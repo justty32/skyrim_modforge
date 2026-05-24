@@ -66,7 +66,18 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
         gained an optional `source` (.psc path rel. to spec). Verified: sample_spec →
         SampleMod/ with SampleMod.esp + Scripts/MFDemoQuestScript.pex + Source/.psc.
         **It.5 COMPLETE — full spec→packaged-mod pipeline works on Linux.**
-- [ ] **It.6 — NL→spec layer**: prompt → structured spec (the "AI agent" front).
+- [~] **It.6 — NL→spec layer** (the "AI agent" front):
+  - [x] **6a — `validate <spec.json>`** (done 2026-05-24): semantic guardrail — editorId
+        presence/uniqueness + referential integrity (dialogue→quest/npc, npc→faction,
+        script→target, object-prop→record, property types). Exit non-zero on any problem
+        so an NL→spec front can self-correct. Verified: good sample passes; a broken spec
+        surfaces all 4 seeded errors.
+  - [ ] **6b — SPEC.md + spec.schema.json**: full field reference + JSON Schema so any LLM
+        (incl. Claude here) emits valid specs reliably; document the NL→spec→validate→
+        build/package workflow.
+  - [ ] **6c — live LLM hook** (BLOCKED on user): a `describe "<NL>"` command calling an
+        LLM API to emit a spec. Needs the user's API key / provider preference. Until then
+        the NL→spec step is done by Claude in-session (produce spec.json → validate → package).
 
 ## Build / test
 ```

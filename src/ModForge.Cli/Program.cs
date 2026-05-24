@@ -35,6 +35,7 @@ internal static class Program
                 case "build" when args.Length == 3:   Build(args[1], args[2]); return 0;
                 case "compile" when args.Length == 3: return Compile(args[1], args[2]);
                 case "package" when args.Length == 3: return Package(args[1], args[2]);
+                case "validate" when args.Length == 2: return Validate(args[1]);
                 case "extract" when args.Length == 3: Extract(args[1], args[2]); return 0;
                 case "apply" when args.Length == 4:   Apply(args[1], args[2], args[3]); return 0;
                 default: Usage(); return 1;
@@ -53,6 +54,7 @@ internal static class Program
         "  build   <spec.json> <out.esp>\n" +
         "  compile <script.psc> <outDir>\n" +
         "  package <spec.json> <outModDir>\n" +
+        "  validate <spec.json>\n" +
         "  extract <in.esp> <strings.json>\n" +
         "  apply   <in.esp> <strings.json> <out.esp>");
 
@@ -542,6 +544,76 @@ internal static class Program
 
         Console.WriteLine($"packaged -> {outModDir}  ({pluginName} + {compiled} compiled script(s) under Scripts/)");
         return 0;
+    }
+
+    // -------------------------------------------------------------------------------
+    //  validate — semantic guardrail for (LLM-authored) specs: editorId presence +
+    //  uniqueness, and referential integrity (dialogue→quest/npc, npc→faction,
+    //  script→target, object-property→record, property types). Returns non-zero if any
+    //  problem so an NL→spec front can self-correct before build/package.
+    // -------------------------------------------------------------------------------
+    private static int Validate(string specPath)
+    {
+        var spec = JsonSerializer.Deserialize<ModSpec>(File.ReadAllText(specPath), ReadOpts)
+                   ?? throw new InvalidOperationException("spec deserialized to null");
+        var problems = new List<string>();
+        var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var npcIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var questIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var factionIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        void Reg(string ed, string what, HashSet<string>? typed = null)
+        {
+            if (string.IsNullOrWhiteSpace(ed)) { problems.Add($"{what}: empty editorId"); return; }
+            if (!ids.Add(ed)) problems.Add($"duplicate editorId '{ed}' (at {what})");
+            typed?.Add(ed);
+        }
+
+        foreach (var m in spec.MiscItems) Reg(m.EditorId, "miscItem");
+        foreach (var b in spec.Books) Reg(b.EditorId, "book");
+        foreach (var w in spec.Weapons) Reg(w.EditorId, "weapon");
+        foreach (var n in spec.Npcs) Reg(n.EditorId, "npc", npcIds);
+        foreach (var q in spec.Quests) Reg(q.EditorId, "quest", questIds);
+        foreach (var s in spec.Spells) Reg(s.EditorId, "spell");
+        foreach (var p in spec.Potions) Reg(p.EditorId, "potion");
+        foreach (var a in spec.Armors) Reg(a.EditorId, "armor");
+        foreach (var f in spec.Factions) Reg(f.EditorId, "faction", factionIds);
+        foreach (var msg in spec.Messages) Reg(msg.EditorId, "message");
+        foreach (var d in spec.Dialogue) Reg(d.EditorId, "dialogue");
+
+        foreach (var n in spec.Npcs)
+            foreach (var fac in n.Factions)
+                if (!factionIds.Contains(fac)) problems.Add($"npc '{n.EditorId}' references unknown faction '{fac}'");
+
+        foreach (var d in spec.Dialogue)
+        {
+            if (!questIds.Contains(d.QuestEditorId)) problems.Add($"dialogue '{d.EditorId}' references unknown quest '{d.QuestEditorId}'");
+            if (!string.IsNullOrEmpty(d.SpeakerNpcEditorId) && !npcIds.Contains(d.SpeakerNpcEditorId))
+                problems.Add($"dialogue '{d.EditorId}' references unknown speaker npc '{d.SpeakerNpcEditorId}'");
+            if (string.IsNullOrEmpty(d.Prompt)) problems.Add($"dialogue '{d.EditorId}' has empty prompt");
+        }
+
+        var validTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "int", "float", "bool", "string", "object" };
+        foreach (var sa in spec.Scripts)
+        {
+            if (string.IsNullOrEmpty(sa.ScriptName)) problems.Add($"script attach on '{sa.TargetEditorId}' has empty scriptName");
+            if (!ids.Contains(sa.TargetEditorId)) problems.Add($"script '{sa.ScriptName}' targets unknown record '{sa.TargetEditorId}'");
+            foreach (var p in sa.Properties)
+            {
+                if (!validTypes.Contains(p.Type)) problems.Add($"script '{sa.ScriptName}' prop '{p.Name}' has invalid type '{p.Type}'");
+                if (string.Equals(p.Type, "object", StringComparison.OrdinalIgnoreCase) && !ids.Contains(p.ObjectEditorId))
+                    problems.Add($"script '{sa.ScriptName}' prop '{p.Name}' object references unknown record '{p.ObjectEditorId}'");
+            }
+        }
+
+        if (problems.Count == 0)
+        {
+            Console.WriteLine($"valid: {Path.GetFileName(specPath)} — {ids.Count} record(s), no problems");
+            return 0;
+        }
+        Console.Error.WriteLine($"INVALID: {Path.GetFileName(specPath)} — {problems.Count} problem(s):");
+        foreach (var p in problems) Console.Error.WriteLine($"  - {p}");
+        return 1;
     }
 }
 
