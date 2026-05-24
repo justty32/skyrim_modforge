@@ -16,6 +16,8 @@
   `IMutagenEncodingProvider`, then lowercases `_Chinese`→`_chinese` (Mutagen capitalizes it;
   case matters on Linux/Proton). Verified: CnDemo → Strings/CnDemo_chinese.STRINGS with valid
   UTF-8 Chinese. Official CHS mod reference extracted at /tmp/chs-mod (Strings/*_chinese.*).
+  **PAUSED 2026-05-24**: user hasn't installed a CJK font yet → CJK content + in-game testing
+  on hold. `applyloc` code is done + byte-verified; don't push CJK further until the font's in.
 
 ## Current focus: the ESP GENERATOR (spec → plugin)
 Generalize the hardcoded `gen` demo into a data-driven `build <spec.json> <out.esp>`.
