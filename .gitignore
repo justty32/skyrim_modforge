@@ -1,0 +1,15 @@
+# .NET build output
+bin/
+obj/
+*.user
+
+# Generated / test plugin artifacts
+*.esp
+*.esl
+*.esm
+*.pex
+strings*.json
+
+# IDE
+.vs/
+.idea/
