@@ -349,6 +349,31 @@ internal static class Program
             r.EditorID = msg.EditorId; r.Name = msg.Name; r.Description = msg.Description;
         }
 
+        // --- pass 2: resolve cross-record references by editorId -> FormLink ---
+        // All records exist now, so build one editorId -> FormKey table and wire links
+        // that may point forward (e.g. an NPC listed before the faction it belongs to).
+        var formKeyByEd = new Dictionary<string, FormKey>();
+        foreach (var r in mod.EnumerateMajorRecords())
+            if (!string.IsNullOrEmpty(r.EditorID)) formKeyByEd[r.EditorID!] = r.FormKey;
+
+        int linksWired = 0;
+        foreach (var n in spec.Npcs)
+        {
+            if (n.Factions.Count == 0 || !npcsByEd.TryGetValue(n.EditorId, out var npcRec)) continue;
+            foreach (var factionEd in n.Factions)
+            {
+                if (!formKeyByEd.TryGetValue(factionEd, out var fk))
+                {
+                    Console.WriteLine($"  ! npc '{n.EditorId}' faction '{factionEd}' not found in spec");
+                    continue;
+                }
+                var rp = new RankPlacement { Rank = 0 };
+                rp.Faction.SetTo(fk);
+                npcRec.Factions.Add(rp);
+                linksWired++;
+            }
+        }
+
         if (spec.Esl) mod.IsSmallMaster = true;
         Write(mod, outPath);
         int total = spec.MiscItems.Count + spec.Books.Count + spec.Weapons.Count + spec.Npcs.Count
@@ -356,7 +381,8 @@ internal static class Program
                     + spec.Spells.Count + spec.Potions.Count + spec.Armors.Count
                     + spec.Factions.Count + spec.Messages.Count;
         Console.WriteLine($"built {outPath} from {Path.GetFileName(specPath)} " +
-                          $"(ESL={spec.Esl}, {total} top-level record(s); {dialogueBuilt} dialogue topic(s))");
+                          $"(ESL={spec.Esl}, {total} top-level record(s); {dialogueBuilt} dialogue topic(s); " +
+                          $"{linksWired} cross-ref link(s))");
     }
 }
 
@@ -406,7 +432,7 @@ internal sealed class ModSpec
 internal sealed class MiscSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } }
 internal sealed class BookSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Text { get; set; } = ""; }
 internal sealed class WeaponSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
-internal sealed class NpcSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
+internal sealed class NpcSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public List<string> Factions { get; set; } = new(); }
 internal sealed class QuestSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public List<ObjectiveSpec> Objectives { get; set; } = new(); }
 internal sealed class ObjectiveSpec { public ushort Index { get; set; } public string Text { get; set; } = ""; }
 // A dialogue topic: shown under QuestEditorId's branch; targets SpeakerNpcEditorId (GetIsID).

@@ -13,7 +13,7 @@
     { "editorId": "MF_Blade", "name": "Forged Blade" }
   ],
   "npcs": [
-    { "editorId": "MF_Smith", "name": "Borin the Smith" }
+    { "editorId": "MF_Smith", "name": "Borin the Smith", "factions": ["MF_Guild"] }
   ],
   "quests": [
     { "editorId": "MF_Q1", "name": "A Forged Errand",

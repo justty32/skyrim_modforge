@@ -32,8 +32,15 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
       extract cosmetic bug (`TrimStart('I')` was eating the 'I' in "Ingestible"; concrete
       record names have no interface prefix). Still TODO if wanted: MagicEffect, Container,
       Activator, Ammunition, Ingredient — same trivial pattern.
-- [ ] **It.4 — refs & FormLinks across records**: let spec entries reference each other by
-      editorId (e.g. npc→faction, leveled lists, container contents); resolve in two passes.
+- [x] **It.4 — refs & FormLinks across records** (done 2026-05-24): two-pass build —
+      pass 1 creates all records, then one editorId→FormKey table from
+      `EnumerateMajorRecords()` resolves forward refs. Demo: NpcSpec.factions (list of
+      faction editorIds) → `Npc.Factions` RankPlacement (FormLink<IFaction>, Rank 0).
+      sample_spec wires 1 link (MF_Smith → MF_Guild). Build prints a "cross-ref link(s)"
+      count. (Round-trip currently trusted from build output; a `dump` command — list
+      records + key FormLinks — would let extract-style verify links. Good next helper.)
+      More refs are the same pattern: container contents, leveled lists, npc CrimeFaction,
+      keywords, npc→class/race/outfit.
 - [ ] **It.5 — Papyrus hook**: spec entry can name a `.psc` to compile (wine PapyrusCompiler)
       + attach via VMAD ScriptEntry/properties. (Compiler at the CK install; parse stdout
       for success, NOT exit code.)
