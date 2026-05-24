@@ -51,9 +51,15 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
         **PREREQ (one-time, already done on this box):** extracted base sources +
         TESV_Papyrus_Flags.flg from `<CK>/Data/Scripts.zip` (`Source/Scripts/*`, 14301 .psc)
         to `~/.cache/modforge/papyrus/`. (For SKSE functions, add the SKSE .psc to that dir.)
-  - [ ] **5b — VMAD attach**: a spec form (e.g. Quest) names a script (+typed properties);
-        Build adds `VirtualMachineAdapter` + `ScriptEntry{Name=...}` + `ScriptObjectProperty`
-        etc., matching the compiled .pex's Scriptname. (See parent memory for the API.)
+  - [x] **5b — VMAD attach** (done 2026-05-24): spec.scripts[] attaches a script (by
+        Scriptname) to any record by editorId, with typed properties (int/float/bool/
+        string/object; object resolves an editorId→FormLink). The VMAD setter isn't on
+        IHaveVirtualMachineAdapter (get-only) and its type varies (Quest→QuestAdapter,
+        else VirtualMachineAdapter), so Build REFLECTS the concrete `VirtualMachineAdapter`
+        property + `System.Activator.CreateInstance`s the right adapter, then adds a
+        ScriptEntry to `.Scripts`. Properties get `ScriptProperty.Flag.Edited`. Verified:
+        sample attaches MFDemoQuestScript to MF_Q1 (int GreetingCount=3 + object PlayerRef
+        →MF_Smith); `strings` confirms script+prop names in the esp; re-read OK.
   - [ ] **5c — packaging**: place compiled `.pex` under the output mod's `Scripts/` (and
         sources under `Scripts/Source/`); a `build` run could compile+attach+package in one.
 - [ ] **It.6 — NL→spec layer**: prompt → structured spec (the "AI agent" front).

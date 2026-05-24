@@ -356,8 +356,10 @@ internal static class Program
         // All records exist now, so build one editorId -> FormKey table and wire links
         // that may point forward (e.g. an NPC listed before the faction it belongs to).
         var formKeyByEd = new Dictionary<string, FormKey>();
+        var recordsByEd = new Dictionary<string, IMajorRecord>();
         foreach (var r in mod.EnumerateMajorRecords())
-            if (!string.IsNullOrEmpty(r.EditorID)) formKeyByEd[r.EditorID!] = r.FormKey;
+            if (!string.IsNullOrEmpty(r.EditorID))
+            { formKeyByEd[r.EditorID!] = r.FormKey; recordsByEd[r.EditorID!] = r; }
 
         int linksWired = 0;
         foreach (var n in spec.Npcs)
@@ -377,6 +379,50 @@ internal static class Program
             }
         }
 
+        // Attach Papyrus scripts (VMAD) to any record by editorId. The VMAD setter is
+        // not on the IHaveVirtualMachineAdapter interface (get-only) and its type varies
+        // (Quest -> QuestAdapter, most others -> VirtualMachineAdapter), so we reflect
+        // the concrete property + create the right adapter. ScriptEntry.Name must match
+        // the compiled .pex's Scriptname; typed properties are set in the ESP (Flag.Edited).
+        int scriptsAttached = 0;
+        foreach (var sa in spec.Scripts)
+        {
+            if (!recordsByEd.TryGetValue(sa.TargetEditorId, out var target))
+            { Console.WriteLine($"  ! script attach: target '{sa.TargetEditorId}' not found"); continue; }
+
+            var vmadProp = target.GetType().GetProperty("VirtualMachineAdapter");
+            if (vmadProp is null || !vmadProp.CanWrite)
+            { Console.WriteLine($"  ! '{sa.TargetEditorId}' ({target.GetType().Name}) takes no script"); continue; }
+
+            var vmad = vmadProp.GetValue(target);
+            if (vmad is null)
+            {
+                vmad = System.Activator.CreateInstance(vmadProp.PropertyType);
+                vmadProp.SetValue(target, vmad);
+            }
+            var scriptsList = (System.Collections.IList)vmad!.GetType().GetProperty("Scripts")!.GetValue(vmad)!;
+
+            var entry = new ScriptEntry { Name = sa.ScriptName };
+            foreach (var p in sa.Properties)
+            {
+                ScriptProperty? sp = (p.Type ?? "").ToLowerInvariant() switch
+                {
+                    "int"    => new ScriptIntProperty { Data = p.Int },
+                    "float"  => new ScriptFloatProperty { Data = p.Float },
+                    "bool"   => new ScriptBoolProperty { Data = p.Bool },
+                    "string" => new ScriptStringProperty { Data = p.Str },
+                    "object" => MakeObjectProp(p, formKeyByEd),
+                    _        => null,
+                };
+                if (sp is null) { Console.WriteLine($"  ! script '{sa.ScriptName}' prop '{p.Name}' bad type/ref '{p.Type}'"); continue; }
+                sp.Name = p.Name;
+                sp.Flags = ScriptProperty.Flag.Edited;
+                entry.Properties.Add(sp);
+            }
+            scriptsList.Add(entry);
+            scriptsAttached++;
+        }
+
         if (spec.Esl) mod.IsSmallMaster = true;
         Write(mod, outPath);
         int total = spec.MiscItems.Count + spec.Books.Count + spec.Weapons.Count + spec.Npcs.Count
@@ -385,7 +431,16 @@ internal static class Program
                     + spec.Factions.Count + spec.Messages.Count;
         Console.WriteLine($"built {outPath} from {Path.GetFileName(specPath)} " +
                           $"(ESL={spec.Esl}, {total} top-level record(s); {dialogueBuilt} dialogue topic(s); " +
-                          $"{linksWired} cross-ref link(s))");
+                          $"{linksWired} cross-ref link(s); {scriptsAttached} script(s) attached)");
+    }
+
+    private static ScriptProperty? MakeObjectProp(PropertySpec p, Dictionary<string, FormKey> formKeyByEd)
+    {
+        if (string.IsNullOrEmpty(p.ObjectEditorId) || !formKeyByEd.TryGetValue(p.ObjectEditorId, out var fk))
+            return null;
+        var op = new ScriptObjectProperty();
+        op.Object.SetTo(fk);
+        return op;
     }
 
     // -------------------------------------------------------------------------------
@@ -494,6 +549,7 @@ internal sealed class ModSpec
     public List<ArmorSpec> Armors { get; set; } = new();
     public List<FactionSpec> Factions { get; set; } = new();
     public List<MessageSpec> Messages { get; set; } = new();
+    public List<ScriptAttachSpec> Scripts { get; set; } = new();
 }
 internal sealed class MiscSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } }
 internal sealed class BookSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Text { get; set; } = ""; }
@@ -515,3 +571,21 @@ internal sealed class PotionSpec { public string EditorId { get; set; } = ""; pu
 internal sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } }
 internal sealed class FactionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
 internal sealed class MessageSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Description { get; set; } = ""; }
+// Attach a compiled Papyrus script (by Scriptname) to a record (by editorId), with
+// typed properties. type ∈ int|float|bool|string|object; object resolves ObjectEditorId.
+internal sealed class ScriptAttachSpec
+{
+    public string TargetEditorId { get; set; } = "";
+    public string ScriptName { get; set; } = "";
+    public List<PropertySpec> Properties { get; set; } = new();
+}
+internal sealed class PropertySpec
+{
+    public string Name { get; set; } = "";
+    public string Type { get; set; } = "";
+    public int Int { get; set; }
+    public float Float { get; set; }
+    public bool Bool { get; set; }
+    public string Str { get; set; } = "";
+    public string ObjectEditorId { get; set; } = "";
+}

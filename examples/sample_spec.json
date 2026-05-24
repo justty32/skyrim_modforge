@@ -39,5 +39,12 @@
   "messages": [
     { "editorId": "MF_Notice", "name": "Guild Notice",
       "description": "The Forged Guild welcomes you. Report to Borin." }
+  ],
+  "scripts": [
+    { "targetEditorId": "MF_Q1", "scriptName": "MFDemoQuestScript",
+      "properties": [
+        { "name": "GreetingCount", "type": "int", "int": 3 },
+        { "name": "PlayerRef", "type": "object", "objectEditorId": "MF_Smith" }
+      ] }
   ]
 }
