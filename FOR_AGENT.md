@@ -25,7 +25,7 @@ R="dotnet run --project src/ModForge.Cli --no-build --"       # then drive it fa
 $R validate <spec.json>                      # ALWAYS run first; exits non-zero + lists problems
 $R build    <spec.json> <out.esp>            # spec -> plugin (records, dialogue, FormLinks, VMAD)
 $R package  <spec.json> <outModDir>          # build + compile each script `source` -> MO2-ready folder
-$R dump     <plugin.esp>                     # read back: records, names, npc race/class/outfit/factions, keywords, scripts, dialogue, objectives, masters
+$R dump     <plugin.esp>                     # read back: records, names, npc race/class/outfit/factions, weapon/armor stats, effects, cells/placements, keywords, scripts, dialogue, objectives, masters
 $R find     <plugin.esp> <query> [type]      # search a master (e.g. Skyrim.esm) -> "Skyrim.esm:0xFORMID  Type  EditorID"
 $R compile  <script.psc> <outDir>            # .psc -> .pex via the CK PapyrusCompiler under Wine
 $R extract  <plugin.esp> <strings.json>      # pull translatable strings -> JSON (source/target)
@@ -106,16 +106,18 @@ NPC needs at least `race` + `class` to act like a real actor; `outfit` clothes i
 ModForge writes **structurally valid** records. That is NOT the same as **in-game functional**:
 
 - **NPCs can now be functional actors** — set `race` + `class` (+ `outfit`) via vanilla refs
-  and the NPC behaves like a real actor. BUT a generated NPC is **not placed in the world**
-  yet — there's no cell/worldspace placement, so it won't physically appear somewhere until
-  that lands (or a script/quest alias places it). It exists as a form, not as a spawned actor.
+  and the NPC behaves like a real actor.
+- **Placement works for new interior cells:** `cells` + `placements` put an NPC/object into a
+  **new in-spec interior cell** (reach it with `coc <editorId>`). Placing into a **vanilla
+  cell** (e.g. dropping an NPC into Whiterun) is NOT supported yet — it needs a cell override;
+  `validate` flags it. So a generated NPC physically appears only in a cell this plugin makes.
 - **Items/spells now carry gameplay stats:** weapons take `damage`/`speed`/`reach`, armor
   takes `armorType` + biped `slots`, and **spells/potions take `effects`** (a MagicEffect
   *ref* + magnitude/area/duration). A potion with one effect is fully functional; a spell
   works but cast-type/spell-type aren't spec fields yet (defaults are written).
 - **External/vanilla forms CAN be referenced** (race/class/outfit/keywords/factions/
-  magicEffect, via `"<master>:0xFORMID"`). Still NOT covered: leveled lists, container
-  contents, and **world placement**.
+  magicEffect/placement base, via `"<master>:0xFORMID"`). Still NOT covered: leveled lists,
+  container contents, and **placement into a vanilla cell** (only new in-spec cells work).
 - **Dialogue** records are valid, but a line actually appearing in conversation can need
   quest-flag/branch tuning, and there is **no voice** (subtitle only).
 - You cannot confirm anything works **in-game** from here — that needs a Proton/Skyrim launch.

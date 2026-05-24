@@ -384,6 +384,25 @@ internal static class Program
             r.EditorID = msg.EditorId; r.Name = msg.Name; r.Description = msg.Description;
         }
 
+        // New interior cells. Cells nest CellBlock(type 2) -> CellSubBlock(type 3) -> Cell;
+        // we put all new interior cells in one 0/0 block (interior block numbers are not
+        // strictly enforced by the engine — cells are reached by EditorID, e.g. `coc <id>`).
+        var cellsByEd = new Dictionary<string, Cell>();
+        if (spec.Cells.Count > 0)
+        {
+            var block = new CellBlock { BlockNumber = 0, GroupType = GroupTypeEnum.InteriorCellBlock };
+            var sub = new CellSubBlock { BlockNumber = 0, GroupType = GroupTypeEnum.InteriorCellSubBlock };
+            block.SubBlocks.Add(sub);
+            mod.Cells.Records.Add(block);
+            foreach (var c in spec.Cells)
+            {
+                var cell = new Cell(mod, c.EditorId) { Flags = Cell.Flag.IsInteriorCell };
+                if (!string.IsNullOrEmpty(c.Name)) cell.Name = c.Name;
+                sub.Cells.Add(cell);
+                if (!string.IsNullOrEmpty(c.EditorId)) cellsByEd[c.EditorId] = cell;
+            }
+        }
+
         // --- pass 2: resolve cross-record references by editorId -> FormLink ---
         // All records exist now, so build one editorId -> FormKey table and wire links
         // that may point forward (e.g. an NPC listed before the faction it belongs to).
@@ -455,6 +474,37 @@ internal static class Program
         foreach (var s in spec.Spells) WireEffects(s.EditorId, s.Effects);
         foreach (var p in spec.Potions) WireEffects(p.EditorId, p.Effects);
 
+        // World placement: put a base form (npc/object) into a cell at a position/rotation.
+        // Phase 1 = in-spec interior cells only; placing into a vanilla cell needs a cell
+        // override (deferred). NPC -> PlacedNpc (ACHR), other -> PlacedObject (REFR).
+        int placed = 0;
+        foreach (var pl in spec.Placements)
+        {
+            if (LooksExternalRef(pl.Cell))
+            { Console.WriteLine($"  ! placement into external/vanilla cell '{pl.Cell}' needs a cell override (not yet supported) — skipped"); continue; }
+            if (!cellsByEd.TryGetValue(pl.Cell, out var cell))
+            { Console.WriteLine($"  ! placement: cell '{pl.Cell}' not found in spec — skipped"); continue; }
+            if (!TryResolveRef(pl.Base, formKeyByEd, out var baseFk))
+            { Console.WriteLine($"  ! placement: base '{pl.Base}' unresolved — skipped"); continue; }
+
+            var placement = new Placement
+            {
+                Position = new Noggog.P3Float(pl.Position.X, pl.Position.Y, pl.Position.Z),
+                Rotation = new Noggog.P3Float(Deg2Rad(pl.Rotation.X), Deg2Rad(pl.Rotation.Y), Deg2Rad(pl.Rotation.Z)),
+            };
+
+            // Explicit kind wins; otherwise an in-spec NPC base -> npc, anything else -> object.
+            bool isNpc = pl.Kind.Equals("npc", StringComparison.OrdinalIgnoreCase)
+                || (string.IsNullOrEmpty(pl.Kind) && recordsByEd.TryGetValue(pl.Base, out var br) && br is INpc);
+
+            IPlaced placedRec;
+            if (isNpc) { var a = new PlacedNpc(mod); a.Base.SetTo(baseFk); a.Placement = placement; placedRec = a; }
+            else       { var o = new PlacedObject(mod); o.Base.SetTo(baseFk); o.Placement = placement; placedRec = o; }
+
+            (pl.Persistent ? cell.Persistent : cell.Temporary).Add(placedRec);
+            placed++;
+        }
+
         // Attach Papyrus scripts (VMAD) to any record by editorId. The VMAD setter is
         // not on the IHaveVirtualMachineAdapter interface (get-only) and its type varies
         // (Quest -> QuestAdapter, most others -> VirtualMachineAdapter), so we reflect
@@ -504,11 +554,11 @@ internal static class Program
         int total = spec.MiscItems.Count + spec.Books.Count + spec.Weapons.Count + spec.Npcs.Count
                     + spec.Quests.Count + dialogueBuilt
                     + spec.Spells.Count + spec.Potions.Count + spec.Armors.Count
-                    + spec.Factions.Count + spec.Messages.Count;
+                    + spec.Factions.Count + spec.Messages.Count + spec.Cells.Count;
         Console.WriteLine($"built {outPath} from {Path.GetFileName(specPath)} " +
                           $"(ESL={spec.Esl}, {total} top-level record(s); {dialogueBuilt} dialogue topic(s); " +
                           $"{linksWired} cross-ref link(s), {extLinks} to external master(s); " +
-                          $"{scriptsAttached} script(s) attached)");
+                          $"{scriptsAttached} script(s) attached; {placed} placement(s) in {spec.Cells.Count} cell(s))");
     }
 
     private static ScriptProperty? MakeObjectProp(PropertySpec p, Dictionary<string, FormKey> formKeyByEd)
@@ -528,6 +578,9 @@ internal static class Program
         "heavy" or "heavyarmor" => ArmorType.HeavyArmor,
         _ => ArmorType.Clothing,
     };
+
+    // Skyrim stores placement rotation in radians; specs author it in (friendlier) degrees.
+    private static float Deg2Rad(float deg) => deg * (float)Math.PI / 180f;
 
     // -------------------------------------------------------------------------------
     //  Reference resolver (It.7b). A "ref" string is EITHER an in-spec editorId, OR an
@@ -682,6 +735,7 @@ internal static class Program
         var npcIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var questIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var factionIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var cellIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         void Reg(string ed, string what, HashSet<string>? typed = null)
         {
@@ -701,6 +755,7 @@ internal static class Program
         foreach (var f in spec.Factions) Reg(f.EditorId, "faction", factionIds);
         foreach (var msg in spec.Messages) Reg(msg.EditorId, "message");
         foreach (var d in spec.Dialogue) Reg(d.EditorId, "dialogue");
+        foreach (var c in spec.Cells) Reg(c.EditorId, "cell", cellIds);
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
         void CheckRef(string r, string what)
@@ -767,6 +822,16 @@ internal static class Program
                 if (string.Equals(p.Type, "object", StringComparison.OrdinalIgnoreCase))
                     CheckRef(p.ObjectEditorId, $"script '{sa.ScriptName}' prop '{p.Name}' object");
             }
+        }
+
+        foreach (var pl in spec.Placements)
+        {
+            CheckRef(pl.Base, "placement base");
+            if (string.IsNullOrWhiteSpace(pl.Cell)) problems.Add("placement has empty cell");
+            else if (LooksExternalRef(pl.Cell)) problems.Add($"placement into external/vanilla cell '{pl.Cell}' is not supported yet (in-spec interior cell only)");
+            else if (!cellIds.Contains(pl.Cell)) problems.Add($"placement references unknown cell '{pl.Cell}' (must be an in-spec cell editorId)");
+            if (!string.IsNullOrEmpty(pl.Kind) && !pl.Kind.Equals("npc", StringComparison.OrdinalIgnoreCase) && !pl.Kind.Equals("object", StringComparison.OrdinalIgnoreCase))
+                problems.Add($"placement kind '{pl.Kind}' invalid (npc|object)");
         }
 
         if (problems.Count == 0)
@@ -964,6 +1029,15 @@ internal static class Program
                 foreach (var e in eff.Effects)
                     Console.WriteLine($"      effect -> {Ref(e.BaseEffect.FormKey)} (mag={e.Data?.Magnitude} area={e.Data?.Area} dur={e.Data?.Duration})");
 
+            if (r is ICellGetter cg)
+                Console.WriteLine($"      cell: interior={cg.Flags.HasFlag(Cell.Flag.IsInteriorCell)} persistent={cg.Persistent.Count} temporary={cg.Temporary.Count}");
+
+            if (r is IPlacedNpcGetter pnpc && pnpc.Placement is { } pp)
+                Console.WriteLine($"      placed npc -> base {Ref(pnpc.Base.FormKey)} @ ({pp.Position.X:0.#}, {pp.Position.Y:0.#}, {pp.Position.Z:0.#})");
+
+            if (r is IPlacedObjectGetter pobj && pobj.Placement is { } op)
+                Console.WriteLine($"      placed obj -> base {Ref(pobj.Base.FormKey)} @ ({op.Position.X:0.#}, {op.Position.Y:0.#}, {op.Position.Z:0.#})");
+
             if (r is IHaveVirtualMachineAdapterGetter hv && hv.VirtualMachineAdapter is { } vm)
                 foreach (var se in vm.Scripts)
                     Console.WriteLine($"      script: {se.Name} [{se.Properties.Count} prop(s)]");
@@ -1028,6 +1102,8 @@ internal sealed class ModSpec
     public List<FactionSpec> Factions { get; set; } = new();
     public List<MessageSpec> Messages { get; set; } = new();
     public List<ScriptAttachSpec> Scripts { get; set; } = new();
+    public List<CellSpec> Cells { get; set; } = new();
+    public List<PlacementSpec> Placements { get; set; } = new();
 }
 // "ref" fields below accept EITHER an in-spec editorId OR an external "<master>:0xFORMID"
 // (e.g. "Skyrim.esm:0x013746" — find them with the `find` command). External refs auto-add
@@ -1080,4 +1156,20 @@ internal sealed class PropertySpec
     public bool Bool { get; set; }
     public string Str { get; set; } = "";
     public string ObjectEditorId { get; set; } = "";
+}
+// A new interior cell the plugin creates (reachable in-game via `coc <editorId>`).
+internal sealed class CellSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
+internal sealed class Vec3 { public float X { get; set; } public float Y { get; set; } public float Z { get; set; } }
+// Place a base form (npc/object, in-spec or external) into a cell at a position/rotation.
+// `cell` must be an in-spec cell editorId for now; placing into a vanilla cell needs an
+// override (It.7d phase 2). `rotation` is in degrees. `kind` ("npc"|"object") is inferred
+// for in-spec bases and defaults to "object" for external ones.
+internal sealed class PlacementSpec
+{
+    public string Base { get; set; } = "";
+    public string Cell { get; set; } = "";
+    public string Kind { get; set; } = "";
+    public Vec3 Position { get; set; } = new();
+    public Vec3 Rotation { get; set; } = new();
+    public bool Persistent { get; set; }
 }

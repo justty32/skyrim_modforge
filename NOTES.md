@@ -130,10 +130,31 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
         - Verified: sample_spec round-trips via dump (Blade dmg12 spd1 reach1; Apron Clothing/Body;
           Spark→AlchDamageHealth mag10 dur5; Tonic→AlchRestoreHealth mag25). Negative test: 5/5
           bad fields caught by validate. NOT in-game tested (needs Proton). API verified via ilspy.
-  - [ ] **7d — world placement + aggregates** (the real "appears in-game" blocker): cell/
-        worldspace **placement** of an NPC/object (PlacedNpc/PlacedObject in a Cell — needs
-        override semantics for vanilla cells, or a new interior cell; intricate, do carefully),
-        leveled lists, container contents, spell cast/spell-type fields. Refs + `find` are the tools.
+  - [~] **7d — world placement** (the real "appears in-game" blocker):
+    - [x] **7d phase 1 — new interior cells + placement** (done 2026-05-24): `cells` (new
+          interior Cell, IsInteriorCell, reachable via `coc <editorId>`) + `placements` (a
+          base ref → `PlacedNpc` (ACHR) if the base is an NPC else `PlacedObject` (REFR), with
+          `Placement{Position, Rotation}`; rotation authored in degrees → radians). Cell nesting
+          = one `CellBlock`(GroupType InteriorCellBlock=2) → `CellSubBlock`(InteriorCellSubBlock=3)
+          → Cells at block 0/0 (interior block numbers aren't engine-enforced). Records made with
+          `new Cell(mod, editorId)` / `new PlacedNpc(mod)` / `new PlacedObject(mod)` (auto FormKey);
+          placed refs go in `cell.Temporary` (or `.Persistent` if `persistent:true`). base resolves
+          through the existing ref resolver (in-spec or external). `validate` registers cell ids +
+          checks placement base/cell/kind (and flags external-cell placement as unsupported); `dump`
+          prints cell interior/persistent/temporary counts + each placed npc/obj's base + position.
+          Verified: sample → MF_TestRoom with PlacedNpc(MF_Smith)+PlacedObject(MF_Coin), dump
+          round-trips (so the bytes re-parse via CreateFromBinary); negative test 5/5 caught.
+          **NOT in-game tested** (needs Proton): coc reachability + actor actually standing there.
+          Mutagen API (Cell/CellBlock/CellSubBlock/PlacedNpc/PlacedObject/Placement/P3Float/
+          GroupTypeEnum) all verified via ilspy.
+    - [ ] **7d phase 2 — placement into a VANILLA cell** (Whiterun etc.): needs a cell *override*
+          (the placed ref must live in an override of the vanilla cell's children). Approach: build a
+          link cache from a manual load order over Skyrim.esm (avoid GameEnvironment/plugins.txt, as
+          in `find`), resolve the cell context, `GetOrAddAsOverride(mod)`, add the ref. Watch: a naive
+          copy-as-override pulls in ALL the cell's existing children (bloat/conflict) — want to add
+          refs without re-stating existing ones. Intricate; research carefully before coding.
+  - [ ] **7e — aggregates**: leveled lists, container contents, spell cast/spell-type fields.
+        Self-contained new records (no override) — same pattern as the existing record types.
 
 ## Build / test
 ```

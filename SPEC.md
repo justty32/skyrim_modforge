@@ -42,7 +42,8 @@ keywords, factions, etc. The named master is **added to the plugin automatically
   "miscItems": [...], "books": [...], "weapons": [...], "npcs": [...],
   "quests": [...], "dialogue": [...], "spells": [...], "potions": [...],
   "armors": [...], "factions": [...], "messages": [...],
-  "scripts": [...]              // Papyrus attachments (see below)
+  "scripts": [...],             // Papyrus attachments (see below)
+  "cells": [...], "placements": [...]   // new interior cells + placing forms in them
 }
 ```
 
@@ -61,6 +62,8 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `armors` | `editorId`, `name`, `value`, `weight`, `armorRating` (number), `armorType` (`light`\|`heavy`\|`clothing`), `slots` (array of biped-slot names), `keywords` (array of *refs*) |
 | `factions` | `editorId`, `name` |
 | `messages` | `editorId`, `name`, `description` (body text) |
+| `cells` | `editorId`, `name` (a new interior cell) |
+| `placements` | `base` (*ref*), `cell` (in-spec cell editorId), `kind` (`npc`\|`object`), `position` (`{x,y,z}`), `rotation` (`{x,y,z}` degrees), `persistent` (bool) |
 
 A field marked *ref* takes an in-spec `editorId` **or** `"<master>:0xFORMID"` (see
 *References to vanilla / external forms* above). A standing NPC needs at least `race` +
@@ -117,6 +120,28 @@ spec; `speakerNpcEditorId`, if set, must name an npc. `prompt` is the player's l
   MagicEffect, Weapon, Armor, MiscItem, Book, Ingestible, …). The script `Name` must
   match the compiled `.pex`.
 
+### cells & placements — putting things in the world
+```jsonc
+"cells": [
+  { "editorId": "MF_TestRoom", "name": "ModForge Test Room" }   // a new interior cell
+],
+"placements": [
+  { "base": "MF_Smith", "cell": "MF_TestRoom",                   // an in-spec NPC ...
+    "position": { "x": 0, "y": 0, "z": 0 },
+    "rotation": { "x": 0, "y": 0, "z": 0 } },                    //   rotation in degrees
+  { "base": "Skyrim.esm:0x0001397E", "cell": "MF_TestRoom",      // ... or a vanilla form (ref)
+    "position": { "x": 60, "y": 0, "z": 0 }, "kind": "object" }
+]
+```
+- A `cell` is a **new interior cell**; reach it in-game with `coc <editorId>` (it has no
+  lighting template, so it’ll be dark — fine for testing that the placed forms are there).
+- A `placement` puts a `base` form into a `cell`. `base` is a *ref* (in-spec or external);
+  NPCs become `PlacedNpc`, anything else `PlacedObject` (`kind` overrides the guess).
+  `position` is world units, `rotation` is **degrees**. `persistent: true` puts it in the
+  cell’s persistent list (needed if a quest/script references it).
+- **Only in-spec cells** are supported. Placing into a **vanilla cell** (e.g. dropping an
+  NPC into Whiterun) needs a cell *override* and is not implemented yet — `validate` flags it.
+
 ## Workflow
 
 ```bash
@@ -132,9 +157,9 @@ A live `describe` command (LLM API) is planned (It.6c) — until then the LLM st
 interactively.
 
 ## Not yet covered (extend in `Program.cs` `Build` + a spec class)
-Container contents, leveled lists, spell cast/spell-type fields, and **cell/world
-placement** (putting an NPC or object *in the world* — the next blocker for a generated
-NPC to physically appear). Refs (in-spec or `<master>:0xFORMID`) and the `find` command
-are the building blocks for the external ones.
+Container contents, leveled lists, spell cast/spell-type fields, and **placement into a
+vanilla cell** (an NPC/object dropped into Whiterun etc. — needs a cell *override*; new
+in-spec interior cells already work via `cells`/`placements`). Refs (in-spec or
+`<master>:0xFORMID`) and the `find` command are the building blocks for the external ones.
 
 See `examples/sample_spec.json` for a complete working example.
