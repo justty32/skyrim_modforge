@@ -31,6 +31,7 @@
   ],
   "spells": [
     { "editorId": "MF_Spark", "name": "Forged Spark",
+      "spellType": "Spell", "castType": "FireAndForget", "targetType": "Aimed", "baseCost": 28,
       "effects": [
         { "magicEffect": "Skyrim.esm:0x03EB42", "magnitude": 10, "duration": 5 }
       ] }
@@ -69,5 +70,24 @@
       "position": { "x": 0, "y": 0, "z": 0 }, "rotation": { "x": 0, "y": 0, "z": 0 } },
     { "base": "MF_Coin", "cell": "MF_TestRoom",
       "position": { "x": 40, "y": 0, "z": 0 } }
+  ],
+  "leveledItems": [
+    { "editorId": "MF_LootList", "chanceNone": 25,
+      "flags": ["CalculateFromAllLevelsLessThanOrEqualPlayer"],
+      "entries": [
+        { "reference": "MF_Blade", "level": 1, "count": 1 },
+        { "reference": "MF_Coin", "level": 1, "count": 5 }
+      ] }
+  ],
+  "leveledNpcs": [
+    { "editorId": "MF_GuardList", "chanceNone": 0,
+      "entries": [ { "reference": "MF_Smith", "level": 1, "count": 1 } ] }
+  ],
+  "containers": [
+    { "editorId": "MF_Chest", "name": "Forged Chest", "weight": 0,
+      "items": [
+        { "item": "MF_Coin", "count": 10 },
+        { "item": "MF_Apron", "count": 1 }
+      ] }
   ]
 }

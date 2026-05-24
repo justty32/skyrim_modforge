@@ -153,8 +153,22 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
           in `find`), resolve the cell context, `GetOrAddAsOverride(mod)`, add the ref. Watch: a naive
           copy-as-override pulls in ALL the cell's existing children (bloat/conflict) — want to add
           refs without re-stating existing ones. Intricate; research carefully before coding.
-  - [ ] **7e — aggregates**: leveled lists, container contents, spell cast/spell-type fields.
-        Self-contained new records (no override) — same pattern as the existing record types.
+  - [x] **7e — aggregates + spell cast-type** (done 2026-05-24): self-contained, low-risk.
+        - **LeveledItem (LVLI) / LeveledNpc (LVLN):** `leveledItems`/`leveledNpcs` with
+          `chanceNone` (0–100 → `Noggog.Percent`), `flags` (LVLI/LVLN flag names OR'd via the
+          generic `ParseFlags<T>`), and `entries[]` (`reference` ref + `level`/`count` shorts).
+          Built as `mod.LeveledItems/LeveledNpcs.AddNew()`; entries wired in pass 2 via the ref
+          resolver (`Entry.Data.Reference.SetTo(fk)`; LVLI ref = IItem, LVLN ref = INpcSpawn).
+        - **Container (CONT):** `containers` with `name`/`weight`/`items[]` (`item` ref + `count`).
+          `ContainerEntry{ Item = ContainerItem{ Item.SetTo(fk), Count } }`.
+        - **Spell cast-type:** SpellSpec gained `spellType`/`castType`/`targetType` (enums via
+          Enum.TryParse) + `baseCost`/`chargeTime`, set in pass 1.
+        - validate registers the ids + checks entry/item refs, flag names, and the 3 spell
+          enums; dump prints lvli/lvln entries, container contents, and spell type/cast/target/cost.
+        - Verified: sample (MF_LootList, MF_GuardList, MF_Chest, MF_Spark cast-type) round-trips
+          via dump (13 cross-ref links); negative test 6/6 caught. Mutagen API verified via ilspy.
+          NOT in-game tested.
+        Remaining gameplay gaps are minor/long-tail; the big one left is It.7d phase 2.
 
 ## Build / test
 ```

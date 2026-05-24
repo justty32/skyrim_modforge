@@ -112,12 +112,14 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
   cell** (e.g. dropping an NPC into Whiterun) is NOT supported yet — it needs a cell override;
   `validate` flags it. So a generated NPC physically appears only in a cell this plugin makes.
 - **Items/spells now carry gameplay stats:** weapons take `damage`/`speed`/`reach`, armor
-  takes `armorType` + biped `slots`, and **spells/potions take `effects`** (a MagicEffect
-  *ref* + magnitude/area/duration). A potion with one effect is fully functional; a spell
-  works but cast-type/spell-type aren't spec fields yet (defaults are written).
+  takes `armorType` + biped `slots`, **spells/potions take `effects`** (a MagicEffect *ref* +
+  magnitude/area/duration), and spells take `spellType`/`castType`/`targetType`/`baseCost`. A
+  potion with one effect is fully functional; a spell wants an effect + the cast fields.
+- **Leveled lists + containers:** `leveledItems`/`leveledNpcs` (weighted level-gated entries,
+  each a *ref*) and `containers` (item *refs* + counts) — loot tables, merchant chests, etc.
 - **External/vanilla forms CAN be referenced** (race/class/outfit/keywords/factions/
-  magicEffect/placement base, via `"<master>:0xFORMID"`). Still NOT covered: leveled lists,
-  container contents, and **placement into a vanilla cell** (only new in-spec cells work).
+  magicEffect/placement base/leveled+container entries, via `"<master>:0xFORMID"`). The main
+  thing still NOT covered: **placement into a vanilla cell** (only new in-spec cells work).
 - **Dialogue** records are valid, but a line actually appearing in conversation can need
   quest-flag/branch tuning, and there is **no voice** (subtitle only).
 - You cannot confirm anything works **in-game** from here — that needs a Proton/Skyrim launch.

@@ -20,7 +20,10 @@
     "messages": { "type": "array", "items": { "$ref": "#/$defs/message" } },
     "scripts": { "type": "array", "items": { "$ref": "#/$defs/script" } },
     "cells": { "type": "array", "items": { "$ref": "#/$defs/cell" }, "description": "new interior cells (reach in-game via `coc <editorId>`)" },
-    "placements": { "type": "array", "items": { "$ref": "#/$defs/placement" }, "description": "put a base form into a cell at a position/rotation" }
+    "placements": { "type": "array", "items": { "$ref": "#/$defs/placement" }, "description": "put a base form into a cell at a position/rotation" },
+    "leveledItems": { "type": "array", "items": { "$ref": "#/$defs/leveledList" }, "description": "LeveledItem (LVLI): level-gated weighted item lists" },
+    "leveledNpcs": { "type": "array", "items": { "$ref": "#/$defs/leveledList" }, "description": "LeveledNpc (LVLN): level-gated weighted npc lists" },
+    "containers": { "type": "array", "items": { "$ref": "#/$defs/container" }, "description": "Container (CONT): a named container with item contents" }
   },
   "additionalProperties": false,
   "$defs": {
@@ -59,7 +62,12 @@
       "properties": {
         "editorId": { "type": "string", "minLength": 1 },
         "name": { "type": "string" },
-        "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" }, "description": "magic effects (does nothing without at least one)" }
+        "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" }, "description": "magic effects (does nothing without at least one)" },
+        "spellType": { "enum": ["Spell", "Disease", "Power", "LesserPower", "Ability", "Poison", "Addiction", "Voice"] },
+        "castType": { "enum": ["ConstantEffect", "FireAndForget", "Concentration"] },
+        "targetType": { "enum": ["Self", "Touch", "Aimed", "TargetActor", "TargetLocation"] },
+        "baseCost": { "type": "integer", "minimum": 0, "description": "magicka cost" },
+        "chargeTime": { "type": "number", "minimum": 0 }
       }
     },
     "potion": {
@@ -209,6 +217,43 @@
         "position": { "$ref": "#/$defs/vec3" },
         "rotation": { "$ref": "#/$defs/vec3", "description": "degrees" },
         "persistent": { "type": "boolean", "description": "place in the cell's persistent (vs temporary) list" }
+      }
+    },
+    "leveledEntry": {
+      "type": "object",
+      "required": ["reference"],
+      "properties": {
+        "reference": { "$ref": "#/$defs/ref", "description": "the item (LVLI) or npc (LVLN) to spawn — in-spec or external" },
+        "level": { "type": "integer", "minimum": 1, "description": "min player/encounter level for this entry (default 1)" },
+        "count": { "type": "integer", "minimum": 1, "description": "how many (default 1)" }
+      }
+    },
+    "leveledList": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "chanceNone": { "type": "integer", "minimum": 0, "maximum": 100, "description": "percent chance the list yields nothing" },
+        "flags": { "type": "array", "items": { "enum": ["CalculateFromAllLevelsLessThanOrEqualPlayer", "CalculateForEachItemInCount", "UseAll", "SpecialLoot"] } },
+        "entries": { "type": "array", "items": { "$ref": "#/$defs/leveledEntry" } }
+      }
+    },
+    "containerItem": {
+      "type": "object",
+      "required": ["item"],
+      "properties": {
+        "item": { "$ref": "#/$defs/ref", "description": "the item to put inside — in-spec or external" },
+        "count": { "type": "integer", "minimum": 1, "description": "default 1" }
+      }
+    },
+    "container": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "weight": { "type": "number", "minimum": 0 },
+        "items": { "type": "array", "items": { "$ref": "#/$defs/containerItem" } }
       }
     }
   }

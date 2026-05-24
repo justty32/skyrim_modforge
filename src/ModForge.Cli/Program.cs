@@ -352,6 +352,11 @@ internal static class Program
         {
             var r = mod.Spells.AddNew();
             r.EditorID = s.EditorId; r.Name = s.Name;
+            if (Enum.TryParse<SpellType>(s.SpellType, ignoreCase: true, out var st)) r.Type = st;
+            if (Enum.TryParse<CastType>(s.CastType, ignoreCase: true, out var ct)) r.CastType = ct;
+            if (Enum.TryParse<TargetType>(s.TargetType, ignoreCase: true, out var tt)) r.TargetType = tt;
+            if (s.BaseCost > 0) r.BaseCost = s.BaseCost;
+            if (s.ChargeTime > 0) r.ChargeTime = s.ChargeTime;
         }
         foreach (var p in spec.Potions)
         {
@@ -382,6 +387,31 @@ internal static class Program
         {
             var r = mod.Messages.AddNew();
             r.EditorID = msg.EditorId; r.Name = msg.Name; r.Description = msg.Description;
+        }
+
+        // Leveled lists + containers: create the records now (scalar fields + flags); their
+        // entries reference other forms, so they're wired in pass 2 with the ref resolver.
+        foreach (var li in spec.LeveledItems)
+        {
+            var r = mod.LeveledItems.AddNew();
+            r.EditorID = li.EditorId;
+            r.ChanceNone = new Noggog.Percent(Math.Clamp(li.ChanceNone, 0, 100) / 100.0);
+            r.Flags = ParseFlags<LeveledItem.Flag>(li.Flags);
+            r.Entries = new();
+        }
+        foreach (var ln in spec.LeveledNpcs)
+        {
+            var r = mod.LeveledNpcs.AddNew();
+            r.EditorID = ln.EditorId;
+            r.ChanceNone = new Noggog.Percent(Math.Clamp(ln.ChanceNone, 0, 100) / 100.0);
+            r.Flags = ParseFlags<LeveledNpc.Flag>(ln.Flags);
+            r.Entries = new();
+        }
+        foreach (var ct in spec.Containers)
+        {
+            var r = mod.Containers.AddNew();
+            r.EditorID = ct.EditorId; r.Name = ct.Name; r.Weight = ct.Weight;
+            r.Items = new();
         }
 
         // New interior cells. Cells nest CellBlock(type 2) -> CellSubBlock(type 3) -> Cell;
@@ -505,6 +535,44 @@ internal static class Program
             placed++;
         }
 
+        // Leveled-list entries + container contents (each references an item/npc by ref).
+        foreach (var li in spec.LeveledItems)
+        {
+            if (!recordsByEd.TryGetValue(li.EditorId, out var rec) || rec is not ILeveledItem lvl) continue;
+            lvl.Entries ??= new();
+            foreach (var e in li.Entries)
+                Resolve($"leveledItem '{li.EditorId}' entry", e.Reference, fk =>
+                {
+                    var entry = new LeveledItemEntry { Data = new LeveledItemEntryData { Level = e.Level, Count = e.Count } };
+                    entry.Data!.Reference.SetTo(fk);
+                    lvl.Entries!.Add(entry);
+                });
+        }
+        foreach (var ln in spec.LeveledNpcs)
+        {
+            if (!recordsByEd.TryGetValue(ln.EditorId, out var rec) || rec is not ILeveledNpc lvl) continue;
+            lvl.Entries ??= new();
+            foreach (var e in ln.Entries)
+                Resolve($"leveledNpc '{ln.EditorId}' entry", e.Reference, fk =>
+                {
+                    var entry = new LeveledNpcEntry { Data = new LeveledNpcEntryData { Level = e.Level, Count = e.Count } };
+                    entry.Data!.Reference.SetTo(fk);
+                    lvl.Entries!.Add(entry);
+                });
+        }
+        foreach (var ct in spec.Containers)
+        {
+            if (!recordsByEd.TryGetValue(ct.EditorId, out var rec) || rec is not IContainer cont) continue;
+            cont.Items ??= new();
+            foreach (var e in ct.Items)
+                Resolve($"container '{ct.EditorId}' item", e.Item, fk =>
+                {
+                    var ci = new ContainerItem { Count = e.Count };
+                    ci.Item.SetTo(fk);
+                    cont.Items!.Add(new ContainerEntry { Item = ci });
+                });
+        }
+
         // Attach Papyrus scripts (VMAD) to any record by editorId. The VMAD setter is
         // not on the IHaveVirtualMachineAdapter interface (get-only) and its type varies
         // (Quest -> QuestAdapter, most others -> VirtualMachineAdapter), so we reflect
@@ -554,7 +622,8 @@ internal static class Program
         int total = spec.MiscItems.Count + spec.Books.Count + spec.Weapons.Count + spec.Npcs.Count
                     + spec.Quests.Count + dialogueBuilt
                     + spec.Spells.Count + spec.Potions.Count + spec.Armors.Count
-                    + spec.Factions.Count + spec.Messages.Count + spec.Cells.Count;
+                    + spec.Factions.Count + spec.Messages.Count + spec.Cells.Count
+                    + spec.LeveledItems.Count + spec.LeveledNpcs.Count + spec.Containers.Count;
         Console.WriteLine($"built {outPath} from {Path.GetFileName(specPath)} " +
                           $"(ESL={spec.Esl}, {total} top-level record(s); {dialogueBuilt} dialogue topic(s); " +
                           $"{linksWired} cross-ref link(s), {extLinks} to external master(s); " +
@@ -581,6 +650,16 @@ internal static class Program
 
     // Skyrim stores placement rotation in radians; specs author it in (friendlier) degrees.
     private static float Deg2Rad(float deg) => deg * (float)Math.PI / 180f;
+
+    // OR together a list of flag names (case-insensitive) into one enum value; unknown names
+    // are ignored (validate is responsible for reporting them).
+    private static T ParseFlags<T>(List<string> names) where T : struct, Enum
+    {
+        long acc = 0;
+        foreach (var n in names)
+            if (Enum.TryParse<T>(n, ignoreCase: true, out var v)) acc |= Convert.ToInt64(v);
+        return (T)Enum.ToObject(typeof(T), acc);
+    }
 
     // -------------------------------------------------------------------------------
     //  Reference resolver (It.7b). A "ref" string is EITHER an in-spec editorId, OR an
@@ -756,6 +835,9 @@ internal static class Program
         foreach (var msg in spec.Messages) Reg(msg.EditorId, "message");
         foreach (var d in spec.Dialogue) Reg(d.EditorId, "dialogue");
         foreach (var c in spec.Cells) Reg(c.EditorId, "cell", cellIds);
+        foreach (var li in spec.LeveledItems) Reg(li.EditorId, "leveledItem");
+        foreach (var ln in spec.LeveledNpcs) Reg(ln.EditorId, "leveledNpc");
+        foreach (var ct in spec.Containers) Reg(ct.EditorId, "container");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
         void CheckRef(string r, string what)
@@ -832,6 +914,26 @@ internal static class Program
             else if (!cellIds.Contains(pl.Cell)) problems.Add($"placement references unknown cell '{pl.Cell}' (must be an in-spec cell editorId)");
             if (!string.IsNullOrEmpty(pl.Kind) && !pl.Kind.Equals("npc", StringComparison.OrdinalIgnoreCase) && !pl.Kind.Equals("object", StringComparison.OrdinalIgnoreCase))
                 problems.Add($"placement kind '{pl.Kind}' invalid (npc|object)");
+        }
+
+        foreach (var li in spec.LeveledItems)
+        {
+            foreach (var e in li.Entries) CheckRef(e.Reference, $"leveledItem '{li.EditorId}' entry");
+            foreach (var f in li.Flags) if (!Enum.TryParse<LeveledItem.Flag>(f, true, out _)) problems.Add($"leveledItem '{li.EditorId}' invalid flag '{f}'");
+        }
+        foreach (var ln in spec.LeveledNpcs)
+        {
+            foreach (var e in ln.Entries) CheckRef(e.Reference, $"leveledNpc '{ln.EditorId}' entry");
+            foreach (var f in ln.Flags) if (!Enum.TryParse<LeveledNpc.Flag>(f, true, out _)) problems.Add($"leveledNpc '{ln.EditorId}' invalid flag '{f}'");
+        }
+        foreach (var ct in spec.Containers)
+            foreach (var e in ct.Items) CheckRef(e.Item, $"container '{ct.EditorId}' item");
+
+        foreach (var s in spec.Spells)
+        {
+            if (!string.IsNullOrEmpty(s.SpellType) && !Enum.TryParse<SpellType>(s.SpellType, true, out _)) problems.Add($"spell '{s.EditorId}' invalid spellType '{s.SpellType}'");
+            if (!string.IsNullOrEmpty(s.CastType) && !Enum.TryParse<CastType>(s.CastType, true, out _)) problems.Add($"spell '{s.EditorId}' invalid castType '{s.CastType}'");
+            if (!string.IsNullOrEmpty(s.TargetType) && !Enum.TryParse<TargetType>(s.TargetType, true, out _)) problems.Add($"spell '{s.EditorId}' invalid targetType '{s.TargetType}'");
         }
 
         if (problems.Count == 0)
@@ -1038,6 +1140,18 @@ internal static class Program
             if (r is IPlacedObjectGetter pobj && pobj.Placement is { } op)
                 Console.WriteLine($"      placed obj -> base {Ref(pobj.Base.FormKey)} @ ({op.Position.X:0.#}, {op.Position.Y:0.#}, {op.Position.Z:0.#})");
 
+            if (r is ILeveledItemGetter lvli && lvli.Entries is { Count: > 0 } lies)
+                foreach (var e in lies) if (e.Data is { } d) Console.WriteLine($"      lvli entry -> {Ref(d.Reference.FormKey)} (lvl {d.Level} x{d.Count})");
+
+            if (r is ILeveledNpcGetter lvln && lvln.Entries is { Count: > 0 } lnes)
+                foreach (var e in lnes) if (e.Data is { } d) Console.WriteLine($"      lvln entry -> {Ref(d.Reference.FormKey)} (lvl {d.Level} x{d.Count})");
+
+            if (r is IContainerGetter contG && contG.Items is { Count: > 0 } items)
+                foreach (var e in items) Console.WriteLine($"      contains -> {Ref(e.Item.Item.FormKey)} x{e.Item.Count}");
+
+            if (r is ISpellGetter spG && (spG.Type != SpellType.Spell || spG.CastType != CastType.ConstantEffect || spG.BaseCost > 0))
+                Console.WriteLine($"      spell: type={spG.Type} cast={spG.CastType} target={spG.TargetType} cost={spG.BaseCost}");
+
             if (r is IHaveVirtualMachineAdapterGetter hv && hv.VirtualMachineAdapter is { } vm)
                 foreach (var se in vm.Scripts)
                     Console.WriteLine($"      script: {se.Name} [{se.Properties.Count} prop(s)]");
@@ -1104,6 +1218,9 @@ internal sealed class ModSpec
     public List<ScriptAttachSpec> Scripts { get; set; } = new();
     public List<CellSpec> Cells { get; set; } = new();
     public List<PlacementSpec> Placements { get; set; } = new();
+    public List<LeveledItemSpec> LeveledItems { get; set; } = new();
+    public List<LeveledNpcSpec> LeveledNpcs { get; set; } = new();
+    public List<ContainerSpec> Containers { get; set; } = new();
 }
 // "ref" fields below accept EITHER an in-spec editorId OR an external "<master>:0xFORMID"
 // (e.g. "Skyrim.esm:0x013746" — find them with the `find` command). External refs auto-add
@@ -1131,7 +1248,17 @@ internal sealed class DialogueSpec
     public string Prompt { get; set; } = "";
     public List<string> Responses { get; set; } = new();
 }
-internal sealed class SpellSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public List<EffectSpec> Effects { get; set; } = new(); }
+internal sealed class SpellSpec
+{
+    public string EditorId { get; set; } = "";
+    public string Name { get; set; } = "";
+    public List<EffectSpec> Effects { get; set; } = new();
+    public string SpellType { get; set; } = "";   // Spell|Power|LesserPower|Ability|Disease|Poison|Voice
+    public string CastType { get; set; } = "";     // FireAndForget|Concentration|ConstantEffect
+    public string TargetType { get; set; } = "";    // Self|Touch|Aimed|TargetActor|TargetLocation
+    public uint BaseCost { get; set; }
+    public float ChargeTime { get; set; }
+}
 internal sealed class PotionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<EffectSpec> Effects { get; set; } = new(); }
 internal sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } public string ArmorType { get; set; } = ""; public List<string> Slots { get; set; } = new(); public List<string> Keywords { get; set; } = new(); }
 // One magic effect on a spell/potion: a MagicEffect ref + magnitude/area/duration (EffectData).
@@ -1173,3 +1300,11 @@ internal sealed class PlacementSpec
     public Vec3 Rotation { get; set; } = new();
     public bool Persistent { get; set; }
 }
+// One entry in a leveled list: a ref (item or npc) that appears at >= Level, Count copies.
+internal sealed class LeveledEntrySpec { public string Reference { get; set; } = ""; public short Level { get; set; } = 1; public short Count { get; set; } = 1; }
+// LeveledItem (LVLI) / LeveledNpc (LVLN): chanceNone (0-100), flag names, weighted entries.
+internal sealed class LeveledItemSpec { public string EditorId { get; set; } = ""; public int ChanceNone { get; set; } public List<string> Flags { get; set; } = new(); public List<LeveledEntrySpec> Entries { get; set; } = new(); }
+internal sealed class LeveledNpcSpec { public string EditorId { get; set; } = ""; public int ChanceNone { get; set; } public List<string> Flags { get; set; } = new(); public List<LeveledEntrySpec> Entries { get; set; } = new(); }
+// Container (CONT): named, with a list of item refs + counts.
+internal sealed class ContainerEntrySpec { public string Item { get; set; } = ""; public int Count { get; set; } = 1; }
+internal sealed class ContainerSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public float Weight { get; set; } public List<ContainerEntrySpec> Items { get; set; } = new(); }
