@@ -92,14 +92,29 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
         prop count, dialogue prompt/INFO groups, quest objectives. Round-trip verification
         helper. Confirmed It.2/It.4/It.5b actually persist (Smith→Guild faction, Q1→script
         [2 props] + objective all read back correctly). Also a general .esp inspector.
-  - [ ] **7b — external/vanilla form refs** (the real blocker for functional content):
-        npc.race/class/outfit, keywords, spell effects all reference VANILLA forms
-        (Skyrim.esm) by FormID — needs a reference syntax like `"Skyrim.esm:0x13746"` →
-        FormKey, + adding the master. Design: a `ref` resolver (editorId in-spec OR
-        `<master>:0xFORMID` external) used everywhere FormLinks are set. Then race/class
-        (npc functional), armor keywords, etc. fall out.
-  - [ ] **7c — self-contained fields**: armor armorType (enum), biped slots, weapon
-        damage/reach, etc. — no external refs, quick wins.
+  - [x] **7a+ — `find <plugin> <query> [type]`** (done 2026-05-24): search a master
+        (Skyrim.esm, 250 MB) for records whose EditorID/Name contains <query>, print
+        `Skyrim.esm:0xFORMID  Type  EditorID`. Lazy read-only **overlay** (`CreateFromBinaryOverlay`)
+        so the master isn't fully materialized; optional [type] uses typed group enumeration
+        (`EnumerateMajorRecords(I<Type>Getter)`) to skip irrelevant groups (~0.9s typed vs
+        ~3.3s full-ESM). Name is localized + BSA-packed → unresolvable headless (no plugins.txt);
+        resolved **best-effort**, falls back to EditorID-only (which is inline + always read,
+        and descriptive: `NordRace`, `IronSword`). Verified FormIDs match vanilla
+        (IronSword=0x012EB7, NordRace=0x013746). `MODFORGE_DEBUG=1` prints full stack on error.
+  - [x] **7b — external/vanilla form refs** (done 2026-05-24): a **ref** is an in-spec editorId
+        OR external `"<master>:0xFORMID"`. Central resolver `TryResolveRef` (+ `LooksExternalRef`/
+        `TryExternalRef`, mask off the master-index byte). Wired: npc `race`/`class`/`outfit`
+        (Race=IFormLink, DefaultOutfit=IFormLinkNullable), npc `factions` (now external-capable),
+        armor/weapon/misc `keywords` (cast to `IKeyworded<IKeywordGetter>`, `.Keywords` list),
+        and script object-properties. Master auto-added on write (MastersListContent=Iterate, no
+        manual MAST needed; ESL+master OK). `validate` accepts/format-checks refs; `dump` shows
+        race/class/outfit/keywords + masters list. Sample wires NordRace + VendorBlacksmith +
+        BlacksmithOutfit01 + CrimeFactionWhiterun + ArmorClothing — round-trip verified via dump.
+        **NPCs are now functional actors (race+class); still NOT world-placed.**
+  - [ ] **7c — self-contained / remaining fields**: spell/potion **effects** (EffectItem →
+        MagicEffect ref + magnitude/area/duration), armor armorType (enum)/biped slots, weapon
+        damage/reach, leveled lists, container contents, and **world placement** (cell/worldspace
+        — the next real blocker for an NPC to physically appear). Refs + `find` are the tools.
 
 ## Build / test
 ```

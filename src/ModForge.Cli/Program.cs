@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -42,12 +43,15 @@ internal static class Program
                 case "apply" when args.Length == 4:   Apply(args[1], args[2], args[3]); return 0;
                 case "applyloc" when args.Length == 4: return ApplyLocalized(args[1], args[2], args[3]);
                 case "dump" when args.Length == 2:    return Dump(args[1]);
+                case "find" when args.Length is 3 or 4: return Find(args[1], args[2], args.Length == 4 ? args[3] : null);
                 default: Usage(); return 1;
             }
         }
         catch (Exception e)
         {
             Console.Error.WriteLine($"ERROR: {e.GetType().Name}: {e.Message}");
+            if (Environment.GetEnvironmentVariable("MODFORGE_DEBUG") is not null)
+                Console.Error.WriteLine(e.ToString());
             return 2;
         }
     }
@@ -60,6 +64,7 @@ internal static class Program
         "  package <spec.json> <outModDir>\n" +
         "  validate <spec.json>\n" +
         "  dump    <in.esp>\n" +
+        "  find    <in.esp> <query> [type]              search editorId/name -> Skyrim.esm:0xFORMID\n" +
         "  extract <in.esp> <strings.json>\n" +
         "  applyloc <in.esp> <strings.json> <outDir>   (Localized UTF-8 _chinese.STRINGS)\n" +
         "  apply   <in.esp> <strings.json> <out.esp>");
@@ -371,23 +376,48 @@ internal static class Program
             if (!string.IsNullOrEmpty(r.EditorID))
             { formKeyByEd[r.EditorID!] = r.FormKey; recordsByEd[r.EditorID!] = r; }
 
-        int linksWired = 0;
+        // Resolve a ref (in-spec editorId OR external <master>:0xFORMID) and run `set`.
+        int linksWired = 0, extLinks = 0;
+        void Resolve(string what, string refStr, Action<FormKey> set)
+        {
+            if (string.IsNullOrWhiteSpace(refStr)) return;
+            if (TryResolveRef(refStr, formKeyByEd, out var fk))
+            {
+                set(fk);
+                linksWired++;
+                if (LooksExternalRef(refStr)) extLinks++;
+            }
+            else Console.WriteLine($"  ! {what} ref '{refStr}' unresolved (need in-spec editorId or <master>:0xFORMID)");
+        }
+
         foreach (var n in spec.Npcs)
         {
-            if (n.Factions.Count == 0 || !npcsByEd.TryGetValue(n.EditorId, out var npcRec)) continue;
-            foreach (var factionEd in n.Factions)
-            {
-                if (!formKeyByEd.TryGetValue(factionEd, out var fk))
+            if (!npcsByEd.TryGetValue(n.EditorId, out var npcRec)) continue;
+            Resolve($"npc '{n.EditorId}' race",   n.Race,   fk => npcRec.Race.SetTo(fk));
+            Resolve($"npc '{n.EditorId}' class",  n.Class,  fk => npcRec.Class.SetTo(fk));
+            Resolve($"npc '{n.EditorId}' outfit", n.Outfit, fk => npcRec.DefaultOutfit.SetTo(fk));
+            foreach (var factionRef in n.Factions)
+                Resolve($"npc '{n.EditorId}' faction", factionRef, fk =>
                 {
-                    Console.WriteLine($"  ! npc '{n.EditorId}' faction '{factionEd}' not found in spec");
-                    continue;
-                }
-                var rp = new RankPlacement { Rank = 0 };
-                rp.Faction.SetTo(fk);
-                npcRec.Factions.Add(rp);
-                linksWired++;
-            }
+                    var rp = new RankPlacement { Rank = 0 };
+                    rp.Faction.SetTo(fk);
+                    npcRec.Factions.Add(rp);
+                });
         }
+
+        // Keywords on armor/weapon/misc (all implement the IKeyworded aspect).
+        void WireKeywords(string ed, List<string> kws)
+        {
+            if (kws.Count == 0) return;
+            if (!recordsByEd.TryGetValue(ed, out var rec) || rec is not IKeyworded<IKeywordGetter> kw)
+            { Console.WriteLine($"  ! '{ed}' takes no keywords (or not found)"); return; }
+            kw.Keywords ??= new();
+            foreach (var kref in kws)
+                Resolve($"'{ed}' keyword", kref, fk => kw.Keywords!.Add(new FormLink<IKeywordGetter>(fk)));
+        }
+        foreach (var a in spec.Armors) WireKeywords(a.EditorId, a.Keywords);
+        foreach (var w in spec.Weapons) WireKeywords(w.EditorId, w.Keywords);
+        foreach (var m in spec.MiscItems) WireKeywords(m.EditorId, m.Keywords);
 
         // Attach Papyrus scripts (VMAD) to any record by editorId. The VMAD setter is
         // not on the IHaveVirtualMachineAdapter interface (get-only) and its type varies
@@ -441,16 +471,56 @@ internal static class Program
                     + spec.Factions.Count + spec.Messages.Count;
         Console.WriteLine($"built {outPath} from {Path.GetFileName(specPath)} " +
                           $"(ESL={spec.Esl}, {total} top-level record(s); {dialogueBuilt} dialogue topic(s); " +
-                          $"{linksWired} cross-ref link(s); {scriptsAttached} script(s) attached)");
+                          $"{linksWired} cross-ref link(s), {extLinks} to external master(s); " +
+                          $"{scriptsAttached} script(s) attached)");
     }
 
     private static ScriptProperty? MakeObjectProp(PropertySpec p, Dictionary<string, FormKey> formKeyByEd)
     {
-        if (string.IsNullOrEmpty(p.ObjectEditorId) || !formKeyByEd.TryGetValue(p.ObjectEditorId, out var fk))
+        if (string.IsNullOrEmpty(p.ObjectEditorId) || !TryResolveRef(p.ObjectEditorId, formKeyByEd, out var fk))
             return null;
         var op = new ScriptObjectProperty();
         op.Object.SetTo(fk);
         return op;
+    }
+
+    // -------------------------------------------------------------------------------
+    //  Reference resolver (It.7b). A "ref" string is EITHER an in-spec editorId, OR an
+    //  external vanilla/master form "<master>:0xFORMID" (e.g. "Skyrim.esm:0x013746").
+    //  External refs become a FormKey on the named master directly; Mutagen adds the
+    //  master to the output's masters list on write (MastersListContent = Iterate).
+    //  Discover external FormIDs with the `find` command.
+    // -------------------------------------------------------------------------------
+    private static bool LooksExternalRef(string s)
+    {
+        int i = s.IndexOf(':');
+        if (i <= 0) return false;
+        var master = s[..i].Trim();
+        return master.EndsWith(".esm", StringComparison.OrdinalIgnoreCase)
+            || master.EndsWith(".esp", StringComparison.OrdinalIgnoreCase)
+            || master.EndsWith(".esl", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool TryExternalRef(string s, out FormKey fk)
+    {
+        fk = default;
+        int i = s.IndexOf(':');
+        if (i <= 0) return false;
+        var master = s[..i].Trim();
+        if (!LooksExternalRef(s)) return false;
+        var idPart = s[(i + 1)..].Trim();
+        if (idPart.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) idPart = idPart[2..];
+        if (!uint.TryParse(idPart, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var id)) return false;
+        fk = new FormKey(ModKey.FromNameAndExtension(master), id & 0x00FFFFFF);  // mask off the master-index byte
+        return true;
+    }
+
+    // Resolve a ref to a FormKey: external "<master>:0xID" first, else in-spec editorId.
+    private static bool TryResolveRef(string s, Dictionary<string, FormKey> formKeyByEd, out FormKey fk)
+    {
+        if (string.IsNullOrWhiteSpace(s)) { fk = default; return false; }
+        if (TryExternalRef(s, out fk)) return true;
+        return formKeyByEd.TryGetValue(s, out fk);
     }
 
     // -------------------------------------------------------------------------------
@@ -587,9 +657,30 @@ internal static class Program
         foreach (var msg in spec.Messages) Reg(msg.EditorId, "message");
         foreach (var d in spec.Dialogue) Reg(d.EditorId, "dialogue");
 
+        // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
+        void CheckRef(string r, string what)
+        {
+            if (string.IsNullOrWhiteSpace(r)) return;
+            if (LooksExternalRef(r))
+            { if (!TryExternalRef(r, out _)) problems.Add($"{what}: malformed external ref '{r}' (expect <master>:0xFORMID)"); }
+            else if (!ids.Contains(r))
+                problems.Add($"{what}: unresolved ref '{r}' (unknown in-spec editorId; for vanilla forms use <master>:0xFORMID)");
+        }
+
         foreach (var n in spec.Npcs)
+        {
             foreach (var fac in n.Factions)
-                if (!factionIds.Contains(fac)) problems.Add($"npc '{n.EditorId}' references unknown faction '{fac}'");
+                if (LooksExternalRef(fac))
+                { if (!TryExternalRef(fac, out _)) problems.Add($"npc '{n.EditorId}' faction: malformed external ref '{fac}'"); }
+                else if (!factionIds.Contains(fac))
+                    problems.Add($"npc '{n.EditorId}' references unknown faction '{fac}' (in-spec, non-faction or typo; vanilla faction -> <master>:0xFORMID)");
+            CheckRef(n.Race, $"npc '{n.EditorId}' race");
+            CheckRef(n.Class, $"npc '{n.EditorId}' class");
+            CheckRef(n.Outfit, $"npc '{n.EditorId}' outfit");
+        }
+        foreach (var a in spec.Armors) foreach (var k in a.Keywords) CheckRef(k, $"armor '{a.EditorId}' keyword");
+        foreach (var w in spec.Weapons) foreach (var k in w.Keywords) CheckRef(k, $"weapon '{w.EditorId}' keyword");
+        foreach (var m in spec.MiscItems) foreach (var k in m.Keywords) CheckRef(k, $"miscItem '{m.EditorId}' keyword");
 
         foreach (var d in spec.Dialogue)
         {
@@ -607,8 +698,8 @@ internal static class Program
             foreach (var p in sa.Properties)
             {
                 if (!validTypes.Contains(p.Type)) problems.Add($"script '{sa.ScriptName}' prop '{p.Name}' has invalid type '{p.Type}'");
-                if (string.Equals(p.Type, "object", StringComparison.OrdinalIgnoreCase) && !ids.Contains(p.ObjectEditorId))
-                    problems.Add($"script '{sa.ScriptName}' prop '{p.Name}' object references unknown record '{p.ObjectEditorId}'");
+                if (string.Equals(p.Type, "object", StringComparison.OrdinalIgnoreCase))
+                    CheckRef(p.ObjectEditorId, $"script '{sa.ScriptName}' prop '{p.Name}' object");
             }
         }
 
@@ -679,6 +770,92 @@ internal static class Program
     //  wires up (names, npc faction membership, VMAD scripts, dialogue, quest
     //  objectives). Round-trip verification helper + a way to inspect any .esp.
     // -------------------------------------------------------------------------------
+    // Search a (possibly huge, e.g. Skyrim.esm) plugin for records whose EditorID or Name
+    // contains <query> (case-insensitive). Reads via a lazy read-only OVERLAY so a 250 MB
+    // master doesn't get fully materialized. Prints a resolver-ready "<master>:0xFORMID" ref,
+    // the record type, EditorID and Name. Optional [type] (e.g. Weapon, Npc, Keyword) filters
+    // by record kind, letting the overlay skip whole groups instead of parsing everything.
+    private static int Find(string inPath, string query, string? typeName)
+    {
+        // Vanilla masters are localized: Name is a string index whose text lives in BSA-packed
+        // .STRINGS. Point the strings reader at the plugin's own Data folder (BSA override) so it
+        // resolves names WITHOUT the game-environment/plugins.txt lookup (absent on Linux).
+        var dataDir = Path.GetDirectoryName(Path.GetFullPath(inPath))!;
+        var readParams = new BinaryReadParameters
+        {
+            StringsParam = new StringsReadParameters
+            {
+                BsaFolderOverride = dataDir,
+                StringsFolderOverride = dataDir,
+                TargetLanguage = Language.English,
+            },
+        };
+        using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE, readParams);
+
+        IEnumerable<IMajorRecordGetter> records;
+        if (!string.IsNullOrEmpty(typeName))
+        {
+            var t = typeof(ISkyrimModGetter).Assembly
+                .GetType($"Mutagen.Bethesda.Skyrim.I{typeName}Getter", throwOnError: false, ignoreCase: true);
+            if (t is null)
+            {
+                Console.Error.WriteLine(
+                    $"Unknown record type '{typeName}'. Examples: Weapon, Armor, Ammunition, Npc, " +
+                    "MiscItem, Ingredient, Ingestible, Book, Key, SoulGem, Keyword, Race, Class, " +
+                    "Faction, Spell, MagicEffect, Perk, Outfit, LeveledItem, LeveledNpc, Location, Cell, Furniture.");
+                return 2;
+            }
+            records = mod.EnumerateMajorRecords(t, throwIfUnknown: false);
+        }
+        else
+        {
+            records = mod.EnumerateMajorRecords();
+        }
+
+        // Name is a localized string (BSA-packed for vanilla); resolving it needs the game's
+        // archive load order, which isn't available headless on Linux. EditorID + FormID are
+        // stored inline and always read. So resolve Name best-effort: on the first failure,
+        // stop trying (deterministic) and search EditorID only.
+        bool namesOk = true;
+        string? NameOf(IMajorRecordGetter r)
+        {
+            if (!namesOk) return null;
+            try { return (r as INamedGetter)?.Name; }
+            catch { namesOk = false; return null; }
+        }
+
+        var q = query.ToLowerInvariant();
+        const int cap = 300;
+        int total = 0, shown = 0;
+        foreach (var r in records)
+        {
+            var ed = r.EditorID;
+            var name = NameOf(r);
+            bool hit = (ed is { } e && e.ToLowerInvariant().Contains(q))
+                    || (name is { } n && n.ToLowerInvariant().Contains(q));
+            if (!hit) continue;
+            total++;
+            if (shown++ < cap)
+            {
+                var fk = r.FormKey;
+                Console.WriteLine($"{fk.ModKey}:0x{fk.ID:X6}  {TypeLabel(r)}  {ed}"
+                    + (name is { } nm ? $"  \"{nm}\"" : ""));
+            }
+        }
+        Console.WriteLine($"-- {total} match(es)" + (total > cap ? $", showing first {cap}" : "")
+            + (namesOk ? "" : "  [names unresolved: search matched EditorID only — see note]"));
+        return 0;
+    }
+
+    // Concrete Mutagen record class -> friendly type name (strip overlay/getter suffixes).
+    private static string TypeLabel(IMajorRecordGetter r)
+    {
+        var n = r.GetType().Name;
+        foreach (var suf in new[] { "BinaryOverlay", "Getter" })
+            if (n.EndsWith(suf)) n = n[..^suf.Length];
+        return n;
+    }
+
     private static int Dump(string inPath)
     {
         var mod = Load(inPath);
@@ -687,15 +864,26 @@ internal static class Program
             if (!string.IsNullOrEmpty(r.EditorID)) edByFk[r.FormKey] = r.EditorID!;
         string Ref(FormKey fk) => fk.IsNull ? "<null>" : edByFk.TryGetValue(fk, out var ed) ? ed : fk.ToString();
 
-        Console.WriteLine($"{Path.GetFileName(inPath)} — {mod.EnumerateMajorRecords().Count()} record(s), localized={mod.UsingLocalization}");
+        var masters = mod.MasterReferences;
+        Console.WriteLine($"{Path.GetFileName(inPath)} — {mod.EnumerateMajorRecords().Count()} record(s), "
+            + $"localized={mod.UsingLocalization}, master(s)=[{string.Join(", ", masters.Select(m => m.Master.FileName.ToString()))}]");
         foreach (var r in mod.EnumerateMajorRecords())
         {
             var name = (r as INamedGetter)?.Name;
             Console.WriteLine($"  [{r.FormKey}] {r.GetType().Name} {r.EditorID}" + (name is { } nm ? $"  \"{nm}\"" : ""));
 
             if (r is INpcGetter npc)
+            {
+                if (!npc.Race.IsNull)          Console.WriteLine($"      race -> {Ref(npc.Race.FormKey)}");
+                if (!npc.Class.IsNull)         Console.WriteLine($"      class -> {Ref(npc.Class.FormKey)}");
+                if (!npc.DefaultOutfit.IsNull) Console.WriteLine($"      outfit -> {Ref(npc.DefaultOutfit.FormKey)}");
                 foreach (var f in npc.Factions)
                     Console.WriteLine($"      faction -> {Ref(f.Faction.FormKey)} (rank {f.Rank})");
+            }
+
+            if (r is IKeywordedGetter<IKeywordGetter> kwd && kwd.Keywords is { Count: > 0 } kws)
+                foreach (var k in kws)
+                    Console.WriteLine($"      keyword -> {Ref(k.FormKey)}");
 
             if (r is IHaveVirtualMachineAdapterGetter hv && hv.VirtualMachineAdapter is { } vm)
                 foreach (var se in vm.Scripts)
@@ -762,10 +950,21 @@ internal sealed class ModSpec
     public List<MessageSpec> Messages { get; set; } = new();
     public List<ScriptAttachSpec> Scripts { get; set; } = new();
 }
-internal sealed class MiscSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } }
+// "ref" fields below accept EITHER an in-spec editorId OR an external "<master>:0xFORMID"
+// (e.g. "Skyrim.esm:0x013746" — find them with the `find` command). External refs auto-add
+// the master on write (Mutagen MastersListContent=Iterate).
+internal sealed class MiscSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<string> Keywords { get; set; } = new(); }
 internal sealed class BookSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Text { get; set; } = ""; }
-internal sealed class WeaponSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
-internal sealed class NpcSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public List<string> Factions { get; set; } = new(); }
+internal sealed class WeaponSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public List<string> Keywords { get; set; } = new(); }
+internal sealed class NpcSpec
+{
+    public string EditorId { get; set; } = "";
+    public string Name { get; set; } = "";
+    public List<string> Factions { get; set; } = new();
+    public string Race { get; set; } = "";       // ref (e.g. Skyrim.esm:0x013746 = NordRace)
+    public string Class { get; set; } = "";       // ref
+    public string Outfit { get; set; } = "";      // ref -> DefaultOutfit
+}
 internal sealed class QuestSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public List<ObjectiveSpec> Objectives { get; set; } = new(); }
 internal sealed class ObjectiveSpec { public ushort Index { get; set; } public string Text { get; set; } = ""; }
 // A dialogue topic: shown under QuestEditorId's branch; targets SpeakerNpcEditorId (GetIsID).
@@ -779,7 +978,7 @@ internal sealed class DialogueSpec
 }
 internal sealed class SpellSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
 internal sealed class PotionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } }
-internal sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } }
+internal sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } public List<string> Keywords { get; set; } = new(); }
 internal sealed class FactionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
 internal sealed class MessageSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Description { get; set; } = ""; }
 // Attach a compiled Papyrus script (by Scriptname) to a record (by editorId), with

@@ -13,7 +13,11 @@
     { "editorId": "MF_Blade", "name": "Forged Blade" }
   ],
   "npcs": [
-    { "editorId": "MF_Smith", "name": "Borin the Smith", "factions": ["MF_Guild"] }
+    { "editorId": "MF_Smith", "name": "Borin the Smith",
+      "race": "Skyrim.esm:0x013746",
+      "class": "Skyrim.esm:0x013257",
+      "outfit": "Skyrim.esm:0x057C4C",
+      "factions": ["MF_Guild", "Skyrim.esm:0x0267EA"] }
   ],
   "quests": [
     { "editorId": "MF_Q1", "name": "A Forged Errand",
@@ -31,7 +35,8 @@
     { "editorId": "MF_Tonic", "name": "Smith's Tonic", "value": 25, "weight": 0.5 }
   ],
   "armors": [
-    { "editorId": "MF_Apron", "name": "Smith's Apron", "value": 40, "weight": 4.0, "armorRating": 12.5 }
+    { "editorId": "MF_Apron", "name": "Smith's Apron", "value": 40, "weight": 4.0, "armorRating": 12.5,
+      "keywords": ["Skyrim.esm:0x06BBE8"] }
   ],
   "factions": [
     { "editorId": "MF_Guild", "name": "The Forged Guild" }

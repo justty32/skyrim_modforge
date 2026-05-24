@@ -26,6 +26,8 @@ dotnet run --project src/ModForge.Cli -- <command> ...
   build    <spec.json> <out.esp>            spec -> plugin (records, dialogue, FormLinks, VMAD)
   package  <spec.json> <outModDir>          build + compile scripts -> MO2-ready mod folder
   validate <spec.json>                       semantic check (ids, refs, types) before building
+  dump     <in.esp>                          read a plugin back (records, refs, keywords, masters)
+  find     <in.esp> <query> [type]           search a master -> "Skyrim.esm:0xFORMID  Type  EditorID"
   compile  <script.psc> <outDir>            .psc -> .pex via the CK PapyrusCompiler under Wine
   gen      <out.esp>                          write a demo plugin (for testing)
   extract  <in.esp>  <strings.json>          pull translatable strings -> JSON

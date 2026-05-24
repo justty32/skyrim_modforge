@@ -25,7 +25,8 @@ R="dotnet run --project src/ModForge.Cli --no-build --"       # then drive it fa
 $R validate <spec.json>                      # ALWAYS run first; exits non-zero + lists problems
 $R build    <spec.json> <out.esp>            # spec -> plugin (records, dialogue, FormLinks, VMAD)
 $R package  <spec.json> <outModDir>          # build + compile each script `source` -> MO2-ready folder
-$R dump     <plugin.esp>                     # read back: records, names, npc factions, scripts, dialogue, objectives
+$R dump     <plugin.esp>                     # read back: records, names, npc race/class/outfit/factions, keywords, scripts, dialogue, objectives, masters
+$R find     <plugin.esp> <query> [type]      # search a master (e.g. Skyrim.esm) -> "Skyrim.esm:0xFORMID  Type  EditorID"
 $R compile  <script.psc> <outDir>            # .psc -> .pex via the CK PapyrusCompiler under Wine
 $R extract  <plugin.esp> <strings.json>      # pull translatable strings -> JSON (source/target)
 $R apply    <plugin.esp> <strings.json> <out.esp>     # write targets back (Latin scripts / inline)
@@ -35,10 +36,27 @@ $R gen      <out.esp>                         # demo plugin (sanity check the to
 
 `--no-build` requires a prior `dotnet build`; drop it (slower) if unsure.
 
+## Referencing vanilla forms (race/class/outfit/keywords/factions)
+
+Some spec fields are **refs** — they take an in-spec `editorId` OR an external vanilla form
+`"<master>:0xFORMID"` (e.g. `"Skyrim.esm:0x013746"` = NordRace). The master is auto-added.
+To find a vanilla FormID, search the game master:
+
+```bash
+SKYRIM_ESM="$HOME/.local/share/Steam/steamapps/common/Skyrim Special Edition/Data/Skyrim.esm"
+$R find "$SKYRIM_ESM" nordrace Race      # -> Skyrim.esm:0x013746  Race  NordRace
+$R find "$SKYRIM_ESM" blacksmith Class   # -> Skyrim.esm:0x013257  Class VendorBlacksmith
+$R find "$SKYRIM_ESM" armorclothing Keyword
+```
+Always run `find` to get the real FormID — **never guess one**. Search is by EditorID
+(descriptive, e.g. `NordRace`); localized display names aren't resolved headless. A standing
+NPC needs at least `race` + `class` to act like a real actor; `outfit` clothes it.
+
 ## Generate-content workflow
 
 1. Read `SPEC.md` for the exact fields. Write `spec.json` (camelCase; property names are
-   matched case-insensitively).
+   matched case-insensitively). For race/class/outfit/keywords/vanilla factions, `find` the
+   FormID first and use the `"<master>:0xFORMID"` ref form.
 2. `validate spec.json`. **If it reports problems, FIX the spec and re-validate** — do not
    build an invalid spec. It catches: empty/duplicate `editorId`, dialogue→unknown quest/npc,
    script→unknown target, object-property→unknown record, bad property type.
@@ -86,12 +104,13 @@ $R gen      <out.esp>                         # demo plugin (sanity check the to
 
 ModForge writes **structurally valid** records. That is NOT the same as **in-game functional**:
 
-- **NPCs are not yet functional actors** — there is no race/class/outfit support yet
-  (needs external/vanilla form references, the pending It.7b). A generated npc record exists
-  but won't behave like a real NPC in-game until that lands.
-- **External/vanilla forms can't be referenced yet** — you cannot point at Skyrim.esm content
-  (vanilla items, races, keywords, magic effects, leveled lists, cells/placement). So no
-  spell/potion effects, no armor keywords, no placing things in the world yet.
+- **NPCs can now be functional actors** — set `race` + `class` (+ `outfit`) via vanilla refs
+  and the NPC behaves like a real actor. BUT a generated NPC is **not placed in the world**
+  yet — there's no cell/worldspace placement, so it won't physically appear somewhere until
+  that lands (or a script/quest alias places it). It exists as a form, not as a spawned actor.
+- **External/vanilla forms CAN be referenced** (race/class/outfit/keywords/factions, via
+  `"<master>:0xFORMID"`). Still NOT covered: spell/potion **effects** (EffectItem →
+  MagicEffect with magnitude/area), leveled lists, container contents, and **world placement**.
 - **Dialogue** records are valid, but a line actually appearing in conversation can need
   quest-flag/branch tuning, and there is **no voice** (subtitle only).
 - You cannot confirm anything works **in-game** from here — that needs a Proton/Skyrim launch.

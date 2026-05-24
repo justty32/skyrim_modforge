@@ -22,6 +22,11 @@
   },
   "additionalProperties": false,
   "$defs": {
+    "ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A reference: an in-spec editorId OR an external form '<master>:0xFORMID' (e.g. 'Skyrim.esm:0x013746' = NordRace). Discover FormIDs with the `find` command."
+    },
     "named": {
       "type": "object",
       "required": ["editorId"],
@@ -29,7 +34,8 @@
         "editorId": { "type": "string", "minLength": 1 },
         "name": { "type": "string" },
         "value": { "type": "integer", "minimum": 0 },
-        "weight": { "type": "number", "minimum": 0 }
+        "weight": { "type": "number", "minimum": 0 },
+        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "keyword refs (weapons/misc; ignored on records that don't take keywords)" }
       }
     },
     "valued": {
@@ -59,7 +65,8 @@
         "name": { "type": "string" },
         "value": { "type": "integer", "minimum": 0 },
         "weight": { "type": "number", "minimum": 0 },
-        "armorRating": { "type": "number", "minimum": 0 }
+        "armorRating": { "type": "number", "minimum": 0 },
+        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
       }
     },
     "message": {
@@ -77,7 +84,10 @@
       "properties": {
         "editorId": { "type": "string", "minLength": 1 },
         "name": { "type": "string" },
-        "factions": { "type": "array", "items": { "type": "string" }, "description": "faction editorIds" }
+        "factions": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "faction refs (in-spec or external)" },
+        "race": { "$ref": "#/$defs/ref", "description": "Race ref; needed (with class) for a functional actor" },
+        "class": { "$ref": "#/$defs/ref", "description": "Class ref" },
+        "outfit": { "$ref": "#/$defs/ref", "description": "Outfit ref -> DefaultOutfit" }
       }
     },
     "quest": {
