@@ -1,0 +1,18 @@
+{
+  "pluginName": "SampleMod.esp",
+  "esl": true,
+  "miscItems": [
+    { "editorId": "MF_Coin", "name": "Forged Coin", "value": 5, "weight": 0.1 },
+    { "editorId": "MF_Gear", "name": "Brass Gear", "value": 12, "weight": 0.5 }
+  ],
+  "books": [
+    { "editorId": "MF_Letter", "name": "A Forged Letter",
+      "text": "Greetings, traveler. This whole plugin was generated from a JSON spec." }
+  ],
+  "weapons": [
+    { "editorId": "MF_Blade", "name": "Forged Blade" }
+  ],
+  "npcs": [
+    { "editorId": "MF_Smith", "name": "Borin the Smith" }
+  ]
+}

@@ -31,6 +31,7 @@ internal static class Program
             switch (args[0])
             {
                 case "gen" when args.Length == 2:     Gen(args[1]); return 0;
+                case "build" when args.Length == 3:   Build(args[1], args[2]); return 0;
                 case "extract" when args.Length == 3: Extract(args[1], args[2]); return 0;
                 case "apply" when args.Length == 4:   Apply(args[1], args[2], args[3]); return 0;
                 default: Usage(); return 1;
@@ -46,6 +47,7 @@ internal static class Program
     private static void Usage() => Console.WriteLine(
         "ModForge.Cli\n" +
         "  gen     <out.esp>\n" +
+        "  build   <spec.json> <out.esp>\n" +
         "  extract <in.esp> <strings.json>\n" +
         "  apply   <in.esp> <strings.json> <out.esp>");
 
@@ -54,6 +56,8 @@ internal static class Program
         WriteIndented = true,
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
+
+    private static readonly JsonSerializerOptions ReadOpts = new() { PropertyNameCaseInsensitive = true };
 
     private static ISkyrimMod Load(string path) =>
         SkyrimMod.CreateFromBinary(new ModPath(path), SkyrimRelease.SkyrimSE);
@@ -222,6 +226,46 @@ internal static class Program
         mod.WriteToBinary(outPath);
         Console.WriteLine($"wrote {outPath}  (ESL={mod.IsSmallMaster}, {mod.EnumerateMajorRecords().Count()} records)");
     }
+
+    // -------------------------------------------------------------------------------
+    //  build — generate a plugin from a structured spec (the data-driven generator).
+    //  Layer between an LLM (NL -> spec) and Mutagen (spec -> valid plugin). Extend by
+    //  adding a list to ModSpec + a loop here. (It.2+: quests/dialogue, more types.)
+    // -------------------------------------------------------------------------------
+    private static void Build(string specPath, string outPath)
+    {
+        var spec = JsonSerializer.Deserialize<ModSpec>(File.ReadAllText(specPath), ReadOpts)
+                   ?? throw new InvalidOperationException("spec deserialized to null");
+        var key = ModKey.FromNameAndExtension(Path.GetFileName(outPath));
+        var mod = new SkyrimMod(key, SkyrimRelease.SkyrimSE);
+
+        foreach (var m in spec.MiscItems)
+        {
+            var r = mod.MiscItems.AddNew();
+            r.EditorID = m.EditorId; r.Name = m.Name; r.Value = m.Value; r.Weight = m.Weight;
+        }
+        foreach (var b in spec.Books)
+        {
+            var r = mod.Books.AddNew();
+            r.EditorID = b.EditorId; r.Name = b.Name; r.BookText = b.Text;
+        }
+        foreach (var w in spec.Weapons)
+        {
+            var r = mod.Weapons.AddNew();
+            r.EditorID = w.EditorId; r.Name = w.Name;
+        }
+        foreach (var n in spec.Npcs)
+        {
+            var r = mod.Npcs.AddNew();
+            r.EditorID = n.EditorId; r.Name = n.Name;
+        }
+
+        if (spec.Esl) mod.IsSmallMaster = true;
+        Write(mod, outPath);
+        int total = spec.MiscItems.Count + spec.Books.Count + spec.Weapons.Count + spec.Npcs.Count;
+        Console.WriteLine($"built {outPath} from {Path.GetFileName(specPath)} " +
+                          $"(ESL={spec.Esl}, {total} record(s) from spec)");
+    }
 }
 
 // A translatable text slot: where it lives + accessors. extract reads Get(); apply calls Set(target).
@@ -249,3 +293,18 @@ internal sealed class StringEntry
     public string Source { get; set; } = "";
     public string Target { get; set; } = "";
 }
+
+// --- ESP generator spec (the structured IR; deserialized case-insensitively) ---------
+internal sealed class ModSpec
+{
+    public string PluginName { get; set; } = "Generated.esp";
+    public bool Esl { get; set; } = true;
+    public List<MiscSpec> MiscItems { get; set; } = new();
+    public List<BookSpec> Books { get; set; } = new();
+    public List<WeaponSpec> Weapons { get; set; } = new();
+    public List<NpcSpec> Npcs { get; set; } = new();
+}
+internal sealed class MiscSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } }
+internal sealed class BookSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Text { get; set; } = ""; }
+internal sealed class WeaponSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
+internal sealed class NpcSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
