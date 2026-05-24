@@ -29,7 +29,9 @@ dotnet run --project src/ModForge.Cli -- <command> ...
   compile  <script.psc> <outDir>            .psc -> .pex via the CK PapyrusCompiler under Wine
   gen      <out.esp>                          write a demo plugin (for testing)
   extract  <in.esp>  <strings.json>          pull translatable strings -> JSON
-  apply    <in.esp>  <strings.json> <out.esp> write translated strings back
+  apply    <in.esp>  <strings.json> <out.esp> write translated strings back (Latin/inline)
+  applyloc <in.esp>  <strings.json> <outDir>  write a LOCALIZED plugin + UTF-8
+                                              <plugin>_chinese.STRINGS (Simplified-Chinese SSE)
 ```
 
 The **spec** format (the JSON the generator consumes) is documented in

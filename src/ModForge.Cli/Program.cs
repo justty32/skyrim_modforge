@@ -10,6 +10,8 @@ using Mutagen.Bethesda.Plugins.Aspects;
 using Mutagen.Bethesda.Plugins.Binary.Parameters;
 using Mutagen.Bethesda.Plugins.Records;
 using Mutagen.Bethesda.Skyrim;
+using Mutagen.Bethesda.Strings;
+using Mutagen.Bethesda.Strings.DI;
 
 // =====================================================================================
 //  ModForge.Cli — AI Skyrim mod authoring toolchain (Mutagen, Linux).
@@ -38,6 +40,7 @@ internal static class Program
                 case "validate" when args.Length == 2: return Validate(args[1]);
                 case "extract" when args.Length == 3: Extract(args[1], args[2]); return 0;
                 case "apply" when args.Length == 4:   Apply(args[1], args[2], args[3]); return 0;
+                case "applyloc" when args.Length == 4: return ApplyLocalized(args[1], args[2], args[3]);
                 default: Usage(); return 1;
             }
         }
@@ -56,6 +59,7 @@ internal static class Program
         "  package <spec.json> <outModDir>\n" +
         "  validate <spec.json>\n" +
         "  extract <in.esp> <strings.json>\n" +
+        "  applyloc <in.esp> <strings.json> <outDir>   (Localized UTF-8 _chinese.STRINGS)\n" +
         "  apply   <in.esp> <strings.json> <out.esp>");
 
     private static readonly JsonSerializerOptions JsonOpts = new()
@@ -615,6 +619,64 @@ internal static class Program
         foreach (var p in problems) Console.Error.WriteLine($"  - {p}");
         return 1;
     }
+
+    // -------------------------------------------------------------------------------
+    //  applyloc — like `apply`, but writes a LOCALIZED plugin with UTF-8
+    //  <plugin>_chinese.STRINGS — what Simplified-Chinese SSE expects (verified against
+    //  the official CHS translation: its .STRINGS are UTF-8, not GBK). Output is a
+    //  folder: <outDir>/<plugin> + <outDir>/Strings/<plugin>_chinese.{STRINGS,IL,DL}.
+    // -------------------------------------------------------------------------------
+    private static int ApplyLocalized(string inPath, string jsonPath, string outDir)
+    {
+        var entries = JsonSerializer.Deserialize<List<StringEntry>>(File.ReadAllText(jsonPath)) ?? new();
+        var map = entries.Where(e => !string.IsNullOrEmpty(e.Target))
+                         .ToDictionary(e => $"{e.FormKey}|{e.Field}|{e.Index}", e => e.Target);
+
+        // Target the Chinese language so string sets land in the Chinese entry + .STRINGS.
+        TranslatedString.DefaultLanguage = Language.Chinese;
+
+        var mod = Load(inPath);
+        mod.UsingLocalization = true;
+
+        int applied = 0;
+        foreach (var s in Slots(mod))
+            if (map.TryGetValue($"{s.FormKey}|{s.Field}|{s.Index}", out var t)) { s.Set(t); applied++; }
+
+        Directory.CreateDirectory(outDir);
+        var stringsDir = Path.Combine(outDir, "Strings");
+        Directory.CreateDirectory(stringsDir);
+        var espPath = Path.Combine(outDir, mod.ModKey.FileName);
+
+        var sw = new StringsWriter(GameRelease.SkyrimSE, mod.ModKey, stringsDir, new Utf8EncodingProvider());
+        mod.WriteToBinary(espPath, new BinaryWriteParameters
+        {
+            ModKey = ModKeyOption.NoCheck,
+            StringsWriter = sw,
+            TargetLanguageOverride = Language.Chinese,
+        });
+        sw.Dispose();   // flush the .STRINGS files before we rename them
+
+        // Skyrim loads <plugin>_<lang>.STRINGS with a LOWERCASE language suffix; Mutagen
+        // writes "_Chinese" — rename to "_chinese" (matters on case-sensitive Linux/Proton,
+        // and matches the official CHS mod's naming).
+        int renamed = 0;
+        foreach (var file in Directory.GetFiles(stringsDir))
+        {
+            var name = Path.GetFileName(file);
+            var lower = name.Replace("_Chinese.", "_chinese.");
+            if (!string.Equals(lower, name, StringComparison.Ordinal))
+            { File.Move(file, Path.Combine(stringsDir, lower), overwrite: true); renamed++; }
+        }
+
+        Console.WriteLine($"applyloc: {applied} string(s) -> {espPath} + {renamed} Strings/*_chinese.* file(s) (UTF-8)");
+        return 0;
+    }
+}
+
+// UTF-8 for every language — Simplified-Chinese SSE reads UTF-8 .STRINGS (not GBK).
+internal sealed class Utf8EncodingProvider : IMutagenEncodingProvider
+{
+    public IMutagenEncoding GetEncoding(GameRelease release, Language language) => MutagenEncoding._utf8;
 }
 
 // A translatable text slot: where it lives + accessors. extract reads Get(); apply calls Set(target).

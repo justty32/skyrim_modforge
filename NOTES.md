@@ -8,10 +8,14 @@
 - Foundation proven on this Linux box: Mutagen generates valid `.esp`/`.esl`; Papyrus
   compiles via Wine; Mutagen VMAD bridges scripts↔forms (see the parent repo's memory
   `project_authoring_toolchain_roadmap`).
-- **Translate pipeline DONE** (`gen`/`extract`/`apply`, 8/8 round-trip incl. dialogue).
-  Latin targets work; **CJK output blocked on string encoding** — PAUSED pending the
-  user's official Chinese localization mod as the encoding reference. Do NOT pursue CJK
-  encoding until that arrives.
+- **Translate pipeline DONE incl. CJK** (2026-05-24): `extract` → fill JSON `target` →
+  `apply` (Latin/inline) **or** `applyloc` (CJK). CJK was unblocked by the user's official
+  CHS mod: inspection showed Simplified-Chinese SSE uses **Localized `<plugin>_chinese.STRINGS`
+  in UTF-8** (NOT GBK). `applyloc` writes exactly that: sets `TranslatedString.DefaultLanguage
+  = Language.Chinese`, `UsingLocalization = true`, a `StringsWriter` with a UTF-8
+  `IMutagenEncodingProvider`, then lowercases `_Chinese`→`_chinese` (Mutagen capitalizes it;
+  case matters on Linux/Proton). Verified: CnDemo → Strings/CnDemo_chinese.STRINGS with valid
+  UTF-8 Chinese. Official CHS mod reference extracted at /tmp/chs-mod (Strings/*_chinese.*).
 
 ## Current focus: the ESP GENERATOR (spec → plugin)
 Generalize the hardcoded `gen` demo into a data-driven `build <spec.json> <out.esp>`.
