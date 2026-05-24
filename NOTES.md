@@ -147,12 +147,27 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
           **NOT in-game tested** (needs Proton): coc reachability + actor actually standing there.
           Mutagen API (Cell/CellBlock/CellSubBlock/PlacedNpc/PlacedObject/Placement/P3Float/
           GroupTypeEnum) all verified via ilspy.
-    - [ ] **7d phase 2 — placement into a VANILLA cell** (Whiterun etc.): needs a cell *override*
-          (the placed ref must live in an override of the vanilla cell's children). Approach: build a
-          link cache from a manual load order over Skyrim.esm (avoid GameEnvironment/plugins.txt, as
-          in `find`), resolve the cell context, `GetOrAddAsOverride(mod)`, add the ref. Watch: a naive
-          copy-as-override pulls in ALL the cell's existing children (bloat/conflict) — want to add
-          refs without re-stating existing ones. Intricate; research carefully before coding.
+    - [x] **7d phase 2 — placement into a VANILLA INTERIOR cell** (done 2026-05-24): `placements[].cell`
+          now also accepts an external `"<master>:0xFORMID"` (find it: `find <Skyrim.esm> <name> Cell`,
+          e.g. WhiterunBanneredMare = Skyrim.esm:0x01605E). Lazily loads the master as an overlay +
+          `ToImmutableLinkCache<ISkyrimMod,ISkyrimModGetter>()` (data dir from MODFORGE_SKYRIM_DATA or
+          the Steam default), `TryResolve<ICellGetter>` the cell.
+          **PITFALL hit:** the obvious `cache.TryResolveContext<ICell,ICellGetter>(fk).GetOrAddAsOverride(mod)`
+          throws `Could not determine plugin listings path` — GetOrAddAsOverride DEEP-COPIES the cell,
+          and copying the localized `Name` (`TranslatedString.DeepCopy`) resolves string sources →
+          BSA archive load order → plugins.txt (absent headless on Linux; same wall as `find`'s Name).
+          **WORKAROUND (manual override, no deep copy):** make `new Cell(vanillaFk, SkyrimRelease)`
+          (same FormKey = an override), copy ONLY `Flags` off the getter (so the interior flag isn't
+          blanked; Flags is inline, not localized), leave Name/Lighting/etc null → omitted on write →
+          inherited from master (no ITM, no BSA read). Add it to our interior block (shared lazy
+          `InteriorSub()`), then add our placed ref to its Temporary. Vanilla refs are NOT re-stated
+          (they come from the master; omitting ≠ deleting) → no bloat/conflict. One override per cell
+          (cached in `vanillaCellOverrides`); multiple placements into the same cell share it.
+          Only **interior** cells (checks `Cell.Flag.IsInteriorCell`); exterior warns + skips.
+          Verified: sample places MF_Chest into Bannered Mare → dump shows `[01605E:Skyrim.esm] Cell`
+          (an override) temporary=1 + our PlacedObject, master=[Skyrim.esm], re-parses via CreateFromBinary.
+          NOT in-game tested. **Remaining: 7d phase 3 = exterior/worldspace vanilla cells** (need the
+          worldspace block + grid-cell structure; harder — likely needs the context/worldspace parent).
   - [x] **7e — aggregates + spell cast-type** (done 2026-05-24): self-contained, low-risk.
         - **LeveledItem (LVLI) / LeveledNpc (LVLN):** `leveledItems`/`leveledNpcs` with
           `chanceNone` (0–100 → `Noggog.Percent`), `flags` (LVLI/LVLN flag names OR'd via the

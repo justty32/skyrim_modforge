@@ -9,6 +9,7 @@ using Mutagen.Bethesda;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Aspects;
 using Mutagen.Bethesda.Plugins.Binary.Parameters;
+using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Plugins.Records;
 using Mutagen.Bethesda.Skyrim;
 using Mutagen.Bethesda.Strings;
@@ -414,23 +415,27 @@ internal static class Program
             r.Items = new();
         }
 
-        // New interior cells. Cells nest CellBlock(type 2) -> CellSubBlock(type 3) -> Cell;
-        // we put all new interior cells in one 0/0 block (interior block numbers are not
-        // strictly enforced by the engine — cells are reached by EditorID, e.g. `coc <id>`).
+        // New interior cells + (in pass 2) vanilla interior-cell overrides share one interior
+        // block. Cells nest CellBlock(type 2) -> CellSubBlock(type 3) -> Cell; interior block
+        // numbers aren't strictly enforced by the engine (cells are reached by EditorID/FormID,
+        // e.g. `coc <id>`), so one lazily-made 0/0 block holds them all.
         var cellsByEd = new Dictionary<string, Cell>();
-        if (spec.Cells.Count > 0)
+        CellSubBlock? interiorSub = null;
+        CellSubBlock InteriorSub()
         {
+            if (interiorSub is not null) return interiorSub;
             var block = new CellBlock { BlockNumber = 0, GroupType = GroupTypeEnum.InteriorCellBlock };
-            var sub = new CellSubBlock { BlockNumber = 0, GroupType = GroupTypeEnum.InteriorCellSubBlock };
-            block.SubBlocks.Add(sub);
+            interiorSub = new CellSubBlock { BlockNumber = 0, GroupType = GroupTypeEnum.InteriorCellSubBlock };
+            block.SubBlocks.Add(interiorSub);
             mod.Cells.Records.Add(block);
-            foreach (var c in spec.Cells)
-            {
-                var cell = new Cell(mod, c.EditorId) { Flags = Cell.Flag.IsInteriorCell };
-                if (!string.IsNullOrEmpty(c.Name)) cell.Name = c.Name;
-                sub.Cells.Add(cell);
-                if (!string.IsNullOrEmpty(c.EditorId)) cellsByEd[c.EditorId] = cell;
-            }
+            return interiorSub;
+        }
+        foreach (var c in spec.Cells)
+        {
+            var cell = new Cell(mod, c.EditorId) { Flags = Cell.Flag.IsInteriorCell };
+            if (!string.IsNullOrEmpty(c.Name)) cell.Name = c.Name;
+            InteriorSub().Cells.Add(cell);
+            if (!string.IsNullOrEmpty(c.EditorId)) cellsByEd[c.EditorId] = cell;
         }
 
         // --- pass 2: resolve cross-record references by editorId -> FormLink ---
@@ -505,15 +510,78 @@ internal static class Program
         foreach (var p in spec.Potions) WireEffects(p.EditorId, p.Effects);
 
         // World placement: put a base form (npc/object) into a cell at a position/rotation.
-        // Phase 1 = in-spec interior cells only; placing into a vanilla cell needs a cell
-        // override (deferred). NPC -> PlacedNpc (ACHR), other -> PlacedObject (REFR).
-        int placed = 0;
+        // The target cell is either an in-spec interior cell, or (phase 2) a VANILLA cell we
+        // override. NPC base -> PlacedNpc (ACHR), other -> PlacedObject (REFR).
+        //
+        // Vanilla-cell override (the careful bit): we resolve the cell's *context* from a link
+        // cache over its master and GetOrAddAsOverride it into our mod (Mutagen puts it in the
+        // right block/worldspace). GetOrAddAsOverride deep-copies the whole cell INCLUDING its
+        // children, so we immediately CLEAR Persistent+Temporary — the vanilla references still
+        // come from the master at load time (omitting them doesn't delete them); we only ADD our
+        // new ref. That avoids re-stating (and conflicting on) every vanilla reference.
+        var skyrimData = Environment.GetEnvironmentVariable("MODFORGE_SKYRIM_DATA")
+            ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                            ".local", "share", "Steam", "steamapps", "common", "Skyrim Special Edition", "Data");
+        var masterCaches = new Dictionary<string, ILinkCache<ISkyrimMod, ISkyrimModGetter>?>(StringComparer.OrdinalIgnoreCase);
+        var masterDisposables = new List<IDisposable>();
+        var vanillaCellOverrides = new Dictionary<FormKey, ICell>();
+
+        ILinkCache<ISkyrimMod, ISkyrimModGetter>? MasterCache(string masterName)
+        {
+            if (masterCaches.TryGetValue(masterName, out var cached)) return cached;
+            var path = Path.Combine(skyrimData, masterName);
+            ILinkCache<ISkyrimMod, ISkyrimModGetter>? cache = null;
+            if (!File.Exists(path))
+                Console.WriteLine($"  ! master '{masterName}' not found at {path} (set MODFORGE_SKYRIM_DATA to your Data folder)");
+            else
+            {
+                var getter = SkyrimMod.CreateFromBinaryOverlay(new ModPath(path), SkyrimRelease.SkyrimSE);
+                masterDisposables.Add(getter);
+                cache = getter.ToImmutableLinkCache<ISkyrimMod, ISkyrimModGetter>();
+            }
+            masterCaches[masterName] = cache;
+            return cache;
+        }
+
+        ICell? VanillaCellOverride(string cellRef)
+        {
+            if (!TryExternalRef(cellRef, out var fk)) return null;
+            if (vanillaCellOverrides.TryGetValue(fk, out var existing)) return existing;
+            var masterName = cellRef[..cellRef.IndexOf(':')].Trim();
+            var cache = MasterCache(masterName);
+            if (cache is null) return null;
+            if (!cache.TryResolve<ICellGetter>(fk, out var vanilla))
+            { Console.WriteLine($"  ! vanilla cell '{cellRef}' not found in {masterName}"); return null; }
+            if (!vanilla.Flags.HasFlag(Cell.Flag.IsInteriorCell))
+            { Console.WriteLine($"  ! vanilla cell '{cellRef}' is exterior — only interior vanilla cells supported (phase 2); skipped"); return null; }
+
+            // Manual override (NOT GetOrAddAsOverride): that deep-copies the localized Name, which
+            // needs the BSA archive load order / plugins.txt — absent headless on Linux. Instead
+            // we make a same-FormKey override and copy ONLY Flags (so the interior flag isn't
+            // blanked); Name/Lighting/etc. stay null -> omitted on write -> inherited from the
+            // master (no ITM string, no BSA read). Vanilla refs remain (from the master); we just
+            // ADD ours. Only Flags is read off the getter, and Flags is inline (not localized).
+            var ov = new Cell(fk, SkyrimRelease.SkyrimSE) { Flags = vanilla.Flags };
+            InteriorSub().Cells.Add(ov);
+            vanillaCellOverrides[fk] = ov;
+            return ov;
+        }
+
+        int placed = 0, vanillaCells = 0;
         foreach (var pl in spec.Placements)
         {
+            ICell? cell;
             if (LooksExternalRef(pl.Cell))
-            { Console.WriteLine($"  ! placement into external/vanilla cell '{pl.Cell}' needs a cell override (not yet supported) — skipped"); continue; }
-            if (!cellsByEd.TryGetValue(pl.Cell, out var cell))
+            {
+                int before = vanillaCellOverrides.Count;
+                cell = VanillaCellOverride(pl.Cell);
+                if (cell is null) { Console.WriteLine($"  ! placement: vanilla cell '{pl.Cell}' unresolved — skipped"); continue; }
+                if (vanillaCellOverrides.Count > before) vanillaCells++;
+            }
+            else if (!cellsByEd.TryGetValue(pl.Cell, out var inSpec))
             { Console.WriteLine($"  ! placement: cell '{pl.Cell}' not found in spec — skipped"); continue; }
+            else cell = inSpec;
+
             if (!TryResolveRef(pl.Base, formKeyByEd, out var baseFk))
             { Console.WriteLine($"  ! placement: base '{pl.Base}' unresolved — skipped"); continue; }
 
@@ -619,6 +687,7 @@ internal static class Program
 
         if (spec.Esl) mod.IsSmallMaster = true;
         Write(mod, outPath);
+        foreach (var d in masterDisposables) d.Dispose();   // release the master overlays (overrides are deep-copied)
         int total = spec.MiscItems.Count + spec.Books.Count + spec.Weapons.Count + spec.Npcs.Count
                     + spec.Quests.Count + dialogueBuilt
                     + spec.Spells.Count + spec.Potions.Count + spec.Armors.Count
@@ -627,7 +696,8 @@ internal static class Program
         Console.WriteLine($"built {outPath} from {Path.GetFileName(specPath)} " +
                           $"(ESL={spec.Esl}, {total} top-level record(s); {dialogueBuilt} dialogue topic(s); " +
                           $"{linksWired} cross-ref link(s), {extLinks} to external master(s); " +
-                          $"{scriptsAttached} script(s) attached; {placed} placement(s) in {spec.Cells.Count} cell(s))");
+                          $"{scriptsAttached} script(s) attached; " +
+                          $"{placed} placement(s) in {spec.Cells.Count} new + {vanillaCells} vanilla cell(s))");
     }
 
     private static ScriptProperty? MakeObjectProp(PropertySpec p, Dictionary<string, FormKey> formKeyByEd)
@@ -910,8 +980,9 @@ internal static class Program
         {
             CheckRef(pl.Base, "placement base");
             if (string.IsNullOrWhiteSpace(pl.Cell)) problems.Add("placement has empty cell");
-            else if (LooksExternalRef(pl.Cell)) problems.Add($"placement into external/vanilla cell '{pl.Cell}' is not supported yet (in-spec interior cell only)");
-            else if (!cellIds.Contains(pl.Cell)) problems.Add($"placement references unknown cell '{pl.Cell}' (must be an in-spec cell editorId)");
+            else if (LooksExternalRef(pl.Cell))
+            { if (!TryExternalRef(pl.Cell, out _)) problems.Add($"placement: malformed external cell ref '{pl.Cell}' (expect <master>:0xFORMID)"); }
+            else if (!cellIds.Contains(pl.Cell)) problems.Add($"placement references unknown cell '{pl.Cell}' (in-spec cell editorId or <master>:0xFORMID)");
             if (!string.IsNullOrEmpty(pl.Kind) && !pl.Kind.Equals("npc", StringComparison.OrdinalIgnoreCase) && !pl.Kind.Equals("object", StringComparison.OrdinalIgnoreCase))
                 problems.Add($"placement kind '{pl.Kind}' invalid (npc|object)");
         }

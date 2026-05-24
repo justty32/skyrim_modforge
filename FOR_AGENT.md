@@ -48,6 +48,7 @@ $R find "$SKYRIM_ESM" nordrace Race        # -> Skyrim.esm:0x013746  Race  NordR
 $R find "$SKYRIM_ESM" blacksmith Class     # -> Skyrim.esm:0x013257  Class VendorBlacksmith
 $R find "$SKYRIM_ESM" armorclothing Keyword
 $R find "$SKYRIM_ESM" restorehealth MagicEffect  # -> Skyrim.esm:0x03EB15  AlchRestoreHealth (for a potion `effects`)
+$R find "$SKYRIM_ESM" banneredmare Cell    # -> Skyrim.esm:0x01605E  WhiterunBanneredMare (for a `placement` cell)
 ```
 Always run `find` to get the real FormID — **never guess one**. Search is by EditorID
 (descriptive, e.g. `NordRace`); localized display names aren't resolved headless. A standing
@@ -78,6 +79,8 @@ NPC needs at least `race` + `class` to act like a real actor; `outfit` clothes i
 ## Environment prerequisites
 
 - **.NET 8 or 10 SDK** (`dotnet`). NuGet restores `Mutagen.Bethesda.Skyrim` on first build.
+- **Game `Data` folder** — only for placing into a **vanilla** cell (it reads the master to
+  override the cell). Defaults to the Steam path; override with `MODFORGE_SKYRIM_DATA`.
 - **Papyrus** (`compile`, and `package` when a script has a `source`): needs `wine` + the
   Creation Kit's `PapyrusCompiler.exe` + the vanilla base script sources. Defaults assume the
   local CK Steam install and `~/.cache/modforge/papyrus/Source/Scripts`. Override with env:
@@ -107,10 +110,12 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
 
 - **NPCs can now be functional actors** — set `race` + `class` (+ `outfit`) via vanilla refs
   and the NPC behaves like a real actor.
-- **Placement works for new interior cells:** `cells` + `placements` put an NPC/object into a
-  **new in-spec interior cell** (reach it with `coc <editorId>`). Placing into a **vanilla
-  cell** (e.g. dropping an NPC into Whiterun) is NOT supported yet — it needs a cell override;
-  `validate` flags it. So a generated NPC physically appears only in a cell this plugin makes.
+- **Placement works for new AND vanilla interior cells:** `cells` + `placements` put an
+  NPC/object into a new in-spec interior cell (reach it with `coc <editorId>`) **or** into a
+  **vanilla interior cell** by ref (`"Skyrim.esm:0xFORMID"`, e.g. `0x01605E` = Bannered Mare —
+  `find <Skyrim.esm> <name> Cell`). Vanilla placement overrides the cell to *add* your ref
+  (vanilla contents untouched). **Exterior/worldspace** cells aren't supported yet. Vanilla
+  placement reads the game `Data` folder — set `MODFORGE_SKYRIM_DATA` if not at the Steam default.
 - **Items/spells now carry gameplay stats:** weapons take `damage`/`speed`/`reach`, armor
   takes `armorType` + biped `slots`, **spells/potions take `effects`** (a MagicEffect *ref* +
   magnitude/area/duration), and spells take `spellType`/`castType`/`targetType`/`baseCost`. A
@@ -118,8 +123,9 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
 - **Leveled lists + containers:** `leveledItems`/`leveledNpcs` (weighted level-gated entries,
   each a *ref*) and `containers` (item *refs* + counts) — loot tables, merchant chests, etc.
 - **External/vanilla forms CAN be referenced** (race/class/outfit/keywords/factions/
-  magicEffect/placement base/leveled+container entries, via `"<master>:0xFORMID"`). The main
-  thing still NOT covered: **placement into a vanilla cell** (only new in-spec cells work).
+  magicEffect/placement base+cell/leveled+container entries, via `"<master>:0xFORMID"`). The
+  main thing still NOT covered: **placement into an exterior/worldspace vanilla cell** (interior
+  vanilla cells and new in-spec cells both work).
 - **Dialogue** records are valid, but a line actually appearing in conversation can need
   quest-flag/branch tuning, and there is **no voice** (subtitle only).
 - You cannot confirm anything works **in-game** from here — that needs a Proton/Skyrim launch.

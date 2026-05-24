@@ -64,7 +64,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `factions` | `editorId`, `name` |
 | `messages` | `editorId`, `name`, `description` (body text) |
 | `cells` | `editorId`, `name` (a new interior cell) |
-| `placements` | `base` (*ref*), `cell` (in-spec cell editorId), `kind` (`npc`\|`object`), `position` (`{x,y,z}`), `rotation` (`{x,y,z}` degrees), `persistent` (bool) |
+| `placements` | `base` (*ref*), `cell` (in-spec cell editorId **or** vanilla interior cell `<master>:0xFORMID`), `kind` (`npc`\|`object`), `position` (`{x,y,z}`), `rotation` (`{x,y,z}` degrees), `persistent` (bool) |
 | `leveledItems` | `editorId`, `chanceNone` (0–100), `flags` (array), `entries` (array of `{ reference (*ref*), level (int), count (int) }`) |
 | `leveledNpcs` | same shape as `leveledItems`, but `reference` is an npc/leveled-npc |
 | `containers` | `editorId`, `name`, `weight`, `items` (array of `{ item (*ref*), count (int) }`) |
@@ -133,18 +133,21 @@ spec; `speakerNpcEditorId`, if set, must name an npc. `prompt` is the player's l
   { "base": "MF_Smith", "cell": "MF_TestRoom",                   // an in-spec NPC ...
     "position": { "x": 0, "y": 0, "z": 0 },
     "rotation": { "x": 0, "y": 0, "z": 0 } },                    //   rotation in degrees
-  { "base": "Skyrim.esm:0x0001397E", "cell": "MF_TestRoom",      // ... or a vanilla form (ref)
-    "position": { "x": 60, "y": 0, "z": 0 }, "kind": "object" }
+  { "base": "MF_Chest", "cell": "Skyrim.esm:0x01605E",          // ... into a VANILLA cell
+    "position": { "x": 100, "y": 0, "z": 0 } }                   //   (Skyrim.esm WhiterunBanneredMare)
 ]
 ```
-- A `cell` is a **new interior cell**; reach it in-game with `coc <editorId>` (it has no
-  lighting template, so it’ll be dark — fine for testing that the placed forms are there).
-- A `placement` puts a `base` form into a `cell`. `base` is a *ref* (in-spec or external);
+- `cell` is **either** a new in-spec interior cell’s `editorId`, **or** an external/vanilla
+  interior cell `"<master>:0xFORMID"` (find it with `find <Skyrim.esm> <name> Cell`). A new
+  cell has no lighting template, so it’s dark — fine for testing the placed forms are there.
+- A `placement` puts a `base` form into the `cell`. `base` is a *ref* (in-spec or external);
   NPCs become `PlacedNpc`, anything else `PlacedObject` (`kind` overrides the guess).
   `position` is world units, `rotation` is **degrees**. `persistent: true` puts it in the
   cell’s persistent list (needed if a quest/script references it).
-- **Only in-spec cells** are supported. Placing into a **vanilla cell** (e.g. dropping an
-  NPC into Whiterun) needs a cell *override* and is not implemented yet — `validate` flags it.
+- **Vanilla-cell placement** overrides the cell to *add* your reference (vanilla contents are
+  untouched — they come from the master). Only **interior** vanilla cells are supported
+  (Bannered Mare, shops, homes, dungeons…); exterior/worldspace cells are not yet. Needs the
+  game’s `Data` folder — set `MODFORGE_SKYRIM_DATA` if it isn’t at the default Steam path.
 
 ### leveled lists & containers
 ```jsonc
@@ -181,8 +184,8 @@ A live `describe` command (LLM API) is planned (It.6c) — until then the LLM st
 interactively.
 
 ## Not yet covered (extend in `Program.cs` `Build` + a spec class)
-Mainly **placement into a vanilla cell** (an NPC/object dropped into Whiterun etc. — needs a
-cell *override*; new in-spec interior cells already work via `cells`/`placements`). Refs
+Mainly **placement into an exterior/worldspace vanilla cell** (open-world spots — needs the
+worldspace block structure; interior vanilla cells and new interior cells already work). Refs
 (in-spec or `<master>:0xFORMID`) and the `find` command are the building blocks for the
 external ones. Other record types/fields are the same pattern — add a spec class + a loop.
 

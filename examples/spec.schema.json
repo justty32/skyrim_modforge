@@ -212,7 +212,7 @@
       "required": ["base", "cell"],
       "properties": {
         "base": { "$ref": "#/$defs/ref", "description": "the form to place: an in-spec npc/object editorId or external <master>:0xFORMID" },
-        "cell": { "type": "string", "minLength": 1, "description": "an in-spec cell editorId (placing into a vanilla cell is not supported yet)" },
+        "cell": { "type": "string", "minLength": 1, "description": "an in-spec cell editorId OR a vanilla INTERIOR cell '<master>:0xFORMID' (find with `find <Skyrim.esm> <name> Cell`)" },
         "kind": { "enum": ["npc", "object"], "description": "inferred for in-spec bases; defaults to object for external" },
         "position": { "$ref": "#/$defs/vec3" },
         "rotation": { "$ref": "#/$defs/vec3", "description": "degrees" },

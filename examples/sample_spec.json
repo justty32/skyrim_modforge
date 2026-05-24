@@ -69,7 +69,9 @@
     { "base": "MF_Smith", "cell": "MF_TestRoom",
       "position": { "x": 0, "y": 0, "z": 0 }, "rotation": { "x": 0, "y": 0, "z": 0 } },
     { "base": "MF_Coin", "cell": "MF_TestRoom",
-      "position": { "x": 40, "y": 0, "z": 0 } }
+      "position": { "x": 40, "y": 0, "z": 0 } },
+    { "base": "MF_Chest", "cell": "Skyrim.esm:0x01605E",
+      "position": { "x": 100, "y": 0, "z": 0 } }
   ],
   "leveledItems": [
     { "editorId": "MF_LootList", "chanceNone": 25,
