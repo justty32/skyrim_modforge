@@ -60,8 +60,12 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
         ScriptEntry to `.Scripts`. Properties get `ScriptProperty.Flag.Edited`. Verified:
         sample attaches MFDemoQuestScript to MF_Q1 (int GreetingCount=3 + object PlayerRef
         →MF_Smith); `strings` confirms script+prop names in the esp; re-read OK.
-  - [ ] **5c — packaging**: place compiled `.pex` under the output mod's `Scripts/` (and
-        sources under `Scripts/Source/`); a `build` run could compile+attach+package in one.
+  - [x] **5c — packaging** (done 2026-05-24): `package <spec.json> <outModDir>` = build esp
+        + compile each script `source` + lay out a MO2/Vortex-ready folder
+        (`<PluginName>` at root, `Scripts/*.pex`, `Scripts/Source/*.psc`). ScriptAttachSpec
+        gained an optional `source` (.psc path rel. to spec). Verified: sample_spec →
+        SampleMod/ with SampleMod.esp + Scripts/MFDemoQuestScript.pex + Source/.psc.
+        **It.5 COMPLETE — full spec→packaged-mod pipeline works on Linux.**
 - [ ] **It.6 — NL→spec layer**: prompt → structured spec (the "AI agent" front).
 
 ## Build / test

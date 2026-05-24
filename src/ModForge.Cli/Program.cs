@@ -34,6 +34,7 @@ internal static class Program
                 case "gen" when args.Length == 2:     Gen(args[1]); return 0;
                 case "build" when args.Length == 3:   Build(args[1], args[2]); return 0;
                 case "compile" when args.Length == 3: return Compile(args[1], args[2]);
+                case "package" when args.Length == 3: return Package(args[1], args[2]);
                 case "extract" when args.Length == 3: Extract(args[1], args[2]); return 0;
                 case "apply" when args.Length == 4:   Apply(args[1], args[2], args[3]); return 0;
                 default: Usage(); return 1;
@@ -51,6 +52,7 @@ internal static class Program
         "  gen     <out.esp>\n" +
         "  build   <spec.json> <out.esp>\n" +
         "  compile <script.psc> <outDir>\n" +
+        "  package <spec.json> <outModDir>\n" +
         "  extract <in.esp> <strings.json>\n" +
         "  apply   <in.esp> <strings.json> <out.esp>");
 
@@ -505,6 +507,42 @@ internal static class Program
         Console.WriteLine($"compiled {scriptName} -> {pex} ({new FileInfo(pex).Length} bytes)");
         return 0;
     }
+
+    // -------------------------------------------------------------------------------
+    //  package — build the .esp, compile any script sources, and lay out an MO2/Vortex-
+    //  ready mod folder: <outModDir>/<PluginName> + Scripts/*.pex + Scripts/Source/*.psc.
+    //  (A script entry with a `source` .psc gets compiled; its VMAD attach happened in
+    //  Build by Scriptname.)
+    // -------------------------------------------------------------------------------
+    private static int Package(string specPath, string outModDir)
+    {
+        var spec = JsonSerializer.Deserialize<ModSpec>(File.ReadAllText(specPath), ReadOpts)
+                   ?? throw new InvalidOperationException("spec deserialized to null");
+        var pluginName = string.IsNullOrEmpty(spec.PluginName) ? "Generated.esp" : spec.PluginName;
+        Directory.CreateDirectory(outModDir);
+
+        // 1) the plugin (Build also does the VMAD script attach by Scriptname)
+        Build(specPath, Path.Combine(outModDir, pluginName));
+
+        // 2) compile each referenced script source -> Scripts/*.pex; copy .psc -> Scripts/Source/
+        var scriptsDir = Path.Combine(outModDir, "Scripts");
+        var sourceDir = Path.Combine(scriptsDir, "Source");
+        var specDir = Path.GetDirectoryName(Path.GetFullPath(specPath)) ?? ".";
+        int compiled = 0;
+        foreach (var sa in spec.Scripts)
+        {
+            if (string.IsNullOrEmpty(sa.Source)) continue;
+            var src = Path.IsPathRooted(sa.Source) ? sa.Source : Path.Combine(specDir, sa.Source);
+            if (!File.Exists(src)) { Console.Error.WriteLine($"  ! script source not found: {src}"); continue; }
+            if (Compile(src, scriptsDir) != 0) { Console.Error.WriteLine($"  ! compile failed: {sa.Source}"); continue; }
+            Directory.CreateDirectory(sourceDir);
+            File.Copy(src, Path.Combine(sourceDir, Path.GetFileName(src)), overwrite: true);
+            compiled++;
+        }
+
+        Console.WriteLine($"packaged -> {outModDir}  ({pluginName} + {compiled} compiled script(s) under Scripts/)");
+        return 0;
+    }
 }
 
 // A translatable text slot: where it lives + accessors. extract reads Get(); apply calls Set(target).
@@ -577,6 +615,7 @@ internal sealed class ScriptAttachSpec
 {
     public string TargetEditorId { get; set; } = "";
     public string ScriptName { get; set; } = "";
+    public string Source { get; set; } = "";   // optional .psc path (rel. to spec) for `package` to compile
     public List<PropertySpec> Properties { get; set; } = new();
 }
 internal sealed class PropertySpec

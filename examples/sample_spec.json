@@ -42,6 +42,7 @@
   ],
   "scripts": [
     { "targetEditorId": "MF_Q1", "scriptName": "MFDemoQuestScript",
+      "source": "scripts/MFDemoQuestScript.psc",
       "properties": [
         { "name": "GreetingCount", "type": "int", "int": 3 },
         { "name": "PlayerRef", "type": "object", "objectEditorId": "MF_Smith" }
