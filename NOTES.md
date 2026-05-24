@@ -111,10 +111,29 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
         race/class/outfit/keywords + masters list. Sample wires NordRace + VendorBlacksmith +
         BlacksmithOutfit01 + CrimeFactionWhiterun + ArmorClothing — round-trip verified via dump.
         **NPCs are now functional actors (race+class); still NOT world-placed.**
-  - [ ] **7c — self-contained / remaining fields**: spell/potion **effects** (EffectItem →
-        MagicEffect ref + magnitude/area/duration), armor armorType (enum)/biped slots, weapon
-        damage/reach, leveled lists, container contents, and **world placement** (cell/worldspace
-        — the next real blocker for an NPC to physically appear). Refs + `find` are the tools.
+  - [x] **7c — gameplay stats on existing record types** (done 2026-05-24): the
+        self-contained, headless-verifiable half of "make generated records functional".
+        - **Weapons:** `WeaponSpec` gained `value`/`weight`/`damage`(ushort)/`speed`/`reach`.
+          Build sets `Weapon.BasicStats` (WeaponBasicStats{Damage,Value,Weight}) + `Weapon.Data`
+          (WeaponData{Speed,Reach}) whenever any stat is given; speed/reach default to 1.0 so the
+          weapon is swingable (0 = unusable).
+        - **Armor:** `armorType` (light/heavy/clothing → `ArmorType` enum via `ParseArmorType`)
+          + `slots` (BipedObjectFlag names, OR'd via `Enum.TryParse`) → `Armor.BodyTemplate`
+          (ArmorType + FirstPersonFlags).
+        - **Spell/Potion effects:** new `EffectSpec{magicEffect(ref),magnitude,area,duration}`;
+          Spell+Ingestible both implement `IHasEffects` → one `WireEffects` path in pass 2 adds
+          `new Effect{ BaseEffect.SetTo(fk), Data = new EffectData{...} }` to `he.Effects`.
+          magicEffect resolves through the existing `Resolve`/`TryResolveRef` (so vanilla
+          `Skyrim.esm:0x03EB15`=AlchRestoreHealth, `0x03EB42`=AlchDamageHealth work + auto-master).
+        - `validate` checks armorType enum / slot names / effect refs (+empty magicEffect);
+          `dump` prints weapon damage/speed/reach, armor type/slots, and effect→magEffect+mag/area/dur.
+        - Verified: sample_spec round-trips via dump (Blade dmg12 spd1 reach1; Apron Clothing/Body;
+          Spark→AlchDamageHealth mag10 dur5; Tonic→AlchRestoreHealth mag25). Negative test: 5/5
+          bad fields caught by validate. NOT in-game tested (needs Proton). API verified via ilspy.
+  - [ ] **7d — world placement + aggregates** (the real "appears in-game" blocker): cell/
+        worldspace **placement** of an NPC/object (PlacedNpc/PlacedObject in a Cell — needs
+        override semantics for vanilla cells, or a new interior cell; intricate, do carefully),
+        leveled lists, container contents, spell cast/spell-type fields. Refs + `find` are the tools.
 
 ## Build / test
 ```

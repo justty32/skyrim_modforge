@@ -44,9 +44,10 @@ To find a vanilla FormID, search the game master:
 
 ```bash
 SKYRIM_ESM="$HOME/.local/share/Steam/steamapps/common/Skyrim Special Edition/Data/Skyrim.esm"
-$R find "$SKYRIM_ESM" nordrace Race      # -> Skyrim.esm:0x013746  Race  NordRace
-$R find "$SKYRIM_ESM" blacksmith Class   # -> Skyrim.esm:0x013257  Class VendorBlacksmith
+$R find "$SKYRIM_ESM" nordrace Race        # -> Skyrim.esm:0x013746  Race  NordRace
+$R find "$SKYRIM_ESM" blacksmith Class     # -> Skyrim.esm:0x013257  Class VendorBlacksmith
 $R find "$SKYRIM_ESM" armorclothing Keyword
+$R find "$SKYRIM_ESM" restorehealth MagicEffect  # -> Skyrim.esm:0x03EB15  AlchRestoreHealth (for a potion `effects`)
 ```
 Always run `find` to get the real FormID — **never guess one**. Search is by EditorID
 (descriptive, e.g. `NordRace`); localized display names aren't resolved headless. A standing
@@ -108,9 +109,13 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
   and the NPC behaves like a real actor. BUT a generated NPC is **not placed in the world**
   yet — there's no cell/worldspace placement, so it won't physically appear somewhere until
   that lands (or a script/quest alias places it). It exists as a form, not as a spawned actor.
-- **External/vanilla forms CAN be referenced** (race/class/outfit/keywords/factions, via
-  `"<master>:0xFORMID"`). Still NOT covered: spell/potion **effects** (EffectItem →
-  MagicEffect with magnitude/area), leveled lists, container contents, and **world placement**.
+- **Items/spells now carry gameplay stats:** weapons take `damage`/`speed`/`reach`, armor
+  takes `armorType` + biped `slots`, and **spells/potions take `effects`** (a MagicEffect
+  *ref* + magnitude/area/duration). A potion with one effect is fully functional; a spell
+  works but cast-type/spell-type aren't spec fields yet (defaults are written).
+- **External/vanilla forms CAN be referenced** (race/class/outfit/keywords/factions/
+  magicEffect, via `"<master>:0xFORMID"`). Still NOT covered: leveled lists, container
+  contents, and **world placement**.
 - **Dialogue** records are valid, but a line actually appearing in conversation can need
   quest-flag/branch tuning, and there is **no voice** (subtitle only).
 - You cannot confirm anything works **in-game** from here — that needs a Proton/Skyrim launch.

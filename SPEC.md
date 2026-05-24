@@ -52,19 +52,40 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 |---------|--------|
 | `miscItems` | `editorId`, `name`, `value` (int≥0), `weight` (number), `keywords` (array of *refs*) |
 | `books` | `editorId`, `name`, `text` (book body) |
-| `weapons` | `editorId`, `name`, `keywords` (array of *refs*) |
+| `weapons` | `editorId`, `name`, `value`, `weight`, `damage` (int≥0), `speed` (number), `reach` (number), `keywords` (array of *refs*) |
 | `npcs` | `editorId`, `name`, `factions` (array of *refs*), `race` (*ref*), `class` (*ref*), `outfit` (*ref* → DefaultOutfit) |
 | `quests` | `editorId`, `name`, `objectives` (array of `{ index (int), text }`) |
 | `dialogue` | `editorId`, `questEditorId`, `speakerNpcEditorId` (optional), `prompt`, `responses` (array of strings) |
-| `spells` | `editorId`, `name` |
-| `potions` | `editorId`, `name`, `value`, `weight` |
-| `armors` | `editorId`, `name`, `value`, `weight`, `armorRating` (number), `keywords` (array of *refs*) |
+| `spells` | `editorId`, `name`, `effects` (array of *effects*) |
+| `potions` | `editorId`, `name`, `value`, `weight`, `effects` (array of *effects*) |
+| `armors` | `editorId`, `name`, `value`, `weight`, `armorRating` (number), `armorType` (`light`\|`heavy`\|`clothing`), `slots` (array of biped-slot names), `keywords` (array of *refs*) |
 | `factions` | `editorId`, `name` |
 | `messages` | `editorId`, `name`, `description` (body text) |
 
 A field marked *ref* takes an in-spec `editorId` **or** `"<master>:0xFORMID"` (see
 *References to vanilla / external forms* above). A standing NPC needs at least `race` +
 `class` to behave as a real actor in-game; `outfit` gives it clothing/gear.
+
+### Gameplay stats
+- **Weapons:** give a `damage` (and usually `value`/`weight`). `speed` and `reach`
+  default to `1.0` when any stat is set, so the weapon is swingable; override for slower/
+  faster or longer/shorter weapons. A weapon with no stats is an inert item (it’ll equip
+  but do nothing useful).
+- **Armor:** `armorType` is `light` / `heavy` / `clothing` (default `clothing`); `slots`
+  lists the biped slots it occupies by `BipedObjectFlag` name — `Body`, `Head`, `Hands`,
+  `Feet`, `Forearms`, `Calves`, `Shield`, `Amulet`, `Ring`, `Circlet`, … (multiple slots
+  are OR’d). `armorRating` is the protection value.
+
+### effects (spells & potions)
+A spell or potion **does nothing without at least one effect**. Each effect is:
+```jsonc
+{ "magicEffect": "Skyrim.esm:0x03EB15",  // a MagicEffect *ref* (usually vanilla)
+  "magnitude": 25, "area": 0, "duration": 0 }   // duration in seconds; 0 = instant
+```
+The `magicEffect` is a *ref* — find a vanilla one with `find <Skyrim.esm> <query> MagicEffect`
+(e.g. `AlchRestoreHealth = Skyrim.esm:0x03EB15`, `AlchDamageHealth = Skyrim.esm:0x03EB42`).
+A potion is fully functional with one effect; a spell also wants cast/spell-type tuning
+(not yet a spec field — defaults are written) but the effect is the core.
 
 ### dialogue
 A `dialogue` entry is a player topic shown under a quest's branch, optionally limited
@@ -111,9 +132,9 @@ A live `describe` command (LLM API) is planned (It.6c) — until then the LLM st
 interactively.
 
 ## Not yet covered (extend in `Program.cs` `Build` + a spec class)
-Effects on spells/potions (magnitude/area/duration `EffectItem`s referencing MagicEffects),
-armor biped slots / armorType, weapon damage/reach, container contents, leveled lists,
-cell/world placement (putting an NPC or object *in the world*). Refs (in-spec or
-`<master>:0xFORMID`) and the `find` command are the building blocks for the external ones.
+Container contents, leveled lists, spell cast/spell-type fields, and **cell/world
+placement** (putting an NPC or object *in the world* — the next blocker for a generated
+NPC to physically appear). Refs (in-spec or `<master>:0xFORMID`) and the `find` command
+are the building blocks for the external ones.
 
 See `examples/sample_spec.json` for a complete working example.

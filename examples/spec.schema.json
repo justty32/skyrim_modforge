@@ -9,12 +9,12 @@
     "esl": { "type": "boolean", "default": true, "description": "Light-master flag; keep new records <= 4096" },
     "miscItems": { "type": "array", "items": { "$ref": "#/$defs/named" } },
     "books": { "type": "array", "items": { "$ref": "#/$defs/book" } },
-    "weapons": { "type": "array", "items": { "$ref": "#/$defs/named" } },
+    "weapons": { "type": "array", "items": { "$ref": "#/$defs/weapon" } },
     "npcs": { "type": "array", "items": { "$ref": "#/$defs/npc" } },
     "quests": { "type": "array", "items": { "$ref": "#/$defs/quest" } },
     "dialogue": { "type": "array", "items": { "$ref": "#/$defs/dialogue" } },
-    "spells": { "type": "array", "items": { "$ref": "#/$defs/named" } },
-    "potions": { "type": "array", "items": { "$ref": "#/$defs/valued" } },
+    "spells": { "type": "array", "items": { "$ref": "#/$defs/spell" } },
+    "potions": { "type": "array", "items": { "$ref": "#/$defs/potion" } },
     "armors": { "type": "array", "items": { "$ref": "#/$defs/armor" } },
     "factions": { "type": "array", "items": { "$ref": "#/$defs/named" } },
     "messages": { "type": "array", "items": { "$ref": "#/$defs/message" } },
@@ -27,6 +27,50 @@
       "minLength": 1,
       "description": "A reference: an in-spec editorId OR an external form '<master>:0xFORMID' (e.g. 'Skyrim.esm:0x013746' = NordRace). Discover FormIDs with the `find` command."
     },
+    "effect": {
+      "type": "object",
+      "required": ["magicEffect"],
+      "properties": {
+        "magicEffect": { "$ref": "#/$defs/ref", "description": "MagicEffect ref — normally a vanilla one, e.g. 'Skyrim.esm:0x03EB15' = AlchRestoreHealth. find <Skyrim.esm> <query> MagicEffect" },
+        "magnitude": { "type": "number", "minimum": 0 },
+        "area": { "type": "integer", "minimum": 0 },
+        "duration": { "type": "integer", "minimum": 0, "description": "seconds; 0 = instant" }
+      }
+    },
+    "weapon": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "value": { "type": "integer", "minimum": 0 },
+        "weight": { "type": "number", "minimum": 0 },
+        "damage": { "type": "integer", "minimum": 0, "description": "base damage; functional weapon needs this > 0" },
+        "speed": { "type": "number", "minimum": 0, "description": "swing speed (~1.0 normal); defaults to 1.0 if any stat is set" },
+        "reach": { "type": "number", "minimum": 0, "description": "reach (~1.0 normal); defaults to 1.0 if any stat is set" },
+        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
+      }
+    },
+    "spell": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" }, "description": "magic effects (does nothing without at least one)" }
+      }
+    },
+    "potion": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "value": { "type": "integer", "minimum": 0 },
+        "weight": { "type": "number", "minimum": 0 },
+        "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" }, "description": "magic effects (a potion is fully functional with one)" }
+      }
+    },
     "named": {
       "type": "object",
       "required": ["editorId"],
@@ -36,16 +80,6 @@
         "value": { "type": "integer", "minimum": 0 },
         "weight": { "type": "number", "minimum": 0 },
         "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "keyword refs (weapons/misc; ignored on records that don't take keywords)" }
-      }
-    },
-    "valued": {
-      "type": "object",
-      "required": ["editorId"],
-      "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "value": { "type": "integer", "minimum": 0 },
-        "weight": { "type": "number", "minimum": 0 }
       }
     },
     "book": {
@@ -66,6 +100,8 @@
         "value": { "type": "integer", "minimum": 0 },
         "weight": { "type": "number", "minimum": 0 },
         "armorRating": { "type": "number", "minimum": 0 },
+        "armorType": { "enum": ["light", "heavy", "clothing", "lightArmor", "heavyArmor"], "description": "armor class; default clothing" },
+        "slots": { "type": "array", "items": { "type": "string" }, "description": "biped slots occupied, e.g. Body, Head, Hands, Feet, Forearms, Calves, Shield (BipedObjectFlag names)" },
         "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
       }
     },

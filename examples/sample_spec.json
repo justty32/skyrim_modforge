@@ -10,7 +10,8 @@
       "text": "Greetings, traveler. This whole plugin was generated from a JSON spec." }
   ],
   "weapons": [
-    { "editorId": "MF_Blade", "name": "Forged Blade" }
+    { "editorId": "MF_Blade", "name": "Forged Blade",
+      "damage": 12, "value": 75, "weight": 11.0, "speed": 1.0, "reach": 1.0 }
   ],
   "npcs": [
     { "editorId": "MF_Smith", "name": "Borin the Smith",
@@ -29,13 +30,20 @@
       "responses": [ "I forge whatever the spec asks of me, traveler." ] }
   ],
   "spells": [
-    { "editorId": "MF_Spark", "name": "Forged Spark" }
+    { "editorId": "MF_Spark", "name": "Forged Spark",
+      "effects": [
+        { "magicEffect": "Skyrim.esm:0x03EB42", "magnitude": 10, "duration": 5 }
+      ] }
   ],
   "potions": [
-    { "editorId": "MF_Tonic", "name": "Smith's Tonic", "value": 25, "weight": 0.5 }
+    { "editorId": "MF_Tonic", "name": "Smith's Tonic", "value": 25, "weight": 0.5,
+      "effects": [
+        { "magicEffect": "Skyrim.esm:0x03EB15", "magnitude": 25, "duration": 0 }
+      ] }
   ],
   "armors": [
     { "editorId": "MF_Apron", "name": "Smith's Apron", "value": 40, "weight": 4.0, "armorRating": 12.5,
+      "armorType": "clothing", "slots": ["Body"],
       "keywords": ["Skyrim.esm:0x06BBE8"] }
   ],
   "factions": [

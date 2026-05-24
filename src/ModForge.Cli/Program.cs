@@ -271,6 +271,14 @@ internal static class Program
         {
             var r = mod.Weapons.AddNew();
             r.EditorID = w.EditorId; r.Name = w.Name;
+            // A usable weapon needs damage + a non-zero swing speed/reach. Create both
+            // subrecords whenever any stat is given; speed/reach default to 1.0 so the
+            // weapon is swingable (0 would make it effectively unusable).
+            if (w.Damage > 0 || w.Value > 0 || w.Weight > 0 || w.Speed > 0 || w.Reach > 0)
+            {
+                r.BasicStats = new WeaponBasicStats { Damage = w.Damage, Value = w.Value, Weight = w.Weight };
+                r.Data = new WeaponData { Speed = w.Speed > 0 ? w.Speed : 1.0f, Reach = w.Reach > 0 ? w.Reach : 1.0f };
+            }
         }
         // NPCs + quests are kept in editorId->record maps so dialogue can reference them.
         var npcsByEd = new Dictionary<string, Npc>();
@@ -355,6 +363,15 @@ internal static class Program
             var r = mod.Armors.AddNew();
             r.EditorID = a.EditorId; r.Name = a.Name;
             r.Value = a.Value; r.Weight = a.Weight; r.ArmorRating = a.ArmorRating;
+            // BodyTemplate = the armor class (light/heavy/clothing) + which biped slots it fills.
+            if (!string.IsNullOrEmpty(a.ArmorType) || a.Slots.Count > 0)
+            {
+                var bt = new BodyTemplate { ArmorType = ParseArmorType(a.ArmorType) };
+                foreach (var slot in a.Slots)
+                    if (Enum.TryParse<BipedObjectFlag>(slot, ignoreCase: true, out var f)) bt.FirstPersonFlags |= f;
+                    else Console.WriteLine($"  ! armor '{a.EditorId}' unknown slot '{slot}' (e.g. Body, Head, Hands, Feet, Forearms, Calves, Shield)");
+                r.BodyTemplate = bt;
+            }
         }
         foreach (var f in spec.Factions)
         {
@@ -418,6 +435,25 @@ internal static class Program
         foreach (var a in spec.Armors) WireKeywords(a.EditorId, a.Keywords);
         foreach (var w in spec.Weapons) WireKeywords(w.EditorId, w.Keywords);
         foreach (var m in spec.MiscItems) WireKeywords(m.EditorId, m.Keywords);
+
+        // Magic effects on spells/potions (both implement IHasEffects). Each Effect links a
+        // vanilla/in-spec MagicEffect (a ref) and carries EffectData (magnitude/area/duration).
+        void WireEffects(string ed, List<EffectSpec> effects)
+        {
+            if (effects.Count == 0) return;
+            if (!recordsByEd.TryGetValue(ed, out var rec) || rec is not IHasEffects he)
+            { Console.WriteLine($"  ! '{ed}' takes no magic effects (or not found)"); return; }
+            foreach (var es in effects)
+                Resolve($"'{ed}' effect", es.MagicEffect, fk =>
+                {
+                    var eff = new Effect();
+                    eff.BaseEffect.SetTo(fk);
+                    eff.Data = new EffectData { Magnitude = es.Magnitude, Area = es.Area, Duration = es.Duration };
+                    he.Effects.Add(eff);
+                });
+        }
+        foreach (var s in spec.Spells) WireEffects(s.EditorId, s.Effects);
+        foreach (var p in spec.Potions) WireEffects(p.EditorId, p.Effects);
 
         // Attach Papyrus scripts (VMAD) to any record by editorId. The VMAD setter is
         // not on the IHaveVirtualMachineAdapter interface (get-only) and its type varies
@@ -483,6 +519,15 @@ internal static class Program
         op.Object.SetTo(fk);
         return op;
     }
+
+    // Armor class string -> enum. Accepts shorthand (light/heavy/clothing) or the enum names;
+    // anything unrecognised (incl. empty) falls back to Clothing.
+    private static ArmorType ParseArmorType(string s) => s.Trim().ToLowerInvariant() switch
+    {
+        "light" or "lightarmor" => ArmorType.LightArmor,
+        "heavy" or "heavyarmor" => ArmorType.HeavyArmor,
+        _ => ArmorType.Clothing,
+    };
 
     // -------------------------------------------------------------------------------
     //  Reference resolver (It.7b). A "ref" string is EITHER an in-spec editorId, OR an
@@ -681,6 +726,27 @@ internal static class Program
         foreach (var a in spec.Armors) foreach (var k in a.Keywords) CheckRef(k, $"armor '{a.EditorId}' keyword");
         foreach (var w in spec.Weapons) foreach (var k in w.Keywords) CheckRef(k, $"weapon '{w.EditorId}' keyword");
         foreach (var m in spec.MiscItems) foreach (var k in m.Keywords) CheckRef(k, $"miscItem '{m.EditorId}' keyword");
+
+        var armorTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            { "light", "heavy", "clothing", "lightarmor", "heavyarmor" };
+        foreach (var a in spec.Armors)
+        {
+            if (!string.IsNullOrEmpty(a.ArmorType) && !armorTypes.Contains(a.ArmorType))
+                problems.Add($"armor '{a.EditorId}' has invalid armorType '{a.ArmorType}' (light|heavy|clothing)");
+            foreach (var slot in a.Slots)
+                if (!Enum.TryParse<BipedObjectFlag>(slot, ignoreCase: true, out _))
+                    problems.Add($"armor '{a.EditorId}' has invalid slot '{slot}' (e.g. Body, Head, Hands, Feet, Forearms, Calves, Shield)");
+        }
+
+        // A spell/potion effect needs a MagicEffect ref (in-spec or, normally, a vanilla one).
+        void CheckEffects(string ed, List<EffectSpec> effects, string kind)
+        {
+            foreach (var e in effects)
+                if (string.IsNullOrWhiteSpace(e.MagicEffect)) problems.Add($"{kind} '{ed}' has an effect with empty magicEffect ref");
+                else CheckRef(e.MagicEffect, $"{kind} '{ed}' effect magicEffect");
+        }
+        foreach (var s in spec.Spells) CheckEffects(s.EditorId, s.Effects, "spell");
+        foreach (var p in spec.Potions) CheckEffects(p.EditorId, p.Effects, "potion");
 
         foreach (var d in spec.Dialogue)
         {
@@ -885,6 +951,19 @@ internal static class Program
                 foreach (var k in kws)
                     Console.WriteLine($"      keyword -> {Ref(k.FormKey)}");
 
+            if (r is IWeaponGetter wpn)
+            {
+                if (wpn.BasicStats is { } bs) Console.WriteLine($"      damage={bs.Damage} value={bs.Value} weight={bs.Weight}");
+                if (wpn.Data is { } wd) Console.WriteLine($"      speed={wd.Speed} reach={wd.Reach}");
+            }
+
+            if (r is IArmorGetter arm && arm.BodyTemplate is { } bt)
+                Console.WriteLine($"      armorRating={arm.ArmorRating} armorType={bt.ArmorType} slots=[{bt.FirstPersonFlags}]");
+
+            if (r is IHasEffectsGetter eff && eff.Effects.Count > 0)
+                foreach (var e in eff.Effects)
+                    Console.WriteLine($"      effect -> {Ref(e.BaseEffect.FormKey)} (mag={e.Data?.Magnitude} area={e.Data?.Area} dur={e.Data?.Duration})");
+
             if (r is IHaveVirtualMachineAdapterGetter hv && hv.VirtualMachineAdapter is { } vm)
                 foreach (var se in vm.Scripts)
                     Console.WriteLine($"      script: {se.Name} [{se.Properties.Count} prop(s)]");
@@ -955,7 +1034,7 @@ internal sealed class ModSpec
 // the master on write (Mutagen MastersListContent=Iterate).
 internal sealed class MiscSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<string> Keywords { get; set; } = new(); }
 internal sealed class BookSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Text { get; set; } = ""; }
-internal sealed class WeaponSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public List<string> Keywords { get; set; } = new(); }
+internal sealed class WeaponSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public ushort Damage { get; set; } public float Speed { get; set; } public float Reach { get; set; } public List<string> Keywords { get; set; } = new(); }
 internal sealed class NpcSpec
 {
     public string EditorId { get; set; } = "";
@@ -976,9 +1055,11 @@ internal sealed class DialogueSpec
     public string Prompt { get; set; } = "";
     public List<string> Responses { get; set; } = new();
 }
-internal sealed class SpellSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
-internal sealed class PotionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } }
-internal sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } public List<string> Keywords { get; set; } = new(); }
+internal sealed class SpellSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public List<EffectSpec> Effects { get; set; } = new(); }
+internal sealed class PotionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<EffectSpec> Effects { get; set; } = new(); }
+internal sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } public string ArmorType { get; set; } = ""; public List<string> Slots { get; set; } = new(); public List<string> Keywords { get; set; } = new(); }
+// One magic effect on a spell/potion: a MagicEffect ref + magnitude/area/duration (EffectData).
+internal sealed class EffectSpec { public string MagicEffect { get; set; } = ""; public float Magnitude { get; set; } public int Area { get; set; } public int Duration { get; set; } }
 internal sealed class FactionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
 internal sealed class MessageSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Description { get; set; } = ""; }
 // Attach a compiled Papyrus script (by Scriptname) to a record (by editorId), with
