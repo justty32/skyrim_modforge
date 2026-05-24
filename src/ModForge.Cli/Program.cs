@@ -41,6 +41,7 @@ internal static class Program
                 case "extract" when args.Length == 3: Extract(args[1], args[2]); return 0;
                 case "apply" when args.Length == 4:   Apply(args[1], args[2], args[3]); return 0;
                 case "applyloc" when args.Length == 4: return ApplyLocalized(args[1], args[2], args[3]);
+                case "dump" when args.Length == 2:    return Dump(args[1]);
                 default: Usage(); return 1;
             }
         }
@@ -58,6 +59,7 @@ internal static class Program
         "  compile <script.psc> <outDir>\n" +
         "  package <spec.json> <outModDir>\n" +
         "  validate <spec.json>\n" +
+        "  dump    <in.esp>\n" +
         "  extract <in.esp> <strings.json>\n" +
         "  applyloc <in.esp> <strings.json> <outDir>   (Localized UTF-8 _chinese.STRINGS)\n" +
         "  apply   <in.esp> <strings.json> <out.esp>");
@@ -669,6 +671,43 @@ internal static class Program
         }
 
         Console.WriteLine($"applyloc: {applied} string(s) -> {espPath} + {renamed} Strings/*_chinese.* file(s) (UTF-8)");
+        return 0;
+    }
+
+    // -------------------------------------------------------------------------------
+    //  dump — read a plugin back and print its records + the key things generation
+    //  wires up (names, npc faction membership, VMAD scripts, dialogue, quest
+    //  objectives). Round-trip verification helper + a way to inspect any .esp.
+    // -------------------------------------------------------------------------------
+    private static int Dump(string inPath)
+    {
+        var mod = Load(inPath);
+        var edByFk = new Dictionary<FormKey, string>();
+        foreach (var r in mod.EnumerateMajorRecords())
+            if (!string.IsNullOrEmpty(r.EditorID)) edByFk[r.FormKey] = r.EditorID!;
+        string Ref(FormKey fk) => fk.IsNull ? "<null>" : edByFk.TryGetValue(fk, out var ed) ? ed : fk.ToString();
+
+        Console.WriteLine($"{Path.GetFileName(inPath)} — {mod.EnumerateMajorRecords().Count()} record(s), localized={mod.UsingLocalization}");
+        foreach (var r in mod.EnumerateMajorRecords())
+        {
+            var name = (r as INamedGetter)?.Name;
+            Console.WriteLine($"  [{r.FormKey}] {r.GetType().Name} {r.EditorID}" + (name is { } nm ? $"  \"{nm}\"" : ""));
+
+            if (r is INpcGetter npc)
+                foreach (var f in npc.Factions)
+                    Console.WriteLine($"      faction -> {Ref(f.Faction.FormKey)} (rank {f.Rank})");
+
+            if (r is IHaveVirtualMachineAdapterGetter hv && hv.VirtualMachineAdapter is { } vm)
+                foreach (var se in vm.Scripts)
+                    Console.WriteLine($"      script: {se.Name} [{se.Properties.Count} prop(s)]");
+
+            if (r is IDialogTopicGetter dt)
+                Console.WriteLine($"      prompt: \"{dt.Name?.String}\"  ({dt.Responses.Count} INFO group(s))");
+
+            if (r is IQuestGetter q)
+                foreach (var o in q.Objectives)
+                    Console.WriteLine($"      objective[{o.Index}]: \"{o.DisplayText?.String}\"");
+        }
         return 0;
     }
 }

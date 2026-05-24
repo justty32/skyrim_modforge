@@ -84,13 +84,20 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
         LLM API to emit a spec. Needs the user's API key / provider preference. Until then
         the NL→spec step is done by Claude in-session (produce spec.json → validate → package).
 
-- [ ] **It.7 — gameplay-complete fields** (next autonomous track, since 6c is blocked):
-      deepen records so generated content actually works in-game, not just structurally:
-      spell/potion magic effects, armor armorType/keywords/biped slots, npc race/class/
-      outfit (an npc needs these to be a functional actor), container contents, leveled
-      lists. Same pattern: add fields to the spec class + Build, verify via build/extract/
-      strings. Also worth: a `dump <esp>` command (list records + key FormLinks + scripts)
-      as a round-trip verification helper.
+- [~] **It.7 — gameplay-complete fields** (autonomous track, since 6c is blocked):
+  - [x] **7a — `dump <esp>`** (done 2026-05-24): reads a plugin back + prints records,
+        names, npc faction membership (FormLink resolved to editorId), VMAD scripts +
+        prop count, dialogue prompt/INFO groups, quest objectives. Round-trip verification
+        helper. Confirmed It.2/It.4/It.5b actually persist (Smith→Guild faction, Q1→script
+        [2 props] + objective all read back correctly). Also a general .esp inspector.
+  - [ ] **7b — external/vanilla form refs** (the real blocker for functional content):
+        npc.race/class/outfit, keywords, spell effects all reference VANILLA forms
+        (Skyrim.esm) by FormID — needs a reference syntax like `"Skyrim.esm:0x13746"` →
+        FormKey, + adding the master. Design: a `ref` resolver (editorId in-spec OR
+        `<master>:0xFORMID` external) used everywhere FormLinks are set. Then race/class
+        (npc functional), armor keywords, etc. fall out.
+  - [ ] **7c — self-contained fields**: armor armorType (enum), biped slots, weapon
+        damage/reach, etc. — no external refs, quick wins.
 
 ## Build / test
 ```
