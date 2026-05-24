@@ -26,8 +26,12 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
       speaker NPC by editorId; GetIsID condition). Verified: sample_spec → 7 records +
       1 dialogue topic; extract shows quest name/objective + prompt + response line.
       (Gotcha: `DialogResponse.ResponseNumber` is `byte`.)
-- [ ] **It.3 — more record types**: Spell/MagicEffect, Ingestible(potion), Armor, Container,
-      Activator, Message, Faction. Add each to the spec model + `Build`.
+- [x] **It.3 — more record types** (done 2026-05-24): added Spell, Potion(Ingestible),
+      Armor (value/weight/armorRating), Faction, Message(description) to spec + Build.
+      Verified: sample_spec → 12 top-level records, extract shows all. Also fixed an
+      extract cosmetic bug (`TrimStart('I')` was eating the 'I' in "Ingestible"; concrete
+      record names have no interface prefix). Still TODO if wanted: MagicEffect, Container,
+      Activator, Ammunition, Ingredient — same trivial pattern.
 - [ ] **It.4 — refs & FormLinks across records**: let spec entries reference each other by
       editorId (e.g. npc→faction, leveled lists, container contents); resolve in two passes.
 - [ ] **It.5 — Papyrus hook**: spec entry can name a `.psc` to compile (wine PapyrusCompiler)

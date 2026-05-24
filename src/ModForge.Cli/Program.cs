@@ -76,7 +76,7 @@ internal static class Program
         foreach (var rec in mod.EnumerateMajorRecords())
         {
             var fk = rec.FormKey.ToString();
-            var typeName = rec.GetType().Name.TrimStart('I');
+            var typeName = rec.GetType().Name; // concrete record type (e.g. "Ingestible")
 
             if (rec is IDialogTopic) continue; // handled in the dedicated dialogue pass
 
@@ -322,10 +322,39 @@ internal static class Program
             dialogueBuilt++;
         }
 
+        foreach (var s in spec.Spells)
+        {
+            var r = mod.Spells.AddNew();
+            r.EditorID = s.EditorId; r.Name = s.Name;
+        }
+        foreach (var p in spec.Potions)
+        {
+            var r = mod.Ingestibles.AddNew();
+            r.EditorID = p.EditorId; r.Name = p.Name; r.Value = p.Value; r.Weight = p.Weight;
+        }
+        foreach (var a in spec.Armors)
+        {
+            var r = mod.Armors.AddNew();
+            r.EditorID = a.EditorId; r.Name = a.Name;
+            r.Value = a.Value; r.Weight = a.Weight; r.ArmorRating = a.ArmorRating;
+        }
+        foreach (var f in spec.Factions)
+        {
+            var r = mod.Factions.AddNew();
+            r.EditorID = f.EditorId; r.Name = f.Name;
+        }
+        foreach (var msg in spec.Messages)
+        {
+            var r = mod.Messages.AddNew();
+            r.EditorID = msg.EditorId; r.Name = msg.Name; r.Description = msg.Description;
+        }
+
         if (spec.Esl) mod.IsSmallMaster = true;
         Write(mod, outPath);
         int total = spec.MiscItems.Count + spec.Books.Count + spec.Weapons.Count + spec.Npcs.Count
-                    + spec.Quests.Count + dialogueBuilt;
+                    + spec.Quests.Count + dialogueBuilt
+                    + spec.Spells.Count + spec.Potions.Count + spec.Armors.Count
+                    + spec.Factions.Count + spec.Messages.Count;
         Console.WriteLine($"built {outPath} from {Path.GetFileName(specPath)} " +
                           $"(ESL={spec.Esl}, {total} top-level record(s); {dialogueBuilt} dialogue topic(s))");
     }
@@ -368,6 +397,11 @@ internal sealed class ModSpec
     public List<NpcSpec> Npcs { get; set; } = new();
     public List<QuestSpec> Quests { get; set; } = new();
     public List<DialogueSpec> Dialogue { get; set; } = new();
+    public List<SpellSpec> Spells { get; set; } = new();
+    public List<PotionSpec> Potions { get; set; } = new();
+    public List<ArmorSpec> Armors { get; set; } = new();
+    public List<FactionSpec> Factions { get; set; } = new();
+    public List<MessageSpec> Messages { get; set; } = new();
 }
 internal sealed class MiscSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } }
 internal sealed class BookSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Text { get; set; } = ""; }
@@ -384,3 +418,8 @@ internal sealed class DialogueSpec
     public string Prompt { get; set; } = "";
     public List<string> Responses { get; set; } = new();
 }
+internal sealed class SpellSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
+internal sealed class PotionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } }
+internal sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } }
+internal sealed class FactionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
+internal sealed class MessageSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Description { get; set; } = ""; }

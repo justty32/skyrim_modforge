@@ -23,5 +23,21 @@
     { "editorId": "MF_TopicSmith", "questEditorId": "MF_Q1", "speakerNpcEditorId": "MF_Smith",
       "prompt": "Tell me about your work.",
       "responses": [ "I forge whatever the spec asks of me, traveler." ] }
+  ],
+  "spells": [
+    { "editorId": "MF_Spark", "name": "Forged Spark" }
+  ],
+  "potions": [
+    { "editorId": "MF_Tonic", "name": "Smith's Tonic", "value": 25, "weight": 0.5 }
+  ],
+  "armors": [
+    { "editorId": "MF_Apron", "name": "Smith's Apron", "value": 40, "weight": 4.0, "armorRating": 12.5 }
+  ],
+  "factions": [
+    { "editorId": "MF_Guild", "name": "The Forged Guild" }
+  ],
+  "messages": [
+    { "editorId": "MF_Notice", "name": "Guild Notice",
+      "description": "The Forged Guild welcomes you. Report to Borin." }
   ]
 }
