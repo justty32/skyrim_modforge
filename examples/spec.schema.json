@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://modforge/spec.schema.json",
+  "title": "ModForge plugin spec",
+  "description": "Describes the content of one Skyrim plugin. See SPEC.md. Property names are matched case-insensitively by the generator.",
+  "type": "object",
+  "properties": {
+    "pluginName": { "type": "string", "description": "Output filename / ModKey, e.g. MyMod.esp" },
+    "esl": { "type": "boolean", "default": true, "description": "Light-master flag; keep new records <= 4096" },
+    "miscItems": { "type": "array", "items": { "$ref": "#/$defs/named" } },
+    "books": { "type": "array", "items": { "$ref": "#/$defs/book" } },
+    "weapons": { "type": "array", "items": { "$ref": "#/$defs/named" } },
+    "npcs": { "type": "array", "items": { "$ref": "#/$defs/npc" } },
+    "quests": { "type": "array", "items": { "$ref": "#/$defs/quest" } },
+    "dialogue": { "type": "array", "items": { "$ref": "#/$defs/dialogue" } },
+    "spells": { "type": "array", "items": { "$ref": "#/$defs/named" } },
+    "potions": { "type": "array", "items": { "$ref": "#/$defs/valued" } },
+    "armors": { "type": "array", "items": { "$ref": "#/$defs/armor" } },
+    "factions": { "type": "array", "items": { "$ref": "#/$defs/named" } },
+    "messages": { "type": "array", "items": { "$ref": "#/$defs/message" } },
+    "scripts": { "type": "array", "items": { "$ref": "#/$defs/script" } }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "named": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "value": { "type": "integer", "minimum": 0 },
+        "weight": { "type": "number", "minimum": 0 }
+      }
+    },
+    "valued": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "value": { "type": "integer", "minimum": 0 },
+        "weight": { "type": "number", "minimum": 0 }
+      }
+    },
+    "book": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "text": { "type": "string" }
+      }
+    },
+    "armor": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "value": { "type": "integer", "minimum": 0 },
+        "weight": { "type": "number", "minimum": 0 },
+        "armorRating": { "type": "number", "minimum": 0 }
+      }
+    },
+    "message": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "npc": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "factions": { "type": "array", "items": { "type": "string" }, "description": "faction editorIds" }
+      }
+    },
+    "quest": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "objectives": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["index"],
+            "properties": {
+              "index": { "type": "integer", "minimum": 0 },
+              "text": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "dialogue": {
+      "type": "object",
+      "required": ["editorId", "questEditorId", "prompt"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "questEditorId": { "type": "string", "minLength": 1, "description": "must be a quest editorId in this spec" },
+        "speakerNpcEditorId": { "type": "string", "description": "optional; an npc editorId (GetIsID condition)" },
+        "prompt": { "type": "string", "minLength": 1, "description": "the player's topic line" },
+        "responses": { "type": "array", "items": { "type": "string" }, "description": "the NPC's spoken lines" }
+      }
+    },
+    "script": {
+      "type": "object",
+      "required": ["targetEditorId", "scriptName"],
+      "properties": {
+        "targetEditorId": { "type": "string", "minLength": 1, "description": "record to attach to (any editorId)" },
+        "scriptName": { "type": "string", "minLength": 1, "description": "must match the .pex/.psc Scriptname" },
+        "source": { "type": "string", "description": "optional .psc path (rel. to spec); `package` compiles it" },
+        "properties": { "type": "array", "items": { "$ref": "#/$defs/property" } }
+      }
+    },
+    "property": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["int", "float", "bool", "string", "object"] },
+        "int": { "type": "integer" },
+        "float": { "type": "number" },
+        "bool": { "type": "boolean" },
+        "str": { "type": "string" },
+        "objectEditorId": { "type": "string", "description": "required when type=object; an editorId" }
+      },
+      "allOf": [
+        { "if": { "properties": { "type": { "const": "object" } } },
+          "then": { "required": ["objectEditorId"] } }
+      ]
+    }
+  }
+}

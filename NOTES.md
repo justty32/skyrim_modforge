@@ -72,12 +72,21 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
         script→target, object-prop→record, property types). Exit non-zero on any problem
         so an NL→spec front can self-correct. Verified: good sample passes; a broken spec
         surfaces all 4 seeded errors.
-  - [ ] **6b — SPEC.md + spec.schema.json**: full field reference + JSON Schema so any LLM
-        (incl. Claude here) emits valid specs reliably; document the NL→spec→validate→
-        build/package workflow.
+  - [x] **6b — SPEC.md + spec.schema.json** (done 2026-05-24): `SPEC.md` full field
+        reference + NL→spec workflow; `examples/spec.schema.json` (draft 2020-12, enum on
+        property type, object-prop conditional-required); README CLI list refreshed to all
+        7 commands. Both JSON files parse-validated.
   - [ ] **6c — live LLM hook** (BLOCKED on user): a `describe "<NL>"` command calling an
         LLM API to emit a spec. Needs the user's API key / provider preference. Until then
         the NL→spec step is done by Claude in-session (produce spec.json → validate → package).
+
+- [ ] **It.7 — gameplay-complete fields** (next autonomous track, since 6c is blocked):
+      deepen records so generated content actually works in-game, not just structurally:
+      spell/potion magic effects, armor armorType/keywords/biped slots, npc race/class/
+      outfit (an npc needs these to be a functional actor), container contents, leveled
+      lists. Same pattern: add fields to the spec class + Build, verify via build/extract/
+      strings. Also worth: a `dump <esp>` command (list records + key FormLinks + scripts)
+      as a round-trip verification helper.
 
 ## Build / test
 ```

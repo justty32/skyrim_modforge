@@ -21,10 +21,24 @@ Linux (no Creation Kit, no Windows needed for generation).
 ## CLI (src/ModForge.Cli)
 
 ```
-dotnet run --project src/ModForge.Cli -- gen      <out.esp>
-dotnet run --project src/ModForge.Cli -- extract  <in.esp>  <strings.json>
-dotnet run --project src/ModForge.Cli -- apply    <in.esp>  <strings.json>  <out.esp>
+dotnet run --project src/ModForge.Cli -- <command> ...
+
+  build    <spec.json> <out.esp>            spec -> plugin (records, dialogue, FormLinks, VMAD)
+  package  <spec.json> <outModDir>          build + compile scripts -> MO2-ready mod folder
+  validate <spec.json>                       semantic check (ids, refs, types) before building
+  compile  <script.psc> <outDir>            .psc -> .pex via the CK PapyrusCompiler under Wine
+  gen      <out.esp>                          write a demo plugin (for testing)
+  extract  <in.esp>  <strings.json>          pull translatable strings -> JSON
+  apply    <in.esp>  <strings.json> <out.esp> write translated strings back
 ```
+
+The **spec** format (the JSON the generator consumes) is documented in
+[`SPEC.md`](SPEC.md) with a JSON Schema at [`examples/spec.schema.json`](examples/spec.schema.json);
+[`examples/sample_spec.json`](examples/sample_spec.json) is a complete working example.
+
+Papyrus prereq (one-time): extract the CK's `Data/Scripts.zip` `Source/Scripts/*` to
+`~/.cache/modforge/papyrus/` (or set `MODFORGE_PAPYRUS_BASE`); set
+`MODFORGE_PAPYRUS_COMPILER` if the CK isn't at the default Steam path.
 
 **Translation workflow:** `extract` pulls all translatable strings into a reviewable
 JSON (each entry has `source` + an empty `target`). An AI (or a human) fills in
