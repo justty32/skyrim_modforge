@@ -254,17 +254,80 @@ internal static class Program
             var r = mod.Weapons.AddNew();
             r.EditorID = w.EditorId; r.Name = w.Name;
         }
+        // NPCs + quests are kept in editorId->record maps so dialogue can reference them.
+        var npcsByEd = new Dictionary<string, Npc>();
         foreach (var n in spec.Npcs)
         {
             var r = mod.Npcs.AddNew();
             r.EditorID = n.EditorId; r.Name = n.Name;
+            if (!string.IsNullOrEmpty(n.EditorId)) npcsByEd[n.EditorId] = r;
+        }
+
+        var questsByEd = new Dictionary<string, Quest>();
+        foreach (var q in spec.Quests)
+        {
+            var r = mod.Quests.AddNew();
+            r.EditorID = q.EditorId; r.Name = q.Name;
+            foreach (var o in q.Objectives)
+                r.Objectives.Add(new QuestObjective { Index = o.Index, DisplayText = o.Text });
+            if (!string.IsNullOrEmpty(q.EditorId)) questsByEd[q.EditorId] = r;
+        }
+
+        // Native dialogue: Quest -> DialogBranch -> DialogTopic -> DialogResponses(INFO).
+        // (Writes valid records; making the line actually surface in-game still needs
+        // quest-flag tuning + Proton testing — see NOTES.md / the parent spike.)
+        int dialogueBuilt = 0;
+        foreach (var d in spec.Dialogue)
+        {
+            if (string.IsNullOrEmpty(d.QuestEditorId) || !questsByEd.TryGetValue(d.QuestEditorId, out var quest))
+            {
+                Console.WriteLine($"  ! dialogue '{d.EditorId}' skipped: quest '{d.QuestEditorId}' not found in spec");
+                continue;
+            }
+
+            var branch = mod.DialogBranches.AddNew();
+            branch.EditorID = d.EditorId + "_Br";
+            branch.Quest.SetTo(quest);
+            branch.Category = DialogBranch.CategoryType.Player;
+
+            var topic = mod.DialogTopics.AddNew();
+            topic.EditorID = d.EditorId;
+            topic.Quest.SetTo(quest);
+            topic.Branch.SetTo(branch);
+            topic.Category = DialogTopic.CategoryEnum.Topic;
+            topic.Subtype = DialogTopic.SubtypeEnum.Custom;
+            topic.SubtypeName = RecordType.Null;
+            topic.Name = d.Prompt;
+            topic.Priority = 50f;
+            branch.StartingTopic.SetTo(topic);
+
+            var info = new DialogResponses(mod) { Prompt = "Greeting" };
+            byte rn = 1;
+            foreach (var line in d.Responses)
+                info.Responses.Add(new DialogResponse { Text = line, ResponseNumber = rn++, Emotion = Emotion.Neutral });
+
+            if (!string.IsNullOrEmpty(d.SpeakerNpcEditorId) &&
+                npcsByEd.TryGetValue(d.SpeakerNpcEditorId, out var speaker))
+            {
+                var cond = new ConditionFloat
+                {
+                    CompareOperator = CompareOperator.EqualTo,
+                    ComparisonValue = 1f,
+                    Data = new GetIsIDConditionData(),
+                };
+                ((GetIsIDConditionData)cond.Data).Object.Link.SetTo(speaker);
+                info.Conditions.Add(cond);
+            }
+            topic.Responses.Add(info);
+            dialogueBuilt++;
         }
 
         if (spec.Esl) mod.IsSmallMaster = true;
         Write(mod, outPath);
-        int total = spec.MiscItems.Count + spec.Books.Count + spec.Weapons.Count + spec.Npcs.Count;
+        int total = spec.MiscItems.Count + spec.Books.Count + spec.Weapons.Count + spec.Npcs.Count
+                    + spec.Quests.Count + dialogueBuilt;
         Console.WriteLine($"built {outPath} from {Path.GetFileName(specPath)} " +
-                          $"(ESL={spec.Esl}, {total} record(s) from spec)");
+                          $"(ESL={spec.Esl}, {total} top-level record(s); {dialogueBuilt} dialogue topic(s))");
     }
 }
 
@@ -303,8 +366,21 @@ internal sealed class ModSpec
     public List<BookSpec> Books { get; set; } = new();
     public List<WeaponSpec> Weapons { get; set; } = new();
     public List<NpcSpec> Npcs { get; set; } = new();
+    public List<QuestSpec> Quests { get; set; } = new();
+    public List<DialogueSpec> Dialogue { get; set; } = new();
 }
 internal sealed class MiscSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } }
 internal sealed class BookSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Text { get; set; } = ""; }
 internal sealed class WeaponSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
 internal sealed class NpcSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
+internal sealed class QuestSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public List<ObjectiveSpec> Objectives { get; set; } = new(); }
+internal sealed class ObjectiveSpec { public ushort Index { get; set; } public string Text { get; set; } = ""; }
+// A dialogue topic: shown under QuestEditorId's branch; targets SpeakerNpcEditorId (GetIsID).
+internal sealed class DialogueSpec
+{
+    public string EditorId { get; set; } = "";
+    public string QuestEditorId { get; set; } = "";
+    public string SpeakerNpcEditorId { get; set; } = "";
+    public string Prompt { get; set; } = "";
+    public List<string> Responses { get; set; } = new();
+}

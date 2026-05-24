@@ -21,9 +21,11 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
 ### Iterations
 - [x] **It.1 — basic records**: spec for MiscItem / Book / Weapon / Npc; `build` command;
       sample spec; round-trip test (build → extract verifies names/text).
-- [ ] **It.2 — quest + dialogue in spec**: express Quest (+objectives) and a DialogTopic/
-      response graph in the spec; generate + verify via extract. (Linking: branch→topic→
-      info, GetIsID target — see `gen` for the working Mutagen calls.)
+- [x] **It.2 — quest + dialogue in spec** (done 2026-05-24): spec now has `quests`
+      (+objectives) and `dialogue` (topic prompt + responses, referencing quest &
+      speaker NPC by editorId; GetIsID condition). Verified: sample_spec → 7 records +
+      1 dialogue topic; extract shows quest name/objective + prompt + response line.
+      (Gotcha: `DialogResponse.ResponseNumber` is `byte`.)
 - [ ] **It.3 — more record types**: Spell/MagicEffect, Ingestible(potion), Armor, Container,
       Activator, Message, Faction. Add each to the spec model + `Build`.
 - [ ] **It.4 — refs & FormLinks across records**: let spec entries reference each other by

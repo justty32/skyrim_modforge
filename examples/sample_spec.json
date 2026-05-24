@@ -14,5 +14,14 @@
   ],
   "npcs": [
     { "editorId": "MF_Smith", "name": "Borin the Smith" }
+  ],
+  "quests": [
+    { "editorId": "MF_Q1", "name": "A Forged Errand",
+      "objectives": [ { "index": 10, "text": "Speak with Borin the Smith" } ] }
+  ],
+  "dialogue": [
+    { "editorId": "MF_TopicSmith", "questEditorId": "MF_Q1", "speakerNpcEditorId": "MF_Smith",
+      "prompt": "Tell me about your work.",
+      "responses": [ "I forge whatever the spec asks of me, traveler." ] }
   ]
 }
