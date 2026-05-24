@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -32,6 +33,7 @@ internal static class Program
             {
                 case "gen" when args.Length == 2:     Gen(args[1]); return 0;
                 case "build" when args.Length == 3:   Build(args[1], args[2]); return 0;
+                case "compile" when args.Length == 3: return Compile(args[1], args[2]);
                 case "extract" when args.Length == 3: Extract(args[1], args[2]); return 0;
                 case "apply" when args.Length == 4:   Apply(args[1], args[2], args[3]); return 0;
                 default: Usage(); return 1;
@@ -48,6 +50,7 @@ internal static class Program
         "ModForge.Cli\n" +
         "  gen     <out.esp>\n" +
         "  build   <spec.json> <out.esp>\n" +
+        "  compile <script.psc> <outDir>\n" +
         "  extract <in.esp> <strings.json>\n" +
         "  apply   <in.esp> <strings.json> <out.esp>");
 
@@ -383,6 +386,69 @@ internal static class Program
         Console.WriteLine($"built {outPath} from {Path.GetFileName(specPath)} " +
                           $"(ESL={spec.Esl}, {total} top-level record(s); {dialogueBuilt} dialogue topic(s); " +
                           $"{linksWired} cross-ref link(s))");
+    }
+
+    // -------------------------------------------------------------------------------
+    //  compile — drive the Creation Kit's PapyrusCompiler.exe under Wine: .psc -> .pex.
+    //  Base script sources + the flags file come from the CK's Scripts.zip (extract
+    //  once to MODFORGE_PAPYRUS_BASE; default ~/.cache/modforge/papyrus/Source/Scripts).
+    //  GOTCHA: the compiler returns exit code 0 even on failure -> scrape stdout
+    //  ("Failed on") and confirm the .pex was actually produced.
+    // -------------------------------------------------------------------------------
+    private static readonly string PapyrusCompilerExe =
+        Environment.GetEnvironmentVariable("MODFORGE_PAPYRUS_COMPILER")
+        ?? "/home/lorkhan/.local/share/Steam/steamapps/common/Skyrim Special Edition 1946180/Papyrus Compiler/PapyrusCompiler.exe";
+    private static readonly string PapyrusBaseScripts =
+        Environment.GetEnvironmentVariable("MODFORGE_PAPYRUS_BASE")
+        ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                        ".cache", "modforge", "papyrus", "Source", "Scripts");
+
+    private static int Compile(string scriptPath, string outDir)
+    {
+        var flags = Path.Combine(PapyrusBaseScripts, "TESV_Papyrus_Flags.flg");
+        if (!File.Exists(PapyrusCompilerExe))
+        { Console.Error.WriteLine($"ERROR: PapyrusCompiler not found: {PapyrusCompilerExe} (set MODFORGE_PAPYRUS_COMPILER)"); return 2; }
+        if (!File.Exists(flags))
+        { Console.Error.WriteLine($"ERROR: flags file not found: {flags} (set MODFORGE_PAPYRUS_BASE to the extracted Source/Scripts)"); return 2; }
+        if (!File.Exists(scriptPath))
+        { Console.Error.WriteLine($"ERROR: script not found: {scriptPath}"); return 2; }
+
+        var dir = Path.GetDirectoryName(scriptPath);
+        var scriptDir = Path.GetFullPath(string.IsNullOrEmpty(dir) ? "." : dir);
+        var scriptName = Path.GetFileNameWithoutExtension(scriptPath);
+        var outFull = Path.GetFullPath(outDir);
+        Directory.CreateDirectory(outFull);
+
+        var psi = new ProcessStartInfo
+        {
+            FileName = "wine",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+        };
+        psi.ArgumentList.Add(PapyrusCompilerExe);
+        psi.ArgumentList.Add(scriptName);
+        psi.ArgumentList.Add($"-f={flags}");
+        psi.ArgumentList.Add($"-i={PapyrusBaseScripts};{scriptDir}");
+        psi.ArgumentList.Add($"-o={outFull}");
+
+        using var proc = Process.Start(psi) ?? throw new InvalidOperationException("could not start wine");
+        var stdout = proc.StandardOutput.ReadToEnd();
+        var stderr = proc.StandardError.ReadToEnd();
+        proc.WaitForExit();
+
+        var pex = Path.Combine(outFull, scriptName + ".pex");
+        bool pexOk = File.Exists(pex);
+        bool failed = !pexOk || stdout.Contains("Failed on") || stdout.Contains("compilation failed");
+        if (failed)
+        {
+            Console.Error.WriteLine($"compile FAILED for {scriptName}");
+            var msg = stdout.Trim();
+            if (msg.Length > 0) Console.Error.WriteLine(msg);
+            return 1;
+        }
+        Console.WriteLine($"compiled {scriptName} -> {pex} ({new FileInfo(pex).Length} bytes)");
+        return 0;
     }
 }
 

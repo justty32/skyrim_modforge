@@ -41,9 +41,21 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
       records + key FormLinks — would let extract-style verify links. Good next helper.)
       More refs are the same pattern: container contents, leveled lists, npc CrimeFaction,
       keywords, npc→class/race/outfit.
-- [ ] **It.5 — Papyrus hook**: spec entry can name a `.psc` to compile (wine PapyrusCompiler)
-      + attach via VMAD ScriptEntry/properties. (Compiler at the CK install; parse stdout
-      for success, NOT exit code.)
+- [~] **It.5 — Papyrus hook** (in progress):
+  - [x] **5a — compile command** (done 2026-05-24): `compile <script.psc> <outDir>` drives
+        the CK's `PapyrusCompiler.exe` under `wine` from C# (Process), parses stdout
+        (`Failed on`) + checks the `.pex` exists (exit code is unreliable). Verified:
+        examples/scripts/MFDemoQuestScript.psc → valid .pex (magic fa57c0de). Paths via
+        env `MODFORGE_PAPYRUS_COMPILER` / `MODFORGE_PAPYRUS_BASE`, defaults to the local CK
+        + `~/.cache/modforge/papyrus/Source/Scripts`.
+        **PREREQ (one-time, already done on this box):** extracted base sources +
+        TESV_Papyrus_Flags.flg from `<CK>/Data/Scripts.zip` (`Source/Scripts/*`, 14301 .psc)
+        to `~/.cache/modforge/papyrus/`. (For SKSE functions, add the SKSE .psc to that dir.)
+  - [ ] **5b — VMAD attach**: a spec form (e.g. Quest) names a script (+typed properties);
+        Build adds `VirtualMachineAdapter` + `ScriptEntry{Name=...}` + `ScriptObjectProperty`
+        etc., matching the compiled .pex's Scriptname. (See parent memory for the API.)
+  - [ ] **5c — packaging**: place compiled `.pex` under the output mod's `Scripts/` (and
+        sources under `Scripts/Source/`); a `build` run could compile+attach+package in one.
 - [ ] **It.6 — NL→spec layer**: prompt → structured spec (the "AI agent" front).
 
 ## Build / test
