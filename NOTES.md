@@ -130,7 +130,7 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
         - Verified: sample_spec round-trips via dump (Blade dmg12 spd1 reach1; Apron Clothing/Body;
           Spark→AlchDamageHealth mag10 dur5; Tonic→AlchRestoreHealth mag25). Negative test: 5/5
           bad fields caught by validate. NOT in-game tested (needs Proton). API verified via ilspy.
-  - [~] **7d — world placement** (the real "appears in-game" blocker):
+  - [x] **7d — world placement** (the real "appears in-game" blocker — all 3 phases done):
     - [x] **7d phase 1 — new interior cells + placement** (done 2026-05-24): `cells` (new
           interior Cell, IsInteriorCell, reachable via `coc <editorId>`) + `placements` (a
           base ref → `PlacedNpc` (ACHR) if the base is an NPC else `PlacedObject` (REFR), with
@@ -166,8 +166,29 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
           Only **interior** cells (checks `Cell.Flag.IsInteriorCell`); exterior warns + skips.
           Verified: sample places MF_Chest into Bannered Mare → dump shows `[01605E:Skyrim.esm] Cell`
           (an override) temporary=1 + our PlacedObject, master=[Skyrim.esm], re-parses via CreateFromBinary.
-          NOT in-game tested. **Remaining: 7d phase 3 = exterior/worldspace vanilla cells** (need the
-          worldspace block + grid-cell structure; harder — likely needs the context/worldspace parent).
+          NOT in-game tested.
+    - [x] **7d phase 3 — placement into the EXTERIOR / open world** (done 2026-05-25): `placements[]`
+          gained `worldspace` (a `<master>:0xFORMID` ref, e.g. Tamriel = `Skyrim.esm:0x00003C`). When set,
+          `position` is the WORLD position; the target exterior cell = `floor(x/4096), floor(y/4096)`. We
+          find the existing master cell at that grid and OVERRIDE it (same Flags+Grid-only manual override
+          as p2 — no localized deep-copy), hosted on a minimal `Worldspace` override that re-states only
+          our block tree (vanilla cells stay in the master). Mutagen nesting:
+          `Worldspace.SubCells` (`ExtendedList<WorldspaceBlock>`, GroupType=ExteriorCellBlock=4,
+          BlockNumberX/Y) → `WorldspaceBlock.Items` (`WorldspaceSubBlock`, ExteriorCellSubBlock=5) →
+          `WorldspaceSubBlock.Items` (`Cell`); cell grid = `Cell.Grid.Point` (`Noggog.P2Int`).
+          **THE FOOTGUN (verified, not guessed):** block = floor(grid/32), sub-block = floor(grid/8), and
+          this must be FLOOR division (toward -inf), NOT C#'s truncating `/`. PROVED against real Tamriel
+          via a throwaway `_probe`: cell (5,5)→block(0,0)/sub(0,0); cell (7,-41)→block(0,-2)/sub(0,-6)
+          (C# `/` would give (0,-1)/(0,-5) — wrong group). Helpers `FloorDiv`/`PosToGrid`/`CellSize=4096`.
+          If a grid has no master cell, a NEW exterior cell `MF_Ext_<x>_<y>` is made at that grid (warns;
+          structural-only). `worldspace` wins over `cell` if both set. validate: worldspace must be a
+          well-formed external ref; cell waived when worldspace is set. dump: prints worldspace block/cell
+          counts + each cell's `grid=(x,y)`.
+          Verified: sample places MF_Coin into Tamriel @ (22528,22528) → overrides master cell
+          `[009123:Skyrim.esm]` grid=(5,5) temporary=1, re-parses via CreateFromBinary. Negative-grid test
+          @ (30720,-165888) → master cell `[00EEF3:Skyrim.esm]` grid=(7,-41) (FloorDiv path). New-cell test
+          @ grid (200,200) → `MF_Ext_200_200` warn. validate negative: 4/4 caught. Mutagen API via ilspy.
+          NOT in-game tested (needs Proton: object actually present at the world coords + cell merges clean).
   - [x] **7e — aggregates + spell cast-type** (done 2026-05-24): self-contained, low-risk.
         - **LeveledItem (LVLI) / LeveledNpc (LVLN):** `leveledItems`/`leveledNpcs` with
           `chanceNone` (0–100 → `Noggog.Percent`), `flags` (LVLI/LVLN flag names OR'd via the
@@ -183,7 +204,9 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
         - Verified: sample (MF_LootList, MF_GuardList, MF_Chest, MF_Spark cast-type) round-trips
           via dump (13 cross-ref links); negative test 6/6 caught. Mutagen API verified via ilspy.
           NOT in-game tested.
-        Remaining gameplay gaps are minor/long-tail; the big one left is It.7d phase 2.
+        Remaining gameplay gaps are minor/long-tail (extra record types/fields — same spec-class+loop
+        pattern). World placement (interior + vanilla interior + exterior) is now complete (7d p1–p3).
+        Biggest unblocked-but-untouched items: in-game testing (needs Proton) + It.6c (LLM API, needs key).
 
 ## Build / test
 ```

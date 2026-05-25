@@ -64,7 +64,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `factions` | `editorId`, `name` |
 | `messages` | `editorId`, `name`, `description` (body text) |
 | `cells` | `editorId`, `name` (a new interior cell) |
-| `placements` | `base` (*ref*), `cell` (in-spec cell editorId **or** vanilla interior cell `<master>:0xFORMID`), `kind` (`npc`\|`object`), `position` (`{x,y,z}`), `rotation` (`{x,y,z}` degrees), `persistent` (bool) |
+| `placements` | `base` (*ref*); **interior:** `cell` (in-spec editorId **or** vanilla interior cell `<master>:0xFORMID`) **or exterior:** `worldspace` (`<master>:0xFORMID`, position is world coords); `kind` (`npc`\|`object`), `position` (`{x,y,z}`), `rotation` (`{x,y,z}` degrees), `persistent` (bool) |
 | `leveledItems` | `editorId`, `chanceNone` (0–100), `flags` (array), `entries` (array of `{ reference (*ref*), level (int), count (int) }`) |
 | `leveledNpcs` | same shape as `leveledItems`, but `reference` is an npc/leveled-npc |
 | `containers` | `editorId`, `name`, `weight`, `items` (array of `{ item (*ref*), count (int) }`) |
@@ -133,20 +133,27 @@ spec; `speakerNpcEditorId`, if set, must name an npc. `prompt` is the player's l
   { "base": "MF_Smith", "cell": "MF_TestRoom",                   // an in-spec NPC ...
     "position": { "x": 0, "y": 0, "z": 0 },
     "rotation": { "x": 0, "y": 0, "z": 0 } },                    //   rotation in degrees
-  { "base": "MF_Chest", "cell": "Skyrim.esm:0x01605E",          // ... into a VANILLA cell
-    "position": { "x": 100, "y": 0, "z": 0 } }                   //   (Skyrim.esm WhiterunBanneredMare)
+  { "base": "MF_Chest", "cell": "Skyrim.esm:0x01605E",          // ... into a VANILLA INTERIOR cell
+    "position": { "x": 100, "y": 0, "z": 0 } },                  //   (Skyrim.esm WhiterunBanneredMare)
+  { "base": "MF_Coin", "worldspace": "Skyrim.esm:0x00003C",     // ... into the OPEN WORLD (Tamriel);
+    "position": { "x": 22528, "y": 22528, "z": 200 } }           //   position is WORLD coords
 ]
 ```
-- `cell` is **either** a new in-spec interior cell’s `editorId`, **or** an external/vanilla
-  interior cell `"<master>:0xFORMID"` (find it with `find <Skyrim.esm> <name> Cell`). A new
-  cell has no lighting template, so it’s dark — fine for testing the placed forms are there.
-- A `placement` puts a `base` form into the `cell`. `base` is a *ref* (in-spec or external);
-  NPCs become `PlacedNpc`, anything else `PlacedObject` (`kind` overrides the guess).
-  `position` is world units, `rotation` is **degrees**. `persistent: true` puts it in the
+- A `placement` targets **either** an interior `cell` **or** an exterior `worldspace` (set one):
+  - **interior** — `cell` is a new in-spec interior cell’s `editorId`, **or** an external/vanilla
+    interior cell `"<master>:0xFORMID"` (find with `find <Skyrim.esm> <name> Cell`). A new cell
+    has no lighting template, so it’s dark — fine for testing the placed forms are there.
+    `position` is local to the cell.
+  - **exterior** — `worldspace` is a worldspace ref `"<master>:0xFORMID"` (Tamriel =
+    `Skyrim.esm:0x00003C`; find with `find <Skyrim.esm> <name> Worldspace`). `position` is the
+    **world** position; the exterior cell at `floor(x/4096), floor(y/4096)` is found in the master
+    and overridden to add your ref. If that grid has no master cell, a new exterior cell is made
+    there (structural only — not in-game verified). `worldspace` wins if both it and `cell` are set.
+- `base` is a *ref* (in-spec or external); NPCs become `PlacedNpc`, anything else `PlacedObject`
+  (`kind` overrides the guess). `rotation` is **degrees**. `persistent: true` puts it in the
   cell’s persistent list (needed if a quest/script references it).
-- **Vanilla-cell placement** overrides the cell to *add* your reference (vanilla contents are
-  untouched — they come from the master). Only **interior** vanilla cells are supported
-  (Bannered Mare, shops, homes, dungeons…); exterior/worldspace cells are not yet. Needs the
+- **Vanilla placement** (interior cell or exterior worldspace) overrides the cell/worldspace to
+  *add* your reference (vanilla contents are untouched — they come from the master). Needs the
   game’s `Data` folder — set `MODFORGE_SKYRIM_DATA` if it isn’t at the default Steam path.
 
 ### leveled lists & containers
@@ -184,9 +191,9 @@ A live `describe` command (LLM API) is planned (It.6c) — until then the LLM st
 interactively.
 
 ## Not yet covered (extend in `Program.cs` `Build` + a spec class)
-Mainly **placement into an exterior/worldspace vanilla cell** (open-world spots — needs the
-worldspace block structure; interior vanilla cells and new interior cells already work). Refs
-(in-spec or `<master>:0xFORMID`) and the `find` command are the building blocks for the
-external ones. Other record types/fields are the same pattern — add a spec class + a loop.
+World placement now covers new interior cells, vanilla interior cells, **and exterior/worldspace
+cells** (via `worldspace` + world position). Refs (in-spec or `<master>:0xFORMID`) and the `find`
+command are the building blocks for the external ones. Remaining gaps are long-tail record
+types/fields — the same pattern: add a spec class + a loop in `Build`.
 
 See `examples/sample_spec.json` for a complete working example.

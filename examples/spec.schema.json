@@ -209,12 +209,18 @@
     },
     "placement": {
       "type": "object",
-      "required": ["base", "cell"],
+      "required": ["base"],
+      "description": "set EITHER `cell` (interior) OR `worldspace` (exterior); worldspace wins if both are set",
+      "oneOf": [
+        { "required": ["cell"] },
+        { "required": ["worldspace"] }
+      ],
       "properties": {
         "base": { "$ref": "#/$defs/ref", "description": "the form to place: an in-spec npc/object editorId or external <master>:0xFORMID" },
-        "cell": { "type": "string", "minLength": 1, "description": "an in-spec cell editorId OR a vanilla INTERIOR cell '<master>:0xFORMID' (find with `find <Skyrim.esm> <name> Cell`)" },
+        "cell": { "type": "string", "minLength": 1, "description": "INTERIOR target: an in-spec cell editorId OR a vanilla INTERIOR cell '<master>:0xFORMID' (find with `find <Skyrim.esm> <name> Cell`)" },
+        "worldspace": { "type": "string", "minLength": 1, "description": "EXTERIOR target: a worldspace '<master>:0xFORMID' (Tamriel = Skyrim.esm:0x00003C; find with `find <Skyrim.esm> <name> Worldspace`). `position` is then WORLD coords; the cell at floor(x/4096),floor(y/4096) is overridden" },
         "kind": { "enum": ["npc", "object"], "description": "inferred for in-spec bases; defaults to object for external" },
-        "position": { "$ref": "#/$defs/vec3" },
+        "position": { "$ref": "#/$defs/vec3", "description": "cell-local for interior; WORLD coords for exterior" },
         "rotation": { "$ref": "#/$defs/vec3", "description": "degrees" },
         "persistent": { "type": "boolean", "description": "place in the cell's persistent (vs temporary) list" }
       }

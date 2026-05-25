@@ -48,7 +48,8 @@ $R find "$SKYRIM_ESM" nordrace Race        # -> Skyrim.esm:0x013746  Race  NordR
 $R find "$SKYRIM_ESM" blacksmith Class     # -> Skyrim.esm:0x013257  Class VendorBlacksmith
 $R find "$SKYRIM_ESM" armorclothing Keyword
 $R find "$SKYRIM_ESM" restorehealth MagicEffect  # -> Skyrim.esm:0x03EB15  AlchRestoreHealth (for a potion `effects`)
-$R find "$SKYRIM_ESM" banneredmare Cell    # -> Skyrim.esm:0x01605E  WhiterunBanneredMare (for a `placement` cell)
+$R find "$SKYRIM_ESM" banneredmare Cell    # -> Skyrim.esm:0x01605E  WhiterunBanneredMare (interior `placement` cell)
+$R find "$SKYRIM_ESM" tamriel Worldspace   # -> Skyrim.esm:0x00003C  Tamriel (exterior `placement` worldspace)
 ```
 Always run `find` to get the real FormID — **never guess one**. Search is by EditorID
 (descriptive, e.g. `NordRace`); localized display names aren't resolved headless. A standing
@@ -110,12 +111,16 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
 
 - **NPCs can now be functional actors** — set `race` + `class` (+ `outfit`) via vanilla refs
   and the NPC behaves like a real actor.
-- **Placement works for new AND vanilla interior cells:** `cells` + `placements` put an
-  NPC/object into a new in-spec interior cell (reach it with `coc <editorId>`) **or** into a
-  **vanilla interior cell** by ref (`"Skyrim.esm:0xFORMID"`, e.g. `0x01605E` = Bannered Mare —
-  `find <Skyrim.esm> <name> Cell`). Vanilla placement overrides the cell to *add* your ref
-  (vanilla contents untouched). **Exterior/worldspace** cells aren't supported yet. Vanilla
-  placement reads the game `Data` folder — set `MODFORGE_SKYRIM_DATA` if not at the Steam default.
+- **Placement works for interior cells AND the open world (exterior):** `placements` put an
+  NPC/object into (a) a new in-spec interior cell (`cell` = its editorId; reach with
+  `coc <editorId>`), (b) a **vanilla interior cell** (`cell` = `"Skyrim.esm:0xFORMID"`, e.g.
+  `0x01605E` = Bannered Mare — `find <Skyrim.esm> <name> Cell`), or (c) the **exterior/open
+  world** (`worldspace` = `"Skyrim.esm:0x00003C"` = Tamriel — `find <Skyrim.esm> <name>
+  Worldspace`; `position` is then WORLD coords, and the exterior cell at floor(x/4096),
+  floor(y/4096) is found + overridden). All vanilla placement overrides the cell/worldspace to
+  *add* your ref (vanilla contents untouched) and reads the game `Data` folder — set
+  `MODFORGE_SKYRIM_DATA` if not at the Steam default. (An ungenerated exterior grid gets a brand-
+  new cell — structural only, not in-game verified; placing near existing locations is the safe path.)
 - **Items/spells now carry gameplay stats:** weapons take `damage`/`speed`/`reach`, armor
   takes `armorType` + biped `slots`, **spells/potions take `effects`** (a MagicEffect *ref* +
   magnitude/area/duration), and spells take `spellType`/`castType`/`targetType`/`baseCost`. A
@@ -123,9 +128,8 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
 - **Leveled lists + containers:** `leveledItems`/`leveledNpcs` (weighted level-gated entries,
   each a *ref*) and `containers` (item *refs* + counts) — loot tables, merchant chests, etc.
 - **External/vanilla forms CAN be referenced** (race/class/outfit/keywords/factions/
-  magicEffect/placement base+cell/leveled+container entries, via `"<master>:0xFORMID"`). The
-  main thing still NOT covered: **placement into an exterior/worldspace vanilla cell** (interior
-  vanilla cells and new in-spec cells both work).
+  magicEffect/placement base+cell+worldspace/leveled+container entries, via `"<master>:0xFORMID"`).
+  World placement now covers interior cells, vanilla interior cells, AND exterior/worldspace cells.
 - **Dialogue** records are valid, but a line actually appearing in conversation can need
   quest-flag/branch tuning, and there is **no voice** (subtitle only).
 - You cannot confirm anything works **in-game** from here — that needs a Proton/Skyrim launch.

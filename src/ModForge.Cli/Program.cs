@@ -567,11 +567,106 @@ internal static class Program
             return ov;
         }
 
+        // --- Exterior / worldspace placement (It.7d phase 3) ---------------------------------
+        // An exterior cell lives inside a WRLD, nested WorldspaceBlock(type 4, /32 grid) ->
+        // WorldspaceSubBlock(type 5, /8 grid) -> Cell(grid x,y). To add a ref to the world we
+        // OVERRIDE the existing master cell at the target grid (same careful, Flags+Grid-only
+        // override as the interior vanilla case — no localized deep-copy). We host it on a minimal
+        // Worldspace override that re-states only OUR block tree (vanilla cells stay in the master).
+        var worldspaceOverrides = new Dictionary<FormKey, Worldspace>();
+        var exteriorCells = new Dictionary<(FormKey Ws, int X, int Y), Cell>();
+        int worldspaceCount = 0, exteriorNewCells = 0;
+
+        Worldspace WorldspaceOverride(FormKey wsFk)
+        {
+            if (worldspaceOverrides.TryGetValue(wsFk, out var ex)) return ex;
+            var ws = new Worldspace(wsFk, SkyrimRelease.SkyrimSE); // minimal override: just hosts our block tree
+            mod.Worldspaces.Add(ws);
+            worldspaceOverrides[wsFk] = ws;
+            worldspaceCount++;
+            return ws;
+        }
+
+        // The existing master exterior cell at grid (cx,cy), or null if that grid is ungenerated.
+        ICellGetter? FindMasterExteriorCell(string masterName, FormKey wsFk, int cx, int cy)
+        {
+            var cache = MasterCache(masterName);
+            if (cache is null) return null;
+            if (!cache.TryResolve<IWorldspaceGetter>(wsFk, out var ws))
+            { Console.WriteLine($"  ! worldspace {wsFk} not found in {masterName}"); return null; }
+            short bx = (short)FloorDiv(cx, 32), by = (short)FloorDiv(cy, 32);
+            short sx = (short)FloorDiv(cx, 8),  sy = (short)FloorDiv(cy, 8);
+            foreach (var block in ws.SubCells)
+            {
+                if (block.BlockNumberX != bx || block.BlockNumberY != by) continue;
+                foreach (var sub in block.Items)
+                {
+                    if (sub.BlockNumberX != sx || sub.BlockNumberY != sy) continue;
+                    foreach (var c in sub.Items)
+                        if (c.Grid?.Point is { } p && p.X == cx && p.Y == cy) return c;
+                }
+            }
+            return null;
+        }
+
+        // Get-or-add the exterior cell at grid (cx,cy) inside the worldspace override's block tree.
+        Cell? ExteriorCell(string worldspaceRef, int cx, int cy)
+        {
+            if (!TryExternalRef(worldspaceRef, out var wsFk))
+            { Console.WriteLine($"  ! placement worldspace '{worldspaceRef}' must be an external <master>:0xFORMID ref"); return null; }
+            var key = (wsFk, cx, cy);
+            if (exteriorCells.TryGetValue(key, out var cached)) return cached;
+
+            var masterName = worldspaceRef[..worldspaceRef.IndexOf(':')].Trim();
+            var existing = FindMasterExteriorCell(masterName, wsFk, cx, cy);
+
+            var ws = WorldspaceOverride(wsFk);
+            short bx = (short)FloorDiv(cx, 32), by = (short)FloorDiv(cy, 32);
+            short sx = (short)FloorDiv(cx, 8),  sy = (short)FloorDiv(cy, 8);
+            var block = ws.SubCells.FirstOrDefault(b => b.BlockNumberX == bx && b.BlockNumberY == by);
+            if (block is null)
+            { block = new WorldspaceBlock { BlockNumberX = bx, BlockNumberY = by, GroupType = GroupTypeEnum.ExteriorCellBlock }; ws.SubCells.Add(block); }
+            var sub = block.Items.FirstOrDefault(s => s.BlockNumberX == sx && s.BlockNumberY == sy);
+            if (sub is null)
+            { sub = new WorldspaceSubBlock { BlockNumberX = sx, BlockNumberY = sy, GroupType = GroupTypeEnum.ExteriorCellSubBlock }; block.Items.Add(sub); }
+
+            Cell cell;
+            if (existing is not null)
+            {
+                // Override the master cell (same FormKey). Copy ONLY inline data: Flags + Grid (the
+                // grid X,Y is how the engine places the cell). Name/lighting/etc. stay null ->
+                // inherited from the master on write (no localized deep-copy / BSA read). Vanilla
+                // refs come from the master; we only ADD ours.
+                cell = new Cell(existing.FormKey, SkyrimRelease.SkyrimSE) { Flags = existing.Flags };
+                if (existing.Grid is { } eg)
+                    cell.Grid = new CellGrid { Point = new Noggog.P2Int(eg.Point.X, eg.Point.Y), Flags = eg.Flags };
+            }
+            else
+            {
+                // Ungenerated grid (no master cell). Make a NEW exterior cell at the grid: structurally
+                // valid, but a land-less exterior cell created this way is NOT in-game verified.
+                Console.WriteLine($"  ! exterior grid ({cx},{cy}) has no master cell in {masterName} — creating a NEW cell (structural only, not in-game verified)");
+                cell = new Cell(mod, $"MF_Ext_{(cx < 0 ? "m" : "")}{Math.Abs(cx)}_{(cy < 0 ? "m" : "")}{Math.Abs(cy)}")
+                { Grid = new CellGrid { Point = new Noggog.P2Int(cx, cy) } };
+                exteriorNewCells++;
+            }
+            sub.Items.Add(cell);
+            exteriorCells[key] = cell;
+            return cell;
+        }
+
         int placed = 0, vanillaCells = 0;
         foreach (var pl in spec.Placements)
         {
             ICell? cell;
-            if (LooksExternalRef(pl.Cell))
+            if (!string.IsNullOrWhiteSpace(pl.Worldspace))
+            {
+                // Exterior: the world position picks the grid cell in the worldspace.
+                int cx = PosToGrid(pl.Position.X), cy = PosToGrid(pl.Position.Y);
+                cell = ExteriorCell(pl.Worldspace, cx, cy);
+                if (cell is null) { Console.WriteLine($"  ! placement: worldspace '{pl.Worldspace}' unresolved — skipped"); continue; }
+            }
+            else if (LooksExternalRef(pl.Cell))
             {
                 int before = vanillaCellOverrides.Count;
                 cell = VanillaCellOverride(pl.Cell);
@@ -697,7 +792,8 @@ internal static class Program
                           $"(ESL={spec.Esl}, {total} top-level record(s); {dialogueBuilt} dialogue topic(s); " +
                           $"{linksWired} cross-ref link(s), {extLinks} to external master(s); " +
                           $"{scriptsAttached} script(s) attached; " +
-                          $"{placed} placement(s) in {spec.Cells.Count} new + {vanillaCells} vanilla cell(s))");
+                          $"{placed} placement(s) in {spec.Cells.Count} new + {vanillaCells} vanilla interior cell(s) + " +
+                          $"{worldspaceCount} worldspace(s) [{exteriorNewCells} new exterior cell(s)])");
     }
 
     private static ScriptProperty? MakeObjectProp(PropertySpec p, Dictionary<string, FormKey> formKeyByEd)
@@ -720,6 +816,15 @@ internal static class Program
 
     // Skyrim stores placement rotation in radians; specs author it in (friendlier) degrees.
     private static float Deg2Rad(float deg) => deg * (float)Math.PI / 180f;
+
+    // Exterior worldspace cells are 4096 units square. A world position maps to cell grid
+    // coords by floor(pos/4096); those map to the WRLD group nesting by floor(grid/8) (sub-block)
+    // and floor(grid/32) (block) — VERIFIED against Tamriel (cell (7,-41) -> block (0,-2),
+    // sub-block (0,-6)). NOTE: this must be FLOOR division (toward -inf), not C#'s truncating `/`
+    // ((-41)/8 == -5, but floor is -6) — negative coordinates would land in the wrong group.
+    private const int CellSize = 4096;
+    private static int FloorDiv(int a, int b) => (int)Math.Floor((double)a / b);
+    private static int PosToGrid(float pos) => (int)Math.Floor(pos / CellSize);
 
     // OR together a list of flag names (case-insensitive) into one enum value; unknown names
     // are ignored (validate is responsible for reporting them).
@@ -979,7 +1084,14 @@ internal static class Program
         foreach (var pl in spec.Placements)
         {
             CheckRef(pl.Base, "placement base");
-            if (string.IsNullOrWhiteSpace(pl.Cell)) problems.Add("placement has empty cell");
+            if (!string.IsNullOrWhiteSpace(pl.Worldspace))
+            {
+                // Exterior placement: worldspace + world position (cell is derived, not authored).
+                // Worldspaces aren't built in-spec, so the ref must be a well-formed external one.
+                if (!LooksExternalRef(pl.Worldspace) || !TryExternalRef(pl.Worldspace, out _))
+                    problems.Add($"placement worldspace '{pl.Worldspace}' must be a well-formed external <master>:0xFORMID ref (find it: find <Skyrim.esm> <name> Worldspace)");
+            }
+            else if (string.IsNullOrWhiteSpace(pl.Cell)) problems.Add("placement has empty cell (and no worldspace — set one or the other)");
             else if (LooksExternalRef(pl.Cell))
             { if (!TryExternalRef(pl.Cell, out _)) problems.Add($"placement: malformed external cell ref '{pl.Cell}' (expect <master>:0xFORMID)"); }
             else if (!cellIds.Contains(pl.Cell)) problems.Add($"placement references unknown cell '{pl.Cell}' (in-spec cell editorId or <master>:0xFORMID)");
@@ -1202,8 +1314,17 @@ internal static class Program
                 foreach (var e in eff.Effects)
                     Console.WriteLine($"      effect -> {Ref(e.BaseEffect.FormKey)} (mag={e.Data?.Magnitude} area={e.Data?.Area} dur={e.Data?.Duration})");
 
+            if (r is IWorldspaceGetter wg)
+            {
+                int blocks = wg.SubCells.Count;
+                int cells = wg.SubCells.SelectMany(b => b.Items).SelectMany(s => s.Items).Count();
+                Console.WriteLine($"      worldspace: {blocks} block(s), {cells} exterior cell(s)");
+            }
+
             if (r is ICellGetter cg)
-                Console.WriteLine($"      cell: interior={cg.Flags.HasFlag(Cell.Flag.IsInteriorCell)} persistent={cg.Persistent.Count} temporary={cg.Temporary.Count}");
+                Console.WriteLine($"      cell: interior={cg.Flags.HasFlag(Cell.Flag.IsInteriorCell)}"
+                    + (cg.Grid?.Point is { } gp ? $" grid=({gp.X},{gp.Y})" : "")
+                    + $" persistent={cg.Persistent.Count} temporary={cg.Temporary.Count}");
 
             if (r is IPlacedNpcGetter pnpc && pnpc.Placement is { } pp)
                 Console.WriteLine($"      placed npc -> base {Ref(pnpc.Base.FormKey)} @ ({pp.Position.X:0.#}, {pp.Position.Y:0.#}, {pp.Position.Z:0.#})");
@@ -1358,14 +1479,20 @@ internal sealed class PropertySpec
 // A new interior cell the plugin creates (reachable in-game via `coc <editorId>`).
 internal sealed class CellSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
 internal sealed class Vec3 { public float X { get; set; } public float Y { get; set; } public float Z { get; set; } }
-// Place a base form (npc/object, in-spec or external) into a cell at a position/rotation.
-// `cell` must be an in-spec cell editorId for now; placing into a vanilla cell needs an
-// override (It.7d phase 2). `rotation` is in degrees. `kind` ("npc"|"object") is inferred
-// for in-spec bases and defaults to "object" for external ones.
+// Place a base form (npc/object, in-spec or external) into the world at a position/rotation.
+// TWO targeting modes:
+//   * INTERIOR: set `cell` to an in-spec interior cell editorId (It.7d-p1) OR a vanilla interior
+//     cell ref "<master>:0xFORMID" (It.7d-p2). `position` is local to that cell.
+//   * EXTERIOR: set `worldspace` to a worldspace ref "<master>:0xFORMID" (e.g. Tamriel =
+//     Skyrim.esm:0x00003C, find via `find <Skyrim.esm> <name> Worldspace`); `position` is the
+//     WORLD position. The cell at floor(x/4096),floor(y/4096) is found in the master and
+//     overridden to add this ref (It.7d-p3). `worldspace` wins over `cell` if both are set.
+// `rotation` is in degrees. `kind` ("npc"|"object") is inferred for in-spec bases, "object" else.
 internal sealed class PlacementSpec
 {
     public string Base { get; set; } = "";
-    public string Cell { get; set; } = "";
+    public string Cell { get; set; } = "";        // interior: in-spec editorId OR <master>:0xFORMID
+    public string Worldspace { get; set; } = "";   // exterior: worldspace ref; position is world-space
     public string Kind { get; set; } = "";
     public Vec3 Position { get; set; } = new();
     public Vec3 Rotation { get; set; } = new();
