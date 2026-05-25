@@ -1,14 +1,15 @@
 # ModForge
 
-An AI-driven Skyrim mod **authoring** toolchain. You describe content (or hand it a
-structured spec); ModForge produces a valid `.esp`/`.esl` — and, as a byproduct,
-translates the text inside existing plugins. Built on
+An AI-driven Skyrim mod **authoring** toolchain. You describe content to an AI agent
+(Claude Code), which writes a structured spec; ModForge turns the spec into a valid
+`.esp`/`.esl` — and, as a byproduct, translates the text inside existing plugins. Built on
 [Mutagen.Bethesda](https://github.com/Mutagen-Modding/Mutagen) (C#/.NET), runs on
 Linux (no Creation Kit, no Windows needed for generation).
 
-> Design principle: **the LLM only emits intent / text; a deterministic tool
-> (Mutagen) emits the bytes.** Plugin records, FormIDs, masters and record sizes are
-> never hand-written — Mutagen guarantees validity.
+> Design principle: **the AI agent only emits intent / text (a reviewable JSON spec); a
+> deterministic tool (Mutagen) emits the bytes.** Plugin records, FormIDs, masters and record
+> sizes are never hand-written — Mutagen guarantees validity. The agent drives the tool per
+> `FOR_AGENT.md`; there is no in-tool LLM API.
 
 ## Pillars (proven feasible on Linux, 2026-05-24)
 

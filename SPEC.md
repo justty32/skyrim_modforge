@@ -1,11 +1,12 @@
 # ModForge spec — authoring reference
 
 The **spec** is a JSON file describing the content of one Skyrim plugin. It is the
-contract between intent (natural language / an LLM) and the deterministic generator
-(Mutagen). You write/produce a spec, `validate` it, then `build` or `package` it.
+contract between intent (natural language, turned into a spec by an AI agent) and the
+deterministic generator (Mutagen). You write/produce a spec, `validate` it, then `build`
+or `package` it.
 
 ```
-NL / idea ──(LLM)──▶ spec.json ──(validate)──▶ ──(build | package)──▶ .esp [+ .pex]
+NL / idea ──(AI agent: Claude Code)──▶ spec.json ──(validate)──▶ ──(build | package)──▶ .esp [+ .pex]
 ```
 
 Property names are **case-insensitive** (`editorId` == `EditorId`); examples use camelCase.
@@ -185,10 +186,11 @@ dotnet run --project src/ModForge.Cli -- package  myspec.json OutModDir # esp + 
 ```
 `package` lays out `OutModDir/<pluginName>` + `Scripts/*.pex` + `Scripts/Source/*.psc`.
 
-**NL → spec:** describe what you want; an LLM emits a spec conforming to this doc /
-`examples/spec.schema.json`; run `validate` (self-correct on problems); then `package`.
-A live `describe` command (LLM API) is planned (It.6c) — until then the LLM step is done
-interactively.
+**NL → spec:** describe what you want to an AI agent (Claude Code); the agent emits a spec
+conforming to this doc / `examples/spec.schema.json` (per `FOR_AGENT.md`), runs `validate`
+(self-correcting on problems), then `build`/`package`. This agent-driven loop **is** the
+NL→spec layer — there is no in-tool LLM API (the once-planned `describe` command is dropped),
+so there's no API key/provider to configure.
 
 ## Not yet covered (extend in `Program.cs` `Build` + a spec class)
 World placement now covers new interior cells, vanilla interior cells, **and exterior/worldspace

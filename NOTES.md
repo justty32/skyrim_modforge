@@ -22,7 +22,8 @@
 ## Current focus: the ESP GENERATOR (spec → plugin)
 Generalize the hardcoded `gen` demo into a data-driven `build <spec.json> <out.esp>`.
 Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → plugin.
-(The NL→spec LLM layer comes later; the spec IS the contract.)
+(The NL→spec layer is an AI agent driving this tool per `FOR_AGENT.md` — NOT an in-tool LLM
+call; the spec IS the contract.)
 
 ### Iterations
 - [x] **It.1 — basic records**: spec for MiscItem / Book / Weapon / Npc; `build` command;
@@ -72,7 +73,8 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
         gained an optional `source` (.psc path rel. to spec). Verified: sample_spec →
         SampleMod/ with SampleMod.esp + Scripts/MFDemoQuestScript.pex + Source/.psc.
         **It.5 COMPLETE — full spec→packaged-mod pipeline works on Linux.**
-- [~] **It.6 — NL→spec layer** (the "AI agent" front):
+- [x] **It.6 — NL→spec layer** (the "AI agent" front) — delivered as an AGENT-DRIVEN workflow,
+      not an in-tool LLM call (see 6c):
   - [x] **6a — `validate <spec.json>`** (done 2026-05-24): semantic guardrail — editorId
         presence/uniqueness + referential integrity (dialogue→quest/npc, npc→faction,
         script→target, object-prop→record, property types). Exit non-zero on any problem
@@ -82,11 +84,14 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
         reference + NL→spec workflow; `examples/spec.schema.json` (draft 2020-12, enum on
         property type, object-prop conditional-required); README CLI list refreshed to all
         7 commands. Both JSON files parse-validated.
-  - [ ] **6c — live LLM hook** (BLOCKED on user): a `describe "<NL>"` command calling an
-        LLM API to emit a spec. Needs the user's API key / provider preference. Until then
-        the NL→spec step is done by Claude in-session (produce spec.json → validate → package).
+  - [DROPPED] **6c — live in-tool LLM hook** (NOT doing it — user decision 2026-05-25): a
+        `describe "<NL>"` command calling an LLM API was once planned. **Dropped:** the NL→spec
+        layer is delivered by an AI agent (Claude Code) driving this tool — the agent reads
+        `FOR_AGENT.md`, writes spec.json, runs validate→build→package. An in-tool LLM API would
+        be a redundant extra layer + key/provider management. So THIS IS the workflow, not a
+        stopgap; don't plan/build in-tool LLM integration.
 
-- [~] **It.7 — gameplay-complete fields** (autonomous track, since 6c is blocked):
+- [~] **It.7 — gameplay-complete fields** (autonomous track, originally run while 6c was deferred):
   - [x] **7a — `dump <esp>`** (done 2026-05-24): reads a plugin back + prints records,
         names, npc faction membership (FormLink resolved to editorId), VMAD scripts +
         prop count, dialogue prompt/INFO groups, quest objectives. Round-trip verification
@@ -206,7 +211,8 @@ Layered design: structured spec (JSON IR, human/AI-reviewable) → Mutagen → p
           NOT in-game tested.
         Remaining gameplay gaps are minor/long-tail (extra record types/fields — same spec-class+loop
         pattern). World placement (interior + vanilla interior + exterior) is now complete (7d p1–p3).
-        Biggest unblocked-but-untouched items: in-game testing (needs Proton) + It.6c (LLM API, needs key).
+        Biggest unblocked-but-untouched item: in-game testing (needs Proton). (It.6c in-tool LLM
+        API was dropped — NL→spec is agent-driven; see It.6.)
 
 ## Build / test
 ```
