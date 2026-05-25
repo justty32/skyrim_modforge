@@ -3,7 +3,8 @@
   "esl": true,
   "miscItems": [
     { "editorId": "MF_Coin", "name": "Forged Coin", "value": 5, "weight": 0.1 },
-    { "editorId": "MF_Gear", "name": "Brass Gear", "value": 12, "weight": 0.5 }
+    { "editorId": "MF_Gear", "name": "Brass Gear", "value": 12, "weight": 0.5,
+      "keywords": ["MF_KwTrinket"] }
   ],
   "books": [
     { "editorId": "MF_Letter", "name": "A Forged Letter",
@@ -93,5 +94,37 @@
         { "item": "MF_Coin", "count": 10 },
         { "item": "MF_Apron", "count": 1 }
       ] }
+  ],
+  "keywords": [
+    { "editorId": "MF_KwTrinket" }
+  ],
+  "ingredients": [
+    { "editorId": "MF_Herb", "name": "Forged Herb", "value": 3, "weight": 0.1,
+      "effects": [ { "magicEffect": "Skyrim.esm:0x03EB15", "magnitude": 5, "duration": 0 } ],
+      "keywords": ["MF_KwTrinket"] }
+  ],
+  "ammunitions": [
+    { "editorId": "MF_Arrow", "name": "Forged Arrow", "value": 1, "weight": 0, "damage": 14 }
+  ],
+  "scrolls": [
+    { "editorId": "MF_ScrollFire", "name": "Scroll of Forged Fire", "value": 25, "weight": 0.1,
+      "effects": [ { "magicEffect": "Skyrim.esm:0x03EB42", "magnitude": 20, "duration": 5 } ],
+      "castType": "FireAndForget", "targetType": "Aimed", "baseCost": 30 }
+  ],
+  "soulGems": [
+    { "editorId": "MF_Gem", "name": "Forged Soul Gem", "value": 50, "weight": 0.3,
+      "maximumCapacity": "Common" }
+  ],
+  "keys": [
+    { "editorId": "MF_Key", "name": "Forged Key", "value": 0, "weight": 0 }
+  ],
+  "outfits": [
+    { "editorId": "MF_Outfit", "items": ["MF_Apron"] }
+  ],
+  "statics": [
+    { "editorId": "MF_Rock", "model": "Clutter\\Common\\Rock01.nif" }
+  ],
+  "activators": [
+    { "editorId": "MF_Lever", "name": "Forged Lever", "model": "Dungeons\\Caves\\Furniture\\CaveLever01.nif" }
   ]
 }

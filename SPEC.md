@@ -45,7 +45,9 @@ keywords, factions, etc. The named master is **added to the plugin automatically
   "armors": [...], "factions": [...], "messages": [...],
   "scripts": [...],             // Papyrus attachments (see below)
   "cells": [...], "placements": [...],  // new interior cells + placing forms in them
-  "leveledItems": [...], "leveledNpcs": [...], "containers": [...]
+  "leveledItems": [...], "leveledNpcs": [...], "containers": [...],
+  "ingredients": [...], "ammunitions": [...], "scrolls": [...], "soulGems": [...],
+  "keys": [...], "keywords": [...], "outfits": [...], "statics": [...], "activators": [...]
 }
 ```
 
@@ -69,6 +71,15 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `leveledItems` | `editorId`, `chanceNone` (0–100), `flags` (array), `entries` (array of `{ reference (*ref*), level (int), count (int) }`) |
 | `leveledNpcs` | same shape as `leveledItems`, but `reference` is an npc/leveled-npc |
 | `containers` | `editorId`, `name`, `weight`, `items` (array of `{ item (*ref*), count (int) }`) |
+| `ingredients` | `editorId`, `name`, `value`, `weight`, `effects` (array of *effects*), `keywords` (array of *refs*) |
+| `ammunitions` | `editorId`, `name`, `value`, `weight`, `damage` (number), `keywords` (array of *refs*) |
+| `scrolls` | `editorId`, `name`, `value`, `weight`, `effects` (array of *effects*), `spellType`, `castType`, `targetType`, `baseCost` (int), `keywords` (array of *refs*) |
+| `soulGems` | `editorId`, `name`, `value`, `weight`, `maximumCapacity` (`None`\|`Petty`\|`Lesser`\|`Common`\|`Greater`\|`Grand`), `keywords` (array of *refs*) |
+| `keys` | `editorId`, `name`, `value`, `weight`, `keywords` (array of *refs*) |
+| `keywords` | `editorId` (define your own keyword so in-spec records can list it in `keywords`) |
+| `outfits` | `editorId`, `items` (array of *refs* → armors/weapons; an npc `outfit` can point at this editorId) |
+| `statics` | `editorId`, `model` (a `.nif` path — reference a vanilla mesh; a placement base, no name) |
+| `activators` | `editorId`, `name`, `model` (`.nif` path), `keywords` (array of *refs*); attach behaviour via `scripts` |
 
 A field marked *ref* takes an in-spec `editorId` **or** `"<master>:0xFORMID"` (see
 *References to vanilla / external forms* above). A standing NPC needs at least `race` +

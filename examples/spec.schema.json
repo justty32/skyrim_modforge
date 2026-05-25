@@ -23,7 +23,16 @@
     "placements": { "type": "array", "items": { "$ref": "#/$defs/placement" }, "description": "put a base form into a cell at a position/rotation" },
     "leveledItems": { "type": "array", "items": { "$ref": "#/$defs/leveledList" }, "description": "LeveledItem (LVLI): level-gated weighted item lists" },
     "leveledNpcs": { "type": "array", "items": { "$ref": "#/$defs/leveledList" }, "description": "LeveledNpc (LVLN): level-gated weighted npc lists" },
-    "containers": { "type": "array", "items": { "$ref": "#/$defs/container" }, "description": "Container (CONT): a named container with item contents" }
+    "containers": { "type": "array", "items": { "$ref": "#/$defs/container" }, "description": "Container (CONT): a named container with item contents" },
+    "ingredients": { "type": "array", "items": { "$ref": "#/$defs/ingredient" }, "description": "Ingredient (INGR): alchemy reagent with effects" },
+    "ammunitions": { "type": "array", "items": { "$ref": "#/$defs/ammunition" }, "description": "Ammunition (AMMO): arrow/bolt with damage" },
+    "scrolls": { "type": "array", "items": { "$ref": "#/$defs/scroll" }, "description": "Scroll (SCRL): one-shot spell-as-item with effects + cast fields" },
+    "soulGems": { "type": "array", "items": { "$ref": "#/$defs/soulGem" }, "description": "SoulGem (SLGM)" },
+    "keys": { "type": "array", "items": { "$ref": "#/$defs/key" }, "description": "Key (KEYM)" },
+    "keywords": { "type": "array", "items": { "$ref": "#/$defs/keyword" }, "description": "Keyword (KYWD): define your own so in-spec records can reference it" },
+    "outfits": { "type": "array", "items": { "$ref": "#/$defs/outfit" }, "description": "Outfit (OTFT): a set of item refs an NPC can wear" },
+    "statics": { "type": "array", "items": { "$ref": "#/$defs/staticRec" }, "description": "Static (STAT): a world mesh (model path)" },
+    "activators": { "type": "array", "items": { "$ref": "#/$defs/activator" }, "description": "Activator (ACTI): an interactable world object" }
   },
   "additionalProperties": false,
   "$defs": {
@@ -260,6 +269,102 @@
         "name": { "type": "string" },
         "weight": { "type": "number", "minimum": 0 },
         "items": { "type": "array", "items": { "$ref": "#/$defs/containerItem" } }
+      }
+    },
+    "ingredient": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "value": { "type": "integer", "minimum": 0 },
+        "weight": { "type": "number", "minimum": 0 },
+        "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
+      }
+    },
+    "ammunition": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "value": { "type": "integer", "minimum": 0 },
+        "weight": { "type": "number", "minimum": 0 },
+        "damage": { "type": "number", "minimum": 0 },
+        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
+      }
+    },
+    "scroll": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "value": { "type": "integer", "minimum": 0 },
+        "weight": { "type": "number", "minimum": 0 },
+        "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+        "spellType": { "enum": ["Spell", "Disease", "Power", "LesserPower", "Ability", "Poison", "Addiction", "Voice"] },
+        "castType": { "enum": ["ConstantEffect", "FireAndForget", "Concentration"] },
+        "targetType": { "enum": ["Self", "Touch", "Aimed", "TargetActor", "TargetLocation"] },
+        "baseCost": { "type": "integer", "minimum": 0 },
+        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
+      }
+    },
+    "soulGem": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "value": { "type": "integer", "minimum": 0 },
+        "weight": { "type": "number", "minimum": 0 },
+        "maximumCapacity": { "enum": ["None", "Petty", "Lesser", "Common", "Greater", "Grand"] },
+        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
+      }
+    },
+    "key": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "value": { "type": "integer", "minimum": 0 },
+        "weight": { "type": "number", "minimum": 0 },
+        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
+      }
+    },
+    "keyword": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1, "description": "reference it from any record's `keywords` list" }
+      }
+    },
+    "outfit": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "items": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "armor/weapon refs the NPC wears; an npc `outfit` can point at this editorId" }
+      }
+    },
+    "staticRec": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "description": "a .nif path (reference a vanilla mesh in the BSA, e.g. 'Clutter\\\\Common\\\\Rock01.nif')" }
+      }
+    },
+    "activator": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "model": { "type": "string", "description": "a .nif path" },
+        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
       }
     }
   }

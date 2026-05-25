@@ -209,10 +209,36 @@ call; the spec IS the contract.)
         - Verified: sample (MF_LootList, MF_GuardList, MF_Chest, MF_Spark cast-type) round-trips
           via dump (13 cross-ref links); negative test 6/6 caught. Mutagen API verified via ilspy.
           NOT in-game tested.
-        Remaining gameplay gaps are minor/long-tail (extra record types/fields — same spec-class+loop
-        pattern). World placement (interior + vanilla interior + exterior) is now complete (7d p1–p3).
-        Biggest unblocked-but-untouched item: in-game testing (needs Proton). (It.6c in-tool LLM
-        API was dropped — NL→spec is agent-driven; see It.6.)
+  - [x] **7f — long-tail record types** (done 2026-05-25): nine more types, all the same
+        spec-class + pass-1-build (+ pass-2 ref wiring) pattern, reusing the existing
+        `WireKeywords`/`WireEffects`/`Resolve` helpers:
+        - **Ingredient (INGR)** name/value/weight + `effects` (reuses `WireEffects` — Ingredient
+          implements `IHasEffects`) + keywords. **Ammunition (AMMO)** name/value/weight + `damage`
+          (float) + keywords. **Scroll (SCRL)** name/value/weight + `effects` + spell cast fields
+          (`Type`/`CastType`/`TargetType`/`BaseCost`) + keywords. **SoulGem (SLGM)** name/value/
+          weight + `maximumCapacity` (`SoulGem.Level` enum) + keywords. **Key (KEYM)** name/value/
+          weight + keywords.
+        - **Keyword (KYWD)** = just an editorId — lets a spec DEFINE its own keyword and reference
+          it in any record's `keywords` (the ref resolver already resolves in-spec editorIds;
+          keyword created in pass 1 so it's in the formKey table for pass 2). **Outfit (OTFT)**
+          `items[]` (refs → `IFormLink<IOutfitTargetGetter>`); an npc `outfit` ref can now point at
+          an in-spec outfit. **Static (STAT)** `model` only (no Name; `r.Model.File.GivenPath = path`,
+          `File` is `AssetLink<SkyrimModelAssetType>`). **Activator (ACTI)** name + `model` + keywords
+          (+ script via `scripts`).
+        - validate: Reg() all nine; keyword/effect/outfit-item refs via CheckRef/CheckEffects; scroll
+          spell enums; soulGem `maximumCapacity` enum. dump: ammo damage, scroll cast, soulgem
+          capacity, outfit items, static/activator model.
+        - Verified: sample now has all nine (25 top-level records, 18 cross-ref links). Highlights:
+          in-spec keyword `MF_KwTrinket` referenced by `MF_Gear` + `MF_Herb`; outfit `MF_Outfit` →
+          in-spec armor `MF_Apron`; static/activator model paths. build→dump re-parses. validate
+          negative: 6/6 caught. Mutagen API (Ingredient/Ammunition/Scroll/SoulGem/Key/Keyword/Outfit/
+          Static/Activator + Model.File + SoulGem.Level + Outfit.Items) verified via ilspy. NOT in-game tested.
+        Remaining gameplay gaps are minor long-tail (more record types/fields — same pattern) and
+        the medium ones that aren't pure pattern-adds: MagicEffect (MGEF — archetypes), Race/Class,
+        ConstructibleObject (COBJ crafting — workbench-keyword conditions). World placement
+        (interior + vanilla interior + exterior) is complete (7d p1–p3). Biggest unblocked-but-
+        untouched item: in-game testing (needs Proton). (It.6c in-tool LLM API was dropped —
+        NL→spec is agent-driven; see It.6.)
 
 ## Build / test
 ```

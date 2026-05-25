@@ -390,6 +390,60 @@ internal static class Program
             r.EditorID = msg.EditorId; r.Name = msg.Name; r.Description = msg.Description;
         }
 
+        // Long-tail record types (pass 1: scalar fields; keywords/effects/outfit-items wired in pass 2).
+        foreach (var i in spec.Ingredients)
+        {
+            var r = mod.Ingredients.AddNew();
+            r.EditorID = i.EditorId; r.Name = i.Name; r.Value = i.Value; r.Weight = i.Weight;
+        }
+        foreach (var a in spec.Ammunitions)
+        {
+            var r = mod.Ammunitions.AddNew();
+            r.EditorID = a.EditorId; r.Name = a.Name; r.Value = a.Value; r.Weight = a.Weight; r.Damage = a.Damage;
+        }
+        foreach (var s in spec.Scrolls)
+        {
+            var r = mod.Scrolls.AddNew();
+            r.EditorID = s.EditorId; r.Name = s.Name; r.Value = s.Value; r.Weight = s.Weight;
+            if (Enum.TryParse<SpellType>(s.SpellType, ignoreCase: true, out var st)) r.Type = st;
+            if (Enum.TryParse<CastType>(s.CastType, ignoreCase: true, out var ct)) r.CastType = ct;
+            if (Enum.TryParse<TargetType>(s.TargetType, ignoreCase: true, out var tt)) r.TargetType = tt;
+            if (s.BaseCost > 0) r.BaseCost = s.BaseCost;
+        }
+        foreach (var sg in spec.SoulGems)
+        {
+            var r = mod.SoulGems.AddNew();
+            r.EditorID = sg.EditorId; r.Name = sg.Name; r.Value = sg.Value; r.Weight = sg.Weight;
+            if (Enum.TryParse<SoulGem.Level>(sg.MaximumCapacity, ignoreCase: true, out var lv)) r.MaximumCapacity = lv;
+        }
+        foreach (var k in spec.Keys)
+        {
+            var r = mod.Keys.AddNew();
+            r.EditorID = k.EditorId; r.Name = k.Name; r.Value = k.Value; r.Weight = k.Weight;
+        }
+        foreach (var kw in spec.Keywords)
+        {
+            var r = mod.Keywords.AddNew();
+            r.EditorID = kw.EditorId;
+        }
+        foreach (var o in spec.Outfits)
+        {
+            var r = mod.Outfits.AddNew();
+            r.EditorID = o.EditorId; r.Items = new();
+        }
+        foreach (var st in spec.Statics)
+        {
+            var r = mod.Statics.AddNew();
+            r.EditorID = st.EditorId;
+            if (!string.IsNullOrEmpty(st.Model)) { r.Model = new Model(); r.Model.File.GivenPath = st.Model; }
+        }
+        foreach (var ac in spec.Activators)
+        {
+            var r = mod.Activators.AddNew();
+            r.EditorID = ac.EditorId; r.Name = ac.Name;
+            if (!string.IsNullOrEmpty(ac.Model)) { r.Model = new Model(); r.Model.File.GivenPath = ac.Model; }
+        }
+
         // Leveled lists + containers: create the records now (scalar fields + flags); their
         // entries reference other forms, so they're wired in pass 2 with the ref resolver.
         foreach (var li in spec.LeveledItems)
@@ -489,6 +543,12 @@ internal static class Program
         foreach (var a in spec.Armors) WireKeywords(a.EditorId, a.Keywords);
         foreach (var w in spec.Weapons) WireKeywords(w.EditorId, w.Keywords);
         foreach (var m in spec.MiscItems) WireKeywords(m.EditorId, m.Keywords);
+        foreach (var i in spec.Ingredients) WireKeywords(i.EditorId, i.Keywords);
+        foreach (var a in spec.Ammunitions) WireKeywords(a.EditorId, a.Keywords);
+        foreach (var s in spec.Scrolls) WireKeywords(s.EditorId, s.Keywords);
+        foreach (var sg in spec.SoulGems) WireKeywords(sg.EditorId, sg.Keywords);
+        foreach (var k in spec.Keys) WireKeywords(k.EditorId, k.Keywords);
+        foreach (var ac in spec.Activators) WireKeywords(ac.EditorId, ac.Keywords);
 
         // Magic effects on spells/potions (both implement IHasEffects). Each Effect links a
         // vanilla/in-spec MagicEffect (a ref) and carries EffectData (magnitude/area/duration).
@@ -508,6 +568,17 @@ internal static class Program
         }
         foreach (var s in spec.Spells) WireEffects(s.EditorId, s.Effects);
         foreach (var p in spec.Potions) WireEffects(p.EditorId, p.Effects);
+        foreach (var i in spec.Ingredients) WireEffects(i.EditorId, i.Effects);
+        foreach (var s in spec.Scrolls) WireEffects(s.EditorId, s.Effects);
+
+        // Outfit (OTFT) contents: each item is a ref (in-spec armor/weapon or external).
+        foreach (var o in spec.Outfits)
+        {
+            if (!recordsByEd.TryGetValue(o.EditorId, out var rec) || rec is not IOutfit outfit) continue;
+            outfit.Items ??= new();
+            foreach (var itemRef in o.Items)
+                Resolve($"outfit '{o.EditorId}' item", itemRef, fk => outfit.Items!.Add(new FormLink<IOutfitTargetGetter>(fk)));
+        }
 
         // World placement: put a base form (npc/object) into a cell at a position/rotation.
         // The target cell is either an in-spec interior cell, or (phase 2) a VANILLA cell we
@@ -787,7 +858,10 @@ internal static class Program
                     + spec.Quests.Count + dialogueBuilt
                     + spec.Spells.Count + spec.Potions.Count + spec.Armors.Count
                     + spec.Factions.Count + spec.Messages.Count + spec.Cells.Count
-                    + spec.LeveledItems.Count + spec.LeveledNpcs.Count + spec.Containers.Count;
+                    + spec.LeveledItems.Count + spec.LeveledNpcs.Count + spec.Containers.Count
+                    + spec.Ingredients.Count + spec.Ammunitions.Count + spec.Scrolls.Count
+                    + spec.SoulGems.Count + spec.Keys.Count + spec.Keywords.Count
+                    + spec.Outfits.Count + spec.Statics.Count + spec.Activators.Count;
         Console.WriteLine($"built {outPath} from {Path.GetFileName(specPath)} " +
                           $"(ESL={spec.Esl}, {total} top-level record(s); {dialogueBuilt} dialogue topic(s); " +
                           $"{linksWired} cross-ref link(s), {extLinks} to external master(s); " +
@@ -1013,6 +1087,15 @@ internal static class Program
         foreach (var li in spec.LeveledItems) Reg(li.EditorId, "leveledItem");
         foreach (var ln in spec.LeveledNpcs) Reg(ln.EditorId, "leveledNpc");
         foreach (var ct in spec.Containers) Reg(ct.EditorId, "container");
+        foreach (var i in spec.Ingredients) Reg(i.EditorId, "ingredient");
+        foreach (var a in spec.Ammunitions) Reg(a.EditorId, "ammunition");
+        foreach (var s in spec.Scrolls) Reg(s.EditorId, "scroll");
+        foreach (var sg in spec.SoulGems) Reg(sg.EditorId, "soulGem");
+        foreach (var k in spec.Keys) Reg(k.EditorId, "key");
+        foreach (var kw in spec.Keywords) Reg(kw.EditorId, "keyword");
+        foreach (var o in spec.Outfits) Reg(o.EditorId, "outfit");
+        foreach (var st in spec.Statics) Reg(st.EditorId, "static");
+        foreach (var ac in spec.Activators) Reg(ac.EditorId, "activator");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
         void CheckRef(string r, string what)
@@ -1118,6 +1201,35 @@ internal static class Program
             if (!string.IsNullOrEmpty(s.CastType) && !Enum.TryParse<CastType>(s.CastType, true, out _)) problems.Add($"spell '{s.EditorId}' invalid castType '{s.CastType}'");
             if (!string.IsNullOrEmpty(s.TargetType) && !Enum.TryParse<TargetType>(s.TargetType, true, out _)) problems.Add($"spell '{s.EditorId}' invalid targetType '{s.TargetType}'");
         }
+
+        // --- long-tail record types: keyword/effect refs + enum fields ---
+        foreach (var i in spec.Ingredients)
+        {
+            foreach (var k in i.Keywords) CheckRef(k, $"ingredient '{i.EditorId}' keyword");
+            CheckEffects(i.EditorId, i.Effects, "ingredient");
+        }
+        foreach (var a in spec.Ammunitions)
+            foreach (var k in a.Keywords) CheckRef(k, $"ammunition '{a.EditorId}' keyword");
+        foreach (var s in spec.Scrolls)
+        {
+            foreach (var k in s.Keywords) CheckRef(k, $"scroll '{s.EditorId}' keyword");
+            CheckEffects(s.EditorId, s.Effects, "scroll");
+            if (!string.IsNullOrEmpty(s.SpellType) && !Enum.TryParse<SpellType>(s.SpellType, true, out _)) problems.Add($"scroll '{s.EditorId}' invalid spellType '{s.SpellType}'");
+            if (!string.IsNullOrEmpty(s.CastType) && !Enum.TryParse<CastType>(s.CastType, true, out _)) problems.Add($"scroll '{s.EditorId}' invalid castType '{s.CastType}'");
+            if (!string.IsNullOrEmpty(s.TargetType) && !Enum.TryParse<TargetType>(s.TargetType, true, out _)) problems.Add($"scroll '{s.EditorId}' invalid targetType '{s.TargetType}'");
+        }
+        foreach (var sg in spec.SoulGems)
+        {
+            foreach (var k in sg.Keywords) CheckRef(k, $"soulGem '{sg.EditorId}' keyword");
+            if (!string.IsNullOrEmpty(sg.MaximumCapacity) && !Enum.TryParse<SoulGem.Level>(sg.MaximumCapacity, true, out _))
+                problems.Add($"soulGem '{sg.EditorId}' invalid maximumCapacity '{sg.MaximumCapacity}' (None|Petty|Lesser|Common|Greater|Grand)");
+        }
+        foreach (var k in spec.Keys)
+            foreach (var kw in k.Keywords) CheckRef(kw, $"key '{k.EditorId}' keyword");
+        foreach (var ac in spec.Activators)
+            foreach (var kw in ac.Keywords) CheckRef(kw, $"activator '{ac.EditorId}' keyword");
+        foreach (var o in spec.Outfits)
+            foreach (var it in o.Items) CheckRef(it, $"outfit '{o.EditorId}' item");
 
         if (problems.Count == 0)
         {
@@ -1344,6 +1456,21 @@ internal static class Program
             if (r is ISpellGetter spG && (spG.Type != SpellType.Spell || spG.CastType != CastType.ConstantEffect || spG.BaseCost > 0))
                 Console.WriteLine($"      spell: type={spG.Type} cast={spG.CastType} target={spG.TargetType} cost={spG.BaseCost}");
 
+            if (r is IAmmunitionGetter ammo)
+                Console.WriteLine($"      ammo: damage={ammo.Damage} value={ammo.Value} weight={ammo.Weight}");
+
+            if (r is IScrollGetter scrl)
+                Console.WriteLine($"      scroll: type={scrl.Type} cast={scrl.CastType} target={scrl.TargetType} cost={scrl.BaseCost} value={scrl.Value}");
+
+            if (r is ISoulGemGetter slgm)
+                Console.WriteLine($"      soulgem: capacity={slgm.MaximumCapacity} value={slgm.Value}");
+
+            if (r is IOutfitGetter otft && otft.Items is { Count: > 0 } oitems)
+                foreach (var it in oitems) Console.WriteLine($"      outfit item -> {Ref(it.FormKey)}");
+
+            if ((r is IStaticGetter || r is IActivatorGetter) && r is IModeledGetter mdl && mdl.Model?.File is { } mf)
+                Console.WriteLine($"      model: {mf.GivenPath}");
+
             if (r is IHaveVirtualMachineAdapterGetter hv && hv.VirtualMachineAdapter is { } vm)
                 foreach (var se in vm.Scripts)
                     Console.WriteLine($"      script: {se.Name} [{se.Properties.Count} prop(s)]");
@@ -1413,6 +1540,15 @@ internal sealed class ModSpec
     public List<LeveledItemSpec> LeveledItems { get; set; } = new();
     public List<LeveledNpcSpec> LeveledNpcs { get; set; } = new();
     public List<ContainerSpec> Containers { get; set; } = new();
+    public List<IngredientSpec> Ingredients { get; set; } = new();
+    public List<AmmunitionSpec> Ammunitions { get; set; } = new();
+    public List<ScrollSpec> Scrolls { get; set; } = new();
+    public List<SoulGemSpec> SoulGems { get; set; } = new();
+    public List<KeySpec> Keys { get; set; } = new();
+    public List<KeywordSpec> Keywords { get; set; } = new();
+    public List<OutfitSpec> Outfits { get; set; } = new();
+    public List<StaticSpec> Statics { get; set; } = new();
+    public List<ActivatorSpec> Activators { get; set; } = new();
 }
 // "ref" fields below accept EITHER an in-spec editorId OR an external "<master>:0xFORMID"
 // (e.g. "Skyrim.esm:0x013746" — find them with the `find` command). External refs auto-add
@@ -1506,3 +1642,28 @@ internal sealed class LeveledNpcSpec { public string EditorId { get; set; } = ""
 // Container (CONT): named, with a list of item refs + counts.
 internal sealed class ContainerEntrySpec { public string Item { get; set; } = ""; public int Count { get; set; } = 1; }
 internal sealed class ContainerSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public float Weight { get; set; } public List<ContainerEntrySpec> Items { get; set; } = new(); }
+
+// --- Long-tail record types (same spec-class + build-loop pattern) ---------------------
+// Ingredient (INGR): an alchemy reagent — value/weight + `effects` (reuses the spell/potion
+// effect pipeline) + keywords.
+internal sealed class IngredientSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<EffectSpec> Effects { get; set; } = new(); public List<string> Keywords { get; set; } = new(); }
+// Ammunition (AMMO): arrow/bolt — value/weight + `damage` (float) + keywords.
+internal sealed class AmmunitionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float Damage { get; set; } public List<string> Keywords { get; set; } = new(); }
+// Scroll (SCRL): a one-shot spell-as-item — value/weight + `effects` + spell cast fields.
+internal sealed class ScrollSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<EffectSpec> Effects { get; set; } = new(); public string SpellType { get; set; } = ""; public string CastType { get; set; } = ""; public string TargetType { get; set; } = ""; public uint BaseCost { get; set; } public List<string> Keywords { get; set; } = new(); }
+// SoulGem (SLGM): value/weight + `maximumCapacity` (None|Petty|Lesser|Common|Greater|Grand) + keywords.
+internal sealed class SoulGemSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public string MaximumCapacity { get; set; } = ""; public List<string> Keywords { get; set; } = new(); }
+// Key (KEYM): value/weight + keywords.
+internal sealed class KeySpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<string> Keywords { get; set; } = new(); }
+// Keyword (KYWD): just an editorId — define your own so in-spec records can reference it in
+// their `keywords` lists (e.g. a custom "VendorItemFood" category).
+internal sealed class KeywordSpec { public string EditorId { get; set; } = ""; }
+// Outfit (OTFT): a named set of item *refs* (armors/weapons) an NPC can wear; an npc `outfit`
+// ref can point at an in-spec outfit's editorId.
+internal sealed class OutfitSpec { public string EditorId { get; set; } = ""; public List<string> Items { get; set; } = new(); }
+// Static (STAT): a world mesh — just `model` (a .nif path; reference a vanilla mesh in the BSA).
+// A placement base for scenery; no Name (statics are nameless).
+internal sealed class StaticSpec { public string EditorId { get; set; } = ""; public string Model { get; set; } = ""; }
+// Activator (ACTI): an interactable world object — name + `model` + keywords (+ a script via
+// `scripts`). A placement base you can walk up to / attach behaviour to.
+internal sealed class ActivatorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Model { get; set; } = ""; public List<string> Keywords { get; set; } = new(); }
