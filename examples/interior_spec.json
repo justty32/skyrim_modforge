@@ -1,0 +1,10 @@
+{
+  "pluginName": "ModForgeInterior.esp",
+  "esl": true,
+  "placements": [
+    { "base": "Skyrim.esm:0x08F965", "cell": "Skyrim.esm:0x01605E",
+      "position": { "x": -119.18, "y": -504.33, "z": 68.04 } },
+    { "base": "Skyrim.esm:0x06B30E", "cell": "Skyrim.esm:0x01605E",
+      "position": { "x": -49.18, "y": -504.33, "z": 68.04 } }
+  ]
+}

@@ -292,6 +292,23 @@ call; the spec IS the contract.)
     - **Re-tested in-game (2026-05-26): ALL PASS** — statue + NPC present, no underwater, location
       name correct. Exterior open-world placement is now in-game-verified end-to-end. (Interior /
       vanilla-interior placement get the same CopyCellEnv but are still not in-game tested.)
+- [ ] **It.10 — interior (vanilla-cell) placement: IN-GAME FAILED, bug suspected (2026-05-26).**
+      `examples/interior_spec.json` placed a Dibella statue + NobleChest into the Bannered Mare
+      (`WhiterunBanneredMare 0x01605E`) at user getpos local coords. dump looked correct (cell
+      override with `lightTmpl` carried, 2 temporary refs). **In-game: objects did NOT appear,
+      lighting was normal (i.e. the override was effectively IGNORED — vanilla cell intact).**
+      SUSPECTED ROOT CAUSE: `InteriorSub()` (Program.cs ~636) hardcodes the override cell into
+      `CellBlock{BlockNumber=0}` / `CellSubBlock{BlockNumber=0}`, but Skyrim groups interior cells
+      into block/sub-block BY FORMID — exterior computes block/subblock from the grid (works), the
+      interior path never did. A cell in the wrong block GRUP isn't matched as an override → ignored.
+      NEXT: confirm the Bannered Mare's real block/subblock in Skyrim.esm (walk mod.Cells.Records),
+      derive the formula (likely block=(id/10)%10, subBlock=id%10 or similar), set them in
+      InteriorSub()/VanillaCellOverride — OR switch to Mutagen's context `GetOrAddAsOverride` (which
+      blocks correctly) and clear the localized Name after. (Then the new-in-spec-interior-cell path
+      also needs a lighting template + a floor static, else black/void.) NOTE: the tester also saw
+      tofu subtitles + a fogged map — those are unrelated to this ESP (it has zero strings + only
+      touches an interior cell); they're from the tester's recent CJK-font/UI install, to be checked
+      separately.
 
 ## Build / test
 ```
