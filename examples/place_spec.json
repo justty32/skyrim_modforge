@@ -1,0 +1,16 @@
+{
+  "pluginName": "ModForgePlace.esp",
+  "esl": true,
+  "npcs": [
+    { "editorId": "MFP_Subject", "name": "ModForge Proof Subject",
+      "race": "Skyrim.esm:0x013746",
+      "class": "Skyrim.esm:0x01326B",
+      "outfit": "Skyrim.esm:0x09D5DF" }
+  ],
+  "placements": [
+    { "base": "Skyrim.esm:0x0D1846", "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": -90476.8, "y": 18097.19, "z": -3725.44 } },
+    { "base": "MFP_Subject", "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": -90176.8, "y": 18097.19, "z": -3725.44 } }
+  ]
+}

@@ -266,6 +266,32 @@ call; the spec IS the contract.)
       for armor (equip) / ingredient / ammo / scroll / soulGem / key — extend `template` the same
       way when those are exercised. NPCs already fine (race template). dump now prints weapon
       anim/model/firstPersonModel + book/misc/potion model for verification.
+- [x] **It.9 — IN-GAME exterior placement + cell/worldspace-env fix** (done 2026-05-26, Proton/MO2).
+      `examples/place_spec.json` → `ModForgePlace.esp`: a Talos statue (vanilla base `Skyrim.esm:
+      0x0D1846`) + the generated NPC placed in Tamriel at world coords → grid (-23,4) [floor-div on
+      negatives confirmed; overrode existing master cell `0x009536`, 0 new cells]. **In-game: statue
+      + NPC appeared — open-world placement WORKS.** But two override-completeness bugs surfaced:
+    - **"Whole world underwater":** an override CELL/WORLDSPACE does NOT inherit omitted data
+      subrecords from the master — the engine defaults them. The minimal worldspace override dropped
+      `LandDefaults`, resetting DefaultWaterHeight from Tamriel's real **-14000** to **0**, flooding
+      all terrain between -14000 and 0 (player z=-3725). (The cell's own WaterHeight=FLT_MAX is just
+      the "use worldspace default" sentinel — a red herring; copying it faithfully changed nothing.)
+    - **Save shows "unknown location":** the same minimal worldspace override also blanked the
+      worldspace Name.
+    - **Fix:** `CopyCellEnv` (cell: water height/textures, lighting+template, regions, imagespace,
+      music, acoustic, encounter zone, location, owner, sky-from-region) AND `CopyWorldspaceEnv`
+      (worldspace: LandDefaults [land/water defaults], MaxHeight, MapData, Parent, water forms +
+      LOD water height, climate, location, encounter zone, interior lighting, music, flags, object
+      bounds, map-offset scale, distant-LOD mult). Both SKIP the localized Name (string-lookup
+      landmine) + the giant child structures (cell ref lists / worldspace SubCells/TopCell/OffsetData
+      — we add only our ref / build our own block tree) + AssetLink texture paths (cosmetic). For the
+      Name, restate a plain `"Skyrim"` for Tamriel (0x3C) — headless can't read the localized master
+      name (TODO: spec field for other worldspaces). Used hand-copy not DeepCopyIn-mask (worldspace
+      SubCells/TopCell are MaskItem sub-masks, awkward to exclude). dump prints cell water/lightTmpl
+      + worldspace defaultWater/nameSet.
+    - **Re-tested in-game (2026-05-26): ALL PASS** — statue + NPC present, no underwater, location
+      name correct. Exterior open-world placement is now in-game-verified end-to-end. (Interior /
+      vanilla-interior placement get the same CopyCellEnv but are still not in-game tested.)
 
 ## Build / test
 ```

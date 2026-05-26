@@ -302,6 +302,70 @@ internal static class Program
             return cache is not null && cache.TryResolve<T>(fk, out tmpl);
         }
 
+        // Copy a master cell's ENVIRONMENT data (water height/type/textures, lighting + template,
+        // region list, imagespace, music, acoustic space, encounter zone, location, ownership,
+        // sky/weather-from-region) onto an override cell. CRITICAL: an override CELL that omits
+        // these does NOT inherit them from the master at runtime — the engine resets them to
+        // defaults. The worst offender is WaterHeight -> 0, which floods any terrain below sea
+        // level (the "whole world is underwater" bug); a missing interior LightingTemplate -> a
+        // pitch-black room. We DELIBERATELY skip the localized Name (copying it needs the BSA/
+        // load-order string lookup, absent headless) and the child reference lists (we ADD our ref
+        // to Temporary; vanilla refs stay in the master). Every field copied here is inline or a
+        // FormLink — no string resolution, so no plugins.txt dependency.
+        void CopyCellEnv(ICellGetter src, Cell dst)
+        {
+            dst.Flags = src.Flags;
+            if (src.Grid is { } g)
+                dst.Grid = new CellGrid { Point = new Noggog.P2Int(g.Point.X, g.Point.Y), Flags = g.Flags };
+            dst.Lighting = src.Lighting?.DeepCopy();
+            dst.WaterHeight = src.WaterHeight;
+            dst.WaterNoiseTexture = src.WaterNoiseTexture;
+            dst.WaterEnvironmentMap = src.WaterEnvironmentMap;
+            dst.LightingTemplate.SetTo(src.LightingTemplate);
+            dst.Water.SetTo(src.Water);
+            dst.Location.SetTo(src.Location);
+            dst.Owner.SetTo(src.Owner);
+            dst.SkyAndWeatherFromRegion.SetTo(src.SkyAndWeatherFromRegion);
+            dst.AcousticSpace.SetTo(src.AcousticSpace);
+            dst.EncounterZone.SetTo(src.EncounterZone);
+            dst.Music.SetTo(src.Music);
+            dst.ImageSpace.SetTo(src.ImageSpace);
+            if (src.Regions is { } regions)
+            {
+                dst.Regions = new Noggog.ExtendedList<IFormLinkGetter<IRegionGetter>>();
+                foreach (var rg in regions) dst.Regions.Add(rg);
+            }
+        }
+
+        // Copy a master WORLDSPACE's inline data onto a minimal override that hosts our new cell.
+        // CRITICAL: a worldspace override that omits LandDefaults resets DefaultWaterHeight to 0 —
+        // and Tamriel's real default is -14000, so any terrain between -14000 and 0 gets flooded
+        // ("the whole world is underwater"). We copy land/water defaults, water forms, climate, map,
+        // bounds, parent, lighting, etc. but NOT the localized Name or the giant child structures
+        // (SubCells block tree — we build our own; TopCell/LargeReferences/OffsetData). All copied
+        // fields are inline / FormLink / sub-objects — no localized string resolution. (Skipped:
+        // the AssetLink LOD/water/map TEXTURE paths — cosmetic, and getter≠setter type.)
+        void CopyWorldspaceEnv(IWorldspaceGetter src, Worldspace dst)
+        {
+            dst.Flags = src.Flags;
+            dst.ObjectBoundsMin = src.ObjectBoundsMin;
+            dst.ObjectBoundsMax = src.ObjectBoundsMax;
+            dst.WorldMapOffsetScale = src.WorldMapOffsetScale;
+            dst.DistantLodMultiplier = src.DistantLodMultiplier;
+            dst.LodWaterHeight = src.LodWaterHeight;
+            dst.LandDefaults = src.LandDefaults?.DeepCopy();   // DefaultWaterHeight (-14000) = THE flood fix
+            dst.MaxHeight = src.MaxHeight?.DeepCopy();
+            dst.MapData = src.MapData?.DeepCopy();
+            dst.Parent = src.Parent?.DeepCopy();
+            dst.Water.SetTo(src.Water);
+            dst.LodWater.SetTo(src.LodWater);
+            dst.Climate.SetTo(src.Climate);
+            dst.Location.SetTo(src.Location);
+            dst.EncounterZone.SetTo(src.EncounterZone);
+            dst.InteriorLighting.SetTo(src.InteriorLighting);
+            dst.Music.SetTo(src.Music);
+        }
+
         foreach (var m in spec.MiscItems)
         {
             var r = mod.MiscItems.AddNew();
@@ -697,13 +761,13 @@ internal static class Program
             if (!vanilla.Flags.HasFlag(Cell.Flag.IsInteriorCell))
             { Console.WriteLine($"  ! vanilla cell '{cellRef}' is exterior — only interior vanilla cells supported (phase 2); skipped"); return null; }
 
-            // Manual override (NOT GetOrAddAsOverride): that deep-copies the localized Name, which
-            // needs the BSA archive load order / plugins.txt — absent headless on Linux. Instead
-            // we make a same-FormKey override and copy ONLY Flags (so the interior flag isn't
-            // blanked); Name/Lighting/etc. stay null -> omitted on write -> inherited from the
-            // master (no ITM string, no BSA read). Vanilla refs remain (from the master); we just
-            // ADD ours. Only Flags is read off the getter, and Flags is inline (not localized).
-            var ov = new Cell(fk, SkyrimRelease.SkyrimSE) { Flags = vanilla.Flags };
+            // Manual override (NOT GetOrAddAsOverride, which deep-copies the localized Name → needs
+            // the BSA/load-order string lookup, absent headless). Same-FormKey override that copies
+            // the cell's inline ENVIRONMENT data (lighting/water/etc.) via CopyCellEnv — omitting it
+            // makes the engine reset those to defaults (e.g. a black interior with no lighting).
+            // Localized Name is skipped; vanilla refs stay in the master, we only ADD ours.
+            var ov = new Cell(fk, SkyrimRelease.SkyrimSE);
+            CopyCellEnv(vanilla, ov);
             InteriorSub().Cells.Add(ov);
             vanillaCellOverrides[fk] = ov;
             return ov;
@@ -719,10 +783,16 @@ internal static class Program
         var exteriorCells = new Dictionary<(FormKey Ws, int X, int Y), Cell>();
         int worldspaceCount = 0, exteriorNewCells = 0;
 
-        Worldspace WorldspaceOverride(FormKey wsFk)
+        Worldspace WorldspaceOverride(FormKey wsFk, IWorldspaceGetter? src)
         {
             if (worldspaceOverrides.TryGetValue(wsFk, out var ex)) return ex;
-            var ws = new Worldspace(wsFk, SkyrimRelease.SkyrimSE); // minimal override: just hosts our block tree
+            var ws = new Worldspace(wsFk, SkyrimRelease.SkyrimSE); // override that hosts our block tree
+            if (src is not null) CopyWorldspaceEnv(src, ws);       // carry land/water defaults etc.
+            // Headless can't resolve the master's LOCALIZED worldspace Name; an omitted Name makes the
+            // override blank it -> saves/HUD show "unknown location". Restate a plain Name for known
+            // worldspaces. (TODO: a spec field for arbitrary worldspaces.)
+            if (wsFk.ModKey.Name.Equals("Skyrim", StringComparison.OrdinalIgnoreCase) && wsFk.ID == 0x00003C)
+                ws.Name = "Skyrim";
             mod.Worldspaces.Add(ws);
             worldspaceOverrides[wsFk] = ws;
             worldspaceCount++;
@@ -762,7 +832,10 @@ internal static class Program
             var masterName = worldspaceRef[..worldspaceRef.IndexOf(':')].Trim();
             var existing = FindMasterExteriorCell(masterName, wsFk, cx, cy);
 
-            var ws = WorldspaceOverride(wsFk);
+            // Resolve the master worldspace so the override can carry its land/water defaults + name.
+            IWorldspaceGetter? wsSrc = null;
+            MasterCache(masterName)?.TryResolve<IWorldspaceGetter>(wsFk, out wsSrc);
+            var ws = WorldspaceOverride(wsFk, wsSrc);
             short bx = (short)FloorDiv(cx, 32), by = (short)FloorDiv(cy, 32);
             short sx = (short)FloorDiv(cx, 8),  sy = (short)FloorDiv(cy, 8);
             var block = ws.SubCells.FirstOrDefault(b => b.BlockNumberX == bx && b.BlockNumberY == by);
@@ -775,13 +848,13 @@ internal static class Program
             Cell cell;
             if (existing is not null)
             {
-                // Override the master cell (same FormKey). Copy ONLY inline data: Flags + Grid (the
-                // grid X,Y is how the engine places the cell). Name/lighting/etc. stay null ->
-                // inherited from the master on write (no localized deep-copy / BSA read). Vanilla
-                // refs come from the master; we only ADD ours.
-                cell = new Cell(existing.FormKey, SkyrimRelease.SkyrimSE) { Flags = existing.Flags };
-                if (existing.Grid is { } eg)
-                    cell.Grid = new CellGrid { Point = new Noggog.P2Int(eg.Point.X, eg.Point.Y), Flags = eg.Flags };
+                // Override the master cell (same FormKey). Copy the cell's inline ENVIRONMENT data
+                // (Flags, Grid, water height/type, lighting, regions, imagespace, …) via CopyCellEnv.
+                // Omitting these does NOT inherit from the master — the engine defaults them, e.g.
+                // WaterHeight -> 0 floods sub-sea-level terrain ("whole world underwater"). Localized
+                // Name skipped; vanilla refs stay in the master, we only ADD ours.
+                cell = new Cell(existing.FormKey, SkyrimRelease.SkyrimSE);
+                CopyCellEnv(existing, cell);
             }
             else
             {
@@ -1515,12 +1588,16 @@ internal static class Program
             {
                 int blocks = wg.SubCells.Count;
                 int cells = wg.SubCells.SelectMany(b => b.Items).SelectMany(s => s.Items).Count();
-                Console.WriteLine($"      worldspace: {blocks} block(s), {cells} exterior cell(s)");
+                Console.WriteLine($"      worldspace: {blocks} block(s), {cells} exterior cell(s)"
+                    + $" nameSet={wg.Name is not null}"
+                    + (wg.LandDefaults is { } wld ? $" defaultWater={wld.DefaultWaterHeight}" : " defaultWater=<none>"));
             }
 
             if (r is ICellGetter cg)
                 Console.WriteLine($"      cell: interior={cg.Flags.HasFlag(Cell.Flag.IsInteriorCell)}"
                     + (cg.Grid?.Point is { } gp ? $" grid=({gp.X},{gp.Y})" : "")
+                    + (cg.WaterHeight is { } wh ? $" water={wh}" : " water=<none>")
+                    + (cg.LightingTemplate.IsNull ? "" : $" lightTmpl={cg.LightingTemplate.FormKey}")
                     + $" persistent={cg.Persistent.Count} temporary={cg.Temporary.Count}");
 
             if (r is IPlacedNpcGetter pnpc && pnpc.Placement is { } pp)
