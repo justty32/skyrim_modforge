@@ -239,6 +239,33 @@ call; the spec IS the contract.)
         (interior + vanilla interior + exterior) is complete (7d p1–p3). Biggest unblocked-but-
         untouched item: in-game testing (needs Proton). (It.6c in-tool LLM API was dropped —
         NL→spec is agent-driven; see It.6.)
+- [x] **It.8 — FIRST IN-GAME TEST + model gap fix** (done 2026-05-26, Proton/MO2, Skyrim
+      1.6.1170). Built a minimal smoke ESP (`examples/proof_spec.json` → `ModForgeProof.esp`:
+      weapon/potion/misc/book/npc, all names "ModForge*") and human-tested it. **Core premise
+      CONFIRMED:** generated ESP loads, `help "ModForge" 0` lists all 5, names render, additem/
+      placeatme work, NPC animates, potion restores HP. **Bug found in-game:** equipping the
+      weapon and reading the book CRASHED — root cause: generated records carry **NO 3D model
+      (.nif)**. They sit fine in inventory (icon only), but any interaction that attaches a model
+      to the scene crashes (weapon equip → skeleton; book read → 3D reading view). Drink/additem
+      don't load a model → fine.
+    - **Fix:** weapons/books/miscItems/potions take an optional `template` ref (`"<master>:0xFORMID"`,
+      a vanilla record of the right kind). Build clones it via `DeepCopyIn` → real model + (weapon)
+      firstPersonModel/animationType/equip slot + keywords/sounds, then overrides EditorID/Name/stats.
+      proof templates: weapon→IronSword `0x012EB7`, book→Book1CheapNordsArise `0x0ED161`,
+      misc→GemRuby `0x063B42`, potion→RestoreHealth06 `0x039BE5`.
+    - **Two gotchas (cost a build cycle each):** (1) MUST pass a `TranslationMask { Name=false,
+      Description/BookText=false }` to DeepCopyIn — copying a localized TranslatedString from
+      Skyrim.esm calls `TranslatedString.DeepCopy()→ResolveAllStringSources()` which enumerates
+      BSAs via the load-order/plugins.txt listing → "Could not determine plugin listings path"
+      headless on Linux. We override those strings anyway, so skip them. (2) For potions also
+      `r.Effects.Clear()` after clone, else the cloned effects + WireEffects-added spec effects
+      stack (double potion). DeepCopyIn preserves OUR FormKey (verified: records stay in the
+      plugin, master still just Skyrim.esm). MasterCache moved to top of Build() so item loops reach it.
+    - **Re-tested in-game (2026-05-26): ALL PASS** — weapon equips + swings (OneHandSword), book
+      reads, potion bottle + ruby misc show 3D models when dropped. Same model gap still untouched
+      for armor (equip) / ingredient / ammo / scroll / soulGem / key — extend `template` the same
+      way when those are exercised. NPCs already fine (race template). dump now prints weapon
+      anim/model/firstPersonModel + book/misc/potion model for verification.
 
 ## Build / test
 ```

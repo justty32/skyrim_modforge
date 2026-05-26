@@ -258,28 +258,109 @@ internal static class Program
         var key = ModKey.FromNameAndExtension(Path.GetFileName(outPath));
         var mod = new SkyrimMod(key, SkyrimRelease.SkyrimSE);
 
+        // --- Master link-caches (read-only overlays of Skyrim.esm etc.) -----------------------
+        // Used by (a) weapon/book *templating* — cloning a vanilla record so a generated item gets
+        // a real model/animation/equip data and doesn't CRASH on equip/read — and (b) vanilla
+        // cell/worldspace placement further down. Declared up here so the item-build loops reach it.
+        var skyrimData = Environment.GetEnvironmentVariable("MODFORGE_SKYRIM_DATA")
+            ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                            ".local", "share", "Steam", "steamapps", "common", "Skyrim Special Edition", "Data");
+        var masterCaches = new Dictionary<string, ILinkCache<ISkyrimMod, ISkyrimModGetter>?>(StringComparer.OrdinalIgnoreCase);
+        var masterDisposables = new List<IDisposable>();
+
+        ILinkCache<ISkyrimMod, ISkyrimModGetter>? MasterCache(string masterName)
+        {
+            if (masterCaches.TryGetValue(masterName, out var cached)) return cached;
+            var path = Path.Combine(skyrimData, masterName);
+            ILinkCache<ISkyrimMod, ISkyrimModGetter>? cache = null;
+            if (!File.Exists(path))
+                Console.WriteLine($"  ! master '{masterName}' not found at {path} (set MODFORGE_SKYRIM_DATA to your Data folder)");
+            else
+            {
+                // NOTE: Skyrim.esm is LOCALIZED, so its TranslatedString fields (Name/Description/
+                // BookText) live in .STRINGS inside a BSA. We must NOT DeepCopy those (it triggers
+                // an all-string-source resolve that needs the plugins.txt/load-order listings path,
+                // absent headless on Linux). The weapon/book clone uses a TranslationMask to skip
+                // exactly those fields (we override them anyway), so no string resolution happens.
+                var getter = SkyrimMod.CreateFromBinaryOverlay(new ModPath(path), SkyrimRelease.SkyrimSE);
+                masterDisposables.Add(getter);
+                cache = getter.ToImmutableLinkCache<ISkyrimMod, ISkyrimModGetter>();
+            }
+            masterCaches[masterName] = cache;
+            return cache;
+        }
+
+        // Resolve a vanilla record (by "<master>:0xFORMID" ref) to clone from. False (caller warns)
+        // if the ref is malformed or the master/record can't be found.
+        bool TryResolveTemplate<T>(string templateRef, out T? tmpl) where T : class, ISkyrimMajorRecordGetter
+        {
+            tmpl = null;
+            if (string.IsNullOrWhiteSpace(templateRef)) return false;
+            int colon = templateRef.IndexOf(':');
+            if (colon <= 0 || !TryExternalRef(templateRef, out var fk)) return false;
+            var cache = MasterCache(templateRef[..colon].Trim());
+            return cache is not null && cache.TryResolve<T>(fk, out tmpl);
+        }
+
         foreach (var m in spec.MiscItems)
         {
             var r = mod.MiscItems.AddNew();
+            // A model-less MISC doesn't crash (inventory is an icon) but has NO 3D mesh when dropped
+            // in the world. Optional `template` clones a vanilla misc (e.g. Skyrim.esm:0x063B42
+            // GemRuby) for its model + keywords. Mask out the localized Name (we set it below).
+            if (!string.IsNullOrWhiteSpace(m.Template)
+                && TryResolveTemplate<IMiscItemGetter>(m.Template, out var tmpl) && tmpl is not null)
+                r.DeepCopyIn(tmpl, out _, new MiscItem.TranslationMask(defaultOn: true) { Name = false });
             r.EditorID = m.EditorId; r.Name = m.Name; r.Value = m.Value; r.Weight = m.Weight;
         }
         foreach (var b in spec.Books)
         {
             var r = mod.Books.AddNew();
+            // A model-less BOOK CRASHES on read (the reading view loads the 3D book mesh). Clone a
+            // vanilla book (`template`: "<master>:0xFORMID", e.g. Skyrim.esm:0x0ED161) so it gets a
+            // model + sounds + keywords, then override identity + text. DeepCopyIn keeps OUR FormKey.
+            if (!string.IsNullOrWhiteSpace(b.Template))
+            {
+                if (TryResolveTemplate<IBookGetter>(b.Template, out var tmpl) && tmpl is not null)
+                    // Skip the localized strings (Name/BookText) — we set them below, and copying
+                    // them would resolve .STRINGS via the (headless-absent) load-order listing.
+                    r.DeepCopyIn(tmpl, out _, new Book.TranslationMask(defaultOn: true) { Name = false, BookText = false });
+                else
+                    Console.WriteLine($"  ! book '{b.EditorId}': template '{b.Template}' not resolved — book will lack a model and may CRASH on read");
+            }
+            else
+                Console.WriteLine($"  ! book '{b.EditorId}': no `template` — a model-less book CRASHES on read; set template to a vanilla book (e.g. Skyrim.esm:0x0ED161 Book1CheapNordsArise)");
             r.EditorID = b.EditorId; r.Name = b.Name; r.BookText = b.Text;
         }
         foreach (var w in spec.Weapons)
         {
             var r = mod.Weapons.AddNew();
-            r.EditorID = w.EditorId; r.Name = w.Name;
-            // A usable weapon needs damage + a non-zero swing speed/reach. Create both
-            // subrecords whenever any stat is given; speed/reach default to 1.0 so the
-            // weapon is swingable (0 would make it effectively unusable).
-            if (w.Damage > 0 || w.Value > 0 || w.Weight > 0 || w.Speed > 0 || w.Reach > 0)
+            // A bare WEAP (no model / first-person model / animation type / equip slot) CRASHES on
+            // equip — structurally valid but not in-game functional. Clone a vanilla weapon of the
+            // desired type (`template`: "<master>:0xFORMID", e.g. Skyrim.esm:0x012EB7 = IronSword)
+            // via DeepCopyIn — that brings the model, 1st-person model, equip slot, animation type,
+            // skill, sounds, impact + type/material keywords — then override identity + stats below.
+            // DeepCopyIn keeps OUR FormKey (record stays in this plugin; the template's sub-forms
+            // become FormLinks into its master).
+            if (!string.IsNullOrWhiteSpace(w.Template))
             {
-                r.BasicStats = new WeaponBasicStats { Damage = w.Damage, Value = w.Value, Weight = w.Weight };
-                r.Data = new WeaponData { Speed = w.Speed > 0 ? w.Speed : 1.0f, Reach = w.Reach > 0 ? w.Reach : 1.0f };
+                if (TryResolveTemplate<IWeaponGetter>(w.Template, out var tmpl) && tmpl is not null)
+                    // Skip the localized strings (Name/Description) — we set Name below, and copying
+                    // them would resolve .STRINGS via the (headless-absent) load-order listing.
+                    r.DeepCopyIn(tmpl, out _, new Weapon.TranslationMask(defaultOn: true) { Name = false, Description = false });
+                else
+                    Console.WriteLine($"  ! weapon '{w.EditorId}': template '{w.Template}' not resolved — weapon will lack a model and may CRASH on equip");
             }
+            else
+                Console.WriteLine($"  ! weapon '{w.EditorId}': no `template` — a model-less weapon CRASHES on equip; set template to a vanilla weapon (e.g. Skyrim.esm:0x012EB7 IronSword)");
+            r.EditorID = w.EditorId; r.Name = w.Name;
+            // Stats override the template's. speed/reach default to 1.0 so the weapon is swingable;
+            // when templated, keep the clone's Data (anim type/skill/stagger/flags) and only restate
+            // speed/reach + the basic stats.
+            r.BasicStats = new WeaponBasicStats { Damage = w.Damage, Value = w.Value, Weight = w.Weight };
+            r.Data ??= new WeaponData();
+            r.Data.Speed = w.Speed > 0 ? w.Speed : (r.Data.Speed > 0 ? r.Data.Speed : 1.0f);
+            r.Data.Reach = w.Reach > 0 ? w.Reach : (r.Data.Reach > 0 ? r.Data.Reach : 1.0f);
         }
         // NPCs + quests are kept in editorId->record maps so dialogue can reference them.
         var npcsByEd = new Dictionary<string, Npc>();
@@ -362,6 +443,16 @@ internal static class Program
         foreach (var p in spec.Potions)
         {
             var r = mod.Ingestibles.AddNew();
+            // A model-less ALCH drinks fine (no model load) but has NO 3D mesh when dropped. Optional
+            // `template` clones a vanilla potion (e.g. Skyrim.esm:0x039BE5 RestoreHealth06) for the
+            // bottle model + keywords + consume sound. Mask out the localized Name (set below); CLEAR
+            // the cloned effects so pass-2 WireEffects adds only THIS spec's effects (no duplicates).
+            if (!string.IsNullOrWhiteSpace(p.Template)
+                && TryResolveTemplate<IIngestibleGetter>(p.Template, out var tmpl) && tmpl is not null)
+            {
+                r.DeepCopyIn(tmpl, out _, new Ingestible.TranslationMask(defaultOn: true) { Name = false });
+                r.Effects.Clear();
+            }
             r.EditorID = p.EditorId; r.Name = p.Name; r.Value = p.Value; r.Weight = p.Weight;
         }
         foreach (var a in spec.Armors)
@@ -590,29 +681,9 @@ internal static class Program
         // children, so we immediately CLEAR Persistent+Temporary — the vanilla references still
         // come from the master at load time (omitting them doesn't delete them); we only ADD our
         // new ref. That avoids re-stating (and conflicting on) every vanilla reference.
-        var skyrimData = Environment.GetEnvironmentVariable("MODFORGE_SKYRIM_DATA")
-            ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                            ".local", "share", "Steam", "steamapps", "common", "Skyrim Special Edition", "Data");
-        var masterCaches = new Dictionary<string, ILinkCache<ISkyrimMod, ISkyrimModGetter>?>(StringComparer.OrdinalIgnoreCase);
-        var masterDisposables = new List<IDisposable>();
+        // (master link-cache infra `MasterCache` + `TryResolveTemplate` are defined at the top of
+        // Build now, so the weapon/book item loops can clone vanilla templates.)
         var vanillaCellOverrides = new Dictionary<FormKey, ICell>();
-
-        ILinkCache<ISkyrimMod, ISkyrimModGetter>? MasterCache(string masterName)
-        {
-            if (masterCaches.TryGetValue(masterName, out var cached)) return cached;
-            var path = Path.Combine(skyrimData, masterName);
-            ILinkCache<ISkyrimMod, ISkyrimModGetter>? cache = null;
-            if (!File.Exists(path))
-                Console.WriteLine($"  ! master '{masterName}' not found at {path} (set MODFORGE_SKYRIM_DATA to your Data folder)");
-            else
-            {
-                var getter = SkyrimMod.CreateFromBinaryOverlay(new ModPath(path), SkyrimRelease.SkyrimSE);
-                masterDisposables.Add(getter);
-                cache = getter.ToImmutableLinkCache<ISkyrimMod, ISkyrimModGetter>();
-            }
-            masterCaches[masterName] = cache;
-            return cache;
-        }
 
         ICell? VanillaCellOverride(string cellRef)
         {
@@ -1120,6 +1191,15 @@ internal static class Program
         }
         foreach (var a in spec.Armors) foreach (var k in a.Keywords) CheckRef(k, $"armor '{a.EditorId}' keyword");
         foreach (var w in spec.Weapons) foreach (var k in w.Keywords) CheckRef(k, $"weapon '{w.EditorId}' keyword");
+        // `template` = a vanilla record to clone (model/anim) — must be a well-formed external ref.
+        foreach (var w in spec.Weapons) if (!string.IsNullOrWhiteSpace(w.Template) && !TryExternalRef(w.Template, out _))
+            problems.Add($"weapon '{w.EditorId}' template: malformed external ref '{w.Template}' (expect <master>:0xFORMID, e.g. Skyrim.esm:0x012EB7)");
+        foreach (var b in spec.Books) if (!string.IsNullOrWhiteSpace(b.Template) && !TryExternalRef(b.Template, out _))
+            problems.Add($"book '{b.EditorId}' template: malformed external ref '{b.Template}' (expect <master>:0xFORMID, e.g. Skyrim.esm:0x0ED161)");
+        foreach (var m in spec.MiscItems) if (!string.IsNullOrWhiteSpace(m.Template) && !TryExternalRef(m.Template, out _))
+            problems.Add($"miscItem '{m.EditorId}' template: malformed external ref '{m.Template}' (expect <master>:0xFORMID, e.g. Skyrim.esm:0x063B42)");
+        foreach (var p in spec.Potions) if (!string.IsNullOrWhiteSpace(p.Template) && !TryExternalRef(p.Template, out _))
+            problems.Add($"potion '{p.EditorId}' template: malformed external ref '{p.Template}' (expect <master>:0xFORMID, e.g. Skyrim.esm:0x039BE5)");
         foreach (var m in spec.MiscItems) foreach (var k in m.Keywords) CheckRef(k, $"miscItem '{m.EditorId}' keyword");
 
         var armorTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -1416,8 +1496,13 @@ internal static class Program
             if (r is IWeaponGetter wpn)
             {
                 if (wpn.BasicStats is { } bs) Console.WriteLine($"      damage={bs.Damage} value={bs.Value} weight={bs.Weight}");
-                if (wpn.Data is { } wd) Console.WriteLine($"      speed={wd.Speed} reach={wd.Reach}");
+                if (wpn.Data is { } wd) Console.WriteLine($"      speed={wd.Speed} reach={wd.Reach} anim={wd.AnimationType}");
+                if (wpn.Model?.File is { } wmf) Console.WriteLine($"      model={wmf}");        // null model => CRASH on equip
+                if (wpn.FirstPersonModel.FormKeyNullable is { } fpk) Console.WriteLine($"      firstPersonModel -> {fpk}");
             }
+
+            if (r is IBookGetter bk && bk.Model?.File is { } bmf)
+                Console.WriteLine($"      model={bmf}");                                       // null model => CRASH on read
 
             if (r is IArmorGetter arm && arm.BodyTemplate is { } bt)
                 Console.WriteLine($"      armorRating={arm.ArmorRating} armorType={bt.ArmorType} slots=[{bt.FirstPersonFlags}]");
@@ -1470,6 +1555,9 @@ internal static class Program
 
             if ((r is IStaticGetter || r is IActivatorGetter) && r is IModeledGetter mdl && mdl.Model?.File is { } mf)
                 Console.WriteLine($"      model: {mf.GivenPath}");
+
+            if ((r is IMiscItemGetter || r is IIngestibleGetter) && r is IModeledGetter im && im.Model?.File is { } imf)
+                Console.WriteLine($"      model={imf}");      // null model => no 3D mesh when dropped
 
             if (r is IHaveVirtualMachineAdapterGetter hv && hv.VirtualMachineAdapter is { } vm)
                 foreach (var se in vm.Scripts)
@@ -1553,9 +1641,9 @@ internal sealed class ModSpec
 // "ref" fields below accept EITHER an in-spec editorId OR an external "<master>:0xFORMID"
 // (e.g. "Skyrim.esm:0x013746" — find them with the `find` command). External refs auto-add
 // the master on write (Mutagen MastersListContent=Iterate).
-internal sealed class MiscSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<string> Keywords { get; set; } = new(); }
-internal sealed class BookSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Text { get; set; } = ""; }
-internal sealed class WeaponSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public ushort Damage { get; set; } public float Speed { get; set; } public float Reach { get; set; } public List<string> Keywords { get; set; } = new(); }
+internal sealed class MiscSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<string> Keywords { get; set; } = new(); public string Template { get; set; } = ""; }
+internal sealed class BookSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Text { get; set; } = ""; public string Template { get; set; } = ""; }
+internal sealed class WeaponSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public ushort Damage { get; set; } public float Speed { get; set; } public float Reach { get; set; } public List<string> Keywords { get; set; } = new(); public string Template { get; set; } = ""; }
 internal sealed class NpcSpec
 {
     public string EditorId { get; set; } = "";
@@ -1587,7 +1675,7 @@ internal sealed class SpellSpec
     public uint BaseCost { get; set; }
     public float ChargeTime { get; set; }
 }
-internal sealed class PotionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<EffectSpec> Effects { get; set; } = new(); }
+internal sealed class PotionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<EffectSpec> Effects { get; set; } = new(); public string Template { get; set; } = ""; }
 internal sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } public string ArmorType { get; set; } = ""; public List<string> Slots { get; set; } = new(); public List<string> Keywords { get; set; } = new(); }
 // One magic effect on a spell/potion: a MagicEffect ref + magnitude/area/duration (EffectData).
 internal sealed class EffectSpec { public string MagicEffect { get; set; } = ""; public float Magnitude { get; set; } public int Area { get; set; } public int Duration { get; set; } }

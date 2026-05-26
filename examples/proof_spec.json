@@ -1,0 +1,31 @@
+{
+  "pluginName": "ModForgeProof.esp",
+  "esl": true,
+  "weapons": [
+    { "editorId": "MFP_Blade", "name": "ModForge Proof Blade",
+      "template": "Skyrim.esm:0x012EB7",
+      "damage": 25, "value": 200, "weight": 9.0, "speed": 1.0, "reach": 1.0 }
+  ],
+  "potions": [
+    { "editorId": "MFP_Tonic", "name": "ModForge Proof Tonic", "value": 25, "weight": 0.5,
+      "template": "Skyrim.esm:0x039BE5",
+      "effects": [
+        { "magicEffect": "Skyrim.esm:0x03EB15", "magnitude": 50, "duration": 0 }
+      ] }
+  ],
+  "miscItems": [
+    { "editorId": "MFP_Token", "name": "ModForge Proof Token", "value": 100, "weight": 0.1,
+      "template": "Skyrim.esm:0x063B42" }
+  ],
+  "books": [
+    { "editorId": "MFP_Note", "name": "ModForge Proof Note",
+      "template": "Skyrim.esm:0x0ED161",
+      "text": "If you can read this in-game, the ModForge toolchain produced a working plugin from a JSON spec. No Creation Kit was opened." }
+  ],
+  "npcs": [
+    { "editorId": "MFP_Subject", "name": "ModForge Proof Subject",
+      "race": "Skyrim.esm:0x013746",
+      "class": "Skyrim.esm:0x01326B",
+      "outfit": "Skyrim.esm:0x09D5DF" }
+  ]
+}
