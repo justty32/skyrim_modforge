@@ -465,7 +465,10 @@ call; the spec IS the contract.)
     - **RE-TEST (needs the tester):** `help "ModForge Firebolt" 0` → `player.addspell <id>` → aim at an
       enemy/wall and cast → should see a fire bolt LEAVE the hand, travel, and impact (vs nothing
       before), dealing ~25 fire damage. (Race/Class is the last big gap.)
-- [ ] **It.15 — Class (CLAS) authoring (built, NOT YET in-game tested) (2026-05-27).**
+- [x] **It.15 — Class (CLAS) authoring + npc level/autoCalcStats — IN-GAME CONFIRMED (2026-05-27).**
+      Tester A/B: the battlemage NPC (class M60) reads high magicka/low health, the warrior NPC (class
+      H60) the opposite — the class drives an auto-calc NPC's attribute distribution. (Needed the
+      It.15-fix `level` + `autoCalcStats`; a bare NPC ignores class and reads flat 50/50/50.)
       Did the safe half of the last big gap (Class); skipped custom Race (deep asset rabbit hole —
       bodies/skeleton/voice + heavy in-game iteration). A `classes[]` entry = an npc "profession" an
       npc's `class` ref can point at. CLAS has NO FormLinks (all enums + weight dicts), so it's built
