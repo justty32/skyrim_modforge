@@ -29,6 +29,7 @@ dotnet run --project src/ModForge.Cli -- <command> ...
   validate <spec.json>                       semantic check (ids, refs, types) before building
   dump     <in.esp>                          read a plugin back (records, refs, stats, effects, keywords, masters)
   find     <in.esp> <query> [type]           search a master -> "Skyrim.esm:0xFORMID  Type  EditorID"
+  cellblk  <in.esp> [0xFORMID]              interior cell block/sub-block (FormID grouping; verify overrides)
   compile  <script.psc> <outDir>            .psc -> .pex via the CK PapyrusCompiler under Wine
   gen      <out.esp>                          write a demo plugin (for testing)
   extract  <in.esp>  <strings.json>          pull translatable strings -> JSON
