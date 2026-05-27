@@ -357,7 +357,7 @@ call; the spec IS the contract.)
       floor tile is there, but if the floor-piece mesh pivot isn't at its top surface the player may
       spawn slightly in/under it (tcl to check); (2) floor tile real size vs the 256 spacing — if gaps
       show, tighten spacing. Report back and I'll adjust z/spacing.
-- [ ] **It.12 — custom MagicEffect (MGEF) authoring (built, NOT YET in-game tested) (2026-05-27).**
+- [x] **It.12 — custom MagicEffect (MGEF) authoring — IN-GAME CONFIRMED after a flag fix (2026-05-27).**
       Picked this big gap (over Race/Class + COBJ) because it's the highest-leverage one: the
       spell/potion/ingredient/scroll `effects[]` pipeline (It.7c) already links a `magicEffect` ref,
       but you could only point at VANILLA effects. Now a spec can DEFINE its own MGEF and reference it.
@@ -404,6 +404,9 @@ call; the spec IS the contract.)
       → cast → max Health +50 for 60s then reverts; `player.additem <MF_HealthDraught id> 1` → drink → heals.
       STILL FUTURE: Aimed damage spells need a projectile + casting/hit art (ART/PROJ). (Race/Class
       untouched; COBJ done in It.13.)
+    - **RE-TEST PASSED (2026-05-27): tester confirms the spells AND the potion are all present/working.**
+      Custom MGEF authoring is in-game-verified end-to-end. The `Recover`-on-instant trap is the key
+      lesson (now in SPEC.md). Both big gaps this session — MGEF (It.12) + COBJ (It.13) — are confirmed.
 - [x] **It.13 — crafting recipes (ConstructibleObject / COBJ) — IN-GAME CONFIRMED (2026-05-27).**
       Tester: at a forge with 3× iron ingot + 1× leather strip, "ModForge Forged Blade" appeared,
       crafted it, the blade equips and swings normally. COBJ crafting works end-to-end.
