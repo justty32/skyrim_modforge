@@ -334,6 +334,17 @@ call; the spec IS the contract.)
       and the placed `DefaultSunlightHalfOmni01` evidently isn't reading as a real light here). COSMETIC
       follow-up (the cell is usable): try a proper omni/shadow light base, or tune the copied Lighting's
       ambient/directional. Core It.11 goal (lit enough to use + floor) MET; polish deferred.
+    - **LIGHTING FIX (2026-05-27, rebuilt — NOT yet re-tested):** root cause found with a new `lightdiag`
+      command — the placed `DefaultSunlightHalfOmni01` is **radius 256 + `PortalStrict`**: a PortalStrict
+      light only lights inside a ROOM PORTAL, and our cell has no room markers, so it illuminated almost
+      nothing → "feels unlit." Swapped it for `WRShadowOmni 0x0C82AE` (omnidirectional shadow-casting,
+      warm white, radius 512, on-by-default, NOT PortalStrict — matches the Whiterun stone floor) as the
+      key light + two non-shadow warm fills `WRInteriorLightBrite01 0x06ED46` at ±220. Repackaged
+      `~/skyrim_mods/ModForgeNewCell.zip` (now 14 refs: 9 floor + 3 lights + statue + chest). The
+      open-floor-in-a-void shape still has no walls/ceiling, so a fully "room"-like look would need an
+      enclosure (a separate step); this fix targets the actual light source. NEW CLI: `lightdiag`.
+    - **RE-TEST (needs the tester):** `coc MF_TestChamber` → should now be clearly lit by a warm light
+      with falloff + the statue/chest casting shadows on the floor (vs the old flat look).
       A brand-new in-spec interior cell had no Lighting/LightingTemplate (renders PITCH BLACK) and
       no floor geometry (player `coc`s in and falls into the void). Fix is two parts:
     - **Lighting (code):** added an optional `template` field to `CellSpec` — a vanilla INTERIOR cell

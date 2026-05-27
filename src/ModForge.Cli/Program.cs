@@ -47,6 +47,7 @@ internal static class Program
                 case "find" when args.Length is 3 or 4: return Find(args[1], args[2], args.Length == 4 ? args[3] : null);
                 case "cellblk" when args.Length is 2 or 3: return CellBlk(args[1], args.Length == 3 ? args[2] : null);
                 case "mgefdiag" when args.Length == 3: return MgefDiag(args[1], args[2]);
+                case "lightdiag" when args.Length is 2 or 3: return LightDiag(args[1], args.Length == 3 ? args[2] : null);
                 default: Usage(); return 1;
             }
         }
@@ -70,6 +71,7 @@ internal static class Program
         "  find    <in.esp> <query> [type]              search editorId/name -> Skyrim.esm:0xFORMID\n" +
         "  cellblk <in.esp> [0xFORMID]                  show interior cell block/sub-block (FormID grouping)\n" +
         "  mgefdiag <in.esp> <0xFORMID>                 print a MagicEffect's fields (compare gen vs vanilla)\n" +
+        "  lightdiag <in.esp> [0xFORMID]                a Light's radius/color/flags (no id: list room-fill lights)\n" +
         "  extract <in.esp> <strings.json>\n" +
         "  applyloc <in.esp> <strings.json> <outDir>   (Localized UTF-8 _chinese.STRINGS)\n" +
         "  apply   <in.esp> <strings.json> <out.esp>");
@@ -1702,6 +1704,35 @@ internal static class Program
             return 0;
         }
         Console.WriteLine($"0x{id:X6} not a MagicEffect in {Path.GetFileName(inPath)}");
+        return 0;
+    }
+
+    // Diagnostic: print a Light's radius/color/flags (one 0xFORMID) — or, with no FormID, list every
+    // Light that's a decent general ROOM fill (big radius, omnidirectional, on by default, not carried)
+    // so we can pick a believable interior light for a generated cell.
+    private static int LightDiag(string inPath, string? formIdHex)
+    {
+        using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE);
+        uint? target = formIdHex is null ? null
+            : Convert.ToUInt32(formIdHex.Replace("0x", "", StringComparison.OrdinalIgnoreCase), 16) & 0xFFFFFF;
+        int shown = 0;
+        foreach (var l in mod.EnumerateMajorRecords<ILightGetter>())
+        {
+            if (target is { } t) { if (l.FormKey.ID != t) continue; }
+            else
+            {
+                // room-fill heuristic: radius >= 512, not carried/spot/off-by-default
+                bool carried = l.Flags.HasFlag(Light.Flag.CanBeCarried);
+                bool spot = l.Flags.HasFlag(Light.Flag.SpotLight) || l.Flags.HasFlag(Light.Flag.ShadowSpotlight);
+                bool off = l.Flags.HasFlag(Light.Flag.OffByDefault);
+                if (l.Radius < 512 || carried || spot || off) continue;
+                if (shown++ >= 40) { Console.WriteLine("…(capped)"); break; }
+            }
+            Console.WriteLine($"0x{l.FormKey.ID:X6}  {l.EditorID,-34} radius={l.Radius,4} "
+                + $"color=({l.Color.R},{l.Color.G},{l.Color.B}) fade={l.FadeValue} flags={l.Flags}");
+            if (target is not null) return 0;
+        }
+        if (target is not null) Console.WriteLine($"0x{target:X6} not a Light in {Path.GetFileName(inPath)}");
         return 0;
     }
 
