@@ -129,6 +129,8 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
   a custom MGEF (`archetype`/`actorValue`/`magicSkill`/`resistValue`/`flags`/…) for a bespoke effect.
 - **Leveled lists + containers:** `leveledItems`/`leveledNpcs` (weighted level-gated entries,
   each a *ref*) and `containers` (item *refs* + counts) — loot tables, merchant chests, etc.
+- **Crafting:** `recipes` (COBJ) make an item (`createdObject` *ref*) craftable at a `workbench`
+  keyword (defaults to the forge) by consuming `components` (item *refs* + counts).
 - **More record types** (same spec→build→dump pattern): `ingredients` (alchemy, take `effects`),
   `ammunitions` (`damage`), `scrolls` (`effects` + cast fields), `soulGems` (`maximumCapacity`),
   `keys`, `keywords` (define your own → reference it from any record's `keywords`), `outfits`

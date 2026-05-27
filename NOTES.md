@@ -380,7 +380,30 @@ call; the spec IS the contract.)
       Health restores. KNOWN LIMITATION: a custom `ValueModifier` MGEF applies its value but has NO
       visual art/projectile — so `MF_Firebolt` (Aimed) has no visible bolt and may not "travel" without
       a projectile + casting/hit art (ART/PROJ records — a deeper rabbit hole, future work). Self/Touch
-      + potions work fully. (Race/Class + COBJ crafting still untouched.)
+      + potions work fully. (Race/Class still untouched; COBJ crafting done in It.13.)
+- [ ] **It.13 — crafting recipes (ConstructibleObject / COBJ) (built, NOT YET in-game tested) (2026-05-27).**
+      Makes generated items craftable at a workbench. Turned out SIMPLER than NOTES feared — the
+      workbench is a plain `WorkbenchKeyword` FormLink, NOT a CTDA condition; components live in
+      `Items` (the same `ContainerEntry`/`ContainerItem` type the container support already uses);
+      `Conditions` (perk/skill gating) is optional and a basic recipe needs none.
+    - **Spec:** new `recipes[]` (RecipeSpec): `editorId`, `createdObject` (*ref* — the produced item),
+      `count` (CreatedObjectCount, default 1), `workbench` (keyword *ref*; empty → forge 0x088105),
+      `components[]` (RecipeComponentSpec: item *ref* + count, consumed on craft).
+    - **Build:** pass-1 `mod.ConstructibleObjects.AddNew()` (editorId + count, registers it); pass-2
+      wires createdObject + workbench (defaulting to forge) + components via the existing `Resolve` +
+      `ContainerEntry` idiom. validate: Reg() + empty-createdObject + no-components + every ref checked.
+      dump: prints `recipe: makes Nx <obj> at <bench>` + each `component -> <ref> xN`.
+    - **Example:** `examples/recipe_spec.json` → `ModForgeRecipe.esp`: an in-spec weapon `MF_ForgedBlade`
+      (IronSword template for model, damage 12) + recipe `MF_ForgedBladeRecipe` making it at the forge
+      (workbench omitted → defaulted) from 3× IngotIron (0x05ACE4) + 1× LeatherStrips (0x0800E4). Built
+      + round-tripped via dump (recipe → forge 088105, 2 components; 4 cross-ref links, 1 in-spec).
+      validate clean; negative test catches empty createdObject / no components / bad component ref (3/3).
+      Packaged → `~/skyrim_mods/ModForgeRecipe.zip`.
+    - **NEXT (needs the tester):** stand at any forge → the "ModForge Forged Blade" recipe should appear
+      when you have ≥3 iron ingots + 1 leather strip → craft it → blade in inventory (equips fine, has
+      the IronSword model from It.8 templating). FUTURE: optional `conditions` (perk gating, e.g. require
+      Steel Smithing) + temper recipes (armor table / sharpening wheel benches). (Race/Class is the last
+      big gap left.)
 
 ## Build / test
 ```

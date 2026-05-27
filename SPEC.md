@@ -81,6 +81,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `outfits` | `editorId`, `items` (array of *refs* → armors/weapons; an npc `outfit` can point at this editorId) |
 | `statics` | `editorId`, `model` (a `.nif` path — reference a vanilla mesh; a placement base, no name) |
 | `activators` | `editorId`, `name`, `model` (`.nif` path), `keywords` (array of *refs*); attach behaviour via `scripts` |
+| `recipes` | `editorId`, `createdObject` (*ref*), `count` (int), `workbench` (keyword *ref*; defaults to the forge), `components` (array of `{ item (*ref*), count (int) }`) — a crafting recipe (COBJ) |
 
 A field marked *ref* takes an in-spec `editorId` **or** `"<master>:0xFORMID"` (see
 *References to vanilla / external forms* above). A standing NPC needs at least `race` +
@@ -209,6 +210,21 @@ spec; `speakerNpcEditorId`, if set, must name an npc. `prompt` is the player's l
   list yields nothing; `flags` names come from the LVLI/LVLN flag set.
 - `containers` (CONT) hold `items`, each an item *ref* + `count`. (To make the container
   appear in the world, place it with a `placement`, same as any object.)
+
+### recipes (crafting / COBJ)
+Make an item craftable at a workbench:
+```jsonc
+{ "editorId": "MF_ForgedBladeRecipe",
+  "createdObject": "MF_ForgedBlade",   // a ref — usually an in-spec weapon/armor
+  "count": 1,
+  "workbench": "Skyrim.esm:0x088105",   // bench keyword ref; OMIT to default to the forge
+  "components": [                        // consumed on craft (ref + count)
+    { "item": "Skyrim.esm:0x05ACE4", "count": 3 },   // IngotIron
+    { "item": "Skyrim.esm:0x0800E4", "count": 1 } ] }  // LeatherStrips
+```
+Common bench keywords: `0x088105` forge (new weapons/armor), `0x0ADB78` armor table (temper armor),
+`0x088108` sharpening wheel (temper weapons), `0x0F46CE` Skyforge. Perk/skill gating (conditions)
+is not yet a spec field — a recipe shows whenever you have the components.
 
 ## Workflow
 

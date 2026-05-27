@@ -646,6 +646,15 @@ internal static class Program
             r.Items = new();
         }
 
+        // ConstructibleObject (COBJ): created in pass 1 (editorId only, so it registers in the
+        // formKey table); createdObject/workbench/component refs are wired in pass 2.
+        foreach (var co in spec.Recipes)
+        {
+            var r = mod.ConstructibleObjects.AddNew();
+            r.EditorID = co.EditorId;
+            r.CreatedObjectCount = (ushort)Math.Max(1, co.Count);
+        }
+
         // Interior cells nest CellBlock(type 2, label=block) -> CellSubBlock(type 3, label=sub) ->
         // Cell, and Skyrim groups them BY FORMID: block = id % 10, sub = (id / 10) % 10 (decimal,
         // 24-bit ID — verified by walking Skyrim.esm, e.g. WhiterunBanneredMare 0x01605E/dec 90206
@@ -1008,6 +1017,24 @@ internal static class Program
                 });
         }
 
+        // Recipes (COBJ): wire createdObject + workbench keyword + component refs. Workbench defaults
+        // to the forge (CraftingSmithingForge) when unset, so a weapon/armor recipe just works.
+        foreach (var co in spec.Recipes)
+        {
+            if (!recordsByEd.TryGetValue(co.EditorId, out var rec) || rec is not IConstructibleObject cobj) continue;
+            Resolve($"recipe '{co.EditorId}' createdObject", co.CreatedObject, fk => cobj.CreatedObject.SetTo(fk));
+            var bench = string.IsNullOrWhiteSpace(co.Workbench) ? "Skyrim.esm:0x088105" : co.Workbench;
+            Resolve($"recipe '{co.EditorId}' workbench", bench, fk => cobj.WorkbenchKeyword.SetTo(fk));
+            cobj.Items ??= new();
+            foreach (var comp in co.Components)
+                Resolve($"recipe '{co.EditorId}' component", comp.Item, fk =>
+                {
+                    var ci = new ContainerItem { Count = comp.Count };
+                    ci.Item.SetTo(fk);
+                    cobj.Items!.Add(new ContainerEntry { Item = ci });
+                });
+        }
+
         // Attach Papyrus scripts (VMAD) to any record by editorId. The VMAD setter is
         // not on the IHaveVirtualMachineAdapter interface (get-only) and its type varies
         // (Quest -> QuestAdapter, most others -> VirtualMachineAdapter), so we reflect
@@ -1303,6 +1330,7 @@ internal static class Program
         foreach (var st in spec.Statics) Reg(st.EditorId, "static");
         foreach (var ac in spec.Activators) Reg(ac.EditorId, "activator");
         foreach (var me in spec.MagicEffects) Reg(me.EditorId, "magicEffect");
+        foreach (var co in spec.Recipes) Reg(co.EditorId, "recipe");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
         void CheckRef(string r, string what)
@@ -1425,6 +1453,15 @@ internal static class Program
         }
         foreach (var ct in spec.Containers)
             foreach (var e in ct.Items) CheckRef(e.Item, $"container '{ct.EditorId}' item");
+
+        foreach (var co in spec.Recipes)
+        {
+            if (string.IsNullOrWhiteSpace(co.CreatedObject)) problems.Add($"recipe '{co.EditorId}' has empty createdObject");
+            else CheckRef(co.CreatedObject, $"recipe '{co.EditorId}' createdObject");
+            CheckRef(co.Workbench, $"recipe '{co.EditorId}' workbench");   // empty -> defaults to forge
+            if (co.Components.Count == 0) problems.Add($"recipe '{co.EditorId}' has no components (nothing to consume)");
+            foreach (var comp in co.Components) CheckRef(comp.Item, $"recipe '{co.EditorId}' component");
+        }
 
         foreach (var s in spec.Spells)
         {
@@ -1724,6 +1761,14 @@ internal static class Program
             if (r is IContainerGetter contG && contG.Items is { Count: > 0 } items)
                 foreach (var e in items) Console.WriteLine($"      contains -> {Ref(e.Item.Item.FormKey)} x{e.Item.Count}");
 
+            if (r is IConstructibleObjectGetter cobj)
+            {
+                Console.WriteLine($"      recipe: makes {cobj.CreatedObjectCount ?? 1}x {Ref(cobj.CreatedObject.FormKey)}"
+                    + $" at {Ref(cobj.WorkbenchKeyword.FormKey)}");
+                if (cobj.Items is { } comps)
+                    foreach (var c in comps) Console.WriteLine($"        component -> {Ref(c.Item.Item.FormKey)} x{c.Item.Count}");
+            }
+
             if (r is ISpellGetter spG && (spG.Type != SpellType.Spell || spG.CastType != CastType.ConstantEffect || spG.BaseCost > 0))
                 Console.WriteLine($"      spell: type={spG.Type} cast={spG.CastType} target={spG.TargetType} cost={spG.BaseCost}");
 
@@ -1832,6 +1877,7 @@ internal sealed class ModSpec
     public List<OutfitSpec> Outfits { get; set; } = new();
     public List<StaticSpec> Statics { get; set; } = new();
     public List<ActivatorSpec> Activators { get; set; } = new();
+    public List<RecipeSpec> Recipes { get; set; } = new();
 }
 // "ref" fields below accept EITHER an in-spec editorId OR an external "<master>:0xFORMID"
 // (e.g. "Skyrim.esm:0x013746" — find them with the `find` command). External refs auto-add
@@ -1951,6 +1997,21 @@ internal sealed class LeveledNpcSpec { public string EditorId { get; set; } = ""
 // Container (CONT): named, with a list of item refs + counts.
 internal sealed class ContainerEntrySpec { public string Item { get; set; } = ""; public int Count { get; set; } = 1; }
 internal sealed class ContainerSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public float Weight { get; set; } public List<ContainerEntrySpec> Items { get; set; } = new(); }
+// One required ingredient in a recipe: a *ref* (in-spec or vanilla) + how many are consumed.
+internal sealed class RecipeComponentSpec { public string Item { get; set; } = ""; public int Count { get; set; } = 1; }
+// ConstructibleObject (COBJ): a crafting recipe. `createdObject` (a *ref*, usually an in-spec item)
+// is made in `count` copies at the `workbench` (a Keyword *ref*; defaults to the forge —
+// Skyrim.esm:0x088105 CraftingSmithingForge) by consuming the `components`. Perk/skill gating
+// (Conditions) is not yet a spec field — a recipe with components but no condition shows whenever
+// you have the materials.
+internal sealed class RecipeSpec
+{
+    public string EditorId { get; set; } = "";
+    public string CreatedObject { get; set; } = "";
+    public int Count { get; set; } = 1;
+    public string Workbench { get; set; } = "";   // bench keyword ref; empty -> forge
+    public List<RecipeComponentSpec> Components { get; set; } = new();
+}
 
 // --- Long-tail record types (same spec-class + build-loop pattern) ---------------------
 // Ingredient (INGR): an alchemy reagent — value/weight + `effects` (reuses the spell/potion

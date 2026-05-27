@@ -33,7 +33,8 @@
     "keywords": { "type": "array", "items": { "$ref": "#/$defs/keyword" }, "description": "Keyword (KYWD): define your own so in-spec records can reference it" },
     "outfits": { "type": "array", "items": { "$ref": "#/$defs/outfit" }, "description": "Outfit (OTFT): a set of item refs an NPC can wear" },
     "statics": { "type": "array", "items": { "$ref": "#/$defs/staticRec" }, "description": "Static (STAT): a world mesh (model path)" },
-    "activators": { "type": "array", "items": { "$ref": "#/$defs/activator" }, "description": "Activator (ACTI): an interactable world object" }
+    "activators": { "type": "array", "items": { "$ref": "#/$defs/activator" }, "description": "Activator (ACTI): an interactable world object" },
+    "recipes": { "type": "array", "items": { "$ref": "#/$defs/recipe" }, "description": "ConstructibleObject (COBJ): crafting recipes" }
   },
   "additionalProperties": false,
   "$defs": {
@@ -290,6 +291,18 @@
         "name": { "type": "string" },
         "weight": { "type": "number", "minimum": 0 },
         "items": { "type": "array", "items": { "$ref": "#/$defs/containerItem" } }
+      }
+    },
+    "recipe": {
+      "type": "object",
+      "required": ["editorId", "createdObject"],
+      "description": "ConstructibleObject (COBJ): a crafting recipe",
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "createdObject": { "$ref": "#/$defs/ref", "description": "the item produced — usually an in-spec weapon/armor/etc." },
+        "count": { "type": "integer", "minimum": 1, "description": "how many are produced (default 1)" },
+        "workbench": { "$ref": "#/$defs/ref", "description": "bench keyword ref; omit to default to the forge (Skyrim.esm:0x088105). Others: 0x0ADB78 armor table, 0x088108 sharpening wheel, 0x0F46CE Skyforge" },
+        "components": { "type": "array", "items": { "$ref": "#/$defs/containerItem" }, "description": "ingredients consumed on craft (item ref + count)" }
       }
     },
     "ingredient": {

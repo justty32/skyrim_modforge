@@ -1,0 +1,25 @@
+{
+  "pluginName": "ModForgeRecipe.esp",
+  "esl": true,
+  "weapons": [
+    {
+      "editorId": "MF_ForgedBlade",
+      "name": "ModForge Forged Blade",
+      "value": 75,
+      "weight": 9.0,
+      "damage": 12,
+      "template": "Skyrim.esm:0x012EB7"
+    }
+  ],
+  "recipes": [
+    {
+      "editorId": "MF_ForgedBladeRecipe",
+      "createdObject": "MF_ForgedBlade",
+      "count": 1,
+      "components": [
+        { "item": "Skyrim.esm:0x05ACE4", "count": 3 },
+        { "item": "Skyrim.esm:0x0800E4", "count": 1 }
+      ]
+    }
+  ]
+}
