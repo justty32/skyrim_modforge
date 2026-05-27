@@ -46,6 +46,7 @@ internal static class Program
                 case "dump" when args.Length == 2:    return Dump(args[1]);
                 case "find" when args.Length is 3 or 4: return Find(args[1], args[2], args.Length == 4 ? args[3] : null);
                 case "cellblk" when args.Length is 2 or 3: return CellBlk(args[1], args.Length == 3 ? args[2] : null);
+                case "mgefdiag" when args.Length == 3: return MgefDiag(args[1], args[2]);
                 default: Usage(); return 1;
             }
         }
@@ -68,6 +69,7 @@ internal static class Program
         "  dump    <in.esp>\n" +
         "  find    <in.esp> <query> [type]              search editorId/name -> Skyrim.esm:0xFORMID\n" +
         "  cellblk <in.esp> [0xFORMID]                  show interior cell block/sub-block (FormID grouping)\n" +
+        "  mgefdiag <in.esp> <0xFORMID>                 print a MagicEffect's fields (compare gen vs vanilla)\n" +
         "  extract <in.esp> <strings.json>\n" +
         "  applyloc <in.esp> <strings.json> <outDir>   (Localized UTF-8 _chinese.STRINGS)\n" +
         "  apply   <in.esp> <strings.json> <out.esp>");
@@ -1671,6 +1673,35 @@ internal static class Program
             }
         }
         if (target is not null && shown == 0) Console.WriteLine($"0x{target:X6} not found as an interior cell");
+        return 0;
+    }
+
+    // Diagnostic: print a MagicEffect's full functional field set from any plugin, to compare a
+    // generated MGEF against a vanilla one (this is how the It.12 "Recover flag cancels an instant
+    // heal" bug was found). Avoids Name/Description (localized string landmine on master overlays).
+    private static int MgefDiag(string inPath, string formIdHex)
+    {
+        uint id = Convert.ToUInt32(formIdHex.Replace("0x", "", StringComparison.OrdinalIgnoreCase), 16) & 0xFFFFFF;
+        using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE);
+        foreach (var r in mod.EnumerateMajorRecords<IMagicEffectGetter>())
+        {
+            if (r.FormKey.ID != id) continue;
+            string F(IFormLinkGetter<IMajorRecordGetter> l) => l.FormKey.IsNull ? "-" : l.FormKey.ToString();
+            Console.WriteLine($"0x{id:X6}  EditorID={r.EditorID}");
+            Console.WriteLine($"  archetype.Type = {r.Archetype.Type}");
+            Console.WriteLine($"  archetype.ActorValue = {r.Archetype.ActorValue}");
+            Console.WriteLine($"  archetype.Association = {(r.Archetype.AssociationKey.FormKey.IsNull ? "-" : r.Archetype.AssociationKey.FormKey.ToString())}");
+            Console.WriteLine($"  Flags = {r.Flags}");
+            Console.WriteLine($"  BaseCost = {r.BaseCost}");
+            Console.WriteLine($"  MagicSkill = {r.MagicSkill}   ResistValue = {r.ResistValue}   SecondActorValue = {r.SecondActorValue}");
+            Console.WriteLine($"  CastType = {r.CastType}   TargetType = {r.TargetType}");
+            Console.WriteLine($"  TaperWeight={r.TaperWeight} TaperCurve={r.TaperCurve} TaperDuration={r.TaperDuration} SkillUsageMult={r.SkillUsageMultiplier}");
+            Console.WriteLine($"  MenuDisplayObject={F(r.MenuDisplayObject)} CastingArt={F(r.CastingArt)} HitEffectArt={F(r.HitEffectArt)} Projectile={F(r.Projectile)} Explosion={F(r.Explosion)}");
+            Console.WriteLine($"  Keywords={(r.Keywords is null ? "-" : string.Join(",", r.Keywords.Select(k => k.FormKey.ToString())))}");
+            Console.WriteLine($"  PerkToApply={F(r.PerkToApply)} EquipAbility={F(r.EquipAbility)} Conditions={r.Conditions.Count}");
+            return 0;
+        }
+        Console.WriteLine($"0x{id:X6} not a MagicEffect in {Path.GetFileName(inPath)}");
         return 0;
     }
 

@@ -326,7 +326,14 @@ call; the spec IS the contract.)
       vanilla interior / exterior worldspace) are in-game-confirmed.
       (Still open for the NEW-interior-cell path: a void cell needs a lighting template + floor
       static, else black/no-floor — addressed in It.11.)
-- [ ] **It.11 — new interior cell: lighting + floor (built, NOT YET in-game tested) (2026-05-27).**
+- [~] **It.11 — new interior cell: lighting + floor — IN-GAME: core OK, lighting flat (2026-05-27).**
+      Tester: `coc MF_TestChamber` → floor + Dibella statue + chest all present and walkable, and
+      crucially "至少不是全黑的" (NOT pitch-black) — so the `template`/CopyCellEnv lighting copy fixed
+      the original black-cell problem. BUT the lighting looks flat/"荒诞" — uniform ambient, no
+      directional light or shadows (the copied inline Lighting + LightingTemplate give ambient fill,
+      and the placed `DefaultSunlightHalfOmni01` evidently isn't reading as a real light here). COSMETIC
+      follow-up (the cell is usable): try a proper omni/shadow light base, or tune the copied Lighting's
+      ambient/directional. Core It.11 goal (lit enough to use + floor) MET; polish deferred.
       A brand-new in-spec interior cell had no Lighting/LightingTemplate (renders PITCH BLACK) and
       no floor geometry (player `coc`s in and falls into the void). Fix is two parts:
     - **Lighting (code):** added an optional `template` field to `CellSpec` — a vanilla INTERIOR cell
@@ -375,13 +382,31 @@ call; the spec IS the contract.)
       verified via dump (5 records, 3 in-spec effect links), validate clean, negative test catches bad
       archetype/AV/flag/association (4/6). Regression: sample_spec (vanilla effect refs) unchanged.
       Packaged → `~/skyrim_mods/ModForgeMagic.zip`.
-    - **NEXT (needs the tester):** `help "ModForge" 0` to get FormIDs, then `player.addspell <MF_HealSelf>`
-      → cast → Health refills (the bulletproof check); `player.additem <MF_HealthDraught> 1` → drink →
-      Health restores. KNOWN LIMITATION: a custom `ValueModifier` MGEF applies its value but has NO
-      visual art/projectile — so `MF_Firebolt` (Aimed) has no visible bolt and may not "travel" without
-      a projectile + casting/hit art (ART/PROJ records — a deeper rabbit hole, future work). Self/Touch
-      + potions work fully. (Race/Class still untouched; COBJ crafting done in It.13.)
-- [ ] **It.13 — crafting recipes (ConstructibleObject / COBJ) (built, NOT YET in-game tested) (2026-05-27).**
+    - **IN-GAME (2026-05-27, first try): FAILED — `MF_HealSelf` cast but didn't heal + magicka cost
+      was absurd.** Root-caused with a new `mgefdiag` diagnostic (prints an MGEF's functional fields
+      from any plugin, master or generated) by diffing my effect vs vanilla `AlchRestoreHealth 0x03EB15`:
+      (1) **the `Recover` flag was the killer** — `Recover` reverts the modified value when the effect
+      *ends*; on an instant effect (duration 0) it ends immediately, so the +100 heal was applied then
+      instantly undone → net zero. Vanilla restore uses `NoDuration, NoArea` and NO Recover. (2) `baseCost`
+      8 (vs vanilla 0.5) × magnitude 100 under autocalc = the absurd cost. The bug was in the EXAMPLE's
+      authored flags, not the build code — but it's the #1 MGEF gotcha, so it's now documented in SPEC.md.
+    - **FIX (example + docs, rebuilt — NOT yet re-tested):** redesigned `mgef_spec.json` to teach the
+      flag/timing rule: `MF_RestoreHealthEffect` = instant, `["NoDuration","NoArea"]`, baseCost 0.5 (now
+      matches vanilla via mgefdiag) used by spell `MF_HealSelf` + potion `MF_HealthDraught`; NEW
+      `MF_FortifyHealthEffect` = timed (+50 Health/60s), `["Recover","NoArea"]` — the CORRECT use of
+      Recover — used by spell `MF_FortifyHealth`. Dropped the Aimed `MF_Firebolt` (a no-projectile Aimed
+      spell is a poor demo). SPEC.md now spells out instant→NoDuration/no-Recover vs timed→Recover, and
+      "keep baseCost low (autocalc)". `mgefdiag` promoted to a documented CLI command (README + Usage).
+    - **RE-TEST (needs the tester):** broad `help "ModForge" 0` to list ALL records + FormIDs (the
+      earlier `help "ModForge Health Draught" 0` found nothing — likely a query quirk, the potion IS in
+      the file with that name per dump; confirm via the broad list). Then **take damage first**, then
+      `player.addspell <MF_HealSelf id>` → cast → Health refills; `player.addspell <MF_FortifyHealth id>`
+      → cast → max Health +50 for 60s then reverts; `player.additem <MF_HealthDraught id> 1` → drink → heals.
+      STILL FUTURE: Aimed damage spells need a projectile + casting/hit art (ART/PROJ). (Race/Class
+      untouched; COBJ done in It.13.)
+- [x] **It.13 — crafting recipes (ConstructibleObject / COBJ) — IN-GAME CONFIRMED (2026-05-27).**
+      Tester: at a forge with 3× iron ingot + 1× leather strip, "ModForge Forged Blade" appeared,
+      crafted it, the blade equips and swings normally. COBJ crafting works end-to-end.
       Makes generated items craftable at a workbench. Turned out SIMPLER than NOTES feared — the
       workbench is a plain `WorkbenchKeyword` FormLink, NOT a CTDA condition; components live in
       `Items` (the same `ContainerEntry`/`ContainerItem` type the container support already uses);

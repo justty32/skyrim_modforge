@@ -127,6 +127,17 @@ A bare `ValueModifier` MGEF (no visual art/projectile) still applies its value �
 and for potions. A damage spell that *travels* (Aimed) also needs a projectile + casting/hit art
 (not yet spec fields), so an Aimed custom spell currently applies on contact but has no visible bolt.
 
+**Flags matter — match the effect's timing (this is the #1 gotcha):**
+- **Instant** restore/damage (`duration` 0) → `["NoDuration", "NoArea"]`, and add `"Detrimental"`
+  (+`"Hostile"`) for damage. Do **NOT** set `Recover` — `Recover` reverts the value when the effect
+  *ends*, and an instant effect ends immediately, so the change is undone (a heal applies +N then
+  instantly removes it → **net zero, looks like "casts but does nothing"**).
+- **Timed** fortify (`duration` > 0, e.g. +50 Health for 60s) → `["Recover", "NoArea"]`: `Recover`
+  cleanly removes the bonus when the timer expires. This is `Recover`'s correct use.
+Keep `baseCost` low (vanilla restore/damage effects use ~0.5–3); the spell's magicka cost is
+auto-calculated from `baseCost` × `magnitude`, so a large `baseCost` makes the spell absurdly
+expensive. Compare any effect to a vanilla one with `mgefdiag <Skyrim.esm> <0xFORMID>`.
+
 ### dialogue
 A `dialogue` entry is a player topic shown under a quest's branch, optionally limited
 to one speaker NPC (a `GetIsID` condition). `questEditorId` must name a quest in this

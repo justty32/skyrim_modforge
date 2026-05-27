@@ -11,21 +11,20 @@
       "magicSkill": "Restoration",
       "castType": "FireAndForget",
       "targetType": "Self",
-      "baseCost": 8.0,
-      "flags": ["Recover"]
+      "baseCost": 0.5,
+      "flags": ["NoDuration", "NoArea"]
     },
     {
-      "editorId": "MF_FireDamageEffect",
-      "name": "ModForge Fire Damage",
-      "description": "Deals fire damage.",
+      "editorId": "MF_FortifyHealthEffect",
+      "name": "ModForge Fortify Health",
+      "description": "Health is increased for a short time.",
       "archetype": "ValueModifier",
       "actorValue": "Health",
-      "magicSkill": "Destruction",
-      "resistValue": "ResistFire",
+      "magicSkill": "Restoration",
       "castType": "FireAndForget",
-      "targetType": "Aimed",
-      "baseCost": 12.0,
-      "flags": ["Hostile", "Detrimental"]
+      "targetType": "Self",
+      "baseCost": 0.5,
+      "flags": ["Recover", "NoArea"]
     }
   ],
   "spells": [
@@ -41,14 +40,14 @@
       ]
     },
     {
-      "editorId": "MF_Firebolt",
-      "name": "ModForge Firebolt",
+      "editorId": "MF_FortifyHealth",
+      "name": "ModForge Fortify Health",
       "spellType": "Spell",
       "castType": "FireAndForget",
-      "targetType": "Aimed",
-      "baseCost": 30,
+      "targetType": "Self",
+      "baseCost": 50,
       "effects": [
-        { "magicEffect": "MF_FireDamageEffect", "magnitude": 25, "area": 0, "duration": 0 }
+        { "magicEffect": "MF_FortifyHealthEffect", "magnitude": 50, "area": 0, "duration": 60 }
       ]
     }
   ],
