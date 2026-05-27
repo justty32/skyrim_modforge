@@ -66,6 +66,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `potions` | `editorId`, `name`, `value`, `weight`, `effects` (array of *effects*) |
 | `armors` | `editorId`, `name`, `value`, `weight`, `armorRating` (number), `armorType` (`light`\|`heavy`\|`clothing`), `slots` (array of biped-slot names), `keywords` (array of *refs*) |
 | `factions` | `editorId`, `name` |
+| `classes` | `editorId`, `name`, `description`, `teaches` (Skill), `maxTrainingLevel`, `healthWeight`/`magickaWeight`/`staminaWeight` (attribute distribution), `skillWeights` (`{ Skill: 0–255 }`) — an npc `class` can point at one |
 | `messages` | `editorId`, `name`, `description` (body text) |
 | `cells` | `editorId`, `name`, `template` (vanilla interior cell `<master>:0xFORMID` to copy lighting from — else the new cell is black) |
 | `placements` | `base` (*ref*); **interior:** `cell` (in-spec editorId **or** vanilla interior cell `<master>:0xFORMID`) **or exterior:** `worldspace` (`<master>:0xFORMID`, position is world coords); `kind` (`npc`\|`object`), `position` (`{x,y,z}`), `rotation` (`{x,y,z}` degrees), `persistent` (bool) |
@@ -142,6 +143,21 @@ and for potions. A damage spell that *travels* (`targetType: Aimed`) needs a `pr
 Keep `baseCost` low (vanilla restore/damage effects use ~0.5–3); the spell's magicka cost is
 auto-calculated from `baseCost` × `magnitude`, so a large `baseCost` makes the spell absurdly
 expensive. Compare any effect to a vanilla one with `mgefdiag <Skyrim.esm> <0xFORMID>`.
+
+### classes (CLAS)
+An NPC's "profession" — set an npc's `class` ref to one. It drives the actor's attribute
+distribution and favoured skills (and, for a trainer NPC, what it `teaches`).
+```jsonc
+{ "editorId": "MF_Battlemage", "name": "ModForge Battlemage",
+  "teaches": "Destruction",        // a Skill the class can train (trainers); optional
+  "maxTrainingLevel": 50,
+  "healthWeight": 30, "magickaWeight": 50, "staminaWeight": 20,   // attribute split (~sum 100)
+  "skillWeights": { "Destruction": 100, "Restoration": 75, "OneHanded": 50 } }  // Skill -> 0–255 favour
+```
+Skill names: `OneHanded`, `TwoHanded`, `Archery`, `Block`, `Smithing`, `HeavyArmor`, `LightArmor`,
+`Pickpocket`, `Lockpicking`, `Sneak`, `Alchemy`, `Speech`, `Alteration`, `Conjuration`,
+`Destruction`, `Illusion`, `Restoration`, `Enchanting`. Class effects are subtle (they shape an
+NPC's auto-levelled stats/skills + combat preference), not a flashy in-game visual.
 
 ### dialogue
 A `dialogue` entry is a player topic shown under a quest's branch, optionally limited

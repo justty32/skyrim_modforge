@@ -465,6 +465,26 @@ call; the spec IS the contract.)
     - **RE-TEST (needs the tester):** `help "ModForge Firebolt" 0` → `player.addspell <id>` → aim at an
       enemy/wall and cast → should see a fire bolt LEAVE the hand, travel, and impact (vs nothing
       before), dealing ~25 fire damage. (Race/Class is the last big gap.)
+- [ ] **It.15 — Class (CLAS) authoring (built, NOT YET in-game tested) (2026-05-27).**
+      Did the safe half of the last big gap (Class); skipped custom Race (deep asset rabbit hole —
+      bodies/skeleton/voice + heavy in-game iteration). A `classes[]` entry = an npc "profession" an
+      npc's `class` ref can point at. CLAS has NO FormLinks (all enums + weight dicts), so it's built
+      fully in pass 1.
+    - **Spec/build:** ClassSpec → `name`/`description`, `teaches` (Skill enum, trainer NPCs),
+      `maxTrainingLevel`, `healthWeight`/`magickaWeight`/`staminaWeight` (BasicStat distribution dict),
+      `skillWeights` (`{Skill: 0–255}`). `mod.Classes.AddNew()`; enums via `Enum.TryParse<Skill>` /
+      `<BasicStat>`; all-zero stat weights default to balanced 1/1/1 (avoid a degenerate distribution);
+      unknown skill keys warn + skip. validate: Reg() + `CheckEnum<Skill>` on `teaches` + every
+      skillWeight key. dump: `class: teaches/maxTrain/stats[…]/skills[…]`.
+    - **Example:** `examples/class_spec.json` → `ModForgeClass.esp`: class `MF_Battlemage` (teaches
+      Destruction, H30/M50/S20, skills Destruction100/Restoration75/Alteration40/OneHanded50/HeavyArmor25)
+      + npc `MF_BattlemageNpc` (race NordRace 0x013746 + class MF_Battlemage). Built + dump verified
+      (weights correct, npc→class link resolves in-spec); validate clean; negative test catches bad
+      `teaches`/skill key. Packaged → `~/skyrim_mods/ModForgeClass.zip`.
+    - **NEXT (needs the tester):** `player.placeatme <MF_BattlemageNpc id>` spawns the NPC (NordRace
+      body). Class effects are SUBTLE — they shape the actor's auto-levelled attribute split + skill
+      preference, not a flashy visual; `getavinfo`/behaviour over time is the only real tell. Structural
+      verification (dump) is the main check. Custom Race remains the one untouched big gap.
 
 ## Build / test
 ```

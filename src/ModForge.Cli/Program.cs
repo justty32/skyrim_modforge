@@ -565,6 +565,27 @@ internal static class Program
             var r = mod.Factions.AddNew();
             r.EditorID = f.EditorId; r.Name = f.Name;
         }
+        // Class (CLAS): no FormLinks (all enums/weight dicts), so fully built in pass 1. An npc's
+        // `class` ref can point at one (resolved in pass 2 — it's in formKeyByEd by then). StatWeights
+        // (Health/Magicka/Stamina) drive the actor's attribute distribution; SkillWeights favour skills.
+        foreach (var cl in spec.Classes)
+        {
+            var r = mod.Classes.AddNew();
+            r.EditorID = cl.EditorId;
+            if (!string.IsNullOrEmpty(cl.Name)) r.Name = cl.Name;
+            if (!string.IsNullOrEmpty(cl.Description)) r.Description = cl.Description;
+            if (Enum.TryParse<Skill>(cl.Teaches, ignoreCase: true, out var teach)) r.Teaches = teach;
+            r.MaxTrainingLevel = (byte)Math.Clamp(cl.MaxTrainingLevel, 0, 255);
+            // All-zero stat weights would be a degenerate distribution; default to balanced.
+            bool anyStat = cl.HealthWeight != 0 || cl.MagickaWeight != 0 || cl.StaminaWeight != 0;
+            r.StatWeights[BasicStat.Health]  = (byte)Math.Clamp(anyStat ? cl.HealthWeight  : 1, 0, 255);
+            r.StatWeights[BasicStat.Magicka] = (byte)Math.Clamp(anyStat ? cl.MagickaWeight : 1, 0, 255);
+            r.StatWeights[BasicStat.Stamina] = (byte)Math.Clamp(anyStat ? cl.StaminaWeight : 1, 0, 255);
+            foreach (var (skillName, w) in cl.SkillWeights)
+                if (Enum.TryParse<Skill>(skillName, ignoreCase: true, out var sk))
+                    r.SkillWeights[sk] = (byte)Math.Clamp(w, 0, 255);
+                else Console.WriteLine($"  ! class '{cl.EditorId}' skillWeight '{skillName}' is not a Skill — skipped");
+        }
         foreach (var msg in spec.Messages)
         {
             var r = mod.Messages.AddNew();
@@ -1339,6 +1360,7 @@ internal static class Program
         foreach (var ac in spec.Activators) Reg(ac.EditorId, "activator");
         foreach (var me in spec.MagicEffects) Reg(me.EditorId, "magicEffect");
         foreach (var co in spec.Recipes) Reg(co.EditorId, "recipe");
+        foreach (var cl in spec.Classes) Reg(cl.EditorId, "class");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
         void CheckRef(string r, string what)
@@ -1412,6 +1434,11 @@ internal static class Program
             CheckRef(me.CastingArt, $"magicEffect '{me.EditorId}' castingArt");
             CheckRef(me.HitEffectArt, $"magicEffect '{me.EditorId}' hitEffectArt");
             CheckRef(me.Explosion, $"magicEffect '{me.EditorId}' explosion");
+        }
+        foreach (var cl in spec.Classes)
+        {
+            CheckEnum<Skill>(cl.Teaches, $"class '{cl.EditorId}' teaches");
+            foreach (var sk in cl.SkillWeights.Keys) CheckEnum<Skill>(sk, $"class '{cl.EditorId}' skillWeight key");
         }
 
         foreach (var d in spec.Dialogue)
@@ -1842,6 +1869,13 @@ internal static class Program
             if (r is ISpellGetter spG && (spG.Type != SpellType.Spell || spG.CastType != CastType.ConstantEffect || spG.BaseCost > 0))
                 Console.WriteLine($"      spell: type={spG.Type} cast={spG.CastType} target={spG.TargetType} cost={spG.BaseCost}");
 
+            if (r is IClassGetter cls)
+            {
+                var stats = string.Join(",", cls.StatWeights.Select(kv => $"{kv.Key}:{kv.Value}"));
+                var skills = string.Join(",", cls.SkillWeights.Where(kv => kv.Value > 0).Select(kv => $"{kv.Key}:{kv.Value}"));
+                Console.WriteLine($"      class: teaches={cls.Teaches?.ToString() ?? "-"} maxTrain={cls.MaxTrainingLevel} stats=[{stats}] skills=[{skills}]");
+            }
+
             if (r is IMagicEffectGetter mgef)
             {
                 var assoc = mgef.Archetype.AssociationKey.FormKey;
@@ -1948,6 +1982,7 @@ internal sealed class ModSpec
     public List<StaticSpec> Statics { get; set; } = new();
     public List<ActivatorSpec> Activators { get; set; } = new();
     public List<RecipeSpec> Recipes { get; set; } = new();
+    public List<ClassSpec> Classes { get; set; } = new();
 }
 // "ref" fields below accept EITHER an in-spec editorId OR an external "<master>:0xFORMID"
 // (e.g. "Skyrim.esm:0x013746" — find them with the `find` command). External refs auto-add
@@ -2020,6 +2055,23 @@ internal sealed class ArmorSpec { public string EditorId { get; set; } = ""; pub
 // One magic effect on a spell/potion: a MagicEffect ref + magnitude/area/duration (EffectData).
 internal sealed class EffectSpec { public string MagicEffect { get; set; } = ""; public float Magnitude { get; set; } public int Area { get; set; } public int Duration { get; set; } }
 internal sealed class FactionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
+// Class (CLAS): an actor's "profession" — drives its attribute distribution + favoured skills (and,
+// for trainers, what it `teaches`). An npc's `class` ref can point at one. `healthWeight`/
+// `magickaWeight`/`staminaWeight` are the BasicStat distribution (relative %, ~sum 100); `skillWeights`
+// maps a Skill name (OneHanded/Destruction/Sneak/…) to a 0–255 favour. `teaches` (a Skill) +
+// `maxTrainingLevel` matter only for trainer NPCs.
+internal sealed class ClassSpec
+{
+    public string EditorId { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Description { get; set; } = "";
+    public string Teaches { get; set; } = "";
+    public int MaxTrainingLevel { get; set; }
+    public int HealthWeight { get; set; }
+    public int MagickaWeight { get; set; }
+    public int StaminaWeight { get; set; }
+    public Dictionary<string, int> SkillWeights { get; set; } = new();
+}
 internal sealed class MessageSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Description { get; set; } = ""; }
 // Attach a compiled Papyrus script (by Scriptname) to a record (by editorId), with
 // typed properties. type ∈ int|float|bool|string|object; object resolves ObjectEditorId.

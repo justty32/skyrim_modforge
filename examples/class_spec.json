@@ -1,0 +1,31 @@
+{
+  "pluginName": "ModForgeClass.esp",
+  "esl": true,
+  "classes": [
+    {
+      "editorId": "MF_Battlemage",
+      "name": "ModForge Battlemage",
+      "description": "A warrior-mage who blends destruction magic with the sword.",
+      "teaches": "Destruction",
+      "maxTrainingLevel": 50,
+      "healthWeight": 30,
+      "magickaWeight": 50,
+      "staminaWeight": 20,
+      "skillWeights": {
+        "Destruction": 100,
+        "Restoration": 75,
+        "Alteration": 40,
+        "OneHanded": 50,
+        "HeavyArmor": 25
+      }
+    }
+  ],
+  "npcs": [
+    {
+      "editorId": "MF_BattlemageNpc",
+      "name": "ModForge Battlemage",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_Battlemage"
+    }
+  ]
+}

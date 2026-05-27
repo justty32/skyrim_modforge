@@ -18,6 +18,7 @@
     "potions": { "type": "array", "items": { "$ref": "#/$defs/potion" } },
     "armors": { "type": "array", "items": { "$ref": "#/$defs/armor" } },
     "factions": { "type": "array", "items": { "$ref": "#/$defs/named" } },
+    "classes": { "type": "array", "items": { "$ref": "#/$defs/class" }, "description": "Class (CLAS): an npc 'profession' (attribute/skill weights); an npc class can point at one" },
     "messages": { "type": "array", "items": { "$ref": "#/$defs/message" } },
     "scripts": { "type": "array", "items": { "$ref": "#/$defs/script" } },
     "cells": { "type": "array", "items": { "$ref": "#/$defs/cell" }, "description": "new interior cells (reach in-game via `coc <editorId>`)" },
@@ -156,6 +157,22 @@
         "editorId": { "type": "string", "minLength": 1 },
         "name": { "type": "string" },
         "description": { "type": "string" }
+      }
+    },
+    "class": {
+      "type": "object",
+      "required": ["editorId"],
+      "description": "Class (CLAS): an npc 'profession' — attribute/skill weights",
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "teaches": { "enum": ["OneHanded", "TwoHanded", "Archery", "Block", "Smithing", "HeavyArmor", "LightArmor", "Pickpocket", "Lockpicking", "Sneak", "Alchemy", "Speech", "Alteration", "Conjuration", "Destruction", "Illusion", "Restoration", "Enchanting"], "description": "a Skill the class can train (trainer NPCs)" },
+        "maxTrainingLevel": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "healthWeight": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "magickaWeight": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "staminaWeight": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "skillWeights": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 255 }, "description": "Skill name -> 0-255 favour, e.g. {\"Destruction\":100}" }
       }
     },
     "npc": {
