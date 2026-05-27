@@ -96,8 +96,12 @@
         "castType": { "enum": ["ConstantEffect", "FireAndForget", "Concentration"] },
         "targetType": { "enum": ["Self", "Touch", "Aimed", "TargetActor", "TargetLocation"] },
         "baseCost": { "type": "number", "minimum": 0 },
-        "flags": { "type": "array", "items": { "enum": ["Hostile", "Recover", "Detrimental", "SnapToNavmesh", "NoHitEvent", "DispelWithKeywords", "NoDuration", "NoMagnitude", "NoArea", "FXPersist", "GoryVisuals", "HideInUI", "NoRecast", "PowerAffectsMagnitude", "PowerAffectsDuration", "Painless", "NoHitEffect", "NoDeathDispel"] } },
-        "association": { "$ref": "#/$defs/ref", "description": "summoned/bound form ref (only for Summon/Bound-type archetypes)" }
+        "flags": { "type": "array", "items": { "enum": ["Hostile", "Recover", "Detrimental", "SnapToNavmesh", "NoHitEvent", "DispelWithKeywords", "NoDuration", "NoMagnitude", "NoArea", "FXPersist", "GoryVisuals", "HideInUI", "NoRecast", "PowerAffectsMagnitude", "PowerAffectsDuration", "Painless", "NoHitEffect", "NoDeathDispel"] }, "description": "instant restore/damage: [NoDuration,NoArea] (+Hostile,Detrimental for damage); timed fortify: [Recover]. Recover on an instant effect cancels it." },
+        "association": { "$ref": "#/$defs/ref", "description": "summoned/bound form ref (only for Summon/Bound-type archetypes)" },
+        "projectile": { "$ref": "#/$defs/ref", "description": "PROJ ref — the bolt that travels; needed for an Aimed spell to be visible (e.g. Skyrim.esm:0x10FBEA)" },
+        "castingArt": { "$ref": "#/$defs/ref", "description": "ARTO ref — FX at the caster's hands (e.g. Skyrim.esm:0x01B211)" },
+        "hitEffectArt": { "$ref": "#/$defs/ref", "description": "ARTO ref — FX at the impact point" },
+        "explosion": { "$ref": "#/$defs/ref", "description": "EXPL ref — AoE explosion on impact" }
       }
     },
     "potion": {

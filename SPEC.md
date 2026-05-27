@@ -121,11 +121,16 @@ then points at it by `editorId` (and the per-cast `magnitude`/`area`/`duration` 
   "targetType": "Self",            // Self | Touch | Aimed | TargetActor | TargetLocation
   "baseCost": 8.0,
   "flags": ["Recover"],            // Hostile | Detrimental | Recover | NoArea | NoDuration | NoMagnitude | …
-  "association": "<ref>" }         // summoned/bound form (only for Summon/Bound archetypes)
+  "association": "<ref>",          // summoned/bound form (only for Summon/Bound archetypes)
+  "projectile": "<ref>",           // PROJ — the bolt that travels (needed for Aimed spells)
+  "castingArt": "<ref>",           // ARTO — FX at the caster's hands
+  "hitEffectArt": "<ref>",         // ARTO — FX at the impact point
+  "explosion": "<ref>" }           // EXPL — AoE explosion on impact
 ```
-A bare `ValueModifier` MGEF (no visual art/projectile) still applies its value — fine for self/touch
-and for potions. A damage spell that *travels* (Aimed) also needs a projectile + casting/hit art
-(not yet spec fields), so an Aimed custom spell currently applies on contact but has no visible bolt.
+A bare `ValueModifier` MGEF (no visual art/projectile) still applies its value — fine for Self/Touch
+and for potions. A damage spell that *travels* (`targetType: Aimed`) needs a `projectile` (+ usually
+`castingArt`); harvest a vanilla one with `mgefdiag <Skyrim.esm> <0xFORMID>` (e.g. the fire effect
+`FireDamageFFAimed75 0x10F7F1` uses projectile `0x10FBEA` + castingArt `0x01B211`).
 
 **Flags matter — match the effect's timing (this is the #1 gotcha):**
 - **Instant** restore/damage (`duration` 0) → `["NoDuration", "NoArea"]`, and add `"Detrimental"`

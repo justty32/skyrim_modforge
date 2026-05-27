@@ -446,6 +446,23 @@ call; the spec IS the contract.)
       the IronSword model from It.8 templating). FUTURE: optional `conditions` (perk gating, e.g. require
       Steel Smithing) + temper recipes (armor table / sharpening wheel benches). (Race/Class is the last
       big gap left.)
+- [ ] **It.14 — spell projectiles + visual art (built, NOT YET in-game tested) (2026-05-27).**
+      Completes It.12: a custom Aimed damage spell had no visible bolt (a ValueModifier MGEF applies
+      its value but carries no visuals). Added four optional ref fields to MagicEffectSpec —
+      `projectile` (PROJ, the traveling bolt), `castingArt` (ARTO, FX at the hands), `hitEffectArt`
+      (ARTO, FX at impact), `explosion` (EXPL, AoE) — wired in pass 2 alongside `association` (Resolve
+      skips empty, so only authored refs are set). validate CheckRef's each. Harvested the real vanilla
+      values with `mgefdiag`: `FireDamageFFAimed75 0x10F7F1` → projectile `0x10FBEA` + castingArt
+      `0x01B211` (the projectile carries its own impact visuals, so hitEffectArt/explosion optional).
+    - **Example:** re-added `MF_FireDamageEffect` (ValueModifier/Health/Destruction/Aimed/ResistFire,
+      flags Hostile,Detrimental,NoDuration,NoArea, baseCost 1.5, **projectile 0x10FBEA + castingArt
+      0x01B211**) + spell `MF_Firebolt` (Aimed, magnitude 25) to `mgef_spec.json`. Built + verified via
+      mgefdiag (Projectile + CastingArt now set on the effect). validate clean; negative test catches a
+      malformed/unresolved projectile/castingArt ref. Repackaged `~/skyrim_mods/ModForgeMagic.zip` (now
+      7 records: 3 MGEF + 3 spells + 1 potion).
+    - **RE-TEST (needs the tester):** `help "ModForge Firebolt" 0` → `player.addspell <id>` → aim at an
+      enemy/wall and cast → should see a fire bolt LEAVE the hand, travel, and impact (vs nothing
+      before), dealing ~25 fire damage. (Race/Class is the last big gap.)
 
 ## Build / test
 ```

@@ -25,6 +25,21 @@
       "targetType": "Self",
       "baseCost": 0.5,
       "flags": ["Recover", "NoArea"]
+    },
+    {
+      "editorId": "MF_FireDamageEffect",
+      "name": "ModForge Fire Damage",
+      "description": "Deals fire damage.",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "magicSkill": "Destruction",
+      "resistValue": "ResistFire",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
+      "baseCost": 1.5,
+      "flags": ["Hostile", "Detrimental", "NoDuration", "NoArea"],
+      "projectile": "Skyrim.esm:0x10FBEA",
+      "castingArt": "Skyrim.esm:0x01B211"
     }
   ],
   "spells": [
@@ -48,6 +63,17 @@
       "baseCost": 50,
       "effects": [
         { "magicEffect": "MF_FortifyHealthEffect", "magnitude": 50, "area": 0, "duration": 60 }
+      ]
+    },
+    {
+      "editorId": "MF_Firebolt",
+      "name": "ModForge Firebolt",
+      "spellType": "Spell",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
+      "baseCost": 35,
+      "effects": [
+        { "magicEffect": "MF_FireDamageEffect", "magnitude": 25, "area": 0, "duration": 0 }
       ]
     }
   ],

@@ -786,14 +786,18 @@ internal static class Program
         foreach (var i in spec.Ingredients) WireEffects(i.EditorId, i.Effects);
         foreach (var s in spec.Scrolls) WireEffects(s.EditorId, s.Effects);
 
-        // MagicEffect archetype `association` (summoned creature / bound weapon / etc.) is a ref —
-        // wired in pass 2 since it may point forward (or at a vanilla form).
+        // MagicEffect refs wired in pass 2 (may point forward, or at vanilla forms): the archetype
+        // `association` (summon/bound form) + the visual `projectile`/`castingArt`/`hitEffectArt`/
+        // `explosion`. Resolve() skips empty refs, so only authored ones are wired.
         foreach (var me in spec.MagicEffects)
         {
-            if (string.IsNullOrWhiteSpace(me.Association)) continue;
-            if (recordsByEd.TryGetValue(me.EditorId, out var rec) && rec is IMagicEffect mgef
-                && mgef.Archetype is IMagicEffectArchetype a)
+            if (!recordsByEd.TryGetValue(me.EditorId, out var rec) || rec is not IMagicEffect mgef) continue;
+            if (mgef.Archetype is IMagicEffectArchetype a)
                 Resolve($"magicEffect '{me.EditorId}' association", me.Association, fk => a.Association.SetTo(fk));
+            Resolve($"magicEffect '{me.EditorId}' projectile",   me.Projectile,   fk => mgef.Projectile.SetTo(fk));
+            Resolve($"magicEffect '{me.EditorId}' castingArt",   me.CastingArt,   fk => mgef.CastingArt.SetTo(fk));
+            Resolve($"magicEffect '{me.EditorId}' hitEffectArt", me.HitEffectArt, fk => mgef.HitEffectArt.SetTo(fk));
+            Resolve($"magicEffect '{me.EditorId}' explosion",    me.Explosion,    fk => mgef.Explosion.SetTo(fk));
         }
 
         // Outfit (OTFT) contents: each item is a ref (in-spec armor/weapon or external).
@@ -1404,6 +1408,10 @@ internal static class Program
             CheckEnum<TargetType>(me.TargetType, $"magicEffect '{me.EditorId}' targetType");
             foreach (var f in me.Flags) CheckEnum<MagicEffect.Flag>(f, $"magicEffect '{me.EditorId}' flag");
             CheckRef(me.Association, $"magicEffect '{me.EditorId}' association");
+            CheckRef(me.Projectile, $"magicEffect '{me.EditorId}' projectile");
+            CheckRef(me.CastingArt, $"magicEffect '{me.EditorId}' castingArt");
+            CheckRef(me.HitEffectArt, $"magicEffect '{me.EditorId}' hitEffectArt");
+            CheckRef(me.Explosion, $"magicEffect '{me.EditorId}' explosion");
         }
 
         foreach (var d in spec.Dialogue)
@@ -2001,6 +2009,12 @@ internal sealed class MagicEffectSpec
     public float BaseCost { get; set; }
     public List<string> Flags { get; set; } = new();
     public string Association { get; set; } = "";       // summon/bound form ref (optional)
+    // Visual/projectile refs (optional, usually vanilla) — needed for an Aimed spell to have a
+    // visible traveling bolt + cast/impact FX. The projectile carries its own model + impact.
+    public string Projectile { get; set; } = "";        // PROJ — the thing that travels (Aimed)
+    public string CastingArt { get; set; } = "";        // ARTO — FX at the caster's hands
+    public string HitEffectArt { get; set; } = "";      // ARTO — FX at the impact point
+    public string Explosion { get; set; } = "";          // EXPL — AoE explosion on impact
 }
 internal sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } public string ArmorType { get; set; } = ""; public List<string> Slots { get; set; } = new(); public List<string> Keywords { get; set; } = new(); }
 // One magic effect on a spell/potion: a MagicEffect ref + magnitude/area/duration (EffectData).
