@@ -184,7 +184,9 @@
         "factions": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "faction refs (in-spec or external)" },
         "race": { "$ref": "#/$defs/ref", "description": "Race ref; needed (with class) for a functional actor" },
         "class": { "$ref": "#/$defs/ref", "description": "Class ref" },
-        "outfit": { "$ref": "#/$defs/ref", "description": "Outfit ref -> DefaultOutfit" }
+        "outfit": { "$ref": "#/$defs/ref", "description": "Outfit ref -> DefaultOutfit" },
+        "level": { "type": "integer", "minimum": 0, "description": "fixed level (0 = default); needed for class-based stat auto-calc" },
+        "autoCalcStats": { "type": "boolean", "description": "derive H/M/S + skills from level + class (else flat 50/50/50 defaults)" }
       }
     },
     "quest": {

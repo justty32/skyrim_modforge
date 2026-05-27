@@ -8,15 +8,32 @@
       "description": "A warrior-mage who blends destruction magic with the sword.",
       "teaches": "Destruction",
       "maxTrainingLevel": 50,
-      "healthWeight": 30,
-      "magickaWeight": 50,
-      "staminaWeight": 20,
+      "healthWeight": 25,
+      "magickaWeight": 60,
+      "staminaWeight": 15,
       "skillWeights": {
         "Destruction": 100,
         "Restoration": 75,
         "Alteration": 40,
         "OneHanded": 50,
         "HeavyArmor": 25
+      }
+    },
+    {
+      "editorId": "MF_Warrior",
+      "name": "ModForge Warrior",
+      "description": "A front-line fighter who lives by the blade.",
+      "teaches": "OneHanded",
+      "maxTrainingLevel": 50,
+      "healthWeight": 60,
+      "magickaWeight": 5,
+      "staminaWeight": 35,
+      "skillWeights": {
+        "OneHanded": 100,
+        "TwoHanded": 75,
+        "HeavyArmor": 75,
+        "Block": 60,
+        "Smithing": 30
       }
     }
   ],
@@ -25,7 +42,17 @@
       "editorId": "MF_BattlemageNpc",
       "name": "ModForge Battlemage",
       "race": "Skyrim.esm:0x013746",
-      "class": "MF_Battlemage"
+      "class": "MF_Battlemage",
+      "level": 25,
+      "autoCalcStats": true
+    },
+    {
+      "editorId": "MF_WarriorNpc",
+      "name": "ModForge Warrior",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_Warrior",
+      "level": 25,
+      "autoCalcStats": true
     }
   ]
 }

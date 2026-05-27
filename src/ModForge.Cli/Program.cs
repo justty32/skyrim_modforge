@@ -438,6 +438,10 @@ internal static class Program
         {
             var r = mod.Npcs.AddNew();
             r.EditorID = n.EditorId; r.Name = n.Name;
+            // A fixed level + AutoCalcStats is what makes the `class` actually drive the actor's
+            // attribute (H/M/S) + skill distribution; without them the engine uses flat defaults.
+            if (n.Level > 0) r.Configuration.Level = new NpcLevel { Level = (short)Math.Clamp(n.Level, 1, short.MaxValue) };
+            if (n.AutoCalcStats) r.Configuration.Flags |= NpcConfiguration.Flag.AutoCalcStats;
             if (!string.IsNullOrEmpty(n.EditorId)) npcsByEd[n.EditorId] = r;
         }
 
@@ -1800,6 +1804,9 @@ internal static class Program
             {
                 if (!npc.Race.IsNull)          Console.WriteLine($"      race -> {Ref(npc.Race.FormKey)}");
                 if (!npc.Class.IsNull)         Console.WriteLine($"      class -> {Ref(npc.Class.FormKey)}");
+                bool autoCalc = npc.Configuration.Flags.HasFlag(NpcConfiguration.Flag.AutoCalcStats);
+                if (npc.Configuration.Level is INpcLevelGetter lvl && (lvl.Level != 1 || autoCalc))
+                    Console.WriteLine($"      level={lvl.Level} autoCalcStats={autoCalc}");
                 if (!npc.DefaultOutfit.IsNull) Console.WriteLine($"      outfit -> {Ref(npc.DefaultOutfit.FormKey)}");
                 foreach (var f in npc.Factions)
                     Console.WriteLine($"      faction -> {Ref(f.Faction.FormKey)} (rank {f.Rank})");
@@ -1998,6 +2005,8 @@ internal sealed class NpcSpec
     public string Race { get; set; } = "";       // ref (e.g. Skyrim.esm:0x013746 = NordRace)
     public string Class { get; set; } = "";       // ref
     public string Outfit { get; set; } = "";      // ref -> DefaultOutfit
+    public int Level { get; set; }                 // fixed level (0 = leave default); needed for class stat auto-calc
+    public bool AutoCalcStats { get; set; }        // derive H/M/S + skills from level + class (else flat defaults)
 }
 internal sealed class QuestSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public List<ObjectiveSpec> Objectives { get; set; } = new(); }
 internal sealed class ObjectiveSpec { public ushort Index { get; set; } public string Text { get; set; } = ""; }

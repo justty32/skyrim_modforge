@@ -481,10 +481,19 @@ call; the spec IS the contract.)
       + npc `MF_BattlemageNpc` (race NordRace 0x013746 + class MF_Battlemage). Built + dump verified
       (weights correct, npc→class link resolves in-spec); validate clean; negative test catches bad
       `teaches`/skill key. Packaged → `~/skyrim_mods/ModForgeClass.zip`.
-    - **NEXT (needs the tester):** `player.placeatme <MF_BattlemageNpc id>` spawns the NPC (NordRace
-      body). Class effects are SUBTLE — they shape the actor's auto-levelled attribute split + skill
-      preference, not a flashy visual; `getavinfo`/behaviour over time is the only real tell. Structural
-      verification (dump) is the main check. Custom Race remains the one untouched big gap.
+    - **IN-GAME (2026-05-27): tester spawned the NPC, `getav health/magicka/stamina` = 50/50/50 — class
+      had NO effect.** Correct + expected: a class only drives an actor's stats when the NPC
+      **auto-calculates from a level**; a bare NPC (no level, no auto-calc) uses flat 50/50/50 and never
+      consults the class weights. The class record itself was fine (dump).
+    - **FIX (2026-05-27, rebuilt — re-test pending):** added `level` (int) + `autoCalcStats` (bool) to
+      NpcSpec → `Configuration.Level = new NpcLevel{Level}` + `Configuration.Flags |=
+      NpcConfiguration.Flag.AutoCalcStats`. Reworked `class_spec.json` into an A/B test: `MF_BattlemageNpc`
+      (class M60/H25/S15) vs `MF_WarriorNpc` (class H60/S35/M5), BOTH NordRace, level 25, autoCalcStats.
+      dump now prints `level=/autoCalcStats=`. Repackaged `~/skyrim_mods/ModForgeClass.zip` (4 records).
+    - **RE-TEST (needs the tester):** `help "ModForge" 0` → `player.placeatme` BOTH NPCs (pick the `NPC_`
+      entries) → click each → `getav magicka` / `getav health`: the **battlemage should read high magicka /
+      low health, the warrior the opposite** (vs the old flat 50/50/50). That contrast = the class driving
+      stats. Custom Race remains the one untouched big gap.
 
 ## Build / test
 ```

@@ -58,7 +58,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `miscItems` | `editorId`, `name`, `value` (int≥0), `weight` (number), `keywords` (array of *refs*) |
 | `books` | `editorId`, `name`, `text` (book body) |
 | `weapons` | `editorId`, `name`, `value`, `weight`, `damage` (int≥0), `speed` (number), `reach` (number), `keywords` (array of *refs*) |
-| `npcs` | `editorId`, `name`, `factions` (array of *refs*), `race` (*ref*), `class` (*ref*), `outfit` (*ref* → DefaultOutfit) |
+| `npcs` | `editorId`, `name`, `factions` (array of *refs*), `race` (*ref*), `class` (*ref*), `outfit` (*ref* → DefaultOutfit), `level` (int), `autoCalcStats` (bool — derive H/M/S + skills from level + class) |
 | `quests` | `editorId`, `name`, `objectives` (array of `{ index (int), text }`) |
 | `dialogue` | `editorId`, `questEditorId`, `speakerNpcEditorId` (optional), `prompt`, `responses` (array of strings) |
 | `spells` | `editorId`, `name`, `effects` (array of *effects*), `spellType`, `castType`, `targetType`, `baseCost` (int), `chargeTime` (number) |
@@ -156,8 +156,11 @@ distribution and favoured skills (and, for a trainer NPC, what it `teaches`).
 ```
 Skill names: `OneHanded`, `TwoHanded`, `Archery`, `Block`, `Smithing`, `HeavyArmor`, `LightArmor`,
 `Pickpocket`, `Lockpicking`, `Sneak`, `Alchemy`, `Speech`, `Alteration`, `Conjuration`,
-`Destruction`, `Illusion`, `Restoration`, `Enchanting`. Class effects are subtle (they shape an
-NPC's auto-levelled stats/skills + combat preference), not a flashy in-game visual.
+`Destruction`, `Illusion`, `Restoration`, `Enchanting`. A class only drives an NPC's actual
+attribute/skill values when that npc has **`level` > 0 and `autoCalcStats: true`** — otherwise the
+engine uses flat defaults (a bare NPC reads 50/50/50 regardless of class). To see it: spawn a
+magicka-heavy and a health-heavy NPC (both `autoCalcStats` at the same level) and compare
+`getav magicka`/`getav health`.
 
 ### dialogue
 A `dialogue` entry is a player topic shown under a quest's branch, optionally limited
