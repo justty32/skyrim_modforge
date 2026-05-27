@@ -326,7 +326,7 @@ call; the spec IS the contract.)
       vanilla interior / exterior worldspace) are in-game-confirmed.
       (Still open for the NEW-interior-cell path: a void cell needs a lighting template + floor
       static, else black/no-floor — addressed in It.11.)
-- [~] **It.11 — new interior cell: lighting + floor — IN-GAME: core OK, lighting flat (2026-05-27).**
+- [x] **It.11 — new interior cell: lighting + floor — IN-GAME CONFIRMED (lighting fixed) (2026-05-27).**
       Tester: `coc MF_TestChamber` → floor + Dibella statue + chest all present and walkable, and
       crucially "至少不是全黑的" (NOT pitch-black) — so the `template`/CopyCellEnv lighting copy fixed
       the original black-cell problem. BUT the lighting looks flat/"荒诞" — uniform ambient, no
@@ -343,8 +343,11 @@ call; the spec IS the contract.)
       `~/skyrim_mods/ModForgeNewCell.zip` (now 14 refs: 9 floor + 3 lights + statue + chest). The
       open-floor-in-a-void shape still has no walls/ceiling, so a fully "room"-like look would need an
       enclosure (a separate step); this fix targets the actual light source. NEW CLI: `lightdiag`.
-    - **RE-TEST (needs the tester):** `coc MF_TestChamber` → should now be clearly lit by a warm light
-      with falloff + the statue/chest casting shadows on the floor (vs the old flat look).
+    - **RE-TEST PASSED (2026-05-27): tester confirms the lighting is fixed.** The `WRShadowOmni` swap
+      (dropping the PortalStrict/radius-256 sunlight) resolved the "feels unlit/flat" look. It.11 DONE.
+      OPTIONAL future polish: the cell is still an open floor platform (no walls/ceiling) — enclosing it
+      with a wall kit (WRInt* pieces, e.g. WRIntWallStr01Low 0x0CB43B) would make it read as a true room,
+      but that's a visual-iteration task best done with the tester watching, not a blind autonomous one.
       A brand-new in-spec interior cell had no Lighting/LightingTemplate (renders PITCH BLACK) and
       no floor geometry (player `coc`s in and falls into the void). Fix is two parts:
     - **Lighting (code):** added an optional `template` field to `CellSpec` — a vanilla INTERIOR cell
