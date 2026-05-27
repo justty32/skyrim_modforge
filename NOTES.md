@@ -325,7 +325,31 @@ call; the spec IS the contract.)
       placement is now in-game-verified end-to-end. So ALL THREE placement paths (new interior /
       vanilla interior / exterior worldspace) are in-game-confirmed.
       (Still open for the NEW-interior-cell path: a void cell needs a lighting template + floor
-      static, else black/no-floor — separate from this override bug, untouched/untested.)
+      static, else black/no-floor — addressed in It.11.)
+- [ ] **It.11 — new interior cell: lighting + floor (built, NOT YET in-game tested) (2026-05-27).**
+      A brand-new in-spec interior cell had no Lighting/LightingTemplate (renders PITCH BLACK) and
+      no floor geometry (player `coc`s in and falls into the void). Fix is two parts:
+    - **Lighting (code):** added an optional `template` field to `CellSpec` — a vanilla INTERIOR cell
+      ref `"<master>:0xFORMID"`. The new-cell build loop resolves it via `TryResolveTemplate<ICellGetter>`
+      and runs `CopyCellEnv(tmpl, cell)` (the same env-copy used by the vanilla-override path: inline
+      Lighting + LightingTemplate FormLink + water/etc., NO localized Name → no string-lookup landmine).
+      `CopyCellEnv` overwrites Flags from the template, so we re-assert `IsInteriorCell` after. Warns +
+      continues if the ref is unresolved (cell still builds, just dark) or points at an exterior cell.
+      validate: a malformed `template` ref is now a problem. dump already prints `lightTmpl`.
+    - **Floor (data, not code):** a floor is just a placed static — the existing placement system already
+      does this. No new code; the example demonstrates it.
+    - **Example:** `examples/newcell_spec.json` → `ModForgeNewCell.esp`: cell `MF_TestChamber` with
+      `template` = WhiterunBreezehome `0x0165A8`; placements = a 3×3 grid of `WRIntFloorSTMid01Large`
+      `0x1044AA` (z=0, 256 spacing) + a `DefaultSunlightHalfOmni01` `0x0172C4` omni light at z=300 +
+      a `StatueDibella` `0x08F965` landmark + a `NobleChest01` `0x06B30E`. Built + verified: cell
+      0x000800 (dec 2048) → block 8/sub 4 (own FormID block), `lightTmpl=06175D:Skyrim.esm` copied,
+      12 temporary refs, name preserved, validate clean. Packaged → `~/skyrim_mods/ModForgeNewCell.zip`.
+    - **NEXT (needs the tester):** `coc MF_TestChamber` and check: room is LIT (not black), there's a
+      walkable FLOOR (don't fall), the Dibella statue + chest are present. UNKNOWNS to watch:
+      (1) `coc` with no designated COC marker spawns the player at cell origin (0,0,0) — the center
+      floor tile is there, but if the floor-piece mesh pivot isn't at its top surface the player may
+      spawn slightly in/under it (tcl to check); (2) floor tile real size vs the 256 spacing — if gaps
+      show, tighten spacing. Report back and I'll adjust z/spacing.
 
 ## Build / test
 ```

@@ -1,0 +1,23 @@
+{
+  "pluginName": "ModForgeNewCell.esp",
+  "esl": true,
+  "cells": [
+    { "editorId": "MF_TestChamber", "name": "ModForge Test Chamber",
+      "template": "Skyrim.esm:0x0165A8" }
+  ],
+  "placements": [
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_TestChamber", "position": { "x": -256, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_TestChamber", "position": { "x":    0, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_TestChamber", "position": { "x":  256, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_TestChamber", "position": { "x": -256, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_TestChamber", "position": { "x":    0, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_TestChamber", "position": { "x":  256, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_TestChamber", "position": { "x": -256, "y":  256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_TestChamber", "position": { "x":    0, "y":  256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_TestChamber", "position": { "x":  256, "y":  256, "z": 0 } },
+
+    { "base": "Skyrim.esm:0x0172C4", "cell": "MF_TestChamber", "position": { "x": 0, "y": 0, "z": 300 } },
+    { "base": "Skyrim.esm:0x08F965", "cell": "MF_TestChamber", "position": { "x": 0, "y": 220, "z": 0 }, "rotation": { "x": 0, "y": 0, "z": 180 } },
+    { "base": "Skyrim.esm:0x06B30E", "cell": "MF_TestChamber", "position": { "x": 140, "y": 0, "z": 0 }, "rotation": { "x": 0, "y": 0, "z": 270 } }
+  ]
+}

@@ -207,7 +207,8 @@
       "required": ["editorId"],
       "properties": {
         "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string", "description": "display name" }
+        "name": { "type": "string", "description": "display name" },
+        "template": { "type": "string", "description": "optional vanilla INTERIOR cell '<master>:0xFORMID' to copy lighting/water env from (a new cell with no lighting renders BLACK; find one with `find <Skyrim.esm> <name> Cell`). Still place a floor static via a `placement`, else the player falls into the void." }
       }
     },
     "vec3": {

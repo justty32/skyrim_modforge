@@ -66,7 +66,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `armors` | `editorId`, `name`, `value`, `weight`, `armorRating` (number), `armorType` (`light`\|`heavy`\|`clothing`), `slots` (array of biped-slot names), `keywords` (array of *refs*) |
 | `factions` | `editorId`, `name` |
 | `messages` | `editorId`, `name`, `description` (body text) |
-| `cells` | `editorId`, `name` (a new interior cell) |
+| `cells` | `editorId`, `name`, `template` (vanilla interior cell `<master>:0xFORMID` to copy lighting from — else the new cell is black) |
 | `placements` | `base` (*ref*); **interior:** `cell` (in-spec editorId **or** vanilla interior cell `<master>:0xFORMID`) **or exterior:** `worldspace` (`<master>:0xFORMID`, position is world coords); `kind` (`npc`\|`object`), `position` (`{x,y,z}`), `rotation` (`{x,y,z}` degrees), `persistent` (bool) |
 | `leveledItems` | `editorId`, `chanceNone` (0–100), `flags` (array), `entries` (array of `{ reference (*ref*), level (int), count (int) }`) |
 | `leveledNpcs` | same shape as `leveledItems`, but `reference` is an npc/leveled-npc |
@@ -139,7 +139,8 @@ spec; `speakerNpcEditorId`, if set, must name an npc. `prompt` is the player's l
 ### cells & placements — putting things in the world
 ```jsonc
 "cells": [
-  { "editorId": "MF_TestRoom", "name": "ModForge Test Room" }   // a new interior cell
+  { "editorId": "MF_TestRoom", "name": "ModForge Test Room",     // a new interior cell
+    "template": "Skyrim.esm:0x0165A8" }                          //   copy lighting from Breezehome (else BLACK)
 ],
 "placements": [
   { "base": "MF_Smith", "cell": "MF_TestRoom",                   // an in-spec NPC ...
@@ -154,8 +155,9 @@ spec; `speakerNpcEditorId`, if set, must name an npc. `prompt` is the player's l
 - A `placement` targets **either** an interior `cell` **or** an exterior `worldspace` (set one):
   - **interior** — `cell` is a new in-spec interior cell’s `editorId`, **or** an external/vanilla
     interior cell `"<master>:0xFORMID"` (find with `find <Skyrim.esm> <name> Cell`). A new cell
-    has no lighting template, so it’s dark — fine for testing the placed forms are there.
-    `position` is local to the cell.
+    with no `template` renders **pitch-black** and has **no floor** (you fall into the void): set
+    the cell’s `template` to a vanilla interior (copies its lighting) and place a floor static in
+    it. `position` is local to the cell.
   - **exterior** — `worldspace` is a worldspace ref `"<master>:0xFORMID"` (Tamriel =
     `Skyrim.esm:0x00003C`; find with `find <Skyrim.esm> <name> Worldspace`). `position` is the
     **world** position; the exterior cell at `floor(x/4096), floor(y/4096)` is found in the master

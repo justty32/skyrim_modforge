@@ -655,6 +655,20 @@ internal static class Program
         foreach (var c in spec.Cells)
         {
             var cell = new Cell(mod, c.EditorId) { Flags = Cell.Flag.IsInteriorCell };
+            // A cell with no Lighting/LightingTemplate renders PITCH BLACK in-game. Optionally copy a
+            // vanilla interior cell's lighting/water ENV (same `template` pattern as It.8 item models):
+            // point `template` at a known-good vanilla interior (e.g. a player home). Floor still comes
+            // from a placed static — without one the player falls into the void.
+            if (!string.IsNullOrWhiteSpace(c.Template))
+            {
+                if (TryResolveTemplate<ICellGetter>(c.Template, out var tmplCell) && tmplCell is not null)
+                {
+                    if (tmplCell.Flags.HasFlag(Cell.Flag.IsInteriorCell)) CopyCellEnv(tmplCell, cell);
+                    else Console.WriteLine($"  ! cell '{c.EditorId}' template '{c.Template}' is exterior — ignored (need an interior cell)");
+                }
+                else Console.WriteLine($"  ! cell '{c.EditorId}' template '{c.Template}' unresolved — created without lighting (may render black)");
+            }
+            cell.Flags |= Cell.Flag.IsInteriorCell;   // CopyCellEnv overwrote Flags — keep it interior
             if (!string.IsNullOrEmpty(c.Name)) cell.Name = c.Name;
             InteriorSubFor(cell.FormKey).Cells.Add(cell);
             if (!string.IsNullOrEmpty(c.EditorId)) cellsByEd[c.EditorId] = cell;
@@ -1240,7 +1254,12 @@ internal static class Program
         foreach (var f in spec.Factions) Reg(f.EditorId, "faction", factionIds);
         foreach (var msg in spec.Messages) Reg(msg.EditorId, "message");
         foreach (var d in spec.Dialogue) Reg(d.EditorId, "dialogue");
-        foreach (var c in spec.Cells) Reg(c.EditorId, "cell", cellIds);
+        foreach (var c in spec.Cells)
+        {
+            Reg(c.EditorId, "cell", cellIds);
+            if (!string.IsNullOrWhiteSpace(c.Template) && !TryExternalRef(c.Template, out _))
+                problems.Add($"cell '{c.EditorId}' template '{c.Template}' must be an external <master>:0xFORMID interior-cell ref");
+        }
         foreach (var li in spec.LeveledItems) Reg(li.EditorId, "leveledItem");
         foreach (var ln in spec.LeveledNpcs) Reg(ln.EditorId, "leveledNpc");
         foreach (var ct in spec.Containers) Reg(ct.EditorId, "container");
@@ -1822,7 +1841,10 @@ internal sealed class PropertySpec
     public string ObjectEditorId { get; set; } = "";
 }
 // A new interior cell the plugin creates (reachable in-game via `coc <editorId>`).
-internal sealed class CellSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
+// `template` (optional, a vanilla INTERIOR cell ref "<master>:0xFORMID") copies that cell's
+// lighting/water environment so a brand-new cell isn't pitch-black; it still needs a floor
+// static placed in it (a `placement`) so the player doesn't fall into the void.
+internal sealed class CellSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Template { get; set; } = ""; }
 internal sealed class Vec3 { public float X { get; set; } public float Y { get; set; } public float Z { get; set; } }
 // Place a base form (npc/object, in-spec or external) into the world at a position/rotation.
 // TWO targeting modes:
