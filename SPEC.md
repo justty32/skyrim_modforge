@@ -62,6 +62,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `quests` | `editorId`, `name`, `objectives` (array of `{ index (int), text }`) |
 | `dialogue` | `editorId`, `questEditorId`, `speakerNpcEditorId` (optional), `prompt`, `responses` (array of strings) |
 | `spells` | `editorId`, `name`, `effects` (array of *effects*), `spellType`, `castType`, `targetType`, `baseCost` (int), `chargeTime` (number) |
+| `magicEffects` | `editorId`, `name`, `description`, `archetype`, `actorValue`, `magicSkill`, `resistValue`, `castType`, `targetType`, `baseCost` (number), `flags` (array), `association` (*ref*) — a custom MGEF an `effect` can point at |
 | `potions` | `editorId`, `name`, `value`, `weight`, `effects` (array of *effects*) |
 | `armors` | `editorId`, `name`, `value`, `weight`, `armorRating` (number), `armorType` (`light`\|`heavy`\|`clothing`), `slots` (array of biped-slot names), `keywords` (array of *refs*) |
 | `factions` | `editorId`, `name` |
@@ -101,10 +102,29 @@ A spell or potion **does nothing without at least one effect**. Each effect is:
 { "magicEffect": "Skyrim.esm:0x03EB15",  // a MagicEffect *ref* (usually vanilla)
   "magnitude": 25, "area": 0, "duration": 0 }   // duration in seconds; 0 = instant
 ```
-The `magicEffect` is a *ref* — find a vanilla one with `find <Skyrim.esm> <query> MagicEffect`
-(e.g. `AlchRestoreHealth = Skyrim.esm:0x03EB15`, `AlchDamageHealth = Skyrim.esm:0x03EB42`).
-A potion is fully functional with one effect; a spell also wants cast/spell-type tuning
-(not yet a spec field — defaults are written) but the effect is the core.
+The `magicEffect` is a *ref* — a vanilla one (`find <Skyrim.esm> <query> MagicEffect`, e.g.
+`AlchRestoreHealth = Skyrim.esm:0x03EB15`, `AlchDamageHealth = Skyrim.esm:0x03EB42`) **or** an
+in-spec `magicEffects` entry's `editorId` (see below). A potion is fully functional with one
+effect; a spell also wants cast/spell-type tuning but the effect is the core.
+
+### magicEffects (custom MGEF)
+Define your OWN effect instead of reusing a vanilla one; a spell/potion/ingredient/scroll `effect`
+then points at it by `editorId` (and the per-cast `magnitude`/`area`/`duration` stay on that effect).
+```jsonc
+{ "editorId": "MF_RestoreHealthEffect", "name": "ModForge Restore Health",
+  "archetype": "ValueModifier",   // ValueModifier (damage/heal/fortify) | SummonCreature | Bound | Light | Paralysis | …
+  "actorValue": "Health",          // what it acts on: Health | Magicka | Stamina | …
+  "magicSkill": "Restoration",     // school: Alteration|Conjuration|Destruction|Illusion|Restoration
+  "resistValue": "ResistFire",     // AV that resists it (optional): ResistFire | ResistFrost | PoisonResist | …
+  "castType": "FireAndForget",     // FireAndForget | Concentration | ConstantEffect
+  "targetType": "Self",            // Self | Touch | Aimed | TargetActor | TargetLocation
+  "baseCost": 8.0,
+  "flags": ["Recover"],            // Hostile | Detrimental | Recover | NoArea | NoDuration | NoMagnitude | …
+  "association": "<ref>" }         // summoned/bound form (only for Summon/Bound archetypes)
+```
+A bare `ValueModifier` MGEF (no visual art/projectile) still applies its value — fine for self/touch
+and for potions. A damage spell that *travels* (Aimed) also needs a projectile + casting/hit art
+(not yet spec fields), so an Aimed custom spell currently applies on contact but has no visible bolt.
 
 ### dialogue
 A `dialogue` entry is a player topic shown under a quest's branch, optionally limited

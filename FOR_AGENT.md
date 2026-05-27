@@ -124,7 +124,9 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
 - **Items/spells now carry gameplay stats:** weapons take `damage`/`speed`/`reach`, armor
   takes `armorType` + biped `slots`, **spells/potions take `effects`** (a MagicEffect *ref* +
   magnitude/area/duration), and spells take `spellType`/`castType`/`targetType`/`baseCost`. A
-  potion with one effect is fully functional; a spell wants an effect + the cast fields.
+  potion with one effect is fully functional; a spell wants an effect + the cast fields. The
+  `effects[].magicEffect` *ref* can be a vanilla MGEF **or** an in-spec `magicEffects` entry — author
+  a custom MGEF (`archetype`/`actorValue`/`magicSkill`/`resistValue`/`flags`/…) for a bespoke effect.
 - **Leveled lists + containers:** `leveledItems`/`leveledNpcs` (weighted level-gated entries,
   each a *ref*) and `containers` (item *refs* + counts) — loot tables, merchant chests, etc.
 - **More record types** (same spec→build→dump pattern): `ingredients` (alchemy, take `effects`),

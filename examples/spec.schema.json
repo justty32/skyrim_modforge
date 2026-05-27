@@ -14,6 +14,7 @@
     "quests": { "type": "array", "items": { "$ref": "#/$defs/quest" } },
     "dialogue": { "type": "array", "items": { "$ref": "#/$defs/dialogue" } },
     "spells": { "type": "array", "items": { "$ref": "#/$defs/spell" } },
+    "magicEffects": { "type": "array", "items": { "$ref": "#/$defs/magicEffect" }, "description": "custom MGEF records an effect can point at by editorId" },
     "potions": { "type": "array", "items": { "$ref": "#/$defs/potion" } },
     "armors": { "type": "array", "items": { "$ref": "#/$defs/armor" } },
     "factions": { "type": "array", "items": { "$ref": "#/$defs/named" } },
@@ -45,7 +46,7 @@
       "type": "object",
       "required": ["magicEffect"],
       "properties": {
-        "magicEffect": { "$ref": "#/$defs/ref", "description": "MagicEffect ref — normally a vanilla one, e.g. 'Skyrim.esm:0x03EB15' = AlchRestoreHealth. find <Skyrim.esm> <query> MagicEffect" },
+        "magicEffect": { "$ref": "#/$defs/ref", "description": "MagicEffect ref — a vanilla one (e.g. 'Skyrim.esm:0x03EB15' = AlchRestoreHealth; find <Skyrim.esm> <query> MagicEffect) OR an in-spec magicEffects entry's editorId" },
         "magnitude": { "type": "number", "minimum": 0 },
         "area": { "type": "integer", "minimum": 0 },
         "duration": { "type": "integer", "minimum": 0, "description": "seconds; 0 = instant" }
@@ -77,6 +78,25 @@
         "targetType": { "enum": ["Self", "Touch", "Aimed", "TargetActor", "TargetLocation"] },
         "baseCost": { "type": "integer", "minimum": 0, "description": "magicka cost" },
         "chargeTime": { "type": "number", "minimum": 0 }
+      }
+    },
+    "magicEffect": {
+      "type": "object",
+      "required": ["editorId"],
+      "description": "a custom MGEF; reference it from an effect's magicEffect by editorId",
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "archetype": { "enum": ["ValueModifier", "Script", "Dispel", "CureDisease", "Absorb", "DualValueModifier", "Calm", "Demoralize", "Frenzy", "Disarm", "CommandSummoned", "Invisibility", "Light", "Lock", "Open", "Bound", "SummonCreature", "DetectLife", "Telekinesis", "Paralysis", "Reanimate", "SoulTrap", "TurnUndead", "Guide", "WerewolfFeed", "CureParalysis", "CureAddiction", "CurePoison", "Concussion", "ValueAndParts", "AccumulateMagnitude", "Stagger", "PeakValueModifier", "Cloak", "Werewolf", "SlowTime", "Rally", "EnhanceWeapon", "SpawnHazard", "Etherealize", "Banish", "SpawnScriptedRef", "Disguise", "GrabActor", "VampireLord"], "description": "what the effect does; ValueModifier is the common damage/heal/fortify" },
+        "actorValue": { "type": "string", "description": "the actor value it acts on, e.g. Health, Magicka, Stamina, MagickaRate" },
+        "magicSkill": { "type": "string", "description": "school: Alteration|Conjuration|Destruction|Illusion|Restoration (or None)" },
+        "resistValue": { "type": "string", "description": "actor value that resists it, e.g. ResistFire, ResistFrost, PoisonResist (or None)" },
+        "castType": { "enum": ["ConstantEffect", "FireAndForget", "Concentration"] },
+        "targetType": { "enum": ["Self", "Touch", "Aimed", "TargetActor", "TargetLocation"] },
+        "baseCost": { "type": "number", "minimum": 0 },
+        "flags": { "type": "array", "items": { "enum": ["Hostile", "Recover", "Detrimental", "SnapToNavmesh", "NoHitEvent", "DispelWithKeywords", "NoDuration", "NoMagnitude", "NoArea", "FXPersist", "GoryVisuals", "HideInUI", "NoRecast", "PowerAffectsMagnitude", "PowerAffectsDuration", "Painless", "NoHitEffect", "NoDeathDispel"] } },
+        "association": { "$ref": "#/$defs/ref", "description": "summoned/bound form ref (only for Summon/Bound-type archetypes)" }
       }
     },
     "potion": {

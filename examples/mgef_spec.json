@@ -1,0 +1,67 @@
+{
+  "pluginName": "ModForgeMagic.esp",
+  "esl": true,
+  "magicEffects": [
+    {
+      "editorId": "MF_RestoreHealthEffect",
+      "name": "ModForge Restore Health",
+      "description": "Restores Health.",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "magicSkill": "Restoration",
+      "castType": "FireAndForget",
+      "targetType": "Self",
+      "baseCost": 8.0,
+      "flags": ["Recover"]
+    },
+    {
+      "editorId": "MF_FireDamageEffect",
+      "name": "ModForge Fire Damage",
+      "description": "Deals fire damage.",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "magicSkill": "Destruction",
+      "resistValue": "ResistFire",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
+      "baseCost": 12.0,
+      "flags": ["Hostile", "Detrimental"]
+    }
+  ],
+  "spells": [
+    {
+      "editorId": "MF_HealSelf",
+      "name": "ModForge Heal Self",
+      "spellType": "Spell",
+      "castType": "FireAndForget",
+      "targetType": "Self",
+      "baseCost": 40,
+      "effects": [
+        { "magicEffect": "MF_RestoreHealthEffect", "magnitude": 100, "area": 0, "duration": 0 }
+      ]
+    },
+    {
+      "editorId": "MF_Firebolt",
+      "name": "ModForge Firebolt",
+      "spellType": "Spell",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
+      "baseCost": 30,
+      "effects": [
+        { "magicEffect": "MF_FireDamageEffect", "magnitude": 25, "area": 0, "duration": 0 }
+      ]
+    }
+  ],
+  "potions": [
+    {
+      "editorId": "MF_HealthDraught",
+      "name": "ModForge Health Draught",
+      "value": 35,
+      "weight": 0.5,
+      "template": "Skyrim.esm:0x039BE5",
+      "effects": [
+        { "magicEffect": "MF_RestoreHealthEffect", "magnitude": 50, "area": 0, "duration": 0 }
+      ]
+    }
+  ]
+}

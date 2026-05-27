@@ -496,6 +496,26 @@ internal static class Program
             dialogueBuilt++;
         }
 
+        foreach (var me in spec.MagicEffects)
+        {
+            var r = mod.MagicEffects.AddNew();
+            r.EditorID = me.EditorId;
+            if (!string.IsNullOrEmpty(me.Name)) r.Name = me.Name;
+            if (!string.IsNullOrEmpty(me.Description)) r.Description = me.Description;
+            r.BaseCost = me.BaseCost;
+            // Archetype: Type (what it does) + ActorValue (what it acts on). Association (summon/bound
+            // form) is a ref, wired in pass 2. MagicSkill/ResistValue default to None (-1) when unset.
+            var arch = new MagicEffectArchetype();
+            if (Enum.TryParse<MagicEffectArchetype.TypeEnum>(me.Archetype, ignoreCase: true, out var at)) arch.Type = at;
+            arch.ActorValue = Enum.TryParse<ActorValue>(me.ActorValue, ignoreCase: true, out var av) ? av : ActorValue.None;
+            r.Archetype = arch;
+            r.MagicSkill = Enum.TryParse<ActorValue>(me.MagicSkill, ignoreCase: true, out var sk) ? sk : ActorValue.None;
+            r.ResistValue = Enum.TryParse<ActorValue>(me.ResistValue, ignoreCase: true, out var rv) ? rv : ActorValue.None;
+            if (Enum.TryParse<CastType>(me.CastType, ignoreCase: true, out var mct)) r.CastType = mct;
+            if (Enum.TryParse<TargetType>(me.TargetType, ignoreCase: true, out var mtt)) r.TargetType = mtt;
+            foreach (var f in me.Flags)
+                if (Enum.TryParse<MagicEffect.Flag>(f, ignoreCase: true, out var fl)) r.Flags |= fl;
+        }
         foreach (var s in spec.Spells)
         {
             var r = mod.Spells.AddNew();
@@ -752,6 +772,16 @@ internal static class Program
         foreach (var p in spec.Potions) WireEffects(p.EditorId, p.Effects);
         foreach (var i in spec.Ingredients) WireEffects(i.EditorId, i.Effects);
         foreach (var s in spec.Scrolls) WireEffects(s.EditorId, s.Effects);
+
+        // MagicEffect archetype `association` (summoned creature / bound weapon / etc.) is a ref —
+        // wired in pass 2 since it may point forward (or at a vanilla form).
+        foreach (var me in spec.MagicEffects)
+        {
+            if (string.IsNullOrWhiteSpace(me.Association)) continue;
+            if (recordsByEd.TryGetValue(me.EditorId, out var rec) && rec is IMagicEffect mgef
+                && mgef.Archetype is IMagicEffectArchetype a)
+                Resolve($"magicEffect '{me.EditorId}' association", me.Association, fk => a.Association.SetTo(fk));
+        }
 
         // Outfit (OTFT) contents: each item is a ref (in-spec armor/weapon or external).
         foreach (var o in spec.Outfits)
@@ -1272,6 +1302,7 @@ internal static class Program
         foreach (var o in spec.Outfits) Reg(o.EditorId, "outfit");
         foreach (var st in spec.Statics) Reg(st.EditorId, "static");
         foreach (var ac in spec.Activators) Reg(ac.EditorId, "activator");
+        foreach (var me in spec.MagicEffects) Reg(me.EditorId, "magicEffect");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
         void CheckRef(string r, string what)
@@ -1327,6 +1358,21 @@ internal static class Program
         }
         foreach (var s in spec.Spells) CheckEffects(s.EditorId, s.Effects, "spell");
         foreach (var p in spec.Potions) CheckEffects(p.EditorId, p.Effects, "potion");
+
+        // MagicEffect (MGEF): every authored enum string must parse; association (if set) is a ref.
+        void CheckEnum<TEnum>(string val, string what) where TEnum : struct, Enum
+        { if (!string.IsNullOrWhiteSpace(val) && !Enum.TryParse<TEnum>(val, ignoreCase: true, out _)) problems.Add($"{what} '{val}' invalid"); }
+        foreach (var me in spec.MagicEffects)
+        {
+            CheckEnum<MagicEffectArchetype.TypeEnum>(me.Archetype, $"magicEffect '{me.EditorId}' archetype");
+            CheckEnum<ActorValue>(me.ActorValue, $"magicEffect '{me.EditorId}' actorValue");
+            CheckEnum<ActorValue>(me.MagicSkill, $"magicEffect '{me.EditorId}' magicSkill");
+            CheckEnum<ActorValue>(me.ResistValue, $"magicEffect '{me.EditorId}' resistValue");
+            CheckEnum<CastType>(me.CastType, $"magicEffect '{me.EditorId}' castType");
+            CheckEnum<TargetType>(me.TargetType, $"magicEffect '{me.EditorId}' targetType");
+            foreach (var f in me.Flags) CheckEnum<MagicEffect.Flag>(f, $"magicEffect '{me.EditorId}' flag");
+            CheckRef(me.Association, $"magicEffect '{me.EditorId}' association");
+        }
 
         foreach (var d in spec.Dialogue)
         {
@@ -1681,6 +1727,14 @@ internal static class Program
             if (r is ISpellGetter spG && (spG.Type != SpellType.Spell || spG.CastType != CastType.ConstantEffect || spG.BaseCost > 0))
                 Console.WriteLine($"      spell: type={spG.Type} cast={spG.CastType} target={spG.TargetType} cost={spG.BaseCost}");
 
+            if (r is IMagicEffectGetter mgef)
+            {
+                var assoc = mgef.Archetype.AssociationKey.FormKey;
+                Console.WriteLine($"      mgef: archetype={mgef.Archetype.Type} av={mgef.Archetype.ActorValue} skill={mgef.MagicSkill}"
+                    + $" resist={mgef.ResistValue} cast={mgef.CastType} target={mgef.TargetType} cost={mgef.BaseCost} flags={mgef.Flags}"
+                    + (assoc.IsNull ? "" : $" assoc={Ref(assoc)}"));
+            }
+
             if (r is IAmmunitionGetter ammo)
                 Console.WriteLine($"      ammo: damage={ammo.Damage} value={ammo.Value} weight={ammo.Weight}");
 
@@ -1758,6 +1812,7 @@ internal sealed class ModSpec
     public List<QuestSpec> Quests { get; set; } = new();
     public List<DialogueSpec> Dialogue { get; set; } = new();
     public List<SpellSpec> Spells { get; set; } = new();
+    public List<MagicEffectSpec> MagicEffects { get; set; } = new();
     public List<PotionSpec> Potions { get; set; } = new();
     public List<ArmorSpec> Armors { get; set; } = new();
     public List<FactionSpec> Factions { get; set; } = new();
@@ -1816,6 +1871,29 @@ internal sealed class SpellSpec
     public float ChargeTime { get; set; }
 }
 internal sealed class PotionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<EffectSpec> Effects { get; set; } = new(); public string Template { get; set; } = ""; }
+// MagicEffect (MGEF): the building block a spell/potion/ingredient/scroll `effect` points at — lets a
+// spec define its OWN effect instead of only reusing vanilla ones. `archetype` (MagicEffectArchetype.
+// TypeEnum: ValueModifier = the common damage/heal/fortify, plus SummonCreature, Bound, Light,
+// Paralysis, …) acts on `actorValue` (Health/Magicka/Stamina/…). `magicSkill` is the school
+// (Alteration/Conjuration/Destruction/Illusion/Restoration), `resistValue` the AV that resists it
+// (ResistFire/PoisonResist/…). `flags` (Hostile/Detrimental/Recover/NoArea/NoDuration/…) drive UI +
+// behaviour. `association` (a ref) is the summoned/bound form for those archetypes. The per-effect
+// magnitude/area/duration stay on the spell/potion's `effects[]` entry (not here).
+internal sealed class MagicEffectSpec
+{
+    public string EditorId { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Description { get; set; } = "";
+    public string Archetype { get; set; } = "ValueModifier";
+    public string ActorValue { get; set; } = "";   // affected AV, e.g. Health
+    public string MagicSkill { get; set; } = "";    // school, e.g. Destruction
+    public string ResistValue { get; set; } = "";    // resisted by, e.g. ResistFire
+    public string CastType { get; set; } = "";        // FireAndForget|Concentration|ConstantEffect
+    public string TargetType { get; set; } = "";       // Self|Touch|Aimed|TargetActor|TargetLocation
+    public float BaseCost { get; set; }
+    public List<string> Flags { get; set; } = new();
+    public string Association { get; set; } = "";       // summon/bound form ref (optional)
+}
 internal sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } public string ArmorType { get; set; } = ""; public List<string> Slots { get; set; } = new(); public List<string> Keywords { get; set; } = new(); }
 // One magic effect on a spell/potion: a MagicEffect ref + magnitude/area/duration (EffectData).
 internal sealed class EffectSpec { public string MagicEffect { get; set; } = ""; public float Magnitude { get; set; } public int Area { get; set; } public int Duration { get; set; } }
