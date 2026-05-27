@@ -446,7 +446,9 @@ call; the spec IS the contract.)
       the IronSword model from It.8 templating). FUTURE: optional `conditions` (perk gating, e.g. require
       Steel Smithing) + temper recipes (armor table / sharpening wheel benches). (Race/Class is the last
       big gap left.)
-- [ ] **It.14 — spell projectiles + visual art (built, NOT YET in-game tested) (2026-05-27).**
+- [x] **It.14 — spell projectiles + visual art — IN-GAME CONFIRMED (2026-05-27).**
+      Tester: `MF_Firebolt` now launches a visible fire bolt from the hand that travels + impacts and
+      deals fire damage. Custom magic is complete end-to-end: effect → spell/potion → projectile + FX.
       Completes It.12: a custom Aimed damage spell had no visible bolt (a ValueModifier MGEF applies
       its value but carries no visuals). Added four optional ref fields to MagicEffectSpec —
       `projectile` (PROJ, the traveling bolt), `castingArt` (ARTO, FX at the hands), `hitEffectArt`
