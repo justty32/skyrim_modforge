@@ -292,7 +292,7 @@ call; the spec IS the contract.)
     - **Re-tested in-game (2026-05-26): ALL PASS** — statue + NPC present, no underwater, location
       name correct. Exterior open-world placement is now in-game-verified end-to-end. (Interior /
       vanilla-interior placement get the same CopyCellEnv but are still not in-game tested.)
-- [ ] **It.10 — interior (vanilla-cell) placement: IN-GAME FAILED, bug suspected (2026-05-26).**
+- [x] **It.10 — interior (vanilla-cell) placement: FAILED then FIXED, IN-GAME CONFIRMED (2026-05-27).**
       `examples/interior_spec.json` placed a Dibella statue + NobleChest into the Bannered Mare
       (`WhiterunBanneredMare 0x01605E`) at user getpos local coords. dump looked correct (cell
       override with `lightTmpl` carried, 2 temporary refs). **In-game: objects did NOT appear,
@@ -301,14 +301,31 @@ call; the spec IS the contract.)
       `CellBlock{BlockNumber=0}` / `CellSubBlock{BlockNumber=0}`, but Skyrim groups interior cells
       into block/sub-block BY FORMID — exterior computes block/subblock from the grid (works), the
       interior path never did. A cell in the wrong block GRUP isn't matched as an override → ignored.
-      NEXT: confirm the Bannered Mare's real block/subblock in Skyrim.esm (walk mod.Cells.Records),
-      derive the formula (likely block=(id/10)%10, subBlock=id%10 or similar), set them in
-      InteriorSub()/VanillaCellOverride — OR switch to Mutagen's context `GetOrAddAsOverride` (which
-      blocks correctly) and clear the localized Name after. (Then the new-in-spec-interior-cell path
-      also needs a lighting template + a floor static, else black/void.) NOTE: the tester also saw
-      tofu subtitles + a fogged map — those are unrelated to this ESP (it has zero strings + only
-      touches an interior cell); they're from the tester's recent CJK-font/UI install, to be checked
-      separately.
+      NOTE: the tester also saw tofu subtitles + a fogged map — those are unrelated to this ESP (it
+      has zero strings + only touches an interior cell); they're from the tester's recent CJK-font/
+      UI install, to be checked separately.
+    - **ROOT CAUSE CONFIRMED + FIXED (2026-05-27), pending in-game retest.** Added a throwaway-turned-
+      kept diagnostic `cellblk <esp> [0xFORMID]` (walks the interior CELL block tree, prints block/
+      sub per cell) and walked Skyrim.esm: **WhiterunBanneredMare 0x01605E (dec 90206) lives in block
+      6 / sub 0.** Derived + cross-checked the formula over ~40 cells — it's **block = id % 10, sub =
+      (id / 10) % 10** (decimal, 24-bit ID). NB: the It.10 guess above had the two HALVES SWAPPED
+      (block is id%10, NOT (id/10)%10). The old code hardcoded 0/0, so the override sat in the wrong
+      GRUP and the engine never matched it to the master → silently ignored.
+    - **Fix:** replaced the single lazy `InteriorSub()` (always 0/0) with `InteriorSubFor(FormKey)` —
+      a (block, sub)-keyed get-or-add over `mod.Cells.Records`, computing block/sub from the cell's
+      FormID (same get-or-add shape as the exterior `ws.SubCells` path). Applies to BOTH the vanilla-
+      cell override (uses the master FormID) and new in-spec interior cells (use their assigned FormID).
+      Kept the manual same-FormKey override (not `GetOrAddAsOverride`) to keep dodging the localized-
+      Name string-lookup landmine. Structurally verified: interior_spec → override 0x01605E now in
+      block 6/sub 0 with lightTmpl + 2 temp refs; sample_spec's two cells split correctly into 4/7
+      (new MF_TestRoom 0x00081A) and 6/0 (override) instead of colliding in 0/0.
+    - **IN-GAME CONFIRMED (2026-05-27, Proton/MO2):** packaged `ModForgeInterior.zip` (esp at archive
+      root, MO2-ready), loaded it, `coc WhiterunBanneredMare` — the Dibella statue + noble chest
+      now APPEAR at the authored local coords and the cell lighting is normal. Interior vanilla-cell
+      placement is now in-game-verified end-to-end. So ALL THREE placement paths (new interior /
+      vanilla interior / exterior worldspace) are in-game-confirmed.
+      (Still open for the NEW-interior-cell path: a void cell needs a lighting template + floor
+      static, else black/no-floor — separate from this override bug, untouched/untested.)
 
 ## Build / test
 ```

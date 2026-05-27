@@ -45,6 +45,7 @@ internal static class Program
                 case "applyloc" when args.Length == 4: return ApplyLocalized(args[1], args[2], args[3]);
                 case "dump" when args.Length == 2:    return Dump(args[1]);
                 case "find" when args.Length is 3 or 4: return Find(args[1], args[2], args.Length == 4 ? args[3] : null);
+                case "cellblk" when args.Length is 2 or 3: return CellBlk(args[1], args.Length == 3 ? args[2] : null);
                 default: Usage(); return 1;
             }
         }
@@ -66,6 +67,7 @@ internal static class Program
         "  validate <spec.json>\n" +
         "  dump    <in.esp>\n" +
         "  find    <in.esp> <query> [type]              search editorId/name -> Skyrim.esm:0xFORMID\n" +
+        "  cellblk <in.esp> [0xFORMID]                  show interior cell block/sub-block (FormID grouping)\n" +
         "  extract <in.esp> <strings.json>\n" +
         "  applyloc <in.esp> <strings.json> <outDir>   (Localized UTF-8 _chinese.STRINGS)\n" +
         "  apply   <in.esp> <strings.json> <out.esp>");
@@ -624,26 +626,37 @@ internal static class Program
             r.Items = new();
         }
 
-        // New interior cells + (in pass 2) vanilla interior-cell overrides share one interior
-        // block. Cells nest CellBlock(type 2) -> CellSubBlock(type 3) -> Cell; interior block
-        // numbers aren't strictly enforced by the engine (cells are reached by EditorID/FormID,
-        // e.g. `coc <id>`), so one lazily-made 0/0 block holds them all.
+        // Interior cells nest CellBlock(type 2, label=block) -> CellSubBlock(type 3, label=sub) ->
+        // Cell, and Skyrim groups them BY FORMID: block = id % 10, sub = (id / 10) % 10 (decimal,
+        // 24-bit ID — verified by walking Skyrim.esm, e.g. WhiterunBanneredMare 0x01605E/dec 90206
+        // is in block 6 / sub 0). This is CRITICAL for OVERRIDES: a vanilla-cell override placed in
+        // the wrong block GRUP is never matched against the master cell, so the engine SILENTLY
+        // IGNORES it (the It.10 bug — placed objects + lighting didn't apply; we'd hardcoded 0/0).
+        // get-or-add the correct (block, sub) GRUP for any cell's FormID.
         var cellsByEd = new Dictionary<string, Cell>();
-        CellSubBlock? interiorSub = null;
-        CellSubBlock InteriorSub()
+        var interiorSubs = new Dictionary<(int Block, int Sub), CellSubBlock>();
+        CellSubBlock InteriorSubFor(FormKey fk)
         {
-            if (interiorSub is not null) return interiorSub;
-            var block = new CellBlock { BlockNumber = 0, GroupType = GroupTypeEnum.InteriorCellBlock };
-            interiorSub = new CellSubBlock { BlockNumber = 0, GroupType = GroupTypeEnum.InteriorCellSubBlock };
-            block.SubBlocks.Add(interiorSub);
-            mod.Cells.Records.Add(block);
-            return interiorSub;
+            int id = (int)fk.ID;
+            int blk = id % 10, sub = (id / 10) % 10;
+            if (interiorSubs.TryGetValue((blk, sub), out var cached)) return cached;
+            var block = mod.Cells.Records.FirstOrDefault(
+                b => b.BlockNumber == blk && b.GroupType == GroupTypeEnum.InteriorCellBlock);
+            if (block is null)
+            {
+                block = new CellBlock { BlockNumber = blk, GroupType = GroupTypeEnum.InteriorCellBlock };
+                mod.Cells.Records.Add(block);
+            }
+            var subBlock = new CellSubBlock { BlockNumber = sub, GroupType = GroupTypeEnum.InteriorCellSubBlock };
+            block.SubBlocks.Add(subBlock);
+            interiorSubs[(blk, sub)] = subBlock;
+            return subBlock;
         }
         foreach (var c in spec.Cells)
         {
             var cell = new Cell(mod, c.EditorId) { Flags = Cell.Flag.IsInteriorCell };
             if (!string.IsNullOrEmpty(c.Name)) cell.Name = c.Name;
-            InteriorSub().Cells.Add(cell);
+            InteriorSubFor(cell.FormKey).Cells.Add(cell);
             if (!string.IsNullOrEmpty(c.EditorId)) cellsByEd[c.EditorId] = cell;
         }
 
@@ -768,7 +781,7 @@ internal static class Program
             // Localized Name is skipped; vanilla refs stay in the master, we only ADD ours.
             var ov = new Cell(fk, SkyrimRelease.SkyrimSE);
             CopyCellEnv(vanilla, ov);
-            InteriorSub().Cells.Add(ov);
+            InteriorSubFor(fk).Cells.Add(ov);
             vanillaCellOverrides[fk] = ov;
             return ov;
         }
@@ -1525,6 +1538,37 @@ internal static class Program
         }
         Console.WriteLine($"-- {total} match(es)" + (total > cap ? $", showing first {cap}" : "")
             + (namesOk ? "" : "  [names unresolved: search matched EditorID only — see note]"));
+        return 0;
+    }
+
+    // Diagnostic: walk a plugin's interior CELL block tree and print the block/sub-block each
+    // interior cell lives in. Skyrim groups interior cells BY FORMID (block = id % 10, sub =
+    // (id/10) % 10); an override in the wrong GRUP is silently ignored by the engine, so this is
+    // how you verify a vanilla-cell override landed in the right block WITHOUT an in-game cycle.
+    // Optional 0xFORMID arg filters to one cell.
+    private static int CellBlk(string inPath, string? formIdHex)
+    {
+        uint? target = null;
+        if (formIdHex is not null)
+            target = Convert.ToUInt32(formIdHex.Replace("0x", "", StringComparison.OrdinalIgnoreCase), 16) & 0xFFFFFF;
+        using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE);
+        int shown = 0;
+        foreach (var block in mod.Cells.Records)
+        {
+            foreach (var sub in block.SubBlocks)
+            {
+                foreach (var c in sub.Cells)
+                {
+                    uint id = c.FormKey.ID;
+                    if (target is { } t && id != t) continue;
+                    if (target is null && shown >= 60) { Console.WriteLine("…(capped at 60)"); return 0; }
+                    Console.WriteLine($"0x{id:X6} (dec {id})  block={block.BlockNumber} sub={sub.BlockNumber}  {c.EditorID}"
+                        + $"   [id%10={id % 10}, (id/10)%10={(id / 10) % 10}]");
+                    shown++;
+                }
+            }
+        }
+        if (target is not null && shown == 0) Console.WriteLine($"0x{target:X6} not found as an interior cell");
         return 0;
     }
 
