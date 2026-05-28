@@ -133,6 +133,12 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
   keyword (defaults to the forge) by consuming `components` (item *refs* + counts).
 - **Classes:** `classes` (CLAS) define an npc "profession" — `healthWeight`/`magickaWeight`/
   `staminaWeight` + `skillWeights` (Skill→0-255) + `teaches`; an npc's `class` ref can point at one.
+- **CombatStyles (CSTY) + NPC.spells:** `combatStyles[]` define HOW an NPC fights — the six
+  `equipMult*` fields are the AI's per-weapon-class preference scores (push `equipMultMagic` high
+  for a mage NPC; vanilla csVampireMagic uses 8.1). An npc's `combatStyle` ref points at one.
+  Combined with `npcs[].spells` (array of SPEL refs, populates the AI's spell list) the engine
+  picks one of the listed spells to cast based on the CombatStyle preferences. Use
+  `cstydiag <Skyrim.esm> <0xFORMID>` to inspect any vanilla CSTY's numeric values.
 - **AI Packages (PACK):** `packages` give NPCs decision-layer behaviour ("sandbox at a spot",
   "travel to the inn", etc.). Skyrim PACKs use a vanilla **procedure template** (`template` *ref*,
   e.g. `Skyrim.esm:0x01C254` = Sandbox) that defines the data-input schema; the package fills those

@@ -50,6 +50,7 @@ internal static class Program
                 case "lightdiag" when args.Length is 2 or 3: return LightDiag(args[1], args.Length == 3 ? args[2] : null);
                 case "packagediag" when args.Length == 3: return PackageDiag(args[1], args[2]);
                 case "npcdiag" when args.Length == 3: return NpcDiag(args[1], args[2]);
+                case "cstydiag" when args.Length == 3: return CstyDiag(args[1], args[2]);
                 default: Usage(); return 1;
             }
         }
@@ -76,6 +77,7 @@ internal static class Program
         "  lightdiag <in.esp> [0xFORMID]                a Light's radius/color/flags (no id: list room-fill lights)\n" +
         "  packagediag <in.esp> <0xFORMID>              print a Package's template/flags/schedule/data inputs\n" +
         "  npcdiag <in.esp> <0xFORMID>                  print an Npc's race/class/voice/factions/packages/flags (for cross-cell diff vs vanilla)\n" +
+        "  cstydiag <in.esp> <0xFORMID>                 print a CombatStyle's offensive/defensive mults + equipment preferences + flags\n" +
         "  extract <in.esp> <strings.json>\n" +
         "  applyloc <in.esp> <strings.json> <outDir>   (Localized UTF-8 _chinese.STRINGS)\n" +
         "  apply   <in.esp> <strings.json> <out.esp>");
@@ -693,6 +695,27 @@ internal static class Program
             r.CreatedObjectCount = (ushort)Math.Max(1, co.Count);
         }
 
+        // CombatStyle (CSTY): no FormLinks (all floats + a Flag enum), so fully built in pass 1.
+        // An npc's `combatStyle` ref can point at one (resolved in pass 2 alongside race/class/etc.).
+        // The six EquipmentScoreMult* fields are the AI's weapon-preference scores — set Magic high
+        // for a mage NPC. See cstydiag on csVampireMagic 0x02DFB5 for the gold-standard mage values.
+        foreach (var cs in spec.CombatStyles)
+        {
+            var r = mod.CombatStyles.AddNew();
+            r.EditorID = cs.EditorId;
+            r.OffensiveMult = cs.OffensiveMult;
+            r.DefensiveMult = cs.DefensiveMult;
+            r.GroupOffensiveMult = cs.GroupOffensiveMult;
+            r.EquipmentScoreMultMelee   = cs.EquipMultMelee;
+            r.EquipmentScoreMultMagic   = cs.EquipMultMagic;
+            r.EquipmentScoreMultRanged  = cs.EquipMultRanged;
+            r.EquipmentScoreMultShout   = cs.EquipMultShout;
+            r.EquipmentScoreMultUnarmed = cs.EquipMultUnarmed;
+            r.EquipmentScoreMultStaff   = cs.EquipMultStaff;
+            r.AvoidThreatChance = cs.AvoidThreatChance;
+            r.Flags = ParseFlags<Mutagen.Bethesda.Skyrim.CombatStyle.Flag>(cs.Flags);
+        }
+
         // AI Package (PACK): pass-1 sets scalar fields (flags, interrupt flags, speed, schedule).
         // Template/CombatStyle/OwnerQuest + Sandbox `Data` dictionary inputs are wired in pass 2.
         // Type is Package (=18), never PackageTemplate — those are vanilla-defined.
@@ -801,6 +824,18 @@ internal static class Program
             // of these set; without it the engine refuses door-teleport travel as if the NPC
             // were trespassing.
             Resolve($"npc '{n.EditorId}' crimeFaction", n.CrimeFaction, fk => npcRec.CrimeFaction.SetTo(fk));
+            // CombatStyle: HOW the AI fights — picks magic/melee/staff based on equipMult* weights.
+            Resolve($"npc '{n.EditorId}' combatStyle", n.CombatStyle, fk => npcRec.CombatStyle.SetTo(fk));
+            // Spells: populates npc.ActorEffect — the AI's spell list. Combat AI consults this when
+            // its CombatStyle says "prefer magic"; without spells, no casting (the spell list is
+            // empty). Reuse the existing ref resolver — works for in-spec spells AND vanilla refs.
+            if (n.Spells.Count > 0)
+            {
+                npcRec.ActorEffect ??= new();
+                foreach (var spellRef in n.Spells)
+                    Resolve($"npc '{n.EditorId}' spell", spellRef, fk =>
+                        npcRec.ActorEffect!.Add(new FormLink<ISpellRecordGetter>(fk)));
+            }
             foreach (var factionRef in n.Factions)
                 Resolve($"npc '{n.EditorId}' faction", factionRef, fk =>
                 {
@@ -1513,6 +1548,7 @@ internal static class Program
         foreach (var co in spec.Recipes) Reg(co.EditorId, "recipe");
         foreach (var cl in spec.Classes) Reg(cl.EditorId, "class");
         foreach (var pk in spec.Packages) Reg(pk.EditorId, "package");
+        foreach (var cs in spec.CombatStyles) Reg(cs.EditorId, "combatStyle");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
         void CheckRef(string r, string what)
@@ -1536,7 +1572,13 @@ internal static class Program
             CheckRef(n.Outfit, $"npc '{n.EditorId}' outfit");
             CheckRef(n.VoiceType, $"npc '{n.EditorId}' voiceType");
             CheckRef(n.CrimeFaction, $"npc '{n.EditorId}' crimeFaction");
+            CheckRef(n.CombatStyle, $"npc '{n.EditorId}' combatStyle");
+            foreach (var s in n.Spells) CheckRef(s, $"npc '{n.EditorId}' spell");
         }
+        foreach (var cs in spec.CombatStyles)
+            foreach (var f in cs.Flags)
+                if (!Enum.TryParse<Mutagen.Bethesda.Skyrim.CombatStyle.Flag>(f, true, out _))
+                    problems.Add($"combatStyle '{cs.EditorId}' invalid flag '{f}' (Dueling|Flanking|AllowDualWielding)");
         foreach (var a in spec.Armors) foreach (var k in a.Keywords) CheckRef(k, $"armor '{a.EditorId}' keyword");
         foreach (var w in spec.Weapons) foreach (var k in w.Keywords) CheckRef(k, $"weapon '{w.EditorId}' keyword");
         // `template` = a vanilla record to clone (model/anim) — must be a well-formed external ref.
@@ -2057,6 +2099,31 @@ internal static class Program
         return 0;
     }
 
+    // Diagnostic: print a CombatStyle's offensive/defensive multipliers + the six equipment
+    // preferences (Melee/Magic/Ranged/Shout/Unarmed/Staff) + flags. The equipment scores are how
+    // the AI decides which combat path to favour — a magic-preferring NPC needs Magic high relative
+    // to the others. Use to harvest sensible vanilla values when authoring a custom CombatStyle.
+    private static int CstyDiag(string inPath, string formIdHex)
+    {
+        uint id = Convert.ToUInt32(formIdHex.Replace("0x", "", StringComparison.OrdinalIgnoreCase), 16) & 0xFFFFFF;
+        using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE);
+        foreach (var c in mod.EnumerateMajorRecords<ICombatStyleGetter>())
+        {
+            if (c.FormKey.ID != id) continue;
+            Console.WriteLine($"0x{id:X6}  EditorID={c.EditorID}");
+            Console.WriteLine($"  OffensiveMult={c.OffensiveMult}  DefensiveMult={c.DefensiveMult}  GroupOffensiveMult={c.GroupOffensiveMult}");
+            Console.WriteLine($"  EquipMult: Melee={c.EquipmentScoreMultMelee}  Magic={c.EquipmentScoreMultMagic}  Ranged={c.EquipmentScoreMultRanged}");
+            Console.WriteLine($"             Shout={c.EquipmentScoreMultShout}  Unarmed={c.EquipmentScoreMultUnarmed}  Staff={c.EquipmentScoreMultStaff}");
+            Console.WriteLine($"  AvoidThreatChance={c.AvoidThreatChance}");
+            Console.WriteLine($"  Flags={c.Flags?.ToString() ?? "-"}   MajorFlags={c.MajorFlags}");
+            Console.WriteLine($"  LongRangeStrafeMult={c.LongRangeStrafeMult?.ToString() ?? "-"}");
+            Console.WriteLine($"  Melee sub: {(c.Melee is null ? "-" : "set")}   CloseRange sub: {(c.CloseRange is null ? "-" : "set")}   Flight sub: {(c.Flight is null ? "-" : "set")}");
+            return 0;
+        }
+        Console.WriteLine($"0x{id:X6} not a CombatStyle in {Path.GetFileName(inPath)}");
+        return 0;
+    }
+
     // Concrete Mutagen record class -> friendly type name (strip overlay/getter suffixes).
     private static string TypeLabel(IMajorRecordGetter r)
     {
@@ -2092,6 +2159,9 @@ internal static class Program
                 if (!npc.DefaultOutfit.IsNull) Console.WriteLine($"      outfit -> {Ref(npc.DefaultOutfit.FormKey)}");
                 if (!npc.Voice.IsNull) Console.WriteLine($"      voice -> {Ref(npc.Voice.FormKey)}");
                 if (!npc.CrimeFaction.IsNull) Console.WriteLine($"      crimeFaction -> {Ref(npc.CrimeFaction.FormKey)}");
+                if (!npc.CombatStyle.IsNull) Console.WriteLine($"      combatStyle -> {Ref(npc.CombatStyle.FormKey)}");
+                if (npc.ActorEffect is { Count: > 0 } actEff)
+                    foreach (var sp in actEff) Console.WriteLine($"      spell -> {Ref(sp.FormKey)}");
                 foreach (var f in npc.Factions)
                     Console.WriteLine($"      faction -> {Ref(f.Faction.FormKey)} (rank {f.Rank})");
                 foreach (var pkg in npc.Packages)
@@ -2161,6 +2231,14 @@ internal static class Program
 
             if (r is ISpellGetter spG && (spG.Type != SpellType.Spell || spG.CastType != CastType.ConstantEffect || spG.BaseCost > 0))
                 Console.WriteLine($"      spell: type={spG.Type} cast={spG.CastType} target={spG.TargetType} cost={spG.BaseCost}");
+
+            if (r is ICombatStyleGetter csG)
+            {
+                Console.WriteLine($"      cs: off={csG.OffensiveMult} def={csG.DefensiveMult} group={csG.GroupOffensiveMult}"
+                    + $" equip(melee={csG.EquipmentScoreMultMelee} magic={csG.EquipmentScoreMultMagic} ranged={csG.EquipmentScoreMultRanged}"
+                    + $" shout={csG.EquipmentScoreMultShout} unarmed={csG.EquipmentScoreMultUnarmed} staff={csG.EquipmentScoreMultStaff})"
+                    + $" avoid={csG.AvoidThreatChance} flags={csG.Flags?.ToString() ?? "-"}");
+            }
 
             if (r is IPackageGetter pkgG)
             {
@@ -2288,6 +2366,7 @@ internal sealed class ModSpec
     public List<RecipeSpec> Recipes { get; set; } = new();
     public List<ClassSpec> Classes { get; set; } = new();
     public List<PackageSpec> Packages { get; set; } = new();
+    public List<CombatStyleSpec> CombatStyles { get; set; } = new();
 }
 // "ref" fields below accept EITHER an in-spec editorId OR an external "<master>:0xFORMID"
 // (e.g. "Skyrim.esm:0x013746" — find them with the `find` command). External refs auto-add
@@ -2309,6 +2388,8 @@ internal sealed class NpcSpec
     public string VoiceType { get; set; } = "";      // ref → VTYP (e.g. Skyrim.esm:0x013AE6 = MaleNord); without one, NPC is silent (no hello/idle chatter)
     public string CrimeFaction { get; set; } = "";   // ref → FACT (e.g. Skyrim.esm:0x0267EA = CrimeFactionWhiterun); marks the NPC as a member of a city's crime/citizen circle — grants city-traversal rights (without it, cross-cell Travel through city gates is silently rejected)
     public bool Unique { get; set; }                  // Configuration.Flag.Unique — engine treats the actor as a one-off (vs leveled spawn); seems to matter for AI tracking + cross-cell travel
+    public List<string> Spells { get; set; } = new(); // refs → SPEL records; populates npc.ActorEffect — the AI's spell list, what combat AI considers casting (combined with combatStyle's magic preference)
+    public string CombatStyle { get; set; } = "";    // ref → CSTY; HOW the AI fights (magic vs melee preference, aggression, group flank). Without one, the engine uses a default that may not pick spells from `spells`.
 }
 internal sealed class QuestSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public List<ObjectiveSpec> Objectives { get; set; } = new(); }
 internal sealed class ObjectiveSpec { public ushort Index { get; set; } public string Text { get; set; } = ""; }
@@ -2415,6 +2496,28 @@ internal sealed class PackageScheduleSpec
     public int Hour { get; set; } = -1;
     public int Minute { get; set; } = -1;
     public int DurationInMinutes { get; set; }
+}
+// CombatStyle (CSTY): HOW an NPC fights. The six `equipMult*` weights are the AI's preference
+// scores per weapon class — a magic-preferring NPC needs `magic` high relative to the others
+// (vanilla csVampireMagic: Magic=8.1, Staff=2.15, Melee=0.51). Without a CSTY set on the NPC,
+// the engine uses a flat default that may not pick the NPC's spells from its `spells` list.
+// `offensiveMult` (~aggression), `defensiveMult` (~blocking/dodging), `groupOffensiveMult`
+// (~boldness in groups), `avoidThreatChance` (0..1, chance to back off from danger). `flags`
+// values: Dueling, Flanking, AllowDualWielding.
+internal sealed class CombatStyleSpec
+{
+    public string EditorId { get; set; } = "";
+    public float OffensiveMult { get; set; } = 0.5f;
+    public float DefensiveMult { get; set; } = 0.5f;
+    public float GroupOffensiveMult { get; set; } = 0.5f;
+    public float EquipMultMelee   { get; set; } = 1.0f;
+    public float EquipMultMagic   { get; set; } = 1.0f;
+    public float EquipMultRanged  { get; set; } = 1.0f;
+    public float EquipMultShout   { get; set; } = 1.0f;
+    public float EquipMultUnarmed { get; set; } = 1.0f;
+    public float EquipMultStaff   { get; set; } = 1.0f;
+    public float AvoidThreatChance { get; set; }
+    public List<string> Flags { get; set; } = new();   // CombatStyle.Flag names (Dueling/Flanking/AllowDualWielding)
 }
 // Sandbox-template (Skyrim.esm:0x01C254) data inputs. Slot indices on the template:
 //   0 Location  1 AllowEating  3 AllowSleeping  4 AllowConversation  5 AllowIdleMarkers

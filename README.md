@@ -33,6 +33,8 @@ dotnet run --project src/ModForge.Cli -- <command> ...
   mgefdiag <in.esp> <0xFORMID>             dump a MagicEffect's fields (compare generated vs vanilla)
   lightdiag <in.esp> [0xFORMID]            dump a Light's radius/color/flags (no id: list room-fill lights)
   packagediag <in.esp> <0xFORMID>         dump an AI Package's template/flags/schedule + Data slot schema
+  npcdiag <in.esp> <0xFORMID>             dump an NPC's race/class/voice/factions/packages/flags (cross-cell diff vs vanilla)
+  cstydiag <in.esp> <0xFORMID>            dump a CombatStyle's offensive/defensive mults + equipment preferences + flags
   compile  <script.psc> <outDir>            .psc -> .pex via the CK PapyrusCompiler under Wine
   gen      <out.esp>                          write a demo plugin (for testing)
   extract  <in.esp>  <strings.json>          pull translatable strings -> JSON

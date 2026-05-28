@@ -1,0 +1,68 @@
+{
+  "pluginName": "ModForgeCombat.esp",
+  "esl": true,
+  "_": "It.17: a magic-preferring NPC with a vanilla Flames spell. CombatStyle (csVampireMagic-derived: Magic=8.1, Staff=2.15, Melee=0.51) tells the AI to favour magic; spells list gives her something to cast. Place outdoors near the It.9 wilderness coords; tester walks up and `placeatme 0x0009AE36` (Wolf base) to give her a target — she should cast Flames at the wolf rather than melee.",
+
+  "combatStyles": [
+    {
+      "editorId": "MF_MageCombatStyle",
+      "_": "Values lifted from csVampireMagic 0x02DFB5 via cstydiag — proven vanilla mage profile.",
+      "offensiveMult": 0.77, "defensiveMult": 0.3, "groupOffensiveMult": 0.74,
+      "equipMultMelee": 0.51, "equipMultMagic": 8.1, "equipMultRanged": 0.55,
+      "equipMultShout": 0.21, "equipMultUnarmed": 0.98, "equipMultStaff": 2.15,
+      "avoidThreatChance": 0.2,
+      "flags": [ "Dueling" ]
+    }
+  ],
+
+  "classes": [
+    {
+      "editorId": "MF_MageClass",
+      "name": "ModForge Mage",
+      "_": "Magicka-heavy so auto-calc gives her usable mana. Destruction-favoured skills + level 25 = Flames hits hard enough to matter.",
+      "healthWeight": 20, "magickaWeight": 65, "staminaWeight": 15,
+      "skillWeights": { "Destruction": 100, "Restoration": 60, "Alteration": 40, "OneHanded": 20 }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_MageNpc",
+      "name": "ModForge Mage",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_MageClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+      "unique": true,
+      "level": 25,
+      "autoCalcStats": true,
+      "combatStyle": "MF_MageCombatStyle",
+      "spells": [ "Skyrim.esm:0x0C969A" ],
+      "packages": [ "MF_MageSandbox" ]
+    }
+  ],
+
+  "packages": [
+    { "editorId": "MF_MageSandbox",
+      "template": "Skyrim.esm:0x01C254",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [
+        "HellosToPlayer", "ObserveCombatBehavior",
+        "ReactionToPlayerActions", "AllowIdleChatter"
+      ],
+      "sandbox": {
+        "radius": 512,
+        "allowEating": true, "allowSleeping": false, "allowConversation": true,
+        "allowIdleMarkers": true, "allowSitting": true, "allowWandering": true,
+        "allowSpecialFurniture": true, "energy": 50.0
+      } }
+  ],
+
+  "placements": [
+    { "_": "Tamriel wilderness (the It.9 confirmed-working coords). Far enough from settlements that she's alone; tester spawns enemies via `placeatme` to test combat.",
+      "base": "MF_MageNpc", "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": -90176.8, "y": 18097.19, "z": -3725.44 } }
+  ]
+}

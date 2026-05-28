@@ -731,6 +731,47 @@ call; the spec IS the contract.)
     - **A/B GAP still open** (same as It.16c): we still haven't isolated which of CrimeFaction /
       faction-membership / Unique is THE necessary one — likely it's CrimeFaction primarily, but
       this remains a small follow-up test, not a blocker.
+- [~] **It.17 — CombatStyle (CSTY) + NPC.spells — structurally verified; in-game TBD (2026-05-28).**
+      The third and last of the user's original three goals (cf. the It.16 series for goals 1+2):
+      "NPCs use the spells my mod adds." Approach: a CombatStyle record drives the AI's per-weapon
+      preference (Magic vs Melee vs Staff vs Ranged), and the NPC's `spells` list is the source of
+      castable spells; combined, the engine picks magic when CSTY says so and there are spells to
+      cast. Pure record-authoring, no SKSE/C++.
+    - **API discovery:** ICombatStyleGetter has 9 main fields — Offensive/Defensive/Group offensive
+      multipliers (~aggression/blocking/group boldness) + six `EquipmentScoreMult*` weights
+      (Melee/Magic/Ranged/Shout/Unarmed/Staff) + `AvoidThreatChance` + `Flags` (Dueling/Flanking/
+      AllowDualWielding) + 3 sub-records (Melee/CloseRange/Flight — left at defaults for now). The
+      six EquipMult scores are the AI's combat-path preference; push Magic high for a mage.
+    - **NEW CLI `cstydiag <esp> <0xFORMID>`** (mgefdiag-style): dumps a CSTY's Offensive/Defensive/
+      Group + the six EquipMults + AvoidThreatChance + Flags. Used to harvest vanilla CSTY values:
+      `csVampireMagic` (0x02DFB5) = gold mage profile (Magic=8.1, Staff=2.15, Melee=0.51), aggressive
+      OffensiveMult=0.77, AvoidThreatChance=0.2, Dueling flag. `csSoldierMagic` (0x046B9E) = mildly
+      magic-preferring (Magic=3 vs others=1). `csForswornMagic` is misleadingly named — all EquipMults
+      are 1.0 (balanced, not magic-preferring despite the name).
+    - **Spec/Build:** new top-level `combatStyles[]` (CombatStyleSpec) — editorId + 9 floats + flags
+      array. All fields are floats / enums (no FormLinks), so fully built in pass 1. NpcSpec gained
+      two related fields: `combatStyle` (ref → CSTY; wired in pass-2 alongside race/class/etc.) and
+      `spells` (array of refs → SPEL records; populates `npc.ActorEffect` ExtendedList in pass-2 via
+      the existing Resolve helper). validate Reg() registers CSTY ids + checks Flag enum names +
+      CheckRef on combatStyle/spells. dump prints `cs: …` summary for each CSTY + on each NPC
+      `combatStyle -> <ref>` + each `spell -> <ref>`.
+    - **Example `examples/combat_spec.json`** → `ModForgeCombat.esp` → `~/skyrim_mods/ModForgeCombat.zip`.
+      `MF_MageCombatStyle` lifts csVampireMagic's numeric values exactly (proven vanilla mage profile).
+      `MF_MageClass` is magicka-heavy (Magicka 65/Health 20/Stamina 15) with Destruction=100,
+      Restoration=60, Alteration=40 skill weights. `MF_MageNpc` (level 25 autoCalc + the It.16c
+      citizenship recipe so she's "valid" anywhere) has `combatStyle = MF_MageCombatStyle` and
+      `spells = [Skyrim.esm:0x0C969A]` (vanilla `FlamesRightHand`, the basic novice destruction
+      cone). Placed at the It.9 wilderness Tamriel coords (proven exterior placement). validate +
+      dump verify all wired: spell → 0C969A, combatStyle → MF_MageCombatStyle, all factions present.
+    - **IN-GAME TEST (needs the tester):** fast-travel near Tamriel grid (-23, 4) or `coc` the area
+      → find `MF_MageNpc` ("ModForge Mage") → **`placeatme 0x10F2A3 1`** (EncWolfIce_Indoor — the
+      indoor variant still works outdoors; or use 0x10F2A2 for vanilla EncWolf, or any aggressive
+      vanilla NPC base via `help <name> 0`). Expected: the wolf aggros on the mage; she casts
+      `Flames` (yellow cone of fire) at it rather than running up and punching. The big test is
+      whether she actually CASTS — if she punches/runs, the CombatStyle didn't take or the spell
+      list isn't being read. FUTURE It.18 candidates: custom MGEF/spell + this CSTY (closes the
+      "NPC uses MY mod's spells" loop end-to-end); CombatStyle subobjects (Melee, CloseRange, Flight
+      currently left at defaults — may matter for ranged/airborne combat tuning).
 
 ## Build / test
 ```
