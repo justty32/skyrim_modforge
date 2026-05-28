@@ -852,12 +852,48 @@ internal static class Program
             Resolve($"magicEffect '{me.EditorId}' explosion",    me.Explosion,    fk => mgef.Explosion.SetTo(fk));
         }
 
-        // AI Package (PACK) pass-2: resolve template/combatStyle/ownerQuest refs and (when the
-        // template is the Sandbox procedure template) fill the Data dictionary by slot index.
-        // The vanilla Sandbox template (Skyrim.esm:0x01C254) has named inputs at fixed sbyte
-        // indices; we mirror what DefaultSandboxEditorLocation256 emits, overriding from SandboxSpec.
-        const uint SandboxTemplateId = 0x01C254;       // Skyrim.esm: editorId "Sandbox"
+        // AI Package (PACK) pass-2: resolve template/combatStyle/ownerQuest refs and dispatch Data
+        // slot filling by the vanilla procedure template referenced. Each template has its own
+        // sbyte-indexed named slot schema (discover via `packagediag <Skyrim.esm> <templateFormId>`);
+        // we mirror what vanilla concrete packages emit so the engine gets explicit values.
+        const uint SandboxTemplateId = 0x01C254;  // Skyrim.esm: editorId "Sandbox"     — 12 slots
+        const uint TravelTemplateId  = 0x016FAA;  // Skyrim.esm: editorId "Travel"      —  3 slots
         var skyrimEsm = ModKey.FromNameAndExtension("Skyrim.esm");
+
+        // Build a PackageDataLocation: an authored placed-ref → LocationTarget anchored at that
+        // ref, else LocationFallback(NearSelf) — anchors at the actor's current position with no
+        // external dependency. NEVER use NearEditorLocation: it needs a CK-set Editor Location on
+        // the NPC; Mutagen-generated NPCs don't have one, so sandbox/travel silently no-ops in-game.
+        PackageDataLocation MakeLocationSlot(string slotName, string ownerLabel, string refStr, uint radius)
+        {
+            if (!string.IsNullOrWhiteSpace(refStr)
+                && TryResolveRef(refStr, formKeyByEd, out var fk))
+            {
+                linksWired++;
+                if (LooksExternalRef(refStr)) extLinks++;
+                return new PackageDataLocation
+                {
+                    Name = slotName,
+                    Location = new LocationTargetRadius
+                    {
+                        Target = new LocationTarget { Link = new FormLink<IPlacedGetter>(fk) },
+                        Radius = radius,
+                    }
+                };
+            }
+            if (!string.IsNullOrWhiteSpace(refStr))
+                Console.WriteLine($"  ! {ownerLabel} location '{refStr}' unresolved — falling back to NearSelf");
+            return new PackageDataLocation
+            {
+                Name = slotName,
+                Location = new LocationTargetRadius
+                {
+                    Target = new LocationFallback { Type = LocationTargetRadius.LocationType.NearSelf },
+                    Radius = radius,
+                }
+            };
+        }
+
         foreach (var pk in spec.Packages)
         {
             if (!recordsByEd.TryGetValue(pk.EditorId, out var rec) || rec is not IPackage pack) continue;
@@ -865,77 +901,51 @@ internal static class Program
             Resolve($"package '{pk.EditorId}' combatStyle", pk.CombatStyle, fk => pack.CombatStyle.SetTo(fk));
             Resolve($"package '{pk.EditorId}' ownerQuest",  pk.OwnerQuest,  fk => pack.OwnerQuest.SetTo(fk));
 
-            // Only fill Data for the Sandbox template; other templates (Travel/UseItemAt/Find/…) are
-            // out of scope for It.16a — we still emit a structurally-valid package referencing the
-            // template, but with no Data overrides (template defaults apply).
-            bool isSandbox = pack.PackageTemplate.FormKey is { } tfk
-                             && tfk.ModKey == skyrimEsm && tfk.ID == SandboxTemplateId;
-            if (!isSandbox)
+            var tfk = pack.PackageTemplate.FormKey;
+            if (tfk.IsNull || tfk.ModKey != skyrimEsm)
             {
                 if (!string.IsNullOrWhiteSpace(pk.Template))
-                    Console.WriteLine($"  ! package '{pk.EditorId}': template '{pk.Template}' is not the Sandbox template (Skyrim.esm:0x01C254) — It.16a supports Sandbox only; emitting package with no Data");
+                    Console.WriteLine($"  ! package '{pk.EditorId}': template '{pk.Template}' not a Skyrim.esm template; no Data overrides emitted (template defaults apply)");
                 continue;
             }
 
-            var sb = pk.Sandbox;
-            // Slot 0 — Location: an optional placed-ref Link (then LocationTarget), else LocationFallback.
-            //   LocationFallback = "use the NPC's editor location" (the cell/coords it was placed at).
-            //   LocationTarget(Link=<placed REFR/ACHR>) anchors the sandbox at that ref's location.
-            APackageData slot0;
-            if (!string.IsNullOrWhiteSpace(sb.Location)
-                && TryResolveRef(sb.Location, formKeyByEd, out var locFk))
+            if (tfk.ID == SandboxTemplateId)
             {
-                slot0 = new PackageDataLocation
-                {
-                    Name = "Location",
-                    Location = new LocationTargetRadius
-                    {
-                        Target = new LocationTarget { Link = new FormLink<IPlacedGetter>(locFk) },
-                        Radius = sb.Radius,
-                    }
-                };
-                linksWired++;
-                if (LooksExternalRef(sb.Location)) extLinks++;
+                // Mirrors DefaultSandboxCurrentLocation256 (Skyrim.esm:0x0956B8) — concrete sandboxes
+                // explicitly set all 12 named slots; we do the same so behaviour is deterministic.
+                var sb = pk.Sandbox;
+                pack.Data[0] = MakeLocationSlot("Location", $"package '{pk.EditorId}' sandbox", sb.Location, sb.Radius);
+                void SBool(sbyte slot, string name, bool? user, bool def)
+                    => pack.Data[slot] = new PackageDataBool { Name = name, Data = user ?? def };
+                SBool(1,  "Allow Eating",            sb.AllowEating,           true);
+                SBool(3,  "Allow Sleeping",          sb.AllowSleeping,         true);
+                SBool(4,  "Allow Conversation",      sb.AllowConversation,     true);
+                SBool(5,  "Allow Idle Markers",      sb.AllowIdleMarkers,      true);
+                SBool(6,  "Allow Sitting",           sb.AllowSitting,          true);
+                SBool(7,  "Allow Wandering",         sb.AllowWandering,        true);
+                SBool(14, "Unlock On Arrival?",      sb.UnlockOnArrival,       false);
+                SBool(25, "Prefered Path Only?",     sb.PreferredPathOnly,     false);
+                SBool(27, "RideHorseIfPossible",     sb.RideHorseIfPossible,   false);
+                SBool(31, "Allow Special Furniture", sb.AllowSpecialFurniture, true);
+                pack.Data[29] = new PackageDataFloat { Name = "Energy", Data = sb.Energy ?? 50f };
+            }
+            else if (tfk.ID == TravelTemplateId)
+            {
+                // Travel template has just 3 slots — 0=Place (PackageDataLocation), 2=RideHorse,
+                // 4=PreferPath. `place` is REQUIRED in practice — Travel without a destination
+                // ref means "travel to nowhere" (NearSelf), i.e. the NPC just stands. radius=0 is
+                // template default (= arrive at exact point); set non-zero for "arrive within R".
+                var tv = pk.Travel;
+                if (string.IsNullOrWhiteSpace(tv.Place))
+                    Console.WriteLine($"  ! package '{pk.EditorId}' travel: no `place` ref — Travel will fall back to NearSelf (NPC stays put)");
+                pack.Data[0] = MakeLocationSlot("Place to Travel", $"package '{pk.EditorId}' travel", tv.Place, tv.Radius);
+                pack.Data[2] = new PackageDataBool { Name = "Ride Horse if possible?", Data = tv.RideHorse ?? false };
+                pack.Data[4] = new PackageDataBool { Name = "Prefer Preferred Path?", Data = tv.PreferPath ?? false };
             }
             else
             {
-                // LocationFallback writes a polymorphic ALocationTarget; Mutagen picks the BINARY
-                // shape from LocationFallback.Type (the LocationTargetRadius.LocationType enum), NOT
-                // from the C# class — leaving Type at 0 silently writes it as LocationTarget (the
-                // It.16a "target=LocationTarget instead of LocationFallback" bug). The fallback
-                // type matters too: `NearEditorLocation` (what `DefaultSandboxEditorLocation256` uses)
-                // requires the NPC to have an Editor Location set in CK — vanilla actors get one,
-                // generated ones don't, so sandbox finds no anchor and the actor just stands still
-                // (the in-game "doesn't sandbox at all" bug). `NearSelf` (what `DefaultSandbox
-                // CurrentLocation256` and `WE18WitchSandboxNearSelf` use) anchors to the actor's
-                // current position with no external dependency — the right default for generated NPCs.
-                slot0 = new PackageDataLocation
-                {
-                    Name = "Location",
-                    Location = new LocationTargetRadius
-                    {
-                        Target = new LocationFallback { Type = LocationTargetRadius.LocationType.NearSelf },
-                        Radius = sb.Radius,
-                    }
-                };
+                Console.WriteLine($"  ! package '{pk.EditorId}': template {tfk} is not yet supported (known: sandbox=0x01C254, travel=0x016FAA) — emitting package with no Data overrides; template defaults apply");
             }
-            pack.Data[0] = slot0;
-
-            // Bool/float slots — match DefaultSandboxEditorLocation256's value set so the engine
-            // gets explicit values (not template defaults) the way vanilla concrete sandboxes do.
-            void Bool(sbyte slot, string name, bool? user, bool def)
-                => pack.Data[slot] = new PackageDataBool { Name = name, Data = user ?? def };
-            Bool(1,  "Allow Eating",            sb.AllowEating,           true);
-            Bool(3,  "Allow Sleeping",          sb.AllowSleeping,         true);
-            Bool(4,  "Allow Conversation",      sb.AllowConversation,     true);
-            Bool(5,  "Allow Idle Markers",      sb.AllowIdleMarkers,      true);
-            Bool(6,  "Allow Sitting",           sb.AllowSitting,          true);
-            Bool(7,  "Allow Wandering",         sb.AllowWandering,        true);
-            Bool(14, "Unlock On Arrival?",      sb.UnlockOnArrival,       false);
-            Bool(25, "Prefered Path Only?",     sb.PreferredPathOnly,     false);
-            Bool(27, "RideHorseIfPossible",     sb.RideHorseIfPossible,   false);
-            Bool(31, "Allow Special Furniture", sb.AllowSpecialFurniture, true);
-            pack.Data[29] = new PackageDataFloat { Name = "Energy", Data = sb.Energy ?? 50f };
         }
 
         // NPC.Packages — assign each ref'd package to the NPC's package list (run-order: the engine
@@ -1680,6 +1690,7 @@ internal static class Program
             CheckRef(pk.CombatStyle, $"package '{pk.EditorId}' combatStyle");
             CheckRef(pk.OwnerQuest,  $"package '{pk.EditorId}' ownerQuest");
             CheckRef(pk.Sandbox.Location, $"package '{pk.EditorId}' sandbox.location");
+            CheckRef(pk.Travel.Place, $"package '{pk.EditorId}' travel.place");
             foreach (var f in pk.Flags)
                 if (!Enum.TryParse<Mutagen.Bethesda.Skyrim.Package.Flag>(f, true, out _))
                     problems.Add($"package '{pk.EditorId}' invalid flag '{f}'");
@@ -2337,6 +2348,9 @@ internal sealed class PackageSpec
     // Sandbox-template inputs (apply when `template` is Skyrim.esm:0x01C254). All optional —
     // omit any field to inherit the template's default (e.g. all "Allow Eating/Sleeping/…" default true).
     public SandboxSpec Sandbox { get; set; } = new();
+    // Travel-template inputs (apply when `template` is Skyrim.esm:0x016FAA). `place` is the
+    // destination ref (a placed REFR/ACHR); without one the NPC won't actually travel anywhere.
+    public TravelSpec Travel { get; set; } = new();
 }
 internal sealed class PackageScheduleSpec
 {
@@ -2368,6 +2382,18 @@ internal sealed class SandboxSpec
     public bool? PreferredPathOnly { get; set; }
     public bool? RideHorseIfPossible { get; set; }
     public float? Energy { get; set; }
+}
+// Travel-template (Skyrim.esm:0x016FAA) data inputs:
+//   0 Place to Travel (PackageDataLocation) — the destination (a placed REFR/ACHR ref)
+//   2 Ride Horse if possible? (bool, default false)
+//   4 Prefer Preferred Path? (bool, default false)
+// `place` should be a real ref; without it the package falls back to NearSelf (no movement).
+internal sealed class TravelSpec
+{
+    public string Place { get; set; } = "";   // ref → a placed REFR/ACHR (where to travel to)
+    public uint Radius { get; set; } = 0;     // 0 = arrive at exact point (template default); non-zero = arrive within radius
+    public bool? RideHorse { get; set; }
+    public bool? PreferPath { get; set; }
 }
 // Attach a compiled Papyrus script (by Scriptname) to a record (by editorId), with
 // typed properties. type ∈ int|float|bool|string|object; object resolves ObjectEditorId.

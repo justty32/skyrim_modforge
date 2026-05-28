@@ -1,0 +1,80 @@
+{
+  "pluginName": "ModForgePackage2.esp",
+  "esl": true,
+  "_": "It.16b: Travel template + Sandbox-at-specific-ref demo. NPC starts inside the Bannered Mare; Travel package targets `debugWhiterunOrigin` (Skyrim.esm:0x0567F7 — the marker that `coc whiterun` spawns at), and a Sandbox package anchored at the SAME ref so once he arrives he hangs around the marketplace. Engine evaluates packages in list order; Travel runs first (he'll try to leave the inn and walk to Whiterun's centre), then Sandbox keeps him there.",
+
+  "packages": [
+    {
+      "editorId": "MF_TravelToWhiterunPackage",
+      "_": "Travel template (Skyrim.esm:0x016FAA) has 3 slots — place / rideHorse / preferPath.",
+      "template": "Skyrim.esm:0x016FAA",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [
+        "HellosToPlayer", "ObserveCombatBehavior",
+        "ReactionToPlayerActions", "AllowIdleChatter", "WorldInteractions"
+      ],
+      "travel": {
+        "place": "Skyrim.esm:0x0567F7",
+        "radius": 256,
+        "rideHorse": false,
+        "preferPath": false
+      }
+    },
+    {
+      "editorId": "MF_SandboxAtWhiterunPackage",
+      "_": "Same Sandbox shape as It.16a, but anchored at a specific vanilla ref (debugWhiterunOrigin) instead of NearSelf — demonstrates the `location` ref path of SandboxSpec. Runs after Travel completes.",
+      "template": "Skyrim.esm:0x01C254",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [
+        "HellosToPlayer", "RandomConversations", "ObserveCombatBehavior",
+        "GreetCorpseBehavior", "ReactionToPlayerActions", "FriendlyFireComments",
+        "AggroRadiusBehavior", "AllowIdleChatter", "WorldInteractions"
+      ],
+      "sandbox": {
+        "location": "Skyrim.esm:0x0567F7",
+        "radius": 512,
+        "allowEating": true,
+        "allowSleeping": false,
+        "allowConversation": true,
+        "allowIdleMarkers": true,
+        "allowSitting": true,
+        "allowWandering": true,
+        "allowSpecialFurniture": true,
+        "energy": 50.0
+      }
+    }
+  ],
+
+  "classes": [
+    {
+      "editorId": "MF_TravelerClass",
+      "name": "ModForge Traveler",
+      "healthWeight": 33, "magickaWeight": 33, "staminaWeight": 34,
+      "skillWeights": { "Speech": 60, "OneHanded": 30 }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_TravelerNpc",
+      "name": "ModForge Traveler",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_TravelerClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "level": 5,
+      "autoCalcStats": true,
+      "_packages": "Order matters — engine picks the first matching package. Travel runs while he hasn't arrived; once at the destination, Sandbox takes over.",
+      "packages": [
+        "MF_TravelToWhiterunPackage",
+        "MF_SandboxAtWhiterunPackage"
+      ]
+    }
+  ],
+
+  "placements": [
+    { "_": "Spawn inside the Bannered Mare (the It.16a-confirmed arena). Travel should walk him out and across town to the Whiterun-origin marker; if cross-cell pathfinding fails the engine falls through to the Sandbox package's location anchor.",
+      "base": "MF_TravelerNpc", "cell": "Skyrim.esm:0x01605E",
+      "position": { "x": 0, "y": 0, "z": 0 } }
+  ]
+}

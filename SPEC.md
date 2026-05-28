@@ -84,7 +84,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `statics` | `editorId`, `model` (a `.nif` path — reference a vanilla mesh; a placement base, no name) |
 | `activators` | `editorId`, `name`, `model` (`.nif` path), `keywords` (array of *refs*); attach behaviour via `scripts` |
 | `recipes` | `editorId`, `createdObject` (*ref*), `count` (int), `workbench` (keyword *ref*; defaults to the forge), `components` (array of `{ item (*ref*), count (int) }`) — a crafting recipe (COBJ) |
-| `packages` | `editorId`, `template` (*ref* → a vanilla procedure template, e.g. Sandbox = `Skyrim.esm:0x01C254`), `flags` (array — `Package.Flag` names), `interruptFlags` (array — `HellosToPlayer`/`AllowIdleChatter`/`WorldInteractions`/…), `preferredSpeed` (`Walk`\|`Jog`\|`Run`\|`FastWalk`), `combatStyle` (*ref*, optional), `ownerQuest` (*ref*, optional), `schedule` (`{ month, dayOfWeek, date, hour, minute, durationInMinutes }`), `sandbox` (template-input subobject — see below). An AI package; assign it to one or more NPCs via `npcs[].packages`. |
+| `packages` | `editorId`, `template` (*ref* → a vanilla procedure template, e.g. Sandbox = `Skyrim.esm:0x01C254`, Travel = `Skyrim.esm:0x016FAA`), `flags` (array — `Package.Flag` names), `interruptFlags` (array — `HellosToPlayer`/`AllowIdleChatter`/`WorldInteractions`/…), `preferredSpeed` (`Walk`\|`Jog`\|`Run`\|`FastWalk`), `combatStyle` (*ref*, optional), `ownerQuest` (*ref*, optional), `schedule` (`{ month, dayOfWeek, date, hour, minute, durationInMinutes }`), `sandbox` (template-input subobject — see below), `travel` (template-input subobject — see below). An AI package; assign it to one or more NPCs via `npcs[].packages`. |
 
 A field marked *ref* takes an in-spec `editorId` **or** `"<master>:0xFORMID"` (see
 *References to vanilla / external forms* above). A standing NPC needs at least `race` +
@@ -268,9 +268,18 @@ A `packages` entry is an AI package. Skyrim's PACK record is **template-driven**
 vanilla "procedure template" form via `template`, and that template defines the data input schema
 (slot indices + types). Our package fills in the inputs for the slots the template defines.
 
-Right now ModForge implements **Sandbox** (`Skyrim.esm:0x01C254`). To author for other templates
-(Travel/Find/UseItemAt/EatSleep/…), use `packagediag <Skyrim.esm> <0xFORMID>` to dump a template's
-named slot schema; the in-spec inputs are then a future iteration of this generator (It.16b+).
+ModForge currently implements two templates — **Sandbox** (`Skyrim.esm:0x01C254`) and **Travel**
+(`Skyrim.esm:0x016FAA`). Author the matching subobject (`sandbox` / `travel`) and the build will
+fill that template's Data slots. To target a template ModForge doesn't yet handle (Patrol /
+UseMagic / Follow / Escort / …), still set `template`; the package emits structurally valid but
+with no Data overrides (template defaults apply) and a warning. Use `packagediag <Skyrim.esm>
+<0xFORMID>` to discover any template's named slot schema before adding support.
+
+**Sandbox at a specific ref vs Travel:** Sandbox's `location` ref makes the NPC wander/eat/sit
+**around** that ref (radius covers nearby furniture). Travel's `place` ref makes the NPC actually
+**walk to** that ref and stop within `radius` of it. Common chain: a Travel package + a Sandbox
+package on the same NPC's `packages` list (Travel first) — Travel runs until the NPC arrives,
+then Sandbox takes over.
 
 ```jsonc
 { "editorId": "MF_HangAtSpotPackage",
@@ -296,6 +305,23 @@ Then attach to an NPC: `"npcs": [{ ..., "packages": [ "MF_HangAtSpotPackage" ] }
 A specific `location` ref (an REFR/ACHR FormID) anchors the sandbox at that reference's position.
 `Allow Sleeping = false` keeps the NPC active 24/7 (good for visible-in-game testing); leave it true
 for a normal day/night cycle. `Energy = 50` is the vanilla default (higher = more wandering).
+
+**Travel template (`Skyrim.esm:0x016FAA`) — `travel` subobject:**
+```jsonc
+{ "editorId": "MF_GoToWhiterun",
+  "template": "Skyrim.esm:0x016FAA",       // Travel
+  "preferredSpeed": "Walk",
+  "interruptFlags": [ "HellosToPlayer", "AllowIdleChatter" ],
+  "travel": {
+    "place": "Skyrim.esm:0x0567F7",        // a ref to a placed REFR/ACHR (the destination)
+    "radius": 256,                          // arrive within this many units (0 = exact point)
+    "rideHorse": false,                     // template default
+    "preferPath": false } }                 // template default
+```
+Travel has just 3 slots: `Place to Travel` / `Ride Horse if possible?` / `Prefer Preferred Path?`.
+**Without a `place` ref the NPC won't actually travel** — the engine falls back to NearSelf
+(degenerate: travel to where you already are) and the package no-ops. Chain a Sandbox package after
+it (lower priority in the NPC's `packages` list) so the NPC has something to do on arrival.
 
 **Flags (Package.Flag):** `OffersServices`, `MustComplete`, `MaintainSpeedAtGoal`, `ContinueIfPcNear`,
 `OncePerDay`, `PreferredSpeed`, `AlwaysSneak`, `AllowSwimming`, `IgnoreCombat`, `WeaponsUnequipped`,

@@ -141,6 +141,10 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
   `interruptFlags` array (`HellosToPlayer`, `AllowIdleChatter`, `WorldInteractions`, …) is what
   separates a silent statue from a lifelike NPC. Assign packages to an actor via `npcs[].packages`.
   Use `packagediag <Skyrim.esm> <0xFORMID>` to dump a template's slot schema or to inspect any package.
+  **Supported templates: Sandbox** (`Skyrim.esm:0x01C254` — `sandbox` field, "hang out here")
+  **and Travel** (`Skyrim.esm:0x016FAA` — `travel` field, "walk to this ref"). Common pattern:
+  put a Travel package + a Sandbox package on the same NPC's `packages` list (Travel first) — he
+  walks to the destination, then sandboxes there once arrived.
 - **More record types** (same spec→build→dump pattern): `ingredients` (alchemy, take `effects`),
   `ammunitions` (`damage`), `scrolls` (`effects` + cast fields), `soulGems` (`maximumCapacity`),
   `keys`, `keywords` (define your own → reference it from any record's `keywords`), `outfits`

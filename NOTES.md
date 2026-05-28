@@ -575,6 +575,54 @@ call; the spec IS the contract.)
       (CSTY) — for "NPC uses my mod spells" + "rushes to block". The "idle chatter via faction"
       cleanup is a minor task — extend the example to add a citizen faction once we know which one
       gives the chattiest dialogue without contaminating the faction's behaviour.
+- [~] **It.16b — Travel template + Sandbox-at-ref demo (2026-05-28).** Structurally verified; in-game
+      test deferred. Originally scoped Travel + UseItemAt + Find; collapsed to **Travel only** after
+      discovering that **vanilla has no `UseItemAt` named template** (Sandbox + a `location` ref to a
+      furniture REFR + `allowSpecialFurniture: true` is the "go to specific furniture" pattern; no new
+      code needed — already supported in It.16a) and Find has no clear template-form match either.
+      Travel = `Skyrim.esm:0x016FAA` (NOT the `0x01C266` written in the It.16a NOTES — that was a
+      guess, the real ID was found by `packagediag`-ing concrete vanilla Travel packages and reading
+      their `PackageTemplate` ref).
+    - **Template inventory** (via packagediag on candidate FormIDs):
+      - Sandbox  `Skyrim.esm:0x01C254` — 12 slots (It.16a, done)
+      - **Travel `Skyrim.esm:0x016FAA` — 3 slots** (this iteration)
+      - Patrol  `Skyrim.esm:0x017723` — 6 slots, uses PackageDataTarget for a LinkedReference chain
+        of idle markers (more complex; deferred)
+      - UseMagic `Skyrim.esm:0x0504F5` — 13 slots, scheduled non-combat spell casting (interesting
+        for "NPC casts buff at altar"; deferred to It.16c or later)
+      - UseWeapon `Skyrim.esm:0x01C338`, Follow `0x019B2C`, Escort `0x023B73` — discovered, deferred
+    - **Travel slot schema:** 0=Place to Travel (PackageDataLocation), 2=Ride Horse if possible?
+      (bool, default false), 4=Prefer Preferred Path? (bool, default false). Simpler than Sandbox.
+    - **Refactor:** Build pass-2 PACK loop now **dispatches by template FormID** — central
+      `MakeLocationSlot(name, owner, refStr, radius)` helper returns either LocationTarget(Link=fk)
+      or LocationFallback(NearSelf) (reused by both Sandbox slot 0 and Travel slot 0; consolidates
+      the two-trap fix from It.16a). Template ID switch: SandboxTemplateId → SandboxSpec fill,
+      TravelTemplateId → TravelSpec fill, else warn ("template not yet supported; no Data overrides").
+      Unknown templates still emit a structurally valid package (template defaults apply).
+    - **Spec:** `PackageSpec` gained `travel` (TravelSpec) sibling of `sandbox`. TravelSpec is just
+      `place` (ref, required for actual movement) / `radius` (default 0 = exact arrival) / `rideHorse`
+      / `preferPath`. validate's `CheckRef` covers `travel.place`. dump unchanged (`data=N slot(s)`
+      already shows whichever variant filled).
+    - **Example `examples/package2_spec.json`** → `ModForgePackage2.esp` (4 records → 6 with cell
+      override + placement): one NPC with **two packages**: `MF_TravelToWhiterunPackage` (Travel,
+      destination = `debugWhiterunOrigin` Skyrim.esm:0x0567F7 — the `coc whiterun` marker, a known
+      stable XMARKER REFR) + `MF_SandboxAtWhiterunPackage` (Sandbox with `location` =
+      **same ref** — anchored sandbox at the Travel destination). The NPC is placed inside Bannered
+      Mare; engine evaluates packages in list order, so Travel runs first and Sandbox is the
+      arrival behaviour. dump: 2 packages on the NPC, Travel package has 3 data slots, Sandbox has
+      12. packagediag confirms slot 0 of both = LocationTarget(0567F7:Skyrim.esm). Packaged →
+      `~/skyrim_mods/ModForgePackage2.zip`.
+    - **In-game test deferred:** cross-cell Travel (inn interior → Whiterun exterior marker) might
+      need additional engine plumbing we haven't verified — exterior-to-interior traversal often
+      depends on door teleport refs, faction trespass rules, and the NPC owning a "starting context"
+      that lets it find the destination. Structurally the PACK is identical to vanilla travel packages
+      (compared byte-by-byte via packagediag); whether the engine accepts it for an inn-spawned actor
+      is a runtime concern. **Next test pattern:** place the NPC in the same exterior cell as the
+      Travel destination (or have him start at a known XMarker and travel to another), to take the
+      cross-cell traversal out of the equation.
+    - **What this UNBLOCKS:** It.16c — Patrol (LinkedReference idle-marker chains, for "guards walk
+      this route") + UseMagic (scheduled spell casting, for "altar buff" scenarios). Same Build
+      dispatch pattern; each is a fresh SubSpec + a `case TemplateId:` branch.
 
 ## Build / test
 ```
