@@ -57,6 +57,9 @@ round-1 failure mode. **Both systems must be authored.**
 | Travel package in spec but NPC ignores it (sandboxes locally instead) | Engine silently rejected cross-cell Travel — NPC has no "citizen" identity to traverse city gates | Set `crimeFaction` + add the town's faction to `factions` + `unique: true` |
 | NPC walks but never speaks; only mumbles "嗯/啊" when approached | No voiceType set, OR voice set but no faction-conditioned dialogue topics match | Set `voiceType: MaleNord` (or similar). For more chatter, add a town faction so faction-conditioned dialogue topics apply |
 | Mage NPC just runs away from any threat | `Aggression=Unaggressive + Confidence=Cowardly` (Mutagen defaults) — flees regardless of CombatStyle | `aggression: "Aggressive"` + `confidence: "Brave"` |
+| UseMagic NPC stands at location but NEVER casts | Slot 3 "Spell" authored as `PackageTargetObjectType` (category enum). Template default is misleading — all 46 vanilla UseMagic packages use `PackageTargetObjectID` with a FormLink to a specific SPEL | Spec field `useMagic.spell: "<master>:0xFORMID"` of the SPEL; Build writes `PackageTargetObjectID`. Spell IS an `IObjectId` so the FormLink works |
+| UseMagic NPC casts 1-2 times then stops forever | `numToCastMax` is **total package-lifetime casts**, not per-cycle. With `schedule.durationInMinutes=0` (default) the package completes the moment its quota's hit | `numToCastMax: 1000` + `schedule.durationInMinutes: 1440` (24h continuous), mirroring vanilla `WCollegeOnmundPracticeFlames12x4` |
+| UseMagic NPC stops casting when combat starts | Vanilla behaviour — combat AI preempts idle packages | If you want casting to continue (e.g. boss ritual), add `flags: [ "IgnoreCombat" ]` like vanilla `SprigganCallOverride` |
 | Generated NPC appears with no model when dropped (or crashes on equip/read) | Weapon/Book/Misc/Potion need a `template` ref to clone a vanilla model from | Set `template: "Skyrim.esm:0x012EB7"` (IronSword) etc. — see SPEC.md item types |
 | Custom MGEF heal spell casts but doesn't heal | `Recover` flag on instant effect — reverts the heal when the effect "ends" (immediately) | `["NoDuration","NoArea"]` instant effects must NOT use `Recover` |
 | Sandbox NPC stands still for the first 30–90 seconds after cell load | Engine sandbox cold-start delay; normal | **Wait the full minute** before declaring failure — vanilla NPCs hide this because they're initialised long before the player arrives |
@@ -71,7 +74,7 @@ round-1 failure mode. **Both systems must be authored.**
 | Sandbox | `Skyrim.esm:0x01C254` | 12 | NPC hangs around a location, interacts with furniture/idle markers/other NPCs |
 | Travel | `Skyrim.esm:0x016FAA` | 3 | NPC walks to a specific REFR/cell |
 | Patrol | `Skyrim.esm:0x017723` | 6 | Guard route via LinkedReference chain of idle markers (not yet ModForge-supported) |
-| UseMagic | `Skyrim.esm:0x0504F5` | 13 | Scheduled non-combat spell casting (e.g. altar buff) — not yet ModForge-supported |
+| UseMagic | `Skyrim.esm:0x0504F5` | 11 | Scheduled non-combat spell casting (priest at altar, mage self-buffing). NPC picks one spell from `spells` matching `spellType` (TargetObjectType enum). Wired in `packages[].useMagic` |
 | UseWeapon | `Skyrim.esm:0x01C338` | — | Practice attacks at a target — not yet ModForge-supported |
 | Follow | `Skyrim.esm:0x019B2C` | — | Follow another actor (follower behaviour) — not yet ModForge-supported |
 | Escort | `Skyrim.esm:0x023B73` | — | Escort another actor to a location — not yet ModForge-supported |
@@ -241,6 +244,37 @@ Add to the inn-patron above:
 ```
 
 Class should be magicka-heavy with Destruction-favouring skill weights.
+
+### "Ritual caster" (UseMagic — non-combat scheduled spellcasting)
+
+```jsonc
+{ "packages": [
+    { "editorId": "MF_Ritual", "template": "Skyrim.esm:0x0504F5",
+      "interruptFlags": [ "HellosToPlayer", "AllowIdleChatter" ],
+      // Both knobs needed for CONTINUOUS casting (see gotchas table) — without them the
+      // package completes after numToCastMax casts and the NPC goes idle.
+      "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 1440, "dayOfWeek": "Any" },
+      "useMagic": {
+        "spell":         "Skyrim.esm:0x043324",   // SPEL FormLink — NOT a category enum
+        "radius":        256,
+        "target":        "",                      // optional placed-ref; omit ⇒ PackageTargetSelf
+        "castTimeMin":   1.5, "castTimeMax":   2.5,
+        "cooldownTimeMin": 8.0, "cooldownTimeMax": 12.0,
+        "numToCastMin":  1, "numToCastMax":  1000,
+        "dualCast":      false } }
+  ],
+  "npcs": [
+    { "editorId": "MF_Priest", ..., "level": 15, "autoCalcStats": true,
+      "spells":   [ "Skyrim.esm:0x043324" ],   // Candlelight (self-cast, visible orb)
+      "aggression": "Aggressive", "confidence": "Brave",
+      "packages": [ "MF_Ritual" ] }
+  ] }
+```
+
+The "Spell" slot is a `PackageTargetObjectID` FormLink to a specific SPEL record — NOT a category
+enum. The target slot defaults to `PackageTargetSelf` (correct for self-cast spells like
+Candlelight/Healing/Ward); set `target` to a placed-ref for cast-at-X. Combat preempts UseMagic
+unless you add `flags: [ "IgnoreCombat" ]`.
 
 ## Related docs in this repo
 

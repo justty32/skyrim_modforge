@@ -1,0 +1,60 @@
+{
+  "pluginName": "ModForgeUseMagic.esp",
+  "esl": true,
+  "_": "It.18 round-2: NPC repeatedly casts Candlelight on himself via the UseMagic procedure template. Round-1 in-game FAILED (mage stood but never cast) — root cause: I'd authored slot 3 (Spell) as PackageTargetObjectType+category-enum which produces a structurally-valid package the engine silently no-ops. All 46 vanilla UseMagic packages use PackageTargetObjectID with a FormLink to a specific SPEL. Round-2 fix: `spell` is now a SPEL ref, slot 4 defaults to PackageTargetSelf (vanilla pattern for self-cast). Candlelight (Skyrim.esm:0x043324) is a self-targeting Illusion spell that summons a glowing orb above the caster for ~60s — VISUALLY OBVIOUS in-game.",
+
+  "npcs": [
+    {
+      "editorId": "MF_UseMagicMage",
+      "name": "ModForge UseMagic Mage",
+      "race": "Skyrim.esm:0x013746",
+      "class": "Skyrim.esm:0x01326B",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+      "unique": true,
+      "level": 15,
+      "autoCalcStats": true,
+      "_spells": "Add Candlelight to the NPC's known spells so he has it in his ActorEffect list (vanilla UseMagic packages tend to do this too — defensive belt-and-braces; the package's `spell` ref alone may suffice, but adding it here ensures the NPC actually 'knows' the spell).",
+      "spells": [ "Skyrim.esm:0x043324" ],
+      "aggression": "Aggressive",
+      "confidence": "Brave",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50,
+      "packages": [ "MF_UseMagicCandlelight" ]
+    }
+  ],
+
+  "packages": [
+    {
+      "editorId": "MF_UseMagicCandlelight",
+      "_": "UseMagic template (Skyrim.esm:0x0504F5). Round-2 (ObjectID + Self) made the orb APPEAR but only 1-2 times then stopped — root cause: `numToCastMax=2` is TOTAL casts for the package lifetime, not 'per cycle', AND schedule `durationInMinutes=0` lets the package complete the moment its cast quota's hit. Round-3 mirrors vanilla `WCollegeOnmundPracticeFlames` (NumToCast 1/1000 + Schedule durationMin=240): bump numToCastMax to 1000 and set durationInMinutes to 1440 (24h continuous) so the package keeps cycling forever.",
+      "template": "Skyrim.esm:0x0504F5",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [
+        "HellosToPlayer", "AllowIdleChatter",
+        "ObserveCombatBehavior", "ReactionToPlayerActions"
+      ],
+      "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 1440, "dayOfWeek": "Any" },
+      "useMagic": {
+        "spell": "Skyrim.esm:0x043324",
+        "radius": 256,
+        "holdWhenBlocked": true,
+        "castTimeMin": 1.5, "castTimeMax": 2.5,
+        "cooldownTimeMin": 8.0, "cooldownTimeMax": 12.0,
+        "numToCastMin": 1, "numToCastMax": 1000,
+        "dualCast": false
+      }
+    }
+  ],
+
+  "placements": [
+    {
+      "_": "Tamriel wilderness — same coords as the It.9 confirmed-working exterior placement. NPC stands here alone so nothing else interferes with package selection; tester walks up to find him.",
+      "base": "MF_UseMagicMage",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": -90176.8, "y": 18097.19, "z": -3725.44 }
+    }
+  ]
+}

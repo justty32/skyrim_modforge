@@ -803,6 +803,80 @@ call; the spec IS the contract.)
       (d) defend itself with mod-added spells in combat (It.17). Future iterations are POLISH
       (Patrol / UseMagic templates, A/B testing the citizenship recipe, custom MGEF→spell→NPC end-
       to-end), not foundational. **ModForge is now a complete lifelike-NPC authoring toolkit.**
+- [x] **It.18 — UseMagic procedure template (Skyrim.esm:0x0504F5) — IN-GAME CONFIRMED (2026-05-28
+      after three rounds).** First non-combat ritual/scheduled spellcasting package. UseMagic has
+      11 active slots (2-12; 0/1 are inherited APackageData placeholders we skip, matching all 46
+      vanilla concrete packages): Location, Spell, Target, HoldWhenBlocked, CastTime{Min/Max},
+      CooldownTime{Min/Max}, NumToCast{Min/Max}, DualCast.
+
+      **Spec/Build:** new `useMagic` field on `PackageSpec` (sibling of `sandbox` / `travel`),
+      with `spell` (REQUIRED — ref to a SPEL record), optional `location`/`target` placed-refs,
+      and the timing knobs. Build pass-2 adds an `else if (tfk.ID == UseMagicTemplateId)` branch.
+      New CLI `pkgsbytemplate <plugin> <0xFORMID>` lists every package whose `PackageTemplate`
+      matches a given form — used to find vanilla CONCRETE packages for a template (`find` only
+      matches EditorIDs, so template-based packages like `WhiterunTempleCastHealingSpellSoldier`
+      that don't carry the template name in their EditorID are invisible to `find`). `packagediag`
+      enhanced to print each `PackageDataTarget`'s inner key field: PackageTargetObjectType prints
+      its enum, ObjectID/SpecificReference print their FormKey, LinkedReference its keyword,
+      PackageTargetSelf prints "(self)".
+
+      **Round 1 (`PackageTargetObjectType` + category enum) IN-GAME FAILED.** Tester: mage stood
+      at the coords, never cast. The template diag (`packagediag Skyrim.esm 0x0504F5`) shows the
+      "Spell" slot uses `Type=Target target=PackageTargetObjectType`, so I guessed the spec field
+      should be a `TargetObjectType` enum (AnyActorEffects, TargetActorEffects, …) and the engine
+      would pick a matching spell from the NPC's `spells` (ActorEffect) list. The package built
+      structurally-valid (dump verified all 10 slots, Spell shows `PackageTargetObjectType(AnyActorEffects)`)
+      but the engine silently no-ops on it in-game.
+
+      **Round 1 root cause + fix (round 2).** `pkgsbytemplate Skyrim.esm 0x0504F5` listed 46
+      vanilla packages using the UseMagic template. Diffed 4 (MG01NiryaCastMageLight1,
+      WCollegeOnmundPracticeFlames12x4, WhiterunTempleCastHealingSpellSoldier, WCollegePracticeCastWard) —
+      ALL FOUR use `PackageTargetObjectID` on slot 3 (not ObjectType): `Reference =
+      FormLink<IObjectIdGetter>(<specific spell FormID>)`. `IObjectId` is implemented by `Activator,
+      Ammunition, Armor, …, Spell, Static, …` — i.e. Spell IS an ObjectId, so the FormLink works.
+      ObjectType (a category enum) and ObjectID (a FormLink) are sibling APackageTarget subclasses;
+      I'd picked the wrong sister. Fix: spec field `spell` (ref to a SPEL); Build writes
+      `PackageDataTarget { Type=Target, Target=PackageTargetObjectID { Reference = formLink } }`.
+      Also: vanilla packages ALWAYS set slot 4 (Target) — `PackageTargetSelf` for self-cast
+      (Ward/Healing/Candlelight) or `PackageTargetSpecificReference` for cast-at-X. Leaving it
+      as the template's `PackageTargetLinkedReference` fallback also no-ops in practice. Build
+      now defaults slot 4 to `PackageTargetSelf` when `target` is empty.
+
+      **Round 2 (ObjectID + Self) IN-GAME PARTIAL.** Tester: orb DID appear (✅ spell+target
+      slots right) but only 1-2 times then stopped. Package "completed."
+
+      **Round 2 root cause + fix (round 3).** `numToCastMax` is the TOTAL casts for the package's
+      lifetime, not per-cycle as I'd assumed. Combined with `Schedule.durationInMinutes=0` (the
+      `PackageScheduleSpec` default), the package completes the instant its cast quota's hit.
+      With nothing else in the NPC's `packages` list, the engine has no follow-up package and
+      the NPC idles. Vanilla `WCollegeOnmundPracticeFlames12x4` pattern: NumToCast 1/**1000**
+      + Schedule.durationMin=240 — high upper-bound + non-zero schedule duration → cycles
+      continuously until duration expires (or NPC is interrupted by combat, see below).
+
+      **Round 3 (numToCastMax=1000 + Schedule.durationInMinutes=1440) IN-GAME PASSED.** Mage stands,
+      casts Candlelight every ~10s, orb appears/fades on a steady cadence. EXPECTED side effect
+      observed: when combat begins the package halts (vanilla `Package.Flag` `IgnoreCombat` would
+      override — e.g. `SprigganCallOverride` uses it — but for a typical lifelike NPC, having
+      combat preempt the idle cast is correct).
+
+      **Three concrete gotchas worth remembering** (also in `LIFELIKE_NPC.md` gotchas table):
+        1. **UseMagic Spell slot wants `PackageTargetObjectID` (FormLink to SPEL)**, not
+           `PackageTargetObjectType` (category enum). The template's default value (an empty
+           ObjectType) is misleading — vanilla concrete packages all override it with ObjectID.
+        2. **UseMagic Target slot must be set** (`PackageTargetSelf` for self-cast, otherwise
+           `PackageTargetSpecificReference`). LinkedReference fallback silently no-ops.
+        3. **`NumToCastMax` is total package-lifetime casts.** For continuous casting you need
+           BOTH a high upper bound (1000 like Onmund) AND a non-zero `Schedule.durationInMinutes`
+           (e.g. 1440 = 24h continuous). With dur=0 and numMax=N, the package completes after N
+           casts and the engine moves on.
+
+      **Mutagen gotcha:** `PackageDataInt.Data` is `uint` (not `int`).
+
+      **Example `examples/usemagic_spec.json`** → `ModForgeUseMagic.esp` → `~/skyrim_mods/ModForgeUseMagic.zip`.
+      `MF_UseMagicMage` (citizenship + AIData Aggressive/Brave, level 15 autoCalc, spells =
+      [Candlelight `Skyrim.esm:0x043324`]). Package `MF_UseMagicCandlelight` with spell=Candlelight,
+      no target (defaults to Self), cooldown 8-12s, numToCastMax=1000, schedule
+      durationInMinutes=1440. Placed at the It.9 Tamriel wilderness coords.
 
 ## Build / test
 ```

@@ -84,7 +84,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `statics` | `editorId`, `model` (a `.nif` path — reference a vanilla mesh; a placement base, no name) |
 | `activators` | `editorId`, `name`, `model` (`.nif` path), `keywords` (array of *refs*); attach behaviour via `scripts` |
 | `recipes` | `editorId`, `createdObject` (*ref*), `count` (int), `workbench` (keyword *ref*; defaults to the forge), `components` (array of `{ item (*ref*), count (int) }`) — a crafting recipe (COBJ) |
-| `packages` | `editorId`, `template` (*ref* → a vanilla procedure template, e.g. Sandbox = `Skyrim.esm:0x01C254`, Travel = `Skyrim.esm:0x016FAA`), `flags` (array — `Package.Flag` names), `interruptFlags` (array — `HellosToPlayer`/`AllowIdleChatter`/`WorldInteractions`/…), `preferredSpeed` (`Walk`\|`Jog`\|`Run`\|`FastWalk`), `combatStyle` (*ref*, optional), `ownerQuest` (*ref*, optional), `schedule` (`{ month, dayOfWeek, date, hour, minute, durationInMinutes }`), `sandbox` (template-input subobject — see below), `travel` (template-input subobject — see below). An AI package; assign it to one or more NPCs via `npcs[].packages`. |
+| `packages` | `editorId`, `template` (*ref* → a vanilla procedure template, e.g. Sandbox = `Skyrim.esm:0x01C254`, Travel = `Skyrim.esm:0x016FAA`, UseMagic = `Skyrim.esm:0x0504F5`), `flags` (array — `Package.Flag` names), `interruptFlags` (array — `HellosToPlayer`/`AllowIdleChatter`/`WorldInteractions`/…), `preferredSpeed` (`Walk`\|`Jog`\|`Run`\|`FastWalk`), `combatStyle` (*ref*, optional), `ownerQuest` (*ref*, optional), `schedule` (`{ month, dayOfWeek, date, hour, minute, durationInMinutes }`), `sandbox` / `travel` / `useMagic` (template-input subobjects — see below). An AI package; assign it to one or more NPCs via `npcs[].packages`. |
 | `combatStyles` | `editorId`, `offensiveMult`/`defensiveMult`/`groupOffensiveMult` (~aggression/blocking/group-boldness), `equipMultMelee`/`equipMultMagic`/`equipMultRanged`/`equipMultShout`/`equipMultUnarmed`/`equipMultStaff` (AI weapon-preference scores; for a mage NPC, push Magic high relative to the others — vanilla `csVampireMagic` uses 8.1/2.15/0.51), `avoidThreatChance` (0..1), `flags` (array — `Dueling`\|`Flanking`\|`AllowDualWielding`). An npc's `combatStyle` ref can point at one. |
 
 A field marked *ref* takes an in-spec `editorId` **or** `"<master>:0xFORMID"` (see
@@ -269,12 +269,13 @@ A `packages` entry is an AI package. Skyrim's PACK record is **template-driven**
 vanilla "procedure template" form via `template`, and that template defines the data input schema
 (slot indices + types). Our package fills in the inputs for the slots the template defines.
 
-ModForge currently implements two templates — **Sandbox** (`Skyrim.esm:0x01C254`) and **Travel**
-(`Skyrim.esm:0x016FAA`). Author the matching subobject (`sandbox` / `travel`) and the build will
-fill that template's Data slots. To target a template ModForge doesn't yet handle (Patrol /
-UseMagic / Follow / Escort / …), still set `template`; the package emits structurally valid but
-with no Data overrides (template defaults apply) and a warning. Use `packagediag <Skyrim.esm>
-<0xFORMID>` to discover any template's named slot schema before adding support.
+ModForge currently implements three templates — **Sandbox** (`Skyrim.esm:0x01C254`), **Travel**
+(`Skyrim.esm:0x016FAA`), and **UseMagic** (`Skyrim.esm:0x0504F5`). Author the matching subobject
+(`sandbox` / `travel` / `useMagic`) and the build will fill that template's Data slots. To target
+a template ModForge doesn't yet handle (Patrol / Follow / Escort / UseWeapon / …), still set
+`template`; the package emits structurally valid but with no Data overrides (template defaults
+apply) and a warning. Use `packagediag <Skyrim.esm> <0xFORMID>` to discover any template's named
+slot schema before adding support.
 
 **Sandbox at a specific ref vs Travel:** Sandbox's `location` ref makes the NPC wander/eat/sit
 **around** that ref (radius covers nearby furniture). Travel's `place` ref makes the NPC actually
@@ -323,6 +324,49 @@ Travel has just 3 slots: `Place to Travel` / `Ride Horse if possible?` / `Prefer
 **Without a `place` ref the NPC won't actually travel** — the engine falls back to NearSelf
 (degenerate: travel to where you already are) and the package no-ops. Chain a Sandbox package after
 it (lower priority in the NPC's `packages` list) so the NPC has something to do on arrival.
+
+**UseMagic template (`Skyrim.esm:0x0504F5`) — `useMagic` subobject:**
+```jsonc
+{ "editorId": "MF_AltarRitual",
+  "template": "Skyrim.esm:0x0504F5",       // UseMagic
+  "preferredSpeed": "Walk",
+  "interruptFlags": [ "HellosToPlayer", "AllowIdleChatter" ],
+  // For CONTINUOUS casting BOTH knobs are required (see "It.18 gotchas" below):
+  "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 1440, "dayOfWeek": "Any" },
+  "useMagic": {
+    "spell":           "Skyrim.esm:0x043324",   // REQUIRED — FormLink to a SPEL record (Candlelight)
+    "location":        "",                       // optional placed-ref (where to stand); empty -> NearSelf
+    "radius":          256,                      // location radius (template default 500)
+    "target":          "",                       // optional placed-ref (who to cast on); empty -> PackageTargetSelf
+    "holdWhenBlocked": true,
+    "castTimeMin":     1.5, "castTimeMax":     2.5,
+    "cooldownTimeMin": 8.0, "cooldownTimeMax": 12.0,
+    "numToCastMin":    1, "numToCastMax":    1000,
+    "dualCast":        false } }
+```
+UseMagic has 11 active slots (2-12). The **"Spell" slot is a `PackageTargetObjectID` FormLink to
+a specific SPEL record** — NOT a category enum. (`Spell` implements `IObjectId`.) Build writes
+slot 4 (Target) as `PackageTargetSelf` when `target` is empty, matching vanilla self-cast packages
+like `WCollegePracticeCastWard`; set `target` to a placed-ref for cast-at-X (vanilla
+`WCollegeOnmundPracticeFlames12x4` points at a target dummy).
+
+**It.18 gotchas (learned the hard way — 3 in-game rounds):**
+1. **Slot 3 (Spell) must be `PackageTargetObjectID`, not `PackageTargetObjectType`.** The template
+   default shows `PackageTargetObjectType` (a category enum), but all 46 vanilla UseMagic packages
+   override it with `PackageTargetObjectID` (FormLink). The enum form builds, dumps fine, no-ops in-game.
+2. **Slot 4 (Target) must be set** — `PackageTargetSelf` for self-cast, otherwise
+   `PackageTargetSpecificReference`. Leaving it as the template's `PackageTargetLinkedReference`
+   fallback also no-ops in practice.
+3. **`numToCastMax` is total package-lifetime casts**, NOT per-cycle. With `schedule.durationInMinutes=0`
+   (the default) the package completes the moment its quota's hit. For continuous casting use BOTH
+   a high upper bound (1000 like vanilla Onmund) AND a non-zero `schedule.durationInMinutes`
+   (e.g. 1440 = 24h).
+4. **Combat preempts UseMagic.** Vanilla — for an idle ritual caster this is correct (NPC switches
+   to attacking instead of standing & casting Candlelight). To force casting to continue (e.g. a
+   boss ritual), add `flags: [ "IgnoreCombat" ]` like vanilla `SprigganCallOverride`.
+5. **Use `pkgsbytemplate <plugin> <0xFORMID>`** to scan a master for all packages using a given
+   template. Necessary because `find` matches EditorIDs only, and many template-based packages
+   (e.g. `WhiterunTempleCastHealingSpellSoldier`) don't carry the template name in their EditorID.
 
 **Flags (Package.Flag):** `OffersServices`, `MustComplete`, `MaintainSpeedAtGoal`, `ContinueIfPcNear`,
 `OncePerDay`, `PreferredSpeed`, `AlwaysSneak`, `AllowSwimming`, `IgnoreCombat`, `WeaponsUnequipped`,

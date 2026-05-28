@@ -49,6 +49,7 @@ internal static class Program
                 case "mgefdiag" when args.Length == 3: return MgefDiag(args[1], args[2]);
                 case "lightdiag" when args.Length is 2 or 3: return LightDiag(args[1], args.Length == 3 ? args[2] : null);
                 case "packagediag" when args.Length == 3: return PackageDiag(args[1], args[2]);
+                case "pkgsbytemplate" when args.Length == 3: return PkgsByTemplate(args[1], args[2]);
                 case "npcdiag" when args.Length == 3: return NpcDiag(args[1], args[2]);
                 case "cstydiag" when args.Length == 3: return CstyDiag(args[1], args[2]);
                 default: Usage(); return 1;
@@ -914,8 +915,9 @@ internal static class Program
         // slot filling by the vanilla procedure template referenced. Each template has its own
         // sbyte-indexed named slot schema (discover via `packagediag <Skyrim.esm> <templateFormId>`);
         // we mirror what vanilla concrete packages emit so the engine gets explicit values.
-        const uint SandboxTemplateId = 0x01C254;  // Skyrim.esm: editorId "Sandbox"     — 12 slots
-        const uint TravelTemplateId  = 0x016FAA;  // Skyrim.esm: editorId "Travel"      —  3 slots
+        const uint SandboxTemplateId  = 0x01C254;  // Skyrim.esm: editorId "Sandbox"   — 12 slots
+        const uint TravelTemplateId   = 0x016FAA;  // Skyrim.esm: editorId "Travel"    —  3 slots
+        const uint UseMagicTemplateId = 0x0504F5;  // Skyrim.esm: editorId "UseMagic"  — 11 active slots (2-12)
         var skyrimEsm = ModKey.FromNameAndExtension("Skyrim.esm");
 
         // Build a PackageDataLocation: an authored placed-ref → LocationTarget anchored at that
@@ -1000,9 +1002,80 @@ internal static class Program
                 pack.Data[2] = new PackageDataBool { Name = "Ride Horse if possible?", Data = tv.RideHorse ?? false };
                 pack.Data[4] = new PackageDataBool { Name = "Prefer Preferred Path?", Data = tv.PreferPath ?? false };
             }
+            else if (tfk.ID == UseMagicTemplateId)
+            {
+                // UseMagic template active slots are 2-12 (slots 0/1 are inherited APackageData
+                // placeholders; we don't touch them — vanilla concrete packages also skip them).
+                // Slot 3 (Spell) MUST be a PackageTargetObjectID with a FormLink to the specific
+                // SPEL record — discovered by scanning all 46 vanilla UseMagic packages with
+                // `pkgsbytemplate` (round-1 in-game failure: PackageTargetObjectType silently
+                // no-ops). Slot 4 (Target) MUST be set: PackageTargetSelf for self-cast spells
+                // (Candlelight/Healing/Ward), PackageTargetSpecificReference for cast-at-X.
+                var um = pk.UseMagic;
+                pack.Data[2] = MakeLocationSlot("Location", $"package '{pk.EditorId}' usemagic", um.Location, um.Radius);
+
+                if (string.IsNullOrWhiteSpace(um.Spell))
+                {
+                    Console.WriteLine($"  ! package '{pk.EditorId}' usemagic: no `spell` ref — package will no-op (engine has nothing to cast)");
+                }
+                else if (TryResolveRef(um.Spell, formKeyByEd, out var spellFk))
+                {
+                    linksWired++;
+                    if (LooksExternalRef(um.Spell)) extLinks++;
+                    pack.Data[3] = new PackageDataTarget
+                    {
+                        Name = "Spell",
+                        Type = PackageDataTarget.Types.Target,
+                        Target = new PackageTargetObjectID { Reference = new FormLink<IObjectIdGetter>(spellFk) },
+                    };
+                }
+                else
+                {
+                    Console.WriteLine($"  ! package '{pk.EditorId}' usemagic spell '{um.Spell}' unresolved — package will no-op");
+                }
+
+                if (!string.IsNullOrWhiteSpace(um.Target)
+                    && TryResolveRef(um.Target, formKeyByEd, out var tgtFk))
+                {
+                    linksWired++;
+                    if (LooksExternalRef(um.Target)) extLinks++;
+                    pack.Data[4] = new PackageDataTarget
+                    {
+                        Name = "Target",
+                        Type = PackageDataTarget.Types.SingleRef,
+                        Target = new PackageTargetSpecificReference { Reference = new FormLink<IPlacedGetter>(tgtFk) },
+                    };
+                }
+                else
+                {
+                    if (!string.IsNullOrWhiteSpace(um.Target))
+                        Console.WriteLine($"  ! package '{pk.EditorId}' usemagic target '{um.Target}' unresolved — defaulting to PackageTargetSelf");
+                    pack.Data[4] = new PackageDataTarget
+                    {
+                        Name = "Target",
+                        Type = PackageDataTarget.Types.SingleRef,
+                        Target = new PackageTargetSelf(),
+                    };
+                }
+
+                void UBool(sbyte slot, string name, bool? user, bool def)
+                    => pack.Data[slot] = new PackageDataBool { Name = name, Data = user ?? def };
+                void UFloat(sbyte slot, string name, float? user, float def)
+                    => pack.Data[slot] = new PackageDataFloat { Name = name, Data = user ?? def };
+                void UInt(sbyte slot, string name, uint? user, uint def)
+                    => pack.Data[slot] = new PackageDataInt { Name = name, Data = user ?? def };
+                UBool(5,  "HoldWhenBlocked", um.HoldWhenBlocked, true);
+                UFloat(6, "CastTimeMin",     um.CastTimeMin,     2f);
+                UFloat(7, "CastTimeMax",     um.CastTimeMax,     3f);
+                UFloat(8, "CooldownTimeMin", um.CooldownTimeMin, 1f);
+                UFloat(9, "CooldownTimeMax", um.CooldownTimeMax, 3f);
+                UInt (10, "NumToCastMin",    um.NumToCastMin,    1u);
+                UInt (11, "NumToCastMax",    um.NumToCastMax,    1u);
+                UBool(12, "DualCast",        um.DualCast,        false);
+            }
             else
             {
-                Console.WriteLine($"  ! package '{pk.EditorId}': template {tfk} is not yet supported (known: sandbox=0x01C254, travel=0x016FAA) — emitting package with no Data overrides; template defaults apply");
+                Console.WriteLine($"  ! package '{pk.EditorId}': template {tfk} is not yet supported (known: sandbox=0x01C254, travel=0x016FAA, usemagic=0x0504F5) — emitting package with no Data overrides; template defaults apply");
             }
         }
 
@@ -1761,6 +1834,14 @@ internal static class Program
             CheckRef(pk.OwnerQuest,  $"package '{pk.EditorId}' ownerQuest");
             CheckRef(pk.Sandbox.Location, $"package '{pk.EditorId}' sandbox.location");
             CheckRef(pk.Travel.Place, $"package '{pk.EditorId}' travel.place");
+            CheckRef(pk.UseMagic.Location, $"package '{pk.EditorId}' useMagic.location");
+            CheckRef(pk.UseMagic.Target,   $"package '{pk.EditorId}' useMagic.target");
+            CheckRef(pk.UseMagic.Spell,    $"package '{pk.EditorId}' useMagic.spell");
+            // useMagic.spell is required only when the template is UseMagic — `Resolve`-style
+            // template-id check is in Build, so here just warn for UseMagic-template packages.
+            if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var tfk) && tfk.ID == 0x0504F5
+                && string.IsNullOrWhiteSpace(pk.UseMagic.Spell))
+                problems.Add($"package '{pk.EditorId}' uses UseMagic template but useMagic.spell is empty — package will no-op in-game");
             foreach (var f in pk.Flags)
                 if (!Enum.TryParse<Mutagen.Bethesda.Skyrim.Package.Flag>(f, true, out _))
                     problems.Add($"package '{pk.EditorId}' invalid flag '{f}'");
@@ -2010,6 +2091,25 @@ internal static class Program
         return 0;
     }
 
+    // Diagnostic: list all packages in a master whose PackageTemplate FormID matches a target.
+    // Used to find vanilla CONCRETE packages that use a given procedure template (Sandbox /
+    // Travel / UseMagic / …) so a new spec author can copy their slot patterns. Necessary because
+    // `find` only matches EditorIDs — a template-based package often has no template name in its ID.
+    private static int PkgsByTemplate(string inPath, string formIdHex)
+    {
+        uint id = Convert.ToUInt32(formIdHex.Replace("0x", "", StringComparison.OrdinalIgnoreCase), 16) & 0xFFFFFF;
+        using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE);
+        int hits = 0;
+        foreach (var p in mod.EnumerateMajorRecords<IPackageGetter>())
+        {
+            if (p.PackageTemplate.FormKey.ID != id) continue;
+            Console.WriteLine($"  {p.FormKey}  {p.EditorID}  type={p.Type}  slots={p.Data.Count}  flags={p.Flags}");
+            hits++;
+        }
+        Console.WriteLine($"-- {hits} package(s) with PackageTemplate=0x{id:X6} in {Path.GetFileName(inPath)}");
+        return 0;
+    }
+
     // Diagnostic: print a Package's template / flags / interrupt flags / schedule / refs and,
     // crucially, its Data dictionary — each entry's sbyte key, Name, concrete subtype
     // (PackageDataLocation/Float/Bool/Int/Target/…) and its key field(s). Used to learn the
@@ -2061,7 +2161,19 @@ internal static class Program
                     case IPackageDataTargetGetter tg:
                         var tgt = tg.Target.GetType().Name;
                         foreach (var suf in new[] { "BinaryOverlay", "Getter" }) if (tgt.EndsWith(suf)) tgt = tgt[..^suf.Length];
-                        extra = $" type={tg.Type} target={tgt}";
+                        // Print the concrete target's key field — used to confirm a built UseMagic
+                        // slot 3 ("Spell") got the right TargetObjectType enum, slot 4 ("Target")
+                        // points at the right placed ref, etc.
+                        var inner = tg.Target switch
+                        {
+                            IPackageTargetObjectTypeGetter ot       => $"({ot.Type})",
+                            IPackageTargetObjectIDGetter      oid   => oid.Reference.FormKey.IsNull ? "" : $"({oid.Reference.FormKey})",
+                            IPackageTargetSpecificReferenceGetter s => s.Reference.FormKey.IsNull   ? "" : $"({s.Reference.FormKey})",
+                            IPackageTargetLinkedReferenceGetter  lk => lk.Keyword.FormKey.IsNull    ? "" : $"(keyword={lk.Keyword.FormKey})",
+                            IPackageTargetSelfGetter          self  => "(self)",
+                            _                                       => "",
+                        };
+                        extra = $" type={tg.Type} target={tgt}{inner}";
                         break;
                     case IPackageDataTopicGetter tp: extra = $" topics={tp.Topics.Count}"; break;
                     case IPackageDataObjectListGetter ol: extra = $" data={ol.Data}"; break;
@@ -2513,6 +2625,11 @@ internal sealed class PackageSpec
     // Travel-template inputs (apply when `template` is Skyrim.esm:0x016FAA). `place` is the
     // destination ref (a placed REFR/ACHR); without one the NPC won't actually travel anywhere.
     public TravelSpec Travel { get; set; } = new();
+    // UseMagic-template inputs (apply when `template` is Skyrim.esm:0x0504F5). NPC stands at
+    // `location` and casts a spell from its `spells` list matching `spellType` (a TargetObjectType
+    // enum — e.g. TargetActorEffects = ranged offensive) at `target`. Use for priests at altars,
+    // mages casting buffs/wards on a schedule, etc. NPC must HAVE a matching spell in its spells.
+    public UseMagicSpec UseMagic { get; set; } = new();
 }
 internal sealed class PackageScheduleSpec
 {
@@ -2578,6 +2695,37 @@ internal sealed class TravelSpec
     public uint Radius { get; set; } = 0;     // 0 = arrive at exact point (template default); non-zero = arrive within radius
     public bool? RideHorse { get; set; }
     public bool? PreferPath { get; set; }
+}
+// UseMagic-template (Skyrim.esm:0x0504F5) data inputs. Slot indices on the template:
+//   2 Location (PackageDataLocation, default radius 500)
+//   3 Spell    (PackageDataTarget with PackageTargetObjectID → FormLink to a SPEL record — REQUIRED)
+//   4 Target   (PackageDataTarget with PackageTargetSelf for self-cast, else PackageTargetSpecificReference)
+//   5 HoldWhenBlocked (bool, default true)
+//   6/7 CastTimeMin/Max (float, default 2/3 sec)  8/9 CooldownMin/Max (float, default 1/3 sec)
+//  10/11 NumToCastMin/Max (int, default 1/1)   12 DualCast (bool, default false)
+// IMPORTANT (round-1 in-game failure root cause): the "Spell" slot is NOT a TargetObjectType
+// category enum — it's a SPECIFIC spell FormLink (Mutagen `PackageTargetObjectID.Reference` →
+// IFormLink<IObjectIdGetter>, which Spell implements). Authoring with PackageTargetObjectType
+// produces a structurally-valid package that the engine silently no-ops. All 46 vanilla UseMagic
+// packages use `PackageTargetObjectID`. Similarly, slot 4 (Target) MUST be set: vanilla uses
+// `PackageTargetSelf` for self-cast spells, `PackageTargetSpecificReference` otherwise; leaving
+// it as the template's `PackageTargetLinkedReference` fallback also no-ops in practice.
+// `spell` is therefore REQUIRED. `target` is optional — omitted ⇒ PackageTargetSelf (self-cast),
+// which is correct for Candlelight/Healing/Ward/etc.
+internal sealed class UseMagicSpec
+{
+    public string Location { get; set; } = "";  // optional ref → placed REFR/ACHR (where to cast from); empty ⇒ NearSelf
+    public uint Radius { get; set; } = 500;     // location radius (template default 500)
+    public string Spell { get; set; } = "";     // REQUIRED ref → SPEL (the specific spell to cast)
+    public string Target { get; set; } = "";    // optional ref → placed REFR/ACHR (who to cast on); empty ⇒ Self
+    public bool? HoldWhenBlocked { get; set; }
+    public float? CastTimeMin { get; set; }
+    public float? CastTimeMax { get; set; }
+    public float? CooldownTimeMin { get; set; }
+    public float? CooldownTimeMax { get; set; }
+    public uint? NumToCastMin { get; set; }
+    public uint? NumToCastMax { get; set; }
+    public bool? DualCast { get; set; }
 }
 // Attach a compiled Papyrus script (by Scriptname) to a record (by editorId), with
 // typed properties. type ∈ int|float|bool|string|object; object resolves ObjectEditorId.
