@@ -575,8 +575,29 @@ call; the spec IS the contract.)
       (CSTY) — for "NPC uses my mod spells" + "rushes to block". The "idle chatter via faction"
       cleanup is a minor task — extend the example to add a citizen faction once we know which one
       gives the chattiest dialogue without contaminating the faction's behaviour.
-- [~] **It.16b — Travel template + Sandbox-at-ref demo (2026-05-28).** Structurally verified; in-game
-      test deferred. Originally scoped Travel + UseItemAt + Find; collapsed to **Travel only** after
+- [x] **It.16b — Travel template + Sandbox-at-ref demo — IN-GAME CONFIRMED (2026-05-28).** Tester:
+      `coc RiverwoodSleepingGiantInn` → `MF_TravelerNpc` walks across the inn floor to the
+      RiverwoodInnCenterMarker, then **transitions into Sandbox** behaviour around it. Both halves
+      of the chain confirmed: (a) Travel actually relocates the actor when the target is reachable
+      from spawn on continuous navmesh, (b) multi-package list ordering works — the engine evaluates
+      packages in spec order, runs Travel until "arrived within radius", then falls through to the
+      next package (Sandbox) as the arrival behaviour. Generated PACK records are functionally
+      equivalent to vanilla CK-authored ones.
+    - **First in-game attempt failed (instructive):** placed NPC inside Bannered Mare with Travel
+      destination = `debugWhiterunOrigin` (WhiterunWorld exterior marker, outside the city walls).
+      NPC sandboxed inside the inn — **Travel was silently rejected** and the engine fell through
+      to the second package. Cross-worldspace travel (Bannered Mare interior cell → WhiterunWorld
+      exterior, two cell transitions through door teleports) needs more than a bare Travel package;
+      vanilla NPCs that do this have additional setup (faction trespass rules, "starting context"
+      links, sometimes a quest alias to anchor them). Lesson: **for the demo to verify Travel
+      itself, keep both endpoints on continuous navmesh** (same cell or same worldspace, no door
+      transitions). The fallback-to-Sandbox behaviour IS still a useful structural confirmation
+      that multi-package lists evaluate in order — but it's not a positive Travel test.
+    - **Second example (this one): both endpoints in Sleeping Giant Inn.** Spawned NPC at cell-
+      local (0,0,0) (entrance area), Travel destination = RiverwoodInnCenterMarker (the inn's
+      centre XMarker, `Skyrim.esm:0x01DC0A`), Sandbox.location = same marker, radius 384. Same
+      cell, navmesh continuous. Tester confirms: walks across inn → sandboxes at centre.
+    - Originally scoped Travel + UseItemAt + Find; Originally scoped Travel + UseItemAt + Find; collapsed to **Travel only** after
       discovering that **vanilla has no `UseItemAt` named template** (Sandbox + a `location` ref to a
       furniture REFR + `allowSpecialFurniture: true` is the "go to specific furniture" pattern; no new
       code needed — already supported in It.16a) and Find has no clear template-form match either.
@@ -612,14 +633,13 @@ call; the spec IS the contract.)
       arrival behaviour. dump: 2 packages on the NPC, Travel package has 3 data slots, Sandbox has
       12. packagediag confirms slot 0 of both = LocationTarget(0567F7:Skyrim.esm). Packaged →
       `~/skyrim_mods/ModForgePackage2.zip`.
-    - **In-game test deferred:** cross-cell Travel (inn interior → Whiterun exterior marker) might
-      need additional engine plumbing we haven't verified — exterior-to-interior traversal often
-      depends on door teleport refs, faction trespass rules, and the NPC owning a "starting context"
-      that lets it find the destination. Structurally the PACK is identical to vanilla travel packages
-      (compared byte-by-byte via packagediag); whether the engine accepts it for an inn-spawned actor
-      is a runtime concern. **Next test pattern:** place the NPC in the same exterior cell as the
-      Travel destination (or have him start at a known XMarker and travel to another), to take the
-      cross-cell traversal out of the equation.
+    - **Known limitation surfaced (worth flagging next iteration):** the Mutagen-generated Travel
+      package CAN be silently rejected when it requires the actor to traverse cell boundaries through
+      a door teleport (especially interior→exterior+different-worldspace, e.g. Bannered Mare → outside
+      Whiterun). Vanilla NPCs that do this have extra plumbing CK sets up (faction permissions,
+      "starting context" linked refs, sometimes a quest alias). Within a single cell — or within a
+      worldspace with continuous navmesh — Travel works as confirmed above. Cross-boundary travel is
+      a CONTENT problem, not a Mutagen / PACK-records problem.
     - **What this UNBLOCKS:** It.16c — Patrol (LinkedReference idle-marker chains, for "guards walk
       this route") + UseMagic (scheduled spell casting, for "altar buff" scenarios). Same Build
       dispatch pattern; each is a fresh SubSpec + a `case TemplateId:` branch.

@@ -1,12 +1,12 @@
 {
   "pluginName": "ModForgePackage2.esp",
   "esl": true,
-  "_": "It.16b: Travel template + Sandbox-at-specific-ref demo. NPC starts inside the Bannered Mare; Travel package targets `debugWhiterunOrigin` (Skyrim.esm:0x0567F7 — the marker that `coc whiterun` spawns at), and a Sandbox package anchored at the SAME ref so once he arrives he hangs around the marketplace. Engine evaluates packages in list order; Travel runs first (he'll try to leave the inn and walk to Whiterun's centre), then Sandbox keeps him there.",
+  "_": "It.16b rev: in-cell Travel test. First attempt placed NPC inside Bannered Mare and tried Travel to a Whiterun-exterior marker — engine silently rejected (cross-worldspace traversal too heavy) and Sandbox kicked in. This rev keeps BOTH endpoints in the same interior cell: NPC spawns at the Sleeping Giant Inn entrance (0,0,0) and Travels to RiverwoodInnCenterMarker. Same cell, same navmesh — Travel should walk him across the inn.",
 
   "packages": [
     {
-      "editorId": "MF_TravelToWhiterunPackage",
-      "_": "Travel template (Skyrim.esm:0x016FAA) has 3 slots — place / rideHorse / preferPath.",
+      "editorId": "MF_TravelToInnCenter",
+      "_": "Travel template — same cell as the NPC's spawn so the engine doesn't have to do cross-cell pathfinding.",
       "template": "Skyrim.esm:0x016FAA",
       "preferredSpeed": "Walk",
       "interruptFlags": [
@@ -14,15 +14,15 @@
         "ReactionToPlayerActions", "AllowIdleChatter", "WorldInteractions"
       ],
       "travel": {
-        "place": "Skyrim.esm:0x0567F7",
-        "radius": 256,
+        "place": "Skyrim.esm:0x01DC0A",
+        "radius": 64,
         "rideHorse": false,
         "preferPath": false
       }
     },
     {
-      "editorId": "MF_SandboxAtWhiterunPackage",
-      "_": "Same Sandbox shape as It.16a, but anchored at a specific vanilla ref (debugWhiterunOrigin) instead of NearSelf — demonstrates the `location` ref path of SandboxSpec. Runs after Travel completes.",
+      "editorId": "MF_SandboxAtInnCenter",
+      "_": "Sandbox kicks in once Travel completes (NPC arrives within radius). location anchors at the same marker so he hangs around the inn's centre afterwards.",
       "template": "Skyrim.esm:0x01C254",
       "preferredSpeed": "Walk",
       "interruptFlags": [
@@ -31,8 +31,8 @@
         "AggroRadiusBehavior", "AllowIdleChatter", "WorldInteractions"
       ],
       "sandbox": {
-        "location": "Skyrim.esm:0x0567F7",
-        "radius": 512,
+        "location": "Skyrim.esm:0x01DC0A",
+        "radius": 384,
         "allowEating": true,
         "allowSleeping": false,
         "allowConversation": true,
@@ -64,17 +64,16 @@
       "voiceType": "Skyrim.esm:0x013AE6",
       "level": 5,
       "autoCalcStats": true,
-      "_packages": "Order matters — engine picks the first matching package. Travel runs while he hasn't arrived; once at the destination, Sandbox takes over.",
       "packages": [
-        "MF_TravelToWhiterunPackage",
-        "MF_SandboxAtWhiterunPackage"
+        "MF_TravelToInnCenter",
+        "MF_SandboxAtInnCenter"
       ]
     }
   ],
 
   "placements": [
-    { "_": "Spawn inside the Bannered Mare (the It.16a-confirmed arena). Travel should walk him out and across town to the Whiterun-origin marker; if cross-cell pathfinding fails the engine falls through to the Sandbox package's location anchor.",
-      "base": "MF_TravelerNpc", "cell": "Skyrim.esm:0x01605E",
+    { "_": "Place NPC at Sleeping Giant Inn entrance area (cell-local origin). After ~1 min cold start, he should walk across the inn floor to the centre marker, then sandbox there.",
+      "base": "MF_TravelerNpc", "cell": "Skyrim.esm:0x0133C6",
       "position": { "x": 0, "y": 0, "z": 0 } }
   ]
 }
