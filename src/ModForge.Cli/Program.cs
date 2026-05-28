@@ -453,6 +453,16 @@ internal static class Program
             // have this. Suspected to matter for the engine's persistent AI-tracking that lets a
             // package decide "I'm at the inn now, schedule says it's market time, walk to market".
             if (n.Unique) r.Configuration.Flags |= NpcConfiguration.Flag.Unique;
+            // AIData — Aggression/Confidence are the difference between "fights" and "flees".
+            // Default Aggression=Unaggressive + Confidence=Cowardly means the NPC runs from any
+            // threat (the "mage just flees, never casts" symptom). Author Aggression=Aggressive
+            // (defends) + Confidence=Brave (stays) for a normal combatant; Frenzied + Foolhardy
+            // for a fanatic. EnergyLevel defaults to 50 for vanilla actors.
+            if (Enum.TryParse<Aggression>(n.Aggression, ignoreCase: true, out var ag)) r.AIData.Aggression = ag;
+            if (Enum.TryParse<Confidence>(n.Confidence, ignoreCase: true, out var cf)) r.AIData.Confidence = cf;
+            if (Enum.TryParse<Assistance>(n.Assistance, ignoreCase: true, out var asst)) r.AIData.Assistance = asst;
+            if (Enum.TryParse<Mood>(n.Mood, ignoreCase: true, out var md)) r.AIData.Mood = md;
+            if (n.EnergyLevel > 0) r.AIData.EnergyLevel = (byte)Math.Clamp(n.EnergyLevel, 0, 100);
             if (!string.IsNullOrEmpty(n.EditorId)) npcsByEd[n.EditorId] = r;
         }
 
@@ -1574,6 +1584,10 @@ internal static class Program
             CheckRef(n.CrimeFaction, $"npc '{n.EditorId}' crimeFaction");
             CheckRef(n.CombatStyle, $"npc '{n.EditorId}' combatStyle");
             foreach (var s in n.Spells) CheckRef(s, $"npc '{n.EditorId}' spell");
+            CheckEnum<Aggression>(n.Aggression, $"npc '{n.EditorId}' aggression");
+            CheckEnum<Confidence>(n.Confidence, $"npc '{n.EditorId}' confidence");
+            CheckEnum<Assistance>(n.Assistance, $"npc '{n.EditorId}' assistance");
+            CheckEnum<Mood>(n.Mood, $"npc '{n.EditorId}' mood");
         }
         foreach (var cs in spec.CombatStyles)
             foreach (var f in cs.Flags)
@@ -2086,6 +2100,7 @@ internal static class Program
             Console.WriteLine($"  Configuration.Flags = {n.Configuration.Flags}");
             if (n.Configuration.Level is INpcLevelGetter lvl) Console.WriteLine($"  Configuration.Level = {lvl.Level}");
             Console.WriteLine($"  MajorFlags = {n.MajorFlags}");
+            Console.WriteLine($"  AIData: Aggression={n.AIData.Aggression} Confidence={n.AIData.Confidence} Mood={n.AIData.Mood} Assistance={n.AIData.Assistance} Energy={n.AIData.EnergyLevel} Responsibility={n.AIData.Responsibility}");
             Console.WriteLine($"  Factions ({n.Factions.Count}):");
             foreach (var f in n.Factions) Console.WriteLine($"    -> {f.Faction.FormKey} rank={f.Rank}");
             Console.WriteLine($"  Packages ({n.Packages.Count}):");
@@ -2162,6 +2177,8 @@ internal static class Program
                 if (!npc.CombatStyle.IsNull) Console.WriteLine($"      combatStyle -> {Ref(npc.CombatStyle.FormKey)}");
                 if (npc.ActorEffect is { Count: > 0 } actEff)
                     foreach (var sp in actEff) Console.WriteLine($"      spell -> {Ref(sp.FormKey)}");
+                if (npc.AIData is { } aid && (aid.Aggression != 0 || aid.Confidence != 0 || aid.Assistance != 0))
+                    Console.WriteLine($"      aiData: Aggression={aid.Aggression} Confidence={aid.Confidence} Assistance={aid.Assistance} Mood={aid.Mood} Energy={aid.EnergyLevel}");
                 foreach (var f in npc.Factions)
                     Console.WriteLine($"      faction -> {Ref(f.Faction.FormKey)} (rank {f.Rank})");
                 foreach (var pkg in npc.Packages)
@@ -2390,6 +2407,15 @@ internal sealed class NpcSpec
     public bool Unique { get; set; }                  // Configuration.Flag.Unique — engine treats the actor as a one-off (vs leveled spawn); seems to matter for AI tracking + cross-cell travel
     public List<string> Spells { get; set; } = new(); // refs → SPEL records; populates npc.ActorEffect — the AI's spell list, what combat AI considers casting (combined with combatStyle's magic preference)
     public string CombatStyle { get; set; } = "";    // ref → CSTY; HOW the AI fights (magic vs melee preference, aggression, group flank). Without one, the engine uses a default that may not pick spells from `spells`.
+    // AIData — controls WHETHER the NPC fights at all (separate system from CombatStyle which is
+    // HOW). Mutagen-generated NPCs default to Aggression=Unaggressive + Confidence=Cowardly which
+    // means they FLEE from any threat, regardless of CombatStyle or spell list. For a combatant set
+    // at minimum Aggression=Aggressive (defends when attacked) + Confidence=Brave (doesn't flee).
+    public string Aggression { get; set; } = "";     // Unaggressive|Aggressive|VeryAggressive|Frenzied (default: Unaggressive — won't initiate, won't defend either)
+    public string Confidence { get; set; } = "";     // Cowardly|Cautious|Average|Brave|Foolhardy (default: Cowardly — flees any threat)
+    public string Assistance { get; set; } = "";     // HelpsNobody|HelpsAllies|HelpsFriendsAndAllies (default: HelpsNobody)
+    public string Mood { get; set; } = "";           // Neutral|Angry|Fear|Happy|Sad|Surprised|Puzzled|Disgusted
+    public int EnergyLevel { get; set; }              // 0..100 — vanilla actors typically 50
 }
 internal sealed class QuestSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public List<ObjectiveSpec> Objectives { get; set; } = new(); }
 internal sealed class ObjectiveSpec { public ushort Index { get; set; } public string Text { get; set; } = ""; }

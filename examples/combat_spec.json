@@ -40,6 +40,11 @@
       "autoCalcStats": true,
       "combatStyle": "MF_MageCombatStyle",
       "spells": [ "Skyrim.esm:0x0C969A" ],
+      "_aiData": "Without these, Mutagen defaults to Unaggressive+Cowardly — the NPC just flees from any threat regardless of CombatStyle. Aggressive defends when attacked; Brave doesn't flee from a fair fight.",
+      "aggression": "Aggressive",
+      "confidence": "Brave",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50,
       "packages": [ "MF_MageSandbox" ]
     }
   ],

@@ -731,12 +731,22 @@ call; the spec IS the contract.)
     - **A/B GAP still open** (same as It.16c): we still haven't isolated which of CrimeFaction /
       faction-membership / Unique is THE necessary one — likely it's CrimeFaction primarily, but
       this remains a small follow-up test, not a blocker.
-- [~] **It.17 — CombatStyle (CSTY) + NPC.spells — structurally verified; in-game TBD (2026-05-28).**
-      The third and last of the user's original three goals (cf. the It.16 series for goals 1+2):
-      "NPCs use the spells my mod adds." Approach: a CombatStyle record drives the AI's per-weapon
-      preference (Magic vs Melee vs Staff vs Ranged), and the NPC's `spells` list is the source of
-      castable spells; combined, the engine picks magic when CSTY says so and there are spells to
-      cast. Pure record-authoring, no SKSE/C++.
+- [x] **It.17 — CombatStyle (CSTY) + NPC.spells + AIData — IN-GAME CONFIRMED (2026-05-28).**
+      Tester: spawn EncWolfIce next to MF_MageNpc → mage stands ground and casts Flames at the wolf.
+      Closes the third and last of the user's original three "lifelike NPC" goals (cf. the It.16
+      series for goals 1+2): "NPCs use the spells my mod adds." Pure record-authoring, no SKSE/C++.
+      **The full lifelike-NPC ESP-side authoring toolkit is now feature-complete in ModForge.**
+
+      KEY INSIGHT discovered the hard way: Skyrim NPC combat decision has **TWO independent
+      systems**, and BOTH need to be authored for a generated NPC to actually fight:
+        - **CombatStyle (CSTY)** controls "**HOW** the AI fights" — `equipMult*` weights determine
+          weapon class preference (magic vs melee vs staff vs ranged).
+        - **AIData.Aggression / Confidence** controls "**WHETHER** the NPC fights at all" —
+          Mutagen-generated NPCs default to **Aggression=Unaggressive + Confidence=Cowardly** which
+          means flee from any threat, regardless of CombatStyle.
+      A CSTY-only setup gives you "wants to use magic but flees the moment it sees a wolf" — the
+      It.17 round-1 failure mode the tester reported. The fix is `aggression: "Aggressive"` (defends
+      when attacked) + `confidence: "Brave"` (doesn't flee a fair fight) on the NPC.
     - **API discovery:** ICombatStyleGetter has 9 main fields — Offensive/Defensive/Group offensive
       multipliers (~aggression/blocking/group boldness) + six `EquipmentScoreMult*` weights
       (Melee/Magic/Ranged/Shout/Unarmed/Staff) + `AvoidThreatChance` + `Flags` (Dueling/Flanking/
@@ -763,15 +773,36 @@ call; the spec IS the contract.)
       `spells = [Skyrim.esm:0x0C969A]` (vanilla `FlamesRightHand`, the basic novice destruction
       cone). Placed at the It.9 wilderness Tamriel coords (proven exterior placement). validate +
       dump verify all wired: spell → 0C969A, combatStyle → MF_MageCombatStyle, all factions present.
-    - **IN-GAME TEST (needs the tester):** fast-travel near Tamriel grid (-23, 4) or `coc` the area
-      → find `MF_MageNpc` ("ModForge Mage") → **`placeatme 0x10F2A3 1`** (EncWolfIce_Indoor — the
-      indoor variant still works outdoors; or use 0x10F2A2 for vanilla EncWolf, or any aggressive
-      vanilla NPC base via `help <name> 0`). Expected: the wolf aggros on the mage; she casts
-      `Flames` (yellow cone of fire) at it rather than running up and punching. The big test is
-      whether she actually CASTS — if she punches/runs, the CombatStyle didn't take or the spell
-      list isn't being read. FUTURE It.18 candidates: custom MGEF/spell + this CSTY (closes the
-      "NPC uses MY mod's spells" loop end-to-end); CombatStyle subobjects (Melee, CloseRange, Flight
-      currently left at defaults — may matter for ranged/airborne combat tuning).
+    - **Round-1 (CSTY only) IN-GAME FAILED — mage fled from wolf, never cast.** Tester observed
+      MF_MageNpc just running away from the spawned wolf. `npcdiag` diff against vanilla bandits
+      revealed the AIData defaults problem (above). Fix: add Aggression/Confidence/Assistance/Mood/
+      EnergyLevel as direct NpcSpec fields → set them at pass-1 on Configuration.AIData.
+    - **Round-2 (CSTY + AIData) IN-GAME PASSED.** With `aggression: "Aggressive"` + `confidence:
+      "Brave"` + `assistance: "HelpsFriendsAndAllies"` + `energyLevel: 50`, MF_MageNpc holds his
+      ground, casts Flames at the wolf, kills it. Re-tested in Tamriel wilderness near the It.9
+      coords. The CombatStyle's Magic=8.1 priority gave him magic as the chosen weapon; AIData
+      Aggressive+Brave gave him the will to engage.
+    - **The complete "lifelike NPC" recipe (now feature-complete):**
+      ```jsonc
+      { "race": "Skyrim.esm:0x013746",         "class": "...",
+        "voiceType": "Skyrim.esm:0x013AE6",     // hello/idle audio
+        "crimeFaction": "Skyrim.esm:0x0267EA",  // citizen identity (cross-cell travel)
+        "factions": [ ... ],                     // reinforcing town faction
+        "unique": true,                          // engine AI tracking
+        "combatStyle": "<MF_MageCS>",           // HOW he fights
+        "spells": [ ... ],                       // WHAT he casts
+        "aggression": "Aggressive",              // WHETHER he fights (vs. fleeing)
+        "confidence":  "Brave",
+        "assistance":  "HelpsFriendsAndAllies",
+        "energyLevel": 50,
+        "level": 25, "autoCalcStats": true,
+        "packages": [ "<Travel>", "<Sandbox>" ] }
+      ```
+      This is the minimum-viable set for a generated NPC to: (a) sandbox/talk/sit/eat (It.16a),
+      (b) walk to a specific point (It.16b), (c) cross cells / leave the inn / city (It.16c/d),
+      (d) defend itself with mod-added spells in combat (It.17). Future iterations are POLISH
+      (Patrol / UseMagic templates, A/B testing the citizenship recipe, custom MGEF→spell→NPC end-
+      to-end), not foundational. **ModForge is now a complete lifelike-NPC authoring toolkit.**
 
 ## Build / test
 ```
