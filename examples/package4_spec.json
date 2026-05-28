@@ -1,0 +1,75 @@
+{
+  "pluginName": "ModForgePackage4.esp",
+  "esl": true,
+  "_": "It.16d: the real exit-the-city test. Same recipe as It.16c (crimeFaction + town faction + unique) but Travel destination is now WhiterunStablesHorseMarker (Skyrim.esm:0x109826) — outside Whiterun's main gate, in Tamriel worldspace. NPC spawns inside Bannered Mare so the path is: Bannered Mare interior → WhiterunWorld exterior (door 1) → through Whiterun streets → Tamriel exterior at stables (door 2). If he makes it all the way to the stables, the 'lifelike daily life' recipe handles TWO worldspace transitions, not just one.",
+
+  "packages": [
+    {
+      "editorId": "MF_TravelToWhiterunStables",
+      "template": "Skyrim.esm:0x016FAA",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [
+        "HellosToPlayer", "ObserveCombatBehavior",
+        "ReactionToPlayerActions", "AllowIdleChatter", "WorldInteractions"
+      ],
+      "travel": {
+        "place": "Skyrim.esm:0x109826",
+        "radius": 256,
+        "rideHorse": false,
+        "preferPath": false
+      }
+    },
+    {
+      "editorId": "MF_SandboxAtWhiterunStables",
+      "template": "Skyrim.esm:0x01C254",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [
+        "HellosToPlayer", "RandomConversations", "ObserveCombatBehavior",
+        "GreetCorpseBehavior", "ReactionToPlayerActions", "FriendlyFireComments",
+        "AggroRadiusBehavior", "AllowIdleChatter", "WorldInteractions"
+      ],
+      "sandbox": {
+        "location": "Skyrim.esm:0x109826",
+        "radius": 512,
+        "allowEating": true, "allowSleeping": false, "allowConversation": true,
+        "allowIdleMarkers": true, "allowSitting": true, "allowWandering": true,
+        "allowSpecialFurniture": true, "energy": 50.0
+      }
+    }
+  ],
+
+  "classes": [
+    { "editorId": "MF_StablehandClass", "name": "ModForge Stablehand",
+      "healthWeight": 40, "magickaWeight": 20, "staminaWeight": 40,
+      "skillWeights": { "Speech": 40, "OneHanded": 40 } }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_OutOfCityTravelerNpc",
+      "name": "ModForge Out-Of-City Traveler",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_StablehandClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [
+        "Skyrim.esm:0x0267EA",
+        "Skyrim.esm:0x028172"
+      ],
+      "unique": true,
+      "level": 5,
+      "autoCalcStats": true,
+      "packages": [
+        "MF_TravelToWhiterunStables",
+        "MF_SandboxAtWhiterunStables"
+      ]
+    }
+  ],
+
+  "placements": [
+    { "_": "Same spawn as It.16c (Bannered Mare interior) so the difference is ONLY the Travel destination — testing whether the same citizenship recipe handles two worldspace transitions, not just one.",
+      "base": "MF_OutOfCityTravelerNpc", "cell": "Skyrim.esm:0x01605E",
+      "position": { "x": 0, "y": 0, "z": 0 } }
+  ]
+}

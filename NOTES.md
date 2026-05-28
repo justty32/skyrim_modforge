@@ -709,6 +709,28 @@ call; the spec IS the contract.)
       multiple Travel + Sandbox packages on time-of-day is now structurally + semantically possible.
       Next: It.17 (CombatStyle — "rush forward to block / use my mod spells") or It.16d (Patrol +
       UseMagic templates, completing the PACK side).
+- [x] **It.16d — cross-WORLDSPACE Travel: out the city to the wilderness — IN-GAME CONFIRMED (2026-05-28).**
+      Follow-up to It.16c. The It.16c test reached an INSIDE-Whiterun marker (debugWhiterunOrigin
+      at marketplace, near but inside the main gate) — that's ONE worldspace transition (Bannered Mare
+      interior → WhiterunWorld exterior). It.16d's test reached an OUTSIDE-Whiterun marker
+      (WhiterunStablesHorseMarker at the stables in Tamriel) — that's TWO worldspace transitions
+      (Bannered Mare interior → WhiterunWorld exterior → Tamriel exterior, through both the inn door
+      AND the main city gate). Tester confirmed: `player.moveto <NPC>` lands at the stables → the
+      same three-piece "citizenship" recipe scales to as many cell/worldspace transitions as the
+      route demands.
+    - **Example `examples/package4_spec.json`** → `ModForgePackage4.esp` → `~/skyrim_mods/ModForgePackage4.zip`.
+      Differs from It.16c only in the Travel + Sandbox destination ref: `Skyrim.esm:0x109826`
+      (WhiterunStablesHorseMarker) instead of `0x0567F7` (debugWhiterunOrigin). Same NPC recipe
+      (crimeFaction CrimeFactionWhiterun, factions [CrimeFactionWhiterun, TownWhiterunFaction],
+      unique=true). No code changes needed — the iteration validated It.16c's recipe at greater scope.
+    - **Practical implication:** the "lifelike NPC" recipe in It.16c is the WHOLE recipe. Once an
+      NPC has citizen identity (CrimeFaction + town faction membership) and Unique, the engine
+      treats any Travel destination — be it across one door teleport or several — as legitimate.
+      The recipe handles full day-and-night cycles (sleep at inn, work at farm, travel to market)
+      with multiple Travel + Sandbox packages on a time-of-day schedule.
+    - **A/B GAP still open** (same as It.16c): we still haven't isolated which of CrimeFaction /
+      faction-membership / Unique is THE necessary one — likely it's CrimeFaction primarily, but
+      this remains a small follow-up test, not a blocker.
 
 ## Build / test
 ```
