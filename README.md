@@ -47,6 +47,10 @@ The **spec** format (the JSON the generator consumes) is documented in
 [`SPEC.md`](SPEC.md) with a JSON Schema at [`examples/spec.schema.json`](examples/spec.schema.json);
 [`examples/sample_spec.json`](examples/sample_spec.json) is a complete working example.
 
+**Building lifelike NPCs?** See [`LIFELIKE_NPC.md`](LIFELIKE_NPC.md) — distilled recipe + the
+two-systems insight (CombatStyle vs AIData) + vanilla FormID reference + diagnostic commands +
+gotchas. The chronological discovery story is in [`NOTES.md`](NOTES.md).
+
 Papyrus prereq (one-time): extract the CK's `Data/Scripts.zip` `Source/Scripts/*` to
 `~/.cache/modforge/papyrus/` (or set `MODFORGE_PAPYRUS_BASE`); set
 `MODFORGE_PAPYRUS_COMPILER` if the CK isn't at the default Steam path.

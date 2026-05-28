@@ -5,6 +5,11 @@ translate plugin text. ModForge is the deterministic half; **you are the NL→sp
 Read this once, then follow the workflow. Field reference for the spec is in `SPEC.md`;
 a complete example is `examples/sample_spec.json`.
 
+**If the request involves making NPCs feel alive** (sandbox / daily life / combat / spell use),
+start by skimming [`LIFELIKE_NPC.md`](LIFELIKE_NPC.md) — distilled recipe + the two-systems
+insight (CombatStyle vs AIData) + vanilla FormID reference + diagnostic command cheat sheet.
+That doc captures the It.16–It.17 learnings; the chronological story is in `NOTES.md`.
+
 ## Your job, in one loop
 
 ```
