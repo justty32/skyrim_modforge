@@ -48,6 +48,7 @@ internal static class Program
                 case "cellblk" when args.Length is 2 or 3: return CellBlk(args[1], args.Length == 3 ? args[2] : null);
                 case "mgefdiag" when args.Length == 3: return MgefDiag(args[1], args[2]);
                 case "lightdiag" when args.Length is 2 or 3: return LightDiag(args[1], args.Length == 3 ? args[2] : null);
+                case "packagediag" when args.Length == 3: return PackageDiag(args[1], args[2]);
                 default: Usage(); return 1;
             }
         }
@@ -72,6 +73,7 @@ internal static class Program
         "  cellblk <in.esp> [0xFORMID]                  show interior cell block/sub-block (FormID grouping)\n" +
         "  mgefdiag <in.esp> <0xFORMID>                 print a MagicEffect's fields (compare gen vs vanilla)\n" +
         "  lightdiag <in.esp> [0xFORMID]                a Light's radius/color/flags (no id: list room-fill lights)\n" +
+        "  packagediag <in.esp> <0xFORMID>              print a Package's template/flags/schedule/data inputs\n" +
         "  extract <in.esp> <strings.json>\n" +
         "  applyloc <in.esp> <strings.json> <outDir>   (Localized UTF-8 _chinese.STRINGS)\n" +
         "  apply   <in.esp> <strings.json> <out.esp>");
@@ -684,6 +686,30 @@ internal static class Program
             r.CreatedObjectCount = (ushort)Math.Max(1, co.Count);
         }
 
+        // AI Package (PACK): pass-1 sets scalar fields (flags, interrupt flags, speed, schedule).
+        // Template/CombatStyle/OwnerQuest + Sandbox `Data` dictionary inputs are wired in pass 2.
+        // Type is Package (=18), never PackageTemplate — those are vanilla-defined.
+        foreach (var pk in spec.Packages)
+        {
+            var r = mod.Packages.AddNew();
+            r.EditorID = pk.EditorId;
+            r.Type = Mutagen.Bethesda.Skyrim.Package.Types.Package;
+            // Flags + interrupt flags (lifelike-NPC switches: HellosToPlayer / AllowIdleChatter /
+            // WorldInteractions / RandomConversations / ReactionToPlayerActions / …)
+            r.Flags = ParseFlags<Package.Flag>(pk.Flags);
+            r.InterruptFlags = ParseFlags<Package.InterruptFlag>(pk.InterruptFlags);
+            if (Enum.TryParse<Package.Speed>(pk.PreferredSpeed, ignoreCase: true, out var spd))
+                r.PreferredSpeed = spd;
+            // Schedule — -1/0 = "any" (vanilla DefaultSandbox uses month=-1 hour=-1 minute=-1).
+            r.ScheduleMonth = (sbyte)Math.Clamp(pk.Schedule.Month, -1, 11);
+            if (Enum.TryParse<Package.DayOfWeek>(pk.Schedule.DayOfWeek, ignoreCase: true, out var dow))
+                r.ScheduleDayOfWeek = dow;
+            r.ScheduleDate = (byte)Math.Clamp(pk.Schedule.Date, 0, 31);
+            r.ScheduleHour = (sbyte)Math.Clamp(pk.Schedule.Hour, -1, 23);
+            r.ScheduleMinute = (sbyte)Math.Clamp(pk.Schedule.Minute, -1, 59);
+            r.ScheduleDurationInMinutes = Math.Max(0, pk.Schedule.DurationInMinutes);
+        }
+
         // Interior cells nest CellBlock(type 2, label=block) -> CellSubBlock(type 3, label=sub) ->
         // Cell, and Skyrim groups them BY FORMID: block = id % 10, sub = (id / 10) % 10 (decimal,
         // 24-bit ID — verified by walking Skyrim.esm, e.g. WhiterunBanneredMare 0x01605E/dec 90206
@@ -761,6 +787,7 @@ internal static class Program
             Resolve($"npc '{n.EditorId}' race",   n.Race,   fk => npcRec.Race.SetTo(fk));
             Resolve($"npc '{n.EditorId}' class",  n.Class,  fk => npcRec.Class.SetTo(fk));
             Resolve($"npc '{n.EditorId}' outfit", n.Outfit, fk => npcRec.DefaultOutfit.SetTo(fk));
+            Resolve($"npc '{n.EditorId}' voiceType", n.VoiceType, fk => npcRec.Voice.SetTo(fk));
             foreach (var factionRef in n.Factions)
                 Resolve($"npc '{n.EditorId}' faction", factionRef, fk =>
                 {
@@ -823,6 +850,103 @@ internal static class Program
             Resolve($"magicEffect '{me.EditorId}' castingArt",   me.CastingArt,   fk => mgef.CastingArt.SetTo(fk));
             Resolve($"magicEffect '{me.EditorId}' hitEffectArt", me.HitEffectArt, fk => mgef.HitEffectArt.SetTo(fk));
             Resolve($"magicEffect '{me.EditorId}' explosion",    me.Explosion,    fk => mgef.Explosion.SetTo(fk));
+        }
+
+        // AI Package (PACK) pass-2: resolve template/combatStyle/ownerQuest refs and (when the
+        // template is the Sandbox procedure template) fill the Data dictionary by slot index.
+        // The vanilla Sandbox template (Skyrim.esm:0x01C254) has named inputs at fixed sbyte
+        // indices; we mirror what DefaultSandboxEditorLocation256 emits, overriding from SandboxSpec.
+        const uint SandboxTemplateId = 0x01C254;       // Skyrim.esm: editorId "Sandbox"
+        var skyrimEsm = ModKey.FromNameAndExtension("Skyrim.esm");
+        foreach (var pk in spec.Packages)
+        {
+            if (!recordsByEd.TryGetValue(pk.EditorId, out var rec) || rec is not IPackage pack) continue;
+            Resolve($"package '{pk.EditorId}' template",    pk.Template,    fk => pack.PackageTemplate.SetTo(fk));
+            Resolve($"package '{pk.EditorId}' combatStyle", pk.CombatStyle, fk => pack.CombatStyle.SetTo(fk));
+            Resolve($"package '{pk.EditorId}' ownerQuest",  pk.OwnerQuest,  fk => pack.OwnerQuest.SetTo(fk));
+
+            // Only fill Data for the Sandbox template; other templates (Travel/UseItemAt/Find/…) are
+            // out of scope for It.16a — we still emit a structurally-valid package referencing the
+            // template, but with no Data overrides (template defaults apply).
+            bool isSandbox = pack.PackageTemplate.FormKey is { } tfk
+                             && tfk.ModKey == skyrimEsm && tfk.ID == SandboxTemplateId;
+            if (!isSandbox)
+            {
+                if (!string.IsNullOrWhiteSpace(pk.Template))
+                    Console.WriteLine($"  ! package '{pk.EditorId}': template '{pk.Template}' is not the Sandbox template (Skyrim.esm:0x01C254) — It.16a supports Sandbox only; emitting package with no Data");
+                continue;
+            }
+
+            var sb = pk.Sandbox;
+            // Slot 0 — Location: an optional placed-ref Link (then LocationTarget), else LocationFallback.
+            //   LocationFallback = "use the NPC's editor location" (the cell/coords it was placed at).
+            //   LocationTarget(Link=<placed REFR/ACHR>) anchors the sandbox at that ref's location.
+            APackageData slot0;
+            if (!string.IsNullOrWhiteSpace(sb.Location)
+                && TryResolveRef(sb.Location, formKeyByEd, out var locFk))
+            {
+                slot0 = new PackageDataLocation
+                {
+                    Name = "Location",
+                    Location = new LocationTargetRadius
+                    {
+                        Target = new LocationTarget { Link = new FormLink<IPlacedGetter>(locFk) },
+                        Radius = sb.Radius,
+                    }
+                };
+                linksWired++;
+                if (LooksExternalRef(sb.Location)) extLinks++;
+            }
+            else
+            {
+                // LocationFallback writes a polymorphic ALocationTarget; Mutagen picks the BINARY
+                // shape from LocationFallback.Type (the LocationTargetRadius.LocationType enum), NOT
+                // from the C# class — leaving Type at 0 silently writes it as LocationTarget (the
+                // It.16a "target=LocationTarget instead of LocationFallback" bug). The fallback
+                // type matters too: `NearEditorLocation` (what `DefaultSandboxEditorLocation256` uses)
+                // requires the NPC to have an Editor Location set in CK — vanilla actors get one,
+                // generated ones don't, so sandbox finds no anchor and the actor just stands still
+                // (the in-game "doesn't sandbox at all" bug). `NearSelf` (what `DefaultSandbox
+                // CurrentLocation256` and `WE18WitchSandboxNearSelf` use) anchors to the actor's
+                // current position with no external dependency — the right default for generated NPCs.
+                slot0 = new PackageDataLocation
+                {
+                    Name = "Location",
+                    Location = new LocationTargetRadius
+                    {
+                        Target = new LocationFallback { Type = LocationTargetRadius.LocationType.NearSelf },
+                        Radius = sb.Radius,
+                    }
+                };
+            }
+            pack.Data[0] = slot0;
+
+            // Bool/float slots — match DefaultSandboxEditorLocation256's value set so the engine
+            // gets explicit values (not template defaults) the way vanilla concrete sandboxes do.
+            void Bool(sbyte slot, string name, bool? user, bool def)
+                => pack.Data[slot] = new PackageDataBool { Name = name, Data = user ?? def };
+            Bool(1,  "Allow Eating",            sb.AllowEating,           true);
+            Bool(3,  "Allow Sleeping",          sb.AllowSleeping,         true);
+            Bool(4,  "Allow Conversation",      sb.AllowConversation,     true);
+            Bool(5,  "Allow Idle Markers",      sb.AllowIdleMarkers,      true);
+            Bool(6,  "Allow Sitting",           sb.AllowSitting,          true);
+            Bool(7,  "Allow Wandering",         sb.AllowWandering,        true);
+            Bool(14, "Unlock On Arrival?",      sb.UnlockOnArrival,       false);
+            Bool(25, "Prefered Path Only?",     sb.PreferredPathOnly,     false);
+            Bool(27, "RideHorseIfPossible",     sb.RideHorseIfPossible,   false);
+            Bool(31, "Allow Special Furniture", sb.AllowSpecialFurniture, true);
+            pack.Data[29] = new PackageDataFloat { Name = "Energy", Data = sb.Energy ?? 50f };
+        }
+
+        // NPC.Packages — assign each ref'd package to the NPC's package list (run-order: the engine
+        // picks the first one whose conditions+schedule match, so order matters; we add in spec order).
+        foreach (var n in spec.Npcs)
+        {
+            if (n.Packages.Count == 0) continue;
+            if (!npcsByEd.TryGetValue(n.EditorId, out var npcRec)) continue;
+            foreach (var pkgRef in n.Packages)
+                Resolve($"npc '{n.EditorId}' package", pkgRef, fk =>
+                    npcRec.Packages.Add(new FormLink<IPackageGetter>(fk)));
         }
 
         // Outfit (OTFT) contents: each item is a ref (in-spec armor/weapon or external).
@@ -1365,6 +1489,7 @@ internal static class Program
         foreach (var me in spec.MagicEffects) Reg(me.EditorId, "magicEffect");
         foreach (var co in spec.Recipes) Reg(co.EditorId, "recipe");
         foreach (var cl in spec.Classes) Reg(cl.EditorId, "class");
+        foreach (var pk in spec.Packages) Reg(pk.EditorId, "package");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
         void CheckRef(string r, string what)
@@ -1386,6 +1511,7 @@ internal static class Program
             CheckRef(n.Race, $"npc '{n.EditorId}' race");
             CheckRef(n.Class, $"npc '{n.EditorId}' class");
             CheckRef(n.Outfit, $"npc '{n.EditorId}' outfit");
+            CheckRef(n.VoiceType, $"npc '{n.EditorId}' voiceType");
         }
         foreach (var a in spec.Armors) foreach (var k in a.Keywords) CheckRef(k, $"armor '{a.EditorId}' keyword");
         foreach (var w in spec.Weapons) foreach (var k in w.Keywords) CheckRef(k, $"weapon '{w.EditorId}' keyword");
@@ -1541,6 +1667,34 @@ internal static class Program
             foreach (var kw in ac.Keywords) CheckRef(kw, $"activator '{ac.EditorId}' keyword");
         foreach (var o in spec.Outfits)
             foreach (var it in o.Items) CheckRef(it, $"outfit '{o.EditorId}' item");
+
+        // AI Packages (PACK): template is required (and must be a well-formed external ref —
+        // there are no in-spec procedure templates); refs (template/combatStyle/ownerQuest +
+        // sandbox.location) checked; enums (Flag/InterruptFlag/Speed/DayOfWeek) parse-checked.
+        foreach (var pk in spec.Packages)
+        {
+            if (string.IsNullOrWhiteSpace(pk.Template))
+                problems.Add($"package '{pk.EditorId}' has empty template (need <master>:0xFORMID of a procedure template, e.g. Skyrim.esm:0x01C254 = Sandbox)");
+            else if (!LooksExternalRef(pk.Template) || !TryExternalRef(pk.Template, out _))
+                problems.Add($"package '{pk.EditorId}' template '{pk.Template}' must be a well-formed external <master>:0xFORMID ref");
+            CheckRef(pk.CombatStyle, $"package '{pk.EditorId}' combatStyle");
+            CheckRef(pk.OwnerQuest,  $"package '{pk.EditorId}' ownerQuest");
+            CheckRef(pk.Sandbox.Location, $"package '{pk.EditorId}' sandbox.location");
+            foreach (var f in pk.Flags)
+                if (!Enum.TryParse<Mutagen.Bethesda.Skyrim.Package.Flag>(f, true, out _))
+                    problems.Add($"package '{pk.EditorId}' invalid flag '{f}'");
+            foreach (var f in pk.InterruptFlags)
+                if (!Enum.TryParse<Mutagen.Bethesda.Skyrim.Package.InterruptFlag>(f, true, out _))
+                    problems.Add($"package '{pk.EditorId}' invalid interruptFlag '{f}' (e.g. HellosToPlayer, AllowIdleChatter, WorldInteractions)");
+            if (!string.IsNullOrEmpty(pk.PreferredSpeed)
+                && !Enum.TryParse<Mutagen.Bethesda.Skyrim.Package.Speed>(pk.PreferredSpeed, true, out _))
+                problems.Add($"package '{pk.EditorId}' invalid preferredSpeed '{pk.PreferredSpeed}' (Walk|Jog|Run|FastWalk)");
+            if (!string.IsNullOrEmpty(pk.Schedule.DayOfWeek)
+                && !Enum.TryParse<Mutagen.Bethesda.Skyrim.Package.DayOfWeek>(pk.Schedule.DayOfWeek, true, out _))
+                problems.Add($"package '{pk.EditorId}' invalid schedule.dayOfWeek '{pk.Schedule.DayOfWeek}' (Sunday|Monday|…|Weekdays|Weekends|Any)");
+        }
+        foreach (var n in spec.Npcs)
+            foreach (var pkgRef in n.Packages) CheckRef(pkgRef, $"npc '{n.EditorId}' package");
 
         if (problems.Count == 0)
         {
@@ -1775,6 +1929,71 @@ internal static class Program
         return 0;
     }
 
+    // Diagnostic: print a Package's template / flags / interrupt flags / schedule / refs and,
+    // crucially, its Data dictionary — each entry's sbyte key, Name, concrete subtype
+    // (PackageDataLocation/Float/Bool/Int/Target/…) and its key field(s). Used to learn the
+    // input schema of a vanilla TEMPLATE (Sandbox / Travel / Find / UseItemAt / EatSleep …)
+    // so a spec can author the right inputs.
+    private static int PackageDiag(string inPath, string formIdHex)
+    {
+        uint id = Convert.ToUInt32(formIdHex.Replace("0x", "", StringComparison.OrdinalIgnoreCase), 16) & 0xFFFFFF;
+        using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE);
+        foreach (var p in mod.EnumerateMajorRecords<IPackageGetter>())
+        {
+            if (p.FormKey.ID != id) continue;
+            string F(IFormLinkGetter<IMajorRecordGetter> l) => l.FormKey.IsNull ? "-" : l.FormKey.ToString();
+            Console.WriteLine($"0x{id:X6}  EditorID={p.EditorID}");
+            Console.WriteLine($"  Type = {p.Type}");
+            Console.WriteLine($"  PackageTemplate -> {(p.PackageTemplate.FormKey.IsNull ? "-" : p.PackageTemplate.FormKey.ToString())}");
+            Console.WriteLine($"  Flags = {p.Flags}");
+            Console.WriteLine($"  InterruptFlags = {p.InterruptFlags}");
+            Console.WriteLine($"  InterruptOverride = {p.InterruptOverride}   PreferredSpeed = {p.PreferredSpeed}");
+            Console.WriteLine($"  Schedule: month={p.ScheduleMonth} dayOfWeek={p.ScheduleDayOfWeek} date={p.ScheduleDate} "
+                + $"hour={p.ScheduleHour} minute={p.ScheduleMinute} durationMin={p.ScheduleDurationInMinutes}");
+            Console.WriteLine($"  CombatStyle = {F(p.CombatStyle)}   OwnerQuest = {F(p.OwnerQuest)}");
+            Console.WriteLine($"  Conditions = {p.Conditions.Count}");
+            Console.WriteLine($"  DataInputVersion = {p.DataInputVersion}");
+            Console.WriteLine($"  Unknown={p.Unknown} Unknown2={p.Unknown2} Unknown3.len={p.Unknown3.Length} Unknown4={p.Unknown4?.ToString() ?? "-"}");
+            Console.WriteLine($"  XnamMarker.len={p.XnamMarker.Length}");
+            Console.WriteLine($"  Data ({p.Data.Count} entry/entries):");
+            foreach (var kv in p.Data)
+            {
+                var d = kv.Value;
+                var concrete = d.GetType().Name;
+                foreach (var suf in new[] { "BinaryOverlay", "Getter" }) if (concrete.EndsWith(suf)) concrete = concrete[..^suf.Length];
+                var extra = "";
+                switch (d)
+                {
+                    case IPackageDataLocationGetter loc:
+                        var t = loc.Location.Target;
+                        var ttype = t.GetType().Name;
+                        foreach (var suf in new[] { "BinaryOverlay", "Getter" }) if (ttype.EndsWith(suf)) ttype = ttype[..^suf.Length];
+                        var tlink = (t as ILocationTargetGetter)?.Link.FormKey;
+                        var fbk = (t as ILocationFallbackGetter);
+                        extra = $" radius={loc.Location.Radius} target={ttype}"
+                            + (tlink is { } fk && !fk.IsNull ? $"({fk})" : "")
+                            + (fbk is not null ? $"(type={fbk.Type},data={fbk.Data})" : "");
+                        break;
+                    case IPackageDataFloatGetter f: extra = $" value={f.Data}"; break;
+                    case IPackageDataIntGetter i:   extra = $" value={i.Data}"; break;
+                    case IPackageDataBoolGetter b:  extra = $" value={b.Data}"; break;
+                    case IPackageDataTargetGetter tg:
+                        var tgt = tg.Target.GetType().Name;
+                        foreach (var suf in new[] { "BinaryOverlay", "Getter" }) if (tgt.EndsWith(suf)) tgt = tgt[..^suf.Length];
+                        extra = $" type={tg.Type} target={tgt}";
+                        break;
+                    case IPackageDataTopicGetter tp: extra = $" topics={tp.Topics.Count}"; break;
+                    case IPackageDataObjectListGetter ol: extra = $" data={ol.Data}"; break;
+                }
+                Console.WriteLine($"    [{kv.Key,3}] {concrete}  Name=\"{d.Name}\"  Flags={d.Flags}{extra}");
+            }
+            Console.WriteLine($"  ProcedureTree: {p.ProcedureTree.Count} branch(es)");
+            return 0;
+        }
+        Console.WriteLine($"0x{id:X6} not a Package in {Path.GetFileName(inPath)}");
+        return 0;
+    }
+
     // Concrete Mutagen record class -> friendly type name (strip overlay/getter suffixes).
     private static string TypeLabel(IMajorRecordGetter r)
     {
@@ -1808,8 +2027,11 @@ internal static class Program
                 if (npc.Configuration.Level is INpcLevelGetter lvl && (lvl.Level != 1 || autoCalc))
                     Console.WriteLine($"      level={lvl.Level} autoCalcStats={autoCalc}");
                 if (!npc.DefaultOutfit.IsNull) Console.WriteLine($"      outfit -> {Ref(npc.DefaultOutfit.FormKey)}");
+                if (!npc.Voice.IsNull) Console.WriteLine($"      voice -> {Ref(npc.Voice.FormKey)}");
                 foreach (var f in npc.Factions)
                     Console.WriteLine($"      faction -> {Ref(f.Faction.FormKey)} (rank {f.Rank})");
+                foreach (var pkg in npc.Packages)
+                    Console.WriteLine($"      package -> {Ref(pkg.FormKey)}");
             }
 
             if (r is IKeywordedGetter<IKeywordGetter> kwd && kwd.Keywords is { Count: > 0 } kws)
@@ -1875,6 +2097,17 @@ internal static class Program
 
             if (r is ISpellGetter spG && (spG.Type != SpellType.Spell || spG.CastType != CastType.ConstantEffect || spG.BaseCost > 0))
                 Console.WriteLine($"      spell: type={spG.Type} cast={spG.CastType} target={spG.TargetType} cost={spG.BaseCost}");
+
+            if (r is IPackageGetter pkgG)
+            {
+                var tmpl = pkgG.PackageTemplate.FormKey;
+                Console.WriteLine($"      package: type={pkgG.Type} template={(tmpl.IsNull ? "-" : Ref(tmpl))}"
+                    + $" flags={pkgG.Flags} interrupt={pkgG.InterruptFlags} speed={pkgG.PreferredSpeed}"
+                    + $" schedule(h={pkgG.ScheduleHour} m={pkgG.ScheduleMinute} dur={pkgG.ScheduleDurationInMinutes} dow={pkgG.ScheduleDayOfWeek})"
+                    + $" data={pkgG.Data.Count} slot(s)"
+                    + (pkgG.CombatStyle.FormKey.IsNull ? "" : $" cs={Ref(pkgG.CombatStyle.FormKey)}")
+                    + (pkgG.OwnerQuest.FormKey.IsNull ? "" : $" quest={Ref(pkgG.OwnerQuest.FormKey)}"));
+            }
 
             if (r is IClassGetter cls)
             {
@@ -1990,6 +2223,7 @@ internal sealed class ModSpec
     public List<ActivatorSpec> Activators { get; set; } = new();
     public List<RecipeSpec> Recipes { get; set; } = new();
     public List<ClassSpec> Classes { get; set; } = new();
+    public List<PackageSpec> Packages { get; set; } = new();
 }
 // "ref" fields below accept EITHER an in-spec editorId OR an external "<master>:0xFORMID"
 // (e.g. "Skyrim.esm:0x013746" — find them with the `find` command). External refs auto-add
@@ -2007,6 +2241,8 @@ internal sealed class NpcSpec
     public string Outfit { get; set; } = "";      // ref -> DefaultOutfit
     public int Level { get; set; }                 // fixed level (0 = leave default); needed for class stat auto-calc
     public bool AutoCalcStats { get; set; }        // derive H/M/S + skills from level + class (else flat defaults)
+    public List<string> Packages { get; set; } = new(); // refs to PACK records (in-spec or external) — assigned to this NPC's package list
+    public string VoiceType { get; set; } = "";      // ref → VTYP (e.g. Skyrim.esm:0x013AE6 = MaleNord); without one, NPC is silent (no hello/idle chatter)
 }
 internal sealed class QuestSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public List<ObjectiveSpec> Objectives { get; set; } = new(); }
 internal sealed class ObjectiveSpec { public ushort Index { get; set; } public string Text { get; set; } = ""; }
@@ -2082,6 +2318,57 @@ internal sealed class ClassSpec
     public Dictionary<string, int> SkillWeights { get; set; } = new();
 }
 internal sealed class MessageSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Description { get; set; } = ""; }
+// AI Package (PACK): an NPC's decision-layer behaviour ("go sandbox at the smithy", "travel to the
+// inn at 18:00", "use the cooking pot"). Built on a vanilla PROCEDURE TEMPLATE (`template` =
+// "<master>:0xFORMID" of e.g. Skyrim.esm:0x01C254 Sandbox), which defines the data input schema;
+// our package fills those inputs. `interruptFlags` (HellosToPlayer/AllowIdleChatter/
+// WorldInteractions/…) are the lifelike-NPC switches. Assign to an NPC via NpcSpec.packages.
+// Use `packagediag <Skyrim.esm> <templateFormId>` to discover a template's slot schema.
+internal sealed class PackageSpec
+{
+    public string EditorId { get; set; } = "";
+    public string Template { get; set; } = "";              // ref → PackageTemplate (Skyrim.esm:0x01C254 = Sandbox)
+    public List<string> Flags { get; set; } = new();        // Package.Flag names
+    public List<string> InterruptFlags { get; set; } = new();// Package.InterruptFlag names
+    public string PreferredSpeed { get; set; } = "";        // Walk|Jog|Run|FastWalk
+    public string CombatStyle { get; set; } = "";           // ref → CSTY (optional, combat packages)
+    public string OwnerQuest { get; set; } = "";            // ref → QUST (optional, Radiant)
+    public PackageScheduleSpec Schedule { get; set; } = new();
+    // Sandbox-template inputs (apply when `template` is Skyrim.esm:0x01C254). All optional —
+    // omit any field to inherit the template's default (e.g. all "Allow Eating/Sleeping/…" default true).
+    public SandboxSpec Sandbox { get; set; } = new();
+}
+internal sealed class PackageScheduleSpec
+{
+    public int Month { get; set; } = -1;   // -1 = any (vanilla default)
+    public string DayOfWeek { get; set; } = "Any";
+    public int Date { get; set; }           // 0 = any
+    public int Hour { get; set; } = -1;
+    public int Minute { get; set; } = -1;
+    public int DurationInMinutes { get; set; }
+}
+// Sandbox-template (Skyrim.esm:0x01C254) data inputs. Slot indices on the template:
+//   0 Location  1 AllowEating  3 AllowSleeping  4 AllowConversation  5 AllowIdleMarkers
+//   6 AllowSitting  7 AllowWandering  14 UnlockOnArrival  25 PreferredPathOnly
+//   27 RideHorseIfPossible  29 Energy(float)  31 AllowSpecialFurniture
+// `location` (optional) is a ref to a placed reference (LocationTarget.Link); omit ⇒
+// LocationFallback (NPC uses its editor location). `radius` defaults to 512.
+internal sealed class SandboxSpec
+{
+    public string Location { get; set; } = "";   // optional ref → placed reference (an REFR/ACHR)
+    public uint Radius { get; set; } = 512;
+    public bool? AllowEating { get; set; }
+    public bool? AllowSleeping { get; set; }
+    public bool? AllowConversation { get; set; }
+    public bool? AllowIdleMarkers { get; set; }
+    public bool? AllowSitting { get; set; }
+    public bool? AllowWandering { get; set; }
+    public bool? AllowSpecialFurniture { get; set; }
+    public bool? UnlockOnArrival { get; set; }
+    public bool? PreferredPathOnly { get; set; }
+    public bool? RideHorseIfPossible { get; set; }
+    public float? Energy { get; set; }
+}
 // Attach a compiled Papyrus script (by Scriptname) to a record (by editorId), with
 // typed properties. type ∈ int|float|bool|string|object; object resolves ObjectEditorId.
 internal sealed class ScriptAttachSpec

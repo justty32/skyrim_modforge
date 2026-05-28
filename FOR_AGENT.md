@@ -133,6 +133,14 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
   keyword (defaults to the forge) by consuming `components` (item *refs* + counts).
 - **Classes:** `classes` (CLAS) define an npc "profession" — `healthWeight`/`magickaWeight`/
   `staminaWeight` + `skillWeights` (Skill→0-255) + `teaches`; an npc's `class` ref can point at one.
+- **AI Packages (PACK):** `packages` give NPCs decision-layer behaviour ("sandbox at a spot",
+  "travel to the inn", etc.). Skyrim PACKs use a vanilla **procedure template** (`template` *ref*,
+  e.g. `Skyrim.esm:0x01C254` = Sandbox) that defines the data-input schema; the package fills those
+  inputs. Right now ModForge implements **Sandbox** (`sandbox` field — `location`/`radius` + Allow
+  Eating/Sleeping/Conversation/IdleMarkers/Sitting/Wandering/SpecialFurniture + `energy`). The
+  `interruptFlags` array (`HellosToPlayer`, `AllowIdleChatter`, `WorldInteractions`, …) is what
+  separates a silent statue from a lifelike NPC. Assign packages to an actor via `npcs[].packages`.
+  Use `packagediag <Skyrim.esm> <0xFORMID>` to dump a template's slot schema or to inspect any package.
 - **More record types** (same spec→build→dump pattern): `ingredients` (alchemy, take `effects`),
   `ammunitions` (`damage`), `scrolls` (`effects` + cast fields), `soulGems` (`maximumCapacity`),
   `keys`, `keywords` (define your own → reference it from any record's `keywords`), `outfits`

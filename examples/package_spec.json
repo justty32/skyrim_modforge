@@ -1,0 +1,65 @@
+{
+  "pluginName": "ModForgePackage.esp",
+  "esl": true,
+  "_": "It.16a re-test: place a sandboxing NPC INSIDE the Bannered Mare (Skyrim.esm:0x01605E). Wilderness placement (the prior test arena) is barren — sandbox needs furniture/idle markers/other NPCs to do anything visible. Inn has all three. Reach via `coc WhiterunBanneredMare`.",
+
+  "packages": [
+    {
+      "editorId": "MF_HangInInnPackage",
+      "template": "Skyrim.esm:0x01C254",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [
+        "HellosToPlayer",
+        "RandomConversations",
+        "ObserveCombatBehavior",
+        "GreetCorpseBehavior",
+        "ReactionToPlayerActions",
+        "FriendlyFireComments",
+        "AggroRadiusBehavior",
+        "AllowIdleChatter",
+        "WorldInteractions"
+      ],
+      "sandbox": {
+        "_": "radius 512 = comfortably covers the inn's ground floor. AllowSleeping=false so he doesn't camp the upstairs bed 24/7 — keep him active for visible testing.",
+        "radius": 512,
+        "allowEating": true,
+        "allowSleeping": false,
+        "allowConversation": true,
+        "allowIdleMarkers": true,
+        "allowSitting": true,
+        "allowWandering": true,
+        "allowSpecialFurniture": true,
+        "energy": 50.0
+      }
+    }
+  ],
+
+  "classes": [
+    {
+      "editorId": "MF_Citizen",
+      "name": "ModForge Citizen",
+      "healthWeight": 33, "magickaWeight": 33, "staminaWeight": 34,
+      "skillWeights": { "Speech": 60, "Sneak": 20, "OneHanded": 20 }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_InnPatronNpc",
+      "name": "ModForge Patron",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_Citizen",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "level": 5,
+      "autoCalcStats": true,
+      "packages": [ "MF_HangInInnPackage" ]
+    }
+  ],
+
+  "placements": [
+    { "_": "Bannered Mare interior — coords roughly near the entrance/main floor (origin = cell center). The sandbox will pull him to chairs/idle markers automatically.",
+      "base": "MF_InnPatronNpc", "cell": "Skyrim.esm:0x01605E",
+      "position": { "x": 0, "y": 0, "z": 0 } }
+  ]
+}

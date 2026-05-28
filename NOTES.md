@@ -497,6 +497,84 @@ call; the spec IS the contract.)
       entries) → click each → `getav magicka` / `getav health`: the **battlemage should read high magicka /
       low health, the warrior the opposite** (vs the old flat 50/50/50). That contrast = the class driving
       stats. Custom Race remains the one untouched big gap.
+- [x] **It.16a — AI Package (PACK) authoring — Sandbox template — IN-GAME CONFIRMED (2026-05-28).**
+      Tester: `coc WhiterunBanneredMare` → `MF_InnPatronNpc` ("ModForge Patron"); ~1 minute after
+      cell load (sandbox AI cold-start delay) **he walked to a chair and sat down**. Sandbox is alive:
+      `AllowWandering` finds the path, `AllowSitting` snaps him to inn furniture. First "lifelike NPC"
+      brick complete — generated NPCs can now decide what to do, not just stand. ESP-side authoring
+      (Mutagen+PACK), zero SKSE-plugin C++; matches the AI Overhaul / Immersive Citizens approach.
+    - **API discovery (Mutagen 0.53.1):** Skyrim PACK is **template-driven** — every concrete
+      Package references a vanilla "procedure template" form via `PackageTemplate` (a `IFormLink<
+      IPackageGetter>`), and `Data` is a `IDictionary<sbyte, APackageData>` keyed by the template's
+      named slot indices. Templates have `Type = PackageTemplate`; concrete packages `Type = Package`.
+      Sandbox = `Skyrim.esm:0x01C254` (EditorID "Sandbox"). All vanilla `Default*Sandbox*` packages
+      reference it. Slot schema discovered via the new `packagediag` command on 0x01C254 (28 named
+      slots, 12 used by concrete sandboxes): 0=Location(LocationTargetRadius), 1=AllowEating(bool),
+      3=AllowSleeping, 4=AllowConversation, 5=AllowIdleMarkers, 6=AllowSitting, 7=AllowWandering,
+      14=UnlockOnArrival, 25=PreferredPathOnly, 27=RideHorseIfPossible, 29=Energy(float), 31=AllowSpecialFurniture.
+    - **NEW CLI `packagediag <esp> <0xFORMID>`** (in It.12 mgefdiag style): dumps Type/PackageTemplate/
+      Flags/InterruptFlags/Speed/Schedule/DataInputVersion/Unknown/XnamMarker + each Data entry's
+      sbyte key, concrete subtype name (PackageDataLocation/Bool/Float/Int/Target/Topic/ObjectList)
+      and its key field — for LocationFallback also `Type` (LocationTargetRadius.LocationType enum)
+      + `Data`. Both LocationFallback traps below were debugged with this command.
+    - **Spec/Build:** new `packages[]` (PackageSpec) — `template` (ref, required), `flags`/
+      `interruptFlags` (string arrays via ParseFlags<T>), `preferredSpeed`/`combatStyle`/`ownerQuest`,
+      a `schedule` subobject, and a `sandbox` subobject (template-input UX). NpcSpec gained
+      `packages` (refs → wired into `npc.Packages`) AND `voiceType` (ref → `npc.Voice`; without one,
+      NPC is silent — no hello/idle chatter audio or subtitle). Pass-1: `mod.Packages.AddNew()` +
+      scalars (Type forced to Package, flags, schedule). Pass-2: resolves template/combatStyle/
+      ownerQuest refs + (only when template is the Sandbox FK) fills `Data[0..31]` with
+      PackageDataLocation/Bool/Float matching `DefaultSandboxCurrentLocation256`'s shape, overriding
+      from SandboxSpec. Non-Sandbox templates emit a structurally-valid package with no Data
+      (template defaults apply) + a warning — Travel/UseItemAt/Find/EatSleep go in It.16b.
+    - **TWO LocationFallback TRAPS (both verified in-game, each cost a debug cycle):**
+      1. **Wrote as LocationTarget, not LocationFallback.** `new LocationFallback()` with `Type` left
+         at 0 silently writes as `LocationTarget` in the binary — Mutagen's writer picks the
+         ALocationTarget binary shape from `LocationFallback.Type` (a `LocationTargetRadius.LocationType`
+         enum), NOT from the C# class identity. Fix: explicitly set `Type`.
+      2. **Wrong fallback type → sandbox finds no anchor.** First fix used `NearEditorLocation`
+         (what `DefaultSandboxEditorLocation256` uses, hence the name). **In-game failure mode:**
+         the NPC stood still doing nothing for an unbounded time, even with all data slots correct
+         and full InterruptFlags (he'd still greet on approach because that's a separate flag, but
+         no wandering / sitting / chatter). Root cause: `NearEditorLocation` requires the NPC to have
+         an "Editor Location" field set in CK — vanilla CK-edited actors get one, but Mutagen-
+         generated `Npc` records don't, so sandbox finds no anchor and silently no-ops. Fix: use
+         `LocationTargetRadius.LocationType.NearSelf` (what `DefaultSandboxCurrentLocation256` and
+         `WE18WitchSandboxNearSelf` use) — anchors at the actor's current position, no external link.
+         Verified by `packagediag` byte-diff vs vanilla NearSelf sandboxes after the fix.
+    - **validate/dump:** validate Reg() registers package editorIds; checks template (required +
+      well-formed external ref), combatStyle/ownerQuest/sandbox.location/voiceType refs, Flag/
+      InterruptFlag/Speed/DayOfWeek enum names; NpcSpec.packages refs. dump: prints `package: type/
+      template/flags/interrupt/speed/schedule/data N slot(s)` + on each NPC `package -> <ref>` +
+      `voice -> <ref>` lines.
+    - **Example evolution (3 spec rewrites driven by in-game findings):**
+      1. Wilderness placement at Tamriel grid (-23,4) (proven It.9 coords). Validated structurally
+         but **no in-game sandbox visible** — the grid is empty wilderness; sandbox needs furniture/
+         idle markers/other NPCs nearby to do anything observable. Lesson: structural pass-through
+         isn't the same as a meaningful test arena.
+      2. Added `voiceType: Skyrim.esm:0x013AE6` (MaleNord). In-game: NPC now greets on approach
+         ("嗯/啊" generic male responses) — voice chain works — but without faction membership only
+         the most generic filler audio plays. Idle chatter requires faction-conditioned dialogue
+         topics; deferred as a follow-up (NpcSpec already takes `factions`, just not wired in the
+         example).
+      3. Relocated to Bannered Mare interior (`Skyrim.esm:0x01605E`, position 0,0,0; the It.10
+         vanilla-interior placement path). After the NearSelf fix above: tester reports NPC walks to
+         a chair and sits after ~1 minute. Final in-game-confirmed example.
+    - **Tester gotcha (worth flagging next iteration):** Skyrim sandbox has a **~30-90s cold start**
+      after cell load before the first decision tick fires. If you `coc` in and watch for 10s seeing
+      no movement, that's normal — wait the full minute. Vanilla NPCs in the same cell hide this
+      because they were initialized when the cell was first generated, well before the player arrived.
+    - **Cosmetic byte-diff still open (NOT in-game blocking, deferred):** `packagediag` shows three
+      fields differ from vanilla (verified harmless via the in-game confirm above):
+      `DataInputVersion` (vanilla=10, ours=0), `Unknown` byte (vanilla=196, ours=0), `XnamMarker`
+      length (vanilla=1, ours=0). Cargo-culting these to match vanilla is a 3-line follow-up; flag
+      it the moment any future test depends on them.
+    - **What this UNBLOCKS:** It.16b — more procedure templates (Travel `Skyrim.esm:0x01C266`,
+      UseItemAt, Find, EatSleep), each one a `Data[...]` slot-fill helper analogous to the Sandbox
+      one. The Sandbox path is the proof; the others reuse the same plumbing. It.17 = CombatStyle
+      (CSTY) — for "NPC uses my mod spells" + "rushes to block". The "idle chatter via faction"
+      cleanup is a minor task — extend the example to add a citizen faction once we know which one
+      gives the chattiest dialogue without contaminating the faction's behaviour.
 
 ## Build / test
 ```

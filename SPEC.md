@@ -47,7 +47,8 @@ keywords, factions, etc. The named master is **added to the plugin automatically
   "cells": [...], "placements": [...],  // new interior cells + placing forms in them
   "leveledItems": [...], "leveledNpcs": [...], "containers": [...],
   "ingredients": [...], "ammunitions": [...], "scrolls": [...], "soulGems": [...],
-  "keys": [...], "keywords": [...], "outfits": [...], "statics": [...], "activators": [...]
+  "keys": [...], "keywords": [...], "outfits": [...], "statics": [...], "activators": [...],
+  "packages": [...]              // AI Packages — what an NPC DOES (sandbox/travel/use furniture)
 }
 ```
 
@@ -58,7 +59,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `miscItems` | `editorId`, `name`, `value` (int≥0), `weight` (number), `keywords` (array of *refs*) |
 | `books` | `editorId`, `name`, `text` (book body) |
 | `weapons` | `editorId`, `name`, `value`, `weight`, `damage` (int≥0), `speed` (number), `reach` (number), `keywords` (array of *refs*) |
-| `npcs` | `editorId`, `name`, `factions` (array of *refs*), `race` (*ref*), `class` (*ref*), `outfit` (*ref* → DefaultOutfit), `level` (int), `autoCalcStats` (bool — derive H/M/S + skills from level + class) |
+| `npcs` | `editorId`, `name`, `factions` (array of *refs*), `race` (*ref*), `class` (*ref*), `outfit` (*ref* → DefaultOutfit), `level` (int), `autoCalcStats` (bool — derive H/M/S + skills from level + class), `packages` (array of *refs* → PACK; the NPC's AI package list, evaluated in order) |
 | `quests` | `editorId`, `name`, `objectives` (array of `{ index (int), text }`) |
 | `dialogue` | `editorId`, `questEditorId`, `speakerNpcEditorId` (optional), `prompt`, `responses` (array of strings) |
 | `spells` | `editorId`, `name`, `effects` (array of *effects*), `spellType`, `castType`, `targetType`, `baseCost` (int), `chargeTime` (number) |
@@ -83,6 +84,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `statics` | `editorId`, `model` (a `.nif` path — reference a vanilla mesh; a placement base, no name) |
 | `activators` | `editorId`, `name`, `model` (`.nif` path), `keywords` (array of *refs*); attach behaviour via `scripts` |
 | `recipes` | `editorId`, `createdObject` (*ref*), `count` (int), `workbench` (keyword *ref*; defaults to the forge), `components` (array of `{ item (*ref*), count (int) }`) — a crafting recipe (COBJ) |
+| `packages` | `editorId`, `template` (*ref* → a vanilla procedure template, e.g. Sandbox = `Skyrim.esm:0x01C254`), `flags` (array — `Package.Flag` names), `interruptFlags` (array — `HellosToPlayer`/`AllowIdleChatter`/`WorldInteractions`/…), `preferredSpeed` (`Walk`\|`Jog`\|`Run`\|`FastWalk`), `combatStyle` (*ref*, optional), `ownerQuest` (*ref*, optional), `schedule` (`{ month, dayOfWeek, date, hour, minute, durationInMinutes }`), `sandbox` (template-input subobject — see below). An AI package; assign it to one or more NPCs via `npcs[].packages`. |
 
 A field marked *ref* takes an in-spec `editorId` **or** `"<master>:0xFORMID"` (see
 *References to vanilla / external forms* above). A standing NPC needs at least `race` +
@@ -260,6 +262,49 @@ Make an item craftable at a workbench:
 Common bench keywords: `0x088105` forge (new weapons/armor), `0x0ADB78` armor table (temper armor),
 `0x088108` sharpening wheel (temper weapons), `0x0F46CE` Skyforge. Perk/skill gating (conditions)
 is not yet a spec field — a recipe shows whenever you have the components.
+
+### packages — AI Packages (what an NPC DOES)
+A `packages` entry is an AI package. Skyrim's PACK record is **template-driven**: you reference a
+vanilla "procedure template" form via `template`, and that template defines the data input schema
+(slot indices + types). Our package fills in the inputs for the slots the template defines.
+
+Right now ModForge implements **Sandbox** (`Skyrim.esm:0x01C254`). To author for other templates
+(Travel/Find/UseItemAt/EatSleep/…), use `packagediag <Skyrim.esm> <0xFORMID>` to dump a template's
+named slot schema; the in-spec inputs are then a future iteration of this generator (It.16b+).
+
+```jsonc
+{ "editorId": "MF_HangAtSpotPackage",
+  "template": "Skyrim.esm:0x01C254",        // Sandbox procedure template (find by EditorID "Sandbox")
+  "preferredSpeed": "Walk",
+  "interruptFlags": [                        // the lifelike-NPC switches — leave most ON
+    "HellosToPlayer", "RandomConversations", "ObserveCombatBehavior",
+    "GreetCorpseBehavior", "ReactionToPlayerActions", "FriendlyFireComments",
+    "AggroRadiusBehavior", "AllowIdleChatter", "WorldInteractions" ],
+  "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 0, "dayOfWeek": "Any" },
+  "sandbox": {
+    "radius": 1024,                          // wander distance from the anchor
+    "location": "",                           // empty -> LocationFallback (NPC's editor location);
+                                              // a ref -> LocationTarget anchored at that placed ref
+    "allowEating": true,  "allowSleeping": false,  "allowConversation": true,
+    "allowIdleMarkers": true, "allowSitting": true, "allowWandering": true,
+    "allowSpecialFurniture": true, "energy": 50.0 } }
+```
+Then attach to an NPC: `"npcs": [{ ..., "packages": [ "MF_HangAtSpotPackage" ] }]`.
+
+**Why these inputs:** the Sandbox template names them (see `packagediag <Skyrim.esm> 0x01C254`).
+`location: ""` is the safest default — the engine anchors the sandbox at wherever the NPC was placed.
+A specific `location` ref (an REFR/ACHR FormID) anchors the sandbox at that reference's position.
+`Allow Sleeping = false` keeps the NPC active 24/7 (good for visible-in-game testing); leave it true
+for a normal day/night cycle. `Energy = 50` is the vanilla default (higher = more wandering).
+
+**Flags (Package.Flag):** `OffersServices`, `MustComplete`, `MaintainSpeedAtGoal`, `ContinueIfPcNear`,
+`OncePerDay`, `PreferredSpeed`, `AlwaysSneak`, `AllowSwimming`, `IgnoreCombat`, `WeaponsUnequipped`,
+`WeaponDrawn`, `NoCombatAlert`, `WearSleepOutfit`.
+
+**Interrupt flags (Package.InterruptFlag):** `HellosToPlayer`, `RandomConversations`,
+`ObserveCombatBehavior`, `GreetCorpseBehavior`, `ReactionToPlayerActions`, `FriendlyFireComments`,
+`AggroRadiusBehavior`, `AllowIdleChatter`, `WorldInteractions`. **These are the difference between
+a silent statue and a lifelike NPC.** Vanilla DefaultSandbox enables all of them.
 
 ## Workflow
 
