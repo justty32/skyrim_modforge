@@ -643,6 +643,72 @@ call; the spec IS the contract.)
     - **What this UNBLOCKS:** It.16c — Patrol (LinkedReference idle-marker chains, for "guards walk
       this route") + UseMagic (scheduled spell casting, for "altar buff" scenarios). Same Build
       dispatch pattern; each is a fresh SubSpec + a `case TemplateId:` branch.
+- [x] **It.16c — cross-cell Travel ("let NPC walk OUT of the inn") — IN-GAME CONFIRMED (2026-05-28).**
+      Tester: `coc WhiterunBanneredMare` → `MF_CrossCellTravelerNpc` walked out of the inn, through
+      Whiterun's city streets, all the way to the gate area near the Whiterun-origin marker. THIS is
+      the real "lifelike NPC daily life" unlock — generated NPCs can now genuinely participate in
+      cross-cell traversal, not just stay within one cell.
+    - **Why It.16b's first attempt failed (the right diagnosis, after the fact):** the It.16b NPC
+      was rejected at the door teleport because she was **not a citizen of Whiterun** — engine treats
+      her as having no traversal rights through city gates. Sandbox kicking in as a fallback hid the
+      Travel rejection completely silently. The Mutagen-generated NPC was structurally identical to
+      vanilla packages but missing the "I belong here" identity that vanilla actors get from CK.
+    - **Diagnosis: npcdiag-style diff of a known cross-cell vanilla NPC (Ysolda, 0x013BAB) vs
+      MF_InnPatronNpc.** New `npcdiag <esp> <0xFORMID>` CLI command (in the It.12 mgefdiag pattern):
+      dumps an Npc's race/class/voice/outfits + factions/CrimeFaction + Template/DefaultPackageList +
+      ObserveDead/GuardWarn/CombatOverride package lists + Configuration.Flags + MajorFlags +
+      Packages/Keywords/ActorEffect/Perks. Ran on Ysolda + our NPC side by side. Ysolda has:
+        - `CrimeFaction = 0267EA:Skyrim.esm` (CrimeFactionWhiterun) — the city's "citizen recognition"
+          faction. Ours: empty.
+        - Faction membership in CrimeFactionWhiterun + TownWhiterunFaction (028172). Ours: 0 factions.
+        - `Configuration.Flags = Female, AutoCalcStats, Unique, LoopedScript, LoopedAudio`. Ours: just
+          AutoCalcStats. The interesting bit was **`Unique`** — marks the actor as a one-off (vs a
+          leveled-list template instance).
+      All four of Ysolda's packages packagediag'd identical-shape to ours (no OwnerQuest, no
+      Conditions, no special Flags). So the difference is in the NPC base record, NOT the packages.
+    - **Spec / Build:** NpcSpec gained `crimeFaction` (ref → FACT) and `unique` (bool —
+      Configuration.Flag.Unique). Pass-2 resolves the crimeFaction ref onto `npc.CrimeFaction`; pass-1
+      OR's in the Unique flag when set. validate: CheckRef on crimeFaction. dump: prints
+      `crimeFaction -> <ref>` on each NPC when set.
+    - **Example `examples/package3_spec.json`** → `ModForgePackage3.esp`. Same shape as It.16b's
+      failed first attempt (NPC spawned in Bannered Mare, Travel to `debugWhiterunOrigin` outside
+      city walls + Sandbox-at-marker fallback), PLUS the three It.16c additions: `crimeFaction:
+      Skyrim.esm:0x0267EA`, `factions: [CrimeFactionWhiterun, TownWhiterunFaction]`, `unique: true`.
+      Build + dump verify: CrimeFaction wired, both factions present rank 0, Configuration.Flags
+      shows `AutoCalcStats, Unique`. Packaged → `~/skyrim_mods/ModForgePackage3.zip`.
+    - **A/B GAP (honest open follow-up):** we changed THREE things at once (CrimeFaction +
+      TownWhiterunFaction membership + Unique). The in-game success doesn't tell us which is
+      individually load-bearing. Hypothesis: CrimeFaction is the primary one (city-citizen
+      identity); TownWhiterunFaction is reinforcing; Unique helps engine track the actor's AI
+      state across cell transitions. Future A/B: build 3 variants, each missing one of the three,
+      see which fails. Not blocking — the "all three" recipe works.
+    - **Texture/LOD glitch at gate (NOT our ESP):** tester reported visual seams + flickering LOD
+      around the Whiterun gate area. **Verified false alarm.** `dump ModForgePackage3.esp` shows we
+      ONLY override Bannered Mare interior cell (0x01605E); we touch zero exterior cells, zero
+      worldspaces, zero landscape/LOD data. Cause is the well-known Skyrim `coc`-into-interior +
+      walk-out-without-load-screen quirk — exterior LOD doesn't preload. Tester confirmed by fast-
+      travelling away and back: LOD fully reloaded, glitch gone. Worth flagging in future testing:
+      use `coc <exteriorMarker>` (which does run a normal load) rather than `coc <interiorCell>` +
+      walk-out, OR fast-travel in/out once after the cold-start sandbox period.
+    - **The "lifelike NPC" minimum recipe is now complete:**
+      ```jsonc
+      { "editorId": "MF_LifelikeNpc",
+        "race": "Skyrim.esm:0x013746",
+        "class": "<some class>",
+        "voiceType": "Skyrim.esm:0x013AE6",      // hello/idle audio
+        "crimeFaction": "Skyrim.esm:0x0267EA",   // city citizen — needed for cross-cell travel
+        "factions": [ "Skyrim.esm:0x0267EA",
+                       "Skyrim.esm:0x028172" ],  // town faction reinforces
+        "unique": true,                           // one-off NPC, not leveled
+        "level": 5, "autoCalcStats": true,
+        "packages": [ "<Travel>", "<Sandbox>" ] }
+      ```
+      Add this `crimeFaction` + `unique` + faction memberships and any generated NPC can have a
+      proper daily life that includes leaving the building.
+    - **What this UNBLOCKS:** the original user goal ("讓 NPC 出門") is met. Daily schedule with
+      multiple Travel + Sandbox packages on time-of-day is now structurally + semantically possible.
+      Next: It.17 (CombatStyle — "rush forward to block / use my mod spells") or It.16d (Patrol +
+      UseMagic templates, completing the PACK side).
 
 ## Build / test
 ```

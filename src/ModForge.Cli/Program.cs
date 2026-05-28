@@ -49,6 +49,7 @@ internal static class Program
                 case "mgefdiag" when args.Length == 3: return MgefDiag(args[1], args[2]);
                 case "lightdiag" when args.Length is 2 or 3: return LightDiag(args[1], args.Length == 3 ? args[2] : null);
                 case "packagediag" when args.Length == 3: return PackageDiag(args[1], args[2]);
+                case "npcdiag" when args.Length == 3: return NpcDiag(args[1], args[2]);
                 default: Usage(); return 1;
             }
         }
@@ -74,6 +75,7 @@ internal static class Program
         "  mgefdiag <in.esp> <0xFORMID>                 print a MagicEffect's fields (compare gen vs vanilla)\n" +
         "  lightdiag <in.esp> [0xFORMID]                a Light's radius/color/flags (no id: list room-fill lights)\n" +
         "  packagediag <in.esp> <0xFORMID>              print a Package's template/flags/schedule/data inputs\n" +
+        "  npcdiag <in.esp> <0xFORMID>                  print an Npc's race/class/voice/factions/packages/flags (for cross-cell diff vs vanilla)\n" +
         "  extract <in.esp> <strings.json>\n" +
         "  applyloc <in.esp> <strings.json> <outDir>   (Localized UTF-8 _chinese.STRINGS)\n" +
         "  apply   <in.esp> <strings.json> <out.esp>");
@@ -444,6 +446,11 @@ internal static class Program
             // attribute (H/M/S) + skill distribution; without them the engine uses flat defaults.
             if (n.Level > 0) r.Configuration.Level = new NpcLevel { Level = (short)Math.Clamp(n.Level, 1, short.MaxValue) };
             if (n.AutoCalcStats) r.Configuration.Flags |= NpcConfiguration.Flag.AutoCalcStats;
+            // Configuration.Flag.Unique: marks the actor as a one-off (vs a leveled/respawning
+            // template instance). Vanilla cross-cell-travelling NPCs (Ysolda, Carlotta, …) all
+            // have this. Suspected to matter for the engine's persistent AI-tracking that lets a
+            // package decide "I'm at the inn now, schedule says it's market time, walk to market".
+            if (n.Unique) r.Configuration.Flags |= NpcConfiguration.Flag.Unique;
             if (!string.IsNullOrEmpty(n.EditorId)) npcsByEd[n.EditorId] = r;
         }
 
@@ -788,6 +795,12 @@ internal static class Program
             Resolve($"npc '{n.EditorId}' class",  n.Class,  fk => npcRec.Class.SetTo(fk));
             Resolve($"npc '{n.EditorId}' outfit", n.Outfit, fk => npcRec.DefaultOutfit.SetTo(fk));
             Resolve($"npc '{n.EditorId}' voiceType", n.VoiceType, fk => npcRec.Voice.SetTo(fk));
+            // CrimeFaction (e.g. CrimeFactionWhiterun): the faction that the NPC's crimes are
+            // reported to AND that marks them as a recognised "citizen of X". Vanilla NPCs that
+            // freely cross between a city's interior cells and exterior worldspace all have one
+            // of these set; without it the engine refuses door-teleport travel as if the NPC
+            // were trespassing.
+            Resolve($"npc '{n.EditorId}' crimeFaction", n.CrimeFaction, fk => npcRec.CrimeFaction.SetTo(fk));
             foreach (var factionRef in n.Factions)
                 Resolve($"npc '{n.EditorId}' faction", factionRef, fk =>
                 {
@@ -1522,6 +1535,7 @@ internal static class Program
             CheckRef(n.Class, $"npc '{n.EditorId}' class");
             CheckRef(n.Outfit, $"npc '{n.EditorId}' outfit");
             CheckRef(n.VoiceType, $"npc '{n.EditorId}' voiceType");
+            CheckRef(n.CrimeFaction, $"npc '{n.EditorId}' crimeFaction");
         }
         foreach (var a in spec.Armors) foreach (var k in a.Keywords) CheckRef(k, $"armor '{a.EditorId}' keyword");
         foreach (var w in spec.Weapons) foreach (var k in w.Keywords) CheckRef(k, $"weapon '{w.EditorId}' keyword");
@@ -2005,6 +2019,44 @@ internal static class Program
         return 0;
     }
 
+    // Diagnostic: full survey of an Npc's link-bearing fields — race/class/voice/outfit, factions
+    // (with rank), packages, crimeFaction, template, defaultPackageList, combatStyle, configuration
+    // flags, sleeping outfit, etc. Used to diff a vanilla NPC (e.g. Ysolda, who crosses cells daily)
+    // against a Mutagen-generated NPC to find which field(s) the engine needs to accept cross-cell
+    // Travel — the It.16b "stays in inn" failure mode.
+    private static int NpcDiag(string inPath, string formIdHex)
+    {
+        uint id = Convert.ToUInt32(formIdHex.Replace("0x", "", StringComparison.OrdinalIgnoreCase), 16) & 0xFFFFFF;
+        using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE);
+        foreach (var n in mod.EnumerateMajorRecords<INpcGetter>())
+        {
+            if (n.FormKey.ID != id) continue;
+            string F(IFormLinkGetter<IMajorRecordGetter> l) => l.FormKey.IsNull ? "-" : l.FormKey.ToString();
+            Console.WriteLine($"0x{id:X6}  EditorID={n.EditorID}");
+            Console.WriteLine($"  Race = {F(n.Race)}   Class = {F(n.Class)}   Voice = {F(n.Voice)}");
+            Console.WriteLine($"  DefaultOutfit = {F(n.DefaultOutfit)}   SleepingOutfit = {F(n.SleepingOutfit)}");
+            Console.WriteLine($"  CombatStyle = {F(n.CombatStyle)}   CrimeFaction = {F(n.CrimeFaction)}");
+            Console.WriteLine($"  Template = {F(n.Template)}   DefaultPackageList = {F(n.DefaultPackageList)}");
+            Console.WriteLine($"  SpectatorOverridePackageList = {F(n.SpectatorOverridePackageList)}");
+            Console.WriteLine($"  ObserveDeadBodyOverridePackageList = {F(n.ObserveDeadBodyOverridePackageList)}");
+            Console.WriteLine($"  GuardWarnOverridePackageList = {F(n.GuardWarnOverridePackageList)}");
+            Console.WriteLine($"  CombatOverridePackageList = {F(n.CombatOverridePackageList)}");
+            Console.WriteLine($"  Configuration.Flags = {n.Configuration.Flags}");
+            if (n.Configuration.Level is INpcLevelGetter lvl) Console.WriteLine($"  Configuration.Level = {lvl.Level}");
+            Console.WriteLine($"  MajorFlags = {n.MajorFlags}");
+            Console.WriteLine($"  Factions ({n.Factions.Count}):");
+            foreach (var f in n.Factions) Console.WriteLine($"    -> {f.Faction.FormKey} rank={f.Rank}");
+            Console.WriteLine($"  Packages ({n.Packages.Count}):");
+            foreach (var p in n.Packages) Console.WriteLine($"    -> {p.FormKey}");
+            Console.WriteLine($"  Keywords ({n.Keywords?.Count ?? 0})" + (n.Keywords is null ? "" : ": " + string.Join(", ", n.Keywords.Select(k => k.FormKey.ToString()))));
+            Console.WriteLine($"  ActorEffect/Spells ({n.ActorEffect?.Count ?? 0})" + (n.ActorEffect is null ? "" : ": " + string.Join(", ", n.ActorEffect.Select(s => s.FormKey.ToString()))));
+            Console.WriteLine($"  Perks = {n.Perks?.Count ?? 0}   Items = {n.Items?.Count ?? 0}   Attacks = {n.Attacks.Count}");
+            return 0;
+        }
+        Console.WriteLine($"0x{id:X6} not an Npc in {Path.GetFileName(inPath)}");
+        return 0;
+    }
+
     // Concrete Mutagen record class -> friendly type name (strip overlay/getter suffixes).
     private static string TypeLabel(IMajorRecordGetter r)
     {
@@ -2039,6 +2091,7 @@ internal static class Program
                     Console.WriteLine($"      level={lvl.Level} autoCalcStats={autoCalc}");
                 if (!npc.DefaultOutfit.IsNull) Console.WriteLine($"      outfit -> {Ref(npc.DefaultOutfit.FormKey)}");
                 if (!npc.Voice.IsNull) Console.WriteLine($"      voice -> {Ref(npc.Voice.FormKey)}");
+                if (!npc.CrimeFaction.IsNull) Console.WriteLine($"      crimeFaction -> {Ref(npc.CrimeFaction.FormKey)}");
                 foreach (var f in npc.Factions)
                     Console.WriteLine($"      faction -> {Ref(f.Faction.FormKey)} (rank {f.Rank})");
                 foreach (var pkg in npc.Packages)
@@ -2254,6 +2307,8 @@ internal sealed class NpcSpec
     public bool AutoCalcStats { get; set; }        // derive H/M/S + skills from level + class (else flat defaults)
     public List<string> Packages { get; set; } = new(); // refs to PACK records (in-spec or external) — assigned to this NPC's package list
     public string VoiceType { get; set; } = "";      // ref → VTYP (e.g. Skyrim.esm:0x013AE6 = MaleNord); without one, NPC is silent (no hello/idle chatter)
+    public string CrimeFaction { get; set; } = "";   // ref → FACT (e.g. Skyrim.esm:0x0267EA = CrimeFactionWhiterun); marks the NPC as a member of a city's crime/citizen circle — grants city-traversal rights (without it, cross-cell Travel through city gates is silently rejected)
+    public bool Unique { get; set; }                  // Configuration.Flag.Unique — engine treats the actor as a one-off (vs leveled spawn); seems to matter for AI tracking + cross-cell travel
 }
 internal sealed class QuestSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public List<ObjectiveSpec> Objectives { get; set; } = new(); }
 internal sealed class ObjectiveSpec { public ushort Index { get; set; } public string Text { get; set; } = ""; }

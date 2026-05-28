@@ -1,0 +1,76 @@
+{
+  "pluginName": "ModForgePackage3.esp",
+  "esl": true,
+  "_": "It.16c hypothesis test: cross-cell Travel from Bannered Mare interior → outside Whiterun. Adds the fields a vanilla cross-cell-travelling NPC (Ysolda) has that the It.16b NPC didn't: CrimeFactionWhiterun (city-traversal rights / citizen identity), TownWhiterunFaction membership, and Configuration.Flag.Unique. Same Travel destination as the It.16b first attempt that failed — if this works, the diagnosis is confirmed and we know the minimum 'lifelike NPC' setup.",
+
+  "packages": [
+    {
+      "editorId": "MF_TravelToWhiterunOrigin",
+      "template": "Skyrim.esm:0x016FAA",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [
+        "HellosToPlayer", "ObserveCombatBehavior",
+        "ReactionToPlayerActions", "AllowIdleChatter", "WorldInteractions"
+      ],
+      "travel": {
+        "place": "Skyrim.esm:0x0567F7",
+        "radius": 256,
+        "rideHorse": false,
+        "preferPath": false
+      }
+    },
+    {
+      "editorId": "MF_SandboxAtWhiterunOrigin",
+      "template": "Skyrim.esm:0x01C254",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [
+        "HellosToPlayer", "RandomConversations", "ObserveCombatBehavior",
+        "GreetCorpseBehavior", "ReactionToPlayerActions", "FriendlyFireComments",
+        "AggroRadiusBehavior", "AllowIdleChatter", "WorldInteractions"
+      ],
+      "sandbox": {
+        "location": "Skyrim.esm:0x0567F7",
+        "radius": 512,
+        "allowEating": true, "allowSleeping": false, "allowConversation": true,
+        "allowIdleMarkers": true, "allowSitting": true, "allowWandering": true,
+        "allowSpecialFurniture": true, "energy": 50.0
+      }
+    }
+  ],
+
+  "classes": [
+    { "editorId": "MF_CitizenClass", "name": "ModForge Citizen",
+      "healthWeight": 33, "magickaWeight": 33, "staminaWeight": 34,
+      "skillWeights": { "Speech": 60, "OneHanded": 30 } }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_CrossCellTravelerNpc",
+      "name": "ModForge Cross-Cell Traveler",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_CitizenClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "_": "The It.16c additions — vanilla cross-cell NPCs (Ysolda et al.) have all three of these. The hypothesis: they're what grants the actor city-traversal rights through door teleports.",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [
+        "Skyrim.esm:0x0267EA",
+        "Skyrim.esm:0x028172"
+      ],
+      "unique": true,
+      "level": 5,
+      "autoCalcStats": true,
+      "packages": [
+        "MF_TravelToWhiterunOrigin",
+        "MF_SandboxAtWhiterunOrigin"
+      ]
+    }
+  ],
+
+  "placements": [
+    { "_": "Same spawn as It.16b first attempt: Bannered Mare interior. Travel destination is OUTSIDE the inn, OUTSIDE the city walls — needs two door transitions (Bannered Mare → Whiterun city interior → Whiterun marketplace exterior). If he makes it, the citizenship hypothesis is right.",
+      "base": "MF_CrossCellTravelerNpc", "cell": "Skyrim.esm:0x01605E",
+      "position": { "x": 0, "y": 0, "z": 0 } }
+  ]
+}
