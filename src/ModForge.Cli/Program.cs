@@ -929,6 +929,7 @@ internal static class Program
         const uint UseMagicTemplateId = 0x0504F5;  // Skyrim.esm: editorId "UseMagic"  — 11 active slots (2-12)
         const uint PatrolTemplateId   = 0x017723;  // Skyrim.esm: editorId "Patrol"    —  6 slots
         const uint FollowTemplateId   = 0x019B2C;  // Skyrim.esm: editorId "Follow"    —  6 slots
+        const uint EscortTemplateId   = 0x023B73;  // Skyrim.esm: editorId "Escort"    — 15 slots (9 active)
         var skyrimEsm = ModKey.FromNameAndExtension("Skyrim.esm");
 
         // Some templates' SingleRef slot 0 points at a PLACEMENT created later (the placement loop
@@ -937,6 +938,10 @@ internal static class Program
         // register their editorIds, emit each as a PackageTargetSpecificReference. Used by Patrol
         // ("Patrol Start", slot 0) and Follow ("Target to Follow", slot 0).
         var deferredTargetWires = new List<(IPackage Pack, sbyte Slot, string SlotName, string Ed, string Ref)>();
+        // Same deferred problem for PackageDataLocation slots that point at an in-spec placement
+        // (Escort "Destination", slot 3 — naturally an authored marker created in the placement loop
+        // below). Collected here, resolved after placements register via MakeLocationSlot.
+        var deferredLocationWires = new List<(IPackage Pack, sbyte Slot, string SlotName, string Ed, string Ref, uint Radius)>();
 
         // Build a PackageDataLocation: an authored placed-ref → LocationTarget anchored at that
         // ref, else LocationFallback(NearSelf) — anchors at the actor's current position with no
@@ -1123,9 +1128,32 @@ internal static class Program
                 pack.Data[6] = new PackageDataBool  { Name = "Ride Horse?", Data = fo.RideHorse ?? false };
                 pack.Data[8] = new PackageDataBool  { Name = "Need LOS?", Data = fo.NeedLineOfSight ?? false };
             }
+            else if (tfk.ID == EscortTemplateId)
+            {
+                // Escort slots (9 active of 15): 11 Target to Escort (deferred SingleRef — who the NPC
+                // leads; defaults to the player 0x000014, like Follow), 2 Number of Followers (int),
+                // 3 Destination (PackageDataLocation — deferred so it can be an authored marker, REQUIRED),
+                // 4 Distance to Wait for Follower(s) (float), 5 Follower Min Distance, 6 Follower Max
+                // Distance, 13 Ride Horse?, 15 PreferPreferredPath?, 17 Run If Behind Distance.
+                // Escort = the NPC LEADS the escorted target to the destination, pausing if they lag past
+                // "Distance to Wait". The dual of Follow: here the NPC walks ahead, the target tags along.
+                var es = pk.Escort;
+                var tgt = string.IsNullOrWhiteSpace(es.Target) ? "Skyrim.esm:0x000014" : es.Target;
+                deferredTargetWires.Add((pack, 11, "Target to Escort", pk.EditorId, tgt));
+                if (string.IsNullOrWhiteSpace(es.Destination))
+                    Console.WriteLine($"  ! package '{pk.EditorId}' escort: no `destination` ref — Escort will fall back to NearSelf (NPC won't lead anywhere)");
+                deferredLocationWires.Add((pack, 3, "Destination", pk.EditorId, es.Destination, es.Radius));
+                pack.Data[2]  = new PackageDataInt   { Name = "Number of Followers:",            Data = es.NumberOfFollowers ?? 1u };
+                pack.Data[4]  = new PackageDataFloat { Name = "Distance to Wait for Follower(s):", Data = es.WaitDistance ?? 512f };
+                pack.Data[5]  = new PackageDataFloat { Name = "Follower Min Distance:",          Data = es.FollowerMinDistance ?? 120f };
+                pack.Data[6]  = new PackageDataFloat { Name = "Follower Max Distance:",          Data = es.FollowerMaxDistance ?? 256f };
+                pack.Data[13] = new PackageDataBool  { Name = "Ride Horse?",                     Data = es.RideHorse ?? false };
+                pack.Data[15] = new PackageDataBool  { Name = "PreferPreferredPath?",            Data = es.PreferPreferredPath ?? false };
+                pack.Data[17] = new PackageDataFloat { Name = "Run If Behind Distance",          Data = es.RunIfBehindDistance ?? 500f };
+            }
             else
             {
-                Console.WriteLine($"  ! package '{pk.EditorId}': template {tfk} is not yet supported (known: sandbox=0x01C254, travel=0x016FAA, usemagic=0x0504F5, patrol=0x017723, follow=0x019B2C) — emitting package with no Data overrides; template defaults apply");
+                Console.WriteLine($"  ! package '{pk.EditorId}': template {tfk} is not yet supported (known: sandbox=0x01C254, travel=0x016FAA, usemagic=0x0504F5, patrol=0x017723, follow=0x019B2C, escort=0x023B73) — emitting package with no Data overrides; template defaults apply");
             }
         }
 
@@ -1287,6 +1315,13 @@ internal static class Program
         int placed = 0, vanillaCells = 0;
         // editorId → the placed REFR/ACHR, for wiring linkedRefs / patrol-start after all exist.
         var placementsByEd = new Dictionary<string, IPlaced>();
+        // EditorIds that a deferred wire (SingleRef target or Destination location) points at — these
+        // placements must be persistent so the engine doesn't drop the anchor the package depends on.
+        var deferredAnchorEds = new HashSet<string>(
+            deferredTargetWires.Select(w => w.Ref)
+                .Concat(deferredLocationWires.Select(w => w.Ref))
+                .Where(r => !string.IsNullOrWhiteSpace(r) && !LooksExternalRef(r)),
+            StringComparer.OrdinalIgnoreCase);
         foreach (var pl in spec.Placements)
         {
             ICell? cell;
@@ -1337,7 +1372,12 @@ internal static class Program
                 placementsByEd[pl.EditorId] = placedRec;
             }
 
-            bool linkTarget = pl.LinkedRefs.Count > 0;
+            // A placement is a stable anchor that must persist across save/load if: it's an explicit
+            // persistent, it's a linkedRefs source, or another record's deferred wire points at it —
+            // a package SingleRef target (patrol start / follow / escort target) or a package
+            // Destination location. The engine can drop a temporary ref that something else links to.
+            bool linkTarget = pl.LinkedRefs.Count > 0
+                || (!string.IsNullOrWhiteSpace(pl.EditorId) && deferredAnchorEds.Contains(pl.EditorId));
             (pl.Persistent || linkTarget ? cell.Persistent : cell.Temporary).Add(placedRec);
             placed++;
         }
@@ -1383,6 +1423,11 @@ internal static class Program
             linksWired++;
             if (LooksExternalRef(refStr)) extLinks++;
         }
+
+        // Deferred PackageDataLocation slots (Escort "Destination") — resolved now that placements
+        // exist. MakeLocationSlot handles vanilla refs, in-spec placements, and the NearSelf fallback.
+        foreach (var (pack, slot, slotName, ed, refStr, radius) in deferredLocationWires)
+            pack.Data[slot] = MakeLocationSlot(slotName, $"package '{ed}' escort", refStr, radius);
 
         // Leveled-list entries + container contents (each references an item/npc by ref).
         foreach (var li in spec.LeveledItems)
@@ -1959,6 +2004,11 @@ internal static class Program
                 && string.IsNullOrWhiteSpace(pk.Patrol.Start))
                 problems.Add($"package '{pk.EditorId}' uses Patrol template but patrol.start is empty — NPC has no route and won't patrol");
             CheckRef(pk.Follow.Target,     $"package '{pk.EditorId}' follow.target");   // empty ⇒ defaults to the player
+            CheckRef(pk.Escort.Target,      $"package '{pk.EditorId}' escort.target");   // empty ⇒ defaults to the player
+            CheckRef(pk.Escort.Destination, $"package '{pk.EditorId}' escort.destination");
+            if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var etfk) && etfk.ID == 0x023B73
+                && string.IsNullOrWhiteSpace(pk.Escort.Destination))
+                problems.Add($"package '{pk.EditorId}' uses Escort template but escort.destination is empty — NPC won't lead anywhere (falls back to NearSelf)");
             // useMagic.spell is required only when the template is UseMagic — `Resolve`-style
             // template-id check is in Build, so here just warn for UseMagic-template packages.
             if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var tfk) && tfk.ID == 0x0504F5
@@ -2801,6 +2851,11 @@ internal sealed class PackageSpec
     // package targets); set it to an in-spec NPC placement to follow another actor. Companions,
     // summoned creatures, tag-alongs.
     public FollowSpec Follow { get; set; } = new();
+    // Escort-template inputs (apply when `template` is Skyrim.esm:0x023B73). The NPC LEADS the
+    // escorted `target` (defaults to the player) to `destination` (a location ref — vanilla marker
+    // or an in-spec placement), pausing to wait if they lag. The dual of Follow. Quest guides
+    // ("follow me, I'll take you there"), prisoner/VIP escorts, "show the player the way".
+    public EscortSpec Escort { get; set; } = new();
 }
 internal sealed class PackageScheduleSpec
 {
@@ -2932,6 +2987,31 @@ internal sealed class FollowSpec
     public bool? Accompany { get; set; }           // default true
     public bool? RideHorse { get; set; }           // default false
     public bool? NeedLineOfSight { get; set; }     // default false
+}
+// Escort-template (Skyrim.esm:0x023B73) data inputs. Slot indices on the template:
+//   11 Target to Escort (PackageDataTarget, SingleRef → PackageTargetSpecificReference; defaults to
+//      the player 0x000014) — who the NPC LEADS to the destination.
+//    3 Destination (PackageDataLocation — REQUIRED; vanilla ref or in-spec placement). Without it the
+//      package falls back to NearSelf and the NPC won't lead anywhere.
+//    2 Number of Followers (int, default 1)   4 Distance to Wait for Follower(s) (float, default 512)
+//    5 Follower Min Distance (float, default 120)   6 Follower Max Distance (float, default 256)
+//   13 Ride Horse? (bool, default false)   15 PreferPreferredPath? (bool, default false)
+//   17 Run If Behind Distance (float, default 500)
+// Escort is the DUAL of Follow: the NPC walks ahead toward the destination and the escorted target
+// tags along, with the NPC pausing if they fall past the wait distance. Same navmesh rules apply —
+// the destination must sit on reachable navmesh, and cross-cell escort needs the citizenship recipe.
+internal sealed class EscortSpec
+{
+    public string Target { get; set; } = "";          // ref → who to escort; empty ⇒ the player (Skyrim.esm:0x000014)
+    public string Destination { get; set; } = "";      // REQUIRED ref → where to lead them (vanilla marker or in-spec placement)
+    public uint Radius { get; set; } = 0;              // destination radius (0 = arrive at exact point)
+    public uint? NumberOfFollowers { get; set; }       // default 1
+    public float? WaitDistance { get; set; }           // default 512 (how far the target may lag before the NPC waits)
+    public float? FollowerMinDistance { get; set; }    // default 120
+    public float? FollowerMaxDistance { get; set; }    // default 256
+    public bool? RideHorse { get; set; }               // default false
+    public bool? PreferPreferredPath { get; set; }     // default false
+    public float? RunIfBehindDistance { get; set; }    // default 500
 }
 // Attach a compiled Papyrus script (by Scriptname) to a record (by editorId), with
 // typed properties. type ∈ int|float|bool|string|object; object resolves ObjectEditorId.

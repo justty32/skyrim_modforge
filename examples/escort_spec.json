@@ -1,0 +1,76 @@
+{
+  "pluginName": "ModForgeEscort.esp",
+  "esl": true,
+  "_": "It.22: an NPC that ESCORTS THE PLAYER to a destination via the Escort procedure template (Skyrim.esm:0x023B73) — the DUAL of It.21's Follow. Slot 11 'Target to Escort' = the player (0x000014, defaulted when omitted, exactly like Follow's slot 0). Slot 3 'Destination' is a PackageDataLocation pointing at the in-spec marker MF_EscortDest — this exercises the build's new DEFERRED-LOCATION wiring (a location slot that points at a placement created later in the placement loop, resolved after placements register, the same way patrol-start/follow-target SingleRefs are deferred). The NPC walks AHEAD toward the marker and pauses if the player lags past `waitDistance`; the player tags along behind. Both NPC and destination marker sit on the It.16b-confirmed walkable corridor of the Sleeping Giant Inn (cell 0x0133C6): the NPC at cell-local (0,0,0), the marker at the vanilla RiverwoodInnCenterMarker spot (-977.29, 9.08, 0) which It.16b proved a generated NPC can path to. Citizenship recipe (crimeFaction + town faction + unique) included so cross-door escort would work too. `coc RiverwoodSleepingGiantInn`, wait ~30-90s cold-start, then walk toward him — he should set off for the far marker, glancing back / waiting when you fall behind.",
+
+  "classes": [
+    {
+      "editorId": "MF_EscortClass",
+      "name": "ModForge Guide",
+      "healthWeight": 40, "magickaWeight": 20, "staminaWeight": 40,
+      "skillWeights": { "OneHanded": 80, "Block": 60, "HeavyArmor": 60, "Speech": 40 }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_EscortNpc",
+      "name": "ModForge Guide",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_EscortClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+      "unique": true,
+      "level": 10,
+      "autoCalcStats": true,
+      "aggression": "Aggressive",
+      "confidence": "Brave",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50,
+      "packages": [ "MF_EscortPlayer" ]
+    }
+  ],
+
+  "packages": [
+    {
+      "editorId": "MF_EscortPlayer",
+      "_": "Escort template. target omitted ⇒ escorts the player (Skyrim.esm:0x000014). destination = the MF_EscortDest marker placement (resolved via the deferred-location path). waitDistance = how far the player may lag before the NPC pauses; lowered from the 512 default so he waits more visibly in the cramped inn. accompany-style leading: he walks ahead, you follow.",
+      "template": "Skyrim.esm:0x023B73",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [
+        "HellosToPlayer", "ObserveCombatBehavior",
+        "ReactionToPlayerActions", "AllowIdleChatter", "WorldInteractions"
+      ],
+      "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 0, "dayOfWeek": "Any" },
+      "escort": {
+        "destination": "MF_EscortDest",
+        "radius": 0,
+        "numberOfFollowers": 1,
+        "waitDistance": 300,
+        "followerMinDistance": 120,
+        "followerMaxDistance": 256,
+        "rideHorse": false,
+        "preferPreferredPath": false,
+        "runIfBehindDistance": 500
+      }
+    }
+  ],
+
+  "placements": [
+    {
+      "_": "The guide, spawned at the It.16b-confirmed NPC spawn (0,0,0) in the Sleeping Giant Inn.",
+      "base": "MF_EscortNpc",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": 0, "y": 0, "z": 0 }
+    },
+    {
+      "_": "Escort destination marker at the vanilla RiverwoodInnCenterMarker position (-977.29, 9.08, 0) — It.16b confirmed a generated NPC can walk here, so it is on reachable navmesh. An XMarkerHeading; auto-persistent because the package's deferred Destination location links to it.",
+      "editorId": "MF_EscortDest",
+      "base": "Skyrim.esm:0x000034",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": -977.29, "y": 9.08, "z": 0 }
+    }
+  ]
+}

@@ -1021,6 +1021,46 @@ call; the spec IS the contract.)
       player-toggleable follower.) Five procedure templates now in-game-confirmed: Sandbox, Travel,
       UseMagic, Patrol, Follow.
 
+- [ ] **It.22 — Escort procedure template (Skyrim.esm:0x023B73) — STRUCTURAL DONE, awaiting in-game.**
+      The 6th procedure template and the **dual of Follow**: the NPC walks AHEAD and LEADS an escorted
+      target (defaults to the player) to a destination, pausing if they lag past a wait distance.
+      "Follow me, I'll take you there" — quest guides, prisoner/VIP escorts.
+
+      **Escort slot schema** (`packagediag` on the template, 9 active of 15 slots): `[11]` Target to
+      Escort (SingleRef → defaults to player `000014`, like Follow's slot 0), `[3]` **Destination
+      (PackageDataLocation)**, `[2]` Number of Followers (int 1), `[4]` Distance to Wait for
+      Follower(s) (float 512), `[5]` Follower Min Distance (120), `[6]` Follower Max Distance (256),
+      `[13]` Ride Horse?, `[15]` PreferPreferredPath?, `[17]` Run If Behind Distance (500).
+
+      **New build mechanic — deferred LOCATION wiring.** The Destination is a `PackageDataLocation`,
+      and naturally points at an authored marker created later in the placement loop. The existing
+      `deferredTargetWires` only handles SingleRef `PackageDataTarget`s, so I added a parallel
+      `deferredLocationWires` (pack, slot, slotName, editorId, ref, radius), resolved after placements
+      register via the existing `MakeLocationSlot` helper (so it transparently handles vanilla refs,
+      in-spec placements, and the NearSelf fallback). Slot 11 (Target) reuses `deferredTargetWires`.
+
+      **New build mechanic — auto-persist deferred anchors.** A package location/target pointing at a
+      *temporary* ref can be dropped by the engine. Built a `deferredAnchorEds` set (every in-spec
+      editorId referenced by a deferred wire) before the placement loop; any placement in it is forced
+      Persistent — alongside the existing linkedRefs-source rule. The escort destination marker (no
+      linkedRefs of its own) thus correctly lands in the cell's persistent block.
+
+      **Spec/Build:** `PackageSpec.escort` (EscortSpec: `target`/`destination`/`radius`/
+      `numberOfFollowers`/`waitDistance`/`followerMin/MaxDistance`/`rideHorse`/`preferPreferredPath`/
+      `runIfBehindDistance`). `else if (tfk.ID == EscortTemplateId)` branch fills the immediate slots,
+      defers slot 11 (target) + slot 3 (destination). validate: `CheckRef(escort.target/destination)`
+      + Escort-template-without-destination error.
+
+      **Verified structurally:** `packagediag` on the generated package shows all 9 slots correct —
+      slot 3 Destination → the MF_EscortDest marker, slot 11 Target → player `000014`, all
+      floats/int/bools at the authored values; `dump` confirms the marker is in the cell's persistent
+      block (persistent=1/temporary=1) and the NPC temporary; validate clean. **Example
+      `examples/escort_spec.json`** → `ModForgeEscort.esp` → `~/skyrim_mods/ModForgeEscort.zip`.
+      `MF_EscortNpc` (citizenship recipe) at the It.16b inn spawn (0,0,0); destination marker at the
+      vanilla RiverwoodInnCenterMarker spot (-977.29, 9.08, 0) — It.16b-proven reachable navmesh.
+      **In-game expectation:** `coc RiverwoodSleepingGiantInn`, wait ~30–90s cold-start, walk toward
+      him — he should set off for the far marker and pause/glance back when you fall past ~300 units.
+
 ## Build / test
 ```
 cd /home/lorkhan/repo/ModForge
