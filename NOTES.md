@@ -877,6 +877,55 @@ call; the spec IS the contract.)
       [Candlelight `Skyrim.esm:0x043324`]). Package `MF_UseMagicCandlelight` with spell=Candlelight,
       no target (defaults to Self), cooldown 8-12s, numToCastMax=1000, schedule
       durationInMinutes=1440. Placed at the It.9 Tamriel wilderness coords.
+- [ ] **It.19 — Patrol procedure template (Skyrim.esm:0x017723) — STRUCTURAL DONE, awaiting in-game.**
+      The "guard walks a beat" package, and the first one whose behaviour lives in PLACED-REF
+      topology (a linked-reference chain of markers) rather than the package's own Data slots.
+
+      **Patrol slot schema** (`packagediag Skyrim.esm 0x017723`): 6 slots — `[0]` Patrol Start
+      (PackageDataTarget, SingleRef), `[1]` Patrol Radius (float 150), `[2]` Repeatable?,
+      `[4]` Start At Nearest?, `[6]` Ride Horse if Possible?, `[8]` Static Pathing?. Two vanilla
+      patterns for slot 0 (found via `pkgsbytemplate`): `PackageTargetLinkedReference` (route via
+      the NPC's own linked-ref — needs CK plumbing we can't author) vs.
+      `PackageTargetSpecificReference(<marker REFR>)` (GuardRiftenBarracksPatrol 0x10DE27) — the
+      latter is what we emit. The ROUTE itself isn't in the package: it's the **linked-reference
+      chain off the start marker** — each marker REFR has a Linked Ref (null keyword = engine's
+      default link) to the next; loop by linking the last back to the first.
+
+      **Spec/Build:** `PackageSpec.patrol` (PatrolSpec: `start` REQUIRED ref → a marker placement,
+      `radius`/`repeatable`/`startAtNearest`/`rideHorse`/`staticPathing`). NEW: placements gained
+      an optional `editorId` (names a REFR/ACHR so other refs can target it) + `linkedRefs`
+      (`[{target, keyword?}]`). Build wires Patrol slot 0 to `PackageTargetSpecificReference`.
+      **Mutagen:** `LinkedReferences{ Reference: IFormLink<IPlacedGetter>, KeywordOrReference:
+      IFormLink<IKeywordLinkedReferenceGetter> }`; the list is `ExtendedList<LinkedReferences>`
+      (get-only, `.Add()` directly) and lives on `IPlacedObject`/`IPlacedNpc` SEPARATELY — NOT on
+      the shared `IPlacedSimple` — so cast to the concrete type. PlacedObject/PlacedNpc ARE
+      `IMajorRecord`s, so a named placement registers into `formKeyByEd`/`recordsByEd` like any
+      record. Linked-ref sources are auto-forced **persistent** (a temporary ref another ref
+      anchors to could be dropped by the engine).
+
+      **Build ordering gotcha (the one real wrinkle):** the PACK loop runs BEFORE the placement
+      loop, but Patrol's `start` points at a placement created later. So slot-0 wiring is
+      **deferred** — the PACK loop collects `(pack, editorId, startRef)` into `patrolStartWires`;
+      after the placement loop registers all marker editorIds, two follow-up passes run: (1) wire
+      each placement's `linkedRefs` (done after ALL placements exist so a marker can link forward
+      to a later-defined one, and the last back to the first), (2) resolve the deferred patrol
+      starts. This also means named placements are now referenceable by Travel/UseMagic/Sandbox
+      location slots too (previously those could only point at vanilla refs).
+
+      **validate:** registers placement editorIds (uniqueness), checks `patrol.start` +
+      `linkedRefs.target`/`keyword` refs, errors on Patrol-template-without-start and
+      linkedRefs-without-editorId. **dump:** placed obj/npc lines now print their `linkedRef ->`
+      chain. Verified: `packagediag` shows all 6 slots correct (slot 0 → MF_PatrolMarker1),
+      `dump` shows the m1→m2→m3→m1 loop; negative test catches empty start + bad linkedRef target;
+      sample_spec regression clean.
+
+      **Example `examples/patrol_spec.json`** → `ModForgePatrol.esp` → `~/skyrim_mods/ModForgePatrol.zip`.
+      `MF_PatrolGuard` (citizenship + AIData Aggressive/Brave, level 15 autoCalc) patrols a triangle
+      of three XMarkerHeading (`Skyrim.esm:0x000034`) markers ~300 units apart at the It.9 Tamriel
+      wilderness coords, looped, preferredSpeed Walk. **In-game expectation:** `coc` near, watch the
+      guard pace m1→m2→m3→m1 forever. **If he stands still:** likely the markers landed off-navmesh
+      (wilderness terrain) — the SpecificReference + linked-ref topology is structurally identical to
+      vanilla GuardRiftenBarracksPatrol, so a no-walk result points at marker placement, not PACK data.
 
 ## Build / test
 ```

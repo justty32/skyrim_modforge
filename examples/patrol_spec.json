@@ -1,0 +1,81 @@
+{
+  "pluginName": "ModForgePatrol.esp",
+  "esl": true,
+  "_": "It.19: NPC walks a guard-beat patrol between three marker points via the Patrol procedure template (Skyrim.esm:0x017723). The route is the LINKED-REFERENCE chain off the start marker: m1 -> m2 -> m3 -> m1 (looped). Patrol slot 0 (Patrol Start) is a PackageTargetSpecificReference to m1; the engine follows each marker's default (null-keyword) linked ref to the next. Markers are XMarkerHeading (Skyrim.esm:0x000034) — invisible nav points. Placed at the It.9 Tamriel-wilderness confirmed-working coords so the tester can `coc` near and watch the NPC pace the triangle.",
+
+  "npcs": [
+    {
+      "editorId": "MF_PatrolGuard",
+      "name": "ModForge Patrol Guard",
+      "race": "Skyrim.esm:0x013746",
+      "class": "Skyrim.esm:0x01326B",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+      "unique": true,
+      "level": 15,
+      "autoCalcStats": true,
+      "aggression": "Aggressive",
+      "confidence": "Brave",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50,
+      "packages": [ "MF_PatrolBeat" ]
+    }
+  ],
+
+  "packages": [
+    {
+      "editorId": "MF_PatrolBeat",
+      "_": "Patrol template. `start` points at the m1 marker placement; the route is the markers' linkedRefs chain (looped). preferredSpeed Walk = an unhurried guard pace. repeatable=true keeps the NPC cycling the loop indefinitely.",
+      "template": "Skyrim.esm:0x017723",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [
+        "HellosToPlayer", "AllowIdleChatter",
+        "ObserveCombatBehavior", "ReactionToPlayerActions"
+      ],
+      "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 0, "dayOfWeek": "Any" },
+      "patrol": {
+        "start": "MF_PatrolMarker1",
+        "radius": 150,
+        "repeatable": true,
+        "startAtNearest": true,
+        "rideHorse": false,
+        "staticPathing": false
+      }
+    }
+  ],
+
+  "placements": [
+    {
+      "_": "The guard, spawned at marker 1. startAtNearest=true means he'll begin the route from whichever marker is closest, so spawning on m1 is fine.",
+      "base": "MF_PatrolGuard",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": -90176.8, "y": 18097.19, "z": -3725.44 }
+    },
+    {
+      "_": "Marker 1 (route start). linkedRef -> marker 2 (null keyword = the default link the patrol engine follows). Auto-forced persistent because it's a linked-ref source.",
+      "editorId": "MF_PatrolMarker1",
+      "base": "Skyrim.esm:0x000034",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": -90176.8, "y": 18097.19, "z": -3725.44 },
+      "linkedRefs": [ { "target": "MF_PatrolMarker2" } ]
+    },
+    {
+      "_": "Marker 2 -> marker 3.",
+      "editorId": "MF_PatrolMarker2",
+      "base": "Skyrim.esm:0x000034",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": -89876.8, "y": 18097.19, "z": -3725.44 },
+      "linkedRefs": [ { "target": "MF_PatrolMarker3" } ]
+    },
+    {
+      "_": "Marker 3 -> marker 1 (closes the loop).",
+      "editorId": "MF_PatrolMarker3",
+      "base": "Skyrim.esm:0x000034",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": -90026.8, "y": 18347.19, "z": -3725.44 },
+      "linkedRefs": [ { "target": "MF_PatrolMarker1" } ]
+    }
+  ]
+}

@@ -918,7 +918,13 @@ internal static class Program
         const uint SandboxTemplateId  = 0x01C254;  // Skyrim.esm: editorId "Sandbox"   — 12 slots
         const uint TravelTemplateId   = 0x016FAA;  // Skyrim.esm: editorId "Travel"    —  3 slots
         const uint UseMagicTemplateId = 0x0504F5;  // Skyrim.esm: editorId "UseMagic"  — 11 active slots (2-12)
+        const uint PatrolTemplateId   = 0x017723;  // Skyrim.esm: editorId "Patrol"    —  6 slots
         var skyrimEsm = ModKey.FromNameAndExtension("Skyrim.esm");
+
+        // Patrol slot 0 ("Patrol Start") points at a marker PLACEMENT, which is created later (the
+        // placement loop runs after this PACK loop). Defer that one ref-wiring: collect (package,
+        // editorId, startRef) here, resolve after placements register their editorIds.
+        var patrolStartWires = new List<(IPackage Pack, string Ed, string StartRef)>();
 
         // Build a PackageDataLocation: an authored placed-ref → LocationTarget anchored at that
         // ref, else LocationFallback(NearSelf) — anchors at the actor's current position with no
@@ -1073,9 +1079,26 @@ internal static class Program
                 UInt (11, "NumToCastMax",    um.NumToCastMax,    1u);
                 UBool(12, "DualCast",        um.DualCast,        false);
             }
+            else if (tfk.ID == PatrolTemplateId)
+            {
+                // Patrol slots: 0 Patrol Start (deferred — points at a marker placement created in
+                // the placement loop below), 1 Patrol Radius (float), 2 Repeatable?, 4 Start At
+                // Nearest?, 6 Ride Horse if Possible?, 8 Static Pathing?. The route itself is the
+                // linkedRefs chain off the start marker, wired after placements.
+                var pt = pk.Patrol;
+                if (string.IsNullOrWhiteSpace(pt.Start))
+                    Console.WriteLine($"  ! package '{pk.EditorId}' patrol: no `start` ref — NPC has no route and won't patrol");
+                else
+                    patrolStartWires.Add((pack, pk.EditorId, pt.Start));
+                pack.Data[1] = new PackageDataFloat { Name = "Patrol Radius",            Data = pt.Radius ?? 150f };
+                pack.Data[2] = new PackageDataBool  { Name = "Repeatable?",              Data = pt.Repeatable ?? true };
+                pack.Data[4] = new PackageDataBool  { Name = "Start At Nearest?",        Data = pt.StartAtNearest ?? true };
+                pack.Data[6] = new PackageDataBool  { Name = "Ride Horse if Possible?",  Data = pt.RideHorse ?? false };
+                pack.Data[8] = new PackageDataBool  { Name = "Static Pathing?",          Data = pt.StaticPathing ?? false };
+            }
             else
             {
-                Console.WriteLine($"  ! package '{pk.EditorId}': template {tfk} is not yet supported (known: sandbox=0x01C254, travel=0x016FAA, usemagic=0x0504F5) — emitting package with no Data overrides; template defaults apply");
+                Console.WriteLine($"  ! package '{pk.EditorId}': template {tfk} is not yet supported (known: sandbox=0x01C254, travel=0x016FAA, usemagic=0x0504F5, patrol=0x017723) — emitting package with no Data overrides; template defaults apply");
             }
         }
 
@@ -1235,6 +1258,8 @@ internal static class Program
         }
 
         int placed = 0, vanillaCells = 0;
+        // editorId → the placed REFR/ACHR, for wiring linkedRefs / patrol-start after all exist.
+        var placementsByEd = new Dictionary<string, IPlaced>();
         foreach (var pl in spec.Placements)
         {
             ICell? cell;
@@ -1273,8 +1298,61 @@ internal static class Program
             if (isNpc) { var a = new PlacedNpc(mod); a.Base.SetTo(baseFk); a.Placement = placement; placedRec = a; }
             else       { var o = new PlacedObject(mod); o.Base.SetTo(baseFk); o.Placement = placement; placedRec = o; }
 
-            (pl.Persistent ? cell.Persistent : cell.Temporary).Add(placedRec);
+            // Named placements register so other refs (patrol start, linkedRefs target) can find
+            // them. A placement that's a linkedRefs *target* must persist across save/load to be a
+            // stable anchor, so we force it Persistent (markers are cheap; this avoids the engine
+            // dropping a temporary ref another ref points at).
+            if (!string.IsNullOrWhiteSpace(pl.EditorId))
+            {
+                placedRec.EditorID = pl.EditorId;
+                formKeyByEd[pl.EditorId] = placedRec.FormKey;
+                recordsByEd[pl.EditorId] = (IMajorRecord)placedRec;
+                placementsByEd[pl.EditorId] = placedRec;
+            }
+
+            bool linkTarget = pl.LinkedRefs.Count > 0;
+            (pl.Persistent || linkTarget ? cell.Persistent : cell.Temporary).Add(placedRec);
             placed++;
+        }
+
+        // Linked References between placements (the Patrol route, etc.). Done after ALL placements
+        // exist so a marker can link forward to one defined later in the list (and the last back to
+        // the first to loop). null keyword = the default link the patrol engine follows.
+        foreach (var pl in spec.Placements)
+        {
+            if (pl.LinkedRefs.Count == 0 || string.IsNullOrWhiteSpace(pl.EditorId)) continue;
+            if (!placementsByEd.TryGetValue(pl.EditorId, out var src)) continue;
+            // LinkedReferences (XLKR) lives on REFR (IPlacedObject) and ACHR (IPlacedNpc) separately
+            // — no shared settable interface — so pick the concrete list.
+            var list = (src as IPlacedObject)?.LinkedReferences ?? (src as IPlacedNpc)?.LinkedReferences;
+            if (list is null) continue;
+            foreach (var lr in pl.LinkedRefs)
+            {
+                if (!TryResolveRef(lr.Target, formKeyByEd, out var tgtFk))
+                { Console.WriteLine($"  ! placement '{pl.EditorId}' linkedRef target '{lr.Target}' unresolved — skipped"); continue; }
+                var link = new LinkedReferences();
+                link.Reference.SetTo(new FormLink<IPlacedGetter>(tgtFk));
+                if (!string.IsNullOrWhiteSpace(lr.Keyword) && TryResolveRef(lr.Keyword, formKeyByEd, out var kwFk))
+                    link.KeywordOrReference.SetTo(new FormLink<IKeywordLinkedReferenceGetter>(kwFk));
+                list.Add(link);
+                linksWired++;
+                if (LooksExternalRef(lr.Target)) extLinks++;
+            }
+        }
+
+        // Patrol-start targets (deferred from the PACK loop — they point at marker placements).
+        foreach (var (pack, ed, startRef) in patrolStartWires)
+        {
+            if (!TryResolveRef(startRef, formKeyByEd, out var startFk))
+            { Console.WriteLine($"  ! package '{ed}' patrol start '{startRef}' unresolved — NPC won't patrol"); continue; }
+            pack.Data[0] = new PackageDataTarget
+            {
+                Name = "Patrol Start",
+                Type = PackageDataTarget.Types.SingleRef,
+                Target = new PackageTargetSpecificReference { Reference = new FormLink<IPlacedGetter>(startFk) },
+            };
+            linksWired++;
+            if (LooksExternalRef(startRef)) extLinks++;
         }
 
         // Leveled-list entries + container contents (each references an item/npc by ref).
@@ -1632,6 +1710,7 @@ internal static class Program
         foreach (var cl in spec.Classes) Reg(cl.EditorId, "class");
         foreach (var pk in spec.Packages) Reg(pk.EditorId, "package");
         foreach (var cs in spec.CombatStyles) Reg(cs.EditorId, "combatStyle");
+        foreach (var pl in spec.Placements) if (!string.IsNullOrWhiteSpace(pl.EditorId)) Reg(pl.EditorId, "placement");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
         void CheckRef(string r, string what)
@@ -1761,6 +1840,14 @@ internal static class Program
             else if (!cellIds.Contains(pl.Cell)) problems.Add($"placement references unknown cell '{pl.Cell}' (in-spec cell editorId or <master>:0xFORMID)");
             if (!string.IsNullOrEmpty(pl.Kind) && !pl.Kind.Equals("npc", StringComparison.OrdinalIgnoreCase) && !pl.Kind.Equals("object", StringComparison.OrdinalIgnoreCase))
                 problems.Add($"placement kind '{pl.Kind}' invalid (npc|object)");
+            foreach (var lr in pl.LinkedRefs)
+            {
+                if (string.IsNullOrWhiteSpace(lr.Target)) problems.Add($"placement '{pl.EditorId}' linkedRef has empty target");
+                else CheckRef(lr.Target, $"placement '{pl.EditorId}' linkedRef target");
+                CheckRef(lr.Keyword, $"placement '{pl.EditorId}' linkedRef keyword");
+            }
+            if (pl.LinkedRefs.Count > 0 && string.IsNullOrWhiteSpace(pl.EditorId))
+                problems.Add("placement has linkedRefs but no editorId (a linked-ref source must be named so the route can be wired)");
         }
 
         foreach (var li in spec.LeveledItems)
@@ -1837,6 +1924,10 @@ internal static class Program
             CheckRef(pk.UseMagic.Location, $"package '{pk.EditorId}' useMagic.location");
             CheckRef(pk.UseMagic.Target,   $"package '{pk.EditorId}' useMagic.target");
             CheckRef(pk.UseMagic.Spell,    $"package '{pk.EditorId}' useMagic.spell");
+            CheckRef(pk.Patrol.Start,      $"package '{pk.EditorId}' patrol.start");
+            if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var ptfk) && ptfk.ID == 0x017723
+                && string.IsNullOrWhiteSpace(pk.Patrol.Start))
+                problems.Add($"package '{pk.EditorId}' uses Patrol template but patrol.start is empty — NPC has no route and won't patrol");
             // useMagic.spell is required only when the template is UseMagic — `Resolve`-style
             // template-id check is in Build, so here just warn for UseMagic-template packages.
             if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var tfk) && tfk.ID == 0x0504F5
@@ -2336,10 +2427,16 @@ internal static class Program
                     + $" persistent={cg.Persistent.Count} temporary={cg.Temporary.Count}");
 
             if (r is IPlacedNpcGetter pnpc && pnpc.Placement is { } pp)
+            {
                 Console.WriteLine($"      placed npc -> base {Ref(pnpc.Base.FormKey)} @ ({pp.Position.X:0.#}, {pp.Position.Y:0.#}, {pp.Position.Z:0.#})");
+                foreach (var lr in pnpc.LinkedReferences) Console.WriteLine($"        linkedRef -> {Ref(lr.Reference.FormKey)}{(lr.KeywordOrReference.IsNull ? "" : $" (keyword {lr.KeywordOrReference.FormKey})")}");
+            }
 
             if (r is IPlacedObjectGetter pobj && pobj.Placement is { } op)
+            {
                 Console.WriteLine($"      placed obj -> base {Ref(pobj.Base.FormKey)} @ ({op.Position.X:0.#}, {op.Position.Y:0.#}, {op.Position.Z:0.#})");
+                foreach (var lr in pobj.LinkedReferences) Console.WriteLine($"        linkedRef -> {Ref(lr.Reference.FormKey)}{(lr.KeywordOrReference.IsNull ? "" : $" (keyword {lr.KeywordOrReference.FormKey})")}");
+            }
 
             if (r is ILeveledItemGetter lvli && lvli.Entries is { Count: > 0 } lies)
                 foreach (var e in lies) if (e.Data is { } d) Console.WriteLine($"      lvli entry -> {Ref(d.Reference.FormKey)} (lvl {d.Level} x{d.Count})");
@@ -2630,6 +2727,11 @@ internal sealed class PackageSpec
     // enum — e.g. TargetActorEffects = ranged offensive) at `target`. Use for priests at altars,
     // mages casting buffs/wards on a schedule, etc. NPC must HAVE a matching spell in its spells.
     public UseMagicSpec UseMagic { get; set; } = new();
+    // Patrol-template inputs (apply when `template` is Skyrim.esm:0x017723). `start` is the first
+    // patrol-marker placement (a ref to an in-spec `placements[]` entry that has an `editorId`);
+    // the NPC follows that marker's `linkedRefs` chain to the next marker, etc. Loop the route by
+    // linking the last marker back to the first. Use for "guard walks this beat" behaviour.
+    public PatrolSpec Patrol { get; set; } = new();
 }
 internal sealed class PackageScheduleSpec
 {
@@ -2727,6 +2829,25 @@ internal sealed class UseMagicSpec
     public uint? NumToCastMax { get; set; }
     public bool? DualCast { get; set; }
 }
+// Patrol-template (Skyrim.esm:0x017723) data inputs. Slot indices on the template:
+//   0 Patrol Start (PackageDataTarget, SingleRef → PackageTargetSpecificReference to a marker REFR)
+//   1 Patrol Radius (float, default 150)   2 Repeatable? (bool, default true)
+//   4 Start At Nearest? (bool, default true)   6 Ride Horse if Possible? (bool, default false)
+//   8 Static Pathing? (bool, default false)
+// The route is the LINKED-REFERENCE chain off the start marker: each marker placement's
+// `linkedRefs` points to the next marker (null keyword = the default patrol link the engine
+// follows); link the last back to the first to loop. `start` is REQUIRED — without it the NPC
+// has no route and won't patrol. Vanilla concrete patrols use either PackageTargetSpecificReference
+// (a placed marker, which we emit) or PackageTargetLinkedReference (the NPC's own linked-ref).
+internal sealed class PatrolSpec
+{
+    public string Start { get; set; } = "";        // REQUIRED ref → a placement editorId (the first marker)
+    public float? Radius { get; set; }             // default 150
+    public bool? Repeatable { get; set; }          // default true (loop the route)
+    public bool? StartAtNearest { get; set; }      // default true (begin at the closest marker)
+    public bool? RideHorse { get; set; }           // default false
+    public bool? StaticPathing { get; set; }       // default false
+}
 // Attach a compiled Papyrus script (by Scriptname) to a record (by editorId), with
 // typed properties. type ∈ int|float|bool|string|object; object resolves ObjectEditorId.
 internal sealed class ScriptAttachSpec
@@ -2764,12 +2885,25 @@ internal sealed class Vec3 { public float X { get; set; } public float Y { get; 
 internal sealed class PlacementSpec
 {
     public string Base { get; set; } = "";
+    public string EditorId { get; set; } = "";     // optional: names this REFR/ACHR so other refs can target it
+                                                    // (patrol start, linkedRefs target). Must be unique if set.
     public string Cell { get; set; } = "";        // interior: in-spec editorId OR <master>:0xFORMID
     public string Worldspace { get; set; } = "";   // exterior: worldspace ref; position is world-space
     public string Kind { get; set; } = "";
     public Vec3 Position { get; set; } = new();
     public Vec3 Rotation { get; set; } = new();
     public bool Persistent { get; set; }
+    // Linked References on this placed ref. Each points to another placement (by its editorId) or
+    // a vanilla placed ref, optionally tagged with a keyword. With no keyword, the link is the
+    // engine's "default" linked ref — which is what a Patrol route follows from marker to marker.
+    public List<LinkedRefSpec> LinkedRefs { get; set; } = new();
+}
+// One Linked Reference: `target` is the linked placed ref (a placement editorId or external ref);
+// `keyword` (optional ref → KYWD) tags the link. Empty keyword = the null/default link.
+internal sealed class LinkedRefSpec
+{
+    public string Target { get; set; } = "";
+    public string Keyword { get; set; } = "";
 }
 // One entry in a leveled list: a ref (item or npc) that appears at >= Level, Count copies.
 internal sealed class LeveledEntrySpec { public string Reference { get; set; } = ""; public short Level { get; set; } = 1; public short Count { get; set; } = 1; }
