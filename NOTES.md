@@ -982,7 +982,7 @@ call; the spec IS the contract.)
       `equipType=EitherHand` was the needed piece. ModForge can now author wholly-original combat
       magic (not just wire vanilla forms) onto a generated NPC. **Custom-content magic is complete.**
 
-- [ ] **It.21 — Follow procedure template (Skyrim.esm:0x019B2C) — STRUCTURAL DONE, awaiting in-game.**
+- [x] **It.21 — Follow procedure template (Skyrim.esm:0x019B2C) — IN-GAME CONFIRMED (2026-05-29).**
       The 5th procedure template — "NPC physically follows the player (or another actor)". Same
       SingleRef-slot-0 shape as Patrol, so the deferred-wiring was **generalized**: the old
       `patrolStartWires` is now `deferredTargetWires` (package, slot, slotName, editorId, ref),
@@ -1011,6 +1011,15 @@ call; the spec IS the contract.)
       inn door / city gates cross-cell, per It.16c) placed in the Sleeping Giant Inn at the It.16b
       spawn. **In-game expectation:** `coc RiverwoodSleepingGiantInn`, wait ~30–90s cold-start, walk
       around / out the door — she trails you, closing to ~128 and not lagging past ~256.
+
+      **IN-GAME RESULT (2026-05-29): PASSED — and stronger than expected.** She trails the player,
+      AND **persists across FAST TRAVEL** (followed to a distant fast-travel destination). That's full
+      vanilla-companion movement behaviour: the engine fast-travels actors running a Follow-the-player
+      package along with the player. So `Follow` (slot 0 = player) + the citizenship recipe is enough
+      for a generated NPC to behave as a tag-along companion — no managing quest needed for the
+      *movement* layer. (Hire/dismiss dialogue + follow faction would only be needed to make it a
+      player-toggleable follower.) Five procedure templates now in-game-confirmed: Sandbox, Travel,
+      UseMagic, Patrol, Follow.
 
 ## Build / test
 ```
