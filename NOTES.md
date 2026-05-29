@@ -927,7 +927,7 @@ call; the spec IS the contract.)
       (wilderness terrain) — the SpecificReference + linked-ref topology is structurally identical to
       vanilla GuardRiftenBarracksPatrol, so a no-walk result points at marker placement, not PACK data.
 
-- [ ] **It.20 — fully-custom Aimed projectile spell, NPC-cast in combat — STRUCTURAL DONE, awaiting in-game.**
+- [x] **It.20 — fully-custom Aimed projectile spell, NPC-cast in combat — IN-GAME CONFIRMED (2026-05-29).**
       The capstone joining It.12 (custom MGEF authoring — confirmed only for self-cast/potions) with
       It.17 (NPC combat-casting via spells[]+combatStyle+AIData). It.12 explicitly left "Aimed damage
       spells need a projectile + casting/hit art (ART/PROJ)" as FUTURE; this closes it AND proves a
@@ -957,6 +957,23 @@ call; the spec IS the contract.)
       coords. **In-game expectation:** `coc` near, `placeatme 0x0009AE36` (Wolf) → she casts a visible
       fire bolt at it that travels + damages. **If she melees/no projectile:** check the spell's equip
       type took (dump `equip=`) and the MGEF projectile (mgefdiag) — those are the two new-vs-vanilla deltas.
+
+      **IN-GAME RESULT (2026-05-29):** PASSED. The custom MGEF→SPEL→NPC chain works end-to-end —
+      NPC casts the custom Flame Lance at a spawned enemy, visible fire bolt travels + damages.
+      `equipType=EitherHand` was the needed piece. ModForge can now author wholly-original combat
+      magic (not just wire vanilla forms) onto a generated NPC. **Custom-content magic is complete.**
+
+- [ ] **It.19 — Patrol — IN-GAME FAILED (2026-05-29, round 1). Diagnosing.** Structure is correct
+      (packagediag: 6 slots match vanilla GuardRiftenBarracksPatrol; dump: m1→m2→m3→m1 linked-ref
+      loop). Schedule dur=0 is NOT the issue (vanilla GuardRiftenBarracksPatrol also has durationMin=0).
+      Leading hypotheses, pending the tester's symptom report: (1) markers off-navmesh — XMarkerHeading
+      statics placed at a fixed wilderness z don't snap to ground like actors do, so pathing to a
+      floating/buried marker fails (all confirmed-working vanilla patrols are in hand-navmeshed
+      interiors/cities; wilderness multi-point WALKING has never been confirmed — It.9 was a STANDING
+      NPC, It.16c walked on Whiterun's authored street navmesh). (2) linked-ref keyword — I used null
+      keyword (CK-standard for the default patrol link); need to confirm vanilla marker 10DE23 doesn't
+      tag it. NEXT: relocate the patrol to a known-good navmesh area (Whiterun, per It.16c) and/or
+      verify marker reachability before re-shipping.
 
 ## Build / test
 ```
