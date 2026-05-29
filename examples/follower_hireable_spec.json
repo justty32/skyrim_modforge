@@ -1,0 +1,54 @@
+{
+  "pluginName": "ModForgeHireFollower.esp",
+  "esl": true,
+  "_": "It.24: a HIREABLE follower that plugs into the VANILLA follower system — no custom dialogue or scripts. When you talk to her you get the vanilla 'I need your help. Will you follow me?' topic; hire her and she joins (1-follower limit, 'I need you to do something' / 'It's time for us to part ways' all work), because she leverages Skyrim's DialogueFollower quest. The two requirements that make a generic NPC hireable for FREE: (1) membership in PotentialFollowerFaction (Skyrim.esm:0x05C84D) — the faction the follower dialogue is conditioned on; (2) an Ally Relationship to the player — the free 'Follow me' topic is gated on GetRelationshipRank player >= Ally, so without it she'd only be a paid mercenary at best. She also needs a follower-capable voice (MaleNord/FemaleNord etc. have the lines recorded — using FemaleNord 0x013AE7 here) and the citizenship recipe so she traverses doors/gates when you lead her out. `coc RiverwoodSleepingGiantInn`, wait ~30-90s, talk to her, pick 'Follow me' — she should become an active follower and trail you (incl. across fast travel, per It.21).",
+
+  "classes": [
+    {
+      "editorId": "MF_HireClass",
+      "name": "ModForge Sellsword",
+      "healthWeight": 50, "magickaWeight": 10, "staminaWeight": 40,
+      "skillWeights": { "OneHanded": 90, "Block": 70, "HeavyArmor": 70, "Archery": 50 }
+    }
+  ],
+
+  "relationships": [
+    {
+      "_": "Ally relationship to the player. parent = the follower; child defaults to the Player NPC base (Skyrim.esm:0x000007). This satisfies the DialogueFollower free-follow gate (GetRelationshipRank >= Ally).",
+      "editorId": "MF_HireRel",
+      "parent": "MF_HireFollowerNpc",
+      "child": "Skyrim.esm:0x000007",
+      "rank": "Ally"
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_HireFollowerNpc",
+      "name": "Sera the Forged",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_HireClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE7",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "_factions": "Whiterun crime/citizen factions (0x0267EA + 0x028172) for door/gate traversal, PLUS PotentialFollowerFaction (0x05C84D) — the membership the vanilla follower dialogue keys off.",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172", "Skyrim.esm:0x05C84D" ],
+      "unique": true,
+      "level": 10,
+      "autoCalcStats": true,
+      "aggression": "Aggressive",
+      "confidence": "Brave",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50
+    }
+  ],
+
+  "placements": [
+    {
+      "_": "Sera at the It.16b-confirmed Sleeping Giant Inn spawn (0,0,0).",
+      "base": "MF_HireFollowerNpc",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": 0, "y": 0, "z": 0 }
+    }
+  ]
+}

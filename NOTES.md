@@ -1100,6 +1100,37 @@ call; the spec IS the contract.)
       response lines. **In-game expectation:** `coc RiverwoodSleepingGiantInn`, ensure subtitles ON, walk
       up, activate him — the prompt should be a menu option; selecting it shows his two subtitle lines.
 
+- [ ] **It.24 — HIREABLE follower via the vanilla DialogueFollower system + new RELA support — STRUCTURAL DONE, awaiting in-game.**
+      The payoff of It.21 (Follow movement) — a follower you actually HIRE through Skyrim's own
+      "I need your help. Will you follow me?" dialogue, no custom dialogue or scripts. Plugs into the
+      vanilla `DialogueFollower` quest by satisfying its two gates for a FREE follower:
+      1. **PotentialFollowerFaction** (`Skyrim.esm:0x05C84D`) — the faction the follow dialogue is
+         conditioned on. Added to the NPC's `factions` list.
+      2. **An Ally Relationship to the player** — the free "Follow me" topic is gated on
+         `GetRelationshipRank player >= Ally`; without it the NPC is at most a paid mercenary. This
+         needed a NEW record type.
+
+      **New toolkit support — Relationship (RELA).** `RelationshipSpec` (`parent` NPC ref, `child` NPC
+      ref defaulting to the Player NPC base `Skyrim.esm:0x000007`, `rank` = RankType enum: Lover/Ally/
+      Confidant/Friend/Acquaintance/Rival/Foe/Enemy/Archnemesis). pass-1 creates the RELA with its Rank;
+      pass-2 wires Parent/Child via the existing `Resolve`. validate registers the editorId + CheckRefs
+      parent/child + rank-enum check + "no parent" error. `dump` prints `relationship: parent=… child=…
+      rank=…`. (`mod.Relationships.AddNew()`; `Relationship.RankType`; Parent/Child are `IFormLink<INpcGetter>`.)
+
+      Also needs a follower-capable voice (MaleNord/FemaleNord — the generic vanilla voices have the
+      follower lines recorded; used FemaleNord `0x013AE7`) + the citizenship recipe for door/gate
+      traversal when leading her out.
+
+      **Verified structurally** (`dump`): NPC has `faction -> 05C84D` (PotentialFollower) alongside the
+      Whiterun citizenship factions; `relationship: parent=MF_HireFollowerNpc child=000007:Skyrim.esm
+      rank=Ally`. validate clean. **Example `examples/follower_hireable_spec.json`** →
+      `ModForgeHireFollower.esp` → `~/skyrim_mods/ModForgeHireFollower.zip`. `MF_HireFollowerNpc` "Sera
+      the Forged" at the inn spawn. **In-game expectation:** `coc RiverwoodSleepingGiantInn`, wait
+      ~30–90s, talk to her, pick "Follow me" — she joins as an active follower and trails you (incl.
+      across fast travel). **If the hire topic does NOT appear**, the likely gaps to try next: she may
+      need to NOT be flagged as a unique/essential in a way that conflicts, or the relationship/faction
+      may need a game-day to propagate — note the exact symptom for diagnosis.
+
 ## Build / test
 ```
 cd /home/lorkhan/repo/ModForge

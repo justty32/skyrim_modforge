@@ -605,6 +605,14 @@ internal static class Program
             var r = mod.Factions.AddNew();
             r.EditorID = f.EditorId; r.Name = f.Name;
         }
+        // Relationship (RELA): scalar Rank now; Parent/Child NPC refs wired in pass 2.
+        foreach (var rel in spec.Relationships)
+        {
+            var r = mod.Relationships.AddNew();
+            r.EditorID = rel.EditorId;
+            r.Rank = Enum.TryParse<Relationship.RankType>(rel.Rank, ignoreCase: true, out var rk)
+                ? rk : Relationship.RankType.Ally;
+        }
         // Class (CLAS): no FormLinks (all enums/weight dicts), so fully built in pass 1. An npc's
         // `class` ref can point at one (resolved in pass 2 — it's in formKeyByEd by then). StatWeights
         // (Health/Magicka/Stamina) drive the actor's attribute distribution; SkillWeights favour skills.
@@ -868,6 +876,14 @@ internal static class Program
                     rp.Faction.SetTo(fk);
                     npcRec.Factions.Add(rp);
                 });
+        }
+
+        // Relationship Parent/Child NPC refs (Parent usually the in-spec NPC, Child the player).
+        foreach (var rel in spec.Relationships)
+        {
+            if (!recordsByEd.TryGetValue(rel.EditorId, out var rec) || rec is not IRelationship r) continue;
+            Resolve($"relationship '{rel.EditorId}' parent", rel.Parent, fk => r.Parent.SetTo(fk));
+            Resolve($"relationship '{rel.EditorId}' child",  rel.Child,  fk => r.Child.SetTo(fk));
         }
 
         // Keywords on armor/weapon/misc (all implement the IKeyworded aspect).
@@ -1796,6 +1812,7 @@ internal static class Program
         foreach (var cl in spec.Classes) Reg(cl.EditorId, "class");
         foreach (var pk in spec.Packages) Reg(pk.EditorId, "package");
         foreach (var cs in spec.CombatStyles) Reg(cs.EditorId, "combatStyle");
+        foreach (var rel in spec.Relationships) Reg(rel.EditorId, "relationship");
         foreach (var pl in spec.Placements) if (!string.IsNullOrWhiteSpace(pl.EditorId)) Reg(pl.EditorId, "placement");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
@@ -2038,6 +2055,15 @@ internal static class Program
             if (!string.IsNullOrEmpty(pk.Schedule.DayOfWeek)
                 && !Enum.TryParse<Mutagen.Bethesda.Skyrim.Package.DayOfWeek>(pk.Schedule.DayOfWeek, true, out _))
                 problems.Add($"package '{pk.EditorId}' invalid schedule.dayOfWeek '{pk.Schedule.DayOfWeek}' (Sunday|Monday|…|Weekdays|Weekends|Any)");
+        }
+        foreach (var rel in spec.Relationships)
+        {
+            CheckRef(rel.Parent, $"relationship '{rel.EditorId}' parent");
+            CheckRef(rel.Child,  $"relationship '{rel.EditorId}' child");
+            if (string.IsNullOrWhiteSpace(rel.Parent))
+                problems.Add($"relationship '{rel.EditorId}' has no parent NPC");
+            if (!Enum.TryParse<Relationship.RankType>(rel.Rank, true, out _))
+                problems.Add($"relationship '{rel.EditorId}' invalid rank '{rel.Rank}' (Lover|Ally|Confidant|Friend|Acquaintance|Rival|Foe|Enemy|Archnemesis)");
         }
         foreach (var n in spec.Npcs)
             foreach (var pkgRef in n.Packages) CheckRef(pkgRef, $"npc '{n.EditorId}' package");
@@ -2654,6 +2680,9 @@ internal static class Program
                 }
             }
 
+            if (r is IRelationshipGetter rel)
+                Console.WriteLine($"      relationship: parent={Ref(rel.Parent.FormKey)}  child={Ref(rel.Child.FormKey)}  rank={rel.Rank}");
+
             if (r is IQuestGetter q)
             {
                 Console.WriteLine($"      quest: flags={q.Flags}  priority={q.Priority}");
@@ -2733,6 +2762,7 @@ internal sealed class ModSpec
     public List<ClassSpec> Classes { get; set; } = new();
     public List<PackageSpec> Packages { get; set; } = new();
     public List<CombatStyleSpec> CombatStyles { get; set; } = new();
+    public List<RelationshipSpec> Relationships { get; set; } = new();
 }
 // "ref" fields below accept EITHER an in-spec editorId OR an external "<master>:0xFORMID"
 // (e.g. "Skyrim.esm:0x013746" — find them with the `find` command). External refs auto-add
@@ -2785,6 +2815,20 @@ internal sealed class DialogueSpec
     public string SpeakerNpcEditorId { get; set; } = "";
     public string Prompt { get; set; } = "";
     public List<string> Responses { get; set; } = new();
+}
+// Relationship (RELA): a directed bond between two NPCs (`parent` and `child`) at a `rank`. The
+// player's NPC base is `Skyrim.esm:0x000007` — `child` defaults to it, so the common case (an NPC's
+// relationship TO the player) is just `parent` + `rank`. Rank (RankType): Lover, Ally, Confidant,
+// Friend, Acquaintance, Rival, Foe, Enemy, Archnemesis. **Why it matters for followers:** the vanilla
+// DialogueFollower quest's free "Follow me, I need your help" topic is gated on
+// `GetRelationshipRank player >= Ally`, so a custom hireable follower needs an Ally relationship to
+// the player (plus membership in PotentialFollowerFaction `Skyrim.esm:0x05C84D`).
+internal sealed class RelationshipSpec
+{
+    public string EditorId { get; set; } = "";
+    public string Parent { get; set; } = "";                  // ref → NPC (the relationship's owner); usually the custom NPC
+    public string Child { get; set; } = "Skyrim.esm:0x000007"; // ref → NPC; defaults to the Player NPC base
+    public string Rank { get; set; } = "Ally";                // RankType enum name
 }
 internal sealed class SpellSpec
 {
