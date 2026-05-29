@@ -520,9 +520,10 @@ internal static class Program
             // INFO carries the spoken response(s). Leave ResponseData null (so it uses our own
             // Responses, not a shared INFO) and Prompt null (the menu line comes from topic.Name).
             var info = new DialogResponses(mod);
+            var emotion = Enum.TryParse<Emotion>(d.Emotion, ignoreCase: true, out var em) ? em : Emotion.Neutral;
             byte rn = 1;
             foreach (var line in d.Responses)
-                info.Responses.Add(new DialogResponse { Text = line, ResponseNumber = rn++, Emotion = Emotion.Neutral });
+                info.Responses.Add(new DialogResponse { Text = line, ResponseNumber = rn++, Emotion = emotion, EmotionValue = d.EmotionValue });
 
             if (!string.IsNullOrEmpty(d.SpeakerNpcEditorId) &&
                 npcsByEd.TryGetValue(d.SpeakerNpcEditorId, out var speaker))
@@ -1913,6 +1914,9 @@ internal static class Program
             if (!string.IsNullOrEmpty(d.SpeakerNpcEditorId) && !npcIds.Contains(d.SpeakerNpcEditorId))
                 problems.Add($"dialogue '{d.EditorId}' references unknown speaker npc '{d.SpeakerNpcEditorId}'");
             if (string.IsNullOrEmpty(d.Prompt)) problems.Add($"dialogue '{d.EditorId}' has empty prompt");
+            if (d.Responses.Count == 0) problems.Add($"dialogue '{d.EditorId}' has no response lines");
+            if (!Enum.TryParse<Emotion>(d.Emotion, true, out _))
+                problems.Add($"dialogue '{d.EditorId}' invalid emotion '{d.Emotion}' (Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise)");
         }
 
         var validTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "int", "float", "bool", "string", "object" };
@@ -2815,6 +2819,8 @@ internal sealed class DialogueSpec
     public string SpeakerNpcEditorId { get; set; } = "";
     public string Prompt { get; set; } = "";
     public List<string> Responses { get; set; } = new();
+    public string Emotion { get; set; } = "Neutral";   // Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise — applied to all response lines
+    public uint EmotionValue { get; set; } = 50;        // 0..100 intensity
 }
 // Relationship (RELA): a directed bond between two NPCs (`parent` and `child`) at a `rank`. The
 // player's NPC base is `Skyrim.esm:0x000007` — `child` defaults to it, so the common case (an NPC's

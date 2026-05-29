@@ -1131,6 +1131,26 @@ call; the spec IS the contract.)
       need to NOT be flagged as a unique/essential in a way that conflicts, or the relationship/faction
       may need a game-day to propagate — note the exact symptom for diagnosis.
 
+- [ ] **It.25 — conversational NPC (multi-topic menu) + per-line dialogue emotion — STRUCTURAL DONE, awaiting in-game.**
+      Builds on It.23: ONE Start-Game-Enabled host quest carries THREE top-level player topics (each its
+      own `DialogBranch{TopLevel}`), so activating the NPC shows a three-option menu — lore / joke /
+      farewell — each with multi-line GetIsID-gated responses. Confirms the dialogue build handles
+      multiple branches per quest (it already did — the per-dialogue-entry loop just makes N branches).
+
+      **Small toolkit add — dialogue EMOTION.** `DialogueSpec` gained `emotion` (Neutral|Anger|Disgust|
+      Fear|Sad|Happy|Surprise, default Neutral) + `emotionValue` (0..100, default 50), applied to all of
+      that topic's response lines (was hardcoded `Emotion.Neutral`). Affects the speaker's facial
+      expression/delivery. validate rejects a bad emotion + flags empty response lists; `dump` already
+      prints `response[N] (Emotion)`.
+
+      **Verified structurally** (`dump`): 3 topics each `subtype=Custom` on quest MF_ConvQuest, 3
+      `branch ... flags=TopLevel` with distinct starting topics, emotions Neutral/Happy/Sad correctly
+      stamped, all 3 INFOs `GetIsID -> 000800`. validate clean. **Example
+      `examples/dialogue_conversation_spec.json`** → `ModForgeConversation.esp` →
+      `~/skyrim_mods/ModForgeConversation.zip`. "Brom the Storyteller". **In-game expectation:** `coc
+      RiverwoodSleepingGiantInn`, subtitles ON, activate him — menu lists all three prompts; each plays
+      its two lines and returns to the menu.
+
 ## Build / test
 ```
 cd /home/lorkhan/repo/ModForge

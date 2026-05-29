@@ -1,0 +1,91 @@
+{
+  "pluginName": "ModForgeConversation.esp",
+  "esl": true,
+  "_": "It.25: a CONVERSATIONAL NPC with a multi-option dialogue menu, building on It.23. One Start-Game-Enabled host quest carries THREE top-level player topics (each its own DialogBranch{TopLevel}), so activating the NPC shows three menu choices — lore, a joke, a farewell — each with multi-line responses and a distinct EMOTION (new this iteration: per-topic `emotion` + `emotionValue`, previously hardcoded Neutral). All three INFOs are GetIsID-gated to this NPC. Subtitles ON to read the lines. `coc RiverwoodSleepingGiantInn`, activate Brom, and the menu should list all three prompts; each can be picked and returns you to the menu (repeatable).",
+
+  "classes": [
+    {
+      "editorId": "MF_ConvClass",
+      "name": "ModForge Storyteller",
+      "healthWeight": 50, "magickaWeight": 25, "staminaWeight": 25,
+      "skillWeights": { "Speech": 100 }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_ConvNpc",
+      "name": "Brom the Storyteller",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_ConvClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+      "unique": true,
+      "level": 5,
+      "autoCalcStats": true,
+      "aggression": "Unaggressive",
+      "confidence": "Average",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50
+    }
+  ],
+
+  "quests": [
+    {
+      "_": "Single host quest for all three topics. startGameEnabled (default) so it runs.",
+      "editorId": "MF_ConvQuest",
+      "name": "ModForge Conversation",
+      "startGameEnabled": true,
+      "priority": 50,
+      "objectives": []
+    }
+  ],
+
+  "dialogue": [
+    {
+      "editorId": "MF_ConvLore",
+      "questEditorId": "MF_ConvQuest",
+      "speakerNpcEditorId": "MF_ConvNpc",
+      "prompt": "What's the history of this inn?",
+      "emotion": "Neutral",
+      "responses": [
+        "The Sleeping Giant has stood here longer than any of us remember.",
+        "Walls like these have heard a thousand secrets — and kept every one."
+      ]
+    },
+    {
+      "editorId": "MF_ConvJoke",
+      "questEditorId": "MF_ConvQuest",
+      "speakerNpcEditorId": "MF_ConvNpc",
+      "prompt": "Tell me a joke.",
+      "emotion": "Happy",
+      "emotionValue": 90,
+      "responses": [
+        "Why did the dragon cross the Pale? To get to the OTHER shout!",
+        "Ha! I'll be here all week, friend."
+      ]
+    },
+    {
+      "editorId": "MF_ConvBye",
+      "questEditorId": "MF_ConvQuest",
+      "speakerNpcEditorId": "MF_ConvNpc",
+      "prompt": "I should be going.",
+      "emotion": "Sad",
+      "emotionValue": 60,
+      "responses": [
+        "Off already? The road's a lonely thing.",
+        "Walk with the warmth of the hearth at your back, traveler."
+      ]
+    }
+  ],
+
+  "placements": [
+    {
+      "base": "MF_ConvNpc",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": 0, "y": 0, "z": 0 }
+    }
+  ]
+}
