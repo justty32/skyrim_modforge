@@ -1151,6 +1151,33 @@ call; the spec IS the contract.)
       RiverwoodSleepingGiantInn`, subtitles ON, activate him — menu lists all three prompts; each plays
       its two lines and returns to the menu.
 
+- [ ] **It.26 — CAPSTONE: composite "alive" NPC (Sandbox + dialogue + self-defense combat + citizenship) — STRUCTURAL DONE, awaiting in-game.**
+      No new code — proves the whole stack COMPOSES in one character. "Edda the Forged", an inn mage who:
+      (1) **sandboxes** the Sleeping Giant Inn (Sandbox package, It.15) — wanders/sits/eats; (2) is
+      **conversational** with a two-option menu (It.23/25); (3) **defends herself** by casting Flames
+      (`Skyrim.esm:0x0C969A`) via a magic-favoring CombatStyle (It.17/20); (4) is a Whiterun **citizen**
+      (It.16c) for door/gate traversal.
+
+      **Key combat tuning for a FRIENDLY self-defender:** `aggression=Unaggressive` (never initiates
+      against the player — important; "Aggressive" would risk her treating the player as a hostile
+      neutral) + `confidence=Brave` (stands and casts instead of fleeing when attacked). Aggression
+      governs *initiation*; once attacked she fights regardless, and Brave stops the flee. Combat AI
+      preempts the Sandbox package automatically and she resumes sandboxing afterward.
+
+      **Verified structurally** (`dump`): one NPC carrying combatStyle→MF_GuardMageCS, spell→Flames,
+      aiData `Unaggressive/Brave/HelpsFriendsAndAllies`, the two Whiterun citizenship factions, the
+      MF_InnSandbox package, and two TopLevel dialogue branches — all on the single record. validate
+      clean. **Example `examples/lifelike_npc_spec.json`** → `ModForgeLifelikeNpc.esp` →
+      `~/skyrim_mods/ModForgeLifelikeNpc.zip`. **In-game expectation:** `coc RiverwoodSleepingGiantInn`,
+      wait ~30–90s — she wanders/sits; activate her for the chat menu (subtitles ON); attack her (or
+      summon a foe) to watch her cast Flames and hold her ground, then resume sandboxing.
+
+### Batch shipped while user napped (2026-05-29) — awaiting in-game, test together
+      It.23 dialogue · It.24 hireable follower · It.25 conversation · It.26 capstone. Six zips in
+      `~/skyrim_mods`: ModForgeDialogue, ModForgeHireFollower, ModForgeConversation, ModForgeLifelikeNpc
+      (these four are new this batch; Escort/Follow already there). All structurally verified via
+      `dump`/`validate`; none yet run in-game. Subtitles must be ON for any dialogue test.
+
 ## Build / test
 ```
 cd /home/lorkhan/repo/ModForge

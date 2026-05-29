@@ -1,0 +1,109 @@
+{
+  "pluginName": "ModForgeLifelikeNpc.esp",
+  "esl": true,
+  "_": "It.26 CAPSTONE: a single NPC that composes FOUR confirmed subsystems into one believable character — proof the toolkit stacks. Edda is an inn mage who (1) SANDBOXES the Sleeping Giant Inn (wanders/sits/eats — Sandbox package, It.15), (2) is CONVERSATIONAL with a two-option dialogue menu (It.23/25, subtitles ON), (3) DEFENDS herself by casting Flames with a magic-favoring CombatStyle if attacked (It.17/20) — Unaggressive so she never starts a fight with you, Brave so she fights back instead of fleeing, and (4) is a Whiterun CITIZEN so she can move through doors/gates (It.16c). Nothing here is new code — it's the whole stack working together. `coc RiverwoodSleepingGiantInn`, wait ~30-90s: she should be wandering/sitting; activate her for the chat menu; `tdetect` + attack her (or summon a foe) to see her cast Flames and hold her ground.",
+
+  "combatStyles": [
+    {
+      "editorId": "MF_GuardMageCS",
+      "_": "Magic-favoring profile harvested via cstydiag (csVampireMagic-like): Magic dominates the equip weights so the AI picks her Flames spell over melee.",
+      "offensiveMult": 0.77, "defensiveMult": 0.3, "groupOffensiveMult": 0.74,
+      "equipMultMelee": 0.51, "equipMultMagic": 8.1, "equipMultRanged": 0.55,
+      "equipMultShout": 0.21, "equipMultUnarmed": 0.98, "equipMultStaff": 2.15,
+      "avoidThreatChance": 0.2, "flags": [ "Dueling" ]
+    }
+  ],
+
+  "classes": [
+    {
+      "editorId": "MF_LifelikeClass",
+      "name": "ModForge Inn Mage",
+      "healthWeight": 30, "magickaWeight": 55, "staminaWeight": 15,
+      "skillWeights": { "Destruction": 90, "Restoration": 50, "Speech": 40 }
+    }
+  ],
+
+  "packages": [
+    {
+      "editorId": "MF_InnSandbox",
+      "_": "Inn-patron Sandbox — she stays in the inn, eats/sits/wanders/uses idle markers. Combat preempts this automatically when she's attacked, then she resumes when it's over.",
+      "template": "Skyrim.esm:0x01C254",
+      "interruptFlags": [ "HellosToPlayer", "AllowIdleChatter", "WorldInteractions" ],
+      "sandbox": {
+        "radius": 512, "allowEating": true, "allowSleeping": false,
+        "allowConversation": true, "allowIdleMarkers": true,
+        "allowSitting": true, "allowWandering": true,
+        "allowSpecialFurniture": true, "energy": 50.0
+      }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_LifelikeNpc",
+      "name": "Edda the Forged",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_LifelikeClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE7",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+      "unique": true,
+      "level": 15,
+      "autoCalcStats": true,
+      "combatStyle": "MF_GuardMageCS",
+      "spells": [ "Skyrim.esm:0x0C969A" ],
+      "_combat": "Unaggressive = never initiates against the player; Brave = stands and fights (casts Flames) instead of fleeing when attacked. HelpsFriendsAndAllies = aids inn folk.",
+      "aggression": "Unaggressive",
+      "confidence": "Brave",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50,
+      "packages": [ "MF_InnSandbox" ]
+    }
+  ],
+
+  "quests": [
+    {
+      "editorId": "MF_LifelikeQuest",
+      "name": "ModForge Lifelike Conversation",
+      "startGameEnabled": true,
+      "priority": 50,
+      "objectives": []
+    }
+  ],
+
+  "dialogue": [
+    {
+      "editorId": "MF_LifelikeWho",
+      "questEditorId": "MF_LifelikeQuest",
+      "speakerNpcEditorId": "MF_LifelikeNpc",
+      "prompt": "Who are you?",
+      "emotion": "Neutral",
+      "responses": [
+        "Edda. I keep to myself and the warmth of this hearth.",
+        "Cross me and you'll find the fire isn't only in the hearth."
+      ]
+    },
+    {
+      "editorId": "MF_LifelikeMagic",
+      "questEditorId": "MF_LifelikeQuest",
+      "speakerNpcEditorId": "MF_LifelikeNpc",
+      "prompt": "Can you teach me magic?",
+      "emotion": "Happy",
+      "emotionValue": 70,
+      "responses": [
+        "Destruction is just respect, taught quickly.",
+        "Watch your fingers, apprentice."
+      ]
+    }
+  ],
+
+  "placements": [
+    {
+      "_": "Edda at the It.16b-confirmed Sleeping Giant Inn spawn (0,0,0).",
+      "base": "MF_LifelikeNpc",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": 0, "y": 0, "z": 0 }
+    }
+  ]
+}
