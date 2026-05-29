@@ -223,11 +223,14 @@ internal static class Program
 
         var quest = mod.Quests.AddNew();
         quest.EditorID = "MF_DemoQuest"; quest.Name = "A Forged Errand";
+        quest.Flags |= Quest.Flag.StartGameEnabled;  // must run for its dialogue to load
+        quest.Priority = 50;
         quest.Objectives.Add(new QuestObjective { Index = 10, DisplayText = "Speak with Aldric" });
 
         var branch = mod.DialogBranches.AddNew();
         branch.EditorID = "MF_DemoBranch"; branch.Quest.SetTo(quest);
         branch.Category = DialogBranch.CategoryType.Player;
+        branch.Flags = DialogBranch.Flag.TopLevel;   // top-level menu option when you talk to the NPC
 
         var topic = mod.DialogTopics.AddNew();
         topic.EditorID = "MF_DemoTopic"; topic.Quest.SetTo(quest); topic.Branch.SetTo(branch);
@@ -238,7 +241,7 @@ internal static class Program
         topic.Priority = 50f;
         branch.StartingTopic.SetTo(topic);
 
-        var info = new DialogResponses(mod) { Prompt = "Greeting" };
+        var info = new DialogResponses(mod);
         info.Responses.Add(new DialogResponse
         {
             Text = "Welcome, traveler. Everything here was forged on Linux.",
@@ -474,6 +477,10 @@ internal static class Program
         {
             var r = mod.Quests.AddNew();
             r.EditorID = q.EditorId; r.Name = q.Name;
+            // StartGameEnabled is what makes a dialogue-hosting quest actually run (and thus its
+            // dialogue load + evaluate). Priority orders competing dialogue between quests.
+            if (q.StartGameEnabled) r.Flags |= Quest.Flag.StartGameEnabled;
+            r.Priority = q.Priority;
             foreach (var o in q.Objectives)
                 r.Objectives.Add(new QuestObjective { Index = o.Index, DisplayText = o.Text });
             if (!string.IsNullOrEmpty(q.EditorId)) questsByEd[q.EditorId] = r;
@@ -495,6 +502,9 @@ internal static class Program
             branch.EditorID = d.EditorId + "_Br";
             branch.Quest.SetTo(quest);
             branch.Category = DialogBranch.CategoryType.Player;
+            // TopLevel = this branch is a top-level menu option shown the moment you talk to the NPC
+            // (vs. a sub-branch reachable only from another topic). Without it the prompt never appears.
+            branch.Flags = DialogBranch.Flag.TopLevel;
 
             var topic = mod.DialogTopics.AddNew();
             topic.EditorID = d.EditorId;
@@ -507,7 +517,9 @@ internal static class Program
             topic.Priority = 50f;
             branch.StartingTopic.SetTo(topic);
 
-            var info = new DialogResponses(mod) { Prompt = "Greeting" };
+            // INFO carries the spoken response(s). Leave ResponseData null (so it uses our own
+            // Responses, not a shared INFO) and Prompt null (the menu line comes from topic.Name).
+            var info = new DialogResponses(mod);
             byte rn = 1;
             foreach (var line in d.Responses)
                 info.Responses.Add(new DialogResponse { Text = line, ResponseNumber = rn++, Emotion = Emotion.Neutral });
@@ -2624,11 +2636,30 @@ internal static class Program
                     Console.WriteLine($"      script: {se.Name} [{se.Properties.Count} prop(s)]");
 
             if (r is IDialogTopicGetter dt)
-                Console.WriteLine($"      prompt: \"{dt.Name?.String}\"  ({dt.Responses.Count} INFO group(s))");
+                Console.WriteLine($"      topic: prompt=\"{dt.Name?.String}\"  category={dt.Category}  subtype={dt.Subtype}  quest={Ref(dt.Quest.FormKey)}  branch={Ref(dt.Branch.FormKey)}  ({dt.Responses.Count} INFO group(s))");
+
+            if (r is IDialogBranchGetter db)
+                Console.WriteLine($"      branch: category={db.Category}  flags={db.Flags?.ToString() ?? "-"}  quest={Ref(db.Quest.FormKey)}  startingTopic={Ref(db.StartingTopic.FormKey)}");
+
+            if (r is IDialogResponsesGetter info)
+            {
+                foreach (var resp in info.Responses)
+                    Console.WriteLine($"      response[{resp.ResponseNumber}] ({resp.Emotion}): \"{resp.Text?.String}\"");
+                foreach (var c in info.Conditions)
+                {
+                    // Surface the GetIsID speaker gate (the usual "only this NPC says it" condition).
+                    var data = (c as IConditionFloatGetter)?.Data;
+                    var tgt = (data as IGetIsIDConditionDataGetter)?.Object.Link.FormKey;
+                    Console.WriteLine($"      condition: {data?.GetType().Name ?? c.GetType().Name}{(tgt is { } fk ? $" -> {fk}" : "")}");
+                }
+            }
 
             if (r is IQuestGetter q)
+            {
+                Console.WriteLine($"      quest: flags={q.Flags}  priority={q.Priority}");
                 foreach (var o in q.Objectives)
                     Console.WriteLine($"      objective[{o.Index}]: \"{o.DisplayText?.String}\"");
+            }
         }
         return 0;
     }
@@ -2735,7 +2766,16 @@ internal sealed class NpcSpec
     public string Mood { get; set; } = "";           // Neutral|Angry|Fear|Happy|Sad|Surprised|Puzzled|Disgusted
     public int EnergyLevel { get; set; }              // 0..100 — vanilla actors typically 50
 }
-internal sealed class QuestSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public List<ObjectiveSpec> Objectives { get; set; } = new(); }
+internal sealed class QuestSpec
+{
+    public string EditorId { get; set; } = "";
+    public string Name { get; set; } = "";
+    public List<ObjectiveSpec> Objectives { get; set; } = new();
+    // StartGameEnabled (default true): the quest auto-starts on game load, which is REQUIRED for any
+    // dialogue it hosts to be loaded/evaluated. A quest that never runs = its dialogue never surfaces.
+    public bool StartGameEnabled { get; set; } = true;
+    public byte Priority { get; set; } = 50;   // higher wins when multiple quests offer dialogue to the same NPC
+}
 internal sealed class ObjectiveSpec { public ushort Index { get; set; } public string Text { get; set; } = ""; }
 // A dialogue topic: shown under QuestEditorId's branch; targets SpeakerNpcEditorId (GetIsID).
 internal sealed class DialogueSpec

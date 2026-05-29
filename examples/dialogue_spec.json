@@ -1,0 +1,68 @@
+{
+  "pluginName": "ModForgeDialogue.esp",
+  "esl": true,
+  "_": "It.23: the FIRST in-game-surfacing custom DIALOGUE. An NPC you can TALK TO — activate him and a top-level player topic 'Tell me about this place.' appears in the menu; pick it and he speaks two response lines (shown as SUBTITLES — no recorded voice, so turn subtitles ON: Settings > Display > General Subtitles + Dialogue Subtitles). The records were always emittable (It.2); what was missing to make them SURFACE: (1) the host Quest must be START GAME ENABLED so it actually runs and its dialogue loads/evaluates, and (2) the DialogBranch must have the TOP-LEVEL flag so the topic is a menu option (not a sub-branch reachable only from another topic). The INFO is conditioned GetIsID == MF_TalkerNpc so ONLY this NPC offers the line. `coc RiverwoodSleepingGiantInn`, walk up to him, press activate — the prompt should be in the list.",
+
+  "classes": [
+    {
+      "editorId": "MF_TalkerClass",
+      "name": "ModForge Talker",
+      "healthWeight": 50, "magickaWeight": 25, "staminaWeight": 25,
+      "skillWeights": { "Speech": 100 }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_TalkerNpc",
+      "name": "Aldric the Forged",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_TalkerClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+      "unique": true,
+      "level": 5,
+      "autoCalcStats": true,
+      "aggression": "Unaggressive",
+      "confidence": "Average",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50
+    }
+  ],
+
+  "quests": [
+    {
+      "_": "The dialogue HOST quest. startGameEnabled (the default) makes it auto-run so the dialogue below is loaded and evaluated — the single most-missed requirement. No stages/aliases needed for plain conversation.",
+      "editorId": "MF_TalkQuest",
+      "name": "ModForge Conversation",
+      "startGameEnabled": true,
+      "priority": 50,
+      "objectives": []
+    }
+  ],
+
+  "dialogue": [
+    {
+      "_": "A player top-level topic. `prompt` is the clickable menu line; `responses` are what the NPC says back (subtitles), in order. speakerNpcEditorId adds the GetIsID == MF_TalkerNpc condition so the line is exclusive to him. The build wires Quest->Branch(TopLevel,Player)->Topic(Custom)->INFO(GetIsID).",
+      "editorId": "MF_TalkAboutPlace",
+      "questEditorId": "MF_TalkQuest",
+      "speakerNpcEditorId": "MF_TalkerNpc",
+      "prompt": "Tell me about this place.",
+      "responses": [
+        "Welcome, traveler. Everything you see here was forged on Linux.",
+        "No Creation Kit, no Windows — just JSON and a stubborn modder."
+      ]
+    }
+  ],
+
+  "placements": [
+    {
+      "_": "Aldric at the It.16b-confirmed Sleeping Giant Inn spawn (0,0,0). coc in, walk up, activate him.",
+      "base": "MF_TalkerNpc",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": 0, "y": 0, "z": 0 }
+    }
+  ]
+}

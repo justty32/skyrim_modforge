@@ -1067,6 +1067,39 @@ call; the spec IS the contract.)
       a live anchor (a temporary marker would have made the package no-op). **Six procedure templates
       now in-game-confirmed: Sandbox, Travel, UseMagic, Patrol, Follow, Escort.**
 
+- [ ] **It.23 — custom DIALOGUE that surfaces in-game (Quest→Branch→Topic→INFO) — STRUCTURAL DONE, awaiting in-game.**
+      The records were emittable since It.2, but never SURFACED in-game — this iteration finds and fills
+      the two missing requirements. You talk to an NPC, a top-level player topic appears, you pick it,
+      the NPC speaks lines shown as SUBTITLES (no recorded voice — turn General + Dialogue Subtitles ON).
+
+      **The two missing flags (root cause of "records valid but nothing shows"):**
+      1. **`Quest.Flag.StartGameEnabled`** — the host quest must auto-run, else its dialogue is never
+         loaded/evaluated. (`ilspycmd`: `Quest.Flag.StartGameEnabled = 1`; `Quest.Priority` is a byte —
+         orders competing dialogue between quests.) Was unset → quest dormant → dialogue invisible.
+      2. **`DialogBranch.Flag.TopLevel`** — makes the branch a top-level menu option shown on activate,
+         vs. a sub-branch reachable only from another topic. (`DialogBranch.Flag.TopLevel = 1`.) Was unset.
+
+      **Full minimal recipe** (all in `mod.DialogBranches/DialogTopics`, INFO is `new DialogResponses(mod)`):
+      Quest{StartGameEnabled, Priority=50} → DialogBranch{Category=Player, **Flags=TopLevel**, StartingTopic→topic}
+      → DialogTopic{Category=Topic, Subtype=Custom, Name=player-prompt, Quest+Branch set} → DialogResponses{
+      Responses=[lines], Conditions=[GetIsID == speaker NPC]}. Leave INFO `ResponseData` null (uses our own
+      Responses) and INFO `Prompt` null (the menu line comes from `topic.Name`) — the old code hardcoded
+      `Prompt="Greeting"` which would mislabel the menu; removed.
+
+      **Spec/Build:** `QuestSpec` gained `startGameEnabled` (default true) + `priority` (default 50); quest
+      build sets `r.Flags |= StartGameEnabled` + `r.Priority`. Dialogue build sets `branch.Flags =
+      TopLevel` and drops the hardcoded Prompt. The `gen` demo updated to match. `dump` enhanced to print
+      quest flags/priority, branch category/flags/startingTopic, and INFO responses + the GetIsID
+      condition target — so dialogue wiring is verifiable without a hex editor.
+
+      **Verified structurally** (`dump`): quest `flags=StartGameEnabled priority=50`; branch
+      `category=Player flags=TopLevel`; topic `category=Topic subtype=Custom` linked to both; INFO 2
+      response lines + `condition GetIsIDConditionData -> 000800` (the speaker). validate clean.
+      **Example `examples/dialogue_spec.json`** → `ModForgeDialogue.esp` → `~/skyrim_mods/ModForgeDialogue.zip`.
+      `MF_TalkerNpc` "Aldric the Forged" at the It.16b inn spawn; topic "Tell me about this place." → two
+      response lines. **In-game expectation:** `coc RiverwoodSleepingGiantInn`, ensure subtitles ON, walk
+      up, activate him — the prompt should be a menu option; selecting it shows his two subtitle lines.
+
 ## Build / test
 ```
 cd /home/lorkhan/repo/ModForge
