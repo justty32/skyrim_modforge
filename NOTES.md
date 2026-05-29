@@ -877,7 +877,7 @@ call; the spec IS the contract.)
       [Candlelight `Skyrim.esm:0x043324`]). Package `MF_UseMagicCandlelight` with spell=Candlelight,
       no target (defaults to Self), cooldown 8-12s, numToCastMax=1000, schedule
       durationInMinutes=1440. Placed at the It.9 Tamriel wilderness coords.
-- [ ] **It.19 — Patrol procedure template (Skyrim.esm:0x017723) — STRUCTURAL DONE, awaiting in-game.**
+- [x] **It.19 — Patrol procedure template (Skyrim.esm:0x017723) — IN-GAME CONFIRMED (2026-05-29, round 2).**
       The "guard walks a beat" package, and the first one whose behaviour lives in PLACED-REF
       topology (a linked-reference chain of markers) rather than the package's own Data slots.
 
@@ -920,12 +920,31 @@ call; the spec IS the contract.)
       sample_spec regression clean.
 
       **Example `examples/patrol_spec.json`** → `ModForgePatrol.esp` → `~/skyrim_mods/ModForgePatrol.zip`.
-      `MF_PatrolGuard` (citizenship + AIData Aggressive/Brave, level 15 autoCalc) patrols a triangle
-      of three XMarkerHeading (`Skyrim.esm:0x000034`) markers ~300 units apart at the It.9 Tamriel
-      wilderness coords, looped, preferredSpeed Walk. **In-game expectation:** `coc` near, watch the
-      guard pace m1→m2→m3→m1 forever. **If he stands still:** likely the markers landed off-navmesh
-      (wilderness terrain) — the SpecificReference + linked-ref topology is structurally identical to
-      vanilla GuardRiftenBarracksPatrol, so a no-walk result points at marker placement, not PACK data.
+      `MF_PatrolGuard` (citizenship + AIData Aggressive/Brave, level 15 autoCalc) paces a 3-marker
+      line in the Sleeping Giant Inn (`RiverwoodSleepingGiantInn`, cell `Skyrim.esm:0x0133C6`), looped,
+      preferredSpeed Walk. Re-test: `coc RiverwoodSleepingGiantInn`, wait ~30–90s for package cold-start.
+
+      **ROUND 1 FAILED → ROUND 2 PASSED (the navmesh lesson).** Round 1 placed three XMarkerHeading
+      (`Skyrim.esm:0x000034`) markers in the open Tamriel wilderness at the It.9 coords; in-game the
+      NPC **stood completely still, never walking to the first marker.** Structure was correct
+      (`packagediag`: 6 slots match vanilla GuardRiftenBarracksPatrol; `dump`: the m1→m2→m3→m1 loop;
+      schedule dur=0 is fine — vanilla GuardRiftenBarracksPatrol also has durationMin=0), so the
+      failure had to be placement. Root cause: **a static REFR does NOT snap to the floor the way an
+      actor does** — a marker at a guessed exterior z lands off-navmesh, so pathing to it silently
+      fails. (All confirmed-working vanilla patrols are in hand-navmeshed interiors/cities; wilderness
+      multi-point WALKING had never been confirmed — It.9 was a STANDING NPC, It.16c walked on
+      Whiterun's authored street navmesh.) ROUND-2 FIX: relocate the whole patrol into the Sleeping
+      Giant Inn and put the markers on a CONFIRMED-WALKABLE corridor — It.16b proved a generated NPC
+      walks from cell-local (0,0,0) to the vanilla `RiverwoodInnCenterMarker`, so m1 (0,0,0) = that
+      spawn, m2 (-500,5,0) = midpoint, m3 (-977.29,9.08,0) = the centre marker, all z=0; NPC spawns at
+      m1. In-game: the guard paces the line. **KEY LESSON (now the rule for ALL placed markers/objects,
+      in LIFELIKE_NPC.md gotchas): anchor markers on coords proven walkable — use the new `refpos`
+      tool to copy a vanilla reachable ref's position, or place inside a hand-navmeshed interior.
+      Actors (ACHR) snap to ground so their spawn z is forgiving; markers (REFR) do not.**
+
+      **NEW diagnostic `refpos <plugin> <0xFORMID>`** — prints a placed ref's (REFR/ACHR)
+      position/rotation/base (cell-local for interiors, world for exteriors). The round-2 enabler:
+      `refpos Skyrim.esm 0x01DC0A` → RiverwoodInnCenterMarker at (-977.29, 9.08, 0), base XMarkerHeading.
 
 - [x] **It.20 — fully-custom Aimed projectile spell, NPC-cast in combat — IN-GAME CONFIRMED (2026-05-29).**
       The capstone joining It.12 (custom MGEF authoring — confirmed only for self-cast/potions) with
@@ -962,44 +981,6 @@ call; the spec IS the contract.)
       NPC casts the custom Flame Lance at a spawned enemy, visible fire bolt travels + damages.
       `equipType=EitherHand` was the needed piece. ModForge can now author wholly-original combat
       magic (not just wire vanilla forms) onto a generated NPC. **Custom-content magic is complete.**
-
-- [x] **It.19 — Patrol — IN-GAME CONFIRMED (2026-05-29, round 2).** Structure is correct
-      (packagediag: 6 slots match vanilla GuardRiftenBarracksPatrol; dump: m1→m2→m3→m1 linked-ref
-      loop). Schedule dur=0 is NOT the issue (vanilla GuardRiftenBarracksPatrol also has durationMin=0).
-      Leading hypotheses, pending the tester's symptom report: (1) markers off-navmesh — XMarkerHeading
-      statics placed at a fixed wilderness z don't snap to ground like actors do, so pathing to a
-      floating/buried marker fails (all confirmed-working vanilla patrols are in hand-navmeshed
-      interiors/cities; wilderness multi-point WALKING has never been confirmed — It.9 was a STANDING
-      NPC, It.16c walked on Whiterun's authored street navmesh). (2) linked-ref keyword — I used null
-      keyword (CK-standard for the default patrol link); need to confirm vanilla marker 10DE23 doesn't
-      tag it. NEXT: relocate the patrol to a known-good navmesh area (Whiterun, per It.16c) and/or
-      verify marker reachability before re-shipping.
-
-      **ROUND-1 SYMPTOM (tester): NPC completely stands still** — never even walks to the first
-      marker. With no fallback package on the NPC, "stands" = patrol selected-but-can't-path (markers
-      off-navmesh) OR cold-start not yet elapsed. **ROUND-2 FIX (shipped, awaiting re-test):** relocate
-      the whole patrol INTO the Sleeping Giant Inn (`RiverwoodSleepingGiantInn`, cell Skyrim.esm:0x0133C6)
-      and place the 3 markers on a CONFIRMED-WALKABLE corridor. New diagnostic **`refpos <plugin>
-      <0xFORMID>`** prints a placed ref's position/rotation/base (cell-local for interiors, world for
-      exteriors) — used it on the vanilla `RiverwoodInnCenterMarker` (0x01DC0A) to get its real coords
-      (-977.29, 9.08, 0); base = XMarkerHeading (confirms 0x000034 is a valid patrol-marker base). It.16b
-      proved a generated NPC walks from cell-local (0,0,0) to that marker, so the markers now sit on that
-      proven line: m1 (0,0,0) = the It.16b spawn, m2 (-500,5,0) = midpoint, m3 (-977.29,9.08,0) = the
-      vanilla centre marker, all z=0. NPC spawns at m1. **Re-test:** `coc RiverwoodSleepingGiantInn`,
-      wait ~30-90s for package cold-start, watch him pace the line m1→m2→m3→m1. If he STILL stands on a
-      flat confirmed floor, it's a deeper patrol-not-executing issue (not navmesh) and the next step is a
-      Sandbox fallback package to distinguish patrol-skipped (wanders) from patrol-stuck (stands).
-      **The `refpos` tool is the lasting win here — anchor any future placement on known navmesh instead
-      of guessing a z that statics won't snap to.**
-
-      **ROUND-2 RESULT (2026-05-29): PASSED.** In the Sleeping Giant Inn, the guard paces the
-      m1→m2→m3→m1 line. Confirms the round-1 failure was purely placement (markers off-navmesh in open
-      wilderness), NOT the PACK/linked-ref code — which was structurally correct from round 1. Patrol
-      template is done. **KEY LESSON (now the rule for ALL placed markers/objects): a static REFR does
-      NOT snap to the floor like an actor does — placing one at a guessed exterior z lands it off-navmesh
-      and anything that must path to it silently fails. Anchor markers on coords proven walkable: use
-      `refpos` to copy a vanilla reachable ref's position, or place inside a hand-navmeshed interior.
-      Actors (ACHR) snap to ground so their spawn z is forgiving; markers (REFR) do not.**
 
 ## Build / test
 ```
