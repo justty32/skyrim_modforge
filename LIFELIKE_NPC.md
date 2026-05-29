@@ -64,6 +64,7 @@ round-1 failure mode. **Both systems must be authored.**
 | Custom MGEF heal spell casts but doesn't heal | `Recover` flag on instant effect — reverts the heal when the effect "ends" (immediately) | `["NoDuration","NoArea"]` instant effects must NOT use `Recover` |
 | Sandbox NPC stands still for the first 30–90 seconds after cell load | Engine sandbox cold-start delay; normal | **Wait the full minute** before declaring failure — vanilla NPCs hide this because they're initialised long before the player arrives |
 | `coc <interior>` then walk out → terrain LOD breaks at city gate | `coc` skips the normal load screen, exterior LOD doesn't preload | Fast-travel away + back, OR `coc <exteriorMarker>` directly |
+| Patrol NPC (or any path-to-marker behaviour) stands still, never moves | A **static REFR does NOT snap to the floor** like an actor does — a marker placed at a guessed exterior z lands off-navmesh, so pathing to it silently fails (It.19 round 1, open wilderness) | Anchor markers on coords PROVEN walkable: `refpos <plugin> <0xFORMID>` to copy a vanilla reachable ref's position, or place inside a hand-navmeshed interior. Actors (ACHR) snap to ground so their spawn z is forgiving; markers (REFR) do not |
 
 ## Vanilla FormID reference
 
@@ -73,7 +74,7 @@ round-1 failure mode. **Both systems must be authored.**
 |---|---|---|---|
 | Sandbox | `Skyrim.esm:0x01C254` | 12 | NPC hangs around a location, interacts with furniture/idle markers/other NPCs |
 | Travel | `Skyrim.esm:0x016FAA` | 3 | NPC walks to a specific REFR/cell |
-| Patrol | `Skyrim.esm:0x017723` | 6 | Guard route via LinkedReference chain of idle markers (not yet ModForge-supported) |
+| Patrol | `Skyrim.esm:0x017723` | 6 | Guard route. Wired in `packages[].patrol` (`start` → first marker placement); the route is the markers' `linkedRefs` chain (m1→m2→m3→m1 looped, null keyword). Markers must be on navmesh — see the static-marker gotcha below |
 | UseMagic | `Skyrim.esm:0x0504F5` | 11 | Scheduled non-combat spell casting (priest at altar, mage self-buffing). NPC picks one spell from `spells` matching `spellType` (TargetObjectType enum). Wired in `packages[].useMagic` |
 | UseWeapon | `Skyrim.esm:0x01C338` | — | Practice attacks at a target — not yet ModForge-supported |
 | Follow | `Skyrim.esm:0x019B2C` | — | Follow another actor (follower behaviour) — not yet ModForge-supported |
@@ -156,6 +157,7 @@ dotnet run --project src/ModForge.Cli --no-build -- npcdiag     <plugin> <0xFORM
 dotnet run --project src/ModForge.Cli --no-build -- cstydiag    <plugin> <0xFORMID>   # CSTY: offensive/defensive/equip mults/flags
 dotnet run --project src/ModForge.Cli --no-build -- mgefdiag    <plugin> <0xFORMID>   # MGEF: archetype/AV/flags/projectile/casting art
 dotnet run --project src/ModForge.Cli --no-build -- lightdiag   <plugin> [0xFORMID]   # LIGH (no ID lists candidates)
+dotnet run --project src/ModForge.Cli --no-build -- refpos      <plugin> <0xFORMID>   # REFR/ACHR: position+rotation+base (anchor new placements on known navmesh)
 dotnet run --project src/ModForge.Cli --no-build -- cellblk     <plugin> [0xFORMID]   # Cell block/sub-block by FormID
 
 # Build / dump round-trip

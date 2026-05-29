@@ -963,7 +963,7 @@ call; the spec IS the contract.)
       `equipType=EitherHand` was the needed piece. ModForge can now author wholly-original combat
       magic (not just wire vanilla forms) onto a generated NPC. **Custom-content magic is complete.**
 
-- [ ] **It.19 — Patrol — IN-GAME FAILED (2026-05-29, round 1). Diagnosing.** Structure is correct
+- [x] **It.19 — Patrol — IN-GAME CONFIRMED (2026-05-29, round 2).** Structure is correct
       (packagediag: 6 slots match vanilla GuardRiftenBarracksPatrol; dump: m1→m2→m3→m1 linked-ref
       loop). Schedule dur=0 is NOT the issue (vanilla GuardRiftenBarracksPatrol also has durationMin=0).
       Leading hypotheses, pending the tester's symptom report: (1) markers off-navmesh — XMarkerHeading
@@ -991,6 +991,15 @@ call; the spec IS the contract.)
       Sandbox fallback package to distinguish patrol-skipped (wanders) from patrol-stuck (stands).
       **The `refpos` tool is the lasting win here — anchor any future placement on known navmesh instead
       of guessing a z that statics won't snap to.**
+
+      **ROUND-2 RESULT (2026-05-29): PASSED.** In the Sleeping Giant Inn, the guard paces the
+      m1→m2→m3→m1 line. Confirms the round-1 failure was purely placement (markers off-navmesh in open
+      wilderness), NOT the PACK/linked-ref code — which was structurally correct from round 1. Patrol
+      template is done. **KEY LESSON (now the rule for ALL placed markers/objects): a static REFR does
+      NOT snap to the floor like an actor does — placing one at a guessed exterior z lands it off-navmesh
+      and anything that must path to it silently fails. Anchor markers on coords proven walkable: use
+      `refpos` to copy a vanilla reachable ref's position, or place inside a hand-navmeshed interior.
+      Actors (ACHR) snap to ground so their spawn z is forgiving; markers (REFR) do not.**
 
 ## Build / test
 ```
