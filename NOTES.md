@@ -1021,7 +1021,7 @@ call; the spec IS the contract.)
       player-toggleable follower.) Five procedure templates now in-game-confirmed: Sandbox, Travel,
       UseMagic, Patrol, Follow.
 
-- [ ] **It.22 — Escort procedure template (Skyrim.esm:0x023B73) — STRUCTURAL DONE, awaiting in-game.**
+- [x] **It.22 — Escort procedure template (Skyrim.esm:0x023B73) — IN-GAME CONFIRMED (2026-05-29).**
       The 6th procedure template and the **dual of Follow**: the NPC walks AHEAD and LEADS an escorted
       target (defaults to the player) to a destination, pausing if they lag past a wait distance.
       "Follow me, I'll take you there" — quest guides, prisoner/VIP escorts.
@@ -1060,6 +1060,12 @@ call; the spec IS the contract.)
       vanilla RiverwoodInnCenterMarker spot (-977.29, 9.08, 0) — It.16b-proven reachable navmesh.
       **In-game expectation:** `coc RiverwoodSleepingGiantInn`, wait ~30–90s cold-start, walk toward
       him — he should set off for the far marker and pause/glance back when you fall past ~300 units.
+
+      **IN-GAME RESULT (2026-05-29): PASSED.** The guide leads to the destination marker and waits/
+      paces when the player lags — confirming both new build mechanics work end-to-end: the deferred
+      `PackageDataLocation` resolves to the authored marker, and the auto-persist keeps that marker as
+      a live anchor (a temporary marker would have made the package no-op). **Six procedure templates
+      now in-game-confirmed: Sandbox, Travel, UseMagic, Patrol, Follow, Escort.**
 
 ## Build / test
 ```
