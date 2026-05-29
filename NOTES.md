@@ -927,6 +927,37 @@ call; the spec IS the contract.)
       (wilderness terrain) — the SpecificReference + linked-ref topology is structurally identical to
       vanilla GuardRiftenBarracksPatrol, so a no-walk result points at marker placement, not PACK data.
 
+- [ ] **It.20 — fully-custom Aimed projectile spell, NPC-cast in combat — STRUCTURAL DONE, awaiting in-game.**
+      The capstone joining It.12 (custom MGEF authoring — confirmed only for self-cast/potions) with
+      It.17 (NPC combat-casting via spells[]+combatStyle+AIData). It.12 explicitly left "Aimed damage
+      spells need a projectile + casting/hit art (ART/PROJ)" as FUTURE; this closes it AND proves a
+      custom spell (not a vanilla one) in an NPC's spell list is cast at an enemy.
+
+      **The recipe (custom firebolt):** custom MGEF `MF_FlameLanceEffect` authored to match vanilla
+      `FireDamageFFAimed75` (0x10F7F1, found via `find`+`mgefdiag`) on every functional field —
+      ValueModifier/Health, Destruction, ResistFire, FireAndForget/Aimed, Hostile+Detrimental+NoArea,
+      baseCost 3.3 (It.12 lesson: low cost for sane autocalc; NO Recover on an instant effect). The
+      MGEF reuses the vanilla firebolt **projectile** `Skyrim.esm:0x10FBEA` + **castingArt**
+      `0x01B211` (already-supported MagicEffectSpec ref fields, wired pass-2) so the bolt is VISIBLE
+      and actually delivers the hit. Custom SPEL `MF_FlameLanceSpell` wraps it at magnitude 30. NPC
+      `MF_FlameLanceNpc` is the It.17 mage recipe verbatim (csVampireMagic combatStyle, magicka-heavy
+      class, level 25 autoCalc, Aggressive/Brave AIData) but its `spells[]` = OUR custom spell.
+
+      **NEW code — `SpellSpec.equipType` (EQUP ref).** A hand spell needs an Equip Type or an NPC
+      can't equip it into a hand to cast in combat (vanilla hand spells use EitherHand
+      `Skyrim.esm:0x013F44`; BothHands/Left/RightHand exist too). Wired pass-2 (`sp.EquipmentType.SetTo`,
+      ISpell), validate `CheckRef`, dump prints `equip=` on the spell line. Omit for abilities/voice
+      powers. This was the most likely silent-no-cast failure mode for a generated combat spell.
+
+      **Verified structurally:** `dump` shows MGEF (all functional fields) + spell (effect→MGEF mag30,
+      FireAndForget/Aimed, equip=EitherHand) + NPC (class/combatStyle/spell/package all linked);
+      `mgefdiag` on the generated MGEF confirms Projectile=10FBEA + CastingArt=01B211 landed. validate
+      clean; combat_spec + sample_spec regression clean. **Example `examples/customspell_spec.json`**
+      → `ModForgeCustomSpell.esp` → `~/skyrim_mods/ModForgeCustomSpell.zip`, NPC at the It.9 wilderness
+      coords. **In-game expectation:** `coc` near, `placeatme 0x0009AE36` (Wolf) → she casts a visible
+      fire bolt at it that travels + damages. **If she melees/no projectile:** check the spell's equip
+      type took (dump `equip=`) and the MGEF projectile (mgefdiag) — those are the two new-vs-vanilla deltas.
+
 ## Build / test
 ```
 cd /home/lorkhan/repo/ModForge

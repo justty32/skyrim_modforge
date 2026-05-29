@@ -1,0 +1,106 @@
+{
+  "pluginName": "ModForgeCustomSpell.esp",
+  "esl": true,
+  "_": "It.20: the capstone — a FULLY CUSTOM Aimed projectile damage spell (custom MGEF + custom SPEL), given to a custom NPC who casts it AT AN ENEMY IN COMBAT. Combines It.12 (custom MGEF authoring, in-game-confirmed for self-cast/potions only) with It.17 (NPC combat-casting via spells[]+combatStyle+AIData). It.12 explicitly left 'Aimed damage spells need a projectile + casting/hit art' as FUTURE — this closes it. The MGEF reuses the vanilla firebolt PROJECTILE (0x10FBEA) + casting art (0x01B211) so the bolt is VISIBLE and delivers the hit; all functional fields (archetype/flags/skill/cost/cast/target) are authored to match vanilla FireDamageFFAimed75 (verified via mgefdiag). The damage value itself is ours.",
+
+  "magicEffects": [
+    {
+      "editorId": "MF_FlameLanceEffect",
+      "name": "Flame Lance",
+      "description": "A lance of fire that sears the target.",
+      "_": "Mirrors vanilla FireDamageFFAimed75 (0x10F7F1) functional fields: ValueModifier/Health, Destruction, ResistFire, FireAndForget/Aimed, Hostile+Detrimental+NoArea, baseCost 3.3 (It.12 lesson: keep baseCost low for sane autocalc; NO Recover flag on an instant effect or the damage is undone). projectile+castingArt reuse vanilla firebolt assets so it's visible and actually hits.",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "magicSkill": "Destruction",
+      "resistValue": "ResistFire",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
+      "baseCost": 3.3,
+      "flags": [ "Hostile", "Detrimental", "NoArea" ],
+      "projectile": "Skyrim.esm:0x10FBEA",
+      "castingArt": "Skyrim.esm:0x01B211"
+    }
+  ],
+
+  "spells": [
+    {
+      "editorId": "MF_FlameLanceSpell",
+      "name": "Flame Lance",
+      "_": "Wraps the custom MGEF at magnitude 30 (firebolt-tier). spellType=Spell, FireAndForget/Aimed mirrors the effect. equipType=EitherHand (Skyrim.esm:0x013F44) is REQUIRED for an NPC to equip the spell into a hand and cast it in combat (It.20 new field). baseCost 0 = let the engine autocalc from the effect.",
+      "spellType": "Spell",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
+      "equipType": "Skyrim.esm:0x013F44",
+      "effects": [
+        { "magicEffect": "MF_FlameLanceEffect", "magnitude": 30, "area": 0, "duration": 0 }
+      ]
+    }
+  ],
+
+  "combatStyles": [
+    {
+      "editorId": "MF_FlameLanceCombatStyle",
+      "_": "csVampireMagic profile (via cstydiag) — magic-preferring so the AI picks the spell over melee.",
+      "offensiveMult": 0.77, "defensiveMult": 0.3, "groupOffensiveMult": 0.74,
+      "equipMultMelee": 0.51, "equipMultMagic": 8.1, "equipMultRanged": 0.55,
+      "equipMultShout": 0.21, "equipMultUnarmed": 0.98, "equipMultStaff": 2.15,
+      "avoidThreatChance": 0.2,
+      "flags": [ "Dueling" ]
+    }
+  ],
+
+  "classes": [
+    {
+      "editorId": "MF_FlameLanceClass",
+      "name": "ModForge Flame Mage",
+      "healthWeight": 20, "magickaWeight": 65, "staminaWeight": 15,
+      "skillWeights": { "Destruction": 100, "Restoration": 60, "Alteration": 40, "OneHanded": 20 }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_FlameLanceNpc",
+      "name": "ModForge Flame Mage",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_FlameLanceClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+      "unique": true,
+      "level": 25,
+      "autoCalcStats": true,
+      "combatStyle": "MF_FlameLanceCombatStyle",
+      "_spells": "The NPC's known spell is OUR custom spell — not a vanilla one. This is the It.20 proof point.",
+      "spells": [ "MF_FlameLanceSpell" ],
+      "aggression": "Aggressive",
+      "confidence": "Brave",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50,
+      "packages": [ "MF_FlameLanceSandbox" ]
+    }
+  ],
+
+  "packages": [
+    { "editorId": "MF_FlameLanceSandbox",
+      "template": "Skyrim.esm:0x01C254",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [
+        "HellosToPlayer", "ObserveCombatBehavior",
+        "ReactionToPlayerActions", "AllowIdleChatter"
+      ],
+      "sandbox": {
+        "radius": 512,
+        "allowEating": true, "allowSleeping": false, "allowConversation": true,
+        "allowIdleMarkers": true, "allowSitting": true, "allowWandering": true,
+        "allowSpecialFurniture": true, "energy": 50.0
+      } }
+  ],
+
+  "placements": [
+    { "_": "Tamriel wilderness (It.9 confirmed-working coords). Tester walks up and `placeatme 0x0009AE36` (Wolf) to give her a target — she should cast OUR Flame Lance at the wolf: a fire bolt travels and damages it.",
+      "base": "MF_FlameLanceNpc", "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": -90176.8, "y": 18097.19, "z": -3725.44 } }
+  ]
+}

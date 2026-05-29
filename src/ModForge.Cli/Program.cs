@@ -893,6 +893,13 @@ internal static class Program
                 });
         }
         foreach (var s in spec.Spells) WireEffects(s.EditorId, s.Effects);
+        // Spell EquipType (EQUP ref) — needed for a hand spell to be equippable/castable.
+        foreach (var s in spec.Spells)
+        {
+            if (string.IsNullOrWhiteSpace(s.EquipType)) continue;
+            if (recordsByEd.TryGetValue(s.EditorId, out var rec) && rec is ISpell sp)
+                Resolve($"spell '{s.EditorId}' equipType", s.EquipType, fk => sp.EquipmentType.SetTo(fk));
+        }
         foreach (var p in spec.Potions) WireEffects(p.EditorId, p.Effects);
         foreach (var i in spec.Ingredients) WireEffects(i.EditorId, i.Effects);
         foreach (var s in spec.Scrolls) WireEffects(s.EditorId, s.Effects);
@@ -1777,6 +1784,7 @@ internal static class Program
                 else CheckRef(e.MagicEffect, $"{kind} '{ed}' effect magicEffect");
         }
         foreach (var s in spec.Spells) CheckEffects(s.EditorId, s.Effects, "spell");
+        foreach (var s in spec.Spells) CheckRef(s.EquipType, $"spell '{s.EditorId}' equipType");
         foreach (var p in spec.Potions) CheckEffects(p.EditorId, p.Effects, "potion");
 
         // MagicEffect (MGEF): every authored enum string must parse; association (if set) is a ref.
@@ -2456,7 +2464,8 @@ internal static class Program
             }
 
             if (r is ISpellGetter spG && (spG.Type != SpellType.Spell || spG.CastType != CastType.ConstantEffect || spG.BaseCost > 0))
-                Console.WriteLine($"      spell: type={spG.Type} cast={spG.CastType} target={spG.TargetType} cost={spG.BaseCost}");
+                Console.WriteLine($"      spell: type={spG.Type} cast={spG.CastType} target={spG.TargetType} cost={spG.BaseCost}"
+                    + (spG.EquipmentType.IsNull ? "" : $" equip={Ref(spG.EquipmentType.FormKey)}"));
 
             if (r is ICombatStyleGetter csG)
             {
@@ -2647,6 +2656,11 @@ internal sealed class SpellSpec
     public string TargetType { get; set; } = "";    // Self|Touch|Aimed|TargetActor|TargetLocation
     public uint BaseCost { get; set; }
     public float ChargeTime { get; set; }
+    // EquipType (EQUP) ref — which slot the spell occupies. For a hand spell an NPC (or the player)
+    // must equip+cast, set this to EitherHand (Skyrim.esm:0x013F44); BothHands/Left/RightHand exist
+    // too. Omit for non-equipped magic (abilities, voice powers). Without it, an NPC can't equip a
+    // hand spell into a hand and won't cast it in combat.
+    public string EquipType { get; set; } = "";
 }
 internal sealed class PotionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<EffectSpec> Effects { get; set; } = new(); public string Template { get; set; } = ""; }
 // MagicEffect (MGEF): the building block a spell/potion/ingredient/scroll `effect` points at — lets a
