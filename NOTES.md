@@ -982,6 +982,36 @@ call; the spec IS the contract.)
       `equipType=EitherHand` was the needed piece. ModForge can now author wholly-original combat
       magic (not just wire vanilla forms) onto a generated NPC. **Custom-content magic is complete.**
 
+- [ ] **It.21 — Follow procedure template (Skyrim.esm:0x019B2C) — STRUCTURAL DONE, awaiting in-game.**
+      The 5th procedure template — "NPC physically follows the player (or another actor)". Same
+      SingleRef-slot-0 shape as Patrol, so the deferred-wiring was **generalized**: the old
+      `patrolStartWires` is now `deferredTargetWires` (package, slot, slotName, editorId, ref),
+      emitted as `PackageTargetSpecificReference` after the placement loop — shared by Patrol's
+      "Patrol Start" and Follow's "Target to Follow".
+
+      **Follow slot schema** (`packagediag`): `[0]` Target to Follow (SingleRef), `[1]` Min Radius
+      (float 128), `[2]` Max Radius (float 256), `[4]` Accompany?, `[6]` Ride Horse?, `[8]` Need LOS?.
+      All 3 vanilla "FollowsPlayer" packages I diffed (dunBloatedManHunterGroup2, HowlSummonedWolf,
+      CWAttackCityFriendly) emit slot 0 = `PackageTargetSpecificReference(000014)` = the PlayerRef —
+      so `follow.target` **defaults to `Skyrim.esm:0x000014` (the player)** when omitted; set it to an
+      in-spec NPC placement to follow another actor.
+
+      **Spec/Build:** `PackageSpec.follow` (FollowSpec: `target`/`minRadius`/`maxRadius`/`accompany`/
+      `rideHorse`/`needLineOfSight`). `else if (tfk.ID == FollowTemplateId)` branch fills slots 1/2/4/6/8
+      immediately, defers slot 0 to `deferredTargetWires`. validate `CheckRef(follow.target)` (empty
+      OK — defaults to player). NOTE: this is the raw tag-along MOVEMENT only; a full hireable
+      follower also needs a managing quest + follow faction + dialogue (out of scope — this makes an
+      actor physically accompany you: companion-lite / summon / escort).
+
+      **Verified structurally:** `packagediag` shows all 6 slots = vanilla CWAttackCityFriendlyFollowPlayer
+      (slot 0 → player 000014, radii 128/256); validate clean; patrol regression confirms the
+      generalized deferred-wiring still emits "Patrol Start" correctly; negative test catches a bad
+      `follow.target`. **Example `examples/follow_spec.json`** → `ModForgeFollow.esp` →
+      `~/skyrim_mods/ModForgeFollow.zip`. `MF_FollowerNpc` (citizenship recipe so she can traverse the
+      inn door / city gates cross-cell, per It.16c) placed in the Sleeping Giant Inn at the It.16b
+      spawn. **In-game expectation:** `coc RiverwoodSleepingGiantInn`, wait ~30–90s cold-start, walk
+      around / out the door — she trails you, closing to ~128 and not lagging past ~256.
+
 ## Build / test
 ```
 cd /home/lorkhan/repo/ModForge

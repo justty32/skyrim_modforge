@@ -928,12 +928,15 @@ internal static class Program
         const uint TravelTemplateId   = 0x016FAA;  // Skyrim.esm: editorId "Travel"    —  3 slots
         const uint UseMagicTemplateId = 0x0504F5;  // Skyrim.esm: editorId "UseMagic"  — 11 active slots (2-12)
         const uint PatrolTemplateId   = 0x017723;  // Skyrim.esm: editorId "Patrol"    —  6 slots
+        const uint FollowTemplateId   = 0x019B2C;  // Skyrim.esm: editorId "Follow"    —  6 slots
         var skyrimEsm = ModKey.FromNameAndExtension("Skyrim.esm");
 
-        // Patrol slot 0 ("Patrol Start") points at a marker PLACEMENT, which is created later (the
-        // placement loop runs after this PACK loop). Defer that one ref-wiring: collect (package,
-        // editorId, startRef) here, resolve after placements register their editorIds.
-        var patrolStartWires = new List<(IPackage Pack, string Ed, string StartRef)>();
+        // Some templates' SingleRef slot 0 points at a PLACEMENT created later (the placement loop
+        // runs after this PACK loop) — or at a vanilla ref (e.g. the player). Defer that ref-wiring
+        // uniformly: collect (package, slot, slotName, editorId, ref) here, then after placements
+        // register their editorIds, emit each as a PackageTargetSpecificReference. Used by Patrol
+        // ("Patrol Start", slot 0) and Follow ("Target to Follow", slot 0).
+        var deferredTargetWires = new List<(IPackage Pack, sbyte Slot, string SlotName, string Ed, string Ref)>();
 
         // Build a PackageDataLocation: an authored placed-ref → LocationTarget anchored at that
         // ref, else LocationFallback(NearSelf) — anchors at the actor's current position with no
@@ -1098,16 +1101,31 @@ internal static class Program
                 if (string.IsNullOrWhiteSpace(pt.Start))
                     Console.WriteLine($"  ! package '{pk.EditorId}' patrol: no `start` ref — NPC has no route and won't patrol");
                 else
-                    patrolStartWires.Add((pack, pk.EditorId, pt.Start));
+                    deferredTargetWires.Add((pack, 0, "Patrol Start", pk.EditorId, pt.Start));
                 pack.Data[1] = new PackageDataFloat { Name = "Patrol Radius",            Data = pt.Radius ?? 150f };
                 pack.Data[2] = new PackageDataBool  { Name = "Repeatable?",              Data = pt.Repeatable ?? true };
                 pack.Data[4] = new PackageDataBool  { Name = "Start At Nearest?",        Data = pt.StartAtNearest ?? true };
                 pack.Data[6] = new PackageDataBool  { Name = "Ride Horse if Possible?",  Data = pt.RideHorse ?? false };
                 pack.Data[8] = new PackageDataBool  { Name = "Static Pathing?",          Data = pt.StaticPathing ?? false };
             }
+            else if (tfk.ID == FollowTemplateId)
+            {
+                // Follow slots: 0 Target to Follow (deferred — defaults to the player 0x000014, all
+                // vanilla "FollowsPlayer" packages emit PackageTargetSpecificReference(000014); can
+                // also be an in-spec NPC placement to follow another actor), 1 Min Radius (float),
+                // 2 Max Radius (float), 4 Accompany?, 6 Ride Horse?, 8 Need LOS?.
+                var fo = pk.Follow;
+                var tgt = string.IsNullOrWhiteSpace(fo.Target) ? "Skyrim.esm:0x000014" : fo.Target;
+                deferredTargetWires.Add((pack, 0, "Target to Follow", pk.EditorId, tgt));
+                pack.Data[1] = new PackageDataFloat { Name = "Min Radius:", Data = fo.MinRadius ?? 128f };
+                pack.Data[2] = new PackageDataFloat { Name = "Max Radius:", Data = fo.MaxRadius ?? 256f };
+                pack.Data[4] = new PackageDataBool  { Name = "Accompany?", Data = fo.Accompany ?? true };
+                pack.Data[6] = new PackageDataBool  { Name = "Ride Horse?", Data = fo.RideHorse ?? false };
+                pack.Data[8] = new PackageDataBool  { Name = "Need LOS?", Data = fo.NeedLineOfSight ?? false };
+            }
             else
             {
-                Console.WriteLine($"  ! package '{pk.EditorId}': template {tfk} is not yet supported (known: sandbox=0x01C254, travel=0x016FAA, usemagic=0x0504F5, patrol=0x017723) — emitting package with no Data overrides; template defaults apply");
+                Console.WriteLine($"  ! package '{pk.EditorId}': template {tfk} is not yet supported (known: sandbox=0x01C254, travel=0x016FAA, usemagic=0x0504F5, patrol=0x017723, follow=0x019B2C) — emitting package with no Data overrides; template defaults apply");
             }
         }
 
@@ -1349,19 +1367,21 @@ internal static class Program
             }
         }
 
-        // Patrol-start targets (deferred from the PACK loop — they point at marker placements).
-        foreach (var (pack, ed, startRef) in patrolStartWires)
+        // Deferred SingleRef slot-0 targets (Patrol "Patrol Start", Follow "Target to Follow") —
+        // emitted now that placements exist, as PackageTargetSpecificReference. The ref is an in-spec
+        // placement (e.g. a patrol marker, or an NPC to follow) or a vanilla ref (e.g. the player).
+        foreach (var (pack, slot, slotName, ed, refStr) in deferredTargetWires)
         {
-            if (!TryResolveRef(startRef, formKeyByEd, out var startFk))
-            { Console.WriteLine($"  ! package '{ed}' patrol start '{startRef}' unresolved — NPC won't patrol"); continue; }
-            pack.Data[0] = new PackageDataTarget
+            if (!TryResolveRef(refStr, formKeyByEd, out var tgtFk))
+            { Console.WriteLine($"  ! package '{ed}' {slotName} '{refStr}' unresolved — package will no-op"); continue; }
+            pack.Data[slot] = new PackageDataTarget
             {
-                Name = "Patrol Start",
+                Name = slotName,
                 Type = PackageDataTarget.Types.SingleRef,
-                Target = new PackageTargetSpecificReference { Reference = new FormLink<IPlacedGetter>(startFk) },
+                Target = new PackageTargetSpecificReference { Reference = new FormLink<IPlacedGetter>(tgtFk) },
             };
             linksWired++;
-            if (LooksExternalRef(startRef)) extLinks++;
+            if (LooksExternalRef(refStr)) extLinks++;
         }
 
         // Leveled-list entries + container contents (each references an item/npc by ref).
@@ -1938,6 +1958,7 @@ internal static class Program
             if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var ptfk) && ptfk.ID == 0x017723
                 && string.IsNullOrWhiteSpace(pk.Patrol.Start))
                 problems.Add($"package '{pk.EditorId}' uses Patrol template but patrol.start is empty — NPC has no route and won't patrol");
+            CheckRef(pk.Follow.Target,     $"package '{pk.EditorId}' follow.target");   // empty ⇒ defaults to the player
             // useMagic.spell is required only when the template is UseMagic — `Resolve`-style
             // template-id check is in Build, so here just warn for UseMagic-template packages.
             if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var tfk) && tfk.ID == 0x0504F5
@@ -2775,6 +2796,11 @@ internal sealed class PackageSpec
     // the NPC follows that marker's `linkedRefs` chain to the next marker, etc. Loop the route by
     // linking the last marker back to the first. Use for "guard walks this beat" behaviour.
     public PatrolSpec Patrol { get; set; } = new();
+    // Follow-template inputs (apply when `template` is Skyrim.esm:0x019B2C). `target` is who to
+    // follow — defaults to the player (Skyrim.esm:0x000014, what every vanilla "FollowsPlayer"
+    // package targets); set it to an in-spec NPC placement to follow another actor. Companions,
+    // summoned creatures, tag-alongs.
+    public FollowSpec Follow { get; set; } = new();
 }
 internal sealed class PackageScheduleSpec
 {
@@ -2890,6 +2916,22 @@ internal sealed class PatrolSpec
     public bool? StartAtNearest { get; set; }      // default true (begin at the closest marker)
     public bool? RideHorse { get; set; }           // default false
     public bool? StaticPathing { get; set; }       // default false
+}
+// Follow-template (Skyrim.esm:0x019B2C) data inputs. Slot indices on the template:
+//   0 Target to Follow (PackageDataTarget, SingleRef → PackageTargetSpecificReference; defaults to
+//     the player 0x000014, as every vanilla "FollowsPlayer" package does), 1 Min Radius (float),
+//   2 Max Radius (float), 4 Accompany? (bool), 6 Ride Horse? (bool), 8 Need LOS? (bool).
+// The NPC trails `target`, closing to Min and not straying past Max. Note: this is the raw movement
+// behaviour only — a full vanilla FOLLOWER also needs a follow faction / dialogue / a managing quest;
+// this package alone makes an actor physically tag along (companion-lite, summon, escort).
+internal sealed class FollowSpec
+{
+    public string Target { get; set; } = "";       // ref → who to follow; empty ⇒ the player (Skyrim.esm:0x000014)
+    public float? MinRadius { get; set; }          // default 128 (how close it closes in)
+    public float? MaxRadius { get; set; }          // default 256 (how far it may lag)
+    public bool? Accompany { get; set; }           // default true
+    public bool? RideHorse { get; set; }           // default false
+    public bool? NeedLineOfSight { get; set; }     // default false
 }
 // Attach a compiled Papyrus script (by Scriptname) to a record (by editorId), with
 // typed properties. type ∈ int|float|bool|string|object; object resolves ObjectEditorId.

@@ -1,0 +1,65 @@
+{
+  "pluginName": "ModForgeFollow.esp",
+  "esl": true,
+  "_": "It.21: an NPC that physically FOLLOWS THE PLAYER via the Follow procedure template (Skyrim.esm:0x019B2C). Slot 0 'Target to Follow' = PackageTargetSpecificReference to the player (0x000014) — exactly what every vanilla 'FollowsPlayer' package emits; the build defaults follow.target to the player when omitted. This is the raw tag-along MOVEMENT only (not a full follower with dialogue/hire — that needs a managing quest + follow faction). Citizenship recipe (crimeFaction + town faction + unique) is included so she can traverse the inn door / city gates when the player leads her cross-cell (It.16c lesson). Placed in the Sleeping Giant Inn at the It.16b-confirmed spawn; `coc RiverwoodSleepingGiantInn`, wait ~30-90s cold-start, then walk around / out the door — she should trail you, closing to ~128 units and not lagging past ~256.",
+
+  "classes": [
+    {
+      "editorId": "MF_FollowerClass",
+      "name": "ModForge Companion",
+      "healthWeight": 40, "magickaWeight": 20, "staminaWeight": 40,
+      "skillWeights": { "OneHanded": 80, "Block": 60, "HeavyArmor": 60, "Archery": 40 }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_FollowerNpc",
+      "name": "ModForge Companion",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_FollowerClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+      "unique": true,
+      "level": 10,
+      "autoCalcStats": true,
+      "aggression": "Aggressive",
+      "confidence": "Brave",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50,
+      "packages": [ "MF_FollowPlayer" ]
+    }
+  ],
+
+  "packages": [
+    {
+      "editorId": "MF_FollowPlayer",
+      "_": "Follow template. target omitted ⇒ defaults to the player (Skyrim.esm:0x000014). minRadius/maxRadius are how close she closes in vs. how far she may lag. accompany=true = walk WITH the player rather than just chase.",
+      "template": "Skyrim.esm:0x019B2C",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [
+        "HellosToPlayer", "ObserveCombatBehavior",
+        "ReactionToPlayerActions", "AllowIdleChatter", "WorldInteractions"
+      ],
+      "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 0, "dayOfWeek": "Any" },
+      "follow": {
+        "minRadius": 128,
+        "maxRadius": 256,
+        "accompany": true,
+        "rideHorse": false,
+        "needLineOfSight": false
+      }
+    }
+  ],
+
+  "placements": [
+    {
+      "_": "Sleeping Giant Inn at the It.16b-confirmed walkable spawn (0,0,0). Player coc's in, finds her, then leads her around / out the door.",
+      "base": "MF_FollowerNpc",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": 0, "y": 0, "z": 0 }
+    }
+  ]
+}

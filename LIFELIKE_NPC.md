@@ -76,6 +76,7 @@ round-1 failure mode. **Both systems must be authored.**
 | Travel | `Skyrim.esm:0x016FAA` | 3 | NPC walks to a specific REFR/cell |
 | Patrol | `Skyrim.esm:0x017723` | 6 | Guard route. Wired in `packages[].patrol` (`start` → first marker placement); the route is the markers' `linkedRefs` chain (m1→m2→m3→m1 looped, null keyword). Markers must be on navmesh — see the static-marker gotcha below |
 | UseMagic | `Skyrim.esm:0x0504F5` | 11 | Scheduled non-combat spell casting (priest at altar, mage self-buffing). NPC picks one spell from `spells` matching `spellType` (TargetObjectType enum). Wired in `packages[].useMagic` |
+| Follow | `Skyrim.esm:0x019B2C` | 6 | NPC physically follows the player (or another actor). Wired in `packages[].follow` (`target` defaults to the player `0x000014`; `minRadius`/`maxRadius`/`accompany`). Raw tag-along movement only — a hireable follower also needs a managing quest + follow faction + dialogue |
 | UseWeapon | `Skyrim.esm:0x01C338` | — | Practice attacks at a target — not yet ModForge-supported |
 | Follow | `Skyrim.esm:0x019B2C` | — | Follow another actor (follower behaviour) — not yet ModForge-supported |
 | Escort | `Skyrim.esm:0x023B73` | — | Escort another actor to a location — not yet ModForge-supported |
