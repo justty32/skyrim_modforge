@@ -261,17 +261,22 @@ internal static partial class Program
             foreach (var line in d.Responses)
                 info.Responses.Add(new DialogResponse { Text = line, ResponseNumber = rn++, Emotion = emotion, EmotionValue = d.EmotionValue });
 
-            if (!string.IsNullOrEmpty(d.SpeakerNpcEditorId) &&
-                npcsByEd.TryGetValue(d.SpeakerNpcEditorId, out var speaker))
+            if (!string.IsNullOrEmpty(d.SpeakerNpcEditorId))
             {
-                var cond = new ConditionFloat
+                if (npcsByEd.TryGetValue(d.SpeakerNpcEditorId, out var speaker))
                 {
-                    CompareOperator = CompareOperator.EqualTo,
-                    ComparisonValue = 1f,
-                    Data = new GetIsIDConditionData(),
-                };
-                ((GetIsIDConditionData)cond.Data).Object.Link.SetTo(speaker);
-                info.Conditions.Add(cond);
+                    var cond = new ConditionFloat
+                    {
+                        CompareOperator = CompareOperator.EqualTo,
+                        ComparisonValue = 1f,
+                        Data = new GetIsIDConditionData(),
+                    };
+                    ((GetIsIDConditionData)cond.Data).Object.Link.SetTo(speaker);
+                    info.Conditions.Add(cond);
+                }
+                else
+                    // No GetIsID gate => EVERY NPC would speak this line. Warn (validate also catches this).
+                    Console.WriteLine($"  ! dialogue '{d.EditorId}' speaker '{d.SpeakerNpcEditorId}' not found in spec — line has NO speaker gate (any NPC may say it)");
             }
             topic.Responses.Add(info);
             dialogueBuilt++;
@@ -462,7 +467,7 @@ internal static partial class Program
         {
             var r = mod.ConstructibleObjects.AddNew();
             r.EditorID = co.EditorId;
-            r.CreatedObjectCount = (ushort)Math.Max(1, co.Count);
+            r.CreatedObjectCount = (ushort)Math.Clamp(co.Count, 1, ushort.MaxValue);
         }
 
         // CombatStyle (CSTY): no FormLinks (all floats + a Flag enum), so fully built in pass 1.
@@ -1131,6 +1136,11 @@ internal static partial class Program
             // dropping a temporary ref another ref points at).
             if (!string.IsNullOrWhiteSpace(pl.EditorId))
             {
+                // A placement editorId that collides with an already-registered record would
+                // silently clobber that record's FormKey here, breaking any ref to the original.
+                // validate enforces uniqueness, but Build can run without it — so warn.
+                if (formKeyByEd.ContainsKey(pl.EditorId))
+                    Console.WriteLine($"  ! placement editorId '{pl.EditorId}' collides with an existing record — its FormKey is now overwritten (run validate to catch this)");
                 placedRec.EditorID = pl.EditorId;
                 formKeyByEd[pl.EditorId] = placedRec.FormKey;
                 recordsByEd[pl.EditorId] = (IMajorRecord)placedRec;
@@ -1304,7 +1314,10 @@ internal static partial class Program
                     + spec.LeveledItems.Count + spec.LeveledNpcs.Count + spec.Containers.Count
                     + spec.Ingredients.Count + spec.Ammunitions.Count + spec.Scrolls.Count
                     + spec.SoulGems.Count + spec.Keys.Count + spec.Keywords.Count
-                    + spec.Outfits.Count + spec.Statics.Count + spec.Activators.Count;
+                    + spec.Outfits.Count + spec.Statics.Count + spec.Activators.Count
+                    + spec.MagicEffects.Count + spec.Classes.Count + spec.Packages.Count
+                    + spec.CombatStyles.Count + spec.Relationships.Count + spec.Recipes.Count;
+                    // (Placements are reported separately below, so not folded into `total`.)
         Console.WriteLine($"built {outPath} from {Path.GetFileName(specPath)} " +
                           $"(ESL={spec.Esl}, {total} top-level record(s); {dialogueBuilt} dialogue topic(s); " +
                           $"{linksWired} cross-ref link(s), {extLinks} to external master(s); " +
