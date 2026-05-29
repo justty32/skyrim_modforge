@@ -975,6 +975,23 @@ call; the spec IS the contract.)
       tag it. NEXT: relocate the patrol to a known-good navmesh area (Whiterun, per It.16c) and/or
       verify marker reachability before re-shipping.
 
+      **ROUND-1 SYMPTOM (tester): NPC completely stands still** — never even walks to the first
+      marker. With no fallback package on the NPC, "stands" = patrol selected-but-can't-path (markers
+      off-navmesh) OR cold-start not yet elapsed. **ROUND-2 FIX (shipped, awaiting re-test):** relocate
+      the whole patrol INTO the Sleeping Giant Inn (`RiverwoodSleepingGiantInn`, cell Skyrim.esm:0x0133C6)
+      and place the 3 markers on a CONFIRMED-WALKABLE corridor. New diagnostic **`refpos <plugin>
+      <0xFORMID>`** prints a placed ref's position/rotation/base (cell-local for interiors, world for
+      exteriors) — used it on the vanilla `RiverwoodInnCenterMarker` (0x01DC0A) to get its real coords
+      (-977.29, 9.08, 0); base = XMarkerHeading (confirms 0x000034 is a valid patrol-marker base). It.16b
+      proved a generated NPC walks from cell-local (0,0,0) to that marker, so the markers now sit on that
+      proven line: m1 (0,0,0) = the It.16b spawn, m2 (-500,5,0) = midpoint, m3 (-977.29,9.08,0) = the
+      vanilla centre marker, all z=0. NPC spawns at m1. **Re-test:** `coc RiverwoodSleepingGiantInn`,
+      wait ~30-90s for package cold-start, watch him pace the line m1→m2→m3→m1. If he STILL stands on a
+      flat confirmed floor, it's a deeper patrol-not-executing issue (not navmesh) and the next step is a
+      Sandbox fallback package to distinguish patrol-skipped (wanders) from patrol-stuck (stands).
+      **The `refpos` tool is the lasting win here — anchor any future placement on known navmesh instead
+      of guessing a z that statics won't snap to.**
+
 ## Build / test
 ```
 cd /home/lorkhan/repo/ModForge

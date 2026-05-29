@@ -52,6 +52,7 @@ internal static class Program
                 case "pkgsbytemplate" when args.Length == 3: return PkgsByTemplate(args[1], args[2]);
                 case "npcdiag" when args.Length == 3: return NpcDiag(args[1], args[2]);
                 case "cstydiag" when args.Length == 3: return CstyDiag(args[1], args[2]);
+                case "refpos" when args.Length == 3: return RefPos(args[1], args[2]);
                 default: Usage(); return 1;
             }
         }
@@ -79,6 +80,7 @@ internal static class Program
         "  packagediag <in.esp> <0xFORMID>              print a Package's template/flags/schedule/data inputs\n" +
         "  npcdiag <in.esp> <0xFORMID>                  print an Npc's race/class/voice/factions/packages/flags (for cross-cell diff vs vanilla)\n" +
         "  cstydiag <in.esp> <0xFORMID>                 print a CombatStyle's offensive/defensive mults + equipment preferences + flags\n" +
+        "  refpos <in.esp> <0xFORMID>                   print a placed ref's (REFR/ACHR) position+rotation+base (anchor new placements on known navmesh)\n" +
         "  extract <in.esp> <strings.json>\n" +
         "  applyloc <in.esp> <strings.json> <outDir>   (Localized UTF-8 _chinese.STRINGS)\n" +
         "  apply   <in.esp> <strings.json> <out.esp>");
@@ -2187,6 +2189,33 @@ internal static class Program
             if (target is not null) return 0;
         }
         if (target is not null) Console.WriteLine($"0x{target:X6} not a Light in {Path.GetFileName(inPath)}");
+        return 0;
+    }
+
+    // Diagnostic: print a placed reference's (REFR/ACHR) position + rotation + base form, by FormID.
+    // Position is cell-LOCAL for interiors, WORLD coords for exteriors. Used to anchor new placements
+    // (e.g. patrol markers) at a point KNOWN to be on navmesh — copy a vanilla reachable ref's coords
+    // rather than guessing, since static markers don't snap to the floor the way actors do.
+    private static int RefPos(string inPath, string formIdHex)
+    {
+        uint id = Convert.ToUInt32(formIdHex.Replace("0x", "", StringComparison.OrdinalIgnoreCase), 16) & 0xFFFFFF;
+        using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE);
+        foreach (var r in mod.EnumerateMajorRecords<IPlacedGetter>())
+        {
+            if (r.FormKey.ID != id) continue;
+            var (pos, rot, baseFk, kind) = r switch
+            {
+                IPlacedObjectGetter o => (o.Placement?.Position, o.Placement?.Rotation, o.Base.FormKey, "PlacedObject (REFR)"),
+                IPlacedNpcGetter a    => (a.Placement?.Position, a.Placement?.Rotation, a.Base.FormKey, "PlacedNpc (ACHR)"),
+                _ => ((Noggog.P3Float?)null, (Noggog.P3Float?)null, default(FormKey), "Placed"),
+            };
+            Console.WriteLine($"0x{id:X6}  {kind}  EditorID={r.EditorID ?? "-"}");
+            Console.WriteLine($"  base = {baseFk}");
+            if (pos is { } p) Console.WriteLine($"  position = ({p.X:0.##}, {p.Y:0.##}, {p.Z:0.##})  (cell-local for interiors, world for exteriors)");
+            if (rot is { } ro) Console.WriteLine($"  rotation = ({ro.X:0.###}, {ro.Y:0.###}, {ro.Z:0.###}) rad");
+            return 0;
+        }
+        Console.WriteLine($"0x{id:X6} not a placed reference in {Path.GetFileName(inPath)}");
         return 0;
     }
 

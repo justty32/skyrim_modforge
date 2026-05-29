@@ -1,7 +1,7 @@
 {
   "pluginName": "ModForgePatrol.esp",
   "esl": true,
-  "_": "It.19: NPC walks a guard-beat patrol between three marker points via the Patrol procedure template (Skyrim.esm:0x017723). The route is the LINKED-REFERENCE chain off the start marker: m1 -> m2 -> m3 -> m1 (looped). Patrol slot 0 (Patrol Start) is a PackageTargetSpecificReference to m1; the engine follows each marker's default (null-keyword) linked ref to the next. Markers are XMarkerHeading (Skyrim.esm:0x000034) — invisible nav points. Placed at the It.9 Tamriel-wilderness confirmed-working coords so the tester can `coc` near and watch the NPC pace the triangle.",
+  "_": "It.19 ROUND 2: NPC walks a guard-beat patrol between three markers via the Patrol procedure template (Skyrim.esm:0x017723). ROUND 1 FAILED in open wilderness (NPC stood still) — root cause: static XMarkerHeading markers don't snap to the floor like actors do, so a marker placed at a fixed wilderness z lands off-navmesh and the NPC can't path to it. ROUND-2 FIX: relocate INSIDE the Sleeping Giant Inn (RiverwoodSleepingGiantInn, cell Skyrim.esm:0x0133C6) and place the 3 markers along a CONFIRMED-WALKABLE corridor — It.16b proved a generated NPC walks from cell-local (0,0,0) to the vanilla RiverwoodInnCenterMarker at (-977.29, 9.08, 0). So m1/m2/m3 sit on that proven line at z=0. The route is the LINKED-REFERENCE chain m1->m2->m3->m1 (looped); Patrol slot 0 points at m1 (PackageTargetSpecificReference); the engine follows each marker's default (null-keyword) linked ref. `coc RiverwoodSleepingGiantInn`, wait ~30-90s for the package cold-start, watch the NPC pace the line.",
 
   "npcs": [
     {
@@ -48,33 +48,33 @@
 
   "placements": [
     {
-      "_": "The guard, spawned at marker 1. startAtNearest=true means he'll begin the route from whichever marker is closest, so spawning on m1 is fine.",
+      "_": "The guard, spawned at the It.16b-confirmed NPC spawn (0,0,0) in the Sleeping Giant Inn. startAtNearest=true → begins the route from whichever marker is closest (m1, here).",
       "base": "MF_PatrolGuard",
-      "worldspace": "Skyrim.esm:0x00003C",
-      "position": { "x": -90176.8, "y": 18097.19, "z": -3725.44 }
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": 0, "y": 0, "z": 0 }
     },
     {
-      "_": "Marker 1 (route start). linkedRef -> marker 2 (null keyword = the default link the patrol engine follows). Auto-forced persistent because it's a linked-ref source.",
+      "_": "Marker 1 (route start) at the It.16b spawn point — confirmed on navmesh. linkedRef -> m2 (null keyword = the default patrol link). Auto-persistent (linked-ref source).",
       "editorId": "MF_PatrolMarker1",
       "base": "Skyrim.esm:0x000034",
-      "worldspace": "Skyrim.esm:0x00003C",
-      "position": { "x": -90176.8, "y": 18097.19, "z": -3725.44 },
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": 0, "y": 0, "z": 0 },
       "linkedRefs": [ { "target": "MF_PatrolMarker2" } ]
     },
     {
-      "_": "Marker 2 -> marker 3.",
+      "_": "Marker 2 at the midpoint of the It.16b-walked corridor (spawn -> RiverwoodInnCenterMarker). m2 -> m3.",
       "editorId": "MF_PatrolMarker2",
       "base": "Skyrim.esm:0x000034",
-      "worldspace": "Skyrim.esm:0x00003C",
-      "position": { "x": -89876.8, "y": 18097.19, "z": -3725.44 },
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": -500, "y": 5, "z": 0 },
       "linkedRefs": [ { "target": "MF_PatrolMarker3" } ]
     },
     {
-      "_": "Marker 3 -> marker 1 (closes the loop).",
+      "_": "Marker 3 at the vanilla RiverwoodInnCenterMarker position (-977.29, 9.08, 0) — It.16b confirmed an NPC walks here. m3 -> m1 (closes the loop).",
       "editorId": "MF_PatrolMarker3",
       "base": "Skyrim.esm:0x000034",
-      "worldspace": "Skyrim.esm:0x00003C",
-      "position": { "x": -90026.8, "y": 18347.19, "z": -3725.44 },
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": -977.29, "y": 9.08, "z": 0 },
       "linkedRefs": [ { "target": "MF_PatrolMarker1" } ]
     }
   ]
