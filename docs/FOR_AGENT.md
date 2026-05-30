@@ -10,6 +10,13 @@ start by skimming [`lifelike/`](lifelike/README.md) — distilled recipe + the t
 insight (CombatStyle vs AIData) + vanilla FormID reference + diagnostic command cheat sheet.
 The deeper engine mechanics behind the generator are in [`engine-internals.md`](engine-internals.md).
 
+> **Two ways to drive ModForge.** This guide covers the default: **write a JSON spec, run the
+> CLI.** If instead you need to **compose the spec in code** — loops/conditionals, data pulled
+> from elsewhere, embedding generation in a larger program, or reacting to build warnings
+> programmatically — reference `ModForge.Core` as a library and call `Generator.Build` /
+> `Generator.Validate` directly. That path is documented in **[library-api.md](library-api.md)**.
+> Default to the CLI + JSON; reach for the library when the spec must be *computed*, not authored.
+
 ## Your job, in one loop
 
 ```

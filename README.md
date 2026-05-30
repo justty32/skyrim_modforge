@@ -41,6 +41,9 @@ if (problems.Count == 0)
 }
 ```
 
+Full library guide (API surface, dynamic composition, when to prefer it over CLI + JSON):
+[`docs/library-api.md`](docs/library-api.md).
+
 ## CLI (src/ModForge.Cli)
 
 ```
