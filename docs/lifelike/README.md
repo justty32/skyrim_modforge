@@ -8,7 +8,7 @@ This page is the hub: the complete recipe + the one key insight. Everything else
 - **[cheatsheets.md](cheatsheets.md)** — diagnostic commands, in-game console, Papyrus + CJK setup
 - **[cookbook.md](cookbook.md)** — copy-paste recipes (inn patron, commuter, mage, ritual caster, follower, craftable item, …)
 - **[../engine-internals.md](../engine-internals.md)** — the *why*: override semantics, GRUP formulas, PACK templates, the localized-string landmine
-- **[../SPEC.md](../SPEC.md)** — full per-field spec reference · **[../FOR_AGENT.md](../FOR_AGENT.md)** — the agent workflow
+- **[../SPEC.md](../SPEC.md)** — full per-field spec reference · **[../for_agent.md](../for_agent.md)** — the agent workflow (CLI + library)
 
 ## TL;DR — the complete NPC recipe
 

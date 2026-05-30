@@ -5,11 +5,11 @@ conditionals, data pulled from elsewhere), embed generation in a larger program,
 agent write C# that calls ModForge directly. `ModForge.Core` is the reusable engine; it works on
 objects and never touches the console, argv, or hard-coded file paths.
 
-← agent workflow hub: [FOR_AGENT.md](FOR_AGENT.md) · spec field reference: [SPEC.md](SPEC.md)
+← index: [for_agent.md](for_agent.md) · CLI path: [for_agent_cli.md](for_agent_cli.md) · spec fields: [SPEC.md](SPEC.md)
 
 ## CLI + JSON vs. library — which to use
 
-| | CLI + JSON (`FOR_AGENT.md`) | Library (`ModForge.Core`) |
+| | CLI + JSON ([for_agent_cli.md](for_agent_cli.md)) | Library (`ModForge.Core`) |
 |---|---|---|
 | The spec is… | a static `.json` file you write | a `ModSpec` object you build in code |
 | Best for | "describe a mod → generate it" (reviewable, diffable, re-runnable) | dynamic composition, embedding, reacting to build warnings programmatically |
@@ -99,5 +99,5 @@ programmatically — a build with warnings still produces a mod; decide per-warn
 ## Same honesty rule
 
 Building a structurally-valid mod is **not** the same as in-game-functional — see the
-[Limits section in FOR_AGENT.md](FOR_AGENT.md#limits--be-honest-do-not-over-claim). The library
+[Limits section in for_agent.md](for_agent.md#limits--be-honest-do-not-over-claim). The library
 gives you the bytes; only a Proton/Skyrim launch confirms behaviour.

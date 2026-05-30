@@ -9,7 +9,7 @@ Linux (no Creation Kit, no Windows needed for generation).
 > Design principle: **the AI agent only emits intent / text (a reviewable JSON spec); a
 > deterministic tool (Mutagen) emits the bytes.** Plugin records, FormIDs, masters and record
 > sizes are never hand-written — Mutagen guarantees validity. The agent drives the tool per
-> `docs/FOR_AGENT.md`; there is no in-tool LLM API.
+> `docs/for_agent.md`; there is no in-tool LLM API.
 
 ## Pillars (proven feasible on Linux, 2026-05-24)
 
@@ -42,7 +42,7 @@ if (problems.Count == 0)
 ```
 
 Full library guide (API surface, dynamic composition, when to prefer it over CLI + JSON):
-[`docs/library-api.md`](docs/library-api.md).
+[`docs/for_agent_lib.md`](docs/for_agent_lib.md).
 
 ## CLI (src/ModForge.Cli)
 
@@ -72,7 +72,7 @@ dotnet run --project src/ModForge.Cli -- <command> ...
 The **spec** format (the JSON the generator consumes) is documented in
 [`docs/SPEC.md`](docs/SPEC.md) with a JSON Schema at [`examples/spec.schema.json`](examples/spec.schema.json);
 [`examples/sample_spec.json`](examples/sample_spec.json) is a complete working example.
-The agent workflow is in [`docs/FOR_AGENT.md`](docs/FOR_AGENT.md).
+The agent workflow is in [`docs/for_agent.md`](docs/for_agent.md) (CLI path + library path).
 
 **Building lifelike NPCs?** See [`docs/lifelike/`](docs/lifelike/README.md) — distilled recipe + the
 two-systems insight (CombatStyle vs AIData) + vanilla FormID reference + diagnostic commands +
