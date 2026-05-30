@@ -224,7 +224,7 @@ internal static partial class Program
 
         // Native dialogue: Quest -> DialogBranch -> DialogTopic -> DialogResponses(INFO).
         // (Writes valid records; making the line actually surface in-game still needs
-        // quest-flag tuning + Proton testing — see NOTES.md / the parent spike.)
+        // quest-flag tuning + Proton testing — see docs/lifelike/gotchas.md.)
         int dialogueBuilt = 0;
         foreach (var d in spec.Dialogue)
         {

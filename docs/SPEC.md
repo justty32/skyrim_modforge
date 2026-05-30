@@ -387,7 +387,7 @@ dotnet run --project src/ModForge.Cli -- package  myspec.json OutModDir # esp + 
 `package` lays out `OutModDir/<pluginName>` + `Scripts/*.pex` + `Scripts/Source/*.psc`.
 
 **NL → spec:** describe what you want to an AI agent (Claude Code); the agent emits a spec
-conforming to this doc / `examples/spec.schema.json` (per `FOR_AGENT.md`), runs `validate`
+conforming to this doc / `../examples/spec.schema.json` (per `FOR_AGENT.md`), runs `validate`
 (self-correcting on problems), then `build`/`package`. This agent-driven loop **is** the
 NL→spec layer — there is no in-tool LLM API (the once-planned `describe` command is dropped),
 so there's no API key/provider to configure.
@@ -398,4 +398,4 @@ cells** (via `worldspace` + world position). Refs (in-spec or `<master>:0xFORMID
 command are the building blocks for the external ones. Remaining gaps are long-tail record
 types/fields — the same pattern: add a spec class + a loop in `Build`.
 
-See `examples/sample_spec.json` for a complete working example.
+See `../examples/sample_spec.json` for a complete working example.

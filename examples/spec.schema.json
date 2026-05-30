@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://modforge/spec.schema.json",
   "title": "ModForge plugin spec",
-  "description": "Describes the content of one Skyrim plugin. See SPEC.md. Property names are matched case-insensitively by the generator.",
+  "description": "Describes the content of one Skyrim plugin. See docs/SPEC.md. Property names are matched case-insensitively by the generator.",
   "type": "object",
   "properties": {
     "pluginName": { "type": "string", "description": "Output filename / ModKey, e.g. MyMod.esp" },

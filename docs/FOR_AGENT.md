@@ -3,12 +3,12 @@
 You (an AI agent) drive ModForge to turn a content request into a Skyrim plugin, and to
 translate plugin text. ModForge is the deterministic half; **you are the NL→spec half.**
 Read this once, then follow the workflow. Field reference for the spec is in `SPEC.md`;
-a complete example is `examples/sample_spec.json`.
+a complete example is `../examples/sample_spec.json`.
 
 **If the request involves making NPCs feel alive** (sandbox / daily life / combat / spell use),
-start by skimming [`LIFELIKE_NPC.md`](LIFELIKE_NPC.md) — distilled recipe + the two-systems
+start by skimming [`lifelike/`](lifelike/README.md) — distilled recipe + the two-systems
 insight (CombatStyle vs AIData) + vanilla FormID reference + diagnostic command cheat sheet.
-That doc captures the It.16–It.17 learnings; the chronological story is in `NOTES.md`.
+The deeper engine mechanics behind the generator are in [`engine-internals.md`](engine-internals.md).
 
 ## Your job, in one loop
 
@@ -169,5 +169,4 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
 - You cannot confirm anything works **in-game** from here — that needs a Proton/Skyrim launch.
   Say "generated and structurally verified (dump)", not "works in-game", unless a human tested it.
 
-When a request needs something in the Limits list, say so plainly and offer what IS possible
-(or note it as blocked on It.7b). See `NOTES.md` for the iteration backlog.
+When a request needs something in the Limits list, say so plainly and offer what IS possible.

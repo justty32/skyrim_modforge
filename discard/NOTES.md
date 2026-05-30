@@ -1,4 +1,10 @@
-# ModForge — working notes (autonomous-loop anchor)
+# ModForge — working notes (ARCHIVED)
+
+> **ARCHIVED & OUTDATED — do not use as a source of truth.** The evergreen knowledge here has
+> been distilled into `docs/` (see [`docs/lifelike/`](../docs/lifelike/README.md),
+> [`docs/engine-internals.md`](../docs/engine-internals.md), [`docs/SPEC.md`](../docs/SPEC.md)).
+> Where this file conflicts with those, **the `docs/` versions win.** Kept only for the
+> chronological "why did we decide X" story.
 
 > Scratch/handoff file. Each loop iteration: read this, do the next unchecked item,
 > update it, commit. Build/test commands at the bottom.

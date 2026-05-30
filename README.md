@@ -9,7 +9,7 @@ Linux (no Creation Kit, no Windows needed for generation).
 > Design principle: **the AI agent only emits intent / text (a reviewable JSON spec); a
 > deterministic tool (Mutagen) emits the bytes.** Plugin records, FormIDs, masters and record
 > sizes are never hand-written — Mutagen guarantees validity. The agent drives the tool per
-> `FOR_AGENT.md`; there is no in-tool LLM API.
+> `docs/FOR_AGENT.md`; there is no in-tool LLM API.
 
 ## Pillars (proven feasible on Linux, 2026-05-24)
 
@@ -45,12 +45,14 @@ dotnet run --project src/ModForge.Cli -- <command> ...
 ```
 
 The **spec** format (the JSON the generator consumes) is documented in
-[`SPEC.md`](SPEC.md) with a JSON Schema at [`examples/spec.schema.json`](examples/spec.schema.json);
+[`docs/SPEC.md`](docs/SPEC.md) with a JSON Schema at [`examples/spec.schema.json`](examples/spec.schema.json);
 [`examples/sample_spec.json`](examples/sample_spec.json) is a complete working example.
+The agent workflow is in [`docs/FOR_AGENT.md`](docs/FOR_AGENT.md).
 
-**Building lifelike NPCs?** See [`LIFELIKE_NPC.md`](LIFELIKE_NPC.md) — distilled recipe + the
+**Building lifelike NPCs?** See [`docs/lifelike/`](docs/lifelike/README.md) — distilled recipe + the
 two-systems insight (CombatStyle vs AIData) + vanilla FormID reference + diagnostic commands +
-gotchas. The chronological discovery story is in [`NOTES.md`](NOTES.md).
+gotchas. The engine mechanics behind the generator are in
+[`docs/engine-internals.md`](docs/engine-internals.md).
 
 Papyrus prereq (one-time): extract the CK's `Data/Scripts.zip` `Source/Scripts/*` to
 `~/.cache/modforge/papyrus/` (or set `MODFORGE_PAPYRUS_BASE`); set
@@ -64,7 +66,7 @@ contract — deterministic, diff-able, re-runnable.
 ### Translatable fields currently covered
 `Name` (most records), `Book.BookText`, `Npc.ShortName`, quest objective text, and
 native dialogue (`DialogTopic` prompt + spoken `DialogResponse` lines). Easy to extend
-— add a slot in `Program.cs`'s `Slots(...)`.
+— add a slot in `Translate.cs`'s `Slots(...)`.
 
 ## Status
 Phase 1: the translate pipeline (extract/apply) + a `gen` demo plugin. Generation of
