@@ -16,6 +16,7 @@
     {
       "editorId": "MF_TalkerNpc",
       "name": "Aldric the Forged",
+      "greeting": "Welcome to the Sleeping Giant. What brings you here?",
       "race": "Skyrim.esm:0x013746",
       "class": "MF_TalkerClass",
       "outfit": "Skyrim.esm:0x09D5DF",

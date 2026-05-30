@@ -42,6 +42,7 @@
     {
       "editorId": "MF_LifelikeNpc",
       "name": "Edda the Forged",
+      "greeting": "Mind the fire, traveler. Speak your piece.",
       "race": "Skyrim.esm:0x013746",
       "class": "MF_LifelikeClass",
       "outfit": "Skyrim.esm:0x09D5DF",

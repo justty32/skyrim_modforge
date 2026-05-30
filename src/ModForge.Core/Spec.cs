@@ -69,6 +69,12 @@ public sealed class NpcSpec
     public string Assistance { get; set; } = "";     // HelpsNobody|HelpsAllies|HelpsFriendsAndAllies (default: HelpsNobody)
     public string Mood { get; set; } = "";           // Neutral|Angry|Fear|Happy|Sad|Surprised|Puzzled|Disgusted
     public int EnergyLevel { get; set; }              // 0..100 — vanilla actors typically 50
+    // Greeting (Hello) line. When this NPC is the speaker of any custom `dialogue[]`, Build auto-emits
+    // a Hello topic (Category=Misc, Subtype=Hello, SNAM='HELO') gated on GetIsID(this NPC). This is
+    // what makes the NPC CONVERSABLE — without a Hello, activating the NPC never opens the dialogue
+    // menu, so the player topics never surface (you just get voicetype mumbles). Empty => a neutral
+    // default line is used so the NPC still works.
+    public string Greeting { get; set; } = "";
 }
 public sealed class QuestSpec
 {

@@ -292,6 +292,45 @@ public static partial class Generator
             dialogueBuilt++;
         }
 
+        // Hello (greeting) per speaking NPC: WITHOUT one the NPC is not conversable — activating it
+        // never opens the dialogue menu, so the player topics above never surface (you just get
+        // voicetype mumbles). Vanilla talkable NPCs all carry a Hello (Category=Misc, Subtype=Hello,
+        // SNAM='HELO', no branch, gated on GetIsID). Emit one per (speaker, quest), keyed so multiple
+        // topics from the same NPC share a single Hello.
+        var npcSpecByEd = spec.Npcs.Where(n => !string.IsNullOrEmpty(n.EditorId))
+                                   .GroupBy(n => n.EditorId).ToDictionary(g => g.Key, g => g.First());
+        var helloDone = new HashSet<string>();
+        foreach (var d in spec.Dialogue)
+        {
+            if (string.IsNullOrEmpty(d.SpeakerNpcEditorId)) continue;
+            if (string.IsNullOrEmpty(d.QuestEditorId) || !questsByEd.TryGetValue(d.QuestEditorId, out var quest)) continue;
+            if (!npcsByEd.TryGetValue(d.SpeakerNpcEditorId, out var speaker)) continue;
+            if (!helloDone.Add(d.SpeakerNpcEditorId + "|" + quest.FormKey)) continue;
+
+            var hello = mod.DialogTopics.AddNew();
+            hello.EditorID = d.SpeakerNpcEditorId + "_Hello";
+            hello.Quest.SetTo(quest);
+            hello.Category = DialogTopic.CategoryEnum.Misc;
+            hello.Subtype = DialogTopic.SubtypeEnum.Hello;
+            hello.SubtypeName = new RecordType("HELO");
+            hello.Priority = 50f;   // no Branch — Hello is NPC-initiated, not a player menu branch
+
+            var greet = npcSpecByEd.TryGetValue(d.SpeakerNpcEditorId, out var ns) && !string.IsNullOrWhiteSpace(ns.Greeting)
+                ? ns.Greeting
+                : "Yes? What do you need?";
+            var hinfo = new DialogResponses(mod);
+            hinfo.Responses.Add(new DialogResponse { Text = greet, ResponseNumber = 1, Emotion = Emotion.Neutral, EmotionValue = 50 });
+            var hcond = new ConditionFloat
+            {
+                CompareOperator = CompareOperator.EqualTo,
+                ComparisonValue = 1f,
+                Data = new GetIsIDConditionData(),
+            };
+            ((GetIsIDConditionData)hcond.Data).Object.Link.SetTo(speaker);
+            hinfo.Conditions.Add(hcond);
+            hello.Responses.Add(hinfo);
+        }
+
         foreach (var me in spec.MagicEffects)
         {
             var r = mod.MagicEffects.AddNew();
