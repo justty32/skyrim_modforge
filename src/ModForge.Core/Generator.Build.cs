@@ -233,6 +233,7 @@ public static partial class Generator
         // (Writes valid records; making the line actually surface in-game still needs
         // quest-flag tuning + Proton testing — see docs/lifelike/gotchas.md.)
         int dialogueBuilt = 0;
+        var branchesByQuest = new Dictionary<string, (Quest quest, List<DialogBranch> branches)>();
         foreach (var d in spec.Dialogue)
         {
             if (string.IsNullOrEmpty(d.QuestEditorId) || !questsByEd.TryGetValue(d.QuestEditorId, out var quest))
@@ -289,7 +290,25 @@ public static partial class Generator
                     Warn($"  ! dialogue '{d.EditorId}' speaker '{d.SpeakerNpcEditorId}' not found in spec — line has NO speaker gate (any NPC may say it)");
             }
             topic.Responses.Add(info);
+            if (!branchesByQuest.TryGetValue(d.QuestEditorId, out var bag))
+                branchesByQuest[d.QuestEditorId] = bag = (quest, new List<DialogBranch>());
+            bag.branches.Add(branch);
             dialogueBuilt++;
+        }
+
+        // DialogView (DLVW) per quest: ties the player branches to the quest. Every vanilla dialogue
+        // branch belongs to a view; without it the engine never serves the quest's player topics, so
+        // the NPC can't even be talked to (activating it opens no dialogue camera). ENAM/DNAM mirror
+        // vanilla defaults (4 zero bytes / single 1 byte).
+        foreach (var (questEd, bag) in branchesByQuest)
+        {
+            var view = mod.DialogViews.AddNew();
+            view.EditorID = questEd + "_View";
+            view.Quest.SetTo(bag.quest);
+            foreach (var b in bag.branches)
+                view.Branches.Add(b);
+            view.ENAM = new byte[] { 0, 0, 0, 0 };  // mirror vanilla DLVW
+            view.DNAM = new byte[] { 1 };            // single flag byte vanilla views carry
         }
 
         // Hello (greeting) per speaking NPC: WITHOUT one the NPC is not conversable — activating it
