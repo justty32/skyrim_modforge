@@ -186,3 +186,33 @@ optional and a basic recipe needs none.
 
 Reusing a vanilla `projectile` + `castingArt` is what makes the bolt visible and lets it deliver the
 hit. Without `equipType` the NPC melees / never casts — the #1 silent failure for a generated combat spell.
+
+## "Conversational NPC" (custom player topics — IN-GAME CONFIRMED It.23)
+
+Give the NPC a `greeting`, a host quest, and one `dialogue` entry per topic. From that the build emits
+the whole vanilla chain (Quest→DialogView→Branch→Topic→INFO + a Hello), so the topic actually shows.
+
+```jsonc
+{ "quests": [ { "editorId": "MF_TalkQuest", "name": "...", "startGameEnabled": true } ],
+  "npcs": [
+    { "editorId": "MF_Talker", "name": "Aldric", "race": "Skyrim.esm:0x013746",
+      "voiceType": "Skyrim.esm:0x013AE6",            // a real voice type — silent NPCs don't greet
+      "greeting": "Welcome. What brings you here?",   // REQUIRED: emits the Hello that makes him conversable
+      "factions": [ "Skyrim.esm:0x028172" ] } ],
+  "dialogue": [
+    { "editorId": "MF_AboutPlace", "questEditorId": "MF_TalkQuest", "speakerNpcEditorId": "MF_Talker",
+      "prompt": "Tell me about this place.", "emotion": "Happy",
+      "responses": [ "Everything here was forged on Linux.", "No Creation Kit needed." ] } ],
+  "placements": [
+    { "base": "MF_Talker", "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": -350, "y": 180, "z": 0 } } ]   // a REAL in-room coord, NOT (0,0,0)
+}
+```
+
+Three things that each independently make it silently fail (all are now handled by the build except
+the last two, which are yours to get right) — see [gotchas.md](gotchas.md):
+- **`greeting`** must be set, or the NPC isn't conversable (no dialogue camera). The build turns it into
+  a Hello info; the topic chain (SNAM='CUST', DialogView, INFO ENAM/CNAM) is emitted automatically.
+- **Placement** must be a real in-room coordinate — a no-package NPC at `(0,0,0)` lands off-navmesh and
+  you can't reach it (you end up talking to a vanilla NPC).
+- **Unvoiced lines** flash past — install **Fuz Ro D-oh** (or bundle silent `.fuz`) and turn on subtitles.

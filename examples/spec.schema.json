@@ -13,6 +13,9 @@
     "npcs": { "type": "array", "items": { "$ref": "#/$defs/npc" } },
     "quests": { "type": "array", "items": { "$ref": "#/$defs/quest" } },
     "dialogue": { "type": "array", "items": { "$ref": "#/$defs/dialogue" } },
+    "relationships": { "type": "array", "items": { "$ref": "#/$defs/relationship" }, "description": "Relationship (RELA): a directed NPC_-to-NPC_ bond at a rank; child defaults to the player NPC base 0x000014" },
+    "combatStyles": { "type": "array", "items": { "$ref": "#/$defs/combatStyle" }, "description": "CombatStyle (CSTY): HOW an NPC fights; reference via npc.combatStyle" },
+    "packages": { "type": "array", "items": { "$ref": "#/$defs/package" }, "description": "AI Package (PACK); assign via npc.packages. See SPEC.md for the template-input subobjects" },
     "spells": { "type": "array", "items": { "$ref": "#/$defs/spell" } },
     "magicEffects": { "type": "array", "items": { "$ref": "#/$defs/magicEffect" }, "description": "custom MGEF records an effect can point at by editorId" },
     "potions": { "type": "array", "items": { "$ref": "#/$defs/potion" } },
@@ -186,7 +189,64 @@
         "class": { "$ref": "#/$defs/ref", "description": "Class ref" },
         "outfit": { "$ref": "#/$defs/ref", "description": "Outfit ref -> DefaultOutfit" },
         "level": { "type": "integer", "minimum": 0, "description": "fixed level (0 = default); needed for class-based stat auto-calc" },
-        "autoCalcStats": { "type": "boolean", "description": "derive H/M/S + skills from level + class (else flat 50/50/50 defaults)" }
+        "autoCalcStats": { "type": "boolean", "description": "derive H/M/S + skills from level + class (else flat 50/50/50 defaults)" },
+        "packages": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "PACK refs; the NPC's AI package list, evaluated in order" },
+        "voiceType": { "$ref": "#/$defs/ref", "description": "VTYP ref (e.g. MaleNord Skyrim.esm:0x013AE6); without one the NPC is silent" },
+        "crimeFaction": { "$ref": "#/$defs/ref", "description": "FACT ref; city-citizen identity, required for cross-cell Travel" },
+        "unique": { "type": "boolean", "description": "one-off actor (vs leveled); helps engine AI tracking + cross-cell travel" },
+        "combatStyle": { "$ref": "#/$defs/ref", "description": "CSTY ref; HOW the AI fights (magic/melee/ranged preference)" },
+        "spells": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "SPEL refs; the AI's spell list" },
+        "aggression": { "enum": ["Unaggressive", "Aggressive", "VeryAggressive", "Frenzied"], "description": "WHETHER it initiates (default Unaggressive)" },
+        "confidence": { "enum": ["Cowardly", "Cautious", "Average", "Brave", "Foolhardy"], "description": "flee-vs-stand once attacked (default Cowardly = flees)" },
+        "assistance": { "enum": ["HelpsNobody", "HelpsAllies", "HelpsFriendsAndAllies"] },
+        "mood": { "enum": ["Neutral", "Angry", "Fear", "Happy", "Sad", "Surprised", "Puzzled", "Disgusted"] },
+        "energyLevel": { "type": "integer", "minimum": 0, "maximum": 100, "description": "vanilla actors typically 50" },
+        "greeting": { "type": "string", "description": "Hello line; when this NPC has custom dialogue, a Hello info is auto-emitted so it is conversable. Empty => default line" }
+      }
+    },
+    "relationship": {
+      "type": "object",
+      "required": ["editorId", "parent"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "parent": { "$ref": "#/$defs/ref", "description": "NPC_ base ref (the relationship owner; usually the custom NPC)" },
+        "child": { "$ref": "#/$defs/ref", "description": "NPC_ base ref; defaults to the Player NPC base Skyrim.esm:0x000014. NOTE: must be an NPC_, NOT PlayerRef 0x000007 (an ACHR) — that CRASHES on load" },
+        "rank": { "enum": ["Lover", "Ally", "Confidant", "Friend", "Acquaintance", "Rival", "Foe", "Enemy", "Archnemesis"], "description": "Ally satisfies the vanilla free-follow gate" }
+      }
+    },
+    "combatStyle": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "offensiveMult": { "type": "number" },
+        "defensiveMult": { "type": "number" },
+        "groupOffensiveMult": { "type": "number" },
+        "equipMultMelee": { "type": "number" },
+        "equipMultMagic": { "type": "number", "description": "raise well above the others to make the AI prefer spells" },
+        "equipMultRanged": { "type": "number" },
+        "equipMultShout": { "type": "number" },
+        "equipMultUnarmed": { "type": "number" },
+        "equipMultStaff": { "type": "number" },
+        "avoidThreatChance": { "type": "number" },
+        "flags": { "type": "array", "items": { "type": "string" }, "description": "CombatStyle.Flag names, e.g. Dueling" }
+      }
+    },
+    "package": {
+      "type": "object",
+      "required": ["editorId", "template"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "template": { "$ref": "#/$defs/ref", "description": "vanilla procedure template, e.g. Sandbox=Skyrim.esm:0x01C254, Travel=Skyrim.esm:0x016FAA" },
+        "flags": { "type": "array", "items": { "type": "string" }, "description": "Package.Flag names" },
+        "interruptFlags": { "type": "array", "items": { "type": "string" }, "description": "HellosToPlayer / AllowIdleChatter / WorldInteractions / ..." },
+        "preferredSpeed": { "enum": ["Walk", "Jog", "Run", "FastWalk"] },
+        "combatStyle": { "$ref": "#/$defs/ref" },
+        "ownerQuest": { "$ref": "#/$defs/ref" },
+        "schedule": { "type": "object", "description": "{ month, dayOfWeek, date, hour, minute, durationInMinutes }" },
+        "sandbox": { "type": "object", "description": "Sandbox template inputs (radius, allowEating, ...); see SPEC.md" },
+        "travel": { "type": "object", "description": "Travel template inputs (destination, ...); see SPEC.md" },
+        "useMagic": { "type": "object", "description": "UseMagic template inputs (spell, numToCastMax, ...); see SPEC.md" }
       }
     },
     "quest": {
@@ -214,9 +274,11 @@
       "properties": {
         "editorId": { "type": "string", "minLength": 1 },
         "questEditorId": { "type": "string", "minLength": 1, "description": "must be a quest editorId in this spec" },
-        "speakerNpcEditorId": { "type": "string", "description": "optional; an npc editorId (GetIsID condition)" },
+        "speakerNpcEditorId": { "type": "string", "description": "optional; an npc editorId (GetIsID condition). The speaker also needs a `greeting` so it is conversable" },
         "prompt": { "type": "string", "minLength": 1, "description": "the player's topic line" },
-        "responses": { "type": "array", "items": { "type": "string" }, "description": "the NPC's spoken lines" }
+        "responses": { "type": "array", "items": { "type": "string" }, "description": "the NPC's spoken lines" },
+        "emotion": { "enum": ["Neutral", "Anger", "Disgust", "Fear", "Sad", "Happy", "Surprise"], "description": "applied to all response lines (default Neutral)" },
+        "emotionValue": { "type": "integer", "minimum": 0, "maximum": 100, "description": "emotion intensity (default 50)" }
       }
     },
     "script": {

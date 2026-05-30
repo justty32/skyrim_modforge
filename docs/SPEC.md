@@ -59,9 +59,9 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `miscItems` | `editorId`, `name`, `value` (int≥0), `weight` (number), `keywords` (array of *refs*) |
 | `books` | `editorId`, `name`, `text` (book body) |
 | `weapons` | `editorId`, `name`, `value`, `weight`, `damage` (int≥0), `speed` (number), `reach` (number), `keywords` (array of *refs*) |
-| `npcs` | `editorId`, `name`, `factions` (array of *refs*), `race` (*ref*), `class` (*ref*), `outfit` (*ref* → DefaultOutfit), `level` (int), `autoCalcStats` (bool — derive H/M/S + skills from level + class), `packages` (array of *refs* → PACK; the NPC's AI package list, evaluated in order), `voiceType` (*ref* → VTYP), `crimeFaction` (*ref* → FACT; city-citizen identity, required for cross-cell Travel), `unique` (bool — one-off actor, helps engine AI tracking), `combatStyle` (*ref* → CSTY; HOW the AI fights), `spells` (array of *refs* → SPEL; the AI's spell list) |
+| `npcs` | `editorId`, `name`, `factions` (array of *refs*), `race` (*ref*), `class` (*ref*), `outfit` (*ref* → DefaultOutfit), `level` (int), `autoCalcStats` (bool — derive H/M/S + skills from level + class), `packages` (array of *refs* → PACK; the NPC's AI package list, evaluated in order), `voiceType` (*ref* → VTYP), `crimeFaction` (*ref* → FACT; city-citizen identity, required for cross-cell Travel), `unique` (bool — one-off actor, helps engine AI tracking), `combatStyle` (*ref* → CSTY; HOW the AI fights), `spells` (array of *refs* → SPEL; the AI's spell list), `greeting` (string — the Hello line; when this NPC has custom `dialogue`, a Hello info is auto-emitted so it's conversable. Empty ⇒ a default line) |
 | `quests` | `editorId`, `name`, `objectives` (array of `{ index (int), text }`) |
-| `dialogue` | `editorId`, `questEditorId`, `speakerNpcEditorId` (optional), `prompt`, `responses` (array of strings) |
+| `dialogue` | `editorId`, `questEditorId`, `speakerNpcEditorId` (optional), `prompt`, `responses` (array of strings), `emotion` (optional — `Neutral`\|`Anger`\|`Disgust`\|`Fear`\|`Sad`\|`Happy`\|`Surprise`), `emotionValue` (0–100). Build wires the full chain (Quest→DialogView→Branch→Topic→INFO + a Hello) — see the dialogue section below |
 | `spells` | `editorId`, `name`, `effects` (array of *effects*), `spellType`, `castType`, `targetType`, `baseCost` (int), `chargeTime` (number) |
 | `magicEffects` | `editorId`, `name`, `description`, `archetype`, `actorValue`, `magicSkill`, `resistValue`, `castType`, `targetType`, `baseCost` (number), `flags` (array), `association` (*ref*) — a custom MGEF an `effect` can point at |
 | `potions` | `editorId`, `name`, `value`, `weight`, `effects` (array of *effects*) |
@@ -171,9 +171,21 @@ to one speaker NPC (a `GetIsID` condition). `questEditorId` must name a quest in
 spec; `speakerNpcEditorId`, if set, must name an npc. `prompt` is the player's line;
 `responses` are the NPC's spoken lines.
 
-> **In-game caveat:** the generator writes *structurally valid* dialogue records, but
-> making a line actually surface in conversation can need quest-flag/branch tuning and
-> in-game (Proton) testing — that is content/runtime tuning, not a Mutagen limitation.
+From one `dialogue` entry the build emits the **whole vanilla chain** so the topic
+actually surfaces in-game (confirmed It.23, SSE 1.6.1170):
+- the **Topic** (`Custom`, `SNAM='CUST'` — a null subtype crashes on load) + **Branch**
+  (`TopLevel`, Player) + an **INFO** carrying the responses. Each INFO gets `ENAM`
+  (flags) + `CNAM` (favor level) — **an INFO without `ENAM` is treated as invalid and
+  its topic is silently dropped from the menu**;
+- a **DialogView (DLVW)** per quest tying its branches to the quest (without it the
+  quest's player dialogue is never served);
+- a **Hello** info (`Misc`/`Hello`/`SNAM='HELO'`) per speaking NPC so the NPC is
+  *conversable* at all — set the line with `npc.greeting`.
+
+> **Two runtime requirements (not record bugs):** (1) place the speaker at a real
+> in-room coordinate — a no-package NPC at cell origin **(0,0,0)** lands off-navmesh and
+> can't be reached. (2) Unvoiced lines flash past instantly; install **Fuz Ro D-oh** (or
+> bundle silent `.fuz` files) and enable subtitles. See `lifelike/gotchas.md`.
 
 ### scripts — Papyrus attachment
 ```jsonc
