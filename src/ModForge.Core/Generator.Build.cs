@@ -331,36 +331,58 @@ public static partial class Generator
         // topics from the same NPC share a single Hello.
         var npcSpecByEd = spec.Npcs.Where(n => !string.IsNullOrEmpty(n.EditorId))
                                    .GroupBy(n => n.EditorId).ToDictionary(g => g.Key, g => g.First());
-        var helloDone = new HashSet<string>();
+        // Local: emit one Hello (Misc/Hello/HELO, no branch, GetIsID(speaker), ENAM+CNAM) under a quest.
+        void MakeHello(string npcEd, INpcGetter speaker, Quest quest, string? greetingLine)
+        {
+            var hello = mod.DialogTopics.AddNew();
+            hello.EditorID = npcEd + "_Hello";
+            hello.Quest.SetTo(quest);
+            hello.Category = DialogTopic.CategoryEnum.Misc;
+            hello.Subtype = DialogTopic.SubtypeEnum.Hello;
+            hello.SubtypeName = new RecordType("HELO");
+            hello.Priority = 50f;   // no Branch — Hello is NPC-initiated, not a player menu branch
+            var greet = !string.IsNullOrWhiteSpace(greetingLine) ? greetingLine! : "Yes? What do you need?";
+            var hinfo = new DialogResponses(mod) { Flags = new DialogResponseFlags(), FavorLevel = FavorLevel.None };
+            hinfo.Responses.Add(new DialogResponse { Text = greet, ResponseNumber = 1, Emotion = Emotion.Neutral, EmotionValue = 50 });
+            var hcond = new ConditionFloat { CompareOperator = CompareOperator.EqualTo, ComparisonValue = 1f, Data = new GetIsIDConditionData() };
+            ((GetIsIDConditionData)hcond.Data).Object.Link.SetTo(speaker);
+            hinfo.Conditions.Add(hcond);
+            hello.Responses.Add(hinfo);
+        }
+
+        var helloDone = new HashSet<string>();      // (speakerEd|quest) pairs already given a Hello
+        var helloedNpcs = new HashSet<string>();     // npc editorIds that now have SOME Hello
         foreach (var d in spec.Dialogue)
         {
             if (string.IsNullOrEmpty(d.SpeakerNpcEditorId)) continue;
             if (string.IsNullOrEmpty(d.QuestEditorId) || !questsByEd.TryGetValue(d.QuestEditorId, out var quest)) continue;
             if (!npcsByEd.TryGetValue(d.SpeakerNpcEditorId, out var speaker)) continue;
             if (!helloDone.Add(d.SpeakerNpcEditorId + "|" + quest.FormKey)) continue;
+            npcSpecByEd.TryGetValue(d.SpeakerNpcEditorId, out var ns);
+            MakeHello(d.SpeakerNpcEditorId, speaker, quest, ns?.Greeting);
+            helloedNpcs.Add(d.SpeakerNpcEditorId);
+        }
 
-            var hello = mod.DialogTopics.AddNew();
-            hello.EditorID = d.SpeakerNpcEditorId + "_Hello";
-            hello.Quest.SetTo(quest);
-            hello.Category = DialogTopic.CategoryEnum.Misc;
-            hello.Subtype = DialogTopic.SubtypeEnum.Hello;
-            hello.SubtypeName = new RecordType("HELO");
-            hello.Priority = 50f;   // no Branch — Hello is NPC-initiated, not a player menu branch
+        // Greeting-only NPCs (e.g. a hireable follower that uses the vanilla DialogueFollower topics
+        // and has NO custom dialogue[]): they still need a Hello to be conversable at all — a custom
+        // NPC is NOT made talkable by vanilla generic/follower dialogue alone (IN-GAME confirmed: a
+        // follower with PotentialFollowerFaction + Ally relationship but no Hello just mumbles, the
+        // "Follow me" topic never shows because the dialogue camera never opens). Give each such NPC
+        // its own StartGameEnabled host quest + a Hello so activating it opens dialogue; the vanilla
+        // follow/trade/dismiss topics then surface on top.
+        foreach (var n in spec.Npcs)
+        {
+            if (string.IsNullOrEmpty(n.EditorId) || string.IsNullOrWhiteSpace(n.Greeting)) continue;
+            if (helloedNpcs.Contains(n.EditorId)) continue;
+            if (!npcsByEd.TryGetValue(n.EditorId, out var speaker)) continue;
 
-            var greet = npcSpecByEd.TryGetValue(d.SpeakerNpcEditorId, out var ns) && !string.IsNullOrWhiteSpace(ns.Greeting)
-                ? ns.Greeting
-                : "Yes? What do you need?";
-            var hinfo = new DialogResponses(mod) { Flags = new DialogResponseFlags(), FavorLevel = FavorLevel.None };
-            hinfo.Responses.Add(new DialogResponse { Text = greet, ResponseNumber = 1, Emotion = Emotion.Neutral, EmotionValue = 50 });
-            var hcond = new ConditionFloat
-            {
-                CompareOperator = CompareOperator.EqualTo,
-                ComparisonValue = 1f,
-                Data = new GetIsIDConditionData(),
-            };
-            ((GetIsIDConditionData)hcond.Data).Object.Link.SetTo(speaker);
-            hinfo.Conditions.Add(hcond);
-            hello.Responses.Add(hinfo);
+            var gq = mod.Quests.AddNew();
+            gq.EditorID = n.EditorId + "_GreetQuest";
+            gq.Name = string.Empty;
+            gq.Flags |= Quest.Flag.StartGameEnabled;   // must run so its Hello is served
+            gq.Priority = 50;
+            MakeHello(n.EditorId, speaker, gq, n.Greeting);
+            helloedNpcs.Add(n.EditorId);
         }
 
         foreach (var me in spec.MagicEffects)

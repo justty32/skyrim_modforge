@@ -1,7 +1,7 @@
 {
   "pluginName": "ModForgeShowcase.esp",
   "esl": true,
-  "_": "Combined showcase: Aldric+Brom+Edda+Sera all in the Sleeping Giant Inn in ONE plugin so they coexist (separate plugins that each override the same cell 0x0133C6 conflict — last-loaded wins, only one NPC appears).",
+  "_": "Combined showcase: Aldric+Brom+Edda+Sera in ONE plugin (separate plugins overriding the same cell conflict). Dialogue registers on game LOAD — save+load or fresh game to test.",
   "classes": [
     {
       "editorId": "MF_TalkerClass",
@@ -124,6 +124,8 @@
     {
       "editorId": "MF_HireFollowerNpc",
       "name": "Sera the Forged",
+      "_greeting": "Required so she is CONVERSABLE — a custom NPC with no custom dialogue isn't talkable just from being follower-eligible; the build gives her a host quest + Hello, and the vanilla 'Follow me' topic then surfaces on top.",
+      "greeting": "Need a sword arm? I'm listening.",
       "race": "Skyrim.esm:0x013746",
       "class": "MF_HireClass",
       "outfit": "Skyrim.esm:0x09D5DF",

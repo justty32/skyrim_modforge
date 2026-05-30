@@ -26,6 +26,8 @@
     {
       "editorId": "MF_HireFollowerNpc",
       "name": "Sera the Forged",
+      "_greeting": "Required so she is CONVERSABLE — a custom NPC with no custom dialogue isn't talkable just from being follower-eligible; the build gives her a host quest + Hello, and the vanilla 'Follow me' topic then surfaces on top.",
+      "greeting": "Need a sword arm? I'm listening.",
       "race": "Skyrim.esm:0x013746",
       "class": "MF_HireClass",
       "outfit": "Skyrim.esm:0x09D5DF",
