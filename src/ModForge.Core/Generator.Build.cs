@@ -234,6 +234,12 @@ public static partial class Generator
         // quest-flag tuning + Proton testing — see docs/lifelike/gotchas.md.)
         int dialogueBuilt = 0;
         var branchesByQuest = new Dictionary<string, (Quest quest, List<DialogBranch> branches)>();
+        // Each player topic needs a DISTINCT priority. Vanilla never has two simultaneously-valid
+        // top-level player topics share a priority (e.g. DialogueFollower's are 95/80/75/25/10);
+        // multiple same-priority + unconditional top-level topics make the engine's menu sort/dedupe
+        // collapse so NOTHING shows (and the NPC's whole dialogue, incl. Hello, dies). Hand out a
+        // descending distinct priority per topic within each quest.
+        var topicPriorityByQuest = new Dictionary<string, float>();
         foreach (var d in spec.Dialogue)
         {
             if (string.IsNullOrEmpty(d.QuestEditorId) || !questsByEd.TryGetValue(d.QuestEditorId, out var quest))
@@ -261,7 +267,11 @@ public static partial class Generator
             // builds the dialogue-topic index (vanilla Custom topics all carry SNAM='CUST').
             topic.SubtypeName = new RecordType("CUST");
             topic.Name = d.Prompt;
-            topic.Priority = 50f;
+            // distinct, descending priority per quest (90, 89, 88, …) so multiple top-level topics
+            // each get a unique slot in the menu — see topicPriorityByQuest note above.
+            var nextPri = topicPriorityByQuest.TryGetValue(d.QuestEditorId, out var p) ? p - 1f : 90f;
+            topicPriorityByQuest[d.QuestEditorId] = nextPri;
+            topic.Priority = nextPri;
             branch.StartingTopic.SetTo(topic);
 
             // INFO carries the spoken response(s). Leave ResponseData null (so it uses our own
