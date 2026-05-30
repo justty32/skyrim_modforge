@@ -1,0 +1,332 @@
+{
+  "pluginName": "ModForgeShowcase.esp",
+  "esl": true,
+  "_": "Combined showcase: Aldric+Brom+Edda+Sera all in the Sleeping Giant Inn in ONE plugin so they coexist (separate plugins that each override the same cell 0x0133C6 conflict — last-loaded wins, only one NPC appears).",
+  "classes": [
+    {
+      "editorId": "MF_TalkerClass",
+      "name": "ModForge Talker",
+      "healthWeight": 50,
+      "magickaWeight": 25,
+      "staminaWeight": 25,
+      "skillWeights": {
+        "Speech": 100
+      }
+    },
+    {
+      "editorId": "MF_ConvClass",
+      "name": "ModForge Storyteller",
+      "healthWeight": 50,
+      "magickaWeight": 25,
+      "staminaWeight": 25,
+      "skillWeights": {
+        "Speech": 100
+      }
+    },
+    {
+      "editorId": "MF_LifelikeClass",
+      "name": "ModForge Inn Mage",
+      "healthWeight": 30,
+      "magickaWeight": 55,
+      "staminaWeight": 15,
+      "skillWeights": {
+        "Destruction": 90,
+        "Restoration": 50,
+        "Speech": 40
+      }
+    },
+    {
+      "editorId": "MF_HireClass",
+      "name": "ModForge Sellsword",
+      "healthWeight": 50,
+      "magickaWeight": 10,
+      "staminaWeight": 40,
+      "skillWeights": {
+        "OneHanded": 90,
+        "Block": 70,
+        "HeavyArmor": 70,
+        "Archery": 50
+      }
+    }
+  ],
+  "npcs": [
+    {
+      "editorId": "MF_TalkerNpc",
+      "name": "Aldric the Forged",
+      "greeting": "Welcome to the Sleeping Giant. What brings you here?",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_TalkerClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [
+        "Skyrim.esm:0x0267EA",
+        "Skyrim.esm:0x028172"
+      ],
+      "unique": true,
+      "level": 5,
+      "autoCalcStats": true,
+      "aggression": "Unaggressive",
+      "confidence": "Average",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50
+    },
+    {
+      "editorId": "MF_ConvNpc",
+      "name": "Brom the Storyteller",
+      "greeting": "Pull up a chair, friend. What would you like to hear?",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_ConvClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [
+        "Skyrim.esm:0x0267EA",
+        "Skyrim.esm:0x028172"
+      ],
+      "unique": true,
+      "level": 5,
+      "autoCalcStats": true,
+      "aggression": "Unaggressive",
+      "confidence": "Average",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50
+    },
+    {
+      "editorId": "MF_LifelikeNpc",
+      "name": "Edda the Forged",
+      "greeting": "Mind the fire, traveler. Speak your piece.",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_LifelikeClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE7",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [
+        "Skyrim.esm:0x0267EA",
+        "Skyrim.esm:0x028172"
+      ],
+      "unique": true,
+      "level": 15,
+      "autoCalcStats": true,
+      "combatStyle": "MF_GuardMageCS",
+      "spells": [
+        "Skyrim.esm:0x0C969A"
+      ],
+      "_combat": "Unaggressive = never initiates against the player; Brave = stands and fights (casts Flames) instead of fleeing when attacked. HelpsFriendsAndAllies = aids inn folk.",
+      "aggression": "Unaggressive",
+      "confidence": "Brave",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50,
+      "packages": [
+        "MF_InnSandbox"
+      ]
+    },
+    {
+      "editorId": "MF_HireFollowerNpc",
+      "name": "Sera the Forged",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_HireClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE7",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "_factions": "Whiterun crime/citizen factions (0x0267EA + 0x028172) for door/gate traversal, PLUS PotentialFollowerFaction (0x05C84D) — the membership the vanilla follower dialogue keys off.",
+      "factions": [
+        "Skyrim.esm:0x0267EA",
+        "Skyrim.esm:0x028172",
+        "Skyrim.esm:0x05C84D"
+      ],
+      "unique": true,
+      "level": 10,
+      "autoCalcStats": true,
+      "aggression": "Aggressive",
+      "confidence": "Brave",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50
+    }
+  ],
+  "quests": [
+    {
+      "_": "The dialogue HOST quest. startGameEnabled (the default) makes it auto-run so the dialogue below is loaded and evaluated — the single most-missed requirement. No stages/aliases needed for plain conversation.",
+      "editorId": "MF_TalkQuest",
+      "name": "ModForge Conversation",
+      "startGameEnabled": true,
+      "priority": 50,
+      "objectives": []
+    },
+    {
+      "_": "Single host quest for all three topics. startGameEnabled (default) so it runs.",
+      "editorId": "MF_ConvQuest",
+      "name": "ModForge Conversation",
+      "startGameEnabled": true,
+      "priority": 50,
+      "objectives": []
+    },
+    {
+      "editorId": "MF_LifelikeQuest",
+      "name": "ModForge Lifelike Conversation",
+      "startGameEnabled": true,
+      "priority": 50,
+      "objectives": []
+    }
+  ],
+  "dialogue": [
+    {
+      "_": "A player top-level topic. `prompt` is the clickable menu line; `responses` are what the NPC says back (subtitles), in order. speakerNpcEditorId adds the GetIsID == MF_TalkerNpc condition so the line is exclusive to him. The build wires Quest->Branch(TopLevel,Player)->Topic(Custom)->INFO(GetIsID).",
+      "editorId": "MF_TalkAboutPlace",
+      "questEditorId": "MF_TalkQuest",
+      "speakerNpcEditorId": "MF_TalkerNpc",
+      "prompt": "Tell me about this place.",
+      "responses": [
+        "Welcome, traveler. Everything you see here was forged on Linux.",
+        "No Creation Kit, no Windows — just JSON and a stubborn modder."
+      ]
+    },
+    {
+      "editorId": "MF_ConvLore",
+      "questEditorId": "MF_ConvQuest",
+      "speakerNpcEditorId": "MF_ConvNpc",
+      "prompt": "What's the history of this inn?",
+      "emotion": "Neutral",
+      "responses": [
+        "The Sleeping Giant has stood here longer than any of us remember.",
+        "Walls like these have heard a thousand secrets — and kept every one."
+      ]
+    },
+    {
+      "editorId": "MF_ConvJoke",
+      "questEditorId": "MF_ConvQuest",
+      "speakerNpcEditorId": "MF_ConvNpc",
+      "prompt": "Tell me a joke.",
+      "emotion": "Happy",
+      "emotionValue": 90,
+      "responses": [
+        "Why did the dragon cross the Pale? To get to the OTHER shout!",
+        "Ha! I'll be here all week, friend."
+      ]
+    },
+    {
+      "editorId": "MF_ConvBye",
+      "questEditorId": "MF_ConvQuest",
+      "speakerNpcEditorId": "MF_ConvNpc",
+      "prompt": "I should be going.",
+      "emotion": "Sad",
+      "emotionValue": 60,
+      "responses": [
+        "Off already? The road's a lonely thing.",
+        "Walk with the warmth of the hearth at your back, traveler."
+      ]
+    },
+    {
+      "editorId": "MF_LifelikeWho",
+      "questEditorId": "MF_LifelikeQuest",
+      "speakerNpcEditorId": "MF_LifelikeNpc",
+      "prompt": "Who are you?",
+      "emotion": "Neutral",
+      "responses": [
+        "Edda. I keep to myself and the warmth of this hearth.",
+        "Cross me and you'll find the fire isn't only in the hearth."
+      ]
+    },
+    {
+      "editorId": "MF_LifelikeMagic",
+      "questEditorId": "MF_LifelikeQuest",
+      "speakerNpcEditorId": "MF_LifelikeNpc",
+      "prompt": "Can you teach me magic?",
+      "emotion": "Happy",
+      "emotionValue": 70,
+      "responses": [
+        "Destruction is just respect, taught quickly.",
+        "Watch your fingers, apprentice."
+      ]
+    }
+  ],
+  "packages": [
+    {
+      "editorId": "MF_InnSandbox",
+      "_": "Inn-patron Sandbox — she stays in the inn, eats/sits/wanders/uses idle markers. Combat preempts this automatically when she's attacked, then she resumes when it's over.",
+      "template": "Skyrim.esm:0x01C254",
+      "interruptFlags": [
+        "HellosToPlayer",
+        "AllowIdleChatter",
+        "WorldInteractions"
+      ],
+      "sandbox": {
+        "radius": 512,
+        "allowEating": true,
+        "allowSleeping": false,
+        "allowConversation": true,
+        "allowIdleMarkers": true,
+        "allowSitting": true,
+        "allowWandering": true,
+        "allowSpecialFurniture": true,
+        "energy": 50.0
+      }
+    }
+  ],
+  "combatStyles": [
+    {
+      "editorId": "MF_GuardMageCS",
+      "_": "Magic-favoring profile harvested via cstydiag (csVampireMagic-like): Magic dominates the equip weights so the AI picks her Flames spell over melee.",
+      "offensiveMult": 0.77,
+      "defensiveMult": 0.3,
+      "groupOffensiveMult": 0.74,
+      "equipMultMelee": 0.51,
+      "equipMultMagic": 8.1,
+      "equipMultRanged": 0.55,
+      "equipMultShout": 0.21,
+      "equipMultUnarmed": 0.98,
+      "equipMultStaff": 2.15,
+      "avoidThreatChance": 0.2,
+      "flags": [
+        "Dueling"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "_": "Ally relationship to the player. parent = the follower; child = the Player NPC base (Skyrim.esm:0x000014 — NOT PlayerRef 0x000007, which is the placed ACHR; a RELA pointing at an ACHR is a type mismatch that CRASHES on load). This satisfies the DialogueFollower free-follow gate (GetRelationshipRank >= Ally).",
+      "editorId": "MF_HireRel",
+      "parent": "MF_HireFollowerNpc",
+      "child": "Skyrim.esm:0x000014",
+      "rank": "Ally"
+    }
+  ],
+  "placements": [
+    {
+      "base": "MF_TalkerNpc",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": {
+        "x": -300,
+        "y": 60,
+        "z": 0
+      }
+    },
+    {
+      "base": "MF_ConvNpc",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": {
+        "x": -300,
+        "y": 180,
+        "z": 0
+      }
+    },
+    {
+      "base": "MF_LifelikeNpc",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": {
+        "x": -420,
+        "y": 120,
+        "z": 0
+      }
+    },
+    {
+      "base": "MF_HireFollowerNpc",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": {
+        "x": -250,
+        "y": 240,
+        "z": 0
+      }
+    }
+  ]
+}
