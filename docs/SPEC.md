@@ -182,10 +182,12 @@ actually surfaces in-game (confirmed It.23, SSE 1.6.1170):
 - a **Hello** info (`Misc`/`Hello`/`SNAM='HELO'`) per speaking NPC so the NPC is
   *conversable* at all — set the line with `npc.greeting`.
 
-> **Two runtime requirements (not record bugs):** (1) place the speaker at a real
-> in-room coordinate — a no-package NPC at cell origin **(0,0,0)** lands off-navmesh and
-> can't be reached. (2) Unvoiced lines flash past instantly; install **Fuz Ro D-oh** (or
-> bundle silent `.fuz` files) and enable subtitles. See `lifelike/gotchas.md`.
+> **Three runtime requirements (not record bugs):** (1) the dialogue only registers on a
+> **game LOAD** — test with a genuine new game, or `save`+`load` after the quest starts;
+> a main-menu `coc` or mid-session `startquest` leaves the NPC mute even with a perfect
+> plugin. (2) Place the speaker at a real in-room coordinate — a no-package NPC at cell
+> origin **(0,0,0)** lands off-navmesh and can't be reached. (3) Unvoiced lines flash past;
+> install **Fuz Ro D-oh** (or bundle silent `.fuz`) and enable subtitles. See `lifelike/gotchas.md`.
 
 ### scripts — Papyrus attachment
 ```jsonc

@@ -234,12 +234,14 @@ public static partial class Generator
         // quest-flag tuning + Proton testing — see docs/lifelike/gotchas.md.)
         int dialogueBuilt = 0;
         var branchesByQuest = new Dictionary<string, (Quest quest, List<DialogBranch> branches)>();
-        // Each player topic needs a DISTINCT priority. Vanilla never has two simultaneously-valid
-        // top-level player topics share a priority (e.g. DialogueFollower's are 95/80/75/25/10);
-        // multiple same-priority + unconditional top-level topics make the engine's menu sort/dedupe
-        // collapse so NOTHING shows (and the NPC's whole dialogue, incl. Hello, dies). Hand out a
-        // descending distinct priority per topic within each quest.
-        var topicPriorityByQuest = new Dictionary<string, float>();
+        // Each player topic needs a priority that is DISTINCT ACROSS THE WHOLE PLUGIN (not just per
+        // quest). The engine sorts ALL running quests' top-level player topics by priority while
+        // building the menu, BEFORE applying GetIsID conditions; any priority collision among them
+        // collapses the menu so NOTHING shows (and the NPCs' whole dialogue, incl. Hellos, dies).
+        // Per-quest-distinct is NOT enough — two NPCs each with a priority-90 topic still collide.
+        // Vanilla never has two simultaneously-loaded top-level topics share a priority. So use one
+        // GLOBAL descending counter for every player topic in the plugin (90, 89, 88, …).
+        float nextTopicPriority = 90f;
         foreach (var d in spec.Dialogue)
         {
             if (string.IsNullOrEmpty(d.QuestEditorId) || !questsByEd.TryGetValue(d.QuestEditorId, out var quest))
@@ -267,11 +269,9 @@ public static partial class Generator
             // builds the dialogue-topic index (vanilla Custom topics all carry SNAM='CUST').
             topic.SubtypeName = new RecordType("CUST");
             topic.Name = d.Prompt;
-            // distinct, descending priority per quest (90, 89, 88, …) so multiple top-level topics
-            // each get a unique slot in the menu — see topicPriorityByQuest note above.
-            var nextPri = topicPriorityByQuest.TryGetValue(d.QuestEditorId, out var p) ? p - 1f : 90f;
-            topicPriorityByQuest[d.QuestEditorId] = nextPri;
-            topic.Priority = nextPri;
+            // plugin-global distinct descending priority (90, 89, 88, …) — see note above.
+            topic.Priority = nextTopicPriority;
+            nextTopicPriority -= 1f;
             branch.StartingTopic.SetTo(topic);
 
             // INFO carries the spoken response(s). Leave ResponseData null (so it uses our own
