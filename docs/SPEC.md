@@ -392,7 +392,7 @@ conforming to this doc / `../examples/spec.schema.json` (per `FOR_AGENT.md`), ru
 NL→spec layer — there is no in-tool LLM API (the once-planned `describe` command is dropped),
 so there's no API key/provider to configure.
 
-## Not yet covered (extend in `Program.cs` `Build` + a spec class)
+## Not yet covered (extend in `ModForge.Core` `Generator.Build` + a spec class)
 World placement now covers new interior cells, vanilla interior cells, **and exterior/worldspace
 cells** (via `worldspace` + world position). Refs (in-spec or `<master>:0xFORMID`) and the `find`
 command are the building blocks for the external ones. Remaining gaps are long-tail record

@@ -1,11 +1,15 @@
-internal static partial class Program
+namespace ModForge;
+
+/// <summary>A hand-built demo plugin (general content + dialogue + ESL) — toolchain sanity check
+/// and a ready-made translate target.</summary>
+public static class Demo
 {
     // -------------------------------------------------------------------------------
-    //  gen — demo plugin (general content + dialogue + ESL); also a translate target
+    //  CreateDemoPlugin — demo plugin (general content + dialogue + ESL); also a translate target
     // -------------------------------------------------------------------------------
-    private static void Gen(string outPath)
+    /// <summary>Build the demo mod in memory. The caller writes it (<c>mod.WriteToBinary</c>).</summary>
+    public static ISkyrimMod CreateDemoPlugin(ModKey key)
     {
-        var key = ModKey.FromNameAndExtension(Path.GetFileName(outPath));
         var mod = new SkyrimMod(key, SkyrimRelease.SkyrimSE);
 
         var misc = mod.MiscItems.AddNew();
@@ -56,8 +60,6 @@ internal static partial class Program
         topic.Responses.Add(info);
 
         mod.IsSmallMaster = true; // ESL flag (≤4096 new records)
-
-        mod.WriteToBinary(outPath);
-        Console.WriteLine($"wrote {outPath}  (ESL={mod.IsSmallMaster}, {mod.EnumerateMajorRecords().Count()} records)");
+        return mod;
     }
 }

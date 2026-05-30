@@ -1,5 +1,7 @@
+namespace ModForge;
+
 // --- ESP generator spec (the structured IR; deserialized case-insensitively) ---------
-internal sealed class ModSpec
+public sealed class ModSpec
 {
     public string PluginName { get; set; } = "Generated.esp";
     public bool Esl { get; set; } = true;
@@ -39,10 +41,10 @@ internal sealed class ModSpec
 // "ref" fields below accept EITHER an in-spec editorId OR an external "<master>:0xFORMID"
 // (e.g. "Skyrim.esm:0x013746" — find them with the `find` command). External refs auto-add
 // the master on write (Mutagen MastersListContent=Iterate).
-internal sealed class MiscSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<string> Keywords { get; set; } = new(); public string Template { get; set; } = ""; }
-internal sealed class BookSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Text { get; set; } = ""; public string Template { get; set; } = ""; }
-internal sealed class WeaponSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public ushort Damage { get; set; } public float Speed { get; set; } public float Reach { get; set; } public List<string> Keywords { get; set; } = new(); public string Template { get; set; } = ""; }
-internal sealed class NpcSpec
+public sealed class MiscSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<string> Keywords { get; set; } = new(); public string Template { get; set; } = ""; }
+public sealed class BookSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Text { get; set; } = ""; public string Template { get; set; } = ""; }
+public sealed class WeaponSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public ushort Damage { get; set; } public float Speed { get; set; } public float Reach { get; set; } public List<string> Keywords { get; set; } = new(); public string Template { get; set; } = ""; }
+public sealed class NpcSpec
 {
     public string EditorId { get; set; } = "";
     public string Name { get; set; } = "";
@@ -68,7 +70,7 @@ internal sealed class NpcSpec
     public string Mood { get; set; } = "";           // Neutral|Angry|Fear|Happy|Sad|Surprised|Puzzled|Disgusted
     public int EnergyLevel { get; set; }              // 0..100 — vanilla actors typically 50
 }
-internal sealed class QuestSpec
+public sealed class QuestSpec
 {
     public string EditorId { get; set; } = "";
     public string Name { get; set; } = "";
@@ -78,9 +80,9 @@ internal sealed class QuestSpec
     public bool StartGameEnabled { get; set; } = true;
     public byte Priority { get; set; } = 50;   // higher wins when multiple quests offer dialogue to the same NPC
 }
-internal sealed class ObjectiveSpec { public ushort Index { get; set; } public string Text { get; set; } = ""; }
+public sealed class ObjectiveSpec { public ushort Index { get; set; } public string Text { get; set; } = ""; }
 // A dialogue topic: shown under QuestEditorId's branch; targets SpeakerNpcEditorId (GetIsID).
-internal sealed class DialogueSpec
+public sealed class DialogueSpec
 {
     public string EditorId { get; set; } = "";
     public string QuestEditorId { get; set; } = "";
@@ -97,14 +99,14 @@ internal sealed class DialogueSpec
 // DialogueFollower quest's free "Follow me, I need your help" topic is gated on
 // `GetRelationshipRank player >= Ally`, so a custom hireable follower needs an Ally relationship to
 // the player (plus membership in PotentialFollowerFaction `Skyrim.esm:0x05C84D`).
-internal sealed class RelationshipSpec
+public sealed class RelationshipSpec
 {
     public string EditorId { get; set; } = "";
     public string Parent { get; set; } = "";                  // ref → NPC (the relationship's owner); usually the custom NPC
     public string Child { get; set; } = "Skyrim.esm:0x000007"; // ref → NPC; defaults to the Player NPC base
     public string Rank { get; set; } = "Ally";                // RankType enum name
 }
-internal sealed class SpellSpec
+public sealed class SpellSpec
 {
     public string EditorId { get; set; } = "";
     public string Name { get; set; } = "";
@@ -120,7 +122,7 @@ internal sealed class SpellSpec
     // hand spell into a hand and won't cast it in combat.
     public string EquipType { get; set; } = "";
 }
-internal sealed class PotionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<EffectSpec> Effects { get; set; } = new(); public string Template { get; set; } = ""; }
+public sealed class PotionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<EffectSpec> Effects { get; set; } = new(); public string Template { get; set; } = ""; }
 // MagicEffect (MGEF): the building block a spell/potion/ingredient/scroll `effect` points at — lets a
 // spec define its OWN effect instead of only reusing vanilla ones. `archetype` (MagicEffectArchetype.
 // TypeEnum: ValueModifier = the common damage/heal/fortify, plus SummonCreature, Bound, Light,
@@ -129,7 +131,7 @@ internal sealed class PotionSpec { public string EditorId { get; set; } = ""; pu
 // (ResistFire/PoisonResist/…). `flags` (Hostile/Detrimental/Recover/NoArea/NoDuration/…) drive UI +
 // behaviour. `association` (a ref) is the summoned/bound form for those archetypes. The per-effect
 // magnitude/area/duration stay on the spell/potion's `effects[]` entry (not here).
-internal sealed class MagicEffectSpec
+public sealed class MagicEffectSpec
 {
     public string EditorId { get; set; } = "";
     public string Name { get; set; } = "";
@@ -150,16 +152,16 @@ internal sealed class MagicEffectSpec
     public string HitEffectArt { get; set; } = "";      // ARTO — FX at the impact point
     public string Explosion { get; set; } = "";          // EXPL — AoE explosion on impact
 }
-internal sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } public string ArmorType { get; set; } = ""; public List<string> Slots { get; set; } = new(); public List<string> Keywords { get; set; } = new(); }
+public sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } public string ArmorType { get; set; } = ""; public List<string> Slots { get; set; } = new(); public List<string> Keywords { get; set; } = new(); }
 // One magic effect on a spell/potion: a MagicEffect ref + magnitude/area/duration (EffectData).
-internal sealed class EffectSpec { public string MagicEffect { get; set; } = ""; public float Magnitude { get; set; } public int Area { get; set; } public int Duration { get; set; } }
-internal sealed class FactionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
+public sealed class EffectSpec { public string MagicEffect { get; set; } = ""; public float Magnitude { get; set; } public int Area { get; set; } public int Duration { get; set; } }
+public sealed class FactionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
 // Class (CLAS): an actor's "profession" — drives its attribute distribution + favoured skills (and,
 // for trainers, what it `teaches`). An npc's `class` ref can point at one. `healthWeight`/
 // `magickaWeight`/`staminaWeight` are the BasicStat distribution (relative %, ~sum 100); `skillWeights`
 // maps a Skill name (OneHanded/Destruction/Sneak/…) to a 0–255 favour. `teaches` (a Skill) +
 // `maxTrainingLevel` matter only for trainer NPCs.
-internal sealed class ClassSpec
+public sealed class ClassSpec
 {
     public string EditorId { get; set; } = "";
     public string Name { get; set; } = "";
@@ -171,14 +173,14 @@ internal sealed class ClassSpec
     public int StaminaWeight { get; set; }
     public Dictionary<string, int> SkillWeights { get; set; } = new();
 }
-internal sealed class MessageSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Description { get; set; } = ""; }
+public sealed class MessageSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Description { get; set; } = ""; }
 // AI Package (PACK): an NPC's decision-layer behaviour ("go sandbox at the smithy", "travel to the
 // inn at 18:00", "use the cooking pot"). Built on a vanilla PROCEDURE TEMPLATE (`template` =
 // "<master>:0xFORMID" of e.g. Skyrim.esm:0x01C254 Sandbox), which defines the data input schema;
 // our package fills those inputs. `interruptFlags` (HellosToPlayer/AllowIdleChatter/
 // WorldInteractions/…) are the lifelike-NPC switches. Assign to an NPC via NpcSpec.packages.
 // Use `packagediag <Skyrim.esm> <templateFormId>` to discover a template's slot schema.
-internal sealed class PackageSpec
+public sealed class PackageSpec
 {
     public string EditorId { get; set; } = "";
     public string Template { get; set; } = "";              // ref → PackageTemplate (Skyrim.esm:0x01C254 = Sandbox)
@@ -215,7 +217,7 @@ internal sealed class PackageSpec
     // ("follow me, I'll take you there"), prisoner/VIP escorts, "show the player the way".
     public EscortSpec Escort { get; set; } = new();
 }
-internal sealed class PackageScheduleSpec
+public sealed class PackageScheduleSpec
 {
     public int Month { get; set; } = -1;   // -1 = any (vanilla default)
     public string DayOfWeek { get; set; } = "Any";
@@ -231,7 +233,7 @@ internal sealed class PackageScheduleSpec
 // `offensiveMult` (~aggression), `defensiveMult` (~blocking/dodging), `groupOffensiveMult`
 // (~boldness in groups), `avoidThreatChance` (0..1, chance to back off from danger). `flags`
 // values: Dueling, Flanking, AllowDualWielding.
-internal sealed class CombatStyleSpec
+public sealed class CombatStyleSpec
 {
     public string EditorId { get; set; } = "";
     public float OffensiveMult { get; set; } = 0.5f;
@@ -252,7 +254,7 @@ internal sealed class CombatStyleSpec
 //   27 RideHorseIfPossible  29 Energy(float)  31 AllowSpecialFurniture
 // `location` (optional) is a ref to a placed reference (LocationTarget.Link); omit ⇒
 // LocationFallback (NPC uses its editor location). `radius` defaults to 512.
-internal sealed class SandboxSpec
+public sealed class SandboxSpec
 {
     public string Location { get; set; } = "";   // optional ref → placed reference (an REFR/ACHR)
     public uint Radius { get; set; } = 512;
@@ -273,7 +275,7 @@ internal sealed class SandboxSpec
 //   2 Ride Horse if possible? (bool, default false)
 //   4 Prefer Preferred Path? (bool, default false)
 // `place` should be a real ref; without it the package falls back to NearSelf (no movement).
-internal sealed class TravelSpec
+public sealed class TravelSpec
 {
     public string Place { get; set; } = "";   // ref → a placed REFR/ACHR (where to travel to)
     public uint Radius { get; set; } = 0;     // 0 = arrive at exact point (template default); non-zero = arrive within radius
@@ -296,7 +298,7 @@ internal sealed class TravelSpec
 // it as the template's `PackageTargetLinkedReference` fallback also no-ops in practice.
 // `spell` is therefore REQUIRED. `target` is optional — omitted ⇒ PackageTargetSelf (self-cast),
 // which is correct for Candlelight/Healing/Ward/etc.
-internal sealed class UseMagicSpec
+public sealed class UseMagicSpec
 {
     public string Location { get; set; } = "";  // optional ref → placed REFR/ACHR (where to cast from); empty ⇒ NearSelf
     public uint Radius { get; set; } = 500;     // location radius (template default 500)
@@ -321,7 +323,7 @@ internal sealed class UseMagicSpec
 // follows); link the last back to the first to loop. `start` is REQUIRED — without it the NPC
 // has no route and won't patrol. Vanilla concrete patrols use either PackageTargetSpecificReference
 // (a placed marker, which we emit) or PackageTargetLinkedReference (the NPC's own linked-ref).
-internal sealed class PatrolSpec
+public sealed class PatrolSpec
 {
     public string Start { get; set; } = "";        // REQUIRED ref → a placement editorId (the first marker)
     public float? Radius { get; set; }             // default 150
@@ -337,7 +339,7 @@ internal sealed class PatrolSpec
 // The NPC trails `target`, closing to Min and not straying past Max. Note: this is the raw movement
 // behaviour only — a full vanilla FOLLOWER also needs a follow faction / dialogue / a managing quest;
 // this package alone makes an actor physically tag along (companion-lite, summon, escort).
-internal sealed class FollowSpec
+public sealed class FollowSpec
 {
     public string Target { get; set; } = "";       // ref → who to follow; empty ⇒ the player (Skyrim.esm:0x000014)
     public float? MinRadius { get; set; }          // default 128 (how close it closes in)
@@ -358,7 +360,7 @@ internal sealed class FollowSpec
 // Escort is the DUAL of Follow: the NPC walks ahead toward the destination and the escorted target
 // tags along, with the NPC pausing if they fall past the wait distance. Same navmesh rules apply —
 // the destination must sit on reachable navmesh, and cross-cell escort needs the citizenship recipe.
-internal sealed class EscortSpec
+public sealed class EscortSpec
 {
     public string Target { get; set; } = "";          // ref → who to escort; empty ⇒ the player (Skyrim.esm:0x000014)
     public string Destination { get; set; } = "";      // REQUIRED ref → where to lead them (vanilla marker or in-spec placement)
@@ -373,14 +375,14 @@ internal sealed class EscortSpec
 }
 // Attach a compiled Papyrus script (by Scriptname) to a record (by editorId), with
 // typed properties. type ∈ int|float|bool|string|object; object resolves ObjectEditorId.
-internal sealed class ScriptAttachSpec
+public sealed class ScriptAttachSpec
 {
     public string TargetEditorId { get; set; } = "";
     public string ScriptName { get; set; } = "";
     public string Source { get; set; } = "";   // optional .psc path (rel. to spec) for `package` to compile
     public List<PropertySpec> Properties { get; set; } = new();
 }
-internal sealed class PropertySpec
+public sealed class PropertySpec
 {
     public string Name { get; set; } = "";
     public string Type { get; set; } = "";
@@ -394,8 +396,8 @@ internal sealed class PropertySpec
 // `template` (optional, a vanilla INTERIOR cell ref "<master>:0xFORMID") copies that cell's
 // lighting/water environment so a brand-new cell isn't pitch-black; it still needs a floor
 // static placed in it (a `placement`) so the player doesn't fall into the void.
-internal sealed class CellSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Template { get; set; } = ""; }
-internal sealed class Vec3 { public float X { get; set; } public float Y { get; set; } public float Z { get; set; } }
+public sealed class CellSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Template { get; set; } = ""; }
+public sealed class Vec3 { public float X { get; set; } public float Y { get; set; } public float Z { get; set; } }
 // Place a base form (npc/object, in-spec or external) into the world at a position/rotation.
 // TWO targeting modes:
 //   * INTERIOR: set `cell` to an in-spec interior cell editorId (It.7d-p1) OR a vanilla interior
@@ -405,7 +407,7 @@ internal sealed class Vec3 { public float X { get; set; } public float Y { get; 
 //     WORLD position. The cell at floor(x/4096),floor(y/4096) is found in the master and
 //     overridden to add this ref (It.7d-p3). `worldspace` wins over `cell` if both are set.
 // `rotation` is in degrees. `kind` ("npc"|"object") is inferred for in-spec bases, "object" else.
-internal sealed class PlacementSpec
+public sealed class PlacementSpec
 {
     public string Base { get; set; } = "";
     public string EditorId { get; set; } = "";     // optional: names this REFR/ACHR so other refs can target it
@@ -423,27 +425,27 @@ internal sealed class PlacementSpec
 }
 // One Linked Reference: `target` is the linked placed ref (a placement editorId or external ref);
 // `keyword` (optional ref → KYWD) tags the link. Empty keyword = the null/default link.
-internal sealed class LinkedRefSpec
+public sealed class LinkedRefSpec
 {
     public string Target { get; set; } = "";
     public string Keyword { get; set; } = "";
 }
 // One entry in a leveled list: a ref (item or npc) that appears at >= Level, Count copies.
-internal sealed class LeveledEntrySpec { public string Reference { get; set; } = ""; public short Level { get; set; } = 1; public short Count { get; set; } = 1; }
+public sealed class LeveledEntrySpec { public string Reference { get; set; } = ""; public short Level { get; set; } = 1; public short Count { get; set; } = 1; }
 // LeveledItem (LVLI) / LeveledNpc (LVLN): chanceNone (0-100), flag names, weighted entries.
-internal sealed class LeveledItemSpec { public string EditorId { get; set; } = ""; public int ChanceNone { get; set; } public List<string> Flags { get; set; } = new(); public List<LeveledEntrySpec> Entries { get; set; } = new(); }
-internal sealed class LeveledNpcSpec { public string EditorId { get; set; } = ""; public int ChanceNone { get; set; } public List<string> Flags { get; set; } = new(); public List<LeveledEntrySpec> Entries { get; set; } = new(); }
+public sealed class LeveledItemSpec { public string EditorId { get; set; } = ""; public int ChanceNone { get; set; } public List<string> Flags { get; set; } = new(); public List<LeveledEntrySpec> Entries { get; set; } = new(); }
+public sealed class LeveledNpcSpec { public string EditorId { get; set; } = ""; public int ChanceNone { get; set; } public List<string> Flags { get; set; } = new(); public List<LeveledEntrySpec> Entries { get; set; } = new(); }
 // Container (CONT): named, with a list of item refs + counts.
-internal sealed class ContainerEntrySpec { public string Item { get; set; } = ""; public int Count { get; set; } = 1; }
-internal sealed class ContainerSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public float Weight { get; set; } public List<ContainerEntrySpec> Items { get; set; } = new(); }
+public sealed class ContainerEntrySpec { public string Item { get; set; } = ""; public int Count { get; set; } = 1; }
+public sealed class ContainerSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public float Weight { get; set; } public List<ContainerEntrySpec> Items { get; set; } = new(); }
 // One required ingredient in a recipe: a *ref* (in-spec or vanilla) + how many are consumed.
-internal sealed class RecipeComponentSpec { public string Item { get; set; } = ""; public int Count { get; set; } = 1; }
+public sealed class RecipeComponentSpec { public string Item { get; set; } = ""; public int Count { get; set; } = 1; }
 // ConstructibleObject (COBJ): a crafting recipe. `createdObject` (a *ref*, usually an in-spec item)
 // is made in `count` copies at the `workbench` (a Keyword *ref*; defaults to the forge —
 // Skyrim.esm:0x088105 CraftingSmithingForge) by consuming the `components`. Perk/skill gating
 // (Conditions) is not yet a spec field — a recipe with components but no condition shows whenever
 // you have the materials.
-internal sealed class RecipeSpec
+public sealed class RecipeSpec
 {
     public string EditorId { get; set; } = "";
     public string CreatedObject { get; set; } = "";
@@ -455,24 +457,24 @@ internal sealed class RecipeSpec
 // --- Long-tail record types (same spec-class + build-loop pattern) ---------------------
 // Ingredient (INGR): an alchemy reagent — value/weight + `effects` (reuses the spell/potion
 // effect pipeline) + keywords.
-internal sealed class IngredientSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<EffectSpec> Effects { get; set; } = new(); public List<string> Keywords { get; set; } = new(); }
+public sealed class IngredientSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<EffectSpec> Effects { get; set; } = new(); public List<string> Keywords { get; set; } = new(); }
 // Ammunition (AMMO): arrow/bolt — value/weight + `damage` (float) + keywords.
-internal sealed class AmmunitionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float Damage { get; set; } public List<string> Keywords { get; set; } = new(); }
+public sealed class AmmunitionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float Damage { get; set; } public List<string> Keywords { get; set; } = new(); }
 // Scroll (SCRL): a one-shot spell-as-item — value/weight + `effects` + spell cast fields.
-internal sealed class ScrollSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<EffectSpec> Effects { get; set; } = new(); public string SpellType { get; set; } = ""; public string CastType { get; set; } = ""; public string TargetType { get; set; } = ""; public uint BaseCost { get; set; } public List<string> Keywords { get; set; } = new(); }
+public sealed class ScrollSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<EffectSpec> Effects { get; set; } = new(); public string SpellType { get; set; } = ""; public string CastType { get; set; } = ""; public string TargetType { get; set; } = ""; public uint BaseCost { get; set; } public List<string> Keywords { get; set; } = new(); }
 // SoulGem (SLGM): value/weight + `maximumCapacity` (None|Petty|Lesser|Common|Greater|Grand) + keywords.
-internal sealed class SoulGemSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public string MaximumCapacity { get; set; } = ""; public List<string> Keywords { get; set; } = new(); }
+public sealed class SoulGemSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public string MaximumCapacity { get; set; } = ""; public List<string> Keywords { get; set; } = new(); }
 // Key (KEYM): value/weight + keywords.
-internal sealed class KeySpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<string> Keywords { get; set; } = new(); }
+public sealed class KeySpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<string> Keywords { get; set; } = new(); }
 // Keyword (KYWD): just an editorId — define your own so in-spec records can reference it in
 // their `keywords` lists (e.g. a custom "VendorItemFood" category).
-internal sealed class KeywordSpec { public string EditorId { get; set; } = ""; }
+public sealed class KeywordSpec { public string EditorId { get; set; } = ""; }
 // Outfit (OTFT): a named set of item *refs* (armors/weapons) an NPC can wear; an npc `outfit`
 // ref can point at an in-spec outfit's editorId.
-internal sealed class OutfitSpec { public string EditorId { get; set; } = ""; public List<string> Items { get; set; } = new(); }
+public sealed class OutfitSpec { public string EditorId { get; set; } = ""; public List<string> Items { get; set; } = new(); }
 // Static (STAT): a world mesh — just `model` (a .nif path; reference a vanilla mesh in the BSA).
 // A placement base for scenery; no Name (statics are nameless).
-internal sealed class StaticSpec { public string EditorId { get; set; } = ""; public string Model { get; set; } = ""; }
+public sealed class StaticSpec { public string EditorId { get; set; } = ""; public string Model { get; set; } = ""; }
 // Activator (ACTI): an interactable world object — name + `model` + keywords (+ a script via
 // `scripts`). A placement base you can walk up to / attach behaviour to.
-internal sealed class ActivatorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Model { get; set; } = ""; public List<string> Keywords { get; set; } = new(); }
+public sealed class ActivatorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Model { get; set; } = ""; public List<string> Keywords { get; set; } = new(); }

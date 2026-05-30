@@ -1,22 +1,29 @@
-internal static partial class Program
+namespace ModForge;
+
+public static partial class Generator
 {
     // -------------------------------------------------------------------------------
-    //  build — generate a plugin from a structured spec (the data-driven generator).
+    //  Build — generate a plugin from a structured spec (the data-driven generator).
     //  Layer between an LLM (NL -> spec) and Mutagen (spec -> valid plugin). Extend by
-    //  adding a list to ModSpec + a loop here. (It.2+: quests/dialogue, more types.)
+    //  adding a list to ModSpec + a loop here. Object in, object out: the caller owns
+    //  reading the spec and writing the result; warnings are collected, never printed.
     // -------------------------------------------------------------------------------
-    private static void Build(string specPath, string outPath)
+    /// <summary>
+    /// Build a mod from a spec. The result holds the in-memory <see cref="ISkyrimMod"/> (caller
+    /// writes it), the non-fatal warnings, and build stats. Run <see cref="Validate"/> first.
+    /// </summary>
+    public static BuildResult Build(ModSpec spec, ModKey outputKey, BuildOptions? options = null)
     {
-        var spec = JsonSerializer.Deserialize<ModSpec>(File.ReadAllText(specPath), ReadOpts)
-                   ?? throw new InvalidOperationException("spec deserialized to null");
-        var key = ModKey.FromNameAndExtension(Path.GetFileName(outPath));
-        var mod = new SkyrimMod(key, SkyrimRelease.SkyrimSE);
+        var warnings = new List<string>();
+        void Warn(string message) => warnings.Add(message);
+        var mod = new SkyrimMod(outputKey, SkyrimRelease.SkyrimSE);
 
         // --- Master link-caches (read-only overlays of Skyrim.esm etc.) -----------------------
         // Used by (a) weapon/book *templating* — cloning a vanilla record so a generated item gets
         // a real model/animation/equip data and doesn't CRASH on equip/read — and (b) vanilla
         // cell/worldspace placement further down. Declared up here so the item-build loops reach it.
-        var skyrimData = Environment.GetEnvironmentVariable("MODFORGE_SKYRIM_DATA")
+        var skyrimData = options?.SkyrimDataPath
+            ?? Environment.GetEnvironmentVariable("MODFORGE_SKYRIM_DATA")
             ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                             ".local", "share", "Steam", "steamapps", "common", "Skyrim Special Edition", "Data");
         var masterCaches = new Dictionary<string, ILinkCache<ISkyrimMod, ISkyrimModGetter>?>(StringComparer.OrdinalIgnoreCase);
@@ -28,7 +35,7 @@ internal static partial class Program
             var path = Path.Combine(skyrimData, masterName);
             ILinkCache<ISkyrimMod, ISkyrimModGetter>? cache = null;
             if (!File.Exists(path))
-                Console.WriteLine($"  ! master '{masterName}' not found at {path} (set MODFORGE_SKYRIM_DATA to your Data folder)");
+                Warn($"  ! master '{masterName}' not found at {path} (set MODFORGE_SKYRIM_DATA to your Data folder)");
             else
             {
                 // NOTE: Skyrim.esm is LOCALIZED, so its TranslatedString fields (Name/Description/
@@ -144,10 +151,10 @@ internal static partial class Program
                     // them would resolve .STRINGS via the (headless-absent) load-order listing.
                     r.DeepCopyIn(tmpl, out _, new Book.TranslationMask(defaultOn: true) { Name = false, BookText = false });
                 else
-                    Console.WriteLine($"  ! book '{b.EditorId}': template '{b.Template}' not resolved — book will lack a model and may CRASH on read");
+                    Warn($"  ! book '{b.EditorId}': template '{b.Template}' not resolved — book will lack a model and may CRASH on read");
             }
             else
-                Console.WriteLine($"  ! book '{b.EditorId}': no `template` — a model-less book CRASHES on read; set template to a vanilla book (e.g. Skyrim.esm:0x0ED161 Book1CheapNordsArise)");
+                Warn($"  ! book '{b.EditorId}': no `template` — a model-less book CRASHES on read; set template to a vanilla book (e.g. Skyrim.esm:0x0ED161 Book1CheapNordsArise)");
             r.EditorID = b.EditorId; r.Name = b.Name; r.BookText = b.Text;
         }
         foreach (var w in spec.Weapons)
@@ -167,10 +174,10 @@ internal static partial class Program
                     // them would resolve .STRINGS via the (headless-absent) load-order listing.
                     r.DeepCopyIn(tmpl, out _, new Weapon.TranslationMask(defaultOn: true) { Name = false, Description = false });
                 else
-                    Console.WriteLine($"  ! weapon '{w.EditorId}': template '{w.Template}' not resolved — weapon will lack a model and may CRASH on equip");
+                    Warn($"  ! weapon '{w.EditorId}': template '{w.Template}' not resolved — weapon will lack a model and may CRASH on equip");
             }
             else
-                Console.WriteLine($"  ! weapon '{w.EditorId}': no `template` — a model-less weapon CRASHES on equip; set template to a vanilla weapon (e.g. Skyrim.esm:0x012EB7 IronSword)");
+                Warn($"  ! weapon '{w.EditorId}': no `template` — a model-less weapon CRASHES on equip; set template to a vanilla weapon (e.g. Skyrim.esm:0x012EB7 IronSword)");
             r.EditorID = w.EditorId; r.Name = w.Name;
             // Stats override the template's. speed/reach default to 1.0 so the weapon is swingable;
             // when templated, keep the clone's Data (anim type/skill/stagger/flags) and only restate
@@ -230,7 +237,7 @@ internal static partial class Program
         {
             if (string.IsNullOrEmpty(d.QuestEditorId) || !questsByEd.TryGetValue(d.QuestEditorId, out var quest))
             {
-                Console.WriteLine($"  ! dialogue '{d.EditorId}' skipped: quest '{d.QuestEditorId}' not found in spec");
+                Warn($"  ! dialogue '{d.EditorId}' skipped: quest '{d.QuestEditorId}' not found in spec");
                 continue;
             }
 
@@ -276,7 +283,7 @@ internal static partial class Program
                 }
                 else
                     // No GetIsID gate => EVERY NPC would speak this line. Warn (validate also catches this).
-                    Console.WriteLine($"  ! dialogue '{d.EditorId}' speaker '{d.SpeakerNpcEditorId}' not found in spec — line has NO speaker gate (any NPC may say it)");
+                    Warn($"  ! dialogue '{d.EditorId}' speaker '{d.SpeakerNpcEditorId}' not found in spec — line has NO speaker gate (any NPC may say it)");
             }
             topic.Responses.Add(info);
             dialogueBuilt++;
@@ -338,7 +345,7 @@ internal static partial class Program
                 var bt = new BodyTemplate { ArmorType = ParseArmorType(a.ArmorType) };
                 foreach (var slot in a.Slots)
                     if (Enum.TryParse<BipedObjectFlag>(slot, ignoreCase: true, out var f)) bt.FirstPersonFlags |= f;
-                    else Console.WriteLine($"  ! armor '{a.EditorId}' unknown slot '{slot}' (e.g. Body, Head, Hands, Feet, Forearms, Calves, Shield)");
+                    else Warn($"  ! armor '{a.EditorId}' unknown slot '{slot}' (e.g. Body, Head, Hands, Feet, Forearms, Calves, Shield)");
                 r.BodyTemplate = bt;
             }
         }
@@ -374,7 +381,7 @@ internal static partial class Program
             foreach (var (skillName, w) in cl.SkillWeights)
                 if (Enum.TryParse<Skill>(skillName, ignoreCase: true, out var sk))
                     r.SkillWeights[sk] = (byte)Math.Clamp(w, 0, 255);
-                else Console.WriteLine($"  ! class '{cl.EditorId}' skillWeight '{skillName}' is not a Skill — skipped");
+                else Warn($"  ! class '{cl.EditorId}' skillWeight '{skillName}' is not a Skill — skipped");
         }
         foreach (var msg in spec.Messages)
         {
@@ -553,9 +560,9 @@ internal static partial class Program
                 if (TryResolveTemplate<ICellGetter>(c.Template, out var tmplCell) && tmplCell is not null)
                 {
                     if (tmplCell.Flags.HasFlag(Cell.Flag.IsInteriorCell)) CopyCellEnv(tmplCell, cell);
-                    else Console.WriteLine($"  ! cell '{c.EditorId}' template '{c.Template}' is exterior — ignored (need an interior cell)");
+                    else Warn($"  ! cell '{c.EditorId}' template '{c.Template}' is exterior — ignored (need an interior cell)");
                 }
-                else Console.WriteLine($"  ! cell '{c.EditorId}' template '{c.Template}' unresolved — created without lighting (may render black)");
+                else Warn($"  ! cell '{c.EditorId}' template '{c.Template}' unresolved — created without lighting (may render black)");
             }
             cell.Flags |= Cell.Flag.IsInteriorCell;   // CopyCellEnv overwrote Flags — keep it interior
             if (!string.IsNullOrEmpty(c.Name)) cell.Name = c.Name;
@@ -583,7 +590,7 @@ internal static partial class Program
                 linksWired++;
                 if (LooksExternalRef(refStr)) extLinks++;
             }
-            else Console.WriteLine($"  ! {what} ref '{refStr}' unresolved (need in-spec editorId or <master>:0xFORMID)");
+            else Warn($"  ! {what} ref '{refStr}' unresolved (need in-spec editorId or <master>:0xFORMID)");
         }
 
         foreach (var n in spec.Npcs)
@@ -633,7 +640,7 @@ internal static partial class Program
         {
             if (kws.Count == 0) return;
             if (!recordsByEd.TryGetValue(ed, out var rec) || rec is not IKeyworded<IKeywordGetter> kw)
-            { Console.WriteLine($"  ! '{ed}' takes no keywords (or not found)"); return; }
+            { Warn($"  ! '{ed}' takes no keywords (or not found)"); return; }
             kw.Keywords ??= new();
             foreach (var kref in kws)
                 Resolve($"'{ed}' keyword", kref, fk => kw.Keywords!.Add(new FormLink<IKeywordGetter>(fk)));
@@ -654,7 +661,7 @@ internal static partial class Program
         {
             if (effects.Count == 0) return;
             if (!recordsByEd.TryGetValue(ed, out var rec) || rec is not IHasEffects he)
-            { Console.WriteLine($"  ! '{ed}' takes no magic effects (or not found)"); return; }
+            { Warn($"  ! '{ed}' takes no magic effects (or not found)"); return; }
             foreach (var es in effects)
                 Resolve($"'{ed}' effect", es.MagicEffect, fk =>
                 {
@@ -735,7 +742,7 @@ internal static partial class Program
                 };
             }
             if (!string.IsNullOrWhiteSpace(refStr))
-                Console.WriteLine($"  ! {ownerLabel} location '{refStr}' unresolved — falling back to NearSelf");
+                Warn($"  ! {ownerLabel} location '{refStr}' unresolved — falling back to NearSelf");
             return new PackageDataLocation
             {
                 Name = slotName,
@@ -758,7 +765,7 @@ internal static partial class Program
             if (tfk.IsNull || tfk.ModKey != skyrimEsm)
             {
                 if (!string.IsNullOrWhiteSpace(pk.Template))
-                    Console.WriteLine($"  ! package '{pk.EditorId}': template '{pk.Template}' not a Skyrim.esm template; no Data overrides emitted (template defaults apply)");
+                    Warn($"  ! package '{pk.EditorId}': template '{pk.Template}' not a Skyrim.esm template; no Data overrides emitted (template defaults apply)");
                 continue;
             }
 
@@ -790,7 +797,7 @@ internal static partial class Program
                 // template default (= arrive at exact point); set non-zero for "arrive within R".
                 var tv = pk.Travel;
                 if (string.IsNullOrWhiteSpace(tv.Place))
-                    Console.WriteLine($"  ! package '{pk.EditorId}' travel: no `place` ref — Travel will fall back to NearSelf (NPC stays put)");
+                    Warn($"  ! package '{pk.EditorId}' travel: no `place` ref — Travel will fall back to NearSelf (NPC stays put)");
                 pack.Data[0] = MakeLocationSlot("Place to Travel", $"package '{pk.EditorId}' travel", tv.Place, tv.Radius);
                 pack.Data[2] = new PackageDataBool { Name = "Ride Horse if possible?", Data = tv.RideHorse ?? false };
                 pack.Data[4] = new PackageDataBool { Name = "Prefer Preferred Path?", Data = tv.PreferPath ?? false };
@@ -809,7 +816,7 @@ internal static partial class Program
 
                 if (string.IsNullOrWhiteSpace(um.Spell))
                 {
-                    Console.WriteLine($"  ! package '{pk.EditorId}' usemagic: no `spell` ref — package will no-op (engine has nothing to cast)");
+                    Warn($"  ! package '{pk.EditorId}' usemagic: no `spell` ref — package will no-op (engine has nothing to cast)");
                 }
                 else if (TryResolveRef(um.Spell, formKeyByEd, out var spellFk))
                 {
@@ -824,7 +831,7 @@ internal static partial class Program
                 }
                 else
                 {
-                    Console.WriteLine($"  ! package '{pk.EditorId}' usemagic spell '{um.Spell}' unresolved — package will no-op");
+                    Warn($"  ! package '{pk.EditorId}' usemagic spell '{um.Spell}' unresolved — package will no-op");
                 }
 
                 if (!string.IsNullOrWhiteSpace(um.Target)
@@ -842,7 +849,7 @@ internal static partial class Program
                 else
                 {
                     if (!string.IsNullOrWhiteSpace(um.Target))
-                        Console.WriteLine($"  ! package '{pk.EditorId}' usemagic target '{um.Target}' unresolved — defaulting to PackageTargetSelf");
+                        Warn($"  ! package '{pk.EditorId}' usemagic target '{um.Target}' unresolved — defaulting to PackageTargetSelf");
                     pack.Data[4] = new PackageDataTarget
                     {
                         Name = "Target",
@@ -874,7 +881,7 @@ internal static partial class Program
                 // linkedRefs chain off the start marker, wired after placements.
                 var pt = pk.Patrol;
                 if (string.IsNullOrWhiteSpace(pt.Start))
-                    Console.WriteLine($"  ! package '{pk.EditorId}' patrol: no `start` ref — NPC has no route and won't patrol");
+                    Warn($"  ! package '{pk.EditorId}' patrol: no `start` ref — NPC has no route and won't patrol");
                 else
                     deferredTargetWires.Add((pack, 0, "Patrol Start", pk.EditorId, pt.Start));
                 pack.Data[1] = new PackageDataFloat { Name = "Patrol Radius",            Data = pt.Radius ?? 150f };
@@ -911,7 +918,7 @@ internal static partial class Program
                 var tgt = string.IsNullOrWhiteSpace(es.Target) ? "Skyrim.esm:0x000014" : es.Target;
                 deferredTargetWires.Add((pack, 11, "Target to Escort", pk.EditorId, tgt));
                 if (string.IsNullOrWhiteSpace(es.Destination))
-                    Console.WriteLine($"  ! package '{pk.EditorId}' escort: no `destination` ref — Escort will fall back to NearSelf (NPC won't lead anywhere)");
+                    Warn($"  ! package '{pk.EditorId}' escort: no `destination` ref — Escort will fall back to NearSelf (NPC won't lead anywhere)");
                 deferredLocationWires.Add((pack, 3, "Destination", pk.EditorId, es.Destination, es.Radius));
                 pack.Data[2]  = new PackageDataInt   { Name = "Number of Followers:",            Data = es.NumberOfFollowers ?? 1u };
                 pack.Data[4]  = new PackageDataFloat { Name = "Distance to Wait for Follower(s):", Data = es.WaitDistance ?? 512f };
@@ -923,7 +930,7 @@ internal static partial class Program
             }
             else
             {
-                Console.WriteLine($"  ! package '{pk.EditorId}': template {tfk} is not yet supported (known: sandbox=0x01C254, travel=0x016FAA, usemagic=0x0504F5, patrol=0x017723, follow=0x019B2C, escort=0x023B73) — emitting package with no Data overrides; template defaults apply");
+                Warn($"  ! package '{pk.EditorId}': template {tfk} is not yet supported (known: sandbox=0x01C254, travel=0x016FAA, usemagic=0x0504F5, patrol=0x017723, follow=0x019B2C, escort=0x023B73) — emitting package with no Data overrides; template defaults apply");
             }
         }
 
@@ -969,9 +976,9 @@ internal static partial class Program
             var cache = MasterCache(masterName);
             if (cache is null) return null;
             if (!cache.TryResolve<ICellGetter>(fk, out var vanilla))
-            { Console.WriteLine($"  ! vanilla cell '{cellRef}' not found in {masterName}"); return null; }
+            { Warn($"  ! vanilla cell '{cellRef}' not found in {masterName}"); return null; }
             if (!vanilla.Flags.HasFlag(Cell.Flag.IsInteriorCell))
-            { Console.WriteLine($"  ! vanilla cell '{cellRef}' is exterior — only interior vanilla cells supported (phase 2); skipped"); return null; }
+            { Warn($"  ! vanilla cell '{cellRef}' is exterior — only interior vanilla cells supported (phase 2); skipped"); return null; }
 
             // Manual override (NOT GetOrAddAsOverride, which deep-copies the localized Name → needs
             // the BSA/load-order string lookup, absent headless). Same-FormKey override that copies
@@ -1017,7 +1024,7 @@ internal static partial class Program
             var cache = MasterCache(masterName);
             if (cache is null) return null;
             if (!cache.TryResolve<IWorldspaceGetter>(wsFk, out var ws))
-            { Console.WriteLine($"  ! worldspace {wsFk} not found in {masterName}"); return null; }
+            { Warn($"  ! worldspace {wsFk} not found in {masterName}"); return null; }
             short bx = (short)FloorDiv(cx, 32), by = (short)FloorDiv(cy, 32);
             short sx = (short)FloorDiv(cx, 8),  sy = (short)FloorDiv(cy, 8);
             foreach (var block in ws.SubCells)
@@ -1037,7 +1044,7 @@ internal static partial class Program
         Cell? ExteriorCell(string worldspaceRef, int cx, int cy)
         {
             if (!TryExternalRef(worldspaceRef, out var wsFk))
-            { Console.WriteLine($"  ! placement worldspace '{worldspaceRef}' must be an external <master>:0xFORMID ref"); return null; }
+            { Warn($"  ! placement worldspace '{worldspaceRef}' must be an external <master>:0xFORMID ref"); return null; }
             var key = (wsFk, cx, cy);
             if (exteriorCells.TryGetValue(key, out var cached)) return cached;
 
@@ -1072,7 +1079,7 @@ internal static partial class Program
             {
                 // Ungenerated grid (no master cell). Make a NEW exterior cell at the grid: structurally
                 // valid, but a land-less exterior cell created this way is NOT in-game verified.
-                Console.WriteLine($"  ! exterior grid ({cx},{cy}) has no master cell in {masterName} — creating a NEW cell (structural only, not in-game verified)");
+                Warn($"  ! exterior grid ({cx},{cy}) has no master cell in {masterName} — creating a NEW cell (structural only, not in-game verified)");
                 cell = new Cell(mod, $"MF_Ext_{(cx < 0 ? "m" : "")}{Math.Abs(cx)}_{(cy < 0 ? "m" : "")}{Math.Abs(cy)}")
                 { Grid = new CellGrid { Point = new Noggog.P2Int(cx, cy) } };
                 exteriorNewCells++;
@@ -1100,21 +1107,21 @@ internal static partial class Program
                 // Exterior: the world position picks the grid cell in the worldspace.
                 int cx = PosToGrid(pl.Position.X), cy = PosToGrid(pl.Position.Y);
                 cell = ExteriorCell(pl.Worldspace, cx, cy);
-                if (cell is null) { Console.WriteLine($"  ! placement: worldspace '{pl.Worldspace}' unresolved — skipped"); continue; }
+                if (cell is null) { Warn($"  ! placement: worldspace '{pl.Worldspace}' unresolved — skipped"); continue; }
             }
             else if (LooksExternalRef(pl.Cell))
             {
                 int before = vanillaCellOverrides.Count;
                 cell = VanillaCellOverride(pl.Cell);
-                if (cell is null) { Console.WriteLine($"  ! placement: vanilla cell '{pl.Cell}' unresolved — skipped"); continue; }
+                if (cell is null) { Warn($"  ! placement: vanilla cell '{pl.Cell}' unresolved — skipped"); continue; }
                 if (vanillaCellOverrides.Count > before) vanillaCells++;
             }
             else if (!cellsByEd.TryGetValue(pl.Cell, out var inSpec))
-            { Console.WriteLine($"  ! placement: cell '{pl.Cell}' not found in spec — skipped"); continue; }
+            { Warn($"  ! placement: cell '{pl.Cell}' not found in spec — skipped"); continue; }
             else cell = inSpec;
 
             if (!TryResolveRef(pl.Base, formKeyByEd, out var baseFk))
-            { Console.WriteLine($"  ! placement: base '{pl.Base}' unresolved — skipped"); continue; }
+            { Warn($"  ! placement: base '{pl.Base}' unresolved — skipped"); continue; }
 
             var placement = new Placement
             {
@@ -1140,7 +1147,7 @@ internal static partial class Program
                 // silently clobber that record's FormKey here, breaking any ref to the original.
                 // validate enforces uniqueness, but Build can run without it — so warn.
                 if (formKeyByEd.ContainsKey(pl.EditorId))
-                    Console.WriteLine($"  ! placement editorId '{pl.EditorId}' collides with an existing record — its FormKey is now overwritten (run validate to catch this)");
+                    Warn($"  ! placement editorId '{pl.EditorId}' collides with an existing record — its FormKey is now overwritten (run validate to catch this)");
                 placedRec.EditorID = pl.EditorId;
                 formKeyByEd[pl.EditorId] = placedRec.FormKey;
                 recordsByEd[pl.EditorId] = (IMajorRecord)placedRec;
@@ -1171,7 +1178,7 @@ internal static partial class Program
             foreach (var lr in pl.LinkedRefs)
             {
                 if (!TryResolveRef(lr.Target, formKeyByEd, out var tgtFk))
-                { Console.WriteLine($"  ! placement '{pl.EditorId}' linkedRef target '{lr.Target}' unresolved — skipped"); continue; }
+                { Warn($"  ! placement '{pl.EditorId}' linkedRef target '{lr.Target}' unresolved — skipped"); continue; }
                 var link = new LinkedReferences();
                 link.Reference.SetTo(new FormLink<IPlacedGetter>(tgtFk));
                 if (!string.IsNullOrWhiteSpace(lr.Keyword) && TryResolveRef(lr.Keyword, formKeyByEd, out var kwFk))
@@ -1188,7 +1195,7 @@ internal static partial class Program
         foreach (var (pack, slot, slotName, ed, refStr) in deferredTargetWires)
         {
             if (!TryResolveRef(refStr, formKeyByEd, out var tgtFk))
-            { Console.WriteLine($"  ! package '{ed}' {slotName} '{refStr}' unresolved — package will no-op"); continue; }
+            { Warn($"  ! package '{ed}' {slotName} '{refStr}' unresolved — package will no-op"); continue; }
             pack.Data[slot] = new PackageDataTarget
             {
                 Name = slotName,
@@ -1269,11 +1276,11 @@ internal static partial class Program
         foreach (var sa in spec.Scripts)
         {
             if (!recordsByEd.TryGetValue(sa.TargetEditorId, out var target))
-            { Console.WriteLine($"  ! script attach: target '{sa.TargetEditorId}' not found"); continue; }
+            { Warn($"  ! script attach: target '{sa.TargetEditorId}' not found"); continue; }
 
             var vmadProp = target.GetType().GetProperty("VirtualMachineAdapter");
             if (vmadProp is null || !vmadProp.CanWrite)
-            { Console.WriteLine($"  ! '{sa.TargetEditorId}' ({target.GetType().Name}) takes no script"); continue; }
+            { Warn($"  ! '{sa.TargetEditorId}' ({target.GetType().Name}) takes no script"); continue; }
 
             var vmad = vmadProp.GetValue(target);
             if (vmad is null)
@@ -1295,7 +1302,7 @@ internal static partial class Program
                     "object" => MakeObjectProp(p, formKeyByEd),
                     _        => null,
                 };
-                if (sp is null) { Console.WriteLine($"  ! script '{sa.ScriptName}' prop '{p.Name}' bad type/ref '{p.Type}'"); continue; }
+                if (sp is null) { Warn($"  ! script '{sa.ScriptName}' prop '{p.Name}' bad type/ref '{p.Type}'"); continue; }
                 sp.Name = p.Name;
                 sp.Flags = ScriptProperty.Flag.Edited;
                 entry.Properties.Add(sp);
@@ -1305,8 +1312,11 @@ internal static partial class Program
         }
 
         if (spec.Esl) mod.IsSmallMaster = true;
-        Write(mod, outPath);
-        foreach (var d in masterDisposables) d.Dispose();   // release the master overlays (overrides are deep-copied)
+        // Release the master overlays now: every template clone / cell-env copy above is eager
+        // (DeepCopyIn / CopyCellEnv), and FormLinks only hold FormKeys, so nothing the write needs
+        // depends on the caches still being open. The caller writes the returned mod.
+        foreach (var d in masterDisposables) d.Dispose();
+
         int total = spec.MiscItems.Count + spec.Books.Count + spec.Weapons.Count + spec.Npcs.Count
                     + spec.Quests.Count + dialogueBuilt
                     + spec.Spells.Count + spec.Potions.Count + spec.Armors.Count
@@ -1317,13 +1327,26 @@ internal static partial class Program
                     + spec.Outfits.Count + spec.Statics.Count + spec.Activators.Count
                     + spec.MagicEffects.Count + spec.Classes.Count + spec.Packages.Count
                     + spec.CombatStyles.Count + spec.Relationships.Count + spec.Recipes.Count;
-                    // (Placements are reported separately below, so not folded into `total`.)
-        Console.WriteLine($"built {outPath} from {Path.GetFileName(specPath)} " +
-                          $"(ESL={spec.Esl}, {total} top-level record(s); {dialogueBuilt} dialogue topic(s); " +
-                          $"{linksWired} cross-ref link(s), {extLinks} to external master(s); " +
-                          $"{scriptsAttached} script(s) attached; " +
-                          $"{placed} placement(s) in {spec.Cells.Count} new + {vanillaCells} vanilla interior cell(s) + " +
-                          $"{worldspaceCount} worldspace(s) [{exteriorNewCells} new exterior cell(s)])");
+                    // (Placements are reported separately in stats, so not folded into `total`.)
+        return new BuildResult
+        {
+            Mod = mod,
+            Warnings = warnings,
+            Stats = new BuildStats
+            {
+                Esl = spec.Esl,
+                TopLevelRecords = total,
+                DialogueTopics = dialogueBuilt,
+                LinksWired = linksWired,
+                ExternalLinks = extLinks,
+                ScriptsAttached = scriptsAttached,
+                Placements = placed,
+                NewInteriorCells = spec.Cells.Count,
+                VanillaInteriorCells = vanillaCells,
+                Worldspaces = worldspaceCount,
+                NewExteriorCells = exteriorNewCells,
+            },
+        };
     }
 
     private static ScriptProperty? MakeObjectProp(PropertySpec p, Dictionary<string, FormKey> formKeyByEd)

@@ -1,3 +1,5 @@
+namespace ModForge;
+
 // UTF-8 for every language — Simplified-Chinese SSE reads UTF-8 .STRINGS (not GBK).
 internal sealed class Utf8EncodingProvider : IMutagenEncodingProvider
 {
@@ -20,7 +22,7 @@ internal sealed class Slot
     }
 }
 
-internal sealed class StringEntry
+public sealed class StringEntry
 {
     public string FormKey { get; set; } = "";
     public string Type { get; set; } = "";

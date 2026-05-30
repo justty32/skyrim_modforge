@@ -1,4 +1,6 @@
-internal static partial class Program
+namespace ModForge;
+
+public static partial class Generator
 {
     // Armor class string -> enum. Accepts shorthand (light/heavy/clothing) or the enum names;
     // anything unrecognised (incl. empty) falls back to Clothing.

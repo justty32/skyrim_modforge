@@ -19,6 +19,28 @@ Linux (no Creation Kit, no Windows needed for generation).
 3. **Papyrus** (next) — AI writes `.psc` → compile via the Creation Kit's
    `PapyrusCompiler.exe` (under Wine) → attach the `.pex` to forms via Mutagen's VMAD.
 
+## Two projects
+
+- **`src/ModForge.Core`** (class library, namespace `ModForge`) — the reusable engine. Works on
+  objects, never the console: `Generator.Build(spec, key) → BuildResult{Mod, Warnings, Stats}`,
+  `Generator.Validate(spec) → problems`, plus `Translator`, `Demo`, `Papyrus`, `PluginIo`, and the
+  public `ModSpec`/`*Spec`/`StringEntry` model. Reference it to compose specs in code (e.g. an AI
+  agent generating a spec dynamically) and get an `ISkyrimMod` back.
+- **`src/ModForge.Cli`** (the `dotnet run` entry point below) — a thin wrapper: argv + JSON read/write
+  + console output + exit codes, plus the diagnostic (`find`/`dump`/`*diag`) commands.
+
+```csharp
+// Library use: build a plugin from a spec composed in code, then write it.
+var spec = new ModSpec { PluginName = "MyMod.esp", Weapons = { /* … */ } };
+var problems = Generator.Validate(spec);
+if (problems.Count == 0)
+{
+    var result = Generator.Build(spec, ModKey.FromNameAndExtension("MyMod.esp"));
+    foreach (var w in result.Warnings) Console.WriteLine(w);
+    PluginIo.Write(result.Mod, "MyMod.esp");
+}
+```
+
 ## CLI (src/ModForge.Cli)
 
 ```
@@ -66,7 +88,7 @@ contract — deterministic, diff-able, re-runnable.
 ### Translatable fields currently covered
 `Name` (most records), `Book.BookText`, `Npc.ShortName`, quest objective text, and
 native dialogue (`DialogTopic` prompt + spoken `DialogResponse` lines). Easy to extend
-— add a slot in `Translate.cs`'s `Slots(...)`.
+— add a slot in `ModForge.Core`'s `Translator.Slots(...)`.
 
 ## Status
 Phase 1: the translate pipeline (extract/apply) + a `gen` demo plugin. Generation of

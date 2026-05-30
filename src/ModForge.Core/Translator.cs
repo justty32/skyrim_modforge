@@ -1,11 +1,19 @@
-internal static partial class Program
+namespace ModForge;
+
+/// <summary>
+/// The translate pipeline: pull every translatable string out of a plugin (<see cref="Extract"/>),
+/// and write edited strings back, either inline (<see cref="Apply"/>) or as a Localized UTF-8
+/// <c>.STRINGS</c> set (<see cref="ApplyLocalized"/>). Works on a loaded <see cref="ISkyrimMod"/>;
+/// the caller owns reading/writing the JSON contract.
+/// </summary>
+public static class Translator
 {
     // -------------------------------------------------------------------------------
-    //  Every translatable text slot: where it lives + how to read/write it. extract
-    //  and apply iterate the SAME Slots(mod) so they stay aligned; apply matches by
+    //  Every translatable text slot: where it lives + how to read/write it. Extract
+    //  and Apply iterate the SAME Slots(mod) so they stay aligned; apply matches by
     //  (FormKey, Field, Index). Add a record type here to extend coverage.
     // -------------------------------------------------------------------------------
-    private static IEnumerable<Slot> Slots(ISkyrimMod mod)
+    internal static IEnumerable<Slot> Slots(ISkyrimMod mod)
     {
         foreach (var rec in mod.EnumerateMajorRecords())
         {
@@ -59,65 +67,45 @@ internal static partial class Program
         }
     }
 
-    // -------------------------------------------------------------------------------
-    //  extract
-    // -------------------------------------------------------------------------------
-    private static void Extract(string inPath, string jsonPath)
-    {
-        var mod = Load(inPath);
-        var entries = Slots(mod).Select(s => new StringEntry
+    /// <summary>Pull every translatable string out of a mod (each entry has Source set, Target empty).</summary>
+    public static List<StringEntry> Extract(ISkyrimMod mod) =>
+        Slots(mod).Select(s => new StringEntry
         {
             FormKey = s.FormKey, Type = s.Type, Field = s.Field, Index = s.Index,
             Source = s.Get() ?? "", Target = "",
         }).ToList();
 
-        File.WriteAllText(jsonPath, JsonSerializer.Serialize(entries, JsonOpts));
-        Console.WriteLine($"extracted {entries.Count} string(s) from {Path.GetFileName(inPath)} -> {jsonPath}");
-        foreach (var e in entries.Take(20))
-            Console.WriteLine($"  {e.FormKey} {e.Type}.{e.Field}[{e.Index}] = \"{e.Source}\"");
-        if (entries.Count > 20) Console.WriteLine($"  … +{entries.Count - 20} more");
-    }
+    // Match key for an entry/slot: (FormKey, Field, Index).
+    private static Dictionary<string, string> TargetMap(IEnumerable<StringEntry> translations) =>
+        translations.Where(e => !string.IsNullOrEmpty(e.Target))
+                    .ToDictionary(e => $"{e.FormKey}|{e.Field}|{e.Index}", e => e.Target);
 
-    // -------------------------------------------------------------------------------
-    //  apply
-    // -------------------------------------------------------------------------------
-    private static void Apply(string inPath, string jsonPath, string outPath)
+    /// <summary>
+    /// Write each non-empty <see cref="StringEntry.Target"/> back into the mod (inline). Mutates
+    /// <paramref name="mod"/> in place; the caller writes it. Returns the number of slots set.
+    /// </summary>
+    public static int Apply(ISkyrimMod mod, IEnumerable<StringEntry> translations)
     {
-        var entries = JsonSerializer.Deserialize<List<StringEntry>>(File.ReadAllText(jsonPath)) ?? new();
-        var map = entries
-            .Where(e => !string.IsNullOrEmpty(e.Target))
-            .ToDictionary(e => $"{e.FormKey}|{e.Field}|{e.Index}", e => e.Target);
-
-        var mod = Load(inPath);
+        var map = TargetMap(translations);
         int applied = 0;
         foreach (var s in Slots(mod))
-        {
-            if (map.TryGetValue($"{s.FormKey}|{s.Field}|{s.Index}", out var target))
-            {
-                s.Set(target);
-                applied++;
-            }
-        }
-
-        Write(mod, outPath);
-        Console.WriteLine($"applied {applied}/{map.Count} translation(s) -> {Path.GetFileName(outPath)}");
+            if (map.TryGetValue($"{s.FormKey}|{s.Field}|{s.Index}", out var target)) { s.Set(target); applied++; }
+        return applied;
     }
-    // -------------------------------------------------------------------------------
-    //  applyloc — like `apply`, but writes a LOCALIZED plugin with UTF-8
-    //  <plugin>_chinese.STRINGS — what Simplified-Chinese SSE expects (verified against
-    //  the official CHS translation: its .STRINGS are UTF-8, not GBK). Output is a
-    //  folder: <outDir>/<plugin> + <outDir>/Strings/<plugin>_chinese.{STRINGS,IL,DL}.
-    // -------------------------------------------------------------------------------
-    private static int ApplyLocalized(string inPath, string jsonPath, string outDir)
+
+    /// <summary>
+    /// Apply translations as a LOCALIZED plugin with UTF-8 <c>&lt;plugin&gt;_chinese.STRINGS</c> — what
+    /// Simplified-Chinese SSE expects (its .STRINGS are UTF-8, not GBK). Writes
+    /// <paramref name="outDir"/>/&lt;plugin&gt; + <paramref name="outDir"/>/Strings/&lt;plugin&gt;_chinese.{STRINGS,IL,DL}.
+    /// Returns (applied, renamed, espPath).
+    /// </summary>
+    public static (int Applied, int Renamed, string EspPath) ApplyLocalized(
+        ISkyrimMod mod, IEnumerable<StringEntry> translations, string outDir)
     {
-        var entries = JsonSerializer.Deserialize<List<StringEntry>>(File.ReadAllText(jsonPath)) ?? new();
-        var map = entries.Where(e => !string.IsNullOrEmpty(e.Target))
-                         .ToDictionary(e => $"{e.FormKey}|{e.Field}|{e.Index}", e => e.Target);
+        var map = TargetMap(translations);
 
         // Target the Chinese language so string sets land in the Chinese entry + .STRINGS.
         TranslatedString.DefaultLanguage = Language.Chinese;
-
-        var mod = Load(inPath);
         mod.UsingLocalization = true;
 
         int applied = 0;
@@ -150,7 +138,6 @@ internal static partial class Program
             { File.Move(file, Path.Combine(stringsDir, lower), overwrite: true); renamed++; }
         }
 
-        Console.WriteLine($"applyloc: {applied} string(s) -> {espPath} + {renamed} Strings/*_chinese.* file(s) (UTF-8)");
-        return 0;
+        return (applied, renamed, espPath);
     }
 }

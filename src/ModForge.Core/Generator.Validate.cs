@@ -1,15 +1,16 @@
-internal static partial class Program
+namespace ModForge;
+
+public static partial class Generator
 {
     // -------------------------------------------------------------------------------
-    //  validate — semantic guardrail for (LLM-authored) specs: editorId presence +
+    //  Validate — semantic guardrail for (LLM-authored) specs: editorId presence +
     //  uniqueness, and referential integrity (dialogue→quest/npc, npc→faction,
-    //  script→target, object-property→record, property types). Returns non-zero if any
-    //  problem so an NL→spec front can self-correct before build/package.
+    //  script→target, object-property→record, property types). Returns the list of
+    //  problems (empty == valid) so an NL→spec front can self-correct before build.
     // -------------------------------------------------------------------------------
-    private static int Validate(string specPath)
+    /// <summary>Semantically validate a spec. Returns the list of problems; empty means valid.</summary>
+    public static IReadOnlyList<string> Validate(ModSpec spec)
     {
-        var spec = JsonSerializer.Deserialize<ModSpec>(File.ReadAllText(specPath), ReadOpts)
-                   ?? throw new InvalidOperationException("spec deserialized to null");
         var problems = new List<string>();
         var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var npcIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -317,13 +318,6 @@ internal static partial class Program
         foreach (var n in spec.Npcs)
             foreach (var pkgRef in n.Packages) CheckRef(pkgRef, $"npc '{n.EditorId}' package");
 
-        if (problems.Count == 0)
-        {
-            Console.WriteLine($"valid: {Path.GetFileName(specPath)} — {ids.Count} record(s), no problems");
-            return 0;
-        }
-        Console.Error.WriteLine($"INVALID: {Path.GetFileName(specPath)} — {problems.Count} problem(s):");
-        foreach (var p in problems) Console.Error.WriteLine($"  - {p}");
-        return 1;
+        return problems;
     }
 }
