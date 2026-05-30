@@ -14,10 +14,10 @@
 
   "relationships": [
     {
-      "_": "Ally relationship to the player. parent = the follower; child defaults to the Player NPC base (Skyrim.esm:0x000007). This satisfies the DialogueFollower free-follow gate (GetRelationshipRank >= Ally).",
+      "_": "Ally relationship to the player. parent = the follower; child = the Player NPC base (Skyrim.esm:0x000014 — NOT PlayerRef 0x000007, which is the placed ACHR; a RELA pointing at an ACHR is a type mismatch that CRASHES on load). This satisfies the DialogueFollower free-follow gate (GetRelationshipRank >= Ally).",
       "editorId": "MF_HireRel",
       "parent": "MF_HireFollowerNpc",
-      "child": "Skyrim.esm:0x000007",
+      "child": "Skyrim.esm:0x000014",
       "rank": "Ally"
     }
   ],

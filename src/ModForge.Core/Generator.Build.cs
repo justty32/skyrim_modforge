@@ -255,7 +255,10 @@ public static partial class Generator
             topic.Branch.SetTo(branch);
             topic.Category = DialogTopic.CategoryEnum.Topic;
             topic.Subtype = DialogTopic.SubtypeEnum.Custom;
-            topic.SubtypeName = RecordType.Null;
+            // SNAM must be the 4-char subtype code "CUST" (matches the Custom enum). Leaving it
+            // RecordType.Null writes SNAM=0x00000000, which CRASHES the engine at load when it
+            // builds the dialogue-topic index (vanilla Custom topics all carry SNAM='CUST').
+            topic.SubtypeName = new RecordType("CUST");
             topic.Name = d.Prompt;
             topic.Priority = 50f;
             branch.StartingTopic.SetTo(topic);

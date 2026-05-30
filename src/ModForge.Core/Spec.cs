@@ -93,8 +93,10 @@ public sealed class DialogueSpec
     public uint EmotionValue { get; set; } = 50;        // 0..100 intensity
 }
 // Relationship (RELA): a directed bond between two NPCs (`parent` and `child`) at a `rank`. The
-// player's NPC base is `Skyrim.esm:0x000007` — `child` defaults to it, so the common case (an NPC's
-// relationship TO the player) is just `parent` + `rank`. Rank (RankType): Lover, Ally, Confidant,
+// player's NPC *base* record is `Skyrim.esm:0x000014` (NOT `0x000007`, which is PlayerRef — the
+// placed ACHR; pointing a RELA at it is a type mismatch that CRASHES on load). `child` defaults to
+// `0x000014`, so the common case (an NPC's relationship TO the player) is just `parent` + `rank`.
+// Rank (RankType): Lover, Ally, Confidant,
 // Friend, Acquaintance, Rival, Foe, Enemy, Archnemesis. **Why it matters for followers:** the vanilla
 // DialogueFollower quest's free "Follow me, I need your help" topic is gated on
 // `GetRelationshipRank player >= Ally`, so a custom hireable follower needs an Ally relationship to
@@ -103,7 +105,7 @@ public sealed class RelationshipSpec
 {
     public string EditorId { get; set; } = "";
     public string Parent { get; set; } = "";                  // ref → NPC (the relationship's owner); usually the custom NPC
-    public string Child { get; set; } = "Skyrim.esm:0x000007"; // ref → NPC; defaults to the Player NPC base
+    public string Child { get; set; } = "Skyrim.esm:0x000014"; // ref → NPC; defaults to the Player NPC base (0x000014, NOT PlayerRef 0x000007)
     public string Rank { get; set; } = "Ally";                // RankType enum name
 }
 public sealed class SpellSpec
