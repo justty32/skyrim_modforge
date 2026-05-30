@@ -101,10 +101,10 @@
 
   "placements": [
     {
-      "_": "Edda at the It.16b-confirmed Sleeping Giant Inn spawn (0,0,0).",
+      "_": "Edda in the Sleeping Giant Inn common room (her Sandbox would also pull her onto navmesh, but a real start coord is safer than the 0,0,0 origin).",
       "base": "MF_LifelikeNpc",
       "cell": "Skyrim.esm:0x0133C6",
-      "position": { "x": 0, "y": 0, "z": 0 }
+      "position": { "x": -400, "y": 180, "z": 0 }
     }
   ]
 }

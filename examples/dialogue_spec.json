@@ -60,10 +60,10 @@
 
   "placements": [
     {
-      "_": "Aldric at the It.16b-confirmed Sleeping Giant Inn spawn (0,0,0). coc in, walk up, activate him.",
+      "_": "Aldric in the Sleeping Giant Inn common room, amid the vanilla NPCs (which sit ~ -200..-500,150..200,0). A no-package NPC at the cell origin (0,0,0) ends up off-navmesh in a corner/wall and unreachable — only PACKAGED NPCs (Travel/Sandbox) escaped (0,0,0) in It.16-22. Actors snap to navmesh, so any in-room coord works.",
       "base": "MF_TalkerNpc",
       "cell": "Skyrim.esm:0x0133C6",
-      "position": { "x": 0, "y": 0, "z": 0 }
+      "position": { "x": -350, "y": 180, "z": 0 }
     }
   ]
 }

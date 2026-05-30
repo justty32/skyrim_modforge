@@ -45,10 +45,10 @@
 
   "placements": [
     {
-      "_": "Sera at the It.16b-confirmed Sleeping Giant Inn spawn (0,0,0).",
+      "_": "Sera in the Sleeping Giant Inn common room near the patrons (a no-package NPC at the cell origin 0,0,0 lands off-navmesh and is unreachable; actors snap to navmesh so any in-room coord works).",
       "base": "MF_HireFollowerNpc",
       "cell": "Skyrim.esm:0x0133C6",
-      "position": { "x": 0, "y": 0, "z": 0 }
+      "position": { "x": -250, "y": 180, "z": 0 }
     }
   ]
 }

@@ -266,7 +266,10 @@ public static partial class Generator
 
             // INFO carries the spoken response(s). Leave ResponseData null (so it uses our own
             // Responses, not a shared INFO) and Prompt null (the menu line comes from topic.Name).
-            var info = new DialogResponses(mod);
+            // Flags (ENAM) + FavorLevel (CNAM) MUST be present: a vanilla player INFO always carries
+            // both, and an INFO missing ENAM is treated as invalid — a topic whose only INFO is
+            // invalid is silently dropped from the menu (so the topic never appears at all).
+            var info = new DialogResponses(mod) { Flags = new DialogResponseFlags(), FavorLevel = FavorLevel.None };
             var emotion = Enum.TryParse<Emotion>(d.Emotion, ignoreCase: true, out var em) ? em : Emotion.Neutral;
             byte rn = 1;
             foreach (var line in d.Responses)
@@ -337,7 +340,7 @@ public static partial class Generator
             var greet = npcSpecByEd.TryGetValue(d.SpeakerNpcEditorId, out var ns) && !string.IsNullOrWhiteSpace(ns.Greeting)
                 ? ns.Greeting
                 : "Yes? What do you need?";
-            var hinfo = new DialogResponses(mod);
+            var hinfo = new DialogResponses(mod) { Flags = new DialogResponseFlags(), FavorLevel = FavorLevel.None };
             hinfo.Responses.Add(new DialogResponse { Text = greet, ResponseNumber = 1, Emotion = Emotion.Neutral, EmotionValue = 50 });
             var hcond = new ConditionFloat
             {
