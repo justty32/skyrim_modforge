@@ -1,7 +1,7 @@
 {
   "pluginName": "ModForgeHireFollower.esp",
   "esl": true,
-  "_": "It.24: a HIREABLE follower that plugs into the VANILLA follower system — no custom dialogue or scripts. When you talk to her you get the vanilla 'I need your help. Will you follow me?' topic; hire her and she joins (1-follower limit, 'I need you to do something' / 'It's time for us to part ways' all work), because she leverages Skyrim's DialogueFollower quest. The two requirements that make a generic NPC hireable for FREE: (1) membership in PotentialFollowerFaction (Skyrim.esm:0x05C84D) — the faction the follower dialogue is conditioned on; (2) an Ally Relationship to the player — the free 'Follow me' topic is gated on GetRelationshipRank player >= Ally, so without it she'd only be a paid mercenary at best. She also needs a follower-capable voice (MaleNord/FemaleNord etc. have the lines recorded — using FemaleNord 0x013AE7 here) and the citizenship recipe so she traverses doors/gates when you lead her out. `coc RiverwoodSleepingGiantInn`, wait ~30-90s, talk to her, pick 'Follow me' — she should become an active follower and trail you (incl. across fast travel, per It.21).",
+  "_": "It.26: a HIREABLE follower that plugs into the VANILLA follower system — no custom dialogue or scripts. PRIMARY PATH = the PAID hireling: she's in PotentialHireling (Skyrim.esm:0x0BCC9A), so vanilla's DialogueFollower drives the 'I need your help. I'll pay you.' topic → gold transaction → she joins; all the follow/wait/dismiss commands work, no Papyrus from us. This path is the one that works from purely STATIC records, because that hire topic is gated on faction MEMBERSHIP, not on a player relationship (a static RELA to the player reads rank 0 at runtime — useless; see gotchas.md #6). The FREE 'Follow me' topic also requires PotentialFollowerFaction (Skyrim.esm:0x05C84D) + GetRelationshipRank player >= Ally; both are kept here for completeness, but the relationship won't surface that topic without `setrelationshiprank player 3` (or a script), so in-game she's reliably recruitable via the PAID line. She needs a follower-capable voice (FemaleEvenToned 0x013ADD, in VoicesFollowerNeutral) and the citizenship factions so she traverses doors/gates when you lead her out. `coc RiverwoodSleepingGiantInn`, wait ~30-90s, talk to her, pick the hire line — she joins and trails you (incl. across fast travel, per It.21).",
 
   "classes": [
     {
@@ -14,7 +14,7 @@
 
   "relationships": [
     {
-      "_": "Ally relationship to the player. parent = the follower; child = the Player NPC base (Skyrim.esm:0x000014 — NOT PlayerRef 0x000007, which is the placed ACHR; a RELA pointing at an ACHR is a type mismatch that CRASHES on load). This satisfies the DialogueFollower free-follow gate (GetRelationshipRank >= Ally).",
+      "_": "Ally relationship to the player. parent = the follower; child = the Player NPC base (Skyrim.esm:0x000014 — NOT PlayerRef 0x000007, which is the placed ACHR; a RELA pointing at an ACHR is a type mismatch that CRASHES on load). Intended for the free-follow gate (GetRelationshipRank >= Ally) — but a STATIC RELA to the player reads rank 0 at runtime (gotchas.md #6), so this does NOT actually surface the free topic in-game; the PotentialHireling paid path is what works without a script. Kept for documentation/completeness.",
       "editorId": "MF_HireRel",
       "parent": "MF_HireFollowerNpc",
       "child": "Skyrim.esm:0x000014",
@@ -34,8 +34,8 @@
       "_voiceType": "FemaleEvenToned (0x013ADD) — MUST be a voice in VoicesFollowerNeutral (0x0D23AC) or the vanilla 'Follow me' hire topic's GetIsVoiceType condition fails and it never shows. FemaleNord/MaleNord are CITIZEN voices, NOT follower voices. Female follower voices: FemaleEvenToned 013ADD, FemaleSultry 013AE0, FemaleCondescending 013AE4, FemaleYoungEager 013ADC. Male: MaleEvenToned 013AD2, MaleYoungEager 013AD1, MaleEvenTonedAccented 0EA267.",
       "voiceType": "Skyrim.esm:0x013ADD",
       "crimeFaction": "Skyrim.esm:0x0267EA",
-      "_factions": "Whiterun crime/citizen factions (0x0267EA + 0x028172) for door/gate traversal, PLUS PotentialFollowerFaction (0x05C84D) — the membership the vanilla follower dialogue keys off.",
-      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172", "Skyrim.esm:0x05C84D" ],
+      "_factions": "Whiterun crime/citizen factions (0x0267EA + 0x028172) for door/gate traversal; PotentialFollowerFaction (0x05C84D) — keyed by the free 'Follow me' dialogue; PLUS PotentialHireling (0x0BCC9A) — keyed by vanilla's PAID hireling dialogue, the path that actually recruits her from static records (no script, no console). All resolve as plain external <master>:0xFORMID refs and are added at faction rank 0, exactly like vanilla mercenaries (Jenassa/Belrand etc. sit in PotentialHireling).",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172", "Skyrim.esm:0x05C84D", "Skyrim.esm:0x0BCC9A" ],
       "unique": true,
       "level": 10,
       "autoCalcStats": true,

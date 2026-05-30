@@ -38,7 +38,8 @@ Without a voice type, the NPC is silent — no hello/idle audio, no subtitles.
 |---|---|---|
 | CrimeFactionWhiterun | `Skyrim.esm:0x0267EA` | Whiterun (crime + citizen identity) |
 | TownWhiterunFaction | `Skyrim.esm:0x028172` | Whiterun (reinforcing) |
-| PotentialFollowerFaction | `Skyrim.esm:0x05C84D` | Required (with an Ally relationship) for the vanilla "Follow me" hire dialogue |
+| PotentialFollowerFaction | `Skyrim.esm:0x05C84D` | Required (with an Ally relationship) for the vanilla free "Follow me" hire dialogue |
+| PotentialHireling | `Skyrim.esm:0x0BCC9A` | The PAID-hireling path: membership alone makes vanilla's DialogueFollower offer the "I'll pay you" recruit line — works from static records, NO script/relationship needed |
 
 Other hold crime/town factions follow the same naming pattern; `find <Skyrim.esm> CrimeFaction Faction`.
 
