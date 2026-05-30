@@ -201,7 +201,9 @@ internal static partial class Program
     private static void ApplyCmd(string inPath, string jsonPath, string outPath)
     {
         var entries = JsonSerializer.Deserialize<List<StringEntry>>(File.ReadAllText(jsonPath)) ?? new();
-        int requested = entries.Count(e => !string.IsNullOrEmpty(e.Target));
+        // Distinct (FormKey|Field|Index) targets — matches what Translator.Apply can actually set.
+        int requested = entries.Where(e => !string.IsNullOrEmpty(e.Target))
+                               .Select(e => $"{e.FormKey}|{e.Field}|{e.Index}").Distinct().Count();
         var mod = Load(inPath);
         int applied = Translator.Apply(mod, entries);
         PluginIo.Write(mod, outPath);
