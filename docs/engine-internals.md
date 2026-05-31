@@ -142,6 +142,29 @@ byte that orders competing dialogue) or it stays dormant and its dialogue never 
 INFO's `ResponseData` null (so it uses your own Responses) and `Prompt` null — the menu line comes
 from `topic.Name`; a hardcoded Prompt mislabels the menu.
 
+## Perk entry points carry a hidden tab-count byte
+
+An entry-point perk effect (`PerkEntryPointModifyValue`, e.g. ModAttackDamage ×1.2) has a
+`PerkConditionTabCount` byte (the 3rd byte of the PERK entry-point `DATA` subrecord). It is the
+entry point's **intrinsic number of condition tabs** — the attacker / target / weapon contexts the
+function evaluates — **not** how many conditions you author. The engine sizes a per-tab condition
+array from it; a `PRKC` condition tab authored on index 0 while the count is **0** overflows that
+array, corrupts a pointer, and **hard-CTDs during "Loading Files"** (an access violation in the
+TESForm lookup hash map on a garbage FormID).
+
+This is a pure **"Mutagen-tolerant, engine-fatal"** binary bug: Mutagen reads back the real
+`Conditions` list and ignores the count byte, so `dump` / round-trip / link-resolution / ESL-header
+all look clean — only the runtime parser crashes. It hides until a second plugin shifts the memory
+layout, then surfaces as a "two mods crash together" report (root-caused 2026-05-31 from a
+CrashLoggerSSE log; see [lifelike/gotchas](lifelike/gotchas.md)).
+
+The count is fixed per entry point and is always `1`/`2`/`3`, never `0` — and always ≥ the number of
+PRKC tabs present (vanilla freely has e.g. count 3 with one or zero tabs). `Build` sets it from a
+table extracted from Skyrim.esm's 375 PERK records (`ModAttackDamage`/`ModSpellMagnitude`/
+`CalculateWeaponDamage` = 3; `ModArmorRating`/`ModBuyPrices` = 2; `ModSkillUse`/`ModFallingDamage` =
+1; unlisted → 2). Regenerate the table by scanning vanilla: read every `IAPerkEntryPointEffectGetter`
+and group `EntryPoint → PerkConditionTabCount`.
+
 ## Mutagen API traps
 
 - `AddNew()` needs `using Mutagen.Bethesda;`.
