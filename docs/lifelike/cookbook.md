@@ -187,8 +187,15 @@ the flag. Skeleton (full: `examples/follower_paid_spec.json` + `MFHirePaidRecrui
 ```
 Recruit fragment: `AddToFaction(FollowerFaction)` + `SetPlayerTeammate(true)` (after taking gold).
 Dismiss fragment: `RemoveFromFaction(FollowerFaction)` + `SetPlayerTeammate(false)` + `EvaluatePackage()`.
-(Trade/"wait" aren't wired — add them as own topics: `OpenInventory(true)` for trade, a swap to a
-wait/sandbox package for "wait here".)
+
+**Trade / wait / follow-again** (the full example wires these too — same fragment pattern):
+- **Trade**: a topic gated on `FollowerFlag==1`, **not** `goodbye` (so the menu opens over the
+  dialogue, like vanilla), fragment `akSpeaker.OpenInventory(true)`.
+- **Wait / resume**: use the **`WaitingForPlayer` ActorValue** vanilla itself uses. Gate the Follow
+  package on `GetActorValue WaitingForPlayer == 0` (added to `FollowerFlag==1`). A "wait here" topic
+  (gated `WaitingForPlayer==0`) sets it to 1 (`SetActorValue("WaitingForPlayer", 1.0)` + `EvaluatePackage`)
+  so she holds position; a "follow me again" topic (gated `WaitingForPlayer==1`) clears it. Dismiss
+  clears it too. See `MFFollowerTrade/Wait/Follow.psc`.
 
 ## "Usable interior cell" (lighting + floor, not a black void)
 
