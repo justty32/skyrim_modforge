@@ -241,7 +241,7 @@ combat preempts it and she resumes after.
 // ...and reference it on the npc: "packages": [ "MF_Sandbox" ]   (no condition needed)
 ```
 
-**Daily routine — scheduled Sleep on top of the sandbox** (It.35). The downtime sandbox is the
+**Daily routine — scheduled Sleep on top of the sandbox** (It.35, in-game confirmed). The downtime sandbox is the
 *waking-hours* default; layer a **Sleep package** (template `0x019717`) above it to make her bed down
 at night. Sleep is a specialized Sandbox that actively **seeks a bed** (built-in) and can lock doors.
 The sleep window is the package **`schedule`** (not a data slot); the NPC's `packages` list is in
