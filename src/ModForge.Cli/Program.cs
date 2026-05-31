@@ -109,6 +109,17 @@ internal static partial class Program
         PluginIo.Write(result.Mod, outPath);
         foreach (var w in result.Warnings) Console.WriteLine(w);
         Console.WriteLine(BuildSummary(result.Stats, specPath, outPath));
+        WriteSeq(outPath, Path.GetDirectoryName(Path.GetFullPath(outPath)) ?? ".");
+    }
+
+    // A Start-Game-Enabled quest hosting dialogue needs a Data/Seq/<plugin>.seq entry, or its
+    // dialogue won't surface on a pre-existing save until a save+reload (new games are unaffected).
+    // See ModForge.SeqFile. Writes next to the plugin so the Seq/ folder lands in the same Data root.
+    private static void WriteSeq(string espPath, string dataDir)
+    {
+        var quests = SeqFile.Write(espPath, dataDir);
+        if (quests.Count > 0)
+            Console.WriteLine($"wrote Seq/{Path.GetFileNameWithoutExtension(espPath)}.seq ({quests.Count} start-game-enabled quest(s) — needed for dialogue on existing saves)");
     }
 
     private static string BuildSummary(BuildStats s, string specPath, string outPath) =>
@@ -153,6 +164,7 @@ internal static partial class Program
         PluginIo.Write(result.Mod, espPath);
         foreach (var w in result.Warnings) Console.WriteLine(w);
         Console.WriteLine(BuildSummary(result.Stats, specPath, espPath));
+        WriteSeq(espPath, outModDir);   // Data/Seq/<plugin>.seq alongside the plugin in the mod folder
 
         // 2) compile each referenced script source -> Scripts/*.pex; copy .psc -> Scripts/Source/
         var scriptsDir = Path.Combine(outModDir, "Scripts");
