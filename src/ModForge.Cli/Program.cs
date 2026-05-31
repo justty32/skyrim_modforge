@@ -34,6 +34,9 @@ internal static partial class Program
                 case "npcdiag" when args.Length == 3: return NpcDiag(args[1], args[2]);
                 case "cstydiag" when args.Length == 3: return CstyDiag(args[1], args[2]);
                 case "refpos" when args.Length == 3: return RefPos(args[1], args[2]);
+                case "infodiag" when args.Length is 3 or 4: return InfoDiag(args[1], args[2], args.Length == 4 ? args[3] : null);
+                case "factdiag" when args.Length == 3: return FactDiag(args[1], args[2]);
+                case "reladiag" when args.Length == 3: return RelaDiag(args[1], args[2]);
                 default: Usage(); return 1;
             }
         }
@@ -62,6 +65,9 @@ internal static partial class Program
         "  npcdiag <in.esp> <0xFORMID>                  print an Npc's race/class/voice/factions/packages/flags (for cross-cell diff vs vanilla)\n" +
         "  cstydiag <in.esp> <0xFORMID>                 print a CombatStyle's offensive/defensive mults + equipment preferences + flags\n" +
         "  refpos <in.esp> <0xFORMID>                   print a placed ref's (REFR/ACHR) position+rotation+base (anchor new placements on known navmesh)\n" +
+        "  infodiag <in.esp> <0xFORMID> [substr]        dump dialogue INFO responses + FULL CTDA conditions for a topic, or every topic a quest owns (substr filters EditorID)\n" +
+        "  factdiag <in.esp> <0xFORMID>                 print a Faction's flags/ranks/inter-faction relations (the paid-hireling gate is faction membership)\n" +
+        "  reladiag <in.esp> <0xFORMID>                 print a RELA, or every RELA referencing the FormID as parent/child (player has zero static RELA)\n" +
         "  extract <in.esp> <strings.json>\n" +
         "  applyloc <in.esp> <strings.json> <outDir>   (Localized UTF-8 _chinese.STRINGS)\n" +
         "  apply   <in.esp> <strings.json> <out.esp>");

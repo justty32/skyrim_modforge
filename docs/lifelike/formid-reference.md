@@ -39,7 +39,8 @@ Without a voice type, the NPC is silent — no hello/idle audio, no subtitles.
 | CrimeFactionWhiterun | `Skyrim.esm:0x0267EA` | Whiterun (crime + citizen identity) |
 | TownWhiterunFaction | `Skyrim.esm:0x028172` | Whiterun (reinforcing) |
 | PotentialFollowerFaction | `Skyrim.esm:0x05C84D` | Required (with an Ally relationship) for the vanilla free "Follow me" hire dialogue |
-| PotentialHireling | `Skyrim.esm:0x0BCC9A` | The PAID-hireling path: membership alone makes vanilla's DialogueFollower offer the "I'll pay you" recruit line — works from static records, NO script/relationship needed |
+| PotentialHireling | `Skyrim.esm:0x0BCC9A` | The PAID-hireling gate — but **membership alone only buys the *refusal* line, NOT the recruit** (REFUTED It.27, see gotchas #hireling-getsid). The actual "I'll pay you 500" RECRUIT INFOs in `HirelingQuestTopic1` (0x0BCC84) are each hardcoded `GetIsID == <specific vanilla HirelingX>` — a custom NPC matches none, so at gold≥500 every INFO fails and the topic VANISHES. Recruiting a custom NPC needs a script either way |
+| CurrentHireling | `Skyrim.esm:0x0BD738` | The recruit INFOs require `GetInFaction CurrentHireling == 0` (not already hired); the result script adds you to it on hire |
 
 Other hold crime/town factions follow the same naming pattern; `find <Skyrim.esm> CrimeFaction Faction`.
 
