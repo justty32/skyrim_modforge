@@ -1,7 +1,7 @@
 {
   "pluginName": "ModForgeHireFollower.esp",
   "esl": true,
-  "_": "It.26: a HIREABLE follower that plugs into the VANILLA follower system — no custom dialogue or scripts. PRIMARY PATH = the PAID hireling: she's in PotentialHireling (Skyrim.esm:0x0BCC9A), so vanilla's DialogueFollower drives the 'I need your help. I'll pay you.' topic → gold transaction → she joins; all the follow/wait/dismiss commands work, no Papyrus from us. This path is the one that works from purely STATIC records, because that hire topic is gated on faction MEMBERSHIP, not on a player relationship (a static RELA to the player reads rank 0 at runtime — useless; see gotchas.md #6). The FREE 'Follow me' topic also requires PotentialFollowerFaction (Skyrim.esm:0x05C84D) + GetRelationshipRank player >= Ally; both are kept here for completeness, but the relationship won't surface that topic without `setrelationshiprank player 3` (or a script), so in-game she's reliably recruitable via the PAID line. She needs a follower-capable voice (FemaleEvenToned 0x013ADD, in VoicesFollowerNeutral) and the citizenship factions so she traverses doors/gates when you lead her out. `coc RiverwoodSleepingGiantInn`, wait ~30-90s, talk to her, pick the hire line — she joins and trails you (incl. across fast travel, per It.21).",
+  "_": "It.27: a FREE-follow custom follower that plugs into the vanilla follower system. The PAID-hireling path (PotentialHireling 0x0BCC9A) was REFUTED — its recruit INFOs are each hardcoded GetIsID==<a specific vanilla mercenary>, so a custom NPC fails them all at gold>=500 and the topic vanishes (probe: `modforge infodiag Skyrim.esm 0x0BCC84`). The path that WORKS for a custom NPC is the FREE 'Follow me, I need your help' topic (DialogueFavorGenericFollowBranchTopic, 0x0B0EE6), gated on PotentialFollowerFaction + a follower voice + GetRelationshipRank(player) >= 1 — and NOTABLY on PotentialHireling==0, so the two paths are mutually exclusive; she must NOT be in PotentialHireling. A static RELA to the player reads rank 0 at runtime, so the relationship is set by a tiny Papyrus quest script (MFHireFollowerSetup) at game start. `coc RiverwoodSleepingGiantInn`, wait a moment, talk to her, pick 'Follow me' — she joins for free and trails you (incl. across fast travel, per It.21). A separate PAID custom-topic example with its own result fragment is planned for It.28.",
 
   "classes": [
     {
@@ -14,7 +14,7 @@
 
   "relationships": [
     {
-      "_": "Ally relationship to the player. parent = the follower; child = the Player NPC base (Skyrim.esm:0x000014 — NOT PlayerRef 0x000007, which is the placed ACHR; a RELA pointing at an ACHR is a type mismatch that CRASHES on load). Intended for the free-follow gate (GetRelationshipRank >= Ally) — but a STATIC RELA to the player reads rank 0 at runtime (gotchas.md #6), so this does NOT actually surface the free topic in-game; the PotentialHireling paid path is what works without a script. Kept for documentation/completeness.",
+      "_": "Ally relationship to the player. parent = the follower; child = the Player NPC base (Skyrim.esm:0x000014 — NOT PlayerRef 0x000007, which is the placed ACHR; a RELA pointing at an ACHR is a type mismatch that CRASHES on load). A STATIC RELA reads rank 0 at runtime (gotchas.md), so this record alone does NOT surface the free topic — the MFHireFollowerSetup script is what actually sets the rank. Kept for documentation/intent.",
       "editorId": "MF_HireRel",
       "parent": "MF_HireFollowerNpc",
       "child": "Skyrim.esm:0x000014",
@@ -31,11 +31,11 @@
       "race": "Skyrim.esm:0x013746",
       "class": "MF_HireClass",
       "outfit": "Skyrim.esm:0x09D5DF",
-      "_voiceType": "FemaleEvenToned (0x013ADD) — MUST be a voice in VoicesFollowerNeutral (0x0D23AC) or the vanilla 'Follow me' hire topic's GetIsVoiceType condition fails and it never shows. FemaleNord/MaleNord are CITIZEN voices, NOT follower voices. Female follower voices: FemaleEvenToned 013ADD, FemaleSultry 013AE0, FemaleCondescending 013AE4, FemaleYoungEager 013ADC. Male: MaleEvenToned 013AD2, MaleYoungEager 013AD1, MaleEvenTonedAccented 0EA267.",
+      "_voiceType": "FemaleEvenToned (0x013ADD) — MUST be a voice in VoicesFollowerNeutral (0x0D23AC) or the 'Follow me' topic's GetIsVoiceType condition fails and it never shows. FemaleNord/MaleNord are CITIZEN voices, NOT follower voices. Female follower voices: FemaleEvenToned 013ADD, FemaleSultry 013AE0, FemaleCondescending 013AE4, FemaleYoungEager 013ADC. Male: MaleEvenToned 013AD2, MaleYoungEager 013AD1, MaleEvenTonedAccented 0EA267.",
       "voiceType": "Skyrim.esm:0x013ADD",
       "crimeFaction": "Skyrim.esm:0x0267EA",
-      "_factions": "Whiterun crime/citizen factions (0x0267EA + 0x028172) for door/gate traversal; PotentialFollowerFaction (0x05C84D) — keyed by the free 'Follow me' dialogue; PLUS PotentialHireling (0x0BCC9A) — keyed by vanilla's PAID hireling dialogue, the path that actually recruits her from static records (no script, no console). All resolve as plain external <master>:0xFORMID refs and are added at faction rank 0, exactly like vanilla mercenaries (Jenassa/Belrand etc. sit in PotentialHireling).",
-      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172", "Skyrim.esm:0x05C84D", "Skyrim.esm:0x0BCC9A" ],
+      "_factions": "Whiterun crime/citizen factions (0x0267EA + 0x028172) for door/gate traversal; PotentialFollowerFaction (0x05C84D) — keyed by the free 'Follow me' dialogue. NOTE: PotentialHireling (0x0BCC9A) is deliberately OMITTED — the free-follow topic requires GetInFaction PotentialHireling==0, so adding it would DISABLE the working path (the two recruit paths are mutually exclusive).",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172", "Skyrim.esm:0x05C84D" ],
       "unique": true,
       "level": 10,
       "autoCalcStats": true,
@@ -46,10 +46,34 @@
     }
   ],
 
+  "quests": [
+    {
+      "_": "Setup quest: StartGameEnabled so its OnInit() fires at game load; hosts the script that sets Sera's relationship rank to the player (which a static RELA can't do).",
+      "editorId": "MF_HireSetupQuest",
+      "name": "ModForge Hire Setup",
+      "startGameEnabled": true,
+      "priority": 50
+    }
+  ],
+
+  "scripts": [
+    {
+      "_": "Attach MFHireFollowerSetup (extends Quest) to the setup quest; SeraRef object property is bound to the placed follower ACHR (MF_HireFollowerRef). OnInit() runs SetRelationshipRank(player, 3). `package` compiles the .psc via Wine+PapyrusCompiler.",
+      "targetEditorId": "MF_HireSetupQuest",
+      "scriptName": "MFHireFollowerSetup",
+      "source": "scripts/MFHireFollowerSetup.psc",
+      "properties": [
+        { "name": "SeraRef", "type": "object", "objectEditorId": "MF_HireFollowerRef" }
+      ]
+    }
+  ],
+
   "placements": [
     {
-      "_": "Sera in the Sleeping Giant Inn common room near the patrons (a no-package NPC at the cell origin 0,0,0 lands off-navmesh and is unreachable; actors snap to navmesh so any in-room coord works).",
+      "_": "Sera in the Sleeping Giant Inn common room near the patrons (a no-package NPC at the cell origin 0,0,0 lands off-navmesh and is unreachable; actors snap to navmesh so any in-room coord works). editorId names the ACHR so the script property can bind to it; persistent=true so the ref resolves at game start even while the inn cell is unloaded.",
       "base": "MF_HireFollowerNpc",
+      "editorId": "MF_HireFollowerRef",
+      "persistent": true,
       "cell": "Skyrim.esm:0x0133C6",
       "position": { "x": -250, "y": 180, "z": 0 }
     }
