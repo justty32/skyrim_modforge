@@ -63,6 +63,7 @@ public static partial class Generator
         private int placed, vanillaCells;
         private int worldspaceCount, exteriorNewCells;
         private int scriptsAttached;
+        private int worldspacesBuilt, regionsBuilt;
 
         public BuildContext(ModSpec spec, ModKey outputKey, BuildOptions? options)
         {
@@ -195,6 +196,7 @@ public static partial class Generator
                         + spec.WordsOfPower.Count + spec.Shouts.Count
                         + spec.Enchantments.Count + spec.TextureSets.Count
                         + spec.Weathers.Count + spec.Climates.Count
+                        + worldspacesBuilt + regionsBuilt
                         + scenesBuilt;
                         // (Placements are reported separately in stats, so not folded into `total`.)
             return new BuildResult
@@ -214,8 +216,9 @@ public static partial class Generator
                     Placements = placed,
                     NewInteriorCells = spec.Cells.Count,
                     VanillaInteriorCells = vanillaCells,
-                    Worldspaces = worldspaceCount,
+                    Worldspaces = worldspaceCount + worldspacesBuilt,
                     NewExteriorCells = exteriorNewCells,
+                    Regions = regionsBuilt,
                 },
             };
         }

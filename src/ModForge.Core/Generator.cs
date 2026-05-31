@@ -53,4 +53,5 @@ public sealed class BuildStats
     public int VanillaInteriorCells { get; init; }
     public int Worldspaces { get; init; }
     public int NewExteriorCells { get; init; }
+    public int Regions { get; init; }
 }

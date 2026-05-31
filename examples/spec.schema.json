@@ -42,7 +42,9 @@
     "recipes": { "type": "array", "items": { "$ref": "#/$defs/recipe" }, "description": "ConstructibleObject (COBJ): crafting recipes" },
     "enchantments": { "type": "array", "items": { "$ref": "#/$defs/enchantment" }, "description": "Enchantment / Object Effect (ENCH): MGEF-based effects bundled into a weapon/staff/apparel enchantment a weapon/armor references via its `enchantment` field" },
     "weathers": { "type": "array", "items": { "$ref": "#/$defs/weather" }, "description": "Weather (WTHR): a custom sky (cloud layers, per-time-of-day colours, precipitation, wind, fog)" },
-    "climates": { "type": "array", "items": { "$ref": "#/$defs/climate" }, "description": "Climate (CLMT): a weather cycle + sunrise/sunset timing + sun/moon textures; references weathers" }
+    "climates": { "type": "array", "items": { "$ref": "#/$defs/climate" }, "description": "Climate (CLMT): a weather cycle + sunrise/sunset timing + sun/moon textures; references weathers" },
+    "worldspaces": { "type": "array", "items": { "$ref": "#/$defs/worldspace" }, "description": "Worldspace (WRLD): a new exterior world (climate/water/parent/map). RECORD LAYER ONLY — terrain/LOD/navmesh stay CK-side." },
+    "regions": { "type": "array", "items": { "$ref": "#/$defs/region" }, "description": "Region (REGN): an area inside a worldspace + its weather table (the climate hook)." }
   },
   "additionalProperties": false,
   "$defs": {
@@ -673,6 +675,72 @@
         "phaseLength": { "type": "integer", "minimum": 0, "maximum": 255 },
         "volatility": { "type": "integer", "minimum": 0, "maximum": 255 }
       }
+    },
+    "worldspace": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "climate": { "$ref": "#/$defs/ref", "description": "CLMT ref — the sky/lighting cycle (strongly advised; without it the world has no day/night)" },
+        "water": { "$ref": "#/$defs/ref", "description": "WATR ref (optional)" },
+        "lodWater": { "$ref": "#/$defs/ref", "description": "WATR ref for distant LOD water (optional)" },
+        "parent": { "$ref": "#/$defs/ref", "description": "parent WRLD ref (optional)" },
+        "interiorLighting": { "$ref": "#/$defs/ref" },
+        "location": { "$ref": "#/$defs/ref" },
+        "music": { "$ref": "#/$defs/ref" },
+        "encounterZone": { "$ref": "#/$defs/ref" },
+        "flags": { "type": "array", "items": { "type": "string", "enum": ["SmallWorld", "CannotFastTravel", "NoLodWater", "NoLandscape", "NoSky", "FixedDimensions", "NoGrass"] } },
+        "defaultLandHeight": { "type": "number", "description": "WRLD land default (Tamriel -27000); leave it unless you know better" },
+        "defaultWaterHeight": { "type": "number", "description": "WRLD water default (Tamriel -14000); a 0 here floods sub-0 terrain" },
+        "map": {
+          "type": "object",
+          "properties": {
+            "northwestX": { "type": "integer" }, "northwestY": { "type": "integer" },
+            "southeastX": { "type": "integer" }, "southeastY": { "type": "integer" },
+            "usableWidth": { "type": "integer" }, "usableHeight": { "type": "integer" },
+            "cameraInitialPitch": { "type": "number" },
+            "cameraMinHeight": { "type": "number" }, "cameraMaxHeight": { "type": "number" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "region": {
+      "type": "object",
+      "required": ["editorId", "worldspace"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "worldspace": { "$ref": "#/$defs/ref", "description": "the WRLD this region lives in (in-spec or vanilla)" },
+        "edgeFallOff": { "type": "integer", "minimum": 0, "description": "blend distance (units) at the region border" },
+        "mapColor": { "type": "string", "description": "world-map color as 0xRRGGBB (optional)" },
+        "weatherPriority": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "weather": {
+          "type": "array",
+          "description": "the weather table — >=1 entry, chances must sum > 0 (the climate hook)",
+          "items": {
+            "type": "object",
+            "required": ["weather"],
+            "properties": {
+              "weather": { "$ref": "#/$defs/ref", "description": "WTHR ref" },
+              "chance": { "type": "integer", "minimum": 0, "description": "relative weight 0-100" },
+              "global": { "$ref": "#/$defs/ref" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "area": {
+          "type": "array",
+          "description": "polygon of >=3 world-space points enclosing the area",
+          "items": {
+            "type": "object",
+            "properties": { "x": { "type": "number" }, "y": { "type": "number" } },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

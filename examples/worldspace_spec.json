@@ -1,0 +1,47 @@
+{
+  "pluginName": "ModForgeWorldspace.esp",
+  "esl": true,
+
+  "worldspaces": [
+    {
+      "editorId": "MFTestWorld",
+      "name": "ModForge Test Vale",
+      "climate": "Skyrim.esm:0x000812",
+      "water": "Skyrim.esm:0x000018",
+      "parent": "Skyrim.esm:0x00003C",
+      "flags": ["SmallWorld", "CannotFastTravel"],
+      "defaultLandHeight": -27000,
+      "defaultWaterHeight": -14000,
+      "map": {
+        "northwestX": -4,
+        "northwestY": 4,
+        "southeastX": 4,
+        "southeastY": -4,
+        "cameraInitialPitch": 50,
+        "cameraMinHeight": 50000,
+        "cameraMaxHeight": 80000
+      }
+    }
+  ],
+
+  "regions": [
+    {
+      "editorId": "MFTestWorldWeather",
+      "worldspace": "MFTestWorld",
+      "edgeFallOff": 1024,
+      "mapColor": "0x3CA0F0",
+      "weatherPriority": 60,
+      "weather": [
+        { "weather": "Skyrim.esm:0x10E1F2", "chance": 60 },
+        { "weather": "Skyrim.esm:0x10E1F1", "chance": 30 },
+        { "weather": "Skyrim.esm:0x10E1F0", "chance": 10 }
+      ],
+      "area": [
+        { "x": -16384, "y": -16384 },
+        { "x":  16384, "y": -16384 },
+        { "x":  16384, "y":  16384 },
+        { "x": -16384, "y":  16384 }
+      ]
+    }
+  ]
+}

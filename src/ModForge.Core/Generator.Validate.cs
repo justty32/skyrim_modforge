@@ -70,6 +70,8 @@ public static partial class Generator
         foreach (var tx in spec.TextureSets) Reg(tx.EditorId, "textureSet");
         foreach (var w in spec.Weathers) Reg(w.EditorId, "weather");
         foreach (var cl in spec.Climates) Reg(cl.EditorId, "climate");
+        foreach (var ws in spec.Worldspaces) Reg(ws.EditorId, "worldspace");
+        foreach (var rg in spec.Regions) Reg(rg.EditorId, "region");
         foreach (var pl in spec.Placements) if (!string.IsNullOrWhiteSpace(pl.EditorId)) Reg(pl.EditorId, "placement");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
@@ -509,6 +511,60 @@ public static partial class Generator
         foreach (var ac in spec.Activators) CheckAltTextures(ac.EditorId, ac.Model, ac.AlternateTextures, "activator");
 
         ValidateWeather(spec, problems, ids, CheckRef);
+
+        // Worldspaces (WRLD): refs (climate/water/parent/…) resolve; a climate is strongly advised
+        // (without it the world has no sky/lighting cycle). Flags must parse.
+        foreach (var ws in spec.Worldspaces)
+        {
+            if (string.IsNullOrWhiteSpace(ws.Climate))
+                problems.Add($"worldspace '{ws.EditorId}' has no climate — the world will have no sky/lighting cycle (set a CLMT ref, e.g. Skyrim.esm:0x000812)");
+            CheckRef(ws.Climate, $"worldspace '{ws.EditorId}' climate");
+            CheckRef(ws.Water, $"worldspace '{ws.EditorId}' water");
+            CheckRef(ws.LodWater, $"worldspace '{ws.EditorId}' lodWater");
+            CheckRef(ws.Parent, $"worldspace '{ws.EditorId}' parent");
+            CheckRef(ws.InteriorLighting, $"worldspace '{ws.EditorId}' interiorLighting");
+            CheckRef(ws.Location, $"worldspace '{ws.EditorId}' location");
+            CheckRef(ws.Music, $"worldspace '{ws.EditorId}' music");
+            CheckRef(ws.EncounterZone, $"worldspace '{ws.EditorId}' encounterZone");
+            foreach (var f in ws.Flags)
+                if (!Enum.TryParse<Worldspace.Flag>(f, true, out _))
+                    problems.Add($"worldspace '{ws.EditorId}' invalid flag '{f}' (SmallWorld|CannotFastTravel|NoLodWater|NoLandscape|NoSky|FixedDimensions|NoGrass)");
+        }
+
+        // Regions (REGN): must name a worldspace, enclose an area (≥3 points), and carry ≥1 weather
+        // entry whose chances sum > 0 — that weather table is the climate hook the feature exists for.
+        foreach (var rg in spec.Regions)
+        {
+            if (string.IsNullOrWhiteSpace(rg.Worldspace))
+                problems.Add($"region '{rg.EditorId}' has no worldspace (a region must live inside a WRLD)");
+            else CheckRef(rg.Worldspace, $"region '{rg.EditorId}' worldspace");
+
+            if (rg.Area.Count == 0)
+                problems.Add($"region '{rg.EditorId}' has no area (need a polygon of ≥3 world-space points)");
+            else if (rg.Area.Count < 3)
+                problems.Add($"region '{rg.EditorId}' area has only {rg.Area.Count} point(s) — need ≥3 to enclose an area");
+
+            if (rg.Weather.Count == 0)
+                problems.Add($"region '{rg.EditorId}' has no weather entries — add ≥1 Weather ref+chance (the point of a weather region)");
+            else
+            {
+                int sum = 0;
+                foreach (var we in rg.Weather)
+                {
+                    if (string.IsNullOrWhiteSpace(we.Weather))
+                        problems.Add($"region '{rg.EditorId}' has a weather entry with empty weather ref");
+                    else CheckRef(we.Weather, $"region '{rg.EditorId}' weather");
+                    CheckRef(we.Global, $"region '{rg.EditorId}' weather global");
+                    if (we.Chance < 0) problems.Add($"region '{rg.EditorId}' weather chance {we.Chance} is negative");
+                    else sum += we.Chance;
+                }
+                if (sum <= 0)
+                    problems.Add($"region '{rg.EditorId}' weather chances sum to {sum} — at least one entry needs a chance > 0");
+            }
+
+            if (!string.IsNullOrWhiteSpace(rg.MapColor) && !TryParseRgb(rg.MapColor, out _))
+                problems.Add($"region '{rg.EditorId}' mapColor '{rg.MapColor}' is not a hex RGB (expect 0xRRGGBB)");
+        }
 
         // Vendor (merchant) faction data: hours sane (0..24, start<end), gold implied by the
         // merchant container, refs well-formed. The merchant container must be a PLACEMENT editorId

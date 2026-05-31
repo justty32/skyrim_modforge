@@ -65,6 +65,7 @@ public static partial class Generator
         ctx.WireDialogueConditions();              // extra CTDA gates on dialogue INFOs
         ctx.WireBanterConditions();                // situational CTDA gates on banter INFOs
         ctx.WirePackageConditions();               // CTDA gates on AI packages (runtime behaviour switch)
+        ctx.BuildWorldspacesAndRegions();          // WRLD + REGN (new exterior worlds + weather/area regions)
 
         return ctx.Finish();
     }

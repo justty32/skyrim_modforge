@@ -625,9 +625,43 @@ weather (`find <Skyrim.esm> Rain Weather` → e.g. `SkyrimStormRain` `0x0C8220`,
 
 **The one thing that makes it do nothing in-game:** a `WTHR`+`CLMT` is just data until something
 *assigns* the climate. Vanilla does that through a **worldspace** (`WRLD` `Climate` field) or a
-**region** (`REGN` weather-data) — neither is emitted here (out of scope). So this recipe ships a
-valid, inspectable climate you'd then point a WRLD/REGN at by hand. **Structurally verified only;
-the sky actually rendering is in-game-unconfirmed.**
+**region** (`REGN` weather-data) — both of which ModForge *can* now emit (next recipe). So this
+recipe ships a valid, inspectable climate you'd then point a WRLD/REGN at. **Structurally verified
+only; the sky actually rendering is in-game-unconfirmed.**
+
+## "Custom exterior worldspace + weather region" (WRLD + REGN — RECORD LAYER ONLY)
+
+Create a new exterior world, attach a climate (the sky/lighting cycle), and add a region whose
+weather table drives which weathers play in an area. This is the hook for a custom Climate/Weather.
+
+```jsonc
+{ "worldspaces": [
+    { "editorId": "MFTestWorld", "name": "ModForge Test Vale",
+      "climate": "Skyrim.esm:0x000812",      // default climate — WITHOUT this the world has no sky cycle
+      "water":   "Skyrim.esm:0x000018",      // DefaultWater (optional)
+      "parent":  "Skyrim.esm:0x00003C",      // Tamriel (optional)
+      "flags":   [ "SmallWorld", "CannotFastTravel" ],
+      "defaultLandHeight": -27000, "defaultWaterHeight": -14000 }  // FLOOD-FIX — leave these
+  ],
+  "regions": [
+    { "editorId": "MFTestWorldWeather", "worldspace": "MFTestWorld", "weatherPriority": 60,
+      "mapColor": "0x3CA0F0", "edgeFallOff": 1024,
+      "weather": [ { "weather": "Skyrim.esm:0x10E1F2", "chance": 60 },   // SkyrimClear
+                   { "weather": "Skyrim.esm:0x10E1F1", "chance": 30 },   // SkyrimCloudy
+                   { "weather": "Skyrim.esm:0x10E1F0", "chance": 10 } ], // SkyrimClearSN
+      "area": [ { "x": -16384, "y": -16384 }, { "x": 16384, "y": -16384 },
+                { "x": 16384, "y": 16384 }, { "x": -16384, "y": 16384 } ] }
+  ] }
+```
+
+**Honest caveat — this is the RECORD layer, not a walkable world.** ModForge emits valid WRLD/REGN
+records and wires every link, but a world you can actually *enter and walk* also needs **terrain
+(LAND heightmap), LOD meshes, and navmesh** — all of which are **Creation-Kit** work ModForge does
+not do. Treat this as: (a) attach a custom Climate to a world, and (b) define weather/spawn regions.
+The `climate` (worldspace) and `weather` (region) refs are where a generated/chosen CLMT/WTHR plugs
+in. Verified structurally (`build`/`dump`/`worlddiag`/`regndiag` round-trip) — **not in-game
+confirmed**. Harvest vanilla values with `worlddiag <Skyrim.esm> 0x00003C` (Tamriel) and
+`regndiag <Skyrim.esm> <0xFORMID>`. Full example: `examples/worldspace_spec.json`.
 
 ## "Two NPCs arguing" (SCEN multi-actor conversation — STRUCTURAL ONLY, not yet in-game confirmed)
 

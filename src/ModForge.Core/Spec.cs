@@ -54,4 +54,6 @@ public sealed class ModSpec
     // cycle + sun/moon timing. See WeatherSpec / ClimateSpec in Spec.Weather.cs.
     public List<WeatherSpec> Weathers { get; set; } = new();
     public List<ClimateSpec> Climates { get; set; } = new();
+    public List<WorldspaceSpec> Worldspaces { get; set; } = new();
+    public List<RegionSpec> Regions { get; set; } = new();
 }

@@ -369,6 +369,55 @@ CurrentFollowerFaction == 1` so it only runs after recruitment. See `examples/fo
   *add* your reference (vanilla contents are untouched — they come from the master). Needs the
   game’s `Data` folder — set `MODFORGE_SKYRIM_DATA` if it isn’t at the default Steam path.
 
+### worldspaces (WRLD) & regions (REGN) — exterior worlds & weather
+Create a **new** exterior worldspace and attach a climate, and define **regions** (areas inside a
+worldspace) whose **weather table** drives which weathers play there:
+```jsonc
+"worldspaces": [
+  { "editorId": "MFTestWorld", "name": "ModForge Test Vale",
+    "climate": "Skyrim.esm:0x000812",      // CLMT — the sky/lighting cycle (REQUIRED in practice)
+    "water":   "Skyrim.esm:0x000018",      // WATR — DefaultWater (optional)
+    "parent":  "Skyrim.esm:0x00003C",      // parent WRLD = Tamriel (optional)
+    "flags":   ["SmallWorld", "CannotFastTravel"],
+    "defaultLandHeight":  -27000,          // the FLOOD-FIX: omitting these defaults water to 0,
+    "defaultWaterHeight": -14000,          //   which drowns any terrain below sea level
+    "map": { "northwestX": -4, "northwestY": 4, "southeastX": 4, "southeastY": -4,
+             "cameraInitialPitch": 50, "cameraMinHeight": 50000, "cameraMaxHeight": 80000 } }
+],
+"regions": [
+  { "editorId": "MFTestWorldWeather", "worldspace": "MFTestWorld",  // ref to in-spec WRLD or vanilla
+    "edgeFallOff": 1024, "mapColor": "0x3CA0F0", "weatherPriority": 60,
+    "weather": [                                                     // the climate hook — >=1 entry
+      { "weather": "Skyrim.esm:0x10E1F2", "chance": 60 },           //   SkyrimClear  (relative weight)
+      { "weather": "Skyrim.esm:0x10E1F1", "chance": 30 },           //   SkyrimCloudy
+      { "weather": "Skyrim.esm:0x10E1F0", "chance": 10 } ],         //   SkyrimClearSN
+    "area": [ { "x": -16384, "y": -16384 }, { "x": 16384, "y": -16384 },
+              { "x": 16384, "y": 16384 }, { "x": -16384, "y": 16384 } ] }   // >=3 world-space points
+  ]
+```
+- **worldspaces** (WRLD): a new exterior world. `climate` is a CLMT *ref* (vanilla default =
+  `Skyrim.esm:0x000812`) — without it the world has **no sky/lighting cycle**; validate flags a
+  missing climate. `water`/`lodWater`/`parent`/`interiorLighting`/`location`/`music`/`encounterZone`
+  are optional *refs*. `flags` from the WRLD set (`SmallWorld`, `CannotFastTravel`, `NoLodWater`,
+  `NoLandscape`, `NoSky`, `FixedDimensions`, `NoGrass`). `defaultLandHeight`/`defaultWaterHeight`
+  default to Tamriel's values (-27000 / -14000) — **leave them** unless you know better, since a 0
+  water default floods the world. `map` sets the world-map cell-corner bounds + local-map camera.
+- **regions** (REGN): an area inside a `worldspace` (an in-spec WRLD `editorId` or a vanilla
+  `"<master>:0xFORMID"`). `area` is a polygon of **>=3** world-space points (not cell grid).
+  `weather` is the table that picks the active weather — each entry a WTHR *ref* + a relative
+  `chance` (the chances must sum > 0); `weatherPriority` orders overlapping regions. `mapColor` is
+  `0xRRGGBB`. Other RegionData kinds (sound/objects/grass/land) are CK-side and not emitted.
+- WARNING **RECORD LAYER ONLY — not a playable world.** ModForge emits the WRLD/REGN records and
+  wires their links, but a real walkable exterior also needs **terrain (LAND heightmap), LOD meshes,
+  and navmesh**, all authored in the **Creation Kit** — ModForge does not generate them. A new
+  worldspace here is the hook to **attach a custom Climate/Weather** and to **define weather / spawn
+  regions**; pair `climate` (or a region's `weather`) with a generated/chosen CLMT/WTHR. This
+  feature is **structurally verified** (build/dump/round-trip) but **not in-game confirmed**.
+- Discover vanilla values with `find <Skyrim.esm> <name> Worldspace`, then
+  `worlddiag <Skyrim.esm> <0xFORMID>` (climate/water/parent + map bounds + land/water defaults) and
+  `regndiag <Skyrim.esm> <0xFORMID>` (worldspace/area/mapColor + weather table). Example:
+  `examples/worldspace_spec.json`.
+
 ### leveled lists & containers
 ```jsonc
 "leveledItems": [
@@ -724,8 +773,10 @@ so there's no API key/provider to configure.
 
 ## Not yet covered (extend in `ModForge.Core` `Generator.Build` + a spec class)
 World placement now covers new interior cells, vanilla interior cells, **and exterior/worldspace
-cells** (via `worldspace` + world position). Refs (in-spec or `<master>:0xFORMID`) and the `find`
-command are the building blocks for the external ones. Remaining gaps are long-tail record
-types/fields — the same pattern: add a spec class + a loop in `Build`.
+cells** (via `worldspace` + world position), and ModForge can now **create** new worldspaces (WRLD)
++ regions (REGN) — see *worldspaces & regions* above (record layer only; terrain/LOD/navmesh stay
+CK-side). Refs (in-spec or `<master>:0xFORMID`) and the `find` command are the building blocks for
+the external ones. Remaining gaps are long-tail record types/fields and the CK-side terrain/LOD/
+navmesh authoring — the record-side pattern is the same: add a spec class + a loop in `Build`.
 
 See `../examples/sample_spec.json` for a complete working example.

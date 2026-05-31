@@ -106,7 +106,28 @@ internal static partial class Program
                 int cells = wg.SubCells.SelectMany(b => b.Items).SelectMany(s => s.Items).Count();
                 Console.WriteLine($"      worldspace: {blocks} block(s), {cells} exterior cell(s)"
                     + $" nameSet={wg.Name is not null}"
-                    + (wg.LandDefaults is { } wld ? $" defaultWater={wld.DefaultWaterHeight}" : " defaultWater=<none>"));
+                    + (wg.LandDefaults is { } wld ? $" defaultLand={wld.DefaultLandHeight} defaultWater={wld.DefaultWaterHeight}" : " defaultWater=<none>"));
+                if (!wg.Climate.IsNull) Console.WriteLine($"      climate -> {Ref(wg.Climate.FormKey)}");
+                if (!wg.Water.IsNull) Console.WriteLine($"      water -> {Ref(wg.Water.FormKey)}");
+                if (!wg.LodWater.IsNull) Console.WriteLine($"      lodWater -> {Ref(wg.LodWater.FormKey)}");
+                if (wg.Parent?.Worldspace is { IsNull: false } pw) Console.WriteLine($"      parent -> {Ref(pw.FormKey)}");
+                if (!wg.Music.IsNull) Console.WriteLine($"      music -> {Ref(wg.Music.FormKey)}");
+                if (wg.MapData is { } wmd) Console.WriteLine($"      map: nw={wmd.NorthwestCellCoords} se={wmd.SoutheastCellCoords} pitch={wmd.CameraInitialPitch} camH={wmd.CameraMinHeight}..{wmd.CameraMaxHeight}");
+            }
+
+            if (r is IRegionGetter rgn)
+            {
+                Console.WriteLine($"      region: worldspace -> {(rgn.Worldspace.IsNull ? "<none>" : Ref(rgn.Worldspace.FormKey))}"
+                    + (rgn.MapColor is { } mc ? $" mapColor=#{mc.R:X2}{mc.G:X2}{mc.B:X2}" : "")
+                    + $" area(s)={rgn.RegionAreas.Count}");
+                foreach (var a in rgn.RegionAreas)
+                    Console.WriteLine($"        area: {a.RegionPointListData?.Count ?? 0} point(s) edgeFallOff={a.EdgeFallOff}");
+                if (rgn.Weather is { Weathers: { Count: > 0 } wls } rw)
+                {
+                    Console.WriteLine($"        weather: priority={rw.Priority} {wls.Count} entry(s)");
+                    foreach (var we in wls)
+                        Console.WriteLine($"          weather -> {Ref(we.Weather.FormKey)} (chance {we.Chance})");
+                }
             }
 
             if (r is ICellGetter cg)
