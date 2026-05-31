@@ -143,7 +143,8 @@ Hard-won lessons (It.27–It.30 — see the [follower gotchas](gotchas.md) and p
   *DialogueFollower quest* and only releases followers it registered; a manually-faction'd NPC gets the
   "you're dismissed" notification but keeps following. **Manage follower state yourself.**
 
-**Two paths that DO work for a custom NPC:**
+**Three paths — prefer the vanilla-integrated ones (a)/(c); they're compatible with follower-manager
+mods (AFT/EFF/NFF) and need no custom command dialogue.**
 
 **(a) Free "Follow me, I need your help"** — reuse vanilla's free-follow topic (`0x0B0EE6`), which gates
 on relationship + follower voice, *not* GetIsID. Needs: a follower voice (e.g. `FemaleEvenToned
@@ -151,9 +152,35 @@ on relationship + follower voice, *not* GetIsID. Needs: a follower voice (e.g. `
 conversable), and a tiny quest script setting the relationship (a static player RELA reads 0 at
 runtime). See `examples/follower_hireable_spec.json` + `MFHireFollowerSetup.psc`.
 
-**(b) Paid, fully self-managed** (recommended — reliable hire *and* dismiss). An OWN flag faction is the
-"is my follower" state; OWN recruit + dismiss topics carry result fragments; the Follow package gates on
-the flag. Skeleton (full: `examples/follower_paid_spec.json` + `MFHirePaidRecruit/Dismiss.psc`):
+**(c) Paid via vanilla `SetFollower` — RECOMMENDED for a paid follower (the user prefers this).** Author
+your own paid recruit topic, but in its fragment hand the NPC straight to the vanilla follower system:
+```papyrus
+Quest Property DialogueFollower Auto   ; bound to Skyrim.esm:0x0750BA
+...
+player.RemoveItem(Gold001, 500)
+(DialogueFollower as DialogueFollowerScript).SetFollower(akSpeaker)   ; compiles vs base scripts
+```
+`SetFollower` sets relationship + `SetPlayerTeammate` + `ForceRefTo`'s the follower alias (which carries
+the follow package and adds `CurrentFollowerFaction`). After that, **vanilla's own trade/wait/follow/
+dismiss dialogue all work** and AFT/EFF/NFF pick her up — no custom command topics needed. Gate the
+recruit line on `GetGlobalValue PlayerFollowerCount (0x0BCC98) == 0` so it never stomps the single
+follower slot. See `examples/follower_vanilla_spec.json` + `MFHireVanillaRecruit.psc`.
+
+> **What survives vanilla follower status** (the worry about losing your lifelike work): a follower is
+> just an alias stacking a high-priority *follow package* on top — it's additive, not destructive.
+> **CombatStyle is preserved** (verified: `PlayerFollowerPackage`/the combat-override package set no
+> CombatStyle, so the actor's base CSTY drives combat). **Your custom dialogue is preserved** and can be
+> *conditioned on* follower state — e.g. a follower-only self-introduction gated on `GetInFaction
+> CurrentFollowerFaction (0x05C84E) == 1` (see the vanilla example). **Sandbox/travel/schedule packages
+> are only out-prioritized while she's actively trailing you** (you can't both follow and commute) and
+> resume the moment she's dismissed or told to wait.
+
+**(b) Paid, fully self-managed** — *the user found this less preferable than (c); kept for reference.* No
+vanilla follower involvement: an OWN flag faction is the "is my follower" state; OWN recruit + dismiss +
+trade + wait topics carry result fragments; the Follow package gates on the flag. Upside: zero conflicts,
+no single-slot limit, runs alongside a real vanilla follower. Downside: you re-implement every command,
+and follower-manager mods don't see her. Skeleton (full: `examples/follower_paid_spec.json` +
+`MFHirePaidRecruit/Dismiss.psc`):
 
 ```jsonc
 { "factions": [ { "editorId": "MF_FollowerFlag", "name": "My Follower" } ],
