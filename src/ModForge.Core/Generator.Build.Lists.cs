@@ -129,16 +129,18 @@ public static partial class Generator
             }
         }
 
-        // --- pass 2: Recipes (COBJ) — wire createdObject + workbench keyword + component refs ---
-        // Workbench defaults to the forge (CraftingSmithingForge) when unset, so a weapon/armor recipe
-        // just works.
+        // --- pass 2: Recipes (COBJ) — wire createdObject + workbench keyword + component refs + CTDA ---
+        // `kind` (craft/temper/smelt/breakdown) picks the default bench; `workbench` is a NAMED selector
+        // (forge/sharpeningWheel/armorTable/smelter/tanningRack/skyforge) or a raw ref. For a TEMPER
+        // recipe the createdObject IS the item being improved. Conditions perk/item/skill gate the
+        // recipe — built via the SHARED BuildCondition (Generator.Build.Conditions.cs).
         public void WireRecipes()
         {
             foreach (var co in spec.Recipes)
             {
                 if (!recordsByEd.TryGetValue(co.EditorId, out var rec) || rec is not IConstructibleObject cobj) continue;
                 Resolve($"recipe '{co.EditorId}' createdObject", co.CreatedObject, fk => cobj.CreatedObject.SetTo(fk));
-                var bench = string.IsNullOrWhiteSpace(co.Workbench) ? "Skyrim.esm:0x088105" : co.Workbench;
+                var bench = ResolveWorkbenchRef(co.Kind, co.Workbench);
                 Resolve($"recipe '{co.EditorId}' workbench", bench, fk => cobj.WorkbenchKeyword.SetTo(fk));
                 cobj.Items ??= new();
                 foreach (var comp in co.Components)
@@ -148,6 +150,9 @@ public static partial class Generator
                         ci.Item.SetTo(fk);
                         cobj.Items!.Add(new ContainerEntry { Item = ci });
                     });
+                foreach (var cs in co.Conditions)
+                    if (BuildCondition(cs, $"recipe '{co.EditorId}' condition") is { } cond)
+                        cobj.Conditions.Add(cond);
             }
         }
     }

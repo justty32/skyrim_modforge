@@ -331,17 +331,56 @@ in a portal-less cell.
 ## "Craftable item" (COBJ recipe)
 
 Simpler than it looks: the workbench is a plain keyword FormLink (defaults to the forge), **not** a
-CTDA condition; components reuse the container item/count shape; perk/skill gating (`Conditions`) is
+CTDA condition; components reuse the container item/count shape; perk/skill gating (`conditions`) is
 optional and a basic recipe needs none.
 
 ```jsonc
 { "recipes": [
     { "editorId": "MF_ForgeSword", "createdObject": "<MF_MySword>", "count": 1,
-      // "workbench": "Skyrim.esm:0x088105",   // forge — this is the default, can omit
+      // "workbench": "forge",   // named selector — forge is the default, can omit
       "components": [ { "item": "Skyrim.esm:0x05ACE4", "count": 3 },    // IngotIron
                       { "item": "Skyrim.esm:0x0800E4", "count": 1 } ] } // LeatherStrips
   ] }
 ```
+
+## "Craftable + temperable weapon" (perk-gated forge + grindstone temper + smelt)
+
+A complete smithing chain: forge the weapon (perk-gated so it only shows once you've taken
+SteelSmithing), improve it at the grindstone, and smelt ore into the ingots it costs. `workbench` is
+a **named selector** (`forge`/`sharpeningWheel`/`armorTable`/`smelter`/`tanningRack`/`skyforge`); the
+recipe `kind` (`craft`/`temper`/`smelt`/`breakdown`) sets a sensible default bench so you can often
+omit it. A `temper` recipe's `createdObject` **is** the weapon itself, and mirrors vanilla by adding
+the `TemperIsEnchanted`(`or: true`) guard before the smithing `HasPerk`. Conditions are the shared
+CTDA `ConditionSpec` (`function`/`param`/`comparison`/`value`/`or`). Discover perk/ingredient FormIDs
+with `find Skyrim.esm SteelSmithing Perk`; inspect any recipe with `cobjdiag <esp> <0xID>`. A full
+runnable version is [`examples/smithing_spec.json`](../../examples/smithing_spec.json).
+
+```jsonc
+{ "recipes": [
+    // FORGE — perk-gated craft (SteelSmithing perk = Skyrim.esm:0x0CB40D)
+    { "editorId": "MF_ForgeBlade", "kind": "craft", "createdObject": "<MF_MyBlade>",
+      "workbench": "forge",
+      "components": [ { "item": "Skyrim.esm:0x05ACE5", "count": 2 },     // SteelIngot
+                      { "item": "Skyrim.esm:0x0800E4", "count": 1 } ],   // LeatherStrips
+      "conditions": [ { "function": "HasPerk", "param": "Skyrim.esm:0x0CB40D", "comparison": "==", "value": 1 } ] },
+
+    // GRINDSTONE — temper (createdObject = the blade; enchant-guard + perk, exactly like vanilla)
+    { "editorId": "MF_TemperBlade", "kind": "temper", "createdObject": "<MF_MyBlade>",
+      "workbench": "sharpeningWheel",
+      "components": [ { "item": "Skyrim.esm:0x05ACE5", "count": 1 } ],   // SteelIngot
+      "conditions": [
+        { "function": "TemperIsEnchanted", "comparison": "!=", "value": 1, "or": true },
+        { "function": "HasPerk", "param": "Skyrim.esm:0x0CB40D", "comparison": "==", "value": 1 } ] },
+
+    // SMELTER — ore -> ingot (no conditions)
+    { "editorId": "MF_SmeltIron", "kind": "smelt", "createdObject": "Skyrim.esm:0x05ACE4",
+      "components": [ { "item": "Skyrim.esm:0x071CF3", "count": 1 } ] }   // IronOre -> IronIngot
+  ] }
+```
+
+Structurally verified (`dump`/`cobjdiag` show the temper recipe byte-for-byte matching vanilla
+`TemperWeaponSteelSword` apart from the target/perk). **In-game NOT yet confirmed** — that the
+recipe actually appears at the bench / temper applies requires running the game.
 
 ## "Custom aimed combat spell" (MGEF + projectile + SPEL)
 

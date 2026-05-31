@@ -287,13 +287,52 @@ public static partial class Generator
         foreach (var ct in spec.Containers)
             foreach (var e in ct.Items) CheckRef(e.Item, $"container '{ct.EditorId}' item");
 
+        // In-spec weapon/armor editorIds — a temper recipe's target must be one of these (or an
+        // external <master>:0xID weapon/armor, which we can't type-check headlessly).
+        var weaponArmorIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var w in spec.Weapons) weaponArmorIds.Add(w.EditorId);
+        foreach (var a in spec.Armors)  weaponArmorIds.Add(a.EditorId);
+
         foreach (var co in spec.Recipes)
         {
+            var kind = NormalizeKind(co.Kind);
+            if (!KnownRecipeKinds.Contains(kind))
+                problems.Add($"recipe '{co.EditorId}' invalid kind '{co.Kind}' (use {string.Join("/", KnownRecipeKinds)})");
+
             if (string.IsNullOrWhiteSpace(co.CreatedObject)) problems.Add($"recipe '{co.EditorId}' has empty createdObject");
             else CheckRef(co.CreatedObject, $"recipe '{co.EditorId}' createdObject");
-            CheckRef(co.Workbench, $"recipe '{co.EditorId}' workbench");   // empty -> defaults to forge
+
+            // Workbench: a named selector OR a ref. A named selector is always valid; otherwise it
+            // must be a resolvable ref. Empty -> the kind default (forge/wheel/smelter), also fine.
+            if (!string.IsNullOrWhiteSpace(co.Workbench)
+                && !KnownWorkbenchNames.Contains(co.Workbench.Trim()))
+                CheckRef(co.Workbench, $"recipe '{co.EditorId}' workbench");
+
             if (co.Components.Count == 0) problems.Add($"recipe '{co.EditorId}' has no components (nothing to consume)");
             foreach (var comp in co.Components) CheckRef(comp.Item, $"recipe '{co.EditorId}' component");
+
+            // Temper guardrail: the improved item must be an in-spec weapon/armor (or an external
+            // ref, unverifiable here). A temper recipe whose createdObject is a misc item won't show
+            // up as an improvement at the bench.
+            if (kind == "temper" && !string.IsNullOrWhiteSpace(co.CreatedObject)
+                && !LooksExternalRef(co.CreatedObject) && !weaponArmorIds.Contains(co.CreatedObject))
+                problems.Add($"recipe '{co.EditorId}' kind=temper createdObject '{co.CreatedObject}' is not an in-spec weapon/armor (temper improves a weapon/armor)");
+
+            // Conditions (shared ConditionSpec): function known + param present when the function
+            // needs one. `param` is the form arg (perk/item/global); TemperIsEnchanted takes none.
+            foreach (var cnd in co.Conditions)
+            {
+                if (!IsKnownRecipeFunction(cnd.Function))
+                { problems.Add($"recipe '{co.EditorId}' condition: unknown function '{cnd.Function}' (HasPerk/GetItemCount/GetGlobalValue/TemperIsEnchanted)"); continue; }
+                if (!IsValidCompareOp(cnd.Comparison))
+                    problems.Add($"recipe '{co.EditorId}' condition: invalid comparison '{cnd.Comparison}' (== != > >= < <=)");
+                if (RecipeFunctionNeedsRef(cnd.Function))
+                {
+                    if (string.IsNullOrWhiteSpace(cnd.Param))
+                        problems.Add($"recipe '{co.EditorId}' condition '{cnd.Function}' needs a param (perk/item/global ref)");
+                    else CheckRef(cnd.Param, $"recipe '{co.EditorId}' condition '{cnd.Function}' param");
+                }
+            }
         }
 
         foreach (var s in spec.Spells)

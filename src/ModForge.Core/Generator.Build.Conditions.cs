@@ -37,6 +37,7 @@ public static partial class Generator
             ConditionData? data;
             switch (c.Function.ToLowerInvariant())
             {
+                case "hasperk":             { var d = new HasPerkConditionData();             if (hasParam) d.Perk.Link.SetTo(paramFk);      data = d; break; }
                 case "getinfaction":        { var d = new GetInFactionConditionData();        if (hasParam) d.Faction.Link.SetTo(paramFk);   data = d; break; }
                 case "getitemcount":        { var d = new GetItemCountConditionData();        if (hasParam) d.ItemOrList.Link.SetTo(paramFk); data = d; break; }
                 case "getglobalvalue":      { var d = new GetGlobalValueConditionData();      if (hasParam) d.Global.Link.SetTo(paramFk);    data = d; break; }
@@ -66,10 +67,14 @@ public static partial class Generator
                 case "isininterior":     data = new IsInInteriorConditionData();     break;
                 case "isincombat":       data = new IsInCombatConditionData();       break;
                 case "getrandompercent": data = new GetRandomPercentConditionData(); break;
+                // EPTemperingItemIsEnchanted — the vanilla temper guard so an enchanted item without
+                // the Arcane-Blacksmith perk can't be improved. No form arg; pair with `or: true`.
+                case "temperisenchanted":
+                case "eptemperingitemisenchanted": data = new EPTemperingItemIsEnchantedConditionData(); break;
                 default:
                     Warn($"  ! {label}: unsupported function '{c.Function}' "
-                        + "(have GetInFaction/GetItemCount/GetGlobalValue/GetStage/GetIsID/GetRelationshipRank/"
-                        + "GetActorValue/GetActorValuePercent/GetCurrentTime/IsInInterior/IsInCombat/GetRandomPercent)");
+                        + "(have HasPerk/GetInFaction/GetItemCount/GetGlobalValue/GetStage/GetIsID/GetRelationshipRank/"
+                        + "GetActorValue/GetActorValuePercent/GetCurrentTime/IsInInterior/IsInCombat/GetRandomPercent/TemperIsEnchanted)");
                     return null;
             }
 

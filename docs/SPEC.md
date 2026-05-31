@@ -89,7 +89,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `outfits` | `editorId`, `items` (array of *refs* → armors/weapons; an npc `outfit` can point at this editorId) |
 | `statics` | `editorId`, `model` (a `.nif` path — reference a vanilla mesh; a placement base, no name) |
 | `activators` | `editorId`, `name`, `model` (`.nif` path), `keywords` (array of *refs*); attach behaviour via `scripts` |
-| `recipes` | `editorId`, `createdObject` (*ref*), `count` (int), `workbench` (keyword *ref*; defaults to the forge), `components` (array of `{ item (*ref*), count (int) }`) — a crafting recipe (COBJ) |
+| `recipes` | `editorId`, `kind` (`craft`/`temper`/`smelt`/`breakdown`), `createdObject` (*ref*), `count` (int), `workbench` (named selector `forge`/`sharpeningWheel`/`armorTable`/`smelter`/`tanningRack`/`skyforge` OR a keyword *ref*; defaults by kind), `components` (array of `{ item (*ref*), count (int) }`), `conditions` (array of shared CTDA `{ function, param (*ref*), comparison, value, or }` — perk/item/skill gating, e.g. `HasPerk`/`TemperIsEnchanted`) — a crafting/tempering/smelting recipe (COBJ) |
 | `packages` | `editorId`, `template` (*ref* → a vanilla procedure template, e.g. Sandbox = `Skyrim.esm:0x01C254`, Travel = `Skyrim.esm:0x016FAA`, UseMagic = `Skyrim.esm:0x0504F5`), `flags` (array — `Package.Flag` names), `interruptFlags` (array — `HellosToPlayer`/`AllowIdleChatter`/`WorldInteractions`/…), `preferredSpeed` (`Walk`\|`Jog`\|`Run`\|`FastWalk`), `combatStyle` (*ref*, optional), `ownerQuest` (*ref*, optional), `schedule` (`{ month, dayOfWeek, date, hour, minute, durationInMinutes }` — a time window `[hour, hour+durationInMinutes)`; `hour:-1` = any time), `sandbox` / `sleep` / `travel` / `useMagic` / `patrol` / `follow` / `escort` (template-input subobjects — see below), `conditions` (array of CTDA gates — see *conditions* below). An NPC's `packages` list is in **priority order**: the engine runs the first package whose schedule **and** conditions pass — so put scheduled/conditioned packages first and an unconditioned fallback last (e.g. a Sleep package scheduled 22:00–07:00 above an unconditioned Sandbox; or a Follow package gated on `GetInFaction CurrentFollowerFaction==1` above a downtime Sandbox). Assign to one or more NPCs via `npcs[].packages`. |
 | `combatStyles` | `editorId`, `offensiveMult`/`defensiveMult`/`groupOffensiveMult` (~aggression/blocking/group-boldness), `equipMultMelee`/`equipMultMagic`/`equipMultRanged`/`equipMultShout`/`equipMultUnarmed`/`equipMultStaff` (AI weapon-preference scores; for a mage NPC, push Magic high relative to the others — vanilla `csVampireMagic` uses 8.1/2.15/0.51), `avoidThreatChance` (0..1), `flags` (array — `Dueling`\|`Flanking`\|`AllowDualWielding`). An npc's `combatStyle` ref can point at one. |
 
@@ -294,9 +294,9 @@ From this one entry the build emits the **whole vanilla chain** (mirrors `scened
 A condition is **static gate data**, so it lives in the spec (logic still belongs in Papyrus). Both
 `dialogue[].conditions` and `packages[].conditions` take the same shape:
 ```jsonc
-{ "function": "GetItemCount",          // form-arg: GetInFaction | GetItemCount | GetGlobalValue | GetStage | GetIsID | GetRelationshipRank
+{ "function": "GetItemCount",          // form-arg: HasPerk | GetInFaction | GetItemCount | GetGlobalValue | GetStage | GetIsID | GetRelationshipRank
   //                                    // actorValue-arg: GetActorValue | GetActorValuePercent (0..1 fraction)
-  //                                    // no-arg situational: GetCurrentTime (hour 0..24) | IsInInterior | IsInCombat | GetRandomPercent (0..99)
+  //                                    // no-arg situational: GetCurrentTime (hour 0..24) | IsInInterior | IsInCombat | GetRandomPercent (0..99) | TemperIsEnchanted (recipe temper guard)
   "comparison": ">=",                  // == != > >= < <=
   "value": 500,
   "param": "Skyrim.esm:0x00000F",      // the function's form arg (faction/item/global/quest/npc) as a ref
@@ -443,19 +443,51 @@ the gold + stock) whose member NPC the engine treats as a shopkeeper.
   **load** (new game or save+reload), not a mid-session `coc`.
 
 ### recipes (crafting / COBJ)
-Make an item craftable at a workbench:
+Make an item craftable, temperable, or smeltable at a workbench. A recipe's `kind` picks the
+flavour (default `craft`) and the **default bench**; `workbench` is a **named selector** (`forge` /
+`sharpeningWheel` (=`grindstone`) / `armorTable` (=`workbench`) / `smelter` / `tanningRack` /
+`skyforge`) — or a raw `<master>:0xID` keyword ref, which overrides the kind default. Omit
+`workbench` to take the kind's default.
+
 ```jsonc
 { "editorId": "MF_ForgedBladeRecipe",
-  "createdObject": "MF_ForgedBlade",   // a ref — usually an in-spec weapon/armor
+  "kind": "craft",                      // craft | temper | smelt | breakdown   (default craft)
+  "createdObject": "MF_ForgedBlade",    // a ref — usually an in-spec weapon/armor
   "count": 1,
-  "workbench": "Skyrim.esm:0x088105",   // bench keyword ref; OMIT to default to the forge
+  "workbench": "forge",                 // named selector OR a keyword ref; OMIT -> kind default
   "components": [                        // consumed on craft (ref + count)
-    { "item": "Skyrim.esm:0x05ACE4", "count": 3 },   // IngotIron
-    { "item": "Skyrim.esm:0x0800E4", "count": 1 } ] }  // LeatherStrips
+    { "item": "Skyrim.esm:0x05ACE5", "count": 2 },   // SteelIngot
+    { "item": "Skyrim.esm:0x0800E4", "count": 1 } ], // LeatherStrips
+  "conditions": [                        // perk/item/skill gating (shared CTDA) — optional
+    { "function": "HasPerk", "param": "Skyrim.esm:0x0CB40D", "comparison": "==", "value": 1 } ] }
 ```
-Common bench keywords: `0x088105` forge (new weapons/armor), `0x0ADB78` armor table (temper armor),
-`0x088108` sharpening wheel (temper weapons), `0x0F46CE` Skyforge. Perk/skill gating (conditions)
-is not yet a spec field — a recipe shows whenever you have the components.
+
+**`kind` defaults** — `craft` → forge, `temper` → sharpening wheel, `smelt`/`breakdown` → smelter.
+
+**`kind: "temper"`** — IMPROVE an existing weapon/armor at a grindstone (weapons) / armor table
+(armor). The `createdObject` IS the item being improved (must be an in-spec weapon/armor or an
+external ref); the component is the temper material. Mirror vanilla by adding the enchanted-item
+guard `TemperIsEnchanted` (`or: true`) before the smithing `HasPerk`:
+```jsonc
+{ "editorId": "MF_ForgedBladeTemper", "kind": "temper",
+  "createdObject": "MF_ForgedBlade", "workbench": "sharpeningWheel",
+  "components": [ { "item": "Skyrim.esm:0x05ACE5", "count": 1 } ],
+  "conditions": [
+    { "function": "TemperIsEnchanted", "comparison": "!=", "value": 1, "or": true },
+    { "function": "HasPerk", "param": "Skyrim.esm:0x0CB40D", "comparison": "==", "value": 1 } ] }
+```
+
+**`kind: "smelt"` / `"breakdown"`** — ore → ingot, or break an item down into materials at the
+smelter (`createdObject` = the output ingot, component = the ore/item consumed).
+
+**`conditions`** — each is a shared CTDA (the same `ConditionSpec` as dialogue/package gates — see the *conditions — CTDA gates* section above).
+`function` ∈ `HasPerk` | `GetItemCount` | `GetGlobalValue` (each needs a `param` ref) |
+`TemperIsEnchanted` (no param). `comparison` is the operator (`==` `!=` `>` `>=` `<` `<=`, default
+`>=`), `value` the test value, `or: true` OR-chains with the NEXT condition. Use `find Skyrim.esm
+<name> Perk` to discover perk FormIDs; `cobjdiag <esp> <0xID>` prints any recipe's full shape.
+
+Common bench keyword FormIDs (probed from Skyrim.esm): `0x088105` forge, `0x0ADB78` armor table,
+`0x088108` sharpening wheel, `0x0A5CCE` smelter, `0x07866A` tanning rack, `0x0F46CE` Skyforge.
 
 ### packages — AI Packages (what an NPC DOES)
 A `packages` entry is an AI package. Skyrim's PACK record is **template-driven**: you reference a

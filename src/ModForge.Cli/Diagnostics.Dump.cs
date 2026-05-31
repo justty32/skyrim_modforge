@@ -143,6 +143,18 @@ internal static partial class Program
                     + $" at {Ref(cobj.WorkbenchKeyword.FormKey)}");
                 if (cobj.Items is { } comps)
                     foreach (var c in comps) Console.WriteLine($"        component -> {Ref(c.Item.Item.FormKey)} x{c.Item.Count}");
+                foreach (var cond in cobj.Conditions)
+                {
+                    string p1 = cond.Data switch
+                    {
+                        IHasPerkConditionDataGetter hp        => $" perk={Ref(hp.Perk.Link.FormKey)}",
+                        IGetItemCountConditionDataGetter gic   => $" item={Ref(gic.ItemOrList.Link.FormKey)}",
+                        IGetGlobalValueConditionDataGetter ggv => $" global={Ref(ggv.Global.Link.FormKey)}",
+                        _ => "",
+                    };
+                    string cmp = cond is IConditionFloatGetter cf ? $" {cond.CompareOperator} {cf.ComparisonValue}" : "";
+                    Console.WriteLine($"        condition -> {cond.Data.Function}{cmp}{p1}{(cond.Flags.HasFlag(Condition.Flag.OR) ? " [OR]" : "")}");
+                }
             }
 
             if (r is ISpellGetter spG && (spG.Type != SpellType.Spell || spG.CastType != CastType.ConstantEffect || spG.BaseCost > 0))

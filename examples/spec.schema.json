@@ -436,10 +436,25 @@
       "description": "ConstructibleObject (COBJ): a crafting recipe",
       "properties": {
         "editorId": { "type": "string", "minLength": 1 },
-        "createdObject": { "$ref": "#/$defs/ref", "description": "the item produced — usually an in-spec weapon/armor/etc." },
+        "kind": { "enum": ["craft", "temper", "smelt", "breakdown"], "default": "craft", "description": "recipe flavour; picks the default bench (craft->forge, temper->sharpening wheel, smelt/breakdown->smelter)" },
+        "createdObject": { "$ref": "#/$defs/ref", "description": "the item produced (temper: the item being improved) — usually an in-spec weapon/armor/etc." },
         "count": { "type": "integer", "minimum": 1, "description": "how many are produced (default 1)" },
-        "workbench": { "$ref": "#/$defs/ref", "description": "bench keyword ref; omit to default to the forge (Skyrim.esm:0x088105). Others: 0x0ADB78 armor table, 0x088108 sharpening wheel, 0x0F46CE Skyforge" },
-        "components": { "type": "array", "items": { "$ref": "#/$defs/containerItem" }, "description": "ingredients consumed on craft (item ref + count)" }
+        "workbench": { "type": "string", "description": "named selector (forge|sharpeningWheel|armorTable|smelter|tanningRack|skyforge) OR a keyword ref; omit -> the kind default" },
+        "components": { "type": "array", "items": { "$ref": "#/$defs/containerItem" }, "description": "ingredients consumed on craft (item ref + count)" },
+        "conditions": {
+          "type": "array",
+          "description": "perk/item/skill gating (shared CTDA ConditionSpec)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "function": { "enum": ["HasPerk", "GetItemCount", "GetGlobalValue", "TemperIsEnchanted"], "description": "the CTDA function; HasPerk/GetItemCount/GetGlobalValue need a param, TemperIsEnchanted does not" },
+              "param": { "type": "string", "description": "the function's form arg (perk/item/global ref)" },
+              "comparison": { "enum": ["==", "=", "!=", ">", ">=", "<", "<="], "description": "the comparison operator (default >=)" },
+              "value": { "type": "number", "description": "the test value (default 0)" },
+              "or": { "type": "boolean", "description": "OR-chain with the NEXT condition (default AND)" }
+            }
+          }
+        }
       }
     },
     "ingredient": {

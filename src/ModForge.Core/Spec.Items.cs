@@ -51,17 +51,29 @@ public sealed class ContainerSpec { public string EditorId { get; set; } = ""; p
 // One required ingredient in a recipe: a *ref* (in-spec or vanilla) + how many are consumed.
 public sealed class RecipeComponentSpec { public string Item { get; set; } = ""; public int Count { get; set; } = 1; }
 // ConstructibleObject (COBJ): a crafting recipe. `createdObject` (a *ref*, usually an in-spec item)
-// is made in `count` copies at the `workbench` (a Keyword *ref*; defaults to the forge —
-// Skyrim.esm:0x088105 CraftingSmithingForge) by consuming the `components`. Perk/skill gating
-// (Conditions) is not yet a spec field — a recipe with components but no condition shows whenever
-// you have the materials.
+// is made in `count` copies at the `workbench` by consuming the `components`, optionally gated by
+// `conditions` (the SHARED CTDA ConditionSpec — perk/item/skill, e.g. function "HasPerk", param a
+// smithing-perk ref; or "TemperIsEnchanted" + or:true for the vanilla temper guard).
+//
+// `kind` picks the recipe flavour (default "craft"):
+//   craft     — make `createdObject` from components at a bench (default forge).
+//   temper    — IMPROVE an existing weapon/armor: createdObject = the item itself, default bench is
+//               the sharpening wheel (weapons) / armor table; component = the temper material.
+//   smelt     — ore -> ingot (default bench: smelter), or break an item down into materials.
+//   breakdown — alias of smelt (break an item into components at the smelter).
+//
+// `workbench` is a NAMED selector — forge | sharpeningWheel | armorTable | smelter | tanningRack |
+// skyforge — resolved to the right vanilla CraftingSmithing* keyword. A raw <master>:0xID or in-spec
+// keyword ref still works (overrides the kind default). Empty -> the kind's default bench.
 public sealed class RecipeSpec
 {
     public string EditorId { get; set; } = "";
+    public string Kind { get; set; } = "craft";      // craft | temper | smelt | breakdown
     public string CreatedObject { get; set; } = "";
     public int Count { get; set; } = 1;
-    public string Workbench { get; set; } = "";   // bench keyword ref; empty -> forge
+    public string Workbench { get; set; } = "";       // named selector OR ref; empty -> kind default
     public List<RecipeComponentSpec> Components { get; set; } = new();
+    public List<ConditionSpec> Conditions { get; set; } = new();   // shared CTDA gates (HasPerk/…)
 }
 
 // --- Long-tail record types (same spec-class + build-loop pattern) ---------------------

@@ -1,0 +1,75 @@
+{
+  "pluginName": "ModForgeSmithing.esp",
+  "esl": true,
+
+  "_comment": "Smithing depth demo: a perk-gated craftable weapon at the forge, its tempering recipe at the grindstone (with the vanilla enchanted-item guard), and two smelter recipes (ore->ingot, plus breaking the weapon back down into materials). Recipe conditions use the SHARED ConditionSpec (function + param + comparison + value + or). Vanilla FormIDs discovered via the CLI find/cobjdiag against Skyrim.esm. SteelSmithing perk=0x0CB40D, IronIngot=0x05ACE4, SteelIngot=0x05ACE5, IronOre=0x071CF3, LeatherStrips=0x0800E4.",
+
+  "weapons": [
+    {
+      "editorId": "MF_ForgedBlade",
+      "name": "ModForge Forged Blade",
+      "value": 75,
+      "weight": 9.0,
+      "damage": 12,
+      "template": "Skyrim.esm:0x012EB7"
+    }
+  ],
+
+  "recipes": [
+    {
+      "_comment": "CRAFT at the forge, gated on the SteelSmithing perk so it only shows once you've taken it.",
+      "editorId": "MF_ForgedBladeRecipe",
+      "kind": "craft",
+      "createdObject": "MF_ForgedBlade",
+      "count": 1,
+      "workbench": "forge",
+      "components": [
+        { "item": "Skyrim.esm:0x05ACE5", "count": 2 },
+        { "item": "Skyrim.esm:0x0800E4", "count": 1 }
+      ],
+      "conditions": [
+        { "function": "HasPerk", "param": "Skyrim.esm:0x0CB40D", "comparison": "==", "value": 1 }
+      ]
+    },
+    {
+      "_comment": "TEMPER at the grindstone (sharpeningWheel): createdObject IS the blade. The TemperIsEnchanted(or:true) guard mirrors vanilla so an enchanted copy can't be improved without Arcane Blacksmith; then HasPerk SteelSmithing. Component = 1 steel ingot.",
+      "editorId": "MF_ForgedBladeTemper",
+      "kind": "temper",
+      "createdObject": "MF_ForgedBlade",
+      "count": 1,
+      "workbench": "sharpeningWheel",
+      "components": [
+        { "item": "Skyrim.esm:0x05ACE5", "count": 1 }
+      ],
+      "conditions": [
+        { "function": "TemperIsEnchanted", "comparison": "!=", "value": 1, "or": true },
+        { "function": "HasPerk", "param": "Skyrim.esm:0x0CB40D", "comparison": "==", "value": 1 }
+      ]
+    },
+    {
+      "_comment": "SMELT iron ore -> iron ingot at the smelter (no conditions), mirroring vanilla RecipeIngotIron.",
+      "editorId": "MF_SmeltIronOre",
+      "kind": "smelt",
+      "createdObject": "Skyrim.esm:0x05ACE4",
+      "count": 1,
+      "workbench": "smelter",
+      "components": [
+        { "item": "Skyrim.esm:0x071CF3", "count": 1 }
+      ]
+    },
+    {
+      "_comment": "BREAKDOWN: melt the Forged Blade back into a steel ingot at the smelter. Gated on owning at least one blade so the recipe only shows when you have one to break.",
+      "editorId": "MF_ForgedBladeBreakdown",
+      "kind": "breakdown",
+      "createdObject": "Skyrim.esm:0x05ACE5",
+      "count": 1,
+      "workbench": "smelter",
+      "components": [
+        { "item": "MF_ForgedBlade", "count": 1 }
+      ],
+      "conditions": [
+        { "function": "GetItemCount", "param": "MF_ForgedBlade", "comparison": ">=", "value": 1 }
+      ]
+    }
+  ]
+}
