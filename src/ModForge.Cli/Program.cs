@@ -159,18 +159,24 @@ internal static partial class Program
         var sourceDir = Path.Combine(scriptsDir, "Source");
         var specDir = Path.GetDirectoryName(Path.GetFullPath(specPath)) ?? ".";
         int compiled = 0;
-        foreach (var sa in spec.Scripts)
+        var compiledSources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        bool CompileSource(string? source, string label)
         {
-            if (string.IsNullOrEmpty(sa.Source)) continue;
-            var src = Path.IsPathRooted(sa.Source) ? sa.Source : Path.Combine(specDir, sa.Source);
-            if (!File.Exists(src)) { Console.Error.WriteLine($"  ! script source not found: {src}"); continue; }
+            if (string.IsNullOrEmpty(source)) return false;
+            var src = Path.IsPathRooted(source) ? source : Path.Combine(specDir, source);
+            if (!compiledSources.Add(Path.GetFullPath(src))) return false;   // same .psc referenced twice
+            if (!File.Exists(src)) { Console.Error.WriteLine($"  ! script source not found: {src}"); return false; }
             var cr = Papyrus.Compile(src, scriptsDir);
-            if (!cr.Success) { Console.Error.WriteLine(cr.Message); Console.Error.WriteLine($"  ! compile failed: {sa.Source}"); continue; }
+            if (!cr.Success) { Console.Error.WriteLine(cr.Message); Console.Error.WriteLine($"  ! compile failed: {label}"); return false; }
             Console.WriteLine(cr.Message);
             Directory.CreateDirectory(sourceDir);
             File.Copy(src, Path.Combine(sourceDir, Path.GetFileName(src)), overwrite: true);
             compiled++;
+            return true;
         }
+        foreach (var sa in spec.Scripts) CompileSource(sa.Source, sa.Source);
+        // Dialogue result-script fragments (the INFO OnEnd TIF) are compiled the same way.
+        foreach (var d in spec.Dialogue) CompileSource(d.ResultScriptSource, d.ResultScriptSource);
 
         Console.WriteLine($"packaged -> {outModDir}  ({pluginName} + {compiled} compiled script(s) under Scripts/)");
         return 0;

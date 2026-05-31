@@ -97,6 +97,16 @@ public sealed class DialogueSpec
     public List<string> Responses { get; set; } = new();
     public string Emotion { get; set; } = "Neutral";   // Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise — applied to all response lines
     public uint EmotionValue { get; set; } = 50;        // 0..100 intensity
+    // Result fragment — Papyrus that runs when the line is PICKED (the INFO's OnEnd fragment). This is
+    // the only way to *do* something on a dialogue choice (take gold, join the follower system, set a
+    // stage). ResultScript is the fragment's Scriptname (must `Extends TopicInfo` and define
+    // `Function Fragment_0(ObjectReference akSpeakerRef)`); ResultScriptSource is the .psc for `package`
+    // to compile; ResultProperties bind that script's Auto properties (same shape as a ScriptAttachSpec).
+    public string ResultScript { get; set; } = "";
+    public string ResultScriptSource { get; set; } = "";
+    public List<PropertySpec> ResultProperties { get; set; } = new();
+    // Goodbye closes the dialogue menu after this line — vanilla recruit/dismiss lines all set it.
+    public bool Goodbye { get; set; }
 }
 // Relationship (RELA): a directed bond between two NPCs (`parent` and `child`) at a `rank`. The
 // player's NPC *base* record is `Skyrim.esm:0x000014` (NOT `0x000007`, which is PlayerRef — the

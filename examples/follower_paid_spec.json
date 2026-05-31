@@ -1,0 +1,78 @@
+{
+  "pluginName": "ModForgePaidFollower.esp",
+  "esl": true,
+  "_": "It.28: a PAID custom follower via a fully-CUSTOM recruit topic + result fragment. The vanilla paid path (PotentialHireling) can't recruit a custom NPC — its recruit INFOs are GetIsID-hardcoded per vanilla mercenary (probe: `modforge infodiag Skyrim.esm 0x0BCC84`). So we author our own topic, gated on GetIsID==our speaker (always passes), with an OnEnd Papyrus fragment (MFHirePaidRecruit) that takes 500 gold and joins her to CurrentFollowerFaction (0x05C84E) + SetPlayerTeammate — after which the GENERIC vanilla follow/wait/dismiss dialogue works (it keys on that faction + follower voice, no GetIsID). Counterpart to follower_hireable_spec.json (the FREE-follow path). She must NOT be in PotentialHireling (the generic follower dialogue requires PotentialHireling==0). `coc RiverwoodSleepingGiantInn`, talk to her, pick the 500-gold line.",
+
+  "classes": [
+    {
+      "editorId": "MF_PaidClass",
+      "name": "ModForge Sellsword",
+      "healthWeight": 50, "magickaWeight": 10, "staminaWeight": 40,
+      "skillWeights": { "OneHanded": 90, "Block": 70, "HeavyArmor": 70, "Archery": 50 }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_PaidFollowerNpc",
+      "name": "Brynja the Hired",
+      "_greeting": "Makes her conversable (host quest + Hello). The custom recruit topic surfaces on top.",
+      "greeting": "Coin talks. You buying?",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_PaidClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "_voiceType": "FemaleEvenToned (0x013ADD) — a VoicesFollowerNeutral voice, required so the generic vanilla follow/wait/dismiss dialogue (GetIsVoiceType) surfaces once she's in CurrentFollowerFaction.",
+      "voiceType": "Skyrim.esm:0x013ADD",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "_factions": "Only Whiterun crime/citizen (door/gate traversal). NO PotentialHireling/PotentialFollower — the recruit is our own topic, and the generic follower dialogue needs PotentialHireling==0.",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+      "unique": true,
+      "level": 10,
+      "autoCalcStats": true,
+      "aggression": "Aggressive",
+      "confidence": "Brave",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50
+    }
+  ],
+
+  "quests": [
+    {
+      "_": "Hosts the custom recruit topic. StartGameEnabled so the topic is evaluated/served when you talk to her.",
+      "editorId": "MF_PaidQuest",
+      "name": "ModForge Paid Hire",
+      "startGameEnabled": true,
+      "priority": 50
+    }
+  ],
+
+  "dialogue": [
+    {
+      "_": "Custom recruit line. speakerNpcEditorId adds GetIsID==Brynja (so only she offers it). goodbye closes the menu. The OnEnd fragment MFHirePaidRecruit does the gold check + transaction + follower-join — all logic lives in Papyrus, not JSON. resultProperties bind the fragment's Auto properties to vanilla forms + the gold cost / relationship rank.",
+      "editorId": "MF_PaidRecruitTopic",
+      "questEditorId": "MF_PaidQuest",
+      "speakerNpcEditorId": "MF_PaidFollowerNpc",
+      "prompt": "Here's 500 gold. Fight at my side.",
+      "responses": [ "Gold's gold. Lead the way." ],
+      "emotion": "Happy",
+      "goodbye": true,
+      "resultScript": "MFHirePaidRecruit",
+      "resultScriptSource": "scripts/MFHirePaidRecruit.psc",
+      "resultProperties": [
+        { "name": "Gold001", "type": "object", "objectEditorId": "Skyrim.esm:0x00000F" },
+        { "name": "CurrentFollowerFaction", "type": "object", "objectEditorId": "Skyrim.esm:0x05C84E" },
+        { "name": "GoldCost", "type": "int", "int": 500 },
+        { "name": "RelRank", "type": "int", "int": 3 }
+      ]
+    }
+  ],
+
+  "placements": [
+    {
+      "_": "Brynja in the Sleeping Giant Inn common room (any in-room coord; actors snap to navmesh).",
+      "base": "MF_PaidFollowerNpc",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": -250, "y": 140, "z": 0 }
+    }
+  ]
+}

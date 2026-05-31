@@ -56,7 +56,14 @@ public static partial class Generator
                 // Flags (ENAM) + FavorLevel (CNAM) MUST be present: a vanilla player INFO always carries
                 // both, and an INFO missing ENAM is treated as invalid — a topic whose only INFO is
                 // invalid is silently dropped from the menu (so the topic never appears at all).
-                var info = new DialogResponses(mod) { Flags = new DialogResponseFlags(), FavorLevel = FavorLevel.None };
+                var info = new DialogResponses(mod)
+                {
+                    // Goodbye (DialogResponses.Flag, not the per-line DialogResponse.Flag) closes the menu
+                    // after the line — set for recruit/dismiss-style lines that carry a result fragment.
+                    Flags = new DialogResponseFlags { Flags = d.Goodbye ? DialogResponses.Flag.Goodbye : default },
+                    FavorLevel = FavorLevel.None,
+                };
+                dialogResponsesByEd[d.EditorId] = info;
                 var emotion = Enum.TryParse<Emotion>(d.Emotion, ignoreCase: true, out var em) ? em : Emotion.Neutral;
                 byte rn = 1;
                 foreach (var line in d.Responses)

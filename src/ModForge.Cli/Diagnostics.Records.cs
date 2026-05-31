@@ -391,6 +391,14 @@ internal static partial class Program
                     Console.WriteLine($"    response[{resp.ResponseNumber}] ({resp.Emotion}): \"{Text(() => resp.Text?.String) ?? "<localized>"}\"");
                 foreach (var c in info.Conditions)
                     PrintCondition(c, "    cond: ");
+                // The result script (TIF__ fragment) that runs when the line is picked — the part we
+                // must replicate to author a custom paid recruit (take gold + join follower system).
+                if (info.VirtualMachineAdapter is { } vmad)
+                {
+                    string Frag(IScriptFragmentGetter? f) => f is null ? "-" : $"{f.ScriptName}.{f.FragmentName}";
+                    var sf = vmad.ScriptFragments;
+                    Console.WriteLine($"    VMAD: file={sf?.FileName ?? "-"}  OnBegin={Frag(sf?.OnBegin)}  OnEnd={Frag(sf?.OnEnd)}  scripts=[{string.Join(", ", vmad.Scripts.Select(s => s.Name))}]");
+                }
             }
         }
         Console.WriteLine($"-- {byQuest.Count} topic(s)");

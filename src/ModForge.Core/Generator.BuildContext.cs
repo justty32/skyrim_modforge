@@ -32,6 +32,9 @@ public static partial class Generator
         private readonly Dictionary<string, Npc> npcsByEd = new();
         private readonly Dictionary<string, Quest> questsByEd = new();
         private readonly Dictionary<string, Cell> cellsByEd = new();
+        // Built INFOs by dialogue editorId, so a pass-2 step can attach result-script fragments
+        // (which need ref resolution from the formKey table that only exists in pass 2).
+        private readonly Dictionary<string, DialogResponses> dialogResponsesByEd = new();
         private readonly Dictionary<(int Block, int Sub), CellSubBlock> interiorSubs = new();
         private readonly Dictionary<string, FormKey> formKeyByEd = new();
         private readonly Dictionary<string, IMajorRecord> recordsByEd = new();

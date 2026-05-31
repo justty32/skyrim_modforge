@@ -48,6 +48,7 @@ public static partial class Generator
         ctx.WireLeveledAndContainers();            // leveled-list entries + container contents
         ctx.WireRecipes();                         // COBJ createdObject/workbench/components
         ctx.AttachScripts();                       // VMAD Papyrus script attachment
+        ctx.AttachDialogueResultScripts();         // INFO OnEnd result fragments (dialogue-pick scripts)
 
         return ctx.Finish();
     }

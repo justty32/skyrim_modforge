@@ -29,24 +29,60 @@ public static partial class Generator
                 var scriptsList = (System.Collections.IList)vmad!.GetType().GetProperty("Scripts")!.GetValue(vmad)!;
 
                 var entry = new ScriptEntry { Name = sa.ScriptName };
-                foreach (var p in sa.Properties)
-                {
-                    ScriptProperty? sp = (p.Type ?? "").ToLowerInvariant() switch
-                    {
-                        "int"    => new ScriptIntProperty { Data = p.Int },
-                        "float"  => new ScriptFloatProperty { Data = p.Float },
-                        "bool"   => new ScriptBoolProperty { Data = p.Bool },
-                        "string" => new ScriptStringProperty { Data = p.Str },
-                        "object" => MakeObjectProp(p),
-                        _        => null,
-                    };
-                    if (sp is null) { Warn($"  ! script '{sa.ScriptName}' prop '{p.Name}' bad type/ref '{p.Type}'"); continue; }
-                    sp.Name = p.Name;
-                    sp.Flags = ScriptProperty.Flag.Edited;
-                    entry.Properties.Add(sp);
-                }
+                FillProperties(entry, sa.Properties, sa.ScriptName);
                 scriptsList.Add(entry);
                 scriptsAttached++;
+            }
+        }
+
+        // --- pass 2: attach dialogue RESULT-script fragments (the INFO's OnEnd TIF fragment) ---
+        // A DialogResponses VMAD is shaped differently from a normal record's: a DialogResponsesAdapter
+        // holding ScriptFragments (the per-INFO fragment) + a Scripts list (the fragment's properties).
+        // Vanilla fires Fragment_0(akSpeakerRef) on OnEnd; we mirror that. Runs after BuildFormKeyTable
+        // so object properties resolve.
+        public void AttachDialogueResultScripts()
+        {
+            foreach (var d in spec.Dialogue)
+            {
+                if (string.IsNullOrEmpty(d.ResultScript)) continue;
+                if (!dialogResponsesByEd.TryGetValue(d.EditorId, out var info))
+                { Warn($"  ! dialogue result-script: INFO for '{d.EditorId}' not built"); continue; }
+
+                var entry = new ScriptEntry { Name = d.ResultScript };
+                FillProperties(entry, d.ResultProperties, d.ResultScript);
+                info.VirtualMachineAdapter = new DialogResponsesAdapter
+                {
+                    ScriptFragments = new ScriptFragments
+                    {
+                        FileName = d.ResultScript,
+                        OnEnd = new ScriptFragment { ScriptName = d.ResultScript, FragmentName = "Fragment_0" },
+                    },
+                };
+                info.VirtualMachineAdapter.Scripts.Add(entry);
+                scriptsAttached++;
+            }
+        }
+
+        // Build typed ScriptProperty entries from a spec property list onto a ScriptEntry (shared by the
+        // record-VMAD attach and the dialogue-fragment attach). int/float/bool/string/object; object
+        // resolves ObjectEditorId via the formKey table.
+        private void FillProperties(ScriptEntry entry, List<PropertySpec> props, string scriptName)
+        {
+            foreach (var p in props)
+            {
+                ScriptProperty? sp = (p.Type ?? "").ToLowerInvariant() switch
+                {
+                    "int"    => new ScriptIntProperty { Data = p.Int },
+                    "float"  => new ScriptFloatProperty { Data = p.Float },
+                    "bool"   => new ScriptBoolProperty { Data = p.Bool },
+                    "string" => new ScriptStringProperty { Data = p.Str },
+                    "object" => MakeObjectProp(p),
+                    _        => null,
+                };
+                if (sp is null) { Warn($"  ! script '{scriptName}' prop '{p.Name}' bad type/ref '{p.Type}'"); continue; }
+                sp.Name = p.Name;
+                sp.Flags = ScriptProperty.Flag.Edited;
+                entry.Properties.Add(sp);
             }
         }
 
