@@ -43,6 +43,8 @@ public sealed class BuildStats
     public bool Esl { get; init; }
     public int TopLevelRecords { get; init; }
     public int DialogueTopics { get; init; }
+    public int Scenes { get; init; }
+    public int ScenePhases { get; init; }
     public int LinksWired { get; init; }
     public int ExternalLinks { get; init; }
     public int ScriptsAttached { get; init; }

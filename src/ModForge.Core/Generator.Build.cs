@@ -26,6 +26,7 @@ public static partial class Generator
         ctx.BuildNpcsAndQuests();                  // Npc, Quest (kept in editorId maps for dialogue)
         ctx.BuildDialogue();                        // Quest->Branch->Topic->INFO, DialogView, Hellos
         ctx.BuildBanter();                          // proactive Idle banter topics (unprompted NPC lines)
+        ctx.BuildScenes();                          // SCEN multi-actor conversations (quest aliases + phases + Scene topics)
         ctx.BuildMagicAndSpells();                 // MagicEffect, Spell
         ctx.BuildConsumablesGearAndMessages();     // Potion, Armor, Faction, Relationship, Class, Message
         ctx.BuildLongTailItems();                  // Ingredient..Activator (scalar fields)
@@ -36,6 +37,7 @@ public static partial class Generator
         ctx.BuildFormKeyTable();
         ctx.WireNpcs();                            // race/class/outfit/voice/crime/combatStyle/spells/factions
         ctx.WireRelationships();                   // RELA Parent/Child NPC refs
+        ctx.WireScenes();                          // SCEN actor aliases -> the NPC that fills each (UniqueActor)
         ctx.WireKeywords();                        // keywords on armor/weapon/misc/...
         ctx.WireEffects();                         // magic effects on spell/potion/ingredient/scroll (+ spell equipType)
         ctx.WireMagicEffectRefs();                 // MGEF association/projectile/art/explosion

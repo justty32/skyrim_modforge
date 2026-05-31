@@ -36,6 +36,7 @@ public static partial class Generator
         foreach (var f in spec.Factions) Reg(f.EditorId, "faction", factionIds);
         foreach (var msg in spec.Messages) Reg(msg.EditorId, "message");
         foreach (var d in spec.Dialogue) Reg(d.EditorId, "dialogue");
+        foreach (var sc in spec.Scenes) Reg(sc.EditorId, "scene");
         foreach (var c in spec.Cells)
         {
             Reg(c.EditorId, "cell", cellIds);
@@ -163,6 +164,36 @@ public static partial class Generator
             if (d.Responses.Count == 0) problems.Add($"dialogue '{d.EditorId}' has no response lines");
             if (!Enum.TryParse<Emotion>(d.Emotion, true, out _))
                 problems.Add($"dialogue '{d.EditorId}' invalid emotion '{d.Emotion}' (Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise)");
+        }
+
+        // SCENE (SCEN): host quest must exist; actors need a (unique) aliasId + an NPC; every phase must
+        // name a speaker that is one of the scene's actors and carry at least one line.
+        foreach (var sc in spec.Scenes)
+        {
+            if (!questIds.Contains(sc.QuestEditorId))
+                problems.Add($"scene '{sc.EditorId}' references unknown quest '{sc.QuestEditorId}'");
+            if (sc.Actors.Count == 0)
+                problems.Add($"scene '{sc.EditorId}' has no actors (a scene needs at least two NPCs talking to each other)");
+            var sceneAliasIds = new HashSet<int>();
+            foreach (var a in sc.Actors)
+            {
+                if (a.AliasId < 0) problems.Add($"scene '{sc.EditorId}' actor has negative aliasId {a.AliasId}");
+                else if (!sceneAliasIds.Add(a.AliasId)) problems.Add($"scene '{sc.EditorId}' duplicate actor aliasId {a.AliasId}");
+                if (string.IsNullOrWhiteSpace(a.Npc)) problems.Add($"scene '{sc.EditorId}' actor (alias {a.AliasId}) has empty npc ref");
+                else CheckRef(a.Npc, $"scene '{sc.EditorId}' actor (alias {a.AliasId}) npc");
+            }
+            if (sc.Phases.Count == 0)
+                problems.Add($"scene '{sc.EditorId}' has no phases (nothing is spoken)");
+            for (int i = 0; i < sc.Phases.Count; i++)
+            {
+                var ph = sc.Phases[i];
+                if (!sceneAliasIds.Contains(ph.Speaker))
+                    problems.Add($"scene '{sc.EditorId}' phase {i} speaker aliasId {ph.Speaker} is not one of the scene's actors");
+                if (ph.Lines.Count == 0)
+                    problems.Add($"scene '{sc.EditorId}' phase {i} has no lines");
+                if (!Enum.TryParse<Emotion>(ph.Emotion, true, out _))
+                    problems.Add($"scene '{sc.EditorId}' phase {i} invalid emotion '{ph.Emotion}' (Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise)");
+            }
         }
 
         var validTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "int", "float", "bool", "string", "object" };

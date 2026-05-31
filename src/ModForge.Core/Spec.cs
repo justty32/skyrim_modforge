@@ -19,6 +19,7 @@ public sealed class ModSpec
     public List<QuestSpec> Quests { get; set; } = new();
     public List<DialogueSpec> Dialogue { get; set; } = new();
     public List<BanterSpec> Banter { get; set; } = new();
+    public List<SceneSpec> Scenes { get; set; } = new();
     public List<SpellSpec> Spells { get; set; } = new();
     public List<MagicEffectSpec> MagicEffects { get; set; } = new();
     public List<PotionSpec> Potions { get; set; } = new();

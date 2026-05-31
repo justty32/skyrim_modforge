@@ -37,6 +37,7 @@ internal static partial class Program
                 case "infodiag" when args.Length is 3 or 4: return InfoDiag(args[1], args[2], args.Length == 4 ? args[3] : null);
                 case "factdiag" when args.Length == 3: return FactDiag(args[1], args[2]);
                 case "reladiag" when args.Length == 3: return RelaDiag(args[1], args[2]);
+                case "scenediag" when args.Length == 3: return SceneDiag(args[1], args[2]);
                 default: Usage(); return 1;
             }
         }
@@ -68,6 +69,7 @@ internal static partial class Program
         "  infodiag <in.esp> <0xFORMID> [substr]        dump dialogue INFO responses + FULL CTDA conditions for a topic, or every topic a quest owns (substr filters EditorID)\n" +
         "  factdiag <in.esp> <0xFORMID>                 print a Faction's flags/ranks/inter-faction relations (the paid-hireling gate is faction membership)\n" +
         "  reladiag <in.esp> <0xFORMID>                 print a RELA, or every RELA referencing the FormID as parent/child (player has zero static RELA)\n" +
+        "  scenediag <in.esp> <0xFORMID>                print a SCEN's host quest + actors (alias indices) + phases + actions (which alias speaks which topic)\n" +
         "  extract <in.esp> <strings.json>\n" +
         "  applyloc <in.esp> <strings.json> <outDir>   (Localized UTF-8 _chinese.STRINGS)\n" +
         "  apply   <in.esp> <strings.json> <out.esp>");
@@ -125,6 +127,7 @@ internal static partial class Program
     private static string BuildSummary(BuildStats s, string specPath, string outPath) =>
         $"built {outPath} from {Path.GetFileName(specPath)} " +
         $"(ESL={s.Esl}, {s.TopLevelRecords} top-level record(s); {s.DialogueTopics} dialogue topic(s); " +
+        $"{s.Scenes} scene(s) in {s.ScenePhases} phase(s); " +
         $"{s.LinksWired} cross-ref link(s), {s.ExternalLinks} to external master(s); " +
         $"{s.ScriptsAttached} script(s) attached; " +
         $"{s.Placements} placement(s) in {s.NewInteriorCells} new + {s.VanillaInteriorCells} vanilla interior cell(s) + " +
