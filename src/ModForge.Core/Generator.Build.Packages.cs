@@ -13,12 +13,7 @@ public static partial class Generator
         // by WireDeferredTargets/WireDeferredLocations once placements register their editorIds.
         public void BuildPackageData()
         {
-            const uint SandboxTemplateId  = 0x01C254;  // Skyrim.esm: editorId "Sandbox"   — 12 slots
-            const uint TravelTemplateId   = 0x016FAA;  // Skyrim.esm: editorId "Travel"    —  3 slots
-            const uint UseMagicTemplateId = 0x0504F5;  // Skyrim.esm: editorId "UseMagic"  — 11 active slots (2-12)
-            const uint PatrolTemplateId   = 0x017723;  // Skyrim.esm: editorId "Patrol"    —  6 slots
-            const uint FollowTemplateId   = 0x019B2C;  // Skyrim.esm: editorId "Follow"    —  6 slots
-            const uint EscortTemplateId   = 0x023B73;  // Skyrim.esm: editorId "Escort"    — 15 slots (9 active)
+            // Known templates live in PackageTemplates (shared with Validate so the FormIDs can't drift).
             var skyrimEsm = ModKey.FromNameAndExtension("Skyrim.esm");
 
             foreach (var pk in spec.Packages)
@@ -36,7 +31,7 @@ public static partial class Generator
                     continue;
                 }
 
-                if (tfk.ID == SandboxTemplateId)
+                if (tfk == PackageTemplates.Sandbox)
                 {
                     // Mirrors DefaultSandboxCurrentLocation256 (Skyrim.esm:0x0956B8) — concrete sandboxes
                     // explicitly set all 12 named slots; we do the same so behaviour is deterministic.
@@ -56,7 +51,7 @@ public static partial class Generator
                     SBool(31, "Allow Special Furniture", sb.AllowSpecialFurniture, true);
                     pack.Data[29] = new PackageDataFloat { Name = "Energy", Data = sb.Energy ?? 50f };
                 }
-                else if (tfk.ID == TravelTemplateId)
+                else if (tfk == PackageTemplates.Travel)
                 {
                     // Travel template has just 3 slots — 0=Place (PackageDataLocation), 2=RideHorse,
                     // 4=PreferPath. `place` is REQUIRED in practice — Travel without a destination
@@ -69,7 +64,7 @@ public static partial class Generator
                     pack.Data[2] = new PackageDataBool { Name = "Ride Horse if possible?", Data = tv.RideHorse ?? false };
                     pack.Data[4] = new PackageDataBool { Name = "Prefer Preferred Path?", Data = tv.PreferPath ?? false };
                 }
-                else if (tfk.ID == UseMagicTemplateId)
+                else if (tfk == PackageTemplates.UseMagic)
                 {
                     // UseMagic template active slots are 2-12 (slots 0/1 are inherited APackageData
                     // placeholders; we don't touch them — vanilla concrete packages also skip them).
@@ -140,7 +135,7 @@ public static partial class Generator
                     UInt (11, "NumToCastMax",    um.NumToCastMax,    1u);
                     UBool(12, "DualCast",        um.DualCast,        false);
                 }
-                else if (tfk.ID == PatrolTemplateId)
+                else if (tfk == PackageTemplates.Patrol)
                 {
                     // Patrol slots: 0 Patrol Start (deferred — points at a marker placement created in
                     // the placement loop below), 1 Patrol Radius (float), 2 Repeatable?, 4 Start At
@@ -157,7 +152,7 @@ public static partial class Generator
                     pack.Data[6] = new PackageDataBool  { Name = "Ride Horse if Possible?",  Data = pt.RideHorse ?? false };
                     pack.Data[8] = new PackageDataBool  { Name = "Static Pathing?",          Data = pt.StaticPathing ?? false };
                 }
-                else if (tfk.ID == FollowTemplateId)
+                else if (tfk == PackageTemplates.Follow)
                 {
                     // Follow slots: 0 Target to Follow (deferred — defaults to the player 0x000014, all
                     // vanilla "FollowsPlayer" packages emit PackageTargetSpecificReference(000014); can
@@ -172,7 +167,7 @@ public static partial class Generator
                     pack.Data[6] = new PackageDataBool  { Name = "Ride Horse?", Data = fo.RideHorse ?? false };
                     pack.Data[8] = new PackageDataBool  { Name = "Need LOS?", Data = fo.NeedLineOfSight ?? false };
                 }
-                else if (tfk.ID == EscortTemplateId)
+                else if (tfk == PackageTemplates.Escort)
                 {
                     // Escort slots (9 active of 15): 11 Target to Escort (deferred SingleRef — who the NPC
                     // leads; defaults to the player 0x000014, like Follow), 2 Number of Followers (int),

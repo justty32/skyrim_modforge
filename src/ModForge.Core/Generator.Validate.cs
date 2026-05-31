@@ -279,18 +279,18 @@ public static partial class Generator
             CheckRef(pk.UseMagic.Target,   $"package '{pk.EditorId}' useMagic.target");
             CheckRef(pk.UseMagic.Spell,    $"package '{pk.EditorId}' useMagic.spell");
             CheckRef(pk.Patrol.Start,      $"package '{pk.EditorId}' patrol.start");
-            if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var ptfk) && ptfk.ID == 0x017723
+            if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var ptfk) && ptfk == PackageTemplates.Patrol
                 && string.IsNullOrWhiteSpace(pk.Patrol.Start))
                 problems.Add($"package '{pk.EditorId}' uses Patrol template but patrol.start is empty — NPC has no route and won't patrol");
             CheckRef(pk.Follow.Target,     $"package '{pk.EditorId}' follow.target");   // empty ⇒ defaults to the player
             CheckRef(pk.Escort.Target,      $"package '{pk.EditorId}' escort.target");   // empty ⇒ defaults to the player
             CheckRef(pk.Escort.Destination, $"package '{pk.EditorId}' escort.destination");
-            if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var etfk) && etfk.ID == 0x023B73
+            if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var etfk) && etfk == PackageTemplates.Escort
                 && string.IsNullOrWhiteSpace(pk.Escort.Destination))
                 problems.Add($"package '{pk.EditorId}' uses Escort template but escort.destination is empty — NPC won't lead anywhere (falls back to NearSelf)");
             // useMagic.spell is required only when the template is UseMagic — `Resolve`-style
             // template-id check is in Build, so here just warn for UseMagic-template packages.
-            if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var tfk) && tfk.ID == 0x0504F5
+            if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var tfk) && tfk == PackageTemplates.UseMagic
                 && string.IsNullOrWhiteSpace(pk.UseMagic.Spell))
                 problems.Add($"package '{pk.EditorId}' uses UseMagic template but useMagic.spell is empty — package will no-op in-game");
             foreach (var f in pk.Flags)

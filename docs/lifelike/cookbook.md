@@ -259,7 +259,7 @@ line variety) — all in addition to the static gates (GetInFaction/GetItemCount
 Follower-only **backstory** is the same pattern with just the `CurrentFollowerFaction==1` gate and
 more response lines.
 
-**Proactive banter** (It.34) — lines she says *unprompted*. Use the `banter` section (not `dialogue`):
+**Proactive banter** (It.34, in-game confirmed) — lines she says *unprompted*. Use the `banter` section (not `dialogue`):
 all entries sharing a (speaker, quest) collapse into one ambient topic (Misc / SNAM=`IDLE`, no branch)
 with Random-flagged INFOs; the engine plays a matching one on its own. **Requires idle chatter
 enabled** — the Sandbox package above (or the vanilla follow package) provides it.
