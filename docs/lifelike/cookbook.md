@@ -241,6 +241,32 @@ combat preempts it and she resumes after.
 // ...and reference it on the npc: "packages": [ "MF_Sandbox" ]   (no condition needed)
 ```
 
+**Daily routine — scheduled Sleep on top of the sandbox** (It.35). The downtime sandbox is the
+*waking-hours* default; layer a **Sleep package** (template `0x019717`) above it to make her bed down
+at night. Sleep is a specialized Sandbox that actively **seeks a bed** (built-in) and can lock doors.
+The sleep window is the package **`schedule`** (not a data slot); the NPC's `packages` list is in
+**priority order** — the engine runs the first package whose schedule + conditions match, so put the
+scheduled Sleep *first* and the unconditioned sandbox *last* as the fallback for every other hour.
+```jsonc
+"packages": [
+  { "editorId": "MF_NightSleep", "template": "Skyrim.esm:0x019717",
+    "schedule": { "hour": 22, "durationInMinutes": 540 },          // 22:00–07:00
+    "interruptFlags": [ "HellosToPlayer" ],
+    "sleep": { "radius": 1024, "lockDoors": false } },             // lockDoors:false — shared inn, don't lock it
+  { "editorId": "MF_Sandbox", "template": "Skyrim.esm:0x01C254", "sandbox": { ... } } ],
+"packages": [ "MF_NightSleep", "MF_Sandbox" ]   // on the npc: Sleep FIRST (priority), sandbox fallback LAST
+```
+- **`lockDoors` defaults true** (an NPC locks its *own house* at night) — set **false** for a follower
+  sleeping in a shared space (an inn), or she'll lock the building.
+- Like vanilla `NearEditorLocation` slots, the bed search anchors on **`NearSelf`** (our generated NPCs
+  have no CK Editor Location, which would silently no-op) — she finds a bed within `radius` of where
+  she is, so keep her placed in a room that *has* beds and widen `radius` (~1024) to reach them.
+- **More tiers** (a midday meal spot, a workbench shift) are the same pattern: add more scheduled
+  packages *above* the fallback. Relocating her between zones needs a `location`/Travel `place` ref to
+  a placed marker; without one each tier sandboxes/sleeps around her current spot.
+- This whole routine only runs in downtime — while she's actively following, the alias package
+  overrides every package in her list (Sleep included).
+
 **Situational dialogue** — gate a *player-initiated* line on RUNTIME state, ANDed with the
 follower gate, so the right line only appears in context. Uses the runtime CTDA functions:
 ```jsonc

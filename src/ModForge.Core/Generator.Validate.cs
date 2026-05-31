@@ -274,6 +274,7 @@ public static partial class Generator
             CheckRef(pk.CombatStyle, $"package '{pk.EditorId}' combatStyle");
             CheckRef(pk.OwnerQuest,  $"package '{pk.EditorId}' ownerQuest");
             CheckRef(pk.Sandbox.Location, $"package '{pk.EditorId}' sandbox.location");
+            CheckRef(pk.Sleep.Location,   $"package '{pk.EditorId}' sleep.location");   // optional ⇒ editor location
             CheckRef(pk.Travel.Place, $"package '{pk.EditorId}' travel.place");
             CheckRef(pk.UseMagic.Location, $"package '{pk.EditorId}' useMagic.location");
             CheckRef(pk.UseMagic.Target,   $"package '{pk.EditorId}' useMagic.target");

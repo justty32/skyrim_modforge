@@ -51,6 +51,38 @@ public static partial class Generator
                     SBool(31, "Allow Special Furniture", sb.AllowSpecialFurniture, true);
                     pack.Data[29] = new PackageDataFloat { Name = "Energy", Data = sb.Energy ?? 50f };
                 }
+                else if (tfk == PackageTemplates.Sleep)
+                {
+                    // Mirrors DefaultSleepEditorLoc* concretes: slot 0 Location, the fixed bed-search
+                    // scaffolding (1 Search Criteria = TouchActorEffects, 2 Found Bed objectlist, 6/8
+                    // internal bools — NOT author-facing; emitted exactly as vanilla so bed-seeking works),
+                    // then the named bool/float block. The sleep window is the package Schedule, not a slot.
+                    var sl = pk.Sleep;
+                    pack.Data[0] = MakeLocationSlot("Sleep Location", $"package '{pk.EditorId}' sleep", sl.Location, sl.Radius == 0 ? 500u : sl.Radius);
+                    pack.Data[1] = new PackageDataTarget
+                    {
+                        Name = "Search Criteria:",
+                        Type = PackageDataTarget.Types.Target,
+                        Target = new PackageTargetObjectType { Type = TargetObjectType.TouchActorEffects },
+                    };
+                    pack.Data[2] = new PackageDataObjectList { Name = "Found Bed" };
+                    void SlBool(sbyte slot, string name, bool? user, bool def)
+                        => pack.Data[slot] = new PackageDataBool { Name = name, Data = user ?? def };
+                    SlBool(6,  "Wander Preferred Path Only?", false,                 false);
+                    SlBool(8,  "False",                       false,                 false);
+                    SlBool(11, "RideHorseIfPossible",         sl.RideHorseIfPossible, false);
+                    SlBool(13, "Warn Before Locking?",        sl.WarnBeforeLocking,  true);
+                    SlBool(15, "Lock Doors?",                 sl.LockDoors,          true);
+                    SlBool(17, "AllowEating",                 sl.AllowEating,        false);
+                    SlBool(18, "AllowSleeping",               sl.AllowSleeping,      true);
+                    SlBool(19, "AllowConversation",           sl.AllowConversation,  true);
+                    SlBool(20, "AllowIdleMarkers",            sl.AllowIdleMarkers,   true);
+                    SlBool(21, "AllowSitting",                sl.AllowSitting,       true);
+                    SlBool(22, "AllowWandering",              sl.AllowWandering,     true);
+                    SlBool(25, "AllowSpecialFurniture",       sl.AllowSpecialFurniture, true);
+                    pack.Data[26] = new PackageDataFloat { Name = "MinWanderDistance", Data = sl.MinWanderDistance ?? 300f };
+                    pack.Data[24] = new PackageDataFloat { Name = "Energy",            Data = sl.Energy ?? 50f };
+                }
                 else if (tfk == PackageTemplates.Travel)
                 {
                     // Travel template has just 3 slots — 0=Place (PackageDataLocation), 2=RideHorse,
@@ -192,7 +224,7 @@ public static partial class Generator
                 }
                 else
                 {
-                    Warn($"  ! package '{pk.EditorId}': template {tfk} is not yet supported (known: sandbox=0x01C254, travel=0x016FAA, usemagic=0x0504F5, patrol=0x017723, follow=0x019B2C, escort=0x023B73) — emitting package with no Data overrides; template defaults apply");
+                    Warn($"  ! package '{pk.EditorId}': template {tfk} is not yet supported (known: sandbox=0x01C254, sleep=0x019717, travel=0x016FAA, usemagic=0x0504F5, patrol=0x017723, follow=0x019B2C, escort=0x023B73) — emitting package with no Data overrides; template defaults apply");
                 }
             }
         }

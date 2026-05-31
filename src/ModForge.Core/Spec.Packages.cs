@@ -21,6 +21,10 @@ public sealed class PackageSpec
     // Sandbox-template inputs (apply when `template` is Skyrim.esm:0x01C254). All optional —
     // omit any field to inherit the template's default (e.g. all "Allow Eating/Sleeping/…" default true).
     public SandboxSpec Sandbox { get; set; } = new();
+    // Sleep-template inputs (apply when `template` is Skyrim.esm:0x019717). A specialized Sandbox that
+    // actively SEEKS A BED (built-in bed search) and can lock doors — the "go home and sleep" routine.
+    // Gate the sleep window with `schedule` (hour + durationInMinutes); all Sleep slots are optional.
+    public SleepSpec Sleep { get; set; } = new();
     // Travel-template inputs (apply when `template` is Skyrim.esm:0x016FAA). `place` is the
     // destination ref (a placed REFR/ACHR); without one the NPC won't actually travel anywhere.
     public TravelSpec Travel { get; set; } = new();
@@ -79,6 +83,35 @@ public sealed class SandboxSpec
     public bool? PreferredPathOnly { get; set; }
     public bool? RideHorseIfPossible { get; set; }
     public float? Energy { get; set; }
+}
+// Sleep-template (Skyrim.esm:0x019717) data inputs. A specialized Sandbox: it actively searches for a
+// bed (slot 1 "Search Criteria" = TouchActorEffects + slot 2 "Found Bed" objectlist — both fixed/emitted
+// by the builder, not author-facing) and can lock doors on the way to bed. Author-facing named slots:
+//   0 Sleep Location  11 RideHorseIfPossible  13 WarnBeforeLocking  15 LockDoors  17 AllowEating
+//   18 AllowSleeping  19 AllowConversation  20 AllowIdleMarkers  21 AllowSitting  22 AllowWandering
+//   24 Energy(float)  25 AllowSpecialFurniture  26 MinWanderDistance(float)
+// `location` (optional) is a ref to a placed reference; omit ⇒ LocationFallback (NPC's editor location —
+// the NPC looks for a bed near where it spawns). `radius` defaults to 500; vanilla "sleep at editor
+// location" packages bump it to ~1000–2000 to widen the bed search. The sleep WINDOW is NOT a slot —
+// set it via `schedule` (e.g. hour=22, durationInMinutes=540 ⇒ sleeps 22:00–07:00). NOTE on `lockDoors`:
+// vanilla defaults TRUE (an NPC locks its house at night); for a follower sleeping in a SHARED space
+// (an inn), set it false so she doesn't lock the building.
+public sealed class SleepSpec
+{
+    public string Location { get; set; } = "";   // optional ref → placed reference; omit ⇒ editor location
+    public uint Radius { get; set; } = 500;       // bed-search radius (template default 500; widen to ~1000–2000)
+    public bool? LockDoors { get; set; }          // default true — set false for shared/inn sleeping
+    public bool? WarnBeforeLocking { get; set; }  // default true
+    public bool? RideHorseIfPossible { get; set; }// default false
+    public bool? AllowEating { get; set; }        // default false (Sleep flips this off vs Sandbox)
+    public bool? AllowSleeping { get; set; }       // default true (the whole point)
+    public bool? AllowConversation { get; set; }  // default true
+    public bool? AllowIdleMarkers { get; set; }   // default true
+    public bool? AllowSitting { get; set; }       // default true
+    public bool? AllowWandering { get; set; }     // default true
+    public bool? AllowSpecialFurniture { get; set; }// default true
+    public float? MinWanderDistance { get; set; } // default 300
+    public float? Energy { get; set; }            // default 50
 }
 // Travel-template (Skyrim.esm:0x016FAA) data inputs:
 //   0 Place to Travel (PackageDataLocation) — the destination (a placed REFR/ACHR ref)

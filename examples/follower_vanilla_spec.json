@@ -25,7 +25,19 @@
 
   "packages": [
     {
-      "_": "DOWNTIME behaviour. An unconditioned Sandbox is her lowest-priority fallback: it runs whenever the vanilla PlayerFollowerPackage (on the DialogueFollower alias) is NOT active — i.e. before recruit, after dismiss, and while she's told to Wait. So instead of standing frozen at her spawn point she eats/sits/wanders the Sleeping Giant Inn and chats with patrons. While she's actively following, the alias package overrides this automatically; combat preempts it and she resumes after. No `location` ⇒ she sandboxes around her editor location (the inn).",
+      "_": "DAILY ROUTINE, tier 1 (night). A Sleep package (template 0x019717) — a specialized Sandbox that actively SEEKS A BED and beds down. Gated by `schedule` to 22:00–07:00 (hour=22, duration=540min). It sits ABOVE MF_VanillaSandbox in her package list, so the engine runs it during its window and falls through to the sandbox the rest of the day. lockDoors=false because she sleeps in the SHARED Sleeping Giant Inn — a follower locking the inn would be wrong (vanilla defaults lockDoors=true for an NPC's own house). radius bumped to 1024 to widen the bed search across the common room. Like the sandbox, this whole routine only runs when she's NOT actively following — the vanilla follower-alias package overrides it while she trails the player.",
+      "editorId": "MF_NightSleep",
+      "template": "Skyrim.esm:0x019717",
+      "schedule": { "hour": 22, "durationInMinutes": 540 },
+      "interruptFlags": [ "HellosToPlayer" ],
+      "sleep": {
+        "radius": 1024,
+        "lockDoors": false,
+        "allowConversation": true
+      }
+    },
+    {
+      "_": "DAILY ROUTINE, tier 2 (waking-hours default). An unconditioned Sandbox — her lowest-priority fallback, active whenever the Sleep window above isn't (i.e. ~07:00–22:00) AND she's not following. She eats/sits/wanders the inn and chats with patrons instead of standing frozen. While she's actively following, the alias package overrides this; combat preempts it and she resumes after. No `location` ⇒ she sandboxes around her editor location (the inn). To add more tiers (a midday meal spot, a work bench), add more scheduled packages ABOVE this one in her `packages` list — list order = priority, first matching schedule+conditions wins.",
       "editorId": "MF_VanillaSandbox",
       "template": "Skyrim.esm:0x01C254",
       "interruptFlags": [ "HellosToPlayer", "AllowIdleChatter", "WorldInteractions" ],
@@ -54,8 +66,8 @@
       "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
       "_combatStyle": "Custom CSTY — preserved while she's a follower (the vanilla follow/combat-override packages set no CombatStyle, so the actor's base CSTY drives combat).",
       "combatStyle": "MF_VanillaCS",
-      "_packages": "Sandbox downtime — runs when she's NOT actively following (pre-recruit, post-dismiss, while Wait-ing). The vanilla follower alias package overrides it while she trails the player.",
-      "packages": [ "MF_VanillaSandbox" ],
+      "_packages": "Daily downtime routine, in PRIORITY ORDER (list order = priority; engine runs the first whose schedule+conditions match). Tier 1 MF_NightSleep (22:00–07:00, seeks a bed). Tier 2 MF_VanillaSandbox (unconditioned waking-hours fallback). All of this only runs when she's NOT actively following — the vanilla follower alias package overrides it while she trails the player.",
+      "packages": [ "MF_NightSleep", "MF_VanillaSandbox" ],
       "unique": true,
       "level": 10,
       "autoCalcStats": true,

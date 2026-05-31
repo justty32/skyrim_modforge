@@ -10,6 +10,7 @@ Harvested via `find` / `*diag`. All refs are `Skyrim.esm:0xFORMID` — usable di
 | Template | FormID | Slots used | Use when |
 |---|---|---|---|
 | Sandbox | `Skyrim.esm:0x01C254` | 12 | NPC hangs around a location, interacts with furniture/idle markers/other NPCs |
+| Sleep | `Skyrim.esm:0x019717` | 14 | Specialized Sandbox that actively **seeks a bed** and beds down; can lock doors. Wired in `packages[].sleep`. Sleep window = the package `schedule` (`hour`+`durationInMinutes`); `sleep.lockDoors` defaults true — set false for shared/inn sleeping |
 | Travel | `Skyrim.esm:0x016FAA` | 3 | NPC walks to a specific REFR/cell |
 | Patrol | `Skyrim.esm:0x017723` | 6 | Guard route. Wired in `packages[].patrol` (`start` → first marker); the route is the markers' `linkedRefs` chain (m1→m2→m3→m1 looped, null keyword). Markers must be on navmesh |
 | UseMagic | `Skyrim.esm:0x0504F5` | 11 | Scheduled non-combat spell casting (priest at altar, mage self-buffing). Wired in `packages[].useMagic` |

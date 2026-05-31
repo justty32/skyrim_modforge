@@ -87,7 +87,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `statics` | `editorId`, `model` (a `.nif` path — reference a vanilla mesh; a placement base, no name) |
 | `activators` | `editorId`, `name`, `model` (`.nif` path), `keywords` (array of *refs*); attach behaviour via `scripts` |
 | `recipes` | `editorId`, `createdObject` (*ref*), `count` (int), `workbench` (keyword *ref*; defaults to the forge), `components` (array of `{ item (*ref*), count (int) }`) — a crafting recipe (COBJ) |
-| `packages` | `editorId`, `template` (*ref* → a vanilla procedure template, e.g. Sandbox = `Skyrim.esm:0x01C254`, Travel = `Skyrim.esm:0x016FAA`, UseMagic = `Skyrim.esm:0x0504F5`), `flags` (array — `Package.Flag` names), `interruptFlags` (array — `HellosToPlayer`/`AllowIdleChatter`/`WorldInteractions`/…), `preferredSpeed` (`Walk`\|`Jog`\|`Run`\|`FastWalk`), `combatStyle` (*ref*, optional), `ownerQuest` (*ref*, optional), `schedule` (`{ month, dayOfWeek, date, hour, minute, durationInMinutes }`), `sandbox` / `travel` / `useMagic` / `follow` / `escort` (template-input subobjects — see below), `conditions` (array of CTDA gates — see *conditions* below; the engine runs the first package whose conditions pass, so e.g. a Follow package gated on `GetInFaction CurrentFollowerFaction==1` only activates after recruitment). An AI package; assign it to one or more NPCs via `npcs[].packages`. |
+| `packages` | `editorId`, `template` (*ref* → a vanilla procedure template, e.g. Sandbox = `Skyrim.esm:0x01C254`, Travel = `Skyrim.esm:0x016FAA`, UseMagic = `Skyrim.esm:0x0504F5`), `flags` (array — `Package.Flag` names), `interruptFlags` (array — `HellosToPlayer`/`AllowIdleChatter`/`WorldInteractions`/…), `preferredSpeed` (`Walk`\|`Jog`\|`Run`\|`FastWalk`), `combatStyle` (*ref*, optional), `ownerQuest` (*ref*, optional), `schedule` (`{ month, dayOfWeek, date, hour, minute, durationInMinutes }` — a time window `[hour, hour+durationInMinutes)`; `hour:-1` = any time), `sandbox` / `sleep` / `travel` / `useMagic` / `patrol` / `follow` / `escort` (template-input subobjects — see below), `conditions` (array of CTDA gates — see *conditions* below). An NPC's `packages` list is in **priority order**: the engine runs the first package whose schedule **and** conditions pass — so put scheduled/conditioned packages first and an unconditioned fallback last (e.g. a Sleep package scheduled 22:00–07:00 above an unconditioned Sandbox; or a Follow package gated on `GetInFaction CurrentFollowerFaction==1` above a downtime Sandbox). Assign to one or more NPCs via `npcs[].packages`. |
 | `combatStyles` | `editorId`, `offensiveMult`/`defensiveMult`/`groupOffensiveMult` (~aggression/blocking/group-boldness), `equipMultMelee`/`equipMultMagic`/`equipMultRanged`/`equipMultShout`/`equipMultUnarmed`/`equipMultStaff` (AI weapon-preference scores; for a mage NPC, push Magic high relative to the others — vanilla `csVampireMagic` uses 8.1/2.15/0.51), `avoidThreatChance` (0..1), `flags` (array — `Dueling`\|`Flanking`\|`AllowDualWielding`). An npc's `combatStyle` ref can point at one. |
 
 A field marked *ref* takes an in-spec `editorId` **or** `"<master>:0xFORMID"` (see
@@ -330,13 +330,14 @@ A `packages` entry is an AI package. Skyrim's PACK record is **template-driven**
 vanilla "procedure template" form via `template`, and that template defines the data input schema
 (slot indices + types). Our package fills in the inputs for the slots the template defines.
 
-ModForge currently implements three templates — **Sandbox** (`Skyrim.esm:0x01C254`), **Travel**
-(`Skyrim.esm:0x016FAA`), and **UseMagic** (`Skyrim.esm:0x0504F5`). Author the matching subobject
-(`sandbox` / `travel` / `useMagic`) and the build will fill that template's Data slots. To target
-a template ModForge doesn't yet handle (Patrol / Follow / Escort / UseWeapon / …), still set
-`template`; the package emits structurally valid but with no Data overrides (template defaults
-apply) and a warning. Use `packagediag <Skyrim.esm> <0xFORMID>` to discover any template's named
-slot schema before adding support.
+ModForge currently implements seven templates — **Sandbox** (`Skyrim.esm:0x01C254`), **Sleep**
+(`Skyrim.esm:0x019717`), **Travel** (`Skyrim.esm:0x016FAA`), **UseMagic** (`Skyrim.esm:0x0504F5`),
+**Patrol** (`Skyrim.esm:0x017723`), **Follow** (`Skyrim.esm:0x019B2C`), and **Escort**
+(`Skyrim.esm:0x023B73`). Author the matching subobject (`sandbox` / `sleep` / `travel` / `useMagic`
+/ `patrol` / `follow` / `escort`) and the build will fill that template's Data slots. To target a
+template ModForge doesn't yet handle (UseWeapon / …), still set `template`; the package emits
+structurally valid but with no Data overrides (template defaults apply) and a warning. Use
+`packagediag <Skyrim.esm> <0xFORMID>` to discover any template's named slot schema before adding support.
 
 **Sandbox at a specific ref vs Travel:** Sandbox's `location` ref makes the NPC wander/eat/sit
 **around** that ref (radius covers nearby furniture). Travel's `place` ref makes the NPC actually
