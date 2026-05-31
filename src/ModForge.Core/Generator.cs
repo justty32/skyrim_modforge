@@ -56,4 +56,5 @@ public sealed class BuildStats
     public int NewExteriorCells { get; init; }
     public int Regions { get; init; }
     public int EncounterZones { get; init; }
+    public int WordWalls { get; init; }
 }

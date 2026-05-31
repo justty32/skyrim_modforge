@@ -346,6 +346,53 @@ public static partial class Generator
                 (pl.Persistent || linkTarget ? cell.Persistent : cell.Temporary).Add(placedRec);
                 placed++;
             }
+
+            // Word-wall triggers: place a WordWallTrigger activator (vanilla 0x05095E unless
+            // overridden) at each word wall's location. The trigger is the physical thing the player
+            // walks into; its teaching quest + generated fragment (attached in AttachWordWallScripts)
+            // does the learning. Reuses the SAME interior/worldspace cell resolution as a placement;
+            // forced Persistent so a quest-relevant trigger isn't dropped across save/load.
+            foreach (var ww in spec.WordWalls)
+            {
+                ICell? cell;
+                if (!string.IsNullOrWhiteSpace(ww.Worldspace))
+                {
+                    int cx = PosToGrid(ww.Position.X), cy = PosToGrid(ww.Position.Y);
+                    cell = ExteriorCell(ww.Worldspace, cx, cy);
+                    if (cell is null) Warn($"  ! wordWall '{ww.EditorId}': worldspace '{ww.Worldspace}' unresolved — trigger skipped");
+                }
+                else if (LooksExternalRef(ww.Cell)) cell = VanillaCellOverride(ww.Cell);
+                else if (cellsByEd.TryGetValue(ww.Cell, out var inSpec)) cell = inSpec;
+                else { Warn($"  ! wordWall '{ww.EditorId}': cell '{ww.Cell}' not found — trigger skipped"); cell = null; }
+
+                if (cell is not null)
+                {
+                    var triggerBase = string.IsNullOrWhiteSpace(ww.TriggerBase) ? VanillaWordWallTrigger : ww.TriggerBase;
+                    if (!TryResolveRef(triggerBase, formKeyByEd, out var baseFk))
+                        Warn($"  ! wordWall '{ww.EditorId}': trigger base '{triggerBase}' unresolved — trigger skipped");
+                    else
+                    {
+                        var trigger = new PlacedObject(mod);
+                        trigger.Base.SetTo(baseFk);
+                        trigger.Placement = new Placement
+                        {
+                            Position = new Noggog.P3Float(ww.Position.X, ww.Position.Y, ww.Position.Z),
+                            Rotation = new Noggog.P3Float(Deg2Rad(ww.Rotation.X), Deg2Rad(ww.Rotation.Y), Deg2Rad(ww.Rotation.Z)),
+                        };
+                        var triggerEd = string.IsNullOrWhiteSpace(ww.TriggerEditorId) ? ww.EditorId + "Trigger" : ww.TriggerEditorId;
+                        if (!formKeyByEd.ContainsKey(triggerEd))
+                        {
+                            trigger.EditorID = triggerEd;
+                            formKeyByEd[triggerEd] = trigger.FormKey;
+                            recordsByEd[triggerEd] = trigger;
+                        }
+                        cell.Persistent.Add(trigger);   // a quest-relevant trigger must persist across save/load
+                        placed++;
+                    }
+                }
+                if (LooksExternalRef(ww.Shout)) extLinks++;
+                wordWallsBuilt++;
+            }
         }
 
         // --- pass 2: Linked References between placements (the Patrol route, etc.) ---

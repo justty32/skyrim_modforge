@@ -65,6 +65,7 @@ public static partial class Generator
         ctx.WireLeveledAndContainers();            // leveled-list entries + container contents
         ctx.WireRecipes();                         // COBJ createdObject/workbench/components
         ctx.AttachScripts();                       // VMAD Papyrus script attachment
+        ctx.AttachWordWallScripts();               // word-wall teaching-quest fragment (Shout/Word props)
         ctx.AttachDialogueResultScripts();         // INFO OnEnd result fragments (dialogue-pick scripts)
         ctx.WireDialogueConditions();              // extra CTDA gates on dialogue INFOs
         ctx.WireQuestStages();                     // QSDT log-entry CTDA + stage→objective fragment VMAD

@@ -157,7 +157,7 @@ internal static partial class Program
         $"{s.ScriptsAttached} script(s) attached; " +
         $"{s.Placements} placement(s) in {s.NewInteriorCells} new + {s.VanillaInteriorCells} vanilla interior cell(s) + " +
         $"{s.Worldspaces} worldspace(s) [{s.NewExteriorCells} new exterior cell(s)]; " +
-        $"{s.Regions} region(s); {s.EncounterZones} encounter zone(s))";
+        $"{s.Regions} region(s); {s.EncounterZones} encounter zone(s); {s.WordWalls} word wall(s))";
 
     // -------------------------------------------------------------------------------
     //  validate
@@ -259,8 +259,26 @@ internal static partial class Program
                     $"from {assetsSrc} -> [{string.Join(", ", br.CopiedFolders)}]");
         }
 
+        // 4) word-wall teaching fragments: ModForge GENERATES the .psc (no user source file). Write
+        //    each to Scripts/Source so the CK can compile it, and attempt a compile here too
+        //    (best-effort — the .psc is a compile-ready scaffold; the CK compile + binding + in-game
+        //    learning are UNCONFIRMED, see docs/lifelike/cookbook.md "Make a shout learnable").
+        int wordWallScripts = 0;
+        foreach (var ww in spec.WordWalls)
+        {
+            var scriptName = string.IsNullOrWhiteSpace(ww.ScriptName) ? ww.EditorId + "Script" : ww.ScriptName;
+            Directory.CreateDirectory(sourceDir);
+            var pscPath = Path.Combine(sourceDir, scriptName + ".psc");
+            File.WriteAllText(pscPath, Generator.GenerateWordWallScript(ww));
+            wordWallScripts++;
+            var cr = Papyrus.Compile(pscPath, scriptsDir);
+            if (cr.Success) { Console.WriteLine(cr.Message); compiled++; }
+            else Console.WriteLine($"  (word-wall script {scriptName}.psc written to Scripts/Source — CK compile pending: {cr.Message.Split('\n')[0]})");
+        }
+
         Console.WriteLine($"packaged -> {outModDir}  ({pluginName} + {compiled} compiled script(s)"
-            + (generated > 0 ? $" + {generated} generated fragment scaffold(s)" : "") + " under Scripts/)");
+            + (generated > 0 ? $" + {generated} generated fragment scaffold(s)" : "")
+            + (wordWallScripts > 0 ? $" + {wordWallScripts} word-wall fragment(s)" : "") + " under Scripts/)");
         return 0;
     }
 

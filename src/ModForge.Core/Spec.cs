@@ -60,6 +60,7 @@ public sealed class ModSpec
     public List<FurnitureSpec> Furniture { get; set; } = new();
     public List<SoundSpec> Sounds { get; set; } = new();
     public List<PerkSpec> Perks { get; set; } = new();
+    public List<WordWallSpec> WordWalls { get; set; } = new();
     // External-resource pipeline (see docs/external_assets.md): a source directory whose
     // `Meshes/`, `Textures/`, `Sounds/` (and loose `.hkx`) sub-trees `package` copies next to
     // the .esp so the packaged mod is self-contained / MO2-ready. ModForge REFERENCES + BUNDLES

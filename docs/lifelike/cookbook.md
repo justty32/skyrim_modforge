@@ -708,6 +708,59 @@ script — then objectives display on stage-set and the line advances the quest.
 the stage/journal data is real but objective-display + dialogue-advance are **structural only**
 (in-game-unconfirmed). Dialogue also only registers on a game **LOAD** — see [gotchas.md](gotchas.md).
 
+## "Make a shout learnable (word wall)" — SHOU + WOOP + word wall (STRUCTURAL only)
+
+A custom shout is record-correct but the player can never **use** it until they **learn** its words.
+Vanilla teaches a word at a word wall: a `WordWallTrigger` activator you walk into fires a script that
+grants the shout + teaches the word. ModForge emits all three layers — the shout, the trigger, and a
+teaching quest with a **generated** Papyrus fragment.
+
+```jsonc
+{ "magicEffects": [
+    { "editorId": "MF_ForgedVoiceEffect", "archetype": "Stagger",
+      "castType": "FireAndForget", "targetType": "Aimed", "flags": [ "NoHitEvent" ] } ],
+  "spells": [   // one Voice spell per charge level — spellType MUST be "Voice"
+    { "editorId": "MF_FV1", "name": "Forged Voice", "spellType": "Voice", "castType": "FireAndForget",
+      "targetType": "Aimed", "effects": [ { "magicEffect": "MF_ForgedVoiceEffect", "magnitude": 1 } ] },
+    { "editorId": "MF_FV2", "name": "Forged Voice", "spellType": "Voice", "castType": "FireAndForget",
+      "targetType": "Aimed", "effects": [ { "magicEffect": "MF_ForgedVoiceEffect", "magnitude": 2 } ] },
+    { "editorId": "MF_FV3", "name": "Forged Voice", "spellType": "Voice", "castType": "FireAndForget",
+      "targetType": "Aimed", "effects": [ { "magicEffect": "MF_ForgedVoiceEffect", "magnitude": 3 } ] } ],
+  "wordsOfPower": [
+    { "editorId": "MF_Dov", "name": "Dov", "translation": "Dragon" },
+    { "editorId": "MF_Ah",  "name": "Ah",  "translation": "Hunter" },
+    { "editorId": "MF_Vul", "name": "Vul", "translation": "Forged" } ],
+  "shouts": [
+    { "editorId": "MF_ForgedVoice", "name": "Forged Voice",
+      "words": [   // EXACTLY 3: word1 = tap, 1+2 = hold, 1+2+3 = full charge
+        { "word": "MF_Dov", "spell": "MF_FV1", "recoveryTime": 12 },
+        { "word": "MF_Ah",  "spell": "MF_FV2", "recoveryTime": 18 },
+        { "word": "MF_Vul", "spell": "MF_FV3", "recoveryTime": 25 } ] } ],
+  "wordWalls": [
+    { "editorId": "MF_ForgedVoiceWall", "name": "Forged Voice Word Wall",
+      "shout": "MF_ForgedVoice", "wordIndex": 1,           // teaches word 1 (MF_Dov, auto-derived)
+      "scriptName": "ForgedVoiceWordWallScript",
+      "cell": "Skyrim.esm:0x0371DE",                       // BleakFallsBarrow01 (the real UF wall is here)
+      "position": { "x": 0, "y": 0, "z": 0 } } ]           // CK-tune to sit at the wall
+}
+```
+
+`build` emits the SHOU (3 word slots → WOOP + Voice SPEL + recovery), the start-enabled teaching
+quest, and the WordWallTrigger placement. `package` additionally **writes the generated `.psc`** to
+`Scripts/Source/ForgedVoiceWordWallScript.psc` (and attempts a Wine compile). The fragment binds two
+VMAD object properties (`WordWallShout`, `WordWallWord`) that ModForge fills, and calls
+`Game.GetPlayer().AddShout(...)` + `Game.TeachWord(...)` / `UnlockWord(...)`.
+
+**Honest limits (verified STRUCTURALLY only — no Skyrim, can't run the game):**
+- The generated `.psc` is a **compile-ready scaffold**. It does compile to `.pex` under the Wine
+  Papyrus compiler here, but the **CK property-binding step and the in-game learning are UNCONFIRMED.**
+  In the CK you must confirm the trigger's instance script starts/owns the teaching quest (vanilla
+  wires `WordWallTriggerScript` on the placed trigger; this scaffold drives the learning from the
+  quest's `OnInit`/`TeachFromWall` instead — adapt to taste).
+- The blue **word-glow VFX** on the wall (the syllable lighting up) is a **CK/mesh + Imagespace**
+  concern — it is **not** emitted. Without it the trigger still teaches, just with no wall animation.
+- A **vanilla** shout (`shout` is an external ref) can't auto-derive its word — set `word` explicitly.
+
 ## "Custom sky" (WTHR + CLMT — atmosphere, not yet assigned)
 
 An eerie green-tinted fog weather plus a climate that cycles it. Full worked spec:

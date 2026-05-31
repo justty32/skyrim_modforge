@@ -49,7 +49,10 @@
     "climates": { "type": "array", "items": { "$ref": "#/$defs/climate" }, "description": "Climate (CLMT): a weather cycle + sunrise/sunset timing + sun/moon textures; references weathers" },
     "worldspaces": { "type": "array", "items": { "$ref": "#/$defs/worldspace" }, "description": "Worldspace (WRLD): a new exterior world (climate/water/parent/map). RECORD LAYER ONLY — terrain/LOD/navmesh stay CK-side." },
     "regions": { "type": "array", "items": { "$ref": "#/$defs/region" }, "description": "Region (REGN): an area inside a worldspace + its weather table (the climate hook)." },
-    "perks": { "type": "array", "items": { "$ref": "#/$defs/perk" }, "description": "Perk (PERK): a passive ability / stat-or-combat modifier; attach to an NPC via npc.perks" }
+    "perks": { "type": "array", "items": { "$ref": "#/$defs/perk" }, "description": "Perk (PERK): a passive ability / stat-or-combat modifier; attach to an NPC via npc.perks" },
+    "wordsOfPower": { "type": "array", "items": { "$ref": "#/$defs/wordOfPower" }, "description": "WordOfPower (WOOP): one dragon-language syllable; referenced by a shout's words[].word + a word wall's word" },
+    "shouts": { "type": "array", "items": { "$ref": "#/$defs/shout" }, "description": "Shout (SHOU): a dragon shout = up to 3 words, each a WOOP + a Voice SPEL. Unusable until learned at a word wall" },
+    "wordWalls": { "type": "array", "items": { "$ref": "#/$defs/wordWall" }, "description": "The learnable layer: a teaching quest + generated Papyrus fragment + WordWallTrigger placement that teaches a shout's word" }
   },
   "additionalProperties": false,
   "$defs": {
@@ -868,6 +871,52 @@
         "nextPerk": { "$ref": "#/$defs/ref", "description": "optional ref to the next perk in a rank chain" },
         "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "description": "perk-level CTDA gates" },
         "effects": { "type": "array", "items": { "$ref": "#/$defs/perkEffect" } }
+      }
+    },
+    "wordOfPower": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "description": "dragon-script glyph shown in the shout menu" },
+        "translation": { "type": "string", "description": "English gloss" }
+      }
+    },
+    "shoutWord": {
+      "type": "object",
+      "properties": {
+        "word": { "$ref": "#/$defs/ref", "description": "WOOP ref" },
+        "spell": { "$ref": "#/$defs/ref", "description": "SPEL ref — a Voice-type spell fired at this charge level" },
+        "recoveryTime": { "type": "number", "description": "cooldown in seconds" }
+      }
+    },
+    "shout": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "menuDisplayObject": { "$ref": "#/$defs/ref" },
+        "words": { "type": "array", "maxItems": 3, "items": { "$ref": "#/$defs/shoutWord" } }
+      }
+    },
+    "wordWall": {
+      "type": "object",
+      "required": ["editorId", "shout"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1, "description": "editorId of the generated teaching quest" },
+        "name": { "type": "string" },
+        "shout": { "$ref": "#/$defs/ref", "description": "SHOU ref the wall teaches" },
+        "wordIndex": { "type": "integer", "minimum": 1, "maximum": 3, "description": "which of the shout's 3 words to teach" },
+        "word": { "$ref": "#/$defs/ref", "description": "explicit WOOP ref; auto-derived from an in-spec shout's wordIndex, required for a vanilla shout" },
+        "scriptName": { "type": "string", "description": "generated fragment name; defaults to <editorId>Script" },
+        "triggerEditorId": { "type": "string" },
+        "triggerBase": { "$ref": "#/$defs/ref", "description": "ACTI base to place; defaults to vanilla WordWallTrigger Skyrim.esm:0x05095E" },
+        "cell": { "type": "string", "description": "interior: in-spec editorId or <master>:0xFORMID" },
+        "worldspace": { "type": "string", "description": "exterior worldspace ref; position is world-space" },
+        "position": { "$ref": "#/$defs/vec3" },
+        "rotation": { "$ref": "#/$defs/vec3" }
       }
     }
   }

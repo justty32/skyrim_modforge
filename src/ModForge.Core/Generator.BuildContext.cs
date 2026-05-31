@@ -67,6 +67,7 @@ public static partial class Generator
         private int worldspaceCount, exteriorNewCells;
         private int scriptsAttached;
         private int worldspacesBuilt, regionsBuilt;
+        private int wordWallsBuilt;
 
         public BuildContext(ModSpec spec, ModKey outputKey, BuildOptions? options)
         {
@@ -196,7 +197,7 @@ public static partial class Generator
                         + spec.Outfits.Count + spec.Statics.Count + spec.Activators.Count
                         + spec.MagicEffects.Count + spec.Classes.Count + spec.Packages.Count
                         + spec.CombatStyles.Count + spec.Relationships.Count + spec.Recipes.Count
-                        + spec.WordsOfPower.Count + spec.Shouts.Count
+                        + spec.WordsOfPower.Count + spec.Shouts.Count + spec.WordWalls.Count
                         + spec.Enchantments.Count + spec.TextureSets.Count
                         + spec.Weathers.Count + spec.Climates.Count
                         + spec.EncounterZones.Count
@@ -226,6 +227,7 @@ public static partial class Generator
                     NewExteriorCells = exteriorNewCells,
                     Regions = regionsBuilt,
                     EncounterZones = spec.EncounterZones.Count,
+                    WordWalls = wordWallsBuilt,
                 },
             };
         }

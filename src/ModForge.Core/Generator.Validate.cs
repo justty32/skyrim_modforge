@@ -66,6 +66,14 @@ public static partial class Generator
         foreach (var rel in spec.Relationships) Reg(rel.EditorId, "relationship");
         foreach (var w in spec.WordsOfPower) Reg(w.EditorId, "wordOfPower");
         foreach (var sh in spec.Shouts) Reg(sh.EditorId, "shout");
+        // Word walls emit a teaching quest under their editorId AND a trigger REFR under
+        // <editorId>Trigger (or triggerEditorId) — both must be unique across the spec.
+        foreach (var ww in spec.WordWalls)
+        {
+            Reg(ww.EditorId, "wordWall (teaching quest)");
+            var triggerEd = string.IsNullOrWhiteSpace(ww.TriggerEditorId) ? ww.EditorId + "Trigger" : ww.TriggerEditorId;
+            if (!string.IsNullOrWhiteSpace(triggerEd)) Reg(triggerEd, "wordWall trigger placement");
+        }
         foreach (var e in spec.Enchantments) Reg(e.EditorId, "enchantment");
         foreach (var tx in spec.TextureSets) Reg(tx.EditorId, "textureSet");
         foreach (var w in spec.Weathers) Reg(w.EditorId, "weather");
@@ -830,6 +838,40 @@ public static partial class Generator
                 else CheckRef(ws.Spell, $"shout '{sh.EditorId}' word[{i}] spell");
                 if (ws.RecoveryTime < 0) problems.Add($"shout '{sh.EditorId}' word[{i}] recoveryTime {ws.RecoveryTime} is negative");
             }
+        }
+
+        // WordWall: the teaching layer. shout must resolve (in-spec SHOU or vanilla); wordIndex 1-3;
+        // an explicit `word` (if given) resolves, else it's auto-derived from the in-spec shout's
+        // wordIndex (so a vanilla-shout wall MUST set `word` explicitly). Trigger placement is the
+        // same interior/worldspace contract as a `placement`. triggerBase (if set) is a ref.
+        foreach (var ww in spec.WordWalls)
+        {
+            if (string.IsNullOrWhiteSpace(ww.Shout)) problems.Add($"wordWall '{ww.EditorId}' has empty shout ref");
+            else CheckRef(ww.Shout, $"wordWall '{ww.EditorId}' shout");
+            if (ww.WordIndex is < 1 or > 3)
+                problems.Add($"wordWall '{ww.EditorId}' wordIndex {ww.WordIndex} out of range (1, 2, or 3)");
+            CheckRef(ww.Word, $"wordWall '{ww.EditorId}' word");
+            CheckRef(ww.TriggerBase, $"wordWall '{ww.EditorId}' triggerBase");
+            // A vanilla-shout wall (external ref) can't auto-derive its word — require an explicit one.
+            if (LooksExternalRef(ww.Shout) && string.IsNullOrWhiteSpace(ww.Word))
+                problems.Add($"wordWall '{ww.EditorId}' teaches a vanilla/external shout but has no explicit `word` — set `word` to the WOOP it should teach (can't derive from an out-of-spec shout)");
+            // An in-spec word wall whose derived word slot doesn't exist would attach no WordWallWord.
+            if (!LooksExternalRef(ww.Shout) && string.IsNullOrWhiteSpace(ww.Word))
+            {
+                var sh = spec.Shouts.FirstOrDefault(s => string.Equals(s.EditorId, ww.Shout, StringComparison.OrdinalIgnoreCase));
+                if (sh is not null && (ww.WordIndex < 1 || ww.WordIndex > sh.Words.Count))
+                    problems.Add($"wordWall '{ww.EditorId}' wordIndex {ww.WordIndex} has no matching word in shout '{ww.Shout}' (it defines {sh.Words.Count}) — set `word` explicitly or add the word");
+            }
+            // Trigger location: worldspace XOR cell, validated like a placement.
+            if (!string.IsNullOrWhiteSpace(ww.Worldspace))
+            {
+                if (!LooksExternalRef(ww.Worldspace) || !TryExternalRef(ww.Worldspace, out _))
+                    problems.Add($"wordWall '{ww.EditorId}' worldspace '{ww.Worldspace}' must be a well-formed external <master>:0xFORMID ref");
+            }
+            else if (string.IsNullOrWhiteSpace(ww.Cell)) problems.Add($"wordWall '{ww.EditorId}' has empty cell (and no worldspace — the trigger needs a location)");
+            else if (LooksExternalRef(ww.Cell))
+            { if (!TryExternalRef(ww.Cell, out _)) problems.Add($"wordWall '{ww.EditorId}' malformed external cell ref '{ww.Cell}'"); }
+            else if (!cellIds.Contains(ww.Cell)) problems.Add($"wordWall '{ww.EditorId}' references unknown cell '{ww.Cell}' (in-spec cell editorId or <master>:0xFORMID)");
         }
 
         return problems;

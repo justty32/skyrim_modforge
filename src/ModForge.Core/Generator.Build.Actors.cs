@@ -65,6 +65,19 @@ public static partial class Generator
                 }
                 if (!string.IsNullOrEmpty(q.EditorId)) questsByEd[q.EditorId] = r;
             }
+
+            // Word-wall teaching quests: one start-enabled QUEST per word wall, hosting the generated
+            // teaching fragment (the shout/word are bound on it in the script pass). StartGameEnabled
+            // so its OnInit-driven fragment is live the moment the trigger starts it.
+            foreach (var ww in spec.WordWalls)
+            {
+                if (string.IsNullOrWhiteSpace(ww.EditorId)) continue;
+                var r = mod.Quests.AddNew();
+                r.EditorID = ww.EditorId;
+                if (!string.IsNullOrEmpty(ww.Name)) r.Name = ww.Name;
+                r.Flags |= Quest.Flag.StartGameEnabled;
+                questsByEd[ww.EditorId] = r;
+            }
         }
 
         // --- pass 2: NPC cross-record refs (race/class/outfit/voice/crime/combatStyle/spells/factions) ---
