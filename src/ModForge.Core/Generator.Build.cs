@@ -31,6 +31,7 @@ public static partial class Generator
         ctx.BuildEnchantments();                   // ObjectEffect (ENCH) scalar records
         ctx.BuildShouts();                         // WordOfPower (WOOP) + Shout (SHOU) scalar records
         ctx.BuildConsumablesGearAndMessages();     // Potion, Armor, Faction, Relationship, Class, Message
+        ctx.BuildPerks();                          // Perk (PERK) trunk scalar fields
         ctx.BuildLongTailItems();                  // Ingredient..Activator (scalar fields)
         ctx.BuildTextureSets();                    // TextureSet (TXST) retexture map paths
         ctx.BuildListsContainersStylesPackages();  // LeveledItem/Npc, Container, Recipe, CombatStyle, Package
@@ -49,6 +50,7 @@ public static partial class Generator
         ctx.WireEffects();                         // magic effects on spell/potion/ingredient/scroll (+ spell equipType)
         ctx.WireEnchantments();                    // ENCH effects + weapon/armor enchantment FormLinks
         ctx.WireMagicEffectRefs();                 // MGEF association/projectile/art/explosion
+        ctx.WirePerks();                           // PERK effects/conditions/nextPerk + npc perk grants
         ctx.WireWeatherAndClimateLinks();          // WTHR precipitation + CLMT weather FormLinks
         ctx.WireShouts();                          // SHOU MenuDisplayObject + per-row Word (WOOP) + Spell (SPEL)
         ctx.BuildPackageData();                    // PACK template dispatch (sandbox/travel/usemagic/patrol/follow/escort)

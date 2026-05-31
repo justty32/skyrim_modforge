@@ -47,6 +47,8 @@ internal static partial class Program
                     Console.WriteLine($"      faction -> {Ref(f.Faction.FormKey)} (rank {f.Rank})");
                 foreach (var pkg in npc.Packages)
                     Console.WriteLine($"      package -> {Ref(pkg.FormKey)}");
+                if (npc.Perks is { Count: > 0 } perks)
+                    foreach (var perkPlace in perks) Console.WriteLine($"      perk -> {Ref(perkPlace.Perk.FormKey)} (rank {perkPlace.Rank})");
             }
 
             if (r is IKeywordedGetter<IKeywordGetter> kwd && kwd.Keywords is { Count: > 0 } kws)
@@ -334,6 +336,24 @@ internal static partial class Program
                     Console.WriteLine($"      merchantContainer -> {Ref(fact.MerchantContainer.FormKey)}");
                 if (fact.VendorLocation is { } vloc && vloc.Target is ILocationTargetGetter lt && !lt.Link.FormKey.IsNull)
                     Console.WriteLine($"      vendorLocation -> {Ref(lt.Link.FormKey)} (radius {vloc.Radius})");
+            }
+
+            if (r is IPerkGetter prk)
+            {
+                Console.WriteLine($"      perk: playable={prk.Playable} hidden={prk.Hidden} trait={prk.Trait} level={prk.Level} ranks={prk.NumRanks}"
+                    + (prk.NextPerk.FormKey.IsNull ? "" : $" next={Ref(prk.NextPerk.FormKey)}")
+                    + $" conditions={prk.Conditions.Count} effects={prk.Effects.Count}");
+                foreach (var e in prk.Effects)
+                {
+                    if (e is IPerkAbilityEffectGetter ab)
+                        Console.WriteLine($"        effect[ability] rank={ab.Rank} prio={ab.Priority} -> {Ref(ab.Ability.FormKey)} conds={ab.Conditions.Count}");
+                    else if (e is IPerkEntryPointModifyValueGetter mv)
+                        Console.WriteLine($"        effect[entryPoint] {mv.EntryPoint} {mv.Modification} {mv.Value} (rank={mv.Rank} prio={mv.Priority} conds={mv.Conditions.Count})");
+                    else if (e is IAPerkEntryPointEffectGetter ep)
+                        Console.WriteLine($"        effect[entryPoint] {ep.EntryPoint} ({e.GetType().Name})");
+                    else
+                        Console.WriteLine($"        effect[{e.GetType().Name}]");
+                }
             }
 
             if (r is IRelationshipGetter rel)

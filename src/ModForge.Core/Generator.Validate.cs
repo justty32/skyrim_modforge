@@ -75,6 +75,7 @@ public static partial class Generator
         foreach (var ez in spec.EncounterZones) Reg(ez.EditorId, "encounterZone");
         foreach (var fn in spec.Furniture) Reg(fn.EditorId, "furniture");
         foreach (var sd in spec.Sounds) Reg(sd.EditorId, "sound");
+        foreach (var pk in spec.Perks) Reg(pk.EditorId, "perk");
         foreach (var pl in spec.Placements) if (!string.IsNullOrWhiteSpace(pl.EditorId)) Reg(pl.EditorId, "placement");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
@@ -521,6 +522,76 @@ public static partial class Generator
         }
         foreach (var n in spec.Npcs)
             foreach (var pkgRef in n.Packages) CheckRef(pkgRef, $"npc '{n.EditorId}' package");
+        foreach (var n in spec.Npcs)
+            foreach (var perkRef in n.Perks) CheckRef(perkRef, $"npc '{n.EditorId}' perk");
+
+        // One CTDA condition (the SHARED ConditionSpec): function must be supported; comparison must
+        // parse (symbol or enum name); the function's required parameter (param ref / actorValue /
+        // itemType) must be present + valid.
+        bool ValidComparison(string cmp) => string.IsNullOrEmpty(cmp)
+            || cmp is "==" or "=" or "!=" or ">" or ">=" or "<" or "<="
+            || Enum.TryParse<CompareOperator>(cmp, true, out _);
+        void CheckCondition(ConditionSpec cs, string what)
+        {
+            if (string.IsNullOrWhiteSpace(cs.Function)) { problems.Add($"{what}: condition has empty function"); return; }
+            if (!SupportedConditionFunctions.Contains(cs.Function))
+                problems.Add($"{what}: unsupported condition function '{cs.Function}'");
+            if (!ValidComparison(cs.Comparison))
+                problems.Add($"{what}: invalid comparison '{cs.Comparison}' (== != > >= < <= or the CompareOperator enum names)");
+            if (!string.IsNullOrEmpty(cs.RunOn) && !Enum.TryParse<Condition.RunOnType>(cs.RunOn, true, out _))
+                problems.Add($"{what}: invalid runOn '{cs.RunOn}' (Subject|Target|Reference|CombatTarget|...)");
+            // Per-function required parameter.
+            switch (cs.Function.ToLowerInvariant())
+            {
+                case "getbaseactorvalue":
+                case "getactorvalue":
+                case "getactorvaluepercent":
+                    if (string.IsNullOrWhiteSpace(cs.ActorValue)) problems.Add($"{what}: {cs.Function} needs an actorValue");
+                    else CheckEnum<ActorValue>(cs.ActorValue, $"{what} actorValue");
+                    break;
+                case "haskeyword": case "wornhaskeyword": case "hasperk": case "getisid":
+                case "getisrace": case "getitemcount": case "isspelltarget": case "getinfaction":
+                case "getglobalvalue": case "getstage": case "getrelationshiprank":
+                    if (string.IsNullOrWhiteSpace(cs.Param)) problems.Add($"{what}: {cs.Function} needs a param ref");
+                    else CheckRef(cs.Param, $"{what} param");
+                    break;
+                case "getequippeditemtype":
+                    if (!string.IsNullOrEmpty(cs.ItemType)) CheckEnum<CastSource>(cs.ItemType, $"{what} itemType");
+                    break;
+            }
+        }
+
+        var perkEntryTypes = new HashSet<string>(
+            Enum.GetNames<APerkEntryPointEffect.EntryType>(), StringComparer.OrdinalIgnoreCase);
+        foreach (var pk in spec.Perks)
+        {
+            if (string.IsNullOrWhiteSpace(pk.Name)) problems.Add($"perk '{pk.EditorId}' has empty name");
+            if (pk.NumRanks < 1) problems.Add($"perk '{pk.EditorId}' numRanks must be >= 1 (got {pk.NumRanks})");
+            CheckRef(pk.NextPerk, $"perk '{pk.EditorId}' nextPerk");
+            foreach (var cs in pk.Conditions) CheckCondition(cs, $"perk '{pk.EditorId}' condition");
+            if (pk.Effects.Count == 0) problems.Add($"perk '{pk.EditorId}' has no effects (a perk with no effects does nothing)");
+            foreach (var es in pk.Effects)
+            {
+                var kind = (es.Kind ?? "").ToLowerInvariant();
+                if (kind == "ability")
+                {
+                    if (string.IsNullOrWhiteSpace(es.Spell)) problems.Add($"perk '{pk.EditorId}' ability effect has empty spell ref");
+                    else CheckRef(es.Spell, $"perk '{pk.EditorId}' ability effect spell");
+                }
+                else if (kind == "entrypoint")
+                {
+                    if (string.IsNullOrWhiteSpace(es.EntryPoint)) problems.Add($"perk '{pk.EditorId}' entryPoint effect has empty entryPoint");
+                    else if (!perkEntryTypes.Contains(es.EntryPoint))
+                        problems.Add($"perk '{pk.EditorId}' entryPoint effect has unknown entryPoint '{es.EntryPoint}' (e.g. ModAttackDamage, ModSpellMagnitude, CalculateMyCriticalHitChance)");
+                    if (!string.IsNullOrEmpty(es.Function)
+                        && es.Function.ToLowerInvariant() is not ("set" or "add" or "multiply" or "mult"))
+                        problems.Add($"perk '{pk.EditorId}' entryPoint effect has invalid function '{es.Function}' (Set|Add|Multiply)");
+                }
+                else
+                    problems.Add($"perk '{pk.EditorId}' effect has invalid kind '{es.Kind}' (ability|entryPoint)");
+                foreach (var cs in es.Conditions) CheckCondition(cs, $"perk '{pk.EditorId}' effect condition");
+            }
+        }
 
         // TextureSet (TXST): a texture-map path must be a `.dds` string RELATIVE TO Data\Textures\
         // (the slot's implicit root — exactly how vanilla TXSTs and ModForge's `model` field store

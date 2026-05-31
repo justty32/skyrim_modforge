@@ -112,10 +112,11 @@ public sealed class ScenePhaseSpec
 public sealed class ConditionSpec
 {
     public string Function { get; set; } = "";
-    public string Comparison { get; set; } = ">=";   // == | != | > | >= | < | <=
+    public string Comparison { get; set; } = ">=";   // == | != | > | >= | < | <=  (also accepts EqualTo/GreaterThan/… names)
     public float Value { get; set; }
-    public string Param { get; set; } = "";           // the function's form argument (a ref)
-    public string ActorValue { get; set; } = "";       // the ActorValue name for GetActorValue (e.g. WaitingForPlayer)
+    public string Param { get; set; } = "";           // the function's form argument (a ref — faction/item/global/perk/keyword/npc/race/…)
+    public string ActorValue { get; set; } = "";       // the ActorValue name for GetActorValue/GetBaseActorValue (e.g. WaitingForPlayer, Destruction)
+    public string ItemType { get; set; } = "";         // CastSource for GetEquippedItemType (Left | Right | Voice | Instant)
     public string RunOn { get; set; } = "Subject";     // Subject | Target | Reference | CombatTarget | ...
     public string Reference { get; set; } = "";        // the ref read when RunOn=Reference (e.g. player Skyrim.esm:0x000014)
     public bool Or { get; set; }                        // OR with the NEXT condition (default AND)

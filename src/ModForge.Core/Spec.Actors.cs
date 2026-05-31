@@ -33,6 +33,11 @@ public sealed class NpcSpec
     // menu, so the player topics never surface (you just get voicetype mumbles). Empty => a neutral
     // default line is used so the NPC still works.
     public string Greeting { get; set; } = "";
+    // Perks (PERK refs) granted to this NPC — populates npc.Perks (each as a PerkPlacement with the
+    // perk's NumRanks). For an NPC, a perk's entry-point/ability effects apply passively (e.g. a
+    // +damage entry-point perk makes the actor hit harder); this is how vanilla races/NPCs carry
+    // their innate ability perks. Player perks are normally granted by script/AddPerk, NOT here.
+    public List<string> Perks { get; set; } = new();
 }
 // Faction (FACT): a named group an NPC can belong to. `vendor` (optional) turns this into a
 // MERCHANT faction — the engine treats any NPC who is a member of a Vendor-flagged faction (with

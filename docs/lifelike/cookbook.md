@@ -628,6 +628,50 @@ Verify structurally: `factdiag <plugin> 0x000804` and diff against vanilla Belet
 **Whether the barter menu actually opens needs a Proton/Skyrim launch** (the reachable-NPC +
 load-registration rules from the conversational-NPC recipe apply).
 
+## "Passive perk on an NPC" (PERK — ability + entry-point)
+
+Two perk shapes, both attachable to an NPC via `npcs[].perks` (the actor gains them at game start):
+
+```jsonc
+{ "magicEffects": [
+    { "editorId": "MF_IronHideMgef", "archetype": "ValueModifier", "actorValue": "DamageResist",
+      "castType": "ConstantEffect", "targetType": "Self",
+      "flags": [ "Recover", "NoArea", "NoDuration", "HideInUI" ] }   // a constant-effect fortify
+  ],
+  "spells": [
+    { "editorId": "MF_IronHideAbility", "name": "Iron Hide", "spellType": "Ability",
+      "castType": "ConstantEffect", "targetType": "Self",
+      "effects": [ { "magicEffect": "MF_IronHideMgef", "magnitude": 50 } ] }
+  ],
+  "perks": [
+    // (a) ability perk — grants the constant-effect SPEL above
+    { "editorId": "MF_IronHidePerk", "name": "Iron Hide", "numRanks": 1,
+      "effects": [ { "kind": "ability", "spell": "MF_IronHideAbility" } ] },
+    // (b) entry-point perk — +20% attack damage when wielding a sword, available at One-Handed 30
+    { "editorId": "MF_DeadlyStrikesPerk", "name": "Deadly Strikes", "numRanks": 1,
+      "conditions": [
+        { "function": "GetBaseActorValue", "actorValue": "OneHanded",
+          "comparison": "GreaterThanOrEqualTo", "value": 30 } ],
+      "effects": [
+        { "kind": "entryPoint", "entryPoint": "ModAttackDamage", "function": "Multiply", "value": 1.2,
+          "conditions": [
+            { "function": "WornHasKeyword", "param": "Skyrim.esm:0x01E711",   // WeapTypeSword
+              "comparison": "EqualTo", "value": 1 } ] } ] }
+  ],
+  "npcs": [
+    { "editorId": "MF_PerkGuard", "name": "Hardened Guard", "race": "Skyrim.esm:0x013746",
+      "perks": [ "MF_IronHidePerk", "MF_DeadlyStrikesPerk" ] }
+  ] }
+```
+
+- Discover entry-point names + a vanilla shape to copy: `perkdiag <Skyrim.esm> entrypoints` and
+  `perkdiag <Skyrim.esm> 0x079343` (Armsman20). Verify your output with `dump` / `perkdiag <out.esp> <id>`.
+- **Player perks** are NOT record-only: grant them with a Papyrus `AddPerk` call (a `scripts` quest
+  fragment). The NPC path above is fully record-authorable.
+- Structurally these emit exactly like vanilla perks; whether the modifier actually moves combat
+  numbers in-game needs a real Skyrim launch to confirm (structural-only here). Full example:
+  [`../../examples/perk_spec.json`](../../examples/perk_spec.json).
+
 ## "Custom sky" (WTHR + CLMT — atmosphere, not yet assigned)
 
 An eerie green-tinted fog weather plus a climate that cycles it. Full worked spec:

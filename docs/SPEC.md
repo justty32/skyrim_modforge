@@ -67,7 +67,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `books` | `editorId`, `name`, `text` (book body), `template` (*ref* → a vanilla BOOK to clone a model from — a takeable/readable book NEEDS one or it CRASHES on 3D-read), `value` (int; 0 ⇒ keep template's), `weight` (number; 0 ⇒ keep template's), `flags` (array of `Book.Flag` names, e.g. `CantBeTaken`), `teaches` (optional — a *teaching* book; see below) |
 | `books[].teaches` | `{ "kind": "spell", "spell": <ref> }` — a **spell tome** that grants a SPEL on first read (`spell` is an in-spec spell editorId OR a vanilla `<master>:0xFORMID`); OR `{ "kind": "skill", "skill": <name> }` — a **skill book** that raises a `Skill` (e.g. `Destruction`, `OneHanded`, `Smithing`) on first read; OR omit ⇒ a plain book (teaches nothing). A teaching book must have a `template`. |
 | `weapons` | `editorId`, `name`, `value`, `weight`, `damage` (int≥0), `speed` (number), `reach` (number), `keywords` (array of *refs*), `enchantment` (*ref* → ENCH, in-spec or vanilla `<master>:0xFORMID`), `enchantmentAmount` (int — the weapon's charge pool, e.g. 1500–3000; 0 = engine auto-calc), `template` (vanilla WEAP ref — clones model/anim/equip; needed to avoid an equip CRASH), `model` (custom world-mesh `.nif` path — pair WITH `template`), `pickUpSound`/`putDownSound` (SNDR *refs*) |
-| `npcs` | `editorId`, `name`, `factions` (array of *refs*), `race` (*ref*), `class` (*ref*), `outfit` (*ref* → DefaultOutfit), `level` (int), `autoCalcStats` (bool — derive H/M/S + skills from level + class), `packages` (array of *refs* → PACK; the NPC's AI package list, evaluated in order), `voiceType` (*ref* → VTYP), `crimeFaction` (*ref* → FACT; city-citizen identity, required for cross-cell Travel), `unique` (bool — one-off actor, helps engine AI tracking), `combatStyle` (*ref* → CSTY; HOW the AI fights), `spells` (array of *refs* → SPEL; the AI's spell list), `greeting` (string — the Hello line; when this NPC has custom `dialogue`, a Hello info is auto-emitted so it's conversable. Empty ⇒ a default line) |
+| `npcs` | `editorId`, `name`, `factions` (array of *refs*), `race` (*ref*), `class` (*ref*), `outfit` (*ref* → DefaultOutfit), `level` (int), `autoCalcStats` (bool — derive H/M/S + skills from level + class), `packages` (array of *refs* → PACK; the NPC's AI package list, evaluated in order), `voiceType` (*ref* → VTYP), `crimeFaction` (*ref* → FACT; city-citizen identity, required for cross-cell Travel), `unique` (bool — one-off actor, helps engine AI tracking), `combatStyle` (*ref* → CSTY; HOW the AI fights), `spells` (array of *refs* → SPEL; the AI's spell list), `perks` (array of *refs* → PERK; granted to the actor as passive ability/entry-point perks at game start), `greeting` (string — the Hello line; when this NPC has custom `dialogue`, a Hello info is auto-emitted so it's conversable. Empty ⇒ a default line) |
 | `quests` | `editorId`, `name`, `objectives` (array of `{ index (int), text }`) |
 | `dialogue` | `editorId`, `questEditorId`, `speakerNpcEditorId` (optional), `prompt`, `responses` (array of strings), `emotion` (optional — `Neutral`\|`Anger`\|`Disgust`\|`Fear`\|`Sad`\|`Happy`\|`Surprise`), `emotionValue` (0–100). Optional **result fragment** (runs when the line is picked): `resultScript` (Scriptname, `Extends TopicInfo`, `Fragment_0`), `resultScriptSource` (`.psc`), `resultProperties` (bound props), `goodbye` (bool — close menu after). Build wires the full chain (Quest→DialogView→Branch→Topic→INFO + a Hello) — see the dialogue section below |
 | `banter` | `editorId` (optional), `questEditorId`, `speakerNpcEditorId`, `responses` (array of strings — one unprompted comment), `emotion`/`emotionValue`, `conditions` (situational CTDA gates). Proactive (NPC-initiated) lines; entries sharing a (speaker, quest) merge into one ambient Misc/`IDLE` topic with Random INFOs. Needs the speaker to have idle chatter enabled (a Sandbox/follow package). See the *banter* section below |
@@ -100,6 +100,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `packages` | `editorId`, `template` (*ref* → a vanilla procedure template, e.g. Sandbox = `Skyrim.esm:0x01C254`, Travel = `Skyrim.esm:0x016FAA`, UseMagic = `Skyrim.esm:0x0504F5`), `flags` (array — `Package.Flag` names), `interruptFlags` (array — `HellosToPlayer`/`AllowIdleChatter`/`WorldInteractions`/…), `preferredSpeed` (`Walk`\|`Jog`\|`Run`\|`FastWalk`), `combatStyle` (*ref*, optional), `ownerQuest` (*ref*, optional), `schedule` (`{ month, dayOfWeek, date, hour, minute, durationInMinutes }` — a time window `[hour, hour+durationInMinutes)`; `hour:-1` = any time), `sandbox` / `sleep` / `travel` / `useMagic` / `patrol` / `follow` / `escort` (template-input subobjects — see below), `conditions` (array of CTDA gates — see *conditions* below). An NPC's `packages` list is in **priority order**: the engine runs the first package whose schedule **and** conditions pass — so put scheduled/conditioned packages first and an unconditioned fallback last (e.g. a Sleep package scheduled 22:00–07:00 above an unconditioned Sandbox; or a Follow package gated on `GetInFaction CurrentFollowerFaction==1` above a downtime Sandbox). Assign to one or more NPCs via `npcs[].packages`. |
 | `combatStyles` | `editorId`, `offensiveMult`/`defensiveMult`/`groupOffensiveMult` (~aggression/blocking/group-boldness), `equipMultMelee`/`equipMultMagic`/`equipMultRanged`/`equipMultShout`/`equipMultUnarmed`/`equipMultStaff` (AI weapon-preference scores; for a mage NPC, push Magic high relative to the others — vanilla `csVampireMagic` uses 8.1/2.15/0.51), `avoidThreatChance` (0..1), `flags` (array — `Dueling`\|`Flanking`\|`AllowDualWielding`). An npc's `combatStyle` ref can point at one. |
 | `encounterZones` | `editorId`, `minLevel` (0–255), `maxLevel` (0–255; **0 = uncapped**, scales with the player), `rank` (int, owner rank), `owner` (*ref* → FACT/NPC, optional), `location` (*ref* → LCTN, optional), `flags` (array — `NeverResets`\|`MatchPcBelowMinimumLevel`\|`DisableCombatBoundary`). A cell's / placed spawn's `encounterZone` points at one. |
+| `perks` | `editorId`, `name`, `description`, `playable`/`hidden`/`trait` (bool trunk flags), `level` (int), `numRanks` (int, ≥1), `nextPerk` (*ref*, optional rank chain), `conditions` (array — perk-level CTDA gates), `effects` (array — `ability` or `entryPoint`; see *perks (PERK)* below). A passive ability / stat-or-combat modifier. Attach to an NPC via `npcs[].perks`. |
 | `textureSets` | `editorId`, eight optional `.dds` slot paths — `diffuse`, `normal`, `mask`, `glow`, `height`, `environment`, `multilayer`, `backlight` — each **relative to `Data\Textures\`** (omit the leading `Textures\`), `flags` (array — `NoSpecularMap`\|`FaceGenTextures`\|`HasModelSpaceNormalMap`). A TXST retextures an existing mesh; wire it via a record's `alternateTextures`. See the *textureSets* section below. |
 | `weathers` | `editorId`, `flags` (array — `Pleasant`\|`Cloudy`\|`Rainy`\|`Snow`\|`SkyStaticsAlwaysVisible`\|`SkyStaticsFollowsSunPosition`), per-time-of-day *colours* (`skyUpperColor`/`skyLowerColor`/`fogNearColor`/`fogFarColor`/`horizonColor`/`cloudColor`/`sunColor`/`sunlightColor`/`ambientColor`/`starsColor`), `clouds` (array of `{ index (0–31), texture, xSpeed, ySpeed, colors, alphaSunrise/Day/Sunset/Night }`), `precipitation` (*ref* → SPGD), `windSpeed` (0–1 or 0–100), `windDirection`/`windDirectionRange` (degrees), `fogDayNear`/`fogDayFar`/`fogNightNear`/`fogNightFar` (world units), `transitionDelta`. A custom sky — see the section below |
 | `climates` | `editorId`, `weathers` (array of `{ weather (*ref* → WTHR), chance (int weight) }`), `sunriseBegin`/`sunriseEnd`/`sunsetBegin`/`sunsetEnd` (`"HH:MM"` 24h), `sunTexture`/`sunGlareTexture` (Textures-relative paths), `moons` (array — `Masser`\|`Secunda`), `phaseLength` (int), `volatility` (0–255). A weather cycle — see the section below |
@@ -590,6 +591,53 @@ smelter (`createdObject` = the output ingot, component = the ore/item consumed).
 
 Common bench keyword FormIDs (probed from Skyrim.esm): `0x088105` forge, `0x0ADB78` armor table,
 `0x088108` sharpening wheel, `0x0A5CCE` smelter, `0x07866A` tanning rack, `0x0F46CE` Skyforge.
+
+### perks (PERK)
+A perk is a passive ability or a quantitative stat/combat modifier — the building block of the skill
+trees, race abilities, and quest-reward bonuses. The trunk carries `name`/`description`, the
+`playable`/`hidden`/`trait` flags, `level` + `numRanks` (≥1), optional player-facing `conditions`
+(perk-level CTDA gates), and a list of `effects`. Two effect kinds are supported:
+
+```jsonc
+{ "editorId": "MF_IronHidePerk", "name": "Iron Hide", "numRanks": 1,
+  "effects": [
+    // (a) ABILITY — grant a SPEL. Pair with an in-spec Ability/constant-effect spell + MGEF.
+    { "kind": "ability", "spell": "MF_IronHideAbility" } ] }
+
+{ "editorId": "MF_DeadlyStrikesPerk", "name": "Deadly Strikes", "numRanks": 1,
+  "conditions": [   // perk-level gate (when the perk applies at all)
+    { "function": "GetBaseActorValue", "actorValue": "OneHanded",
+      "comparison": "GreaterThanOrEqualTo", "value": 30 } ],
+  "effects": [
+    // (b) ENTRY-POINT — a quantitative modifier on a named EntryPoint.
+    { "kind": "entryPoint",
+      "entryPoint": "ModAttackDamage",      // an EntryType name
+      "function": "Multiply",               // Set | Add | Multiply
+      "value": 1.2,                          // ×1.2 = +20%
+      "conditions": [                        // effect-level gate (when the bonus fires)
+        { "function": "WornHasKeyword", "param": "Skyrim.esm:0x01E711",  // WeapTypeSword
+          "comparison": "EqualTo", "value": 1 } ] } ] }
+```
+
+- **`entryPoint`** is one of Skyrim's `EntryType` values — `ModAttackDamage`, `ModSpellMagnitude`,
+  `CalculateMyCriticalHitChance`, `ModArmorRating`, `GetMaxCarryWeight`, … Discover the full set with
+  `perkdiag <Skyrim.esm> entrypoints`, or dump a vanilla perk to copy a working shape:
+  `perkdiag <Skyrim.esm> 0x079343` (Armsman20 = ModAttackDamage ×1.4).
+- **`conditions`** (both perk-level and per-effect) use the shared CTDA builder (the same
+  `ConditionSpec` as dialogue/package/recipe gates). Perk-relevant functions:
+  `GetBaseActorValue`/`GetActorValue` (need `actorValue`), `HasKeyword`/`WornHasKeyword`/`HasPerk`/
+  `GetIsID`/`GetIsRace`/`GetItemCount`/`IsSpellTarget` (need a `param` ref), `GetEquippedItemType`
+  (`itemType` = `Left`/`Right`/`Voice`/`Instant`), `GetRandomPercent`, `GetLevel`. Each takes a
+  `comparison` (`EqualTo`/`GreaterThanOrEqualTo`/… or the symbol forms) vs `value`, an optional
+  `runOn` (`Subject` default / `Target`), and `or` (OR with the next condition).
+- **Attach to an NPC** via `npcs[].perks: ["MF_IronHidePerk", …]` — the actor gains the perk(s)
+  passively at game start (each placement carries the perk's `numRanks`). **Granting a perk to the
+  PLAYER needs a Papyrus `AddPerk` call** (`scripts` + a quest fragment) — there is no record-only way
+  to put a perk on the player at game start; that's a CK/script route, documented honestly here.
+- **In-game caveat:** structurally these emit exactly like vanilla perks (verify with `dump` /
+  `perkdiag`), but whether an entry-point modifier actually changes combat numbers, or an ability
+  perk's SPEL applies, can only be confirmed by a real Skyrim launch. Worked example:
+  `examples/perk_spec.json`.
 
 ### external assets — your own meshes / textures / sounds (`model`, `sounds`, `assets`)
 Instead of cloning a vanilla record's mesh via `template`, bring your OWN assets. ModForge

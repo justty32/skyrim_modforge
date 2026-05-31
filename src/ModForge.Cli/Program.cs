@@ -35,6 +35,7 @@ internal static partial class Program
                 case "pkgsbytemplate" when args.Length == 3: return PkgsByTemplate(args[1], args[2]);
                 case "npcdiag" when args.Length == 3: return NpcDiag(args[1], args[2]);
                 case "cstydiag" when args.Length == 3: return CstyDiag(args[1], args[2]);
+                case "perkdiag" when args.Length == 3: return PerkDiag(args[1], args[2]);
                 case "txstdiag" when args.Length is 2 or 3: return TxstDiag(args[1], args.Length == 3 ? args[2] : null);
                 case "cobjdiag" when args.Length == 3: return CobjDiag(args[1], args[2]);
                 case "weatherdiag" when args.Length == 3: return WeatherDiag(args[1], args[2]);
@@ -77,6 +78,7 @@ internal static partial class Program
         "  packagediag <in.esp> <0xFORMID>              print a Package's template/flags/schedule/data inputs\n" +
         "  npcdiag <in.esp> <0xFORMID>                  print an Npc's race/class/voice/factions/packages/flags (for cross-cell diff vs vanilla)\n" +
         "  cstydiag <in.esp> <0xFORMID>                 print a CombatStyle's offensive/defensive mults + equipment preferences + flags\n" +
+        "  perkdiag <in.esp> <0xFORMID|entrypoints>     print a Perk's flags/effects/conditions, or list every EntryType name\n" +
         "  cobjdiag <in.esp> <0xFORMID>                 print a recipe's (COBJ) createdObject/count/workbench/components/conditions\n" +
         "  txstdiag <in.esp> [0xFORMID]                 a TextureSet's 8 texture-map slots+flags (no id: list all TXST)\n" +
         "  weatherdiag <in.esp> <0xFORMID>              print a Weather's flags/colours/clouds/fog (compare gen vs vanilla)\n" +
@@ -147,7 +149,7 @@ internal static partial class Program
 
     private static string BuildSummary(BuildStats s, string specPath, string outPath) =>
         $"built {outPath} from {Path.GetFileName(specPath)} " +
-        $"(ESL={s.Esl}, {s.TopLevelRecords} top-level record(s); {s.DialogueTopics} dialogue topic(s); " +
+        $"(ESL={s.Esl}, {s.TopLevelRecords} top-level record(s); {s.Perks} perk(s); {s.DialogueTopics} dialogue topic(s); " +
         $"{s.Scenes} scene(s) in {s.ScenePhases} phase(s); " +
         $"{s.LinksWired} cross-ref link(s), {s.ExternalLinks} to external master(s); " +
         $"{s.ScriptsAttached} script(s) attached; " +

@@ -48,7 +48,8 @@
     "weathers": { "type": "array", "items": { "$ref": "#/$defs/weather" }, "description": "Weather (WTHR): a custom sky (cloud layers, per-time-of-day colours, precipitation, wind, fog)" },
     "climates": { "type": "array", "items": { "$ref": "#/$defs/climate" }, "description": "Climate (CLMT): a weather cycle + sunrise/sunset timing + sun/moon textures; references weathers" },
     "worldspaces": { "type": "array", "items": { "$ref": "#/$defs/worldspace" }, "description": "Worldspace (WRLD): a new exterior world (climate/water/parent/map). RECORD LAYER ONLY — terrain/LOD/navmesh stay CK-side." },
-    "regions": { "type": "array", "items": { "$ref": "#/$defs/region" }, "description": "Region (REGN): an area inside a worldspace + its weather table (the climate hook)." }
+    "regions": { "type": "array", "items": { "$ref": "#/$defs/region" }, "description": "Region (REGN): an area inside a worldspace + its weather table (the climate hook)." },
+    "perks": { "type": "array", "items": { "$ref": "#/$defs/perk" }, "description": "Perk (PERK): a passive ability / stat-or-combat modifier; attach to an NPC via npc.perks" }
   },
   "additionalProperties": false,
   "$defs": {
@@ -257,6 +258,7 @@
         "unique": { "type": "boolean", "description": "one-off actor (vs leveled); helps engine AI tracking + cross-cell travel" },
         "combatStyle": { "$ref": "#/$defs/ref", "description": "CSTY ref; HOW the AI fights (magic/melee/ranged preference)" },
         "spells": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "SPEL refs; the AI's spell list" },
+        "perks": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "PERK refs granted to the actor as passive ability/entry-point perks at game start" },
         "aggression": { "enum": ["Unaggressive", "Aggressive", "VeryAggressive", "Frenzied"], "description": "WHETHER it initiates (default Unaggressive)" },
         "confidence": { "enum": ["Cowardly", "Cautious", "Average", "Brave", "Foolhardy"], "description": "flee-vs-stand once attacked (default Cowardly = flees)" },
         "assistance": { "enum": ["HelpsNobody", "HelpsAllies", "HelpsFriendsAndAllies"] },
@@ -799,6 +801,54 @@
         }
       },
       "additionalProperties": false
+    },
+    "condition": {
+      "type": "object",
+      "description": "A CTDA condition (the shared ConditionSpec). function is a supported condition-function name; comparison + value are the test; param/actorValue/itemType supply the function's parameter; runOn picks Subject/Target; or ORs with the next.",
+      "required": ["function"],
+      "properties": {
+        "function": { "enum": ["HasPerk", "GetInFaction", "GetItemCount", "GetGlobalValue", "GetStage", "GetIsID", "GetIsRace", "HasKeyword", "WornHasKeyword", "IsSpellTarget", "GetRelationshipRank", "GetActorValue", "GetActorValuePercent", "GetBaseActorValue", "GetEquippedItemType", "GetCurrentTime", "IsInInterior", "IsInCombat", "GetRandomPercent", "GetLevel", "TemperIsEnchanted"] },
+        "comparison": { "type": "string", "description": "== != > >= < <= or a CompareOperator enum name (default >=)" },
+        "value": { "type": "number" },
+        "param": { "$ref": "#/$defs/ref", "description": "FormLink param (perk/keyword/npc/race/item/magicItem/faction/global/quest)" },
+        "actorValue": { "type": "string", "description": "ActorValue param for GetBaseActorValue/GetActorValue (e.g. OneHanded, Destruction)" },
+        "itemType": { "enum": ["Left", "Right", "Voice", "Instant"], "description": "CastSource for GetEquippedItemType" },
+        "runOn": { "enum": ["Subject", "Target", "Reference", "CombatTarget", "LinkedReference", "QuestAlias", "PackageData", "EventData"], "default": "Subject" },
+        "reference": { "$ref": "#/$defs/ref", "description": "the ref read when runOn=Reference (e.g. the player Skyrim.esm:0x000014)" },
+        "or": { "type": "boolean", "default": false }
+      }
+    },
+    "perkEffect": {
+      "type": "object",
+      "description": "One perk effect. kind=ability grants spell; kind=entryPoint modifies a named EntryPoint (entryPoint name + function + value).",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["ability", "entryPoint"] },
+        "rank": { "type": "integer", "minimum": 0, "description": "applies at perk rank >= this (default 0)" },
+        "priority": { "type": "integer", "minimum": 0, "description": "tie-break ordering among effects" },
+        "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "description": "effect-level CTDA gates" },
+        "spell": { "$ref": "#/$defs/ref", "description": "(ability) SPEL ref to grant" },
+        "entryPoint": { "type": "string", "description": "(entryPoint) EntryType name, e.g. ModAttackDamage. List all: perkdiag <Skyrim.esm> entrypoints" },
+        "function": { "enum": ["Set", "Add", "Multiply", "Mult"], "default": "Multiply", "description": "(entryPoint) how value is applied" },
+        "value": { "type": "number", "description": "(entryPoint) the operand, e.g. 1.2 for +20% with Multiply" }
+      }
+    },
+    "perk": {
+      "type": "object",
+      "required": ["editorId", "name"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "playable": { "type": "boolean", "default": true },
+        "hidden": { "type": "boolean", "default": false },
+        "trait": { "type": "boolean", "default": false },
+        "level": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "numRanks": { "type": "integer", "minimum": 1, "maximum": 255, "default": 1 },
+        "nextPerk": { "$ref": "#/$defs/ref", "description": "optional ref to the next perk in a rank chain" },
+        "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "description": "perk-level CTDA gates" },
+        "effects": { "type": "array", "items": { "$ref": "#/$defs/perkEffect" } }
+      }
     }
   }
 }

@@ -1,0 +1,78 @@
+{
+  "pluginName": "ModForgePerks.esp",
+  "esl": true,
+
+  "magicEffects": [
+    {
+      "editorId": "MF_IronHidePerkEffect",
+      "name": "Iron Hide",
+      "description": "Your skin is tougher; armor rating is increased.",
+      "archetype": "ValueModifier",
+      "actorValue": "DamageResist",
+      "magicSkill": "Restoration",
+      "castType": "ConstantEffect",
+      "targetType": "Self",
+      "baseCost": 0,
+      "flags": ["Recover", "NoArea", "NoDuration", "NoHitEvent", "HideInUI"]
+    }
+  ],
+
+  "spells": [
+    {
+      "editorId": "MF_IronHideAbility",
+      "name": "Iron Hide",
+      "spellType": "Ability",
+      "castType": "ConstantEffect",
+      "targetType": "Self",
+      "baseCost": 0,
+      "effects": [
+        { "magicEffect": "MF_IronHidePerkEffect", "magnitude": 50, "area": 0, "duration": 0 }
+      ]
+    }
+  ],
+
+  "perks": [
+    {
+      "editorId": "MF_IronHidePerk",
+      "name": "Iron Hide",
+      "description": "Tougher skin grants +50 armor rating.",
+      "playable": true,
+      "numRanks": 1,
+      "effects": [
+        { "kind": "ability", "spell": "MF_IronHideAbility" }
+      ]
+    },
+    {
+      "editorId": "MF_DeadlyStrikesPerk",
+      "name": "Deadly Strikes",
+      "description": "One-handed attacks do 20% more damage (requires One-Handed 30).",
+      "playable": true,
+      "numRanks": 1,
+      "conditions": [
+        { "function": "GetBaseActorValue", "actorValue": "OneHanded", "comparison": "GreaterThanOrEqualTo", "value": 30 }
+      ],
+      "effects": [
+        {
+          "kind": "entryPoint",
+          "entryPoint": "ModAttackDamage",
+          "function": "Multiply",
+          "value": 1.2,
+          "conditions": [
+            { "function": "WornHasKeyword", "param": "Skyrim.esm:0x01E711", "comparison": "EqualTo", "value": 1 }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_PerkGuard",
+      "name": "Hardened Guard",
+      "race": "Skyrim.esm:0x013746",
+      "perks": ["MF_IronHidePerk", "MF_DeadlyStrikesPerk"],
+      "aggression": "Aggressive",
+      "confidence": "Brave"
+    }
+  ]
+}
