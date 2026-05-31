@@ -93,15 +93,22 @@ public class VendorTests
         Assert.Equal(chestRef.FormKey, fact.MerchantContainer.FormKey);
     }
 
-    // Regression (in-game root-caused 2026-05-31): the build must NOT set VendorLocation. Anchoring it
-    // at the chest with Radius 0 is a degenerate point, so GetOffersServicesNow evaluates the player as
-    // outside the (zero-size) shop and the trade menu never opens. Vanilla merchants leave it EMPTY.
+    // Regression (in-game root-caused 2026-05-31, verified against vanilla Belethor): VendorLocation must
+    // be a LocationCell pointing at the merchant's CELL (binary locType 1), NOT a reference anchored at the
+    // chest. A generated NPC has no CK editor location, so GetOffersServicesNow has no implicit sell area —
+    // the cell must be stated explicitly or the trade menu never opens. (The original bug used a chest
+    // reference target with radius 0 = a degenerate point; removing it entirely was also wrong.)
     [Fact]
-    public void VendorFaction_LeavesVendorLocationEmpty()
+    public void VendorFaction_VendorLocation_IsTheMerchantCell()
     {
         var result = Generator.Build(VendorSpecFixture(), Key);
         var fact = Assert.Single(result.Mod.Factions, f => f.EditorID == "MF_ShopFaction");
-        Assert.Null(fact.VendorLocation);
+        var cell = Assert.Single(result.Mod.EnumerateMajorRecords<ICellGetter>(), c => c.EditorID == "MF_Shop");
+
+        Assert.NotNull(fact.VendorLocation);
+        var loc = Assert.IsType<LocationCell>(fact.VendorLocation!.Target);
+        Assert.Equal(cell.FormKey, loc.Link.FormKey);
+        Assert.Equal(0u, fact.VendorLocation.Radius);
     }
 
     [Fact]

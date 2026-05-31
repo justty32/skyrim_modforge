@@ -32,11 +32,29 @@ public static partial class Generator
                 if (!TryResolveRef(refStr, formKeyByEd, out var fk))
                 { Warn($"  ! faction '{factEd}' vendor.merchantContainer '{refStr}' unresolved — vendor has no merchant chest (no gold/stock to trade)"); continue; }
                 fact.MerchantContainer.SetTo(fk);
-                // Do NOT set VendorLocation here. A LocationTarget anchored at the chest with Radius 0 is a
-                // DEGENERATE point — the engine's GetOffersServicesNow check then evaluates the player as
-                // outside the (zero-size) shop area and returns 0, so the trade dialogue never opens.
-                // Vanilla merchants (e.g. Belethor) leave VendorLocation EMPTY and gate "on shift" purely
-                // via the merchant's scheduled sell package + JobMerchant faction. Mirror that: leave unset.
+                // VendorLocation = the merchant's CELL (a LocationCell, binary locType 1), NOT a reference
+                // anchored at the chest. Verified against vanilla Belethor (ServicesWhiterunBelethorsGoods
+                // PLVD = LocationCell -> WhiterunBelethorsGeneralGoods cell, radius 0): the engine's
+                // GetOffersServicesNow check asks "is the player in the vendor's sell area?", and for a
+                // generated NPC — which has NO CK editor location to fall back on — that area must be stated
+                // explicitly or services are never offered (trade dialogue never opens). The earlier bug
+                // was using a chest REFERENCE target with radius 0 (a degenerate point); removing it
+                // entirely was also wrong. An InCell location needs no radius. Resolve the cell from the
+                // merchant-container placement's `cell` (in-spec editorId or vanilla <master>:0xFORMID).
+                var chestPlacement = spec.Placements.FirstOrDefault(
+                    p => string.Equals(p.EditorId, refStr, StringComparison.OrdinalIgnoreCase));
+                if (chestPlacement is { } cp && !string.IsNullOrWhiteSpace(cp.Cell)
+                    && TryResolveRef(cp.Cell, formKeyByEd, out var cellFk))
+                {
+                    var loc = new LocationCell();
+                    loc.Link.SetTo(cellFk);
+                    fact.VendorLocation = new LocationTargetRadius { Target = loc, Radius = 0 };
+                }
+                else
+                {
+                    Warn($"  ! faction '{factEd}' vendor: could not resolve the merchant cell for VendorLocation " +
+                         $"(chest placement '{refStr}' has no resolvable cell) — GetOffersServicesNow may stay 0 and trade won't open");
+                }
                 linksWired++;
                 if (LooksExternalRef(refStr)) extLinks++;
                 // (The chest placement is forced Persistent in the placement loop via deferredAnchorEds.)
