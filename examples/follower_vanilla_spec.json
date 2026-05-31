@@ -1,0 +1,109 @@
+{
+  "pluginName": "ModForgeVanillaFollower.esp",
+  "esl": true,
+  "_": "It.32: a PAID follower that plugs straight into the VANILLA follower system (recommended over the self-managed follower_paid_spec.json — the user prefers this). Only the recruit trigger + gold are custom; the recruit fragment calls DialogueFollowerScript.SetFollower(akSpeaker), after which vanilla's own trade/wait/follow/dismiss dialogue manages her and follower-manager mods (AFT/EFF/NFF) pick her up automatically. Demonstrates that custom records survive vanilla follower status: she keeps her custom CombatStyle (combat AI is NOT overridden — PlayerFollowerPackage carries no CombatStyle), and a FOLLOWER-ONLY self-introduction topic (gated on CurrentFollowerFaction) shows only after she joins. `coc RiverwoodSleepingGiantInn`, talk to her, pay 500; then 'tell me about yourself' appears, and vanilla wait/trade/dismiss all work.",
+
+  "classes": [
+    {
+      "editorId": "MF_VanillaClass",
+      "name": "ModForge Sellsword",
+      "healthWeight": 50, "magickaWeight": 10, "staminaWeight": 40,
+      "skillWeights": { "OneHanded": 90, "Block": 70, "HeavyArmor": 70, "Archery": 50 }
+    }
+  ],
+
+  "combatStyles": [
+    {
+      "_": "A melee-favouring sellsword style — proof that a custom CSTY is preserved through vanilla follower status (the vanilla follow/combat-override packages set no CombatStyle, so the actor's base CSTY drives combat).",
+      "editorId": "MF_VanillaCS",
+      "offensiveMult": 0.75, "defensiveMult": 0.5, "groupOffensiveMult": 0.5,
+      "equipMultMelee": 2.0, "equipMultRanged": 1.0, "equipMultMagic": 0.2,
+      "equipMultShout": 0.5, "equipMultUnarmed": 0.5, "equipMultStaff": 0.2,
+      "avoidThreatChance": 0.1, "flags": [ "Dueling", "Flanking" ]
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_VanillaFollowerNpc",
+      "name": "Sigrid the Sword",
+      "_greeting": "Makes her conversable (host quest + Hello). The recruit topic surfaces on top.",
+      "greeting": "You look like you could use a blade.",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_VanillaClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "_voiceType": "FemaleEvenToned (0x013ADD) — a VoicesFollowerNeutral voice, REQUIRED so vanilla's follow/wait/trade/dismiss dialogue (all GetIsVoiceType-gated) surfaces once SetFollower puts her in CurrentFollowerFaction.",
+      "voiceType": "Skyrim.esm:0x013ADD",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "_factions": "Only Whiterun crime/citizen (door/gate traversal). NOT in any follower faction at start — SetFollower's alias adds CurrentFollowerFaction at recruit.",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+      "_combatStyle": "Custom CSTY — preserved while she's a follower. (Add sandbox/travel packages here too for lifelike downtime; they run when she's NOT actively following, i.e. before recruit and after dismiss/while waiting.)",
+      "combatStyle": "MF_VanillaCS",
+      "unique": true,
+      "level": 10,
+      "autoCalcStats": true,
+      "aggression": "Aggressive",
+      "confidence": "Brave",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50
+    }
+  ],
+
+  "quests": [
+    {
+      "_": "Hosts the recruit + self-intro topics. StartGameEnabled so they're served when you talk to her.",
+      "editorId": "MF_VanillaQuest",
+      "name": "ModForge Vanilla Hire",
+      "startGameEnabled": true,
+      "priority": 50
+    }
+  ],
+
+  "dialogue": [
+    {
+      "_": "Recruit line. Shown only when the player can afford it AND has no current follower (GetGlobalValue PlayerFollowerCount==0 — the same global vanilla uses; avoids stomping the single follower slot). Fragment takes gold + DialogueFollowerScript.SetFollower(akSpeaker). After that the line hides (count==1) and vanilla follow/wait/trade/dismiss take over.",
+      "editorId": "MF_VanillaRecruitTopic",
+      "questEditorId": "MF_VanillaQuest",
+      "speakerNpcEditorId": "MF_VanillaFollowerNpc",
+      "prompt": "Here's 500 gold. Fight at my side.",
+      "responses": [ "Coin well spent. Lead on." ],
+      "emotion": "Happy",
+      "goodbye": true,
+      "conditions": [
+        { "function": "GetItemCount", "comparison": ">=", "value": 500, "param": "Skyrim.esm:0x00000F", "runOn": "Reference", "reference": "Skyrim.esm:0x000014" },
+        { "function": "GetGlobalValue", "comparison": "==", "value": 0, "param": "Skyrim.esm:0x0BCC98", "runOn": "Subject" }
+      ],
+      "resultScript": "MFHireVanillaRecruit",
+      "resultScriptSource": "scripts/MFHireVanillaRecruit.psc",
+      "resultProperties": [
+        { "name": "Gold001", "type": "object", "objectEditorId": "Skyrim.esm:0x00000F" },
+        { "name": "GoldCost", "type": "int", "int": 500 },
+        { "name": "DialogueFollower", "type": "object", "objectEditorId": "Skyrim.esm:0x0750BA" }
+      ]
+    },
+    {
+      "_": "FOLLOWER-ONLY self-introduction. Gated on GetInFaction CurrentFollowerFaction==1, so it ONLY appears after she's recruited (SetFollower's alias adds that faction) and disappears when dismissed. No fragment — just spoken lines. This is the pattern for any 'unlocked once she travels with you' dialogue (backstory, banter, personal quest hooks).",
+      "editorId": "MF_VanillaIntroTopic",
+      "questEditorId": "MF_VanillaQuest",
+      "speakerNpcEditorId": "MF_VanillaFollowerNpc",
+      "prompt": "Tell me about yourself.",
+      "responses": [
+        "Sigrid, they call me. Grew up in Markarth's smoke and steel — learned the sword before I could read.",
+        "I've sold this blade from Solitude to Riften. You're just the latest to be glad of it."
+      ],
+      "emotion": "Neutral",
+      "conditions": [
+        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" }
+      ]
+    }
+  ],
+
+  "placements": [
+    {
+      "_": "Sigrid in the Sleeping Giant Inn common room (any in-room coord; actors snap to navmesh).",
+      "base": "MF_VanillaFollowerNpc",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": -250, "y": 100, "z": 0 }
+    }
+  ]
+}
