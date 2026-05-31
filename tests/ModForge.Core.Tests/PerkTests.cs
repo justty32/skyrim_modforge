@@ -120,6 +120,19 @@ public class PerkTests
         Assert.Equal(1.2f, mv.Value);
     }
 
+    // Regression (in-game CTD root-caused 2026-05-31 via CrashLoggerSSE): the entry point's
+    // PerkConditionTabCount must carry the vanilla-canonical count for that EntryType, never 0.
+    // The engine sizes its per-tab condition array from this byte; leaving it 0 while a PRKC
+    // condition tab is present overflows the array and hard-crashes during "Loading Files".
+    // ModAttackDamage is canonically 3 tabs.
+    [Fact]
+    public void EntryPointEffect_SetsVanillaPerkConditionTabCount()
+    {
+        var perk = Perk(Generator.Build(MakeSpec(), OutKey).Mod, "TestEntryPerk");
+        var mv = Assert.IsAssignableFrom<IPerkEntryPointModifyValueGetter>(Assert.Single(perk.Effects));
+        Assert.Equal(3, mv.PerkConditionTabCount);
+    }
+
     [Fact]
     public void PerkLevelCondition_IsWired()
     {
