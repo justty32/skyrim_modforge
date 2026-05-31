@@ -582,11 +582,14 @@ the last two, which are yours to get right) — see [gotchas.md](gotchas.md):
   you can't reach it (you end up talking to a vanilla NPC).
 - **Unvoiced lines** flash past — install **Fuz Ro D-oh** (or bundle silent `.fuz`) and turn on subtitles.
 
-## "Working merchant" (a shopkeeper who buys + sells — structural, in-game-unconfirmed)
+## "Working merchant" (a shopkeeper who buys + sells — IN-GAME CONFIRMED 2026-05-31)
 
 A vendor = a **Vendor-flagged FACT** (trade hours + a buy/sell category list + a merchant chest with
 gold/stock) whose member NPC the engine treats as a shopkeeper. Make the NPC conversable and Build
-auto-adds `JobMerchantFaction`, so the vanilla generic "I'd like to trade" topic surfaces.
+auto-adds `JobMerchantFaction`, so the vanilla generic "I'd like to trade" topic surfaces — **but
+only when `GetOffersServicesNow` returns 1**, which has two non-obvious requirements for a generated
+NPC (the merchant must STAND on-duty in its shop, and the faction must name a sell-area CELL — see
+below). With those, the barter menu opens in-game.
 
 ```jsonc
 { "factions": [
@@ -622,11 +625,24 @@ Why each piece:
   dialogue that appears on any conversable vendor-faction NPC during trade hours.
 - **Conversable.** No `greeting`/`dialogue` ⇒ no dialogue menu ⇒ the trade prompt can't appear
   (`validate` flags this). Same load-only rule as all dialogue (new game or save+reload).
+- **The merchant must STAND on-duty in its shop** — `GetOffersServicesNow` is 0 for an NPC that isn't
+  settled at its shop. Two things this needs in a **new** cell: (a) a FLOOR (a `WRIntFloorSTMid01Large`
+  `0x1044AA` grid + a light) so the NPC doesn't fall into the void perpetually, and (b) an on-duty
+  **Sandbox** package (`0x01C254`, NearSelf) so it stands at the counter. Without a floor the merchant
+  is in a falling state and never goes on-shift — the trade option silently never appears.
+- **`VendorLocation` = the merchant's CELL.** Build sets the faction's `VendorLocation` to a
+  `LocationCell` pointing at the merchant-container placement's cell (radius 0). This is the sell area
+  `GetOffersServicesNow` tests the player against. A CK-authored merchant has an *editor location* the
+  engine falls back on; a generated NPC has none, so **omitting this (or using a chest *reference* with
+  radius 0, a degenerate point) breaks the trade menu**. Verified against vanilla Belethor, whose PLVD
+  is `LocationCell → WhiterunBelethorsGeneralGoods`, radius 0 — not empty. (No CK-authored "sell
+  package" `0x06C872` is required; VENV radius 0 is fine — Belethor's is 0 too.)
 
 Verify structurally: `factdiag <plugin> 0x000804` and diff against vanilla Belethor `factdiag
-<Skyrim.esm> 0x09CAF5` — same flags / VendorValues / buy-sell list / merchant container shape.
-**Whether the barter menu actually opens needs a Proton/Skyrim launch** (the reachable-NPC +
-load-registration rules from the conversational-NPC recipe apply).
+<Skyrim.esm> 0x09CAF5` — same flags / VendorValues / buy-sell list / merchant container / `LocationCell`
+VendorLocation shape. **Confirmed in-game 2026-05-31**: `coc MF_Shop`, `set GameHour to 12`, talk to
+Marcurio → barter menu opens (the reachable-NPC + load-registration rules from the conversational-NPC
+recipe still apply).
 
 ## "Passive perk on an NPC" (PERK — ability + entry-point)
 
