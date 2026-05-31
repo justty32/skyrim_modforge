@@ -224,6 +224,42 @@ Dismiss fragment: `RemoveFromFaction(FollowerFaction)` + `SetPlayerTeammate(fals
   so she holds position; a "follow me again" topic (gated `WaitingForPlayer==1`) clears it. Dismiss
   clears it too. See `MFFollowerTrade/Wait/Follow.psc`.
 
+## "Lifelike follower" extras — downtime + situational lines (It.33, in-game confirmed)
+
+Once the hire/follow plumbing works, two cheap additions make a follower feel alive. Both are in
+`examples/follower_vanilla_spec.json`.
+
+**Downtime behaviour** — give the follower NPC an *unconditioned* Sandbox package. It's her
+lowest-priority fallback, so it runs exactly when the vanilla follow-alias package is NOT active:
+before recruit, after dismiss, and while she's told to wait. Instead of standing frozen she
+eats/sits/wanders wherever she's placed. While actively trailing you the alias package overrides it;
+combat preempts it and she resumes after.
+```jsonc
+"packages": [ { "editorId": "MF_Sandbox", "template": "Skyrim.esm:0x01C254",
+  "interruptFlags": [ "HellosToPlayer", "AllowIdleChatter", "WorldInteractions" ],
+  "sandbox": { "radius": 512, "allowEating": true, "allowSitting": true, "allowWandering": true } } ],
+// ...and reference it on the npc: "packages": [ "MF_Sandbox" ]   (no condition needed)
+```
+
+**Situational dialogue** — gate a *player-initiated* line on RUNTIME state, ANDed with the
+follower gate, so the right line only appears in context. Uses the runtime CTDA functions:
+```jsonc
+// "You're hurt?" — only when she's below half health
+"conditions": [
+  { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" },
+  { "function": "GetActorValuePercent", "comparison": "<", "value": 0.5, "actorValue": "Health", "runOn": "Subject" } ]
+// "Make camp?" — only after 7pm.  GetCurrentTime is no-arg (game hour 0..24); no param/ref.
+"conditions": [
+  { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" },
+  { "function": "GetCurrentTime", "comparison": ">=", "value": 19 } ]
+```
+Runtime condition functions available: `GetActorValuePercent` (0..1 fraction, AV arg),
+`GetCurrentTime` (hour 0..24), `IsInInterior`, `IsInCombat`, `GetRandomPercent` (0..99 roll, for
+line variety) — all in addition to the static gates (GetInFaction/GetItemCount/GetGlobalValue/…).
+Follower-only **backstory** is the same pattern with just the `CurrentFollowerFaction==1` gate and
+more response lines. NOTE: this is for lines the player *asks for*; proactive/ambient banter (NPC
+speaks unprompted) is a different dialogue subtype, not yet supported.
+
 ## "Usable interior cell" (lighting + floor, not a black void)
 
 A brand-new interior cell needs three things or it's a pitch-black void you fall through:
