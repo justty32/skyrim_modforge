@@ -48,12 +48,13 @@
 
   "packages": [
     {
-      "_": "Trail the player (Follow template 0x019B2C, target '' ⇒ player). Active ONLY while she's in MF_PaidFollowerFaction — recruit flips it on, dismiss flips it off (and EvaluatePackage re-checks).",
+      "_": "Trail the player (Follow template 0x019B2C, target '' ⇒ player). Active ONLY while she's in MF_PaidFollowerFaction AND not told to wait (WaitingForPlayer==0, the same ActorValue vanilla uses). Recruit flips the faction on; 'wait here' sets WaitingForPlayer=1 so this fails and she holds position; 'follow me again' clears it.",
       "editorId": "MF_PaidFollowPkg",
       "template": "Skyrim.esm:0x019B2C",
       "follow": { "target": "", "minRadius": 128, "maxRadius": 256, "accompany": true },
       "conditions": [
-        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "MF_PaidFollowerFaction", "runOn": "Subject" }
+        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "MF_PaidFollowerFaction", "runOn": "Subject" },
+        { "function": "GetActorValue", "comparison": "==", "value": 0, "actorValue": "WaitingForPlayer", "runOn": "Subject" }
       ]
     }
   ],
@@ -108,6 +109,52 @@
       "resultProperties": [
         { "name": "FollowerFaction", "type": "object", "objectEditorId": "MF_PaidFollowerFaction" }
       ]
+    },
+    {
+      "_": "Trade line — shown while she's a follower. NOT goodbye (like vanilla): the trade menu opens over the dialogue. Fragment: OpenInventory(true). No properties needed.",
+      "editorId": "MF_PaidTradeTopic",
+      "questEditorId": "MF_PaidQuest",
+      "speakerNpcEditorId": "MF_PaidFollowerNpc",
+      "prompt": "Let me see what you're carrying.",
+      "responses": [ "Have a look." ],
+      "emotion": "Neutral",
+      "conditions": [
+        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "MF_PaidFollowerFaction", "runOn": "Subject" }
+      ],
+      "resultScript": "MFFollowerTrade",
+      "resultScriptSource": "scripts/MFFollowerTrade.psc"
+    },
+    {
+      "_": "Wait line — shown while following and NOT already waiting. Fragment sets WaitingForPlayer=1; the Follow package gates on ==0, so she holds position.",
+      "editorId": "MF_PaidWaitTopic",
+      "questEditorId": "MF_PaidQuest",
+      "speakerNpcEditorId": "MF_PaidFollowerNpc",
+      "prompt": "Wait here.",
+      "responses": [ "I'll hold this spot." ],
+      "emotion": "Neutral",
+      "goodbye": true,
+      "conditions": [
+        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "MF_PaidFollowerFaction", "runOn": "Subject" },
+        { "function": "GetActorValue", "comparison": "==", "value": 0, "actorValue": "WaitingForPlayer", "runOn": "Subject" }
+      ],
+      "resultScript": "MFFollowerWait",
+      "resultScriptSource": "scripts/MFFollowerWait.psc"
+    },
+    {
+      "_": "Resume line — shown while following and currently waiting. Fragment clears WaitingForPlayer, re-enabling the Follow package.",
+      "editorId": "MF_PaidFollowAgainTopic",
+      "questEditorId": "MF_PaidQuest",
+      "speakerNpcEditorId": "MF_PaidFollowerNpc",
+      "prompt": "Follow me again.",
+      "responses": [ "Right behind you." ],
+      "emotion": "Neutral",
+      "goodbye": true,
+      "conditions": [
+        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "MF_PaidFollowerFaction", "runOn": "Subject" },
+        { "function": "GetActorValue", "comparison": "==", "value": 1, "actorValue": "WaitingForPlayer", "runOn": "Subject" }
+      ],
+      "resultScript": "MFFollowerFollow",
+      "resultScriptSource": "scripts/MFFollowerFollow.psc"
     }
   ],
 

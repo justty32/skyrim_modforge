@@ -14,6 +14,7 @@ Function Fragment_0(ObjectReference akSpeakerRef)
     EndIf
     speaker.RemoveFromFaction(FollowerFaction)
     speaker.SetPlayerTeammate(false)
+    speaker.SetActorValue("WaitingForPlayer", 0.0)   ; clear wait state so a re-hire isn't stuck waiting
     speaker.EvaluatePackage()   ; re-evaluate: Follow package now fails its condition -> she stops
     Debug.Notification("She parts ways with you.")
 EndFunction

@@ -122,6 +122,7 @@ public sealed class ConditionSpec
     public string Comparison { get; set; } = ">=";   // == | != | > | >= | < | <=
     public float Value { get; set; }
     public string Param { get; set; } = "";           // the function's form argument (a ref)
+    public string ActorValue { get; set; } = "";       // the ActorValue name for GetActorValue (e.g. WaitingForPlayer)
     public string RunOn { get; set; } = "Subject";     // Subject | Target | Reference | CombatTarget | ...
     public string Reference { get; set; } = "";        // the ref read when RunOn=Reference (e.g. player Skyrim.esm:0x000014)
     public bool Or { get; set; }                        // OR with the NEXT condition (default AND)

@@ -43,9 +43,16 @@ public static partial class Generator
                 case "getstage":            { var d = new GetStageConditionData();            if (hasParam) d.Quest.Link.SetTo(paramFk);     data = d; break; }
                 case "getisid":             { var d = new GetIsIDConditionData();             if (hasParam) d.Object.Link.SetTo(paramFk);    data = d; break; }
                 case "getrelationshiprank": { var d = new GetRelationshipRankConditionData(); if (hasParam) d.TargetNpc.Link.SetTo(paramFk); data = d; break; }
+                case "getactorvalue":       // ActorValue arg (e.g. WaitingForPlayer), not a form ref
+                {
+                    var d = new GetActorValueConditionData();
+                    if (Enum.TryParse<ActorValue>(c.ActorValue, ignoreCase: true, out var av)) d.ActorValue = av;
+                    else { Warn($"  ! {label}: bad/missing actorValue '{c.ActorValue}'"); return null; }
+                    data = d; break;
+                }
                 default:
                     Warn($"  ! {label}: unsupported function '{c.Function}' "
-                        + "(have GetInFaction/GetItemCount/GetGlobalValue/GetStage/GetIsID/GetRelationshipRank)");
+                        + "(have GetInFaction/GetItemCount/GetGlobalValue/GetStage/GetIsID/GetRelationshipRank/GetActorValue)");
                     return null;
             }
 
