@@ -17,6 +17,7 @@ dotnet run ... -- packagediag    <plugin> <0xFORMID>   # PACK: template, flags, 
 dotnet run ... -- pkgsbytemplate <plugin> <0xFORMID>   # every package USING a given procedure template
 dotnet run ... -- npcdiag        <plugin> <0xFORMID>   # NPC: race/class/voice/factions/CrimeFaction/AIData/packages/spells
 dotnet run ... -- cstydiag       <plugin> <0xFORMID>   # CSTY: offensive/defensive/equip mults/flags
+dotnet run ... -- eczndiag       <plugin> <0xFORMID>   # ECZN: level range (max 0 = uncapped)/rank/flags/owner/location
 dotnet run ... -- mgefdiag       <plugin> <0xFORMID>   # MGEF: archetype/AV/flags/projectile/casting art
 dotnet run ... -- lightdiag      <plugin> [0xFORMID]   # LIGH (no ID lists room-fill candidates)
 dotnet run ... -- refpos         <plugin> <0xFORMID>   # REFR/ACHR: position+rotation+base (anchor placements on known navmesh)

@@ -6,7 +6,7 @@ namespace ModForge;
 // `template` (optional, a vanilla INTERIOR cell ref "<master>:0xFORMID") copies that cell's
 // lighting/water environment so a brand-new cell isn't pitch-black; it still needs a floor
 // static placed in it (a `placement`) so the player doesn't fall into the void.
-public sealed class CellSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Template { get; set; } = ""; }
+public sealed class CellSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Template { get; set; } = ""; public string EncounterZone { get; set; } = ""; } // encounterZone: ref → in-spec ECZN editorId or vanilla <master>:0xFORMID; sets the cell's XEZN (level scaling/respawn for the whole cell)
 public sealed class Vec3 { public float X { get; set; } public float Y { get; set; } public float Z { get; set; } }
 // Place a base form (npc/object, in-spec or external) into the world at a position/rotation.
 // TWO targeting modes:
@@ -17,6 +17,10 @@ public sealed class Vec3 { public float X { get; set; } public float Y { get; se
 //     WORLD position. The cell at floor(x/4096),floor(y/4096) is found in the master and
 //     overridden to add this ref (It.7d-p3). `worldspace` wins over `cell` if both are set.
 // `rotation` is in degrees. `kind` ("npc"|"object") is inferred for in-spec bases, "object" else.
+// LEVELED-ACTOR SPAWN: `base` may be a LeveledNpc (LVLN) list — in-spec or vanilla — instead of a
+// concrete NPC. The placed ACHR then rolls a level-appropriate actor from that list at load (the
+// dungeon-population pattern). A leveled-npc base is treated as `kind: "npc"` automatically; pair it
+// with the cell's / this ref's `encounterZone` to control the level range it rolls within.
 public sealed class PlacementSpec
 {
     public string Base { get; set; } = "";
@@ -28,6 +32,10 @@ public sealed class PlacementSpec
     public Vec3 Position { get; set; } = new();
     public Vec3 Rotation { get; set; } = new();
     public bool Persistent { get; set; }
+    // Optional encounter-zone ref (in-spec ECZN editorId or vanilla <master>:0xFORMID) for THIS
+    // placed ref (its XEZN). A per-ref override of the cell's zone — usually leave empty and let the
+    // ref inherit the cell's encounterZone, but set it to scope a single spawn to its own zone.
+    public string EncounterZone { get; set; } = "";
     // Linked References on this placed ref. Each points to another placement (by its editorId) or
     // a vanilla placed ref, optionally tagged with a keyword. With no keyword, the link is the
     // engine's "default" linked ref — which is what a Patrol route follows from marker to marker.
@@ -39,6 +47,25 @@ public sealed class LinkedRefSpec
 {
     public string Target { get; set; } = "";
     public string Keyword { get; set; } = "";
+}
+// EncounterZone (ECZN): controls level scaling + respawn for an area. A cell's `encounterZone`
+// (and/or a placed spawn's `encounterZone`) points at one; the engine rolls leveled-actor spawns
+// in that zone to a level inside [minLevel, maxLevel]. `minLevel`/`maxLevel` are 0–255 (a single
+// byte each); maxLevel 0 = "no upper cap" (vanilla idiom — e.g. HelgenZone is min 6 / max 0, scaling
+// up with the player forever). `owner` (optional ref → FACT or NPC) ties the zone to a faction/actor
+// for crime/ownership; `location` (optional ref → LCTN) links it to a map location. `flags`:
+//   NeverResets               — the zone never respawns its actors/loot (cleared dungeons stay cleared)
+//   MatchPcBelowMinimumLevel  — if the player is below minLevel, spawns match the PLAYER (else clamp to minLevel)
+//   DisableCombatBoundary     — actors may chase the player out of the zone
+public sealed class EncounterZoneSpec
+{
+    public string EditorId { get; set; } = "";
+    public int MinLevel { get; set; }              // 0–255; the floor of the spawn level range
+    public int MaxLevel { get; set; }              // 0–255; 0 = uncapped (scales with the player)
+    public string Owner { get; set; } = "";        // optional ref → FACT/NPC owner
+    public string Location { get; set; } = "";     // optional ref → LCTN
+    public int Rank { get; set; }                  // owner rank (0 if no owner)
+    public List<string> Flags { get; set; } = new(); // EncounterZone.Flag names (see above)
 }
 
 // --- Worldspace (WRLD) + Region (REGN) ---------------------------------------------------

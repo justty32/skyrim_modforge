@@ -91,6 +91,26 @@ Other hold crime/town factions follow the same naming pattern; `find <Skyrim.esm
 | EncWolf_Indoor | `Skyrim.esm:0x10F2A2` |
 | EncBandit05MagicArgonianM | `Skyrim.esm:0x0C3CA7` |
 
+## Leveled enemy spawns (for a `placements[].base` leveled-actor spawn → ACHR)
+
+A spawn `base` set to one of these LeveledNpc (LVLN) lists rolls a level-appropriate actor at load.
+Add `"kind": "npc"` for a vanilla list (the build can't read the master's type headlessly). Pair with
+an `encounterZone` to control the level range. Find more: `find <Skyrim.esm> LCharBandit LeveledNpc`.
+
+| Editor ID | FormID | Role |
+|---|---|---|
+| LCharBanditMeleeAny | `Skyrim.esm:0x03DECD` | Generic melee bandit |
+| LCharBanditMissileNordM | `Skyrim.esm:0x01A348` | Archer bandit |
+| LCharBanditBossNordM | `Skyrim.esm:0x01A341` | Bandit boss (tougher, level-scaled) |
+
+## Encounter zones (sample vanilla ECZNs — inspect with `eczndiag <Skyrim.esm> <id>`)
+
+| Editor ID | FormID | Levels / flags |
+|---|---|---|
+| HelgenZone | `Skyrim.esm:0x0F94A6` | min 6 / max 0 (uncapped), `NeverResets` |
+| BoulderfallCaveZone | `Skyrim.esm:0x0F52DB` | min 6 / max 0 (uncapped), no flags |
+| NoResetZone | `Skyrim.esm:0x0F90B1` | min 1 / max 0, `NeverResets` (a reusable "don't respawn" zone) |
+
 ## Spells / magic effects (for `spells` list and `effects[].magicEffect`)
 
 | Editor ID | FormID | Kind | Notes |

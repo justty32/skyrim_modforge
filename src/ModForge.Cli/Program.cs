@@ -40,6 +40,7 @@ internal static partial class Program
                 case "climatediag" when args.Length == 3: return ClimateDiag(args[1], args[2]);
                 case "worlddiag" when args.Length == 3: return WorldDiag(args[1], args[2]);
                 case "regndiag" when args.Length == 3: return RegnDiag(args[1], args[2]);
+                case "eczndiag" when args.Length == 3: return EcznDiag(args[1], args[2]);
                 case "refpos" when args.Length == 3: return RefPos(args[1], args[2]);
                 case "bookdiag" when args.Length == 3: return BookDiag(args[1], args[2]);
                 case "infodiag" when args.Length is 3 or 4: return InfoDiag(args[1], args[2], args.Length == 4 ? args[3] : null);
@@ -81,6 +82,7 @@ internal static partial class Program
         "  climatediag <in.esp> <0xFORMID>              print a Climate's weather list/sun-times/moons/textures\n" +
         "  worlddiag <in.esp> <0xFORMID>                print a Worldspace's climate/water/parent + map bounds + land/water defaults\n" +
         "  regndiag <in.esp> <0xFORMID>                 print a Region's worldspace/area/mapColor + weather table (priority + weather refs + chances)\n" +
+        "  eczndiag <in.esp> <0xFORMID>                 print an EncounterZone's level range/rank/flags/owner/location\n" +
         "  bookdiag <in.esp> <0xFORMID>                 print a Book's Teaches (spell/skill/nothing) + flags + model (e.g. a vanilla spell tome)\n" +
         "  refpos <in.esp> <0xFORMID>                   print a placed ref's (REFR/ACHR) position+rotation+base (anchor new placements on known navmesh)\n" +
         "  infodiag <in.esp> <0xFORMID> [substr]        dump dialogue INFO responses + FULL CTDA conditions for a topic, or every topic a quest owns (substr filters EditorID)\n" +
@@ -150,7 +152,7 @@ internal static partial class Program
         $"{s.ScriptsAttached} script(s) attached; " +
         $"{s.Placements} placement(s) in {s.NewInteriorCells} new + {s.VanillaInteriorCells} vanilla interior cell(s) + " +
         $"{s.Worldspaces} worldspace(s) [{s.NewExteriorCells} new exterior cell(s)]; " +
-        $"{s.Regions} region(s))";
+        $"{s.Regions} region(s); {s.EncounterZones} encounter zone(s))";
 
     // -------------------------------------------------------------------------------
     //  validate

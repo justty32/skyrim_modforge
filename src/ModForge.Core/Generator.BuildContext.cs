@@ -196,6 +196,7 @@ public static partial class Generator
                         + spec.WordsOfPower.Count + spec.Shouts.Count
                         + spec.Enchantments.Count + spec.TextureSets.Count
                         + spec.Weathers.Count + spec.Climates.Count
+                        + spec.EncounterZones.Count
                         + worldspacesBuilt + regionsBuilt
                         + scenesBuilt;
                         // (Placements are reported separately in stats, so not folded into `total`.)
@@ -219,6 +220,7 @@ public static partial class Generator
                     Worldspaces = worldspaceCount + worldspacesBuilt,
                     NewExteriorCells = exteriorNewCells,
                     Regions = regionsBuilt,
+                    EncounterZones = spec.EncounterZones.Count,
                 },
             };
         }

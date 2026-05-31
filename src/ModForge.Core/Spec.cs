@@ -56,4 +56,5 @@ public sealed class ModSpec
     public List<ClimateSpec> Climates { get; set; } = new();
     public List<WorldspaceSpec> Worldspaces { get; set; } = new();
     public List<RegionSpec> Regions { get; set; } = new();
+    public List<EncounterZoneSpec> EncounterZones { get; set; } = new();
 }

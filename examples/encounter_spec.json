@@ -1,0 +1,37 @@
+{
+  "pluginName": "ModForgeEncounter.esp",
+  "esl": true,
+
+  "encounterZones": [
+    { "editorId": "MF_BanditDenZone",
+      "minLevel": 4,
+      "maxLevel": 0,
+      "flags": ["MatchPcBelowMinimumLevel"] }
+  ],
+
+  "cells": [
+    { "editorId": "MF_BanditDen", "name": "ModForge Bandit Den",
+      "template": "Skyrim.esm:0x0165A8",
+      "encounterZone": "MF_BanditDenZone" }
+  ],
+
+  "placements": [
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_BanditDen", "position": { "x": -256, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_BanditDen", "position": { "x":    0, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_BanditDen", "position": { "x":  256, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_BanditDen", "position": { "x": -256, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_BanditDen", "position": { "x":    0, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_BanditDen", "position": { "x":  256, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_BanditDen", "position": { "x": -256, "y":  256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_BanditDen", "position": { "x":    0, "y":  256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_BanditDen", "position": { "x":  256, "y":  256, "z": 0 } },
+
+    { "base": "Skyrim.esm:0x03DECD", "cell": "MF_BanditDen", "kind": "npc",
+      "position": { "x": -180, "y": 120, "z": 0 } },
+    { "base": "Skyrim.esm:0x01A348", "cell": "MF_BanditDen", "kind": "npc",
+      "position": { "x": 180, "y": 120, "z": 0 } },
+    { "base": "Skyrim.esm:0x01A341", "cell": "MF_BanditDen", "kind": "npc",
+      "position": { "x": 0, "y": -120, "z": 0 },
+      "encounterZone": "MF_BanditDenZone" }
+  ]
+}

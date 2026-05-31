@@ -115,6 +115,22 @@ public static partial class Generator
                         lvl.Entries!.Add(entry);
                     });
             }
+            // EncounterZone (ECZN) owner/location refs. Owner is a FACT or NPC (IOwner); Location an LCTN.
+            foreach (var ez in spec.EncounterZones)
+            {
+                if (!recordsByEd.TryGetValue(ez.EditorId, out var rec) || rec is not IEncounterZone zone) continue;
+                Resolve($"encounterZone '{ez.EditorId}' owner",    ez.Owner,    fk => zone.Owner.SetTo(fk));
+                Resolve($"encounterZone '{ez.EditorId}' location", ez.Location, fk => zone.Location.SetTo(fk));
+            }
+            // Cell encounterZone (XEZN): a cell's level scaling / respawn zone. In-spec cells were created
+            // in pass 1 (cellsByEd); a vanilla-cell override carries the master's zone via CopyCellEnv, but
+            // an explicit `encounterZone` here overrides it. Resolves an in-spec ECZN or a vanilla one.
+            foreach (var c in spec.Cells)
+            {
+                if (string.IsNullOrWhiteSpace(c.EncounterZone)) continue;
+                if (!cellsByEd.TryGetValue(c.EditorId, out var cell)) continue;
+                Resolve($"cell '{c.EditorId}' encounterZone", c.EncounterZone, fk => cell.EncounterZone.SetTo(fk));
+            }
             foreach (var ct in spec.Containers)
             {
                 if (!recordsByEd.TryGetValue(ct.EditorId, out var rec) || rec is not IContainer cont) continue;

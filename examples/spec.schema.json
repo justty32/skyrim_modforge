@@ -27,7 +27,8 @@
     "cells": { "type": "array", "items": { "$ref": "#/$defs/cell" }, "description": "new interior cells (reach in-game via `coc <editorId>`)" },
     "placements": { "type": "array", "items": { "$ref": "#/$defs/placement" }, "description": "put a base form into a cell at a position/rotation" },
     "leveledItems": { "type": "array", "items": { "$ref": "#/$defs/leveledList" }, "description": "LeveledItem (LVLI): level-gated weighted item lists" },
-    "leveledNpcs": { "type": "array", "items": { "$ref": "#/$defs/leveledList" }, "description": "LeveledNpc (LVLN): level-gated weighted npc lists" },
+    "leveledNpcs": { "type": "array", "items": { "$ref": "#/$defs/leveledList" }, "description": "LeveledNpc (LVLN): level-gated weighted npc lists (also a placement `base` for a leveled-actor spawn)" },
+    "encounterZones": { "type": "array", "items": { "$ref": "#/$defs/encounterZone" }, "description": "EncounterZone (ECZN): level scaling / respawn for an area; a cell/spawn `encounterZone` points at one" },
     "containers": { "type": "array", "items": { "$ref": "#/$defs/container" }, "description": "Container (CONT): a named container with item contents" },
     "ingredients": { "type": "array", "items": { "$ref": "#/$defs/ingredient" }, "description": "Ingredient (INGR): alchemy reagent with effects" },
     "ammunitions": { "type": "array", "items": { "$ref": "#/$defs/ammunition" }, "description": "Ammunition (AMMO): arrow/bolt with damage" },
@@ -289,6 +290,20 @@
         "flags": { "type": "array", "items": { "type": "string" }, "description": "CombatStyle.Flag names, e.g. Dueling" }
       }
     },
+    "encounterZone": {
+      "type": "object",
+      "required": ["editorId"],
+      "description": "EncounterZone (ECZN): level scaling + respawn for an area; a cell/spawn `encounterZone` points at one",
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "minLevel": { "type": "integer", "minimum": 0, "maximum": 255, "description": "floor of the spawn level range" },
+        "maxLevel": { "type": "integer", "minimum": 0, "maximum": 255, "description": "cap of the spawn level range; 0 = UNCAPPED (scales with the player — the vanilla dungeon idiom)" },
+        "rank": { "type": "integer", "minimum": 0, "maximum": 255, "description": "owner rank (0 if no owner)" },
+        "owner": { "$ref": "#/$defs/ref", "description": "optional FACT/NPC owner ref" },
+        "location": { "$ref": "#/$defs/ref", "description": "optional LCTN ref (map location)" },
+        "flags": { "type": "array", "items": { "enum": ["NeverResets", "MatchPcBelowMinimumLevel", "DisableCombatBoundary"] }, "description": "NeverResets = no respawn; MatchPcBelowMinimumLevel = below-min players get player-level spawns; DisableCombatBoundary = actors may chase out of the zone" }
+      }
+    },
     "package": {
       "type": "object",
       "required": ["editorId", "template"],
@@ -371,7 +386,8 @@
       "properties": {
         "editorId": { "type": "string", "minLength": 1 },
         "name": { "type": "string", "description": "display name" },
-        "template": { "type": "string", "description": "optional vanilla INTERIOR cell '<master>:0xFORMID' to copy lighting/water env from (a new cell with no lighting renders BLACK; find one with `find <Skyrim.esm> <name> Cell`). Still place a floor static via a `placement`, else the player falls into the void." }
+        "template": { "type": "string", "description": "optional vanilla INTERIOR cell '<master>:0xFORMID' to copy lighting/water env from (a new cell with no lighting renders BLACK; find one with `find <Skyrim.esm> <name> Cell`). Still place a floor static via a `placement`, else the player falls into the void." },
+        "encounterZone": { "$ref": "#/$defs/ref", "description": "optional ECZN ref (in-spec editorId or '<master>:0xFORMID') — the whole cell's level scaling / respawn (XEZN)" }
       }
     },
     "vec3": {
@@ -389,13 +405,14 @@
         { "required": ["worldspace"] }
       ],
       "properties": {
-        "base": { "$ref": "#/$defs/ref", "description": "the form to place: an in-spec npc/object editorId or external <master>:0xFORMID" },
+        "base": { "$ref": "#/$defs/ref", "description": "the form to place: an in-spec npc/object editorId or external <master>:0xFORMID. May also be a LeveledNpc (LVLN) list for a LEVELED-ACTOR SPAWN — the ACHR then rolls a level-appropriate actor (add kind:\"npc\" for a vanilla list)" },
         "cell": { "type": "string", "minLength": 1, "description": "INTERIOR target: an in-spec cell editorId OR a vanilla INTERIOR cell '<master>:0xFORMID' (find with `find <Skyrim.esm> <name> Cell`)" },
         "worldspace": { "type": "string", "minLength": 1, "description": "EXTERIOR target: a worldspace '<master>:0xFORMID' (Tamriel = Skyrim.esm:0x00003C; find with `find <Skyrim.esm> <name> Worldspace`). `position` is then WORLD coords; the cell at floor(x/4096),floor(y/4096) is overridden" },
         "kind": { "enum": ["npc", "object"], "description": "inferred for in-spec bases; defaults to object for external" },
         "position": { "$ref": "#/$defs/vec3", "description": "cell-local for interior; WORLD coords for exterior" },
         "rotation": { "$ref": "#/$defs/vec3", "description": "degrees" },
-        "persistent": { "type": "boolean", "description": "place in the cell's persistent (vs temporary) list" }
+        "persistent": { "type": "boolean", "description": "place in the cell's persistent (vs temporary) list" },
+        "encounterZone": { "$ref": "#/$defs/ref", "description": "optional ECZN ref — a per-ref override of the cell's zone (this spawn's XEZN); usually only meaningful on a leveled-actor spawn" }
       }
     },
     "leveledEntry": {

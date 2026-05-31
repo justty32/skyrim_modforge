@@ -72,6 +72,7 @@ public static partial class Generator
         foreach (var cl in spec.Climates) Reg(cl.EditorId, "climate");
         foreach (var ws in spec.Worldspaces) Reg(ws.EditorId, "worldspace");
         foreach (var rg in spec.Regions) Reg(rg.EditorId, "region");
+        foreach (var ez in spec.EncounterZones) Reg(ez.EditorId, "encounterZone");
         foreach (var pl in spec.Placements) if (!string.IsNullOrWhiteSpace(pl.EditorId)) Reg(pl.EditorId, "placement");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
@@ -565,6 +566,27 @@ public static partial class Generator
             if (!string.IsNullOrWhiteSpace(rg.MapColor) && !TryParseRgb(rg.MapColor, out _))
                 problems.Add($"region '{rg.EditorId}' mapColor '{rg.MapColor}' is not a hex RGB (expect 0xRRGGBB)");
         }
+
+        // EncounterZone (ECZN): level range sane (min<=max unless max==0 = uncapped), bytes in 0–255,
+        // owner/location refs resolve, flags parse.
+        foreach (var ez in spec.EncounterZones)
+        {
+            if (ez.MinLevel is < 0 or > 255) problems.Add($"encounterZone '{ez.EditorId}' minLevel {ez.MinLevel} out of range (0–255)");
+            if (ez.MaxLevel is < 0 or > 255) problems.Add($"encounterZone '{ez.EditorId}' maxLevel {ez.MaxLevel} out of range (0–255)");
+            // maxLevel 0 = "uncapped" (vanilla idiom), so only enforce min<=max when a real cap is set.
+            if (ez.MaxLevel != 0 && ez.MinLevel > ez.MaxLevel)
+                problems.Add($"encounterZone '{ez.EditorId}' minLevel {ez.MinLevel} > maxLevel {ez.MaxLevel} (set maxLevel 0 for an uncapped zone)");
+            CheckRef(ez.Owner, $"encounterZone '{ez.EditorId}' owner");
+            CheckRef(ez.Location, $"encounterZone '{ez.EditorId}' location");
+            foreach (var f in ez.Flags)
+                if (!Enum.TryParse<EncounterZone.Flag>(f, true, out _))
+                    problems.Add($"encounterZone '{ez.EditorId}' invalid flag '{f}' (NeverResets|MatchPcBelowMinimumLevel|DisableCombatBoundary)");
+        }
+        // Cell / placement encounterZone refs must resolve to an in-spec ECZN or vanilla one.
+        foreach (var c in spec.Cells)
+            CheckRef(c.EncounterZone, $"cell '{c.EditorId}' encounterZone");
+        foreach (var pl in spec.Placements)
+            CheckRef(pl.EncounterZone, $"placement '{(string.IsNullOrWhiteSpace(pl.EditorId) ? pl.Base : pl.EditorId)}' encounterZone");
 
         // Vendor (merchant) faction data: hours sane (0..24, start<end), gold implied by the
         // merchant container, refs well-formed. The merchant container must be a PLACEMENT editorId

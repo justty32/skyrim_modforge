@@ -15,6 +15,8 @@ internal static partial class Program
         foreach (var r in records)
             if (!string.IsNullOrEmpty(r.EditorID)) edByFk[r.FormKey] = r.EditorID!;
         string Ref(FormKey fk) => fk.IsNull ? "<null>" : edByFk.TryGetValue(fk, out var ed) ? ed : fk.ToString();
+        // In-spec LeveledNpc FormKeys — so a placed ACHR pointing at one is shown as a LEVELED spawn.
+        var inSpecLvln = records.OfType<ILeveledNpcGetter>().Select(l => l.FormKey).ToHashSet();
 
         var masters = mod.MasterReferences;
         Console.WriteLine($"{Path.GetFileName(inPath)} — {records.Count} record(s), "
@@ -135,17 +137,32 @@ internal static partial class Program
                     + (cg.Grid?.Point is { } gp ? $" grid=({gp.X},{gp.Y})" : "")
                     + (cg.WaterHeight is { } wh ? $" water={wh}" : " water=<none>")
                     + (cg.LightingTemplate.IsNull ? "" : $" lightTmpl={cg.LightingTemplate.FormKey}")
+                    + (cg.EncounterZone.IsNull ? "" : $" encZone -> {Ref(cg.EncounterZone.FormKey)}")
                     + $" persistent={cg.Persistent.Count} temporary={cg.Temporary.Count}");
+
+            if (r is IEncounterZoneGetter ecz)
+            {
+                var maxStr = ecz.MaxLevel == 0 ? "uncapped" : ecz.MaxLevel.ToString();
+                Console.WriteLine($"      encZone: levels [{ecz.MinLevel}..{maxStr}] rank={ecz.Rank} flags={ecz.Flags}"
+                    + (ecz.Owner.IsNull ? "" : $" owner -> {Ref(ecz.Owner.FormKey)}")
+                    + (ecz.Location.IsNull ? "" : $" location -> {Ref(ecz.Location.FormKey)}"));
+            }
 
             if (r is IPlacedNpcGetter pnpc && pnpc.Placement is { } pp)
             {
-                Console.WriteLine($"      placed npc -> base {Ref(pnpc.Base.FormKey)} @ ({pp.Position.X:0.#}, {pp.Position.Y:0.#}, {pp.Position.Z:0.#})");
+                // A leveled-actor spawn = ACHR whose base is a LeveledNpc. Detected by in-spec LVLN
+                // membership, or (for a vanilla base, whose record we can't see) the LChar* naming.
+                bool lvlBase = inSpecLvln.Contains(pnpc.Base.FormKey)
+                    || (edByFk.TryGetValue(pnpc.Base.FormKey, out var bed) && bed.StartsWith("LChar", StringComparison.OrdinalIgnoreCase));
+                Console.WriteLine($"      placed npc -> base {Ref(pnpc.Base.FormKey)}{(lvlBase ? " (LEVELED spawn)" : "")} @ ({pp.Position.X:0.#}, {pp.Position.Y:0.#}, {pp.Position.Z:0.#})"
+                    + (pnpc.EncounterZone.IsNull ? "" : $"  encZone -> {Ref(pnpc.EncounterZone.FormKey)}"));
                 foreach (var lr in pnpc.LinkedReferences) Console.WriteLine($"        linkedRef -> {Ref(lr.Reference.FormKey)}{(lr.KeywordOrReference.IsNull ? "" : $" (keyword {lr.KeywordOrReference.FormKey})")}");
             }
 
             if (r is IPlacedObjectGetter pobj && pobj.Placement is { } op)
             {
-                Console.WriteLine($"      placed obj -> base {Ref(pobj.Base.FormKey)} @ ({op.Position.X:0.#}, {op.Position.Y:0.#}, {op.Position.Z:0.#})");
+                Console.WriteLine($"      placed obj -> base {Ref(pobj.Base.FormKey)} @ ({op.Position.X:0.#}, {op.Position.Y:0.#}, {op.Position.Z:0.#})"
+                    + (pobj.EncounterZone.IsNull ? "" : $"  encZone -> {Ref(pobj.EncounterZone.FormKey)}"));
                 foreach (var lr in pobj.LinkedReferences) Console.WriteLine($"        linkedRef -> {Ref(lr.Reference.FormKey)}{(lr.KeywordOrReference.IsNull ? "" : $" (keyword {lr.KeywordOrReference.FormKey})")}");
             }
 

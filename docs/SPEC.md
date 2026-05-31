@@ -52,7 +52,8 @@ keywords, factions, etc. The named master is **added to the plugin automatically
   "keys": [...], "keywords": [...], "outfits": [...], "statics": [...], "activators": [...],
   "textureSets": [...],          // TXST — retexture an existing mesh without a new .nif
   "packages": [...],             // AI Packages — what an NPC DOES (sandbox/travel/use furniture)
-  "weathers": [...], "climates": [...]  // custom skies (WTHR) + weather cycles (CLMT)
+  "weathers": [...], "climates": [...],  // custom skies (WTHR) + weather cycles (CLMT)
+  "encounterZones": [...]        // ECZN — level scaling / respawn for an area (a cell/spawn points at one)
 }
 ```
 
@@ -77,8 +78,8 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `factions` | `editorId`, `name`, `vendor` (optional sub-object — turns this into a MERCHANT faction; see *vendors / merchants* below) |
 | `classes` | `editorId`, `name`, `description`, `teaches` (Skill), `maxTrainingLevel`, `healthWeight`/`magickaWeight`/`staminaWeight` (attribute distribution), `skillWeights` (`{ Skill: 0–255 }`) — an npc `class` can point at one |
 | `messages` | `editorId`, `name`, `description` (body text) |
-| `cells` | `editorId`, `name`, `template` (vanilla interior cell `<master>:0xFORMID` to copy lighting from — else the new cell is black) |
-| `placements` | `base` (*ref*); **interior:** `cell` (in-spec editorId **or** vanilla interior cell `<master>:0xFORMID`) **or exterior:** `worldspace` (`<master>:0xFORMID`, position is world coords); `kind` (`npc`\|`object`), `position` (`{x,y,z}`), `rotation` (`{x,y,z}` degrees), `persistent` (bool) |
+| `cells` | `editorId`, `name`, `template` (vanilla interior cell `<master>:0xFORMID` to copy lighting from — else the new cell is black), `encounterZone` (*ref* → ECZN — level scaling/respawn for the whole cell) |
+| `placements` | `base` (*ref* — a concrete form **or a LeveledNpc list** for a leveled-actor spawn); **interior:** `cell` (in-spec editorId **or** vanilla interior cell `<master>:0xFORMID`) **or exterior:** `worldspace` (`<master>:0xFORMID`, position is world coords); `kind` (`npc`\|`object`), `position` (`{x,y,z}`), `rotation` (`{x,y,z}` degrees), `persistent` (bool), `encounterZone` (*ref* → ECZN — per-ref override of the cell's zone) |
 | `leveledItems` | `editorId`, `chanceNone` (0–100), `flags` (array), `entries` (array of `{ reference (*ref*), level (int), count (int) }`) |
 | `leveledNpcs` | same shape as `leveledItems`, but `reference` is an npc/leveled-npc |
 | `containers` | `editorId`, `name`, `weight`, `items` (array of `{ item (*ref*), count (int) }`) |
@@ -94,6 +95,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `recipes` | `editorId`, `kind` (`craft`/`temper`/`smelt`/`breakdown`), `createdObject` (*ref*), `count` (int), `workbench` (named selector `forge`/`sharpeningWheel`/`armorTable`/`smelter`/`tanningRack`/`skyforge` OR a keyword *ref*; defaults by kind), `components` (array of `{ item (*ref*), count (int) }`), `conditions` (array of shared CTDA `{ function, param (*ref*), comparison, value, or }` — perk/item/skill gating, e.g. `HasPerk`/`TemperIsEnchanted`) — a crafting/tempering/smelting recipe (COBJ) |
 | `packages` | `editorId`, `template` (*ref* → a vanilla procedure template, e.g. Sandbox = `Skyrim.esm:0x01C254`, Travel = `Skyrim.esm:0x016FAA`, UseMagic = `Skyrim.esm:0x0504F5`), `flags` (array — `Package.Flag` names), `interruptFlags` (array — `HellosToPlayer`/`AllowIdleChatter`/`WorldInteractions`/…), `preferredSpeed` (`Walk`\|`Jog`\|`Run`\|`FastWalk`), `combatStyle` (*ref*, optional), `ownerQuest` (*ref*, optional), `schedule` (`{ month, dayOfWeek, date, hour, minute, durationInMinutes }` — a time window `[hour, hour+durationInMinutes)`; `hour:-1` = any time), `sandbox` / `sleep` / `travel` / `useMagic` / `patrol` / `follow` / `escort` (template-input subobjects — see below), `conditions` (array of CTDA gates — see *conditions* below). An NPC's `packages` list is in **priority order**: the engine runs the first package whose schedule **and** conditions pass — so put scheduled/conditioned packages first and an unconditioned fallback last (e.g. a Sleep package scheduled 22:00–07:00 above an unconditioned Sandbox; or a Follow package gated on `GetInFaction CurrentFollowerFaction==1` above a downtime Sandbox). Assign to one or more NPCs via `npcs[].packages`. |
 | `combatStyles` | `editorId`, `offensiveMult`/`defensiveMult`/`groupOffensiveMult` (~aggression/blocking/group-boldness), `equipMultMelee`/`equipMultMagic`/`equipMultRanged`/`equipMultShout`/`equipMultUnarmed`/`equipMultStaff` (AI weapon-preference scores; for a mage NPC, push Magic high relative to the others — vanilla `csVampireMagic` uses 8.1/2.15/0.51), `avoidThreatChance` (0..1), `flags` (array — `Dueling`\|`Flanking`\|`AllowDualWielding`). An npc's `combatStyle` ref can point at one. |
+| `encounterZones` | `editorId`, `minLevel` (0–255), `maxLevel` (0–255; **0 = uncapped**, scales with the player), `rank` (int, owner rank), `owner` (*ref* → FACT/NPC, optional), `location` (*ref* → LCTN, optional), `flags` (array — `NeverResets`\|`MatchPcBelowMinimumLevel`\|`DisableCombatBoundary`). A cell's / placed spawn's `encounterZone` points at one. |
 | `textureSets` | `editorId`, eight optional `.dds` slot paths — `diffuse`, `normal`, `mask`, `glow`, `height`, `environment`, `multilayer`, `backlight` — each **relative to `Data\Textures\`** (omit the leading `Textures\`), `flags` (array — `NoSpecularMap`\|`FaceGenTextures`\|`HasModelSpaceNormalMap`). A TXST retextures an existing mesh; wire it via a record's `alternateTextures`. See the *textureSets* section below. |
 | `weathers` | `editorId`, `flags` (array — `Pleasant`\|`Cloudy`\|`Rainy`\|`Snow`\|`SkyStaticsAlwaysVisible`\|`SkyStaticsFollowsSunPosition`), per-time-of-day *colours* (`skyUpperColor`/`skyLowerColor`/`fogNearColor`/`fogFarColor`/`horizonColor`/`cloudColor`/`sunColor`/`sunlightColor`/`ambientColor`/`starsColor`), `clouds` (array of `{ index (0–31), texture, xSpeed, ySpeed, colors, alphaSunrise/Day/Sunset/Night }`), `precipitation` (*ref* → SPGD), `windSpeed` (0–1 or 0–100), `windDirection`/`windDirectionRange` (degrees), `fogDayNear`/`fogDayFar`/`fogNightNear`/`fogNightFar` (world units), `transitionDelta`. A custom sky — see the section below |
 | `climates` | `editorId`, `weathers` (array of `{ weather (*ref* → WTHR), chance (int weight) }`), `sunriseBegin`/`sunriseEnd`/`sunsetBegin`/`sunsetEnd` (`"HH:MM"` 24h), `sunTexture`/`sunGlareTexture` (Textures-relative paths), `moons` (array — `Masser`\|`Secunda`), `phaseLength` (int), `volatility` (0–255). A weather cycle — see the section below |
@@ -437,6 +439,48 @@ worldspace) whose **weather table** drives which weathers play there:
   list yields nothing; `flags` names come from the LVLI/LVLN flag set.
 - `containers` (CONT) hold `items`, each an item *ref* + `count`. (To make the container
   appear in the world, place it with a `placement`, same as any object.)
+
+### encounter zones & leveled-actor spawns — populating an area with scaled enemies
+Two pieces work together to drop **level-appropriate** enemies into an area:
+
+**1. A leveled-actor spawn** is just a `placement` whose `base` is a **LeveledNpc list** (LVLN)
+instead of a concrete NPC. The placed ACHR then *rolls* a level-appropriate actor from that list
+at load — so the same spawn yields a weak bandit at low level and a tough one later.
+```jsonc
+{ "base": "Skyrim.esm:0x03DECD", "cell": "MF_BanditDen", "kind": "npc",   // LCharBanditMeleeAny
+  "position": { "x": -180, "y": 120, "z": 0 } }
+```
+- For an **in-spec** `leveledNpcs` list, the base auto-detects as an actor (ACHR). For a **vanilla**
+  list (`Skyrim.esm:0x…`) the build can't see the record type headlessly, so add `"kind": "npc"`.
+- Find leveled enemy lists with `find <Skyrim.esm> LChar<…> LeveledNpc` (e.g. `LCharBanditMeleeAny`
+  `0x03DECD`, `LCharBanditMissileNordM` `0x01A348`, `LCharBanditBossNordM` `0x01A341`).
+
+**2. An encounter zone** (`encounterZones`, ECZN) sets the **level range + respawn** the spawns roll
+inside. A cell points at one via `encounterZone` (the whole cell), and/or an individual spawn does
+(its own XEZN — a per-ref override).
+```jsonc
+"encounterZones": [
+  { "editorId": "MF_BanditDenZone",
+    "minLevel": 4, "maxLevel": 0,            // floor 4; maxLevel 0 = uncapped (scales with the player)
+    "flags": ["MatchPcBelowMinimumLevel"] }  // below-min players get player-level spawns, not min
+],
+"cells": [
+  { "editorId": "MF_BanditDen", "template": "Skyrim.esm:0x0165A8",
+    "encounterZone": "MF_BanditDenZone" }    // wires the cell's level scaling/respawn
+]
+```
+- `maxLevel 0` means **uncapped** — the vanilla dungeon idiom (e.g. `HelgenZone` is min 6 / max 0).
+  Validate enforces `minLevel ≤ maxLevel` only when a real cap (`maxLevel > 0`) is set.
+- `flags`: `NeverResets` (cleared dungeons stay cleared — no respawn), `MatchPcBelowMinimumLevel`
+  (spawns match a low-level player instead of clamping to `minLevel`), `DisableCombatBoundary`
+  (actors may chase out of the zone). `owner` (FACT/NPC) + `rank` set zone ownership; `location` (LCTN)
+  links it to a map location.
+- Inspect any zone with `eczndiag <plugin> <0xFORMID>` (level range / rank / flags / owner / location).
+- **Navmesh caveat:** a brand-NEW in-spec cell has **no navmesh**, so spawned actors can't *path*
+  until it's navmeshed in the Creation Kit — they stand where placed. Actors snap to the floor (unlike
+  static markers), so any sane in-room coordinate works for placement, but movement/combat AI needs
+  navmesh. Anchor on proven-walkable coords (`refpos`) or navmesh the cell in the CK before relying on
+  patrols/pursuit. (See the worked `examples/encounter_spec.json`.)
 
 ### vendors / merchants — a working shopkeeper
 Turn an NPC into a functioning shop (buys + sells) by giving a **faction** a `vendor` sub-object and

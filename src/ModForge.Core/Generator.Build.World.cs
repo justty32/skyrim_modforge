@@ -285,13 +285,30 @@ public static partial class Generator
                     Rotation = new Noggog.P3Float(Deg2Rad(pl.Rotation.X), Deg2Rad(pl.Rotation.Y), Deg2Rad(pl.Rotation.Z)),
                 };
 
-                // Explicit kind wins; otherwise an in-spec NPC base -> npc, anything else -> object.
+                // Explicit kind wins; otherwise an in-spec NPC *or LeveledNpc* base -> npc (ACHR),
+                // anything else -> object (REFR). A LeveledNpc base makes the ACHR a LEVELED SPAWN: the
+                // engine rolls a level-appropriate actor from that list at load. (For a vanilla base we
+                // can't see the record type headlessly, so an external LVLN spawn needs explicit
+                // kind:"npc" — but in practice the spawn list is usually in-spec or the author sets kind.)
                 bool isNpc = pl.Kind.Equals("npc", StringComparison.OrdinalIgnoreCase)
-                    || (string.IsNullOrEmpty(pl.Kind) && recordsByEd.TryGetValue(pl.Base, out var br) && br is INpc);
+                    || (string.IsNullOrEmpty(pl.Kind) && recordsByEd.TryGetValue(pl.Base, out var br) && (br is INpc || br is ILeveledNpc));
 
                 IPlaced placedRec;
                 if (isNpc) { var a = new PlacedNpc(mod); a.Base.SetTo(baseFk); a.Placement = placement; placedRec = a; }
                 else       { var o = new PlacedObject(mod); o.Base.SetTo(baseFk); o.Placement = placement; placedRec = o; }
+
+                // Per-ref encounter zone (XEZN) — scopes THIS spawn to its own zone (else it inherits the
+                // cell's). EncounterZone lives on both ACHR and REFR (no shared settable interface), so set
+                // the concrete one. Usually only meaningful on a leveled-actor spawn.
+                if (!string.IsNullOrWhiteSpace(pl.EncounterZone) && TryResolveRef(pl.EncounterZone, formKeyByEd, out var ezFk))
+                {
+                    if (placedRec is PlacedNpc pnRec) pnRec.EncounterZone.SetTo(ezFk);
+                    else if (placedRec is PlacedObject poRec) poRec.EncounterZone.SetTo(ezFk);
+                    linksWired++;
+                    if (LooksExternalRef(pl.EncounterZone)) extLinks++;
+                }
+                else if (!string.IsNullOrWhiteSpace(pl.EncounterZone))
+                    Warn($"  ! placement encounterZone '{pl.EncounterZone}' unresolved — skipped");
 
                 // Named placements register so other refs (patrol start, linkedRefs target) can find
                 // them. A placement that's a linkedRefs *target* must persist across save/load to be a

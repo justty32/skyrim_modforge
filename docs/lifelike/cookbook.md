@@ -328,6 +328,43 @@ Lighting comes from the `template` (code path `CopyCellEnv`); floor + light are 
 Use a non-PortalStrict omni light (`WRShadowOmni 0x0C82AE`) — a `PortalStrict` light lights nothing
 in a portal-less cell.
 
+## "Populate a dungeon with scaled enemies" (encounter zone + leveled spawns)
+
+Drop **level-appropriate** enemies into an area: an encounter zone (ECZN) sets the level range +
+respawn; each spawn's `base` is a **LeveledNpc list** so the engine rolls a scaled actor at load.
+
+```jsonc
+{ "encounterZones": [
+    { "editorId": "MF_BanditDenZone", "minLevel": 4, "maxLevel": 0,   // max 0 = uncapped (scales w/ player)
+      "flags": [ "MatchPcBelowMinimumLevel" ] }
+  ],
+  "cells": [
+    { "editorId": "MF_BanditDen", "name": "Bandit Den",
+      "template": "Skyrim.esm:0x0165A8",          // lighting (else black) — see "Usable interior cell"
+      "encounterZone": "MF_BanditDenZone" }       // the whole cell's level scaling/respawn
+  ],
+  "placements": [
+    // ... a floor grid (WRIntFloorSTMid01Large 0x1044AA) so you don't fall into the void ...
+    { "base": "Skyrim.esm:0x03DECD", "cell": "MF_BanditDen", "kind": "npc",   // LCharBanditMeleeAny
+      "position": { "x": -180, "y": 120, "z": 0 } },
+    { "base": "Skyrim.esm:0x01A348", "cell": "MF_BanditDen", "kind": "npc",   // LCharBanditMissileNordM (archer)
+      "position": { "x":  180, "y": 120, "z": 0 } },
+    { "base": "Skyrim.esm:0x01A341", "cell": "MF_BanditDen", "kind": "npc",   // LCharBanditBossNordM (boss)
+      "position": { "x": 0, "y": -120, "z": 0 }, "encounterZone": "MF_BanditDenZone" }  // per-ref XEZN (optional)
+  ] }
+```
+
+- A **vanilla** LVLN base (`Skyrim.esm:0x…`) needs `"kind": "npc"` — the build can't read the master's
+  record type headlessly. An **in-spec** `leveledNpcs` base auto-detects as an actor.
+- `maxLevel 0` = uncapped (the vanilla idiom; `HelgenZone` is min 6 / max 0). `MatchPcBelowMinimumLevel`
+  gives a low-level player player-scaled spawns instead of clamping to `minLevel`; `NeverResets` makes
+  a cleared den stay cleared.
+- Verify: `validate` → `build` → `dump` (cell `encZone ->`, each `placed npc -> base …`, the ECZN's
+  `levels [min..max]`) and `eczndiag <plugin> <0xFORMID>`. Worked spec: `examples/encounter_spec.json`.
+- **Navmesh:** a brand-new cell has **no navmesh**, so spawns stand where placed and can't path/pursue
+  until you navmesh the cell in the CK. Actors snap to the floor, so placement coords are forgiving, but
+  movement/combat AI is not active until navmeshed (structural-only until then).
+
 ## "Craftable item" (COBJ recipe)
 
 Simpler than it looks: the workbench is a plain keyword FormLink (defaults to the forge), **not** a

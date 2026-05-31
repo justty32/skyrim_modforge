@@ -54,4 +54,5 @@ public sealed class BuildStats
     public int Worldspaces { get; init; }
     public int NewExteriorCells { get; init; }
     public int Regions { get; init; }
+    public int EncounterZones { get; init; }
 }
