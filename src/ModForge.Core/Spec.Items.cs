@@ -95,8 +95,45 @@ public sealed class KeywordSpec { public string EditorId { get; set; } = ""; }
 // ref can point at an in-spec outfit's editorId.
 public sealed class OutfitSpec { public string EditorId { get; set; } = ""; public List<string> Items { get; set; } = new(); }
 // Static (STAT): a world mesh — just `model` (a .nif path; reference a vanilla mesh in the BSA).
-// A placement base for scenery; no Name (statics are nameless).
-public sealed class StaticSpec { public string EditorId { get; set; } = ""; public string Model { get; set; } = ""; }
+// A placement base for scenery; no Name (statics are nameless). `alternateTextures` swaps the
+// textures of named material sub-meshes inside that .nif to in-spec/vanilla TextureSet (TXST)
+// records — the "retexture without a new mesh" path (see TextureSetSpec).
+public sealed class StaticSpec { public string EditorId { get; set; } = ""; public string Model { get; set; } = ""; public List<AlternateTextureSpec> AlternateTextures { get; set; } = new(); }
 // Activator (ACTI): an interactable world object — name + `model` + keywords (+ a script via
-// `scripts`). A placement base you can walk up to / attach behaviour to.
-public sealed class ActivatorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Model { get; set; } = ""; public List<string> Keywords { get; set; } = new(); }
+// `scripts`). A placement base you can walk up to / attach behaviour to. `alternateTextures` works
+// exactly like STAT's — see TextureSetSpec.
+public sealed class ActivatorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Model { get; set; } = ""; public List<string> Keywords { get; set; } = new(); public List<AlternateTextureSpec> AlternateTextures { get; set; } = new(); }
+// TextureSet (TXST): a set of texture-map paths that REPLACE a base mesh's textures without
+// authoring a new .nif — the heart of "retexture" mods (a recolored sword, reskinned armor, etc.).
+// Every field is an OPTIONAL Data-relative `Textures\...\*.dds` path; an omitted slot leaves the
+// mesh's original texture for that map. The eight slots mirror Mutagen's TextureSet record and the
+// CK's TXST editor (BGSM order): diffuse (color/albedo), normal (normal+gloss), mask
+// (env-mask / subsurface tint), glow (glow / detail), height (parallax), environment (cubemap),
+// multilayer, backlight (backlight-mask / specular). `flags` ∈ NoSpecularMap | FaceGenTextures |
+// HasModelSpaceNormalMap. A TXST does nothing on its own — wire it into a consumer's
+// `alternateTextures` (Static/Activator) by editorId. The .dds files themselves are USER-AUTHORED;
+// ModForge only writes the references/paths (it cannot create or verify texture content).
+public sealed class TextureSetSpec
+{
+    public string EditorId { get; set; } = "";
+    public string Diffuse { get; set; } = "";       // slot 0 — color/albedo (_d.dds); the one you almost always set
+    public string Normal { get; set; } = "";         // slot 1 — normal + gloss (_n.dds)
+    public string Mask { get; set; } = "";           // slot 2 — environment-mask / subsurface tint (_m.dds / _sk.dds)
+    public string Glow { get; set; } = "";           // slot 3 — glow / detail map (_g.dds)
+    public string Height { get; set; } = "";         // slot 4 — parallax height (_p.dds)
+    public string Environment { get; set; } = "";    // slot 5 — environment cube map (_e.dds)
+    public string Multilayer { get; set; } = "";     // slot 6 — multilayer (rarely used)
+    public string Backlight { get; set; } = "";      // slot 7 — backlight-mask / specular
+    public List<string> Flags { get; set; } = new(); // TextureSet.Flag names
+}
+// One alternate-texture override on a modeled record's mesh. `name` MUST match a material/sub-mesh
+// (BSLightingShaderProperty/“3D index name”) inside the base .nif — the CK shows these in the
+// "Model Data" → AltTex dialog; the wrong name silently swaps nothing. `index` is the 3D sub-mesh
+// index (0 for a single-material mesh). `textureSet` is a ref → a TXST (in-spec editorId or vanilla
+// <master>:0xFORMID).
+public sealed class AlternateTextureSpec
+{
+    public string Name { get; set; } = "";          // REQUIRED — the .nif material/sub-mesh name to retexture
+    public int Index { get; set; }                   // 3D sub-mesh index (default 0)
+    public string TextureSet { get; set; } = "";     // REQUIRED ref → TXST
+}

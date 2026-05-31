@@ -67,6 +67,7 @@ public static partial class Generator
         foreach (var w in spec.WordsOfPower) Reg(w.EditorId, "wordOfPower");
         foreach (var sh in spec.Shouts) Reg(sh.EditorId, "shout");
         foreach (var e in spec.Enchantments) Reg(e.EditorId, "enchantment");
+        foreach (var tx in spec.TextureSets) Reg(tx.EditorId, "textureSet");
         foreach (var pl in spec.Placements) if (!string.IsNullOrWhiteSpace(pl.EditorId)) Reg(pl.EditorId, "placement");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
@@ -442,6 +443,68 @@ public static partial class Generator
         }
         foreach (var n in spec.Npcs)
             foreach (var pkgRef in n.Packages) CheckRef(pkgRef, $"npc '{n.EditorId}' package");
+
+        // TextureSet (TXST): a texture-map path must be a `.dds` string RELATIVE TO Data\Textures\
+        // (the slot's implicit root — exactly how vanilla TXSTs and ModForge's `model` field store
+        // paths: `Clothes\Monk\Robes_d.dds`, NOT `Textures\Clothes\…`). So the leading `Textures\` is
+        // an error (it would resolve to Data\Textures\Textures\…), as are absolute paths and non-.dds
+        // files. At least one slot should be set (a TXST overriding nothing is a no-op).
+        void CheckTexPath(string path, string what)
+        {
+            if (string.IsNullOrWhiteSpace(path)) return;
+            var raw = path.Trim();
+            var p = raw.Replace('/', '\\');
+            // Reject absolute paths portably: a leading / or \ (Unix root / UNC), a drive letter
+            // (C:\), or .NET's own rooted check on the verbatim string.
+            bool rooted = raw.StartsWith('/') || raw.StartsWith('\\') || Path.IsPathRooted(raw)
+                || (raw.Length >= 2 && char.IsLetter(raw[0]) && raw[1] == ':');
+            if (rooted)
+                problems.Add($"{what} path '{path}' must be RELATIVE to Data\\Textures (e.g. mymod\\sword_d.dds), not absolute");
+            if (p.StartsWith("Textures\\", StringComparison.OrdinalIgnoreCase))
+                problems.Add($"{what} path '{path}' must NOT start with 'Textures\\' — TXST slots are already relative to Data\\Textures (use e.g. mymod\\sword_d.dds)");
+            if (!p.EndsWith(".dds", StringComparison.OrdinalIgnoreCase))
+                problems.Add($"{what} path '{path}' must be a .dds texture");
+        }
+        foreach (var tx in spec.TextureSets)
+        {
+            if (string.IsNullOrWhiteSpace(tx.Diffuse) && string.IsNullOrWhiteSpace(tx.Normal)
+                && string.IsNullOrWhiteSpace(tx.Mask) && string.IsNullOrWhiteSpace(tx.Glow)
+                && string.IsNullOrWhiteSpace(tx.Height) && string.IsNullOrWhiteSpace(tx.Environment)
+                && string.IsNullOrWhiteSpace(tx.Multilayer) && string.IsNullOrWhiteSpace(tx.Backlight))
+                problems.Add($"textureSet '{tx.EditorId}' sets no texture slots (at minimum set `diffuse`) — overrides nothing");
+            else if (string.IsNullOrWhiteSpace(tx.Diffuse))
+                problems.Add($"textureSet '{tx.EditorId}' has no `diffuse` slot (the base color map) — unusual; most retextures set it");
+            CheckTexPath(tx.Diffuse,     $"textureSet '{tx.EditorId}' diffuse");
+            CheckTexPath(tx.Normal,      $"textureSet '{tx.EditorId}' normal");
+            CheckTexPath(tx.Mask,        $"textureSet '{tx.EditorId}' mask");
+            CheckTexPath(tx.Glow,        $"textureSet '{tx.EditorId}' glow");
+            CheckTexPath(tx.Height,      $"textureSet '{tx.EditorId}' height");
+            CheckTexPath(tx.Environment, $"textureSet '{tx.EditorId}' environment");
+            CheckTexPath(tx.Multilayer,  $"textureSet '{tx.EditorId}' multilayer");
+            CheckTexPath(tx.Backlight,   $"textureSet '{tx.EditorId}' backlight");
+            foreach (var f in tx.Flags)
+                if (!Enum.TryParse<TextureSet.Flag>(f, true, out _))
+                    problems.Add($"textureSet '{tx.EditorId}' invalid flag '{f}' (NoSpecularMap|FaceGenTextures|HasModelSpaceNormalMap)");
+        }
+        // alternateTextures (the TXST consumer) on Static/Activator: a base `model` to override, a
+        // material `name` to target, and a TXST `textureSet` ref that resolves.
+        void CheckAltTextures(string ed, string model, List<AlternateTextureSpec> alts, string kind)
+        {
+            if (alts.Count == 0) return;
+            if (string.IsNullOrWhiteSpace(model))
+                problems.Add($"{kind} '{ed}' has alternateTextures but no `model` — nothing to retexture");
+            foreach (var alt in alts)
+            {
+                if (string.IsNullOrWhiteSpace(alt.Name))
+                    problems.Add($"{kind} '{ed}' alternateTexture has empty `name` (must match a material/sub-mesh in the .nif)");
+                if (string.IsNullOrWhiteSpace(alt.TextureSet))
+                    problems.Add($"{kind} '{ed}' alternateTexture '{alt.Name}' has empty `textureSet` ref");
+                else CheckRef(alt.TextureSet, $"{kind} '{ed}' alternateTexture '{alt.Name}' textureSet");
+                if (alt.Index < 0) problems.Add($"{kind} '{ed}' alternateTexture '{alt.Name}' index must be >= 0");
+            }
+        }
+        foreach (var st in spec.Statics) CheckAltTextures(st.EditorId, st.Model, st.AlternateTextures, "static");
+        foreach (var ac in spec.Activators) CheckAltTextures(ac.EditorId, ac.Model, ac.AlternateTextures, "activator");
 
         // Vendor (merchant) faction data: hours sane (0..24, start<end), gold implied by the
         // merchant container, refs well-formed. The merchant container must be a PLACEMENT editorId

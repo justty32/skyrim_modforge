@@ -34,6 +34,7 @@ internal static partial class Program
                 case "pkgsbytemplate" when args.Length == 3: return PkgsByTemplate(args[1], args[2]);
                 case "npcdiag" when args.Length == 3: return NpcDiag(args[1], args[2]);
                 case "cstydiag" when args.Length == 3: return CstyDiag(args[1], args[2]);
+                case "txstdiag" when args.Length is 2 or 3: return TxstDiag(args[1], args.Length == 3 ? args[2] : null);
                 case "cobjdiag" when args.Length == 3: return CobjDiag(args[1], args[2]);
                 case "refpos" when args.Length == 3: return RefPos(args[1], args[2]);
                 case "bookdiag" when args.Length == 3: return BookDiag(args[1], args[2]);
@@ -71,6 +72,7 @@ internal static partial class Program
         "  npcdiag <in.esp> <0xFORMID>                  print an Npc's race/class/voice/factions/packages/flags (for cross-cell diff vs vanilla)\n" +
         "  cstydiag <in.esp> <0xFORMID>                 print a CombatStyle's offensive/defensive mults + equipment preferences + flags\n" +
         "  cobjdiag <in.esp> <0xFORMID>                 print a recipe's (COBJ) createdObject/count/workbench/components/conditions\n" +
+        "  txstdiag <in.esp> [0xFORMID]                 a TextureSet's 8 texture-map slots+flags (no id: list all TXST)\n" +
         "  bookdiag <in.esp> <0xFORMID>                 print a Book's Teaches (spell/skill/nothing) + flags + model (e.g. a vanilla spell tome)\n" +
         "  refpos <in.esp> <0xFORMID>                   print a placed ref's (REFR/ACHR) position+rotation+base (anchor new placements on known navmesh)\n" +
         "  infodiag <in.esp> <0xFORMID> [substr]        dump dialogue INFO responses + FULL CTDA conditions for a topic, or every topic a quest owns (substr filters EditorID)\n" +

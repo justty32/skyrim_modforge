@@ -49,4 +49,5 @@ public sealed class ModSpec
     public List<WordOfPowerSpec> WordsOfPower { get; set; } = new();
     public List<ShoutSpec> Shouts { get; set; } = new();
     public List<EnchantmentSpec> Enchantments { get; set; } = new();
+    public List<TextureSetSpec> TextureSets { get; set; } = new();
 }

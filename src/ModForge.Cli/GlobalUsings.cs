@@ -3,6 +3,7 @@ global using System.Text.Json;
 global using Mutagen.Bethesda;
 global using Mutagen.Bethesda.Plugins;
 global using Mutagen.Bethesda.Plugins.Aspects;
+global using Mutagen.Bethesda.Plugins.Assets;
 global using Mutagen.Bethesda.Plugins.Binary.Parameters;
 global using Mutagen.Bethesda.Plugins.Records;
 global using Mutagen.Bethesda.Skyrim;

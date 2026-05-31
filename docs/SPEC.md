@@ -50,6 +50,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
   "leveledItems": [...], "leveledNpcs": [...], "containers": [...],
   "ingredients": [...], "ammunitions": [...], "scrolls": [...], "soulGems": [...],
   "keys": [...], "keywords": [...], "outfits": [...], "statics": [...], "activators": [...],
+  "textureSets": [...],          // TXST — retexture an existing mesh without a new .nif
   "packages": [...]              // AI Packages — what an NPC DOES (sandbox/travel/use furniture)
 }
 ```
@@ -87,11 +88,12 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `keys` | `editorId`, `name`, `value`, `weight`, `keywords` (array of *refs*) |
 | `keywords` | `editorId` (define your own keyword so in-spec records can list it in `keywords`) |
 | `outfits` | `editorId`, `items` (array of *refs* → armors/weapons; an npc `outfit` can point at this editorId) |
-| `statics` | `editorId`, `model` (a `.nif` path — reference a vanilla mesh; a placement base, no name) |
-| `activators` | `editorId`, `name`, `model` (`.nif` path), `keywords` (array of *refs*); attach behaviour via `scripts` |
+| `statics` | `editorId`, `model` (a `.nif` path — reference a vanilla mesh; a placement base, no name), `alternateTextures` (array — swap the mesh's textures to a TXST; see *textureSets* below) |
+| `activators` | `editorId`, `name`, `model` (`.nif` path), `keywords` (array of *refs*), `alternateTextures` (array — same as `statics`); attach behaviour via `scripts` |
 | `recipes` | `editorId`, `kind` (`craft`/`temper`/`smelt`/`breakdown`), `createdObject` (*ref*), `count` (int), `workbench` (named selector `forge`/`sharpeningWheel`/`armorTable`/`smelter`/`tanningRack`/`skyforge` OR a keyword *ref*; defaults by kind), `components` (array of `{ item (*ref*), count (int) }`), `conditions` (array of shared CTDA `{ function, param (*ref*), comparison, value, or }` — perk/item/skill gating, e.g. `HasPerk`/`TemperIsEnchanted`) — a crafting/tempering/smelting recipe (COBJ) |
 | `packages` | `editorId`, `template` (*ref* → a vanilla procedure template, e.g. Sandbox = `Skyrim.esm:0x01C254`, Travel = `Skyrim.esm:0x016FAA`, UseMagic = `Skyrim.esm:0x0504F5`), `flags` (array — `Package.Flag` names), `interruptFlags` (array — `HellosToPlayer`/`AllowIdleChatter`/`WorldInteractions`/…), `preferredSpeed` (`Walk`\|`Jog`\|`Run`\|`FastWalk`), `combatStyle` (*ref*, optional), `ownerQuest` (*ref*, optional), `schedule` (`{ month, dayOfWeek, date, hour, minute, durationInMinutes }` — a time window `[hour, hour+durationInMinutes)`; `hour:-1` = any time), `sandbox` / `sleep` / `travel` / `useMagic` / `patrol` / `follow` / `escort` (template-input subobjects — see below), `conditions` (array of CTDA gates — see *conditions* below). An NPC's `packages` list is in **priority order**: the engine runs the first package whose schedule **and** conditions pass — so put scheduled/conditioned packages first and an unconditioned fallback last (e.g. a Sleep package scheduled 22:00–07:00 above an unconditioned Sandbox; or a Follow package gated on `GetInFaction CurrentFollowerFaction==1` above a downtime Sandbox). Assign to one or more NPCs via `npcs[].packages`. |
 | `combatStyles` | `editorId`, `offensiveMult`/`defensiveMult`/`groupOffensiveMult` (~aggression/blocking/group-boldness), `equipMultMelee`/`equipMultMagic`/`equipMultRanged`/`equipMultShout`/`equipMultUnarmed`/`equipMultStaff` (AI weapon-preference scores; for a mage NPC, push Magic high relative to the others — vanilla `csVampireMagic` uses 8.1/2.15/0.51), `avoidThreatChance` (0..1), `flags` (array — `Dueling`\|`Flanking`\|`AllowDualWielding`). An npc's `combatStyle` ref can point at one. |
+| `textureSets` | `editorId`, eight optional `.dds` slot paths — `diffuse`, `normal`, `mask`, `glow`, `height`, `environment`, `multilayer`, `backlight` — each **relative to `Data\Textures\`** (omit the leading `Textures\`), `flags` (array — `NoSpecularMap`\|`FaceGenTextures`\|`HasModelSpaceNormalMap`). A TXST retextures an existing mesh; wire it via a record's `alternateTextures`. See the *textureSets* section below. |
 
 A field marked *ref* takes an in-spec `editorId` **or** `"<master>:0xFORMID"` (see
 *References to vanilla / external forms* above). A standing NPC needs at least `race` +
@@ -488,6 +490,52 @@ smelter (`createdObject` = the output ingot, component = the ore/item consumed).
 
 Common bench keyword FormIDs (probed from Skyrim.esm): `0x088105` forge, `0x0ADB78` armor table,
 `0x088108` sharpening wheel, `0x0A5CCE` smelter, `0x07866A` tanning rack, `0x0F46CE` Skyforge.
+
+### textureSets (TXST) — retexture without a new mesh
+A huge class of mods just **swaps the textures** of an existing mesh (a recolored sword, a reskinned
+creature, a Markarth-painted banner reusing the Jorrvaskr banner `.nif`) without authoring a new
+`.nif`. That's a **TextureSet (TXST)** record: a set of texture-map paths plus a consumer that points
+a named material on a base mesh at it.
+
+A TXST has up to eight optional slots; set only the ones you replace (an omitted slot keeps the
+mesh's original map for that channel). Every path is **relative to `Data\Textures\`** — exactly like
+a `model` path is relative to `Data\Meshes\` — so you **omit** the leading `Textures\`:
+
+```jsonc
+"textureSets": [
+  { "editorId": "MF_GildedRubbleTexture",
+    "diffuse": "ModForge\\rubble\\gilded_rubble_d.dds",   // slot 0 — color/albedo (_d)
+    "normal":  "ModForge\\rubble\\gilded_rubble_n.dds",   // slot 1 — normal + gloss (_n)
+    // mask(_m)/glow(_g)/height(_p)/environment(_e)/multilayer/backlight also available — all optional
+    "flags": [ "NoSpecularMap" ] }                         // NoSpecularMap|FaceGenTextures|HasModelSpaceNormalMap
+]
+```
+
+Wire it into a consumer with `alternateTextures` on a `statics` or `activators` record (any record
+with a `model`). Each entry overrides one **named material/sub-mesh** inside the base `.nif`:
+
+```jsonc
+"statics": [
+  { "editorId": "MF_GildedRubble",
+    "model": "Dungeons\\Nordic\\Rubble\\NorRubblePiece03.nif",   // a VANILLA mesh, reused as-is
+    "alternateTextures": [
+      { "name": "NorRubblePiece03:0",        // MUST match a material/3D-name in the .nif (CK "AltTex" dialog)
+        "index": 0,                           // 3D sub-mesh index (the trailing number in `name`)
+        "textureSet": "MF_GildedRubbleTexture" } ] }              // ref → a TXST (in-spec or <master>:0xFORMID)
+]
+```
+
+The `name`/`index` convention (`<MeshName>:<index>`) mirrors vanilla — inspect a real one with
+`txstdiag` (a TXST's slots) or `dump` (a record's `altTexture` lines), e.g. vanilla STAT
+`NorExtRubblePiece03_HeavySN` uses `name="NorRubblePiece03:0" index=0`. Get the material names from
+the CK's *Model Data → Edit → 3D Name* list (NifSkope shows them as `BSLightingShaderProperty`
+names); a wrong `name` silently swaps nothing.
+
+**Honest limit:** ModForge writes the TXST record + the `alternateTextures` references only. The
+`.dds` files themselves are **user-authored** — ModForge cannot create or render texture content, and
+the headless toolchain cannot verify that a swap looks right in-game. Put your authored `.dds` files
+under `Data/Textures/<your path>/` in the packaged mod folder. See `examples/texture_set_spec.json`
+(with a placeholder `examples/textures/ModForge/rubble/` tree) and the cookbook recipe.
 
 ### packages — AI Packages (what an NPC DOES)
 A `packages` entry is an AI package. Skyrim's PACK record is **template-driven**: you reference a

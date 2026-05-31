@@ -32,6 +32,7 @@ public static partial class Generator
         ctx.BuildShouts();                         // WordOfPower (WOOP) + Shout (SHOU) scalar records
         ctx.BuildConsumablesGearAndMessages();     // Potion, Armor, Faction, Relationship, Class, Message
         ctx.BuildLongTailItems();                  // Ingredient..Activator (scalar fields)
+        ctx.BuildTextureSets();                    // TextureSet (TXST) retexture map paths
         ctx.BuildListsContainersStylesPackages();  // LeveledItem/Npc, Container, Recipe, CombatStyle, Package
         ctx.BuildCells();                          // interior cells (block/sub GRUP by FormID)
 
@@ -42,6 +43,7 @@ public static partial class Generator
         ctx.WireRelationships();                   // RELA Parent/Child NPC refs
         ctx.WireScenes();                          // SCEN actor aliases -> the NPC that fills each (UniqueActor)
         ctx.WireKeywords();                        // keywords on armor/weapon/misc/...
+        ctx.WireAlternateTextures();               // TXST alt-textures on static/activator meshes
         ctx.WireEffects();                         // magic effects on spell/potion/ingredient/scroll (+ spell equipType)
         ctx.WireEnchantments();                    // ENCH effects + weapon/armor enchantment FormLinks
         ctx.WireMagicEffectRefs();                 // MGEF association/projectile/art/explosion

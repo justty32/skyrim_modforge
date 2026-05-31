@@ -1,0 +1,31 @@
+{
+  "pluginName": "ModForgeTextureSet.esp",
+  "esl": true,
+
+  "textureSets": [
+    {
+      "editorId": "MF_GildedRubbleTexture",
+      "diffuse": "ModForge\\rubble\\gilded_rubble_d.dds",
+      "normal": "ModForge\\rubble\\gilded_rubble_n.dds",
+      "flags": [ "NoSpecularMap" ]
+    }
+  ],
+
+  "statics": [
+    {
+      "editorId": "MF_GildedRubble",
+      "model": "Dungeons\\Nordic\\Rubble\\NorRubblePiece03.nif",
+      "alternateTextures": [
+        { "name": "NorRubblePiece03:0", "index": 0, "textureSet": "MF_GildedRubbleTexture" }
+      ]
+    }
+  ],
+
+  "placements": [
+    {
+      "base": "MF_GildedRubble",
+      "cell": "Skyrim.esm:0x01605E",
+      "position": { "x": 0.0, "y": 0.0, "z": 0.0 }
+    }
+  ]
+}

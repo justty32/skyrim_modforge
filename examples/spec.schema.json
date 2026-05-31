@@ -38,6 +38,7 @@
     "outfits": { "type": "array", "items": { "$ref": "#/$defs/outfit" }, "description": "Outfit (OTFT): a set of item refs an NPC can wear" },
     "statics": { "type": "array", "items": { "$ref": "#/$defs/staticRec" }, "description": "Static (STAT): a world mesh (model path)" },
     "activators": { "type": "array", "items": { "$ref": "#/$defs/activator" }, "description": "Activator (ACTI): an interactable world object" },
+    "textureSets": { "type": "array", "items": { "$ref": "#/$defs/textureSet" }, "description": "TextureSet (TXST): retexture an existing mesh without a new .nif" },
     "recipes": { "type": "array", "items": { "$ref": "#/$defs/recipe" }, "description": "ConstructibleObject (COBJ): crafting recipes" },
     "enchantments": { "type": "array", "items": { "$ref": "#/$defs/enchantment" }, "description": "Enchantment / Object Effect (ENCH): MGEF-based effects bundled into a weapon/staff/apparel enchantment a weapon/armor references via its `enchantment` field" }
   },
@@ -540,7 +541,8 @@
       "required": ["editorId"],
       "properties": {
         "editorId": { "type": "string", "minLength": 1 },
-        "model": { "type": "string", "description": "a .nif path (reference a vanilla mesh in the BSA, e.g. 'Clutter\\\\Common\\\\Rock01.nif')" }
+        "model": { "type": "string", "description": "a .nif path (reference a vanilla mesh in the BSA, e.g. 'Clutter\\\\Common\\\\Rock01.nif')" },
+        "alternateTextures": { "type": "array", "items": { "$ref": "#/$defs/alternateTexture" }, "description": "retexture named materials of `model` via TXST records" }
       }
     },
     "activator": {
@@ -550,7 +552,35 @@
         "editorId": { "type": "string", "minLength": 1 },
         "name": { "type": "string" },
         "model": { "type": "string", "description": "a .nif path" },
-        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
+        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } },
+        "alternateTextures": { "type": "array", "items": { "$ref": "#/$defs/alternateTexture" }, "description": "retexture named materials of `model` via TXST records" }
+      }
+    },
+    "textureSet": {
+      "type": "object",
+      "required": ["editorId"],
+      "description": "TextureSet (TXST): retexture an existing mesh without a new .nif. All slot paths are RELATIVE to Data\\Textures\\ (omit the leading 'Textures\\') and end in .dds. Wire it via a record's alternateTextures.",
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "diffuse": { "type": "string", "description": "slot 0 — color/albedo (_d.dds), relative to Data\\Textures\\" },
+        "normal": { "type": "string", "description": "slot 1 — normal + gloss (_n.dds)" },
+        "mask": { "type": "string", "description": "slot 2 — environment-mask / subsurface tint" },
+        "glow": { "type": "string", "description": "slot 3 — glow / detail map" },
+        "height": { "type": "string", "description": "slot 4 — parallax height" },
+        "environment": { "type": "string", "description": "slot 5 — environment cube map" },
+        "multilayer": { "type": "string", "description": "slot 6 — multilayer" },
+        "backlight": { "type": "string", "description": "slot 7 — backlight-mask / specular" },
+        "flags": { "type": "array", "items": { "type": "string", "enum": ["NoSpecularMap", "FaceGenTextures", "HasModelSpaceNormalMap"] } }
+      }
+    },
+    "alternateTexture": {
+      "type": "object",
+      "required": ["name", "textureSet"],
+      "description": "Override one named material/sub-mesh of a base .nif with a TXST.",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "description": "the material/3D-name inside the .nif (e.g. 'NorRubblePiece03:0')" },
+        "index": { "type": "integer", "minimum": 0, "description": "3D sub-mesh index (default 0)" },
+        "textureSet": { "$ref": "#/$defs/ref", "description": "ref → a TXST (in-spec editorId or <master>:0xFORMID)" }
       }
     }
   }

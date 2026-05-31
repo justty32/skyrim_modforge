@@ -208,7 +208,31 @@ internal static partial class Program
                 foreach (var it in oitems) Console.WriteLine($"      outfit item -> {Ref(it.FormKey)}");
 
             if ((r is IStaticGetter || r is IActivatorGetter) && r is IModeledGetter mdl && mdl.Model?.File is { } mf)
+            {
                 Console.WriteLine($"      model: {mf.GivenPath}");
+                if (mdl.Model.AlternateTextures is { Count: > 0 } alts)
+                    foreach (var at in alts)
+                        Console.WriteLine($"        altTexture: name=\"{at.Name}\" index={at.Index} -> {Ref(at.NewTexture.FormKey)}");
+            }
+
+            if (r is ITextureSetGetter txst)
+            {
+                string? S(IAssetLinkGetter? a) => a?.GivenPath;
+                var slots = new (string Label, string? Path)[]
+                {
+                    ("diffuse",     S(txst.Diffuse)),
+                    ("normal",      S(txst.NormalOrGloss)),
+                    ("mask",        S(txst.EnvironmentMaskOrSubsurfaceTint)),
+                    ("glow",        S(txst.GlowOrDetailMap)),
+                    ("height",      S(txst.Height)),
+                    ("environment", S(txst.Environment)),
+                    ("multilayer",  S(txst.Multilayer)),
+                    ("backlight",   S(txst.BacklightMaskOrSpecular)),
+                };
+                Console.WriteLine($"      textureSet: flags={txst.Flags?.ToString() ?? "-"}");
+                foreach (var (label, path) in slots)
+                    if (!string.IsNullOrEmpty(path)) Console.WriteLine($"        {label} -> {path}");
+            }
 
             if ((r is IMiscItemGetter || r is IIngestibleGetter) && r is IModeledGetter im && im.Model?.File is { } imf)
                 Console.WriteLine($"      model={imf}");      // null model => no 3D mesh when dropped

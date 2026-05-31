@@ -343,6 +343,43 @@ optional and a basic recipe needs none.
   ] }
 ```
 
+## "Retexture without a new mesh" (TXST + alternateTextures)
+
+Reskin a vanilla object by reusing its `.nif` and pointing one of its materials at your own
+**TextureSet (TXST)**. No mesh authoring — only texture paths.
+
+```jsonc
+{ "textureSets": [
+    { "editorId": "MF_GildedRubbleTexture",
+      "diffuse": "ModForge\\rubble\\gilded_rubble_d.dds",   // relative to Data\Textures\ — OMIT the "Textures\" prefix
+      "normal":  "ModForge\\rubble\\gilded_rubble_n.dds",
+      "flags": [ "NoSpecularMap" ] }
+  ],
+  "statics": [
+    { "editorId": "MF_GildedRubble",
+      "model": "Dungeons\\Nordic\\Rubble\\NorRubblePiece03.nif",   // a VANILLA mesh, reused as-is
+      "alternateTextures": [
+        { "name": "NorRubblePiece03:0", "index": 0,                 // material/3D-name inside the .nif
+          "textureSet": "MF_GildedRubbleTexture" } ] }
+  ] }
+```
+
+Gotchas:
+- **Path root.** TXST slot paths are relative to `Data\Textures\`, so they OMIT the leading
+  `Textures\` (mirrors how `model` omits `Meshes\`). Validate rejects a stray `Textures\` prefix.
+- **The `name` must match the mesh.** It's `<3DName>:<index>` from the `.nif`'s shader properties
+  (CK *Model Data → AltTex*, or NifSkope's `BSLightingShaderProperty` names). A wrong name swaps
+  nothing — silently. Mirror a vanilla example: `txstdiag <Skyrim.esm>` lists every TXST, `dump`
+  prints a record's `altTexture` lines, and vanilla STAT `NorExtRubblePiece03_HeavySN` shows the
+  `NorRubblePiece03:0` / index 0 pattern this recipe copies.
+- **`textureSet` is a ref** — an in-spec TXST editorId or a vanilla `<master>:0xFORMID`.
+- **You author the `.dds`.** ModForge writes the record + references; it cannot create or render
+  texture content, and the headless toolchain can't confirm the swap looks right — only a Skyrim
+  launch does. Drop your authored `.dds` files under `Data/Textures/<your path>/` in the mod folder.
+
+Verify structurally: `validate` → `build` → `txstdiag <out.esp>` (slots written) and
+`dump <out.esp>` (the `altTexture` wiring + its `-> <TXST>` target).
+
 ## "Craftable + temperable weapon" (perk-gated forge + grindstone temper + smelt)
 
 A complete smithing chain: forge the weapon (perk-gated so it only shows once you've taken
