@@ -35,6 +35,7 @@ public static partial class Generator
         ctx.BuildTextureSets();                    // TextureSet (TXST) retexture map paths
         ctx.BuildListsContainersStylesPackages();  // LeveledItem/Npc, Container, Recipe, CombatStyle, Package
         ctx.BuildCells();                          // interior cells (block/sub GRUP by FormID)
+        ctx.BuildWeathersAndClimates();            // WTHR + CLMT scalar fields (links wired in pass 2)
 
         // --- index editorId -> FormKey, then pass 2: wire cross-record references ---
         ctx.BuildFormKeyTable();
@@ -47,6 +48,7 @@ public static partial class Generator
         ctx.WireEffects();                         // magic effects on spell/potion/ingredient/scroll (+ spell equipType)
         ctx.WireEnchantments();                    // ENCH effects + weapon/armor enchantment FormLinks
         ctx.WireMagicEffectRefs();                 // MGEF association/projectile/art/explosion
+        ctx.WireWeatherAndClimateLinks();          // WTHR precipitation + CLMT weather FormLinks
         ctx.WireShouts();                          // SHOU MenuDisplayObject + per-row Word (WOOP) + Spell (SPEL)
         ctx.BuildPackageData();                    // PACK template dispatch (sandbox/travel/usemagic/patrol/follow/escort)
         ctx.WireNpcPackages();                     // NPC.Packages list

@@ -51,7 +51,8 @@ keywords, factions, etc. The named master is **added to the plugin automatically
   "ingredients": [...], "ammunitions": [...], "scrolls": [...], "soulGems": [...],
   "keys": [...], "keywords": [...], "outfits": [...], "statics": [...], "activators": [...],
   "textureSets": [...],          // TXST — retexture an existing mesh without a new .nif
-  "packages": [...]              // AI Packages — what an NPC DOES (sandbox/travel/use furniture)
+  "packages": [...],             // AI Packages — what an NPC DOES (sandbox/travel/use furniture)
+  "weathers": [...], "climates": [...]  // custom skies (WTHR) + weather cycles (CLMT)
 }
 ```
 
@@ -94,6 +95,8 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `packages` | `editorId`, `template` (*ref* → a vanilla procedure template, e.g. Sandbox = `Skyrim.esm:0x01C254`, Travel = `Skyrim.esm:0x016FAA`, UseMagic = `Skyrim.esm:0x0504F5`), `flags` (array — `Package.Flag` names), `interruptFlags` (array — `HellosToPlayer`/`AllowIdleChatter`/`WorldInteractions`/…), `preferredSpeed` (`Walk`\|`Jog`\|`Run`\|`FastWalk`), `combatStyle` (*ref*, optional), `ownerQuest` (*ref*, optional), `schedule` (`{ month, dayOfWeek, date, hour, minute, durationInMinutes }` — a time window `[hour, hour+durationInMinutes)`; `hour:-1` = any time), `sandbox` / `sleep` / `travel` / `useMagic` / `patrol` / `follow` / `escort` (template-input subobjects — see below), `conditions` (array of CTDA gates — see *conditions* below). An NPC's `packages` list is in **priority order**: the engine runs the first package whose schedule **and** conditions pass — so put scheduled/conditioned packages first and an unconditioned fallback last (e.g. a Sleep package scheduled 22:00–07:00 above an unconditioned Sandbox; or a Follow package gated on `GetInFaction CurrentFollowerFaction==1` above a downtime Sandbox). Assign to one or more NPCs via `npcs[].packages`. |
 | `combatStyles` | `editorId`, `offensiveMult`/`defensiveMult`/`groupOffensiveMult` (~aggression/blocking/group-boldness), `equipMultMelee`/`equipMultMagic`/`equipMultRanged`/`equipMultShout`/`equipMultUnarmed`/`equipMultStaff` (AI weapon-preference scores; for a mage NPC, push Magic high relative to the others — vanilla `csVampireMagic` uses 8.1/2.15/0.51), `avoidThreatChance` (0..1), `flags` (array — `Dueling`\|`Flanking`\|`AllowDualWielding`). An npc's `combatStyle` ref can point at one. |
 | `textureSets` | `editorId`, eight optional `.dds` slot paths — `diffuse`, `normal`, `mask`, `glow`, `height`, `environment`, `multilayer`, `backlight` — each **relative to `Data\Textures\`** (omit the leading `Textures\`), `flags` (array — `NoSpecularMap`\|`FaceGenTextures`\|`HasModelSpaceNormalMap`). A TXST retextures an existing mesh; wire it via a record's `alternateTextures`. See the *textureSets* section below. |
+| `weathers` | `editorId`, `flags` (array — `Pleasant`\|`Cloudy`\|`Rainy`\|`Snow`\|`SkyStaticsAlwaysVisible`\|`SkyStaticsFollowsSunPosition`), per-time-of-day *colours* (`skyUpperColor`/`skyLowerColor`/`fogNearColor`/`fogFarColor`/`horizonColor`/`cloudColor`/`sunColor`/`sunlightColor`/`ambientColor`/`starsColor`), `clouds` (array of `{ index (0–31), texture, xSpeed, ySpeed, colors, alphaSunrise/Day/Sunset/Night }`), `precipitation` (*ref* → SPGD), `windSpeed` (0–1 or 0–100), `windDirection`/`windDirectionRange` (degrees), `fogDayNear`/`fogDayFar`/`fogNightNear`/`fogNightFar` (world units), `transitionDelta`. A custom sky — see the section below |
+| `climates` | `editorId`, `weathers` (array of `{ weather (*ref* → WTHR), chance (int weight) }`), `sunriseBegin`/`sunriseEnd`/`sunsetBegin`/`sunsetEnd` (`"HH:MM"` 24h), `sunTexture`/`sunGlareTexture` (Textures-relative paths), `moons` (array — `Masser`\|`Secunda`), `phaseLength` (int), `volatility` (0–255). A weather cycle — see the section below |
 
 A field marked *ref* takes an in-spec `editorId` **or** `"<master>:0xFORMID"` (see
 *References to vanilla / external forms* above). A standing NPC needs at least `race` +
@@ -650,6 +653,59 @@ like `WCollegePracticeCastWard`; set `target` to a placed-ref for cast-at-X (van
 `ObserveCombatBehavior`, `GreetCorpseBehavior`, `ReactionToPlayerActions`, `FriendlyFireComments`,
 `AggroRadiusBehavior`, `AllowIdleChatter`, `WorldInteractions`. **These are the difference between
 a silent statue and a lifelike NPC.** Vanilla DefaultSandbox enables all of them.
+
+### weathers & climates — custom skies (WTHR) + weather cycles (CLMT)
+
+A **weather** (`WTHR`) is one *sky*: cloud layers, per-time-of-day colours for the
+sky/fog/clouds/sun, precipitation, wind, fog distances. A **climate** (`CLMT`) is a
+*cycle*: which weathers occur (each with a relative `chance` weight) plus sunrise/sunset
+timing and the sun/moon textures. A climate references weathers; together they give a
+worldspace or region its atmosphere.
+
+```jsonc
+"weathers": [{
+  "editorId": "MF_EerieFog",
+  "flags": ["Cloudy", "Rainy"],          // default ["Pleasant"]
+  "skyUpperColor": {                      // each colour: sunrise/day/sunset/night, RGB 0–255
+    "day":   { "r": 46, "g": 92, "b": 58 },
+    "night": { "r": 8,  "g": 20, "b": 14 }   // omitted times-of-day fall back to `day`
+  },
+  "fogNearColor": { "day": { "r": 60, "g": 120, "b": 70 } },
+  "sunlightColor": { "day": { "r": 120, "g": 170, "b": 110 } },  // directional light on the world
+  "clouds": [{ "index": 0, "texture": "Sky\\SkyrimCloudsUpper04.dds",
+               "xSpeed": 0.012, "ySpeed": -0.006, "alphaDay": 1.0, "alphaNight": 0.8 }],
+  "precipitation": "Skyrim.esm:0x10780F",  // a rain SPGD (find one via weatherdiag on a vanilla rainy WTHR)
+  "windSpeed": 0.35, "windDirection": 210,  // speed 0–1 (or 0–100); direction in degrees
+  "fogDayNear": 256, "fogDayFar": 9000
+}],
+"climates": [{
+  "editorId": "MF_EerieClimate",
+  "weathers": [ { "weather": "MF_EerieFog", "chance": 75 },
+                { "weather": "MF_PlainClear", "chance": 25 } ],   // chances are relative weights
+  "sunriseBegin": "06:00", "sunriseEnd": "09:30",
+  "sunsetBegin": "17:00",  "sunsetEnd": "20:00",
+  "moons": ["Masser", "Secunda"], "volatility": 40
+}]
+```
+
+- **Minimal is valid.** A weather with just an `editorId` is a vanilla-sane clear-day sky;
+  a climate needs only an `editorId` + at least one `weather`. Everything else defaults.
+- **Colours** are 8-bit RGB (0–255). Any omitted time-of-day is seeded from `day`, so a
+  partial colour is still valid. Validate flags out-of-range components.
+- **Wind direction** is authored in **degrees** (0–360); it's stored on disk as a fraction
+  of a full circle. **Wind speed** accepts a 0–1 fraction or a 0–100 percentage.
+- **`precipitation`** is a *ref* to a shader-particle-geometry (`SPGD`). Discover a vanilla
+  rain one with `weatherdiag <Skyrim.esm> <a-rainy-WTHR-formid>` (e.g. `SkyrimStormRain`
+  → `Skyrim.esm:0x10780F`). The `Rainy`/`Snow` flags drive the engine's precip systems.
+- **Inspect** a generated or vanilla record with `weatherdiag <esp> <0xFORMID>` /
+  `climatediag <esp> <0xFORMID>`, or `dump` (which prints both).
+
+> **Assigning the climate is a separate step.** Emitting a `WTHR`+`CLMT` does **not** by
+> itself change any in-game sky. A vanilla game applies a climate via a **worldspace**
+> (`WRLD` `Climate` field) or a **region** (`REGN` weather-data) record — neither is built
+> here (worldspace/region authoring is out of scope). The records this produces are valid
+> targets to point such a record at; doing so by hand (or via a future WRLD/REGN feature)
+> is the hook. **Structurally verified only — the sky actually rendering is in-game-unconfirmed.**
 
 ## Workflow
 

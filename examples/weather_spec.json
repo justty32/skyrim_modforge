@@ -1,0 +1,105 @@
+{
+  "pluginName": "ModForgeWeather.esp",
+  "esl": true,
+
+  "//": "An eerie green-tinted fog weather + a clear baseline, plus a climate that cycles them.",
+  "//assign": "Emitting WTHR/CLMT does NOT change any sky by itself. To use this climate, point a worldspace (WRLD 'Climate' field) or a region (REGN weather-data) at MF_EerieClimate — those records are out of scope here (see docs/SPEC.md 'Weather & Climate').",
+
+  "weathers": [
+    {
+      "editorId": "MF_EerieFog",
+      "//": "Sickly green haze: green-shifted sky/fog, dim green sunlight, slow heavy clouds, light rain.",
+      "flags": ["Cloudy", "Rainy"],
+      "skyUpperColor": {
+        "sunrise": { "r": 30, "g": 60, "b": 40 },
+        "day":     { "r": 46, "g": 92, "b": 58 },
+        "sunset":  { "r": 30, "g": 60, "b": 40 },
+        "night":   { "r": 8,  "g": 20, "b": 14 }
+      },
+      "skyLowerColor": {
+        "day":   { "r": 70, "g": 110, "b": 80 },
+        "night": { "r": 12, "g": 28,  "b": 18 }
+      },
+      "fogNearColor": {
+        "day":     { "r": 60,  "g": 120, "b": 70 },
+        "sunrise": { "r": 50,  "g": 100, "b": 60 },
+        "sunset":  { "r": 50,  "g": 100, "b": 60 },
+        "night":   { "r": 14,  "g": 34,  "b": 22 }
+      },
+      "fogFarColor": {
+        "day":   { "r": 40, "g": 90, "b": 55 },
+        "night": { "r": 8,  "g": 22, "b": 14 }
+      },
+      "horizonColor": {
+        "day": { "r": 80, "g": 130, "b": 90 }
+      },
+      "sunColor": {
+        "day": { "r": 180, "g": 220, "b": 150 }
+      },
+      "sunlightColor": {
+        "sunrise": { "r": 90,  "g": 130, "b": 90 },
+        "day":     { "r": 120, "g": 170, "b": 110 },
+        "sunset":  { "r": 90,  "g": 130, "b": 90 },
+        "night":   { "r": 20,  "g": 40,  "b": 28 }
+      },
+      "ambientColor": {
+        "day":   { "r": 55, "g": 85, "b": 60 },
+        "night": { "r": 12, "g": 22, "b": 16 }
+      },
+      "cloudColor": {
+        "day":   { "r": 90, "g": 130, "b": 95 },
+        "night": { "r": 14, "g": 30, "b": 20 }
+      },
+      "clouds": [
+        {
+          "index": 0,
+          "texture": "Sky\\SkyrimCloudsUpper04.dds",
+          "xSpeed": 0.012,
+          "ySpeed": -0.006,
+          "alphaDay": 1.0,
+          "alphaNight": 0.8
+        },
+        {
+          "index": 3,
+          "texture": "Sky\\SkyrimCloudsUpper01.dds",
+          "xSpeed": 0.018,
+          "ySpeed": 0.0,
+          "alphaDay": 0.9,
+          "alphaNight": 0.7
+        }
+      ],
+      "precipitation": "Skyrim.esm:0x10780F",
+      "windSpeed": 0.35,
+      "windDirection": 210,
+      "windDirectionRange": 40,
+      "fogDayNear": 256,
+      "fogDayFar": 9000,
+      "fogNightNear": 128,
+      "fogNightFar": 5000,
+      "transitionDelta": 400
+    },
+    {
+      "editorId": "MF_PlainClear",
+      "//": "A minimal weather: just an editorId + flags. Everything else defaults to a vanilla-sane clear-day baseline.",
+      "flags": ["Pleasant"]
+    }
+  ],
+
+  "climates": [
+    {
+      "editorId": "MF_EerieClimate",
+      "//": "Mostly the eerie fog, occasionally clearing. Chances are relative weights.",
+      "weathers": [
+        { "weather": "MF_EerieFog",   "chance": 75 },
+        { "weather": "MF_PlainClear", "chance": 25 }
+      ],
+      "sunriseBegin": "06:00",
+      "sunriseEnd": "09:30",
+      "sunsetBegin": "17:00",
+      "sunsetEnd": "20:00",
+      "moons": ["Masser", "Secunda"],
+      "phaseLength": 3,
+      "volatility": 40
+    }
+  ]
+}

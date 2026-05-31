@@ -68,6 +68,8 @@ public static partial class Generator
         foreach (var sh in spec.Shouts) Reg(sh.EditorId, "shout");
         foreach (var e in spec.Enchantments) Reg(e.EditorId, "enchantment");
         foreach (var tx in spec.TextureSets) Reg(tx.EditorId, "textureSet");
+        foreach (var w in spec.Weathers) Reg(w.EditorId, "weather");
+        foreach (var cl in spec.Climates) Reg(cl.EditorId, "climate");
         foreach (var pl in spec.Placements) if (!string.IsNullOrWhiteSpace(pl.EditorId)) Reg(pl.EditorId, "placement");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
@@ -505,6 +507,8 @@ public static partial class Generator
         }
         foreach (var st in spec.Statics) CheckAltTextures(st.EditorId, st.Model, st.AlternateTextures, "static");
         foreach (var ac in spec.Activators) CheckAltTextures(ac.EditorId, ac.Model, ac.AlternateTextures, "activator");
+
+        ValidateWeather(spec, problems, ids, CheckRef);
 
         // Vendor (merchant) faction data: hours sane (0..24, start<end), gold implied by the
         // merchant container, refs well-formed. The merchant container must be a PLACEMENT editorId

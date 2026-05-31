@@ -40,7 +40,9 @@
     "activators": { "type": "array", "items": { "$ref": "#/$defs/activator" }, "description": "Activator (ACTI): an interactable world object" },
     "textureSets": { "type": "array", "items": { "$ref": "#/$defs/textureSet" }, "description": "TextureSet (TXST): retexture an existing mesh without a new .nif" },
     "recipes": { "type": "array", "items": { "$ref": "#/$defs/recipe" }, "description": "ConstructibleObject (COBJ): crafting recipes" },
-    "enchantments": { "type": "array", "items": { "$ref": "#/$defs/enchantment" }, "description": "Enchantment / Object Effect (ENCH): MGEF-based effects bundled into a weapon/staff/apparel enchantment a weapon/armor references via its `enchantment` field" }
+    "enchantments": { "type": "array", "items": { "$ref": "#/$defs/enchantment" }, "description": "Enchantment / Object Effect (ENCH): MGEF-based effects bundled into a weapon/staff/apparel enchantment a weapon/armor references via its `enchantment` field" },
+    "weathers": { "type": "array", "items": { "$ref": "#/$defs/weather" }, "description": "Weather (WTHR): a custom sky (cloud layers, per-time-of-day colours, precipitation, wind, fog)" },
+    "climates": { "type": "array", "items": { "$ref": "#/$defs/climate" }, "description": "Climate (CLMT): a weather cycle + sunrise/sunset timing + sun/moon textures; references weathers" }
   },
   "additionalProperties": false,
   "$defs": {
@@ -581,6 +583,95 @@
         "name": { "type": "string", "minLength": 1, "description": "the material/3D-name inside the .nif (e.g. 'NorRubblePiece03:0')" },
         "index": { "type": "integer", "minimum": 0, "description": "3D sub-mesh index (default 0)" },
         "textureSet": { "$ref": "#/$defs/ref", "description": "ref → a TXST (in-spec editorId or <master>:0xFORMID)" }
+      }
+    },
+    "color": {
+      "type": "object",
+      "description": "An 8-bit RGB(A) colour; components 0–255 (alpha usually 0 for weather colours).",
+      "properties": {
+        "r": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "g": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "b": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "a": { "type": "integer", "minimum": 0, "maximum": 255 }
+      }
+    },
+    "weatherColor": {
+      "type": "object",
+      "description": "A weather colour across times of day; omitted ones fall back to `day`.",
+      "properties": {
+        "sunrise": { "$ref": "#/$defs/color" },
+        "day": { "$ref": "#/$defs/color" },
+        "sunset": { "$ref": "#/$defs/color" },
+        "night": { "$ref": "#/$defs/color" }
+      }
+    },
+    "cloudLayer": {
+      "type": "object",
+      "properties": {
+        "index": { "type": "integer", "minimum": 0, "maximum": 31, "description": "cloud-layer slot 0..31" },
+        "texture": { "type": "string", "description": "Textures-relative .dds path, e.g. 'Sky\\\\SkyrimCloudsUpper04.dds'" },
+        "xSpeed": { "type": "number" },
+        "ySpeed": { "type": "number" },
+        "colors": { "$ref": "#/$defs/weatherColor" },
+        "alphaSunrise": { "type": "number", "minimum": 0, "maximum": 1 },
+        "alphaDay": { "type": "number", "minimum": 0, "maximum": 1 },
+        "alphaSunset": { "type": "number", "minimum": 0, "maximum": 1 },
+        "alphaNight": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "weather": {
+      "type": "object",
+      "required": ["editorId"],
+      "description": "A custom sky (WTHR). Minimal = just editorId (clear-day baseline).",
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "flags": { "type": "array", "items": { "type": "string", "enum": ["Pleasant", "Cloudy", "Rainy", "Snow", "SkyStaticsAlwaysVisible", "SkyStaticsFollowsSunPosition"] } },
+        "skyUpperColor": { "$ref": "#/$defs/weatherColor" },
+        "skyLowerColor": { "$ref": "#/$defs/weatherColor" },
+        "fogNearColor": { "$ref": "#/$defs/weatherColor" },
+        "fogFarColor": { "$ref": "#/$defs/weatherColor" },
+        "horizonColor": { "$ref": "#/$defs/weatherColor" },
+        "cloudColor": { "$ref": "#/$defs/weatherColor" },
+        "sunColor": { "$ref": "#/$defs/weatherColor" },
+        "sunlightColor": { "$ref": "#/$defs/weatherColor" },
+        "ambientColor": { "$ref": "#/$defs/weatherColor" },
+        "starsColor": { "$ref": "#/$defs/weatherColor" },
+        "clouds": { "type": "array", "items": { "$ref": "#/$defs/cloudLayer" } },
+        "precipitation": { "$ref": "#/$defs/ref", "description": "a shader-particle-geometry (SPGD) ref, e.g. Skyrim.esm:0x10780F (rain)" },
+        "windSpeed": { "type": "number", "description": "0..1 fraction (or 0..100 percent)" },
+        "windDirection": { "type": "number", "minimum": 0, "maximum": 360, "description": "degrees" },
+        "windDirectionRange": { "type": "number", "minimum": 0, "maximum": 360 },
+        "fogDayNear": { "type": "number" },
+        "fogDayFar": { "type": "number" },
+        "fogNightNear": { "type": "number" },
+        "fogNightFar": { "type": "number" },
+        "transitionDelta": { "type": "number" }
+      }
+    },
+    "weatherChance": {
+      "type": "object",
+      "required": ["weather"],
+      "properties": {
+        "weather": { "$ref": "#/$defs/ref", "description": "a WTHR ref (in-spec editorId or <master>:0xFORMID)" },
+        "chance": { "type": "integer", "minimum": 0, "description": "relative weight" }
+      }
+    },
+    "climate": {
+      "type": "object",
+      "required": ["editorId"],
+      "description": "A weather cycle (CLMT). Minimal = editorId + at least one weather.",
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "weathers": { "type": "array", "items": { "$ref": "#/$defs/weatherChance" } },
+        "sunriseBegin": { "type": "string", "description": "'HH:MM' 24-hour" },
+        "sunriseEnd": { "type": "string", "description": "'HH:MM' 24-hour" },
+        "sunsetBegin": { "type": "string", "description": "'HH:MM' 24-hour" },
+        "sunsetEnd": { "type": "string", "description": "'HH:MM' 24-hour" },
+        "sunTexture": { "type": "string" },
+        "sunGlareTexture": { "type": "string" },
+        "moons": { "type": "array", "items": { "type": "string", "enum": ["Masser", "Secunda"] } },
+        "phaseLength": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "volatility": { "type": "integer", "minimum": 0, "maximum": 255 }
       }
     }
   }

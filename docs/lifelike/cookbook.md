@@ -591,6 +591,44 @@ Verify structurally: `factdiag <plugin> 0x000804` and diff against vanilla Belet
 **Whether the barter menu actually opens needs a Proton/Skyrim launch** (the reachable-NPC +
 load-registration rules from the conversational-NPC recipe apply).
 
+## "Custom sky" (WTHR + CLMT — atmosphere, not yet assigned)
+
+An eerie green-tinted fog weather plus a climate that cycles it. Full worked spec:
+[`../../examples/weather_spec.json`](../../examples/weather_spec.json).
+
+```jsonc
+{
+  "pluginName": "ModForgeWeather.esp",
+  "weathers": [{
+    "editorId": "MF_EerieFog",
+    "flags": ["Cloudy", "Rainy"],
+    "skyUpperColor": { "day": { "r": 46, "g": 92, "b": 58 }, "night": { "r": 8, "g": 20, "b": 14 } },
+    "fogNearColor":  { "day": { "r": 60, "g": 120, "b": 70 } },
+    "sunlightColor": { "day": { "r": 120, "g": 170, "b": 110 } },   // sickly green light on the world
+    "clouds": [{ "index": 0, "texture": "Sky\\SkyrimCloudsUpper04.dds",
+                 "xSpeed": 0.012, "ySpeed": -0.006, "alphaNight": 0.8 }],
+    "precipitation": "Skyrim.esm:0x10780F",                          // vanilla rain SPGD
+    "windSpeed": 0.35, "windDirection": 210, "fogDayNear": 256, "fogDayFar": 9000
+  }],
+  "climates": [{
+    "editorId": "MF_EerieClimate",
+    "weathers": [ { "weather": "MF_EerieFog", "chance": 75 } ],
+    "sunriseBegin": "06:00", "sunsetEnd": "20:00", "moons": ["Masser", "Secunda"]
+  }]
+}
+```
+
+Verify structurally: `validate` → `build` → `dump` (or `weatherdiag <esp> <0xFORMID>` /
+`climatediag <esp> <0xFORMID>`). To find a precipitation SPGD, `weatherdiag` a vanilla rainy
+weather (`find <Skyrim.esm> Rain Weather` → e.g. `SkyrimStormRain` `0x0C8220`, whose
+`Precipitation = 0x10780F`).
+
+**The one thing that makes it do nothing in-game:** a `WTHR`+`CLMT` is just data until something
+*assigns* the climate. Vanilla does that through a **worldspace** (`WRLD` `Climate` field) or a
+**region** (`REGN` weather-data) — neither is emitted here (out of scope). So this recipe ships a
+valid, inspectable climate you'd then point a WRLD/REGN at by hand. **Structurally verified only;
+the sky actually rendering is in-game-unconfirmed.**
+
 ## "Two NPCs arguing" (SCEN multi-actor conversation — STRUCTURAL ONLY, not yet in-game confirmed)
 
 A `scene` is NPCs talking to **each other**, not the player. It's hosted by a quest whose **aliases**

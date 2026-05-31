@@ -276,6 +276,29 @@ internal static partial class Program
             if (r is IRelationshipGetter rel)
                 Console.WriteLine($"      relationship: parent={Ref(rel.Parent.FormKey)}  child={Ref(rel.Child.FormKey)}  rank={rel.Rank}");
 
+            if (r is IWeatherGetter wthr)
+            {
+                int tex = wthr.CloudTextures.Count(t => t is not null);
+                static string C(IWeatherColorGetter? c) => c is null ? "-"
+                    : $"sr={Rgb(c.Sunrise)} day={Rgb(c.Day)} ss={Rgb(c.Sunset)} ni={Rgb(c.Night)}";
+                Console.WriteLine($"      weather: flags={wthr.Flags} wind(speed={wthr.WindSpeed} dir={wthr.WindDirection * 360f:0.#}deg range={wthr.WindDirectionRange * 360f:0.#}deg)"
+                    + $" {tex} cloud texture(s)"
+                    + (wthr.Precipitation.FormKeyNullable is { } pk && !pk.IsNull ? $" precip={Ref(pk)}" : ""));
+                Console.WriteLine($"        skyUpper: {C(wthr.SkyUpperColor)}");
+                Console.WriteLine($"        fogNear:  {C(wthr.FogNearColor)}");
+                Console.WriteLine($"        sun:      {C(wthr.SunColor)}");
+                Console.WriteLine($"        fogDist: day(near={wthr.FogDistanceDayNear} far={wthr.FogDistanceDayFar}) night(near={wthr.FogDistanceNightNear} far={wthr.FogDistanceNightFar})");
+            }
+
+            if (r is IClimateGetter clim)
+            {
+                Console.WriteLine($"      climate: sunrise({clim.SunriseBegin:HH:mm}-{clim.SunriseEnd:HH:mm}) sunset({clim.SunsetBegin:HH:mm}-{clim.SunsetEnd:HH:mm})"
+                    + $" moons={clim.Moons} phaseLen={clim.PhaseLength} volatility={clim.Volatility}"
+                    + $" sun={clim.SunTexture?.GivenPath ?? "-"} glare={clim.SunGlareTexture?.GivenPath ?? "-"}");
+                foreach (var wt in clim.WeatherTypes ?? Enumerable.Empty<IWeatherTypeGetter>())
+                    Console.WriteLine($"        weather -> {Ref(wt.Weather.FormKey)} (chance {wt.Chance})");
+            }
+
             if (r is IQuestGetter q)
             {
                 Console.WriteLine($"      quest: flags={q.Flags}  priority={q.Priority}");
