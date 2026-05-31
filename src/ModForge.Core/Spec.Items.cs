@@ -2,7 +2,7 @@ namespace ModForge;
 
 // --- Items: gear, consumables, containers, leveled lists, recipes, and the long tail ----
 
-public sealed class MiscSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<string> Keywords { get; set; } = new(); public string Template { get; set; } = ""; }
+public sealed class MiscSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<string> Keywords { get; set; } = new(); public string Template { get; set; } = ""; public string Model { get; set; } = ""; public string PickUpSound { get; set; } = ""; public string PutDownSound { get; set; } = ""; }
 // Book (BOOK): plain readable book, OR a *teaching* book. A spell tome (`teaches.kind="spell"`) grants
 // a Spell when first read; a skill book (`teaches.kind="skill"`) raises an ActorValue/skill on first
 // read. `value`/`weight` override the (cloned-template) stats; `flags` are Book.Flag names (e.g.
@@ -33,7 +33,7 @@ public sealed class BookTeachesSpec
 // POOL (how many casts before it must be recharged with a soul gem) — vanilla enchanted weapons use
 // 1500–3000; 0 leaves the engine's auto-calc. Only meaningful for weapon/staff (Enchantment/
 // StaffEnchantment) enchants; ignored (no charge) for constant-effect apparel.
-public sealed class WeaponSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public ushort Damage { get; set; } public float Speed { get; set; } public float Reach { get; set; } public List<string> Keywords { get; set; } = new(); public string Template { get; set; } = ""; public string Enchantment { get; set; } = ""; public ushort EnchantmentAmount { get; set; } }
+public sealed class WeaponSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public ushort Damage { get; set; } public float Speed { get; set; } public float Reach { get; set; } public List<string> Keywords { get; set; } = new(); public string Template { get; set; } = ""; public string Enchantment { get; set; } = ""; public ushort EnchantmentAmount { get; set; } public string Model { get; set; } = ""; public string PickUpSound { get; set; } = ""; public string PutDownSound { get; set; } = ""; }
 public sealed class PotionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<EffectSpec> Effects { get; set; } = new(); public string Template { get; set; } = ""; }
 // Armor `enchantment` is a ref → an in-spec ENCH (enchantments[], normally an `apparel` constant-
 // effect one) or a vanilla ObjectEffect. Apparel enchants are passive/always-on while worn, so
@@ -99,10 +99,25 @@ public sealed class OutfitSpec { public string EditorId { get; set; } = ""; publ
 // textures of named material sub-meshes inside that .nif to in-spec/vanilla TextureSet (TXST)
 // records — the "retexture without a new mesh" path (see TextureSetSpec).
 public sealed class StaticSpec { public string EditorId { get; set; } = ""; public string Model { get; set; } = ""; public List<AlternateTextureSpec> AlternateTextures { get; set; } = new(); }
+// FURN — a placeable, interactive piece of furniture (chair/bed/crafting bench/idle marker).
+// `model` is a `.nif` (vanilla or user-supplied); attach behaviour via `scripts`/keywords.
+public sealed class FurnitureSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Model { get; set; } = ""; public List<string> Keywords { get; set; } = new(); }
+// SNDR — a Sound Descriptor referencing a user `.wav`/`.xwm`. Activators/misc/weapons point at
+// one by `editorId` (e.g. activator.activationSound). `category` defaults to AudioCategorySFX.
+// This is the general sound primitive the future voice/TTS plan also builds on.
+public sealed class SoundSpec
+{
+    public string EditorId { get; set; } = "";
+    public List<string> Files { get; set; } = new();    // Data-relative `Sound\...` paths (.wav/.xwm)
+    public string Category { get; set; } = "";           // ref → SNCT; empty -> Skyrim.esm:0x0172A1 AudioCategorySFX
+    public string OutputModel { get; set; } = "";        // ref → SOPM; empty -> Skyrim.esm:0x0B4058 (vanilla SFX output)
+    public byte Priority { get; set; } = 128;
+    public float StaticAttenuation { get; set; }          // dB attenuation (0 = none)
+}
 // Activator (ACTI): an interactable world object — name + `model` + keywords (+ a script via
 // `scripts`). A placement base you can walk up to / attach behaviour to. `alternateTextures` works
-// exactly like STAT's — see TextureSetSpec.
-public sealed class ActivatorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Model { get; set; } = ""; public List<string> Keywords { get; set; } = new(); public List<AlternateTextureSpec> AlternateTextures { get; set; } = new(); }
+// exactly like STAT's — see TextureSetSpec. `activationSound`/`loopingSound` ref a SNDR.
+public sealed class ActivatorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Model { get; set; } = ""; public List<string> Keywords { get; set; } = new(); public List<AlternateTextureSpec> AlternateTextures { get; set; } = new(); public string ActivationSound { get; set; } = ""; public string LoopingSound { get; set; } = ""; }
 // TextureSet (TXST): a set of texture-map paths that REPLACE a base mesh's textures without
 // authoring a new .nif — the heart of "retexture" mods (a recolored sword, reskinned armor, etc.).
 // Every field is an OPTIONAL Data-relative `Textures\...\*.dds` path; an omitted slot leaves the

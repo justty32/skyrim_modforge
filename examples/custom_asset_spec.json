@@ -1,0 +1,52 @@
+{
+  "pluginName": "MFCustomAssets.esp",
+  "esl": true,
+
+  "_comment": "External-resource pipeline demo — see docs/external_assets.md. Records REFERENCE user-authored .nif/.wav/.xwm by Data-relative path; `package --assets <dir>` (or spec.assets) BUNDLES them next to the .esp. ModForge does NOT generate meshes/sounds; the paths below must be authored in a DCC tool / Creation Kit and dropped into the assets dir. The placeholder tree at examples/assets/customasset/ here is empty stub content for the wiring/bundling test only.",
+
+  "assets": "assets/customasset",
+
+  "sounds": [
+    {
+      "editorId": "MFBellChimeSD",
+      "files": [ "Sound\\fx\\mfcustom\\bell_chime_01.wav" ],
+      "priority": 128,
+      "staticAttenuation": 5.0
+    }
+  ],
+
+  "statics": [
+    {
+      "editorId": "MFCustomMonument",
+      "model": "MFCustom\\monument.nif"
+    }
+  ],
+
+  "furniture": [
+    {
+      "editorId": "MFCustomThrone",
+      "name": "Forged Throne",
+      "model": "MFCustom\\throne.nif"
+    }
+  ],
+
+  "activators": [
+    {
+      "editorId": "MFCustomBell",
+      "name": "Forged Bell",
+      "model": "MFCustom\\bell.nif",
+      "activationSound": "MFBellChimeSD"
+    }
+  ],
+
+  "miscItems": [
+    {
+      "editorId": "MFCustomRelic",
+      "name": "Forged Relic",
+      "value": 250,
+      "weight": 2.0,
+      "model": "MFCustom\\relic.nif",
+      "pickUpSound": "MFBellChimeSD"
+    }
+  ]
+}

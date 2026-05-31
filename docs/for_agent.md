@@ -18,6 +18,9 @@ Both paths produce the same plugins and share the same field reference and limit
 - **Making NPCs feel alive** (sandbox / daily life / combat / spell use): start with
   [lifelike/](lifelike/README.md) — recipe + two-systems insight + vanilla FormID reference + gotchas.
 - **The engine mechanics behind the generator:** [engine-internals.md](engine-internals.md).
+- **Bringing your OWN meshes / textures / sounds / animations** (custom-content mods): the
+  external-resource contract — what ModForge references + bundles vs what you author elsewhere —
+  is **[external_assets.md](external_assets.md)**.
 
 ## Limits — be honest, do not over-claim
 

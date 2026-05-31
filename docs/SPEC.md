@@ -51,6 +51,8 @@ keywords, factions, etc. The named master is **added to the plugin automatically
   "ingredients": [...], "ammunitions": [...], "scrolls": [...], "soulGems": [...],
   "keys": [...], "keywords": [...], "outfits": [...], "statics": [...], "activators": [...],
   "textureSets": [...],          // TXST — retexture an existing mesh without a new .nif
+  "furniture": [...], "sounds": [...],  // custom-mesh furniture + Sound Descriptors (external assets)
+  "assets": "path/to/asset/dir",        // source dir whose Meshes/Textures/Sounds `package` bundles
   "packages": [...],             // AI Packages — what an NPC DOES (sandbox/travel/use furniture)
   "weathers": [...], "climates": [...],  // custom skies (WTHR) + weather cycles (CLMT)
   "encounterZones": [...]        // ECZN — level scaling / respawn for an area (a cell/spawn points at one)
@@ -61,10 +63,10 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 
 | section | fields |
 |---------|--------|
-| `miscItems` | `editorId`, `name`, `value` (int≥0), `weight` (number), `keywords` (array of *refs*) |
+| `miscItems` | `editorId`, `name`, `value` (int≥0), `weight` (number), `keywords` (array of *refs*), `template` (vanilla MISC ref to clone a model from), `model` (custom `.nif` path — overrides `template`'s mesh), `pickUpSound`/`putDownSound` (SNDR *refs*) — see [external_assets.md](external_assets.md) |
 | `books` | `editorId`, `name`, `text` (book body), `template` (*ref* → a vanilla BOOK to clone a model from — a takeable/readable book NEEDS one or it CRASHES on 3D-read), `value` (int; 0 ⇒ keep template's), `weight` (number; 0 ⇒ keep template's), `flags` (array of `Book.Flag` names, e.g. `CantBeTaken`), `teaches` (optional — a *teaching* book; see below) |
 | `books[].teaches` | `{ "kind": "spell", "spell": <ref> }` — a **spell tome** that grants a SPEL on first read (`spell` is an in-spec spell editorId OR a vanilla `<master>:0xFORMID`); OR `{ "kind": "skill", "skill": <name> }` — a **skill book** that raises a `Skill` (e.g. `Destruction`, `OneHanded`, `Smithing`) on first read; OR omit ⇒ a plain book (teaches nothing). A teaching book must have a `template`. |
-| `weapons` | `editorId`, `name`, `value`, `weight`, `damage` (int≥0), `speed` (number), `reach` (number), `keywords` (array of *refs*), `enchantment` (*ref* → ENCH, in-spec or vanilla `<master>:0xFORMID`), `enchantmentAmount` (int — the weapon's charge pool, e.g. 1500–3000; 0 = engine auto-calc) |
+| `weapons` | `editorId`, `name`, `value`, `weight`, `damage` (int≥0), `speed` (number), `reach` (number), `keywords` (array of *refs*), `enchantment` (*ref* → ENCH, in-spec or vanilla `<master>:0xFORMID`), `enchantmentAmount` (int — the weapon's charge pool, e.g. 1500–3000; 0 = engine auto-calc), `template` (vanilla WEAP ref — clones model/anim/equip; needed to avoid an equip CRASH), `model` (custom world-mesh `.nif` path — pair WITH `template`), `pickUpSound`/`putDownSound` (SNDR *refs*) |
 | `npcs` | `editorId`, `name`, `factions` (array of *refs*), `race` (*ref*), `class` (*ref*), `outfit` (*ref* → DefaultOutfit), `level` (int), `autoCalcStats` (bool — derive H/M/S + skills from level + class), `packages` (array of *refs* → PACK; the NPC's AI package list, evaluated in order), `voiceType` (*ref* → VTYP), `crimeFaction` (*ref* → FACT; city-citizen identity, required for cross-cell Travel), `unique` (bool — one-off actor, helps engine AI tracking), `combatStyle` (*ref* → CSTY; HOW the AI fights), `spells` (array of *refs* → SPEL; the AI's spell list), `greeting` (string — the Hello line; when this NPC has custom `dialogue`, a Hello info is auto-emitted so it's conversable. Empty ⇒ a default line) |
 | `quests` | `editorId`, `name`, `objectives` (array of `{ index (int), text }`) |
 | `dialogue` | `editorId`, `questEditorId`, `speakerNpcEditorId` (optional), `prompt`, `responses` (array of strings), `emotion` (optional — `Neutral`\|`Anger`\|`Disgust`\|`Fear`\|`Sad`\|`Happy`\|`Surprise`), `emotionValue` (0–100). Optional **result fragment** (runs when the line is picked): `resultScript` (Scriptname, `Extends TopicInfo`, `Fragment_0`), `resultScriptSource` (`.psc`), `resultProperties` (bound props), `goodbye` (bool — close menu after). Build wires the full chain (Quest→DialogView→Branch→Topic→INFO + a Hello) — see the dialogue section below |
@@ -90,8 +92,10 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `keys` | `editorId`, `name`, `value`, `weight`, `keywords` (array of *refs*) |
 | `keywords` | `editorId` (define your own keyword so in-spec records can list it in `keywords`) |
 | `outfits` | `editorId`, `items` (array of *refs* → armors/weapons; an npc `outfit` can point at this editorId) |
-| `statics` | `editorId`, `model` (a `.nif` path — reference a vanilla mesh; a placement base, no name), `alternateTextures` (array — swap the mesh's textures to a TXST; see *textureSets* below) |
-| `activators` | `editorId`, `name`, `model` (`.nif` path), `keywords` (array of *refs*), `alternateTextures` (array — same as `statics`); attach behaviour via `scripts` |
+| `statics` | `editorId`, `model` (a `.nif` path — vanilla OR custom mesh; a placement base, no name), `alternateTextures` (array — swap the mesh's textures to a TXST; see *textureSets* below) |
+| `activators` | `editorId`, `name`, `model` (`.nif` path), `keywords` (array of *refs*), `alternateTextures` (array — same as `statics`), `activationSound`/`loopingSound` (SNDR *refs*); attach behaviour via `scripts` |
+| `furniture` | `editorId`, `name`, `model` (`.nif` path — vanilla OR custom mesh), `keywords` (array of *refs*) — a placeable interactive object (chair/bed/bench/idle marker); place it with a `placement` |
+| `sounds` | `editorId`, `files` (array of Data-relative `Sound\...` `.wav`/`.xwm` paths), `category` (SNCT *ref*, default AudioCategorySFX), `outputModel` (SOPM *ref*, default vanilla SFX), `priority` (0–255), `staticAttenuation` (dB) — a Sound Descriptor (SNDR) a record's sound field points at. See [external_assets.md](external_assets.md) |
 | `recipes` | `editorId`, `kind` (`craft`/`temper`/`smelt`/`breakdown`), `createdObject` (*ref*), `count` (int), `workbench` (named selector `forge`/`sharpeningWheel`/`armorTable`/`smelter`/`tanningRack`/`skyforge` OR a keyword *ref*; defaults by kind), `components` (array of `{ item (*ref*), count (int) }`), `conditions` (array of shared CTDA `{ function, param (*ref*), comparison, value, or }` — perk/item/skill gating, e.g. `HasPerk`/`TemperIsEnchanted`) — a crafting/tempering/smelting recipe (COBJ) |
 | `packages` | `editorId`, `template` (*ref* → a vanilla procedure template, e.g. Sandbox = `Skyrim.esm:0x01C254`, Travel = `Skyrim.esm:0x016FAA`, UseMagic = `Skyrim.esm:0x0504F5`), `flags` (array — `Package.Flag` names), `interruptFlags` (array — `HellosToPlayer`/`AllowIdleChatter`/`WorldInteractions`/…), `preferredSpeed` (`Walk`\|`Jog`\|`Run`\|`FastWalk`), `combatStyle` (*ref*, optional), `ownerQuest` (*ref*, optional), `schedule` (`{ month, dayOfWeek, date, hour, minute, durationInMinutes }` — a time window `[hour, hour+durationInMinutes)`; `hour:-1` = any time), `sandbox` / `sleep` / `travel` / `useMagic` / `patrol` / `follow` / `escort` (template-input subobjects — see below), `conditions` (array of CTDA gates — see *conditions* below). An NPC's `packages` list is in **priority order**: the engine runs the first package whose schedule **and** conditions pass — so put scheduled/conditioned packages first and an unconditioned fallback last (e.g. a Sleep package scheduled 22:00–07:00 above an unconditioned Sandbox; or a Follow package gated on `GetInFaction CurrentFollowerFaction==1` above a downtime Sandbox). Assign to one or more NPCs via `npcs[].packages`. |
 | `combatStyles` | `editorId`, `offensiveMult`/`defensiveMult`/`groupOffensiveMult` (~aggression/blocking/group-boldness), `equipMultMelee`/`equipMultMagic`/`equipMultRanged`/`equipMultShout`/`equipMultUnarmed`/`equipMultStaff` (AI weapon-preference scores; for a mage NPC, push Magic high relative to the others — vanilla `csVampireMagic` uses 8.1/2.15/0.51), `avoidThreatChance` (0..1), `flags` (array — `Dueling`\|`Flanking`\|`AllowDualWielding`). An npc's `combatStyle` ref can point at one. |
@@ -586,6 +590,31 @@ smelter (`createdObject` = the output ingot, component = the ore/item consumed).
 
 Common bench keyword FormIDs (probed from Skyrim.esm): `0x088105` forge, `0x0ADB78` armor table,
 `0x088108` sharpening wheel, `0x0A5CCE` smelter, `0x07866A` tanning rack, `0x0F46CE` Skyforge.
+
+### external assets — your own meshes / textures / sounds (`model`, `sounds`, `assets`)
+Instead of cloning a vanilla record's mesh via `template`, bring your OWN assets. ModForge
+**references** them (writes the Data-relative path into the record) and **bundles** them (copies the
+files next to the `.esp` on `package`). It does NOT author meshes/sounds — full contract +
+path rules in **[external_assets.md](external_assets.md)**.
+```jsonc
+"assets": "my_assets",          // source dir; package copies its Meshes/Textures/Sound/… into the mod
+"sounds": [ { "editorId": "MFChimeSD", "files": [ "Sound\\fx\\mymod\\chime.wav" ] } ],
+"statics":    [ { "editorId": "MFStone",  "model": "MyMod\\stone.nif" } ],
+"furniture":  [ { "editorId": "MFThrone", "name": "Throne", "model": "MyMod\\throne.nif" } ],
+"activators": [ { "editorId": "MFBell", "name": "Bell", "model": "MyMod\\bell.nif",
+                  "activationSound": "MFChimeSD" } ]
+```
+- **`model`** (on statics/activators/furniture/miscItems/weapons) is a Data-relative `.nif` path
+  rooted at `Meshes\` — so **omit the `Meshes\` prefix** (write `MyMod\bell.nif`, not
+  `Meshes\MyMod\bell.nif`). `validate` enforces this. On a `miscItem`, `model` overrides `template`
+  (warns); on a `weapon`, pair `model` WITH a `template` (a model-less/template-less weapon CRASHES
+  on equip).
+- **`sounds`** emit Sound Descriptors (SNDR). A record points at one by *ref* (in-spec `editorId` or
+  vanilla `<master>:0xFORMID`): activator `activationSound`/`loopingSound`, misc/weapon
+  `pickUpSound`/`putDownSound`. `category`/`outputModel` default to the vanilla SFX category/output.
+- **`assets`** names a source dir laid out like `Data/` (`Meshes/`, `Textures/`, `Sound/`, `Music/`,
+  `Seq/`); `package` copies those sub-trees into the output mod folder. Override per-run with
+  `package <spec> <outDir> --assets <dir>`. Worked example: `../examples/custom_asset_spec.json`.
 
 ### textureSets (TXST) — retexture without a new mesh
 A huge class of mods just **swaps the textures** of an existing mesh (a recolored sword, a reskinned

@@ -25,6 +25,14 @@ public static partial class Generator
                     && TryResolveTemplate<IMiscItemGetter>(m.Template, out var tmpl) && tmpl is not null)
                     r.DeepCopyIn(tmpl, out _, MiscCopyMask);
                 r.EditorID = m.EditorId; r.Name = m.Name; r.Value = m.Value; r.Weight = m.Weight;
+                // External-resource pipeline: a `model` path string IS the .nif (overrides any cloned
+                // template mesh). `model` + `template` together is ambiguous — warn, model wins.
+                if (!string.IsNullOrWhiteSpace(m.Model))
+                {
+                    if (!string.IsNullOrWhiteSpace(m.Template))
+                        Warn($"  ! miscItem '{m.EditorId}': both `template` and `model` set — `model` wins (the user mesh overrides the cloned template's)");
+                    r.Model = new Model(); r.Model.File.GivenPath = m.Model;
+                }
             }
             foreach (var b in spec.Books)
             {
@@ -82,6 +90,16 @@ public static partial class Generator
                 else
                     Warn($"  ! weapon '{w.EditorId}': no `template` — a model-less weapon CRASHES on equip; set template to a vanilla weapon (e.g. Skyrim.esm:0x012EB7 IronSword)");
                 r.EditorID = w.EditorId; r.Name = w.Name;
+                // External-resource pipeline: a `model` path overrides the cloned world-model .nif (the
+                // template still supplies first-person model / anim / equip data — a user mesh usually
+                // pairs WITH a template so the weapon stays equip-safe). `model`+`template` is intended
+                // here, but `model` alone (no template) likely CRASHES on equip — warn either way.
+                if (!string.IsNullOrWhiteSpace(w.Model))
+                {
+                    if (string.IsNullOrWhiteSpace(w.Template))
+                        Warn($"  ! weapon '{w.EditorId}': `model` set but no `template` — a custom world mesh without a template's 1st-person model/anim/equip data may CRASH on equip; pair `model` with a `template` of the same weapon type");
+                    r.Model ??= new Model(); r.Model.File.GivenPath = w.Model;
+                }
                 // Stats override the template's. speed/reach default to 1.0 so the weapon is swingable;
                 // when templated, keep the clone's Data (anim type/skill/stagger/flags) and only restate
                 // speed/reach + the basic stats.
@@ -286,6 +304,27 @@ public static partial class Generator
                 r.EditorID = ac.EditorId; r.Name = ac.Name;
                 if (!string.IsNullOrEmpty(ac.Model)) { r.Model = new Model(); r.Model.File.GivenPath = ac.Model; }
             }
+            // FURN — a placeable interactive object (chairs/beds/benches). Like STAT/ACTI, a `model`
+            // path string IS the .nif; an external resource pipeline writes a user mesh here directly.
+            foreach (var fn in spec.Furniture)
+            {
+                var r = mod.Furniture.AddNew();
+                r.EditorID = fn.EditorId; r.Name = fn.Name;
+                if (!string.IsNullOrEmpty(fn.Model)) { r.Model = new Model(); r.Model.File.GivenPath = fn.Model; }
+            }
+            // SNDR — Sound Descriptor: wraps a user `.wav`/`.xwm` so records can FormLink to it.
+            // `SoundFiles` holds Data-relative `Sound\...` paths (the package step bundles the audio).
+            // Category/OutputModel are FormLinks resolved in pass 2 (default to vanilla SFX there).
+            foreach (var sd in spec.Sounds)
+            {
+                var r = mod.SoundDescriptors.AddNew();
+                r.EditorID = sd.EditorId;
+                r.Priority = sd.Priority;
+                r.StaticAttenuation = sd.StaticAttenuation;
+                foreach (var f in sd.Files)
+                    if (!string.IsNullOrWhiteSpace(f))
+                        r.SoundFiles.Add(new Mutagen.Bethesda.Plugins.Assets.AssetLink<Mutagen.Bethesda.Skyrim.Assets.SkyrimSoundAssetType>(f));
+            }
         }
 
         // --- pass 2: keywords on armor/weapon/misc/... (all implement the IKeyworded aspect) ---
@@ -309,6 +348,50 @@ public static partial class Generator
             foreach (var sg in spec.SoulGems) Wire(sg.EditorId, sg.Keywords);
             foreach (var k in spec.Keys) Wire(k.EditorId, k.Keywords);
             foreach (var ac in spec.Activators) Wire(ac.EditorId, ac.Keywords);
+        }
+
+        // --- pass 2: external-resource sound wiring ---
+        // SNDR Category/OutputModel + the per-record sound FormLinks (activator activation/looping,
+        // misc/weapon pick-up/put-down) point at a SoundDescriptor: an in-spec `sounds` editorId OR
+        // a vanilla `<master>:0xFORMID`. The SNDR's Category/OutputModel default to vanilla SFX so an
+        // authored .wav is actually audible.
+        public void WireSounds()
+        {
+            const string DefaultSoundCategory = "Skyrim.esm:0x0172A1";    // AudioCategorySFX
+            const string DefaultSoundOutputModel = "Skyrim.esm:0x0B4058"; // vanilla SFX output model (SOPM)
+            foreach (var sd in spec.Sounds)
+            {
+                if (!recordsByEd.TryGetValue(sd.EditorId, out var rec) || rec is not ISoundDescriptor snd) continue;
+                Resolve($"sound '{sd.EditorId}' category",
+                    string.IsNullOrWhiteSpace(sd.Category) ? DefaultSoundCategory : sd.Category,
+                    fk => snd.Category.SetTo(fk));
+                Resolve($"sound '{sd.EditorId}' outputModel",
+                    string.IsNullOrWhiteSpace(sd.OutputModel) ? DefaultSoundOutputModel : sd.OutputModel,
+                    fk => snd.OutputModel.SetTo(fk));
+            }
+            void WireSound(string ownerEd, string soundRef, string slot, Action<FormKey> set)
+            {
+                if (string.IsNullOrWhiteSpace(soundRef)) return;
+                Resolve($"'{ownerEd}' {slot}", soundRef, set);
+            }
+            foreach (var ac in spec.Activators)
+            {
+                if (!recordsByEd.TryGetValue(ac.EditorId, out var rec) || rec is not IActivator a) continue;
+                WireSound(ac.EditorId, ac.ActivationSound, "activationSound", fk => a.ActivationSound.SetTo(fk));
+                WireSound(ac.EditorId, ac.LoopingSound,    "loopingSound",    fk => a.LoopingSound.SetTo(fk));
+            }
+            foreach (var m in spec.MiscItems)
+            {
+                if (!recordsByEd.TryGetValue(m.EditorId, out var rec) || rec is not IMiscItem mi) continue;
+                WireSound(m.EditorId, m.PickUpSound,  "pickUpSound",  fk => mi.PickUpSound.SetTo(fk));
+                WireSound(m.EditorId, m.PutDownSound, "putDownSound", fk => mi.PutDownSound.SetTo(fk));
+            }
+            foreach (var w in spec.Weapons)
+            {
+                if (!recordsByEd.TryGetValue(w.EditorId, out var rec) || rec is not IWeapon wp) continue;
+                WireSound(w.EditorId, w.PickUpSound,  "pickUpSound",  fk => wp.PickUpSound.SetTo(fk));
+                WireSound(w.EditorId, w.PutDownSound, "putDownSound", fk => wp.PutDownSound.SetTo(fk));
+            }
         }
 
         // --- pass 2: magic effects on spell/potion/ingredient/scroll (IHasEffects) + spell EquipType ---

@@ -44,6 +44,7 @@ public static partial class Generator
         ctx.WireRelationships();                   // RELA Parent/Child NPC refs
         ctx.WireScenes();                          // SCEN actor aliases -> the NPC that fills each (UniqueActor)
         ctx.WireKeywords();                        // keywords on armor/weapon/misc/...
+        ctx.WireSounds();                          // SNDR category/output + per-record sound FormLinks
         ctx.WireAlternateTextures();               // TXST alt-textures on static/activator meshes
         ctx.WireEffects();                         // magic effects on spell/potion/ingredient/scroll (+ spell equipType)
         ctx.WireEnchantments();                    // ENCH effects + weapon/armor enchantment FormLinks

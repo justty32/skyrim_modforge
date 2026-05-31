@@ -75,6 +75,29 @@ internal static partial class Program
                 Console.WriteLine($"      book: teaches={teach} flags={bk.Flags}");
             }
 
+            // External-resource pipeline: the per-record sound FormLinks + SNDR records (the model
+            // paths print via the IModeledGetter blocks below).
+            if (r is IActivatorGetter acti)
+            {
+                if (!acti.ActivationSound.IsNull) Console.WriteLine($"      activationSound -> {Ref(acti.ActivationSound.FormKey)}");
+                if (!acti.LoopingSound.IsNull) Console.WriteLine($"      loopingSound -> {Ref(acti.LoopingSound.FormKey)}");
+            }
+            if (r is IMiscItemGetter misc)
+            {
+                if (!misc.PickUpSound.IsNull) Console.WriteLine($"      pickUpSound -> {Ref(misc.PickUpSound.FormKey)}");
+                if (!misc.PutDownSound.IsNull) Console.WriteLine($"      putDownSound -> {Ref(misc.PutDownSound.FormKey)}");
+            }
+            if (r is IWeaponGetter wsnd)
+            {
+                if (!wsnd.PickUpSound.IsNull) Console.WriteLine($"      pickUpSound -> {Ref(wsnd.PickUpSound.FormKey)}");
+                if (!wsnd.PutDownSound.IsNull) Console.WriteLine($"      putDownSound -> {Ref(wsnd.PutDownSound.FormKey)}");
+            }
+            if (r is ISoundDescriptorGetter snd)
+            {
+                Console.WriteLine($"      sndr: category -> {Ref(snd.Category.FormKey)} outputModel -> {Ref(snd.OutputModel.FormKey)} priority={snd.Priority}");
+                foreach (var sf in snd.SoundFiles) Console.WriteLine($"        soundFile={sf.GivenPath}");
+            }
+
             if (r is IArmorGetter arm)
             {
                 if (arm.BodyTemplate is { } bt)
@@ -247,7 +270,7 @@ internal static partial class Program
             if (r is IOutfitGetter otft && otft.Items is { Count: > 0 } oitems)
                 foreach (var it in oitems) Console.WriteLine($"      outfit item -> {Ref(it.FormKey)}");
 
-            if ((r is IStaticGetter || r is IActivatorGetter) && r is IModeledGetter mdl && mdl.Model?.File is { } mf)
+            if ((r is IStaticGetter || r is IActivatorGetter || r is IFurnitureGetter) && r is IModeledGetter mdl && mdl.Model?.File is { } mf)
             {
                 Console.WriteLine($"      model: {mf.GivenPath}");
                 if (mdl.Model.AlternateTextures is { Count: > 0 } alts)

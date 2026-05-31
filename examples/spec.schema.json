@@ -39,6 +39,9 @@
     "outfits": { "type": "array", "items": { "$ref": "#/$defs/outfit" }, "description": "Outfit (OTFT): a set of item refs an NPC can wear" },
     "statics": { "type": "array", "items": { "$ref": "#/$defs/staticRec" }, "description": "Static (STAT): a world mesh (model path)" },
     "activators": { "type": "array", "items": { "$ref": "#/$defs/activator" }, "description": "Activator (ACTI): an interactable world object" },
+    "furniture": { "type": "array", "items": { "$ref": "#/$defs/furniture" }, "description": "Furniture (FURN): a placeable interactive object (chair/bed/bench), vanilla or custom mesh" },
+    "sounds": { "type": "array", "items": { "$ref": "#/$defs/sound" }, "description": "SoundDescriptor (SNDR): wraps a user .wav/.xwm so records can FormLink to it" },
+    "assets": { "type": "string", "description": "External-resource source dir; package copies its Meshes/Textures/Sounds/Music/Seq sub-trees next to the .esp. See docs/external_assets.md" },
     "textureSets": { "type": "array", "items": { "$ref": "#/$defs/textureSet" }, "description": "TextureSet (TXST): retexture an existing mesh without a new .nif" },
     "recipes": { "type": "array", "items": { "$ref": "#/$defs/recipe" }, "description": "ConstructibleObject (COBJ): crafting recipes" },
     "enchantments": { "type": "array", "items": { "$ref": "#/$defs/enchantment" }, "description": "Enchantment / Object Effect (ENCH): MGEF-based effects bundled into a weapon/staff/apparel enchantment a weapon/armor references via its `enchantment` field" },
@@ -576,7 +579,7 @@
       "required": ["editorId"],
       "properties": {
         "editorId": { "type": "string", "minLength": 1 },
-        "model": { "type": "string", "description": "a .nif path (reference a vanilla mesh in the BSA, e.g. 'Clutter\\\\Common\\\\Rock01.nif')" },
+        "model": { "type": "string", "description": "a .nif path, Data-relative rooted at Meshes\\ (omit the 'Meshes\\' prefix), vanilla OR custom, e.g. 'Clutter\\\\Common\\\\Rock01.nif' or 'MyMod\\\\stone.nif'" },
         "alternateTextures": { "type": "array", "items": { "$ref": "#/$defs/alternateTexture" }, "description": "retexture named materials of `model` via TXST records" }
       }
     },
@@ -586,9 +589,33 @@
       "properties": {
         "editorId": { "type": "string", "minLength": 1 },
         "name": { "type": "string" },
-        "model": { "type": "string", "description": "a .nif path" },
+        "model": { "type": "string", "description": "a .nif path (rooted at Meshes\\, omit the prefix)" },
         "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } },
-        "alternateTextures": { "type": "array", "items": { "$ref": "#/$defs/alternateTexture" }, "description": "retexture named materials of `model` via TXST records" }
+        "alternateTextures": { "type": "array", "items": { "$ref": "#/$defs/alternateTexture" }, "description": "retexture named materials of `model` via TXST records" },
+        "activationSound": { "$ref": "#/$defs/ref", "description": "SNDR ref (in-spec sounds editorId or vanilla <master>:0xFORMID) played on activation" },
+        "loopingSound": { "$ref": "#/$defs/ref", "description": "SNDR ref played in a loop while present" }
+      }
+    },
+    "furniture": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "model": { "type": "string", "description": "a .nif path (rooted at Meshes\\, omit the prefix), vanilla OR custom" },
+        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
+      }
+    },
+    "sound": {
+      "type": "object",
+      "required": ["editorId", "files"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "files": { "type": "array", "minItems": 1, "items": { "type": "string" }, "description": "Data-relative Sound\\... paths to .wav/.xwm audio (the package step bundles them)" },
+        "category": { "$ref": "#/$defs/ref", "description": "SNCT ref; empty -> Skyrim.esm:0x0172A1 AudioCategorySFX" },
+        "outputModel": { "$ref": "#/$defs/ref", "description": "SOPM ref; empty -> Skyrim.esm:0x0B4058 vanilla SFX output" },
+        "priority": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "staticAttenuation": { "type": "number", "description": "dB attenuation" }
       }
     },
     "textureSet": {

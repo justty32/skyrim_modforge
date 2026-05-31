@@ -73,6 +73,8 @@ public static partial class Generator
         foreach (var ws in spec.Worldspaces) Reg(ws.EditorId, "worldspace");
         foreach (var rg in spec.Regions) Reg(rg.EditorId, "region");
         foreach (var ez in spec.EncounterZones) Reg(ez.EditorId, "encounterZone");
+        foreach (var fn in spec.Furniture) Reg(fn.EditorId, "furniture");
+        foreach (var sd in spec.Sounds) Reg(sd.EditorId, "sound");
         foreach (var pl in spec.Placements) if (!string.IsNullOrWhiteSpace(pl.EditorId)) Reg(pl.EditorId, "placement");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
@@ -153,6 +155,53 @@ public static partial class Generator
         foreach (var p in spec.Potions) if (!string.IsNullOrWhiteSpace(p.Template) && !TryExternalRef(p.Template, out _))
             problems.Add($"potion '{p.EditorId}' template: malformed external ref '{p.Template}' (expect <master>:0xFORMID, e.g. Skyrim.esm:0x039BE5)");
         foreach (var m in spec.MiscItems) foreach (var k in m.Keywords) CheckRef(k, $"miscItem '{m.EditorId}' keyword");
+
+        // External-resource pipeline — model/sound path + ref shape checks.
+        // A `model` is a Data-relative .nif path (engine roots it at Meshes\, so it must NOT begin
+        // with "Meshes\"). A sound `file` is a Data-relative .wav/.xwm under Sound\. Paths use
+        // backslashes by Bethesda convention, but we accept '/' too (the engine normalizes).
+        void CheckModelPath(string model, string what)
+        {
+            if (string.IsNullOrWhiteSpace(model)) return;
+            var p = model.Replace('/', '\\');
+            if (!p.EndsWith(".nif", StringComparison.OrdinalIgnoreCase))
+                problems.Add($"{what} model '{model}' must be a .nif path (Data-relative, rooted at Meshes\\, e.g. Weapons\\Iron\\LongSword.nif)");
+            if (p.StartsWith("Meshes\\", StringComparison.OrdinalIgnoreCase))
+                problems.Add($"{what} model '{model}' must NOT start with 'Meshes\\' — the engine roots model paths at Meshes\\ already (drop the prefix)");
+            if (System.IO.Path.IsPathRooted(model) || p.StartsWith('\\') || p.Contains(':'))
+                problems.Add($"{what} model '{model}' must be a relative path, not absolute/drive-qualified");
+        }
+        void CheckSoundFile(string file, string what)
+        {
+            if (string.IsNullOrWhiteSpace(file)) return;
+            var p = file.Replace('/', '\\');
+            if (!(p.EndsWith(".wav", StringComparison.OrdinalIgnoreCase) || p.EndsWith(".xwm", StringComparison.OrdinalIgnoreCase)))
+                problems.Add($"{what} file '{file}' must be a .wav or .xwm path (Data-relative under Sound\\, e.g. Sound\\fx\\mymod\\bell.wav)");
+            if (System.IO.Path.IsPathRooted(file) || p.StartsWith('\\') || p.Contains(':'))
+                problems.Add($"{what} file '{file}' must be a relative path, not absolute/drive-qualified");
+        }
+        foreach (var st in spec.Statics) CheckModelPath(st.Model, $"static '{st.EditorId}'");
+        foreach (var ac in spec.Activators) CheckModelPath(ac.Model, $"activator '{ac.EditorId}'");
+        foreach (var fn in spec.Furniture) CheckModelPath(fn.Model, $"furniture '{fn.EditorId}'");
+        foreach (var m in spec.MiscItems) CheckModelPath(m.Model, $"miscItem '{m.EditorId}'");
+        foreach (var w in spec.Weapons) CheckModelPath(w.Model, $"weapon '{w.EditorId}'");
+        foreach (var fn in spec.Furniture) foreach (var k in fn.Keywords) CheckRef(k, $"furniture '{fn.EditorId}' keyword");
+        // SNDR: at least one sound file, valid file shapes, optional category/outputModel refs.
+        foreach (var sd in spec.Sounds)
+        {
+            if (sd.Files.Count == 0)
+                problems.Add($"sound '{sd.EditorId}' has no files (a SoundDescriptor needs at least one .wav/.xwm)");
+            foreach (var f in sd.Files) CheckSoundFile(f, $"sound '{sd.EditorId}'");
+            CheckRef(sd.Category, $"sound '{sd.EditorId}' category");
+            CheckRef(sd.OutputModel, $"sound '{sd.EditorId}' outputModel");
+        }
+        // Record sound refs must resolve to an in-spec `sounds` editorId or a vanilla SNDR ref.
+        foreach (var ac in spec.Activators)
+        { CheckRef(ac.ActivationSound, $"activator '{ac.EditorId}' activationSound"); CheckRef(ac.LoopingSound, $"activator '{ac.EditorId}' loopingSound"); }
+        foreach (var m in spec.MiscItems)
+        { CheckRef(m.PickUpSound, $"miscItem '{m.EditorId}' pickUpSound"); CheckRef(m.PutDownSound, $"miscItem '{m.EditorId}' putDownSound"); }
+        foreach (var w in spec.Weapons)
+        { CheckRef(w.PickUpSound, $"weapon '{w.EditorId}' pickUpSound"); CheckRef(w.PutDownSound, $"weapon '{w.EditorId}' putDownSound"); }
 
         var armorTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { "light", "heavy", "clothing", "lightarmor", "heavyarmor" };

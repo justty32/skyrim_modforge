@@ -1,0 +1,1 @@
+README: placeholder asset tree for the external-resource pipeline demo (examples/custom_asset_spec.json). Stub bytes only — replace each file with real authored content. ModForge references+bundles; it does not author meshes/textures/sounds.

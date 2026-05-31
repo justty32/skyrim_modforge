@@ -200,6 +200,7 @@ public static partial class Generator
                         + spec.Enchantments.Count + spec.TextureSets.Count
                         + spec.Weathers.Count + spec.Climates.Count
                         + spec.EncounterZones.Count
+                        + spec.Furniture.Count + spec.Sounds.Count
                         + worldspacesBuilt + regionsBuilt
                         + scenesBuilt;
                         // (Placements are reported separately in stats, so not folded into `total`.)

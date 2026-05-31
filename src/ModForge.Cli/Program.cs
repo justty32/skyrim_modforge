@@ -19,7 +19,8 @@ internal static partial class Program
                 case "gen" when args.Length == 2:      GenCmd(args[1]); return 0;
                 case "build" when args.Length == 3:    BuildCmd(args[1], args[2]); return 0;
                 case "compile" when args.Length == 3:  return CompileCmd(args[1], args[2]);
-                case "package" when args.Length == 3:  return PackageCmd(args[1], args[2]);
+                case "package" when args.Length == 3:  return PackageCmd(args[1], args[2], null);
+                case "package" when args.Length == 5 && args[3] == "--assets": return PackageCmd(args[1], args[2], args[4]);
                 case "validate" when args.Length == 2: return ValidateCmd(args[1]);
                 case "extract" when args.Length == 3:  ExtractCmd(args[1], args[2]); return 0;
                 case "apply" when args.Length == 4:    ApplyCmd(args[1], args[2], args[3]); return 0;
@@ -65,7 +66,7 @@ internal static partial class Program
         "  gen     <out.esp>\n" +
         "  build   <spec.json> <out.esp>\n" +
         "  compile <script.psc> <outDir>\n" +
-        "  package <spec.json> <outModDir>\n" +
+        "  package <spec.json> <outModDir> [--assets <dir>]   esp + scripts + bundled Meshes/Textures/Sounds\n" +
         "  validate <spec.json>\n" +
         "  dump    <in.esp>\n" +
         "  find    <in.esp> <query> [type]              search editorId/name -> Skyrim.esm:0xFORMID\n" +
@@ -175,7 +176,7 @@ internal static partial class Program
     //  package — build the .esp, compile any script sources, and lay out an MO2/Vortex-
     //  ready mod folder: <outModDir>/<PluginName> + Scripts/*.pex + Scripts/Source/*.psc.
     // -------------------------------------------------------------------------------
-    private static int PackageCmd(string specPath, string outModDir)
+    private static int PackageCmd(string specPath, string outModDir, string? assetsOverride)
     {
         var spec = ReadSpec(specPath);
         var pluginName = string.IsNullOrEmpty(spec.PluginName) ? "Generated.esp" : spec.PluginName;
@@ -213,6 +214,21 @@ internal static partial class Program
         foreach (var sa in spec.Scripts) CompileSource(sa.Source, sa.Source);
         // Dialogue result-script fragments (the INFO OnEnd TIF) are compiled the same way.
         foreach (var d in spec.Dialogue) CompileSource(d.ResultScriptSource, d.ResultScriptSource);
+
+        // 3) external-resource bundling — copy the spec's (or --assets) Meshes/Textures/Sounds/…
+        //    sub-trees next to the .esp so the packaged mod is self-contained / MO2-ready.
+        var assetsSrc = !string.IsNullOrWhiteSpace(assetsOverride) ? assetsOverride
+                      : !string.IsNullOrWhiteSpace(spec.Assets)
+                            ? (Path.IsPathRooted(spec.Assets) ? spec.Assets : Path.Combine(specDir, spec.Assets))
+                            : null;
+        if (!string.IsNullOrWhiteSpace(assetsSrc))
+        {
+            var br = Assets.Bundle(assetsSrc, outModDir);
+            foreach (var w in br.Warnings) Console.Error.WriteLine(w);
+            if (br.FilesCopied > 0)
+                Console.WriteLine($"bundled {br.FilesCopied} asset file(s) ({br.BytesCopied / 1024.0:0.#} KiB) " +
+                    $"from {assetsSrc} -> [{string.Join(", ", br.CopiedFolders)}]");
+        }
 
         Console.WriteLine($"packaged -> {outModDir}  ({pluginName} + {compiled} compiled script(s) under Scripts/)");
         return 0;
