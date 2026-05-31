@@ -157,7 +157,7 @@ internal static partial class Program
     {
         uint id = Convert.ToUInt32(formIdHex.Replace("0x", "", StringComparison.OrdinalIgnoreCase), 16) & 0xFFFFFF;
         using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE);
-        var all = mod.EnumerateMajorRecords<IRelationshipGetter>();
+        var all = mod.EnumerateMajorRecords<IRelationshipGetter>().ToList();   // materialize once: enumerated twice below (overlay re-parses otherwise)
         void Print(IRelationshipGetter r) => Console.WriteLine(
             $"0x{r.FormKey.ID:X6}  {r.EditorID ?? "-"}  parent={r.Parent.FormKey} child={r.Child.FormKey}"
             + $"  rank={r.Rank}  assoc={(r.AssociationType.FormKey.IsNull ? "-" : r.AssociationType.FormKey.ToString())}  flags={r.Flags}");

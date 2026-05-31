@@ -6,6 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>ModForge</RootNamespace>
+    <!-- .NET 9+ enables CET/shadow-stack by default, which Mod Organizer 2 fails to launch under.
+         This tool's output is consumed by MO2 users and may itself be run inside MO2 — disable it.
+         (Mutagen best-practice: Mo2-Compatibility.) -->
+    <CETCompat>false</CETCompat>
   </PropertyGroup>
 
   <ItemGroup>

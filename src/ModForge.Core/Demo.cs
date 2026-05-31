@@ -59,7 +59,7 @@ public static class Demo
         info.Conditions.Add(cond);
         topic.Responses.Add(info);
 
-        mod.IsSmallMaster = true; // ESL flag (≤4096 new records)
+        mod.IsSmallMaster = true; // ESL flag (≤2048 new records — FormIDs 0x800–0xFFF)
         return mod;
     }
 }
