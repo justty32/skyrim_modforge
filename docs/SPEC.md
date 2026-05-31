@@ -60,7 +60,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 |---------|--------|
 | `miscItems` | `editorId`, `name`, `value` (int≥0), `weight` (number), `keywords` (array of *refs*) |
 | `books` | `editorId`, `name`, `text` (book body) |
-| `weapons` | `editorId`, `name`, `value`, `weight`, `damage` (int≥0), `speed` (number), `reach` (number), `keywords` (array of *refs*) |
+| `weapons` | `editorId`, `name`, `value`, `weight`, `damage` (int≥0), `speed` (number), `reach` (number), `keywords` (array of *refs*), `enchantment` (*ref* → ENCH, in-spec or vanilla `<master>:0xFORMID`), `enchantmentAmount` (int — the weapon's charge pool, e.g. 1500–3000; 0 = engine auto-calc) |
 | `npcs` | `editorId`, `name`, `factions` (array of *refs*), `race` (*ref*), `class` (*ref*), `outfit` (*ref* → DefaultOutfit), `level` (int), `autoCalcStats` (bool — derive H/M/S + skills from level + class), `packages` (array of *refs* → PACK; the NPC's AI package list, evaluated in order), `voiceType` (*ref* → VTYP), `crimeFaction` (*ref* → FACT; city-citizen identity, required for cross-cell Travel), `unique` (bool — one-off actor, helps engine AI tracking), `combatStyle` (*ref* → CSTY; HOW the AI fights), `spells` (array of *refs* → SPEL; the AI's spell list), `greeting` (string — the Hello line; when this NPC has custom `dialogue`, a Hello info is auto-emitted so it's conversable. Empty ⇒ a default line) |
 | `quests` | `editorId`, `name`, `objectives` (array of `{ index (int), text }`) |
 | `dialogue` | `editorId`, `questEditorId`, `speakerNpcEditorId` (optional), `prompt`, `responses` (array of strings), `emotion` (optional — `Neutral`\|`Anger`\|`Disgust`\|`Fear`\|`Sad`\|`Happy`\|`Surprise`), `emotionValue` (0–100). Optional **result fragment** (runs when the line is picked): `resultScript` (Scriptname, `Extends TopicInfo`, `Fragment_0`), `resultScriptSource` (`.psc`), `resultProperties` (bound props), `goodbye` (bool — close menu after). Build wires the full chain (Quest→DialogView→Branch→Topic→INFO + a Hello) — see the dialogue section below |
@@ -68,8 +68,9 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `scenes` | `editorId`, `questEditorId` (host quest), `actors` (array of `{ aliasId (int), npc (*ref*), name }`), `phases` (ordered array of `{ speaker (an aliasId), lines (array of strings), emotion, emotionValue }`), `beginOnQuestStart` (bool, default true), `stopQuestOnEnd` (bool). A **SCEN** — two NPCs talking to EACH OTHER. Build emits the host quest's `UniqueActor`-bound aliases, the Scene (actors + phases + Dialog actions), and one Scene/`SCEN` topic+INFO per phase line. See the *scenes* section below |
 | `spells` | `editorId`, `name`, `effects` (array of *effects*), `spellType`, `castType`, `targetType`, `baseCost` (int), `chargeTime` (number) |
 | `magicEffects` | `editorId`, `name`, `description`, `archetype`, `actorValue`, `magicSkill`, `resistValue`, `castType`, `targetType`, `baseCost` (number), `flags` (array), `association` (*ref*) — a custom MGEF an `effect` can point at |
+| `enchantments` | `editorId`, `name`, `enchantType` (`weapon`\|`apparel`\|`staff`), `castType`/`targetType` (optional overrides), `enchantmentCost` (int — per-cast charge cost / worn cost), `chargeTime` (number — staff charge-up), `effects` (array of *effects*) — an Object Effect (ENCH) a weapon/armor `enchantment` field points at |
 | `potions` | `editorId`, `name`, `value`, `weight`, `effects` (array of *effects*) |
-| `armors` | `editorId`, `name`, `value`, `weight`, `armorRating` (number), `armorType` (`light`\|`heavy`\|`clothing`), `slots` (array of biped-slot names), `keywords` (array of *refs*) |
+| `armors` | `editorId`, `name`, `value`, `weight`, `armorRating` (number), `armorType` (`light`\|`heavy`\|`clothing`), `slots` (array of biped-slot names), `keywords` (array of *refs*), `enchantment` (*ref* → ENCH, normally an `apparel` constant-effect one) |
 | `factions` | `editorId`, `name` |
 | `classes` | `editorId`, `name`, `description`, `teaches` (Skill), `maxTrainingLevel`, `healthWeight`/`magickaWeight`/`staminaWeight` (attribute distribution), `skillWeights` (`{ Skill: 0–255 }`) — an npc `class` can point at one |
 | `messages` | `editorId`, `name`, `description` (body text) |
@@ -150,6 +151,41 @@ and for potions. A damage spell that *travels* (`targetType: Aimed`) needs a `pr
 Keep `baseCost` low (vanilla restore/damage effects use ~0.5–3); the spell's magicka cost is
 auto-calculated from `baseCost` × `magnitude`, so a large `baseCost` makes the spell absurdly
 expensive. Compare any effect to a vanilla one with `mgefdiag <Skyrim.esm> <0xFORMID>`.
+
+### enchantments (ENCH / Object Effect)
+An **Object Effect** bundles one or more MGEF-based `effects` (the SAME `{ magicEffect, magnitude,
+area, duration }` shape as a spell/potion effect) into a reusable enchantment that a **weapon** or
+**armor** references via its `enchantment` field. `enchantType` picks the behaviour family and its
+vanilla-default cast/target (verified against `Skyrim.esm`):
+
+| `enchantType` | EnchantType | default castType / targetType | charge | use |
+|---------------|-------------|-------------------------------|--------|-----|
+| `weapon`  | `Enchantment`      | `FireAndForget` / `Touch` | weapon carries the pool (`enchantmentAmount`) | cast-on-strike (frost/fire/absorb weapon) |
+| `apparel` | `Enchantment`      | `ConstantEffect` / `Self` | none — always-on while worn | fortify/resist/regen apparel |
+| `staff`   | `StaffEnchantment` | `FireAndForget` / `Aimed` | staff carries the pool | staff "cast on use" (vanilla staves set `chargeTime` ~0.5) |
+
+```jsonc
+"enchantments": [
+  { "editorId": "MF_FrostWeaponEnch", "name": "Frost Damage",
+    "enchantType": "weapon",          // weapon | apparel | staff
+    "enchantmentCost": 15,            // per-cast charge cost drained from the weapon's pool
+    // "castType": "...", "targetType": "...",  // optional — override the family defaults
+    "effects": [ { "magicEffect": "MF_FrostDamageEnchEffect", "magnitude": 10 } ] }
+],
+"weapons": [
+  { "editorId": "MF_FrostIronSword", "name": "Frostbite Iron Sword",
+    "template": "Skyrim.esm:0x012EB7",   // clone a vanilla weapon for the model (else CRASH on equip)
+    "damage": 8,
+    "enchantment": "MF_FrostWeaponEnch", // ref → in-spec ENCH or vanilla <master>:0xFORMID
+    "enchantmentAmount": 1500 }          // the weapon's charge pool (casts before recharge)
+]
+```
+An `apparel` (constant-effect) enchantment goes on an **armor** the same way (no `enchantmentAmount` —
+apparel is passive). The `enchantment` ref may also be a **vanilla** ObjectEffect
+(`find <Skyrim.esm> Ench... ObjectEffect`, e.g. `EnchWeaponFrostDamageBase = Skyrim.esm:0x10FB96`).
+Inspect a built or vanilla ENCH with `enchdiag <in.esp> <0xFORMID>`. Worked example:
+[`examples/enchantment_spec.json`](../examples/enchantment_spec.json). *(Structurally verified; the
+enchantment actually firing in-game is unconfirmed — see the cookbook recipe note.)*
 
 ### classes (CLAS)
 An NPC's "profession" — set an npc's `class` ref to one. It drives the actor's attribute

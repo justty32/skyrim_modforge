@@ -187,6 +187,7 @@ public static partial class Generator
                         + spec.MagicEffects.Count + spec.Classes.Count + spec.Packages.Count
                         + spec.CombatStyles.Count + spec.Relationships.Count + spec.Recipes.Count
                         + spec.WordsOfPower.Count + spec.Shouts.Count
+                        + spec.Enchantments.Count
                         + scenesBuilt;
                         // (Placements are reported separately in stats, so not folded into `total`.)
             return new BuildResult

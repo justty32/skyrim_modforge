@@ -365,6 +365,46 @@ optional and a basic recipe needs none.
 Reusing a vanilla `projectile` + `castingArt` is what makes the bolt visible and lets it deliver the
 hit. Without `equipType` the NPC melees / never casts — the #1 silent failure for a generated combat spell.
 
+## "Enchanted weapon for a custom effect" (MGEF + ENCH + WEAP + COBJ)
+
+Three layers: a custom **MGEF** (what happens on hit) → an **enchantment** / ENCH (the reusable
+"object effect", `enchantType: weapon`) → a **weapon** that references it and carries a charge pool.
+Add a COBJ so the player can craft it. (For a passive **apparel** enchant, use `enchantType: apparel`
+and put `enchantment` on an `armor` instead — no `enchantmentAmount`, it's always-on while worn.)
+
+```jsonc
+{ "magicEffects": [
+    { "editorId": "MF_FrostDamageEnchEffect", "name": "Frost Damage",
+      "archetype": "ValueModifier", "actorValue": "Health",
+      "magicSkill": "Destruction", "resistValue": "ResistFrost",
+      "castType": "FireAndForget", "targetType": "Touch", "baseCost": 1.5,
+      "flags": [ "Hostile", "Detrimental", "NoArea" ] }
+  ],
+  "enchantments": [
+    { "editorId": "MF_FrostWeaponEnch", "name": "Frost Damage",
+      "enchantType": "weapon",          // → EnchantType=Enchantment, cast=FireAndForget, target=Touch
+      "enchantmentCost": 15,            // per-strike charge drained from the weapon's pool
+      "effects": [ { "magicEffect": "MF_FrostDamageEnchEffect", "magnitude": 10 } ] }
+  ],
+  "weapons": [
+    { "editorId": "MF_FrostIronSword", "name": "Frostbite Iron Sword",
+      "template": "Skyrim.esm:0x012EB7", "damage": 8,   // template = model (else CRASH on equip)
+      "enchantment": "MF_FrostWeaponEnch", "enchantmentAmount": 1500 }   // 1500 = charge pool
+  ],
+  "recipes": [
+    { "editorId": "MF_FrostIronSwordRecipe", "createdObject": "MF_FrostIronSword",
+      "components": [ { "item": "Skyrim.esm:0x05ACE4", "count": 2 },     // IngotIron
+                      { "item": "Skyrim.esm:0x02E4FC", "count": 1 } ] }  // SoulGemGrand
+  ] }
+```
+
+Full file: [`examples/enchantment_spec.json`](../../examples/enchantment_spec.json). Verify with
+`enchdiag <out.esp> <0xFORMID>` (ENCH type/cost/effects) and `dump` (the weapon's `enchantment ->`
+link + charge). **Note — structurally verified only:** the records build, validate, link and round-trip
+correctly and mirror vanilla ENCH structure exactly, but the enchantment actually *firing* in-game has
+not been confirmed (no in-game test was run). The `enchantmentCost` ↔ `enchantmentAmount` tuning and
+whether the engine auto-prices the charge are the most likely things to verify in-game.
+
 ## "Conversational NPC" (custom player topics — IN-GAME CONFIRMED It.23)
 
 Give the NPC a `greeting`, a host quest, and one `dialogue` entry per topic. From that the build emits

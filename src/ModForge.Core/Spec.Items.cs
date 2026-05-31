@@ -4,9 +4,17 @@ namespace ModForge;
 
 public sealed class MiscSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<string> Keywords { get; set; } = new(); public string Template { get; set; } = ""; }
 public sealed class BookSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Text { get; set; } = ""; public string Template { get; set; } = ""; }
-public sealed class WeaponSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public ushort Damage { get; set; } public float Speed { get; set; } public float Reach { get; set; } public List<string> Keywords { get; set; } = new(); public string Template { get; set; } = ""; }
+// Weapon `enchantment` is a ref → an in-spec ENCH (enchantments[]) or a vanilla ObjectEffect
+// (e.g. Skyrim.esm:0x10FB96 EnchWeaponFrostDamageBase). `enchantmentAmount` is the weapon's CHARGE
+// POOL (how many casts before it must be recharged with a soul gem) — vanilla enchanted weapons use
+// 1500–3000; 0 leaves the engine's auto-calc. Only meaningful for weapon/staff (Enchantment/
+// StaffEnchantment) enchants; ignored (no charge) for constant-effect apparel.
+public sealed class WeaponSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public ushort Damage { get; set; } public float Speed { get; set; } public float Reach { get; set; } public List<string> Keywords { get; set; } = new(); public string Template { get; set; } = ""; public string Enchantment { get; set; } = ""; public ushort EnchantmentAmount { get; set; } }
 public sealed class PotionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<EffectSpec> Effects { get; set; } = new(); public string Template { get; set; } = ""; }
-public sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } public string ArmorType { get; set; } = ""; public List<string> Slots { get; set; } = new(); public List<string> Keywords { get; set; } = new(); }
+// Armor `enchantment` is a ref → an in-spec ENCH (enchantments[], normally an `apparel` constant-
+// effect one) or a vanilla ObjectEffect. Apparel enchants are passive/always-on while worn, so
+// there's no charge pool (no enchantmentAmount).
+public sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } public string ArmorType { get; set; } = ""; public List<string> Slots { get; set; } = new(); public List<string> Keywords { get; set; } = new(); public string Enchantment { get; set; } = ""; }
 public sealed class MessageSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Description { get; set; } = ""; }
 // One entry in a leveled list: a ref (item or npc) that appears at >= Level, Count copies.
 public sealed class LeveledEntrySpec { public string Reference { get; set; } = ""; public short Level { get; set; } = 1; public short Count { get; set; } = 1; }

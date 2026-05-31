@@ -57,13 +57,22 @@ internal static partial class Program
                 if (wpn.Data is { } wd) Console.WriteLine($"      speed={wd.Speed} reach={wd.Reach} anim={wd.AnimationType}");
                 if (wpn.Model?.File is { } wmf) Console.WriteLine($"      model={wmf}");        // null model => CRASH on equip
                 if (wpn.FirstPersonModel.FormKeyNullable is { } fpk) Console.WriteLine($"      firstPersonModel -> {fpk}");
+                if (!wpn.ObjectEffect.IsNull) Console.WriteLine($"      enchantment -> {Ref(wpn.ObjectEffect.FormKey)} (charge={wpn.EnchantmentAmount})");
             }
 
             if (r is IBookGetter bk && bk.Model?.File is { } bmf)
                 Console.WriteLine($"      model={bmf}");                                       // null model => CRASH on read
 
-            if (r is IArmorGetter arm && arm.BodyTemplate is { } bt)
-                Console.WriteLine($"      armorRating={arm.ArmorRating} armorType={bt.ArmorType} slots=[{bt.FirstPersonFlags}]");
+            if (r is IArmorGetter arm)
+            {
+                if (arm.BodyTemplate is { } bt)
+                    Console.WriteLine($"      armorRating={arm.ArmorRating} armorType={bt.ArmorType} slots=[{bt.FirstPersonFlags}]");
+                if (!arm.ObjectEffect.IsNull) Console.WriteLine($"      enchantment -> {Ref(arm.ObjectEffect.FormKey)}");
+            }
+
+            if (r is IObjectEffectGetter oe)
+                Console.WriteLine($"      ench: enchantType={oe.EnchantType} cast={oe.CastType} target={oe.TargetType}"
+                    + $" cost={oe.EnchantmentCost} amount={oe.EnchantmentAmount} chargeTime={oe.ChargeTime} effects={oe.Effects.Count}");
 
             if (r is IHasEffectsGetter eff && eff.Effects.Count > 0)
                 foreach (var e in eff.Effects)

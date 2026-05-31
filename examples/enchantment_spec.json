@@ -1,0 +1,93 @@
+{
+  "pluginName": "ModForgeEnchant.esp",
+  "esl": true,
+  "_": "Enchantments (ENCH / ObjectEffect). Two worked cases: (1) a custom Frost Damage MGEF -> a `weapon` enchantment -> a craftable, frost-enchanted iron sword (charge pool via enchantmentAmount). (2) a custom Fortify Stamina MGEF -> an `apparel` constant-effect enchantment -> an iron cuirass that boosts stamina while worn. FormIDs discovered via the CLI (find): IronSword=0x012EB7, ArmorIronCuirass=0x012E49, IronIngot=0x05ACE4, GrandSoulGem=0x02E4FC, forge keyword=0x088105. The enchantment FIRING in-game is structurally-built but NOT in-game-confirmed (I can't run Skyrim).",
+
+  "magicEffects": [
+    {
+      "editorId": "MF_FrostDamageEnchEffect",
+      "name": "ModForge Frost Damage",
+      "description": "Target takes frost damage to Health and Stamina.",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "magicSkill": "Destruction",
+      "resistValue": "ResistFrost",
+      "castType": "FireAndForget",
+      "targetType": "Touch",
+      "baseCost": 1.5,
+      "flags": ["Hostile", "Detrimental", "NoArea"]
+    },
+    {
+      "editorId": "MF_FortifyStaminaEnchEffect",
+      "name": "ModForge Fortify Stamina",
+      "description": "Stamina is increased while the item is worn.",
+      "archetype": "ValueModifier",
+      "actorValue": "Stamina",
+      "magicSkill": "Restoration",
+      "castType": "ConstantEffect",
+      "targetType": "Self",
+      "baseCost": 0.5,
+      "flags": ["Recover", "NoArea"]
+    }
+  ],
+
+  "enchantments": [
+    {
+      "editorId": "MF_FrostWeaponEnch",
+      "name": "Frost Damage",
+      "enchantType": "weapon",
+      "enchantmentCost": 15,
+      "effects": [
+        { "magicEffect": "MF_FrostDamageEnchEffect", "magnitude": 10, "area": 0, "duration": 0 }
+      ]
+    },
+    {
+      "editorId": "MF_FortifyStaminaApparelEnch",
+      "name": "Fortify Stamina",
+      "enchantType": "apparel",
+      "enchantmentCost": 40,
+      "effects": [
+        { "magicEffect": "MF_FortifyStaminaEnchEffect", "magnitude": 40, "area": 0, "duration": 0 }
+      ]
+    }
+  ],
+
+  "weapons": [
+    {
+      "editorId": "MF_FrostIronSword",
+      "name": "Frostbite Iron Sword",
+      "template": "Skyrim.esm:0x012EB7",
+      "value": 120,
+      "weight": 9.0,
+      "damage": 8,
+      "enchantment": "MF_FrostWeaponEnch",
+      "enchantmentAmount": 1500
+    }
+  ],
+
+  "armors": [
+    {
+      "editorId": "MF_StaminaIronCuirass",
+      "name": "Iron Cuirass of Vigor",
+      "value": 250,
+      "weight": 30.0,
+      "armorRating": 25,
+      "armorType": "heavy",
+      "slots": ["Body"],
+      "enchantment": "MF_FortifyStaminaApparelEnch"
+    }
+  ],
+
+  "recipes": [
+    {
+      "editorId": "MF_FrostIronSwordRecipe",
+      "createdObject": "MF_FrostIronSword",
+      "count": 1,
+      "workbench": "Skyrim.esm:0x088105",
+      "components": [
+        { "item": "Skyrim.esm:0x05ACE4", "count": 2 },
+        { "item": "Skyrim.esm:0x02E4FC", "count": 1 }
+      ]
+    }
+  ]
+}

@@ -63,6 +63,7 @@ public static partial class Generator
         foreach (var rel in spec.Relationships) Reg(rel.EditorId, "relationship");
         foreach (var w in spec.WordsOfPower) Reg(w.EditorId, "wordOfPower");
         foreach (var sh in spec.Shouts) Reg(sh.EditorId, "shout");
+        foreach (var e in spec.Enchantments) Reg(e.EditorId, "enchantment");
         foreach (var pl in spec.Placements) if (!string.IsNullOrWhiteSpace(pl.EditorId)) Reg(pl.EditorId, "placement");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
@@ -100,6 +101,9 @@ public static partial class Generator
                     problems.Add($"combatStyle '{cs.EditorId}' invalid flag '{f}' (Dueling|Flanking|AllowDualWielding)");
         foreach (var a in spec.Armors) foreach (var k in a.Keywords) CheckRef(k, $"armor '{a.EditorId}' keyword");
         foreach (var w in spec.Weapons) foreach (var k in w.Keywords) CheckRef(k, $"weapon '{w.EditorId}' keyword");
+        // `enchantment` is a ref → an in-spec ENCH (enchantments[]) or a vanilla ObjectEffect.
+        foreach (var w in spec.Weapons) CheckRef(w.Enchantment, $"weapon '{w.EditorId}' enchantment");
+        foreach (var a in spec.Armors) CheckRef(a.Enchantment, $"armor '{a.EditorId}' enchantment");
         // `template` = a vanilla record to clone (model/anim) — must be a well-formed external ref.
         foreach (var w in spec.Weapons) if (!string.IsNullOrWhiteSpace(w.Template) && !TryExternalRef(w.Template, out _))
             problems.Add($"weapon '{w.EditorId}' template: malformed external ref '{w.Template}' (expect <master>:0xFORMID, e.g. Skyrim.esm:0x012EB7)");
@@ -264,6 +268,21 @@ public static partial class Generator
             if (!string.IsNullOrEmpty(s.SpellType) && !Enum.TryParse<SpellType>(s.SpellType, true, out _)) problems.Add($"spell '{s.EditorId}' invalid spellType '{s.SpellType}'");
             if (!string.IsNullOrEmpty(s.CastType) && !Enum.TryParse<CastType>(s.CastType, true, out _)) problems.Add($"spell '{s.EditorId}' invalid castType '{s.CastType}'");
             if (!string.IsNullOrEmpty(s.TargetType) && !Enum.TryParse<TargetType>(s.TargetType, true, out _)) problems.Add($"spell '{s.EditorId}' invalid targetType '{s.TargetType}'");
+        }
+
+        // Enchantment (ENCH/ObjectEffect): enchantType in {weapon|apparel|staff}; ≥1 effect with a
+        // resolvable MGEF ref; optional cast/target enum overrides. cost/charge are uint/float, so
+        // non-negative by type. An item references one via weapon/armor `enchantment` (checked above).
+        foreach (var e in spec.Enchantments)
+        {
+            if (string.IsNullOrWhiteSpace(e.EnchantType) || !EnchantTypes.Contains(e.EnchantType))
+                problems.Add($"enchantment '{e.EditorId}' invalid enchantType '{e.EnchantType}' (weapon|apparel|staff)");
+            if (e.Effects.Count == 0) problems.Add($"enchantment '{e.EditorId}' has no effects (an ENCH needs ≥1 MGEF-based effect)");
+            CheckEffects(e.EditorId, e.Effects, "enchantment");
+            if (!string.IsNullOrEmpty(e.CastType) && !Enum.TryParse<CastType>(e.CastType, true, out _))
+                problems.Add($"enchantment '{e.EditorId}' invalid castType '{e.CastType}' (FireAndForget|Concentration|ConstantEffect)");
+            if (!string.IsNullOrEmpty(e.TargetType) && !Enum.TryParse<TargetType>(e.TargetType, true, out _))
+                problems.Add($"enchantment '{e.EditorId}' invalid targetType '{e.TargetType}' (Self|Touch|Aimed|TargetActor|TargetLocation)");
         }
 
         // --- long-tail record types: keyword/effect refs + enum fields ---

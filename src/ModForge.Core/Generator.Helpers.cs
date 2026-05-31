@@ -14,6 +14,23 @@ public static partial class Generator
     // Skyrim stores placement rotation in radians; specs author it in (friendlier) degrees.
     private static float Deg2Rad(float deg) => deg * (float)Math.PI / 180f;
 
+    // Enchantment (ENCH/ObjectEffect) family -> Mutagen EnchantType + the vanilla-default cast/target
+    // for that family (VERIFIED against Skyrim.esm: EnchWeaponFrostDamageBase = Enchantment/
+    // FireAndForget/Touch, EnchArmorFortifyStaminaBase = Enchantment/ConstantEffect/Self,
+    // StaffEnchIcySpear = StaffEnchantment/FireAndForget/Aimed). Note Mutagen's EnchantTypeEnum has
+    // only {Enchantment, StaffEnchantment}; a constant-effect APPAREL enchant is still EnchantType=
+    // Enchantment — it's the ConstantEffect *CastType* that makes it always-on. `apparel`/`armor`
+    // and `staff` are accepted aliases; anything else falls back to the weapon family.
+    private static readonly HashSet<string> EnchantTypes =
+        new(StringComparer.OrdinalIgnoreCase) { "weapon", "apparel", "armor", "staff" };
+    private static (ObjectEffect.EnchantTypeEnum type, CastType cast, TargetType target) EnchantFamily(string s)
+        => s.Trim().ToLowerInvariant() switch
+        {
+            "apparel" or "armor" => (ObjectEffect.EnchantTypeEnum.Enchantment, CastType.ConstantEffect, TargetType.Self),
+            "staff"              => (ObjectEffect.EnchantTypeEnum.StaffEnchantment, CastType.FireAndForget, TargetType.Aimed),
+            _                    => (ObjectEffect.EnchantTypeEnum.Enchantment, CastType.FireAndForget, TargetType.Touch),
+        };
+
     // Exterior worldspace cells are 4096 units square. A world position maps to cell grid
     // coords by floor(pos/4096); those map to the WRLD group nesting by floor(grid/8) (sub-block)
     // and floor(grid/32) (block) — VERIFIED against Tamriel (cell (7,-41) -> block (0,-2),

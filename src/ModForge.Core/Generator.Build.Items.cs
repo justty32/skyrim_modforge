@@ -267,22 +267,27 @@ public static partial class Generator
         }
 
         // --- pass 2: magic effects on spell/potion/ingredient/scroll (IHasEffects) + spell EquipType ---
+        // Wire a record's MGEF-based effects (shared by spell/potion/ingredient/scroll/enchantment —
+        // anything that implements IHasEffects). Pulled out of WireEffects so the ENCH pass-2 step
+        // (Generator.Build.Enchantments.cs) can reuse it.
+        public void WireEffectsFor(string ed, List<EffectSpec> effects)
+        {
+            if (effects.Count == 0) return;
+            if (!recordsByEd.TryGetValue(ed, out var rec) || rec is not IHasEffects he)
+            { Warn($"  ! '{ed}' takes no magic effects (or not found)"); return; }
+            foreach (var es in effects)
+                Resolve($"'{ed}' effect", es.MagicEffect, fk =>
+                {
+                    var eff = new Effect();
+                    eff.BaseEffect.SetTo(fk);
+                    eff.Data = new EffectData { Magnitude = es.Magnitude, Area = es.Area, Duration = es.Duration };
+                    he.Effects.Add(eff);
+                });
+        }
+
         public void WireEffects()
         {
-            void Wire(string ed, List<EffectSpec> effects)
-            {
-                if (effects.Count == 0) return;
-                if (!recordsByEd.TryGetValue(ed, out var rec) || rec is not IHasEffects he)
-                { Warn($"  ! '{ed}' takes no magic effects (or not found)"); return; }
-                foreach (var es in effects)
-                    Resolve($"'{ed}' effect", es.MagicEffect, fk =>
-                    {
-                        var eff = new Effect();
-                        eff.BaseEffect.SetTo(fk);
-                        eff.Data = new EffectData { Magnitude = es.Magnitude, Area = es.Area, Duration = es.Duration };
-                        he.Effects.Add(eff);
-                    });
-            }
+            void Wire(string ed, List<EffectSpec> effects) => WireEffectsFor(ed, effects);
             foreach (var s in spec.Spells) Wire(s.EditorId, s.Effects);
             // Spell EquipType (EQUP ref) — needed for a hand spell to be equippable/castable.
             foreach (var s in spec.Spells)

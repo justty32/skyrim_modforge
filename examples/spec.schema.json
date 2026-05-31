@@ -38,7 +38,8 @@
     "outfits": { "type": "array", "items": { "$ref": "#/$defs/outfit" }, "description": "Outfit (OTFT): a set of item refs an NPC can wear" },
     "statics": { "type": "array", "items": { "$ref": "#/$defs/staticRec" }, "description": "Static (STAT): a world mesh (model path)" },
     "activators": { "type": "array", "items": { "$ref": "#/$defs/activator" }, "description": "Activator (ACTI): an interactable world object" },
-    "recipes": { "type": "array", "items": { "$ref": "#/$defs/recipe" }, "description": "ConstructibleObject (COBJ): crafting recipes" }
+    "recipes": { "type": "array", "items": { "$ref": "#/$defs/recipe" }, "description": "ConstructibleObject (COBJ): crafting recipes" },
+    "enchantments": { "type": "array", "items": { "$ref": "#/$defs/enchantment" }, "description": "Enchantment / Object Effect (ENCH): MGEF-based effects bundled into a weapon/staff/apparel enchantment a weapon/armor references via its `enchantment` field" }
   },
   "additionalProperties": false,
   "$defs": {
@@ -68,7 +69,23 @@
         "damage": { "type": "integer", "minimum": 0, "description": "base damage; functional weapon needs this > 0" },
         "speed": { "type": "number", "minimum": 0, "description": "swing speed (~1.0 normal); defaults to 1.0 if any stat is set" },
         "reach": { "type": "number", "minimum": 0, "description": "reach (~1.0 normal); defaults to 1.0 if any stat is set" },
-        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
+        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } },
+        "enchantment": { "$ref": "#/$defs/ref", "description": "ENCH ref — an in-spec enchantments entry or a vanilla ObjectEffect (<master>:0xFORMID)" },
+        "enchantmentAmount": { "type": "integer", "minimum": 0, "description": "the weapon's charge pool (casts before recharge); e.g. 1500-3000; 0 = engine auto-calc" }
+      }
+    },
+    "enchantment": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "enchantType": { "enum": ["weapon", "apparel", "armor", "staff"], "default": "weapon", "description": "weapon = cast-on-strike (charge); apparel = constant-effect (always-on while worn); staff = staff cast-on-use (charge)" },
+        "castType": { "enum": ["ConstantEffect", "FireAndForget", "Concentration"], "description": "optional — overrides the per-enchantType default" },
+        "targetType": { "enum": ["Self", "Touch", "Aimed", "TargetActor", "TargetLocation"], "description": "optional — overrides the per-enchantType default" },
+        "enchantmentCost": { "type": "integer", "minimum": 0, "description": "per-cast charge cost (weapon/staff) / worn cost (apparel)" },
+        "chargeTime": { "type": "number", "minimum": 0, "description": "staff cast charge-up (vanilla staves ~0.5)" },
+        "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" }, "description": "MGEF-based effects (needs at least one)" }
       }
     },
     "spell": {
@@ -150,7 +167,8 @@
         "armorRating": { "type": "number", "minimum": 0 },
         "armorType": { "enum": ["light", "heavy", "clothing", "lightArmor", "heavyArmor"], "description": "armor class; default clothing" },
         "slots": { "type": "array", "items": { "type": "string" }, "description": "biped slots occupied, e.g. Body, Head, Hands, Feet, Forearms, Calves, Shield (BipedObjectFlag names)" },
-        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
+        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } },
+        "enchantment": { "$ref": "#/$defs/ref", "description": "ENCH ref — normally an in-spec apparel (constant-effect) enchantments entry, or a vanilla ObjectEffect (<master>:0xFORMID)" }
       }
     },
     "message": {

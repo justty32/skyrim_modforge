@@ -48,4 +48,5 @@ public sealed class ModSpec
     public List<RelationshipSpec> Relationships { get; set; } = new();
     public List<WordOfPowerSpec> WordsOfPower { get; set; } = new();
     public List<ShoutSpec> Shouts { get; set; } = new();
+    public List<EnchantmentSpec> Enchantments { get; set; } = new();
 }
