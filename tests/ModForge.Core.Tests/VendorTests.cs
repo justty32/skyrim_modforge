@@ -91,10 +91,17 @@ public class VendorTests
 
         Assert.False(fact.MerchantContainer.IsNull);
         Assert.Equal(chestRef.FormKey, fact.MerchantContainer.FormKey);
-        // VendorLocation anchors at the chest too.
-        Assert.NotNull(fact.VendorLocation);
-        var lt = Assert.IsAssignableFrom<ILocationTargetGetter>(fact.VendorLocation!.Target);
-        Assert.Equal(chestRef.FormKey, lt.Link.FormKey);
+    }
+
+    // Regression (in-game root-caused 2026-05-31): the build must NOT set VendorLocation. Anchoring it
+    // at the chest with Radius 0 is a degenerate point, so GetOffersServicesNow evaluates the player as
+    // outside the (zero-size) shop and the trade menu never opens. Vanilla merchants leave it EMPTY.
+    [Fact]
+    public void VendorFaction_LeavesVendorLocationEmpty()
+    {
+        var result = Generator.Build(VendorSpecFixture(), Key);
+        var fact = Assert.Single(result.Mod.Factions, f => f.EditorID == "MF_ShopFaction");
+        Assert.Null(fact.VendorLocation);
     }
 
     [Fact]

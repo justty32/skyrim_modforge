@@ -32,11 +32,11 @@ public static partial class Generator
                 if (!TryResolveRef(refStr, formKeyByEd, out var fk))
                 { Warn($"  ! faction '{factEd}' vendor.merchantContainer '{refStr}' unresolved — vendor has no merchant chest (no gold/stock to trade)"); continue; }
                 fact.MerchantContainer.SetTo(fk);
-                // Anchor the vendor location at the chest (LocationTarget + radius) so the engine knows
-                // where the shop is — mirrors vanilla VendorLocation. Radius 0 = engine default.
-                var loc = new LocationTarget();
-                loc.Link.SetTo(new FormLink<IPlacedGetter>(fk));
-                fact.VendorLocation = new LocationTargetRadius { Target = loc, Radius = 0 };
+                // Do NOT set VendorLocation here. A LocationTarget anchored at the chest with Radius 0 is a
+                // DEGENERATE point — the engine's GetOffersServicesNow check then evaluates the player as
+                // outside the (zero-size) shop area and returns 0, so the trade dialogue never opens.
+                // Vanilla merchants (e.g. Belethor) leave VendorLocation EMPTY and gate "on shift" purely
+                // via the merchant's scheduled sell package + JobMerchant faction. Mirror that: leave unset.
                 linksWired++;
                 if (LooksExternalRef(refStr)) extLinks++;
                 // (The chest placement is forced Persistent in the placement loop via deferredAnchorEds.)
