@@ -1,7 +1,7 @@
 {
   "pluginName": "ModForgePaidFollower.esp",
   "esl": true,
-  "_": "It.28: a PAID custom follower via a fully-CUSTOM recruit topic + result fragment. The vanilla paid path (PotentialHireling) can't recruit a custom NPC — its recruit INFOs are GetIsID-hardcoded per vanilla mercenary (probe: `modforge infodiag Skyrim.esm 0x0BCC84`). So we author our own topic, gated on GetIsID==our speaker (always passes), with an OnEnd Papyrus fragment (MFHirePaidRecruit) that takes 500 gold and joins her to CurrentFollowerFaction (0x05C84E) + SetPlayerTeammate — after which the GENERIC vanilla follow/wait/dismiss dialogue works (it keys on that faction + follower voice, no GetIsID). Counterpart to follower_hireable_spec.json (the FREE-follow path). She must NOT be in PotentialHireling (the generic follower dialogue requires PotentialHireling==0). `coc RiverwoodSleepingGiantInn`, talk to her, pick the 500-gold line.",
+  "_": "It.28–It.30: a PAID custom follower, fully SELF-CONTAINED (own recruit + dismiss topics + fragments, own follower-flag faction). Why not the vanilla follower system: (1) the vanilla paid path (PotentialHireling) can't recruit a custom NPC — its recruit INFOs are GetIsID-hardcoded per vanilla mercenary (`modforge infodiag Skyrim.esm 0x0BCC84`); (2) joining vanilla's CurrentFollowerFaction makes the GENERIC vanilla dismiss line appear, but it can't actually release her — that line is driven by the DialogueFollower quest, which only dismisses followers IT registered, so a manually-faction'd NPC gets the 'you're dismissed' notification yet keeps following (It.29 in-game bug). So we manage state ourselves with MF_PaidFollowerFaction as the 'is my follower' flag: recruit adds it + SetPlayerTeammate, the Follow package gates on it, dismiss clears it. `coc RiverwoodSleepingGiantInn`, talk to her, pick the 500-gold line; later pick 'we part ways' to actually release her. (Trade/wait dialogue isn't wired — add own topics if wanted.)",
 
   "classes": [
     {
@@ -12,21 +12,29 @@
     }
   ],
 
+  "factions": [
+    {
+      "_": "Our own 'is currently my follower' flag. AddToFaction on recruit, RemoveFromFaction on dismiss. The Follow package + both dialogue lines gate on membership in it. Self-managed, so dismiss actually works (unlike piggybacking vanilla CurrentFollowerFaction).",
+      "editorId": "MF_PaidFollowerFaction",
+      "name": "ModForge Paid Follower"
+    }
+  ],
+
   "npcs": [
     {
       "editorId": "MF_PaidFollowerNpc",
       "name": "Brynja the Hired",
-      "_greeting": "Makes her conversable (host quest + Hello). The custom recruit topic surfaces on top.",
+      "_greeting": "Makes her conversable (host quest + Hello). The custom recruit/dismiss topics surface on top.",
       "greeting": "Coin talks. You buying?",
       "race": "Skyrim.esm:0x013746",
       "class": "MF_PaidClass",
       "outfit": "Skyrim.esm:0x09D5DF",
-      "_voiceType": "FemaleEvenToned (0x013ADD) — a VoicesFollowerNeutral voice, required so the generic vanilla follow/wait/dismiss dialogue (GetIsVoiceType) surfaces once she's in CurrentFollowerFaction.",
+      "_voiceType": "FemaleEvenToned (0x013ADD) — a normal follower voice; only used for Hello audio here since we don't rely on vanilla voice-gated follower dialogue.",
       "voiceType": "Skyrim.esm:0x013ADD",
       "crimeFaction": "Skyrim.esm:0x0267EA",
-      "_factions": "Only Whiterun crime/citizen (door/gate traversal). NO PotentialHireling/PotentialFollower — the recruit is our own topic, and the generic follower dialogue needs PotentialHireling==0.",
+      "_factions": "Only Whiterun crime/citizen (door/gate traversal). She is NOT in MF_PaidFollowerFaction at start — the recruit fragment adds her at runtime.",
       "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
-      "_packages": "Follow-player package gated on GetInFaction CurrentFollowerFaction==1 — the fragment adds her to that faction on recruit, so she only trails the player AFTER hiring (and stops on dismiss, which removes her from it). Without this she'd stand still even as a teammate: SetPlayerTeammate makes her fight for you, but FOLLOWING needs an AI package.",
+      "_packages": "Follow-player package gated on GetInFaction MF_PaidFollowerFaction==1. SetPlayerTeammate makes her fight/obey, but FOLLOWING needs this package; gating it on the flag faction means she trails only while hired and stops the instant dismiss clears the flag.",
       "packages": [ "MF_PaidFollowPkg" ],
       "unique": true,
       "level": 10,
@@ -40,19 +48,19 @@
 
   "packages": [
     {
-      "_": "Trail the player (Follow template 0x019B2C, target '' ⇒ player). Active ONLY when she's a current follower — the fragment's AddToFaction(CurrentFollowerFaction) flips this on at recruit; vanilla dismiss removes her from it, flipping it off.",
+      "_": "Trail the player (Follow template 0x019B2C, target '' ⇒ player). Active ONLY while she's in MF_PaidFollowerFaction — recruit flips it on, dismiss flips it off (and EvaluatePackage re-checks).",
       "editorId": "MF_PaidFollowPkg",
       "template": "Skyrim.esm:0x019B2C",
       "follow": { "target": "", "minRadius": 128, "maxRadius": 256, "accompany": true },
       "conditions": [
-        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" }
+        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "MF_PaidFollowerFaction", "runOn": "Subject" }
       ]
     }
   ],
 
   "quests": [
     {
-      "_": "Hosts the custom recruit topic. StartGameEnabled so the topic is evaluated/served when you talk to her.",
+      "_": "Hosts the custom recruit + dismiss topics. StartGameEnabled so they're evaluated/served when you talk to her.",
       "editorId": "MF_PaidQuest",
       "name": "ModForge Paid Hire",
       "startGameEnabled": true,
@@ -62,7 +70,7 @@
 
   "dialogue": [
     {
-      "_": "Custom recruit line. speakerNpcEditorId adds GetIsID==Brynja (so only she offers it). goodbye closes the menu. The OnEnd fragment MFHirePaidRecruit does the gold check + transaction + follower-join — all logic lives in Papyrus, not JSON. resultProperties bind the fragment's Auto properties to vanilla forms + the gold cost / relationship rank.",
+      "_": "Recruit line. GetIsID==Brynja (auto from speaker). Shown only when player has >=500 gold AND she isn't already in MF_PaidFollowerFaction. Fragment: take gold + AddToFaction(flag) + SetPlayerTeammate(true).",
       "editorId": "MF_PaidRecruitTopic",
       "questEditorId": "MF_PaidQuest",
       "speakerNpcEditorId": "MF_PaidFollowerNpc",
@@ -70,18 +78,35 @@
       "responses": [ "Gold's gold. Lead the way." ],
       "emotion": "Happy",
       "goodbye": true,
-      "_conditions": "Gate the line so it ONLY shows when the player has >=500 gold AND she isn't already a follower — mirrors vanilla UX (the fragment still guards both, but conditions hide the line instead of failing it). GetItemCount runs on the player (Reference 0x14); GetInFaction runs on her (Subject).",
       "conditions": [
         { "function": "GetItemCount", "comparison": ">=", "value": 500, "param": "Skyrim.esm:0x00000F", "runOn": "Reference", "reference": "Skyrim.esm:0x000014" },
-        { "function": "GetInFaction", "comparison": "==", "value": 0, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" }
+        { "function": "GetInFaction", "comparison": "==", "value": 0, "param": "MF_PaidFollowerFaction", "runOn": "Subject" }
       ],
       "resultScript": "MFHirePaidRecruit",
       "resultScriptSource": "scripts/MFHirePaidRecruit.psc",
       "resultProperties": [
         { "name": "Gold001", "type": "object", "objectEditorId": "Skyrim.esm:0x00000F" },
-        { "name": "CurrentFollowerFaction", "type": "object", "objectEditorId": "Skyrim.esm:0x05C84E" },
+        { "name": "FollowerFaction", "type": "object", "objectEditorId": "MF_PaidFollowerFaction" },
         { "name": "GoldCost", "type": "int", "int": 500 },
         { "name": "RelRank", "type": "int", "int": 3 }
+      ]
+    },
+    {
+      "_": "Dismiss line. Shown only while she IS in MF_PaidFollowerFaction. Fragment: RemoveFromFaction(flag) + SetPlayerTeammate(false) + EvaluatePackage → Follow package deactivates, she stops; recruit line reappears.",
+      "editorId": "MF_PaidDismissTopic",
+      "questEditorId": "MF_PaidQuest",
+      "speakerNpcEditorId": "MF_PaidFollowerNpc",
+      "prompt": "Let's part ways.",
+      "responses": [ "Aye. It's been good coin." ],
+      "emotion": "Sad",
+      "goodbye": true,
+      "conditions": [
+        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "MF_PaidFollowerFaction", "runOn": "Subject" }
+      ],
+      "resultScript": "MFHirePaidDismiss",
+      "resultScriptSource": "scripts/MFHirePaidDismiss.psc",
+      "resultProperties": [
+        { "name": "FollowerFaction", "type": "object", "objectEditorId": "MF_PaidFollowerFaction" }
       ]
     }
   ],
