@@ -203,11 +203,13 @@ to close the menu after the line (vanilla recruit/dismiss lines all do). See
 A condition is **static gate data**, so it lives in the spec (logic still belongs in Papyrus). Both
 `dialogue[].conditions` and `packages[].conditions` take the same shape:
 ```jsonc
-{ "function": "GetItemCount",          // GetInFaction | GetItemCount | GetGlobalValue | GetStage | GetIsID | GetRelationshipRank | GetActorValue
+{ "function": "GetItemCount",          // form-arg: GetInFaction | GetItemCount | GetGlobalValue | GetStage | GetIsID | GetRelationshipRank
+  //                                    // actorValue-arg: GetActorValue | GetActorValuePercent (0..1 fraction)
+  //                                    // no-arg situational: GetCurrentTime (hour 0..24) | IsInInterior | IsInCombat | GetRandomPercent (0..99)
   "comparison": ">=",                  // == != > >= < <=
   "value": 500,
   "param": "Skyrim.esm:0x00000F",      // the function's form arg (faction/item/global/quest/npc) as a ref
-  "actorValue": "",                    // for GetActorValue instead of param — e.g. "WaitingForPlayer"
+  "actorValue": "",                    // for GetActorValue/GetActorValuePercent instead of param — e.g. "Health", "WaitingForPlayer"
   "runOn": "Reference",                // whose value: Subject (default) | Reference | Target | CombatTarget | ...
   "reference": "Skyrim.esm:0x000014",  // the ref read when runOn=Reference (here, the player)
   "or": false }                        // OR with the NEXT condition (default AND)

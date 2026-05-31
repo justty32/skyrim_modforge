@@ -42,7 +42,9 @@ public sealed class DialogueSpec
 // + `value` are the numeric test; `runOn`/`reference` pick WHOSE value is read (Subject = the
 // speaker/package owner; Reference = a named ref such as the player 0x14). `or` OR-chains with the next.
 // Supported functions: GetInFaction, GetItemCount, GetGlobalValue, GetStage, GetIsID, GetRelationshipRank,
-// GetActorValue (uses `actorValue` instead of `param`).
+// GetActorValue / GetActorValuePercent (use `actorValue` instead of `param`; Percent is a 0..1 fraction),
+// and the no-argument situational gates GetCurrentTime (game hour 0..24), IsInInterior, IsInCombat,
+// GetRandomPercent (0..99 roll, for line variety).
 public sealed class ConditionSpec
 {
     public string Function { get; set; } = "";

@@ -50,9 +50,26 @@ public static partial class Generator
                     else { Warn($"  ! {label}: bad/missing actorValue '{c.ActorValue}'"); return null; }
                     data = d; break;
                 }
+                case "getactorvaluepercent": // AV as a 0..1 fraction — use value 0.5 for "below half". ActorValue arg.
+                {
+                    var d = new GetActorValuePercentConditionData();
+                    if (Enum.TryParse<ActorValue>(c.ActorValue, ignoreCase: true, out var av)) d.ActorValue = av;
+                    else { Warn($"  ! {label}: bad/missing actorValue '{c.ActorValue}'"); return null; }
+                    data = d; break;
+                }
+                // No-argument situational functions (no form ref, no actorValue). Compared against `value`:
+                //   getcurrenttime   game hour 0..24 (e.g. >= 20 for "after 8pm")
+                //   isininterior     1 indoors / 0 outdoors
+                //   isincombat       1 if the run-on actor is fighting
+                //   getrandompercent 0..99 roll (e.g. < 25 ⇒ ~25% of the time — adds line variety)
+                case "getcurrenttime":   data = new GetCurrentTimeConditionData();   break;
+                case "isininterior":     data = new IsInInteriorConditionData();     break;
+                case "isincombat":       data = new IsInCombatConditionData();       break;
+                case "getrandompercent": data = new GetRandomPercentConditionData(); break;
                 default:
                     Warn($"  ! {label}: unsupported function '{c.Function}' "
-                        + "(have GetInFaction/GetItemCount/GetGlobalValue/GetStage/GetIsID/GetRelationshipRank/GetActorValue)");
+                        + "(have GetInFaction/GetItemCount/GetGlobalValue/GetStage/GetIsID/GetRelationshipRank/"
+                        + "GetActorValue/GetActorValuePercent/GetCurrentTime/IsInInterior/IsInCombat/GetRandomPercent)");
                     return null;
             }
 

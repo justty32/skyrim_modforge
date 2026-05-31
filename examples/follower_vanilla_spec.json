@@ -1,7 +1,7 @@
 {
   "pluginName": "ModForgeVanillaFollower.esp",
   "esl": true,
-  "_": "It.32: a PAID follower that plugs straight into the VANILLA follower system (recommended over the self-managed follower_paid_spec.json — the user prefers this). Only the recruit trigger + gold are custom; the recruit fragment calls DialogueFollowerScript.SetFollower(akSpeaker), after which vanilla's own trade/wait/follow/dismiss dialogue manages her and follower-manager mods (AFT/EFF/NFF) pick her up automatically. Demonstrates that custom records survive vanilla follower status: she keeps her custom CombatStyle (combat AI is NOT overridden — PlayerFollowerPackage carries no CombatStyle), and a FOLLOWER-ONLY self-introduction topic (gated on CurrentFollowerFaction) shows only after she joins. `coc RiverwoodSleepingGiantInn`, talk to her, pay 500; then 'tell me about yourself' appears, and vanilla wait/trade/dismiss all work.",
+  "_": "It.32+It.33: a PAID follower that plugs straight into the VANILLA follower system (recommended over the self-managed follower_paid_spec.json — the user prefers this). Only the recruit trigger + gold are custom; the recruit fragment calls DialogueFollowerScript.SetFollower(akSpeaker), after which vanilla's own trade/wait/follow/dismiss dialogue manages her and follower-manager mods (AFT/EFF/NFF) pick her up automatically. Custom records survive vanilla follower status: custom CombatStyle (combat AI not overridden) + a Sandbox downtime package (runs when not actively following). It.33 DEEPENS her: follower-only backstory topics + SITUATIONAL lines gated on runtime state (low-health via GetActorValuePercent, night via GetCurrentTime). `coc RiverwoodSleepingGiantInn` — she sandboxes the inn; talk to her, pay 500; then backstory/situational topics appear by context, and vanilla wait/trade/dismiss all work.",
 
   "classes": [
     {
@@ -23,6 +23,21 @@
     }
   ],
 
+  "packages": [
+    {
+      "_": "DOWNTIME behaviour. An unconditioned Sandbox is her lowest-priority fallback: it runs whenever the vanilla PlayerFollowerPackage (on the DialogueFollower alias) is NOT active — i.e. before recruit, after dismiss, and while she's told to Wait. So instead of standing frozen at her spawn point she eats/sits/wanders the Sleeping Giant Inn and chats with patrons. While she's actively following, the alias package overrides this automatically; combat preempts it and she resumes after. No `location` ⇒ she sandboxes around her editor location (the inn).",
+      "editorId": "MF_VanillaSandbox",
+      "template": "Skyrim.esm:0x01C254",
+      "interruptFlags": [ "HellosToPlayer", "AllowIdleChatter", "WorldInteractions" ],
+      "sandbox": {
+        "radius": 512,
+        "allowEating": true, "allowSleeping": false, "allowConversation": true,
+        "allowIdleMarkers": true, "allowSitting": true, "allowWandering": true,
+        "allowSpecialFurniture": true, "energy": 50.0
+      }
+    }
+  ],
+
   "npcs": [
     {
       "editorId": "MF_VanillaFollowerNpc",
@@ -37,8 +52,10 @@
       "crimeFaction": "Skyrim.esm:0x0267EA",
       "_factions": "Only Whiterun crime/citizen (door/gate traversal). NOT in any follower faction at start — SetFollower's alias adds CurrentFollowerFaction at recruit.",
       "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
-      "_combatStyle": "Custom CSTY — preserved while she's a follower. (Add sandbox/travel packages here too for lifelike downtime; they run when she's NOT actively following, i.e. before recruit and after dismiss/while waiting.)",
+      "_combatStyle": "Custom CSTY — preserved while she's a follower (the vanilla follow/combat-override packages set no CombatStyle, so the actor's base CSTY drives combat).",
       "combatStyle": "MF_VanillaCS",
+      "_packages": "Sandbox downtime — runs when she's NOT actively following (pre-recruit, post-dismiss, while Wait-ing). The vanilla follower alias package overrides it while she trails the player.",
+      "packages": [ "MF_VanillaSandbox" ],
       "unique": true,
       "level": 10,
       "autoCalcStats": true,
@@ -94,6 +111,53 @@
       "emotion": "Neutral",
       "conditions": [
         { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" }
+      ]
+    },
+    {
+      "_": "Backstory, follower-only. Same CurrentFollowerFaction gate — a second 'travels-with-you' topic. Shows the pattern scales: every extra topic is just another entry with the same gate.",
+      "editorId": "MF_VanillaBackstory1",
+      "questEditorId": "MF_VanillaQuest",
+      "speakerNpcEditorId": "MF_VanillaFollowerNpc",
+      "prompt": "Where did you learn to fight?",
+      "responses": [
+        "Markarth's fighting pits, when I was too young to know better. You learn fast when losing means bleeding in the dirt.",
+        "A retired legionnaire took pity on me — taught me the shield before the blade. Kept me alive long enough to get good."
+      ],
+      "emotion": "Neutral",
+      "conditions": [
+        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" }
+      ]
+    },
+    {
+      "_": "SITUATIONAL — only when she's badly hurt. GetActorValuePercent Health < 0.5 on Subject (herself), AND follower-only. Demonstrates a player-initiated line that surfaces only in a runtime state. (Percent is a 0..1 fraction; 0.5 = below half health.)",
+      "editorId": "MF_VanillaHurtTopic",
+      "questEditorId": "MF_VanillaQuest",
+      "speakerNpcEditorId": "MF_VanillaFollowerNpc",
+      "prompt": "You're hurt. Can you keep going?",
+      "responses": [
+        "I've fought through worse with less. But I'll not say no if you've a potion to spare.",
+        "Flesh wound. Mostly. Give me a moment and I'm at your back again."
+      ],
+      "emotion": "Sad",
+      "conditions": [
+        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" },
+        { "function": "GetActorValuePercent", "comparison": "<", "value": 0.5, "actorValue": "Health", "runOn": "Subject" }
+      ]
+    },
+    {
+      "_": "SITUATIONAL — only at night. GetCurrentTime >= 19 (after 7pm), AND follower-only. GetCurrentTime is a no-arg function returning the game hour 0..24; no param/ref needed.",
+      "editorId": "MF_VanillaNightTopic",
+      "questEditorId": "MF_VanillaQuest",
+      "speakerNpcEditorId": "MF_VanillaFollowerNpc",
+      "prompt": "It's getting late. Should we make camp?",
+      "responses": [
+        "Aye. Even a sellsword sleeps. Find us somewhere with four walls and I'll take first watch.",
+        "The roads are worse after dark — bandits, and worse than bandits. Best we hole up till light."
+      ],
+      "emotion": "Neutral",
+      "conditions": [
+        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" },
+        { "function": "GetCurrentTime", "comparison": ">=", "value": 19 }
       ]
     }
   ],
