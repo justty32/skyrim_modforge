@@ -21,17 +21,39 @@ public sealed class Vec3 { public float X { get; set; } public float Y { get; se
 // concrete NPC. The placed ACHR then rolls a level-appropriate actor from that list at load (the
 // dungeon-population pattern). A leveled-npc base is treated as `kind: "npc"` automatically; pair it
 // with the cell's / this ref's `encounterZone` to control the level range it rolls within.
+//
+// MARKERS (XMarker / XMarkerHeading): these are first-class placement bases — the invisible
+// staging refs vanilla uses as Travel destinations, patrol nodes, scene marks and `coc` targets.
+// Place one with `base` = the vanilla marker static (XMarker = Skyrim.esm:0x00003B, XMarkerHeading
+// = Skyrim.esm:0x000034 — heading carries a facing direction), give it an `editorId`, and it can be
+// targeted by Travel `place`, Patrol `start`, the `linkedRefs` route chain, escort `destination`,
+// etc. GOTCHA: a marker REFR does NOT snap to the floor the way an actor does, so anchor it on
+// coords PROVEN walkable (`refpos <plugin> <0xFORMID>` to copy a reachable vanilla ref) or inside a
+// hand-navmeshed interior — a guessed exterior z lands off-navmesh and pathing silently fails.
+//
+// LOAD DOORS (teleport pair): a `placement` whose `base` is a DOOR record (a *load* door, e.g.
+// FarmhouseLDoor01 = Skyrim.esm:0x029CB0) and whose `teleport` names the PARTNER door placement
+// links two cells — the player walks through one door and arrives at the other. Author TWO door
+// placements, each `teleport`-pointing at the other (typically in different cells). Build writes
+// each door's TeleportDestination (XTEL): partner door FormKey + the partner's position/rotation
+// (where the player materialises). Partner may be another in-spec door OR a vanilla door ref
+// "<master>:0xFORMID". Doors with a teleport are forced persistent (the engine must keep the link).
 public sealed class PlacementSpec
 {
     public string Base { get; set; } = "";
     public string EditorId { get; set; } = "";     // optional: names this REFR/ACHR so other refs can target it
-                                                    // (patrol start, linkedRefs target). Must be unique if set.
+                                                    // (patrol start, linkedRefs target, teleport partner). Must be unique if set.
     public string Cell { get; set; } = "";        // interior: in-spec editorId OR <master>:0xFORMID
     public string Worldspace { get; set; } = "";   // exterior: worldspace ref; position is world-space
     public string Kind { get; set; } = "";
     public Vec3 Position { get; set; } = new();
     public Vec3 Rotation { get; set; } = new();
     public bool Persistent { get; set; }
+    // Load-door teleport: the PARTNER door this door teleports to (a placement editorId, or a vanilla
+    // door ref "<master>:0xFORMID"). Set on BOTH doors of the pair (each pointing at the other) to
+    // make a walk-through link. `base` must be a DOOR record. The arrival point is the partner's
+    // position/rotation, written into this door's XTEL automatically.
+    public string Teleport { get; set; } = "";
     // Optional encounter-zone ref (in-spec ECZN editorId or vanilla <master>:0xFORMID) for THIS
     // placed ref (its XEZN). A per-ref override of the cell's zone — usually leave empty and let the
     // ref inherit the cell's encounterZone, but set it to scope a single spawn to its own zone.

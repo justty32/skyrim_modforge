@@ -278,6 +278,30 @@ public static partial class Generator
             }
             if (pl.LinkedRefs.Count > 0 && string.IsNullOrWhiteSpace(pl.EditorId))
                 problems.Add("placement has linkedRefs but no editorId (a linked-ref source must be named so the route can be wired)");
+            // Load-door teleport: the partner must resolve (an in-spec door placement OR a vanilla door
+            // ref), and a teleport door must be named so its partner can point back at it.
+            if (!string.IsNullOrWhiteSpace(pl.Teleport))
+            {
+                CheckRef(pl.Teleport, $"placement '{pl.EditorId}' teleport partner");
+                if (string.IsNullOrWhiteSpace(pl.EditorId))
+                    problems.Add("placement has a teleport but no editorId (a teleport door must be named so its partner can link back)");
+                if (string.Equals(pl.Teleport, pl.EditorId, StringComparison.OrdinalIgnoreCase))
+                    problems.Add($"placement '{pl.EditorId}' teleport points at itself");
+            }
+        }
+        // Teleport reciprocity: when the partner is ALSO an in-spec placement, it should teleport back
+        // at this door — a one-way in-spec link is almost always an authoring slip (the player can walk
+        // in but not out). (A vanilla partner can't be edited, so it's only checked one way.)
+        var teleportByEd = spec.Placements
+            .Where(p => !string.IsNullOrWhiteSpace(p.EditorId) && !string.IsNullOrWhiteSpace(p.Teleport))
+            .GroupBy(p => p.EditorId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First().Teleport, StringComparer.OrdinalIgnoreCase);
+        foreach (var pl in spec.Placements)
+        {
+            if (string.IsNullOrWhiteSpace(pl.Teleport) || LooksExternalRef(pl.Teleport)) continue;
+            if (!teleportByEd.TryGetValue(pl.Teleport, out var back)
+                || !string.Equals(back, pl.EditorId, StringComparison.OrdinalIgnoreCase))
+                problems.Add($"placement '{pl.EditorId}' teleports to in-spec '{pl.Teleport}' but that door does not teleport back (one-way link — set its teleport to '{pl.EditorId}')");
         }
 
         foreach (var li in spec.LeveledItems)

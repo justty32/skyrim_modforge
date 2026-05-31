@@ -164,6 +164,8 @@ internal static partial class Program
                 Console.WriteLine($"      placed obj -> base {Ref(pobj.Base.FormKey)} @ ({op.Position.X:0.#}, {op.Position.Y:0.#}, {op.Position.Z:0.#})"
                     + (pobj.EncounterZone.IsNull ? "" : $"  encZone -> {Ref(pobj.EncounterZone.FormKey)}"));
                 foreach (var lr in pobj.LinkedReferences) Console.WriteLine($"        linkedRef -> {Ref(lr.Reference.FormKey)}{(lr.KeywordOrReference.IsNull ? "" : $" (keyword {lr.KeywordOrReference.FormKey})")}");
+                if (pobj.TeleportDestination is { } td)   // load-door XTEL: partner door + arrival point
+                    Console.WriteLine($"        teleport -> door {Ref(td.Door.FormKey)} arrive @ ({td.Position.X:0.#}, {td.Position.Y:0.#}, {td.Position.Z:0.#}) rot ({td.Rotation.X:0.###}, {td.Rotation.Y:0.###}, {td.Rotation.Z:0.###})");
             }
 
             if (r is ILeveledItemGetter lvli && lvli.Entries is { Count: > 0 } lies)

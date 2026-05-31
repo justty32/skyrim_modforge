@@ -255,6 +255,12 @@ public static partial class Generator
                     .Concat(MerchantContainerRefs())   // the merchant chest holds gold/stock — must persist
                     .Where(r => !string.IsNullOrWhiteSpace(r) && !LooksExternalRef(r)),
                 StringComparer.OrdinalIgnoreCase);
+            // EditorIds named as some door's teleport PARTNER — a teleport anchor must persist (the engine
+            // drops a temporary door, breaking the link). Both ends of a pair end up here.
+            var teleportAnchorEds = new HashSet<string>(
+                spec.Placements.Select(p => p.Teleport)
+                    .Where(t => !string.IsNullOrWhiteSpace(t) && !LooksExternalRef(t)),
+                StringComparer.OrdinalIgnoreCase);
             foreach (var pl in spec.Placements)
             {
                 ICell? cell;
@@ -325,14 +331,18 @@ public static partial class Generator
                     formKeyByEd[pl.EditorId] = placedRec.FormKey;
                     recordsByEd[pl.EditorId] = (IMajorRecord)placedRec;
                     placementsByEd[pl.EditorId] = placedRec;
+                    placementSpecByEd[pl.EditorId] = pl;
                 }
 
                 // A placement is a stable anchor that must persist across save/load if: it's an explicit
-                // persistent, it's a linkedRefs source, or another record's deferred wire points at it —
-                // a package SingleRef target (patrol start / follow / escort target) or a package
-                // Destination location. The engine can drop a temporary ref that something else links to.
+                // persistent, it's a linkedRefs source, a teleport door (or named as one's partner), or
+                // another record's deferred wire points at it — a package SingleRef target (patrol start /
+                // follow / escort target) or a package Destination location. The engine can drop a
+                // temporary ref that something else links to.
                 bool linkTarget = pl.LinkedRefs.Count > 0
-                    || (!string.IsNullOrWhiteSpace(pl.EditorId) && deferredAnchorEds.Contains(pl.EditorId));
+                    || !string.IsNullOrWhiteSpace(pl.Teleport)
+                    || (!string.IsNullOrWhiteSpace(pl.EditorId)
+                        && (deferredAnchorEds.Contains(pl.EditorId) || teleportAnchorEds.Contains(pl.EditorId)));
                 (pl.Persistent || linkTarget ? cell.Persistent : cell.Temporary).Add(placedRec);
                 placed++;
             }
@@ -366,6 +376,52 @@ public static partial class Generator
             }
         }
 
+        // --- pass 2: load-door TELEPORTS (XTEL) — done after all placements exist so a door can point ---
+        // at a partner defined later in the list. A load door is a PlacedObject (REFR) over a DOOR base
+        // whose TeleportDestination = { partner door FormKey, partner position, partner rotation } — the
+        // player walks through this door and materialises AT THE PARTNER. So the XTEL position/rotation is
+        // the PARTNER's, not this door's (mirrors every vanilla load-door pair). The partner is an in-spec
+        // door placement (its position read from the spec) or a vanilla door ref (its position read from
+        // the master). Author both doors of a pair, each `teleport`-ing at the other.
+        public void WireTeleportDoors()
+        {
+            bool PartnerArrival(string partnerRef, out FormKey doorFk, out Noggog.P3Float pos, out Noggog.P3Float rot)
+            {
+                doorFk = default; pos = default; rot = default;
+                if (!LooksExternalRef(partnerRef))
+                {
+                    if (!placementsByEd.TryGetValue(partnerRef, out var partner)
+                        || !placementSpecByEd.TryGetValue(partnerRef, out var ps)) return false;
+                    doorFk = partner.FormKey;
+                    pos = new Noggog.P3Float(ps.Position.X, ps.Position.Y, ps.Position.Z);
+                    rot = new Noggog.P3Float(Deg2Rad(ps.Rotation.X), Deg2Rad(ps.Rotation.Y), Deg2Rad(ps.Rotation.Z));
+                    return true;
+                }
+                if (!TryExternalRef(partnerRef, out doorFk)) return false;
+                // Vanilla partner door: pull its world/cell-local position+rotation from the master so the
+                // player arrives where the vanilla door actually is (already-radians rotation in the master).
+                var cache = MasterCache(partnerRef[..partnerRef.IndexOf(':')].Trim());
+                if (cache is not null && cache.TryResolve<IPlacedObjectGetter>(doorFk, out var vd) && vd.Placement is { } vp)
+                { pos = vp.Position; rot = vp.Rotation; }
+                else Warn($"  ! teleport partner '{partnerRef}' position not resolvable from master — arrival point defaults to (0,0,0)");
+                return true;
+            }
+            foreach (var pl in spec.Placements)
+            {
+                if (string.IsNullOrWhiteSpace(pl.Teleport) || string.IsNullOrWhiteSpace(pl.EditorId)) continue;
+                if (!placementsByEd.TryGetValue(pl.EditorId, out var src)) continue;
+                if (src is not IPlacedObject door)
+                { Warn($"  ! placement '{pl.EditorId}' has teleport but is not an object (door) ref — skipped"); continue; }
+                if (!PartnerArrival(pl.Teleport, out var partnerFk, out var pos, out var rot))
+                { Warn($"  ! placement '{pl.EditorId}' teleport partner '{pl.Teleport}' unresolved — skipped"); continue; }
+                var xtel = new TeleportDestination { Position = pos, Rotation = rot };
+                xtel.Door.SetTo(new FormLink<IPlacedObjectGetter>(partnerFk));
+                door.TeleportDestination = xtel;
+                linksWired++;
+                if (LooksExternalRef(pl.Teleport)) extLinks++;
+            }
+        }
+
         // --- pass 2: deferred SingleRef slot-0 targets (Patrol "Patrol Start", Follow "Target to Follow") ---
         // Emitted now that placements exist, as PackageTargetSpecificReference. The ref is an in-spec
         // placement (e.g. a patrol marker, or an NPC to follow) or a vanilla ref (e.g. the player).
@@ -386,13 +442,13 @@ public static partial class Generator
             }
         }
 
-        // --- pass 2: deferred PackageDataLocation slots (Escort "Destination") ---
-        // Resolved now that placements exist. MakeLocationSlot handles vanilla refs, in-spec placements,
-        // and the NearSelf fallback.
+        // --- pass 2: deferred PackageDataLocation slots (Escort "Destination", Travel "Place to Travel") ---
+        // Resolved now that placements exist, so an in-spec marker/placement editorId resolves.
+        // MakeLocationSlot handles vanilla refs, in-spec placements, and the NearSelf fallback.
         public void WireDeferredLocations()
         {
             foreach (var (pack, slot, slotName, ed, refStr, radius) in deferredLocationWires)
-                pack.Data[slot] = MakeLocationSlot(slotName, $"package '{ed}' escort", refStr, radius);
+                pack.Data[slot] = MakeLocationSlot(slotName, $"package '{ed}' {slotName.ToLowerInvariant()}", refStr, radius);
         }
     }
 }

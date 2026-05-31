@@ -1,0 +1,77 @@
+{
+  "pluginName": "ModForgeDoors.esp",
+  "esl": true,
+  "_": "XMARKERS + LOAD-DOOR TELEPORTS. Two NEW interior cells (a hall + a back room) joined by a load-door PAIR so the player can walk between them, plus an XMarker travel anchor in the back room that a Travel NPC paths to. STRUCTURAL ONLY (not in-game verified): the door pair + XTEL + marker are written correctly per vanilla, but navmesh reachability inside a brand-new hand-unnavmeshed cell is UNCONFIRMED — a new cell has no navmesh, so the AI-traversed bits (Travel to the marker, the NPC walking through the door) may not path until a real navmesh is added in the CK. The door itself (player-activated) does not need navmesh and is the proven mechanic; positions are kept modest and near origin like the It.7 newcell example that rendered. Door base = FarmhouseLDoor01 (Skyrim.esm:0x029CB0, a load door); XMarkerHeading = Skyrim.esm:0x000034.",
+
+  "cells": [
+    { "_": "Hall: lit via Breezehome's lighting (template 0x0165A8). coc target: ModForgeDoorsHall.",
+      "editorId": "ModForgeDoorsHall", "name": "ModForge Doors Hall",
+      "template": "Skyrim.esm:0x0165A8" },
+    { "_": "Back room reached through the load door.",
+      "editorId": "ModForgeDoorsBack", "name": "ModForge Doors Back Room",
+      "template": "Skyrim.esm:0x0165A8" }
+  ],
+
+  "placements": [
+    { "_": "--- HALL: 3x3 floor grid (WRIntFloorSTMid01Large 0x1044AA, 256 spacing) so the player doesn't fall into the void ---",
+      "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsHall", "position": { "x": -256, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsHall", "position": { "x":    0, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsHall", "position": { "x":  256, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsHall", "position": { "x": -256, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsHall", "position": { "x":    0, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsHall", "position": { "x":  256, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsHall", "position": { "x": -256, "y":  256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsHall", "position": { "x":    0, "y":  256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsHall", "position": { "x":  256, "y":  256, "z": 0 } },
+    { "_": "Hall key light (WRShadowOmni 0x0C82AE, non-PortalStrict) + warm fills (WRInteriorLightBrite01 0x06ED46).",
+      "base": "Skyrim.esm:0x0C82AE", "cell": "ModForgeDoorsHall", "position": { "x": 0, "y": 0, "z": 300 } },
+    { "base": "Skyrim.esm:0x06ED46", "cell": "ModForgeDoorsHall", "position": { "x": -220, "y": 0, "z": 220 } },
+    { "base": "Skyrim.esm:0x06ED46", "cell": "ModForgeDoorsHall", "position": { "x":  220, "y": 0, "z": 220 } },
+
+    { "_": "HALL DOOR — base FarmhouseLDoor01 (load door). teleport -> the back-room door; arriving the player materialises at that door's position. Auto-persistent (it is a teleport door).",
+      "editorId": "MF_DoorHall", "base": "Skyrim.esm:0x029CB0", "cell": "ModForgeDoorsHall",
+      "position": { "x": 256, "y": 0, "z": 0 }, "rotation": { "x": 0, "y": 0, "z": 270 },
+      "teleport": "MF_DoorBack" },
+
+    { "_": "--- BACK ROOM: floor grid ---",
+      "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsBack", "position": { "x": -256, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsBack", "position": { "x":    0, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsBack", "position": { "x":  256, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsBack", "position": { "x": -256, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsBack", "position": { "x":    0, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsBack", "position": { "x":  256, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsBack", "position": { "x": -256, "y":  256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsBack", "position": { "x":    0, "y":  256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "ModForgeDoorsBack", "position": { "x":  256, "y":  256, "z": 0 } },
+    { "base": "Skyrim.esm:0x0C82AE", "cell": "ModForgeDoorsBack", "position": { "x": 0, "y": 0, "z": 300 } },
+    { "base": "Skyrim.esm:0x06ED46", "cell": "ModForgeDoorsBack", "position": { "x": 0, "y": 0, "z": 220 } },
+
+    { "_": "BACK-ROOM DOOR — the partner. teleport -> the hall door (reciprocal: the player can walk back). Together MF_DoorHall <-> MF_DoorBack form the walk-through pair.",
+      "editorId": "MF_DoorBack", "base": "Skyrim.esm:0x029CB0", "cell": "ModForgeDoorsBack",
+      "position": { "x": -256, "y": 0, "z": 0 }, "rotation": { "x": 0, "y": 0, "z": 90 },
+      "teleport": "MF_DoorHall" },
+
+    { "_": "XMARKER TRAVEL ANCHOR in the back room — an XMarkerHeading (Skyrim.esm:0x000034). The Travel package's `place` points here, so the NPC walks to it. Auto-persistent (it is a deferred package target). MARKER GOTCHA: markers don't snap to the floor, so this sits at z=0 on the floor grid; in a real mod, navmesh this cell + confirm the marker is walkable.",
+      "editorId": "MF_BackRoomMarker", "base": "Skyrim.esm:0x000034", "cell": "ModForgeDoorsBack",
+      "position": { "x": 0, "y": 200, "z": 0 } },
+
+    { "_": "An NPC in the hall that travels to the back-room marker (demonstrates the marker as a Travel anchor). NOTE: cross-cell pathing through a load door needs navmesh + door-portal links the CK builds — UNCONFIRMED here; the NPC structurally has the Travel package targeting the marker.",
+      "base": "MF_DoorsTraveler", "cell": "ModForgeDoorsHall", "position": { "x": 0, "y": 0, "z": 0 } }
+  ],
+
+  "npcs": [
+    { "editorId": "MF_DoorsTraveler", "name": "ModForge Doors Traveler",
+      "race": "Skyrim.esm:0x013746", "class": "Skyrim.esm:0x01326B",
+      "voiceType": "Skyrim.esm:0x013AE6", "unique": true,
+      "aggression": "Unaggressive", "confidence": "Brave",
+      "packages": [ "MF_TravelToMarker" ] }
+  ],
+
+  "packages": [
+    { "_": "Travel template (Skyrim.esm:0x016FAA). place = the XMarker anchor in the back room.",
+      "editorId": "MF_TravelToMarker", "template": "Skyrim.esm:0x016FAA",
+      "preferredSpeed": "Walk",
+      "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 0, "dayOfWeek": "Any" },
+      "travel": { "place": "MF_BackRoomMarker" } }
+  ]
+}

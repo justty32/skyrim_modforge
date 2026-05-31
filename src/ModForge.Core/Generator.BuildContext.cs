@@ -49,6 +49,9 @@ public static partial class Generator
         private readonly List<(IPackage Pack, sbyte Slot, string SlotName, string Ed, string Ref)> deferredTargetWires = new();
         private readonly List<(IPackage Pack, sbyte Slot, string SlotName, string Ed, string Ref, uint Radius)> deferredLocationWires = new();
         private readonly Dictionary<string, IPlaced> placementsByEd = new();
+        // editorId → its source PlacementSpec, so a teleport partner's arrival position/rotation can be
+        // read once all placements exist (XTEL stores where the player materialises = the partner's pos/rot).
+        private readonly Dictionary<string, PlacementSpec> placementSpecByEd = new(StringComparer.OrdinalIgnoreCase);
 
         // Vendor (merchant) factions: editorIds of in-spec factions carrying vendor data (so an NPC
         // who joins one also gets JobMerchantFaction). The merchant chest is a PLACEMENT that doesn't

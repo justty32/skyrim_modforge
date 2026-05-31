@@ -55,6 +55,7 @@ public static partial class Generator
         ctx.WireOutfits();                         // OTFT contents
         ctx.BuildPlacements();                     // world placement (interior/vanilla/exterior cells)
         ctx.WireLinkedRefs();                      // XLKR between placements (patrol routes)
+        ctx.WireTeleportDoors();                   // load-door XTEL teleport pairs (player walk-through links)
         ctx.WireDeferredTargets();                 // package SingleRef slot-0 targets (now placements exist)
         ctx.WireDeferredLocations();               // package Destination location slots
         ctx.WireDeferredMerchantContainers();      // FACT merchant chest + VendorLocation (now placements exist)

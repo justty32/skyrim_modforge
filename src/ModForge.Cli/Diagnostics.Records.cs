@@ -118,6 +118,14 @@ internal static partial class Program
             Console.WriteLine($"  base = {baseFk}");
             if (pos is { } p) Console.WriteLine($"  position = ({p.X:0.##}, {p.Y:0.##}, {p.Z:0.##})  (cell-local for interiors, world for exteriors)");
             if (rot is { } ro) Console.WriteLine($"  rotation = ({ro.X:0.###}, {ro.Y:0.###}, {ro.Z:0.###}) rad");
+            // Load-door teleport (XTEL): the partner door it links to + where the player materialises.
+            // Probe a vanilla door pair this way to copy a proven-walkable arrival point.
+            if (r is IPlacedObjectGetter po && po.TeleportDestination is { } td)
+            {
+                Console.WriteLine($"  teleport -> door {td.Door.FormKey}");
+                Console.WriteLine($"    arrive position = ({td.Position.X:0.##}, {td.Position.Y:0.##}, {td.Position.Z:0.##})");
+                Console.WriteLine($"    arrive rotation = ({td.Rotation.X:0.###}, {td.Rotation.Y:0.###}, {td.Rotation.Z:0.###}) rad");
+            }
             return 0;
         }
         Console.WriteLine($"0x{id:X6} not a placed reference in {Path.GetFileName(inPath)}");

@@ -92,7 +92,11 @@ public static partial class Generator
                     var tv = pk.Travel;
                     if (string.IsNullOrWhiteSpace(tv.Place))
                         Warn($"  ! package '{pk.EditorId}' travel: no `place` ref — Travel will fall back to NearSelf (NPC stays put)");
-                    pack.Data[0] = MakeLocationSlot("Place to Travel", $"package '{pk.EditorId}' travel", tv.Place, tv.Radius);
+                    // DEFERRED (like Escort's Destination): `place` may be an IN-SPEC placement editorId
+                    // (e.g. an XMarker travel anchor) that isn't registered until the placement loop runs.
+                    // Resolving eagerly here would miss it and fall back to NearSelf. MakeLocationSlot
+                    // (vanilla ref / in-spec placement / NearSelf) is applied after placements exist.
+                    deferredLocationWires.Add((pack, 0, "Place to Travel", pk.EditorId, tv.Place, tv.Radius));
                     pack.Data[2] = new PackageDataBool { Name = "Ride Horse if possible?", Data = tv.RideHorse ?? false };
                     pack.Data[4] = new PackageDataBool { Name = "Prefer Preferred Path?", Data = tv.PreferPath ?? false };
                 }

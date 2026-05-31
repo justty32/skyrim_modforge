@@ -405,14 +405,28 @@
         { "required": ["worldspace"] }
       ],
       "properties": {
-        "base": { "$ref": "#/$defs/ref", "description": "the form to place: an in-spec npc/object editorId or external <master>:0xFORMID. May also be a LeveledNpc (LVLN) list for a LEVELED-ACTOR SPAWN — the ACHR then rolls a level-appropriate actor (add kind:\"npc\" for a vanilla list)" },
+        "base": { "$ref": "#/$defs/ref", "description": "the form to place: an in-spec npc/object editorId or external <master>:0xFORMID. May also be a LeveledNpc (LVLN) list for a LEVELED-ACTOR SPAWN — the ACHR then rolls a level-appropriate actor (add kind:\"npc\" for a vanilla list). MARKERS: XMarker = Skyrim.esm:0x00003B, XMarkerHeading = Skyrim.esm:0x000034 (a Travel/Patrol/scene anchor). DOORS: a load-door base (e.g. FarmhouseLDoor01 = Skyrim.esm:0x029CB0) + `teleport` makes a walk-through link" },
+        "editorId": { "type": "string", "description": "optional: names this REFR/ACHR so other refs can target it (patrol start, linkedRefs target, teleport partner). Must be unique" },
         "cell": { "type": "string", "minLength": 1, "description": "INTERIOR target: an in-spec cell editorId OR a vanilla INTERIOR cell '<master>:0xFORMID' (find with `find <Skyrim.esm> <name> Cell`)" },
         "worldspace": { "type": "string", "minLength": 1, "description": "EXTERIOR target: a worldspace '<master>:0xFORMID' (Tamriel = Skyrim.esm:0x00003C; find with `find <Skyrim.esm> <name> Worldspace`). `position` is then WORLD coords; the cell at floor(x/4096),floor(y/4096) is overridden" },
         "kind": { "enum": ["npc", "object"], "description": "inferred for in-spec bases; defaults to object for external" },
         "position": { "$ref": "#/$defs/vec3", "description": "cell-local for interior; WORLD coords for exterior" },
         "rotation": { "$ref": "#/$defs/vec3", "description": "degrees" },
-        "persistent": { "type": "boolean", "description": "place in the cell's persistent (vs temporary) list" },
-        "encounterZone": { "$ref": "#/$defs/ref", "description": "optional ECZN ref — a per-ref override of the cell's zone (this spawn's XEZN); usually only meaningful on a leveled-actor spawn" }
+        "persistent": { "type": "boolean", "description": "place in the cell's persistent (vs temporary) list (teleport doors / linkedRefs sources / package anchors are forced persistent automatically)" },
+        "encounterZone": { "$ref": "#/$defs/ref", "description": "optional ECZN ref — a per-ref override of the cell's zone (this spawn's XEZN); usually only meaningful on a leveled-actor spawn" },
+        "teleport": { "type": "string", "description": "LOAD-DOOR pair: the PARTNER door this door teleports to (a placement editorId, or a vanilla door '<master>:0xFORMID'). Set on BOTH doors (each pointing at the other). `base` must be a DOOR. Arrival = the partner's position/rotation (written to this door's XTEL)" },
+        "linkedRefs": {
+          "type": "array",
+          "description": "Linked References (XLKR) on this ref — the Patrol route chain etc. Source placement must have an editorId",
+          "items": {
+            "type": "object",
+            "required": ["target"],
+            "properties": {
+              "target": { "$ref": "#/$defs/ref", "description": "the linked placed ref (a placement editorId or external ref)" },
+              "keyword": { "$ref": "#/$defs/ref", "description": "optional KYWD tagging the link; empty = the null/default link a Patrol route follows" }
+            }
+          }
+        }
       }
     },
     "leveledEntry": {

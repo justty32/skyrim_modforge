@@ -76,6 +76,35 @@ Other hold crime/town factions follow the same naming pattern; `find <Skyrim.esm
 | WhiterunStablesHorseMarker | `Skyrim.esm:0x109826` | Tamriel | Just outside Whiterun's main gate |
 | Tamriel (worldspace) | `Skyrim.esm:0x00003C` | — | Worldspace ref for exterior `placements` |
 
+### XMarker bases (for a first-class staging marker — Travel/Patrol/scene/`coc` anchor)
+
+A `placement` whose `base` is one of these is the invisible marker vanilla uses as a destination/node.
+**Markers do NOT snap to the floor** — anchor them on proven-walkable coords (`refpos` a vanilla
+ref, or inside a navmeshed interior), else pathing silently fails. Reference the placement's
+`editorId` from Travel `place`, Patrol `start`, the `linkedRefs` route chain, or escort `destination`.
+
+| Editor ID | FormID | Notes |
+|---|---|---|
+| XMarker | `Skyrim.esm:0x00003B` | Plain position marker (no facing) |
+| XMarkerHeading | `Skyrim.esm:0x000034` | Position **+ facing direction** — the usual patrol/travel node |
+
+## Load doors (for a teleport pair — connect two cells)
+
+Two `placement`s whose `base` is a load DOOR and whose `teleport` points at each other form a
+walk-through link (XTEL). The arrival point is auto-set to the partner door's position. Probe a
+vanilla door's XTEL with `refpos <Skyrim.esm> <0xFORMID>` (now prints the teleport target + arrival).
+
+| Editor ID | FormID | Notes |
+|---|---|---|
+| FarmhouseLDoor01 | `Skyrim.esm:0x029CB0` | Wooden farmhouse load door (used by Sleeping Giant Inn) |
+| WRShackDoor01 | `Skyrim.esm:0x024E26` | Whiterun shack load door |
+| ImpDoorSingleLoad01MinUse | `Skyrim.esm:0x0EF53A` | Imperial single load door |
+| NorDoorSmLoad01MinUse | `Skyrim.esm:0x0F1C16` | Nordic small load door |
+| ImpWoodDoorCaveLoad01 | `Skyrim.esm:0x10C62A` | Cave/dungeon load door |
+
+> A proven interior load-door position (Sleeping Giant Inn entry, ref `0x013419`): cell-local
+> `(-255.78, -422.47, 0)` rot `(0,0,3.142)`, partnered with exterior door `0x013424`.
+
 ## Reference actors (engine built-ins)
 
 | Editor ID | FormID | Note |
