@@ -405,6 +405,40 @@ correctly and mirror vanilla ENCH structure exactly, but the enchantment actuall
 not been confirmed (no in-game test was run). The `enchantmentCost` ↔ `enchantmentAmount` tuning and
 whether the engine auto-prices the charge are the most likely things to verify in-game.
 
+## "Spell tome for a custom spell" (MGEF → SPEL → BOOK that teaches it)
+
+A spell tome is a BOOK whose `teaches` grants a SPEL on first read. The killer combo: author the
+spell (custom MGEF + SPEL, as above) AND a tome that teaches it — all in one spec. Reading the tome
+gives the player the spell.
+
+```jsonc
+{ "magicEffects": [ { "editorId": "MF_EmberLanceEffect", /* …archetype/projectile/castingArt… */ } ],
+  "spells":       [ { "editorId": "MF_EmberLanceSpell", "name": "Ember Lance", /* …effects… */ } ],
+  "books": [
+    { "editorId": "MF_SpellTomeEmberLance", "name": "Spell Tome: Ember Lance",
+      "text": "<p>Reading this grants the Ember Lance spell.</p>",
+      "template": "Skyrim.esm:0x10F7F4",                 // clone SpellTomeIncinerate's MODEL (else CRASH on read)
+      "value": 250, "flags": [ "CantBeTaken" ],          // vanilla spell-tome flag
+      "teaches": { "kind": "spell", "spell": "MF_EmberLanceSpell" } },   // ← teaches OUR in-spec spell
+
+    // also valid: teach a VANILLA spell by external ref…
+    { "editorId": "MF_SpellTomeFirebolt", "name": "Spell Tome: Firebolt (copy)",
+      "template": "Skyrim.esm:0x10F7F4",
+      "teaches": { "kind": "spell", "spell": "Skyrim.esm:0x012FD0" } },
+
+    // …or a SKILL book that raises a skill on read (no model crash if you keep a template)
+    { "editorId": "MF_SkillBookDestruction", "name": "Pyromancy for Beginners",
+      "template": "Skyrim.esm:0x0ED161",
+      "teaches": { "kind": "skill", "skill": "Destruction" } }
+  ] }
+```
+
+Gotcha: a teaching book is takeable/readable, so it STILL needs a `template` (a vanilla BOOK to clone
+a `.nif` model from) — a model-less book CRASHES the reading view. The in-spec `spell` ref is wired in
+build pass 2, so the tome can teach a spell defined later in the same spec. Discover a tome's model /
+the `Teaches` shape with the CLI: `bookdiag <Skyrim.esm> 0x10F7F4` (a vanilla spell tome) or `0x01AFD2`
+(a skill book). The actual *grant on read* is structurally wired but in-game-unconfirmed here.
+
 ## "Conversational NPC" (custom player topics — IN-GAME CONFIRMED It.23)
 
 Give the NPC a `greeting`, a host quest, and one `dialogue` entry per topic. From that the build emits

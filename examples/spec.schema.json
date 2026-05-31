@@ -153,7 +153,20 @@
       "properties": {
         "editorId": { "type": "string", "minLength": 1 },
         "name": { "type": "string" },
-        "text": { "type": "string" }
+        "text": { "type": "string" },
+        "template": { "type": "string", "description": "ref to a vanilla BOOK to clone a model from; a takeable/readable book needs one or it CRASHES on read" },
+        "value": { "type": "integer", "minimum": 0 },
+        "weight": { "type": "number", "minimum": 0 },
+        "flags": { "type": "array", "items": { "enum": ["Teaches", "CantBeTaken"] }, "description": "Book.Flag names" },
+        "teaches": {
+          "type": "object",
+          "description": "a teaching book: a spell tome (grants a SPEL) or a skill book (raises a Skill) on first read",
+          "properties": {
+            "kind": { "enum": ["spell", "skill"] },
+            "spell": { "type": "string", "description": "ref to a SPEL (in-spec editorId or <master>:0xFORMID); when kind=spell" },
+            "skill": { "enum": ["OneHanded", "TwoHanded", "Archery", "Block", "Smithing", "HeavyArmor", "LightArmor", "Pickpocket", "Lockpicking", "Sneak", "Alchemy", "Speech", "Alteration", "Conjuration", "Destruction", "Illusion", "Restoration", "Enchanting"], "description": "when kind=skill" }
+          }
+        }
       }
     },
     "armor": {

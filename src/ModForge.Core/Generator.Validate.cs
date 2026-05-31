@@ -17,6 +17,7 @@ public static partial class Generator
         var questIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var factionIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var cellIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var spellIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         void Reg(string ed, string what, HashSet<string>? typed = null)
         {
@@ -30,7 +31,7 @@ public static partial class Generator
         foreach (var w in spec.Weapons) Reg(w.EditorId, "weapon");
         foreach (var n in spec.Npcs) Reg(n.EditorId, "npc", npcIds);
         foreach (var q in spec.Quests) Reg(q.EditorId, "quest", questIds);
-        foreach (var s in spec.Spells) Reg(s.EditorId, "spell");
+        foreach (var s in spec.Spells) Reg(s.EditorId, "spell", spellIds);
         foreach (var p in spec.Potions) Reg(p.EditorId, "potion");
         foreach (var a in spec.Armors) Reg(a.EditorId, "armor");
         foreach (var f in spec.Factions) Reg(f.EditorId, "faction", factionIds);
@@ -107,8 +108,38 @@ public static partial class Generator
         // `template` = a vanilla record to clone (model/anim) — must be a well-formed external ref.
         foreach (var w in spec.Weapons) if (!string.IsNullOrWhiteSpace(w.Template) && !TryExternalRef(w.Template, out _))
             problems.Add($"weapon '{w.EditorId}' template: malformed external ref '{w.Template}' (expect <master>:0xFORMID, e.g. Skyrim.esm:0x012EB7)");
-        foreach (var b in spec.Books) if (!string.IsNullOrWhiteSpace(b.Template) && !TryExternalRef(b.Template, out _))
-            problems.Add($"book '{b.EditorId}' template: malformed external ref '{b.Template}' (expect <master>:0xFORMID, e.g. Skyrim.esm:0x0ED161)");
+        foreach (var b in spec.Books)
+        {
+            if (!string.IsNullOrWhiteSpace(b.Template) && !TryExternalRef(b.Template, out _))
+                problems.Add($"book '{b.EditorId}' template: malformed external ref '{b.Template}' (expect <master>:0xFORMID, e.g. Skyrim.esm:0x0ED161)");
+            foreach (var f in b.Flags)
+                if (!Enum.TryParse<Book.Flag>(f, true, out _))
+                    problems.Add($"book '{b.EditorId}' invalid flag '{f}' (e.g. CantBeTaken)");
+            // A teaching book (spell tome / skill book) STILL needs a model or it crashes on read.
+            // We don't carry a model inline, so require a `template` to clone one from.
+            if (b.Teaches is { Kind: { Length: > 0 } } t)
+            {
+                if (string.IsNullOrWhiteSpace(b.Template))
+                    problems.Add($"book '{b.EditorId}' teaches something but has no `template` — a takeable/readable book needs a model or it CRASHES on read (clone a vanilla book/tome, e.g. Skyrim.esm:0x10F7F4)");
+                if (t.Kind.Equals("spell", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (string.IsNullOrWhiteSpace(t.Spell))
+                        problems.Add($"book '{b.EditorId}' teaches.kind=spell but teaches.spell ref is empty");
+                    else if (!LooksExternalRef(t.Spell) && !spellIds.Contains(t.Spell))
+                        problems.Add($"book '{b.EditorId}' teaches.spell '{t.Spell}' is not an in-spec spell (it must be a SPEL — use an in-spec spell editorId or a vanilla <master>:0xFORMID)");
+                    else CheckRef(t.Spell, $"book '{b.EditorId}' teaches.spell");
+                }
+                else if (t.Kind.Equals("skill", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (string.IsNullOrWhiteSpace(t.Skill))
+                        problems.Add($"book '{b.EditorId}' teaches.kind=skill but teaches.skill is empty");
+                    else if (!Enum.TryParse<Skill>(t.Skill, true, out _))
+                        problems.Add($"book '{b.EditorId}' teaches.skill '{t.Skill}' is not a valid Skill (e.g. Destruction, OneHanded, Smithing)");
+                }
+                else
+                    problems.Add($"book '{b.EditorId}' teaches.kind '{t.Kind}' invalid (spell|skill)");
+            }
+        }
         foreach (var m in spec.MiscItems) if (!string.IsNullOrWhiteSpace(m.Template) && !TryExternalRef(m.Template, out _))
             problems.Add($"miscItem '{m.EditorId}' template: malformed external ref '{m.Template}' (expect <master>:0xFORMID, e.g. Skyrim.esm:0x063B42)");
         foreach (var p in spec.Potions) if (!string.IsNullOrWhiteSpace(p.Template) && !TryExternalRef(p.Template, out _))

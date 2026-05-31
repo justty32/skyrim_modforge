@@ -44,6 +44,21 @@ public static partial class Generator
                 else
                     Warn($"  ! book '{b.EditorId}': no `template` — a model-less book CRASHES on read; set template to a vanilla book (e.g. Skyrim.esm:0x0ED161 Book1CheapNordsArise)");
                 r.EditorID = b.EditorId; r.Name = b.Name; r.BookText = b.Text;
+                if (b.Value != 0) r.Value = b.Value;
+                if (b.Weight != 0) r.Weight = b.Weight;
+                foreach (var f in b.Flags)
+                    if (Enum.TryParse<Book.Flag>(f, ignoreCase: true, out var bf)) r.Flags |= bf;
+                    else Warn($"  ! book '{b.EditorId}': unknown flag '{f}'");
+                // Teaches: a SKILL book carries an ActorValue inline (no FormLink) — set it here. A SPELL
+                // tome's SPEL FormLink may point at an in-spec spell built later, so it's wired in pass 2.
+                // No `teaches` (or kind="") leaves the default BookTeachesNothing — a plain readable book.
+                if (b.Teaches is { } t && t.Kind.Equals("skill", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (Enum.TryParse<Skill>(t.Skill, ignoreCase: true, out var sk))
+                        r.Teaches = new BookSkill { Skill = sk };
+                    else
+                        Warn($"  ! book '{b.EditorId}': teaches.skill '{t.Skill}' is not a valid Skill (e.g. Destruction, OneHanded, Smithing)");
+                }
             }
             foreach (var w in spec.Weapons)
             {
@@ -299,6 +314,19 @@ public static partial class Generator
             foreach (var p in spec.Potions) Wire(p.EditorId, p.Effects);
             foreach (var i in spec.Ingredients) Wire(i.EditorId, i.Effects);
             foreach (var s in spec.Scrolls) Wire(s.EditorId, s.Effects);
+
+            // Spell tome (BOOK teaches=spell): the SPEL FormLink resolved by editorId — the killer combo
+            // is a tome teaching an IN-SPEC custom spell (MGEF→SPEL→tome in one spec, all forward refs
+            // now in the table). Reading the book grants the spell in-game. (Skill books wired inline.)
+            foreach (var b in spec.Books)
+            {
+                if (b.Teaches is not { } t || !t.Kind.Equals("spell", StringComparison.OrdinalIgnoreCase)) continue;
+                if (!recordsByEd.TryGetValue(b.EditorId, out var rec) || rec is not IBook book) continue;
+                if (string.IsNullOrWhiteSpace(t.Spell))
+                { Warn($"  ! book '{b.EditorId}': teaches.kind=spell but teaches.spell ref is empty — book teaches nothing"); continue; }
+                Resolve($"book '{b.EditorId}' teaches spell", t.Spell, fk =>
+                    book.Teaches = new BookSpell { Spell = new FormLink<ISpellGetter>(fk) });
+            }
         }
 
         // --- pass 2: MagicEffect refs (may point forward, or at vanilla forms): the archetype ---

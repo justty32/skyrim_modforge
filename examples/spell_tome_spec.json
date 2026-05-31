@@ -1,0 +1,78 @@
+{
+  "pluginName": "ModForgeSpellTome.esp",
+  "esl": true,
+  "_": "Spell tomes + skill books — books that DO something when read. The killer combo: a FULLY CUSTOM spell (custom MGEF + custom SPEL) bundled with a spell TOME that teaches it (MGEF->SPEL->BOOK.Teaches=spell, all in one spec). Reading the tome grants the custom spell. Plus a vanilla-spell tome, and a skill book that raises a Skill on read. Book.Teaches discovered via `bookdiag` against vanilla SpellTomeIncinerate (0x10F7F4, teaches Spell) and SkillSmithing5 (0x01AFD2, teaches Skill=Smithing). GOTCHA: a takeable/readable book STILL needs a `template` (a vanilla book to clone a model .nif from) or it CRASHES on 3D-read — so every tome clones a vanilla SpellTome.",
+
+  "magicEffects": [
+    {
+      "editorId": "MF_EmberLanceEffect",
+      "name": "Ember Lance",
+      "description": "A lance of embers that sears the target.",
+      "_": "Mirrors a vanilla fire Aimed damage effect (ValueModifier/Health, Destruction, ResistFire, FireAndForget/Aimed, Hostile+Detrimental+NoArea, low baseCost for sane autocalc). Reuses the vanilla Firebolt expert projectile (0x10FBEA) + casting art (0x01B211) so the bolt is VISIBLE and delivers the hit — both verified in examples/customspell_spec.json.",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "magicSkill": "Destruction",
+      "resistValue": "ResistFire",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
+      "baseCost": 3.3,
+      "flags": [ "Hostile", "Detrimental", "NoArea" ],
+      "projectile": "Skyrim.esm:0x10FBEA",
+      "castingArt": "Skyrim.esm:0x01B211"
+    }
+  ],
+
+  "spells": [
+    {
+      "editorId": "MF_EmberLanceSpell",
+      "name": "Ember Lance",
+      "_": "Wraps the custom MGEF at magnitude 25. equipType=EitherHand (Skyrim.esm:0x013F44) so it equips into a hand. baseCost 0 = engine autocalc.",
+      "spellType": "Spell",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
+      "equipType": "Skyrim.esm:0x013F44",
+      "effects": [
+        { "magicEffect": "MF_EmberLanceEffect", "magnitude": 25, "area": 0, "duration": 0 }
+      ]
+    }
+  ],
+
+  "books": [
+    {
+      "editorId": "MF_SpellTomeEmberLance",
+      "name": "Spell Tome: Ember Lance",
+      "text": "<p>The teachings of fire, bound in tome. Reading this grants the Ember Lance spell.</p>",
+      "_": "THE killer combo: this tome teaches our IN-SPEC custom spell MF_EmberLanceSpell (SPEL FormLink wired in pass 2). Clones the vanilla Destruction spell-tome model from SpellTomeIncinerate (0x10F7F4) so it has a 3D mesh + sounds. CantBeTaken is a vanilla spell-tome flag.",
+      "template": "Skyrim.esm:0x10F7F4",
+      "value": 250,
+      "weight": 1,
+      "flags": [ "CantBeTaken" ],
+      "teaches": { "kind": "spell", "spell": "MF_EmberLanceSpell" }
+    },
+    {
+      "editorId": "MF_SpellTomeFirebolt",
+      "name": "Spell Tome: Firebolt (copy)",
+      "text": "<p>A reproduction of the Firebolt tome.</p>",
+      "_": "A tome teaching a VANILLA spell (Firebolt, Skyrim.esm:0x012FD0) by external ref — proves teaches.spell works for vanilla SPEL too. Clones the SpellTomeIncinerate model.",
+      "template": "Skyrim.esm:0x10F7F4",
+      "value": 90,
+      "teaches": { "kind": "spell", "spell": "Skyrim.esm:0x012FD0" }
+    },
+    {
+      "editorId": "MF_SkillBookDestruction",
+      "name": "Pyromancy for Beginners",
+      "text": "<p>A primer on the destructive arts. Reading it sharpens your Destruction.</p>",
+      "_": "A SKILL book: raises the reader's Destruction skill once on read. teaches.skill is a Skill name (inline, no FormLink). Clones a plain readable book (Book1CheapNordsArise, 0x0ED161) for its model.",
+      "template": "Skyrim.esm:0x0ED161",
+      "value": 50,
+      "teaches": { "kind": "skill", "skill": "Destruction" }
+    },
+    {
+      "editorId": "MF_PlainNote",
+      "name": "A Torn Note",
+      "text": "<p>Just a note. It teaches nothing.</p>",
+      "_": "A plain book — no `teaches`, so Book.Teaches stays BookTeachesNothing. Still needs a model template.",
+      "template": "Skyrim.esm:0x0ED161"
+    }
+  ]
+}

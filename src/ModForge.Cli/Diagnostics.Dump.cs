@@ -60,8 +60,18 @@ internal static partial class Program
                 if (!wpn.ObjectEffect.IsNull) Console.WriteLine($"      enchantment -> {Ref(wpn.ObjectEffect.FormKey)} (charge={wpn.EnchantmentAmount})");
             }
 
-            if (r is IBookGetter bk && bk.Model?.File is { } bmf)
-                Console.WriteLine($"      model={bmf}");                                       // null model => CRASH on read
+            if (r is IBookGetter bk)
+            {
+                if (bk.Model?.File is { } bmf)
+                    Console.WriteLine($"      model={bmf}");                                   // null model => CRASH on read
+                var teach = bk.Teaches switch
+                {
+                    IBookSpellGetter sp => $"spell -> {(sp.Spell.FormKey.IsNull ? "-" : Ref(sp.Spell.FormKey))}",
+                    IBookSkillGetter sk => $"skill = {sk.Skill}",
+                    _ => "nothing",
+                };
+                Console.WriteLine($"      book: teaches={teach} flags={bk.Flags}");
+            }
 
             if (r is IArmorGetter arm)
             {

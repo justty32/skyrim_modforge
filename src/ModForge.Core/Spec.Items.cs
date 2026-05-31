@@ -3,7 +3,31 @@ namespace ModForge;
 // --- Items: gear, consumables, containers, leveled lists, recipes, and the long tail ----
 
 public sealed class MiscSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public List<string> Keywords { get; set; } = new(); public string Template { get; set; } = ""; }
-public sealed class BookSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Text { get; set; } = ""; public string Template { get; set; } = ""; }
+// Book (BOOK): plain readable book, OR a *teaching* book. A spell tome (`teaches.kind="spell"`) grants
+// a Spell when first read; a skill book (`teaches.kind="skill"`) raises an ActorValue/skill on first
+// read. `value`/`weight` override the (cloned-template) stats; `flags` are Book.Flag names (e.g.
+// CantBeTaken). A takeable book STILL needs a `template` (a vanilla book to clone its model from) or
+// it CRASHES on read — clone a matching tome (e.g. Skyrim.esm:0x10F7F4 SpellTomeIncinerate's model).
+public sealed class BookSpec
+{
+    public string EditorId { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Text { get; set; } = "";
+    public string Template { get; set; } = "";
+    public uint Value { get; set; }                 // 0 = keep template's value
+    public float Weight { get; set; }                // 0 = keep template's weight
+    public List<string> Flags { get; set; } = new(); // Book.Flag names (e.g. CantBeTaken)
+    public BookTeachesSpec? Teaches { get; set; }    // null/kind="" => teaches nothing (plain book)
+}
+// What a book teaches on first read. kind="spell" => grant `spell` (an in-spec or vanilla SPEL ref);
+// kind="skill" => raise `skill` (an ActorValue name, e.g. Destruction, OneHanded, Smithing). Anything
+// else (or null) => teaches nothing.
+public sealed class BookTeachesSpec
+{
+    public string Kind { get; set; } = "";   // "spell" | "skill" | "" (nothing)
+    public string Spell { get; set; } = "";  // ref → SPEL (when kind="spell")
+    public string Skill { get; set; } = "";  // Skill name (when kind="skill"), e.g. Destruction, OneHanded, Smithing
+}
 // Weapon `enchantment` is a ref → an in-spec ENCH (enchantments[]) or a vanilla ObjectEffect
 // (e.g. Skyrim.esm:0x10FB96 EnchWeaponFrostDamageBase). `enchantmentAmount` is the weapon's CHARGE
 // POOL (how many casts before it must be recharged with a soul gem) — vanilla enchanted weapons use
