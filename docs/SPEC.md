@@ -84,7 +84,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `statics` | `editorId`, `model` (a `.nif` path — reference a vanilla mesh; a placement base, no name) |
 | `activators` | `editorId`, `name`, `model` (`.nif` path), `keywords` (array of *refs*); attach behaviour via `scripts` |
 | `recipes` | `editorId`, `createdObject` (*ref*), `count` (int), `workbench` (keyword *ref*; defaults to the forge), `components` (array of `{ item (*ref*), count (int) }`) — a crafting recipe (COBJ) |
-| `packages` | `editorId`, `template` (*ref* → a vanilla procedure template, e.g. Sandbox = `Skyrim.esm:0x01C254`, Travel = `Skyrim.esm:0x016FAA`, UseMagic = `Skyrim.esm:0x0504F5`), `flags` (array — `Package.Flag` names), `interruptFlags` (array — `HellosToPlayer`/`AllowIdleChatter`/`WorldInteractions`/…), `preferredSpeed` (`Walk`\|`Jog`\|`Run`\|`FastWalk`), `combatStyle` (*ref*, optional), `ownerQuest` (*ref*, optional), `schedule` (`{ month, dayOfWeek, date, hour, minute, durationInMinutes }`), `sandbox` / `travel` / `useMagic` (template-input subobjects — see below). An AI package; assign it to one or more NPCs via `npcs[].packages`. |
+| `packages` | `editorId`, `template` (*ref* → a vanilla procedure template, e.g. Sandbox = `Skyrim.esm:0x01C254`, Travel = `Skyrim.esm:0x016FAA`, UseMagic = `Skyrim.esm:0x0504F5`), `flags` (array — `Package.Flag` names), `interruptFlags` (array — `HellosToPlayer`/`AllowIdleChatter`/`WorldInteractions`/…), `preferredSpeed` (`Walk`\|`Jog`\|`Run`\|`FastWalk`), `combatStyle` (*ref*, optional), `ownerQuest` (*ref*, optional), `schedule` (`{ month, dayOfWeek, date, hour, minute, durationInMinutes }`), `sandbox` / `travel` / `useMagic` / `follow` / `escort` (template-input subobjects — see below), `conditions` (array of CTDA gates — see *conditions* below; the engine runs the first package whose conditions pass, so e.g. a Follow package gated on `GetInFaction CurrentFollowerFaction==1` only activates after recruitment). An AI package; assign it to one or more NPCs via `npcs[].packages`. |
 | `combatStyles` | `editorId`, `offensiveMult`/`defensiveMult`/`groupOffensiveMult` (~aggression/blocking/group-boldness), `equipMultMelee`/`equipMultMagic`/`equipMultRanged`/`equipMultShout`/`equipMultUnarmed`/`equipMultStaff` (AI weapon-preference scores; for a mage NPC, push Magic high relative to the others — vanilla `csVampireMagic` uses 8.1/2.15/0.51), `avoidThreatChance` (0..1), `flags` (array — `Dueling`\|`Flanking`\|`AllowDualWielding`). An npc's `combatStyle` ref can point at one. |
 
 A field marked *ref* takes an in-spec `editorId` **or** `"<master>:0xFORMID"` (see
@@ -198,6 +198,23 @@ to close the menu after the line (vanilla recruit/dismiss lines all do). See
 > plugin. (2) Place the speaker at a real in-room coordinate — a no-package NPC at cell
 > origin **(0,0,0)** lands off-navmesh and can't be reached. (3) Unvoiced lines flash past;
 > install **Fuz Ro D-oh** (or bundle silent `.fuz`) and enable subtitles. See `lifelike/gotchas.md`.
+
+### conditions — CTDA gates (on a `dialogue` INFO or a `package`)
+A condition is **static gate data**, so it lives in the spec (logic still belongs in Papyrus). Both
+`dialogue[].conditions` and `packages[].conditions` take the same shape:
+```jsonc
+{ "function": "GetItemCount",          // GetInFaction | GetItemCount | GetGlobalValue | GetStage | GetIsID | GetRelationshipRank
+  "comparison": ">=",                  // == != > >= < <=
+  "value": 500,
+  "param": "Skyrim.esm:0x00000F",      // the function's form arg (faction/item/global/quest/npc) as a ref
+  "runOn": "Reference",                // whose value: Subject (default) | Reference | Target | CombatTarget | ...
+  "reference": "Skyrim.esm:0x000014",  // the ref read when runOn=Reference (here, the player)
+  "or": false }                        // OR with the NEXT condition (default AND)
+```
+A `dialogue` INFO already carries an auto `GetIsID` speaker gate; these are appended. Typical follower
+uses: hide a paid recruit line unless `GetItemCount Gold >= 500` (on the player) **and**
+`GetInFaction CurrentFollowerFaction == 0`; gate a Follow package on `GetInFaction
+CurrentFollowerFaction == 1` so it only runs after recruitment. See `examples/follower_paid_spec.json`.
 
 ### scripts — Papyrus attachment
 ```jsonc
