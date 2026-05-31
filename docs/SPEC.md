@@ -61,7 +61,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `weapons` | `editorId`, `name`, `value`, `weight`, `damage` (int≥0), `speed` (number), `reach` (number), `keywords` (array of *refs*) |
 | `npcs` | `editorId`, `name`, `factions` (array of *refs*), `race` (*ref*), `class` (*ref*), `outfit` (*ref* → DefaultOutfit), `level` (int), `autoCalcStats` (bool — derive H/M/S + skills from level + class), `packages` (array of *refs* → PACK; the NPC's AI package list, evaluated in order), `voiceType` (*ref* → VTYP), `crimeFaction` (*ref* → FACT; city-citizen identity, required for cross-cell Travel), `unique` (bool — one-off actor, helps engine AI tracking), `combatStyle` (*ref* → CSTY; HOW the AI fights), `spells` (array of *refs* → SPEL; the AI's spell list), `greeting` (string — the Hello line; when this NPC has custom `dialogue`, a Hello info is auto-emitted so it's conversable. Empty ⇒ a default line) |
 | `quests` | `editorId`, `name`, `objectives` (array of `{ index (int), text }`) |
-| `dialogue` | `editorId`, `questEditorId`, `speakerNpcEditorId` (optional), `prompt`, `responses` (array of strings), `emotion` (optional — `Neutral`\|`Anger`\|`Disgust`\|`Fear`\|`Sad`\|`Happy`\|`Surprise`), `emotionValue` (0–100). Build wires the full chain (Quest→DialogView→Branch→Topic→INFO + a Hello) — see the dialogue section below |
+| `dialogue` | `editorId`, `questEditorId`, `speakerNpcEditorId` (optional), `prompt`, `responses` (array of strings), `emotion` (optional — `Neutral`\|`Anger`\|`Disgust`\|`Fear`\|`Sad`\|`Happy`\|`Surprise`), `emotionValue` (0–100). Optional **result fragment** (runs when the line is picked): `resultScript` (Scriptname, `Extends TopicInfo`, `Fragment_0`), `resultScriptSource` (`.psc`), `resultProperties` (bound props), `goodbye` (bool — close menu after). Build wires the full chain (Quest→DialogView→Branch→Topic→INFO + a Hello) — see the dialogue section below |
 | `spells` | `editorId`, `name`, `effects` (array of *effects*), `spellType`, `castType`, `targetType`, `baseCost` (int), `chargeTime` (number) |
 | `magicEffects` | `editorId`, `name`, `description`, `archetype`, `actorValue`, `magicSkill`, `resistValue`, `castType`, `targetType`, `baseCost` (number), `flags` (array), `association` (*ref*) — a custom MGEF an `effect` can point at |
 | `potions` | `editorId`, `name`, `value`, `weight`, `effects` (array of *effects*) |
@@ -181,6 +181,16 @@ actually surfaces in-game (confirmed It.23, SSE 1.6.1170):
   quest's player dialogue is never served);
 - a **Hello** info (`Misc`/`Hello`/`SNAM='HELO'`) per speaking NPC so the NPC is
   *conversable* at all — set the line with `npc.greeting`.
+
+**Result fragment (do something when the line is picked).** A dialogue choice can only
+*act* (take gold, join the follower system, set a stage) through a Papyrus fragment — JSON
+holds static data, never control flow. Set `resultScript` (the fragment's Scriptname, which
+must `Extends TopicInfo` and define `Function Fragment_0(ObjectReference akSpeakerRef)`),
+`resultScriptSource` (the `.psc`, compiled by `package`), and `resultProperties` (bind its
+`Auto` properties — same shape as a `scripts[]` entry's properties: `int`/`float`/`bool`/
+`string`/`object`). The build attaches the INFO's `OnEnd` fragment VMAD. Set `goodbye: true`
+to close the menu after the line (vanilla recruit/dismiss lines all do). See
+`examples/follower_paid_spec.json` + `MFHirePaidRecruit.psc` for a paid-follower recruit.
 
 > **Three runtime requirements (not record bugs):** (1) the dialogue only registers on a
 > **game LOAD** — test with a genuine new game, or `save`+`load` after the quest starts;
