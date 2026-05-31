@@ -3,8 +3,9 @@ internal static partial class Program
     // -------------------------------------------------------------------------------
     //  find — search a (possibly huge) plugin for records by EditorID / Name.
     //  Plus TypeLabel, the friendly-record-type helper shared with `dump`.
-    //  The per-record inspection commands live in Diagnostics.Records.cs; the full
-    //  round-trip dumper in Diagnostics.Dump.cs.
+    //  The per-record inspection commands live in Diagnostics.Records.cs; the dialogue/
+    //  faction/relationship CTDA probes in Diagnostics.Dialogue.cs; the full round-trip
+    //  dumper in Diagnostics.Dump.cs.
     // -------------------------------------------------------------------------------
     // Search a (possibly huge, e.g. Skyrim.esm) plugin for records whose EditorID or Name
     // contains <query> (case-insensitive). Reads via a lazy read-only OVERLAY so a 250 MB
