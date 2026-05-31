@@ -43,7 +43,8 @@ Everything public lives in `namespace ModForge`.
 
 `BuildOptions.SkyrimDataPath` overrides where master plugins (Skyrim.esm, for template clones /
 vanilla-cell overrides) are read from; when null it falls back to `MODFORGE_SKYRIM_DATA`, then the
-default Steam path. `spec.Esl` (default true) drives `IsSmallMaster`.
+default Steam path. `spec.Esl` (default true) drives `IsSmallMaster` (light master: ≤2048 new
+records, FormIDs 0x800–0xFFF; `PluginIo.Write` throws a clear error if exceeded).
 
 ## Worked example — generate, validate, write
 

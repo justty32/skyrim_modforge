@@ -18,7 +18,9 @@ Property names are **case-insensitive** (`editorId` == `EditorId`); examples use
   `editorId`; a dialogue names its quest by `editorId`). It is **not** a FormID:
   Mutagen assigns FormIDs and masters automatically.
 - `editorId` must be **non-empty and unique** across the whole spec (`validate` enforces).
-- `esl: true` (default) flags the plugin as a light master — keep new records **≤ 4096**.
+- `esl: true` (default) flags the plugin as a light master — new records must fit FormIDs
+  **0x800–0xFFF, i.e. ≤ 2048** total. Exceeding it is a hard error at write time (with a clear
+  message); set `esl: false` or split the content across plugins if you need more.
 
 ### References to vanilla / external forms
 Some fields are **refs**: they accept *either* an in-spec `editorId` *or* an external
@@ -38,7 +40,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 ```jsonc
 {
   "pluginName": "MyMod.esp",   // output filename / ModKey
-  "esl": true,                  // light-master flag (default true)
+  "esl": true,                  // light-master flag (default true); ≤2048 new records
 
   "miscItems": [...], "books": [...], "weapons": [...], "npcs": [...],
   "quests": [...], "dialogue": [...], "banter": [...], "spells": [...], "potions": [...],

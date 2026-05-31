@@ -99,7 +99,7 @@ NPC needs at least `race` + `class` to act like a real actor; `outfit` clothes i
   `objectEditorId` to exist. `validate` enforces all of this.
 - A `script`'s `scriptName` must equal the compiled `.pex`'s `Scriptname`, and the `.psc`
   filename must match the `Scriptname` too.
-- **ESL** (`esl: true`, default): keep new records ≤ 4096.
+- **ESL** (`esl: true`, default): ≤ 2048 new records (FormIDs 0x800–0xFFF); a clear error at write if exceeded.
 - **CJK**: only `applyloc` produces game-readable Chinese (Localized UTF-8). Plain inline
   strings turn Chinese into `?` (the engine's cp1252). Don't use `apply`/`build` for CJK text.
 - The Papyrus compiler returns exit code 0 even on failure; the tool already scrapes stdout —
