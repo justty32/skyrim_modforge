@@ -65,6 +65,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `quests` | `editorId`, `name`, `objectives` (array of `{ index (int), text }`) |
 | `dialogue` | `editorId`, `questEditorId`, `speakerNpcEditorId` (optional), `prompt`, `responses` (array of strings), `emotion` (optional — `Neutral`\|`Anger`\|`Disgust`\|`Fear`\|`Sad`\|`Happy`\|`Surprise`), `emotionValue` (0–100). Optional **result fragment** (runs when the line is picked): `resultScript` (Scriptname, `Extends TopicInfo`, `Fragment_0`), `resultScriptSource` (`.psc`), `resultProperties` (bound props), `goodbye` (bool — close menu after). Build wires the full chain (Quest→DialogView→Branch→Topic→INFO + a Hello) — see the dialogue section below |
 | `banter` | `editorId` (optional), `questEditorId`, `speakerNpcEditorId`, `responses` (array of strings — one unprompted comment), `emotion`/`emotionValue`, `conditions` (situational CTDA gates). Proactive (NPC-initiated) lines; entries sharing a (speaker, quest) merge into one ambient Misc/`IDLE` topic with Random INFOs. Needs the speaker to have idle chatter enabled (a Sandbox/follow package). See the *banter* section below |
+| `scenes` | `editorId`, `questEditorId` (host quest), `actors` (array of `{ aliasId (int), npc (*ref*), name }`), `phases` (ordered array of `{ speaker (an aliasId), lines (array of strings), emotion, emotionValue }`), `beginOnQuestStart` (bool, default true), `stopQuestOnEnd` (bool). A **SCEN** — two NPCs talking to EACH OTHER. Build emits the host quest's `UniqueActor`-bound aliases, the Scene (actors + phases + Dialog actions), and one Scene/`SCEN` topic+INFO per phase line. See the *scenes* section below |
 | `spells` | `editorId`, `name`, `effects` (array of *effects*), `spellType`, `castType`, `targetType`, `baseCost` (int), `chargeTime` (number) |
 | `magicEffects` | `editorId`, `name`, `description`, `archetype`, `actorValue`, `magicSkill`, `resistValue`, `castType`, `targetType`, `baseCost` (number), `flags` (array), `association` (*ref*) — a custom MGEF an `effect` can point at |
 | `potions` | `editorId`, `name`, `value`, `weight`, `effects` (array of *effects*) |
@@ -215,6 +216,42 @@ situational with `conditions` (e.g. `GetCurrentTime` for night, `IsInInterior`, 
 for "I'm hurt", and `GetInFaction CurrentFollowerFaction==1` for follower-only). This is the
 *unprompted* counterpart to a `dialogue` line the player asks for. NOTE: ambient/idle only — true
 combat shouts use a different subtype (Taunt/Attack), not yet supported. See `examples/follower_vanilla_spec.json`.
+
+### scenes — two NPCs talking to EACH OTHER (SCEN)
+A `scene` is a scripted conversation between NPCs (not the player) — the vanilla **Scene** record.
+A scene is **hosted by a quest**, its participants are that quest's **aliases** (not direct NPC refs),
+and it plays an ordered list of **phases**, one spoken line per phase.
+```jsonc
+{ "editorId": "MF_TavernArgument",
+  "questEditorId": "MF_SceneQuest",     // a StartGameEnabled quest in this spec (the scene runs while it does)
+  "beginOnQuestStart": true,            // play the moment the host quest starts (= on game load); default true
+  "stopQuestOnEnd": false,              // stop the host quest when the scene finishes (vanilla one-shots set true)
+  "actors": [                            // each actor = an alias INDEX + the NPC that fills it
+    { "aliasId": 0, "npc": "MF_Borin", "name": "Borin" },
+    { "aliasId": 1, "npc": "MF_Hilda", "name": "Hilda" } ],
+  "phases": [                            // played in order; `speaker` is one of the actors' aliasId
+    { "speaker": 0, "emotion": "Anger",   "lines": [ "You still owe me for the ale, Hilda." ] },
+    { "speaker": 1, "emotion": "Disgust", "lines": [ "Owe you? That swill wasn't worth a clipped septim." ] },
+    { "speaker": 0, "emotion": "Anger",   "lines": [ "Watch your tongue, or there'll be trouble." ] },
+    { "speaker": 1, "emotion": "Happy",   "lines": [ "Ha! Buy me a drink and we're even." ] } ] }
+```
+From this one entry the build emits the **whole vanilla chain** (mirrors `scenediag` on
+`dunIronbindBeemJaMourningScene`):
+- one **QuestAlias** per actor on the host quest, each `UniqueActor`-bound to the named NPC (so the
+  alias fills with that specific actor);
+- the **Scene (SCEN)**: its `SceneActors` reference the **alias indices** (not NPC FormKeys); its
+  `Phases` are the ordered beats; one **Dialog `SceneAction`** per phase ties (speaking alias, phase)
+  → the line's topic, with the *other* actor as the headtrack target so they face each other;
+- one **Scene-subtype DialogTopic** (Category=Scene, SNAM=`SCEN`) + **INFO** per phase, carrying the
+  spoken `lines` + `emotion`.
+
+> **Runtime requirements (not record bugs):** (1) the two NPCs must be **placed near each other** —
+> add a `placements[]` entry per NPC into the **same cell** (they have to be co-located to converse).
+> (2) Like all quest dialogue, a scene only loads on a **game LOAD** — test a new game, or `save`+`load`
+> after the host quest starts (the build auto-writes the `.seq` entry). (3) Unvoiced lines flash past;
+> install **Fuz Ro D-oh** and enable subtitles. **Status: structural only** — `build`/`validate`/`dump`
+> verified against the vanilla scene shape; **not yet in-game confirmed.** See `examples/scene_spec.json`
+> and `lifelike/cookbook.md`.
 
 ### conditions — CTDA gates (on a `dialogue` INFO, a `banter` INFO, or a `package`)
 A condition is **static gate data**, so it lives in the spec (logic still belongs in Papyrus). Both

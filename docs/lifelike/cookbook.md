@@ -394,3 +394,45 @@ the last two, which are yours to get right) — see [gotchas.md](gotchas.md):
 - **Placement** must be a real in-room coordinate — a no-package NPC at `(0,0,0)` lands off-navmesh and
   you can't reach it (you end up talking to a vanilla NPC).
 - **Unvoiced lines** flash past — install **Fuz Ro D-oh** (or bundle silent `.fuz`) and turn on subtitles.
+
+## "Two NPCs arguing" (SCEN multi-actor conversation — STRUCTURAL ONLY, not yet in-game confirmed)
+
+A `scene` is NPCs talking to **each other**, not the player. It's hosted by a quest whose **aliases**
+are the participants; the build emits the alias-binding, the Scene record, and a Scene/`SCEN` topic per
+spoken line. Place both NPCs **in the same cell, near each other**, so they're co-located to converse.
+
+```jsonc
+{ "quests": [ { "editorId": "MF_SceneQuest", "name": "...", "startGameEnabled": true } ],
+  "npcs": [
+    { "editorId": "MF_Borin", "name": "Borin", "greeting": "...", "race": "Skyrim.esm:0x013746",
+      "voiceType": "Skyrim.esm:0x013AE6", "unique": true },
+    { "editorId": "MF_Hilda", "name": "Hilda", "greeting": "...", "race": "Skyrim.esm:0x013746",
+      "voiceType": "Skyrim.esm:0x013AE7", "unique": true } ],
+  "scenes": [
+    { "editorId": "MF_TavernArgument", "questEditorId": "MF_SceneQuest", "beginOnQuestStart": true,
+      "actors": [ { "aliasId": 0, "npc": "MF_Borin" }, { "aliasId": 1, "npc": "MF_Hilda" } ],
+      "phases": [                                    // played in order; one line per phase
+        { "speaker": 0, "emotion": "Anger",   "lines": [ "You still owe me for the ale, Hilda." ] },
+        { "speaker": 1, "emotion": "Disgust", "lines": [ "That swill wasn't worth a clipped septim." ] },
+        { "speaker": 0, "emotion": "Anger",   "lines": [ "Watch your tongue, or there'll be trouble." ] },
+        { "speaker": 1, "emotion": "Happy",   "lines": [ "Ha! Buy me a drink and we're even." ] } ] } ],
+  "placements": [                                    // SAME cell, a few units apart
+    { "base": "MF_Borin", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 180, "z": 0 } },
+    { "base": "MF_Hilda", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 280, "z": 0 },
+      "rotation": { "x": 0, "y": 0, "z": 180 } } ] }
+```
+
+How it maps to vanilla (verified with `scenediag <Skyrim.esm> <0xFORMID>` against
+`dunIronbindBeemJaMourningScene` / `MQSkyHavenSparringScene`):
+- the host quest gets one **QuestAlias** per `actor`, `UniqueActor`-bound to that NPC — the Scene's
+  `SceneActors` reference the **alias index** (`aliasId`), never the NPC FormKey directly;
+- each `phase` → one `ScenePhase` + one **Dialog `SceneAction`** (speaking alias, phase window,
+  the other actor as headtrack target) + one **Scene/`SCEN` DialogTopic+INFO** holding the line;
+- `beginOnQuestStart` plays the scene the moment the quest starts (i.e. on game load).
+
+**Status / honesty:** `build`/`validate`/`dump` are clean and the record shape matches vanilla
+byte-for-shape, but this has **not been confirmed in-game** (I can't run Skyrim). Likely follow-ups
+before it plays reliably: the scene may need a **start trigger** beyond `beginOnQuestStart` (a quest
+stage / script `Start()` call), the actor aliases may want **fill conditions** or a `GetIsAliasRef`
+gate on each INFO, and the NPCs need to be **awake and reachable** (a Sandbox package keeps them
+active). Probe any vanilla scene with `scenediag` to compare. See `examples/scene_spec.json`.

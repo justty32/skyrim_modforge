@@ -37,6 +37,9 @@ public static partial class Generator
         private readonly Dictionary<string, DialogResponses> dialogResponsesByEd = new();
         // Proactive banter INFOs, kept so pass 2 can append their situational conditions (mirrors dialogResponsesByEd).
         private readonly List<(BanterSpec Spec, DialogResponses Info, string Label)> banterInfos = new();
+        // Scene actor aliases, kept so pass 2 can bind each to the NPC that fills it (UniqueActor link —
+        // the NPC ref may be forward or external, so it resolves only after the formKey table exists).
+        private readonly List<(string SceneEd, int AliasId, string NpcRef, QuestAlias Alias)> sceneAliasWires = new();
         private readonly Dictionary<(int Block, int Sub), CellSubBlock> interiorSubs = new();
         private readonly Dictionary<string, FormKey> formKeyByEd = new();
         private readonly Dictionary<string, IMajorRecord> recordsByEd = new();
@@ -49,6 +52,7 @@ public static partial class Generator
 
         // Stats counters (accumulated across the steps, read by ToResult).
         private int dialogueBuilt, banterBuilt;
+        private int scenesBuilt, scenePhasesBuilt;
         private int linksWired, extLinks;
         private int placed, vanillaCells;
         private int worldspaceCount, exteriorNewCells;
@@ -181,7 +185,8 @@ public static partial class Generator
                         + spec.SoulGems.Count + spec.Keys.Count + spec.Keywords.Count
                         + spec.Outfits.Count + spec.Statics.Count + spec.Activators.Count
                         + spec.MagicEffects.Count + spec.Classes.Count + spec.Packages.Count
-                        + spec.CombatStyles.Count + spec.Relationships.Count + spec.Recipes.Count;
+                        + spec.CombatStyles.Count + spec.Relationships.Count + spec.Recipes.Count
+                        + scenesBuilt;
                         // (Placements are reported separately in stats, so not folded into `total`.)
             return new BuildResult
             {
@@ -192,6 +197,8 @@ public static partial class Generator
                     Esl = spec.Esl,
                     TopLevelRecords = total,
                     DialogueTopics = dialogueBuilt,
+                    Scenes = scenesBuilt,
+                    ScenePhases = scenePhasesBuilt,
                     LinksWired = linksWired,
                     ExternalLinks = extLinks,
                     ScriptsAttached = scriptsAttached,

@@ -57,6 +57,50 @@ public sealed class BanterSpec
     public uint EmotionValue { get; set; } = 50;
     public List<ConditionSpec> Conditions { get; set; } = new();  // situational gates (beyond the auto speaker gate)
 }
+// SCENE (SCEN) — two (or more) NPCs talking to EACH OTHER, not to the player. A vanilla Scene is
+// hosted by a quest, its participants are the quest's ALIASES (not direct NPC refs), and it runs an
+// ordered list of PHASES; in each phase one actor speaks a line via a Dialog ACTION that points at a
+// Scene-subtype DialogTopic (Category=Scene, SNAM='SCEN') carrying the spoken response. ModForge emits
+// the whole chain from this one spec entry: the host quest's QuestAliases (each `UniqueActor`-bound to
+// the named NPC), the Scene's SceneActors (referencing those alias indices), one SceneePhase + one
+// Dialog SceneAction + one Scene/SCEN DialogTopic+INFO per `phases[]` line.
+//
+// Authoring: name a `questEditorId` (a StartGameEnabled quest in this spec — the scene loads/plays only
+// while its host quest runs, exactly like player dialogue), list the `actors` (each = an `aliasId` index
+// + the `npc` editorId that fills it), then the ordered `phases` (each = which actor `speaker`s, the
+// `lines` they say, and an `emotion`). The two NPCs must be PLACED near each other (a `placements[]`
+// entry per NPC into the same cell) for the conversation to actually fire in-game.
+public sealed class SceneSpec
+{
+    public string EditorId { get; set; } = "";
+    public string QuestEditorId { get; set; } = "";        // host quest (must exist in spec; StartGameEnabled so the scene runs)
+    public List<SceneActorSpec> Actors { get; set; } = new();
+    public List<ScenePhaseSpec> Phases { get; set; } = new();
+    // BeginOnQuestStart (default true): the scene auto-plays the moment its host quest starts — the
+    // simplest "two NPCs chat on game load" trigger. StopQuestOnEnd stops the host quest when the
+    // scene finishes (vanilla one-shot conversation scenes set both). Turn BeginOnQuestStart off to
+    // trigger the scene from a script/package instead.
+    public bool BeginOnQuestStart { get; set; } = true;
+    public bool StopQuestOnEnd { get; set; }
+}
+// One participant in a scene: an alias INDEX (unique within the host quest, ≥0) plus the NPC that fills
+// it. The alias is emitted on the host quest and `UniqueActor`-bound to `npc` (a ref → an in-spec NPC or
+// a vanilla `<master>:0xFORMID`); the Scene's SceneActor references this `aliasId`.
+public sealed class SceneActorSpec
+{
+    public int AliasId { get; set; }                        // alias index in the host quest (unique, ≥0)
+    public string Npc { get; set; } = "";                   // ref → the NPC that fills this alias
+    public string Name { get; set; } = "";                  // optional alias name (defaults to the npc editorId)
+}
+// One phase of a scene: actor `speaker` (an `aliasId` from `actors`) says `lines` (one or more spoken
+// strings, played in sequence) with `emotion`/`emotionValue`. Phases play in list order.
+public sealed class ScenePhaseSpec
+{
+    public int Speaker { get; set; }                        // the aliasId (from actors[]) who speaks this phase
+    public List<string> Lines { get; set; } = new();        // the spoken line(s) for this phase
+    public string Emotion { get; set; } = "Neutral";        // Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise
+    public uint EmotionValue { get; set; } = 50;            // 0..100 intensity
+}
 // A CTDA condition (a static gate) usable on a dialogue INFO or an AI package. `function` picks the
 // condition function; `param` is its form argument (a ref → faction/item/global/quest/npc); `comparison`
 // + `value` are the numeric test; `runOn`/`reference` pick WHOSE value is read (Subject = the

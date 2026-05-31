@@ -201,6 +201,22 @@ internal static partial class Program
                 Console.WriteLine($"      quest: flags={q.Flags}  priority={q.Priority}");
                 foreach (var o in q.Objectives)
                     Console.WriteLine($"      objective[{o.Index}]: \"{o.DisplayText?.String}\"");
+                // Scene actor aliases live on the host quest — surface their NPC binding (UniqueActor).
+                foreach (var al in q.Aliases.OfType<IQuestAliasGetter>())
+                    if (!al.UniqueActor.FormKey.IsNull)
+                        Console.WriteLine($"      alias[{al.ID}] \"{al.Name}\" -> uniqueActor {Ref(al.UniqueActor.FormKey)}");
+            }
+
+            if (r is ISceneGetter sc)
+            {
+                Console.WriteLine($"      scene: quest={Ref(sc.Quest.FormKey)}  flags={sc.Flags}  "
+                    + $"{sc.Actors.Count} actor(s), {sc.Phases.Count} phase(s), {sc.Actions.Count} action(s)");
+                foreach (var a in sc.Actors)
+                    Console.WriteLine($"        actor alias #{a.ID}  behavior={a.BehaviorFlags}");
+                foreach (var act in sc.Actions)
+                    Console.WriteLine($"        action: {act.Type} alias #{act.ActorID} phase {act.StartPhase}"
+                        + (act.Topic.FormKey.IsNull ? "" : $" -> topic {Ref(act.Topic.FormKey)}")
+                        + (act.Type == SceneAction.TypeEnum.Dialog ? $" ({act.Emotion})" : ""));
             }
         }
         return 0;
