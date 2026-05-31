@@ -1,0 +1,74 @@
+{
+  "pluginName": "ModForgeShout.esp",
+  "esl": true,
+
+  "magicEffects": [
+    {
+      "editorId": "MF_ShoutFrostEffect",
+      "name": "Winter's Embrace",
+      "description": "A blast of dragon frost.",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "magicSkill": "Destruction",
+      "resistValue": "ResistFrost",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
+      "baseCost": 1.5,
+      "flags": ["Hostile", "Detrimental", "NoDuration", "NoArea"],
+      "projectile": "Skyrim.esm:0x10FBEA"
+    }
+  ],
+
+  "spells": [
+    {
+      "editorId": "MF_WintersEmbrace1",
+      "name": "Winter's Embrace",
+      "spellType": "Voice",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
+      "effects": [
+        { "magicEffect": "MF_ShoutFrostEffect", "magnitude": 20, "area": 0, "duration": 0 }
+      ]
+    },
+    {
+      "editorId": "MF_WintersEmbrace2",
+      "name": "Winter's Embrace",
+      "spellType": "Voice",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
+      "effects": [
+        { "magicEffect": "MF_ShoutFrostEffect", "magnitude": 40, "area": 0, "duration": 0 }
+      ]
+    },
+    {
+      "editorId": "MF_WintersEmbrace3",
+      "name": "Winter's Embrace",
+      "spellType": "Voice",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
+      "effects": [
+        { "magicEffect": "MF_ShoutFrostEffect", "magnitude": 60, "area": 0, "duration": 0 }
+      ]
+    }
+  ],
+
+  "wordsOfPower": [
+    { "editorId": "MF_WordIss",  "translation": "Iss",  "name": "Iss" },
+    { "editorId": "MF_WordKren", "translation": "Kren", "name": "Kren" },
+    { "editorId": "MF_WordVus",  "translation": "Vus",  "name": "Vus" }
+  ],
+
+  "shouts": [
+    {
+      "editorId": "MF_WintersEmbraceShout",
+      "name": "Winter's Embrace",
+      "description": "ISS... KREN... VUS! The dragon's breath turns the air to killing frost.",
+      "menuDisplayObject": "Skyrim.esm:0x0A59AC",
+      "words": [
+        { "word": "MF_WordIss",  "spell": "MF_WintersEmbrace1", "recoveryTime": 15 },
+        { "word": "MF_WordKren", "spell": "MF_WintersEmbrace2", "recoveryTime": 20 },
+        { "word": "MF_WordVus",  "spell": "MF_WintersEmbrace3", "recoveryTime": 45 }
+      ]
+    }
+  ]
+}

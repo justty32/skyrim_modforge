@@ -46,4 +46,6 @@ public sealed class ModSpec
     public List<PackageSpec> Packages { get; set; } = new();
     public List<CombatStyleSpec> CombatStyles { get; set; } = new();
     public List<RelationshipSpec> Relationships { get; set; } = new();
+    public List<WordOfPowerSpec> WordsOfPower { get; set; } = new();
+    public List<ShoutSpec> Shouts { get; set; } = new();
 }

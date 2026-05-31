@@ -69,6 +69,18 @@ internal static partial class Program
                 foreach (var e in eff.Effects)
                     Console.WriteLine($"      effect -> {Ref(e.BaseEffect.FormKey)} (mag={e.Data?.Magnitude} area={e.Data?.Area} dur={e.Data?.Duration})");
 
+            if (r is IWordOfPowerGetter woop)
+                Console.WriteLine($"      word: translation=\"{woop.Translation?.String}\"");
+
+            if (r is IShoutGetter shout)
+            {
+                if (!shout.MenuDisplayObject.IsNull)
+                    Console.WriteLine($"      menuDisplayObject -> {Ref(shout.MenuDisplayObject.FormKey)}");
+                int wi = 0;
+                foreach (var w in shout.WordsOfPower)
+                    Console.WriteLine($"      word[{wi++}] -> {Ref(w.Word.FormKey)}  spell -> {Ref(w.Spell.FormKey)}  recovery={w.RecoveryTime}");
+            }
+
             if (r is IWorldspaceGetter wg)
             {
                 int blocks = wg.SubCells.Count;

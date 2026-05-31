@@ -61,6 +61,8 @@ public static partial class Generator
         foreach (var pk in spec.Packages) Reg(pk.EditorId, "package");
         foreach (var cs in spec.CombatStyles) Reg(cs.EditorId, "combatStyle");
         foreach (var rel in spec.Relationships) Reg(rel.EditorId, "relationship");
+        foreach (var w in spec.WordsOfPower) Reg(w.EditorId, "wordOfPower");
+        foreach (var sh in spec.Shouts) Reg(sh.EditorId, "shout");
         foreach (var pl in spec.Placements) if (!string.IsNullOrWhiteSpace(pl.EditorId)) Reg(pl.EditorId, "placement");
 
         // A ref must be an in-spec editorId OR a well-formed external "<master>:0xFORMID".
@@ -349,6 +351,28 @@ public static partial class Generator
         }
         foreach (var n in spec.Npcs)
             foreach (var pkgRef in n.Packages) CheckRef(pkgRef, $"npc '{n.EditorId}' package");
+
+        // Shouts (SHOU) + Words of Power (WOOP). A shout must have 1–3 word rows (vanilla shouts have
+        // exactly 3). Each row's word + spell refs must resolve, recovery time can't be negative, and a
+        // WOOP needs at least one of translation/name so the menu has something to show.
+        foreach (var w in spec.WordsOfPower)
+            if (string.IsNullOrWhiteSpace(w.Translation) && string.IsNullOrWhiteSpace(w.Name))
+                problems.Add($"wordOfPower '{w.EditorId}' has empty translation and name (set at least one — the in-game word text)");
+        foreach (var sh in spec.Shouts)
+        {
+            if (sh.Words.Count is < 1 or > 3)
+                problems.Add($"shout '{sh.EditorId}' has {sh.Words.Count} word row(s) — a shout needs 1–3 (vanilla shouts have exactly 3)");
+            CheckRef(sh.MenuDisplayObject, $"shout '{sh.EditorId}' menuDisplayObject");
+            for (int i = 0; i < sh.Words.Count; i++)
+            {
+                var ws = sh.Words[i];
+                if (string.IsNullOrWhiteSpace(ws.Word)) problems.Add($"shout '{sh.EditorId}' word[{i}] has empty word ref");
+                else CheckRef(ws.Word, $"shout '{sh.EditorId}' word[{i}] word");
+                if (string.IsNullOrWhiteSpace(ws.Spell)) problems.Add($"shout '{sh.EditorId}' word[{i}] has empty spell ref");
+                else CheckRef(ws.Spell, $"shout '{sh.EditorId}' word[{i}] spell");
+                if (ws.RecoveryTime < 0) problems.Add($"shout '{sh.EditorId}' word[{i}] recoveryTime {ws.RecoveryTime} is negative");
+            }
+        }
 
         return problems;
     }

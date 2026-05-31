@@ -28,6 +28,7 @@ public static partial class Generator
         ctx.BuildBanter();                          // proactive Idle banter topics (unprompted NPC lines)
         ctx.BuildScenes();                          // SCEN multi-actor conversations (quest aliases + phases + Scene topics)
         ctx.BuildMagicAndSpells();                 // MagicEffect, Spell
+        ctx.BuildShouts();                         // WordOfPower (WOOP) + Shout (SHOU) scalar records
         ctx.BuildConsumablesGearAndMessages();     // Potion, Armor, Faction, Relationship, Class, Message
         ctx.BuildLongTailItems();                  // Ingredient..Activator (scalar fields)
         ctx.BuildListsContainersStylesPackages();  // LeveledItem/Npc, Container, Recipe, CombatStyle, Package
@@ -41,6 +42,7 @@ public static partial class Generator
         ctx.WireKeywords();                        // keywords on armor/weapon/misc/...
         ctx.WireEffects();                         // magic effects on spell/potion/ingredient/scroll (+ spell equipType)
         ctx.WireMagicEffectRefs();                 // MGEF association/projectile/art/explosion
+        ctx.WireShouts();                          // SHOU MenuDisplayObject + per-row Word (WOOP) + Spell (SPEL)
         ctx.BuildPackageData();                    // PACK template dispatch (sandbox/travel/usemagic/patrol/follow/escort)
         ctx.WireNpcPackages();                     // NPC.Packages list
         ctx.WireOutfits();                         // OTFT contents
