@@ -43,6 +43,26 @@ public static partial class Generator
                 r.Priority = q.Priority;
                 foreach (var o in q.Objectives)
                     r.Objectives.Add(new QuestObjective { Index = o.Index, DisplayText = o.Text });
+                // STAGES (QSDT) + LOG ENTRIES (QLOG). Index + flags + text are pure record data; any
+                // log-entry CTDA conditions are wired in pass 2 (WireQuestStageConditions). A bare
+                // stage with no log entry is a silent milestone (valid; vanilla does this).
+                foreach (var st in q.Stages.OrderBy(s => s.Index))
+                {
+                    var stage = new QuestStage { Index = st.Index };
+                    if (!string.IsNullOrEmpty(st.LogEntry) || st.CompleteQuest || st.FailQuest)
+                    {
+                        var le = new QuestLogEntry();
+                        if (!string.IsNullOrEmpty(st.LogEntry)) le.Entry = st.LogEntry;
+                        // Flags is Nullable<QuestLogEntry.Flag> (default null); accumulate into a local
+                        // non-null value and assign once (null |= x stays null).
+                        QuestLogEntry.Flag leFlags = 0;
+                        if (st.CompleteQuest) leFlags |= QuestLogEntry.Flag.CompleteQuest;
+                        if (st.FailQuest) leFlags |= QuestLogEntry.Flag.FailQuest;
+                        if (leFlags != 0) le.Flags = leFlags;
+                        stage.LogEntries.Add(le);
+                    }
+                    r.Stages.Add(stage);
+                }
                 if (!string.IsNullOrEmpty(q.EditorId)) questsByEd[q.EditorId] = r;
             }
         }

@@ -385,6 +385,15 @@ internal static partial class Program
             if (r is IQuestGetter q)
             {
                 Console.WriteLine($"      quest: flags={q.Flags}  priority={q.Priority}");
+                foreach (var s in q.Stages)
+                {
+                    Console.WriteLine($"      stage[{s.Index}] flags={s.Flags}");
+                    foreach (var le in s.LogEntries)
+                    {
+                        var flagStr = le.Flags == default ? "" : $" [{le.Flags}]";
+                        Console.WriteLine($"        log{flagStr}: \"{le.Entry?.String}\"" + (le.Conditions.Count > 0 ? $"  ({le.Conditions.Count} cond)" : ""));
+                    }
+                }
                 foreach (var o in q.Objectives)
                     Console.WriteLine($"      objective[{o.Index}]: \"{o.DisplayText?.String}\"");
                 // Scene actor aliases live on the host quest — surface their NPC binding (UniqueActor).

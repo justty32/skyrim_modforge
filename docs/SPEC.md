@@ -68,7 +68,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `books[].teaches` | `{ "kind": "spell", "spell": <ref> }` — a **spell tome** that grants a SPEL on first read (`spell` is an in-spec spell editorId OR a vanilla `<master>:0xFORMID`); OR `{ "kind": "skill", "skill": <name> }` — a **skill book** that raises a `Skill` (e.g. `Destruction`, `OneHanded`, `Smithing`) on first read; OR omit ⇒ a plain book (teaches nothing). A teaching book must have a `template`. |
 | `weapons` | `editorId`, `name`, `value`, `weight`, `damage` (int≥0), `speed` (number), `reach` (number), `keywords` (array of *refs*), `enchantment` (*ref* → ENCH, in-spec or vanilla `<master>:0xFORMID`), `enchantmentAmount` (int — the weapon's charge pool, e.g. 1500–3000; 0 = engine auto-calc), `template` (vanilla WEAP ref — clones model/anim/equip; needed to avoid an equip CRASH), `model` (custom world-mesh `.nif` path — pair WITH `template`), `pickUpSound`/`putDownSound` (SNDR *refs*) |
 | `npcs` | `editorId`, `name`, `factions` (array of *refs*), `race` (*ref*), `class` (*ref*), `outfit` (*ref* → DefaultOutfit), `level` (int), `autoCalcStats` (bool — derive H/M/S + skills from level + class), `packages` (array of *refs* → PACK; the NPC's AI package list, evaluated in order), `voiceType` (*ref* → VTYP), `crimeFaction` (*ref* → FACT; city-citizen identity, required for cross-cell Travel), `unique` (bool — one-off actor, helps engine AI tracking), `combatStyle` (*ref* → CSTY; HOW the AI fights), `spells` (array of *refs* → SPEL; the AI's spell list), `perks` (array of *refs* → PERK; granted to the actor as passive ability/entry-point perks at game start), `greeting` (string — the Hello line; when this NPC has custom `dialogue`, a Hello info is auto-emitted so it's conversable. Empty ⇒ a default line) |
-| `quests` | `editorId`, `name`, `objectives` (array of `{ index (int), text }`) |
+| `quests` | `editorId`, `name`, `startGameEnabled` (bool, default true), `priority` (0–255), `objectives` (array of `{ index (int), text, showStage?, completeStage? }`), `stages` (array of `{ index (int), logEntry?, completeQuest?, failQuest?, conditions? }`) — see *Quest stages* below |
 | `dialogue` | `editorId`, `questEditorId`, `speakerNpcEditorId` (optional), `prompt`, `responses` (array of strings), `emotion` (optional — `Neutral`\|`Anger`\|`Disgust`\|`Fear`\|`Sad`\|`Happy`\|`Surprise`), `emotionValue` (0–100). Optional **result fragment** (runs when the line is picked): `resultScript` (Scriptname, `Extends TopicInfo`, `Fragment_0`), `resultScriptSource` (`.psc`), `resultProperties` (bound props), `goodbye` (bool — close menu after). Build wires the full chain (Quest→DialogView→Branch→Topic→INFO + a Hello) — see the dialogue section below |
 | `banter` | `editorId` (optional), `questEditorId`, `speakerNpcEditorId`, `responses` (array of strings — one unprompted comment), `emotion`/`emotionValue`, `conditions` (situational CTDA gates). Proactive (NPC-initiated) lines; entries sharing a (speaker, quest) merge into one ambient Misc/`IDLE` topic with Random INFOs. Needs the speaker to have idle chatter enabled (a Sandbox/follow package). See the *banter* section below |
 | `scenes` | `editorId`, `questEditorId` (host quest), `actors` (array of `{ aliasId (int), npc (*ref*), name }`), `phases` (ordered array of `{ speaker (an aliasId), lines (array of strings), emotion, emotionValue }`), `beginOnQuestStart` (bool, default true), `stopQuestOnEnd` (bool). A **SCEN** — two NPCs talking to EACH OTHER. Build emits the host quest's `UniqueActor`-bound aliases, the Scene (actors + phases + Dialog actions), and one Scene/`SCEN` topic+INFO per phase line. See the *scenes* section below |
@@ -321,6 +321,51 @@ A `dialogue` INFO already carries an auto `GetIsID` speaker gate; these are appe
 uses: hide a paid recruit line unless `GetItemCount Gold >= 500` (on the player) **and**
 `GetInFaction CurrentFollowerFaction == 0`; gate a Follow package on `GetInFaction
 CurrentFollowerFaction == 1` so it only runs after recruitment. See `examples/follower_paid_spec.json`.
+
+### Quest stages, log entries & objective wiring
+A quest's `stages[]` are integer milestones the quest can be **set to** (10, 20, 30…). Each stage
+optionally writes a **journal log entry** and can carry a quest-state flag. Objectives display and
+complete as stages are set; a `dialogue` line can advance a stage when picked.
+
+```jsonc
+"quests": [{
+  "editorId": "MF_ErrandQuest", "name": "A Forged Errand",
+  "startGameEnabled": true, "priority": 60,
+  "stages": [
+    { "index": 10, "logEntry": "Joren asked me to retrieve his lost hammer." },
+    { "index": 20, "logEntry": "I agreed to help. Time to search the riverbank.",
+      "conditions": [ { "function": "GetStage", "comparison": "GreaterThanOrEqualTo",
+                        "value": 10, "param": "MF_ErrandQuest" } ] },   // optional CTDA gate on the log entry
+    { "index": 30, "logEntry": "I returned the hammer. Done.", "completeQuest": true }   // closes the quest
+  ],
+  "objectives": [
+    { "index": 10, "text": "Agree to help Joren", "showStage": 10, "completeStage": 20 },
+    { "index": 20, "text": "Find Joren's hammer",  "showStage": 20, "completeStage": 30 }
+  ]
+}]
+```
+- **`stages[]`** — `index` (unique, **ascending**), `logEntry` (journal text; omit for a silent
+  milestone), `completeQuest` / `failQuest` (set the QuestLogEntry flag that closes / fails the quest
+  when this stage is reached — at most one), `conditions` (optional CTDA gate on the log entry, built
+  with the shared **ConditionSpec**: `function` (a `GetStage`/`GetIsID`/… name), `comparison`
+  (`==`/`>=`/… or `EqualTo`/`GreaterThanOrEqualTo`/…, default `>=`), `value`, `param` (ref → the
+  function's form parameter, e.g. the quest for `GetStage`)).
+- **`objectives[].showStage` / `.completeStage`** — link an objective to stages: it's
+  `SetObjectiveDisplayed` at `showStage` and `SetObjectiveCompleted` at `completeStage`. `-1` (the
+  default) means "not stage-linked".
+- **`dialogue[].setStage`** — picking that topic advances the host quest to this stage.
+
+**What's record-only vs. what needs Papyrus (be honest):** stages, log entries, the
+`completeQuest`/`failQuest` flags and log-entry conditions are **pure record data** — they build,
+`dump`/`questdiag` cleanly, and the engine reads them directly. But *displaying* an objective on
+stage-set and *advancing* a stage from a dialogue line are done in Skyrim via **Papyrus fragments**.
+ModForge attaches the quest fragment script (`<quest>_Stages`) to the QUST and, on `package`,
+emits **ready-to-compile fragment sources** under `Scripts/Source/` (`<quest>_Stages.psc` with
+`ApplyStage_N()` helpers; `TIF_<dialogue>.psc` with `GetOwningQuest().SetStage(N)`). These must be
+**compiled and bound in the Creation Kit** — the one step that can't run headless on Linux — so the
+objective-display / stage-advance behaviour is **structurally wired but in-game-unconfirmed**.
+Inspect any quest with `questdiag <plugin> <0xFORMID>`. Dialogue still only registers on a game
+**LOAD** (see the gotcha above). Worked example: `examples/quest_stages_spec.json`.
 
 ### scripts — Papyrus attachment
 ```jsonc

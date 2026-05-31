@@ -672,6 +672,42 @@ Two perk shapes, both attachable to an NPC via `npcs[].perks` (the actor gains t
   numbers in-game needs a real Skyrim launch to confirm (structural-only here). Full example:
   [`../../examples/perk_spec.json`](../../examples/perk_spec.json).
 
+## "Multi-stage quest" (stages + journal log + objectives + dialogue-set-stage)
+
+A quest that **progresses**: it advances through stages, writes journal text at each, shows/completes
+objectives per stage, and closes itself. Pure record data (stages, log entries, `completeQuest`,
+log-entry conditions) builds and `questdiag`s cleanly; the objective-display and dialogue-set-stage
+*logic* is emitted as Papyrus fragment scaffolds for the CK (see the note at the end).
+
+```jsonc
+{ "quests": [ {
+    "editorId": "MF_ErrandQuest", "name": "A Forged Errand",
+    "startGameEnabled": true, "priority": 60,
+    "stages": [
+      { "index": 10, "logEntry": "Joren asked me to retrieve his lost hammer." },
+      { "index": 20, "logEntry": "I agreed to help. Time to search the riverbank." },
+      { "index": 30, "logEntry": "I returned the hammer. Done.", "completeQuest": true } ],
+    "objectives": [
+      { "index": 10, "text": "Agree to help Joren", "showStage": 10, "completeStage": 20 },
+      { "index": 20, "text": "Find Joren's hammer",  "showStage": 20, "completeStage": 30 } ] } ],
+  "dialogue": [
+    { "editorId": "MF_AgreeToHelp", "questEditorId": "MF_ErrandQuest", "speakerNpcEditorId": "MF_Joren",
+      "prompt": "I'll find your hammer.", "responses": [ "Good. It's by the mill." ],
+      "setStage": 20 } ] }                                 // picking this advances the quest 10 → 20
+```
+
+Verify the records with `questdiag <plugin.esp> <questFormId>` (stages, log entries, `CompleteQuest`
+flags, objectives). The full worked spec — with the NPC, Hello, and placement — is
+[`examples/quest_stages_spec.json`](../../examples/quest_stages_spec.json).
+
+**The Papyrus step (can't run headless):** `package` writes `Scripts/Source/MF_ErrandQuest_Stages.psc`
+(with `ApplyStage_10/20/30()` calling `SetObjectiveDisplayed/Completed`) and
+`Scripts/Source/TIF_MF_AgreeToHelp.psc` (`GetOwningQuest().SetStage(20)`). Compile these in the
+Creation Kit and bind each `ApplyStage_N` to its QUST stage fragment / the dialogue INFO result
+script — then objectives display on stage-set and the line advances the quest. Until that CK pass,
+the stage/journal data is real but objective-display + dialogue-advance are **structural only**
+(in-game-unconfirmed). Dialogue also only registers on a game **LOAD** — see [gotchas.md](gotchas.md).
+
 ## "Custom sky" (WTHR + CLMT — atmosphere, not yet assigned)
 
 An eerie green-tinted fog weather plus a climate that cycles it. Full worked spec:

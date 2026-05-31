@@ -38,6 +38,7 @@ Everything public lives in `namespace ModForge`.
 | `Translator.ApplyLocalized(ISkyrimMod, entries, outDir)` | → `(int Applied, int Renamed, string EspPath)`; writes a Localized UTF-8 `_chinese.STRINGS` set. |
 | `Demo.CreateDemoPlugin(ModKey)` | → `ISkyrimMod` (toolchain sanity check). |
 | `Papyrus.Compile(scriptPath, outDir, PapyrusOptions?)` | → `CompileResult { bool Success; int ExitCode; string? PexPath; string Message }` (never throws on a compile error). |
+| `Generator.GenerateQuestFragmentSource(QuestSpec)` / `GenerateDialogueFragmentSource(DialogueSpec)` | → `string` Papyrus source for stage→objective wiring / dialogue-set-stage (empty when not needed). Pure; the `package` command writes these under `Scripts/Source/` for CK compilation. `QuestFragmentScriptName` / `DialogueFragmentScriptName` give the attached script name. |
 | `PluginIo.Load(path)` / `PluginIo.Write(mod, path)` | load a plugin / write one (`Write` uses `ModKeyOption.NoCheck`). |
 | `ModSpec` + every `*Spec` + `StringEntry` | public data model (mutable; `List<>` collection-initializer friendly). |
 

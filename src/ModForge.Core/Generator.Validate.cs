@@ -250,9 +250,56 @@ public static partial class Generator
             foreach (var sk in cl.SkillWeights.Keys) CheckEnum<Skill>(sk, $"class '{cl.EditorId}' skillWeight key");
         }
 
+        // Quests: stage indices unique + ascending; objective↔stage refs exist; log-entry conditions valid.
+        var stageIndexByQuest = new Dictionary<string, HashSet<int>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var q in spec.Quests)
+        {
+            var seen = new HashSet<int>();
+            int prev = -1;
+            foreach (var st in q.Stages)
+            {
+                if (!seen.Add(st.Index))
+                    problems.Add($"quest '{q.EditorId}' has duplicate stage index {st.Index}");
+                if (st.Index <= prev)
+                    problems.Add($"quest '{q.EditorId}' stage index {st.Index} is not ascending (must list stages in increasing order)");
+                prev = st.Index;
+                if (st.CompleteQuest && st.FailQuest)
+                    problems.Add($"quest '{q.EditorId}' stage {st.Index} sets both completeQuest and failQuest");
+                foreach (var cs in st.Conditions)
+                {
+                    if (string.IsNullOrWhiteSpace(cs.Function))
+                        problems.Add($"quest '{q.EditorId}' stage {st.Index} condition has empty function");
+                    else if (!Enum.TryParse<Condition.Function>(cs.Function, true, out _))
+                        problems.Add($"quest '{q.EditorId}' stage {st.Index} condition invalid function '{cs.Function}'");
+                    if (!string.IsNullOrWhiteSpace(cs.Comparison)
+                        && cs.Comparison is not ("==" or "=" or "!=" or ">" or ">=" or "<" or "<=")
+                        && !Enum.TryParse<CompareOperator>(cs.Comparison, true, out _))
+                        problems.Add($"quest '{q.EditorId}' stage {st.Index} condition invalid comparison '{cs.Comparison}'");
+                    CheckRef(cs.Param, $"quest '{q.EditorId}' stage {st.Index} condition param");
+                }
+            }
+            stageIndexByQuest[q.EditorId] = seen;
+            var objIdx = new HashSet<int>();
+            foreach (var o in q.Objectives)
+            {
+                if (!objIdx.Add(o.Index))
+                    problems.Add($"quest '{q.EditorId}' has duplicate objective index {o.Index}");
+                if (o.ShowStage >= 0 && !seen.Contains(o.ShowStage))
+                    problems.Add($"quest '{q.EditorId}' objective {o.Index} showStage {o.ShowStage} has no matching stage");
+                if (o.CompleteStage >= 0 && !seen.Contains(o.CompleteStage))
+                    problems.Add($"quest '{q.EditorId}' objective {o.Index} completeStage {o.CompleteStage} has no matching stage");
+            }
+        }
+
         foreach (var d in spec.Dialogue)
         {
             if (!questIds.Contains(d.QuestEditorId)) problems.Add($"dialogue '{d.EditorId}' references unknown quest '{d.QuestEditorId}'");
+            // dialogue setStage must name a real stage of its host quest.
+            if (d.SetStage >= 0)
+            {
+                if (!stageIndexByQuest.TryGetValue(d.QuestEditorId, out var stages) || !stages.Contains(d.SetStage))
+                    problems.Add($"dialogue '{d.EditorId}' setStage {d.SetStage} has no matching stage in quest '{d.QuestEditorId}'");
+            }
             if (!string.IsNullOrEmpty(d.SpeakerNpcEditorId) && !npcIds.Contains(d.SpeakerNpcEditorId))
                 problems.Add($"dialogue '{d.EditorId}' references unknown speaker npc '{d.SpeakerNpcEditorId}'");
             if (string.IsNullOrEmpty(d.Prompt)) problems.Add($"dialogue '{d.EditorId}' has empty prompt");

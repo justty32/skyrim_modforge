@@ -36,6 +36,7 @@ internal static partial class Program
                 case "npcdiag" when args.Length == 3: return NpcDiag(args[1], args[2]);
                 case "cstydiag" when args.Length == 3: return CstyDiag(args[1], args[2]);
                 case "perkdiag" when args.Length == 3: return PerkDiag(args[1], args[2]);
+                case "questdiag" when args.Length == 3: return QuestDiag(args[1], args[2]);
                 case "txstdiag" when args.Length is 2 or 3: return TxstDiag(args[1], args.Length == 3 ? args[2] : null);
                 case "cobjdiag" when args.Length == 3: return CobjDiag(args[1], args[2]);
                 case "weatherdiag" when args.Length == 3: return WeatherDiag(args[1], args[2]);
@@ -79,6 +80,7 @@ internal static partial class Program
         "  npcdiag <in.esp> <0xFORMID>                  print an Npc's race/class/voice/factions/packages/flags (for cross-cell diff vs vanilla)\n" +
         "  cstydiag <in.esp> <0xFORMID>                 print a CombatStyle's offensive/defensive mults + equipment preferences + flags\n" +
         "  perkdiag <in.esp> <0xFORMID|entrypoints>     print a Perk's flags/effects/conditions, or list every EntryType name\n" +
+        "  questdiag <in.esp> <0xFORMID>                print a Quest's stages (log entries + flags) + objectives (display text + targets)\n" +
         "  cobjdiag <in.esp> <0xFORMID>                 print a recipe's (COBJ) createdObject/count/workbench/components/conditions\n" +
         "  txstdiag <in.esp> [0xFORMID]                 a TextureSet's 8 texture-map slots+flags (no id: list all TXST)\n" +
         "  weatherdiag <in.esp> <0xFORMID>              print a Weather's flags/colours/clouds/fog (compare gen vs vanilla)\n" +
@@ -217,6 +219,31 @@ internal static partial class Program
         // Dialogue result-script fragments (the INFO OnEnd TIF) are compiled the same way.
         foreach (var d in spec.Dialogue) CompileSource(d.ResultScriptSource, d.ResultScriptSource);
 
+        // 2b) emit GENERATED quest/dialogue fragment Papyrus SOURCES (stage→objective wiring +
+        //     dialogue-set-stage). These are scaffolds the author compiles + binds in the CK (the one
+        //     step we can't run headless on Linux); see docs/SPEC.md "Multi-stage quest".
+        int generated = 0;
+        foreach (var q in spec.Quests)
+        {
+            var src = Generator.GenerateQuestFragmentSource(q);
+            if (string.IsNullOrEmpty(src)) continue;
+            Directory.CreateDirectory(sourceDir);
+            var path = Path.Combine(sourceDir, Generator.QuestFragmentScriptName(q) + ".psc");
+            File.WriteAllText(path, src);
+            Console.WriteLine($"  generated quest fragment scaffold -> {path}");
+            generated++;
+        }
+        foreach (var d in spec.Dialogue)
+        {
+            var src = Generator.GenerateDialogueFragmentSource(d);
+            if (string.IsNullOrEmpty(src)) continue;
+            Directory.CreateDirectory(sourceDir);
+            var path = Path.Combine(sourceDir, Generator.DialogueFragmentScriptName(d) + ".psc");
+            File.WriteAllText(path, src);
+            Console.WriteLine($"  generated dialogue fragment scaffold -> {path}");
+            generated++;
+        }
+
         // 3) external-resource bundling — copy the spec's (or --assets) Meshes/Textures/Sounds/…
         //    sub-trees next to the .esp so the packaged mod is self-contained / MO2-ready.
         var assetsSrc = !string.IsNullOrWhiteSpace(assetsOverride) ? assetsOverride
@@ -232,7 +259,8 @@ internal static partial class Program
                     $"from {assetsSrc} -> [{string.Join(", ", br.CopiedFolders)}]");
         }
 
-        Console.WriteLine($"packaged -> {outModDir}  ({pluginName} + {compiled} compiled script(s) under Scripts/)");
+        Console.WriteLine($"packaged -> {outModDir}  ({pluginName} + {compiled} compiled script(s)"
+            + (generated > 0 ? $" + {generated} generated fragment scaffold(s)" : "") + " under Scripts/)");
         return 0;
     }
 

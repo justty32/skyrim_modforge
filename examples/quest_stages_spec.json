@@ -1,0 +1,76 @@
+{
+  "pluginName": "ModForgeQuestStages.esp",
+  "esl": true,
+  "_": "Multi-stage quest demo. The quest 'A Forged Errand' has 3 stages (10 start, 20 mid, 30 complete) each writing a JOURNAL log entry; stage 30 carries completeQuest so the quest closes. Two objectives display/complete as the stages set: obj 10 shows at stage 10 and completes at stage 20; obj 20 shows at stage 20 and completes at stage 30. A dialogue line on Joren advances the quest from stage 10 to stage 20 (setStage). NOTE: stages + log entries + the completeQuest flag are pure RECORD data and are written/dumpable here; making objectives DISPLAY on stage-set and the dialogue line SET the stage needs the generated Papyrus fragment scaffolds (emitted by `package` under Scripts/Source) compiled + bound in the Creation Kit. Dialogue, as always, only registers on a game LOAD (or save+reload on an existing save; build auto-considerations apply).",
+
+  "classes": [
+    { "editorId": "MF_QErrandClass", "name": "ModForge Errand Giver",
+      "healthWeight": 50, "magickaWeight": 25, "staminaWeight": 25,
+      "skillWeights": { "Speech": 100 } }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_Joren",
+      "name": "Joren the Forged",
+      "greeting": "You there. I have an errand, if you're willing.",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_QErrandClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [ "Skyrim.esm:0x0267EA" ],
+      "unique": true,
+      "level": 5,
+      "autoCalcStats": true,
+      "aggression": "Unaggressive",
+      "confidence": "Average",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50
+    }
+  ],
+
+  "quests": [
+    {
+      "editorId": "MF_ErrandQuest",
+      "name": "A Forged Errand",
+      "startGameEnabled": true,
+      "priority": 60,
+      "stages": [
+        { "index": 10, "logEntry": "Joren has asked me to retrieve his lost hammer from the river." },
+        { "index": 20, "logEntry": "I told Joren I would help. Time to search the riverbank." },
+        { "index": 30, "logEntry": "I returned the hammer to Joren. The errand is done.", "completeQuest": true }
+      ],
+      "objectives": [
+        { "index": 10, "text": "Agree to help Joren", "showStage": 10, "completeStage": 20 },
+        { "index": 20, "text": "Find Joren's hammer", "showStage": 20, "completeStage": 30 }
+      ]
+    }
+  ],
+
+  "dialogue": [
+    {
+      "_": "Picking this line advances the quest to stage 20 (setStage). The build wires the INFO + emits MF_TIF_MF_AgreeToHelp.psc (GetOwningQuest().SetStage(20)) on `package` for CK binding.",
+      "editorId": "MF_AgreeToHelp",
+      "questEditorId": "MF_ErrandQuest",
+      "speakerNpcEditorId": "MF_Joren",
+      "prompt": "I'll find your hammer.",
+      "responses": [
+        "Good. Last I saw it, it slipped into the shallows by the mill.",
+        "Bring it back and I'll see you rewarded."
+      ],
+      "emotion": "Happy",
+      "emotionValue": 60,
+      "setStage": 20
+    }
+  ],
+
+  "placements": [
+    {
+      "_": "Joren in the Sleeping Giant Inn common room (in-room coord, on navmesh).",
+      "base": "MF_Joren",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": -350, "y": 180, "z": 0 }
+    }
+  ]
+}

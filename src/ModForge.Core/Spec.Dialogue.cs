@@ -7,12 +7,42 @@ public sealed class QuestSpec
     public string EditorId { get; set; } = "";
     public string Name { get; set; } = "";
     public List<ObjectiveSpec> Objectives { get; set; } = new();
+    // Quest STAGES (QSDT). A stage is an integer milestone (10/20/30…) the quest can be SET to. Each
+    // stage optionally writes a journal LOG ENTRY (QLOG text) and can carry a CompleteQuest/FailQuest
+    // flag (closes/fails the quest when reached). Objectives display/complete as a stage is set —
+    // wire that with the objective's `showStage`/`completeStage`. Setting a stage at runtime is done
+    // by a generated quest fragment script (see `package`); a dialogue line can set one via
+    // `dialogue[].setStage`. Stage indices must be unique and ascending.
+    public List<StageSpec> Stages { get; set; } = new();
     // StartGameEnabled (default true): the quest auto-starts on game load, which is REQUIRED for any
     // dialogue it hosts to be loaded/evaluated. A quest that never runs = its dialogue never surfaces.
     public bool StartGameEnabled { get; set; } = true;
     public byte Priority { get; set; } = 50;   // higher wins when multiple quests offer dialogue to the same NPC
 }
-public sealed class ObjectiveSpec { public ushort Index { get; set; } public string Text { get; set; } = ""; }
+// One quest stage (QSDT). `index` is the stage number (set with SetStage). `logEntry` (optional) is
+// the journal text shown when the quest reaches this stage (a QuestLogEntry / QLOG). `completeQuest`
+// (QuestLogEntry.Flag.CompleteQuest) closes the quest when this stage is reached; `failQuest` fails
+// it. `conditions` (optional) gate WHICH log entry of the stage applies (CTDA on the QLOG) — the
+// SHARED ConditionSpec / BuildCondition (e.g. function GetStage, param the quest ref).
+public sealed class StageSpec
+{
+    public ushort Index { get; set; }
+    public string LogEntry { get; set; } = "";
+    public bool CompleteQuest { get; set; }
+    public bool FailQuest { get; set; }
+    public List<ConditionSpec> Conditions { get; set; } = new();
+}
+// One quest objective (QOBJ). `index` is the objective number; `text` is the journal display text.
+// `showStage`/`completeStage` (optional) link the objective to stages: the generated quest fragment
+// SetObjectiveDisplayed at `showStage` and SetObjectiveCompleted at `completeStage`. -1 (the default)
+// means "not stage-linked" — leave both unset for a static objective the quest script drives itself.
+public sealed class ObjectiveSpec
+{
+    public ushort Index { get; set; }
+    public string Text { get; set; } = "";
+    public int ShowStage { get; set; } = -1;       // stage index that displays this objective (-1 = none)
+    public int CompleteStage { get; set; } = -1;   // stage index that completes this objective (-1 = none)
+}
 // A dialogue topic: shown under QuestEditorId's branch; targets SpeakerNpcEditorId (GetIsID).
 public sealed class DialogueSpec
 {
@@ -36,6 +66,11 @@ public sealed class DialogueSpec
     // Extra CTDA gates on the INFO (beyond the auto GetIsID speaker gate). e.g. only show a paid
     // recruit line when the player can afford it and isn't already following.
     public List<ConditionSpec> Conditions { get; set; } = new();
+    // SetStage (optional, -1 = none): when the player picks this topic, advance the host quest to this
+    // stage. In Skyrim a dialogue line sets a stage via an INFO RESULT FRAGMENT (a Papyrus snippet
+    // `GetOwningQuest().SetStage(N)`). `package` emits a ready-to-compile TIF fragment scaffold; it
+    // must be CK-compiled + bound to the INFO (structural only).
+    public int SetStage { get; set; } = -1;
 }
 // PROACTIVE banter — a line the NPC says UNPROMPTED (no player menu), the vanilla follower-comment
 // pattern (see Skyrim.esm `HirelingIdles` 0x055DEB). All banter entries that share a (speaker, quest)

@@ -332,6 +332,8 @@
       "properties": {
         "editorId": { "type": "string", "minLength": 1 },
         "name": { "type": "string" },
+        "startGameEnabled": { "type": "boolean", "description": "auto-start on load (default true; required for hosted dialogue)" },
+        "priority": { "type": "integer", "minimum": 0, "maximum": 255 },
         "objectives": {
           "type": "array",
           "items": {
@@ -339,7 +341,24 @@
             "required": ["index"],
             "properties": {
               "index": { "type": "integer", "minimum": 0 },
-              "text": { "type": "string" }
+              "text": { "type": "string" },
+              "showStage": { "type": "integer", "description": "stage index that displays this objective (-1 = none)" },
+              "completeStage": { "type": "integer", "description": "stage index that completes this objective (-1 = none)" }
+            }
+          }
+        },
+        "stages": {
+          "type": "array",
+          "description": "quest milestones; index unique + ascending. See SPEC.md 'quest stages'.",
+          "items": {
+            "type": "object",
+            "required": ["index"],
+            "properties": {
+              "index": { "type": "integer", "minimum": 0 },
+              "logEntry": { "type": "string", "description": "journal text shown when the quest reaches this stage" },
+              "completeQuest": { "type": "boolean", "description": "close the quest at this stage" },
+              "failQuest": { "type": "boolean", "description": "fail the quest at this stage" },
+              "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "description": "optional CTDA gate on the log entry (e.g. function GetStage, param the quest ref)" }
             }
           }
         }
@@ -355,7 +374,8 @@
         "prompt": { "type": "string", "minLength": 1, "description": "the player's topic line" },
         "responses": { "type": "array", "items": { "type": "string" }, "description": "the NPC's spoken lines" },
         "emotion": { "enum": ["Neutral", "Anger", "Disgust", "Fear", "Sad", "Happy", "Surprise"], "description": "applied to all response lines (default Neutral)" },
-        "emotionValue": { "type": "integer", "minimum": 0, "maximum": 100, "description": "emotion intensity (default 50)" }
+        "emotionValue": { "type": "integer", "minimum": 0, "maximum": 100, "description": "emotion intensity (default 50)" },
+        "setStage": { "type": "integer", "description": "advance the host quest to this stage when the line is picked (-1 = none); needs the generated TIF fragment compiled in CK" }
       }
     },
     "script": {

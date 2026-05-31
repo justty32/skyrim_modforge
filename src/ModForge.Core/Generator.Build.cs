@@ -67,6 +67,7 @@ public static partial class Generator
         ctx.AttachScripts();                       // VMAD Papyrus script attachment
         ctx.AttachDialogueResultScripts();         // INFO OnEnd result fragments (dialogue-pick scripts)
         ctx.WireDialogueConditions();              // extra CTDA gates on dialogue INFOs
+        ctx.WireQuestStages();                     // QSDT log-entry CTDA + stage→objective fragment VMAD
         ctx.WireBanterConditions();                // situational CTDA gates on banter INFOs
         ctx.WirePackageConditions();               // CTDA gates on AI packages (runtime behaviour switch)
         ctx.BuildWorldspacesAndRegions();          // WRLD + REGN (new exterior worlds + weather/area regions)
