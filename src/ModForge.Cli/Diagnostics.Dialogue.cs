@@ -95,7 +95,7 @@ internal static partial class Program
         foreach (var t in byQuest)
         {
             var prompt = Text(() => t.Name?.String);
-            Console.WriteLine($"TOPIC 0x{t.FormKey.ID:X6}  {t.EditorID ?? "-"}  cat={t.Category} sub={t.Subtype}"
+            Console.WriteLine($"TOPIC 0x{t.FormKey.ID:X6}  {t.EditorID ?? "-"}  cat={t.Category} sub={t.Subtype} SNAM={t.SubtypeName}"
                 + $"  prio={t.Priority}  quest={t.Quest.FormKey}  branch={(t.Branch.FormKey.IsNull ? "-" : t.Branch.FormKey.ToString())}"
                 + (prompt is { } pr ? $"  prompt=\"{pr}\"" : ""));
             int ii = 0;

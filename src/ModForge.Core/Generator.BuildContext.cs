@@ -35,6 +35,8 @@ public static partial class Generator
         // Built INFOs by dialogue editorId, so a pass-2 step can attach result-script fragments
         // (which need ref resolution from the formKey table that only exists in pass 2).
         private readonly Dictionary<string, DialogResponses> dialogResponsesByEd = new();
+        // Proactive banter INFOs, kept so pass 2 can append their situational conditions (mirrors dialogResponsesByEd).
+        private readonly List<(BanterSpec Spec, DialogResponses Info, string Label)> banterInfos = new();
         private readonly Dictionary<(int Block, int Sub), CellSubBlock> interiorSubs = new();
         private readonly Dictionary<string, FormKey> formKeyByEd = new();
         private readonly Dictionary<string, IMajorRecord> recordsByEd = new();
@@ -46,7 +48,7 @@ public static partial class Generator
         private readonly Dictionary<string, IPlaced> placementsByEd = new();
 
         // Stats counters (accumulated across the steps, read by ToResult).
-        private int dialogueBuilt;
+        private int dialogueBuilt, banterBuilt;
         private int linksWired, extLinks;
         private int placed, vanillaCells;
         private int worldspaceCount, exteriorNewCells;
@@ -171,7 +173,7 @@ public static partial class Generator
         private BuildResult ToResult()
         {
             int total = spec.MiscItems.Count + spec.Books.Count + spec.Weapons.Count + spec.Npcs.Count
-                        + spec.Quests.Count + dialogueBuilt
+                        + spec.Quests.Count + dialogueBuilt + banterBuilt
                         + spec.Spells.Count + spec.Potions.Count + spec.Armors.Count
                         + spec.Factions.Count + spec.Messages.Count + spec.Cells.Count
                         + spec.LeveledItems.Count + spec.LeveledNpcs.Count + spec.Containers.Count

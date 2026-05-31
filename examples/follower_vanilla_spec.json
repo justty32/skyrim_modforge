@@ -162,6 +162,53 @@
     }
   ],
 
+  "_banter": "PROACTIVE banter (It.34) — lines she says UNPROMPTED. All four collapse into one ambient topic (Misc/SNAM='IDLE', no branch) with Random-flagged INFOs; the engine plays a matching one on its own while she has idle chatter (her Sandbox package + the vanilla follow package both allow it). Each is follower-only (CurrentFollowerFaction==1) plus a situational gate, so she only comments while travelling with you and only in the right context. This is the unprompted counterpart to the player-asked situational topics above.",
+  "banter": [
+    {
+      "editorId": "MF_BanterHurt",
+      "questEditorId": "MF_VanillaQuest",
+      "speakerNpcEditorId": "MF_VanillaFollowerNpc",
+      "responses": [ "I'm bleeding... give me a breath before the next one." ],
+      "emotion": "Sad",
+      "conditions": [
+        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" },
+        { "function": "GetActorValuePercent", "comparison": "<", "value": 0.4, "actorValue": "Health", "runOn": "Subject" }
+      ]
+    },
+    {
+      "editorId": "MF_BanterNight",
+      "questEditorId": "MF_VanillaQuest",
+      "speakerNpcEditorId": "MF_VanillaFollowerNpc",
+      "responses": [ "Quiet, this hour. I almost miss the din of a good fight." ],
+      "emotion": "Neutral",
+      "conditions": [
+        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" },
+        { "function": "GetCurrentTime", "comparison": ">=", "value": 22 }
+      ]
+    },
+    {
+      "editorId": "MF_BanterIndoor",
+      "questEditorId": "MF_VanillaQuest",
+      "speakerNpcEditorId": "MF_VanillaFollowerNpc",
+      "responses": [ "Stone walls and smoke. Feels like Markarth in here." ],
+      "emotion": "Neutral",
+      "conditions": [
+        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" },
+        { "function": "IsInInterior", "comparison": "==", "value": 1 }
+      ]
+    },
+    {
+      "editorId": "MF_BanterIdle",
+      "questEditorId": "MF_VanillaQuest",
+      "speakerNpcEditorId": "MF_VanillaFollowerNpc",
+      "responses": [ "Lead on. This blade gets restless." ],
+      "emotion": "Happy",
+      "conditions": [
+        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" }
+      ]
+    }
+  ],
+
   "placements": [
     {
       "_": "Sigrid in the Sleeping Giant Inn common room (any in-room coord; actors snap to navmesh).",

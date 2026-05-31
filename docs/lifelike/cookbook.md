@@ -257,8 +257,29 @@ Runtime condition functions available: `GetActorValuePercent` (0..1 fraction, AV
 `GetCurrentTime` (hour 0..24), `IsInInterior`, `IsInCombat`, `GetRandomPercent` (0..99 roll, for
 line variety) — all in addition to the static gates (GetInFaction/GetItemCount/GetGlobalValue/…).
 Follower-only **backstory** is the same pattern with just the `CurrentFollowerFaction==1` gate and
-more response lines. NOTE: this is for lines the player *asks for*; proactive/ambient banter (NPC
-speaks unprompted) is a different dialogue subtype, not yet supported.
+more response lines.
+
+**Proactive banter** (It.34) — lines she says *unprompted*. Use the `banter` section (not `dialogue`):
+all entries sharing a (speaker, quest) collapse into one ambient topic (Misc / SNAM=`IDLE`, no branch)
+with Random-flagged INFOs; the engine plays a matching one on its own. **Requires idle chatter
+enabled** — the Sandbox package above (or the vanilla follow package) provides it.
+```jsonc
+"banter": [
+  { "editorId": "MF_BHurt", "questEditorId": "MF_Q", "speakerNpcEditorId": "MF_Npc",
+    "responses": [ "I'm bleeding... give me a breath." ], "emotion": "Sad",
+    "conditions": [
+      { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" },
+      { "function": "GetActorValuePercent", "comparison": "<", "value": 0.4, "actorValue": "Health", "runOn": "Subject" } ] },
+  { "editorId": "MF_BNight", "questEditorId": "MF_Q", "speakerNpcEditorId": "MF_Npc",
+    "responses": [ "Quiet, this hour." ], "emotion": "Neutral",
+    "conditions": [
+      { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" },
+      { "function": "GetCurrentTime", "comparison": ">=", "value": 22 } ] }
+]
+```
+Gate each on `CurrentFollowerFaction==1` (so she only banters while travelling with you) + a
+situational function. NOTE: ambient/idle only — true combat shouts (Taunt/Attack subtype) aren't
+supported yet. Vanilla reference probed for this: `HirelingIdles` (Skyrim.esm 0x055DEB).
 
 ## "Usable interior cell" (lighting + floor, not a black void)
 

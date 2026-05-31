@@ -37,6 +37,26 @@ public sealed class DialogueSpec
     // recruit line when the player can afford it and isn't already following.
     public List<ConditionSpec> Conditions { get; set; } = new();
 }
+// PROACTIVE banter — a line the NPC says UNPROMPTED (no player menu), the vanilla follower-comment
+// pattern (see Skyrim.esm `HirelingIdles` 0x055DEB). All banter entries that share a (speaker, quest)
+// are grouped into ONE ambient topic: Category=Misc, SNAM='IDLE', no branch, each entry an INFO with
+// the Random flag so the engine random-picks among those whose `conditions` currently pass. The line
+// only surfaces while the NPC has idle chatter enabled (an AI package with the AllowIdleChatter
+// interrupt flag — e.g. a Sandbox package, or the vanilla follow package). Use `conditions` to make it
+// situational (GetCurrentTime for night, IsInInterior, GetActorValuePercent for "I'm hurt", and the
+// CurrentFollowerFaction gate for follower-only banter). Each entry's `responses` are spoken as one
+// comment (multiple lines play in sequence). NOTE: this is ambient/idle banter — true *combat* shouts
+// use a different subtype (Taunt/Attack), not yet supported.
+public sealed class BanterSpec
+{
+    public string EditorId { get; set; } = "";          // optional — names the INFO group for diag/uniqueness
+    public string QuestEditorId { get; set; } = "";       // host quest (must be StartGameEnabled, like dialogue)
+    public string SpeakerNpcEditorId { get; set; } = ""; // who says it (auto GetIsID gate)
+    public List<string> Responses { get; set; } = new(); // the spoken line(s) for this one comment
+    public string Emotion { get; set; } = "Neutral";
+    public uint EmotionValue { get; set; } = 50;
+    public List<ConditionSpec> Conditions { get; set; } = new();  // situational gates (beyond the auto speaker gate)
+}
 // A CTDA condition (a static gate) usable on a dialogue INFO or an AI package. `function` picks the
 // condition function; `param` is its form argument (a ref → faction/item/global/quest/npc); `comparison`
 // + `value` are the numeric test; `runOn`/`reference` pick WHOSE value is read (Subject = the

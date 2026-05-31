@@ -25,6 +25,7 @@ public static partial class Generator
         ctx.BuildItems();                          // Misc / Book / Weapon
         ctx.BuildNpcsAndQuests();                  // Npc, Quest (kept in editorId maps for dialogue)
         ctx.BuildDialogue();                        // Quest->Branch->Topic->INFO, DialogView, Hellos
+        ctx.BuildBanter();                          // proactive Idle banter topics (unprompted NPC lines)
         ctx.BuildMagicAndSpells();                 // MagicEffect, Spell
         ctx.BuildConsumablesGearAndMessages();     // Potion, Armor, Faction, Relationship, Class, Message
         ctx.BuildLongTailItems();                  // Ingredient..Activator (scalar fields)
@@ -50,6 +51,7 @@ public static partial class Generator
         ctx.AttachScripts();                       // VMAD Papyrus script attachment
         ctx.AttachDialogueResultScripts();         // INFO OnEnd result fragments (dialogue-pick scripts)
         ctx.WireDialogueConditions();              // extra CTDA gates on dialogue INFOs
+        ctx.WireBanterConditions();                // situational CTDA gates on banter INFOs
         ctx.WirePackageConditions();               // CTDA gates on AI packages (runtime behaviour switch)
 
         return ctx.Finish();
