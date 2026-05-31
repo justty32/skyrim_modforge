@@ -40,7 +40,28 @@
       "crimeFaction": "Skyrim.esm:0x0267EA",
       "unique": true,
       "factions": [ "MF_ShopFaction" ],
-      "greeting": "Looking to buy? I've got the finest goods in Whiterun."
+      "greeting": "Looking to buy? I've got the finest goods in Whiterun.",
+      "packages": [ "MF_ShopSandbox" ]
+    }
+  ],
+
+  "packages": [
+    {
+      "_": "Keeps the merchant STANDING at his shop instead of idling at cell origin — and, more importantly, in a settled on-duty state so the vendor faction's selling hours apply. A bare new cell has no navmesh/furniture, so he won't wander; that's fine for a counter merchant. NearSelf anchors at his placed position (generated NPCs have no CK editor location).",
+      "editorId": "MF_ShopSandbox",
+      "template": "Skyrim.esm:0x01C254",
+      "interruptFlags": [ "HellosToPlayer", "AllowIdleChatter" ],
+      "sandbox": {
+        "radius": 256,
+        "allowEating": false,
+        "allowSleeping": false,
+        "allowConversation": true,
+        "allowIdleMarkers": true,
+        "allowSitting": true,
+        "allowWandering": false,
+        "allowSpecialFurniture": true,
+        "energy": 0.0
+      }
     }
   ],
 
@@ -53,6 +74,20 @@
   ],
 
   "placements": [
+    { "_": "FLOOR — 3x3 grid of WRIntFloorSTMid01Large (0x1044AA, 256 spacing) so the NPC stands instead of falling into the void. Without this the merchant is perpetually in a falling state and never goes on-duty.",
+      "base": "Skyrim.esm:0x1044AA", "cell": "MF_Shop", "position": { "x": -256, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_Shop", "position": { "x":    0, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_Shop", "position": { "x":  256, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_Shop", "position": { "x": -256, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_Shop", "position": { "x":    0, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_Shop", "position": { "x":  256, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_Shop", "position": { "x": -256, "y":  256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_Shop", "position": { "x":    0, "y":  256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MF_Shop", "position": { "x":  256, "y":  256, "z": 0 } },
+    { "_": "Key light (WRShadowOmni 0x0C82AE, non-PortalStrict) + two warm fills (WRInteriorLightBrite01 0x06ED46) so the room is lit.",
+      "base": "Skyrim.esm:0x0C82AE", "cell": "MF_Shop", "position": { "x": 0, "y": 0, "z": 300 } },
+    { "base": "Skyrim.esm:0x06ED46", "cell": "MF_Shop", "position": { "x": -220, "y": 0, "z": 220 } },
+    { "base": "Skyrim.esm:0x06ED46", "cell": "MF_Shop", "position": { "x":  220, "y": 0, "z": 220 } },
     {
       "base": "MF_Shopkeeper",
       "cell": "MF_Shop",
