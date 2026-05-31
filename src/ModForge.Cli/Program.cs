@@ -94,7 +94,7 @@ internal static partial class Program
     {
         var key = ModKey.FromNameAndExtension(Path.GetFileName(outPath));
         var mod = Demo.CreateDemoPlugin(key);
-        mod.WriteToBinary(outPath);
+        PluginIo.Write(mod, outPath);   // NoCheck + ESL-limit guard, same as every other write path
         Console.WriteLine($"wrote {outPath}  (ESL={mod.IsSmallMaster}, {mod.EnumerateMajorRecords().Count()} records)");
     }
 

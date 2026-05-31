@@ -7,19 +7,24 @@ internal static partial class Program
     // -------------------------------------------------------------------------------
     private static int Dump(string inPath)
     {
-        var mod = Load(inPath);
+        // Read-only inspection → overlay (lazy, no full materialize). Enumerate the records ONCE
+        // (the overlay re-parses the group on each pass) and reuse the list throughout.
+        using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE);
+        var records = mod.EnumerateMajorRecords().ToList();
         var edByFk = new Dictionary<FormKey, string>();
-        foreach (var r in mod.EnumerateMajorRecords())
+        foreach (var r in records)
             if (!string.IsNullOrEmpty(r.EditorID)) edByFk[r.FormKey] = r.EditorID!;
         string Ref(FormKey fk) => fk.IsNull ? "<null>" : edByFk.TryGetValue(fk, out var ed) ? ed : fk.ToString();
 
         var masters = mod.MasterReferences;
-        Console.WriteLine($"{Path.GetFileName(inPath)} — {mod.EnumerateMajorRecords().Count()} record(s), "
+        Console.WriteLine($"{Path.GetFileName(inPath)} — {records.Count} record(s), "
             + $"localized={mod.UsingLocalization}, master(s)=[{string.Join(", ", masters.Select(m => m.Master.FileName.ToString()))}]");
-        foreach (var r in mod.EnumerateMajorRecords())
+        foreach (var r in records)
         {
             var name = (r as INamedGetter)?.Name;
-            Console.WriteLine($"  [{r.FormKey}] {r.GetType().Name} {r.EditorID}" + (name is { } nm ? $"  \"{nm}\"" : ""));
+            // Overlay getters report type names like "BookBinaryOverlay" — trim the suffix to the record name.
+            var typeName = r.GetType().Name.Replace("BinaryOverlay", "");
+            Console.WriteLine($"  [{r.FormKey}] {typeName} {r.EditorID}" + (name is { } nm ? $"  \"{nm}\"" : ""));
 
             if (r is INpcGetter npc)
             {

@@ -4,6 +4,14 @@ public static partial class Generator
 {
     private sealed partial class BuildContext
     {
+        // Reusable DeepCopyIn masks — a TranslationMask is just instructions, so build it ONCE instead of
+        // per loop iteration. All skip the localized Name (we set it from the spec; copying it would resolve
+        // .STRINGS via the headless-absent load-order listing); Book/Weapon also skip their long text field.
+        private static readonly MiscItem.TranslationMask   MiscCopyMask   = new(defaultOn: true) { Name = false };
+        private static readonly Book.TranslationMask       BookCopyMask   = new(defaultOn: true) { Name = false, BookText = false };
+        private static readonly Weapon.TranslationMask     WeaponCopyMask = new(defaultOn: true) { Name = false, Description = false };
+        private static readonly Ingestible.TranslationMask PotionCopyMask = new(defaultOn: true) { Name = false };
+
         // --- pass 1: Misc / Book / Weapon (model templating to avoid equip/read CRASHes) ---
         public void BuildItems()
         {
@@ -15,7 +23,7 @@ public static partial class Generator
                 // GemRuby) for its model + keywords. Mask out the localized Name (we set it below).
                 if (!string.IsNullOrWhiteSpace(m.Template)
                     && TryResolveTemplate<IMiscItemGetter>(m.Template, out var tmpl) && tmpl is not null)
-                    r.DeepCopyIn(tmpl, out _, new MiscItem.TranslationMask(defaultOn: true) { Name = false });
+                    r.DeepCopyIn(tmpl, out _, MiscCopyMask);
                 r.EditorID = m.EditorId; r.Name = m.Name; r.Value = m.Value; r.Weight = m.Weight;
             }
             foreach (var b in spec.Books)
@@ -29,7 +37,7 @@ public static partial class Generator
                     if (TryResolveTemplate<IBookGetter>(b.Template, out var tmpl) && tmpl is not null)
                         // Skip the localized strings (Name/BookText) — we set them below, and copying
                         // them would resolve .STRINGS via the (headless-absent) load-order listing.
-                        r.DeepCopyIn(tmpl, out _, new Book.TranslationMask(defaultOn: true) { Name = false, BookText = false });
+                        r.DeepCopyIn(tmpl, out _, BookCopyMask);
                     else
                         Warn($"  ! book '{b.EditorId}': template '{b.Template}' not resolved — book will lack a model and may CRASH on read");
                 }
@@ -52,7 +60,7 @@ public static partial class Generator
                     if (TryResolveTemplate<IWeaponGetter>(w.Template, out var tmpl) && tmpl is not null)
                         // Skip the localized strings (Name/Description) — we set Name below, and copying
                         // them would resolve .STRINGS via the (headless-absent) load-order listing.
-                        r.DeepCopyIn(tmpl, out _, new Weapon.TranslationMask(defaultOn: true) { Name = false, Description = false });
+                        r.DeepCopyIn(tmpl, out _, WeaponCopyMask);
                     else
                         Warn($"  ! weapon '{w.EditorId}': template '{w.Template}' not resolved — weapon will lack a model and may CRASH on equip");
                 }
@@ -117,7 +125,7 @@ public static partial class Generator
                 if (!string.IsNullOrWhiteSpace(p.Template)
                     && TryResolveTemplate<IIngestibleGetter>(p.Template, out var tmpl) && tmpl is not null)
                 {
-                    r.DeepCopyIn(tmpl, out _, new Ingestible.TranslationMask(defaultOn: true) { Name = false });
+                    r.DeepCopyIn(tmpl, out _, PotionCopyMask);
                     r.Effects.Clear();
                 }
                 r.EditorID = p.EditorId; r.Name = p.Name; r.Value = p.Value; r.Weight = p.Weight;
