@@ -49,6 +49,8 @@ public static partial class Generator
         ctx.WireRecipes();                         // COBJ createdObject/workbench/components
         ctx.AttachScripts();                       // VMAD Papyrus script attachment
         ctx.AttachDialogueResultScripts();         // INFO OnEnd result fragments (dialogue-pick scripts)
+        ctx.WireDialogueConditions();              // extra CTDA gates on dialogue INFOs
+        ctx.WirePackageConditions();               // CTDA gates on AI packages (runtime behaviour switch)
 
         return ctx.Finish();
     }

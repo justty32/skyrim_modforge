@@ -107,6 +107,24 @@ public sealed class DialogueSpec
     public List<PropertySpec> ResultProperties { get; set; } = new();
     // Goodbye closes the dialogue menu after this line — vanilla recruit/dismiss lines all set it.
     public bool Goodbye { get; set; }
+    // Extra CTDA gates on the INFO (beyond the auto GetIsID speaker gate). e.g. only show a paid
+    // recruit line when the player can afford it and isn't already following.
+    public List<ConditionSpec> Conditions { get; set; } = new();
+}
+// A CTDA condition (a static gate) usable on a dialogue INFO or an AI package. `function` picks the
+// condition function; `param` is its form argument (a ref → faction/item/global/quest/npc); `comparison`
+// + `value` are the numeric test; `runOn`/`reference` pick WHOSE value is read (Subject = the
+// speaker/package owner; Reference = a named ref such as the player 0x14). `or` OR-chains with the next.
+// Supported functions: GetInFaction, GetItemCount, GetGlobalValue, GetStage, GetIsID, GetRelationshipRank.
+public sealed class ConditionSpec
+{
+    public string Function { get; set; } = "";
+    public string Comparison { get; set; } = ">=";   // == | != | > | >= | < | <=
+    public float Value { get; set; }
+    public string Param { get; set; } = "";           // the function's form argument (a ref)
+    public string RunOn { get; set; } = "Subject";     // Subject | Target | Reference | CombatTarget | ...
+    public string Reference { get; set; } = "";        // the ref read when RunOn=Reference (e.g. player Skyrim.esm:0x000014)
+    public bool Or { get; set; }                        // OR with the NEXT condition (default AND)
 }
 // Relationship (RELA): a directed bond between two NPCs (`parent` and `child`) at a `rank`. The
 // player's NPC *base* record is `Skyrim.esm:0x000014` (NOT `0x000007`, which is PlayerRef — the
@@ -229,6 +247,10 @@ public sealed class PackageSpec
     // package targets); set it to an in-spec NPC placement to follow another actor. Companions,
     // summoned creatures, tag-alongs.
     public FollowSpec Follow { get; set; } = new();
+    // CTDA gates on the package — the engine runs the first package in the NPC's list whose
+    // conditions pass, so a conditioned package switches behaviour at runtime (e.g. a Follow package
+    // gated on GetInFaction CurrentFollowerFaction==1 only trails the player once she's been recruited).
+    public List<ConditionSpec> Conditions { get; set; } = new();
     // Escort-template inputs (apply when `template` is Skyrim.esm:0x023B73). The NPC LEADS the
     // escorted `target` (defaults to the player) to `destination` (a location ref — vanilla marker
     // or an in-spec placement), pausing to wait if they lag. The dual of Follow. Quest guides

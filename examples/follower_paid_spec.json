@@ -26,6 +26,8 @@
       "crimeFaction": "Skyrim.esm:0x0267EA",
       "_factions": "Only Whiterun crime/citizen (door/gate traversal). NO PotentialHireling/PotentialFollower — the recruit is our own topic, and the generic follower dialogue needs PotentialHireling==0.",
       "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+      "_packages": "Follow-player package gated on GetInFaction CurrentFollowerFaction==1 — the fragment adds her to that faction on recruit, so she only trails the player AFTER hiring (and stops on dismiss, which removes her from it). Without this she'd stand still even as a teammate: SetPlayerTeammate makes her fight for you, but FOLLOWING needs an AI package.",
+      "packages": [ "MF_PaidFollowPkg" ],
       "unique": true,
       "level": 10,
       "autoCalcStats": true,
@@ -33,6 +35,18 @@
       "confidence": "Brave",
       "assistance": "HelpsFriendsAndAllies",
       "energyLevel": 50
+    }
+  ],
+
+  "packages": [
+    {
+      "_": "Trail the player (Follow template 0x019B2C, target '' ⇒ player). Active ONLY when she's a current follower — the fragment's AddToFaction(CurrentFollowerFaction) flips this on at recruit; vanilla dismiss removes her from it, flipping it off.",
+      "editorId": "MF_PaidFollowPkg",
+      "template": "Skyrim.esm:0x019B2C",
+      "follow": { "target": "", "minRadius": 128, "maxRadius": 256, "accompany": true },
+      "conditions": [
+        { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" }
+      ]
     }
   ],
 
@@ -56,6 +70,11 @@
       "responses": [ "Gold's gold. Lead the way." ],
       "emotion": "Happy",
       "goodbye": true,
+      "_conditions": "Gate the line so it ONLY shows when the player has >=500 gold AND she isn't already a follower — mirrors vanilla UX (the fragment still guards both, but conditions hide the line instead of failing it). GetItemCount runs on the player (Reference 0x14); GetInFaction runs on her (Subject).",
+      "conditions": [
+        { "function": "GetItemCount", "comparison": ">=", "value": 500, "param": "Skyrim.esm:0x00000F", "runOn": "Reference", "reference": "Skyrim.esm:0x000014" },
+        { "function": "GetInFaction", "comparison": "==", "value": 0, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" }
+      ],
       "resultScript": "MFHirePaidRecruit",
       "resultScriptSource": "scripts/MFHirePaidRecruit.psc",
       "resultProperties": [
