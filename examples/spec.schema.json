@@ -20,7 +20,7 @@
     "magicEffects": { "type": "array", "items": { "$ref": "#/$defs/magicEffect" }, "description": "custom MGEF records an effect can point at by editorId" },
     "potions": { "type": "array", "items": { "$ref": "#/$defs/potion" } },
     "armors": { "type": "array", "items": { "$ref": "#/$defs/armor" } },
-    "factions": { "type": "array", "items": { "$ref": "#/$defs/named" } },
+    "factions": { "type": "array", "items": { "$ref": "#/$defs/faction" }, "description": "Faction (FACT); add a `vendor` sub-object to make members shopkeepers" },
     "classes": { "type": "array", "items": { "$ref": "#/$defs/class" }, "description": "Class (CLAS): an npc 'profession' (attribute/skill weights); an npc class can point at one" },
     "messages": { "type": "array", "items": { "$ref": "#/$defs/message" } },
     "scripts": { "type": "array", "items": { "$ref": "#/$defs/script" } },
@@ -145,6 +145,27 @@
         "value": { "type": "integer", "minimum": 0 },
         "weight": { "type": "number", "minimum": 0 },
         "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "keyword refs (weapons/misc; ignored on records that don't take keywords)" }
+      }
+    },
+    "faction": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "vendor": {
+          "type": "object",
+          "description": "Vendor data (FACT VENV/VEND/VENC). Present => Vendor-flagged merchant faction; members are shopkeepers and the generic 'I'd like to trade' topic surfaces.",
+          "properties": {
+            "startHour": { "type": "integer", "minimum": 0, "maximum": 24, "description": "shop opens (0..24)" },
+            "endHour": { "type": "integer", "minimum": 0, "maximum": 24, "description": "shop closes (0..24); must be > startHour" },
+            "radius": { "type": "integer", "minimum": 0, "description": "sell radius (0 = engine default)" },
+            "buysStolen": { "type": "boolean", "description": "OnlyBuysStolenItems — a fence" },
+            "sellBuyList": { "$ref": "#/$defs/ref", "description": "FormList of VendorItem keywords (e.g. Skyrim.esm:0x06CB48 VendorItemsMisc)" },
+            "notSellBuyList": { "type": "boolean", "description": "true => sellBuyList is a NOT-sell list (trade everything except)" },
+            "merchantContainer": { "$ref": "#/$defs/ref", "description": "a PLACEMENT editorId: the placed merchant chest (gold + stock)" }
+          }
+        }
       }
     },
     "book": {

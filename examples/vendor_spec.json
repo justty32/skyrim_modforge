@@ -1,0 +1,72 @@
+{
+  "pluginName": "MFVendor.esp",
+  "esl": true,
+
+  "//": "A WORKING MERCHANT. A vanilla vendor = a Vendor-flagged FACTION (hours + sell radius + a buy/sell item-category list + a merchant chest) whose member NPC the engine treats as a shopkeeper. The generic vanilla 'I'd like to trade' topic (DialogueGeneric.OfferServicesTopic) then surfaces, gated on GetInFaction JobMerchantFaction + GetOffersServicesNow — Build adds JobMerchantFaction automatically. See docs/lifelike/cookbook.md 'Working merchant'.",
+
+  "factions": [
+    {
+      "editorId": "MF_ShopFaction",
+      "name": "ModForge General Goods",
+      "vendor": {
+        "startHour": 8,
+        "endHour": 20,
+        "radius": 0,
+        "buysStolen": false,
+        "sellBuyList": "Skyrim.esm:0x06CB48",
+        "notSellBuyList": true,
+        "merchantContainer": "MF_ShopChestRef"
+      }
+    }
+  ],
+
+  "containers": [
+    {
+      "editorId": "MF_ShopChest",
+      "name": "Merchant Chest",
+      "items": [
+        { "item": "Skyrim.esm:0x072AE7", "count": 1 },
+        { "item": "Skyrim.esm:0x09AF0A", "count": 10 }
+      ]
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_Shopkeeper",
+      "name": "Marcurio the Merchant",
+      "race": "Skyrim.esm:0x013746",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "unique": true,
+      "factions": [ "MF_ShopFaction" ],
+      "greeting": "Looking to buy? I've got the finest goods in Whiterun."
+    }
+  ],
+
+  "cells": [
+    {
+      "editorId": "MF_Shop",
+      "name": "ModForge Trading Post",
+      "template": "Skyrim.esm:0x0165A8"
+    }
+  ],
+
+  "placements": [
+    {
+      "base": "MF_Shopkeeper",
+      "cell": "MF_Shop",
+      "position": { "x": 0, "y": 128, "z": 0 },
+      "rotation": { "x": 0, "y": 0, "z": 180 },
+      "persistent": true
+    },
+    {
+      "editorId": "MF_ShopChestRef",
+      "base": "MF_ShopChest",
+      "cell": "MF_Shop",
+      "position": { "x": 0, "y": 256, "z": 0 },
+      "rotation": { "x": 0, "y": 0, "z": 0 },
+      "persistent": true
+    }
+  ]
+}

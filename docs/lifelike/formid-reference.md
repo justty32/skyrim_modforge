@@ -142,3 +142,19 @@ Other hold crime/town factions follow the same naming pattern; `find <Skyrim.esm
 | Editor ID | FormID |
 |---|---|
 | BlacksmithOutfit01 | `Skyrim.esm:0x09D5DF` |
+
+## Vendor / merchant (for a `factions[].vendor` shopkeeper)
+
+| Editor ID | FormID | Kind | Use |
+|---|---|---|---|
+| JobMerchantFaction | `Skyrim.esm:0x051596` | FACT | The generic "I'd like to trade" topic gates on membership here — **Build auto-adds it** to any NPC in an in-spec vendor faction |
+| ServicesWhiterunBelethorsGoods | `Skyrim.esm:0x09CAF5` | FACT | Reference vanilla general-goods vendor faction — diff your generated FACT against it with `factdiag` |
+| VendorItemsMisc | `Skyrim.esm:0x06CB48` | FormList | General-goods category list (use with `notSellBuyList: true` for a "sells everything" shop) |
+| VendorItemsBlacksmith | `Skyrim.esm:0x066333` | FormList | Smith's category list (weapon/armor/ore/ingot/…) |
+| VendorGoldMisc | `Skyrim.esm:0x072AE7` | LVLI | The vendor's gold pool — put one in the merchant chest so it has money to buy with |
+| LItemMiscVendorMiscItems75 | `Skyrim.esm:0x09AF0A` | LVLI | General-goods stock leveled-list (what the shop sells) |
+| Gold001 | `Skyrim.esm:0x00000F` | MISC | Plain gold (use a flat count instead of the leveled gold pool if you prefer) |
+
+The generic trade prompt (`DialogueGeneric.OfferServicesTopic` `0x07F6BB`) is vanilla universal
+dialogue — you do **not** emit it. It surfaces on any conversable NPC who is in `JobMerchantFaction`
++ a Vendor-flagged faction with a merchant container, during the faction's trade hours.

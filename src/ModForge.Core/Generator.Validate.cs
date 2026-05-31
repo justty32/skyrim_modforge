@@ -34,6 +34,8 @@ public static partial class Generator
         foreach (var s in spec.Spells) Reg(s.EditorId, "spell", spellIds);
         foreach (var p in spec.Potions) Reg(p.EditorId, "potion");
         foreach (var a in spec.Armors) Reg(a.EditorId, "armor");
+        var placementIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var pl in spec.Placements) if (!string.IsNullOrWhiteSpace(pl.EditorId)) placementIds.Add(pl.EditorId);
         foreach (var f in spec.Factions) Reg(f.EditorId, "faction", factionIds);
         foreach (var msg in spec.Messages) Reg(msg.EditorId, "message");
         foreach (var d in spec.Dialogue) Reg(d.EditorId, "dialogue");
@@ -401,6 +403,37 @@ public static partial class Generator
         }
         foreach (var n in spec.Npcs)
             foreach (var pkgRef in n.Packages) CheckRef(pkgRef, $"npc '{n.EditorId}' package");
+
+        // Vendor (merchant) faction data: hours sane (0..24, start<end), gold implied by the
+        // merchant container, refs well-formed. The merchant container must be a PLACEMENT editorId
+        // (the placed chest), not a bare in-spec Container — only a placed ref holds gold the engine
+        // reads. A vendor faction with no member NPC trades to nobody.
+        var vendorFactEds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var f in spec.Factions)
+        {
+            if (f.Vendor is not { } v) continue;
+            if (!string.IsNullOrWhiteSpace(f.EditorId)) vendorFactEds.Add(f.EditorId);
+            if (v.StartHour > 24) problems.Add($"faction '{f.EditorId}' vendor.startHour {v.StartHour} out of range (0..24)");
+            if (v.EndHour > 24) problems.Add($"faction '{f.EditorId}' vendor.endHour {v.EndHour} out of range (0..24)");
+            if (v.StartHour <= 24 && v.EndHour <= 24 && v.StartHour > v.EndHour)
+                problems.Add($"faction '{f.EditorId}' vendor hours invalid: startHour {v.StartHour} > endHour {v.EndHour} (shop never opens)");
+            CheckRef(v.SellBuyList, $"faction '{f.EditorId}' vendor.sellBuyList");
+            if (string.IsNullOrWhiteSpace(v.SellBuyList) && !v.NotSellBuyList)
+                problems.Add($"faction '{f.EditorId}' vendor has no sellBuyList and notSellBuyList=false — vendor trades no item categories (set a VendorItem FormList ref, e.g. Skyrim.esm:0x06CB48 VendorItemsMisc, or notSellBuyList=true)");
+            CheckRef(v.MerchantContainer, $"faction '{f.EditorId}' vendor.merchantContainer");
+            if (string.IsNullOrWhiteSpace(v.MerchantContainer))
+                problems.Add($"faction '{f.EditorId}' vendor.merchantContainer is empty — a vendor needs a placed merchant chest (holds the gold + stock); reference a placement editorId");
+            else if (!LooksExternalRef(v.MerchantContainer) && !placementIds.Contains(v.MerchantContainer))
+                problems.Add($"faction '{f.EditorId}' vendor.merchantContainer '{v.MerchantContainer}' must be a PLACEMENT editorId (the placed chest), not a bare record — give the chest placement an editorId and reference it");
+        }
+        // An NPC member of an in-spec vendor faction becomes a shopkeeper; remind that it needs a
+        // greeting (to be conversable) for the trade prompt to surface.
+        foreach (var n in spec.Npcs)
+        {
+            bool isVendorNpc = n.Factions.Any(fr => !LooksExternalRef(fr) && vendorFactEds.Contains(fr));
+            if (isVendorNpc && string.IsNullOrWhiteSpace(n.Greeting) && !spec.Dialogue.Any(d => d.SpeakerNpcEditorId == n.EditorId))
+                problems.Add($"npc '{n.EditorId}' is a vendor (member of a vendor faction) but has no greeting and no dialogue — it won't be conversable, so the 'I'd like to trade' prompt can't appear (set a `greeting`)");
+        }
 
         // Shouts (SHOU) + Words of Power (WOOP). A shout must have 1–3 word rows (vanilla shouts have
         // exactly 3). Each row's word + spell refs must resolve, recovery time can't be negative, and a

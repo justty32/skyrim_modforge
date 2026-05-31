@@ -129,11 +129,18 @@ internal static partial class Program
     {
         uint id = Convert.ToUInt32(formIdHex.Replace("0x", "", StringComparison.OrdinalIgnoreCase), 16) & 0xFFFFFF;
         using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE);
+        // Best-effort resolver over THIS plugin only (resolves in-spec list/chest editorIds; vanilla
+        // forms print as their FormKey — we don't open masters here, same as the other *diag commands).
+        var edByFk = new Dictionary<FormKey, string>();
+        foreach (var r in mod.EnumerateMajorRecords())
+            if (!string.IsNullOrEmpty(r.EditorID)) edByFk[r.FormKey] = r.EditorID!;
+        string Ref(FormKey fk) => fk.IsNull ? "-" : edByFk.TryGetValue(fk, out var ed) ? $"{ed} ({fk})" : fk.ToString();
+
         foreach (var f in mod.EnumerateMajorRecords<IFactionGetter>())
         {
             if (f.FormKey.ID != id) continue;
             Console.WriteLine($"0x{id:X6}  EditorID={f.EditorID}");
-            Console.WriteLine($"  Flags = {f.Flags}");
+            Console.WriteLine($"  Flags = {f.Flags}   (vendor={f.Flags.HasFlag(Faction.FactionFlag.Vendor)})");
             Console.WriteLine($"  Ranks ({f.Ranks.Count}):");
             foreach (var rk in f.Ranks)
             {
@@ -143,6 +150,23 @@ internal static partial class Program
             Console.WriteLine($"  Relations ({f.Relations.Count}):");
             foreach (var rel in f.Relations)
                 Console.WriteLine($"    -> {rel.Target.FormKey} modifier={rel.Modifier} reaction={rel.Reaction}");
+            // Vendor block: VendorValues (hours/radius/buy-stolen/not-sell) + buy-sell list + merchant
+            // chest + vendor location — compare a generated vendor FACT against a vanilla merchant.
+            if (f.VendorValues is { } vv)
+            {
+                Console.WriteLine($"  VendorValues: startHour={vv.StartHour} endHour={vv.EndHour} radius={vv.Radius} "
+                    + $"buysStolen={vv.OnlyBuysStolenItems} notSellBuy={vv.NotSellBuy}");
+                Console.WriteLine($"  VendorBuySellList = {Ref(f.VendorBuySellList.FormKey)}"
+                    + (vv.NotSellBuy ? "  [NOT-sell list: trades everything EXCEPT these]" : "  [trades THESE categories]"));
+                if (!f.VendorBuySellList.IsNull
+                    && mod.EnumerateMajorRecords<IFormListGetter>().FirstOrDefault(l => l.FormKey == f.VendorBuySellList.FormKey) is { } fl)
+                    foreach (var it in fl.Items) Console.WriteLine($"      item -> {Ref(it.FormKey)}");
+                Console.WriteLine($"  MerchantContainer = {Ref(f.MerchantContainer.FormKey)}");
+                if (f.VendorLocation is { } loc && loc.Target is ILocationTargetGetter lt)
+                    Console.WriteLine($"  VendorLocation -> {Ref(lt.Link.FormKey)} radius={loc.Radius}");
+                else
+                    Console.WriteLine("  VendorLocation: <none>");
+            }
             return 0;
         }
         Console.WriteLine($"0x{id:X6} not a Faction in {Path.GetFileName(inPath)}");

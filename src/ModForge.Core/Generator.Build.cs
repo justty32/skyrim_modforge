@@ -38,6 +38,7 @@ public static partial class Generator
         // --- index editorId -> FormKey, then pass 2: wire cross-record references ---
         ctx.BuildFormKeyTable();
         ctx.WireNpcs();                            // race/class/outfit/voice/crime/combatStyle/spells/factions
+        ctx.WireVendors();                         // FACT vendor sellBuyList + queue deferred merchant-chest links
         ctx.WireRelationships();                   // RELA Parent/Child NPC refs
         ctx.WireScenes();                          // SCEN actor aliases -> the NPC that fills each (UniqueActor)
         ctx.WireKeywords();                        // keywords on armor/weapon/misc/...
@@ -52,6 +53,7 @@ public static partial class Generator
         ctx.WireLinkedRefs();                      // XLKR between placements (patrol routes)
         ctx.WireDeferredTargets();                 // package SingleRef slot-0 targets (now placements exist)
         ctx.WireDeferredLocations();               // package Destination location slots
+        ctx.WireDeferredMerchantContainers();      // FACT merchant chest + VendorLocation (now placements exist)
         ctx.WireLeveledAndContainers();            // leveled-list entries + container contents
         ctx.WireRecipes();                         // COBJ createdObject/workbench/components
         ctx.AttachScripts();                       // VMAD Papyrus script attachment

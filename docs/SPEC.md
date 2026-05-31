@@ -72,7 +72,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `enchantments` | `editorId`, `name`, `enchantType` (`weapon`\|`apparel`\|`staff`), `castType`/`targetType` (optional overrides), `enchantmentCost` (int — per-cast charge cost / worn cost), `chargeTime` (number — staff charge-up), `effects` (array of *effects*) — an Object Effect (ENCH) a weapon/armor `enchantment` field points at |
 | `potions` | `editorId`, `name`, `value`, `weight`, `effects` (array of *effects*) |
 | `armors` | `editorId`, `name`, `value`, `weight`, `armorRating` (number), `armorType` (`light`\|`heavy`\|`clothing`), `slots` (array of biped-slot names), `keywords` (array of *refs*), `enchantment` (*ref* → ENCH, normally an `apparel` constant-effect one) |
-| `factions` | `editorId`, `name` |
+| `factions` | `editorId`, `name`, `vendor` (optional sub-object — turns this into a MERCHANT faction; see *vendors / merchants* below) |
 | `classes` | `editorId`, `name`, `description`, `teaches` (Skill), `maxTrainingLevel`, `healthWeight`/`magickaWeight`/`staminaWeight` (attribute distribution), `skillWeights` (`{ Skill: 0–255 }`) — an npc `class` can point at one |
 | `messages` | `editorId`, `name`, `description` (body text) |
 | `cells` | `editorId`, `name`, `template` (vanilla interior cell `<master>:0xFORMID` to copy lighting from — else the new cell is black) |
@@ -383,6 +383,64 @@ CurrentFollowerFaction == 1` so it only runs after recruitment. See `examples/fo
   list yields nothing; `flags` names come from the LVLI/LVLN flag set.
 - `containers` (CONT) hold `items`, each an item *ref* + `count`. (To make the container
   appear in the world, place it with a `placement`, same as any object.)
+
+### vendors / merchants — a working shopkeeper
+Turn an NPC into a functioning shop (buys + sells) by giving a **faction** a `vendor` sub-object and
+making the NPC a member of it. A vanilla merchant is exactly this: a **Vendor-flagged FACT** (trade
+hours, sell radius, buy-stolen flag, a buy/sell item-category list, and a **merchant chest** holding
+the gold + stock) whose member NPC the engine treats as a shopkeeper.
+```jsonc
+"factions": [
+  { "editorId": "MF_ShopFaction", "name": "ModForge General Goods",
+    "vendor": {
+      "startHour": 8, "endHour": 20,          // when the shop is open (0..24; start < end)
+      "radius": 0,                             // how far the player may stray and still trade (0 = engine default)
+      "buysStolen": false,                     // true = a fence (OnlyBuysStolenItems)
+      "sellBuyList": "Skyrim.esm:0x06CB48",    // a FormList of VendorItem keywords (categories traded)
+      "notSellBuyList": true,                  // true ⇒ sellBuyList is a NOT-sell list (trade ALL except those — the "general goods" pattern)
+      "merchantContainer": "MF_ShopChestRef"   // ref to a PLACEMENT editorId: the placed merchant chest (gold + stock)
+    } }
+],
+"containers": [
+  { "editorId": "MF_ShopChest", "name": "Merchant Chest",
+    "items": [ { "item": "Skyrim.esm:0x072AE7", "count": 1 },    // VendorGoldMisc (the vendor's gold pool)
+               { "item": "Skyrim.esm:0x09AF0A", "count": 10 } ] }  // a stock leveled-list (LItemMiscVendorMiscItems75)
+],
+"placements": [
+  { "editorId": "MF_ShopChestRef", "base": "MF_ShopChest", "cell": "MF_Shop", "persistent": true,
+    "position": { "x": 0, "y": 256, "z": 0 } }
+],
+"npcs": [
+  { "editorId": "MF_Shopkeeper", "name": "...", "race": "Skyrim.esm:0x013746",
+    "factions": [ "MF_ShopFaction" ],          // membership = "this NPC is the vendor"
+    "greeting": "Looking to buy?" }            // a greeting (or custom dialogue) makes it conversable — REQUIRED for the prompt
+]
+```
+- **`sellBuyList`** is a *ref* to a vanilla `VendorItemsX` **FormList** (a list of `VendorItem*`
+  keywords). Useful ones: `Skyrim.esm:0x06CB48` `VendorItemsMisc` (general goods), `0x066333`
+  `VendorItemsBlacksmith`. With `notSellBuyList: false` the list names the categories the vendor
+  **does** trade; with `notSellBuyList: true` it's a NOT-sell list (trade everything **except**).
+  (In-spec FormLists aren't a record type yet, so reference a vanilla list — `find <Skyrim.esm>
+  VendorItems FormList`.)
+- **`merchantContainer`** must reference a **placement** `editorId` (the placed chest REFR), not the
+  bare container — only a *placed* ref holds the gold/stock the engine reads. Put `VendorGoldMisc`
+  (`Skyrim.esm:0x072AE7`, the leveled gold pool) in the chest so the vendor has money to buy with;
+  add stock leveled-lists for what it sells. Build forces the chest placement `persistent`.
+- **Membership = the shopkeeper.** An NPC in the vendor faction is the merchant. Build **auto-adds**
+  `JobMerchantFaction` (`Skyrim.esm:0x051596`) to that NPC, because the vanilla generic "I'd like to
+  trade" topic (`DialogueGeneric.OfferServicesTopic`) is gated on `GetInFaction JobMerchantFaction`
+  + `GetOffersServicesNow`. You don't (and can't) emit that topic — it's universal vanilla dialogue
+  that surfaces on any conversable, vendor-faction NPC during trade hours.
+- **Conversable.** Same rule as all custom NPCs: the trade prompt only appears once the NPC opens a
+  dialogue menu, which needs a `greeting` (auto-emits a Hello) or custom `dialogue[]`. A vendor with
+  no greeting just mumbles (`validate` flags this).
+- Inspect with `factdiag <plugin> <0xFORMID>` (vendor flag / hours / buy-sell list / merchant chest);
+  `dump` also prints the vendor block. Compare to a vanilla merchant, e.g. `factdiag <Skyrim.esm>
+  0x09CAF5` (Belethor's General Goods).
+- **In-game-unconfirmed:** the FACT/chest/membership are structurally identical to a vanilla vendor
+  (verified via `factdiag` diff), but whether the "I'd like to trade" prompt actually opens the
+  barter menu needs a Proton/Skyrim launch — like all dialogue, it also only registers on a game
+  **load** (new game or save+reload), not a mid-session `coc`.
 
 ### recipes (crafting / COBJ)
 Make an item craftable at a workbench:

@@ -50,6 +50,12 @@ public static partial class Generator
         private readonly List<(IPackage Pack, sbyte Slot, string SlotName, string Ed, string Ref, uint Radius)> deferredLocationWires = new();
         private readonly Dictionary<string, IPlaced> placementsByEd = new();
 
+        // Vendor (merchant) factions: editorIds of in-spec factions carrying vendor data (so an NPC
+        // who joins one also gets JobMerchantFaction). The merchant chest is a PLACEMENT that doesn't
+        // exist until the placement loop runs, so its FormLink is deferred like a package target.
+        private readonly HashSet<string> vendorFactionEds = new(StringComparer.OrdinalIgnoreCase);
+        private readonly List<(IFaction Fact, string FactEd, string Ref)> deferredMerchantContainers = new();
+
         // Stats counters (accumulated across the steps, read by ToResult).
         private int dialogueBuilt, banterBuilt;
         private int scenesBuilt, scenePhasesBuilt;

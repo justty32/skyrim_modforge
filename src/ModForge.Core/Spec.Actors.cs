@@ -34,7 +34,35 @@ public sealed class NpcSpec
     // default line is used so the NPC still works.
     public string Greeting { get; set; } = "";
 }
-public sealed class FactionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; }
+// Faction (FACT): a named group an NPC can belong to. `vendor` (optional) turns this into a
+// MERCHANT faction — the engine treats any NPC who is a member of a Vendor-flagged faction (with
+// vendor hours + a merchant container) as a shopkeeper, and the vanilla generic "I'd like to
+// trade" service topic (DialogueGeneric.OfferServicesTopic, gated on GetInFaction JobMerchantFaction
+// + GetOffersServicesNow) surfaces on talking to them. See VendorSpec.
+public sealed class FactionSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public VendorSpec? Vendor { get; set; } }
+// Vendor data on a FACT (VENV/VEND/VENC/CITC subrecords). When present, the faction gets the
+// Vendor flag + VendorValues + (optional) VendorBuySellList + MerchantContainer, exactly like a
+// vanilla merchant faction (e.g. ServicesWhiterunBelethorsGoods 0x09CAF5). An NPC becomes a working
+// shopkeeper by (a) being a member of this faction (npc.factions) and (b) being in JobMerchantFaction
+// (Skyrim.esm:0x051596) so the generic trade topic's GetInFaction condition matches — Build adds
+// JobMerchantFaction automatically to any NPC in an in-spec vendor faction.
+//
+// `sellBuyList` is a FormList REF (VendorItemX keyword list — reference a vanilla one such as
+// VendorItemsMisc Skyrim.esm:0x06CB48, or build your own FormList... not yet an in-spec record, so
+// use a vanilla list). `notSellBuyList=false` ⇒ the list names the categories the vendor TRADES;
+// `notSellBuyList=true` ⇒ the list is a NOT-sell list (vendor trades everything EXCEPT those — the
+// Belethor "general goods" pattern). `merchantContainer` is a ref to a PLACEMENT editorId whose base
+// is a Container holding the vendor's gold (+ optional leveled stock) — that's the merchant chest.
+public sealed class VendorSpec
+{
+    public ushort StartHour { get; set; } = 8;   // vendor opens (0..24)
+    public ushort EndHour { get; set; } = 20;     // vendor closes (0..24)
+    public ushort Radius { get; set; }            // how far the player may stray from the merchant and still trade (0 = engine default)
+    public bool BuysStolen { get; set; }          // OnlyBuysStolenItems — a fence (false for a normal shop)
+    public string SellBuyList { get; set; } = ""; // ref → FormList of VendorItem keywords (vanilla, e.g. Skyrim.esm:0x06CB48 VendorItemsMisc); empty = trade nothing-by-list (relies on notSellBuyList)
+    public bool NotSellBuyList { get; set; }       // true ⇒ sellBuyList is a NOT-sell list (sell everything except those categories)
+    public string MerchantContainer { get; set; } = ""; // ref → a placement editorId (the placed Container REFR = the merchant chest with gold + stock)
+}
 // Relationship (RELA): a directed bond between two NPCs (`parent` and `child`) at a `rank`. The
 // player's NPC *base* record is `Skyrim.esm:0x000014` (NOT `0x000007`, which is PlayerRef — the
 // placed ACHR; pointing a RELA at it is a type mismatch that CRASHES on load). `child` defaults to

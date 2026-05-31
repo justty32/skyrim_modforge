@@ -469,6 +469,52 @@ the last two, which are yours to get right) — see [gotchas.md](gotchas.md):
   you can't reach it (you end up talking to a vanilla NPC).
 - **Unvoiced lines** flash past — install **Fuz Ro D-oh** (or bundle silent `.fuz`) and turn on subtitles.
 
+## "Working merchant" (a shopkeeper who buys + sells — structural, in-game-unconfirmed)
+
+A vendor = a **Vendor-flagged FACT** (trade hours + a buy/sell category list + a merchant chest with
+gold/stock) whose member NPC the engine treats as a shopkeeper. Make the NPC conversable and Build
+auto-adds `JobMerchantFaction`, so the vanilla generic "I'd like to trade" topic surfaces.
+
+```jsonc
+{ "factions": [
+    { "editorId": "MF_ShopFaction", "name": "ModForge General Goods",
+      "vendor": {
+        "startHour": 8, "endHour": 20, "buysStolen": false,
+        "sellBuyList": "Skyrim.esm:0x06CB48",     // VendorItemsMisc (a VendorItem-keyword FormList)
+        "notSellBuyList": true,                    // NOT-sell list -> trades everything except those (general goods)
+        "merchantContainer": "MF_ShopChestRef" } } ],   // -> the placed chest (below)
+  "containers": [
+    { "editorId": "MF_ShopChest", "name": "Merchant Chest",
+      "items": [ { "item": "Skyrim.esm:0x072AE7", "count": 1 },     // VendorGoldMisc (the vendor's gold)
+                 { "item": "Skyrim.esm:0x09AF0A", "count": 10 } ] } ],  // LItemMiscVendorMiscItems75 (stock)
+  "npcs": [
+    { "editorId": "MF_Shopkeeper", "name": "Marcurio the Merchant", "race": "Skyrim.esm:0x013746",
+      "voiceType": "Skyrim.esm:0x013AE6", "unique": true,
+      "factions": [ "MF_ShopFaction" ],          // membership = "this NPC is the vendor"
+      "greeting": "Looking to buy?" } ],          // REQUIRED to be conversable (auto-Hello)
+  "cells": [ { "editorId": "MF_Shop", "name": "Trading Post", "template": "Skyrim.esm:0x0165A8" } ],
+  "placements": [
+    { "base": "MF_Shopkeeper", "cell": "MF_Shop", "position": { "x": 0, "y": 128, "z": 0 }, "persistent": true },
+    { "editorId": "MF_ShopChestRef", "base": "MF_ShopChest", "cell": "MF_Shop",
+      "position": { "x": 0, "y": 256, "z": 0 }, "persistent": true } ] }
+```
+(Full worked spec: `examples/vendor_spec.json`.)
+
+Why each piece:
+- **`merchantContainer` is a PLACEMENT ref**, not the bare container — only a placed chest holds the
+  gold the engine reads. Put `VendorGoldMisc` (`0x072AE7`) in it or the vendor has no money to buy with.
+- **`JobMerchantFaction` is auto-added** to any NPC in an in-spec vendor faction — the vanilla
+  `DialogueGeneric.OfferServicesTopic` ("I'd like to trade") is gated on `GetInFaction
+  JobMerchantFaction` + `GetOffersServicesNow`. You never emit that topic; it's universal vanilla
+  dialogue that appears on any conversable vendor-faction NPC during trade hours.
+- **Conversable.** No `greeting`/`dialogue` ⇒ no dialogue menu ⇒ the trade prompt can't appear
+  (`validate` flags this). Same load-only rule as all dialogue (new game or save+reload).
+
+Verify structurally: `factdiag <plugin> 0x000804` and diff against vanilla Belethor `factdiag
+<Skyrim.esm> 0x09CAF5` — same flags / VendorValues / buy-sell list / merchant container shape.
+**Whether the barter menu actually opens needs a Proton/Skyrim launch** (the reachable-NPC +
+load-registration rules from the conversational-NPC recipe apply).
+
 ## "Two NPCs arguing" (SCEN multi-actor conversation — STRUCTURAL ONLY, not yet in-game confirmed)
 
 A `scene` is NPCs talking to **each other**, not the player. It's hosted by a quest whose **aliases**

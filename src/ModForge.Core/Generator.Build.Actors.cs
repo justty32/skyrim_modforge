@@ -75,13 +75,33 @@ public static partial class Generator
                         Resolve($"npc '{n.EditorId}' spell", spellRef, fk =>
                             npcRec.ActorEffect!.Add(new FormLink<ISpellRecordGetter>(fk)));
                 }
+                bool joinsVendorFaction = false;
                 foreach (var factionRef in n.Factions)
+                {
+                    if (!LooksExternalRef(factionRef) && vendorFactionEds.Contains(factionRef)) joinsVendorFaction = true;
                     Resolve($"npc '{n.EditorId}' faction", factionRef, fk =>
                     {
                         var rp = new RankPlacement { Rank = 0 };
                         rp.Faction.SetTo(fk);
                         npcRec.Factions.Add(rp);
                     });
+                }
+                // A member of an in-spec VENDOR faction must also be in JobMerchantFaction (Skyrim.esm:
+                // 0x051596): the vanilla generic "I'd like to trade" topic (DialogueGeneric.OfferServices
+                // Topic) gates on GetInFaction JobMerchantFaction + GetOffersServicesNow. Add it once
+                // (unless the spec already lists it) so the trade prompt actually surfaces.
+                if (joinsVendorFaction)
+                {
+                    var jobMerchant = new FormKey(ModKey.FromNameAndExtension("Skyrim.esm"), 0x051596);
+                    bool already = npcRec.Factions.Any(rp => rp.Faction.FormKey == jobMerchant);
+                    if (!already)
+                    {
+                        var rp = new RankPlacement { Rank = 0 };
+                        rp.Faction.SetTo(jobMerchant);
+                        npcRec.Factions.Add(rp);
+                        linksWired++; extLinks++;
+                    }
+                }
             }
         }
 

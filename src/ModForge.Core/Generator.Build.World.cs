@@ -252,6 +252,7 @@ public static partial class Generator
             var deferredAnchorEds = new HashSet<string>(
                 deferredTargetWires.Select(w => w.Ref)
                     .Concat(deferredLocationWires.Select(w => w.Ref))
+                    .Concat(MerchantContainerRefs())   // the merchant chest holds gold/stock — must persist
                     .Where(r => !string.IsNullOrWhiteSpace(r) && !LooksExternalRef(r)),
                 StringComparer.OrdinalIgnoreCase);
             foreach (var pl in spec.Placements)

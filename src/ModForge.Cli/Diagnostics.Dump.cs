@@ -224,6 +224,19 @@ internal static partial class Program
                 }
             }
 
+            if (r is IFactionGetter fact && fact.Flags.HasFlag(Faction.FactionFlag.Vendor))
+            {
+                Console.WriteLine($"      vendor: flags={fact.Flags}");
+                if (fact.VendorValues is { } vv)
+                    Console.WriteLine($"      vendorValues: hours={vv.StartHour}-{vv.EndHour} radius={vv.Radius} buysStolen={vv.OnlyBuysStolenItems} notSellBuy={vv.NotSellBuy}");
+                if (!fact.VendorBuySellList.IsNull)
+                    Console.WriteLine($"      sellBuyList -> {Ref(fact.VendorBuySellList.FormKey)}" + (fact.VendorValues is { NotSellBuy: true } ? " (NOT-sell)" : ""));
+                if (!fact.MerchantContainer.IsNull)
+                    Console.WriteLine($"      merchantContainer -> {Ref(fact.MerchantContainer.FormKey)}");
+                if (fact.VendorLocation is { } vloc && vloc.Target is ILocationTargetGetter lt && !lt.Link.FormKey.IsNull)
+                    Console.WriteLine($"      vendorLocation -> {Ref(lt.Link.FormKey)} (radius {vloc.Radius})");
+            }
+
             if (r is IRelationshipGetter rel)
                 Console.WriteLine($"      relationship: parent={Ref(rel.Parent.FormKey)}  child={Ref(rel.Child.FormKey)}  rank={rel.Rank}");
 
