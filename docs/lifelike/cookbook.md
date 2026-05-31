@@ -129,6 +129,67 @@ faction (see the [hireable-follower gotcha](gotchas.md)) are only what make it p
   "npcs": [ { "editorId": "MF_Companion", ..., "packages": [ "MF_FollowPlayer" ] } ] }
 ```
 
+## "Recruitable follower" (hire → follow → dismiss), in-game confirmed
+
+Hard-won lessons (It.27–It.30 — see the [follower gotchas](gotchas.md) and probe everything with
+`infodiag` first):
+
+- **You cannot reuse vanilla's PAID hireling line.** Every recruit INFO in `HirelingQuestTopic1` is
+  gated `GetIsID==<a specific vanilla mercenary>`, so a custom NPC fails them all (and the topic even
+  *vanishes* once you can afford it). `PotentialHireling` membership alone only buys the refusal line.
+- **`SetPlayerTeammate(true)` ≠ follows.** It makes her fight for you and obey commands, but physical
+  following needs a **Follow package** targeting the player.
+- **Don't piggyback `CurrentFollowerFaction` for dismiss.** Vanilla's dismiss line is driven by the
+  *DialogueFollower quest* and only releases followers it registered; a manually-faction'd NPC gets the
+  "you're dismissed" notification but keeps following. **Manage follower state yourself.**
+
+**Two paths that DO work for a custom NPC:**
+
+**(a) Free "Follow me, I need your help"** — reuse vanilla's free-follow topic (`0x0B0EE6`), which gates
+on relationship + follower voice, *not* GetIsID. Needs: a follower voice (e.g. `FemaleEvenToned
+0x013ADD`), `PotentialFollowerFaction 0x05C84D`, **not** `PotentialHireling`, a `greeting` (so she's
+conversable), and a tiny quest script setting the relationship (a static player RELA reads 0 at
+runtime). See `examples/follower_hireable_spec.json` + `MFHireFollowerSetup.psc`.
+
+**(b) Paid, fully self-managed** (recommended — reliable hire *and* dismiss). An OWN flag faction is the
+"is my follower" state; OWN recruit + dismiss topics carry result fragments; the Follow package gates on
+the flag. Skeleton (full: `examples/follower_paid_spec.json` + `MFHirePaidRecruit/Dismiss.psc`):
+
+```jsonc
+{ "factions": [ { "editorId": "MF_FollowerFlag", "name": "My Follower" } ],
+  "packages": [
+    { "editorId": "MF_FollowPkg", "template": "Skyrim.esm:0x019B2C",
+      "follow": { "target": "" },                                   // ⇒ player
+      "conditions": [ { "function": "GetInFaction", "comparison": "==", "value": 1,
+                        "param": "MF_FollowerFlag", "runOn": "Subject" } ] }  // follow only while hired
+  ],
+  "npcs": [ { "editorId": "MF_Merc", "voiceType": "Skyrim.esm:0x013ADD", "greeting": "Coin talks.",
+              "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],   // citizenship, NOT a follower faction
+              "packages": [ "MF_FollowPkg" ], "unique": true } ],
+  "quests": [ { "editorId": "MF_Q", "startGameEnabled": true } ],
+  "dialogue": [
+    { "editorId": "MF_Hire", "questEditorId": "MF_Q", "speakerNpcEditorId": "MF_Merc",
+      "prompt": "Here's 500 gold. Fight at my side.", "responses": [ "Lead the way." ], "goodbye": true,
+      "conditions": [                                                  // hide unless affordable & not hired
+        { "function": "GetItemCount", "comparison": ">=", "value": 500, "param": "Skyrim.esm:0x00000F",
+          "runOn": "Reference", "reference": "Skyrim.esm:0x000014" },
+        { "function": "GetInFaction", "comparison": "==", "value": 0, "param": "MF_FollowerFlag", "runOn": "Subject" } ],
+      "resultScript": "MFHirePaidRecruit", "resultScriptSource": "scripts/MFHirePaidRecruit.psc",
+      "resultProperties": [ { "name": "Gold001", "type": "object", "objectEditorId": "Skyrim.esm:0x00000F" },
+        { "name": "FollowerFaction", "type": "object", "objectEditorId": "MF_FollowerFlag" },
+        { "name": "GoldCost", "type": "int", "int": 500 }, { "name": "RelRank", "type": "int", "int": 3 } ] },
+    { "editorId": "MF_Dismiss", "questEditorId": "MF_Q", "speakerNpcEditorId": "MF_Merc",
+      "prompt": "Let's part ways.", "responses": [ "Aye." ], "goodbye": true,
+      "conditions": [ { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "MF_FollowerFlag", "runOn": "Subject" } ],
+      "resultScript": "MFHirePaidDismiss", "resultScriptSource": "scripts/MFHirePaidDismiss.psc",
+      "resultProperties": [ { "name": "FollowerFaction", "type": "object", "objectEditorId": "MF_FollowerFlag" } ] }
+  ] }
+```
+Recruit fragment: `AddToFaction(FollowerFaction)` + `SetPlayerTeammate(true)` (after taking gold).
+Dismiss fragment: `RemoveFromFaction(FollowerFaction)` + `SetPlayerTeammate(false)` + `EvaluatePackage()`.
+(Trade/"wait" aren't wired — add them as own topics: `OpenInventory(true)` for trade, a swap to a
+wait/sandbox package for "wait here".)
+
 ## "Usable interior cell" (lighting + floor, not a black void)
 
 A brand-new interior cell needs three things or it's a pitch-black void you fall through:

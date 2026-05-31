@@ -21,6 +21,9 @@ dotnet run ... -- mgefdiag       <plugin> <0xFORMID>   # MGEF: archetype/AV/flag
 dotnet run ... -- lightdiag      <plugin> [0xFORMID]   # LIGH (no ID lists room-fill candidates)
 dotnet run ... -- refpos         <plugin> <0xFORMID>   # REFR/ACHR: position+rotation+base (anchor placements on known navmesh)
 dotnet run ... -- cellblk        <plugin> [0xFORMID]   # Cell block/sub-block by FormID
+dotnet run ... -- infodiag       <plugin> <0xFORMID> [substr]  # INFO: responses + FULL CTDA conditions + OnEnd VMAD fragment, for a topic OR every topic a quest owns
+dotnet run ... -- factdiag       <plugin> <0xFORMID>   # FACT: flags / ranks / inter-faction relations
+dotnet run ... -- reladiag       <plugin> <0xFORMID>   # RELA: one record, or every RELA referencing the FormID as parent/child
 
 # Build / inspect round-trip
 dotnet run ... -- validate <spec.json>              # ALWAYS run first
@@ -39,6 +42,11 @@ Tips:
 - **`cellblk` against `Skyrim.esm`** cross-checks the interior block/sub-block formula
   (block = id%10, sub = (id/10)%10) — use it to confirm a vanilla-cell override lands in the
   right GRUP without an in-game cycle.
+- **`infodiag` is THE probe before reusing any vanilla dialogue path.** Dump the topic's INFO CTDA
+  stack to see what a generated NPC must satisfy — this is how the It.27 follower bug was cracked
+  (every paid-recruit INFO is `GetIsID==<a specific vanilla mercenary>`, so a custom NPC can never
+  pass; `infodiag Skyrim.esm 0x0BCC84`). It also prints each INFO's OnEnd VMAD fragment, so you can
+  see whether a vanilla line runs a result script you'd need to replicate.
 - **`MODFORGE_DEBUG=1`** prints the full stack trace on error (otherwise just `ERROR: Type: msg`).
 
 ## In-game console (for testing generated NPCs)
