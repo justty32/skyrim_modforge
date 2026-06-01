@@ -19,7 +19,8 @@
         "NoDuration",
         "NoArea"
       ],
-      "projectile": "Skyrim.esm:0x10FBEA"
+      "projectile": "Skyrim.esm:0x0002F774",
+      "castingArt": "Skyrim.esm:0x000334B9"
     }
   ],
   "spells": [

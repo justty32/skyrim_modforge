@@ -15,7 +15,8 @@
       "baseCost": 0,
       "flags": [
         "NoHitEvent"
-      ]
+      ],
+      "projectile": "Skyrim.esm:0x00013DF4"
     }
   ],
   "spells": [
