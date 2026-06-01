@@ -205,4 +205,27 @@ public class ShoutTests
         spec.WordsOfPower.Add(new WordOfPowerSpec { EditorId = "MF_W1", Translation = "Dup" });
         Assert.Contains(Generator.Validate(spec), p => p.Contains("duplicate editorId 'MF_W1'"));
     }
+
+    [Fact]
+    public void ReleaseSound_IsWired_AsTheThuumVoice()
+    {
+        // The Release sound is the Thu'um the player yells (e.g. a VOCShoutFX… voice). Without it a
+        // shout fires silently even with a projectile. Default type is Release.
+        var spec = MakeShoutSpec();
+        spec.MagicEffects[0].Sounds.Add(new MagicEffectSoundSpec { Sound = "Skyrim.esm:0x0007F8E6" });
+        var mg = Build(spec).MagicEffects.Single(x => x.EditorID == "MF_FrostFx");
+        var rel = Assert.Single(mg.Sounds.Where(s => s.Type == MagicEffect.SoundType.Release));
+        Assert.Equal(0x07F8E6u, rel.Sound.FormKey.ID);
+        Assert.Equal("Skyrim.esm", rel.Sound.FormKey.ModKey.FileName);
+    }
+
+    [Fact]
+    public void InvalidSoundType_Warns_AndIsSkipped()
+    {
+        var spec = MakeShoutSpec();
+        spec.MagicEffects[0].Sounds.Add(new MagicEffectSoundSpec { Type = "Bogus", Sound = "Skyrim.esm:0x0007F8E6" });
+        var result = Generator.Build(spec, ModKey.FromNameAndExtension(spec.PluginName));
+        Assert.Contains(result.Warnings, w => w.Contains("MF_FrostFx") && w.Contains("sound type 'Bogus'"));
+        Assert.Empty(result.Mod.MagicEffects.Single(x => x.EditorID == "MF_FrostFx").Sounds);
+    }
 }

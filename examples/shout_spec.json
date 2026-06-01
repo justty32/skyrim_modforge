@@ -20,7 +20,13 @@
         "NoArea"
       ],
       "projectile": "Skyrim.esm:0x0002F774",
-      "castingArt": "Skyrim.esm:0x000334B9"
+      "castingArt": "Skyrim.esm:0x000334B9",
+      "sounds": [
+        {
+          "type": "Release",
+          "sound": "Skyrim.esm:0x0007F8E6"
+        }
+      ]
     }
   ],
   "spells": [

@@ -47,7 +47,13 @@ public sealed class MagicEffectSpec
     public string CastingArt { get; set; } = "";        // ARTO — FX at the caster's hands
     public string HitEffectArt { get; set; } = "";      // ARTO — FX at the impact point
     public string Explosion { get; set; } = "";          // EXPL — AoE explosion on impact
+    // Sounds (SNDD) — per-phase sound descriptors. The big one for a SHOUT is `Release`: the Thu'um
+    // VOICE the player yells (e.g. VOCShoutFX… for "FUS RO DAH"). Without it a shout fires silently
+    // even with a projectile. Other phases: SheathDraw / Charge / Ready / ConcentrationCastLoop / OnHit.
+    public List<MagicEffectSoundSpec> Sounds { get; set; } = new();
 }
+// One MGEF sound: which phase + the SoundDescriptor (SNDR) ref. `type` defaults to Release (cast-out).
+public sealed class MagicEffectSoundSpec { public string Type { get; set; } = "Release"; public string Sound { get; set; } = ""; }
 // One magic effect on a spell/potion: a MagicEffect ref + magnitude/area/duration (EffectData).
 public sealed class EffectSpec { public string MagicEffect { get; set; } = ""; public float Magnitude { get; set; } public int Area { get; set; } public int Duration { get; set; } }
 // Class (CLAS): an actor's "profession" — drives its attribute distribution + favoured skills (and,

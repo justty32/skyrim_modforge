@@ -16,7 +16,13 @@
       "flags": [
         "NoHitEvent"
       ],
-      "projectile": "Skyrim.esm:0x00013DF4"
+      "projectile": "Skyrim.esm:0x00013DF4",
+      "sounds": [
+        {
+          "type": "Release",
+          "sound": "Skyrim.esm:0x000A0F52"
+        }
+      ]
     }
   ],
   "spells": [

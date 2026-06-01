@@ -503,6 +503,25 @@ public static partial class Generator
                 Resolve($"magicEffect '{me.EditorId}' castingArt",   me.CastingArt,   fk => mgef.CastingArt.SetTo(fk));
                 Resolve($"magicEffect '{me.EditorId}' hitEffectArt", me.HitEffectArt, fk => mgef.HitEffectArt.SetTo(fk));
                 Resolve($"magicEffect '{me.EditorId}' explosion",    me.Explosion,    fk => mgef.Explosion.SetTo(fk));
+                // Sounds (esp. Release = the Thu'um voice for a shout). Each resolves its SNDR ref and
+                // appends a MagicEffectSound of the named phase (default Release). Sounds is null on a
+                // fresh MGEF — materialize the list before appending.
+                if (me.Sounds.Count > 0) mgef.Sounds ??= new();
+                foreach (var snd in me.Sounds)
+                {
+                    if (string.IsNullOrWhiteSpace(snd.Sound)) continue;
+                    if (!Enum.TryParse<MagicEffect.SoundType>(snd.Type, ignoreCase: true, out var phase))
+                    {
+                        Warn($"  ! magicEffect '{me.EditorId}' sound type '{snd.Type}' invalid (Release/Charge/Ready/SheathDraw/ConcentrationCastLoop/OnHit) — skipped");
+                        continue;
+                    }
+                    Resolve($"magicEffect '{me.EditorId}' sound", snd.Sound, fk =>
+                    {
+                        var ms = new MagicEffectSound { Type = phase };
+                        ms.Sound.SetTo(fk);
+                        mgef.Sounds.Add(ms);
+                    });
+                }
             }
         }
     }

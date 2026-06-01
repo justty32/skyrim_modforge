@@ -5,54 +5,323 @@
   "description": "Describes the content of one Skyrim plugin. See docs/SPEC.md. Property names are matched case-insensitively by the generator.",
   "type": "object",
   "properties": {
-    "pluginName": { "type": "string", "description": "Output filename / ModKey, e.g. MyMod.esp" },
-    "esl": { "type": "boolean", "default": true, "description": "Light-master flag; keep new records <= 4096" },
-    "miscItems": { "type": "array", "items": { "$ref": "#/$defs/named" } },
-    "books": { "type": "array", "items": { "$ref": "#/$defs/book" } },
-    "weapons": { "type": "array", "items": { "$ref": "#/$defs/weapon" } },
-    "npcs": { "type": "array", "items": { "$ref": "#/$defs/npc" } },
-    "quests": { "type": "array", "items": { "$ref": "#/$defs/quest" } },
-    "dialogue": { "type": "array", "items": { "$ref": "#/$defs/dialogue" } },
-    "relationships": { "type": "array", "items": { "$ref": "#/$defs/relationship" }, "description": "Relationship (RELA): a directed NPC_-to-NPC_ bond at a rank; child defaults to the player NPC base 0x000014" },
-    "combatStyles": { "type": "array", "items": { "$ref": "#/$defs/combatStyle" }, "description": "CombatStyle (CSTY): HOW an NPC fights; reference via npc.combatStyle" },
-    "packages": { "type": "array", "items": { "$ref": "#/$defs/package" }, "description": "AI Package (PACK); assign via npc.packages. See SPEC.md for the template-input subobjects" },
-    "spells": { "type": "array", "items": { "$ref": "#/$defs/spell" } },
-    "magicEffects": { "type": "array", "items": { "$ref": "#/$defs/magicEffect" }, "description": "custom MGEF records an effect can point at by editorId" },
-    "potions": { "type": "array", "items": { "$ref": "#/$defs/potion" } },
-    "armors": { "type": "array", "items": { "$ref": "#/$defs/armor" } },
-    "factions": { "type": "array", "items": { "$ref": "#/$defs/faction" }, "description": "Faction (FACT); add a `vendor` sub-object to make members shopkeepers" },
-    "classes": { "type": "array", "items": { "$ref": "#/$defs/class" }, "description": "Class (CLAS): an npc 'profession' (attribute/skill weights); an npc class can point at one" },
-    "messages": { "type": "array", "items": { "$ref": "#/$defs/message" } },
-    "scripts": { "type": "array", "items": { "$ref": "#/$defs/script" } },
-    "cells": { "type": "array", "items": { "$ref": "#/$defs/cell" }, "description": "new interior cells (reach in-game via `coc <editorId>`)" },
-    "placements": { "type": "array", "items": { "$ref": "#/$defs/placement" }, "description": "put a base form into a cell at a position/rotation" },
-    "leveledItems": { "type": "array", "items": { "$ref": "#/$defs/leveledList" }, "description": "LeveledItem (LVLI): level-gated weighted item lists" },
-    "leveledNpcs": { "type": "array", "items": { "$ref": "#/$defs/leveledList" }, "description": "LeveledNpc (LVLN): level-gated weighted npc lists (also a placement `base` for a leveled-actor spawn)" },
-    "encounterZones": { "type": "array", "items": { "$ref": "#/$defs/encounterZone" }, "description": "EncounterZone (ECZN): level scaling / respawn for an area; a cell/spawn `encounterZone` points at one" },
-    "containers": { "type": "array", "items": { "$ref": "#/$defs/container" }, "description": "Container (CONT): a named container with item contents" },
-    "ingredients": { "type": "array", "items": { "$ref": "#/$defs/ingredient" }, "description": "Ingredient (INGR): alchemy reagent with effects" },
-    "ammunitions": { "type": "array", "items": { "$ref": "#/$defs/ammunition" }, "description": "Ammunition (AMMO): arrow/bolt with damage" },
-    "scrolls": { "type": "array", "items": { "$ref": "#/$defs/scroll" }, "description": "Scroll (SCRL): one-shot spell-as-item with effects + cast fields" },
-    "soulGems": { "type": "array", "items": { "$ref": "#/$defs/soulGem" }, "description": "SoulGem (SLGM)" },
-    "keys": { "type": "array", "items": { "$ref": "#/$defs/key" }, "description": "Key (KEYM)" },
-    "keywords": { "type": "array", "items": { "$ref": "#/$defs/keyword" }, "description": "Keyword (KYWD): define your own so in-spec records can reference it" },
-    "outfits": { "type": "array", "items": { "$ref": "#/$defs/outfit" }, "description": "Outfit (OTFT): a set of item refs an NPC can wear" },
-    "statics": { "type": "array", "items": { "$ref": "#/$defs/staticRec" }, "description": "Static (STAT): a world mesh (model path)" },
-    "activators": { "type": "array", "items": { "$ref": "#/$defs/activator" }, "description": "Activator (ACTI): an interactable world object" },
-    "furniture": { "type": "array", "items": { "$ref": "#/$defs/furniture" }, "description": "Furniture (FURN): a placeable interactive object (chair/bed/bench), vanilla or custom mesh" },
-    "sounds": { "type": "array", "items": { "$ref": "#/$defs/sound" }, "description": "SoundDescriptor (SNDR): wraps a user .wav/.xwm so records can FormLink to it" },
-    "assets": { "type": "string", "description": "External-resource source dir; package copies its Meshes/Textures/Sounds/Music/Seq sub-trees next to the .esp. See docs/external_assets.md" },
-    "textureSets": { "type": "array", "items": { "$ref": "#/$defs/textureSet" }, "description": "TextureSet (TXST): retexture an existing mesh without a new .nif" },
-    "recipes": { "type": "array", "items": { "$ref": "#/$defs/recipe" }, "description": "ConstructibleObject (COBJ): crafting recipes" },
-    "enchantments": { "type": "array", "items": { "$ref": "#/$defs/enchantment" }, "description": "Enchantment / Object Effect (ENCH): MGEF-based effects bundled into a weapon/staff/apparel enchantment a weapon/armor references via its `enchantment` field" },
-    "weathers": { "type": "array", "items": { "$ref": "#/$defs/weather" }, "description": "Weather (WTHR): a custom sky (cloud layers, per-time-of-day colours, precipitation, wind, fog)" },
-    "climates": { "type": "array", "items": { "$ref": "#/$defs/climate" }, "description": "Climate (CLMT): a weather cycle + sunrise/sunset timing + sun/moon textures; references weathers" },
-    "worldspaces": { "type": "array", "items": { "$ref": "#/$defs/worldspace" }, "description": "Worldspace (WRLD): a new exterior world (climate/water/parent/map). RECORD LAYER ONLY — terrain/LOD/navmesh stay CK-side." },
-    "regions": { "type": "array", "items": { "$ref": "#/$defs/region" }, "description": "Region (REGN): an area inside a worldspace + its weather table (the climate hook)." },
-    "perks": { "type": "array", "items": { "$ref": "#/$defs/perk" }, "description": "Perk (PERK): a passive ability / stat-or-combat modifier; attach to an NPC via npc.perks" },
-    "wordsOfPower": { "type": "array", "items": { "$ref": "#/$defs/wordOfPower" }, "description": "WordOfPower (WOOP): one dragon-language syllable; referenced by a shout's words[].word + a word wall's word" },
-    "shouts": { "type": "array", "items": { "$ref": "#/$defs/shout" }, "description": "Shout (SHOU): a dragon shout = up to 3 words, each a WOOP + a Voice SPEL. Unusable until learned at a word wall" },
-    "wordWalls": { "type": "array", "items": { "$ref": "#/$defs/wordWall" }, "description": "The learnable layer: a teaching quest + generated Papyrus fragment + WordWallTrigger placement that teaches a shout's word" }
+    "pluginName": {
+      "type": "string",
+      "description": "Output filename / ModKey, e.g. MyMod.esp"
+    },
+    "esl": {
+      "type": "boolean",
+      "default": true,
+      "description": "Light-master flag; keep new records <= 4096"
+    },
+    "miscItems": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/named"
+      }
+    },
+    "books": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/book"
+      }
+    },
+    "weapons": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/weapon"
+      }
+    },
+    "npcs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/npc"
+      }
+    },
+    "quests": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/quest"
+      }
+    },
+    "dialogue": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/dialogue"
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/relationship"
+      },
+      "description": "Relationship (RELA): a directed NPC_-to-NPC_ bond at a rank; child defaults to the player NPC base 0x000014"
+    },
+    "combatStyles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/combatStyle"
+      },
+      "description": "CombatStyle (CSTY): HOW an NPC fights; reference via npc.combatStyle"
+    },
+    "packages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/package"
+      },
+      "description": "AI Package (PACK); assign via npc.packages. See SPEC.md for the template-input subobjects"
+    },
+    "spells": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/spell"
+      }
+    },
+    "magicEffects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/magicEffect"
+      },
+      "description": "custom MGEF records an effect can point at by editorId"
+    },
+    "potions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/potion"
+      }
+    },
+    "armors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/armor"
+      }
+    },
+    "factions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/faction"
+      },
+      "description": "Faction (FACT); add a `vendor` sub-object to make members shopkeepers"
+    },
+    "classes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/class"
+      },
+      "description": "Class (CLAS): an npc 'profession' (attribute/skill weights); an npc class can point at one"
+    },
+    "messages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/message"
+      }
+    },
+    "scripts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/script"
+      }
+    },
+    "cells": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/cell"
+      },
+      "description": "new interior cells (reach in-game via `coc <editorId>`)"
+    },
+    "placements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/placement"
+      },
+      "description": "put a base form into a cell at a position/rotation"
+    },
+    "leveledItems": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/leveledList"
+      },
+      "description": "LeveledItem (LVLI): level-gated weighted item lists"
+    },
+    "leveledNpcs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/leveledList"
+      },
+      "description": "LeveledNpc (LVLN): level-gated weighted npc lists (also a placement `base` for a leveled-actor spawn)"
+    },
+    "encounterZones": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/encounterZone"
+      },
+      "description": "EncounterZone (ECZN): level scaling / respawn for an area; a cell/spawn `encounterZone` points at one"
+    },
+    "containers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/container"
+      },
+      "description": "Container (CONT): a named container with item contents"
+    },
+    "ingredients": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ingredient"
+      },
+      "description": "Ingredient (INGR): alchemy reagent with effects"
+    },
+    "ammunitions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ammunition"
+      },
+      "description": "Ammunition (AMMO): arrow/bolt with damage"
+    },
+    "scrolls": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/scroll"
+      },
+      "description": "Scroll (SCRL): one-shot spell-as-item with effects + cast fields"
+    },
+    "soulGems": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/soulGem"
+      },
+      "description": "SoulGem (SLGM)"
+    },
+    "keys": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/key"
+      },
+      "description": "Key (KEYM)"
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/keyword"
+      },
+      "description": "Keyword (KYWD): define your own so in-spec records can reference it"
+    },
+    "outfits": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/outfit"
+      },
+      "description": "Outfit (OTFT): a set of item refs an NPC can wear"
+    },
+    "statics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/staticRec"
+      },
+      "description": "Static (STAT): a world mesh (model path)"
+    },
+    "activators": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/activator"
+      },
+      "description": "Activator (ACTI): an interactable world object"
+    },
+    "furniture": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/furniture"
+      },
+      "description": "Furniture (FURN): a placeable interactive object (chair/bed/bench), vanilla or custom mesh"
+    },
+    "sounds": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/sound"
+      },
+      "description": "SoundDescriptor (SNDR): wraps a user .wav/.xwm so records can FormLink to it"
+    },
+    "assets": {
+      "type": "string",
+      "description": "External-resource source dir; package copies its Meshes/Textures/Sounds/Music/Seq sub-trees next to the .esp. See docs/external_assets.md"
+    },
+    "textureSets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/textureSet"
+      },
+      "description": "TextureSet (TXST): retexture an existing mesh without a new .nif"
+    },
+    "recipes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/recipe"
+      },
+      "description": "ConstructibleObject (COBJ): crafting recipes"
+    },
+    "enchantments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/enchantment"
+      },
+      "description": "Enchantment / Object Effect (ENCH): MGEF-based effects bundled into a weapon/staff/apparel enchantment a weapon/armor references via its `enchantment` field"
+    },
+    "weathers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/weather"
+      },
+      "description": "Weather (WTHR): a custom sky (cloud layers, per-time-of-day colours, precipitation, wind, fog)"
+    },
+    "climates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/climate"
+      },
+      "description": "Climate (CLMT): a weather cycle + sunrise/sunset timing + sun/moon textures; references weathers"
+    },
+    "worldspaces": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/worldspace"
+      },
+      "description": "Worldspace (WRLD): a new exterior world (climate/water/parent/map). RECORD LAYER ONLY — terrain/LOD/navmesh stay CK-side."
+    },
+    "regions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/region"
+      },
+      "description": "Region (REGN): an area inside a worldspace + its weather table (the climate hook)."
+    },
+    "perks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/perk"
+      },
+      "description": "Perk (PERK): a passive ability / stat-or-combat modifier; attach to an NPC via npc.perks"
+    },
+    "wordsOfPower": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/wordOfPower"
+      },
+      "description": "WordOfPower (WOOP): one dragon-language syllable; referenced by a shout's words[].word + a word wall's word"
+    },
+    "shouts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/shout"
+      },
+      "description": "Shout (SHOU): a dragon shout = up to 3 words, each a WOOP + a Voice SPEL. Unusable until learned at a word wall"
+    },
+    "wordWalls": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/wordWall"
+      },
+      "description": "The learnable layer: a teaching quest + generated Papyrus fragment + WordWallTrigger placement that teaches a shout's word"
+    }
   },
   "additionalProperties": false,
   "$defs": {
@@ -63,292 +332,1084 @@
     },
     "effect": {
       "type": "object",
-      "required": ["magicEffect"],
+      "required": [
+        "magicEffect"
+      ],
       "properties": {
-        "magicEffect": { "$ref": "#/$defs/ref", "description": "MagicEffect ref — a vanilla one (e.g. 'Skyrim.esm:0x03EB15' = AlchRestoreHealth; find <Skyrim.esm> <query> MagicEffect) OR an in-spec magicEffects entry's editorId" },
-        "magnitude": { "type": "number", "minimum": 0 },
-        "area": { "type": "integer", "minimum": 0 },
-        "duration": { "type": "integer", "minimum": 0, "description": "seconds; 0 = instant" }
+        "magicEffect": {
+          "$ref": "#/$defs/ref",
+          "description": "MagicEffect ref — a vanilla one (e.g. 'Skyrim.esm:0x03EB15' = AlchRestoreHealth; find <Skyrim.esm> <query> MagicEffect) OR an in-spec magicEffects entry's editorId"
+        },
+        "magnitude": {
+          "type": "number",
+          "minimum": 0
+        },
+        "area": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duration": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "seconds; 0 = instant"
+        }
       }
     },
     "weapon": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "value": { "type": "integer", "minimum": 0 },
-        "weight": { "type": "number", "minimum": 0 },
-        "damage": { "type": "integer", "minimum": 0, "description": "base damage; functional weapon needs this > 0" },
-        "speed": { "type": "number", "minimum": 0, "description": "swing speed (~1.0 normal); defaults to 1.0 if any stat is set" },
-        "reach": { "type": "number", "minimum": 0, "description": "reach (~1.0 normal); defaults to 1.0 if any stat is set" },
-        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } },
-        "enchantment": { "$ref": "#/$defs/ref", "description": "ENCH ref — an in-spec enchantments entry or a vanilla ObjectEffect (<master>:0xFORMID)" },
-        "enchantmentAmount": { "type": "integer", "minimum": 0, "description": "the weapon's charge pool (casts before recharge); e.g. 1500-3000; 0 = engine auto-calc" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0
+        },
+        "damage": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "base damage; functional weapon needs this > 0"
+        },
+        "speed": {
+          "type": "number",
+          "minimum": 0,
+          "description": "swing speed (~1.0 normal); defaults to 1.0 if any stat is set"
+        },
+        "reach": {
+          "type": "number",
+          "minimum": 0,
+          "description": "reach (~1.0 normal); defaults to 1.0 if any stat is set"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "enchantment": {
+          "$ref": "#/$defs/ref",
+          "description": "ENCH ref — an in-spec enchantments entry or a vanilla ObjectEffect (<master>:0xFORMID)"
+        },
+        "enchantmentAmount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "the weapon's charge pool (casts before recharge); e.g. 1500-3000; 0 = engine auto-calc"
+        }
       }
     },
     "enchantment": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "enchantType": { "enum": ["weapon", "apparel", "armor", "staff"], "default": "weapon", "description": "weapon = cast-on-strike (charge); apparel = constant-effect (always-on while worn); staff = staff cast-on-use (charge)" },
-        "castType": { "enum": ["ConstantEffect", "FireAndForget", "Concentration"], "description": "optional — overrides the per-enchantType default" },
-        "targetType": { "enum": ["Self", "Touch", "Aimed", "TargetActor", "TargetLocation"], "description": "optional — overrides the per-enchantType default" },
-        "enchantmentCost": { "type": "integer", "minimum": 0, "description": "per-cast charge cost (weapon/staff) / worn cost (apparel)" },
-        "chargeTime": { "type": "number", "minimum": 0, "description": "staff cast charge-up (vanilla staves ~0.5)" },
-        "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" }, "description": "MGEF-based effects (needs at least one)" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "enchantType": {
+          "enum": [
+            "weapon",
+            "apparel",
+            "armor",
+            "staff"
+          ],
+          "default": "weapon",
+          "description": "weapon = cast-on-strike (charge); apparel = constant-effect (always-on while worn); staff = staff cast-on-use (charge)"
+        },
+        "castType": {
+          "enum": [
+            "ConstantEffect",
+            "FireAndForget",
+            "Concentration"
+          ],
+          "description": "optional — overrides the per-enchantType default"
+        },
+        "targetType": {
+          "enum": [
+            "Self",
+            "Touch",
+            "Aimed",
+            "TargetActor",
+            "TargetLocation"
+          ],
+          "description": "optional — overrides the per-enchantType default"
+        },
+        "enchantmentCost": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "per-cast charge cost (weapon/staff) / worn cost (apparel)"
+        },
+        "chargeTime": {
+          "type": "number",
+          "minimum": 0,
+          "description": "staff cast charge-up (vanilla staves ~0.5)"
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/effect"
+          },
+          "description": "MGEF-based effects (needs at least one)"
+        }
       }
     },
     "spell": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" }, "description": "magic effects (does nothing without at least one)" },
-        "spellType": { "enum": ["Spell", "Disease", "Power", "LesserPower", "Ability", "Poison", "Addiction", "Voice"] },
-        "castType": { "enum": ["ConstantEffect", "FireAndForget", "Concentration"] },
-        "targetType": { "enum": ["Self", "Touch", "Aimed", "TargetActor", "TargetLocation"] },
-        "baseCost": { "type": "integer", "minimum": 0, "description": "magicka cost" },
-        "chargeTime": { "type": "number", "minimum": 0 }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/effect"
+          },
+          "description": "magic effects (does nothing without at least one)"
+        },
+        "spellType": {
+          "enum": [
+            "Spell",
+            "Disease",
+            "Power",
+            "LesserPower",
+            "Ability",
+            "Poison",
+            "Addiction",
+            "Voice"
+          ]
+        },
+        "castType": {
+          "enum": [
+            "ConstantEffect",
+            "FireAndForget",
+            "Concentration"
+          ]
+        },
+        "targetType": {
+          "enum": [
+            "Self",
+            "Touch",
+            "Aimed",
+            "TargetActor",
+            "TargetLocation"
+          ]
+        },
+        "baseCost": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "magicka cost"
+        },
+        "chargeTime": {
+          "type": "number",
+          "minimum": 0
+        }
       }
     },
     "magicEffect": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "description": "a custom MGEF; reference it from an effect's magicEffect by editorId",
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "archetype": { "enum": ["ValueModifier", "Script", "Dispel", "CureDisease", "Absorb", "DualValueModifier", "Calm", "Demoralize", "Frenzy", "Disarm", "CommandSummoned", "Invisibility", "Light", "Lock", "Open", "Bound", "SummonCreature", "DetectLife", "Telekinesis", "Paralysis", "Reanimate", "SoulTrap", "TurnUndead", "Guide", "WerewolfFeed", "CureParalysis", "CureAddiction", "CurePoison", "Concussion", "ValueAndParts", "AccumulateMagnitude", "Stagger", "PeakValueModifier", "Cloak", "Werewolf", "SlowTime", "Rally", "EnhanceWeapon", "SpawnHazard", "Etherealize", "Banish", "SpawnScriptedRef", "Disguise", "GrabActor", "VampireLord"], "description": "what the effect does; ValueModifier is the common damage/heal/fortify" },
-        "actorValue": { "type": "string", "description": "the actor value it acts on, e.g. Health, Magicka, Stamina, MagickaRate" },
-        "magicSkill": { "type": "string", "description": "school: Alteration|Conjuration|Destruction|Illusion|Restoration (or None)" },
-        "resistValue": { "type": "string", "description": "actor value that resists it, e.g. ResistFire, ResistFrost, PoisonResist (or None)" },
-        "castType": { "enum": ["ConstantEffect", "FireAndForget", "Concentration"] },
-        "targetType": { "enum": ["Self", "Touch", "Aimed", "TargetActor", "TargetLocation"] },
-        "baseCost": { "type": "number", "minimum": 0 },
-        "flags": { "type": "array", "items": { "enum": ["Hostile", "Recover", "Detrimental", "SnapToNavmesh", "NoHitEvent", "DispelWithKeywords", "NoDuration", "NoMagnitude", "NoArea", "FXPersist", "GoryVisuals", "HideInUI", "NoRecast", "PowerAffectsMagnitude", "PowerAffectsDuration", "Painless", "NoHitEffect", "NoDeathDispel"] }, "description": "instant restore/damage: [NoDuration,NoArea] (+Hostile,Detrimental for damage); timed fortify: [Recover]. Recover on an instant effect cancels it." },
-        "association": { "$ref": "#/$defs/ref", "description": "summoned/bound form ref (only for Summon/Bound-type archetypes)" },
-        "projectile": { "$ref": "#/$defs/ref", "description": "PROJ ref — the bolt that travels; needed for an Aimed spell to be visible (e.g. Skyrim.esm:0x10FBEA)" },
-        "castingArt": { "$ref": "#/$defs/ref", "description": "ARTO ref — FX at the caster's hands (e.g. Skyrim.esm:0x01B211)" },
-        "hitEffectArt": { "$ref": "#/$defs/ref", "description": "ARTO ref — FX at the impact point" },
-        "explosion": { "$ref": "#/$defs/ref", "description": "EXPL ref — AoE explosion on impact" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "archetype": {
+          "enum": [
+            "ValueModifier",
+            "Script",
+            "Dispel",
+            "CureDisease",
+            "Absorb",
+            "DualValueModifier",
+            "Calm",
+            "Demoralize",
+            "Frenzy",
+            "Disarm",
+            "CommandSummoned",
+            "Invisibility",
+            "Light",
+            "Lock",
+            "Open",
+            "Bound",
+            "SummonCreature",
+            "DetectLife",
+            "Telekinesis",
+            "Paralysis",
+            "Reanimate",
+            "SoulTrap",
+            "TurnUndead",
+            "Guide",
+            "WerewolfFeed",
+            "CureParalysis",
+            "CureAddiction",
+            "CurePoison",
+            "Concussion",
+            "ValueAndParts",
+            "AccumulateMagnitude",
+            "Stagger",
+            "PeakValueModifier",
+            "Cloak",
+            "Werewolf",
+            "SlowTime",
+            "Rally",
+            "EnhanceWeapon",
+            "SpawnHazard",
+            "Etherealize",
+            "Banish",
+            "SpawnScriptedRef",
+            "Disguise",
+            "GrabActor",
+            "VampireLord"
+          ],
+          "description": "what the effect does; ValueModifier is the common damage/heal/fortify"
+        },
+        "actorValue": {
+          "type": "string",
+          "description": "the actor value it acts on, e.g. Health, Magicka, Stamina, MagickaRate"
+        },
+        "magicSkill": {
+          "type": "string",
+          "description": "school: Alteration|Conjuration|Destruction|Illusion|Restoration (or None)"
+        },
+        "resistValue": {
+          "type": "string",
+          "description": "actor value that resists it, e.g. ResistFire, ResistFrost, PoisonResist (or None)"
+        },
+        "castType": {
+          "enum": [
+            "ConstantEffect",
+            "FireAndForget",
+            "Concentration"
+          ]
+        },
+        "targetType": {
+          "enum": [
+            "Self",
+            "Touch",
+            "Aimed",
+            "TargetActor",
+            "TargetLocation"
+          ]
+        },
+        "baseCost": {
+          "type": "number",
+          "minimum": 0
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "Hostile",
+              "Recover",
+              "Detrimental",
+              "SnapToNavmesh",
+              "NoHitEvent",
+              "DispelWithKeywords",
+              "NoDuration",
+              "NoMagnitude",
+              "NoArea",
+              "FXPersist",
+              "GoryVisuals",
+              "HideInUI",
+              "NoRecast",
+              "PowerAffectsMagnitude",
+              "PowerAffectsDuration",
+              "Painless",
+              "NoHitEffect",
+              "NoDeathDispel"
+            ]
+          },
+          "description": "instant restore/damage: [NoDuration,NoArea] (+Hostile,Detrimental for damage); timed fortify: [Recover]. Recover on an instant effect cancels it."
+        },
+        "association": {
+          "$ref": "#/$defs/ref",
+          "description": "summoned/bound form ref (only for Summon/Bound-type archetypes)"
+        },
+        "projectile": {
+          "$ref": "#/$defs/ref",
+          "description": "PROJ ref — the bolt that travels; needed for an Aimed spell to be visible (e.g. Skyrim.esm:0x10FBEA)"
+        },
+        "castingArt": {
+          "$ref": "#/$defs/ref",
+          "description": "ARTO ref — FX at the caster's hands (e.g. Skyrim.esm:0x01B211)"
+        },
+        "hitEffectArt": {
+          "$ref": "#/$defs/ref",
+          "description": "ARTO ref — FX at the impact point"
+        },
+        "explosion": {
+          "$ref": "#/$defs/ref",
+          "description": "EXPL ref — AoE explosion on impact"
+        },
+        "sounds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "enum": [
+                  "Release",
+                  "Charge",
+                  "Ready",
+                  "SheathDraw",
+                  "ConcentrationCastLoop",
+                  "OnHit"
+                ],
+                "default": "Release"
+              },
+              "sound": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "MGEF sound descriptors; Release = the Thuum voice the player yells for a shout"
+        }
       }
     },
     "potion": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "value": { "type": "integer", "minimum": 0 },
-        "weight": { "type": "number", "minimum": 0 },
-        "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" }, "description": "magic effects (a potion is fully functional with one)" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/effect"
+          },
+          "description": "magic effects (a potion is fully functional with one)"
+        }
       }
     },
     "named": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "value": { "type": "integer", "minimum": 0 },
-        "weight": { "type": "number", "minimum": 0 },
-        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "keyword refs (weapons/misc; ignored on records that don't take keywords)" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          },
+          "description": "keyword refs (weapons/misc; ignored on records that don't take keywords)"
+        }
       }
     },
     "faction": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
         "vendor": {
           "type": "object",
           "description": "Vendor data (FACT VENV/VEND/VENC). Present => Vendor-flagged merchant faction; members are shopkeepers and the generic 'I'd like to trade' topic surfaces.",
           "properties": {
-            "startHour": { "type": "integer", "minimum": 0, "maximum": 24, "description": "shop opens (0..24)" },
-            "endHour": { "type": "integer", "minimum": 0, "maximum": 24, "description": "shop closes (0..24); must be > startHour" },
-            "radius": { "type": "integer", "minimum": 0, "description": "sell radius (0 = engine default)" },
-            "buysStolen": { "type": "boolean", "description": "OnlyBuysStolenItems — a fence" },
-            "sellBuyList": { "$ref": "#/$defs/ref", "description": "FormList of VendorItem keywords (e.g. Skyrim.esm:0x06CB48 VendorItemsMisc)" },
-            "notSellBuyList": { "type": "boolean", "description": "true => sellBuyList is a NOT-sell list (trade everything except)" },
-            "merchantContainer": { "$ref": "#/$defs/ref", "description": "a PLACEMENT editorId: the placed merchant chest (gold + stock)" }
+            "startHour": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 24,
+              "description": "shop opens (0..24)"
+            },
+            "endHour": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 24,
+              "description": "shop closes (0..24); must be > startHour"
+            },
+            "radius": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "sell radius (0 = engine default)"
+            },
+            "buysStolen": {
+              "type": "boolean",
+              "description": "OnlyBuysStolenItems — a fence"
+            },
+            "sellBuyList": {
+              "$ref": "#/$defs/ref",
+              "description": "FormList of VendorItem keywords (e.g. Skyrim.esm:0x06CB48 VendorItemsMisc)"
+            },
+            "notSellBuyList": {
+              "type": "boolean",
+              "description": "true => sellBuyList is a NOT-sell list (trade everything except)"
+            },
+            "merchantContainer": {
+              "$ref": "#/$defs/ref",
+              "description": "a PLACEMENT editorId: the placed merchant chest (gold + stock)"
+            }
           }
         }
       }
     },
     "book": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "text": { "type": "string" },
-        "template": { "type": "string", "description": "ref to a vanilla BOOK to clone a model from; a takeable/readable book needs one or it CRASHES on read" },
-        "value": { "type": "integer", "minimum": 0 },
-        "weight": { "type": "number", "minimum": 0 },
-        "flags": { "type": "array", "items": { "enum": ["Teaches", "CantBeTaken"] }, "description": "Book.Flag names" },
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "template": {
+          "type": "string",
+          "description": "ref to a vanilla BOOK to clone a model from; a takeable/readable book needs one or it CRASHES on read"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "Teaches",
+              "CantBeTaken"
+            ]
+          },
+          "description": "Book.Flag names"
+        },
         "teaches": {
           "type": "object",
           "description": "a teaching book: a spell tome (grants a SPEL) or a skill book (raises a Skill) on first read",
           "properties": {
-            "kind": { "enum": ["spell", "skill"] },
-            "spell": { "type": "string", "description": "ref to a SPEL (in-spec editorId or <master>:0xFORMID); when kind=spell" },
-            "skill": { "enum": ["OneHanded", "TwoHanded", "Archery", "Block", "Smithing", "HeavyArmor", "LightArmor", "Pickpocket", "Lockpicking", "Sneak", "Alchemy", "Speech", "Alteration", "Conjuration", "Destruction", "Illusion", "Restoration", "Enchanting"], "description": "when kind=skill" }
+            "kind": {
+              "enum": [
+                "spell",
+                "skill"
+              ]
+            },
+            "spell": {
+              "type": "string",
+              "description": "ref to a SPEL (in-spec editorId or <master>:0xFORMID); when kind=spell"
+            },
+            "skill": {
+              "enum": [
+                "OneHanded",
+                "TwoHanded",
+                "Archery",
+                "Block",
+                "Smithing",
+                "HeavyArmor",
+                "LightArmor",
+                "Pickpocket",
+                "Lockpicking",
+                "Sneak",
+                "Alchemy",
+                "Speech",
+                "Alteration",
+                "Conjuration",
+                "Destruction",
+                "Illusion",
+                "Restoration",
+                "Enchanting"
+              ],
+              "description": "when kind=skill"
+            }
           }
         }
       }
     },
     "armor": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "value": { "type": "integer", "minimum": 0 },
-        "weight": { "type": "number", "minimum": 0 },
-        "armorRating": { "type": "number", "minimum": 0 },
-        "armorType": { "enum": ["light", "heavy", "clothing", "lightArmor", "heavyArmor"], "description": "armor class; default clothing" },
-        "slots": { "type": "array", "items": { "type": "string" }, "description": "biped slots occupied, e.g. Body, Head, Hands, Feet, Forearms, Calves, Shield (BipedObjectFlag names)" },
-        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } },
-        "enchantment": { "$ref": "#/$defs/ref", "description": "ENCH ref — normally an in-spec apparel (constant-effect) enchantments entry, or a vanilla ObjectEffect (<master>:0xFORMID)" },
-        "template": { "type": "string", "description": "vanilla armor to clone for its Armature (worn mesh) + WorldModel + BodyTemplate (<master>:0xFORMID, e.g. Skyrim.esm:0x00012E49 ArmorIronCuirass). REQUIRED for the armor to be visible when equipped — a bare ARMO equips INVISIBLE." },
-        "model": { "type": "string", "description": "optional ground/world model .nif path; overrides the cloned template's. The worn mesh still comes from the template's Armature, so pair `model` with a `template`." }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0
+        },
+        "armorRating": {
+          "type": "number",
+          "minimum": 0
+        },
+        "armorType": {
+          "enum": [
+            "light",
+            "heavy",
+            "clothing",
+            "lightArmor",
+            "heavyArmor"
+          ],
+          "description": "armor class; default clothing"
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "biped slots occupied, e.g. Body, Head, Hands, Feet, Forearms, Calves, Shield (BipedObjectFlag names)"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "enchantment": {
+          "$ref": "#/$defs/ref",
+          "description": "ENCH ref — normally an in-spec apparel (constant-effect) enchantments entry, or a vanilla ObjectEffect (<master>:0xFORMID)"
+        },
+        "template": {
+          "type": "string",
+          "description": "vanilla armor to clone for its Armature (worn mesh) + WorldModel + BodyTemplate (<master>:0xFORMID, e.g. Skyrim.esm:0x00012E49 ArmorIronCuirass). REQUIRED for the armor to be visible when equipped — a bare ARMO equips INVISIBLE."
+        },
+        "model": {
+          "type": "string",
+          "description": "optional ground/world model .nif path; overrides the cloned template's. The worn mesh still comes from the template's Armature, so pair `model` with a `template`."
+        }
       }
     },
     "message": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "description": { "type": "string" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
       }
     },
     "class": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "description": "Class (CLAS): an npc 'profession' — attribute/skill weights",
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "teaches": { "enum": ["OneHanded", "TwoHanded", "Archery", "Block", "Smithing", "HeavyArmor", "LightArmor", "Pickpocket", "Lockpicking", "Sneak", "Alchemy", "Speech", "Alteration", "Conjuration", "Destruction", "Illusion", "Restoration", "Enchanting"], "description": "a Skill the class can train (trainer NPCs)" },
-        "maxTrainingLevel": { "type": "integer", "minimum": 0, "maximum": 255 },
-        "healthWeight": { "type": "integer", "minimum": 0, "maximum": 255 },
-        "magickaWeight": { "type": "integer", "minimum": 0, "maximum": 255 },
-        "staminaWeight": { "type": "integer", "minimum": 0, "maximum": 255 },
-        "skillWeights": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 255 }, "description": "Skill name -> 0-255 favour, e.g. {\"Destruction\":100}" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "teaches": {
+          "enum": [
+            "OneHanded",
+            "TwoHanded",
+            "Archery",
+            "Block",
+            "Smithing",
+            "HeavyArmor",
+            "LightArmor",
+            "Pickpocket",
+            "Lockpicking",
+            "Sneak",
+            "Alchemy",
+            "Speech",
+            "Alteration",
+            "Conjuration",
+            "Destruction",
+            "Illusion",
+            "Restoration",
+            "Enchanting"
+          ],
+          "description": "a Skill the class can train (trainer NPCs)"
+        },
+        "maxTrainingLevel": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "healthWeight": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "magickaWeight": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "staminaWeight": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "skillWeights": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "description": "Skill name -> 0-255 favour, e.g. {\"Destruction\":100}"
+        }
       }
     },
     "npc": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "factions": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "faction refs (in-spec or external)" },
-        "race": { "$ref": "#/$defs/ref", "description": "Race ref; needed (with class) for a functional actor" },
-        "class": { "$ref": "#/$defs/ref", "description": "Class ref" },
-        "outfit": { "$ref": "#/$defs/ref", "description": "Outfit ref -> DefaultOutfit" },
-        "level": { "type": "integer", "minimum": 0, "description": "fixed level (0 = default); needed for class-based stat auto-calc" },
-        "autoCalcStats": { "type": "boolean", "description": "derive H/M/S + skills from level + class (else flat 50/50/50 defaults)" },
-        "packages": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "PACK refs; the NPC's AI package list, evaluated in order" },
-        "voiceType": { "$ref": "#/$defs/ref", "description": "VTYP ref (e.g. MaleNord Skyrim.esm:0x013AE6); without one the NPC is silent" },
-        "crimeFaction": { "$ref": "#/$defs/ref", "description": "FACT ref; city-citizen identity, required for cross-cell Travel" },
-        "unique": { "type": "boolean", "description": "one-off actor (vs leveled); helps engine AI tracking + cross-cell travel" },
-        "combatStyle": { "$ref": "#/$defs/ref", "description": "CSTY ref; HOW the AI fights (magic/melee/ranged preference)" },
-        "spells": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "SPEL refs; the AI's spell list" },
-        "perks": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "PERK refs granted to the actor as passive ability/entry-point perks at game start" },
-        "aggression": { "enum": ["Unaggressive", "Aggressive", "VeryAggressive", "Frenzied"], "description": "WHETHER it initiates (default Unaggressive)" },
-        "confidence": { "enum": ["Cowardly", "Cautious", "Average", "Brave", "Foolhardy"], "description": "flee-vs-stand once attacked (default Cowardly = flees)" },
-        "assistance": { "enum": ["HelpsNobody", "HelpsAllies", "HelpsFriendsAndAllies"] },
-        "mood": { "enum": ["Neutral", "Angry", "Fear", "Happy", "Sad", "Surprised", "Puzzled", "Disgusted"] },
-        "energyLevel": { "type": "integer", "minimum": 0, "maximum": 100, "description": "vanilla actors typically 50" },
-        "greeting": { "type": "string", "description": "Hello line; when this NPC has custom dialogue, a Hello info is auto-emitted so it is conversable. Empty => default line" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "factions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          },
+          "description": "faction refs (in-spec or external)"
+        },
+        "race": {
+          "$ref": "#/$defs/ref",
+          "description": "Race ref; needed (with class) for a functional actor"
+        },
+        "class": {
+          "$ref": "#/$defs/ref",
+          "description": "Class ref"
+        },
+        "outfit": {
+          "$ref": "#/$defs/ref",
+          "description": "Outfit ref -> DefaultOutfit"
+        },
+        "level": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "fixed level (0 = default); needed for class-based stat auto-calc"
+        },
+        "autoCalcStats": {
+          "type": "boolean",
+          "description": "derive H/M/S + skills from level + class (else flat 50/50/50 defaults)"
+        },
+        "packages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          },
+          "description": "PACK refs; the NPC's AI package list, evaluated in order"
+        },
+        "voiceType": {
+          "$ref": "#/$defs/ref",
+          "description": "VTYP ref (e.g. MaleNord Skyrim.esm:0x013AE6); without one the NPC is silent"
+        },
+        "crimeFaction": {
+          "$ref": "#/$defs/ref",
+          "description": "FACT ref; city-citizen identity, required for cross-cell Travel"
+        },
+        "unique": {
+          "type": "boolean",
+          "description": "one-off actor (vs leveled); helps engine AI tracking + cross-cell travel"
+        },
+        "combatStyle": {
+          "$ref": "#/$defs/ref",
+          "description": "CSTY ref; HOW the AI fights (magic/melee/ranged preference)"
+        },
+        "spells": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          },
+          "description": "SPEL refs; the AI's spell list"
+        },
+        "perks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          },
+          "description": "PERK refs granted to the actor as passive ability/entry-point perks at game start"
+        },
+        "aggression": {
+          "enum": [
+            "Unaggressive",
+            "Aggressive",
+            "VeryAggressive",
+            "Frenzied"
+          ],
+          "description": "WHETHER it initiates (default Unaggressive)"
+        },
+        "confidence": {
+          "enum": [
+            "Cowardly",
+            "Cautious",
+            "Average",
+            "Brave",
+            "Foolhardy"
+          ],
+          "description": "flee-vs-stand once attacked (default Cowardly = flees)"
+        },
+        "assistance": {
+          "enum": [
+            "HelpsNobody",
+            "HelpsAllies",
+            "HelpsFriendsAndAllies"
+          ]
+        },
+        "mood": {
+          "enum": [
+            "Neutral",
+            "Angry",
+            "Fear",
+            "Happy",
+            "Sad",
+            "Surprised",
+            "Puzzled",
+            "Disgusted"
+          ]
+        },
+        "energyLevel": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "vanilla actors typically 50"
+        },
+        "greeting": {
+          "type": "string",
+          "description": "Hello line; when this NPC has custom dialogue, a Hello info is auto-emitted so it is conversable. Empty => default line"
+        }
       }
     },
     "relationship": {
       "type": "object",
-      "required": ["editorId", "parent"],
+      "required": [
+        "editorId",
+        "parent"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "parent": { "$ref": "#/$defs/ref", "description": "NPC_ base ref (the relationship owner; usually the custom NPC)" },
-        "child": { "$ref": "#/$defs/ref", "description": "NPC_ base ref; defaults to the Player NPC base Skyrim.esm:0x000014. NOTE: must be an NPC_, NOT PlayerRef 0x000007 (an ACHR) — that CRASHES on load" },
-        "rank": { "enum": ["Lover", "Ally", "Confidant", "Friend", "Acquaintance", "Rival", "Foe", "Enemy", "Archnemesis"], "description": "Ally satisfies the vanilla free-follow gate" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parent": {
+          "$ref": "#/$defs/ref",
+          "description": "NPC_ base ref (the relationship owner; usually the custom NPC)"
+        },
+        "child": {
+          "$ref": "#/$defs/ref",
+          "description": "NPC_ base ref; defaults to the Player NPC base Skyrim.esm:0x000014. NOTE: must be an NPC_, NOT PlayerRef 0x000007 (an ACHR) — that CRASHES on load"
+        },
+        "rank": {
+          "enum": [
+            "Lover",
+            "Ally",
+            "Confidant",
+            "Friend",
+            "Acquaintance",
+            "Rival",
+            "Foe",
+            "Enemy",
+            "Archnemesis"
+          ],
+          "description": "Ally satisfies the vanilla free-follow gate"
+        }
       }
     },
     "combatStyle": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "offensiveMult": { "type": "number" },
-        "defensiveMult": { "type": "number" },
-        "groupOffensiveMult": { "type": "number" },
-        "equipMultMelee": { "type": "number" },
-        "equipMultMagic": { "type": "number", "description": "raise well above the others to make the AI prefer spells" },
-        "equipMultRanged": { "type": "number" },
-        "equipMultShout": { "type": "number" },
-        "equipMultUnarmed": { "type": "number" },
-        "equipMultStaff": { "type": "number" },
-        "avoidThreatChance": { "type": "number" },
-        "flags": { "type": "array", "items": { "type": "string" }, "description": "CombatStyle.Flag names, e.g. Dueling" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "offensiveMult": {
+          "type": "number"
+        },
+        "defensiveMult": {
+          "type": "number"
+        },
+        "groupOffensiveMult": {
+          "type": "number"
+        },
+        "equipMultMelee": {
+          "type": "number"
+        },
+        "equipMultMagic": {
+          "type": "number",
+          "description": "raise well above the others to make the AI prefer spells"
+        },
+        "equipMultRanged": {
+          "type": "number"
+        },
+        "equipMultShout": {
+          "type": "number"
+        },
+        "equipMultUnarmed": {
+          "type": "number"
+        },
+        "equipMultStaff": {
+          "type": "number"
+        },
+        "avoidThreatChance": {
+          "type": "number"
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "CombatStyle.Flag names, e.g. Dueling"
+        }
       }
     },
     "encounterZone": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "description": "EncounterZone (ECZN): level scaling + respawn for an area; a cell/spawn `encounterZone` points at one",
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "minLevel": { "type": "integer", "minimum": 0, "maximum": 255, "description": "floor of the spawn level range" },
-        "maxLevel": { "type": "integer", "minimum": 0, "maximum": 255, "description": "cap of the spawn level range; 0 = UNCAPPED (scales with the player — the vanilla dungeon idiom)" },
-        "rank": { "type": "integer", "minimum": 0, "maximum": 255, "description": "owner rank (0 if no owner)" },
-        "owner": { "$ref": "#/$defs/ref", "description": "optional FACT/NPC owner ref" },
-        "location": { "$ref": "#/$defs/ref", "description": "optional LCTN ref (map location)" },
-        "flags": { "type": "array", "items": { "enum": ["NeverResets", "MatchPcBelowMinimumLevel", "DisableCombatBoundary"] }, "description": "NeverResets = no respawn; MatchPcBelowMinimumLevel = below-min players get player-level spawns; DisableCombatBoundary = actors may chase out of the zone" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "minLevel": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255,
+          "description": "floor of the spawn level range"
+        },
+        "maxLevel": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255,
+          "description": "cap of the spawn level range; 0 = UNCAPPED (scales with the player — the vanilla dungeon idiom)"
+        },
+        "rank": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255,
+          "description": "owner rank (0 if no owner)"
+        },
+        "owner": {
+          "$ref": "#/$defs/ref",
+          "description": "optional FACT/NPC owner ref"
+        },
+        "location": {
+          "$ref": "#/$defs/ref",
+          "description": "optional LCTN ref (map location)"
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "NeverResets",
+              "MatchPcBelowMinimumLevel",
+              "DisableCombatBoundary"
+            ]
+          },
+          "description": "NeverResets = no respawn; MatchPcBelowMinimumLevel = below-min players get player-level spawns; DisableCombatBoundary = actors may chase out of the zone"
+        }
       }
     },
     "package": {
       "type": "object",
-      "required": ["editorId", "template"],
+      "required": [
+        "editorId",
+        "template"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "template": { "$ref": "#/$defs/ref", "description": "vanilla procedure template, e.g. Sandbox=Skyrim.esm:0x01C254, Travel=Skyrim.esm:0x016FAA" },
-        "flags": { "type": "array", "items": { "type": "string" }, "description": "Package.Flag names" },
-        "interruptFlags": { "type": "array", "items": { "type": "string" }, "description": "HellosToPlayer / AllowIdleChatter / WorldInteractions / ..." },
-        "preferredSpeed": { "enum": ["Walk", "Jog", "Run", "FastWalk"] },
-        "combatStyle": { "$ref": "#/$defs/ref" },
-        "ownerQuest": { "$ref": "#/$defs/ref" },
-        "schedule": { "type": "object", "description": "{ month, dayOfWeek, date, hour, minute, durationInMinutes }" },
-        "sandbox": { "type": "object", "description": "Sandbox template inputs (radius, allowEating, ...); see SPEC.md" },
-        "travel": { "type": "object", "description": "Travel template inputs (destination, ...); see SPEC.md" },
-        "useMagic": { "type": "object", "description": "UseMagic template inputs (spell, numToCastMax, ...); see SPEC.md" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "template": {
+          "$ref": "#/$defs/ref",
+          "description": "vanilla procedure template, e.g. Sandbox=Skyrim.esm:0x01C254, Travel=Skyrim.esm:0x016FAA"
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Package.Flag names"
+        },
+        "interruptFlags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "HellosToPlayer / AllowIdleChatter / WorldInteractions / ..."
+        },
+        "preferredSpeed": {
+          "enum": [
+            "Walk",
+            "Jog",
+            "Run",
+            "FastWalk"
+          ]
+        },
+        "combatStyle": {
+          "$ref": "#/$defs/ref"
+        },
+        "ownerQuest": {
+          "$ref": "#/$defs/ref"
+        },
+        "schedule": {
+          "type": "object",
+          "description": "{ month, dayOfWeek, date, hour, minute, durationInMinutes }"
+        },
+        "sandbox": {
+          "type": "object",
+          "description": "Sandbox template inputs (radius, allowEating, ...); see SPEC.md"
+        },
+        "travel": {
+          "type": "object",
+          "description": "Travel template inputs (destination, ...); see SPEC.md"
+        },
+        "useMagic": {
+          "type": "object",
+          "description": "UseMagic template inputs (spell, numToCastMax, ...); see SPEC.md"
+        }
       }
     },
     "quest": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "startGameEnabled": { "type": "boolean", "description": "auto-start on load (default true; required for hosted dialogue)" },
-        "priority": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "startGameEnabled": {
+          "type": "boolean",
+          "description": "auto-start on load (default true; required for hosted dialogue)"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
         "objectives": {
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["index"],
+            "required": [
+              "index"
+            ],
             "properties": {
-              "index": { "type": "integer", "minimum": 0 },
-              "text": { "type": "string" },
-              "showStage": { "type": "integer", "description": "stage index that displays this objective (-1 = none)" },
-              "completeStage": { "type": "integer", "description": "stage index that completes this objective (-1 = none)" }
+              "index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "text": {
+                "type": "string"
+              },
+              "showStage": {
+                "type": "integer",
+                "description": "stage index that displays this objective (-1 = none)"
+              },
+              "completeStage": {
+                "type": "integer",
+                "description": "stage index that completes this objective (-1 = none)"
+              }
             }
           }
         },
@@ -357,13 +1418,33 @@
           "description": "quest milestones; index unique + ascending. See SPEC.md 'quest stages'.",
           "items": {
             "type": "object",
-            "required": ["index"],
+            "required": [
+              "index"
+            ],
             "properties": {
-              "index": { "type": "integer", "minimum": 0 },
-              "logEntry": { "type": "string", "description": "journal text shown when the quest reaches this stage" },
-              "completeQuest": { "type": "boolean", "description": "close the quest at this stage" },
-              "failQuest": { "type": "boolean", "description": "fail the quest at this stage" },
-              "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "description": "optional CTDA gate on the log entry (e.g. function GetStage, param the quest ref)" }
+              "index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "logEntry": {
+                "type": "string",
+                "description": "journal text shown when the quest reaches this stage"
+              },
+              "completeQuest": {
+                "type": "boolean",
+                "description": "close the quest at this stage"
+              },
+              "failQuest": {
+                "type": "boolean",
+                "description": "fail the quest at this stage"
+              },
+              "conditions": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/condition"
+                },
+                "description": "optional CTDA gate on the log entry (e.g. function GetStage, param the quest ref)"
+              }
             }
           }
         }
@@ -371,89 +1452,263 @@
     },
     "dialogue": {
       "type": "object",
-      "required": ["editorId", "questEditorId", "prompt"],
+      "required": [
+        "editorId",
+        "questEditorId",
+        "prompt"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "questEditorId": { "type": "string", "minLength": 1, "description": "must be a quest editorId in this spec" },
-        "speakerNpcEditorId": { "type": "string", "description": "optional; an npc editorId (GetIsID condition). The speaker also needs a `greeting` so it is conversable" },
-        "prompt": { "type": "string", "minLength": 1, "description": "the player's topic line" },
-        "responses": { "type": "array", "items": { "type": "string" }, "description": "the NPC's spoken lines" },
-        "emotion": { "enum": ["Neutral", "Anger", "Disgust", "Fear", "Sad", "Happy", "Surprise"], "description": "applied to all response lines (default Neutral)" },
-        "emotionValue": { "type": "integer", "minimum": 0, "maximum": 100, "description": "emotion intensity (default 50)" },
-        "setStage": { "type": "integer", "description": "advance the host quest to this stage when the line is picked (-1 = none); needs the generated TIF fragment compiled in CK" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "questEditorId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "must be a quest editorId in this spec"
+        },
+        "speakerNpcEditorId": {
+          "type": "string",
+          "description": "optional; an npc editorId (GetIsID condition). The speaker also needs a `greeting` so it is conversable"
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "the player's topic line"
+        },
+        "responses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "the NPC's spoken lines"
+        },
+        "emotion": {
+          "enum": [
+            "Neutral",
+            "Anger",
+            "Disgust",
+            "Fear",
+            "Sad",
+            "Happy",
+            "Surprise"
+          ],
+          "description": "applied to all response lines (default Neutral)"
+        },
+        "emotionValue": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "emotion intensity (default 50)"
+        },
+        "setStage": {
+          "type": "integer",
+          "description": "advance the host quest to this stage when the line is picked (-1 = none); needs the generated TIF fragment compiled in CK"
+        }
       }
     },
     "script": {
       "type": "object",
-      "required": ["targetEditorId", "scriptName"],
+      "required": [
+        "targetEditorId",
+        "scriptName"
+      ],
       "properties": {
-        "targetEditorId": { "type": "string", "minLength": 1, "description": "record to attach to (any editorId)" },
-        "scriptName": { "type": "string", "minLength": 1, "description": "must match the .pex/.psc Scriptname" },
-        "source": { "type": "string", "description": "optional .psc path (rel. to spec); `package` compiles it" },
-        "properties": { "type": "array", "items": { "$ref": "#/$defs/property" } }
+        "targetEditorId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "record to attach to (any editorId)"
+        },
+        "scriptName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "must match the .pex/.psc Scriptname"
+        },
+        "source": {
+          "type": "string",
+          "description": "optional .psc path (rel. to spec); `package` compiles it"
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/property"
+          }
+        }
       }
     },
     "property": {
       "type": "object",
-      "required": ["name", "type"],
+      "required": [
+        "name",
+        "type"
+      ],
       "properties": {
-        "name": { "type": "string", "minLength": 1 },
-        "type": { "enum": ["int", "float", "bool", "string", "object"] },
-        "int": { "type": "integer" },
-        "float": { "type": "number" },
-        "bool": { "type": "boolean" },
-        "str": { "type": "string" },
-        "objectEditorId": { "type": "string", "description": "required when type=object; an editorId" }
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "enum": [
+            "int",
+            "float",
+            "bool",
+            "string",
+            "object"
+          ]
+        },
+        "int": {
+          "type": "integer"
+        },
+        "float": {
+          "type": "number"
+        },
+        "bool": {
+          "type": "boolean"
+        },
+        "str": {
+          "type": "string"
+        },
+        "objectEditorId": {
+          "type": "string",
+          "description": "required when type=object; an editorId"
+        }
       },
       "allOf": [
-        { "if": { "properties": { "type": { "const": "object" } } },
-          "then": { "required": ["objectEditorId"] } }
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "object"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "objectEditorId"
+            ]
+          }
+        }
       ]
     },
     "cell": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string", "description": "display name" },
-        "template": { "type": "string", "description": "optional vanilla INTERIOR cell '<master>:0xFORMID' to copy lighting/water env from (a new cell with no lighting renders BLACK; find one with `find <Skyrim.esm> <name> Cell`). Still place a floor static via a `placement`, else the player falls into the void." },
-        "encounterZone": { "$ref": "#/$defs/ref", "description": "optional ECZN ref (in-spec editorId or '<master>:0xFORMID') — the whole cell's level scaling / respawn (XEZN)" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "description": "display name"
+        },
+        "template": {
+          "type": "string",
+          "description": "optional vanilla INTERIOR cell '<master>:0xFORMID' to copy lighting/water env from (a new cell with no lighting renders BLACK; find one with `find <Skyrim.esm> <name> Cell`). Still place a floor static via a `placement`, else the player falls into the void."
+        },
+        "encounterZone": {
+          "$ref": "#/$defs/ref",
+          "description": "optional ECZN ref (in-spec editorId or '<master>:0xFORMID') — the whole cell's level scaling / respawn (XEZN)"
+        }
       }
     },
     "vec3": {
       "type": "object",
       "properties": {
-        "x": { "type": "number" }, "y": { "type": "number" }, "z": { "type": "number" }
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        }
       }
     },
     "placement": {
       "type": "object",
-      "required": ["base"],
+      "required": [
+        "base"
+      ],
       "description": "set EITHER `cell` (interior) OR `worldspace` (exterior); worldspace wins if both are set",
       "oneOf": [
-        { "required": ["cell"] },
-        { "required": ["worldspace"] }
+        {
+          "required": [
+            "cell"
+          ]
+        },
+        {
+          "required": [
+            "worldspace"
+          ]
+        }
       ],
       "properties": {
-        "base": { "$ref": "#/$defs/ref", "description": "the form to place: an in-spec npc/object editorId or external <master>:0xFORMID. May also be a LeveledNpc (LVLN) list for a LEVELED-ACTOR SPAWN — the ACHR then rolls a level-appropriate actor (add kind:\"npc\" for a vanilla list). MARKERS: XMarker = Skyrim.esm:0x00003B, XMarkerHeading = Skyrim.esm:0x000034 (a Travel/Patrol/scene anchor). DOORS: a load-door base (e.g. FarmhouseLDoor01 = Skyrim.esm:0x029CB0) + `teleport` makes a walk-through link" },
-        "editorId": { "type": "string", "description": "optional: names this REFR/ACHR so other refs can target it (patrol start, linkedRefs target, teleport partner). Must be unique" },
-        "cell": { "type": "string", "minLength": 1, "description": "INTERIOR target: an in-spec cell editorId OR a vanilla INTERIOR cell '<master>:0xFORMID' (find with `find <Skyrim.esm> <name> Cell`)" },
-        "worldspace": { "type": "string", "minLength": 1, "description": "EXTERIOR target: a worldspace '<master>:0xFORMID' (Tamriel = Skyrim.esm:0x00003C; find with `find <Skyrim.esm> <name> Worldspace`). `position` is then WORLD coords; the cell at floor(x/4096),floor(y/4096) is overridden" },
-        "kind": { "enum": ["npc", "object"], "description": "inferred for in-spec bases; defaults to object for external" },
-        "position": { "$ref": "#/$defs/vec3", "description": "cell-local for interior; WORLD coords for exterior" },
-        "rotation": { "$ref": "#/$defs/vec3", "description": "degrees" },
-        "persistent": { "type": "boolean", "description": "place in the cell's persistent (vs temporary) list (teleport doors / linkedRefs sources / package anchors are forced persistent automatically)" },
-        "encounterZone": { "$ref": "#/$defs/ref", "description": "optional ECZN ref — a per-ref override of the cell's zone (this spawn's XEZN); usually only meaningful on a leveled-actor spawn" },
-        "teleport": { "type": "string", "description": "LOAD-DOOR pair: the PARTNER door this door teleports to (a placement editorId, or a vanilla door '<master>:0xFORMID'). Set on BOTH doors (each pointing at the other). `base` must be a DOOR. Arrival = the partner's position/rotation (written to this door's XTEL)" },
+        "base": {
+          "$ref": "#/$defs/ref",
+          "description": "the form to place: an in-spec npc/object editorId or external <master>:0xFORMID. May also be a LeveledNpc (LVLN) list for a LEVELED-ACTOR SPAWN — the ACHR then rolls a level-appropriate actor (add kind:\"npc\" for a vanilla list). MARKERS: XMarker = Skyrim.esm:0x00003B, XMarkerHeading = Skyrim.esm:0x000034 (a Travel/Patrol/scene anchor). DOORS: a load-door base (e.g. FarmhouseLDoor01 = Skyrim.esm:0x029CB0) + `teleport` makes a walk-through link"
+        },
+        "editorId": {
+          "type": "string",
+          "description": "optional: names this REFR/ACHR so other refs can target it (patrol start, linkedRefs target, teleport partner). Must be unique"
+        },
+        "cell": {
+          "type": "string",
+          "minLength": 1,
+          "description": "INTERIOR target: an in-spec cell editorId OR a vanilla INTERIOR cell '<master>:0xFORMID' (find with `find <Skyrim.esm> <name> Cell`)"
+        },
+        "worldspace": {
+          "type": "string",
+          "minLength": 1,
+          "description": "EXTERIOR target: a worldspace '<master>:0xFORMID' (Tamriel = Skyrim.esm:0x00003C; find with `find <Skyrim.esm> <name> Worldspace`). `position` is then WORLD coords; the cell at floor(x/4096),floor(y/4096) is overridden"
+        },
+        "kind": {
+          "enum": [
+            "npc",
+            "object"
+          ],
+          "description": "inferred for in-spec bases; defaults to object for external"
+        },
+        "position": {
+          "$ref": "#/$defs/vec3",
+          "description": "cell-local for interior; WORLD coords for exterior"
+        },
+        "rotation": {
+          "$ref": "#/$defs/vec3",
+          "description": "degrees"
+        },
+        "persistent": {
+          "type": "boolean",
+          "description": "place in the cell's persistent (vs temporary) list (teleport doors / linkedRefs sources / package anchors are forced persistent automatically)"
+        },
+        "encounterZone": {
+          "$ref": "#/$defs/ref",
+          "description": "optional ECZN ref — a per-ref override of the cell's zone (this spawn's XEZN); usually only meaningful on a leveled-actor spawn"
+        },
+        "teleport": {
+          "type": "string",
+          "description": "LOAD-DOOR pair: the PARTNER door this door teleports to (a placement editorId, or a vanilla door '<master>:0xFORMID'). Set on BOTH doors (each pointing at the other). `base` must be a DOOR. Arrival = the partner's position/rotation (written to this door's XTEL)"
+        },
         "linkedRefs": {
           "type": "array",
           "description": "Linked References (XLKR) on this ref — the Patrol route chain etc. Source placement must have an editorId",
           "items": {
             "type": "object",
-            "required": ["target"],
+            "required": [
+              "target"
+            ],
             "properties": {
-              "target": { "$ref": "#/$defs/ref", "description": "the linked placed ref (a placement editorId or external ref)" },
-              "keyword": { "$ref": "#/$defs/ref", "description": "optional KYWD tagging the link; empty = the null/default link a Patrol route follows" }
+              "target": {
+                "$ref": "#/$defs/ref",
+                "description": "the linked placed ref (a placement editorId or external ref)"
+              },
+              "keyword": {
+                "$ref": "#/$defs/ref",
+                "description": "optional KYWD tagging the link; empty = the null/default link a Patrol route follows"
+              }
             }
           }
         }
@@ -461,63 +1716,184 @@
     },
     "leveledEntry": {
       "type": "object",
-      "required": ["reference"],
+      "required": [
+        "reference"
+      ],
       "properties": {
-        "reference": { "$ref": "#/$defs/ref", "description": "the item (LVLI) or npc (LVLN) to spawn — in-spec or external" },
-        "level": { "type": "integer", "minimum": 1, "description": "min player/encounter level for this entry (default 1)" },
-        "count": { "type": "integer", "minimum": 1, "description": "how many (default 1)" }
+        "reference": {
+          "$ref": "#/$defs/ref",
+          "description": "the item (LVLI) or npc (LVLN) to spawn — in-spec or external"
+        },
+        "level": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "min player/encounter level for this entry (default 1)"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "how many (default 1)"
+        }
       }
     },
     "leveledList": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "chanceNone": { "type": "integer", "minimum": 0, "maximum": 100, "description": "percent chance the list yields nothing" },
-        "flags": { "type": "array", "items": { "enum": ["CalculateFromAllLevelsLessThanOrEqualPlayer", "CalculateForEachItemInCount", "UseAll", "SpecialLoot"] } },
-        "entries": { "type": "array", "items": { "$ref": "#/$defs/leveledEntry" } }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "chanceNone": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "percent chance the list yields nothing"
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "CalculateFromAllLevelsLessThanOrEqualPlayer",
+              "CalculateForEachItemInCount",
+              "UseAll",
+              "SpecialLoot"
+            ]
+          }
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/leveledEntry"
+          }
+        }
       }
     },
     "containerItem": {
       "type": "object",
-      "required": ["item"],
+      "required": [
+        "item"
+      ],
       "properties": {
-        "item": { "$ref": "#/$defs/ref", "description": "the item to put inside — in-spec or external" },
-        "count": { "type": "integer", "minimum": 1, "description": "default 1" }
+        "item": {
+          "$ref": "#/$defs/ref",
+          "description": "the item to put inside — in-spec or external"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "default 1"
+        }
       }
     },
     "container": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "weight": { "type": "number", "minimum": 0 },
-        "items": { "type": "array", "items": { "$ref": "#/$defs/containerItem" } }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/containerItem"
+          }
+        }
       }
     },
     "recipe": {
       "type": "object",
-      "required": ["editorId", "createdObject"],
+      "required": [
+        "editorId",
+        "createdObject"
+      ],
       "description": "ConstructibleObject (COBJ): a crafting recipe",
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "kind": { "enum": ["craft", "temper", "smelt", "breakdown"], "default": "craft", "description": "recipe flavour; picks the default bench (craft->forge, temper->sharpening wheel, smelt/breakdown->smelter)" },
-        "createdObject": { "$ref": "#/$defs/ref", "description": "the item produced (temper: the item being improved) — usually an in-spec weapon/armor/etc." },
-        "count": { "type": "integer", "minimum": 1, "description": "how many are produced (default 1)" },
-        "workbench": { "type": "string", "description": "named selector (forge|sharpeningWheel|armorTable|smelter|tanningRack|skyforge) OR a keyword ref; omit -> the kind default" },
-        "components": { "type": "array", "items": { "$ref": "#/$defs/containerItem" }, "description": "ingredients consumed on craft (item ref + count)" },
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "craft",
+            "temper",
+            "smelt",
+            "breakdown"
+          ],
+          "default": "craft",
+          "description": "recipe flavour; picks the default bench (craft->forge, temper->sharpening wheel, smelt/breakdown->smelter)"
+        },
+        "createdObject": {
+          "$ref": "#/$defs/ref",
+          "description": "the item produced (temper: the item being improved) — usually an in-spec weapon/armor/etc."
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "how many are produced (default 1)"
+        },
+        "workbench": {
+          "type": "string",
+          "description": "named selector (forge|sharpeningWheel|armorTable|smelter|tanningRack|skyforge) OR a keyword ref; omit -> the kind default"
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/containerItem"
+          },
+          "description": "ingredients consumed on craft (item ref + count)"
+        },
         "conditions": {
           "type": "array",
           "description": "perk/item/skill gating (shared CTDA ConditionSpec)",
           "items": {
             "type": "object",
             "properties": {
-              "function": { "enum": ["HasPerk", "GetItemCount", "GetGlobalValue", "TemperIsEnchanted"], "description": "the CTDA function; HasPerk/GetItemCount/GetGlobalValue need a param, TemperIsEnchanted does not" },
-              "param": { "type": "string", "description": "the function's form arg (perk/item/global ref)" },
-              "comparison": { "enum": ["==", "=", "!=", ">", ">=", "<", "<="], "description": "the comparison operator (default >=)" },
-              "value": { "type": "number", "description": "the test value (default 0)" },
-              "or": { "type": "boolean", "description": "OR-chain with the NEXT condition (default AND)" }
+              "function": {
+                "enum": [
+                  "HasPerk",
+                  "GetItemCount",
+                  "GetGlobalValue",
+                  "TemperIsEnchanted"
+                ],
+                "description": "the CTDA function; HasPerk/GetItemCount/GetGlobalValue need a param, TemperIsEnchanted does not"
+              },
+              "param": {
+                "type": "string",
+                "description": "the function's form arg (perk/item/global ref)"
+              },
+              "comparison": {
+                "enum": [
+                  "==",
+                  "=",
+                  "!=",
+                  ">",
+                  ">=",
+                  "<",
+                  "<="
+                ],
+                "description": "the comparison operator (default >=)"
+              },
+              "value": {
+                "type": "number",
+                "description": "the test value (default 0)"
+              },
+              "or": {
+                "type": "boolean",
+                "description": "OR-chain with the NEXT condition (default AND)"
+              }
             }
           }
         }
@@ -525,267 +1901,802 @@
     },
     "ingredient": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "value": { "type": "integer", "minimum": 0 },
-        "weight": { "type": "number", "minimum": 0 },
-        "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
-        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/effect"
+          }
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        }
       }
     },
     "ammunition": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "value": { "type": "integer", "minimum": 0 },
-        "weight": { "type": "number", "minimum": 0 },
-        "damage": { "type": "number", "minimum": 0 },
-        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0
+        },
+        "damage": {
+          "type": "number",
+          "minimum": 0
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        }
       }
     },
     "scroll": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "value": { "type": "integer", "minimum": 0 },
-        "weight": { "type": "number", "minimum": 0 },
-        "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
-        "spellType": { "enum": ["Spell", "Disease", "Power", "LesserPower", "Ability", "Poison", "Addiction", "Voice"] },
-        "castType": { "enum": ["ConstantEffect", "FireAndForget", "Concentration"] },
-        "targetType": { "enum": ["Self", "Touch", "Aimed", "TargetActor", "TargetLocation"] },
-        "baseCost": { "type": "integer", "minimum": 0 },
-        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/effect"
+          }
+        },
+        "spellType": {
+          "enum": [
+            "Spell",
+            "Disease",
+            "Power",
+            "LesserPower",
+            "Ability",
+            "Poison",
+            "Addiction",
+            "Voice"
+          ]
+        },
+        "castType": {
+          "enum": [
+            "ConstantEffect",
+            "FireAndForget",
+            "Concentration"
+          ]
+        },
+        "targetType": {
+          "enum": [
+            "Self",
+            "Touch",
+            "Aimed",
+            "TargetActor",
+            "TargetLocation"
+          ]
+        },
+        "baseCost": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        }
       }
     },
     "soulGem": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "value": { "type": "integer", "minimum": 0 },
-        "weight": { "type": "number", "minimum": 0 },
-        "maximumCapacity": { "enum": ["None", "Petty", "Lesser", "Common", "Greater", "Grand"] },
-        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0
+        },
+        "maximumCapacity": {
+          "enum": [
+            "None",
+            "Petty",
+            "Lesser",
+            "Common",
+            "Greater",
+            "Grand"
+          ]
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        }
       }
     },
     "key": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "value": { "type": "integer", "minimum": 0 },
-        "weight": { "type": "number", "minimum": 0 },
-        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        }
       }
     },
     "keyword": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1, "description": "reference it from any record's `keywords` list" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "reference it from any record's `keywords` list"
+        }
       }
     },
     "outfit": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "items": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "armor/weapon refs the NPC wears; an npc `outfit` can point at this editorId" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          },
+          "description": "armor/weapon refs the NPC wears; an npc `outfit` can point at this editorId"
+        }
       }
     },
     "staticRec": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "model": { "type": "string", "description": "a .nif path, Data-relative rooted at Meshes\\ (omit the 'Meshes\\' prefix), vanilla OR custom, e.g. 'Clutter\\\\Common\\\\Rock01.nif' or 'MyMod\\\\stone.nif'" },
-        "alternateTextures": { "type": "array", "items": { "$ref": "#/$defs/alternateTexture" }, "description": "retexture named materials of `model` via TXST records" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "description": "a .nif path, Data-relative rooted at Meshes\\ (omit the 'Meshes\\' prefix), vanilla OR custom, e.g. 'Clutter\\\\Common\\\\Rock01.nif' or 'MyMod\\\\stone.nif'"
+        },
+        "alternateTextures": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/alternateTexture"
+          },
+          "description": "retexture named materials of `model` via TXST records"
+        }
       }
     },
     "activator": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "model": { "type": "string", "description": "a .nif path (rooted at Meshes\\, omit the prefix)" },
-        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } },
-        "alternateTextures": { "type": "array", "items": { "$ref": "#/$defs/alternateTexture" }, "description": "retexture named materials of `model` via TXST records" },
-        "activationSound": { "$ref": "#/$defs/ref", "description": "SNDR ref (in-spec sounds editorId or vanilla <master>:0xFORMID) played on activation" },
-        "loopingSound": { "$ref": "#/$defs/ref", "description": "SNDR ref played in a loop while present" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string",
+          "description": "a .nif path (rooted at Meshes\\, omit the prefix)"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "alternateTextures": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/alternateTexture"
+          },
+          "description": "retexture named materials of `model` via TXST records"
+        },
+        "activationSound": {
+          "$ref": "#/$defs/ref",
+          "description": "SNDR ref (in-spec sounds editorId or vanilla <master>:0xFORMID) played on activation"
+        },
+        "loopingSound": {
+          "$ref": "#/$defs/ref",
+          "description": "SNDR ref played in a loop while present"
+        }
       }
     },
     "furniture": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "model": { "type": "string", "description": "a .nif path (rooted at Meshes\\, omit the prefix), vanilla OR custom" },
-        "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string",
+          "description": "a .nif path (rooted at Meshes\\, omit the prefix), vanilla OR custom"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        }
       }
     },
     "sound": {
       "type": "object",
-      "required": ["editorId", "files"],
+      "required": [
+        "editorId",
+        "files"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "files": { "type": "array", "minItems": 1, "items": { "type": "string" }, "description": "Data-relative Sound\\... paths to .wav/.xwm audio (the package step bundles them)" },
-        "category": { "$ref": "#/$defs/ref", "description": "SNCT ref; empty -> Skyrim.esm:0x0172A1 AudioCategorySFX" },
-        "outputModel": { "$ref": "#/$defs/ref", "description": "SOPM ref; empty -> Skyrim.esm:0x0B4058 vanilla SFX output" },
-        "priority": { "type": "integer", "minimum": 0, "maximum": 255 },
-        "staticAttenuation": { "type": "number", "description": "dB attenuation" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "Data-relative Sound\\... paths to .wav/.xwm audio (the package step bundles them)"
+        },
+        "category": {
+          "$ref": "#/$defs/ref",
+          "description": "SNCT ref; empty -> Skyrim.esm:0x0172A1 AudioCategorySFX"
+        },
+        "outputModel": {
+          "$ref": "#/$defs/ref",
+          "description": "SOPM ref; empty -> Skyrim.esm:0x0B4058 vanilla SFX output"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "staticAttenuation": {
+          "type": "number",
+          "description": "dB attenuation"
+        }
       }
     },
     "textureSet": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "description": "TextureSet (TXST): retexture an existing mesh without a new .nif. All slot paths are RELATIVE to Data\\Textures\\ (omit the leading 'Textures\\') and end in .dds. Wire it via a record's alternateTextures.",
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "diffuse": { "type": "string", "description": "slot 0 — color/albedo (_d.dds), relative to Data\\Textures\\" },
-        "normal": { "type": "string", "description": "slot 1 — normal + gloss (_n.dds)" },
-        "mask": { "type": "string", "description": "slot 2 — environment-mask / subsurface tint" },
-        "glow": { "type": "string", "description": "slot 3 — glow / detail map" },
-        "height": { "type": "string", "description": "slot 4 — parallax height" },
-        "environment": { "type": "string", "description": "slot 5 — environment cube map" },
-        "multilayer": { "type": "string", "description": "slot 6 — multilayer" },
-        "backlight": { "type": "string", "description": "slot 7 — backlight-mask / specular" },
-        "flags": { "type": "array", "items": { "type": "string", "enum": ["NoSpecularMap", "FaceGenTextures", "HasModelSpaceNormalMap"] } }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "diffuse": {
+          "type": "string",
+          "description": "slot 0 — color/albedo (_d.dds), relative to Data\\Textures\\"
+        },
+        "normal": {
+          "type": "string",
+          "description": "slot 1 — normal + gloss (_n.dds)"
+        },
+        "mask": {
+          "type": "string",
+          "description": "slot 2 — environment-mask / subsurface tint"
+        },
+        "glow": {
+          "type": "string",
+          "description": "slot 3 — glow / detail map"
+        },
+        "height": {
+          "type": "string",
+          "description": "slot 4 — parallax height"
+        },
+        "environment": {
+          "type": "string",
+          "description": "slot 5 — environment cube map"
+        },
+        "multilayer": {
+          "type": "string",
+          "description": "slot 6 — multilayer"
+        },
+        "backlight": {
+          "type": "string",
+          "description": "slot 7 — backlight-mask / specular"
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "NoSpecularMap",
+              "FaceGenTextures",
+              "HasModelSpaceNormalMap"
+            ]
+          }
+        }
       }
     },
     "alternateTexture": {
       "type": "object",
-      "required": ["name", "textureSet"],
+      "required": [
+        "name",
+        "textureSet"
+      ],
       "description": "Override one named material/sub-mesh of a base .nif with a TXST.",
       "properties": {
-        "name": { "type": "string", "minLength": 1, "description": "the material/3D-name inside the .nif (e.g. 'NorRubblePiece03:0')" },
-        "index": { "type": "integer", "minimum": 0, "description": "3D sub-mesh index (default 0)" },
-        "textureSet": { "$ref": "#/$defs/ref", "description": "ref → a TXST (in-spec editorId or <master>:0xFORMID)" }
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "the material/3D-name inside the .nif (e.g. 'NorRubblePiece03:0')"
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "3D sub-mesh index (default 0)"
+        },
+        "textureSet": {
+          "$ref": "#/$defs/ref",
+          "description": "ref → a TXST (in-spec editorId or <master>:0xFORMID)"
+        }
       }
     },
     "color": {
       "type": "object",
       "description": "An 8-bit RGB(A) colour; components 0–255 (alpha usually 0 for weather colours).",
       "properties": {
-        "r": { "type": "integer", "minimum": 0, "maximum": 255 },
-        "g": { "type": "integer", "minimum": 0, "maximum": 255 },
-        "b": { "type": "integer", "minimum": 0, "maximum": 255 },
-        "a": { "type": "integer", "minimum": 0, "maximum": 255 }
+        "r": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "g": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "b": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "a": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
       }
     },
     "weatherColor": {
       "type": "object",
       "description": "A weather colour across times of day; omitted ones fall back to `day`.",
       "properties": {
-        "sunrise": { "$ref": "#/$defs/color" },
-        "day": { "$ref": "#/$defs/color" },
-        "sunset": { "$ref": "#/$defs/color" },
-        "night": { "$ref": "#/$defs/color" }
+        "sunrise": {
+          "$ref": "#/$defs/color"
+        },
+        "day": {
+          "$ref": "#/$defs/color"
+        },
+        "sunset": {
+          "$ref": "#/$defs/color"
+        },
+        "night": {
+          "$ref": "#/$defs/color"
+        }
       }
     },
     "cloudLayer": {
       "type": "object",
       "properties": {
-        "index": { "type": "integer", "minimum": 0, "maximum": 31, "description": "cloud-layer slot 0..31" },
-        "texture": { "type": "string", "description": "Textures-relative .dds path, e.g. 'Sky\\\\SkyrimCloudsUpper04.dds'" },
-        "xSpeed": { "type": "number" },
-        "ySpeed": { "type": "number" },
-        "colors": { "$ref": "#/$defs/weatherColor" },
-        "alphaSunrise": { "type": "number", "minimum": 0, "maximum": 1 },
-        "alphaDay": { "type": "number", "minimum": 0, "maximum": 1 },
-        "alphaSunset": { "type": "number", "minimum": 0, "maximum": 1 },
-        "alphaNight": { "type": "number", "minimum": 0, "maximum": 1 }
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 31,
+          "description": "cloud-layer slot 0..31"
+        },
+        "texture": {
+          "type": "string",
+          "description": "Textures-relative .dds path, e.g. 'Sky\\\\SkyrimCloudsUpper04.dds'"
+        },
+        "xSpeed": {
+          "type": "number"
+        },
+        "ySpeed": {
+          "type": "number"
+        },
+        "colors": {
+          "$ref": "#/$defs/weatherColor"
+        },
+        "alphaSunrise": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "alphaDay": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "alphaSunset": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "alphaNight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
       }
     },
     "weather": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "description": "A custom sky (WTHR). Minimal = just editorId (clear-day baseline).",
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "flags": { "type": "array", "items": { "type": "string", "enum": ["Pleasant", "Cloudy", "Rainy", "Snow", "SkyStaticsAlwaysVisible", "SkyStaticsFollowsSunPosition"] } },
-        "skyUpperColor": { "$ref": "#/$defs/weatherColor" },
-        "skyLowerColor": { "$ref": "#/$defs/weatherColor" },
-        "fogNearColor": { "$ref": "#/$defs/weatherColor" },
-        "fogFarColor": { "$ref": "#/$defs/weatherColor" },
-        "horizonColor": { "$ref": "#/$defs/weatherColor" },
-        "cloudColor": { "$ref": "#/$defs/weatherColor" },
-        "sunColor": { "$ref": "#/$defs/weatherColor" },
-        "sunlightColor": { "$ref": "#/$defs/weatherColor" },
-        "ambientColor": { "$ref": "#/$defs/weatherColor" },
-        "starsColor": { "$ref": "#/$defs/weatherColor" },
-        "clouds": { "type": "array", "items": { "$ref": "#/$defs/cloudLayer" } },
-        "precipitation": { "$ref": "#/$defs/ref", "description": "a shader-particle-geometry (SPGD) ref, e.g. Skyrim.esm:0x10780F (rain)" },
-        "windSpeed": { "type": "number", "description": "0..1 fraction (or 0..100 percent)" },
-        "windDirection": { "type": "number", "minimum": 0, "maximum": 360, "description": "degrees" },
-        "windDirectionRange": { "type": "number", "minimum": 0, "maximum": 360 },
-        "fogDayNear": { "type": "number" },
-        "fogDayFar": { "type": "number" },
-        "fogNightNear": { "type": "number" },
-        "fogNightFar": { "type": "number" },
-        "transitionDelta": { "type": "number" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Pleasant",
+              "Cloudy",
+              "Rainy",
+              "Snow",
+              "SkyStaticsAlwaysVisible",
+              "SkyStaticsFollowsSunPosition"
+            ]
+          }
+        },
+        "skyUpperColor": {
+          "$ref": "#/$defs/weatherColor"
+        },
+        "skyLowerColor": {
+          "$ref": "#/$defs/weatherColor"
+        },
+        "fogNearColor": {
+          "$ref": "#/$defs/weatherColor"
+        },
+        "fogFarColor": {
+          "$ref": "#/$defs/weatherColor"
+        },
+        "horizonColor": {
+          "$ref": "#/$defs/weatherColor"
+        },
+        "cloudColor": {
+          "$ref": "#/$defs/weatherColor"
+        },
+        "sunColor": {
+          "$ref": "#/$defs/weatherColor"
+        },
+        "sunlightColor": {
+          "$ref": "#/$defs/weatherColor"
+        },
+        "ambientColor": {
+          "$ref": "#/$defs/weatherColor"
+        },
+        "starsColor": {
+          "$ref": "#/$defs/weatherColor"
+        },
+        "clouds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/cloudLayer"
+          }
+        },
+        "precipitation": {
+          "$ref": "#/$defs/ref",
+          "description": "a shader-particle-geometry (SPGD) ref, e.g. Skyrim.esm:0x10780F (rain)"
+        },
+        "windSpeed": {
+          "type": "number",
+          "description": "0..1 fraction (or 0..100 percent)"
+        },
+        "windDirection": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 360,
+          "description": "degrees"
+        },
+        "windDirectionRange": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 360
+        },
+        "fogDayNear": {
+          "type": "number"
+        },
+        "fogDayFar": {
+          "type": "number"
+        },
+        "fogNightNear": {
+          "type": "number"
+        },
+        "fogNightFar": {
+          "type": "number"
+        },
+        "transitionDelta": {
+          "type": "number"
+        }
       }
     },
     "weatherChance": {
       "type": "object",
-      "required": ["weather"],
+      "required": [
+        "weather"
+      ],
       "properties": {
-        "weather": { "$ref": "#/$defs/ref", "description": "a WTHR ref (in-spec editorId or <master>:0xFORMID)" },
-        "chance": { "type": "integer", "minimum": 0, "description": "relative weight" }
+        "weather": {
+          "$ref": "#/$defs/ref",
+          "description": "a WTHR ref (in-spec editorId or <master>:0xFORMID)"
+        },
+        "chance": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "relative weight"
+        }
       }
     },
     "climate": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "description": "A weather cycle (CLMT). Minimal = editorId + at least one weather.",
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "weathers": { "type": "array", "items": { "$ref": "#/$defs/weatherChance" } },
-        "sunriseBegin": { "type": "string", "description": "'HH:MM' 24-hour" },
-        "sunriseEnd": { "type": "string", "description": "'HH:MM' 24-hour" },
-        "sunsetBegin": { "type": "string", "description": "'HH:MM' 24-hour" },
-        "sunsetEnd": { "type": "string", "description": "'HH:MM' 24-hour" },
-        "sunTexture": { "type": "string" },
-        "sunGlareTexture": { "type": "string" },
-        "moons": { "type": "array", "items": { "type": "string", "enum": ["Masser", "Secunda"] } },
-        "phaseLength": { "type": "integer", "minimum": 0, "maximum": 255 },
-        "volatility": { "type": "integer", "minimum": 0, "maximum": 255 }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "weathers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/weatherChance"
+          }
+        },
+        "sunriseBegin": {
+          "type": "string",
+          "description": "'HH:MM' 24-hour"
+        },
+        "sunriseEnd": {
+          "type": "string",
+          "description": "'HH:MM' 24-hour"
+        },
+        "sunsetBegin": {
+          "type": "string",
+          "description": "'HH:MM' 24-hour"
+        },
+        "sunsetEnd": {
+          "type": "string",
+          "description": "'HH:MM' 24-hour"
+        },
+        "sunTexture": {
+          "type": "string"
+        },
+        "sunGlareTexture": {
+          "type": "string"
+        },
+        "moons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Masser",
+              "Secunda"
+            ]
+          }
+        },
+        "phaseLength": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "volatility": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
       }
     },
     "worldspace": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "climate": { "$ref": "#/$defs/ref", "description": "CLMT ref — the sky/lighting cycle (strongly advised; without it the world has no day/night)" },
-        "water": { "$ref": "#/$defs/ref", "description": "WATR ref (optional)" },
-        "lodWater": { "$ref": "#/$defs/ref", "description": "WATR ref for distant LOD water (optional)" },
-        "parent": { "$ref": "#/$defs/ref", "description": "parent WRLD ref (optional)" },
-        "interiorLighting": { "$ref": "#/$defs/ref" },
-        "location": { "$ref": "#/$defs/ref" },
-        "music": { "$ref": "#/$defs/ref" },
-        "encounterZone": { "$ref": "#/$defs/ref" },
-        "flags": { "type": "array", "items": { "type": "string", "enum": ["SmallWorld", "CannotFastTravel", "NoLodWater", "NoLandscape", "NoSky", "FixedDimensions", "NoGrass"] } },
-        "defaultLandHeight": { "type": "number", "description": "WRLD land default (Tamriel -27000); leave it unless you know better" },
-        "defaultWaterHeight": { "type": "number", "description": "WRLD water default (Tamriel -14000); a 0 here floods sub-0 terrain" },
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "climate": {
+          "$ref": "#/$defs/ref",
+          "description": "CLMT ref — the sky/lighting cycle (strongly advised; without it the world has no day/night)"
+        },
+        "water": {
+          "$ref": "#/$defs/ref",
+          "description": "WATR ref (optional)"
+        },
+        "lodWater": {
+          "$ref": "#/$defs/ref",
+          "description": "WATR ref for distant LOD water (optional)"
+        },
+        "parent": {
+          "$ref": "#/$defs/ref",
+          "description": "parent WRLD ref (optional)"
+        },
+        "interiorLighting": {
+          "$ref": "#/$defs/ref"
+        },
+        "location": {
+          "$ref": "#/$defs/ref"
+        },
+        "music": {
+          "$ref": "#/$defs/ref"
+        },
+        "encounterZone": {
+          "$ref": "#/$defs/ref"
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SmallWorld",
+              "CannotFastTravel",
+              "NoLodWater",
+              "NoLandscape",
+              "NoSky",
+              "FixedDimensions",
+              "NoGrass"
+            ]
+          }
+        },
+        "defaultLandHeight": {
+          "type": "number",
+          "description": "WRLD land default (Tamriel -27000); leave it unless you know better"
+        },
+        "defaultWaterHeight": {
+          "type": "number",
+          "description": "WRLD water default (Tamriel -14000); a 0 here floods sub-0 terrain"
+        },
         "map": {
           "type": "object",
           "properties": {
-            "northwestX": { "type": "integer" }, "northwestY": { "type": "integer" },
-            "southeastX": { "type": "integer" }, "southeastY": { "type": "integer" },
-            "usableWidth": { "type": "integer" }, "usableHeight": { "type": "integer" },
-            "cameraInitialPitch": { "type": "number" },
-            "cameraMinHeight": { "type": "number" }, "cameraMaxHeight": { "type": "number" }
+            "northwestX": {
+              "type": "integer"
+            },
+            "northwestY": {
+              "type": "integer"
+            },
+            "southeastX": {
+              "type": "integer"
+            },
+            "southeastY": {
+              "type": "integer"
+            },
+            "usableWidth": {
+              "type": "integer"
+            },
+            "usableHeight": {
+              "type": "integer"
+            },
+            "cameraInitialPitch": {
+              "type": "number"
+            },
+            "cameraMinHeight": {
+              "type": "number"
+            },
+            "cameraMaxHeight": {
+              "type": "number"
+            }
           },
           "additionalProperties": false
         }
@@ -794,23 +2705,54 @@
     },
     "region": {
       "type": "object",
-      "required": ["editorId", "worldspace"],
+      "required": [
+        "editorId",
+        "worldspace"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "worldspace": { "$ref": "#/$defs/ref", "description": "the WRLD this region lives in (in-spec or vanilla)" },
-        "edgeFallOff": { "type": "integer", "minimum": 0, "description": "blend distance (units) at the region border" },
-        "mapColor": { "type": "string", "description": "world-map color as 0xRRGGBB (optional)" },
-        "weatherPriority": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "worldspace": {
+          "$ref": "#/$defs/ref",
+          "description": "the WRLD this region lives in (in-spec or vanilla)"
+        },
+        "edgeFallOff": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "blend distance (units) at the region border"
+        },
+        "mapColor": {
+          "type": "string",
+          "description": "world-map color as 0xRRGGBB (optional)"
+        },
+        "weatherPriority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
         "weather": {
           "type": "array",
           "description": "the weather table — >=1 entry, chances must sum > 0 (the climate hook)",
           "items": {
             "type": "object",
-            "required": ["weather"],
+            "required": [
+              "weather"
+            ],
             "properties": {
-              "weather": { "$ref": "#/$defs/ref", "description": "WTHR ref" },
-              "chance": { "type": "integer", "minimum": 0, "description": "relative weight 0-100" },
-              "global": { "$ref": "#/$defs/ref" }
+              "weather": {
+                "$ref": "#/$defs/ref",
+                "description": "WTHR ref"
+              },
+              "chance": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "relative weight 0-100"
+              },
+              "global": {
+                "$ref": "#/$defs/ref"
+              }
             },
             "additionalProperties": false
           }
@@ -820,7 +2762,14 @@
           "description": "polygon of >=3 world-space points enclosing the area",
           "items": {
             "type": "object",
-            "properties": { "x": { "type": "number" }, "y": { "type": "number" } },
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              }
+            },
             "additionalProperties": false
           }
         }
@@ -830,95 +2779,315 @@
     "condition": {
       "type": "object",
       "description": "A CTDA condition (the shared ConditionSpec). function is a supported condition-function name; comparison + value are the test; param/actorValue/itemType supply the function's parameter; runOn picks Subject/Target; or ORs with the next.",
-      "required": ["function"],
+      "required": [
+        "function"
+      ],
       "properties": {
-        "function": { "enum": ["HasPerk", "GetInFaction", "GetItemCount", "GetGlobalValue", "GetStage", "GetIsID", "GetIsRace", "HasKeyword", "WornHasKeyword", "IsSpellTarget", "GetRelationshipRank", "GetActorValue", "GetActorValuePercent", "GetBaseActorValue", "GetEquippedItemType", "GetCurrentTime", "IsInInterior", "IsInCombat", "GetRandomPercent", "GetLevel", "TemperIsEnchanted"] },
-        "comparison": { "type": "string", "description": "== != > >= < <= or a CompareOperator enum name (default >=)" },
-        "value": { "type": "number" },
-        "param": { "$ref": "#/$defs/ref", "description": "FormLink param (perk/keyword/npc/race/item/magicItem/faction/global/quest)" },
-        "actorValue": { "type": "string", "description": "ActorValue param for GetBaseActorValue/GetActorValue (e.g. OneHanded, Destruction)" },
-        "itemType": { "enum": ["Left", "Right", "Voice", "Instant"], "description": "CastSource for GetEquippedItemType" },
-        "runOn": { "enum": ["Subject", "Target", "Reference", "CombatTarget", "LinkedReference", "QuestAlias", "PackageData", "EventData"], "default": "Subject" },
-        "reference": { "$ref": "#/$defs/ref", "description": "the ref read when runOn=Reference (e.g. the player Skyrim.esm:0x000014)" },
-        "or": { "type": "boolean", "default": false }
+        "function": {
+          "enum": [
+            "HasPerk",
+            "GetInFaction",
+            "GetItemCount",
+            "GetGlobalValue",
+            "GetStage",
+            "GetIsID",
+            "GetIsRace",
+            "HasKeyword",
+            "WornHasKeyword",
+            "IsSpellTarget",
+            "GetRelationshipRank",
+            "GetActorValue",
+            "GetActorValuePercent",
+            "GetBaseActorValue",
+            "GetEquippedItemType",
+            "GetCurrentTime",
+            "IsInInterior",
+            "IsInCombat",
+            "GetRandomPercent",
+            "GetLevel",
+            "TemperIsEnchanted"
+          ]
+        },
+        "comparison": {
+          "type": "string",
+          "description": "== != > >= < <= or a CompareOperator enum name (default >=)"
+        },
+        "value": {
+          "type": "number"
+        },
+        "param": {
+          "$ref": "#/$defs/ref",
+          "description": "FormLink param (perk/keyword/npc/race/item/magicItem/faction/global/quest)"
+        },
+        "actorValue": {
+          "type": "string",
+          "description": "ActorValue param for GetBaseActorValue/GetActorValue (e.g. OneHanded, Destruction)"
+        },
+        "itemType": {
+          "enum": [
+            "Left",
+            "Right",
+            "Voice",
+            "Instant"
+          ],
+          "description": "CastSource for GetEquippedItemType"
+        },
+        "runOn": {
+          "enum": [
+            "Subject",
+            "Target",
+            "Reference",
+            "CombatTarget",
+            "LinkedReference",
+            "QuestAlias",
+            "PackageData",
+            "EventData"
+          ],
+          "default": "Subject"
+        },
+        "reference": {
+          "$ref": "#/$defs/ref",
+          "description": "the ref read when runOn=Reference (e.g. the player Skyrim.esm:0x000014)"
+        },
+        "or": {
+          "type": "boolean",
+          "default": false
+        }
       }
     },
     "perkEffect": {
       "type": "object",
       "description": "One perk effect. kind=ability grants spell; kind=entryPoint modifies a named EntryPoint (entryPoint name + function + value).",
-      "required": ["kind"],
+      "required": [
+        "kind"
+      ],
       "properties": {
-        "kind": { "enum": ["ability", "entryPoint"] },
-        "rank": { "type": "integer", "minimum": 0, "description": "applies at perk rank >= this (default 0)" },
-        "priority": { "type": "integer", "minimum": 0, "description": "tie-break ordering among effects" },
-        "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "description": "effect-level CTDA gates" },
-        "spell": { "$ref": "#/$defs/ref", "description": "(ability) SPEL ref to grant" },
-        "entryPoint": { "type": "string", "description": "(entryPoint) EntryType name, e.g. ModAttackDamage. List all: perkdiag <Skyrim.esm> entrypoints" },
-        "function": { "enum": ["Set", "Add", "Multiply", "Mult"], "default": "Multiply", "description": "(entryPoint) how value is applied" },
-        "value": { "type": "number", "description": "(entryPoint) the operand, e.g. 1.2 for +20% with Multiply" }
+        "kind": {
+          "enum": [
+            "ability",
+            "entryPoint"
+          ]
+        },
+        "rank": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "applies at perk rank >= this (default 0)"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "tie-break ordering among effects"
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/condition"
+          },
+          "description": "effect-level CTDA gates"
+        },
+        "spell": {
+          "$ref": "#/$defs/ref",
+          "description": "(ability) SPEL ref to grant"
+        },
+        "entryPoint": {
+          "type": "string",
+          "description": "(entryPoint) EntryType name, e.g. ModAttackDamage. List all: perkdiag <Skyrim.esm> entrypoints"
+        },
+        "function": {
+          "enum": [
+            "Set",
+            "Add",
+            "Multiply",
+            "Mult"
+          ],
+          "default": "Multiply",
+          "description": "(entryPoint) how value is applied"
+        },
+        "value": {
+          "type": "number",
+          "description": "(entryPoint) the operand, e.g. 1.2 for +20% with Multiply"
+        }
       }
     },
     "perk": {
       "type": "object",
-      "required": ["editorId", "name"],
+      "required": [
+        "editorId",
+        "name"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string", "minLength": 1 },
-        "description": { "type": "string" },
-        "playable": { "type": "boolean", "default": true },
-        "hidden": { "type": "boolean", "default": false },
-        "trait": { "type": "boolean", "default": false },
-        "level": { "type": "integer", "minimum": 0, "maximum": 255 },
-        "numRanks": { "type": "integer", "minimum": 1, "maximum": 255, "default": 1 },
-        "nextPerk": { "$ref": "#/$defs/ref", "description": "optional ref to the next perk in a rank chain" },
-        "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "description": "perk-level CTDA gates" },
-        "effects": { "type": "array", "items": { "$ref": "#/$defs/perkEffect" } }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "playable": {
+          "type": "boolean",
+          "default": true
+        },
+        "hidden": {
+          "type": "boolean",
+          "default": false
+        },
+        "trait": {
+          "type": "boolean",
+          "default": false
+        },
+        "level": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "numRanks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 255,
+          "default": 1
+        },
+        "nextPerk": {
+          "$ref": "#/$defs/ref",
+          "description": "optional ref to the next perk in a rank chain"
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/condition"
+          },
+          "description": "perk-level CTDA gates"
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/perkEffect"
+          }
+        }
       }
     },
     "wordOfPower": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string", "description": "dragon-script glyph shown in the shout menu" },
-        "translation": { "type": "string", "description": "English gloss" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "description": "dragon-script glyph shown in the shout menu"
+        },
+        "translation": {
+          "type": "string",
+          "description": "English gloss"
+        }
       }
     },
     "shoutWord": {
       "type": "object",
       "properties": {
-        "word": { "$ref": "#/$defs/ref", "description": "WOOP ref" },
-        "spell": { "$ref": "#/$defs/ref", "description": "SPEL ref — a Voice-type spell fired at this charge level" },
-        "recoveryTime": { "type": "number", "description": "cooldown in seconds" }
+        "word": {
+          "$ref": "#/$defs/ref",
+          "description": "WOOP ref"
+        },
+        "spell": {
+          "$ref": "#/$defs/ref",
+          "description": "SPEL ref — a Voice-type spell fired at this charge level"
+        },
+        "recoveryTime": {
+          "type": "number",
+          "description": "cooldown in seconds"
+        }
       }
     },
     "shout": {
       "type": "object",
-      "required": ["editorId"],
+      "required": [
+        "editorId"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "menuDisplayObject": { "$ref": "#/$defs/ref" },
-        "words": { "type": "array", "maxItems": 3, "items": { "$ref": "#/$defs/shoutWord" } }
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "menuDisplayObject": {
+          "$ref": "#/$defs/ref"
+        },
+        "words": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/shoutWord"
+          }
+        }
       }
     },
     "wordWall": {
       "type": "object",
-      "required": ["editorId", "shout"],
+      "required": [
+        "editorId",
+        "shout"
+      ],
       "properties": {
-        "editorId": { "type": "string", "minLength": 1, "description": "editorId of the generated teaching quest" },
-        "name": { "type": "string" },
-        "shout": { "$ref": "#/$defs/ref", "description": "SHOU ref the wall teaches" },
-        "wordIndex": { "type": "integer", "minimum": 1, "maximum": 3, "description": "which of the shout's 3 words to teach" },
-        "word": { "$ref": "#/$defs/ref", "description": "explicit WOOP ref; auto-derived from an in-spec shout's wordIndex, required for a vanilla shout" },
-        "scriptName": { "type": "string", "description": "generated fragment name; defaults to <editorId>Script" },
-        "triggerEditorId": { "type": "string" },
-        "triggerBase": { "$ref": "#/$defs/ref", "description": "ACTI base to place; defaults to vanilla WordWallTrigger Skyrim.esm:0x05095E" },
-        "cell": { "type": "string", "description": "interior: in-spec editorId or <master>:0xFORMID" },
-        "worldspace": { "type": "string", "description": "exterior worldspace ref; position is world-space" },
-        "position": { "$ref": "#/$defs/vec3" },
-        "rotation": { "$ref": "#/$defs/vec3" }
+        "editorId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "editorId of the generated teaching quest"
+        },
+        "name": {
+          "type": "string"
+        },
+        "shout": {
+          "$ref": "#/$defs/ref",
+          "description": "SHOU ref the wall teaches"
+        },
+        "wordIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3,
+          "description": "which of the shout's 3 words to teach"
+        },
+        "word": {
+          "$ref": "#/$defs/ref",
+          "description": "explicit WOOP ref; auto-derived from an in-spec shout's wordIndex, required for a vanilla shout"
+        },
+        "scriptName": {
+          "type": "string",
+          "description": "generated fragment name; defaults to <editorId>Script"
+        },
+        "triggerEditorId": {
+          "type": "string"
+        },
+        "triggerBase": {
+          "$ref": "#/$defs/ref",
+          "description": "ACTI base to place; defaults to vanilla WordWallTrigger Skyrim.esm:0x05095E"
+        },
+        "cell": {
+          "type": "string",
+          "description": "interior: in-spec editorId or <master>:0xFORMID"
+        },
+        "worldspace": {
+          "type": "string",
+          "description": "exterior worldspace ref; position is world-space"
+        },
+        "position": {
+          "$ref": "#/$defs/vec3"
+        },
+        "rotation": {
+          "$ref": "#/$defs/vec3"
+        }
       }
     }
   }
