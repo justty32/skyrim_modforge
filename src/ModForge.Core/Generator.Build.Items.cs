@@ -11,6 +11,10 @@ public static partial class Generator
         private static readonly Book.TranslationMask       BookCopyMask   = new(defaultOn: true) { Name = false, BookText = false };
         private static readonly Weapon.TranslationMask     WeaponCopyMask = new(defaultOn: true) { Name = false, Description = false };
         private static readonly Ingestible.TranslationMask PotionCopyMask = new(defaultOn: true) { Name = false };
+        // Armor: bring the template's Armature (ARMA addons = the actual worn mesh) + WorldModel (ground
+        // model) + BodyTemplate. Skip the localized Name (set from spec). Description on ARMO is a nested
+        // sub-mask, not a bool — vanilla armor templates have no DESC so there's no .STRINGS to resolve.
+        private static readonly Armor.TranslationMask ArmorCopyMask = new(defaultOn: true) { Name = false };
 
         // --- pass 1: Misc / Book / Weapon (model templating to avoid equip/read CRASHes) ---
         public void BuildItems()
@@ -166,9 +170,26 @@ public static partial class Generator
             foreach (var a in spec.Armors)
             {
                 var r = mod.Armors.AddNew();
+                // A bare ARMO with only a BodyTemplate equips INVISIBLE — the worn mesh lives in the
+                // Armature (ARMA addon records), not on the ARMO. Clone a vanilla armor of the desired
+                // slot (`template`: "<master>:0xFORMID", e.g. Skyrim.esm:0x00012E49 = ArmorIronCuirass)
+                // via DeepCopyIn — that brings its Armature (worn mesh per body part) + WorldModel (ground
+                // model) + BodyTemplate — then override identity/stats below. DeepCopyIn keeps OUR FormKey;
+                // the ARMA links stay pointed at the template's master, so the vanilla mesh is reused.
+                if (!string.IsNullOrWhiteSpace(a.Template))
+                {
+                    if (TryResolveTemplate<IArmorGetter>(a.Template, out var tmpl) && tmpl is not null)
+                        r.DeepCopyIn(tmpl, out _, ArmorCopyMask);
+                    else
+                        Warn($"  ! armor '{a.EditorId}': template '{a.Template}' not resolved — armor will have NO Armature and equip INVISIBLE; set template to a vanilla armor of the same slot (e.g. Skyrim.esm:0x00012E49 ArmorIronCuirass)");
+                }
+                else
+                    Warn($"  ! armor '{a.EditorId}': no `template` — an ARMO without an Armature equips INVISIBLE (the worn mesh lives on ARMA addons); set template to a vanilla armor (e.g. Skyrim.esm:0x00012E49 ArmorIronCuirass)");
                 r.EditorID = a.EditorId; r.Name = a.Name;
                 r.Value = a.Value; r.Weight = a.Weight; r.ArmorRating = a.ArmorRating;
                 // BodyTemplate = the armor class (light/heavy/clothing) + which biped slots it fills.
+                // When templated, the clone already has a correct BodyTemplate; only override it if the
+                // spec explicitly states armorType/slots (so the user's choice wins over the template's).
                 if (!string.IsNullOrEmpty(a.ArmorType) || a.Slots.Count > 0)
                 {
                     var bt = new BodyTemplate { ArmorType = ParseArmorType(a.ArmorType) };
@@ -176,6 +197,16 @@ public static partial class Generator
                         if (Enum.TryParse<BipedObjectFlag>(slot, ignoreCase: true, out var f)) bt.FirstPersonFlags |= f;
                         else Warn($"  ! armor '{a.EditorId}' unknown slot '{slot}' (e.g. Body, Head, Hands, Feet, Forearms, Calves, Shield)");
                     r.BodyTemplate = bt;
+                }
+                // External-resource pipeline: a `model` path overrides the cloned ground/world model .nif.
+                // (The worn mesh still comes from the template's Armature — a user world model usually pairs
+                // WITH a template so the equipped armor stays visible.)
+                if (!string.IsNullOrWhiteSpace(a.Model))
+                {
+                    if (string.IsNullOrWhiteSpace(a.Template))
+                        Warn($"  ! armor '{a.EditorId}': `model` set but no `template` — a ground mesh without a template's Armature still equips INVISIBLE; pair `model` with a `template`");
+                    ArmorModel Mk() { var am = new ArmorModel { Model = new Model() }; am.Model.File.GivenPath = a.Model; return am; }
+                    r.WorldModel = new GenderedItem<ArmorModel?>(Mk(), Mk());
                 }
             }
             foreach (var f in spec.Factions)

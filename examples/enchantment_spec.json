@@ -1,7 +1,7 @@
 {
   "pluginName": "ModForgeEnchant.esp",
   "esl": true,
-  "_": "Enchantments (ENCH / ObjectEffect). Two worked cases: (1) a custom Frost Damage MGEF -> a `weapon` enchantment -> a craftable, frost-enchanted iron sword (charge pool via enchantmentAmount). (2) a custom Fortify Stamina MGEF -> an `apparel` constant-effect enchantment -> an iron cuirass that boosts stamina while worn. FormIDs discovered via the CLI (find): IronSword=0x012EB7, ArmorIronCuirass=0x012E49, IronIngot=0x05ACE4, GrandSoulGem=0x02E4FC, forge keyword=0x088105. The enchantment FIRING in-game is structurally-built but NOT in-game-confirmed (I can't run Skyrim).",
+  "_": "Enchantments (ENCH / ObjectEffect). Two worked cases: (1) a custom Frost Damage MGEF -> a `weapon` enchantment -> a craftable, frost-enchanted iron sword (charge pool via enchantmentAmount). (2) a custom Fortify Stamina MGEF -> an `apparel` constant-effect enchantment -> an iron cuirass that boosts stamina while worn. The cuirass sets `template` to ArmorIronCuirass so it CLONES the iron armor's Armature (worn mesh) — a bare ARMO equips INVISIBLE (the mesh lives on ARMA addons, not the ARMO). FormIDs discovered via the CLI (find): IronSword=0x012EB7, ArmorIronCuirass=0x012E49, IronIngot=0x05ACE4, GrandSoulGem=0x02E4FC, forge keyword=0x088105. The enchantment FIRING in-game is structurally-built but NOT in-game-confirmed (I can't run Skyrim).",
 
   "magicEffects": [
     {
@@ -69,6 +69,7 @@
     {
       "editorId": "MF_StaminaIronCuirass",
       "name": "Iron Cuirass of Vigor",
+      "template": "Skyrim.esm:0x00012E49",
       "value": 250,
       "weight": 30.0,
       "armorRating": 25,

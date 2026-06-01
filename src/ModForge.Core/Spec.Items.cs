@@ -38,7 +38,7 @@ public sealed class PotionSpec { public string EditorId { get; set; } = ""; publ
 // Armor `enchantment` is a ref → an in-spec ENCH (enchantments[], normally an `apparel` constant-
 // effect one) or a vanilla ObjectEffect. Apparel enchants are passive/always-on while worn, so
 // there's no charge pool (no enchantmentAmount).
-public sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } public string ArmorType { get; set; } = ""; public List<string> Slots { get; set; } = new(); public List<string> Keywords { get; set; } = new(); public string Enchantment { get; set; } = ""; }
+public sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } public string ArmorType { get; set; } = ""; public List<string> Slots { get; set; } = new(); public List<string> Keywords { get; set; } = new(); public string Enchantment { get; set; } = ""; public string Template { get; set; } = ""; public string Model { get; set; } = ""; }
 public sealed class MessageSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Description { get; set; } = ""; }
 // One entry in a leveled list: a ref (item or npc) that appears at >= Level, Count copies.
 public sealed class LeveledEntrySpec { public string Reference { get; set; } = ""; public short Level { get; set; } = 1; public short Count { get; set; } = 1; }

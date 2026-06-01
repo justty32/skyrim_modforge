@@ -215,7 +215,9 @@
         "armorType": { "enum": ["light", "heavy", "clothing", "lightArmor", "heavyArmor"], "description": "armor class; default clothing" },
         "slots": { "type": "array", "items": { "type": "string" }, "description": "biped slots occupied, e.g. Body, Head, Hands, Feet, Forearms, Calves, Shield (BipedObjectFlag names)" },
         "keywords": { "type": "array", "items": { "$ref": "#/$defs/ref" } },
-        "enchantment": { "$ref": "#/$defs/ref", "description": "ENCH ref — normally an in-spec apparel (constant-effect) enchantments entry, or a vanilla ObjectEffect (<master>:0xFORMID)" }
+        "enchantment": { "$ref": "#/$defs/ref", "description": "ENCH ref — normally an in-spec apparel (constant-effect) enchantments entry, or a vanilla ObjectEffect (<master>:0xFORMID)" },
+        "template": { "type": "string", "description": "vanilla armor to clone for its Armature (worn mesh) + WorldModel + BodyTemplate (<master>:0xFORMID, e.g. Skyrim.esm:0x00012E49 ArmorIronCuirass). REQUIRED for the armor to be visible when equipped — a bare ARMO equips INVISIBLE." },
+        "model": { "type": "string", "description": "optional ground/world model .nif path; overrides the cloned template's. The worn mesh still comes from the template's Armature, so pair `model` with a `template`." }
       }
     },
     "message": {

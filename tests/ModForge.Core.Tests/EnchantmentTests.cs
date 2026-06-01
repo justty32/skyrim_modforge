@@ -119,8 +119,9 @@ public class EnchantmentTests
     [Fact]
     public void Armor_ObjectEffect_LinkedToInSpecEnchantment()
     {
-        // Armor needs no vanilla template, so this stays master-free (no warnings).
-        var r = TestBuild.Ok(new ModSpec
+        // A template-less armor intentionally warns (equips INVISIBLE — no Armature); use Raw so we
+        // still get the build result and can assert on the ObjectEffect link that DOES get wired.
+        var r = TestBuild.Raw(new ModSpec
         {
             MagicEffects = { Mgef("MF_Fort") },
             Enchantments =
@@ -179,6 +180,32 @@ public class EnchantmentTests
         Assert.False(weap.ObjectEffect.IsNull);
         Assert.Equal("Skyrim.esm", weap.ObjectEffect.FormKey.ModKey.FileName);
         Assert.Equal(0x10FB96u, weap.ObjectEffect.FormKey.ID);
+    }
+
+    [Fact]
+    public void Armor_NoTemplate_Warns_EquipsInvisible()
+    {
+        // A bare ARMO (no Armature) equips invisible; build must warn so the modder knows to add a template.
+        var r = TestBuild.Raw(new ModSpec
+        {
+            Armors = { new ArmorSpec { EditorId = "MF_Cuirass", Name = "C", ArmorType = "heavy", Slots = { "Body" } } },
+        });
+        Assert.Contains(r.Warnings, w => w.Contains("MF_Cuirass") && w.Contains("INVISIBLE"));
+        var armor = r.Mod.EnumerateMajorRecords<IArmorGetter>().Single();
+        Assert.Empty(armor.Armature); // no template -> no worn mesh
+    }
+
+    [Fact]
+    public void Armor_ModelOverride_SetsGenderedWorldModel()
+    {
+        // `model` (no template) still warns invisible, but the ground/world model path must be applied.
+        var r = TestBuild.Raw(new ModSpec
+        {
+            Armors = { new ArmorSpec { EditorId = "MF_Cuirass", Name = "C", Model = "Armor/Custom/Cuirass.nif" } },
+        });
+        var armor = r.Mod.EnumerateMajorRecords<IArmorGetter>().Single();
+        Assert.Equal("Armor/Custom/Cuirass.nif", armor.WorldModel?.Male?.Model?.File.GivenPath);
+        Assert.Equal("Armor/Custom/Cuirass.nif", armor.WorldModel?.Female?.Model?.File.GivenPath);
     }
 
     // ----- validate guardrails -----
