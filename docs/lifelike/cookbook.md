@@ -485,7 +485,8 @@ Three layers: a custom **MGEF** (what happens on hit) → an **enchantment** / E
 Add a COBJ so the player can craft it. (For a passive **apparel** enchant, use `enchantType: apparel`
 and put `enchantment` on an `armor` instead — no `enchantmentAmount`, it's always-on while worn.)
 
-> **Armor must carry a `template` or it equips INVISIBLE.** An ARMO's worn mesh lives on its
+> **Armor must carry a `template` or it equips INVISIBLE** (IN-GAME CONFIRMED 2026-06-01: the
+> templated cuirass shows the iron-armor mesh when worn). An ARMO's worn mesh lives on its
 > Armature (ARMA addon records), not the ARMO — a spec armor with only `armorType`+`slots` renders
 > nothing when worn (it does *not* crash). Set `template` to a vanilla armor of the same slot, e.g.
 > `"template": "Skyrim.esm:0x00012E49"` (ArmorIronCuirass); the clone brings the Armature (worn mesh),
