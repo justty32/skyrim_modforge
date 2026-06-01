@@ -444,16 +444,32 @@ public static partial class Generator
                 });
         }
 
+        // Castable = occupies an equip slot (gets a default EitherHand EQUP). Empty defaults to Spell
+        // (Mutagen's SpellType 0). Passive types (Ability/Disease/Poison/Addiction) stay slot-less.
+        private static bool IsCastableSpellType(string spellType) =>
+            string.IsNullOrWhiteSpace(spellType) ||
+            spellType.Equals("Spell", StringComparison.OrdinalIgnoreCase) ||
+            spellType.Equals("Voice", StringComparison.OrdinalIgnoreCase) ||
+            spellType.Equals("Power", StringComparison.OrdinalIgnoreCase) ||
+            spellType.Equals("LesserPower", StringComparison.OrdinalIgnoreCase);
+
         public void WireEffects()
         {
             void Wire(string ed, List<EffectSpec> effects) => WireEffectsFor(ed, effects);
             foreach (var s in spec.Spells) Wire(s.EditorId, s.Effects);
-            // Spell EquipType (EQUP ref) — needed for a hand spell to be equippable/castable.
+            // Spell EquipType (EQUP ref) — REQUIRED for any castable spell to have an equip slot. This
+            // covers hand spells (an NPC can't equip+cast without it) AND **Voice/shout charge-spells**:
+            // every vanilla shout word-spell carries EitherHand (Skyrim.esm:0x013F44) too. With no EQUP
+            // the player learns the shout but CAN'T SHOUT it (the word fires no spell → the Thu'um does
+            // nothing). So when the spec omits equipType, default castable types to EitherHand; leave
+            // passive types (Ability/Disease/Poison/Addiction) slot-less.
             foreach (var s in spec.Spells)
             {
-                if (string.IsNullOrWhiteSpace(s.EquipType)) continue;
-                if (recordsByEd.TryGetValue(s.EditorId, out var rec) && rec is ISpell sp)
+                if (!(recordsByEd.TryGetValue(s.EditorId, out var rec) && rec is ISpell sp)) continue;
+                if (!string.IsNullOrWhiteSpace(s.EquipType))
                     Resolve($"spell '{s.EditorId}' equipType", s.EquipType, fk => sp.EquipmentType.SetTo(fk));
+                else if (IsCastableSpellType(s.SpellType))
+                    Resolve($"spell '{s.EditorId}' default equipType", "Skyrim.esm:0x00013F44", fk => sp.EquipmentType.SetTo(fk));
             }
             foreach (var p in spec.Potions) Wire(p.EditorId, p.Effects);
             foreach (var i in spec.Ingredients) Wire(i.EditorId, i.Effects);

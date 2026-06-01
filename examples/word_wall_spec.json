@@ -1,8 +1,7 @@
 {
   "pluginName": "ModForgeWordWall.esp",
   "esl": true,
-  "_": "Make a custom dragon shout LEARNABLE. A SHOU + 3 WOOP is record-correct but UNUSABLE until the player learns its words at a word wall. This spec ships: (1) a custom shout 'Forged Voice' (3 Words of Power, each firing a progressively stronger Voice spell), and (2) a word wall in Bleak Falls Barrow that teaches its FIRST word — a WordWallTrigger activator placed in the barrow + a start-enabled teaching QUEST whose GENERATED Papyrus fragment calls Game.GetPlayer().AddShout(shout)+TeachWord(word). HONEST: the .psc is a compile-ready scaffold — the Creation Kit must compile it and the in-game learning is UNCONFIRMED (no Skyrim/Papyrus here). The blue word-glow VFX on the wall is a separate CK/mesh concern, not emitted. `package` writes Data/Scripts/Source/ForgedVoiceWordWallScript.psc for the CK.",
-
+  "_": "Make a custom dragon shout LEARNABLE. A SHOU + 3 WOOP is record-correct but UNUSABLE until the player learns its words at a word wall. This spec ships: (1) a custom shout 'Forged Voice' (3 Words of Power, each firing a progressively stronger Voice spell), and (2) a word wall in Bleak Falls Barrow that teaches its FIRST word — a WordWallTrigger activator placed in the barrow + a start-enabled teaching QUEST whose GENERATED Papyrus fragment calls Game.GetPlayer().AddShout(shout)+TeachWord(word). HONEST: the .psc is a compile-ready scaffold — the Creation Kit must compile it and the in-game learning is UNCONFIRMED (no Skyrim/Papyrus here). The blue word-glow VFX on the wall is a separate CK/mesh concern, not emitted. `package` writes Data/Scripts/Source/ForgedVoiceWordWallScript.psc for the CK. IMPORTANT (2026-06-01): learning is driven by the teaching QUEST fragment OnInit (start-game-enabled), so the shout + word 1 are granted AS SOON AS THE PLUGIN LOADS — NOT by walking to the wall. The placed WordWallTrigger is decorative; binding it to OnTriggerEnter for true walk-up learning is CK work. Also the placement targets cell 0x0371DE = the VANILLA Unrelenting Force wall room, so the wall you see there is VANILLA, not ours (ours sits at cell-origin 0,0,0) — do not confuse them. Shout now castable: Voice spells auto-get EitherHand EQUP.",
   "magicEffects": [
     {
       "_": "The effect each charge level fires — a simple stagger/force on the target. Voice cast, fire-and-forget aimed.",
@@ -14,42 +13,82 @@
       "castType": "FireAndForget",
       "targetType": "Aimed",
       "baseCost": 0,
-      "flags": [ "NoHitEvent" ]
+      "flags": [
+        "NoHitEvent"
+      ]
     }
   ],
-
   "spells": [
     {
       "_": "Word 1 (tap) — weakest. spellType=Voice so it's a shout charge level, not a normal spell. baseCost 0 (shouts cost no magicka).",
       "editorId": "MF_ForgedVoiceSpell1",
       "name": "Forged Voice",
-      "spellType": "Voice", "castType": "FireAndForget", "targetType": "Aimed",
+      "spellType": "Voice",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
       "baseCost": 0,
-      "effects": [ { "magicEffect": "MF_ForgedVoiceEffect", "magnitude": 1, "area": 0, "duration": 0 } ]
+      "effects": [
+        {
+          "magicEffect": "MF_ForgedVoiceEffect",
+          "magnitude": 1,
+          "area": 0,
+          "duration": 0
+        }
+      ]
     },
     {
       "_": "Word 1+2 (hold) — stronger.",
       "editorId": "MF_ForgedVoiceSpell2",
-      "name": "Forged Voice", "spellType": "Voice", "castType": "FireAndForget", "targetType": "Aimed",
+      "name": "Forged Voice",
+      "spellType": "Voice",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
       "baseCost": 0,
-      "effects": [ { "magicEffect": "MF_ForgedVoiceEffect", "magnitude": 2, "area": 0, "duration": 0 } ]
+      "effects": [
+        {
+          "magicEffect": "MF_ForgedVoiceEffect",
+          "magnitude": 2,
+          "area": 0,
+          "duration": 0
+        }
+      ]
     },
     {
       "_": "Word 1+2+3 (full charge) — strongest.",
       "editorId": "MF_ForgedVoiceSpell3",
-      "name": "Forged Voice", "spellType": "Voice", "castType": "FireAndForget", "targetType": "Aimed",
+      "name": "Forged Voice",
+      "spellType": "Voice",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
       "baseCost": 0,
-      "effects": [ { "magicEffect": "MF_ForgedVoiceEffect", "magnitude": 3, "area": 0, "duration": 0 } ]
+      "effects": [
+        {
+          "magicEffect": "MF_ForgedVoiceEffect",
+          "magnitude": 3,
+          "area": 0,
+          "duration": 0
+        }
+      ]
     }
   ],
-
   "wordsOfPower": [
-    { "_": "The dragon-language syllables. `name` is the glyph string shown in the shout menu; `translation` the gloss.",
-      "editorId": "MF_WordDov",  "name": "Dov",  "translation": "Dragon" },
-    { "editorId": "MF_WordAh",   "name": "Ah",   "translation": "Hunter" },
-    { "editorId": "MF_WordVulom","name": "Vulom","translation": "Forged" }
+    {
+      "_": "The dragon-language syllables. `name` is the glyph string shown in the shout menu; `translation` the gloss.",
+      "editorId": "MF_WordDov",
+      "name": "Dov",
+      "translation": "Dragon"
+    },
+    {
+      "editorId": "MF_WordAh",
+      "name": "Ah",
+      "translation": "Hunter"
+    },
+    {
+      "editorId": "MF_WordVulom",
+      "name": "Vulom",
+      "translation": "Forged"
+    }
   ],
-
   "shouts": [
     {
       "_": "The shout: exactly 3 words, each a WOOP `word` + the Voice SPEL `spell` that fires at that charge level + recoveryTime (cooldown seconds). word1=tap, 1+2=hold, 1+2+3=full charge.",
@@ -57,13 +96,25 @@
       "name": "Forged Voice",
       "description": "Dov Ah Vulom — a Thu'um forged in ModForge.",
       "words": [
-        { "word": "MF_WordDov",   "spell": "MF_ForgedVoiceSpell1", "recoveryTime": 12 },
-        { "word": "MF_WordAh",    "spell": "MF_ForgedVoiceSpell2", "recoveryTime": 18 },
-        { "word": "MF_WordVulom", "spell": "MF_ForgedVoiceSpell3", "recoveryTime": 25 }
-      ]
+        {
+          "word": "MF_WordDov",
+          "spell": "MF_ForgedVoiceSpell1",
+          "recoveryTime": 12
+        },
+        {
+          "word": "MF_WordAh",
+          "spell": "MF_ForgedVoiceSpell2",
+          "recoveryTime": 18
+        },
+        {
+          "word": "MF_WordVulom",
+          "spell": "MF_ForgedVoiceSpell3",
+          "recoveryTime": 25
+        }
+      ],
+      "menuDisplayObject": "Skyrim.esm:0x0A59AC"
     }
   ],
-
   "wordWalls": [
     {
       "_": "The learnable layer. Teaches word 1 (MF_WordDov, auto-derived from the shout's wordIndex). Emits: a start-enabled teaching QUEST (editorId) hosting the generated fragment, and a WordWallTrigger activator (vanilla Skyrim.esm:0x05095E) placed in BleakFallsBarrow01 (0x0371DE) where the real Unrelenting Force wall is. The generated .psc (ForgedVoiceWordWallScript) AddShouts the shout + TeachWords the word on the player. `package` writes it to Scripts/Source for the CK to compile. position is cell-local; tweak in the CK to sit at the wall.",
@@ -73,8 +124,16 @@
       "wordIndex": 1,
       "scriptName": "ForgedVoiceWordWallScript",
       "cell": "Skyrim.esm:0x0371DE",
-      "position": { "x": 0, "y": 0, "z": 0 },
-      "rotation": { "x": 0, "y": 0, "z": 0 }
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
     }
   ]
 }

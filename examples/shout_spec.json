@@ -1,7 +1,6 @@
 {
   "pluginName": "ModForgeShout.esp",
   "esl": true,
-
   "magicEffects": [
     {
       "editorId": "MF_ShoutFrostEffect",
@@ -14,11 +13,15 @@
       "castType": "FireAndForget",
       "targetType": "Aimed",
       "baseCost": 1.5,
-      "flags": ["Hostile", "Detrimental", "NoDuration", "NoArea"],
+      "flags": [
+        "Hostile",
+        "Detrimental",
+        "NoDuration",
+        "NoArea"
+      ],
       "projectile": "Skyrim.esm:0x10FBEA"
     }
   ],
-
   "spells": [
     {
       "editorId": "MF_WintersEmbrace1",
@@ -27,7 +30,12 @@
       "castType": "FireAndForget",
       "targetType": "Aimed",
       "effects": [
-        { "magicEffect": "MF_ShoutFrostEffect", "magnitude": 20, "area": 0, "duration": 0 }
+        {
+          "magicEffect": "MF_ShoutFrostEffect",
+          "magnitude": 20,
+          "area": 0,
+          "duration": 0
+        }
       ]
     },
     {
@@ -37,7 +45,12 @@
       "castType": "FireAndForget",
       "targetType": "Aimed",
       "effects": [
-        { "magicEffect": "MF_ShoutFrostEffect", "magnitude": 40, "area": 0, "duration": 0 }
+        {
+          "magicEffect": "MF_ShoutFrostEffect",
+          "magnitude": 40,
+          "area": 0,
+          "duration": 0
+        }
       ]
     },
     {
@@ -47,17 +60,32 @@
       "castType": "FireAndForget",
       "targetType": "Aimed",
       "effects": [
-        { "magicEffect": "MF_ShoutFrostEffect", "magnitude": 60, "area": 0, "duration": 0 }
+        {
+          "magicEffect": "MF_ShoutFrostEffect",
+          "magnitude": 60,
+          "area": 0,
+          "duration": 0
+        }
       ]
     }
   ],
-
   "wordsOfPower": [
-    { "editorId": "MF_WordIss",  "translation": "Iss",  "name": "Iss" },
-    { "editorId": "MF_WordKren", "translation": "Kren", "name": "Kren" },
-    { "editorId": "MF_WordVus",  "translation": "Vus",  "name": "Vus" }
+    {
+      "editorId": "MF_WordIss",
+      "translation": "Iss",
+      "name": "Iss"
+    },
+    {
+      "editorId": "MF_WordKren",
+      "translation": "Kren",
+      "name": "Kren"
+    },
+    {
+      "editorId": "MF_WordVus",
+      "translation": "Vus",
+      "name": "Vus"
+    }
   ],
-
   "shouts": [
     {
       "editorId": "MF_WintersEmbraceShout",
@@ -65,9 +93,21 @@
       "description": "ISS... KREN... VUS! The dragon's breath turns the air to killing frost.",
       "menuDisplayObject": "Skyrim.esm:0x0A59AC",
       "words": [
-        { "word": "MF_WordIss",  "spell": "MF_WintersEmbrace1", "recoveryTime": 15 },
-        { "word": "MF_WordKren", "spell": "MF_WintersEmbrace2", "recoveryTime": 20 },
-        { "word": "MF_WordVus",  "spell": "MF_WintersEmbrace3", "recoveryTime": 45 }
+        {
+          "word": "MF_WordIss",
+          "spell": "MF_WintersEmbrace1",
+          "recoveryTime": 15
+        },
+        {
+          "word": "MF_WordKren",
+          "spell": "MF_WintersEmbrace2",
+          "recoveryTime": 20
+        },
+        {
+          "word": "MF_WordVus",
+          "spell": "MF_WintersEmbrace3",
+          "recoveryTime": 45
+        }
       ]
     }
   ]

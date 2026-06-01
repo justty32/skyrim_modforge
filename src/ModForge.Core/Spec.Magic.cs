@@ -12,10 +12,11 @@ public sealed class SpellSpec
     public string TargetType { get; set; } = "";    // Self|Touch|Aimed|TargetActor|TargetLocation
     public uint BaseCost { get; set; }
     public float ChargeTime { get; set; }
-    // EquipType (EQUP) ref — which slot the spell occupies. For a hand spell an NPC (or the player)
-    // must equip+cast, set this to EitherHand (Skyrim.esm:0x013F44); BothHands/Left/RightHand exist
-    // too. Omit for non-equipped magic (abilities, voice powers). Without it, an NPC can't equip a
-    // hand spell into a hand and won't cast it in combat.
+    // EquipType (EQUP) ref — which slot the spell occupies. Build DEFAULTS castable types (Spell/Voice/
+    // Power/LesserPower) to EitherHand (Skyrim.esm:0x013F44) when this is omitted, because BOTH hand
+    // spells AND Voice/shout charge-spells need an equip slot (vanilla shout word-spells all use
+    // EitherHand). Set this only to override (BothHands/Left/RightHand). Without an EQUP an NPC can't
+    // equip a hand spell, and the player learns a shout but can't actually shout it.
     public string EquipType { get; set; } = "";
 }
 // MagicEffect (MGEF): the building block a spell/potion/ingredient/scroll `effect` points at — lets a

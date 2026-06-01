@@ -128,6 +128,32 @@ public class ShoutTests
     }
 
     [Fact]
+    public void VoiceSpell_GetsDefaultEitherHandEquipType()
+    {
+        // A Voice/shout charge-spell with no explicit equipType MUST default to EitherHand
+        // (Skyrim.esm:0x013F44) — without an EQUP slot the player learns the shout but can't shout it
+        // (the in-game symptom: "no word fires / nothing happens"). Every vanilla shout word-spell
+        // carries EitherHand too.
+        var mod = Build(MakeShoutSpec());
+        foreach (var s in mod.Spells)
+        {
+            Assert.False(s.EquipmentType.IsNull, $"{s.EditorID} must have an EQUP slot");
+            Assert.Equal("Skyrim.esm", s.EquipmentType.FormKey.ModKey.FileName);
+            Assert.Equal(0x013F44u, s.EquipmentType.FormKey.ID);
+        }
+    }
+
+    [Fact]
+    public void ExplicitEquipType_OverridesTheDefault()
+    {
+        var spec = MakeShoutSpec();
+        spec.Spells[0].EquipType = "Skyrim.esm:0x00013F45"; // BothHands
+        var mod = Build(spec);
+        var sp = mod.Spells.Single(x => x.EditorID == "MF_Voice1");
+        Assert.Equal(0x013F45u, sp.EquipmentType.FormKey.ID);
+    }
+
+    [Fact]
     public void Validate_RejectsTooManyWordRows()
     {
         var spec = MakeShoutSpec();
