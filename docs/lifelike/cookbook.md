@@ -731,18 +731,30 @@ script — then objectives display on stage-set and the line advances the quest.
 the stage/journal data is real but objective-display + dialogue-advance are **structural only**
 (in-game-unconfirmed). Dialogue also only registers on a game **LOAD** — see [gotchas.md](gotchas.md).
 
-## "Make a shout learnable (word wall)" — SHOU + WOOP + word wall (STRUCTURAL only)
+## "Custom dragon shout" — SHOU + WOOP + word wall (IN-GAME CONFIRMED 2026-06-01)
 
-A custom shout is record-correct but the player can never **use** it until they **learn** its words.
-Vanilla teaches a word at a word wall: a `WordWallTrigger` activator you walk into fires a script that
-grants the shout + teaches the word. ModForge emits all three layers — the shout, the trigger, and a
-teaching quest with a **generated** Papyrus fragment.
+A custom shout is `MGEF → Voice SPEL → WOOP → SHOU`, plus a way to **learn** it. Getting a shout to
+actually fire in-game took four pieces beyond the bare records — each one was an invisible failure
+until found in-game:
+
+1. **Every Voice spell needs an equip slot.** A `spellType: "Voice"` SPEL with no `EquipmentType`
+   has no slot → the player learns the shout but **pressing Shout does nothing**. Build now
+   **auto-defaults** castable types (Spell/Voice/Power/LesserPower) to **EitherHand**
+   (`Skyrim.esm:0x00013F44`) — same EQUP every vanilla shout word-spell uses. (You can override.)
+2. **The MGEF needs a `projectile`** or the Thu'um fires invisibly + silently. The projectile carries
+   the travelling model, the impact, and the impact sound. Match the theme — a frost shout wants a
+   frost projectile (`0x02F774` FrostIcicle), a force shout the shockwave (`0x013DF4` VoicePush).
+   Add `castingArt` for the cast-out flash.
+3. **The `Release` sound is the EFFECT sound** (thunder/frost FX), via `magicEffects[].sounds`.
+4. **The SHOU wants a `menuDisplayObject`** (`0x0A59AC`) so it previews in the shout menu.
 
 ```jsonc
 { "magicEffects": [
     { "editorId": "MF_ForgedVoiceEffect", "archetype": "Stagger",
-      "castType": "FireAndForget", "targetType": "Aimed", "flags": [ "NoHitEvent" ] } ],
-  "spells": [   // one Voice spell per charge level — spellType MUST be "Voice"
+      "castType": "FireAndForget", "targetType": "Aimed", "flags": [ "NoHitEvent" ],
+      "projectile": "Skyrim.esm:0x00013DF4",               // VoicePush shockwave (model+impact+sound)
+      "sounds": [ { "type": "Release", "sound": "Skyrim.esm:0x000A0F52" } ] } ],  // UnrelentingForce FX
+  "spells": [   // one Voice spell per charge level — spellType MUST be "Voice"; equipType auto = EitherHand
     { "editorId": "MF_FV1", "name": "Forged Voice", "spellType": "Voice", "castType": "FireAndForget",
       "targetType": "Aimed", "effects": [ { "magicEffect": "MF_ForgedVoiceEffect", "magnitude": 1 } ] },
     { "editorId": "MF_FV2", "name": "Forged Voice", "spellType": "Voice", "castType": "FireAndForget",
@@ -754,7 +766,7 @@ teaching quest with a **generated** Papyrus fragment.
     { "editorId": "MF_Ah",  "name": "Ah",  "translation": "Hunter" },
     { "editorId": "MF_Vul", "name": "Vul", "translation": "Forged" } ],
   "shouts": [
-    { "editorId": "MF_ForgedVoice", "name": "Forged Voice",
+    { "editorId": "MF_ForgedVoice", "name": "Forged Voice", "menuDisplayObject": "Skyrim.esm:0x000A59AC",
       "words": [   // EXACTLY 3: word1 = tap, 1+2 = hold, 1+2+3 = full charge
         { "word": "MF_Dov", "spell": "MF_FV1", "recoveryTime": 12 },
         { "word": "MF_Ah",  "spell": "MF_FV2", "recoveryTime": 18 },
@@ -763,26 +775,29 @@ teaching quest with a **generated** Papyrus fragment.
     { "editorId": "MF_ForgedVoiceWall", "name": "Forged Voice Word Wall",
       "shout": "MF_ForgedVoice", "wordIndex": 1,           // teaches word 1 (MF_Dov, auto-derived)
       "scriptName": "ForgedVoiceWordWallScript",
-      "cell": "Skyrim.esm:0x0371DE",                       // BleakFallsBarrow01 (the real UF wall is here)
-      "position": { "x": 0, "y": 0, "z": 0 } } ]           // CK-tune to sit at the wall
+      "cell": "Skyrim.esm:0x0371DE",                       // BleakFallsBarrow01 — see the wall caveat below
+      "position": { "x": 0, "y": 0, "z": 0 } } ]
 }
 ```
 
-`build` emits the SHOU (3 word slots → WOOP + Voice SPEL + recovery), the start-enabled teaching
-quest, and the WordWallTrigger placement. `package` additionally **writes the generated `.psc`** to
-`Scripts/Source/ForgedVoiceWordWallScript.psc` (and attempts a Wine compile). The fragment binds two
-VMAD object properties (`WordWallShout`, `WordWallWord`) that ModForge fills, and calls
-`Game.GetPlayer().AddShout(...)` + `Game.TeachWord(...)` / `UnlockWord(...)`.
+**Console test:** `help "Forged Voice" 0` → `player.addshout <SHOUT>`, then **`player.teachword <WORD>`**
+for each word — `teachword` (not just `unlockword`) is what makes the glyph **show** in the shout menu.
+Equip it, hold the Shout key: the bolt fires, deals its effect, with the FX sound + impact.
 
-**Honest limits (verified STRUCTURALLY only — no Skyrim, can't run the game):**
-- The generated `.psc` is a **compile-ready scaffold**. It does compile to `.pex` under the Wine
-  Papyrus compiler here, but the **CK property-binding step and the in-game learning are UNCONFIRMED.**
-  In the CK you must confirm the trigger's instance script starts/owns the teaching quest (vanilla
-  wires `WordWallTriggerScript` on the placed trigger; this scaffold drives the learning from the
-  quest's `OnInit`/`TeachFromWall` instead — adapt to taste).
-- The blue **word-glow VFX** on the wall (the syllable lighting up) is a **CK/mesh + Imagespace**
-  concern — it is **not** emitted. Without it the trigger still teaches, just with no wall animation.
-- A **vanilla** shout (`shout` is an external ref) can't auto-derive its word — set `word` explicitly.
+**In-game confirmed working:** castable shout, projectile + impact + effect sound, 3 charge levels.
+
+**Two honest limits:**
+- **No spoken-word voice.** The player yelling the dragon syllables ("FUS RO DAH") is a **recorded
+  voice asset** (also a MGEF `Release` sound, but a *voiced* `.fuz`, e.g. `VOCShoutDragon01AFus`). A
+  programmatic shout has none, so the word-voice is silent — only the effect FX plays. Supplying it
+  needs a real voice file (see the voice-gen plan). For a 3-level *progressive* effect sound, use 3
+  MGEFs (one per word-spell) each with its own A/B/C `Release` sound.
+- **Word-wall learning is `OnInit`, not walk-up.** The teaching quest is start-game-enabled, so the
+  shout + word 1 are granted **as soon as the plugin loads** — the placed `WordWallTrigger` is
+  decorative (binding it to `OnTriggerEnter` for true walk-up learning is CK work). And the example
+  cell `0x0371DE` is the **vanilla** Unrelenting Force room, so the wall you see there is vanilla, not
+  ours (ours sits at origin). The blue word-glow VFX is CK/mesh + Imagespace — not emitted. A
+  **vanilla** shout ref can't auto-derive its word — set `word` explicitly.
 
 ## "Custom sky" (WTHR + CLMT — atmosphere, not yet assigned)
 
