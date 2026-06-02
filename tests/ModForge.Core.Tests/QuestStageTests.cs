@@ -41,6 +41,50 @@ public class QuestStageTests
     }
 
     [Fact]
+    public void Journal_quest_defaults_to_a_visible_type_so_it_shows_in_the_journal()
+    {
+        // type=None (Mutagen default) = a background quest the player never sees: log entries don't
+        // surface, setstage shows nothing. A quest with journal content must default to a visible type.
+        var withLog = BuildQuest(new QuestSpec
+        {
+            EditorId = "MF_Q", Name = "Q",
+            Stages = { new StageSpec { Index = 10, LogEntry = "start" } },
+        });
+        Assert.Equal(Quest.TypeEnum.SideQuest, withLog.Type);
+
+        var withObjective = BuildQuest(new QuestSpec
+        {
+            EditorId = "MF_Q2", Name = "Q2",
+            Objectives = { new ObjectiveSpec { Index = 10, Text = "do it" } },
+        });
+        Assert.Equal(Quest.TypeEnum.SideQuest, withObjective.Type);
+    }
+
+    [Fact]
+    public void Controller_quest_with_no_journal_content_stays_type_None()
+    {
+        // A dialogue-only / silent-milestone quest must NOT clutter the journal: no objectives and no
+        // stage log text -> stays None.
+        var q = BuildQuest(new QuestSpec
+        {
+            EditorId = "MF_Ctrl", Name = "Ctrl",
+            Stages = { new StageSpec { Index = 10 } },   // silent stage, no log entry
+        });
+        Assert.Equal(Quest.TypeEnum.None, q.Type);
+    }
+
+    [Fact]
+    public void Explicit_quest_type_overrides_the_smart_default()
+    {
+        var q = BuildQuest(new QuestSpec
+        {
+            EditorId = "MF_Q", Name = "Q", Type = "Misc",
+            Stages = { new StageSpec { Index = 10, LogEntry = "start" } },
+        });
+        Assert.Equal(Quest.TypeEnum.Misc, q.Type);
+    }
+
+    [Fact]
     public void CompleteQuest_flag_set_on_the_log_entry()
     {
         var q = new QuestSpec

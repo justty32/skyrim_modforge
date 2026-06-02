@@ -41,6 +41,14 @@ public static partial class Generator
                 // dialogue load + evaluate). Priority orders competing dialogue between quests.
                 if (q.StartGameEnabled) r.Flags |= Quest.Flag.StartGameEnabled;
                 r.Priority = q.Priority;
+                // Quest TYPE (DNAM) decides JOURNAL-tab visibility: type=None (the Mutagen default) is a
+                // background quest the player never sees, so its log entries don't surface and `setstage`
+                // shows nothing. An explicit spec type wins; otherwise any quest with journal content
+                // (an objective, or a stage with log text) defaults to SideQuest so it actually appears.
+                if (Enum.TryParse<Quest.TypeEnum>(q.Type, ignoreCase: true, out var qType))
+                    r.Type = qType;
+                else if (q.Objectives.Count > 0 || q.Stages.Any(s => !string.IsNullOrEmpty(s.LogEntry)))
+                    r.Type = Quest.TypeEnum.SideQuest;
                 foreach (var o in q.Objectives)
                     r.Objectives.Add(new QuestObjective { Index = o.Index, DisplayText = o.Text });
                 // STAGES (QSDT) + LOG ENTRIES (QLOG). Index + flags + text are pure record data; any

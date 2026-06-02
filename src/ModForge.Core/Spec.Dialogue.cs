@@ -18,6 +18,16 @@ public sealed class QuestSpec
     // dialogue it hosts to be loaded/evaluated. A quest that never runs = its dialogue never surfaces.
     public bool StartGameEnabled { get; set; } = true;
     public byte Priority { get; set; } = 50;   // higher wins when multiple quests offer dialogue to the same NPC
+    // Quest TYPE (DNAM) — which JOURNAL tab the quest groups under. CRITICAL: a quest with type=None
+    // does NOT appear in the player's journal at all (it is a background/controller quest), so its
+    // stage LOG ENTRIES never show and `setstage` produces no on-screen update. Leave empty for the
+    // smart default: a quest that carries journal content (any objective, or a stage with log text)
+    // defaults to "SideQuest" so it shows; a pure dialogue/controller quest (no objectives, no log
+    // text) stays None to avoid cluttering the journal. Set explicitly to override:
+    // None|MainQuest|MageGuild|ThievesGuild|DarkBrotherhood|CompanionQuests|Misc|Daedric|SideQuest|
+    // CivilWar|Vampire|Dragonborn. "Misc" shows as a one-line Miscellaneous entry (no quest page);
+    // "SideQuest" gives it its own page under Side Quests with objectives.
+    public string Type { get; set; } = "";
 }
 // One quest stage (QSDT). `index` is the stage number (set with SetStage). `logEntry` (optional) is
 // the journal text shown when the quest reaches this stage (a QuestLogEntry / QLOG). `completeQuest`
