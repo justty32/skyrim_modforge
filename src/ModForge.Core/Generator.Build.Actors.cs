@@ -41,6 +41,12 @@ public static partial class Generator
                 // dialogue load + evaluate). Priority orders competing dialogue between quests.
                 if (q.StartGameEnabled) r.Flags |= Quest.Flag.StartGameEnabled;
                 r.Priority = q.Priority;
+                // QuestFormVersion (DNAM byte 3) is the quest's data-format version. Mutagen defaults it
+                // to 255 (0xFF) — an "unset" sentinel that NO vanilla quest uses (1697/1811 vanilla
+                // quests are 0). A 0xFF form version reads as an unknown/future format: the engine still
+                // processes basic stage flags (so CompleteQuest fires) but DOES NOT register the quest in
+                // the JOURNAL, so its log entries never display. Pin it to the vanilla canonical 0.
+                r.QuestFormVersion = 0;
                 // Quest TYPE (DNAM) decides JOURNAL-tab visibility: type=None (the Mutagen default) is a
                 // background quest the player never sees, so its log entries don't surface and `setstage`
                 // shows nothing. An explicit spec type wins; otherwise any quest with journal content

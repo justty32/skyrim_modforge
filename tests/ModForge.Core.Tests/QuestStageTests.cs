@@ -61,6 +61,20 @@ public class QuestStageTests
     }
 
     [Fact]
+    public void QuestFormVersion_is_pinned_to_vanilla_zero_not_the_mutagen_0xFF_default()
+    {
+        // Mutagen defaults QuestFormVersion to 255 (0xFF) — an unset sentinel no vanilla quest uses;
+        // a 0xFF form version stops the engine registering the quest in the JOURNAL (stage flags still
+        // fire, so it masquerades as "completeQuest works but the log never shows").
+        var q = BuildQuest(new QuestSpec
+        {
+            EditorId = "MF_Q", Name = "Q",
+            Stages = { new StageSpec { Index = 10, LogEntry = "start" } },
+        });
+        Assert.Equal(0, q.QuestFormVersion);
+    }
+
+    [Fact]
     public void Controller_quest_with_no_journal_content_stays_type_None()
     {
         // A dialogue-only / silent-milestone quest must NOT clutter the journal: no objectives and no
