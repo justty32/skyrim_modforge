@@ -44,17 +44,21 @@ public static partial class Generator
                 // Stage = the quest stage number (uint16), StageIndex = log-entry index within stage
                 // (always 0 — we emit one log entry per stage), FragmentName = CK-standard function name
                 // the engine calls when SetStage() fires.
-                int fragIdx = 0;
                 foreach (var st in q.Stages.OrderBy(s => s.Index))
                 {
                     bool needsFrag = q.Objectives.Any(o => o.ShowStage == st.Index || o.CompleteStage == st.Index);
                     if (!needsFrag) continue;
+                    // Stage = quest stage number, StageIndex = log-entry index within the stage
+                    // (always 0 — we emit one log entry per stage, matching vanilla convention).
+                    // Unknown2 = 1 in every vanilla fragment (confirmed vs MS08, MS13, MQ101 etc.).
+                    // Setting it to 0 causes the engine to skip the fragment when SetStage() is
+                    // called via Papyrus (though the console setstage is more lenient).
                     qa.Fragments.Add(new QuestScriptFragment
                     {
                         Stage = (ushort)st.Index,
                         Unknown = 0,
-                        StageIndex = fragIdx++,
-                        Unknown2 = 0,
+                        StageIndex = 0,
+                        Unknown2 = 1,
                         ScriptName = scriptName,
                         FragmentName = $"Fragment_Stage_{st.Index:D4}_Item00000",
                     });
