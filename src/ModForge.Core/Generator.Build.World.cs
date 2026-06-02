@@ -291,13 +291,16 @@ public static partial class Generator
                     Rotation = new Noggog.P3Float(Deg2Rad(pl.Rotation.X), Deg2Rad(pl.Rotation.Y), Deg2Rad(pl.Rotation.Z)),
                 };
 
-                // Explicit kind wins; otherwise an in-spec NPC *or LeveledNpc* base -> npc (ACHR),
-                // anything else -> object (REFR). A LeveledNpc base makes the ACHR a LEVELED SPAWN: the
-                // engine rolls a level-appropriate actor from that list at load. (For a vanilla base we
-                // can't see the record type headlessly, so an external LVLN spawn needs explicit
-                // kind:"npc" — but in practice the spawn list is usually in-spec or the author sets kind.)
+                // Explicit kind wins; otherwise an in-spec NPC_ base -> npc (ACHR), anything else ->
+                // object (REFR). IMPORTANT: Skyrim's engine does NOT support LVLN (LeveledNpc list) as
+                // an ACHR base — it crashes on load. The correct pattern is an NPC_ record whose
+                // TEMPLATE chain references an LVLN (e.g. Skyrim.esm LvlBanditMeleeAny = 0x01E79C, not
+                // LCharBanditMeleeAny = 0x03DECD). Warn rather than silently produce a crashing plugin.
+                if (pl.Kind.Equals("npc", StringComparison.OrdinalIgnoreCase)
+                    && recordsByEd.TryGetValue(pl.Base, out var bk) && bk is ILeveledNpc)
+                    Warn($"  ! placement '{pl.EditorId ?? pl.Base}' base is a LeveledNpc list (LVLN) — LVLN bases CTD at load; use an NPC_ actor whose template references the list (e.g. LvlBandit* not LChar*)");
                 bool isNpc = pl.Kind.Equals("npc", StringComparison.OrdinalIgnoreCase)
-                    || (string.IsNullOrEmpty(pl.Kind) && recordsByEd.TryGetValue(pl.Base, out var br) && (br is INpc || br is ILeveledNpc));
+                    || (string.IsNullOrEmpty(pl.Kind) && recordsByEd.TryGetValue(pl.Base, out var br) && br is INpc);
 
                 IPlaced placedRec;
                 if (isNpc) { var a = new PlacedNpc(mod); a.Base.SetTo(baseFk); a.Placement = placement; placedRec = a; }

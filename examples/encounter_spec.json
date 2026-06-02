@@ -26,11 +26,11 @@
     { "base": "Skyrim.esm:0x1044AA", "cell": "MF_BanditDen", "position": { "x":    0, "y":  256, "z": 0 } },
     { "base": "Skyrim.esm:0x1044AA", "cell": "MF_BanditDen", "position": { "x":  256, "y":  256, "z": 0 } },
 
-    { "base": "Skyrim.esm:0x03DECD", "cell": "MF_BanditDen", "kind": "npc",
+    { "base": "Skyrim.esm:0x01E79C", "cell": "MF_BanditDen", "kind": "npc",
       "position": { "x": -180, "y": 120, "z": 0 } },
-    { "base": "Skyrim.esm:0x01A348", "cell": "MF_BanditDen", "kind": "npc",
+    { "base": "Skyrim.esm:0x01B0D5", "cell": "MF_BanditDen", "kind": "npc",
       "position": { "x": 180, "y": 120, "z": 0 } },
-    { "base": "Skyrim.esm:0x01A341", "cell": "MF_BanditDen", "kind": "npc",
+    { "base": "Skyrim.esm:0x01B0E1", "cell": "MF_BanditDen", "kind": "npc",
       "position": { "x": 0, "y": -120, "z": 0 },
       "encounterZone": "MF_BanditDenZone" }
   ]
