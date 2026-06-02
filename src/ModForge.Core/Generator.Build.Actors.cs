@@ -55,6 +55,13 @@ public static partial class Generator
                     r.Type = qType;
                 else if (q.Objectives.Count > 0 || q.Stages.Any(s => !string.IsNullOrEmpty(s.LogEntry)))
                     r.Type = Quest.TypeEnum.SideQuest;
+                // "Displayed In HUD" (DNAM flags bit 0x0010) — must be set for the quest to appear in
+                // the player's journal at all. Vanilla and third-party mods carry this on every
+                // journal-visible quest (raw DNAM byte 0 = 0x11 not 0x01). Mutagen's Quest.Flag enum
+                // doesn't name this bit, so cast the value directly. Set whenever the quest is given a
+                // non-None type (i.e. intended to be journal-visible).
+                if (r.Type != Quest.TypeEnum.None)
+                    r.Flags |= (Quest.Flag)0x0010;
                 foreach (var o in q.Objectives)
                     r.Objectives.Add(new QuestObjective { Index = o.Index, DisplayText = o.Text });
                 // STAGES (QSDT) + LOG ENTRIES (QLOG). Index + flags + text are pure record data; any

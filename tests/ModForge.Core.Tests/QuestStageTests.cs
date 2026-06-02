@@ -61,6 +61,21 @@ public class QuestStageTests
     }
 
     [Fact]
+    public void Journal_quest_has_DisplayedInHUD_flag_so_it_appears_in_the_journal()
+    {
+        // REGRESSION (It.36): 0x0010 = "Displayed In HUD" (DNAM bit 4). Without it a quest is running
+        // but NEVER appears in the player's journal (not even the title), even with type=SideQuest and
+        // valid log entries. Vanilla and third-party mods carry DNAM byte0=0x11; ours was 0x01.
+        const Quest.Flag DisplayedInHud = (Quest.Flag)0x0010;
+        var q = BuildQuest(new QuestSpec
+        {
+            EditorId = "MF_Q", Name = "Q",
+            Stages = { new StageSpec { Index = 10, LogEntry = "start" } },
+        });
+        Assert.True(q.Flags.HasFlag(DisplayedInHud));
+    }
+
+    [Fact]
     public void QuestFormVersion_is_pinned_to_vanilla_zero_not_the_mutagen_0xFF_default()
     {
         // Mutagen defaults QuestFormVersion to 255 (0xFF) — an unset sentinel no vanilla quest uses;
