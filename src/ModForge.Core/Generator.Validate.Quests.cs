@@ -1,0 +1,111 @@
+namespace ModForge;
+
+public static partial class Generator
+{
+    private sealed partial class ValidateContext
+    {
+        // --- quests, dialogue, scenes, script attachments ---
+        public void ValidateQuestsAndDialogue()
+        {
+            // Quest stage indices unique + ascending; objective↔stage refs; log-entry conditions valid.
+            var stageIndexByQuest = new Dictionary<string, HashSet<int>>(StringComparer.OrdinalIgnoreCase);
+            foreach (var q in spec.Quests)
+            {
+                var seen = new HashSet<int>();
+                int prev = -1;
+                foreach (var st in q.Stages)
+                {
+                    if (!seen.Add(st.Index))
+                        Problems.Add($"quest '{q.EditorId}' has duplicate stage index {st.Index}");
+                    if (st.Index <= prev)
+                        Problems.Add($"quest '{q.EditorId}' stage index {st.Index} is not ascending (must list stages in increasing order)");
+                    prev = st.Index;
+                    if (st.CompleteQuest && st.FailQuest)
+                        Problems.Add($"quest '{q.EditorId}' stage {st.Index} sets both completeQuest and failQuest");
+                    foreach (var cs in st.Conditions)
+                    {
+                        if (string.IsNullOrWhiteSpace(cs.Function))
+                            Problems.Add($"quest '{q.EditorId}' stage {st.Index} condition has empty function");
+                        else if (!Enum.TryParse<Condition.Function>(cs.Function, true, out _))
+                            Problems.Add($"quest '{q.EditorId}' stage {st.Index} condition invalid function '{cs.Function}'");
+                        if (!string.IsNullOrWhiteSpace(cs.Comparison)
+                            && cs.Comparison is not ("==" or "=" or "!=" or ">" or ">=" or "<" or "<=")
+                            && !Enum.TryParse<CompareOperator>(cs.Comparison, true, out _))
+                            Problems.Add($"quest '{q.EditorId}' stage {st.Index} condition invalid comparison '{cs.Comparison}'");
+                        CheckRef(cs.Param, $"quest '{q.EditorId}' stage {st.Index} condition param");
+                    }
+                }
+                stageIndexByQuest[q.EditorId] = seen;
+                var objIdx = new HashSet<int>();
+                foreach (var o in q.Objectives)
+                {
+                    if (!objIdx.Add(o.Index))
+                        Problems.Add($"quest '{q.EditorId}' has duplicate objective index {o.Index}");
+                    if (o.ShowStage >= 0 && !seen.Contains(o.ShowStage))
+                        Problems.Add($"quest '{q.EditorId}' objective {o.Index} showStage {o.ShowStage} has no matching stage");
+                    if (o.CompleteStage >= 0 && !seen.Contains(o.CompleteStage))
+                        Problems.Add($"quest '{q.EditorId}' objective {o.Index} completeStage {o.CompleteStage} has no matching stage");
+                }
+            }
+
+            foreach (var d in spec.Dialogue)
+            {
+                if (!questIds.Contains(d.QuestEditorId)) Problems.Add($"dialogue '{d.EditorId}' references unknown quest '{d.QuestEditorId}'");
+                if (d.SetStage >= 0)
+                {
+                    if (!stageIndexByQuest.TryGetValue(d.QuestEditorId, out var stages) || !stages.Contains(d.SetStage))
+                        Problems.Add($"dialogue '{d.EditorId}' setStage {d.SetStage} has no matching stage in quest '{d.QuestEditorId}'");
+                }
+                if (!string.IsNullOrEmpty(d.SpeakerNpcEditorId) && !npcIds.Contains(d.SpeakerNpcEditorId))
+                    Problems.Add($"dialogue '{d.EditorId}' references unknown speaker npc '{d.SpeakerNpcEditorId}'");
+                if (string.IsNullOrEmpty(d.Prompt)) Problems.Add($"dialogue '{d.EditorId}' has empty prompt");
+                if (d.Responses.Count == 0) Problems.Add($"dialogue '{d.EditorId}' has no response lines");
+                if (!Enum.TryParse<Emotion>(d.Emotion, true, out _))
+                    Problems.Add($"dialogue '{d.EditorId}' invalid emotion '{d.Emotion}' (Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise)");
+            }
+
+            // SCENE (SCEN): host quest must exist; actors need a unique aliasId + an NPC; every phase
+            // must name a speaker that is one of the scene's actors and carry at least one line.
+            foreach (var sc in spec.Scenes)
+            {
+                if (!questIds.Contains(sc.QuestEditorId))
+                    Problems.Add($"scene '{sc.EditorId}' references unknown quest '{sc.QuestEditorId}'");
+                if (sc.Actors.Count == 0)
+                    Problems.Add($"scene '{sc.EditorId}' has no actors (a scene needs at least two NPCs talking to each other)");
+                var sceneAliasIds = new HashSet<int>();
+                foreach (var a in sc.Actors)
+                {
+                    if (a.AliasId < 0) Problems.Add($"scene '{sc.EditorId}' actor has negative aliasId {a.AliasId}");
+                    else if (!sceneAliasIds.Add(a.AliasId)) Problems.Add($"scene '{sc.EditorId}' duplicate actor aliasId {a.AliasId}");
+                    if (string.IsNullOrWhiteSpace(a.Npc)) Problems.Add($"scene '{sc.EditorId}' actor (alias {a.AliasId}) has empty npc ref");
+                    else CheckRef(a.Npc, $"scene '{sc.EditorId}' actor (alias {a.AliasId}) npc");
+                }
+                if (sc.Phases.Count == 0)
+                    Problems.Add($"scene '{sc.EditorId}' has no phases (nothing is spoken)");
+                for (int i = 0; i < sc.Phases.Count; i++)
+                {
+                    var ph = sc.Phases[i];
+                    if (!sceneAliasIds.Contains(ph.Speaker))
+                        Problems.Add($"scene '{sc.EditorId}' phase {i} speaker aliasId {ph.Speaker} is not one of the scene's actors");
+                    if (ph.Lines.Count == 0)
+                        Problems.Add($"scene '{sc.EditorId}' phase {i} has no lines");
+                    if (!Enum.TryParse<Emotion>(ph.Emotion, true, out _))
+                        Problems.Add($"scene '{sc.EditorId}' phase {i} invalid emotion '{ph.Emotion}' (Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise)");
+                }
+            }
+
+            var validTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "int", "float", "bool", "string", "object" };
+            foreach (var sa in spec.Scripts)
+            {
+                if (string.IsNullOrEmpty(sa.ScriptName)) Problems.Add($"script attach on '{sa.TargetEditorId}' has empty scriptName");
+                if (!Ids.Contains(sa.TargetEditorId)) Problems.Add($"script '{sa.ScriptName}' targets unknown record '{sa.TargetEditorId}'");
+                foreach (var p in sa.Properties)
+                {
+                    if (!validTypes.Contains(p.Type)) Problems.Add($"script '{sa.ScriptName}' prop '{p.Name}' has invalid type '{p.Type}'");
+                    if (string.Equals(p.Type, "object", StringComparison.OrdinalIgnoreCase))
+                        CheckRef(p.ObjectEditorId, $"script '{sa.ScriptName}' prop '{p.Name}' object");
+                }
+            }
+        }
+    }
+}
