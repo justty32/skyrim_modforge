@@ -129,9 +129,30 @@ public static partial class Generator
         {
             foreach (var d in spec.Dialogue)
             {
-                if (d.Conditions.Count == 0) continue;
                 if (!dialogResponsesByEd.TryGetValue(d.EditorId, out var info))
-                { Warn($"  ! dialogue '{d.EditorId}' conditions: INFO not built"); continue; }
+                {
+                    if (d.Conditions.Count > 0 || d.SetStage >= 0)
+                        Warn($"  ! dialogue '{d.EditorId}' conditions: INFO not built");
+                    continue;
+                }
+
+                // Auto-condition: if this line advances the quest to stage N, only show it when
+                // the quest is still below stage N — prevents the line from repeating after the
+                // player has already picked it. GetStage(quest) < setStage hides it at stage N+.
+                if (d.SetStage >= 0 && !string.IsNullOrEmpty(d.QuestEditorId)
+                    && questsByEd.TryGetValue(d.QuestEditorId, out var questRec))
+                {
+                    var sc = new ConditionFloat
+                    {
+                        CompareOperator = CompareOperator.LessThan,
+                        ComparisonValue = d.SetStage,
+                    };
+                    var sd = new GetStageConditionData();
+                    sd.Quest.Link.SetTo(questRec.FormKey);
+                    sc.Data = sd;
+                    info.Conditions.Add(sc);
+                }
+
                 foreach (var c in d.Conditions)
                     if (BuildCondition(c, $"dialogue '{d.EditorId}' condition") is { } cond) info.Conditions.Add(cond);
             }
