@@ -62,12 +62,15 @@ public static partial class Generator
 
                 var entry = new ScriptEntry { Name = scriptName };
                 if (scriptName == d.ResultScript) FillProperties(entry, d.ResultProperties, scriptName);
+                // OnBegin fires the moment the player selects the line (before the NPC speaks).
+                // OnEnd fires after voice playback — unreliable for unvoiced custom NPCs.
+                // Vanilla CK-generated TIF fragments use OnBegin for quest advancement.
                 info.VirtualMachineAdapter = new DialogResponsesAdapter
                 {
                     ScriptFragments = new ScriptFragments
                     {
                         FileName = scriptName,
-                        OnEnd = new ScriptFragment { ScriptName = scriptName, FragmentName = "Fragment_0" },
+                        OnBegin = new ScriptFragment { ScriptName = scriptName, FragmentName = "Fragment_0" },
                     },
                 };
                 info.VirtualMachineAdapter.Scripts.Add(entry);
