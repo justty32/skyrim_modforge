@@ -81,7 +81,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `classes` | `editorId`, `name`, `description`, `teaches` (Skill), `maxTrainingLevel`, `healthWeight`/`magickaWeight`/`staminaWeight` (attribute distribution), `skillWeights` (`{ Skill: 0–255 }`) — an npc `class` can point at one |
 | `messages` | `editorId`, `name`, `description` (body text) |
 | `cells` | `editorId`, `name`, `template` (vanilla interior cell `<master>:0xFORMID` to copy lighting from — else the new cell is black), `encounterZone` (*ref* → ECZN — level scaling/respawn for the whole cell) |
-| `placements` | `base` (*ref* — a concrete form **or a LeveledNpc list** for a leveled-actor spawn); **interior:** `cell` (in-spec editorId **or** vanilla interior cell `<master>:0xFORMID`) **or exterior:** `worldspace` (`<master>:0xFORMID`, position is world coords); `kind` (`npc`\|`object`), `position` (`{x,y,z}`), `rotation` (`{x,y,z}` degrees), `persistent` (bool), `encounterZone` (*ref* → ECZN — per-ref override of the cell's zone) |
+| `placements` | `base` (*ref* — a concrete NPC_ actor or object form; **never a raw LeveledNpc list (LVLN)** — LVLN as ACHR base CTDs at load, see the encounter-zone section); **interior:** `cell` (in-spec editorId **or** vanilla interior cell `<master>:0xFORMID`) **or exterior:** `worldspace` (`<master>:0xFORMID`, position is world coords); `kind` (`npc`\|`object`), `position` (`{x,y,z}`), `rotation` (`{x,y,z}` degrees), `persistent` (bool), `encounterZone` (*ref* → ECZN — per-ref override of the cell's zone) |
 | `leveledItems` | `editorId`, `chanceNone` (0–100), `flags` (array), `entries` (array of `{ reference (*ref*), level (int), count (int) }`) |
 | `leveledNpcs` | same shape as `leveledItems`, but `reference` is an npc/leveled-npc |
 | `containers` | `editorId`, `name`, `weight`, `items` (array of `{ item (*ref*), count (int) }`) |
@@ -506,17 +506,24 @@ worldspace) whose **weather table** drives which weathers play there:
 ### encounter zones & leveled-actor spawns — populating an area with scaled enemies
 Two pieces work together to drop **level-appropriate** enemies into an area:
 
-**1. A leveled-actor spawn** is just a `placement` whose `base` is a **LeveledNpc list** (LVLN)
-instead of a concrete NPC. The placed ACHR then *rolls* a level-appropriate actor from that list
-at load — so the same spawn yields a weak bandit at low level and a tough one later.
+**1. A leveled-actor spawn** uses an **NPC_ wrapper** as the `base` — an NPC_ whose TEMPLATE chain
+references a LeveledNpc list (LVLN), letting the engine roll a level-appropriate actor at spawn time.
+
+> **CRITICAL GOTCHA — confirmed CTD (It.36, 2026-06-02):** `LChar*` formids (e.g. `0x03DECD`
+> `LCharBanditMeleeAny`) are **LVLN records**, and a raw LVLN as an ACHR base **crashes Skyrim at
+> load** — the engine calls NPC_-specific vtable methods on it. Use `LvlBandit*` NPC_ wrappers
+> instead. The naming rule: `Lvl…` prefix = NPC_ (safe to place); `LChar…` prefix = LVLN (never
+> place directly).
+
 ```jsonc
-{ "base": "Skyrim.esm:0x03DECD", "cell": "MF_BanditDen", "kind": "npc",   // LCharBanditMeleeAny
+{ "base": "Skyrim.esm:0x01E79C", "cell": "MF_BanditDen", "kind": "npc",   // LvlBanditMeleeAny (NPC_)
   "position": { "x": -180, "y": 120, "z": 0 } }
 ```
-- For an **in-spec** `leveledNpcs` list, the base auto-detects as an actor (ACHR). For a **vanilla**
-  list (`Skyrim.esm:0x…`) the build can't see the record type headlessly, so add `"kind": "npc"`.
-- Find leveled enemy lists with `find <Skyrim.esm> LChar<…> LeveledNpc` (e.g. `LCharBanditMeleeAny`
-  `0x03DECD`, `LCharBanditMissileNordM` `0x01A348`, `LCharBanditBossNordM` `0x01A341`).
+- Find NPC_ wrappers with `find <Skyrim.esm> Lvl<…> Npc` (e.g. `LvlBanditMeleeAny` `0x01E79C`,
+  `LvlBanditMissileNordM` `0x01B0D5`, `LvlBanditBossNordM` `0x01B0E1`). Their underlying LVLN lists
+  (`LCharBanditMeleeAny` `0x03DECD`, etc.) are **not** valid placement bases.
+- For an **in-spec** `leveledNpcs` list used as a placement base, add `"kind": "npc"` so the build
+  emits a warning rather than silently producing a crashing plugin.
 
 **2. An encounter zone** (`encounterZones`, ECZN) sets the **level range + respawn** the spawns roll
 inside. A cell points at one via `encounterZone` (the whole cell), and/or an individual spawn does
@@ -544,6 +551,8 @@ inside. A cell points at one via `encounterZone` (the whole cell), and/or an ind
   static markers), so any sane in-room coordinate works for placement, but movement/combat AI needs
   navmesh. Anchor on proven-walkable coords (`refpos`) or navmesh the cell in the CK before relying on
   patrols/pursuit. (See the worked `examples/encounter_spec.json`.)
+- **IN-GAME CONFIRMED (It.36, 2026-06-02):** `coc MF_BanditDen` — cell loads, bandits spawn, no CTD.
+  Full round-trip: encounter zone, cell template, NPC_ placements all verified in SSE 1.6.1170.
 
 ### vendors / merchants — a working shopkeeper
 Turn an NPC into a functioning shop (buys + sells) by giving a **faction** a `vendor` sub-object and
@@ -933,7 +942,9 @@ worldspace or region its atmosphere.
 > (`WRLD` `Climate` field) or a **region** (`REGN` weather-data) record — neither is built
 > here (worldspace/region authoring is out of scope). The records this produces are valid
 > targets to point such a record at; doing so by hand (or via a future WRLD/REGN feature)
-> is the hook. **Structurally verified only — the sky actually rendering is in-game-unconfirmed.**
+> is the hook. **IN-GAME CONFIRMED (It.36, 2026-06-02):** force weather via console `sw <XX>000800`
+> where `XX` = plugin's load order slot in hex (see MO2 right panel). The `build` command prints
+> the `sw` commands for all WTHR records after a successful build.
 
 ## Workflow
 
