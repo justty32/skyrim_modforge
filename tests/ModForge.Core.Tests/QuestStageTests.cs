@@ -85,6 +85,27 @@ public class QuestStageTests
     }
 
     [Fact]
+    public void Every_log_entry_has_non_null_flags_so_the_QSDT_marker_is_written()
+    {
+        // REGRESSION (It.36 CTD): a QuestLogEntry with Flags=null makes Mutagen OMIT the QSDT subrecord,
+        // leaving an orphan CNAM the SSE engine mis-parses -> the journal UI access-violates. Vanilla
+        // always writes QSDT (flags 0) before a log entry's CNAM, so a plain log entry must carry 0,
+        // not null.
+        var q = BuildQuest(new QuestSpec
+        {
+            EditorId = "MF_Q", Name = "Q",
+            Stages =
+            {
+                new StageSpec { Index = 10, LogEntry = "plain" },          // no complete/fail
+                new StageSpec { Index = 20, LogEntry = "end", CompleteQuest = true },
+            },
+        });
+        foreach (var le in q.Stages.SelectMany(s => s.LogEntries))
+            Assert.NotNull(le.Flags);   // non-null => QSDT emitted
+        Assert.Equal((QuestLogEntry.Flag)0, q.Stages.First(s => s.Index == 10).LogEntries.Single().Flags);
+    }
+
+    [Fact]
     public void CompleteQuest_flag_set_on_the_log_entry()
     {
         var q = new QuestSpec

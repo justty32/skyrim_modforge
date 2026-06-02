@@ -61,12 +61,17 @@ public static partial class Generator
                     {
                         var le = new QuestLogEntry();
                         if (!string.IsNullOrEmpty(st.LogEntry)) le.Entry = st.LogEntry;
-                        // Flags is Nullable<QuestLogEntry.Flag> (default null); accumulate into a local
-                        // non-null value and assign once (null |= x stays null).
+                        // Flags MUST be non-null (NOT left at its default null): in the SSE QUST format a
+                        // log entry is a QSDT (1-byte flags marker) followed by its CNAM text, and Mutagen
+                        // OMITS the QSDT subrecord entirely when Flags is null. A CNAM with no preceding
+                        // QSDT is malformed — the engine's quest parser desyncs and the JOURNAL UI later
+                        // CTDs (access-violation reading a bogus string length) when it renders the quest.
+                        // Vanilla always writes QSDT=0 on a plain log entry. So accumulate into a non-null
+                        // local and ALWAYS assign (0 when no complete/fail) to force the QSDT marker out.
                         QuestLogEntry.Flag leFlags = 0;
                         if (st.CompleteQuest) leFlags |= QuestLogEntry.Flag.CompleteQuest;
                         if (st.FailQuest) leFlags |= QuestLogEntry.Flag.FailQuest;
-                        if (leFlags != 0) le.Flags = leFlags;
+                        le.Flags = leFlags;
                         stage.LogEntries.Add(le);
                     }
                     r.Stages.Add(stage);
