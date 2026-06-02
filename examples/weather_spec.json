@@ -1,6 +1,6 @@
 {
   "pluginName": "ModForgeWeather.esp",
-  "esl": true,
+  "esl": false,
 
   "//": "An eerie green-tinted fog weather + a clear baseline, plus a climate that cycles them.",
   "//assign": "Emitting WTHR/CLMT does NOT change any sky by itself. To use this climate, point a worldspace (WRLD 'Climate' field) or a region (REGN weather-data) at MF_EerieClimate — those records are out of scope here (see docs/SPEC.md 'Weather & Climate').",

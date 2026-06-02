@@ -137,6 +137,15 @@ internal static partial class Program
         foreach (var w in result.Warnings) Console.WriteLine(w);
         Console.WriteLine(BuildSummary(result.Stats, specPath, outPath));
         WriteSeq(outPath, Path.GetDirectoryName(Path.GetFullPath(outPath)) ?? ".");
+        if (spec.Weathers.Count > 0)
+        {
+            string prefix = spec.Esl ? "FE<slot>" : "<XX>";
+            string detail = spec.Esl
+                ? "(XX=ESL slot index — find with 'help' or check MO2 load order light-plugin list)"
+                : "(XX=load order index in hex — check MO2 right panel, decimal→hex)";
+            for (int i = 0; i < spec.Weathers.Count; i++)
+                Console.WriteLine($"  Weather test: sw {prefix}{0x800 + i:X06}  → {spec.Weathers[i].EditorId}  {(i == 0 ? detail : "")}");
+        }
     }
 
     // A Start-Game-Enabled quest hosting dialogue needs a Data/Seq/<plugin>.seq entry, or its
