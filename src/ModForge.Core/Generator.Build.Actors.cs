@@ -55,13 +55,14 @@ public static partial class Generator
                     r.Type = qType;
                 else if (q.Objectives.Count > 0 || q.Stages.Any(s => !string.IsNullOrEmpty(s.LogEntry)))
                     r.Type = Quest.TypeEnum.SideQuest;
-                // "Displayed In HUD" (DNAM flags bit 0x0010) — must be set for the quest to appear in
-                // the player's journal at all. Vanilla and third-party mods carry this on every
-                // journal-visible quest (raw DNAM byte 0 = 0x11 not 0x01). Mutagen's Quest.Flag enum
-                // doesn't name this bit, so cast the value directly. Set whenever the quest is given a
-                // non-None type (i.e. intended to be journal-visible).
+                // "Displayed In HUD" (DNAM flags bit 0x0010) + RunOnce (0x0100) — both present on every
+                // vanilla SideQuest with StartGameEnabled (raw DNAM byte pair = 0x11 0x01 = flags 0x0111).
+                // DisplayedInHUD: must be set for the quest to appear in the journal at all (Mutagen's
+                // Quest.Flag enum doesn't name it, so cast directly). RunOnce: prevents the quest from
+                // auto-restarting after completion (matches vanilla SideQuest/MainQuest pattern; harmless
+                // for background quests). Set both whenever the quest is given a non-None type.
                 if (r.Type != Quest.TypeEnum.None)
-                    r.Flags |= (Quest.Flag)0x0010;
+                    r.Flags |= (Quest.Flag)0x0010 | (Quest.Flag)0x0100;
                 foreach (var o in q.Objectives)
                     // Flags MUST be non-null so Mutagen writes the FNAM subrecord. Vanilla and all
                     // third-party mods have FNAM on every QOBJ; omitting it (Flags=null → no FNAM)
