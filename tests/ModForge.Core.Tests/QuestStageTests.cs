@@ -265,7 +265,8 @@ public class QuestStageTests
         var src = Generator.GenerateDialogueFragmentSource(d);
         Assert.Equal("TIF_MF_Agree", Generator.DialogueFragmentScriptName(d));
         Assert.Contains("extends TopicInfo", src);
-        Assert.Contains("GetOwningQuest().SetStage(20)", src);
+        Assert.Contains($"Quest Property {Generator.TifQuestPropertyName} Auto", src);
+        Assert.Contains($"{Generator.TifQuestPropertyName}.SetStage(20)", src);
 
         // No setStage -> no fragment.
         var plain = new DialogueSpec { EditorId = "MF_Plain", QuestEditorId = "MF_Q", Prompt = "Hi", Responses = { "Hey" } };

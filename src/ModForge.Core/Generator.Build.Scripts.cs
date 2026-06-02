@@ -61,10 +61,27 @@ public static partial class Generator
                 { Warn($"  ! dialogue result-script: INFO for '{d.EditorId}' not built"); continue; }
 
                 var entry = new ScriptEntry { Name = scriptName };
-                if (scriptName == d.ResultScript) FillProperties(entry, d.ResultProperties, scriptName);
+                if (scriptName == d.ResultScript)
+                    FillProperties(entry, d.ResultProperties, scriptName);
+                else if (d.SetStage >= 0 && !string.IsNullOrEmpty(d.QuestEditorId))
+                {
+                    // Auto-generated TIF: bind the OwningQuest property to the quest FormKey so
+                    // Fragment_0 can call SetStage() without relying on GetOwningQuest() — that
+                    // native method can return None for StartGameEnabled quests at OnBegin time.
+                    if (questsByEd.TryGetValue(d.QuestEditorId, out var questRec))
+                    {
+                        var qp = new ScriptObjectProperty
+                        {
+                            Name = Generator.TifQuestPropertyName,
+                            Flags = ScriptProperty.Flag.Edited,
+                        };
+                        qp.Object.SetTo(questRec.FormKey);
+                        entry.Properties.Add(qp);
+                        linksWired++;
+                    }
+                    else Warn($"  ! TIF '{d.EditorId}': quest '{d.QuestEditorId}' not found — OwningQuest property unset");
+                }
                 // OnBegin fires the moment the player selects the line (before the NPC speaks).
-                // OnEnd fires after voice playback — unreliable for unvoiced custom NPCs.
-                // Vanilla CK-generated TIF fragments use OnBegin for quest advancement.
                 info.VirtualMachineAdapter = new DialogResponsesAdapter
                 {
                     ScriptFragments = new ScriptFragments
