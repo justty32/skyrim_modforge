@@ -63,7 +63,10 @@ public static partial class Generator
                 if (r.Type != Quest.TypeEnum.None)
                     r.Flags |= (Quest.Flag)0x0010;
                 foreach (var o in q.Objectives)
-                    r.Objectives.Add(new QuestObjective { Index = o.Index, DisplayText = o.Text });
+                    // Flags MUST be non-null so Mutagen writes the FNAM subrecord. Vanilla and all
+                    // third-party mods have FNAM on every QOBJ; omitting it (Flags=null → no FNAM)
+                    // produces a structurally different record the engine may reject for journal display.
+                    r.Objectives.Add(new QuestObjective { Index = o.Index, DisplayText = o.Text, Flags = 0 });
                 // STAGES (QSDT) + LOG ENTRIES (QLOG). Index + flags + text are pure record data; any
                 // log-entry CTDA conditions are wired in pass 2 (WireQuestStageConditions). A bare
                 // stage with no log entry is a silent milestone (valid; vanilla does this).

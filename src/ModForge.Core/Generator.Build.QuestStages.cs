@@ -26,23 +26,14 @@ public static partial class Generator
                 }
             }
 
-            // Quest stage→objective fragment script: when a quest has objectives linked to stages,
-            // attach its generated fragment script (<quest>_Stages) to the QUST via the QuestAdapter
-            // VMAD so the record references the script the CK will bind stage fragments to. The .psc
-            // source is emitted by `package` (QuestFragmentScriptName / GenerateQuestFragmentSource).
-            foreach (var q in spec.Quests)
-            {
-                var scriptName = QuestFragmentScriptName(q);
-                if (string.IsNullOrEmpty(scriptName)) continue;
-                if (!questsByEd.TryGetValue(q.EditorId, out var qr)) continue;
-                qr.VirtualMachineAdapter ??= new QuestAdapter();
-                // avoid a duplicate if the author also hand-attached the same script
-                if (!qr.VirtualMachineAdapter.Scripts.Any(s => string.Equals(s.Name, scriptName, StringComparison.OrdinalIgnoreCase)))
-                {
-                    qr.VirtualMachineAdapter.Scripts.Add(new ScriptEntry { Name = scriptName });
-                    scriptsAttached++;
-                }
-            }
+            // Quest stage→objective fragment script: we generate the .psc SOURCE for CK compilation
+            // (emitted by `package`), but do NOT attach the QuestAdapter VMAD to the record until a
+            // compiled .pex exists. Reason: a VMAD referencing an absent .pex triggers a Papyrus error
+            // at quest-start that prevents the quest from properly initialising its journal state —
+            // setstage fires the stage flags (CompleteQuest popup) but the journal never updates. The
+            // correct workflow is: generate → package → open in CK → compile scripts → save; the CK
+            // then wires the VMAD and binds the stage fragments. (WireQuestStages still runs for
+            // log-entry CTDA conditions above; the script-attach block below is intentionally absent.)
         }
     }
 }

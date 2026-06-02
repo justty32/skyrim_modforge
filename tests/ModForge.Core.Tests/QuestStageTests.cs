@@ -231,11 +231,13 @@ public class QuestStageTests
         Assert.Contains("Function ApplyStage_30()", src);
         Assert.Contains("SetObjectiveCompleted(20)", src);
 
-        // The QUST record carries the fragment script via VMAD so the CK can bind stage fragments.
+        // The .psc SOURCE is generated for CK use, but the VMAD is NOT attached to the record:
+        // a VMAD referencing an absent .pex causes a Papyrus error at quest-start that prevents
+        // journal initialisation. The CK wires the VMAD when the user opens + saves the plugin.
         var quest = BuildQuest(q);
         var scriptName = Generator.QuestFragmentScriptName(q);
         Assert.Equal("MF_Q_Stages", scriptName);
-        Assert.Contains(quest.VirtualMachineAdapter!.Scripts, s => s.Name == scriptName);
+        Assert.Null(quest.VirtualMachineAdapter);   // no VMAD until CK compiles the script
     }
 
     [Fact]
