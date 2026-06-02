@@ -723,13 +723,22 @@ Verify the records with `questdiag <plugin.esp> <questFormId>` (stages, log entr
 flags, objectives). The full worked spec — with the NPC, Hello, and placement — is
 [`examples/quest_stages_spec.json`](../../examples/quest_stages_spec.json).
 
-**The Papyrus step (can't run headless):** `package` writes `Scripts/Source/MF_ErrandQuest_Stages.psc`
-(with `ApplyStage_10/20/30()` calling `SetObjectiveDisplayed/Completed`) and
-`Scripts/Source/TIF_MF_AgreeToHelp.psc` (`GetOwningQuest().SetStage(20)`). Compile these in the
-Creation Kit and bind each `ApplyStage_N` to its QUST stage fragment / the dialogue INFO result
-script — then objectives display on stage-set and the line advances the quest. Until that CK pass,
-the stage/journal data is real but objective-display + dialogue-advance are **structural only**
-(in-game-unconfirmed). Dialogue also only registers on a game **LOAD** — see [gotchas.md](gotchas.md).
+**`package` handles Papyrus automatically — no CK needed (IN-GAME CONFIRMED It.36 2026-06-02).**
+It generates, compiles, and VMAD-attaches everything:
+
+- `Scripts/Source/MF_ErrandQuest_Stages.psc` — one `Fragment_Stage_XXXX_Item00000()` per stage that
+  shows/completes objectives (`SetObjectiveDisplayed` / `SetObjectiveCompleted`). Engine calls this
+  function by name when `SetStage()` fires.
+- `Scripts/Source/TIF_MF_AgreeToHelp.psc` — `extends TopicInfo Hidden`, explicit `Quest Property
+  OwningQuest Auto` (bound to the quest FormKey in VMAD), `OnBegin` calls `OwningQuest.SetStage(20)`.
+  **Do not use `GetOwningQuest()` — returns None for StartGameEnabled quests** (see gotchas.md).
+- Compiled `.pex` copied to `Scripts/`, VMAD attached to QUST and INFO.
+- A `GetStage(quest) < 20` condition auto-added to the `setStage` line so Joren won't repeat it.
+
+The `package` command requires `~/tools/papyrus-compiler` (Linux-native; falls back to Wine/CK).
+One-time machine setup: write stub `TopicInfo.psc` + `ScriptObject.psc` to
+`Data/Scripts/Source/` (see `Papyrus.cs` for details). Dialogue only registers on a game **LOAD**
+— see [gotchas.md](gotchas.md).
 
 ## "Custom dragon shout" — SHOU + WOOP + word wall (IN-GAME CONFIRMED 2026-06-01)
 

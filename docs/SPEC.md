@@ -69,7 +69,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `weapons` | `editorId`, `name`, `value`, `weight`, `damage` (int≥0), `speed` (number), `reach` (number), `keywords` (array of *refs*), `enchantment` (*ref* → ENCH, in-spec or vanilla `<master>:0xFORMID`), `enchantmentAmount` (int — the weapon's charge pool, e.g. 1500–3000; 0 = engine auto-calc), `template` (vanilla WEAP ref — clones model/anim/equip; needed to avoid an equip CRASH), `model` (custom world-mesh `.nif` path — pair WITH `template`), `pickUpSound`/`putDownSound` (SNDR *refs*) |
 | `npcs` | `editorId`, `name`, `factions` (array of *refs*), `race` (*ref*), `class` (*ref*), `outfit` (*ref* → DefaultOutfit), `level` (int), `autoCalcStats` (bool — derive H/M/S + skills from level + class), `packages` (array of *refs* → PACK; the NPC's AI package list, evaluated in order), `voiceType` (*ref* → VTYP), `crimeFaction` (*ref* → FACT; city-citizen identity, required for cross-cell Travel), `unique` (bool — one-off actor, helps engine AI tracking), `combatStyle` (*ref* → CSTY; HOW the AI fights), `spells` (array of *refs* → SPEL; the AI's spell list), `perks` (array of *refs* → PERK; granted to the actor as passive ability/entry-point perks at game start), `greeting` (string — the Hello line; when this NPC has custom `dialogue`, a Hello info is auto-emitted so it's conversable. Empty ⇒ a default line) |
 | `quests` | `editorId`, `name`, `startGameEnabled` (bool, default true), `priority` (0–255), `objectives` (array of `{ index (int), text, showStage?, completeStage? }`), `stages` (array of `{ index (int), logEntry?, completeQuest?, failQuest?, conditions? }`) — see *Quest stages* below |
-| `dialogue` | `editorId`, `questEditorId`, `speakerNpcEditorId` (optional), `prompt`, `responses` (array of strings), `emotion` (optional — `Neutral`\|`Anger`\|`Disgust`\|`Fear`\|`Sad`\|`Happy`\|`Surprise`), `emotionValue` (0–100). Optional **result fragment** (runs when the line is picked): `resultScript` (Scriptname, `Extends TopicInfo`, `Fragment_0`), `resultScriptSource` (`.psc`), `resultProperties` (bound props), `goodbye` (bool — close menu after). Build wires the full chain (Quest→DialogView→Branch→Topic→INFO + a Hello) — see the dialogue section below |
+| `dialogue` | `editorId`, `questEditorId`, `speakerNpcEditorId` (optional), `prompt`, `responses` (array of strings), `emotion` (optional — `Neutral`\|`Anger`\|`Disgust`\|`Fear`\|`Sad`\|`Happy`\|`Surprise`), `emotionValue` (0–100). `setStage` (int — advance the quest to this stage when the line is picked; `package` auto-compiles + VMAD-attaches the TIF fragment and auto-adds a `GetStage < N` condition so the line won't repeat). Optional **custom result fragment** (overrides the auto TIF): `resultScript` (Scriptname, `Extends TopicInfo`, `Fragment_0`), `resultScriptSource` (`.psc`), `resultProperties` (bound props), `goodbye` (bool — close menu after). Build wires the full chain (Quest→DialogView→Branch→Topic→INFO + a Hello) — see the dialogue section below |
 | `banter` | `editorId` (optional), `questEditorId`, `speakerNpcEditorId`, `responses` (array of strings — one unprompted comment), `emotion`/`emotionValue`, `conditions` (situational CTDA gates). Proactive (NPC-initiated) lines; entries sharing a (speaker, quest) merge into one ambient Misc/`IDLE` topic with Random INFOs. Needs the speaker to have idle chatter enabled (a Sandbox/follow package). See the *banter* section below |
 | `scenes` | `editorId`, `questEditorId` (host quest), `actors` (array of `{ aliasId (int), npc (*ref*), name }`), `phases` (ordered array of `{ speaker (an aliasId), lines (array of strings), emotion, emotionValue }`), `beginOnQuestStart` (bool, default true), `stopQuestOnEnd` (bool). A **SCEN** — two NPCs talking to EACH OTHER. Build emits the host quest's `UniqueActor`-bound aliases, the Scene (actors + phases + Dialog actions), and one Scene/`SCEN` topic+INFO per phase line. See the *scenes* section below |
 | `spells` | `editorId`, `name`, `effects` (array of *effects*), `spellType`, `castType`, `targetType`, `baseCost` (int), `chargeTime` (number), `equipType` (EQUP *ref*). **Castable types (Spell/Voice/Power/LesserPower) auto-default to EitherHand `Skyrim.esm:0x00013F44` when omitted** — a Voice/shout spell with no EQUP is learned but **can't be shouted**; set only to override |
@@ -244,7 +244,8 @@ holds static data, never control flow. Set `resultScript` (the fragment's Script
 must `Extends TopicInfo` and define `Function Fragment_0(ObjectReference akSpeakerRef)`),
 `resultScriptSource` (the `.psc`, compiled by `package`), and `resultProperties` (bind its
 `Auto` properties — same shape as a `scripts[]` entry's properties: `int`/`float`/`bool`/
-`string`/`object`). The build attaches the INFO's `OnEnd` fragment VMAD. Set `goodbye: true`
+`string`/`object`). The build attaches the INFO's `OnBegin` fragment VMAD (fires when the player
+selects the line; use `OnEnd` only for effects that must follow the full voiced response). Set `goodbye: true`
 to close the menu after the line (vanilla recruit/dismiss lines all do). See
 `examples/follower_paid_spec.json` + `MFHirePaidRecruit.psc` for a paid-follower recruit.
 
@@ -358,15 +359,24 @@ complete as stages are set; a `dialogue` line can advance a stage when picked.
   default) means "not stage-linked".
 - **`dialogue[].setStage`** — picking that topic advances the host quest to this stage.
 
-**What's record-only vs. what needs Papyrus (be honest):** stages, log entries, the
-`completeQuest`/`failQuest` flags and log-entry conditions are **pure record data** — they build,
-`dump`/`questdiag` cleanly, and the engine reads them directly. But *displaying* an objective on
-stage-set and *advancing* a stage from a dialogue line are done in Skyrim via **Papyrus fragments**.
-ModForge attaches the quest fragment script (`<quest>_Stages`) to the QUST and, on `package`,
-emits **ready-to-compile fragment sources** under `Scripts/Source/` (`<quest>_Stages.psc` with
-`ApplyStage_N()` helpers; `TIF_<dialogue>.psc` with `GetOwningQuest().SetStage(N)`). These must be
-**compiled and bound in the Creation Kit** — the one step that can't run headless on Linux — so the
-objective-display / stage-advance behaviour is **structurally wired but in-game-unconfirmed**.
+**What's record-only vs. what needs Papyrus:** stages, log entries, the `completeQuest`/`failQuest`
+flags and log-entry conditions are **pure record data** — they build, `dump`/`questdiag` cleanly,
+and the engine reads them directly. But *displaying* an objective on stage-set and *advancing* a
+stage from a dialogue line require **Papyrus fragments**. The `package` command handles this
+end-to-end (**no CK needed, IN-GAME CONFIRMED It.36 2026-06-02**):
+
+1. Generates `Scripts/Source/<quest>_Stages.psc` — one `Fragment_Stage_XXXX_Item00000()` function
+   per stage that shows/completes objectives (CK-standard naming; engine calls it when `SetStage()` fires).
+2. Generates `Scripts/Source/TIF_<dialogue>.psc` — `extends TopicInfo Hidden`, with an explicit
+   `Quest Property OwningQuest Auto` bound to the quest FormKey; `Fragment_0` calls
+   `OwningQuest.SetStage(N)`. Uses `OnBegin` (fires when the player selects the line).
+   **Do not use `GetOwningQuest()` — it returns None for StartGameEnabled quests on game-load.**
+3. Compiles both `.psc` → `.pex` with the Linux-native `papyrus-compiler` (falls back to Wine/CK).
+4. Attaches the VMAD to the QUST (`QuestScriptFragment.Unknown2=1` required — the enable flag; 0
+   skips the fragment even when `SetStage()` fires) and to the INFO (`DialogResponsesAdapter`, `OnBegin`).
+5. Auto-adds a `GetStage(quest) < setStage` condition on every `setStage` dialogue line so the NPC
+   won't repeat it after the player has already picked it.
+
 Inspect any quest with `questdiag <plugin> <0xFORMID>`. Dialogue still only registers on a game
 **LOAD** (see the gotcha above). Worked example: `examples/quest_stages_spec.json`.
 
