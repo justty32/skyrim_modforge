@@ -223,12 +223,12 @@ public class QuestStageTests
 
         Assert.True(Generator.QuestNeedsFragmentScript(q));
         var src = Generator.GenerateQuestFragmentSource(q);
-        Assert.Contains("Function ApplyStage_10()", src);
+        Assert.Contains("Function Fragment_Stage_0010_Item00000()", src);
         Assert.Contains("SetObjectiveDisplayed(10)", src);
-        Assert.Contains("Function ApplyStage_20()", src);
+        Assert.Contains("Function Fragment_Stage_0020_Item00000()", src);
         Assert.Contains("SetObjectiveDisplayed(20)", src);
         Assert.Contains("SetObjectiveCompleted(10)", src);
-        Assert.Contains("Function ApplyStage_30()", src);
+        Assert.Contains("Function Fragment_Stage_0030_Item00000()", src);
         Assert.Contains("SetObjectiveCompleted(20)", src);
 
         // The .psc SOURCE is generated for CK use, but the VMAD is NOT attached to the record:

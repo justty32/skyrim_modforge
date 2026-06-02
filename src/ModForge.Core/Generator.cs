@@ -22,6 +22,13 @@ public sealed class BuildOptions
     /// to the <c>MODFORGE_SKYRIM_DATA</c> env var, then the default Steam install path.
     /// </summary>
     public string? SkyrimDataPath { get; set; }
+
+    /// <summary>
+    /// Directory containing compiled <c>.pex</c> files. When set and a compiled script exists for a
+    /// generated quest/dialogue fragment, the corresponding VMAD is attached automatically — no CK
+    /// step needed. Populated by the <c>package</c> command after it compiles the generated sources.
+    /// </summary>
+    public string? CompiledScriptsDir { get; set; }
 }
 
 /// <summary>The outcome of <see cref="Generator.Build"/>: the in-memory mod plus warnings and stats.</summary>

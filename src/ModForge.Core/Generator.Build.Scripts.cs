@@ -44,18 +44,30 @@ public static partial class Generator
         {
             foreach (var d in spec.Dialogue)
             {
-                if (string.IsNullOrEmpty(d.ResultScript)) continue;
+                // User-supplied ResultScript takes priority; auto-generated setStage TIF is the fallback.
+                var scriptName = !string.IsNullOrEmpty(d.ResultScript) ? d.ResultScript
+                    : (d.SetStage >= 0 && options?.CompiledScriptsDir is not null)
+                        ? Generator.DialogueFragmentScriptName(d)
+                        : null;
+                if (string.IsNullOrEmpty(scriptName)) continue;
+
+                // For auto-generated TIF, only attach the VMAD when the compiled .pex is confirmed present.
+                if (scriptName == Generator.DialogueFragmentScriptName(d) && scriptName != d.ResultScript)
+                {
+                    if (!File.Exists(Path.Combine(options!.CompiledScriptsDir!, scriptName + ".pex"))) continue;
+                }
+
                 if (!dialogResponsesByEd.TryGetValue(d.EditorId, out var info))
                 { Warn($"  ! dialogue result-script: INFO for '{d.EditorId}' not built"); continue; }
 
-                var entry = new ScriptEntry { Name = d.ResultScript };
-                FillProperties(entry, d.ResultProperties, d.ResultScript);
+                var entry = new ScriptEntry { Name = scriptName };
+                if (scriptName == d.ResultScript) FillProperties(entry, d.ResultProperties, scriptName);
                 info.VirtualMachineAdapter = new DialogResponsesAdapter
                 {
                     ScriptFragments = new ScriptFragments
                     {
-                        FileName = d.ResultScript,
-                        OnEnd = new ScriptFragment { ScriptName = d.ResultScript, FragmentName = "Fragment_0" },
+                        FileName = scriptName,
+                        OnEnd = new ScriptFragment { ScriptName = scriptName, FragmentName = "Fragment_0" },
                     },
                 };
                 info.VirtualMachineAdapter.Scripts.Add(entry);

@@ -14,6 +14,8 @@ public static partial class Generator
             foreach (var q in spec.Quests)
             {
                 if (!questsByEd.TryGetValue(q.EditorId, out var qr)) continue;
+
+                // Pass 1: wire log-entry CTDA conditions (need all record editorIds resolved).
                 foreach (var st in q.Stages)
                 {
                     if (st.Conditions.Count == 0) continue;
@@ -24,16 +26,42 @@ public static partial class Generator
                         if (BuildCondition(cs, $"quest '{q.EditorId}' stage {st.Index} condition") is { } cond)
                             le.Conditions.Add(cond);
                 }
-            }
 
-            // Quest stage→objective fragment script: we generate the .psc SOURCE for CK compilation
-            // (emitted by `package`), but do NOT attach the QuestAdapter VMAD to the record until a
-            // compiled .pex exists. Reason: a VMAD referencing an absent .pex triggers a Papyrus error
-            // at quest-start that prevents the quest from properly initialising its journal state —
-            // setstage fires the stage flags (CompleteQuest popup) but the journal never updates. The
-            // correct workflow is: generate → package → open in CK → compile scripts → save; the CK
-            // then wires the VMAD and binds the stage fragments. (WireQuestStages still runs for
-            // log-entry CTDA conditions above; the script-attach block below is intentionally absent.)
+                // Pass 2: attach QuestAdapter VMAD with stage-fragment bindings when a compiled .pex
+                // exists in options.CompiledScriptsDir. A VMAD referencing an absent .pex would trigger
+                // a Papyrus error at quest-start that blocks journal registration, so we ONLY attach when
+                // the .pex is confirmed present. The `package` command pre-compiles the generated .psc
+                // and then calls Build() with CompiledScriptsDir set, enabling this block.
+                if (options?.CompiledScriptsDir is not { } compiledDir) continue;
+                var scriptName = Generator.QuestFragmentScriptName(q);
+                if (string.IsNullOrEmpty(scriptName)) continue;
+                if (!File.Exists(Path.Combine(compiledDir, scriptName + ".pex"))) continue;
+
+                var qa = new QuestAdapter { FileName = scriptName };
+                qa.Scripts.Add(new ScriptEntry { Name = scriptName });
+
+                // One QuestScriptFragment per stage that shows/completes an objective.
+                // Stage = the quest stage number (uint16), StageIndex = log-entry index within stage
+                // (always 0 — we emit one log entry per stage), FragmentName = CK-standard function name
+                // the engine calls when SetStage() fires.
+                int fragIdx = 0;
+                foreach (var st in q.Stages.OrderBy(s => s.Index))
+                {
+                    bool needsFrag = q.Objectives.Any(o => o.ShowStage == st.Index || o.CompleteStage == st.Index);
+                    if (!needsFrag) continue;
+                    qa.Fragments.Add(new QuestScriptFragment
+                    {
+                        Stage = (ushort)st.Index,
+                        Unknown = 0,
+                        StageIndex = fragIdx++,
+                        Unknown2 = 0,
+                        ScriptName = scriptName,
+                        FragmentName = $"Fragment_Stage_{st.Index:D4}_Item00000",
+                    });
+                }
+                qr.VirtualMachineAdapter = qa;
+                scriptsAttached++;
+            }
         }
     }
 }

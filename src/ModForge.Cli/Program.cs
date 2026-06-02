@@ -186,28 +186,77 @@ internal static partial class Program
         var pluginName = string.IsNullOrEmpty(spec.PluginName) ? "Generated.esp" : spec.PluginName;
         Directory.CreateDirectory(outModDir);
 
-        // 1) the plugin (Build also does the VMAD script attach by Scriptname)
-        var espPath = Path.Combine(outModDir, pluginName);
-        var key = ModKey.FromNameAndExtension(pluginName);
-        var result = Generator.Build(spec, key);
-        PluginIo.Write(result.Mod, espPath);
-        foreach (var w in result.Warnings) Console.WriteLine(w);
-        Console.WriteLine(BuildSummary(result.Stats, specPath, espPath));
-        WriteSeq(espPath, outModDir);   // Data/Seq/<plugin>.seq alongside the plugin in the mod folder
-
-        // 2) compile each referenced script source -> Scripts/*.pex; copy .psc -> Scripts/Source/
         var scriptsDir = Path.Combine(outModDir, "Scripts");
         var sourceDir = Path.Combine(scriptsDir, "Source");
         var specDir = Path.GetDirectoryName(Path.GetFullPath(specPath)) ?? ".";
-        int compiled = 0;
+
+        // 1) Pre-compile generated quest/dialogue fragment .psc files so the VMAD can be attached
+        //    in Build(). These .psc files are generated from the spec (no user authoring required):
+        //    * Quest stage→objective fragments: Fragment_Stage_XXXX_Item00000 functions that call
+        //      SetObjectiveDisplayed/Completed — makes quests appear in the Active Quests journal.
+        //    * Dialogue set-stage fragments: Fragment_0(akSpeakerRef) that calls SetStage(N) when a
+        //      dialogue line is picked — advances quest stage without CK scripting.
+        //    Both are compiled into a temp dir; Build() checks that dir and only attaches the VMAD
+        //    when the .pex is confirmed present (absent .pex → Papyrus error at quest-start).
+        var compiledFragmentsDir = Path.Combine(Path.GetTempPath(), "modforge_fragments_" + Path.GetRandomFileName());
+        Directory.CreateDirectory(compiledFragmentsDir);
+        int autoCompiled = 0;
+
+        void CompileGenerated(string pscSource, string scriptName, string label)
+        {
+            Directory.CreateDirectory(sourceDir);
+            var pscPath = Path.Combine(compiledFragmentsDir, scriptName + ".psc");
+            File.WriteAllText(pscPath, pscSource);
+            var cr = Papyrus.CompileBest(pscPath, compiledFragmentsDir);
+            if (cr.Success)
+            {
+                Console.WriteLine($"  compiled {label} -> {scriptName}.pex");
+                autoCompiled++;
+            }
+            else
+                Console.WriteLine($"  (auto-compile skipped for {label}: {cr.Message.Split('\n')[0]})");
+            // Always write the .psc to Scripts/Source for the author's reference.
+            File.Copy(pscPath, Path.Combine(sourceDir, scriptName + ".psc"), overwrite: true);
+        }
+
+        foreach (var q in spec.Quests)
+        {
+            var src = Generator.GenerateQuestFragmentSource(q);
+            if (!string.IsNullOrEmpty(src))
+                CompileGenerated(src, Generator.QuestFragmentScriptName(q), $"quest fragment for '{q.EditorId}'");
+        }
+        foreach (var d in spec.Dialogue)
+        {
+            var src = Generator.GenerateDialogueFragmentSource(d);
+            if (!string.IsNullOrEmpty(src))
+                CompileGenerated(src, Generator.DialogueFragmentScriptName(d), $"dialogue fragment for '{d.EditorId}'");
+        }
+
+        // 2) Build the plugin, passing CompiledScriptsDir so WireQuestStages and
+        //    AttachDialogueResultScripts wire the VMAD for any fragment whose .pex exists.
+        var espPath = Path.Combine(outModDir, pluginName);
+        var key = ModKey.FromNameAndExtension(pluginName);
+        var result = Generator.Build(spec, key, new BuildOptions { CompiledScriptsDir = compiledFragmentsDir });
+        PluginIo.Write(result.Mod, espPath);
+        foreach (var w in result.Warnings) Console.WriteLine(w);
+        Console.WriteLine(BuildSummary(result.Stats, specPath, espPath));
+        WriteSeq(espPath, outModDir);
+
+        // 3) Copy compiled .pex files (fragments + user scripts) into Scripts/.
+        Directory.CreateDirectory(scriptsDir);
+        foreach (var pex in Directory.GetFiles(compiledFragmentsDir, "*.pex"))
+            File.Copy(pex, Path.Combine(scriptsDir, Path.GetFileName(pex)), overwrite: true);
+
+        // 4) User-specified script sources: compile + copy to Scripts/ + Scripts/Source/.
+        int compiled = autoCompiled;
         var compiledSources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         bool CompileSource(string? source, string label)
         {
             if (string.IsNullOrEmpty(source)) return false;
             var src = Path.IsPathRooted(source) ? source : Path.Combine(specDir, source);
-            if (!compiledSources.Add(Path.GetFullPath(src))) return false;   // same .psc referenced twice
+            if (!compiledSources.Add(Path.GetFullPath(src))) return false;
             if (!File.Exists(src)) { Console.Error.WriteLine($"  ! script source not found: {src}"); return false; }
-            var cr = Papyrus.Compile(src, scriptsDir);
+            var cr = Papyrus.CompileBest(src, scriptsDir);
             if (!cr.Success) { Console.Error.WriteLine(cr.Message); Console.Error.WriteLine($"  ! compile failed: {label}"); return false; }
             Console.WriteLine(cr.Message);
             Directory.CreateDirectory(sourceDir);
@@ -216,36 +265,23 @@ internal static partial class Program
             return true;
         }
         foreach (var sa in spec.Scripts) CompileSource(sa.Source, sa.Source);
-        // Dialogue result-script fragments (the INFO OnEnd TIF) are compiled the same way.
         foreach (var d in spec.Dialogue) CompileSource(d.ResultScriptSource, d.ResultScriptSource);
 
-        // 2b) emit GENERATED quest/dialogue fragment Papyrus SOURCES (stage→objective wiring +
-        //     dialogue-set-stage). These are scaffolds the author compiles + binds in the CK (the one
-        //     step we can't run headless on Linux); see docs/SPEC.md "Multi-stage quest".
-        int generated = 0;
-        foreach (var q in spec.Quests)
+        // 5) Word-wall teaching fragments (generated source, compiled best-effort).
+        int wordWallScripts = 0;
+        foreach (var ww in spec.WordWalls)
         {
-            var src = Generator.GenerateQuestFragmentSource(q);
-            if (string.IsNullOrEmpty(src)) continue;
+            var scriptName = string.IsNullOrWhiteSpace(ww.ScriptName) ? ww.EditorId + "Script" : ww.ScriptName;
             Directory.CreateDirectory(sourceDir);
-            var path = Path.Combine(sourceDir, Generator.QuestFragmentScriptName(q) + ".psc");
-            File.WriteAllText(path, src);
-            Console.WriteLine($"  generated quest fragment scaffold -> {path}");
-            generated++;
-        }
-        foreach (var d in spec.Dialogue)
-        {
-            var src = Generator.GenerateDialogueFragmentSource(d);
-            if (string.IsNullOrEmpty(src)) continue;
-            Directory.CreateDirectory(sourceDir);
-            var path = Path.Combine(sourceDir, Generator.DialogueFragmentScriptName(d) + ".psc");
-            File.WriteAllText(path, src);
-            Console.WriteLine($"  generated dialogue fragment scaffold -> {path}");
-            generated++;
+            var pscPath = Path.Combine(sourceDir, scriptName + ".psc");
+            File.WriteAllText(pscPath, Generator.GenerateWordWallScript(ww));
+            wordWallScripts++;
+            var cr = Papyrus.CompileBest(pscPath, scriptsDir);
+            if (cr.Success) { Console.WriteLine(cr.Message); compiled++; }
+            else Console.WriteLine($"  (word-wall script {scriptName}.psc written to Scripts/Source — compile pending: {cr.Message.Split('\n')[0]})");
         }
 
-        // 3) external-resource bundling — copy the spec's (or --assets) Meshes/Textures/Sounds/…
-        //    sub-trees next to the .esp so the packaged mod is self-contained / MO2-ready.
+        // 6) External-resource bundling — copy spec's (or --assets) Meshes/Textures/Sounds/….
         var assetsSrc = !string.IsNullOrWhiteSpace(assetsOverride) ? assetsOverride
                       : !string.IsNullOrWhiteSpace(spec.Assets)
                             ? (Path.IsPathRooted(spec.Assets) ? spec.Assets : Path.Combine(specDir, spec.Assets))
@@ -259,25 +295,10 @@ internal static partial class Program
                     $"from {assetsSrc} -> [{string.Join(", ", br.CopiedFolders)}]");
         }
 
-        // 4) word-wall teaching fragments: ModForge GENERATES the .psc (no user source file). Write
-        //    each to Scripts/Source so the CK can compile it, and attempt a compile here too
-        //    (best-effort — the .psc is a compile-ready scaffold; the CK compile + binding + in-game
-        //    learning are UNCONFIRMED, see docs/lifelike/cookbook.md "Make a shout learnable").
-        int wordWallScripts = 0;
-        foreach (var ww in spec.WordWalls)
-        {
-            var scriptName = string.IsNullOrWhiteSpace(ww.ScriptName) ? ww.EditorId + "Script" : ww.ScriptName;
-            Directory.CreateDirectory(sourceDir);
-            var pscPath = Path.Combine(sourceDir, scriptName + ".psc");
-            File.WriteAllText(pscPath, Generator.GenerateWordWallScript(ww));
-            wordWallScripts++;
-            var cr = Papyrus.Compile(pscPath, scriptsDir);
-            if (cr.Success) { Console.WriteLine(cr.Message); compiled++; }
-            else Console.WriteLine($"  (word-wall script {scriptName}.psc written to Scripts/Source — CK compile pending: {cr.Message.Split('\n')[0]})");
-        }
+        // Cleanup temp dir.
+        try { Directory.Delete(compiledFragmentsDir, recursive: true); } catch { /* best effort */ }
 
         Console.WriteLine($"packaged -> {outModDir}  ({pluginName} + {compiled} compiled script(s)"
-            + (generated > 0 ? $" + {generated} generated fragment scaffold(s)" : "")
             + (wordWallScripts > 0 ? $" + {wordWallScripts} word-wall fragment(s)" : "") + " under Scripts/)");
         return 0;
     }

@@ -69,9 +69,12 @@ public static partial class Generator
         private int worldspacesBuilt, regionsBuilt;
         private int wordWallsBuilt;
 
+        private readonly BuildOptions? options;
+
         public BuildContext(ModSpec spec, ModKey outputKey, BuildOptions? options)
         {
             this.spec = spec;
+            this.options = options;
             mod = new SkyrimMod(outputKey, SkyrimRelease.SkyrimSE);
             skyrimData = options?.SkyrimDataPath
                 ?? Environment.GetEnvironmentVariable("MODFORGE_SKYRIM_DATA")
