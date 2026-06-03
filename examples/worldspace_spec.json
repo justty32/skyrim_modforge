@@ -1,6 +1,6 @@
 {
   "pluginName": "ModForgeWorldspace.esp",
-  "esl": true,
+  "esl": false,
 
   "worldspaces": [
     {

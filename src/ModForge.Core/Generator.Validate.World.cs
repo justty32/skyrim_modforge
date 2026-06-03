@@ -73,6 +73,8 @@ public static partial class Generator
                 foreach (var e in ct.Items) CheckRef(e.Item, $"container '{ct.EditorId}' item");
 
             // Worldspaces (WRLD): refs resolve; climate strongly advised.
+            if (spec.Esl && spec.Worldspaces.Any(ws => ws.Cells.Count > 0))
+                Problems.Add("spec has esl=true but worldspace(s) define terrain cells — Skyrim's engine does not load LAND records from ESL (light) plugins; set esl=false for any spec that generates terrain");
             foreach (var ws in spec.Worldspaces)
             {
                 if (string.IsNullOrWhiteSpace(ws.Climate))
