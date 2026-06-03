@@ -60,7 +60,7 @@ sub      = FloorDiv(cellGrid, 8)
 
 3. **ESL 外掛不能包含 LAND records。** Skyrim 引擎會靜默忽略從 ESL（輕型外掛）載入的地形資料——外部地形載入路徑只讀取完整的 ESP/ESM。有 `cells` 的 spec 必須設定 `"esl": false`。`validate` 指令會強制檢查此項。
 
-4. **`NavigationMapInfo.Parent` 必須設定**，否則 Mutagen 在寫入時會拋出 `NullReferenceException`。使用 `new NavigationMapInfoCellParent { ParentCell = cell.FormKey }`。NAVM 上的 `Data.Parent`（`CellNavmeshParent`）是獨立欄位，兩者皆須設定。
+4. **室外 NAVM 用 `WorldspaceNavmeshParent`，不是 `CellNavmeshParent`。** 型別錯誤會在引擎讀取 `PathingStreamMasterFileRead` 時 CTD（頂點數量讀到垃圾值，因為二進位偏移錯誤）。規則：室外 cell → `WorldspaceNavmeshParent { Parent = worldspace.FormKey }`；室內 cell → `CellNavmeshParent { Parent = cell.FormKey }`。NAVI 的 `NavigationMapInfo.Parent` 也同樣規則：室外 → `NavigationMapInfoWorldParent { ParentWorldspace = ws.FormKey }`；室內 → `NavigationMapInfoCellParent { ParentCell = cell.FormKey }`。任一 Parent 為 null 也會 CTD（Mutagen 寫入時 NullReferenceException）。
 
 5. **NavmeshGrid 格式：** 以列優先順序，每個網格子 cell 的格式為 `[uint32 triCount][ushort idx0]...[ushort idxN]`。`GridDivisor` = N 代表 N×N 網格；`MaxDistanceX/Y` = cellWidth/N（每個子 cell 的遊戲單位）。對於獨立的 2 三角形平坦 cell：`GridDivisor=1`，`MaxDistance=4096`，grid bytes = `02 00 00 00 00 00 01 00`（8 bytes，一個包含兩個三角形的 cell）。
 

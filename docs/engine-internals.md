@@ -88,10 +88,14 @@ Three bugs confirmed in-game (2026-06-03) when generating flat LAND records:
    loaded from ESL (light) plugins — the exterior terrain loading path only reads from full ESP/ESM.
    Specs with `cells` must use `"esl": false`. The `validate` command enforces this.
 
-4. **`NavigationMapInfo.Parent` must be set** or Mutagen throws a `NullReferenceException` on
-   write. Use `new NavigationMapInfoCellParent { ParentCell = cell.FormKey }` — the matching
-   `ANavmeshParent` on the NAVM (`Data.Parent = new CellNavmeshParent { Parent = cell.FormKey }`)
-   is a separate field and must also be set.
+4. **Exterior NAVM uses `WorldspaceNavmeshParent`, not `CellNavmeshParent`.** Using the wrong
+   parent type CTDs the engine with `PathingStreamMasterFileRead` + garbage vertex count (the
+   engine reads the vertex count from the wrong binary offset). Rule: exterior cells →
+   `WorldspaceNavmeshParent { Parent = worldspace.FormKey }`; interior cells →
+   `CellNavmeshParent { Parent = cell.FormKey }`. Same rule applies to the NAVI
+   `NavigationMapInfo.Parent`: exterior → `NavigationMapInfoWorldParent { ParentWorldspace = ws.FormKey }`;
+   interior → `NavigationMapInfoCellParent { ParentCell = cell.FormKey }`.
+   Either parent set to null also CTDs (`NullReferenceException` on write from Mutagen).
 
 5. **NavmeshGrid format:** `[uint32 triCount][ushort idx0]...[ushort idxN]` per grid sub-cell in
    row-major order. `GridDivisor` = N means an N×N grid; `MaxDistanceX/Y` = cellWidth/N (game

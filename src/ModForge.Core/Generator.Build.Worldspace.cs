@@ -22,8 +22,8 @@ public static partial class Generator
         SkyrimMod mod, ModSpec spec, Dictionary<string, FormKey> formKeyByEd, Action<string> warn)
     {
         int worldspaces = 0, regions = 0, terrainCells = 0, navmeshCells = 0, links = 0, extLinks = 0;
-        // Collected (navm, center, cellFormKey) tuples → NAVI record written after all worldspaces.
-        var navmInfos = new List<(NavigationMesh Navm, Noggog.P3Float Center, FormKey CellFk)>();
+        // Collected (navm, center, worldspaceFormKey) tuples → NAVI record written after all worldspaces.
+        var navmInfos = new List<(NavigationMesh Navm, Noggog.P3Float Center, FormKey WorldspaceFk)>();
 
         // Resolve a ref (in-spec editorId OR external <master>:0xFORMID) and run `set`; tally links.
         void Wire(string what, string refStr, Action<FormKey> set)
@@ -150,9 +150,9 @@ public static partial class Generator
                     data.NavmeshVersion = NavigationMeshData.NavmeshVersionDefault;
                     data.CrcHash = 0;
 
-                    var navParent = new CellNavmeshParent();
-                    navParent.UnusedWorldspaceParent.SetTo(w.FormKey);
-                    navParent.Parent.SetTo(cell.FormKey);
+                    // Exterior cells use WorldspaceNavmeshParent (not CellNavmeshParent — that is for interiors).
+                    var navParent = new WorldspaceNavmeshParent();
+                    navParent.Parent.SetTo(w.FormKey);
                     data.Parent = navParent;
 
                     // V0=SW, V1=SE, V2=NE, V3=NW (CCW winding from above)
@@ -177,7 +177,7 @@ public static partial class Generator
 
                     navm.Data = data;
                     cell.NavigationMeshes.Add(navm);
-                    navmInfos.Add((navm, new Noggog.P3Float((wx0 + wx1) / 2f, (wy0 + wy1) / 2f, h), cell.FormKey));
+                    navmInfos.Add((navm, new Noggog.P3Float((wx0 + wx1) / 2f, (wy0 + wy1) / 2f, h), w.FormKey));
                     navmeshCells++;
                 }
 
@@ -192,7 +192,7 @@ public static partial class Generator
         {
             var navi = mod.NavigationMeshInfoMaps.AddNew();
             navi.NavMeshVersion = NavigationMeshData.NavmeshVersionDefault;
-            foreach (var (navm, center, cellFk) in navmInfos)
+            foreach (var (navm, center, worldspaceFk) in navmInfos)
             {
                 var mi = new NavigationMapInfo();
                 mi.NavigationMesh.SetTo(navm.FormKey);
@@ -200,9 +200,9 @@ public static partial class Generator
                 mi.Unknown = 0;
                 mi.Unknown2 = 0;
                 mi.PreferredMergesFlag = 0;
-                // Parent (ANavigationMapInfoParent) must be set — Mutagen throws NullReferenceException on write if null.
-                var miParent = new NavigationMapInfoCellParent();
-                miParent.ParentCell.SetTo(cellFk);
+                // Exterior navmeshes use NavigationMapInfoWorldParent (not Cell variant — that is for interiors).
+                var miParent = new NavigationMapInfoWorldParent();
+                miParent.ParentWorldspace.SetTo(worldspaceFk);
                 mi.Parent = miParent;
                 navi.MapInfos.Add(mi);
             }
