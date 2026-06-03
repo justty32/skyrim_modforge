@@ -25,5 +25,11 @@ public static class PluginIo
                     "Set \"esl\": false in the spec, or split the content across multiple plugins.");
         }
         mod.WriteToBinary(outPath, new BinaryWriteParameters { ModKey = ModKeyOption.NoCheck });
+
+        // NOTE: a "NVNM parent-byte shift" post-pass once lived here. It was a mis-diagnosis made
+        // under stale-ESP test conditions and has been removed. Mutagen already writes the
+        // authoritative NVNM layout (Version | Magic | ParentWorldspace | Coords/Cell |
+        // VertexCount | ...), so the bytes ship untouched. See docs/engine-internals.md
+        // ("Programmatic navmesh") for the full story.
     }
 }

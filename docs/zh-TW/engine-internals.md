@@ -60,9 +60,36 @@ sub      = FloorDiv(cellGrid, 8)
 
 3. **ESL 外掛不能包含 LAND records。** Skyrim 引擎會靜默忽略從 ESL（輕型外掛）載入的地形資料——外部地形載入路徑只讀取完整的 ESP/ESM。有 `cells` 的 spec 必須設定 `"esl": false`。`validate` 指令會強制檢查此項。
 
-4. **室外 NAVM 用 `WorldspaceNavmeshParent`，不是 `CellNavmeshParent`。** 型別錯誤會在引擎讀取 `PathingStreamMasterFileRead` 時 CTD（頂點數量讀到垃圾值，因為二進位偏移錯誤）。規則：室外 cell → `WorldspaceNavmeshParent { Parent = worldspace.FormKey }`；室內 cell → `CellNavmeshParent { Parent = cell.FormKey }`。NAVI 的 `NavigationMapInfo.Parent` 也同樣規則：室外 → `NavigationMapInfoWorldParent { ParentWorldspace = ws.FormKey }`；室內 → `NavigationMapInfoCellParent { ParentCell = cell.FormKey }`。任一 Parent 為 null 也會 CTD（Mutagen 寫入時 NullReferenceException）。
+4. **室外 NAVM 用 `WorldspaceNavmeshParent`，不是 `CellNavmeshParent`。** 規則：室外 cell → `WorldspaceNavmeshParent { Parent = worldspace.FormKey }`；室內 cell → `CellNavmeshParent { Parent = cell.FormKey }`。Parent 為 null 會 CTD（Mutagen 寫入時 NullReferenceException）。
 
 5. **NavmeshGrid 格式：** 以列優先順序，每個網格子 cell 的格式為 `[uint32 triCount][ushort idx0]...[ushort idxN]`。`GridDivisor` = N 代表 N×N 網格；`MaxDistanceX/Y` = cellWidth/N（每個子 cell 的遊戲單位）。對於獨立的 2 三角形平坦 cell：`GridDivisor=1`，`MaxDistance=4096`，grid bytes = `02 00 00 00 00 00 01 00`（8 bytes，一個包含兩個三角形的 cell）。
+
+## 程式化 navmesh（NAVM + NAVI）——遊戲內已確認 2026-06-03
+
+為自訂 worldspace 產生能讓引擎正常載入（不 CTD）的 navmesh，經歷了一段長除錯。關鍵事實（透過遊戲內進入 `MFTestWorld` 確認，並以解碼 Vigilant.esm——一個真實 CK-finalize 過的自訂 worldspace mod——作為 known-good 對照）：
+
+1. **NAVI 是全遊戲唯一、所有外掛都去 override 並累加合併的單一 record：`Skyrim.esm:0x00012FB4`。** 全遊戲只有這一個 `NavMeshInfoMap`（vanilla 有 15,462 筆）。引擎會把**每個外掛的 `0x12FB4` NVMI 清單 additive 合併**（Vigilant 的 override 只列它自己的 897 筆，不是 vanilla 的 15,462 筆）。所以：
+   ```csharp
+   var navi = new NavigationMeshInfoMap(FormKey.Factory("012FB4:Skyrim.esm"), SkyrimRelease.SkyrimSE);
+   // ...只加入你自己的 NavigationMapInfo 條目...
+   mod.NavigationMeshInfoMaps.Add(navi);   // additive override；對新 worldspace 不會衝突
+   ```
+   **建立一個全新的 NAVI record（`AddNew()`）是最致命的錯誤**——會產生第二個、孤立的 `NavMeshInfoMap`，它的 runtime pathing cell 是 null，引擎在 navmesh-init 工作執行緒（約 5 秒 uptime）的 `NavMeshInfoMap::InitItemImpl`（`mov edx,[rcx+0x10]`, rcx=0）CTD。崩潰 log 的 `R14 = NavMeshInfoMap [0x0A000804]`（我們的 rogue record）對比 `[0x00012FB4]`（vanilla master，當我們的 NAVM 完全沒有 NAVI 條目時）就是線索。
+
+2. **NVNM 照 Mutagen 原樣輸出——不做任何 byte patch。** 權威格式（xEdit wbNVNM）：`Version(u32=12) | Magic(4) | ParentWorldspace(FormID) | {GridY,GridX i16}|ParentCell | Vertices | Triangles | EdgeLinks | DoorTris | CoverTris | GridDivisor(u32) | MaxX/YDist | Min XYZ | Max XYZ | NavMeshGrid`。VertexCount 在 offset 16，**在 8-byte parent 之後**。（先前「把 parent 從 offset 8 移掉」的 hack 是在 stale-ESP 測試下的誤判；刪掉 parent 既錯位又拿掉 init 階段需要的 worldspace 連結。）
+
+3. **「Magic」常數是 `0xA5E9A03C`**（檔案位元組 `3C A0 E9 A5`）。出現在兩個地方，都對照 vanilla/Vigilant 驗證過：
+   - `NavigationMeshData.CrcHash`（NVNM offset 4）。
+   - `NavigationMapInfo.Unknown2`（NVMI 在 `Parent Worldspace` 之前的 4-byte 欄位）。
+   留成 0 是錯的（它本身不會 CTD，但要符合引擎預期）。
+
+4. **真實 navmesh 不是 island。** 一般 mesh 的 `NavigationMapInfo.Island` 保持 null（`Is Island = 0`）——對照 Vigilant 確認。（設成 island 沒幫助，也不是 CK 的做法。）
+
+5. **三角形邊鄰接**：`EdgeLink_n` 是跨越本地頂點 n 與 n+1 之間那條邊的鄰居三角形索引，邊界邊為 `-1`。共用 V0–V2 對角線的 2 三角形 quad：T0 `EdgeLink_2_0 = 1`、T1 `EdgeLink_0_1 = 0`、其餘 `-1`。
+
+6. **與 NAVM 相同的 parent 規則**適用於每筆 NVMI：室外 → `NavigationMapInfoWorldParent { ParentWorldspace = ws.FormKey, ParentWorldspaceCoord = (gridX,gridY) }`；室內 → `NavigationMapInfoCellParent { ParentCell = cell.FormKey }`。
+
+> 一個讓上述問題被掩蓋好幾輪的打包陷阱：MO2 安裝 zip 必須是**扁平**結構（plugin 在 zip 根目錄、`Seq/` 同層）。一個遺留在 zip 根目錄的舊 `.esp` 被裝成而不是剛 build 的那個，所以「還是 crash」其實一再是 *stale* plugin。永遠要 `unzip -l` + `md5sum` 把 zip 內的 esp 跟剛 build 的對拍。
 
 ## AI 套件以模板為基礎驅動
 

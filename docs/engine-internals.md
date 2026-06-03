@@ -88,19 +88,65 @@ Three bugs confirmed in-game (2026-06-03) when generating flat LAND records:
    loaded from ESL (light) plugins — the exterior terrain loading path only reads from full ESP/ESM.
    Specs with `cells` must use `"esl": false`. The `validate` command enforces this.
 
-4. **Exterior NAVM uses `WorldspaceNavmeshParent`, not `CellNavmeshParent`.** Using the wrong
-   parent type CTDs the engine with `PathingStreamMasterFileRead` + garbage vertex count (the
-   engine reads the vertex count from the wrong binary offset). Rule: exterior cells →
+4. **Exterior NAVM uses `WorldspaceNavmeshParent`, not `CellNavmeshParent`.** Rule: exterior cells →
    `WorldspaceNavmeshParent { Parent = worldspace.FormKey }`; interior cells →
-   `CellNavmeshParent { Parent = cell.FormKey }`. Same rule applies to the NAVI
-   `NavigationMapInfo.Parent`: exterior → `NavigationMapInfoWorldParent { ParentWorldspace = ws.FormKey }`;
-   interior → `NavigationMapInfoCellParent { ParentCell = cell.FormKey }`.
-   Either parent set to null also CTDs (`NullReferenceException` on write from Mutagen).
+   `CellNavmeshParent { Parent = cell.FormKey }`. Either parent set to null CTDs
+   (`NullReferenceException` on write from Mutagen).
 
 5. **NavmeshGrid format:** `[uint32 triCount][ushort idx0]...[ushort idxN]` per grid sub-cell in
    row-major order. `GridDivisor` = N means an N×N grid; `MaxDistanceX/Y` = cellWidth/N (game
    units per sub-cell). For a standalone 2-triangle flat cell: `GridDivisor=1`, `MaxDistance=4096`,
    grid bytes = `02 00 00 00 00 00 01 00` (8 bytes, one cell containing both triangles).
+
+## Programmatic navmesh (NAVM + NAVI) — IN-GAME CONFIRMED 2026-06-03
+
+Generating navmesh for a custom worldspace so the engine loads it without CTD took a long
+debugging arc. The decisive facts (verified by entering `MFTestWorld` in-game, and by decoding
+Vigilant.esm — a real CK-finalized custom-worldspace mod — as the known-good reference):
+
+1. **The NAVI is a single global record that all plugins OVERRIDE and merge into:
+   `Skyrim.esm:0x00012FB4`.** There is exactly one `NavMeshInfoMap` in the whole game (15,462
+   entries in vanilla). The engine **merges every plugin's `0x12FB4` NVMI list additively**
+   (Vigilant's override lists only its own 897 navmeshes, not the 15,462 vanilla ones). So:
+   ```csharp
+   var navi = new NavigationMeshInfoMap(FormKey.Factory("012FB4:Skyrim.esm"), SkyrimRelease.SkyrimSE);
+   // ...add only YOUR NavigationMapInfo entries...
+   mod.NavigationMeshInfoMaps.Add(navi);   // additive override; conflict-safe for new worldspaces
+   ```
+   **Creating a NEW NAVI record (`AddNew()`) is the cardinal mistake** — it produces a second,
+   rogue `NavMeshInfoMap` whose runtime pathing cell is null, and the engine CTDs in
+   `NavMeshInfoMap::InitItemImpl` (`mov edx,[rcx+0x10]`, rcx=0) on the navmesh-init worker thread
+   at ~5 s uptime. The crash log's `R14 = NavMeshInfoMap [0x0A000804]` (our rogue record) vs
+   `[0x00012FB4]` (the vanilla master, when our NAVM had no NAVI entry at all) was the tell.
+
+2. **NVNM is shipped as Mutagen writes it — no byte patching.** Authoritative layout (xEdit wbNVNM):
+   `Version(u32=12) | Magic(4) | ParentWorldspace(FormID) | {GridY,GridX i16}|ParentCell | Vertices |
+   Triangles | EdgeLinks | DoorTris | CoverTris | GridDivisor(u32) | MaxX/YDist | Min XYZ | Max XYZ |
+   NavMeshGrid`. VertexCount lives at offset 16, **after** the 8-byte parent. (An earlier
+   "shift the parent out at offset 8" hack was a mis-diagnosis under stale-ESP tests; deleting the
+   parent both misaligns the record and strips the worldspace linkage the init stage needs.)
+
+3. **The "Magic" constant is `0xA5E9A03C`** (file bytes `3C A0 E9 A5`). It appears in TWO places,
+   both verified against every vanilla/Vigilant navmesh:
+   - `NavigationMeshData.CrcHash` (NVNM offset 4).
+   - `NavigationMapInfo.Unknown2` (the NVMI 4-byte field just before `Parent Worldspace`).
+   Leaving either at 0 is wrong (it didn't CTD on its own, but match the engine's expectation).
+
+4. **Real navmeshes are NOT islands.** `NavigationMapInfo.Island` stays null (`Is Island = 0`) for
+   ordinary meshes — confirmed across Vigilant. (Setting it did not help and is not how the CK does it.)
+
+5. **Triangle edge adjacency**: `EdgeLink_n` is the neighbouring triangle index across the edge
+   between local verts n and n+1, or `-1` for a border edge. For a 2-triangle quad sharing the
+   V0–V2 diagonal: T0 `EdgeLink_2_0 = 1`, T1 `EdgeLink_0_1 = 0`, the rest `-1`.
+
+6. **Same parent rule as NAVM** applies to each NVMI: exterior →
+   `NavigationMapInfoWorldParent { ParentWorldspace = ws.FormKey, ParentWorldspaceCoord = (gridX,gridY) }`;
+   interior → `NavigationMapInfoCellParent { ParentCell = cell.FormKey }`.
+
+> Packaging caveat that masked all of the above for several iterations: the MO2 install zip must be
+> **flat** (plugin at the zip root, `Seq/` a sibling). A stray older `.esp` left at the zip root got
+> installed instead of the freshly-built one, so "still crashes" was repeatedly a *stale* plugin.
+> Always `unzip -l` + `md5sum` the zipped esp against the just-built one.
 
 ## AI Packages are template-driven
 
