@@ -122,7 +122,10 @@ public static partial class Generator
 
                 // Flat LAND: all 33×33 height-map deltas = 0 → terrain at Z = Offset*8 = 0.
                 // All normals point straight up (128,128,255 in Skyrim's unsigned-byte encoding).
+                // VertexNormalsHeightMap flag MUST be set; without it the engine skips VHGT/VNML
+                // and the player falls through with no collision.
                 var land = new Landscape(mod);
+                land.Flags = Landscape.Flag.VertexNormalsHeightMap;
                 land.VertexHeightMap = new LandscapeVertexHeightMap
                 {
                     Offset = 0f,
