@@ -51,7 +51,7 @@ worldspace) whose **weather table** drives which weathers play there:
     "map": { "northwestX": -4, "northwestY": 4, "southeastX": 4, "southeastY": -4,
              "cameraInitialPitch": 50, "cameraMinHeight": 50000, "cameraMaxHeight": 80000 },
     "cells": [
-      { "x": 0, "y": 0 }                  // flat terrain cell at grid origin; height defaults to 4000
+      { "x": 0, "y": 0, "navmesh": true } // flat terrain cell + navmesh; height defaults to 4000
     ] }
 ],
 "regions": [
@@ -76,8 +76,10 @@ worldspace) whose **weather table** drives which weathers play there:
   generates a CELL + LAND record (flat 33×33 heightmap) placed in the worldspace's SubCell block
   tree. Optional `"height"` (game units, default 4000) sets the terrain elevation — Z=0 is
   approximately Skyrim's sea level, so 4000+ is safely above water. Enter in-game with:
-  `cow <worldspace editorId> X Y`. No navmesh is generated; NPCs cannot path, but the player can
-  walk. A full landscape (varied terrain, LOD, navmesh) still requires the Creation Kit.
+  `cow <worldspace editorId> X Y`. Optional `"navmesh": true` adds a flat quad NAVM (4 vertices,
+  2 triangles) covering the full 4096×4096 cell so NPCs can path on it, plus a NAVI index entry.
+  No edge-links to neighbour cells — cross-cell pathfinding requires matching NAVMs in adjacent
+  cells. For varied terrain/LOD/detailed navmesh use the Creation Kit.
   **ESL LIMIT:** Skyrim's engine ignores LAND records in ESL (light) plugins — specs with `cells`
   must use `"esl": false` (the validator enforces this).
 - **regions** (REGN): an area inside a `worldspace` (an in-spec WRLD `editorId` or a vanilla

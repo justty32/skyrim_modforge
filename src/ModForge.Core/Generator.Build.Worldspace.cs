@@ -18,10 +18,12 @@ public static partial class Generator
     //
     //  Returns counts folded into BuildStats + the link tallies.
     // -------------------------------------------------------------------------------
-    private static (int Worldspaces, int Regions, int TerrainCells, int Links, int ExtLinks) BuildWorldspacesAndRegions(
+    private static (int Worldspaces, int Regions, int TerrainCells, int NavmeshCells, int Links, int ExtLinks) BuildWorldspacesAndRegions(
         SkyrimMod mod, ModSpec spec, Dictionary<string, FormKey> formKeyByEd, Action<string> warn)
     {
-        int worldspaces = 0, regions = 0, terrainCells = 0, links = 0, extLinks = 0;
+        int worldspaces = 0, regions = 0, terrainCells = 0, navmeshCells = 0, links = 0, extLinks = 0;
+        // Collected (navm, center, cellFormKey) tuples → NAVI record written after all worldspaces.
+        var navmInfos = new List<(NavigationMesh Navm, Noggog.P3Float Center, FormKey CellFk)>();
 
         // Resolve a ref (in-spec editorId OR external <master>:0xFORMID) and run `set`; tally links.
         void Wire(string what, string refStr, Action<FormKey> set)
@@ -135,8 +137,74 @@ public static partial class Generator
                 land.VertexNormals = new Noggog.Array2d<Noggog.P3UInt8>(33, 33, new Noggog.P3UInt8(128, 128, 255));
                 cell.Landscape = land;
 
+                // Flat navmesh: a 4-vertex quad (2 triangles) covering the cell at terrain height.
+                // Vertices are world-space (not cell-local). GridDivisor=1 → trivial 1×1 grid.
+                if (cs.Navmesh)
+                {
+                    float wx0 = cs.X * 4096f, wy0 = cs.Y * 4096f;
+                    float wx1 = wx0 + 4096f,  wy1 = wy0 + 4096f;
+                    float h = cs.Height;
+
+                    var navm = new NavigationMesh(mod);
+                    var data = new NavigationMeshData();
+                    data.NavmeshVersion = NavigationMeshData.NavmeshVersionDefault;
+                    data.CrcHash = 0;
+
+                    var navParent = new CellNavmeshParent();
+                    navParent.UnusedWorldspaceParent.SetTo(w.FormKey);
+                    navParent.Parent.SetTo(cell.FormKey);
+                    data.Parent = navParent;
+
+                    // V0=SW, V1=SE, V2=NE, V3=NW (CCW winding from above)
+                    data.Vertices.Add(new Noggog.P3Float(wx0, wy0, h));
+                    data.Vertices.Add(new Noggog.P3Float(wx1, wy0, h));
+                    data.Vertices.Add(new Noggog.P3Float(wx1, wy1, h));
+                    data.Vertices.Add(new Noggog.P3Float(wx0, wy1, h));
+
+                    // T0: V0,V1,V2 | T1: V0,V2,V3 — no edge links (standalone cell)
+                    data.Triangles.Add(new NavmeshTriangle
+                        { Vertices = new Noggog.P3Int16(0, 1, 2), EdgeLink_0_1 = -1, EdgeLink_1_2 = -1, EdgeLink_2_0 = -1 });
+                    data.Triangles.Add(new NavmeshTriangle
+                        { Vertices = new Noggog.P3Int16(0, 2, 3), EdgeLink_0_1 = -1, EdgeLink_1_2 = -1, EdgeLink_2_0 = -1 });
+
+                    // 1×1 NavmeshGrid: [count=2][idx=0][idx=1]
+                    data.NavmeshGrid = new byte[] { 2, 0, 0, 0,  0, 0,  1, 0 };
+                    data.NavmeshGridDivisor = 1;
+                    data.MaxDistanceX = 4096f;
+                    data.MaxDistanceY = 4096f;
+                    data.Min = new Noggog.P3Float(wx0, wy0, h);
+                    data.Max = new Noggog.P3Float(wx1, wy1, h);
+
+                    navm.Data = data;
+                    cell.NavigationMeshes.Add(navm);
+                    navmInfos.Add((navm, new Noggog.P3Float((wx0 + wx1) / 2f, (wy0 + wy1) / 2f, h), cell.FormKey));
+                    navmeshCells++;
+                }
+
                 sub.Items.Add(cell);
                 terrainCells++;
+            }
+        }
+
+        // NAVI (NavigationMeshInfoMap): one record indexing all generated NAVMs.
+        // The engine uses this for cross-cell path queries; each entry is (navm, center, crcHash).
+        if (navmInfos.Count > 0)
+        {
+            var navi = mod.NavigationMeshInfoMaps.AddNew();
+            navi.NavMeshVersion = NavigationMeshData.NavmeshVersionDefault;
+            foreach (var (navm, center, cellFk) in navmInfos)
+            {
+                var mi = new NavigationMapInfo();
+                mi.NavigationMesh.SetTo(navm.FormKey);
+                mi.Point = center;
+                mi.Unknown = 0;
+                mi.Unknown2 = 0;
+                mi.PreferredMergesFlag = 0;
+                // Parent (ANavigationMapInfoParent) must be set — Mutagen throws NullReferenceException on write if null.
+                var miParent = new NavigationMapInfoCellParent();
+                miParent.ParentCell.SetTo(cellFk);
+                mi.Parent = miParent;
+                navi.MapInfos.Add(mi);
             }
         }
 
@@ -178,7 +246,7 @@ public static partial class Generator
             regions++;
         }
 
-        return (worldspaces, regions, terrainCells, links, extLinks);
+        return (worldspaces, regions, terrainCells, navmeshCells, links, extLinks);
     }
 
     // Parse "0xRRGGBB" / "RRGGBB" (or "#RRGGBB") into an opaque Color; false if blank/malformed.
@@ -199,10 +267,11 @@ public static partial class Generator
     {
         public void BuildWorldspacesAndRegions()
         {
-            var (w, r, tc, l, e) = Generator.BuildWorldspacesAndRegions(mod, spec, formKeyByEd, Warn);
+            var (w, r, tc, nc, l, e) = Generator.BuildWorldspacesAndRegions(mod, spec, formKeyByEd, Warn);
             worldspacesBuilt = w;
             regionsBuilt = r;
             terrainCellsBuilt = tc;
+            navmeshCellsBuilt = nc;
             linksWired += l;
             extLinks += e;
         }

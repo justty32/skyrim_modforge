@@ -88,6 +88,16 @@ Three bugs confirmed in-game (2026-06-03) when generating flat LAND records:
    loaded from ESL (light) plugins — the exterior terrain loading path only reads from full ESP/ESM.
    Specs with `cells` must use `"esl": false`. The `validate` command enforces this.
 
+4. **`NavigationMapInfo.Parent` must be set** or Mutagen throws a `NullReferenceException` on
+   write. Use `new NavigationMapInfoCellParent { ParentCell = cell.FormKey }` — the matching
+   `ANavmeshParent` on the NAVM (`Data.Parent = new CellNavmeshParent { Parent = cell.FormKey }`)
+   is a separate field and must also be set.
+
+5. **NavmeshGrid format:** `[uint32 triCount][ushort idx0]...[ushort idxN]` per grid sub-cell in
+   row-major order. `GridDivisor` = N means an N×N grid; `MaxDistanceX/Y` = cellWidth/N (game
+   units per sub-cell). For a standalone 2-triangle flat cell: `GridDivisor=1`, `MaxDistance=4096`,
+   grid bytes = `02 00 00 00 00 00 01 00` (8 bytes, one cell containing both triangles).
+
 ## AI Packages are template-driven
 
 Every concrete `Package` references a vanilla **procedure template** via `PackageTemplate`

@@ -22,7 +22,7 @@
         "cameraMaxHeight": 80000
       },
       "cells": [
-        { "x": 0, "y": 0 }
+        { "x": 0, "y": 0, "navmesh": true }
       ]
     }
   ],

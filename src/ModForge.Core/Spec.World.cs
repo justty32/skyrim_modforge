@@ -148,6 +148,11 @@ public sealed class WorldspaceCellSpec
     // Terrain height in game units. Offset stored as Height/8 in VHGT (Skyrim's scale factor).
     // Default 4000 puts terrain ~280m above sea level (Z=0), safely above water. 0 = sea level.
     public float Height { get; set; } = 4000f;
+    // Generate a flat navmesh (NAVM) for this cell so NPCs can path on it.
+    // A 4-vertex quad (2 triangles) covering the full 4096×4096 cell is emitted; a NAVI index
+    // entry is created for cross-cell path queries. No edge-links to neighbors — pathfinding
+    // works within the cell but NPCs cannot cross to adjacent cells without matching neighbor NAVMs.
+    public bool Navmesh { get; set; }
 }
 
 /// <summary>Worldspace map-menu bounds + local-map camera (the WNAM/MNAM data).</summary>

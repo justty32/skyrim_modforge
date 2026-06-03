@@ -93,7 +93,7 @@
       "parent":  "Skyrim.esm:0x00003C",      // 上層 WRLD = Tamriel（可選）
       "flags":   [ "SmallWorld", "CannotFastTravel" ],
       "defaultLandHeight": -27000, "defaultWaterHeight": -14000,  // 防淹修正——保留這些值
-      "cells": [ { "x": 0, "y": 0 } ] }     // 生成平坦地形 cell；進入：cow MFTestWorld 0 0
+      "cells": [ { "x": 0, "y": 0, "navmesh": true } ] } // 平坦地形 + 尋路網格；進入：cow MFTestWorld 0 0
   ],
   "regions": [
     { "editorId": "MFTestWorldWeather", "worldspace": "MFTestWorld", "weatherPriority": 60,
@@ -106,7 +106,7 @@
   ] }
 ```
 
-`cells` 中每個 `{ "x": N, "y": N }` 生成一個 CELL + LAND（平坦高度圖，`height` 預設 4000 game units = 海平面以上）。遊戲內進入：`cow MFTestWorld 0 0`。無導覽網格——玩家可行走，NPC 不能導航。**實機確認**（2026-06-03）。完整範例：`examples/worldspace_spec.json`。
+`cells` 中每個 `{ "x": N, "y": N }` 生成一個 CELL + LAND（平坦高度圖，`height` 預設 4000 game units = 海平面以上）。`"navmesh": true` 額外生成一個平坦四邊形 NAVM（4 頂點、2 三角形覆蓋整個 4096×4096 cell）加上 NAVI 索引條目——NPC 可在 cell 內導航。無相鄰 cell 邊緣連結；在相鄰 cell 也設定 `navmesh: true` 即可跨 cell 尋路。遊戲內進入：`cow MFTestWorld 0 0`。**實機確認**（2026-06-03）。完整範例：`examples/worldspace_spec.json`。
 
 ## 「兩個 NPC 爭論」（SCEN 多角色對話——僅限結構，尚未在遊戲中確認）
 

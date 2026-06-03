@@ -165,7 +165,7 @@ internal static partial class Program
         $"{s.LinksWired} cross-ref link(s), {s.ExternalLinks} to external master(s); " +
         $"{s.ScriptsAttached} script(s) attached; " +
         $"{s.Placements} placement(s) in {s.NewInteriorCells} new + {s.VanillaInteriorCells} vanilla interior cell(s) + " +
-        $"{s.Worldspaces} worldspace(s) [{s.NewExteriorCells} new exterior cell(s)]; " +
+        $"{s.Worldspaces} worldspace(s) [{s.NewExteriorCells} new exterior cell(s), {s.NavmeshCells} navmeshed]; " +
         $"{s.Regions} region(s); {s.EncounterZones} encounter zone(s); {s.WordWalls} word wall(s))";
 
     // -------------------------------------------------------------------------------

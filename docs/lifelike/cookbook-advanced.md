@@ -123,7 +123,7 @@ cells, and define a weather region. This is the hook for a custom Climate/Weathe
       "parent":  "Skyrim.esm:0x00003C",      // Tamriel (optional)
       "flags":   [ "SmallWorld", "CannotFastTravel" ],
       "defaultLandHeight": -27000, "defaultWaterHeight": -14000,  // FLOOD-FIX — leave these
-      "cells": [ { "x": 0, "y": 0 } ] }     // flat terrain cell; enter: cow MFTestWorld 0 0
+      "cells": [ { "x": 0, "y": 0, "navmesh": true } ] } // flat terrain + navmesh; enter: cow MFTestWorld 0 0
   ],
   "regions": [
     { "editorId": "MFTestWorldWeather", "worldspace": "MFTestWorld", "weatherPriority": 60,
@@ -137,9 +137,11 @@ cells, and define a weather region. This is the hook for a custom Climate/Weathe
 ```
 
 Each `cells` entry generates a CELL + LAND (flat 33×33 heightmap; `height` defaults to 4000 game
-units, safely above sea level at Z=0). No navmesh — player walkable, NPCs cannot path. For varied
-terrain / LOD / navmesh use the Creation Kit. **In-game confirmed** (2026-06-03): `cow MFTestWorld
-0 0` → player lands on solid flat ground. Harvest vanilla values with `worlddiag <Skyrim.esm>
+units, safely above sea level at Z=0). `"navmesh": true` also generates a flat quad NAVM (4
+vertices, 2 triangles covering the full 4096×4096 cell) + a NAVI index entry — NPCs can path
+within the cell. No edge-links to neighbouring cells; add `navmesh: true` to adjacent cells for
+cross-cell pathfinding. **In-game confirmed** (2026-06-03): `cow MFTestWorld 0 0` → player lands
+on solid flat ground. Harvest vanilla values with `worlddiag <Skyrim.esm>
 0x00003C` and `regndiag <Skyrim.esm> <0xFORMID>`. Full example: `examples/worldspace_spec.json`.
 
 ## "Two NPCs arguing" (SCEN multi-actor conversation — STRUCTURAL ONLY, not yet in-game confirmed)

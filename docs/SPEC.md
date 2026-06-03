@@ -473,8 +473,10 @@ worldspace) whose **weather table** drives which weathers play there:
 - **`cells`** — flat walkable terrain cells. Each `{ "x": N, "y": N }` generates a CELL + LAND
   record (flat 33×33 heightmap) in the worldspace's SubCell block tree. Optional `"height"` (game
   units, default 4000; Z=0 ≈ sea level) sets terrain elevation. Enter in-game: `cow <editorId> X Y`.
-  No navmesh — player can walk, NPCs cannot path. **ESL LIMIT:** Skyrim ignores LAND in ESL plugins;
-  specs with `cells` must use `"esl": false` (validator enforces this).
+  Optional `"navmesh": true` adds a flat quad NAVM (4 vertices, 2 triangles covering the full
+  4096×4096 cell) + a NAVI index entry so NPCs can path within the cell. No edge-links to
+  neighbours — add `navmesh: true` on adjacent cells for cross-cell pathfinding. **ESL LIMIT:**
+  Skyrim ignores LAND in ESL plugins; specs with `cells` must use `"esl": false` (validator enforces).
 - **regions** (REGN): an area inside a `worldspace` (an in-spec WRLD `editorId` or a vanilla
   `"<master>:0xFORMID"`). `area` is a polygon of **>=3** world-space points (not cell grid).
   `weather` is the table that picks the active weather — each entry a WTHR *ref* + a relative
@@ -968,7 +970,8 @@ World placement now covers new interior cells, vanilla interior cells, **and ext
 cells** (via `worldspace` + world position), and ModForge can now **create** new worldspaces (WRLD)
 + regions (REGN) with **flat walkable terrain** (`cells` → CELL + LAND). Refs (in-spec or
 `<master>:0xFORMID`) and the `find` command are the building blocks for external ones. Remaining
-gaps are varied terrain (multi-height VHGT), LOD meshes, navmesh, and long-tail record types — the
+gaps are varied terrain (multi-height VHGT), LOD meshes, navmesh edge-links (cross-cell NPC paths),
+and long-tail record types — the
 record-side pattern for new types is the same: add a spec class + a loop in `Build`.
 
 See `../examples/sample_spec.json` for a complete working example.

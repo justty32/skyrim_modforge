@@ -60,6 +60,10 @@ sub      = FloorDiv(cellGrid, 8)
 
 3. **ESL 外掛不能包含 LAND records。** Skyrim 引擎會靜默忽略從 ESL（輕型外掛）載入的地形資料——外部地形載入路徑只讀取完整的 ESP/ESM。有 `cells` 的 spec 必須設定 `"esl": false`。`validate` 指令會強制檢查此項。
 
+4. **`NavigationMapInfo.Parent` 必須設定**，否則 Mutagen 在寫入時會拋出 `NullReferenceException`。使用 `new NavigationMapInfoCellParent { ParentCell = cell.FormKey }`。NAVM 上的 `Data.Parent`（`CellNavmeshParent`）是獨立欄位，兩者皆須設定。
+
+5. **NavmeshGrid 格式：** 以列優先順序，每個網格子 cell 的格式為 `[uint32 triCount][ushort idx0]...[ushort idxN]`。`GridDivisor` = N 代表 N×N 網格；`MaxDistanceX/Y` = cellWidth/N（每個子 cell 的遊戲單位）。對於獨立的 2 三角形平坦 cell：`GridDivisor=1`，`MaxDistance=4096`，grid bytes = `02 00 00 00 00 00 01 00`（8 bytes，一個包含兩個三角形的 cell）。
+
 ## AI 套件以模板為基礎驅動
 
 每個具體的 `Package` 透過 `PackageTemplate`（`IFormLink<IPackageGetter>`）引用一個原版的**程序模板**，其 `Data` 是一個以模板**具名插槽索引**為鍵的 `IDictionary<sbyte, APackageData>`。具體套件的 `Type = Package`；模板本身的 `Type = PackageTemplate`（永遠不要撰寫後者）。以 `packagediag <Skyrim.esm> <templateFormId>` 探索任何模板的插槽結構；以 `pkgsbytemplate` 尋找具體範例。
