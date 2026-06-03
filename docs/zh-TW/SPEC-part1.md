@@ -1,4 +1,4 @@
-<!-- Part 1/3 — Introduction through Conditions -->
+<!-- 第 1/5 部分 — 簡介至附魔 -->
 # ModForge 規格說明 — 創作參考手冊
 
 **spec** 是一個 JSON 檔案，描述一個 Skyrim 外掛的內容。它是意圖（自然語言，由 AI 代理轉換為規格）與確定性生成器（Mutagen）之間的契約。你撰寫或產生一個 spec，對其執行 `validate`，然後執行 `build` 或 `package`。
@@ -159,66 +159,3 @@ NL / idea ──(AI agent: Claude Code)──▶ spec.json ──(validate)─�
 ]
 ```
 `apparel`（常效型）附魔以相同方式套用到**盔甲**上（無 `enchantmentAmount` — 裝備為被動）。使用 `enchdiag <in.esp> <0xFORMID>` 檢查已建置或 vanilla 的 ENCH。*（結構已驗證；附魔在遊戲中實際觸發尚未確認 — 見食譜備注。）*
-
-### classes（CLAS）
-NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動角色的屬性分配和偏好技能。
-```jsonc
-{ "editorId": "MF_Battlemage", "name": "ModForge Battlemage",
-  "teaches": "Destruction",
-  "maxTrainingLevel": 50,
-  "healthWeight": 30, "magickaWeight": 50, "staminaWeight": 20,
-  "skillWeights": { "Destruction": 100, "Restoration": 75, "OneHanded": 50 } }
-```
-技能名稱：`OneHanded`、`TwoHanded`、`Archery`、`Block`、`Smithing`、`HeavyArmor`、`LightArmor`、`Pickpocket`、`Lockpicking`、`Sneak`、`Alchemy`、`Speech`、`Alteration`、`Conjuration`、`Destruction`、`Illusion`、`Restoration`、`Enchanting`。職業只有在 npc 具有 **`level` > 0 且 `autoCalcStats: true`** 時才會驅動 NPC 的實際屬性/技能值——否則引擎使用固定預設值（未設定的 NPC 無論職業如何都讀取 50/50/50）。
-
-### dialogue（對話）
-一個 `dialogue` 條目是顯示在任務分支下的玩家話題，可選擇性限定於一個說話者 NPC（一個 `GetIsID` 條件）。`questEditorId` 必須指向此 spec 中的一個任務；`prompt` 為玩家的台詞；`responses` 為 NPC 的口語回應。
-
-從一個 `dialogue` 條目，建置時會發出**完整的 vanilla 鏈**，使話題在遊戲中實際出現（已確認 It.23，SSE 1.6.1170）：
-- **Topic**（`Custom`，`SNAM='CUST'` — null 子類型在載入時 crash）+ **Branch**（`TopLevel`，Player）+ 攜帶回應的 **INFO**。每個 INFO 獲得 `ENAM`（旗標）+ `CNAM`（好感等級）— **沒有 `ENAM` 的 INFO 被視為無效，其話題會從選單中靜默捨棄**；
-- 每個任務對應一個 **DialogView（DLVW）**，將其分支綁定到任務；
-- 每個說話 NPC 對應一個 **Hello** info（`Misc`/`Hello`/`SNAM='HELO'`），使 NPC 完全*可對話* — 使用 `npc.greeting` 設定台詞。
-
-**結果 fragment（選擇台詞時執行某些操作）。** 對話選擇只能透過 Papyrus fragment *執行動作*。設定 `resultScript`、`resultScriptSource`（`.psc`，由 `package` 編譯）和 `resultProperties`。建置時附加 INFO 的 `OnBegin` fragment VMAD。設定 `goodbye: true` 可在台詞後關閉選單。
-
-> **三個執行時需求（非記錄錯誤）：**（1）對話僅在**遊戲載入**時註冊 — 在主選單使用 `coc` 或在會話中使用 `startquest` 會使 NPC 保持沉默。（2）將說話者放置在真實的房間座標上 — 位於 cell 原點 **(0,0,0)** 會落在導航網格外。（3）無語音台詞閃過；安裝 **Fuz Ro D-oh**（或打包無聲的 `.fuz`）並啟用字幕。見 `lifelike/gotchas.md`。
-
-### banter — 主動（未受提示）的 NPC 台詞
-一個 `banter` 條目是 NPC **自行說出**的台詞，沒有玩家選單——vanilla 跟隨者評論模式（`HirelingIdles`）。共用相同（說話者、任務）的所有 banter 條目會折疊為**一個環境話題**——Category=Misc，SNAM=`IDLE`，無分支——每個條目對應一個標記為 **Random** 的 INFO；引擎隨機挑選一個當前 `conditions` 通過的 INFO 並播放。**觸發需求：** 說話者必須啟用閒聊——具有 `AllowIdleChatter` 中斷旗標的 AI 套件（`Sandbox` 套件或 vanilla 跟隨套件）。見 `examples/follower_vanilla_spec.json`。
-
-### scenes — 兩個 NPC 互相交談（SCEN）
-一個 `scene` 是 NPC 之間（非玩家）的腳本對話——vanilla 的 **Scene** 記錄。場景由**任務宿主**，其參與者是該任務的**別名**，並按順序播放**階段**清單，每個階段說一句話。
-
-```jsonc
-{ "editorId": "MF_TavernArgument",
-  "questEditorId": "MF_SceneQuest",
-  "beginOnQuestStart": true,
-  "stopQuestOnEnd": false,
-  "actors": [
-    { "aliasId": 0, "npc": "MF_Borin", "name": "Borin" },
-    { "aliasId": 1, "npc": "MF_Hilda", "name": "Hilda" } ],
-  "phases": [
-    { "speaker": 0, "emotion": "Anger",   "lines": [ "You still owe me for the ale, Hilda." ] },
-    { "speaker": 1, "emotion": "Disgust", "lines": [ "Owe you? That swill wasn't worth a clipped septim." ] },
-    { "speaker": 0, "emotion": "Anger",   "lines": [ "Watch your tongue, or there'll be trouble." ] },
-    { "speaker": 1, "emotion": "Happy",   "lines": [ "Ha! Buy me a drink and we're even." ] } ] }
-```
-從這一個條目，建置時會發出**完整的 vanilla 鏈**——每個角色對應一個 **QuestAlias**（以 `UniqueActor` 綁定到指定 NPC）；一個 **Scene（SCEN）**（其 `SceneActors` 參照**別名索引**）；每個階段對應一個 **Scene 子類型 DialogTopic**（Category=Scene，SNAM=`SCEN`）+ **INFO**。
-
-> **執行時需求（非記錄錯誤）：**（1）兩個 NPC 必須**放置在彼此附近** — 在**同一個 cell** 中。（2）與所有任務對話一樣，場景只在**遊戲載入**時載入。（3）無語音台詞閃過；安裝 **Fuz Ro D-oh**。**狀態：僅限結構**——`build`/`validate`/`dump` 已對照 vanilla 場景結構驗證；**尚未在遊戲中確認。** 見 `examples/scene_spec.json` 和 `lifelike/cookbook.md`。
-
-### conditions — CTDA 閘門（在 `dialogue` INFO、`banter` INFO 或 `package` 上）
-條件是**靜態閘門資料**，因此它存在於 spec 中（邏輯仍屬於 Papyrus）。`dialogue[].conditions` 和 `packages[].conditions` 採用相同的結構：
-```jsonc
-{ "function": "GetItemCount",          // form-arg: HasPerk | GetInFaction | GetItemCount | GetGlobalValue | GetStage | GetIsID | GetRelationshipRank
-  //                                    // actorValue-arg: GetActorValue | GetActorValuePercent (0..1 fraction)
-  //                                    // no-arg situational: GetCurrentTime (hour 0..24) | IsInInterior | IsInCombat | GetRandomPercent (0..99) | TemperIsEnchanted
-  "comparison": ">=",
-  "value": 500,
-  "param": "Skyrim.esm:0x00000F",      // the function's form arg (faction/item/global/quest/npc) as a ref
-  "actorValue": "",                    // for GetActorValue/GetActorValuePercent instead of param
-  "runOn": "Reference",                // whose value: Subject (default) | Reference | Target | CombatTarget | ...
-  "reference": "Skyrim.esm:0x000014",  // the ref read when runOn=Reference (here, the player)
-  "or": false }                        // OR with the NEXT condition (default AND)
-```
-一個 `dialogue` INFO 已自動攜帶 `GetIsID` 說話者閘門；這些條件會被附加上去。典型的跟隨者用途：隱藏付費招募台詞，除非（玩家）`GetItemCount Gold >= 500` **且** `GetInFaction CurrentFollowerFaction == 0`；在 `GetInFaction CurrentFollowerFaction == 1` 條件下開啟 Follow 套件，使其僅在招募後執行。見 `examples/follower_paid_spec.json`。

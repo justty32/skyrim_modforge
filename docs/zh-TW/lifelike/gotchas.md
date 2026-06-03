@@ -72,3 +72,22 @@
 | 自訂對話記錄有效，但與 NPC 交談時主題**從不出現** | 宿主**任務未設定 Start Game Enabled** 和/或 **DialogBranch 未設定為 Top-Level** | 任務 `flags |= StartGameEnabled`（+ 一個 `Priority`）；分支 `Flags = TopLevel` |
 | 選單台詞標籤錯誤 / 顯示了錯誤的文字 | INFO 的 `Prompt` 被設定了，覆蓋了選單台詞 | 將 INFO 的 `Prompt` 留為 null——選單台詞來自 `topic.Name` |
 | 自訂對話台詞沒有聲音 / NPC 嘴唇不動 | 沒有錄製的語音（.fuz/.lip）——對產生的對話這是預期行為 | 開啟**一般 + 對話字幕**（設定 ▸ 顯示） |
+
+## 遭遇、等級生成與遭遇區
+
+| 症狀 | 根本原因 | 修正方式 |
+|---|---|---|
+| 啟用使用 `LChar*` FormID（例如 `LCharBanditMeleeAny 0x03DECD`）作為 ACHR 基底的模組時，**讀取存檔時崩潰** | `LChar*` FormID 是 **LVLN 記錄**（等級 NPC 列表）。將原始 LVLN 作為 ACHR 基底放置是類型不符——引擎對其調用 NPC_ 專用的虛表方法 → 讀取時存取違規崩潰。**已確認崩潰（It.36, 2026-06-02）** | 改用 `Lvl*` NPC_ 包裝 Actor：`LvlBanditMeleeAny 0x01E79C`、`LvlBanditMissileNordM 0x01B0D5`、`LvlBanditBossNordM 0x01B0E1`。命名規則：**`Lvl…` 前綴 = NPC_（可安全放置）；`LChar…` 前綴 = LVLN（絕對不能直接放置）**。用 `find <Skyrim.esm> Lvl Npc` 查找包裝器 |
+| 規格內的 `leveledNpcs` 列表作為放置 `base` 看似正常，但產生崩潰或類型錯誤 | 當列表的 FormID 作為 ACHR 基底發出時，就是 LVLN-as-ACHR 的同一問題 | 在放置條目加上 `"kind": "npc"`——讓 Build 發出 NPC_ 包裝記錄，而非直接放置 LVLN |
+| `coc` 進入新場景後，生成的 Actor 站在原地，從不移動或巡邏 | 新的規格內場景**沒有導航網格**——路徑/戰鬥 AI 需要導航網格 | 沒有導航網格的 Actor 仍會正常生成和待機（他們會附著在地板上並沙盒閒逛）。需要巡邏/追蹤時，在 Creation Kit 中為場景建立導航網格（需執行**Finalize Navmesh** 步驟）。永遠不要從生成器發出 NAVM/NAVI——不完整的 NAVI 會導致讀取時崩潰 |
+| 遭遇區的 `minLevel`/`maxLevel` 似乎不影響生成的 Actor | 遭遇區記錄存在，但場景的 `encounterZone` 欄位未指向它 | 連結場景：`cells[].encounterZone: "MF_MyZone"`。個別生成點可用 `placements[].encounterZone` 覆蓋。用 `eczndiag <plugin> <0xFORMID>` 驗證 |
+| `maxLevel 0` 強制所有生成點的等級為 0 | `0` 看起來像「低端無上限」，但對 `maxLevel` 來說它是**無上限哨符**（跟隨玩家等級無限縮放）。僅當 `maxLevel > 0` 時，Validate 才拒絕 `minLevel > maxLevel` | 這是正確的原版行為（`HelgenZone` 是最低 6 / 最高 0）。對開放式地下城有意使用 |
+
+## 天氣與氣候
+
+| 症狀 | 根本原因 | 修正方式 |
+|---|---|---|
+| 無法在遊戲內用 `sw <formid>` 測試生成的天氣 | **ESL 旗標**的外掛使用 `FE<slot>xxx` 執行期 FormID；在遊戲內查找輕型外掛的槽位索引沒有簡便方法 | **`build` 在成功建置後會印出每個 WTHR 的精確 `sw` 指令**——直接從那裡複製。若需手動查找：停用 ESL 旗標（`esl: false`），FormID 就會變成可預測的 `<XX>000800`，其中 `XX` 是 MO2 右側面板顯示的讀取順序槽位 |
+| 生成的天氣記錄看起來正確，但裝備模組後**遊戲內天空沒有變化** | 發出 WTHR（+ 選擇性 CLMT）**不會**自動將其指派到任何世界空間或地區——天空來自 `WRLD` 的 Climate 欄位或 `REGN` 天氣資料記錄，這兩者都不在這裡撰寫 | 用主控台測試：`sw <XX>000800`（來自建置輸出）強制切換天氣。若要永久指派，在 CK 中將原版或自訂世界空間的 Climate 指向你的 CLMT，或撰寫 REGN 天氣資料條目。這是設計決策——世界空間/地區撰寫超出生成器的範疇 |
+| 氣候引用了天氣，但天氣從不出現 | `weathers[].chance` 值是**相對權重**，在內部求和，不是百分比 | 值是比例：`[{chance:75},{chance:25}]` → 75% / 25%。任何正非零權重均有效。Validate 會標示機率為零的條目（永不觸發） |
+| 設定了 `precipitation: "..."` SPGD 參照，但沒有雨出現 | `Rainy`/`Snow` 天氣旗標驅動粒子系統；即使有有效的 SPGD，缺少旗標也會讓降雨靜默 | 在 `precipitation` 參照旁加上 `"flags": ["Rainy"]`（或 `"Snow"`）。用 `weatherdiag <Skyrim.esm> <rainy-WTHR>` 找原版降雨 SPGD（例如 `SkyrimStormRain 0x10780F`） |

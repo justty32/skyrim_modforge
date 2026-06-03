@@ -1,4 +1,4 @@
-﻿<!-- Part 3/4 — World building and items -->
+﻿<!-- Part 3/5 — World building and items -->
 ## "Usable interior cell" (lighting + floor, not a black void)
 
 A brand-new interior cell needs three things or it's a pitch-black void you fall through:

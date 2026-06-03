@@ -1,4 +1,4 @@
-﻿<!-- Part 1/3 — Introduction through Conditions -->
+<!-- Part 1/5 — Introduction through Enchantments -->
 # ModForge spec — authoring reference
 
 The **spec** is a JSON file describing the content of one Skyrim plugin. It is the
@@ -116,12 +116,12 @@ A field marked *ref* takes an in-spec `editorId` **or** `"<master>:0xFORMID"` (s
 ### Gameplay stats
 - **Weapons:** give a `damage` (and usually `value`/`weight`). `speed` and `reach`
   default to `1.0` when any stat is set, so the weapon is swingable; override for slower/
-  faster or longer/shorter weapons. A weapon with no stats is an inert item (it’ll equip
+  faster or longer/shorter weapons. A weapon with no stats is an inert item (it'll equip
   but do nothing useful).
 - **Armor:** `armorType` is `light` / `heavy` / `clothing` (default `clothing`); `slots`
   lists the biped slots it occupies by `BipedObjectFlag` name — `Body`, `Head`, `Hands`,
   `Feet`, `Forearms`, `Calves`, `Shield`, `Amulet`, `Ring`, `Circlet`, … (multiple slots
-  are OR’d). `armorRating` is the protection value.
+  are OR'd). `armorRating` is the protection value.
 
 ### effects (spells & potions)
 A spell or potion **does nothing without at least one effect**. Each effect is:
@@ -203,127 +203,3 @@ apparel is passive). The `enchantment` ref may also be a **vanilla** ObjectEffec
 Inspect a built or vanilla ENCH with `enchdiag <in.esp> <0xFORMID>`. Worked example:
 [`examples/enchantment_spec.json`](../examples/enchantment_spec.json). *(Structurally verified; the
 enchantment actually firing in-game is unconfirmed — see the cookbook recipe note.)*
-
-### classes (CLAS)
-An NPC's "profession" — set an npc's `class` ref to one. It drives the actor's attribute
-distribution and favoured skills (and, for a trainer NPC, what it `teaches`).
-```jsonc
-{ "editorId": "MF_Battlemage", "name": "ModForge Battlemage",
-  "teaches": "Destruction",        // a Skill the class can train (trainers); optional
-  "maxTrainingLevel": 50,
-  "healthWeight": 30, "magickaWeight": 50, "staminaWeight": 20,   // attribute split (~sum 100)
-  "skillWeights": { "Destruction": 100, "Restoration": 75, "OneHanded": 50 } }  // Skill -> 0–255 favour
-```
-Skill names: `OneHanded`, `TwoHanded`, `Archery`, `Block`, `Smithing`, `HeavyArmor`, `LightArmor`,
-`Pickpocket`, `Lockpicking`, `Sneak`, `Alchemy`, `Speech`, `Alteration`, `Conjuration`,
-`Destruction`, `Illusion`, `Restoration`, `Enchanting`. A class only drives an NPC's actual
-attribute/skill values when that npc has **`level` > 0 and `autoCalcStats: true`** — otherwise the
-engine uses flat defaults (a bare NPC reads 50/50/50 regardless of class). To see it: spawn a
-magicka-heavy and a health-heavy NPC (both `autoCalcStats` at the same level) and compare
-`getav magicka`/`getav health`.
-
-### dialogue
-A `dialogue` entry is a player topic shown under a quest's branch, optionally limited
-to one speaker NPC (a `GetIsID` condition). `questEditorId` must name a quest in this
-spec; `speakerNpcEditorId`, if set, must name an npc. `prompt` is the player's line;
-`responses` are the NPC's spoken lines.
-
-From one `dialogue` entry the build emits the **whole vanilla chain** so the topic
-actually surfaces in-game (confirmed It.23, SSE 1.6.1170):
-- the **Topic** (`Custom`, `SNAM='CUST'` — a null subtype crashes on load) + **Branch**
-  (`TopLevel`, Player) + an **INFO** carrying the responses. Each INFO gets `ENAM`
-  (flags) + `CNAM` (favor level) — **an INFO without `ENAM` is treated as invalid and
-  its topic is silently dropped from the menu**;
-- a **DialogView (DLVW)** per quest tying its branches to the quest (without it the
-  quest's player dialogue is never served);
-- a **Hello** info (`Misc`/`Hello`/`SNAM='HELO'`) per speaking NPC so the NPC is
-  *conversable* at all — set the line with `npc.greeting`.
-
-**Result fragment (do something when the line is picked).** A dialogue choice can only
-*act* (take gold, join the follower system, set a stage) through a Papyrus fragment — JSON
-holds static data, never control flow. Set `resultScript` (the fragment's Scriptname, which
-must `Extends TopicInfo` and define `Function Fragment_0(ObjectReference akSpeakerRef)`),
-`resultScriptSource` (the `.psc`, compiled by `package`), and `resultProperties` (bind its
-`Auto` properties — same shape as a `scripts[]` entry's properties: `int`/`float`/`bool`/
-`string`/`object`). The build attaches the INFO's `OnBegin` fragment VMAD (fires when the player
-selects the line; use `OnEnd` only for effects that must follow the full voiced response). Set `goodbye: true`
-to close the menu after the line (vanilla recruit/dismiss lines all do). See
-`examples/follower_paid_spec.json` + `MFHirePaidRecruit.psc` for a paid-follower recruit.
-
-> **Three runtime requirements (not record bugs):** (1) the dialogue only registers on a
-> **game LOAD** — test with a genuine new game, or `save`+`load` after the quest starts;
-> a main-menu `coc` or mid-session `startquest` leaves the NPC mute even with a perfect
-> plugin. (2) Place the speaker at a real in-room coordinate — a no-package NPC at cell
-> origin **(0,0,0)** lands off-navmesh and can't be reached. (3) Unvoiced lines flash past;
-> install **Fuz Ro D-oh** (or bundle silent `.fuz`) and enable subtitles. See `lifelike/gotchas.md`.
-
-### banter — proactive (unprompted) NPC lines
-A `banter` entry is a line the NPC says **on its own**, with no player menu — the vanilla
-follower-comment pattern (`HirelingIdles`). Shape: `editorId` (optional), `questEditorId`,
-`speakerNpcEditorId`, `responses` (the spoken line(s) — one comment), `emotion`/`emotionValue`,
-`conditions` (situational gates). All banter entries sharing a (speaker, quest) collapse into
-**one ambient topic** — Category=Misc, SNAM=`IDLE`, no branch — with one **Random**-flagged INFO
-per entry; the engine random-picks one whose `conditions` currently pass and plays it. **Trigger
-requirement:** the speaker must have **idle chatter enabled** — an AI package carrying the
-`AllowIdleChatter` interrupt flag (a `Sandbox` package, or the vanilla follow package). Make it
-situational with `conditions` (e.g. `GetCurrentTime` for night, `IsInInterior`, `GetActorValuePercent`
-for "I'm hurt", and `GetInFaction CurrentFollowerFaction==1` for follower-only). This is the
-*unprompted* counterpart to a `dialogue` line the player asks for. NOTE: ambient/idle only — true
-combat shouts use a different subtype (Taunt/Attack), not yet supported. See `examples/follower_vanilla_spec.json`.
-
-### scenes — two NPCs talking to EACH OTHER (SCEN)
-A `scene` is a scripted conversation between NPCs (not the player) — the vanilla **Scene** record.
-A scene is **hosted by a quest**, its participants are that quest's **aliases** (not direct NPC refs),
-and it plays an ordered list of **phases**, one spoken line per phase.
-```jsonc
-{ "editorId": "MF_TavernArgument",
-  "questEditorId": "MF_SceneQuest",     // a StartGameEnabled quest in this spec (the scene runs while it does)
-  "beginOnQuestStart": true,            // play the moment the host quest starts (= on game load); default true
-  "stopQuestOnEnd": false,              // stop the host quest when the scene finishes (vanilla one-shots set true)
-  "actors": [                            // each actor = an alias INDEX + the NPC that fills it
-    { "aliasId": 0, "npc": "MF_Borin", "name": "Borin" },
-    { "aliasId": 1, "npc": "MF_Hilda", "name": "Hilda" } ],
-  "phases": [                            // played in order; `speaker` is one of the actors' aliasId
-    { "speaker": 0, "emotion": "Anger",   "lines": [ "You still owe me for the ale, Hilda." ] },
-    { "speaker": 1, "emotion": "Disgust", "lines": [ "Owe you? That swill wasn't worth a clipped septim." ] },
-    { "speaker": 0, "emotion": "Anger",   "lines": [ "Watch your tongue, or there'll be trouble." ] },
-    { "speaker": 1, "emotion": "Happy",   "lines": [ "Ha! Buy me a drink and we're even." ] } ] }
-```
-From this one entry the build emits the **whole vanilla chain** (mirrors `scenediag` on
-`dunIronbindBeemJaMourningScene`):
-- one **QuestAlias** per actor on the host quest, each `UniqueActor`-bound to the named NPC (so the
-  alias fills with that specific actor);
-- the **Scene (SCEN)**: its `SceneActors` reference the **alias indices** (not NPC FormKeys); its
-  `Phases` are the ordered beats; one **Dialog `SceneAction`** per phase ties (speaking alias, phase)
-  → the line's topic, with the *other* actor as the headtrack target so they face each other;
-- one **Scene-subtype DialogTopic** (Category=Scene, SNAM=`SCEN`) + **INFO** per phase, carrying the
-  spoken `lines` + `emotion`.
-
-> **Runtime requirements (not record bugs):** (1) the two NPCs must be **placed near each other** —
-> add a `placements[]` entry per NPC into the **same cell** (they have to be co-located to converse).
-> (2) Like all quest dialogue, a scene only loads on a **game LOAD** — test a new game, or `save`+`load`
-> after the host quest starts (the build auto-writes the `.seq` entry). (3) Unvoiced lines flash past;
-> install **Fuz Ro D-oh** and enable subtitles. **Status: structural only** — `build`/`validate`/`dump`
-> verified against the vanilla scene shape; **not yet in-game confirmed.** See `examples/scene_spec.json`
-> and `lifelike/cookbook.md`.
-
-### conditions — CTDA gates (on a `dialogue` INFO, a `banter` INFO, or a `package`)
-A condition is **static gate data**, so it lives in the spec (logic still belongs in Papyrus). Both
-`dialogue[].conditions` and `packages[].conditions` take the same shape:
-```jsonc
-{ "function": "GetItemCount",          // form-arg: HasPerk | GetInFaction | GetItemCount | GetGlobalValue | GetStage | GetIsID | GetRelationshipRank
-  //                                    // actorValue-arg: GetActorValue | GetActorValuePercent (0..1 fraction)
-  //                                    // no-arg situational: GetCurrentTime (hour 0..24) | IsInInterior | IsInCombat | GetRandomPercent (0..99) | TemperIsEnchanted (recipe temper guard)
-  "comparison": ">=",                  // == != > >= < <=
-  "value": 500,
-  "param": "Skyrim.esm:0x00000F",      // the function's form arg (faction/item/global/quest/npc) as a ref
-  "actorValue": "",                    // for GetActorValue/GetActorValuePercent instead of param — e.g. "Health", "WaitingForPlayer"
-  "runOn": "Reference",                // whose value: Subject (default) | Reference | Target | CombatTarget | ...
-  "reference": "Skyrim.esm:0x000014",  // the ref read when runOn=Reference (here, the player)
-  "or": false }                        // OR with the NEXT condition (default AND)
-```
-A `dialogue` INFO already carries an auto `GetIsID` speaker gate; these are appended. Typical follower
-uses: hide a paid recruit line unless `GetItemCount Gold >= 500` (on the player) **and**
-`GetInFaction CurrentFollowerFaction == 0`; gate a Follow package on `GetInFaction
-CurrentFollowerFaction == 1` so it only runs after recruitment. See `examples/follower_paid_spec.json`.
-

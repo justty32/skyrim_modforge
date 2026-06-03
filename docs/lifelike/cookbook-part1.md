@@ -1,4 +1,4 @@
-﻿<!-- Part 1/4 — Basic NPC patterns -->
+﻿<!-- Part 1/5 — Basic NPC patterns -->
 # Recipe cookbook
 
 Copy-paste starting points. Combine with the [TL;DR NPC recipe](README.md#tldr--the-complete-npc-recipe)

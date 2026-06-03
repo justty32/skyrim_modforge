@@ -1,4 +1,4 @@
-<!-- Part 1/4 — Basic NPC patterns -->
+<!-- 第 1/5 部分 — 基本 NPC 模式 -->
 # 食譜手冊
 
 複製貼上的起點範例。與 [TL;DR NPC 食譜](README.md#tldr--the-complete-npc-recipe) 搭配使用，並將每個 `<...>` / FormID 對應至 [formid-reference](formid-reference.md)。

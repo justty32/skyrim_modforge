@@ -1,4 +1,67 @@
-<!-- Part 2/3 — Quest Stages through Vendors -->
+<!-- 第 2/5 部分 — 類別至 Papyrus 腳本 -->
+### classes（CLAS）
+NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動角色的屬性分配和偏好技能。
+```jsonc
+{ "editorId": "MF_Battlemage", "name": "ModForge Battlemage",
+  "teaches": "Destruction",
+  "maxTrainingLevel": 50,
+  "healthWeight": 30, "magickaWeight": 50, "staminaWeight": 20,
+  "skillWeights": { "Destruction": 100, "Restoration": 75, "OneHanded": 50 } }
+```
+技能名稱：`OneHanded`、`TwoHanded`、`Archery`、`Block`、`Smithing`、`HeavyArmor`、`LightArmor`、`Pickpocket`、`Lockpicking`、`Sneak`、`Alchemy`、`Speech`、`Alteration`、`Conjuration`、`Destruction`、`Illusion`、`Restoration`、`Enchanting`。職業只有在 npc 具有 **`level` > 0 且 `autoCalcStats: true`** 時才會驅動 NPC 的實際屬性/技能值——否則引擎使用固定預設值（未設定的 NPC 無論職業如何都讀取 50/50/50）。
+
+### dialogue（對話）
+一個 `dialogue` 條目是顯示在任務分支下的玩家話題，可選擇性限定於一個說話者 NPC（一個 `GetIsID` 條件）。`questEditorId` 必須指向此 spec 中的一個任務；`prompt` 為玩家的台詞；`responses` 為 NPC 的口語回應。
+
+從一個 `dialogue` 條目，建置時會發出**完整的 vanilla 鏈**，使話題在遊戲中實際出現（已確認 It.23，SSE 1.6.1170）：
+- **Topic**（`Custom`，`SNAM='CUST'` — null 子類型在載入時 crash）+ **Branch**（`TopLevel`，Player）+ 攜帶回應的 **INFO**。每個 INFO 獲得 `ENAM`（旗標）+ `CNAM`（好感等級）— **沒有 `ENAM` 的 INFO 被視為無效，其話題會從選單中靜默捨棄**；
+- 每個任務對應一個 **DialogView（DLVW）**，將其分支綁定到任務；
+- 每個說話 NPC 對應一個 **Hello** info（`Misc`/`Hello`/`SNAM='HELO'`），使 NPC 完全*可對話* — 使用 `npc.greeting` 設定台詞。
+
+**結果 fragment（選擇台詞時執行某些操作）。** 對話選擇只能透過 Papyrus fragment *執行動作*。設定 `resultScript`、`resultScriptSource`（`.psc`，由 `package` 編譯）和 `resultProperties`。建置時附加 INFO 的 `OnBegin` fragment VMAD。設定 `goodbye: true` 可在台詞後關閉選單。
+
+> **三個執行時需求（非記錄錯誤）：**（1）對話僅在**遊戲載入**時註冊 — 在主選單使用 `coc` 或在會話中使用 `startquest` 會使 NPC 保持沉默。（2）將說話者放置在真實的房間座標上 — 位於 cell 原點 **(0,0,0)** 會落在導航網格外。（3）無語音台詞閃過；安裝 **Fuz Ro D-oh**（或打包無聲的 `.fuz`）並啟用字幕。見 `lifelike/gotchas.md`。
+
+### banter — 主動（未受提示）的 NPC 台詞
+一個 `banter` 條目是 NPC **自行說出**的台詞，沒有玩家選單——vanilla 跟隨者評論模式（`HirelingIdles`）。共用相同（說話者、任務）的所有 banter 條目會折疊為**一個環境話題**——Category=Misc，SNAM=`IDLE`，無分支——每個條目對應一個標記為 **Random** 的 INFO；引擎隨機挑選一個當前 `conditions` 通過的 INFO 並播放。**觸發需求：** 說話者必須啟用閒聊——具有 `AllowIdleChatter` 中斷旗標的 AI 套件（`Sandbox` 套件或 vanilla 跟隨套件）。見 `examples/follower_vanilla_spec.json`。
+
+### scenes — 兩個 NPC 互相交談（SCEN）
+一個 `scene` 是 NPC 之間（非玩家）的腳本對話——vanilla 的 **Scene** 記錄。場景由**任務宿主**，其參與者是該任務的**別名**，並按順序播放**階段**清單，每個階段說一句話。
+
+```jsonc
+{ "editorId": "MF_TavernArgument",
+  "questEditorId": "MF_SceneQuest",
+  "beginOnQuestStart": true,
+  "stopQuestOnEnd": false,
+  "actors": [
+    { "aliasId": 0, "npc": "MF_Borin", "name": "Borin" },
+    { "aliasId": 1, "npc": "MF_Hilda", "name": "Hilda" } ],
+  "phases": [
+    { "speaker": 0, "emotion": "Anger",   "lines": [ "You still owe me for the ale, Hilda." ] },
+    { "speaker": 1, "emotion": "Disgust", "lines": [ "Owe you? That swill wasn't worth a clipped septim." ] },
+    { "speaker": 0, "emotion": "Anger",   "lines": [ "Watch your tongue, or there'll be trouble." ] },
+    { "speaker": 1, "emotion": "Happy",   "lines": [ "Ha! Buy me a drink and we're even." ] } ] }
+```
+從這一個條目，建置時會發出**完整的 vanilla 鏈**——每個角色對應一個 **QuestAlias**（以 `UniqueActor` 綁定到指定 NPC）；一個 **Scene（SCEN）**（其 `SceneActors` 參照**別名索引**）；每個階段對應一個 **Scene 子類型 DialogTopic**（Category=Scene，SNAM=`SCEN`）+ **INFO**。
+
+> **執行時需求（非記錄錯誤）：**（1）兩個 NPC 必須**放置在彼此附近** — 在**同一個 cell** 中。（2）與所有任務對話一樣，場景只在**遊戲載入**時載入。（3）無語音台詞閃過；安裝 **Fuz Ro D-oh**。**狀態：僅限結構**——`build`/`validate`/`dump` 已對照 vanilla 場景結構驗證；**尚未在遊戲中確認。** 見 `examples/scene_spec.json` 和 `lifelike/cookbook.md`。
+
+### conditions — CTDA 閘門（在 `dialogue` INFO、`banter` INFO 或 `package` 上）
+條件是**靜態閘門資料**，因此它存在於 spec 中（邏輯仍屬於 Papyrus）。`dialogue[].conditions` 和 `packages[].conditions` 採用相同的結構：
+```jsonc
+{ "function": "GetItemCount",          // form-arg: HasPerk | GetInFaction | GetItemCount | GetGlobalValue | GetStage | GetIsID | GetRelationshipRank
+  //                                    // actorValue-arg: GetActorValue | GetActorValuePercent (0..1 fraction)
+  //                                    // no-arg situational: GetCurrentTime (hour 0..24) | IsInInterior | IsInCombat | GetRandomPercent (0..99) | TemperIsEnchanted
+  "comparison": ">=",
+  "value": 500,
+  "param": "Skyrim.esm:0x00000F",      // the function's form arg (faction/item/global/quest/npc) as a ref
+  "actorValue": "",                    // for GetActorValue/GetActorValuePercent instead of param
+  "runOn": "Reference",                // whose value: Subject (default) | Reference | Target | CombatTarget | ...
+  "reference": "Skyrim.esm:0x000014",  // the ref read when runOn=Reference (here, the player)
+  "or": false }                        // OR with the NEXT condition (default AND)
+```
+一個 `dialogue` INFO 已自動攜帶 `GetIsID` 說話者閘門；這些條件會被附加上去。典型的跟隨者用途：隱藏付費招募台詞，除非（玩家）`GetItemCount Gold >= 500` **且** `GetInFaction CurrentFollowerFaction == 0`；在 `GetInFaction CurrentFollowerFaction == 1` 條件下開啟 Follow 套件，使其僅在招募後執行。見 `examples/follower_paid_spec.json`。
+
 ### 任務階段、日誌條目與目標連結
 
 任務的 `stages[]` 是任務可被**設定到**的整數里程碑（10、20、30…）。每個階段可選擇性地寫入一條**日誌條目**，並可攜帶任務狀態旗標。目標會隨著階段設定而顯示與完成；一條 `dialogue` 對話選項在被選取時可以推進階段。
@@ -48,137 +111,3 @@
 ```
 - 屬性 `type` ∈ `int | float | bool | string | object`。設定對應的值欄位：`int` / `float` / `bool` / `str`，或 `objectEditorId`（用於 `object`，解析為 FormLink）。屬性被標記為 *Edited*，以便遊戲讀取。
 - 附加適用於任何支援腳本的記錄（Quest、Npc、Activator、MagicEffect、Weapon、Armor、MiscItem、Book、Ingestible 等）。腳本 `Name` 必須與編譯後的 `.pex` 相符。
-
-### cells 與 placements — 將物件放入世界
-```jsonc
-"cells": [
-  { "editorId": "MF_TestRoom", "name": "ModForge Test Room",
-    "template": "Skyrim.esm:0x0165A8" }                          // 從 Breezehome 複製燈光（否則全黑）
-],
-"placements": [
-  { "base": "MF_Smith", "cell": "MF_TestRoom",
-    "position": { "x": 0, "y": 0, "z": 0 },
-    "rotation": { "x": 0, "y": 0, "z": 0 } },                    // 旋轉以度為單位
-  { "base": "MF_Chest", "cell": "Skyrim.esm:0x01605E",           // 放入原版室內 cell
-    "position": { "x": 100, "y": 0, "z": 0 } },
-  { "base": "MF_Coin", "worldspace": "Skyrim.esm:0x00003C",      // 放入開放世界（Tamriel）
-    "position": { "x": 22528, "y": 22528, "z": 200 } }
-]
-```
-- 一個 `placement` 目標為**室內** `cell` **或**室外 `worldspace` 其中之一：
-  - **室內** — `cell` 為 spec 內新室內 cell 的 `editorId`，**或**外部/原版室內 cell 的 `"<master>:0xFORMID"`。沒有 `template` 的新 cell 會呈現**全黑**且**沒有地板**：將 cell 的 `template` 設為原版室內並在其中放置地板靜態物件。`position` 相對於 cell。
-  - **室外** — `worldspace` 為世界空間 ref `"<master>:0xFORMID"`（Tamriel = `Skyrim.esm:0x00003C`）。`position` 為**世界**座標；若 `worldspace` 和 `cell` 同時設定，以 `worldspace` 為準。
-- `base` 為 *ref*；NPC 會變為 `PlacedNpc`，其他則為 `PlacedObject`（`kind` 可覆寫）。`rotation` 的單位為**度**。`persistent: true` 將其放入 cell 的永久清單中。
-- **原版 placement** 會覆寫 cell/worldspace 以*加入*你的 reference（原版內容不受影響）。需要遊戲的 `Data` 資料夾——若不在預設的 Steam 路徑，請設定 `MODFORGE_SKYRIM_DATA`。
-
-### worldspaces（WRLD）與 regions（REGN）— 室外世界與天氣
-建立一個**新的**室外世界空間並附加氣候，並定義 **regions**（世界空間內的區域），其**天氣表**決定該處播放哪種天氣：
-```jsonc
-"worldspaces": [
-  { "editorId": "MFTestWorld", "name": "ModForge Test Vale",
-    "climate": "Skyrim.esm:0x000812",      // CLMT — 天空/光照週期（實際上為必要）
-    "water":   "Skyrim.esm:0x000018",      // WATR — DefaultWater（可選）
-    "parent":  "Skyrim.esm:0x00003C",      // 上層 WRLD = Tamriel（可選）
-    "flags":   ["SmallWorld", "CannotFastTravel"],
-    "defaultLandHeight":  -27000,          // 防浸水修正：省略這些會使水面預設為 0，
-    "defaultWaterHeight": -14000,          //   令海平面以下的地形被淹沒
-    "map": { "northwestX": -4, "northwestY": 4, "southeastX": 4, "southeastY": -4,
-             "cameraInitialPitch": 50, "cameraMinHeight": 50000, "cameraMaxHeight": 80000 } }
-],
-"regions": [
-  { "editorId": "MFTestWorldWeather", "worldspace": "MFTestWorld",
-    "edgeFallOff": 1024, "mapColor": "0x3CA0F0", "weatherPriority": 60,
-    "weather": [
-      { "weather": "Skyrim.esm:0x10E1F2", "chance": 60 },           // SkyrimClear（相對權重）
-      { "weather": "Skyrim.esm:0x10E1F1", "chance": 30 },           // SkyrimCloudy
-      { "weather": "Skyrim.esm:0x10E1F0", "chance": 10 } ],         // SkyrimClearSN
-    "area": [ { "x": -16384, "y": -16384 }, { "x": 16384, "y": -16384 },
-              { "x": 16384, "y": 16384 }, { "x": -16384, "y": 16384 } ] }   // >=3 個世界座標點
-  ]
-```
-- **worldspaces**（WRLD）：一個新的室外世界。`climate` 為 CLMT *ref*（原版預設 = `Skyrim.esm:0x000812`）——若無此設定，世界將**沒有天空/光照週期**。`defaultLandHeight`/`defaultWaterHeight` 預設為 Tamriel 的值（-27000 / -14000）——**保留這些值**，因為水面預設為 0 會淹沒整個世界。
-- **regions**（REGN）：`worldspace` 內的一個區域。`area` 為**至少 3 個**世界座標點組成的多邊形（非 cell 格子）。`weather` 為選取當前天氣的表——每個條目為一個 WTHR *ref* 加上相對 `chance`。
-- 警告 **僅限記錄層——非可遊玩的世界。** ModForge 會輸出 WRLD/REGN 記錄，但真正可步行的室外地區還需要**地形（LAND 高度圖）、LOD 網格與尋路網格**，這些必須在 **Creation Kit** 中製作。此功能**在結構上已驗證**但**尚未在遊戲中確認**。
-
-### 等級列表與容器
-```jsonc
-"leveledItems": [
-  { "editorId": "MF_LootList", "chanceNone": 25,
-    "flags": ["CalculateFromAllLevelsLessThanOrEqualPlayer"],
-    "entries": [ { "reference": "MF_Blade", "level": 1, "count": 1 },
-                 { "reference": "MF_Coin",  "level": 1, "count": 5 } ] }
-],
-"containers": [
-  { "editorId": "MF_Chest", "name": "Forged Chest",
-    "items": [ { "item": "MF_Coin", "count": 10 }, { "item": "MF_Apron", "count": 1 } ] }
-]
-```
-- `leveledItems`（LVLI）和 `leveledNpcs`（LVLN）是受等級限制的加權清單：每個 `entry` 的 `reference` 為 *ref*，以 `level` 作為門檻，重複 `count` 次。`chanceNone`（0–100）為清單不產出任何東西的機率；`flags` 名稱來自 LVLI/LVLN 旗標集合。
-- `containers`（CONT）持有 `items`，每項為一個物品 *ref* 加上 `count`。（若要讓容器出現在世界中，需用 `placement` 放置，與其他物件相同。）
-
-### 遭遇區與等級演員生成——在區域中填入等比例的敵人
-兩個部分協同運作，以在區域中投放**適合等級**的敵人：
-
-**1. 等級演員生成**使用 **NPC_ 包裝器**作為 `base`——一個 NPC_，其 TEMPLATE 鏈參照 LeveledNpc 清單（LVLN），讓引擎在生成時滾出一個適合等級的演員。
-
-> **嚴重注意事項——已確認 CTD（It.36，2026-06-02）：** `LChar*` formid（例如 `0x03DECD` `LCharBanditMeleeAny`）是 **LVLN 記錄**，而將原始 LVLN 作為 ACHR 基底**會導致 Skyrim 在載入時崩潰**。請改用 `LvlBandit*` NPC_ 包裝器。命名規則：`Lvl…` 前綴 = NPC_（可安全放置）；`LChar…` 前綴 = LVLN（永遠不要直接放置）。
-
-```jsonc
-{ "base": "Skyrim.esm:0x01E79C", "cell": "MF_BanditDen", "kind": "npc",   // LvlBanditMeleeAny (NPC_)
-  "position": { "x": -180, "y": 120, "z": 0 } }
-```
-- 使用 `find <Skyrim.esm> Lvl<…> Npc` 查找 NPC_ 包裝器（例如 `LvlBanditMeleeAny` `0x01E79C`）。其底層的 LVLN 清單**不是**有效的 placement 基底。
-- 對於 spec 內用作 placement 基底的 `leveledNpcs` 清單，請加入 `"kind": "npc"` 以讓建置發出警告，而非靜默產生會崩潰的外掛。
-
-**2. 遭遇區**（`encounterZones`，ECZN）設定生成所滾動的**等級範圍與重生**規則。
-```jsonc
-"encounterZones": [
-  { "editorId": "MF_BanditDenZone",
-    "minLevel": 4, "maxLevel": 0,            // 最低等級 4；maxLevel 0 = 無上限（隨玩家縮放）
-    "flags": ["MatchPcBelowMinimumLevel"] }
-],
-"cells": [
-  { "editorId": "MF_BanditDen", "template": "Skyrim.esm:0x0165A8",
-    "encounterZone": "MF_BanditDenZone" }    // 連結 cell 的等級縮放與重生設定
-]
-```
-- `maxLevel 0` 表示**無上限**——原版地下城的慣例（例如 `HelgenZone` 為最低 6 / 最高 0）。
-- `flags`：`NeverResets`（已清除的地下城不重生），`MatchPcBelowMinimumLevel`（生成等級符合低等級玩家），`DisableCombatBoundary`（演員可在區域外追逐）。
-- 使用 `eczndiag <plugin> <0xFORMID>` 檢查任何區域。
-- **尋路網格注意事項：** 全新的 spec 內 cell **沒有尋路網格**，因此生成的演員在 CK 為其建立尋路網格之前無法移動。
-- **已在遊戲中確認（It.36，2026-06-02）：** `coc MF_BanditDen`——cell 載入、強盜生成、無崩潰。完整流程：遭遇區、cell 範本、NPC_ 放置均已在 SSE 1.6.1170 中驗證。
-
-### 商販／商人——一個可運作的店主
-透過給予一個**派系** `vendor` 子物件，並讓 NPC 成為其成員，即可將 NPC 轉變為可運作的商店（買入 + 賣出）。
-```jsonc
-"factions": [
-  { "editorId": "MF_ShopFaction", "name": "ModForge General Goods",
-    "vendor": {
-      "startHour": 8, "endHour": 20,
-      "radius": 0,
-      "buysStolen": false,
-      "sellBuyList": "Skyrim.esm:0x06CB48",    // VendorItem 關鍵字的 FormList（交易類別）
-      "notSellBuyList": true,                  // true ⇒ sellBuyList 為 NOT-sell 清單（交易除此之外的一切）
-      "merchantContainer": "MF_ShopChestRef"   // 參照一個 PLACEMENT 的 editorId：已放置的商人箱子
-    } }
-],
-"containers": [
-  { "editorId": "MF_ShopChest", "name": "Merchant Chest",
-    "items": [ { "item": "Skyrim.esm:0x072AE7", "count": 1 },    // VendorGoldMisc（商販的金幣池）
-               { "item": "Skyrim.esm:0x09AF0A", "count": 10 } ] }  // 庫存等級清單
-],
-"placements": [
-  { "editorId": "MF_ShopChestRef", "base": "MF_ShopChest", "cell": "MF_Shop", "persistent": true,
-    "position": { "x": 0, "y": 256, "z": 0 } }
-],
-"npcs": [
-  { "editorId": "MF_Shopkeeper", "name": "...", "race": "Skyrim.esm:0x013746",
-    "factions": [ "MF_ShopFaction" ],
-    "greeting": "Looking to buy?" }            // 問候語使其可對話——提示框所需的必要條件
-]
-```
-- **`merchantContainer`** 必須參照一個 **placement** 的 `editorId`（已放置的箱子 REFR），而非裸容器——只有*已放置*的 ref 才持有引擎讀取的金幣/庫存。在箱子中放入 `VendorGoldMisc`（`Skyrim.esm:0x072AE7`）讓商販有錢購物。
-- **成員資格即店主。** 建置會**自動加入** `JobMerchantFaction`（`Skyrim.esm:0x051596`）至該 NPC，因為原版通用的「我想交易」主題需要滿足 `GetInFaction JobMerchantFaction` + `GetOffersServicesNow`。
-- **可對話。** 與所有自訂 NPC 相同的規則：交易提示只有在 NPC 開啟對話選單後才會出現，而這需要一句 `greeting` 或自訂的 `dialogue[]`。
-- 使用 `factdiag <plugin> <0xFORMID>` 檢查；與原版商人比較，例如 `factdiag <Skyrim.esm> 0x09CAF5`（Belethor's General Goods）。
-- **尚未在遊戲中確認：** FACT/箱子/成員資格在結構上與原版商販相同，但「我想交易」提示是否真的能開啟以物易物選單，仍需透過 Proton/Skyrim 啟動確認。

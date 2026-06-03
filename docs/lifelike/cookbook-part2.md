@@ -1,4 +1,4 @@
-﻿<!-- Part 2/4 — Follower system -->
+﻿<!-- Part 2/5 — Follower system -->
 
 ## "Recruitable follower" (hire → follow → dismiss), in-game confirmed
 
