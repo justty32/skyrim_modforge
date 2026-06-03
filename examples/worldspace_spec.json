@@ -20,7 +20,10 @@
         "cameraInitialPitch": 50,
         "cameraMinHeight": 50000,
         "cameraMaxHeight": 80000
-      }
+      },
+      "cells": [
+        { "x": 0, "y": 0 }
+      ]
     }
   ],
 

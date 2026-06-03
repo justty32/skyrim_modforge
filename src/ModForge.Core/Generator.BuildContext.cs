@@ -66,7 +66,7 @@ public static partial class Generator
         private int placed, vanillaCells;
         private int worldspaceCount, exteriorNewCells;
         private int scriptsAttached;
-        private int worldspacesBuilt, regionsBuilt;
+        private int worldspacesBuilt, regionsBuilt, terrainCellsBuilt;
         private int wordWallsBuilt;
 
         private readonly BuildOptions? options;
@@ -227,7 +227,7 @@ public static partial class Generator
                     NewInteriorCells = spec.Cells.Count,
                     VanillaInteriorCells = vanillaCells,
                     Worldspaces = worldspaceCount + worldspacesBuilt,
-                    NewExteriorCells = exteriorNewCells,
+                    NewExteriorCells = exteriorNewCells + terrainCellsBuilt,
                     Regions = regionsBuilt,
                     EncounterZones = spec.EncounterZones.Count,
                     WordWalls = wordWallsBuilt,

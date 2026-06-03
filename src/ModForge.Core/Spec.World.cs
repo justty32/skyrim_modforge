@@ -130,6 +130,21 @@ public sealed class WorldspaceSpec
     // Map-menu data. Cell coords bound the world map; the camera fields frame the local-map view.
     // Defaults are a small sane window (a 9×9 cell box centred on origin) — override for a bigger world.
     public WorldMapDataSpec Map { get; set; } = new();
+
+    // Flat terrain cells to generate. Each gets a CELL + LAND record (height=0, flat normals) placed
+    // in the worldspace's SubCell block tree. Enter in-game with: cow <editorId> X Y
+    public List<WorldspaceCellSpec> Cells { get; set; } = new();
+}
+
+/// <summary>
+/// A flat terrain cell inside a new worldspace. Adds a CELL + LAND (flat terrain at Z=0) so the
+/// player can enter via <c>cow &lt;worldspace editorId&gt; X Y</c> without falling through the void.
+/// X and Y are exterior cell-grid coordinates (1 unit = 4096 game units); (0,0) is the origin.
+/// </summary>
+public sealed class WorldspaceCellSpec
+{
+    public int X { get; set; }
+    public int Y { get; set; }
 }
 
 /// <summary>Worldspace map-menu bounds + local-map camera (the WNAM/MNAM data).</summary>

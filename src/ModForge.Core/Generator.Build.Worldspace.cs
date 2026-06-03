@@ -18,10 +18,10 @@ public static partial class Generator
     //
     //  Returns counts folded into BuildStats + the link tallies.
     // -------------------------------------------------------------------------------
-    private static (int Worldspaces, int Regions, int Links, int ExtLinks) BuildWorldspacesAndRegions(
+    private static (int Worldspaces, int Regions, int TerrainCells, int Links, int ExtLinks) BuildWorldspacesAndRegions(
         SkyrimMod mod, ModSpec spec, Dictionary<string, FormKey> formKeyByEd, Action<string> warn)
     {
-        int worldspaces = 0, regions = 0, links = 0, extLinks = 0;
+        int worldspaces = 0, regions = 0, terrainCells = 0, links = 0, extLinks = 0;
 
         // Resolve a ref (in-spec editorId OR external <master>:0xFORMID) and run `set`; tally links.
         void Wire(string what, string refStr, Action<FormKey> set)
@@ -90,6 +90,51 @@ public static partial class Generator
             // Register so an in-spec region (or placement) can reference this world by editorId.
             if (!string.IsNullOrWhiteSpace(ws.EditorId)) formKeyByEd[ws.EditorId] = w.FormKey;
             worldspaces++;
+
+            // Flat terrain cells: each cell spec gets a CELL + LAND so the player can enter the
+            // world via `cow <editorId> X Y` without falling into the void. Terrain is a flat
+            // 33×33-vertex heightmap at Z=0 with straight-up normals — no textures needed for
+            // collision. Block/sub-block coords follow the same /32 and /8 floor-division the
+            // exterior placement code uses (proven against vanilla Skyrim.esm cell groups).
+            foreach (var cs in ws.Cells)
+            {
+                short bx = (short)FloorDiv(cs.X, 32), by = (short)FloorDiv(cs.Y, 32);
+                short sx = (short)FloorDiv(cs.X, 8),  sy = (short)FloorDiv(cs.Y, 8);
+
+                var block = w.SubCells.FirstOrDefault(b => b.BlockNumberX == bx && b.BlockNumberY == by);
+                if (block is null)
+                {
+                    block = new WorldspaceBlock { BlockNumberX = bx, BlockNumberY = by, GroupType = GroupTypeEnum.ExteriorCellBlock };
+                    w.SubCells.Add(block);
+                }
+                var sub = block.Items.FirstOrDefault(s => s.BlockNumberX == sx && s.BlockNumberY == sy);
+                if (sub is null)
+                {
+                    sub = new WorldspaceSubBlock { BlockNumberX = sx, BlockNumberY = sy, GroupType = GroupTypeEnum.ExteriorCellSubBlock };
+                    block.Items.Add(sub);
+                }
+
+                var edBase = string.IsNullOrWhiteSpace(ws.EditorId) ? "MF" : ws.EditorId;
+                var xTag = cs.X < 0 ? $"m{-cs.X}" : cs.X.ToString();
+                var yTag = cs.Y < 0 ? $"m{-cs.Y}" : cs.Y.ToString();
+                var cell = new Cell(mod, $"{edBase}_Cell_{xTag}_{yTag}");
+                cell.Grid = new CellGrid { Point = new Noggog.P2Int(cs.X, cs.Y) };
+
+                // Flat LAND: all 33×33 height-map deltas = 0 → terrain at Z = Offset*8 = 0.
+                // All normals point straight up (128,128,255 in Skyrim's unsigned-byte encoding).
+                var land = new Landscape(mod);
+                land.VertexHeightMap = new LandscapeVertexHeightMap
+                {
+                    Offset = 0f,
+                    HeightMap = new Noggog.Array2d<byte>(33, 33, 0),
+                    Unknown = new Noggog.P3UInt8(0, 0, 0),
+                };
+                land.VertexNormals = new Noggog.Array2d<Noggog.P3UInt8>(33, 33, new Noggog.P3UInt8(128, 128, 255));
+                cell.Landscape = land;
+
+                sub.Items.Add(cell);
+                terrainCells++;
+            }
         }
 
         // --- Regions (REGN) ---------------------------------------------------------------------
@@ -130,7 +175,7 @@ public static partial class Generator
             regions++;
         }
 
-        return (worldspaces, regions, links, extLinks);
+        return (worldspaces, regions, terrainCells, links, extLinks);
     }
 
     // Parse "0xRRGGBB" / "RRGGBB" (or "#RRGGBB") into an opaque Color; false if blank/malformed.
@@ -151,9 +196,10 @@ public static partial class Generator
     {
         public void BuildWorldspacesAndRegions()
         {
-            var (w, r, l, e) = Generator.BuildWorldspacesAndRegions(mod, spec, formKeyByEd, Warn);
+            var (w, r, tc, l, e) = Generator.BuildWorldspacesAndRegions(mod, spec, formKeyByEd, Warn);
             worldspacesBuilt = w;
             regionsBuilt = r;
+            terrainCellsBuilt = tc;
             linksWired += l;
             extLinks += e;
         }
