@@ -1,0 +1,85 @@
+<!-- 第 5/5 部分 — AI 套件至工作流程 -->
+### packages — AI 套件（NPC 的行為）
+`packages` 條目是一個 AI 套件。Skyrim 的 PACK 記錄採用**模板驅動**方式：你透過 `template` 參考一個原版「程序模板」表單，由該模板定義資料輸入結構（插槽索引及類型）。我們的套件為模板所定義的插槽填入輸入值。
+
+ModForge 目前實作七個模板——**Sandbox**（`Skyrim.esm:0x01C254`）、**Sleep**（`Skyrim.esm:0x019717`）、**Travel**（`Skyrim.esm:0x016FAA`）、**UseMagic**（`Skyrim.esm:0x0504F5`）、**Patrol**（`Skyrim.esm:0x017723`）、**Follow**（`Skyrim.esm:0x019B2C`）及 **Escort**（`Skyrim.esm:0x023B73`）。
+
+**Sandbox 指定參考 vs Travel：** Sandbox 的 `location` 參考讓 NPC 在該參考**附近**徘徊/進食/就坐。Travel 的 `place` 參考讓 NPC 真正**走向**該參考並停在其 `radius` 範圍內。常見組合：Travel 套件 + Sandbox 套件（Travel 在前）——Travel 執行直到 NPC 抵達，然後 Sandbox 接管。
+
+```jsonc
+{ "editorId": "MF_HangAtSpotPackage",
+  "template": "Skyrim.esm:0x01C254",        // Sandbox 程序模板
+  "preferredSpeed": "Walk",
+  "interruptFlags": [                        // 擬真 NPC 開關 — 大多保持開啟
+    "HellosToPlayer", "RandomConversations", "ObserveCombatBehavior",
+    "GreetCorpseBehavior", "ReactionToPlayerActions", "FriendlyFireComments",
+    "AggroRadiusBehavior", "AllowIdleChatter", "WorldInteractions" ],
+  "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 0, "dayOfWeek": "Any" },
+  "sandbox": {
+    "radius": 1024,
+    "location": "",
+    "allowEating": true,  "allowSleeping": false,  "allowConversation": true,
+    "allowIdleMarkers": true, "allowSitting": true, "allowWandering": true,
+    "allowSpecialFurniture": true, "energy": 50.0 } }
+```
+
+**It.18 注意事項（UseMagic 特有的實戰血淚）：**
+1. **Spell 插槽必須是 `PackageTargetObjectID`，而非 `PackageTargetObjectType`。** 所有 46 個原版 UseMagic 套件均用 FormLink 覆寫。
+2. **Target 插槽必須設定**——自我施法用 `PackageTargetSelf`。
+3. **`numToCastMax` 是整個套件生命周期的施法總次數**。若要持續施法，必須同時設定高上限值**及**非零的 `schedule.durationInMinutes`（例如 1440 = 24 小時）。
+4. **戰鬥會中斷 UseMagic。** 若要強制施法持續，加入 `flags: [ "IgnoreCombat" ]`。
+
+**中斷旗標（Package.InterruptFlag）：** `HellosToPlayer`、`RandomConversations`、`ObserveCombatBehavior`、`GreetCorpseBehavior`、`ReactionToPlayerActions`、`FriendlyFireComments`、`AggroRadiusBehavior`、`AllowIdleChatter`、`WorldInteractions`。**這些旗標決定了一個 NPC 是沉默的石像還是栩栩如生的角色。**
+
+### 天氣與氣候 — 自訂天空（WTHR）+ 天氣循環（CLMT）
+
+**天氣**（`WTHR`）是一個*天空*：雲層、每日時段的天空/霧氣/雲朵/太陽顏色、降水、風速、霧距。**氣候**（`CLMT`）是一個*循環*：哪些天氣會出現（各自帶有相對 `chance` 權重）以及日出/日落時間與太陽/月亮貼圖。
+
+```jsonc
+"weathers": [{
+  "editorId": "MF_EerieFog",
+  "flags": ["Cloudy", "Rainy"],
+  "skyUpperColor": {
+    "day":   { "r": 46, "g": 92, "b": 58 },
+    "night": { "r": 8,  "g": 20, "b": 14 }
+  },
+  "fogNearColor": { "day": { "r": 60, "g": 120, "b": 70 } },
+  "sunlightColor": { "day": { "r": 120, "g": 170, "b": 110 } },
+  "clouds": [{ "index": 0, "texture": "Sky\\SkyrimCloudsUpper04.dds",
+               "xSpeed": 0.012, "ySpeed": -0.006, "alphaDay": 1.0, "alphaNight": 0.8 }],
+  "precipitation": "Skyrim.esm:0x10780F",
+  "windSpeed": 0.35, "windDirection": 210,
+  "fogDayNear": 256, "fogDayFar": 9000
+}],
+"climates": [{
+  "editorId": "MF_EerieClimate",
+  "weathers": [ { "weather": "MF_EerieFog", "chance": 75 },
+                { "weather": "MF_PlainClear", "chance": 25 } ],
+  "sunriseBegin": "06:00", "sunriseEnd": "09:30",
+  "sunsetBegin": "17:00",  "sunsetEnd": "20:00",
+  "moons": ["Masser", "Secunda"], "volatility": 40
+}]
+```
+
+- **最簡結構即有效。** 只含 `editorId` 的天氣是符合原版規範的晴天天空；氣候只需 `editorId` + 至少一個 `weather`。
+- **顏色**為 8 位元 RGB（0–255）。任何省略的時段從 `day` 繼承。
+- **風向**以**度**（0–360）編寫；**風速**接受 0–1 分數或 0–100 百分比。
+- **`precipitation`** 是指向著色粒子幾何體（`SPGD`）的 *ref*。使用 `weatherdiag <Skyrim.esm> <rainy-WTHR-formid>` 查找原版雨效。
+
+> **指派氣候是獨立步驟。** 輸出 `WTHR`+`CLMT` 本身**不會**改變任何遊戲內天空。原版透過**世界空間**（`WRLD` `Climate` 欄位）或**地區**（`REGN` 天氣資料）套用氣候。**已於遊戲內確認（It.36，2026-06-02）：** 透過控制台 `sw <XX>000800` 強制天氣。`build` 指令在建置成功後會輸出所有 WTHR 記錄的 `sw` 指令。
+
+## 工作流程
+
+```bash
+dotnet run --project src/ModForge.Cli -- validate myspec.json          # 先行檢查
+dotnet run --project src/ModForge.Cli -- build    myspec.json out.esp   # 僅建置插件
+dotnet run --project src/ModForge.Cli -- package  myspec.json OutModDir # esp + 編譯後的腳本 -> MO2 資料夾
+```
+`package` 輸出 `OutModDir/<pluginName>` + `Scripts/*.pex` + `Scripts/Source/*.psc`。
+
+**自然語言 → 規格：** 向 AI 代理人（Claude Code）描述需求；代理人根據本文件 / `../examples/spec.schema.json`（依 `for_agent.md`）輸出規格，執行 `validate`（自動修正問題），再執行 `build`/`package`。此代理人驅動循環**即是** NL→規格層——工具本身不含 LLM API（原本規劃的 `describe` 指令已取消），因此無需設定任何 API 金鑰或提供商。
+
+## 尚未涵蓋（可在 `ModForge.Core` 的 `Generator.Build` + 規格類別中擴充）
+世界放置現已涵蓋新建室內場景、原版室內場景，**以及室外/世界空間場景**（透過 `worldspace` + 世界座標），ModForge 現在也能**建立**新的世界空間（WRLD）+ 地區（REGN）——見上方 *worldspaces & regions*（僅限記錄層；地形/LOD/導航網格仍在 CK 端）。其餘缺口為長尾記錄類型/欄位及 CK 端的地形/LOD/導航網格創作——記錄端的模式相同：新增一個規格類別 + 在 `Build` 中新增一個迴圈。
+
+完整可用範例請見 `../examples/sample_spec.json`。

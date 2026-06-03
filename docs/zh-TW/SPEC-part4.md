@@ -1,0 +1,105 @@
+<!-- 第 4/5 部分 — 配方至紋理集 -->
+### recipes（合成 / COBJ）
+讓物品可以在工作台合成、改良或熔煉。recipe 的 `kind` 決定類型（預設為 `craft`）以及**預設工作台**；`workbench` 是一個**具名選擇器**（`forge` / `sharpeningWheel`（即 `grindstone`）/ `armorTable`（即 `workbench`）/ `smelter` / `tanningRack` / `skyforge`）——或是一個原始的 `<master>:0xID` 關鍵字參考，會覆蓋 kind 的預設值。省略 `workbench` 則使用 kind 的預設值。
+
+```jsonc
+{ "editorId": "MF_ForgedBladeRecipe",
+  "kind": "craft",                      // craft | temper | smelt | breakdown   (預設 craft)
+  "createdObject": "MF_ForgedBlade",    // 一個參考 — 通常是規格內的武器/護甲
+  "count": 1,
+  "workbench": "forge",                 // 具名選擇器或關鍵字參考；省略 -> kind 預設值
+  "components": [                        // 合成時消耗（參考 + 數量）
+    { "item": "Skyrim.esm:0x05ACE5", "count": 2 },   // SteelIngot
+    { "item": "Skyrim.esm:0x0800E4", "count": 1 } ], // LeatherStrips
+  "conditions": [                        // 以技能/物品/專長設置條件（共用 CTDA）— 可選
+    { "function": "HasPerk", "param": "Skyrim.esm:0x0CB40D", "comparison": "==", "value": 1 } ] }
+```
+
+**`kind` 預設值** — `craft` → 鍛造爐，`temper` → 磨刀石，`smelt`/`breakdown` → 熔爐。
+
+**`kind: "temper"`** — 在磨刀石（武器）/ 盔甲工作台（護甲）處改良現有武器/護甲。`createdObject` 就是被改良的物品；組件為改良材料。仿照原版，在鍛造 `HasPerk` 之前加上附魔物品防護條件 `TemperIsEnchanted`（`or: true`）：
+```jsonc
+{ "editorId": "MF_ForgedBladeTemper", "kind": "temper",
+  "createdObject": "MF_ForgedBlade", "workbench": "sharpeningWheel",
+  "components": [ { "item": "Skyrim.esm:0x05ACE5", "count": 1 } ],
+  "conditions": [
+    { "function": "TemperIsEnchanted", "comparison": "!=", "value": 1, "or": true },
+    { "function": "HasPerk", "param": "Skyrim.esm:0x0CB40D", "comparison": "==", "value": 1 } ] }
+```
+
+**`kind: "smelt"` / `"breakdown"`** — 礦石 → 金屬錠，或在熔爐將物品分解為材料（`createdObject` = 產出的金屬錠，組件 = 消耗的礦石/物品）。
+
+**`conditions`** — 每條件均為共用 CTDA（與對話/套件條件門相同的 `ConditionSpec`）。`function` ∈ `HasPerk` | `GetItemCount` | `GetGlobalValue`（各需要一個 `param` 參考）| `TemperIsEnchanted`（無參數）。使用 `find Skyrim.esm <name> Perk` 查找專長 FormID；`cobjdiag <esp> <0xID>` 可輸出任何 recipe 的完整結構。
+
+常用工作台關鍵字 FormID（從 Skyrim.esm 探取）：`0x088105` 鍛造爐，`0x0ADB78` 盔甲工作台，`0x088108` 磨刀石，`0x0A5CCE` 熔爐，`0x07866A` 製革架，`0x0F46CE` Skyforge。
+
+### perks（PERK）
+專長是一種被動能力或數值/戰鬥修正值——技能樹、種族能力及任務獎勵加成的基礎積木。支援兩種效果類型：
+
+```jsonc
+{ "editorId": "MF_IronHidePerk", "name": "Iron Hide", "numRanks": 1,
+  "effects": [
+    // (a) ABILITY — 賦予一個 SPEL。搭配規格內的 Ability/constant-effect 法術 + MGEF。
+    { "kind": "ability", "spell": "MF_IronHideAbility" } ] }
+
+{ "editorId": "MF_DeadlyStrikesPerk", "name": "Deadly Strikes", "numRanks": 1,
+  "conditions": [
+    { "function": "GetBaseActorValue", "actorValue": "OneHanded",
+      "comparison": "GreaterThanOrEqualTo", "value": 30 } ],
+  "effects": [
+    // (b) ENTRY-POINT — 對具名 EntryPoint 的數值修正。
+    { "kind": "entryPoint",
+      "entryPoint": "ModAttackDamage",
+      "function": "Multiply",
+      "value": 1.2,
+      "conditions": [
+        { "function": "WornHasKeyword", "param": "Skyrim.esm:0x01E711",  // WeapTypeSword
+          "comparison": "EqualTo", "value": 1 } ] } ] }
+```
+
+- **`entryPoint`** 是 Skyrim 的 `EntryType` 值之一 — `ModAttackDamage`、`ModSpellMagnitude`、`CalculateMyCriticalHitChance`、`ModArmorRating`、`GetMaxCarryWeight`… 使用 `perkdiag <Skyrim.esm> entrypoints` 查看完整清單，或 `perkdiag <Skyrim.esm> 0x079343`（Armsman20 = ModAttackDamage ×1.4）。
+- **附加至 NPC** 可透過 `npcs[].perks: ["MF_IronHidePerk", …]`——角色在遊戲開始時被動獲得專長。**賦予玩家專長需要 Papyrus `AddPerk` 呼叫**（`scripts` + 任務片段）——沒有純記錄的方式在遊戲開始時將專長放置在玩家身上。
+- **遊戲內注意事項：** 結構上這些輸出與原版專長完全一致，但入口點修正是否真的改變戰鬥數值只能透過實際啟動 Skyrim 確認。可參考範例：`examples/perk_spec.json`。
+
+### 外部資源 — 自訂網格 / 貼圖 / 音效（`model`、`sounds`、`assets`）
+無需透過 `template` 複製原版記錄的網格，直接帶入你自己的資源。ModForge **參考**這些資源（將 Data 相對路徑寫入記錄）並**封裝**它們（將檔案複製到 `.esp` 旁邊）。它不負責製作網格/音效——完整合約及路徑規則請見 **[external_assets.md](external_assets.md)**。
+```jsonc
+"assets": "my_assets",          // 來源目錄；package 將其 Meshes/Textures/Sound/… 複製至模組內
+"sounds": [ { "editorId": "MFChimeSD", "files": [ "Sound\\fx\\mymod\\chime.wav" ] } ],
+"statics":    [ { "editorId": "MFStone",  "model": "MyMod\\stone.nif" } ],
+"furniture":  [ { "editorId": "MFThrone", "name": "Throne", "model": "MyMod\\throne.nif" } ],
+"activators": [ { "editorId": "MFBell", "name": "Bell", "model": "MyMod\\bell.nif",
+                  "activationSound": "MFChimeSD" } ]
+```
+- **`model`**（用於 statics/activators/furniture/miscItems/weapons）是以 Data 相對的 `.nif` 路徑，根目錄為 `Meshes\`——因此請**省略 `Meshes\` 前綴**（寫 `MyMod\bell.nif`，而非 `Meshes\MyMod\bell.nif`）。`validate` 會強制執行此規則。在 `miscItem` 上，`model` 會覆蓋 `template`（並發出警告）；在 `weapon` 上，請將 `model` 與 `template` **配合使用**（沒有網格/模板的武器在裝備時會**崩潰**）。
+- **`sounds`** 會輸出音效描述符（SNDR）。`category`/`outputModel` 預設為原版 SFX 分類/輸出。
+- **`assets`** 指定一個結構如 `Data/` 的來源目錄（含 `Meshes/`、`Textures/`、`Sound/`、`Music/`、`Seq/`）；`package` 會將這些子目錄樹複製到輸出模組資料夾中。可參考範例：`../examples/custom_asset_spec.json`。
+
+### textureSets（TXST）— 無需新網格的貼圖替換
+大量模組只是**替換現有網格的貼圖**而不製作新的 `.nif`。這就是 **TextureSet（TXST）** 記錄：一組貼圖路徑，加上讓消費者將基礎網格上的具名材質指向它的設定。
+
+TXST 最多有八個可選插槽；只需設定你要替換的插槽。每個路徑均**相對於 `Data\Textures\`**——因此請**省略**開頭的 `Textures\`：
+
+```jsonc
+"textureSets": [
+  { "editorId": "MF_GildedRubbleTexture",
+    "diffuse": "ModForge\\rubble\\gilded_rubble_d.dds",   // 插槽 0 — 顏色/反照率 (_d)
+    "normal":  "ModForge\\rubble\\gilded_rubble_n.dds",   // 插槽 1 — 法線 + 光澤 (_n)
+    "flags": [ "NoSpecularMap" ] }
+]
+```
+
+透過 `statics` 或 `activators` 記錄上的 `alternateTextures` 連接至消費者。每個條目覆蓋基礎 `.nif` 內一個**具名材質/子網格**：
+
+```jsonc
+"statics": [
+  { "editorId": "MF_GildedRubble",
+    "model": "Dungeons\\Nordic\\Rubble\\NorRubblePiece03.nif",   // 一個原版網格，直接重用
+    "alternateTextures": [
+      { "name": "NorRubblePiece03:0",        // 必須匹配 .nif 中的材質/3D 名稱（CK「AltTex」對話框）
+        "index": 0,                           // 3D 子網格索引
+        "textureSet": "MF_GildedRubbleTexture" } ] }
+]
+```
+
+**誠實限制：** ModForge 只寫入 TXST 記錄及 `alternateTextures` 參考。`.dds` 檔案本身須由**使用者製作**——ModForge 無法建立或渲染貼圖內容。見 `examples/texture_set_spec.json` 及食譜範例。
