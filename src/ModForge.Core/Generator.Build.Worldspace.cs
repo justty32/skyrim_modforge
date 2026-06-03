@@ -128,7 +128,7 @@ public static partial class Generator
                 land.Flags = Landscape.Flag.VertexNormalsHeightMap;
                 land.VertexHeightMap = new LandscapeVertexHeightMap
                 {
-                    Offset = 0f,
+                    Offset = cs.Height / 8f,   // VHGT scale: actual_Z = Offset * 8
                     HeightMap = new Noggog.Array2d<byte>(33, 33, 0),
                     Unknown = new Noggog.P3UInt8(0, 0, 0),
                 };

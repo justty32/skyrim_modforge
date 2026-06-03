@@ -145,6 +145,9 @@ public sealed class WorldspaceCellSpec
 {
     public int X { get; set; }
     public int Y { get; set; }
+    // Terrain height in game units. Offset stored as Height/8 in VHGT (Skyrim's scale factor).
+    // Default 4000 puts terrain ~280m above sea level (Z=0), safely above water. 0 = sea level.
+    public float Height { get; set; } = 4000f;
 }
 
 /// <summary>Worldspace map-menu bounds + local-map camera (the WNAM/MNAM data).</summary>
