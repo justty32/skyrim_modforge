@@ -1,0 +1,108 @@
+# 引擎內部原理 — ModForge 生成程式碼背後的「原因」
+
+Skyrim/Mutagen 的非直覺性機制，這些機制是生成器（`src/ModForge.Cli/Build.cs`）必須遵守的。這是從（現已封存的）迭代日誌中提煉出的長青設計知識；症狀→修復的查詢請參閱 [lifelike/gotchas](lifelike/gotchas.md)，欄位逐一的規格文件請參閱 [SPEC.md](SPEC.md)。
+
+## 核心原則：覆寫記錄**不會**繼承省略的子記錄
+
+當你覆寫原版記錄（相同的 FormKey）時，引擎**不會**將你的稀疏覆寫合併到主記錄上——它會直接使用你所撰寫的記錄，並將所有你省略的欄位**重設為預設值**。幾乎所有 cell/worldspace 錯誤的根源都在於此：
+
+- 省略 worldspace 的 `LandDefaults` → `DefaultWaterHeight` 從 Tamriel 真實的 `-14000` 重設為 `0` → 所有低於海平面的地形都被淹沒（「整個世界都在水下」）。
+- 省略內部 cell 的 `LightingTemplate` → 房間完全黑暗。
+
+因此，覆寫必須**重新宣告內聯環境資料**。`Build` 透過 `CopyCellEnv`（水面高度/類型/材質、光照 + 模板、區域、影像空間、音樂、音響空間、遭遇區域、位置、所有權、天空/天氣）和 `CopyWorldspaceEnv`（陸地/水面預設、水體形式、氣候、地圖、邊界、父級、光照）來執行此操作。這兩者故意**跳過**本地化的 Name 以及龐大的子結構（cell/worldspace 區塊樹——我們自己建立；原版引用保留在主記錄中，不會重新宣告，因此不會有膨脹也不會有衝突）。
+
+> cell 上的 `WaterHeight = FLT_MAX` **不是**錯誤——它是「使用 worldspace 預設值」的哨兵值。
+
+## 本地化字串的地雷（在 Linux 上無頭執行時）
+
+Skyrim.esm 是**本地化**的：`TranslatedString` 欄位（Name / Description / BookText）是字串索引，其文字存放於 BSA 內的 `.STRINGS` 中。解析這些字串需要遊戲的 plugins.txt / 載入順序封存列表——**在 Linux 上無頭執行時不存在**。
+
+任何觸及這些字串的操作都會拋出 *"Could not determine plugin listings path"*：
+- 對原版記錄執行 `DeepCopyIn` → 傳入 `TranslationMask { Name=false, Description=false, BookText=false }`（我們無論如何都會覆寫這些欄位）。
+- 對 cell 執行 `GetOrAddAsOverride` → 改為建立**手動相同 FormKey 覆寫**（`new Cell(vanillaFk, SkyrimRelease)`），只複製內聯欄位，並將 Name/Lighting 保留為 null，使其從主記錄繼承。
+- `find` 的 Name 解析 → 盡力解析，遇到第一個失敗即停止，僅以 EditorID 搜尋。
+
+EditorID 和 FormID 是內聯儲存的，永遠可以讀取——這就是為什麼每個 `find`/`*diag` 都以 EditorID 為鍵，而非顯示名稱。
+
+## Cell GRUP 的放置是以 FormID/網格為鍵
+
+### 內部 Cell GRUP 公式
+
+Skyrim 將內部 cell 巢狀為 `CellBlock(type 2) → CellSubBlock(type 3) → Cell`，並**依 FormID** 分組：
+
+```
+block = id % 10
+sub   = (id / 10) % 10          # 十進位，24 位元 ID
+```
+
+（已透過遍歷 Skyrim.esm 驗證：WhiterunBanneredMare `0x01605E` = 十進位 90206 → block 6，sub 0。）
+**覆寫的關鍵：** 放置在錯誤 block GRUP 中的原版 cell 覆寫永遠不會與主記錄 cell 匹配，因此引擎會**靜默忽略它**（放置的物件和光照不會套用）。以 `cellblk` 確認。
+
+### 外部 Cell 網格 → GRUP
+
+外部 cell 巢狀為 `WorldspaceBlock(type 4, /32 網格) → WorldspaceSubBlock(type 5, /8 網格) → Cell(網格 x,y)`：
+
+```
+cellGrid = floor(worldPos / 4096)        # CellSize = 4096
+block    = FloorDiv(cellGrid, 32)
+sub      = FloorDiv(cellGrid, 8)
+```
+
+除法**必須向 −∞ 取底**，而非像 C# 的 `/` 那樣截斷（例如 C# 中 `-41 / 8 == -5`，但底數為 `-6`）。負座標在其他情況下會落入錯誤的 GRUP。（已對照 Tamriel 驗證：cell (7,−41) → block (0,−2)，sub (0,−6)。）
+
+## AI 套件以模板為基礎驅動
+
+每個具體的 `Package` 透過 `PackageTemplate`（`IFormLink<IPackageGetter>`）引用一個原版的**程序模板**，其 `Data` 是一個以模板**具名插槽索引**為鍵的 `IDictionary<sbyte, APackageData>`。具體套件的 `Type = Package`；模板本身的 `Type = PackageTemplate`（永遠不要撰寫後者）。以 `packagediag <Skyrim.esm> <templateFormId>` 探索任何模板的插槽結構；以 `pkgsbytemplate` 尋找具體範例。
+
+幾個容易踩到的插槽細節：
+- `LocationFallback` 的二進位形狀由其 **`Type` 列舉決定，而非 C# 類別** — `new LocationFallback()` 帶有 `Type = 0` 會靜默地以 `LocationTarget` 形式寫出。請務必設定 `Type = NearSelf`（錨定在角色目前位置；不需要外部連結）。永遠不要使用 `NearEditorLocation`——它需要由 CK 設定的 Editor Location，而透過 Mutagen 建立的 NPC 缺少此設定。
+- UseMagic 插槽 0/1 是繼承的 `APackageData` 佔位符——保持不動（所有 46 個原版具體 UseMagic 套件均如此）。
+
+### PACK 資料插槽對應表
+
+| 模板 | 插槽對應（索引 → 含義，原版預設值） |
+|---|---|
+| **Sandbox** `0x01C254` | 0 Location · 1 AllowEating · 3 AllowSleeping · 4 AllowConversation · 5 AllowIdleMarkers · 6 AllowSitting · 7 AllowWandering · 14 UnlockOnArrival · 25 PreferredPathOnly · 27 RideHorseIfPossible · 29 Energy · 31 AllowSpecialFurniture |
+| **Travel** `0x016FAA` | 0 Place (Location) · 2 RideHorse · 4 PreferPath |
+| **Patrol** `0x017723` | 0 Start (SingleRef) · 1 Radius (150) · 2 Repeatable · 4 StartAtNearest · 6 RideHorse · 8 StaticPathing |
+| **Follow** `0x019B2C` | 0 Target (SingleRef → player) · 1 MinRadius (128) · 2 MaxRadius (256) · 4 Accompany · 6 RideHorse · 8 NeedLOS |
+| **Escort** `0x023B73` | 11 Target (SingleRef → player) · 3 Destination (Location) · 2 NumFollowers (1) · 4 WaitDistance (512) · 5 FollowerMin (120) · 6 FollowerMax (256) · 13 RideHorse · 15 PreferPath · 17 RunIfBehind (500) |
+
+### 巡邏路線拓撲存在於放置引用的連結引用中
+
+路線**不在**套件中——每個標記 REFR 都有一個連結引用（null 關鍵字）指向下一個；透過將最後一個連回第一個來形成迴圈。`LinkedReferences` 分別存在於 `IPlacedObject` / `IPlacedNpc` 上（沒有共用的可設定介面——須轉型為具體類型）。任何連結引用的來源，以及套件的延遲錨點所指向的任何放置，都必須強制設定為**持久性（Persistent）**——引擎可能會丟棄某些其他物件錨定的臨時引用。
+
+### 跨 Cell 的 Travel 是內容關卡，而非記錄關卡
+
+一個與原版完全相同的 Travel 套件，在門傳送時會被靜默拒絕，除非 NPC 具備**市民身份**（`crimeFaction` + 城鎮派系成員資格 + `unique: true`）。誠實的警告：這三者是一起加入的；哪一個單獨起作用尚未驗證（假設：CrimeFaction 是主要因素，Unique 有助於引擎跨 cell 轉換追蹤 AI 狀態）。
+
+## 魔法效果時序
+
+- **即時**效果（duration 0）必須使用 `["NoDuration","NoArea"]` 且**不加 `Recover`** — `Recover` 會在效果結束時還原數值，而對於即時效果，這等同於*立即*還原，最終淨效果為零（「無法治癒的治癒」錯誤）。
+- `Recover` 只適用於**有時限的**強化效果（例如 60 秒內 +50 生命值）。
+- 保持 `baseCost` 較低：自動計算會將 baseCost 乘以 magnitude，因此高 baseCost 會產生荒謬的魔力消耗。
+- 戰鬥 SPEL 需要 `equipType`（EitherHand `0x013F44`），否則 NPC 無法將其裝備到手上，並會靜默地永遠不施放。
+
+## 克隆原版模型
+
+沒有 `.nif` 的記錄在物品欄中可以正常存放，但**在任何將模型附加到場景的互動中都會崩潰**（武器裝備、書本 3D 閱讀）；`additem`/drink 是安全的（不載入模型）。給武器/書本/雜項物品/藥水一個 `template` 引用；`Build` 執行 `DeepCopyIn`（關閉本地化字串遮罩），這會**保留你自己的 FormKey**（記錄保留在你的插件中；模板的子表單成為指向其主記錄的 FormLinks），然後覆寫身份/屬性。對於藥水，它會先清除克隆的 `Effects`，以免規格效果與模板效果疊加。
+
+## 自訂對話的顯示
+
+必須有兩個旗標，否則主題永遠不會出現：宿主 **Quest** 需要 `StartGameEnabled`（+ 排序競爭對話的 `Priority` 位元組），否則它會保持休眠且其對話永遠不會載入；**DialogBranch** 需要 `Flag.TopLevel`，否則主題是子分支而非選單選項。將 INFO 的 `ResponseData` 保留為 null（以使用你自己的 Responses），將 `Prompt` 保留為 null——選單行來自 `topic.Name`；硬編碼的 Prompt 會錯誤標記選單。
+
+## 技能進入點帶有隱藏的分頁計數位元組
+
+進入點技能效果（`PerkEntryPointModifyValue`，例如 ModAttackDamage ×1.2）有一個 `PerkConditionTabCount` 位元組（PERK 進入點 `DATA` 子記錄的第 3 個位元組）。它是進入點的**固有條件分頁數量**——函數評估的攻擊者/目標/武器情境——**不是**你撰寫的條件數量。引擎根據它來調整每個分頁的條件陣列大小；一個撰寫在索引 0 上而計數為 **0** 的 `PRKC` 條件分頁會溢出該陣列，破壞指標，並在**「Loading Files」期間發生硬性崩潰**（TESForm 查找雜湊表中，因垃圾 FormID 造成的存取違規）。
+
+這是一個純粹的 **「Mutagen 可容忍，引擎致命」** 的二進位錯誤：Mutagen 讀回真實的 `Conditions` 列表並忽略計數位元組，因此 `dump` / 往返 / 連結解析 / ESL 標頭看起來都是乾淨的——只有執行時解析器會崩潰。它會隱藏起來直到第二個插件改變記憶體佈局，然後以「兩個模組一起崩潰」的報告形式出現（根本原因於 2026-05-31 從 CrashLoggerSSE 日誌中找到；請參閱 [lifelike/gotchas](lifelike/gotchas.md)）。
+
+計數是每個進入點固定的，永遠是 `1`/`2`/`3`，絕不為 `0`——且永遠 ≥ 存在的 PRKC 分頁數量（原版可以自由地設定例如計數為 3 但只有一個或零個分頁）。`Build` 從 Skyrim.esm 的 375 個 PERK 記錄中提取的表格設定此值（`ModAttackDamage`/`ModSpellMagnitude`/`CalculateWeaponDamage` = 3；`ModArmorRating`/`ModBuyPrices` = 2；`ModSkillUse`/`ModFallingDamage` = 1；未列出的 → 2）。透過掃描原版來重新生成表格：讀取每個 `IAPerkEntryPointEffectGetter` 並以 `EntryPoint → PerkConditionTabCount` 分組。
+
+## Mutagen API 陷阱
+
+- `AddNew()` 需要 `using Mutagen.Bethesda;`。
+- 當輸出檔名與模組的 ModKey 不同時，以 `BinaryWriteParameters { ModKey = ModKeyOption.NoCheck }` 寫出。
+- 類型陷阱：`DialogResponse.ResponseNumber` 是 `byte`；`PackageDataInt.Data` 是 `uint`；`LeveledItem.ChanceNone` 是 `Noggog.Percent`（0–100）；cell 網格是 `Noggog.P2Int`；旋轉以度數撰寫但以弧度儲存。
+- 外部引用（`<master>:0xFORMID`）在寫出時會自動加入主記錄（`MastersListContent = Iterate`）；構造 FormKey 時以 `& 0x00FFFFFF` 遮罩主記錄索引位元組。
+- API 探索：`ilspycmd -t <Type> ~/.nuget/packages/mutagen.bethesda.*/0.53.1/lib/net9.0/*.dll`。

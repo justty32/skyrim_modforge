@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ModForge 文件 — 繁體中文</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="sidebar">
+  <div class="logo"><a href="index.html">📖 ModForge 文件</a></div>
+  <div class="nav-section">代理工作流程</div>
+  <a class="nav-item" href="for-agent.html">概覽</a>
+  <a class="nav-item" href="for-agent-cli.html">CLI 驅動</a>
+  <a class="nav-item" href="for-agent-lib.html">函式庫 API</a>
+  <a class="nav-item" href="external-assets.html">外部資源</a>
+  <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
+  <div class="nav-section">規格說明（SPEC）</div>
+  <a class="nav-item" href="spec-1.html">Part 1：介紹 · 條件</a>
+  <a class="nav-item" href="spec-2.html">Part 2：任務 · 商販</a>
+  <a class="nav-item" href="spec-3.html">Part 3：配方 · 工作流程</a>
+  <div class="nav-section">讓 NPC 更有生命力</div>
+  <a class="nav-item" href="lifelike.html">總覽</a>
+  <a class="nav-item" href="cookbook-1.html">食譜 1：基礎 NPC</a>
+  <a class="nav-item" href="cookbook-2.html">食譜 2：跟隨者系統</a>
+  <a class="nav-item" href="cookbook-3.html">食譜 3：世界建構</a>
+  <a class="nav-item" href="cookbook-4.html">食譜 4：進階食譜</a>
+  <a class="nav-item" href="cheatsheets.html">速查表</a>
+  <a class="nav-item" href="gotchas.html">常見陷阱</a>
+  <a class="nav-item" href="formid-ref.html">原版 FormID 參考</a>
+</nav>
+<div class="content">
+<div class="content-inner">
+  <h1 style="font-size:2em;font-weight:700;color:#1a1a2e;margin-bottom:12px">ModForge 文件</h1>
+  <p class="page-intro">
+    ModForge 是一個 Skyrim 外掛產生器。你（AI 代理或開發者）撰寫 JSON 規格，
+    工具輸出有效的 <code style="background:#f0f0f5;border:1px solid #d8d9e0;padding:1px 5px;border-radius:4px;font-family:monospace;color:#7c3aed">.esp</code>/<code style="background:#f0f0f5;border:1px solid #d8d9e0;padding:1px 5px;border-radius:4px;font-family:monospace;color:#7c3aed">.esl</code>。
+    本文件為繁體中文翻譯版本。
+  </p>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>🤖 代理工作流程</h3>
+      <ul>
+        <li><a href="for-agent.html">概覽 — 兩種驅動方式與限制</a></li>
+        <li><a href="for-agent-cli.html">CLI 驅動（JSON 規格 → 插件）</a></li>
+        <li><a href="for-agent-lib.html">函式庫 API（ModForge.Core）</a></li>
+        <li><a href="external-assets.html">外部資源（網格 / 貼圖 / 音效）</a></li>
+        <li><a href="engine-internals.html">引擎內部原理</a></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>📋 規格說明（SPEC）</h3>
+      <ul>
+        <li><a href="spec-1.html">Part 1：介紹、記錄類型、條件</a></li>
+        <li><a href="spec-2.html">Part 2：任務階段、腳本、商販</a></li>
+        <li><a href="spec-3.html">Part 3：配方、天氣、工作流程</a></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>🧑‍🤝‍🧑 讓 NPC 更有生命力</h3>
+      <ul>
+        <li><a href="lifelike.html">總覽 — 兩大 AI 系統</a></li>
+        <li><a href="cookbook-1.html">食譜 1：酒館常客、通勤者、法師</a></li>
+        <li><a href="cookbook-2.html">食譜 2：可招募的跟隨者</a></li>
+        <li><a href="cookbook-3.html">食譜 3：室內空間、地城、物品</a></li>
+        <li><a href="cookbook-4.html">食譜 4：附魔、任務、龍吼、場景</a></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>🔧 快速工具</h3>
+      <ul>
+        <li><a href="cheatsheets.html">速查表 — 診斷指令與控制台</a></li>
+        <li><a href="gotchas.html">常見陷阱 — 已踩過的坑</a></li>
+        <li><a href="formid-ref.html">原版 FormID 參考</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+<script>
+document.querySelectorAll('.nav-item').forEach(function(a){
+  var p=location.pathname.split('/').pop()||'index.html';
+  if(a.getAttribute('href')===p)a.classList.add('active');
+});
+</script>
+</body>
+</html>

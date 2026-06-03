@@ -1,0 +1,106 @@
+/* ModForge 文件 — 共用樣式 */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  font-size:15px;line-height:1.72;color:#24292f;
+  background:#fff;display:flex;height:100vh;overflow:hidden;
+}
+
+/* ── Sidebar ── */
+.sidebar{
+  width:262px;min-width:262px;
+  background:#1e1e2e;color:#cdd6f4;
+  overflow-y:auto;padding-bottom:32px;
+  display:flex;flex-direction:column;flex-shrink:0;
+  border-right:1px solid #313244;
+}
+.logo{
+  padding:18px 16px 14px;
+  font-size:15px;font-weight:700;color:#cba6f7;
+  border-bottom:1px solid #313244;margin-bottom:6px;
+}
+.logo a{color:inherit;text-decoration:none}
+.nav-section{
+  padding:14px 16px 3px;
+  font-size:10.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.08em;
+  color:#6c7086;
+}
+.nav-item{
+  display:block;padding:5px 16px 5px 22px;
+  color:#bac2de;text-decoration:none;
+  font-size:13.5px;transition:background .1s,color .1s;
+}
+.nav-item:hover{background:#313244;color:#cdd6f4}
+.nav-item.active{
+  background:#313244;color:#89b4fa;font-weight:600;
+  border-left:3px solid #89b4fa;padding-left:19px;
+}
+
+/* ── Main content area ── */
+.content{flex:1;overflow-y:auto;background:#fff}
+.content-inner{max-width:880px;padding:36px 48px 80px;margin:0 auto}
+
+/* ── Markdown typography ── */
+.md h1{font-size:1.9em;font-weight:700;border-bottom:2px solid #e1e4e8;padding-bottom:10px;margin:0 0 22px;color:#1a1a2e}
+.md h2{font-size:1.45em;font-weight:700;border-bottom:1px solid #e1e4e8;padding-bottom:7px;margin:38px 0 14px;color:#1a1a2e}
+.md h3{font-size:1.15em;font-weight:700;margin:26px 0 10px;color:#24292f}
+.md h4{font-size:1em;font-weight:700;margin:18px 0 6px}
+.md p{margin:10px 0}
+.md ul,.md ol{padding-left:26px;margin:10px 0}
+.md li{margin:3px 0}
+.md li>ul,.md li>ol{margin:3px 0}
+.md a{color:#1e66f5;text-decoration:none}
+.md a:hover{text-decoration:underline}
+.md strong{font-weight:700}
+.md em{font-style:italic}
+.md hr{border:none;border-top:2px solid #e1e4e8;margin:28px 0}
+
+/* Blockquotes */
+.md blockquote{
+  border-left:4px solid #89b4fa;background:#f0f4ff;
+  padding:10px 16px;margin:14px 0;color:#3b3b52;
+  border-radius:0 6px 6px 0;
+}
+.md blockquote p{margin:4px 0}
+
+/* Inline code */
+.md code{
+  font-family:'JetBrains Mono','Fira Code',Consolas,'Courier New',monospace;
+  font-size:87%;
+}
+.md p code,.md li code,.md td code,.md h3 code,.md h4 code{
+  background:#f0f0f5;border:1px solid #d8d9e0;
+  padding:1px 5px;border-radius:4px;color:#7c3aed;
+}
+
+/* Code blocks */
+.md pre{
+  background:#1e1e2e;color:#cdd6f4;
+  border-radius:8px;padding:15px 20px;
+  overflow-x:auto;margin:14px 0;
+  font-size:13px;line-height:1.55;
+}
+.md pre code{background:none;border:none;padding:0;color:inherit;font-size:inherit}
+
+/* Tables */
+.md table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+.md th,.md td{padding:7px 11px;border:1px solid #d0d7de;text-align:left;vertical-align:top}
+.md th{background:#f6f8fa;font-weight:600}
+.md tr:nth-child(even) td{background:#fafbfc}
+
+/* Index page cards */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:24px}
+.card{
+  border:1px solid #d0d7de;border-radius:10px;
+  padding:20px;background:#fafbfc;
+  transition:border-color .15s,box-shadow .15s;
+}
+.card:hover{border-color:#89b4fa;box-shadow:0 2px 8px rgba(137,180,250,.15)}
+.card h3{font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px}
+.card ul{list-style:none;padding:0}
+.card ul li{margin:4px 0}
+.card ul li a{font-size:13px;color:#1e66f5;text-decoration:none}
+.card ul li a:hover{text-decoration:underline}
+.page-intro{color:#57606a;margin-bottom:28px;font-size:15px;line-height:1.7}

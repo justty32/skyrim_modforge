@@ -1,0 +1,286 @@
+<!-- Part 4/4 — Advanced recipes -->
+## 「法術書」（自訂法術的 BOOK，首次閱讀時教授法術：MGEF → SPEL → BOOK）
+
+法術書是一種 BOOK，其 `teaches` 欄位在首次閱讀時授予一個 SPEL。最佳組合：撰寫法術（自訂 MGEF + SPEL，如上）以及一本教授它的書卷——全都在同一份規格中。閱讀書卷後，玩家即可獲得法術。
+
+```jsonc
+{ "magicEffects": [ { "editorId": "MF_EmberLanceEffect", /* …archetype/projectile/castingArt… */ } ],
+  "spells":       [ { "editorId": "MF_EmberLanceSpell", "name": "Ember Lance", /* …effects… */ } ],
+  "books": [
+    { "editorId": "MF_SpellTomeEmberLance", "name": "Spell Tome: Ember Lance",
+      "text": "<p>Reading this grants the Ember Lance spell.</p>",
+      "template": "Skyrim.esm:0x10F7F4",                 // 克隆 SpellTomeIncinerate 的 MODEL（否則閱讀時會崩潰）
+      "value": 250, "flags": [ "CantBeTaken" ],          // 原版法術書旗標
+      "teaches": { "kind": "spell", "spell": "MF_EmberLanceSpell" } },   // ← 教授規格內的法術
+
+    // 也可以：透過外部參照教授原版法術…
+    { "editorId": "MF_SpellTomeFirebolt", "name": "Spell Tome: Firebolt (copy)",
+      "template": "Skyrim.esm:0x10F7F4",
+      "teaches": { "kind": "spell", "spell": "Skyrim.esm:0x012FD0" } },
+
+    // …或是在閱讀時提升技能的技能書（保留 template 就不會發生模型崩潰）
+    { "editorId": "MF_SkillBookDestruction", "name": "Pyromancy for Beginners",
+      "template": "Skyrim.esm:0x0ED161",
+      "teaches": { "kind": "skill", "skill": "Destruction" } }
+  ] }
+```
+
+注意事項：教授書卷可以被取用和閱讀，因此仍然需要一個 `template`（用於克隆 `.nif` 模型的原版 BOOK）——沒有模型的書卷在開啟閱讀介面時會**崩潰**。規格內的 `spell` 參照在建構第二階段才會連結，因此書卷可以教授在同一份規格中稍後定義的法術。透過 CLI 確認書卷的模型或 `Teaches` 結構：`bookdiag <Skyrim.esm> 0x10F7F4`（原版法術書）或 `0x01AFD2`（技能書）。實際上的*閱讀後授予*在結構上已連結，但此處尚未在遊戲中確認。
+
+## 「可對話的 NPC」（自訂玩家對話選項——遊戲內已確認 It.23）
+
+為 NPC 設定一個 `greeting`、一個宿主任務，以及每個話題各一個 `dialogue` 條目。由此，建構程序會自動產生完整的原版鏈（Quest→DialogView→Branch→Topic→INFO + 一個 Hello），使話題能夠實際顯示。
+
+```jsonc
+{ "quests": [ { "editorId": "MF_TalkQuest", "name": "...", "startGameEnabled": true } ],
+  "npcs": [
+    { "editorId": "MF_Talker", "name": "Aldric", "race": "Skyrim.esm:0x013746",
+      "voiceType": "Skyrim.esm:0x013AE6",            // 真實的語音類型——沒有語音的 NPC 不會打招呼
+      "greeting": "Welcome. What brings you here?",   // 必填：產生讓他可對話的 Hello
+      "factions": [ "Skyrim.esm:0x028172" ] } ],
+  "dialogue": [
+    { "editorId": "MF_AboutPlace", "questEditorId": "MF_TalkQuest", "speakerNpcEditorId": "MF_Talker",
+      "prompt": "Tell me about this place.", "emotion": "Happy",
+      "responses": [ "Everything here was forged on Linux.", "No Creation Kit needed." ] } ],
+  "placements": [
+    { "base": "MF_Talker", "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": -350, "y": 180, "z": 0 } } ]   // 真實的室內座標，而非 (0,0,0)
+}
+```
+
+以下三件事各自獨立地會導致靜默失敗——參見 [gotchas.md](gotchas.md)：
+- **`greeting`** 必須設定，否則 NPC 無法對話（不會出現對話鏡頭）。
+- **放置位置**必須是真實的室內座標——一個沒有套件的 NPC 位於 `(0,0,0)` 時會偏離導覽網格，你無法靠近它。
+- **未配音的台詞**會一閃而過——請安裝 **Fuz Ro D-oh**（或附上靜音 `.fuz`），並開啟字幕。
+
+## 「運作中的商人」（能買賣商品的店主——遊戲內已確認 2026-05-31）
+
+商人 = 一個**標有 Vendor 旗標的 FACT**（包含交易時段 + 買賣類別清單 + 含金幣與存貨的商人箱），其成員 NPC 會被遊戲引擎視為店主。讓 NPC 可以對話，建構程序會自動加入 `JobMerchantFaction`，使原版通用的「I'd like to trade」話題得以顯示——**但前提是 `GetOffersServicesNow` 回傳 1**，這對生成的 NPC 有兩個不明顯的要求（商人必須在其商店內就位當班，且派系必須指定一個售賣區域的 CELL）。
+
+```jsonc
+{ "factions": [
+    { "editorId": "MF_ShopFaction", "name": "ModForge General Goods",
+      "vendor": {
+        "startHour": 8, "endHour": 20, "buysStolen": false,
+        "sellBuyList": "Skyrim.esm:0x06CB48",     // VendorItemsMisc（VendorItem-keyword FormList）
+        "notSellBuyList": true,                    // NOT-sell 清單 -> 交易除此之外的所有物品（一般商品）
+        "merchantContainer": "MF_ShopChestRef" } } ],   // -> 放置的箱子（如下）
+  "containers": [
+    { "editorId": "MF_ShopChest", "name": "Merchant Chest",
+      "items": [ { "item": "Skyrim.esm:0x072AE7", "count": 1 },     // VendorGoldMisc（商人的金幣）
+                 { "item": "Skyrim.esm:0x09AF0A", "count": 10 } ] } ],  // LItemMiscVendorMiscItems75（存貨）
+  "npcs": [
+    { "editorId": "MF_Shopkeeper", "name": "Marcurio the Merchant", "race": "Skyrim.esm:0x013746",
+      "voiceType": "Skyrim.esm:0x013AE6", "unique": true,
+      "factions": [ "MF_ShopFaction" ],
+      "greeting": "Looking to buy?" } ],
+  "cells": [ { "editorId": "MF_Shop", "name": "Trading Post", "template": "Skyrim.esm:0x0165A8" } ],
+  "placements": [
+    { "base": "MF_Shopkeeper", "cell": "MF_Shop", "position": { "x": 0, "y": 128, "z": 0 }, "persistent": true },
+    { "editorId": "MF_ShopChestRef", "base": "MF_ShopChest", "cell": "MF_Shop",
+      "position": { "x": 0, "y": 256, "z": 0 }, "persistent": true } ] }
+```
+（完整範例規格：`examples/vendor_spec.json`。）
+
+**商人必須在其商店內就位當班**——這在**新**室內空間中需要：(a) 一個地板（`WRIntFloorSTMid01Large` `0x1044AA` 格板 + 一盞燈），以及 (b) 一個當班用的 **Sandbox** 套件（`0x01C254`，NearSelf）。
+
+**已確認（2026-05-31）**：`coc MF_Shop`、`set GameHour to 12`，與 Marcurio 對話 → 以物易物選單開啟。
+
+## 「NPC 的被動特技」（PERK——能力 + 入口點）
+
+兩種特技形態，均可透過 `npcs[].perks` 附加到 NPC（角色在遊戲開始時獲得）：
+
+```jsonc
+{ "magicEffects": [
+    { "editorId": "MF_IronHideMgef", "archetype": "ValueModifier", "actorValue": "DamageResist",
+      "castType": "ConstantEffect", "targetType": "Self",
+      "flags": [ "Recover", "NoArea", "NoDuration", "HideInUI" ] }
+  ],
+  "spells": [
+    { "editorId": "MF_IronHideAbility", "name": "Iron Hide", "spellType": "Ability",
+      "castType": "ConstantEffect", "targetType": "Self",
+      "effects": [ { "magicEffect": "MF_IronHideMgef", "magnitude": 50 } ] }
+  ],
+  "perks": [
+    // (a) 能力特技——授予上方的持續效果 SPEL
+    { "editorId": "MF_IronHidePerk", "name": "Iron Hide", "numRanks": 1,
+      "effects": [ { "kind": "ability", "spell": "MF_IronHideAbility" } ] },
+    // (b) 入口點特技——揮劍時攻擊傷害 +20%，單手武器達 30 時可用
+    { "editorId": "MF_DeadlyStrikesPerk", "name": "Deadly Strikes", "numRanks": 1,
+      "conditions": [
+        { "function": "GetBaseActorValue", "actorValue": "OneHanded",
+          "comparison": "GreaterThanOrEqualTo", "value": 30 } ],
+      "effects": [
+        { "kind": "entryPoint", "entryPoint": "ModAttackDamage", "function": "Multiply", "value": 1.2,
+          "conditions": [
+            { "function": "WornHasKeyword", "param": "Skyrim.esm:0x01E711",   // WeapTypeSword
+              "comparison": "EqualTo", "value": 1 } ] } ] }
+  ],
+  "npcs": [
+    { "editorId": "MF_PerkGuard", "name": "Hardened Guard", "race": "Skyrim.esm:0x013746",
+      "perks": [ "MF_IronHidePerk", "MF_DeadlyStrikesPerk" ] }
+  ] }
+```
+
+- 透過 `perkdiag <Skyrim.esm> entrypoints` 和 `perkdiag <Skyrim.esm> 0x079343`（Armsman20）確認入口點名稱及可參考的原版結構。
+- **玩家特技**並非僅靠資料記錄即可：需透過 Papyrus 的 `AddPerk` 呼叫（一個 `scripts` 任務片段）來授予。
+- 這些在結構上與原版特技完全相同；但修改值是否真的影響遊戲內的戰鬥數值，需要實際啟動 Skyrim 才能確認。完整範例：[`../../examples/perk_spec.json`](../../examples/perk_spec.json)。
+
+## 「多階段任務」（階段 + 日誌記錄 + 目標 + 對話設定階段）
+
+一個會**推進**的任務：在各階段間推進、在每個階段寫入日誌文字、依階段顯示/完成目標，並在最終階段關閉任務。
+
+```jsonc
+{ "quests": [ {
+    "editorId": "MF_ErrandQuest", "name": "A Forged Errand",
+    "startGameEnabled": true, "priority": 60,
+    "stages": [
+      { "index": 10, "logEntry": "Joren asked me to retrieve his lost hammer." },
+      { "index": 20, "logEntry": "I agreed to help. Time to search the riverbank." },
+      { "index": 30, "logEntry": "I returned the hammer. Done.", "completeQuest": true } ],
+    "objectives": [
+      { "index": 10, "text": "Agree to help Joren", "showStage": 10, "completeStage": 20 },
+      { "index": 20, "text": "Find Joren's hammer",  "showStage": 20, "completeStage": 30 } ] } ],
+  "dialogue": [
+    { "editorId": "MF_AgreeToHelp", "questEditorId": "MF_ErrandQuest", "speakerNpcEditorId": "MF_Joren",
+      "prompt": "I'll find your hammer.", "responses": [ "Good. It's by the mill." ],
+      "setStage": 20 } ] }                                 // 選擇此選項後任務從 10 → 20
+```
+
+**`package` 自動處理 Papyrus——無需 CK（遊戲內已確認 It.36 2026-06-02）。**
+它會生成、編譯並以 VMAD 附加所有內容：一個每階段各有 `Fragment_Stage_XXXX_Item00000()` 的 Quest 腳本，以及一個 `extends TopicInfo Hidden` 的 TIF 腳本（含明確的 `Quest Property OwningQuest Auto`，呼叫 `OwningQuest.SetStage(N)`）。**請勿使用 `GetOwningQuest()`——對 StartGameEnabled 任務回傳 None**。
+
+## 「自訂龍吼」——SHOU + WOOP + 字詞之牆（遊戲內已確認 2026-06-01）
+
+自訂龍吼的結構為 `MGEF → Voice SPEL → WOOP → SHOU`，加上一種**學習**方式。要在遊戲中實際觸發龍吼，需要在基本記錄之外補充四個要素：
+
+1. **每個 Voice 法術都需要一個裝備槽。** Build 現在會**自動預設**可施放類型（Spell/Voice/Power/LesserPower）為 **EitherHand**（`Skyrim.esm:0x00013F44`）。
+2. **MGEF 需要一個 `projectile`**，否則龍吼的力量無聲無息地發出。
+3. **`Release` 音效是效果音效**（雷聲/冰霜特效），透過 `magicEffects[].sounds` 設定。
+4. **SHOU 需要一個 `menuDisplayObject`**（`0x0A59AC`），才能在龍吼選單中顯示預覽圖。
+
+```jsonc
+{ "magicEffects": [
+    { "editorId": "MF_ForgedVoiceEffect", "archetype": "Stagger",
+      "castType": "FireAndForget", "targetType": "Aimed", "flags": [ "NoHitEvent" ],
+      "projectile": "Skyrim.esm:0x00013DF4",               // VoicePush 衝擊波
+      "sounds": [ { "type": "Release", "sound": "Skyrim.esm:0x000A0F52" } ] } ],
+  "spells": [   // 每個充能等級各一個 Voice 法術——spellType 必須為 "Voice"；equipType 自動 = EitherHand
+    { "editorId": "MF_FV1", "name": "Forged Voice", "spellType": "Voice", "castType": "FireAndForget",
+      "targetType": "Aimed", "effects": [ { "magicEffect": "MF_ForgedVoiceEffect", "magnitude": 1 } ] },
+    { "editorId": "MF_FV2", "name": "Forged Voice", "spellType": "Voice", "castType": "FireAndForget",
+      "targetType": "Aimed", "effects": [ { "magicEffect": "MF_ForgedVoiceEffect", "magnitude": 2 } ] },
+    { "editorId": "MF_FV3", "name": "Forged Voice", "spellType": "Voice", "castType": "FireAndForget",
+      "targetType": "Aimed", "effects": [ { "magicEffect": "MF_ForgedVoiceEffect", "magnitude": 3 } ] } ],
+  "wordsOfPower": [
+    { "editorId": "MF_Dov", "name": "Dov", "translation": "Dragon" },
+    { "editorId": "MF_Ah",  "name": "Ah",  "translation": "Hunter" },
+    { "editorId": "MF_Vul", "name": "Vul", "translation": "Forged" } ],
+  "shouts": [
+    { "editorId": "MF_ForgedVoice", "name": "Forged Voice", "menuDisplayObject": "Skyrim.esm:0x000A59AC",
+      "words": [   // 恰好 3 個：word1 = 點擊，1+2 = 長按，1+2+3 = 完整充能
+        { "word": "MF_Dov", "spell": "MF_FV1", "recoveryTime": 12 },
+        { "word": "MF_Ah",  "spell": "MF_FV2", "recoveryTime": 18 },
+        { "word": "MF_Vul", "spell": "MF_FV3", "recoveryTime": 25 } ] } ],
+  "wordWalls": [
+    { "editorId": "MF_ForgedVoiceWall", "name": "Forged Voice Word Wall",
+      "shout": "MF_ForgedVoice", "wordIndex": 1,
+      "scriptName": "ForgedVoiceWordWallScript",
+      "cell": "Skyrim.esm:0x0371DE",
+      "position": { "x": 0, "y": 0, "z": 0 } } ]
+}
+```
+
+**主機台測試：** `help "Forged Voice" 0` → `player.addshout <SHOUT>`，然後對每個字詞使用 **`player.teachword <WORD>`**——`teachword` 才能使字形**顯示**在龍吼選單中。
+
+**遊戲內已確認有效：** 可施放的龍吼、投射物 + 衝擊 + 效果音效、3 個充能等級。
+
+**兩個誠實的限制：**
+- **沒有口說龍語。** 程式化產生的龍吼沒有語音資產，因此字詞語音為靜音——只有效果特效播放。
+- **字詞之牆的學習是 `OnInit`，而非走近觸發。** 教授任務在遊戲開始時啟用，因此龍吼 + 字詞 1 在**插件載入後立即授予**。
+
+## 「自訂天空」（WTHR + CLMT——大氣效果，尚未指派）
+
+一個詭異的綠色霧氣天氣，加上循環此天氣的氣候。完整範例規格：[`../../examples/weather_spec.json`](../../examples/weather_spec.json)。
+
+```jsonc
+{
+  "pluginName": "ModForgeWeather.esp",
+  "weathers": [{
+    "editorId": "MF_EerieFog",
+    "flags": ["Cloudy", "Rainy"],
+    "skyUpperColor": { "day": { "r": 46, "g": 92, "b": 58 }, "night": { "r": 8, "g": 20, "b": 14 } },
+    "fogNearColor":  { "day": { "r": 60, "g": 120, "b": 70 } },
+    "sunlightColor": { "day": { "r": 120, "g": 170, "b": 110 } },
+    "clouds": [{ "index": 0, "texture": "Sky\\SkyrimCloudsUpper04.dds",
+                 "xSpeed": 0.012, "ySpeed": -0.006, "alphaNight": 0.8 }],
+    "precipitation": "Skyrim.esm:0x10780F",
+    "windSpeed": 0.35, "windDirection": 210, "fogDayNear": 256, "fogDayFar": 9000
+  }],
+  "climates": [{
+    "editorId": "MF_EerieClimate",
+    "weathers": [ { "weather": "MF_EerieFog", "chance": 75 } ],
+    "sunriseBegin": "06:00", "sunsetEnd": "20:00", "moons": ["Masser", "Secunda"]
+  }]
+}
+```
+
+**讓它在遊戲中毫無作用的唯一原因：** 一個 `WTHR`+`CLMT` 只是資料，直到某個東西*指派*了這個氣候。原版透過**世界空間**（`WRLD` 的 `Climate` 欄位）或**地區**（`REGN` 天氣資料）來實現——ModForge *現在*均可產生（見下一個配方）。**僅通過結構驗證；天空實際渲染尚未在遊戲中確認。**
+
+## 「自訂室外世界空間 + 天氣地區」（WRLD + REGN——僅限記錄層）
+
+建立一個新的室外世界，附加氣候（天空/光照循環），並新增一個天氣表格驅動某區域天氣播放的地區。這是接入自訂 Climate/Weather 的鉤子。
+
+```jsonc
+{ "worldspaces": [
+    { "editorId": "MFTestWorld", "name": "ModForge Test Vale",
+      "climate": "Skyrim.esm:0x000812",
+      "water":   "Skyrim.esm:0x000018",
+      "parent":  "Skyrim.esm:0x00003C",
+      "flags":   [ "SmallWorld", "CannotFastTravel" ],
+      "defaultLandHeight": -27000, "defaultWaterHeight": -14000 }  // 防淹修正——保留這些值
+  ],
+  "regions": [
+    { "editorId": "MFTestWorldWeather", "worldspace": "MFTestWorld", "weatherPriority": 60,
+      "mapColor": "0x3CA0F0", "edgeFallOff": 1024,
+      "weather": [ { "weather": "Skyrim.esm:0x10E1F2", "chance": 60 },   // SkyrimClear
+                   { "weather": "Skyrim.esm:0x10E1F1", "chance": 30 },   // SkyrimCloudy
+                   { "weather": "Skyrim.esm:0x10E1F0", "chance": 10 } ], // SkyrimClearSN
+      "area": [ { "x": -16384, "y": -16384 }, { "x": 16384, "y": -16384 },
+                { "x": 16384, "y": 16384 }, { "x": -16384, "y": 16384 } ] }
+  ] }
+```
+
+**誠實的注意事項——這是記錄層，而非可步行的世界。** ModForge 會產生有效的 WRLD/REGN 記錄並連結所有關聯，但一個你可以實際*進入並行走*的世界還需要**地形（LAND 高度圖）、LOD 網格和導覽網格**——這些都是 ModForge 無法完成的 **Creation Kit** 工作。已通過結構驗證——**尚未在遊戲中確認**。完整範例：`examples/worldspace_spec.json`。
+
+## 「兩個 NPC 爭論」（SCEN 多角色對話——僅限結構，尚未在遊戲中確認）
+
+`scene` 是讓 NPC **彼此**對話，而非與玩家對話。它由一個任務宿主，任務的**別名**即為參與者；建構程序會產生別名繫結、Scene 記錄，以及每句台詞各一個 Scene/`SCEN` 話題。將兩個 NPC**放置在同一個 CELL、彼此靠近**。
+
+```jsonc
+{ "quests": [ { "editorId": "MF_SceneQuest", "name": "...", "startGameEnabled": true } ],
+  "npcs": [
+    { "editorId": "MF_Borin", "name": "Borin", "greeting": "...", "race": "Skyrim.esm:0x013746",
+      "voiceType": "Skyrim.esm:0x013AE6", "unique": true },
+    { "editorId": "MF_Hilda", "name": "Hilda", "greeting": "...", "race": "Skyrim.esm:0x013746",
+      "voiceType": "Skyrim.esm:0x013AE7", "unique": true } ],
+  "scenes": [
+    { "editorId": "MF_TavernArgument", "questEditorId": "MF_SceneQuest", "beginOnQuestStart": true,
+      "actors": [ { "aliasId": 0, "npc": "MF_Borin" }, { "aliasId": 1, "npc": "MF_Hilda" } ],
+      "phases": [
+        { "speaker": 0, "emotion": "Anger",   "lines": [ "You still owe me for the ale, Hilda." ] },
+        { "speaker": 1, "emotion": "Disgust", "lines": [ "That swill wasn't worth a clipped septim." ] },
+        { "speaker": 0, "emotion": "Anger",   "lines": [ "Watch your tongue, or there'll be trouble." ] },
+        { "speaker": 1, "emotion": "Happy",   "lines": [ "Ha! Buy me a drink and we're even." ] } ] } ],
+  "placements": [
+    { "base": "MF_Borin", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 180, "z": 0 } },
+    { "base": "MF_Hilda", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 280, "z": 0 },
+      "rotation": { "x": 0, "y": 0, "z": 180 } } ] }
+```
+
+它與原版的對應關係（已透過 `scenediag <Skyrim.esm> <0xFORMID>` 對照原版場景驗證）：
+- 宿主任務的每個 `actor` 各有一個 **QuestAlias**，以 `UniqueActor` 繫結至該 NPC；
+- 每個 `phase` → 一個 `ScenePhase` + 一個**對話 `SceneAction`** + 一個**Scene/`SCEN` DialogTopic+INFO** 持有台詞；
+- `beginOnQuestStart` 在任務開始的瞬間播放場景。
+
+**狀態/誠實說明：** `build`/`validate`/`dump` 均乾淨通過，記錄結構逐位元組符合原版，但這**尚未在遊戲中確認**。使用 `scenediag` 探查任何原版場景以進行比較。參見 `examples/scene_spec.json`。
