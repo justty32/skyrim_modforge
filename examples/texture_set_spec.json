@@ -25,7 +25,7 @@
   "placements": [
     {
       "base": "MF_GildedRubble",
-      "cell": "Skyrim.esm:0x01605E",
+      "cell": "Skyrim.esm:0x0133C6",
       "position": { "x": 0.0, "y": 0.0, "z": 0.0 }
     }
   ]
