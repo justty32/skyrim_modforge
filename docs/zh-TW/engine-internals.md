@@ -50,6 +50,16 @@ sub      = FloorDiv(cellGrid, 8)
 
 除法**必須向 −∞ 取底**，而非像 C# 的 `/` 那樣截斷（例如 C# 中 `-41 / 8 == -5`，但底數為 `-6`）。負座標在其他情況下會落入錯誤的 GRUP。（已對照 Tamriel 驗證：cell (7,−41) → block (0,−2)，sub (0,−6)。）
 
+### LAND record 的陷阱（平坦地形生成）
+
+生成平坦 LAND records 時已在實機確認三個 bug（2026-06-03）：
+
+1. **`Landscape.Flags` 必須包含 `VertexNormalsHeightMap`（0x01）。** 若無此 DATA flag，引擎會跳過整個 VHGT/VNML 資料——cell 沒有地形碰撞，玩家會直接穿透。
+
+2. **Z=0 約等於 Skyrim 的海平面。** VHGT `Offset=0` → 地形在 Z=0 = 海面高度。請使用 `Offset = height / 8`（例如 height=4000 → Offset=500 → Z=4000，安全地高於水面）。
+
+3. **ESL 外掛不能包含 LAND records。** Skyrim 引擎會靜默忽略從 ESL（輕型外掛）載入的地形資料——外部地形載入路徑只讀取完整的 ESP/ESM。有 `cells` 的 spec 必須設定 `"esl": false`。`validate` 指令會強制檢查此項。
+
 ## AI 套件以模板為基礎驅動
 
 每個具體的 `Package` 透過 `PackageTemplate`（`IFormLink<IPackageGetter>`）引用一個原版的**程序模板**，其 `Data` 是一個以模板**具名插槽索引**為鍵的 `IDictionary<sbyte, APackageData>`。具體套件的 `Type = Package`；模板本身的 `Type = PackageTemplate`（永遠不要撰寫後者）。以 `packagediag <Skyrim.esm> <templateFormId>` 探索任何模板的插槽結構；以 `pkgsbytemplate` 尋找具體範例。

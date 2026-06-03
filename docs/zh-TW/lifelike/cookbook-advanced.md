@@ -80,18 +80,20 @@
 
 **讓它在遊戲中毫無作用的唯一原因：** 一個 `WTHR`+`CLMT` 只是資料，直到某個東西*指派*了這個氣候。原版透過**世界空間**（`WRLD` 的 `Climate` 欄位）或**地區**（`REGN` 天氣資料）來實現——這是接入自訂天氣的鉤子（見下一個配方）。**僅通過結構驗證；天空實際渲染尚未在遊戲中確認。**
 
-## 「自訂室外世界空間 + 天氣地區」（WRLD + REGN——僅限記錄層）
+## 「自訂室外世界空間 + 天氣地區」（WRLD + REGN + 平坦地形）
 
-建立一個新的室外世界，附加氣候（天空/光照循環），並新增一個天氣表格驅動某區域天氣播放的地區。這是接入自訂 Climate/Weather 的鉤子。
+建立一個新的室外世界，附加氣候（天空/光照循環），加入可行走的平坦地形 cell，並新增一個天氣表格驅動某區域天氣播放的地區。
 
 ```jsonc
-{ "worldspaces": [
+{ "esl": false,                              // 必須！ESL 外掛不載入 LAND records
+  "worldspaces": [
     { "editorId": "MFTestWorld", "name": "ModForge Test Vale",
       "climate": "Skyrim.esm:0x000812",      // 若無此設定，世界將沒有天空/光照週期
       "water":   "Skyrim.esm:0x000018",      // DefaultWater（可選）
       "parent":  "Skyrim.esm:0x00003C",      // 上層 WRLD = Tamriel（可選）
       "flags":   [ "SmallWorld", "CannotFastTravel" ],
-      "defaultLandHeight": -27000, "defaultWaterHeight": -14000 }  // 防淹修正——保留這些值
+      "defaultLandHeight": -27000, "defaultWaterHeight": -14000,  // 防淹修正——保留這些值
+      "cells": [ { "x": 0, "y": 0 } ] }     // 生成平坦地形 cell；進入：cow MFTestWorld 0 0
   ],
   "regions": [
     { "editorId": "MFTestWorldWeather", "worldspace": "MFTestWorld", "weatherPriority": 60,
@@ -104,7 +106,7 @@
   ] }
 ```
 
-**誠實的注意事項——這是記錄層，而非可步行的世界。** ModForge 會產生有效的 WRLD/REGN 記錄並連結所有關聯，但一個你可以實際*進入並行走*的世界還需要**地形（LAND 高度圖）、LOD 網格和導覽網格**——這些都是 ModForge 無法完成的 **Creation Kit** 工作。已通過結構驗證（`build`/`dump`/`worlddiag`/`regndiag` 均正常）——**尚未在遊戲中確認**。完整範例：`examples/worldspace_spec.json`。
+`cells` 中每個 `{ "x": N, "y": N }` 生成一個 CELL + LAND（平坦高度圖，`height` 預設 4000 game units = 海平面以上）。遊戲內進入：`cow MFTestWorld 0 0`。無導覽網格——玩家可行走，NPC 不能導航。**實機確認**（2026-06-03）。完整範例：`examples/worldspace_spec.json`。
 
 ## 「兩個 NPC 爭論」（SCEN 多角色對話——僅限結構，尚未在遊戲中確認）
 

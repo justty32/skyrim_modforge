@@ -447,7 +447,10 @@ worldspace) whose **weather table** drives which weathers play there:
     "defaultLandHeight":  -27000,          // the FLOOD-FIX: omitting these defaults water to 0,
     "defaultWaterHeight": -14000,          //   which drowns any terrain below sea level
     "map": { "northwestX": -4, "northwestY": 4, "southeastX": 4, "southeastY": -4,
-             "cameraInitialPitch": 50, "cameraMinHeight": 50000, "cameraMaxHeight": 80000 } }
+             "cameraInitialPitch": 50, "cameraMinHeight": 50000, "cameraMaxHeight": 80000 },
+    "cells": [
+      { "x": 0, "y": 0 }                  // flat terrain cell at grid origin; height defaults to 4000
+    ] }
 ],
 "regions": [
   { "editorId": "MFTestWorldWeather", "worldspace": "MFTestWorld",  // ref to in-spec WRLD or vanilla
@@ -467,21 +470,20 @@ worldspace) whose **weather table** drives which weathers play there:
   `NoLandscape`, `NoSky`, `FixedDimensions`, `NoGrass`). `defaultLandHeight`/`defaultWaterHeight`
   default to Tamriel's values (-27000 / -14000) — **leave them** unless you know better, since a 0
   water default floods the world. `map` sets the world-map cell-corner bounds + local-map camera.
+- **`cells`** — flat walkable terrain cells. Each `{ "x": N, "y": N }` generates a CELL + LAND
+  record (flat 33×33 heightmap) in the worldspace's SubCell block tree. Optional `"height"` (game
+  units, default 4000; Z=0 ≈ sea level) sets terrain elevation. Enter in-game: `cow <editorId> X Y`.
+  No navmesh — player can walk, NPCs cannot path. **ESL LIMIT:** Skyrim ignores LAND in ESL plugins;
+  specs with `cells` must use `"esl": false` (validator enforces this).
 - **regions** (REGN): an area inside a `worldspace` (an in-spec WRLD `editorId` or a vanilla
   `"<master>:0xFORMID"`). `area` is a polygon of **>=3** world-space points (not cell grid).
   `weather` is the table that picks the active weather — each entry a WTHR *ref* + a relative
   `chance` (the chances must sum > 0); `weatherPriority` orders overlapping regions. `mapColor` is
   `0xRRGGBB`. Other RegionData kinds (sound/objects/grass/land) are CK-side and not emitted.
-- WARNING **RECORD LAYER ONLY — not a playable world.** ModForge emits the WRLD/REGN records and
-  wires their links, but a real walkable exterior also needs **terrain (LAND heightmap), LOD meshes,
-  and navmesh**, all authored in the **Creation Kit** — ModForge does not generate them. A new
-  worldspace here is the hook to **attach a custom Climate/Weather** and to **define weather / spawn
-  regions**; pair `climate` (or a region's `weather`) with a generated/chosen CLMT/WTHR. This
-  feature is **structurally verified** (build/dump/round-trip) but **not in-game confirmed**.
 - Discover vanilla values with `find <Skyrim.esm> <name> Worldspace`, then
   `worlddiag <Skyrim.esm> <0xFORMID>` (climate/water/parent + map bounds + land/water defaults) and
   `regndiag <Skyrim.esm> <0xFORMID>` (worldspace/area/mapColor + weather table). Example:
-  `examples/worldspace_spec.json`.
+  `examples/worldspace_spec.json`. **In-game confirmed** (2026-06-03).
 
 ### leveled lists & containers
 ```jsonc
@@ -964,9 +966,9 @@ so there's no API key/provider to configure.
 ## Not yet covered (extend in `ModForge.Core` `Generator.Build` + a spec class)
 World placement now covers new interior cells, vanilla interior cells, **and exterior/worldspace
 cells** (via `worldspace` + world position), and ModForge can now **create** new worldspaces (WRLD)
-+ regions (REGN) — see *worldspaces & regions* above (record layer only; terrain/LOD/navmesh stay
-CK-side). Refs (in-spec or `<master>:0xFORMID`) and the `find` command are the building blocks for
-the external ones. Remaining gaps are long-tail record types/fields and the CK-side terrain/LOD/
-navmesh authoring — the record-side pattern is the same: add a spec class + a loop in `Build`.
++ regions (REGN) with **flat walkable terrain** (`cells` → CELL + LAND). Refs (in-spec or
+`<master>:0xFORMID`) and the `find` command are the building blocks for external ones. Remaining
+gaps are varied terrain (multi-height VHGT), LOD meshes, navmesh, and long-tail record types — the
+record-side pattern for new types is the same: add a spec class + a loop in `Build`.
 
 See `../examples/sample_spec.json` for a complete working example.

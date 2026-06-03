@@ -37,7 +37,10 @@
     "defaultLandHeight":  -27000,          // 防浸水修正：省略這些會使水面預設為 0，
     "defaultWaterHeight": -14000,          //   令海平面以下的地形被淹沒
     "map": { "northwestX": -4, "northwestY": 4, "southeastX": 4, "southeastY": -4,
-             "cameraInitialPitch": 50, "cameraMinHeight": 50000, "cameraMaxHeight": 80000 } }
+             "cameraInitialPitch": 50, "cameraMinHeight": 50000, "cameraMaxHeight": 80000 },
+    "cells": [
+      { "x": 0, "y": 0 }                  // 原點的平坦地形 cell；height 預設 4000
+    ] }
 ],
 "regions": [
   { "editorId": "MFTestWorldWeather", "worldspace": "MFTestWorld",
@@ -51,8 +54,9 @@
   ]
 ```
 - **worldspaces**（WRLD）：一個新的室外世界。`climate` 為 CLMT *ref*（原版預設 = `Skyrim.esm:0x000812`）——若無此設定，世界將**沒有天空/光照週期**。`defaultLandHeight`/`defaultWaterHeight` 預設為 Tamriel 的值（-27000 / -14000）——**保留這些值**，因為水面預設為 0 會淹沒整個世界。
+- **`cells`** — 在世界空間中生成可行走的平坦地形 cell。每個條目 `{ "x": N, "y": N }` 生成一個 CELL + LAND record（平坦的 33×33 高度圖），放置在世界空間的 SubCell block tree 中。可選的 `"height"`（遊戲單位，預設 4000）設定地形高度——Z=0 約為 Skyrim 的海平面，4000 以上才安全。遊戲內進入指令：`cow <worldspace editorId> X Y`。沒有生成尋路網格（NPC 無法導航），但玩家可行走。完整的地形（多樣地貌、LOD、尋路網格）仍須用 Creation Kit 製作。**ESL 限制**：Skyrim 引擎**不載入** ESL（輕型外掛）中的 LAND records——有 `cells` 的 spec 必須設定 `"esl": false`（validator 會強制檢查）。
 - **regions**（REGN）：`worldspace` 內的一個區域。`area` 為**至少 3 個**世界座標點組成的多邊形（非 cell 格子）。`weather` 為選取當前天氣的表——每個條目為一個 WTHR *ref* 加上相對 `chance`。
-- 警告 **僅限記錄層——非可遊玩的世界。** ModForge 會輸出 WRLD/REGN 記錄，但真正可步行的室外地區還需要**地形（LAND 高度圖）、LOD 網格與尋路網格**，這些必須在 **Creation Kit** 中製作。此功能**在結構上已驗證**但**尚未在遊戲中確認**。
+- **實機確認**（2026-06-03）：`cow MFTestWorld 0 0` → 玩家落在實心的平坦地面上。
 
 ### 等級列表與容器
 ```jsonc

@@ -73,6 +73,21 @@ The division **must floor toward −∞**, not truncate like C#'s `/` (e.g. `-41
 the floor is `-6`). Negative coordinates land in the wrong GRUP otherwise. (Verified against
 Tamriel: cell (7,−41) → block (0,−2), sub (0,−6).)
 
+### LAND record gotchas (flat terrain generation)
+
+Three bugs confirmed in-game (2026-06-03) when generating flat LAND records:
+
+1. **`Landscape.Flags` must include `VertexNormalsHeightMap` (0x01).** Without this DATA flag the
+   engine skips the entire VHGT/VNML payload — the cell has no terrain collision and the player
+   falls through.
+
+2. **Z=0 ≈ Skyrim's sea level.** VHGT `Offset=0` → terrain at Z=0 = ocean surface. Use
+   `Offset = height / 8` (e.g. height=4000 → Offset=500 → Z=4000, safely above water).
+
+3. **ESL plugins cannot contain LAND records.** Skyrim's engine silently ignores terrain data
+   loaded from ESL (light) plugins — the exterior terrain loading path only reads from full ESP/ESM.
+   Specs with `cells` must use `"esl": false`. The `validate` command enforces this.
+
 ## AI Packages are template-driven
 
 Every concrete `Package` references a vanilla **procedure template** via `PackageTemplate`

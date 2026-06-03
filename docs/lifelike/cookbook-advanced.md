@@ -109,19 +109,21 @@ weather (`find <Skyrim.esm> Rain Weather` → e.g. `SkyrimStormRain` `0x0C8220`,
 recipe ships a valid, inspectable climate you'd then point a WRLD/REGN at. **Structurally verified
 only; the sky actually rendering is in-game-unconfirmed.**
 
-## "Custom exterior worldspace + weather region" (WRLD + REGN — RECORD LAYER ONLY)
+## "Custom exterior worldspace + weather region" (WRLD + REGN + flat terrain)
 
-Create a new exterior world, attach a climate (the sky/lighting cycle), and add a region whose
-weather table drives which weathers play in an area. This is the hook for a custom Climate/Weather.
+Create a new exterior world, attach a climate (the sky/lighting cycle), add flat walkable terrain
+cells, and define a weather region. This is the hook for a custom Climate/Weather.
 
 ```jsonc
-{ "worldspaces": [
+{ "esl": false,                              // REQUIRED — Skyrim does not load LAND from ESL plugins
+  "worldspaces": [
     { "editorId": "MFTestWorld", "name": "ModForge Test Vale",
       "climate": "Skyrim.esm:0x000812",      // default climate — WITHOUT this the world has no sky cycle
       "water":   "Skyrim.esm:0x000018",      // DefaultWater (optional)
       "parent":  "Skyrim.esm:0x00003C",      // Tamriel (optional)
       "flags":   [ "SmallWorld", "CannotFastTravel" ],
-      "defaultLandHeight": -27000, "defaultWaterHeight": -14000 }  // FLOOD-FIX — leave these
+      "defaultLandHeight": -27000, "defaultWaterHeight": -14000,  // FLOOD-FIX — leave these
+      "cells": [ { "x": 0, "y": 0 } ] }     // flat terrain cell; enter: cow MFTestWorld 0 0
   ],
   "regions": [
     { "editorId": "MFTestWorldWeather", "worldspace": "MFTestWorld", "weatherPriority": 60,
@@ -134,14 +136,11 @@ weather table drives which weathers play in an area. This is the hook for a cust
   ] }
 ```
 
-**Honest caveat — this is the RECORD layer, not a walkable world.** ModForge emits valid WRLD/REGN
-records and wires every link, but a world you can actually *enter and walk* also needs **terrain
-(LAND heightmap), LOD meshes, and navmesh** — all of which are **Creation-Kit** work ModForge does
-not do. Treat this as: (a) attach a custom Climate to a world, and (b) define weather/spawn regions.
-The `climate` (worldspace) and `weather` (region) refs are where a generated/chosen CLMT/WTHR plugs
-in. Verified structurally (`build`/`dump`/`worlddiag`/`regndiag` round-trip) — **not in-game
-confirmed**. Harvest vanilla values with `worlddiag <Skyrim.esm> 0x00003C` (Tamriel) and
-`regndiag <Skyrim.esm> <0xFORMID>`. Full example: `examples/worldspace_spec.json`.
+Each `cells` entry generates a CELL + LAND (flat 33×33 heightmap; `height` defaults to 4000 game
+units, safely above sea level at Z=0). No navmesh — player walkable, NPCs cannot path. For varied
+terrain / LOD / navmesh use the Creation Kit. **In-game confirmed** (2026-06-03): `cow MFTestWorld
+0 0` → player lands on solid flat ground. Harvest vanilla values with `worlddiag <Skyrim.esm>
+0x00003C` and `regndiag <Skyrim.esm> <0xFORMID>`. Full example: `examples/worldspace_spec.json`.
 
 ## "Two NPCs arguing" (SCEN multi-actor conversation — STRUCTURAL ONLY, not yet in-game confirmed)
 
