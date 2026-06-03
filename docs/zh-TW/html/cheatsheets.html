@@ -70,7 +70,7 @@ dotnet run ... -- package  <spec.json> <outDir>     # esp + .pex
 提示：
 - **`pkgsbytemplate` 是如何為模板找出原版套件的方法** — `find` 只比對 EditorID，所以 EditorID 中不含模板名稱的模板式原版套件（例如 `WhiterunTempleCastHealingSpellSoldier`）對 `find` 不可見。傳入模板 FormID（例如 UseMagic `0x0504F5`）可列出所有使用它的具體套件，再用 `packagediag` 複製其插槽模式。
 - **`cellblk` 對照 `Skyrim.esm`** 可交叉驗證室內區塊/子區塊公式（block = id%10，sub = (id/10)%10）— 無需進行遊戲週期就能確認原版空間覆寫落在正確的 GRUP 中。
-- **`infodiag` 是重用任何原版對話路徑前的必要探測工具。** 倒出主題的 INFO CTDA 堆疊，看看生成的 NPC 必須滿足什麼條件 — 這就是 It.27 跟隨者錯誤被破解的方式（每個付費招募 INFO 都有 `GetIsID==<特定原版傭兵>`，所以自訂 NPC 永遠無法通過；`infodiag Skyrim.esm 0x0BCC84`）。
+- **`infodiag` 是重用任何原版對話路徑前的必要探測工具。** 倒出主題的 INFO CTDA 堆疊，看看生成的 NPC 必須滿足什麼條件 — 這就是 It.27 跟隨者錯誤被破解的方式（每個付費招募 INFO 都有 `GetIsID==<特定原版傭兵>`，所以自訂 NPC 永遠無法通過；`infodiag Skyrim.esm 0x0BCC84`）。它也會印出每個 INFO 的 OnEnd VMAD 片段，讓您看到原版臺詞是否執行了您需要複製的結果腳本。
 - **`MODFORGE_DEBUG=1`** 在出錯時印出完整堆疊追蹤（否則只顯示 `ERROR: Type: msg`）。
 
 ## 遊戲內控制台（用於測試生成的 NPC）

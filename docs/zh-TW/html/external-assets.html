@@ -114,10 +114,10 @@ OutModDir/
 "sounds": [
   { "editorId": "MFBellChimeSD",
     "files": [ "Sound\\fx\\mymod\\bell_chime_01.wav" ],
-    "category": "",
-    "outputModel": "",
+    "category": "",            // ref → SNCT；空 -> Skyrim.esm:0x0172A1 AudioCategorySFX
+    "outputModel": "",         // ref → SOPM；空 -> Skyrim.esm:0x0B4058（原版 SFX 輸出）
     "priority": 128,
-    "staticAttenuation": 5.0 }
+    "staticAttenuation": 5.0 } // dB 衰減
 ],
 "activators": [ { "editorId": "MFBell", "name": "Bell", "model": "MyMod\\bell.nif",
                   "activationSound": "MFBellChimeSD" } ]

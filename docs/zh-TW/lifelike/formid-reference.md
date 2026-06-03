@@ -113,13 +113,15 @@
 
 ## 分級敵人生成（用於 `placements[].base` 分級角色生成 → ACHR）
 
-將 `base` 設為以下 LeveledNpc（LVLN）列表之一，可在載入時生成等級適當的角色。為原版列表加上 `"kind": "npc"`（建置工具無法在無頭模式下讀取主外掛的記錄類型）。搭配 `encounterZone` 控制等級範圍。
+`base` 必須是 **NPC_ 包裝器**（`Lvl*`），其 TEMPLATE 鏈參照 LeveledNpc 列表，可在載入時生成等級適當的角色。為原版基底加上 `"kind": "npc"`（建置工具無法在無頭模式下讀取主外掛的記錄類型）。搭配 `encounterZone` 控制等級範圍。
 
 | EditorID | FormID | 角色 |
 |---|---|---|
-| LCharBanditMeleeAny | `Skyrim.esm:0x03DECD` | 通用近戰強盜 |
-| LCharBanditMissileNordM | `Skyrim.esm:0x01A348` | 弓箭手強盜 |
-| LCharBanditBossNordM | `Skyrim.esm:0x01A341` | 強盜首領（更強，等級縮放） |
+| LvlBanditMeleeAny | `Skyrim.esm:0x01E79C` | 通用近戰強盜 |
+| LvlBanditMissileNordM | `Skyrim.esm:0x01B0D5` | 弓箭手強盜 |
+| LvlBanditBossNordM | `Skyrim.esm:0x01B0E1` | 強盜首領（更強，等級縮放） |
+
+> **CTD 警告：** 底層的 `LChar*` LVLN 列表（`LCharBanditMeleeAny` `0x03DECD`、`LCharBanditMissileNordM` `0x01A348`、`LCharBanditBossNordM` `0x01A341`）可用於*建構*分級列表，但原始 LVLN **不是**有效的 placement 基底——放置它會導致 Skyrim 在載入時崩潰。
 
 ## 遭遇區域（原版 ECZN 範例 — 用 `eczndiag <Skyrim.esm> <id>` 檢查）
 

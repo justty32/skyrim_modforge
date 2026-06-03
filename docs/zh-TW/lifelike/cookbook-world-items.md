@@ -39,16 +39,16 @@
   ],
   "placements": [
     // ... 地板網格（WRIntFloorSTMid01Large 0x1044AA），以免掉入虛空 ...
-    { "base": "Skyrim.esm:0x03DECD", "cell": "MF_BanditDen", "kind": "npc",   // LCharBanditMeleeAny
+    { "base": "Skyrim.esm:0x01E79C", "cell": "MF_BanditDen", "kind": "npc",   // LvlBanditMeleeAny（NPC_）
       "position": { "x": -180, "y": 120, "z": 0 } },
-    { "base": "Skyrim.esm:0x01A348", "cell": "MF_BanditDen", "kind": "npc",   // LCharBanditMissileNordM（弓手）
+    { "base": "Skyrim.esm:0x01B0D5", "cell": "MF_BanditDen", "kind": "npc",   // LvlBanditMissileNordM（NPC_ 弓手）
       "position": { "x":  180, "y": 120, "z": 0 } },
-    { "base": "Skyrim.esm:0x01A341", "cell": "MF_BanditDen", "kind": "npc",   // LCharBanditBossNordM（首領）
+    { "base": "Skyrim.esm:0x01B0E1", "cell": "MF_BanditDen", "kind": "npc",   // LvlBanditBossNordM（NPC_ 首領）
       "position": { "x": 0, "y": -120, "z": 0 }, "encounterZone": "MF_BanditDenZone" }  // 單一引用的 XEZN（可選）
   ] }
 ```
 
-- **原版** LVLN 基底（`Skyrim.esm:0x…`）需要 `"kind": "npc"`——建置程序無法在無介面模式下讀取主檔的記錄類型。**規格內**的 `leveledNpcs` 基底會自動辨識為角色。
+- **嚴重——已確認 CTD（It.36，2026-06-02）：** `LChar*` formid（例如 `0x03DECD` `LCharBanditMeleeAny`）是 **LVLN 記錄**，而將原始 LVLN 作為 ACHR 基底**會導致 Skyrim 在載入時崩潰**。請改放置 `LvlBandit*` **NPC_ 包裝器**（`Lvl…` 前綴 = NPC_，可安全放置；`LChar…` 前綴 = LVLN，永遠不要直接放置）。**規格內**的 `leveledNpcs` 基底會自動辨識為角色（建置會為其發出警告）。
 - `maxLevel 0` = 無上限（原版慣例；`HelgenZone` 為最低 6 / 最高 0）。`MatchPcBelowMinimumLevel` 讓低等級玩家獲得依其等級縮放的重生點；`NeverResets` 讓清空的巢穴維持清空狀態。
 - 驗證方式：`validate` → `build` → `dump` 以及 `eczndiag <plugin> <0xFORMID>`。可運作的規格範例：`examples/encounter_spec.json`。
 - **導航網格：** 全新空間**沒有導航網格**，因此重生點在 CK 中建立導航網格前無法移動或追擊。

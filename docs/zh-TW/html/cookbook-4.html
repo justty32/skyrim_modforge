@@ -101,9 +101,9 @@
     { "editorId": "MF_ShopFaction", "name": "ModForge General Goods",
       "vendor": {
         "startHour": 8, "endHour": 20, "buysStolen": false,
-        "sellBuyList": "Skyrim.esm:0x06CB48",     // VendorItemsMisc
+        "sellBuyList": "Skyrim.esm:0x06CB48",     // VendorItemsMisc（VendorItem-keyword FormList）
         "notSellBuyList": true,                    // NOT-sell 清單 -> 交易除此之外的所有物品（一般商品）
-        "merchantContainer": "MF_ShopChestRef" } } ],
+        "merchantContainer": "MF_ShopChestRef" } } ],   // -> 放置的箱子（如下）
   "containers": [
     { "editorId": "MF_ShopChest", "name": "Merchant Chest",
       "items": [ { "item": "Skyrim.esm:0x072AE7", "count": 1 },     // VendorGoldMisc（商人的金幣）
@@ -119,6 +119,7 @@
     { "editorId": "MF_ShopChestRef", "base": "MF_ShopChest", "cell": "MF_Shop",
       "position": { "x": 0, "y": 256, "z": 0 }, "persistent": true } ] }
 ```
+（完整範例規格：`examples/vendor_spec.json`。）
 
 **商人必須在其商店內就位當班**——這在**新**室內空間中需要：(a) 一個地板（`WRIntFloorSTMid01Large` `0x1044AA` 格板 + 一盞燈），以及 (b) 一個當班用的 **Sandbox** 套件（`0x01C254`，NearSelf）。
 
@@ -160,6 +161,10 @@
   ] }
 ```
 
+- 透過 `perkdiag <Skyrim.esm> entrypoints` 和 `perkdiag <Skyrim.esm> 0x079343`（Armsman20）確認入口點名稱及可參考的原版結構。
+- **玩家特技**並非僅靠資料記錄即可：需透過 Papyrus 的 `AddPerk` 呼叫（一個 `scripts` 任務片段）來授予。
+- 這些在結構上與原版特技完全相同；但修改值是否真的影響遊戲內的戰鬥數值，需要實際啟動 Skyrim 才能確認。完整範例：[`../../examples/perk_spec.json`](../../examples/perk_spec.json)。
+
 ## 「多階段任務」（階段 + 日誌記錄 + 目標 + 對話設定階段）
 
 一個會**推進**的任務：在各階段間推進、在每個階段寫入日誌文字、依階段顯示/完成目標，並在最終階段關閉任務。
@@ -182,14 +187,21 @@
 ```
 
 **`package` 自動處理 Papyrus——無需 CK（遊戲內已確認 It.36 2026-06-02）。**
-它會生成、編譯並以 VMAD 附加所有內容：一個每階段各有 `Fragment_Stage_XXXX_Item00000()` 的 Quest 腳本，以及一個 `extends TopicInfo Hidden` 的 TIF 腳本（含明確的 `Quest Property OwningQuest Auto`，呼叫 `OwningQuest.SetStage(N)`）。**請勿使用 `GetOwningQuest()`——對 StartGameEnabled 任務回傳 None**。
+它會生成、編譯並以 VMAD 附加所有內容：
+
+- `Scripts/Source/MF_ErrandQuest_Stages.psc` — 每個階段各有 `Fragment_Stage_XXXX_Item00000()`，用於顯示/完成目標。引擎在 `SetStage()` 觸發時按名稱呼叫此函式。
+- `Scripts/Source/TIF_MF_AgreeToHelp.psc` — `extends TopicInfo Hidden`，帶有明確的 `Quest Property OwningQuest Auto`（綁定至任務的 FormKey），`OnBegin` 呼叫 `OwningQuest.SetStage(20)`。**請勿使用 `GetOwningQuest()`——對 StartGameEnabled 任務回傳 None**（見 [常見陷阱](gotchas.html)）。
+- 編譯後的 `.pex` 複製至 `Scripts/`，VMAD 附加至 QUST 和 INFO。
+- `setStage` 對話行上自動加入 `GetStage(quest) < 20` 條件，使 Joren 在玩家已選取後不再重複觸發。
+
+`package` 指令需要 `~/tools/papyrus-compiler`（Linux 原生；備用方案為 Wine/CK）。對話仍然只在遊戲**載入**時才會登錄——見 [常見陷阱](gotchas.html)。
 
 ## 「自訂龍吼」——SHOU + WOOP + 字詞之牆（遊戲內已確認 2026-06-01）
 
 自訂龍吼的結構為 `MGEF → Voice SPEL → WOOP → SHOU`，加上一種**學習**方式。要在遊戲中實際觸發龍吼，需要在基本記錄之外補充四個要素：
 
-1. **每個 Voice 法術都需要一個裝備槽。** Build 現在會**自動預設**可施放類型（Spell/Voice/Power/LesserPower）為 **EitherHand**（`Skyrim.esm:0x00013F44`）。
-2. **MGEF 需要一個 `projectile`**，否則龍吼的力量無聲無息地發出。
+1. **每個 Voice 法術都需要一個裝備槽。** Build 現在會**自動預設**可施放類型（Spell/Voice/Power/LesserPower）為 **EitherHand**（`Skyrim.esm:0x00013F44`）——這與每個原版龍吼字詞法術使用的相同 EQUP。
+2. **MGEF 需要一個 `projectile`**，否則龍吼的力量無聲無息地發出。彈體攜帶移動中的模型、命中效果和命中音效。配合主題——冰霜龍吼用冰霜彈體（`0x02F774` FrostIcicle），力量龍吼用衝擊波（`0x013DF4` VoicePush）。加入 `castingArt` 產生施法時的閃光效果。
 3. **`Release` 音效是效果音效**（雷聲/冰霜特效），透過 `magicEffects[].sounds` 設定。
 4. **SHOU 需要一個 `menuDisplayObject`**（`0x0A59AC`），才能在龍吼選單中顯示預覽圖。
 
@@ -225,15 +237,15 @@
 }
 ```
 
-**主機台測試：** `help "Forged Voice" 0` → `player.addshout <SHOUT>`，然後對每個字詞使用 **`player.teachword <WORD>`**——`teachword` 才能使字形**顯示**在龍吼選單中。
+**主機台測試：** `help "Forged Voice" 0` → `player.addshout <SHOUT>`，然後對每個字詞使用 **`player.teachword <WORD>`**——`teachword` 才能使字形**顯示**在龍吼選單中。長按龍吼按鍵：光束飛出，觸發效果，播放特效音效 + 命中效果。
 
-**遊戲內已確認有效：** 可施放的龍吼、投射物 + 衝擊 + 效果音效、3 個充能等級。
+**遊戲內已確認有效：** 可施放的龍吼、投射物 + 命中 + 效果音效、3 個充能等級。
 
 **兩個誠實的限制：**
-- **沒有口說龍語。** 程式化產生的龍吼沒有語音資產，因此字詞語音為靜音——只有效果特效播放。
-- **字詞之牆的學習是 `OnInit`，而非走近觸發。** 教授任務在遊戲開始時啟用，因此龍吼 + 字詞 1 在**插件載入後立即授予**。
+- **沒有口說龍語。** 玩家呼喊龍語音節（「FUS RO DAH」）是一個**已錄製的語音資產**。程式化產生的龍吼沒有語音資產，因此字詞語音為靜音——只有效果特效播放。若要提供不同等級的漸進式效果音效，可使用 3 個 MGEF（每個字詞法術各一個），各自帶有其自己的 A/B/C `Release` 音效。
+- **字詞之牆的學習是 `OnInit`，而非走近觸發。** 教授任務在遊戲開始時啟用，因此龍吼 + 字詞 1 在**插件載入後立即授予**——放置的 `WordWallTrigger` 只是裝飾。範例 cell `0x0371DE` 是原版的力量龍吼房間，因此你在那裡看到的字牆是原版的，不是我們的（我們的在原點）。**原版**龍吼引用無法自動推導其字詞——請明確設定 `word`。
 
-## 「自訂天空」（WTHR + CLMT——大氣效果）
+## 「自訂天空」（WTHR + CLMT——大氣效果，尚未指派）
 
 一個詭異的綠色霧氣天氣，加上循環此天氣的氣候。完整範例規格：[`../../examples/weather_spec.json`](../../examples/weather_spec.json)。
 
@@ -259,7 +271,7 @@
 }
 ```
 
-**讓它在遊戲中毫無作用的唯一原因：** 一個 `WTHR`+`CLMT` 只是資料，直到某個東西*指派*了這個氣候。原版透過**世界空間**（`WRLD` 的 `Climate` 欄位）或**地區**（`REGN` 天氣資料）來實現——ModForge *現在*均可產生（見下一個配方）。**僅通過結構驗證；天空實際渲染尚未在遊戲中確認。**
+**讓它在遊戲中毫無作用的唯一原因：** 一個 `WTHR`+`CLMT` 只是資料，直到某個東西*指派*了這個氣候。原版透過**世界空間**（`WRLD` 的 `Climate` 欄位）或**地區**（`REGN` 天氣資料）來實現——這是接入自訂天氣的鉤子（見下一個配方）。**僅通過結構驗證；天空實際渲染尚未在遊戲中確認。**
 
 ## 「自訂室外世界空間 + 天氣地區」（WRLD + REGN——僅限記錄層）
 
@@ -268,9 +280,9 @@
 ```jsonc
 { "worldspaces": [
     { "editorId": "MFTestWorld", "name": "ModForge Test Vale",
-      "climate": "Skyrim.esm:0x000812",
-      "water":   "Skyrim.esm:0x000018",
-      "parent":  "Skyrim.esm:0x00003C",
+      "climate": "Skyrim.esm:0x000812",      // 若無此設定，世界將沒有天空/光照週期
+      "water":   "Skyrim.esm:0x000018",      // DefaultWater（可選）
+      "parent":  "Skyrim.esm:0x00003C",      // 上層 WRLD = Tamriel（可選）
       "flags":   [ "SmallWorld", "CannotFastTravel" ],
       "defaultLandHeight": -27000, "defaultWaterHeight": -14000 }  // 防淹修正——保留這些值
   ],
@@ -285,7 +297,7 @@
   ] }
 ```
 
-**誠實的注意事項——這是記錄層，而非可步行的世界。** ModForge 會產生有效的 WRLD/REGN 記錄並連結所有關聯，但一個你可以實際*進入並行走*的世界還需要**地形（LAND 高度圖）、LOD 網格和導覽網格**——這些都是 ModForge 無法完成的 **Creation Kit** 工作。已通過結構驗證——**尚未在遊戲中確認**。完整範例：`examples/worldspace_spec.json`。
+**誠實的注意事項——這是記錄層，而非可步行的世界。** ModForge 會產生有效的 WRLD/REGN 記錄並連結所有關聯，但一個你可以實際*進入並行走*的世界還需要**地形（LAND 高度圖）、LOD 網格和導覽網格**——這些都是 ModForge 無法完成的 **Creation Kit** 工作。已通過結構驗證（`build`/`dump`/`worlddiag`/`regndiag` 均正常）——**尚未在遊戲中確認**。完整範例：`examples/worldspace_spec.json`。
 
 ## 「兩個 NPC 爭論」（SCEN 多角色對話——僅限結構，尚未在遊戲中確認）
 
@@ -313,11 +325,11 @@
 ```
 
 它與原版的對應關係（已透過 `scenediag <Skyrim.esm> <0xFORMID>` 對照原版場景驗證）：
-- 宿主任務的每個 `actor` 各有一個 **QuestAlias**，以 `UniqueActor` 繫結至該 NPC；
-- 每個 `phase` → 一個 `ScenePhase` + 一個**對話 `SceneAction`** + 一個**Scene/`SCEN` DialogTopic+INFO** 持有台詞；
-- `beginOnQuestStart` 在任務開始的瞬間播放場景。
+- 宿主任務的每個 `actor` 各有一個 **QuestAlias**，以 `UniqueActor` 繫結至該 NPC——Scene 的 `SceneActors` 參照**別名索引**（aliasId），而非直接參照 NPC FormKey；
+- 每個 `phase` → 一個 `ScenePhase` + 一個**對話 `SceneAction`**（說話者 alias、階段窗口、另一個角色作為注視目標）+ 一個**Scene/`SCEN` DialogTopic+INFO** 持有台詞；
+- `beginOnQuestStart` 在任務開始的瞬間播放場景（即遊戲載入時）。
 
-**狀態/誠實說明：** `build`/`validate`/`dump` 均乾淨通過，記錄結構逐位元組符合原版，但這**尚未在遊戲中確認**。使用 `scenediag` 探查任何原版場景以進行比較。參見 `examples/scene_spec.json`。
+**狀態/誠實說明：** `build`/`validate`/`dump` 均乾淨通過，記錄結構逐位元組符合原版，但這**尚未在遊戲中確認**。可能的後續工作：場景可能需要除 `beginOnQuestStart` 之外的**啟動觸發器**（任務階段 / 腳本 `Start()` 呼叫）、演員別名可能需要**填充條件**，以及 NPC 需要**處於清醒且可到達的狀態**（Sandbox 套件讓他們保持活躍）。使用 `scenediag` 探查任何原版場景以進行比較。參見 `examples/scene_spec.json`。
 
 ---
 

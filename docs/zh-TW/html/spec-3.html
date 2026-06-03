@@ -96,8 +96,9 @@
           "comparison": "EqualTo", "value": 1 } ] } ] }
 ```
 
-- **`entryPoint`** 是 Skyrim 的 `EntryType` 值之一 — `ModAttackDamage`、`ModSpellMagnitude`、`CalculateMyCriticalHitChance`、`ModArmorRating`、`GetMaxCarryWeight`… 使用 `perkdiag <Skyrim.esm> entrypoints` 查看完整清單。
+- **`entryPoint`** 是 Skyrim 的 `EntryType` 值之一 — `ModAttackDamage`、`ModSpellMagnitude`、`CalculateMyCriticalHitChance`、`ModArmorRating`、`GetMaxCarryWeight`… 使用 `perkdiag <Skyrim.esm> entrypoints` 查看完整清單，或 `perkdiag <Skyrim.esm> 0x079343`（Armsman20 = ModAttackDamage ×1.4）。
 - **附加至 NPC** 可透過 `npcs[].perks: ["MF_IronHidePerk", …]`——角色在遊戲開始時被動獲得專長。**賦予玩家專長需要 Papyrus `AddPerk` 呼叫**（`scripts` + 任務片段）——沒有純記錄的方式在遊戲開始時將專長放置在玩家身上。
+- **遊戲內注意事項：** 結構上這些輸出與原版專長完全一致，但入口點修正是否真的改變戰鬥數值只能透過實際啟動 Skyrim 確認。
 
 ## 外部資源 — 自訂網格 / 貼圖 / 音效（`model`、`sounds`、`assets`）
 ```jsonc
@@ -143,7 +144,7 @@ TXST 最多有八個可選插槽；只需設定你要替換的插槽。每個路
 
 ModForge 目前實作七個模板——**Sandbox**（`Skyrim.esm:0x01C254`）、**Sleep**（`Skyrim.esm:0x019717`）、**Travel**（`Skyrim.esm:0x016FAA`）、**UseMagic**（`Skyrim.esm:0x0504F5`）、**Patrol**（`Skyrim.esm:0x017723`）、**Follow**（`Skyrim.esm:0x019B2C`）及 **Escort**（`Skyrim.esm:0x023B73`）。
 
-**Sandbox 指定參考 vs Travel：** Sandbox 的 `location` 參考讓 NPC 在該參考**附近**徘徊/進食/就坐。Travel 的 `place` 參考讓 NPC 真正**走向**該參考並停在其 `radius` 範圍內。
+**Sandbox 指定參考 vs Travel：** Sandbox 的 `location` 參考讓 NPC 在該參考**附近**徘徊/進食/就坐。Travel 的 `place` 參考讓 NPC 真正**走向**該參考並停在其 `radius` 範圍內。常見組合：Travel 套件 + Sandbox 套件（Travel 在前）——Travel 執行直到 NPC 抵達，然後 Sandbox 接管。
 
 ```jsonc
 { "editorId": "MF_HangAtSpotPackage",
@@ -161,6 +162,12 @@ ModForge 目前實作七個模板——**Sandbox**（`Skyrim.esm:0x01C254`）、
     "allowIdleMarkers": true, "allowSitting": true, "allowWandering": true,
     "allowSpecialFurniture": true, "energy": 50.0 } }
 ```
+
+**It.18 注意事項（UseMagic 特有的實戰血淚）：**
+1. **Spell 插槽必須是 `PackageTargetObjectID`，而非 `PackageTargetObjectType`。** 所有 46 個原版 UseMagic 套件均用 FormLink 覆寫。
+2. **Target 插槽必須設定**——自我施法用 `PackageTargetSelf`。
+3. **`numToCastMax` 是整個套件生命周期的施法總次數**。若要持續施法，必須同時設定高上限值**及**非零的 `schedule.durationInMinutes`（例如 1440 = 24 小時）。
+4. **戰鬥會中斷 UseMagic。** 若要強制施法持續，加入 `flags: [ "IgnoreCombat" ]`。
 
 **中斷旗標（Package.InterruptFlag）：** `HellosToPlayer`、`RandomConversations`、`ObserveCombatBehavior`、`GreetCorpseBehavior`、`ReactionToPlayerActions`、`FriendlyFireComments`、`AggroRadiusBehavior`、`AllowIdleChatter`、`WorldInteractions`。**這些旗標決定了一個 NPC 是沉默的石像還是栩栩如生的角色。**
 
@@ -195,6 +202,7 @@ ModForge 目前實作七個模板——**Sandbox**（`Skyrim.esm:0x01C254`）、
 - **最簡結構即有效。** 只含 `editorId` 的天氣是符合原版規範的晴天天空；氣候只需 `editorId` + 至少一個 `weather`。
 - **顏色**為 8 位元 RGB（0–255）。任何省略的時段從 `day` 繼承。
 - **風向**以**度**（0–360）編寫；**風速**接受 0–1 分數或 0–100 百分比。
+- **`precipitation`** 是指向著色粒子幾何體（`SPGD`）的 *ref*。使用 `weatherdiag <Skyrim.esm> <rainy-WTHR-formid>` 查找原版雨效。
 
 > **指派氣候是獨立步驟。** 輸出 `WTHR`+`CLMT` 本身**不會**改變任何遊戲內天空。原版透過**世界空間**（`WRLD` `Climate` 欄位）或**地區**（`REGN` 天氣資料）套用氣候。**已於遊戲內確認（It.36，2026-06-02）：** 透過控制台 `sw <XX>000800` 強制天氣。`build` 指令在建置成功後會輸出所有 WTHR 記錄的 `sw` 指令。
 

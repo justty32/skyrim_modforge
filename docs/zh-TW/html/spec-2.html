@@ -139,7 +139,7 @@
 ```
 
 - **worldspaces**（WRLD）：一個新的室外世界。`climate` 為 CLMT *ref*（原版預設 = `Skyrim.esm:0x000812`）——若無此設定，世界將**沒有天空/光照週期**。`defaultLandHeight`/`defaultWaterHeight` 預設為 Tamriel 的值（-27000 / -14000）——**保留這些值**，因為水面預設為 0 會淹沒整個世界。
-- **regions**（REGN）：`worldspace` 內的一個區域。`area` 為**至少 3 個**世界座標點組成的多邊形。
+- **regions**（REGN）：`worldspace` 內的一個區域。`area` 為**至少 3 個**世界座標點組成的多邊形（非 cell 格子）。`weather` 為選取當前天氣的表——每個條目為一個 WTHR *ref* 加上相對 `chance`。
 - 警告 **僅限記錄層——非可遊玩的世界。** ModForge 會輸出 WRLD/REGN 記錄，但真正可步行的室外地區還需要**地形（LAND 高度圖）、LOD 網格與尋路網格**，這些必須在 **Creation Kit** 中製作。此功能**在結構上已驗證**但**尚未在遊戲中確認**。
 
 ## 等級列表與容器
@@ -172,7 +172,7 @@
   "position": { "x": -180, "y": 120, "z": 0 } }
 ```
 
-使用 `find <Skyrim.esm> Lvl<…> Npc` 查找 NPC_ 包裝器（例如 `LvlBanditMeleeAny` `0x01E79C`）。其底層的 LVLN 清單**不是**有效的 placement 基底。
+使用 `find <Skyrim.esm> Lvl<…> Npc` 查找 NPC_ 包裝器（例如 `LvlBanditMeleeAny` `0x01E79C`）。其底層的 LVLN 清單**不是**有效的 placement 基底。對於 spec 內用作 placement 基底的 `leveledNpcs` 清單，請加入 `"kind": "npc"` 以讓建置發出警告，而非靜默產生會崩潰的外掛。
 
 **2. 遭遇區**（`encounterZones`，ECZN）設定生成所滾動的**等級範圍與重生**規則。
 ```jsonc
@@ -189,6 +189,8 @@
 
 - `maxLevel 0` 表示**無上限**——原版地下城的慣例（例如 `HelgenZone` 為最低 6 / 最高 0）。
 - `flags`：`NeverResets`（已清除的地下城不重生），`MatchPcBelowMinimumLevel`（生成等級符合低等級玩家），`DisableCombatBoundary`（演員可在區域外追逐）。
+- 使用 `eczndiag <plugin> <0xFORMID>` 檢查任何區域。
+- **尋路網格注意事項：** 全新的 spec 內 cell **沒有尋路網格**，因此生成的演員在 CK 為其建立尋路網格之前無法移動。
 - **已在遊戲中確認（It.36，2026-06-02）：** `coc MF_BanditDen`——cell 載入、強盜生成、無崩潰。完整流程：遭遇區、cell 範本、NPC_ 放置均已在 SSE 1.6.1170 中驗證。
 
 ## 商販／商人——一個可運作的店主
@@ -225,7 +227,7 @@
 - **成員資格即店主。** 建置會**自動加入** `JobMerchantFaction`（`Skyrim.esm:0x051596`）至該 NPC，因為原版通用的「我想交易」主題需要滿足 `GetInFaction JobMerchantFaction` + `GetOffersServicesNow`。
 - **可對話。** 與所有自訂 NPC 相同的規則：交易提示只有在 NPC 開啟對話選單後才會出現，而這需要一句 `greeting` 或自訂的 `dialogue[]`。
 - 使用 `factdiag <plugin> <0xFORMID>` 檢查；與原版商人比較，例如 `factdiag <Skyrim.esm> 0x09CAF5`（Belethor's General Goods）。
-- **尚未在遊戲中確認：** FACT/箱子/成員資格在結構上與原版商販相同，但「我想交易」提示是否真的能開啟以物易物選單，仍需透過 Proton/Skyrim 啟動確認。
+- **已在遊戲中確認 2026-05-31：** FACT/箱子/成員資格已於 SSE 1.6.1170 中驗證——「我想交易」提示正確開啟以物易物選單。
 
 ---
 

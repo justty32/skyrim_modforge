@@ -57,7 +57,7 @@ NL / idea ──(AI agent: Claude Code)──▶ spec.json ──(validate)─�
 
 - **使用 `find` 指令查找 FormID：**
   `find "<Skyrim Data>/Skyrim.esm" <query> [type]` → 印出 `Skyrim.esm:0xFORMID  Type  EditorID`。
-  `[type]`（例如 `Race`、`Class`、`Outfit`、`Keyword`、`Faction`、`Weapon`、`Npc`）可將搜尋範圍縮小至單一記錄類型。
+  `[type]`（例如 `Race`、`Class`、`Outfit`、`Keyword`、`Faction`、`Weapon`、`Npc`）可將搜尋範圍縮小至單一記錄類型。（搜尋與顯示以 **EditorID** 為準；本地化顯示*名稱*打包在 BSA 中，無頭模式下無法解析 — 像 `NordRace` 這樣的 EditorID 已足夠描述性。）
 - `validate` 會檢查 ref 欄位：spec 內部的 ref 必須存在；外部 ref 必須格式正確。
 
 ## 頂層結構
@@ -158,6 +158,7 @@ NL / idea ──(AI agent: Claude Code)──▶ spec.json ──(validate)─�
   "targetType": "Self",            // Self | Touch | Aimed | TargetActor | TargetLocation
   "baseCost": 8.0,
   "flags": ["Recover"],            // Hostile | Detrimental | Recover | NoArea | NoDuration | NoMagnitude | …
+  "association": "<ref>",          // ARTO/召喚或束縛形體（僅用於 Summon/Bound 原型）
   "projectile": "<ref>",           // PROJ — 飛行的彈體（Aimed 法術需要）
   "castingArt": "<ref>",           // ARTO — 施法者手上的特效
   "hitEffectArt": "<ref>",         // ARTO — 命中點的特效
@@ -168,7 +169,7 @@ NL / idea ──(AI agent: Claude Code)──▶ spec.json ──(validate)─�
 - **瞬間**恢復/傷害（`duration` 為 0）→ `["NoDuration", "NoArea"]`，傷害時加上 `"Detrimental"`（+`"Hostile"`）。**不要**設定 `Recover` — `Recover` 在 effect *結束*時還原數值，而瞬間 effect 立即結束，因此變更會被撤銷（治療套用 +N 後立即移除 → **淨零，看起來像「施法但什麼都沒做」**）。
 - **計時**強化（`duration` > 0）→ `["Recover", "NoArea"]`：`Recover` 在計時器到期時乾淨地移除加成。
 
-保持 `baseCost` 低（vanilla 恢復/傷害 effect 使用約 0.5–3）；法術的魔力消耗由 `baseCost` × `magnitude` 自動計算，因此大的 `baseCost` 會使法術極其昂貴。
+保持 `baseCost` 低（vanilla 恢復/傷害 effect 使用約 0.5–3）；法術的魔力消耗由 `baseCost` × `magnitude` 自動計算，因此大的 `baseCost` 會使法術極其昂貴。使用 `mgefdiag <Skyrim.esm> <0xFORMID>` 將任何 effect 與 vanilla 進行比較。
 
 ### enchantments（ENCH / 物品效果）
 
@@ -193,6 +194,7 @@ NL / idea ──(AI agent: Claude Code)──▶ spec.json ──(validate)─�
     "enchantmentAmount": 1500 }
 ]
 ```
+`apparel`（常效型）附魔以相同方式套用到**盔甲**上（無 `enchantmentAmount` — 裝備為被動）。使用 `enchdiag <in.esp> <0xFORMID>` 檢查已建置或 vanilla 的 ENCH。*（結構已驗證；附魔在遊戲中實際觸發尚未確認 — 見食譜備注。）*
 
 ### classes（CLAS）
 ```jsonc
@@ -210,7 +212,7 @@ NL / idea ──(AI agent: Claude Code)──▶ spec.json ──(validate)─�
 從一個 `dialogue` 條目，建置時會發出**完整的 vanilla 鏈**（已確認 It.23，SSE 1.6.1170）：
 - **Topic**（`Custom`，`SNAM='CUST'` — null 子類型在載入時 crash）+ **Branch**（`TopLevel`，Player）+ 攜帶回應的 **INFO**。每個 INFO 獲得 `ENAM`（旗標）+ `CNAM`（好感等級）— **沒有 `ENAM` 的 INFO 被視為無效，其話題會從選單中靜默捨棄**；
 - 每個任務對應一個 **DialogView（DLVW）**，將其分支綁定到任務；
-- 每個說話 NPC 對應一個 **Hello** info，使 NPC 完全*可對話* — 使用 `npc.greeting` 設定台詞。
+- 每個說話 NPC 對應一個 **Hello** info（`Misc`/`Hello`/`SNAM='HELO'`），使 NPC 完全*可對話* — 使用 `npc.greeting` 設定台詞。
 
 > **三個執行時需求（非記錄錯誤）：**（1）對話僅在**遊戲載入**時註冊 — 在主選單使用 `coc` 或在會話中使用 `startquest` 會使 NPC 保持沉默。（2）將說話者放置在真實的房間座標上 — 位於 cell 原點 **(0,0,0)** 會落在導航網格外。（3）無語音台詞閃過；安裝 **Fuz Ro D-oh**（或打包無聲的 `.fuz`）並啟用字幕。見 [常見陷阱](gotchas.html)。
 
@@ -238,9 +240,9 @@ NL / idea ──(AI agent: Claude Code)──▶ spec.json ──(validate)─�
 
 ### conditions — CTDA 閘門（在 `dialogue` INFO、`banter` INFO 或 `package` 上）
 ```jsonc
-{ "function": "GetItemCount",          // form-arg: HasPerk | GetInFaction | GetItemCount | GetGlobalValue | GetStage | GetIsID
+{ "function": "GetItemCount",          // form-arg: HasPerk | GetInFaction | GetItemCount | GetGlobalValue | GetStage | GetIsID | GetRelationshipRank
   //                                    // actorValue-arg: GetActorValue | GetActorValuePercent (0..1)
-  //                                    // no-arg: GetCurrentTime | IsInInterior | IsInCombat | GetRandomPercent | TemperIsEnchanted
+  //                                    // no-arg: GetCurrentTime (hour 0..24) | IsInInterior | IsInCombat | GetRandomPercent (0..99) | TemperIsEnchanted
   "comparison": ">=",
   "value": 500,
   "param": "Skyrim.esm:0x00000F",      // the function's form arg as a ref

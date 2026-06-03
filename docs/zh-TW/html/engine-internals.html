@@ -129,9 +129,9 @@ sub      = FloorDiv(cellGrid, 8)
 
 進入點技能效果（`PerkEntryPointModifyValue`，例如 ModAttackDamage ×1.2）有一個 `PerkConditionTabCount` 位元組（PERK 進入點 `DATA` 子記錄的第 3 個位元組）。它是進入點的**固有條件分頁數量**——函數評估的攻擊者/目標/武器情境——**不是**你撰寫的條件數量。引擎根據它來調整每個分頁的條件陣列大小；一個撰寫在索引 0 上而計數為 **0** 的 `PRKC` 條件分頁會溢出該陣列，破壞指標，並在**「Loading Files」期間發生硬性崩潰**（TESForm 查找雜湊表中，因垃圾 FormID 造成的存取違規）。
 
-這是一個純粹的 **「Mutagen 可容忍，引擎致命」** 的二進位錯誤：Mutagen 讀回真實的 `Conditions` 列表並忽略計數位元組，因此 `dump` / 往返 / 連結解析 / ESL 標頭看起來都是乾淨的——只有執行時解析器會崩潰。
+這是一個純粹的 **「Mutagen 可容忍，引擎致命」** 的二進位錯誤：Mutagen 讀回真實的 `Conditions` 列表並忽略計數位元組，因此 `dump` / 往返 / 連結解析 / ESL 標頭看起來都是乾淨的——只有執行時解析器會崩潰。它會隱藏起來直到第二個插件改變記憶體佈局，然後以「兩個模組一起崩潰」的報告形式出現（根本原因於 2026-05-31 從 CrashLoggerSSE 日誌中找到；請參閱 [常見陷阱](gotchas.html)）。
 
-計數是每個進入點固定的，永遠是 `1`/`2`/`3`，絕不為 `0`——且永遠 ≥ 存在的 PRKC 分頁數量（原版可以自由地設定例如計數為 3 但只有一個或零個分頁）。`Build` 從 Skyrim.esm 的 375 個 PERK 記錄中提取的表格設定此值（`ModAttackDamage`/`ModSpellMagnitude`/`CalculateWeaponDamage` = 3；`ModArmorRating`/`ModBuyPrices` = 2；`ModSkillUse`/`ModFallingDamage` = 1；未列出的 → 2）。
+計數是每個進入點固定的，永遠是 `1`/`2`/`3`，絕不為 `0`——且永遠 ≥ 存在的 PRKC 分頁數量（原版可以自由地設定例如計數為 3 但只有一個或零個分頁）。`Build` 從 Skyrim.esm 的 375 個 PERK 記錄中提取的表格設定此值（`ModAttackDamage`/`ModSpellMagnitude`/`CalculateWeaponDamage` = 3；`ModArmorRating`/`ModBuyPrices` = 2；`ModSkillUse`/`ModFallingDamage` = 1；未列出的 → 2）。透過掃描原版來重新生成表格：讀取每個 `IAPerkEntryPointEffectGetter` 並以 `EntryPoint → PerkConditionTabCount` 分組。
 
 ## Mutagen API 陷阱
 

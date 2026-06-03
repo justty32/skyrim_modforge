@@ -345,17 +345,19 @@ respawn; each spawn's `base` is a **LeveledNpc list** so the engine rolls a scal
   ],
   "placements": [
     // ... a floor grid (WRIntFloorSTMid01Large 0x1044AA) so you don't fall into the void ...
-    { "base": "Skyrim.esm:0x03DECD", "cell": "MF_BanditDen", "kind": "npc",   // LCharBanditMeleeAny
+    { "base": "Skyrim.esm:0x01E79C", "cell": "MF_BanditDen", "kind": "npc",   // LvlBanditMeleeAny (NPC_)
       "position": { "x": -180, "y": 120, "z": 0 } },
-    { "base": "Skyrim.esm:0x01A348", "cell": "MF_BanditDen", "kind": "npc",   // LCharBanditMissileNordM (archer)
+    { "base": "Skyrim.esm:0x01B0D5", "cell": "MF_BanditDen", "kind": "npc",   // LvlBanditMissileNordM (NPC_ archer)
       "position": { "x":  180, "y": 120, "z": 0 } },
-    { "base": "Skyrim.esm:0x01A341", "cell": "MF_BanditDen", "kind": "npc",   // LCharBanditBossNordM (boss)
+    { "base": "Skyrim.esm:0x01B0E1", "cell": "MF_BanditDen", "kind": "npc",   // LvlBanditBossNordM (NPC_ boss)
       "position": { "x": 0, "y": -120, "z": 0 }, "encounterZone": "MF_BanditDenZone" }  // per-ref XEZN (optional)
   ] }
 ```
 
-- A **vanilla** LVLN base (`Skyrim.esm:0x…`) needs `"kind": "npc"` — the build can't read the master's
-  record type headlessly. An **in-spec** `leveledNpcs` base auto-detects as an actor.
+- **CRITICAL — confirmed CTD (It.36, 2026-06-02):** `LChar*` formids (e.g. `0x03DECD` `LCharBanditMeleeAny`)
+  are **LVLN records**, and a raw LVLN as an ACHR base **crashes Skyrim at load**. Place the `LvlBandit*`
+  **NPC_ wrappers** instead (`Lvl…` prefix = NPC_, safe to place; `LChar…` prefix = LVLN, never place
+  directly). An **in-spec** `leveledNpcs` base auto-detects as an actor (the build emits a warning for it).
 - `maxLevel 0` = uncapped (the vanilla idiom; `HelgenZone` is min 6 / max 0). `MatchPcBelowMinimumLevel`
   gives a low-level player player-scaled spawns instead of clamping to `minLevel`; `NeverResets` makes
   a cleared den stay cleared.

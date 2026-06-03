@@ -144,13 +144,15 @@
 
 ## 分級敵人生成（用於 `placements[].base` 分級角色生成 → ACHR）
 
-將 `base` 設為以下 LeveledNpc（LVLN）列表之一，可在載入時生成等級適當的角色。為原版列表加上 `"kind": "npc"`。搭配 `encounterZone` 控制等級範圍。
+將 `base` 設為以下 `LvlBandit*` NPC_ 包裝器之一，可在載入時生成等級適當的角色。為原版列表加上 `"kind": "npc"`。搭配 `encounterZone` 控制等級範圍。
 
 | EditorID | FormID | 角色 |
 |---|---|---|
-| LCharBanditMeleeAny | `Skyrim.esm:0x03DECD` | 通用近戰強盜 |
-| LCharBanditMissileNordM | `Skyrim.esm:0x01A348` | 弓箭手強盜 |
-| LCharBanditBossNordM | `Skyrim.esm:0x01A341` | 強盜首領（更強，等級縮放） |
+| LvlBanditMeleeAny | `Skyrim.esm:0x01E79C` | 通用近戰強盜 |
+| LvlBanditMissileNordM | `Skyrim.esm:0x01B0D5` | 弓箭手強盜 |
+| LvlBanditBossNordM | `Skyrim.esm:0x01B0E1` | 強盜首領（更強，等級縮放） |
+
+> **不要**將底層的 `LChar*` LVLN 列表（`LCharBanditMeleeAny 0x03DECD` / `LCharBanditMissileNordM 0x01A348` / `LCharBanditBossNordM 0x01A341`）用作放置基底 — 它們**不是**有效的放置基底，會導致 CTD（當機）。請使用上方的 `LvlBandit*` NPC_ 包裝器。
 
 ## 遭遇區域（原版 ECZN 範例 — 用 `eczndiag <Skyrim.esm> <id>` 檢查）
 

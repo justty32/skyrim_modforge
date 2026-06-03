@@ -122,15 +122,20 @@ vanilla door's XTEL with `refpos <Skyrim.esm> <0xFORMID>` (now prints the telepo
 
 ## Leveled enemy spawns (for a `placements[].base` leveled-actor spawn → ACHR)
 
-A spawn `base` set to one of these LeveledNpc (LVLN) lists rolls a level-appropriate actor at load.
-Add `"kind": "npc"` for a vanilla list (the build can't read the master's type headlessly). Pair with
-an `encounterZone` to control the level range. Find more: `find <Skyrim.esm> LCharBandit LeveledNpc`.
+A spawn `base` must be an **NPC_ wrapper** (`Lvl*`) whose TEMPLATE chain references a LeveledNpc list,
+rolling a level-appropriate actor at load. Add `"kind": "npc"` for a vanilla base (the build can't read
+the master's type headlessly). Pair with an `encounterZone` to control the level range. Find more:
+`find <Skyrim.esm> LvlBandit Npc`.
 
 | Editor ID | FormID | Role |
 |---|---|---|
-| LCharBanditMeleeAny | `Skyrim.esm:0x03DECD` | Generic melee bandit |
-| LCharBanditMissileNordM | `Skyrim.esm:0x01A348` | Archer bandit |
-| LCharBanditBossNordM | `Skyrim.esm:0x01A341` | Bandit boss (tougher, level-scaled) |
+| LvlBanditMeleeAny | `Skyrim.esm:0x01E79C` | Generic melee bandit |
+| LvlBanditMissileNordM | `Skyrim.esm:0x01B0D5` | Archer bandit |
+| LvlBanditBossNordM | `Skyrim.esm:0x01B0E1` | Bandit boss (tougher, level-scaled) |
+
+> **CTD warning:** the underlying `LChar*` LVLN lists (`LCharBanditMeleeAny` `0x03DECD`,
+> `LCharBanditMissileNordM` `0x01A348`, `LCharBanditBossNordM` `0x01A341`) exist for *building*
+> leveled lists, but a raw LVLN is **not** a valid placement base — placing one crashes Skyrim at load.
 
 ## Encounter zones (sample vanilla ECZNs — inspect with `eczndiag <Skyrim.esm> <id>`)
 
