@@ -1,4 +1,7 @@
-<!-- Part 4/5 — Recipes through Texture Sets -->
+# ModForge spec — recipes, perks, assets & texture sets
+
+← [index](SPEC-index.md)
+
 ### recipes (crafting / COBJ)
 Make an item craftable, temperable, or smeltable at a workbench. A recipe's `kind` picks the
 flavour (default `craft`) and the **default bench**; `workbench` is a **named selector** (`forge` /
@@ -37,7 +40,7 @@ guard `TemperIsEnchanted` (`or: true`) before the smithing `HasPerk`:
 **`kind: "smelt"` / `"breakdown"`** — ore → ingot, or break an item down into materials at the
 smelter (`createdObject` = the output ingot, component = the ore/item consumed).
 
-**`conditions`** — each is a shared CTDA (the same `ConditionSpec` as dialogue/package gates — see the *conditions — CTDA gates* section above).
+**`conditions`** — each is a shared CTDA (the same `ConditionSpec` as dialogue/package gates — see [SPEC-dialogue-quests](SPEC-dialogue-quests.md)).
 `function` ∈ `HasPerk` | `GetItemCount` | `GetGlobalValue` (each needs a `param` ref) |
 `TemperIsEnchanted` (no param). `comparison` is the operator (`==` `!=` `>` `>=` `<` `<=`, default
 `>=`), `value` the test value, `or: true` OR-chains with the NEXT condition. Use `find Skyrim.esm

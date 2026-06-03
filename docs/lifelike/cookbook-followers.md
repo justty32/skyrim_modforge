@@ -1,4 +1,7 @@
-﻿<!-- Part 2/5 — Follower system -->
+<!-- Follower patterns -->
+# Recipe cookbook — followers
+
+← [cookbook index](cookbook-index.md) | [lifelike hub](README.md)
 
 ## "Recruitable follower" (hire → follow → dismiss), in-game confirmed
 
@@ -68,7 +71,7 @@ and follower-manager mods don't see her. Skeleton (full: `examples/follower_paid
   "dialogue": [
     { "editorId": "MF_Hire", "questEditorId": "MF_Q", "speakerNpcEditorId": "MF_Merc",
       "prompt": "Here's 500 gold. Fight at my side.", "responses": [ "Lead the way." ], "goodbye": true,
-      "conditions": [                                                  // hide unless affordable & not hired
+      "conditions": [
         { "function": "GetItemCount", "comparison": ">=", "value": 500, "param": "Skyrim.esm:0x00000F",
           "runOn": "Reference", "reference": "Skyrim.esm:0x000014" },
         { "function": "GetInFaction", "comparison": "==", "value": 0, "param": "MF_FollowerFlag", "runOn": "Subject" } ],
@@ -177,4 +180,3 @@ enabled** — the Sandbox package above (or the vanilla follow package) provides
 Gate each on `CurrentFollowerFaction==1` (so she only banters while travelling with you) + a
 situational function. NOTE: ambient/idle only — true combat shouts (Taunt/Attack subtype) aren't
 supported yet. Vanilla reference probed for this: `HirelingIdles` (Skyrim.esm 0x055DEB).
-

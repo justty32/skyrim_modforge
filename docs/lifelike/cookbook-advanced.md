@@ -1,4 +1,8 @@
-<!-- Part 5/5 — Shouts, weather, and scenes -->
+<!-- Advanced patterns -->
+# Recipe cookbook — advanced
+
+← [cookbook index](cookbook-index.md) | [lifelike hub](README.md)
+
 ## "Custom dragon shout" — SHOU + WOOP + word wall (IN-GAME CONFIRMED 2026-06-01)
 
 A custom shout is `MGEF → Voice SPEL → WOOP → SHOU`, plus a way to **learn** it. Getting a shout to

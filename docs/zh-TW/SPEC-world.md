@@ -1,4 +1,8 @@
-<!-- 第 3/5 部分 — 場景至商販 -->
+<!-- Cells、世界空間、等級列表、遭遇區域、商販 -->
+# ModForge 規格說明 — 世界、Cells 與商販
+
+← [目錄](SPEC-index.md)
+
 ### cells 與 placements — 將物件放入世界
 ```jsonc
 "cells": [
@@ -131,4 +135,4 @@
 - **成員資格即店主。** 建置會**自動加入** `JobMerchantFaction`（`Skyrim.esm:0x051596`）至該 NPC，因為原版通用的「我想交易」主題需要滿足 `GetInFaction JobMerchantFaction` + `GetOffersServicesNow`。
 - **可對話。** 與所有自訂 NPC 相同的規則：交易提示只有在 NPC 開啟對話選單後才會出現，而這需要一句 `greeting` 或自訂的 `dialogue[]`。
 - 使用 `factdiag <plugin> <0xFORMID>` 檢查；與原版商人比較，例如 `factdiag <Skyrim.esm> 0x09CAF5`（Belethor's General Goods）。
-- **尚未在遊戲中確認：** FACT/箱子/成員資格在結構上與原版商販相同，但「我想交易」提示是否真的能開啟以物易物選單，仍需透過 Proton/Skyrim 啟動確認。
+- **已在遊戲中確認 2026-05-31：** FACT/箱子/成員資格已於 SSE 1.6.1170 中驗證——「我想交易」提示正確開啟以物易物選單。

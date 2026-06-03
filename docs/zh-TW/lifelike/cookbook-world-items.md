@@ -1,4 +1,8 @@
-<!-- 第 3/5 部分 — 世界建構與物品 -->
+<!-- 世界建構與物品 -->
+# 食譜手冊 — 世界建構與物品
+
+← [目錄](cookbook-index.md) | [lifelike 主頁](README.md)
+
 ## 「可用的室內空間」（光照 + 地板，而非漆黑的虛空）
 
 全新的室內空間需要三樣東西，否則就會變成漆黑一片、腳下空無一物的虛空：
@@ -84,7 +88,7 @@
 
 注意事項：
 - **路徑根目錄。** TXST 插槽路徑相對於 `Data\Textures\`，因此須**省略**開頭的 `Textures\`。驗證程序會拒絕多餘的 `Textures\` 前綴。
-- **`name` 必須與網格吻合。** 格式為 `.nif` 著色器屬性中的 `<3DName>:<index>`（CK 的 *Model Data → AltTex*，或 NifSkope 中的 `BSLightingShaderProperty` 名稱）。名稱錯誤時替換不會生效——且不會有任何提示。
+- **`name` 必須與網格吻合。** 格式為 `.nif` 著色器屬性中的 `<3DName>:<index>`。名稱錯誤時替換不會生效——且不會有任何提示。
 - **`textureSet` 是一個引用**——規格內的 TXST editorId，或原版的 `<master>:0xFORMID`。
 - **你需要自行製作 `.dds`。** ModForge 負責寫入記錄與引用；它無法建立或渲染貼圖內容。
 
@@ -118,58 +122,3 @@
 ```
 
 已通過結構驗證。**尚未在遊戲中確認**——需要實際執行遊戲才能驗證。
-
-## 「自訂瞄準戰鬥法術」（MGEF + 彈體 + SPEL）
-
-```jsonc
-{ "magicEffects": [
-    { "editorId": "MF_Firebolt", "archetype": "ValueModifier", "actorValue": "Health",
-      "magicSkill": "Destruction", "resistValue": "ResistFire",
-      "castType": "FireAndForget", "targetType": "Aimed", "baseCost": 12.0,
-      "flags": [ "Hostile", "Detrimental", "NoArea" ],   // 不加 Recover（這是即時效果）
-      "projectile": "Skyrim.esm:0x10FBEA",               // 重複使用原版火焰箭彈體（可見光束 + 命中效果）
-      "castingArt": "Skyrim.esm:0x01B211" }              // 雙手特效
-  ],
-  "spells": [
-    { "editorId": "MF_FireboltSpell", "name": "Forged Firebolt",
-      "spellType": "Spell", "castType": "FireAndForget", "targetType": "Aimed",
-      "equipType": "Skyrim.esm:0x013F44",                // EitherHand — 必填，否則 NPC 無法裝備/施放
-      "effects": [ { "magicEffect": "MF_Firebolt", "magnitude": 25, "area": 0, "duration": 0 } ] }
-  ] }
-```
-
-重複使用原版的 `projectile` 與 `castingArt`，才能讓光束可見並傳遞命中效果。若缺少 `equipType`，NPC 會改用近戰攻擊——這是生成戰鬥法術時最常見的無聲失敗原因。
-
-## 「為自訂效果製作附魔武器」（MGEF + ENCH + WEAP + COBJ）
-
-三個層次：自訂 **MGEF**（命中時觸發的效果）→ **附魔** / ENCH（`enchantType: weapon`）→ 引用它並帶有充能槽的**武器**。加入 COBJ 讓玩家可以製作。（若為被動**裝備**附魔，使用 `enchantType: apparel` 放在 `armor` 上——無需 `enchantmentAmount`，穿著時持續生效。）
-
-> **盔甲必須帶有 `template`，否則裝備後會隱形**（已於 2026-06-01 在遊戲中確認）。ARMO 穿著時的網格位於其 Armature（ARMA 附加記錄）上，而非 ARMO 本身。Set `template` to a vanilla armor of the same slot, e.g. `"template": "Skyrim.esm:0x00012E49"` (ArmorIronCuirass)。Build 現在會在護甲沒有 `template` 時發出警告。
-
-```jsonc
-{ "magicEffects": [
-    { "editorId": "MF_FrostDamageEnchEffect", "name": "Frost Damage",
-      "archetype": "ValueModifier", "actorValue": "Health",
-      "magicSkill": "Destruction", "resistValue": "ResistFrost",
-      "castType": "FireAndForget", "targetType": "Touch", "baseCost": 1.5,
-      "flags": [ "Hostile", "Detrimental", "NoArea" ] }
-  ],
-  "enchantments": [
-    { "editorId": "MF_FrostWeaponEnch", "name": "Frost Damage",
-      "enchantType": "weapon",
-      "enchantmentCost": 15,            // 每次攻擊從武器充能槽消耗的量
-      "effects": [ { "magicEffect": "MF_FrostDamageEnchEffect", "magnitude": 10 } ] }
-  ],
-  "weapons": [
-    { "editorId": "MF_FrostIronSword", "name": "Frostbite Iron Sword",
-      "template": "Skyrim.esm:0x012EB7", "damage": 8,
-      "enchantment": "MF_FrostWeaponEnch", "enchantmentAmount": 1500 }
-  ],
-  "recipes": [
-    { "editorId": "MF_FrostIronSwordRecipe", "createdObject": "MF_FrostIronSword",
-      "components": [ { "item": "Skyrim.esm:0x05ACE4", "count": 2 },
-                      { "item": "Skyrim.esm:0x02E4FC", "count": 1 } ] }
-  ] }
-```
-
-完整檔案：[`examples/enchantment_spec.json`](../../examples/enchantment_spec.json)。**注意——僅通過結構驗證：** 附魔在遊戲中實際*觸發*尚未確認。

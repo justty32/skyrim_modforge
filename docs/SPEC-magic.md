@@ -1,0 +1,94 @@
+# ModForge spec — magic & stats
+
+← [index](SPEC-index.md)
+
+### Gameplay stats
+- **Weapons:** give a `damage` (and usually `value`/`weight`). `speed` and `reach`
+  default to `1.0` when any stat is set, so the weapon is swingable; override for slower/
+  faster or longer/shorter weapons. A weapon with no stats is an inert item (it'll equip
+  but do nothing useful).
+- **Armor:** `armorType` is `light` / `heavy` / `clothing` (default `clothing`); `slots`
+  lists the biped slots it occupies by `BipedObjectFlag` name — `Body`, `Head`, `Hands`,
+  `Feet`, `Forearms`, `Calves`, `Shield`, `Amulet`, `Ring`, `Circlet`, … (multiple slots
+  are OR'd). `armorRating` is the protection value.
+
+### effects (spells & potions)
+A spell or potion **does nothing without at least one effect**. Each effect is:
+```jsonc
+{ "magicEffect": "Skyrim.esm:0x03EB15",  // a MagicEffect *ref* (usually vanilla)
+  "magnitude": 25, "area": 0, "duration": 0 }   // duration in seconds; 0 = instant
+```
+The `magicEffect` is a *ref* — a vanilla one (`find <Skyrim.esm> <query> MagicEffect`, e.g.
+`AlchRestoreHealth = Skyrim.esm:0x03EB15`, `AlchDamageHealth = Skyrim.esm:0x03EB42`) **or** an
+in-spec `magicEffects` entry's `editorId` (see below). A potion is fully functional with one
+effect; a spell also wants cast/spell-type tuning but the effect is the core.
+
+### magicEffects (custom MGEF)
+Define your OWN effect instead of reusing a vanilla one; a spell/potion/ingredient/scroll `effect`
+then points at it by `editorId` (and the per-cast `magnitude`/`area`/`duration` stay on that effect).
+```jsonc
+{ "editorId": "MF_RestoreHealthEffect", "name": "ModForge Restore Health",
+  "archetype": "ValueModifier",   // ValueModifier (damage/heal/fortify) | SummonCreature | Bound | Light | Paralysis | …
+  "actorValue": "Health",          // what it acts on: Health | Magicka | Stamina | …
+  "magicSkill": "Restoration",     // school: Alteration|Conjuration|Destruction|Illusion|Restoration
+  "resistValue": "ResistFire",     // AV that resists it (optional): ResistFire | ResistFrost | PoisonResist | …
+  "castType": "FireAndForget",     // FireAndForget | Concentration | ConstantEffect
+  "targetType": "Self",            // Self | Touch | Aimed | TargetActor | TargetLocation
+  "baseCost": 8.0,
+  "flags": ["Recover"],            // Hostile | Detrimental | Recover | NoArea | NoDuration | NoMagnitude | …
+  "association": "<ref>",          // summoned/bound form (only for Summon/Bound archetypes)
+  "projectile": "<ref>",           // PROJ — the bolt that travels (needed for Aimed spells)
+  "castingArt": "<ref>",           // ARTO — FX at the caster's hands
+  "hitEffectArt": "<ref>",         // ARTO — FX at the impact point
+  "explosion": "<ref>" }           // EXPL — AoE explosion on impact
+```
+A bare `ValueModifier` MGEF (no visual art/projectile) still applies its value — fine for Self/Touch
+and for potions. A damage spell that *travels* (`targetType: Aimed`) needs a `projectile` (+ usually
+`castingArt`); harvest a vanilla one with `mgefdiag <Skyrim.esm> <0xFORMID>` (e.g. the fire effect
+`FireDamageFFAimed75 0x10F7F1` uses projectile `0x10FBEA` + castingArt `0x01B211`).
+
+**Flags matter — match the effect's timing (this is the #1 gotcha):**
+- **Instant** restore/damage (`duration` 0) → `["NoDuration", "NoArea"]`, and add `"Detrimental"`
+  (+`"Hostile"`) for damage. Do **NOT** set `Recover` — `Recover` reverts the value when the effect
+  *ends*, and an instant effect ends immediately, so the change is undone (a heal applies +N then
+  instantly removes it → **net zero, looks like "casts but does nothing"**).
+- **Timed** fortify (`duration` > 0, e.g. +50 Health for 60s) → `["Recover", "NoArea"]`: `Recover`
+  cleanly removes the bonus when the timer expires. This is `Recover`'s correct use.
+Keep `baseCost` low (vanilla restore/damage effects use ~0.5–3); the spell's magicka cost is
+auto-calculated from `baseCost` × `magnitude`, so a large `baseCost` makes the spell absurdly
+expensive. Compare any effect to a vanilla one with `mgefdiag <Skyrim.esm> <0xFORMID>`.
+
+### enchantments (ENCH / Object Effect)
+An **Object Effect** bundles one or more MGEF-based `effects` (the SAME `{ magicEffect, magnitude,
+area, duration }` shape as a spell/potion effect) into a reusable enchantment that a **weapon** or
+**armor** references via its `enchantment` field. `enchantType` picks the behaviour family and its
+vanilla-default cast/target (verified against `Skyrim.esm`):
+
+| `enchantType` | EnchantType | default castType / targetType | charge | use |
+|---------------|-------------|-------------------------------|--------|-----|
+| `weapon`  | `Enchantment`      | `FireAndForget` / `Touch` | weapon carries the pool (`enchantmentAmount`) | cast-on-strike (frost/fire/absorb weapon) |
+| `apparel` | `Enchantment`      | `ConstantEffect` / `Self` | none — always-on while worn | fortify/resist/regen apparel |
+| `staff`   | `StaffEnchantment` | `FireAndForget` / `Aimed` | staff carries the pool | staff "cast on use" (vanilla staves set `chargeTime` ~0.5) |
+
+```jsonc
+"enchantments": [
+  { "editorId": "MF_FrostWeaponEnch", "name": "Frost Damage",
+    "enchantType": "weapon",          // weapon | apparel | staff
+    "enchantmentCost": 15,            // per-cast charge cost drained from the weapon's pool
+    // "castType": "...", "targetType": "...",  // optional — override the family defaults
+    "effects": [ { "magicEffect": "MF_FrostDamageEnchEffect", "magnitude": 10 } ] }
+],
+"weapons": [
+  { "editorId": "MF_FrostIronSword", "name": "Frostbite Iron Sword",
+    "template": "Skyrim.esm:0x012EB7",   // clone a vanilla weapon for the model (else CRASH on equip)
+    "damage": 8,
+    "enchantment": "MF_FrostWeaponEnch", // ref → in-spec ENCH or vanilla <master>:0xFORMID
+    "enchantmentAmount": 1500 }          // the weapon's charge pool (casts before recharge)
+]
+```
+An `apparel` (constant-effect) enchantment goes on an **armor** the same way (no `enchantmentAmount` —
+apparel is passive). The `enchantment` ref may also be a **vanilla** ObjectEffect
+(`find <Skyrim.esm> Ench... ObjectEffect`, e.g. `EnchWeaponFrostDamageBase = Skyrim.esm:0x10FB96`).
+Inspect a built or vanilla ENCH with `enchdiag <in.esp> <0xFORMID>`. Worked example:
+[`examples/enchantment_spec.json`](../examples/enchantment_spec.json). *(Structurally verified; the
+enchantment actually firing in-game is unconfirmed — see the cookbook recipe note.)*

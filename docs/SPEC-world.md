@@ -1,4 +1,7 @@
-<!-- Part 3/5 — Cells through Vendors -->
+# ModForge spec — world, cells & spawns
+
+← [index](SPEC-index.md)
+
 ### cells & placements — putting things in the world
 ```jsonc
 "cells": [

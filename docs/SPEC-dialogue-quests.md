@@ -1,4 +1,7 @@
-<!-- Part 2/5 — Classes through Papyrus Scripts -->
+# ModForge spec — dialogue, quests & scripts
+
+← [index](SPEC-index.md)
+
 ### classes (CLAS)
 An NPC's "profession" — set an npc's `class` ref to one. It drives the actor's attribute
 distribution and favoured skills (and, for a trainer NPC, what it `teaches`).

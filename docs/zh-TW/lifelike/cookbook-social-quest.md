@@ -1,31 +1,7 @@
-<!-- 第 4/5 部分 — 進階法術與對話 -->
-## 「法術書」（自訂法術的 BOOK，首次閱讀時教授法術：MGEF → SPEL → BOOK）
+<!-- 社交與任務模式 -->
+# 食譜手冊 — 社交與任務
 
-法術書是一種 BOOK，其 `teaches` 欄位在首次閱讀時授予一個 SPEL。最佳組合：撰寫法術（自訂 MGEF + SPEL，如上）以及一本教授它的書卷——全都在同一份規格中。閱讀書卷後，玩家即可獲得法術。
-
-```jsonc
-{ "magicEffects": [ { "editorId": "MF_EmberLanceEffect", /* …archetype/projectile/castingArt… */ } ],
-  "spells":       [ { "editorId": "MF_EmberLanceSpell", "name": "Ember Lance", /* …effects… */ } ],
-  "books": [
-    { "editorId": "MF_SpellTomeEmberLance", "name": "Spell Tome: Ember Lance",
-      "text": "<p>Reading this grants the Ember Lance spell.</p>",
-      "template": "Skyrim.esm:0x10F7F4",                 // 克隆 SpellTomeIncinerate 的 MODEL（否則閱讀時會崩潰）
-      "value": 250, "flags": [ "CantBeTaken" ],          // 原版法術書旗標
-      "teaches": { "kind": "spell", "spell": "MF_EmberLanceSpell" } },   // ← 教授規格內的法術
-
-    // 也可以：透過外部參照教授原版法術…
-    { "editorId": "MF_SpellTomeFirebolt", "name": "Spell Tome: Firebolt (copy)",
-      "template": "Skyrim.esm:0x10F7F4",
-      "teaches": { "kind": "spell", "spell": "Skyrim.esm:0x012FD0" } },
-
-    // …或是在閱讀時提升技能的技能書（保留 template 就不會發生模型崩潰）
-    { "editorId": "MF_SkillBookDestruction", "name": "Pyromancy for Beginners",
-      "template": "Skyrim.esm:0x0ED161",
-      "teaches": { "kind": "skill", "skill": "Destruction" } }
-  ] }
-```
-
-注意事項：教授書卷可以被取用和閱讀，因此仍然需要一個 `template`（用於克隆 `.nif` 模型的原版 BOOK）——沒有模型的書卷在開啟閱讀介面時會**崩潰**。規格內的 `spell` 參照在建構第二階段才會連結，因此書卷可以教授在同一份規格中稍後定義的法術。透過 CLI 確認書卷的模型或 `Teaches` 結構：`bookdiag <Skyrim.esm> 0x10F7F4`（原版法術書）或 `0x01AFD2`（技能書）。實際上的*閱讀後授予*在結構上已連結，但此處尚未在遊戲中確認。
+← [目錄](cookbook-index.md) | [lifelike 主頁](README.md)
 
 ## 「可對話的 NPC」（自訂玩家對話選項——遊戲內已確認 It.23）
 
@@ -148,4 +124,11 @@
 ```
 
 **`package` 自動處理 Papyrus——無需 CK（遊戲內已確認 It.36 2026-06-02）。**
-它會生成、編譯並以 VMAD 附加所有內容：一個每階段各有 `Fragment_Stage_XXXX_Item00000()` 的 Quest 腳本，以及一個 `extends TopicInfo Hidden` 的 TIF 腳本（含明確的 `Quest Property OwningQuest Auto`，呼叫 `OwningQuest.SetStage(N)`）。**請勿使用 `GetOwningQuest()`——對 StartGameEnabled 任務回傳 None**。
+它會生成、編譯並以 VMAD 附加所有內容：
+
+- `Scripts/Source/MF_ErrandQuest_Stages.psc` — 每個階段各有 `Fragment_Stage_XXXX_Item00000()`，用於顯示/完成目標。引擎在 `SetStage()` 觸發時按名稱呼叫此函式。
+- `Scripts/Source/TIF_MF_AgreeToHelp.psc` — `extends TopicInfo Hidden`，帶有明確的 `Quest Property OwningQuest Auto`（綁定至任務的 FormKey），`OnBegin` 呼叫 `OwningQuest.SetStage(20)`。**請勿使用 `GetOwningQuest()`——對 StartGameEnabled 任務回傳 None**（見 gotchas.md）。
+- 編譯後的 `.pex` 複製至 `Scripts/`，VMAD 附加至 QUST 和 INFO。
+- `setStage` 對話行上自動加入 `GetStage(quest) < 20` 條件，使 Joren 在玩家已選取後不再重複觸發。
+
+`package` 指令需要 `~/tools/papyrus-compiler`（Linux 原生；備用方案為 Wine/CK）。對話仍然只在遊戲**載入**時才會登錄——見 [gotchas.md](gotchas.md)。

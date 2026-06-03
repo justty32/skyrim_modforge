@@ -1,12 +1,9 @@
-﻿<!-- Part 1/5 — Basic NPC patterns -->
-# Recipe cookbook
+<!-- 基本 NPC 模式 -->
+# 食譜手冊 — 基本 NPC 模式
 
-Copy-paste starting points. Combine with the [TL;DR NPC recipe](README.md#tldr--the-complete-npc-recipe)
-and resolve every `<...>` / FormID against [formid-reference](formid-reference.md).
+← [目錄](cookbook-index.md) | [lifelike 主頁](README.md)
 
-← back to [lifelike hub](README.md)
-
-## "Inn patron" (Sandbox only)
+## 「酒館常客」（僅沙盒模式）
 
 ```jsonc
 { "packages": [
@@ -28,9 +25,9 @@ and resolve every `<...>` / FormID against [formid-reference](formid-reference.m
   ] }
 ```
 
-## "Cross-city commuter" (Travel + Sandbox + citizenship)
+## 「跨城通勤者」（移動 + 沙盒 + 市民身份）
 
-Add to the inn-patron above:
+在上方酒館常客的基礎上新增：
 ```jsonc
 { "packages": [
     { "editorId": "MF_GoOut", "template": "Skyrim.esm:0x016FAA",
@@ -47,7 +44,7 @@ Add to the inn-patron above:
   ] }
 ```
 
-## "Combat-capable mage"
+## 「具備戰鬥能力的法師」
 
 ```jsonc
 { "combatStyles": [
@@ -67,12 +64,11 @@ Add to the inn-patron above:
   ] }
 ```
 
-Class should be magicka-heavy with Destruction-favouring skill weights.
+職業應以魔力為主，並側重破壞系魔法的技能權重。
 
-## "Friendly self-defender" (townsperson who fights only when attacked)
+## 「友善的自我防衛者」（只在受到攻擊時才還手的市鎮居民）
 
-A deliberate contrast to the combat-mage: do **not** use `Aggressive` (it risks treating the
-player as hostile). Aggression governs *initiation*; `Brave` governs flee-vs-stand once attacked.
+此設定刻意與戰鬥法師形成對比：**不**使用 `Aggressive`（這樣做有將玩家視為敵對的風險）。Aggression 決定的是*主動發動攻擊*的行為；`Brave` 則決定受到攻擊後是逃跑還是迎戰。
 
 ```jsonc
 { "npcs": [
@@ -84,7 +80,7 @@ player as hostile). Aggression governs *initiation*; `Brave` governs flee-vs-sta
   ] }
 ```
 
-## "Ritual caster" (UseMagic — non-combat scheduled spellcasting)
+## 「儀式施法者」（UseMagic — 非戰鬥排程施法）
 
 ```jsonc
 { "packages": [
@@ -110,17 +106,11 @@ player as hostile). Aggression governs *initiation*; `Brave` governs flee-vs-sta
   ] }
 ```
 
-The "Spell" slot is a `PackageTargetObjectID` FormLink to a specific SPEL record — NOT a category
-enum. The target slot defaults to `PackageTargetSelf` (correct for self-cast spells like
-Candlelight/Healing/Ward); set `target` to a placed-ref for cast-at-X. Combat preempts UseMagic
-unless you add `flags: [ "IgnoreCombat" ]`.
+「Spell」欄位是指向特定 SPEL 記錄的 `PackageTargetObjectID` FormLink，**不是**類別列舉。目標欄位預設為 `PackageTargetSelf`（適用於 Candlelight/Healing/Ward 等自身施放的法術）；若需對特定目標施法，請將 `target` 設為已放置的參照物件。戰鬥狀態會搶占 UseMagic 的執行，除非加入 `flags: [ "IgnoreCombat" ]`。
 
-## "Companion that trails the player" (Follow — movement layer only)
+## 「跟隨玩家的同伴」（Follow — 僅限移動層）
 
-A Follow package targeting the player + the citizenship recipe makes a generated NPC trail the
-player **and persist across fast travel** (the engine fast-travels actors running a follow-the-player
-package). No managing quest is needed for the *movement* layer — the hire/dismiss dialogue + follow
-faction (see the [hireable-follower gotcha](gotchas.md)) are only what make it player-toggleable.
+一個以玩家為目標的 Follow 套件搭配市民身份食譜，可讓生成的 NPC 跟隨玩家**並在快速旅行後持續存在**（引擎會對執行「跟隨玩家」套件的角色一同進行快速旅行）。*移動層*本身不需要管理用的任務——僱用/解僱對話與跟隨派系只是讓玩家能夠自行切換開關的必要條件。
 
 ```jsonc
 { "packages": [
@@ -129,4 +119,3 @@ faction (see the [hireable-follower gotcha](gotchas.md)) are only what make it p
   ],                                  // target "" ⇒ defaults to the player
   "npcs": [ { "editorId": "MF_Companion", ..., "packages": [ "MF_FollowPlayer" ] } ] }
 ```
-

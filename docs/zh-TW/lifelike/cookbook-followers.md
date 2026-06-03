@@ -1,4 +1,7 @@
-<!-- 第 2/5 部分 — 跟隨者系統 -->
+<!-- 跟隨者系統 -->
+# 食譜手冊 — 跟隨者系統
+
+← [目錄](cookbook-index.md) | [lifelike 主頁](README.md)
 
 ## 「可招募的跟隨者」（雇用 → 跟隨 → 解散），遊戲內確認
 
@@ -21,7 +24,7 @@ player.RemoveItem(Gold001, 500)
 ```
 `SetFollower` 會設定關係值 + `SetPlayerTeammate` + `ForceRefTo` 的跟隨者 alias（該 alias 帶有跟隨 package 並加入 `CurrentFollowerFaction`）。此後，**原版自己的交易/等待/跟隨/解散對話全部可用**，AFT/EFF/NFF 也會識別她 — 無需自訂指令 topic。在招募台詞上設置 `GetGlobalValue PlayerFollowerCount (0x0BCC98) == 0` 的條件，以確保永遠不會佔用超過單人跟隨者名額。詳見 `examples/follower_vanilla_spec.json` + `MFHireVanillaRecruit.psc`。
 
-> **原版跟隨者狀態下能保留什麼**（關於你的生動化成果會不會消失的疑慮）：跟隨者不過是一個 alias，它在角色的 package 堆疊上疊加了一個高優先級的*跟隨 package* — 這是附加的，並非覆蓋性的。**CombatStyle 會被保留**（已確認：`PlayerFollowerPackage`/戰鬥覆寫 package 均未設定 CombatStyle，因此角色的基礎 CSTY 主導戰鬥行為）。**你的自訂對話會被保留**，並且可以*以跟隨者狀態為條件* — 例如一段僅對跟隨者開放、以 `GetInFaction CurrentFollowerFaction (0x05C84E) == 1` 為條件的自我介紹（詳見原版範例）。**Sandbox/旅行/排程 package 只有在她主動跟著你時才會被覆蓋優先級**（她無法同時跟隨又按行程通勤），一旦她被解散或被告知等待，這些 package 便會立即恢復。
+> **原版跟隨者狀態下能保留什麼**（關於你的生動化成果會不會消失的疑慮）：跟隨者不過是一個 alias，它在角色的 package 堆疊上疊加了一個高優先級的*跟隨 package* — 這是附加的，並非覆蓋性的。**CombatStyle 會被保留**（已確認：`PlayerFollowerPackage`/戰鬥覆寫 package 均未設定 CombatStyle，因此角色的基礎 CSTY 主導戰鬥行為）。**你的自訂對話會被保留**，並且可以*以跟隨者狀態為條件*。**Sandbox/旅行/排程 package 只有在她主動跟著你時才會被覆蓋優先級**，一旦她被解散或被告知等待，這些 package 便會立即恢復。
 
 **(b) 付費，完全自行管理** — *使用者認為此方式不如 (c) 理想；保留僅供參考。* 不涉及原版跟隨者系統：以帶 OWN flag 的派系作為「是我的跟隨者」狀態；OWN 的招募＋解散＋交易＋等待 topic 攜帶結果 fragment；Follow package 以 flag 為條件。優點：零衝突，無單人名額限制，可與真正的原版跟隨者並存。缺點：你需要重新實作每一條指令，且跟隨者管理 mod 看不到她。骨架（完整版：`examples/follower_paid_spec.json` + `MFHirePaidRecruit/Dismiss.psc`）：
 
@@ -34,7 +37,7 @@ player.RemoveItem(Gold001, 500)
                         "param": "MF_FollowerFlag", "runOn": "Subject" } ] }  // follow only while hired
   ],
   "npcs": [ { "editorId": "MF_Merc", "voiceType": "Skyrim.esm:0x013ADD", "greeting": "Coin talks.",
-              "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],   // citizenship, NOT a follower faction
+              "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
               "packages": [ "MF_FollowPkg" ], "unique": true } ],
   "quests": [ { "editorId": "MF_Q", "startGameEnabled": true } ],
   "dialogue": [
@@ -59,7 +62,7 @@ player.RemoveItem(Gold001, 500)
 解散 fragment：`RemoveFromFaction(FollowerFaction)` + `SetPlayerTeammate(false)` + `EvaluatePackage()`。
 
 **交易 / 等待 / 再次跟隨**（完整範例中也有連接這些功能 — 相同的 fragment 模式）：
-- **交易**：一個以 `FollowerFlag==1` 為條件的 topic，**不**設 `goodbye`（這樣選單就會在對話上方開啟，與原版相同），fragment 為 `akSpeaker.OpenInventory(true)`。
+- **交易**：一個以 `FollowerFlag==1` 為條件的 topic，**不**設 `goodbye`，fragment 為 `akSpeaker.OpenInventory(true)`。
 - **等待 / 恢復**：使用原版本身就在用的 **`WaitingForPlayer` ActorValue**。在 Follow package 上增加 `GetActorValue WaitingForPlayer == 0`（附加於 `FollowerFlag==1`）。一個「在這裡等待」的 topic（條件 `WaitingForPlayer==0`）將其設為 1（`SetActorValue("WaitingForPlayer", 1.0)` + `EvaluatePackage`）；一個「再次跟上我」的 topic（條件 `WaitingForPlayer==1`）清除它。詳見 `MFFollowerTrade/Wait/Follow.psc`。
 
 ## 「更生動的跟隨者附加功能」 — 閒暇時光＋情境台詞（It.33，遊戲內確認）

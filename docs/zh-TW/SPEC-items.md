@@ -1,4 +1,8 @@
-<!-- 第 4/5 部分 — 配方至紋理集 -->
+<!-- 配方、特技、外部資源、材質集 -->
+# ModForge 規格說明 — 配方、特技與資源
+
+← [目錄](SPEC-index.md)
+
 ### recipes（合成 / COBJ）
 讓物品可以在工作台合成、改良或熔煉。recipe 的 `kind` 決定類型（預設為 `craft`）以及**預設工作台**；`workbench` 是一個**具名選擇器**（`forge` / `sharpeningWheel`（即 `grindstone`）/ `armorTable`（即 `workbench`）/ `smelter` / `tanningRack` / `skyforge`）——或是一個原始的 `<master>:0xID` 關鍵字參考，會覆蓋 kind 的預設值。省略 `workbench` 則使用 kind 的預設值。
 

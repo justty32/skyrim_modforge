@@ -1,4 +1,8 @@
-<!-- 第 5/5 部分 — AI 套件至工作流程 -->
+<!-- AI 套件、天氣與氣候 -->
+# ModForge 規格說明 — AI 套件與天氣
+
+← [目錄](SPEC-index.md)
+
 ### packages — AI 套件（NPC 的行為）
 `packages` 條目是一個 AI 套件。Skyrim 的 PACK 記錄採用**模板驅動**方式：你透過 `template` 參考一個原版「程序模板」表單，由該模板定義資料輸入結構（插槽索引及類型）。我們的套件為模板所定義的插槽填入輸入值。
 
@@ -67,19 +71,3 @@ ModForge 目前實作七個模板——**Sandbox**（`Skyrim.esm:0x01C254`）、
 - **`precipitation`** 是指向著色粒子幾何體（`SPGD`）的 *ref*。使用 `weatherdiag <Skyrim.esm> <rainy-WTHR-formid>` 查找原版雨效。
 
 > **指派氣候是獨立步驟。** 輸出 `WTHR`+`CLMT` 本身**不會**改變任何遊戲內天空。原版透過**世界空間**（`WRLD` `Climate` 欄位）或**地區**（`REGN` 天氣資料）套用氣候。**已於遊戲內確認（It.36，2026-06-02）：** 透過控制台 `sw <XX>000800` 強制天氣。`build` 指令在建置成功後會輸出所有 WTHR 記錄的 `sw` 指令。
-
-## 工作流程
-
-```bash
-dotnet run --project src/ModForge.Cli -- validate myspec.json          # 先行檢查
-dotnet run --project src/ModForge.Cli -- build    myspec.json out.esp   # 僅建置插件
-dotnet run --project src/ModForge.Cli -- package  myspec.json OutModDir # esp + 編譯後的腳本 -> MO2 資料夾
-```
-`package` 輸出 `OutModDir/<pluginName>` + `Scripts/*.pex` + `Scripts/Source/*.psc`。
-
-**自然語言 → 規格：** 向 AI 代理人（Claude Code）描述需求；代理人根據本文件 / `../examples/spec.schema.json`（依 `for_agent.md`）輸出規格，執行 `validate`（自動修正問題），再執行 `build`/`package`。此代理人驅動循環**即是** NL→規格層——工具本身不含 LLM API（原本規劃的 `describe` 指令已取消），因此無需設定任何 API 金鑰或提供商。
-
-## 尚未涵蓋（可在 `ModForge.Core` 的 `Generator.Build` + 規格類別中擴充）
-世界放置現已涵蓋新建室內場景、原版室內場景，**以及室外/世界空間場景**（透過 `worldspace` + 世界座標），ModForge 現在也能**建立**新的世界空間（WRLD）+ 地區（REGN）——見上方 *worldspaces & regions*（僅限記錄層；地形/LOD/導航網格仍在 CK 端）。其餘缺口為長尾記錄類型/欄位及 CK 端的地形/LOD/導航網格創作——記錄端的模式相同：新增一個規格類別 + 在 `Build` 中新增一個迴圈。
-
-完整可用範例請見 `../examples/sample_spec.json`。

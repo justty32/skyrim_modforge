@@ -1,4 +1,8 @@
-<!-- 第 2/5 部分 — 類別至 Papyrus 腳本 -->
+<!-- 職業、對話、場景、任務 -->
+# ModForge 規格說明 — 對話、場景與任務
+
+← [目錄](SPEC-index.md)
+
 ### classes（CLAS）
 NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動角色的屬性分配和偏好技能。
 ```jsonc
@@ -44,7 +48,7 @@ NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動
 ```
 從這一個條目，建置時會發出**完整的 vanilla 鏈**——每個角色對應一個 **QuestAlias**（以 `UniqueActor` 綁定到指定 NPC）；一個 **Scene（SCEN）**（其 `SceneActors` 參照**別名索引**）；每個階段對應一個 **Scene 子類型 DialogTopic**（Category=Scene，SNAM=`SCEN`）+ **INFO**。
 
-> **執行時需求（非記錄錯誤）：**（1）兩個 NPC 必須**放置在彼此附近** — 在**同一個 cell** 中。（2）與所有任務對話一樣，場景只在**遊戲載入**時載入。（3）無語音台詞閃過；安裝 **Fuz Ro D-oh**。**狀態：僅限結構**——`build`/`validate`/`dump` 已對照 vanilla 場景結構驗證；**尚未在遊戲中確認。** 見 `examples/scene_spec.json` 和 `lifelike/cookbook.md`。
+> **執行時需求（非記錄錯誤）：**（1）兩個 NPC 必須**放置在彼此附近** — 在**同一個 cell** 中。（2）與所有任務對話一樣，場景只在**遊戲載入**時載入。（3）無語音台詞閃過；安裝 **Fuz Ro D-oh**。**狀態：僅限結構**——`build`/`validate`/`dump` 已對照 vanilla 場景結構驗證；**尚未在遊戲中確認。** 見 `examples/scene_spec.json`。
 
 ### conditions — CTDA 閘門（在 `dialogue` INFO、`banter` INFO 或 `package` 上）
 條件是**靜態閘門資料**，因此它存在於 spec 中（邏輯仍屬於 Papyrus）。`dialogue[].conditions` 和 `packages[].conditions` 採用相同的結構：
