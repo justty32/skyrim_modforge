@@ -1,6 +1,7 @@
 {
   "pluginName": "ModForgeTextureSet.esp",
   "esl": true,
+  "assets": "textures",
 
   "textureSets": [
     {
