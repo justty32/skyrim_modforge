@@ -56,6 +56,10 @@ public static partial class Generator
         ctx.BuildPackageData();                    // PACK template dispatch (sandbox/travel/usemagic/patrol/follow/escort)
         ctx.WireNpcPackages();                     // NPC.Packages list
         ctx.WireOutfits();                         // OTFT contents
+        ctx.BuildWorldspacesAndRegions();          // WRLD + REGN (+ NAVM/NAVI) — BEFORE placements so a
+                                                   // placement can target a custom in-spec worldspace's
+                                                   // cell, and its patrol markers/linked-refs/package
+                                                   // start can be wired by the phases that follow.
         ctx.BuildPlacements();                     // world placement (interior/vanilla/exterior cells)
         ctx.WireLinkedRefs();                      // XLKR between placements (patrol routes)
         ctx.WireTeleportDoors();                   // load-door XTEL teleport pairs (player walk-through links)
@@ -71,7 +75,6 @@ public static partial class Generator
         ctx.WireQuestStages();                     // QSDT log-entry CTDA + stage→objective fragment VMAD
         ctx.WireBanterConditions();                // situational CTDA gates on banter INFOs
         ctx.WirePackageConditions();               // CTDA gates on AI packages (runtime behaviour switch)
-        ctx.BuildWorldspacesAndRegions();          // WRLD + REGN (new exterior worlds + weather/area regions)
 
         return ctx.Finish();
     }

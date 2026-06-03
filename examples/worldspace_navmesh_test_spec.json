@@ -1,0 +1,96 @@
+{
+  "pluginName": "ModForgeNavmeshTest.esp",
+  "esl": false,
+  "_": "Navmesh PATHING test (follow-up to the 2026-06-03 navmesh breakthrough). Builds the custom worldspace MFTestWorld (flat LAND + a 4096x4096 navmesh quad at z=4000, NAVI as an additive override of Skyrim.esm:0x00012FB4) AND drops a guard who patrols three markers laid out ON that navmesh. If the navmesh truly works, the guard paces the triangle m1->m2->m3->m1; if not, he stands still. Test: `cow MFTestWorld 0 0`, wait ~30-90s for the patrol package cold-start, watch the guard. esl=false is mandatory (worldspaces carry LAND, which ESL plugins can't hold). The markers sit at z=4000 = exactly the flat navmesh height (static XMarkerHeadings don't snap to the floor, so they must be authored at the mesh height — see examples/patrol_spec.json for that lesson).",
+
+  "worldspaces": [
+    {
+      "editorId": "MFTestWorld",
+      "name": "ModForge Test Vale",
+      "climate": "Skyrim.esm:0x000812",
+      "water": "Skyrim.esm:0x000018",
+      "parent": "Skyrim.esm:0x00003C",
+      "flags": ["SmallWorld", "CannotFastTravel"],
+      "defaultLandHeight": -27000,
+      "defaultWaterHeight": -14000,
+      "map": {
+        "northwestX": -4, "northwestY": 4, "southeastX": 4, "southeastY": -4,
+        "cameraInitialPitch": 50, "cameraMinHeight": 50000, "cameraMaxHeight": 80000
+      },
+      "cells": [
+        { "x": 0, "y": 0, "navmesh": true }
+      ]
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MFNT_PatrolGuard",
+      "name": "ModForge Vale Guard",
+      "race": "Skyrim.esm:0x013746",
+      "class": "Skyrim.esm:0x01326B",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+      "unique": true,
+      "level": 15,
+      "autoCalcStats": true,
+      "aggression": "Aggressive",
+      "confidence": "Brave",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50,
+      "packages": [ "MFNT_PatrolBeat" ]
+    }
+  ],
+
+  "packages": [
+    {
+      "editorId": "MFNT_PatrolBeat",
+      "_": "Patrol template (Skyrim.esm:0x017723). start -> m1; the route is the markers' linkedRef chain m1->m2->m3->m1 (looped). Walk pace, repeatable, startAtNearest.",
+      "template": "Skyrim.esm:0x017723",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [ "HellosToPlayer", "AllowIdleChatter", "ObserveCombatBehavior", "ReactionToPlayerActions" ],
+      "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 0, "dayOfWeek": "Any" },
+      "patrol": {
+        "start": "MFNT_Marker1",
+        "radius": 150,
+        "repeatable": true,
+        "startAtNearest": true,
+        "rideHorse": false,
+        "staticPathing": false
+      }
+    }
+  ],
+
+  "placements": [
+    {
+      "_": "The guard, spawned at the centre of the navmesh quad. z=4000 = the flat navmesh/terrain height. startAtNearest=true → begins from whichever marker is closest.",
+      "base": "MFNT_PatrolGuard",
+      "worldspace": "MFTestWorld",
+      "position": { "x": 2048, "y": 2048, "z": 4000 }
+    },
+    {
+      "_": "Marker 1 (route start). All three markers sit at z=4000 inside the 0..4096 navmesh quad, ≥1024 units from the edges. linkedRef -> m2. Auto-persistent (linked-ref source + patrol start anchor).",
+      "editorId": "MFNT_Marker1",
+      "base": "Skyrim.esm:0x000034",
+      "worldspace": "MFTestWorld",
+      "position": { "x": 1024, "y": 1024, "z": 4000 },
+      "linkedRefs": [ { "target": "MFNT_Marker2" } ]
+    },
+    {
+      "editorId": "MFNT_Marker2",
+      "base": "Skyrim.esm:0x000034",
+      "worldspace": "MFTestWorld",
+      "position": { "x": 3072, "y": 1024, "z": 4000 },
+      "linkedRefs": [ { "target": "MFNT_Marker3" } ]
+    },
+    {
+      "editorId": "MFNT_Marker3",
+      "base": "Skyrim.esm:0x000034",
+      "worldspace": "MFTestWorld",
+      "position": { "x": 2048, "y": 3072, "z": 4000 },
+      "linkedRefs": [ { "target": "MFNT_Marker1" } ]
+    }
+  ]
+}

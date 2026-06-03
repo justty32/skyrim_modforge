@@ -198,11 +198,44 @@ public static partial class Generator
                 return null;
             }
 
+            // A custom worldspace we built earlier this run (BuildWorldspacesAndRegions runs before
+            // placements). Locate the cell we generated for grid (cx,cy) — it already carries LAND +
+            // navmesh — so refs/markers land in the navmeshed cell and patrol/sandbox actually works.
+            Cell OwnExteriorCell(IWorldspace ownWs, int cx, int cy)
+            {
+                var key = (ownWs.FormKey, cx, cy);
+                if (exteriorCells.TryGetValue(key, out var cached)) return cached;
+                short bx = (short)FloorDiv(cx, 32), by = (short)FloorDiv(cy, 32);
+                short sx = (short)FloorDiv(cx, 8),  sy = (short)FloorDiv(cy, 8);
+                var block = ownWs.SubCells.FirstOrDefault(b => b.BlockNumberX == bx && b.BlockNumberY == by);
+                if (block is null)
+                { block = new WorldspaceBlock { BlockNumberX = bx, BlockNumberY = by, GroupType = GroupTypeEnum.ExteriorCellBlock }; ownWs.SubCells.Add(block); }
+                var sub = block.Items.FirstOrDefault(s => s.BlockNumberX == sx && s.BlockNumberY == sy);
+                if (sub is null)
+                { sub = new WorldspaceSubBlock { BlockNumberX = sx, BlockNumberY = sy, GroupType = GroupTypeEnum.ExteriorCellSubBlock }; block.Items.Add(sub); }
+                var cell = sub.Items.FirstOrDefault(c => c.Grid?.Point is { } p && p.X == cx && p.Y == cy);
+                if (cell is null)
+                {
+                    Warn($"  ! placement grid ({cx},{cy}) has no generated cell in worldspace '{ownWs.EditorID}' — creating a bare cell (no navmesh; NPCs there can't path)");
+                    cell = new Cell(mod, $"{ownWs.EditorID}_Cell_{(cx < 0 ? "m" : "")}{Math.Abs(cx)}_{(cy < 0 ? "m" : "")}{Math.Abs(cy)}")
+                    { Grid = new CellGrid { Point = new Noggog.P2Int(cx, cy) } };
+                    sub.Items.Add(cell);
+                }
+                exteriorCells[key] = cell;
+                return cell;
+            }
+
             // Get-or-add the exterior cell at grid (cx,cy) inside the worldspace override's block tree.
             Cell? ExteriorCell(string worldspaceRef, int cx, int cy)
             {
+                // In-spec custom worldspace (editorId) built earlier this run → use its generated cell.
+                if (!LooksExternalRef(worldspaceRef)
+                    && formKeyByEd.TryGetValue(worldspaceRef, out var ownFk)
+                    && mod.Worldspaces.FirstOrDefault(w => w.FormKey == ownFk) is { } ownWs)
+                    return OwnExteriorCell(ownWs, cx, cy);
+
                 if (!TryExternalRef(worldspaceRef, out var wsFk))
-                { Warn($"  ! placement worldspace '{worldspaceRef}' must be an external <master>:0xFORMID ref"); return null; }
+                { Warn($"  ! placement worldspace '{worldspaceRef}' must be an external <master>:0xFORMID ref or an in-spec worldspace editorId"); return null; }
                 var key = (wsFk, cx, cy);
                 if (exteriorCells.TryGetValue(key, out var cached)) return cached;
 

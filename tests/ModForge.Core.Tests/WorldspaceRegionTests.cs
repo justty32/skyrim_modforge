@@ -74,6 +74,39 @@ public class WorldspaceRegionTests
         Assert.True(w.Flags.HasFlag(Worldspace.Flag.SmallWorld));
     }
 
+    // A placement targeting a custom in-spec worldspace (by editorId) must land in that worldspace's
+    // generated, navmeshed cell — not be rejected as "external ref only". Guards the build-order +
+    // ExteriorCell change that lets NPCs/markers be placed on a generated navmesh (the patrol test).
+    [Fact]
+    public void Placement_IntoCustomWorldspace_LandsInGeneratedNavmeshedCell()
+    {
+        var world = MakeWorld();
+        world.Cells.Add(new WorldspaceCellSpec { X = 0, Y = 0, Navmesh = true });
+        var spec = new ModSpec
+        {
+            Esl = false,   // worldspaces carry LAND, which ESL plugins can't hold
+            Worldspaces = { world },
+            Placements =
+            {
+                new PlacementSpec
+                {
+                    Base = "Skyrim.esm:0x000034", EditorId = "M1", Worldspace = "TestWorld",
+                    Position = new Vec3 { X = 2048, Y = 2048, Z = 4000 },
+                },
+            },
+        };
+
+        Assert.Empty(Generator.Validate(spec));   // in-spec worldspace ref accepted by the validator
+
+        var mod = Generator.Build(spec, Out).Mod;
+        var cell = mod.Worldspaces.First(w => w.EditorID == "TestWorld")
+            .SubCells.SelectMany(b => b.Items).SelectMany(s => s.Items)
+            .Single(c => c.Grid is { } g && g.Point.X == 0 && g.Point.Y == 0);
+
+        Assert.Single(cell.NavigationMeshes);   // the target cell carries the generated navmesh
+        Assert.Contains(cell.Persistent.Concat(cell.Temporary), p => p.EditorID == "M1");
+    }
+
     [Fact]
     public void Worldspace_SetsLandAndWaterDefaults_TheFloodFix()
     {

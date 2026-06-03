@@ -19,8 +19,12 @@ public static partial class Generator
                     Problems.Add($"placement '{pl.EditorId ?? pl.Base}' base '{pl.Base}' is a LeveledNpc list (LVLN) — LVLN bases cause CTD at load; use an NPC_ actor whose template references the list");
                 if (!string.IsNullOrWhiteSpace(pl.Worldspace))
                 {
-                    if (!LooksExternalRef(pl.Worldspace) || !TryExternalRef(pl.Worldspace, out _))
-                        Problems.Add($"placement worldspace '{pl.Worldspace}' must be a well-formed external <master>:0xFORMID ref (find it: find <Skyrim.esm> <name> Worldspace)");
+                    // Accept either an external <master>:0xFORMID ref OR an in-spec worldspace editorId
+                    // (placements into a custom worldspace land in its generated, navmeshed cell).
+                    bool inSpecWs = spec.Worldspaces.Any(w =>
+                        string.Equals(w.EditorId, pl.Worldspace, StringComparison.OrdinalIgnoreCase));
+                    if (!inSpecWs && (!LooksExternalRef(pl.Worldspace) || !TryExternalRef(pl.Worldspace, out _)))
+                        Problems.Add($"placement worldspace '{pl.Worldspace}' must be an in-spec worldspace editorId or a well-formed external <master>:0xFORMID ref (find it: find <Skyrim.esm> <name> Worldspace)");
                 }
                 else if (string.IsNullOrWhiteSpace(pl.Cell)) Problems.Add("placement has empty cell (and no worldspace — set one or the other)");
                 else if (LooksExternalRef(pl.Cell))
