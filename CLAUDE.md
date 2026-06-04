@@ -29,7 +29,7 @@
 - **實機修掉的 alias 鐵律**（[[story-manager-kill-recipe]]）：① location 槽填充 alias 必須 `Type=Location`（否則填 null；fromEvent 'L' 開頭自動設）；② 任一必填 alias 填不上 → quest 靜默不啟動；③ 殺/指向被 `ReservesLocationOrReference` 保留的 NPC 需 alias `AllowReserved`——已加 opt-in `allowReserved`（uniqueActor 強制開）；④ `QuestAlias.Flags` nullable、`|=` 對 null no-op，旗標要 `GetValueOrDefault()` 起底。
 - **Script Event 入口 — 研究尖兵完成**（`docs/superpowers/specs/2026-06-04-script-event-entry-spike.md`）：根 `0x01379A`/碼 `SCPT`，keyword 綁在**分支條件** `GetEventData Keyword GetIsID <KYWD>==1`（Mutagen `GetEventDataConditionData` 原生，ESP 側可建）；**Papyrus-on-Linux 可行已實證**（`mono PapyrusCompiler.exe` + CK `Scripts.zip` 編出 .pex，免 Caprica/wine）；單一通用 dispatcher 服務所有 mod。**下一步可實作**。
 
-**Script Event 入口（量產通用自訂入口）：✅ 已實作（2026-06-04，待實機）**——297 測試綠：
+**Script Event 入口（量產通用自訂入口）：✅ 實機驗證通過（2026-06-04）**——297 測試綠（MFSE_Target running + Target alias=玩家）：
 - 事件表加 `ScriptEvent`（根 `0x01379A`/碼 `SCPT`/槽 ref1=R1、ref2=R2、loc=L1）。
 - `QuestStoryEventSpec.Keyword`：ScriptEvent quest 宣告一個 KYWD（spec.keywords 裏建），build 在分支上加 keyword 過濾條件 `GetEventData/GetIsID Member=Keyword Record=<KYWD> ==1`（Mutagen `GetEventDataConditionData` 原生）。同 keyword 共用分支、不同 keyword 不同分支。validate 要求 keyword 已宣告。
 - 通用派發器 `assets/papyrus/MFStoryEventDispatch.{psc,pex}`（Global `Fire(kw,ref1,ref2,loc)`→`kw.SendStoryEvent`），編一次、embed 進 CLI；package 遇到 ScriptEvent quest 自動丟 `.pex` 進 `Scripts/`。**Papyrus 編譯**：`Papyrus.Compile`（Wine+CK）用 cache 全 source set（`~/.cache/modforge/papyrus/Source/Scripts`，14301 .psc）；native `~/tools/papyrus-compiler` 用 loose Source（headers 不全時設 `MODFORGE_PAPYRUS_HEADERS` 指向 cache）。
