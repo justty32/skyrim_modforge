@@ -114,8 +114,8 @@ public static partial class Generator
             }
         }
 
-        // --- pass 1: Potion, Armor, Faction, Relationship, Class, Message ---
-        public void BuildConsumablesGearAndMessages()
+        // --- pass 1: Potion (ALCH) ---
+        public void BuildPotions()
         {
             foreach (var p in spec.Potions)
             {
@@ -132,6 +132,11 @@ public static partial class Generator
                 }
                 r.EditorID = p.EditorId; r.Name = p.Name; r.Value = p.Value; r.Weight = p.Weight;
             }
+        }
+
+        // --- pass 1: Armor (ARMO) — needs a `template` for an Armature or it equips invisible ---
+        public void BuildArmors()
+        {
             foreach (var a in spec.Armors)
             {
                 var r = mod.Armors.AddNew();
@@ -174,6 +179,11 @@ public static partial class Generator
                     r.WorldModel = new GenderedItem<ArmorModel?>(Mk(), Mk());
                 }
             }
+        }
+
+        // --- pass 1: Faction (FACT) — incl. inline vendor data; sellBuyList/container wired in pass 2 ---
+        public void BuildFactions()
+        {
             foreach (var f in spec.Factions)
             {
                 var r = mod.Factions.AddNew();
@@ -197,7 +207,11 @@ public static partial class Generator
                     // in pass 2 (WireVendors) — the container placement is created in the placement loop.
                 }
             }
-            // Relationship (RELA): scalar Rank now; Parent/Child NPC refs wired in pass 2.
+        }
+
+        // --- pass 1: Relationship (RELA) — scalar Rank now; Parent/Child NPC refs wired in pass 2 ---
+        public void BuildRelationships()
+        {
             foreach (var rel in spec.Relationships)
             {
                 var r = mod.Relationships.AddNew();
@@ -205,9 +219,13 @@ public static partial class Generator
                 r.Rank = Enum.TryParse<Relationship.RankType>(rel.Rank, ignoreCase: true, out var rk)
                     ? rk : Relationship.RankType.Ally;
             }
-            // EncounterZone (ECZN): pass-1 sets the level range/rank/flags (all inline). Owner/Location
-            // FormLinks are wired in pass 2. maxLevel 0 = "uncapped" (the vanilla scales-with-player
-            // idiom). A cell's / placed-spawn's `encounterZone` ref points at one (resolved in pass 2).
+        }
+
+        // --- pass 1: EncounterZone (ECZN): level range/rank/flags (all inline). Owner/Location
+        // FormLinks are wired in pass 2. maxLevel 0 = "uncapped" (the vanilla scales-with-player
+        // idiom). A cell's / placed-spawn's `encounterZone` ref points at one (resolved in pass 2). ---
+        public void BuildEncounterZones()
+        {
             foreach (var ez in spec.EncounterZones)
             {
                 var r = mod.EncounterZones.AddNew();
@@ -217,9 +235,13 @@ public static partial class Generator
                 r.Rank = (byte)Math.Clamp(ez.Rank, 0, 255);
                 r.Flags = ParseFlags<EncounterZone.Flag>(ez.Flags);
             }
-            // Class (CLAS): no FormLinks (all enums/weight dicts), so fully built in pass 1. An npc's
-            // `class` ref can point at one (resolved in pass 2 — it's in formKeyByEd by then). StatWeights
-            // (Health/Magicka/Stamina) drive the actor's attribute distribution; SkillWeights favour skills.
+        }
+
+        // --- pass 1: Class (CLAS): no FormLinks (all enums/weight dicts), so fully built in pass 1. An
+        // npc's `class` ref can point at one (resolved in pass 2 — it's in formKeyByEd by then). StatWeights
+        // (Health/Magicka/Stamina) drive the actor's attribute distribution; SkillWeights favour skills. ---
+        public void BuildClasses()
+        {
             foreach (var cl in spec.Classes)
             {
                 var r = mod.Classes.AddNew();
@@ -238,6 +260,11 @@ public static partial class Generator
                         r.SkillWeights[sk] = (byte)Math.Clamp(w, 0, 255);
                     else Warn($"  ! class '{cl.EditorId}' skillWeight '{skillName}' is not a Skill — skipped");
             }
+        }
+
+        // --- pass 1: Message (MESG) ---
+        public void BuildMessages()
+        {
             foreach (var msg in spec.Messages)
             {
                 var r = mod.Messages.AddNew();

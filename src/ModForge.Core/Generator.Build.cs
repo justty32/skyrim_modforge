@@ -30,7 +30,13 @@ public static partial class Generator
         ctx.BuildMagicAndSpells();                 // MagicEffect, Spell
         ctx.BuildEnchantments();                   // ObjectEffect (ENCH) scalar records
         ctx.BuildShouts();                         // WordOfPower (WOOP) + Shout (SHOU) scalar records
-        ctx.BuildConsumablesGearAndMessages();     // Potion, Armor, Faction, Relationship, Class, Message
+        ctx.BuildPotions();                        // Potion (ALCH)
+        ctx.BuildArmors();                         // Armor (ARMO)
+        ctx.BuildFactions();                       // Faction (FACT) incl. vendor data
+        ctx.BuildRelationships();                  // Relationship (RELA)
+        ctx.BuildEncounterZones();                 // EncounterZone (ECZN)
+        ctx.BuildClasses();                        // Class (CLAS)
+        ctx.BuildMessages();                       // Message (MESG)
         ctx.BuildPerks();                          // Perk (PERK) trunk scalar fields
         ctx.BuildLongTailItems();                  // Ingredient..Activator (scalar fields)
         ctx.BuildTextureSets();                    // TextureSet (TXST) retexture map paths
