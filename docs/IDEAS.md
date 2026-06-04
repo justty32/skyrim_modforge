@@ -331,8 +331,8 @@ modforge catalog Skyrim.esm --types Npc,Weapon,Armor,Food,Creature,Location,...
 
 - **A. 玩家定位：混合**——M&B 式傭兵起步，後期解鎖三國志式君主玩法；最小可玩版先做 M&B 前段（募兵+野戰），君主層等模擬層成熟後補
 - **B. 時間與行軍：即時派**——行軍 = 真的帶兵走，敵軍是世界內真實移動的部隊（AI package 巡邏）；「野外撞見敵軍」是 M&B 靈魂體驗，不事件化
-- **C. 依賴基線**：SKSE + SkyUI + JContainers + po3 Papyrus Extender / Tweaks + Fuz Ro D'oh——**這些視為所有玩家都裝的標配**（此基線適用所有想法，不只本節）；自寫 SKSE plugin 留作後期選項，前期把模擬邏輯隔離好方便日後搬遷
-  - **ModForge 也應該配合這個基線**：(1) Papyrus 編譯管線要認得第三方腳本源（`PO3_SKSEFunctions.psc`、JContainers 的 `JValue/JMap/JArray.psc`、SKSE 基礎腳本、SkyUI 的 `SKI_*.psc`）——加 import path 設定讓生成的腳本能直接呼叫這些函數；(2) spec 可考慮支援 **MCM 設定選單**的鷹架生成（quest + 繼承 `SKI_ConfigBase` 的腳本，SkyUI 標配功能）；(3) 文件/for_agent 註明哪些函數庫可假設存在
+- **C. 依賴基線**：SKSE + SkyUI + JContainers + po3 Papyrus Extender / Tweaks + Fuz Ro D'oh + **Nemesis**（behavior 引擎，動畫類 mod 的事實標準）+ **Community Shaders**（含 Light Limit Fix 等 feature 模組；2026-06-04 補）——**這些視為所有玩家都裝的標配**（此基線適用所有想法，不只本節）；自寫 SKSE plugin 留作後期選項，前期把模擬邏輯隔離好方便日後搬遷
+  - **ModForge 也應該配合這個基線**：(1) Papyrus 編譯管線要認得第三方腳本源（`PO3_SKSEFunctions.psc`、JContainers 的 `JValue/JMap/JArray.psc`、SKSE 基礎腳本、SkyUI 的 `SKI_*.psc`）——加 import path 設定讓生成的腳本能直接呼叫這些函數；(2) spec 可考慮支援 **MCM 設定選單**的鷹架生成（quest + 繼承 `SKI_ConfigBase` 的腳本，SkyUI 標配功能）；(3) 文件/for_agent 註明哪些函數庫可假設存在；(4) **Nemesis**：自訂動畫內容的接點——`package` 打包要能輸出 Nemesis 認得的動畫/behavior patch 目錄結構；(5) **Community Shaders**：美術方向可假設 Light Limit Fix（室內擺燈不再受每 mesh 4 盞限制，直接放大 §12 的操作空間），CS 的卡通渲染類 feature 若成熟也是 §13 二次元路線的渲染端解
 - **D. 世界規模：先小後大**——~8×8 cells、3-5 座城起步，霧遮遠景躲 LOD；「世界是 spec 生成的」保證日後重生成大世界不是重做
 - **E. 勢力/武將規模**：資料模型按「N 勢力 M 武將」參數化設計，原型 3×5、成品 5-8 勢力 × 30+ 武將，不用現在拍死
 - **F. 兵種樹：架空設計**——各勢力自己的兵種樹，全部用 vanilla 裝備模型拼（ModForge NPC + LvlN 現有能力）
@@ -352,7 +352,7 @@ Skyrim 本身的光照氛圍太陰暗——偏好原神、薩爾達那種明亮�
 
 - **室外**：Weather 記錄內建完整調色盤（日光/環境光/霧/天空色 × 黎明/白天/黃昏/夜晚），vanilla 故意調灰冷低飽和；每個 weather 還掛 **IMGS（ImageSpace）**——HDR 眼適應、bloom、cinematic 飽和/亮度/對比，「亮、乾淨、高飽和」很大部分是 IMGS 參數
 - **室內**：CELL Lighting 欄位（環境光/方向光/霧色 + DALC 六方向環境光）、**LGTM（Lighting Template）**（地城 90% 用 DefaultDungeon 系暗模板）、擺放 LIGH 光源刻意稀疏——全都是「選擇」。Zelda 神廟也是封閉空間但它亮
-- 引擎真限制：沒有 GI（環境光拉太高會平/塑膠感，正解是高一點環境光打底 + 少量光源做層次）；每 mesh 最多 4 盞光（Community Shaders 可解）；卡通渲染做不到（要 shader 級工作）；最後一哩是玩家側 ENB/CS preset，但**記錄層能把底子打到八成**
+- 引擎真限制：沒有 GI（環境光拉太高會平/塑膠感，正解是高一點環境光打底 + 少量光源做層次）；每 mesh 最多 4 盞光——**Community Shaders + Light Limit Fix 已入依賴基線（§11 決策 C），此限制可視為解除**；卡通渲染做不到（要 shader 級工作，CS feature 是可能出路）；最後一哩是玩家側 ENB/CS preset，但**記錄層能把底子打到八成**
 
 **與 §11 天作之合**：架空世界的 climate/weather/室內模板全部自己定，明亮基調從 spec 一路貫穿。
 
@@ -379,6 +379,23 @@ Skyrim 本身的光照氛圍太陰暗——偏好原神、薩爾達那種明亮�
 - **離線烘焙路線**：套 blendshape 權重算頂點是純數學，理論上可不靠 CK 直接寫 nif——但屬資產層、超出 Mutagen 範圍；或 shell out 給 CK 命令列 `-ExportFaceGenData`（同 xLODGen 態度：不自造）
 
 **二次元終局的真實成本不在臉**：動漫頭通常整顆 mesh + 少量 morph，反而繞開 FaceGen 烘焙；貴的是 **vanilla 裝備不貼合動漫身形（全裝備 refit）** 和比例差異的動畫適配。務實順序：先用寫實美化資產驗證轉換管線，二次元化 = 同管線換資產包 + 裝備 refit 的後續
+
+## 14. 資產格式轉換管線（glTF/FBX → NIF）（2026-06-04）
+
+主流 3D 格式和 Skyrim 格式的全自動轉換可行性——**「網格」可以，「全套」不行**，卡點很集中：
+
+| 內容 | Skyrim 格式 | 自動化可行性 |
+|---|---|---|
+| 網格/材質 | `.nif`（SSE BSTriShape 變體） | 高（PyNifly / ck-cmd 已解） |
+| 貼圖 | `.dds`（BC 壓縮 + mipmaps） | 完全自動（純轉碼） |
+| 表情/morph | `.tri` | 高（兩邊都是頂點 delta） |
+| 動畫/骨架/物理 | `.hkx`（Havok 二進位） | **這就是那道牆** |
+
+- **靜態物件最接近全自動**：要補 (1) 碰撞——NIF 的 `bhk*` 塊也是 Havok 資料，但簡單形狀（凸包/box）可程式生成；(2) 材質映射有損——glTF PBR 語義對不上 `BSLightingShaderProperty`，要一份映射規則（寫一次、批次套用）
+- **蒙皮網格半自動**：綁 Skyrim 骨架（`NPC Spine [Spn1]` 命名體系）、每頂點 ≤4 骨權重、裝備切 `BSDismemberSkinInstance` 分區——「來源骨架 → Skyrim 骨架」的 retarget 映射每個來源體系寫一次，和 §13 滑條轉換表同一哲學：**一次性規則 + 批次套用**
+- **動畫是真正的牆**：Havok SDK 不公開，社群靠 ck-cmd/hkxcmd 包舊版 SDK 做 FBX→hkx（能用但版本敏感）；behavior graph 完全沒有自動轉換可能（Nemesis/Pandora 領域）→ 帶全套自訂動畫的模型目前做不到無人值守轉換
+- **對其他想法的意義**：§13 二次元路線（VRoid/MMD 模型 = 主流格式出身，頭/身網格轉 NIF 可管線化，卡在動畫——與「真實成本在裝備 refit 和動畫」吻合）；想法 5 資源移植（靜態場景物件是甜蜜點，一條批次管線灌整包場景資產）。⚠️ 法律面：其他遊戲資產轉了不能發布，只適用自製/CC 授權資產
+- **ModForge 視角**：這是**資產層管線**，與記錄層（Mutagen）平行的另一條軸；`package` 已會打包 Meshes/Textures，上游接轉換步驟是自然延伸；PyNifly 可腳本化，shell-out 候選（同 xLODGen 態度：不自造）
 
 ---
 
