@@ -313,9 +313,34 @@ modforge catalog Skyrim.esm --types Npc,Weapon,Armor,Food,Creature,Location,...
 - 大規模事件調度 = Story Manager（9 節）正好是戰略層事件的天然載體
 - 架空 worldspace = 想法 4 / 8 的直接應用場景；聚落量產會倒逼 ModForge 的 worldspace 能力（地形、批量 placed refs）
 
+### 技術難題盤點（按致命度）
+
+**致命級（設計必須繞著走）**：
+1. **戰鬥 AI 上限**：超過 ~20 個 actor 同時戰鬥，AI 決策品質劣化（發呆、不揮刀）；Havok/ragdoll 隨人數暴漲；大量 `OnDeath` handler 會塞爆 Papyrus VM（每幀 ~1.2ms 預算）→ **會戰必須是 20v20 波次制**（陣亡補位 + 後台增援池計數），這是設計前提不是優化選項
+2. **攻城戰尋路**：navmesh 靜態、攻城梯路徑做不出來、大量 AI 擠隘口會卡死 → 城在設計期就預埋突破口 + 預鋪攻城動線 navmesh，攻城戰 = 預設動線上的波次戰（M&B 本質上也是這樣做的）
+
+**困難級（有路但都是硬仗）**：
+3. **非平坦地形 + LOD**：heightmap 程式生成不難（難在跨 cell 接縫/normals）；LTEX 地表貼圖層；**LOD 是真硬點**——沒有 terrain LOD 遠景直接虛空，務實解是 shell out 給 xLODGen 而非自造；短期折衷 = 小世界 + 霧遮遠景
+4. **聚落 navmesh**：建築 footprint → 網格法挖洞 → 三角化（簡化版 recast），純演算法工作量
+5. **戰略層 UI**：Scaleform/SWF 痛苦（想法 6）、CEF 網頁 UI 是最好試驗場（想法 7，回合制不要求即時）、原型期用 message box + 書本保底
+6. **Papyrus 資料天花板**：陣列上限 128 元素 → JContainers 必須；模擬規模大了終點是 SKSE native plugin
+
+**工程量級**：部隊跟隨（照抄 EFF/NFF 的 catch-up teleport / 門口排隊方案）；NPC 騎乘戰鬥 AI 很爛（騎兵衝鋒大概率做成腳本化位移+撞擊判定的假騎兵）；聚落量產（量大但都是 ModForge 已有/近似已有能力）
+
+### 已拍板的決策（2026-06-04）
+
+- **A. 玩家定位：混合**——M&B 式傭兵起步，後期解鎖三國志式君主玩法；最小可玩版先做 M&B 前段（募兵+野戰），君主層等模擬層成熟後補
+- **B. 時間與行軍：即時派**——行軍 = 真的帶兵走，敵軍是世界內真實移動的部隊（AI package 巡邏）；「野外撞見敵軍」是 M&B 靈魂體驗，不事件化
+- **C. 依賴基線**：SKSE + SkyUI + JContainers + po3 Papyrus Extender / Tweaks + Fuz Ro D'oh——**這些視為所有玩家都裝的標配**（此基線適用所有想法，不只本節）；自寫 SKSE plugin 留作後期選項，前期把模擬邏輯隔離好方便日後搬遷
+  - **ModForge 也應該配合這個基線**：(1) Papyrus 編譯管線要認得第三方腳本源（`PO3_SKSEFunctions.psc`、JContainers 的 `JValue/JMap/JArray.psc`、SKSE 基礎腳本、SkyUI 的 `SKI_*.psc`）——加 import path 設定讓生成的腳本能直接呼叫這些函數；(2) spec 可考慮支援 **MCM 設定選單**的鷹架生成（quest + 繼承 `SKI_ConfigBase` 的腳本，SkyUI 標配功能）；(3) 文件/for_agent 註明哪些函數庫可假設存在
+- **D. 世界規模：先小後大**——~8×8 cells、3-5 座城起步，霧遮遠景躲 LOD；「世界是 spec 生成的」保證日後重生成大世界不是重做
+- **E. 勢力/武將規模**：資料模型按「N 勢力 M 武將」參數化設計，原型 3×5、成品 5-8 勢力 × 30+ 武將，不用現在拍死
+- **F. 兵種樹：架空設計**——各勢力自己的兵種樹，全部用 vanilla 裝備模型拼（ModForge NPC + LvlN 現有能力）
+- **G. 第一個垂直切片：波次會戰原型**——一塊平地 + 兩隊 spawn + 波次增援腳本，驗證難題 1 的手感；它是整個企劃的試金石（手感不行其他都白搭），且對 ModForge 需求最小（平地 worldspace 已會生）
+
 ### 待深挖的三個方向
 
-- (a) 戰略層資料模型：城/武將/勢力狀態怎麼存、AI 決策規則
+- (a) 戰略層資料模型：城/武將/勢力狀態怎麼存（JContainers）、AI 決策規則
 - (b) 聚落量產：從「一座城的 spec」生出 placed refs + N 勢力 marker 組
 - (c) 玩家循環：募兵 → 帶兵 → 受封 → 自立的具體機制接點
 
