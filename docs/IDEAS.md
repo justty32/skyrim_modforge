@@ -1,0 +1,268 @@
+# 模組創作想法隨記
+
+個人構想備忘，未必有明確優先順序，隨時增補。
+
+---
+
+## 1. 擴充停止更新的隨從模組
+
+許多高品質的隨從模組已停止維護，想在此基礎上做後續擴充：
+
+- 補充更多日常對話與情境反應（旅行中的閒聊、遭遇特定地點或事件的台詞）
+- 深化與玩家的互動（任務完成後的感想、好感度觸發的特殊對話）
+- 多隨從同行時彼此之間的互動對話（隨從 A 評論隨從 B、爭執、互相調侃）
+
+### 隨從在場偵測方案
+
+不依賴任何多隨從框架（NFF/EFF 等），用 vanilla Papyrus 三層判斷：
+
+```papyrus
+; 1. 已載入、可參與 Scene —— 同 Cell（注意：室內 Cell 經常是一整層地城，
+;    不等於「同一個房間」；這層只保證引擎已載入對方）
+bool loaded  = followerRef.GetParentCell() == Game.GetPlayer().GetParentCell()
+
+; 2. 夠近 —— 室外 Cell 粒度太細（一格地形），用距離補
+bool nearby  = followerRef.GetDistance(Game.GetPlayer()) < 2048.0
+
+; 3. 真的「看得見」—— 引擎原生視線檢查，這才是不穿牆的判斷
+bool visible = Game.GetPlayer().HasLOS(followerRef)
+```
+
+第 3 層按需使用：兩個隨從在背後閒聊，被柱子擋住也無妨；「評論玩家正在做的事」這類需要真的看見的觸發才加 LOS。
+
+「是否在隊伍」若有需要，可分層追加：
+- 大多數隨從模組走標準系統 → `followerRef.IsPlayerTeammate()` 夠用
+- 有自訂跟隨機制的模組 → 才去讀該模組的 Quest Stage / 專屬變數
+
+### Scene 觸發骨架
+
+**硬性前提：Scene 的 Actor 必須是同一個 Quest 的 Alias。** 不是偵測到兩個 NPC 就能開演——要先 `ForceRefTo()` 把他們填進自己 Quest 的 Alias，Scene 才能引用。常駐 Quest 同時是偵測器與 Alias 容器，Alias 的填入/釋放時機（隨從死亡、被解散、跨模組 NPC 未載入）都要處理。
+
+```
+常駐 Quest
+├── Alias: FollowerA（ForceRefTo 填入，注意釋放時機）
+├── Alias: FollowerB（同上）
+└── Papyrus Script
+    RegisterForSingleUpdate(N) 鏈式輪詢（不要用 OnUpdate 持續循環——存檔膨脹的經典來源）：
+      if A 在場 && B 在場 && !冷卻中 && 玩家不在對話/戰鬥中
+          StartScene(InteractionScene)
+          設冷卻 flag
+      endif
+      RegisterForSingleUpdate(N)   ; 重新註冊下一輪
+```
+
+### 語音問題（所有對話類想法共同的前提）
+
+Skyrim 的對話沒有語音檔幾乎不能用——無聲台詞的字幕一閃而過（字幕停留時間由音檔長度決定）。
+
+- **預設假設：玩家都裝了 Fuz Ro D'oh**（SKSE 插件，讓無聲台詞字幕正常停留）——自己玩、開發迭代期都以此為前提
+- **生成靜音 .fuz** 與 **AI 語音合成**（xVASynth 有 Skyrim 聲庫可做 voice cloning、或 ElevenLabs 等）仍然需要——擴充既有隨從要讓新台詞像「她本人」說的，唯一正解是語音合成。這屬於之後的工作流，不在 ModForge 本體範圍
+
+---
+
+## 1b. NPC 劇情演出（Scene 驅動）
+
+不只是對話，想在特定時機（如玩家選了某個選項後）讓 NPC 進行完整演出：
+
+- 走到指定地點（Scene Phase + XMarker 目的地，依賴 navmesh）
+- 播放指定動畫（`PlayAnimation` event name，自訂動畫需 DAR/OAR）
+- 使用場景物件（FURN — 椅子、工作台、祭壇等，NPC 自動走過去互動）
+- NPC 之間的對話（多 Actor 輪流說台詞，每句是一個 action）
+- 可選：附帶鏡頭（Camera Shot record），簡單演出不做也行
+
+### 觸發流程骨架
+
+```
+玩家選對話 (INFO Result Script)
+  └─ SetStage(MyQuest, N)  或直接 MyScene.Start()
+
+Scene
+  Phase 1: NPC 移動到 XMarker
+  Phase 2: NPC 播放動畫 / 使用 FURN
+  Phase 3: NPC 之間對話
+  Phase 4: 結束，回正常 AI
+```
+
+### ModForge 待補
+
+SCEN 有基本支援（phases、actors、dialogue actions）；「移動到指定位置」「播放動畫」「使用物件」這幾種 action type 目前 spec 還沒對應欄位，之後有需要再擴充。
+
+---
+
+## 2. 喜愛劇情模組的遺憾分支改版
+
+有些劇情模組在關鍵節點缺少想要的選擇，想自己補上：
+
+- 製作平行的劇情分支，讓玩家能走「作者當初沒寫的那條路」
+- 保留原模組的人設與世界觀，只擴充分支，盡量以 Patch 形式存在
+- 可能涉及新的 INFO/對話樹、條件觸發、任務階段
+
+---
+
+## 3. 商隊與船隊生活
+
+想體驗上古卷軸中的流浪商人視角：
+
+- 加入或組建陸路商隊，沿固定路線移動、進行交易
+- 船隊：海路版本，港口停靠、貨物買賣
+- **空艇冒險**：利用空艇（Airship）作為移動基地，穿越各地甚至異域
+- 可能需要自訂 AI Package（商隊巡邏路線）和配套的商業系統 UI
+
+---
+
+## 4. 異世界冒險（另開 Worldspace）
+
+- 開闢一個全新的 Worldspace，設定迥異於泰姆瑞爾的世界觀
+- 以「穿越」或「傳送門」作為進入手段，有對應的劇情驅動
+- 可以是奇幻異界、蒸汽龐克城市、廢土等任何主題
+
+---
+
+## 5. 其他遊戲資源移植 / 引擎復現
+
+- 將電腦上其他遊戲的場景、角色、玩法概念「翻譯」進 Skyrim 引擎
+- 不是完整移植，而是用 Skyrim 的敘事與互動語言重現那個遊戲的精髓
+- 需要評估資源格式轉換（模型/材質）以及遊戲規則的系統化對應
+
+---
+
+## 6. 在 SkyUI 基礎上擴充 UI
+
+- 已有先例：如快捷欄擴充模組（iEquip、Wheeler 等），先研究其實作方式
+- 想添加的元素：技能槽（可快速切換施法序列）、任務追蹤懸浮框、小地圖增強
+- 核心挑戰：SkyUI 以 ActionScript/Flash 實作，擴充需要 AS3 或 Scaleform 知識
+
+---
+
+## 7. 遊戲內嵌入網頁 UI
+
+- 概念：在 Skyrim 視角內顯示一塊可互動的「瀏覽器」面板
+- 可能方向：利用 CEF（Chromium Embedded Framework）或類似技術搭配 SKSE 插件
+- 應用場景：遊戲內查閱攻略、顯示 AI 代理回傳的資訊、即時地圖服務
+- 技術難度高，需要 SKSE/C++ 層面的介入
+
+---
+
+## 8. 程序生成的世界
+
+- 更生動、更具隨機性的世界：地形、地城、NPC 組成、事件都有程序生成的成分
+- 參考：Requiem 的縮放系統 + Radiant Story 的延伸 + 自訂世界生成邏輯
+- ModForge 本身的 Generator 或許可以作為批次生成「骨架 ESP」的起點，再疊上程序邏輯
+- 長期目標：每次開新檔都有不同的世界佈局
+
+---
+
+## 9. 大量劇情自動生成（獨立工作流）
+
+想要體驗遠超現有模組數量的劇情內容，靠手工寫規格無法擴展，需要一套 LLM 驅動的生成管線。
+
+### 分層架構
+
+```
+故事生成系統（獨立工作流）
+  ├─ LLM 構思劇情概要、人物弧線、對話
+  ├─ 展開成 ModForge spec JSON
+  └─ 呼叫 ModForge build → .esp
+
+ModForge（下游工具，負責記錄層）
+  └─ spec → 合法 ESP，不參與敘事設計
+```
+
+ModForge 對這條管線的貢獻是：spec 格式夠清楚讓 LLM 可靠填寫，build 出來的 ESP 不出錯。`for_agent.md` 已經是為此設計的。
+
+### 真正的難題（故事生成系統自己要解）
+
+- 跨任務的 NPC 狀態記憶（A 任務結果影響 B 任務）
+- 人物個性一致性（不同 NPC 說話風格要有區別）
+- 大量劇情之間不重複、不單調
+- 語音：必須把 TTS 排進管線（見 1 節的語音問題），不然產出的是啞巴劇情
+
+### 引擎層的規模天花板（量產前必須面對）
+
+- **載入順序上限**：完整 ESP 約 254 個、ESL 約 4096 個——「一個任務一個 ESP」走不遠；生成系統要嘛合併輸出成大 ESP，要嘛設計插件回收機制
+- **ESL FormID 預算**：一個 ESL 只有 2048（舊版）/ 4096（1.6.1130+）個新 record；一條有對話的任務輕易吃掉幾十到幾百個
+- **存檔膨脹**：每個有腳本的 Quest 都進存檔；幾百個生成任務同時 running 會拖垮存檔——需要「完成即 Stop + 清 Alias」的紀律
+
+### 量產的關鍵槓桿：Story Manager + 條件式 Alias
+
+Skyrim 原生的 Story Manager + 條件式 Quest Alias 就是設計來做「動態選角、動態選地點」的（Radiant 系統的底層）。生成系統若輸出「模板任務 + 條件 Alias」而非「寫死 NPC 的任務」，同一個 ESP 能產生的劇情變化量放大一個數量級。
+
+**核心循環**：
+
+```
+遊戲內事件（殺人、進入地點、升級、合成…）
+  → 引擎帶事件資料走訪 SM 節點樹（SMEN 事件根 → SMBN 分支 → SMQN 任務節點）
+    → 逐層評估條件 → 嘗試啟動 Quest
+      → Alias 用事件資料 + 條件動態填充（Find Matching Reference / Location Alias / From Event Data）
+        → 全部填充成功才啟動；任一失敗 → 換下一個候選（靜默）
+```
+
+**對量產最重要的入口：Script Event**
+
+```papyrus
+; 對著自訂 Keyword 發射 SM 事件，可帶兩個 ref + 兩個數值
+MyStoryKeyword.SendStoryEvent(akLoc, akRef1, akRef2, aiValue1, aiValue2)
+```
+
+策略：生成系統供應「模板任務池」掛在自訂 Keyword 的 Script Event Node 下；一個輕量常駐腳本在恰當時機發射事件；SM 按條件挑出此刻最合適的模板並自動選角。調度權在引擎（原生條件評估、零 Papyrus 負擔），生成系統只管供應模板。
+
+**工程上的好性質**：SM 節點靠 PNAM（指向父節點）連結，不是父節點持有子清單——多個 ESP 可同時往同一個事件節點下加分支，互不衝突、不用 override 原版記錄。對大量生成的插件共存非常友善。
+
+**已知的坑**（原版設計就有）：
+- Alias 填充失敗 = 任務靜默不啟動，無錯誤訊息（CK 有 SM 日誌 ini 開關可救）
+- 條件只在啟動時評估一次；啟動後世界變化（選中的 NPC 死亡）要靠 Alias 的 Death/Disable flag 處理
+- Quest Node 要設 `Num Quests to Run` / `Shares Event` / 冷卻，否則同一事件連發多個任務
+- Find Matching Reference 受已載入區域 / Location 範圍限制，條件太苛刻會永遠填不出來
+
+**ModForge 現況缺口（落地前要補的）**：
+- SMEN / SMBN / SMQN 三種記錄 spec 完全沒支援
+- Quest 的 Event 欄位（標記「可被 SM 啟動」）
+- Alias 的條件式填充類型（Find Matching Reference / Location Alias / From Event Data——目前只有 forced ref 一類）
+
+**最小驗證實驗（第一步就做這個）**：
+手寫一個 spec → 一個 Script Event Keyword + 一個帶 Find Matching Reference Alias 的模板任務 → 遊戲內 `SendStoryEvent` → 看 SM 能否正確選角。這個實驗會把 ModForge 缺的欄位全部暴露出來。
+
+### ModForge 可以貢獻的：資源索引
+
+故事生成系統需要知道「我要一隻狼 / 一條麵包用哪個 FormKey」，ModForge 可以擴充一個 `catalog` 指令，把 Skyrim.esm（或任意 ESP）的資源批次匯出成索引供查詢：
+
+```
+modforge catalog Skyrim.esm --types Npc,Weapon,Armor,Food,Creature,Location,...
+→ 可查詢的索引（SQLite / 分類分片 / 查詢 API）
+```
+
+**形態注意**：Skyrim.esm 有幾十萬筆 record，單一大 JSON 是 LLM 讀不完的——catalog 應該是**可查詢的索引**，讓生成系統按需檢索（按類型/關鍵字/名稱查），而不是一次性大檔。
+
+索引包含兩層：
+
+**資料層**
+- FormKey、EditorID、顯示名稱、記錄類型
+- 關鍵屬性（NPC 的種族/等級、食物的回復量、武器的傷害值…）
+
+**美術層**
+- NPC 外型：種族、性別、臉部預設、髮型、眼睛顏色
+- 物品模型路徑（`.nif`）、貼圖路徑（`.dds`）、物品欄圖示
+- 可讓生成系統在撰寫人物描述或選配外型時有真實依據
+- 聲音資源：語音類型（Voice Type）、環境音效、音樂路徑（`.fuz` / `.wav`），讓生成系統知道哪些聲音實際存在可用
+- 動作資源：可用的 idle 動畫 event name、paired 動畫、furniture 互動動畫，供 Scene 演出設計時引用
+- 地點資源：Location / Cell 清單，標註類型（地城、城鎮、廢墟、戶外等），讓生成系統在安排事件發生地點時有真實場景可選
+- 劇情與對話內容：QUST（任務結構、階段、目標）、DIAL/INFO（對話樹、台詞、條件）— 不限於原版，第三方模組也要能匯出；故事生成系統擴充別人的劇情時，需要先讀懂原模組說過什麼，才不會產生衝突或重複
+- 派系（FACT）：現有派系清單、階級、派系間敵友關係——陣營衝突與角色歸屬的依據
+- 書籍／文本（BOOK）：典籍、信件、日記等現成的世界觀素材，生成系統可引用或延伸
+- 種族（RACE）：可用種族及其特性——角色設計的基礎
+- 關鍵字（KYWD）：分類標籤系統，物品/NPC/技能到處都在用，生成時需要正確引用
+- 天氣／氣候（WTHR/CLMT）：場景氛圍與環境設定
+- 原則上涵蓋所有記錄類型；catalog 指令接受任意 ESP，不限原版
+
+現有的診斷指令（`npcdiag`、`dump`、`find` 等）已能拉這些欄位，批次化即可產出。
+
+---
+
+## 10. 翻譯 + 插件合併
+
+- **翻譯工作流**：ModForge 已有 `extract` / `apply` / `applyloc`（含 UTF-8 `_chinese.STRINGS` 本地化輸出）；想對喜歡的英文模組做中文化時直接用
+- **ESP/ESL 合併**：把多個小插件合併成一個，釋放載入順序空位——對「大量生成劇情」尤其重要（見 9 節的載入順序上限）。合併要處理 FormID 重映射 + 所有引用（含腳本屬性、SEQ）的同步改寫，是個不小的工程，但 Mutagen 有對應的基礎能力
+
+---
+
+*最後更新：2026-06-04*
