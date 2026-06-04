@@ -43,6 +43,11 @@ public static partial class Generator
         private readonly Dictionary<(int Block, int Sub), CellSubBlock> interiorSubs = new();
         private readonly Dictionary<string, FormKey> formKeyByEd = new();
         private readonly Dictionary<string, IMajorRecord> recordsByEd = new();
+        // Placement-pass caches: vanilla interior cells we override (by FormKey), worldspace overrides
+        // that host our exterior block tree (by FormKey), and exterior cells resolved per (worldspace, grid).
+        private readonly Dictionary<FormKey, ICell> vanillaCellOverrides = new();
+        private readonly Dictionary<FormKey, Worldspace> worldspaceOverrides = new();
+        private readonly Dictionary<(FormKey Ws, int X, int Y), Cell> exteriorCells = new();
 
         // Package slot wiring deferred until placements register their editorIds (the target/
         // destination of a Patrol/Follow/Escort can be an authored marker created later).

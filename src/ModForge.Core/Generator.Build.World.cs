@@ -124,162 +124,6 @@ public static partial class Generator
         // an exterior worldspace cell. NPC base -> PlacedNpc (ACHR), other -> PlacedObject (REFR).
         public void BuildPlacements()
         {
-            // Vanilla-cell override (the careful bit): we resolve the cell's *context* from a link
-            // cache over its master and override it (same FormKey) into our mod, copying only the inline
-            // ENVIRONMENT data via CopyCellEnv (NOT GetOrAddAsOverride, which deep-copies the localized
-            // Name → needs the BSA/load-order string lookup, absent headless). The vanilla references
-            // still come from the master at load time (omitting them doesn't delete them); we only ADD
-            // our new ref. (master link-cache infra MasterCache + TryResolveTemplate is on the context.)
-            var vanillaCellOverrides = new Dictionary<FormKey, ICell>();
-
-            ICell? VanillaCellOverride(string cellRef)
-            {
-                if (!TryExternalRef(cellRef, out var fk)) return null;
-                if (vanillaCellOverrides.TryGetValue(fk, out var existing)) return existing;
-                var masterName = cellRef[..cellRef.IndexOf(':')].Trim();
-                var cache = MasterCache(masterName);
-                if (cache is null) return null;
-                if (!cache.TryResolve<ICellGetter>(fk, out var vanilla))
-                { Warn($"  ! vanilla cell '{cellRef}' not found in {masterName}"); return null; }
-                if (!vanilla.Flags.HasFlag(Cell.Flag.IsInteriorCell))
-                { Warn($"  ! vanilla cell '{cellRef}' is exterior — only interior vanilla cells supported (phase 2); skipped"); return null; }
-
-                var ov = new Cell(fk, SkyrimRelease.SkyrimSE);
-                CopyCellEnv(vanilla, ov);
-                InteriorSubFor(fk).Cells.Add(ov);
-                vanillaCellOverrides[fk] = ov;
-                return ov;
-            }
-
-            // --- Exterior / worldspace placement (It.7d phase 3) ---------------------------------
-            // An exterior cell lives inside a WRLD, nested WorldspaceBlock(type 4, /32 grid) ->
-            // WorldspaceSubBlock(type 5, /8 grid) -> Cell(grid x,y). To add a ref to the world we
-            // OVERRIDE the existing master cell at the target grid (same careful, Flags+Grid-only
-            // override as the interior vanilla case — no localized deep-copy). We host it on a minimal
-            // Worldspace override that re-states only OUR block tree (vanilla cells stay in the master).
-            var worldspaceOverrides = new Dictionary<FormKey, Worldspace>();
-            var exteriorCells = new Dictionary<(FormKey Ws, int X, int Y), Cell>();
-
-            Worldspace WorldspaceOverride(FormKey wsFk, IWorldspaceGetter? src)
-            {
-                if (worldspaceOverrides.TryGetValue(wsFk, out var ex)) return ex;
-                var ws = new Worldspace(wsFk, SkyrimRelease.SkyrimSE); // override that hosts our block tree
-                if (src is not null) CopyWorldspaceEnv(src, ws);       // carry land/water defaults etc.
-                // Headless can't resolve the master's LOCALIZED worldspace Name; an omitted Name makes the
-                // override blank it -> saves/HUD show "unknown location". Restate a plain Name for known
-                // worldspaces. (TODO: a spec field for arbitrary worldspaces.)
-                if (wsFk.ModKey.Name.Equals("Skyrim", StringComparison.OrdinalIgnoreCase) && wsFk.ID == 0x00003C)
-                    ws.Name = "Skyrim";
-                mod.Worldspaces.Add(ws);
-                worldspaceOverrides[wsFk] = ws;
-                worldspaceCount++;
-                return ws;
-            }
-
-            // The existing master exterior cell at grid (cx,cy), or null if that grid is ungenerated.
-            ICellGetter? FindMasterExteriorCell(string masterName, FormKey wsFk, int cx, int cy)
-            {
-                var cache = MasterCache(masterName);
-                if (cache is null) return null;
-                if (!cache.TryResolve<IWorldspaceGetter>(wsFk, out var ws))
-                { Warn($"  ! worldspace {wsFk} not found in {masterName}"); return null; }
-                short bx = (short)FloorDiv(cx, 32), by = (short)FloorDiv(cy, 32);
-                short sx = (short)FloorDiv(cx, 8),  sy = (short)FloorDiv(cy, 8);
-                foreach (var block in ws.SubCells)
-                {
-                    if (block.BlockNumberX != bx || block.BlockNumberY != by) continue;
-                    foreach (var sub in block.Items)
-                    {
-                        if (sub.BlockNumberX != sx || sub.BlockNumberY != sy) continue;
-                        foreach (var c in sub.Items)
-                            if (c.Grid?.Point is { } p && p.X == cx && p.Y == cy) return c;
-                    }
-                }
-                return null;
-            }
-
-            // A custom worldspace we built earlier this run (BuildWorldspacesAndRegions runs before
-            // placements). Locate the cell we generated for grid (cx,cy) — it already carries LAND +
-            // navmesh — so refs/markers land in the navmeshed cell and patrol/sandbox actually works.
-            Cell OwnExteriorCell(IWorldspace ownWs, int cx, int cy)
-            {
-                var key = (ownWs.FormKey, cx, cy);
-                if (exteriorCells.TryGetValue(key, out var cached)) return cached;
-                short bx = (short)FloorDiv(cx, 32), by = (short)FloorDiv(cy, 32);
-                short sx = (short)FloorDiv(cx, 8),  sy = (short)FloorDiv(cy, 8);
-                var block = ownWs.SubCells.FirstOrDefault(b => b.BlockNumberX == bx && b.BlockNumberY == by);
-                if (block is null)
-                { block = new WorldspaceBlock { BlockNumberX = bx, BlockNumberY = by, GroupType = GroupTypeEnum.ExteriorCellBlock }; ownWs.SubCells.Add(block); }
-                var sub = block.Items.FirstOrDefault(s => s.BlockNumberX == sx && s.BlockNumberY == sy);
-                if (sub is null)
-                { sub = new WorldspaceSubBlock { BlockNumberX = sx, BlockNumberY = sy, GroupType = GroupTypeEnum.ExteriorCellSubBlock }; block.Items.Add(sub); }
-                var cell = sub.Items.FirstOrDefault(c => c.Grid?.Point is { } p && p.X == cx && p.Y == cy);
-                if (cell is null)
-                {
-                    Warn($"  ! placement grid ({cx},{cy}) has no generated cell in worldspace '{ownWs.EditorID}' — creating a bare cell (no navmesh; NPCs there can't path)");
-                    cell = new Cell(mod, $"{ownWs.EditorID}_Cell_{(cx < 0 ? "m" : "")}{Math.Abs(cx)}_{(cy < 0 ? "m" : "")}{Math.Abs(cy)}")
-                    { Grid = new CellGrid { Point = new Noggog.P2Int(cx, cy) } };
-                    sub.Items.Add(cell);
-                }
-                exteriorCells[key] = cell;
-                return cell;
-            }
-
-            // Get-or-add the exterior cell at grid (cx,cy) inside the worldspace override's block tree.
-            Cell? ExteriorCell(string worldspaceRef, int cx, int cy)
-            {
-                // In-spec custom worldspace (editorId) built earlier this run → use its generated cell.
-                if (!LooksExternalRef(worldspaceRef)
-                    && formKeyByEd.TryGetValue(worldspaceRef, out var ownFk)
-                    && mod.Worldspaces.FirstOrDefault(w => w.FormKey == ownFk) is { } ownWs)
-                    return OwnExteriorCell(ownWs, cx, cy);
-
-                if (!TryExternalRef(worldspaceRef, out var wsFk))
-                { Warn($"  ! placement worldspace '{worldspaceRef}' must be an external <master>:0xFORMID ref or an in-spec worldspace editorId"); return null; }
-                var key = (wsFk, cx, cy);
-                if (exteriorCells.TryGetValue(key, out var cached)) return cached;
-
-                var masterName = worldspaceRef[..worldspaceRef.IndexOf(':')].Trim();
-                var existing = FindMasterExteriorCell(masterName, wsFk, cx, cy);
-
-                // Resolve the master worldspace so the override can carry its land/water defaults + name.
-                IWorldspaceGetter? wsSrc = null;
-                MasterCache(masterName)?.TryResolve<IWorldspaceGetter>(wsFk, out wsSrc);
-                var ws = WorldspaceOverride(wsFk, wsSrc);
-                short bx = (short)FloorDiv(cx, 32), by = (short)FloorDiv(cy, 32);
-                short sx = (short)FloorDiv(cx, 8),  sy = (short)FloorDiv(cy, 8);
-                var block = ws.SubCells.FirstOrDefault(b => b.BlockNumberX == bx && b.BlockNumberY == by);
-                if (block is null)
-                { block = new WorldspaceBlock { BlockNumberX = bx, BlockNumberY = by, GroupType = GroupTypeEnum.ExteriorCellBlock }; ws.SubCells.Add(block); }
-                var sub = block.Items.FirstOrDefault(s => s.BlockNumberX == sx && s.BlockNumberY == sy);
-                if (sub is null)
-                { sub = new WorldspaceSubBlock { BlockNumberX = sx, BlockNumberY = sy, GroupType = GroupTypeEnum.ExteriorCellSubBlock }; block.Items.Add(sub); }
-
-                Cell cell;
-                if (existing is not null)
-                {
-                    // Override the master cell (same FormKey). Copy the cell's inline ENVIRONMENT data
-                    // (Flags, Grid, water height/type, lighting, regions, imagespace, …) via CopyCellEnv.
-                    // Omitting these does NOT inherit from the master — the engine defaults them, e.g.
-                    // WaterHeight -> 0 floods sub-sea-level terrain ("whole world underwater"). Localized
-                    // Name skipped; vanilla refs stay in the master, we only ADD ours.
-                    cell = new Cell(existing.FormKey, SkyrimRelease.SkyrimSE);
-                    CopyCellEnv(existing, cell);
-                }
-                else
-                {
-                    // Ungenerated grid (no master cell). Make a NEW exterior cell at the grid: structurally
-                    // valid, but a land-less exterior cell created this way is NOT in-game verified.
-                    Warn($"  ! exterior grid ({cx},{cy}) has no master cell in {masterName} — creating a NEW cell (structural only, not in-game verified)");
-                    cell = new Cell(mod, $"MF_Ext_{(cx < 0 ? "m" : "")}{Math.Abs(cx)}_{(cy < 0 ? "m" : "")}{Math.Abs(cy)}")
-                    { Grid = new CellGrid { Point = new Noggog.P2Int(cx, cy) } };
-                    exteriorNewCells++;
-                }
-                sub.Items.Add(cell);
-                exteriorCells[key] = cell;
-                return cell;
-            }
-
             // editorIds that a deferred wire (SingleRef target or Destination location) points at — these
             // placements must be persistent so the engine doesn't drop the anchor the package depends on.
             var deferredAnchorEds = new HashSet<string>(
@@ -383,11 +227,168 @@ public static partial class Generator
                 placed++;
             }
 
-            // Word-wall triggers: place a WordWallTrigger activator (vanilla 0x05095E unless
-            // overridden) at each word wall's location. The trigger is the physical thing the player
-            // walks into; its teaching quest + generated fragment (attached in AttachWordWallScripts)
-            // does the learning. Reuses the SAME interior/worldspace cell resolution as a placement;
-            // forced Persistent so a quest-relevant trigger isn't dropped across save/load.
+            BuildWordWallTriggers();
+        }
+
+        // --- placement cell resolution (shared by BuildPlacements + BuildWordWallTriggers) -------
+        // Vanilla-cell override (the careful bit): we resolve the cell's *context* from a link
+        // cache over its master and override it (same FormKey) into our mod, copying only the inline
+        // ENVIRONMENT data via CopyCellEnv (NOT GetOrAddAsOverride, which deep-copies the localized
+        // Name → needs the BSA/load-order string lookup, absent headless). The vanilla references
+        // still come from the master at load time (omitting them doesn't delete them); we only ADD
+        // our new ref. (master link-cache infra MasterCache + TryResolveTemplate is on the context.)
+        private ICell? VanillaCellOverride(string cellRef)
+        {
+            if (!TryExternalRef(cellRef, out var fk)) return null;
+            if (vanillaCellOverrides.TryGetValue(fk, out var existing)) return existing;
+            var masterName = cellRef[..cellRef.IndexOf(':')].Trim();
+            var cache = MasterCache(masterName);
+            if (cache is null) return null;
+            if (!cache.TryResolve<ICellGetter>(fk, out var vanilla))
+            { Warn($"  ! vanilla cell '{cellRef}' not found in {masterName}"); return null; }
+            if (!vanilla.Flags.HasFlag(Cell.Flag.IsInteriorCell))
+            { Warn($"  ! vanilla cell '{cellRef}' is exterior — only interior vanilla cells supported (phase 2); skipped"); return null; }
+
+            var ov = new Cell(fk, SkyrimRelease.SkyrimSE);
+            CopyCellEnv(vanilla, ov);
+            InteriorSubFor(fk).Cells.Add(ov);
+            vanillaCellOverrides[fk] = ov;
+            return ov;
+        }
+
+        // --- Exterior / worldspace placement (It.7d phase 3) ---------------------------------
+        // An exterior cell lives inside a WRLD, nested WorldspaceBlock(type 4, /32 grid) ->
+        // WorldspaceSubBlock(type 5, /8 grid) -> Cell(grid x,y). To add a ref to the world we
+        // OVERRIDE the existing master cell at the target grid (same careful, Flags+Grid-only
+        // override as the interior vanilla case — no localized deep-copy). We host it on a minimal
+        // Worldspace override that re-states only OUR block tree (vanilla cells stay in the master).
+        private Worldspace WorldspaceOverride(FormKey wsFk, IWorldspaceGetter? src)
+        {
+            if (worldspaceOverrides.TryGetValue(wsFk, out var ex)) return ex;
+            var ws = new Worldspace(wsFk, SkyrimRelease.SkyrimSE); // override that hosts our block tree
+            if (src is not null) CopyWorldspaceEnv(src, ws);       // carry land/water defaults etc.
+            // Headless can't resolve the master's LOCALIZED worldspace Name; an omitted Name makes the
+            // override blank it -> saves/HUD show "unknown location". Restate a plain Name for known
+            // worldspaces. (TODO: a spec field for arbitrary worldspaces.)
+            if (wsFk.ModKey.Name.Equals("Skyrim", StringComparison.OrdinalIgnoreCase) && wsFk.ID == 0x00003C)
+                ws.Name = "Skyrim";
+            mod.Worldspaces.Add(ws);
+            worldspaceOverrides[wsFk] = ws;
+            worldspaceCount++;
+            return ws;
+        }
+
+        // The existing master exterior cell at grid (cx,cy), or null if that grid is ungenerated.
+        private ICellGetter? FindMasterExteriorCell(string masterName, FormKey wsFk, int cx, int cy)
+        {
+            var cache = MasterCache(masterName);
+            if (cache is null) return null;
+            if (!cache.TryResolve<IWorldspaceGetter>(wsFk, out var ws))
+            { Warn($"  ! worldspace {wsFk} not found in {masterName}"); return null; }
+            short bx = (short)FloorDiv(cx, 32), by = (short)FloorDiv(cy, 32);
+            short sx = (short)FloorDiv(cx, 8),  sy = (short)FloorDiv(cy, 8);
+            foreach (var block in ws.SubCells)
+            {
+                if (block.BlockNumberX != bx || block.BlockNumberY != by) continue;
+                foreach (var sub in block.Items)
+                {
+                    if (sub.BlockNumberX != sx || sub.BlockNumberY != sy) continue;
+                    foreach (var c in sub.Items)
+                        if (c.Grid?.Point is { } p && p.X == cx && p.Y == cy) return c;
+                }
+            }
+            return null;
+        }
+
+        // A custom worldspace we built earlier this run (BuildWorldspacesAndRegions runs before
+        // placements). Locate the cell we generated for grid (cx,cy) — it already carries LAND +
+        // navmesh — so refs/markers land in the navmeshed cell and patrol/sandbox actually works.
+        private Cell OwnExteriorCell(IWorldspace ownWs, int cx, int cy)
+        {
+            var key = (ownWs.FormKey, cx, cy);
+            if (exteriorCells.TryGetValue(key, out var cached)) return cached;
+            short bx = (short)FloorDiv(cx, 32), by = (short)FloorDiv(cy, 32);
+            short sx = (short)FloorDiv(cx, 8),  sy = (short)FloorDiv(cy, 8);
+            var block = ownWs.SubCells.FirstOrDefault(b => b.BlockNumberX == bx && b.BlockNumberY == by);
+            if (block is null)
+            { block = new WorldspaceBlock { BlockNumberX = bx, BlockNumberY = by, GroupType = GroupTypeEnum.ExteriorCellBlock }; ownWs.SubCells.Add(block); }
+            var sub = block.Items.FirstOrDefault(s => s.BlockNumberX == sx && s.BlockNumberY == sy);
+            if (sub is null)
+            { sub = new WorldspaceSubBlock { BlockNumberX = sx, BlockNumberY = sy, GroupType = GroupTypeEnum.ExteriorCellSubBlock }; block.Items.Add(sub); }
+            var cell = sub.Items.FirstOrDefault(c => c.Grid?.Point is { } p && p.X == cx && p.Y == cy);
+            if (cell is null)
+            {
+                Warn($"  ! placement grid ({cx},{cy}) has no generated cell in worldspace '{ownWs.EditorID}' — creating a bare cell (no navmesh; NPCs there can't path)");
+                cell = new Cell(mod, $"{ownWs.EditorID}_Cell_{(cx < 0 ? "m" : "")}{Math.Abs(cx)}_{(cy < 0 ? "m" : "")}{Math.Abs(cy)}")
+                { Grid = new CellGrid { Point = new Noggog.P2Int(cx, cy) } };
+                sub.Items.Add(cell);
+            }
+            exteriorCells[key] = cell;
+            return cell;
+        }
+
+        // Get-or-add the exterior cell at grid (cx,cy) inside the worldspace override's block tree.
+        private Cell? ExteriorCell(string worldspaceRef, int cx, int cy)
+        {
+            // In-spec custom worldspace (editorId) built earlier this run → use its generated cell.
+            if (!LooksExternalRef(worldspaceRef)
+                && formKeyByEd.TryGetValue(worldspaceRef, out var ownFk)
+                && mod.Worldspaces.FirstOrDefault(w => w.FormKey == ownFk) is { } ownWs)
+                return OwnExteriorCell(ownWs, cx, cy);
+
+            if (!TryExternalRef(worldspaceRef, out var wsFk))
+            { Warn($"  ! placement worldspace '{worldspaceRef}' must be an external <master>:0xFORMID ref or an in-spec worldspace editorId"); return null; }
+            var key = (wsFk, cx, cy);
+            if (exteriorCells.TryGetValue(key, out var cached)) return cached;
+
+            var masterName = worldspaceRef[..worldspaceRef.IndexOf(':')].Trim();
+            var existing = FindMasterExteriorCell(masterName, wsFk, cx, cy);
+
+            // Resolve the master worldspace so the override can carry its land/water defaults + name.
+            IWorldspaceGetter? wsSrc = null;
+            MasterCache(masterName)?.TryResolve<IWorldspaceGetter>(wsFk, out wsSrc);
+            var ws = WorldspaceOverride(wsFk, wsSrc);
+            short bx = (short)FloorDiv(cx, 32), by = (short)FloorDiv(cy, 32);
+            short sx = (short)FloorDiv(cx, 8),  sy = (short)FloorDiv(cy, 8);
+            var block = ws.SubCells.FirstOrDefault(b => b.BlockNumberX == bx && b.BlockNumberY == by);
+            if (block is null)
+            { block = new WorldspaceBlock { BlockNumberX = bx, BlockNumberY = by, GroupType = GroupTypeEnum.ExteriorCellBlock }; ws.SubCells.Add(block); }
+            var sub = block.Items.FirstOrDefault(s => s.BlockNumberX == sx && s.BlockNumberY == sy);
+            if (sub is null)
+            { sub = new WorldspaceSubBlock { BlockNumberX = sx, BlockNumberY = sy, GroupType = GroupTypeEnum.ExteriorCellSubBlock }; block.Items.Add(sub); }
+
+            Cell cell;
+            if (existing is not null)
+            {
+                // Override the master cell (same FormKey). Copy the cell's inline ENVIRONMENT data
+                // (Flags, Grid, water height/type, lighting, regions, imagespace, …) via CopyCellEnv.
+                // Omitting these does NOT inherit from the master — the engine defaults them, e.g.
+                // WaterHeight -> 0 floods sub-sea-level terrain ("whole world underwater"). Localized
+                // Name skipped; vanilla refs stay in the master, we only ADD ours.
+                cell = new Cell(existing.FormKey, SkyrimRelease.SkyrimSE);
+                CopyCellEnv(existing, cell);
+            }
+            else
+            {
+                // Ungenerated grid (no master cell). Make a NEW exterior cell at the grid: structurally
+                // valid, but a land-less exterior cell created this way is NOT in-game verified.
+                Warn($"  ! exterior grid ({cx},{cy}) has no master cell in {masterName} — creating a NEW cell (structural only, not in-game verified)");
+                cell = new Cell(mod, $"MF_Ext_{(cx < 0 ? "m" : "")}{Math.Abs(cx)}_{(cy < 0 ? "m" : "")}{Math.Abs(cy)}")
+                { Grid = new CellGrid { Point = new Noggog.P2Int(cx, cy) } };
+                exteriorNewCells++;
+            }
+            sub.Items.Add(cell);
+            exteriorCells[key] = cell;
+            return cell;
+        }
+
+        // Word-wall triggers: place a WordWallTrigger activator (vanilla 0x05095E unless
+        // overridden) at each word wall's location. The trigger is the physical thing the player
+        // walks into; its teaching quest + generated fragment (attached in AttachWordWallScripts)
+        // does the learning. Reuses the SAME interior/worldspace cell resolution as a placement;
+        // forced Persistent so a quest-relevant trigger isn't dropped across save/load.
+        private void BuildWordWallTriggers()
+        {
             foreach (var ww in spec.WordWalls)
             {
                 ICell? cell;
