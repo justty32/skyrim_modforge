@@ -169,12 +169,13 @@ public static partial class Generator
                 };
 
                 // Explicit kind wins; otherwise an in-spec NPC_ base -> npc (ACHR), anything else ->
-                // object (REFR). IMPORTANT: Skyrim's engine does NOT support LVLN (LeveledNpc list) as
-                // an ACHR base — it crashes on load. The correct pattern is an NPC_ record whose
-                // TEMPLATE chain references an LVLN (e.g. Skyrim.esm LvlBanditMeleeAny = 0x01E79C, not
-                // LCharBanditMeleeAny = 0x03DECD). Warn rather than silently produce a crashing plugin.
-                if (pl.Kind.Equals("npc", StringComparison.OrdinalIgnoreCase)
-                    && recordsByEd.TryGetValue(pl.Base, out var bk) && bk is ILeveledNpc)
+                // object (REFR). IMPORTANT: a raw LVLN (LeveledNpc list) is placeable as NEITHER: as an
+                // ACHR base it CTDs at load, and as a REFR base it's an invalid (un-placeable) form. So
+                // warn whenever the base is an in-spec LVLN, regardless of kind (the no-kind case would
+                // otherwise fall through to a silent, equally-broken PlacedObject). The correct pattern is
+                // an NPC_ whose TEMPLATE chain references the LVLN (e.g. Skyrim.esm LvlBanditMeleeAny =
+                // 0x01E79C, not LCharBanditMeleeAny = 0x03DECD).
+                if (recordsByEd.TryGetValue(pl.Base, out var bk) && bk is ILeveledNpc)
                     Warn($"  ! placement '{pl.EditorId ?? pl.Base}' base is a LeveledNpc list (LVLN) — LVLN bases CTD at load; use an NPC_ actor whose template references the list (e.g. LvlBandit* not LChar*)");
                 bool isNpc = pl.Kind.Equals("npc", StringComparison.OrdinalIgnoreCase)
                     || (string.IsNullOrEmpty(pl.Kind) && recordsByEd.TryGetValue(pl.Base, out var br) && br is INpc);

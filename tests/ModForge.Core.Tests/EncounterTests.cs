@@ -85,6 +85,16 @@ public sealed class EncounterTests
         Assert.Equal(fac.FormKey, ecz.Owner.FormKey);
     }
 
+    // A raw LVLN can be neither an ACHR base (CTD) nor a REFR base — it's a list, not a placeable form.
+    // So a placement on an in-spec LVLN base must WARN regardless of kind, not just when kind:npc (the
+    // no-kind case used to fall through to a silent, equally-invalid PlacedObject).
+    [Fact]
+    public void LeveledNpcBase_WithoutKind_StillWarns()
+    {
+        Roundtrip(DenSpec(), out var warnings);   // DenSpec's placement has no explicit kind
+        Assert.Contains(warnings, w => w.Contains("LeveledNpc list (LVLN)"));
+    }
+
     [Fact]
     public void Cell_And_Spawn_Reference_TheZone()
     {
@@ -157,9 +167,16 @@ public sealed class EncounterTests
         Assert.Contains(problems, p => p.Contains("encounterZone") && p.Contains("unresolved"));
     }
 
+    // DenSpec's only validation problem is its (deliberately invalid) raw LVLN placement base — proving
+    // both that we flag the LVLN base and that a well-formed encounter (zone/faction/cell/spawn wiring)
+    // adds no spurious validation noise. (The LVLN base models the common mistake the guardrail catches;
+    // the correct idiom is an NPC_ whose template chain references the list.)
     [Fact]
-    public void Validate_CleanDenSpecHasNoProblems()
+    public void Validate_DenSpec_OnlyProblemIsTheLvlnBase()
     {
-        Assert.Empty(Generator.Validate(DenSpec()));
+        var problems = Generator.Validate(DenSpec());
+        Assert.Single(problems);
+        Assert.Contains("MF_BanditList", problems[0]);
+        Assert.Contains("LVLN", problems[0]);
     }
 }

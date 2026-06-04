@@ -10,12 +10,12 @@ public static partial class Generator
             foreach (var pl in spec.Placements)
             {
                 CheckRef(pl.Base, "placement base");
-                // LVLN (LeveledNpc list) CANNOT be an ACHR base — Skyrim's engine CTDs at load. Use an
-                // NPC_ whose template chain references the LVLN (e.g. LvlBanditMeleeAny=0x01E79C not
-                // LCharBanditMeleeAny=0x03DECD). We can only detect in-spec LVLNs here; external refs
-                // must be verified manually with "npcdiag <Skyrim.esm> 0xFORMID".
-                if (pl.Kind.Equals("npc", StringComparison.OrdinalIgnoreCase)
-                    && spec.LeveledNpcs.Any(l => l.EditorId.Equals(pl.Base, StringComparison.OrdinalIgnoreCase)))
+                // LVLN (LeveledNpc list) CANNOT be a placement base of any kind — as an ACHR base Skyrim
+                // CTDs at load, and as a REFR base it's an un-placeable form. Flag any in-spec LVLN base
+                // regardless of kind. Use an NPC_ whose template chain references the LVLN (e.g.
+                // LvlBanditMeleeAny=0x01E79C not LCharBanditMeleeAny=0x03DECD). We can only detect in-spec
+                // LVLNs here; external refs must be verified manually with "npcdiag <Skyrim.esm> 0xFORMID".
+                if (spec.LeveledNpcs.Any(l => l.EditorId.Equals(pl.Base, StringComparison.OrdinalIgnoreCase)))
                     Problems.Add($"placement '{pl.EditorId ?? pl.Base}' base '{pl.Base}' is a LeveledNpc list (LVLN) — LVLN bases cause CTD at load; use an NPC_ actor whose template references the list");
                 if (!string.IsNullOrWhiteSpace(pl.Worldspace))
                 {
