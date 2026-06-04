@@ -1,6 +1,6 @@
 # 外部資源 — 帶入您自己的網格 / 貼圖 / 音效 / 動畫
 
-← 索引：[for_agent.md](for_agent.md) · 規格欄位：[SPEC.md](SPEC.md) · CLI：[for_agent_cli.md](for_agent_cli.md)
+← 索引：[for_agent.md](for_agent.md) · 規格欄位：[SPEC-index.md](SPEC-index.md) · CLI：[for_agent_cli.md](for_agent_cli.md)
 
 ModForge 預設透過**複製原版記錄**（武器的 `template` 重用 IronSword 的 `.nif`）來給記錄 3D 外觀。**外部資源管線**讓您改為帶入**自己的**資源 — 自訂網格、貼圖、音效、動畫 — 並讓 ModForge (1) **將 Data 相對路徑寫入記錄**，以及 (2) **將檔案打包**到 `.esp` 旁邊，使打包後的模組可獨立運作 / 相容 MO2。
 

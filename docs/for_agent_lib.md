@@ -5,7 +5,7 @@ conditionals, data pulled from elsewhere), embed generation in a larger program,
 agent write C# that calls ModForge directly. `ModForge.Core` is the reusable engine; it works on
 objects and never touches the console, argv, or hard-coded file paths.
 
-← index: [for_agent.md](for_agent.md) · CLI path: [for_agent_cli.md](for_agent_cli.md) · spec fields: [SPEC.md](SPEC.md)
+← index: [for_agent.md](for_agent.md) · CLI path: [for_agent_cli.md](for_agent_cli.md) · spec fields: [SPEC-index.md](SPEC-index.md)
 
 ## CLI + JSON vs. library — which to use
 

@@ -70,7 +70,7 @@ dotnet run --project src/ModForge.Cli -- <command> ...
 ```
 
 The **spec** format (the JSON the generator consumes) is documented in
-[`docs/SPEC.md`](docs/SPEC.md) with a JSON Schema at [`examples/spec.schema.json`](examples/spec.schema.json);
+[`docs/SPEC-index.md`](docs/SPEC-index.md) with a JSON Schema at [`examples/spec.schema.json`](examples/spec.schema.json);
 [`examples/sample_spec.json`](examples/sample_spec.json) is a complete working example.
 The agent workflow is in [`docs/for_agent.md`](docs/for_agent.md) (CLI path + library path).
 

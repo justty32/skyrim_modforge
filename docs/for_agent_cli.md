@@ -3,13 +3,13 @@
 The **default** workflow: you write a JSON **spec**, the CLI emits a valid `.esp`/`.esl`
 (+ compiled `.pex`). The spec is the contract — you never hand-write plugin bytes or FormIDs.
 
-← index: [for_agent.md](for_agent.md) · spec fields: [SPEC.md](SPEC.md) · compute the spec in code instead: [for_agent_lib.md](for_agent_lib.md)
+← index: [for_agent.md](for_agent.md) · spec fields: [SPEC-index.md](SPEC-index.md) · compute the spec in code instead: [for_agent_lib.md](for_agent_lib.md)
 · lifelike NPCs: [lifelike/](lifelike/README.md) · engine mechanics: [engine-internals.md](engine-internals.md)
 
 ## Your job, in one loop
 
 ```
-request (NL) ──▶ write spec.json (per SPEC.md) ──▶ validate ──(fix on errors)──▶ build|package ──▶ dump (verify) ──▶ report honestly
+request (NL) ──▶ write spec.json (per SPEC-index.md) ──▶ validate ──(fix on errors)──▶ build|package ──▶ dump (verify) ──▶ report honestly
                                                   ▲___________________________|
 ```
 
@@ -57,7 +57,7 @@ NPC needs at least `race` + `class` to act like a real actor; `outfit` clothes i
 
 ## Generate-content workflow
 
-1. Read `SPEC.md` for the exact fields. Write `spec.json` (camelCase; property names are
+1. Read `SPEC-index.md` for the exact fields. Write `spec.json` (camelCase; property names are
    matched case-insensitively). For race/class/outfit/keywords/vanilla factions, `find` the
    FormID first and use the `"<master>:0xFORMID"` ref form.
 2. `validate spec.json`. **If it reports problems, FIX the spec and re-validate** — do not

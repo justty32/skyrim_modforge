@@ -3,7 +3,7 @@
 The non-obvious Skyrim/Mutagen mechanics that the generator (`src/ModForge.Cli/Build.cs`) has to
 respect. This is the evergreen design knowledge distilled from the (now archived) iteration log;
 for symptom→fix lookups see [lifelike/gotchas](lifelike/gotchas.md), for field-by-field spec docs
-see [SPEC.md](SPEC.md).
+see [SPEC-index.md](SPEC-index.md).
 
 ## The core principle: an override does NOT inherit omitted subrecords
 

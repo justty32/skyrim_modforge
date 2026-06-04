@@ -1,6 +1,6 @@
 # 引擎內部原理 — ModForge 生成程式碼背後的「原因」
 
-Skyrim/Mutagen 的非直覺性機制，這些機制是生成器（`src/ModForge.Cli/Build.cs`）必須遵守的。這是從（現已封存的）迭代日誌中提煉出的長青設計知識；症狀→修復的查詢請參閱 [lifelike/gotchas](lifelike/gotchas.md)，欄位逐一的規格文件請參閱 [SPEC.md](SPEC.md)。
+Skyrim/Mutagen 的非直覺性機制，這些機制是生成器（`src/ModForge.Cli/Build.cs`）必須遵守的。這是從（現已封存的）迭代日誌中提煉出的長青設計知識；症狀→修復的查詢請參閱 [lifelike/gotchas](lifelike/gotchas.md)，欄位逐一的規格文件請參閱 [SPEC-index.md](SPEC-index.md)。
 
 ## 核心原則：覆寫記錄**不會**繼承省略的子記錄
 

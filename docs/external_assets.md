@@ -1,6 +1,6 @@
 # External assets — bringing your own meshes / textures / sounds / animations
 
-← index: [for_agent.md](for_agent.md) · spec fields: [SPEC.md](SPEC.md) · CLI: [for_agent_cli.md](for_agent_cli.md)
+← index: [for_agent.md](for_agent.md) · spec fields: [SPEC-index.md](SPEC-index.md) · CLI: [for_agent_cli.md](for_agent_cli.md)
 
 By default ModForge gives a record a 3D appearance by **cloning a vanilla record** (a weapon's
 `template` reuses IronSword's `.nif`). The **external-resource pipeline** lets you instead bring your

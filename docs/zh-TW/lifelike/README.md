@@ -8,7 +8,7 @@
 - **[cheatsheets.md](cheatsheets.md)** — 診斷指令、遊戲內控制台、Papyrus + CJK 設定
 - **[cookbook-index.md](cookbook-index.md)** — 複製貼上食譜，依主題拆分（旅館常客、通勤者、法師、儀式施法者、跟隨者、可合成物品…）
 - **[../engine-internals.md](../engine-internals.md)** — *為什麼*：覆寫語意、GRUP 公式、PACK 模板、本地化字串地雷
-- **[../SPEC.md](../SPEC.md)** — 完整欄位規格參考 · **[../for_agent.md](../for_agent.md)** — 代理工作流程（CLI + 函式庫）
+- **[../SPEC-index.md](../SPEC-index.md)** — 完整欄位規格參考 · **[../for_agent.md](../for_agent.md)** — 代理工作流程（CLI + 函式庫）
 
 ## TL;DR — 完整 NPC 食譜
 

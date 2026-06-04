@@ -14,7 +14,7 @@ plugin bytes or FormIDs — you emit a **spec** and the tool emits a valid `.esp
 Default to CLI + JSON; reach for the library only when the spec must be computed, not authored.
 Both paths produce the same plugins and share the same field reference and limits below.
 
-- **Spec field reference (both paths):** [SPEC.md](SPEC.md) · complete example: `../examples/sample_spec.json`
+- **Spec field reference (both paths):** [SPEC-index.md](SPEC-index.md) · complete example: `../examples/sample_spec.json`
 - **Making NPCs feel alive** (sandbox / daily life / combat / spell use): start with
   [lifelike/](lifelike/README.md) — recipe + two-systems insight + vanilla FormID reference + gotchas.
 - **The engine mechanics behind the generator:** [engine-internals.md](engine-internals.md).

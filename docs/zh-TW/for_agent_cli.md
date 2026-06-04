@@ -2,13 +2,13 @@
 
 **預設**工作流程：你撰寫一份 JSON **規格**，CLI 產生一個合法的 `.esp`/`.esl`（+ 已編譯的 `.pex`）。規格就是合約——你不需要手寫插件位元組或 FormID。
 
-← 索引：[for_agent.md](for_agent.md) · 規格欄位：[SPEC.md](SPEC.md) · 改用程式碼計算規格：[for_agent_lib.md](for_agent_lib.md)
+← 索引：[for_agent.md](for_agent.md) · 規格欄位：[SPEC-index.md](SPEC-index.md) · 改用程式碼計算規格：[for_agent_lib.md](for_agent_lib.md)
 · 擬真 NPC：[lifelike/](lifelike/README.md) · 引擎機制：[engine-internals.md](engine-internals.md)
 
 ## 你的工作，一個迴圈搞定
 
 ```
-請求（自然語言）──▶ 撰寫 spec.json（依 SPEC.md）──▶ 驗證 ──（有錯則修正）──▶ build|package ──▶ dump（驗證）──▶ 如實回報
+請求（自然語言）──▶ 撰寫 spec.json（依 SPEC-index.md）──▶ 驗證 ──（有錯則修正）──▶ build|package ──▶ dump（驗證）──▶ 如實回報
                                                   ▲___________________________|
 ```
 
@@ -52,7 +52,7 @@ $R find "$SKYRIM_ESM" tamriel Worldspace   # -> Skyrim.esm:0x00003C  Tamriel（�
 
 ## 產生內容的工作流程
 
-1. 閱讀 `SPEC.md` 了解確切欄位。撰寫 `spec.json`（camelCase；屬性名稱不區分大小寫匹配）。對於種族/職業/服裝/關鍵字/原版派系，請先用 `find` 取得 FormID，並使用 `"<master>:0xFORMID"` 的引用格式。
+1. 閱讀 `SPEC-index.md` 了解確切欄位。撰寫 `spec.json`（camelCase；屬性名稱不區分大小寫匹配）。對於種族/職業/服裝/關鍵字/原版派系，請先用 `find` 取得 FormID，並使用 `"<master>:0xFORMID"` 的引用格式。
 2. 執行 `validate spec.json`。**若回報問題，請修正規格並重新驗證** — 不要建置無效的規格。此步驟會檢查：空白/重複的 `editorId`、對話→未知任務/NPC、腳本→未知目標、物件屬性→未知記錄、錯誤的屬性型別。
 3. 執行 `package spec.json OutDir`（或只需插件時用 `build spec.json out.esp`）。
 4. 執行 `dump OutDir/<pluginName>` 並**確認輸出符合需求**（名稱、派系成員、附加腳本 + 屬性數量、對話提示、任務目標）。

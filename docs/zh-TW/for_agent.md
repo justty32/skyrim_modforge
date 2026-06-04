@@ -11,7 +11,7 @@
 
 預設使用 CLI + JSON；只在規格必須計算而非手寫時才使用函式庫。兩種路徑產生相同的外掛，並共用下方的欄位參考與限制。
 
-- **規格欄位參考（兩種路徑均適用）：** [SPEC.md](SPEC.md) · 完整範例：`../examples/sample_spec.json`
+- **規格欄位參考（兩種路徑均適用）：** [SPEC-index.md](SPEC-index.md) · 完整範例：`../examples/sample_spec.json`
 - **讓 NPC 更有生命力**（沙盒 / 日常生活 / 戰鬥 / 施法）：從 [lifelike/](lifelike/README.md) 開始 — 食譜、雙系統洞察、原版 FormID 參考、常見陷阱。
 - **產生器背後的引擎機制：** [engine-internals.md](engine-internals.md)。
 - **帶入您自己的網格 / 貼圖 / 音效 / 動畫**（自訂內容模組）：外部資源合約 — ModForge 負責參考與打包 vs. 您需要在別處製作的內容 — 詳見 **[external_assets.md](external_assets.md)**。
