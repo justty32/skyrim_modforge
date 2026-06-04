@@ -25,7 +25,6 @@ public static partial class Generator
         ctx.BuildItems();                          // Misc / Book / Weapon
         ctx.BuildNpcs();                           // Npc (ACTOR) — kept in npcsByEd for dialogue/packages
         ctx.BuildQuests();                         // Quest (QUST) — kept in questsByEd for dialogue
-        ctx.BuildStoryManager();                   // Story Manager: storyEvent quests → Event/aliases + SMBN/SMQN
         ctx.BuildWordWallQuests();                 // one start-enabled QUST per word wall (after spec quests)
         ctx.BuildDialogue();                        // Quest->Branch->Topic->INFO, DialogView, Hellos
         ctx.BuildBanter();                          // proactive Idle banter topics (unprompted NPC lines)
@@ -66,6 +65,7 @@ public static partial class Generator
 
         // --- index editorId -> FormKey, then pass 2: wire cross-record references ---
         ctx.BuildFormKeyTable();
+        ctx.BuildStoryManager();                   // Story Manager: storyEvent quests → Event/aliases + SMBN/SMQN (pass 2 so forced/condition refs resolve via formKeyByEd)
         ctx.WireNpcs();                            // race/class/outfit/voice/crime/combatStyle/spells/factions
         ctx.WireVendors();                         // FACT vendor sellBuyList + queue deferred merchant-chest links
         ctx.WireRelationships();                   // RELA Parent/Child NPC refs

@@ -77,4 +77,22 @@ public class StoryManagerBuildTests
         var alias = Assert.Single(q.Aliases);
         Assert.Equal(0x000007u, alias.ForcedReference.FormKey.ID);
     }
+
+    [Fact]
+    public void Forced_alias_resolves_in_spec_editorid()
+    {
+        var spec = new ModSpec();
+        spec.Npcs.Add(new NpcSpec { EditorId = "MyBoss", Name = "Boss" });
+        spec.Quests.Add(new QuestSpec
+        {
+            EditorId = "MFSM_InSpec", Name = "I",
+            StoryEvent = new QuestStoryEventSpec { Event = "KillActor" },
+            Aliases = { new QuestAliasSpec { Name = "Boss", Fill = "forced:MyBoss" } },
+        });
+        var mod = Build(spec);
+        var q = mod.Quests.Single(x => x.EditorID == "MFSM_InSpec");
+        var npc = mod.Npcs.Single(x => x.EditorID == "MyBoss");
+        var alias = Assert.Single(q.Aliases);
+        Assert.Equal(npc.FormKey, alias.ForcedReference.FormKey);
+    }
 }
