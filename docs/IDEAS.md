@@ -344,6 +344,38 @@ modforge catalog Skyrim.esm --types Npc,Weapon,Armor,Food,Creature,Location,...
 - (b) 聚落量產：從「一座城的 spec」生出 placed refs + N 勢力 marker 組
 - (c) 玩家循環：募兵 → 帶兵 → 受封 → 自立的具體機制接點
 
+## 12. 明亮美術基調 / 光照管線（2026-06-04）
+
+Skyrim 本身的光照氛圍太陰暗——偏好原神、薩爾達那種明亮的感覺。那種感覺 vanilla 只有白天 worldspace 才有；地下城、洞窟一律陰暗，偏偏玩家大部分時間在裡面。
+
+**核心認知：暗是美術方向，不是引擎限制**——光照幾乎全是記錄層的事，正是 ModForge 主場：
+
+- **室外**：Weather 記錄內建完整調色盤（日光/環境光/霧/天空色 × 黎明/白天/黃昏/夜晚），vanilla 故意調灰冷低飽和；每個 weather 還掛 **IMGS（ImageSpace）**——HDR 眼適應、bloom、cinematic 飽和/亮度/對比，「亮、乾淨、高飽和」很大部分是 IMGS 參數
+- **室內**：CELL Lighting 欄位（環境光/方向光/霧色 + DALC 六方向環境光）、**LGTM（Lighting Template）**（地城 90% 用 DefaultDungeon 系暗模板）、擺放 LIGH 光源刻意稀疏——全都是「選擇」。Zelda 神廟也是封閉空間但它亮
+- 引擎真限制：沒有 GI（環境光拉太高會平/塑膠感，正解是高一點環境光打底 + 少量光源做層次）；每 mesh 最多 4 盞光（Community Shaders 可解）；卡通渲染做不到（要 shader 級工作）；最後一哩是玩家側 ENB/CS preset，但**記錄層能把底子打到八成**
+
+**與 §11 天作之合**：架空世界的 climate/weather/室內模板全部自己定，明亮基調從 spec 一路貫穿。
+
+**ModForge 缺口（純記錄工作，難度低）**：
+1. CELL 光照欄位直接進 spec（ambient/directional/fog 色 + DALC）——現在室內只能 `template` 整包抄 vanilla cell
+2. LGTM 生成——自製一套明亮模板（BrightShrine、BrightCave…）全 mod 共用
+3. IMGS 生成——自訂 imagespace 掛 weather 和 cell，控制飽和/亮度/bloom
+4. 補 `lgtmdiag` / `imgsdiag` 診斷命令
+
+## 13. 通用 NPC 美化 → 二次元化（2026-06-04）
+
+現有 NPC 美化模組的根本缺陷：**硬覆蓋每個 NPC 的記錄**（頭型 morphs、head parts、tint）+ 附帶按 FormID 預烘焙的 FaceGen 檔（`FaceGenData\FaceGeom\<plugin>\00XXXXXX.nif`）。所以：
+- 其他 mod 新增的 NPC 沒被美化（替換包不知道它們的 FormID）
+- 記錄被改但 FaceGen 沒配對 → 黑臉/灰臉 bug，「美化了卻怪怪的」多半是這個
+
+**為什麼身體沒這問題**：CBBE/UNP 是 race 級替換（mesh/texture 全種族共用），mod NPC 自動吃到。問題全在「臉是 per-NPC 烘焙」這個機制上。
+
+**通用化的路線**：
+- **Patcher 路線（ModForge 的天然延伸）**：掃整個 load order → 對每個 NPC_ 按 race/sex/體型套美化模板（換 head parts/tints/morphs）→ 出一個 patch esp + 批次生 FaceGen。Mutagen 生態已有先例（EasyNPC、Synthesis facefixer 類 patcher 都是 Mutagen 寫的）——ModForge 本來就會讀任意插件（翻譯支柱），「美化」可以做成跟翻譯同構的第三種 load-order 級轉換：讀入 → 確定性變換 → 輸出 patch。FaceGen 烘焙本身要借 CK 命令列（`-ExportFaceGenData`）或等效工具，這是 shell-out 點（同 xLODGen 的態度：不自造）
+- **執行期路線**：SKSE（RaceMenu/SKEE、po3 有改外觀的函數）執行期換外觀，Project Proteus 走過這條——不用預烘焙但相容性/穩定性難搞
+- **二次元終局**：全 NPC 轉原神型動漫模型 = race 級換 頭+身+骨架（動漫 race mod 已證明單 race 可行）。真正的成本不在臉——在 **vanilla 裝備不貼合動漫身形（全裝備 refit）** 和比例差異的動畫適配；臉反而因為動漫頭通常是「整顆頭一個 mesh + 少量 morph」而繞開了 FaceGen 烘焙問題
+- 務實順序：先做 patcher 路線的「寫實系統一美化」驗證管線（吃現成美化資產），二次元化是同一管線換資產包 + 裝備 refit 的後續
+
 ---
 
 *最後更新：2026-06-04*
