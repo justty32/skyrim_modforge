@@ -362,19 +362,23 @@ Skyrim 本身的光照氛圍太陰暗——偏好原神、薩爾達那種明亮�
 3. IMGS 生成——自訂 imagespace 掛 weather 和 cell，控制飽和/亮度/bloom
 4. 補 `lgtmdiag` / `imgsdiag` 診斷命令
 
-## 13. 通用 NPC 美化 → 二次元化（2026-06-04）
+## 13. 通用 NPC 美化：morph 空間轉換規則（2026-06-04）
 
-現有 NPC 美化模組的根本缺陷：**硬覆蓋每個 NPC 的記錄**（頭型 morphs、head parts、tint）+ 附帶按 FormID 預烘焙的 FaceGen 檔（`FaceGenData\FaceGeom\<plugin>\00XXXXXX.nif`）。所以：
-- 其他 mod 新增的 NPC 沒被美化（替換包不知道它們的 FormID）
-- 記錄被改但 FaceGen 沒配對 → 黑臉/灰臉 bug，「美化了卻怪怪的」多半是這個
+**核心想法：不是「換成哪種美術」，而是一個轉換規則（morph 空間 → morph 空間的函數）**——讀每個 NPC 原版的滑條數值，按規則轉換成另一個模型/骨架系統的滑條數值。原版滑條編碼了 NPC 的個性，轉換把個性帶進新美術——全 load order（含 mod 新增 NPC）自動套用，且「這個 NPC 在新美術下還認得出是她」。二次元（原神型動漫模型）只是其中一個資產包；同一管線換寫實高模頭、COtR 頭都通。
 
-**為什麼身體沒這問題**：CBBE/UNP 是 race 級替換（mesh/texture 全種族共用），mod NPC 自動吃到。問題全在「臉是 per-NPC 烘焙」這個機制上。
+**為什麼現有美化做不到**：替換包是**硬覆蓋每個 NPC 的記錄** + 按 FormID 預烘焙 FaceGen 檔（`FaceGenData\FaceGeom\<plugin>\00XXXXXX.nif`）——mod 新增 NPC 不在它的 FormID 清單裡就漏網；記錄被改但 FaceGen 沒配對 → 黑臉 bug（「美化了卻怪怪的」多半是這個）。身體沒這問題是因為 CBBE/UNP 是 race 級替換；病根在「臉是 per-NPC 烘焙」。
 
-**通用化的路線**：
-- **Patcher 路線（ModForge 的天然延伸）**：掃整個 load order → 對每個 NPC_ 按 race/sex/體型套美化模板（換 head parts/tints/morphs）→ 出一個 patch esp + 批次生 FaceGen。Mutagen 生態已有先例（EasyNPC、Synthesis facefixer 類 patcher 都是 Mutagen 寫的）——ModForge 本來就會讀任意插件（翻譯支柱），「美化」可以做成跟翻譯同構的第三種 load-order 級轉換：讀入 → 確定性變換 → 輸出 patch。FaceGen 烘焙本身要借 CK 命令列（`-ExportFaceGenData`）或等效工具，這是 shell-out 點（同 xLODGen 的態度：不自造）
-- **執行期路線**：SKSE（RaceMenu/SKEE、po3 有改外觀的函數）執行期換外觀，Project Proteus 走過這條——不用預烘焙但相容性/穩定性難搞
-- **二次元終局**：全 NPC 轉原神型動漫模型 = race 級換 頭+身+骨架（動漫 race mod 已證明單 race 可行）。真正的成本不在臉——在 **vanilla 裝備不貼合動漫身形（全裝備 refit）** 和比例差異的動畫適配；臉反而因為動漫頭通常是「整顆頭一個 mesh + 少量 morph」而繞開了 FaceGen 烘焙問題
-- 務實順序：先做 patcher 路線的「寫實系統一美化」驗證管線（吃現成美化資產），二次元化是同一管線換資產包 + 裝備 refit 的後續
+**原版滑條存在哪（轉換的輸入端）**：NPC_ 記錄的 Face Morph（19 個 float：鼻長/顎寬/顴骨…）+ Face Parts 離散預設（鼻型 N 號）+ Head Parts（HDPT）+ tint layers。注意：CK 手雕過的 NPC 個性有一部分只在烘焙 nif 頂點裡、滑條讀不回來——轉換只能近似，但目標是風格化美術，近似可接受。
+
+**轉換規則本身就是 spec**：兩邊都是 blendshape 係數空間，規則可做成宣告式對照表（`NoseLength → target.nose_long × 0.7`；離散 Face Parts 查表展開成 morph 組合）。每個目標模型系統手寫一份規則（一次性工作），之後全 NPC 自動轉。規則表是可審閱 JSON、patcher 是確定性變換、輸出可 diff——完全是 ModForge 的形狀，跟翻譯支柱同構（讀任意插件 → 確定性變換 → 輸出 patch）。
+
+**身體側此模式已被驗證**：OBody/AutoBody = 按規則給每個 NPC 套 BodySlide 滑條、SKEE 執行期應用（vanilla 單根 weight 滑條展開成多滑條）。臉側沒有對應物（SynthEBD 只到貼圖/資產分配層級）——**「OBody 的臉版 + 跨模型系統滑條轉換」是空白**。
+
+**執行落點兩條路**：
+- **執行期路線（可能更順）**：patch 記錄換 head parts 指向目標頭模，轉換後的 per-NPC morph 值由 SKEE/RaceMenu 執行期套——完全繞開 FaceGen 烘焙、不碰 nif。Project Proteus 走過執行期換外觀這條路（相容性/穩定性是難點）
+- **離線烘焙路線**：套 blendshape 權重算頂點是純數學，理論上可不靠 CK 直接寫 nif——但屬資產層、超出 Mutagen 範圍；或 shell out 給 CK 命令列 `-ExportFaceGenData`（同 xLODGen 態度：不自造）
+
+**二次元終局的真實成本不在臉**：動漫頭通常整顆 mesh + 少量 morph，反而繞開 FaceGen 烘焙；貴的是 **vanilla 裝備不貼合動漫身形（全裝備 refit）** 和比例差異的動畫適配。務實順序：先用寫實美化資產驗證轉換管線，二次元化 = 同管線換資產包 + 裝備 refit 的後續
 
 ---
 
