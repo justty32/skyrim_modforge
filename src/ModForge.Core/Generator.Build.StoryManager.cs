@@ -8,14 +8,17 @@ public static partial class Generator
     private sealed partial class BuildContext
     {
         // 把 spec 裏每個帶 storyEvent 的 quest 變成可被 SM 啟動：設 Quest.Event/EventConditions、清
-        // StartGameEnabled、建 aliases，並 additive 生 SMBN→SMQN 掛到原版事件根下。在 BuildQuests() 後跑。
+        // StartGameEnabled、建 aliases，並 additive 接到原版事件根下。在 BuildQuests() 後跑。
         public void BuildStoryManager()
         {
-            // Sibling SM nodes under one parent form a linked list via PreviousSibling (decoded from
-            // vanilla: every SMQN/SMBN child of a shared parent points at its previous sibling). With a
-            // SINGLE child a null head works, but MULTIPLE unchained children make the engine's sibling
-            // traversal miss all-but-one — so chain each new branch to the prior one under the same root.
-            var lastBranchByParent = new Dictionary<FormKey, StoryManagerBranchNode>();
+            // Structure decoded from vanilla (the WIKill tree): an event root has ONE branch, and ALL
+            // the event's quests live as sibling QUEST NODES under that single branch — NOT one branch
+            // per quest. Sibling branches under an event root are mutually-exclusive handlers (the engine
+            // picks one), so N branches → only the head's quest fires; N quest nodes under ONE branch all
+            // evaluate per event (vanilla runs 2 such kill quest nodes). Sibling nodes must be chained via
+            // PreviousSibling (first = null head) or the engine's sibling walk misses all-but-one.
+            var branchByRoot = new Dictionary<FormKey, StoryManagerBranchNode>();
+            var lastQNodeByBranch = new Dictionary<FormKey, StoryManagerQuestNode>();
             foreach (var qs in spec.Quests)
             {
                 if (qs.StoryEvent is not { } se) continue;
@@ -55,16 +58,22 @@ public static partial class Generator
                 }
                 quest.NextAliasID = nextId;
 
-                var branch = mod.StoryManagerBranchNodes.AddNew();
-                branch.EditorID = $"{qs.EditorId}_SMBranch";
-                branch.Parent.SetTo(def.Root);
-                if (lastBranchByParent.TryGetValue(def.Root, out var prevBranch))
-                    branch.PreviousSibling.SetTo(prevBranch);
-                lastBranchByParent[def.Root] = branch;
+                // One shared branch per event root (created on first use), hung under the vanilla root.
+                if (!branchByRoot.TryGetValue(def.Root, out var branch))
+                {
+                    branch = mod.StoryManagerBranchNodes.AddNew();
+                    branch.EditorID = $"MFSM_{se.Event}_SMBranch";
+                    branch.Parent.SetTo(def.Root);
+                    branchByRoot[def.Root] = branch;
+                }
 
+                // One quest node per quest, all chained as siblings under the shared branch.
                 var qnode = mod.StoryManagerQuestNodes.AddNew();
                 qnode.EditorID = $"{qs.EditorId}_SMQuestNode";
                 qnode.Parent.SetTo(branch);
+                if (lastQNodeByBranch.TryGetValue(branch.FormKey, out var prevQNode))
+                    qnode.PreviousSibling.SetTo(prevQNode);
+                lastQNodeByBranch[branch.FormKey] = qnode;
                 var entry = new StoryManagerQuest();
                 entry.Quest.SetTo(quest);
                 qnode.Quests.Add(entry);
