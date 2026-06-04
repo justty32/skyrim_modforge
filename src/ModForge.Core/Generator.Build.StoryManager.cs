@@ -11,6 +11,11 @@ public static partial class Generator
         // StartGameEnabled、建 aliases，並 additive 生 SMBN→SMQN 掛到原版事件根下。在 BuildQuests() 後跑。
         public void BuildStoryManager()
         {
+            // Sibling SM nodes under one parent form a linked list via PreviousSibling (decoded from
+            // vanilla: every SMQN/SMBN child of a shared parent points at its previous sibling). With a
+            // SINGLE child a null head works, but MULTIPLE unchained children make the engine's sibling
+            // traversal miss all-but-one — so chain each new branch to the prior one under the same root.
+            var lastBranchByParent = new Dictionary<FormKey, StoryManagerBranchNode>();
             foreach (var qs in spec.Quests)
             {
                 if (qs.StoryEvent is not { } se) continue;
@@ -53,6 +58,9 @@ public static partial class Generator
                 var branch = mod.StoryManagerBranchNodes.AddNew();
                 branch.EditorID = $"{qs.EditorId}_SMBranch";
                 branch.Parent.SetTo(def.Root);
+                if (lastBranchByParent.TryGetValue(def.Root, out var prevBranch))
+                    branch.PreviousSibling.SetTo(prevBranch);
+                lastBranchByParent[def.Root] = branch;
 
                 var qnode = mod.StoryManagerQuestNodes.AddNew();
                 qnode.EditorID = $"{qs.EditorId}_SMQuestNode";

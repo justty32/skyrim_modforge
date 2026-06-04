@@ -48,6 +48,30 @@ public class StoryManagerBuildTests
         Assert.Equal(0x013010u, branch.Parent.FormKey.ID);
         Assert.Equal(branch.FormKey, qnode.Parent.FormKey);
         Assert.Equal(q.FormKey, Assert.Single(qnode.Quests).Quest.FormKey);
+        Assert.True(branch.PreviousSibling.FormKey.IsNull);   // single branch = chain head, no prev sibling
+    }
+
+    [Fact]
+    public void Multiple_storyevent_quests_chain_branch_siblings()
+    {
+        // Sibling SM branches under one parent must form a PreviousSibling linked list, or the engine's
+        // sibling traversal misses all but one (decoded from vanilla; confirmed in-game: 4 unchained
+        // branches → none fired). First branch is the head (null prev); each next points at the prior.
+        var spec = new ModSpec();
+        foreach (var ed in new[] { "Q1", "Q2", "Q3" })
+            spec.Quests.Add(new QuestSpec
+            {
+                EditorId = ed, Name = ed,
+                StoryEvent = new QuestStoryEventSpec { Event = "KillActor" },
+                Aliases = { new QuestAliasSpec { Name = "Victim", Fill = "fromEvent:victim" } },
+            });
+        var mod = Build(spec);
+        var b1 = mod.StoryManagerBranchNodes.Single(x => x.EditorID == "Q1_SMBranch");
+        var b2 = mod.StoryManagerBranchNodes.Single(x => x.EditorID == "Q2_SMBranch");
+        var b3 = mod.StoryManagerBranchNodes.Single(x => x.EditorID == "Q3_SMBranch");
+        Assert.True(b1.PreviousSibling.FormKey.IsNull);     // head
+        Assert.Equal(b1.FormKey, b2.PreviousSibling.FormKey);
+        Assert.Equal(b2.FormKey, b3.PreviousSibling.FormKey);
     }
 
     [Fact]
