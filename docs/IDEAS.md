@@ -227,7 +227,9 @@ MyStoryKeyword.SendStoryEvent(akLoc, akRef1, akRef2, aiValue1, aiValue2)
 - **結果**：殺一個完整 actor 後 `sqv MFSM_AvengeQuest` → 任務啟動、Victim alias 填上被殺者 FormID。**SM 動態選角在 ModForge 產出的記錄上跑通了。**
 - **離線解出的真值**（記進 [[story-manager-kill-recipe]]）：`Quest.Event="KILL"`；alias `FindMatchingRefFromEvent{FromEvent="KILL", EventData="R1"=52 31 00 00}` = 事件被殺者槽；SMBN 零條件 = 每次擊殺都嘗試。
 - **暴露的引擎 quirk**：Kill Actor story event **不對 `SimpleActor` 旗標的環境 critter 發送**（雞、兔…）——殺雞無觸發，殺牛/盜賊才有。量產 radiant 擊殺內容時須以完整 actor 為對象。
-- **下一步＝階段二**：把 SMEN/SMBN/SMQN + Quest Event 欄位 + FromEvent/條件式 alias 填充正式落進 spec schema + `Generator.Build.StoryManager.cs` + validator。另起 brainstorm。完整計畫見 `docs/superpowers/plans/2026-06-04-story-manager-probe.md`。
+- **階段二 spec 管線：✅ 已實作（2026-06-04），待實機驗證**。意圖導向落地：`QuestSpec.storyEvent`(event+conditions) + `QuestSpec.aliases`(fill `fromEvent:<slot>`|`forced:<ref>`)；事件表 `StoryManagerEvents`（只 KillActor）；`Generator.Build.StoryManager.cs`（pass 2，自動生 SMBN→SMQN + 清 StartGameEnabled）；`Generator.Validate.StoryManager.cs`。探針 builder/smprobe 退役、`smtree` 保留。樣本 `examples/story-manager-kill.json`。278 測試綠。設計/計畫見 `docs/superpowers/specs/2026-06-04-story-manager-spec-pipeline-design.md` + `docs/superpowers/plans/2026-06-04-story-manager-spec-pipeline.md`。
+  - 待實機（包在 `~/skyrim_mods/`）：`MFSM_Multi`（非 ESL，4 quest 測 basic / victim+killer 的 R2 是否=玩家 / forced / event condition 是否破壞觸發）、`MFSM_Esl`（測 **ESL 能否裝 SMEN/SMBN/SMQN**——IDEAS 未解問題；若失敗則 validator 改硬擋 ESL+storyEvent）。
+  - 後續：更多事件（離線解碼 + 一行進表）、Script Event 入口（自訂 Keyword + `SendStoryEvent`，需 Papyrus）、findMatching/location 填充型別。
 
 ### ModForge 可以貢獻的：資源索引
 

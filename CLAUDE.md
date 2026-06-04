@@ -19,4 +19,8 @@
 **Story Manager 階段一探針：✅ 實機 PASS（2026-06-04）**——
 用原版 Kill Actor 事件節點（零 Papyrus）+ From Event Data 填充驗證成功。`StoryManagerProbe.BuildProbe`（Core）+ CLI `smtree`/`smprobe`。殺完整 actor → SM 啟動模板任務 + Victim alias 填上被殺者。引擎 quirk：`SimpleActor`（雞/兔）不發 Kill 事件。真值與背景見 `docs/IDEAS.md` 第 9 節 + `docs/superpowers/plans/2026-06-04-story-manager-probe.md`。
 
-**下一步＝階段二**：把 SMEN/SMBN/SMQN + Quest Event 欄位 + FromEvent/條件式 Alias 填充正式落進 spec schema + `Generator.Build.StoryManager.cs` + validator（探針目前繞過 spec 管線）。另起 brainstorm。
+**Story Manager 階段二 spec 管線：✅ 已實作（2026-06-04），待實機**——
+意圖導向：`QuestSpec` 加 `storyEvent`(event+conditions) + `aliases`(fill="fromEvent:<slot>"|"forced:<ref>")，build 自動生 SMBN→SMQN 掛原版根下並清 StartGameEnabled。事件表 `StoryManagerEvents`（只 KillActor）、`Generator.Build.StoryManager.cs`（pass 2）、`Generator.Validate.StoryManager.cs`。探針 builder/smprobe 已退役，`smtree` 保留。278 測試綠。
+待實機測試包在 `~/skyrim_mods/`：`MFSM_Multi.zip`（非 ESL，4 quest 測 basic/victim+killer/forced/condition）、`MFSM_Esl.zip`（測 ESL 能否裝 SM 記錄）。測法見 `~/skyrim_mods/MFSM_TEST_README.txt`。結果回來補進 `docs/IDEAS.md` 第 9 節。
+
+**之後可做**：加更多事件（離線解碼 + 一行進 `StoryManagerEvents` 表）；Script Event 入口（自訂 Keyword + Papyrus `SendStoryEvent`，量產最終入口，需 Papyrus）；findMatching/location 等填充型別。
