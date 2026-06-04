@@ -3,21 +3,22 @@
 An AI-driven Skyrim mod **authoring** toolchain. You describe content to an AI agent
 (Claude Code), which writes a structured spec; ModForge turns the spec into a valid
 `.esp`/`.esl` — and, as a byproduct, translates the text inside existing plugins. Built on
-[Mutagen.Bethesda](https://github.com/Mutagen-Modding/Mutagen) (C#/.NET), runs on
-Linux (no Creation Kit, no Windows needed for generation).
+[Mutagen.Bethesda](https://github.com/Mutagen-Modding/Mutagen) (C#/.NET) — generation is
+pure .NET and runs on Windows or Linux, no Creation Kit needed.
 
 > Design principle: **the AI agent only emits intent / text (a reviewable JSON spec); a
 > deterministic tool (Mutagen) emits the bytes.** Plugin records, FormIDs, masters and record
 > sizes are never hand-written — Mutagen guarantees validity. The agent drives the tool per
 > `docs/for_agent.md`; there is no in-tool LLM API.
 
-## Pillars (proven feasible on Linux, 2026-05-24)
+## Pillars (all three operational)
 
-1. **Generate** — spec/NL → `.esp`/`.esl` (NPCs, items, weapons, quests, dialogue…).
-2. **Translate** (this first milestone) — read an existing plugin → extract every
-   translatable string to JSON → an AI fills in translations → write a localized plugin.
-3. **Papyrus** (next) — AI writes `.psc` → compile via the Creation Kit's
-   `PapyrusCompiler.exe` (under Wine) → attach the `.pex` to forms via Mutagen's VMAD.
+1. **Generate** — spec → `.esp`/`.esl` (NPCs, items, magic, perks, quests, dialogue,
+   scenes, AI packages, weather/climate, interior cells, custom worldspaces…).
+2. **Translate** — read an existing plugin → extract every translatable string to JSON →
+   an AI fills in translations → write back inline, or as a localized plugin + `.STRINGS`.
+3. **Papyrus** — AI writes `.psc` → compiled via the open-source native compiler, or the
+   CK's `PapyrusCompiler.exe` under Wine on Linux → attached to forms via Mutagen's VMAD.
 
 ## Two projects
 
@@ -49,24 +50,32 @@ Full library guide (API surface, dynamic composition, when to prefer it over CLI
 ```
 dotnet run --project src/ModForge.Cli -- <command> ...
 
-  build    <spec.json> <out.esp>            spec -> plugin (records, dialogue, FormLinks, VMAD)
-  package  <spec.json> <outModDir>          build + compile scripts -> MO2-ready mod folder
+  build    <spec.json> <out.esp>             spec -> plugin (records, dialogue, FormLinks, VMAD)
+  package  <spec.json> <outModDir> [--assets <dir>]
+                                             build + compile scripts + bundle Meshes/Textures/… -> MO2-ready mod folder
   validate <spec.json>                       semantic check (ids, refs, types) before building
+  compile  <script.psc> <outDir>             .psc -> .pex (native compiler, or CK PapyrusCompiler under Wine)
+  gen      <out.esp>                         write a demo plugin (for testing)
   dump     <in.esp>                          read a plugin back (records, refs, stats, effects, keywords, masters)
   find     <in.esp> <query> [type]           search a master -> "Skyrim.esm:0xFORMID  Type  EditorID"
-  cellblk  <in.esp> [0xFORMID]              interior cell block/sub-block (FormID grouping; verify overrides)
-  mgefdiag <in.esp> <0xFORMID>             dump a MagicEffect's fields (compare generated vs vanilla)
-  lightdiag <in.esp> [0xFORMID]            dump a Light's radius/color/flags (no id: list room-fill lights)
-  packagediag <in.esp> <0xFORMID>         dump an AI Package's template/flags/schedule + Data slot schema
-  pkgsbytemplate <in.esp> <0xFORMID>      list every package using the given procedure template (e.g. UseMagic=0x0504F5)
-  npcdiag <in.esp> <0xFORMID>             dump an NPC's race/class/voice/factions/packages/flags (cross-cell diff vs vanilla)
-  cstydiag <in.esp> <0xFORMID>            dump a CombatStyle's offensive/defensive mults + equipment preferences + flags
-  compile  <script.psc> <outDir>            .psc -> .pex via the CK PapyrusCompiler under Wine
-  gen      <out.esp>                          write a demo plugin (for testing)
-  extract  <in.esp>  <strings.json>          pull translatable strings -> JSON
-  apply    <in.esp>  <strings.json> <out.esp> write translated strings back (Latin/inline)
-  applyloc <in.esp>  <strings.json> <outDir>  write a LOCALIZED plugin + UTF-8
-                                              <plugin>_chinese.STRINGS (Simplified-Chinese SSE)
+  extract  <in.esp> <strings.json>           pull translatable strings -> JSON
+  apply    <in.esp> <strings.json> <out.esp> write translated strings back (Latin/inline)
+  applyloc <in.esp> <strings.json> <outDir>  write a LOCALIZED plugin + UTF-8
+                                             <plugin>_chinese.STRINGS (Simplified-Chinese SSE)
+```
+
+Plus ~20 diagnostic commands (compare generated vs vanilla records, find FormIDs, verify
+structure) — most take `<in.esp> <0xFORMID>`; run the CLI with no args for exact usage:
+
+```
+  cellblk, refpos                            cell block/sub-block grouping; placed-ref position/rotation/base
+  mgefdiag, enchdiag, perkdiag, shoutdiag    magic effects, enchantments, perks, shouts
+  npcdiag, cstydiag, factdiag, reladiag      NPCs, combat styles, factions, relationships
+  packagediag, pkgsbytemplate                AI packages; every package using a given procedure template
+  questdiag, infodiag, scenediag             quest stages/objectives, dialogue INFO + conditions, scenes
+  worlddiag, regndiag, eczndiag              worldspaces, regions, encounter zones
+  weatherdiag, climatediag, lightdiag        weather, climates, lights
+  txstdiag, cobjdiag, bookdiag               texture sets, crafting recipes, books
 ```
 
 The **spec** format (the JSON the generator consumes) is documented in
@@ -94,5 +103,9 @@ native dialogue (`DialogTopic` prompt + spoken `DialogResponse` lines). Easy to 
 — add a slot in `ModForge.Core`'s `Translator.Slots(...)`.
 
 ## Status
-Phase 1: the translate pipeline (extract/apply) + a `gen` demo plugin. Generation of
-arbitrary content from a structured spec, and the Papyrus pipeline, build on top.
+All three pillars are operational. Generation covers NPCs/items/magic/enchantments/perks,
+dialogue/quests/scenes/word walls, AI packages/combat styles, weather/climate/regions,
+interior cells and custom worldspaces (flat terrain cells + loadable navmesh), with script
+attachment (VMAD), SEQ files and MO2-ready packaging; translation supports inline and
+localized (`.STRINGS`) output. The full spec surface is documented in
+[`docs/SPEC-index.md`](docs/SPEC-index.md).
