@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>函式庫 API — ModForge 文件</title>
+<title>以函式庫方式使用 ModForge（ModForge.Core） — ModForge 文件</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,19 +12,27 @@
   <div class="nav-section">代理工作流程</div>
   <a class="nav-item" href="for-agent.html">概覽</a>
   <a class="nav-item" href="for-agent-cli.html">CLI 驅動</a>
-  <a class="nav-item" href="for-agent-lib.html">函式庫 API</a>
+  <a class="nav-item active" href="for-agent-lib.html">函式庫 API</a>
   <a class="nav-item" href="external-assets.html">外部資源</a>
   <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
   <div class="nav-section">規格說明（SPEC）</div>
-  <a class="nav-item" href="spec-1.html">Part 1：介紹 · 條件</a>
-  <a class="nav-item" href="spec-2.html">Part 2：任務 · 商販</a>
-  <a class="nav-item" href="spec-3.html">Part 3：配方 · 工作流程</a>
+  <a class="nav-item" href="spec-index.html">總覽 · 目錄</a>
+  <a class="nav-item" href="spec-intro.html">介紹 · 記錄類型</a>
+  <a class="nav-item" href="spec-magic.html">魔法 · 附魔</a>
+  <a class="nav-item" href="spec-dialogue-quests.html">對話 · 任務 · 腳本</a>
+  <a class="nav-item" href="spec-world.html">世界空間 · 地城 · 商販</a>
+  <a class="nav-item" href="spec-items.html">物品 · 配方 · 資源</a>
+  <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
+  <a class="nav-item" href="spec-workflow.html">工作流程</a>
   <div class="nav-section">讓 NPC 更有生命力</div>
   <a class="nav-item" href="lifelike.html">總覽</a>
-  <a class="nav-item" href="cookbook-1.html">食譜 1：基礎 NPC</a>
-  <a class="nav-item" href="cookbook-2.html">食譜 2：跟隨者系統</a>
-  <a class="nav-item" href="cookbook-3.html">食譜 3：世界建構</a>
-  <a class="nav-item" href="cookbook-4.html">食譜 4：進階食譜</a>
+  <a class="nav-item" href="cookbook-index.html">食譜手冊 · 目錄</a>
+  <a class="nav-item" href="cookbook-npc-basics.html">食譜：基礎 NPC</a>
+  <a class="nav-item" href="cookbook-followers.html">食譜：跟隨者</a>
+  <a class="nav-item" href="cookbook-world-items.html">食譜：世界 · 物品</a>
+  <a class="nav-item" href="cookbook-magic.html">食譜：魔法</a>
+  <a class="nav-item" href="cookbook-social-quest.html">食譜：社交 · 任務</a>
+  <a class="nav-item" href="cookbook-advanced.html">食譜：進階</a>
   <a class="nav-item" href="cheatsheets.html">速查表</a>
   <a class="nav-item" href="gotchas.html">常見陷阱</a>
   <a class="nav-item" href="formid-ref.html">原版 FormID 參考</a>
@@ -35,11 +43,11 @@
 
 當靜態 JSON 規格不夠用時 — 您想**以程式碼組合規格**（迴圈、條件判斷、從他處取得的資料）、將產生功能嵌入更大的程式，或讓 AI 代理撰寫直接呼叫 ModForge 的 C# 程式碼。`ModForge.Core` 是可重用的引擎；它操作物件，永遠不接觸主控台、argv 或寫死的檔案路徑。
 
-← 索引：[概覽](for-agent.html) · CLI 路徑：[CLI 驅動](for-agent-cli.html) · 規格欄位：[SPEC Part 1](spec-1.html)
+← 索引：[for_agent.md](for-agent.html) · CLI 路徑：[for_agent_cli.md](for-agent-cli.html) · 規格欄位：[SPEC-index.md](spec-index.html)
 
 ## CLI + JSON vs. 函式庫 — 如何選擇
 
-| | CLI + JSON | 函式庫（`ModForge.Core`） |
+| | CLI + JSON（[for_agent_cli.md](for-agent-cli.html)） | 函式庫（`ModForge.Core`） |
 |---|---|---|
 | 規格是… | 您撰寫的靜態 `.json` 檔案 | 您在程式碼中建構的 `ModSpec` 物件 |
 | 最適合 | 「描述模組 → 產生它」（可審閱、可差異比較、可重複執行） | 動態組合、嵌入程式、以程式碼回應建置警告 |
@@ -124,7 +132,7 @@ var spec = new ModSpec { LeveledItems = { list } };
 
 ## 相同的誠實原則
 
-建置結構有效的模組與遊戲內可運作是**不同**的 — 詳見 [概覽的限制章節](for-agent.html)。函式庫給您位元組；只有實際的 Proton/Skyrim 啟動能確認行為。
+建置結構有效的模組與遊戲內可運作是**不同**的 — 詳見 [for_agent.md 的限制章節](for-agent.html#限制--請如實說明不要過度宣稱)。函式庫給您位元組；只有實際的 Proton/Skyrim 啟動能確認行為。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>

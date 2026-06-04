@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>讓 NPC 更有生命力 — ModForge 文件</title>
+<title>有生命力的 NPC — 讓生成的 NPC 更真實 — ModForge 文件</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,15 +16,23 @@
   <a class="nav-item" href="external-assets.html">外部資源</a>
   <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
   <div class="nav-section">規格說明（SPEC）</div>
-  <a class="nav-item" href="spec-1.html">Part 1：介紹 · 條件</a>
-  <a class="nav-item" href="spec-2.html">Part 2：任務 · 商販</a>
-  <a class="nav-item" href="spec-3.html">Part 3：配方 · 工作流程</a>
+  <a class="nav-item" href="spec-index.html">總覽 · 目錄</a>
+  <a class="nav-item" href="spec-intro.html">介紹 · 記錄類型</a>
+  <a class="nav-item" href="spec-magic.html">魔法 · 附魔</a>
+  <a class="nav-item" href="spec-dialogue-quests.html">對話 · 任務 · 腳本</a>
+  <a class="nav-item" href="spec-world.html">世界空間 · 地城 · 商販</a>
+  <a class="nav-item" href="spec-items.html">物品 · 配方 · 資源</a>
+  <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
+  <a class="nav-item" href="spec-workflow.html">工作流程</a>
   <div class="nav-section">讓 NPC 更有生命力</div>
-  <a class="nav-item" href="lifelike.html">總覽</a>
-  <a class="nav-item" href="cookbook-1.html">食譜 1：基礎 NPC</a>
-  <a class="nav-item" href="cookbook-2.html">食譜 2：跟隨者系統</a>
-  <a class="nav-item" href="cookbook-3.html">食譜 3：世界建構</a>
-  <a class="nav-item" href="cookbook-4.html">食譜 4：進階食譜</a>
+  <a class="nav-item active" href="lifelike.html">總覽</a>
+  <a class="nav-item" href="cookbook-index.html">食譜手冊 · 目錄</a>
+  <a class="nav-item" href="cookbook-npc-basics.html">食譜：基礎 NPC</a>
+  <a class="nav-item" href="cookbook-followers.html">食譜：跟隨者</a>
+  <a class="nav-item" href="cookbook-world-items.html">食譜：世界 · 物品</a>
+  <a class="nav-item" href="cookbook-magic.html">食譜：魔法</a>
+  <a class="nav-item" href="cookbook-social-quest.html">食譜：社交 · 任務</a>
+  <a class="nav-item" href="cookbook-advanced.html">食譜：進階</a>
   <a class="nav-item" href="cheatsheets.html">速查表</a>
   <a class="nav-item" href="gotchas.html">常見陷阱</a>
   <a class="nav-item" href="formid-ref.html">原版 FormID 參考</a>
@@ -36,12 +44,12 @@
 「我們現在所知的一切」的精華，用於製作能移動、戰鬥、說話、活在世界中的 NPC。
 本頁是中心：完整食譜 + 一個關鍵洞察。其他內容分拆至：
 
-- **[常見陷阱](gotchas.html)** — 我們踩過的陷阱，以及修復方法（依領域分組）
-- **[原版 FormID 參考](formid-ref.html)** — 我們使用的每個原版 FormID（模板、語音、派系、CombatStyles、標記物、法術、光源…）
-- **[速查表](cheatsheets.html)** — 診斷指令、遊戲內控制台、Papyrus + CJK 設定
-- **[食譜手冊](cookbook-1.html)** — 複製貼上食譜（旅館常客、通勤者、法師、儀式施法者、跟隨者、可合成物品…）
-- **[引擎內部原理](engine-internals.html)** — *為什麼*：覆寫語意、GRUP 公式、PACK 模板、本地化字串地雷
-- **[SPEC Part 1](spec-1.html)** — 完整欄位規格參考 · **[概覽](for-agent.html)** — 代理工作流程（CLI + 函式庫）
+- **[gotchas.md](gotchas.html)** — 我們踩過的陷阱，以及修復方法（依領域分組）
+- **[formid-reference.md](formid-ref.html)** — 我們使用的每個原版 FormID（模板、語音、派系、CombatStyles、標記物、法術、光源…）
+- **[cheatsheets.md](cheatsheets.html)** — 診斷指令、遊戲內控制台、Papyrus + CJK 設定
+- **[cookbook-index.md](cookbook-index.html)** — 複製貼上食譜，依主題拆分（旅館常客、通勤者、法師、儀式施法者、跟隨者、可合成物品…）
+- **[../engine-internals.md](engine-internals.html)** — *為什麼*：覆寫語意、GRUP 公式、PACK 模板、本地化字串地雷
+- **[../SPEC-index.md](spec-index.html)** — 完整欄位規格參考 · **[../for_agent.md](for-agent.html)** — 代理工作流程（CLI + 函式庫）
 
 ## TL;DR — 完整 NPC 食譜
 
@@ -74,7 +82,7 @@
 }
 ```
 
-省略上面任何一行，角色在遊戲中都會有明顯退化 — 每個省略的具體失敗模式詳見 [常見陷阱](gotchas.html)。
+省略上面任何一行，角色在遊戲中都會有明顯退化 — 每個省略的具體失敗模式詳見 [gotchas.md](gotchas.html)。
 
 ## 關鍵洞察 — Skyrim NPC AI 有兩個獨立系統
 

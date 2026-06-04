@@ -3,28 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>概覽 — ModForge 文件</title>
+<title>FOR_AGENT — 以 AI 代理身份操作 ModForge — ModForge 文件</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <nav class="sidebar">
   <div class="logo"><a href="index.html">📖 ModForge 文件</a></div>
   <div class="nav-section">代理工作流程</div>
-  <a class="nav-item" href="for-agent.html">概覽</a>
+  <a class="nav-item active" href="for-agent.html">概覽</a>
   <a class="nav-item" href="for-agent-cli.html">CLI 驅動</a>
   <a class="nav-item" href="for-agent-lib.html">函式庫 API</a>
   <a class="nav-item" href="external-assets.html">外部資源</a>
   <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
   <div class="nav-section">規格說明（SPEC）</div>
-  <a class="nav-item" href="spec-1.html">Part 1：介紹 · 條件</a>
-  <a class="nav-item" href="spec-2.html">Part 2：任務 · 商販</a>
-  <a class="nav-item" href="spec-3.html">Part 3：配方 · 工作流程</a>
+  <a class="nav-item" href="spec-index.html">總覽 · 目錄</a>
+  <a class="nav-item" href="spec-intro.html">介紹 · 記錄類型</a>
+  <a class="nav-item" href="spec-magic.html">魔法 · 附魔</a>
+  <a class="nav-item" href="spec-dialogue-quests.html">對話 · 任務 · 腳本</a>
+  <a class="nav-item" href="spec-world.html">世界空間 · 地城 · 商販</a>
+  <a class="nav-item" href="spec-items.html">物品 · 配方 · 資源</a>
+  <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
+  <a class="nav-item" href="spec-workflow.html">工作流程</a>
   <div class="nav-section">讓 NPC 更有生命力</div>
   <a class="nav-item" href="lifelike.html">總覽</a>
-  <a class="nav-item" href="cookbook-1.html">食譜 1：基礎 NPC</a>
-  <a class="nav-item" href="cookbook-2.html">食譜 2：跟隨者系統</a>
-  <a class="nav-item" href="cookbook-3.html">食譜 3：世界建構</a>
-  <a class="nav-item" href="cookbook-4.html">食譜 4：進階食譜</a>
+  <a class="nav-item" href="cookbook-index.html">食譜手冊 · 目錄</a>
+  <a class="nav-item" href="cookbook-npc-basics.html">食譜：基礎 NPC</a>
+  <a class="nav-item" href="cookbook-followers.html">食譜：跟隨者</a>
+  <a class="nav-item" href="cookbook-world-items.html">食譜：世界 · 物品</a>
+  <a class="nav-item" href="cookbook-magic.html">食譜：魔法</a>
+  <a class="nav-item" href="cookbook-social-quest.html">食譜：社交 · 任務</a>
+  <a class="nav-item" href="cookbook-advanced.html">食譜：進階</a>
   <a class="nav-item" href="cheatsheets.html">速查表</a>
   <a class="nav-item" href="gotchas.html">常見陷阱</a>
   <a class="nav-item" href="formid-ref.html">原版 FormID 參考</a>
@@ -39,15 +47,15 @@
 
 | 路徑 | 適用時機 | 指南 |
 |---|---|---|
-| **CLI + JSON**（預設） | 描述模組 → 撰寫 JSON 規格 → 執行 CLI。可審閱、可差異比較、無需編譯步驟。 | **[CLI 驅動](for-agent-cli.html)** |
-| **函式庫**（`ModForge.Core`） | 規格必須以程式*計算*而來 — 迴圈/條件判斷、從他處取得的資料、嵌入更大的程式、或以程式碼回應建置警告。 | **[函式庫 API](for-agent-lib.html)** |
+| **CLI + JSON**（預設） | 描述模組 → 撰寫 JSON 規格 → 執行 CLI。可審閱、可差異比較、無需編譯步驟。 | **[for_agent_cli.md](for-agent-cli.html)** |
+| **函式庫**（`ModForge.Core`） | 規格必須以程式*計算*而來 — 迴圈/條件判斷、從他處取得的資料、嵌入更大的程式、或以程式碼回應建置警告。 | **[for_agent_lib.md](for-agent-lib.html)** |
 
 預設使用 CLI + JSON；只在規格必須計算而非手寫時才使用函式庫。兩種路徑產生相同的外掛，並共用下方的欄位參考與限制。
 
-- **規格欄位參考（兩種路徑均適用）：** [SPEC Part 1](spec-1.html) · 完整範例：`../examples/sample_spec.json`
+- **規格欄位參考（兩種路徑均適用）：** [SPEC-index.md](spec-index.html) · 完整範例：`../examples/sample_spec.json`
 - **讓 NPC 更有生命力**（沙盒 / 日常生活 / 戰鬥 / 施法）：從 [lifelike/](lifelike.html) 開始 — 食譜、雙系統洞察、原版 FormID 參考、常見陷阱。
-- **產生器背後的引擎機制：** [engine-internals.html](engine-internals.html)。
-- **帶入您自己的網格 / 貼圖 / 音效 / 動畫**（自訂內容模組）：外部資源合約 — 詳見 **[外部資源](external-assets.html)**。
+- **產生器背後的引擎機制：** [engine-internals.md](engine-internals.html)。
+- **帶入您自己的網格 / 貼圖 / 音效 / 動畫**（自訂內容模組）：外部資源合約 — ModForge 負責參考與打包 vs. 您需要在別處製作的內容 — 詳見 **[external_assets.md](external-assets.html)**。
 
 ## 限制 — 請如實說明，不要過度宣稱
 

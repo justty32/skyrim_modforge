@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ModForge 規格說明 — 目錄 — ModForge 文件</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="sidebar">
+  <div class="logo"><a href="index.html">📖 ModForge 文件</a></div>
+  <div class="nav-section">代理工作流程</div>
+  <a class="nav-item" href="for-agent.html">概覽</a>
+  <a class="nav-item" href="for-agent-cli.html">CLI 驅動</a>
+  <a class="nav-item" href="for-agent-lib.html">函式庫 API</a>
+  <a class="nav-item" href="external-assets.html">外部資源</a>
+  <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
+  <div class="nav-section">規格說明（SPEC）</div>
+  <a class="nav-item active" href="spec-index.html">總覽 · 目錄</a>
+  <a class="nav-item" href="spec-intro.html">介紹 · 記錄類型</a>
+  <a class="nav-item" href="spec-magic.html">魔法 · 附魔</a>
+  <a class="nav-item" href="spec-dialogue-quests.html">對話 · 任務 · 腳本</a>
+  <a class="nav-item" href="spec-world.html">世界空間 · 地城 · 商販</a>
+  <a class="nav-item" href="spec-items.html">物品 · 配方 · 資源</a>
+  <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
+  <a class="nav-item" href="spec-workflow.html">工作流程</a>
+  <div class="nav-section">讓 NPC 更有生命力</div>
+  <a class="nav-item" href="lifelike.html">總覽</a>
+  <a class="nav-item" href="cookbook-index.html">食譜手冊 · 目錄</a>
+  <a class="nav-item" href="cookbook-npc-basics.html">食譜：基礎 NPC</a>
+  <a class="nav-item" href="cookbook-followers.html">食譜：跟隨者</a>
+  <a class="nav-item" href="cookbook-world-items.html">食譜：世界 · 物品</a>
+  <a class="nav-item" href="cookbook-magic.html">食譜：魔法</a>
+  <a class="nav-item" href="cookbook-social-quest.html">食譜：社交 · 任務</a>
+  <a class="nav-item" href="cookbook-advanced.html">食譜：進階</a>
+  <a class="nav-item" href="cheatsheets.html">速查表</a>
+  <a class="nav-item" href="gotchas.html">常見陷阱</a>
+  <a class="nav-item" href="formid-ref.html">原版 FormID 參考</a>
+</nav>
+<div class="content"><div class="content-inner"><div id="md" class="md"></div></div></div>
+<textarea id="src" hidden>
+# ModForge 規格說明 — 目錄
+
+規格（spec）是一個 JSON 檔案 → `.esp` 插件。選擇主題：
+
+| 檔案 | 內容 |
+|------|------|
+| [SPEC-intro](spec-intro.html) | 交叉參照與 ID、頂層結構、完整記錄類型表 |
+| [SPEC-magic](spec-magic.html) | 遊戲數值、法術/藥水 effect、自訂 MGEF、附魔（ENCH） |
+| [SPEC-dialogue-quests](spec-dialogue-quests.html) | 職業、對話、閒聊、場景、CTDA 條件、任務階段、Papyrus 腳本 |
+| [SPEC-world](spec-world.html) | Cells 與放置、世界空間與地區、等級列表、遭遇區域、商販 |
+| [SPEC-items](spec-items.html) | 配方（COBJ）、特技、外部資源（網格/音效）、材質集（TXST） |
+| [SPEC-packages](spec-packages.html) | AI 套件（Sandbox/Travel/UseMagic/Follow/Sleep/Patrol/Escort）、天氣與氣候 |
+| [SPEC-workflow](spec-workflow.html) | CLI 工作流程（`validate` / `build` / `package`）+ 尚未涵蓋的功能 |
+
+快速 CLI 參考：
+```bash
+dotnet run --project src/ModForge.Cli -- validate myspec.json
+dotnet run --project src/ModForge.Cli -- build    myspec.json out.esp
+dotnet run --project src/ModForge.Cli -- package  myspec.json OutModDir
+```
+
+另請參見：[lifelike 主頁](lifelike.html) — NPC 食譜、Cookbook、常見陷阱、FormID 參考。
+</textarea>
+<script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+<script>
+marked.setOptions({gfm:true,breaks:false});
+document.getElementById('md').innerHTML=marked.parse(document.getElementById('src').value);
+document.querySelectorAll('.nav-item').forEach(function(a){
+  var p=location.pathname.split('/').pop()||'index.html';
+  if(a.getAttribute('href')===p)a.classList.add('active');
+});
+</script>
+</body>
+</html>

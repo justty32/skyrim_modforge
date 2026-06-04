@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>食譜手冊 — 目錄 — ModForge 文件</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="sidebar">
+  <div class="logo"><a href="index.html">📖 ModForge 文件</a></div>
+  <div class="nav-section">代理工作流程</div>
+  <a class="nav-item" href="for-agent.html">概覽</a>
+  <a class="nav-item" href="for-agent-cli.html">CLI 驅動</a>
+  <a class="nav-item" href="for-agent-lib.html">函式庫 API</a>
+  <a class="nav-item" href="external-assets.html">外部資源</a>
+  <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
+  <div class="nav-section">規格說明（SPEC）</div>
+  <a class="nav-item" href="spec-index.html">總覽 · 目錄</a>
+  <a class="nav-item" href="spec-intro.html">介紹 · 記錄類型</a>
+  <a class="nav-item" href="spec-magic.html">魔法 · 附魔</a>
+  <a class="nav-item" href="spec-dialogue-quests.html">對話 · 任務 · 腳本</a>
+  <a class="nav-item" href="spec-world.html">世界空間 · 地城 · 商販</a>
+  <a class="nav-item" href="spec-items.html">物品 · 配方 · 資源</a>
+  <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
+  <a class="nav-item" href="spec-workflow.html">工作流程</a>
+  <div class="nav-section">讓 NPC 更有生命力</div>
+  <a class="nav-item" href="lifelike.html">總覽</a>
+  <a class="nav-item active" href="cookbook-index.html">食譜手冊 · 目錄</a>
+  <a class="nav-item" href="cookbook-npc-basics.html">食譜：基礎 NPC</a>
+  <a class="nav-item" href="cookbook-followers.html">食譜：跟隨者</a>
+  <a class="nav-item" href="cookbook-world-items.html">食譜：世界 · 物品</a>
+  <a class="nav-item" href="cookbook-magic.html">食譜：魔法</a>
+  <a class="nav-item" href="cookbook-social-quest.html">食譜：社交 · 任務</a>
+  <a class="nav-item" href="cookbook-advanced.html">食譜：進階</a>
+  <a class="nav-item" href="cheatsheets.html">速查表</a>
+  <a class="nav-item" href="gotchas.html">常見陷阱</a>
+  <a class="nav-item" href="formid-ref.html">原版 FormID 參考</a>
+</nav>
+<div class="content"><div class="content-inner"><div id="md" class="md"></div></div></div>
+<textarea id="src" hidden>
+# 食譜手冊 — 目錄
+
+複製貼上的起點範例。與 [TL;DR NPC 食譜](lifelike.html#tldr--the-complete-npc-recipe) 搭配使用，並將每個 `<...>` / FormID 對應至 [formid-reference](formid-ref.html)。
+
+← 返回 [lifelike 主頁](lifelike.html)
+
+| 檔案 | 內容 |
+|------|------|
+| [cookbook-npc-basics](cookbook-npc-basics.html) | 酒館常客、跨城通勤者、戰鬥法師、自我防衛者、儀式施法者、跟隨同伴 |
+| [cookbook-followers](cookbook-followers.html) | 可招募的跟隨者（三條路線：免費/SetFollower/自行管理）、閒暇行為、Sleep 作息、情境台詞、主動閒聊 |
+| [cookbook-world-items](cookbook-world-items.html) | 可用的室內空間、填充地城（等級縮放）、可製作物品（COBJ）、無需新網格的重新貼圖（TXST）、可製作與鍛造武器 |
+| [cookbook-magic](cookbook-magic.html) | 自訂瞄準戰鬥法術（MGEF+彈體+SPEL）、附魔武器（MGEF+ENCH+WEAP+COBJ）、法術書（BOOK 教授） |
+| [cookbook-social-quest](cookbook-social-quest.html) | 可對話的 NPC（遊戲內已確認 It.23）、運作中的商人（遊戲內已確認 2026-05-31）、NPC 被動特技、多階段任務（遊戲內已確認 It.36） |
+| [cookbook-advanced](cookbook-advanced.html) | 自訂龍吼（遊戲內已確認 2026-06-01）、自訂天空（WTHR+CLMT）、室外世界空間+地區（僅限記錄層）、兩個 NPC 爭論（SCEN，僅限結構） |
+</textarea>
+<script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+<script>
+marked.setOptions({gfm:true,breaks:false});
+document.getElementById('md').innerHTML=marked.parse(document.getElementById('src').value);
+document.querySelectorAll('.nav-item').forEach(function(a){
+  var p=location.pathname.split('/').pop()||'index.html';
+  if(a.getAttribute('href')===p)a.classList.add('active');
+});
+</script>
+</body>
+</html>

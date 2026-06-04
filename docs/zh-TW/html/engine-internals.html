@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>引擎內部原理 — ModForge 文件</title>
+<title>引擎內部原理 — ModForge 生成程式碼背後的「原因」 — ModForge 文件</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,17 +14,25 @@
   <a class="nav-item" href="for-agent-cli.html">CLI 驅動</a>
   <a class="nav-item" href="for-agent-lib.html">函式庫 API</a>
   <a class="nav-item" href="external-assets.html">外部資源</a>
-  <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
+  <a class="nav-item active" href="engine-internals.html">引擎內部原理</a>
   <div class="nav-section">規格說明（SPEC）</div>
-  <a class="nav-item" href="spec-1.html">Part 1：介紹 · 條件</a>
-  <a class="nav-item" href="spec-2.html">Part 2：任務 · 商販</a>
-  <a class="nav-item" href="spec-3.html">Part 3：配方 · 工作流程</a>
+  <a class="nav-item" href="spec-index.html">總覽 · 目錄</a>
+  <a class="nav-item" href="spec-intro.html">介紹 · 記錄類型</a>
+  <a class="nav-item" href="spec-magic.html">魔法 · 附魔</a>
+  <a class="nav-item" href="spec-dialogue-quests.html">對話 · 任務 · 腳本</a>
+  <a class="nav-item" href="spec-world.html">世界空間 · 地城 · 商販</a>
+  <a class="nav-item" href="spec-items.html">物品 · 配方 · 資源</a>
+  <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
+  <a class="nav-item" href="spec-workflow.html">工作流程</a>
   <div class="nav-section">讓 NPC 更有生命力</div>
   <a class="nav-item" href="lifelike.html">總覽</a>
-  <a class="nav-item" href="cookbook-1.html">食譜 1：基礎 NPC</a>
-  <a class="nav-item" href="cookbook-2.html">食譜 2：跟隨者系統</a>
-  <a class="nav-item" href="cookbook-3.html">食譜 3：世界建構</a>
-  <a class="nav-item" href="cookbook-4.html">食譜 4：進階食譜</a>
+  <a class="nav-item" href="cookbook-index.html">食譜手冊 · 目錄</a>
+  <a class="nav-item" href="cookbook-npc-basics.html">食譜：基礎 NPC</a>
+  <a class="nav-item" href="cookbook-followers.html">食譜：跟隨者</a>
+  <a class="nav-item" href="cookbook-world-items.html">食譜：世界 · 物品</a>
+  <a class="nav-item" href="cookbook-magic.html">食譜：魔法</a>
+  <a class="nav-item" href="cookbook-social-quest.html">食譜：社交 · 任務</a>
+  <a class="nav-item" href="cookbook-advanced.html">食譜：進階</a>
   <a class="nav-item" href="cheatsheets.html">速查表</a>
   <a class="nav-item" href="gotchas.html">常見陷阱</a>
   <a class="nav-item" href="formid-ref.html">原版 FormID 參考</a>
@@ -33,7 +41,7 @@
 <textarea id="src" hidden>
 # 引擎內部原理 — ModForge 生成程式碼背後的「原因」
 
-Skyrim/Mutagen 的非直覺性機制，這些機制是生成器（`src/ModForge.Cli/Build.cs`）必須遵守的。這是從（現已封存的）迭代日誌中提煉出的長青設計知識；症狀→修復的查詢請參閱 [常見陷阱](gotchas.html)，欄位逐一的規格文件請參閱 [SPEC Part 1](spec-1.html)。
+Skyrim/Mutagen 的非直覺性機制，這些機制是生成器（`src/ModForge.Cli/Build.cs`）必須遵守的。這是從（現已封存的）迭代日誌中提煉出的長青設計知識；症狀→修復的查詢請參閱 [lifelike/gotchas](gotchas.html)，欄位逐一的規格文件請參閱 [SPEC-index.md](spec-index.html)。
 
 ## 核心原則：覆寫記錄**不會**繼承省略的子記錄
 
@@ -69,7 +77,6 @@ sub   = (id / 10) % 10          # 十進位，24 位元 ID
 ```
 
 （已透過遍歷 Skyrim.esm 驗證：WhiterunBanneredMare `0x01605E` = 十進位 90206 → block 6，sub 0。）
-
 **覆寫的關鍵：** 放置在錯誤 block GRUP 中的原版 cell 覆寫永遠不會與主記錄 cell 匹配，因此引擎會**靜默忽略它**（放置的物件和光照不會套用）。以 `cellblk` 確認。
 
 ### 外部 Cell 網格 → GRUP
@@ -83,6 +90,47 @@ sub      = FloorDiv(cellGrid, 8)
 ```
 
 除法**必須向 −∞ 取底**，而非像 C# 的 `/` 那樣截斷（例如 C# 中 `-41 / 8 == -5`，但底數為 `-6`）。負座標在其他情況下會落入錯誤的 GRUP。（已對照 Tamriel 驗證：cell (7,−41) → block (0,−2)，sub (0,−6)。）
+
+### LAND record 的陷阱（平坦地形生成）
+
+生成平坦 LAND records 時已在實機確認三個 bug（2026-06-03）：
+
+1. **`Landscape.Flags` 必須包含 `VertexNormalsHeightMap`（0x01）。** 若無此 DATA flag，引擎會跳過整個 VHGT/VNML 資料——cell 沒有地形碰撞，玩家會直接穿透。
+
+2. **Z=0 約等於 Skyrim 的海平面。** VHGT `Offset=0` → 地形在 Z=0 = 海面高度。請使用 `Offset = height / 8`（例如 height=4000 → Offset=500 → Z=4000，安全地高於水面）。
+
+3. **ESL 外掛不能包含 LAND records。** Skyrim 引擎會靜默忽略從 ESL（輕型外掛）載入的地形資料——外部地形載入路徑只讀取完整的 ESP/ESM。有 `cells` 的 spec 必須設定 `"esl": false`。`validate` 指令會強制檢查此項。
+
+4. **室外 NAVM 用 `WorldspaceNavmeshParent`，不是 `CellNavmeshParent`。** 規則：室外 cell → `WorldspaceNavmeshParent { Parent = worldspace.FormKey }`；室內 cell → `CellNavmeshParent { Parent = cell.FormKey }`。Parent 為 null 會 CTD（Mutagen 寫入時 NullReferenceException）。
+
+5. **NavmeshGrid 格式：** 以列優先順序，每個網格子 cell 的格式為 `[uint32 triCount][ushort idx0]...[ushort idxN]`。`GridDivisor` = N 代表 N×N 網格；`MaxDistanceX/Y` = cellWidth/N（每個子 cell 的遊戲單位）。對於獨立的 2 三角形平坦 cell：`GridDivisor=1`，`MaxDistance=4096`，grid bytes = `02 00 00 00 00 00 01 00`（8 bytes，一個包含兩個三角形的 cell）。
+
+## 程式化 navmesh（NAVM + NAVI）——遊戲內已確認 2026-06-03
+
+為自訂 worldspace 產生能讓引擎正常載入（不 CTD）的 navmesh，經歷了一段長除錯。關鍵事實（透過遊戲內進入 `MFTestWorld` 確認，並以解碼 Vigilant.esm——一個真實 CK-finalize 過的自訂 worldspace mod——作為 known-good 對照）：
+
+1. **NAVI 是全遊戲唯一、所有外掛都去 override 並累加合併的單一 record：`Skyrim.esm:0x00012FB4`。** 全遊戲只有這一個 `NavMeshInfoMap`（vanilla 有 15,462 筆）。引擎會把**每個外掛的 `0x12FB4` NVMI 清單 additive 合併**（Vigilant 的 override 只列它自己的 897 筆，不是 vanilla 的 15,462 筆）。所以：
+   ```csharp
+   var navi = new NavigationMeshInfoMap(FormKey.Factory("012FB4:Skyrim.esm"), SkyrimRelease.SkyrimSE);
+   // ...只加入你自己的 NavigationMapInfo 條目...
+   mod.NavigationMeshInfoMaps.Add(navi);   // additive override；對新 worldspace 不會衝突
+   ```
+   **建立一個全新的 NAVI record（`AddNew()`）是最致命的錯誤**——會產生第二個、孤立的 `NavMeshInfoMap`，它的 runtime pathing cell 是 null，引擎在 navmesh-init 工作執行緒（約 5 秒 uptime）的 `NavMeshInfoMap::InitItemImpl`（`mov edx,[rcx+0x10]`, rcx=0）CTD。崩潰 log 的 `R14 = NavMeshInfoMap [0x0A000804]`（我們的 rogue record）對比 `[0x00012FB4]`（vanilla master，當我們的 NAVM 完全沒有 NAVI 條目時）就是線索。
+
+2. **NVNM 照 Mutagen 原樣輸出——不做任何 byte patch。** 權威格式（xEdit wbNVNM）：`Version(u32=12) | Magic(4) | ParentWorldspace(FormID) | {GridY,GridX i16}|ParentCell | Vertices | Triangles | EdgeLinks | DoorTris | CoverTris | GridDivisor(u32) | MaxX/YDist | Min XYZ | Max XYZ | NavMeshGrid`。VertexCount 在 offset 16，**在 8-byte parent 之後**。（先前「把 parent 從 offset 8 移掉」的 hack 是在 stale-ESP 測試下的誤判；刪掉 parent 既錯位又拿掉 init 階段需要的 worldspace 連結。）
+
+3. **「Magic」常數是 `0xA5E9A03C`**（檔案位元組 `3C A0 E9 A5`）。出現在兩個地方，都對照 vanilla/Vigilant 驗證過：
+   - `NavigationMeshData.CrcHash`（NVNM offset 4）。
+   - `NavigationMapInfo.Unknown2`（NVMI 在 `Parent Worldspace` 之前的 4-byte 欄位）。
+   留成 0 是錯的（它本身不會 CTD，但要符合引擎預期）。
+
+4. **真實 navmesh 不是 island。** 一般 mesh 的 `NavigationMapInfo.Island` 保持 null（`Is Island = 0`）——對照 Vigilant 確認。（設成 island 沒幫助，也不是 CK 的做法。）
+
+5. **三角形邊鄰接**：`EdgeLink_n` 是跨越本地頂點 n 與 n+1 之間那條邊的鄰居三角形索引，邊界邊為 `-1`。共用 V0–V2 對角線的 2 三角形 quad：T0 `EdgeLink_2_0 = 1`、T1 `EdgeLink_0_1 = 0`、其餘 `-1`。
+
+6. **與 NAVM 相同的 parent 規則**適用於每筆 NVMI：室外 → `NavigationMapInfoWorldParent { ParentWorldspace = ws.FormKey, ParentWorldspaceCoord = (gridX,gridY) }`；室內 → `NavigationMapInfoCellParent { ParentCell = cell.FormKey }`。
+
+> 一個讓上述問題被掩蓋好幾輪的打包陷阱：MO2 安裝 zip 必須是**扁平**結構（plugin 在 zip 根目錄、`Seq/` 同層）。一個遺留在 zip 根目錄的舊 `.esp` 被裝成而不是剛 build 的那個，所以「還是 crash」其實一再是 *stale* plugin。永遠要 `unzip -l` + `md5sum` 把 zip 內的 esp 跟剛 build 的對拍。
 
 ## AI 套件以模板為基礎驅動
 
@@ -129,7 +177,7 @@ sub      = FloorDiv(cellGrid, 8)
 
 進入點技能效果（`PerkEntryPointModifyValue`，例如 ModAttackDamage ×1.2）有一個 `PerkConditionTabCount` 位元組（PERK 進入點 `DATA` 子記錄的第 3 個位元組）。它是進入點的**固有條件分頁數量**——函數評估的攻擊者/目標/武器情境——**不是**你撰寫的條件數量。引擎根據它來調整每個分頁的條件陣列大小；一個撰寫在索引 0 上而計數為 **0** 的 `PRKC` 條件分頁會溢出該陣列，破壞指標，並在**「Loading Files」期間發生硬性崩潰**（TESForm 查找雜湊表中，因垃圾 FormID 造成的存取違規）。
 
-這是一個純粹的 **「Mutagen 可容忍，引擎致命」** 的二進位錯誤：Mutagen 讀回真實的 `Conditions` 列表並忽略計數位元組，因此 `dump` / 往返 / 連結解析 / ESL 標頭看起來都是乾淨的——只有執行時解析器會崩潰。它會隱藏起來直到第二個插件改變記憶體佈局，然後以「兩個模組一起崩潰」的報告形式出現（根本原因於 2026-05-31 從 CrashLoggerSSE 日誌中找到；請參閱 [常見陷阱](gotchas.html)）。
+這是一個純粹的 **「Mutagen 可容忍，引擎致命」** 的二進位錯誤：Mutagen 讀回真實的 `Conditions` 列表並忽略計數位元組，因此 `dump` / 往返 / 連結解析 / ESL 標頭看起來都是乾淨的——只有執行時解析器會崩潰。它會隱藏起來直到第二個插件改變記憶體佈局，然後以「兩個模組一起崩潰」的報告形式出現（根本原因於 2026-05-31 從 CrashLoggerSSE 日誌中找到；請參閱 [lifelike/gotchas](gotchas.html)）。
 
 計數是每個進入點固定的，永遠是 `1`/`2`/`3`，絕不為 `0`——且永遠 ≥ 存在的 PRKC 分頁數量（原版可以自由地設定例如計數為 3 但只有一個或零個分頁）。`Build` 從 Skyrim.esm 的 375 個 PERK 記錄中提取的表格設定此值（`ModAttackDamage`/`ModSpellMagnitude`/`CalculateWeaponDamage` = 3；`ModArmorRating`/`ModBuyPrices` = 2；`ModSkillUse`/`ModFallingDamage` = 1；未列出的 → 2）。透過掃描原版來重新生成表格：讀取每個 `IAPerkEntryPointEffectGetter` 並以 `EntryPoint → PerkConditionTabCount` 分組。
 

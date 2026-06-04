@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>外部資源 — ModForge 文件</title>
+<title>外部資源 — 帶入您自己的網格 / 貼圖 / 音效 / 動畫 — ModForge 文件</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,18 +13,26 @@
   <a class="nav-item" href="for-agent.html">概覽</a>
   <a class="nav-item" href="for-agent-cli.html">CLI 驅動</a>
   <a class="nav-item" href="for-agent-lib.html">函式庫 API</a>
-  <a class="nav-item" href="external-assets.html">外部資源</a>
+  <a class="nav-item active" href="external-assets.html">外部資源</a>
   <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
   <div class="nav-section">規格說明（SPEC）</div>
-  <a class="nav-item" href="spec-1.html">Part 1：介紹 · 條件</a>
-  <a class="nav-item" href="spec-2.html">Part 2：任務 · 商販</a>
-  <a class="nav-item" href="spec-3.html">Part 3：配方 · 工作流程</a>
+  <a class="nav-item" href="spec-index.html">總覽 · 目錄</a>
+  <a class="nav-item" href="spec-intro.html">介紹 · 記錄類型</a>
+  <a class="nav-item" href="spec-magic.html">魔法 · 附魔</a>
+  <a class="nav-item" href="spec-dialogue-quests.html">對話 · 任務 · 腳本</a>
+  <a class="nav-item" href="spec-world.html">世界空間 · 地城 · 商販</a>
+  <a class="nav-item" href="spec-items.html">物品 · 配方 · 資源</a>
+  <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
+  <a class="nav-item" href="spec-workflow.html">工作流程</a>
   <div class="nav-section">讓 NPC 更有生命力</div>
   <a class="nav-item" href="lifelike.html">總覽</a>
-  <a class="nav-item" href="cookbook-1.html">食譜 1：基礎 NPC</a>
-  <a class="nav-item" href="cookbook-2.html">食譜 2：跟隨者系統</a>
-  <a class="nav-item" href="cookbook-3.html">食譜 3：世界建構</a>
-  <a class="nav-item" href="cookbook-4.html">食譜 4：進階食譜</a>
+  <a class="nav-item" href="cookbook-index.html">食譜手冊 · 目錄</a>
+  <a class="nav-item" href="cookbook-npc-basics.html">食譜：基礎 NPC</a>
+  <a class="nav-item" href="cookbook-followers.html">食譜：跟隨者</a>
+  <a class="nav-item" href="cookbook-world-items.html">食譜：世界 · 物品</a>
+  <a class="nav-item" href="cookbook-magic.html">食譜：魔法</a>
+  <a class="nav-item" href="cookbook-social-quest.html">食譜：社交 · 任務</a>
+  <a class="nav-item" href="cookbook-advanced.html">食譜：進階</a>
   <a class="nav-item" href="cheatsheets.html">速查表</a>
   <a class="nav-item" href="gotchas.html">常見陷阱</a>
   <a class="nav-item" href="formid-ref.html">原版 FormID 參考</a>
@@ -33,7 +41,7 @@
 <textarea id="src" hidden>
 # 外部資源 — 帶入您自己的網格 / 貼圖 / 音效 / 動畫
 
-← 索引：[概覽](for-agent.html) · 規格欄位：[SPEC Part 1](spec-1.html) · CLI：[CLI 驅動](for-agent-cli.html)
+← 索引：[for_agent.md](for-agent.html) · 規格欄位：[SPEC-index.md](spec-index.html) · CLI：[for_agent_cli.md](for-agent-cli.html)
 
 ModForge 預設透過**複製原版記錄**（武器的 `template` 重用 IronSword 的 `.nif`）來給記錄 3D 外觀。**外部資源管線**讓您改為帶入**自己的**資源 — 自訂網格、貼圖、音效、動畫 — 並讓 ModForge (1) **將 Data 相對路徑寫入記錄**，以及 (2) **將檔案打包**到 `.esp` 旁邊，使打包後的模組可獨立運作 / 相容 MO2。
 
@@ -154,7 +162,7 @@ ModForge 寫出**結構有效**的記錄並**複製您給它的檔案**，但**�
 - 將動畫接入角色的**行為圖**（這是 CK/havok 的工作）；
 - 從 `.nif` 的貼圖參考產生 `.dds`（您需要同時提供兩者；`.nif` 在內部指定其貼圖）。
 
-確認自訂資源能實際渲染/播放需要 Proton/Skyrim 啟動 — 詳見 [概覽 → 限制](for-agent.html)。
+確認自訂資源能實際渲染/播放需要 Proton/Skyrim 啟動 — 詳見 [for_agent.md → 限制](for-agent.html#限制--請如實說明不要過度宣稱)。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>

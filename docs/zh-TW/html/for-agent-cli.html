@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CLI 驅動 — ModForge 文件</title>
+<title>從 CLI 驅動 ModForge（JSON 規格 → 插件） — ModForge 文件</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,20 +11,28 @@
   <div class="logo"><a href="index.html">📖 ModForge 文件</a></div>
   <div class="nav-section">代理工作流程</div>
   <a class="nav-item" href="for-agent.html">概覽</a>
-  <a class="nav-item" href="for-agent-cli.html">CLI 驅動</a>
+  <a class="nav-item active" href="for-agent-cli.html">CLI 驅動</a>
   <a class="nav-item" href="for-agent-lib.html">函式庫 API</a>
   <a class="nav-item" href="external-assets.html">外部資源</a>
   <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
   <div class="nav-section">規格說明（SPEC）</div>
-  <a class="nav-item" href="spec-1.html">Part 1：介紹 · 條件</a>
-  <a class="nav-item" href="spec-2.html">Part 2：任務 · 商販</a>
-  <a class="nav-item" href="spec-3.html">Part 3：配方 · 工作流程</a>
+  <a class="nav-item" href="spec-index.html">總覽 · 目錄</a>
+  <a class="nav-item" href="spec-intro.html">介紹 · 記錄類型</a>
+  <a class="nav-item" href="spec-magic.html">魔法 · 附魔</a>
+  <a class="nav-item" href="spec-dialogue-quests.html">對話 · 任務 · 腳本</a>
+  <a class="nav-item" href="spec-world.html">世界空間 · 地城 · 商販</a>
+  <a class="nav-item" href="spec-items.html">物品 · 配方 · 資源</a>
+  <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
+  <a class="nav-item" href="spec-workflow.html">工作流程</a>
   <div class="nav-section">讓 NPC 更有生命力</div>
   <a class="nav-item" href="lifelike.html">總覽</a>
-  <a class="nav-item" href="cookbook-1.html">食譜 1：基礎 NPC</a>
-  <a class="nav-item" href="cookbook-2.html">食譜 2：跟隨者系統</a>
-  <a class="nav-item" href="cookbook-3.html">食譜 3：世界建構</a>
-  <a class="nav-item" href="cookbook-4.html">食譜 4：進階食譜</a>
+  <a class="nav-item" href="cookbook-index.html">食譜手冊 · 目錄</a>
+  <a class="nav-item" href="cookbook-npc-basics.html">食譜：基礎 NPC</a>
+  <a class="nav-item" href="cookbook-followers.html">食譜：跟隨者</a>
+  <a class="nav-item" href="cookbook-world-items.html">食譜：世界 · 物品</a>
+  <a class="nav-item" href="cookbook-magic.html">食譜：魔法</a>
+  <a class="nav-item" href="cookbook-social-quest.html">食譜：社交 · 任務</a>
+  <a class="nav-item" href="cookbook-advanced.html">食譜：進階</a>
   <a class="nav-item" href="cheatsheets.html">速查表</a>
   <a class="nav-item" href="gotchas.html">常見陷阱</a>
   <a class="nav-item" href="formid-ref.html">原版 FormID 參考</a>
@@ -35,13 +43,13 @@
 
 **預設**工作流程：你撰寫一份 JSON **規格**，CLI 產生一個合法的 `.esp`/`.esl`（+ 已編譯的 `.pex`）。規格就是合約——你不需要手寫插件位元組或 FormID。
 
-← 索引：[概覽](for-agent.html) · 規格欄位：[SPEC Part 1](spec-1.html) · 改用程式碼計算規格：[函式庫 API](for-agent-lib.html)
-· 擬真 NPC：[lifelike/](lifelike.html) · 引擎機制：[引擎內部原理](engine-internals.html)
+← 索引：[for_agent.md](for-agent.html) · 規格欄位：[SPEC-index.md](spec-index.html) · 改用程式碼計算規格：[for_agent_lib.md](for-agent-lib.html)
+· 擬真 NPC：[lifelike/](lifelike.html) · 引擎機制：[engine-internals.md](engine-internals.html)
 
 ## 你的工作，一個迴圈搞定
 
 ```
-請求（自然語言）──▶ 撰寫 spec.json（依 SPEC.md）──▶ 驗證 ──（有錯則修正）──▶ build|package ──▶ dump（驗證）──▶ 如實回報
+請求（自然語言）──▶ 撰寫 spec.json（依 SPEC-index.md）──▶ 驗證 ──（有錯則修正）──▶ build|package ──▶ dump（驗證）──▶ 如實回報
                                                   ▲___________________________|
 ```
 
@@ -77,16 +85,15 @@ SKYRIM_ESM="$HOME/.local/share/Steam/steamapps/common/Skyrim Special Edition/Dat
 $R find "$SKYRIM_ESM" nordrace Race        # -> Skyrim.esm:0x013746  Race  NordRace
 $R find "$SKYRIM_ESM" blacksmith Class     # -> Skyrim.esm:0x013257  Class VendorBlacksmith
 $R find "$SKYRIM_ESM" armorclothing Keyword
-$R find "$SKYRIM_ESM" restorehealth MagicEffect  # -> Skyrim.esm:0x03EB15  AlchRestoreHealth
-$R find "$SKYRIM_ESM" banneredmare Cell    # -> Skyrim.esm:0x01605E  WhiterunBanneredMare
-$R find "$SKYRIM_ESM" tamriel Worldspace   # -> Skyrim.esm:0x00003C  Tamriel
+$R find "$SKYRIM_ESM" restorehealth MagicEffect  # -> Skyrim.esm:0x03EB15  AlchRestoreHealth（用於藥水的 `effects`）
+$R find "$SKYRIM_ESM" banneredmare Cell    # -> Skyrim.esm:0x01605E  WhiterunBanneredMare（室內 `placement` 場景）
+$R find "$SKYRIM_ESM" tamriel Worldspace   # -> Skyrim.esm:0x00003C  Tamriel（室外 `placement` 世界空間）
 ```
-
 務必執行 `find` 取得真實 FormID — **絕不要猜測**。搜尋依據為 EditorID（描述性名稱，例如 `NordRace`）；本地化顯示名稱在無頭模式下無法解析。一個靜態 NPC 至少需要 `race` + `class` 才能表現得像真正的角色；`outfit` 則為其穿上衣物。
 
 ## 產生內容的工作流程
 
-1. 閱讀 `SPEC.md` 了解確切欄位。撰寫 `spec.json`（camelCase；屬性名稱不區分大小寫匹配）。對於種族/職業/服裝/關鍵字/原版派系，請先用 `find` 取得 FormID，並使用 `"<master>:0xFORMID"` 的引用格式。
+1. 閱讀 `SPEC-index.md` 了解確切欄位。撰寫 `spec.json`（camelCase；屬性名稱不區分大小寫匹配）。對於種族/職業/服裝/關鍵字/原版派系，請先用 `find` 取得 FormID，並使用 `"<master>:0xFORMID"` 的引用格式。
 2. 執行 `validate spec.json`。**若回報問題，請修正規格並重新驗證** — 不要建置無效的規格。此步驟會檢查：空白/重複的 `editorId`、對話→未知任務/NPC、腳本→未知目標、物件屬性→未知記錄、錯誤的屬性型別。
 3. 執行 `package spec.json OutDir`（或只需插件時用 `build spec.json out.esp`）。
 4. 執行 `dump OutDir/<pluginName>` 並**確認輸出符合需求**（名稱、派系成員、附加腳本 + 屬性數量、對話提示、任務目標）。
@@ -119,7 +126,7 @@ $R find "$SKYRIM_ESM" tamriel Worldspace   # -> Skyrim.esm:0x00003C  Tamriel
 
 ## 限制 — 如實回報，切勿誇大
 
-ModForge 寫出的是**結構上合法**的記錄，這與**遊戲中可正常運作**並不相同，且你無法從此處確認遊戲內行為（那需要實際啟動 Proton/Skyrim）。關於哪些功能可運作與哪些不可運作的完整說明——以及如實回報的規則——請見索引：**[概覽 → 限制](for-agent.html)**。回報結果前請先閱讀。
+ModForge 寫出的是**結構上合法**的記錄，這與**遊戲中可正常運作**並不相同，且你無法從此處確認遊戲內行為（那需要實際啟動 Proton/Skyrim）。關於哪些功能可運作與哪些不可運作的完整說明——以及如實回報的規則——請見索引：**[for_agent.md → 限制](for-agent.html#限制--請如實說明不要過度宣稱)**。回報結果前請先閱讀。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>
