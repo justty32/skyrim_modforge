@@ -215,5 +215,42 @@ public static partial class Generator
                     Resolve($"outfit '{o.EditorId}' item", itemRef, fk => outfit.Items!.Add(new FormLink<IOutfitTargetGetter>(fk)));
             }
         }
+
+        // --- pass 1: Relationship (RELA) — scalar Rank now; Parent/Child NPC refs wired in pass 2 ---
+        public void BuildRelationships()
+        {
+            foreach (var rel in spec.Relationships)
+            {
+                var r = mod.Relationships.AddNew();
+                r.EditorID = rel.EditorId;
+                r.Rank = Enum.TryParse<Relationship.RankType>(rel.Rank, ignoreCase: true, out var rk)
+                    ? rk : Relationship.RankType.Ally;
+            }
+        }
+
+        // --- pass 1: Class (CLAS): no FormLinks (all enums/weight dicts), so fully built in pass 1. An
+        // npc's `class` ref can point at one (resolved in pass 2 — it's in formKeyByEd by then). StatWeights
+        // (Health/Magicka/Stamina) drive the actor's attribute distribution; SkillWeights favour skills. ---
+        public void BuildClasses()
+        {
+            foreach (var cl in spec.Classes)
+            {
+                var r = mod.Classes.AddNew();
+                r.EditorID = cl.EditorId;
+                if (!string.IsNullOrEmpty(cl.Name)) r.Name = cl.Name;
+                if (!string.IsNullOrEmpty(cl.Description)) r.Description = cl.Description;
+                if (Enum.TryParse<Skill>(cl.Teaches, ignoreCase: true, out var teach)) r.Teaches = teach;
+                r.MaxTrainingLevel = (byte)Math.Clamp(cl.MaxTrainingLevel, 0, 255);
+                // All-zero stat weights would be a degenerate distribution; default to balanced.
+                bool anyStat = cl.HealthWeight != 0 || cl.MagickaWeight != 0 || cl.StaminaWeight != 0;
+                r.StatWeights[BasicStat.Health]  = (byte)Math.Clamp(anyStat ? cl.HealthWeight  : 1, 0, 255);
+                r.StatWeights[BasicStat.Magicka] = (byte)Math.Clamp(anyStat ? cl.MagickaWeight : 1, 0, 255);
+                r.StatWeights[BasicStat.Stamina] = (byte)Math.Clamp(anyStat ? cl.StaminaWeight : 1, 0, 255);
+                foreach (var (skillName, w) in cl.SkillWeights)
+                    if (Enum.TryParse<Skill>(skillName, ignoreCase: true, out var sk))
+                        r.SkillWeights[sk] = (byte)Math.Clamp(w, 0, 255);
+                    else Warn($"  ! class '{cl.EditorId}' skillWeight '{skillName}' is not a Skill — skipped");
+            }
+        }
     }
 }

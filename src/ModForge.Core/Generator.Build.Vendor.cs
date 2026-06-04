@@ -65,5 +65,33 @@ public static partial class Generator
         // vendor's gold/stock, must persist). Read by the placement loop's deferredAnchorEds.
         public IEnumerable<string> MerchantContainerRefs()
             => deferredMerchantContainers.Select(w => w.Ref);
+
+        // --- pass 1: Faction (FACT) — incl. inline vendor data; sellBuyList/container wired in pass 2 ---
+        public void BuildFactions()
+        {
+            foreach (var f in spec.Factions)
+            {
+                var r = mod.Factions.AddNew();
+                r.EditorID = f.EditorId; r.Name = f.Name;
+                if (f.Vendor is { } v)
+                {
+                    // Vendor flag = "this faction's members are merchants". CanBeOwner mirrors vanilla
+                    // merchant factions (they own their shop cell/chest). VendorValues carries the hours,
+                    // sell radius, buy-stolen flag, and whether the buy/sell list is a NOT-sell list.
+                    r.Flags |= Faction.FactionFlag.Vendor | Faction.FactionFlag.CanBeOwner;
+                    r.VendorValues = new VendorValues
+                    {
+                        StartHour = (ushort)Math.Clamp((int)v.StartHour, 0, 24),
+                        EndHour = (ushort)Math.Clamp((int)v.EndHour, 0, 24),
+                        Radius = v.Radius,
+                        OnlyBuysStolenItems = v.BuysStolen,
+                        NotSellBuy = v.NotSellBuyList,
+                    };
+                    if (!string.IsNullOrEmpty(f.EditorId)) vendorFactionEds.Add(f.EditorId);
+                    // SellBuyList (FormList) + MerchantContainer (a placed ref) are FormLinks resolved
+                    // in pass 2 (WireVendors) — the container placement is created in the placement loop.
+                }
+            }
+        }
     }
 }

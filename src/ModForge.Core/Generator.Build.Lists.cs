@@ -209,5 +209,21 @@ public static partial class Generator
                         cobj.Conditions.Add(cond);
             }
         }
+
+        // --- pass 1: EncounterZone (ECZN): level range/rank/flags (all inline). Owner/Location
+        // FormLinks are wired in pass 2 (WireEncounterZones). maxLevel 0 = "uncapped" (the vanilla
+        // scales-with-player idiom). A cell's / placed-spawn's `encounterZone` ref points at one. ---
+        public void BuildEncounterZones()
+        {
+            foreach (var ez in spec.EncounterZones)
+            {
+                var r = mod.EncounterZones.AddNew();
+                r.EditorID = ez.EditorId;
+                r.MinLevel = (byte)Math.Clamp(ez.MinLevel, 0, 255);
+                r.MaxLevel = (byte)Math.Clamp(ez.MaxLevel, 0, 255);
+                r.Rank = (byte)Math.Clamp(ez.Rank, 0, 255);
+                r.Flags = ParseFlags<EncounterZone.Flag>(ez.Flags);
+            }
+        }
     }
 }
