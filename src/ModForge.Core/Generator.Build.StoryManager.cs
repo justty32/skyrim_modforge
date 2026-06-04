@@ -51,6 +51,13 @@ public static partial class Generator
                         {
                             alias.ForcedReference.SetTo(fk);
                         }
+                        else if (kind.Equals("uniqueActor", StringComparison.OrdinalIgnoreCase)
+                            && TryResolveRef(arg, formKeyByEd, out var uaFk))
+                        {
+                            // QuestAlias.UniqueActor (ALUA) = a unique NPC base record this alias
+                            // resolves to. <ref> is an in-spec NPC editorId or Plugin.esm:0xID.
+                            alias.UniqueActor.SetTo(uaFk);
+                        }
                     }
                     if (aSpec.Optional) alias.Flags |= QuestAlias.Flag.Optional;
                     quest.Aliases.Add(alias);

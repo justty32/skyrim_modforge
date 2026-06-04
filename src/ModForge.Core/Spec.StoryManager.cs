@@ -8,7 +8,8 @@ public sealed class QuestStoryEventSpec
     public List<ConditionSpec> Conditions { get; set; } = new();
 }
 
-// 一條 quest alias。fill 語法："fromEvent:<slot>"（拿事件帶來的 ref）或 "forced:<ref>"（寫死特定 ref）。
+// 一條 quest alias。fill 語法："fromEvent:<slot>"（拿事件帶來的 ref）、"forced:<ref>"（寫死特定 ref）
+// 或 "uniqueActor:<ref>"（指向某個唯一 NPC base，<ref> 同 forced 解析）。
 public sealed class QuestAliasSpec
 {
     public string Name { get; set; } = "";

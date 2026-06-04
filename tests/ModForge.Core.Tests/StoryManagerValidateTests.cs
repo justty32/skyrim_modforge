@@ -46,4 +46,31 @@ public class StoryManagerValidateTests
             new QuestAliasSpec { Name = "Victim", Fill = "fromEvent:victim" }));
         Assert.DoesNotContain(problems, p => p.Contains("storyEvent") || p.Contains("fill"));
     }
+
+    [Fact]
+    public void UniqueActor_unresolved_ref_is_an_error()
+    {
+        var problems = Generator.Validate(QuestWith(
+            new QuestStoryEventSpec { Event = "KillActor" },
+            new QuestAliasSpec { Name = "X", Fill = "uniqueActor:NoSuchEditorId" }));
+        Assert.Contains(problems, p => p.Contains("uniqueActor") && p.Contains("NoSuchEditorId"));
+    }
+
+    [Fact]
+    public void UniqueActor_valid_ref_has_no_problems()
+    {
+        var problems = Generator.Validate(QuestWith(
+            new QuestStoryEventSpec { Event = "KillActor" },
+            new QuestAliasSpec { Name = "Target", Fill = "uniqueActor:Skyrim.esm:0x01414D" }));
+        Assert.DoesNotContain(problems, p => p.Contains("uniqueActor"));
+    }
+
+    [Fact]
+    public void Unknown_fill_kind_is_still_rejected()
+    {
+        var problems = Generator.Validate(QuestWith(
+            new QuestStoryEventSpec { Event = "KillActor" },
+            new QuestAliasSpec { Name = "X", Fill = "bogusKind:whatever" }));
+        Assert.Contains(problems, p => p.Contains("bogusKind") && p.Contains("unsupported"));
+    }
 }

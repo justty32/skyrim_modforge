@@ -1,0 +1,15 @@
+{
+  "esl": false,
+  "quests": [
+    {
+      "editorId": "MFSM_UlfricDown",
+      "name": "The Bear Has Fallen",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "KillActor" },
+      "aliases": [
+        { "name": "Victim", "fill": "fromEvent:victim" },
+        { "name": "TheJarl", "fill": "uniqueActor:Skyrim.esm:0x01414D" }
+      ]
+    }
+  ]
+}

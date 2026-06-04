@@ -127,4 +127,39 @@ public class StoryManagerBuildTests
         var alias = Assert.Single(q.Aliases);
         Assert.Equal(npc.FormKey, alias.ForcedReference.FormKey);
     }
+
+    [Fact]
+    public void UniqueActor_alias_sets_unique_actor_link()
+    {
+        var spec = new ModSpec();
+        spec.Quests.Add(new QuestSpec
+        {
+            EditorId = "MFSM_Unique", Name = "U",
+            StoryEvent = new QuestStoryEventSpec { Event = "KillActor" },
+            Aliases = { new QuestAliasSpec { Name = "Target", Fill = "uniqueActor:Skyrim.esm:0x01414D" } },
+        });
+        var mod = Build(spec);
+        var q = mod.Quests.Single(x => x.EditorID == "MFSM_Unique");
+        var alias = Assert.Single(q.Aliases);
+        Assert.Equal(0x01414Du, alias.UniqueActor.FormKey.ID);
+        Assert.True(alias.ForcedReference.FormKey.IsNull);   // only UniqueActor set, not ForcedReference
+    }
+
+    [Fact]
+    public void UniqueActor_alias_resolves_in_spec_editorid()
+    {
+        var spec = new ModSpec();
+        spec.Npcs.Add(new NpcSpec { EditorId = "MyHero", Name = "Hero" });
+        spec.Quests.Add(new QuestSpec
+        {
+            EditorId = "MFSM_UniqueInSpec", Name = "UI",
+            StoryEvent = new QuestStoryEventSpec { Event = "KillActor" },
+            Aliases = { new QuestAliasSpec { Name = "Hero", Fill = "uniqueActor:MyHero" } },
+        });
+        var mod = Build(spec);
+        var q = mod.Quests.Single(x => x.EditorID == "MFSM_UniqueInSpec");
+        var npc = mod.Npcs.Single(x => x.EditorID == "MyHero");
+        var alias = Assert.Single(q.Aliases);
+        Assert.Equal(npc.FormKey, alias.UniqueActor.FormKey);
+    }
 }

@@ -27,7 +27,7 @@ public static partial class Generator
                 {
                     if (!StoryManagerEvents.TryParseFill(a.Fill, out var kind, out var arg))
                     {
-                        Problems.Add($"{where} alias '{a.Name}' fill '{a.Fill}' is malformed (expect 'fromEvent:<slot>' or 'forced:<ref>')");
+                        Problems.Add($"{where} alias '{a.Name}' fill '{a.Fill}' is malformed (expect 'fromEvent:<slot>', 'forced:<ref>' or 'uniqueActor:<ref>')");
                         continue;
                     }
                     if (kind.Equals("fromEvent", StringComparison.OrdinalIgnoreCase))
@@ -39,9 +39,13 @@ public static partial class Generator
                     {
                         CheckRef(arg, $"{where} alias '{a.Name}' forced ref");
                     }
+                    else if (kind.Equals("uniqueActor", StringComparison.OrdinalIgnoreCase))
+                    {
+                        CheckRef(arg, $"{where} alias '{a.Name}' uniqueActor ref");
+                    }
                     else
                     {
-                        Problems.Add($"{where} alias '{a.Name}' fill kind '{kind}' unsupported (use fromEvent | forced)");
+                        Problems.Add($"{where} alias '{a.Name}' fill kind '{kind}' unsupported (use fromEvent | forced | uniqueActor)");
                     }
                 }
                 // Note: StartGameEnabled is force-cleared for storyEvent quests at build time (it
