@@ -23,4 +23,9 @@
 意圖導向：`QuestSpec` 加 `storyEvent`(event+conditions) + `aliases`(fill="fromEvent:<slot>"|"forced:<ref>")，build 自動生 SMBN→SMQN 掛原版根下並清 StartGameEnabled。事件表 `StoryManagerEvents`（只 KillActor）、`Generator.Build.StoryManager.cs`（pass 2）、`Generator.Validate.StoryManager.cs`。探針 builder/smprobe 已退役，`smtree` 保留。279 測試綠。
 **SM 結構鐵律（[[story-manager-kill-recipe]]）**：一事件根→一條共用分支→多個 quest node（串 PreviousSibling）；事件根下多分支互斥（引擎只跑一條）；**引擎一事件只啟動一個最先符合的 quest（正確 radiant 行為，非 bug）**；ESL 能裝 SM。實機全綠：victim/killer(R2=玩家)/forced/condition/ESL 五變體。
 
-**之後可做**：加更多事件（離線解碼 + 一行進 `StoryManagerEvents` 表）；Script Event 入口（自訂 Keyword + Papyrus `SendStoryEvent`，量產最終入口，需 Papyrus）；findMatching/location 等填充型別。
+**階段二+ 擴充：✅ 已建（2026-06-04，待實機）**——289 測試綠：
+- **事件表 +4**（純資料，build/validate 不變）：`ChangeLocation`(0x01320E/CLOC)、`CastMagic`(0x046829/CAST)、`AddItem`(0x02C439/AIPL)、`Assault`(0x02C494/ASSU)。槽 R1/R2/L1/L2。
+- **新填充 `uniqueActor:<ref>`** → `QuestAlias.UniqueActor`（語法同 forced）。`createObject`/`findMatching` 緩做（需解碼 vanilla 範例再落地）。
+- **Script Event 入口 — 研究尖兵完成**（`docs/superpowers/specs/2026-06-04-script-event-entry-spike.md`）：根 `0x01379A`/碼 `SCPT`，keyword 綁在**分支條件** `GetEventData Keyword GetIsID <KYWD>==1`（Mutagen `GetEventDataConditionData` 原生，ESP 側可建）；**Papyrus-on-Linux 可行已實證**（`mono PapyrusCompiler.exe` + CK `Scripts.zip` 編出 .pex，免 Caprica/wine）；單一通用 dispatcher 服務所有 mod。**下一步可實作**。
+
+**之後可做**：實作 Script Event 入口（量產最終入口）；`createObject`/`findMatching` 填充；再多解事件進表。
