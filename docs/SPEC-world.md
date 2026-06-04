@@ -78,8 +78,10 @@ worldspace) whose **weather table** drives which weathers play there:
   approximately Skyrim's sea level, so 4000+ is safely above water. Enter in-game with:
   `cow <worldspace editorId> X Y`. Optional `"navmesh": true` adds a flat quad NAVM (4 vertices,
   2 triangles) covering the full 4096×4096 cell so NPCs can path on it, plus a NAVI index entry.
-  No edge-links to neighbour cells — cross-cell pathfinding requires matching NAVMs in adjacent
-  cells. For varied terrain/LOD/detailed navmesh use the Creation Kit.
+  **In-game confirmed** (2026-06-04): a guard placed in a navmeshed cell of MFTestWorld walks an
+  m1→m2→m3→m1 patrol on the generated mesh — NPCs path on a program-generated custom-worldspace
+  navmesh. No edge-links to neighbour cells — cross-cell pathfinding requires matching NAVMs in
+  adjacent cells. For varied terrain/LOD/detailed navmesh use the Creation Kit.
   **ESL LIMIT:** Skyrim's engine ignores LAND records in ESL (light) plugins — specs with `cells`
   must use `"esl": false` (the validator enforces this).
 - **regions** (REGN): an area inside a `worldspace` (an in-spec WRLD `editorId` or a vanilla
@@ -91,7 +93,8 @@ worldspace) whose **weather table** drives which weathers play there:
   `worlddiag <Skyrim.esm> <0xFORMID>` (climate/water/parent + map bounds + land/water defaults) and
   `regndiag <Skyrim.esm> <0xFORMID>` (worldspace/area/mapColor + weather table). Example:
   `examples/worldspace_spec.json`. **In-game confirmed** (2026-06-03): `cow MFTestWorld 0 0` →
-  player lands on solid flat terrain.
+  player lands on solid flat terrain. Navmesh-patrol example: `examples/worldspace_navmesh_test_spec.json`
+  (guard pacing m1→m2→m3→m1 on the z=4000 mesh) — **in-game confirmed** (2026-06-04).
 
 ### leveled lists & containers
 ```jsonc

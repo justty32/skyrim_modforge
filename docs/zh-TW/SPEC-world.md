@@ -54,9 +54,9 @@
   ]
 ```
 - **worldspaces**（WRLD）：一個新的室外世界。`climate` 為 CLMT *ref*（原版預設 = `Skyrim.esm:0x000812`）——若無此設定，世界將**沒有天空/光照週期**。`defaultLandHeight`/`defaultWaterHeight` 預設為 Tamriel 的值（-27000 / -14000）——**保留這些值**，因為水面預設為 0 會淹沒整個世界。
-- **`cells`** — 在世界空間中生成可行走的平坦地形 cell。每個條目 `{ "x": N, "y": N }` 生成一個 CELL + LAND record（平坦的 33×33 高度圖），放置在世界空間的 SubCell block tree 中。可選的 `"height"`（遊戲單位，預設 4000）設定地形高度——Z=0 約為 Skyrim 的海平面，4000 以上才安全。遊戲內進入指令：`cow <worldspace editorId> X Y`。可選 `"navmesh": true` 為該 cell 新增一個平坦四邊形 NAVM（4 頂點、2 三角形，覆蓋整個 4096×4096 cell）以及 NAVI 索引條目，讓 NPC 可在此 cell 內導航。無相鄰 cell 的邊緣連結——跨 cell 尋路需要在相鄰 cell 也設定 `navmesh: true`。完整的地形（多樣地貌、LOD、精細導航網格）仍須用 Creation Kit 製作。**ESL 限制**：Skyrim 引擎**不載入** ESL（輕型外掛）中的 LAND records——有 `cells` 的 spec 必須設定 `"esl": false`（validator 會強制檢查）。
+- **`cells`** — 在世界空間中生成可行走的平坦地形 cell。每個條目 `{ "x": N, "y": N }` 生成一個 CELL + LAND record（平坦的 33×33 高度圖），放置在世界空間的 SubCell block tree 中。可選的 `"height"`（遊戲單位，預設 4000）設定地形高度——Z=0 約為 Skyrim 的海平面，4000 以上才安全。遊戲內進入指令：`cow <worldspace editorId> X Y`。可選 `"navmesh": true` 為該 cell 新增一個平坦四邊形 NAVM（4 頂點、2 三角形，覆蓋整個 4096×4096 cell）以及 NAVI 索引條目，讓 NPC 可在此 cell 內導航。**實機確認**（2026-06-04）：放在 MFTestWorld navmesh cell 中的守衛沿 m1→m2→m3→m1 在生成的網格上巡邏——NPC 確實能在程式生成的自訂世界空間導航網格上尋路。無相鄰 cell 的邊緣連結——跨 cell 尋路需要在相鄰 cell 也設定 `navmesh: true`。完整的地形（多樣地貌、LOD、精細導航網格）仍須用 Creation Kit 製作。**ESL 限制**：Skyrim 引擎**不載入** ESL（輕型外掛）中的 LAND records——有 `cells` 的 spec 必須設定 `"esl": false`（validator 會強制檢查）。
 - **regions**（REGN）：`worldspace` 內的一個區域。`area` 為**至少 3 個**世界座標點組成的多邊形（非 cell 格子）。`weather` 為選取當前天氣的表——每個條目為一個 WTHR *ref* 加上相對 `chance`。
-- **實機確認**（2026-06-03）：`cow MFTestWorld 0 0` → 玩家落在實心的平坦地面上。
+- **實機確認**（2026-06-03）：`cow MFTestWorld 0 0` → 玩家落在實心的平坦地面上。導航巡邏範例：`examples/worldspace_navmesh_test_spec.json`（守衛沿 m1→m2→m3→m1 在 z=4000 網格上巡邏）——**實機確認**（2026-06-04）。
 
 ### 等級列表與容器
 ```jsonc
