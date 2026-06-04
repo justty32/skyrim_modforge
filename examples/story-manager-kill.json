@@ -1,0 +1,14 @@
+{
+  "esl": false,
+  "quests": [
+    {
+      "editorId": "MFSM_Avenge",
+      "name": "Avenge the Fallen",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "KillActor" },
+      "aliases": [
+        { "name": "Victim", "fill": "fromEvent:victim" }
+      ]
+    }
+  ]
+}

@@ -44,13 +44,9 @@ public static partial class Generator
                         Problems.Add($"{where} alias '{a.Name}' fill kind '{kind}' unsupported (use fromEvent | forced)");
                     }
                 }
-
-                // A storyEvent quest is force-cleared of StartGameEnabled at build time. Warn if the
-                // user explicitly left it true. NOTE: this message must NOT contain "storyEvent" or
-                // "fill" — StartGameEnabled defaults true, so a well-formed storyEvent quest trips
-                // this, and the valid-case test asserts no problem mentions "storyEvent"/"fill".
-                if (q.StartGameEnabled)
-                    Problems.Add($"quest '{q.EditorId}': startGameEnabled=true is ignored for a story-event quest (auto-cleared)");
+                // Note: StartGameEnabled is force-cleared for storyEvent quests at build time (it
+                // defaults true). No warning is emitted — ModForge's Validate has no warning/error
+                // distinction, so a warning here would mark every valid SM spec INVALID.
             }
         }
     }
