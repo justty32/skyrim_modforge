@@ -24,9 +24,15 @@ public class StoryManagerProbeTests
         Assert.NotNull(q.Event);
         // Mutagen 0.53.1 has no standalone StartGameEnabled bool; it is a Quest.Flag — assert it's clear.
         Assert.False(q.Flags.HasFlag(Quest.Flag.StartGameEnabled));
+        // Event code "KILL" + the FromEvent fill recipe are decoded from vanilla WIKill quests.
+        Assert.Equal(new RecordType("KILL"), q.Event);
         var alias = Assert.Single(q.Aliases);
         Assert.Equal("Victim", alias.Name);
-        Assert.NotNull(alias.FindMatchingRefFromEvent);
+        var fill = alias.FindMatchingRefFromEvent;
+        Assert.NotNull(fill);
+        Assert.Equal(new RecordType("KILL"), fill!.FromEvent);
+        // EventData "R1\0\0" = event reference slot 1 (the killed actor).
+        Assert.Equal(new byte[] { 0x52, 0x31, 0x00, 0x00 }, fill.EventData!.Value.ToArray());
         Assert.Contains(q.Stages, s => s.Index == 10);
     }
 

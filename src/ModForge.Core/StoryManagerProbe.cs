@@ -6,11 +6,14 @@ namespace ModForge;
 /// without owning Skyrim.esm. Throwaway-ish experiment driving the "Story Manager 最小驗證" plan.
 ///
 /// Graph built (additive — we hang under the VANILLA Kill Actor event root, we never author our own SMEN):
-///   VANILLA SMEN (Kill Actor, passed in)  ◄── SMBN.Parent
+///   VANILLA SMEN (Kill Actor = Skyrim.esm:0x013010, passed in)  ◄── SMBN.Parent
 ///                                              SMBN  ◄── SMQN.Parent
 ///                                                        SMQN.Quests = [ our MFSM_AvengeQuest ]
-///   MFSM_AvengeQuest: StartGameEnabled=false, Event=KillActor, alias "Victim"
-///                     (FindMatchingRefFromEvent), startup stage Index=10.
+///   MFSM_AvengeQuest: StartGameEnabled=false, Event="KILL", alias "Victim"
+///                     (FindMatchingRefFromEvent: FromEvent="KILL", EventData="R1" = killed actor),
+///                     startup stage Index=10. Our SMBN carries NO conditions, so it attempts on every
+///                     kill (vanilla WIKillEventsBranchNode gates with 6 conditions — we want it permissive).
+/// Real values (event code, EventData, root FormID) decoded from Skyrim.esm's WIKill quests, not guessed.
 ///
 /// API 釘樁 — pinned Mutagen 0.53.1 types (verified by compiling):
 ///   - Groups: mod.StoryManagerBranchNodes / mod.StoryManagerQuestNodes / mod.StoryManagerEventNodes
@@ -18,7 +21,7 @@ namespace ModForge;
 ///       AStoryManagerNode.Parent : IFormLinkNullable&lt;IStoryManagerNodeGetter&gt;  (SetTo(FormKey) / .FormKey)
 ///   - StoryManagerQuestNode.Quests : ExtendedList&lt;StoryManagerQuest&gt;
 ///   - StoryManagerQuest.Quest : IFormLinkNullable&lt;IQuestGetter&gt;
-///   - Quest.Event : RecordType  (a Skyrim "Quest Event" 4-char code; placeholder until smtree)
+///   - Quest.Event : RecordType  (a Skyrim "Quest Event" 4-char code; "KILL" for Kill Actor)
 ///   - Quest.NextAliasID : uint? ; Quest.Flags : Quest.Flag (StartGameEnabled is a flag, not a bool prop)
 ///   - QuestAlias.ID : uint ; QuestAlias.Name : string ; QuestAlias.FindMatchingRefFromEvent : FindMatchingRefFromEvent
 ///   - FindMatchingRefFromEvent.EventData : Noggog.MemorySlice&lt;byte&gt;? ; .FromEvent : RecordType?
@@ -38,19 +41,22 @@ public static class StoryManagerProbe
         // (there is no standalone bool property in Mutagen 0.53.1) — leave the flag CLEARED.
         quest.Flags &= ~Quest.Flag.StartGameEnabled;
 
-        // TODO(smtree): set to the real Kill Actor event code printed by the smtree CLI command.
-        // Placeholder so the SM linkage compiles/tests; Quest.Event is a Mutagen RecordType? — any
-        // non-null 4-char code satisfies the structural test. "KILL" is a stand-in, NOT verified vanilla.
+        // Quest Event code for the Kill Actor SM event. CONFIRMED against Skyrim.esm: every vanilla
+        // WIKill0x quest hung under the Kill Actor root (0x013010) carries Event "KILL".
         quest.Event = new RecordType("KILL");
 
-        // Alias "Victim" filled from the Kill Actor event's killed reference. EventData/FromEvent get
-        // tuned against smtree output during in-game testing (EventData is a MemorySlice<byte>? blob,
-        // FromEvent a RecordType? — both left default/minimal here for the structural probe).
+        // Alias "Victim" filled from the Kill Actor event's killed reference. CONFIRMED recipe from the
+        // vanilla WIKill quests: FromEvent="KILL", EventData = ASCII "R1\0\0" (52 31 00 00) = event ref
+        // slot 1 (the killed actor; slot 2 "R2" is the killer). Matches SendStoryEvent(akRef1, akRef2).
         var alias = new QuestAlias
         {
             ID = 0,
             Name = "Victim",
-            FindMatchingRefFromEvent = new FindMatchingRefFromEvent(),
+            FindMatchingRefFromEvent = new FindMatchingRefFromEvent
+            {
+                FromEvent = new RecordType("KILL"),
+                EventData = new byte[] { 0x52, 0x31, 0x00, 0x00 },
+            },
         };
         quest.Aliases.Add(alias);
         quest.NextAliasID = 1;
