@@ -28,6 +28,11 @@ public sealed class QuestSpec
     // CivilWar|Vampire|Dragonborn. "Misc" shows as a one-line Miscellaneous entry (no quest page);
     // "SideQuest" gives it its own page under Side Quests with objectives.
     public string Type { get; set; } = "";
+    // Story Manager：宣告此 quest 可被某遊戲事件動態啟動（radiant 量產的底座）。有此塊時 build 會
+    // 自動產生 SMBN→SMQN 把它掛到原版事件根下，並強制清除 StartGameEnabled（SM 啟動，不開局自跑）。
+    public QuestStoryEventSpec? StoryEvent { get; set; }
+    // SM 啟動時要填的 alias。fill="fromEvent:<slot>" 拿事件 ref，"forced:<ref>" 填寫死 ref。
+    public List<QuestAliasSpec> Aliases { get; set; } = new();
 }
 // One quest stage (QSDT). `index` is the stage number (set with SetStage). `logEntry` (optional) is
 // the journal text shown when the quest reaches this stage (a QuestLogEntry / QLOG). `completeQuest`
