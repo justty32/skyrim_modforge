@@ -38,7 +38,17 @@ public static partial class Generator
         ctx.BuildClasses();                        // Class (CLAS)
         ctx.BuildMessages();                       // Message (MESG)
         ctx.BuildPerks();                          // Perk (PERK) trunk scalar fields
-        ctx.BuildLongTailItems();                  // Ingredient..Activator (scalar fields)
+        ctx.BuildIngredients();                    // Ingredient (IGRE)
+        ctx.BuildAmmunition();                     // Ammunition (AMMO)
+        ctx.BuildScrolls();                        // Scroll (SCRL)
+        ctx.BuildSoulGems();                       // SoulGem (SLGM)
+        ctx.BuildKeys();                           // Key (KEYM)
+        ctx.BuildKeywords();                       // Keyword (KYWD)
+        ctx.BuildOutfits();                        // Outfit (OTFT) — contents wired in pass 2
+        ctx.BuildStatics();                        // Static (STAT)
+        ctx.BuildActivators();                     // Activator (ACTI)
+        ctx.BuildFurniture();                      // Furniture (FURN)
+        ctx.BuildSounds();                         // Sound Descriptor (SNDR)
         ctx.BuildTextureSets();                    // TextureSet (TXST) retexture map paths
         ctx.BuildListsContainersStylesPackages();  // LeveledItem/Npc, Container, Recipe, CombatStyle, Package
         ctx.BuildCells();                          // interior cells (block/sub GRUP by FormID)
