@@ -28,6 +28,8 @@ public class StoryManagerEventsTests
     [InlineData("forced:SomeEd", true, "forced", "SomeEd")]
     [InlineData("forced:Skyrim.esm:0x013010", true, "forced", "Skyrim.esm:0x013010")]
     [InlineData("garbage", false, "", "")]
+    [InlineData("forced:", false, "", "")]
+    [InlineData(":victim", false, "", "")]
     [InlineData("", false, "", "")]
     public void TryParseFill_splits_kind_and_arg(string fill, bool ok, string kind, string arg)
     {
