@@ -4,8 +4,9 @@ public static partial class Generator
 {
     private sealed partial class BuildContext
     {
-        // --- pass 1: MagicEffect (MGEF) + Spell (SPEL) scalar/archetype fields ---
-        public void BuildMagicAndSpells()
+        // --- pass 1: MagicEffect (MGEF) scalar/archetype fields. Association/projectile/art/sound
+        // refs are wired in pass 2 (WireMagicEffectRefs). Built before Spells (orchestrator order). ---
+        public void BuildMagicEffects()
         {
             foreach (var me in spec.MagicEffects)
             {
@@ -27,6 +28,11 @@ public static partial class Generator
                 foreach (var f in me.Flags)
                     if (Enum.TryParse<MagicEffect.Flag>(f, ignoreCase: true, out var fl)) r.Flags |= fl;
             }
+        }
+
+        // --- pass 1: Spell (SPEL) scalar fields. Effects + EquipType are wired in pass 2 (WireEffects). ---
+        public void BuildSpells()
+        {
             foreach (var s in spec.Spells)
             {
                 var r = mod.Spells.AddNew();

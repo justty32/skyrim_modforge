@@ -5,7 +5,7 @@ public static partial class Generator
     private sealed partial class BuildContext
     {
         // --- pass 2: quest stage LOG-ENTRY conditions (CTDA on QLOG) + the stage→objective fragment ---
-        // script attach. Stage/objective record data is built in pass 1 (BuildNpcsAndQuests); the
+        // script attach. Stage/objective record data is built in pass 1 (BuildQuests); the
         // log-entry conditions need every record's editorId resolved, so they wire here via the SHARED
         // BuildCondition (e.g. GetStage with the quest as its param). A stage with one log entry attaches
         // all its conditions to that entry — they AND together to gate whether it applies.

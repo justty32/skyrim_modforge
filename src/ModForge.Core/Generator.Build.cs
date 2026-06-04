@@ -23,11 +23,14 @@ public static partial class Generator
 
         // --- pass 1: create every record (so all FormKeys exist before any ref is wired) ---
         ctx.BuildItems();                          // Misc / Book / Weapon
-        ctx.BuildNpcsAndQuests();                  // Npc, Quest (kept in editorId maps for dialogue)
+        ctx.BuildNpcs();                           // Npc (ACTOR) — kept in npcsByEd for dialogue/packages
+        ctx.BuildQuests();                         // Quest (QUST) — kept in questsByEd for dialogue
+        ctx.BuildWordWallQuests();                 // one start-enabled QUST per word wall (after spec quests)
         ctx.BuildDialogue();                        // Quest->Branch->Topic->INFO, DialogView, Hellos
         ctx.BuildBanter();                          // proactive Idle banter topics (unprompted NPC lines)
         ctx.BuildScenes();                          // SCEN multi-actor conversations (quest aliases + phases + Scene topics)
-        ctx.BuildMagicAndSpells();                 // MagicEffect, Spell
+        ctx.BuildMagicEffects();                   // MagicEffect (MGEF)
+        ctx.BuildSpells();                         // Spell (SPEL)
         ctx.BuildEnchantments();                   // ObjectEffect (ENCH) scalar records
         ctx.BuildShouts();                         // WordOfPower (WOOP) + Shout (SHOU) scalar records
         ctx.BuildPotions();                        // Potion (ALCH)
@@ -50,9 +53,15 @@ public static partial class Generator
         ctx.BuildFurniture();                      // Furniture (FURN)
         ctx.BuildSounds();                         // Sound Descriptor (SNDR)
         ctx.BuildTextureSets();                    // TextureSet (TXST) retexture map paths
-        ctx.BuildListsContainersStylesPackages();  // LeveledItem/Npc, Container, Recipe, CombatStyle, Package
+        ctx.BuildLeveledItems();                   // LeveledItem (LVLI)
+        ctx.BuildLeveledNpcs();                    // LeveledNpc (LVLN)
+        ctx.BuildContainers();                     // Container (CONT)
+        ctx.BuildRecipes();                        // ConstructibleObject (COBJ)
+        ctx.BuildCombatStyles();                   // CombatStyle (CSTY)
+        ctx.BuildPackages();                       // AI Package (PACK) scalar fields
         ctx.BuildCells();                          // interior cells (block/sub GRUP by FormID)
-        ctx.BuildWeathersAndClimates();            // WTHR + CLMT scalar fields (links wired in pass 2)
+        ctx.BuildWeatherRecords();                 // Weather (WTHR) scalar fields (links wired in pass 2)
+        ctx.BuildClimateRecords();                 // Climate (CLMT) scalar fields (weathers wired in pass 2)
 
         // --- index editorId -> FormKey, then pass 2: wire cross-record references ---
         ctx.BuildFormKeyTable();
@@ -82,7 +91,11 @@ public static partial class Generator
         ctx.WireDeferredTargets();                 // package SingleRef slot-0 targets (now placements exist)
         ctx.WireDeferredLocations();               // package Destination location slots
         ctx.WireDeferredMerchantContainers();      // FACT merchant chest + VendorLocation (now placements exist)
-        ctx.WireLeveledAndContainers();            // leveled-list entries + container contents
+        ctx.WireLeveledItems();                    // LVLI entries
+        ctx.WireLeveledNpcs();                     // LVLN entries
+        ctx.WireEncounterZones();                  // ECZN owner/location refs
+        ctx.WireCellZones();                       // cell XEZN (encounterZone) refs
+        ctx.WireContainers();                      // CONT contents
         ctx.WireRecipes();                         // COBJ createdObject/workbench/components
         ctx.AttachScripts();                       // VMAD Papyrus script attachment
         ctx.AttachWordWallScripts();               // word-wall teaching-quest fragment (Shout/Word props)

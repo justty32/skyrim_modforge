@@ -118,7 +118,7 @@ public static partial class Generator
         }
 
         // --- pass 2: bind each scene actor's QuestAlias to the NPC that fills it (UniqueActor link) ---
-        // Deferred from pass 1 because the in-spec NPC base record is created in BuildNpcsAndQuests but a
+        // Deferred from pass 1 because the in-spec NPC base record is created in BuildNpcs but a
         // forward-referenced one (or a vanilla <master>:0xFORMID) only resolves once the formKey table exists.
         public void WireScenes()
         {

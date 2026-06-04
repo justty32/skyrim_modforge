@@ -206,11 +206,12 @@ public static partial class Generator
     // Resolve as parameters (no BuildContext coupling); here we hand them the context's privates.
     private sealed partial class BuildContext
     {
-        public void BuildWeathersAndClimates()
-        {
-            BuildWeathers(spec, mod, Warn);
-            BuildClimates(spec, mod, Warn);
-        }
+        // WTHR + CLMT are independent record types; the orchestrator calls these two in order. The
+        // heavy lifting lives in the static BuildWeathers/BuildClimates above (param-based, no context
+        // coupling) — these instance steps just hand them the context's privates. Qualified with
+        // Generator. because the same-named instance step would otherwise hide the outer static.
+        public void BuildWeatherRecords() => Generator.BuildWeathers(spec, mod, Warn);
+        public void BuildClimateRecords() => Generator.BuildClimates(spec, mod, Warn);
 
         public void WireWeatherAndClimateLinks()
         {

@@ -4,8 +4,9 @@ public static partial class Generator
 {
     private sealed partial class BuildContext
     {
-        // --- pass 1: Npc (ACTOR) + Quest (QUST) — kept in editorId maps so dialogue can reference them ---
-        public void BuildNpcsAndQuests()
+        // --- pass 1: Npc (ACTOR) — kept in npcsByEd so dialogue/packages/wiring can reference them.
+        // Quests + word-wall quests follow in their own steps (orchestrator order: NPC then QUST). ---
+        public void BuildNpcs()
         {
             foreach (var n in spec.Npcs)
             {
@@ -32,7 +33,12 @@ public static partial class Generator
                 if (n.EnergyLevel > 0) r.AIData.EnergyLevel = (byte)Math.Clamp(n.EnergyLevel, 0, 100);
                 if (!string.IsNullOrEmpty(n.EditorId)) npcsByEd[n.EditorId] = r;
             }
+        }
 
+        // --- pass 1: Quest (QUST) — kept in questsByEd so dialogue/aliases can reference them.
+        // Stage/objective record data only; log-entry CTDA conditions are wired in pass 2. ---
+        public void BuildQuests()
+        {
             foreach (var q in spec.Quests)
             {
                 var r = mod.Quests.AddNew();
@@ -95,10 +101,14 @@ public static partial class Generator
                 }
                 if (!string.IsNullOrEmpty(q.EditorId)) questsByEd[q.EditorId] = r;
             }
+        }
 
-            // Word-wall teaching quests: one start-enabled QUEST per word wall, hosting the generated
-            // teaching fragment (the shout/word are bound on it in the script pass). StartGameEnabled
-            // so its OnInit-driven fragment is live the moment the trigger starts it.
+        // --- pass 1: Word-wall teaching quests: one start-enabled QUEST per word wall, hosting the
+        // generated teaching fragment (the shout/word are bound on it in the script pass). StartGameEnabled
+        // so its OnInit-driven fragment is live the moment the trigger starts it. Built after the spec
+        // quests so its FormIDs follow them (the orchestrator preserves this order). ---
+        public void BuildWordWallQuests()
+        {
             foreach (var ww in spec.WordWalls)
             {
                 if (string.IsNullOrWhiteSpace(ww.EditorId)) continue;
