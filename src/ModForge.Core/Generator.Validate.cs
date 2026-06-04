@@ -20,6 +20,7 @@ public static partial class Generator
         ctx.ValidateItems();
         ctx.ValidateQuestsAndDialogue();
         ctx.ValidateWorld();
+        ctx.ValidateStoryManager();
         ValidateWeather(spec, ctx.Problems, ctx.Ids, ctx.CheckRef);
         return ctx.Problems;
     }
