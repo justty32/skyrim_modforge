@@ -23,6 +23,16 @@ public static partial class Generator
                 foreach (var cs in se.Conditions)
                     CheckCondition(cs, $"{where} condition");
 
+                // ScriptEvent is the custom entry: it MUST name a keyword (declared in spec.keywords)
+                // so the branch can filter to it. Other events don't use a keyword.
+                if (se.Event.Equals("ScriptEvent", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (string.IsNullOrWhiteSpace(se.Keyword))
+                        Problems.Add($"{where} event 'ScriptEvent' requires a 'keyword' (a KYWD editorId declared in spec.keywords)");
+                    else if (!spec.Keywords.Any(k => string.Equals(k.EditorId, se.Keyword, StringComparison.OrdinalIgnoreCase)))
+                        Problems.Add($"{where} keyword '{se.Keyword}' is not declared in spec.keywords");
+                }
+
                 foreach (var a in q.Aliases)
                 {
                     if (!StoryManagerEvents.TryParseFill(a.Fill, out var kind, out var arg))

@@ -24,6 +24,57 @@ public class StoryManagerBuildTests
         Generator.Build(spec, ModKey.FromNameAndExtension("Test.esp")).Mod;
 
     [Fact]
+    public void ScriptEvent_branch_gets_a_keyword_filter_condition()
+    {
+        var spec = new ModSpec();
+        spec.Keywords.Add(new KeywordSpec { EditorId = "MFSE_KW" });
+        spec.Quests.Add(new QuestSpec
+        {
+            EditorId = "MFSE_Q", Name = "Q",
+            StoryEvent = new QuestStoryEventSpec { Event = "ScriptEvent", Keyword = "MFSE_KW" },
+            Aliases = { new QuestAliasSpec { Name = "Target", Fill = "fromEvent:ref1" } },
+        });
+        var mod = Build(spec);
+        var q = mod.Quests.Single(x => x.EditorID == "MFSE_Q");
+        Assert.Equal(new RecordType("SCPT"), q.Event);
+        var kw = mod.Keywords.Single(x => x.EditorID == "MFSE_KW");
+
+        var branch = mod.StoryManagerBranchNodes.Single();
+        Assert.Equal(0x01379Au, branch.Parent.FormKey.ID);                 // ScriptEvent root
+        var cond = (ConditionFloat)branch.Conditions.Single();
+        Assert.Equal(CompareOperator.EqualTo, cond.CompareOperator);
+        Assert.Equal(1, cond.ComparisonValue);
+        var data = Assert.IsType<GetEventDataConditionData>(cond.Data);
+        Assert.Equal(GetEventDataConditionData.EventFunction.GetIsID, data.Function);
+        Assert.Equal(GetEventDataConditionData.EventMember.Keyword, data.Member);
+        Assert.Equal(kw.FormKey, data.Record.FormKey);                     // filters on OUR keyword
+
+        // the ref1 alias is a Reference-type fromEvent fill with the R1 slot
+        var alias = q.Aliases.Single();
+        Assert.Equal(QuestAlias.TypeEnum.Reference, alias.Type);
+        Assert.Equal(new byte[] { 0x52, 0x31, 0x00, 0x00 }, alias.FindMatchingRefFromEvent!.EventData!.Value.ToArray());
+    }
+
+    [Fact]
+    public void ScriptEvent_distinct_keywords_get_distinct_branches_same_keyword_shares()
+    {
+        var spec = new ModSpec();
+        spec.Keywords.Add(new KeywordSpec { EditorId = "KW_A" });
+        spec.Keywords.Add(new KeywordSpec { EditorId = "KW_B" });
+        foreach (var (ed, kw) in new[] { ("Q1", "KW_A"), ("Q2", "KW_A"), ("Q3", "KW_B") })
+            spec.Quests.Add(new QuestSpec
+            {
+                EditorId = ed, Name = ed,
+                StoryEvent = new QuestStoryEventSpec { Event = "ScriptEvent", Keyword = kw },
+                Aliases = { new QuestAliasSpec { Name = "T", Fill = "fromEvent:ref1" } },
+            });
+        var mod = Build(spec);
+        // KW_A shared by Q1+Q2 → one branch; KW_B → a second branch
+        Assert.Equal(2, mod.StoryManagerBranchNodes.Count);
+        Assert.Equal(3, mod.StoryManagerQuestNodes.Count);
+    }
+
+    [Fact]
     public void StoryEvent_quest_gets_event_and_clears_startgame()
     {
         var mod = Build(SpecWithKillQuest());

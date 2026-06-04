@@ -17,7 +17,10 @@ public static partial class Generator
             // picks one), so N branches → only the head's quest fires; N quest nodes under ONE branch all
             // evaluate per event (vanilla runs 2 such kill quest nodes). Sibling nodes must be chained via
             // PreviousSibling (first = null head) or the engine's sibling walk misses all-but-one.
-            var branchByRoot = new Dictionary<FormKey, StoryManagerBranchNode>();
+            // Keyed by "root|keyword" — engine-native events have an empty keyword (one branch per
+            // root, as before); ScriptEvent quests sharing a keyword share one keyword-filtered branch,
+            // and different keywords get different (mutually-exclusive) branches like vanilla WE does.
+            var branchByKey = new Dictionary<string, StoryManagerBranchNode>();
             var lastQNodeByBranch = new Dictionary<FormKey, StoryManagerQuestNode>();
             foreach (var qs in spec.Quests)
             {
@@ -87,13 +90,36 @@ public static partial class Generator
                 }
                 quest.NextAliasID = nextId;
 
-                // One shared branch per event root (created on first use), hung under the vanilla root.
-                if (!branchByRoot.TryGetValue(def.Root, out var branch))
+                // ScriptEvent quests are gated by a keyword; that keyword keys (and filters) the branch.
+                bool isScriptEvent = se.Event.Equals("ScriptEvent", StringComparison.OrdinalIgnoreCase);
+                string kw = isScriptEvent ? se.Keyword : "";
+                string branchKey = $"{def.Root}|{kw}";
+
+                // One shared branch per (event root, keyword), created on first use, hung under the root.
+                if (!branchByKey.TryGetValue(branchKey, out var branch))
                 {
                     branch = mod.StoryManagerBranchNodes.AddNew();
-                    branch.EditorID = $"MFSM_{se.Event}_SMBranch";
+                    branch.EditorID = isScriptEvent ? $"MFSM_{se.Event}_{kw}_SMBranch" : $"MFSM_{se.Event}_SMBranch";
                     branch.Parent.SetTo(def.Root);
-                    branchByRoot[def.Root] = branch;
+                    // ScriptEvent: filter to our keyword so only content firing THIS keyword starts the
+                    // quest. CK: "GetEventData Keyword GetIsID <KYWD> == 1" (Mutagen native, no binary).
+                    if (isScriptEvent && formKeyByEd.TryGetValue(kw, out var kwFk))
+                    {
+                        var cond = new ConditionFloat
+                        {
+                            CompareOperator = CompareOperator.EqualTo,
+                            ComparisonValue = 1,
+                            Data = new GetEventDataConditionData
+                            {
+                                Function = GetEventDataConditionData.EventFunction.GetIsID,
+                                Member = GetEventDataConditionData.EventMember.Keyword,
+                                RunOnType = Condition.RunOnType.Subject,
+                            },
+                        };
+                        ((GetEventDataConditionData)cond.Data).Record.SetTo(kwFk);
+                        branch.Conditions.Add(cond);
+                    }
+                    branchByKey[branchKey] = branch;
                 }
 
                 // One quest node per quest, all chained as siblings under the shared branch.

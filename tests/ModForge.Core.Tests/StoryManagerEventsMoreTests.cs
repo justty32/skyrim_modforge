@@ -62,4 +62,15 @@ public class StoryManagerEventsMoreTests
         Assert.True(StoryManagerEvents.TryGet("additem", out _));
         Assert.True(StoryManagerEvents.TryGet("assault", out _));
     }
+
+    [Fact]
+    public void ScriptEvent_has_root_code_and_payload_slots()
+    {
+        Assert.True(StoryManagerEvents.TryGet("ScriptEvent", out var def));
+        Assert.Equal(0x01379Au, def.Root.ID);
+        Assert.Equal(new RecordType("SCPT"), def.Code);
+        Assert.Equal(R1, def.Slots["ref1"]);
+        Assert.Equal(R2, def.Slots["ref2"]);
+        Assert.Equal(L1, def.Slots["loc"]);
+    }
 }

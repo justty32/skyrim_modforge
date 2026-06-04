@@ -6,6 +6,10 @@ public sealed class QuestStoryEventSpec
 {
     public string Event { get; set; } = "";
     public List<ConditionSpec> Conditions { get; set; } = new();
+    // Only for event == "ScriptEvent": the editorId of a KYWD (declare it in spec.keywords) the
+    // dispatcher passes to SendStoryEvent. The SM branch gets a GetEventData/GetIsID Keyword filter,
+    // so this quest starts only when content fires THAT keyword. Ignored for engine-native events.
+    public string Keyword { get; set; } = "";
 }
 
 // 一條 quest alias。fill 語法："fromEvent:<slot>"（拿事件帶來的 ref）、"forced:<ref>"（寫死特定 ref）

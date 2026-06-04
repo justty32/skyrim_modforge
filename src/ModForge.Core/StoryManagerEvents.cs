@@ -72,6 +72,18 @@ public static class StoryManagerEvents
                     ("victim", R1),     // R1 = assaulted actor
                     ("attacker", R2),   // R2 = the attacker
                     ("location", L1))), // L1 = where it happened
+
+            // Script Event — the GENERIC custom entry. Root SMEN .Type = ScriptEvent (no conditions =
+            // listens to every Papyrus SendStoryEvent). A quest under it is gated by a keyword filter
+            // (see BuildStoryManager's ScriptEvent branch). Payload maps to Keyword.SendStoryEvent(
+            // akLoc=L1, akRef1=R1, akRef2=R2). This is the entry ModForge content fires itself.
+            ["ScriptEvent"] = new StoryEventDef(
+                Root(0x01379A),
+                new RecordType("SCPT"),
+                Slots(
+                    ("ref1", R1),       // R1 = akRef1
+                    ("ref2", R2),       // R2 = akRef2
+                    ("loc", L1))),      // L1 = akLoc
         };
 
     public static IEnumerable<string> Names => Defs.Keys;

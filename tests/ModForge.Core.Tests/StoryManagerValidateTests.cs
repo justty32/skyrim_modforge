@@ -73,4 +73,30 @@ public class StoryManagerValidateTests
             new QuestAliasSpec { Name = "X", Fill = "bogusKind:whatever" }));
         Assert.Contains(problems, p => p.Contains("bogusKind") && p.Contains("unsupported"));
     }
+
+    [Fact]
+    public void ScriptEvent_without_keyword_is_an_error()
+    {
+        var problems = Generator.Validate(QuestWith(new QuestStoryEventSpec { Event = "ScriptEvent" }));
+        Assert.Contains(problems, p => p.Contains("ScriptEvent") && p.Contains("keyword"));
+    }
+
+    [Fact]
+    public void ScriptEvent_keyword_must_be_declared_in_spec_keywords()
+    {
+        var problems = Generator.Validate(QuestWith(
+            new QuestStoryEventSpec { Event = "ScriptEvent", Keyword = "MFSE_Undeclared" }));
+        Assert.Contains(problems, p => p.Contains("MFSE_Undeclared") && p.Contains("not declared"));
+    }
+
+    [Fact]
+    public void ScriptEvent_with_declared_keyword_has_no_keyword_problem()
+    {
+        var spec = QuestWith(
+            new QuestStoryEventSpec { Event = "ScriptEvent", Keyword = "MFSE_KW" },
+            new QuestAliasSpec { Name = "T", Fill = "fromEvent:ref1" });
+        spec.Keywords.Add(new KeywordSpec { EditorId = "MFSE_KW" });
+        var problems = Generator.Validate(spec);
+        Assert.DoesNotContain(problems, p => p.Contains("keyword"));
+    }
 }
