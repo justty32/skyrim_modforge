@@ -106,6 +106,24 @@ internal static partial class Program
             else Console.WriteLine($"  (word-wall script {scriptName}.psc written to Scripts/Source — compile pending: {cr.Message.Split('\n')[0]})");
         }
 
+        // 5b) Ship the generic Script Event dispatcher .pex whenever a quest uses event "ScriptEvent".
+        //     It's the universal entry content calls (MFStoryEventDispatch.Fire(kw, ref…)) to fire a
+        //     story event; one prebuilt .pex (embedded in this CLI) serves every generated mod.
+        if (spec.Quests.Any(q => q.StoryEvent is { } se
+                && se.Event.Equals("ScriptEvent", StringComparison.OrdinalIgnoreCase)))
+        {
+            Directory.CreateDirectory(scriptsDir);
+            using var rs = typeof(Program).Assembly.GetManifestResourceStream("MFStoryEventDispatch.pex");
+            if (rs is null)
+                Console.Error.WriteLine("  ! Script Event dispatcher .pex missing from build — ScriptEvent quests won't fire");
+            else
+            {
+                using var fs = File.Create(Path.Combine(scriptsDir, "MFStoryEventDispatch.pex"));
+                rs.CopyTo(fs);
+                Console.WriteLine("  + bundled MFStoryEventDispatch.pex (Script Event dispatcher)");
+            }
+        }
+
         // 6) External-resource bundling — copy spec's (or --assets) Meshes/Textures/Sounds/….
         var assetsSrc = !string.IsNullOrWhiteSpace(assetsOverride) ? assetsOverride
                       : !string.IsNullOrWhiteSpace(spec.Assets)

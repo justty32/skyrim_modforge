@@ -16,4 +16,12 @@
     <ProjectReference Include="..\ModForge.Core\ModForge.Core.csproj" />
   </ItemGroup>
 
+  <!-- The generic Story-Event dispatcher .pex (compiled once from assets/papyrus/*.psc). Embedded so
+       `package` can drop it into Scripts/ for any mod using event "ScriptEvent", regardless of CWD. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\assets\papyrus\MFStoryEventDispatch.pex">
+      <LogicalName>MFStoryEventDispatch.pex</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

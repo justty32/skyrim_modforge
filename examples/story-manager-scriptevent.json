@@ -1,0 +1,26 @@
+{
+  "esl": false,
+  "keywords": [ { "editorId": "MFSE_TestKW" } ],
+  "quests": [
+    {
+      "editorId": "MFSE_Target",
+      "name": "Script Event Target",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "ScriptEvent", "keyword": "MFSE_TestKW" },
+      "aliases": [ { "name": "Target", "fill": "fromEvent:ref1" } ]
+    },
+    {
+      "editorId": "MFSE_Trigger",
+      "name": "Script Event Trigger",
+      "stages": [ { "index": 10 } ]
+    }
+  ],
+  "scripts": [
+    {
+      "targetEditorId": "MFSE_Trigger",
+      "scriptName": "MFSE_TestTrigger",
+      "source": "MFSE_TestTrigger.psc",
+      "properties": [ { "name": "TheKW", "type": "object", "objectEditorId": "MFSE_TestKW" } ]
+    }
+  ]
+}
