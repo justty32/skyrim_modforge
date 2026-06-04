@@ -20,9 +20,8 @@ public static partial class Generator
                     continue;
                 }
 
-                if (se.Conditions != null)
-                    foreach (var cs in se.Conditions)
-                        CheckCondition(cs, $"{where} condition");
+                foreach (var cs in se.Conditions)
+                    CheckCondition(cs, $"{where} condition");
 
                 foreach (var a in q.Aliases)
                 {
