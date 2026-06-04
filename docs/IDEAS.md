@@ -228,7 +228,7 @@ MyStoryKeyword.SendStoryEvent(akLoc, akRef1, akRef2, aiValue1, aiValue2)
 - **離線解出的真值**（記進 [[story-manager-kill-recipe]]）：`Quest.Event="KILL"`；alias `FindMatchingRefFromEvent{FromEvent="KILL", EventData="R1"=52 31 00 00}` = 事件被殺者槽；SMBN 零條件 = 每次擊殺都嘗試。
 - **暴露的引擎 quirk**：Kill Actor story event **不對 `SimpleActor` 旗標的環境 critter 發送**（雞、兔…）——殺雞無觸發，殺牛/盜賊才有。量產 radiant 擊殺內容時須以完整 actor 為對象。
 - **階段二 spec 管線：✅ 已實作（2026-06-04），待實機驗證**。意圖導向落地：`QuestSpec.storyEvent`(event+conditions) + `QuestSpec.aliases`(fill `fromEvent:<slot>`|`forced:<ref>`)；事件表 `StoryManagerEvents`（只 KillActor）；`Generator.Build.StoryManager.cs`（pass 2，自動生 SMBN→SMQN + 清 StartGameEnabled）；`Generator.Validate.StoryManager.cs`。探針 builder/smprobe 退役、`smtree` 保留。樣本 `examples/story-manager-kill.json`。278 測試綠。設計/計畫見 `docs/superpowers/specs/2026-06-04-story-manager-spec-pipeline-design.md` + `docs/superpowers/plans/2026-06-04-story-manager-spec-pipeline.md`。
-  - 待實機（包在 `~/skyrim_mods/`）：`MFSM_Multi`（非 ESL，4 quest 測 basic / victim+killer 的 R2 是否=玩家 / forced / event condition 是否破壞觸發）、`MFSM_Esl`（測 **ESL 能否裝 SMEN/SMBN/SMQN**——IDEAS 未解問題；若失敗則 validator 改硬擋 ESL+storyEvent）。
+  - **實機發現（2026-06-04）**：(a) **ESL 插件能裝並啟動 SM 記錄**（`MFSM_Esl` 殺牛後 stopped→running）——解決 IDEAS 未解問題，不需 ESL 守衛。(b) **同父多 sibling 節點需 PreviousSibling 鏈**：初版 `MFSM_Multi`（4 個分支同掛 kill root、未串 sibling）四個全沒啟動；單分支的 ESL 卻正常。解碼 vanilla 確認 sibling 靠 PreviousSibling 串成 linked list → 已修（`Generator.Build.StoryManager.cs` 每個新分支 `PreviousSibling.SetTo(前一個)`，首個 null head）。修後 `MFSM_Multi` 待重測（basic / victim+killer 的 R2 是否=玩家 / forced / event condition 是否破壞觸發）。
   - 後續：更多事件（離線解碼 + 一行進表）、Script Event 入口（自訂 Keyword + `SendStoryEvent`，需 Papyrus）、findMatching/location 填充型別。
 
 ### ModForge 可以貢獻的：資源索引
