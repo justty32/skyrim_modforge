@@ -143,6 +143,9 @@ public class StoryManagerBuildTests
         var alias = Assert.Single(q.Aliases);
         Assert.Equal(0x01414Du, alias.UniqueActor.FormKey.ID);
         Assert.True(alias.ForcedReference.FormKey.IsNull);   // only UniqueActor set, not ForcedReference
+        // AllowReserved is mandatory on unique-actor aliases (vanilla sets it universally); without
+        // it a reserved unique NPC can't be grabbed and the required alias blocks quest start.
+        Assert.True(alias.Flags.GetValueOrDefault().HasFlag(QuestAlias.Flag.AllowReserved));
     }
 
     [Fact]

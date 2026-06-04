@@ -57,9 +57,18 @@ public static partial class Generator
                             // QuestAlias.UniqueActor (ALUA) = a unique NPC base record this alias
                             // resolves to. <ref> is an in-spec NPC editorId or Plugin.esm:0xID.
                             alias.UniqueActor.SetTo(uaFk);
+                            // AllowReserved is REQUIRED here (vanilla sets it on EVERY unique-actor
+                            // alias): a unique NPC's persistent ref is usually already reserved by
+                            // other quests, and without this flag the fill fails — which, for a
+                            // non-optional alias, blocks the whole quest from starting. (In-game:
+                            // Ulfric uniqueActor alias kept the quest stopped until this was set.)
+                            // NB: QuestAlias.Flags defaults to null, and `|=` on a null lifts to null
+                            // (no-op) — must seed from GetValueOrDefault() or the flag never sticks.
+                            alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.AllowReserved;
                         }
                     }
-                    if (aSpec.Optional) alias.Flags |= QuestAlias.Flag.Optional;
+                    if (aSpec.Optional)
+                        alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.Optional;
                     quest.Aliases.Add(alias);
                     nextId++;
                 }
