@@ -22,8 +22,9 @@ public static partial class Generator
         SkyrimMod mod, ModSpec spec, Dictionary<string, FormKey> formKeyByEd, Action<string> warn)
     {
         int worldspaces = 0, regions = 0, terrainCells = 0, navmeshCells = 0, links = 0, extLinks = 0;
-        // Collected (navm, center, worldspaceFormKey) tuples → NAVI record written after all worldspaces.
-        var navmInfos = new List<(NavigationMesh Navm, Noggog.P3Float Center, Noggog.P3Float Min, Noggog.P3Float Max, FormKey WorldspaceFk)>();
+        // Per-cell navmeshes collected here → single NAVI override written after all worldspaces
+        // (the flat-navmesh build + NAVI write live in Generator.Build.Navmesh.cs).
+        var navmInfos = new List<NavmCellInfo>();
 
         // Resolve a ref (in-spec editorId OR external <master>:0xFORMID) and run `set`; tally links.
         void Wire(string what, string refStr, Action<FormKey> set)
@@ -137,55 +138,11 @@ public static partial class Generator
                 land.VertexNormals = new Noggog.Array2d<Noggog.P3UInt8>(33, 33, new Noggog.P3UInt8(128, 128, 255));
                 cell.Landscape = land;
 
-                // Flat navmesh: a 4-vertex quad (2 triangles) covering the cell at terrain height.
-                // Vertices are world-space (not cell-local). GridDivisor=1 → trivial 1×1 grid.
+                // Flat navmesh: a 4-vertex quad covering the cell at terrain height so NPCs can path
+                // across it (built + the NAVI map written in Generator.Build.Navmesh.cs).
                 if (cs.Navmesh)
                 {
-                    float wx0 = cs.X * 4096f, wy0 = cs.Y * 4096f;
-                    float wx1 = wx0 + 4096f,  wy1 = wy0 + 4096f;
-                    float h = cs.Height;
-
-                    var navm = new NavigationMesh(mod);
-                    var data = new NavigationMeshData();
-                    data.NavmeshVersion = NavigationMeshData.NavmeshVersionDefault;
-                    // NVNM offset-4 "Magic" (Mutagen calls it CrcHash). xEdit defaults new
-                    // navmeshes to bytes 3C A0 E9 A5; little-endian that is 0xA5E9A03C.
-                    data.CrcHash = 0xA5E9A03C;
-
-                    // Exterior cells use WorldspaceNavmeshParent (not CellNavmeshParent — that is for interiors).
-                    var navParent = new WorldspaceNavmeshParent();
-                    navParent.Parent.SetTo(w.FormKey);
-                    data.Parent = navParent;
-
-                    // V0=SW, V1=SE, V2=NE, V3=NW (CCW winding from above)
-                    data.Vertices.Add(new Noggog.P3Float(wx0, wy0, h));
-                    data.Vertices.Add(new Noggog.P3Float(wx1, wy0, h));
-                    data.Vertices.Add(new Noggog.P3Float(wx1, wy1, h));
-                    data.Vertices.Add(new Noggog.P3Float(wx0, wy1, h));
-
-                    // T0: V0,V1,V2 | T1: V0,V2,V3. The two triangles share the V0–V2 diagonal,
-                    // so they must reference each other across that edge (a value of -1 means
-                    // "no neighbour" / a border edge). EdgeLink_n is the neighbouring triangle
-                    // index across the edge between local vertices n and n+1:
-                    //   T0 edge 2-0 (V2→V0) == diagonal → neighbour T1
-                    //   T1 edge 0-1 (V0→V2) == diagonal → neighbour T0
-                    data.Triangles.Add(new NavmeshTriangle
-                        { Vertices = new Noggog.P3Int16(0, 1, 2), EdgeLink_0_1 = -1, EdgeLink_1_2 = -1, EdgeLink_2_0 = 1 });
-                    data.Triangles.Add(new NavmeshTriangle
-                        { Vertices = new Noggog.P3Int16(0, 2, 3), EdgeLink_0_1 = 0, EdgeLink_1_2 = -1, EdgeLink_2_0 = -1 });
-
-                    // 1×1 NavmeshGrid: [count=2][idx=0][idx=1]
-                    data.NavmeshGrid = new byte[] { 2, 0, 0, 0,  0, 0,  1, 0 };
-                    data.NavmeshGridDivisor = 1;
-                    data.MaxDistanceX = 4096f;
-                    data.MaxDistanceY = 4096f;
-                    data.Min = new Noggog.P3Float(wx0, wy0, h);
-                    data.Max = new Noggog.P3Float(wx1, wy1, h);
-
-                    navm.Data = data;
-                    cell.NavigationMeshes.Add(navm);
-                    navmInfos.Add((navm, new Noggog.P3Float((wx0 + wx1) / 2f, (wy0 + wy1) / 2f, h),
-                        new Noggog.P3Float(wx0, wy0, h), new Noggog.P3Float(wx1, wy1, h), w.FormKey));
+                    AddFlatCellNavmesh(mod, cell, cs, w.FormKey, navmInfos);
                     navmeshCells++;
                 }
 
@@ -194,43 +151,8 @@ public static partial class Generator
             }
         }
 
-        // NAVI (NavigationMeshInfoMap): the engine keeps exactly ONE navmesh-info map for the whole
-        // game — Skyrim.esm:0x00012FB4 — and MERGES every plugin's NVMI entries into it additively
-        // (verified: Vigilant.esm's 0x12FB4 override lists only its own 897 navmeshes, not the
-        // 15,462 vanilla ones). Creating a *new* NAVI record in our plugin produces a second, rogue
-        // NavMeshInfoMap that the engine's runtime init dereferences into a null pathing cell →
-        // CTD in NavMeshInfoMap::InitItemImpl. So we must OVERRIDE 0x00012FB4 and append our entry,
-        // exactly as the CK does on "Finalize Navmesh".
-        if (navmInfos.Count > 0)
-        {
-            // Magic constant the CK stamps into both NVNM CrcHash and the NVMI trailing "Unknown"
-            // field (0xA5E9A03C — bytes 3C A0 E9 A5). Observed on every vanilla/Vigilant navmesh.
-            const int NavmeshMagic = unchecked((int)0xA5E9A03C);
-
-            var navi = new NavigationMeshInfoMap(
-                FormKey.Factory("012FB4:Skyrim.esm"), SkyrimRelease.SkyrimSE);
-            navi.NavMeshVersion = NavigationMeshData.NavmeshVersionDefault;
-            foreach (var (navm, center, min, max, worldspaceFk) in navmInfos)
-            {
-                var mi = new NavigationMapInfo();
-                mi.NavigationMesh.SetTo(navm.FormKey);
-                mi.Point = center;
-                mi.Unknown = 0;
-                mi.Unknown2 = NavmeshMagic;        // CK stamps the navmesh magic here, not 0
-                mi.PreferredMergesFlag = 0;
-                // Real navmeshes are NOT marked as islands (verified against Vigilant) — leave
-                // Island null (Is Island = 0). No merges/preferred-merges/doors for a standalone mesh.
-
-                // Exterior navmeshes use NavigationMapInfoWorldParent (Cell variant is for interiors).
-                var miParent = new NavigationMapInfoWorldParent();
-                miParent.ParentWorldspace.SetTo(worldspaceFk);
-                miParent.ParentWorldspaceCoord = new Noggog.P2Int16(
-                    (short)Math.Round(min.X / 4096f), (short)Math.Round(min.Y / 4096f));
-                mi.Parent = miParent;
-                navi.MapInfos.Add(mi);
-            }
-            mod.NavigationMeshInfoMaps.Add(navi);   // additive override of the master 0x12FB4
-        }
+        // One additive NAVI override (master 0x00012FB4) carrying every cell's navmesh info.
+        WriteNaviInfoMap(mod, navmInfos);
 
         // --- Regions (REGN) ---------------------------------------------------------------------
         foreach (var rg in spec.Regions)
