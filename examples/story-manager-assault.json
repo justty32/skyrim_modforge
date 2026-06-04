@@ -1,0 +1,15 @@
+{
+  "esl": false,
+  "quests": [
+    {
+      "editorId": "MFSM_OnAssault",
+      "name": "Witness the Assault",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "Assault" },
+      "aliases": [
+        { "name": "Victim", "fill": "fromEvent:victim" },
+        { "name": "Attacker", "fill": "fromEvent:attacker" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "esl": false,
+  "quests": [
+    {
+      "editorId": "MFSM_OnEnterLocation",
+      "name": "Explorer's Log",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "ChangeLocation" },
+      "aliases": [
+        { "name": "NewLocation", "fill": "fromEvent:newLocation" }
+      ]
+    }
+  ]
+}

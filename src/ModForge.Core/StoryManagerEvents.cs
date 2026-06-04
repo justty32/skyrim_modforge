@@ -8,19 +8,70 @@ public readonly record struct StoryEventDef(FormKey Root, RecordType Code, IRead
 // 內建「事件名 → 定義」表。一個事件一筆；之後加事件 = 加一筆（值離線從 Skyrim.esm vanilla 解出）。
 public static class StoryManagerEvents
 {
-    private static readonly FormKey KillRoot = new(ModKey.FromNameAndExtension("Skyrim.esm"), 0x013010);
+    private static readonly ModKey Skyrim = ModKey.FromNameAndExtension("Skyrim.esm");
+    private static FormKey Root(uint id) => new(Skyrim, id);
+
+    // Vanilla event-data slot indices (decoded from Skyrim.esm). "R1"/"R2" = ref slots,
+    // "L1"/"L2" = location slots. Engine fills the matching ref on the alias at runtime.
+    private static readonly byte[] R1 = { 0x52, 0x31, 0x00, 0x00 }; // "R1"
+    private static readonly byte[] R2 = { 0x52, 0x32, 0x00, 0x00 }; // "R2"
+    private static readonly byte[] L1 = { 0x4C, 0x31, 0x00, 0x00 }; // "L1"
+    private static readonly byte[] L2 = { 0x4C, 0x32, 0x00, 0x00 }; // "L2"
+
+    private static Dictionary<string, byte[]> Slots(params (string, byte[])[] pairs)
+    {
+        var d = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (k, v) in pairs) d[k] = v;
+        return d;
+    }
 
     private static readonly Dictionary<string, StoryEventDef> Defs =
         new(StringComparer.OrdinalIgnoreCase)
         {
+            // Kill Actor — fires when an actor dies. Root SMEN .Type = KillActorEvent.
             ["KillActor"] = new StoryEventDef(
-                KillRoot,
+                Root(0x013010),
                 new RecordType("KILL"),
-                new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["victim"] = new byte[] { 0x52, 0x31, 0x00, 0x00 }, // "R1" = killed actor
-                    ["killer"] = new byte[] { 0x52, 0x32, 0x00, 0x00 }, // "R2" = the killer
-                }),
+                Slots(
+                    ("victim", R1),   // R1 = killed actor
+                    ("killer", R2))), // R2 = the killer
+
+            // Change Location — fires when an actor (the player) enters a new location.
+            // Root SMEN .Type = ChangeLocationEvent. Slots are LOCATION refs, not actors.
+            ["ChangeLocation"] = new StoryEventDef(
+                Root(0x01320E),
+                new RecordType("CLOC"),
+                Slots(
+                    ("oldLocation", L1),   // L1 = location departed
+                    ("newLocation", L2))), // L2 = location entered
+
+            // Cast Magic — fires when an actor casts a spell. Root SMEN .Type = CastMagicEvent.
+            ["CastMagic"] = new StoryEventDef(
+                Root(0x046829),
+                new RecordType("CAST"),
+                Slots(
+                    ("caster", R1),     // R1 = casting actor
+                    ("target", R2),     // R2 = spell target
+                    ("location", L1))), // L1 = where it was cast
+
+            // Player Add Item — fires when the player acquires an item.
+            // Root SMEN .Type = PlayerAddItem.
+            ["AddItem"] = new StoryEventDef(
+                Root(0x02C439),
+                new RecordType("AIPL"),
+                Slots(
+                    ("owner", R1),      // R1 = prior owner of the item
+                    ("location", L1))), // L1 = where the item was
+
+            // Assault Actor — fires when an actor assaults (attacks) another.
+            // Root SMEN .Type = AssaultActorEvent.
+            ["Assault"] = new StoryEventDef(
+                Root(0x02C494),
+                new RecordType("ASSU"),
+                Slots(
+                    ("victim", R1),     // R1 = assaulted actor
+                    ("attacker", R2),   // R2 = the attacker
+                    ("location", L1))), // L1 = where it happened
         };
 
     public static IEnumerable<string> Names => Defs.Keys;
