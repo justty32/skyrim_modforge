@@ -16,5 +16,7 @@
 
 想法備忘錄在 `docs/IDEAS.md`（隨從擴充、劇情演出、大量劇情生成等）。
 
-**下一步（2026-06-04 決定）**：Story Manager 最小驗證實驗——
-手寫 spec → Script Event Keyword + 帶 Find Matching Reference Alias 的模板任務 → 遊戲內 `SendStoryEvent` → 驗證 SM 選角。目的是暴露 ModForge 缺的欄位（SMEN/SMBN/SMQN、Quest Event 欄位、條件式 Alias 填充）。完整背景見 `docs/IDEAS.md` 第 9 節的 Story Manager 段落。
+**Story Manager 階段一探針：✅ 實機 PASS（2026-06-04）**——
+用原版 Kill Actor 事件節點（零 Papyrus）+ From Event Data 填充驗證成功。`StoryManagerProbe.BuildProbe`（Core）+ CLI `smtree`/`smprobe`。殺完整 actor → SM 啟動模板任務 + Victim alias 填上被殺者。引擎 quirk：`SimpleActor`（雞/兔）不發 Kill 事件。真值與背景見 `docs/IDEAS.md` 第 9 節 + `docs/superpowers/plans/2026-06-04-story-manager-probe.md`。
+
+**下一步＝階段二**：把 SMEN/SMBN/SMQN + Quest Event 欄位 + FromEvent/條件式 Alias 填充正式落進 spec schema + `Generator.Build.StoryManager.cs` + validator（探針目前繞過 spec 管線）。另起 brainstorm。

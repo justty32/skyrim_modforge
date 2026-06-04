@@ -222,6 +222,13 @@ MyStoryKeyword.SendStoryEvent(akLoc, akRef1, akRef2, aiValue1, aiValue2)
 **最小驗證實驗（第一步就做這個）**：
 手寫一個 spec → 一個 Script Event Keyword + 一個帶 Find Matching Reference Alias 的模板任務 → 遊戲內 `SendStoryEvent` → 看 SM 能否正確選角。這個實驗會把 ModForge 缺的欄位全部暴露出來。
 
+**✅ 階段一探針結果（2026-06-04，實機 PASS）**：
+改用更精簡的路徑驗證——原版 **Kill Actor** 事件節點（零 Papyrus）+ **From Event Data** 填充，而非自訂 Keyword + `SendStoryEvent`。`StoryManagerProbe.BuildProbe`（`src/ModForge.Core/StoryManagerProbe.cs`）直接用 Mutagen 拼 SMBN→SMQN（additive 掛在原版 Kill Actor SMEN `Skyrim.esm:0x013010` 下）+ 帶 `FindMatchingRefFromEvent` 的模板 Quest。CLI：`smtree`（解事件根）、`smprobe`（寫 esp）。
+- **結果**：殺一個完整 actor 後 `sqv MFSM_AvengeQuest` → 任務啟動、Victim alias 填上被殺者 FormID。**SM 動態選角在 ModForge 產出的記錄上跑通了。**
+- **離線解出的真值**（記進 [[story-manager-kill-recipe]]）：`Quest.Event="KILL"`；alias `FindMatchingRefFromEvent{FromEvent="KILL", EventData="R1"=52 31 00 00}` = 事件被殺者槽；SMBN 零條件 = 每次擊殺都嘗試。
+- **暴露的引擎 quirk**：Kill Actor story event **不對 `SimpleActor` 旗標的環境 critter 發送**（雞、兔…）——殺雞無觸發，殺牛/盜賊才有。量產 radiant 擊殺內容時須以完整 actor 為對象。
+- **下一步＝階段二**：把 SMEN/SMBN/SMQN + Quest Event 欄位 + FromEvent/條件式 alias 填充正式落進 spec schema + `Generator.Build.StoryManager.cs` + validator。另起 brainstorm。完整計畫見 `docs/superpowers/plans/2026-06-04-story-manager-probe.md`。
+
 ### ModForge 可以貢獻的：資源索引
 
 故事生成系統需要知道「我要一隻狼 / 一條麵包用哪個 FormKey」，ModForge 可以擴充一個 `catalog` 指令，把 Skyrim.esm（或任意 ESP）的資源批次匯出成索引供查詢：
