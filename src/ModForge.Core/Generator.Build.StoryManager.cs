@@ -29,7 +29,7 @@ public static partial class Generator
                     var alias = new QuestAlias { ID = nextId, Name = aSpec.Name };
                     if (StoryManagerEvents.TryParseFill(aSpec.Fill, out var kind, out var arg))
                     {
-                        if (kind.Equals("fromEvent", System.StringComparison.OrdinalIgnoreCase)
+                        if (kind.Equals("fromEvent", StringComparison.OrdinalIgnoreCase)
                             && def.Slots.TryGetValue(arg, out var slot))
                         {
                             alias.FindMatchingRefFromEvent = new FindMatchingRefFromEvent
@@ -38,7 +38,7 @@ public static partial class Generator
                                 EventData = (byte[])slot.Clone(),
                             };
                         }
-                        else if (kind.Equals("forced", System.StringComparison.OrdinalIgnoreCase)
+                        else if (kind.Equals("forced", StringComparison.OrdinalIgnoreCase)
                             && TryResolveRef(arg, formKeyByEd, out var fk))
                         {
                             alias.ForcedReference.SetTo(fk);
