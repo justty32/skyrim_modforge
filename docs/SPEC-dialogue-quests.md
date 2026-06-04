@@ -103,7 +103,7 @@ From this one entry the build emits the **whole vanilla chain** (mirrors `scened
 > after the host quest starts (the build auto-writes the `.seq` entry). (3) Unvoiced lines flash past;
 > install **Fuz Ro D-oh** and enable subtitles. **Status: structural only** — `build`/`validate`/`dump`
 > verified against the vanilla scene shape; **not yet in-game confirmed.** See `examples/scene_spec.json`
-> and `lifelike/cookbook.md`.
+> and `lifelike/cookbook-advanced.md`.
 
 ### conditions — CTDA gates (on a `dialogue` INFO, a `banter` INFO, or a `package`)
 A condition is **static gate data**, so it lives in the spec (logic still belongs in Papyrus). Both

@@ -6,7 +6,7 @@
 - **[gotchas.md](gotchas.md)** — 我們踩過的陷阱，以及修復方法（依領域分組）
 - **[formid-reference.md](formid-reference.md)** — 我們使用的每個原版 FormID（模板、語音、派系、CombatStyles、標記物、法術、光源…）
 - **[cheatsheets.md](cheatsheets.md)** — 診斷指令、遊戲內控制台、Papyrus + CJK 設定
-- **[cookbook.md](cookbook.md)** — 複製貼上食譜（旅館常客、通勤者、法師、儀式施法者、跟隨者、可合成物品…）
+- **[cookbook-index.md](cookbook-index.md)** — 複製貼上食譜，依主題拆分（旅館常客、通勤者、法師、儀式施法者、跟隨者、可合成物品…）
 - **[../engine-internals.md](../engine-internals.md)** — *為什麼*：覆寫語意、GRUP 公式、PACK 模板、本地化字串地雷
 - **[../SPEC.md](../SPEC.md)** — 完整欄位規格參考 · **[../for_agent.md](../for_agent.md)** — 代理工作流程（CLI + 函式庫）
 

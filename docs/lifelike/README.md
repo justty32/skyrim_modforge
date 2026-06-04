@@ -6,7 +6,7 @@ This page is the hub: the complete recipe + the one key insight. Everything else
 - **[gotchas.md](gotchas.md)** — the traps that bit us, with the fix (grouped by area)
 - **[formid-reference.md](formid-reference.md)** — every vanilla FormID we use (templates, voices, factions, CombatStyles, markers, spells, lights, …)
 - **[cheatsheets.md](cheatsheets.md)** — diagnostic commands, in-game console, Papyrus + CJK setup
-- **[cookbook.md](cookbook.md)** — copy-paste recipes (inn patron, commuter, mage, ritual caster, follower, craftable item, …)
+- **[cookbook-index.md](cookbook-index.md)** — copy-paste recipes, split by theme (inn patron, commuter, mage, ritual caster, follower, craftable item, …)
 - **[../engine-internals.md](../engine-internals.md)** — the *why*: override semantics, GRUP formulas, PACK templates, the localized-string landmine
 - **[../SPEC.md](../SPEC.md)** — full per-field spec reference · **[../for_agent.md](../for_agent.md)** — the agent workflow (CLI + library)
 
