@@ -15,4 +15,7 @@ public sealed class QuestAliasSpec
     public string Name { get; set; } = "";
     public string Fill { get; set; } = "";
     public bool Optional { get; set; }
+    // Set true to let this alias fill with a ref another running quest has reserved (e.g. a town NPC
+    // held by a Freeform quest). Off by default (vanilla-faithful). uniqueActor forces it on anyway.
+    public bool AllowReserved { get; set; }
 }

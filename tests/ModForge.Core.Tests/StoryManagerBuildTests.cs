@@ -149,6 +149,53 @@ public class StoryManagerBuildTests
     }
 
     [Fact]
+    public void Location_slot_makes_a_location_type_alias_ref_slot_a_reference_alias()
+    {
+        // The alias Type must match the event slot's payload kind, or the engine fills null.
+        var spec = new ModSpec();
+        spec.Quests.Add(new QuestSpec
+        {
+            EditorId = "MFSM_Loc", Name = "L",
+            StoryEvent = new QuestStoryEventSpec { Event = "ChangeLocation" },
+            Aliases =
+            {
+                new QuestAliasSpec { Name = "NewLoc", Fill = "fromEvent:newLocation" }, // L2 slot
+                new QuestAliasSpec { Name = "Caster", Fill = "fromEvent:newLocation" }, // still a loc slot
+            },
+        });
+        var mod = Build(spec);
+        var q = mod.Quests.Single(x => x.EditorID == "MFSM_Loc");
+        Assert.Equal(QuestAlias.TypeEnum.Location, q.Aliases.First(a => a.Name == "NewLoc").Type);
+
+        // a KillActor victim (R1) must stay a Reference-type alias
+        var spec2 = new ModSpec();
+        spec2.Quests.Add(new QuestSpec
+        {
+            EditorId = "MFSM_Ref", Name = "R",
+            StoryEvent = new QuestStoryEventSpec { Event = "KillActor" },
+            Aliases = { new QuestAliasSpec { Name = "Victim", Fill = "fromEvent:victim" } },
+        });
+        var mod2 = Build(spec2);
+        var v = mod2.Quests.Single(x => x.EditorID == "MFSM_Ref").Aliases.Single();
+        Assert.Equal(QuestAlias.TypeEnum.Reference, v.Type);
+    }
+
+    [Fact]
+    public void AllowReserved_spec_flag_sets_the_alias_flag()
+    {
+        var spec = new ModSpec();
+        spec.Quests.Add(new QuestSpec
+        {
+            EditorId = "MFSM_Res", Name = "R",
+            StoryEvent = new QuestStoryEventSpec { Event = "KillActor" },
+            Aliases = { new QuestAliasSpec { Name = "Victim", Fill = "fromEvent:victim", AllowReserved = true } },
+        });
+        var mod = Build(spec);
+        var alias = mod.Quests.Single(x => x.EditorID == "MFSM_Res").Aliases.Single();
+        Assert.True(alias.Flags.GetValueOrDefault().HasFlag(QuestAlias.Flag.AllowReserved));
+    }
+
+    [Fact]
     public void UniqueActor_alias_resolves_in_spec_editorid()
     {
         var spec = new ModSpec();

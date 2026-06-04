@@ -7,7 +7,7 @@
       "stages": [ { "index": 10 } ],
       "storyEvent": { "event": "KillActor" },
       "aliases": [
-        { "name": "Victim", "fill": "fromEvent:victim" },
+        { "name": "Victim", "fill": "fromEvent:victim", "allowReserved": true },
         { "name": "TheJarl", "fill": "uniqueActor:Skyrim.esm:0x01414D" }
       ]
     }

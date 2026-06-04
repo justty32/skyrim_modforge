@@ -45,6 +45,13 @@ public static partial class Generator
                                 FromEvent = def.Code,
                                 EventData = (byte[])slot.Clone(),
                             };
+                            // The alias TYPE must match the slot's payload kind or the engine fills
+                            // null: a Location slot ("L1"/"L2", first byte 'L'=0x4C) needs a LOCATION
+                            // alias; a ref slot ("R1"/"R2") a REFERENCE alias. (In-game: a ChangeLocation
+                            // L2 fill returned null because the alias defaulted to Reference type.)
+                            alias.Type = slot.Length > 0 && slot[0] == (byte)'L'
+                                ? QuestAlias.TypeEnum.Location
+                                : QuestAlias.TypeEnum.Reference;
                         }
                         else if (kind.Equals("forced", StringComparison.OrdinalIgnoreCase)
                             && TryResolveRef(arg, formKeyByEd, out var fk))
@@ -69,6 +76,12 @@ public static partial class Generator
                     }
                     if (aSpec.Optional)
                         alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.Optional;
+                    // AllowReserved lets the fill grab a ref another quest has reserved (via
+                    // ReservesLocationOrReference). Without it, killing/targeting an actor a running
+                    // quest holds (e.g. a Riverwood NPC reserved by a Freeform quest) fails to fill —
+                    // and a required alias that can't fill blocks the whole quest from starting.
+                    if (aSpec.AllowReserved)
+                        alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.AllowReserved;
                     quest.Aliases.Add(alias);
                     nextId++;
                 }
