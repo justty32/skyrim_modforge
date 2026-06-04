@@ -54,16 +54,20 @@ public sealed class EncounterTests
         };
     }
 
+    // An in-spec LeveledNpc (LVLN) base must NOT auto-detect as an ACHR: Skyrim CTDs at load with an
+    // LVLN as an ACHR base (the engine calls NPC_-only vtable methods on the LVLN). Without an explicit
+    // kind:npc the spawn stays a plain PlacedObject (REFR). The correct actor idiom is an NPC_ whose
+    // template chain references the list (LvlBandit*, not the raw list). See ca379dc + the SPEC-world
+    // LVLN-CTD gotcha.
     [Fact]
-    public void LeveledNpcBase_BecomesAchr_WithLeveledList()
+    public void LeveledNpcBase_DoesNotAutoBecomeAchr()
     {
         var mod = Roundtrip(DenSpec(), out _);
         var lvln = mod.EnumerateMajorRecords<ILeveledNpcGetter>().Single(l => l.EditorID == "MF_BanditList");
-        var achr = mod.EnumerateMajorRecords<IPlacedNpcGetter>().Single();
 
-        // The spawn is a PlacedNpc (ACHR), not a PlacedObject, and its base is the leveled list.
-        Assert.Equal(lvln.FormKey, achr.Base.FormKey);
-        Assert.Empty(mod.EnumerateMajorRecords<IPlacedObjectGetter>());
+        Assert.Empty(mod.EnumerateMajorRecords<IPlacedNpcGetter>());            // NOT an ACHR
+        var refr = mod.EnumerateMajorRecords<IPlacedObjectGetter>().Single();   // a plain REFR instead
+        Assert.Equal(lvln.FormKey, refr.Base.FormKey);
     }
 
     [Fact]
@@ -87,10 +91,10 @@ public sealed class EncounterTests
         var mod = Roundtrip(DenSpec(), out _);
         var ecz = mod.EnumerateMajorRecords<IEncounterZoneGetter>().Single();
         var cell = mod.EnumerateMajorRecords<ICellGetter>().Single();
-        var achr = mod.EnumerateMajorRecords<IPlacedNpcGetter>().Single();
+        var spawn = mod.EnumerateMajorRecords<IPlacedObjectGetter>().Single();   // REFR — LVLN base doesn't auto-ACHR
 
-        Assert.Equal(ecz.FormKey, cell.EncounterZone.FormKey);   // XEZN on the cell
-        Assert.Equal(ecz.FormKey, achr.EncounterZone.FormKey);   // XEZN on the spawn
+        Assert.Equal(ecz.FormKey, cell.EncounterZone.FormKey);    // XEZN on the cell
+        Assert.Equal(ecz.FormKey, spawn.EncounterZone.FormKey);   // XEZN on the spawn
     }
 
     [Fact]
