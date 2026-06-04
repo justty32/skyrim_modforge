@@ -25,6 +25,7 @@ public static partial class Generator
         ctx.BuildItems();                          // Misc / Book / Weapon
         ctx.BuildNpcs();                           // Npc (ACTOR) — kept in npcsByEd for dialogue/packages
         ctx.BuildQuests();                         // Quest (QUST) — kept in questsByEd for dialogue
+        ctx.BuildStoryManager();                   // Story Manager: storyEvent quests → Event/aliases + SMBN/SMQN
         ctx.BuildWordWallQuests();                 // one start-enabled QUST per word wall (after spec quests)
         ctx.BuildDialogue();                        // Quest->Branch->Topic->INFO, DialogView, Hellos
         ctx.BuildBanter();                          // proactive Idle banter topics (unprompted NPC lines)
