@@ -4,6 +4,25 @@
 
 涵蓋：quest + stages + objectives、dialogue topics + INFO、banter、multi-actor scenes、CTDA conditions、Story Manager event quests、ScriptEvent、word walls、Papyrus 附加。
 
+## Examples
+
+| 檔案 | 對應功能 |
+|-----|---------|
+| `examples/dialogue_spec.json` | 單一 NPC 對話樹 |
+| `examples/dialogue_conversation_spec.json` | 多輪對話（conversation 模式）|
+| `examples/scene_spec.json` | 雙 NPC 場景（SCEN）|
+| `examples/quest_stages_spec.json` | quest stages + objectives + log entries |
+| `examples/word_wall_spec.json` | word wall 觸發教字 |
+| `examples/story-manager-kill.json` | KillActor SM 事件 |
+| `examples/story-manager-assault.json` | Assault SM 事件 |
+| `examples/story-manager-changelocation.json` | ChangeLocation SM 事件 |
+| `examples/story-manager-uniqueactor.json` | uniqueActor alias fill |
+| `examples/story-manager-scriptevent.json` | ScriptEvent 自訂觸發 |
+| `examples/MFSE_TestTrigger.psc` | ScriptEvent OnInit 觸發腳本 |
+| `examples/scripts/MFDemoQuestScript.psc` | quest fragment Papyrus 示範 |
+
+---
+
 ## Tests
 
 | 測試檔案 | 涵蓋 |
@@ -131,7 +150,13 @@
 
 同上 Story Manager 的源碼層（共用 `StoryManagerEvents.cs` / `Generator.Build.StoryManager.cs` / `Generator.Validate.StoryManager.cs`）。
 
-Papyrus dispatcher：`MFStoryEventDispatch.Fire(kw, ref1, ref2, loc)` — `.pex` 嵌入 CLI，`package` 時自動複製到 `Scripts/`。
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| **源碼** | `assets/papyrus/MFStoryEventDispatch.psc` | 通用派發器源碼（`Fire(kw,ref1,ref2,loc)→kw.SendStoryEvent`）；Package.cs 讀取此檔、embed .pex 進 CLI |
+| Example | `examples/story-manager-scriptevent.json` | ScriptEvent quest 完整範例 |
+| Example | `examples/MFSE_TestTrigger.psc` | OnInit 觸發 ScriptEvent 的測試腳本 |
+
+⚠️ ScriptEvent 介面或槽位有任何改動，`MFStoryEventDispatch.psc` 必須同步重編。
 
 ---
 

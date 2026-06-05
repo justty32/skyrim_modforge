@@ -4,6 +4,23 @@
 
 涵蓋：weapons、armor、books/misc、magic effects、spells、potions、enchantments、perks、shouts、ingredients、ammunition、scrolls、soul gems、keys、texture sets、long-tail records。
 
+## Examples
+
+| 檔案 | 對應功能 |
+|-----|---------|
+| `examples/customspell_spec.json` | 自訂法術 + magic effect |
+| `examples/mgef_spec.json` | 自訂 MGEF（archetype / actorValue）|
+| `examples/spell_tome_spec.json` | spell tome 教學 |
+| `examples/enchantment_spec.json` | weapon / apparel enchantment |
+| `examples/perk_spec.json` | perk entry-point + ability spell |
+| `examples/shout_spec.json` | 三段 shout + word of power |
+| `examples/texture_set_spec.json` | TXST 8 槽路徑 |
+| `examples/custom_asset_spec.json` | 外部網格 / 貼圖 / 音效打包 |
+| `examples/assets/customasset/` | 配套示範資產（.nif / .dds / .wav）|
+| `examples/textures/` | 貼圖集示範資產（.dds）|
+
+---
+
 ## Tests
 
 | 測試檔案 | 涵蓋 |

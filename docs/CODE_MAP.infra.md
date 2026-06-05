@@ -4,6 +4,17 @@
 
 涵蓋：CLI 命令進入點、build orchestrator、BuildContext 狀態機、spec 驗證 pipeline、Papyrus 編譯、asset 打包、翻譯 extract/apply、plugin I/O。
 
+## Examples & Schema
+
+| 檔案 | 性質 | 職責 |
+|-----|-----|-----|
+| `examples/spec.schema.json` | **源碼** | JSON Schema for spec；IDE IntelliSense 用；`Spec.*.cs` 欄位有增減時必須同步 |
+| `examples/sample_spec.json` | **源碼** | 完整示範 spec；`for_agent_cli.md` 直接引用，是 agent 最先參考的範例 |
+| `examples/proof_spec.json` | 煙霧測試 | 基礎功能 e2e 驗證用 spec |
+| `examples/showcase_spec.json` | 煙霧測試 | 完整功能展示 spec |
+
+---
+
 ## Tests
 
 | 測試檔案 | 涵蓋 |

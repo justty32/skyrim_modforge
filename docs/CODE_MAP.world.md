@@ -4,6 +4,23 @@
 
 涵蓋：interior cells、exterior placements、worldspaces、regions、leveled lists、containers、recipes、encounter zones、vendors。
 
+## Examples
+
+| 檔案 | 對應功能 |
+|-----|---------|
+| `examples/place_spec.json` | NPC / object 放置（室內）|
+| `examples/interior_spec.json` | 新建 interior cell |
+| `examples/newcell_spec.json` | cell + placement 完整範例 |
+| `examples/teleport_doors_spec.json` | teleport door linked-ref pair |
+| `examples/encounter_spec.json` | encounter zone + leveled spawns |
+| `examples/recipe_spec.json` | COBJ crafting recipe |
+| `examples/smithing_spec.json` | 鍛造台 recipe |
+| `examples/vendor_spec.json` | 商人 faction + merchant chest |
+| `examples/worldspace_spec.json` | 自訂 worldspace |
+| `examples/worldspace_navmesh_test_spec.json` | worldspace + navmesh |
+
+---
+
 ## Tests
 
 | 測試檔案 | 涵蓋 |

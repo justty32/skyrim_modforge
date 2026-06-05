@@ -4,6 +4,35 @@
 
 涵蓋：NPCs、factions、relationships、classes、combat styles、AI packages（Sandbox/Travel/UseMagic/Follow/Sleep/Patrol/Escort）、outfits、weather/climate。
 
+## Examples
+
+| 檔案 | 對應功能 |
+|-----|---------|
+| `examples/lifelike_npc_spec.json` | 擬真 NPC（race + class + outfit + packages）|
+| `examples/follower_hireable_spec.json` | 可招募隨從（hireable 模式）|
+| `examples/follower_paid_spec.json` | 付費隨從 |
+| `examples/follower_vanilla_spec.json` | vanilla 風格隨從 |
+| `examples/class_spec.json` | 自訂職業（CLAS）|
+| `examples/combat_spec.json` | 戰鬥風格（CSTY）|
+| `examples/package_spec.json` | Sandbox AI package |
+| `examples/package2_spec.json` | Travel package |
+| `examples/package3_spec.json` | UseMagic package |
+| `examples/package4_spec.json` | 其他 package 變體 |
+| `examples/escort_spec.json` | Escort package |
+| `examples/follow_spec.json` | Follow package |
+| `examples/patrol_spec.json` | Patrol package |
+| `examples/usemagic_spec.json` | UseMagic package（施法 AI）|
+| `examples/weather_spec.json` | 自訂天氣 + 氣候 |
+| `examples/scripts/MFFollowerFollow.psc` | 隨從 Follow 行為腳本 |
+| `examples/scripts/MFFollowerTrade.psc` | 隨從交易腳本 |
+| `examples/scripts/MFFollowerWait.psc` | 隨從待命腳本 |
+| `examples/scripts/MFHireFollowerSetup.psc` | 招募設置腳本 |
+| `examples/scripts/MFHirePaidDismiss.psc` | 付費解散腳本 |
+| `examples/scripts/MFHirePaidRecruit.psc` | 付費招募腳本 |
+| `examples/scripts/MFHireVanillaRecruit.psc` | vanilla 招募腳本 |
+
+---
+
 ## Tests
 
 | 測試檔案 | 涵蓋 |

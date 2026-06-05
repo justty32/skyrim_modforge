@@ -24,10 +24,12 @@
 | `docs/CODE_MAP.npcs-packages.md` | NPC / faction / class / AI package / combat style / weather / climate |
 | `docs/CODE_MAP.infra.md` | CLI / build orchestrator / validate / package / Papyrus / translate / plugin I/O |
 
-四個面向構成維護鏈：**程式碼 → CODE_MAP → 文檔 → examples/assets**（HTML bundle 最低，只在明確要求時更新）。
+三個面向構成維護鏈：**程式碼（含 examples/ 與 assets/）→ CODE_MAP → 文檔**（HTML bundle 最低，只在明確要求時更新）。
+
+`examples/*.json`、`examples/scripts/*.psc`、`examples/assets/`、`assets/papyrus/MFStoryEventDispatch.psc`、`spec.schema.json` 均視為**源碼**——功能變動時必須同步，不是次要的附屬物。
 
 **優先級（衝突或時間不夠時，依序保持一致）：**
-程式碼 > CODE_MAP > 文檔（`docs/SPEC-*.md` / `for_agent*.md`）> examples/assets > HTML
+程式碼（含 examples + assets）> CODE_MAP > 文檔（`docs/SPEC-*.md` / `for_agent*.md`）> HTML
 
 **CODE_MAP 與程式碼衝突時：以程式碼為準，立即修正 CODE_MAP。**
 
