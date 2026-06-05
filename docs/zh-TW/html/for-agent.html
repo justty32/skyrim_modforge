@@ -72,6 +72,8 @@ ModForge 輸出的是**結構有效**的記錄，這與**遊戲內可正常運�
 - **更多記錄類型**（相同的規格→建置→dump 模式）：`ingredients`（煉金，含 `effects`）、`ammunitions`（`damage`）、`scrolls`（`effects` + 施放欄位）、`soulGems`（`maximumCapacity`）、`keys`、`keywords`、`outfits`、`statics`/`activators`（`.nif` 路徑 — 參考原版網格 — 作為放置基底）。
 - **外部/原版表單可被參考**（種族/職業/裝束/關鍵字/派系/魔法效果/放置基底+空間，透過 `"<master>:0xFORMID"`）。
 - **對話**記錄有效，但一條對話實際出現在對話中可能需要任務旗標/分支調整，且**沒有配音**（僅字幕）。
+- **Story Manager（SM）事件驅動任務：** 在任務中加入 `storyEvent` + `aliases`，建置時自動在原版事件根下配線 SMBN→SMQN。支援的事件：`KillActor`、`ChangeLocation`、`CastMagic`、`AddItem`、`Assault`、`ScriptEvent`。別名填充：`fromEvent:<槽>`、`uniqueActor:<ref>`、`forced:<ref>`。**遊戲內確認（2026-06-04）**，涵蓋所有變體（含 ESL 插件）。見 SPEC-dialogue-quests.md → 「Story Manager 任務」。
+- **Script Event（自訂 Story 觸發）：** `ScriptEvent` 任務宣告一個 `keyword`；Papyrus 呼叫端透過 `MFStoryEventDispatch.Fire(kw, ref1, ref2, loc)` 發送事件，引擎將其路由到符合的 SM 任務。派發器 `.pex` 已嵌入 CLI，並在有任何 ScriptEvent 任務時由 `package` 自動複製到 `Scripts/`——無需每個模組單獨編譯 Papyrus。**遊戲內確認（2026-06-04）。**
 - 您無法在此確認任何東西能**在遊戲中**正常運作 — 那需要 Proton/Skyrim 實際啟動。請說「已產生並透過 dump 結構驗證」，而非「在遊戲中可運作」，除非有人類實際測試過。
 
 當有需求超出限制時，請直接說明，並提供實際可做的部分。
