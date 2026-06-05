@@ -108,10 +108,11 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 **派發器→真實觸發接線（量產入口第一條）：✅ 實機驗證通過（2026-06-05）**——
 `examples/story-manager-magictrigger.json` + `examples/MFSE_SpellTrigger.psc`：可複用 magic-effect trigger（`extends ActiveMagicEffect`，`OnEffectStart→MFStoryEventDispatch.Fire(kw,caster,target)`）掛在自訂 MGEF/spell 上，玩家施法→SM 啟動 quest，`Caster` alias=玩家。把 OnInit 測試觸發換成實際遊戲動作。**編譯耐久修法**：dispatcher `.psc` 也 embed 進 CLI，Package.cs 編 user script 時解到 temp 當 sibling header（compiler 把 input 檔所在目錄當 header dir），`Fire()` 免 per-machine cache 即可解析——未來任何經派發器的 trigger 腳本都受惠。297 測試綠。
 
-**可複用 trigger 庫擴充（structurally verified，實機待測）**——同一 `Fire()` 一行接不同入口:
-- **activator**：`examples/story-manager-activatortrigger.json` + `MFSE_ActivatorTrigger.psc`（`extends ObjectReference`，`OnActivate→Fire`）。CaveLever01 vanilla 模型,免 placement——`player.placeatme <leverFormID>` 生拉桿再拉。
-- **potion**：`examples/story-manager-potiontrigger.json`（複用 MFSE_SpellTrigger，喝藥水觸發,證明 trigger 與 delivery 無關）。`player.additem <formid>` 後喝。
-- **dialogue**：`examples/story-manager-dialoguetrigger.json` + `MFSE_DialogueTrigger.psc`（`extends TopicInfo`，`Fragment_0→Fire`，NPC 給任務入口）。NPC 放 Sleeping Giant Inn,`coc RiverwoodSleepingGiantInn` 找「Forged Envoy」對話。複用 proven dialogue[]+placed-NPC,result-script VMAD 正確。
-- 四個 zip 在 `~/skyrim_mods/`（ModForge{Magic,Activator,Potion,Dialogue}Trigger.zip）。Magic 已實機 PASS;其餘 structurally verified、實機待測。
+**可複用 trigger 庫 — 四入口全數實機驗證通過（2026-06-05）**——同一 `Fire()` 一行接不同入口:
+- **magic effect（spell）**：`examples/story-manager-magictrigger.json` + `MFSE_SpellTrigger.psc`（`extends ActiveMagicEffect`，`OnEffectStart→Fire`）。玩家施法。✅
+- **potion**：`examples/story-manager-potiontrigger.json`（複用 MFSE_SpellTrigger，證明 trigger 與 delivery 無關）。`player.additem` 後喝。✅
+- **activator**：`examples/story-manager-activatortrigger.json` + `MFSE_ActivatorTrigger.psc`（`extends ObjectReference`，`OnActivate→Fire`）。`player.placeatme <leverFormID>` 生拉桿再拉。⚠️ model 必須是驗證存在的 vanilla nif（假路徑→隱形物件,見 [[vanilla-nif-paths-must-be-verified]]）。✅
+- **dialogue**：`examples/story-manager-dialoguetrigger.json` + `MFSE_DialogueTrigger.psc`（`extends TopicInfo`，`Fragment_0→Fire`，NPC 給任務入口）。NPC 放 Sleeping Giant Inn,`coc RiverwoodSleepingGiantInn` 找「Forged Envoy」。複用 proven dialogue[]+placed-NPC。✅
+- 四個 zip 在 `~/skyrim_mods/`（ModForge{Magic,Activator,Potion,Dialogue}Trigger.zip）。
 
 **之後可做**：dialogue fragment result-script 觸發;alias OnActivate;`createObject`/`findMatching` 填充;再多解事件進表。

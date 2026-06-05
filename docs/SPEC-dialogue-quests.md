@@ -304,10 +304,13 @@ The same one-line `Fire()` call works from any entry point — a small reusable 
 
 | Entry point | Script (`extends …`) | Event | Example |
 |-------------|----------------------|-------|---------|
-| Magic effect (spell) | `ActiveMagicEffect` | `OnEffectStart` | `story-manager-magictrigger.json` (in-game ✓ 2026-06-05) |
-| Magic effect (potion) | `ActiveMagicEffect` | `OnEffectStart` | `story-manager-potiontrigger.json` (same script, drink to fire) |
-| Activator | `ObjectReference` | `OnActivate` | `story-manager-activatortrigger.json` (pull a lever) |
-| Dialogue line | `TopicInfo` | `Fragment_0` | `story-manager-dialoguetrigger.json` (NPC gives a quest) |
+| Magic effect (spell) | `ActiveMagicEffect` | `OnEffectStart` | `story-manager-magictrigger.json` (in-game ✓) |
+| Magic effect (potion) | `ActiveMagicEffect` | `OnEffectStart` | `story-manager-potiontrigger.json` (same script, drink to fire; in-game ✓) |
+| Activator | `ObjectReference` | `OnActivate` | `story-manager-activatortrigger.json` (pull a lever; in-game ✓) |
+| Dialogue line | `TopicInfo` | `Fragment_0` | `story-manager-dialoguetrigger.json` (NPC gives a quest; in-game ✓) |
+
+All four in-game verified 2026-06-05. Note for the activator: the `model` must be a NIF path that
+actually exists in the load order — a wrong path spawns an invisible object with no error.
 
 The first three attach one script to a record (MGEF / ACTI) with a `Keyword` property, set via the
 spec's `scripts[]`. The dialogue trigger wires the script as a line's `resultScript` +

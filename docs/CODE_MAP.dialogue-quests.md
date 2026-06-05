@@ -162,11 +162,11 @@
 | **源碼** | `assets/papyrus/MFStoryEventDispatch.psc` | 通用派發器源碼（`Fire(kw,ref1,ref2,loc)→kw.SendStoryEvent`）；csproj embed `.pex`（夾帶進 Scripts/）+ `.psc`（user script 編譯時當 header）|
 | Example | `examples/story-manager-scriptevent.json` | ScriptEvent quest 完整範例（OnInit 測試觸發）|
 | Example | `examples/MFSE_TestTrigger.psc` | OnInit 觸發 ScriptEvent 的測試腳本 |
-| Example | `examples/story-manager-magictrigger.json` | **真實觸發接線**：玩家施法→MGEF→Fire→啟動 quest（實機驗證 2026-06-05）|
-| Example | `examples/MFSE_SpellTrigger.psc` | 可複用 magic-effect trigger（`extends ActiveMagicEffect`，`OnEffectStart→Fire`）；spell + potion 共用 |
-| Example | `examples/story-manager-activatortrigger.json` + `MFSE_ActivatorTrigger.psc` | activator 觸發：`extends ObjectReference`，`OnActivate→Fire`（拉桿；structurally verified，實機待測）|
-| Example | `examples/story-manager-potiontrigger.json` | potion 觸發:複用 MFSE_SpellTrigger 證明 trigger 與 delivery 無關（structurally verified，實機待測）|
-| Example | `examples/story-manager-dialoguetrigger.json` + `MFSE_DialogueTrigger.psc` | NPC 對話觸發:`extends TopicInfo`，`Fragment_0→Fire`（result-script VMAD；複用 proven dialogue[]+placed-NPC；structurally verified，實機待測）|
+**可複用 trigger 庫 — 四入口全數實機驗證通過（2026-06-05）**：
+| Example | `examples/story-manager-magictrigger.json` + `MFSE_SpellTrigger.psc` | magic effect 觸發：`extends ActiveMagicEffect`，`OnEffectStart→Fire`（玩家施法）；spell + potion 共用 ✅ |
+| Example | `examples/story-manager-potiontrigger.json` | potion 觸發:複用 MFSE_SpellTrigger 證明 trigger 與 delivery 無關（喝藥水）✅ |
+| Example | `examples/story-manager-activatortrigger.json` + `MFSE_ActivatorTrigger.psc` | activator 觸發：`extends ObjectReference`，`OnActivate→Fire`（拉桿；model 必須是驗證存在的 vanilla nif）✅ |
+| Example | `examples/story-manager-dialoguetrigger.json` + `MFSE_DialogueTrigger.psc` | NPC 對話觸發:`extends TopicInfo`，`Fragment_0→Fire`（result-script VMAD；複用 proven dialogue[]+placed-NPC）✅ |
 
 ⚠️ ScriptEvent 介面或槽位有任何改動，`MFStoryEventDispatch.psc` 必須同步重編（`.pex`）。
 **派發器 header 機制**：呼叫 `Fire()` 的 user trigger 腳本，Package.cs 編譯時把 embed 的 dispatcher `.psc` 解到 temp 目錄當 sibling header（compiler 把 input 檔所在目錄當 header dir），免 per-machine cache 安裝。
