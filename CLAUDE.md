@@ -115,4 +115,10 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - **dialogue**：`examples/story-manager-dialoguetrigger.json` + `MFSE_DialogueTrigger.psc`（`extends TopicInfo`，`Fragment_0→Fire`，NPC 給任務入口）。NPC 放 Sleeping Giant Inn,`coc RiverwoodSleepingGiantInn` 找「Forged Envoy」。複用 proven dialogue[]+placed-NPC。✅
 - 四個 zip 在 `~/skyrim_mods/`（ModForge{Magic,Activator,Potion,Dialogue}Trigger.zip）。
 
-**之後可做**：dialogue fragment result-script 觸發;alias OnActivate;`createObject`/`findMatching` 填充;再多解事件進表。
+**alias fill 擴充 + 事件表擴充：✅ 實機驗證通過（2026-06-05）**——303 測試綠：
+- **`createObject:<ref>@<targetAlias>`**（`CreateReferenceToObject` ALCO/ALCA/ALCL）：quest 啟動時在 `<targetAlias>` 持有的 ref 處生成一個 `<ref>` 新實例（施法→狼出現在腳邊）。解自 vanilla MQGreybeardCall/WERoad12。`examples/story-manager-createobject.json`。
+- **`findMatching:closest|any`**（QuestAlias 旗標 `MatchingRefInLoadedArea`[+`MatchingRefClosest`] + alias `conditions`）：在 loaded area 找最近/第一個符合條件的既有 ref（施法→填上最近 NPC）。解自 vanilla MQGreybeardCall Bystander。**踩坑**：先用 `FindMatchingRefNearAlias(LinkedRefChild)` 實機失敗（那只找 editor linked-ref 子物件）——正解是旗標機制。`examples/story-manager-findmatching.json`。
+- **事件表 +3**（engine-native 純資料，build/validate 不變）：CraftItem(0x039D86/CRFT,workbench=R1)、PlayerRemoveItem(0x02C6AC/REMP,owner=R1/item=R2)、Arrest(0x06B369/ARRT,guard=R1/criminal=R2)。`examples/story-manager-events-demo.json` 三合一測試。**DeadBody 解了但移除**（NPC 偵測事件,非玩家觸發）。
+- alias fill 現五種、事件表現九個。背景/坑見 [[dispatcher-magic-trigger]]。
+
+**之後可做**：dialogue fragment result-script 觸發;alias OnActivate;再多解事件進表（ActorDialogue/ActorHello/ChangeRelationshipRank/IncreaseLevel 已解碼待落地,見 [[dispatcher-magic-trigger]]）。
