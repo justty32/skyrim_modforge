@@ -7,10 +7,18 @@
 - Commit 訊息用多個 `-m` flag 組多行（PowerShell here-string 易出問題）
 - 重構必須行為不變（behavior-preserving）；不要未經確認就 push 或開新工作
 
+**前置步驟（fresh clone 後，`dotnet build` 前必做一次）：**
+`assets/papyrus/MFStoryEventDispatch.pex` 被 `ModForge.Cli.csproj` embed 為 EmbeddedResource，但 `.pex` 在 `.gitignore` 裡不進 repo。需先編譯：
+```
+dotnet run --project src/ModForge.Cli -- compile assets/papyrus/MFStoryEventDispatch.psc assets/papyrus/
+```
+（需要 Wine + CK PapyrusCompiler 環境。）`MFStoryEventDispatch.psc` 有任何改動時，同樣需要重跑此步驟並將新的 `.pex` 保留在本機（不 commit）。
+
 ## 程式碼慣例
 
 - `partial class` 按領域拆檔：CLI 是 `Program.cs` + `Diagnostics.*.cs` + `Package.cs`；Core 是 `Generator.Build.*.cs`
 - 所有 src 檔案維持在 300 行以下
+- **Spec 欄位 breaking change**：新增欄位安全（optional，舊 example 不受影響）；**刪除或改名欄位**前必須先 `grep -r "舊欄位名" examples/`，找出所有受影響的 JSON 並在同一個 commit 裡一起更新。
 
 ## CODE_MAP 工作流程
 

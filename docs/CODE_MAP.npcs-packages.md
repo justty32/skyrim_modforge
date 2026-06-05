@@ -4,6 +4,29 @@
 
 涵蓋：NPCs、factions、relationships、classes、combat styles、AI packages（Sandbox/Travel/UseMagic/Follow/Sleep/Patrol/Escort）、outfits、weather/climate。
 
+## Lifelike Docs（NPC 深度指南）
+→ **說明文件**：[lifelike/README.md](lifelike/README.md)（入口）
+
+這組文件是 NPC / package 功能的深度知識庫，獨立於 SPEC-*.md 之外。修改 NPC 或 AI package 相關功能時，需同步評估這裡是否需要更新。
+
+| 檔案 | 內容 |
+|-----|-----|
+| `docs/lifelike/README.md` | 入口索引 |
+| `docs/lifelike/cookbook-index.md` | Cookbook 目錄 |
+| `docs/lifelike/cookbook-npc-basics.md` | NPC 基礎食譜 |
+| `docs/lifelike/cookbook-followers.md` | 隨從食譜 |
+| `docs/lifelike/cookbook-social-quest.md` | 社交 / 任務食譜 |
+| `docs/lifelike/cookbook-magic.md` | 魔法 NPC 食譜 |
+| `docs/lifelike/cookbook-world-items.md` | 世界物件食譜 |
+| `docs/lifelike/cookbook-advanced.md` | 進階食譜 |
+| `docs/lifelike/formid-reference.md` | 原版 FormID 速查 |
+| `docs/lifelike/gotchas.md` | 常見陷阱 |
+| `docs/lifelike/cheatsheets.md` | 速查表 |
+
+（zh-TW 對應版本在 `docs/zh-TW/lifelike/`，最低優先級，有明確需要才更新。）
+
+---
+
 ## Examples
 
 | 檔案 | 對應功能 |
