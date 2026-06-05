@@ -37,8 +37,16 @@ public static partial class Generator
                 if (string.IsNullOrEmpty(scriptName)) continue;
                 if (!File.Exists(Path.Combine(compiledDir, scriptName + ".pex"))) continue;
 
-                var qa = new QuestAdapter { FileName = scriptName };
-                qa.Scripts.Add(new ScriptEntry { Name = scriptName });
+                // MERGE into any QuestAdapter already attached (e.g. by BuildStoryManager's
+                // AttachAliasScript, which stores alias scripts in qa.Aliases). Overwriting with a fresh
+                // adapter here would drop those alias fragments. A vanilla QuestAdapter holds BOTH a
+                // quest-level script (FileName + Scripts + stage Fragments) AND per-alias fragments, so
+                // the two coexist on one adapter (Version=5/ObjectFormat=2 = vanilla canonical).
+                var qa = qr.VirtualMachineAdapter as QuestAdapter
+                         ?? new QuestAdapter { Version = 5, ObjectFormat = 2 };
+                qa.FileName = scriptName;
+                if (!qa.Scripts.Any(s => string.Equals(s.Name, scriptName, StringComparison.OrdinalIgnoreCase)))
+                    qa.Scripts.Add(new ScriptEntry { Name = scriptName });
 
                 // One QuestScriptFragment per stage that shows/completes an objective.
                 // Stage = the quest stage number (uint16), StageIndex = log-entry index within stage

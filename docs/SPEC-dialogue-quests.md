@@ -153,10 +153,20 @@ complete as stages are set; a `dialogue` line can advance a stage when picked.
   with the shared **ConditionSpec**: `function` (a `GetStage`/`GetIsID`/… name), `comparison`
   (`==`/`>=`/… or `EqualTo`/`GreaterThanOrEqualTo`/…, default `>=`), `value`, `param` (ref → the
   function's form parameter, e.g. the quest for `GetStage`)).
+- **`stages[].startUpStage`** — marks the stage the engine **auto-runs `SetStage` to the instant the
+  quest starts** (vanilla QSDT "Start Up Stage" flag). This is how a **Story-Manager-triggered** quest
+  shows its opening log entry / displays its first objective with **no external `SetStage`** — without
+  it an SM-started quest sits silently at stage 0. At most one per quest. (A `dialogue`/`startGameEnabled`
+  quest usually doesn't need one; SM quests do.) **IN-GAME CONFIRMED 2026-06-05.**
 - **`objectives[].showStage` / `.completeStage`** — link an objective to stages: it's
   `SetObjectiveDisplayed` at `showStage` and `SetObjectiveCompleted` at `completeStage`. `-1` (the
   default) means "not stage-linked".
-- **`dialogue[].setStage`** — picking that topic advances the host quest to this stage.
+- **`dialogue[].setStage`** — picking that topic advances the host quest to this stage. To advance a
+  stage from a NON-dialogue action (e.g. activating a runtime-spawned ref), attach an **alias script**
+  (`alias[].script`) whose `OnActivate` calls `GetOwningQuest().SetStage(N)` — the reusable
+  `examples/MFSE_AdvanceStage.psc` does exactly this. End-to-end journal-progression demo (start-up
+  stage shows the objective on SM start → alias `OnActivate` completes it + closes the quest):
+  `examples/story-manager-queststage.json`.
 
 **What's record-only vs. what needs Papyrus:** stages, log entries, the `completeQuest`/`failQuest`
 flags and log-entry conditions are **pure record data** — they build, `dump`/`questdiag` cleanly,

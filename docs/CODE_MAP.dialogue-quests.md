@@ -23,6 +23,7 @@
 | `examples/story-manager-createobject.json` | createObject alias fill（事件觸發→在另一 alias 處生成物件；複用 magic trigger）|
 | `examples/story-manager-findmatching.json` | findMatching alias fill（loaded area 裏找最近的符合 conditions 的既有 ref；複用 magic trigger）|
 | `examples/story-manager-aliastrigger.json` + `MFSE_AliasActivate.psc` | alias OnActivate（腳本掛 quest alias→活化執行時 createObject 生成的 ref→Fire 鏈下個事件；複用 magic trigger + createObject）|
+| `examples/story-manager-queststage.json` + `MFSE_AdvanceStage.psc` | journal 進度：`startUpStage` 啟動即顯示 objective + alias OnActivate `SetStage` 完成並關閉 quest（startUpStage + alias 腳本 + stage fragment 三者共存）|
 | `examples/story-manager-scriptevent.json` | ScriptEvent 自訂觸發 |
 | `examples/MFSE_TestTrigger.psc` | ScriptEvent OnInit 觸發腳本 |
 | `examples/story-manager-magictrigger.json` | ScriptEvent 經 magic effect 觸發（玩家施法→啟動 quest）|
@@ -44,7 +45,7 @@
 | `DialogueTests.cs` | dialogue topic / INFO / greeting 生成 |
 | `QuestStageTests.cs` | stage log text / objective fragment / VMAD |
 | `SceneTests.cs` | SCEN actor / phase / dialogue action |
-| `StoryManagerBuildTests.cs` | SM build pass 2（SMBN/SMQN 掛接、alias fill 接線、alias 腳本 VMAD 掛接）|
+| `StoryManagerBuildTests.cs` | SM build pass 2（SMBN/SMQN 掛接、alias fill 接線、alias 腳本 VMAD 掛接、`startUpStage` QSDT flag、stage fragment + alias 腳本共存於單一 adapter）|
 | `StoryManagerEventsTests.cs` | 事件登錄表欄位（FormKey / slot 對應）|
 | `StoryManagerEventsMoreTests.cs` | 擴充事件（ChangeLocation/CastMagic/AddItem/Assault/ScriptEvent）|
 | `StoryManagerValidateTests.cs` | SM validate（事件名、alias 語法、keyword 要求）|
@@ -70,11 +71,12 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Dialogue.cs` | `QuestSpec`, `QuestStageSpec`, `QuestObjectiveSpec` |
-| Build P1 | `Generator.Build.Dialogue.cs` | 建 Quest record + Branch + Topic + INFO；greeting 自動生成 |
-| Build P2 | `Generator.Build.QuestStages.cs` | stage log text + objective-completion fragment VMAD |
+| Spec | `Spec.Dialogue.cs` | `QuestSpec`, `StageSpec`（含 `startUpStage` = QSDT 起始 stage flag）, `ObjectiveSpec` |
+| Build P1 | `Generator.Build.Actors.cs` `BuildQuests` | 建 Quest record + QSDT stages（log/complete/fail flag、`startUpStage`→`QuestStage.Flag.StartUpStage`）+ QOBJ objectives |
+| Build P1 | `Generator.Build.Dialogue.cs` | dialogue Branch + Topic + INFO；greeting 自動生成 |
+| Build P2 | `Generator.Build.QuestStages.cs` | stage log-entry CTDA + objective fragment VMAD（**合併**進既有 QuestAdapter，不覆寫 alias 腳本的 `.Aliases`）|
 | Build P2 | `Generator.QuestFragments.cs` | 自動生 SetObjectiveDisplayed/SetObjectiveCompleted Papyrus fragment |
-| Validate | `Generator.Validate.Quests.cs` | stage index 唯一/遞增、objective↔stage 連結、script ref 存在 |
+| Validate | `Generator.Validate.Quests.cs` | stage index 唯一/遞增、`startUpStage` 至多一個、objective↔stage 連結、script ref 存在 |
 | Diag | `Diagnostics.Quests.cs` | stages / objectives / aliases / VMAD 腳本 dump |
 | Diag | `Diagnostics.Dump.Quest.cs` | quest + scene 結構化完整 dump |
 

@@ -127,4 +127,10 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - 端到端 `examples/story-manager-aliastrigger.json` + `MFSE_AliasActivate.psc`（`OnActivate→Fire`）：施法→createObject 生箱子於腳邊→開箱→alias OnActivate→`Fire(MFSE_AliasKW)`→啟動 MFSE_AliasTarget。zip `~/skyrim_mods/ModForgeAliasTrigger.zip`。
 - **編譯踩坑**：`extends ReferenceAlias` 的 native 編譯要 `MODFORGE_PAPYRUS_HEADERS=~/.cache/modforge/papyrus/Source/Scripts`（loose Source 不含 ReferenceAlias.psc）。
 
-**之後可做**：dialogue fragment result-script 觸發（其實 dialogue trigger 已用 resultScript 接通）;再多解事件（SkillIncrease/Jail/Bribe… `smtree Skyrim.esm` 列舉,但須用 conditions 才安全,見 [[dispatcher-magic-trigger]]）。
+**Quest 階段/目標推進（SM quest journal 進度）：✅ 實機驗證通過（2026-06-05）**——308 測試綠：
+- **`StageSpec.startUpStage`**（新）：引擎在 quest 啟動時自動 `SetStage` 到被標記的 stage（vanilla QSDT `QuestStage.Flag.StartUpStage`，`Generator.Build.Actors.cs` `BuildQuests`）。這是 SM 啟動的 quest 能**自顯開場 log entry / objective** 的缺口——之前停在 stage 0、journal 空白。validate 限至多一個。
+- **adapter 合併修正**：`WireQuestStages` 原本 `=` 覆寫 `VirtualMachineAdapter`，會清掉 alias 腳本的 `.Aliases`。改成**合併**進既有 `QuestAdapter`（stage fragment 的 `FileName`/`Scripts`/`Fragments` + alias 腳本的 `Aliases` 共存於單一 adapter，v5/objFmt2）。解碼 packaged esp 確認三者共存。
+- **完成半段免新程式碼**：複用 alias OnActivate，新增可複用 `examples/MFSE_AdvanceStage.psc`（`OnActivate→GetOwningQuest().SetStage(Stage)`；`GetOwningQuest()` 在「執行時 alias OnActivate、非 StartGameEnabled」情境可用，與 dialogue TIF 在 game-load 的 None 坑不同）。
+- 端到端 `examples/story-manager-queststage.json`：施法→SM 啟動 quest 於 startUpStage 10（objective 顯示）+ createObject 生箱→開箱→alias `SetStage(20)`→objective 完成 + quest 關閉（stage 20 completeQuest）。zip `~/skyrim_mods/ModForgeQuestStage.zip`。
+
+**之後可做**：再多解事件（SkillIncrease/Jail/Bribe… `smtree Skyrim.esm` 列舉,但須用 conditions 才安全,見 [[dispatcher-magic-trigger]]）;把 alias 建構推廣到 StartGameEnabled（非 storyEvent）quest，讓它們也能帶 forced/createObject alias + alias 腳本。

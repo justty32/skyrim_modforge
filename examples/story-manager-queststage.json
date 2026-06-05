@@ -1,0 +1,77 @@
+{
+  "pluginName": "ModForgeQuestStage.esp",
+  "esl": false,
+  "_": "Journal PROGRESSION on a Story-Manager-triggered quest. Demonstrates two things with no hand-written quest script: (1) startUpStage — the engine auto-SetStages stage 10 the instant the SM event starts the quest, so its opening objective displays in the journal; (2) completion via an alias OnActivate script (MFSE_AdvanceStage) that runs SetStage(20), completing the objective and closing the quest. Chain: addspell + cast Forge Errand (MFSE_ErrandSpell) -> MFSE_SpellTrigger -> Fire(MFSE_ErrandKW, caster) -> SM starts MFSE_Errand at startUpStage 10 -> objective 'Open the supply cache' shows; the Cache alias createObjects a vanilla chest at the caster. OPEN that chest -> MFSE_AdvanceStage OnActivate -> SetStage(20) -> objective completes + quest closes (stage 20 completeQuest). In-game: `player.addspell <MFSE_ErrandSpell formid>`, cast it (objective appears + a chest spawns at your feet), open the chest, watch the objective tick complete and the quest finish.",
+
+  "keywords": [
+    { "editorId": "MFSE_ErrandKW" }
+  ],
+
+  "magicEffects": [
+    {
+      "editorId": "MFSE_ErrandEffect",
+      "name": "Forge Errand",
+      "description": "Issues a forge errand.",
+      "_": "Self token effect so OnEffectStart runs on the caster; payload is the attached MFSE_SpellTrigger.",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "magicSkill": "Restoration",
+      "castType": "FireAndForget",
+      "targetType": "Self",
+      "baseCost": 0.5,
+      "flags": [ "NoDuration", "NoArea" ]
+    }
+  ],
+
+  "spells": [
+    {
+      "editorId": "MFSE_ErrandSpell",
+      "name": "Forge Errand",
+      "_": "Self-cast. Wraps MFSE_ErrandEffect.",
+      "spellType": "Spell",
+      "castType": "FireAndForget",
+      "targetType": "Self",
+      "baseCost": 10,
+      "effects": [
+        { "magicEffect": "MFSE_ErrandEffect", "magnitude": 1, "area": 0, "duration": 0 }
+      ]
+    }
+  ],
+
+  "quests": [
+    {
+      "editorId": "MFSE_Errand",
+      "name": "Forge Errand",
+      "type": "SideQuest",
+      "_": "Started by the SM ScriptEvent root when MFSE_ErrandKW fires (the spell). startUpStage 10 fires automatically on start -> objective 0 displays. Opening the createObject'd Cache runs MFSE_AdvanceStage -> SetStage(20) -> objective 0 completes + quest closes (stage 20 completeQuest).",
+      "stages": [
+        { "index": 10, "startUpStage": true, "logEntry": "A forge errand has begun. Open the supply cache." },
+        { "index": 20, "logEntry": "The supply cache is open. The errand is done.", "completeQuest": true }
+      ],
+      "objectives": [
+        { "index": 0, "text": "Open the supply cache", "showStage": 10, "completeStage": 20 }
+      ],
+      "storyEvent": { "event": "ScriptEvent", "keyword": "MFSE_ErrandKW" },
+      "aliases": [
+        { "name": "Caster", "fill": "fromEvent:ref1" },
+        {
+          "name": "Cache",
+          "fill": "createObject:Skyrim.esm:0x0BCD2D@Caster",
+          "_": "Spawns a vanilla small chest at the Caster, and carries the advance-stage alias script. Opening it (OnActivate) advances the owning quest to stage 20.",
+          "script": "MFSE_AdvanceStage",
+          "scriptSource": "MFSE_AdvanceStage.psc",
+          "scriptProperties": [ { "name": "Stage", "type": "int", "int": 20 } ]
+        }
+      ]
+    }
+  ],
+
+  "scripts": [
+    {
+      "targetEditorId": "MFSE_ErrandEffect",
+      "scriptName": "MFSE_SpellTrigger",
+      "source": "MFSE_SpellTrigger.psc",
+      "properties": [ { "name": "TheKW", "type": "object", "objectEditorId": "MFSE_ErrandKW" } ]
+    }
+  ]
+}

@@ -86,6 +86,13 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
   story event (in-game confirmed 2026-06-05). **In-game confirmed (2026-06-04)**
   on all variant patterns including ESL plugins. See SPEC-dialogue-quests.md → "Story Manager
   quests".
+- **Journal progression on an SM quest:** mark a stage `startUpStage:true` and the engine auto-runs
+  it the instant the quest starts, so an SM-triggered quest shows its opening log entry / displays its
+  first objective with no external `SetStage`. Complete/close it later from a player action with an
+  alias `script` whose `OnActivate` calls `GetOwningQuest().SetStage(N)` (reusable
+  `examples/MFSE_AdvanceStage.psc`). Full arc demo: `examples/story-manager-queststage.json` (cast →
+  objective shows + chest spawns → open chest → objective completes + quest closes). In-game confirmed
+  2026-06-05.
 - **Script Event (custom story trigger):** a `ScriptEvent` quest declares a `keyword`; a
   Papyrus caller fires `MFStoryEventDispatch.Fire(kw, ref1, ref2, loc)` and the engine routes
   it to matching SM quests. The dispatcher `.pex` is embedded in the CLI and copied into

@@ -45,6 +45,13 @@ public sealed class StageSpec
     public string LogEntry { get; set; } = "";
     public bool CompleteQuest { get; set; }
     public bool FailQuest { get; set; }
+    // StartUpStage (QSDT "Start Up Stage" flag): the engine AUTO-runs SetStage to this stage the moment
+    // the quest starts — no external SetStage needed. This is how a Story-Manager-triggered quest shows
+    // its first journal log entry / displays its opening objective on start (the stage's log entry shows
+    // engine-natively; an objective bound via `showStage` displays through the auto stage→objective
+    // fragment). At most one start-up stage per quest. Without one, an SM-started quest sits silently at
+    // stage 0 until something else sets a stage (a dialogue line, or an alias-script SetStage).
+    public bool StartUpStage { get; set; }
     public List<ConditionSpec> Conditions { get; set; } = new();
 }
 // One quest objective (QOBJ). `index` is the objective number; `text` is the journal display text.

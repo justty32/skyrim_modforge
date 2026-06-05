@@ -80,6 +80,10 @@ public static partial class Generator
                 foreach (var st in q.Stages.OrderBy(s => s.Index))
                 {
                     var stage = new QuestStage { Index = st.Index };
+                    // StartUpStage: the engine auto-SetStages here on quest start (so an SM-triggered
+                    // quest shows its opening log entry / objective with no external SetStage). The
+                    // QSDT stage flag byte is always written (Flags is non-nullable); default 0.
+                    if (st.StartUpStage) stage.Flags = QuestStage.Flag.StartUpStage;
                     if (!string.IsNullOrEmpty(st.LogEntry) || st.CompleteQuest || st.FailQuest)
                     {
                         var le = new QuestLogEntry();

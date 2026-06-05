@@ -13,8 +13,10 @@ public static partial class Generator
             {
                 var seen = new HashSet<int>();
                 int prev = -1;
+                int startUpStages = 0;
                 foreach (var st in q.Stages)
                 {
+                    if (st.StartUpStage) startUpStages++;
                     if (!seen.Add(st.Index))
                         Problems.Add($"quest '{q.EditorId}' has duplicate stage index {st.Index}");
                     if (st.Index <= prev)
@@ -36,6 +38,8 @@ public static partial class Generator
                     }
                 }
                 stageIndexByQuest[q.EditorId] = seen;
+                if (startUpStages > 1)
+                    Problems.Add($"quest '{q.EditorId}' marks {startUpStages} stages as startUpStage (at most one allowed — the engine auto-runs exactly one on quest start)");
                 var objIdx = new HashSet<int>();
                 foreach (var o in q.Objectives)
                 {

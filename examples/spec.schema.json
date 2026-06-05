@@ -1438,6 +1438,10 @@
                 "type": "boolean",
                 "description": "fail the quest at this stage"
               },
+              "startUpStage": {
+                "type": "boolean",
+                "description": "engine auto-runs SetStage to this stage on quest start (QSDT Start Up Stage flag) — how an SM-triggered quest shows its opening log entry/objective with no external SetStage. At most one per quest."
+              },
               "conditions": {
                 "type": "array",
                 "items": {

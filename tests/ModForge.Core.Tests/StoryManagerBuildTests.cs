@@ -399,4 +399,74 @@ public class StoryManagerBuildTests
         var q = mod.Quests.Single(x => x.EditorID == "MFSM_Avenge");
         Assert.Null(q.VirtualMachineAdapter);                              // no alias script → no VMAD
     }
+
+    [Fact]
+    public void StartUpStage_sets_the_QSDT_start_up_flag_on_only_that_stage()
+    {
+        var spec = new ModSpec();
+        spec.Quests.Add(new QuestSpec
+        {
+            EditorId = "MFSM_Errand", Name = "Errand",
+            Stages =
+            {
+                new StageSpec { Index = 10, StartUpStage = true, LogEntry = "Begin." },
+                new StageSpec { Index = 20, LogEntry = "Done.", CompleteQuest = true },
+            },
+            StoryEvent = new QuestStoryEventSpec { Event = "KillActor" },
+            Aliases = { new QuestAliasSpec { Name = "Victim", Fill = "fromEvent:victim" } },
+        });
+        var q = Build(spec).Quests.Single(x => x.EditorID == "MFSM_Errand");
+        var s10 = q.Stages.Single(s => s.Index == 10);
+        var s20 = q.Stages.Single(s => s.Index == 20);
+        Assert.Equal(QuestStage.Flag.StartUpStage, s10.Flags);            // start-up flag on stage 10
+        Assert.Equal((QuestStage.Flag)0, s20.Flags);                     // not on the others
+    }
+
+    // A quest that has BOTH an alias script (QuestAdapter.Aliases, from BuildStoryManager) AND a
+    // stage→objective fragment (QuestAdapter.Fragments, from WireQuestStages) must keep both on ONE
+    // adapter — WireQuestStages MERGES rather than overwriting. Exercised by setting CompiledScriptsDir
+    // to a temp dir holding the stage-fragment .pex so WireQuestStages' attach block runs.
+    [Fact]
+    public void Stage_fragment_and_alias_script_coexist_on_one_quest_adapter()
+    {
+        var spec = new ModSpec();
+        spec.Keywords.Add(new KeywordSpec { EditorId = "MFSE_FireKW" });
+        spec.Quests.Add(new QuestSpec
+        {
+            EditorId = "MFSM_Both", Name = "Both",
+            Stages =
+            {
+                new StageSpec { Index = 10, StartUpStage = true, LogEntry = "Begin." },
+                new StageSpec { Index = 20, LogEntry = "Done.", CompleteQuest = true },
+            },
+            Objectives = { new ObjectiveSpec { Index = 0, Text = "Open it", ShowStage = 10, CompleteStage = 20 } },
+            StoryEvent = new QuestStoryEventSpec { Event = "ScriptEvent", Keyword = "MFSE_FireKW" },
+            Aliases =
+            {
+                new QuestAliasSpec
+                {
+                    Name = "Cache", Fill = "createObject:Skyrim.esm:0x0010FE05@Cache",
+                    Script = "MFSE_AdvanceStage", ScriptSource = "MFSE_AdvanceStage.psc",
+                    ScriptProperties = { new PropertySpec { Name = "Stage", Type = "int", Int = 20 } },
+                },
+            },
+        });
+
+        var dir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "mfqs_" + System.Guid.NewGuid().ToString("N"));
+        System.IO.Directory.CreateDirectory(dir);
+        try
+        {
+            var fragName = Generator.QuestFragmentScriptName(spec.Quests[0]);
+            System.IO.File.WriteAllBytes(System.IO.Path.Combine(dir, fragName + ".pex"), new byte[] { 0 });
+            var mod = Generator.Build(spec, ModKey.FromNameAndExtension("Test.esp"),
+                new BuildOptions { CompiledScriptsDir = dir }).Mod;
+            var q = mod.Quests.Single(x => x.EditorID == "MFSM_Both");
+            var qad = Assert.IsType<QuestAdapter>(q.VirtualMachineAdapter);
+            Assert.Equal(fragName, qad.FileName);                          // stage fragment kept its script
+            Assert.NotEmpty(qad.Fragments);                               // stage→objective fragment present
+            Assert.Single(qad.Aliases);                                   // alias script NOT clobbered
+            Assert.Equal("MFSE_AdvanceStage", Assert.Single(qad.Aliases[0].Scripts).Name);
+        }
+        finally { System.IO.Directory.Delete(dir, recursive: true); }
+    }
 }
