@@ -300,9 +300,18 @@ EndEvent
 resolves without any local Papyrus setup. The same shape works from dialogue fragments, alias
 scripts, or activators — anywhere you can run one line of Papyrus.
 
-See `examples/story-manager-scriptevent.json` + `examples/MFSE_TestTrigger.psc` (OnInit test), and
-`examples/story-manager-magictrigger.json` + `examples/MFSE_SpellTrigger.psc` (player casts a spell
-→ SM quest starts; in-game verified 2026-06-05).
+The same one-line `Fire()` call works from any entry point — a small reusable trigger library:
+
+| Entry point | Script (`extends …`) | Event | Example |
+|-------------|----------------------|-------|---------|
+| Magic effect (spell) | `ActiveMagicEffect` | `OnEffectStart` | `story-manager-magictrigger.json` (in-game ✓ 2026-06-05) |
+| Magic effect (potion) | `ActiveMagicEffect` | `OnEffectStart` | `story-manager-potiontrigger.json` (same script, drink to fire) |
+| Activator | `ObjectReference` | `OnActivate` | `story-manager-activatortrigger.json` (pull a lever) |
+
+Each attaches one script to a record (MGEF / ACTI) with a `Keyword` property, set via the spec's
+`scripts[]`. `package` compiles them beside the embedded dispatcher source automatically.
+
+See also `examples/story-manager-scriptevent.json` + `examples/MFSE_TestTrigger.psc` (OnInit test).
 
 ### scripts — Papyrus attachment
 ```jsonc

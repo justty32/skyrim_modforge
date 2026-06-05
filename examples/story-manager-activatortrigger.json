@@ -1,0 +1,38 @@
+{
+  "pluginName": "ModForgeActivatorTrigger.esp",
+  "esl": false,
+  "_": "Second real-trigger wiring of the Script-Event dispatcher (after story-manager-magictrigger.json's spell). A custom lever (ACTI, vanilla CaveLever01 model) carries MFSE_ActivatorTrigger; OnActivate -> MFStoryEventDispatch.Fire(kw, activator) -> the SM ScriptEvent root starts MFSE_LeverTarget with Activator=the actor who pulled it. No placement needed: spawn the lever in front of you with `player.placeatme XX000800` (XX = load order), then activate it. Distinct entry point, identical one-line dispatcher call — the reusable-trigger-library pattern.",
+
+  "keywords": [ { "editorId": "MFSE_LeverKW" } ],
+
+  "activators": [
+    {
+      "editorId": "MFSE_LeverActivator",
+      "name": "Forge Lever",
+      "_": "Vanilla cave pull-lever mesh so it renders with no custom asset. The payload is the attached MFSE_ActivatorTrigger script.",
+      "model": "Dungeons\\Caves\\Furniture\\CaveLever01.nif"
+    }
+  ],
+
+  "quests": [
+    {
+      "editorId": "MFSE_LeverTarget",
+      "name": "Forge Lever Target",
+      "_": "Started by the SM ScriptEvent root when MFSE_LeverKW fires. Activator alias pulls event ref1 (whoever pulled the lever — the player). Verify: pull the lever, then `sqv MFSE_LeverTarget` -> State Running, Activator alias filled.",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "ScriptEvent", "keyword": "MFSE_LeverKW" },
+      "aliases": [
+        { "name": "Activator", "fill": "fromEvent:ref1" }
+      ]
+    }
+  ],
+
+  "scripts": [
+    {
+      "targetEditorId": "MFSE_LeverActivator",
+      "scriptName": "MFSE_ActivatorTrigger",
+      "source": "MFSE_ActivatorTrigger.psc",
+      "properties": [ { "name": "TheKW", "type": "object", "objectEditorId": "MFSE_LeverKW" } ]
+    }
+  ]
+}

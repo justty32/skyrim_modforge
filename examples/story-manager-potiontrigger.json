@@ -1,0 +1,59 @@
+{
+  "pluginName": "ModForgePotionTrigger.esp",
+  "esl": false,
+  "_": "Third real-trigger wiring — same MFSE_SpellTrigger script, different DELIVERY. A drinkable potion whose MGEF carries the trigger: OnEffectStart -> MFStoryEventDispatch.Fire(kw, drinker) -> SM ScriptEvent root starts MFSE_PotionTarget with Drinker=the player. Proves the magic-effect trigger script is delivery-agnostic (spell in magictrigger.json, potion here). Acquire with `player.additem XX000802 1` (XX = load order), then drink it from the inventory.",
+
+  "keywords": [ { "editorId": "MFSE_PotionKW" } ],
+
+  "magicEffects": [
+    {
+      "editorId": "MFSE_PotionEffect",
+      "name": "Forge Draught",
+      "description": "A signal in a bottle.",
+      "_": "Harmless self Restoration effect so OnEffectStart fires on the drinker. The payload is the attached MFSE_SpellTrigger script (reused verbatim from the spell example).",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "magicSkill": "Restoration",
+      "castType": "FireAndForget",
+      "targetType": "Self",
+      "baseCost": 0.5,
+      "flags": [ "NoDuration", "NoArea" ]
+    }
+  ],
+
+  "potions": [
+    {
+      "editorId": "MFSE_CallPotion",
+      "name": "Forge Draught",
+      "_": "Vanilla potion template (0x039BE5) for bottle model/sound. Wraps MFSE_PotionEffect.",
+      "value": 10,
+      "weight": 0.5,
+      "template": "Skyrim.esm:0x039BE5",
+      "effects": [
+        { "magicEffect": "MFSE_PotionEffect", "magnitude": 1, "area": 0, "duration": 0 }
+      ]
+    }
+  ],
+
+  "quests": [
+    {
+      "editorId": "MFSE_PotionTarget",
+      "name": "Forge Draught Target",
+      "_": "Started when MFSE_PotionKW fires on drink. Drinker alias pulls event ref1. Verify: drink the potion, then `sqv MFSE_PotionTarget` -> State Running, Drinker alias = player.",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "ScriptEvent", "keyword": "MFSE_PotionKW" },
+      "aliases": [
+        { "name": "Drinker", "fill": "fromEvent:ref1" }
+      ]
+    }
+  ],
+
+  "scripts": [
+    {
+      "targetEditorId": "MFSE_PotionEffect",
+      "scriptName": "MFSE_SpellTrigger",
+      "source": "MFSE_SpellTrigger.psc",
+      "properties": [ { "name": "TheKW", "type": "object", "objectEditorId": "MFSE_PotionKW" } ]
+    }
+  ]
+}
