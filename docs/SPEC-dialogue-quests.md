@@ -179,6 +179,113 @@ end-to-end (**no CK needed, IN-GAME CONFIRMED It.36 2026-06-02**):
 Inspect any quest with `questdiag <plugin> <0xFORMID>`. Dialogue still only registers on a game
 **LOAD** (see the gotcha above). Worked example: `examples/quest_stages_spec.json`.
 
+### Story Manager quests — event-driven start
+
+A quest can be **launched automatically by the Story Manager (SM)** in response to an
+in-game event instead of starting on game load or via `SetObjectiveDisplayed`. Add a
+`storyEvent` block to the quest and the build wires everything automatically (SMBN→SMQN
+under the correct vanilla event root, `StartGameEnabled` cleared).
+
+**In-game confirmed (2026-06-04)** on all five variant patterns (victim, killer, forced,
+condition, ESL).
+
+```jsonc
+// minimal — triggers on any actor kill, Victim alias = the killed actor
+{
+  "editorId": "MFSM_Avenge", "name": "Avenge the Fallen",
+  "stages": [ { "index": 10 } ],
+  "storyEvent": { "event": "KillActor" },
+  "aliases": [ { "name": "Victim", "fill": "fromEvent:victim" } ]
+}
+```
+
+#### `storyEvent` fields
+
+| Field | Type | Notes |
+|---|---|---|
+| `event` | string | Event name — see table below. **Required.** |
+| `keyword` | string | `editorId` of a keyword in this spec. **Required for `ScriptEvent` only.** Multiple quests can share the same keyword (same filter branch). |
+| `conditions` | ConditionSpec[] | Extra CTDA conditions on the SM branch (same shape as `dialogue[].conditions`). Gates whether SM tries to start this quest. |
+
+#### Supported events
+
+| `event` | Triggered by | Slots available for `fill` |
+|---|---|---|
+| `KillActor` | Any actor killed | `victim`, `killer`, `location` |
+| `ChangeLocation` | Actor enters a new location | `oldLocation`, `newLocation` |
+| `CastMagic` | Spell cast | `caster`, `target`, `location` |
+| `AddItem` | Item added to inventory | `owner`, `location` |
+| `Assault` | Actor assaulted | `victim`, `attacker`, `location` |
+| `ScriptEvent` | Papyrus `SendStoryEvent` via the dispatcher | `ref1`, `ref2`, `location` |
+
+#### `aliases` — dynamic alias fill
+
+Each entry in `aliases` fills one quest alias when the quest starts. If any **required** alias
+cannot be filled the quest silently does not start.
+
+```jsonc
+"aliases": [
+  { "name": "Victim",    "fill": "fromEvent:victim" },        // slot from the event payload
+  { "name": "Killer",    "fill": "fromEvent:killer" },
+  { "name": "NewLoc",    "fill": "fromEvent:newLocation" },   // Location slot → alias Type=Location auto-set
+  { "name": "TheBoss",   "fill": "uniqueActor:Skyrim.esm:0x01414D" },  // specific NPC (Ulfric)
+  { "name": "TriggerRef","fill": "forced:Skyrim.esm:0x000014" }         // forced ref (player)
+]
+```
+
+| `fill` prefix | Alias kind | Notes |
+|---|---|---|
+| `fromEvent:<slot>` | `FindMatchingRefFromEvent` | Slot names from the event table above. Location slots (`newLocation`, `oldLocation`, `location`) automatically set `QuestAlias.Type = Location`. |
+| `uniqueActor:<ref>` | `UniqueActor` | Pinned to a specific NPC by ref; `AllowReserved` forced on. |
+| `forced:<ref>` | `ForcedReference` | Static ref (e.g. the player `Skyrim.esm:0x000014`). |
+
+**Extra alias options:**
+
+| Field | Default | Notes |
+|---|---|---|
+| `allowReserved` | `false` | Set `true` if the target NPC may be reserved by another quest (`ReservesLocationOrReference`). Without this, the alias fails to fill and the quest doesn't start. `uniqueActor` forces it on. |
+
+#### SM iron laws (engine behaviour, not bugs)
+
+- **One event → one quest starts** — the engine tries quest nodes in order and starts the
+  first one whose conditions pass. A second unconditional quest on the same event never starts
+  in the same event firing. Use conditions to differentiate.
+- **`SimpleActor` critters don't fire `KillActor`** — killing chickens, rabbits, etc. produces
+  no SM event. Target proper actors (bandits, wolves, NPCs).
+- **Any required alias that fails to fill → quest doesn't start, silently.** Make aliases
+  optional only if the quest can function without them.
+- **ESL plugins work fine with SM records.** No need to use an ESP just for SM content.
+
+#### ScriptEvent — sending your own story events
+
+`ScriptEvent` lets Papyrus code trigger SM quests without relying on a vanilla event.
+The build embeds the shared dispatcher (`MFStoryEventDispatch.pex`) into the packaged mod
+automatically — you don't compile anything per-quest.
+
+```jsonc
+// 1. declare the keyword that identifies your event channel
+"keywords": [ { "editorId": "MY_StoryKW" } ],
+
+// 2. the quest that responds to it
+"quests": [{
+  "editorId": "MY_QuestOnFire",
+  "storyEvent": { "event": "ScriptEvent", "keyword": "MY_StoryKW" },
+  "aliases": [ { "name": "Target", "fill": "fromEvent:ref1" } ]
+}]
+```
+
+From Papyrus (any script), fire the event:
+```papyrus
+; MFStoryEventDispatch is the embedded global script
+MFStoryEventDispatch.Fire(MY_StoryKW, akRef1, akRef2, akLocation)
+```
+
+The dispatcher calls `MY_StoryKW.SendStoryEvent(...)` which the engine routes to every
+matching SM quest node. One dispatcher `.pex` serves all mods — `package` copies it into
+`Scripts/` automatically when any ScriptEvent quest is present.
+
+See `examples/story-manager-scriptevent.json` + `examples/MFSE_TestTrigger.psc`.
+
 ### scripts — Papyrus attachment
 ```jsonc
 {

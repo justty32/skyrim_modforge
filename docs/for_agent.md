@@ -73,6 +73,17 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
   magicEffect/placement base+cell+worldspace/leveled+container entries, via `"<master>:0xFORMID"`).
 - **Dialogue** records are valid, but a line actually appearing in conversation can need
   quest-flag/branch tuning, and there is **no voice** (subtitle only).
+- **Story Manager (SM) event-driven quests:** add `storyEvent` + `aliases` to a quest and the
+  build wires SMBN→SMQN automatically under the vanilla event root. Supported events:
+  `KillActor`, `ChangeLocation`, `CastMagic`, `AddItem`, `Assault`, `ScriptEvent`. Alias fills:
+  `fromEvent:<slot>`, `uniqueActor:<ref>`, `forced:<ref>`. **In-game confirmed (2026-06-04)**
+  on all variant patterns including ESL plugins. See SPEC-dialogue-quests.md → "Story Manager
+  quests".
+- **Script Event (custom story trigger):** a `ScriptEvent` quest declares a `keyword`; a
+  Papyrus caller fires `MFStoryEventDispatch.Fire(kw, ref1, ref2, loc)` and the engine routes
+  it to matching SM quests. The dispatcher `.pex` is embedded in the CLI and copied into
+  `Scripts/` by `package` automatically — no per-mod Papyrus compile needed. **In-game
+  confirmed (2026-06-04).**
 - You cannot confirm anything works **in-game** from here — that needs a Proton/Skyrim launch.
   Say "generated and structurally verified (dump)", not "works in-game", unless a human tested it.
 

@@ -31,6 +31,7 @@ $R extract  <plugin.esp> <strings.json>      # 擷取可翻譯字串 -> JSON（s
 $R apply    <plugin.esp> <strings.json> <out.esp>     # 寫回譯文（拉丁文字 / 內嵌）
 $R applyloc <plugin.esp> <strings.json> <outModDir>   # CJK：Localized UTF-8 <plugin>_chinese.STRINGS
 $R gen      <out.esp>                         # 示範插件（驗證工具鏈是否正常）
+$R smtree   <Skyrim.esm>                      # 列出 Story Manager 事件根（查詢事件根 FormID）
 ```
 
 `--no-build` 需要先執行過 `dotnet build`；若不確定，可省略（速度較慢）。

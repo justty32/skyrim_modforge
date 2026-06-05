@@ -101,6 +101,100 @@ NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動
 
 使用 `questdiag <plugin> <0xFORMID>` 可檢查任何任務。對話仍然只在遊戲**載入**時才會登錄。完整範例：`examples/quest_stages_spec.json`。
 
+### Story Manager 任務 — 事件驅動啟動
+
+任務可以由 **Story Manager（SM）** 在回應遊戲內事件時**自動啟動**，而不需要在遊戲載入時啟動或透過 `SetObjectiveDisplayed`。在任務中加入 `storyEvent` 區塊，建置時會自動配線（在正確的原版事件根下建立 SMBN→SMQN，並清除 `StartGameEnabled`）。
+
+**遊戲內確認（2026-06-04）**，涵蓋所有五種變體（victim、killer、forced、condition、ESL）。
+
+```jsonc
+// 最簡形式 — 任何角色被殺時觸發，Victim 別名 = 被殺的角色
+{
+  "editorId": "MFSM_Avenge", "name": "Avenge the Fallen",
+  "stages": [ { "index": 10 } ],
+  "storyEvent": { "event": "KillActor" },
+  "aliases": [ { "name": "Victim", "fill": "fromEvent:victim" } ]
+}
+```
+
+#### `storyEvent` 欄位
+
+| 欄位 | 類型 | 說明 |
+|---|---|---|
+| `event` | string | 事件名稱——見下方事件表。**必填。** |
+| `keyword` | string | 此 spec 中一個 keyword 的 `editorId`。**僅 `ScriptEvent` 需要。** 多個任務可共用同一個 keyword（共用過濾分支）。 |
+| `conditions` | ConditionSpec[] | SM 分支上額外的 CTDA 條件（與 `dialogue[].conditions` 相同結構）。用於控制 SM 是否嘗試啟動此任務。 |
+
+#### 支援的事件
+
+| `event` | 觸發時機 | 可用於 `fill` 的槽 |
+|---|---|---|
+| `KillActor` | 任何角色被殺 | `victim`、`killer`、`location` |
+| `ChangeLocation` | 角色進入新地點 | `oldLocation`、`newLocation` |
+| `CastMagic` | 施放法術 | `caster`、`target`、`location` |
+| `AddItem` | 物品加入物品欄 | `owner`、`location` |
+| `Assault` | 角色遭到攻擊 | `victim`、`attacker`、`location` |
+| `ScriptEvent` | 透過派發器發送 Papyrus `SendStoryEvent` | `ref1`、`ref2`、`location` |
+
+#### `aliases` — 動態別名填充
+
+`aliases` 中的每個條目在任務啟動時填充一個任務別名。若任何**必填**別名無法填充，任務將靜默不啟動。
+
+```jsonc
+"aliases": [
+  { "name": "Victim",    "fill": "fromEvent:victim" },        // 從事件資料取得的槽
+  { "name": "Killer",    "fill": "fromEvent:killer" },
+  { "name": "NewLoc",    "fill": "fromEvent:newLocation" },   // Location 槽 → 自動設定別名 Type=Location
+  { "name": "TheBoss",   "fill": "uniqueActor:Skyrim.esm:0x01414D" },  // 指定 NPC（Ulfric）
+  { "name": "TriggerRef","fill": "forced:Skyrim.esm:0x000014" }         // 固定 ref（玩家）
+]
+```
+
+| `fill` 前綴 | 別名種類 | 說明 |
+|---|---|---|
+| `fromEvent:<槽>` | `FindMatchingRefFromEvent` | 槽名稱來自上方事件表。Location 槽（`newLocation`、`oldLocation`、`location`）自動設定 `QuestAlias.Type = Location`。 |
+| `uniqueActor:<ref>` | `UniqueActor` | 以 ref 固定到特定 NPC；強制啟用 `AllowReserved`。 |
+| `forced:<ref>` | `ForcedReference` | 靜態 ref（例如玩家 `Skyrim.esm:0x000014`）。 |
+
+**額外別名選項：**
+
+| 欄位 | 預設值 | 說明 |
+|---|---|---|
+| `allowReserved` | `false` | 若目標 NPC 可能被另一個任務保留（`ReservesLocationOrReference`），設為 `true`。否則別名填充失敗，任務不啟動。`uniqueActor` 強制啟用。 |
+
+#### SM 鐵律（引擎行為，非 bug）
+
+- **一個事件只啟動一個任務** — 引擎依序嘗試任務節點，啟動第一個條件通過的任務。在同一次事件觸發中，同事件的第二個無條件任務永遠不會啟動。用條件來區分不同任務。
+- **`SimpleActor` 小動物不觸發 `KillActor`** — 殺死雞、兔子等不會產生 SM 事件。以真正的角色（盜賊、狼、NPC）為目標。
+- **任何必填別名填充失敗 → 任務不啟動，且無任何提示。** 只有在任務可以在沒有該別名的情況下運作時，才將別名設為選填。
+- **ESL 插件完全支援 SM 記錄**，無需使用 ESP 格式。
+
+#### ScriptEvent — 發送自訂 Story 事件
+
+`ScriptEvent` 讓 Papyrus 程式碼在不依賴原版事件的情況下觸發 SM 任務。建置時會將共用的派發器（`MFStoryEventDispatch.pex`）自動嵌入打包的模組中——每個任務不需要個別編譯任何東西。
+
+```jsonc
+// 1. 宣告識別您的事件頻道的 keyword
+"keywords": [ { "editorId": "MY_StoryKW" } ],
+
+// 2. 回應它的任務
+"quests": [{
+  "editorId": "MY_QuestOnFire",
+  "storyEvent": { "event": "ScriptEvent", "keyword": "MY_StoryKW" },
+  "aliases": [ { "name": "Target", "fill": "fromEvent:ref1" } ]
+}]
+```
+
+從 Papyrus（任何腳本）發送事件：
+```papyrus
+; MFStoryEventDispatch 是嵌入的全域腳本
+MFStoryEventDispatch.Fire(MY_StoryKW, akRef1, akRef2, akLocation)
+```
+
+派發器呼叫 `MY_StoryKW.SendStoryEvent(...)`，引擎將其路由到所有符合的 SM 任務節點。一個派發器 `.pex` 服務所有模組——當任何 ScriptEvent 任務存在時，`package` 會自動將其複製到 `Scripts/`。
+
+見 `examples/story-manager-scriptevent.json` + `examples/MFSE_TestTrigger.psc`。
+
 ### scripts — Papyrus 附加
 ```jsonc
 {

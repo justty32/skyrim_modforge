@@ -32,6 +32,7 @@ $R extract  <plugin.esp> <strings.json>      # pull translatable strings -> JSON
 $R apply    <plugin.esp> <strings.json> <out.esp>     # write targets back (Latin scripts / inline)
 $R applyloc <plugin.esp> <strings.json> <outModDir>   # CJK: Localized UTF-8 <plugin>_chinese.STRINGS
 $R gen      <out.esp>                         # demo plugin (sanity check the toolchain)
+$R smtree   <Skyrim.esm>                      # list Story Manager event roots (find an event root FormID)
 ```
 
 `--no-build` requires a prior `dotnet build`; drop it (slower) if unsure.
