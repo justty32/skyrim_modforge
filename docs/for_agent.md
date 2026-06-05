@@ -84,6 +84,10 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
   it to matching SM quests. The dispatcher `.pex` is embedded in the CLI and copied into
   `Scripts/` by `package` automatically — no per-mod Papyrus compile needed. **In-game
   confirmed (2026-06-04).**
+- **Reusable trigger library** — the one-line `Fire()` call wired to four real in-game entry
+  points, all in-game confirmed (2026-06-05): magic effect (cast a spell), potion (drink),
+  activator (`OnActivate`, pull a lever — model must be a real vanilla NIF), dialogue line
+  (`TopicInfo` `Fragment_0`, NPC gives a quest). Examples: `story-manager-{magic,potion,activator,dialogue}trigger.json`.
 - You cannot confirm anything works **in-game** from here — that needs a Proton/Skyrim launch.
   Say "generated and structurally verified (dump)", not "works in-game", unless a human tested it.
 

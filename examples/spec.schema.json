@@ -1550,6 +1550,21 @@
         "setStage": {
           "type": "integer",
           "description": "advance the host quest to this stage when the line is picked (-1 = none); needs the generated TIF fragment compiled in CK"
+        },
+        "resultScript": {
+          "type": "string",
+          "description": "custom result-script Scriptname (extends TopicInfo) wired as the line's OnBegin Fragment_0; overrides the auto setStage TIF"
+        },
+        "resultScriptSource": {
+          "type": "string",
+          "description": "optional .psc path (rel. to spec) for resultScript; `package` compiles it (beside the embedded dispatcher header for Fire()-routed triggers)"
+        },
+        "resultProperties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/property"
+          },
+          "description": "typed properties bound on the result-script VMAD (e.g. a Keyword for a dispatcher trigger)"
         }
       }
     },
