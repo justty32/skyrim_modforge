@@ -3,12 +3,11 @@ namespace ModForge;
 public static partial class Generator
 {
     // -------------------------------------------------------------------------------
-    //  Worldspace (WRLD) + Region (REGN) build.
+    //  Worldspace (WRLD) build.
     //
     //  Emits a NEW exterior worldspace (name, climate, water, parent, map bounds, land/water
-    //  defaults) and regions inside it (area polygon + weather table + map color). Records are
-    //  created and all FormLinks (climate/water/parent/worldspace/weather/…) wired here in one go,
-    //  resolving in-spec editorIds OR external "<master>:0xFORMID" refs.
+    //  defaults). Records are created and all FormLinks (climate/water/parent/…) wired here in one
+    //  go, resolving in-spec editorIds OR external "<master>:0xFORMID" refs.
     //
     //  HONEST SCOPE: this is the RECORD layer only. A worldspace with no SubCells block tree,
     //  no terrain (LAND), no LOD meshes and no navmesh is a valid record but NOT a walkable world
@@ -16,12 +15,13 @@ public static partial class Generator
     //  here is (a) attaching a custom Climate to a world and (b) defining weather/spawn REGIONS,
     //  which the Climate/Weather feature pairs with. See docs/SPEC.md.
     //
+    //  Region (REGN) build is in Generator.Build.Regions.cs.
     //  Returns counts folded into BuildStats + the link tallies.
     // -------------------------------------------------------------------------------
-    private static (int Worldspaces, int Regions, int TerrainCells, int NavmeshCells, int Links, int ExtLinks) BuildWorldspacesAndRegions(
+    private static (int Worldspaces, int TerrainCells, int NavmeshCells, int Links, int ExtLinks) BuildWorldspaces(
         SkyrimMod mod, ModSpec spec, Dictionary<string, FormKey> formKeyByEd, Action<string> warn)
     {
-        int worldspaces = 0, regions = 0, terrainCells = 0, navmeshCells = 0, links = 0, extLinks = 0;
+        int worldspaces = 0, terrainCells = 0, navmeshCells = 0, links = 0, extLinks = 0;
         // Per-cell navmeshes collected here → single NAVI override written after all worldspaces
         // (the flat-navmesh build + NAVI write live in Generator.Build.Navmesh.cs).
         var navmInfos = new List<NavmCellInfo>();
@@ -154,72 +154,6 @@ public static partial class Generator
         // One additive NAVI override (master 0x00012FB4) carrying every cell's navmesh info.
         WriteNaviInfoMap(mod, navmInfos);
 
-        // --- Regions (REGN) ---------------------------------------------------------------------
-        foreach (var rg in spec.Regions)
-        {
-            var r = mod.Regions.AddNew();
-            r.EditorID = rg.EditorId;
-
-            Wire($"region '{rg.EditorId}' worldspace", rg.Worldspace, fk => r.Worldspace.SetTo(fk));
-
-            // Area polygon (RPLD). Each point is a 2-D world position; the closed loop bounds the area.
-            if (rg.Area.Count > 0)
-            {
-                var area = new RegionArea { EdgeFallOff = rg.EdgeFallOff };
-                area.RegionPointListData = new Noggog.ExtendedList<Noggog.P2Float>();
-                foreach (var p in rg.Area) area.RegionPointListData.Add(new Noggog.P2Float(p.X, p.Y));
-                r.RegionAreas.Add(area);
-            }
-
-            // Map color (RCLR) — 0xRRGGBB.
-            if (TryParseRgb(rg.MapColor, out var color)) r.MapColor = color;
-
-            // Weather table (RDWT) — the climate hook. Each entry is a Weather ref + chance weight.
-            if (rg.Weather.Count > 0)
-            {
-                var weather = new RegionWeather { Priority = rg.WeatherPriority };
-                weather.Weathers = new Noggog.ExtendedList<WeatherType>();
-                foreach (var we in rg.Weather)
-                {
-                    var wt = new WeatherType { Chance = we.Chance };
-                    Wire($"region '{rg.EditorId}' weather", we.Weather, fk => wt.Weather.SetTo(fk));
-                    Wire($"region '{rg.EditorId}' weather global", we.Global, fk => wt.Global.SetTo(fk));
-                    weather.Weathers.Add(wt);
-                }
-                r.Weather = weather;
-            }
-
-            regions++;
-        }
-
-        return (worldspaces, regions, terrainCells, navmeshCells, links, extLinks);
-    }
-
-    // Parse "0xRRGGBB" / "RRGGBB" (or "#RRGGBB") into an opaque Color; false if blank/malformed.
-    private static bool TryParseRgb(string s, out System.Drawing.Color color)
-    {
-        color = default;
-        if (string.IsNullOrWhiteSpace(s)) return false;
-        s = s.Trim().TrimStart('#');
-        if (s.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) s = s[2..];
-        if (!uint.TryParse(s, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var v)) return false;
-        color = System.Drawing.Color.FromArgb(0, (byte)(v >> 16), (byte)(v >> 8), (byte)v);
-        return true;
-    }
-
-    // BuildContext entry point — runs the worldspace/region build after the formKey table exists
-    // (so regions can resolve in-spec worldspace editorIds), folding counts/links into the context.
-    private sealed partial class BuildContext
-    {
-        public void BuildWorldspacesAndRegions()
-        {
-            var (w, r, tc, nc, l, e) = Generator.BuildWorldspacesAndRegions(mod, spec, formKeyByEd, Warn);
-            worldspacesBuilt = w;
-            regionsBuilt = r;
-            terrainCellsBuilt = tc;
-            navmeshCellsBuilt = nc;
-            linksWired += l;
-            extLinks += e;
-        }
+        return (worldspaces, terrainCells, navmeshCells, links, extLinks);
     }
 }
