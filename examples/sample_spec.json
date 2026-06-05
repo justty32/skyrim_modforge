@@ -125,6 +125,6 @@
     { "editorId": "MF_Rock", "model": "Clutter\\Common\\Rock01.nif" }
   ],
   "activators": [
-    { "editorId": "MF_Lever", "name": "Forged Lever", "model": "Dungeons\\Caves\\Furniture\\CaveLever01.nif" }
+    { "editorId": "MF_Lever", "name": "Forged Lever", "model": "Dungeons\\Nordic\\Levers\\PullBar\\GenPullBar01.nif" }
   ]
 }

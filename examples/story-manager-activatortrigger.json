@@ -9,8 +9,8 @@
     {
       "editorId": "MFSE_LeverActivator",
       "name": "Forge Lever",
-      "_": "Vanilla cave pull-lever mesh so it renders with no custom asset. The payload is the attached MFSE_ActivatorTrigger script.",
-      "model": "Dungeons\\Caves\\Furniture\\CaveLever01.nif"
+      "_": "Vanilla free-standing pull-bar mesh (GenPullBar01, verified present in Skyrim.esm — formid 026826) so it renders and stands on the ground when spawned. The payload is the attached MFSE_ActivatorTrigger script.",
+      "model": "Dungeons\\Nordic\\Levers\\PullBar\\GenPullBar01.nif"
     }
   ],
 
