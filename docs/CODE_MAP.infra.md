@@ -101,6 +101,7 @@
 | Core | `Translator.cs` | 字串 extract（→ JSON source/target）+ apply（inline or Localized .STRINGS）|
 | Core | `Support.cs` | UTF-8 provider（CJK localization）+ string-entry translation slot helpers |
 | CLI | `Program.Translate.cs` | `extract` / `apply` / `applyloc` 命令 |
+| CLI | `Program.Schema.cs` | `CheckUnknownFields`：遞迴比對 JSON key 與 C# 型別屬性，抓拼字錯誤；跳過 `_*` / `//*` 注釋慣例 |
 
 ---
 
