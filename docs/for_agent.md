@@ -93,6 +93,12 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
   `examples/MFSE_AdvanceStage.psc`). Full arc demo: `examples/story-manager-queststage.json` (cast →
   objective shows + chest spawns → open chest → objective completes + quest closes). In-game confirmed
   2026-06-05.
+- **Aliases on an ordinary quest (no `storyEvent`):** the `aliases[]` block also works on a normal
+  StartGameEnabled quest — `forced`/`uniqueActor`/`createObject`/`findMatching` fills + an alias
+  `script` all apply (only `fromEvent` is invalid without an event). They fill on quest start (= game
+  load). So a plain quest can force an NPC/ref into an alias, spawn an object at it, and carry an
+  `OnActivate` alias script with no SM event. Demo `examples/quest-alias-standalone.json`. In-game
+  confirmed 2026-06-05.
 - **Script Event (custom story trigger):** a `ScriptEvent` quest declares a `keyword`; a
   Papyrus caller fires `MFStoryEventDispatch.Fire(kw, ref1, ref2, loc)` and the engine routes
   it to matching SM quests. The dispatcher `.pex` is embedded in the CLI and copied into

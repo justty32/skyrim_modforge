@@ -1,0 +1,32 @@
+{
+  "pluginName": "ModForgeStandaloneAlias.esp",
+  "esl": false,
+  "_": "Aliases on an ORDINARY (non-storyEvent, StartGameEnabled) quest — no Story Manager event needed. Demonstrates that forced / createObject fills and an alias OnActivate script all work on a normal always-running quest (previously the build only built aliases for storyEvent quests). Chain, all on game LOAD: the quest MFSE_Standalone auto-starts -> startUpStage 10 shows the objective 'Open the cache at your feet' AND its Player alias is forced to the player, then the Cache alias createObjects a vanilla chest AT the Player. That spawned chest carries the MFSE_AdvanceStage alias script. OPEN the chest -> OnActivate -> SetStage(20) -> objective completes + quest closes (RunOnce stops it respawning). In-game: load a save, a chest appears at your feet with a new journal objective; open it; the objective ticks done and the quest finishes.",
+
+  "quests": [
+    {
+      "editorId": "MFSE_Standalone",
+      "name": "A Standing Errand",
+      "type": "SideQuest",
+      "_": "StartGameEnabled (default true) — NO storyEvent. Its aliases are built by BuildStandaloneQuestAliases. Player = forced player ref (Skyrim.esm:0x000014); Cache = createObject a vanilla small chest at the Player, carrying the advance-stage alias script.",
+      "stages": [
+        { "index": 10, "startUpStage": true, "logEntry": "A cache has appeared. Open it." },
+        { "index": 20, "logEntry": "The cache is open. Done.", "completeQuest": true }
+      ],
+      "objectives": [
+        { "index": 0, "text": "Open the cache at your feet", "showStage": 10, "completeStage": 20 }
+      ],
+      "aliases": [
+        { "name": "Player", "fill": "forced:Skyrim.esm:0x000014" },
+        {
+          "name": "Cache",
+          "fill": "createObject:Skyrim.esm:0x0BCD2D@Player",
+          "_": "Spawns a vanilla small chest at the player on quest start (= game load), carrying the alias OnActivate script that advances this quest to stage 20.",
+          "script": "MFSE_AdvanceStage",
+          "scriptSource": "MFSE_AdvanceStage.psc",
+          "scriptProperties": [ { "name": "Stage", "type": "int", "int": 20 } ]
+        }
+      ]
+    }
+  ]
+}

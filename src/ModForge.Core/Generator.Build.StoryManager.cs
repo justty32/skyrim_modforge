@@ -34,102 +34,7 @@ public static partial class Generator
                     if (BuildCondition(cs, $"quest '{qs.EditorId}' storyEvent condition") is { } cond)
                         quest.EventConditions.Add(cond);
 
-                // Map alias name → its ID (= sequential index) up front so a createObject fill can
-                // target another alias by name even when that target is declared later in the list.
-                var aliasIdByName = new Dictionary<string, uint>(StringComparer.OrdinalIgnoreCase);
-                for (int i = 0; i < qs.Aliases.Count; i++) aliasIdByName[qs.Aliases[i].Name] = (uint)i;
-
-                uint nextId = 0;
-                foreach (var aSpec in qs.Aliases)
-                {
-                    var alias = new QuestAlias { ID = nextId, Name = aSpec.Name };
-                    if (StoryManagerEvents.TryParseFill(aSpec.Fill, out var kind, out var arg))
-                    {
-                        if (kind.Equals("fromEvent", StringComparison.OrdinalIgnoreCase)
-                            && def.Slots.TryGetValue(arg, out var slot))
-                        {
-                            alias.FindMatchingRefFromEvent = new FindMatchingRefFromEvent
-                            {
-                                FromEvent = def.Code,
-                                EventData = (byte[])slot.Clone(),
-                            };
-                            // The alias TYPE must match the slot's payload kind or the engine fills
-                            // null: a Location slot ("L1"/"L2", first byte 'L'=0x4C) needs a LOCATION
-                            // alias; a ref slot ("R1"/"R2") a REFERENCE alias. (In-game: a ChangeLocation
-                            // L2 fill returned null because the alias defaulted to Reference type.)
-                            alias.Type = slot.Length > 0 && slot[0] == (byte)'L'
-                                ? QuestAlias.TypeEnum.Location
-                                : QuestAlias.TypeEnum.Reference;
-                        }
-                        else if (kind.Equals("forced", StringComparison.OrdinalIgnoreCase)
-                            && TryResolveRef(arg, formKeyByEd, out var fk))
-                        {
-                            alias.ForcedReference.SetTo(fk);
-                        }
-                        else if (kind.Equals("uniqueActor", StringComparison.OrdinalIgnoreCase)
-                            && TryResolveRef(arg, formKeyByEd, out var uaFk))
-                        {
-                            // QuestAlias.UniqueActor (ALUA) = a unique NPC base record this alias
-                            // resolves to. <ref> is an in-spec NPC editorId or Plugin.esm:0xID.
-                            alias.UniqueActor.SetTo(uaFk);
-                            // AllowReserved is REQUIRED here (vanilla sets it on EVERY unique-actor
-                            // alias): a unique NPC's persistent ref is usually already reserved by
-                            // other quests, and without this flag the fill fails — which, for a
-                            // non-optional alias, blocks the whole quest from starting. (In-game:
-                            // Ulfric uniqueActor alias kept the quest stopped until this was set.)
-                            // NB: QuestAlias.Flags defaults to null, and `|=` on a null lifts to null
-                            // (no-op) — must seed from GetValueOrDefault() or the flag never sticks.
-                            alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.AllowReserved;
-                        }
-                        else if (kind.Equals("createObject", StringComparison.OrdinalIgnoreCase)
-                            && StoryManagerEvents.TryParseCreateObject(arg, out var objRef, out var tgtName)
-                            && TryResolveRef(objRef, formKeyByEd, out var objFk)
-                            && aliasIdByName.TryGetValue(tgtName, out var tgtId))
-                        {
-                            // CreateReferenceToObject (ALCO/ALCA/ALCL): on quest start the engine SPAWNS
-                            // a new reference to <objFk> AT the ref held by alias <tgtName> (e.g. spawn a
-                            // chest at the event's caster). Vanilla always points AliasID at a Reference-
-                            // type alias (an actual ref), never a Location. Create=At; Level=Easy is
-                            // ignored unless <objFk> is a leveled actor base.
-                            var cro = new CreateReferenceToObject
-                            {
-                                AliasID = (short)tgtId,
-                                Create = CreateReferenceToObject.CreateEnum.At,
-                                Level = Level.Easy,
-                            };
-                            cro.Object.SetTo(objFk);
-                            alias.CreateReferenceToObject = cro;
-                        }
-                        else if (kind.Equals("findMatching", StringComparison.OrdinalIgnoreCase))
-                        {
-                            // Find Matching Reference "in loaded area" (decoded from vanilla MQGreybeardCall
-                            // Bystander aliases): the engine fills this alias with an ALREADY-EXISTING ref in
-                            // the loaded area matching this alias's Conditions. This is NOT FindMatchingRefNearAlias
-                            // (that's linked-ref-children only, which fails for refs with no editor links) — it is
-                            // the QuestAlias.Flag MatchingRefInLoadedArea, plus MatchingRefClosest for arg "closest"
-                            // (pick the nearest match) vs "any". Match filter lives on QuestAlias.Conditions.
-                            alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.MatchingRefInLoadedArea;
-                            if (arg.Equals("closest", StringComparison.OrdinalIgnoreCase))
-                                alias.Flags |= QuestAlias.Flag.MatchingRefClosest;
-                            foreach (var cs in aSpec.Conditions)
-                                if (BuildCondition(cs, $"quest '{qs.EditorId}' alias '{aSpec.Name}' findMatching condition") is { } cond)
-                                    alias.Conditions.Add(cond);
-                        }
-                    }
-                    if (aSpec.Optional)
-                        alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.Optional;
-                    // AllowReserved lets the fill grab a ref another quest has reserved (via
-                    // ReservesLocationOrReference). Without it, killing/targeting an actor a running
-                    // quest holds (e.g. a Riverwood NPC reserved by a Freeform quest) fails to fill —
-                    // and a required alias that can't fill blocks the whole quest from starting.
-                    if (aSpec.AllowReserved)
-                        alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.AllowReserved;
-                    quest.Aliases.Add(alias);
-                    if (!string.IsNullOrEmpty(aSpec.Script))
-                        AttachAliasScript(quest, alias.ID, aSpec);
-                    nextId++;
-                }
-                quest.NextAliasID = nextId;
+                BuildQuestAliases(quest, qs, def);
 
                 // ScriptEvent quests are gated by a keyword; that keyword keys (and filters) the branch.
                 bool isScriptEvent = se.Event.Equals("ScriptEvent", StringComparison.OrdinalIgnoreCase);
@@ -173,6 +78,126 @@ public static partial class Generator
                 var entry = new StoryManagerQuest();
                 entry.Quest.SetTo(quest);
                 qnode.Quests.Add(entry);
+            }
+        }
+
+        // Build a quest's aliases (fills + alias scripts). Shared by the Story-Manager path (def = the
+        // event, enabling fromEvent fills) and ordinary StartGameEnabled quests (def = null, so fromEvent
+        // is skipped but forced/uniqueActor/createObject/findMatching + alias scripts all still work).
+        private void BuildQuestAliases(Quest quest, QuestSpec qs, StoryEventDef? def)
+        {
+            // Map alias name → its ID (= sequential index) up front so a createObject fill can
+            // target another alias by name even when that target is declared later in the list.
+            var aliasIdByName = new Dictionary<string, uint>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < qs.Aliases.Count; i++) aliasIdByName[qs.Aliases[i].Name] = (uint)i;
+
+            uint nextId = 0;
+            foreach (var aSpec in qs.Aliases)
+            {
+                var alias = new QuestAlias { ID = nextId, Name = aSpec.Name };
+                if (StoryManagerEvents.TryParseFill(aSpec.Fill, out var kind, out var arg))
+                {
+                    if (kind.Equals("fromEvent", StringComparison.OrdinalIgnoreCase)
+                        && def is { } d && d.Slots.TryGetValue(arg, out var slot))
+                    {
+                        alias.FindMatchingRefFromEvent = new FindMatchingRefFromEvent
+                        {
+                            FromEvent = d.Code,
+                            EventData = (byte[])slot.Clone(),
+                        };
+                        // The alias TYPE must match the slot's payload kind or the engine fills
+                        // null: a Location slot ("L1"/"L2", first byte 'L'=0x4C) needs a LOCATION
+                        // alias; a ref slot ("R1"/"R2") a REFERENCE alias. (In-game: a ChangeLocation
+                        // L2 fill returned null because the alias defaulted to Reference type.)
+                        alias.Type = slot.Length > 0 && slot[0] == (byte)'L'
+                            ? QuestAlias.TypeEnum.Location
+                            : QuestAlias.TypeEnum.Reference;
+                    }
+                    else if (kind.Equals("forced", StringComparison.OrdinalIgnoreCase)
+                        && TryResolveRef(arg, formKeyByEd, out var fk))
+                    {
+                        alias.ForcedReference.SetTo(fk);
+                    }
+                    else if (kind.Equals("uniqueActor", StringComparison.OrdinalIgnoreCase)
+                        && TryResolveRef(arg, formKeyByEd, out var uaFk))
+                    {
+                        // QuestAlias.UniqueActor (ALUA) = a unique NPC base record this alias
+                        // resolves to. <ref> is an in-spec NPC editorId or Plugin.esm:0xID.
+                        alias.UniqueActor.SetTo(uaFk);
+                        // AllowReserved is REQUIRED here (vanilla sets it on EVERY unique-actor
+                        // alias): a unique NPC's persistent ref is usually already reserved by
+                        // other quests, and without this flag the fill fails — which, for a
+                        // non-optional alias, blocks the whole quest from starting. (In-game:
+                        // Ulfric uniqueActor alias kept the quest stopped until this was set.)
+                        // NB: QuestAlias.Flags defaults to null, and `|=` on a null lifts to null
+                        // (no-op) — must seed from GetValueOrDefault() or the flag never sticks.
+                        alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.AllowReserved;
+                    }
+                    else if (kind.Equals("createObject", StringComparison.OrdinalIgnoreCase)
+                        && StoryManagerEvents.TryParseCreateObject(arg, out var objRef, out var tgtName)
+                        && TryResolveRef(objRef, formKeyByEd, out var objFk)
+                        && aliasIdByName.TryGetValue(tgtName, out var tgtId))
+                    {
+                        // CreateReferenceToObject (ALCO/ALCA/ALCL): on quest start the engine SPAWNS
+                        // a new reference to <objFk> AT the ref held by alias <tgtName> (e.g. spawn a
+                        // chest at the event's caster). Vanilla always points AliasID at a Reference-
+                        // type alias (an actual ref), never a Location. Create=At; Level=Easy is
+                        // ignored unless <objFk> is a leveled actor base.
+                        var cro = new CreateReferenceToObject
+                        {
+                            AliasID = (short)tgtId,
+                            Create = CreateReferenceToObject.CreateEnum.At,
+                            Level = Level.Easy,
+                        };
+                        cro.Object.SetTo(objFk);
+                        alias.CreateReferenceToObject = cro;
+                    }
+                    else if (kind.Equals("findMatching", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Find Matching Reference "in loaded area" (decoded from vanilla MQGreybeardCall
+                        // Bystander aliases): the engine fills this alias with an ALREADY-EXISTING ref in
+                        // the loaded area matching this alias's Conditions. This is NOT FindMatchingRefNearAlias
+                        // (that's linked-ref-children only, which fails for refs with no editor links) — it is
+                        // the QuestAlias.Flag MatchingRefInLoadedArea, plus MatchingRefClosest for arg "closest"
+                        // (pick the nearest match) vs "any". Match filter lives on QuestAlias.Conditions.
+                        alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.MatchingRefInLoadedArea;
+                        if (arg.Equals("closest", StringComparison.OrdinalIgnoreCase))
+                            alias.Flags |= QuestAlias.Flag.MatchingRefClosest;
+                        foreach (var cs in aSpec.Conditions)
+                            if (BuildCondition(cs, $"quest '{qs.EditorId}' alias '{aSpec.Name}' findMatching condition") is { } cond)
+                                alias.Conditions.Add(cond);
+                    }
+                }
+                if (aSpec.Optional)
+                    alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.Optional;
+                // AllowReserved lets the fill grab a ref another quest has reserved (via
+                // ReservesLocationOrReference). Without it, killing/targeting an actor a running
+                // quest holds (e.g. a Riverwood NPC reserved by a Freeform quest) fails to fill —
+                // and a required alias that can't fill blocks the whole quest from starting.
+                if (aSpec.AllowReserved)
+                    alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.AllowReserved;
+                quest.Aliases.Add(alias);
+                if (!string.IsNullOrEmpty(aSpec.Script))
+                    AttachAliasScript(quest, alias.ID, aSpec);
+                nextId++;
+            }
+            quest.NextAliasID = nextId;
+        }
+
+        // Ordinary (non-storyEvent, StartGameEnabled) quests can ALSO carry aliases — a forced/uniqueActor
+        // NPC alias, a createObject spawn, a findMatching pick, and crucially an alias OnActivate script —
+        // without being event-launched. BuildStoryManager handles storyEvent quests; this covers the rest.
+        // Runs after BuildStoryManager (so storyEvent quests are skipped) and before WireQuestStages (so an
+        // alias-script adapter is in place for the stage-fragment merge). fromEvent fills are meaningless
+        // here (no event) and are skipped (validator warns).
+        public void BuildStandaloneQuestAliases()
+        {
+            foreach (var qs in spec.Quests)
+            {
+                if (qs.StoryEvent is not null) continue;                  // handled in BuildStoryManager
+                if (qs.Aliases.Count == 0) continue;
+                if (string.IsNullOrEmpty(qs.EditorId) || !questsByEd.TryGetValue(qs.EditorId, out var quest)) continue;
+                BuildQuestAliases(quest, qs, null);
             }
         }
 

@@ -133,4 +133,8 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - **完成半段免新程式碼**：複用 alias OnActivate，新增可複用 `examples/MFSE_AdvanceStage.psc`（`OnActivate→GetOwningQuest().SetStage(Stage)`；`GetOwningQuest()` 在「執行時 alias OnActivate、非 StartGameEnabled」情境可用，與 dialogue TIF 在 game-load 的 None 坑不同）。
 - 端到端 `examples/story-manager-queststage.json`：施法→SM 啟動 quest 於 startUpStage 10（objective 顯示）+ createObject 生箱→開箱→alias `SetStage(20)`→objective 完成 + quest 關閉（stage 20 completeQuest）。zip `~/skyrim_mods/ModForgeQuestStage.zip`。
 
-**之後可做**：再多解事件（SkillIncrease/Jail/Bribe… `smtree Skyrim.esm` 列舉,但須用 conditions 才安全,見 [[dispatcher-magic-trigger]]）;把 alias 建構推廣到 StartGameEnabled（非 storyEvent）quest，讓它們也能帶 forced/createObject alias + alias 腳本。
+**alias 推廣到一般 quest（非 storyEvent）：✅ 實機驗證通過（2026-06-05）**——309 測試綠：
+- 抽出共用 `BuildQuestAliases(quest,qs,def?)`（storyEvent 與一般 quest 共用；fromEvent 僅 `def!=null`）+ `BuildStandaloneQuestAliases()`（Build.cs 在 BuildStoryManager 後、WireQuestStages 前；非 storyEvent quest 也建 forced/uniqueActor/createObject/findMatching + alias 腳本，跳 fromEvent）。validate 抽出 `ValidateQuestAlias`（兩路共用，def=null 時 fromEvent 報錯）。重構行為不變,既有 SM 測試全綠。
+- 一般 StartGameEnabled quest 的 alias 在「quest 啟動＝遊戲載入」時填。範例 `examples/quest-alias-standalone.json`：forced player→createObject 生箱於玩家→開箱→alias OnActivate `SetStage` 完成關閉 quest。zip `~/skyrim_mods/ModForgeStandaloneAlias.zip`。
+
+**之後可做**：再多解事件（SkillIncrease/Jail/Bribe… `smtree Skyrim.esm` 列舉,但須用 conditions 才安全,見 [[dispatcher-magic-trigger]]）;NPC 劇情演出（Scene action types：走位/動畫/用物件，IDEAS 第 1b 節）——讓被啟動的 quest 做出可見演出。

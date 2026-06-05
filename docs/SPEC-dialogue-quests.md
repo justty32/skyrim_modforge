@@ -268,6 +268,15 @@ cannot be filled the quest silently does not start.
 | `allowReserved` | `false` | Set `true` if the target NPC may be reserved by another quest (`ReservesLocationOrReference`). Without this, the alias fails to fill and the quest doesn't start. `uniqueActor` forces it on. |
 | `script` / `scriptSource` / `scriptProperties` | — | Attach a Papyrus **alias script** to this alias (a `ReferenceAlias`-extending script stored on the quest's `QuestAdapter.Aliases` VMAD, bound to the alias ID). It travels with **whatever ref fills the alias** — including a `createObject`-spawned or `findMatching`-matched ref that no base-object script could reach. Classic use is `Event OnActivate(ObjectReference akActionRef)`: activating the aliased ref runs it (e.g. call `MFStoryEventDispatch.Fire(...)` to chain a story event). `script` = the Scriptname, `scriptSource` = the `.psc` for `package` to compile, `scriptProperties` bind its Auto properties (same shape as a dialogue `resultProperties`). You supply the compiled `.pex`. In-game confirmed (2026-06-05); reusable helper `examples/MFSE_AliasActivate.psc`. |
 
+**Aliases on an ordinary quest (no `storyEvent`):** the same `aliases[]` block works on a normal
+**StartGameEnabled** quest — `forced` / `uniqueActor` / `createObject` / `findMatching` fills and an
+alias `script` all apply (only `fromEvent` is invalid, since there's no event to pull a ref from — the
+validator flags it). The aliases fill when the quest starts (= game load for a StartGameEnabled quest).
+This lets a plain always-running quest force an NPC/ref into an alias, spawn an object at it, and carry
+an `OnActivate` alias script — with no Story Manager event. In-game confirmed (2026-06-05); demo
+`examples/quest-alias-standalone.json` (forced player → `createObject` chest at the player → open it →
+alias `OnActivate` advances + closes the quest).
+
 #### SM iron laws (engine behaviour, not bugs)
 
 - **One event → one quest starts** — the engine tries quest nodes in order and starts the

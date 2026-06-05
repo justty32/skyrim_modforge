@@ -24,6 +24,7 @@
 | `examples/story-manager-findmatching.json` | findMatching alias fill（loaded area 裏找最近的符合 conditions 的既有 ref；複用 magic trigger）|
 | `examples/story-manager-aliastrigger.json` + `MFSE_AliasActivate.psc` | alias OnActivate（腳本掛 quest alias→活化執行時 createObject 生成的 ref→Fire 鏈下個事件；複用 magic trigger + createObject）|
 | `examples/story-manager-queststage.json` + `MFSE_AdvanceStage.psc` | journal 進度：`startUpStage` 啟動即顯示 objective + alias OnActivate `SetStage` 完成並關閉 quest（startUpStage + alias 腳本 + stage fragment 三者共存）|
+| `examples/quest-alias-standalone.json` | 一般（非 storyEvent / StartGameEnabled）quest 帶 alias：forced player + createObject 生箱 + alias OnActivate（`BuildStandaloneQuestAliases`）|
 | `examples/story-manager-scriptevent.json` | ScriptEvent 自訂觸發 |
 | `examples/MFSE_TestTrigger.psc` | ScriptEvent OnInit 觸發腳本 |
 | `examples/story-manager-magictrigger.json` | ScriptEvent 經 magic effect 觸發（玩家施法→啟動 quest）|
@@ -45,7 +46,7 @@
 | `DialogueTests.cs` | dialogue topic / INFO / greeting 生成 |
 | `QuestStageTests.cs` | stage log text / objective fragment / VMAD |
 | `SceneTests.cs` | SCEN actor / phase / dialogue action |
-| `StoryManagerBuildTests.cs` | SM build pass 2（SMBN/SMQN 掛接、alias fill 接線、alias 腳本 VMAD 掛接、`startUpStage` QSDT flag、stage fragment + alias 腳本共存於單一 adapter）|
+| `StoryManagerBuildTests.cs` | SM build pass 2（SMBN/SMQN 掛接、alias fill 接線、alias 腳本 VMAD 掛接、`startUpStage` QSDT flag、stage fragment + alias 腳本共存於單一 adapter、非 storyEvent quest 也建 forced/createObject alias + 腳本）|
 | `StoryManagerEventsTests.cs` | 事件登錄表欄位（FormKey / slot 對應）|
 | `StoryManagerEventsMoreTests.cs` | 擴充事件（ChangeLocation/CastMagic/AddItem/Assault/ScriptEvent）|
 | `StoryManagerValidateTests.cs` | SM validate（事件名、alias 語法、keyword 要求）|
@@ -136,8 +137,8 @@
 |-----|-----|-----|
 | Spec | `Spec.StoryManager.cs` | `QuestStoryEventSpec`（event + conditions）、`AliasSpec`（fill 模式：fromEvent/forced/uniqueActor/createObject/findMatching；findMatching 帶 `Conditions`；alias 腳本 `Script`/`ScriptSource`/`ScriptProperties` = OnActivate 等）|
 | Data | `StoryManagerEvents.cs` | 事件登錄表：KillActor/ChangeLocation/CastMagic/AddItem/Assault/CraftItem/PlayerRemoveItem/Arrest/IncreaseLevel/ScriptEvent — FormKey + 槽名；`TryParseFill` / `TryParseCreateObject`（`<ref>@<alias>`）|
-| Build P2 | `Generator.Build.StoryManager.cs` | SMBN→SMQN 掛原版事件根；keyword 過濾條件（GetEventData/GetIsID）；alias fill 接線（含 createObject = `CreateReferenceToObject` 在 `aliasIdByName` 目標 alias 處生成；findMatching = `QuestAlias.Flag.MatchingRefInLoadedArea`[+`MatchingRefClosest`] + `BuildCondition` 把 alias.Conditions 接到 `QuestAlias.Conditions`；alias 腳本 `AttachAliasScript` = 在 `QuestAdapter.Aliases` 加 `QuestFragmentAlias`[v5/objFmt2、綁 alias ID、script flag=Local]）|
-| Validate | `Generator.Validate.StoryManager.cs` | 事件名合法、alias fill 語法、slot 名稱、ScriptEvent 需宣告 keyword |
+| Build P2 | `Generator.Build.StoryManager.cs` | SMBN→SMQN 掛原版事件根；keyword 過濾條件（GetEventData/GetIsID）；**`BuildQuestAliases(quest,qs,def?)`** 共用 helper 建所有 alias fill（fromEvent 僅 `def!=null` 時；createObject = `CreateReferenceToObject` 在 `aliasIdByName` 目標 alias 處生成；findMatching = `QuestAlias.Flag.MatchingRefInLoadedArea`[+`MatchingRefClosest`] + alias.Conditions；alias 腳本 `AttachAliasScript` = `QuestAdapter.Aliases` 加 `QuestFragmentAlias`[v5/objFmt2、綁 alias ID、flag=Local]）；**`BuildStandaloneQuestAliases()`** 替非 storyEvent quest 建 alias（def=null，跳 fromEvent）|
+| Validate | `Generator.Validate.StoryManager.cs` | 事件名合法；**`ValidateQuestAlias(q,a,def?,…)`** 共用（storyEvent 與非 storyEvent quest 都驗 alias fill/ref/script；def=null 時 fromEvent 報錯）；slot 名稱、ScriptEvent 需宣告 keyword |
 | Diag | `Diagnostics.StoryManager.cs` | smtree（事件根列舉）/ SMBN alias fill / event-data slot dump |
 
 ### 支援事件與槽

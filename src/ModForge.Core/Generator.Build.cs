@@ -66,6 +66,7 @@ public static partial class Generator
         // --- index editorId -> FormKey, then pass 2: wire cross-record references ---
         ctx.BuildFormKeyTable();
         ctx.BuildStoryManager();                   // Story Manager: storyEvent quests → Event/aliases + SMBN/SMQN (pass 2 so forced/condition refs resolve via formKeyByEd)
+        ctx.BuildStandaloneQuestAliases();         // non-storyEvent quests' aliases (forced/createObject/findMatching + alias scripts; no fromEvent) — before WireQuestStages for the adapter merge
         ctx.WireNpcs();                            // race/class/outfit/voice/crime/combatStyle/spells/factions
         ctx.WireVendors();                         // FACT vendor sellBuyList + queue deferred merchant-chest links
         ctx.WireRelationships();                   // RELA Parent/Child NPC refs

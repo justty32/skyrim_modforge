@@ -400,6 +400,37 @@ public class StoryManagerBuildTests
         Assert.Null(q.VirtualMachineAdapter);                              // no alias script → no VMAD
     }
 
+    // Aliases on an ORDINARY (non-storyEvent, StartGameEnabled) quest are built by
+    // BuildStandaloneQuestAliases — forced/createObject fills + alias scripts, no fromEvent. Previously
+    // the build only built aliases for storyEvent quests, so a normal quest's aliases were silently dropped.
+    [Fact]
+    public void Non_story_event_quest_still_builds_forced_alias_and_alias_script()
+    {
+        var spec = new ModSpec();
+        spec.Quests.Add(new QuestSpec
+        {
+            EditorId = "MFSM_Standing", Name = "Standing",
+            // no StoryEvent → StartGameEnabled stays true; aliases come from BuildStandaloneQuestAliases
+            Aliases =
+            {
+                new QuestAliasSpec { Name = "Player", Fill = "forced:Skyrim.esm:0x000014" },
+                new QuestAliasSpec
+                {
+                    Name = "Cache", Fill = "createObject:Skyrim.esm:0x0BCD2D@Player",
+                    Script = "MFSE_AdvanceStage", ScriptSource = "MFSE_AdvanceStage.psc",
+                    ScriptProperties = { new PropertySpec { Name = "Stage", Type = "int", Int = 20 } },
+                },
+            },
+        });
+        var q = Build(spec).Quests.Single(x => x.EditorID == "MFSM_Standing");
+        Assert.True(q.Flags.HasFlag(Quest.Flag.StartGameEnabled));        // NOT cleared (no storyEvent)
+        Assert.Equal(2, q.Aliases.Count);
+        Assert.False(q.Aliases.Single(a => a.Name == "Player").ForcedReference.IsNull);
+        Assert.NotNull(q.Aliases.Single(a => a.Name == "Cache").CreateReferenceToObject);
+        var qad = Assert.IsType<QuestAdapter>(q.VirtualMachineAdapter); // alias script attached on a plain quest
+        Assert.Equal("MFSE_AdvanceStage", Assert.Single(Assert.Single(qad.Aliases).Scripts).Name);
+    }
+
     [Fact]
     public void StartUpStage_sets_the_QSDT_start_up_flag_on_only_that_stage()
     {
