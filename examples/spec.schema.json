@@ -1481,7 +1481,7 @@
               },
               "fill": {
                 "type": "string",
-                "description": "fromEvent:<slot> (R1/R2/L1/L2) | forced:<ref> | uniqueActor:<ref>"
+                "description": "fromEvent:<slot> (R1/R2/L1/L2) | forced:<ref> | uniqueActor:<ref> | createObject:<ref>@<targetAlias> (spawn a new ref AT another ref-type alias)"
               },
               "optional": {
                 "type": "boolean",

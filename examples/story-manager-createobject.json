@@ -1,0 +1,61 @@
+{
+  "pluginName": "ModForgeCreateObject.esp",
+  "esl": false,
+  "_": "createObject alias fill demo. Reuses the proven magic-trigger entry (cast a self-spell -> MFSE_SpellTrigger -> MFStoryEventDispatch.Fire(kw, caster, target) -> SM ScriptEvent root starts MFSE_SpawnTarget). The Caster alias pulls event ref1 (the player). The Spawned alias uses 'createObject:<ref>@Caster' so the engine SPAWNS a new reference to a vanilla wolf base AT the Caster when the quest starts -> a wolf appears next to the player the instant the spell is cast. In-game test: player.addspell the Forge Spawn spell, cast it, watch a wolf materialize; `sqv MFSE_SpawnTarget` -> Running with Caster + Spawned aliases filled.",
+
+  "keywords": [ { "editorId": "MFSE_SpawnKW" } ],
+
+  "magicEffects": [
+    {
+      "editorId": "MFSE_SpawnEffect",
+      "name": "Forge Spawn",
+      "description": "Conjures a guardian.",
+      "_": "Token self-heal so OnEffectStart runs on the caster; the payload is the attached MFSE_SpellTrigger script.",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "magicSkill": "Restoration",
+      "castType": "FireAndForget",
+      "targetType": "Self",
+      "baseCost": 0.5,
+      "flags": [ "NoDuration", "NoArea" ]
+    }
+  ],
+
+  "spells": [
+    {
+      "editorId": "MFSE_SpawnSpell",
+      "name": "Forge Spawn",
+      "_": "Self-cast — no aiming needed. Wraps MFSE_SpawnEffect.",
+      "spellType": "Spell",
+      "castType": "FireAndForget",
+      "targetType": "Self",
+      "baseCost": 10,
+      "effects": [
+        { "magicEffect": "MFSE_SpawnEffect", "magnitude": 1, "area": 0, "duration": 0 }
+      ]
+    }
+  ],
+
+  "quests": [
+    {
+      "editorId": "MFSE_SpawnTarget",
+      "name": "Forge Spawn Target",
+      "_": "Started by the SM ScriptEvent root when MFSE_SpawnKW fires. Caster = event ref1 (the player). Spawned uses createObject to materialize a vanilla wolf (Skyrim.esm:0x0010FE05 = EncWolfRed) AT the Caster alias. The createObject target MUST be a ref-type alias (Caster is fromEvent:ref1) — not a Location.",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "ScriptEvent", "keyword": "MFSE_SpawnKW" },
+      "aliases": [
+        { "name": "Caster", "fill": "fromEvent:ref1" },
+        { "name": "Spawned", "fill": "createObject:Skyrim.esm:0x0010FE05@Caster" }
+      ]
+    }
+  ],
+
+  "scripts": [
+    {
+      "targetEditorId": "MFSE_SpawnEffect",
+      "scriptName": "MFSE_SpellTrigger",
+      "source": "MFSE_SpellTrigger.psc",
+      "properties": [ { "name": "TheKW", "type": "object", "objectEditorId": "MFSE_SpawnKW" } ]
+    }
+  ]
+}

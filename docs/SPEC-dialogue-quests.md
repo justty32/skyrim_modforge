@@ -229,7 +229,8 @@ cannot be filled the quest silently does not start.
   { "name": "Killer",    "fill": "fromEvent:killer" },
   { "name": "NewLoc",    "fill": "fromEvent:newLocation" },   // Location slot → alias Type=Location auto-set
   { "name": "TheBoss",   "fill": "uniqueActor:Skyrim.esm:0x01414D" },  // specific NPC (Ulfric)
-  { "name": "TriggerRef","fill": "forced:Skyrim.esm:0x000014" }         // forced ref (player)
+  { "name": "TriggerRef","fill": "forced:Skyrim.esm:0x000014" },        // forced ref (player)
+  { "name": "Spawned",   "fill": "createObject:Skyrim.esm:0x0010FE05@Caster" }  // spawn a wolf AT the Caster alias
 ]
 ```
 
@@ -238,6 +239,7 @@ cannot be filled the quest silently does not start.
 | `fromEvent:<slot>` | `FindMatchingRefFromEvent` | Slot names from the event table above. Location slots (`newLocation`, `oldLocation`, `location`) automatically set `QuestAlias.Type = Location`. |
 | `uniqueActor:<ref>` | `UniqueActor` | Pinned to a specific NPC by ref; `AllowReserved` forced on. |
 | `forced:<ref>` | `ForcedReference` | Static ref (e.g. the player `Skyrim.esm:0x000014`). |
+| `createObject:<ref>@<targetAlias>` | `CreateReferenceToObject` | On quest start, **spawns a new reference** to `<ref>` (any placeable base — NPC/container/static/item) AT the ref held by `<targetAlias>` (`Create=At`, `Level=Easy`). `<targetAlias>` must be another **ref-type** alias in the same quest (not a Location), and cannot be itself. E.g. cast a spell → spawn a guardian at the caster. In-game confirmed (2026-06-05). |
 
 **Extra alias options:**
 

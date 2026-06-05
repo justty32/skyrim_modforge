@@ -101,4 +101,17 @@ public static class StoryManagerEvents
         kind = fill[..i]; arg = fill[(i + 1)..];
         return true;
     }
+
+    // createObject arg "<ref>@<aliasName>" → (ref, aliasName). The ref itself may contain ':'
+    // (Plugin.esm:0xID), so we split on the LAST '@' (a FormID never contains '@'). Missing or
+    // edge-positioned '@' = false.
+    public static bool TryParseCreateObject(string arg, out string objectRef, out string targetAlias)
+    {
+        objectRef = ""; targetAlias = "";
+        if (string.IsNullOrWhiteSpace(arg)) return false;
+        int at = arg.LastIndexOf('@');
+        if (at <= 0 || at >= arg.Length - 1) return false;
+        objectRef = arg[..at]; targetAlias = arg[(at + 1)..];
+        return true;
+    }
 }

@@ -34,6 +34,11 @@ public static partial class Generator
                     if (BuildCondition(cs, $"quest '{qs.EditorId}' storyEvent condition") is { } cond)
                         quest.EventConditions.Add(cond);
 
+                // Map alias name → its ID (= sequential index) up front so a createObject fill can
+                // target another alias by name even when that target is declared later in the list.
+                var aliasIdByName = new Dictionary<string, uint>(StringComparer.OrdinalIgnoreCase);
+                for (int i = 0; i < qs.Aliases.Count; i++) aliasIdByName[qs.Aliases[i].Name] = (uint)i;
+
                 uint nextId = 0;
                 foreach (var aSpec in qs.Aliases)
                 {
@@ -75,6 +80,25 @@ public static partial class Generator
                             // NB: QuestAlias.Flags defaults to null, and `|=` on a null lifts to null
                             // (no-op) — must seed from GetValueOrDefault() or the flag never sticks.
                             alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.AllowReserved;
+                        }
+                        else if (kind.Equals("createObject", StringComparison.OrdinalIgnoreCase)
+                            && StoryManagerEvents.TryParseCreateObject(arg, out var objRef, out var tgtName)
+                            && TryResolveRef(objRef, formKeyByEd, out var objFk)
+                            && aliasIdByName.TryGetValue(tgtName, out var tgtId))
+                        {
+                            // CreateReferenceToObject (ALCO/ALCA/ALCL): on quest start the engine SPAWNS
+                            // a new reference to <objFk> AT the ref held by alias <tgtName> (e.g. spawn a
+                            // chest at the event's caster). Vanilla always points AliasID at a Reference-
+                            // type alias (an actual ref), never a Location. Create=At; Level=Easy is
+                            // ignored unless <objFk> is a leveled actor base.
+                            var cro = new CreateReferenceToObject
+                            {
+                                AliasID = (short)tgtId,
+                                Create = CreateReferenceToObject.CreateEnum.At,
+                                Level = Level.Easy,
+                            };
+                            cro.Object.SetTo(objFk);
+                            alias.CreateReferenceToObject = cro;
                         }
                     }
                     if (aSpec.Optional)

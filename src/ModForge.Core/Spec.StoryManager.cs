@@ -12,8 +12,10 @@ public sealed class QuestStoryEventSpec
     public string Keyword { get; set; } = "";
 }
 
-// 一條 quest alias。fill 語法："fromEvent:<slot>"（拿事件帶來的 ref）、"forced:<ref>"（寫死特定 ref）
-// 或 "uniqueActor:<ref>"（指向某個唯一 NPC base，<ref> 同 forced 解析）。
+// 一條 quest alias。fill 語法："fromEvent:<slot>"（拿事件帶來的 ref）、"forced:<ref>"（寫死特定 ref）、
+// "uniqueActor:<ref>"（指向某個唯一 NPC base，<ref> 同 forced 解析）或
+// "createObject:<ref>@<targetAlias>"（quest 啟動時在 <targetAlias> 持有的 ref 處生成一個 <ref> 的新實例，
+// 例如在施法者腳邊生一個寶箱；<targetAlias> 須為同 quest 內另一個 ref 型 alias，不能是 location）。
 public sealed class QuestAliasSpec
 {
     public string Name { get; set; } = "";

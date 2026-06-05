@@ -263,4 +263,31 @@ public class StoryManagerBuildTests
         var alias = Assert.Single(q.Aliases);
         Assert.Equal(npc.FormKey, alias.UniqueActor.FormKey);
     }
+
+    [Fact]
+    public void CreateObject_alias_spawns_ref_at_target_alias()
+    {
+        var spec = new ModSpec();
+        spec.Keywords.Add(new KeywordSpec { EditorId = "MFSE_KW" });
+        spec.Quests.Add(new QuestSpec
+        {
+            EditorId = "MFSM_Spawn", Name = "S",
+            StoryEvent = new QuestStoryEventSpec { Event = "ScriptEvent", Keyword = "MFSE_KW" },
+            Aliases =
+            {
+                new QuestAliasSpec { Name = "Caster", Fill = "fromEvent:ref1" },
+                // spawn a vanilla wolf base at the Caster alias when the event fires
+                new QuestAliasSpec { Name = "Spawned", Fill = "createObject:Skyrim.esm:0x0010FE05@Caster" },
+            },
+        });
+        var mod = Build(spec);
+        var q = mod.Quests.Single(x => x.EditorID == "MFSM_Spawn");
+        var caster = q.Aliases.Single(a => a.Name == "Caster");
+        var spawned = q.Aliases.Single(a => a.Name == "Spawned");
+        var cro = spawned.CreateReferenceToObject!;
+        Assert.Equal(caster.ID, (uint)cro.AliasID);                        // creates AT the Caster alias
+        Assert.Equal(0x10FE05u, cro.Object.FormKey.ID);                    // the wolf base
+        Assert.Equal("Skyrim.esm", cro.Object.FormKey.ModKey.FileName);
+        Assert.Equal(CreateReferenceToObject.CreateEnum.At, cro.Create);
+    }
 }
