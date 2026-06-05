@@ -81,6 +81,12 @@ public static partial class Generator
                     {
                         Problems.Add($"{where} alias '{a.Name}' fill kind '{kind}' unsupported (use fromEvent | forced | uniqueActor | createObject | findMatching)");
                     }
+
+                    // Optional alias script (alias[].script): its object-properties must resolve. The
+                    // .psc source itself is checked when `package` compiles it.
+                    foreach (var pp in a.ScriptProperties)
+                        if (string.Equals(pp.Type, "object", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(pp.ObjectEditorId))
+                            CheckRef(pp.ObjectEditorId, $"{where} alias '{a.Name}' script property '{pp.Name}'");
                 }
                 // Note: StartGameEnabled is force-cleared for storyEvent quests at build time (it
                 // defaults true). No warning is emitted — ModForge's Validate has no warning/error

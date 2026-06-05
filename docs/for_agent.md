@@ -80,7 +80,10 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
   `fromEvent:<slot>`, `uniqueActor:<ref>`, `forced:<ref>`, `createObject:<ref>@<targetAlias>`
   (spawn a new ref to `<ref>` at another alias — in-game confirmed 2026-06-05),
   `findMatching:closest`|`findMatching:any` (fill with the nearest/first existing ref in the loaded
-  area matching the alias's `conditions`, e.g. nearest NPC). **In-game confirmed (2026-06-04)**
+  area matching the alias's `conditions`, e.g. nearest NPC). An alias can also carry a Papyrus
+  **alias script** (`script`/`scriptSource`/`scriptProperties`, extends `ReferenceAlias`) that
+  travels with whatever ref fills it — e.g. `OnActivate` on a `createObject`-spawned ref to chain a
+  story event (in-game confirmed 2026-06-05). **In-game confirmed (2026-06-04)**
   on all variant patterns including ESL plugins. See SPEC-dialogue-quests.md → "Story Manager
   quests".
 - **Script Event (custom story trigger):** a `ScriptEvent` quest declares a `keyword`; a
@@ -91,7 +94,9 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
 - **Reusable trigger library** — the one-line `Fire()` call wired to four real in-game entry
   points, all in-game confirmed (2026-06-05): magic effect (cast a spell), potion (drink),
   activator (`OnActivate`, pull a lever — model must be a real vanilla NIF), dialogue line
-  (`TopicInfo` `Fragment_0`, NPC gives a quest). Examples: `story-manager-{magic,potion,activator,dialogue}trigger.json`.
+  (`TopicInfo` `Fragment_0`, NPC gives a quest), and an **alias script** (`ReferenceAlias`
+  `OnActivate`, activate a ref a quest alias holds — including one spawned at runtime by
+  `createObject`). Examples: `story-manager-{magic,potion,activator,dialogue,alias}trigger.json`.
 - You cannot confirm anything works **in-game** from here — that needs a Proton/Skyrim launch.
   Say "generated and structurally verified (dump)", not "works in-game", unless a human tested it.
 

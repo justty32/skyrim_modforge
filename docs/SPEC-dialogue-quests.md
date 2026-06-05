@@ -236,7 +236,10 @@ cannot be filled the quest silently does not start.
   { "name": "TriggerRef","fill": "forced:Skyrim.esm:0x000014" },        // forced ref (player)
   { "name": "Spawned",   "fill": "createObject:Skyrim.esm:0x0010FE05@Caster" },  // spawn a wolf AT the Caster alias
   { "name": "Nearby",    "fill": "findMatching:closest",               // nearest ref in the loaded area…
-    "conditions": [ { "function": "HasKeyword", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x013794" } ] }  // …matching these gates (nearest NPC)
+    "conditions": [ { "function": "HasKeyword", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x013794" } ] },  // …matching these gates (nearest NPC)
+  { "name": "Hatch",     "fill": "createObject:Skyrim.esm:0x0BCD2D@Caster",     // spawn a chest, then…
+    "script": "MFSE_AliasActivate", "scriptSource": "MFSE_AliasActivate.psc",   // …OnActivate on the spawned ref
+    "scriptProperties": [ { "name": "TheKW", "type": "object", "objectEditorId": "MFSE_AliasKW" } ] }
 ]
 ```
 
@@ -253,6 +256,7 @@ cannot be filled the quest silently does not start.
 | Field | Default | Notes |
 |---|---|---|
 | `allowReserved` | `false` | Set `true` if the target NPC may be reserved by another quest (`ReservesLocationOrReference`). Without this, the alias fails to fill and the quest doesn't start. `uniqueActor` forces it on. |
+| `script` / `scriptSource` / `scriptProperties` | — | Attach a Papyrus **alias script** to this alias (a `ReferenceAlias`-extending script stored on the quest's `QuestAdapter.Aliases` VMAD, bound to the alias ID). It travels with **whatever ref fills the alias** — including a `createObject`-spawned or `findMatching`-matched ref that no base-object script could reach. Classic use is `Event OnActivate(ObjectReference akActionRef)`: activating the aliased ref runs it (e.g. call `MFStoryEventDispatch.Fire(...)` to chain a story event). `script` = the Scriptname, `scriptSource` = the `.psc` for `package` to compile, `scriptProperties` bind its Auto properties (same shape as a dialogue `resultProperties`). You supply the compiled `.pex`. In-game confirmed (2026-06-05); reusable helper `examples/MFSE_AliasActivate.psc`. |
 
 #### SM iron laws (engine behaviour, not bugs)
 

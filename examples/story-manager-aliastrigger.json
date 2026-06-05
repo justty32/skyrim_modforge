@@ -1,0 +1,81 @@
+{
+  "pluginName": "ModForgeAliasTrigger.esp",
+  "esl": false,
+  "_": "Alias OnActivate demo — a script attached to a quest ALIAS (alias[].script), not a base object, so it works on a ref CREATED at runtime. Chain: cast the Forge Hatch spell -> MFSE_SpellTrigger -> Fire(MFSE_HostKW, caster) -> SM starts MFSE_AliasHost, whose Chest alias uses createObject to SPAWN a chest (Skyrim.esm:0x0BCD2D, a vanilla small chest) at the Caster. That Chest alias carries the MFSE_AliasActivate script (extends ReferenceAlias). OPENING the spawned chest fires OnActivate -> Fire(MFSE_AliasKW, opener, chest) -> SM starts MFSE_AliasTarget. The whole point: no base-object script could touch that chest (it didn't exist at design time) — the alias script does. In-game: player.addspell the Forge Hatch spell, cast it (a chest appears at your feet), open the chest, then `sqv MFSE_AliasTarget` -> Running with Opener filled.",
+
+  "keywords": [
+    { "editorId": "MFSE_HostKW" },
+    { "editorId": "MFSE_AliasKW" }
+  ],
+
+  "magicEffects": [
+    {
+      "editorId": "MFSE_HatchEffect",
+      "name": "Forge Hatch",
+      "description": "Conjures a forge cache.",
+      "_": "Token self-heal so OnEffectStart runs on the caster; the payload is the attached MFSE_SpellTrigger.",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "magicSkill": "Restoration",
+      "castType": "FireAndForget",
+      "targetType": "Self",
+      "baseCost": 0.5,
+      "flags": [ "NoDuration", "NoArea" ]
+    }
+  ],
+
+  "spells": [
+    {
+      "editorId": "MFSE_HatchSpell",
+      "name": "Forge Hatch",
+      "_": "Self-cast — no aiming. Wraps MFSE_HatchEffect.",
+      "spellType": "Spell",
+      "castType": "FireAndForget",
+      "targetType": "Self",
+      "baseCost": 10,
+      "effects": [
+        { "magicEffect": "MFSE_HatchEffect", "magnitude": 1, "area": 0, "duration": 0 }
+      ]
+    }
+  ],
+
+  "quests": [
+    {
+      "editorId": "MFSE_AliasHost",
+      "name": "Forge Hatch Host",
+      "_": "Started by the SM ScriptEvent root when MFSE_HostKW fires (the spell). Caster = event ref1 (the player). Chest uses createObject to materialize a vanilla small chest AT the Caster, and carries the MFSE_AliasActivate alias script — activating that spawned chest fires MFSE_AliasKW. The createObject target (Caster) must be a ref-type alias.",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "ScriptEvent", "keyword": "MFSE_HostKW" },
+      "aliases": [
+        { "name": "Caster", "fill": "fromEvent:ref1" },
+        {
+          "name": "Chest",
+          "fill": "createObject:Skyrim.esm:0x0BCD2D@Caster",
+          "script": "MFSE_AliasActivate",
+          "scriptSource": "MFSE_AliasActivate.psc",
+          "scriptProperties": [ { "name": "TheKW", "type": "object", "objectEditorId": "MFSE_AliasKW" } ]
+        }
+      ]
+    },
+    {
+      "editorId": "MFSE_AliasTarget",
+      "name": "Forge Hatch Target",
+      "_": "Started by the SM ScriptEvent root when MFSE_AliasKW fires (opening the spawned chest). Opener = event ref1 (the activating actor), Chest = event ref2 (the chest). Verify: `sqv MFSE_AliasTarget` -> Running, Opener alias filled.",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "ScriptEvent", "keyword": "MFSE_AliasKW" },
+      "aliases": [
+        { "name": "Opener", "fill": "fromEvent:ref1" },
+        { "name": "Chest", "fill": "fromEvent:ref2" }
+      ]
+    }
+  ],
+
+  "scripts": [
+    {
+      "targetEditorId": "MFSE_HatchEffect",
+      "scriptName": "MFSE_SpellTrigger",
+      "source": "MFSE_SpellTrigger.psc",
+      "properties": [ { "name": "TheKW", "type": "object", "objectEditorId": "MFSE_HostKW" } ]
+    }
+  ]
+}

@@ -122,4 +122,9 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - **解了但移除**：DeadBody（NPC 偵測事件,非玩家觸發）、ActorDialogue/ActorHello（vanilla 分支太多,無條件 quest 輸掉互斥競爭、且會劫持原版對話）、ChangeRelationshipRank（事件由 gameplay 觸發,非 console setter）。**SM 限制**：additive 無條件分支只在 vanilla 少/沒密集處理的事件上可靠生效；坑詳見 [[dispatcher-magic-trigger]]。
 - alias fill 現五種、事件表現十個。
 
-**之後可做**：dialogue fragment result-script 觸發;alias OnActivate;再多解事件（SkillIncrease/Jail/Bribe… `smtree Skyrim.esm` 列舉,但須用 conditions 才安全,見 [[dispatcher-magic-trigger]]）。
+**alias OnActivate（alias 腳本，第五個可複用入口）：✅ 實機驗證通過（2026-06-05）**——306 測試綠：
+- `QuestAliasSpec` 加 `Script`/`ScriptSource`/`ScriptProperties`：把 Papyrus 腳本（`extends ReferenceAlias`）掛在 quest **alias** 上（存進 `QuestAdapter.Aliases` 的 `QuestFragmentAlias`，v5/objFmt2、綁 alias ID、script flag=Local——解自 vanilla alias-only quest）。腳本跟著「填進 alias 的那個 ref」走,所以能接 **createObject 生成** 或 **findMatching 匹配** 的執行時 ref（base-object 腳本碰不到）。`AttachAliasScript`（Build.StoryManager.cs）+ validate 檢查 script 屬性 ref + Package 編譯 `ScriptSource`。
+- 端到端 `examples/story-manager-aliastrigger.json` + `MFSE_AliasActivate.psc`（`OnActivate→Fire`）：施法→createObject 生箱子於腳邊→開箱→alias OnActivate→`Fire(MFSE_AliasKW)`→啟動 MFSE_AliasTarget。zip `~/skyrim_mods/ModForgeAliasTrigger.zip`。
+- **編譯踩坑**：`extends ReferenceAlias` 的 native 編譯要 `MODFORGE_PAPYRUS_HEADERS=~/.cache/modforge/papyrus/Source/Scripts`（loose Source 不含 ReferenceAlias.psc）。
+
+**之後可做**：dialogue fragment result-script 觸發（其實 dialogue trigger 已用 resultScript 接通）;再多解事件（SkillIncrease/Jail/Bribe… `smtree Skyrim.esm` 列舉,但須用 conditions 才安全,見 [[dispatcher-magic-trigger]]）。

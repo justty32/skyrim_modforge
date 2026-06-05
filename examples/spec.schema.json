@@ -1497,6 +1497,21 @@
                   "$ref": "#/$defs/condition"
                 },
                 "description": "findMatching only (required): CTDA filter on WHICH loaded-area ref the engine picks (e.g. HasKeyword ActorTypeNPC = nearest NPC)"
+              },
+              "script": {
+                "type": "string",
+                "description": "optional alias script Scriptname (extends ReferenceAlias) attached to this alias's VMAD — reacts to events on whatever ref fills it (e.g. OnActivate on a createObject-spawned ref to chain a story event via MFStoryEventDispatch.Fire)"
+              },
+              "scriptSource": {
+                "type": "string",
+                "description": "the alias script's .psc, compiled by `package` (you supply/ship the .pex)"
+              },
+              "scriptProperties": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/property"
+                },
+                "description": "typed Auto properties bound on the alias-script VMAD (e.g. a Keyword for a dispatcher trigger)"
               }
             }
           }

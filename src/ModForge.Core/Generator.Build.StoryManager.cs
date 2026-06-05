@@ -125,6 +125,8 @@ public static partial class Generator
                     if (aSpec.AllowReserved)
                         alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.AllowReserved;
                     quest.Aliases.Add(alias);
+                    if (!string.IsNullOrEmpty(aSpec.Script))
+                        AttachAliasScript(quest, alias.ID, aSpec);
                     nextId++;
                 }
                 quest.NextAliasID = nextId;
@@ -172,6 +174,31 @@ public static partial class Generator
                 entry.Quest.SetTo(quest);
                 qnode.Quests.Add(entry);
             }
+        }
+
+        // Attach a quest "alias script" — a ReferenceAlias-extending script that reacts to events on
+        // the ref filling this alias (e.g. OnActivate), letting even a runtime-created (createObject) or
+        // runtime-matched (findMatching) ref carry behaviour no base-object script could. Stored on the
+        // quest's QuestAdapter.Aliases as a QuestFragmentAlias whose Property points at the owning quest
+        // + alias ID. Vanilla shape (decoded from Skyrim.esm alias-only quests): adapter + QFA both
+        // Version=5/ObjectFormat=2, empty FileName, each script Flag=Local. The user provides the
+        // compiled .pex (via package), so attach unconditionally like a ScriptAttach / user ResultScript.
+        private void AttachAliasScript(Quest quest, uint aliasId, QuestAliasSpec aSpec)
+        {
+            if (quest.VirtualMachineAdapter is not QuestAdapter qad)
+            {
+                qad = new QuestAdapter { Version = 5, ObjectFormat = 2 };
+                quest.VirtualMachineAdapter = qad;
+            }
+            var qfa = new QuestFragmentAlias { Version = 5, ObjectFormat = 2 };
+            qfa.Property.Object.SetTo(quest.FormKey);
+            qfa.Property.Alias = (short)aliasId;
+            qfa.Property.Flags = ScriptProperty.Flag.Edited;
+            var entry = new ScriptEntry { Name = aSpec.Script, Flags = ScriptEntry.Flag.Local };
+            FillProperties(entry, aSpec.ScriptProperties, aSpec.Script);
+            qfa.Scripts.Add(entry);
+            qad.Aliases.Add(qfa);
+            scriptsAttached++;
         }
     }
 }

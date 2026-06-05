@@ -117,6 +117,8 @@ internal static partial class Program
         }
         foreach (var sa in spec.Scripts) CompileSource(sa.Source, sa.Source);
         foreach (var d in spec.Dialogue) CompileSource(d.ResultScriptSource, d.ResultScriptSource);
+        foreach (var q in spec.Quests)
+            foreach (var a in q.Aliases) CompileSource(a.ScriptSource, a.ScriptSource);
 
         // 5) Word-wall teaching fragments (generated source, compiled best-effort).
         int wordWallScripts = 0;

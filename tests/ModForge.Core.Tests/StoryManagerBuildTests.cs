@@ -348,4 +348,55 @@ public class StoryManagerBuildTests
         Assert.True(flags.HasFlag(QuestAlias.Flag.MatchingRefInLoadedArea));
         Assert.False(flags.HasFlag(QuestAlias.Flag.MatchingRefClosest));
     }
+
+    [Fact]
+    public void Alias_script_is_attached_to_quest_adapter_bound_to_the_alias_id()
+    {
+        var spec = new ModSpec();
+        spec.Keywords.Add(new KeywordSpec { EditorId = "MFSE_KW" });
+        spec.Keywords.Add(new KeywordSpec { EditorId = "MFSE_FireKW" });
+        spec.Quests.Add(new QuestSpec
+        {
+            EditorId = "MFSM_AliasHost", Name = "H",
+            StoryEvent = new QuestStoryEventSpec { Event = "ScriptEvent", Keyword = "MFSE_KW" },
+            Aliases =
+            {
+                new QuestAliasSpec { Name = "Caster", Fill = "fromEvent:ref1" },
+                new QuestAliasSpec
+                {
+                    Name = "Spawned", Fill = "createObject:Skyrim.esm:0x0010FE05@Caster",
+                    Script = "MFSE_AliasActivate", ScriptSource = "MFSE_AliasActivate.psc",
+                    ScriptProperties = { new PropertySpec { Name = "TheKW", Type = "object", ObjectEditorId = "MFSE_FireKW" } },
+                },
+            },
+        });
+        var mod = Build(spec);
+        var q = mod.Quests.Single(x => x.EditorID == "MFSM_AliasHost");
+        var spawned = q.Aliases.Single(a => a.Name == "Spawned");
+
+        // The alias script lives on the quest's QuestAdapter.Aliases (a QuestFragmentAlias), not on the
+        // QuestAlias record. Vanilla shape: adapter v5/objFmt2, QFA Property bound to the owning quest +
+        // this alias's ID, script Flag=Local.
+        var qad = Assert.IsType<QuestAdapter>(q.VirtualMachineAdapter);
+        Assert.Equal(5, qad.Version);
+        Assert.Equal(2, qad.ObjectFormat);
+        var qfa = Assert.Single(qad.Aliases);
+        Assert.Equal(q.FormKey, qfa.Property.Object.FormKey);             // points at the owning quest
+        Assert.Equal((short)spawned.ID, qfa.Property.Alias);              // bound to the scripted alias
+        var entry = Assert.Single(qfa.Scripts);
+        Assert.Equal("MFSE_AliasActivate", entry.Name);
+        Assert.Equal(ScriptEntry.Flag.Local, entry.Flags);
+        var kw = mod.Keywords.Single(x => x.EditorID == "MFSE_FireKW");
+        var prop = Assert.IsType<ScriptObjectProperty>(Assert.Single(entry.Properties));
+        Assert.Equal("TheKW", prop.Name);
+        Assert.Equal(kw.FormKey, prop.Object.FormKey);
+    }
+
+    [Fact]
+    public void Alias_without_script_leaves_quest_adapter_unset()
+    {
+        var mod = Build(SpecWithKillQuest());
+        var q = mod.Quests.Single(x => x.EditorID == "MFSM_Avenge");
+        Assert.Null(q.VirtualMachineAdapter);                              // no alias script → no VMAD
+    }
 }

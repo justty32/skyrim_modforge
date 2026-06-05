@@ -31,4 +31,16 @@ public sealed class QuestAliasSpec
     // loaded area the engine picks (e.g. HasKeyword ActorTypeNPC on the candidate = nearest NPC, GetIsID
     // for a specific base). Reuses the existing ConditionSpec type and is wired onto QuestAlias.Conditions.
     public List<ConditionSpec> Conditions { get; set; } = new();
+    // Optional Papyrus ALIAS script attached to THIS alias (stored on the quest's QuestAdapter.Aliases
+    // VMAD — a QuestFragmentAlias bound to this alias's ID). It reacts to events on WHATEVER ref fills
+    // the alias, including one created at runtime (createObject) or matched at runtime (findMatching)
+    // that no base-object script could ever reach. Classic use = OnActivate: `Script` extends
+    // ReferenceAlias and defines `Event OnActivate(ObjectReference akActionRef)`; activating the aliased
+    // ref runs it (e.g. call MFStoryEventDispatch.Fire to chain a story event). `ScriptSource` is the
+    // .psc `package` compiles (resolved like a ScriptAttach source); `ScriptProperties` bind its Auto
+    // properties (same shape as a dialogue ResultProperties). The user supplies the compiled .pex, so
+    // the VMAD is attached unconditionally (like a user ScriptAttach / ResultScript).
+    public string Script { get; set; } = "";
+    public string ScriptSource { get; set; } = "";
+    public List<PropertySpec> ScriptProperties { get; set; } = new();
 }
