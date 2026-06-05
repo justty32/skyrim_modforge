@@ -216,6 +216,9 @@ condition, ESL).
 | `CastMagic` | Spell cast | `caster`, `target`, `location` |
 | `AddItem` | Item added to inventory | `owner`, `location` |
 | `Assault` | Actor assaulted | `victim`, `attacker`, `location` |
+| `CraftItem` | Player crafts an item at a station | `workbench` |
+| `PlayerRemoveItem` | Item leaves player inventory (sold/dropped/given) | `owner`, `item` |
+| `Arrest` | A guard arrests an actor | `guard`, `criminal` |
 | `ScriptEvent` | Papyrus `SendStoryEvent` via the dispatcher | `ref1`, `ref2`, `location` |
 
 #### `aliases` — dynamic alias fill
@@ -230,7 +233,9 @@ cannot be filled the quest silently does not start.
   { "name": "NewLoc",    "fill": "fromEvent:newLocation" },   // Location slot → alias Type=Location auto-set
   { "name": "TheBoss",   "fill": "uniqueActor:Skyrim.esm:0x01414D" },  // specific NPC (Ulfric)
   { "name": "TriggerRef","fill": "forced:Skyrim.esm:0x000014" },        // forced ref (player)
-  { "name": "Spawned",   "fill": "createObject:Skyrim.esm:0x0010FE05@Caster" }  // spawn a wolf AT the Caster alias
+  { "name": "Spawned",   "fill": "createObject:Skyrim.esm:0x0010FE05@Caster" },  // spawn a wolf AT the Caster alias
+  { "name": "Nearby",    "fill": "findMatching:closest",               // nearest ref in the loaded area…
+    "conditions": [ { "function": "HasKeyword", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x013794" } ] }  // …matching these gates (nearest NPC)
 ]
 ```
 
@@ -240,6 +245,7 @@ cannot be filled the quest silently does not start.
 | `uniqueActor:<ref>` | `UniqueActor` | Pinned to a specific NPC by ref; `AllowReserved` forced on. |
 | `forced:<ref>` | `ForcedReference` | Static ref (e.g. the player `Skyrim.esm:0x000014`). |
 | `createObject:<ref>@<targetAlias>` | `CreateReferenceToObject` | On quest start, **spawns a new reference** to `<ref>` (any placeable base — NPC/container/static/item) AT the ref held by `<targetAlias>` (`Create=At`, `Level=Easy`). `<targetAlias>` must be another **ref-type** alias in the same quest (not a Location), and cannot be itself. E.g. cast a spell → spawn a guardian at the caster. In-game confirmed (2026-06-05). |
+| `findMatching:closest` / `findMatching:any` | `QuestAlias.Flag.MatchingRefInLoadedArea` (+ `MatchingRefClosest` for `closest`) | Fills with an **already-existing reference in the loaded area** matching this alias's `conditions` — `closest` picks the nearest match, `any` the first. The match filter is a CTDA list (same `ConditionSpec` shape) wired onto `QuestAlias.Conditions` (e.g. `HasKeyword ActorTypeNPC` = nearest NPC; `GetIsID <base>` = nearest of a base). **At least one condition is required.** This is the loaded-area "Find Matching Reference" mechanism decoded from vanilla `MQGreybeardCall` Bystander aliases — **not** `FindMatchingRefNearAlias` (that only finds editor-linked-ref children). Whether the alias fills depends on a matching ref actually being in the loaded area at runtime. |
 
 **Extra alias options:**
 

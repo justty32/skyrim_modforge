@@ -13,9 +13,12 @@ public sealed class QuestStoryEventSpec
 }
 
 // 一條 quest alias。fill 語法："fromEvent:<slot>"（拿事件帶來的 ref）、"forced:<ref>"（寫死特定 ref）、
-// "uniqueActor:<ref>"（指向某個唯一 NPC base，<ref> 同 forced 解析）或
+// "uniqueActor:<ref>"（指向某個唯一 NPC base，<ref> 同 forced 解析）、
 // "createObject:<ref>@<targetAlias>"（quest 啟動時在 <targetAlias> 持有的 ref 處生成一個 <ref> 的新實例，
-// 例如在施法者腳邊生一個寶箱；<targetAlias> 須為同 quest 內另一個 ref 型 alias，不能是 location）。
+// 例如在施法者腳邊生一個寶箱；<targetAlias> 須為同 quest 內另一個 ref 型 alias，不能是 location）或
+// "findMatching:closest"|"findMatching:any"（在 loaded area 裏找一個既有的、符合本 alias `Conditions` 的 ref；
+// closest=最近的一個，any=第一個符合的。= QuestAlias 旗標 MatchingRefInLoadedArea[+MatchingRefClosest]，
+// 解自 vanilla MQGreybeardCall 的 Bystander aliases）。
 public sealed class QuestAliasSpec
 {
     public string Name { get; set; } = "";
@@ -24,4 +27,8 @@ public sealed class QuestAliasSpec
     // Set true to let this alias fill with a ref another running quest has reserved (e.g. a town NPC
     // held by a Freeform quest). Off by default (vanilla-faithful). uniqueActor forces it on anyway.
     public bool AllowReserved { get; set; }
+    // Only used by the "findMatching:closest|any" fill: the CTDA conditions that filter WHICH ref in the
+    // loaded area the engine picks (e.g. HasKeyword ActorTypeNPC on the candidate = nearest NPC, GetIsID
+    // for a specific base). Reuses the existing ConditionSpec type and is wired onto QuestAlias.Conditions.
+    public List<ConditionSpec> Conditions { get; set; } = new();
 }

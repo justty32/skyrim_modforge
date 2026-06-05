@@ -75,9 +75,12 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
   quest-flag/branch tuning, and there is **no voice** (subtitle only).
 - **Story Manager (SM) event-driven quests:** add `storyEvent` + `aliases` to a quest and the
   build wires SMBN→SMQN automatically under the vanilla event root. Supported events:
-  `KillActor`, `ChangeLocation`, `CastMagic`, `AddItem`, `Assault`, `ScriptEvent`. Alias fills:
+  `KillActor`, `ChangeLocation`, `CastMagic`, `AddItem`, `Assault`, `CraftItem`,
+  `PlayerRemoveItem`, `Arrest`, `ScriptEvent`. Alias fills:
   `fromEvent:<slot>`, `uniqueActor:<ref>`, `forced:<ref>`, `createObject:<ref>@<targetAlias>`
-  (spawn a new ref to `<ref>` at another alias — in-game confirmed 2026-06-05). **In-game confirmed (2026-06-04)**
+  (spawn a new ref to `<ref>` at another alias — in-game confirmed 2026-06-05),
+  `findMatching:closest`|`findMatching:any` (fill with the nearest/first existing ref in the loaded
+  area matching the alias's `conditions`, e.g. nearest NPC). **In-game confirmed (2026-06-04)**
   on all variant patterns including ESL plugins. See SPEC-dialogue-quests.md → "Story Manager
   quests".
 - **Script Event (custom story trigger):** a `ScriptEvent` quest declares a `keyword`; a

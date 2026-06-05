@@ -1,0 +1,16 @@
+{
+  "_": "CraftItem SM event (engine-native, no Papyrus). The quest starts when the player crafts ANY item at a crafting station; the Workbench alias pulls event R1 = the station used. In-game test: install, enable, then craft anything at a forge/tanning rack/cooking pot/etc and `sqv MFSM_OnCraft` -> Running with Workbench filled (the station you used). Add conditions to the storyEvent (e.g. on the crafted keyword) to gate it to specific recipes.",
+  "pluginName": "ModForgeCraftItem.esp",
+  "esl": false,
+  "quests": [
+    {
+      "editorId": "MFSM_OnCraft",
+      "name": "Smith's Ledger",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "CraftItem" },
+      "aliases": [
+        { "name": "Workbench", "fill": "fromEvent:workbench" }
+      ]
+    }
+  ]
+}

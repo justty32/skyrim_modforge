@@ -100,6 +100,21 @@ public static partial class Generator
                             cro.Object.SetTo(objFk);
                             alias.CreateReferenceToObject = cro;
                         }
+                        else if (kind.Equals("findMatching", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Find Matching Reference "in loaded area" (decoded from vanilla MQGreybeardCall
+                            // Bystander aliases): the engine fills this alias with an ALREADY-EXISTING ref in
+                            // the loaded area matching this alias's Conditions. This is NOT FindMatchingRefNearAlias
+                            // (that's linked-ref-children only, which fails for refs with no editor links) — it is
+                            // the QuestAlias.Flag MatchingRefInLoadedArea, plus MatchingRefClosest for arg "closest"
+                            // (pick the nearest match) vs "any". Match filter lives on QuestAlias.Conditions.
+                            alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.MatchingRefInLoadedArea;
+                            if (arg.Equals("closest", StringComparison.OrdinalIgnoreCase))
+                                alias.Flags |= QuestAlias.Flag.MatchingRefClosest;
+                            foreach (var cs in aSpec.Conditions)
+                                if (BuildCondition(cs, $"quest '{qs.EditorId}' alias '{aSpec.Name}' findMatching condition") is { } cond)
+                                    alias.Conditions.Add(cond);
+                        }
                     }
                     if (aSpec.Optional)
                         alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.Optional;

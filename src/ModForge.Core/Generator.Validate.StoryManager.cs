@@ -37,7 +37,7 @@ public static partial class Generator
                 {
                     if (!StoryManagerEvents.TryParseFill(a.Fill, out var kind, out var arg))
                     {
-                        Problems.Add($"{where} alias '{a.Name}' fill '{a.Fill}' is malformed (expect 'fromEvent:<slot>', 'forced:<ref>', 'uniqueActor:<ref>' or 'createObject:<ref>@<targetAlias>')");
+                        Problems.Add($"{where} alias '{a.Name}' fill '{a.Fill}' is malformed (expect 'fromEvent:<slot>', 'forced:<ref>', 'uniqueActor:<ref>', 'createObject:<ref>@<targetAlias>' or 'findMatching:closest|any')");
                         continue;
                     }
                     if (kind.Equals("fromEvent", StringComparison.OrdinalIgnoreCase))
@@ -66,9 +66,20 @@ public static partial class Generator
                                 Problems.Add($"{where} alias '{a.Name}' createObject target alias '{tgt}' is not another alias in this quest");
                         }
                     }
+                    else if (kind.Equals("findMatching", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // arg = "closest" (nearest match) or "any" (first match) in the loaded area.
+                        if (!arg.Equals("closest", StringComparison.OrdinalIgnoreCase)
+                            && !arg.Equals("any", StringComparison.OrdinalIgnoreCase))
+                            Problems.Add($"{where} alias '{a.Name}' findMatching mode '{arg}' invalid (use 'closest' or 'any')");
+                        if (a.Conditions.Count == 0)
+                            Problems.Add($"{where} alias '{a.Name}' findMatching needs at least one 'conditions' entry to match a ref (else it matches nothing useful)");
+                        foreach (var cs in a.Conditions)
+                            CheckCondition(cs, $"{where} alias '{a.Name}' findMatching condition");
+                    }
                     else
                     {
-                        Problems.Add($"{where} alias '{a.Name}' fill kind '{kind}' unsupported (use fromEvent | forced | uniqueActor | createObject)");
+                        Problems.Add($"{where} alias '{a.Name}' fill kind '{kind}' unsupported (use fromEvent | forced | uniqueActor | createObject | findMatching)");
                     }
                 }
                 // Note: StartGameEnabled is force-cleared for storyEvent quests at build time (it

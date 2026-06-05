@@ -73,6 +73,32 @@ public static class StoryManagerEvents
                     ("attacker", R2),   // R2 = the attacker
                     ("location", L1))), // L1 = where it happened
 
+            // Craft Item — fires when the player crafts an item at a workbench/forge/etc.
+            // Root SMEN .Type = CraftItem. Vanilla WICraftItem03 fills R1 = the workbench used.
+            ["CraftItem"] = new StoryEventDef(
+                Root(0x039D86),
+                new RecordType("CRFT"),
+                Slots(
+                    ("workbench", R1))), // R1 = the crafting station used
+
+            // Player Remove Item — fires when an item leaves the player's inventory (sold/dropped/given).
+            // Root SMEN .Type = PlayerRemoveItem. Vanilla WIRemoveItem01: R1 = new owner, R2 = the item.
+            ["PlayerRemoveItem"] = new StoryEventDef(
+                Root(0x02C6AC),
+                new RecordType("REMP"),
+                Slots(
+                    ("owner", R1),   // R1 = who received the item
+                    ("item", R2))),  // R2 = the item removed
+
+            // Arrest — fires when a guard arrests an actor. Root SMEN .Type = ArrestEvent.
+            // Vanilla DGArrestQuest: R1 = the arresting guard, R2 = the criminal.
+            ["Arrest"] = new StoryEventDef(
+                Root(0x06B369),
+                new RecordType("ARRT"),
+                Slots(
+                    ("guard", R1),      // R1 = the arresting guard
+                    ("criminal", R2))), // R2 = the arrested actor
+
             // Script Event — the GENERIC custom entry. Root SMEN .Type = ScriptEvent (no conditions =
             // listens to every Papyrus SendStoryEvent). A quest under it is gated by a keyword filter
             // (see BuildStoryManager's ScriptEvent branch). Payload maps to Keyword.SendStoryEvent(

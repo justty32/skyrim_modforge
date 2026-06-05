@@ -55,12 +55,45 @@ public class StoryManagerEventsMoreTests
     }
 
     [Fact]
+    public void CraftItem_def_has_root_code_and_workbench_slot()
+    {
+        Assert.True(StoryManagerEvents.TryGet("CraftItem", out var def));
+        Assert.Equal(new RecordType("CRFT"), def.Code);
+        Assert.Equal(0x039D86u, def.Root.ID);
+        Assert.Equal("Skyrim.esm", def.Root.ModKey.FileName);
+        Assert.Equal(R1, def.Slots["workbench"]);
+    }
+
+    [Fact]
+    public void PlayerRemoveItem_def_has_root_code_and_slots()
+    {
+        Assert.True(StoryManagerEvents.TryGet("PlayerRemoveItem", out var def));
+        Assert.Equal(new RecordType("REMP"), def.Code);
+        Assert.Equal(0x02C6ACu, def.Root.ID);
+        Assert.Equal(R1, def.Slots["owner"]);
+        Assert.Equal(R2, def.Slots["item"]);
+    }
+
+    [Fact]
+    public void Arrest_def_has_root_code_and_slots()
+    {
+        Assert.True(StoryManagerEvents.TryGet("Arrest", out var def));
+        Assert.Equal(new RecordType("ARRT"), def.Code);
+        Assert.Equal(0x06B369u, def.Root.ID);
+        Assert.Equal(R1, def.Slots["guard"]);
+        Assert.Equal(R2, def.Slots["criminal"]);
+    }
+
+    [Fact]
     public void All_new_events_are_case_insensitive()
     {
         Assert.True(StoryManagerEvents.TryGet("changelocation", out _));
         Assert.True(StoryManagerEvents.TryGet("castmagic", out _));
         Assert.True(StoryManagerEvents.TryGet("additem", out _));
         Assert.True(StoryManagerEvents.TryGet("assault", out _));
+        Assert.True(StoryManagerEvents.TryGet("craftitem", out _));
+        Assert.True(StoryManagerEvents.TryGet("playerremoveitem", out _));
+        Assert.True(StoryManagerEvents.TryGet("arrest", out _));
     }
 
     [Fact]

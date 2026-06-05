@@ -1,0 +1,36 @@
+{
+  "_": "Combined in-game test vehicle for the engine-native SM events decoded from Skyrim.esm (no Papyrus). One plugin, three independent quests — each hangs under a DIFFERENT vanilla event root, so they never compete (the 'one event -> one quest' iron law is per-root). Install, enable, then trigger each and check `sqv <editorId>`:\n  - MFSM_OnCraft  : craft anything at any station        -> Workbench filled\n  - MFSM_OnRemove : drop/sell/give an item                 -> Item + Owner filled\n  - MFSM_OnArrest : commit a crime and get arrested         -> Criminal + Guard filled\nEach is unconditional, so it starts on the FIRST occurrence after install (use a fresh save or save/reload). Add `storyEvent.conditions` to gate to specific recipes/items/holds. (All three in-game confirmed 2026-06-05.)",
+  "pluginName": "ModForgeSMEventsDemo.esp",
+  "esl": false,
+  "quests": [
+    {
+      "editorId": "MFSM_OnCraft",
+      "name": "Smith's Ledger",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "CraftItem" },
+      "aliases": [
+        { "name": "Workbench", "fill": "fromEvent:workbench" }
+      ]
+    },
+    {
+      "editorId": "MFSM_OnRemove",
+      "name": "Lost & Found",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "PlayerRemoveItem" },
+      "aliases": [
+        { "name": "Item", "fill": "fromEvent:item" },
+        { "name": "Owner", "fill": "fromEvent:owner" }
+      ]
+    },
+    {
+      "editorId": "MFSM_OnArrest",
+      "name": "Jailhouse Record",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "Arrest" },
+      "aliases": [
+        { "name": "Criminal", "fill": "fromEvent:criminal" },
+        { "name": "Guard", "fill": "fromEvent:guard" }
+      ]
+    }
+  ]
+}

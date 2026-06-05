@@ -290,4 +290,62 @@ public class StoryManagerBuildTests
         Assert.Equal("Skyrim.esm", cro.Object.FormKey.ModKey.FileName);
         Assert.Equal(CreateReferenceToObject.CreateEnum.At, cro.Create);
     }
+
+    [Fact]
+    public void FindMatching_alias_uses_loaded_area_closest_flags_and_conditions()
+    {
+        var spec = new ModSpec();
+        spec.Keywords.Add(new KeywordSpec { EditorId = "MFSE_KW" });
+        spec.Quests.Add(new QuestSpec
+        {
+            EditorId = "MFSM_Find", Name = "F",
+            StoryEvent = new QuestStoryEventSpec { Event = "ScriptEvent", Keyword = "MFSE_KW" },
+            Aliases =
+            {
+                new QuestAliasSpec { Name = "Caster", Fill = "fromEvent:ref1" },
+                // fill with the nearest ref in the loaded area matching the conditions (nearest NPC).
+                new QuestAliasSpec
+                {
+                    Name = "Nearby", Fill = "findMatching:closest",
+                    Conditions = { new ConditionSpec { Function = "HasKeyword", Comparison = "==", Value = 1, Param = "Skyrim.esm:0x013794" } },
+                },
+            },
+        });
+        var mod = Build(spec);
+        var q = mod.Quests.Single(x => x.EditorID == "MFSM_Find");
+        var nearby = q.Aliases.Single(a => a.Name == "Nearby");
+        // loaded-area + closest flags (the correct "find matching ref" encoding, NOT FindMatchingRefNearAlias)
+        var flags = nearby.Flags.GetValueOrDefault();
+        Assert.True(flags.HasFlag(QuestAlias.Flag.MatchingRefInLoadedArea));
+        Assert.True(flags.HasFlag(QuestAlias.Flag.MatchingRefClosest));
+        Assert.Null(nearby.FindMatchingRefNearAlias);
+        var cond = Assert.Single(nearby.Conditions);                       // match filter lives on the alias
+        Assert.IsType<HasKeywordConditionData>(cond.Data);
+    }
+
+    [Fact]
+    public void FindMatching_any_omits_closest_flag()
+    {
+        var spec = new ModSpec();
+        spec.Keywords.Add(new KeywordSpec { EditorId = "KW" });
+        spec.Quests.Add(new QuestSpec
+        {
+            EditorId = "MFSM_FindAny", Name = "FA",
+            StoryEvent = new QuestStoryEventSpec { Event = "ScriptEvent", Keyword = "KW" },
+            Aliases =
+            {
+                new QuestAliasSpec { Name = "Caster", Fill = "fromEvent:ref1" },
+                new QuestAliasSpec
+                {
+                    Name = "AnyNpc", Fill = "findMatching:any",
+                    Conditions = { new ConditionSpec { Function = "HasKeyword", Comparison = "==", Value = 1, Param = "Skyrim.esm:0x013794" } },
+                },
+            },
+        });
+        var mod = Build(spec);
+        var alias = mod.Quests.Single(x => x.EditorID == "MFSM_FindAny").Aliases.Single(a => a.Name == "AnyNpc");
+        var flags = alias.Flags.GetValueOrDefault();
+        Assert.True(flags.HasFlag(QuestAlias.Flag.MatchingRefInLoadedArea));
+        Assert.False(flags.HasFlag(QuestAlias.Flag.MatchingRefClosest));
+    }
 }

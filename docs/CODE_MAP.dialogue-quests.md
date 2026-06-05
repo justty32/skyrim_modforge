@@ -16,8 +16,11 @@
 | `examples/story-manager-kill.json` | KillActor SM 事件 |
 | `examples/story-manager-assault.json` | Assault SM 事件 |
 | `examples/story-manager-changelocation.json` | ChangeLocation SM 事件 |
+| `examples/story-manager-craftitem.json` | CraftItem SM 事件（玩家製作物品；engine-native）|
+| `examples/story-manager-events-demo.json` | 四個 engine-native 事件合一測試（CraftItem/DeadBody/PlayerRemoveItem/Arrest）|
 | `examples/story-manager-uniqueactor.json` | uniqueActor alias fill |
 | `examples/story-manager-createobject.json` | createObject alias fill（事件觸發→在另一 alias 處生成物件；複用 magic trigger）|
+| `examples/story-manager-findmatching.json` | findMatching alias fill（loaded area 裏找最近的符合 conditions 的既有 ref；複用 magic trigger）|
 | `examples/story-manager-scriptevent.json` | ScriptEvent 自訂觸發 |
 | `examples/MFSE_TestTrigger.psc` | ScriptEvent OnInit 觸發腳本 |
 | `examples/story-manager-magictrigger.json` | ScriptEvent 經 magic effect 觸發（玩家施法→啟動 quest）|
@@ -127,9 +130,9 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.StoryManager.cs` | `QuestStoryEventSpec`（event + conditions）、`AliasSpec`（fill 模式：fromEvent/forced/uniqueActor/createObject）|
-| Data | `StoryManagerEvents.cs` | 事件登錄表：KillActor/ChangeLocation/CastMagic/AddItem/Assault/ScriptEvent — FormKey + 槽名；`TryParseFill` / `TryParseCreateObject`（`<ref>@<alias>`）|
-| Build P2 | `Generator.Build.StoryManager.cs` | SMBN→SMQN 掛原版事件根；keyword 過濾條件（GetEventData/GetIsID）；alias fill 接線（含 createObject = `CreateReferenceToObject` 在 `aliasIdByName` 目標 alias 處生成）|
+| Spec | `Spec.StoryManager.cs` | `QuestStoryEventSpec`（event + conditions）、`AliasSpec`（fill 模式：fromEvent/forced/uniqueActor/createObject/findMatching；findMatching 帶 `Conditions`）|
+| Data | `StoryManagerEvents.cs` | 事件登錄表：KillActor/ChangeLocation/CastMagic/AddItem/Assault/CraftItem/PlayerRemoveItem/Arrest/ScriptEvent — FormKey + 槽名；`TryParseFill` / `TryParseCreateObject`（`<ref>@<alias>`）|
+| Build P2 | `Generator.Build.StoryManager.cs` | SMBN→SMQN 掛原版事件根；keyword 過濾條件（GetEventData/GetIsID）；alias fill 接線（含 createObject = `CreateReferenceToObject` 在 `aliasIdByName` 目標 alias 處生成；findMatching = `QuestAlias.Flag.MatchingRefInLoadedArea`[+`MatchingRefClosest`] + `BuildCondition` 把 alias.Conditions 接到 `QuestAlias.Conditions`）|
 | Validate | `Generator.Validate.StoryManager.cs` | 事件名合法、alias fill 語法、slot 名稱、ScriptEvent 需宣告 keyword |
 | Diag | `Diagnostics.StoryManager.cs` | smtree（事件根列舉）/ SMBN alias fill / event-data slot dump |
 
@@ -142,6 +145,9 @@
 | CastMagic | caster | target | location |
 | AddItem | actor | — | location |
 | Assault | victim | assailant | location |
+| CraftItem | workbench | — | — |
+| PlayerRemoveItem | owner | item | — |
+| Arrest | guard | criminal | — |
 | ScriptEvent | ref1 | ref2 | loc |
 
 ### SM 鐵律

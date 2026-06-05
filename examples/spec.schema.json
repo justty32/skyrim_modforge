@@ -1454,7 +1454,7 @@
           "properties": {
             "event": {
               "type": "string",
-              "description": "Event name: KillActor | ChangeLocation | CastMagic | AddItem | Assault | ScriptEvent"
+              "description": "Event name: KillActor | ChangeLocation | CastMagic | AddItem | Assault | CraftItem | PlayerRemoveItem | Arrest | ScriptEvent"
             },
             "conditions": {
               "type": "array",
@@ -1481,7 +1481,7 @@
               },
               "fill": {
                 "type": "string",
-                "description": "fromEvent:<slot> (R1/R2/L1/L2) | forced:<ref> | uniqueActor:<ref> | createObject:<ref>@<targetAlias> (spawn a new ref AT another ref-type alias)"
+                "description": "fromEvent:<slot> (R1/R2/L1/L2) | forced:<ref> | uniqueActor:<ref> | createObject:<ref>@<targetAlias> (spawn a new ref AT another ref-type alias) | findMatching:closest|any (nearest/first existing ref in the loaded area matching this alias's conditions)"
               },
               "optional": {
                 "type": "boolean",
@@ -1490,6 +1490,13 @@
               "allowReserved": {
                 "type": "boolean",
                 "description": "allow filling with a ref held by another running quest (uniqueActor forces this on)"
+              },
+              "conditions": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/condition"
+                },
+                "description": "findMatching only (required): CTDA filter on WHICH loaded-area ref the engine picks (e.g. HasKeyword ActorTypeNPC = nearest NPC)"
               }
             }
           }

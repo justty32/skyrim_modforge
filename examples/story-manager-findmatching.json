@@ -1,0 +1,67 @@
+{
+  "pluginName": "ModForgeFindMatching.esp",
+  "esl": false,
+  "_": "findMatching alias fill demo. Reuses the proven magic-trigger entry (cast a self-spell -> MFSE_SpellTrigger -> MFStoryEventDispatch.Fire(kw, caster, target) -> SM ScriptEvent root starts MFSE_FindTarget). The Caster alias pulls event ref1 (the player). The Nearby alias uses 'findMatching:closest' so the engine fills it with the NEAREST already-existing reference in the loaded area matching the alias's Conditions. The condition here (HasKeyword ActorTypeNPC) matches any NPC, so Nearby fills with the closest NPC to the player. (This is the QuestAlias.Flag MatchingRefInLoadedArea+MatchingRefClosest mechanism decoded from vanilla MQGreybeardCall's Bystander aliases — NOT FindMatchingRefNearAlias, which only finds editor-linked-ref children.) In-game test: player.addspell the Forge Seek spell, stand near an NPC and cast it; `sqv MFSE_FindTarget` -> Running with Caster + Nearby aliases filled (Nearby = the nearest NPC).",
+
+  "keywords": [ { "editorId": "MFSE_FindKW" } ],
+
+  "magicEffects": [
+    {
+      "editorId": "MFSE_FindEffect",
+      "name": "Forge Seek",
+      "description": "Senses a nearby presence.",
+      "_": "Token self-heal so OnEffectStart runs on the caster; the payload is the attached MFSE_SpellTrigger script.",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "magicSkill": "Restoration",
+      "castType": "FireAndForget",
+      "targetType": "Self",
+      "baseCost": 0.5,
+      "flags": [ "NoDuration", "NoArea" ]
+    }
+  ],
+
+  "spells": [
+    {
+      "editorId": "MFSE_FindSpell",
+      "name": "Forge Seek",
+      "_": "Self-cast — no aiming needed. Wraps MFSE_FindEffect.",
+      "spellType": "Spell",
+      "castType": "FireAndForget",
+      "targetType": "Self",
+      "baseCost": 10,
+      "effects": [
+        { "magicEffect": "MFSE_FindEffect", "magnitude": 1, "area": 0, "duration": 0 }
+      ]
+    }
+  ],
+
+  "quests": [
+    {
+      "editorId": "MFSE_FindTarget",
+      "name": "Forge Seek Target",
+      "_": "Started by the SM ScriptEvent root when MFSE_FindKW fires. Caster = event ref1 (the player). Nearby uses findMatching:closest so the engine fills it with the nearest existing ref in the loaded area matching the alias's Conditions (HasKeyword ActorTypeNPC = the closest NPC). Conditions live on the QuestAlias itself; the loaded-area+closest search is set via QuestAlias flags. Use 'findMatching:any' for the first match instead of the nearest.",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "ScriptEvent", "keyword": "MFSE_FindKW" },
+      "aliases": [
+        { "name": "Caster", "fill": "fromEvent:ref1" },
+        {
+          "name": "Nearby",
+          "fill": "findMatching:closest",
+          "conditions": [
+            { "function": "HasKeyword", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x013794", "runOn": "Subject" }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "scripts": [
+    {
+      "targetEditorId": "MFSE_FindEffect",
+      "scriptName": "MFSE_SpellTrigger",
+      "source": "MFSE_SpellTrigger.psc",
+      "properties": [ { "name": "TheKW", "type": "object", "objectEditorId": "MFSE_FindKW" } ]
+    }
+  ]
+}
