@@ -1447,6 +1447,52 @@
               }
             }
           }
+        },
+        "storyEvent": {
+          "type": "object",
+          "description": "Story Manager trigger: this quest starts when the named event fires. Build auto-sets startGameEnabled=false and wires the SM tree.",
+          "properties": {
+            "event": {
+              "type": "string",
+              "description": "Event name: KillActor | ChangeLocation | CastMagic | AddItem | Assault | ScriptEvent"
+            },
+            "conditions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/condition"
+              },
+              "description": "CTDA gates on the SM branch (e.g. GetIsID victim)"
+            },
+            "keyword": {
+              "type": "string",
+              "description": "ScriptEvent only: editorId of a KYWD declared in spec.keywords; the dispatcher passes it to SendStoryEvent and the branch filters on it"
+            }
+          }
+        },
+        "aliases": {
+          "type": "array",
+          "description": "Quest aliases filled by the SM event or forced refs.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "alias name (must be unique within the quest)"
+              },
+              "fill": {
+                "type": "string",
+                "description": "fromEvent:<slot> (R1/R2/L1/L2) | forced:<ref> | uniqueActor:<ref>"
+              },
+              "optional": {
+                "type": "boolean",
+                "description": "quest still starts even if this alias cannot be filled"
+              },
+              "allowReserved": {
+                "type": "boolean",
+                "description": "allow filling with a ref held by another running quest (uniqueActor forces this on)"
+              }
+            }
+          }
         }
       }
     },
@@ -2699,6 +2745,13 @@
             }
           },
           "additionalProperties": false
+        },
+        "cells": {
+          "type": "array",
+          "description": "Flat terrain cells (CELL+LAND) to generate inside this worldspace. Enter in-game with: cow <editorId> X Y",
+          "items": {
+            "$ref": "#/$defs/worldspaceCell"
+          }
         }
       },
       "additionalProperties": false
@@ -2775,6 +2828,29 @@
         }
       },
       "additionalProperties": false
+    },
+    "worldspaceCell": {
+      "type": "object",
+      "description": "A flat terrain cell (CELL+LAND) at exterior grid coordinates (X,Y). 1 unit = 4096 game units; (0,0) is origin.",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "description": "exterior cell-grid X coordinate"
+        },
+        "y": {
+          "type": "integer",
+          "description": "exterior cell-grid Y coordinate"
+        },
+        "height": {
+          "type": "number",
+          "default": 4000,
+          "description": "terrain height in game units (default 4000 ≈ 280 m above sea level; 0 = sea level)"
+        },
+        "navmesh": {
+          "type": "boolean",
+          "description": "generate a flat 4-vertex quad NAVM covering the full cell so NPCs can path on it (no cross-cell links)"
+        }
+      }
     },
     "condition": {
       "type": "object",
