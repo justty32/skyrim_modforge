@@ -54,7 +54,7 @@ $R find "$SKYRIM_ESM" tamriel Worldspace   # -> Skyrim.esm:0x00003C  Tamriel（�
 ## 產生內容的工作流程
 
 1. 閱讀 `SPEC-index.md` 了解確切欄位。撰寫 `spec.json`（camelCase；屬性名稱不區分大小寫匹配）。對於種族/職業/服裝/關鍵字/原版派系，請先用 `find` 取得 FormID，並使用 `"<master>:0xFORMID"` 的引用格式。
-2. 執行 `validate spec.json`。**若回報問題，請修正規格並重新驗證** — 不要建置無效的規格。此步驟會檢查：空白/重複的 `editorId`、對話→未知任務/NPC、腳本→未知目標、物件屬性→未知記錄、錯誤的屬性型別。
+2. 執行 `validate spec.json`。**若回報問題，請修正規格並重新驗證** — 不要建置無效的規格。此步驟會檢查：空白/重複的 `editorId`、對話→未知任務/NPC、腳本→未知目標、物件屬性→未知記錄、錯誤的屬性型別、**未知規格欄位（拼字保護）** — 遞迴檢查所有 JSON key 是否為合法欄位（略過 `_*` / `//*` 注釋 key），捕捉拼字錯誤。
 3. 執行 `package spec.json OutDir`（或只需插件時用 `build spec.json out.esp`）。
 4. 執行 `dump OutDir/<pluginName>` 並**確認輸出符合需求**（名稱、派系成員、附加腳本 + 屬性數量、對話提示、任務目標）。
 5. 回報你所產生的內容，並如實說明哪些僅為結構性（見「限制」章節）。

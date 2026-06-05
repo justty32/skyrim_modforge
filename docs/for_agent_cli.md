@@ -63,7 +63,9 @@ NPC needs at least `race` + `class` to act like a real actor; `outfit` clothes i
    FormID first and use the `"<master>:0xFORMID"` ref form.
 2. `validate spec.json`. **If it reports problems, FIX the spec and re-validate** — do not
    build an invalid spec. It catches: empty/duplicate `editorId`, dialogue→unknown quest/npc,
-   script→unknown target, object-property→unknown record, bad property type.
+   script→unknown target, object-property→unknown record, bad property type, **unknown spec
+   fields** (typo guard — recursively checks every JSON key against the C# spec type; skips
+   `_*` / `//*` comment keys).
 3. `package spec.json OutDir` (or `build spec.json out.esp` for just the plugin).
 4. `dump OutDir/<pluginName>` and **check the output matches the request** (names, faction
    membership, attached scripts + property counts, dialogue prompts, quest objectives).
