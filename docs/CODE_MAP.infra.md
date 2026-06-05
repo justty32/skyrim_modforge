@@ -79,7 +79,7 @@
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
 | Core | `Papyrus.cs` | Wine/CK PapyrusCompiler.exe 包裝 + native Linux 整合 + error capture（exit code 0 bug 處理）|
-| CLI | `Package.cs` | `package` 時自動呼叫 `Papyrus.Compile` + 複製 MFStoryEventDispatch.pex |
+| CLI | `Package.cs` | `package` 時自動編譯 script + 夾帶 MFStoryEventDispatch.pex；編 user script 時把 embed 的 dispatcher `.psc` 解到 temp 當 sibling header（`Fire()` 才解析得到）|
 
 ---
 

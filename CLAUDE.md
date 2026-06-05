@@ -105,4 +105,7 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - 通用派發器 `assets/papyrus/MFStoryEventDispatch.{psc,pex}`（Global `Fire(kw,ref1,ref2,loc)`→`kw.SendStoryEvent`），編一次、embed 進 CLI；package 遇到 ScriptEvent quest 自動丟 `.pex` 進 `Scripts/`。**Papyrus 編譯**：`Papyrus.Compile`（Wine+CK）用 cache 全 source set（`~/.cache/modforge/papyrus/Source/Scripts`，14301 .psc）；native `~/tools/papyrus-compiler` 用 loose Source（headers 不全時設 `MODFORGE_PAPYRUS_HEADERS` 指向 cache）。
 - 範例 `examples/story-manager-scriptevent.json` + 觸發腳本 `examples/MFSE_TestTrigger.psc`（OnInit 發事件）= 端到端。計畫 `docs/superpowers/plans/2026-06-04-script-event-entry.md`。
 
-**之後可做**：`createObject`/`findMatching` 填充；再多解事件進表；把派發器接到實際觸發場景（dialogue fragment / magic effect / alias script）做量產接線。
+**派發器→真實觸發接線（量產入口第一條）：✅ 實機驗證通過（2026-06-05）**——
+`examples/story-manager-magictrigger.json` + `examples/MFSE_SpellTrigger.psc`：可複用 magic-effect trigger（`extends ActiveMagicEffect`，`OnEffectStart→MFStoryEventDispatch.Fire(kw,caster,target)`）掛在自訂 MGEF/spell 上，玩家施法→SM 啟動 quest，`Caster` alias=玩家。把 OnInit 測試觸發換成實際遊戲動作。**編譯耐久修法**：dispatcher `.psc` 也 embed 進 CLI，Package.cs 編 user script 時解到 temp 當 sibling header（compiler 把 input 檔所在目錄當 header dir），`Fire()` 免 per-machine cache 即可解析——未來任何經派發器的 trigger 腳本都受惠。297 測試綠。
+
+**之後可做**：再接更多真實觸發場景（dialogue fragment result-script / alias OnActivate / activator）；`createObject`/`findMatching` 填充；再多解事件進表。

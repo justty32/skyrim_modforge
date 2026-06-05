@@ -73,6 +73,23 @@ internal static partial class Program
             File.Copy(pex, Path.Combine(scriptsDir, Path.GetFileName(pex)), overwrite: true);
 
         // 4) User-specified script sources: compile + copy to Scripts/ + Scripts/Source/.
+        // Scripts that call MFStoryEventDispatch.Fire() (the universal Script-Event entry) need the
+        // dispatcher's .psc on the compiler's header path. The Papyrus compiler treats the input
+        // file's own directory as a header dir, so we compile each user script from a temp dir that
+        // also holds the embedded dispatcher source — no per-machine cache install required.
+        string? sharedHeaderDir = null;
+        string? DispatcherHeaderDir()
+        {
+            if (sharedHeaderDir is not null) return sharedHeaderDir;
+            using var rs = typeof(Program).Assembly.GetManifestResourceStream("MFStoryEventDispatch.psc");
+            if (rs is null) return null;
+            var dir = Path.Combine(Path.GetTempPath(), "modforge-psc-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            using (var fs = File.Create(Path.Combine(dir, "MFStoryEventDispatch.psc"))) rs.CopyTo(fs);
+            sharedHeaderDir = dir;
+            return dir;
+        }
+
         int compiled = autoCompiled;
         var compiledSources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         bool CompileSource(string? source, string label)
@@ -81,7 +98,16 @@ internal static partial class Program
             var src = Path.IsPathRooted(source) ? source : Path.Combine(specDir, source);
             if (!compiledSources.Add(Path.GetFullPath(src))) return false;
             if (!File.Exists(src)) { Console.Error.WriteLine($"  ! script source not found: {src}"); return false; }
-            var cr = Papyrus.CompileBest(src, scriptsDir);
+            // Compile beside the dispatcher header so MFStoryEventDispatch.Fire() resolves; fall back
+            // to compiling in place if the embedded dispatcher source is unavailable.
+            var hdr = DispatcherHeaderDir();
+            var compileTarget = src;
+            if (hdr is not null)
+            {
+                compileTarget = Path.Combine(hdr, Path.GetFileName(src));
+                File.Copy(src, compileTarget, overwrite: true);
+            }
+            var cr = Papyrus.CompileBest(compileTarget, scriptsDir);
             if (!cr.Success) { Console.Error.WriteLine(cr.Message); Console.Error.WriteLine($"  ! compile failed: {label}"); return false; }
             Console.WriteLine(cr.Message);
             Directory.CreateDirectory(sourceDir);

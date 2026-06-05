@@ -27,4 +27,13 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <!-- The dispatcher SOURCE (always in repo; only the .pex is gitignored). Embedded so `package` can
+       drop it beside any user script that calls MFStoryEventDispatch.Fire(), giving the Papyrus
+       compiler the header it needs to resolve the dispatcher — no per-machine cache install. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\assets\papyrus\MFStoryEventDispatch.psc">
+      <LogicalName>MFStoryEventDispatch.psc</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

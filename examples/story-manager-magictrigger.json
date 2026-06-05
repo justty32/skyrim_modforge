@@ -1,0 +1,61 @@
+{
+  "pluginName": "ModForgeMagicTrigger.esp",
+  "esl": false,
+  "_": "Dispatcher-wired REAL trigger: a player-castable spell whose magic effect carries MFSE_SpellTrigger (extends ActiveMagicEffect). OnEffectStart -> MFStoryEventDispatch.Fire(kw, caster, target) -> the SM ScriptEvent root (keyword-filtered) starts MFSE_MagicTarget with Caster=the player. This replaces the OnInit test trigger (story-manager-scriptevent.json) with an actual in-game action. Non-ESL so the spell FormID is XX0008xx (XX = load order) for an easy player.addspell. SM side proven in-game 2026-06-04; only the trigger point changed.",
+
+  "keywords": [ { "editorId": "MFSE_MagicKW" } ],
+
+  "magicEffects": [
+    {
+      "editorId": "MFSE_TriggerEffect",
+      "name": "Forge Call",
+      "description": "Sends a forge signal.",
+      "_": "Harmless self-effect — a token Restoration heal so the effect actually runs (OnEffectStart fires on the caster). The gameplay payload is the attached MFSE_SpellTrigger script, not the heal.",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "magicSkill": "Restoration",
+      "castType": "FireAndForget",
+      "targetType": "Self",
+      "baseCost": 0.5,
+      "flags": [ "NoDuration", "NoArea" ]
+    }
+  ],
+
+  "spells": [
+    {
+      "editorId": "MFSE_CallSpell",
+      "name": "Forge Call",
+      "_": "Self-cast so the tester just casts it on themselves — no target needed. Wraps MFSE_TriggerEffect.",
+      "spellType": "Spell",
+      "castType": "FireAndForget",
+      "targetType": "Self",
+      "baseCost": 10,
+      "effects": [
+        { "magicEffect": "MFSE_TriggerEffect", "magnitude": 1, "area": 0, "duration": 0 }
+      ]
+    }
+  ],
+
+  "quests": [
+    {
+      "editorId": "MFSE_MagicTarget",
+      "name": "Forge Call Target",
+      "_": "Started by the SM ScriptEvent root when MFSE_MagicKW fires. Caster alias pulls event ref1 (the player who cast Forge Call). Verify in-game: cast the spell, then `sqv MFSE_MagicTarget` -> State Running, Caster alias filled with the player.",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "ScriptEvent", "keyword": "MFSE_MagicKW" },
+      "aliases": [
+        { "name": "Caster", "fill": "fromEvent:ref1" },
+        { "name": "Target", "fill": "fromEvent:ref2" }
+      ]
+    }
+  ],
+
+  "scripts": [
+    {
+      "targetEditorId": "MFSE_TriggerEffect",
+      "scriptName": "MFSE_SpellTrigger",
+      "source": "MFSE_SpellTrigger.psc",
+      "properties": [ { "name": "TheKW", "type": "object", "objectEditorId": "MFSE_MagicKW" } ]
+    }
+  ]
+}

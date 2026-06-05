@@ -284,7 +284,25 @@ The dispatcher calls `MY_StoryKW.SendStoryEvent(...)` which the engine routes to
 matching SM quest node. One dispatcher `.pex` serves all mods — `package` copies it into
 `Scripts/` automatically when any ScriptEvent quest is present.
 
-See `examples/story-manager-scriptevent.json` + `examples/MFSE_TestTrigger.psc`.
+**Wiring `Fire()` to a real trigger.** Any Papyrus context can call the dispatcher. A reusable
+pattern is a magic-effect script: attach it to a custom MGEF, set a keyword property, and casting
+the spell fires the story event with the caster as `ref1`:
+
+```papyrus
+Scriptname MFSE_SpellTrigger extends ActiveMagicEffect
+Keyword Property TheKW Auto
+Event OnEffectStart(Actor akTarget, Actor akCaster)
+    MFStoryEventDispatch.Fire(TheKW, akCaster, akTarget)
+EndEvent
+```
+
+`package` compiles such a script beside the embedded dispatcher source automatically, so `Fire()`
+resolves without any local Papyrus setup. The same shape works from dialogue fragments, alias
+scripts, or activators — anywhere you can run one line of Papyrus.
+
+See `examples/story-manager-scriptevent.json` + `examples/MFSE_TestTrigger.psc` (OnInit test), and
+`examples/story-manager-magictrigger.json` + `examples/MFSE_SpellTrigger.psc` (player casts a spell
+→ SM quest starts; in-game verified 2026-06-05).
 
 ### scripts — Papyrus attachment
 ```jsonc

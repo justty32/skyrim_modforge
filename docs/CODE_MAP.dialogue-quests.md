@@ -19,6 +19,8 @@
 | `examples/story-manager-uniqueactor.json` | uniqueActor alias fill |
 | `examples/story-manager-scriptevent.json` | ScriptEvent 自訂觸發 |
 | `examples/MFSE_TestTrigger.psc` | ScriptEvent OnInit 觸發腳本 |
+| `examples/story-manager-magictrigger.json` | ScriptEvent 經 magic effect 觸發（玩家施法→啟動 quest）|
+| `examples/MFSE_SpellTrigger.psc` | 可複用 magic-effect trigger（OnEffectStart→Fire）|
 | `examples/scripts/MFDemoQuestScript.psc` | quest fragment Papyrus 示範 |
 
 ---
@@ -152,11 +154,14 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| **源碼** | `assets/papyrus/MFStoryEventDispatch.psc` | 通用派發器源碼（`Fire(kw,ref1,ref2,loc)→kw.SendStoryEvent`）；Package.cs 讀取此檔、embed .pex 進 CLI |
-| Example | `examples/story-manager-scriptevent.json` | ScriptEvent quest 完整範例 |
+| **源碼** | `assets/papyrus/MFStoryEventDispatch.psc` | 通用派發器源碼（`Fire(kw,ref1,ref2,loc)→kw.SendStoryEvent`）；csproj embed `.pex`（夾帶進 Scripts/）+ `.psc`（user script 編譯時當 header）|
+| Example | `examples/story-manager-scriptevent.json` | ScriptEvent quest 完整範例（OnInit 測試觸發）|
 | Example | `examples/MFSE_TestTrigger.psc` | OnInit 觸發 ScriptEvent 的測試腳本 |
+| Example | `examples/story-manager-magictrigger.json` | **真實觸發接線**：玩家施法→MGEF→Fire→啟動 quest（實機驗證 2026-06-05）|
+| Example | `examples/MFSE_SpellTrigger.psc` | 可複用 magic-effect trigger（`extends ActiveMagicEffect`，`OnEffectStart→MFStoryEventDispatch.Fire`）|
 
-⚠️ ScriptEvent 介面或槽位有任何改動，`MFStoryEventDispatch.psc` 必須同步重編。
+⚠️ ScriptEvent 介面或槽位有任何改動，`MFStoryEventDispatch.psc` 必須同步重編（`.pex`）。
+**派發器 header 機制**：呼叫 `Fire()` 的 user trigger 腳本，Package.cs 編譯時把 embed 的 dispatcher `.psc` 解到 temp 目錄當 sibling header（compiler 把 input 檔所在目錄當 header dir），免 per-machine cache 安裝。
 
 ---
 
