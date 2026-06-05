@@ -24,11 +24,16 @@
 | `docs/CODE_MAP.npcs-packages.md` | NPC / faction / class / AI package / combat style / weather / climate |
 | `docs/CODE_MAP.infra.md` | CLI / build orchestrator / validate / package / Papyrus / translate / plugin I/O |
 
-三個面向構成互聯三角：**程式碼 ↔ CODE_MAP ↔ 文檔**（`docs/SPEC-*.md` / `for_agent*.md`）。任一面向有異動，其他面向必須同步。
+四個面向構成維護鏈：**程式碼 → CODE_MAP → 文檔 → examples/assets**（HTML bundle 最低，只在明確要求時更新）。
+
+**優先級（衝突或時間不夠時，依序保持一致）：**
+程式碼 > CODE_MAP > 文檔（`docs/SPEC-*.md` / `for_agent*.md`）> examples/assets > HTML
+
+**CODE_MAP 與程式碼衝突時：以程式碼為準，立即修正 CODE_MAP。**
 
 **日常規則：**
 1. **修改前**：先讀 `docs/CODE_MAP.md`，找到相關子 index，只讀清單中列出的檔案——不要讀無關領域的檔案。
-2. **修改後**：若新增或刪除了 `.cs` 檔案，或某檔案的職責有顯著改變，必須同步更新對應子 index。
+2. **修改後**：若新增或刪除了 `.cs` 檔案，或某檔案的職責有顯著改變，必須同步更新對應子 index（含 Tests 欄）。
 3. `.cs` 檔案本身不加「對應 CODE_MAP」的註釋（維護成本過高）；反向查找直接 `grep` CODE_MAP 文件。
 
 ## 主要工作流程
@@ -37,30 +42,34 @@
 
 ```
 修改程式碼（增量）
-  → 更新 CODE_MAP（若有新檔案或職責變動）
-  → 使用者測試
-  → 回報問題 → 修程式碼 → 重複
-  → 全數通過後：補齊 CODE_MAP + 文檔 → commit
+  → 使用者測試 → 回報問題 → 修程式碼 → 重複
+  → 全數通過後：補齊 CODE_MAP → 補文檔 → commit
 ```
 
-- 程式碼變動期間（測試迭代中）CODE_MAP / 文檔可以暫時落後，**但 commit 前必須全部同步**。
+- 測試迭代期間，CODE_MAP / 文檔可以暫時落後。
+- 若迭代跨越多個 session，在本檔「進行中的方向」補一行 `[功能名] 文檔/CODE_MAP 待同步`，下一個 session 接手時不會誤以為已同步。
+- **commit 前**：CODE_MAP + 文檔必須對齊（HTML 不要求，examples/assets 視情況）。
 
 ### Workflow 2：重構整理（拆分 / 模塊化）
 
-三個面向同時牽動時，**一次只動一個面向**，完成後再看下一個：
+維護鏈中**一次只動一個面向**，做完 commit 再看下一個：
 
 ```
 Step 1  程式碼重構（behavior-preserving 拆分）
           → 立即更新 CODE_MAP 與相關文檔以對齊新結構
           → 跑測試確認行為不變 → commit
 
-Step 2  （視需要）CODE_MAP 若臃腫 → 單獨重構 CODE_MAP → commit
+Step 2  （視需要）CODE_MAP 若臃腫 → 單獨重構 CODE_MAP
+          → 同步更新 CODE_MAP 中連結到的文檔段落 → commit
 
-Step 3  （視需要）文檔若臃腫 → 單獨重構文檔 → commit
+Step 3  （視需要）文檔若臃腫 → 單獨重構文檔
+          → 同步更新 CODE_MAP 中指向這些文檔的連結 → commit
+
+Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 ```
 
-- **禁止**：同一 session 內同時重構程式碼 + CODE_MAP + 文檔三個面向。
-- 每個 Step 完成前不啟動下一個 Step，確保任意時間點三角都是一致的。
+- **禁止**：同一 session 內同時重構超過一個面向。
+- 每個 Step 完成前不啟動下一個，確保任意時間點維護鏈是一致的。
 
 ## 進行中的方向
 

@@ -4,6 +4,22 @@
 
 涵蓋：quest + stages + objectives、dialogue topics + INFO、banter、multi-actor scenes、CTDA conditions、Story Manager event quests、ScriptEvent、word walls、Papyrus 附加。
 
+## Tests
+
+| 測試檔案 | 涵蓋 |
+|---------|-----|
+| `ConditionTests.cs` | CTDA condition 函數、comparator、ref 解析 |
+| `DialogueTests.cs` | dialogue topic / INFO / greeting 生成 |
+| `QuestStageTests.cs` | stage log text / objective fragment / VMAD |
+| `SceneTests.cs` | SCEN actor / phase / dialogue action |
+| `StoryManagerBuildTests.cs` | SM build pass 2（SMBN/SMQN 掛接、alias fill 接線）|
+| `StoryManagerEventsTests.cs` | 事件登錄表欄位（FormKey / slot 對應）|
+| `StoryManagerEventsMoreTests.cs` | 擴充事件（ChangeLocation/CastMagic/AddItem/Assault/ScriptEvent）|
+| `StoryManagerValidateTests.cs` | SM validate（事件名、alias 語法、keyword 要求）|
+| `WordWallTests.cs` | word wall 教字 quest fragment（⚠️ 需本機 Skyrim.esm）|
+
+---
+
 ---
 
 ## Classes（職業 CLAS）

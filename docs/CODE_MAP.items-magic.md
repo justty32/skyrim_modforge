@@ -4,6 +4,20 @@
 
 涵蓋：weapons、armor、books/misc、magic effects、spells、potions、enchantments、perks、shouts、ingredients、ammunition、scrolls、soul gems、keys、texture sets、long-tail records。
 
+## Tests
+
+| 測試檔案 | 涵蓋 |
+|---------|-----|
+| `EnchantmentTests.cs` | ENCH scalar fields + effect ref 接線 |
+| `ExternalAssetTests.cs` | external asset 打包（Meshes/Textures/Sounds 複製）|
+| `PerkTests.cs` | Perk trunk + entry-point modifier + ability-spell grant |
+| `ShoutTests.cs` | Shout word-of-power + spell tier + cooldown build |
+| `SpellTomeTests.cs` | spell tome teaching mechanics |
+| `TextureSetTests.cs` | TXST 8 槽路徑 build |
+| `TextureSetValidateTests.cs` | texture-path / model-path sanity validate |
+
+---
+
 ---
 
 ## Weapons / Armor / Books / Misc

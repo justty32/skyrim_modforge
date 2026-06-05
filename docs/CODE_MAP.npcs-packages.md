@@ -4,6 +4,16 @@
 
 涵蓋：NPCs、factions、relationships、classes、combat styles、AI packages（Sandbox/Travel/UseMagic/Follow/Sleep/Patrol/Escort）、outfits、weather/climate。
 
+## Tests
+
+| 測試檔案 | 涵蓋 |
+|---------|-----|
+| `PackageTests.cs` | AI package 資料槽填充（所有 template 變體）|
+| `RelationshipAndEslTests.cs` | faction relationship build + ESL flag 行為 |
+| `WeatherClimateTests.cs` | weather scalar fields + climate build |
+
+---
+
 ---
 
 ## NPCs

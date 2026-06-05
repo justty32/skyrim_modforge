@@ -4,6 +4,16 @@
 
 涵蓋：CLI 命令進入點、build orchestrator、BuildContext 狀態機、spec 驗證 pipeline、Papyrus 編譯、asset 打包、翻譯 extract/apply、plugin I/O。
 
+## Tests
+
+| 測試檔案 | 涵蓋 |
+|---------|-----|
+| `ValidateTests.cs` | 跨領域 validate（editorId 唯一性、ref 合法性等通用規則）|
+| `SeqFileTests.cs` | `.seq` manifest 生成（StartGameEnabled quest 列表）|
+| `Helpers.cs` | 共用測試 helper（非 test class，供其他 *Tests.cs 使用）|
+
+---
+
 ---
 
 ## Spec 根（頂層 DTO）

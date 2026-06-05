@@ -4,6 +4,20 @@
 
 涵蓋：interior cells、exterior placements、worldspaces、regions、leveled lists、containers、recipes、encounter zones、vendors。
 
+## Tests
+
+| 測試檔案 | 涵蓋 |
+|---------|-----|
+| `EncounterTests.cs` | encounter zone build + validate |
+| `RecipeTests.cs` | COBJ workbench dispatch + component 接線 |
+| `TeleportDoorTests.cs` | teleport-door XTEL 接線（linked-ref pair build）|
+| `TeleportValidateTests.cs` | teleport pair validate（ref 存在、配對完整性）|
+| `VendorTests.cs` | vendor faction config + merchant container build |
+| `WorldspaceRegionTests.cs` | worldspace record + region polygon/weather build |
+| `XMarkerTests.cs` | XMarker 放置（特殊 placement base）|
+
+---
+
 ---
 
 ## Interior Cells 室內空間
