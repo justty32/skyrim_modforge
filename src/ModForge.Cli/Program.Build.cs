@@ -48,15 +48,21 @@ internal static partial class Program
     // -------------------------------------------------------------------------------
     private static int ValidateCmd(string specPath)
     {
-        var spec = ReadSpec(specPath);
-        var problems = Generator.Validate(spec);
-        if (problems.Count == 0)
+        var json = File.ReadAllText(specPath);
+        var unknowns = CheckUnknownFields(json, typeof(ModSpec));
+
+        var spec = JsonSerializer.Deserialize<ModSpec>(json, ReadOpts)
+            ?? throw new InvalidOperationException("spec deserialized to null");
+        var semantic = Generator.Validate(spec);
+
+        var all = unknowns.Concat(semantic).ToList();
+        if (all.Count == 0)
         {
             Console.WriteLine($"valid: {Path.GetFileName(specPath)} — no problems");
             return 0;
         }
-        Console.Error.WriteLine($"INVALID: {Path.GetFileName(specPath)} — {problems.Count} problem(s):");
-        foreach (var p in problems) Console.Error.WriteLine($"  - {p}");
+        Console.Error.WriteLine($"INVALID: {Path.GetFileName(specPath)} — {all.Count} problem(s):");
+        foreach (var p in all) Console.Error.WriteLine($"  - {p}");
         return 1;
     }
 

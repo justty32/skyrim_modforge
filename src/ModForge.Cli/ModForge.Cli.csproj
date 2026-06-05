@@ -17,8 +17,11 @@
   </ItemGroup>
 
   <!-- The generic Story-Event dispatcher .pex (compiled once from assets/papyrus/*.psc). Embedded so
-       `package` can drop it into Scripts/ for any mod using event "ScriptEvent", regardless of CWD. -->
-  <ItemGroup>
+       `package` can drop it into Scripts/ for any mod using event "ScriptEvent", regardless of CWD.
+       Conditional: build succeeds without it (fresh clone / CI); `package` on a ScriptEvent spec
+       will warn at runtime that the .pex is missing. Compile it with:
+         dotnet run - - compile assets/papyrus/MFStoryEventDispatch.psc assets/papyrus/ -->
+  <ItemGroup Condition="Exists('..\..\assets\papyrus\MFStoryEventDispatch.pex')">
     <EmbeddedResource Include="..\..\assets\papyrus\MFStoryEventDispatch.pex">
       <LogicalName>MFStoryEventDispatch.pex</LogicalName>
     </EmbeddedResource>
