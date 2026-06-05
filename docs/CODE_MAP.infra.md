@@ -6,87 +6,108 @@
 
 ---
 
-## 1. Spec 根（資料定義）
+## Spec 根（頂層 DTO）
+→ **說明文件**：[SPEC-intro.md](SPEC-intro.md)（cross-reference & IDs、完整 record 類型表）
 
-| 檔案 | 主要型別 |
-|-----|---------|
-| `src/ModForge.Core/Spec.cs` | `ModSpec`（頂層 DTO，所有 record family 的清單欄位）|
-| `src/ModForge.Core/GlobalUsings.cs` | 全域 using 別名 |
-
----
-
-## 2. CLI 進入點
-
-| 檔案 | 做什麼 |
-|-----|-------|
-| `src/ModForge.Cli/Program.cs` | argv dispatcher；`gen`/diagnostic 命令；`ReadSpec` JSON 反序列化 |
-| `src/ModForge.Cli/Program.Build.cs` | `build`/`validate`/`package`/`compile` 命令實作 |
-| `src/ModForge.Cli/Program.Translate.cs` | `extract`/`apply`/`applyloc` 命令 |
-| `src/ModForge.Cli/Package.cs` | `package` 完整流程：Papyrus 編譯 + Assets 複製 + MO2 資料夾組裝 |
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.cs` | `ModSpec`（頂層 DTO，所有 record family 的清單欄位）|
 
 ---
 
-## 3. Build Orchestrator
+## CLI 命令進入點
+→ **說明文件**：[for_agent_cli.md](for_agent_cli.md)（命令速查 + 常見陷阱）
 
-| 檔案 | 做什麼 |
-|-----|-------|
-| `src/ModForge.Core/Generator.cs` | 外部入口 `Generator.Build(spec, opts)`；`BuildResult`/`BuildStats` |
-| `src/ModForge.Core/Generator.Build.cs` | 兩段 pipeline：pass 1（建所有 record）→ pass 2（接 FormLink）完整呼叫序列 |
-| `src/ModForge.Core/Generator.BuildContext.cs` | 狀態容器：mod handle、warnings、editorId/formKey 對照表、placement/package/vendor tracking |
-| `src/ModForge.Core/Generator.BuildContext.Utilities.cs` | master link-cache 管理；`PackageDataLocation` slot 建構 |
-| `src/ModForge.Core/Generator.Helpers.cs` | 靜態 helpers：armor/enchantment/grid-coord 解析、flag 解析、ref resolver（in-spec vs external）|
+| 層次 | 檔案 | 命令 |
+|-----|-----|-----|
+| CLI | `Program.cs` | `gen` / `find` / diagnostic dispatcher；`ReadSpec` JSON 反序列化 |
+| CLI | `Program.Build.cs` | `build` / `validate` / `package` / `compile` |
+| CLI | `Program.Translate.cs` | `extract` / `apply` / `applyloc` |
+| CLI | `Package.cs` | `package` 完整流程：Papyrus 編譯 + Assets 複製 + MO2 資料夾組裝 |
 
 ---
 
-## 4. 驗證 Pipeline
+## Build Orchestrator（兩段 Pipeline）
+→ **說明文件**：[SPEC-workflow.md § Workflow](SPEC-workflow.md#workflow)
 
-| 檔案 | 做什麼 |
-|-----|-------|
-| `src/ModForge.Core/Generator.Validate.cs` | 進入點 `Validate(spec)`；`ValidateContext`；`RegisterAll`/`Reg`/`CheckRef` |
-| `src/ModForge.Core/Generator.Validate.Helpers.cs` | 共用 helpers：`CheckEnum`、`CheckEffects`、`ValidComparison`、`CheckCondition`、`CheckModelPath`/`CheckTexPath`/`CheckSoundFile` |
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Entry | `Generator.cs` | 外部入口 `Generator.Build(spec, opts)`；`BuildResult` / `BuildStats` |
+| Pipeline | `Generator.Build.cs` | pass 1（建所有 record）→ pass 2（接 FormLink）完整呼叫序列 |
+| State | `Generator.BuildContext.cs` | 狀態容器：mod handle / warnings / editorId-formKey 對照表 / placement-package-vendor tracking |
+| Helpers | `Generator.BuildContext.Utilities.cs` | master link-cache 管理；`PackageDataLocation` slot 建構 |
+| Helpers | `Generator.Helpers.cs` | 靜態 helpers：armor/enchantment/grid-coord 解析；ref resolver（in-spec vs external）|
+
+---
+
+## 驗證 Pipeline
+→ **說明文件**：[SPEC-workflow.md § Workflow](SPEC-workflow.md#workflow)（validate → fix → build 流程）· [for_agent_cli.md](for_agent_cli.md)（validate 指令）
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Entry | `Generator.Validate.cs` | 進入點 `Validate(spec)`；`ValidateContext`；`RegisterAll` / `Reg` / `CheckRef` |
+| Helpers | `Generator.Validate.Helpers.cs` | `CheckEnum` / `CheckEffects` / `ValidComparison` / `CheckCondition` / `CheckModelPath` / `CheckTexPath` / `CheckSoundFile` |
 
 各領域 Validate 檔案見對應子 index（dialogue-quests / world / items-magic / npcs-packages）。
 
 ---
 
-## 5. 打包・Papyrus・資產
+## Papyrus 編譯
+→ **說明文件**：[for_agent_cli.md § compile](for_agent_cli.md)（`compile` 命令 + 環境需求）
 
-| 檔案 | 做什麼 |
-|-----|-------|
-| `src/ModForge.Core/Papyrus.cs` | Papyrus 編譯：Wine/CK PapyrusCompiler.exe 包裝 + native Linux 整合 + error capture |
-| `src/ModForge.Core/Assets.cs` | 外部資產打包：複製 Meshes/Textures/Sounds 樹到輸出目錄 |
-| `src/ModForge.Core/SeqFile.cs` | 寫 `.seq` manifest（StartGameEnabled quest 強制啟動）|
-| `src/ModForge.Core/Demo.cs` | 手建 demo plugin（sanity check 用）|
-
----
-
-## 6. Plugin I/O・翻譯・工具
-
-| 檔案 | 做什麼 |
-|-----|-------|
-| `src/ModForge.Core/PluginIo.cs` | Mutagen load/write 包裝；ESL 2048 record 安全檢查 |
-| `src/ModForge.Core/Translator.cs` | 字串 extract（→ JSON source/target）+ apply（inline or Localized .STRINGS）|
-| `src/ModForge.Core/Support.cs` | UTF-8 provider（CJK localization）+ string-entry translation slot helpers |
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Core | `Papyrus.cs` | Wine/CK PapyrusCompiler.exe 包裝 + native Linux 整合 + error capture（exit code 0 bug 處理）|
+| CLI | `Package.cs` | `package` 時自動呼叫 `Papyrus.Compile` + 複製 MFStoryEventDispatch.pex |
 
 ---
 
-## 7. Diagnostics（dump 基礎）
+## 打包（Package）& 外部資產
+→ **說明文件**：[SPEC-items.md § external assets](SPEC-items.md#external-assets--your-own-meshes--textures--sounds-model-sounds-assets) · [external_assets.md](external_assets.md)
 
-| 檔案 | 做什麼 |
-|-----|-------|
-| `src/ModForge.Cli/Diagnostics.cs` | `dump`/`find` 命令 dispatcher |
-| `src/ModForge.Cli/Diagnostics.Dump.cs` | 全 record 列舉（name/editorId/key）|
-| `src/ModForge.Cli/Diagnostics.Dump.More.cs` | 擴充 dump（icons/flags/nested sub-records）|
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Core | `Assets.cs` | 複製 Meshes/Textures/Sounds 樹到輸出目錄 |
+| CLI | `Package.cs` | 完整 MO2 資料夾組裝（plugin + assets + scripts + seq）|
+
+---
+
+## 翻譯 Extract / Apply
+→ **說明文件**：[for_agent_cli.md § 翻譯工作流程](for_agent_cli.md)
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Core | `Translator.cs` | 字串 extract（→ JSON source/target）+ apply（inline or Localized .STRINGS）|
+| Core | `Support.cs` | UTF-8 provider（CJK localization）+ string-entry translation slot helpers |
+| CLI | `Program.Translate.cs` | `extract` / `apply` / `applyloc` 命令 |
+
+---
+
+## Plugin I/O
+→ **說明文件**：[for_agent_cli.md § 環境需求](for_agent_cli.md)（ESL 限制說明）· [engine-internals.md](engine-internals.md)
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Core | `PluginIo.cs` | Mutagen load/write 包裝；ESL 2048 record 安全檢查 |
+| Core | `SeqFile.cs` | 寫 `.seq` manifest（StartGameEnabled quest 強制啟動）|
+
+---
+
+## Diagnostics 基礎
+→ **說明文件**：[for_agent_cli.md § dump](for_agent_cli.md)（`dump` / `find` 命令）
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| CLI | `Diagnostics.cs` | `dump` / `find` 命令 dispatcher |
+| CLI | `Diagnostics.Dump.cs` | 全 record 列舉（name/editorId/key）|
+| CLI | `Diagnostics.Dump.More.cs` | 擴充 dump（icons/flags/nested sub-records）|
 
 各領域 Diagnostics 見對應子 index。
 
 ---
 
-## 8. Docs
+## Demo & 測試輔助
 
-| 連結 | 內容 |
-|-----|-----|
-| `docs/SPEC-workflow.md` | CLI workflow + validate/build/package 流程（EN）|
-| `docs/zh-TW/SPEC-workflow.md` | （zh-TW）|
-| `docs/for_agent_cli.md` | CLI 命令速查 + 常見陷阱（EN）|
-| `docs/for_agent_lib.md` | Library API 使用方式 |
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Core | `Demo.cs` | 手建 demo plugin（sanity check 用，`gen` 命令呼叫）|

@@ -1,68 +1,77 @@
-# CODE_MAP — NPC・派系・職業・AI 套件・戰鬥風格
+# CODE_MAP — NPC・派系・職業・AI 套件・戰鬥風格・天氣
 
 ← [CODE_MAP.md](CODE_MAP.md)
 
-涵蓋：NPCs、factions、relationships、classes、combat styles、AI packages（Sandbox/Travel/UseMagic/Follow/Sleep/Patrol/Escort）、outfits、weather/climate（附屬於 NPC 體驗）。
+涵蓋：NPCs、factions、relationships、classes、combat styles、AI packages（Sandbox/Travel/UseMagic/Follow/Sleep/Patrol/Escort）、outfits、weather/climate。
 
 ---
 
-## 1. Spec（資料定義）
+## NPCs
+→ **說明文件**：[for_agent.md § 限制](for_agent.md#limits--be-honest-do-not-over-claim)（race+class+outfit 最低要求）
 
-| 檔案 | 主要型別 |
-|-----|---------|
-| `src/ModForge.Core/Spec.Actors.cs` | `NpcSpec`（race/class/faction/spells/combatStyle/outfit/package…）, `FactionSpec`, `VendorSpec`, `RelationshipSpec` |
-| `src/ModForge.Core/Spec.Magic.cs` | `ClassSpec`（healthWeight/magickaWeight/staminaWeight/skillWeights/teaches）, `CombatStyleSpec`（equipMult* 六欄）|
-| `src/ModForge.Core/Spec.Packages.cs` | `PackageSpec`, `PackageScheduleSpec`, `SandboxSpec`, `SleepSpec` |
-| `src/ModForge.Core/Spec.Packages.Templates.cs` | `TravelSpec`, `UseMagicSpec`, `PatrolSpec`, `FollowSpec`, `EscortSpec` |
-| `src/ModForge.Core/Spec.Weather.cs` | `WeatherSpec`, `ClimateSpec` |
-
----
-
-## 2. Build Pass 1
-
-| 檔案 | 做什麼 |
-|-----|-------|
-| `src/ModForge.Core/Generator.Build.Actors.cs` | 建 NPC record（level/class/faction/combat-style/spell/perk 組裝，refs pass 2 接）|
-| `src/ModForge.Core/Generator.Build.Classes.cs` | 建 Class record（attribute weights + skill training）+ relationship + outfit + wiring |
-| `src/ModForge.Core/Generator.Build.Weather.cs` | 建 weather scalar fields（colors/clouds/wind/fog）|
-| `src/ModForge.Core/Generator.Build.Climate.cs` | 建 climate scalar fields（timing/sun/moon textures/volatility），weather entries pass 2 接 |
-
-## 3. Build Pass 2
-
-| 檔案 | 做什麼 |
-|-----|-------|
-| `src/ModForge.Core/Generator.Build.Packages.cs` | AI package 資料槽填充 dispatcher（sandbox/sleep/travel/usemagic/patrol/follow/escort）|
-| `src/ModForge.Core/Generator.Build.Packages.Advanced.cs` | 複雜套件槽填充：Escort/Patrol/Follow data（location/target/marker 解析）|
-| `src/ModForge.Core/Generator.Build.Vendor.cs` | vendor faction config + merchant container + JobMerchantFaction |
-| `src/ModForge.Core/PackageTemplates.cs` | vanilla AI package procedure-template FormKey 登錄（Sandbox/Sleep/Travel/…）|
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.Actors.cs` | `NpcSpec`（race/class/faction/spells/combatStyle/outfit/packages/perks…）|
+| Build P1 | `Generator.Build.Actors.cs` | 建 NPC record（level/class/faction/combat-style/spell/perk 組裝）|
+| Validate | `Generator.Validate.Npcs.cs` | faction/class/outfit/voice/race ref；package template/slot integrity |
+| Diag | `Diagnostics.Records.Npc.cs` | NPC class/race/faction/outfit/voice/combat-style/package/perk 詳細 dump |
+| Diag | `Diagnostics.Records.cs` | 跨類型 record 詳細欄位（含 NPC）|
 
 ---
 
-## 4. Validate
+## Classes（職業）
+→ **說明文件**：[SPEC-dialogue-quests.md § classes](SPEC-dialogue-quests.md#classes-clas)
 
-| 檔案 | 檢查什麼 |
-|-----|---------|
-| `src/ModForge.Core/Generator.Validate.Npcs.cs` | faction/class/outfit/voice ref；package template/slot integrity；AI-data enum |
-| `src/ModForge.Core/Generator.Validate.Weather.cs` | color component 範圍、cloud index、wind/fog、timing monotonicity、weather chance 總和 |
+（源碼見 [CODE_MAP.dialogue-quests.md § Classes](CODE_MAP.dialogue-quests.md#classes職業-clas)）
 
 ---
 
-## 5. Diagnostics
+## Factions 派系
+→ **說明文件**：[for_agent.md § 限制](for_agent.md#limits--be-honest-do-not-over-claim)
 
-| 檔案 | dump 哪些 |
-|-----|---------|
-| `src/ModForge.Cli/Diagnostics.Records.Npc.cs` | NPC class/race/faction/outfit/voice/combat-style/package/perk 詳細欄位 |
-| `src/ModForge.Cli/Diagnostics.Records.cs` | 跨類型 record 詳細欄位（含 NPC/Faction/CombatStyle）|
-| `src/ModForge.Cli/Diagnostics.Factions.cs` | faction members / vendor config / crime data / relationship |
-| `src/ModForge.Cli/Diagnostics.Weather.cs` | sky colors / cloud layers / precipitation / wind / fog / transition timing |
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.Actors.cs` | `FactionSpec`, `RelationshipSpec` |
+| Build P1 | `Generator.Build.Classes.cs` | `BuildRelationships`, `WireRelationships`, `WireOutfits` |
+| Validate | `Generator.Validate.Npcs.cs` | faction ref |
+| Diag | `Diagnostics.Factions.cs` | faction members / vendor config / crime data / relationship dump |
 
 ---
 
-## 6. Docs
+## Combat Styles 戰鬥風格（CSTY）
+→ **說明文件**：[for_agent.md § 限制](for_agent.md#limits--be-honest-do-not-over-claim)（combatStyle + spells 搭配說明）
 
-| 連結 | 內容 |
-|-----|-----|
-| `docs/SPEC-packages.md` | AI packages + weather/climate 欄位（EN）|
-| `docs/zh-TW/SPEC-packages.md` | （zh-TW）|
-| `docs/for_agent.md#限制` | NPC 功能性角色要求（race+class+outfit）|
-| `docs/lifelike/README.md` | 擬真 NPC 食譜 / Cookbook / FormID 參考 |
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.Magic.cs` | `CombatStyleSpec`（equipMult* 六欄 AI 武器偏好分數）|
+| Build P1 | `Generator.Build.Actors.cs` | 建 CombatStyle record + 接到 NPC |
+| Validate | `Generator.Validate.Npcs.cs` | combatStyle ref |
+| Diag | `Diagnostics.Records.cs` | CombatStyle 欄位 dump |
+
+---
+
+## AI Packages（PACK）
+→ **說明文件**：[SPEC-packages.md § packages](SPEC-packages.md#packages--ai-packages-what-an-npc-does) · [engine-internals.md § AI Packages](engine-internals.md#ai-packages-are-template-driven)
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.Packages.cs` | `PackageSpec`, `PackageScheduleSpec`, `SandboxSpec`, `SleepSpec` |
+| Spec | `Spec.Packages.Templates.cs` | `TravelSpec`, `UseMagicSpec`, `PatrolSpec`, `FollowSpec`, `EscortSpec` |
+| Data | `PackageTemplates.cs` | vanilla PACK procedure-template FormKey 登錄 |
+| Build P2 | `Generator.Build.Packages.cs` | 資料槽填充 dispatcher（sandbox/sleep/travel/usemagic/patrol/follow/escort）|
+| Build P2 | `Generator.Build.Packages.Advanced.cs` | 複雜套件槽：Escort/Patrol/Follow（location/target/marker 解析）|
+| Build P2 | `Generator.Build.Conditions.cs` | package condition 接線（共用）|
+| Validate | `Generator.Validate.Npcs.cs` | package template/slot integrity、AI-data enum |
+
+---
+
+## Weather / Climate（天氣 WTHR / 氣候 CLMT）
+→ **說明文件**：[SPEC-packages.md § weathers & climates](SPEC-packages.md#weathers--climates--custom-skies-wthr--weather-cycles-clmt)
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.Weather.cs` | `WeatherSpec`, `ClimateSpec` |
+| Build P1 | `Generator.Build.Weather.cs` | 建 weather scalar fields（colors/clouds/wind/fog）|
+| Build P1 | `Generator.Build.Climate.cs` | 建 climate scalar fields（timing/sun/moon/volatility）；weather entries pass 2 接 |
+| Validate | `Generator.Validate.Weather.cs` | color 範圍、cloud index、timing monotonicity、chance 總和 |
+| Diag | `Diagnostics.Weather.cs` | sky colors / cloud layers / precipitation / wind / fog dump |
