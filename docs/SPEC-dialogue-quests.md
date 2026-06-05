@@ -307,9 +307,12 @@ The same one-line `Fire()` call works from any entry point — a small reusable 
 | Magic effect (spell) | `ActiveMagicEffect` | `OnEffectStart` | `story-manager-magictrigger.json` (in-game ✓ 2026-06-05) |
 | Magic effect (potion) | `ActiveMagicEffect` | `OnEffectStart` | `story-manager-potiontrigger.json` (same script, drink to fire) |
 | Activator | `ObjectReference` | `OnActivate` | `story-manager-activatortrigger.json` (pull a lever) |
+| Dialogue line | `TopicInfo` | `Fragment_0` | `story-manager-dialoguetrigger.json` (NPC gives a quest) |
 
-Each attaches one script to a record (MGEF / ACTI) with a `Keyword` property, set via the spec's
-`scripts[]`. `package` compiles them beside the embedded dispatcher source automatically.
+The first three attach one script to a record (MGEF / ACTI) with a `Keyword` property, set via the
+spec's `scripts[]`. The dialogue trigger wires the script as a line's `resultScript` +
+`resultScriptSource` + a `TheKW` `resultProperty`. `package` compiles all of them beside the
+embedded dispatcher source automatically.
 
 See also `examples/story-manager-scriptevent.json` + `examples/MFSE_TestTrigger.psc` (OnInit test).
 

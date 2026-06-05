@@ -1,0 +1,81 @@
+{
+  "pluginName": "ModForgeDialogueTrigger.esp",
+  "esl": false,
+  "_": "Fourth real-trigger wiring — the NPC-gives-a-quest entry point. Talk to MFSE_Speaker in the Sleeping Giant Inn, pick the line, and its result script (MFSE_DialogueTrigger, extends TopicInfo) calls MFStoryEventDispatch.Fire(kw, player, speaker) -> SM ScriptEvent root starts MFSE_DlgTarget with Player=ref1, Speaker=ref2. Reuses the in-game-proven dialogue[] + placed-NPC pattern (follower/quest_stages); the only new piece is the Fire() in the fragment. Verify: `coc RiverwoodSleepingGiantInn`, talk to the Forged Envoy, pick the line, then `sqv MFSE_DlgTarget` -> Running, Speaker alias filled. On an existing save dialogue needs a save/reload (the auto-written Seq/ handles new lines).",
+
+  "keywords": [ { "editorId": "MFSE_DlgKW" } ],
+
+  "classes": [
+    { "editorId": "MFSE_SpeakerClass", "name": "ModForge Envoy",
+      "healthWeight": 50, "magickaWeight": 10, "staminaWeight": 40,
+      "skillWeights": { "OneHanded": 60, "Speech": 80, "Block": 40 } }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MFSE_Speaker",
+      "name": "Forged Envoy",
+      "_": "Copied from the in-game-proven hireable-follower NPC (race/voice/factions for conversability + city traversal). greeting makes her talkable; voiceType is a real follower-neutral voice so vanilla topics behave. PotentialFollowerFaction omitted — no follow path wanted here.",
+      "greeting": "You have the look of someone the forge has been waiting for.",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MFSE_SpeakerClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013ADD",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+      "unique": true,
+      "level": 10,
+      "autoCalcStats": true,
+      "aggression": "Unaggressive",
+      "confidence": "Brave",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50
+    }
+  ],
+
+  "placements": [
+    {
+      "_": "Sleeping Giant Inn common room (Skyrim.esm:0x0133C6), proven in-room coord — actors snap to navmesh. persistent so the ref resolves at game start. coc RiverwoodSleepingGiantInn.",
+      "base": "MFSE_Speaker",
+      "editorId": "MFSE_SpeakerRef",
+      "persistent": true,
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": -250, "y": 180, "z": 0 }
+    }
+  ],
+
+  "quests": [
+    {
+      "editorId": "MFSE_DlgHost",
+      "name": "Forge Envoy",
+      "_": "StartGameEnabled host for the dialogue INFO (so the line runs). Just a holder — no stages.",
+      "startGameEnabled": true
+    },
+    {
+      "editorId": "MFSE_DlgTarget",
+      "name": "Forge Envoy Target",
+      "_": "Started by the SM ScriptEvent root when MFSE_DlgKW fires. Player=ref1 (line picker), Speaker=ref2 (the NPC).",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "ScriptEvent", "keyword": "MFSE_DlgKW" },
+      "aliases": [
+        { "name": "Player", "fill": "fromEvent:ref1" },
+        { "name": "Speaker", "fill": "fromEvent:ref2" }
+      ]
+    }
+  ],
+
+  "dialogue": [
+    {
+      "editorId": "MFSE_DlgTopic",
+      "questEditorId": "MFSE_DlgHost",
+      "speakerNpcEditorId": "MFSE_Speaker",
+      "prompt": "Tell the forge I'm ready.",
+      "responses": [ "Then it begins. Watch for the signs." ],
+      "emotion": "Happy",
+      "emotionValue": 60,
+      "resultScript": "MFSE_DialogueTrigger",
+      "resultScriptSource": "MFSE_DialogueTrigger.psc",
+      "resultProperties": [ { "name": "TheKW", "type": "object", "objectEditorId": "MFSE_DlgKW" } ]
+    }
+  ]
+}

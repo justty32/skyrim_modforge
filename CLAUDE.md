@@ -111,6 +111,7 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 **可複用 trigger 庫擴充（structurally verified，實機待測）**——同一 `Fire()` 一行接不同入口:
 - **activator**：`examples/story-manager-activatortrigger.json` + `MFSE_ActivatorTrigger.psc`（`extends ObjectReference`，`OnActivate→Fire`）。CaveLever01 vanilla 模型,免 placement——`player.placeatme <leverFormID>` 生拉桿再拉。
 - **potion**：`examples/story-manager-potiontrigger.json`（複用 MFSE_SpellTrigger，喝藥水觸發,證明 trigger 與 delivery 無關）。`player.additem <formid>` 後喝。
-- 三個 zip 都在 `~/skyrim_mods/`（ModForge{Magic,Activator,Potion}Trigger.zip）。Magic 已實機 PASS;Activator/Potion 待測。
+- **dialogue**：`examples/story-manager-dialoguetrigger.json` + `MFSE_DialogueTrigger.psc`（`extends TopicInfo`，`Fragment_0→Fire`，NPC 給任務入口）。NPC 放 Sleeping Giant Inn,`coc RiverwoodSleepingGiantInn` 找「Forged Envoy」對話。複用 proven dialogue[]+placed-NPC,result-script VMAD 正確。
+- 四個 zip 在 `~/skyrim_mods/`（ModForge{Magic,Activator,Potion,Dialogue}Trigger.zip）。Magic 已實機 PASS;其餘 structurally verified、實機待測。
 
 **之後可做**：dialogue fragment result-script 觸發;alias OnActivate;`createObject`/`findMatching` 填充;再多解事件進表。

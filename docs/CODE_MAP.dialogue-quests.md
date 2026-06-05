@@ -24,6 +24,8 @@
 | `examples/story-manager-activatortrigger.json` | ScriptEvent 經 activator 觸發（拉桿→啟動 quest）|
 | `examples/MFSE_ActivatorTrigger.psc` | 可複用 activator trigger（OnActivate→Fire）|
 | `examples/story-manager-potiontrigger.json` | ScriptEvent 經 potion 觸發（喝藥水→啟動 quest，複用 MFSE_SpellTrigger）|
+| `examples/story-manager-dialoguetrigger.json` | ScriptEvent 經 NPC 對話觸發（選對話→啟動 quest）|
+| `examples/MFSE_DialogueTrigger.psc` | 可複用 dialogue trigger（TopicInfo `Fragment_0`→Fire）|
 | `examples/scripts/MFDemoQuestScript.psc` | quest fragment Papyrus 示範 |
 
 ---
@@ -164,6 +166,7 @@
 | Example | `examples/MFSE_SpellTrigger.psc` | 可複用 magic-effect trigger（`extends ActiveMagicEffect`，`OnEffectStart→Fire`）；spell + potion 共用 |
 | Example | `examples/story-manager-activatortrigger.json` + `MFSE_ActivatorTrigger.psc` | activator 觸發：`extends ObjectReference`，`OnActivate→Fire`（拉桿；structurally verified，實機待測）|
 | Example | `examples/story-manager-potiontrigger.json` | potion 觸發:複用 MFSE_SpellTrigger 證明 trigger 與 delivery 無關（structurally verified，實機待測）|
+| Example | `examples/story-manager-dialoguetrigger.json` + `MFSE_DialogueTrigger.psc` | NPC 對話觸發:`extends TopicInfo`，`Fragment_0→Fire`（result-script VMAD；複用 proven dialogue[]+placed-NPC；structurally verified，實機待測）|
 
 ⚠️ ScriptEvent 介面或槽位有任何改動，`MFStoryEventDispatch.psc` 必須同步重編（`.pex`）。
 **派發器 header 機制**：呼叫 `Fire()` 的 user trigger 腳本，Package.cs 編譯時把 embed 的 dispatcher `.psc` 解到 temp 目錄當 sibling header（compiler 把 input 檔所在目錄當 header dir），免 per-machine cache 安裝。
