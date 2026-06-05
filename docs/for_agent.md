@@ -76,7 +76,7 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
 - **Story Manager (SM) event-driven quests:** add `storyEvent` + `aliases` to a quest and the
   build wires SMBN→SMQN automatically under the vanilla event root. Supported events:
   `KillActor`, `ChangeLocation`, `CastMagic`, `AddItem`, `Assault`, `CraftItem`,
-  `PlayerRemoveItem`, `Arrest`, `ScriptEvent`. Alias fills:
+  `PlayerRemoveItem`, `Arrest`, `IncreaseLevel`, `ScriptEvent`. Alias fills:
   `fromEvent:<slot>`, `uniqueActor:<ref>`, `forced:<ref>`, `createObject:<ref>@<targetAlias>`
   (spawn a new ref to `<ref>` at another alias — in-game confirmed 2026-06-05),
   `findMatching:closest`|`findMatching:any` (fill with the nearest/first existing ref in the loaded

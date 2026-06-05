@@ -85,6 +85,15 @@ public class StoryManagerEventsMoreTests
     }
 
     [Fact]
+    public void IncreaseLevel_def_has_root_code_and_no_slots()
+    {
+        Assert.True(StoryManagerEvents.TryGet("IncreaseLevel", out var def));
+        Assert.Equal(new RecordType("LEVL"), def.Code);
+        Assert.Equal(0x05BD79u, def.Root.ID);
+        Assert.Empty(def.Slots);   // no event ref slots — gate via storyEvent.conditions
+    }
+
+    [Fact]
     public void All_new_events_are_case_insensitive()
     {
         Assert.True(StoryManagerEvents.TryGet("changelocation", out _));
@@ -94,6 +103,7 @@ public class StoryManagerEventsMoreTests
         Assert.True(StoryManagerEvents.TryGet("craftitem", out _));
         Assert.True(StoryManagerEvents.TryGet("playerremoveitem", out _));
         Assert.True(StoryManagerEvents.TryGet("arrest", out _));
+        Assert.True(StoryManagerEvents.TryGet("increaselevel", out _));
     }
 
     [Fact]

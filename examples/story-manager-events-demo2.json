@@ -1,0 +1,13 @@
+{
+  "_": "IncreaseLevel SM event (engine-native, no Papyrus). The quest starts when the player levels up. IncreaseLevel has NO event ref slots, so this quest just starts on level-up — gate it with storyEvent.conditions (e.g. GetLevel >= N) for a threshold trigger. In-game test: install, enable, then in console `player.advlevel`; `sqv MFSM_OnLevelUp` -> Running. (In-game confirmed 2026-06-05.)\n\nNOTE: the other batch-2 events probed this session — ActorDialogue/ActorHello (heavily used by vanilla with many conditional branches; an unconditional quest loses the mutual-exclusion race and forcing it first would hijack vanilla dialogue) and ChangeRelationshipRank (its story event fires from gameplay relationship changes, not the console setter) — were dropped as not cleanly player-triggerable. See docs/superpowers notes.",
+  "pluginName": "ModForgeLevelUp.esp",
+  "esl": false,
+  "quests": [
+    {
+      "editorId": "MFSM_OnLevelUp",
+      "name": "Milestones",
+      "stages": [ { "index": 10 } ],
+      "storyEvent": { "event": "IncreaseLevel" }
+    }
+  ]
+}

@@ -118,7 +118,8 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 **alias fill 擴充 + 事件表擴充：✅ 實機驗證通過（2026-06-05）**——303 測試綠：
 - **`createObject:<ref>@<targetAlias>`**（`CreateReferenceToObject` ALCO/ALCA/ALCL）：quest 啟動時在 `<targetAlias>` 持有的 ref 處生成一個 `<ref>` 新實例（施法→狼出現在腳邊）。解自 vanilla MQGreybeardCall/WERoad12。`examples/story-manager-createobject.json`。
 - **`findMatching:closest|any`**（QuestAlias 旗標 `MatchingRefInLoadedArea`[+`MatchingRefClosest`] + alias `conditions`）：在 loaded area 找最近/第一個符合條件的既有 ref（施法→填上最近 NPC）。解自 vanilla MQGreybeardCall Bystander。**踩坑**：先用 `FindMatchingRefNearAlias(LinkedRefChild)` 實機失敗（那只找 editor linked-ref 子物件）——正解是旗標機制。`examples/story-manager-findmatching.json`。
-- **事件表 +3**（engine-native 純資料，build/validate 不變）：CraftItem(0x039D86/CRFT,workbench=R1)、PlayerRemoveItem(0x02C6AC/REMP,owner=R1/item=R2)、Arrest(0x06B369/ARRT,guard=R1/criminal=R2)。`examples/story-manager-events-demo.json` 三合一測試。**DeadBody 解了但移除**（NPC 偵測事件,非玩家觸發）。
-- alias fill 現五種、事件表現九個。背景/坑見 [[dispatcher-magic-trigger]]。
+- **事件表 +4**（engine-native 純資料，build/validate 不變）：CraftItem(0x039D86/CRFT,workbench=R1)、PlayerRemoveItem(0x02C6AC/REMP,owner=R1/item=R2)、Arrest(0x06B369/ARRT,guard=R1/criminal=R2)、IncreaseLevel(0x05BD79/LEVL,無 ref 槽,`player.advlevel` 觸發)。`examples/story-manager-events-demo.json`(前三合一)+`examples/story-manager-events-demo2.json`(LevelUp)。
+- **解了但移除**：DeadBody（NPC 偵測事件,非玩家觸發）、ActorDialogue/ActorHello（vanilla 分支太多,無條件 quest 輸掉互斥競爭、且會劫持原版對話）、ChangeRelationshipRank（事件由 gameplay 觸發,非 console setter）。**SM 限制**：additive 無條件分支只在 vanilla 少/沒密集處理的事件上可靠生效；坑詳見 [[dispatcher-magic-trigger]]。
+- alias fill 現五種、事件表現十個。
 
-**之後可做**：dialogue fragment result-script 觸發;alias OnActivate;再多解事件進表（ActorDialogue/ActorHello/ChangeRelationshipRank/IncreaseLevel 已解碼待落地,見 [[dispatcher-magic-trigger]]）。
+**之後可做**：dialogue fragment result-script 觸發;alias OnActivate;再多解事件（SkillIncrease/Jail/Bribe… `smtree Skyrim.esm` 列舉,但須用 conditions 才安全,見 [[dispatcher-magic-trigger]]）。

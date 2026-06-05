@@ -1454,7 +1454,7 @@
           "properties": {
             "event": {
               "type": "string",
-              "description": "Event name: KillActor | ChangeLocation | CastMagic | AddItem | Assault | CraftItem | PlayerRemoveItem | Arrest | ScriptEvent"
+              "description": "Event name: KillActor | ChangeLocation | CastMagic | AddItem | Assault | CraftItem | PlayerRemoveItem | Arrest | IncreaseLevel | ScriptEvent"
             },
             "conditions": {
               "type": "array",

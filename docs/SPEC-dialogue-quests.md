@@ -219,6 +219,7 @@ condition, ESL).
 | `CraftItem` | Player crafts an item at a station | `workbench` |
 | `PlayerRemoveItem` | Item leaves player inventory (sold/dropped/given) | `owner`, `item` |
 | `Arrest` | A guard arrests an actor | `guard`, `criminal` |
+| `IncreaseLevel` | Player levels up | *(none — gate via `storyEvent.conditions`, e.g. `GetLevel`)* |
 | `ScriptEvent` | Papyrus `SendStoryEvent` via the dispatcher | `ref1`, `ref2`, `location` |
 
 #### `aliases` — dynamic alias fill

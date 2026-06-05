@@ -99,6 +99,14 @@ public static class StoryManagerEvents
                     ("guard", R1),      // R1 = the arresting guard
                     ("criminal", R2))), // R2 = the arrested actor
 
+            // Increase Level — fires when the player levels up. Root SMEN .Type = IncreaseLevel.
+            // No event ref slots (vanilla LEVL quests fill aliases via forced/findMatching, never
+            // fromEvent) — gate the start with storyEvent.conditions (e.g. GetLevel >= N).
+            ["IncreaseLevel"] = new StoryEventDef(
+                Root(0x05BD79),
+                new RecordType("LEVL"),
+                Slots()),
+
             // Script Event — the GENERIC custom entry. Root SMEN .Type = ScriptEvent (no conditions =
             // listens to every Papyrus SendStoryEvent). A quest under it is gated by a keyword filter
             // (see BuildStoryManager's ScriptEvent branch). Payload maps to Keyword.SendStoryEvent(
