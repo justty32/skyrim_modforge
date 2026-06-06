@@ -50,6 +50,20 @@
         "$ref": "#/$defs/dialogue"
       }
     },
+    "banter": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/banter"
+      },
+      "description": "Banter: proactive UNPROMPTED NPC lines (the follower-comment pattern); entries sharing a (speaker,quest) become one Random-pick ambient IDLE topic"
+    },
+    "scenes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/scene"
+      },
+      "description": "Scene (SCEN): two+ NPCs talking to EACH OTHER (not the player), hosted by a quest, played as ordered phases; supports presence-gated autoStart + non-dialog (package/timer) beats"
+    },
     "relationships": {
       "type": "array",
       "items": {
@@ -83,6 +97,27 @@
         "$ref": "#/$defs/magicEffect"
       },
       "description": "custom MGEF records an effect can point at by editorId"
+    },
+    "projectiles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/projectile"
+      },
+      "description": "Projectile (PROJ): the flying bolt of an Aimed spell; a magicEffect.projectile ref points here"
+    },
+    "explosions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/explosion"
+      },
+      "description": "Explosion (EXPL): the impact AoE a projectile/spell triggers; a magicEffect.explosion or projectile.explosion ref points here"
+    },
+    "imageSpaceModifiers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/imageSpaceModifier"
+      },
+      "description": "ImageSpaceModifier (IMAD): a screen-space post-process (brightness/tint) applied at runtime; referenced by explosion.imageSpaceModifier or a Papyrus property"
     },
     "potions": {
       "type": "array",
@@ -266,6 +301,13 @@
       },
       "description": "Enchantment / Object Effect (ENCH): MGEF-based effects bundled into a weapon/staff/apparel enchantment a weapon/armor references via its `enchantment` field"
     },
+    "lights": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/light"
+      },
+      "description": "Light (LIGT): a custom light source (colour/radius/flicker); place it via placements[] by editorId"
+    },
     "weathers": {
       "type": "array",
       "items": {
@@ -321,6 +363,13 @@
         "$ref": "#/$defs/wordWall"
       },
       "description": "The learnable layer: a teaching quest + generated Papyrus fragment + WordWallTrigger placement that teaches a shout's word"
+    },
+    "globals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/global"
+      },
+      "description": "GlobalVariable (GLOB): a named number shared game-wide, save-persisted, readable by conditions (GetGlobalValue) + Papyrus. `value` is the INITIAL value only (existing saves keep their runtime value)"
     }
   },
   "additionalProperties": false,
@@ -405,6 +454,22 @@
           "type": "integer",
           "minimum": 0,
           "description": "the weapon's charge pool (casts before recharge); e.g. 1500-3000; 0 = engine auto-calc"
+        },
+        "template": {
+          "type": "string",
+          "description": "vanilla weapon to clone for model/animation/sounds (<master>:0xFORMID). A bare WEAP with no template + no model equips INVISIBLE. Cloning also keeps the template's stats for any field left at 0 (e.g. leave `damage` 0 to inherit)"
+        },
+        "model": {
+          "type": "string",
+          "description": "optional .nif path (rooted at Meshes\\, omit the prefix); overrides the cloned template's model"
+        },
+        "pickUpSound": {
+          "$ref": "#/$defs/ref",
+          "description": "SNDR ref played when picked up"
+        },
+        "putDownSound": {
+          "$ref": "#/$defs/ref",
+          "description": "SNDR ref played when dropped"
         }
       }
     },
@@ -524,6 +589,10 @@
         "chargeTime": {
           "type": "number",
           "minimum": 0
+        },
+        "equipType": {
+          "$ref": "#/$defs/ref",
+          "description": "EQUP ref — which slot the spell occupies. Castable types (Spell/Voice/Power/LesserPower) default to EitherHand (Skyrim.esm:0x013F44) when omitted; set only to override (BothHands/Left/RightHand). A hand spell with no EQUP can't be equipped; a shout word-spell needs one or the player can't shout it"
         }
       }
     },
@@ -724,6 +793,10 @@
             "$ref": "#/$defs/effect"
           },
           "description": "magic effects (a potion is fully functional with one)"
+        },
+        "template": {
+          "type": "string",
+          "description": "vanilla ALCH to clone a model from (<master>:0xFORMID)"
         }
       }
     },
@@ -754,6 +827,22 @@
             "$ref": "#/$defs/ref"
           },
           "description": "keyword refs (weapons/misc; ignored on records that don't take keywords)"
+        },
+        "template": {
+          "type": "string",
+          "description": "(miscItems) vanilla MISC to clone a model from (<master>:0xFORMID)"
+        },
+        "model": {
+          "type": "string",
+          "description": "(miscItems) .nif path (rooted at Meshes\\, omit the prefix)"
+        },
+        "pickUpSound": {
+          "$ref": "#/$defs/ref",
+          "description": "(miscItems) SNDR ref played when picked up"
+        },
+        "putDownSound": {
+          "$ref": "#/$defs/ref",
+          "description": "(miscItems) SNDR ref played when dropped"
         }
       }
     },
@@ -1166,6 +1255,21 @@
         "greeting": {
           "type": "string",
           "description": "Hello line; when this NPC has custom dialogue, a Hello info is auto-emitted so it is conversable. Empty => default line"
+        },
+        "essential": {
+          "type": "boolean",
+          "description": "cannot be killed (drops to bleedout then recovers) — for a non-lethal brawl or plot-critical NPC. NOTE: an essential NPC also CANNOT be looted; use `protected` instead if the player should be able to loot custom gear"
+        },
+        "protected": {
+          "type": "boolean",
+          "description": "can only be killed by the PLAYER (other NPCs can't land the killing blow); lootable, unlike essential"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/npcItem"
+          },
+          "description": "inventory the NPC carries — a weapon/armor here is auto-equipped if it's the NPC's best (how you arm an NPC); loot drops on death. A 0-damage weapon scores below fists and won't be drawn"
         }
       }
     },
@@ -1399,6 +1503,23 @@
           "minimum": 0,
           "maximum": 255
         },
+        "type": {
+          "enum": [
+            "None",
+            "MainQuest",
+            "MageGuild",
+            "ThievesGuild",
+            "DarkBrotherhood",
+            "CompanionQuests",
+            "Misc",
+            "Daedric",
+            "SideQuest",
+            "CivilWar",
+            "Vampire",
+            "Dragonborn"
+          ],
+          "description": "Quest TYPE (DNAM) — which journal tab it groups under. type=None = a background/controller quest that does NOT appear in the journal (its stage log entries never show). Leave empty for the smart default: a quest with journal content -> SideQuest; a pure dialogue/controller quest -> None"
+        },
         "objectives": {
           "type": "array",
           "items": {
@@ -1603,6 +1724,17 @@
             "$ref": "#/$defs/property"
           },
           "description": "typed properties bound on the result-script VMAD (e.g. a Keyword for a dispatcher trigger)"
+        },
+        "goodbye": {
+          "type": "boolean",
+          "description": "close the dialogue menu after this line (vanilla recruit/dismiss lines set it)"
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/condition"
+          },
+          "description": "extra CTDA gates on the INFO beyond the auto GetIsID speaker gate (e.g. only show a paid recruit line when the player can afford it)"
         }
       }
     },
@@ -3216,6 +3348,570 @@
         },
         "rotation": {
           "$ref": "#/$defs/vec3"
+        }
+      }
+    },
+    "npcItem": {
+      "type": "object",
+      "required": [
+        "item"
+      ],
+      "description": "One inventory entry on an NPC: a carriable item ref + count.",
+      "properties": {
+        "item": {
+          "$ref": "#/$defs/ref",
+          "description": "ref → a carriable item (weapon/armor/misc/potion/ammo/gold). Gold001 = Skyrim.esm:0x00000F"
+        },
+        "count": {
+          "type": "integer",
+          "description": "stack count (default 1; use larger counts for gold/arrows/potions; must be != 0)"
+        }
+      }
+    },
+    "banter": {
+      "type": "object",
+      "required": [
+        "questEditorId"
+      ],
+      "description": "A proactive unprompted NPC line (ambient IDLE topic). Only surfaces while the NPC has idle chatter (an AI package with the AllowIdleChatter interrupt flag). Use conditions to make it situational.",
+      "properties": {
+        "editorId": {
+          "type": "string",
+          "description": "optional — names the INFO group for diag/uniqueness"
+        },
+        "questEditorId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "host quest editorId (must be StartGameEnabled, like dialogue)"
+        },
+        "speakerNpcEditorId": {
+          "type": "string",
+          "description": "who says it (auto GetIsID gate); an npc editorId"
+        },
+        "responses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "the spoken line(s) for this one comment (played in sequence)"
+        },
+        "emotion": {
+          "enum": [
+            "Neutral",
+            "Anger",
+            "Disgust",
+            "Fear",
+            "Sad",
+            "Happy",
+            "Surprise"
+          ]
+        },
+        "emotionValue": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/condition"
+          },
+          "description": "situational gates beyond the auto speaker gate (GetCurrentTime, IsInInterior, GetActorValuePercent, a follower-faction gate, …)"
+        }
+      }
+    },
+    "scene": {
+      "type": "object",
+      "required": [
+        "editorId",
+        "questEditorId"
+      ],
+      "description": "SCEN — NPCs talking to EACH OTHER (not the player), hosted by a quest, played as ordered phases. The participant NPCs must be PLACED near each other (a placements[] entry per NPC into the same cell) for the conversation to fire in-game.",
+      "properties": {
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "questEditorId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "host quest editorId (must exist in spec; StartGameEnabled so the scene runs)"
+        },
+        "actors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sceneActor"
+          }
+        },
+        "phases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/scenePhase"
+          }
+        },
+        "beginOnQuestStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "auto-play the moment the host quest starts (the simplest 'two NPCs chat on load' trigger). Turn off to trigger from a script/package, or use autoStart for presence-gating"
+        },
+        "stopQuestOnEnd": {
+          "type": "boolean",
+          "description": "stop the host quest when the scene finishes (vanilla one-shot conversation scenes set this with beginOnQuestStart)"
+        },
+        "autoStart": {
+          "$ref": "#/$defs/sceneAutoStart",
+          "description": "presence-gated auto-start (follower-banter style); when set the scene does NOT auto-play on quest start"
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sceneAction"
+          },
+          "description": "non-dialog beats (movement via a package / timed pauses) interleaved with the spoken phases"
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/condition"
+          },
+          "description": "scene-level CTDA gate — the scene only STARTS if all pass. ONLY gates a beginOnQuestStart scene; for an autoStart scene use autoStart.gateGlobal (the controller forces Scene.Start(), bypassing scene begin-conditions)"
+        }
+      }
+    },
+    "sceneActor": {
+      "type": "object",
+      "required": [
+        "aliasId",
+        "npc"
+      ],
+      "description": "One scene participant: an alias INDEX (unique in the host quest) + the NPC that fills it (UniqueActor-bound).",
+      "properties": {
+        "aliasId": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "alias index in the host quest (unique, >=0); the SceneActor references this"
+        },
+        "npc": {
+          "$ref": "#/$defs/ref",
+          "description": "ref → the NPC that fills this alias (in-spec editorId or <master>:0xFORMID)"
+        },
+        "name": {
+          "type": "string",
+          "description": "optional alias name (defaults to the npc editorId)"
+        }
+      }
+    },
+    "scenePhase": {
+      "type": "object",
+      "description": "One scene phase: actor `speaker` says `lines` with emotion; phases play in list order. A phase referenced only by an action may have empty lines (a pure beat).",
+      "properties": {
+        "speaker": {
+          "type": "integer",
+          "description": "the aliasId (from actors[]) who speaks this phase"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "the spoken line(s) for this phase (played in sequence)"
+        },
+        "emotion": {
+          "enum": [
+            "Neutral",
+            "Anger",
+            "Disgust",
+            "Fear",
+            "Sad",
+            "Happy",
+            "Surprise"
+          ]
+        },
+        "emotionValue": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "headtrackActor": {
+          "type": "integer",
+          "default": -2,
+          "description": "actor aliasId to look at; -1 = look at no one; -2 (default) = the OTHER actor"
+        },
+        "headtrackPlayer": {
+          "type": "boolean",
+          "description": "speaker headtracks the PLAYER (mutually exclusive with a non-default headtrackActor)"
+        },
+        "faceTarget": {
+          "type": "boolean",
+          "description": "whether the FaceTarget flag is set (default true if unset)"
+        },
+        "startConditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/condition"
+          },
+          "description": "the phase only PLAYS if all pass (else the engine skips to the next phase)"
+        },
+        "completionConditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/condition"
+          },
+          "description": "the phase ENDS once all pass (a condition-driven advance beyond 'advance when the line finishes')"
+        }
+      }
+    },
+    "sceneAction": {
+      "type": "object",
+      "description": "A non-dialog scene beat over a phase window. Set EXACTLY ONE of `package` (a Package action) or `timerSeconds` > 0 (a Timer action).",
+      "properties": {
+        "actor": {
+          "type": "integer",
+          "description": "aliasId (from actors[]) that performs the action"
+        },
+        "package": {
+          "$ref": "#/$defs/ref",
+          "description": "ref → a PACK (a packages[] editorId or <master>:0xFORMID) the actor runs across the phase window (Travel = walk to a marker; Sandbox = ambient activity)"
+        },
+        "timerSeconds": {
+          "type": "number",
+          "description": "> 0 → a Timer action: the scene waits this many seconds over the phase window (no actor behaviour)"
+        },
+        "startPhase": {
+          "type": "integer",
+          "description": "first phase index (into phases[]) the action spans"
+        },
+        "endPhase": {
+          "type": "integer",
+          "default": -1,
+          "description": "last phase index; -1 = same as startPhase"
+        }
+      }
+    },
+    "sceneAutoStart": {
+      "type": "object",
+      "description": "Presence-gated auto-start tuning. The MFSceneBanterController polls and calls Scene.Start() when the player is within range of BOTH actors (+ optional LOS, not in combat, neither dead) and the cooldown has elapsed. Distances in game units, times in REAL seconds.",
+      "properties": {
+        "triggerDistance": {
+          "type": "number",
+          "default": 2048,
+          "description": "max distance from the player to EACH actor"
+        },
+        "requireLineOfSight": {
+          "type": "boolean",
+          "description": "also require the player HasLOS both actors"
+        },
+        "cooldownSeconds": {
+          "type": "number",
+          "default": 60,
+          "description": "min real seconds between plays"
+        },
+        "pollSeconds": {
+          "type": "number",
+          "default": 5,
+          "description": "RegisterForSingleUpdate interval"
+        },
+        "brawlOnEnd": {
+          "type": "boolean",
+          "description": "the two actors fight each other (StartCombat both ways) the moment the dialogue finishes; mark the actors essential for a non-lethal brawl"
+        },
+        "playOnce": {
+          "type": "boolean",
+          "description": "play at most once ever (the controller stops polling after the single play)"
+        },
+        "playHour": {
+          "type": "number",
+          "default": -1,
+          "description": "only play within ±playHourTolerance of this in-game hour (0..24, circular); -1 = any time"
+        },
+        "playHourTolerance": {
+          "type": "number",
+          "default": 1,
+          "description": "± hours window around playHour"
+        },
+        "gateGlobal": {
+          "$ref": "#/$defs/ref",
+          "description": "ref → a GlobalVariable (GLOB) re-arm token: the scene plays only while it == 0; the controller SetValue(1) right after playing; some OTHER generated content SetValue(0) to re-enable it (build the GLOB in globals[])"
+        }
+      }
+    },
+    "projectile": {
+      "type": "object",
+      "required": [
+        "editorId"
+      ],
+      "description": "PROJ — the bolt that flies from caster to target on an Aimed cast; carries its own model + flight physics + the explosion it triggers on impact.",
+      "properties": {
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "Missile",
+            "Lobber",
+            "Beam",
+            "Flame",
+            "Cone",
+            "Barrier",
+            "Arrow"
+          ],
+          "default": "Missile",
+          "description": "Projectile.TypeEnum — Missile = firebolt-style"
+        },
+        "speed": {
+          "type": "number",
+          "default": 3000
+        },
+        "gravity": {
+          "type": "number",
+          "default": 0
+        },
+        "range": {
+          "type": "number",
+          "default": 12000
+        },
+        "lifetime": {
+          "type": "number",
+          "default": 10
+        },
+        "impactForce": {
+          "type": "number",
+          "default": 1
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Projectile.Flag names: Explosion / Supersonic / Hitscan / MuzzleFlash / CanBeDisabled / PassThroughSmallTransparent / Rotation / … (default [Explosion])"
+        },
+        "model": {
+          "type": "string",
+          "description": ".nif path — VERIFY against vanilla (a wrong path = an INVISIBLE bolt, no error)"
+        },
+        "light": {
+          "$ref": "#/$defs/ref",
+          "description": "LIGT ref (in-flight light)"
+        },
+        "muzzleFlash": {
+          "$ref": "#/$defs/ref",
+          "description": "LIGT ref (muzzle flash)"
+        },
+        "sound": {
+          "$ref": "#/$defs/ref",
+          "description": "SNDR ref (in-flight)"
+        },
+        "explosion": {
+          "$ref": "#/$defs/ref",
+          "description": "EXPL ref — the boom on impact (in-spec editorId or <master>:0xFORMID)"
+        },
+        "collisionRadius": {
+          "type": "number"
+        },
+        "coneSpread": {
+          "type": "number"
+        }
+      }
+    },
+    "explosion": {
+      "type": "object",
+      "required": [
+        "editorId"
+      ],
+      "description": "EXPL — the impact event a projectile/spell triggers: deals damage in radius, shows model + light, plays sound, swaps imageSpaceModifier, and can apply objectEffect (MGEF) to everything in radius (the AoE).",
+      "properties": {
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "damage": {
+          "type": "number",
+          "default": 0
+        },
+        "force": {
+          "type": "number",
+          "default": 0
+        },
+        "radius": {
+          "type": "number",
+          "default": 200
+        },
+        "isRadius": {
+          "type": "number",
+          "description": "imagespace blend radius"
+        },
+        "light": {
+          "$ref": "#/$defs/ref",
+          "description": "LIGT ref"
+        },
+        "sound": {
+          "$ref": "#/$defs/ref",
+          "description": "SNDR ref → Explosion.Sound1"
+        },
+        "impactDataSet": {
+          "$ref": "#/$defs/ref",
+          "description": "IPDS ref"
+        },
+        "imageSpaceModifier": {
+          "$ref": "#/$defs/ref",
+          "description": "IMAD ref — screen post-process swapped on impact"
+        },
+        "objectEffect": {
+          "$ref": "#/$defs/ref",
+          "description": "MGEF ref — the in-radius AoE effect"
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Explosion.Flag names: AlwaysUsesWorldOrientation / KnockDownAlways / IgnoreLosCheck / Chain / …"
+        },
+        "model": {
+          "type": "string",
+          "description": ".nif FX art"
+        }
+      }
+    },
+    "imageSpaceModifier": {
+      "type": "object",
+      "required": [
+        "editorId"
+      ],
+      "description": "IMAD — a screen-space post-process applied/removed at runtime (brightness/tint), the way vanilla Night-Eye / cinematic flashes work. Referenced by explosion.imageSpaceModifier or a Papyrus ImageSpaceModifier property (a script applies it via ApplyCrossFade). A single static value (one keyframe per field).",
+      "properties": {
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "brightnessMultiplier": {
+          "type": "number",
+          "default": 1.6,
+          "description": "CinematicBrightnessMult (1 = neutral, >1 brighter)"
+        },
+        "contrast": {
+          "type": "number",
+          "default": 1.0,
+          "description": "CinematicContrastMult"
+        },
+        "saturation": {
+          "type": "number",
+          "default": 1.0,
+          "description": "CinematicSaturationMult"
+        },
+        "tintColor": {
+          "$ref": "#/$defs/color",
+          "description": "optional screen tint (RGB)"
+        },
+        "tintAmount": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "tint strength 0..1 (mapped to the colour's alpha)"
+        },
+        "duration": {
+          "type": "number",
+          "default": 1.0,
+          "description": "fade/animate duration (s)"
+        },
+        "animatable": {
+          "type": "boolean",
+          "description": "animate the curves over duration"
+        }
+      }
+    },
+    "light": {
+      "type": "object",
+      "required": [
+        "editorId"
+      ],
+      "description": "LIGT — a custom light source (colour / radius / fade / flicker). Minimal = just editorId (vanilla-sane omnidirectional). Place it via placements[] (base = this editorId).",
+      "properties": {
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "description": "in-game name (only shown for carriable lights like torches)"
+        },
+        "color": {
+          "$ref": "#/$defs/color",
+          "description": "RGB tint (0..255 components; alpha unused). Default: warm white"
+        },
+        "radius": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 256,
+          "description": "how far the light reaches (world units)"
+        },
+        "fadeValue": {
+          "type": "number",
+          "default": 1.0,
+          "description": "brightness fade multiplier"
+        },
+        "falloffExponent": {
+          "type": "number",
+          "description": "how quickly brightness drops with distance"
+        },
+        "fov": {
+          "type": "number",
+          "description": "field-of-view (degrees) for spotlights"
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Light.Flag names: Dynamic / Flicker / PortalStrict / CanBeCarried / SpotLight / ShadowSpotlight / OffByDefault / FlickerSlow / Pulse / PulseSlow / SpotShadow"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "inventory gold value (carriable lights)"
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "description": "inventory weight (carriable lights)"
+        }
+      }
+    },
+    "global": {
+      "type": "object",
+      "required": [
+        "editorId"
+      ],
+      "description": "GLOB — a named number shared game-wide, save-persisted, readable by conditions (GetGlobalValue) + Papyrus + console. `value` is the INITIAL value only (an existing save keeps its own runtime value).",
+      "properties": {
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "enum": [
+            "short",
+            "long",
+            "int",
+            "float"
+          ],
+          "default": "short",
+          "description": "Skyrim stores every global as a float on disk; short/long truncate to integer on read. 'int' is an alias for 'long'. Default short (the common flag/counter)"
+        },
+        "value": {
+          "type": "number",
+          "description": "initial value"
+        },
+        "constant": {
+          "type": "boolean",
+          "description": "Constant major flag — a read-only tuning value (can't be SetValue'd)"
         }
       }
     }

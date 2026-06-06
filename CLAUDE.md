@@ -130,7 +130,6 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 
 ### 之後可做
 
-- **`spec.schema.json` 大同步**（已落後：缺 lights/globals/scenes/projectiles/explosions/npc-items… 等頂層與欄位）。
 - Scene 演出續做：PlayIdle / 手勢動畫（可能走 scene phase-fragment 或 alias 腳本 `PlayIdle`，需解碼 `SceneAdapter`）；camera shot。
 - 多解 SM 事件（SkillIncrease/Jail/Bribe…，但須 conditions 才安全，見 [[dispatcher-magic-trigger]]）。
 - 新 record：Music / Imagespace / Hazard 等。
