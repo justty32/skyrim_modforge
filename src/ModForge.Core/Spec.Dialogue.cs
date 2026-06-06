@@ -151,6 +151,10 @@ public sealed class SceneSpec
     // action runs an actor's AI package or a timer over a window of phase indices (see SceneActionSpec).
     // A phase referenced by an action may have empty `lines` (a pure BEAT phase — no spoken line).
     public List<SceneActionSpec> Actions { get; set; } = new();
+    // Scene-level CTDA gate (optional): the scene only STARTS if ALL of these pass. e.g. gate an
+    // autoStart/begin-on-quest-start banter on a GLOB flag (GetGlobalValue) or a quest stage
+    // (GetStage). Uses the SHARED ConditionSpec / BuildCondition, wired in pass 2 (refs by editorId).
+    public List<ConditionSpec> Conditions { get; set; } = new();
 }
 // One non-dialog scene beat (a SceneAction of Type Package or Timer; the spoken phases emit the
 // Dialog actions automatically). EXACTLY ONE of:
@@ -223,6 +227,12 @@ public sealed class ScenePhaseSpec
     public int HeadtrackActor { get; set; } = -2;
     public bool HeadtrackPlayer { get; set; }
     public bool? FaceTarget { get; set; }
+    // Per-phase CTDA gates (optional). `startConditions`: the phase only PLAYS if all pass (else the
+    // engine skips straight to the next phase). `completionConditions`: the phase ENDS once all pass
+    // (a condition-driven advance, beyond "advance when the line finishes"). Both use the SHARED
+    // ConditionSpec / BuildCondition and are wired in pass 2.
+    public List<ConditionSpec> StartConditions { get; set; } = new();
+    public List<ConditionSpec> CompletionConditions { get; set; } = new();
 }
 // A CTDA condition (a static gate) usable on a dialogue INFO or an AI package. `function` picks the
 // condition function; `param` is its form argument (a ref → faction/item/global/quest/npc); `comparison`

@@ -84,6 +84,8 @@ public static partial class Generator
                     if (string.IsNullOrWhiteSpace(a.Npc)) Problems.Add($"scene '{sc.EditorId}' actor (alias {a.AliasId}) has empty npc ref");
                     else CheckRef(a.Npc, $"scene '{sc.EditorId}' actor (alias {a.AliasId}) npc");
                 }
+                foreach (var cs in sc.Conditions)
+                    ValidateSceneCondition(cs, $"scene '{sc.EditorId}' condition");
                 if (sc.Phases.Count == 0)
                     Problems.Add($"scene '{sc.EditorId}' has no phases (nothing is spoken)");
                 // A phase that is COVERED by a non-dialog action may be a lineless "beat" phase (the
@@ -112,6 +114,10 @@ public static partial class Generator
                         Problems.Add($"scene '{sc.EditorId}' phase {i} headtrackActor {ph.HeadtrackActor} is not one of the scene's actors");
                     if (ph.HeadtrackPlayer && ph.HeadtrackActor != -2)
                         Problems.Add($"scene '{sc.EditorId}' phase {i} sets both headtrackPlayer and headtrackActor — pick one");
+                    foreach (var cs in ph.StartConditions)
+                        ValidateSceneCondition(cs, $"scene '{sc.EditorId}' phase {i} startCondition");
+                    foreach (var cs in ph.CompletionConditions)
+                        ValidateSceneCondition(cs, $"scene '{sc.EditorId}' phase {i} completionCondition");
                 }
                 // Non-dialog actions: each runs an actor over a phase window, doing EXACTLY ONE of a
                 // package (movement/sandbox/...) or a timer (a pause).
@@ -149,8 +155,29 @@ public static partial class Generator
                     if (!string.IsNullOrWhiteSpace(au.GateGlobal))
                         CheckRef(au.GateGlobal, $"scene '{sc.EditorId}' autoStart gateGlobal");
                 }
+                foreach (var cs in sc.Conditions)
+                    ValidateSceneCondition(cs, $"scene '{sc.EditorId}' condition");
             }
 
+            ValidateScriptAttachments();
+        }
+
+        // Shared CTDA validation for scene/phase conditions (mirrors the stage-condition checks).
+        private void ValidateSceneCondition(ConditionSpec cs, string label)
+        {
+            if (string.IsNullOrWhiteSpace(cs.Function))
+                Problems.Add($"{label} has empty function");
+            else if (!Enum.TryParse<Condition.Function>(cs.Function, true, out _))
+                Problems.Add($"{label} invalid function '{cs.Function}'");
+            if (!string.IsNullOrWhiteSpace(cs.Comparison)
+                && cs.Comparison is not ("==" or "=" or "!=" or ">" or ">=" or "<" or "<=")
+                && !Enum.TryParse<CompareOperator>(cs.Comparison, true, out _))
+                Problems.Add($"{label} invalid comparison '{cs.Comparison}'");
+            CheckRef(cs.Param, $"{label} param");
+        }
+
+        private void ValidateScriptAttachments()
+        {
             var validTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "int", "float", "bool", "string", "object" };
             foreach (var sa in spec.Scripts)
             {

@@ -473,4 +473,54 @@ public class SceneTests
         spec.Scenes[0].Actors[0].Npc = "Ghost";   // not an in-spec record nor external ref
         Assert.Contains(Generator.Validate(spec), p => p.Contains("unresolved ref 'Ghost'"));
     }
+
+    // --- conditions (scene-level gate + per-phase start/completion gates) -----------------------
+
+    // A scene-level condition list -> scene.Conditions (the whole scene only starts if these pass).
+    [Fact]
+    public void SceneLevelConditions_AreBuilt_OnTheSceneRecord()
+    {
+        var spec = TwoActorScene();
+        spec.Scenes[0].Conditions.Add(new ConditionSpec
+        {
+            Function = "GetGlobalValue", Param = "Skyrim.esm:0x00003A93", Comparison = "==", Value = 1f,
+        });
+        var r = TestBuild.Ok(spec);
+        var sc = TheScene(r);
+        Assert.Single(sc.Conditions);
+    }
+
+    // Per-phase startConditions / completionConditions -> the matching built ScenePhase, by index.
+    [Fact]
+    public void PhaseConditions_AreBuilt_OnTheMatchingPhase_ByIndex()
+    {
+        var spec = TwoActorScene();
+        spec.Scenes[0].Phases[1].StartConditions.Add(new ConditionSpec
+        {
+            Function = "GetGlobalValue", Param = "Skyrim.esm:0x00003A93", Comparison = "==", Value = 1f,
+        });
+        spec.Scenes[0].Phases[2].CompletionConditions.Add(new ConditionSpec
+        {
+            Function = "GetGlobalValue", Param = "Skyrim.esm:0x00003A93", Comparison = ">=", Value = 1f,
+        });
+        var r = TestBuild.Ok(spec);
+        var phases = TheScene(r).Phases.ToList();
+        Assert.Equal(3, phases.Count);
+        Assert.Empty(phases[0].StartConditions);
+        Assert.Empty(phases[0].CompletionConditions);
+        Assert.Single(phases[1].StartConditions);
+        Assert.Empty(phases[1].CompletionConditions);
+        Assert.Empty(phases[2].StartConditions);
+        Assert.Single(phases[2].CompletionConditions);
+    }
+
+    // No-regression: a scene with no conditions has empty condition lists everywhere.
+    [Fact]
+    public void NoConditions_LeavesAllConditionListsEmpty()
+    {
+        var r = TestBuild.Ok(TwoActorScene());
+        var sc = TheScene(r);
+        Assert.Empty(sc.Conditions);
+        Assert.All(sc.Phases, p => { Assert.Empty(p.StartConditions); Assert.Empty(p.CompletionConditions); });
+    }
 }

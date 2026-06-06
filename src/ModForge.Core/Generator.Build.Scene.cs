@@ -66,12 +66,16 @@ public static partial class Generator
 
                 // 3) One Phase + one Dialog Action + one Scene/SCEN Topic+INFO per phase line. The action's
                 //    Topic link is the binding the engine plays; the topic's INFO holds the words.
+                // Per-spec-phase → built-ScenePhase map for pass 2 condition wiring (a phase with an
+                // invalid speaker is skipped, so the built index need not match the spec index).
+                var phaseMap = new List<(int SpecIndex, ScenePhase Phase)>();
                 int actionIndex = 1;   // vanilla SceneActions are 1-based
                 for (int p = 0; p < s.Phases.Count; p++)
                 {
                     var ph = s.Phases[p];
-                    scene.Phases.Add(new ScenePhase());   // always add — keeps phase index aligned with p
-                                                          // (an empty phase = "advance when the line/beat finishes")
+                    var phase = new ScenePhase();         // always add — keeps phase index aligned with p
+                    scene.Phases.Add(phase);              // (an empty phase = "advance when the line/beat finishes")
+                    phaseMap.Add((p, phase));             // map spec phase p → built ScenePhase for pass-2 condition wiring
                     // A lineless BEAT phase exists only as a window for non-dialog actions (movement/timer):
                     // emit the phase but no spoken topic / Dialog action.
                     if (ph.Lines.Count == 0) continue;
@@ -169,6 +173,7 @@ public static partial class Generator
                 if (s.AutoStart is { } au && s.Actors.Count >= 2)
                     AttachSceneController(quest, scene, s.Actors[0].AliasId, s.Actors[1].AliasId, au);
 
+                sceneConditionWires.Add((s, scene, phaseMap));
                 scenesBuilt++;
             }
         }
@@ -230,6 +235,27 @@ public static partial class Generator
             // Scene controller GateGlobal (replay re-arm token) → the GlobalVariable object property.
             foreach (var (hostEd, prop, globalRef) in sceneGateWires)
                 Resolve($"scene controller on quest '{hostEd}' gateGlobal", globalRef, fk => prop.Object.SetTo(fk));
+
+            // Scene-level gate (the whole scene only starts if all pass) + per-phase start/completion
+            // gates. Refs are by editorId, so they wire here via the SHARED BuildCondition (mirrors
+            // WireQuestStages). A scene with no conditions leaves every list empty (byte-identical).
+            foreach (var (s, scene, phaseMap) in sceneConditionWires)
+            {
+                foreach (var cs in s.Conditions)
+                    if (BuildCondition(cs, $"scene '{s.EditorId}' condition") is { } cond)
+                        scene.Conditions.Add(cond);
+
+                foreach (var (specIndex, phase) in phaseMap)
+                {
+                    var ph = s.Phases[specIndex];
+                    foreach (var cs in ph.StartConditions)
+                        if (BuildCondition(cs, $"scene '{s.EditorId}' phase {specIndex} startCondition") is { } cond)
+                            phase.StartConditions.Add(cond);
+                    foreach (var cs in ph.CompletionConditions)
+                        if (BuildCondition(cs, $"scene '{s.EditorId}' phase {specIndex} completionCondition") is { } cond)
+                            phase.CompletionConditions.Add(cond);
+                }
+            }
         }
     }
 }

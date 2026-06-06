@@ -44,6 +44,10 @@ public static partial class Generator
         private readonly List<(string SceneEd, SceneAction Action, string PackageRef)> sceneActionWires = new();
         // Scene controller GateGlobal: the GLOB ref is resolved in pass 2 (WireScenes).
         private readonly List<(string HostEd, ScriptObjectProperty Prop, string GlobalRef)> sceneGateWires = new();
+        // Built scenes kept so pass 2 can attach scene-level + per-phase CTDA conditions (refs by
+        // editorId, resolved only after the formKey table exists). `Phases` maps each spec-phase index
+        // to the ScenePhase actually emitted (a phase with an invalid speaker is skipped in pass 1).
+        private readonly List<(SceneSpec Spec, Scene Built, List<(int SpecIndex, ScenePhase Phase)> Phases)> sceneConditionWires = new();
         private readonly Dictionary<(int Block, int Sub), CellSubBlock> interiorSubs = new();
         private readonly Dictionary<string, FormKey> formKeyByEd = new();
         private readonly Dictionary<string, IMajorRecord> recordsByEd = new();
