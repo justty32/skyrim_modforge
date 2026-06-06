@@ -1362,6 +1362,10 @@
         "useMagic": {
           "type": "object",
           "description": "UseMagic template inputs (spell, numToCastMax, ...); see SPEC.md"
+        },
+        "sitTarget": {
+          "type": "object",
+          "description": "SitTarget template (Skyrim.esm:0x0A9277) inputs: target (REQUIRED furniture ref), waitTime, stopMovement — NPC walks to and sits on the furniture; see SPEC-packages.md"
         }
       }
     },

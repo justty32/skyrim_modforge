@@ -52,6 +52,10 @@ public sealed class PackageSpec
     // or an in-spec placement), pausing to wait if they lag. The dual of Follow. Quest guides
     // ("follow me, I'll take you there"), prisoner/VIP escorts, "show the player the way".
     public EscortSpec Escort { get; set; } = new();
+    // SitTarget-template inputs (apply when `template` is Skyrim.esm:0x0A9277). The NPC walks to and
+    // sits/uses the furniture ref in `target`. The scene-performance "sit" beat — a scene Package
+    // action points at a SitTarget package so an actor takes a seat mid-scene. `target` is REQUIRED.
+    public SitTargetSpec SitTarget { get; set; } = new();
 }
 public sealed class PackageScheduleSpec
 {

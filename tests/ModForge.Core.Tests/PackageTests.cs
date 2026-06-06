@@ -85,6 +85,60 @@ public class PackageTests
         Assert.Equal(new[] { night, day }, npc.Packages.Select(p => p.FormKey).ToArray());
     }
 
+    private const string SitTemplate = "Skyrim.esm:0x0A9277";   // SitTarget (UseItemAt furniture)
+
+    // SitTarget makes an NPC go USE a furniture ref. Slot 16 is the SingleRef target (the chair/
+    // furniture placement); decoded from vanilla MQ306EsbernSit. Reuses the deferred-target wiring,
+    // so the target may be an in-spec placement editorId.
+    private static ModSpec SitSpec() => new()
+    {
+        PluginName = "Test.esp",
+        Cells = { new CellSpec { EditorId = "Room", Name = "Room" } },
+        Placements =
+        {
+            // a furniture ref (vanilla CommonChair01F base) the NPC will sit on
+            new PlacementSpec { EditorId = "Chair", Base = "Skyrim.esm:0x06E7A8", Cell = "Room",
+                                Position = new Vec3 { X = 0, Y = 200, Z = 0 } },
+            new PlacementSpec { Base = "Sitter", Cell = "Room", Kind = "npc" },
+        },
+        Packages =
+        {
+            new PackageSpec
+            {
+                EditorId = "GoSit", Template = SitTemplate,
+                SitTarget = new SitTargetSpec { Target = "Chair", WaitTime = 30f, StopMovement = true },
+            },
+        },
+        Npcs = { new NpcSpec { EditorId = "Sitter", Name = "Sitter", Race = "Skyrim.esm:0x013746", Packages = { "GoSit" } } },
+    };
+
+    // Slot 16 = SingleRef target → PackageTargetSpecificReference to the furniture placement.
+    [Fact]
+    public void SitTarget_Slot16_PointsAtFurnitureRef()
+    {
+        var r = TestBuild.Ok(SitSpec());
+        var chair = r.Mod.EnumerateMajorRecords<IPlacedObjectGetter>().Single(o => o.EditorID == "Chair");
+        var sit = Pkg(r, "GoSit");
+        var tgt = Assert.IsAssignableFrom<IPackageDataTargetGetter>(Slot(sit, 16));
+        Assert.Equal(PackageDataTarget.Types.SingleRef, tgt.Type);
+        var spec = Assert.IsAssignableFrom<IPackageTargetSpecificReferenceGetter>(tgt.Target);
+        Assert.Equal(chair.FormKey, spec.Reference.FormKey);
+
+        // The chair is a package SingleRef target, so it must be forced PERSISTENT (else the engine can
+        // drop the anchor across save/load and the NPC has nothing to sit on).
+        var room = r.Mod.Cells.SelectMany(b => b.SubBlocks).SelectMany(s => s.Cells).Single(c => c.EditorID == "Room");
+        Assert.Contains(room.Persistent, p => p.EditorID == "Chair");
+    }
+
+    // Slot 3 (Wait Time, float) and slot 4 (Stop Movement Flag, bool) carry the author's values.
+    [Fact]
+    public void SitTarget_WaitTime_And_StopMovement_AreWired()
+    {
+        var sit = Pkg(TestBuild.Ok(SitSpec()), "GoSit");
+        Assert.Equal(30f, Assert.IsAssignableFrom<IPackageDataFloatGetter>(Slot(sit, 3)).Data);
+        Assert.True(Assert.IsAssignableFrom<IPackageDataBoolGetter>(Slot(sit, 4)).Data);
+    }
+
     // An unsupported procedure template emits a warning (and no Data overrides), not a hard failure.
     [Fact]
     public void UnsupportedTemplate_Warns()

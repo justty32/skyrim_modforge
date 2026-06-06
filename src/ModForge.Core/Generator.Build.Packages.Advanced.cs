@@ -151,5 +151,21 @@ public static partial class Generator
             pack.Data[15] = new PackageDataBool  { Name = "PreferPreferredPath?",            Data = es.PreferPreferredPath ?? false };
             pack.Data[17] = new PackageDataFloat { Name = "Run If Behind Distance",          Data = es.RunIfBehindDistance ?? 500f };
         }
+
+        private void ApplySitTargetData(PackageSpec pk, IPackage pack)
+        {
+            // SitTarget slots (3 author of 13): 16 Target (deferred SingleRef — the FURNITURE ref to
+            // sit/use; REQUIRED, can be an in-spec placement so it's resolved after the placement loop),
+            // 3 Wait Time (float seconds), 4 Stop Movement Flag (bool). Decoded from vanilla
+            // MQ306EsbernSit (which sets exactly slots 16/3/4). The remaining template slots
+            // (Sit Location / Chairs / Destination / RideHorse / …) keep their template defaults.
+            var st = pk.SitTarget;
+            if (string.IsNullOrWhiteSpace(st.Target))
+                Warn($"  ! package '{pk.EditorId}' sitTarget: no `target` ref — NPC has no furniture to use and won't sit");
+            else
+                deferredTargetWires.Add((pack, 16, "Target", pk.EditorId, st.Target));
+            pack.Data[3] = new PackageDataFloat { Name = "Wait Time",          Data = st.WaitTime ?? 0f };
+            pack.Data[4] = new PackageDataBool  { Name = "Stop Movement Flag", Data = st.StopMovement ?? false };
+        }
     }
 }

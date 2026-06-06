@@ -144,12 +144,31 @@ Player-confirmed with `ModForgeSceneAction.zip`: Borin walks across the Sleeping
 `RiverwoodInnCenterMarker` (the scene Package action driving a Travel PACK), pauses (the Timer action
 pacing the beat phase), then the two argue. First in-game confirmation of non-Dialog scene actions.
 
+## Sit / use furniture (second slice) — ✅ structurally verified (2026-06-06), pending in-game
+
+Implemented as a new **SitTarget** PACK template, not a new scene-action type — because scene actions
+are *only* Dialog/Package/Timer (confirmed: `SceneAction.TypeEnum` has exactly those three), so every
+NPC performance routes through a Package action. SitTarget therefore drops straight into the existing
+scene Package-action plumbing — zero scene-side changes.
+
+- Template `SitTarget` = `Skyrim.esm:0x0A9277` (editorID literally "SitTarget"; the procedure behind
+  vanilla `MQ306EsbernSit`). Author slots: **16** `Target` (`PackageDataTarget` SingleRef →
+  `PackageTargetSpecificReference` to a placed furniture ref, REQUIRED), **3** `Wait Time` (float),
+  **4** `Stop Movement Flag` (bool). `MQ306EsbernSit` sets exactly those three; the rest keep template
+  defaults. Decoded with `packagediag`; furniture base verified `CommonChair01F` (`0x06E7A8`).
+- **Key property:** SitTarget paths the NPC to the furniture *and* seats him — one action = walk + sit,
+  so no separate Travel beat is needed. The furniture ref is forced **persistent** (it's a package
+  SingleRef target, via `deferredAnchorEds`).
+- Code: `PackageTemplates.SitTarget`; `SitTargetSpec` (Spec.Packages.Templates.cs); `ApplySitTargetData`
+  (Generator.Build.Packages.Advanced.cs); dispatch in Generator.Build.Packages.cs; validate
+  (target REQUIRED) in Generator.Validate.Npcs.cs. Tests: `PackageTests` SitTarget slot-16/wait-time/
+  persistence (340 green).
+- Example: `examples/scene-sit-performance.json` — Borin strides across the Sleeping Giant Inn to a
+  `CommonChair01F` placed at the navmesh-verified `RiverwoodInnCenterMarker` spot, sits (10s Timer beat),
+  then he and Hilda argue; `brawlOnEnd` makes him stand and scuffle. `~/skyrim_mods/ModForgeSitAction.zip`.
+
 ## Future work (decoded, deferred)
 
-- **Sit / use furniture** (`MQ306EsbernSit` shape): register a UseItemAt PACK template (Data[16]
-  `PackageDataTarget` SingleRef → a placed FURN ref, Data[3] float, Data[4] bool) so a scene actor
-  can sit/use a workbench/altar. Needs the template FormKey decoded + a `furniture`-targeting PACK
-  spec, then the same Package scene action references it.
 - **PlayIdle / animation event names** (DAR/OAR for custom) — likely a Papyrus `PlayIdle` on an alias
-  script beat rather than a SceneAction; revisit after sit lands.
+  script beat rather than a SceneAction (scene actions can't express a one-off idle directly); revisit next.
 - LipFile / camera (Camera Shot) — cosmetic, last.

@@ -1,0 +1,86 @@
+{
+  "pluginName": "ModForgeSitAction.esp",
+  "esl": true,
+  "_": "Scene SIT performance (IDEAS §1b, second slice): an NPC walks to a chair and SITS DOWN mid-scene, then argues. Builds on scene-action-performance.json (autoStart + two essential unique NPCs in the Sleeping Giant Inn) but the opening BEAT phase drives a NEW package template — SitTarget (Skyrim.esm:0x0A9277, decoded from vanilla MQ306EsbernSit). SitTarget is 'go use that furniture': the engine paths the actor to the furniture ref AND seats him, so ONE action shows both movement and the sit. Borin strides across the inn to a CommonChair01F placed at the (navmesh-verified) RiverwoodInnCenterMarker spot, sits for a beat (Timer), THEN the two trade barbs; brawlOnEnd makes him stand and scuffle (essential = non-lethal). Test: coc RiverwoodSleepingGiantInn (after save+reload on an old save), stand near both → Borin walks over, sits, they argue, then brawl. The chair sits on the SAME interior navmesh as the NPCs so pathing isn't rejected (same rule as the Travel slice). package bundles MFSceneBanterController.pex automatically (autoStart). Pairs with scene-action-performance.json (walk) — together they exercise the whole scene-action framework (Travel + SitTarget + Timer + Dialog).",
+
+  "classes": [
+    {
+      "editorId": "MF_SitClass",
+      "name": "ModForge Townsfolk",
+      "healthWeight": 50, "magickaWeight": 25, "staminaWeight": 25,
+      "skillWeights": { "Speech": 75 }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_SitBorin", "name": "Borin", "greeting": "Mind your own, stranger.",
+      "race": "Skyrim.esm:0x013746", "class": "MF_SitClass", "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6", "crimeFaction": "Skyrim.esm:0x0267EA",
+      "unique": true, "essential": true, "level": 4, "autoCalcStats": true,
+      "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
+    },
+    {
+      "editorId": "MF_SitHilda", "name": "Hilda", "greeting": "Hmph.",
+      "race": "Skyrim.esm:0x013746", "class": "MF_SitClass", "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE7", "crimeFaction": "Skyrim.esm:0x0267EA",
+      "unique": true, "essential": true, "level": 4, "autoCalcStats": true,
+      "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
+    }
+  ],
+
+  "packages": [
+    {
+      "editorId": "MF_BorinSit",
+      "_": "SitTarget package the SCENE drives (not assigned to the NPC) — referenced by the scene's Package action. `target` is the placed chair (InnChair, an in-spec placement). The engine walks Borin to it and seats him. preferredSpeed Walk so he ambles.",
+      "template": "Skyrim.esm:0x0A9277",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [ "HellosToPlayer", "ObserveCombatBehavior", "ReactionToPlayerActions" ],
+      "sitTarget": { "target": "InnChair", "waitTime": 0, "stopMovement": false }
+    }
+  ],
+
+  "quests": [
+    {
+      "_": "Controller host quest. StartGameEnabled so MFSceneBanterController's OnInit arms the poll.",
+      "editorId": "MF_SitQuest", "name": "ModForge Sit Action",
+      "startGameEnabled": true, "priority": 50, "objectives": []
+    }
+  ],
+
+  "scenes": [
+    {
+      "editorId": "MF_SitScene",
+      "questEditorId": "MF_SitQuest",
+      "autoStart": {
+        "triggerDistance": 1500.0,
+        "requireLineOfSight": false,
+        "cooldownSeconds": 30.0,
+        "pollSeconds": 4.0,
+        "brawlOnEnd": true
+      },
+      "actors": [
+        { "aliasId": 0, "npc": "MF_SitBorin", "name": "Borin" },
+        { "aliasId": 1, "npc": "MF_SitHilda", "name": "Hilda" }
+      ],
+      "_phases": "phase 0 is a lineless BEAT — Borin walks to the chair and SITS (SitTarget package) over a 10s window (Timer action). Phases 1-4 are the spoken argument; brawlOnEnd then makes them scuffle.",
+      "phases": [
+        { },
+        { "speaker": 0, "emotion": "Anger",   "emotionValue": 60, "lines": [ "Let me take a seat... right. Now, about the ale you owe me, Hilda." ] },
+        { "speaker": 1, "emotion": "Disgust", "emotionValue": 70, "lines": [ "Comfortable? Good. You'll wait a long while for coin from me." ] },
+        { "speaker": 0, "emotion": "Anger",   "emotionValue": 80, "lines": [ "Don't make me get up, woman." ] },
+        { "speaker": 1, "emotion": "Anger",   "emotionValue": 75, "lines": [ "Get up then, you old goat. See where it gets you." ] }
+      ],
+      "actions": [
+        { "actor": 0, "package": "MF_BorinSit", "startPhase": 0, "endPhase": 0 },
+        { "actor": 0, "timerSeconds": 10.0,     "startPhase": 0, "endPhase": 0 }
+      ]
+    }
+  ],
+
+  "placements": [
+    { "base": "MF_SitBorin", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 180, "z": 0 } },
+    { "base": "MF_SitHilda", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -850, "y": 60, "z": 0 }, "rotation": { "x": 0, "y": 0, "z": 180 } },
+    { "editorId": "InnChair", "base": "Skyrim.esm:0x06E7A8", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -977.29, "y": 9.08, "z": 0 }, "rotation": { "x": 0, "y": 0, "z": 136 } }
+  ]
+}

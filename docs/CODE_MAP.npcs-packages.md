@@ -44,6 +44,7 @@
 | `examples/escort_spec.json` | Escort package |
 | `examples/follow_spec.json` | Follow package |
 | `examples/patrol_spec.json` | Patrol package |
+| `examples/scene-sit-performance.json` | SitTarget package（NPC 走到家具並坐下；scene Package action 驅動的演出 beat）|
 | `examples/usemagic_spec.json` | UseMagic package（施法 AI）|
 | `examples/weather_spec.json` | 自訂天氣 + 氣候 |
 | `examples/scripts/MFFollowerFollow.psc` | 隨從 Follow 行為腳本 |
@@ -119,10 +120,10 @@
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
 | Spec | `Spec.Packages.cs` | `PackageSpec`, `PackageScheduleSpec`, `SandboxSpec`, `SleepSpec` |
-| Spec | `Spec.Packages.Templates.cs` | `TravelSpec`, `UseMagicSpec`, `PatrolSpec`, `FollowSpec`, `EscortSpec` |
-| Data | `PackageTemplates.cs` | vanilla PACK procedure-template FormKey 登錄 |
-| Build P2 | `Generator.Build.Packages.cs` | 資料槽填充 dispatcher（sandbox/sleep/travel/usemagic/patrol/follow/escort）|
-| Build P2 | `Generator.Build.Packages.Advanced.cs` | 複雜套件槽：Escort/Patrol/Follow（location/target/marker 解析）|
+| Spec | `Spec.Packages.Templates.cs` | `TravelSpec`, `UseMagicSpec`, `PatrolSpec`, `FollowSpec`, `EscortSpec`, `SitTargetSpec` |
+| Data | `PackageTemplates.cs` | vanilla PACK procedure-template FormKey 登錄（含 `SitTarget`=0x0A9277）|
+| Build P2 | `Generator.Build.Packages.cs` | 資料槽填充 dispatcher（sandbox/sleep/travel/usemagic/patrol/follow/escort/**sittarget**）|
+| Build P2 | `Generator.Build.Packages.Advanced.cs` | 複雜套件槽：Escort/Patrol/Follow/**SitTarget**（location/target/marker 解析；SitTarget slot 16 SingleRef→家具 ref，走位+坐合一）|
 | Build P2 | `Generator.Build.Conditions.cs` | package condition 接線（共用）|
 | Validate | `Generator.Validate.Npcs.cs` | package template/slot integrity、AI-data enum |
 

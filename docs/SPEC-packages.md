@@ -7,11 +7,12 @@ A `packages` entry is an AI package. Skyrim's PACK record is **template-driven**
 vanilla "procedure template" form via `template`, and that template defines the data input schema
 (slot indices + types). Our package fills in the inputs for the slots the template defines.
 
-ModForge currently implements seven templates — **Sandbox** (`Skyrim.esm:0x01C254`), **Sleep**
+ModForge currently implements eight templates — **Sandbox** (`Skyrim.esm:0x01C254`), **Sleep**
 (`Skyrim.esm:0x019717`), **Travel** (`Skyrim.esm:0x016FAA`), **UseMagic** (`Skyrim.esm:0x0504F5`),
-**Patrol** (`Skyrim.esm:0x017723`), **Follow** (`Skyrim.esm:0x019B2C`), and **Escort**
-(`Skyrim.esm:0x023B73`). Author the matching subobject (`sandbox` / `sleep` / `travel` / `useMagic`
-/ `patrol` / `follow` / `escort`) and the build will fill that template's Data slots. To target a
+**Patrol** (`Skyrim.esm:0x017723`), **Follow** (`Skyrim.esm:0x019B2C`), **Escort**
+(`Skyrim.esm:0x023B73`), and **SitTarget** (`Skyrim.esm:0x0A9277`). Author the matching subobject
+(`sandbox` / `sleep` / `travel` / `useMagic` / `patrol` / `follow` / `escort` / `sitTarget`) and the
+build will fill that template's Data slots. To target a
 template ModForge doesn't yet handle (UseWeapon / …), still set `template`; the package emits
 structurally valid but with no Data overrides (template defaults apply) and a warning. Use
 `packagediag <Skyrim.esm> <0xFORMID>` to discover any template's named slot schema before adding support.
@@ -106,6 +107,27 @@ like `WCollegePracticeCastWard`; set `target` to a placed-ref for cast-at-X (van
 5. **Use `pkgsbytemplate <plugin> <0xFORMID>`** to scan a master for all packages using a given
    template. Necessary because `find` matches EditorIDs only, and many template-based packages
    (e.g. `WhiterunTempleCastHealingSpellSoldier`) don't carry the template name in their EditorID.
+
+**SitTarget template (`Skyrim.esm:0x0A9277`) — `sitTarget` subobject:**
+```jsonc
+{ "editorId": "MF_BorinSit",
+  "template": "Skyrim.esm:0x0A9277",       // SitTarget ("go use that furniture")
+  "preferredSpeed": "Walk",
+  "sitTarget": {
+    "target":       "InnChair",            // REQUIRED — ref to a placed FURNITURE reference
+                                           //   (vanilla REFR or an in-spec placement editorId)
+    "waitTime":     0,                     // seconds to stay seated (0 = until the package/phase ends)
+    "stopMovement": false } }
+```
+SitTarget is the "walk to and sit/use a piece of furniture" routine (decoded from vanilla
+`MQ306EsbernSit`). It fills 3 author slots: **16** `Target` (SingleRef → the furniture ref, REQUIRED),
+**3** `Wait Time` (float), **4** `Stop Movement Flag` (bool). The engine paths the NPC to the furniture
+**and** seats him, so **one SitTarget action covers both the walk and the sit** (no separate Travel
+needed). Same navmesh rule as Travel: the furniture must be a placed ref reachable on the NPC's navmesh
+(keep it in the same interior cell). The furniture ref is forced **persistent** automatically (it's a
+package SingleRef target). Without `target` the package no-ops. Primary use: a **scene performance beat**
+— a scene Package action references a SitTarget package so an actor takes a seat mid-conversation
+(see `examples/scene-sit-performance.json`).
 
 **Flags (Package.Flag):** `OffersServices`, `MustComplete`, `MaintainSpeedAtGoal`, `ContinueIfPcNear`,
 `OncePerDay`, `PreferredSpeed`, `AlwaysSneak`, `AllowSwimming`, `IgnoreCombat`, `WeaponsUnequipped`,

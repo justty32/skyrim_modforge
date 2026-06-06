@@ -61,6 +61,10 @@ public static partial class Generator
                 if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var tfk) && tfk == PackageTemplates.UseMagic
                     && string.IsNullOrWhiteSpace(pk.UseMagic.Spell))
                     Problems.Add($"package '{pk.EditorId}' uses UseMagic template but useMagic.spell is empty — package will no-op in-game");
+                CheckRef(pk.SitTarget.Target, $"package '{pk.EditorId}' sitTarget.target");
+                if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var sttfk) && sttfk == PackageTemplates.SitTarget
+                    && string.IsNullOrWhiteSpace(pk.SitTarget.Target))
+                    Problems.Add($"package '{pk.EditorId}' uses SitTarget template but sitTarget.target is empty — NPC has no furniture to use and won't sit");
                 foreach (var f in pk.Flags)
                     if (!Enum.TryParse<Mutagen.Bethesda.Skyrim.Package.Flag>(f, true, out _))
                         Problems.Add($"package '{pk.EditorId}' invalid flag '{f}'");

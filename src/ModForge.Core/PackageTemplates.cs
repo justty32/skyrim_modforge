@@ -22,4 +22,5 @@ internal static class PackageTemplates
     public static readonly FormKey Patrol   = Of(0x017723);  //  6 slots
     public static readonly FormKey Follow   = Of(0x019B2C);  //  6 slots
     public static readonly FormKey Escort   = Of(0x023B73);  // 15 slots (9 active)
+    public static readonly FormKey SitTarget = Of(0x0A9277); //  3 author slots (16/3/4) — sit at furniture
 }

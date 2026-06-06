@@ -103,3 +103,19 @@ public sealed class EscortSpec
     public bool? PreferPreferredPath { get; set; }     // default false
     public float? RunIfBehindDistance { get; set; }    // default 500
 }
+// SitTarget-template (Skyrim.esm:0x0A9277, editorID "SitTarget") data inputs. The "go use that piece
+// of furniture" routine — the NPC walks to a furniture reference and sits/uses it. Decoded from vanilla
+// MQ306EsbernSit. Author-facing slots on the template:
+//   16 Target (PackageDataTarget, SingleRef → PackageTargetSpecificReference to a placed FURNITURE ref
+//      — REQUIRED; without it the NPC has nothing to sit on and the package no-ops),
+//    3 Wait Time (float seconds, 0 = until the package ends / scene phase window closes),
+//    4 Stop Movement Flag (bool, default false).
+// This is the scene-performance "sit" beat: a scene Package action references a SitTarget package so an
+// actor sits on a chair mid-scene (the chair must be a placed furniture ref reachable on navmesh in the
+// same cell, like the Travel destination rule). `target` may be a vanilla REFR or an in-spec placement.
+public sealed class SitTargetSpec
+{
+    public string Target { get; set; } = "";       // REQUIRED ref → a placed FURNITURE reference (vanilla REFR or in-spec placement)
+    public float? WaitTime { get; set; }           // seconds to stay (default 0 = until package/phase ends)
+    public bool? StopMovement { get; set; }        // default false
+}
