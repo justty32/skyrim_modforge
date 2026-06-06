@@ -21,6 +21,14 @@ public static partial class Generator
                 CheckRef(n.CrimeFaction, $"npc '{n.EditorId}' crimeFaction");
                 CheckRef(n.CombatStyle, $"npc '{n.EditorId}' combatStyle");
                 foreach (var s in n.Spells) CheckRef(s, $"npc '{n.EditorId}' spell");
+                foreach (var it in n.Items)
+                {
+                    if (string.IsNullOrWhiteSpace(it.Item))
+                        Problems.Add($"npc '{n.EditorId}' item has empty ref (need a carriable item: in-spec editorId or <master>:0xFORMID)");
+                    else CheckRef(it.Item, $"npc '{n.EditorId}' item");
+                    if (it.Count == 0)
+                        Problems.Add($"npc '{n.EditorId}' item '{it.Item}' has count 0 (must be non-zero)");
+                }
                 CheckEnum<Aggression>(n.Aggression, $"npc '{n.EditorId}' aggression");
                 CheckEnum<Confidence>(n.Confidence, $"npc '{n.EditorId}' confidence");
                 CheckEnum<Assistance>(n.Assistance, $"npc '{n.EditorId}' assistance");

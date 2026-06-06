@@ -1,0 +1,36 @@
+{
+  "_": "NPC inventory demo: an NPC who CARRIES items. Items in npc.items are added to the actor's inventory — a weapon there is auto-equipped (so this is how you ARM an NPC), and everything drops as loot on death (or can be pickpocketed). Mixes a vanilla ref (iron sword), gold, an in-spec custom weapon (declared AFTER the npc to exercise the forward-ref-safe resolve), and a vanilla potion. IN-GAME TEST: `coc RiverwoodSleepingGiantInn`, find 'Forged Carrier' (a Nord standing in the inn). She should be wielding an iron sword. Pickpocket her (or kill+loot the body) to see the 100 gold, the Steel-ish 'Forged Blade' (custom weapon), and a Restore Health potion in her inventory.",
+  "pluginName": "ModForgeNpcInventory.esp",
+  "esl": true,
+  "npcs": [
+    {
+      "editorId": "MF_Carrier",
+      "name": "Forged Carrier",
+      "race": "Skyrim.esm:0x013746",
+      "unique": true,
+      "aggression": "Aggressive",
+      "confidence": "Brave",
+      "items": [
+        { "_": "vanilla iron sword (0x012EB7) — the actor's only weapon, so it gets auto-equipped/drawn", "item": "Skyrim.esm:0x012EB7", "count": 1 },
+        { "_": "100 gold (Gold001 = Skyrim.esm:0x00000F) — loot/pickpocket", "item": "Skyrim.esm:0x00000F", "count": 100 },
+        { "_": "in-spec custom weapon, declared after this NPC: forward-ref resolve", "item": "MF_ForgedBlade", "count": 1 },
+        { "_": "vanilla Restore Health potion (RestoreHealth01 = 0x03EADD)", "item": "Skyrim.esm:0x03EADD", "count": 3 }
+      ]
+    }
+  ],
+  "weapons": [
+    {
+      "_": "custom weapon cloned from the vanilla Steel Sword template; referenced by the NPC above",
+      "editorId": "MF_ForgedBlade",
+      "name": "Forged Blade",
+      "template": "Skyrim.esm:0x013989"
+    }
+  ],
+  "placements": [
+    {
+      "_": "Sleeping Giant Inn interior cell (Skyrim.esm:0x0133C6). coc RiverwoodSleepingGiantInn to reach it.",
+      "base": "MF_Carrier",
+      "cell": "Skyrim.esm:0x0133C6"
+    }
+  ]
+}

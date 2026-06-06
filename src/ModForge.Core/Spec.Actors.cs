@@ -40,6 +40,19 @@ public sealed class NpcSpec
     // +damage entry-point perk makes the actor hit harder); this is how vanilla races/NPCs carry
     // their innate ability perks. Player perks are normally granted by script/AddPerk, NOT here.
     public List<string> Perks { get; set; } = new();
+    // Items the NPC carries — added to its inventory; a weapon/armor here is auto-equipped if it's
+    // the NPC's best, so it's how you arm an NPC; loot drops on death. (Separate from VendorSpec —
+    // those are the merchant's sale categories; these are what THIS actor physically carries.)
+    public List<NpcItemSpec> Items { get; set; } = new();
+}
+// One inventory entry on an NPC: a ref to a carriable item (weapon/armor/misc/potion/gold/ammo —
+// vanilla <master>:0xFORMID or an in-spec editorId) plus a Count (defaults to 1; use larger counts
+// for stacks like gold/arrows/potions). Resolved forward-ref-safe in pass 2 (an in-spec weapon may
+// be declared after the NPC). Gold001 = Skyrim.esm:0x00000F.
+public sealed class NpcItemSpec
+{
+    public string Item { get; set; } = "";   // ref → carriable item (REQUIRED)
+    public int Count { get; set; } = 1;        // stack count (default 1; must be != 0)
 }
 // Faction (FACT): a named group an NPC can belong to. `vendor` (optional) turns this into a
 // MERCHANT faction — the engine treats any NPC who is a member of a Vendor-flagged faction (with

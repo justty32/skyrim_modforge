@@ -139,6 +139,22 @@ public static partial class Generator
                         Resolve($"npc '{n.EditorId}' spell", spellRef, fk =>
                             npcRec.ActorEffect!.Add(new FormLink<ISpellRecordGetter>(fk)));
                 }
+                // Inventory items (CNTO): what the actor physically carries. A weapon/armor here is
+                // auto-equipped if it's the actor's best, so this is how you arm an NPC; everything
+                // drops as loot on death. Forward-ref-safe (an in-spec weapon may be declared after
+                // the NPC) — same Resolve path as spells/factions. npc.Items may be null on a fresh
+                // NPC, so initialize it. Mirrors the container CNTO build (ContainerEntry/Item).
+                if (n.Items.Count > 0)
+                {
+                    npcRec.Items ??= new();
+                    foreach (var it in n.Items)
+                        Resolve($"npc '{n.EditorId}' item", it.Item, fk =>
+                        {
+                            var ci = new ContainerItem { Count = it.Count };
+                            ci.Item.SetTo(fk);
+                            npcRec.Items!.Add(new ContainerEntry { Item = ci });
+                        });
+                }
                 bool joinsVendorFaction = false;
                 foreach (var factionRef in n.Factions)
                 {
