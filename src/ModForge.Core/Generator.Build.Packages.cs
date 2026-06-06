@@ -39,9 +39,11 @@ public static partial class Generator
                 else if (tfk == PackageTemplates.Follow)    ApplyFollowData(pk, pack);
                 else if (tfk == PackageTemplates.Escort)    ApplyEscortData(pk, pack);
                 else if (tfk == PackageTemplates.SitTarget) ApplySitTargetData(pk, pack);
+                else if (tfk == PackageTemplates.Activate)  ApplyActivateData(pk, pack);
+                else if (tfk == PackageTemplates.Eat)       ApplyEatData(pk, pack);
                 else
                 {
-                    Warn($"  ! package '{pk.EditorId}': template {tfk} is not yet supported (known: sandbox=0x01C254, sleep=0x019717, travel=0x016FAA, usemagic=0x0504F5, patrol=0x017723, follow=0x019B2C, escort=0x023B73, sittarget=0x0A9277) — emitting package with no Data overrides; template defaults apply");
+                    Warn($"  ! package '{pk.EditorId}': template {tfk} is not yet supported (known: sandbox=0x01C254, sleep=0x019717, travel=0x016FAA, usemagic=0x0504F5, patrol=0x017723, follow=0x019B2C, escort=0x023B73, sittarget=0x0A9277, activate=0x019B2D, eat=0x019714) — emitting package with no Data overrides; template defaults apply");
                 }
             }
         }

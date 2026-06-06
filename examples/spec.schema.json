@@ -1366,6 +1366,14 @@
         "sitTarget": {
           "type": "object",
           "description": "SitTarget template (Skyrim.esm:0x0A9277) inputs: target (REQUIRED furniture ref), waitTime, stopMovement — NPC walks to and sits on the furniture; see SPEC-packages.md"
+        },
+        "activate": {
+          "type": "object",
+          "description": "Activate template inputs (target [required], numberToActivate); see SPEC.md"
+        },
+        "eat": {
+          "type": "object",
+          "description": "Eat template inputs (location, radius, allowSitting, ...); see SPEC.md"
         }
       }
     },

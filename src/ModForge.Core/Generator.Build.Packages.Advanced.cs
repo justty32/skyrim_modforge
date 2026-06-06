@@ -167,5 +167,59 @@ public static partial class Generator
             pack.Data[3] = new PackageDataFloat { Name = "Wait Time",          Data = st.WaitTime ?? 0f };
             pack.Data[4] = new PackageDataBool  { Name = "Stop Movement Flag", Data = st.StopMovement ?? false };
         }
+
+        private void ApplyActivateData(PackageSpec pk, IPackage pack)
+        {
+            // Activate template: slot 0 Target (deferred SingleRef — the object the NPC walks to and
+            // activates; REQUIRED, may be an in-spec placement created in the placement loop below or a
+            // vanilla ref) + slot 2 Number to Activate (int). Slots 3/4/5 keep template defaults.
+            // Mirrors dunHillgrundsUnlockExteriorDoorActivate (slot 0 SpecificReference + slot 2=1).
+            var ac = pk.Activate;
+            if (string.IsNullOrWhiteSpace(ac.Target))
+                Warn($"  ! package '{pk.EditorId}' activate: no `target` ref — Activate has nothing to activate (package will no-op)");
+            else
+                deferredTargetWires.Add((pack, 0, "Target", pk.EditorId, ac.Target));
+            pack.Data[2] = new PackageDataInt { Name = "Number to Activate", Data = ac.NumberToActivate ?? 1u };
+        }
+
+        private void ApplyEatData(PackageSpec pk, IPackage pack)
+        {
+            // Eat template = a location-based Sandbox variant. Modelled on ApplySleepData: slot 0 Location,
+            // the FIXED food/chair search scaffolding (1 Food Criteria = Creatures, 4 Found Food objectlist,
+            // 5 Chair Target = SelfActorEffects, 6 Found Chair objectlist — NOT author-facing; emitted exactly
+            // as vanilla so the engine's food/chair seeking works), then the named bool/float/int block.
+            var et = pk.Eat;
+            pack.Data[0] = MakeLocationSlot("Eat Location", $"package '{pk.EditorId}' eat", et.Location, et.Radius == 0 ? 500u : et.Radius);
+            pack.Data[1] = new PackageDataTarget
+            {
+                Name = "Food Criteria",
+                Type = PackageDataTarget.Types.Target,
+                Target = new PackageTargetObjectType { Type = TargetObjectType.Creatures },
+            };
+            pack.Data[4] = new PackageDataObjectList { Name = "Found Food" };
+            pack.Data[5] = new PackageDataTarget
+            {
+                Name = "Chair Target",
+                Type = PackageDataTarget.Types.Target,
+                Target = new PackageTargetObjectType { Type = TargetObjectType.SelfActorEffects },
+            };
+            pack.Data[6] = new PackageDataObjectList { Name = "Found Chair" };
+            void EBool(sbyte slot, string name, bool? user, bool def)
+                => pack.Data[slot] = new PackageDataBool { Name = name, Data = user ?? def };
+            EBool(12, "AllowAlreadyHeld",      true,             true);
+            EBool(16, "RideHorseIfPossible",   false,            false);
+            EBool(21, "Unlock On Arrival?",    true,             true);
+            EBool(23, "CreateFakeFood",        true,             true);
+            EBool(25, "AllowEating",           true,             true);
+            EBool(26, "AllowSleeping",         false,            false);
+            EBool(27, "AllowConversation",     true,             true);
+            EBool(28, "AllowIdleMarkers",      true,             true);
+            EBool(29, "AllowSitting",          et.AllowSitting,  true);
+            EBool(30, "AllowWandering",        et.AllowWandering, true);
+            EBool(33, "AllowSpecialFurniture", true,             true);
+            pack.Data[10] = new PackageDataInt   { Name = "NumFoodItems",      Data = et.NumFoodItems ?? 1u };
+            pack.Data[32] = new PackageDataFloat { Name = "Energy",            Data = et.Energy ?? 0f };
+            pack.Data[35] = new PackageDataFloat { Name = "MinWanderDistance", Data = et.MinWanderDistance ?? 300f };
+        }
     }
 }

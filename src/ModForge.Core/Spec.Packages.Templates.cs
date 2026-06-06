@@ -119,3 +119,40 @@ public sealed class SitTargetSpec
     public float? WaitTime { get; set; }           // seconds to stay (default 0 = until package/phase ends)
     public bool? StopMovement { get; set; }        // default false
 }
+// Activate-template (Skyrim.esm:0x019B2D) data inputs. Slot indices on the template:
+//   0 Target (PackageDataTarget, SingleRef → PackageTargetSpecificReference; REQUIRED) — the object the
+//     NPC walks to and activates (a lever/door/activator). Deferred-wired like Patrol/Follow slot-0 so
+//     the ref may be an IN-SPEC placement editorId resolved after the placement loop runs.
+//   2 Number to Activate (int, default 1).
+// Slots 3 Destination / 4 RideHorseIfPossible / 5 PreferPreferredPath keep template defaults (not emitted).
+// Concrete vanilla example dunHillgrundsUnlockExteriorDoorActivate sets exactly [0] (SpecificReference) + [2]=1.
+public sealed class ActivateSpec
+{
+    public string Target { get; set; } = "";    // REQUIRED ref → the object to activate (placement editorId or vanilla ref)
+    public uint? NumberToActivate { get; set; }  // default 1
+}
+// Eat-template (Skyrim.esm:0x019714) data inputs. A LOCATION-based sandbox variant ("go to a location,
+// find food, sit and eat") — modelled on Sleep's slot-filling (same fixed search-scaffolding pattern).
+// Author-facing + fixed slots decoded from Skyrim.esm:
+//   0 Eat Location (PackageDataLocation, default radius 500) — optional; empty ⇒ NearSelf fallback.
+//   1 Food Criteria  — FIXED PackageDataTarget(TargetObjectType.Creatures)         (emitted exactly, not author-facing)
+//   4 Found Food     — FIXED PackageDataObjectList "Found Food"                     (not author-facing)
+//   5 Chair Target   — FIXED PackageDataTarget(TargetObjectType.SelfActorEffects)  (not author-facing)
+//   6 Found Chair    — FIXED PackageDataObjectList "Found Chair"                    (not author-facing)
+//   10 NumFoodItems(int,1)  12 AllowAlreadyHeld(bool,true)  16 RideHorseIfPossible(bool,false)
+//   21 UnlockOnArrival(bool,true)  23 CreateFakeFood(bool,true)  25 AllowEating(bool,true)
+//   26 AllowSleeping(bool,false)  27 AllowConversation(bool,true)  28 AllowIdleMarkers(bool,true)
+//   29 AllowSitting(bool,true)  30 AllowWandering(bool,true)  32 Energy(float,0)  33 AllowSpecialFurniture(bool,true)
+//   35 MinWanderDistance(float,300)
+// The named-bool/float/int block mirrors how ApplySleepData emits each slot's exact Name string for
+// round-trip fidelity. A reasonable author-facing subset is exposed below; the rest keep their defaults.
+public sealed class EatSpec
+{
+    public string Location { get; set; } = "";    // optional ref → placed reference; empty ⇒ NearSelf fallback
+    public uint Radius { get; set; } = 500;        // eat-location radius (template default 500)
+    public bool? AllowSitting { get; set; }        // default true (slot 29)
+    public bool? AllowWandering { get; set; }      // default true (slot 30)
+    public float? Energy { get; set; }             // default 0 (slot 32)
+    public float? MinWanderDistance { get; set; }  // default 300 (slot 35)
+    public uint? NumFoodItems { get; set; }        // default 1 (slot 10)
+}

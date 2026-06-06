@@ -65,6 +65,11 @@ public static partial class Generator
                 if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var sttfk) && sttfk == PackageTemplates.SitTarget
                     && string.IsNullOrWhiteSpace(pk.SitTarget.Target))
                     Problems.Add($"package '{pk.EditorId}' uses SitTarget template but sitTarget.target is empty — NPC has no furniture to use and won't sit");
+                CheckRef(pk.Activate.Target, $"package '{pk.EditorId}' activate.target");
+                if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var atfk) && atfk == PackageTemplates.Activate
+                    && string.IsNullOrWhiteSpace(pk.Activate.Target))
+                    Problems.Add($"package '{pk.EditorId}' uses Activate template but activate.target is empty — Activate has nothing to activate");
+                CheckRef(pk.Eat.Location, $"package '{pk.EditorId}' eat.location");
                 foreach (var f in pk.Flags)
                     if (!Enum.TryParse<Mutagen.Bethesda.Skyrim.Package.Flag>(f, true, out _))
                         Problems.Add($"package '{pk.EditorId}' invalid flag '{f}'");

@@ -1,0 +1,55 @@
+{
+  "pluginName": "ModForgeEat.esp",
+  "esl": true,
+  "_": "An NPC goes to eat via the Eat procedure template (Skyrim.esm:0x019714) — a LOCATION-based sandbox variant. Slot 0 'Eat Location' anchors NearSelf at radius 500 (no `location` ref given), then the engine's FIXED food/chair search scaffolding (slot 1 Food Criteria = Creatures, slot 4 Found Food, slot 5 Chair Target = SelfActorEffects, slot 6 Found Chair — emitted exactly as decoded from Skyrim.esm) lets the NPC find food + a chair, sit and eat. The author-facing named block (allowSitting/allowWandering/energy/minWanderDistance/numFoodItems) keeps vanilla defaults here. Gate the meal window with `schedule` (hour + durationInMinutes). Placed in the Sleeping Giant Inn (plenty of tables + chairs); `coc RiverwoodSleepingGiantInn`, wait ~30-90s cold-start, and the NPC should wander, grab food and sit to eat.",
+
+  "npcs": [
+    {
+      "editorId": "MF_EatNpc",
+      "name": "ModForge Diner",
+      "race": "Skyrim.esm:0x013746",
+      "class": "Skyrim.esm:0x01326B",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+      "unique": true,
+      "level": 5,
+      "autoCalcStats": true,
+      "aggression": "Unaggressive",
+      "confidence": "Average",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50,
+      "packages": [ "MF_GoEat" ]
+    }
+  ],
+
+  "packages": [
+    {
+      "editorId": "MF_GoEat",
+      "_": "Eat template. No `location` ⇒ the NPC eats near where it is (NearSelf, radius 500). schedule gates the meal window (here noon for 2 hours). allowWandering/allowSitting default true so it can roam to food and sit.",
+      "template": "Skyrim.esm:0x019714",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [
+        "HellosToPlayer", "AllowIdleChatter",
+        "ObserveCombatBehavior", "ReactionToPlayerActions"
+      ],
+      "schedule": { "hour": 12, "minute": 0, "durationInMinutes": 120, "dayOfWeek": "Any" },
+      "eat": {
+        "radius": 500,
+        "allowSitting": true,
+        "allowWandering": true,
+        "numFoodItems": 1
+      }
+    }
+  ],
+
+  "placements": [
+    {
+      "_": "The NPC, at the It.16b-confirmed walkable spawn (0,0,0) in the Sleeping Giant Inn — surrounded by vanilla tables/chairs/food for the Eat search to find.",
+      "base": "MF_EatNpc",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": 0, "y": 0, "z": 0 }
+    }
+  ]
+}

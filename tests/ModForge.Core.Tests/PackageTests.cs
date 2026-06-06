@@ -8,8 +8,10 @@ namespace ModForge.Tests;
 // priority order. Template Data filling compares the template FormKey only, so this is master-free.
 public class PackageTests
 {
-    private const string SleepTemplate   = "Skyrim.esm:0x019717";
-    private const string SandboxTemplate = "Skyrim.esm:0x01C254";
+    private const string SleepTemplate    = "Skyrim.esm:0x019717";
+    private const string SandboxTemplate  = "Skyrim.esm:0x01C254";
+    private const string ActivateTemplate = "Skyrim.esm:0x019B2D";
+    private const string EatTemplate      = "Skyrim.esm:0x019714";
 
     private static ModSpec RoutineSpec() => new()
     {
@@ -137,6 +139,103 @@ public class PackageTests
         var sit = Pkg(TestBuild.Ok(SitSpec()), "GoSit");
         Assert.Equal(30f, Assert.IsAssignableFrom<IPackageDataFloatGetter>(Slot(sit, 3)).Data);
         Assert.True(Assert.IsAssignableFrom<IPackageDataBoolGetter>(Slot(sit, 4)).Data);
+    }
+
+    // --- Activate template (Skyrim.esm:0x019B2D): NPC walks to a ref and activates it ---
+    private static ModSpec ActivateSpec(string target = "MF_ActivateLever", uint? num = null) => new()
+    {
+        Cells = { new CellSpec { EditorId = "MF_Cell", Name = "MF Cell" } },
+        Packages =
+        {
+            new PackageSpec
+            {
+                EditorId = "DoActivate", Template = ActivateTemplate,
+                Activate = new ActivateSpec { Target = target, NumberToActivate = num },
+            },
+        },
+        Npcs = { new NpcSpec { EditorId = "Npc", Name = "Npc", Packages = { "DoActivate" } } },
+        Placements =
+        {
+            new PlacementSpec { Base = "Npc", Cell = "MF_Cell", Position = new Vec3() },
+            new PlacementSpec
+            {
+                EditorId = "MF_ActivateLever", Base = "Skyrim.esm:0x000034", Cell = "MF_Cell",
+                Position = new Vec3(),
+            },
+        },
+    };
+
+    // Slot 0 = the activate target, emitted as a SingleRef PackageTargetSpecificReference to the placed ref.
+    [Fact]
+    public void Activate_Target_IsSpecificReference()
+    {
+        var r = TestBuild.Ok(ActivateSpec());
+        var lever = r.Mod.EnumerateMajorRecords<IPlacedObjectGetter>().Single(p => p.EditorID == "MF_ActivateLever");
+        var tgt = Assert.IsAssignableFrom<IPackageDataTargetGetter>(Slot(Pkg(r, "DoActivate"), 0));
+        var sr = Assert.IsAssignableFrom<IPackageTargetSpecificReferenceGetter>(tgt.Target);
+        Assert.Equal(lever.FormKey, sr.Reference.FormKey);
+    }
+
+    // Slot 2 = Number to Activate, defaulting to 1 and honouring an override.
+    [Fact]
+    public void Activate_NumberToActivate_DefaultAndOverride()
+    {
+        Assert.Equal(1f, Assert.IsAssignableFrom<IPackageDataIntGetter>(Slot(Pkg(TestBuild.Ok(ActivateSpec()), "DoActivate"), 2)).Data);
+        Assert.Equal(3f, Assert.IsAssignableFrom<IPackageDataIntGetter>(Slot(Pkg(TestBuild.Ok(ActivateSpec(num: 3u)), "DoActivate"), 2)).Data);
+    }
+
+    // The activated in-spec ref is forced Persistent (a deferred SingleRef anchor must survive save/load).
+    [Fact]
+    public void Activate_TargetRef_ForcedPersistent()
+    {
+        var r = TestBuild.Ok(ActivateSpec());
+        var cell = r.Mod.Cells.SelectMany(b => b.SubBlocks).SelectMany(b => b.Cells).Single(c => c.EditorID == "MF_Cell");
+        Assert.Contains(cell.Persistent, p => p.EditorID == "MF_ActivateLever");
+    }
+
+    // --- Eat template (Skyrim.esm:0x019714): location-based "go eat" sandbox variant ---
+    private static ModSpec EatSpecMod(EatSpec? eat = null) => new()
+    {
+        Packages =
+        {
+            new PackageSpec { EditorId = "GoEat", Template = EatTemplate, Eat = eat ?? new EatSpec() },
+        },
+        Npcs = { new NpcSpec { EditorId = "Npc", Name = "Npc", Packages = { "GoEat" } } },
+    };
+
+    // Slot 0 = Eat Location; with no `location` ref it anchors NearSelf at the default radius 500.
+    [Fact]
+    public void Eat_Location_IsNearSelf_AtDefaultRadius()
+    {
+        var loc = Assert.IsAssignableFrom<IPackageDataLocationGetter>(Slot(Pkg(TestBuild.Ok(EatSpecMod()), "GoEat"), 0));
+        var fb = Assert.IsAssignableFrom<ILocationFallbackGetter>(loc.Location.Target);
+        Assert.Equal(LocationTargetRadius.LocationType.NearSelf, fb.Type);
+        Assert.Equal(500u, loc.Location.Radius);
+    }
+
+    // Fixed scaffolding: slot 1 Food Criteria = Creatures, slot 5 Chair Target = SelfActorEffects (decoded values).
+    [Fact]
+    public void Eat_FixedScaffolding_IsEmitted()
+    {
+        var p = Pkg(TestBuild.Ok(EatSpecMod()), "GoEat");
+        Assert.Equal(TargetObjectType.Creatures,
+            Assert.IsAssignableFrom<IPackageTargetObjectTypeGetter>(Assert.IsAssignableFrom<IPackageDataTargetGetter>(Slot(p, 1)).Target).Type);
+        Assert.Equal(TargetObjectType.SelfActorEffects,
+            Assert.IsAssignableFrom<IPackageTargetObjectTypeGetter>(Assert.IsAssignableFrom<IPackageDataTargetGetter>(Slot(p, 5)).Target).Type);
+    }
+
+    // Named bools default (AllowSitting=true slot 29, AllowWandering=true slot 30) and honour overrides.
+    [Fact]
+    public void Eat_NamedBools_DefaultAndOverride()
+    {
+        var def = Pkg(TestBuild.Ok(EatSpecMod()), "GoEat");
+        Assert.True(Assert.IsAssignableFrom<IPackageDataBoolGetter>(Slot(def, 29)).Data);   // AllowSitting default true
+        Assert.True(Assert.IsAssignableFrom<IPackageDataBoolGetter>(Slot(def, 30)).Data);   // AllowWandering default true
+
+        var over = Pkg(TestBuild.Ok(EatSpecMod(new EatSpec { AllowSitting = false, MinWanderDistance = 99f, NumFoodItems = 2u })), "GoEat");
+        Assert.False(Assert.IsAssignableFrom<IPackageDataBoolGetter>(Slot(over, 29)).Data);  // AllowSitting:false
+        Assert.Equal(99f, Assert.IsAssignableFrom<IPackageDataFloatGetter>(Slot(over, 35)).Data);  // MinWanderDistance
+        Assert.Equal(2f, Assert.IsAssignableFrom<IPackageDataIntGetter>(Slot(over, 10)).Data);     // NumFoodItems
     }
 
     // An unsupported procedure template emits a warning (and no Data overrides), not a hard failure.

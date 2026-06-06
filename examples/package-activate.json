@@ -1,0 +1,62 @@
+{
+  "pluginName": "ModForgeActivate.esp",
+  "esl": true,
+  "_": "An NPC walks to a lever and ACTIVATES it via the Activate procedure template (Skyrim.esm:0x019B2D). Slot 0 'Target' = PackageTargetSpecificReference to the placed lever ref (deferred-wired like Patrol/Follow slot 0, so the in-spec placement editorId resolves after placements exist; the engine forces that ref Persistent so the anchor survives save/load). Slot 2 'Number to Activate' = 1 (default). The lever base is the vanilla SimpleLever activator (Skyrim.esm:0x071269) — a verified vanilla NIF. Placed in the Sleeping Giant Inn at the It.16b-confirmed walkable spawn; `coc RiverwoodSleepingGiantInn`, wait ~30-90s cold-start, and the NPC should path to the lever and pull it.",
+
+  "cells": [],
+
+  "npcs": [
+    {
+      "editorId": "MF_ActivateNpc",
+      "name": "ModForge Lever Puller",
+      "race": "Skyrim.esm:0x013746",
+      "class": "Skyrim.esm:0x01326B",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+      "unique": true,
+      "level": 5,
+      "autoCalcStats": true,
+      "aggression": "Unaggressive",
+      "confidence": "Average",
+      "assistance": "HelpsFriendsAndAllies",
+      "energyLevel": 50,
+      "packages": [ "MF_PullLever" ]
+    }
+  ],
+
+  "packages": [
+    {
+      "editorId": "MF_PullLever",
+      "_": "Activate template. `target` points at the MF_Lever placement; numberToActivate defaults to 1. preferredSpeed Walk = an unhurried approach.",
+      "template": "Skyrim.esm:0x019B2D",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [
+        "HellosToPlayer", "AllowIdleChatter",
+        "ObserveCombatBehavior", "ReactionToPlayerActions"
+      ],
+      "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 0, "dayOfWeek": "Any" },
+      "activate": {
+        "target": "MF_Lever",
+        "numberToActivate": 1
+      }
+    }
+  ],
+
+  "placements": [
+    {
+      "_": "The NPC, at the It.16b-confirmed walkable spawn (0,0,0) in the Sleeping Giant Inn.",
+      "base": "MF_ActivateNpc",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": 0, "y": 0, "z": 0 }
+    },
+    {
+      "_": "The lever (vanilla SimpleLever activator) on the proven walkable line toward RiverwoodInnCenterMarker. Auto-persistent because the Activate package's deferred SingleRef target points at it.",
+      "editorId": "MF_Lever",
+      "base": "Skyrim.esm:0x071269",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": -500, "y": 5, "z": 0 }
+    }
+  ]
+}

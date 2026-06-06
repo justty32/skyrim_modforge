@@ -56,6 +56,14 @@ public sealed class PackageSpec
     // sits/uses the furniture ref in `target`. The scene-performance "sit" beat — a scene Package
     // action points at a SitTarget package so an actor takes a seat mid-scene. `target` is REQUIRED.
     public SitTargetSpec SitTarget { get; set; } = new();
+    // Activate-template inputs (apply when `template` is Skyrim.esm:0x019B2D). `target` (REQUIRED) is the
+    // object the NPC walks to and activates — a lever/door/activator, an in-spec placement or vanilla ref.
+    // Levers, pulling a chain, opening a door on a schedule, hitting a button.
+    public ActivateSpec Activate { get; set; } = new();
+    // Eat-template inputs (apply when `template` is Skyrim.esm:0x019714). A location-based sandbox variant:
+    // the NPC goes to `location` (optional; empty ⇒ near itself), finds food + a chair (fixed engine search),
+    // sits and eats. "Go to the tavern and have a meal."
+    public EatSpec Eat { get; set; } = new();
 }
 public sealed class PackageScheduleSpec
 {
