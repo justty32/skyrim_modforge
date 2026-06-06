@@ -50,6 +50,8 @@ public sealed class ModSpec
     public List<ShoutSpec> Shouts { get; set; } = new();
     public List<EnchantmentSpec> Enchantments { get; set; } = new();
     public List<TextureSetSpec> TextureSets { get; set; } = new();
+    // Custom light sources (LIGT): colour/radius/flicker. Placed via placements[] by editorId.
+    public List<LightSpec> Lights { get; set; } = new();
     // Atmospheric records. A Weather (WTHR) is a sky; a Climate (CLMT) is a weather
     // cycle + sun/moon timing. See WeatherSpec / ClimateSpec in Spec.Weather.cs.
     public List<WeatherSpec> Weathers { get; set; } = new();

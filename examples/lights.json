@@ -1,0 +1,31 @@
+{
+  "pluginName": "MFLights.esp",
+  "esl": true,
+
+  "lights": [
+    {
+      "editorId": "MF_EerieGreenLight",
+      "name": "Eerie Glow",
+      "color": { "r": 40, "g": 210, "b": 70 },
+      "radius": 384,
+      "fadeValue": 1.2,
+      "flags": ["Dynamic", "Flicker", "PortalStrict"]
+    },
+    {
+      "editorId": "MF_WarmLamp",
+      "name": "Warm Lamp",
+      "color": { "r": 255, "g": 214, "b": 150 },
+      "radius": 512,
+      "fadeValue": 1.0,
+      "flags": ["Dynamic"]
+    }
+  ],
+
+  "placements": [
+    {
+      "base": "MF_EerieGreenLight",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": -300.0, "y": 180.0, "z": 120.0 }
+    }
+  ]
+}

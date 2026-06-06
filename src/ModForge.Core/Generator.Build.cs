@@ -54,6 +54,7 @@ public static partial class Generator
         ctx.BuildFurniture();                      // Furniture (FURN)
         ctx.BuildSounds();                         // Sound Descriptor (SNDR)
         ctx.BuildTextureSets();                    // TextureSet (TXST) retexture map paths
+        ctx.BuildLights();                         // Light (LIGT) — placeable by editorId in pass 2
         ctx.BuildLeveledItems();                   // LeveledItem (LVLI)
         ctx.BuildLeveledNpcs();                    // LeveledNpc (LVLN)
         ctx.BuildContainers();                     // Container (CONT)
