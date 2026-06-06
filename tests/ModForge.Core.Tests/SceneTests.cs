@@ -299,6 +299,64 @@ public class SceneTests
         Assert.True(((IScriptBoolPropertyGetter)entry.Properties.Single(p => p.Name == "BrawlOnEnd")).Data);
     }
 
+    // --- replay policy props on the controller --------------------------------------------------
+
+    // playOnce → a PlayOnce bool property on the controller.
+    [Fact]
+    public void AutoStart_PlayOnce_WiresBoolProp()
+    {
+        var spec = AutoStartScene();
+        spec.Scenes[0].AutoStart!.PlayOnce = true;
+        var r = TestBuild.Ok(spec);
+        var entry = Controller(HostQuest(r));
+        Assert.True(((IScriptBoolPropertyGetter)entry.Properties.Single(p => p.Name == "PlayOnce")).Data);
+    }
+
+    // playHour / tolerance → float properties (default PlayHour -1 = any time).
+    [Fact]
+    public void AutoStart_PlayHour_WiresFloatProps()
+    {
+        var spec = AutoStartScene();
+        spec.Scenes[0].AutoStart!.PlayHour = 12f;
+        spec.Scenes[0].AutoStart!.PlayHourTolerance = 2f;
+        var r = TestBuild.Ok(spec);
+        var entry = Controller(HostQuest(r));
+        float F(string n) => ((IScriptFloatPropertyGetter)entry.Properties.Single(p => p.Name == n)).Data;
+        Assert.Equal(12f, F("PlayHour"));
+        Assert.Equal(2f, F("PlayHourTolerance"));
+    }
+
+    // gateGlobal → a Gate object property bound to the in-spec GlobalVariable's FormKey.
+    [Fact]
+    public void AutoStart_GateGlobal_WiresGlobalObjectProp()
+    {
+        var spec = AutoStartScene();
+        spec.Globals.Add(new GlobalSpec { EditorId = "MF_BanterGate", Type = "short", Value = 0 });
+        spec.Scenes[0].AutoStart!.GateGlobal = "MF_BanterGate";
+        var r = TestBuild.Ok(spec);
+        var entry = Controller(HostQuest(r));
+        var gate = r.Mod.EnumerateMajorRecords<IGlobalGetter>().Single(g => g.EditorID == "MF_BanterGate").FormKey;
+        var prop = (IScriptObjectPropertyGetter)entry.Properties.Single(p => p.Name == "Gate");
+        Assert.Equal(gate, prop.Object.FormKey);
+    }
+
+    // No gateGlobal → no Gate object property (regression — default autoStart unchanged).
+    [Fact]
+    public void AutoStart_NoGateGlobal_NoGateProp()
+    {
+        var r = TestBuild.Ok(AutoStartScene());
+        var entry = Controller(HostQuest(r));
+        Assert.DoesNotContain(entry.Properties, p => p.Name == "Gate");
+    }
+
+    [Fact]
+    public void Validate_AutoStart_FlagsUnknownGateGlobal()
+    {
+        var spec = AutoStartScene();
+        spec.Scenes[0].AutoStart!.GateGlobal = "NoSuchGlobal";
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("gateGlobal") || (p.Contains("NoSuchGlobal")));
+    }
+
     [Fact]
     public void Validate_AutoStart_FlagsNonStartGameEnabledQuest()
     {

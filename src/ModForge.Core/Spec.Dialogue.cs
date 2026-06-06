@@ -181,6 +181,20 @@ public sealed class SceneAutoStartSpec
     // moment the scene's dialogue finishes — "they come to blows after the argument". For a NON-lethal
     // tavern brawl mark the actors `essential` so the loser drops to bleedout instead of dying.
     public bool BrawlOnEnd { get; set; }
+
+    // --- replay policy (controls WHEN/HOW OFTEN the presence gate re-fires; all AND with cooldown) ---
+    // PlayOnce: play at most once ever (the controller stops polling after the single play). Use for a
+    // one-shot encounter that should not loop.
+    public bool PlayOnce { get; set; }
+    // PlayHour: only play when the in-game hour is within ±PlayHourTolerance of this (0..24, circular).
+    // -1 (default) = any time. e.g. PlayHour=12 → only around noon. Independent of the real-time cooldown.
+    public float PlayHour { get; set; } = -1f;
+    public float PlayHourTolerance { get; set; } = 1f;   // ± hours window around PlayHour
+    // GateGlobal: a ref → a GlobalVariable (GLOB) used as a re-arm TOKEN. The scene only plays while the
+    // global == 0; the controller SetValue(1) right after playing. Some OTHER generated content
+    // (a dialogue result, quest fragment, alias script, another event) SetValue(0) to re-enable it.
+    // This is the general "play once until something resets it" mechanism (build the GLOB in globals[]).
+    public string GateGlobal { get; set; } = "";
 }
 // One participant in a scene: an alias INDEX (unique within the host quest, ≥0) plus the NPC that fills
 // it. The alias is emitted on the host quest and `UniqueActor`-bound to `npc` (a ref → an in-spec NPC or

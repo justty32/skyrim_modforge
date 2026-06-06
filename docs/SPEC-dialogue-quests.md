@@ -130,6 +130,33 @@ fight (`StartCombat` both ways) — they come to blows after the argument; mark 
 automatically. See `examples/scene-presence-banter.json`. **Out of scope (later):** dynamic "scan
 current teammates" fill (this slice uses named, `UniqueActor`-bound actors).
 
+##### Replay policy — controlling when/how often it re-fires
+By default the presence gate re-fires every time the player is co-present and `cooldownSeconds` has
+elapsed (an endless loop). Add any of these to `autoStart` to control replay (all **AND**-ed onto the
+cooldown):
+```jsonc
+"autoStart": {
+  "triggerDistance": 1024.0, "cooldownSeconds": 15.0, "pollSeconds": 4.0,
+  "playOnce": true,                 // play AT MOST ONCE ever; the controller stops polling afterwards
+  "playHour": 12.0,                 // only fire within +/- playHourTolerance of this in-game hour (0..24,
+  "playHourTolerance": 2.0,         //   circular); -1 (default) = any time. e.g. 12 +/- 2 = 10:00..14:00
+  "gateGlobal": "MF_BanterDone"     // a ref → a GLOB used as a re-arm TOKEN (see globals)
+}
+```
+- **`playOnce`** — the simplest "don't loop": after the single play the controller unregisters its poll
+  (save-bloat hygiene). Best for a one-shot encounter.
+- **`playHour` / `playHourTolerance`** — a time-of-day window (the controller reads the in-game hour).
+  Independent of the real-time cooldown — use for "only at noon", "only at night", etc.
+- **`gateGlobal`** — the general mechanism: the scene plays only while the global `== 0`, and the
+  controller `SetValue(1)`s it immediately after. It then stays off until some **OTHER** generated
+  content `SetValue(0)`s it (a dialogue result script, a quest stage fragment, an alias script, another
+  event). This is "play once **until something re-arms it**". Build the GLOB in
+  [`globals`](SPEC-items.md#globals-glob--shared-flags--counters--constants); resetting it to 0 is
+  authored separately (Papyrus). See `examples/scene-replay-policy.json`.
+
+> Changing `MFSceneBanterController.psc` requires recompiling its `.pex` (native
+> `~/tools/papyrus-compiler` with `MODFORGE_PAPYRUS_HEADERS` pointing at the source cache, or Wine+CK).
+
 #### actions — non-dialog performance beats (NPC 劇情演出, IDEAS §1b)
 A scene can do more than talk. Add an `actions[]` list and the scene becomes a little performance —
 *walk to a spot → wait → talk*. Each action is a vanilla non-Dialog `SceneAction` (decoded from

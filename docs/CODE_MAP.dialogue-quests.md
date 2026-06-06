@@ -13,6 +13,7 @@
 | `examples/scene_spec.json` | 雙 NPC 場景（SCEN）|
 | `examples/scene-presence-banter.json` | 在場偵測自動觸發 Scene（autoStart + MFSceneBanterController）|
 | `examples/scene-action-performance.json` | Scene 非對話 action（§1b 演出）：beat phase + Package action（NPC 走位到 marker，Travel PACK）+ Timer action（停頓）|
+| `examples/scene-replay-policy.json` | autoStart 重播策略：`playOnce`（只播一次）/ `playHour`/`playHourTolerance`（到某遊戲時辰才播）/ `gateGlobal`（GLOB re-arm token）|
 | `examples/quest_stages_spec.json` | quest stages + objectives + log entries |
 | `examples/word_wall_spec.json` | word wall 觸發教字 |
 | `examples/story-manager-kill.json` | KillActor SM 事件 |
@@ -47,7 +48,7 @@
 | `ConditionTests.cs` | CTDA condition 函數、comparator、ref 解析 |
 | `DialogueTests.cs` | dialogue topic / INFO / greeting 生成 |
 | `QuestStageTests.cs` | stage log text / objective fragment / VMAD |
-| `SceneTests.cs` | SCEN actor / phase / dialogue action；非對話 action（Package→Packages PACK ref / Timer→TimerSeconds）+ beat phase（無 lines→無 Dialog action/topic）+ LastActionIndex；autoStart → controller VMAD 掛接 + 清 BeginOnQuestStart + 調參 props + validate gate |
+| `SceneTests.cs` | SCEN actor / phase / dialogue action；非對話 action（Package→Packages PACK ref / Timer→TimerSeconds）+ beat phase（無 lines→無 Dialog action/topic）+ LastActionIndex；autoStart → controller VMAD 掛接 + 清 BeginOnQuestStart + 調參 props + **重播策略 props（playOnce/playHour/gateGlobal→GLOB object prop）** + validate gate |
 | `StoryManagerBuildTests.cs` | SM build pass 2（SMBN/SMQN 掛接、alias fill 接線、alias 腳本 VMAD 掛接、`startUpStage` QSDT flag、stage fragment + alias 腳本共存於單一 adapter、非 storyEvent quest 也建 forced/createObject alias + 腳本）|
 | `StoryManagerEventsTests.cs` | 事件登錄表欄位（FormKey / slot 對應）|
 | `StoryManagerEventsMoreTests.cs` | 擴充事件（ChangeLocation/CastMagic/AddItem/Assault/ScriptEvent）|
@@ -114,12 +115,12 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Dialogue.cs` | `SceneSpec`, `SceneActorSpec`, `SceneAutoStartSpec`（在場偵測調參）, **`SceneActionSpec`（§1b 非對話 beat：package 走位/timer 停頓 + phase 窗）** |
-| Build P1 | `Generator.Build.Scene.cs` | 建 SCEN：alias 綁定、參與者、phase + dialogue actions；**lineless phase → beat phase（無 topic/Dialog action）；`actions[]` → Package（Type=Package，PACK ref pass 2 解析）/ Timer（Type=Timer + TimerSeconds）action**；**autoStart → `AttachSceneController` 把 `MFSceneBanterController` 掛上 host quest 並清 BeginOnQuestStart** |
-| Wire P2 | `Generator.Build.Scene.cs` `WireScenes` | actor alias→UniqueActor；**Package action 的 PACK ref → `action.Packages`（sceneActionWires）** |
+| Spec | `Spec.Dialogue.cs` | `SceneSpec`, `SceneActorSpec`, `SceneAutoStartSpec`（在場偵測調參 + **重播策略 playOnce/playHour/playHourTolerance/gateGlobal**）, **`SceneActionSpec`（§1b 非對話 beat：package 走位/timer 停頓 + phase 窗）** |
+| Build P1 | `Generator.Build.Scene.cs` | 建 SCEN：alias 綁定、參與者、phase + dialogue actions；**lineless phase → beat phase（無 topic/Dialog action）；`actions[]` → Package（Type=Package，PACK ref pass 2 解析）/ Timer（Type=Timer + TimerSeconds）action**；**autoStart → `AttachSceneController` 把 `MFSceneBanterController` 掛上 host quest 並清 BeginOnQuestStart；重播策略 props（playOnce/playHour/tol 直填、gateGlobal object prop pass 2 解析）** |
+| Wire P2 | `Generator.Build.Scene.cs` `WireScenes` | actor alias→UniqueActor；**Package action 的 PACK ref → `action.Packages`（sceneActionWires）；controller GateGlobal → GLOB object prop（sceneGateWires）** |
 | Const | `Generator.QuestFragments.cs` | `SceneBanterController` scriptname 常數 |
-| Asset | `assets/papyrus/MFSceneBanterController.psc` | 可複用在場偵測 controller（extends Quest，鏈式 RegisterForSingleUpdate → Scene.Start()）；`brawlOnEnd` 偵測 scene 結束 → `StartBrawl()` 雙向 StartCombat；embed 進 CLI |
-| Validate | `Generator.Validate.Quests.cs` | actor alias ref、scene↔quest 連結；**beat phase 需有 action 覆蓋；每 action 需 exactly-one(package\|timerSeconds) + actor 是 scene actor + phase 窗在範圍內**；**autoStart 需 StartGameEnabled host quest + ≥2 actor + 正數調參** |
+| Asset | `assets/papyrus/MFSceneBanterController.psc` | 可複用在場偵測 controller（extends Quest，鏈式 RegisterForSingleUpdate → Scene.Start()）；`brawlOnEnd` 偵測 scene 結束 → `StartBrawl()` 雙向 StartCombat；**重播閘門 `playOnce`（播完停 poll）/ `playHour`+tol（CurrentHour/HourDistance 時辰窗）/ `Gate` GLOB（GetValue 擋、播完 SetValue(1)）**；改 .psc 要重編 .pex（native `~/tools/papyrus-compiler` + `MODFORGE_PAPYRUS_HEADERS` 指向 cache）；embed 進 CLI |
+| Validate | `Generator.Validate.Quests.cs` | actor alias ref、scene↔quest 連結；**beat phase 需有 action 覆蓋；每 action 需 exactly-one(package\|timerSeconds) + actor 是 scene actor + phase 窗在範圍內**；**autoStart 需 StartGameEnabled host quest + ≥2 actor + 正數調參；playHour 0..24、tol>0、gateGlobal CheckRef** |
 | Package | `src/ModForge.Cli/Package.cs` §5c | 任一 scene 有 autoStart → 出貨 `MFSceneBanterController.pex` 進 Scripts/ |
 | Diag | `Diagnostics.Scene.cs` | `scenediag` actors / phases / actions dump；**`scnscan` 列舉含非對話 action 的 scene（解 §1b 演出來源）** |
 

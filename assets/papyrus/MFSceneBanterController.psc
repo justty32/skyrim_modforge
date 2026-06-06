@@ -22,8 +22,20 @@ Bool Property BrawlOnEnd = false Auto
 { When the scene's dialogue finishes, make the two actors fight each other (StartCombat both ways).
   Mark the actors `essential` for a non-lethal tavern brawl. }
 
+; --- replay policy (all AND-ed onto the Cooldown) ---
+Bool Property PlayOnce = false Auto
+{ Play at most once, ever; the controller stops polling after the single play. }
+Float Property PlayHour = -1.0 Auto
+{ Only play within +/-PlayHourTolerance of this in-game hour (0..24, circular). -1 = any time. }
+Float Property PlayHourTolerance = 1.0 Auto
+{ +/- hours window around PlayHour. }
+GlobalVariable Property Gate Auto
+{ Re-arm token: only play while Gate == 0; SetValue(1) right after playing. Another event SetValue(0)
+  re-enables it. None = no gate. }
+
 float lastPlayed = 0.0
 bool scenePlaying = false
+bool played = false
 
 Event OnInit()
     RegisterForSingleUpdate(PollInterval)
@@ -31,6 +43,10 @@ EndEvent
 
 Event OnUpdate()
     Poll()
+    ; one-shot hygiene: once it has played and the scene has finished, stop polling for good
+    if PlayOnce && played && !scenePlaying
+        return
+    endif
     RegisterForSingleUpdate(PollInterval)   ; re-arm the next poll (no persistent OnUpdate loop)
 EndEvent
 
@@ -63,6 +79,16 @@ Function StartBrawl()
 EndFunction
 
 Function TryBanter()
+    ; --- replay policy gates ---
+    if PlayOnce && played
+        return
+    endif
+    if Gate != None && Gate.GetValue() != 0.0
+        return                                 ; gated off until another event SetValue(0)
+    endif
+    if PlayHour >= 0.0 && HourDistance(CurrentHour(), PlayHour) > PlayHourTolerance
+        return                                 ; outside the time-of-day window
+    endif
     float now = Utility.GetCurrentRealTime()
     if (now - lastPlayed) < Cooldown
         return
@@ -84,7 +110,30 @@ Function TryBanter()
     endif
     BanterScene.Start()
     lastPlayed = now
+    played = true
     scenePlaying = true        ; so Poll() can detect the end and fire BrawlOnEnd
+    if Gate != None
+        Gate.SetValue(1.0)     ; arm the token; another event resets it to 0 to re-enable
+    endif
+EndFunction
+
+; Current in-game hour 0..24 (GetCurrentGameTime is days as a float; fraction * 24 = hour).
+float Function CurrentHour()
+    float gt = Utility.GetCurrentGameTime()
+    int days = gt as int
+    return (gt - days) * 24.0
+EndFunction
+
+; Circular distance between two hours (0..12).
+float Function HourDistance(float h1, float h2)
+    float d = h1 - h2
+    if d < 0.0
+        d = -d
+    endif
+    if d > 12.0
+        d = 24.0 - d
+    endif
+    return d
 EndFunction
 
 Actor Function GetActor(int aliasIndex)

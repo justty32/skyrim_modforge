@@ -175,6 +175,16 @@ public static partial class Generator
             entry.Properties.Add(new ScriptFloatProperty { Name = "Cooldown",        Data = au.CooldownSeconds, Flags = ScriptProperty.Flag.Edited });
             entry.Properties.Add(new ScriptBoolProperty  { Name = "RequireLOS",      Data = au.RequireLineOfSight, Flags = ScriptProperty.Flag.Edited });
             entry.Properties.Add(new ScriptBoolProperty  { Name = "BrawlOnEnd",      Data = au.BrawlOnEnd, Flags = ScriptProperty.Flag.Edited });
+            // Replay policy (controller gates these AND-ed onto the cooldown).
+            entry.Properties.Add(new ScriptBoolProperty  { Name = "PlayOnce",          Data = au.PlayOnce, Flags = ScriptProperty.Flag.Edited });
+            entry.Properties.Add(new ScriptFloatProperty { Name = "PlayHour",          Data = au.PlayHour, Flags = ScriptProperty.Flag.Edited });
+            entry.Properties.Add(new ScriptFloatProperty { Name = "PlayHourTolerance", Data = au.PlayHourTolerance, Flags = ScriptProperty.Flag.Edited });
+            if (!string.IsNullOrWhiteSpace(au.GateGlobal))
+            {
+                var gateProp = new ScriptObjectProperty { Name = "Gate", Flags = ScriptProperty.Flag.Edited };
+                entry.Properties.Add(gateProp);
+                sceneGateWires.Add((quest.EditorID ?? "?", gateProp, au.GateGlobal));   // GLOB ref resolved in pass 2
+            }
             qad.Scripts.Add(entry);
             scriptsAttached++;
         }
@@ -198,6 +208,9 @@ public static partial class Generator
                 { Warn($"  ! scene '{sceneEd}' package action has no package ref — actor will do nothing"); continue; }
                 Resolve($"scene '{sceneEd}' action package", packageRef, fk => action.Packages.Add(fk.ToLink<IPackageGetter>()));
             }
+            // Scene controller GateGlobal (replay re-arm token) → the GlobalVariable object property.
+            foreach (var (hostEd, prop, globalRef) in sceneGateWires)
+                Resolve($"scene controller on quest '{hostEd}' gateGlobal", globalRef, fk => prop.Object.SetTo(fk));
         }
     }
 }

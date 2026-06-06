@@ -137,6 +137,13 @@ public static partial class Generator
                     if (au.PollSeconds <= 0) Problems.Add($"scene '{sc.EditorId}' autoStart pollSeconds must be > 0");
                     if (au.TriggerDistance <= 0) Problems.Add($"scene '{sc.EditorId}' autoStart triggerDistance must be > 0");
                     if (au.CooldownSeconds < 0) Problems.Add($"scene '{sc.EditorId}' autoStart cooldownSeconds must be >= 0");
+                    // Replay policy: a noon-style window must be a real hour; a gate must resolve to a GLOB.
+                    if (au.PlayHour >= 0 && au.PlayHour > 24)
+                        Problems.Add($"scene '{sc.EditorId}' autoStart playHour {au.PlayHour} must be 0..24 (or -1 for any time)");
+                    if (au.PlayHourTolerance <= 0)
+                        Problems.Add($"scene '{sc.EditorId}' autoStart playHourTolerance must be > 0");
+                    if (!string.IsNullOrWhiteSpace(au.GateGlobal))
+                        CheckRef(au.GateGlobal, $"scene '{sc.EditorId}' autoStart gateGlobal");
                 }
             }
 

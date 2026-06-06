@@ -1,0 +1,70 @@
+{
+  "pluginName": "ModForgeReplayPolicy.esp",
+  "esl": true,
+  "_": "Presence-gated SCENE with a REPLAY POLICY (controls when/how often the banter re-fires). Same shape as scene-presence-banter.json, but autoStart adds replay controls — here `playOnce: true` so the argument plays AT MOST ONCE ever (the controller stops polling after the single play; no more looping). Other knobs (all AND-ed onto cooldownSeconds): `playHour`/`playHourTolerance` = only fire within a +/- window of an in-game hour (e.g. 12 = around noon); `gateGlobal` = a GLOB re-arm token — the scene plays only while the global == 0 and the controller SetValue(1)s it after, so it stays off until some OTHER event SetValue(0)s it (build the global in `globals[]` and reset it from a dialogue result / quest fragment / alias script). Test: coc RiverwoodSleepingGiantInn (save+reload on old save), stand near both → they argue ONCE; leave + return → silence (playOnce). Swap to playHour/gateGlobal to see the other policies. package bundles the recompiled MFSceneBanterController.pex automatically.",
+
+  "classes": [
+    {
+      "editorId": "MF_RpClass", "name": "ModForge Townsfolk",
+      "healthWeight": 50, "magickaWeight": 25, "staminaWeight": 25,
+      "skillWeights": { "Speech": 75 }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_RpBorin", "name": "Borin", "greeting": "Mind your own, stranger.",
+      "race": "Skyrim.esm:0x013746", "class": "MF_RpClass", "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6", "crimeFaction": "Skyrim.esm:0x0267EA",
+      "unique": true, "essential": true, "level": 4, "autoCalcStats": true,
+      "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
+    },
+    {
+      "editorId": "MF_RpHilda", "name": "Hilda", "greeting": "Hmph.",
+      "race": "Skyrim.esm:0x013746", "class": "MF_RpClass", "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE7", "crimeFaction": "Skyrim.esm:0x0267EA",
+      "unique": true, "essential": true, "level": 4, "autoCalcStats": true,
+      "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
+    }
+  ],
+
+  "_globals": "Build a GLOB here if you use gateGlobal; not needed for playOnce.",
+  "globals": [
+    { "editorId": "MF_BanterDone", "type": "short", "value": 0, "_": "example re-arm token for the gateGlobal variant (unused by playOnce)" }
+  ],
+
+  "quests": [
+    {
+      "editorId": "MF_RpQuest", "name": "ModForge Replay Policy",
+      "startGameEnabled": true, "priority": 50, "objectives": []
+    }
+  ],
+
+  "scenes": [
+    {
+      "editorId": "MF_RpBanter",
+      "questEditorId": "MF_RpQuest",
+      "autoStart": {
+        "triggerDistance": 1024.0,
+        "cooldownSeconds": 15.0,
+        "pollSeconds": 4.0,
+        "playOnce": true,
+        "_alt": "instead of playOnce, try: \"playHour\": 12.0, \"playHourTolerance\": 2.0  OR  \"gateGlobal\": \"MF_BanterDone\""
+      },
+      "actors": [
+        { "aliasId": 0, "npc": "MF_RpBorin", "name": "Borin" },
+        { "aliasId": 1, "npc": "MF_RpHilda", "name": "Hilda" }
+      ],
+      "phases": [
+        { "speaker": 0, "emotion": "Anger",   "emotionValue": 60, "lines": [ "You still owe me for the ale, Hilda." ] },
+        { "speaker": 1, "emotion": "Disgust", "emotionValue": 70, "lines": [ "Owe you? That swill wasn't worth a clipped septim." ] },
+        { "speaker": 0, "emotion": "Anger",   "emotionValue": 80, "lines": [ "Bah. Once is enough — I'll not waste breath on you again." ] }
+      ]
+    }
+  ],
+
+  "placements": [
+    { "base": "MF_RpBorin", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 180, "z": 0 } },
+    { "base": "MF_RpHilda", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 280, "z": 0 }, "rotation": { "x": 0, "y": 0, "z": 180 } }
+  ]
+}
