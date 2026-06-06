@@ -1,0 +1,34 @@
+{
+  "pluginName": "ModForgeGlobals.esp",
+  "esl": true,
+  "_": "GlobalVariable (GLOB) demo. A GLOB is one named number shared across the whole game, persisted in the save and readable by CONDITIONS with zero Papyrus (GetGlobalValue), by Papyrus (GetValue/SetValue), and the console (set/show). Three subtypes: short | long (int) | float. Use as a FLAG / re-arm token (0/1), a COUNTER, a chance/weight, or a tuning CONSTANT. The plugin value is the INITIAL value only — an existing save keeps its own runtime value (new game picks up the new initial). This spec declares one of each type plus a constant, then proves the canonical use: a dialogue line gated on a flag global (the NPC only offers the line while MF_SeenIntro == 0). To FLIP the flag at runtime you'd SetValue it from a result script / quest fragment / alias script (not shown here — this slice is the GLOB record + reference).",
+
+  "globals": [
+    { "editorId": "MF_SeenIntro", "type": "short", "value": 0, "_": "a 0/1 flag" },
+    { "editorId": "MF_KillCount",  "type": "long",  "value": 0, "_": "a counter" },
+    { "editorId": "MF_FogDensity", "type": "float", "value": 0.35, "_": "a tunable weight/chance" },
+    { "editorId": "MF_DamageMult", "type": "float", "value": 1.5, "constant": true, "_": "read-only tuning constant" }
+  ],
+
+  "npcs": [
+    { "editorId": "MF_GlobGuide", "name": "Guide", "greeting": "Well met." }
+  ],
+
+  "quests": [
+    { "editorId": "MF_GlobQuest", "name": "ModForge Globals", "startGameEnabled": true, "priority": 50, "objectives": [] }
+  ],
+
+  "dialogue": [
+    {
+      "editorId": "MF_IntroLine",
+      "questEditorId": "MF_GlobQuest",
+      "speakerNpcEditorId": "MF_GlobGuide",
+      "prompt": "What is this place?",
+      "responses": [ "First time here? Let me show you around." ],
+      "_conditions": "only while the intro flag is still 0 — a GLOB read by a CTDA, zero Papyrus",
+      "conditions": [
+        { "function": "GetGlobalValue", "param": "MF_SeenIntro", "comparison": "==", "value": 0 }
+      ]
+    }
+  ]
+}

@@ -47,6 +47,7 @@ public static partial class Generator
         ctx.BuildSoulGems();                       // SoulGem (SLGM)
         ctx.BuildKeys();                           // Key (KEYM)
         ctx.BuildKeywords();                       // Keyword (KYWD)
+        ctx.BuildGlobals();                         // GlobalVariable (GLOB) — shared flags/counters/constants
         ctx.BuildOutfits();                        // Outfit (OTFT) — contents wired in pass 2
         ctx.BuildStatics();                        // Static (STAT)
         ctx.BuildActivators();                     // Activator (ACTI)

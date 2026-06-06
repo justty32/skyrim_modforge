@@ -2,7 +2,7 @@
 
 ← [CODE_MAP.md](CODE_MAP.md)
 
-涵蓋：weapons、armor、books/misc、magic effects、spells、potions、enchantments、perks、shouts、ingredients、ammunition、scrolls、soul gems、keys、texture sets、long-tail records。
+涵蓋：weapons、armor、books/misc、magic effects、spells、potions、enchantments、perks、shouts、ingredients、ammunition、scrolls、soul gems、keys、texture sets、global variables、long-tail records。
 
 ## Examples
 
@@ -109,6 +109,21 @@
 | Build P1 | `Generator.Build.LongTail.cs` | 建上述所有小 record |
 | Build P2 | `Generator.Build.LongTail.Wire.cs` | keyword 陣列 + sound ref + alternate-texture ref 接線 |
 | Validate | `Generator.Validate.Items2.cs` | texture-path / model-path / sound-file sanity |
+
+---
+
+## Global Variables（GLOB）— 共享旗標 / 計數器 / 常數
+→ **說明文件**：[SPEC-items.md § globals](SPEC-items.md#globals-glob--shared-flags--counters--constants)
+
+全域共享的單一數字，存檔保存，**condition 零腳本可讀**（`GetGlobalValue`）。三子型：short / long(int) / float；`constant` 旗標 = 唯讀調參。當旗標 / re-arm token（與 quest stage 互補，見 [CODE_MAP.dialogue-quests.md § Story Manager / conditions]）。
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.Globals.cs` | `GlobalSpec`（editorId/type/value/constant）；`Spec.cs` 頂層 `globals` |
+| Build P1 | `Generator.Build.Globals.cs` | 建 GlobalShort/Int/Float（`AddNewShort/Int/Float`）+ 初值 + Constant major flag；在 BuildFormKeyTable 前，故 condition/region 可按 editorId 引用 |
+| Validate | `Generator.Validate.cs` | `ValidateGlobals`（type ∈ short\|long\|float）+ editorId 唯一 |
+| 範例 | `examples/globals.json` | 三型 + constant + dialogue 條件讀旗標 |
+| Tests | `GlobalTests.cs` | 三子型 + 初值 + constant flag + condition 引用 + validate |
 
 ---
 

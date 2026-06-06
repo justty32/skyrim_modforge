@@ -166,3 +166,34 @@ names); a wrong `name` silently swaps nothing.
 the headless toolchain cannot verify that a swap looks right in-game. Put your authored `.dds` files
 under `Data/Textures/<your path>/` in the packaged mod folder. See `examples/texture_set_spec.json`
 (with a placeholder `examples/textures/ModForge/rubble/` tree) and the cookbook recipe.
+
+### globals (GLOB) — shared flags / counters / constants
+A **GlobalVariable** is one named number shared across the **whole game**, persisted in the save. It's
+the simplest cross-cutting state primitive: readable by **conditions with zero Papyrus**
+(`GetGlobalValue`), by Papyrus (`GetValue`/`SetValue`), and the console (`set`/`show`). Use it as a
+**flag / re-arm token** (0/1 — set after one event, cleared by another to re-enable it), a **counter**,
+a chance/weight (regions, leveled lists), or a read-only **tuning constant**.
+```jsonc
+"globals": [
+  { "editorId": "MF_SeenIntro", "type": "short", "value": 0 },               // a 0/1 flag
+  { "editorId": "MF_KillCount",  "type": "long",  "value": 0 },               // a counter ("int" = alias for long)
+  { "editorId": "MF_FogDensity", "type": "float", "value": 0.35 },            // a tunable weight
+  { "editorId": "MF_DamageMult", "type": "float", "value": 1.5, "constant": true } // read-only tuning constant
+]
+```
+- **`type`**: `short` | `long` (int) | `float`. Skyrim stores every global as a float on disk; short/long
+  truncate to integer on read. Default `short`.
+- **`value`**: the **INITIAL** value. ⚠️ Once a save exists it keeps its own runtime value — changing the
+  plugin's value won't override an existing save (a new game picks up the new initial). Same "save已固化"
+  rule as `.seq`/dialogue.
+- **`constant`**: sets the GLOB Constant flag (read-only; can't be `SetValue`'d) — for tuning numbers.
+
+Reference a global by `editorId` anywhere a ref is taken — most usefully a condition's `param` with
+`function: "GetGlobalValue"` (see [conditions](SPEC-dialogue-quests.md#conditions--ctda-gates-on-a-dialogue-info-a-banter-info-or-a-package))
+or a region's `global`. **Complementary to quest stages:** a stage (`GetStage`) is quest-scoped progress;
+a GLOB is global, scriptless shared state. See `examples/globals.json`.
+
+**Honest limit (this slice):** ModForge builds the GLOB record + lets conditions/records reference it.
+**Flipping** a global at runtime (`SetValue`) is done from a Papyrus result script / quest fragment /
+alias script — those are authored/attached separately (the scene "replay policy" using a GLOB gate is a
+planned consumer, not yet built).

@@ -21,6 +21,7 @@ public static partial class Generator
         ctx.ValidateQuestsAndDialogue();
         ctx.ValidateWorld();
         ctx.ValidateStoryManager();
+        ctx.ValidateGlobals();
         ValidateWeather(spec, ctx.Problems, ctx.Ids, ctx.CheckRef);
         return ctx.Problems;
     }
@@ -100,7 +101,19 @@ public static partial class Generator
             foreach (var fn in spec.Furniture) Reg(fn.EditorId, "furniture");
             foreach (var sd in spec.Sounds) Reg(sd.EditorId, "sound");
             foreach (var pk in spec.Perks) Reg(pk.EditorId, "perk");
+            foreach (var g in spec.Globals) Reg(g.EditorId, "global");
             foreach (var pl in spec.Placements) if (!string.IsNullOrWhiteSpace(pl.EditorId)) Reg(pl.EditorId, "placement");
+        }
+
+        // GlobalVariable (GLOB): type must be one of the three Skyrim subtypes (short/long/int/float).
+        public void ValidateGlobals()
+        {
+            foreach (var g in spec.Globals)
+            {
+                var t = (g.Type ?? "").Trim().ToLowerInvariant();
+                if (t is not ("short" or "long" or "int" or "float"))
+                    Problems.Add($"global '{g.EditorId}': unknown type '{g.Type}' (use short | long | float)");
+            }
         }
 
         void Reg(string ed, string what, HashSet<string>? typed = null)
