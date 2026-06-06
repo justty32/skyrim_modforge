@@ -32,6 +32,7 @@
 | 檔案 | 對應功能 |
 |-----|---------|
 | `examples/lifelike_npc_spec.json` | 擬真 NPC（race + class + outfit + packages）|
+| `examples/npc-inventory.json` | NPC 庫存（攜帶武器/金幣/藥水；武器自動裝備、可被劫/loot）|
 | `examples/follower_hireable_spec.json` | 可招募隨從（hireable 模式）|
 | `examples/follower_paid_spec.json` | 付費隨從 |
 | `examples/follower_vanilla_spec.json` | vanilla 風格隨從 |
@@ -76,8 +77,8 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Actors.cs` | `NpcSpec`（race/class/faction/spells/combatStyle/outfit/packages/perks/**unique/essential/protected**…）|
-| Build P1 | `Generator.Build.Actors.cs` | 建 NPC record（level/class/faction/combat-style/spell/perk 組裝；unique/essential/protected → `NpcConfiguration.Flag`）|
+| Spec | `Spec.Actors.cs` | `NpcSpec`（race/class/faction/spells/combatStyle/outfit/packages/perks/**unique/essential/protected**/**items**…）, `NpcItemSpec`（item ref + count）|
+| Build P1 | `Generator.Build.Actors.cs` | 建 NPC record（level/class/faction/combat-style/spell/perk 組裝；unique/essential/protected → `NpcConfiguration.Flag`）；**inventory items 在 `WireNpcs` pass 2 填（forward-ref-safe，建 `ContainerEntry`/`ContainerItem`；武器自動裝備、死亡掉落）** |
 | Validate | `Generator.Validate.Npcs.cs` | faction/class/outfit/voice/race ref；package template/slot integrity |
 | Diag | `Diagnostics.Records.Npc.cs` | NPC class/race/faction/outfit/voice/combat-style/package/perk 詳細 dump |
 | Diag | `Diagnostics.Records.cs` | 跨類型 record 詳細欄位（含 NPC）|

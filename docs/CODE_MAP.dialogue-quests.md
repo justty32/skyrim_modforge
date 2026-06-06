@@ -16,6 +16,8 @@
 | `examples/scene-sit-performance.json` | Scene 演出第二切片：NPC 走到椅子並**坐下**（SitTarget PACK，走位+坐合一）+ Timer + brawlOnEnd（SitTarget 細節見 [CODE_MAP.npcs-packages.md § AI Packages](CODE_MAP.npcs-packages.md#ai-packagespack)）|
 | `examples/scene-headtrack.json` | Scene 每-phase headtrack/facing：說話者 gaze 指向另一 actor／玩家／無人（`ScenePhaseSpec.HeadtrackActor`/`HeadtrackPlayer`/`FaceTarget`）|
 | `examples/showcase-multi.json` | 多功能 showcase（一包一次測）：自訂 Light + headtrackPlayer + SitTarget beat + autoStart/brawl |
+| `examples/scene-conditions.json` | Scene 條件閘：scene-level + per-phase start/completion CTDA（GetGlobalValue 等，refs by editorId）|
+| `examples/showcase-multi2.json` | 多功能 showcase #2：firebolt PROJ/EXPL（spell tome 學）+ NPC 庫存武器 + scene 條件閘（GLOB gate）|
 | `examples/scene-replay-policy.json` | autoStart 重播策略：`playOnce`（只播一次）/ `playHour`/`playHourTolerance`（到某遊戲時辰才播）/ `gateGlobal`（GLOB re-arm token）|
 | `examples/quest_stages_spec.json` | quest stages + objectives + log entries |
 | `examples/word_wall_spec.json` | word wall 觸發教字 |
@@ -118,9 +120,9 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Dialogue.cs` | `SceneSpec`, `SceneActorSpec`, `SceneAutoStartSpec`（在場偵測調參 + **重播策略 playOnce/playHour/playHourTolerance/gateGlobal**）, **`SceneActionSpec`（§1b 非對話 beat：package 走位/timer 停頓 + phase 窗）**, **`ScenePhaseSpec`（含 `HeadtrackActor`/`HeadtrackPlayer`/`FaceTarget` per-phase gaze 控制）** |
+| Spec | `Spec.Dialogue.cs` | `SceneSpec`, `SceneActorSpec`, `SceneAutoStartSpec`（在場偵測調參 + **重播策略 playOnce/playHour/playHourTolerance/gateGlobal**）, **`SceneActionSpec`（§1b 非對話 beat：package 走位/timer 停頓 + phase 窗）**, **`ScenePhaseSpec`（含 `HeadtrackActor`/`HeadtrackPlayer`/`FaceTarget` per-phase gaze 控制 + `StartConditions`/`CompletionConditions` per-phase CTDA 閘）**, **`SceneSpec.Conditions`（scene-level CTDA：整個 scene 通過才啟動）** |
 | Build P1 | `Generator.Build.Scene.cs` | 建 SCEN：alias 綁定、參與者、phase + dialogue actions；**per-phase headtrack/facing（HeadtrackPlayer flag／HeadtrackActorID／FaceTarget；預設＝看另一 actor，行為不變）；lineless phase → beat phase（無 topic/Dialog action）；`actions[]` → Package（Type=Package，PACK ref pass 2 解析）/ Timer（Type=Timer + TimerSeconds）action**；**autoStart → `AttachSceneController` 把 `MFSceneBanterController` 掛上 host quest 並清 BeginOnQuestStart；重播策略 props（playOnce/playHour/tol 直填、gateGlobal object prop pass 2 解析）** |
-| Wire P2 | `Generator.Build.Scene.cs` `WireScenes` | actor alias→UniqueActor；**Package action 的 PACK ref → `action.Packages`（sceneActionWires）；controller GateGlobal → GLOB object prop（sceneGateWires）** |
+| Wire P2 | `Generator.Build.Scene.cs` `WireScenes` | actor alias→UniqueActor；**Package action 的 PACK ref → `action.Packages`（sceneActionWires）；controller GateGlobal → GLOB object prop（sceneGateWires）；scene-level + per-phase conditions via 共用 `BuildCondition`（sceneConditionWires，phaseMap 對齊 spec-phase→built ScenePhase）** |
 | Const | `Generator.QuestFragments.cs` | `SceneBanterController` scriptname 常數 |
 | Asset | `assets/papyrus/MFSceneBanterController.psc` | 可複用在場偵測 controller（extends Quest，鏈式 RegisterForSingleUpdate → Scene.Start()）；`brawlOnEnd` 偵測 scene 結束 → `StartBrawl()` 雙向 StartCombat；**重播閘門 `playOnce`（播完停 poll）/ `playHour`+tol（CurrentHour/HourDistance 時辰窗）/ `Gate` GLOB（GetValue 擋、播完 SetValue(1)）**；改 .psc 要重編 .pex（native `~/tools/papyrus-compiler` + `MODFORGE_PAPYRUS_HEADERS` 指向 cache）；embed 進 CLI |
 | Validate | `Generator.Validate.Quests.cs` | actor alias ref、scene↔quest 連結；**beat phase 需有 action 覆蓋；每 action 需 exactly-one(package\|timerSeconds) + actor 是 scene actor + phase 窗在範圍內**；**autoStart 需 StartGameEnabled host quest + ≥2 actor + 正數調參；playHour 0..24、tol>0、gateGlobal CheckRef** |

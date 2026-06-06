@@ -58,6 +58,34 @@ Keep `baseCost` low (vanilla restore/damage effects use ~0.5–3); the spell's m
 auto-calculated from `baseCost` × `magnitude`, so a large `baseCost` makes the spell absurdly
 expensive. Compare any effect to a vanilla one with `mgefdiag <Skyrim.esm> <0xFORMID>`.
 
+### projectiles (PROJ) & explosions (EXPL) — custom spell bolts & booms
+Give a custom destruction spell its OWN flying bolt and impact explosion (instead of reusing a vanilla
+one). The chain, built bottom-up: **EXPL** ← **PROJ** (references the EXPL) ← **MGEF** (`projectile` =
+the PROJ) ← **SPEL** (Aimed / FireAndForget).
+```jsonc
+"explosions": [
+  { "editorId": "MF_Boom", "name": "Forged Blast",
+    "model": "Effects\\FXEmptyExplosionArt.nif",   // a VERIFIED vanilla nif (wrong path = invisible)
+    "damage": 15, "force": 7, "radius": 256, "isRadius": 1280,
+    "sound": "Skyrim.esm:0x02518F",                // vanilla fire-impact sound
+    "imageSpaceModifier": "Skyrim.esm:0x0010FBE8", // vanilla fire-blast screen FX
+    "flags": [ "IgnoreLosCheck" ] } ],
+"projectiles": [
+  { "editorId": "MF_Bolt", "name": "Forged Bolt",
+    "type": "Missile",                             // Missile|Lobber|Beam|Flame|Cone|Barrier|Arrow
+    "speed": 2500, "gravity": 0, "range": 10000, "lifetime": 10, "impactForce": 1,
+    "flags": [ "Explosion" ],                      // trigger the explosion on impact
+    "model": "Magic\\FireBoltProjectile.nif",      // the REAL vanilla firebolt nif → visible bolt
+    "light": "Skyrim.esm:0x0001CBB3", "sound": "Skyrim.esm:0x0003C8FE",
+    "explosion": "MF_Boom" } ],                     // ref → the in-spec EXPL (built first)
+```
+Then point a MGEF at the bolt: `"projectile": "MF_Bolt"` on a custom `magicEffects` entry, and put that
+effect on an Aimed `spells` entry (see `examples/projectile-explosion.json` for the full castable chain).
+**Always verify nif/art paths** against Skyrim.esm (a wrong `model` = an invisible projectile, no error) —
+decode a vanilla PROJ/EXPL with Mutagen and copy its model/light/sound/imagespace. Explosions are built
+before projectiles, so a PROJ resolves its `explosion` by editorId. Both are normal base records;
+`ImpactDataSet`/`ObjectEffect` (AoE MGEF) are optional refs.
+
 ### enchantments (ENCH / Object Effect)
 An **Object Effect** bundles one or more MGEF-based `effects` (the SAME `{ magicEffect, magnitude,
 area, duration }` shape as a spell/potion effect) into a reusable enchantment that a **weapon** or

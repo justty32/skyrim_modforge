@@ -1,0 +1,121 @@
+{
+  "pluginName": "ModForgeShowcase2.esp",
+  "esl": true,
+  "_": "ONE-BUNDLE SHOWCASE #2 — the second parallel batch in a single coc. (1) PROJ+EXPL: a custom firebolt spell with its OWN flying bolt + fire boom; learn it in-game from a placed SPELL TOME, then cast it. (2) NPC INVENTORY: Borin carries a custom sword (he draws it in the brawl) + 100 gold (lootable). (3) SCENE CONDITIONS: the argue-scene is gated on a GLOB (MF_ShowGate) — it plays while the global == 0; `set MF_ShowGate to 1` in console and it stops firing. All vanilla art FormIDs verified against Skyrim.esm. Test: coc RiverwoodSleepingGiantInn (save+reload on an old save) -> grab + read the 'Tome: Forged Firebolt' on the counter to learn the spell, equip + cast it at a wall (custom bolt + boom). Stand near Borin & Hilda -> they argue + brawl (Borin wields the custom sword). Then `set MF_ShowGate to 1`, leave + return -> no more arguing (scene condition). Bundles MFSceneBanterController.pex automatically.",
+
+  "globals": [
+    { "editorId": "MF_ShowGate", "type": "short", "value": 0, "_": "scene-condition gate: scene plays while ==0; set to 1 to suppress" }
+  ],
+
+  "explosions": [
+    {
+      "editorId": "MF_ShowBoom", "name": "Forged Firebolt Blast",
+      "model": "Effects\\FXEmptyExplosionArt.nif",
+      "damage": 15, "force": 7, "radius": 256, "isRadius": 1280,
+      "sound": "Skyrim.esm:0x02518F", "imageSpaceModifier": "Skyrim.esm:0x0010FBE8",
+      "flags": [ "IgnoreLosCheck" ]
+    }
+  ],
+  "projectiles": [
+    {
+      "editorId": "MF_ShowBolt", "name": "Forged Firebolt",
+      "type": "Missile", "speed": 2500, "gravity": 0, "range": 10000, "lifetime": 10, "impactForce": 1,
+      "flags": [ "Explosion" ],
+      "model": "Magic\\FireBoltProjectile.nif",
+      "light": "Skyrim.esm:0x0001CBB3", "sound": "Skyrim.esm:0x0003C8FE",
+      "explosion": "MF_ShowBoom"
+    }
+  ],
+  "magicEffects": [
+    {
+      "editorId": "MF_ShowFireboltEffect", "name": "Forged Firebolt",
+      "description": "A forged firebolt that hurls a searing bolt at the target.",
+      "archetype": "ValueModifier", "actorValue": "Health", "magicSkill": "Destruction", "resistValue": "ResistFire",
+      "castType": "FireAndForget", "targetType": "Aimed", "baseCost": 3.3,
+      "flags": [ "Hostile", "Detrimental", "NoArea" ],
+      "projectile": "MF_ShowBolt", "castingArt": "Skyrim.esm:0x0001B211"
+    }
+  ],
+  "spells": [
+    {
+      "editorId": "MF_ShowFirebolt", "name": "Forged Firebolt",
+      "spellType": "Spell", "castType": "FireAndForget", "targetType": "Aimed",
+      "equipType": "Skyrim.esm:0x00013F44",
+      "effects": [ { "magicEffect": "MF_ShowFireboltEffect", "magnitude": 25, "area": 0, "duration": 0 } ]
+    }
+  ],
+
+  "books": [
+    {
+      "editorId": "MF_ShowTome", "name": "Tome: Forged Firebolt",
+      "template": "Skyrim.esm:0x0A26FD",
+      "teaches": { "kind": "spell", "spell": "MF_ShowFirebolt" }
+    }
+  ],
+
+  "weapons": [
+    { "editorId": "MF_ShowSword", "name": "Forged Blade", "template": "Skyrim.esm:0x012EB7" }
+  ],
+
+  "classes": [
+    {
+      "editorId": "MF_Show2Class", "name": "ModForge Townsfolk",
+      "healthWeight": 50, "magickaWeight": 25, "staminaWeight": 25, "skillWeights": { "OneHanded": 75 }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_Show2Borin", "name": "Borin", "greeting": "Mind your own, stranger.",
+      "race": "Skyrim.esm:0x013746", "class": "MF_Show2Class", "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6", "crimeFaction": "Skyrim.esm:0x0267EA",
+      "unique": true, "essential": true, "level": 6, "autoCalcStats": true,
+      "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50,
+      "items": [
+        { "item": "MF_ShowSword", "count": 1 },
+        { "item": "Skyrim.esm:0x00000F", "count": 100 }
+      ]
+    },
+    {
+      "editorId": "MF_Show2Hilda", "name": "Hilda", "greeting": "Hmph.",
+      "race": "Skyrim.esm:0x013746", "class": "MF_Show2Class", "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE7", "crimeFaction": "Skyrim.esm:0x0267EA",
+      "unique": true, "essential": true, "level": 6, "autoCalcStats": true,
+      "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
+    }
+  ],
+
+  "quests": [
+    { "editorId": "MF_Show2Quest", "name": "ModForge Showcase 2", "startGameEnabled": true, "priority": 50, "objectives": [] }
+  ],
+
+  "scenes": [
+    {
+      "editorId": "MF_Show2Scene",
+      "questEditorId": "MF_Show2Quest",
+      "_conditions": "the whole scene only STARTS while MF_ShowGate == 0 (set it to 1 in console to suppress).",
+      "conditions": [
+        { "function": "GetGlobalValue", "param": "MF_ShowGate", "comparison": "==", "value": 0 }
+      ],
+      "autoStart": {
+        "triggerDistance": 1500.0, "requireLineOfSight": false,
+        "cooldownSeconds": 25.0, "pollSeconds": 4.0, "brawlOnEnd": true
+      },
+      "actors": [
+        { "aliasId": 0, "npc": "MF_Show2Borin", "name": "Borin" },
+        { "aliasId": 1, "npc": "MF_Show2Hilda", "name": "Hilda" }
+      ],
+      "phases": [
+        { "speaker": 0, "emotion": "Anger",   "emotionValue": 60, "lines": [ "Draw your blade, Hilda — you've insulted me for the last time." ] },
+        { "speaker": 1, "emotion": "Disgust", "emotionValue": 70, "lines": [ "Put that forged toy away before you hurt yourself." ] },
+        { "speaker": 0, "emotion": "Anger",   "emotionValue": 85, "lines": [ "That does it!" ] }
+      ]
+    }
+  ],
+
+  "placements": [
+    { "base": "MF_Show2Borin", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 180, "z": 0 } },
+    { "base": "MF_Show2Hilda", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -450, "y": 120, "z": 0 }, "rotation": { "x": 0, "y": 0, "z": 180 } },
+    { "base": "MF_ShowTome", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -650, "y": 100, "z": 95 } }
+  ]
+}

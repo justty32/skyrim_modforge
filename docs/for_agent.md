@@ -27,7 +27,9 @@ Both paths produce the same plugins and share the same field reference and limit
 ModForge writes **structurally valid** records. That is NOT the same as **in-game functional**:
 
 - **NPCs can now be functional actors** — set `race` + `class` (+ `outfit`) via vanilla refs
-  and the NPC behaves like a real actor.
+  and the NPC behaves like a real actor. Give an NPC carried gear with `items` (a list of
+  `{ item: <ref>, count: N }` — vanilla or in-spec weapon/armor/potion/gold); a weapon they carry is
+  auto-equipped (so it's how you arm an NPC), and the items drop as loot on death.
 - **Placement works for interior cells AND the open world (exterior):** `placements` put an
   NPC/object into (a) a new in-spec interior cell (`cell` = its editorId; reach with
   `coc <editorId>`), (b) a **vanilla interior cell** (`cell` = `"Skyrim.esm:0xFORMID"`, e.g.

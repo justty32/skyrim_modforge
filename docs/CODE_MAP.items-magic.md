@@ -18,6 +18,8 @@
 | `examples/custom_asset_spec.json` | 外部網格 / 貼圖 / 音效打包 |
 | `examples/assets/customasset/` | 配套示範資產（.nif / .dds / .wav）|
 | `examples/textures/` | 貼圖集示範資產（.dds）|
+| `examples/projectile-explosion.json` | 自訂法術飛行彈 + 爆炸（PROJ/EXPL，完整可施法 firebolt 鏈）|
+| `examples/showcase-multi2.json` | 多功能 showcase #2（firebolt PROJ/EXPL + NPC 庫存武器 + scene 條件閘）|
 
 ---
 
@@ -25,6 +27,7 @@
 
 | 測試檔案 | 涵蓋 |
 |---------|-----|
+| `MagicFxTests.cs` | Projectile + Explosion build（scalar + ref 解析 + enum/flag + validate）|
 | `EnchantmentTests.cs` | ENCH scalar fields + effect ref 接線 |
 | `ExternalAssetTests.cs` | external asset 打包（Meshes/Textures/Sounds 複製）|
 | `PerkTests.cs` | Perk trunk + entry-point modifier + ability-spell grant |
@@ -60,6 +63,20 @@
 | Validate | `Generator.Validate.Helpers.cs` | `CheckEffects`（共用）|
 | Diag | `Diagnostics.Records.cs` | Spell / MagicEffect 欄位 dump |
 | Diag | `Diagnostics.SpellTomes.cs` | spell ref + teaching mechanics |
+
+---
+
+## Projectiles / Explosions（PROJ / EXPL）— 法術視覺：飛行彈 + 爆炸
+→ **說明文件**：[SPEC-magic.md § projectiles & explosions](SPEC-magic.md#projectiles-proj--explosions-expl--custom-spell-bolts--booms)
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.MagicFx.cs` | `ProjectileSpec`（type/speed/gravity/range/flags/model/light/sound/explosion…）, `ExplosionSpec`（damage/force/radius/light/sound/impactDataSet/imageSpaceModifier/objectEffect…）|
+| Build P1 | `Generator.Build.Explosions.cs` | 建 EXPL scalar fields（Projectiles 之前建，故 PROJ 可按 editorId 引用 EXPL）|
+| Build P1 | `Generator.Build.Projectiles.cs` | 建 PROJ scalar fields；pass-2 `WireMagicFxRefs` 解析 light/sound/explosion/objectEffect/imageSpaceModifier FormLink |
+| Validate | `Generator.Validate.MagicFx.cs` | enum/flag 合法、radius/speed 正數、ref 完整、editorId 唯一 |
+
+法術飛行彈鏈：自訂 EXPL ← PROJ（flag Explosion，explosion=EXPL）← MGEF（projectile=PROJ）← SPEL（Aimed）。MGEF 的 `projectile`/`explosion` ref 欄位沿用既有（無需改 MGEF builder）。`Tests/MagicFxTests.cs`。
 
 ---
 

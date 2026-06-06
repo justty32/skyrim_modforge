@@ -98,6 +98,11 @@ From this one entry the build emits the **whole vanilla chain** (mirrors `scened
     at; `-1` = look at no one; default = the other actor), `headtrackPlayer: true` (turn to face the
     PLAYER — mutually exclusive with a non-default `headtrackActor`), and `faceTarget` (default true).
     Use it for a beat where an NPC turns to address you directly. Omit all three = unchanged behaviour.
+  - **conditions** (optional CTDA gates, shared `ConditionSpec`, wired in pass 2): scene-level
+    `conditions` (the whole scene only STARTS if all pass — e.g. gate an autoStart banter on a GLOB:
+    `{function:"GetGlobalValue", param:"MyFlag", comparison:"==", value:0}`), and per-phase
+    `startConditions` (the phase only plays if all pass) / `completionConditions` (the phase ends once
+    all pass). A scene with no conditions is byte-identical to before. See `examples/scene-conditions.json`.
 - one **Scene-subtype DialogTopic** (Category=Scene, SNAM=`SCEN`) + **INFO** per phase, carrying the
   spoken `lines` + `emotion`.
 
