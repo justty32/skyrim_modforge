@@ -29,7 +29,11 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
 - **NPCs can now be functional actors** — set `race` + `class` (+ `outfit`) via vanilla refs
   and the NPC behaves like a real actor. Give an NPC carried gear with `items` (a list of
   `{ item: <ref>, count: N }` — vanilla or in-spec weapon/armor/potion/gold); a weapon they carry is
-  auto-equipped (so it's how you arm an NPC), and the items drop as loot on death.
+  auto-equipped (so it's how you arm an NPC — give it real `damage`, or template a vanilla weapon and
+  the clone's damage carries through, else a 0-damage weapon is rated below fists and never drawn), and
+  the items drop as loot **on death**. Note: an `essential` NPC never dies, so their gear can't be
+  looted (and a *living* NPC's worn/equipped items only show via pickpocket, needing perks to take) —
+  use `protected` if you want the player to be able to kill and loot them.
 - **Placement works for interior cells AND the open world (exterior):** `placements` put an
   NPC/object into (a) a new in-spec interior cell (`cell` = its editorId; reach with
   `coc <editorId>`), (b) a **vanilla interior cell** (`cell` = `"Skyrim.esm:0xFORMID"`, e.g.
