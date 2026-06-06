@@ -152,6 +152,23 @@ internal static partial class Program
             }
         }
 
+        // 5c) Ship the reusable presence-gated Scene controller .pex whenever a scene uses `autoStart`.
+        //     ModForge attaches it (extends Quest) to the host quest and wires its properties; one
+        //     prebuilt .pex (embedded in this CLI) serves every generated mod.
+        if (spec.Scenes.Any(sc => sc.AutoStart is not null))
+        {
+            Directory.CreateDirectory(scriptsDir);
+            using var rs = typeof(Program).Assembly.GetManifestResourceStream("MFSceneBanterController.pex");
+            if (rs is null)
+                Console.Error.WriteLine("  ! Scene controller .pex missing from build — autoStart scenes won't fire");
+            else
+            {
+                using var fs = File.Create(Path.Combine(scriptsDir, "MFSceneBanterController.pex"));
+                rs.CopyTo(fs);
+                Console.WriteLine("  + bundled MFSceneBanterController.pex (presence-gated Scene controller)");
+            }
+        }
+
         // 6) External-resource bundling — copy spec's (or --assets) Meshes/Textures/Sounds/….
         var assetsSrc = !string.IsNullOrWhiteSpace(assetsOverride) ? assetsOverride
                       : !string.IsNullOrWhiteSpace(spec.Assets)

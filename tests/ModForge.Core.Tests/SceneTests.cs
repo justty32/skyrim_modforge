@@ -129,6 +129,76 @@ public class SceneTests
         Assert.Contains("A: bye.", lines);
     }
 
+    // --- autoStart: presence-gated repeating Scene ---------------------------------------------
+
+    private static ModSpec AutoStartScene()
+    {
+        var spec = TwoActorScene();
+        spec.Scenes[0].AutoStart = new SceneAutoStartSpec
+        {
+            TriggerDistance = 1024f, RequireLineOfSight = true,
+            CooldownSeconds = 30f, PollSeconds = 4f,
+        };
+        return spec;
+    }
+
+    private static IScriptEntryGetter Controller(IQuestGetter q) =>
+        ((IQuestAdapterGetter)q.VirtualMachineAdapter!).Scripts
+            .Single(e => e.Name == "MFSceneBanterController");
+
+    // autoStart present → the Scene no longer auto-plays on quest start (the controller starts it).
+    [Fact]
+    public void AutoStart_ClearsBeginOnQuestStart()
+    {
+        var r = TestBuild.Ok(AutoStartScene());
+        Assert.False(TheScene(r).Flags?.HasFlag(Scene.Flag.BeginOnQuestStart) == true);
+    }
+
+    // autoStart present → the reusable controller script is attached to the host quest, with the
+    // Scene bound as an object property and the two actor alias indices as int properties.
+    [Fact]
+    public void AutoStart_AttachesController_WithSceneAndAliasProps()
+    {
+        var r = TestBuild.Ok(AutoStartScene());
+        var entry = Controller(HostQuest(r));
+        var sceneFk = TheScene(r).FormKey;
+        var sceneProp = (IScriptObjectPropertyGetter)entry.Properties.Single(p => p.Name == "BanterScene");
+        Assert.Equal(sceneFk, sceneProp.Object.FormKey);
+        Assert.Equal(0, ((IScriptIntPropertyGetter)entry.Properties.Single(p => p.Name == "ActorAliasA")).Data);
+        Assert.Equal(1, ((IScriptIntPropertyGetter)entry.Properties.Single(p => p.Name == "ActorAliasB")).Data);
+    }
+
+    // autoStart config values flow onto the controller's float/bool properties.
+    [Fact]
+    public void AutoStart_WiresConfigProps()
+    {
+        var r = TestBuild.Ok(AutoStartScene());
+        var entry = Controller(HostQuest(r));
+        float F(string n) => ((IScriptFloatPropertyGetter)entry.Properties.Single(p => p.Name == n)).Data;
+        Assert.Equal(1024f, F("TriggerDistance"));
+        Assert.Equal(4f, F("PollInterval"));
+        Assert.Equal(30f, F("Cooldown"));
+        Assert.True(((IScriptBoolPropertyGetter)entry.Properties.Single(p => p.Name == "RequireLOS")).Data);
+    }
+
+    // No autoStart → no controller script, BeginOnQuestStart kept (regression).
+    [Fact]
+    public void NoAutoStart_NoController_KeepsBeginOnQuestStart()
+    {
+        var r = TestBuild.Ok(TwoActorScene());
+        Assert.True(TheScene(r).Flags?.HasFlag(Scene.Flag.BeginOnQuestStart) == true);
+        var adapter = HostQuest(r).VirtualMachineAdapter as IQuestAdapterGetter;
+        Assert.True(adapter is null || adapter.Scripts.All(e => e.Name != "MFSceneBanterController"));
+    }
+
+    [Fact]
+    public void Validate_AutoStart_FlagsNonStartGameEnabledQuest()
+    {
+        var spec = AutoStartScene();
+        spec.Quests[0].StartGameEnabled = false;
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("autoStart") && p.Contains("StartGameEnabled"));
+    }
+
     // --- validate guardrails -------------------------------------------------------------------
 
     [Fact]

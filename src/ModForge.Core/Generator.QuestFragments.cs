@@ -69,6 +69,11 @@ public static partial class Generator
     /// <summary>Property name on a generated TIF script that holds the owning quest reference.</summary>
     internal const string TifQuestPropertyName = "OwningQuest";
 
+    /// <summary>Scriptname of the reusable presence-gated Scene controller (extends Quest), attached to a
+    /// host quest when a scene declares autoStart. One prebuilt .pex (embedded in the CLI) serves every
+    /// generated mod; Package ships it whenever a scene uses autoStart.</summary>
+    internal const string SceneBanterController = "MFSceneBanterController";
+
     /// <summary>The Papyrus source for a dialogue line that advances a stage when picked (the TIF
     /// dialogue-fragment equivalent). Uses an explicit Quest property rather than GetOwningQuest()
     /// — GetOwningQuest() can return None at runtime for StartGameEnabled quests, silently skipping

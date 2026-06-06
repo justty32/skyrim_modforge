@@ -139,6 +139,22 @@ public sealed class SceneSpec
     // trigger the scene from a script/package instead.
     public bool BeginOnQuestStart { get; set; } = true;
     public bool StopQuestOnEnd { get; set; }
+    // Presence-gated AUTO-START (隨從在場偵測 + 互動 Scene). When set, the Scene does NOT auto-play on
+    // quest start; instead the reusable `MFSceneBanterController` Papyrus script is attached to the host
+    // quest and polls (chained RegisterForSingleUpdate): when the player is within range of BOTH actors
+    // (+ optional LOS, not in combat, neither dead) and the cooldown has elapsed, it calls Scene.Start().
+    // Followers stay near the player, so this fires repeatedly while travelling — the usable form of
+    // "follower banter". Host quest must be StartGameEnabled (so the controller's OnInit arms).
+    public SceneAutoStartSpec? AutoStart { get; set; }
+}
+// Tuning for a presence-gated Scene (see SceneSpec.AutoStart). All distances in game units, times in
+// REAL seconds (timescale-independent). Defaults match a comfortable travelling-banter cadence.
+public sealed class SceneAutoStartSpec
+{
+    public float TriggerDistance { get; set; } = 2048f;   // max distance from the player to EACH actor
+    public bool RequireLineOfSight { get; set; }           // also require the player HasLOS both actors
+    public float CooldownSeconds { get; set; } = 60f;      // min real seconds between plays
+    public float PollSeconds { get; set; } = 5f;           // RegisterForSingleUpdate interval
 }
 // One participant in a scene: an alias INDEX (unique within the host quest, ≥0) plus the NPC that fills
 // it. The alias is emitted on the host quest and `UniqueActor`-bound to `npc` (a ref → an in-spec NPC or

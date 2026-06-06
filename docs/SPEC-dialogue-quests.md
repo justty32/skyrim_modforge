@@ -105,6 +105,28 @@ From this one entry the build emits the **whole vanilla chain** (mirrors `scened
 > verified against the vanilla scene shape; **not yet in-game confirmed.** See `examples/scene_spec.json`
 > and `lifelike/cookbook-advanced.md`.
 
+#### autoStart — presence-gated repeating Scene (隨從在場偵測 + 互動 Scene)
+Instead of playing once on game-load (`beginOnQuestStart`), a scene can play itself **whenever the
+player is co-present with both actors**, re-firing on a cooldown — the usable form of "follower
+banter" (followers stay near the player, so it fires while travelling). Add an `autoStart` block:
+```jsonc
+{ "editorId": "MF_TravelBanter", "questEditorId": "MF_BanterQuest",   // host quest MUST be StartGameEnabled
+  "autoStart": {
+    "triggerDistance": 1024.0,        // max distance (units) from the player to EACH actor; default 2048
+    "requireLineOfSight": false,      // also require the player HasLOS both actors; default false
+    "cooldownSeconds": 15.0,          // min REAL seconds between plays (timescale-independent); default 60
+    "pollSeconds": 4.0 },             // RegisterForSingleUpdate poll interval; default 5
+  "actors": [ /* ≥2, UniqueActor-bound as above */ ],
+  "phases": [ /* … */ ] }
+```
+When `autoStart` is present the build **clears** the scene's `beginOnQuestStart` and attaches the
+reusable **`MFSceneBanterController`** (extends Quest) to the host quest, wiring it to this scene + the
+first two actor alias indices + the tuning. The controller polls (chained `RegisterForSingleUpdate`)
+and calls `Scene.Start()` when both actors are loaded, within range, not dead/in-combat, (optional LOS),
+and the cooldown elapsed. `package` ships `MFSceneBanterController.pex` into `Scripts/` automatically.
+See `examples/scene-presence-banter.json`. **Out of scope (later):** dynamic "scan current teammates"
+fill (this slice uses named, `UniqueActor`-bound actors); movement/animation/FURN scene actions.
+
 ### conditions — CTDA gates (on a `dialogue` INFO, a `banter` INFO, or a `package`)
 A condition is **static gate data**, so it lives in the spec (logic still belongs in Papyrus). Both
 `dialogue[].conditions` and `packages[].conditions` take the same shape:

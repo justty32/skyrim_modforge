@@ -49,7 +49,9 @@ public static partial class Generator
                 scene.EditorID = s.EditorId;
                 scene.Quest.SetTo(quest);
                 var flags = default(Scene.Flag);
-                if (s.BeginOnQuestStart) flags |= Scene.Flag.BeginOnQuestStart;
+                // autoStart drives the scene from a controller script, NOT quest-start — so suppress
+                // BeginOnQuestStart when a presence gate is declared (otherwise it'd also fire on load).
+                if (s.BeginOnQuestStart && s.AutoStart is null) flags |= Scene.Flag.BeginOnQuestStart;
                 if (s.StopQuestOnEnd) flags |= Scene.Flag.StopQuestOnEnd;
                 scene.Flags = flags;
                 foreach (var a in s.Actors)
@@ -113,8 +115,39 @@ public static partial class Generator
                     scenePhasesBuilt++;
                 }
                 scene.LastActionIndex = (uint)(actionIndex - 1);
+
+                // Presence-gated auto-start: attach the reusable controller to the host quest, wired to
+                // this scene + the first two actor alias indices + the tuning. The .pex is shipped by
+                // Package when any scene has autoStart (mirrors the Script-Event dispatcher).
+                if (s.AutoStart is { } au && s.Actors.Count >= 2)
+                    AttachSceneController(quest, scene, s.Actors[0].AliasId, s.Actors[1].AliasId, au);
+
                 scenesBuilt++;
             }
+        }
+
+        // Attach MFSceneBanterController (extends Quest) to the host quest with the scene/alias/tuning
+        // properties. Reuses an existing QuestAdapter (e.g. from an alias script) by appending to its
+        // Scripts list rather than clobbering it. Property names match the .psc's Auto properties.
+        private void AttachSceneController(Quest quest, Scene scene, int aliasA, int aliasB, SceneAutoStartSpec au)
+        {
+            if (quest.VirtualMachineAdapter is not QuestAdapter qad)
+            {
+                qad = new QuestAdapter { Version = 5, ObjectFormat = 2 };
+                quest.VirtualMachineAdapter = qad;
+            }
+            var entry = new ScriptEntry { Name = Generator.SceneBanterController, Flags = ScriptEntry.Flag.Local };
+            var sceneProp = new ScriptObjectProperty { Name = "BanterScene", Flags = ScriptProperty.Flag.Edited };
+            sceneProp.Object.SetTo(scene.FormKey);
+            entry.Properties.Add(sceneProp);
+            entry.Properties.Add(new ScriptIntProperty   { Name = "ActorAliasA",     Data = aliasA, Flags = ScriptProperty.Flag.Edited });
+            entry.Properties.Add(new ScriptIntProperty   { Name = "ActorAliasB",     Data = aliasB, Flags = ScriptProperty.Flag.Edited });
+            entry.Properties.Add(new ScriptFloatProperty { Name = "TriggerDistance", Data = au.TriggerDistance, Flags = ScriptProperty.Flag.Edited });
+            entry.Properties.Add(new ScriptFloatProperty { Name = "PollInterval",    Data = au.PollSeconds, Flags = ScriptProperty.Flag.Edited });
+            entry.Properties.Add(new ScriptFloatProperty { Name = "Cooldown",        Data = au.CooldownSeconds, Flags = ScriptProperty.Flag.Edited });
+            entry.Properties.Add(new ScriptBoolProperty  { Name = "RequireLOS",      Data = au.RequireLineOfSight, Flags = ScriptProperty.Flag.Edited });
+            qad.Scripts.Add(entry);
+            scriptsAttached++;
         }
 
         // --- pass 2: bind each scene actor's QuestAlias to the NPC that fills it (UniqueActor link) ---

@@ -36,4 +36,15 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <!-- The reusable presence-gated Scene controller .pex (extends Quest; started by scenes with
+       `autoStart`). Embedded so `package` can drop it into Scripts/ for any mod using a presence-gated
+       scene, regardless of CWD. Conditional: build succeeds without it (fresh clone / CI); `package`
+       on an autoStart spec will warn at runtime that the .pex is missing. Compile it with:
+         dotnet run - - compile assets/papyrus/MFSceneBanterController.psc assets/papyrus/ -->
+  <ItemGroup Condition="Exists('..\..\assets\papyrus\MFSceneBanterController.pex')">
+    <EmbeddedResource Include="..\..\assets\papyrus\MFSceneBanterController.pex">
+      <LogicalName>MFSceneBanterController.pex</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

@@ -11,6 +11,7 @@
 | `examples/dialogue_spec.json` | 單一 NPC 對話樹 |
 | `examples/dialogue_conversation_spec.json` | 多輪對話（conversation 模式）|
 | `examples/scene_spec.json` | 雙 NPC 場景（SCEN）|
+| `examples/scene-presence-banter.json` | 在場偵測自動觸發 Scene（autoStart + MFSceneBanterController）|
 | `examples/quest_stages_spec.json` | quest stages + objectives + log entries |
 | `examples/word_wall_spec.json` | word wall 觸發教字 |
 | `examples/story-manager-kill.json` | KillActor SM 事件 |
@@ -45,7 +46,7 @@
 | `ConditionTests.cs` | CTDA condition 函數、comparator、ref 解析 |
 | `DialogueTests.cs` | dialogue topic / INFO / greeting 生成 |
 | `QuestStageTests.cs` | stage log text / objective fragment / VMAD |
-| `SceneTests.cs` | SCEN actor / phase / dialogue action |
+| `SceneTests.cs` | SCEN actor / phase / dialogue action；autoStart → controller VMAD 掛接 + 清 BeginOnQuestStart + 調參 props + validate gate |
 | `StoryManagerBuildTests.cs` | SM build pass 2（SMBN/SMQN 掛接、alias fill 接線、alias 腳本 VMAD 掛接、`startUpStage` QSDT flag、stage fragment + alias 腳本共存於單一 adapter、非 storyEvent quest 也建 forced/createObject alias + 腳本）|
 | `StoryManagerEventsTests.cs` | 事件登錄表欄位（FormKey / slot 對應）|
 | `StoryManagerEventsMoreTests.cs` | 擴充事件（ChangeLocation/CastMagic/AddItem/Assault/ScriptEvent）|
@@ -112,9 +113,12 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Dialogue.cs` | `SceneSpec`, `SceneActorSpec` |
-| Build P1 | `Generator.Build.Scene.cs` | 建 SCEN：alias 綁定、參與者、phase + dialogue actions |
-| Validate | `Generator.Validate.Quests.cs` | actor alias ref、scene↔quest 連結 |
+| Spec | `Spec.Dialogue.cs` | `SceneSpec`, `SceneActorSpec`, `SceneAutoStartSpec`（在場偵測調參） |
+| Build P1 | `Generator.Build.Scene.cs` | 建 SCEN：alias 綁定、參與者、phase + dialogue actions；**autoStart → `AttachSceneController` 把 `MFSceneBanterController` 掛上 host quest 並清 BeginOnQuestStart** |
+| Const | `Generator.QuestFragments.cs` | `SceneBanterController` scriptname 常數 |
+| Asset | `assets/papyrus/MFSceneBanterController.psc` | 可複用在場偵測 controller（extends Quest，鏈式 RegisterForSingleUpdate → Scene.Start()）；embed 進 CLI |
+| Validate | `Generator.Validate.Quests.cs` | actor alias ref、scene↔quest 連結；**autoStart 需 StartGameEnabled host quest + ≥2 actor + 正數調參** |
+| Package | `src/ModForge.Cli/Package.cs` §5c | 任一 scene 有 autoStart → 出貨 `MFSceneBanterController.pex` 進 Scripts/ |
 | Diag | `Diagnostics.Scene.cs` | actors / phases / dialogue actions dump |
 
 ---

@@ -96,6 +96,19 @@ public static partial class Generator
                     if (!Enum.TryParse<Emotion>(ph.Emotion, true, out _))
                         Problems.Add($"scene '{sc.EditorId}' phase {i} invalid emotion '{ph.Emotion}' (Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise)");
                 }
+                if (sc.AutoStart is { } au)
+                {
+                    // The controller arms in OnInit, which fires when the host quest starts — so the
+                    // quest must run on its own (StartGameEnabled), and it needs ≥2 actors to play.
+                    var hostQuest = spec.Quests.FirstOrDefault(q => q.EditorId == sc.QuestEditorId);
+                    if (hostQuest is not null && !hostQuest.StartGameEnabled)
+                        Problems.Add($"scene '{sc.EditorId}' autoStart requires host quest '{sc.QuestEditorId}' to be StartGameEnabled");
+                    if (sc.Actors.Count < 2)
+                        Problems.Add($"scene '{sc.EditorId}' autoStart needs at least two actors");
+                    if (au.PollSeconds <= 0) Problems.Add($"scene '{sc.EditorId}' autoStart pollSeconds must be > 0");
+                    if (au.TriggerDistance <= 0) Problems.Add($"scene '{sc.EditorId}' autoStart triggerDistance must be > 0");
+                    if (au.CooldownSeconds < 0) Problems.Add($"scene '{sc.EditorId}' autoStart cooldownSeconds must be >= 0");
+                }
             }
 
             var validTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "int", "float", "bool", "string", "object" };

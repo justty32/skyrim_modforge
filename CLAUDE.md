@@ -11,8 +11,9 @@
 `assets/papyrus/MFStoryEventDispatch.pex` 被 `ModForge.Cli.csproj` embed 為 EmbeddedResource，但 `.pex` 在 `.gitignore` 裡不進 repo。需先編譯：
 ```
 dotnet run --project src/ModForge.Cli -- compile assets/papyrus/MFStoryEventDispatch.psc assets/papyrus/
+dotnet run --project src/ModForge.Cli -- compile assets/papyrus/MFSceneBanterController.psc assets/papyrus/
 ```
-（需要 Wine + CK PapyrusCompiler 環境。）`MFStoryEventDispatch.psc` 有任何改動時，同樣需要重跑此步驟並將新的 `.pex` 保留在本機（不 commit）。
+（需要 Wine + CK PapyrusCompiler 環境。）這兩個 `.psc`（dispatcher 與在場偵測 Scene controller）有任何改動時，同樣需要重跑對應步驟並將新的 `.pex` 保留在本機（不 commit）。兩個 `.pex` 都被 `ModForge.Cli.csproj` embed 為 EmbeddedResource（條件式：缺檔仍可 build，runtime 才 warn）。
 
 ## 程式碼慣例
 
@@ -136,5 +137,11 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 **alias 推廣到一般 quest（非 storyEvent）：✅ 實機驗證通過（2026-06-05）**——309 測試綠：
 - 抽出共用 `BuildQuestAliases(quest,qs,def?)`（storyEvent 與一般 quest 共用；fromEvent 僅 `def!=null`）+ `BuildStandaloneQuestAliases()`（Build.cs 在 BuildStoryManager 後、WireQuestStages 前；非 storyEvent quest 也建 forced/uniqueActor/createObject/findMatching + alias 腳本，跳 fromEvent）。validate 抽出 `ValidateQuestAlias`（兩路共用，def=null 時 fromEvent 報錯）。重構行為不變,既有 SM 測試全綠。
 - 一般 StartGameEnabled quest 的 alias 在「quest 啟動＝遊戲載入」時填。範例 `examples/quest-alias-standalone.json`：forced player→createObject 生箱於玩家→開箱→alias OnActivate `SetStage` 完成關閉 quest。zip `~/skyrim_mods/ModForgeStandaloneAlias.zip`。
+
+**Scene 在場偵測自動觸發（隨從在場偵測 + 互動 Scene，IDEAS 1a）：⏳ 結構驗證通過、待實機（2026-06-06）**——314 測試綠：
+- `SceneSpec.AutoStart`（新 `SceneAutoStartSpec`：triggerDistance/requireLineOfSight/cooldownSeconds/pollSeconds）。有此塊時 `Generator.Build.Scene.cs` 清掉 Scene 的 `BeginOnQuestStart`，並 `AttachSceneController` 把可複用 `MFSceneBanterController`（extends Quest）掛上 host quest，wire 進 scene(object) + 前兩個 actor alias 索引(int) + 調參(float/bool)。
+- controller `assets/papyrus/MFSceneBanterController.psc`：鏈式 `RegisterForSingleUpdate`（非常駐 OnUpdate，省存檔膨脹）→ 玩家與兩 actor 同場 + 範圍內 + 非死/戰鬥 +（選配 LOS）+ 冷卻過 → `Scene.Start()`。冷卻用 `GetCurrentRealTime()`（不受 timescale 影響）。`.pex` embed 進 CLI，Package §5c 遇 autoStart scene 自動出貨。
+- validate：autoStart 需 host quest `StartGameEnabled` + ≥2 actor + 正數調參。範例 `examples/scene-presence-banter.json`（Sleeping Giant Inn 擺兩 unique NPC，coc 站近 → 互鬥；離開冷卻後再觸發）。**這也是 base Scene record 的首次實機測試契機**（現有 Scene 支援一直是 structural-only）。zip `~/skyrim_mods/ModForgeSceneBanter.zip`。設計 `docs/superpowers/specs/2026-06-06-presence-gated-scene-design.md`。
+- 切片限定：actor 是具名 `UniqueActor`（非動態掃 teammate + ForceRefTo，留後續層）；無 move/animate/FURN scene action（IDEAS 1b）。
 
 **之後可做**：再多解事件（SkillIncrease/Jail/Bribe… `smtree Skyrim.esm` 列舉,但須用 conditions 才安全,見 [[dispatcher-magic-trigger]]）;NPC 劇情演出（Scene action types：走位/動畫/用物件，IDEAS 第 1b 節）——讓被啟動的 quest 做出可見演出。
