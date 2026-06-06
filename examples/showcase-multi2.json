@@ -1,7 +1,7 @@
 {
   "pluginName": "ModForgeShowcase2.esp",
   "esl": true,
-  "_": "ONE-BUNDLE SHOWCASE #2 — the second parallel batch in a single coc. (1) PROJ+EXPL: a custom firebolt spell with its OWN flying bolt + fire boom; learn it in-game from a placed SPELL TOME, then cast it. (2) NPC INVENTORY: Borin carries a custom sword (he draws it in the brawl) + 100 gold; the NPCs are `protected` (NOT essential) so the NPC-vs-NPC brawl is still non-lethal (only the PLAYER can land a killing blow) BUT you CAN kill Borin and loot the Forged Blade + his clothes (a living/essential NPC's worn gear isn't freely lootable — worn items need pickpocket perks and an essential NPC leaves no corpse). (3) GATE: the presence-triggered argue-scene is gated by the controller on a GLOB (autoStart.gateGlobal MF_ShowGate) — plays while ==0; `set MF_ShowGate to 1` suppresses it (scene-level `conditions` do NOT gate an autoStart scene — the controller force-starts it). All vanilla art FormIDs verified against Skyrim.esm. Test: coc RiverwoodSleepingGiantInn (save+reload on an old save) -> grab + read the 'Tome: Forged Firebolt' to learn the spell, cast it at a wall (custom bolt + boom). Stand near Borin & Hilda -> argue + brawl (Borin wields the custom sword); kill Borin to loot the Forged Blade. Then `set MF_ShowGate to 1`, leave + return -> no more arguing. Bundles MFSceneBanterController.pex automatically.",
+  "_": "ONE-BUNDLE SHOWCASE #2 — the second parallel batch in a single coc. (1) PROJ+EXPL: a custom firebolt spell with its OWN flying bolt + fire boom; learn it in-game from a placed SPELL TOME, then cast it. (2) NPC INVENTORY: Borin carries TWO Forged Blades — he EQUIPS one (draws it in the brawl) and keeps a SPARE you can PICKPOCKET with no perk — plus 100 gold (also pickpocketable). NPCs are `essential` (non-lethal brawl + a stray firebolt can't kill the demo NPC). NOTE: you can only steal the SPARE/unequipped items freely; his EQUIPPED sword and WORN outfit need the Misdirection / Perfect Touch pickpocket perks (vanilla rule). (3) GATE: the presence-triggered argue-scene is gated by the controller on a GLOB (autoStart.gateGlobal MF_ShowGate) — plays while ==0; `set MF_ShowGate to 1` suppresses it (scene-level `conditions` do NOT gate an autoStart scene — the controller force-starts it). All vanilla art FormIDs verified against Skyrim.esm. Test: coc RiverwoodSleepingGiantInn (save+reload on an old save) -> grab + read the 'Tome: Forged Firebolt' to learn the spell, cast it at a wall (custom bolt + boom). Stand near Borin & Hilda -> argue + brawl (Borin wields the custom sword); PICKPOCKET Borin to steal the spare Forged Blade + gold. Then `set MF_ShowGate to 1`, leave + return -> no more arguing. Bundles MFSceneBanterController.pex automatically.",
 
   "globals": [
     { "editorId": "MF_ShowGate", "type": "short", "value": 0, "_": "scene-condition gate: scene plays while ==0; set to 1 to suppress" }
@@ -69,10 +69,11 @@
       "editorId": "MF_Show2Borin", "name": "Borin", "greeting": "Mind your own, stranger.",
       "race": "Skyrim.esm:0x013746", "class": "MF_Show2Class", "outfit": "Skyrim.esm:0x09D5DF",
       "voiceType": "Skyrim.esm:0x013AE6", "crimeFaction": "Skyrim.esm:0x0267EA",
-      "unique": true, "protected": true, "level": 6, "autoCalcStats": true,
+      "unique": true, "essential": true, "level": 6, "autoCalcStats": true,
       "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50,
+      "_items": "count 2 on the sword = Borin EQUIPS one (draws it in the brawl) and keeps a SPARE unequipped — you can PICKPOCKET the spare with no perk (an equipped weapon would need the Misdirection perk). The 100 gold is freely pickpocketable too.",
       "items": [
-        { "item": "MF_ShowSword", "count": 1 },
+        { "item": "MF_ShowSword", "count": 2 },
         { "item": "Skyrim.esm:0x00000F", "count": 100 }
       ]
     },
@@ -80,7 +81,7 @@
       "editorId": "MF_Show2Hilda", "name": "Hilda", "greeting": "Hmph.",
       "race": "Skyrim.esm:0x013746", "class": "MF_Show2Class", "outfit": "Skyrim.esm:0x09D5DF",
       "voiceType": "Skyrim.esm:0x013AE7", "crimeFaction": "Skyrim.esm:0x0267EA",
-      "unique": true, "protected": true, "level": 6, "autoCalcStats": true,
+      "unique": true, "essential": true, "level": 6, "autoCalcStats": true,
       "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
     }
   ],
