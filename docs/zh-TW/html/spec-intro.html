@@ -100,19 +100,19 @@ NL / idea ──(AI agent: Claude Code)──▶ spec.json ──(validate)─�
 | `weapons` | `editorId`、`name`、`value`、`weight`、`damage`（int≥0）、`speed`（數字）、`reach`（數字）、`keywords`（*refs* 陣列）、`enchantment`（*ref* → ENCH）、`enchantmentAmount`（int — 武器的充能池；0 = 引擎自動計算）、`template`（vanilla WEAP ref — 複製模型/動畫/裝備；需要此項以避免裝備時 CRASH）、`model`（自訂世界網格 `.nif` 路徑 — 搭配 `template` 一起使用）、`pickUpSound`/`putDownSound`（SNDR *refs*） |
 | `npcs` | `editorId`、`name`、`factions`（*refs* 陣列）、`race`（*ref*）、`class`（*ref*）、`outfit`（*ref* → DefaultOutfit）、`level`（int）、`autoCalcStats`（bool — 根據等級 + 職業推算 H/M/S + 技能）、`packages`（*refs* → PACK 陣列；NPC 的 AI 套件清單，按順序評估）、`voiceType`（*ref* → VTYP）、`crimeFaction`（*ref* → FACT；城市市民身份，跨 cell 移動所需）、`unique`（bool — 單一角色，有助於引擎 AI 追蹤）、`combatStyle`（*ref* → CSTY；AI 的戰鬥方式）、`spells`（*refs* → SPEL 陣列；AI 的法術清單）、`perks`（*refs* → PERK 陣列；遊戲開始時作為被動能力/入口點 perk 授予角色）、`greeting`（字串 — Hello 台詞；當此 NPC 有自訂 `dialogue` 時，會自動生成一個 Hello info 使其可對話。空字串 ⇒ 使用預設台詞） |
 | `quests` | `editorId`、`name`、`startGameEnabled`（bool，預設 true）、`priority`（0–255）、`objectives`（`{ index (int), text, showStage?, completeStage? }` 陣列）、`stages`（`{ index (int), logEntry?, completeQuest?, failQuest?, conditions? }` 陣列）— 見 [SPEC-dialogue-quests](spec-dialogue-quests.html) |
-| `dialogue` | `editorId`、`questEditorId`、`speakerNpcEditorId`（可選）、`prompt`、`responses`（字串陣列）、`emotion`（可選）、`emotionValue`（0–100）。`setStage`（int）、`resultScript`/`resultScriptSource`/`resultProperties`（Papyrus fragment）、`goodbye`（bool）。 |
-| `banter` | `editorId`（可選）、`questEditorId`、`speakerNpcEditorId`、`responses`（字串陣列）、`emotion`/`emotionValue`、`conditions`（情境 CTDA 閘門）。 |
-| `scenes` | `editorId`、`questEditorId`（宿主任務）、`actors`（`{ aliasId, npc (*ref*), name }` 陣列）、`phases`（有序的 `{ speaker (aliasId), lines, emotion, emotionValue }` 陣列）、`beginOnQuestStart`（bool）、`stopQuestOnEnd`（bool）。 |
-| `spells` | `editorId`、`name`、`effects`（*effects* 陣列）、`spellType`、`castType`、`targetType`、`baseCost`（int）、`chargeTime`（數字）、`equipType`（EQUP *ref*）。**可施放類型省略時自動預設為 EitherHand `Skyrim.esm:0x00013F44`** |
-| `magicEffects` | `editorId`、`name`、`description`、`archetype`、`actorValue`、`magicSkill`、`resistValue`、`castType`、`targetType`、`baseCost`（數字）、`flags`（陣列）、`association`（*ref*）、`projectile`/`castingArt`/`hitEffectArt`/`explosion`（*refs*）、`sounds`（陣列） |
-| `enchantments` | `editorId`、`name`、`enchantType`（`weapon`\|`apparel`\|`staff`）、`castType`/`targetType`（可選）、`enchantmentCost`（int）、`chargeTime`（數字）、`effects`（陣列） |
+| `dialogue` | `editorId`、`questEditorId`、`speakerNpcEditorId`（可選）、`prompt`、`responses`（字串陣列）、`emotion`（可選 — `Neutral`\|`Anger`\|`Disgust`\|`Fear`\|`Sad`\|`Happy`\|`Surprise`）、`emotionValue`（0–100）。`setStage`（int — 選取此台詞時將任務推進到此階段；`package` 自動編譯 + VMAD 附加 TIF fragment 並自動加上 `GetStage < N` 條件使台詞不重複）。可選的**自訂 result fragment**（覆蓋自動 TIF）：`resultScript`（Scriptname，`Extends TopicInfo`，`Fragment_0`）、`resultScriptSource`（`.psc`）、`resultProperties`（綁定 props）、`goodbye`（bool — 之後關閉選單）。Build 串接完整鏈（Quest→DialogView→Branch→Topic→INFO + 一個 Hello）— 見 [SPEC-dialogue-quests](spec-dialogue-quests.html) |
+| `banter` | `editorId`（可選）、`questEditorId`、`speakerNpcEditorId`、`responses`（字串陣列 — 一條無提示的評論）、`emotion`/`emotionValue`、`conditions`（情境 CTDA 閘門）。主動（NPC 發起）的台詞；共享 (speaker, quest) 的條目合併為一個帶 Random INFO 的環境 Misc/`IDLE` topic。需要 speaker 啟用閒談（Sandbox/follow 套件）。見 [SPEC-dialogue-quests](spec-dialogue-quests.html) |
+| `scenes` | `editorId`、`questEditorId`（宿主任務）、`actors`（`{ aliasId (int), npc (*ref*), name }` 陣列）、`phases`（有序的 `{ speaker (aliasId), lines (字串陣列), emotion, emotionValue }` 陣列）、`beginOnQuestStart`（bool，預設 true）、`stopQuestOnEnd`（bool）。一個 **SCEN** — 兩個 NPC 互相對話。見 [SPEC-dialogue-quests](spec-dialogue-quests.html) |
+| `spells` | `editorId`、`name`、`effects`（*effects* 陣列）、`spellType`、`castType`、`targetType`、`baseCost`（int）、`chargeTime`（數字）、`equipType`（EQUP *ref*）。**可施放類型（Spell/Voice/Power/LesserPower）省略時自動預設為 EitherHand `Skyrim.esm:0x00013F44`** — 一個沒有 EQUP 的 Voice/shout 法術會被學會但**無法喊出**；只在需要覆蓋時設定 |
+| `magicEffects` | `editorId`、`name`、`description`、`archetype`、`actorValue`、`magicSkill`、`resistValue`、`castType`、`targetType`、`baseCost`（數字）、`flags`（陣列）、`association`（*ref*）、`projectile`/`castingArt`/`hitEffectArt`/`explosion`（*refs* — 可見的飛行彈 + 施法/撞擊 FX；一個 Aimed 法術/咆哮需要一個 `projectile`，否則會隱形/無聲地發射）、`sounds`（`{ type (預設 `Release`), sound (SNDR *ref*) }` 陣列 — `Release` 是施放出去/效果音；咆哮的口說*語音*是錄製的語音資產，無法在此設定）— 一個 `effect` 可指向的自訂 MGEF |
+| `enchantments` | `editorId`、`name`、`enchantType`（`weapon`\|`apparel`\|`staff`）、`castType`/`targetType`（可選覆蓋）、`enchantmentCost`（int — 每次施放充能成本 / 穿戴成本）、`chargeTime`（數字 — 法杖充能）、`effects`（*effects* 陣列）— 一個武器/盔甲 `enchantment` 欄位指向的物品效果（ENCH） |
 | `potions` | `editorId`、`name`、`value`、`weight`、`effects`（陣列） |
-| `armors` | `editorId`、`name`、`value`、`weight`、`armorRating`（數字）、`armorType`（`light`\|`heavy`\|`clothing`）、`slots`（陣列）、`keywords`（陣列）、`enchantment`（*ref*）、`template`（vanilla ARMO *ref* — **必須有，否則裝備隱形**）、`model`（自訂地面網格） |
-| `factions` | `editorId`、`name`、`vendor`（可選子物件 — 商人陣營） |
-| `classes` | `editorId`、`name`、`description`、`teaches`（Skill）、`maxTrainingLevel`、`healthWeight`/`magickaWeight`/`staminaWeight`、`skillWeights`（`{ Skill: 0–255 }`） |
+| `armors` | `editorId`、`name`、`value`、`weight`、`armorRating`（數字）、`armorType`（`light`\|`heavy`\|`clothing`）、`slots`（雙足槽位名稱陣列）、`keywords`（*refs* 陣列）、`enchantment`（*ref* → ENCH，通常是 `apparel` 常效型）、`template`（vanilla ARMO *ref* — 複製其 **Armature**（穿戴網格）+ WorldModel；**必須有，否則裝備隱形**，例如 `Skyrim.esm:0x00012E49` ArmorIronCuirass）、`model`（自訂地面網格 `.nif` 路徑 — 搭配 `template` 一起使用） |
+| `factions` | `editorId`、`name`、`vendor`（可選子物件 — 將此轉為**商人**陣營；見 [SPEC-world](spec-world.html)） |
+| `classes` | `editorId`、`name`、`description`、`teaches`（Skill）、`maxTrainingLevel`、`healthWeight`/`magickaWeight`/`staminaWeight`（屬性分配）、`skillWeights`（`{ Skill: 0–255 }`）— 一個 npc 的 `class` 可指向它 |
 | `messages` | `editorId`、`name`、`description`（本文內容） |
-| `cells` | `editorId`、`name`、`template`（vanilla 室內 cell，用於複製光照 — 否則全黑）、`encounterZone`（*ref* → ECZN） |
-| `placements` | `base`（*ref* — **絕對不能是 LVLN**，否則 CTD）；`cell` 或 `worldspace`；`kind`（`npc`\|`object`）、`position`（`{x,y,z}`）、`rotation`（`{x,y,z}` 度）、`persistent`（bool）、`encounterZone`（*ref*） |
+| `cells` | `editorId`、`name`、`template`（vanilla 室內 cell `<master>:0xFORMID`，用於複製光照 — 否則新 cell 全黑）、`encounterZone`（*ref* → ECZN — 整個 cell 的等級縮放/重生） |
+| `placements` | `base`（*ref* — 一個具體的 NPC_ actor 或物件 form；**絕對不能是原始的 LeveledNpc 清單（LVLN）** — LVLN 作為 ACHR base 在載入時 CTD，見 [SPEC-world](spec-world.html)）；**室內：** `cell`（spec 內部 editorId **或** vanilla 室內 cell `<master>:0xFORMID`）**或室外：** `worldspace`（`<master>:0xFORMID`，position 為世界座標）；`kind`（`npc`\|`object`）、`position`（`{x,y,z}`）、`rotation`（`{x,y,z}` 度）、`persistent`（bool）、`encounterZone`（*ref* → ECZN — 對該 cell 區域的逐 ref 覆蓋） |
 | `leveledItems` | `editorId`、`chanceNone`（0–100）、`flags`（陣列）、`entries`（`{ reference (*ref*), level (int), count (int) }` 陣列） |
 | `leveledNpcs` | 與 `leveledItems` 相同結構，但 `reference` 為 npc/leveled-npc |
 | `containers` | `editorId`、`name`、`weight`、`items`（`{ item (*ref*), count (int) }` 陣列） |
@@ -122,24 +122,24 @@ NL / idea ──(AI agent: Claude Code)──▶ spec.json ──(validate)─�
 | `soulGems` | `editorId`、`name`、`value`、`weight`、`maximumCapacity`（`None`\|`Petty`\|`Lesser`\|`Common`\|`Greater`\|`Grand`）、`keywords`（陣列） |
 | `keys` | `editorId`、`name`、`value`、`weight`、`keywords`（陣列） |
 | `keywords` | `editorId`（定義你自己的關鍵字） |
-| `outfits` | `editorId`、`items`（*refs* → 盔甲/武器陣列） |
-| `statics` | `editorId`、`model`（`.nif` 路徑）、`alternateTextures`（陣列） |
-| `activators` | `editorId`、`name`、`model`（`.nif` 路徑）、`keywords`（陣列）、`alternateTextures`（陣列）、`activationSound`/`loopingSound`（SNDR *refs*） |
-| `furniture` | `editorId`、`name`、`model`（`.nif` 路徑）、`keywords`（陣列） |
-| `sounds` | `editorId`、`files`（路徑陣列）、`category`（SNCT *ref*）、`outputModel`（SOPM *ref*）、`priority`（0–255）、`staticAttenuation`（dB） |
-| `recipes` | `editorId`、`kind`（`craft`/`temper`/`smelt`/`breakdown`）、`createdObject`（*ref*）、`count`（int）、`workbench`（具名選擇器或關鍵字 *ref*）、`components`（陣列）、`conditions`（CTDA 陣列） |
-| `packages` | `editorId`、`template`（*ref*）、`flags`、`interruptFlags`、`preferredSpeed`、`schedule`、`sandbox`/`sleep`/`travel`/`useMagic`/`patrol`/`follow`/`escort`（模板輸入子物件）、`conditions` |
-| `combatStyles` | `editorId`、`offensiveMult`/`defensiveMult`/`groupOffensiveMult`、各種 `equipMult*`、`avoidThreatChance`、`flags` |
-| `encounterZones` | `editorId`、`minLevel`（0–255）、`maxLevel`（0–255；**0 = 無上限**）、`rank`、`owner`（*ref*）、`location`（*ref*）、`flags` |
-| `perks` | `editorId`、`name`、`description`、`playable`/`hidden`/`trait`（bool）、`level`、`numRanks`、`nextPerk`（*ref*）、`conditions`（陣列）、`effects`（陣列） |
-| `wordsOfPower` | `editorId`、`name`（龍語字符）、`translation`（英文字義） |
-| `shouts` | `editorId`、`name`、`description`、`menuDisplayObject`（*ref* → STAT）、`words`（最多 3 個 `{ word, spell, recoveryTime }` 的陣列） |
-| `wordWalls` | `editorId`、`name`、`shout`（*ref*）、`wordIndex`（1\|2\|3）、`word`（*ref*，vanilla 咆哮必須提供）、`scriptName`、觸發器位置 |
-| `textureSets` | `editorId`，八個可選的 `.dds` 槽位路徑（`diffuse`、`normal`、`mask`、`glow`、`height`、`environment`、`multilayer`、`backlight`），路徑**相對於 `Data\Textures\`**，`flags`（陣列） |
-| `weathers` | `editorId`、`flags`、各時段顏色、`clouds`（陣列）、`precipitation`（*ref* → SPGD）、風速/霧距 |
-| `climates` | `editorId`、`weathers`（陣列）、日出/日落時間、`sunTexture`/`sunGlareTexture`、`moons`（陣列）、`phaseLength`、`volatility` |
+| `outfits` | `editorId`、`items`（*refs* → 盔甲/武器陣列；一個 npc 的 `outfit` 可指向此 editorId） |
+| `statics` | `editorId`、`model`（`.nif` 路徑 — vanilla 或自訂網格；一個 placement base，無 name）、`alternateTextures`（陣列 — 將網格貼圖替換為一個 TXST；見 [SPEC-items](spec-items.html)） |
+| `activators` | `editorId`、`name`、`model`（`.nif` 路徑）、`keywords`（*refs* 陣列）、`alternateTextures`（陣列 — 同 `statics`）、`activationSound`/`loopingSound`（SNDR *refs*）；透過 `scripts` 附加行為 |
+| `furniture` | `editorId`、`name`、`model`（`.nif` 路徑 — vanilla 或自訂網格）、`keywords`（*refs* 陣列）— 一個可放置的互動物件（椅子/床/長椅/idle 標記）；以 `placement` 放置 |
+| `sounds` | `editorId`、`files`（Data 相對的 `Sound\...` `.wav`/`.xwm` 路徑陣列）、`category`（SNCT *ref*，預設 AudioCategorySFX）、`outputModel`（SOPM *ref*，預設 vanilla SFX）、`priority`（0–255）、`staticAttenuation`（dB）— 一個記錄的 sound 欄位指向的音效描述符（SNDR）。見 [external_assets.md](external-assets.html) |
+| `recipes` | `editorId`、`kind`（`craft`/`temper`/`smelt`/`breakdown`）、`createdObject`（*ref*）、`count`（int）、`workbench`（具名選擇器 `forge`/`sharpeningWheel`/`armorTable`/`smelter`/`tanningRack`/`skyforge` 或關鍵字 *ref*；依 kind 預設）、`components`（`{ item (*ref*), count (int) }` 陣列）、`conditions`（共用 CTDA `{ function, param (*ref*), comparison, value, or }` 陣列 — perk/物品/技能設置條件）— 一個合成/改良/熔煉配方（COBJ） |
+| `packages` | `editorId`、`template`（*ref* → vanilla 程序模板）、`flags`、`interruptFlags`、`preferredSpeed`、`combatStyle`、`ownerQuest`、`schedule`、`sandbox`/`sleep`/`travel`/`useMagic`/`patrol`/`follow`/`escort`（模板輸入子物件）、`conditions` — 見 [SPEC-packages](spec-packages.html) |
+| `combatStyles` | `editorId`、`offensiveMult`/`defensiveMult`/`groupOffensiveMult`、`equipMultMelee`/`equipMultMagic`/`equipMultRanged`/`equipMultShout`/`equipMultUnarmed`/`equipMultStaff`、`avoidThreatChance`、`flags`（`Dueling`\|`Flanking`\|`AllowDualWielding`） |
+| `encounterZones` | `editorId`、`minLevel`（0–255）、`maxLevel`（0–255；**0 = 無上限**）、`rank`、`owner`、`location`、`flags`（`NeverResets`\|`MatchPcBelowMinimumLevel`\|`DisableCombatBoundary`）— 見 [SPEC-world](spec-world.html) |
+| `perks` | `editorId`、`name`、`description`、`playable`/`hidden`/`trait`、`level`、`numRanks`（≥1）、`nextPerk`、`conditions`、`effects`（陣列 — `ability` 或 `entryPoint`）— 見 [SPEC-items](spec-items.html) |
+| `wordsOfPower` | `editorId`、`name`（龍語字符）、`translation`（英文字義）— 一個力量之語（WOOP） |
+| `shouts` | `editorId`、`name`、`description`、`menuDisplayObject`、`words`（最多 3 個 `{ word, spell, recoveryTime }` 的陣列）— 一個 SHOU |
+| `wordWalls` | `editorId`、`name`、`shout`、`wordIndex`（1\|2\|3）、`word`、`scriptName`、`triggerEditorId`/`triggerBase`、placement（`cell`/`worldspace` + `position`/`rotation`） |
+| `textureSets` | `editorId`，八個可選的 `.dds` 槽位路徑（`diffuse`、`normal`、`mask`、`glow`、`height`、`environment`、`multilayer`、`backlight`），路徑**相對於 `Data\Textures\`**，`flags` — 見 [SPEC-items](spec-items.html) |
+| `weathers` | `editorId`、`flags`、各時段顏色、`clouds`、`precipitation`、`windSpeed`/`windDirection`、`fogDayNear`/`fogDayFar`/`fogNightNear`/`fogNightFar`、`transitionDelta` — 見 [SPEC-packages](spec-packages.html) |
+| `climates` | `editorId`、`weathers`（`{ weather, chance }` 陣列）、日出/日落時間、`sunTexture`/`sunGlareTexture`、`moons`、`phaseLength`、`volatility` — 見 [SPEC-packages](spec-packages.html) |
 
-標記為 *ref* 的欄位接受 spec 內部的 `editorId` **或** `"<master>:0xFORMID"`。一個站立的 NPC 至少需要 `race` + `class` 才能在遊戲中表現為真實角色；`outfit` 為其提供服裝/裝備。
+標記為 *ref* 的欄位接受 spec 內部的 `editorId` **或** `"<master>:0xFORMID"`（見上方*參照 vanilla / 外部 form*）。一個站立的 NPC 至少需要 `race` + `class` 才能在遊戲中表現為真實角色；`outfit` 為其提供服裝/裝備。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>

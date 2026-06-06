@@ -24,7 +24,7 @@ player.RemoveItem(Gold001, 500)
 ```
 `SetFollower` 會設定關係值 + `SetPlayerTeammate` + `ForceRefTo` 的跟隨者 alias（該 alias 帶有跟隨 package 並加入 `CurrentFollowerFaction`）。此後，**原版自己的交易/等待/跟隨/解散對話全部可用**，AFT/EFF/NFF 也會識別她 — 無需自訂指令 topic。在招募台詞上設置 `GetGlobalValue PlayerFollowerCount (0x0BCC98) == 0` 的條件，以確保永遠不會佔用超過單人跟隨者名額。詳見 `examples/follower_vanilla_spec.json` + `MFHireVanillaRecruit.psc`。
 
-> **原版跟隨者狀態下能保留什麼**（關於你的生動化成果會不會消失的疑慮）：跟隨者不過是一個 alias，它在角色的 package 堆疊上疊加了一個高優先級的*跟隨 package* — 這是附加的，並非覆蓋性的。**CombatStyle 會被保留**（已確認：`PlayerFollowerPackage`/戰鬥覆寫 package 均未設定 CombatStyle，因此角色的基礎 CSTY 主導戰鬥行為）。**你的自訂對話會被保留**，並且可以*以跟隨者狀態為條件*。**Sandbox/旅行/排程 package 只有在她主動跟著你時才會被覆蓋優先級**，一旦她被解散或被告知等待，這些 package 便會立即恢復。
+> **原版跟隨者狀態下能保留什麼**（關於你的生動化成果會不會消失的疑慮）：跟隨者不過是一個 alias，它在角色的 package 堆疊上疊加了一個高優先級的*跟隨 package* — 這是附加的，並非覆蓋性的。**CombatStyle 會被保留**（已確認：`PlayerFollowerPackage`/戰鬥覆寫 package 均未設定 CombatStyle，因此角色的基礎 CSTY 主導戰鬥行為）。**你的自訂對話會被保留**，並且可以*以跟隨者狀態為條件* — 例如一段僅限跟隨者的自我介紹，以 `GetInFaction CurrentFollowerFaction (0x05C84E) == 1` 為條件（見 vanilla 範例）。**Sandbox/旅行/排程 package 只有在她主動跟著你時才會被覆蓋優先級**（你無法同時跟隨又通勤），一旦她被解散或被告知等待，這些 package 便會立即恢復。
 
 **(b) 付費，完全自行管理** — *使用者認為此方式不如 (c) 理想；保留僅供參考。* 不涉及原版跟隨者系統：以帶 OWN flag 的派系作為「是我的跟隨者」狀態；OWN 的招募＋解散＋交易＋等待 topic 攜帶結果 fragment；Follow package 以 flag 為條件。優點：零衝突，無單人名額限制，可與真正的原版跟隨者並存。缺點：你需要重新實作每一條指令，且跟隨者管理 mod 看不到她。骨架（完整版：`examples/follower_paid_spec.json` + `MFHirePaidRecruit/Dismiss.psc`）：
 
@@ -69,7 +69,7 @@ player.RemoveItem(Gold001, 500)
 
 雇用 / 跟隨的底層機制完成後，兩個簡單的功能就能讓跟隨者感覺更有生命力。兩者均在 `examples/follower_vanilla_spec.json` 中。
 
-**閒暇行為** — 給跟隨者 NPC 一個*無條件*的 Sandbox package。這是她優先級最低的備用行為，恰好在原版跟隨者 alias package 未啟用時執行：招募前、解散後、以及被告知等待期間。她不會僵立不動，而是在被放置的地方吃東西、坐下、閒逛。
+**閒暇行為** — 給跟隨者 NPC 一個*無條件*的 Sandbox package。這是她優先級最低的備用行為，恰好在原版跟隨者 alias package 未啟用時執行：招募前、解散後、以及被告知等待期間。她不會僵立不動，而是在被放置的地方吃東西、坐下、閒逛。當她主動跟著你時，alias package 會覆蓋它；戰鬥會搶先中斷它，之後她會恢復。
 ```jsonc
 "packages": [ { "editorId": "MF_Sandbox", "template": "Skyrim.esm:0x01C254",
   "interruptFlags": [ "HellosToPlayer", "AllowIdleChatter", "WorldInteractions" ],
@@ -77,7 +77,7 @@ player.RemoveItem(Gold001, 500)
 // ...and reference it on the npc: "packages": [ "MF_Sandbox" ]   (no condition needed)
 ```
 
-**日常作息 — 在 sandbox 之上排程的 Sleep**（It.35，遊戲內確認）。閒暇 sandbox 是*白天時段*的預設行為；在其上疊加一個 **Sleep package**（template `0x019717`）讓她在夜間上床休息。請將排程的 Sleep 放在*最前面*，無條件 sandbox 放在*最後面*作為備用。
+**日常作息 — 在 sandbox 之上排程的 Sleep**（It.35，遊戲內確認）。閒暇 sandbox 是*白天時段*的預設行為；在其上疊加一個 **Sleep package**（template `0x019717`）讓她在夜間上床休息。Sleep 是一種特化的 Sandbox，它會主動**尋找床鋪**（內建）並能鎖門。睡眠時段是 package 的 **`schedule`**（不是一個資料槽）；NPC 的 `packages` 清單依**優先級排序**——引擎執行第一個其 schedule + 條件符合的 package，所以把排程的 Sleep 放在*最前面*，無條件 sandbox 放在*最後面*作為其餘所有時段的備用。
 ```jsonc
 "packages": [
   { "editorId": "MF_NightSleep", "template": "Skyrim.esm:0x019717",
@@ -88,24 +88,24 @@ player.RemoveItem(Gold001, 500)
 "packages": [ "MF_NightSleep", "MF_Sandbox" ]   // on the npc: Sleep FIRST (priority), sandbox fallback LAST
 ```
 - **`lockDoors` 預設為 true**（NPC 會在夜間鎖上*自己的房子*）——若跟隨者睡在共用空間（例如旅館），請設為 **false**，否則她會把整棟建築鎖起來。
-- 床鋪搜索以 **`NearSelf`** 為錨點——她會在 `radius` 範圍內尋找床鋪，因此請確保她被放置在一個*有*床鋪的房間中，並加大 `radius`（約 1024）。
-- **更多層次**（午間用餐地點、工作台班次）遵循相同模式：在備用 package *之前*加入更多排程 package。
+- 如同原版的 `NearEditorLocation` 槽，床鋪搜索以 **`NearSelf`** 為錨點（我們生成的 NPC 沒有 CK 編輯器位置，那會靜默地無作用）——她會在所在位置 `radius` 範圍內尋找床鋪，因此請確保她被放置在一個*有*床鋪的房間中，並加大 `radius`（約 1024）以觸及它們。
+- **更多層次**（午間用餐地點、工作台班次）遵循相同模式：在備用 package *之前*加入更多排程 package。在不同區域間遷移她需要一個 `location`/Travel `place` 引用指向一個放置的標記；沒有它，每個層次都會在她當前位置周圍 sandbox/sleep。
 - 整套作息只在閒暇時段執行——當她主動跟隨時，alias package 會覆蓋她列表中的每一個 package（包括 Sleep）。
 
-**情境對話** — 以執行時狀態作為條件，使正確的台詞只在特定情境下出現：
+**情境對話** — 以執行時狀態為條件來閘控一條*玩家發起*的台詞，與跟隨者閘門 AND 在一起，使正確的台詞只在特定情境下出現。使用執行時 CTDA 函數：
 ```jsonc
 // "You're hurt?" — only when she's below half health
 "conditions": [
   { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" },
   { "function": "GetActorValuePercent", "comparison": "<", "value": 0.5, "actorValue": "Health", "runOn": "Subject" } ]
-// "Make camp?" — only after 7pm
+// "Make camp?" — only after 7pm.  GetCurrentTime is no-arg (game hour 0..24); no param/ref.
 "conditions": [
   { "function": "GetInFaction", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x05C84E", "runOn": "Subject" },
   { "function": "GetCurrentTime", "comparison": ">=", "value": 19 } ]
 ```
-可用的執行時條件函數：`GetActorValuePercent`（0..1 分數，AV 引數）、`GetCurrentTime`（小時 0..24）、`IsInInterior`、`IsInCombat`、`GetRandomPercent`（0..99 隨機值，用於台詞多樣化）。
+可用的執行時條件函數：`GetActorValuePercent`（0..1 分數，AV 引數）、`GetCurrentTime`（小時 0..24）、`IsInInterior`、`IsInCombat`、`GetRandomPercent`（0..99 隨機值，用於台詞多樣化）——全部都在靜態閘門（GetInFaction/GetItemCount/GetGlobalValue/…）之外另行提供。僅限跟隨者的**背景故事**也是相同模式，只需 `CurrentFollowerFaction==1` 閘門加上更多回應台詞。
 
-**主動閒聊**（It.34，遊戲內確認）— 使用 `banter` 區段（而非 `dialogue`）：所有共享相同（speaker, quest）的項目會合併成一個環境 topic，帶有 Random 旗標的 INFO；引擎會自行播放其中符合條件的一條。**需要啟用閒聊功能** — Sandbox package（或原版跟隨 package）提供此功能。
+**主動閒聊**（It.34，遊戲內確認）— 她*不經提示*說出的台詞。使用 `banter` 區段（而非 `dialogue`）：所有共享相同（speaker, quest）的項目會合併成一個環境 topic（Misc / SNAM=`IDLE`，無分支），帶有 Random 旗標的 INFO；引擎會自行播放其中符合條件的一條。**需要啟用閒聊功能** — 上方的 Sandbox package（或原版跟隨 package）提供此功能。
 ```jsonc
 "banter": [
   { "editorId": "MF_BHurt", "questEditorId": "MF_Q", "speakerNpcEditorId": "MF_Npc",

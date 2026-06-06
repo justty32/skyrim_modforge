@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ModForge 規格說明 — 配方、特技與資源 — ModForge 文件</title>
+<title>ModForge 規格說明 — 配方、特技、資源與材質集 — ModForge 文件</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -40,7 +40,7 @@
 <div class="content"><div class="content-inner"><div id="md" class="md"></div></div></div>
 <textarea id="src" hidden>
 <!-- 配方、特技、外部資源、材質集 -->
-# ModForge 規格說明 — 配方、特技與資源
+# ModForge 規格說明 — 配方、特技、資源與材質集
 
 ← [目錄](spec-index.html)
 
@@ -74,12 +74,12 @@
 
 **`kind: "smelt"` / `"breakdown"`** — 礦石 → 金屬錠，或在熔爐將物品分解為材料（`createdObject` = 產出的金屬錠，組件 = 消耗的礦石/物品）。
 
-**`conditions`** — 每條件均為共用 CTDA（與對話/套件條件門相同的 `ConditionSpec`）。`function` ∈ `HasPerk` | `GetItemCount` | `GetGlobalValue`（各需要一個 `param` 參考）| `TemperIsEnchanted`（無參數）。使用 `find Skyrim.esm <name> Perk` 查找專長 FormID；`cobjdiag <esp> <0xID>` 可輸出任何 recipe 的完整結構。
+**`conditions`** — 每條件均為共用 CTDA（與對話/套件條件門相同的 `ConditionSpec` — 見 [SPEC-dialogue-quests](spec-dialogue-quests.html)）。`function` ∈ `HasPerk` | `GetItemCount` | `GetGlobalValue`（各需要一個 `param` 參考）| `TemperIsEnchanted`（無參數）。`comparison` 為運算子（`==` `!=` `>` `>=` `<` `<=`，預設 `>=`），`value` 為測試值，`or: true` 與**下一個**條件以 OR 串連。使用 `find Skyrim.esm <name> Perk` 查找專長 FormID；`cobjdiag <esp> <0xID>` 可輸出任何 recipe 的完整結構。
 
 常用工作台關鍵字 FormID（從 Skyrim.esm 探取）：`0x088105` 鍛造爐，`0x0ADB78` 盔甲工作台，`0x088108` 磨刀石，`0x0A5CCE` 熔爐，`0x07866A` 製革架，`0x0F46CE` Skyforge。
 
 ### perks（PERK）
-專長是一種被動能力或數值/戰鬥修正值——技能樹、種族能力及任務獎勵加成的基礎積木。支援兩種效果類型：
+專長是一種被動能力或數值/戰鬥修正值——技能樹、種族能力及任務獎勵加成的基礎積木。主幹攜帶 `name`/`description`、`playable`/`hidden`/`trait` 旗標、`level` + `numRanks`（≥1）、可選的面向玩家的 `conditions`（perk 層級的 CTDA 閘門），以及一個 `effects` 清單。支援兩種效果類型：
 
 ```jsonc
 { "editorId": "MF_IronHidePerk", "name": "Iron Hide", "numRanks": 1,
@@ -88,23 +88,24 @@
     { "kind": "ability", "spell": "MF_IronHideAbility" } ] }
 
 { "editorId": "MF_DeadlyStrikesPerk", "name": "Deadly Strikes", "numRanks": 1,
-  "conditions": [
+  "conditions": [   // perk-level gate (when the perk applies at all)
     { "function": "GetBaseActorValue", "actorValue": "OneHanded",
       "comparison": "GreaterThanOrEqualTo", "value": 30 } ],
   "effects": [
     // (b) ENTRY-POINT — 對具名 EntryPoint 的數值修正。
     { "kind": "entryPoint",
-      "entryPoint": "ModAttackDamage",
-      "function": "Multiply",
-      "value": 1.2,
-      "conditions": [
+      "entryPoint": "ModAttackDamage",      // an EntryType name
+      "function": "Multiply",               // Set | Add | Multiply
+      "value": 1.2,                          // ×1.2 = +20%
+      "conditions": [                        // effect-level gate (when the bonus fires)
         { "function": "WornHasKeyword", "param": "Skyrim.esm:0x01E711",  // WeapTypeSword
           "comparison": "EqualTo", "value": 1 } ] } ] }
 ```
 
-- **`entryPoint`** 是 Skyrim 的 `EntryType` 值之一 — `ModAttackDamage`、`ModSpellMagnitude`、`CalculateMyCriticalHitChance`、`ModArmorRating`、`GetMaxCarryWeight`… 使用 `perkdiag <Skyrim.esm> entrypoints` 查看完整清單，或 `perkdiag <Skyrim.esm> 0x079343`（Armsman20 = ModAttackDamage ×1.4）。
-- **附加至 NPC** 可透過 `npcs[].perks: ["MF_IronHidePerk", …]`——角色在遊戲開始時被動獲得專長。**賦予玩家專長需要 Papyrus `AddPerk` 呼叫**（`scripts` + 任務片段）——沒有純記錄的方式在遊戲開始時將專長放置在玩家身上。
-- **遊戲內注意事項：** 結構上這些輸出與原版專長完全一致，但入口點修正是否真的改變戰鬥數值只能透過實際啟動 Skyrim 確認。可參考範例：`examples/perk_spec.json`。
+- **`entryPoint`** 是 Skyrim 的 `EntryType` 值之一 — `ModAttackDamage`、`ModSpellMagnitude`、`CalculateMyCriticalHitChance`、`ModArmorRating`、`GetMaxCarryWeight`… 使用 `perkdiag <Skyrim.esm> entrypoints` 查看完整清單，或傾印一個 vanilla perk 複製其有效結構：`perkdiag <Skyrim.esm> 0x079343`（Armsman20 = ModAttackDamage ×1.4）。
+- **`conditions`**（perk 層級與每個 effect 層級）使用共用的 CTDA builder（與對話/套件/recipe 條件門相同的 `ConditionSpec`）。與 perk 相關的 functions：`GetBaseActorValue`/`GetActorValue`（需要 `actorValue`）、`HasKeyword`/`WornHasKeyword`/`HasPerk`/`GetIsID`/`GetIsRace`/`GetItemCount`/`IsSpellTarget`（需要一個 `param` 參考）、`GetEquippedItemType`（`itemType` = `Left`/`Right`/`Voice`/`Instant`）、`GetRandomPercent`、`GetLevel`。每個都帶一個 `comparison`（`EqualTo`/`GreaterThanOrEqualTo`/… 或符號形式）對比 `value`、一個可選的 `runOn`（預設 `Subject` / `Target`），以及 `or`（與下一個條件 OR）。
+- **附加至 NPC** 可透過 `npcs[].perks: ["MF_IronHidePerk", …]`——角色在遊戲開始時被動獲得專長（每個放置都攜帶 perk 的 `numRanks`）。**賦予玩家專長需要 Papyrus `AddPerk` 呼叫**（`scripts` + 任務片段）——沒有純記錄的方式在遊戲開始時將專長放置在玩家身上；那是 CK/腳本路線，此處誠實記載。
+- **遊戲內注意事項：** 結構上這些輸出與原版專長完全一致（用 `dump` / `perkdiag` 驗證），但入口點修正是否真的改變戰鬥數值，或 ability perk 的 SPEL 是否套用，只能透過實際啟動 Skyrim 確認。可參考範例：`examples/perk_spec.json`。
 
 ### 外部資源 — 自訂網格 / 貼圖 / 音效（`model`、`sounds`、`assets`）
 無需透過 `template` 複製原版記錄的網格，直接帶入你自己的資源。ModForge **參考**這些資源（將 Data 相對路徑寫入記錄）並**封裝**它們（將檔案複製到 `.esp` 旁邊）。它不負責製作網格/音效——完整合約及路徑規則請見 **[external_assets.md](external-assets.html)**。
@@ -117,37 +118,58 @@
                   "activationSound": "MFChimeSD" } ]
 ```
 - **`model`**（用於 statics/activators/furniture/miscItems/weapons）是以 Data 相對的 `.nif` 路徑，根目錄為 `Meshes\`——因此請**省略 `Meshes\` 前綴**（寫 `MyMod\bell.nif`，而非 `Meshes\MyMod\bell.nif`）。`validate` 會強制執行此規則。在 `miscItem` 上，`model` 會覆蓋 `template`（並發出警告）；在 `weapon` 上，請將 `model` 與 `template` **配合使用**（沒有網格/模板的武器在裝備時會**崩潰**）。
-- **`sounds`** 會輸出音效描述符（SNDR）。`category`/`outputModel` 預設為原版 SFX 分類/輸出。
-- **`assets`** 指定一個結構如 `Data/` 的來源目錄（含 `Meshes/`、`Textures/`、`Sound/`、`Music/`、`Seq/`）；`package` 會將這些子目錄樹複製到輸出模組資料夾中。可參考範例：`../examples/custom_asset_spec.json`。
+- **`sounds`** 會輸出音效描述符（SNDR）。記錄以 *ref*（spec 內部的 `editorId` 或 vanilla 的 `<master>:0xFORMID`）指向其中一個：activator 的 `activationSound`/`loopingSound`、misc/weapon 的 `pickUpSound`/`putDownSound`。`category`/`outputModel` 預設為原版 SFX 分類/輸出。
+- **`assets`** 指定一個結構如 `Data/` 的來源目錄（含 `Meshes/`、`Textures/`、`Sound/`、`Music/`、`Seq/`）；`package` 會將這些子目錄樹複製到輸出模組資料夾中。可用 `package <spec> <outDir> --assets <dir>` 逐次覆蓋。可參考範例：`../examples/custom_asset_spec.json`。
 
 ### textureSets（TXST）— 無需新網格的貼圖替換
-大量模組只是**替換現有網格的貼圖**而不製作新的 `.nif`。這就是 **TextureSet（TXST）** 記錄：一組貼圖路徑，加上讓消費者將基礎網格上的具名材質指向它的設定。
+有一大類模組只是**替換現有網格的貼圖**（重新上色的劍、重新換皮的生物、重用 Jorrvaskr 旗幟 `.nif` 並繪成 Markarth 風格的旗幟）而不製作新的 `.nif`。這就是 **TextureSet（TXST）** 記錄：一組貼圖映射路徑，加上讓消費者將基礎網格上的某個具名材質指向它的設定。
 
-TXST 最多有八個可選插槽；只需設定你要替換的插槽。每個路徑均**相對於 `Data\Textures\`**——因此請**省略**開頭的 `Textures\`：
+TXST 最多有八個可選插槽；只需設定你要替換的插槽（省略的插槽會保留該通道的網格原始映射）。每個路徑均**相對於 `Data\Textures\`**——就像 `model` 路徑相對於 `Data\Meshes\` 一樣——因此請**省略**開頭的 `Textures\`：
 
 ```jsonc
 "textureSets": [
   { "editorId": "MF_GildedRubbleTexture",
-    "diffuse": "ModForge\\rubble\\gilded_rubble_d.dds",   // 插槽 0 — 顏色/反照率 (_d)
-    "normal":  "ModForge\\rubble\\gilded_rubble_n.dds",   // 插槽 1 — 法線 + 光澤 (_n)
-    "flags": [ "NoSpecularMap" ] }
+    "diffuse": "ModForge\\rubble\\gilded_rubble_d.dds",   // slot 0 — color/albedo (_d)
+    "normal":  "ModForge\\rubble\\gilded_rubble_n.dds",   // slot 1 — normal + gloss (_n)
+    // mask(_m)/glow(_g)/height(_p)/environment(_e)/multilayer/backlight also available — all optional
+    "flags": [ "NoSpecularMap" ] }                         // NoSpecularMap|FaceGenTextures|HasModelSpaceNormalMap
 ]
 ```
 
-透過 `statics` 或 `activators` 記錄上的 `alternateTextures` 連接至消費者。每個條目覆蓋基礎 `.nif` 內一個**具名材質/子網格**：
+透過 `statics` 或 `activators` 記錄（任何帶 `model` 的記錄）上的 `alternateTextures` 連接至消費者。每個條目覆蓋基礎 `.nif` 內一個**具名材質/子網格**：
 
 ```jsonc
 "statics": [
   { "editorId": "MF_GildedRubble",
-    "model": "Dungeons\\Nordic\\Rubble\\NorRubblePiece03.nif",   // 一個原版網格，直接重用
+    "model": "Dungeons\\Nordic\\Rubble\\NorRubblePiece03.nif",   // a VANILLA mesh, reused as-is
     "alternateTextures": [
-      { "name": "NorRubblePiece03:0",        // 必須匹配 .nif 中的材質/3D 名稱（CK「AltTex」對話框）
-        "index": 0,                           // 3D 子網格索引
-        "textureSet": "MF_GildedRubbleTexture" } ] }
+      { "name": "NorRubblePiece03:0",        // MUST match a material/3D-name in the .nif (CK "AltTex" dialog)
+        "index": 0,                           // 3D sub-mesh index (the trailing number in `name`)
+        "textureSet": "MF_GildedRubbleTexture" } ] }              // ref → a TXST (in-spec or <master>:0xFORMID)
 ]
 ```
 
-**誠實限制：** ModForge 只寫入 TXST 記錄及 `alternateTextures` 參考。`.dds` 檔案本身須由**使用者製作**——ModForge 無法建立或渲染貼圖內容。見 `examples/texture_set_spec.json` 及食譜範例。
+`name`/`index` 慣例（`<MeshName>:<index>`）仿照 vanilla——用 `txstdiag`（一個 TXST 的插槽）或 `dump`（一個記錄的 `altTexture` 行）檢視真實範例，例如 vanilla STAT `NorExtRubblePiece03_HeavySN` 使用 `name="NorRubblePiece03:0" index=0`。材質名稱可從 CK 的 *Model Data → Edit → 3D Name* 清單取得（NifSkope 將它們顯示為 `BSLightingShaderProperty` 名稱）；錯誤的 `name` 會靜默地什麼都不替換。
+
+**誠實限制：** ModForge 只寫入 TXST 記錄及 `alternateTextures` 參考。`.dds` 檔案本身須由**使用者製作**——ModForge 無法建立或渲染貼圖內容，且無頭工具鏈無法驗證替換在遊戲中看起來是否正確。請將你製作的 `.dds` 檔案放在封裝後模組資料夾的 `Data/Textures/<your path>/` 下。見 `examples/texture_set_spec.json`（附帶一個佔位的 `examples/textures/ModForge/rubble/` 樹）及食譜範例。
+
+### globals（GLOB）— 共享旗標 / 計數器 / 常數
+一個 **GlobalVariable** 是一個跨**整個遊戲**共享、並存入存檔的具名數字。它是最簡單的橫切狀態原語：可由**零 Papyrus 的條件**讀取（`GetGlobalValue`）、由 Papyrus 讀取（`GetValue`/`SetValue`），以及主控台（`set`/`show`）。可作為**旗標 / 重新武裝權杖**（0/1 — 一個事件後設定，另一個事件清除以重新啟用）、**計數器**、機率/權重（地區、等級清單），或唯讀的**調校常數**。
+```jsonc
+"globals": [
+  { "editorId": "MF_SeenIntro", "type": "short", "value": 0 },               // a 0/1 flag
+  { "editorId": "MF_KillCount",  "type": "long",  "value": 0 },               // a counter ("int" = alias for long)
+  { "editorId": "MF_FogDensity", "type": "float", "value": 0.35 },            // a tunable weight
+  { "editorId": "MF_DamageMult", "type": "float", "value": 1.5, "constant": true } // read-only tuning constant
+]
+```
+- **`type`**：`short` | `long`（int）| `float`。Skyrim 在磁碟上將每個 global 都存為 float；short/long 在讀取時截斷為整數。預設 `short`。
+- **`value`**：**初始**值。⚠️ 一旦存檔存在，它會保留自己的執行期值——更改外掛的值不會覆寫既有存檔（新遊戲才會採用新的初始值）。與 `.seq`/對話相同的「存檔已固化」規則。
+- **`constant`**：設定 GLOB 的 Constant 旗標（唯讀；不能被 `SetValue`）——用於調校數字。
+
+在任何接受 ref 的地方都可以用 `editorId` 參照一個 global——最有用的是搭配 `function: "GetGlobalValue"` 的條件 `param`（見 [conditions](spec-dialogue-quests.html#conditions--ctda-gates-on-a-dialogue-info-a-banter-info-or-a-package)）或一個 region 的 `global`。**與任務階段互補：** 一個 stage（`GetStage`）是任務範圍的進度；一個 GLOB 是全域、無腳本的共享狀態。見 `examples/globals.json`。
+
+**誠實限制（此切片）：** ModForge 建構 GLOB 記錄 + 讓條件/記錄參照它。在執行期**翻轉**一個 global（`SetValue`）是從 Papyrus result 腳本 / 任務 fragment / alias 腳本完成的——那些是另外撰寫/附加的（使用 GLOB 閘門的 scene「重播策略」是一個計劃中的消費者，尚未建構）。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>

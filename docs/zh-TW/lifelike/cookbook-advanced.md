@@ -44,13 +44,13 @@
 }
 ```
 
-**主機台測試：** `help "Forged Voice" 0` → `player.addshout <SHOUT>`，然後對每個字詞使用 **`player.teachword <WORD>`**——`teachword` 才能使字形**顯示**在龍吼選單中。長按龍吼按鍵：光束飛出，觸發效果，播放特效音效 + 命中效果。
+**主機台測試：** `help "Forged Voice" 0` → `player.addshout <SHOUT>`，然後對每個字詞使用 **`player.teachword <WORD>`**——`teachword`（而非只是 `unlockword`）才能使字形**顯示**在龍吼選單中。裝備它，長按龍吼按鍵：光束飛出，觸發效果，播放特效音效 + 命中效果。
 
 **遊戲內已確認有效：** 可施放的龍吼、投射物 + 命中 + 效果音效、3 個充能等級。
 
 **兩個誠實的限制：**
-- **沒有口說龍語。** 玩家呼喊龍語音節（「FUS RO DAH」）是一個**已錄製的語音資產**。程式化產生的龍吼沒有語音資產，因此字詞語音為靜音——只有效果特效播放。若要提供不同等級的漸進式效果音效，可使用 3 個 MGEF（每個字詞法術各一個），各自帶有其自己的 A/B/C `Release` 音效。
-- **字詞之牆的學習是 `OnInit`，而非走近觸發。** 教授任務在遊戲開始時啟用，因此龍吼 + 字詞 1 在**插件載入後立即授予**——放置的 `WordWallTrigger` 只是裝飾。範例 cell `0x0371DE` 是原版的力量龍吼房間，因此你在那裡看到的字牆是原版的，不是我們的（我們的在原點）。**原版**龍吼引用無法自動推導其字詞——請明確設定 `word`。
+- **沒有口說龍語。** 玩家呼喊龍語音節（「FUS RO DAH」）是一個**已錄製的語音資產**（它同樣是一個 MGEF `Release` 音效，但是一個*帶語音*的 `.fuz`，例如 `VOCShoutDragon01AFus`）。程式化產生的龍吼沒有語音資產，因此字詞語音為靜音——只有效果特效播放。要提供它需要一個真實的語音檔案（見 voice-gen 計畫）。若要提供 3 個等級的*漸進式*效果音效，可使用 3 個 MGEF（每個字詞法術各一個），各自帶有其自己的 A/B/C `Release` 音效。
+- **字詞之牆的學習是 `OnInit`，而非走近觸發。** 教授任務在遊戲開始時啟用，因此龍吼 + 字詞 1 在**插件載入後立即授予**——放置的 `WordWallTrigger` 只是裝飾（將其繫結至 `OnTriggerEnter` 以實現真正的走近學習屬於 CK 工作）。而範例 cell `0x0371DE` 是**原版**的力量龍吼房間，因此你在那裡看到的字牆是原版的，不是我們的（我們的在原點）。藍色的字詞發光 VFX 屬於 CK/網格 + Imagespace——並未產生。**原版**龍吼引用無法自動推導其字詞——請明確設定 `word`。
 
 ## 「自訂天空」（WTHR + CLMT——大氣效果，尚未指派）
 
@@ -64,10 +64,10 @@
     "flags": ["Cloudy", "Rainy"],
     "skyUpperColor": { "day": { "r": 46, "g": 92, "b": 58 }, "night": { "r": 8, "g": 20, "b": 14 } },
     "fogNearColor":  { "day": { "r": 60, "g": 120, "b": 70 } },
-    "sunlightColor": { "day": { "r": 120, "g": 170, "b": 110 } },
+    "sunlightColor": { "day": { "r": 120, "g": 170, "b": 110 } },   // 灑在世界上的病態綠光
     "clouds": [{ "index": 0, "texture": "Sky\\SkyrimCloudsUpper04.dds",
                  "xSpeed": 0.012, "ySpeed": -0.006, "alphaNight": 0.8 }],
-    "precipitation": "Skyrim.esm:0x10780F",
+    "precipitation": "Skyrim.esm:0x10780F",                          // 原版降雨 SPGD
     "windSpeed": 0.35, "windDirection": 210, "fogDayNear": 256, "fogDayFar": 9000
   }],
   "climates": [{
@@ -78,7 +78,9 @@
 }
 ```
 
-**讓它在遊戲中毫無作用的唯一原因：** 一個 `WTHR`+`CLMT` 只是資料，直到某個東西*指派*了這個氣候。原版透過**世界空間**（`WRLD` 的 `Climate` 欄位）或**地區**（`REGN` 天氣資料）來實現——這是接入自訂天氣的鉤子（見下一個配方）。**僅通過結構驗證；天空實際渲染尚未在遊戲中確認。**
+結構驗證：`validate` → `build` → `dump`（或 `weatherdiag <esp> <0xFORMID>` / `climatediag <esp> <0xFORMID>`）。要尋找降水 SPGD，對某個原版的多雨天氣執行 `weatherdiag`（`find <Skyrim.esm> Rain Weather` → 例如 `SkyrimStormRain` `0x0C8220`，其 `Precipitation = 0x10780F`）。
+
+**讓它在遊戲中毫無作用的唯一原因：** 一個 `WTHR`+`CLMT` 只是資料，直到某個東西*指派*了這個氣候。原版透過**世界空間**（`WRLD` 的 `Climate` 欄位）或**地區**（`REGN` 天氣資料）來實現——這兩者 ModForge 現在*都能*產生（見下一個配方）。因此這個配方交付一個有效、可檢視的氣候，你接著用 WRLD/REGN 指向它。**僅通過結構驗證；天空實際渲染尚未在遊戲中確認。**
 
 ## 「自訂室外世界空間 + 天氣地區」（WRLD + REGN + 平坦地形）
 
@@ -106,7 +108,7 @@
   ] }
 ```
 
-`cells` 中每個 `{ "x": N, "y": N }` 生成一個 CELL + LAND（平坦高度圖，`height` 預設 4000 game units = 海平面以上）。`"navmesh": true` 額外生成一個平坦四邊形 NAVM（4 頂點、2 三角形覆蓋整個 4096×4096 cell）加上 NAVI 索引條目——NPC 可在 cell 內導航。無相鄰 cell 邊緣連結；在相鄰 cell 也設定 `navmesh: true` 即可跨 cell 尋路。遊戲內進入：`cow MFTestWorld 0 0`。**實機確認**（2026-06-03）。完整範例：`examples/worldspace_spec.json`。
+`cells` 中每個條目生成一個 CELL + LAND（平坦 33×33 高度圖，`height` 預設 4000 game units，安全地高於 Z=0 的海平面）。`"navmesh": true` 額外生成一個平坦四邊形 NAVM（4 頂點、2 三角形覆蓋整個 4096×4096 cell）加上 NAVI 索引條目——NPC 可在 cell 內導航。無相鄰 cell 邊緣連結；在相鄰 cell 也設定 `navmesh: true` 即可跨 cell 尋路。**實機確認**（2026-06-03）：`cow MFTestWorld 0 0` → 玩家降落在堅實的平坦地面上。用 `worlddiag <Skyrim.esm> 0x00003C` 和 `regndiag <Skyrim.esm> <0xFORMID>` 採集原版數值。完整範例：`examples/worldspace_spec.json`。
 
 ## 「兩個 NPC 爭論」（SCEN 多角色對話——僅限結構，尚未在遊戲中確認）
 

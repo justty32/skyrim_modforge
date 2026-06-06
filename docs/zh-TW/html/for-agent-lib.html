@@ -75,11 +75,11 @@ dotnet add <your.csproj> reference path/to/src/ModForge.Core/ModForge.Core.cspro
 | `Translator.ApplyLocalized(ISkyrimMod, entries, outDir)` | → `(int Applied, int Renamed, string EspPath)`；輸出本地化 UTF-8 `_chinese.STRINGS` 集合。 |
 | `Demo.CreateDemoPlugin(ModKey)` | → `ISkyrimMod`（工具鏈完整性檢查）。 |
 | `Papyrus.Compile(scriptPath, outDir, PapyrusOptions?)` | → `CompileResult { bool Success; int ExitCode; string? PexPath; string Message }`（編譯錯誤時永不拋出例外）。 |
-| `Generator.GenerateQuestFragmentSource(QuestSpec)` / `GenerateDialogueFragmentSource(DialogueSpec)` | → `string` Papyrus 原始碼（空字串表示不需要）。 |
+| `Generator.GenerateQuestFragmentSource(QuestSpec)` / `GenerateDialogueFragmentSource(DialogueSpec)` | → `string` Papyrus 原始碼，用於 stage→objective 配線 / dialogue-set-stage（不需要時為空字串）。純函式；`package` 指令會將這些寫到 `Scripts/Source/` 下供 CK 編譯。`QuestFragmentScriptName` / `DialogueFragmentScriptName` 提供所附加腳本的名稱。 |
 | `PluginIo.Load(path)` / `PluginIo.Write(mod, path)` | 載入/寫入外掛（`Write` 使用 `ModKeyOption.NoCheck`）。 |
 | `ModSpec` + 所有 `*Spec` + `StringEntry` | 公開資料模型（可修改；支援 `List<>` 集合初始化）。 |
 
-`BuildOptions.SkyrimDataPath` 可覆寫主外掛（Skyrim.esm）的讀取位置；為 null 時依序回退至 `MODFORGE_SKYRIM_DATA`，再到預設 Steam 路徑。
+`BuildOptions.SkyrimDataPath` 可覆寫主外掛（Skyrim.esm，用於 template 複製 / 原版 cell 覆寫）的讀取位置；為 null 時依序回退至 `MODFORGE_SKYRIM_DATA`，再到預設 Steam 路徑。`spec.Esl`（預設 true）驅動 `IsSmallMaster`（light master：≤2048 筆新記錄，FormID 0x800–0xFFF；超出時 `PluginIo.Write` 會拋出明確錯誤）。
 
 ## 工作範例 — 產生、驗證、寫入
 

@@ -39,7 +39,7 @@
 </nav>
 <div class="content"><div class="content-inner"><div id="md" class="md"></div></div></div>
 <textarea id="src" hidden>
-<!-- Cells、世界空間、等級列表、遭遇區域、商販 -->
+<!-- Cells、世界空間、燈光、等級列表、遭遇區域、商販 -->
 # ModForge 規格說明 — 世界、Cells 與商販
 
 ← [目錄](spec-index.html)
@@ -47,27 +47,62 @@
 ### cells 與 placements — 將物件放入世界
 ```jsonc
 "cells": [
-  { "editorId": "MF_TestRoom", "name": "ModForge Test Room",
-    "template": "Skyrim.esm:0x0165A8" }                          // 從 Breezehome 複製燈光（否則全黑）
+  { "editorId": "MF_TestRoom", "name": "ModForge Test Room",     // 一個新的室內 cell
+    "template": "Skyrim.esm:0x0165A8" }                          //   從 Breezehome 複製燈光（否則全黑）
 ],
 "placements": [
-  { "base": "MF_Smith", "cell": "MF_TestRoom",
+  { "base": "MF_Smith", "cell": "MF_TestRoom",                   // 一個 spec 內的 NPC……
     "position": { "x": 0, "y": 0, "z": 0 },
-    "rotation": { "x": 0, "y": 0, "z": 0 } },                    // 旋轉以度為單位
-  { "base": "MF_Chest", "cell": "Skyrim.esm:0x01605E",           // 放入原版室內 cell
-    "position": { "x": 100, "y": 0, "z": 0 } },
-  { "base": "MF_Coin", "worldspace": "Skyrim.esm:0x00003C",      // 放入開放世界（Tamriel）
-    "position": { "x": 22528, "y": 22528, "z": 200 } }
+    "rotation": { "x": 0, "y": 0, "z": 0 } },                    //   旋轉以度為單位
+  { "base": "MF_Chest", "cell": "Skyrim.esm:0x01605E",          // ……放入一個原版室內 cell
+    "position": { "x": 100, "y": 0, "z": 0 } },                  //   （Skyrim.esm WhiterunBanneredMare）
+  { "base": "MF_Coin", "worldspace": "Skyrim.esm:0x00003C",     // ……放入開放世界（Tamriel）；
+    "position": { "x": 22528, "y": 22528, "z": 200 } }           //   position 為世界座標
 ]
 ```
-- 一個 `placement` 目標為**室內** `cell` **或**室外 `worldspace` 其中之一：
-  - **室內** — `cell` 為 spec 內新室內 cell 的 `editorId`，**或**外部/原版室內 cell 的 `"<master>:0xFORMID"`。沒有 `template` 的新 cell 會呈現**全黑**且**沒有地板**：將 cell 的 `template` 設為原版室內並在其中放置地板靜態物件。`position` 相對於 cell。
-  - **室外** — `worldspace` 為世界空間 ref `"<master>:0xFORMID"`（Tamriel = `Skyrim.esm:0x00003C`）。`position` 為**世界**座標；若 `worldspace` 和 `cell` 同時設定，以 `worldspace` 為準。
-- `base` 為 *ref*；NPC 會變為 `PlacedNpc`，其他則為 `PlacedObject`（`kind` 可覆寫）。`rotation` 的單位為**度**。`persistent: true` 將其放入 cell 的永久清單中。
-- **原版 placement** 會覆寫 cell/worldspace 以*加入*你的 reference（原版內容不受影響）。需要遊戲的 `Data` 資料夾——若不在預設的 Steam 路徑，請設定 `MODFORGE_SKYRIM_DATA`。
+- 一個 `placement` 目標為**室內** `cell` **或**室外 `worldspace` 其中之一（只設一個）：
+  - **室內** — `cell` 為 spec 內新室內 cell 的 `editorId`，**或**外部/原版室內 cell 的
+    `"<master>:0xFORMID"`（以 `find <Skyrim.esm> <name> Cell` 查找）。沒有 `template` 的新 cell 會呈現
+    **全黑**且**沒有地板**（你會掉入虛空）：將 cell 的 `template` 設為原版室內（複製其燈光）並在其中
+    放置地板靜態物件。`position` 相對於 cell。
+  - **室外** — `worldspace` 為世界空間 ref `"<master>:0xFORMID"`（Tamriel =
+    `Skyrim.esm:0x00003C`；以 `find <Skyrim.esm> <name> Worldspace` 查找）。`position` 為**世界**
+    座標；位於 `floor(x/4096), floor(y/4096)` 的室外 cell 會在 master 中被找到並覆寫以加入你的 ref。
+    若該格沒有 master cell，則在該處建立一個新的室外 cell（僅結構性——尚未實機驗證）。若
+    `worldspace` 和 `cell` 同時設定，以 `worldspace` 為準。
+- `base` 為 *ref*（spec 內或外部）；NPC 會變為 `PlacedNpc`，其他則為 `PlacedObject`
+  （`kind` 可覆寫此猜測）。`rotation` 的單位為**度**。`persistent: true` 將其放入 cell 的
+  永久清單中（若有 quest/腳本參照它則需要）。
+- **原版 placement**（室內 cell 或室外 worldspace）會覆寫該 cell/worldspace 以*加入*你的
+  reference（原版內容不受影響——它們來自 master）。需要遊戲的 `Data` 資料夾——若不在預設的
+  Steam 路徑，請設定 `MODFORGE_SKYRIM_DATA`。
+
+### lights — 自訂光源（LIGT）
+定義一個自訂燈光（顏色、半徑、閃爍）並像其他基底物件一樣**放置**它。ModForge 原本就能*放置*
+原版燈光；`lights[]` 讓你能撰寫新的燈光。
+```jsonc
+"lights": [
+  { "editorId": "MF_EerieLight", "name": "Eerie Glow",
+    "color": { "r": 70, "g": 230, "b": 110 },   // RGB 0..255
+    "radius": 420, "fadeValue": 1.0,            // radius 以單位計；fade = 亮度乘數
+    "flags": [ "Dynamic", "Flicker" ],          // Light.Flag 名稱：Dynamic / Flicker / FlickerSlow /
+                                                //   Pulse / PulseSlow / OffByDefault / SpotLight / CanBeCarried / …
+    "falloffExponent": 1.0, "fov": 90.0,        // 可選（聚光燈）
+    "value": 0, "weight": 0.0 } ]               // 可選（僅可攜帶燈光有意義）
+```
+以一般 `placements[]` 條目放置它，其 `base` 為燈光的 `editorId`：
+```jsonc
+"placements": [ { "base": "MF_EerieLight", "cell": "Skyrim.esm:0x0133C6",
+                  "position": { "x": -650, "y": 100, "z": 140 } } ]
+```
+LIGT 基底 radius 預設 256，fade 預設 1.0。使用 `Dynamic` 讓它照亮穿過它的移動演員，
+`Flicker`/`Pulse` 用於火炬/燭光/魔法效果。Validation 會檢查旗標名稱、顏色範圍
+（0..255）與 radius > 0。（獨立燈光沒有模型——若要可見的*燈具*，再放置一個原版火炬/燈籠
+靜態物件，或將燈光附在火炬物件上攜帶。）
 
 ### worldspaces（WRLD）與 regions（REGN）— 室外世界與天氣
-建立一個**新的**室外世界空間並附加氣候，並定義 **regions**（世界空間內的區域），其**天氣表**決定該處播放哪種天氣：
+建立一個**新的**室外世界空間並附加氣候，並定義 **regions**（世界空間內的區域），其
+**天氣表**決定該處播放哪種天氣：
 ```jsonc
 "worldspaces": [
   { "editorId": "MFTestWorld", "name": "ModForge Test Vale",
@@ -84,25 +119,51 @@
     ] }
 ],
 "regions": [
-  { "editorId": "MFTestWorldWeather", "worldspace": "MFTestWorld",
+  { "editorId": "MFTestWorldWeather", "worldspace": "MFTestWorld",  // 參照 spec 內 WRLD 或原版
     "edgeFallOff": 1024, "mapColor": "0x3CA0F0", "weatherPriority": 60,
-    "weather": [
-      { "weather": "Skyrim.esm:0x10E1F2", "chance": 60 },           // SkyrimClear（相對權重）
-      { "weather": "Skyrim.esm:0x10E1F1", "chance": 30 },           // SkyrimCloudy
-      { "weather": "Skyrim.esm:0x10E1F0", "chance": 10 } ],         // SkyrimClearSN
+    "weather": [                                                     // 氣候掛鉤 — >=1 條目
+      { "weather": "Skyrim.esm:0x10E1F2", "chance": 60 },           //   SkyrimClear（相對權重）
+      { "weather": "Skyrim.esm:0x10E1F1", "chance": 30 },           //   SkyrimCloudy
+      { "weather": "Skyrim.esm:0x10E1F0", "chance": 10 } ],         //   SkyrimClearSN
     "area": [ { "x": -16384, "y": -16384 }, { "x": 16384, "y": -16384 },
               { "x": 16384, "y": 16384 }, { "x": -16384, "y": 16384 } ] }   // >=3 個世界座標點
   ]
 ```
-- **worldspaces**（WRLD）：一個新的室外世界。`climate` 為 CLMT *ref*（原版預設 = `Skyrim.esm:0x000812`）——若無此設定，世界將**沒有天空/光照週期**。`defaultLandHeight`/`defaultWaterHeight` 預設為 Tamriel 的值（-27000 / -14000）——**保留這些值**，因為水面預設為 0 會淹沒整個世界。
-- **`cells`** — 在世界空間中生成可行走的平坦地形 cell。每個條目 `{ "x": N, "y": N }` 生成一個 CELL + LAND record（平坦的 33×33 高度圖），放置在世界空間的 SubCell block tree 中。可選的 `"height"`（遊戲單位，預設 4000）設定地形高度——Z=0 約為 Skyrim 的海平面，4000 以上才安全。遊戲內進入指令：`cow <worldspace editorId> X Y`。可選 `"navmesh": true` 為該 cell 新增一個平坦四邊形 NAVM（4 頂點、2 三角形，覆蓋整個 4096×4096 cell）以及 NAVI 索引條目，讓 NPC 可在此 cell 內導航。**實機確認**（2026-06-04）：放在 MFTestWorld navmesh cell 中的守衛沿 m1→m2→m3→m1 在生成的網格上巡邏——NPC 確實能在程式生成的自訂世界空間導航網格上尋路。無相鄰 cell 的邊緣連結——跨 cell 尋路需要在相鄰 cell 也設定 `navmesh: true`。完整的地形（多樣地貌、LOD、精細導航網格）仍須用 Creation Kit 製作。**ESL 限制**：Skyrim 引擎**不載入** ESL（輕型外掛）中的 LAND records——有 `cells` 的 spec 必須設定 `"esl": false`（validator 會強制檢查）。
-- **regions**（REGN）：`worldspace` 內的一個區域。`area` 為**至少 3 個**世界座標點組成的多邊形（非 cell 格子）。`weather` 為選取當前天氣的表——每個條目為一個 WTHR *ref* 加上相對 `chance`。
-- **實機確認**（2026-06-03）：`cow MFTestWorld 0 0` → 玩家落在實心的平坦地面上。導航巡邏範例：`examples/worldspace_navmesh_test_spec.json`（守衛沿 m1→m2→m3→m1 在 z=4000 網格上巡邏）——**實機確認**（2026-06-04）。
+- **worldspaces**（WRLD）：一個新的室外世界。`climate` 為 CLMT *ref*（原版預設 =
+  `Skyrim.esm:0x000812`）——若無此設定，世界將**沒有天空/光照週期**；validate 會標記缺少
+  climate。`water`/`lodWater`/`parent`/`interiorLighting`/`location`/`music`/`encounterZone`
+  皆為可選 *ref*。`flags` 來自 WRLD 旗標集合（`SmallWorld`、`CannotFastTravel`、`NoLodWater`、
+  `NoLandscape`、`NoSky`、`FixedDimensions`、`NoGrass`）。`defaultLandHeight`/`defaultWaterHeight`
+  預設為 Tamriel 的值（-27000 / -14000）——除非你確知，否則**保留這些值**，因為水面預設為 0
+  會淹沒整個世界。`map` 設定世界地圖的 cell 角落邊界 + 本地地圖攝影機。
+- **`cells`** — 在世界空間中可行走的平坦地形 cell。每個條目 `{ "x": N, "y": N }`
+  生成一個 CELL + LAND record（平坦的 33×33 高度圖），放置在世界空間的 SubCell block tree
+  中。可選的 `"height"`（遊戲單位，預設 4000）設定地形高度——Z=0 約為 Skyrim 的海平面，
+  4000 以上才安全在水面之上。遊戲內進入指令：
+  `cow <worldspace editorId> X Y`。可選 `"navmesh": true` 新增一個平坦四邊形 NAVM（4 頂點、
+  2 三角形）覆蓋整個 4096×4096 cell 以讓 NPC 可在其上尋路，加上一個 NAVI 索引條目。
+  **實機確認**（2026-06-04）：放在 MFTestWorld navmesh cell 中的守衛沿
+  m1→m2→m3→m1 在生成的網格上巡邏——NPC 確實能在程式生成的自訂世界空間導航網格上尋路。
+  無相鄰 cell 的邊緣連結——跨 cell 尋路需要在相鄰 cell 也有對應的 NAVM。
+  多樣地貌/LOD/精細導航網格仍須用 Creation Kit 製作。
+  **ESL 限制：** Skyrim 引擎忽略 ESL（輕型）外掛中的 LAND records——有 `cells` 的 spec
+  必須設定 `"esl": false`（validator 會強制檢查）。
+- **regions**（REGN）：`worldspace` 內的一個區域（spec 內 WRLD `editorId` 或原版
+  `"<master>:0xFORMID"`）。`area` 為**至少 3 個**世界座標點組成的多邊形（非 cell 格子）。
+  `weather` 為選取當前天氣的表——每個條目為一個 WTHR *ref* 加上相對 `chance`
+  （各 chance 總和須 > 0）；`weatherPriority` 排序重疊的 regions。`mapColor` 為
+  `0xRRGGBB`。其他 RegionData 種類（聲音/物件/草地/地形）屬 CK 端，不輸出。
+- 以 `find <Skyrim.esm> <name> Worldspace` 探索原版值，再用
+  `worlddiag <Skyrim.esm> <0xFORMID>`（climate/water/parent + 地圖邊界 + 地形/水面預設值）與
+  `regndiag <Skyrim.esm> <0xFORMID>`（worldspace/area/mapColor + 天氣表）。範例：
+  `examples/worldspace_spec.json`。**實機確認**（2026-06-03）：`cow MFTestWorld 0 0` →
+  玩家落在實心的平坦地面上。導航巡邏範例：`examples/worldspace_navmesh_test_spec.json`
+  （守衛沿 m1→m2→m3→m1 在 z=4000 網格上巡邏）——**實機確認**（2026-06-04）。
 
 ### 等級列表與容器
 ```jsonc
 "leveledItems": [
-  { "editorId": "MF_LootList", "chanceNone": 25,
+  { "editorId": "MF_LootList", "chanceNone": 25,                 // 25% 機率什麼都沒有
     "flags": ["CalculateFromAllLevelsLessThanOrEqualPlayer"],
     "entries": [ { "reference": "MF_Blade", "level": 1, "count": 1 },
                  { "reference": "MF_Coin",  "level": 1, "count": 5 } ] }
@@ -112,29 +173,42 @@
     "items": [ { "item": "MF_Coin", "count": 10 }, { "item": "MF_Apron", "count": 1 } ] }
 ]
 ```
-- `leveledItems`（LVLI）和 `leveledNpcs`（LVLN）是受等級限制的加權清單：每個 `entry` 的 `reference` 為 *ref*，以 `level` 作為門檻，重複 `count` 次。`chanceNone`（0–100）為清單不產出任何東西的機率；`flags` 名稱來自 LVLI/LVLN 旗標集合。
-- `containers`（CONT）持有 `items`，每項為一個物品 *ref* 加上 `count`。（若要讓容器出現在世界中，需用 `placement` 放置，與其他物件相同。）
+- `leveledItems`（LVLI）和 `leveledNpcs`（LVLN）是受等級限制的加權清單：每個
+  `entry` 的 `reference` 為 *ref*（spec 內物品/npc、外部物品，或另一個等級清單），
+  以 `level` 作為門檻並重複 `count` 次。`chanceNone`（0–100）為清單不產出任何東西的
+  機率；`flags` 名稱來自 LVLI/LVLN 旗標集合。
+- `containers`（CONT）持有 `items`，每項為一個物品 *ref* 加上 `count`。（若要讓容器
+  出現在世界中，需用 `placement` 放置，與其他物件相同。）
 
 ### 遭遇區與等級演員生成——在區域中填入等比例的敵人
 兩個部分協同運作，以在區域中投放**適合等級**的敵人：
 
-**1. 等級演員生成**使用 **NPC_ 包裝器**作為 `base`——一個 NPC_，其 TEMPLATE 鏈參照 LeveledNpc 清單（LVLN），讓引擎在生成時滾出一個適合等級的演員。
+**1. 等級演員生成**使用 **NPC_ 包裝器**作為 `base`——一個 NPC_，其 TEMPLATE 鏈
+參照 LeveledNpc 清單（LVLN），讓引擎在生成時滾出一個適合等級的演員。
 
-> **嚴重注意事項——已確認 CTD（It.36，2026-06-02）：** `LChar*` formid（例如 `0x03DECD` `LCharBanditMeleeAny`）是 **LVLN 記錄**，而將原始 LVLN 作為 ACHR 基底**會導致 Skyrim 在載入時崩潰**。請改用 `LvlBandit*` NPC_ 包裝器。命名規則：`Lvl…` 前綴 = NPC_（可安全放置）；`LChar…` 前綴 = LVLN（永遠不要直接放置）。
+> **嚴重注意事項——已確認 CTD（It.36，2026-06-02）：** `LChar*` formid（例如 `0x03DECD`
+> `LCharBanditMeleeAny`）是 **LVLN 記錄**，而將原始 LVLN 作為 ACHR 基底**會導致 Skyrim 在
+> 載入時崩潰**——引擎會對它呼叫 NPC_ 專屬的 vtable 方法。請改用 `LvlBandit*` NPC_ 包裝器。
+> 命名規則：`Lvl…` 前綴 = NPC_（可安全放置）；`LChar…` 前綴 = LVLN（永遠不要直接放置）。
 
 ```jsonc
 { "base": "Skyrim.esm:0x01E79C", "cell": "MF_BanditDen", "kind": "npc",   // LvlBanditMeleeAny (NPC_)
   "position": { "x": -180, "y": 120, "z": 0 } }
 ```
-- 使用 `find <Skyrim.esm> Lvl<…> Npc` 查找 NPC_ 包裝器（例如 `LvlBanditMeleeAny` `0x01E79C`）。其底層的 LVLN 清單**不是**有效的 placement 基底。
-- 對於 spec 內用作 placement 基底的 `leveledNpcs` 清單，請加入 `"kind": "npc"` 以讓建置發出警告，而非靜默產生會崩潰的外掛。
+- 使用 `find <Skyrim.esm> Lvl<…> Npc` 查找 NPC_ 包裝器（例如 `LvlBanditMeleeAny` `0x01E79C`、
+  `LvlBanditMissileNordM` `0x01B0D5`、`LvlBanditBossNordM` `0x01B0E1`）。其底層的 LVLN 清單
+  （`LCharBanditMeleeAny` `0x03DECD` 等）**不是**有效的 placement 基底。
+- 對於 spec 內用作 placement 基底的 `leveledNpcs` 清單，請加入 `"kind": "npc"` 以讓建置
+  發出警告，而非靜默產生會崩潰的外掛。
 
 **2. 遭遇區**（`encounterZones`，ECZN）設定生成所滾動的**等級範圍與重生**規則。
+一個 cell 透過 `encounterZone` 指向一個（整個 cell），且／或個別生成也可指向
+（其自身的 XEZN——一個 per-ref 覆寫）。
 ```jsonc
 "encounterZones": [
   { "editorId": "MF_BanditDenZone",
     "minLevel": 4, "maxLevel": 0,            // 最低等級 4；maxLevel 0 = 無上限（隨玩家縮放）
-    "flags": ["MatchPcBelowMinimumLevel"] }
+    "flags": ["MatchPcBelowMinimumLevel"] }  // 低於最低等級的玩家獲得玩家等級的生成，而非最低等級
 ],
 "cells": [
   { "editorId": "MF_BanditDen", "template": "Skyrim.esm:0x0165A8",
@@ -142,29 +216,40 @@
 ]
 ```
 - `maxLevel 0` 表示**無上限**——原版地下城的慣例（例如 `HelgenZone` 為最低 6 / 最高 0）。
-- `flags`：`NeverResets`（已清除的地下城不重生），`MatchPcBelowMinimumLevel`（生成等級符合低等級玩家），`DisableCombatBoundary`（演員可在區域外追逐）。
-- 使用 `eczndiag <plugin> <0xFORMID>` 檢查任何區域。
-- **尋路網格注意事項：** 全新的 spec 內 cell **沒有尋路網格**，因此生成的演員在 CK 為其建立尋路網格之前無法移動。
-- **已在遊戲中確認（It.36，2026-06-02）：** `coc MF_BanditDen`——cell 載入、強盜生成、無崩潰。完整流程：遭遇區、cell 範本、NPC_ 放置均已在 SSE 1.6.1170 中驗證。
+  Validate 僅在設定了實際上限（`maxLevel > 0`）時才強制 `minLevel ≤ maxLevel`。
+- `flags`：`NeverResets`（已清除的地下城維持已清除——不重生）、`MatchPcBelowMinimumLevel`
+  （生成等級符合低等級玩家，而非箝制至 `minLevel`）、`DisableCombatBoundary`（演員可在區域外
+  追逐）。`owner`（FACT/NPC）+ `rank` 設定區域所有權；`location`（LCTN）將其連結到地圖位置。
+- 以 `eczndiag <plugin> <0xFORMID>` 檢查任何區域（等級範圍 / rank / 旗標 / owner / location）。
+- **尋路網格注意事項：** 全新的 spec 內 cell **沒有尋路網格**，因此生成的演員在 CK 為其
+  建立尋路網格之前無法*移動*——它們站在放置處。演員會吸附到地板（不像靜態標記），因此任何
+  合理的室內座標都適用於放置，但移動/戰鬥 AI 需要尋路網格。錨定在已驗證可行走的座標
+  （`refpos`），或在依賴巡邏/追擊之前先在 CK 為該 cell 建立尋路網格。
+  （參見範例 `examples/encounter_spec.json`。）
+- **已在遊戲中確認（It.36，2026-06-02）：** `coc MF_BanditDen`——cell 載入、強盜生成、無崩潰。
+  完整流程：遭遇區、cell 範本、NPC_ 放置均已在 SSE 1.6.1170 中驗證。
 
 ### 商販／商人——一個可運作的店主
-透過給予一個**派系** `vendor` 子物件，並讓 NPC 成為其成員，即可將 NPC 轉變為可運作的商店（買入 + 賣出）。
+透過給予一個**派系** `vendor` 子物件，並讓 NPC 成為其成員，即可將 NPC 轉變為可運作的
+商店（買入 + 賣出）。一個原版商人正是如此：一個 **Vendor 旗標的 FACT**（交易時間、販售
+半徑、收購贓物旗標、一份買/賣物品類別清單，以及一個持有金幣 + 庫存的**商人箱子**），
+其成員 NPC 會被引擎視為店主。
 ```jsonc
 "factions": [
   { "editorId": "MF_ShopFaction", "name": "ModForge General Goods",
     "vendor": {
-      "startHour": 8, "endHour": 20,
-      "radius": 0,
-      "buysStolen": false,
-      "sellBuyList": "Skyrim.esm:0x06CB48",    // VendorItem 關鍵字的 FormList（交易類別）
-      "notSellBuyList": true,                  // true ⇒ sellBuyList 為 NOT-sell 清單（交易除此之外的一切）
-      "merchantContainer": "MF_ShopChestRef"   // 參照一個 PLACEMENT 的 editorId：已放置的商人箱子
+      "startHour": 8, "endHour": 20,          // 商店營業時間（0..24；start < end）
+      "radius": 0,                             // 玩家可遠離並仍能交易的距離（0 = 引擎預設）
+      "buysStolen": false,                     // true = 銷贓者（OnlyBuysStolenItems）
+      "sellBuyList": "Skyrim.esm:0x06CB48",    // VendorItem 關鍵字的 FormList（交易的類別）
+      "notSellBuyList": true,                  // true ⇒ sellBuyList 為 NOT-sell 清單（交易除此之外的一切——「綜合商品」模式）
+      "merchantContainer": "MF_ShopChestRef"   // 參照一個 PLACEMENT 的 editorId：已放置的商人箱子（金幣 + 庫存）
     } }
 ],
 "containers": [
   { "editorId": "MF_ShopChest", "name": "Merchant Chest",
     "items": [ { "item": "Skyrim.esm:0x072AE7", "count": 1 },    // VendorGoldMisc（商販的金幣池）
-               { "item": "Skyrim.esm:0x09AF0A", "count": 10 } ] }  // 庫存等級清單
+               { "item": "Skyrim.esm:0x09AF0A", "count": 10 } ] }  // 庫存等級清單（LItemMiscVendorMiscItems75）
 ],
 "placements": [
   { "editorId": "MF_ShopChestRef", "base": "MF_ShopChest", "cell": "MF_Shop", "persistent": true,
@@ -172,15 +257,34 @@
 ],
 "npcs": [
   { "editorId": "MF_Shopkeeper", "name": "...", "race": "Skyrim.esm:0x013746",
-    "factions": [ "MF_ShopFaction" ],
-    "greeting": "Looking to buy?" }            // 問候語使其可對話——提示框所需的必要條件
+    "factions": [ "MF_ShopFaction" ],          // 成員資格 = 「這個 NPC 就是商販」
+    "greeting": "Looking to buy?" }            // 問候語（或自訂對話）使其可對話——提示框所需的必要條件
 ]
 ```
-- **`merchantContainer`** 必須參照一個 **placement** 的 `editorId`（已放置的箱子 REFR），而非裸容器——只有*已放置*的 ref 才持有引擎讀取的金幣/庫存。在箱子中放入 `VendorGoldMisc`（`Skyrim.esm:0x072AE7`）讓商販有錢購物。
-- **成員資格即店主。** 建置會**自動加入** `JobMerchantFaction`（`Skyrim.esm:0x051596`）至該 NPC，因為原版通用的「我想交易」主題需要滿足 `GetInFaction JobMerchantFaction` + `GetOffersServicesNow`。
-- **可對話。** 與所有自訂 NPC 相同的規則：交易提示只有在 NPC 開啟對話選單後才會出現，而這需要一句 `greeting` 或自訂的 `dialogue[]`。
-- 使用 `factdiag <plugin> <0xFORMID>` 檢查；與原版商人比較，例如 `factdiag <Skyrim.esm> 0x09CAF5`（Belethor's General Goods）。
-- **已在遊戲中確認 2026-05-31：** FACT/箱子/成員資格已於 SSE 1.6.1170 中驗證——「我想交易」提示正確開啟以物易物選單。
+- **`sellBuyList`** 為指向原版 `VendorItemsX` **FormList** 的 *ref*（一份 `VendorItem*`
+  關鍵字清單）。常用的：`Skyrim.esm:0x06CB48` `VendorItemsMisc`（綜合商品）、`0x066333`
+  `VendorItemsBlacksmith`。當 `notSellBuyList: false` 時，清單列出商販**會**交易的類別；
+  當 `notSellBuyList: true` 時則為 NOT-sell 清單（交易**除此之外**的一切）。
+  （spec 內 FormList 尚非一種 record 類型，因此請參照原版清單——`find <Skyrim.esm>
+  VendorItems FormList`。）
+- **`merchantContainer`** 必須參照一個 **placement** 的 `editorId`（已放置的箱子 REFR），
+  而非裸容器——只有*已放置*的 ref 才持有引擎讀取的金幣/庫存。在箱子中放入 `VendorGoldMisc`
+  （`Skyrim.esm:0x072AE7`，等級金幣池）讓商販有錢購物；加入庫存等級清單作為其販售品。
+  建置會強制箱子 placement 為 `persistent`。
+- **成員資格即店主。** 在 vendor 派系中的 NPC 即是商人。建置會**自動加入**
+  `JobMerchantFaction`（`Skyrim.esm:0x051596`）至該 NPC，因為原版通用的「我想交易」主題
+  （`DialogueGeneric.OfferServicesTopic`）需要滿足 `GetInFaction JobMerchantFaction`
+  + `GetOffersServicesNow`。你不需要（也無法）輸出該主題——它是通用的原版對話，會在交易時間內
+  於任何可對話的 vendor 派系 NPC 身上浮現。
+- **可對話。** 與所有自訂 NPC 相同的規則：交易提示只有在 NPC 開啟對話選單後才會出現，
+  而這需要一句 `greeting`（自動輸出一個 Hello）或自訂的 `dialogue[]`。沒有問候語的商販
+  只會喃喃自語（`validate` 會標記此問題）。
+- 以 `factdiag <plugin> <0xFORMID>` 檢查（vendor 旗標 / 時間 / 買賣清單 / 商人箱子）；
+  `dump` 也會印出 vendor 區塊。與原版商人比較，例如 `factdiag <Skyrim.esm>
+  0x09CAF5`（Belethor's General Goods）。
+- **遊戲內未確認：** FACT/箱子/成員資格在結構上與原版商販完全相同（透過 `factdiag` diff
+  驗證），但「我想交易」提示是否真的開啟以物易物選單需要 Proton/Skyrim 啟動——與所有對話
+  一樣，它也只在遊戲**載入**時（新遊戲或存檔+重載）才註冊，而非 session 中途的 `coc`。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>

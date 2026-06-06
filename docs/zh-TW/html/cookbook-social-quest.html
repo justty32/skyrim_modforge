@@ -65,9 +65,9 @@
 }
 ```
 
-以下三件事各自獨立地會導致靜默失敗——參見 [gotchas.md](gotchas.html)：
-- **`greeting`** 必須設定，否則 NPC 無法對話（不會出現對話鏡頭）。
-- **放置位置**必須是真實的室內座標——一個沒有套件的 NPC 位於 `(0,0,0)` 時會偏離導覽網格，你無法靠近它。
+以下三件事各自獨立地會導致靜默失敗（除了後兩項由你負責正確設定外，其餘現在都由建構程序處理）——參見 [gotchas.md](gotchas.html)：
+- **`greeting`** 必須設定，否則 NPC 無法對話（不會出現對話鏡頭）。建構程序會將它轉換成一個 Hello info；話題鏈（SNAM='CUST'、DialogView、INFO ENAM/CNAM）會自動產生。
+- **放置位置**必須是真實的室內座標——一個沒有套件的 NPC 位於 `(0,0,0)` 時會偏離導覽網格，你無法靠近它（你最後會對到一個原版 NPC 講話）。
 - **未配音的台詞**會一閃而過——請安裝 **Fuz Ro D-oh**（或附上靜音 `.fuz`），並開啟字幕。
 
 ## 「運作中的商人」（能買賣商品的店主——遊戲內已確認 2026-05-31）
@@ -99,9 +99,14 @@
 ```
 （完整範例規格：`examples/vendor_spec.json`。）
 
-**商人必須在其商店內就位當班**——這在**新**室內空間中需要：(a) 一個地板（`WRIntFloorSTMid01Large` `0x1044AA` 格板 + 一盞燈），以及 (b) 一個當班用的 **Sandbox** 套件（`0x01C254`，NearSelf）。
+各部件的緣由：
+- **`merchantContainer` 是一個放置（PLACEMENT）引用**，而非裸的容器——只有放置的箱子才持有引擎讀取的金幣。在其中放入 `VendorGoldMisc`（`0x072AE7`），否則商人沒有錢可用來收購。
+- **`JobMerchantFaction` 會自動加入**任何屬於 in-spec vendor 派系的 NPC——原版的 `DialogueGeneric.OfferServicesTopic`（「I'd like to trade」）以 `GetInFaction JobMerchantFaction` + `GetOffersServicesNow` 為條件。你從不需要產生那個話題；它是通用的原版對話，會在交易時段內出現於任何可對話的 vendor 派系 NPC 上。
+- **可對話。** 沒有 `greeting`/`dialogue` ⇒ 沒有對話選單 ⇒ 交易提示無法出現（`validate` 會標記此問題）。與所有對話相同的僅限載入規則（新遊戲或存檔+重新載入）。
+- **商人必須在其商店內就位當班**——`GetOffersServicesNow` 對一個尚未在其商店安頓的 NPC 回傳 0。這在**新** cell 中需要兩件事：(a) 一個地板（`WRIntFloorSTMid01Large` `0x1044AA` 格板 + 一盞燈），使 NPC 不會永遠墜入虛空；以及 (b) 一個當班用的 **Sandbox** 套件（`0x01C254`，NearSelf），使它站在櫃台旁。沒有地板，商人處於墜落狀態，永遠不會上工——交易選項便靜默地永不出現。
+- **`VendorLocation` = 商人的 CELL。** 建構程序將派系的 `VendorLocation` 設為一個指向商人容器放置所在 cell 的 `LocationCell`（半徑 0）。這是 `GetOffersServicesNow` 用來測試玩家是否在內的售賣區域。CK 撰寫的商人有一個引擎可回退的*編輯器位置*；生成的 NPC 沒有，因此**省略此項（或使用半徑 0 的箱子*引用*，一個退化的點）會破壞交易選單**。已對照原版 Belethor 驗證，其 PLVD 為 `LocationCell → WhiterunBelethorsGeneralGoods`，半徑 0——而非空白。（不需要 CK 撰寫的「sell package」`0x06C872`；VENV 半徑 0 沒問題——Belethor 的也是 0。）
 
-**已確認（2026-05-31）**：`coc MF_Shop`、`set GameHour to 12`，與 Marcurio 對話 → 以物易物選單開啟。
+結構驗證：`factdiag <plugin> 0x000804` 並與原版 Belethor `factdiag <Skyrim.esm> 0x09CAF5` 對比——相同的旗標 / VendorValues / 買賣清單 / 商人容器 / `LocationCell` VendorLocation 結構。**已確認（2026-05-31）**：`coc MF_Shop`、`set GameHour to 12`，與 Marcurio 對話 → 以物易物選單開啟（可到達 NPC + 載入登錄規則仍適用，見可對話 NPC 配方）。
 
 ## 「NPC 的被動特技」（PERK——能力 + 入口點）
 
@@ -139,13 +144,13 @@
   ] }
 ```
 
-- 透過 `perkdiag <Skyrim.esm> entrypoints` 和 `perkdiag <Skyrim.esm> 0x079343`（Armsman20）確認入口點名稱及可參考的原版結構。
-- **玩家特技**並非僅靠資料記錄即可：需透過 Papyrus 的 `AddPerk` 呼叫（一個 `scripts` 任務片段）來授予。
-- 這些在結構上與原版特技完全相同；但修改值是否真的影響遊戲內的戰鬥數值，需要實際啟動 Skyrim 才能確認。完整範例：[`../../examples/perk_spec.json`](../../examples/perk_spec.json)。
+- 透過 `perkdiag <Skyrim.esm> entrypoints` 和 `perkdiag <Skyrim.esm> 0x079343`（Armsman20）確認入口點名稱及可參考的原版結構。用 `dump` / `perkdiag <out.esp> <id>` 驗證你的輸出。
+- **玩家特技**並非僅靠資料記錄即可：需透過 Papyrus 的 `AddPerk` 呼叫（一個 `scripts` 任務片段）來授予。上方的 NPC 路徑則完全可以純資料記錄撰寫。
+- 這些在結構上與原版特技完全相同；但修改值是否真的影響遊戲內的戰鬥數值，需要實際啟動 Skyrim 才能確認（此處僅限結構）。完整範例：[`../../examples/perk_spec.json`](../../examples/perk_spec.json)。
 
 ## 「多階段任務」（階段 + 日誌記錄 + 目標 + 對話設定階段）
 
-一個會**推進**的任務：在各階段間推進、在每個階段寫入日誌文字、依階段顯示/完成目標，並在最終階段關閉任務。
+一個會**推進**的任務：在各階段間推進、在每個階段寫入日誌文字、依階段顯示/完成目標，並自行關閉。純資料記錄（階段、日誌條目、`completeQuest`、日誌條目條件）可乾淨地 build 並 `questdiag`；目標顯示與對話設定階段的*邏輯*則以 Papyrus fragment 鷹架的形式產生供 CK 使用（見末尾的說明）。
 
 ```jsonc
 { "quests": [ {
@@ -164,6 +169,8 @@
       "setStage": 20 } ] }                                 // 選擇此選項後任務從 10 → 20
 ```
 
+用 `questdiag <plugin.esp> <questFormId>` 驗證記錄（階段、日誌條目、`CompleteQuest` 旗標、目標）。包含 NPC、Hello 與放置的完整範例規格為 [`examples/quest_stages_spec.json`](../../examples/quest_stages_spec.json)。
+
 **`package` 自動處理 Papyrus——無需 CK（遊戲內已確認 It.36 2026-06-02）。**
 它會生成、編譯並以 VMAD 附加所有內容：
 
@@ -172,7 +179,7 @@
 - 編譯後的 `.pex` 複製至 `Scripts/`，VMAD 附加至 QUST 和 INFO。
 - `setStage` 對話行上自動加入 `GetStage(quest) < 20` 條件，使 Joren 在玩家已選取後不再重複觸發。
 
-`package` 指令需要 `~/tools/papyrus-compiler`（Linux 原生；備用方案為 Wine/CK）。對話仍然只在遊戲**載入**時才會登錄——見 [gotchas.md](gotchas.html)。
+`package` 指令需要 `~/tools/papyrus-compiler`（Linux 原生；備用方案為 Wine/CK）。一次性的機器設定：將 stub `TopicInfo.psc` + `ScriptObject.psc` 寫入 `Data/Scripts/Source/`（細節見 `Papyrus.cs`）。對話仍然只在遊戲**載入**時才會登錄——見 [gotchas.md](gotchas.html)。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>

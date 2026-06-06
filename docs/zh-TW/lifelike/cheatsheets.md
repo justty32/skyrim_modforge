@@ -22,7 +22,7 @@ dotnet run ... -- mgefdiag       <plugin> <0xFORMID>   # MGEF：原型/AV/旗標
 dotnet run ... -- lightdiag      <plugin> [0xFORMID]   # LIGH（無 ID 時列出房間填充候選）
 dotnet run ... -- refpos         <plugin> <0xFORMID>   # REFR/ACHR：位置+旋轉+基底（用已知導航網格錨定放置）
 dotnet run ... -- cellblk        <plugin> [0xFORMID]   # 依 FormID 查詢 Cell 的區塊/子區塊
-dotnet run ... -- infodiag       <plugin> <0xFORMID> [substr]  # INFO：回應 + 完整 CTDA 條件 + OnEnd VMAD 片段
+dotnet run ... -- infodiag       <plugin> <0xFORMID> [substr]  # INFO：回應 + 完整 CTDA 條件 + OnEnd VMAD 片段，可針對一個主題或一個 quest 擁有的所有主題
 dotnet run ... -- factdiag       <plugin> <0xFORMID>   # FACT：旗標 / 階級 / 派系間關係
 dotnet run ... -- reladiag       <plugin> <0xFORMID>   # RELA：一筆記錄，或所有以該 FormID 為父/子的 RELA
 

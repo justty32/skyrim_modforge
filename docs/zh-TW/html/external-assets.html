@@ -121,7 +121,7 @@ OutModDir/
 ```jsonc
 "sounds": [
   { "editorId": "MFBellChimeSD",
-    "files": [ "Sound\\fx\\mymod\\bell_chime_01.wav" ],
+    "files": [ "Sound\\fx\\mymod\\bell_chime_01.wav" ],   // 一個或多個；Data 相對，位於 Sound\ 下
     "category": "",            // ref → SNCT；空 -> Skyrim.esm:0x0172A1 AudioCategorySFX
     "outputModel": "",         // ref → SOPM；空 -> Skyrim.esm:0x0B4058（原版 SFX 輸出）
     "priority": 128,
@@ -131,7 +131,7 @@ OutModDir/
                   "activationSound": "MFBellChimeSD" } ]
 ```
 
-接受 SNDR *ref* 的音效連結欄位：
+接受 SNDR *ref*（規格內的 `sounds` editorId **或**原版 `<master>:0xFORMID`）的音效連結欄位：
 
 | 記錄 | 欄位 |
 |---|---|
@@ -139,18 +139,21 @@ OutModDir/
 | `miscItems` | `pickUpSound`、`putDownSound` |
 | `weapons` | `pickUpSound`、`putDownSound` |
 
+`category`/`outputModel` 預設為原版 SFX 類別 + 輸出模型，因此音效無需進一步調整即可實際發聲。這個 SNDR 原語在設計上是通用的 — 它也是規劃中的語音/TTS 管線（`.fuz` 語音行）將以之為基礎的根基。
+
 ## 工作流程
 
 ```bash
 # 1) 將您的資源製作到以 Data/ 為結構的來源目錄（Meshes/Textures/Sound/…）
 # 2) 撰寫規格：模型路徑 + 音效 +（可選）`assets` 目錄
-dotnet run --project src/ModForge.Cli -- validate examples/custom_asset_spec.json
+dotnet run --project src/ModForge.Cli -- validate examples/custom_asset_spec.json   # 路徑形狀 + refs
 dotnet run --project src/ModForge.Cli -- package  examples/custom_asset_spec.json OutModDir
+#    （或：package … OutModDir --assets /path/to/my_assets   以覆寫規格的 `assets`）
 dotnet run --project src/ModForge.Cli -- dump OutModDir/MFCustomAssets.esp           # 驗證接線
 find OutModDir -type f                                                                # 驗證打包
 ```
 
-`validate` 檢查：model 是 `.nif`、沒有 `Meshes\` 前綴、是相對路徑；音效至少有一個 `.wav`/`.xwm` 檔案；音效/類別/輸出模型 ref 可解析。
+`validate` 檢查：model 是 `.nif`、沒有 `Meshes\` 前綴、是相對路徑；音效至少有一個 `.wav`/`.xwm` 檔案；音效/類別/輸出模型 ref 可解析。`dump` 會印出每筆記錄的 `model:` 路徑、`activationSound`/`pickUpSound -> …` 連結以及 SNDR 的 `soundFile=` 路徑。
 
 完整工作範例：**`../examples/custom_asset_spec.json`**（含 `../examples/assets/customasset/` 的佔位資源樹 — 僅存根位元組；請替換為真正製作的內容）。
 

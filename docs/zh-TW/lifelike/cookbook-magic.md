@@ -28,7 +28,7 @@
 
 三個層次：自訂 **MGEF**（命中時觸發的效果）→ **附魔** / ENCH（`enchantType: weapon`）→ 引用它並帶有充能槽的**武器**。加入 COBJ 讓玩家可以製作。（若為被動**裝備**附魔，使用 `enchantType: apparel` 放在 `armor` 上——無需 `enchantmentAmount`，穿著時持續生效。）
 
-> **盔甲必須帶有 `template`，否則裝備後會隱形**（已於 2026-06-01 在遊戲中確認）。ARMO 穿著時的網格位於其 Armature（ARMA 附加記錄）上，而非 ARMO 本身。將 `template` 設為相同槽位的原版盔甲，例如 `"template": "Skyrim.esm:0x00012E49"`（ArmorIronCuirass）。Build 現在會在護甲沒有 `template` 時發出警告。
+> **盔甲必須帶有 `template`，否則裝備後會隱形**（已於 2026-06-01 在遊戲中確認：套用 template 的胸甲穿著時會顯示鐵甲網格）。ARMO 穿著時的網格位於其 Armature（ARMA 附加記錄）上，而非 ARMO 本身——只有 `armorType`+`slots` 的規格盔甲穿著時什麼都不會渲染（但*不會*崩潰）。將 `template` 設為相同槽位的原版盔甲，例如 `"template": "Skyrim.esm:0x00012E49"`（ArmorIronCuirass）；克隆會帶來 Armature（穿著網格）、WorldModel（掉落地面模型）以及 BodyTemplate。Build 會在缺少 `template` 時發出警告。
 
 ```jsonc
 { "magicEffects": [
@@ -40,23 +40,23 @@
   ],
   "enchantments": [
     { "editorId": "MF_FrostWeaponEnch", "name": "Frost Damage",
-      "enchantType": "weapon",
+      "enchantType": "weapon",          // → EnchantType=Enchantment, cast=FireAndForget, target=Touch
       "enchantmentCost": 15,            // 每次攻擊從武器充能槽消耗的量
       "effects": [ { "magicEffect": "MF_FrostDamageEnchEffect", "magnitude": 10 } ] }
   ],
   "weapons": [
     { "editorId": "MF_FrostIronSword", "name": "Frostbite Iron Sword",
-      "template": "Skyrim.esm:0x012EB7", "damage": 8,
-      "enchantment": "MF_FrostWeaponEnch", "enchantmentAmount": 1500 }
+      "template": "Skyrim.esm:0x012EB7", "damage": 8,   // template = 模型（否則裝備時崩潰）
+      "enchantment": "MF_FrostWeaponEnch", "enchantmentAmount": 1500 }   // 1500 = 充能槽
   ],
   "recipes": [
     { "editorId": "MF_FrostIronSwordRecipe", "createdObject": "MF_FrostIronSword",
-      "components": [ { "item": "Skyrim.esm:0x05ACE4", "count": 2 },
-                      { "item": "Skyrim.esm:0x02E4FC", "count": 1 } ] }
+      "components": [ { "item": "Skyrim.esm:0x05ACE4", "count": 2 },     // IngotIron
+                      { "item": "Skyrim.esm:0x02E4FC", "count": 1 } ] }  // SoulGemGrand
   ] }
 ```
 
-完整檔案：[`examples/enchantment_spec.json`](../../examples/enchantment_spec.json)。**注意——僅通過結構驗證：** 附魔在遊戲中實際*觸發*尚未確認。
+完整檔案：[`examples/enchantment_spec.json`](../../examples/enchantment_spec.json)。用 `enchdiag <out.esp> <0xFORMID>`（ENCH 類型/成本/效果）與 `dump`（武器的 `enchantment ->` 連結 + 充能）驗證。**注意——僅通過結構驗證：** 記錄能建置、驗證、連結並正確往返，且與原版 ENCH 結構完全吻合，但附魔在遊戲中實際*觸發*尚未確認（未執行遊戲內測試）。`enchantmentCost` ↔ `enchantmentAmount` 的調校，以及引擎是否會自動定價充能，是最可能需要在遊戲中驗證的部分。
 
 ## 「法術書」（自訂法術的 BOOK，首次閱讀時教授法術：MGEF → SPEL → BOOK）
 
