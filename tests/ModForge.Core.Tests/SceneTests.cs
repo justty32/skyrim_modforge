@@ -191,6 +191,18 @@ public class SceneTests
         Assert.True(adapter is null || adapter.Scripts.All(e => e.Name != "MFSceneBanterController"));
     }
 
+    // brawlOnEnd → the controller carries a BrawlOnEnd bool property (it StartCombats the two actors
+    // when the scene finishes — "they come to blows after the argument").
+    [Fact]
+    public void AutoStart_BrawlOnEnd_WiresBoolProp()
+    {
+        var spec = AutoStartScene();
+        spec.Scenes[0].AutoStart!.BrawlOnEnd = true;
+        var r = TestBuild.Ok(spec);
+        var entry = Controller(HostQuest(r));
+        Assert.True(((IScriptBoolPropertyGetter)entry.Properties.Single(p => p.Name == "BrawlOnEnd")).Data);
+    }
+
     [Fact]
     public void Validate_AutoStart_FlagsNonStartGameEnabledQuest()
     {

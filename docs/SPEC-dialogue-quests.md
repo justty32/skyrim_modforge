@@ -115,7 +115,8 @@ banter" (followers stay near the player, so it fires while travelling). Add an `
     "triggerDistance": 1024.0,        // max distance (units) from the player to EACH actor; default 2048
     "requireLineOfSight": false,      // also require the player HasLOS both actors; default false
     "cooldownSeconds": 15.0,          // min REAL seconds between plays (timescale-independent); default 60
-    "pollSeconds": 4.0 },             // RegisterForSingleUpdate poll interval; default 5
+    "pollSeconds": 4.0,               // RegisterForSingleUpdate poll interval; default 5
+    "brawlOnEnd": true },             // when the dialogue finishes, the two actors fight each other; default false
   "actors": [ /* ≥2, UniqueActor-bound as above */ ],
   "phases": [ /* … */ ] }
 ```
@@ -123,9 +124,12 @@ When `autoStart` is present the build **clears** the scene's `beginOnQuestStart`
 reusable **`MFSceneBanterController`** (extends Quest) to the host quest, wiring it to this scene + the
 first two actor alias indices + the tuning. The controller polls (chained `RegisterForSingleUpdate`)
 and calls `Scene.Start()` when both actors are loaded, within range, not dead/in-combat, (optional LOS),
-and the cooldown elapsed. `package` ships `MFSceneBanterController.pex` into `Scripts/` automatically.
-See `examples/scene-presence-banter.json`. **Out of scope (later):** dynamic "scan current teammates"
-fill (this slice uses named, `UniqueActor`-bound actors); movement/animation/FURN scene actions.
+and the cooldown elapsed. With **`brawlOnEnd`** it detects the scene finishing and makes the two actors
+fight (`StartCombat` both ways) — they come to blows after the argument; mark the actors **`essential`**
+(NpcSpec flag) for a non-lethal brawl. `package` ships `MFSceneBanterController.pex` into `Scripts/`
+automatically. See `examples/scene-presence-banter.json`. **Out of scope (later):** dynamic "scan
+current teammates" fill (this slice uses named, `UniqueActor`-bound actors); movement/animation/FURN
+scene actions.
 
 ### conditions — CTDA gates (on a `dialogue` INFO, a `banter` INFO, or a `package`)
 A condition is **static gate data**, so it lives in the spec (logic still belongs in Papyrus). Both

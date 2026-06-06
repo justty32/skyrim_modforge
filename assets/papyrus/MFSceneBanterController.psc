@@ -18,22 +18,51 @@ Float Property Cooldown = 60.0 Auto
 { Min REAL seconds between scene plays. }
 Bool Property RequireLOS = false Auto
 { Also require the player to have line of sight to both actors. }
+Bool Property BrawlOnEnd = false Auto
+{ When the scene's dialogue finishes, make the two actors fight each other (StartCombat both ways).
+  Mark the actors `essential` for a non-lethal tavern brawl. }
 
 float lastPlayed = 0.0
+bool scenePlaying = false
 
 Event OnInit()
     RegisterForSingleUpdate(PollInterval)
 EndEvent
 
 Event OnUpdate()
-    TryBanter()
+    Poll()
     RegisterForSingleUpdate(PollInterval)   ; re-arm the next poll (no persistent OnUpdate loop)
 EndEvent
 
-Function TryBanter()
-    if BanterScene == None || BanterScene.IsPlaying()
+Function Poll()
+    if BanterScene == None
         return
     endif
+    if BanterScene.IsPlaying()
+        scenePlaying = true       ; remember it ran so we can react when it ends
+        return
+    endif
+    if scenePlaying
+        scenePlaying = false      ; the scene just finished this poll
+        if BrawlOnEnd
+            StartBrawl()
+        endif
+        return
+    endif
+    TryBanter()
+EndFunction
+
+Function StartBrawl()
+    Actor a = GetActor(ActorAliasA)
+    Actor b = GetActor(ActorAliasB)
+    if a == None || b == None || a.IsDead() || b.IsDead()
+        return
+    endif
+    a.StartCombat(b)
+    b.StartCombat(a)
+EndFunction
+
+Function TryBanter()
     float now = Utility.GetCurrentRealTime()
     if (now - lastPlayed) < Cooldown
         return
@@ -55,6 +84,7 @@ Function TryBanter()
     endif
     BanterScene.Start()
     lastPlayed = now
+    scenePlaying = true        ; so Poll() can detect the end and fire BrawlOnEnd
 EndFunction
 
 Actor Function GetActor(int aliasIndex)

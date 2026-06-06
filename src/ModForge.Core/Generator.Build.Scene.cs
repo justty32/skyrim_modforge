@@ -146,6 +146,7 @@ public static partial class Generator
             entry.Properties.Add(new ScriptFloatProperty { Name = "PollInterval",    Data = au.PollSeconds, Flags = ScriptProperty.Flag.Edited });
             entry.Properties.Add(new ScriptFloatProperty { Name = "Cooldown",        Data = au.CooldownSeconds, Flags = ScriptProperty.Flag.Edited });
             entry.Properties.Add(new ScriptBoolProperty  { Name = "RequireLOS",      Data = au.RequireLineOfSight, Flags = ScriptProperty.Flag.Edited });
+            entry.Properties.Add(new ScriptBoolProperty  { Name = "BrawlOnEnd",      Data = au.BrawlOnEnd, Flags = ScriptProperty.Flag.Edited });
             qad.Scripts.Add(entry);
             scriptsAttached++;
         }

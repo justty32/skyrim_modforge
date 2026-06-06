@@ -116,7 +116,7 @@
 | Spec | `Spec.Dialogue.cs` | `SceneSpec`, `SceneActorSpec`, `SceneAutoStartSpec`（在場偵測調參） |
 | Build P1 | `Generator.Build.Scene.cs` | 建 SCEN：alias 綁定、參與者、phase + dialogue actions；**autoStart → `AttachSceneController` 把 `MFSceneBanterController` 掛上 host quest 並清 BeginOnQuestStart** |
 | Const | `Generator.QuestFragments.cs` | `SceneBanterController` scriptname 常數 |
-| Asset | `assets/papyrus/MFSceneBanterController.psc` | 可複用在場偵測 controller（extends Quest，鏈式 RegisterForSingleUpdate → Scene.Start()）；embed 進 CLI |
+| Asset | `assets/papyrus/MFSceneBanterController.psc` | 可複用在場偵測 controller（extends Quest，鏈式 RegisterForSingleUpdate → Scene.Start()）；`brawlOnEnd` 偵測 scene 結束 → `StartBrawl()` 雙向 StartCombat；embed 進 CLI |
 | Validate | `Generator.Validate.Quests.cs` | actor alias ref、scene↔quest 連結；**autoStart 需 StartGameEnabled host quest + ≥2 actor + 正數調參** |
 | Package | `src/ModForge.Cli/Package.cs` §5c | 任一 scene 有 autoStart → 出貨 `MFSceneBanterController.pex` 進 Scripts/ |
 | Diag | `Diagnostics.Scene.cs` | actors / phases / dialogue actions dump |

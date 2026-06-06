@@ -148,6 +148,18 @@ cooldown → they banter again. This is ALSO the first in-game confirmation of t
   ActorAliasA/B int props + float/bool config props. autoStart absent → unchanged (regression).
 - Validate test: autoStart on a non-StartGameEnabled quest warns; <2 actors warns.
 
+## Follow-up (2026-06-06): in-game PASS + `brawlOnEnd`
+
+In-game test confirmed presence detection + the base Scene record both work (the two NPCs banter on
+approach) — the first in-game confirmation of SCEN. User feedback: "they didn't come to blows." Added:
+
+- `SceneAutoStartSpec.BrawlOnEnd` (bool). The controller tracks a `scenePlaying` flag; when the scene
+  transitions playing→ended in `Poll()`, it calls `StartBrawl()` → `a.StartCombat(b)` + `b.StartCombat(a)`.
+  Wired as an 8th controller property.
+- `NpcSpec.Essential` / `NpcSpec.Protected` → `NpcConfiguration.Flag`. Mark actors `essential` for a
+  non-lethal brawl (loser bleeds out, recovers) so the test is repeatable. Example NPCs are `essential`
+  + `brawlOnEnd: true`. 318 tests green. brawl awaiting in-game.
+
 ## Out of scope (later layers)
 
 - Dynamic teammate scan + `ForceRefTo` alias fill (generic any-follower).

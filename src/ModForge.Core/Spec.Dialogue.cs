@@ -155,6 +155,10 @@ public sealed class SceneAutoStartSpec
     public bool RequireLineOfSight { get; set; }           // also require the player HasLOS both actors
     public float CooldownSeconds { get; set; } = 60f;      // min real seconds between plays
     public float PollSeconds { get; set; } = 5f;           // RegisterForSingleUpdate interval
+    // When true, the controller makes the two actors fight each other (StartCombat both ways) the
+    // moment the scene's dialogue finishes — "they come to blows after the argument". For a NON-lethal
+    // tavern brawl mark the actors `essential` so the loser drops to bleedout instead of dying.
+    public bool BrawlOnEnd { get; set; }
 }
 // One participant in a scene: an alias INDEX (unique within the host quest, ≥0) plus the NPC that fills
 // it. The alias is emitted on the host quest and `UniqueActor`-bound to `npc` (a ref → an in-spec NPC or

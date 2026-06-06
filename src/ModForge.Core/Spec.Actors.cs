@@ -16,6 +16,8 @@ public sealed class NpcSpec
     public string VoiceType { get; set; } = "";      // ref → VTYP (e.g. Skyrim.esm:0x013AE6 = MaleNord); without one, NPC is silent (no hello/idle chatter)
     public string CrimeFaction { get; set; } = "";   // ref → FACT (e.g. Skyrim.esm:0x0267EA = CrimeFactionWhiterun); marks the NPC as a member of a city's crime/citizen circle — grants city-traversal rights (without it, cross-cell Travel through city gates is silently rejected)
     public bool Unique { get; set; }                  // Configuration.Flag.Unique — engine treats the actor as a one-off (vs leveled spawn); seems to matter for AI tracking + cross-cell travel
+    public bool Essential { get; set; }               // Configuration.Flag.Essential — cannot be killed (drops to bleedout then recovers); use for a non-lethal brawl or a plot-critical NPC
+    public bool Protected { get; set; }               // Configuration.Flag.Protected — can only be killed by the PLAYER (other NPCs can't land the killing blow)
     public List<string> Spells { get; set; } = new(); // refs → SPEL records; populates npc.ActorEffect — the AI's spell list, what combat AI considers casting (combined with combatStyle's magic preference)
     public string CombatStyle { get; set; } = "";    // ref → CSTY; HOW the AI fights (magic vs melee preference, aggression, group flank). Without one, the engine uses a default that may not pick spells from `spells`.
     // AIData — controls WHETHER the NPC fights at all (separate system from CombatStyle which is

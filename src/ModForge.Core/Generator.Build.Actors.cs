@@ -21,6 +21,10 @@ public static partial class Generator
                 // have this. Suspected to matter for the engine's persistent AI-tracking that lets a
                 // package decide "I'm at the inn now, schedule says it's market time, walk to market".
                 if (n.Unique) r.Configuration.Flags |= NpcConfiguration.Flag.Unique;
+                // Essential = unkillable (bleedout + recover); Protected = only the player can kill it.
+                // Essential is what keeps a non-lethal brawl (scene brawlOnEnd) from ending in a corpse.
+                if (n.Essential) r.Configuration.Flags |= NpcConfiguration.Flag.Essential;
+                if (n.Protected) r.Configuration.Flags |= NpcConfiguration.Flag.Protected;
                 // AIData — Aggression/Confidence are the difference between "fights" and "flees".
                 // Default Aggression=Unaggressive + Confidence=Cowardly means the NPC runs from any
                 // threat (the "mage just flees, never casts" symptom). Author Aggression=Aggressive

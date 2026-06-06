@@ -1,7 +1,7 @@
 {
   "pluginName": "ModForgeSceneBanter.esp",
   "esl": true,
-  "_": "Presence-gated interaction SCENE (隨從在場偵測 + 互動 Scene). Unlike scene_spec.json (which plays once on game-load via beginOnQuestStart), this scene declares `autoStart`: ModForge attaches the reusable MFSceneBanterController (extends Quest) to the host quest and clears beginOnQuestStart. The controller polls (chained RegisterForSingleUpdate) and calls Scene.Start() whenever the player is within triggerDistance of BOTH actors, neither is dead/in-combat, and the cooldown elapsed. Two unique NPCs are PLACED in the Sleeping Giant Inn for an easy test: coc RiverwoodSleepingGiantInn (after save+reload on an old save), stand near both → they banter; leave + return after the cooldown → they banter again. THIS is also the first in-game confirmation of the base Scene record. For REAL follower banter the same scene works if the two actors are recruited followers — they stay near the player, so it fires while travelling. package bundles MFSceneBanterController.pex into Scripts/ automatically.",
+  "_": "Presence-gated interaction SCENE (隨從在場偵測 + 互動 Scene). Unlike scene_spec.json (which plays once on game-load via beginOnQuestStart), this scene declares `autoStart`: ModForge attaches the reusable MFSceneBanterController (extends Quest) to the host quest and clears beginOnQuestStart. The controller polls (chained RegisterForSingleUpdate) and calls Scene.Start() whenever the player is within triggerDistance of BOTH actors, neither is dead/in-combat, and the cooldown elapsed. Two unique NPCs are PLACED in the Sleeping Giant Inn for an easy test: coc RiverwoodSleepingGiantInn (after save+reload on an old save), stand near both → they banter; leave + return after the cooldown → they banter again. `brawlOnEnd` makes the controller StartCombat both actors the moment the dialogue finishes — they come to blows after the argument; both NPCs are `essential` so it's a non-lethal brawl (loser drops to bleedout, recovers). For REAL follower banter the same scene works if the two actors are recruited followers — they stay near the player, so it fires while travelling. package bundles MFSceneBanterController.pex into Scripts/ automatically.",
 
   "classes": [
     {
@@ -17,14 +17,14 @@
       "editorId": "MF_BanterBorin", "name": "Borin", "greeting": "Mind your own, stranger.",
       "race": "Skyrim.esm:0x013746", "class": "MF_BanterClass", "outfit": "Skyrim.esm:0x09D5DF",
       "voiceType": "Skyrim.esm:0x013AE6", "crimeFaction": "Skyrim.esm:0x0267EA",
-      "unique": true, "level": 4, "autoCalcStats": true,
+      "unique": true, "essential": true, "level": 4, "autoCalcStats": true,
       "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
     },
     {
       "editorId": "MF_BanterHilda", "name": "Hilda", "greeting": "Hmph.",
       "race": "Skyrim.esm:0x013746", "class": "MF_BanterClass", "outfit": "Skyrim.esm:0x09D5DF",
       "voiceType": "Skyrim.esm:0x013AE7", "crimeFaction": "Skyrim.esm:0x0267EA",
-      "unique": true, "level": 4, "autoCalcStats": true,
+      "unique": true, "essential": true, "level": 4, "autoCalcStats": true,
       "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
     }
   ],
@@ -45,7 +45,8 @@
         "triggerDistance": 1024.0,
         "requireLineOfSight": false,
         "cooldownSeconds": 15.0,
-        "pollSeconds": 4.0
+        "pollSeconds": 4.0,
+        "brawlOnEnd": true
       },
       "actors": [
         { "aliasId": 0, "npc": "MF_BanterBorin", "name": "Borin" },
