@@ -138,6 +138,12 @@ This is also the first in-game confirmation of non-Dialog scene actions in ModFo
 - Validate: action with both package+timer → problem; out-of-range phase → problem; unknown actor →
   problem; lineless phase with no covering action → problem.
 
+## Status: ✅ in-game PASS (2026-06-06)
+
+Player-confirmed with `ModForgeSceneAction.zip`: Borin walks across the Sleeping Giant Inn to
+`RiverwoodInnCenterMarker` (the scene Package action driving a Travel PACK), pauses (the Timer action
+pacing the beat phase), then the two argue. First in-game confirmation of non-Dialog scene actions.
+
 ## Future work (decoded, deferred)
 
 - **Sit / use furniture** (`MQ306EsbernSit` shape): register a UseItemAt PACK template (Data[16]
