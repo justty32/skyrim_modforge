@@ -94,6 +94,10 @@ From this one entry the build emits the **whole vanilla chain** (mirrors `scened
 - the **Scene (SCEN)**: its `SceneActors` reference the **alias indices** (not NPC FormKeys); its
   `Phases` are the ordered beats; one **Dialog `SceneAction`** per phase ties (speaking alias, phase)
   → the line's topic, with the *other* actor as the headtrack target so they face each other;
+  - **per-phase gaze override** (optional): a phase may set `headtrackActor` (an actor `aliasId` to look
+    at; `-1` = look at no one; default = the other actor), `headtrackPlayer: true` (turn to face the
+    PLAYER — mutually exclusive with a non-default `headtrackActor`), and `faceTarget` (default true).
+    Use it for a beat where an NPC turns to address you directly. Omit all three = unchanged behaviour.
 - one **Scene-subtype DialogTopic** (Category=Scene, SNAM=`SCEN`) + **INFO** per phase, carrying the
   spoken `lines` + `emotion`.
 

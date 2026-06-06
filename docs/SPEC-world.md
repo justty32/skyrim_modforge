@@ -36,6 +36,29 @@
   *add* your reference (vanilla contents are untouched — they come from the master). Needs the
   game's `Data` folder — set `MODFORGE_SKYRIM_DATA` if it isn't at the default Steam path.
 
+### lights — custom light sources (LIGT)
+Define a custom light (colour, radius, flicker) and PLACE it like any other base object. ModForge
+could already *place* vanilla lights; `lights[]` lets you author new ones.
+```jsonc
+"lights": [
+  { "editorId": "MF_EerieLight", "name": "Eerie Glow",
+    "color": { "r": 70, "g": 230, "b": 110 },   // RGB 0..255
+    "radius": 420, "fadeValue": 1.0,            // radius in units; fade = brightness multiplier
+    "flags": [ "Dynamic", "Flicker" ],          // Light.Flag names: Dynamic / Flicker / FlickerSlow /
+                                                //   Pulse / PulseSlow / OffByDefault / SpotLight / CanBeCarried / …
+    "falloffExponent": 1.0, "fov": 90.0,        // optional (spotlights)
+    "value": 0, "weight": 0.0 } ]               // optional (only matter for a carriable light)
+```
+Place it with a normal `placements[]` entry whose `base` is the light's `editorId`:
+```jsonc
+"placements": [ { "base": "MF_EerieLight", "cell": "Skyrim.esm:0x0133C6",
+                  "position": { "x": -650, "y": 100, "z": 140 } } ]
+```
+A LIGT base radius defaults to 256, fade to 1.0. Use `Dynamic` so it lights actors that move through
+it, `Flicker`/`Pulse` for torch/candle/magical effects. Validation checks flag names, colour range
+(0..255), and radius > 0. (A free-standing light has no model — for a visible *fixture* place a vanilla
+torch/lantern static too, or carry the light on a torch object.)
+
 ### worldspaces (WRLD) & regions (REGN) — exterior worlds & weather
 Create a **new** exterior worldspace and attach a climate, and define **regions** (areas inside a
 worldspace) whose **weather table** drives which weathers play there:

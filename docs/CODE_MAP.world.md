@@ -18,6 +18,8 @@
 | `examples/vendor_spec.json` | 商人 faction + merchant chest |
 | `examples/worldspace_spec.json` | 自訂 worldspace |
 | `examples/worldspace_navmesh_test_spec.json` | worldspace + navmesh |
+| `examples/lights.json` | 自訂 Light（LIGT）：color/radius/flicker + 放置進 cell |
+| `examples/showcase-multi.json` | 多功能 showcase（Light + scene headtrack + SitTarget，一包一次測）|
 
 ---
 
@@ -32,6 +34,7 @@
 | `VendorTests.cs` | vendor faction config + merchant container build |
 | `WorldspaceRegionTests.cs` | worldspace record + region polygon/weather build |
 | `XMarkerTests.cs` | XMarker 放置（特殊 placement base）|
+| `LightTests.cs` | 自訂 Light（LIGT）color/radius/fade/flags build + validate |
 
 ---
 
@@ -59,6 +62,20 @@
 | Build P2 | `Generator.Build.ExteriorCells.cs` | 室外 worldspace cell group tree（block/sub-block 按 grid 坐標）|
 | Validate | `Generator.Validate.World.cs` | linked-ref target、teleport pairs、worldspace boundary |
 | Diag | `Diagnostics.Dump.World.cs` | placements / cells / linked-refs / navmesh dump |
+
+---
+
+## Lights 自訂光源（LIGT）
+→ **說明文件**：[SPEC-world.md § lights](SPEC-world.md#lights--custom-light-sources-ligt)
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.Lights.cs` | `LightSpec`（editorId/name/color/radius/fadeValue/falloff/fov/flags/value/weight）|
+| Build P1 | `Generator.Build.Lights.cs` | `BuildLights`（`mod.Lights.AddNew`；color R/G/B、radius/fade、`Light.Flag` 解析；BuildFormKeyTable 前建，故 placement 可按 editorId 放置）|
+| Validate | `Generator.Validate.Lights.cs` | `ValidateLights`（flag 名合法、color 0..255、radius>0、editorId 唯一）|
+| Diag | `Diagnostics.Records.cs` | `lightdiag`（radius/color/fade/flags dump）|
+
+自訂 Light 是一般 base record——用既有 `placements[]`（base=light editorId）放進任意 cell，無需動 placement 程式碼。
 
 ---
 

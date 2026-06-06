@@ -129,6 +129,42 @@ package SingleRef target). Without `target` the package no-ops. Primary use: a *
 — a scene Package action references a SitTarget package so an actor takes a seat mid-conversation
 (see `examples/scene-sit-performance.json`).
 
+**Activate template (`Skyrim.esm:0x019B2D`) — `activate` subobject:**
+```jsonc
+{ "editorId": "MF_PullLever",
+  "template": "Skyrim.esm:0x019B2D",       // Activate
+  "preferredSpeed": "Walk",
+  "activate": {
+    "target":           "MF_Lever",        // REQUIRED — ref to the object to activate (placement editorId or vanilla ref)
+    "numberToActivate": 1 } }              // default 1
+```
+The NPC walks to and ACTIVATES `target` (a lever/door/activator — triggers its OnActivate). Slot 0
+is the SingleRef target (deferred-wired like Patrol/Follow slot 0, so it may be an in-spec placement;
+forced **persistent** automatically), slot 2 is "Number to Activate". Decoded from vanilla
+`dunHillgrundsUnlockExteriorDoorActivate`. Without `target` the package no-ops. Pairs well as a scene
+Package-action beat (an actor pulls a chain / opens a door mid-scene). Same navmesh reachability rule
+as Travel/SitTarget.
+
+**Eat template (`Skyrim.esm:0x019714`) — `eat` subobject:**
+```jsonc
+{ "editorId": "MF_TavernMeal",
+  "template": "Skyrim.esm:0x019714",       // Eat
+  "schedule": { "hour": 19, "durationInMinutes": 60 },
+  "eat": {
+    "location":          "",               // optional placed-ref (where to eat); empty -> NearSelf
+    "radius":            500,
+    "allowSitting":      true,
+    "allowWandering":    true,
+    "numFoodItems":      1,
+    "energy":            0,
+    "minWanderDistance": 300 } }
+```
+Eat is a LOCATION-based Sandbox variant: the NPC goes to `location`, finds food + a chair (a fixed
+engine search the builder emits — slot 1 Food Criteria, 4 Found Food, 5 Chair Target, 6 Found Chair),
+sits and eats. Modelled on the Sleep template's slot-filling. Gate the meal window with `schedule`.
+"Go to the tavern and have a meal." (Note: this is an ambient routine — for a precise scene "sit on
+THIS chair" beat use **SitTarget** instead.)
+
 **Flags (Package.Flag):** `OffersServices`, `MustComplete`, `MaintainSpeedAtGoal`, `ContinueIfPcNear`,
 `OncePerDay`, `PreferredSpeed`, `AlwaysSneak`, `AllowSwimming`, `IgnoreCombat`, `WeaponsUnequipped`,
 `WeaponDrawn`, `NoCombatAlert`, `WearSleepOutfit`.

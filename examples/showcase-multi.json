@@ -1,0 +1,95 @@
+{
+  "pluginName": "ModForgeShowcase.esp",
+  "esl": true,
+  "_": "ONE-BUNDLE SHOWCASE of the parallel-built batch — exercises several new features in a single coc. (1) Custom LIGHT (LIGT builder): an eerie green flickering light glows in the Sleeping Giant Inn. (2) Per-phase HEADTRACK: during the argument Borin turns to look straight at YOU (the player) on one line, instead of at Hilda. (3) SitTarget performance beat (re-confirmed): Borin walks across the inn and sits on a chair before the argument. All wrapped in the proven presence-gated autoStart scene with brawlOnEnd (essential NPCs => non-lethal). Test: coc RiverwoodSleepingGiantInn (save+reload on an old save), look for the green glow, then stand near both NPCs => Borin walks over + sits, they argue (watch Borin face the camera on his 2nd line), then they brawl. Also in this batch but shipped as standalone repo examples: package-activate.json (Activate template — NPC pulls a ref), package-eat.json (Eat template), lights.json, scene-headtrack.json. Bundles MFSceneBanterController.pex automatically.",
+
+  "lights": [
+    {
+      "editorId": "MF_EerieLight", "name": "Eerie Glow",
+      "color": { "r": 70, "g": 230, "b": 110 },
+      "radius": 420, "fadeValue": 1.0,
+      "flags": [ "Dynamic", "Flicker" ]
+    }
+  ],
+
+  "classes": [
+    {
+      "editorId": "MF_ShowClass", "name": "ModForge Townsfolk",
+      "healthWeight": 50, "magickaWeight": 25, "staminaWeight": 25,
+      "skillWeights": { "Speech": 75 }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_ShowBorin", "name": "Borin", "greeting": "Mind your own, stranger.",
+      "race": "Skyrim.esm:0x013746", "class": "MF_ShowClass", "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6", "crimeFaction": "Skyrim.esm:0x0267EA",
+      "unique": true, "essential": true, "level": 4, "autoCalcStats": true,
+      "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
+    },
+    {
+      "editorId": "MF_ShowHilda", "name": "Hilda", "greeting": "Hmph.",
+      "race": "Skyrim.esm:0x013746", "class": "MF_ShowClass", "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE7", "crimeFaction": "Skyrim.esm:0x0267EA",
+      "unique": true, "essential": true, "level": 4, "autoCalcStats": true,
+      "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
+    }
+  ],
+
+  "packages": [
+    {
+      "editorId": "MF_ShowSit",
+      "_": "SitTarget package the scene drives — Borin walks to the chair (InnChair) and sits.",
+      "template": "Skyrim.esm:0x0A9277",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [ "HellosToPlayer", "ObserveCombatBehavior", "ReactionToPlayerActions" ],
+      "sitTarget": { "target": "InnChair", "waitTime": 0, "stopMovement": false }
+    }
+  ],
+
+  "quests": [
+    {
+      "_": "Controller host quest. StartGameEnabled so MFSceneBanterController arms the presence poll.",
+      "editorId": "MF_ShowQuest", "name": "ModForge Showcase",
+      "startGameEnabled": true, "priority": 50, "objectives": []
+    }
+  ],
+
+  "scenes": [
+    {
+      "editorId": "MF_ShowScene",
+      "questEditorId": "MF_ShowQuest",
+      "autoStart": {
+        "triggerDistance": 1500.0,
+        "requireLineOfSight": false,
+        "cooldownSeconds": 30.0,
+        "pollSeconds": 4.0,
+        "brawlOnEnd": true
+      },
+      "actors": [
+        { "aliasId": 0, "npc": "MF_ShowBorin", "name": "Borin" },
+        { "aliasId": 1, "npc": "MF_ShowHilda", "name": "Hilda" }
+      ],
+      "_phases": "phase 0 = lineless BEAT (Borin walks to the chair + sits, 10s Timer). phases 1-4 = the argument; phase 2 (Borin's 2nd line) sets headtrackPlayer so he turns to face YOU.",
+      "phases": [
+        { },
+        { "speaker": 0, "emotion": "Anger",   "emotionValue": 60, "lines": [ "Let me sit. Now — the ale you owe me, Hilda." ] },
+        { "speaker": 0, "emotion": "Anger",   "emotionValue": 80, "headtrackPlayer": true, "lines": [ "You there — you saw her take it, didn't you?" ] },
+        { "speaker": 1, "emotion": "Disgust", "emotionValue": 70, "lines": [ "Don't drag the stranger into your lies, Borin." ] },
+        { "speaker": 0, "emotion": "Anger",   "emotionValue": 85, "lines": [ "Lies?! That does it." ] }
+      ],
+      "actions": [
+        { "actor": 0, "package": "MF_ShowSit", "startPhase": 0, "endPhase": 0 },
+        { "actor": 0, "timerSeconds": 10.0,    "startPhase": 0, "endPhase": 0 }
+      ]
+    }
+  ],
+
+  "placements": [
+    { "base": "MF_ShowBorin", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 180, "z": 0 } },
+    { "base": "MF_ShowHilda", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -850, "y": 60, "z": 0 }, "rotation": { "x": 0, "y": 0, "z": 180 } },
+    { "editorId": "InnChair", "base": "Skyrim.esm:0x06E7A8", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -977.29, "y": 9.08, "z": 0 }, "rotation": { "x": 0, "y": 0, "z": 136 } },
+    { "base": "MF_EerieLight", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -650, "y": 100, "z": 140 } }
+  ]
+}
