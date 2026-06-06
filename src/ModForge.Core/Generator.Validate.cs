@@ -22,6 +22,8 @@ public static partial class Generator
         ctx.ValidateWorld();
         ctx.ValidateStoryManager();
         ctx.ValidateGlobals();
+        ctx.ValidateProjectiles();
+        ctx.ValidateExplosions();
         ValidateWeather(spec, ctx.Problems, ctx.Ids, ctx.CheckRef);
         ValidateLights(spec, ctx.Problems);
         return ctx.Problems;
@@ -95,6 +97,8 @@ public static partial class Generator
             foreach (var e in spec.Enchantments) Reg(e.EditorId, "enchantment");
             foreach (var tx in spec.TextureSets) Reg(tx.EditorId, "textureSet");
             foreach (var lt in spec.Lights) Reg(lt.EditorId, "light");
+            foreach (var pr in spec.Projectiles) Reg(pr.EditorId, "projectile");
+            foreach (var ex in spec.Explosions) Reg(ex.EditorId, "explosion");
             foreach (var w in spec.Weathers) Reg(w.EditorId, "weather");
             foreach (var cl in spec.Climates) Reg(cl.EditorId, "climate");
             foreach (var ws in spec.Worldspaces) Reg(ws.EditorId, "worldspace");

@@ -1,0 +1,75 @@
+{
+  "pluginName": "ModForgeProjExpl.esp",
+  "esl": true,
+  "_": "PROJ (Projectile) + EXPL (Explosion) builders — give a custom destruction spell its OWN flying bolt + boom on impact. Chain: custom EXPL (damage+radius, vanilla fire light/sound/imagespace so it's visible+audible) <- custom PROJ (type Missile, flag Explosion, model = the REAL vanilla firebolt nif so the bolt is visible, explosion = our EXPL) <- custom MGEF (projectile = our PROJ) <- custom Aimed FireAndForget SPEL. All vanilla art FormIDs were decoded from Skyrim.esm via Mutagen (FireboltProjectile01 0x012E84 / ExplosionFireBoltExpert01 0x10FBE9) — do NOT invent nif paths (a wrong path = an INVISIBLE projectile).",
+  "_ingame_test": "1) coc qasmoke (or any cell with a wall). 2) `player.addspell <FormID of MF_FXFirebolt>` — or learn it via console: open console, `help \"MF Custom Firebolt\"` to find the SPEL FormID, then `player.addspell <id>`. 3) Equip it and cast at a wall or dummy: you should see OUR firebolt-art bolt fly out (custom PROJ) and a fire explosion + damage on impact (custom EXPL). The bolt art is the real vanilla Magic\\FireBoltProjectile.nif so it is visible; the boom uses vanilla fire imagespace/sound so it reads as a fire blast.",
+
+  "explosions": [
+    {
+      "editorId": "MF_FireboltBoom",
+      "name": "Custom Firebolt Blast",
+      "_": "The boom on impact. Vanilla art decoded from ExplosionFireBoltExpert01 (Skyrim.esm:0x10FBE9): FX model Effects\\FXEmptyExplosionArt.nif, sound 0x02518F (EXPFireballImpactSet... fire impact), imageSpaceModifier 0x10FBE8. damage/radius are OURS (vanilla firebolt expert is 0 direct damage — the MGEF carries the damage there; here we add a small AoE punch so the explosion itself is felt). force/isRadius mirror the vanilla feel.",
+      "model": "Effects\\FXEmptyExplosionArt.nif",
+      "damage": 15,
+      "force": 7,
+      "radius": 256,
+      "isRadius": 1280,
+      "sound": "Skyrim.esm:0x02518F",
+      "imageSpaceModifier": "Skyrim.esm:0x0010FBE8",
+      "flags": [ "IgnoreLosCheck" ]
+    }
+  ],
+
+  "projectiles": [
+    {
+      "editorId": "MF_FireboltBolt",
+      "name": "Custom Firebolt",
+      "_": "The flying bolt. model is the REAL vanilla firebolt nif (decoded from FireboltProjectile01 0x012E84 = Magic\\FireBoltProjectile.nif) so it is VISIBLE. type Missile (firebolt-style straight bolt). flag Explosion = trigger the explosion on impact. explosion = our in-spec EXPL (resolved by editorId — Explosions build before Projectiles). light reuses the vanilla firebolt light 0x01CBB3 so the bolt glows; sound 0x03C8FE is the vanilla firebolt travel sound. speed/range/gravity tuned firebolt-like.",
+      "type": "Missile",
+      "speed": 2500,
+      "gravity": 0,
+      "range": 10000,
+      "lifetime": 10,
+      "impactForce": 1,
+      "flags": [ "Explosion" ],
+      "model": "Magic\\FireBoltProjectile.nif",
+      "light": "Skyrim.esm:0x0001CBB3",
+      "sound": "Skyrim.esm:0x0003C8FE",
+      "explosion": "MF_FireboltBoom"
+    }
+  ],
+
+  "magicEffects": [
+    {
+      "editorId": "MF_FXFireboltEffect",
+      "name": "Custom Firebolt",
+      "description": "A firebolt that hurls a searing bolt at the target.",
+      "_": "Aimed fire damage. Functional fields mirror vanilla FireDamageFFAimed75. projectile = OUR custom PROJ (the It-new field reused from shout work) so the spell flies our bolt. The direct hit damage rides the MGEF magnitude; the EXPL adds its own AoE damage on top. castingArt reuses vanilla firebolt cast art 0x01B211 so the caster's hand lights up.",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "magicSkill": "Destruction",
+      "resistValue": "ResistFire",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
+      "baseCost": 3.3,
+      "flags": [ "Hostile", "Detrimental", "NoArea" ],
+      "projectile": "MF_FireboltBolt",
+      "castingArt": "Skyrim.esm:0x0001B211"
+    }
+  ],
+
+  "spells": [
+    {
+      "editorId": "MF_FXFirebolt",
+      "name": "MF Custom Firebolt",
+      "_": "The castable spell. Aimed FireAndForget. equipType EitherHand (Skyrim.esm:0x013F44) so it can be equipped into a hand and cast. magnitude 25 = firebolt-tier direct hit. player.addspell-able.",
+      "spellType": "Spell",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
+      "equipType": "Skyrim.esm:0x00013F44",
+      "effects": [
+        { "magicEffect": "MF_FXFireboltEffect", "magnitude": 25, "area": 0, "duration": 0 }
+      ]
+    }
+  ]
+}

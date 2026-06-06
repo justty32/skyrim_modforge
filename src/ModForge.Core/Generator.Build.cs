@@ -30,6 +30,8 @@ public static partial class Generator
         ctx.BuildBanter();                          // proactive Idle banter topics (unprompted NPC lines)
         ctx.BuildScenes();                          // SCEN multi-actor conversations (quest aliases + phases + Scene topics)
         ctx.BuildMagicEffects();                   // MagicEffect (MGEF)
+        ctx.BuildExplosions();                      // Explosion (EXPL) — built before Projectiles so a PROJ resolves an in-spec explosion
+        ctx.BuildProjectiles();                    // Projectile (PROJ) — the flying bolt (refs wired in pass 2)
         ctx.BuildSpells();                         // Spell (SPEL)
         ctx.BuildEnchantments();                   // ObjectEffect (ENCH) scalar records
         ctx.BuildShouts();                         // WordOfPower (WOOP) + Shout (SHOU) scalar records
@@ -79,6 +81,7 @@ public static partial class Generator
         ctx.WireEffects();                         // magic effects on spell/potion/ingredient/scroll (+ spell equipType)
         ctx.WireEnchantments();                    // ENCH effects + weapon/armor enchantment FormLinks
         ctx.WireMagicEffectRefs();                 // MGEF association/projectile/art/explosion
+        ctx.WireMagicFxRefs();                     // PROJ + EXPL FormLinks (light/sound/explosion/objectEffect/…)
         ctx.WirePerks();                           // PERK effects/conditions/nextPerk + npc perk grants
         ctx.WireWeatherAndClimateLinks();          // WTHR precipitation + CLMT weather FormLinks
         ctx.WireShouts();                          // SHOU MenuDisplayObject + per-row Word (WOOP) + Spell (SPEL)

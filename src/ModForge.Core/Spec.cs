@@ -22,6 +22,10 @@ public sealed class ModSpec
     public List<SceneSpec> Scenes { get; set; } = new();
     public List<SpellSpec> Spells { get; set; } = new();
     public List<MagicEffectSpec> MagicEffects { get; set; } = new();
+    // Magic combat FX (Spec.MagicFx.cs): a Projectile (PROJ) is the flying bolt; an Explosion
+    // (EXPL) is the boom on impact. A MagicEffect's projectile/explosion refs point at these.
+    public List<ProjectileSpec> Projectiles { get; set; } = new();
+    public List<ExplosionSpec> Explosions { get; set; } = new();
     public List<PotionSpec> Potions { get; set; } = new();
     public List<ArmorSpec> Armors { get; set; } = new();
     public List<FactionSpec> Factions { get; set; } = new();

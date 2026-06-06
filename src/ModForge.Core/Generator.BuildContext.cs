@@ -142,6 +142,7 @@ public static partial class Generator
                         + spec.CombatStyles.Count + spec.Relationships.Count + spec.Recipes.Count
                         + spec.WordsOfPower.Count + spec.Shouts.Count + spec.WordWalls.Count
                         + spec.Enchantments.Count + spec.TextureSets.Count
+                        + spec.Projectiles.Count + spec.Explosions.Count
                         + spec.Weathers.Count + spec.Climates.Count
                         + spec.EncounterZones.Count
                         + spec.Furniture.Count + spec.Sounds.Count + spec.Perks.Count
