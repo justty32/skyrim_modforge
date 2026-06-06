@@ -156,10 +156,10 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - GLOB = 全域共享單一數字、存檔保存、**condition 零腳本可讀**（`GetGlobalValue`）；當旗標/re-arm token/計數器/調參常數。與 quest stage（GetStage，quest 級）互補。**存檔已固化坑**同 `.seq`：value 只是初值，既有存檔保留 runtime 值。
 - 範例 `examples/globals.json`（三型 + constant + dialogue 條件讀旗標）；解包 esp 確認 GlobalShort/Int/Float 三型正確落盤。`GlobalTests.cs` 7 測。**runtime 改值（SetValue）**仍走 Papyrus（result script / fragment / alias 腳本）——scene replay policy 用 GLOB gate 是規劃中的下游消費者。
 
-**Scene 重播策略（playOnce / playHour / gateGlobal）：⚠️ 結構驗證通過、待實機（2026-06-06）**——338 測試綠：
+**Scene 重播策略（playOnce / playHour / gateGlobal）：✅ 實機驗證通過（2026-06-06）**——338 測試綠（玩家確認：吵一次後不再循環）：
 - 解決原始問題「在場觸發的對話無限循環」。`SceneAutoStartSpec` 加 `playOnce`/`playHour`/`playHourTolerance`/`gateGlobal`（全 AND 在既有 cooldown 上）。controller `.psc` 對應加 `PlayOnce`/`PlayHour`/`PlayHourTolerance`/`Gate`(GlobalVariable) property + 閘門：playOnce 播完停 poll（`OnUpdate` 不再 re-register，省存檔）；playHour 用 `CurrentHour`（`GetCurrentGameTime` 小數×24）+ `HourDistance`（環形）窗；Gate 用 `GetValue()` 擋、播完 `SetValue(1)`（別的事件 `SetValue(0)` 重新武裝——用上剛建的 GLOB）。
 - `AttachSceneController` 加三個直填 prop + gateGlobal object prop（pass 2 `WireScenes` 解析，`sceneGateWires`）。validate：playHour 0..24、tol>0、gateGlobal CheckRef。
 - **重編了 `.pex`**（native `~/tools/papyrus-compiler` + `MODFORGE_PAPYRUS_HEADERS=~/.cache/modforge/papyrus/Source/Scripts`；3964→5484 bytes，含新 props/CurrentHour/HourDistance/SetValue）。範例 `examples/scene-replay-policy.json`（playOnce；註解列 playHour/gateGlobal 變體）。zip `~/skyrim_mods/ModForgeReplayPolicy.zip`。
-- **實機重點**：站近兩人 → 吵一次 → 離開再回 → 不再吵（playOnce）。gateGlobal/playHour 變體需另測。
+- **實機 PASS（玩家確認）**：站近兩人 → 吵一次 → 離開再回 → 不再吵（playOnce 生效）。
 
 **之後可做**：再多解事件（SkillIncrease/Jail/Bribe… `smtree Skyrim.esm` 列舉,但須用 conditions 才安全,見 [[dispatcher-magic-trigger]]）;Scene 演出續做（sit/use-furniture：解 UseItemAt PACK template；PlayIdle/動畫 event name；camera shot）——讓演出更豐富。
