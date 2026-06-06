@@ -162,7 +162,7 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - **重編了 `.pex`**（native `~/tools/papyrus-compiler` + `MODFORGE_PAPYRUS_HEADERS=~/.cache/modforge/papyrus/Source/Scripts`；3964→5484 bytes，含新 props/CurrentHour/HourDistance/SetValue）。範例 `examples/scene-replay-policy.json`（playOnce；註解列 playHour/gateGlobal 變體）。zip `~/skyrim_mods/ModForgeReplayPolicy.zip`。
 - **實機 PASS（玩家確認）**：站近兩人 → 吵一次 → 離開再回 → 不再吵（playOnce 生效）。
 
-**Scene 演出第二切片 — NPC 坐下/用家具（SitTarget PACK，IDEAS 1b）：⚠️ 結構驗證通過、待實機（2026-06-06）**——340 測試綠：
+**Scene 演出第二切片 — NPC 坐下/用家具（SitTarget PACK，IDEAS 1b）：✅ 實機驗證通過（2026-06-06）**——340 測試綠（玩家確認：Borin 走過旅館→坐下→吵架→起身互毆）：
 - **關鍵發現**：`SceneAction.TypeEnum` 只有 Dialog/Package/Timer 三種（ikdasm 確認）——所以「NPC 做動作」一律走 **Package action**。坐下不是新 scene-action type，而是新 **PACK template**，直接套用既有 scene Package-action 管線，scene 側零改動。
 - 新 template **`SitTarget`=`Skyrim.esm:0x0A9277`**（editorID 就叫 "SitTarget"，vanilla `MQ306EsbernSit` 背後的 procedure）。作者槽：**16** `Target`（`PackageDataTarget` SingleRef→`PackageTargetSpecificReference` 指向放置的家具 ref，**必填**）、**3** `Wait Time`(float)、**4** `Stop Movement Flag`(bool)。`packagediag` 解碼；家具 base 驗證 `CommonChair01F`(`0x06E7A8`)。**SitTarget 走位＋坐合一**（引擎自動 path 到家具再坐），所以一個 action 同時示範移動與坐下，免另開 Travel。家具 ref 因是 package SingleRef target 自動強制 persistent（`deferredAnchorEds`）。
 - 程式碼：`PackageTemplates.SitTarget` + `SitTargetSpec`（Spec.Packages.Templates.cs）+ `ApplySitTargetData`（Build.Packages.Advanced.cs）+ dispatch（Build.Packages.cs）+ validate（target 必填，Validate.Npcs.cs）。`PackageTests` 加 slot-16 / wait-time / 持久化三斷言。

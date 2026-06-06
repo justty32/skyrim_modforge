@@ -144,7 +144,11 @@ Player-confirmed with `ModForgeSceneAction.zip`: Borin walks across the Sleeping
 `RiverwoodInnCenterMarker` (the scene Package action driving a Travel PACK), pauses (the Timer action
 pacing the beat phase), then the two argue. First in-game confirmation of non-Dialog scene actions.
 
-## Sit / use furniture (second slice) — ✅ structurally verified (2026-06-06), pending in-game
+## Sit / use furniture (second slice) — ✅ in-game PASS (2026-06-06)
+
+Player-confirmed with `ModForgeSitAction.zip`: Borin walks across the Sleeping Giant Inn, sits on the
+chair, the two argue, then they stand and scuffle (brawlOnEnd). SitTarget walk+sit works in-game.
+
 
 Implemented as a new **SitTarget** PACK template, not a new scene-action type — because scene actions
 are *only* Dialog/Package/Timer (confirmed: `SceneAction.TypeEnum` has exactly those three), so every
