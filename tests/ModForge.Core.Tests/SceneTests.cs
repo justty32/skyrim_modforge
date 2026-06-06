@@ -1,4 +1,5 @@
 using System.Linq;
+using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
 using ModForge;
 
@@ -127,6 +128,101 @@ public class SceneTests
         Assert.Contains("A says hi.", lines);
         Assert.Contains("B says hi back.", lines);
         Assert.Contains("A: bye.", lines);
+    }
+
+    // --- non-dialog scene actions (movement / timer beats, IDEAS §1b) --------------------------
+
+    // The two-actor scene + a leading lineless BEAT phase (phase 0) that runs a Package action
+    // (actor 1 walks a vanilla Travel package) and a Timer action (a 2s pause). The three dialogue
+    // phases shift to indices 1/2/3.
+    private static FormKey TravelPack => new(ModKey.FromNameAndExtension("Skyrim.esm"), 0x016FAA);
+    private static ModSpec ActionScene()
+    {
+        var spec = TwoActorScene();
+        var sc = spec.Scenes[0];
+        sc.Phases.Insert(0, new ScenePhaseSpec());   // beat phase: no lines
+        sc.Actions.Add(new SceneActionSpec { Actor = 1, Package = "Skyrim.esm:0x016FAA", StartPhase = 0, EndPhase = 0 });
+        sc.Actions.Add(new SceneActionSpec { Actor = 0, TimerSeconds = 2f, StartPhase = 0, EndPhase = 0 });
+        return spec;
+    }
+
+    // A Package action: Type=Package, the actor that performs it, the phase window, and the PACK
+    // FormKey in Packages. Its Index continues past the dialogue actions.
+    [Fact]
+    public void Actions_PackageBeat_BuildsPackageSceneAction()
+    {
+        var r = TestBuild.Ok(ActionScene());
+        var pkg = TheScene(r).Actions.Single(a => a.Type == SceneAction.TypeEnum.Package);
+        Assert.Equal(1, pkg.ActorID);
+        Assert.Equal(0u, pkg.StartPhase);
+        Assert.Equal(0u, pkg.EndPhase);
+        Assert.Contains(TravelPack, pkg.Packages.Select(p => p.FormKey));
+        Assert.True(pkg.Index > 3);   // after the 3 dialogue actions
+    }
+
+    // A Timer action: Type=Timer, TimerSeconds set, no Packages, no Topic.
+    [Fact]
+    public void Actions_TimerBeat_BuildsTimerSceneAction()
+    {
+        var r = TestBuild.Ok(ActionScene());
+        var timer = TheScene(r).Actions.Single(a => a.Type == SceneAction.TypeEnum.Timer);
+        Assert.Equal(0, timer.ActorID);
+        Assert.Equal(2f, timer.TimerSeconds);
+        Assert.Empty(timer.Packages);
+        Assert.True(timer.Topic.FormKey.IsNull);
+    }
+
+    // A lineless beat phase emits a ScenePhase (so actions can span it) but NO Dialog action / topic.
+    [Fact]
+    public void BeatPhase_EmitsScenePhase_ButNoDialogActionOrTopic()
+    {
+        var r = TestBuild.Ok(ActionScene());
+        var sc = TheScene(r);
+        Assert.Equal(4, sc.Phases.Count);                                            // 1 beat + 3 dialogue
+        Assert.Equal(3, sc.Actions.Count(a => a.Type == SceneAction.TypeEnum.Dialog)); // only lined phases
+        Assert.Equal(3, r.Mod.EnumerateMajorRecords<IDialogTopicGetter>()
+            .Count(t => t.Category == DialogTopic.CategoryEnum.Scene));               // one topic per line
+        Assert.Equal(5, sc.Actions.Count);                                           // 3 dialogue + 2 non-dialog
+    }
+
+    // LastActionIndex counts dialogue AND non-dialog actions.
+    [Fact]
+    public void Actions_LastActionIndex_CountsAll()
+    {
+        var r = TestBuild.Ok(ActionScene());
+        Assert.Equal(5u, TheScene(r).LastActionIndex);
+    }
+
+    [Fact]
+    public void Validate_Action_FlagsBothPackageAndTimer()
+    {
+        var spec = ActionScene();
+        spec.Scenes[0].Actions[0].TimerSeconds = 1f;   // already has a package
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("action") && p.Contains("exactly one"));
+    }
+
+    [Fact]
+    public void Validate_Action_FlagsPhaseOutOfRange()
+    {
+        var spec = ActionScene();
+        spec.Scenes[0].Actions[0].EndPhase = 99;
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("action") && p.Contains("phase"));
+    }
+
+    [Fact]
+    public void Validate_Action_FlagsUnknownActor()
+    {
+        var spec = ActionScene();
+        spec.Scenes[0].Actions[0].Actor = 9;   // not alias 0 or 1
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("action") && p.Contains("not one of the scene's actors"));
+    }
+
+    [Fact]
+    public void Validate_FlagsLinelessPhaseWithNoCoveringAction()
+    {
+        var spec = TwoActorScene();
+        spec.Scenes[0].Phases.Insert(0, new ScenePhaseSpec());   // beat phase, but NO action covers it
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("no lines") && p.Contains("no action"));
     }
 
     // --- autoStart: presence-gated repeating Scene ---------------------------------------------

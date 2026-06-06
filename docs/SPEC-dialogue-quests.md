@@ -128,8 +128,42 @@ and the cooldown elapsed. With **`brawlOnEnd`** it detects the scene finishing a
 fight (`StartCombat` both ways) — they come to blows after the argument; mark the actors **`essential`**
 (NpcSpec flag) for a non-lethal brawl. `package` ships `MFSceneBanterController.pex` into `Scripts/`
 automatically. See `examples/scene-presence-banter.json`. **Out of scope (later):** dynamic "scan
-current teammates" fill (this slice uses named, `UniqueActor`-bound actors); movement/animation/FURN
-scene actions.
+current teammates" fill (this slice uses named, `UniqueActor`-bound actors).
+
+#### actions — non-dialog performance beats (NPC 劇情演出, IDEAS §1b)
+A scene can do more than talk. Add an `actions[]` list and the scene becomes a little performance —
+*walk to a spot → wait → talk*. Each action is a vanilla non-Dialog `SceneAction` (decoded from
+`dunTolvaldsCaveCrownScene` / the `BardSongs*` scenes via `scnscan`) that runs over a **window of
+phase indices**. A phase referenced only by an action may have **empty `lines`** — a pure *beat phase*.
+```jsonc
+{ "editorId": "MF_AltarRite", "questEditorId": "MF_RiteQuest",
+  "actors": [ {"aliasId":0,"npc":"MF_Priest"}, {"aliasId":1,"npc":"MF_Acolyte"} ],
+  "phases": [
+    {},                                              // phase 0: a BEAT (no lines) — window for the walk
+    {"speaker":0, "lines":["Approach the altar."]},  // phase 1: spoken
+    {"speaker":1, "lines":["As you say."]} ],
+  "actions": [
+    {"actor":0, "package":"MF_WalkToAltar", "startPhase":0, "endPhase":0},  // PACKAGE: actor runs a PACK
+    {"actor":0, "timerSeconds":2.0,         "startPhase":0, "endPhase":0} ] // TIMER: pace the beat 2s
+}
+```
+Each action sets **exactly one** of:
+- **`package`** — a ref to an AI package (a `packages[]` entry in this spec, or an external
+  `<master>:0xFORMID`). The actor runs that PACK across the phase window. **Movement** = a **Travel**
+  package whose destination is a placed marker; **ambient activity** = a **Sandbox** package; etc.
+  (anything `packages[]` can build). The build emits a `Type=Package` SceneAction whose `Packages`
+  holds the resolved PACK FormKey (resolved in pass 2, like the actor aliases).
+- **`timerSeconds`** (> 0) — a `Type=Timer` SceneAction: the scene waits this many seconds over the
+  window (vanilla bard scenes pace beats this way). Pair a Timer with a movement Package on the same
+  beat phase so the phase reliably advances after the walk (the engine advances when the window's
+  actions complete).
+
+`startPhase`/`endPhase` are indices into `phases[]`; `endPhase` -1 = `startPhase`. Validation: actor
+must be a scene actor, the phase window must be in range, a beat (lineless) phase must be covered by an
+action. See `examples/scene-action-performance.json` (Borin walks across the Sleeping Giant Inn to the
+vanilla `RiverwoodInnCenterMarker`, waits 8s, then the two argue). **Out of scope (later):** sit /
+use-furniture (needs a UseItemAt PACK template — `MQ306EsbernSit` shape decoded) and standalone
+PlayIdle/animation event names.
 
 ### conditions — CTDA gates (on a `dialogue` INFO, a `banter` INFO, or a `package`)
 A condition is **static gate data**, so it lives in the spec (logic still belongs in Papyrus). Both

@@ -40,6 +40,8 @@ public static partial class Generator
         // Scene actor aliases, kept so pass 2 can bind each to the NPC that fills it (UniqueActor link —
         // the NPC ref may be forward or external, so it resolves only after the formKey table exists).
         private readonly List<(string SceneEd, int AliasId, string NpcRef, QuestAlias Alias)> sceneAliasWires = new();
+        // Non-dialog scene Package actions: the PACK ref is a forward link resolved in pass 2 (WireScenes).
+        private readonly List<(string SceneEd, SceneAction Action, string PackageRef)> sceneActionWires = new();
         private readonly Dictionary<(int Block, int Sub), CellSubBlock> interiorSubs = new();
         private readonly Dictionary<string, FormKey> formKeyByEd = new();
         private readonly Dictionary<string, IMajorRecord> recordsByEd = new();

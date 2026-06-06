@@ -51,6 +51,7 @@ internal static partial class Program
                 case "reladiag" when args.Length == 3: return RelaDiag(args[1], args[2]);
                 case "shoutdiag" when args.Length == 3: return ShoutDiag(args[1], args[2]);
                 case "scenediag" when args.Length == 3: return SceneDiag(args[1], args[2]);
+                case "scnscan" when args.Length is 2 or 3: return ScnScan(args[1], args.Length == 3 ? args[2] : null);
                 case "smtree" when args.Length == 2: return SmTree(args[1]);
                 default: Usage(); return 1;
             }
@@ -96,6 +97,7 @@ internal static partial class Program
         "  reladiag <in.esp> <0xFORMID>                 print a RELA, or every RELA referencing the FormID as parent/child (player has zero static RELA)\n" +
         "  shoutdiag <in.esp> <0xFORMID>                print a Shout's 3 WordsOfPower rows (Word/Spell/RecoveryTime)\n" +
         "  scenediag <in.esp> <0xFORMID>                print a SCEN's host quest + actors (alias indices) + phases + actions (which alias speaks which topic)\n" +
+        "  scnscan <in.esp> [max]                       list scenes with non-Dialog actions (Package/Timer) — find vanilla movement/furniture/timer scenes to model §1b performances on\n" +
         "  smtree <Skyrim.esm>                          list Story Manager event roots (discover an event root FormID)\n" +
         "  extract <in.esp> <strings.json>\n" +
         "  applyloc <in.esp> <strings.json> <outDir>   (Localized UTF-8 _chinese.STRINGS)\n" +

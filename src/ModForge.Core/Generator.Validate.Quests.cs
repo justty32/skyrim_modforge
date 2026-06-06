@@ -86,15 +86,44 @@ public static partial class Generator
                 }
                 if (sc.Phases.Count == 0)
                     Problems.Add($"scene '{sc.EditorId}' has no phases (nothing is spoken)");
+                // A phase that is COVERED by a non-dialog action may be a lineless "beat" phase (the
+                // window in which the actor moves / the scene waits); only a lineless phase that NO
+                // action spans is an authoring mistake.
+                var coveredPhases = new HashSet<int>();
+                foreach (var ac in sc.Actions)
+                {
+                    int end = ac.EndPhase < 0 ? ac.StartPhase : ac.EndPhase;
+                    for (int p = ac.StartPhase; p <= end; p++) coveredPhases.Add(p);
+                }
                 for (int i = 0; i < sc.Phases.Count; i++)
                 {
                     var ph = sc.Phases[i];
+                    if (ph.Lines.Count == 0)
+                    {
+                        if (!coveredPhases.Contains(i))
+                            Problems.Add($"scene '{sc.EditorId}' phase {i} has no lines and no action covers it (a beat phase needs an action)");
+                        continue;   // a beat phase has no speaker/emotion to validate
+                    }
                     if (!sceneAliasIds.Contains(ph.Speaker))
                         Problems.Add($"scene '{sc.EditorId}' phase {i} speaker aliasId {ph.Speaker} is not one of the scene's actors");
-                    if (ph.Lines.Count == 0)
-                        Problems.Add($"scene '{sc.EditorId}' phase {i} has no lines");
                     if (!Enum.TryParse<Emotion>(ph.Emotion, true, out _))
                         Problems.Add($"scene '{sc.EditorId}' phase {i} invalid emotion '{ph.Emotion}' (Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise)");
+                }
+                // Non-dialog actions: each runs an actor over a phase window, doing EXACTLY ONE of a
+                // package (movement/sandbox/...) or a timer (a pause).
+                for (int i = 0; i < sc.Actions.Count; i++)
+                {
+                    var ac = sc.Actions[i];
+                    if (!sceneAliasIds.Contains(ac.Actor))
+                        Problems.Add($"scene '{sc.EditorId}' action {i} actor aliasId {ac.Actor} is not one of the scene's actors");
+                    bool hasPackage = !string.IsNullOrWhiteSpace(ac.Package);
+                    bool hasTimer = ac.TimerSeconds > 0f;
+                    if (hasPackage == hasTimer)
+                        Problems.Add($"scene '{sc.EditorId}' action {i} must set exactly one of package or timerSeconds");
+                    if (hasPackage) CheckRef(ac.Package, $"scene '{sc.EditorId}' action {i} package");
+                    int end = ac.EndPhase < 0 ? ac.StartPhase : ac.EndPhase;
+                    if (ac.StartPhase < 0 || ac.StartPhase >= sc.Phases.Count || end < ac.StartPhase || end >= sc.Phases.Count)
+                        Problems.Add($"scene '{sc.EditorId}' action {i} phase window {ac.StartPhase}..{end} is out of range (0..{sc.Phases.Count - 1})");
                 }
                 if (sc.AutoStart is { } au)
                 {

@@ -70,10 +70,13 @@ public static partial class Generator
                 for (int p = 0; p < s.Phases.Count; p++)
                 {
                     var ph = s.Phases[p];
+                    scene.Phases.Add(new ScenePhase());   // always add — keeps phase index aligned with p
+                                                          // (an empty phase = "advance when the line/beat finishes")
+                    // A lineless BEAT phase exists only as a window for non-dialog actions (movement/timer):
+                    // emit the phase but no spoken topic / Dialog action.
+                    if (ph.Lines.Count == 0) continue;
                     if (!aliasIds.Contains(ph.Speaker))
                     { Warn($"  ! scene '{s.EditorId}' phase {p}: speaker aliasId {ph.Speaker} is not one of the scene's actors — skipping"); continue; }
-
-                    scene.Phases.Add(new ScenePhase());   // an empty phase = "advance when the line finishes"
 
                     // The Scene-subtype topic carrying this phase's line. Category=Scene + SNAM='SCEN' is the
                     // shape every vanilla scene line uses; a null/Custom subtype here would be wrong (the
@@ -113,6 +116,31 @@ public static partial class Generator
                     action.Topic.SetTo(topic);
                     scene.Actions.Add(action);
                     scenePhasesBuilt++;
+                }
+
+                // Non-dialog beats (movement/timer) — emitted after the dialogue actions, continuing the
+                // shared 1-based action index. Package refs are forward links resolved in WireScenes.
+                foreach (var ac in s.Actions)
+                {
+                    int endPhase = ac.EndPhase < 0 ? ac.StartPhase : ac.EndPhase;
+                    var act = new SceneAction
+                    {
+                        ActorID = ac.Actor,
+                        Index = (uint)actionIndex++,
+                        StartPhase = (uint)ac.StartPhase,
+                        EndPhase = (uint)endPhase,
+                    };
+                    if (ac.TimerSeconds > 0f)
+                    {
+                        act.Type = SceneAction.TypeEnum.Timer;
+                        act.TimerSeconds = ac.TimerSeconds;
+                    }
+                    else
+                    {
+                        act.Type = SceneAction.TypeEnum.Package;
+                        sceneActionWires.Add((s.EditorId, act, ac.Package));
+                    }
+                    scene.Actions.Add(act);
                 }
                 scene.LastActionIndex = (uint)(actionIndex - 1);
 
@@ -161,6 +189,14 @@ public static partial class Generator
                 if (string.IsNullOrWhiteSpace(npcRef))
                 { Warn($"  ! scene '{sceneEd}' alias #{aliasId} has no npc — alias will be empty"); continue; }
                 Resolve($"scene '{sceneEd}' alias #{aliasId} npc", npcRef, fk => alias.UniqueActor.SetTo(fk));
+            }
+            // Package-action PACK refs (movement/sandbox/...): now that every record is indexed, resolve
+            // each scene Package action's referenced AI package and add it to the action's Packages list.
+            foreach (var (sceneEd, action, packageRef) in sceneActionWires)
+            {
+                if (string.IsNullOrWhiteSpace(packageRef))
+                { Warn($"  ! scene '{sceneEd}' package action has no package ref — actor will do nothing"); continue; }
+                Resolve($"scene '{sceneEd}' action package", packageRef, fk => action.Packages.Add(fk.ToLink<IPackageGetter>()));
             }
         }
     }

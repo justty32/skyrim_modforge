@@ -146,6 +146,28 @@ public sealed class SceneSpec
     // Followers stay near the player, so this fires repeatedly while travelling — the usable form of
     // "follower banter". Host quest must be StartGameEnabled (so the controller's OnInit arms).
     public SceneAutoStartSpec? AutoStart { get; set; }
+    // Non-dialog scene beats (IDEAS §1b "NPC 劇情演出"): movement / timed pauses interleaved with the
+    // spoken phases, so the scene becomes a visible performance (walk to a spot → wait → talk). Each
+    // action runs an actor's AI package or a timer over a window of phase indices (see SceneActionSpec).
+    // A phase referenced by an action may have empty `lines` (a pure BEAT phase — no spoken line).
+    public List<SceneActionSpec> Actions { get; set; } = new();
+}
+// One non-dialog scene beat (a SceneAction of Type Package or Timer; the spoken phases emit the
+// Dialog actions automatically). EXACTLY ONE of:
+//   * `package` (a ref → an AI package: a `packages[]` entry in this spec, or an external
+//     `<master>:0xFORMID`) → a PACKAGE action: actor `actor` runs that PACK across the phase window.
+//     Movement = a Travel package whose destination is a placed marker; ambient activity = a Sandbox
+//     package; etc. Decoded from vanilla dunTolvaldsCaveCrownScene / BardSongs* scenes.
+//   * `timerSeconds` > 0 → a TIMER action: the scene waits this many seconds over the phase window
+//     (no actor behaviour). Used between beats (vanilla bard scenes pause this way).
+// The phase window is `startPhase`..`endPhase` (indices into `phases[]`); `endPhase` -1 = startPhase.
+public sealed class SceneActionSpec
+{
+    public int Actor { get; set; }                  // aliasId (from actors[]) that performs the action
+    public string Package { get; set; } = "";       // ref → a PACK (spec packages[] editorId or <master>:0xID)
+    public float TimerSeconds { get; set; }          // > 0 → a Timer action instead of a Package action
+    public int StartPhase { get; set; }              // first phase index (into phases[]) the action spans
+    public int EndPhase { get; set; } = -1;          // last phase index; -1 = same as StartPhase
 }
 // Tuning for a presence-gated Scene (see SceneSpec.AutoStart). All distances in game units, times in
 // REAL seconds (timescale-independent). Defaults match a comfortable travelling-banter cadence.

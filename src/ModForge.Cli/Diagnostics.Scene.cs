@@ -1,5 +1,47 @@
 internal static partial class Program
 {
+    // scnscan — enumerate scenes whose actions include a non-Dialog action (Package/Timer), dumping
+    // reflected action fields. This is the probe used to author the `scenes[].actions` spec section
+    // (IDEAS §1b NPC performances): it reveals which vanilla scenes drive movement (a Package action
+    // → a Travel PACK), pace beats (Timer actions), or sit/use furniture, and the exact field shape.
+    // Follow a hit up with `packagediag <esm> <packFormId>` to see what the referenced PACK does.
+    private static int ScnScan(string inPath, string? max)
+    {
+        int limit = int.TryParse(max, out var m) ? m : 25;
+        using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE);
+        int shown = 0;
+        const System.Reflection.BindingFlags bf = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance;
+        foreach (var scene in mod.EnumerateMajorRecords<ISceneGetter>())
+        {
+            var nonDialog = scene.Actions.Where(a => a.Type != SceneAction.TypeEnum.Dialog).ToList();
+            if (nonDialog.Count == 0) continue;
+            Console.WriteLine($"SCENE 0x{scene.FormKey.ID:X6} {scene.EditorID ?? "-"}  actions={scene.Actions.Count} nonDialog={nonDialog.Count}");
+            foreach (var act in nonDialog)
+            {
+                var fields = new List<string>();
+                foreach (var pr in act.GetType().GetProperties(bf))
+                {
+                    if (pr.GetIndexParameters().Length != 0 || pr.Name == "MajorRecordFlagsRaw") continue;
+                    object? v; try { v = pr.GetValue(act); } catch { continue; }
+                    if (v is null) continue;
+                    if (v is Mutagen.Bethesda.Plugins.IFormLinkGetter fl) { if (!fl.FormKey.IsNull) fields.Add($"{pr.Name}={fl.FormKey}"); continue; }
+                    if (v is System.Collections.IEnumerable en and not string)
+                    {
+                        var items = en.Cast<object?>().ToList();
+                        if (items.Count > 0)
+                            fields.Add($"{pr.Name}=[{string.Join(",", items.Select(o => o is Mutagen.Bethesda.Plugins.IFormLinkGetter f ? f.FormKey.ToString() : o?.ToString()))}]");
+                        continue;
+                    }
+                    if (v is string or bool or System.Enum or System.IConvertible) fields.Add($"{pr.Name}={v}");
+                }
+                Console.WriteLine($"    {string.Join("  ", fields)}");
+            }
+            if (++shown >= limit) break;
+        }
+        Console.WriteLine($"-- shown {shown} scene(s) with non-dialog actions --");
+        return 0;
+    }
+
     // -------------------------------------------------------------------------------
     //  scenediag — introspect a SCEN (Scene) record: its host quest, actors (each an
     //  alias index into the host quest), the ordered phases, and the per-phase actions
