@@ -108,6 +108,10 @@ public static partial class Generator
                         Problems.Add($"scene '{sc.EditorId}' phase {i} speaker aliasId {ph.Speaker} is not one of the scene's actors");
                     if (!Enum.TryParse<Emotion>(ph.Emotion, true, out _))
                         Problems.Add($"scene '{sc.EditorId}' phase {i} invalid emotion '{ph.Emotion}' (Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise)");
+                    if (ph.HeadtrackActor >= 0 && !sceneAliasIds.Contains(ph.HeadtrackActor))
+                        Problems.Add($"scene '{sc.EditorId}' phase {i} headtrackActor {ph.HeadtrackActor} is not one of the scene's actors");
+                    if (ph.HeadtrackPlayer && ph.HeadtrackActor != -2)
+                        Problems.Add($"scene '{sc.EditorId}' phase {i} sets both headtrackPlayer and headtrackActor — pick one");
                 }
                 // Non-dialog actions: each runs an actor over a phase window, doing EXACTLY ONE of a
                 // package (movement/sandbox/...) or a timer (a pause).

@@ -365,6 +365,76 @@ public class SceneTests
         Assert.Contains(Generator.Validate(spec), p => p.Contains("autoStart") && p.Contains("StartGameEnabled"));
     }
 
+    // --- per-phase headtrack / facing control --------------------------------------------------
+
+    // (a) DEFAULT phase (no headtrack fields set) → looks at the OTHER actor + FaceTarget flag set.
+    //     Locks the no-regression default: byte-identical to the pre-feature build.
+    [Fact]
+    public void DefaultPhase_HeadtracksOtherActor_AndFacesTarget()
+    {
+        var r = TestBuild.Ok(TwoActorScene());
+        var acts = TheScene(r).Actions.OrderBy(a => a.StartPhase).ToList();
+        Assert.Equal(1, acts[0].HeadtrackActorID);   // speaker 0 → other actor 1
+        Assert.Equal(0, acts[1].HeadtrackActorID);   // speaker 1 → other actor 0
+        Assert.All(acts, a => Assert.True(a.Flags?.HasFlag(SceneAction.Flag.FaceTarget) == true));
+        Assert.All(acts, a => Assert.False(a.Flags?.HasFlag(SceneAction.Flag.HeadtrackPlayer) == true));
+    }
+
+    // (b) headtrackPlayer:true → HeadtrackPlayer flag set, HeadtrackActorID left null.
+    [Fact]
+    public void HeadtrackPlayer_SetsFlag_AndLeavesActorIdNull()
+    {
+        var spec = TwoActorScene();
+        spec.Scenes[0].Phases[0].HeadtrackPlayer = true;
+        var r = TestBuild.Ok(spec);
+        var act = TheScene(r).Actions.OrderBy(a => a.StartPhase).First();
+        Assert.True(act.Flags?.HasFlag(SceneAction.Flag.HeadtrackPlayer) == true);
+        Assert.Null(act.HeadtrackActorID);
+    }
+
+    // (c) headtrackActor:<specific aliasId> → HeadtrackActorID == that id.
+    [Fact]
+    public void HeadtrackActor_SetsExplicitAliasId()
+    {
+        var spec = TwoActorScene();
+        spec.Scenes[0].Phases[0].HeadtrackActor = 0;   // speaker 0 explicitly looks at itself (alias 0)
+        var r = TestBuild.Ok(spec);
+        var act = TheScene(r).Actions.OrderBy(a => a.StartPhase).First();
+        Assert.Equal(0, act.HeadtrackActorID);
+    }
+
+    // (d) headtrackActor:-1 → no headtrack (HeadtrackActorID null), and FaceTarget:false → no flag.
+    [Fact]
+    public void HeadtrackActorMinusOne_AndFaceTargetFalse_NoHeadtrackNoFace()
+    {
+        var spec = TwoActorScene();
+        spec.Scenes[0].Phases[0].HeadtrackActor = -1;
+        spec.Scenes[0].Phases[0].FaceTarget = false;
+        var r = TestBuild.Ok(spec);
+        var act = TheScene(r).Actions.OrderBy(a => a.StartPhase).First();
+        Assert.Null(act.HeadtrackActorID);
+        Assert.False(act.Flags?.HasFlag(SceneAction.Flag.FaceTarget) == true);
+    }
+
+    // (e) validate catches an out-of-range headtrackActor.
+    [Fact]
+    public void Validate_FlagsOutOfRangeHeadtrackActor()
+    {
+        var spec = TwoActorScene();
+        spec.Scenes[0].Phases[0].HeadtrackActor = 9;   // not alias 0 or 1
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("headtrackActor"));
+    }
+
+    // (e2) validate catches headtrackPlayer + a non-default headtrackActor together (ambiguous).
+    [Fact]
+    public void Validate_FlagsHeadtrackPlayerAndActorTogether()
+    {
+        var spec = TwoActorScene();
+        spec.Scenes[0].Phases[0].HeadtrackPlayer = true;
+        spec.Scenes[0].Phases[0].HeadtrackActor = 1;
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("both headtrackPlayer and headtrackActor"));
+    }
+
     // --- validate guardrails -------------------------------------------------------------------
 
     [Fact]

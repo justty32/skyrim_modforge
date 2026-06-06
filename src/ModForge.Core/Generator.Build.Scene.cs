@@ -96,9 +96,28 @@ public static partial class Generator
                         info.Responses.Add(new DialogResponse { Text = line, ResponseNumber = rn++, Emotion = emotion, EmotionValue = ph.EmotionValue });
                     topic.Responses.Add(info);
 
-                    // The Dialog action: alias `Speaker` says the topic during phase `p`. HeadtrackActorID
-                    // points at the OTHER actor so they look at each other (vanilla two-NPC scenes do this).
+                    // The Dialog action: alias `Speaker` says the topic during phase `p`. By default the
+                    // speaker headtracks the OTHER actor so they look at each other (vanilla two-NPC
+                    // scenes do this). The phase can override the gaze (headtrackActor/headtrackPlayer)
+                    // and whether the FaceTarget flag is set (faceTarget).
                     int otherAlias = s.Actors.FirstOrDefault(x => x.AliasId != ph.Speaker)?.AliasId ?? ph.Speaker;
+                    int? headtrackActorId;
+                    var sceneFlags = default(SceneAction.Flag);
+                    if (ph.HeadtrackPlayer)
+                    {
+                        headtrackActorId = null;
+                        sceneFlags |= SceneAction.Flag.HeadtrackPlayer;
+                    }
+                    else
+                    {
+                        headtrackActorId = ph.HeadtrackActor switch
+                        {
+                            -2 => otherAlias,   // default: the other actor (current behavior)
+                            -1 => null,         // look at no one
+                            _ => ph.HeadtrackActor,
+                        };
+                    }
+                    if (ph.FaceTarget ?? true) sceneFlags |= SceneAction.Flag.FaceTarget;
                     var action = new SceneAction
                     {
                         Type = SceneAction.TypeEnum.Dialog,
@@ -106,12 +125,12 @@ public static partial class Generator
                         Index = (uint)actionIndex++,
                         StartPhase = (uint)p,
                         EndPhase = (uint)p,
-                        HeadtrackActorID = otherAlias,
+                        HeadtrackActorID = headtrackActorId,
                         LoopingMin = 1,
                         LoopingMax = 10,
                         Emotion = emotion,
                         EmotionValue = (uint)Math.Clamp(ph.EmotionValue, 0u, 100u),
-                        Flags = SceneAction.Flag.FaceTarget,
+                        Flags = sceneFlags,
                     };
                     action.Topic.SetTo(topic);
                     scene.Actions.Add(action);

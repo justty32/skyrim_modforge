@@ -213,6 +213,16 @@ public sealed class ScenePhaseSpec
     public List<string> Lines { get; set; } = new();        // the spoken line(s) for this phase
     public string Emotion { get; set; } = "Neutral";        // Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise
     public uint EmotionValue { get; set; } = 50;            // 0..100 intensity
+    // HEADTRACK / FACING — where the speaking actor's gaze points during this phase (the SceneAction's
+    // HeadtrackActorID + FaceTarget/HeadtrackPlayer flags). headtrackActor: an actor `aliasId` = look at
+    // that actor; -1 = look at no one (no headtrack); -2 (default) = the OTHER actor — the current
+    // two-NPC default behavior. headtrackPlayer (default false): if true the speaker headtracks the
+    // PLAYER (sets the HeadtrackPlayer flag, leaves HeadtrackActorID null) — mutually exclusive with a
+    // non-default headtrackActor. faceTarget (default null = true): whether the FaceTarget flag is set;
+    // explicit true/false overrides the default.
+    public int HeadtrackActor { get; set; } = -2;
+    public bool HeadtrackPlayer { get; set; }
+    public bool? FaceTarget { get; set; }
 }
 // A CTDA condition (a static gate) usable on a dialogue INFO or an AI package. `function` picks the
 // condition function; `param` is its form argument (a ref → faction/item/global/quest/npc); `comparison`
