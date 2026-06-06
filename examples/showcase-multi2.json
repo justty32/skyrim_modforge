@@ -93,13 +93,11 @@
     {
       "editorId": "MF_Show2Scene",
       "questEditorId": "MF_Show2Quest",
-      "_conditions": "the whole scene only STARTS while MF_ShowGate == 0 (set it to 1 in console to suppress).",
-      "conditions": [
-        { "function": "GetGlobalValue", "param": "MF_ShowGate", "comparison": "==", "value": 0 }
-      ],
+      "_gate": "An autoStart scene is force-started by the controller, which BYPASSES scene-level `conditions` (those only gate engine-started / beginOnQuestStart scenes). To gate a presence-triggered scene use the controller's `gateGlobal` instead: it plays only while MF_ShowGate == 0; `set MF_ShowGate to 1` in console suppresses it.",
       "autoStart": {
         "triggerDistance": 1500.0, "requireLineOfSight": false,
-        "cooldownSeconds": 25.0, "pollSeconds": 4.0, "brawlOnEnd": true
+        "cooldownSeconds": 25.0, "pollSeconds": 4.0, "brawlOnEnd": true,
+        "gateGlobal": "MF_ShowGate"
       },
       "actors": [
         { "aliasId": 0, "npc": "MF_Show2Borin", "name": "Borin" },

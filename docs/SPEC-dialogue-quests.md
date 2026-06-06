@@ -99,10 +99,15 @@ From this one entry the build emits the **whole vanilla chain** (mirrors `scened
     PLAYER — mutually exclusive with a non-default `headtrackActor`), and `faceTarget` (default true).
     Use it for a beat where an NPC turns to address you directly. Omit all three = unchanged behaviour.
   - **conditions** (optional CTDA gates, shared `ConditionSpec`, wired in pass 2): scene-level
-    `conditions` (the whole scene only STARTS if all pass — e.g. gate an autoStart banter on a GLOB:
-    `{function:"GetGlobalValue", param:"MyFlag", comparison:"==", value:0}`), and per-phase
-    `startConditions` (the phase only plays if all pass) / `completionConditions` (the phase ends once
-    all pass). A scene with no conditions is byte-identical to before. See `examples/scene-conditions.json`.
+    `conditions` (the whole scene only STARTS if all pass) and per-phase `startConditions` (the phase
+    only plays if all pass) / `completionConditions` (the phase ends once all pass). A scene with no
+    conditions is byte-identical to before. See `examples/scene-conditions.json`.
+    - **IMPORTANT — scene-level `conditions` only gate ENGINE-started scenes** (`beginOnQuestStart`, or
+      a non-forced engine start). An **`autoStart` (presence-gated) scene is force-started by the
+      controller script (`Scene.Start()`), which BYPASSES scene begin-conditions** — so scene-level
+      `conditions` do NOTHING on an autoStart scene. To gate a presence-triggered scene, use
+      `autoStart.gateGlobal` (a GLOB the controller checks before starting) instead. Per-phase
+      `startConditions`/`completionConditions` ARE still evaluated during playback either way.
 - one **Scene-subtype DialogTopic** (Category=Scene, SNAM=`SCEN`) + **INFO** per phase, carrying the
   spoken `lines` + `emotion`.
 

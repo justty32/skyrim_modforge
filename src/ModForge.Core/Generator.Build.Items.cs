@@ -104,10 +104,14 @@ public static partial class Generator
                         Warn($"  ! weapon '{w.EditorId}': `model` set but no `template` — a custom world mesh without a template's 1st-person model/anim/equip data may CRASH on equip; pair `model` with a `template` of the same weapon type");
                     r.Model ??= new Model(); r.Model.File.GivenPath = w.Model;
                 }
-                // Stats override the template's. speed/reach default to 1.0 so the weapon is swingable;
-                // when templated, keep the clone's Data (anim type/skill/stagger/flags) and only restate
-                // speed/reach + the basic stats.
-                r.BasicStats = new WeaponBasicStats { Damage = w.Damage, Value = w.Value, Weight = w.Weight };
+                // Stats: a non-zero spec value OVERRIDES the template's; a left-default (0) value KEEPS
+                // the cloned template's stat (a templated weapon must inherit the iron sword's damage —
+                // clobbering it to 0 leaves a weapon NPCs rate below their fists and never draw). For a
+                // NON-templated weapon BasicStats is null, so create it from the spec values as before.
+                r.BasicStats ??= new WeaponBasicStats();
+                if (w.Damage > 0) r.BasicStats.Damage = w.Damage;
+                if (w.Value > 0) r.BasicStats.Value = w.Value;
+                if (w.Weight > 0) r.BasicStats.Weight = w.Weight;
                 r.Data ??= new WeaponData();
                 r.Data.Speed = w.Speed > 0 ? w.Speed : (r.Data.Speed > 0 ? r.Data.Speed : 1.0f);
                 r.Data.Reach = w.Reach > 0 ? w.Reach : (r.Data.Reach > 0 ? r.Data.Reach : 1.0f);
