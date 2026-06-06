@@ -8,7 +8,7 @@
 
 **Tech Stack:** C# net10.0、Mutagen.Bethesda.Skyrim 0.53.1、xUnit。
 
-**設計來源：** `docs/superpowers/specs/2026-06-04-story-manager-spec-pipeline-design.md`
+**設計來源：** `docs/superpowers/archive/specs/2026-06-04-story-manager-spec-pipeline-design.md`
 **硬知識：** 記憶 `story-manager-kill-recipe`（根 0x013010、Event "KILL"、victim=R1=`52 31 00 00`、killer=R2=`52 32 00 00`、SimpleActor critter 不發事件）。
 
 ---

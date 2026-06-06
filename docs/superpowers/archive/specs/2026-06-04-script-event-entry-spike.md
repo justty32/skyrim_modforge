@@ -1,7 +1,7 @@
 # Script Event 入口 — 可行性探針 + 設計（RESEARCH SPIKE）
 
 > 日期：2026-06-04 · 狀態：探針完成，**結論：可行，建議列為下一步**（待使用者核可才實作）
-> 前置：階段二 storyEvent 管線已實機 PASS（`docs/superpowers/specs/2026-06-04-story-manager-spec-pipeline-design.md`、[[story-manager-kill-recipe]]）
+> 前置：階段二 storyEvent 管線已實機 PASS（`docs/superpowers/archive/specs/2026-06-04-story-manager-spec-pipeline-design.md`、[[story-manager-kill-recipe]]）
 > 範圍：本文件只是 spike 的決策／解碼成果，**不含實作**。不要把任何 throwaway 工具或 .pex 併入 repo。
 
 ## 為什麼要 Script Event 入口

@@ -1,7 +1,7 @@
 # Story Manager spec 管線（階段二）— 設計
 
 > 日期：2026-06-04 · 狀態：已核可（使用者授權自主定案），待寫 plan
-> 前置：階段一探針已實機 PASS（見 `docs/IDEAS.md` 第 9 節 + `docs/superpowers/plans/2026-06-04-story-manager-probe.md`）
+> 前置：階段一探針已實機 PASS（見 `docs/IDEAS.md` 第 9 節 + `docs/superpowers/archive/plans/2026-06-04-story-manager-probe.md`）
 > 硬知識：[[story-manager-kill-recipe]]（根 0x013010、Event "KILL"、slot R1/R2、SimpleActor quirk）
 
 ## 目的
