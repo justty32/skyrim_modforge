@@ -86,6 +86,28 @@ decode a vanilla PROJ/EXPL with Mutagen and copy its model/light/sound/imagespac
 before projectiles, so a PROJ resolves its `explosion` by editorId. Both are normal base records;
 `ImpactDataSet`/`ObjectEffect` (AoE MGEF) are optional refs.
 
+### imageSpaceModifiers (IMAD) — screen-space post-process
+
+A top-level `imageSpaceModifiers: []` of screen post-process records (brightness/contrast/tint), used
+by an `explosions[].imageSpaceModifier` ref or applied/removed from a Papyrus `ImageSpaceModifier`
+property (`ApplyCrossFade()` / `Remove()`).
+
+```jsonc
+"imageSpaceModifiers": [
+  { "editorId": "MFDaylightIMAD",
+    "brightnessMultiplier": 1.6,   // CinematicBrightnessMult (1=neutral, >1 brighter)
+    "contrast": 1.05, "saturation": 0.92,
+    "tintColor": { "r": 255, "g": 250, "b": 235 }, "tintAmount": 0.15,  // amount -> colour alpha
+    "duration": 1.0, "animatable": false }
+]
+```
+
+Mutagen models every IMAD field as an animatable curve; the builder writes one keyframe per field
+(tint = one ColorFrame). See `examples/daylight_spell_spec.json`. Note: that example's *runtime*
+"daylight" effect was ultimately moved to an SKSE plugin (real follow-light + live cell-ambient,
+which — unlike a screen filter — don't wash out low-albedo objects); the IMAD builder remains a
+general ESP-side capability.
+
 ### enchantments (ENCH / Object Effect)
 An **Object Effect** bundles one or more MGEF-based `effects` (the SAME `{ magicEffect, magnitude,
 area, duration }` shape as a spell/potion effect) into a reusable enchantment that a **weapon** or

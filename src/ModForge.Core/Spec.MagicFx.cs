@@ -51,3 +51,24 @@ public sealed class ExplosionSpec
     public List<string> Flags { get; set; } = new();       // Explosion.Flag names
     public string Model { get; set; } = "";                // .nif FX art
 }
+
+// ImageSpace Modifier (IMAD): a screen-space post-process applied/removed at runtime (the way vanilla
+// Night-Eye / cinematic flashes work). Used here to brighten the whole view ("daylight" feel) for as
+// long as a magic effect script keeps it applied. Referenced by `ExplosionSpec.imageSpaceModifier`
+// (existing) AND by a Papyrus ImageSpaceModifier property (a script applies it via ApplyCrossFade).
+//
+// Mutagen models every IMAD curve as a list of value+time keyframes (animatable). We only need a
+// single static value, so the builder writes ONE keyframe per field. `tintColor`+`tintAmount` map to
+// a single ColorFrame (amount = the colour's alpha). `brightnessMultiplier` is CinematicBrightnessMult
+// (1.0 = no change; >1 brightens). All optional — a bare editorId yields a no-op IMAD.
+public sealed class ImageSpaceModifierSpec
+{
+    public string EditorId { get; set; } = "";
+    public float BrightnessMultiplier { get; set; } = 1.6f;   // CinematicBrightnessMult (1=neutral, >1 brighter)
+    public float Contrast { get; set; } = 1.0f;               // CinematicContrastMult
+    public float Saturation { get; set; } = 1.0f;             // CinematicSaturationMult
+    public ColorSpec? TintColor { get; set; }                 // optional screen tint (RGB)
+    public float TintAmount { get; set; } = 0f;               // tint strength 0..1 (mapped to colour alpha)
+    public float Duration { get; set; } = 1.0f;               // IMAD fade/animate duration (s)
+    public bool Animatable { get; set; } = false;             // animate curves over Duration
+}

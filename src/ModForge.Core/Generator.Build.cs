@@ -32,6 +32,7 @@ public static partial class Generator
         ctx.BuildMagicEffects();                   // MagicEffect (MGEF)
         ctx.BuildExplosions();                      // Explosion (EXPL) — built before Projectiles so a PROJ resolves an in-spec explosion
         ctx.BuildProjectiles();                    // Projectile (PROJ) — the flying bolt (refs wired in pass 2)
+        ctx.BuildImageSpaceModifiers();            // ImageSpace Modifier (IMAD) — screen post-process (no outgoing refs)
         ctx.BuildSpells();                         // Spell (SPEL)
         ctx.BuildEnchantments();                   // ObjectEffect (ENCH) scalar records
         ctx.BuildShouts();                         // WordOfPower (WOOP) + Shout (SHOU) scalar records

@@ -74,9 +74,13 @@
 | Spec | `Spec.MagicFx.cs` | `ProjectileSpec`（type/speed/gravity/range/flags/model/light/sound/explosion…）, `ExplosionSpec`（damage/force/radius/light/sound/impactDataSet/imageSpaceModifier/objectEffect…）|
 | Build P1 | `Generator.Build.Explosions.cs` | 建 EXPL scalar fields（Projectiles 之前建，故 PROJ 可按 editorId 引用 EXPL）|
 | Build P1 | `Generator.Build.Projectiles.cs` | 建 PROJ scalar fields；pass-2 `WireMagicFxRefs` 解析 light/sound/explosion/objectEffect/imageSpaceModifier FormLink |
-| Validate | `Generator.Validate.MagicFx.cs` | enum/flag 合法、radius/speed 正數、ref 完整、editorId 唯一 |
+| Spec | `Spec.MagicFx.cs` | `ImageSpaceModifierSpec`（brightnessMultiplier/contrast/saturation/tintColor+tintAmount/duration/animatable）|
+| Build P1 | `Generator.Build.ImageSpace.cs` | 建 IMAD record（每欄寫一個 KeyFrame；tint→ColorFrame，amount=alpha）；無 pass-2（無對外 ref，被 Explosion.imageSpaceModifier 或 Papyrus property 反向引用）|
+| Validate | `Generator.Validate.MagicFx.cs` | enum/flag 合法、radius/speed 正數、ref 完整、editorId 唯一；IMAD brightness/contrast/saturation/duration ≥ 0 |
 
-法術飛行彈鏈：自訂 EXPL ← PROJ（flag Explosion，explosion=EXPL）← MGEF（projectile=PROJ）← SPEL（Aimed）。MGEF 的 `projectile`/`explosion` ref 欄位沿用既有（無需改 MGEF builder）。`Tests/MagicFxTests.cs`。
+法術飛行彈鏈：自訂 EXPL ← PROJ（flag Explosion，explosion=EXPL）← MGEF（projectile=PROJ）← SPEL（Aimed）。MGEF 的 `projectile`/`explosion` ref 欄位沿用既有（無需改 MGEF builder）。`Tests/MagicFxTests.cs`、`Tests/DaylightSpellTests.cs`（IMAD builder + 開關型法術組裝）。
+
+IMAD（ImageSpace Modifier）：螢幕後處理 record，由 Explosion `imageSpaceModifier` 或 Papyrus `ImageSpaceModifier` property（腳本 `ApplyCrossFade`/`Remove`）套用。頂層 `imageSpaceModifiers[]`。範例 `examples/daylight_spell_spec.json`（開關型「白晝」法術：雙 SPEL Toggle/Active + Light-archetype 跟隨光 + Script-archetype imagespace；註：runtime 端後改走 SKSE plugin 的真實光/cell ambient，imagespace 版為 ESP-only 參考）。`examples/daylight_lights_spec.json` 為配套 SKSE plugin 用的 4 階 LIGH 燈泡。
 
 ---
 

@@ -1,0 +1,115 @@
+{
+  "pluginName": "ModForgeDaylight.esp",
+  "esl": true,
+  "_": "白晝地城法術（開關型，零外部依賴）。施放 MFDaylightToggle 開/關常駐 ability MFDaylightActive，後者掛兩個 effect：Light-archetype 跟隨光(燭光術機制) + Script-archetype imagespace 提亮。狀態靠 ability 是否在身上，天然隨存檔走、讀檔自動恢復。取得：讀 tome 或 console `player.addspell <MFDaylightToggle>`。",
+
+  "imageSpaceModifiers": [
+    {
+      "editorId": "MFDaylightIMAD",
+      "_": "整體白晝觀感：提亮 1.6×、對比略升、飽和略降、微暖 tint。數值以 in-game 觀感迭代。",
+      "brightnessMultiplier": 1.6,
+      "contrast": 1.05,
+      "saturation": 0.92,
+      "tintColor": { "r": 255, "g": 250, "b": 235 },
+      "tintAmount": 0.15,
+      "duration": 1.0,
+      "animatable": false
+    }
+  ],
+
+  "lights": [
+    {
+      "editorId": "MFDaylightLite",
+      "_": "近處真實照明：大半徑暖白光，Dynamic 讓它動態照亮場景；無閃爍。Light-archetype MGEF 把它掛在施法者身上跟隨。",
+      "radius": 4096,
+      "fadeValue": 1.0,
+      "color": { "r": 255, "g": 250, "b": 235 },
+      "flags": ["Dynamic"]
+    }
+  ],
+
+  "magicEffects": [
+    {
+      "editorId": "MFDaylightToggleEffect",
+      "name": "Daylight",
+      "_": "Script archetype：掛 MFDaylightToggle.psc，OnEffectStart 切換常駐 ability。FireAndForget/Self。",
+      "archetype": "Script",
+      "magicSkill": "Alteration",
+      "castType": "FireAndForget",
+      "targetType": "Self"
+    },
+    {
+      "editorId": "MFDaylightLight",
+      "_": "Light archetype：association 指向 MFDaylightLite，常駐在施法者身上＝跟隨光。",
+      "archetype": "Light",
+      "association": "MFDaylightLite",
+      "castType": "ConstantEffect",
+      "targetType": "Self"
+    },
+    {
+      "editorId": "MFDaylightVision",
+      "_": "Script archetype：掛 MFDaylightVisionEffect.psc，常駐期間套用 imagespace、結束移除。",
+      "archetype": "Script",
+      "castType": "ConstantEffect",
+      "targetType": "Self"
+    }
+  ],
+
+  "spells": [
+    {
+      "editorId": "MFDaylightToggle",
+      "name": "Daylight",
+      "_": "可施放的開關。Alteration adept；baseCost 150。",
+      "spellType": "Spell",
+      "castType": "FireAndForget",
+      "targetType": "Self",
+      "baseCost": 150,
+      "effects": [{ "magicEffect": "MFDaylightToggleEffect" }]
+    },
+    {
+      "editorId": "MFDaylightActive",
+      "name": "Daylight (Active)",
+      "_": "常駐載體 ability：被 toggle 加/移除；掛跟隨光 + imagespace 兩個常駐 effect。Ability 無 cost、無 equip slot。",
+      "spellType": "Ability",
+      "castType": "ConstantEffect",
+      "targetType": "Self",
+      "effects": [
+        { "magicEffect": "MFDaylightLight" },
+        { "magicEffect": "MFDaylightVision" }
+      ]
+    }
+  ],
+
+  "books": [
+    {
+      "editorId": "MFDaylightTome",
+      "name": "Spell Tome: Daylight",
+      "text": "<p>Speak the word and the deepest barrow turns to noon. Reading this grants the Daylight spell.</p>",
+      "_": "Clone 一個 vanilla 法術書(SpellTomeIncinerate 0x0010F7F4，與 spell_tome_spec.json 同款已驗證)取得 3D mesh + 音效；CantBeTaken 是法術書旗標。teaches 指向 in-spec 的 MFDaylightToggle。",
+      "template": "Skyrim.esm:0x0010F7F4",
+      "value": 100,
+      "weight": 1,
+      "flags": ["CantBeTaken"],
+      "teaches": { "kind": "spell", "spell": "MFDaylightToggle" }
+    }
+  ],
+
+  "scripts": [
+    {
+      "targetEditorId": "MFDaylightToggleEffect",
+      "scriptName": "MFDaylightToggle",
+      "source": "scripts/MFDaylightToggle.psc",
+      "properties": [
+        { "name": "MFDaylightActive", "type": "object", "objectEditorId": "MFDaylightActive" }
+      ]
+    },
+    {
+      "targetEditorId": "MFDaylightVision",
+      "scriptName": "MFDaylightVisionEffect",
+      "source": "scripts/MFDaylightVisionEffect.psc",
+      "properties": [
+        { "name": "MFDaylightIMAD", "type": "object", "objectEditorId": "MFDaylightIMAD" }
+      ]
+    }
+  ]
+}

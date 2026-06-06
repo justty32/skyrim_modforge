@@ -48,5 +48,19 @@ public static partial class Generator
                 CheckRef(ex.ObjectEffect, $"{w} objectEffect");
             }
         }
+
+        // IMAD: brightness/contrast/saturation/duration are multipliers/seconds — must be >= 0.
+        // tintAmount is clamped to 0..1 at build, so it's non-fatal (not checked here).
+        public void ValidateImageSpaceModifiers()
+        {
+            foreach (var im in spec.ImageSpaceModifiers)
+            {
+                var w = $"imageSpaceModifier '{im.EditorId}'";
+                if (im.BrightnessMultiplier < 0) Problems.Add($"{w} brightnessMultiplier {im.BrightnessMultiplier} must be >= 0");
+                if (im.Contrast < 0) Problems.Add($"{w} contrast {im.Contrast} must be >= 0");
+                if (im.Saturation < 0) Problems.Add($"{w} saturation {im.Saturation} must be >= 0");
+                if (im.Duration < 0) Problems.Add($"{w} duration {im.Duration} must be >= 0");
+            }
+        }
     }
 }
