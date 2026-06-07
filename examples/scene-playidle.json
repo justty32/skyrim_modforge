@@ -3,7 +3,7 @@
   "esl": true,
   "_": "Scene PLAYIDLE performance (IDEAS §1b 'play animation'): a scene whose actor PLAYS AN IDLE ANIMATION on a phase, not just talks. An `idle` ref on a SceneActionSpec compiles to a SCEN SceneAdapter per-phase OnStart fragment (SF_<scene>.Fragment_<phase>) that runs <alias>.GetActorRef().PlayIdle(<idle>) — the THIRD fragment family after quest-stage + TIF. Decoded from vanilla SF_BardSongsBallad01Scene. CRUCIAL: the engine only RUNS a phase that has a SceneAction, so an idle action also emits a Timer (every vanilla fragment phase carries one) — that Timer both makes the phase fire its fragment AND holds the pose. The supplicant stands ready, kneels in worship while pledging, then rises.",
 
-  "_IDLE_FORMIDS": "Vanilla shrine-blessing kneel pair (verified via `find <Skyrim.esm> Kneel idle`): IdleBlessingKneelEnter 0x0F11EE (kneel into the worship pose) / IdleBlessingKneelExit 0x0F11EF (rise). Held pose = IdleBlessingKneel 0x0F11EC. The PlayIdle persists across phases, so the kneel stays until the rise.",
+  "_IDLE_CHOICE": "Uses IdleSilentBow 0x0D8734 — a pledge BOW. IMPORTANT lesson: not every IDLE record can be played via PlayIdle. The kneel/pray idles (IdleBlessingKneel*, IdleCrouchedPray*) are FURNITURE/condition-gated — Skyrim only plays them from a shrine, so a free-standing actor.PlayIdle() does nothing (confirmed in-game: `playidle IdleBlessingKneelEnter` = no motion). Pick idles that vanilla SCRIPTS actually PlayIdle (grep the papyrus source for `.PlayIdle(`): IdleSilentBow, IdleStop, IdleGive, IdleApplaud, gesture/offset idles. IdleSilentBow confirmed in-game via `playidle IdleSilentBow`. (Console `playidle` wants the EditorID, not the FormID — but Papyrus PlayIdle(form) takes the form, which this `idle` ref binds.)",
 
   "classes": [
     {
@@ -57,17 +57,17 @@
       "actors": [
         { "aliasId": 0, "npc": "MF_Oathtaker", "name": "Supplicant" }
       ],
-      "_phases": "phase 0: a brief standing beat (a Timer — vanilla scenes never put a fragment on phase 0). phase 1: he kneels (idle OnStart fragment) AND pledges, holding the kneel 4s. phase 2: he rises (idle) AND speaks the closing line, holding 2s. Each idle action emits a Timer so its phase actually runs.",
+      "_phases": "phase 0: a brief standing beat (a Timer — vanilla scenes never put a fragment on phase 0). phase 1: he BOWS (idle OnStart fragment) AND pledges, holding 3s. phase 2: he bows again (idle) AND seals the oath, holding 3s. Each idle action emits a Timer so its phase actually runs.",
       "phases": [
         { },
         { "speaker": 0, "emotion": "Sad", "emotionValue": 40, "lines": [ "By the Eight, I pledge my blade and my breath." ] },
-        { "speaker": 0, "emotion": "Happy", "emotionValue": 30, "lines": [ "It is done. I rise, sworn." ] }
+        { "speaker": 0, "emotion": "Happy", "emotionValue": 30, "lines": [ "And my honor, until the end. The oath is sworn." ] }
       ],
-      "_actions": "phase 0 = a plain 1.5s Timer beat. phase 1 = kneel idle held 4s (he prays while kneeling). phase 2 = rise idle held 2s. The idle actions carry timerSeconds as the pose-hold duration.",
+      "_actions": "phase 0 = a plain 1.5s Timer beat. phase 1 = bow idle (IdleSilentBow) held 3s while pledging. phase 2 = a second bow held 3s while sealing the oath — exercises BOTH phase fragments. The idle actions carry timerSeconds as the pose-hold duration.",
       "actions": [
         { "actor": 0, "startPhase": 0, "timerSeconds": 1.5 },
-        { "actor": 0, "startPhase": 1, "idle": "Skyrim.esm:0x0F11EE", "timerSeconds": 4.0 },
-        { "actor": 0, "startPhase": 2, "idle": "Skyrim.esm:0x0F11EF", "timerSeconds": 2.0 }
+        { "actor": 0, "startPhase": 1, "idle": "Skyrim.esm:0x0D8734", "timerSeconds": 3.0 },
+        { "actor": 0, "startPhase": 2, "idle": "Skyrim.esm:0x0D8734", "timerSeconds": 3.0 }
       ]
     }
   ],
