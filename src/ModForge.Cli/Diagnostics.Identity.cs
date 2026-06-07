@@ -63,6 +63,20 @@ internal static partial class Program
             Console.WriteLine($"  quest {Ref(defq.FormKey)}  factions=[{string.Join(", ", facs)}]  grants=[{string.Join(", ", grants)}]  perks=[{string.Join(", ", perks)}]");
         }
 
+        // --- auto-grant trigger ----------------------------------------------------
+        Console.WriteLine("\n=== auto-grant trigger (MFIdentityAutoGrant) ===");
+        var agq = mod.Quests.FirstOrDefault(q => Script(q, "MFIdentityAutoGrant") is not null);
+        if (agq is null) Console.WriteLine("  (none — no identity uses autoGrantWhen)");
+        else
+        {
+            var s = Script(agq, "MFIdentityAutoGrant")!;
+            var facs = (Prop(s, "Factions") as IScriptObjectListPropertyGetter)?.Objects.Select(o => Ref(o.Object.FormKey)).ToList() ?? new();
+            var avs = (Prop(s, "AvNames") as IScriptStringListPropertyGetter)?.Data.ToList() ?? new();
+            var thr = (Prop(s, "Thresholds") as IScriptFloatListPropertyGetter)?.Data.ToList() ?? new();
+            for (int i = 0; i < facs.Count; i++)
+                Console.WriteLine($"  {facs[i]} ← GetActorValue(\"{(i < avs.Count ? avs[i] : "?")}\") >= {(i < thr.Count ? thr[i].ToString() : "?")}");
+        }
+
         // --- acquire books ---------------------------------------------------------
         Console.WriteLine("\n=== acquire books (MFIdentityBook) ===");
         int books = 0;

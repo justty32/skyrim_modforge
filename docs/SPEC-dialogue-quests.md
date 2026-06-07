@@ -547,6 +547,12 @@ save-safe, and future-proofs vanilla `GetInFaction` gating). Add an `identities[
   a StartGameEnabled quest (`MFIdentityDefault`, OnInit) that joins the player to each default faction +
   grants its abilities (idempotent; lands in the `.seq` so existing saves fire too). Use for a baseline
   identity (e.g. Adventurer). `package` ships `MFIdentityDefault.pex`.
+- **`autoGrantWhen: { actorValue, threshold }`** — auto-join the identity's faction once the player's
+  ActorValue reaches the threshold (a StartGameEnabled poll controller `MFIdentityAutoGrant` reads
+  `GetActorValue(name) >= threshold` — vanilla, no SKSE). E.g. Dragonborn on `{ "actorValue":
+  "DragonSouls", "threshold": 1 }` (your first absorbed dragon soul). Grants the **faction signal only**
+  (greetings/gates then apply; abilities/perks aren't added by this trigger). `package` ships
+  `MFIdentityAutoGrant.pex`.
 - **`activeWhen`** — a list of CTDA that NARROW when the identity counts as *active* (e.g.
   `WornHasKeyword(heavy armor)`, `GetBaseActorValue(Speech)>=X`, `GetRelationshipRank(npc)>=Y`). Each
   runs on the **player** by default. Appended to the positive `identity`/`primaryIdentity` gate — so a

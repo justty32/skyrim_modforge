@@ -3945,6 +3945,15 @@
           "type": "object",
           "description": "optional performance played when the identity is acquired",
           "properties": { "scene": { "type": "string", "description": "a scene editorId started on acquire" } }
+        },
+        "autoGrantWhen": {
+          "type": "object",
+          "description": "auto-join this identity's faction once the player's ActorValue crosses a threshold (a poll controller reads GetActorValue; e.g. Dragonborn on DragonSouls>=1). Grants the faction signal only.",
+          "properties": {
+            "actorValue": { "type": "string", "description": "the ActorValue name to read (e.g. \"DragonSouls\")" },
+            "threshold": { "type": "number", "default": 1, "description": "grant once GetActorValue(name) >= this" }
+          },
+          "required": [ "actorValue" ]
         }
       }
     },

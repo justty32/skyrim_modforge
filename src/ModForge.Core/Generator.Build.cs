@@ -114,6 +114,7 @@ public static partial class Generator
         ctx.AttachIdentityBooks();                 // MFIdentityBook OnRead → join/leave identity faction
         ctx.BuildDefaultIdentityQuest();           // StartGameEnabled quest → auto-grant `default:true` identities on game start
         ctx.BuildIdentityControllerQuest();        // StartGameEnabled quest → MFIdentityController maintains MF_PrimaryIdentity (primary + manual override)
+        ctx.BuildIdentityAutoGrantQuest();         // StartGameEnabled quest → MFIdentityAutoGrant joins a faction when a player AV crosses a threshold (e.g. Dragonborn)
         ctx.WireDialogueConditions();              // extra CTDA gates on dialogue INFOs
         ctx.WireQuestStages();                     // QSDT log-entry CTDA + stage→objective fragment VMAD
         ctx.WireBanterConditions();                // situational CTDA gates on banter INFOs

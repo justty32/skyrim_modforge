@@ -77,4 +77,14 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <!-- The reusable identity auto-grant trigger .pex (extends Quest; joins a faction when a player AV
+       crosses a threshold, e.g. Dragonborn on DragonSouls>=1). Embedded so `package` can drop it into
+       Scripts/ for any mod whose identities use autoGrantWhen. Compile it with:
+         dotnet run - - compile assets/papyrus/MFIdentityAutoGrant.psc assets/papyrus/ -->
+  <ItemGroup Condition="Exists('..\..\assets\papyrus\MFIdentityAutoGrant.pex')">
+    <EmbeddedResource Include="..\..\assets\papyrus\MFIdentityAutoGrant.pex">
+      <LogicalName>MFIdentityAutoGrant.pex</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

@@ -94,6 +94,11 @@
       "_": "BASELINE identity every player holds from game start — no book to read. A StartGameEnabled quest (MFIdentityDefault) auto-joins MF_FactAdventurer on first load (and on existing saves via the .seq). priority 0 so any acquired identity outranks it as the primary greeting.",
       "id": "Adventurer", "faction": "MF_FactAdventurer", "priority": 0,
       "default": true
+    },
+    {
+      "_": "DRAGONBORN (autoGrantWhen): no book — a poll controller (MFIdentityAutoGrant) joins MF_FactDragonborn once the player's DragonSouls ActorValue >= 1 (your first absorbed dragon soul; vanilla GetActorValue, no SKSE). priority 40 (above Paladin) so once it triggers, Dragonborn becomes your primary identity and NPCs hail you as such.",
+      "id": "Dragonborn", "faction": "MF_FactDragonborn", "priority": 40,
+      "autoGrantWhen": { "actorValue": "DragonSouls", "threshold": 1 }
     }
   ],
 
@@ -226,6 +231,12 @@
       "editorId": "MF_Hail_Merchant", "questEditorId": "MF_IdentityQuest", "speakerNpcEditorId": "MF_Townsfolk",
       "hello": true, "responses": [ "A fellow trader, well met. Coin to coin." ],
       "primaryIdentity": "Merchant"
+    },
+    {
+      "_": "Dragonborn greeting (autoGrantWhen showcase): fires once Dragonborn is your primary (priority 40, after your first dragon soul). Highest priority, so it outranks paladin/merchant unless you manually override.",
+      "editorId": "MF_Hail_Dragonborn", "questEditorId": "MF_IdentityQuest", "speakerNpcEditorId": "MF_Townsfolk",
+      "hello": true, "responses": [ "Dragonborn... the old tales were true, then. Honored, I am." ],
+      "primaryIdentity": "Dragonborn"
     },
     {
       "_": "BASELINE greeting — fires when the player holds no higher identity (i.e. only the default Adventurer). primaryIdentity excludes Paladin/Merchant, so this replaces the plain 'Hm?' fallback before any book is read.",

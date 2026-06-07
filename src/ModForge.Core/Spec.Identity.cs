@@ -32,6 +32,9 @@ public sealed class IdentitySpec
                                                        // in CTDA), so it can fall through to the plain greeting until
                                                        // the Phase-2 controller resolves primary by activeWhen too.
     public IdentityAcquireSpec? OnAcquire { get; set; } // optional performance played when acquired
+    public IdentityAutoGrantSpec? AutoGrantWhen { get; set; } // optional: auto-join this identity's faction once the
+                                                       // player's ActorValue crosses a threshold (e.g. Dragonborn when
+                                                       // DragonSouls ≥ 1). A poll controller grants the FACTION only.
 
     public string AcquireBook { get; set; } = "";       // ref → a BOOK whose OnRead grants/toggles this identity
     public string AcquireText { get; set; } = "";       // optional yes/no MessageBox prompt shown on read
@@ -41,4 +44,13 @@ public sealed class IdentitySpec
 public sealed class IdentityAcquireSpec
 {
     public string Scene { get; set; } = "";   // ref → a scene (editorId) started when the identity is acquired
+}
+
+// Optional auto-grant trigger: a poll controller joins the identity's faction once the player's ActorValue
+// reaches the threshold (read in Papyrus via Actor.GetActorValue(name) — vanilla, no SKSE). E.g. Dragonborn
+// on DragonSouls ≥ 1 (your first absorbed dragon soul). Grants the FACTION signal only (not abilities/perks).
+public sealed class IdentityAutoGrantSpec
+{
+    public string ActorValue { get; set; } = "";   // the ActorValue name (e.g. "DragonSouls")
+    public float Threshold { get; set; } = 1f;       // grant once GetActorValue(name) >= this
 }

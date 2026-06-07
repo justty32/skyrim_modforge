@@ -230,6 +230,24 @@ internal static partial class Program
             }
         }
 
+        // 5g) Ship the reusable identity auto-grant trigger .pex whenever an identity uses `autoGrantWhen`.
+        //     ModForge builds a StartGameEnabled quest carrying it; it joins a faction when a player AV
+        //     crosses a threshold (e.g. Dragonborn on DragonSouls>=1). One prebuilt .pex serves every mod.
+        if (spec.Identities.Any(idn => idn.AutoGrantWhen is { } a && !string.IsNullOrWhiteSpace(a.ActorValue)
+                && !string.IsNullOrWhiteSpace(idn.Faction)))
+        {
+            Directory.CreateDirectory(scriptsDir);
+            using var rs = typeof(Program).Assembly.GetManifestResourceStream("MFIdentityAutoGrant.pex");
+            if (rs is null)
+                Console.Error.WriteLine("  ! identity auto-grant .pex missing from build — autoGrantWhen identities won't be granted");
+            else
+            {
+                using var fs = File.Create(Path.Combine(scriptsDir, "MFIdentityAutoGrant.pex"));
+                rs.CopyTo(fs);
+                Console.WriteLine("  + bundled MFIdentityAutoGrant.pex (identity auto-grant trigger)");
+            }
+        }
+
         // 6) External-resource bundling — copy spec's (or --assets) Meshes/Textures/Sounds/….
         var assetsSrc = !string.IsNullOrWhiteSpace(assetsOverride) ? assetsOverride
                       : !string.IsNullOrWhiteSpace(spec.Assets)

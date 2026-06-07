@@ -227,6 +227,45 @@ public class IdentityTests
     }
 
     [Fact]
+    public void AutoGrantWhen_builds_a_StartGameEnabled_trigger_quest_with_parallel_arrays()
+    {
+        var spec = new ModSpec
+        {
+            PluginName = "Test.esp",
+            Identities =
+            {
+                new IdentitySpec { Id = "Dragonborn", Faction = "MF_FactDragonborn", Priority = 40,
+                    AutoGrantWhen = new IdentityAutoGrantSpec { ActorValue = "DragonSouls", Threshold = 1f } },
+                new IdentitySpec { Id = "Paladin", Faction = "MF_FactPaladin", Priority = 30 }, // no autoGrant → excluded
+            },
+        };
+        var r = TestBuild.Ok(spec);
+        var quest = r.Mod.EnumerateMajorRecords<IQuestGetter>().Single(q => q.EditorID == "MF_IdentityAutoGrantQuest");
+        Assert.True(quest.Flags.HasFlag(Quest.Flag.StartGameEnabled));
+        var entry = quest.VirtualMachineAdapter!.Scripts.Single(e => e.Name == "MFIdentityAutoGrant");
+
+        var facs = (IScriptObjectListPropertyGetter)entry.Properties.Single(p => p.Name == "Factions");
+        var dbFk = r.Mod.EnumerateMajorRecords<IFactionGetter>().Single(f => f.EditorID == "MF_FactDragonborn").FormKey;
+        Assert.Equal(dbFk, Assert.Single(facs.Objects).Object.FormKey);   // only the autoGrant identity
+        var avs = (IScriptStringListPropertyGetter)entry.Properties.Single(p => p.Name == "AvNames");
+        Assert.Equal(new[] { "DragonSouls" }, avs.Data.ToArray());
+        var thr = (IScriptFloatListPropertyGetter)entry.Properties.Single(p => p.Name == "Thresholds");
+        Assert.Equal(new[] { 1f }, thr.Data.ToArray());
+    }
+
+    [Fact]
+    public void No_autoGrant_identity_builds_no_trigger_quest()
+    {
+        var spec = new ModSpec
+        {
+            PluginName = "Test.esp",
+            Identities = { new IdentitySpec { Id = "Paladin", Faction = "MF_FactPaladin", Priority = 30 } },
+        };
+        var r = TestBuild.Ok(spec);
+        Assert.DoesNotContain(r.Mod.EnumerateMajorRecords<IQuestGetter>(), q => q.EditorID == "MF_IdentityAutoGrantQuest");
+    }
+
+    [Fact]
     public void No_default_identity_builds_no_granter_quest()
     {
         var spec = new ModSpec

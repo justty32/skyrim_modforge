@@ -177,6 +177,49 @@ public static partial class Generator
             return list;
         }
 
+        private static ScriptStringListProperty StrListProp(string name, IEnumerable<string> vals)
+        {
+            var list = new ScriptStringListProperty { Name = name, Flags = ScriptProperty.Flag.Edited };
+            foreach (var v in vals) list.Data.Add(v);
+            return list;
+        }
+
+        private static ScriptFloatListProperty FloatListProp(string name, IEnumerable<float> vals)
+        {
+            var list = new ScriptFloatListProperty { Name = name, Flags = ScriptProperty.Flag.Edited };
+            foreach (var v in vals) list.Data.Add(v);
+            return list;
+        }
+
+        internal const string IdentityAutoGrantScript = "MFIdentityAutoGrant";
+
+        // --- pass 2: the auto-grant trigger quest (StartGameEnabled, MFIdentityAutoGrant) ---
+        // For each identity with `autoGrantWhen`, the controller joins the player to its faction once
+        // GetActorValue(name) >= threshold (e.g. Dragonborn on DragonSouls >= 1). Factions[]/AvNames[]/
+        // Thresholds[] are parallel; the faction signal is granted (greetings/gates follow). No autoGrant → not built.
+        public void BuildIdentityAutoGrantQuest()
+        {
+            var auto = spec.Identities
+                .Where(i => i.AutoGrantWhen is { } a && !string.IsNullOrWhiteSpace(a.ActorValue) && !string.IsNullOrWhiteSpace(i.Faction))
+                .ToList();
+            if (auto.Count == 0) return;
+
+            var quest = mod.Quests.AddNew();
+            quest.EditorID = "MF_IdentityAutoGrantQuest";
+            quest.Name = "ModForge Identity Auto-Grant";
+            quest.Flags |= Quest.Flag.StartGameEnabled;
+
+            var entry = new ScriptEntry { Name = IdentityAutoGrantScript, Flags = ScriptEntry.Flag.Local };
+            entry.Properties.Add(ObjListProp("Factions", auto.Select(i => i.Faction), "auto-grant identity faction"));
+            entry.Properties.Add(StrListProp("AvNames", auto.Select(i => i.AutoGrantWhen!.ActorValue)));
+            entry.Properties.Add(FloatListProp("Thresholds", auto.Select(i => i.AutoGrantWhen!.Threshold)));
+
+            var qad = new QuestAdapter { Version = 5, ObjectFormat = 2 };
+            qad.Scripts.Add(entry);
+            quest.VirtualMachineAdapter = qad;
+            scriptsAttached++;
+        }
+
         // True when a controller + the two primary-identity globals are needed: some dialogue gates on
         // primaryIdentity (reads MF_PrimaryIdentity) or sets the override (writes MF_IdentityOverride).
         private bool IdentityControllerNeeded() =>

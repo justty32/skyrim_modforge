@@ -124,7 +124,7 @@
 | CLI | `Diagnostics.cs` | `dump` / `find` 命令 dispatcher（`find` 型別經反射 `I<Type>Getter`，含短別名 `idle`→`IdleAnimation` 供 PlayIdle 探查）|
 | CLI | `Diagnostics.Dump.cs` | 全 record 列舉（name/editorId/key）|
 | CLI | `Diagnostics.Dump.More.cs` | 擴充 dump（icons/flags/nested sub-records）|
-| CLI | `Diagnostics.Identity.cs` | `identitydiag <esp>`：從建好的 plugin 還原身份系統 wiring——讀 controller VMAD 還原 faction↔code registry、default-grant quest（factions/grants/perks）、acquire books（MFIdentityBook props：faction/grant/**perk**/scene/toggle）、兩個控制 GLOB（純讀 plugin record/VMAD，無需 spec/CK）|
+| CLI | `Diagnostics.Identity.cs` | `identitydiag <esp>`：從建好的 plugin 還原身份系統 wiring——讀 controller VMAD 還原 faction↔code registry、default-grant quest（factions/grants/perks）、**auto-grant trigger（faction ← GetActorValue(av) >= threshold）**、acquire books（MFIdentityBook props：faction/grant/perk/scene/toggle）、兩個控制 GLOB（純讀 plugin record/VMAD，無需 spec/CK）|
 
 各領域 Diagnostics 見對應子 index。
 
