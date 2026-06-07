@@ -176,7 +176,8 @@ internal static partial class Program
         }
 
         // 5d) Ship the reusable identity-acquire book .pex whenever an identity declares an acquireBook.
-        //     ModForge attaches it (extends Book) to the book + binds its properties; one prebuilt .pex
+        //     ModForge attaches it (extends ObjectReference — OnRead is an ObjectReference event, NOT
+        //     a Book one) to the BOOK base form + binds its properties; one prebuilt .pex
         //     (embedded in this CLI) serves every generated mod.
         if (spec.Identities.Any(idn => !string.IsNullOrWhiteSpace(idn.AcquireBook)))
         {

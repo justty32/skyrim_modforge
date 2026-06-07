@@ -1,4 +1,4 @@
-Scriptname MFIdentityBook extends Book Hidden
+Scriptname MFIdentityBook extends ObjectReference Hidden
 { ModForge reusable identity-acquire book. Attach to a BOOK (the build binds the properties): reading
   the book joins the player to TheFaction (the identity's held signal), grants the standing ability,
   and optionally starts an acquire performance scene. With Toggle, reading it again leaves the identity.

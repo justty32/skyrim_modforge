@@ -149,7 +149,7 @@
 | Build P1 | `Generator.Build.Identity.cs` `BuildIdentities` | 每身份建一個持有 FACT（bare editorId 才建；外部/已宣告跳過）|
 | Build P2 | `Generator.Build.Identity.cs` `ExpandIdentityConditions` | identity→`GetInFaction(player,faction)≥1`；primaryIdentity 再對每個更高 priority 身份補 `==0` 排除；由 `Generator.Build.Conditions.cs` `WireDialogueConditions` 呼叫併入 INFO CTDA |
 | Build P2 | `Generator.Build.Identity.cs` `AttachIdentityBooks` | 把 `MFIdentityBook` VMAD 掛上 acquireBook + 綁 `TheFaction`/`GrantAbility`(grants[0])/`AcquireScene`/`Toggle`（無條件掛，鏡像 controller；prebuilt .pex 出貨）|
-| Asset | `assets/papyrus/MFIdentityBook.psc` | 可複用身份書（extends Book，OnRead → AddToFaction+AddSpell+Scene.Start；Toggle 反向）；改 .psc 要重編 .pex；embed 進 CLI（條件式 EmbeddedResource）|
+| Asset | `assets/papyrus/MFIdentityBook.psc` | 可複用身份書（**extends ObjectReference**，OnRead → AddToFaction+AddSpell+Scene.Start；Toggle 反向）；**鐵律：OnRead 是 ObjectReference 的 event，不是 Book 的——`extends Book` 永遠收不到 OnRead（Book/ObjectReference 都 extends Form、是兄弟）；綁在 BOOK base form 上、背包讀也會 fire（in-game 2026-06-07 確認）**；改 .psc 要重編 .pex；embed 進 CLI（條件式 EmbeddedResource）|
 | Validate | `Generator.Validate.cs` | `RegisterIdentityFactions`（早登錄自建 FACT editorId 供 condition 解析）+ `ValidateIdentities`（unique id、非空 faction、grants/acquireBook CheckRef）|
 | Package | `src/ModForge.Cli/Package.cs` §5d | 任一身份有 acquireBook → 出貨 `MFIdentityBook.pex` 進 Scripts/ |
 
