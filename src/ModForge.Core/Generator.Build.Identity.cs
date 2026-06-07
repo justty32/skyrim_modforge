@@ -44,13 +44,36 @@ public static partial class Generator
                 var idn = spec.Identities.FirstOrDefault(x => string.Equals(x.Id, id, StringComparison.OrdinalIgnoreCase));
                 if (idn is null) { Warn($"  ! {label}: unknown identity '{id}'"); return; }
                 outc.Add(InFaction(idn.Faction, ">=", 1));
+                // activeWhen NARROWS the positive gate: the identity only counts while these pass. Each is
+                // player-centric — default it to run on the player if the author didn't pin a runOn.
+                foreach (var aw in idn.ActiveWhen)
+                    outc.Add(OnPlayerByDefault(aw));
                 if (primary)
+                    // Exclude higher-priority identities on their FACTION signal ONLY (not their activeWhen —
+                    // a negated condition bundle isn't cleanly expressible in CTDA; documented gap).
                     foreach (var hi in spec.Identities.Where(x => x.Priority > idn.Priority && !string.IsNullOrWhiteSpace(x.Faction)))
                         outc.Add(InFaction(hi.Faction, "==", 0));
             }
             One(identity, false);
             One(primaryIdentity, true);
             return outc;
+        }
+
+        // An activeWhen condition describes the PLAYER (worn gear / skills / relationships), but a dialogue
+        // INFO's default runOn is Subject (the speaker NPC). Pin it to the player unless the author chose a
+        // NON-default runOn (anything other than the "Subject" default / empty). Returns a copy so the
+        // author's spec object isn't mutated.
+        private static ConditionSpec OnPlayerByDefault(ConditionSpec c)
+        {
+            var chosen = !string.IsNullOrWhiteSpace(c.RunOn)
+                         && !string.Equals(c.RunOn, "Subject", StringComparison.OrdinalIgnoreCase);
+            if (chosen) return c;
+            return new ConditionSpec
+            {
+                Function = c.Function, Param = c.Param, Comparison = c.Comparison, Value = c.Value,
+                ActorValue = c.ActorValue, ItemType = c.ItemType, Or = c.Or,
+                RunOn = "Reference", Reference = PlayerRef,
+            };
         }
 
         // The reusable identity-acquire book script (a prebuilt .pex embedded in the CLI + shipped by

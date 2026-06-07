@@ -62,7 +62,9 @@ public static partial class Generator
                 }
                 if (!string.IsNullOrEmpty(d.SpeakerNpcEditorId) && !npcIds.Contains(d.SpeakerNpcEditorId))
                     Problems.Add($"dialogue '{d.EditorId}' references unknown speaker npc '{d.SpeakerNpcEditorId}'");
-                if (string.IsNullOrEmpty(d.Prompt)) Problems.Add($"dialogue '{d.EditorId}' has empty prompt");
+                // A `hello:true` line is the NPC's auto-spoken greeting (Misc/Hello), not a player menu
+                // option, so it has no prompt by design — only require a prompt for normal player topics.
+                if (!d.Hello && string.IsNullOrEmpty(d.Prompt)) Problems.Add($"dialogue '{d.EditorId}' has empty prompt");
                 if (d.Responses.Count == 0) Problems.Add($"dialogue '{d.EditorId}' has no response lines");
                 if (!Enum.TryParse<Emotion>(d.Emotion, true, out _))
                     Problems.Add($"dialogue '{d.EditorId}' invalid emotion '{d.Emotion}' (Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise)");

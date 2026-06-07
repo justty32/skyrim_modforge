@@ -19,6 +19,31 @@ public class ValidateTests
     }
 
     [Fact]
+    public void HelloLine_NeedsNoPrompt()
+    {
+        // A hello:true greeting is the NPC's auto-spoken line, not a player topic — no prompt required.
+        var problems = Generator.Validate(new ModSpec
+        {
+            Quests = { new QuestSpec { EditorId = "Q", Name = "Q" } },
+            Npcs   = { new NpcSpec  { EditorId = "Npc", Name = "Npc", Greeting = "Hi." } },
+            Dialogue = { new DialogueSpec { EditorId = "H", QuestEditorId = "Q", SpeakerNpcEditorId = "Npc", Hello = true, Responses = { "Well met." } } },
+        });
+        Assert.Empty(problems);
+    }
+
+    [Fact]
+    public void NonHelloLine_StillRequiresPrompt()
+    {
+        var problems = Generator.Validate(new ModSpec
+        {
+            Quests = { new QuestSpec { EditorId = "Q", Name = "Q" } },
+            Npcs   = { new NpcSpec  { EditorId = "Npc", Name = "Npc", Greeting = "Hi." } },
+            Dialogue = { new DialogueSpec { EditorId = "D", QuestEditorId = "Q", SpeakerNpcEditorId = "Npc", Responses = { "x" } } },
+        });
+        Assert.Contains(problems, p => p.Contains("empty prompt"));
+    }
+
+    [Fact]
     public void EmptyEditorId_IsRejected()
     {
         var problems = Generator.Validate(new ModSpec { MiscItems = { new MiscSpec { EditorId = "", Name = "x" } } });

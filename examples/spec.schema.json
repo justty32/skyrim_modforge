@@ -3908,6 +3908,7 @@
         "grants": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "SPELs/abilities added on join, removed on leave" },
         "toggle": { "type": "boolean", "default": false, "description": "reading the acquire book again removes the identity" },
         "default": { "type": "boolean", "default": false, "description": "every player holds this from the start (baseline)" },
+        "activeWhen": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "description": "situational CTDA that NARROW when the identity counts as active (e.g. WornHasKeyword/GetBaseActorValue/GetRelationshipRank); each runs on the PLAYER unless it sets a non-default runOn" },
         "acquireBook": { "$ref": "#/$defs/ref", "description": "a BOOK whose OnRead grants/toggles this identity (MFIdentityBook)" },
         "acquireText": { "type": "string", "description": "optional yes/no MessageBox prompt shown on read" },
         "onAcquire": {

@@ -150,6 +150,7 @@ public static partial class Generator
                     CheckRef(idn.Faction, $"identity '{idn.Id}' faction");   // bare editorId = auto-built FACT, fine
                 foreach (var g in idn.Grants) CheckRef(g, $"identity '{idn.Id}' grant");
                 if (!string.IsNullOrWhiteSpace(idn.AcquireBook)) CheckRef(idn.AcquireBook, $"identity '{idn.Id}' acquireBook");
+                foreach (var c in idn.ActiveWhen) CheckRef(c.Param, $"identity '{idn.Id}' activeWhen param");
             }
         }
 

@@ -54,7 +54,11 @@
       "id": "Paladin", "faction": "MF_FactPaladin", "priority": 30,
       "grants": [ "MF_AbilSmite" ],
       "acquireBook": "MF_PaladinTome",
-      "onAcquire": { "scene": "MF_PaladinOathScene" }
+      "onAcquire": { "scene": "MF_PaladinOathScene" },
+      "_activeWhen": "SITUATIONAL gate (Phase-2 #2): the Paladin identity only counts as ACTIVE while these CTDA pass — here, while the player wears HEAVY ARMOR. You stay a faction member (getfactionrank>=0) after reading the book, but the paladin greeting/gates only fire in plate. Each condition runs on the PLAYER by default. NOTE the documented gap: while held-but-inactive (book read, no heavy armor) the lower Adventurer greeting is still excluded on the faction signal, so the NPC falls back to its plain greeting until the Phase-2 controller resolves primary by activeWhen too.",
+      "activeWhen": [
+        { "function": "WornHasKeyword", "param": "Skyrim.esm:0x06BBD2", "comparison": "==", "value": 1 }
+      ]
     },
     {
       "id": "Merchant", "faction": "MF_FactMerchant", "priority": 20,

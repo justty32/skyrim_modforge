@@ -17,6 +17,17 @@ public sealed class IdentitySpec
     public List<string> Grants { get; set; } = new();  // refs → SPELs/abilities added on join, removed on leave
     public bool Toggle { get; set; }                    // reading the acquire book again removes the identity
     public bool Default { get; set; }                   // every player holds this from the start (baseline)
+    public List<ConditionSpec> ActiveWhen { get; set; } = new();  // optional situational gate: the identity only
+                                                       // counts as ACTIVE (for identity/primaryIdentity gates) while
+                                                       // these CTDA pass — e.g. WornHasKeyword(heavy armor),
+                                                       // GetBaseActorValue(Speech)>=X, GetRelationshipRank(npc)>=Y.
+                                                       // Player-centric: each condition runs on the PLAYER unless it
+                                                       // sets its own runOn. NOTE: activeWhen NARROWS the positive
+                                                       // gate only — a held-but-inactive higher identity is still
+                                                       // excluded from LOWER primaryIdentity greetings on its faction
+                                                       // signal alone (negating a condition bundle isn't expressible
+                                                       // in CTDA), so it can fall through to the plain greeting until
+                                                       // the Phase-2 controller resolves primary by activeWhen too.
     public IdentityAcquireSpec? OnAcquire { get; set; } // optional performance played when acquired
 
     public string AcquireBook { get; set; } = "";       // ref → a BOOK whose OnRead grants/toggles this identity

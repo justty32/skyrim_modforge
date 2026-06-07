@@ -176,6 +176,67 @@ public class IdentityTests
     }
 
     [Fact]
+    public void ActiveWhen_narrows_an_identity_gate_and_defaults_to_running_on_the_player()
+    {
+        var spec = new ModSpec
+        {
+            PluginName = "Test.esp",
+            Quests = { new QuestSpec { EditorId = "Q", Name = "Q" } },
+            Npcs = { new NpcSpec { EditorId = "NPC", Name = "Guard", Race = "Skyrim.esm:0x013746" } },
+            Identities =
+            {
+                new IdentitySpec
+                {
+                    Id = "Paladin", Faction = "MF_FactPaladin", Priority = 30,
+                    ActiveWhen = { new ConditionSpec { Function = "WornHasKeyword", Param = "Skyrim.esm:0x06BBD2", Comparison = "==", Value = 1 } },
+                },
+            },
+            Dialogue =
+            {
+                new DialogueSpec { EditorId = "Hail", QuestEditorId = "Q", SpeakerNpcEditorId = "NPC", Hello = true,
+                    Responses = { "Well met." }, PrimaryIdentity = "Paladin" },
+            },
+        };
+        var r = TestBuild.Ok(spec);
+        var info = r.Mod.EnumerateMajorRecords<IDialogResponsesGetter>().Single(i => i.Conditions.Count > 0
+            && i.Conditions.Any(c => c.Data is IGetInFactionConditionDataGetter));
+        // GetInFaction(Paladin)>=1 AND the activeWhen WornHasKeyword, run on the player (ref 0x14).
+        Assert.Contains(info.Conditions, c => c.Data is IWornHasKeywordConditionDataGetter);
+        var worn = info.Conditions.First(c => c.Data is IWornHasKeywordConditionDataGetter);
+        Assert.Equal(Condition.RunOnType.Reference, worn.Data.RunOnType);
+        Assert.Equal(FormKey.Factory("000014:Skyrim.esm"), worn.Data.Reference.FormKey);
+    }
+
+    [Fact]
+    public void ActiveWhen_does_not_taint_the_higher_priority_exclusion_of_a_lower_primaryIdentity()
+    {
+        var spec = new ModSpec
+        {
+            PluginName = "Test.esp",
+            Quests = { new QuestSpec { EditorId = "Q", Name = "Q" } },
+            Npcs = { new NpcSpec { EditorId = "NPC", Name = "Guard", Race = "Skyrim.esm:0x013746" } },
+            Identities =
+            {
+                new IdentitySpec { Id = "Paladin", Faction = "MF_FactPaladin", Priority = 30,
+                    ActiveWhen = { new ConditionSpec { Function = "WornHasKeyword", Param = "Skyrim.esm:0x06BBD2", Comparison = "==", Value = 1 } } },
+                new IdentitySpec { Id = "Adventurer", Faction = "MF_FactAdventurer", Priority = 0, Default = true },
+            },
+            Dialogue =
+            {
+                new DialogueSpec { EditorId = "HailAdv", QuestEditorId = "Q", SpeakerNpcEditorId = "NPC", Hello = true,
+                    Responses = { "Safe travels." }, PrimaryIdentity = "Adventurer" },
+            },
+        };
+        var r = TestBuild.Ok(spec);
+        var info = r.Mod.EnumerateMajorRecords<IDialogResponsesGetter>().Single(i =>
+            i.Conditions.Any(c => c.Data is IGetInFactionConditionDataGetter));
+        // The Adventurer greeting excludes the higher Paladin on its FACTION signal only — no WornHasKeyword
+        // term leaks into the exclusion (a negated activeWhen bundle isn't expressible in CTDA).
+        Assert.DoesNotContain(info.Conditions, c => c.Data is IWornHasKeywordConditionDataGetter);
+        Assert.Equal(2, info.Conditions.Count(c => c.Data is IGetInFactionConditionDataGetter)); // own held + exclude Paladin
+    }
+
+    [Fact]
     public void Default_identity_granter_omits_the_Grants_list_when_no_default_grants()
     {
         var spec = new ModSpec
