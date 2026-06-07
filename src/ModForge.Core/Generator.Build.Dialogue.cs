@@ -19,11 +19,46 @@ public static partial class Generator
             // Vanilla never has two simultaneously-loaded top-level topics share a priority. So use one
             // GLOBAL descending counter for every player topic in the plugin (90, 89, 88, …).
             float nextTopicPriority = 90f;
+            // Conditioned greetings (hello:true): vanilla puts ALL of an NPC's greetings as multiple INFOs
+            // inside ONE Hello topic and plays the FIRST whose conditions pass (INFO order = precedence;
+            // 237/297 vanilla Hello topics have >1 INFO). Separate Hello topics do NOT compose — the engine
+            // serves one topic's INFO and ignores the rest. So stash each conditioned greeting's INFO here,
+            // keyed (speaker|quest); MakeHello assembles them into the single Hello topic (conditioned first,
+            // plain greeting last). Identity/user conditions wire in pass 2 via dialogResponsesByEd.
+            var conditionedHellos = new Dictionary<string, List<DialogResponses>>();
             foreach (var d in spec.Dialogue)
             {
                 if (string.IsNullOrEmpty(d.QuestEditorId) || !questsByEd.TryGetValue(d.QuestEditorId, out var quest))
                 {
                     Warn($"  ! dialogue '{d.EditorId}' skipped: quest '{d.QuestEditorId}' not found in spec");
+                    continue;
+                }
+
+                if (d.Hello)
+                {
+                    var hinfo = new DialogResponses(mod)
+                    {
+                        Flags = new DialogResponseFlags { Flags = d.Goodbye ? DialogResponses.Flag.Goodbye : default },
+                        FavorLevel = FavorLevel.None,
+                    };
+                    dialogResponsesByEd[d.EditorId] = hinfo;
+                    var hem = Enum.TryParse<Emotion>(d.Emotion, ignoreCase: true, out var he) ? he : Emotion.Neutral;
+                    byte hrn = 1;
+                    foreach (var line in d.Responses)
+                        hinfo.Responses.Add(new DialogResponse { Text = line, ResponseNumber = hrn++, Emotion = hem, EmotionValue = d.EmotionValue });
+                    if (!string.IsNullOrEmpty(d.SpeakerNpcEditorId) && npcsByEd.TryGetValue(d.SpeakerNpcEditorId, out var hspk))
+                    {
+                        var hc = new ConditionFloat { CompareOperator = CompareOperator.EqualTo, ComparisonValue = 1f, Data = new GetIsIDConditionData() };
+                        ((GetIsIDConditionData)hc.Data).Object.Link.SetTo(hspk);
+                        hinfo.Conditions.Add(hc);
+                    }
+                    else if (string.IsNullOrEmpty(d.SpeakerNpcEditorId))
+                        Warn($"  ! dialogue '{d.EditorId}' hello: no speaker — every NPC would use this greeting");
+                    var hkey = d.SpeakerNpcEditorId + "|" + quest.FormKey;
+                    if (!conditionedHellos.TryGetValue(hkey, out var hlist))
+                        conditionedHellos[hkey] = hlist = new List<DialogResponses>();
+                    hlist.Add(hinfo);
+                    dialogueBuilt++;
                     continue;
                 }
 
@@ -125,6 +160,11 @@ public static partial class Generator
                 hello.Subtype = DialogTopic.SubtypeEnum.Hello;
                 hello.SubtypeName = new RecordType("HELO");
                 hello.Priority = 50f;   // no Branch — Hello is NPC-initiated, not a player menu branch
+                // Conditioned greetings (hello:true dialogue) FIRST — the engine plays the first INFO whose
+                // conditions pass, so the state-specific greetings must precede the unconditional fallback.
+                if (conditionedHellos.TryGetValue(npcEd + "|" + quest.FormKey, out var conds))
+                    foreach (var ci in conds) hello.Responses.Add(ci);
+                // Plain greeting LAST = the fallback when no conditioned greeting matches.
                 var greet = !string.IsNullOrWhiteSpace(greetingLine) ? greetingLine! : "Yes? What do you need?";
                 var hinfo = new DialogResponses(mod) { Flags = new DialogResponseFlags(), FavorLevel = FavorLevel.None };
                 hinfo.Responses.Add(new DialogResponse { Text = greet, ResponseNumber = 1, Emotion = Emotion.Neutral, EmotionValue = 50 });

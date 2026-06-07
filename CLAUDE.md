@@ -88,12 +88,7 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 
 想法備忘錄在 `docs/IDEAS.md`（隨從擴充、劇情演出、大量劇情生成等）。
 
-**進行中：身份系統（輕量職業）MVP —— 程式碼/測試/CODE_MAP/SPEC 已同步並 commit，待實機驗證。**
-- 已落地（plan `docs/superpowers/plans/2026-06-07-identity-system-mvp.md`，5 task）：`identities[]`（id/faction/priority/grants/toggle/acquireBook/onAcquire.scene）；每身份建持有 FACT；`MFIdentityBook.psc` OnRead（讀書→AddToFaction+AddSpell(grants)+Scene.Start，toggle 反向）embed 進 CLI；`DialogueSpec.Identity`/`PrimaryIdentity` → player GetInFaction CTDA（primary 再排除更高 priority）。檔案見 CODE_MAP「身份系統」段。404 測試綠。
-- showcase `examples/identity-paladin.json` → `~/skyrim_mods/ModForgeIdentity.zip`（讀 Oath of the Eight 書→宣誓鞠躬 scene[複用 PlayIdle]+入聖騎士團+授 +20 單手 ability；商人帳本 toggle；Townsfolk 依 primaryIdentity 改招呼）。ESP 已結構驗證:FACT 建、book VMAD 綁 TheFaction/GrantAbility/AcquireScene/Toggle、身份招呼 CTDA(paladin 1 條、merchant 2 條含排除)。
-- **根因修復(2026-06-07)**:首次實機讀書**完全 no-op**。debug 後發現 `MFIdentityBook extends Book` 是錯的——`OnRead()` 是 **`ObjectReference`** 的 event,Book 收不到(兩者都 extends Form、是兄弟),script 綁得再完美 OnRead 也是死碼。改成 **`extends ObjectReference`** 後 OnRead 正常 fire。**核心 in-game 確認**:`player.additem fe00a800`(MF_PaladinTome)讀書→`[MFIB]` 通知跳出、`player.getav onehanded` **+20**、入聖騎士團 faction;**背包讀也 fire**(base-form ObjectReference script 對 inventory read 有效,不需 ReferenceAlias)。踩坑教訓見 [[book-onread-needs-objectreference]]、[[mo2-reinstall-reverts-manual-pex]]。
-- **待完整 pass**:核心(faction+ability)已綠,但 **scene 演出 + 對話招呼**還沒實機確認(上次測試的 build 剛好 scene fragment 沒編進去)。新 zip(scene frag 已含、VMAD 已綁)請 reinstall 後再跑一次:讀書應 Oath-Keeper 鞠躬+祝詞、跟 Townsfolk 對話出現 paladin 招呼;再讀商人帳本切換。另:**地上 placement 的書看不到**(可能卡進地板/桌子,z=10),待查——但背包讀已可用。全 PASS 後:移除本段、已落地功能補一行、記憶 [[scene-playidle-recipe]] 旁加 identity in-game-confirmed。
-- **MVP 之後（Phase-2/C，未做）**:Adventurer 預設身份自動授予（startGameEnabled OnInit）、`activeWhen` 情境條件、聲望/行為追蹤、controller 主身份+手動覆寫、身份對應互動（交易 UI/護衛任務）。
+**身份系統 Phase-2/C（未做）**:Adventurer 預設身份自動授予（startGameEnabled OnInit）、`activeWhen` 情境條件、聲望/行為追蹤、controller 主身份+手動覆寫、身份對應互動（交易 UI/護衛任務）。
 
 ### 已落地功能（時間序；實作細節見 git log / CODE_MAP / SPEC）
 
@@ -102,6 +97,7 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - **alias fill 五種**：`fromEvent:<slot>` / `forced:<ref>` / `uniqueActor:<ref>` / `createObject:<ref>@<alias>` / `findMatching:closest|any`。
 - **可複用 trigger 庫（五入口，同一 `Fire()`）**：magic-effect / potion / activator / dialogue / alias-OnActivate。zip `~/skyrim_mods/ModForge{Magic,Potion,Activator,Dialogue,Alias}Trigger.zip`。通用派發器 `assets/papyrus/MFStoryEventDispatch`（embed 進 CLI）。
 - **Quest 階段**：`StageSpec.startUpStage`（啟動自顯 objective）+ stage 推進（`MFSE_AdvanceStage.psc`）；alias 也適用一般（非 storyEvent）quest。
+- **身份系統（輕量職業）MVP**（in-game 確認 2026-06-07，`ModForgeIdentity.zip`）：`identities[]`（id/faction/priority/grants/toggle/acquireBook/onAcquire.scene），每身份建持有 FACT。**讀書入會**：`MFIdentityBook.psc`（**`extends ObjectReference`**——OnRead 是 ObjectReference event，**非 Book**[[book-onread-needs-objectreference]]）OnRead→AddToFaction+AddSpell(grants)+`AcquireScene.Start()`（toggle 反向）；embed 進 CLI、背包讀也 fire。**身份招呼**：`DialogueSpec.hello`+`identity`/`primaryIdentity`→同一 NPC 所有招呼合進**一個 Hello topic 多條 INFO**（conditioned 在前、plain 墊底，靠 INFO 順序選取——**非**多 topic 競 priority）+ player GetInFaction CTDA。**acquire scene** 用 `beginOnQuestStart:false`，唯一觸發=書的 Start()（別用 begin-condition 那套）。NPC 用 `autoCalcStats` 必配 `class` 否則 0 血倒地 [[autocalc-without-class-dead-npc]]。
 
 **Scene 劇情演出**
 - **在場偵測 autoStart**：`SceneSpec.AutoStart`（triggerDistance/LOS/cooldown/poll/**brawlOnEnd**）+ 可複用 `MFSceneBanterController`。`ModForgeSceneBanter.zip`。

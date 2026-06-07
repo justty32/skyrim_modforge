@@ -99,10 +99,8 @@
     {
       "editorId": "MF_PaladinOathScene",
       "questEditorId": "MF_IdentityQuest",
-      "_": "Started by MF_PaladinTome's OnRead (AcquireScene.Start()). The scene-level condition (player already in MF_FactPaladin) keeps it from auto-playing at game load — Start() bypasses begin-conditions, so the book still fires it. The oath-keeper BOWS (PlayIdle, reuses scene-playidle) and blesses you.",
-      "conditions": [
-        { "function": "GetInFaction", "param": "MF_FactPaladin", "comparison": ">=", "value": 1, "runOn": "Reference", "reference": "Skyrim.esm:0x000014" }
-      ],
+      "_": "Triggered SOLELY by MF_PaladinTome's OnRead → AcquireScene.Start(). beginOnQuestStart=false so the scene NEVER auto-plays at game load — no begin-condition gate needed (the old condition+forced-Start dance was fragile; the book's Start() is the one clean trigger, same as the autoStart controller uses). The oath-keeper BOWS (PlayIdle, reuses scene-playidle) and blesses you.",
+      "beginOnQuestStart": false,
       "actors": [
         { "aliasId": 0, "npc": "MF_OathKeeper", "name": "Oath-Keeper" }
       ],
@@ -119,18 +117,15 @@
 
   "dialogue": [
     {
+      "_": "GREETINGS that vary by identity: `hello:true` makes these the NPC's auto-spoken greeting (Misc/Hello), not a player menu option. The engine plays the highest-priority Hello whose conditions pass; primaryIdentity gates each on the player's faction (paladin excludes lower-priority ids). If no identity Hello matches, the NPC falls back to its plain `greeting` ('Hm?').",
       "editorId": "MF_Hail_Paladin", "questEditorId": "MF_IdentityQuest", "speakerNpcEditorId": "MF_Townsfolk",
-      "prompt": "(Say nothing)", "responses": [ "Well met, paladin. The Eight smile on you." ],
+      "hello": true, "responses": [ "Well met, paladin. The Eight smile on you." ],
       "primaryIdentity": "Paladin"
     },
     {
       "editorId": "MF_Hail_Merchant", "questEditorId": "MF_IdentityQuest", "speakerNpcEditorId": "MF_Townsfolk",
-      "prompt": "(Say nothing)", "responses": [ "A fellow trader, well met. Coin to coin." ],
+      "hello": true, "responses": [ "A fellow trader, well met. Coin to coin." ],
       "primaryIdentity": "Merchant"
-    },
-    {
-      "editorId": "MF_Hail_Plain", "questEditorId": "MF_IdentityQuest", "speakerNpcEditorId": "MF_Townsfolk",
-      "prompt": "(Say nothing)", "responses": [ "What do you want?" ]
     }
   ],
 

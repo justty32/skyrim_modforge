@@ -1734,6 +1734,10 @@
           "type": "boolean",
           "description": "close the dialogue menu after this line (vanilla recruit/dismiss lines set it)"
         },
+        "hello": {
+          "type": "boolean",
+          "description": "emit this line as the NPC's auto-spoken GREETING (Misc/Hello) instead of a player menu option; combine with identity/primaryIdentity/conditions to greet differently by state (engine picks the highest-priority matching Hello, else the NPC's plain greeting). prompt is ignored."
+        },
         "conditions": {
           "type": "array",
           "items": {

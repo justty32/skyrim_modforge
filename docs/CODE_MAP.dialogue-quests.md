@@ -100,8 +100,8 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Dialogue.cs` | `DialogueSpec`, `DialogueInfoSpec` |
-| Build P1 | `Generator.Build.Dialogue.cs` | Branch / Topic / INFO 建立；player-topic 優先度管理 |
+| Spec | `Spec.Dialogue.cs` | `DialogueSpec`, `DialogueInfoSpec`；**`hello`（bool）= 這行是 NPC 自動招呼(Misc/Hello)而非玩家選單 topic** |
+| Build P1 | `Generator.Build.Dialogue.cs` | Branch / Topic / INFO 建立；player-topic 優先度管理；**`hello:true` 招呼：同一 (NPC,quest) 的所有招呼合進 **一個** Hello topic 的多條 INFO(conditioned 在前、plain `greeting` 墊底)——**鐵律:招呼靠 INFO 順序選取(第一個條件符合的勝出),不是多個獨立 Hello topic 靠 priority 競爭(那樣引擎只取一個 topic、其他無視);vanilla 237/297 Hello topic 多 INFO**(in-game 2026-06-07 確認身份招呼)|
 | Build P2 | `Generator.Build.Conditions.cs` | INFO CTDA 條件接線 |
 | Validate | `Generator.Validate.Quests.cs` | speaker NPC ref、quest ref、condition function |
 | Diag | `Diagnostics.Dialogue.cs` | topic / INFO / condition / result-script dump |

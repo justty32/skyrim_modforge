@@ -94,6 +94,12 @@ public sealed class DialogueSpec
     // are identity ids from `identities[]`; they expand to CTDA at build (Generator.Build.Identity.cs).
     public string Identity { get; set; } = "";
     public string PrimaryIdentity { get; set; } = "";
+    // Hello (default false): emit this line as the NPC's GREETING (Misc/Hello/HELO, NPC-initiated, no
+    // player prompt) instead of a player-selectable Custom topic. Combine with `identity`/
+    // `primaryIdentity` (or `conditions`) to make an NPC greet you differently by state — the engine
+    // picks the highest-priority Hello whose conditions pass, falling back to the NPC's plain `greeting`.
+    // `prompt` is ignored for a Hello (greetings have no menu line).
+    public bool Hello { get; set; }
     // SetStage (optional, -1 = none): when the player picks this topic, advance the host quest to this
     // stage. In Skyrim a dialogue line sets a stage via an INFO RESULT FRAGMENT (a Papyrus snippet
     // `GetOwningQuest().SetStage(N)`). `package` emits a ready-to-compile TIF fragment scaffold; it
