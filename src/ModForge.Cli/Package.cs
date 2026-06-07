@@ -56,6 +56,12 @@ internal static partial class Program
             if (!string.IsNullOrEmpty(src))
                 CompileGenerated(src, Generator.DialogueFragmentScriptName(d), $"dialogue fragment for '{d.EditorId}'");
         }
+        foreach (var s in spec.Scenes)
+        {
+            var src = Generator.GenerateSceneFragmentSource(s);
+            if (!string.IsNullOrEmpty(src))
+                CompileGenerated(src, Generator.SceneFragmentScriptName(s), $"scene fragment for '{s.EditorId}'");
+        }
 
         // 2) Build the plugin, passing CompiledScriptsDir so WireQuestStages and
         //    AttachDialogueResultScripts wire the VMAD for any fragment whose .pex exists.

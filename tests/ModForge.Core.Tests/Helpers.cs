@@ -22,4 +22,14 @@ internal static class TestBuild
 
     // Build without asserting on warnings (for specs that intentionally warn).
     public static BuildResult Raw(ModSpec spec) => Generator.Build(spec, Key);
+
+    // Build with a compiled-scripts dir (the `package` path): enables the fragment-VMAD attach steps
+    // (WireQuestStages, AttachDialogueResultScripts, AttachSceneFragments) for any .pex present there.
+    public static BuildResult OkWithCompiledScripts(ModSpec spec, string compiledDir)
+    {
+        var result = Generator.Build(spec, Key, new BuildOptions { CompiledScriptsDir = compiledDir });
+        Assert.True(result.Warnings.Count == 0,
+            "unexpected build warnings:\n  " + string.Join("\n  ", result.Warnings));
+        return result;
+    }
 }

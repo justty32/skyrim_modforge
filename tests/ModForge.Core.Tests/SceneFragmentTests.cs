@@ -1,3 +1,6 @@
+using System.IO;
+using System.Linq;
+using Mutagen.Bethesda.Skyrim;
 using ModForge;
 using Xunit;
 
@@ -56,5 +59,71 @@ public class SceneFragmentTests
         Assert.False(Generator.SceneNeedsFragmentScript(s));
         Assert.Equal("", Generator.SceneFragmentScriptName(s));
         Assert.Equal("", Generator.GenerateSceneFragmentSource(s));
+    }
+
+    // A minimal buildable single-actor scene with two idle phases, hosted by MF_OathQuest.
+    private static ModSpec MinimalOathSpec() => new()
+    {
+        PluginName = "Test.esp",
+        Quests = { new QuestSpec { EditorId = "MF_OathQuest", Name = "Oath" } },
+        Npcs = { new NpcSpec { EditorId = "Oath", Name = "Oathtaker" } },
+        Scenes =
+        {
+            new SceneSpec
+            {
+                EditorId = "MF_OathScene", QuestEditorId = "MF_OathQuest",
+                Actors = { new SceneActorSpec { AliasId = 0, Npc = "Oath", Name = "Oath" } },
+                Phases =
+                {
+                    new ScenePhaseSpec { Speaker = 0, Lines = { "I pledge." } },
+                    new ScenePhaseSpec { Speaker = 0, Lines = { "It is done." } },
+                },
+                Actions =
+                {
+                    new SceneActionSpec { Actor = 0, StartPhase = 0, Idle = "Skyrim.esm:0x000A0000" },
+                    new SceneActionSpec { Actor = 0, StartPhase = 1, Idle = "Skyrim.esm:0x000B0000" },
+                },
+            },
+        },
+    };
+
+    [Fact]
+    public void Scene_fragments_attached_when_pex_present()
+    {
+        var dir = Directory.CreateTempSubdirectory().FullName;
+        File.WriteAllBytes(Path.Combine(dir, "SF_MF_OathScene.pex"), System.Array.Empty<byte>());
+
+        var r = TestBuild.OkWithCompiledScripts(MinimalOathSpec(), dir);
+        var sc = r.Mod.EnumerateMajorRecords<ISceneGetter>().Single(x => x.EditorID == "MF_OathScene");
+
+        Assert.NotNull(sc.VirtualMachineAdapter);
+        var frags = sc.VirtualMachineAdapter!.ScriptFragments!;
+        Assert.Equal("SF_MF_OathScene", frags.FileName);
+        var pf = frags.PhaseFragments;
+        Assert.Equal(2, pf.Count);
+        Assert.Equal(new byte[] { 0, 1 }, pf.Select(f => f.Index).OrderBy(i => i).ToArray());
+        Assert.All(pf, f => Assert.Equal("SF_MF_OathScene", f.ScriptName));
+        Assert.All(pf, f => Assert.True(f.Flags.HasFlag(ScenePhaseFragment.Flag.OnStart)));
+        Assert.Contains(pf, f => f.FragmentName == "Fragment_0");
+        Assert.Contains(pf, f => f.FragmentName == "Fragment_1");
+
+        // Idle_<phase> + Actor_<phase> properties bound on the single script entry; Actor_* points at
+        // the host quest with the actor's alias index.
+        var props = sc.VirtualMachineAdapter.Scripts.Single(e => e.Name == "SF_MF_OathScene").Properties;
+        var hostQuest = r.Mod.EnumerateMajorRecords<IQuestGetter>().Single(q => q.EditorID == "MF_OathQuest");
+        var actor0 = (IScriptObjectPropertyGetter)props.Single(p => p.Name == "Actor_0");
+        Assert.Equal(hostQuest.FormKey, actor0.Object.FormKey);
+        Assert.Equal(0, actor0.Alias);
+        Assert.Contains(props, p => p.Name == "Idle_0");
+        Assert.Contains(props, p => p.Name == "Idle_1");
+    }
+
+    [Fact]
+    public void Scene_fragments_not_attached_without_pex()
+    {
+        var dir = Directory.CreateTempSubdirectory().FullName;   // empty — no SF_*.pex
+        var r = TestBuild.OkWithCompiledScripts(MinimalOathSpec(), dir);
+        var sc = r.Mod.EnumerateMajorRecords<ISceneGetter>().Single(x => x.EditorID == "MF_OathScene");
+        Assert.Null(sc.VirtualMachineAdapter);
     }
 }

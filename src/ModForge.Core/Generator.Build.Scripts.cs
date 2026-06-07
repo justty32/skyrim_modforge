@@ -95,6 +95,61 @@ public static partial class Generator
             }
         }
 
+        // --- pass 2: attach the SceneAdapter VMAD + per-phase idle fragments (PlayIdle) ---
+        // An idle action (SceneActionSpec.Idle) plays an animation when a phase begins. Skyrim drives
+        // this via a SCEN SceneAdapter whose ScenePhaseFragment (OnStart) calls SF_<scene>.Fragment_N,
+        // which runs <alias>.GetActorRef().PlayIdle(<idle>). Mirrors WireQuestStages: only attach when
+        // the compiled SF_<scene>.pex is present (a VMAD referencing an absent .pex Papyrus-errors at
+        // scene begin). `package` pre-compiles GenerateSceneFragmentSource then Build()s with
+        // CompiledScriptsDir set. Convention (Index = 0-based phase byte, GetActorRef(), object-property
+        // alias binding) decoded from vanilla SF_BardSongsBallad01Scene (Task 0 spike, 2026-06-07).
+        public void AttachSceneFragments()
+        {
+            if (options?.CompiledScriptsDir is not { } compiledDir) return;
+            foreach (var s in spec.Scenes)
+            {
+                if (!Generator.SceneNeedsFragmentScript(s)) continue;
+                var scriptName = Generator.SceneFragmentScriptName(s);
+                if (!File.Exists(Path.Combine(compiledDir, scriptName + ".pex"))) continue;
+                if (!recordsByEd.TryGetValue(s.EditorId, out var rec) || rec is not Scene scene)
+                { Warn($"  ! scene fragment: scene '{s.EditorId}' not built"); continue; }
+                if (!questsByEd.TryGetValue(s.QuestEditorId, out var hostQuest))
+                { Warn($"  ! scene fragment: host quest '{s.QuestEditorId}' for scene '{s.EditorId}' not built"); continue; }
+
+                // MERGE into any existing SceneAdapter (none today, but stay merge-safe like WireQuestStages).
+                var adapter = scene.VirtualMachineAdapter as SceneAdapter
+                              ?? new SceneAdapter { Version = 5, ObjectFormat = 2 };
+                adapter.ScriptFragments ??= new SceneScriptFragments();
+                adapter.ScriptFragments.FileName = scriptName;
+                var entry = adapter.Scripts.FirstOrDefault(e => string.Equals(e.Name, scriptName, StringComparison.OrdinalIgnoreCase));
+                if (entry is null) { entry = new ScriptEntry { Name = scriptName }; adapter.Scripts.Add(entry); }
+
+                foreach (var a in Generator.SceneIdleActions(s))
+                {
+                    adapter.ScriptFragments.PhaseFragments.Add(new ScenePhaseFragment
+                    {
+                        Index = (byte)a.StartPhase,                 // 0-based phase index (Task 0 spike)
+                        Flags = ScenePhaseFragment.Flag.OnStart,    // fires when the phase begins
+                        ScriptName = scriptName,
+                        FragmentName = $"Fragment_{a.StartPhase}",  // ↔ GenerateSceneFragmentSource function name
+                    });
+                    // Idle_<phase> property → the IDLE form.
+                    var ip = new ScriptObjectProperty { Name = $"Idle_{a.StartPhase}", Flags = ScriptProperty.Flag.Edited };
+                    if (TryResolveRef(a.Idle, formKeyByEd, out var idleFk)) ip.Object.SetTo(idleFk);
+                    else Warn($"  ! scene '{s.EditorId}' idle ref '{a.Idle}' unresolved");
+                    entry.Properties.Add(ip);
+                    // Actor_<phase> property → the host-quest ReferenceAlias (alias index a.Actor). Same
+                    // shape as StoryManager AttachAliasScript: Object = quest, Alias = alias index.
+                    var ap = new ScriptObjectProperty { Name = $"Actor_{a.StartPhase}", Flags = ScriptProperty.Flag.Edited };
+                    ap.Object.SetTo(hostQuest.FormKey);
+                    ap.Alias = (short)a.Actor;
+                    entry.Properties.Add(ap);
+                }
+                scene.VirtualMachineAdapter = adapter;
+                scriptsAttached++;
+            }
+        }
+
         // Build typed ScriptProperty entries from a spec property list onto a ScriptEntry (shared by the
         // record-VMAD attach and the dialogue-fragment attach). int/float/bool/string/object; object
         // resolves ObjectEditorId via the formKey table.
