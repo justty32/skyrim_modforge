@@ -117,7 +117,7 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - **Projectile (PROJ) + Explosion (EXPL)**：自訂法術飛行彈+爆，鏈 EXPL←PROJ←MGEF←SPEL。
 - **NPC inventory**：`NpcSpec.Items`（攜帶/自動裝備/死亡掉落）；`NpcSpec.essential/protected`。
 
-**一次測 showcase**：`ModForgeShowcase.zip`（批次#1：Light + headtrack + SitTarget）、`ModForgeShowcase2.zip`（批次#2：firebolt PROJ/EXPL + NPC 武器 + scene 閘）。新 diag：`smtree` / `scnscan` / `packagediag` / `lightdiag` 等。
+**一次測 showcase**：`ModForgeShowcase.zip`（批次#1：Light + headtrack + SitTarget）、`ModForgeShowcase2.zip`（批次#2：firebolt PROJ/EXPL + NPC 武器 + scene 閘）。新 diag：`smtree` / `scnscan` / `packagediag` / `lightdiag` / **`identitydiag`（從建好的 esp 還原身份 registry：controller faction↔code、default grants、acquire books、控制 GLOB）** 等。
 
 ### 鐵律與踩坑（複用知識，勿重蹈）
 
