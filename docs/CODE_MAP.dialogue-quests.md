@@ -162,7 +162,7 @@
 | Validate | `Generator.Validate.Quests.cs` | dialogue 規則；**`hello:true` 招呼免 prompt**（招呼非玩家選項；其餘 dialogue 仍須 prompt）；**`setPrimaryIdentity` 須是已知 id 或 `auto`**；**`rewardItem` CheckRef**|
 | Package | `src/ModForge.Cli/Package.cs` §5d–§5g | §5d acquireBook → `MFIdentityBook.pex`；§5e `default:true` → `MFIdentityDefault.pex`；§5f primaryIdentity/setPrimaryIdentity → `MFIdentityController.pex`；§5g `autoGrantWhen` → `MFIdentityAutoGrant.pex`（皆進 Scripts/）；dialogue fragment 編譯傳 `IdentityCode` 給 `GenerateDialogueFragmentSource`|
 
-**Phase-2/C 進度**：✅ #1 Adventurer 預設自動授予、✅ #2 `activeWhen` 情境條件、✅ #4 controller 主身份+手動覆寫（皆 in-game 2026-06-07）。🔶 #5 身份對應互動 **#5a 商人交易 UI（`openBarter`）+ #5b 護衛/跟隨任務（`identity`-gated escort quest，follow PACK gated on GetStage、`rewardItem`/`evaluateSpeakerPackages` TIF）+ #5c 聖騎士 smite 細調（`grantPerks` → `MF_SmiteEvilPerk` ModAttackDamage ×1.25 vs undead/daedra）+ **龍裔首吼（`autoGrantWhen` → MFIdentityAutoGrant，DragonSouls≥1）**——built + 結構驗證 2026-06-07，**in-game 待測**。**未做**：#3 聲望/行為追蹤。
+**Phase-2/C 進度**：✅ #1 Adventurer 預設自動授予、✅ #2 `activeWhen` 情境條件、✅ #4 controller 主身份+手動覆寫、✅ #5 身份對應互動 **#5a 商人交易 UI（`openBarter`）+ #5b 護衛/跟隨任務（`identity`-gated escort quest，follow PACK gated on GetStage、`rewardItem`/`evaluateSpeakerPackages` TIF）+ #5c 聖騎士 smite 細調（`grantPerks` → `MF_SmiteEvilPerk` ModAttackDamage ×1.25 vs undead/daedra）+ 龍裔首吼（`autoGrantWhen` → MFIdentityAutoGrant，DragonSouls≥1）**（皆 in-game 確認 2026-06-07）。**未做**：#3 聲望/行為追蹤。
 
 ---
 
