@@ -90,5 +90,52 @@ public static partial class Generator
             else Warn($"  ! {label}: ref '{@ref}' unresolved");
             entry.Properties.Add(p);
         }
+
+        // The reusable default-identity granter (a prebuilt .pex; same embed/ship model as the book).
+        // Attached to a StartGameEnabled quest; OnInit adds the player to every default identity's faction.
+        internal const string IdentityDefaultScript = "MFIdentityDefault";
+
+        // --- pass 2: a StartGameEnabled quest that auto-grants every `default:true` identity on game start ---
+        // The MVP's Adventurer baseline: a player should hold the default identity from the first load with
+        // no book to read. We create one host quest carrying MFIdentityDefault (extends Quest); its OnInit
+        // adds the player to each default identity's faction + grants its standing abilities. The quest is
+        // StartGameEnabled so it also fires on existing saves (it lands in the generated .seq). Runs after
+        // the formKey table exists so faction/grant refs resolve. No-op when no identity is `default`.
+        public void BuildDefaultIdentityQuest()
+        {
+            var defaults = spec.Identities
+                .Where(i => i.Default && !string.IsNullOrWhiteSpace(i.Faction))
+                .ToList();
+            if (defaults.Count == 0) return;
+
+            var quest = mod.Quests.AddNew();
+            quest.EditorID = "MF_IdentityDefaultQuest";
+            quest.Name = "ModForge Default Identity";
+            quest.Flags |= Quest.Flag.StartGameEnabled;
+
+            var entry = new ScriptEntry { Name = IdentityDefaultScript, Flags = ScriptEntry.Flag.Local };
+            entry.Properties.Add(ObjListProp("Factions", defaults.Select(i => i.Faction), "default identity faction"));
+            var grants = defaults.SelectMany(i => i.Grants).Where(g => !string.IsNullOrWhiteSpace(g)).Distinct().ToList();
+            if (grants.Count > 0)
+                entry.Properties.Add(ObjListProp("Grants", grants, "default identity grant"));
+
+            var qad = new QuestAdapter { Version = 5, ObjectFormat = 2 };
+            qad.Scripts.Add(entry);
+            quest.VirtualMachineAdapter = qad;
+            scriptsAttached++;
+        }
+
+        private ScriptObjectListProperty ObjListProp(string name, IEnumerable<string> refs, string label)
+        {
+            var list = new ScriptObjectListProperty { Name = name, Flags = ScriptProperty.Flag.Edited };
+            foreach (var @ref in refs)
+            {
+                var p = new ScriptObjectProperty();
+                if (TryResolveRef(@ref, formKeyByEd, out var fk)) p.Object.SetTo(fk);
+                else Warn($"  ! {label}: ref '{@ref}' unresolved");
+                list.Objects.Add(p);
+            }
+            return list;
+        }
     }
 }

@@ -1,4 +1,5 @@
 using System.Linq;
+using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
 using ModForge;
 using Xunit;
@@ -129,5 +130,63 @@ public class IdentityTests
         Assert.Equal(palFk, faction.Object.FormKey);
         Assert.Contains(entry.Properties, p => p.Name == "GrantAbility");
         Assert.Contains(entry.Properties.OfType<IScriptBoolPropertyGetter>(), p => p.Name == "Toggle" && p.Data == false);
+    }
+
+    [Fact]
+    public void Default_identity_builds_a_StartGameEnabled_granter_quest_with_faction_and_grant_lists()
+    {
+        var spec = new ModSpec
+        {
+            PluginName = "Test.esp",
+            Identities =
+            {
+                new IdentitySpec
+                {
+                    Id = "Adventurer", Faction = "MF_FactAdventurer", Priority = 0, Default = true,
+                    Grants = { "Skyrim.esm:0x0005AD5C" },
+                },
+                new IdentitySpec { Id = "Paladin", Faction = "MF_FactPaladin", Priority = 30 }, // non-default → excluded
+            },
+        };
+        var r = TestBuild.Ok(spec);
+        var quest = r.Mod.EnumerateMajorRecords<IQuestGetter>().Single(q => q.EditorID == "MF_IdentityDefaultQuest");
+        Assert.True(quest.Flags.HasFlag(Quest.Flag.StartGameEnabled));
+
+        var entry = quest.VirtualMachineAdapter!.Scripts.Single(e => e.Name == "MFIdentityDefault");
+        var factions = (IScriptObjectListPropertyGetter)entry.Properties.Single(p => p.Name == "Factions");
+        var advFk = r.Mod.EnumerateMajorRecords<IFactionGetter>().Single(f => f.EditorID == "MF_FactAdventurer").FormKey;
+        var palFk = r.Mod.EnumerateMajorRecords<IFactionGetter>().Single(f => f.EditorID == "MF_FactPaladin").FormKey;
+        Assert.Equal(advFk, Assert.Single(factions.Objects).Object.FormKey);   // only the default identity's faction
+        Assert.DoesNotContain(factions.Objects, o => o.Object.FormKey == palFk);
+
+        var grants = (IScriptObjectListPropertyGetter)entry.Properties.Single(p => p.Name == "Grants");
+        Assert.Equal(FormKey.Factory("05AD5C:Skyrim.esm"), Assert.Single(grants.Objects).Object.FormKey);
+    }
+
+    [Fact]
+    public void No_default_identity_builds_no_granter_quest()
+    {
+        var spec = new ModSpec
+        {
+            PluginName = "Test.esp",
+            Identities = { new IdentitySpec { Id = "Paladin", Faction = "MF_FactPaladin", Priority = 30 } },
+        };
+        var r = TestBuild.Ok(spec);
+        Assert.DoesNotContain(r.Mod.EnumerateMajorRecords<IQuestGetter>(), q => q.EditorID == "MF_IdentityDefaultQuest");
+    }
+
+    [Fact]
+    public void Default_identity_granter_omits_the_Grants_list_when_no_default_grants()
+    {
+        var spec = new ModSpec
+        {
+            PluginName = "Test.esp",
+            Identities = { new IdentitySpec { Id = "Adventurer", Faction = "MF_FactAdventurer", Default = true } },
+        };
+        var r = TestBuild.Ok(spec);
+        var quest = r.Mod.EnumerateMajorRecords<IQuestGetter>().Single(q => q.EditorID == "MF_IdentityDefaultQuest");
+        var entry = quest.VirtualMachineAdapter!.Scripts.Single(e => e.Name == "MFIdentityDefault");
+        Assert.Contains(entry.Properties, p => p.Name == "Factions");
+        Assert.DoesNotContain(entry.Properties, p => p.Name == "Grants");   // no grants → no empty list property
     }
 }

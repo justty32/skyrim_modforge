@@ -13,8 +13,9 @@
 dotnet run --project src/ModForge.Cli -- compile assets/papyrus/MFStoryEventDispatch.psc assets/papyrus/
 dotnet run --project src/ModForge.Cli -- compile assets/papyrus/MFSceneBanterController.psc assets/papyrus/
 dotnet run --project src/ModForge.Cli -- compile assets/papyrus/MFIdentityBook.psc assets/papyrus/
+dotnet run --project src/ModForge.Cli -- compile assets/papyrus/MFIdentityDefault.psc assets/papyrus/
 ```
-（需要 Wine + CK PapyrusCompiler 環境；native 走 `~/tools/papyrus-compiler` + `MODFORGE_PAPYRUS_HEADERS=~/.cache/modforge/papyrus/Source/Scripts`。）這三個 `.psc`（dispatcher、在場偵測 Scene controller、身份書 MFIdentityBook）有任何改動時，同樣需要重跑對應步驟並將新的 `.pex` 保留在本機（不 commit）。三個 `.pex` 都被 `ModForge.Cli.csproj` embed 為 EmbeddedResource（條件式：缺檔仍可 build，runtime 才 warn）。
+（需要 Wine + CK PapyrusCompiler 環境；native 走 `~/tools/papyrus-compiler` + `MODFORGE_PAPYRUS_HEADERS=~/.cache/modforge/papyrus/Source/Scripts`。）這四個 `.psc`（dispatcher、在場偵測 Scene controller、身份書 MFIdentityBook、預設身份授予 MFIdentityDefault）有任何改動時，同樣需要重跑對應步驟並將新的 `.pex` 保留在本機（不 commit）。四個 `.pex` 都被 `ModForge.Cli.csproj` embed 為 EmbeddedResource（條件式：缺檔仍可 build，runtime 才 warn）。
 
 ## 程式碼慣例
 
@@ -88,7 +89,7 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 
 想法備忘錄在 `docs/IDEAS.md`（隨從擴充、劇情演出、大量劇情生成等）。
 
-**身份系統 Phase-2/C（未做）**:Adventurer 預設身份自動授予（startGameEnabled OnInit）、`activeWhen` 情境條件、聲望/行為追蹤、controller 主身份+手動覆寫、身份對應互動（交易 UI/護衛任務）。
+**身份系統 Phase-2/C**:① Adventurer 預設身份自動授予 ✅（in-game 確認 2026-06-07，見下「已落地」）；尚未做：② `activeWhen` 情境條件、③ 聲望/行為追蹤、④ controller 主身份+手動覆寫、⑤ 身份對應互動（交易 UI/護衛任務）。
 
 ### 已落地功能（時間序；實作細節見 git log / CODE_MAP / SPEC）
 
@@ -97,7 +98,7 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - **alias fill 五種**：`fromEvent:<slot>` / `forced:<ref>` / `uniqueActor:<ref>` / `createObject:<ref>@<alias>` / `findMatching:closest|any`。
 - **可複用 trigger 庫（五入口，同一 `Fire()`）**：magic-effect / potion / activator / dialogue / alias-OnActivate。zip `~/skyrim_mods/ModForge{Magic,Potion,Activator,Dialogue,Alias}Trigger.zip`。通用派發器 `assets/papyrus/MFStoryEventDispatch`（embed 進 CLI）。
 - **Quest 階段**：`StageSpec.startUpStage`（啟動自顯 objective）+ stage 推進（`MFSE_AdvanceStage.psc`）；alias 也適用一般（非 storyEvent）quest。
-- **身份系統（輕量職業）MVP**（in-game 確認 2026-06-07，`ModForgeIdentity.zip`）：`identities[]`（id/faction/priority/grants/toggle/acquireBook/onAcquire.scene），每身份建持有 FACT。**讀書入會**：`MFIdentityBook.psc`（**`extends ObjectReference`**——OnRead 是 ObjectReference event，**非 Book**[[book-onread-needs-objectreference]]）OnRead→AddToFaction+AddSpell(grants)+`AcquireScene.Start()`（toggle 反向）；embed 進 CLI、背包讀也 fire。**身份招呼**：`DialogueSpec.hello`+`identity`/`primaryIdentity`→同一 NPC 所有招呼合進**一個 Hello topic 多條 INFO**（conditioned 在前、plain 墊底，靠 INFO 順序選取——**非**多 topic 競 priority）+ player GetInFaction CTDA。**acquire scene** 用 `beginOnQuestStart:false`，唯一觸發=書的 Start()（別用 begin-condition 那套）。NPC 用 `autoCalcStats` 必配 `class` 否則 0 血倒地 [[autocalc-without-class-dead-npc]]。
+- **身份系統（輕量職業）MVP**（in-game 確認 2026-06-07，`ModForgeIdentity.zip`）：`identities[]`（id/faction/priority/grants/toggle/acquireBook/onAcquire.scene），每身份建持有 FACT。**讀書入會**：`MFIdentityBook.psc`（**`extends ObjectReference`**——OnRead 是 ObjectReference event，**非 Book**[[book-onread-needs-objectreference]]）OnRead→AddToFaction+AddSpell(grants)+`AcquireScene.Start()`（toggle 反向）；embed 進 CLI、背包讀也 fire。**身份招呼**：`DialogueSpec.hello`+`identity`/`primaryIdentity`→同一 NPC 所有招呼合進**一個 Hello topic 多條 INFO**（conditioned 在前、plain 墊底，靠 INFO 順序選取——**非**多 topic 競 priority）+ player GetInFaction CTDA。**acquire scene** 用 `beginOnQuestStart:false`，唯一觸發=書的 Start()（別用 begin-condition 那套）。NPC 用 `autoCalcStats` 必配 `class` 否則 0 血倒地 [[autocalc-without-class-dead-npc]]。**Phase-2 #1 預設身份自動授予**（in-game 確認 2026-06-07）：`IdentitySpec.default:true` → build 一個 StartGameEnabled quest 掛 `MFIdentityDefault.psc`（extends Quest，OnInit 把每個 default 身份的 faction + grants 加給玩家，idempotent），開局/載入即持有（進 `.seq` 故舊存檔也觸發）；用 `ScriptObjectListProperty` 綁 Factions[]/Grants[]；無 default 則不建此 quest；embed 進 CLI、Package §5e 出貨 pex。
 
 **Scene 劇情演出**
 - **在場偵測 autoStart**：`SceneSpec.AutoStart`（triggerDistance/LOS/cooldown/poll/**brawlOnEnd**）+ 可複用 `MFSceneBanterController`。`ModForgeSceneBanter.zip`。

@@ -193,6 +193,23 @@ internal static partial class Program
             }
         }
 
+        // 5e) Ship the reusable default-identity granter .pex whenever an identity is `default:true`.
+        //     ModForge builds a StartGameEnabled quest carrying it (extends Quest); its OnInit adds the
+        //     player to every default identity's faction on game start; one prebuilt .pex serves all mods.
+        if (spec.Identities.Any(idn => idn.Default && !string.IsNullOrWhiteSpace(idn.Faction)))
+        {
+            Directory.CreateDirectory(scriptsDir);
+            using var rs = typeof(Program).Assembly.GetManifestResourceStream("MFIdentityDefault.pex");
+            if (rs is null)
+                Console.Error.WriteLine("  ! default-identity .pex missing from build — default identities won't be granted");
+            else
+            {
+                using var fs = File.Create(Path.Combine(scriptsDir, "MFIdentityDefault.pex"));
+                rs.CopyTo(fs);
+                Console.WriteLine("  + bundled MFIdentityDefault.pex (default-identity granter)");
+            }
+        }
+
         // 6) External-resource bundling — copy spec's (or --assets) Meshes/Textures/Sounds/….
         var assetsSrc = !string.IsNullOrWhiteSpace(assetsOverride) ? assetsOverride
                       : !string.IsNullOrWhiteSpace(spec.Assets)
