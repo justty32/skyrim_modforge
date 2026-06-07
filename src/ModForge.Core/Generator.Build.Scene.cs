@@ -145,6 +145,11 @@ public static partial class Generator
                 // shared 1-based action index. Package refs are forward links resolved in WireScenes.
                 foreach (var ac in s.Actions)
                 {
+                    // PlayIdle action: realised as a SceneAdapter phase fragment (AttachSceneFragments,
+                    // driven by `package`), NOT a SceneAction. Skip it here — and don't consume an action
+                    // index — so a pure build stays a plain dialogue scene; the fragment fires on phase begin.
+                    if (!string.IsNullOrWhiteSpace(ac.Idle)) continue;
+
                     int endPhase = ac.EndPhase < 0 ? ac.StartPhase : ac.EndPhase;
                     var act = new SceneAction
                     {

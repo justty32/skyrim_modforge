@@ -53,6 +53,21 @@ public class SceneTests
         Assert.Equal("", ac.Idle);
     }
 
+    // An idle action is realised as a SceneAdapter phase fragment (compiled by `package`), NOT a
+    // SceneAction. A pure build (no compiled scripts) must therefore neither emit a SceneAction for
+    // it nor attach the VMAD — it stays a plain dialogue scene until package time.
+    [Fact]
+    public void Idle_action_does_not_emit_a_Package_or_Timer_SceneAction()
+    {
+        var spec = TwoActorScene();   // 3 spoken phases → 3 Dialog actions
+        spec.Scenes[0].Actions.Add(new SceneActionSpec { Actor = 0, StartPhase = 0, Idle = "Skyrim.esm:0x000A0000" });
+        var r = TestBuild.Ok(spec);
+        var sc = TheScene(r);
+        Assert.Equal(3, sc.Actions.Count);
+        Assert.DoesNotContain(sc.Actions, a => a.Type == SceneAction.TypeEnum.Package);
+        Assert.Null(sc.VirtualMachineAdapter);   // pure build (no compiled scripts) attaches no SceneAdapter
+    }
+
     // The Scene record exists, hosted by the named quest, with BeginOnQuestStart (default trigger).
     [Fact]
     public void Scene_IsBuilt_HostedByQuest_BeginOnQuestStart()
