@@ -71,6 +71,7 @@ public sealed class ModSpec
     public List<PerkSpec> Perks { get; set; } = new();
     public List<WordWallSpec> WordWalls { get; set; } = new();
     public List<GlobalSpec> Globals { get; set; } = new();   // GlobalVariable (GLOB) — shared flags/counters/constants
+    public List<IdentitySpec> Identities { get; set; } = new(); // lightweight identity/class system (Spec.Identity.cs)
     // External-resource pipeline (see docs/external_assets.md): a source directory whose
     // `Meshes/`, `Textures/`, `Sounds/` (and loose `.hkx`) sub-trees `package` copies next to
     // the .esp so the packaged mod is self-contained / MO2-ready. ModForge REFERENCES + BUNDLES

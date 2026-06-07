@@ -370,6 +370,11 @@
         "$ref": "#/$defs/global"
       },
       "description": "GlobalVariable (GLOB): a named number shared game-wide, save-persisted, readable by conditions (GetGlobalValue) + Papyrus. `value` is the INITIAL value only (existing saves keep their runtime value)"
+    },
+    "identities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/identity" },
+      "description": "Lightweight identity/class system: each identity is a FACT (held signal) + priority + optional grants/acquire. Gate dialogue with identity/primaryIdentity; acquire via a book's OnRead."
     }
   },
   "additionalProperties": false,
@@ -3885,6 +3890,26 @@
           "type": "number",
           "minimum": 0,
           "description": "inventory weight (carriable lights)"
+        }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "required": [ "id", "faction" ],
+      "description": "A lightweight identity/class the player can hold. `faction` is the persistent held-signal FACT (a bare in-spec editorId is auto-built, or an external <master>:0xID is used as-is). `priority` decides which identity wins as the primary greeting.",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "description": "the tag used by identity/primaryIdentity dialogue gates" },
+        "faction": { "$ref": "#/$defs/ref", "description": "the holding FACT — built if it's a bare in-spec editorId, else an external faction ref" },
+        "priority": { "type": "integer", "default": 0, "description": "higher wins as the primary greeting identity" },
+        "grants": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "SPELs/abilities added on join, removed on leave" },
+        "toggle": { "type": "boolean", "default": false, "description": "reading the acquire book again removes the identity" },
+        "default": { "type": "boolean", "default": false, "description": "every player holds this from the start (baseline)" },
+        "acquireBook": { "$ref": "#/$defs/ref", "description": "a BOOK whose OnRead grants/toggles this identity (MFIdentityBook)" },
+        "acquireText": { "type": "string", "description": "optional yes/no MessageBox prompt shown on read" },
+        "onAcquire": {
+          "type": "object",
+          "description": "optional performance played when the identity is acquired",
+          "properties": { "scene": { "type": "string", "description": "a scene editorId started on acquire" } }
         }
       }
     },
