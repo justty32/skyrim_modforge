@@ -126,4 +126,19 @@ public class SceneFragmentTests
         var sc = r.Mod.EnumerateMajorRecords<ISceneGetter>().Single(x => x.EditorID == "MF_OathScene");
         Assert.Null(sc.VirtualMachineAdapter);
     }
+
+    [Fact]
+    public void Validate_accepts_an_idle_only_action()
+    {
+        Assert.Empty(Generator.Validate(MinimalOathSpec()));
+    }
+
+    [Fact]
+    public void Validate_rejects_an_action_that_sets_both_idle_and_timer()
+    {
+        var spec = MinimalOathSpec();
+        spec.Scenes[0].Actions[0].TimerSeconds = 3f;   // now idle AND timer — not exactly one
+        Assert.Contains(Generator.Validate(spec),
+            p => p.Contains("exactly one of idle, package, or timerSeconds"));
+    }
 }

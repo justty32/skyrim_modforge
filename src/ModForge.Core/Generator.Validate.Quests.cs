@@ -119,17 +119,19 @@ public static partial class Generator
                     foreach (var cs in ph.CompletionConditions)
                         ValidateSceneCondition(cs, $"scene '{sc.EditorId}' phase {i} completionCondition");
                 }
-                // Non-dialog actions: each runs an actor over a phase window, doing EXACTLY ONE of a
-                // package (movement/sandbox/...) or a timer (a pause).
+                // Non-dialog actions: each runs an actor over a phase window, doing EXACTLY ONE of an
+                // idle (PlayIdle via a phase fragment), a package (movement/sandbox/...), or a timer (a pause).
                 for (int i = 0; i < sc.Actions.Count; i++)
                 {
                     var ac = sc.Actions[i];
                     if (!sceneAliasIds.Contains(ac.Actor))
                         Problems.Add($"scene '{sc.EditorId}' action {i} actor aliasId {ac.Actor} is not one of the scene's actors");
+                    bool hasIdle = !string.IsNullOrWhiteSpace(ac.Idle);
                     bool hasPackage = !string.IsNullOrWhiteSpace(ac.Package);
                     bool hasTimer = ac.TimerSeconds > 0f;
-                    if (hasPackage == hasTimer)
-                        Problems.Add($"scene '{sc.EditorId}' action {i} must set exactly one of package or timerSeconds");
+                    if ((hasIdle ? 1 : 0) + (hasPackage ? 1 : 0) + (hasTimer ? 1 : 0) != 1)
+                        Problems.Add($"scene '{sc.EditorId}' action {i} must set exactly one of idle, package, or timerSeconds");
+                    if (hasIdle) CheckRef(ac.Idle, $"scene '{sc.EditorId}' action {i} idle");
                     if (hasPackage) CheckRef(ac.Package, $"scene '{sc.EditorId}' action {i} package");
                     int end = ac.EndPhase < 0 ? ac.StartPhase : ac.EndPhase;
                     if (ac.StartPhase < 0 || ac.StartPhase >= sc.Phases.Count || end < ac.StartPhase || end >= sc.Phases.Count)
