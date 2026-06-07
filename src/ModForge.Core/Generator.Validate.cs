@@ -25,6 +25,7 @@ public static partial class Generator
         ctx.ValidateProjectiles();
         ctx.ValidateExplosions();
         ctx.ValidateImageSpaceModifiers();
+        ctx.ValidateIdentities();
         ValidateWeather(spec, ctx.Problems, ctx.Ids, ctx.CheckRef);
         ValidateLights(spec, ctx.Problems);
         return ctx.Problems;
@@ -121,6 +122,22 @@ public static partial class Generator
                 var t = (g.Type ?? "").Trim().ToLowerInvariant();
                 if (t is not ("short" or "long" or "int" or "float"))
                     Problems.Add($"global '{g.EditorId}': unknown type '{g.Type}' (use short | long | float)");
+            }
+        }
+
+        public void ValidateIdentities()
+        {
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var idn in spec.Identities)
+            {
+                if (string.IsNullOrWhiteSpace(idn.Id)) { Problems.Add("identity: empty id"); continue; }
+                if (!seen.Add(idn.Id)) Problems.Add($"duplicate identity id '{idn.Id}'");
+                if (string.IsNullOrWhiteSpace(idn.Faction))
+                    Problems.Add($"identity '{idn.Id}': empty faction");
+                else if (LooksExternalRef(idn.Faction))
+                    CheckRef(idn.Faction, $"identity '{idn.Id}' faction");   // bare editorId = auto-built FACT, fine
+                foreach (var g in idn.Grants) CheckRef(g, $"identity '{idn.Id}' grant");
+                if (!string.IsNullOrWhiteSpace(idn.AcquireBook)) CheckRef(idn.AcquireBook, $"identity '{idn.Id}' acquireBook");
             }
         }
 

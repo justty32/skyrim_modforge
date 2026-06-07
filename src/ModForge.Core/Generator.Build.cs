@@ -39,6 +39,7 @@ public static partial class Generator
         ctx.BuildPotions();                        // Potion (ALCH)
         ctx.BuildArmors();                         // Armor (ARMO)
         ctx.BuildFactions();                       // Faction (FACT) incl. vendor data
+        ctx.BuildIdentities();                     // a holding FACT per identity (lightweight class system)
         ctx.BuildRelationships();                  // Relationship (RELA)
         ctx.BuildEncounterZones();                 // EncounterZone (ECZN)
         ctx.BuildClasses();                        // Class (CLAS)
