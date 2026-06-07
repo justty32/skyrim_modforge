@@ -16,6 +16,7 @@ public static partial class Generator
     public static IReadOnlyList<string> Validate(ModSpec spec)
     {
         var ctx = new ValidateContext(spec);
+        ctx.RegisterIdentityFactions();   // auto-built identity FACTs, so conditions can reference them
         ctx.ValidateNpcs();
         ctx.ValidateItems();
         ctx.ValidateQuestsAndDialogue();
@@ -123,6 +124,17 @@ public static partial class Generator
                 if (t is not ("short" or "long" or "int" or "float"))
                     Problems.Add($"global '{g.EditorId}': unknown type '{g.Type}' (use short | long | float)");
             }
+        }
+
+        // An identity's `faction`, when a bare in-spec editorId, becomes an auto-built FACT (no factions[]
+        // entry). Register those editorIds up front so dialogue/scene conditions (GetInFaction param) and
+        // other refs resolve. Skip external refs and any faction the user also declared in factions[].
+        public void RegisterIdentityFactions()
+        {
+            var declared = new HashSet<string>(spec.Factions.Select(f => f.EditorId), StringComparer.OrdinalIgnoreCase);
+            foreach (var idn in spec.Identities)
+                if (!string.IsNullOrWhiteSpace(idn.Faction) && !LooksExternalRef(idn.Faction) && !declared.Contains(idn.Faction))
+                    Ids.Add(idn.Faction);
         }
 
         public void ValidateIdentities()

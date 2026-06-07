@@ -1,0 +1,134 @@
+{
+  "pluginName": "ModForgeIdentity.esp",
+  "esl": true,
+  "_": "Identity system MVP (sub-project B): a lightweight class/identity system. Each identity = a FACT (held signal) + priority + optional grants/acquire. THREE FACES: Acquire (read a tome → MFIdentityBook OnRead joins the faction + grants an ability + plays a scene), Grant (a standing Fortify ability while you hold the identity), Gate (identity/primaryIdentity dialogue tags → GetInFaction CTDA so NPCs treat you by your identity). Headline: the Paladin oath reuses the just-shipped PlayIdle scene-action (an oath-keeper BOWS and blesses you). Design: docs/superpowers/specs/2026-06-06-identity-system-design.md.",
+
+  "magicEffects": [
+    {
+      "editorId": "MF_SmiteEffect",
+      "name": "Oath of the Eight",
+      "description": "Your oath steadies your sword arm.",
+      "_": "A constant-effect Fortify One-Handed: the Paladin's standing grant. ValueModifier/OneHanded, ConstantEffect/Self, Recover flag so the bonus is restored (not a one-shot). Detrimental NOT set (it's a buff).",
+      "archetype": "ValueModifier",
+      "actorValue": "OneHanded",
+      "castType": "ConstantEffect",
+      "targetType": "Self",
+      "baseCost": 0.0,
+      "flags": [ "Recover" ]
+    }
+  ],
+
+  "spells": [
+    {
+      "editorId": "MF_AbilSmite",
+      "name": "Oath of the Eight",
+      "_": "The Paladin's standing ability (spellType=Ability, ConstantEffect/Self). Granted on join, removed on leave by MFIdentityBook. +20 One-Handed while held — check in-game with `player.getav onehanded` or the Active Effects menu.",
+      "spellType": "Ability",
+      "castType": "ConstantEffect",
+      "targetType": "Self",
+      "effects": [
+        { "magicEffect": "MF_SmiteEffect", "magnitude": 20, "area": 0, "duration": 0 }
+      ]
+    }
+  ],
+
+  "books": [
+    {
+      "editorId": "MF_PaladinTome",
+      "name": "Oath of the Eight Divines",
+      "_": "Reading it (MFIdentityBook OnRead, attached automatically via identities[].acquireBook) joins MF_FactPaladin, grants MF_AbilSmite, and starts the oath scene.",
+      "template": "Skyrim.esm:0x0ED161",
+      "text": "<p>Kneel, and swear: my blade to the weak, my breath to the Eight. Read these words to take the oath.</p>"
+    },
+    {
+      "editorId": "MF_MerchantLedger",
+      "name": "Trader's Ledger",
+      "_": "A TOGGLE identity: reading it joins MF_FactMerchant; reading it again leaves it.",
+      "template": "Skyrim.esm:0x0ED161",
+      "text": "<p>Mark your goods, tally your coin. Read to take up the trade — or read again to set it down.</p>"
+    }
+  ],
+
+  "identities": [
+    {
+      "id": "Paladin", "faction": "MF_FactPaladin", "priority": 30,
+      "grants": [ "MF_AbilSmite" ],
+      "acquireBook": "MF_PaladinTome",
+      "onAcquire": { "scene": "MF_PaladinOathScene" }
+    },
+    {
+      "id": "Merchant", "faction": "MF_FactMerchant", "priority": 20,
+      "toggle": true,
+      "acquireBook": "MF_MerchantLedger"
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_OathKeeper", "name": "Oath-Keeper", "greeting": "Speak your oath when you are ready.",
+      "race": "Skyrim.esm:0x013746", "voiceType": "Skyrim.esm:0x013AE6",
+      "unique": true, "essential": true, "level": 5, "autoCalcStats": true,
+      "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies"
+    },
+    {
+      "editorId": "MF_Townsfolk", "name": "Townsfolk", "greeting": "Hm?",
+      "race": "Skyrim.esm:0x013746", "voiceType": "Skyrim.esm:0x013AE7",
+      "unique": true, "essential": true, "level": 3, "autoCalcStats": true,
+      "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies"
+    }
+  ],
+
+  "quests": [
+    {
+      "_": "Host quest for the oath scene + the identity-gated dialogue. StartGameEnabled so both are live.",
+      "editorId": "MF_IdentityQuest", "name": "ModForge Identity Showcase",
+      "startGameEnabled": true, "priority": 50, "objectives": []
+    }
+  ],
+
+  "scenes": [
+    {
+      "editorId": "MF_PaladinOathScene",
+      "questEditorId": "MF_IdentityQuest",
+      "_": "Started by MF_PaladinTome's OnRead (AcquireScene.Start()). The scene-level condition (player already in MF_FactPaladin) keeps it from auto-playing at game load — Start() bypasses begin-conditions, so the book still fires it. The oath-keeper BOWS (PlayIdle, reuses scene-playidle) and blesses you.",
+      "conditions": [
+        { "function": "GetInFaction", "param": "MF_FactPaladin", "comparison": ">=", "value": 1, "runOn": "Reference", "reference": "Skyrim.esm:0x000014" }
+      ],
+      "actors": [
+        { "aliasId": 0, "npc": "MF_OathKeeper", "name": "Oath-Keeper" }
+      ],
+      "phases": [
+        { },
+        { "speaker": 0, "emotion": "Happy", "emotionValue": 40, "lines": [ "Rise, sworn of the Eight. Your blade is theirs now." ] }
+      ],
+      "actions": [
+        { "actor": 0, "startPhase": 0, "timerSeconds": 1.5 },
+        { "actor": 0, "startPhase": 1, "idle": "Skyrim.esm:0x0D8734", "timerSeconds": 3.0 }
+      ]
+    }
+  ],
+
+  "dialogue": [
+    {
+      "editorId": "MF_Hail_Paladin", "questEditorId": "MF_IdentityQuest", "speakerNpcEditorId": "MF_Townsfolk",
+      "prompt": "(Say nothing)", "responses": [ "Well met, paladin. The Eight smile on you." ],
+      "primaryIdentity": "Paladin"
+    },
+    {
+      "editorId": "MF_Hail_Merchant", "questEditorId": "MF_IdentityQuest", "speakerNpcEditorId": "MF_Townsfolk",
+      "prompt": "(Say nothing)", "responses": [ "A fellow trader, well met. Coin to coin." ],
+      "primaryIdentity": "Merchant"
+    },
+    {
+      "editorId": "MF_Hail_Plain", "questEditorId": "MF_IdentityQuest", "speakerNpcEditorId": "MF_Townsfolk",
+      "prompt": "(Say nothing)", "responses": [ "What do you want?" ]
+    }
+  ],
+
+  "placements": [
+    { "base": "MF_OathKeeper", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -600, "y": 120, "z": 0 } },
+    { "base": "MF_Townsfolk", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 180, "z": 0 } },
+    { "base": "MF_PaladinTome", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -500, "y": 300, "z": 10 } },
+    { "base": "MF_MerchantLedger", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -450, "y": 300, "z": 10 } }
+  ]
+}
