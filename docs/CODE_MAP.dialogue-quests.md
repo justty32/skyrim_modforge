@@ -14,6 +14,7 @@
 | `examples/scene-presence-banter.json` | 在場偵測自動觸發 Scene（autoStart + MFSceneBanterController）|
 | `examples/scene-action-performance.json` | Scene 非對話 action（§1b 演出）：beat phase + Package action（NPC 走位到 marker，Travel PACK）+ Timer action（停頓）|
 | `examples/scene-sit-performance.json` | Scene 演出第二切片：NPC 走到椅子並**坐下**（SitTarget PACK，走位+坐合一）+ Timer + brawlOnEnd（SitTarget 細節見 [CODE_MAP.npcs-packages.md § AI Packages](CODE_MAP.npcs-packages.md#ai-packagespack)）|
+| `examples/scene-playidle.json` | Scene 演出第三切片：actor 在 phase 邊界**播 IDLE 動畫**（`SceneActionSpec.Idle` → SCEN SceneAdapter phase fragment `SF_<scene>.Fragment_N`，跑 `<alias>.GetActorRef().PlayIdle()`）；跪→停→起三 phase（idle 的 FormID 須 `find idle` 探得驗證，example 內為 placeholder）|
 | `examples/scene-headtrack.json` | Scene 每-phase headtrack/facing：說話者 gaze 指向另一 actor／玩家／無人（`ScenePhaseSpec.HeadtrackActor`/`HeadtrackPlayer`/`FaceTarget`）|
 | `examples/showcase-multi.json` | 多功能 showcase（一包一次測）：自訂 Light + headtrackPlayer + SitTarget beat + autoStart/brawl |
 | `examples/scene-conditions.json` | Scene 條件閘：scene-level + per-phase start/completion CTDA（GetGlobalValue 等，refs by editorId）|
@@ -53,7 +54,8 @@
 | `ConditionTests.cs` | CTDA condition 函數、comparator、ref 解析 |
 | `DialogueTests.cs` | dialogue topic / INFO / greeting 生成 |
 | `QuestStageTests.cs` | stage log text / objective fragment / VMAD |
-| `SceneTests.cs` | SCEN actor / phase / dialogue action；非對話 action（Package→Packages PACK ref / Timer→TimerSeconds）+ beat phase（無 lines→無 Dialog action/topic）+ LastActionIndex；autoStart → controller VMAD 掛接 + 清 BeginOnQuestStart + 調參 props + **重播策略 props（playOnce/playHour/gateGlobal→GLOB object prop）** + validate gate |
+| `SceneTests.cs` | SCEN actor / phase / dialogue action；非對話 action（Package→Packages PACK ref / Timer→TimerSeconds）+ beat phase（無 lines→無 Dialog action/topic）+ LastActionIndex；**idle action 不產 SceneAction（純 build 無 VMAD）**；autoStart → controller VMAD 掛接 + 清 BeginOnQuestStart + 調參 props + **重播策略 props（playOnce/playHour/gateGlobal→GLOB object prop）** + validate gate |
+| `SceneFragmentTests.cs` | PlayIdle 純產生器（`SceneNeedsFragmentScript`/`SceneFragmentScriptName`/`GenerateSceneFragmentSource`：extends Scene Hidden、`Fragment_<phase>`、`GetActorRef()`）+ `AttachSceneFragments`（.pex 在才掛 SceneAdapter、PhaseFragments 數/ScriptName/OnStart flag/FragmentName、Actor_ object prop→host quest+alias index）+ validate（idle-only OK、idle+timer 拒）|
 | `StoryManagerBuildTests.cs` | SM build pass 2（SMBN/SMQN 掛接、alias fill 接線、alias 腳本 VMAD 掛接、`startUpStage` QSDT flag、stage fragment + alias 腳本共存於單一 adapter、非 storyEvent quest 也建 forced/createObject alias + 腳本）|
 | `StoryManagerEventsTests.cs` | 事件登錄表欄位（FormKey / slot 對應）|
 | `StoryManagerEventsMoreTests.cs` | 擴充事件（ChangeLocation/CastMagic/AddItem/Assault/ScriptEvent）|
@@ -85,7 +87,7 @@
 | Build P1 | `Generator.Build.Dialogue.cs` | dialogue Branch + Topic + INFO；greeting 自動生成 |
 | Build P2 | `Generator.Build.QuestStages.cs` | stage log-entry CTDA + objective fragment VMAD（**合併**進既有 QuestAdapter，不覆寫 alias 腳本的 `.Aliases`）|
 | Build P2 | `Generator.QuestFragments.cs` | 自動生 SetObjectiveDisplayed/SetObjectiveCompleted Papyrus fragment |
-| Validate | `Generator.Validate.Quests.cs` | stage index 唯一/遞增、`startUpStage` 至多一個、objective↔stage 連結、script ref 存在 |
+| Validate | `Generator.Validate.Quests.cs` | stage index 唯一/遞增、`startUpStage` 至多一個、objective↔stage 連結、script ref 存在；**scene action 須 exactly-one of idle/package/timerSeconds（idle ref 檢查）** |
 | Diag | `Diagnostics.Quests.cs` | stages / objectives / aliases / VMAD 腳本 dump |
 | Diag | `Diagnostics.Dump.Quest.cs` | quest + scene 結構化完整 dump |
 
@@ -120,13 +122,15 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Dialogue.cs` | `SceneSpec`, `SceneActorSpec`, `SceneAutoStartSpec`（在場偵測調參 + **重播策略 playOnce/playHour/playHourTolerance/gateGlobal**）, **`SceneActionSpec`（§1b 非對話 beat：package 走位/timer 停頓 + phase 窗）**, **`ScenePhaseSpec`（含 `HeadtrackActor`/`HeadtrackPlayer`/`FaceTarget` per-phase gaze 控制 + `StartConditions`/`CompletionConditions` per-phase CTDA 閘）**, **`SceneSpec.Conditions`（scene-level CTDA：整個 scene 通過才啟動）** |
-| Build P1 | `Generator.Build.Scene.cs` | 建 SCEN：alias 綁定、參與者、phase + dialogue actions；**per-phase headtrack/facing（HeadtrackPlayer flag／HeadtrackActorID／FaceTarget；預設＝看另一 actor，行為不變）；lineless phase → beat phase（無 topic/Dialog action）；`actions[]` → Package（Type=Package，PACK ref pass 2 解析）/ Timer（Type=Timer + TimerSeconds）action**；**autoStart → `AttachSceneController` 把 `MFSceneBanterController` 掛上 host quest 並清 BeginOnQuestStart；重播策略 props（playOnce/playHour/tol 直填、gateGlobal object prop pass 2 解析）** |
+| Spec | `Spec.Dialogue.cs` | `SceneSpec`, `SceneActorSpec`, `SceneAutoStartSpec`（在場偵測調參 + **重播策略 playOnce/playHour/playHourTolerance/gateGlobal**）, **`SceneActionSpec`（§1b 非對話 beat：**`idle` 播動畫**/package 走位/timer 停頓 + phase 窗）**, **`ScenePhaseSpec`（含 `HeadtrackActor`/`HeadtrackPlayer`/`FaceTarget` per-phase gaze 控制 + `StartConditions`/`CompletionConditions` per-phase CTDA 閘）**, **`SceneSpec.Conditions`（scene-level CTDA：整個 scene 通過才啟動）** |
+| Build P1 | `Generator.Build.Scene.cs` | 建 SCEN：alias 綁定、參與者、phase + dialogue actions；**per-phase headtrack/facing（HeadtrackPlayer flag／HeadtrackActorID／FaceTarget；預設＝看另一 actor，行為不變）；lineless phase → beat phase（無 topic/Dialog action）；`actions[]` → Package（Type=Package，PACK ref pass 2 解析）/ Timer（Type=Timer + TimerSeconds）action；**`idle` action 短路 `continue`（不產 SceneAction、不耗 action index）——改走 SceneAdapter phase fragment**；autoStart → `AttachSceneController` 把 `MFSceneBanterController` 掛上 host quest 並清 BeginOnQuestStart；重播策略 props（playOnce/playHour/tol 直填、gateGlobal object prop pass 2 解析）** |
+| Gen（PlayIdle）| `Generator.SceneFragments.cs` | scene phase-fragment **純產生器**（第三種 fragment 家族，鏡像 `GenerateQuestFragmentSource`）：`SceneNeedsFragmentScript`/`SceneFragmentScriptName`/`SceneIdleActions`/`GenerateSceneFragmentSource`；產 `SF_<scene> extends Scene Hidden`，每 idle phase 一個 `Fragment_<phase>()` 跑 `Actor_<p>.GetActorRef().PlayIdle(Idle_<p>)`（取 actor 用 `GetActorRef()`，非 `GetActorReference()`，Task 0 spike 釘死）|
+| Build P2 | `Generator.Build.Scripts.cs` `AttachSceneFragments` | 掛 SCEN `SceneAdapter` VMAD（鏡像 `WireQuestStages` gating：僅當 `SF_<scene>.pex` 在 `CompiledScriptsDir`）：每 idle phase 一個 `ScenePhaseFragment{Index=(byte)phase, Flags=OnStart, FragmentName="Fragment_<phase>"}` + 綁 `Idle_<p>`（object prop→IDLE）與 `Actor_<p>`（object prop→host quest，`Alias=actor index`，同 StoryManager `qfa.Property`）|
 | Wire P2 | `Generator.Build.Scene.cs` `WireScenes` | actor alias→UniqueActor；**Package action 的 PACK ref → `action.Packages`（sceneActionWires）；controller GateGlobal → GLOB object prop（sceneGateWires）；scene-level + per-phase conditions via 共用 `BuildCondition`（sceneConditionWires，phaseMap 對齊 spec-phase→built ScenePhase）** |
 | Const | `Generator.QuestFragments.cs` | `SceneBanterController` scriptname 常數 |
 | Asset | `assets/papyrus/MFSceneBanterController.psc` | 可複用在場偵測 controller（extends Quest，鏈式 RegisterForSingleUpdate → Scene.Start()）；`brawlOnEnd` 偵測 scene 結束 → `StartBrawl()` 雙向 StartCombat；**重播閘門 `playOnce`（播完停 poll）/ `playHour`+tol（CurrentHour/HourDistance 時辰窗）/ `Gate` GLOB（GetValue 擋、播完 SetValue(1)）**；改 .psc 要重編 .pex（native `~/tools/papyrus-compiler` + `MODFORGE_PAPYRUS_HEADERS` 指向 cache）；embed 進 CLI |
-| Validate | `Generator.Validate.Quests.cs` | actor alias ref、scene↔quest 連結；**beat phase 需有 action 覆蓋；每 action 需 exactly-one(package\|timerSeconds) + actor 是 scene actor + phase 窗在範圍內**；**autoStart 需 StartGameEnabled host quest + ≥2 actor + 正數調參；playHour 0..24、tol>0、gateGlobal CheckRef** |
-| Package | `src/ModForge.Cli/Package.cs` §5c | 任一 scene 有 autoStart → 出貨 `MFSceneBanterController.pex` 進 Scripts/ |
+| Validate | `Generator.Validate.Quests.cs` | actor alias ref、scene↔quest 連結；**beat phase 需有 action 覆蓋；每 action 需 exactly-one(idle\|package\|timerSeconds) + actor 是 scene actor + phase 窗在範圍內（idle ref CheckRef）**；**autoStart 需 StartGameEnabled host quest + ≥2 actor + 正數調參；playHour 0..24、tol>0、gateGlobal CheckRef** |
+| Package | `src/ModForge.Cli/Package.cs` | 任一 scene 有 autoStart → 出貨 `MFSceneBanterController.pex`；**每 scene 有 idle action → 編 `SF_<scene>.psc`（`GenerateSceneFragmentSource`）並 build 時掛 SceneAdapter VMAD** |
 | Diag | `Diagnostics.Scene.cs` | `scenediag` actors / phases / actions dump；**`scnscan` 列舉含非對話 action 的 scene（解 §1b 演出來源）** |
 
 ---

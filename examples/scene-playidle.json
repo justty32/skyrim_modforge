@@ -1,0 +1,60 @@
+{
+  "pluginName": "ModForgePlayIdle.esp",
+  "esl": true,
+  "_": "Scene PLAYIDLE performance (IDEAS §1b 'play animation'): a scene whose actor PLAYS AN IDLE ANIMATION on a phase boundary, not just talks. The fourth scene-action kind (after Dialog/Package/Timer): an idle action (`idle` ref on a SceneActionSpec) is realised NOT as a SceneAction but as a SCEN SceneAdapter per-phase begin fragment (SF_<scene>.Fragment_N) that runs <alias>.GetActorRef().PlayIdle(<idle>), decoded from vanilla SF_BardSongsBallad01Scene / SF_MQ201EscapeScene. Composition (kneel -> pause -> stand) is plain phases + a Timer, no bespoke enter/hold/exit. The supplicant kneels, murmurs a prayer, then rises.",
+
+  "_IDLE_FORMIDS_TODO": "The two `idle` refs below are PLACEHOLDERS (0x000A0000 / 0x000B0000 are NOT real kneel/stand idles). On a machine with Skyrim.esm, discover real ones and swap them in: `dotnet run --project src/ModForge.Cli -- find idle Kneel` and `find idle Pray` / `find idle GetUp` / `find idle Stand`. A wrong IDLE FormID plays no animation (no error) — verify before shipping (see vanilla-nif-paths-must-be-verified).",
+
+  "classes": [
+    {
+      "editorId": "MF_OathClass",
+      "name": "ModForge Supplicant",
+      "healthWeight": 50, "magickaWeight": 25, "staminaWeight": 25,
+      "skillWeights": { "Restoration": 75 }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MF_Oathtaker", "name": "Supplicant", "greeting": "I am at prayer.",
+      "race": "Skyrim.esm:0x013746", "class": "MF_OathClass", "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "unique": true, "essential": true, "level": 4, "autoCalcStats": true,
+      "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
+    }
+  ],
+
+  "quests": [
+    {
+      "_": "Host quest. StartGameEnabled so the scene (BeginOnQuestStart) is ready; trigger the scene in-game with the console: `startscene MF_OathScene` while looking at / near the supplicant.",
+      "editorId": "MF_OathQuest", "name": "ModForge PlayIdle Showcase",
+      "startGameEnabled": true, "priority": 50, "objectives": []
+    }
+  ],
+
+  "scenes": [
+    {
+      "editorId": "MF_OathScene",
+      "questEditorId": "MF_OathQuest",
+      "actors": [
+        { "aliasId": 0, "npc": "MF_Oathtaker", "name": "Supplicant" }
+      ],
+      "_phases": "phase 0: kneel idle (lineless). phase 1: spoken prayer + a 4s Timer hold. phase 2: stand idle (lineless). The kneel idle holds until the stand idle (or scene end) replaces it.",
+      "phases": [
+        { },
+        { "speaker": 0, "emotion": "Sad", "emotionValue": 40, "lines": [ "By the Eight, I pledge my blade and my breath." ] },
+        { }
+      ],
+      "_actions": "Two idle actions (PlayIdle, via phase fragment — NOT SceneActions) bracket a Timer pause. The idle refs are the PLACEHOLDERS flagged in _IDLE_FORMIDS_TODO above.",
+      "actions": [
+        { "actor": 0, "startPhase": 0, "idle": "Skyrim.esm:0x000A0000" },
+        { "actor": 0, "timerSeconds": 4.0, "startPhase": 1, "endPhase": 1 },
+        { "actor": 0, "startPhase": 2, "idle": "Skyrim.esm:0x000B0000" }
+      ]
+    }
+  ],
+
+  "placements": [
+    { "base": "MF_Oathtaker", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -600, "y": 120, "z": 0 } }
+  ]
+}

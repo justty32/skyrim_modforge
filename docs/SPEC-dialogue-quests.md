@@ -189,6 +189,14 @@ phase indices**. A phase referenced only by an action may have **empty `lines`**
 }
 ```
 Each action sets **exactly one** of:
+- **`idle`** — a ref to an `IDLE` (IdleAnimation) record (`<master>:0xFORMID`; discover with
+  `find idle <keyword>`). The actor **plays that idle animation** when `startPhase` begins
+  (kneel / pray / gesture…), then returns to AI naturally. Unlike `package`/`timerSeconds`, an idle is
+  realised **not as a `SceneAction`** but as a `SceneAdapter` per-phase begin **fragment** on the SCEN:
+  an `SF_<scene>.Fragment_N` that runs `<alias>.GetActorRef().PlayIdle(<idle>)` (decoded from vanilla
+  `SF_BardSongsBallad01Scene` / `SF_MQ201EscapeScene`). The fragment is compiled + attached by
+  **`package`** (a pure `build`/`validate` leaves the scene a plain dialogue scene). The idle's `<master>`
+  must be a real IDLE — a wrong FormID plays nothing (no error), so verify it.
 - **`package`** — a ref to an AI package (a `packages[]` entry in this spec, or an external
   `<master>:0xFORMID`). The actor runs that PACK across the phase window. **Movement** = a **Travel**
   package whose destination is a placed marker; **ambient activity** = a **Sandbox** package; etc.
@@ -199,12 +207,22 @@ Each action sets **exactly one** of:
   beat phase so the phase reliably advances after the walk (the engine advances when the window's
   actions complete).
 
+**PlayIdle composition** (no bespoke enter/hold/exit — just phases + a Timer):
+```jsonc
+"phases": [ {}, {"speaker":0,"lines":["I pledge my blade."]}, {} ],
+"actions": [
+  {"actor":0, "startPhase":0, "idle":"Skyrim.esm:0x0XXXXXX"},  // kneel
+  {"actor":0, "timerSeconds":4.0, "startPhase":1, "endPhase":1}, // hold + a spoken prayer
+  {"actor":0, "startPhase":2, "idle":"Skyrim.esm:0x0YYYYYY"} ]  // stand
+```
+
 `startPhase`/`endPhase` are indices into `phases[]`; `endPhase` -1 = `startPhase`. Validation: actor
 must be a scene actor, the phase window must be in range, a beat (lineless) phase must be covered by an
 action. See `examples/scene-action-performance.json` (Borin walks across the Sleeping Giant Inn to the
-vanilla `RiverwoodInnCenterMarker`, waits 8s, then the two argue). **Out of scope (later):** sit /
-use-furniture (needs a UseItemAt PACK template — `MQ306EsbernSit` shape decoded) and standalone
-PlayIdle/animation event names.
+vanilla `RiverwoodInnCenterMarker`, waits 8s, then the two argue) and `examples/scene-playidle.json`
+(a supplicant kneels → murmurs a prayer → rises). **Out of scope (later):** sit / use-furniture (needs a
+UseItemAt PACK template — `MQ306EsbernSit` shape decoded; available as the `sittarget` PACK template)
+and idle **event-name** (string) variants rather than IDLE-record refs.
 
 ### conditions — CTDA gates (on a `dialogue` INFO, a `banter` INFO, or a `package`)
 A condition is **static gate data**, so it lives in the spec (logic still belongs in Papyrus). Both

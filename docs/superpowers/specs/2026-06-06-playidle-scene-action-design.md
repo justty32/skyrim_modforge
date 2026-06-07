@@ -81,10 +81,23 @@ phase 2:  idle action → 起身 idle(或 scene 結束自然回站姿)
 - **本輪**:`SceneActionSpec.Idle`、idle action 的 build 分支、`SceneAdapter` 併入、`GenerateSceneFragmentSource` 純產生器 + 測試、`package` 編譯/掛載、showcase scene。
 - **之後**:camera shot(CAMS)、手勢序列糖衣、自訂 DAR/OAR 動畫接線、idle event-name(非 IDLE-ref)變體(若有需要)。
 
+## Task 0 spike 結論(已釘死,2026-06-07)
+
+從 vanilla SF_ scene 腳本(`~/.cache/modforge/papyrus/Source/Scripts`,588 個 `Extends Scene`)+ Mutagen 0.53.1 反射確認(本機無 Skyrim.esm,故 SCEN record dump 略過,以 Mutagen API 型別 + 源碼慣例釘死):
+
+1. **取 actor 寫法(關鍵修正):** vanilla 用 `<AliasProp>.GetActorRef()`,**不是** `GetActorReference()`(後者在 `ReferenceAlias` 不存在,會編譯失敗)。SF_ 腳本直接宣告 `ReferenceAlias Property <Name> Auto` 並 `.GetActorRef().PlayIdle(<IdleProp>)`(實例:`SF_BardSongsBallad01Scene` 的 `Bard.GetActorRef().PlayIdle(IdleLuteStart)`、`SF_MQ201EscapeScene` 的 `Malborn.GetActorRef().PlayIdle(...)`)。→ Task 2 產生器用 `GetActorRef()`。
+2. **`ScenePhaseFragment` Mutagen 欄位:** `Byte Index`、`String FragmentName`、`String ScriptName`、`UInt32 Unknown`、nested enum `ScenePhaseFragment.Flag { OnStart, OnCompletion }`。
+   - `Index` 是 **`Byte`**(Task 4 草稿的 `(uint)` 要改 `(byte)`),= **0-based phase index**(對應 `SceneSpec` 的 `StartPhase`,ModForge phase 本就 0-based)。
+   - `FragmentName` = Papyrus 函式名 `"Fragment_<N>"`,N 是腳本內自由 fragment 計數器(vanilla 的 `;NEXT FRAGMENT INDEX`),**與 `Index`(phase)解耦**。本設計一 phase 一 idle,令 N = phase → 不碰撞且 `Index` 與函式名數字巧合一致。
+   - `Flags` = `ScenePhaseFragment.Flag.OnStart`(phase begin fragment)。
+3. **腳本標頭:** `Scriptname SF_<scene> Extends Scene Hidden`(vanilla 一律帶 `Hidden`)。
+4. **property 綁定(關鍵修正):** actor 屬性是 `ReferenceAlias Property`,須綁成 `ScriptObjectProperty { Object = host quest FormKey, Alias = (short)actorAliasId }`(**不是** Task 4 草稿的 `ScriptIntProperty Actor_<p>_AliasId`)——與 `Generator.Build.StoryManager.cs:218` 的 `qfa.Property.Object.SetTo(quest.FormKey); qfa.Property.Alias = (short)aliasId` 同形。idle 屬性綁成 `ScriptObjectProperty → idle FormKey`。
+5. **`SceneAdapter`:** `Int16 Version`、`UInt16 ObjectFormat`、`SceneScriptFragments ScriptFragments`(`FileName` / `OnBegin` / `OnEnd` / `PhaseFragments[]`)、`Scripts[]`。設 `Version=5, ObjectFormat=2`(鏡像 QuestAdapter)。host quest = `SceneSpec.QuestEditorId`。
+
 ## 風險 / 待精修(plan 階段)
 
-- `ScenePhaseFragment` 的確切欄位與 fragment 命名慣例(begin vs end、phase index 對應)需對 Mutagen API 核實——比 quest/TIF 少見的路徑。
-- scene fragment 取 actor ref 的 Papyrus 寫法(`GetOwningQuest()` cast + alias property)需在 showcase 驗證可編譯、runtime 取得到 ref。
+- ~~`ScenePhaseFragment` 欄位與命名慣例~~ → 已由 Task 0 spike 釘死(見上)。唯一未經 Skyrim.esm record dump 直驗的是 `Index` 0-based 假設,但 Mutagen 將 Phases 建模為 0-based `ExtendedList` 且 `Index` 為 byte 參照之,與 ModForge `StartPhase` 一致;實機(Task 7)為最終裁判。
+- scene fragment 取 actor ref 的 Papyrus 寫法已確認為 `<Alias>.GetActorRef()`;runtime 取得到 ref 仍待 showcase 實機驗證。
 - 既有 autoStart scene 已在 host quest 上掛 `MFSceneBanterController`(QuestAdapter);PlayIdle fragment 掛在 **SCEN**(SceneAdapter),兩者不同記錄、不衝突,但 package 掛載要分清楚。
 
 ## 與 CODE_MAP / 文檔

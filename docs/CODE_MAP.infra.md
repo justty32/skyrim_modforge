@@ -121,7 +121,7 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| CLI | `Diagnostics.cs` | `dump` / `find` 命令 dispatcher |
+| CLI | `Diagnostics.cs` | `dump` / `find` 命令 dispatcher（`find` 型別經反射 `I<Type>Getter`，含短別名 `idle`→`IdleAnimation` 供 PlayIdle 探查）|
 | CLI | `Diagnostics.Dump.cs` | 全 record 列舉（name/editorId/key）|
 | CLI | `Diagnostics.Dump.More.cs` | 擴充 dump（icons/flags/nested sub-records）|
 
