@@ -117,12 +117,16 @@ public static partial class Generator
                 { Warn($"  ! scene fragment: host quest '{s.QuestEditorId}' for scene '{s.EditorId}' not built"); continue; }
 
                 // MERGE into any existing SceneAdapter (none today, but stay merge-safe like WireQuestStages).
+                // Version=5/ObjectFormat=2/ExtraBindDataVersion=2 = vanilla canonical (unanimous across all
+                // 265 vanilla phase-fragment scenes); ScriptEntry must be Flag.Local or the engine ignores
+                // the script — same as alias scripts.
                 var adapter = scene.VirtualMachineAdapter as SceneAdapter
                               ?? new SceneAdapter { Version = 5, ObjectFormat = 2 };
                 adapter.ScriptFragments ??= new SceneScriptFragments();
                 adapter.ScriptFragments.FileName = scriptName;
+                adapter.ScriptFragments.ExtraBindDataVersion = 2;
                 var entry = adapter.Scripts.FirstOrDefault(e => string.Equals(e.Name, scriptName, StringComparison.OrdinalIgnoreCase));
-                if (entry is null) { entry = new ScriptEntry { Name = scriptName }; adapter.Scripts.Add(entry); }
+                if (entry is null) { entry = new ScriptEntry { Name = scriptName, Flags = ScriptEntry.Flag.Local }; adapter.Scripts.Add(entry); }
 
                 foreach (var a in Generator.SceneIdleActions(s))
                 {
@@ -130,6 +134,10 @@ public static partial class Generator
                     {
                         Index = (byte)a.StartPhase,                 // 0-based phase index (Task 0 spike)
                         Flags = ScenePhaseFragment.Flag.OnStart,    // fires when the phase begins
+                        // Unknown MUST be 0x01000000 (16777216) — unanimous across all 686 vanilla phase
+                        // fragments. Leaving it 0 makes the engine SKIP the fragment (the scene analog of
+                        // the QuestScriptFragment.Unknown2=1 gotcha; proven cause of the kneel never firing).
+                        Unknown = 16777216,
                         ScriptName = scriptName,
                         FragmentName = $"Fragment_{a.StartPhase}",  // ↔ GenerateSceneFragmentSource function name
                     });

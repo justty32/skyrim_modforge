@@ -99,11 +99,15 @@ public class SceneFragmentTests
         Assert.NotNull(sc.VirtualMachineAdapter);
         var frags = sc.VirtualMachineAdapter!.ScriptFragments!;
         Assert.Equal("SF_MF_OathScene", frags.FileName);
+        // Canonical vanilla VMAD values — wrong values make the engine silently skip the fragment.
+        Assert.Equal(2, frags.ExtraBindDataVersion);
+        Assert.Equal(ScriptEntry.Flag.Local, sc.VirtualMachineAdapter.Scripts.Single().Flags);
         var pf = frags.PhaseFragments;
         Assert.Equal(2, pf.Count);
         Assert.Equal(new byte[] { 0, 1 }, pf.Select(f => f.Index).OrderBy(i => i).ToArray());
         Assert.All(pf, f => Assert.Equal("SF_MF_OathScene", f.ScriptName));
         Assert.All(pf, f => Assert.True(f.Flags.HasFlag(ScenePhaseFragment.Flag.OnStart)));
+        Assert.All(pf, f => Assert.Equal(16777216u, f.Unknown));   // 0x01000000 — or the engine skips it
         Assert.Contains(pf, f => f.FragmentName == "Fragment_0");
         Assert.Contains(pf, f => f.FragmentName == "Fragment_1");
 
