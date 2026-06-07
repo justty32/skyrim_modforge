@@ -87,7 +87,11 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 
 想法備忘錄在 `docs/IDEAS.md`（隨從擴充、劇情演出、大量劇情生成等）。
 
-**目前無進行中項目**（已告一段落）。跨 session 接手時，若有「文檔/CODE_MAP 待同步」的功能，在此補一行。
+**進行中：身份系統（輕量職業）MVP —— 程式碼/測試/CODE_MAP/SPEC 已同步並 commit，待實機驗證。**
+- 已落地（plan `docs/superpowers/plans/2026-06-07-identity-system-mvp.md`，5 task）：`identities[]`（id/faction/priority/grants/toggle/acquireBook/onAcquire.scene）；每身份建持有 FACT；`MFIdentityBook.psc` OnRead（讀書→AddToFaction+AddSpell(grants)+Scene.Start，toggle 反向）embed 進 CLI；`DialogueSpec.Identity`/`PrimaryIdentity` → player GetInFaction CTDA（primary 再排除更高 priority）。檔案見 CODE_MAP「身份系統」段。404 測試綠。
+- showcase `examples/identity-paladin.json` → `~/skyrim_mods/ModForgeIdentity.zip`（讀 Oath of the Eight 書→宣誓鞠躬 scene[複用 PlayIdle]+入聖騎士團+授 +20 單手 ability；商人帳本 toggle；Townsfolk 依 primaryIdentity 改招呼）。ESP 已結構驗證:FACT 建、book VMAD 綁 TheFaction/GrantAbility/AcquireScene/Toggle、身份招呼 CTDA(paladin 1 條、merchant 2 條含排除)。
+- **待實機**:MO2 裝 zip→save/reload→在沉睡巨人旅店(coc RiverwoodSleepingGiantInn)讀「Oath of the Eight Divines」書→Oath-Keeper 鞠躬+祝詞、`player.getav onehanded` 應 +20、跟 Townsfolk 對話應出現 paladin 招呼。再讀商人帳本切換商人身份。最可能風險:OnRead 觸發時機/AddToFaction、scene 在 Start() 前不誤觸發(已加 faction 條件擋 auto-begin)。PASS 後:移除本段、已落地功能補一行、記憶加 in-game-confirmed。
+- **MVP 之後（Phase-2/C，未做）**:Adventurer 預設身份自動授予（startGameEnabled OnInit）、`activeWhen` 情境條件、聲望/行為追蹤、controller 主身份+手動覆寫、身份對應互動（交易 UI/護衛任務）。
 
 ### 已落地功能（時間序；實作細節見 git log / CODE_MAP / SPEC）
 

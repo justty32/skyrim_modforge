@@ -14,7 +14,8 @@
 | `examples/scene-presence-banter.json` | 在場偵測自動觸發 Scene（autoStart + MFSceneBanterController）|
 | `examples/scene-action-performance.json` | Scene 非對話 action（§1b 演出）：beat phase + Package action（NPC 走位到 marker，Travel PACK）+ Timer action（停頓）|
 | `examples/scene-sit-performance.json` | Scene 演出第二切片：NPC 走到椅子並**坐下**（SitTarget PACK，走位+坐合一）+ Timer + brawlOnEnd（SitTarget 細節見 [CODE_MAP.npcs-packages.md § AI Packages](CODE_MAP.npcs-packages.md#ai-packagespack)）|
-| `examples/scene-playidle.json` | Scene 演出第三切片：actor 在 phase 邊界**播 IDLE 動畫**（`SceneActionSpec.Idle` → SCEN SceneAdapter phase fragment `SF_<scene>.Fragment_N`，跑 `<alias>.GetActorRef().PlayIdle()`）；跪→停→起三 phase（用 vanilla 祈福跪姿 IdleBlessingKneelEnter 0x0F11EE / Exit 0x0F11EF，`find <esm> Kneel idle` 探得）|
+| `examples/scene-playidle.json` | Scene 演出第三切片：actor 在 phase 邊界**播 IDLE 動畫**（`SceneActionSpec.Idle` → SCEN SceneAdapter phase fragment `SF_<scene>.Fragment_N`，跑 `<alias>.GetActorRef().PlayIdle()`）；站→鞠躬→獻手（用 vanilla `IdleSilentBow 0x0D8734` / `IdleGive 0x0B5E20`，限 vanilla 腳本 PlayIdle 過的 idle，跪/祈禱綁家具的不行）|
+| `examples/identity-paladin.json` | 輕量身份/職業系統 MVP：讀書(MFIdentityBook OnRead)→入 FACT+授常駐 ability+播宣誓鞠躬 scene(複用 PlayIdle)；Merchant toggle；NPC 依 `primaryIdentity` 改招呼(GetInFaction CTDA，高優先序排除)|
 | `examples/scene-headtrack.json` | Scene 每-phase headtrack/facing：說話者 gaze 指向另一 actor／玩家／無人（`ScenePhaseSpec.HeadtrackActor`/`HeadtrackPlayer`/`FaceTarget`）|
 | `examples/showcase-multi.json` | 多功能 showcase（一包一次測）：自訂 Light + headtrackPlayer + SitTarget beat + autoStart/brawl |
 | `examples/scene-conditions.json` | Scene 條件閘：scene-level + per-phase start/completion CTDA（GetGlobalValue 等，refs by editorId）|
@@ -56,6 +57,7 @@
 | `QuestStageTests.cs` | stage log text / objective fragment / VMAD |
 | `SceneTests.cs` | SCEN actor / phase / dialogue action；非對話 action（Package→Packages PACK ref / Timer→TimerSeconds）+ beat phase（無 lines→無 Dialog action/topic）+ LastActionIndex；**idle action 發 Timer（hold；純 build 無 VMAD）**；autoStart → controller VMAD 掛接 + 清 BeginOnQuestStart + 調參 props + **重播策略 props（playOnce/playHour/gateGlobal→GLOB object prop）** + validate gate |
 | `SceneFragmentTests.cs` | PlayIdle 純產生器（`SceneNeedsFragmentScript`/`SceneFragmentScriptName`/`GenerateSceneFragmentSource`：extends Scene Hidden、`Fragment_<phase>`、`GetActorRef()`）+ `AttachSceneFragments`（.pex 在才掛 SceneAdapter、PhaseFragments 數/ScriptName/OnStart flag/FragmentName、Actor_ object prop→host quest+alias index）+ validate（idle-only OK、idle+timer hold OK、idle+package 拒）|
+| `IdentityTests.cs` | 身份系統：`IdentitySpec` 預設、每身份建 FACT（外部/已宣告不重建）、validate（dup id / bad grant）、`primaryIdentity` → GetInFaction CTDA（held≥1 + 高優先序==0 排除）、acquireBook → `MFIdentityBook` VMAD + 屬性綁定 |
 | `StoryManagerBuildTests.cs` | SM build pass 2（SMBN/SMQN 掛接、alias fill 接線、alias 腳本 VMAD 掛接、`startUpStage` QSDT flag、stage fragment + alias 腳本共存於單一 adapter、非 storyEvent quest 也建 forced/createObject alias + 腳本）|
 | `StoryManagerEventsTests.cs` | 事件登錄表欄位（FormKey / slot 對應）|
 | `StoryManagerEventsMoreTests.cs` | 擴充事件（ChangeLocation/CastMagic/AddItem/Assault/ScriptEvent）|
@@ -132,6 +134,26 @@
 | Validate | `Generator.Validate.Quests.cs` | actor alias ref、scene↔quest 連結；**beat phase 需有 action 覆蓋；每 action：idle⊕package/package⊕timer 互斥、idle+timer(hold) 合法、至少一個 + actor 是 scene actor + phase 窗在範圍內（idle ref CheckRef）**；**autoStart 需 StartGameEnabled host quest + ≥2 actor + 正數調參；playHour 0..24、tol>0、gateGlobal CheckRef** |
 | Package | `src/ModForge.Cli/Package.cs` | 任一 scene 有 autoStart → 出貨 `MFSceneBanterController.pex`；**每 scene 有 idle action → 編 `SF_<scene>.psc`（`GenerateSceneFragmentSource`）並 build 時掛 SceneAdapter VMAD** |
 | Diag | `Diagnostics.Scene.cs` | `scenediag` actors / phases / actions dump；**`scnscan` 列舉含非對話 action 的 scene（解 §1b 演出來源）** |
+
+---
+
+## 身份系統（輕量職業/Identity）
+→ **設計**：`docs/superpowers/specs/2026-06-06-identity-system-design.md`；**plan**：`docs/superpowers/plans/2026-06-07-identity-system-mvp.md`
+
+三面向：Acquire（讀書 OnRead）/ Gate（identity·primaryIdentity 標籤 → GetInFaction CTDA）/ Grant（常駐 ability 加/收）。身份狀態存成 FACT（持久訊號，未來原版 GetInFaction 可 gate）。
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.Identity.cs` | `IdentitySpec`（id/faction/priority/grants/toggle/default/acquireBook/acquireText）+ `IdentityAcquireSpec`（onAcquire.scene）；`ModSpec.Identities` |
+| Spec | `Spec.Dialogue.cs` | `DialogueSpec.Identity` / `PrimaryIdentity`（招呼/對話行身份閘標籤）|
+| Build P1 | `Generator.Build.Identity.cs` `BuildIdentities` | 每身份建一個持有 FACT（bare editorId 才建；外部/已宣告跳過）|
+| Build P2 | `Generator.Build.Identity.cs` `ExpandIdentityConditions` | identity→`GetInFaction(player,faction)≥1`；primaryIdentity 再對每個更高 priority 身份補 `==0` 排除；由 `Generator.Build.Conditions.cs` `WireDialogueConditions` 呼叫併入 INFO CTDA |
+| Build P2 | `Generator.Build.Identity.cs` `AttachIdentityBooks` | 把 `MFIdentityBook` VMAD 掛上 acquireBook + 綁 `TheFaction`/`GrantAbility`(grants[0])/`AcquireScene`/`Toggle`（無條件掛，鏡像 controller；prebuilt .pex 出貨）|
+| Asset | `assets/papyrus/MFIdentityBook.psc` | 可複用身份書（extends Book，OnRead → AddToFaction+AddSpell+Scene.Start；Toggle 反向）；改 .psc 要重編 .pex；embed 進 CLI（條件式 EmbeddedResource）|
+| Validate | `Generator.Validate.cs` | `RegisterIdentityFactions`（早登錄自建 FACT editorId 供 condition 解析）+ `ValidateIdentities`（unique id、非空 faction、grants/acquireBook CheckRef）|
+| Package | `src/ModForge.Cli/Package.cs` §5d | 任一身份有 acquireBook → 出貨 `MFIdentityBook.pex` 進 Scripts/ |
+
+**MVP 之後（Phase-2/C）**：`activeWhen` 情境條件、聲望/行為追蹤、controller 管主身份+手動覆寫、龍裔首吼追加、身份對應互動（商人交易 UI / 護衛任務）、Adventurer 預設身份的 startGameEnabled OnInit 自動授予。
 
 ---
 

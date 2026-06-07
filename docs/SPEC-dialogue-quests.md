@@ -494,3 +494,41 @@ See also `examples/story-manager-scriptevent.json` + `examples/MFSE_TestTrigger.
 - Attaching works on any record that supports scripts (Quest, Npc, Activator,
   MagicEffect, Weapon, Armor, MiscItem, Book, Ingestible, …). The script `Name` must
   match the compiled `.pex`.
+
+---
+
+## Identities (lightweight class/identity system)
+
+Give the player roles (Paladin, Merchant, Adventurer…) that grant standing abilities and change how
+NPCs treat them. Each identity is stored as a **faction** (the persistent "you have it" signal —
+save-safe, and future-proofs vanilla `GetInFaction` gating). Add an `identities[]` list:
+
+```jsonc
+"identities": [
+  { "id": "Paladin", "faction": "MF_FactPaladin", "priority": 30,
+    "grants": ["MF_AbilSmite"],                 // SPELs added on join, removed on leave
+    "acquireBook": "MF_PaladinTome",            // reading it joins the faction (MFIdentityBook OnRead)
+    "onAcquire": { "scene": "MF_OathScene" } }, // optional performance played on acquire (e.g. a PlayIdle bow)
+  { "id": "Merchant", "faction": "MF_FactMerchant", "priority": 20, "toggle": true,
+    "acquireBook": "MF_MerchantLedger" }        // toggle: reading again leaves the identity
+]
+```
+
+- **`faction`** — a bare in-spec editorId is auto-built as a plain FACT; an external `<master>:0xID`
+  (a vanilla / Sofia faction) is used as-is.
+- **`acquireBook`** — a `books[]` entry; the build attaches the reusable `MFIdentityBook` script
+  (OnRead → AddToFaction + AddSpell(grants) + optional `AcquireScene.Start()`; `toggle` reverses it).
+  `package` ships the prebuilt `MFIdentityBook.pex`.
+- **Gate** dialogue with two `DialogueSpec` tags: `identity: "Paladin"` shows the line only while the
+  player holds that identity (`GetInFaction ≥ 1`); `primaryIdentity: "Paladin"` does the same **plus**
+  excludes every higher-`priority` identity (`GetInFaction == 0`), so only the top held identity's
+  greeting fires. Both expand to player `GetInFaction` CTDA at build.
+- **Grant** — `grants[]` SPELs (e.g. a constant-effect Fortify ability) are added on join and removed
+  on leave (the first grant binds to the book script's ability property in the MVP).
+
+A scene started on acquire (`onAcquire.scene`) is **explicitly** `Start()`'d by the book — add a
+scene-level `conditions` gate (e.g. the identity faction) so it doesn't also auto-play at game load
+(`Start()` bypasses begin-conditions). See `examples/identity-paladin.json` (read the tome → an
+oath-keeper bows and blesses you → you join the order, gain +20 One-Handed, and townsfolk hail you as
+a paladin). **Out of scope (Phase-2):** contextual `activeWhen`, reputation, controller-managed primary
+identity + manual override, Dragonborn-on-first-shout, identity-linked interactions (trade UI, escorts).
