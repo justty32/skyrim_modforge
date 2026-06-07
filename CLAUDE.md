@@ -87,10 +87,7 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 
 想法備忘錄在 `docs/IDEAS.md`（隨從擴充、劇情演出、大量劇情生成等）。
 
-**進行中：scene PlayIdle（phase fragment）—— 程式碼/測試/CODE_MAP/文檔皆已同步並 commit，僅待實機驗證。**
-- 已落地（commit 6586ef2…280c4d0）：`SceneActionSpec.Idle` → SCEN `SceneAdapter` per-phase begin fragment（`SF_<scene>.Fragment_<phase>` 跑 `<alias>.GetActorRef().PlayIdle()`）；純 build 不掛 VMAD、package 編 `SF_` 才掛（gating 同 `WireQuestStages`）。純產生器 `Generator.SceneFragments.cs`、掛載 `AttachSceneFragments`（`Generator.Build.Scripts.cs`）。
-- **It.1 in-game(2026-06-07):scene 跑了(actor 說話)但不跪——即使站著也不跪。** 用本機 Skyrim.esm 解碼 vanilla BardSongs* SCEN 找到根因(commit 36276cf):**vanilla 每個帶 phase fragment 的 phase 都有一個 Timer(或 Package)SceneAction;沒有任何 action 的空 phase 引擎不會 run,OnStart fragment 永不觸發。** 我原本讓 idle action 不產 SceneAction(空 phase)→ fragment 不 fire。修法:idle action 現在發一個 Timer(hold=`timerSeconds` 或 `DefaultIdleHoldSeconds` 2s)讓 phase 能 run,動畫仍走 fragment。又:座椅 NPC 忽略 PlayIdle → 供奉者加 Sandbox 包(`allowSitting:false`)保持站立。showcase 重設計成 vanilla 形狀(phase0 beat、phase1 跪+禱、phase2 起;fragment 放 phase≥1)。`Index`=0-based phase、OnStart/OnCompletion 皆 vanilla 在用。已重打包 `~/skyrim_mods/ModForgePlayIdle.zip`。
-- **待實機 re-test**:MO2 重裝 zip→save/reload→`startscene MF_OathScene`(對著供奉者)→確認 站立片刻→跪下念禱詞(hold 4s)→起身。若仍不跪:下一步在 fragment 加 `Debug.Notification` 確認是否 fire(辨別「fragment 不觸發」vs「PlayIdle 被忽略」)。PASS 後:移除本段、已落地功能補一行、IDEAS §1b「播放動畫」標為已支援、記憶加 in-game-confirmed。
+**目前無進行中項目**（已告一段落）。跨 session 接手時，若有「文檔/CODE_MAP 待同步」的功能，在此補一行。
 
 ### 已落地功能（時間序；實作細節見 git log / CODE_MAP / SPEC）
 
@@ -106,6 +103,7 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - **重播策略**：`playOnce` / `playHour(+tolerance)` / `gateGlobal`。`ModForgeReplayPolicy.zip`。
 - **per-phase headtrack/facing**：`ScenePhaseSpec.HeadtrackActor/HeadtrackPlayer/FaceTarget`。
 - **scene 條件**：`SceneSpec.Conditions`（scene-level，僅 `beginOnQuestStart`）+ `ScenePhaseSpec.StartConditions/CompletionConditions`（per-phase）。
+- **PlayIdle 演出**（in-game 確認 2026-06-07）：`SceneActionSpec.Idle`（IDLE ref）→ SCEN `SceneAdapter` per-phase OnStart fragment（`SF_<scene>.Fragment_<phase>` 跑 `<alias>.GetActorRef().PlayIdle()`，第三種 fragment 家族）。純產生器 `Generator.SceneFragments.cs`、掛載 `AttachSceneFragments`；idle action 同時發一個 Timer（hold）讓 phase 能 run。`find <esm> <kw> idle` 探 IDLE。`ModForgePlayIdle.zip`（宣誓鞠躬+獻手）。
 
 **PACK templates（共 10）**：sandbox / sleep / travel / usemagic / patrol / follow / escort / **sittarget**（坐家具）/ **activate**（活化 lever/door）/ **eat**。
 
@@ -123,7 +121,8 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - **SM alias** [[story-manager-kill-recipe]]：① location 槽 alias 必須 `Type=Location`（fromEvent 'L' 自動）；② 任一必填 alias 填不上 → quest 靜默不啟動；③ 殺/指向被 `ReservesLocationOrReference` 保留的 NPC 需 `allowReserved`（uniqueActor 強制）；④ `QuestAlias.Flags` nullable，旗標用 `GetValueOrDefault()` 起底。
 - **SM 事件可靠性** [[dispatcher-magic-trigger]]：additive 無條件分支只在 vanilla 少/沒密集處理的事件上可靠；密集事件（ActorDialogue/Hello）會輸掉互斥競爭、劫持原版對話——須用 conditions（或走自訂 ScriptEvent keyword）。
 - **autoStart scene 閘門**：用 `autoStart.gateGlobal`（controller 端檢查），**不要**用 scene-level `conditions`——controller 強制 `Scene.Start()`，繞過 scene begin-conditions（後者只 gate `beginOnQuestStart` scene）。
-- **scene 動作**：`SceneAction.TypeEnum` 只有 Dialog/Package/Timer——NPC「做動作」一律走 Package action 引用 PACK。
+- **scene 動作**：`SceneAction.TypeEnum` 只有 Dialog/Package/Timer——「走位/坐/活化」走 Package action 引用 PACK；**「播動畫」走 `SceneActionSpec.Idle`（SceneAdapter phase fragment，非 SceneAction）**。
+- **scene PlayIdle**（in-game 2026-06-07 確認，多坑連環）[[scene-playidle-recipe]]：① **SceneAdapter VMAD 三個 canonical 值不可少,否則引擎靜默跳過 fragment**——`ScenePhaseFragment.Unknown=16777216`(0x01000000;=quest 的 `Unknown2=1` 坑的 scene 版)、`SceneScriptFragments.ExtraBindDataVersion=2`、`ScriptEntry.Flags=Local`(全 265 vanilla phase-frag scene 一致)。② **每個帶 fragment 的 phase 必須有一個 SceneAction(Timer)**,空 phase 引擎不 run、fragment 不 fire(故 idle action 同時發一個 Timer 當 hold)。③ **不是每個 IDLE 都能 PlayIdle**:跪/祈禱(`IdleBlessingKneel*`/`IdleCrouchedPray*`)綁神壇家具,自由 `PlayIdle` 無效;挑 vanilla 腳本實際 `.PlayIdle()` 過的(鞠躬 `IdleSilentBow`/獻手 `IdleGive`/`IdleStop`/offset 類),`grep -ri '.PlayIdle(' ~/.cache/modforge/papyrus/Source/Scripts` 查。④ 連播同一 idle 不明顯重播,要不同手勢才看得出兩 fragment 都 fire。⑤ 座椅/sandbox NPC 忽略 PlayIdle → 給站立包(Sandbox `allowSitting:false`)。⑥ console `playidle` 吃 EditorID 不吃 FormID(Papyrus `PlayIdle(form)` 吃 form,spec `idle` ref 綁的就是 form)。
 - **NPC 裝備/偷竊**：武器要有傷害（templated 武器 spec 留空會保留 template 原值；0 傷害武器 NPC 評分低於拳頭、不拔）；未裝備物品免 perk 偷，已裝備武器/穿戴衣物需 Misdirection/Perfect Touch perk；`essential` NPC 不可 loot，要可 loot 改用 `protected`。
 - **Papyrus 編譯**：`Papyrus.Compile`（Wine+CK）用 cache 全 source（`~/.cache/modforge/papyrus/Source/Scripts`）；native `~/tools/papyrus-compiler` 用 loose Source，headers 不全設 `MODFORGE_PAPYRUS_HEADERS` 指向 cache（`extends ReferenceAlias` 必設）。dispatcher/controller `.psc` embed 進 CLI、Package 編 user script 時解到 temp 當 sibling header → `Fire()` 免 per-machine cache。
 - **adapter 合併**：`WireQuestStages` 要**合併**進既有 `QuestAdapter`（不能 `=` 覆寫，否則清掉 alias 腳本的 `.Aliases`）；`GetOwningQuest()` 在執行時 alias OnActivate 可用，dialogue TIF 在 game-load 是 None。

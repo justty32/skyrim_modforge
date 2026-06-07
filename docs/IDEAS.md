@@ -64,9 +64,9 @@ Skyrim 的對話沒有語音檔幾乎不能用——無聲台詞的字幕一閃�
 
 不只是對話，想在特定時機（如玩家選了某個選項後）讓 NPC 進行完整演出：
 
-- 走到指定地點（Scene Phase + XMarker 目的地，依賴 navmesh）
-- 播放指定動畫（`PlayAnimation` event name，自訂動畫需 DAR/OAR）
-- 使用場景物件（FURN — 椅子、工作台、祭壇等，NPC 自動走過去互動）
+- ✅ 走到指定地點（scene Package action 引用 Travel PACK，已支援）
+- ✅ 播放指定動畫（`SceneActionSpec.Idle` → SceneAdapter phase fragment PlayIdle，**in-game 確認 2026-06-07**；限 vanilla 腳本 PlayIdle 過的 IDLE，跪/祈禱那種綁家具的不行）
+- ✅ 使用場景物件（SitTarget / Activate PACK templates，已支援）
 - NPC 之間的對話（多 Actor 輪流說台詞，每句是一個 action）
 - 可選：附帶鏡頭（Camera Shot record），簡單演出不做也行
 
@@ -85,7 +85,7 @@ Scene
 
 ### ModForge 待補
 
-SCEN 有基本支援（phases、actors、dialogue actions）；「移動到指定位置」「播放動畫」「使用物件」這幾種 action type 目前 spec 還沒對應欄位，之後有需要再擴充。
+「移動到指定位置」「播放動畫」「使用物件」皆已落地（見上）。剩「附帶鏡頭」（Camera Shot CAMS）尚未做，簡單演出不需要，之後有需要再擴充。
 
 ---
 
