@@ -81,6 +81,30 @@
     }
   ],
 
+  "factions": [
+    {
+      "_": "Vendor faction for the Townsfolk so the Merchant-only `openBarter` trade option has real goods/gold. always-on-duty hours; sellBuyList is the vanilla VendorItem keyword list (notSellBuyList=true → sells everything BUT those categories). Chest = MF_ShopChestRef.",
+      "editorId": "MF_TownsfolkShop", "name": "ModForge Townsfolk Goods",
+      "vendor": {
+        "startHour": 0, "endHour": 24, "radius": 0, "buysStolen": false,
+        "sellBuyList": "Skyrim.esm:0x06CB48", "notSellBuyList": true,
+        "merchantContainer": "MF_ShopChestRef"
+      }
+    }
+  ],
+
+  "containers": [
+    {
+      "editorId": "MF_ShopChest", "name": "Merchant Chest",
+      "_": "The vendor's gold + stock (shown in barter). 800 gold to buy your wares; a couple of items to sell.",
+      "items": [
+        { "item": "Skyrim.esm:0x0000000F", "count": 800 },
+        { "item": "Skyrim.esm:0x072AE7", "count": 1 },
+        { "item": "Skyrim.esm:0x09AF0A", "count": 10 }
+      ]
+    }
+  ],
+
   "npcs": [
     {
       "editorId": "MF_OathKeeper", "name": "Oath-Keeper", "greeting": "Speak your oath when you are ready.",
@@ -92,7 +116,37 @@
       "editorId": "MF_Townsfolk", "name": "Townsfolk", "greeting": "Hm?",
       "race": "Skyrim.esm:0x013746", "voiceType": "Skyrim.esm:0x013AE7", "class": "MF_IdentityClass",
       "unique": true, "essential": true, "level": 3, "autoCalcStats": true,
+      "factions": [ "MF_TownsfolkShop" ],
       "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies"
+    },
+    {
+      "_": "The escort-quest giver. Holds two packages: a Follow gated on GetStage(MF_EscortQuest)==10 (only follows while the escort is active) and a Stand sandbox fallback. Adventurer-only dialogue starts the escort.",
+      "editorId": "MF_Traveler", "name": "Wary Traveler", "greeting": "These roads aren't safe to walk alone.",
+      "race": "Skyrim.esm:0x013746", "voiceType": "Skyrim.esm:0x013AE6", "class": "MF_IdentityClass",
+      "unique": true, "essential": true, "level": 2, "autoCalcStats": true,
+      "packages": [ "MF_EscortFollow", "MF_TravelerStand" ],
+      "aggression": "Unaggressive", "confidence": "Cowardly", "assistance": "HelpsNobody"
+    }
+  ],
+
+  "packages": [
+    {
+      "_": "Follow the PLAYER (target empty = player), but ONLY while the escort quest is at stage 10. Listed before the stand sandbox on the NPC so it wins when its GetStage condition passes. accompany=true keeps the traveler close.",
+      "editorId": "MF_EscortFollow", "template": "Skyrim.esm:0x019B2C",
+      "follow": { "target": "", "minRadius": 128, "maxRadius": 256, "accompany": true },
+      "conditions": [
+        { "function": "GetStage", "comparison": "==", "value": 10, "param": "MF_EscortQuest" }
+      ]
+    },
+    {
+      "_": "Stand-at-spot fallback when not escorting (stage != 10). NearSelf anchors at the placed position; no wandering.",
+      "editorId": "MF_TravelerStand", "template": "Skyrim.esm:0x01C254",
+      "interruptFlags": [ "HellosToPlayer", "AllowIdleChatter" ],
+      "sandbox": {
+        "radius": 256, "allowEating": false, "allowSleeping": false,
+        "allowConversation": true, "allowIdleMarkers": true, "allowSitting": false,
+        "allowWandering": false, "allowSpecialFurniture": false, "energy": 0.0
+      }
     }
   ],
 
@@ -101,6 +155,18 @@
       "_": "Host quest for the oath scene + the identity-gated dialogue. StartGameEnabled so both are live.",
       "editorId": "MF_IdentityQuest", "name": "ModForge Identity Showcase",
       "startGameEnabled": true, "priority": 50, "objectives": []
+    },
+    {
+      "_": "Escort quest (Phase-2 #5b). StartGameEnabled (runs at stage 0); the Adventurer-gated dialogue sets stage 10 (traveler follows), 'we've arrived' sets stage 20 (complete + reward). The follow package is gated on GetStage==10.",
+      "editorId": "MF_EscortQuest", "name": "A Traveler's Escort",
+      "startGameEnabled": true, "priority": 50,
+      "stages": [
+        { "index": 10, "logEntry": "I agreed to escort the wary traveler to safety." },
+        { "index": 20, "logEntry": "The traveler reached safety.", "completeQuest": true }
+      ],
+      "objectives": [
+        { "index": 0, "text": "Escort the traveler to safety", "showStage": 10, "completeStage": 20 }
+      ]
     }
   ],
 
@@ -162,6 +228,25 @@
       "editorId": "MF_Set_Auto", "questEditorId": "MF_IdentityQuest", "speakerNpcEditorId": "MF_Townsfolk",
       "prompt": "Address me however you see fit.", "responses": [ "Very well." ],
       "setPrimaryIdentity": "auto"
+    },
+    {
+      "_": "IDENTITY-SPECIFIC INTERACTION (Phase-2 #5a): a Merchant-only trade option. openBarter → a TIF result fragment calls (speaker as Actor).ShowBarterMenu(). identity:Merchant gates it so only a fellow merchant sees it; the Townsfolk is a vendor (MF_TownsfolkShop faction + MF_ShopChest), so the barter shows real gold/stock.",
+      "editorId": "MF_Trade", "questEditorId": "MF_IdentityQuest", "speakerNpcEditorId": "MF_Townsfolk",
+      "prompt": "Fellow merchant — let's talk shop.", "responses": [ "Coin to coin. Take a look." ],
+      "identity": "Merchant", "openBarter": true
+    },
+    {
+      "_": "IDENTITY-SPECIFIC INTERACTION (Phase-2 #5b): an Adventurer-only ESCORT offer. identity:Adventurer gates it; setStage 10 starts MF_EscortQuest (the follow package GetStage==10 then matches); evaluateSpeakerPackages makes the traveler start following immediately. Auto-hides after stage 10 (setStage's GetStage<10 condition).",
+      "editorId": "MF_EscortStart", "questEditorId": "MF_EscortQuest", "speakerNpcEditorId": "MF_Traveler",
+      "prompt": "I'm an adventurer — I'll see you safely on your way.", "responses": [ "Thank the gods. Lead on, I'll keep close." ],
+      "identity": "Adventurer", "setStage": 10, "evaluateSpeakerPackages": true, "goodbye": true
+    },
+    {
+      "_": "Escort completion: only at stage 10 (explicit GetStage==10 + setStage's GetStage<20). setStage 20 completes the quest + the rewardItem gives 200 gold; evaluateSpeakerPackages stops the follow (stage no longer 10).",
+      "editorId": "MF_EscortDone", "questEditorId": "MF_EscortQuest", "speakerNpcEditorId": "MF_Traveler",
+      "prompt": "We've arrived. You're safe now.", "responses": [ "Safe at last. Here — for your trouble." ],
+      "conditions": [ { "function": "GetStage", "comparison": "==", "value": 10, "param": "MF_EscortQuest" } ],
+      "setStage": 20, "rewardItem": "Skyrim.esm:0x0000000F", "rewardCount": 200, "evaluateSpeakerPackages": true, "goodbye": true
     }
   ],
 
@@ -169,6 +254,13 @@
     { "base": "MF_OathKeeper", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -600, "y": 120, "z": 0 } },
     { "base": "MF_Townsfolk", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 180, "z": 0 } },
     { "base": "MF_PaladinTome", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -500, "y": 300, "z": 10 } },
-    { "base": "MF_MerchantLedger", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -450, "y": 300, "z": 10 } }
+    { "base": "MF_MerchantLedger", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -450, "y": 300, "z": 10 } },
+    {
+      "_": "The vendor's merchant chest (holds the gold/stock shown in barter). persistent so the vendor faction's MerchantContainer link + VendorLocation resolve.",
+      "editorId": "MF_ShopChestRef", "base": "MF_ShopChest",
+      "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 400, "z": 0 },
+      "persistent": true
+    },
+    { "base": "MF_Traveler", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -150, "y": 180, "z": 0 }, "persistent": true }
   ]
 }

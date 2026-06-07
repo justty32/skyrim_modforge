@@ -111,6 +111,20 @@ public sealed class DialogueSpec
     // `GetOwningQuest().SetStage(N)`). `package` emits a ready-to-compile TIF fragment scaffold; it
     // must be CK-compiled + bound to the INFO (structural only).
     public int SetStage { get; set; } = -1;
+    // OpenBarter (default false): when the player picks this topic, open the BARTER/trade menu with the
+    // speaking NPC (vanilla `Actor.ShowBarterMenu()`, no SKSE). Generates a TIF result fragment. The
+    // speaker must be a vendor (a member of a Vendor-flagged faction with a merchant chest) for goods/gold
+    // to appear. Pair with an `identity:` gate for an identity-specific "fellow merchant" trade option.
+    public bool OpenBarter { get; set; }
+    // RewardItem (optional ref) + RewardCount: when the player picks this topic, give the player this
+    // item/gold (vanilla `Game.GetPlayer().AddItem(item, count)`). Generates a TIF result fragment. Use
+    // for quest rewards (e.g. gold on escort completion). RewardCount defaults to 1.
+    public string RewardItem { get; set; } = "";
+    public int RewardCount { get; set; } = 1;
+    // EvaluateSpeakerPackages (default false): when picked, force the speaking NPC to re-evaluate its AI
+    // packages (`Actor.EvaluatePackage()`) so a package newly enabled by this line's `setStage` (e.g. a
+    // follow package gated on GetStage==N) activates immediately instead of on the next periodic re-eval.
+    public bool EvaluateSpeakerPackages { get; set; }
 }
 // PROACTIVE banter — a line the NPC says UNPROMPTED (no player menu), the vanilla follower-comment
 // pattern (see Skyrim.esm `HirelingIdles` 0x055DEB). All banter entries that share a (speaker, quest)

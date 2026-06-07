@@ -1715,6 +1715,23 @@
           "type": "integer",
           "description": "advance the host quest to this stage when the line is picked (-1 = none); needs the generated TIF fragment compiled in CK"
         },
+        "openBarter": {
+          "type": "boolean",
+          "description": "open the BARTER/trade menu with the speaking NPC when picked (vanilla Actor.ShowBarterMenu(), no SKSE); speaker must be a vendor-faction member with a merchant chest; pair with an identity gate for a merchant-only trade option"
+        },
+        "rewardItem": {
+          "$ref": "#/$defs/ref",
+          "description": "give the player this item/gold when the line is picked (Game.GetPlayer().AddItem); use with setStage for a quest reward"
+        },
+        "rewardCount": {
+          "type": "integer",
+          "default": 1,
+          "description": "how many of rewardItem to give (default 1)"
+        },
+        "evaluateSpeakerPackages": {
+          "type": "boolean",
+          "description": "force the speaking NPC to re-evaluate AI packages (Actor.EvaluatePackage()) so a package newly enabled by this line's setStage (e.g. a follow package gated on GetStage==N) activates immediately"
+        },
         "resultScript": {
           "type": "string",
           "description": "custom result-script Scriptname (extends TopicInfo) wired as the line's OnBegin Fragment_0; overrides the auto setStage TIF"

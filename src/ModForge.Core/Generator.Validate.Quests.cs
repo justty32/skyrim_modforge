@@ -66,6 +66,7 @@ public static partial class Generator
                     && !string.Equals(d.SetPrimaryIdentity, "auto", System.StringComparison.OrdinalIgnoreCase)
                     && !spec.Identities.Any(i => string.Equals(i.Id, d.SetPrimaryIdentity, System.StringComparison.OrdinalIgnoreCase)))
                     Problems.Add($"dialogue '{d.EditorId}' setPrimaryIdentity '{d.SetPrimaryIdentity}' is not a known identity id (or 'auto')");
+                if (!string.IsNullOrWhiteSpace(d.RewardItem)) CheckRef(d.RewardItem, $"dialogue '{d.EditorId}' rewardItem");
                 // A `hello:true` line is the NPC's auto-spoken greeting (Misc/Hello), not a player menu
                 // option, so it has no prompt by design — only require a prompt for normal player topics.
                 if (!d.Hello && string.IsNullOrEmpty(d.Prompt)) Problems.Add($"dialogue '{d.EditorId}' has empty prompt");

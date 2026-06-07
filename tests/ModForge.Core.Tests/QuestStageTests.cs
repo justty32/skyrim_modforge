@@ -273,6 +273,52 @@ public class QuestStageTests
         Assert.Equal("", Generator.GenerateDialogueFragmentSource(plain));
     }
 
+    [Fact]
+    public void Dialogue_open_barter_generates_a_ShowBarterMenu_fragment()
+    {
+        var d = new DialogueSpec
+        {
+            EditorId = "MF_Trade", QuestEditorId = "MF_Q",
+            Prompt = "Let's trade", Responses = { "Sure." }, OpenBarter = true,
+        };
+        Assert.Equal("TIF_MF_Trade", Generator.DialogueFragmentScriptName(d));
+        var src = Generator.GenerateDialogueFragmentSource(d);
+        Assert.Contains("extends TopicInfo", src);
+        Assert.Contains("akSpeakerRef as Actor", src);
+        Assert.Contains(".ShowBarterMenu()", src);
+        Assert.DoesNotContain($"Quest Property {Generator.TifQuestPropertyName} Auto", src);   // openBarter-only → no quest property
+    }
+
+    [Fact]
+    public void Dialogue_open_barter_plus_set_override_combine_in_one_fragment()
+    {
+        var d = new DialogueSpec
+        {
+            EditorId = "MF_TradeSet", QuestEditorId = "MF_Q",
+            Prompt = "Trade as a merchant", Responses = { "Aye." }, OpenBarter = true, SetPrimaryIdentity = "Merchant",
+        };
+        var src = Generator.GenerateDialogueFragmentSource(d, overrideCode: 2);
+        Assert.Contains("MF_IdentityOverride.SetValue(2)", src);
+        Assert.Contains(".ShowBarterMenu()", src);
+    }
+
+    [Fact]
+    public void Dialogue_reward_and_setStage_and_reeval_combine_in_one_fragment()
+    {
+        var d = new DialogueSpec
+        {
+            EditorId = "MF_EscortDone", QuestEditorId = "MF_Q",
+            Prompt = "We've arrived", Responses = { "Here." }, SetStage = 20,
+            RewardItem = "Skyrim.esm:0x00000F", RewardCount = 200, EvaluateSpeakerPackages = true,
+        };
+        Assert.Equal("TIF_MF_EscortDone", Generator.DialogueFragmentScriptName(d));
+        var src = Generator.GenerateDialogueFragmentSource(d);
+        Assert.Contains($"Form Property {Generator.TifRewardPropertyName} Auto", src);
+        Assert.Contains($"Game.GetPlayer().AddItem({Generator.TifRewardPropertyName}, 200)", src);
+        Assert.Contains($"{Generator.TifQuestPropertyName}.SetStage(20)", src);
+        Assert.Contains(".EvaluatePackage()", src);
+    }
+
     // ---- validate guardrails ----
 
     private static ModSpec OneQuestSpec(QuestSpec q)
