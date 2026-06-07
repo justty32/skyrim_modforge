@@ -12,8 +12,9 @@
 ```
 dotnet run --project src/ModForge.Cli -- compile assets/papyrus/MFStoryEventDispatch.psc assets/papyrus/
 dotnet run --project src/ModForge.Cli -- compile assets/papyrus/MFSceneBanterController.psc assets/papyrus/
+dotnet run --project src/ModForge.Cli -- compile assets/papyrus/MFIdentityBook.psc assets/papyrus/
 ```
-（需要 Wine + CK PapyrusCompiler 環境。）這兩個 `.psc`（dispatcher 與在場偵測 Scene controller）有任何改動時，同樣需要重跑對應步驟並將新的 `.pex` 保留在本機（不 commit）。兩個 `.pex` 都被 `ModForge.Cli.csproj` embed 為 EmbeddedResource（條件式：缺檔仍可 build，runtime 才 warn）。
+（需要 Wine + CK PapyrusCompiler 環境；native 走 `~/tools/papyrus-compiler` + `MODFORGE_PAPYRUS_HEADERS=~/.cache/modforge/papyrus/Source/Scripts`。）這三個 `.psc`（dispatcher、在場偵測 Scene controller、身份書 MFIdentityBook）有任何改動時，同樣需要重跑對應步驟並將新的 `.pex` 保留在本機（不 commit）。三個 `.pex` 都被 `ModForge.Cli.csproj` embed 為 EmbeddedResource（條件式：缺檔仍可 build，runtime 才 warn）。
 
 ## 程式碼慣例
 
