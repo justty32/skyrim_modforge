@@ -145,11 +145,6 @@ public static partial class Generator
                 // shared 1-based action index. Package refs are forward links resolved in WireScenes.
                 foreach (var ac in s.Actions)
                 {
-                    // PlayIdle action: realised as a SceneAdapter phase fragment (AttachSceneFragments,
-                    // driven by `package`), NOT a SceneAction. Skip it here — and don't consume an action
-                    // index — so a pure build stays a plain dialogue scene; the fragment fires on phase begin.
-                    if (!string.IsNullOrWhiteSpace(ac.Idle)) continue;
-
                     int endPhase = ac.EndPhase < 0 ? ac.StartPhase : ac.EndPhase;
                     var act = new SceneAction
                     {
@@ -158,7 +153,19 @@ public static partial class Generator
                         StartPhase = (uint)ac.StartPhase,
                         EndPhase = (uint)endPhase,
                     };
-                    if (ac.TimerSeconds > 0f)
+                    if (!string.IsNullOrWhiteSpace(ac.Idle))
+                    {
+                        // PlayIdle action: the animation itself runs via the SceneAdapter phase fragment
+                        // (AttachSceneFragments, driven by `package`). But the engine only RUNS a phase
+                        // that has at least one SceneAction (every vanilla fragment phase carries a Timer
+                        // — decoded from BardSongs* scenes), and an action-less phase never fires its
+                        // OnStart fragment. So emit a Timer here: it both makes the phase run (so the
+                        // PlayIdle fragment fires) and HOLDS the pose for the duration. Hold = TimerSeconds
+                        // if the author set one, else the default.
+                        act.Type = SceneAction.TypeEnum.Timer;
+                        act.TimerSeconds = ac.TimerSeconds > 0f ? ac.TimerSeconds : Generator.DefaultIdleHoldSeconds;
+                    }
+                    else if (ac.TimerSeconds > 0f)
                     {
                         act.Type = SceneAction.TypeEnum.Timer;
                         act.TimerSeconds = ac.TimerSeconds;

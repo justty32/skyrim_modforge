@@ -1,9 +1,9 @@
 {
   "pluginName": "ModForgePlayIdle.esp",
   "esl": true,
-  "_": "Scene PLAYIDLE performance (IDEAS §1b 'play animation'): a scene whose actor PLAYS AN IDLE ANIMATION on a phase boundary, not just talks. The fourth scene-action kind (after Dialog/Package/Timer): an idle action (`idle` ref on a SceneActionSpec) is realised NOT as a SceneAction but as a SCEN SceneAdapter per-phase begin fragment (SF_<scene>.Fragment_N) that runs <alias>.GetActorRef().PlayIdle(<idle>), decoded from vanilla SF_BardSongsBallad01Scene / SF_MQ201EscapeScene. Composition (kneel -> pause -> stand) is plain phases + a Timer, no bespoke enter/hold/exit. The supplicant kneels, murmurs a prayer, then rises.",
+  "_": "Scene PLAYIDLE performance (IDEAS §1b 'play animation'): a scene whose actor PLAYS AN IDLE ANIMATION on a phase, not just talks. An `idle` ref on a SceneActionSpec compiles to a SCEN SceneAdapter per-phase OnStart fragment (SF_<scene>.Fragment_<phase>) that runs <alias>.GetActorRef().PlayIdle(<idle>) — the THIRD fragment family after quest-stage + TIF. Decoded from vanilla SF_BardSongsBallad01Scene. CRUCIAL: the engine only RUNS a phase that has a SceneAction, so an idle action also emits a Timer (every vanilla fragment phase carries one) — that Timer both makes the phase fire its fragment AND holds the pose. The supplicant stands ready, kneels in worship while pledging, then rises.",
 
-  "_IDLE_FORMIDS": "The two `idle` refs are the vanilla shrine-blessing kneel pair (verified via `find Skyrim.esm <kw> idle`): IdleBlessingKneelEnter 0x0F11EE (kneel down into the worship pose) and IdleBlessingKneelExit 0x0F11EF (rise). The held pose is IdleBlessingKneel 0x0F11EC if you want phase 1 to re-assert the kneel. Discover more with `dotnet run --project src/ModForge.Cli -- find <Skyrim.esm> Kneel idle` / `... Pray idle`.",
+  "_IDLE_FORMIDS": "Vanilla shrine-blessing kneel pair (verified via `find <Skyrim.esm> Kneel idle`): IdleBlessingKneelEnter 0x0F11EE (kneel into the worship pose) / IdleBlessingKneelExit 0x0F11EF (rise). Held pose = IdleBlessingKneel 0x0F11EC. The PlayIdle persists across phases, so the kneel stays until the rise.",
 
   "classes": [
     {
@@ -14,11 +14,29 @@
     }
   ],
 
+  "packages": [
+    {
+      "editorId": "MF_OathStand",
+      "_": "Keeps the supplicant STANDING at his editor location (no chair-seeking) so the scene's kneel idle can play — a free-sandboxing NPC sits on inn furniture and a seated actor ignores PlayIdle. Sandbox template (Skyrim.esm:0x01C254) with sitting/wandering/sleeping/furniture all OFF = stand in place. Mirrors how vanilla PlayIdle scene actors (the bard) are package-controlled, not free-roaming.",
+      "template": "Skyrim.esm:0x01C254",
+      "sandbox": {
+        "radius": 128,
+        "allowSitting": false,
+        "allowWandering": false,
+        "allowSleeping": false,
+        "allowIdleMarkers": false,
+        "allowSpecialFurniture": false,
+        "allowConversation": false
+      }
+    }
+  ],
+
   "npcs": [
     {
       "editorId": "MF_Oathtaker", "name": "Supplicant", "greeting": "I am at prayer.",
       "race": "Skyrim.esm:0x013746", "class": "MF_OathClass", "outfit": "Skyrim.esm:0x09D5DF",
       "voiceType": "Skyrim.esm:0x013AE6",
+      "packages": [ "MF_OathStand" ],
       "unique": true, "essential": true, "level": 4, "autoCalcStats": true,
       "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
     }
@@ -26,7 +44,7 @@
 
   "quests": [
     {
-      "_": "Host quest. StartGameEnabled so the scene (BeginOnQuestStart) is ready; trigger the scene in-game with the console: `startscene MF_OathScene` while looking at / near the supplicant.",
+      "_": "Host quest. StartGameEnabled so the scene (BeginOnQuestStart) is armed; replay it any time with the console: `startscene MF_OathScene` while near the supplicant.",
       "editorId": "MF_OathQuest", "name": "ModForge PlayIdle Showcase",
       "startGameEnabled": true, "priority": 50, "objectives": []
     }
@@ -39,17 +57,17 @@
       "actors": [
         { "aliasId": 0, "npc": "MF_Oathtaker", "name": "Supplicant" }
       ],
-      "_phases": "phase 0: kneel idle (lineless). phase 1: spoken prayer + a 4s Timer hold. phase 2: stand idle (lineless). The kneel idle holds until the stand idle (or scene end) replaces it.",
+      "_phases": "phase 0: a brief standing beat (a Timer — vanilla scenes never put a fragment on phase 0). phase 1: he kneels (idle OnStart fragment) AND pledges, holding the kneel 4s. phase 2: he rises (idle) AND speaks the closing line, holding 2s. Each idle action emits a Timer so its phase actually runs.",
       "phases": [
         { },
         { "speaker": 0, "emotion": "Sad", "emotionValue": 40, "lines": [ "By the Eight, I pledge my blade and my breath." ] },
-        { }
+        { "speaker": 0, "emotion": "Happy", "emotionValue": 30, "lines": [ "It is done. I rise, sworn." ] }
       ],
-      "_actions": "Two idle actions (PlayIdle, via phase fragment — NOT SceneActions) bracket a Timer pause: kneel into the blessing pose, hold through the spoken prayer, then rise.",
+      "_actions": "phase 0 = a plain 1.5s Timer beat. phase 1 = kneel idle held 4s (he prays while kneeling). phase 2 = rise idle held 2s. The idle actions carry timerSeconds as the pose-hold duration.",
       "actions": [
-        { "actor": 0, "startPhase": 0, "idle": "Skyrim.esm:0x0F11EE" },
-        { "actor": 0, "timerSeconds": 4.0, "startPhase": 1, "endPhase": 1 },
-        { "actor": 0, "startPhase": 2, "idle": "Skyrim.esm:0x0F11EF" }
+        { "actor": 0, "startPhase": 0, "timerSeconds": 1.5 },
+        { "actor": 0, "startPhase": 1, "idle": "Skyrim.esm:0x0F11EE", "timerSeconds": 4.0 },
+        { "actor": 0, "startPhase": 2, "idle": "Skyrim.esm:0x0F11EF", "timerSeconds": 2.0 }
       ]
     }
   ],

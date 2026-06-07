@@ -134,11 +134,19 @@ public class SceneFragmentTests
     }
 
     [Fact]
-    public void Validate_rejects_an_action_that_sets_both_idle_and_timer()
+    public void Validate_allows_idle_plus_timer_as_a_pose_hold()
     {
         var spec = MinimalOathSpec();
-        spec.Scenes[0].Actions[0].TimerSeconds = 3f;   // now idle AND timer — not exactly one
+        spec.Scenes[0].Actions[0].TimerSeconds = 3f;   // idle + hold duration — allowed
+        Assert.Empty(Generator.Validate(spec));
+    }
+
+    [Fact]
+    public void Validate_rejects_an_action_that_sets_both_idle_and_package()
+    {
+        var spec = MinimalOathSpec();
+        spec.Scenes[0].Actions[0].Package = "Skyrim.esm:0x016FAA";   // idle AND package — mutually exclusive
         Assert.Contains(Generator.Validate(spec),
-            p => p.Contains("exactly one of idle, package, or timerSeconds"));
+            p => p.Contains("sets both idle and package"));
     }
 }

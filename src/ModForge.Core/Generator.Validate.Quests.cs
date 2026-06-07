@@ -129,8 +129,14 @@ public static partial class Generator
                     bool hasIdle = !string.IsNullOrWhiteSpace(ac.Idle);
                     bool hasPackage = !string.IsNullOrWhiteSpace(ac.Package);
                     bool hasTimer = ac.TimerSeconds > 0f;
-                    if ((hasIdle ? 1 : 0) + (hasPackage ? 1 : 0) + (hasTimer ? 1 : 0) != 1)
-                        Problems.Add($"scene '{sc.EditorId}' action {i} must set exactly one of idle, package, or timerSeconds");
+                    // An idle action MAY also carry timerSeconds (the pose-hold duration) — they're not
+                    // exclusive. What's exclusive: idle vs package, and package vs timer.
+                    if (hasIdle && hasPackage)
+                        Problems.Add($"scene '{sc.EditorId}' action {i} sets both idle and package (idle plays an animation, package runs a PACK — pick one)");
+                    if (hasPackage && hasTimer)
+                        Problems.Add($"scene '{sc.EditorId}' action {i} sets both package and timerSeconds — pick one");
+                    if (!hasIdle && !hasPackage && !hasTimer)
+                        Problems.Add($"scene '{sc.EditorId}' action {i} must set one of idle, package, or timerSeconds");
                     if (hasIdle) CheckRef(ac.Idle, $"scene '{sc.EditorId}' action {i} idle");
                     if (hasPackage) CheckRef(ac.Package, $"scene '{sc.EditorId}' action {i} package");
                     int end = ac.EndPhase < 0 ? ac.StartPhase : ac.EndPhase;

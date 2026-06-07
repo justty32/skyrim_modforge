@@ -190,13 +190,18 @@ phase indices**. A phase referenced only by an action may have **empty `lines`**
 ```
 Each action sets **exactly one** of:
 - **`idle`** — a ref to an `IDLE` (IdleAnimation) record (`<master>:0xFORMID`; discover with
-  `find idle <keyword>`). The actor **plays that idle animation** when `startPhase` begins
-  (kneel / pray / gesture…), then returns to AI naturally. Unlike `package`/`timerSeconds`, an idle is
-  realised **not as a `SceneAction`** but as a `SceneAdapter` per-phase begin **fragment** on the SCEN:
-  an `SF_<scene>.Fragment_N` that runs `<alias>.GetActorRef().PlayIdle(<idle>)` (decoded from vanilla
-  `SF_BardSongsBallad01Scene` / `SF_MQ201EscapeScene`). The fragment is compiled + attached by
-  **`package`** (a pure `build`/`validate` leaves the scene a plain dialogue scene). The idle's `<master>`
-  must be a real IDLE — a wrong FormID plays nothing (no error), so verify it.
+  `find <master> <keyword> idle`). The actor **plays that idle animation** when `startPhase` begins
+  (kneel / pray / gesture…), then returns to AI naturally. The animation runs via a `SceneAdapter`
+  per-phase **OnStart fragment** on the SCEN — an `SF_<scene>.Fragment_<phase>` that calls
+  `<alias>.GetActorRef().PlayIdle(<idle>)` (decoded from vanilla `SF_BardSongsBallad01Scene`). The
+  fragment is compiled + attached by **`package`** (a pure `build`/`validate` attaches no VMAD). Two
+  gotchas, both handled for you: (1) the engine only **runs** a phase that has a `SceneAction`, so an
+  idle action also emits a **Timer** (every vanilla fragment phase carries one) — that Timer makes the
+  phase fire its fragment AND **holds the pose**; set `timerSeconds` to control the hold (default 2s).
+  (2) The actor must be **standing** — a seated/sandboxing NPC ignores `PlayIdle`, so give him a
+  package that keeps him in place (a Sandbox with `allowSitting:false`), like vanilla's
+  package-controlled scene actors. The idle's `<master>` must be a real IDLE — a wrong FormID plays
+  nothing (no error), so verify it.
 - **`package`** — a ref to an AI package (a `packages[]` entry in this spec, or an external
   `<master>:0xFORMID`). The actor runs that PACK across the phase window. **Movement** = a **Travel**
   package whose destination is a placed marker; **ambient activity** = a **Sandbox** package; etc.
@@ -207,13 +212,13 @@ Each action sets **exactly one** of:
   beat phase so the phase reliably advances after the walk (the engine advances when the window's
   actions complete).
 
-**PlayIdle composition** (no bespoke enter/hold/exit — just phases + a Timer):
+**PlayIdle composition** (idle = animation + its own hold Timer; put fragments on phase ≥1, never 0):
 ```jsonc
-"phases": [ {}, {"speaker":0,"lines":["I pledge my blade."]}, {} ],
+"phases": [ {}, {"speaker":0,"lines":["By the Eight, I pledge my blade."]}, {"speaker":0,"lines":["It is done."]} ],
 "actions": [
-  {"actor":0, "startPhase":0, "idle":"Skyrim.esm:0x0F11EE"},   // IdleBlessingKneelEnter — kneel
-  {"actor":0, "timerSeconds":4.0, "startPhase":1, "endPhase":1}, // hold + a spoken prayer
-  {"actor":0, "startPhase":2, "idle":"Skyrim.esm:0x0F11EF"} ]  // IdleBlessingKneelExit — rise
+  {"actor":0, "startPhase":0, "timerSeconds":1.5},                                 // a standing beat (no fragment on phase 0)
+  {"actor":0, "startPhase":1, "idle":"Skyrim.esm:0x0F11EE", "timerSeconds":4.0},   // IdleBlessingKneelEnter — kneel + pray (hold 4s)
+  {"actor":0, "startPhase":2, "idle":"Skyrim.esm:0x0F11EF", "timerSeconds":2.0} ]  // IdleBlessingKneelExit — rise
 ```
 
 `startPhase`/`endPhase` are indices into `phases[]`; `endPhase` -1 = `startPhase`. Validation: actor

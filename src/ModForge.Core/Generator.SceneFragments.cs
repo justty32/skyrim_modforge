@@ -21,6 +21,12 @@ public static partial class Generator
     //  binding lives in Generator.Build.Scripts.AttachSceneFragments (driven by `package`).
     // -------------------------------------------------------------------------------
 
+    /// <summary>Default seconds an idle action holds its phase open (and so the pose) when the author
+    /// sets no explicit <see cref="SceneActionSpec.TimerSeconds"/>. The phase MUST carry a Timer or the
+    /// engine won't run it and the OnStart fragment never fires (decoded from vanilla BardSongs* scenes,
+    /// where every fragment phase has a Timer).</summary>
+    public const float DefaultIdleHoldSeconds = 2.0f;
+
     /// <summary>True when a scene has at least one idle action (needs an SF_ phase-fragment script).</summary>
     public static bool SceneNeedsFragmentScript(SceneSpec s) =>
         s.Actions.Any(a => !string.IsNullOrWhiteSpace(a.Idle));

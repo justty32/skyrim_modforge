@@ -53,19 +53,33 @@ public class SceneTests
         Assert.Equal("", ac.Idle);
     }
 
-    // An idle action is realised as a SceneAdapter phase fragment (compiled by `package`), NOT a
-    // SceneAction. A pure build (no compiled scripts) must therefore neither emit a SceneAction for
-    // it nor attach the VMAD — it stays a plain dialogue scene until package time.
+    // An idle action plays via a SceneAdapter phase fragment (compiled by `package`), but the engine
+    // only RUNS a phase that has a SceneAction — every vanilla fragment phase carries a Timer. So an
+    // idle action emits a Timer (to run the phase + hold the pose), NOT a Package. A pure build (no
+    // compiled scripts) still attaches no VMAD — the scene stays a plain dialogue+timer scene.
     [Fact]
-    public void Idle_action_does_not_emit_a_Package_or_Timer_SceneAction()
+    public void Idle_action_emits_a_Timer_so_the_phase_runs()
     {
         var spec = TwoActorScene();   // 3 spoken phases → 3 Dialog actions
         spec.Scenes[0].Actions.Add(new SceneActionSpec { Actor = 0, StartPhase = 0, Idle = "Skyrim.esm:0x000A0000" });
         var r = TestBuild.Ok(spec);
         var sc = TheScene(r);
-        Assert.Equal(3, sc.Actions.Count);
+        Assert.Equal(4, sc.Actions.Count);   // 3 Dialog + 1 Timer (the idle's phase-run/hold)
+        var timer = sc.Actions.Single(a => a.Type == SceneAction.TypeEnum.Timer);
+        Assert.Equal(0u, timer.StartPhase);
+        Assert.Equal(Generator.DefaultIdleHoldSeconds, timer.TimerSeconds);
         Assert.DoesNotContain(sc.Actions, a => a.Type == SceneAction.TypeEnum.Package);
         Assert.Null(sc.VirtualMachineAdapter);   // pure build (no compiled scripts) attaches no SceneAdapter
+    }
+
+    // An idle action's explicit timerSeconds becomes the pose-hold duration.
+    [Fact]
+    public void Idle_action_honors_explicit_timerSeconds_as_hold()
+    {
+        var spec = TwoActorScene();
+        spec.Scenes[0].Actions.Add(new SceneActionSpec { Actor = 0, StartPhase = 0, Idle = "Skyrim.esm:0x000A0000", TimerSeconds = 6f });
+        var sc = TheScene(TestBuild.Ok(spec));
+        Assert.Equal(6f, sc.Actions.Single(a => a.Type == SceneAction.TypeEnum.Timer).TimerSeconds);
     }
 
     // The Scene record exists, hosted by the named quest, with BeginOnQuestStart (default trigger).
@@ -220,7 +234,7 @@ public class SceneTests
     {
         var spec = ActionScene();
         spec.Scenes[0].Actions[0].TimerSeconds = 1f;   // already has a package
-        Assert.Contains(Generator.Validate(spec), p => p.Contains("action") && p.Contains("exactly one"));
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("action") && p.Contains("both package and timerSeconds"));
     }
 
     [Fact]
