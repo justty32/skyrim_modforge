@@ -63,11 +63,11 @@
         { "speaker": 0, "emotion": "Sad", "emotionValue": 40, "lines": [ "By the Eight, I pledge my blade and my breath." ] },
         { "speaker": 0, "emotion": "Happy", "emotionValue": 30, "lines": [ "And my honor, until the end. The oath is sworn." ] }
       ],
-      "_actions": "phase 0 = a plain 1.5s Timer beat. phase 1 = bow idle (IdleSilentBow) held 3s while pledging. phase 2 = a second bow held 3s while sealing the oath — exercises BOTH phase fragments. The idle actions carry timerSeconds as the pose-hold duration.",
+      "_actions": "phase 0 = a plain 1.5s Timer beat. phase 1 = bow (IdleSilentBow 0x0D8734) held 3s while pledging. phase 2 = a DIFFERENT gesture (IdleGive 0x0B5E20, an offering) held 3s while sealing the oath. Two distinct PlayIdle-proven idles → both phase fragments are visibly exercised (re-playing the SAME idle back-to-back can read as one gesture, so phase 2 uses a different one).",
       "actions": [
         { "actor": 0, "startPhase": 0, "timerSeconds": 1.5 },
         { "actor": 0, "startPhase": 1, "idle": "Skyrim.esm:0x0D8734", "timerSeconds": 3.0 },
-        { "actor": 0, "startPhase": 2, "idle": "Skyrim.esm:0x0D8734", "timerSeconds": 3.0 }
+        { "actor": 0, "startPhase": 2, "idle": "Skyrim.esm:0x0B5E20", "timerSeconds": 3.0 }
       ]
     }
   ],
