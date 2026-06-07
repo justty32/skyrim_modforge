@@ -89,8 +89,8 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 
 **進行中：scene PlayIdle（phase fragment）—— 程式碼/測試/CODE_MAP/文檔皆已同步並 commit，僅待實機驗證。**
 - 已落地（commit 6586ef2…280c4d0）：`SceneActionSpec.Idle` → SCEN `SceneAdapter` per-phase begin fragment（`SF_<scene>.Fragment_<phase>` 跑 `<alias>.GetActorRef().PlayIdle()`）；純 build 不掛 VMAD、package 編 `SF_` 才掛（gating 同 `WireQuestStages`）。純產生器 `Generator.SceneFragments.cs`、掛載 `AttachSceneFragments`（`Generator.Build.Scripts.cs`）。
-- showcase `examples/scene-playidle.json`（供奉者 跪→禱→起,用 vanilla IdleBlessingKneelEnter `0x0F11EE` / Exit `0x0F11EF`）已打包 `~/skyrim_mods/ModForgePlayIdle.zip`(flat)。ESP 已結構驗證:SceneAdapter + 2 PhaseFragment(Index 0/2、OnStart)+ Idle_/Actor_ 屬性正確綁定。
-- **待實機**:MO2 裝 zip→存檔 save/reload→console `startscene MF_OathScene`(對著供奉者)→確認 跪下→停頓念禱詞→起身→回正常 AI。最可能失敗點:Enter idle 是否 hold 住跪姿到 phase 2(若彈回,phase 1 可改播 held pose `IdleBlessingKneel 0x0F11EC`)。PASS 後:移除本段、CLAUDE.md 已落地功能補一行、IDEAS §1b「播放動畫」標為已支援、記憶加 in-game-confirmed。
+- **It.1 in-game(2026-06-07):scene 跑了(actor 說話)但不跪——即使站著也不跪。** 用本機 Skyrim.esm 解碼 vanilla BardSongs* SCEN 找到根因(commit 36276cf):**vanilla 每個帶 phase fragment 的 phase 都有一個 Timer(或 Package)SceneAction;沒有任何 action 的空 phase 引擎不會 run,OnStart fragment 永不觸發。** 我原本讓 idle action 不產 SceneAction(空 phase)→ fragment 不 fire。修法:idle action 現在發一個 Timer(hold=`timerSeconds` 或 `DefaultIdleHoldSeconds` 2s)讓 phase 能 run,動畫仍走 fragment。又:座椅 NPC 忽略 PlayIdle → 供奉者加 Sandbox 包(`allowSitting:false`)保持站立。showcase 重設計成 vanilla 形狀(phase0 beat、phase1 跪+禱、phase2 起;fragment 放 phase≥1)。`Index`=0-based phase、OnStart/OnCompletion 皆 vanilla 在用。已重打包 `~/skyrim_mods/ModForgePlayIdle.zip`。
+- **待實機 re-test**:MO2 重裝 zip→save/reload→`startscene MF_OathScene`(對著供奉者)→確認 站立片刻→跪下念禱詞(hold 4s)→起身。若仍不跪:下一步在 fragment 加 `Debug.Notification` 確認是否 fire(辨別「fragment 不觸發」vs「PlayIdle 被忽略」)。PASS 後:移除本段、已落地功能補一行、IDEAS §1b「播放動畫」標為已支援、記憶加 in-game-confirmed。
 
 ### 已落地功能（時間序；實作細節見 git log / CODE_MAP / SPEC）
 
