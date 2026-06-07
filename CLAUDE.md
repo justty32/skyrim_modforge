@@ -87,7 +87,10 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 
 想法備忘錄在 `docs/IDEAS.md`（隨從擴充、劇情演出、大量劇情生成等）。
 
-**目前無進行中項目**（已告一段落）。跨 session 接手時，若有「文檔/CODE_MAP 待同步」的功能，在此補一行。
+**進行中：scene PlayIdle（phase fragment）—— 程式碼/測試/CODE_MAP/文檔皆已同步並 commit，僅待實機驗證。**
+- 已落地（commit 6586ef2…280c4d0）：`SceneActionSpec.Idle` → SCEN `SceneAdapter` per-phase begin fragment（`SF_<scene>.Fragment_<phase>` 跑 `<alias>.GetActorRef().PlayIdle()`）；純 build 不掛 VMAD、package 編 `SF_` 才掛（gating 同 `WireQuestStages`）。純產生器 `Generator.SceneFragments.cs`、掛載 `AttachSceneFragments`（`Generator.Build.Scripts.cs`）。
+- showcase `examples/scene-playidle.json`（供奉者 跪→禱→起,用 vanilla IdleBlessingKneelEnter `0x0F11EE` / Exit `0x0F11EF`）已打包 `~/skyrim_mods/ModForgePlayIdle.zip`(flat)。ESP 已結構驗證:SceneAdapter + 2 PhaseFragment(Index 0/2、OnStart)+ Idle_/Actor_ 屬性正確綁定。
+- **待實機**:MO2 裝 zip→存檔 save/reload→console `startscene MF_OathScene`(對著供奉者)→確認 跪下→停頓念禱詞→起身→回正常 AI。最可能失敗點:Enter idle 是否 hold 住跪姿到 phase 2(若彈回,phase 1 可改播 held pose `IdleBlessingKneel 0x0F11EC`)。PASS 後:移除本段、CLAUDE.md 已落地功能補一行、IDEAS §1b「播放動畫」標為已支援、記憶加 in-game-confirmed。
 
 ### 已落地功能（時間序；實作細節見 git log / CODE_MAP / SPEC）
 
