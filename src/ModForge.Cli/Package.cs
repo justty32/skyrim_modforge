@@ -175,6 +175,23 @@ internal static partial class Program
             }
         }
 
+        // 5d) Ship the reusable identity-acquire book .pex whenever an identity declares an acquireBook.
+        //     ModForge attaches it (extends Book) to the book + binds its properties; one prebuilt .pex
+        //     (embedded in this CLI) serves every generated mod.
+        if (spec.Identities.Any(idn => !string.IsNullOrWhiteSpace(idn.AcquireBook)))
+        {
+            Directory.CreateDirectory(scriptsDir);
+            using var rs = typeof(Program).Assembly.GetManifestResourceStream("MFIdentityBook.pex");
+            if (rs is null)
+                Console.Error.WriteLine("  ! identity book .pex missing from build — acquire books won't grant identities");
+            else
+            {
+                using var fs = File.Create(Path.Combine(scriptsDir, "MFIdentityBook.pex"));
+                rs.CopyTo(fs);
+                Console.WriteLine("  + bundled MFIdentityBook.pex (identity-acquire book)");
+            }
+        }
+
         // 6) External-resource bundling — copy spec's (or --assets) Meshes/Textures/Sounds/….
         var assetsSrc = !string.IsNullOrWhiteSpace(assetsOverride) ? assetsOverride
                       : !string.IsNullOrWhiteSpace(spec.Assets)

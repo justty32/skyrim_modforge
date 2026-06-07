@@ -110,6 +110,7 @@ public static partial class Generator
         ctx.AttachWordWallScripts();               // word-wall teaching-quest fragment (Shout/Word props)
         ctx.AttachDialogueResultScripts();         // INFO OnEnd result fragments (dialogue-pick scripts)
         ctx.AttachSceneFragments();                // SCEN SceneAdapter phase fragments (PlayIdle)
+        ctx.AttachIdentityBooks();                 // MFIdentityBook OnRead → join/leave identity faction
         ctx.WireDialogueConditions();              // extra CTDA gates on dialogue INFOs
         ctx.WireQuestStages();                     // QSDT log-entry CTDA + stage→objective fragment VMAD
         ctx.WireBanterConditions();                // situational CTDA gates on banter INFOs

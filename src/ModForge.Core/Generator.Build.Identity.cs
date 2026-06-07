@@ -52,5 +52,43 @@ public static partial class Generator
             One(primaryIdentity, true);
             return outc;
         }
+
+        // The reusable identity-acquire book script (a prebuilt .pex embedded in the CLI + shipped by
+        // Package, like the dispatcher/controller). Attached to a book; OnRead joins/leaves the faction.
+        internal const string IdentityBookScript = "MFIdentityBook";
+
+        // --- pass 2: attach MFIdentityBook to each identity's acquire book + bind its properties ---
+        // Unconditional (like AttachSceneController) — the prebuilt .pex ships with every package whose
+        // identities declare an acquireBook. Binds: TheFaction (the held signal), GrantAbility (first
+        // grant, optional), AcquireScene (optional onAcquire performance), Toggle.
+        public void AttachIdentityBooks()
+        {
+            foreach (var idn in spec.Identities)
+            {
+                if (string.IsNullOrWhiteSpace(idn.AcquireBook)) continue;
+                if (!recordsByEd.TryGetValue(idn.AcquireBook, out var rec) || rec is not Book book)
+                { Warn($"  ! identity '{idn.Id}': acquireBook '{idn.AcquireBook}' is not an in-spec book"); continue; }
+
+                var entry = new ScriptEntry { Name = IdentityBookScript, Flags = ScriptEntry.Flag.Local };
+                AddObjProp(entry, "TheFaction", idn.Faction, $"identity '{idn.Id}' faction");
+                if (idn.Grants.Count > 0) AddObjProp(entry, "GrantAbility", idn.Grants[0], $"identity '{idn.Id}' grant");
+                if (idn.OnAcquire is { Scene: var scn } && !string.IsNullOrWhiteSpace(scn))
+                    AddObjProp(entry, "AcquireScene", scn, $"identity '{idn.Id}' onAcquire.scene");
+                entry.Properties.Add(new ScriptBoolProperty { Name = "Toggle", Data = idn.Toggle, Flags = ScriptProperty.Flag.Edited });
+
+                var vmad = book.VirtualMachineAdapter ?? new VirtualMachineAdapter();
+                vmad.Scripts.Add(entry);
+                book.VirtualMachineAdapter = vmad;
+                scriptsAttached++;
+            }
+        }
+
+        private void AddObjProp(ScriptEntry entry, string name, string @ref, string label)
+        {
+            var p = new ScriptObjectProperty { Name = name, Flags = ScriptProperty.Flag.Edited };
+            if (TryResolveRef(@ref, formKeyByEd, out var fk)) p.Object.SetTo(fk);
+            else Warn($"  ! {label}: ref '{@ref}' unresolved");
+            entry.Properties.Add(p);
+        }
     }
 }

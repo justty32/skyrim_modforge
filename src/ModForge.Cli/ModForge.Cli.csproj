@@ -47,4 +47,14 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <!-- The reusable identity-acquire book .pex (extends Book; OnRead joins/leaves an identity faction).
+       Embedded so `package` can drop it into Scripts/ for any mod whose identities declare an acquireBook.
+       Conditional: build succeeds without it; `package` warns at runtime if missing. Compile it with:
+         dotnet run - - compile assets/papyrus/MFIdentityBook.psc assets/papyrus/ -->
+  <ItemGroup Condition="Exists('..\..\assets\papyrus\MFIdentityBook.pex')">
+    <EmbeddedResource Include="..\..\assets\papyrus\MFIdentityBook.pex">
+      <LogicalName>MFIdentityBook.pex</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>
