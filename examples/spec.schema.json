@@ -3563,7 +3563,7 @@
     },
     "sceneAction": {
       "type": "object",
-      "description": "A non-dialog scene beat over a phase window. Set EXACTLY ONE of `idle` (a PlayIdle action via a phase fragment), `package` (a Package action), or `timerSeconds` > 0 (a Timer action).",
+      "description": "A non-dialog scene beat over a phase window. Set `idle` (PlayIdle via a phase fragment — may add `timerSeconds` as the pose-hold), `package` (a Package action), or `timerSeconds` > 0 (a Timer action). idle/package are mutually exclusive; package/timerSeconds are mutually exclusive.",
       "properties": {
         "actor": {
           "type": "integer",
@@ -3571,7 +3571,7 @@
         },
         "idle": {
           "$ref": "#/$defs/ref",
-          "description": "ref → an IDLE record; non-empty makes this a PlayIdle action: `actor` plays the idle when `startPhase` begins (via a SceneAdapter phase fragment, not a SceneAction), then returns to AI"
+          "description": "ref → an IDLE record; non-empty makes this a PlayIdle action: `actor` plays the idle when `startPhase` begins (via a SceneAdapter phase fragment + an auto-emitted Timer to run/hold the phase), then returns to AI. Only idles vanilla scripts actually PlayIdle work (bow/gesture/offset); furniture-gated kneel/pray idles do nothing"
         },
         "package": {
           "$ref": "#/$defs/ref",
