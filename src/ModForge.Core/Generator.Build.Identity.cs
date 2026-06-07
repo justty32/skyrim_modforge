@@ -22,5 +22,35 @@ public static partial class Generator
                 have.Add(idn.Faction);   // two identities may share a faction — build it once
             }
         }
+
+        // --- pass 2: expand identity / primaryIdentity dialogue tags into player-faction CTDA specs ---
+        // Returns ConditionSpecs (run through the shared BuildCondition by the caller). `identity` → the
+        // PLAYER is in that identity's faction (GetInFaction ≥ 1). `primaryIdentity` → that PLUS the
+        // player is NOT in any HIGHER-priority identity's faction (GetInFaction == 0), so only the top
+        // held identity's greeting fires. Unknown ids warn and contribute nothing.
+        private const string PlayerRef = "Skyrim.esm:0x000014";
+
+        public List<ConditionSpec> ExpandIdentityConditions(string identity, string primaryIdentity, string label)
+        {
+            var outc = new List<ConditionSpec>();
+            static ConditionSpec InFaction(string fac, string cmp, float val) => new()
+            {
+                Function = "GetInFaction", Param = fac, Comparison = cmp, Value = val,
+                RunOn = "Reference", Reference = PlayerRef,
+            };
+            void One(string id, bool primary)
+            {
+                if (string.IsNullOrWhiteSpace(id)) return;
+                var idn = spec.Identities.FirstOrDefault(x => string.Equals(x.Id, id, StringComparison.OrdinalIgnoreCase));
+                if (idn is null) { Warn($"  ! {label}: unknown identity '{id}'"); return; }
+                outc.Add(InFaction(idn.Faction, ">=", 1));
+                if (primary)
+                    foreach (var hi in spec.Identities.Where(x => x.Priority > idn.Priority && !string.IsNullOrWhiteSpace(x.Faction)))
+                        outc.Add(InFaction(hi.Faction, "==", 0));
+            }
+            One(identity, false);
+            One(primaryIdentity, true);
+            return outc;
+        }
     }
 }

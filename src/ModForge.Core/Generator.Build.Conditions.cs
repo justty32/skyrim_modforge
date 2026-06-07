@@ -155,6 +155,10 @@ public static partial class Generator
 
                 foreach (var c in d.Conditions)
                     if (BuildCondition(c, $"dialogue '{d.EditorId}' condition") is { } cond) info.Conditions.Add(cond);
+
+                // identity / primaryIdentity tags → player GetInFaction CTDA (lightweight class system).
+                foreach (var c in ExpandIdentityConditions(d.Identity, d.PrimaryIdentity, $"dialogue '{d.EditorId}' identity"))
+                    if (BuildCondition(c, $"dialogue '{d.EditorId}' identity") is { } cond) info.Conditions.Add(cond);
             }
         }
 

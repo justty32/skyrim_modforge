@@ -88,6 +88,12 @@ public sealed class DialogueSpec
     // Extra CTDA gates on the INFO (beyond the auto GetIsID speaker gate). e.g. only show a paid
     // recruit line when the player can afford it and isn't already following.
     public List<ConditionSpec> Conditions { get; set; } = new();
+    // Identity gating (lightweight class system). `identity`: only show this line when the PLAYER holds
+    // that identity (GetInFaction(identity.faction) ≥ 1). `primaryIdentity`: same, PLUS exclude every
+    // higher-priority identity (GetInFaction == 0) so only the top "primary" greeting fires. Both names
+    // are identity ids from `identities[]`; they expand to CTDA at build (Generator.Build.Identity.cs).
+    public string Identity { get; set; } = "";
+    public string PrimaryIdentity { get; set; } = "";
     // SetStage (optional, -1 = none): when the player picks this topic, advance the host quest to this
     // stage. In Skyrim a dialogue line sets a stage via an INFO RESULT FRAGMENT (a Papyrus snippet
     // `GetOwningQuest().SetStage(N)`). `package` emits a ready-to-compile TIF fragment scaffold; it

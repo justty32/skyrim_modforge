@@ -68,4 +68,39 @@ public class IdentityTests
         Assert.Contains(probs, p => p.Contains("duplicate identity id 'Paladin'"));
         Assert.Contains(probs, p => p.Contains("grant") && p.Contains("NoSuchSpell"));
     }
+
+    [Fact]
+    public void PrimaryIdentity_tag_gates_dialogue_on_held_minus_higher_priority()
+    {
+        var spec = new ModSpec
+        {
+            PluginName = "Test.esp",
+            Npcs = { new NpcSpec { EditorId = "Guard", Name = "Guard" } },
+            Quests = { new QuestSpec { EditorId = "Q", Name = "Q" } },
+            Identities =
+            {
+                new IdentitySpec { Id = "Paladin", Faction = "MF_FactPaladin", Priority = 30 },
+                new IdentitySpec { Id = "Merchant", Faction = "MF_FactMerchant", Priority = 20 },
+            },
+            Dialogue =
+            {
+                new DialogueSpec
+                {
+                    EditorId = "Hi", QuestEditorId = "Q", SpeakerNpcEditorId = "Guard",
+                    Responses = { "Good day, merchant." }, PrimaryIdentity = "Merchant",
+                },
+            },
+        };
+        var r = TestBuild.Ok(spec);
+        // Across the built INFOs: exactly two GetInFaction conditions — Merchant >= 1, and the
+        // higher-priority Paladin == 0 (the exclusion that makes Merchant the *primary* greeting).
+        var gif = r.Mod.EnumerateMajorRecords<IDialogResponsesGetter>()
+            .SelectMany(i => i.Conditions)
+            .OfType<IConditionFloatGetter>()
+            .Where(c => c.Data is IGetInFactionConditionDataGetter)
+            .ToList();
+        Assert.Equal(2, gif.Count);
+        Assert.Contains(gif, c => c.CompareOperator == CompareOperator.GreaterThanOrEqualTo && c.ComparisonValue == 1f);
+        Assert.Contains(gif, c => c.CompareOperator == CompareOperator.EqualTo && c.ComparisonValue == 0f);
+    }
 }
