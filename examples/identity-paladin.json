@@ -63,16 +63,25 @@
     }
   ],
 
+  "classes": [
+    {
+      "editorId": "MF_IdentityClass", "name": "ModForge Townsfolk",
+      "_": "REQUIRED for the NPCs: autoCalcStats derives H/M/S from the class+level. WITHOUT a class the calc yields ~0 health and an essential NPC spawns in permanent bleedout (looks dead — you'd have to `resurrect` it). Health-weighted so they have real HP.",
+      "healthWeight": 50, "magickaWeight": 25, "staminaWeight": 25,
+      "skillWeights": { "Speech": 75 }
+    }
+  ],
+
   "npcs": [
     {
       "editorId": "MF_OathKeeper", "name": "Oath-Keeper", "greeting": "Speak your oath when you are ready.",
-      "race": "Skyrim.esm:0x013746", "voiceType": "Skyrim.esm:0x013AE6",
+      "race": "Skyrim.esm:0x013746", "voiceType": "Skyrim.esm:0x013AE6", "class": "MF_IdentityClass",
       "unique": true, "essential": true, "level": 5, "autoCalcStats": true,
       "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies"
     },
     {
       "editorId": "MF_Townsfolk", "name": "Townsfolk", "greeting": "Hm?",
-      "race": "Skyrim.esm:0x013746", "voiceType": "Skyrim.esm:0x013AE7",
+      "race": "Skyrim.esm:0x013746", "voiceType": "Skyrim.esm:0x013AE7", "class": "MF_IdentityClass",
       "unique": true, "essential": true, "level": 3, "autoCalcStats": true,
       "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies"
     }

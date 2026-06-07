@@ -78,7 +78,7 @@
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
 | Spec | `Spec.Actors.cs` | `NpcSpec`（race/class/faction/spells/combatStyle/outfit/packages/perks/**unique/essential/protected**/**items**…）, `NpcItemSpec`（item ref + count）|
-| Build P1 | `Generator.Build.Actors.cs` | 建 NPC record（level/class/faction/combat-style/spell/perk 組裝；unique/essential/protected → `NpcConfiguration.Flag`）；**inventory items 在 `WireNpcs` pass 2 填（forward-ref-safe，建 `ContainerEntry`/`ContainerItem`；武器自動裝備、死亡掉落）** |
+| Build P1 | `Generator.Build.Actors.cs` | 建 NPC record（level/class/faction/combat-style/spell/perk 組裝；unique/essential/protected → `NpcConfiguration.Flag`）；**inventory items 在 `WireNpcs` pass 2 填（forward-ref-safe，建 `ContainerEntry`/`ContainerItem`；武器自動裝備、死亡掉落）**；**鐵律：`autoCalcStats` 必須配 `class`——autoCalc 靠 class 算 H/M/S,無 class → ~0 血 → essential NPC 永久倒地(看似死,要 `resurrect`);`BuildNpcs` 偵測到 autoCalc 無 class 會 `Warn`（in-game 踩過 2026-06-07）** |
 | Validate | `Generator.Validate.Npcs.cs` | faction/class/outfit/voice/race ref；package template/slot integrity |
 | Diag | `Diagnostics.Records.Npc.cs` | NPC class/race/faction/outfit/voice/combat-style/package/perk 詳細 dump |
 | Diag | `Diagnostics.Records.cs` | 跨類型 record 詳細欄位（含 NPC）|

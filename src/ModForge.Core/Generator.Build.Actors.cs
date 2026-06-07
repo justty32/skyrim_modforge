@@ -16,6 +16,11 @@ public static partial class Generator
                 // attribute (H/M/S) + skill distribution; without them the engine uses flat defaults.
                 if (n.Level > 0) r.Configuration.Level = new NpcLevel { Level = (short)Math.Clamp(n.Level, 1, short.MaxValue) };
                 if (n.AutoCalcStats) r.Configuration.Flags |= NpcConfiguration.Flag.AutoCalcStats;
+                // FOOTGUN: AutoCalcStats derives H/M/S from the actor's CLASS — with no class the calc
+                // yields ~0 health, so an Essential NPC spawns in permanent bleedout (looks DEAD; you'd
+                // have to `resurrect` it in console). Warn loudly; the fix is to give the NPC a `class`.
+                if (n.AutoCalcStats && string.IsNullOrWhiteSpace(n.Class))
+                    Warn($"  ! npc '{n.EditorId}': autoCalcStats set but NO class — stats calc to ~0 HP; an essential NPC will spawn in permanent bleedout (appears dead). Give it a `class`.");
                 // Configuration.Flag.Unique: marks the actor as a one-off (vs a leveled/respawning
                 // template instance). Vanilla cross-cell-travelling NPCs (Ysolda, Carlotta, …) all
                 // have this. Suspected to matter for the engine's persistent AI-tracking that lets a
