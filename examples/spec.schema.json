@@ -1738,6 +1738,18 @@
           "type": "boolean",
           "description": "emit this line as the NPC's auto-spoken GREETING (Misc/Hello) instead of a player menu option; combine with identity/primaryIdentity/conditions to greet differently by state (engine picks the highest-priority matching Hello, else the NPC's plain greeting). prompt is ignored."
         },
+        "identity": {
+          "type": "string",
+          "description": "gate this line on the player HOLDING this identity (identities[].id) — expands to GetInFaction>=1 (+ the identity's activeWhen)"
+        },
+        "primaryIdentity": {
+          "type": "string",
+          "description": "gate this line on this identity being the player's CURRENT PRIMARY (the controller-maintained MF_PrimaryIdentity global == its code) — used for state-varying greetings"
+        },
+        "setPrimaryIdentity": {
+          "type": "string",
+          "description": "when the player picks this topic, manually OVERRIDE the primary identity to this id (or 'auto' to clear) — generates a TIF fragment setting MF_IdentityOverride; pair with an identity gate"
+        },
         "conditions": {
           "type": "array",
           "items": {
@@ -3907,7 +3919,7 @@
         "priority": { "type": "integer", "default": 0, "description": "higher wins as the primary greeting identity" },
         "grants": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "SPELs/abilities added on join, removed on leave" },
         "toggle": { "type": "boolean", "default": false, "description": "reading the acquire book again removes the identity" },
-        "default": { "type": "boolean", "default": false, "description": "every player holds this from the start (baseline)" },
+        "default": { "type": "boolean", "default": false, "description": "every player holds this from the start (baseline) — auto-granted by a StartGameEnabled quest (MFIdentityDefault)" },
         "activeWhen": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "description": "situational CTDA that NARROW when the identity counts as active (e.g. WornHasKeyword/GetBaseActorValue/GetRelationshipRank); each runs on the PLAYER unless it sets a non-default runOn" },
         "acquireBook": { "$ref": "#/$defs/ref", "description": "a BOOK whose OnRead grants/toggles this identity (MFIdentityBook)" },
         "acquireText": { "type": "string", "description": "optional yes/no MessageBox prompt shown on read" },

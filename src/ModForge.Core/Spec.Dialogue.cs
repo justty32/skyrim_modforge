@@ -94,6 +94,12 @@ public sealed class DialogueSpec
     // are identity ids from `identities[]`; they expand to CTDA at build (Generator.Build.Identity.cs).
     public string Identity { get; set; } = "";
     public string PrimaryIdentity { get; set; } = "";
+    // SetPrimaryIdentity (optional): when the player picks this topic, MANUALLY OVERRIDE which identity NPCs
+    // greet you as. The value is an identity id from `identities[]`, or "auto" (clear the override — back to
+    // the highest-priority held identity). Generates a TIF result fragment that sets the MF_IdentityOverride
+    // global; the MFIdentityController reads it. Pair with an `identity:` gate so the option only shows when
+    // the player actually holds that identity.
+    public string SetPrimaryIdentity { get; set; } = "";
     // Hello (default false): emit this line as the NPC's GREETING (Misc/Hello/HELO, NPC-initiated, no
     // player prompt) instead of a player-selectable Custom topic. Combine with `identity`/
     // `primaryIdentity` (or `conditions`) to make an NPC greet you differently by state — the engine

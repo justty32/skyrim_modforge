@@ -62,6 +62,10 @@ public static partial class Generator
                 }
                 if (!string.IsNullOrEmpty(d.SpeakerNpcEditorId) && !npcIds.Contains(d.SpeakerNpcEditorId))
                     Problems.Add($"dialogue '{d.EditorId}' references unknown speaker npc '{d.SpeakerNpcEditorId}'");
+                if (!string.IsNullOrWhiteSpace(d.SetPrimaryIdentity)
+                    && !string.Equals(d.SetPrimaryIdentity, "auto", System.StringComparison.OrdinalIgnoreCase)
+                    && !spec.Identities.Any(i => string.Equals(i.Id, d.SetPrimaryIdentity, System.StringComparison.OrdinalIgnoreCase)))
+                    Problems.Add($"dialogue '{d.EditorId}' setPrimaryIdentity '{d.SetPrimaryIdentity}' is not a known identity id (or 'auto')");
                 // A `hello:true` line is the NPC's auto-spoken greeting (Misc/Hello), not a player menu
                 // option, so it has no prompt by design — only require a prompt for normal player topics.
                 if (!d.Hello && string.IsNullOrEmpty(d.Prompt)) Problems.Add($"dialogue '{d.EditorId}' has empty prompt");

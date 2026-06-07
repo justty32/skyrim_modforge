@@ -71,7 +71,7 @@ public class IdentityTests
     }
 
     [Fact]
-    public void PrimaryIdentity_tag_gates_dialogue_on_held_minus_higher_priority()
+    public void PrimaryIdentity_tag_gates_dialogue_on_held_plus_the_controller_primary_global()
     {
         var spec = new ModSpec
         {
@@ -93,16 +93,42 @@ public class IdentityTests
             },
         };
         var r = TestBuild.Ok(spec);
-        // Across the built INFOs: exactly two GetInFaction conditions — Merchant >= 1, and the
-        // higher-priority Paladin == 0 (the exclusion that makes Merchant the *primary* greeting).
-        var gif = r.Mod.EnumerateMajorRecords<IDialogResponsesGetter>()
-            .SelectMany(i => i.Conditions)
-            .OfType<IConditionFloatGetter>()
-            .Where(c => c.Data is IGetInFactionConditionDataGetter)
-            .ToList();
-        Assert.Equal(2, gif.Count);
-        Assert.Contains(gif, c => c.CompareOperator == CompareOperator.GreaterThanOrEqualTo && c.ComparisonValue == 1f);
-        Assert.Contains(gif, c => c.CompareOperator == CompareOperator.EqualTo && c.ComparisonValue == 0f);
+        var info = r.Mod.EnumerateMajorRecords<IDialogResponsesGetter>().Single(i =>
+            i.Conditions.Any(c => c.Data is IGetInFactionConditionDataGetter));
+        // primaryIdentity now resolves via the controller-maintained MF_PrimaryIdentity global, NOT a
+        // higher-priority faction-exclusion chain: GetInFaction(Merchant)>=1 AND GetGlobalValue==code.
+        var gif = info.Conditions.OfType<IConditionFloatGetter>().Where(c => c.Data is IGetInFactionConditionDataGetter).ToList();
+        Assert.Single(gif);   // own held only — no Paladin==0 exclusion anymore
+        Assert.Equal(CompareOperator.GreaterThanOrEqualTo, gif[0].CompareOperator);
+        var glob = info.Conditions.OfType<IConditionFloatGetter>().Single(c => c.Data is IGetGlobalValueConditionDataGetter);
+        Assert.Equal(CompareOperator.EqualTo, glob.CompareOperator);
+        Assert.Equal(2f, glob.ComparisonValue);   // Merchant is the 2nd identity → code 2
+        var primaryGlob = r.Mod.EnumerateMajorRecords<IGlobalGetter>().Single(g => g.EditorID == "MF_PrimaryIdentity");
+        Assert.Equal(primaryGlob.FormKey, ((IGetGlobalValueConditionDataGetter)glob.Data).Global.Link.FormKey);
+    }
+
+    [Fact]
+    public void PrimaryIdentity_use_builds_controller_quest_and_two_globals()
+    {
+        var spec = new ModSpec
+        {
+            PluginName = "Test.esp",
+            Npcs = { new NpcSpec { EditorId = "Guard", Name = "Guard" } },
+            Quests = { new QuestSpec { EditorId = "Q", Name = "Q" } },
+            Identities = { new IdentitySpec { Id = "Merchant", Faction = "MF_FactMerchant", Priority = 20 } },
+            Dialogue = { new DialogueSpec { EditorId = "Hi", QuestEditorId = "Q", SpeakerNpcEditorId = "Guard",
+                Responses = { "Hi." }, PrimaryIdentity = "Merchant" } },
+        };
+        var r = TestBuild.Ok(spec);
+        Assert.Contains(r.Mod.EnumerateMajorRecords<IGlobalGetter>(), g => g.EditorID == "MF_PrimaryIdentity");
+        Assert.Contains(r.Mod.EnumerateMajorRecords<IGlobalGetter>(), g => g.EditorID == "MF_IdentityOverride");
+        var quest = r.Mod.EnumerateMajorRecords<IQuestGetter>().Single(q => q.EditorID == "MF_IdentityControllerQuest");
+        Assert.True(quest.Flags.HasFlag(Quest.Flag.StartGameEnabled));
+        var entry = quest.VirtualMachineAdapter!.Scripts.Single(e => e.Name == "MFIdentityController");
+        Assert.Contains(entry.Properties, p => p.Name == "Primary");
+        Assert.Contains(entry.Properties, p => p.Name == "Override");
+        var codes = (IScriptIntListPropertyGetter)entry.Properties.Single(p => p.Name == "Codes");
+        Assert.Equal(new[] { 1 }, codes.Data.ToArray());   // single identity → code 1
     }
 
     [Fact]
@@ -230,10 +256,11 @@ public class IdentityTests
         var r = TestBuild.Ok(spec);
         var info = r.Mod.EnumerateMajorRecords<IDialogResponsesGetter>().Single(i =>
             i.Conditions.Any(c => c.Data is IGetInFactionConditionDataGetter));
-        // The Adventurer greeting excludes the higher Paladin on its FACTION signal only — no WornHasKeyword
-        // term leaks into the exclusion (a negated activeWhen bundle isn't expressible in CTDA).
+        // The Adventurer greeting resolves primary via the controller global (GetGlobalValue==AdvCode), NOT
+        // by re-evaluating the higher Paladin's activeWhen — no WornHasKeyword leaks into a LOWER greeting.
         Assert.DoesNotContain(info.Conditions, c => c.Data is IWornHasKeywordConditionDataGetter);
-        Assert.Equal(2, info.Conditions.Count(c => c.Data is IGetInFactionConditionDataGetter)); // own held + exclude Paladin
+        Assert.Single(info.Conditions.Where(c => c.Data is IGetInFactionConditionDataGetter)); // own held only
+        Assert.Single(info.Conditions.Where(c => c.Data is IGetGlobalValueConditionDataGetter)); // primary == AdvCode
     }
 
     [Fact]

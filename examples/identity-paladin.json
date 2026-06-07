@@ -141,6 +141,27 @@
       "editorId": "MF_Hail_Adventurer", "questEditorId": "MF_IdentityQuest", "speakerNpcEditorId": "MF_Townsfolk",
       "hello": true, "responses": [ "Safe travels, adventurer. The road is long." ],
       "primaryIdentity": "Adventurer"
+    },
+    {
+      "_": "MANUAL OVERRIDE options (Phase-2 #4): picking one sets the MF_IdentityOverride global via a TIF result fragment; the MFIdentityController makes that identity your PRIMARY (how NPCs greet you), overriding the auto highest-priority resolution. Each is gated with `identity` so it only appears when you actually hold that identity. 'auto' clears the override.",
+      "editorId": "MF_Set_Paladin", "questEditorId": "MF_IdentityQuest", "speakerNpcEditorId": "MF_Townsfolk",
+      "prompt": "Address me as a paladin.", "responses": [ "As you say — paladin." ],
+      "identity": "Paladin", "setPrimaryIdentity": "Paladin"
+    },
+    {
+      "editorId": "MF_Set_Merchant", "questEditorId": "MF_IdentityQuest", "speakerNpcEditorId": "MF_Townsfolk",
+      "prompt": "I'm a merchant; treat me as one.", "responses": [ "A merchant it is." ],
+      "identity": "Merchant", "setPrimaryIdentity": "Merchant"
+    },
+    {
+      "editorId": "MF_Set_Adventurer", "questEditorId": "MF_IdentityQuest", "speakerNpcEditorId": "MF_Townsfolk",
+      "prompt": "Just a wanderer, really.", "responses": [ "A wanderer, then." ],
+      "identity": "Adventurer", "setPrimaryIdentity": "Adventurer"
+    },
+    {
+      "editorId": "MF_Set_Auto", "questEditorId": "MF_IdentityQuest", "speakerNpcEditorId": "MF_Townsfolk",
+      "prompt": "Address me however you see fit.", "responses": [ "Very well." ],
+      "setPrimaryIdentity": "auto"
     }
   ],
 

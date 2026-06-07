@@ -44,9 +44,11 @@ public static partial class Generator
         {
             foreach (var d in spec.Dialogue)
             {
-                // User-supplied ResultScript takes priority; auto-generated setStage TIF is the fallback.
+                // User-supplied ResultScript takes priority; the auto-generated TIF (setStage and/or
+                // setPrimaryIdentity override) is the fallback.
+                var needsAutoTif = d.SetStage >= 0 || !string.IsNullOrWhiteSpace(d.SetPrimaryIdentity);
                 var scriptName = !string.IsNullOrEmpty(d.ResultScript) ? d.ResultScript
-                    : (d.SetStage >= 0 && options?.CompiledScriptsDir is not null)
+                    : (needsAutoTif && options?.CompiledScriptsDir is not null)
                         ? Generator.DialogueFragmentScriptName(d)
                         : null;
                 if (string.IsNullOrEmpty(scriptName)) continue;
@@ -63,23 +65,35 @@ public static partial class Generator
                 var entry = new ScriptEntry { Name = scriptName };
                 if (scriptName == d.ResultScript)
                     FillProperties(entry, d.ResultProperties, scriptName);
-                else if (d.SetStage >= 0 && !string.IsNullOrEmpty(d.QuestEditorId))
+                else
                 {
-                    // Auto-generated TIF: bind the OwningQuest property to the quest FormKey so
-                    // Fragment_0 can call SetStage() without relying on GetOwningQuest() — that
-                    // native method can return None for StartGameEnabled quests at OnBegin time.
-                    if (questsByEd.TryGetValue(d.QuestEditorId, out var questRec))
+                    // Auto-generated TIF. SetStage: bind the OwningQuest property to the quest FormKey so
+                    // Fragment_0 can call SetStage() without relying on GetOwningQuest() — that native method
+                    // can return None for StartGameEnabled quests at OnBegin time.
+                    if (d.SetStage >= 0 && !string.IsNullOrEmpty(d.QuestEditorId))
                     {
-                        var qp = new ScriptObjectProperty
+                        if (questsByEd.TryGetValue(d.QuestEditorId, out var questRec))
                         {
-                            Name = Generator.TifQuestPropertyName,
-                            Flags = ScriptProperty.Flag.Edited,
-                        };
-                        qp.Object.SetTo(questRec.FormKey);
-                        entry.Properties.Add(qp);
+                            var qp = new ScriptObjectProperty
+                            {
+                                Name = Generator.TifQuestPropertyName,
+                                Flags = ScriptProperty.Flag.Edited,
+                            };
+                            qp.Object.SetTo(questRec.FormKey);
+                            entry.Properties.Add(qp);
+                            linksWired++;
+                        }
+                        else Warn($"  ! TIF '{d.EditorId}': quest '{d.QuestEditorId}' not found — OwningQuest property unset");
+                    }
+                    // setPrimaryIdentity: bind the MF_IdentityOverride global so Fragment_0 can SetValue(code).
+                    if (!string.IsNullOrWhiteSpace(d.SetPrimaryIdentity))
+                    {
+                        var gp = new ScriptObjectProperty { Name = Generator.IdentityOverrideGlobal, Flags = ScriptProperty.Flag.Edited };
+                        if (TryResolveRef(Generator.IdentityOverrideGlobal, formKeyByEd, out var gfk)) gp.Object.SetTo(gfk);
+                        else Warn($"  ! TIF '{d.EditorId}': override global '{Generator.IdentityOverrideGlobal}' unresolved");
+                        entry.Properties.Add(gp);
                         linksWired++;
                     }
-                    else Warn($"  ! TIF '{d.EditorId}': quest '{d.QuestEditorId}' not found — OwningQuest property unset");
                 }
                 // OnBegin fires the moment the player selects the line (before the NPC speaks).
                 info.VirtualMachineAdapter = new DialogResponsesAdapter

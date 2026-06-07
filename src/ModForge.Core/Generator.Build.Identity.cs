@@ -43,16 +43,21 @@ public static partial class Generator
                 if (string.IsNullOrWhiteSpace(id)) return;
                 var idn = spec.Identities.FirstOrDefault(x => string.Equals(x.Id, id, StringComparison.OrdinalIgnoreCase));
                 if (idn is null) { Warn($"  ! {label}: unknown identity '{id}'"); return; }
-                outc.Add(InFaction(idn.Faction, ">=", 1));
+                outc.Add(InFaction(idn.Faction, ">=", 1));   // held (both gates)
+                // primaryIdentity: the controller-resolved MF_PrimaryIdentity global == this identity's code.
+                // (Phase-2 #4 — replaces the old higher-priority faction-exclusion chain with a single global
+                // read, so a dialogue option can override which identity is "primary". The controller picks
+                // override-if-held else highest-priority held.)
+                if (primary)
+                    outc.Add(new ConditionSpec
+                    {
+                        Function = "GetGlobalValue", Param = Generator.IdentityPrimaryGlobal,
+                        Comparison = "==", Value = Generator.IdentityCode(spec, idn.Id),
+                    });
                 // activeWhen NARROWS the positive gate: the identity only counts while these pass. Each is
                 // player-centric — default it to run on the player if the author didn't pin a runOn.
                 foreach (var aw in idn.ActiveWhen)
                     outc.Add(OnPlayerByDefault(aw));
-                if (primary)
-                    // Exclude higher-priority identities on their FACTION signal ONLY (not their activeWhen —
-                    // a negated condition bundle isn't cleanly expressible in CTDA; documented gap).
-                    foreach (var hi in spec.Identities.Where(x => x.Priority > idn.Priority && !string.IsNullOrWhiteSpace(x.Faction)))
-                        outc.Add(InFaction(hi.Faction, "==", 0));
             }
             One(identity, false);
             One(primaryIdentity, true);
@@ -159,6 +164,65 @@ public static partial class Generator
                 list.Objects.Add(p);
             }
             return list;
+        }
+
+        private static ScriptIntListProperty IntListProp(string name, IEnumerable<int> vals)
+        {
+            var list = new ScriptIntListProperty { Name = name, Flags = ScriptProperty.Flag.Edited };
+            foreach (var v in vals) list.Data.Add(v);
+            return list;
+        }
+
+        // True when a controller + the two primary-identity globals are needed: some dialogue gates on
+        // primaryIdentity (reads MF_PrimaryIdentity) or sets the override (writes MF_IdentityOverride).
+        private bool IdentityControllerNeeded() =>
+            spec.Identities.Count > 0 && spec.Dialogue.Any(d =>
+                !string.IsNullOrWhiteSpace(d.PrimaryIdentity) || !string.IsNullOrWhiteSpace(d.SetPrimaryIdentity));
+
+        // --- pass 1: auto-build the two primary-identity globals (Phase-2 #4 controller) ---
+        // MF_PrimaryIdentity (controller-written, greeting-read) + MF_IdentityOverride (dialogue-written,
+        // controller-read). Built in pass 1 so primaryIdentity CTDA + the override fragment resolve them by
+        // editorId. An author who already declared a global of the same name keeps theirs.
+        public void BuildIdentityGlobals()
+        {
+            if (!IdentityControllerNeeded()) return;
+            var have = new HashSet<string>(spec.Globals.Select(g => g.EditorId), StringComparer.OrdinalIgnoreCase);
+            foreach (var ed in new[] { Generator.IdentityPrimaryGlobal, Generator.IdentityOverrideGlobal })
+            {
+                if (!have.Add(ed)) continue;
+                MakeGlobalShort(0).EditorID = ed;
+            }
+        }
+
+        // --- pass 2: the primary-identity controller quest (StartGameEnabled, MFIdentityController) ---
+        // Maintains MF_PrimaryIdentity = override (if held) else highest-priority held identity. Greetings
+        // read it (single GetGlobalValue == code CTDA), which also lets a dialogue option override the
+        // primary. Factions[]/Codes[] are parallel, sorted by priority DESC; code = 1-based spec index.
+        public void BuildIdentityControllerQuest()
+        {
+            if (!IdentityControllerNeeded()) return;
+            var ordered = spec.Identities
+                .Select((idn, i) => (idn, code: i + 1))
+                .Where(x => !string.IsNullOrWhiteSpace(x.idn.Faction))
+                .OrderByDescending(x => x.idn.Priority)
+                .ToList();
+            if (ordered.Count == 0) return;
+
+            var quest = mod.Quests.AddNew();
+            quest.EditorID = "MF_IdentityControllerQuest";
+            quest.Name = "ModForge Identity Controller";
+            quest.Flags |= Quest.Flag.StartGameEnabled;
+
+            var entry = new ScriptEntry { Name = Generator.IdentityController, Flags = ScriptEntry.Flag.Local };
+            AddObjProp(entry, "Primary", Generator.IdentityPrimaryGlobal, "identity controller Primary global");
+            AddObjProp(entry, "Override", Generator.IdentityOverrideGlobal, "identity controller Override global");
+            entry.Properties.Add(ObjListProp("Factions", ordered.Select(x => x.idn.Faction), "identity controller faction"));
+            entry.Properties.Add(IntListProp("Codes", ordered.Select(x => x.code)));
+
+            var qad = new QuestAdapter { Version = 5, ObjectFormat = 2 };
+            qad.Scripts.Add(entry);
+            quest.VirtualMachineAdapter = qad;
+            scriptsAttached++;
         }
     }
 }

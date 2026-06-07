@@ -67,4 +67,14 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <!-- The reusable primary-identity controller .pex (extends Quest; maintains MF_PrimaryIdentity).
+       Embedded so `package` can drop it into Scripts/ for any mod whose dialogue uses primaryIdentity.
+       Conditional: build succeeds without it; `package` warns at runtime if missing. Compile it with:
+         dotnet run - - compile assets/papyrus/MFIdentityController.psc assets/papyrus/ -->
+  <ItemGroup Condition="Exists('..\..\assets\papyrus\MFIdentityController.pex')">
+    <EmbeddedResource Include="..\..\assets\papyrus\MFIdentityController.pex">
+      <LogicalName>MFIdentityController.pex</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

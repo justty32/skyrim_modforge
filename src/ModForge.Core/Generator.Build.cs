@@ -52,6 +52,7 @@ public static partial class Generator
         ctx.BuildKeys();                           // Key (KEYM)
         ctx.BuildKeywords();                       // Keyword (KYWD)
         ctx.BuildGlobals();                         // GlobalVariable (GLOB) — shared flags/counters/constants
+        ctx.BuildIdentityGlobals();                 // MF_PrimaryIdentity + MF_IdentityOverride (when primaryIdentity/override used)
         ctx.BuildOutfits();                        // Outfit (OTFT) — contents wired in pass 2
         ctx.BuildStatics();                        // Static (STAT)
         ctx.BuildActivators();                     // Activator (ACTI)
@@ -112,6 +113,7 @@ public static partial class Generator
         ctx.AttachSceneFragments();                // SCEN SceneAdapter phase fragments (PlayIdle)
         ctx.AttachIdentityBooks();                 // MFIdentityBook OnRead → join/leave identity faction
         ctx.BuildDefaultIdentityQuest();           // StartGameEnabled quest → auto-grant `default:true` identities on game start
+        ctx.BuildIdentityControllerQuest();        // StartGameEnabled quest → MFIdentityController maintains MF_PrimaryIdentity (primary + manual override)
         ctx.WireDialogueConditions();              // extra CTDA gates on dialogue INFOs
         ctx.WireQuestStages();                     // QSDT log-entry CTDA + stage→objective fragment VMAD
         ctx.WireBanterConditions();                // situational CTDA gates on banter INFOs

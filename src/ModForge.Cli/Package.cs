@@ -52,7 +52,9 @@ internal static partial class Program
         }
         foreach (var d in spec.Dialogue)
         {
-            var src = Generator.GenerateDialogueFragmentSource(d);
+            // setPrimaryIdentity → the override code baked into the fragment (0 = clear/auto).
+            var overrideCode = string.IsNullOrWhiteSpace(d.SetPrimaryIdentity) ? -1 : Generator.IdentityCode(spec, d.SetPrimaryIdentity);
+            var src = Generator.GenerateDialogueFragmentSource(d, overrideCode);
             if (!string.IsNullOrEmpty(src))
                 CompileGenerated(src, Generator.DialogueFragmentScriptName(d), $"dialogue fragment for '{d.EditorId}'");
         }
@@ -207,6 +209,24 @@ internal static partial class Program
                 using var fs = File.Create(Path.Combine(scriptsDir, "MFIdentityDefault.pex"));
                 rs.CopyTo(fs);
                 Console.WriteLine("  + bundled MFIdentityDefault.pex (default-identity granter)");
+            }
+        }
+
+        // 5f) Ship the reusable primary-identity controller .pex whenever dialogue uses primaryIdentity or
+        //     sets the override. ModForge builds a StartGameEnabled quest carrying it (extends Quest); its
+        //     OnInit/poll maintains MF_PrimaryIdentity; one prebuilt .pex serves every generated mod.
+        if (spec.Identities.Count > 0 && spec.Dialogue.Any(d =>
+                !string.IsNullOrWhiteSpace(d.PrimaryIdentity) || !string.IsNullOrWhiteSpace(d.SetPrimaryIdentity)))
+        {
+            Directory.CreateDirectory(scriptsDir);
+            using var rs = typeof(Program).Assembly.GetManifestResourceStream("MFIdentityController.pex");
+            if (rs is null)
+                Console.Error.WriteLine("  ! identity controller .pex missing from build — primary-identity greetings won't resolve");
+            else
+            {
+                using var fs = File.Create(Path.Combine(scriptsDir, "MFIdentityController.pex"));
+                rs.CopyTo(fs);
+                Console.WriteLine("  + bundled MFIdentityController.pex (primary-identity controller)");
             }
         }
 
