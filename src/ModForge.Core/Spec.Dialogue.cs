@@ -156,8 +156,14 @@ public sealed class SceneSpec
     // (GetStage). Uses the SHARED ConditionSpec / BuildCondition, wired in pass 2 (refs by editorId).
     public List<ConditionSpec> Conditions { get; set; } = new();
 }
-// One non-dialog scene beat (a SceneAction of Type Package or Timer; the spoken phases emit the
-// Dialog actions automatically). EXACTLY ONE of:
+// One non-dialog scene beat (a SceneAction of Type Package or Timer, OR — for `idle` — a SceneAdapter
+// phase fragment, no SceneAction at all; the spoken phases emit the Dialog actions automatically).
+// EXACTLY ONE of (checked in this order):
+//   * `idle` (a ref → an IDLE record) → a PLAYIDLE action: actor `actor` plays that idle animation when
+//     phase `startPhase` begins (kneel/pray/gesture…), then returns to AI naturally. Implemented NOT as
+//     a SceneAction but as a SceneAdapter per-phase begin fragment on the SCEN (`SF_<scene>.Fragment_N`
+//     calling `<alias>.GetActorRef().PlayIdle(<idle>)`); `package` compiles + attaches it. Decoded from
+//     vanilla SF_BardSongsBallad01Scene / SF_MQ201EscapeScene.
 //   * `package` (a ref → an AI package: a `packages[]` entry in this spec, or an external
 //     `<master>:0xFORMID`) → a PACKAGE action: actor `actor` runs that PACK across the phase window.
 //     Movement = a Travel package whose destination is a placed marker; ambient activity = a Sandbox
@@ -168,6 +174,8 @@ public sealed class SceneSpec
 public sealed class SceneActionSpec
 {
     public int Actor { get; set; }                  // aliasId (from actors[]) that performs the action
+    public string Idle { get; set; } = "";           // ref → an IDLE record; non-empty = a PlayIdle action
+                                                     // (SceneAdapter phase fragment, NOT a SceneAction)
     public string Package { get; set; } = "";       // ref → a PACK (spec packages[] editorId or <master>:0xID)
     public float TimerSeconds { get; set; }          // > 0 → a Timer action instead of a Package action
     public int StartPhase { get; set; }              // first phase index (into phases[]) the action spans

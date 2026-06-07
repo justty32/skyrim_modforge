@@ -46,6 +46,13 @@ public class SceneTests
     private static IQuestGetter HostQuest(BuildResult r) =>
         r.Mod.EnumerateMajorRecords<IQuestGetter>().Single(q => q.EditorID == "SQ");
 
+    [Fact]
+    public void SceneActionSpec_Idle_defaults_empty()
+    {
+        var ac = new SceneActionSpec();
+        Assert.Equal("", ac.Idle);
+    }
+
     // The Scene record exists, hosted by the named quest, with BeginOnQuestStart (default trigger).
     [Fact]
     public void Scene_IsBuilt_HostedByQuest_BeginOnQuestStart()

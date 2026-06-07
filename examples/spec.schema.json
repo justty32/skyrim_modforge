@@ -3563,11 +3563,15 @@
     },
     "sceneAction": {
       "type": "object",
-      "description": "A non-dialog scene beat over a phase window. Set EXACTLY ONE of `package` (a Package action) or `timerSeconds` > 0 (a Timer action).",
+      "description": "A non-dialog scene beat over a phase window. Set EXACTLY ONE of `idle` (a PlayIdle action via a phase fragment), `package` (a Package action), or `timerSeconds` > 0 (a Timer action).",
       "properties": {
         "actor": {
           "type": "integer",
           "description": "aliasId (from actors[]) that performs the action"
+        },
+        "idle": {
+          "$ref": "#/$defs/ref",
+          "description": "ref → an IDLE record; non-empty makes this a PlayIdle action: `actor` plays the idle when `startPhase` begins (via a SceneAdapter phase fragment, not a SceneAction), then returns to AI"
         },
         "package": {
           "$ref": "#/$defs/ref",
