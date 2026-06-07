@@ -14,7 +14,7 @@
 | `examples/scene-presence-banter.json` | 在場偵測自動觸發 Scene（autoStart + MFSceneBanterController）|
 | `examples/scene-action-performance.json` | Scene 非對話 action（§1b 演出）：beat phase + Package action（NPC 走位到 marker，Travel PACK）+ Timer action（停頓）|
 | `examples/scene-sit-performance.json` | Scene 演出第二切片：NPC 走到椅子並**坐下**（SitTarget PACK，走位+坐合一）+ Timer + brawlOnEnd（SitTarget 細節見 [CODE_MAP.npcs-packages.md § AI Packages](CODE_MAP.npcs-packages.md#ai-packagespack)）|
-| `examples/scene-playidle.json` | Scene 演出第三切片：actor 在 phase 邊界**播 IDLE 動畫**（`SceneActionSpec.Idle` → SCEN SceneAdapter phase fragment `SF_<scene>.Fragment_N`，跑 `<alias>.GetActorRef().PlayIdle()`）；跪→停→起三 phase（idle 的 FormID 須 `find idle` 探得驗證，example 內為 placeholder）|
+| `examples/scene-playidle.json` | Scene 演出第三切片：actor 在 phase 邊界**播 IDLE 動畫**（`SceneActionSpec.Idle` → SCEN SceneAdapter phase fragment `SF_<scene>.Fragment_N`，跑 `<alias>.GetActorRef().PlayIdle()`）；跪→停→起三 phase（用 vanilla 祈福跪姿 IdleBlessingKneelEnter 0x0F11EE / Exit 0x0F11EF，`find <esm> Kneel idle` 探得）|
 | `examples/scene-headtrack.json` | Scene 每-phase headtrack/facing：說話者 gaze 指向另一 actor／玩家／無人（`ScenePhaseSpec.HeadtrackActor`/`HeadtrackPlayer`/`FaceTarget`）|
 | `examples/showcase-multi.json` | 多功能 showcase（一包一次測）：自訂 Light + headtrackPlayer + SitTarget beat + autoStart/brawl |
 | `examples/scene-conditions.json` | Scene 條件閘：scene-level + per-phase start/completion CTDA（GetGlobalValue 等，refs by editorId）|

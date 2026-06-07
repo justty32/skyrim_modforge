@@ -211,9 +211,9 @@ Each action sets **exactly one** of:
 ```jsonc
 "phases": [ {}, {"speaker":0,"lines":["I pledge my blade."]}, {} ],
 "actions": [
-  {"actor":0, "startPhase":0, "idle":"Skyrim.esm:0x0XXXXXX"},  // kneel
+  {"actor":0, "startPhase":0, "idle":"Skyrim.esm:0x0F11EE"},   // IdleBlessingKneelEnter — kneel
   {"actor":0, "timerSeconds":4.0, "startPhase":1, "endPhase":1}, // hold + a spoken prayer
-  {"actor":0, "startPhase":2, "idle":"Skyrim.esm:0x0YYYYYY"} ]  // stand
+  {"actor":0, "startPhase":2, "idle":"Skyrim.esm:0x0F11EF"} ]  // IdleBlessingKneelExit — rise
 ```
 
 `startPhase`/`endPhase` are indices into `phases[]`; `endPhase` -1 = `startPhase`. Validation: actor
