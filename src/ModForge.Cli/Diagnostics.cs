@@ -32,6 +32,12 @@ internal static partial class Program
         IEnumerable<IMajorRecordGetter> records;
         if (!string.IsNullOrEmpty(typeName))
         {
+            // Friendly short aliases → the Mutagen type name (the reflection below uses I<Type>Getter).
+            typeName = typeName.ToLowerInvariant() switch
+            {
+                "idle" => "IdleAnimation",   // PlayIdle scene-action idle discovery
+                _ => typeName,
+            };
             var t = typeof(ISkyrimModGetter).Assembly
                 .GetType($"Mutagen.Bethesda.Skyrim.I{typeName}Getter", throwOnError: false, ignoreCase: true);
             if (t is null)
@@ -39,7 +45,8 @@ internal static partial class Program
                 Console.Error.WriteLine(
                     $"Unknown record type '{typeName}'. Examples: Weapon, Armor, Ammunition, Npc, " +
                     "MiscItem, Ingredient, Ingestible, Book, Key, SoulGem, Keyword, Race, Class, " +
-                    "Faction, Spell, MagicEffect, Perk, Outfit, LeveledItem, LeveledNpc, Location, Cell, Furniture.");
+                    "Faction, Spell, MagicEffect, Perk, Outfit, LeveledItem, LeveledNpc, Location, " +
+                    "Cell, Furniture, IdleAnimation (alias: idle).");
                 return 2;
             }
             records = mod.EnumerateMajorRecords(t, throwIfUnknown: false);
