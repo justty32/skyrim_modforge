@@ -6,6 +6,7 @@ Scriptname MFIdentityBook extends ObjectReference Hidden
 
 Faction Property TheFaction Auto             ; the identity's holding faction (required)
 Spell   Property GrantAbility Auto           ; optional standing ability added on join / removed on leave
+Perk    Property GrantPerk Auto              ; optional standing perk added on join / removed on leave
 Scene   Property AcquireScene Auto           ; optional performance started on acquire
 Bool    Property Toggle = false Auto         ; reading again leaves the identity
 
@@ -17,6 +18,9 @@ Function OnRead()
         If GrantAbility
             p.RemoveSpell(GrantAbility)
         EndIf
+        If GrantPerk
+            p.RemovePerk(GrantPerk)
+        EndIf
         Return
     EndIf
     If has
@@ -25,6 +29,9 @@ Function OnRead()
     p.AddToFaction(TheFaction)
     If GrantAbility
         p.AddSpell(GrantAbility, false)
+    EndIf
+    If GrantPerk
+        p.AddPerk(GrantPerk)
     EndIf
     If AcquireScene
         AcquireScene.Start()

@@ -7,6 +7,7 @@ Scriptname MFIdentityDefault extends Quest Hidden
 
 Faction[] Property Factions Auto   ; the default identities' holding factions
 Spell[]   Property Grants   Auto   ; the default identities' standing abilities (optional)
+Perk[]    Property Perks    Auto   ; the default identities' standing perks (optional)
 
 Event OnInit()
     Actor p = Game.GetPlayer()
@@ -21,6 +22,13 @@ Event OnInit()
     While i < Grants.Length
         If Grants[i] && !p.HasSpell(Grants[i])
             p.AddSpell(Grants[i], false)
+        EndIf
+        i += 1
+    EndWhile
+    i = 0
+    While i < Perks.Length
+        If Perks[i] && !p.HasPerk(Perks[i])
+            p.AddPerk(Perks[i])
         EndIf
         i += 1
     EndWhile

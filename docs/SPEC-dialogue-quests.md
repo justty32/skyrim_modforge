@@ -554,6 +554,10 @@ save-safe, and future-proofs vanilla `GetInFaction` gating). Add an `identities[
   a negated condition bundle isn't CTDA-expressible — so an inactive higher identity falls back to the
   plain greeting until the player overrides the primary; see below.)
 - **`grants[]`** — SPELs (e.g. a constant-effect Fortify ability) added on join, removed on leave.
+- **`grantPerks[]`** — PERKs added on join, removed on leave (e.g. a conditional "smite vs undead" perk —
+  a `ModAttackDamage` entry point gated on the target's `ActorTypeUndead`/`ActorTypeDaedra` keyword). The
+  acquire book grants the first; a `default` identity grants all. (The perk CTD tab-count byte is set
+  automatically — see the perks section.)
 
 **Gate** dialogue with two `DialogueSpec` tags. `identity: "Paladin"` shows the line only while the
 player holds that identity (`GetInFaction ≥ 1`, plus the identity's `activeWhen`). `primaryIdentity:

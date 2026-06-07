@@ -59,7 +59,8 @@ internal static partial class Program
             var s = Script(defq, "MFIdentityDefault")!;
             var facs = (Prop(s, "Factions") as IScriptObjectListPropertyGetter)?.Objects.Select(o => Ref(o.Object.FormKey)) ?? Enumerable.Empty<string>();
             var grants = (Prop(s, "Grants") as IScriptObjectListPropertyGetter)?.Objects.Select(o => Ref(o.Object.FormKey)) ?? Enumerable.Empty<string>();
-            Console.WriteLine($"  quest {Ref(defq.FormKey)}  factions=[{string.Join(", ", facs)}]  grants=[{string.Join(", ", grants)}]");
+            var perks = (Prop(s, "Perks") as IScriptObjectListPropertyGetter)?.Objects.Select(o => Ref(o.Object.FormKey)) ?? Enumerable.Empty<string>();
+            Console.WriteLine($"  quest {Ref(defq.FormKey)}  factions=[{string.Join(", ", facs)}]  grants=[{string.Join(", ", grants)}]  perks=[{string.Join(", ", perks)}]");
         }
 
         // --- acquire books ---------------------------------------------------------
@@ -72,9 +73,10 @@ internal static partial class Program
             books++;
             var fac = Ref((Prop(s, "TheFaction") as IScriptObjectPropertyGetter)?.Object.FormKey ?? default);
             var grant = Ref((Prop(s, "GrantAbility") as IScriptObjectPropertyGetter)?.Object.FormKey ?? default);
+            var perk = Ref((Prop(s, "GrantPerk") as IScriptObjectPropertyGetter)?.Object.FormKey ?? default);
             var scene = Ref((Prop(s, "AcquireScene") as IScriptObjectPropertyGetter)?.Object.FormKey ?? default);
             var toggle = (Prop(s, "Toggle") as IScriptBoolPropertyGetter)?.Data ?? false;
-            Console.WriteLine($"  {Ref(b.FormKey)}: faction={fac}  grant={grant}  scene={scene}  toggle={toggle}");
+            Console.WriteLine($"  {Ref(b.FormKey)}: faction={fac}  grant={grant}  perk={perk}  scene={scene}  toggle={toggle}");
         }
         if (books == 0) Console.WriteLine("  (none)");
 

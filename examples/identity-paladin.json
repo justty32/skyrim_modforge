@@ -32,6 +32,30 @@
     }
   ],
 
+  "perks": [
+    {
+      "_": "SMITE EVIL (Phase-2 #5 'smite 細調'): the Paladin's conditional bonus — +25% weapon damage vs UNDEAD or DAEDRA. A ModAttackDamage entry point (Multiply 1.25) whose effect-level conditions check the TARGET (runOn:Target) for ActorTypeUndead (0x013796) OR ActorTypeDaedra (0x013797) — `or:true` on the FIRST so it reads 'undead OR daedra'. Granted via the identity's grantPerks; the tab-count CTD byte is set automatically. playable:false/hidden — it's script-granted, not a skill-tree perk.",
+      "editorId": "MF_SmiteEvilPerk",
+      "name": "Smite Evil",
+      "description": "Weapon damage against undead and daedra is increased by 25%.",
+      "playable": false,
+      "hidden": true,
+      "numRanks": 1,
+      "effects": [
+        {
+          "kind": "entryPoint",
+          "entryPoint": "ModAttackDamage",
+          "function": "Multiply",
+          "value": 1.25,
+          "conditions": [
+            { "function": "HasKeyword", "param": "Skyrim.esm:0x013796", "comparison": "==", "value": 1, "runOn": "Target", "or": true },
+            { "function": "HasKeyword", "param": "Skyrim.esm:0x013797", "comparison": "==", "value": 1, "runOn": "Target" }
+          ]
+        }
+      ]
+    }
+  ],
+
   "books": [
     {
       "editorId": "MF_PaladinTome",
@@ -53,6 +77,7 @@
     {
       "id": "Paladin", "faction": "MF_FactPaladin", "priority": 30,
       "grants": [ "MF_AbilSmite" ],
+      "grantPerks": [ "MF_SmiteEvilPerk" ],
       "acquireBook": "MF_PaladinTome",
       "onAcquire": { "scene": "MF_PaladinOathScene" },
       "_activeWhen": "SITUATIONAL gate (Phase-2 #2): the Paladin identity only counts as ACTIVE while these CTDA pass — here, while the player wears HEAVY ARMOR. You stay a faction member (getfactionrank>=0) after reading the book, but the paladin greeting/gates only fire in plate. Each condition runs on the PLAYER by default. NOTE the documented gap: while held-but-inactive (book read, no heavy armor) the lower Adventurer greeting is still excluded on the faction signal, so the NPC falls back to its plain greeting until the Phase-2 controller resolves primary by activeWhen too.",

@@ -100,6 +100,7 @@ public static partial class Generator
                 var entry = new ScriptEntry { Name = IdentityBookScript, Flags = ScriptEntry.Flag.Local };
                 AddObjProp(entry, "TheFaction", idn.Faction, $"identity '{idn.Id}' faction");
                 if (idn.Grants.Count > 0) AddObjProp(entry, "GrantAbility", idn.Grants[0], $"identity '{idn.Id}' grant");
+                if (idn.GrantPerks.Count > 0) AddObjProp(entry, "GrantPerk", idn.GrantPerks[0], $"identity '{idn.Id}' grantPerk");
                 if (idn.OnAcquire is { Scene: var scn } && !string.IsNullOrWhiteSpace(scn))
                     AddObjProp(entry, "AcquireScene", scn, $"identity '{idn.Id}' onAcquire.scene");
                 entry.Properties.Add(new ScriptBoolProperty { Name = "Toggle", Data = idn.Toggle, Flags = ScriptProperty.Flag.Edited });
@@ -146,6 +147,9 @@ public static partial class Generator
             var grants = defaults.SelectMany(i => i.Grants).Where(g => !string.IsNullOrWhiteSpace(g)).Distinct().ToList();
             if (grants.Count > 0)
                 entry.Properties.Add(ObjListProp("Grants", grants, "default identity grant"));
+            var perks = defaults.SelectMany(i => i.GrantPerks).Where(p => !string.IsNullOrWhiteSpace(p)).Distinct().ToList();
+            if (perks.Count > 0)
+                entry.Properties.Add(ObjListProp("Perks", perks, "default identity grantPerk"));
 
             var qad = new QuestAdapter { Version = 5, ObjectFormat = 2 };
             qad.Scripts.Add(entry);

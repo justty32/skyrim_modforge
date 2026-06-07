@@ -15,6 +15,9 @@ public sealed class IdentitySpec
                                                        // (built if absent) or an external <master>:0xID
     public int Priority { get; set; }                  // higher wins as the primary greeting identity
     public List<string> Grants { get; set; } = new();  // refs → SPELs/abilities added on join, removed on leave
+    public List<string> GrantPerks { get; set; } = new(); // refs → PERKs added on join, removed on leave (e.g. a
+                                                       // conditional "smite vs undead" perk). The acquire book binds
+                                                       // the FIRST (like grants[0]); a default identity grants all.
     public bool Toggle { get; set; }                    // reading the acquire book again removes the identity
     public bool Default { get; set; }                   // every player holds this from the start (baseline)
     public List<ConditionSpec> ActiveWhen { get; set; } = new();  // optional situational gate: the identity only

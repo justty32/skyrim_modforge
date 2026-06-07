@@ -159,6 +159,43 @@ public class IdentityTests
     }
 
     [Fact]
+    public void Identity_grantPerks_binds_GrantPerk_on_the_acquire_book_and_Perks_on_the_default_quest()
+    {
+        var spec = new ModSpec
+        {
+            PluginName = "Test.esp",
+            Books = { new BookSpec { EditorId = "MF_Tome", Name = "Tome", Template = "Skyrim.esm:0x0ED161" } },
+            Perks =
+            {
+                new PerkSpec { EditorId = "MF_PerkA", Name = "A" },
+                new PerkSpec { EditorId = "MF_PerkB", Name = "B" },
+            },
+            Identities =
+            {
+                new IdentitySpec { Id = "Paladin", Faction = "MF_FactPaladin", Priority = 30,
+                    AcquireBook = "MF_Tome", GrantPerks = { "MF_PerkA" } },
+                new IdentitySpec { Id = "Adventurer", Faction = "MF_FactAdv", Default = true,
+                    GrantPerks = { "MF_PerkB" } },
+            },
+        };
+        var r = TestBuild.Ok(spec);
+        var perkA = r.Mod.EnumerateMajorRecords<IPerkGetter>().Single(p => p.EditorID == "MF_PerkA").FormKey;
+        var perkB = r.Mod.EnumerateMajorRecords<IPerkGetter>().Single(p => p.EditorID == "MF_PerkB").FormKey;
+
+        // Book binds GrantPerk = grantPerks[0].
+        var book = r.Mod.EnumerateMajorRecords<IBookGetter>().Single(b => b.EditorID == "MF_Tome");
+        var bookEntry = book.VirtualMachineAdapter!.Scripts.Single(e => e.Name == "MFIdentityBook");
+        var gp = (IScriptObjectPropertyGetter)bookEntry.Properties.Single(p => p.Name == "GrantPerk");
+        Assert.Equal(perkA, gp.Object.FormKey);
+
+        // Default-grant quest binds Perks[] for the default identity.
+        var quest = r.Mod.EnumerateMajorRecords<IQuestGetter>().Single(q => q.EditorID == "MF_IdentityDefaultQuest");
+        var qEntry = quest.VirtualMachineAdapter!.Scripts.Single(e => e.Name == "MFIdentityDefault");
+        var perks = (IScriptObjectListPropertyGetter)qEntry.Properties.Single(p => p.Name == "Perks");
+        Assert.Equal(perkB, Assert.Single(perks.Objects).Object.FormKey);
+    }
+
+    [Fact]
     public void Default_identity_builds_a_StartGameEnabled_granter_quest_with_faction_and_grant_lists()
     {
         var spec = new ModSpec

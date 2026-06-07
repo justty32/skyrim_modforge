@@ -3935,6 +3935,7 @@
         "faction": { "$ref": "#/$defs/ref", "description": "the holding FACT — built if it's a bare in-spec editorId, else an external faction ref" },
         "priority": { "type": "integer", "default": 0, "description": "higher wins as the primary greeting identity" },
         "grants": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "SPELs/abilities added on join, removed on leave" },
+        "grantPerks": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "PERKs added on join, removed on leave (e.g. a conditional smite-vs-undead perk); the acquire book grants the first, a default identity grants all" },
         "toggle": { "type": "boolean", "default": false, "description": "reading the acquire book again removes the identity" },
         "default": { "type": "boolean", "default": false, "description": "every player holds this from the start (baseline) — auto-granted by a StartGameEnabled quest (MFIdentityDefault)" },
         "activeWhen": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "description": "situational CTDA that NARROW when the identity counts as active (e.g. WornHasKeyword/GetBaseActorValue/GetRelationshipRank); each runs on the PLAYER unless it sets a non-default runOn" },
