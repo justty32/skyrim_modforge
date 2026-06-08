@@ -39,7 +39,7 @@
 </nav>
 <div class="content"><div class="content-inner"><div id="md" class="md"></div></div></div>
 <textarea id="src" hidden>
-<!-- 社交與任務模式 -->
+<!-- Social & quest patterns -->
 # 食譜手冊 — 社交與任務
 
 ← [目錄](cookbook-index.html) | [lifelike 主頁](lifelike.html)
@@ -72,7 +72,7 @@
 
 ## 「運作中的商人」（能買賣商品的店主——遊戲內已確認 2026-05-31）
 
-商人 = 一個**標有 Vendor 旗標的 FACT**（包含交易時段 + 買賣類別清單 + 含金幣與存貨的商人箱），其成員 NPC 會被遊戲引擎視為店主。讓 NPC 可以對話，建構程序會自動加入 `JobMerchantFaction`，使原版通用的「I'd like to trade」話題得以顯示——**但前提是 `GetOffersServicesNow` 回傳 1**，這對生成的 NPC 有兩個不明顯的要求（商人必須在其商店內就位當班，且派系必須指定一個售賣區域的 CELL）。
+商人 = 一個**標有 Vendor 旗標的 FACT**（包含交易時段 + 買賣類別清單 + 含金幣與存貨的商人箱），其成員 NPC 會被遊戲引擎視為店主。讓 NPC 可以對話，建構程序會自動加入 `JobMerchantFaction`，使原版通用的「I'd like to trade」話題得以顯示——**但前提是 `GetOffersServicesNow` 回傳 1**，這對生成的 NPC 有兩個不明顯的要求（商人必須在其商店內就位當班，且派系必須指定一個售賣區域的 CELL——見下文）。具備這些後，以物易物選單即可在遊戲中開啟。
 
 ```jsonc
 { "factions": [
@@ -89,8 +89,8 @@
   "npcs": [
     { "editorId": "MF_Shopkeeper", "name": "Marcurio the Merchant", "race": "Skyrim.esm:0x013746",
       "voiceType": "Skyrim.esm:0x013AE6", "unique": true,
-      "factions": [ "MF_ShopFaction" ],
-      "greeting": "Looking to buy?" } ],
+      "factions": [ "MF_ShopFaction" ],          // 成員身分 = 「此 NPC 即為商人」
+      "greeting": "Looking to buy?" } ],          // 必填，才能可對話（自動 Hello）
   "cells": [ { "editorId": "MF_Shop", "name": "Trading Post", "template": "Skyrim.esm:0x0165A8" } ],
   "placements": [
     { "base": "MF_Shopkeeper", "cell": "MF_Shop", "position": { "x": 0, "y": 128, "z": 0 }, "persistent": true },
@@ -116,7 +116,7 @@
 { "magicEffects": [
     { "editorId": "MF_IronHideMgef", "archetype": "ValueModifier", "actorValue": "DamageResist",
       "castType": "ConstantEffect", "targetType": "Self",
-      "flags": [ "Recover", "NoArea", "NoDuration", "HideInUI" ] }
+      "flags": [ "Recover", "NoArea", "NoDuration", "HideInUI" ] }   // 持續效果的強化
   ],
   "spells": [
     { "editorId": "MF_IronHideAbility", "name": "Iron Hide", "spellType": "Ability",
@@ -174,8 +174,8 @@
 **`package` 自動處理 Papyrus——無需 CK（遊戲內已確認 It.36 2026-06-02）。**
 它會生成、編譯並以 VMAD 附加所有內容：
 
-- `Scripts/Source/MF_ErrandQuest_Stages.psc` — 每個階段各有 `Fragment_Stage_XXXX_Item00000()`，用於顯示/完成目標。引擎在 `SetStage()` 觸發時按名稱呼叫此函式。
-- `Scripts/Source/TIF_MF_AgreeToHelp.psc` — `extends TopicInfo Hidden`，帶有明確的 `Quest Property OwningQuest Auto`（綁定至任務的 FormKey），`OnBegin` 呼叫 `OwningQuest.SetStage(20)`。**請勿使用 `GetOwningQuest()`——對 StartGameEnabled 任務回傳 None**（見 gotchas.md）。
+- `Scripts/Source/MF_ErrandQuest_Stages.psc` — 每個階段各有一個 `Fragment_Stage_XXXX_Item00000()`，用於顯示/完成目標（`SetObjectiveDisplayed` / `SetObjectiveCompleted`）。引擎在 `SetStage()` 觸發時按名稱呼叫此函式。
+- `Scripts/Source/TIF_MF_AgreeToHelp.psc` — `extends TopicInfo Hidden`，帶有明確的 `Quest Property OwningQuest Auto`（在 VMAD 中綁定至任務的 FormKey），`OnBegin` 呼叫 `OwningQuest.SetStage(20)`。**請勿使用 `GetOwningQuest()`——對 StartGameEnabled 任務回傳 None**（見 gotchas.md）。
 - 編譯後的 `.pex` 複製至 `Scripts/`，VMAD 附加至 QUST 和 INFO。
 - `setStage` 對話行上自動加入 `GetStage(quest) < 20` 條件，使 Joren 在玩家已選取後不再重複觸發。
 

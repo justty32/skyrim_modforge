@@ -49,13 +49,12 @@
 參考一個原版「程序模板」表單，由該模板定義資料輸入結構（插槽索引及類型）。我們的套件為
 模板所定義的插槽填入輸入值。
 
-ModForge 目前實作十個模板——**Sandbox**（`Skyrim.esm:0x01C254`）、**Sleep**
+ModForge 目前實作八個模板——**Sandbox**（`Skyrim.esm:0x01C254`）、**Sleep**
 （`Skyrim.esm:0x019717`）、**Travel**（`Skyrim.esm:0x016FAA`）、**UseMagic**（`Skyrim.esm:0x0504F5`）、
 **Patrol**（`Skyrim.esm:0x017723`）、**Follow**（`Skyrim.esm:0x019B2C`）、**Escort**
-（`Skyrim.esm:0x023B73`）、**SitTarget**（`Skyrim.esm:0x0A9277`）、**Activate**
-（`Skyrim.esm:0x019B2D`）及 **Eat**（`Skyrim.esm:0x019714`）。撰寫對應的子物件
-（`sandbox` / `sleep` / `travel` / `useMagic` / `patrol` / `follow` / `escort` / `sitTarget` /
-`activate` / `eat`），建置便會填入該模板的 Data 插槽。若要指向 ModForge 尚未處理的模板
+（`Skyrim.esm:0x023B73`）及 **SitTarget**（`Skyrim.esm:0x0A9277`）。撰寫對應的子物件
+（`sandbox` / `sleep` / `travel` / `useMagic` / `patrol` / `follow` / `escort` / `sitTarget`），
+建置便會填入該模板的 Data 插槽。若要指向 ModForge 尚未處理的模板
 （UseWeapon / …），仍然設定 `template`；套件會輸出結構上有效但無 Data 覆寫（套用模板預設值）
 的記錄並附上警告。在新增支援前，使用
 `packagediag <Skyrim.esm> <0xFORMID>` 探索任何模板的具名插槽結構。

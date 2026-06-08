@@ -86,7 +86,7 @@
 
 ## 載入門（用於傳送配對 — 連接兩個空間）
 
-兩個 `base` 為載入門的 `placement`，且其 `teleport` 相互指向，會形成穿行連結（XTEL）。抵達點自動設定為配對門的位置。
+兩個 `base` 為載入門的 `placement`，且其 `teleport` 相互指向，會形成穿行連結（XTEL）。抵達點自動設定為配對門的位置。用 `refpos <Skyrim.esm> <0xFORMID>` 探查原版門的 XTEL（現在會印出傳送目標 + 抵達點）。
 
 | EditorID | FormID | 備註 |
 |---|---|---|
@@ -95,6 +95,8 @@
 | ImpDoorSingleLoad01MinUse | `Skyrim.esm:0x0EF53A` | 帝國單扇載入門 |
 | NorDoorSmLoad01MinUse | `Skyrim.esm:0x0F1C16` | 北方小型載入門 |
 | ImpWoodDoorCaveLoad01 | `Skyrim.esm:0x10C62A` | 洞穴/地城載入門 |
+
+> 一個已驗證的室內載入門位置（Sleeping Giant Inn 入口，ref `0x013419`）：空間區域座標 `(-255.78, -422.47, 0)`、旋轉 `(0,0,3.142)`，與室外門 `0x013424` 配對。
 
 ## 參考角色（引擎內建）
 

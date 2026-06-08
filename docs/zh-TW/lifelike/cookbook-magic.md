@@ -1,4 +1,4 @@
-<!-- 法術、附魔、法術書 -->
+<!-- Magic patterns -->
 # 食譜手冊 — 法術與附魔
 
 ← [目錄](cookbook-index.md) | [lifelike 主頁](README.md)
@@ -22,11 +22,11 @@
   ] }
 ```
 
-重複使用原版的 `projectile` 與 `castingArt`，才能讓光束可見並傳遞命中效果。若缺少 `equipType`，NPC 會改用近戰攻擊——這是生成戰鬥法術時最常見的無聲失敗原因。
+重複使用原版的 `projectile` 與 `castingArt`，才能讓光束可見並傳遞命中效果。若缺少 `equipType`，NPC 會改用近戰攻擊/從不施放——這是生成戰鬥法術時的頭號無聲失敗原因。
 
 ## 「為自訂效果製作附魔武器」（MGEF + ENCH + WEAP + COBJ）
 
-三個層次：自訂 **MGEF**（命中時觸發的效果）→ **附魔** / ENCH（`enchantType: weapon`）→ 引用它並帶有充能槽的**武器**。加入 COBJ 讓玩家可以製作。（若為被動**裝備**附魔，使用 `enchantType: apparel` 放在 `armor` 上——無需 `enchantmentAmount`，穿著時持續生效。）
+三個層次：自訂 **MGEF**（命中時觸發的效果）→ **附魔** / ENCH（可重複使用的「物件效果」，`enchantType: weapon`）→ 引用它並帶有充能槽的**武器**。加入 COBJ 讓玩家可以製作。（若為被動**裝備**附魔，使用 `enchantType: apparel` 並改放在 `armor` 上——無需 `enchantmentAmount`，穿著時持續生效。）
 
 > **盔甲必須帶有 `template`，否則裝備後會隱形**（已於 2026-06-01 在遊戲中確認：套用 template 的胸甲穿著時會顯示鐵甲網格）。ARMO 穿著時的網格位於其 Armature（ARMA 附加記錄）上，而非 ARMO 本身——只有 `armorType`+`slots` 的規格盔甲穿著時什麼都不會渲染（但*不會*崩潰）。將 `template` 設為相同槽位的原版盔甲，例如 `"template": "Skyrim.esm:0x00012E49"`（ArmorIronCuirass）；克隆會帶來 Armature（穿著網格）、WorldModel（掉落地面模型）以及 BodyTemplate。Build 會在缺少 `template` 時發出警告。
 
@@ -58,7 +58,7 @@
 
 完整檔案：[`examples/enchantment_spec.json`](../../examples/enchantment_spec.json)。用 `enchdiag <out.esp> <0xFORMID>`（ENCH 類型/成本/效果）與 `dump`（武器的 `enchantment ->` 連結 + 充能）驗證。**注意——僅通過結構驗證：** 記錄能建置、驗證、連結並正確往返，且與原版 ENCH 結構完全吻合，但附魔在遊戲中實際*觸發*尚未確認（未執行遊戲內測試）。`enchantmentCost` ↔ `enchantmentAmount` 的調校，以及引擎是否會自動定價充能，是最可能需要在遊戲中驗證的部分。
 
-## 「法術書」（自訂法術的 BOOK，首次閱讀時教授法術：MGEF → SPEL → BOOK）
+## 「自訂法術的法術書」（MGEF → SPEL → 教授它的 BOOK）
 
 法術書是一種 BOOK，其 `teaches` 欄位在首次閱讀時授予一個 SPEL。最佳組合：撰寫法術（自訂 MGEF + SPEL，如上）以及一本教授它的書卷——全都在同一份規格中。閱讀書卷後，玩家即可獲得法術。
 
@@ -70,7 +70,7 @@
       "text": "<p>Reading this grants the Ember Lance spell.</p>",
       "template": "Skyrim.esm:0x10F7F4",                 // 克隆 SpellTomeIncinerate 的 MODEL（否則閱讀時會崩潰）
       "value": 250, "flags": [ "CantBeTaken" ],          // 原版法術書旗標
-      "teaches": { "kind": "spell", "spell": "MF_EmberLanceSpell" } },   // ← 教授規格內的法術
+      "teaches": { "kind": "spell", "spell": "MF_EmberLanceSpell" } },   // ← 教授我們規格內的法術
 
     // 也可以：透過外部參照教授原版法術…
     { "editorId": "MF_SpellTomeFirebolt", "name": "Spell Tome: Firebolt (copy)",

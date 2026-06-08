@@ -37,7 +37,7 @@ player.RemoveItem(Gold001, 500)
                         "param": "MF_FollowerFlag", "runOn": "Subject" } ] }  // follow only while hired
   ],
   "npcs": [ { "editorId": "MF_Merc", "voiceType": "Skyrim.esm:0x013ADD", "greeting": "Coin talks.",
-              "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],
+              "factions": [ "Skyrim.esm:0x0267EA", "Skyrim.esm:0x028172" ],   // citizenship, NOT a follower faction
               "packages": [ "MF_FollowPkg" ], "unique": true } ],
   "quests": [ { "editorId": "MF_Q", "startGameEnabled": true } ],
   "dialogue": [

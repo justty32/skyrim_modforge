@@ -1,5 +1,4 @@
-<!-- 職業、對話、場景、任務 -->
-# ModForge 規格說明 — 對話、場景與任務
+# ModForge 規格說明 — 對話、任務與腳本
 
 ← [目錄](SPEC-index.md)
 
@@ -7,10 +6,10 @@
 NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動角色的屬性分配和偏好技能（對訓練師 NPC 而言，還決定它 `teaches` 什麼）。
 ```jsonc
 { "editorId": "MF_Battlemage", "name": "ModForge Battlemage",
-  "teaches": "Destruction",        // 職業可訓練的 Skill（訓練師用）；可選
+  "teaches": "Destruction",        // a Skill the class can train (trainers); optional
   "maxTrainingLevel": 50,
-  "healthWeight": 30, "magickaWeight": 50, "staminaWeight": 20,   // 屬性分配（總和 ~100）
-  "skillWeights": { "Destruction": 100, "Restoration": 75, "OneHanded": 50 } }  // Skill -> 0–255 偏好
+  "healthWeight": 30, "magickaWeight": 50, "staminaWeight": 20,   // attribute split (~sum 100)
+  "skillWeights": { "Destruction": 100, "Restoration": 75, "OneHanded": 50 } }  // Skill -> 0–255 favour
 ```
 技能名稱：`OneHanded`、`TwoHanded`、`Archery`、`Block`、`Smithing`、`HeavyArmor`、`LightArmor`、`Pickpocket`、`Lockpicking`、`Sneak`、`Alchemy`、`Speech`、`Alteration`、`Conjuration`、`Destruction`、`Illusion`、`Restoration`、`Enchanting`。職業只有在 npc 具有 **`level` > 0 且 `autoCalcStats: true`** 時才會驅動 NPC 的實際屬性/技能值——否則引擎使用固定預設值（一個未設定的 NPC 無論職業如何都讀取 50/50/50）。要看到效果：生成一個 magicka 偏重和一個 health 偏重的 NPC（兩者同等 `level` 且 `autoCalcStats`），比較 `getav magicka`/`getav health`。
 
@@ -27,20 +26,19 @@ NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動
 > **三個執行時需求（非記錄錯誤）：**（1）對話僅在**遊戲載入**時註冊 — 用真正的新遊戲測試，或在任務啟動後 `save`+`load`；在主選單使用 `coc` 或在會話中使用 `startquest` 會使 NPC 保持沉默，即使插件完美無瑕。（2）將說話者放置在真實的房間座標上 — 位於 cell 原點 **(0,0,0)** 的無套件 NPC 會落在導航網格外，無法被到達。（3）無語音台詞閃過；安裝 **Fuz Ro D-oh**（或打包無聲的 `.fuz`）並啟用字幕。見 `lifelike/gotchas.md`。
 
 ### banter — 主動（未受提示）的 NPC 台詞
-一個 `banter` 條目是 NPC **自行說出**的台詞，沒有玩家選單——vanilla 跟隨者評論模式（`HirelingIdles`）。結構：`editorId`（可選）、`questEditorId`、`speakerNpcEditorId`、`responses`（口語台詞——一句評論）、`emotion`/`emotionValue`、`conditions`（情境閘門）。共用相同（說話者、任務）的所有 banter 條目會折疊為**一個環境話題**——Category=Misc，SNAM=`IDLE`，無分支——每個條目對應一個標記為 **Random** 的 INFO；引擎隨機挑選一個當前 `conditions` 通過的 INFO 並播放。**觸發需求：** 說話者必須啟用閒聊——具有 `AllowIdleChatter` 中斷旗標的 AI 套件（`Sandbox` 套件或 vanilla 跟隨套件）。用 `conditions` 使其情境化（例如夜晚用 `GetCurrentTime`、`IsInInterior`、「我受傷了」用 `GetActorValuePercent`、跟隨者限定用 `GetInFaction CurrentFollowerFaction==1`）。這是玩家主動詢問的 `dialogue` 台詞的*未受提示*對應版本。注意：僅限環境／閒置——真正的戰鬥吼叫使用不同的子類型（Taunt/Attack），尚未支援。見 `examples/follower_vanilla_spec.json`。
+一個 `banter` 條目是 NPC **自行說出**的台詞，沒有玩家選單——vanilla 跟隨者評論模式（`HirelingIdles`）。結構：`editorId`（可選）、`questEditorId`、`speakerNpcEditorId`、`responses`（口語台詞——一句評論）、`emotion`/`emotionValue`、`conditions`（情境閘門）。共用相同（說話者、任務）的所有 banter 條目會折疊為**一個環境話題**——Category=Misc，SNAM=`IDLE`，無分支——每個條目對應一個標記為 **Random** 的 INFO；引擎隨機挑選一個當前 `conditions` 通過的 INFO 並播放。**觸發需求：** 說話者必須**啟用閒聊**——具有 `AllowIdleChatter` 中斷旗標的 AI 套件（`Sandbox` 套件或 vanilla 跟隨套件）。用 `conditions` 使其情境化（例如夜晚用 `GetCurrentTime`、`IsInInterior`、「我受傷了」用 `GetActorValuePercent`、跟隨者限定用 `GetInFaction CurrentFollowerFaction==1`）。這是玩家主動詢問的 `dialogue` 台詞的*未受提示*對應版本。注意：僅限環境／閒置——真正的戰鬥吼叫使用不同的子類型（Taunt/Attack），尚未支援。見 `examples/follower_vanilla_spec.json`。
 
 ### scenes — 兩個 NPC 互相交談（SCEN）
-一個 `scene` 是 NPC 之間（非玩家）的腳本對話——vanilla 的 **Scene** 記錄。場景由**任務宿主**，其參與者是該任務的**別名**（非直接 NPC ref），並按順序播放**階段**清單，每個階段說一句話。
-
+一個 `scene` 是 NPC 之間（非玩家）的腳本對話——vanilla 的 **Scene** 記錄。場景由**任務宿主**，其參與者是該任務的**別名**（非直接 NPC ref），並按順序播放一系列**階段**，每個階段說一句話。
 ```jsonc
 { "editorId": "MF_TavernArgument",
-  "questEditorId": "MF_SceneQuest",     // 此 spec 中的一個 StartGameEnabled 任務（場景在它執行期間運作）
-  "beginOnQuestStart": true,            // 宿主任務啟動的那一刻就播放（= 遊戲載入時）；預設 true
-  "stopQuestOnEnd": false,              // 場景結束時停止宿主任務（vanilla 一次性場景設 true）
-  "actors": [                            // 每個 actor = 一個別名 INDEX + 填入它的 NPC
+  "questEditorId": "MF_SceneQuest",     // a StartGameEnabled quest in this spec (the scene runs while it does)
+  "beginOnQuestStart": true,            // play the moment the host quest starts (= on game load); default true
+  "stopQuestOnEnd": false,              // stop the host quest when the scene finishes (vanilla one-shots set true)
+  "actors": [                            // each actor = an alias INDEX + the NPC that fills it
     { "aliasId": 0, "npc": "MF_Borin", "name": "Borin" },
     { "aliasId": 1, "npc": "MF_Hilda", "name": "Hilda" } ],
-  "phases": [                            // 按順序播放；`speaker` 是某個 actor 的 aliasId
+  "phases": [                            // played in order; `speaker` is one of the actors' aliasId
     { "speaker": 0, "emotion": "Anger",   "lines": [ "You still owe me for the ale, Hilda." ] },
     { "speaker": 1, "emotion": "Disgust", "lines": [ "Owe you? That swill wasn't worth a clipped septim." ] },
     { "speaker": 0, "emotion": "Anger",   "lines": [ "Watch your tongue, or there'll be trouble." ] },
@@ -59,14 +57,14 @@ NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動
 #### autoStart — 在場偵測重複 Scene（隨從在場偵測 + 互動 Scene）
 場景不必只在遊戲載入時播放一次（`beginOnQuestStart`），它可以在**玩家與兩個 actor 同處一地時**自行播放，並依冷卻時間重新觸發——這是「跟隨者閒談」的可用形式（跟隨者待在玩家身邊，所以它會在旅行途中觸發）。加入一個 `autoStart` 區塊：
 ```jsonc
-{ "editorId": "MF_TravelBanter", "questEditorId": "MF_BanterQuest",   // 宿主任務必須是 StartGameEnabled
+{ "editorId": "MF_TravelBanter", "questEditorId": "MF_BanterQuest",   // host quest MUST be StartGameEnabled
   "autoStart": {
-    "triggerDistance": 1024.0,        // 玩家到每個 actor 的最大距離（單位）；預設 2048
-    "requireLineOfSight": false,      // 還要求玩家對兩個 actor 都 HasLOS；預設 false
-    "cooldownSeconds": 15.0,          // 兩次播放之間的最小真實秒數（與 timescale 無關）；預設 60
-    "pollSeconds": 4.0,               // RegisterForSingleUpdate 輪詢間隔；預設 5
-    "brawlOnEnd": true },             // 對話結束時，兩個 actor 互相打鬥；預設 false
-  "actors": [ /* ≥2，如上以 UniqueActor 綁定 */ ],
+    "triggerDistance": 1024.0,        // max distance (units) from the player to EACH actor; default 2048
+    "requireLineOfSight": false,      // also require the player HasLOS both actors; default false
+    "cooldownSeconds": 15.0,          // min REAL seconds between plays (timescale-independent); default 60
+    "pollSeconds": 4.0,               // RegisterForSingleUpdate poll interval; default 5
+    "brawlOnEnd": true },             // when the dialogue finishes, the two actors fight each other; default false
+  "actors": [ /* ≥2, UniqueActor-bound as above */ ],
   "phases": [ /* … */ ] }
 ```
 當 `autoStart` 存在時，建置會**清除**場景的 `beginOnQuestStart`，並將可複用的 **`MFSceneBanterController`**（extends Quest）附加到宿主任務，把它配線到此場景 + 前兩個 actor 別名索引 + 調校參數。Controller 輪詢（鏈式 `RegisterForSingleUpdate`），並在兩個 actor 都已載入、在範圍內、未死亡/未戰鬥、（可選 LOS）且冷卻時間已過時呼叫 `Scene.Start()`。有 **`brawlOnEnd`** 時，它偵測場景結束並讓兩個 actor 打鬥（雙向 `StartCombat`）——他們在爭吵後動手；將 actor 標記為 **`essential`**（NpcSpec 旗標）以進行非致命打鬥。`package` 會自動將 `MFSceneBanterController.pex` 送入 `Scripts/`。見 `examples/scene-presence-banter.json`。**範圍外（之後做）：** 動態「掃描目前隊友」填充（此切片使用具名、以 `UniqueActor` 綁定的 actor）。
@@ -76,10 +74,10 @@ NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動
 ```jsonc
 "autoStart": {
   "triggerDistance": 1024.0, "cooldownSeconds": 15.0, "pollSeconds": 4.0,
-  "playOnce": true,                 // 一生最多播放一次；之後 controller 停止輪詢
-  "playHour": 12.0,                 // 只在此遊戲內小時的 +/- playHourTolerance 範圍內觸發（0..24，
-  "playHourTolerance": 2.0,         //   循環）；-1（預設）= 任何時間。例如 12 +/- 2 = 10:00..14:00
-  "gateGlobal": "MF_BanterDone"     // 一個 ref → 用作重新武裝 TOKEN 的 GLOB（見 globals）
+  "playOnce": true,                 // play AT MOST ONCE ever; the controller stops polling afterwards
+  "playHour": 12.0,                 // only fire within +/- playHourTolerance of this in-game hour (0..24,
+  "playHourTolerance": 2.0,         //   circular); -1 (default) = any time. e.g. 12 +/- 2 = 10:00..14:00
+  "gateGlobal": "MF_BanterDone"     // a ref → a GLOB used as a re-arm TOKEN (see globals)
 }
 ```
 - **`playOnce`** — 最簡單的「不要迴圈」：單次播放後 controller 取消註冊其輪詢（存檔膨脹衛生）。最適合一次性遭遇。
@@ -94,19 +92,29 @@ NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動
 { "editorId": "MF_AltarRite", "questEditorId": "MF_RiteQuest",
   "actors": [ {"aliasId":0,"npc":"MF_Priest"}, {"aliasId":1,"npc":"MF_Acolyte"} ],
   "phases": [
-    {},                                              // phase 0：一個 BEAT（無台詞）— 走位的窗口
-    {"speaker":0, "lines":["Approach the altar."]},  // phase 1：口語
+    {},                                              // phase 0: a BEAT (no lines) — window for the walk
+    {"speaker":0, "lines":["Approach the altar."]},  // phase 1: spoken
     {"speaker":1, "lines":["As you say."]} ],
   "actions": [
-    {"actor":0, "package":"MF_WalkToAltar", "startPhase":0, "endPhase":0},  // PACKAGE：actor 跑一個 PACK
-    {"actor":0, "timerSeconds":2.0,         "startPhase":0, "endPhase":0} ] // TIMER：以 2 秒節奏帶過 beat
+    {"actor":0, "package":"MF_WalkToAltar", "startPhase":0, "endPhase":0},  // PACKAGE: actor runs a PACK
+    {"actor":0, "timerSeconds":2.0,         "startPhase":0, "endPhase":0} ] // TIMER: pace the beat 2s
 }
 ```
 每個 action 設定**恰好一個**：
+- **`idle`** — 一個指向 `IDLE`（IdleAnimation）記錄的 ref（`<master>:0xFORMID`；用 `find <master> <keyword> idle` 發掘）。actor 在 `startPhase` 開始時**播放該閒置動畫**（跪下／祈禱／手勢…），然後自然地返回 AI。動畫透過 SCEN 上一個 `SceneAdapter` 的 per-phase **OnStart fragment** 執行——一個 `SF_<scene>.Fragment_<phase>`，呼叫 `<alias>.GetActorRef().PlayIdle(<idle>)`（從 vanilla `SF_BardSongsBallad01Scene` 解碼）。該 fragment 由 **`package`** 編譯 + 附加（純 `build`/`validate` 不附加 VMAD）。兩個踩坑，皆已為你處理：（1）引擎只會**執行**有 `SceneAction` 的階段，所以一個 idle action 也會發出一個 **Timer**（每個 vanilla fragment 階段都帶一個）——該 Timer 讓階段觸發其 fragment **並維持姿勢**；設定 `timerSeconds` 控制維持時間（預設 2 秒）。（2）actor 必須**站立**——一個坐著/sandbox 的 NPC 會忽略 `PlayIdle`，所以給他一個讓他原地待著的套件（一個 `allowSitting:false` 的 Sandbox），就像 vanilla 套件控制的場景 actor。idle 的 `<master>` 必須是真實的 IDLE——錯誤的 FormID 什麼也不播（無錯誤），所以要驗證它。
 - **`package`** — 一個指向 AI 套件的 ref（此 spec 中的 `packages[]` 條目，或外部的 `<master>:0xFORMID`）。actor 在階段窗口內跑該 PACK。**移動** = 一個目的地為已放置 marker 的 **Travel** 套件；**環境活動** = 一個 **Sandbox** 套件；等等（任何 `packages[]` 能建的）。建置會發出一個 `Type=Package` 的 SceneAction，其 `Packages` 持有解析後的 PACK FormKey（在 pass 2 解析，與 actor 別名相同）。
 - **`timerSeconds`**（> 0）— 一個 `Type=Timer` 的 SceneAction：場景在窗口內等待這麼多秒（vanilla 吟遊詩人場景以此帶節奏）。將 Timer 與同一個 beat 階段上的移動 Package 配對，使該階段在走位後可靠地推進（引擎在窗口的 action 完成時推進）。
 
-`startPhase`/`endPhase` 是 `phases[]` 的索引；`endPhase` -1 = `startPhase`。驗證：actor 必須是場景 actor，階段窗口必須在範圍內，一個 beat（無台詞）階段必須被某個 action 涵蓋。見 `examples/scene-action-performance.json`（Borin 走過 Sleeping Giant Inn 到 vanilla `RiverwoodInnCenterMarker`，等 8 秒，然後兩人爭吵）。**範圍外（之後做）：** 坐下 / 使用家具（需要一個 UseItemAt PACK template——`MQ306EsbernSit` 結構已解碼）以及獨立的 PlayIdle/動畫事件名稱。
+**PlayIdle 組成**（idle = 動畫 + 它自己的維持 Timer；把 fragment 放在階段 ≥1，絕不放在 0）：
+```jsonc
+"phases": [ {}, {"speaker":0,"lines":["By the Eight, I pledge my blade."]}, {"speaker":0,"lines":["It is done."]} ],
+"actions": [
+  {"actor":0, "startPhase":0, "timerSeconds":1.5},                                 // a standing beat (no fragment on phase 0)
+  {"actor":0, "startPhase":1, "idle":"Skyrim.esm:0x0F11EE", "timerSeconds":4.0},   // IdleBlessingKneelEnter — kneel + pray (hold 4s)
+  {"actor":0, "startPhase":2, "idle":"Skyrim.esm:0x0F11EF", "timerSeconds":2.0} ]  // IdleBlessingKneelExit — rise
+```
+
+`startPhase`/`endPhase` 是 `phases[]` 的索引；`endPhase` -1 = `startPhase`。驗證：actor 必須是場景 actor，階段窗口必須在範圍內，一個 beat（無台詞）階段必須被某個 action 涵蓋。見 `examples/scene-action-performance.json`（Borin 走過 Sleeping Giant Inn 到 vanilla `RiverwoodInnCenterMarker`，等 8 秒，然後兩人爭吵）以及 `examples/scene-playidle.json`（一個祈求者跪下 → 低聲禱告 → 起身）。**範圍外（之後做）：** 坐下 / 使用家具（需要一個 UseItemAt PACK template——`MQ306EsbernSit` 結構已解碼；以 `sittarget` PACK template 形式提供）以及 idle **事件名稱**（string）變體，而非 IDLE 記錄 ref。
 
 ### conditions — CTDA 閘門（在 `dialogue` INFO、`banter` INFO 或 `package` 上）
 條件是**靜態閘門資料**，因此它存在於 spec 中（邏輯仍屬於 Papyrus）。`dialogue[].conditions` 和 `packages[].conditions` 採用相同的結構：
@@ -114,10 +122,10 @@ NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動
 { "function": "GetItemCount",          // form-arg: HasPerk | GetInFaction | GetItemCount | GetGlobalValue | GetStage | GetIsID | GetRelationshipRank
   //                                    // actorValue-arg: GetActorValue | GetActorValuePercent (0..1 fraction)
   //                                    // no-arg situational: GetCurrentTime (hour 0..24) | IsInInterior | IsInCombat | GetRandomPercent (0..99) | TemperIsEnchanted (recipe temper guard)
-  "comparison": ">=",
+  "comparison": ">=",                  // == != > >= < <=
   "value": 500,
   "param": "Skyrim.esm:0x00000F",      // the function's form arg (faction/item/global/quest/npc) as a ref
-  "actorValue": "",                    // for GetActorValue/GetActorValuePercent instead of param
+  "actorValue": "",                    // for GetActorValue/GetActorValuePercent instead of param — e.g. "Health", "WaitingForPlayer"
   "runOn": "Reference",                // whose value: Subject (default) | Reference | Target | CombatTarget | ...
   "reference": "Skyrim.esm:0x000014",  // the ref read when runOn=Reference (here, the player)
   "or": false }                        // OR with the NEXT condition (default AND)
@@ -125,7 +133,6 @@ NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動
 一個 `dialogue` INFO 已自動攜帶 `GetIsID` 說話者閘門；這些條件會被附加上去。典型的跟隨者用途：隱藏付費招募台詞，除非（玩家）`GetItemCount Gold >= 500` **且** `GetInFaction CurrentFollowerFaction == 0`；在 `GetInFaction CurrentFollowerFaction == 1` 條件下開啟 Follow 套件，使其僅在招募後執行。見 `examples/follower_paid_spec.json`。
 
 ### 任務階段、日誌條目與目標連結
-
 任務的 `stages[]` 是任務可被**設定到**的整數里程碑（10、20、30…）。每個階段可選擇性地寫入一條**日誌條目**，並可攜帶任務狀態旗標。目標會隨著階段設定而顯示與完成；一條 `dialogue` 對話選項在被選取時可以推進階段。
 
 ```jsonc
@@ -136,8 +143,8 @@ NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動
     { "index": 10, "logEntry": "Joren asked me to retrieve his lost hammer." },
     { "index": 20, "logEntry": "I agreed to help. Time to search the riverbank.",
       "conditions": [ { "function": "GetStage", "comparison": "GreaterThanOrEqualTo",
-                        "value": 10, "param": "MF_ErrandQuest" } ] },
-    { "index": 30, "logEntry": "I returned the hammer. Done.", "completeQuest": true }
+                        "value": 10, "param": "MF_ErrandQuest" } ] },   // optional CTDA gate on the log entry
+    { "index": 30, "logEntry": "I returned the hammer. Done.", "completeQuest": true }   // closes the quest
   ],
   "objectives": [
     { "index": 10, "text": "Agree to help Joren", "showStage": 10, "completeStage": 20 },
@@ -150,24 +157,34 @@ NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動
 - **`objectives[].showStage` / `.completeStage`** — 將目標連結到階段：在 `showStage` 時 `SetObjectiveDisplayed`，在 `completeStage` 時 `SetObjectiveCompleted`。`-1`（預設值）表示「未連結階段」。
 - **`dialogue[].setStage`** — 選取該對話主題時，會將宿主任務推進到此階段。要從**非對話**動作（例如活化一個執行時生成的 ref）推進階段，附加一個**別名腳本**（`alias[].script`），其 `OnActivate` 呼叫 `GetOwningQuest().SetStage(N)`——可複用的 `examples/MFSE_AdvanceStage.psc` 正是這樣做。端對端的日誌進度示範（start-up 階段在 SM 啟動時顯示目標 → 別名 `OnActivate` 完成它 + 關閉任務）：`examples/story-manager-queststage.json`。
 
-**哪些是純記錄資料，哪些需要 Papyrus：** 階段、日誌條目、`completeQuest`/`failQuest` 旗標及日誌條目條件都是**純記錄資料**——它們可以順利建置，引擎可直接讀取。但在階段設定時*顯示*目標，以及從對話行*推進*階段，則需要 **Papyrus fragments**。`package` 指令可端對端處理此事（**無需 CK，已在遊戲中確認 It.36 2026-06-02**）：
+**哪些是純記錄資料，哪些需要 Papyrus：** 階段、日誌條目、`completeQuest`/`failQuest` 旗標及日誌條目條件都是**純記錄資料**——它們可以順利建置，可乾淨地 `dump`/`questdiag`，引擎可直接讀取。但在階段設定時*顯示*目標，以及從對話行*推進*階段，則需要 **Papyrus fragments**。`package` 指令可端對端處理此事（**無需 CK，已在遊戲中確認 It.36 2026-06-02**）：
 
 1. 產生 `Scripts/Source/<quest>_Stages.psc` — 每個階段對應一個 `Fragment_Stage_XXXX_Item00000()` 函式，用於顯示／完成目標（CK 標準命名；引擎在 `SetStage()` 觸發時呼叫它）。
 2. 產生 `Scripts/Source/TIF_<dialogue>.psc` — `extends TopicInfo Hidden`，帶有一個明確的 `Quest Property OwningQuest Auto`，綁定至任務的 FormKey；`Fragment_0` 呼叫 `OwningQuest.SetStage(N)`。使用 `OnBegin`（在玩家選取該行時觸發）。**請勿使用 `GetOwningQuest()` — 它對遊戲載入時的 StartGameEnabled 任務會回傳 None。**
 3. 使用 Linux 原生的 `papyrus-compiler` 將兩個 `.psc` 編譯為 `.pex`（備用方案為 Wine/CK）。
-4. 將 VMAD 附加至 QUST（需要 `QuestScriptFragment.Unknown2=1` — 啟用旗標）以及 INFO（`DialogResponsesAdapter`，`OnBegin`）。
+4. 將 VMAD 附加至 QUST（需要 `QuestScriptFragment.Unknown2=1` — 啟用旗標；即使 `SetStage()` 觸發，0 也會跳過 fragment）以及 INFO（`DialogResponsesAdapter`，`OnBegin`）。
 5. 在每一條 `setStage` 對話行上自動加入 `GetStage(quest) < setStage` 條件，使 NPC 在玩家已選取後不會重複觸發。
 
-使用 `questdiag <plugin> <0xFORMID>` 可檢查任何任務。對話仍然只在遊戲**載入**時才會登錄。完整範例：`examples/quest_stages_spec.json`。
+使用 `questdiag <plugin> <0xFORMID>` 可檢查任何任務。對話仍然只在遊戲**載入**時才會登錄（見上方踩坑）。完整範例：`examples/quest_stages_spec.json`。
+
+**其他生成的結果動作**（同一個 TIF fragment 可組合多項——無需 per-mod 腳本）：
+
+- **`hello: true`** — 將該行作為 NPC 自動說出的**問候語**（`Misc`/`Hello`）發出，而非玩家選單選項。與 `identity`/`primaryIdentity`/`conditions` 組合，依狀態給不同問候；引擎播放最高優先級的符合 Hello，否則播放 NPC 的純 `greeting`。（依狀態變化的問候放在**一個** Hello 話題中，作為多個有序的 INFO——同一說話者+任務的 `hello:true` 行會自動合併；特定條件行在前，純後備行在後。）`prompt` 被忽略。
+- **`setPrimaryIdentity: "<id>"|"auto"`** — 覆寫玩家的主身份（見 Identities）。
+- **`openBarter: true`** — 與說話的商人 NPC 開啟交易選單（`Actor.ShowBarterMenu()`）。
+- **`rewardItem`（一個 ref）+ `rewardCount`** — 給玩家該物品/金幣（`Game.GetPlayer().AddItem`）。
+- **`evaluateSpeakerPackages: true`** — 立即重新評估說話者的 AI 套件，使一個被此行的 `setStage` 新啟用的套件（例如一個 gate 在 `GetStage==N` 的 Follow PACK）立即啟動。
+
+**護衛/跟隨任務模式**（純記錄 + 上述動作）：一個帶有階段 10/20 + 一個目標的任務；一個 Follow PACK（`template` `0x019B2C`，target = 玩家）帶 `conditions: [{ function: "GetStage", value: 10, param: "<quest>" }]`；NPC 攜帶 `[followPkg, standSandbox]`；一條 `identity` 閘門的「我來護送你」台詞（`setStage: 10`，`evaluateSpeakerPackages: true`）以及一條「我們到了」台詞（`conditions: GetStage==10`，`setStage: 20`，`rewardItem`）。見 `examples/identity-paladin.json`（Adventurer 閘門的 Wary Traveler 護衛）。
 
 ### Story Manager 任務 — 事件驅動啟動
 
 任務可以由 **Story Manager（SM）** 在回應遊戲內事件時**自動啟動**，而不需要在遊戲載入時啟動或透過 `SetObjectiveDisplayed`。在任務中加入 `storyEvent` 區塊，建置時會自動配線（在正確的原版事件根下建立 SMBN→SMQN，並清除 `StartGameEnabled`）。
 
-**遊戲內確認（2026-06-04）**，涵蓋所有五種變體（victim、killer、forced、condition、ESL）。
+**遊戲內確認（2026-06-04）**，涵蓋所有五種變體模式（victim、killer、forced、condition、ESL）。
 
 ```jsonc
-// 最簡形式 — 任何角色被殺時觸發，Victim 別名 = 被殺的角色
+// minimal — triggers on any actor kill, Victim alias = the killed actor
 {
   "editorId": "MFSM_Avenge", "name": "Avenge the Fallen",
   "stages": [ { "index": 10 } ],
@@ -205,23 +222,23 @@ NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動
 
 ```jsonc
 "aliases": [
-  { "name": "Victim",    "fill": "fromEvent:victim" },        // 從事件資料取得的槽
+  { "name": "Victim",    "fill": "fromEvent:victim" },        // slot from the event payload
   { "name": "Killer",    "fill": "fromEvent:killer" },
-  { "name": "NewLoc",    "fill": "fromEvent:newLocation" },   // Location 槽 → 自動設定別名 Type=Location
-  { "name": "TheBoss",   "fill": "uniqueActor:Skyrim.esm:0x01414D" },  // 指定 NPC（Ulfric）
-  { "name": "TriggerRef","fill": "forced:Skyrim.esm:0x000014" },        // 固定 ref（玩家）
-  { "name": "Spawned",   "fill": "createObject:Skyrim.esm:0x0010FE05@Caster" },  // 在 Caster 別名處生成一頭狼
-  { "name": "Nearby",    "fill": "findMatching:closest",               // 已載入區域中最近的 ref…
-    "conditions": [ { "function": "HasKeyword", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x013794" } ] },  // …符合這些閘門（最近的 NPC）
-  { "name": "Hatch",     "fill": "createObject:Skyrim.esm:0x0BCD2D@Caster",     // 生成一個箱子，然後…
-    "script": "MFSE_AliasActivate", "scriptSource": "MFSE_AliasActivate.psc",   // …對生成的 ref OnActivate
+  { "name": "NewLoc",    "fill": "fromEvent:newLocation" },   // Location slot → alias Type=Location auto-set
+  { "name": "TheBoss",   "fill": "uniqueActor:Skyrim.esm:0x01414D" },  // specific NPC (Ulfric)
+  { "name": "TriggerRef","fill": "forced:Skyrim.esm:0x000014" },        // forced ref (player)
+  { "name": "Spawned",   "fill": "createObject:Skyrim.esm:0x0010FE05@Caster" },  // spawn a wolf AT the Caster alias
+  { "name": "Nearby",    "fill": "findMatching:closest",               // nearest ref in the loaded area…
+    "conditions": [ { "function": "HasKeyword", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x013794" } ] },  // …matching these gates (nearest NPC)
+  { "name": "Hatch",     "fill": "createObject:Skyrim.esm:0x0BCD2D@Caster",     // spawn a chest, then…
+    "script": "MFSE_AliasActivate", "scriptSource": "MFSE_AliasActivate.psc",   // …OnActivate on the spawned ref
     "scriptProperties": [ { "name": "TheKW", "type": "object", "objectEditorId": "MFSE_AliasKW" } ] }
 ]
 ```
 
 | `fill` 前綴 | 別名種類 | 說明 |
 |---|---|---|
-| `fromEvent:<槽>` | `FindMatchingRefFromEvent` | 槽名稱來自上方事件表。Location 槽（`newLocation`、`oldLocation`、`location`）自動設定 `QuestAlias.Type = Location`。 |
+| `fromEvent:<slot>` | `FindMatchingRefFromEvent` | 槽名稱來自上方事件表。Location 槽（`newLocation`、`oldLocation`、`location`）自動設定 `QuestAlias.Type = Location`。 |
 | `uniqueActor:<ref>` | `UniqueActor` | 以 ref 固定到特定 NPC；強制啟用 `AllowReserved`。 |
 | `forced:<ref>` | `ForcedReference` | 靜態 ref（例如玩家 `Skyrim.esm:0x000014`）。 |
 | `createObject:<ref>@<targetAlias>` | `CreateReferenceToObject` | 任務啟動時，在 `<targetAlias>` 持有的 ref 處**生成一個指向 `<ref>` 的新 reference**（任何可放置的 base——NPC/容器/static/物品）（`Create=At`、`Level=Easy`）。`<targetAlias>` 必須是同一任務中另一個 **ref 類型**的別名（非 Location），且不能是自己。例如施放法術 → 在施法者處生成守衛。遊戲內確認（2026-06-05）。 |
@@ -238,20 +255,20 @@ NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動
 
 #### SM 鐵律（引擎行為，非 bug）
 
-- **一個事件只啟動一個任務** — 引擎依序嘗試任務節點，啟動第一個條件通過的任務。在同一次事件觸發中，同事件的第二個無條件任務永遠不會啟動。用條件來區分不同任務。
+- **一個事件 → 一個任務啟動** — 引擎依序嘗試任務節點，啟動第一個條件通過的任務。在同一次事件觸發中，同事件的第二個無條件任務永遠不會啟動。用條件來區分不同任務。
 - **`SimpleActor` 小動物不觸發 `KillActor`** — 殺死雞、兔子等不會產生 SM 事件。以真正的角色（盜賊、狼、NPC）為目標。
 - **任何必填別名填充失敗 → 任務不啟動，且無任何提示。** 只有在任務可以在沒有該別名的情況下運作時，才將別名設為選填。
-- **ESL 插件完全支援 SM 記錄**，無需使用 ESP 格式。
+- **ESL 插件完全支援 SM 記錄。** 無需僅為了 SM 內容而使用 ESP。
 
 #### ScriptEvent — 發送自訂 Story 事件
 
 `ScriptEvent` 讓 Papyrus 程式碼在不依賴原版事件的情況下觸發 SM 任務。建置時會將共用的派發器（`MFStoryEventDispatch.pex`）自動嵌入打包的模組中——每個任務不需要個別編譯任何東西。
 
 ```jsonc
-// 1. 宣告識別您的事件頻道的 keyword
+// 1. declare the keyword that identifies your event channel
 "keywords": [ { "editorId": "MY_StoryKW" } ],
 
-// 2. 回應它的任務
+// 2. the quest that responds to it
 "quests": [{
   "editorId": "MY_QuestOnFire",
   "storyEvent": { "event": "ScriptEvent", "keyword": "MY_StoryKW" },
@@ -261,7 +278,7 @@ NPC 的「職業」— 將 npc 的 `class` ref 設定為其中之一。它驅動
 
 從 Papyrus（任何腳本）發送事件：
 ```papyrus
-; MFStoryEventDispatch 是嵌入的全域腳本
+; MFStoryEventDispatch is the embedded global script
 MFStoryEventDispatch.Fire(MY_StoryKW, akRef1, akRef2, akLocation)
 ```
 
@@ -297,9 +314,10 @@ EndEvent
 ### scripts — Papyrus 附加
 ```jsonc
 {
-  "targetEditorId": "MF_Q1",          // 要附加的記錄（spec 中的任意 editorId）
-  "scriptName": "MFDemoQuestScript",  // 必須與 .pex/.psc 的 Scriptname 相符
-  "source": "scripts/MFDemoQuestScript.psc",  // 可選：.psc 路徑（相對於此 spec）
+  "targetEditorId": "MF_Q1",          // record to attach to (any editorId in the spec)
+  "scriptName": "MFDemoQuestScript",  // must match the .pex/.psc Scriptname
+  "source": "scripts/MFDemoQuestScript.psc",  // optional: .psc path (rel. to this spec);
+                                              //  `package` compiles it via Wine
   "properties": [
     { "name": "GreetingCount", "type": "int",    "int": 3 },
     { "name": "PlayerRef",     "type": "object", "objectEditorId": "MF_Smith" }
@@ -308,3 +326,39 @@ EndEvent
 ```
 - 屬性 `type` ∈ `int | float | bool | string | object`。設定對應的值欄位：`int` / `float` / `bool` / `str`，或 `objectEditorId`（用於 `object`，解析為 FormLink）。屬性被標記為 *Edited*，以便遊戲讀取。
 - 附加適用於任何支援腳本的記錄（Quest、Npc、Activator、MagicEffect、Weapon、Armor、MiscItem、Book、Ingestible 等）。腳本 `Name` 必須與編譯後的 `.pex` 相符。
+
+---
+
+## Identities（輕量職業/身份系統）
+
+給玩家賦予角色身份（Paladin、Merchant、Adventurer…），授予常駐能力並改變 NPC 對待玩家的方式。每個身份儲存為一個**陣營**（持久的「你擁有它」訊號——存檔安全，並為未來的 vanilla `GetInFaction` 閘門打底）。加入一個 `identities[]` 清單：
+
+```jsonc
+"identities": [
+  { "id": "Paladin", "faction": "MF_FactPaladin", "priority": 30,
+    "grants": ["MF_AbilSmite"],                 // SPELs added on join, removed on leave
+    "acquireBook": "MF_PaladinTome",            // reading it joins the faction (MFIdentityBook OnRead)
+    "onAcquire": { "scene": "MF_OathScene" },   // optional performance played on acquire (e.g. a PlayIdle bow)
+    "activeWhen": [                             // only "active" while wearing heavy armor
+      { "function": "WornHasKeyword", "param": "Skyrim.esm:0x06BBD2", "comparison": "==", "value": 1 } ] },
+  { "id": "Merchant", "faction": "MF_FactMerchant", "priority": 20, "toggle": true,
+    "acquireBook": "MF_MerchantLedger" },       // toggle: reading again leaves the identity
+  { "id": "Adventurer", "faction": "MF_FactAdventurer", "priority": 0, "default": true } // baseline, no book
+]
+```
+
+- **`faction`** — 一個純粹的 in-spec editorId 會自動建為一個普通的 FACT；一個外部的 `<master>:0xID`（vanilla / Sofia 陣營）則照原樣使用。
+- **`acquireBook`** — 一個 `books[]` 條目；建置會附加可複用的 `MFIdentityBook` 腳本（OnRead → AddToFaction + AddSpell(grants) + 可選的 `AcquireScene.Start()`；`toggle` 會反轉它）。`package` 會出貨預建的 `MFIdentityBook.pex`。**鐵律：** 書腳本 `extends ObjectReference`（OnRead 是一個 ObjectReference 事件——`extends Book` 永遠不會觸發它）。
+- **`default: true`** — 每個玩家從遊戲開始就持有此身份，無需書。建置會加入一個 StartGameEnabled 任務（`MFIdentityDefault`，OnInit），將玩家加入每個 default 陣營 + 授予其能力（冪等；落在 `.seq` 中，使既有存檔也會觸發）。用於一個基準身份（例如 Adventurer）。`package` 會出貨 `MFIdentityDefault.pex`。
+- **`autoGrantWhen: { actorValue, threshold }`** — 一旦玩家的 ActorValue 達到門檻，就自動加入該身份的陣營（一個 StartGameEnabled 輪詢 controller `MFIdentityAutoGrant` 讀取 `GetActorValue(name) >= threshold`——vanilla，無 SKSE）。例如 Dragonborn 設 `{ "actorValue": "DragonSouls", "threshold": 1 }`（你吸收的第一個龍魂）。只授予**陣營訊號**（問候語/閘門隨之套用；此觸發器不加入能力/perk）。`package` 會出貨 `MFIdentityAutoGrant.pex`。
+- **`activeWhen`** — 一個 CTDA 清單，**窄化**身份算作*active* 的時機（例如 `WornHasKeyword(heavy armor)`、`GetBaseActorValue(Speech)>=X`、`GetRelationshipRank(npc)>=Y`）。每個預設在**玩家**上執行。附加到正向的 `identity`/`primaryIdentity` 閘門——因此一個持有但非 active 的身份的問候語不會觸發。（它**不**參與 primary 排除——一個被否定的條件組無法以 CTDA 表達——所以一個非 active 的較高身份會回退到純問候語，直到玩家覆寫 primary；見下文。）
+- **`grants[]`** — SPEL（例如一個常駐效果的 Fortify ability），加入時授予、離開時移除。
+- **`grantPerks[]`** — PERK，加入時授予、離開時移除（例如一個條件式「smite vs undead」perk——一個 gate 在目標的 `ActorTypeUndead`/`ActorTypeDaedra` keyword 上的 `ModAttackDamage` entry point）。acquire 書授予第一個；一個 `default` 身份授予全部。（perk CTD tab-count byte 會自動設定——見 perks 章節。）
+
+**閘門**對話用兩個 `DialogueSpec` 標籤。`identity: "Paladin"` 只在玩家持有該身份時顯示該行（`GetInFaction ≥ 1`，加上該身份的 `activeWhen`）。`primaryIdentity: "Paladin"` 只在 Paladin 是玩家**當前主身份**時顯示它——由一個 controller 任務（`MFIdentityController`，只要有任何對話使用 primaryIdentity 或 `setPrimaryIdentity` 就會建立）在執行時解析：它維護一個 `MF_PrimaryIdentity` 全域變數 = 手動覆寫（若持有），否則為持有的最高 `priority` 身份，問候語讀取 `GetGlobalValue(MF_PrimaryIdentity) == <code>`。`package` 會出貨 `MFIdentityController.pex`。依狀態變化的問候語應為一個 Hello 話題搭配多個條件式 INFO（`hello: true`，特定條件在前排序），而非分開的話題。
+
+**手動覆寫** — 一個帶 `setPrimaryIdentity: "Merchant"`（或 `"auto"` 以清除）的玩家話題，讓 NPC 不論優先級都把玩家當作該身份對待（一個 TIF fragment 設定 `MF_IdentityOverride`；controller 在下一次輪詢時反映它）。與一個 `identity` 閘門配對，使該選項只在玩家持有它時出現。這也解決了持有但非 active 的 `activeWhen` 缺口。
+
+**身份連結互動** — 將任何互動 gate 在 `identity` 上。兩個內建的對話結果動作（生成的 TIF fragment，無 per-mod 腳本）：**`openBarter: true`** 與說話的 NPC 開啟交易選單（`Actor.ShowBarterMenu()`；該 NPC 必須是帶有商人箱的 vendor-faction 成員）——例如一個 Merchant 限定的「我們來談生意」；**`rewardItem` + `rewardCount`** 給玩家金幣/一個物品（`AddItem`）——例如一個護衛獎勵。`evaluateSpeakerPackages: true` 強制說話者重新評估 AI 套件，使一個 `setStage` 閘門的 follow/escort 套件立即啟動。一個**護衛任務**因此是純記錄資料：一個帶有階段的任務、一個條件在 `GetStage==N` 的 Follow PACK，以及 Adventurer 閘門的開始/結束對話（見下文）。
+
+一個在 acquire 時啟動的場景（`onAcquire.scene`）由書**明確地** `Start()`——將該場景的 `beginOnQuestStart: false` 設定好，使它不會同時在遊戲載入時自動播放（`Start()` 是唯一觸發；begin-condition 那一套很脆弱）。帶有 `autoCalcStats` 的 NPC 必須有一個 `class`，否則它們會以 ~0 HP 生成。完整展示見 `examples/identity-paladin.json`（acquire + grant + oath scene + identity greetings + merchant toggle + `activeWhen` + manual override + merchant trade + escort quest）。用 `identitydiag <plugin>` 檢查一個已建插件的身份配線。**範圍外：** 聲望/行為追蹤。

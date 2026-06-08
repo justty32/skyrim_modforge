@@ -63,13 +63,14 @@ ModForge 無法驗證資源**內容** — 指向壞掉 `.nif` 的路徑可以建
 Skyrim 從遊戲的 `Data/` 資料夾載入散落的檔案。兩種不同的根目錄慣例：
 
 - **模型路徑（`model` 欄位）**以 **`Data\Meshes\`** 為根目錄。所以引擎路徑 `Data\Meshes\MyMod\bell.nif` 應寫成 **`MyMod\bell.nif`** — **不要**加 `Meshes\` 前綴（ModForge 的 `validate` 會拒絕以 `Meshes\` 開頭的 `model`）。
+  （已從原版確認：IronSword 的模型是 `Weapons\Iron\LongSword.nif`，即磁碟上位於 `Data\Meshes\Weapons\Iron\LongSword.nif`。）
 - **音效檔案路徑（`sounds[].files`）**以 **`Data\`** 為根目錄，並放在 **`Sound\`** 下，例如 `Sound\fx\mymod\bell.wav`（磁碟上是 `Data\Sound\fx\mymod\bell.wav`）。請包含 `Sound\` 區段。
 
 依 Bethesda 慣例使用**反斜線**（`\`） — ModForge 也接受 `/`，引擎會正規化。路徑必須是**相對路徑**（無 `C:\…`，無前導 `\`，無磁碟機代號）。請選擇以您的模組命名的唯一子資料夾（`MyMod\…`、`Sound\fx\mymod\…`），以免與原版或其他模組衝突。
 
 ## 放置檔案的位置：資源來源目錄
 
-`package` 會將一個**來源資源目錄**複製到輸出模組資料夾。透過規格的 `assets` 欄位（相對於規格檔案，或絕對路徑）或 CLI 的 `--assets <dir>` 覆寫（優先使用）來指定。來源必須包含引擎標準子資料夾；ModForge 僅打包這些（不區分大小寫，保留結構）：
+`package` 會將一個**來源資源目錄**複製到輸出模組資料夾。透過規格的 `assets` 欄位（相對於規格檔案，或絕對路徑）**或** CLI 的 `--assets <dir>` 覆寫（優先使用）來指定。來源必須包含引擎標準子資料夾；ModForge 僅打包這些（不區分大小寫，保留結構）：
 
 ```
 Meshes/  Textures/  Sounds/ (or Sound/)  Music/  Seq/
@@ -82,7 +83,7 @@ my_assets/
   Meshes/MyMod/bell.nif
   Textures/MyMod/bell.dds
   Sound/fx/mymod/bell_chime_01.wav
-  Meshes/actors/mymod/anims/idle.hkx        # .hkx 放在 Meshes\ 下
+  Meshes/actors/mymod/anims/idle.hkx        # .hkx ride along under Meshes\…
 ```
 
 > 動畫（`.hkx`）在 Skyrim 中放在 **`Meshes\`** 下（例如 `Meshes\actors\character\animations\…`），因此它們作為 `Meshes/` 樹的一部分被打包。將新動畫接入角色的**行為圖**是 Creation Kit / havok 的工作，ModForge 不執行 — 它只攜帶檔案。
@@ -121,11 +122,11 @@ OutModDir/
 ```jsonc
 "sounds": [
   { "editorId": "MFBellChimeSD",
-    "files": [ "Sound\\fx\\mymod\\bell_chime_01.wav" ],   // 一個或多個；Data 相對，位於 Sound\ 下
-    "category": "",            // ref → SNCT；空 -> Skyrim.esm:0x0172A1 AudioCategorySFX
-    "outputModel": "",         // ref → SOPM；空 -> Skyrim.esm:0x0B4058（原版 SFX 輸出）
+    "files": [ "Sound\\fx\\mymod\\bell_chime_01.wav" ],   // one or more; Data-relative under Sound\
+    "category": "",            // ref → SNCT; empty -> Skyrim.esm:0x0172A1 AudioCategorySFX
+    "outputModel": "",         // ref → SOPM; empty -> Skyrim.esm:0x0B4058 (vanilla SFX output)
     "priority": 128,
-    "staticAttenuation": 5.0 } // dB 衰減
+    "staticAttenuation": 5.0 } // dB attenuation
 ],
 "activators": [ { "editorId": "MFBell", "name": "Bell", "model": "MyMod\\bell.nif",
                   "activationSound": "MFBellChimeSD" } ]
@@ -144,13 +145,13 @@ OutModDir/
 ## 工作流程
 
 ```bash
-# 1) 將您的資源製作到以 Data/ 為結構的來源目錄（Meshes/Textures/Sound/…）
-# 2) 撰寫規格：模型路徑 + 音效 +（可選）`assets` 目錄
-dotnet run --project src/ModForge.Cli -- validate examples/custom_asset_spec.json   # 路徑形狀 + refs
+# 1) author your assets into a source dir laid out like Data/ (Meshes/Textures/Sound/…)
+# 2) write the spec: model paths + sounds + (optionally) an `assets` dir
+dotnet run --project src/ModForge.Cli -- validate examples/custom_asset_spec.json   # path-shape + refs
 dotnet run --project src/ModForge.Cli -- package  examples/custom_asset_spec.json OutModDir
-#    （或：package … OutModDir --assets /path/to/my_assets   以覆寫規格的 `assets`）
-dotnet run --project src/ModForge.Cli -- dump OutModDir/MFCustomAssets.esp           # 驗證接線
-find OutModDir -type f                                                                # 驗證打包
+#    (or: package … OutModDir --assets /path/to/my_assets   to override the spec's `assets`)
+dotnet run --project src/ModForge.Cli -- dump OutModDir/MFCustomAssets.esp           # verify wiring
+find OutModDir -type f                                                                # verify bundle
 ```
 
 `validate` 檢查：model 是 `.nif`、沒有 `Meshes\` 前綴、是相對路徑；音效至少有一個 `.wav`/`.xwm` 檔案；音效/類別/輸出模型 ref 可解析。`dump` 會印出每筆記錄的 `model:` 路徑、`activationSound`/`pickUpSound -> …` 連結以及 SNDR 的 `soundFile=` 路徑。
@@ -165,7 +166,7 @@ ModForge 寫出**結構有效**的記錄並**複製您給它的檔案**，但**�
 - 將動畫接入角色的**行為圖**（這是 CK/havok 的工作）；
 - 從 `.nif` 的貼圖參考產生 `.dds`（您需要同時提供兩者；`.nif` 在內部指定其貼圖）。
 
-確認自訂資源能實際渲染/播放需要 Proton/Skyrim 啟動 — 詳見 [for_agent.md → 限制](for-agent.html#限制--請如實說明不要過度宣稱)。
+確認自訂資源能實際渲染/播放需要 Proton/Skyrim 啟動 — 詳見 [for_agent.md → Limits](for-agent.html#limits--be-honest-do-not-over-claim)。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>
