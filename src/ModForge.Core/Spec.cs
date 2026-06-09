@@ -29,6 +29,8 @@ public sealed class ModSpec
     // ImageSpace Modifiers (IMAD): screen-space post-process (brightness/tint) a magic-effect script
     // applies at runtime. Referenced by Explosions[].imageSpaceModifier or a Papyrus property.
     public List<ImageSpaceModifierSpec> ImageSpaceModifiers { get; set; } = new();
+    public List<LightingTemplateSpec> LightingTemplates { get; set; } = new();   // LightingTemplate (LGTM)
+    public List<ImageSpaceSpec> ImageSpaces { get; set; } = new();               // ImageSpace (IMGS) base record (≠ IMAD)
     public List<PotionSpec> Potions { get; set; } = new();
     public List<ArmorSpec> Armors { get; set; } = new();
     public List<FactionSpec> Factions { get; set; } = new();
