@@ -73,5 +73,15 @@ public static partial class Generator
                         problems.Add($"{o} invalid inherit flag '{f}' ({InheritFlagList})");
             }
         }
+
+        foreach (var ws in spec.Weathers)
+        {
+            if (ws.ImageSpaces is not { } isp) continue;
+            var o = $"weather '{ws.EditorId}'";
+            foreach (var (slot, r) in new[] { ("default", isp.Default), ("sunrise", isp.Sunrise),
+                                              ("day", isp.Day), ("sunset", isp.Sunset), ("night", isp.Night) })
+                if (!string.IsNullOrWhiteSpace(r) && !imgsIds.Contains(r) && !TryExternalRef(r, out _))
+                    problems.Add($"{o} imageSpace.{slot} '{r}' unresolved (need an in-spec ImageSpace editorId or <master>:0xFORMID)");
+        }
     }
 }

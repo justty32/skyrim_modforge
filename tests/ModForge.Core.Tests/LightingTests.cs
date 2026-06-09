@@ -161,6 +161,32 @@ public class LightingTests
     }
 
     [Fact]
+    public void Validate_WeatherImageSpace_RejectsNonImgsRef()
+    {
+        var spec = new ModSpec
+        {
+            ImageSpaces = { new ImageSpaceSpec { EditorId = "MF_GoodIMGS" } },
+            Weathers =
+            {
+                new WeatherSpec
+                {
+                    EditorId = "MF_BadWeather",
+                    ImageSpaces = new WeatherImageSpacesSpec { Default = "MF_NotAnImgs" },  // unresolved / not an IMGS
+                },
+                new WeatherSpec
+                {
+                    EditorId = "MF_OkWeather",
+                    ImageSpaces = new WeatherImageSpacesSpec { Default = "MF_GoodIMGS" },    // valid in-spec IMGS
+                },
+            },
+        };
+
+        var problems = Generator.Validate(spec);
+        Assert.Contains(problems, p => p.Contains("MF_BadWeather") && p.Contains("imageSpace"));
+        Assert.DoesNotContain(problems, p => p.Contains("MF_OkWeather") && p.Contains("imageSpace"));
+    }
+
+    [Fact]
     public void Validate_FlagsBadColorDuplicateRefCrossTypeAndInherit()
     {
         var spec = new ModSpec
