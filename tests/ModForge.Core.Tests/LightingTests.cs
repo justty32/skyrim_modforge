@@ -128,6 +128,38 @@ public class LightingTests
         Assert.False(cell.Lighting!.Inherits.HasFlag(CellLighting.Inherit.AmbientColor));
     }
 
+    // Weather.ImageSpaces.Default fills all four times-of-day with the custom IMGS; explicit Day overrides.
+    [Fact]
+    public void Weather_ImageSpaces_DefaultFillsAllAndDayOverrides()
+    {
+        var spec = new ModSpec
+        {
+            ImageSpaces =
+            {
+                new ImageSpaceSpec { EditorId = "MF_OutdoorBright", Brightness = 1.3f, Saturation = 1.25f },
+                new ImageSpaceSpec { EditorId = "MF_NoonPunch", Brightness = 1.5f },
+            },
+            Weathers =
+            {
+                new WeatherSpec
+                {
+                    EditorId = "MF_BrightWeather",
+                    ImageSpaces = new WeatherImageSpacesSpec { Default = "MF_OutdoorBright", Day = "MF_NoonPunch" },
+                },
+            },
+        };
+
+        var r = Build(spec);
+        var bright = r.Mod.EnumerateMajorRecords<IImageSpaceGetter>().Single(x => x.EditorID == "MF_OutdoorBright");
+        var noon = r.Mod.EnumerateMajorRecords<IImageSpaceGetter>().Single(x => x.EditorID == "MF_NoonPunch");
+        var w = r.Mod.EnumerateMajorRecords<IWeatherGetter>().Single(x => x.EditorID == "MF_BrightWeather");
+        Assert.NotNull(w.ImageSpaces);
+        Assert.Equal(bright.FormKey, w.ImageSpaces!.Sunrise.FormKey);
+        Assert.Equal(noon.FormKey,   w.ImageSpaces!.Day.FormKey);     // explicit Day wins over Default
+        Assert.Equal(bright.FormKey, w.ImageSpaces!.Sunset.FormKey);
+        Assert.Equal(bright.FormKey, w.ImageSpaces!.Night.FormKey);
+    }
+
     [Fact]
     public void Validate_FlagsBadColorDuplicateRefCrossTypeAndInherit()
     {

@@ -46,16 +46,32 @@ public static partial class Generator
         return fallback;
     }
 
-    // Pass 2: weather → precipitation (SPGD shader-particle-geometry) ref.
+    // Pass 2: weather → precipitation (SPGD) ref + per-time-of-day ImageSpace (IMGS) refs.
     private static void WireWeatherLinks(ModSpec spec, Dictionary<string, IMajorRecord> recordsByEd,
                                          Action<string, string, Action<FormKey>> resolve)
     {
         foreach (var ws in spec.Weathers)
         {
-            if (string.IsNullOrWhiteSpace(ws.Precipitation)) continue;
             if (!recordsByEd.TryGetValue(ws.EditorId, out var rec) || rec is not IWeather w) continue;
-            resolve($"weather '{ws.EditorId}' precipitation", ws.Precipitation,
-                fk => w.Precipitation.SetTo(fk));
+
+            if (!string.IsNullOrWhiteSpace(ws.Precipitation))
+                resolve($"weather '{ws.EditorId}' precipitation", ws.Precipitation,
+                    fk => w.Precipitation.SetTo(fk));
+
+            if (ws.ImageSpaces is { } isp)
+            {
+                w.ImageSpaces ??= new();
+                string Pick(string tod) => !string.IsNullOrWhiteSpace(tod) ? tod : isp.Default;
+                void Wire(string slot, string refStr, Action<FormKey> set)
+                {
+                    if (!string.IsNullOrWhiteSpace(refStr))
+                        resolve($"weather '{ws.EditorId}' imageSpace {slot}", refStr, set);
+                }
+                Wire("sunrise", Pick(isp.Sunrise), fk => w.ImageSpaces.Sunrise.SetTo(fk));
+                Wire("day",     Pick(isp.Day),     fk => w.ImageSpaces.Day.SetTo(fk));
+                Wire("sunset",  Pick(isp.Sunset),  fk => w.ImageSpaces.Sunset.SetTo(fk));
+                Wire("night",   Pick(isp.Night),   fk => w.ImageSpaces.Night.SetTo(fk));
+            }
         }
     }
 
