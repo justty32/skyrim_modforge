@@ -66,6 +66,9 @@ source .fbx/.obj/.gltf  (+ 來源貼圖)
 | [05-modforge-integration.md](05-modforge-integration.md) | `modelSource` spec 區塊；`importmesh` CLI step；`Mesh.cs` shell-out（Papyrus.cs 模式）；env-var 後端；package wiring；維護鏈落點 |
 | [06-standalone-runbook.md](06-standalone-runbook.md) | 複製貼上回家 runbook，步驟 0→8，雙系統感知；一螢幕速查 |
 | [07-skinned-characters.md](07-skinned-characters.md) | *（後置設計）* 骨架 bone-map、per-source 重定向、≤4 weights、`BSDismemberSkinInstance`、Outfit Studio copy-bone-weights、PyNifly 匯出（Windows 重開機）、handoff 到 `.hkx` |
+| [08-extract-darksouls.md](08-extract-darksouls.md) | **Dark Souls / FromSoft 來源** — soulstruct-blender（原生 Manjaro、純 Python）；DCX/BND/TPF/FLVER；map pieces（靜態 MVP）vs 角色；DSR/DS3 最乾淨 |
+| [09-extract-wuwa.md](09-extract-wuwa.md) | **Wuthering Waves 鳴潮來源** — FModel/CUE4Parse；UE5 AES 金鑰 + `.usmap`；glTF 匯出（Windows 側、雙系統）；Nanite 抽稀 + UE 材質重做坑 |
+| [10-extract-genshin.md](10-extract-genshin.md) | **Genshin Impact 原神來源** — 3DMigoto F8 frame-dump + GIMI；加密 Unity bundle（AssetRipper 讀不了）；Windows 側 dump → Blender 重建（原生）；toon/NPR 重做 + ToS/反作弊風險 |
 
 ---
 

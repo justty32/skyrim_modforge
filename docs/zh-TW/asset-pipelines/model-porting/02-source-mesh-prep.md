@@ -66,13 +66,13 @@ Skyrim 慣例：**Z-up、−Y forward**，且「1 Blender unit = 1 Skyrim unit�
 
 ## 5. 附錄 — 遊戲專屬解包（後置；之後挑遊戲）
 
-你選了通用格式當 MVP，故此處僅參考。三者皆匯聚到 Blender，§1 接續。細節在 survey [`../03-3d-model-import.md §6`](../03-3d-model-import.md)。
+你選了通用格式當 MVP，故此處僅參考。三者皆匯聚到 Blender，§1 接續。
 
-- **Dark Souls / FromSoft → `soulstruct-blender`**（Blender 4.1–5.0，純 Python，**原生 Linux**）。直接匯入 FLVER：角色、物件、裝備、**map pieces（= 靜態）**，含 armatures/weights。*最乾淨*——若之後要真遊戲來源，從這起。
-- **Wuthering Waves（UE5）→ FModel / CUE4Parse**（.NET、跨平台、原生 Linux）。匯出 UE 蒙皮/靜態 mesh → FBX/glTF + 貼圖。需遊戲 `.usmap` + AES key。
-- **Genshin（Unity）→ 3DMigoto F8 frame-dump + GIMI**（DX11/Windows → Proton/Wine 跑；Blender 重建原生）。*最不 Linux-乾淨*——Genshin 加密 bundle，AssetRipper 直接讀不了。
+- **Dark Souls / FromSoft → `soulstruct-blender`** — 完整章節：[08-extract-darksouls.md](08-extract-darksouls.md)。純 Python，**原生 Manjaro、零 Wine**；map piece = 靜態 MVP。
+- **Wuthering Waves（UE5）→ FModel / CUE4Parse** — 完整章節：[09-extract-wuwa.md](09-extract-wuwa.md)。Windows 側抽出（雙系統）→ glTF → Manjaro；注意 Nanite + AES/usmap。
+- **Genshin（Unity）→ 3DMigoto F8 frame-dump + GIMI** — 完整章節：[10-extract-genshin.md](10-extract-genshin.md)。DX11/Windows dump（雙系統）→ Blender 重建（原生）。*最不 Linux-乾淨*——Genshin 加密 bundle 使 AssetRipper 讀不了；注意 toon→PBR 重做與 ToS/反作弊風險。
 
-挑定一個後，本附錄成真章節；在那之前通用匯入器（§1）是路。
+通用匯入器（§1）是路，直到你鎖定特定遊戲；[08]/[09]/[10] 涵蓋三個遊戲來源（最乾淨 → 最難）。
 
 ---
 

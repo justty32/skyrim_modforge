@@ -66,13 +66,13 @@ Nothing here is committed — assets stay local per the legal rule (README).
 
 ## 5. Appendix — game-specific extraction (deferred; pick a title later)
 
-You chose generic formats for the MVP, so this is reference only. All three converge on Blender, where §1 resumes. Detail lives in the survey [`../03-3d-model-import.md §6`](../03-3d-model-import.md).
+You chose generic formats for the MVP, so this is reference only. All three converge on Blender, where §1 resumes.
 
-- **Dark Souls / FromSoft → `soulstruct-blender`** (Blender 4.1–5.0, pure Python, **native Linux**). Imports FLVER directly: characters, objects, equipment, **map pieces (= statics)**, with armatures/weights. *Cleanest* — if you later want a real game source, start here.
-- **Wuthering Waves (UE5) → FModel / CUE4Parse** (.NET, cross-platform, native Linux). Exports UE skeletal/static meshes → FBX/glTF + textures. Needs the game's `.usmap` + AES key.
-- **Genshin (Unity) → 3DMigoto F8 frame-dump + GIMI** (DX11/Windows → run under Proton/Wine; Blender reconstruction native). *Least Linux-clean* — Genshin encrypts bundles, so AssetRipper can't read them directly.
+- **Dark Souls / FromSoft → `soulstruct-blender`** — full chapter: [08-extract-darksouls.md](08-extract-darksouls.md). Pure Python, **native Manjaro, zero Wine**; map piece = static MVP.
+- **Wuthering Waves (UE5) → FModel / CUE4Parse** — full chapter: [09-extract-wuwa.md](09-extract-wuwa.md). Windows-side extract (dual-boot) → glTF → Manjaro; watch Nanite + AES/usmap.
+- **Genshin (Unity) → 3DMigoto F8 frame-dump + GIMI** — full chapter: [10-extract-genshin.md](10-extract-genshin.md). DX11/Windows dump (dual-boot) → Blender reconstruct (native). *Least Linux-clean* — Genshin encrypts bundles so AssetRipper can't read them; watch the toon→PBR re-author and the ToS/anti-cheat risk.
 
-When you pick one, this appendix becomes a real chapter; until then the generic importers (§1) are the path.
+The generic importers (§1) remain the path until you target a specific title; [08]/[09]/[10] cover the three game sources (cleanest → hardest).
 
 ---
 

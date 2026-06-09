@@ -66,6 +66,9 @@ Everything on this spine is **native Manjaro, zero Wine, zero reboot.** That is 
 | [05-modforge-integration.md](05-modforge-integration.md) | `modelSource` spec block; `importmesh` CLI step; `Mesh.cs` shell-out (Papyrus.cs pattern); env-var backends; package wiring; maintenance-chain landing |
 | [06-standalone-runbook.md](06-standalone-runbook.md) | Copy-paste at-home runbook, step 0→8, dual-boot-aware; one-screen quick reference |
 | [07-skinned-characters.md](07-skinned-characters.md) | *(deferred design)* skeleton bone-map, retarget per source, ≤4 weights, `BSDismemberSkinInstance`, Outfit Studio copy-bone-weights, PyNifly export (Windows reboot), handoff to `.hkx` |
+| [08-extract-darksouls.md](08-extract-darksouls.md) | **Dark Souls / FromSoft source** — soulstruct-blender (native Manjaro, pure Python); DCX/BND/TPF/FLVER; map pieces (static MVP) vs characters; DSR/DS3 cleanest |
+| [09-extract-wuwa.md](09-extract-wuwa.md) | **Wuthering Waves source** — FModel/CUE4Parse; UE5 AES key + `.usmap`; glTF export (Windows-side, dual-boot); Nanite decimation + UE-material re-author traps |
+| [10-extract-genshin.md](10-extract-genshin.md) | **Genshin Impact source** — 3DMigoto F8 frame-dump + GIMI; encrypted Unity bundles (AssetRipper can't read); Windows-side dump → Blender reconstruct (native); toon/NPR re-author + ToS/anti-cheat risk |
 
 ---
 
