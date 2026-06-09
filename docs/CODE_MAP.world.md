@@ -20,6 +20,7 @@
 | `examples/worldspace_navmesh_test_spec.json` | worldspace + navmesh |
 | `examples/lights.json` | 自訂 Light（LIGT）：color/radius/flicker + 放置進 cell |
 | `examples/showcase-multi.json` | 多功能 showcase（Light + scene headtrack + SitTarget，一包一次測）|
+| `examples/lighting.json` | 明亮室內：自訂 LGTM + IMGS + CELL 逐欄光照（含 DALC）|
 
 ---
 
@@ -35,6 +36,7 @@
 | `WorldspaceRegionTests.cs` | worldspace record + region polygon/weather build |
 | `XMarkerTests.cs` | XMarker 放置（特殊 placement base）|
 | `LightTests.cs` | 自訂 Light（LIGT）color/radius/fade/flags build + validate |
+| `LightingTests.cs` | LGTM/IMGS build + CELL XCLL inherit + validate guardrails |
 
 ---
 
@@ -76,6 +78,22 @@
 | Diag | `Diagnostics.Records.cs` | `lightdiag`（radius/color/fade/flags dump）|
 
 自訂 Light 是一般 base record——用既有 `placements[]`（base=light editorId）放進任意 cell，無需動 placement 程式碼。
+
+---
+
+## Lighting Templates + ImageSpaces 室內光照（LGTM / IMGS / CELL XCLL）
+→ **說明文件**：[SPEC-world.md § lighting](SPEC-world.md#lighting)
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.Lighting.cs` | `LightingTemplateSpec`(LGTM) / `ImageSpaceSpec`(IMGS) / `CellLightingSpec`(inline XCLL) / `AmbientColorsSpec`(DALC) |
+| Spec | `Spec.World.cs` | `CellSpec.LightingTemplate/ImageSpace/Lighting` |
+| Build P1 | `Generator.Build.Lighting.cs` | `BuildLightingTemplates` + `BuildImageSpaces`（模板抄+覆寫；DALC LGTM→DirectionalAmbientColors、XCLL→AmbientColors；BuildCells 前建，lgtmByEd/imgsByEd 供 cell 解析）|
+| Build P1 | `Generator.Build.Cells.cs` | cell 掛 LGTM/IMGS link（`ResolveLightingRef`）+ `ApplyCellLighting`（inline XCLL + inherit flags；無 inline 且有 template → 全繼承）|
+| Validate | `Generator.Validate.Lighting.cs` | color 0..255、template/cell-ref 可解（cross-type）、inherit flag 名合法 |
+| Diag | `Diagnostics.Records.cs` | `lgtmdiag` / `imgsdiag` |
+
+> 註：`ImageSpaceSpec`(IMGS base) 與既有 `ImageSpaceModifierSpec`(IMAD, `Generator.Build.ImageSpace.cs`) 是兩個不同 record。
 
 ---
 
