@@ -20,10 +20,14 @@ internal static partial class Program
                 if (c is null) { Console.WriteLine($"  {name,-14} -"); return; }
                 Console.WriteLine($"  {name,-14} sunrise={Rgb(c.Sunrise)}  day={Rgb(c.Day)}  sunset={Rgb(c.Sunset)}  night={Rgb(c.Night)}");
             }
+            static string Fk(Mutagen.Bethesda.Plugins.IFormLinkGetter<IImageSpaceGetter>? l)
+                => l is { } x && !x.FormKey.IsNull ? x.FormKey.ToString() : "-";
             Console.WriteLine($"0x{id:X6}  EditorID={w.EditorID}");
             Console.WriteLine($"  Flags = {w.Flags}");
             Console.WriteLine($"  Wind  speed={w.WindSpeed} direction={w.WindDirection * 360f:0.#}deg range={w.WindDirectionRange * 360f:0.#}deg transDelta={w.TransDelta}");
             Console.WriteLine($"  Precipitation = {(w.Precipitation.FormKeyNullable is { } pk && !pk.IsNull ? pk.ToString() : "-")}");
+            var isp = w.ImageSpaces;
+            Console.WriteLine($"  ImageSpaces  sunrise={Fk(isp?.Sunrise)} day={Fk(isp?.Day)} sunset={Fk(isp?.Sunset)} night={Fk(isp?.Night)}");
             Console.WriteLine($"  FogDist day(near={w.FogDistanceDayNear} far={w.FogDistanceDayFar}) night(near={w.FogDistanceNightNear} far={w.FogDistanceNightFar})");
             Col("skyUpper", w.SkyUpperColor);
             Col("skyLower", w.SkyLowerColor);
