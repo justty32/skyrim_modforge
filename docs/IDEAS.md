@@ -159,7 +159,7 @@ Skyrim 光照太陰暗，偏好原神/薩爾達那種明亮——vanilla 只白�
 - 室內：CELL Lighting（+ DALC 六方向環境光）+ **LGTM（地城多用 DefaultDungeon 暗模板）** + 稀疏 LIGH——全是「選擇」（Zelda 神廟也封閉但它亮）。
 - 引擎真限制：無 GI（正解：環境光打底 + 少量光源做層次）；每 mesh 4 燈——**Community Shaders + Light Limit Fix 已入基線（§11-C），視為解除**；卡通渲染要 shader 級（CS feature 是可能出路）。
 
-**ModForge 缺口（純記錄、難度低）**：① CELL 光照欄位進 spec（現在室內只能整包 `template` 抄）；② 自製明亮 LGTM 模板（BrightShrine/BrightCave）；③ 自訂 IMGS 掛 weather/cell；④ 補 `lgtmdiag`/`imgsdiag` 診斷。
+**ModForge 室內光照管線 — ✅ 已落地（in-game 確認 2026-06-09，見 CLAUDE.md「已落地」/ `SPEC-world.md § lighting`）**：① CELL 逐欄光照進 spec ✅；② 自製明亮 LGTM 模板（模板抄+覆寫，含 DALC）✅；③ 自訂 IMGS **掛 cell ✅**（掛 **weather** 室外調色尚未做）；④ `lgtmdiag`/`imgsdiag` ✅。**剩下的室外那半**：IMGS/LGTM 掛 weather/region 做室外明亮調色；明亮 LGTM/IMGS 抽成具名 preset 庫。
 
 ---
 
