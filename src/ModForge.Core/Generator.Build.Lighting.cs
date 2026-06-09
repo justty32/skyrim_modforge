@@ -51,6 +51,43 @@ public static partial class Generator
             }
         }
 
+        public void BuildImageSpaces()
+        {
+            foreach (var s in spec.ImageSpaces)
+            {
+                var img = mod.ImageSpaces.AddNew();
+                if (!string.IsNullOrWhiteSpace(s.Template))
+                {
+                    if (TryResolveTemplate<IImageSpaceGetter>(s.Template, out var tmpl) && tmpl is not null)
+                        img.DeepCopyIn(tmpl, out _, null);   // FormKey preserved (EditorID set below)
+                    else Warn($"  ! imageSpace '{s.EditorId}' template '{s.Template}' unresolved — using engine defaults");
+                }
+                img.EditorID = s.EditorId;
+
+                var hdr = img.Hdr ??= new();
+                if (s.EyeAdaptSpeed is { } v1) hdr.EyeAdaptSpeed = v1;
+                if (s.EyeAdaptStrength is { } v2) hdr.EyeAdaptStrength = v2;
+                if (s.BloomBlurRadius is { } v3) hdr.BloomBlurRadius = v3;
+                if (s.BloomThreshold is { } v4) hdr.BloomThreshold = v4;
+                if (s.BloomScale is { } v5) hdr.BloomScale = v5;
+                if (s.ReceiveBloomThreshold is { } v6) hdr.ReceiveBloomThreshold = v6;
+                if (s.White is { } v7) hdr.White = v7;
+                if (s.SunlightScale is { } v8) hdr.SunlightScale = v8;
+                if (s.SkyScale is { } v9) hdr.SkyScale = v9;
+
+                var cin = img.Cinematic ??= new();
+                if (s.Brightness is { } b) cin.Brightness = b;
+                if (s.Contrast is { } c) cin.Contrast = c;
+                if (s.Saturation is { } sat) cin.Saturation = sat;
+
+                var tint = img.Tint ??= new();
+                if (s.TintAmount is { } ta) tint.Amount = ta;
+                if (s.TintColor is { } tc) tint.Color = ToColor(tc);
+
+                if (!string.IsNullOrEmpty(s.EditorId)) imgsByEd[s.EditorId] = img;
+            }
+        }
+
         // Overwrite only the AmbientColors sub-fields the spec sets (DALC: 6 directions + specular + scale).
         private static void FillAmbientColors(Mutagen.Bethesda.Skyrim.AmbientColors dst, AmbientColorsSpec src)
         {
