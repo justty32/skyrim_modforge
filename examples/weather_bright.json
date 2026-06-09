@@ -5,16 +5,18 @@
     {
       "editorId": "MF_OutdoorBrightIMGS",
       "template": "Skyrim.esm:0x012F88",
-      "brightness": 1.3,
+      "brightness": 1.1,
       "saturation": 1.25,
       "bloomScale": 0.9,
-      "sunlightScale": 1.2
+      "sunlightScale": 1.2,
+      "skyScale": 0.12
     }
   ],
   "weathers": [
     {
       "editorId": "MF_BrightWeather",
-      "skyUpperColor": { "day": { "r": 120, "g": 170, "b": 220 } },
+      "skyUpperColor": { "day": { "r": 55,  "g": 100, "b": 160 } },
+      "skyLowerColor": { "day": { "r": 100, "g": 140, "b": 185 } },
       "sunlightColor": { "day": { "r": 255, "g": 250, "b": 235 } },
       "ambientColor":  { "day": { "r": 150, "g": 155, "b": 165 } },
       "imageSpaces": { "default": "MF_OutdoorBrightIMGS" }
