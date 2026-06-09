@@ -42,6 +42,19 @@ public sealed class WeatherColorSpec
     public ColorSpec? Night { get; set; }
 }
 
+/// <summary>Per-time-of-day ImageSpace (IMGS) attached to a Weather — the outdoor color-grading
+/// lever (HDR/bloom/saturation by time of day). Each ref is an in-spec ImageSpace editorId OR a
+/// vanilla "&lt;master&gt;:0xFORMID". <see cref="Default"/> fills any time-of-day left empty, so a
+/// single bright IMGS can grade the whole day.</summary>
+public sealed class WeatherImageSpacesSpec
+{
+    public string Default { get; set; } = "";
+    public string Sunrise { get; set; } = "";
+    public string Day { get; set; } = "";
+    public string Sunset { get; set; } = "";
+    public string Night { get; set; } = "";
+}
+
 /// <summary>
 /// One sky cloud layer: a texture path (relative to Data\Textures, e.g.
 /// "Sky\\SkyrimCloudsUpper04.dds"), scroll speeds, per-time-of-day colours and alphas.
@@ -86,6 +99,9 @@ public sealed class WeatherSpec
     public WeatherColorSpec? SunlightColor { get; set; }    // directional sunlight on the world
     public WeatherColorSpec? AmbientColor { get; set; }
     public WeatherColorSpec? StarsColor { get; set; }
+
+    /// <summary>Per-time-of-day screen ImageSpace (IMGS) — outdoor color grading. Optional.</summary>
+    public WeatherImageSpacesSpec? ImageSpaces { get; set; }
 
     // --- Cloud layers (texture + speed + colours/alphas). ---
     public List<CloudLayerSpec> Clouds { get; set; } = new();
