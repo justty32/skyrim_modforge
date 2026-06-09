@@ -29,6 +29,7 @@ public static partial class Generator
         ctx.ValidateIdentities();
         ValidateWeather(spec, ctx.Problems, ctx.Ids, ctx.CheckRef);
         ValidateLights(spec, ctx.Problems);
+        ValidateLighting(spec, ctx.Problems);
         return ctx.Problems;
     }
 
@@ -100,6 +101,8 @@ public static partial class Generator
             foreach (var e in spec.Enchantments) Reg(e.EditorId, "enchantment");
             foreach (var tx in spec.TextureSets) Reg(tx.EditorId, "textureSet");
             foreach (var lt in spec.Lights) Reg(lt.EditorId, "light");
+            foreach (var lt in spec.LightingTemplates) Reg(lt.EditorId, "lightingTemplate");
+            foreach (var img in spec.ImageSpaces) Reg(img.EditorId, "imageSpace");
             foreach (var pr in spec.Projectiles) Reg(pr.EditorId, "projectile");
             foreach (var ex in spec.Explosions) Reg(ex.EditorId, "explosion");
             foreach (var im in spec.ImageSpaceModifiers) Reg(im.EditorId, "imageSpaceModifier");

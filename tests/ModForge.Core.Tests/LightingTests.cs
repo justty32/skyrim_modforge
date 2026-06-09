@@ -127,4 +127,35 @@ public class LightingTests
         Assert.True(cell.Lighting!.Inherits.HasFlag(CellLighting.Inherit.DirectionalColor));
         Assert.False(cell.Lighting!.Inherits.HasFlag(CellLighting.Inherit.AmbientColor));
     }
+
+    [Fact]
+    public void Validate_FlagsBadColorDuplicateRefCrossTypeAndInherit()
+    {
+        var spec = new ModSpec
+        {
+            LightingTemplates =
+            {
+                new LightingTemplateSpec { EditorId = "MF_DupLGTM", AmbientColor = new ColorSpec { R = 300, G = 0, B = 0 } },
+                new LightingTemplateSpec { EditorId = "MF_DupLGTM" },   // duplicate editorId
+            },
+            ImageSpaces = { new ImageSpaceSpec { EditorId = "MF_SomeIMGS" } },
+            Cells =
+            {
+                new CellSpec
+                {
+                    EditorId = "MF_BadCell",
+                    LightingTemplate = "MF_DoesNotExist",   // unresolved ref
+                    ImageSpace = "MF_DupLGTM",              // cross-type: an LGTM id used in the imageSpace slot
+                    Lighting = new CellLightingSpec { Inherit = { "NotARealFlag" } },
+                },
+            },
+        };
+
+        var problems = Generator.Validate(spec);
+        Assert.Contains(problems, p => p.Contains("MF_DupLGTM") && p.Contains("duplicate"));
+        Assert.Contains(problems, p => p.Contains("MF_DupLGTM") && p.Contains("ambientColor"));
+        Assert.Contains(problems, p => p.Contains("MF_BadCell") && p.Contains("lightingTemplate"));
+        Assert.Contains(problems, p => p.Contains("MF_BadCell") && p.Contains("imageSpace"));
+        Assert.Contains(problems, p => p.Contains("MF_BadCell") && p.Contains("NotARealFlag"));
+    }
 }
