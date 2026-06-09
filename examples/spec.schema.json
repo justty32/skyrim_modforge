@@ -2817,6 +2817,36 @@
         },
         "transitionDelta": {
           "type": "number"
+        },
+        "imageSpaces": {
+          "$ref": "#/$defs/weatherImageSpaces",
+          "description": "Per-time-of-day ImageSpace (IMGS) for outdoor color grading (HDR/bloom/saturation). Each value is an in-spec imageSpaces editorId or vanilla '<master>:0xFORMID'. `default` fills any time-of-day left empty."
+        }
+      }
+    },
+    "weatherImageSpaces": {
+      "type": "object",
+      "description": "Per-time-of-day IMGS refs for a weather record. `default` fills any unset time-of-day slot.",
+      "properties": {
+        "default": {
+          "type": "string",
+          "description": "IMGS ref used for any time-of-day not explicitly set; in-spec editorId or '<master>:0xFORMID'"
+        },
+        "sunrise": {
+          "type": "string",
+          "description": "IMGS ref for sunrise; in-spec editorId or '<master>:0xFORMID'"
+        },
+        "day": {
+          "type": "string",
+          "description": "IMGS ref for day; in-spec editorId or '<master>:0xFORMID'"
+        },
+        "sunset": {
+          "type": "string",
+          "description": "IMGS ref for sunset; in-spec editorId or '<master>:0xFORMID'"
+        },
+        "night": {
+          "type": "string",
+          "description": "IMGS ref for night; in-spec editorId or '<master>:0xFORMID'"
         }
       }
     },

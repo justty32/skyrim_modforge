@@ -21,6 +21,7 @@
 | `examples/lights.json` | 自訂 Light（LIGT）：color/radius/flicker + 放置進 cell |
 | `examples/showcase-multi.json` | 多功能 showcase（Light + scene headtrack + SitTarget，一包一次測）|
 | `examples/lighting.json` | 明亮室內：自訂 LGTM + IMGS + CELL 逐欄光照（含 DALC）|
+| `examples/weather_bright.json` | 室外天氣 IMGS 調色：自訂 IMGS + Weather `imageSpaces.default` 填全 ToD |
 
 ---
 

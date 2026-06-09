@@ -164,6 +164,43 @@ values.
 Worked example: `examples/lighting.json` (bright interior: custom LGTM + IMGS, cell with
 template-driven lighting, DALC hemisphere fill).
 
+**Outdoor / weather IMGS.** The LGTM + CELL XCLL path above is **interior-only**. Outdoors,
+ambient lighting comes from the Weather record's own sky/sunlight/ambient colour channels
+(the `WeatherSpec` `skyUpperColor` / `sunlightColor` / `ambientColor` per-time-of-day fields —
+already supported). Screen-space colour grading outdoors uses a separate mechanism: the Weather
+record's per-time-of-day **ImageSpace** slots. Set them via `weathers[].imageSpaces`:
+
+```jsonc
+"imageSpaces": [
+  { "editorId": "MF_OutdoorBrightIMGS", "template": "Skyrim.esm:0x012F88",
+    "brightness": 1.3, "saturation": 1.25, "bloomScale": 0.9, "sunlightScale": 1.2 }
+],
+"weathers": [
+  { "editorId": "MF_BrightWeather",
+    "skyUpperColor": { "day": { "r": 120, "g": 170, "b": 220 } },
+    "imageSpaces": { "default": "MF_OutdoorBrightIMGS" } }   // default fills all four ToD
+]
+```
+
+`weathers[].imageSpaces` fields: `default` (fills any unset time-of-day), `sunrise`, `day`,
+`sunset`, `night`. Each value is an in-spec `imageSpaces[]` editorId **or** a vanilla
+`"<master>:0xFORMID"` IMGS ref. A single `default` is sufficient to grade all four
+times-of-day uniformly.
+
+> **Note:** the LGTM / CELL path does NOT apply to exterior cells — do not attach a
+> `lightingTemplate` or `imageSpace` directly to a weather. The weather's own colour fields
+> drive outdoor ambient; IMGS on the weather drives screen-space HDR/bloom/saturation.
+
+**In-game test (non-invasive).** `fw <weatherFormID>` (ForceWeather) activates the weather
+immediately without editing any climate or worldspace. Find the FormID with
+`find <esp> MF_BrightWeather Weather` and pass the hex FormID to `fw` in the console
+(e.g. `fw 0800` for an ESL slot). Verify the IMGS is wired with
+`weatherdiag <esp> <0xFormID>` — the `ImageSpaces` line must show the custom IMGS FormKey
+for all four ToD. No climate/worldspace assignment needed to test the visual result.
+
+Worked example: `examples/weather_bright.json` (outdoor IMGS grading via `imageSpaces.default`).
+Cross-reference: see the indoor [lighting](#lighting) subsection above for LGTM / CELL / XCLL.
+
 ### worldspaces (WRLD) & regions (REGN) — exterior worlds & weather
 Create a **new** exterior worldspace and attach a climate, and define **regions** (areas inside a
 worldspace) whose **weather table** drives which weathers play there:

@@ -1,0 +1,23 @@
+{
+  "pluginName": "ModForgeBrightWeather.esp",
+  "esl": true,
+  "imageSpaces": [
+    {
+      "editorId": "MF_OutdoorBrightIMGS",
+      "template": "Skyrim.esm:0x012F88",
+      "brightness": 1.3,
+      "saturation": 1.25,
+      "bloomScale": 0.9,
+      "sunlightScale": 1.2
+    }
+  ],
+  "weathers": [
+    {
+      "editorId": "MF_BrightWeather",
+      "skyUpperColor": { "day": { "r": 120, "g": 170, "b": 220 } },
+      "sunlightColor": { "day": { "r": 255, "g": 250, "b": 235 } },
+      "ambientColor":  { "day": { "r": 150, "g": 155, "b": 165 } },
+      "imageSpaces": { "default": "MF_OutdoorBrightIMGS" }
+    }
+  ]
+}
