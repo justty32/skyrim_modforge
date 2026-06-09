@@ -1,0 +1,70 @@
+{
+  "pluginName": "ModForgeBrightInterior.esp",
+  "esl": true,
+
+  "lightingTemplates": [
+    {
+      "editorId": "MF_BrightCaveLGTM",
+      "template": "Skyrim.esm:0x0300E2",
+      "ambientColor": { "r": 150, "g": 155, "b": 170 },
+      "directionalColor": { "r": 210, "g": 210, "b": 200 },
+      "fogNear": 0,
+      "fogFar": 8192,
+      "directionalAmbient": {
+        "scale": 1.0,
+        "zPlus":  { "r": 200, "g": 205, "b": 215 },
+        "zMinus": { "r": 120, "g": 122, "b": 130 },
+        "xPlus":  { "r": 170, "g": 172, "b": 180 },
+        "xMinus": { "r": 170, "g": 172, "b": 180 },
+        "yPlus":  { "r": 170, "g": 172, "b": 180 },
+        "yMinus": { "r": 170, "g": 172, "b": 180 }
+      }
+    }
+  ],
+
+  "imageSpaces": [
+    {
+      "editorId": "MF_BrightIMGS",
+      "brightness": 1.35,
+      "saturation": 1.2,
+      "contrast": 1.0,
+      "bloomScale": 0.8,
+      "sunlightScale": 1.2,
+      "white": 1.5
+    }
+  ],
+
+  "cells": [
+    {
+      "editorId": "MF_BrightRoom",
+      "name": "Bright Test Room",
+      "template": "Skyrim.esm:0x0165A8",
+      "lightingTemplate": "MF_BrightCaveLGTM",
+      "imageSpace": "MF_BrightIMGS"
+    }
+  ],
+
+  "lights": [
+    {
+      "editorId": "MF_RoomFill",
+      "color": { "r": 255, "g": 250, "b": 235 },
+      "radius": 1024,
+      "fadeValue": 1.2
+    }
+  ],
+
+  "placements": [
+    {
+      "editorId": "MF_Floor",
+      "base": "Skyrim.esm:0x1044AA",
+      "cell": "MF_BrightRoom",
+      "position": { "x": 0, "y": 0, "z": 0 }
+    },
+    {
+      "editorId": "MF_RoomFillRef",
+      "base": "MF_RoomFill",
+      "cell": "MF_BrightRoom",
+      "position": { "x": 0, "y": 0, "z": 200 }
+    }
+  ]
+}

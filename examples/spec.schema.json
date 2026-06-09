@@ -308,6 +308,20 @@
       },
       "description": "Light (LIGT): a custom light source (colour/radius/flicker); place it via placements[] by editorId"
     },
+    "lightingTemplates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/lightingTemplate"
+      },
+      "description": "LightingTemplate (LGTM): reusable interior lighting (ambient/directional/fog + DALC hemisphere). Author by copying a vanilla LGTM via `template` then overriding fields. CELLs reference it via cells[].lightingTemplate"
+    },
+    "imageSpaces": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/imageSpace"
+      },
+      "description": "ImageSpace (IMGS): screen-space HDR/cinematic/tint attached to a CELL. Copy a vanilla IMGS via `template` then bump brightness/saturation etc. CELLs reference it via cells[].imageSpace"
+    },
     "weathers": {
       "type": "array",
       "items": {
@@ -1880,6 +1894,18 @@
         "encounterZone": {
           "$ref": "#/$defs/ref",
           "description": "optional ECZN ref (in-spec editorId or '<master>:0xFORMID') — the whole cell's level scaling / respawn (XEZN)"
+        },
+        "lightingTemplate": {
+          "type": "string",
+          "description": "optional LGTM ref: an in-spec lightingTemplates entry editorId OR a vanilla '<master>:0xFORMID' (e.g. Skyrim.esm:0x0300E2 = DefaultLightingTemplate). Controls ambient/directional/fog/DALC for the cell."
+        },
+        "imageSpace": {
+          "type": "string",
+          "description": "optional IMGS ref: an in-spec imageSpaces entry editorId OR a vanilla '<master>:0xFORMID'. Controls HDR eye-adapt / bloom / cinematic look for the cell."
+        },
+        "lighting": {
+          "$ref": "#/$defs/cellLighting",
+          "description": "optional inline XCLL overrides; fields left null are pulled from the lightingTemplate. Use when you need per-cell tweaks on top of the shared template."
         }
       }
     },
@@ -3985,6 +4011,113 @@
         "constant": {
           "type": "boolean",
           "description": "Constant major flag — a read-only tuning value (can't be SetValue'd)"
+        }
+      }
+    },
+    "ambientColors": {
+      "type": "object",
+      "description": "Six-direction hemisphere ambient light (DALC) — the flat fill that brightens a dark room overall.",
+      "properties": {
+        "xPlus":    { "$ref": "#/$defs/color", "description": "+X direction (east)" },
+        "xMinus":   { "$ref": "#/$defs/color", "description": "-X direction (west)" },
+        "yPlus":    { "$ref": "#/$defs/color", "description": "+Y direction (north)" },
+        "yMinus":   { "$ref": "#/$defs/color", "description": "-Y direction (south)" },
+        "zPlus":    { "$ref": "#/$defs/color", "description": "+Z direction (up/sky)" },
+        "zMinus":   { "$ref": "#/$defs/color", "description": "-Z direction (down/ground)" },
+        "specular": { "$ref": "#/$defs/color", "description": "specular highlight colour" },
+        "scale":    { "type": "number", "description": "overall DALC brightness multiplier (1.0 = neutral)" }
+      }
+    },
+    "lightingTemplate": {
+      "type": "object",
+      "required": [ "editorId" ],
+      "description": "LightingTemplate (LGTM): reusable interior lighting authored by copying a vanilla LGTM then overriding fields. All colour/float fields are optional (null = keep the template value).",
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "template": {
+          "type": "string",
+          "description": "optional vanilla LGTM to DeepCopy as base ('<master>:0xFORMID', e.g. Skyrim.esm:0x0300E2 = DefaultLightingTemplate)"
+        },
+        "ambientColor":          { "$ref": "#/$defs/color", "description": "flat ambient fill color (RGB 0-255)" },
+        "directionalColor":      { "$ref": "#/$defs/color", "description": "directional light color (RGB 0-255)" },
+        "directionalRotationXY": { "type": "integer", "description": "directional light XY rotation (degrees)" },
+        "directionalRotationZ":  { "type": "integer", "description": "directional light Z rotation (degrees)" },
+        "directionalFade":       { "type": "number",  "description": "directional light fade multiplier" },
+        "fogNearColor":          { "$ref": "#/$defs/color", "description": "near fog color" },
+        "fogFarColor":           { "$ref": "#/$defs/color", "description": "far fog color" },
+        "fogNear":               { "type": "number",  "description": "near fog distance" },
+        "fogFar":                { "type": "number",  "description": "far fog distance" },
+        "fogMax":                { "type": "number",  "description": "maximum fog opacity (0-1)" },
+        "fogClipDistance":       { "type": "number",  "description": "fog clip distance" },
+        "fogPower":              { "type": "number",  "description": "fog power (density curve)" },
+        "lightFadeStart":        { "type": "number",  "description": "distance at which lights start to fade" },
+        "lightFadeEnd":          { "type": "number",  "description": "distance at which lights fully fade" },
+        "directionalAmbient":    { "$ref": "#/$defs/ambientColors", "description": "DALC six-direction hemisphere fill" }
+      }
+    },
+    "imageSpace": {
+      "type": "object",
+      "required": [ "editorId" ],
+      "description": "ImageSpace (IMGS): screen-space HDR / cinematic / tint base record attached to a CELL (distinct from IMAD which is a runtime modifier). Copy a vanilla IMGS via `template` then bump.",
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "template": {
+          "type": "string",
+          "description": "optional vanilla IMGS to DeepCopy as base ('<master>:0xFORMID')"
+        },
+        "eyeAdaptSpeed":          { "type": "number", "description": "HDR: how fast eye adapts to brightness changes" },
+        "eyeAdaptStrength":       { "type": "number", "description": "HDR: eye adaptation strength" },
+        "bloomBlurRadius":        { "type": "number", "description": "HDR: bloom blur radius" },
+        "bloomThreshold":         { "type": "number", "description": "HDR: brightness threshold before bloom applies" },
+        "bloomScale":             { "type": "number", "description": "HDR: bloom intensity scale" },
+        "receiveBloomThreshold":  { "type": "number", "description": "HDR: threshold for receiving bloom" },
+        "white":                  { "type": "number", "description": "HDR: white point (overexposure clamp); >1.0 makes it feel washed-out bright" },
+        "sunlightScale":          { "type": "number", "description": "HDR: sunlight scale multiplier" },
+        "skyScale":               { "type": "number", "description": "HDR: sky brightness scale" },
+        "brightness":             { "type": "number", "description": "cinematic brightness (1.0=neutral, >1 = brighter)" },
+        "contrast":               { "type": "number", "description": "cinematic contrast (1.0=neutral)" },
+        "saturation":             { "type": "number", "description": "cinematic saturation (1.0=neutral, >1 = vivid)" },
+        "tintAmount":             { "type": "number", "description": "tint blend factor (0 = no tint)" },
+        "tintColor":              { "$ref": "#/$defs/color", "description": "tint color" }
+      }
+    },
+    "cellLighting": {
+      "type": "object",
+      "description": "Inline XCLL per-cell lighting overrides. Fields left null are inherited from the cell's lightingTemplate according to the `inherit` flags.",
+      "properties": {
+        "ambientColor":          { "$ref": "#/$defs/color" },
+        "directionalColor":      { "$ref": "#/$defs/color" },
+        "directionalRotationXY": { "type": "integer" },
+        "directionalRotationZ":  { "type": "integer" },
+        "directionalFade":       { "type": "number" },
+        "fogNearColor":          { "$ref": "#/$defs/color" },
+        "fogFarColor":           { "$ref": "#/$defs/color" },
+        "fogNear":               { "type": "number" },
+        "fogFar":                { "type": "number" },
+        "fogMax":                { "type": "number" },
+        "fogClipDistance":       { "type": "number" },
+        "fogPower":              { "type": "number" },
+        "lightFadeBegin":        { "type": "number", "description": "distance at which lights start to fade (XCLL uses Begin/End, LGTM uses Start/End)" },
+        "lightFadeEnd":          { "type": "number" },
+        "directionalAmbient":    { "$ref": "#/$defs/ambientColors" },
+        "inherit": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "AmbientColor",
+              "DirectionalColor",
+              "FogColor",
+              "FogNear",
+              "FogFar",
+              "DirectionalRotation",
+              "DirectionalFade",
+              "ClipDistance",
+              "FogPower",
+              "FogMax",
+              "LightFadeDistances"
+            ]
+          },
+          "description": "field-flag names still inherited from the lightingTemplate (template wins); a field both set inline and listed here is inherited + warned"
         }
       }
     }
