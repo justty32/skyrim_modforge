@@ -60,6 +60,7 @@ public static partial class Generator
         ctx.BuildSounds();                         // Sound Descriptor (SNDR)
         ctx.BuildTextureSets();                    // TextureSet (TXST) retexture map paths
         ctx.BuildLights();                         // Light (LIGT) — placeable by editorId in pass 2
+        ctx.BuildLightingTemplates();              // LightingTemplate (LGTM) — before cells so a CELL resolves it by editorId
         ctx.BuildLeveledItems();                   // LeveledItem (LVLI)
         ctx.BuildLeveledNpcs();                    // LeveledNpc (LVLN)
         ctx.BuildContainers();                     // Container (CONT)

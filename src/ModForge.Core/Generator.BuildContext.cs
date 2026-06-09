@@ -32,6 +32,9 @@ public static partial class Generator
         private readonly Dictionary<string, Npc> npcsByEd = new();
         private readonly Dictionary<string, Quest> questsByEd = new();
         private readonly Dictionary<string, Cell> cellsByEd = new();
+        // Custom LGTM/IMGS built in pass 1 (before cells), so a CELL can resolve them by editorId.
+        private readonly Dictionary<string, LightingTemplate> lgtmByEd = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, ImageSpace> imgsByEd = new(StringComparer.OrdinalIgnoreCase);
         // Built INFOs by dialogue editorId, so a pass-2 step can attach result-script fragments
         // (which need ref resolution from the formKey table that only exists in pass 2).
         private readonly Dictionary<string, DialogResponses> dialogResponsesByEd = new();
