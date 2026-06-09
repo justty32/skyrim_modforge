@@ -74,4 +74,57 @@ public class LightingTests
         Assert.Equal(0.1f, img.Tint!.Amount);
         Assert.Equal(255, img.Tint!.Color.R);
     }
+
+    // CELL points at an in-spec custom LGTM with no inline lighting → auto Inherits=ALL flags.
+    [Fact]
+    public void Cell_WithCustomLgtm_InheritsAll()
+    {
+        var spec = new ModSpec
+        {
+            LightingTemplates = { new LightingTemplateSpec { EditorId = "MF_BrightLGTM" } },
+            Cells = { new CellSpec { EditorId = "MF_BrightRoom", LightingTemplate = "MF_BrightLGTM" } },
+        };
+
+        var r = Build(spec);
+        var lgtm = r.Mod.EnumerateMajorRecords<ILightingTemplateGetter>().Single();
+        var cell = r.Mod.EnumerateMajorRecords<ICellGetter>().Single(c => c.EditorID == "MF_BrightRoom");
+        Assert.Equal(lgtm.FormKey, cell.LightingTemplate.FormKey);
+        Assert.NotNull(cell.Lighting);
+        // every inherit flag set → fully driven by the template
+        foreach (CellLighting.Inherit f in Enum.GetValues<CellLighting.Inherit>())
+            Assert.True(cell.Lighting!.Inherits.HasFlag(f), $"missing inherit flag {f}");
+    }
+
+    // Inline lighting: fields set inline are used; flags listed in `inherit` come from the template.
+    [Fact]
+    public void Cell_InlineLighting_SetsFieldsAndInheritSubset()
+    {
+        var spec = new ModSpec
+        {
+            LightingTemplates = { new LightingTemplateSpec { EditorId = "MF_BaseLGTM" } },
+            Cells =
+            {
+                new CellSpec
+                {
+                    EditorId = "MF_TunedRoom",
+                    LightingTemplate = "MF_BaseLGTM",
+                    Lighting = new CellLightingSpec
+                    {
+                        AmbientColor = new ColorSpec { R = 160, G = 165, B = 175 },
+                        FogFar = 6000f,
+                        DirectionalAmbient = new AmbientColorsSpec { Scale = 1.0f },
+                        Inherit = { "FogColor", "DirectionalColor" },
+                    },
+                },
+            },
+        };
+
+        var cell = Build(spec).Mod.EnumerateMajorRecords<ICellGetter>().Single(c => c.EditorID == "MF_TunedRoom");
+        Assert.Equal(160, cell.Lighting!.AmbientColor.R);
+        Assert.Equal(6000f, cell.Lighting!.FogFar);
+        Assert.Equal(1.0f, cell.Lighting!.AmbientColors!.Scale);
+        Assert.True(cell.Lighting!.Inherits.HasFlag(CellLighting.Inherit.FogColor));
+        Assert.True(cell.Lighting!.Inherits.HasFlag(CellLighting.Inherit.DirectionalColor));
+        Assert.False(cell.Lighting!.Inherits.HasFlag(CellLighting.Inherit.AmbientColor));
+    }
 }

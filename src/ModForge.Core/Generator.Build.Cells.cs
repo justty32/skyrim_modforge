@@ -84,10 +84,81 @@ public static partial class Generator
                     else Warn($"  ! cell '{c.EditorId}' template '{c.Template}' unresolved — created without lighting (may render black)");
                 }
                 cell.Flags |= Cell.Flag.IsInteriorCell;   // CopyCellEnv overwrote Flags — keep it interior
+                // Custom/vanilla LightingTemplate (LGTM) + ImageSpace (IMGS) links + inline XCLL.
+                if (!string.IsNullOrWhiteSpace(c.LightingTemplate))
+                {
+                    if (ResolveLightingRef(c.LightingTemplate, out var ltFk)) cell.LightingTemplate.SetTo(ltFk);
+                    else Warn($"  ! cell '{c.EditorId}' lightingTemplate '{c.LightingTemplate}' unresolved");
+                }
+                if (!string.IsNullOrWhiteSpace(c.ImageSpace))
+                {
+                    if (ResolveLightingRef(c.ImageSpace, out var imgFk)) cell.ImageSpace.SetTo(imgFk);
+                    else Warn($"  ! cell '{c.EditorId}' imageSpace '{c.ImageSpace}' unresolved");
+                }
+                ApplyCellLighting(cell, c);
                 if (!string.IsNullOrEmpty(c.Name)) cell.Name = c.Name;
                 InteriorSubFor(cell.FormKey).Cells.Add(cell);
                 if (!string.IsNullOrEmpty(c.EditorId)) cellsByEd[c.EditorId] = cell;
             }
+        }
+
+        // An interior CELL MUST carry an XCLL (Lighting) or it renders pitch black. The Inherit flags
+        // decide which fields come from the LightingTemplate vs the inline XCLL. Rules:
+        //   * no inline `lighting` → if a LightingTemplate is present and there's no Lighting yet,
+        //     create one that inherits ALL flags (fully template-driven).
+        //   * inline `lighting` → write the authored fields; Inherits = the flags listed in `inherit`
+        //     (those come from the template). A field set inline AND listed in `inherit` is inherited
+        //     (template wins) + warned.
+        private void ApplyCellLighting(Cell cell, CellSpec c)
+        {
+            if (c.Lighting is null)
+            {
+                if (!string.IsNullOrWhiteSpace(c.LightingTemplate))
+                    cell.Lighting ??= new CellLighting { Inherits = AllInheritFlags() };
+                return;
+            }
+
+            var s = c.Lighting;
+            var lz = cell.Lighting ??= new CellLighting();
+
+            CellLighting.Inherit inh = 0;
+            foreach (var f in s.Inherit)
+                if (Enum.TryParse<CellLighting.Inherit>(f, ignoreCase: true, out var fl)) inh |= fl;
+                else Warn($"  ! cell '{c.EditorId}' invalid inherit flag '{f}'");
+            lz.Inherits = inh;
+
+            // helper: set inline value only if NOT inherited; warn on conflict.
+            void Field(CellLighting.Inherit flag, bool authored, Action set)
+            {
+                if (!authored) return;
+                if (inh.HasFlag(flag)) Warn($"  ! cell '{c.EditorId}' field for {flag} set inline but also inherited — template wins");
+                else set();
+            }
+
+            Field(CellLighting.Inherit.AmbientColor, s.AmbientColor is not null, () => lz.AmbientColor = ToColor(s.AmbientColor!));
+            Field(CellLighting.Inherit.DirectionalColor, s.DirectionalColor is not null, () => lz.DirectionalColor = ToColor(s.DirectionalColor!));
+            Field(CellLighting.Inherit.DirectionalRotation, s.DirectionalRotationXY is not null, () => lz.DirectionalRotationXY = s.DirectionalRotationXY!.Value);
+            Field(CellLighting.Inherit.DirectionalRotation, s.DirectionalRotationZ is not null, () => lz.DirectionalRotationZ = s.DirectionalRotationZ!.Value);
+            Field(CellLighting.Inherit.DirectionalFade, s.DirectionalFade is not null, () => lz.DirectionalFade = s.DirectionalFade!.Value);
+            Field(CellLighting.Inherit.FogColor, s.FogNearColor is not null, () => lz.FogNearColor = ToColor(s.FogNearColor!));
+            Field(CellLighting.Inherit.FogColor, s.FogFarColor is not null, () => lz.FogFarColor = ToColor(s.FogFarColor!));
+            Field(CellLighting.Inherit.FogNear, s.FogNear is not null, () => lz.FogNear = s.FogNear!.Value);
+            Field(CellLighting.Inherit.FogFar, s.FogFar is not null, () => lz.FogFar = s.FogFar!.Value);
+            Field(CellLighting.Inherit.FogMax, s.FogMax is not null, () => lz.FogMax = s.FogMax!.Value);
+            Field(CellLighting.Inherit.ClipDistance, s.FogClipDistance is not null, () => lz.FogClipDistance = s.FogClipDistance!.Value);
+            Field(CellLighting.Inherit.FogPower, s.FogPower is not null, () => lz.FogPower = s.FogPower!.Value);
+            Field(CellLighting.Inherit.LightFadeDistances, s.LightFadeBegin is not null, () => lz.LightFadeBegin = s.LightFadeBegin!.Value);
+            Field(CellLighting.Inherit.LightFadeDistances, s.LightFadeEnd is not null, () => lz.LightFadeEnd = s.LightFadeEnd!.Value);
+            if (s.DirectionalAmbient is { } da) FillAmbientColors(lz.AmbientColors ??= new(), da);
+        }
+
+        // All CellLighting.Inherit flags OR'd — a cell with a template but no inline overrides
+        // inherits everything (matches vanilla interior cells).
+        private static CellLighting.Inherit AllInheritFlags()
+        {
+            CellLighting.Inherit all = 0;
+            foreach (CellLighting.Inherit f in Enum.GetValues<CellLighting.Inherit>()) all |= f;
+            return all;
         }
     }
 }

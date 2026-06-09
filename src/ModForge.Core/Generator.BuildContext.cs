@@ -123,6 +123,19 @@ public static partial class Generator
             else Warn($"  ! {what} ref '{refStr}' unresolved (need in-spec editorId or <master>:0xFORMID)");
         }
 
+        // Resolve a CELL's lightingTemplate / imageSpace ref: a custom in-spec record (by editorId)
+        // wins, else a vanilla "<master>:0xFORMID". Runs in pass 1 (formKeyByEd not built yet), so we
+        // use the custom maps + the external link cache directly. Returns false (caller warns) if neither.
+        private bool ResolveLightingRef(string refStr, out FormKey fk)
+        {
+            fk = default;
+            if (string.IsNullOrWhiteSpace(refStr)) return false;
+            if (lgtmByEd.TryGetValue(refStr, out var lt)) { fk = lt.FormKey; return true; }
+            if (imgsByEd.TryGetValue(refStr, out var img)) { fk = img.FormKey; return true; }
+            if (TryExternalRef(refStr, out var ext)) { fk = ext; return true; }
+            return false;
+        }
+
         // Finalize the run: apply the ESL flag, release the master overlays, return the result.
         // Release is safe here because every template clone / cell-env copy is eager (DeepCopyIn /
         // CopyCellEnv) and FormLinks only hold FormKeys, so nothing the write needs depends on the
