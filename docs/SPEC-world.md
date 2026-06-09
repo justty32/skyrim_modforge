@@ -173,11 +173,11 @@ record's per-time-of-day **ImageSpace** slots. Set them via `weathers[].imageSpa
 ```jsonc
 "imageSpaces": [
   { "editorId": "MF_OutdoorBrightIMGS", "template": "Skyrim.esm:0x012F88",
-    "brightness": 1.3, "saturation": 1.25, "bloomScale": 0.9, "sunlightScale": 1.2 }
+    "brightness": 1.1, "saturation": 1.25, "bloomScale": 0.9, "sunlightScale": 1.2, "skyScale": 0.12 }
 ],
 "weathers": [
   { "editorId": "MF_BrightWeather",
-    "skyUpperColor": { "day": { "r": 120, "g": 170, "b": 220 } },
+    "template": "Skyrim.esm:0x10E1F2",                       // SkyrimClear_A — inherit clouds + tuned sky
     "imageSpaces": { "default": "MF_OutdoorBrightIMGS" } }   // default fills all four ToD
 ]
 ```
@@ -186,6 +186,16 @@ record's per-time-of-day **ImageSpace** slots. Set them via `weathers[].imageSpa
 `sunset`, `night`. Each value is an in-spec `imageSpaces[]` editorId **or** a vanilla
 `"<master>:0xFORMID"` IMGS ref. A single `default` is sufficient to grade all four
 times-of-day uniformly.
+
+**Weather `template` (clouds!).** A weather built **from scratch has NO clouds** (and only
+baseline sky colours) — the sky is a flat empty gradient. Set `weathers[].template` to a vanilla
+weather `"<master>:0xFORMID"` (e.g. `Skyrim.esm:0x10E1F2` = SkyrimClear_A): the clone inherits its
+cloud layers + cloud textures + per-time-of-day sky/sunlight/ambient colours + atmospherics, and
+then you override **only** what you set (a colour left null keeps the template's; an empty `clouds`
+list keeps the template's clouds). This is the recommended outdoor base: copy a vanilla clear
+weather for a proper cloudy sky, then push the screen grading via `imageSpaces`. Two levers stay
+independent — **sky brightness** = the weather's `skyUpperColor`/`skyLowerColor` + the IMGS
+`skyScale`; **ground/scene** = `sunlightScale` + the weather's `ambientColor`.
 
 > **Note:** the LGTM / CELL path does NOT apply to exterior cells — do not attach a
 > `lightingTemplate` or `imageSpace` directly to a weather. The weather's own colour fields

@@ -15,10 +15,7 @@
   "weathers": [
     {
       "editorId": "MF_BrightWeather",
-      "skyUpperColor": { "day": { "r": 55,  "g": 100, "b": 160 } },
-      "skyLowerColor": { "day": { "r": 100, "g": 140, "b": 185 } },
-      "sunlightColor": { "day": { "r": 255, "g": 250, "b": 235 } },
-      "ambientColor":  { "day": { "r": 150, "g": 155, "b": 165 } },
+      "template": "Skyrim.esm:0x10E1F2",
       "imageSpaces": { "default": "MF_OutdoorBrightIMGS" }
     }
   ]

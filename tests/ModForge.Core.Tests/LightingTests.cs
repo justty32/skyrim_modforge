@@ -216,4 +216,30 @@ public class LightingTests
         Assert.Contains(problems, p => p.Contains("MF_BadCell") && p.Contains("imageSpace"));
         Assert.Contains(problems, p => p.Contains("MF_BadCell") && p.Contains("NotARealFlag"));
     }
+
+    // Weather template DeepCopies a vanilla weather → inherits its clouds; spec overrides only what it sets.
+    // Needs Skyrim.esm (resolves the vanilla template), like WordWallTests — passes where the game is installed.
+    [Fact]
+    public void Weather_Template_InheritsCloudsAndOverridesImageSpace()
+    {
+        var spec = new ModSpec
+        {
+            ImageSpaces = { new ImageSpaceSpec { EditorId = "MF_Grade", Brightness = 1.1f } },
+            Weathers =
+            {
+                new WeatherSpec
+                {
+                    EditorId = "MF_TmplWeather",
+                    Template = "Skyrim.esm:0x10E1F2",   // SkyrimClear_A (many enabled cloud layers)
+                    ImageSpaces = new WeatherImageSpacesSpec { Default = "MF_Grade" },
+                },
+            },
+        };
+
+        var r = Build(spec);
+        var grade = r.Mod.EnumerateMajorRecords<IImageSpaceGetter>().Single(x => x.EditorID == "MF_Grade");
+        var w = r.Mod.EnumerateMajorRecords<IWeatherGetter>().Single(x => x.EditorID == "MF_TmplWeather");
+        Assert.True(w.Clouds.Count(c => c is { Enabled: true }) >= 4, "expected inherited cloud layers from the vanilla template");
+        Assert.Equal(grade.FormKey, w.ImageSpaces!.Day.FormKey);   // our grading overrides the template's
+    }
 }

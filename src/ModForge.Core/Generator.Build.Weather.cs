@@ -58,31 +58,49 @@ public static partial class Generator
         return Percent.FactoryPutInRange(d);
     }
 
-    private static void BuildWeathers(ModSpec spec, ISkyrimMod mod, Action<string> warn)
+    private static void BuildWeathers(ModSpec spec, ISkyrimMod mod, Action<string> warn,
+                                      Func<string, IWeatherGetter?> resolveTemplate)
     {
         foreach (var ws in spec.Weathers)
         {
             var w = mod.Weathers.AddNew();
+
+            // Optional template: DeepCopy a vanilla weather (clouds + cloud textures + per-ToD sky
+            // colours + atmospherics) as the base, then override only what the spec sets below.
+            // Without a template the record is built from scratch (seeded baselines, NO clouds).
+            bool hasTemplate = false;
+            if (!string.IsNullOrWhiteSpace(ws.Template))
+            {
+                if (resolveTemplate(ws.Template) is { } tmpl)
+                { w.DeepCopyIn(tmpl, out _, null); hasTemplate = true; }
+                else warn($"  ! weather '{ws.EditorId}' template '{ws.Template}' unresolved — building from scratch (no clouds)");
+            }
             w.EditorID = ws.EditorId;
 
-            // Classification flags (default Pleasant clear weather).
-            Weather.Flag flags = 0;
-            foreach (var f in ws.Flags)
-                if (Enum.TryParse<Weather.Flag>(f, ignoreCase: true, out var fl)) flags |= fl;
-                else warn($"  ! weather '{ws.EditorId}' unknown flag '{f}' (Pleasant|Cloudy|Rainy|Snow|SkyStaticsAlwaysVisible|SkyStaticsFollowsSunPosition)");
-            if (flags == 0) flags = Weather.Flag.Pleasant;
-            w.Flags = flags;
+            // Classification flags: spec wins; else Pleasant when from-scratch, else keep template's.
+            if (ws.Flags.Count > 0)
+            {
+                Weather.Flag flags = 0;
+                foreach (var f in ws.Flags)
+                    if (Enum.TryParse<Weather.Flag>(f, ignoreCase: true, out var fl)) flags |= fl;
+                    else warn($"  ! weather '{ws.EditorId}' unknown flag '{f}' (Pleasant|Cloudy|Rainy|Snow|SkyStaticsAlwaysVisible|SkyStaticsFollowsSunPosition)");
+                w.Flags = flags;
+            }
+            else if (!hasTemplate) w.Flags = Weather.Flag.Pleasant;
 
-            // Per-time-of-day colours (each seeded so a partial/omitted colour is still valid).
-            FillWeatherColor(w.SkyUpperColor, ws.SkyUpperColor, BaselineSky);
-            FillWeatherColor(w.SkyLowerColor, ws.SkyLowerColor, BaselineSky);
-            FillWeatherColor(w.FogNearColor, ws.FogNearColor, BaselineFog);
-            FillWeatherColor(w.FogFarColor, ws.FogFarColor, BaselineFog);
-            FillWeatherColor(w.HorizonColor, ws.HorizonColor, BaselineSky);
-            FillWeatherColor(w.SunColor, ws.SunColor, BaselineSun);
-            FillWeatherColor(w.SunlightColor, ws.SunlightColor, BaselineSun);
-            FillWeatherColor(w.AmbientColor, ws.AmbientColor, BaselineSky);
-            FillWeatherColor(w.StarsColor, ws.StarsColor, Color.FromArgb(0, 0, 0, 0));
+            // Per-time-of-day colours. With a template, override only the colours the spec provides
+            // (a null colour keeps the template's); from-scratch, always fill from a seeded baseline.
+            void Col(WeatherColor dst, WeatherColorSpec? src, Color baseline)
+            { if (src is not null || !hasTemplate) FillWeatherColor(dst, src, baseline); }
+            Col(w.SkyUpperColor, ws.SkyUpperColor, BaselineSky);
+            Col(w.SkyLowerColor, ws.SkyLowerColor, BaselineSky);
+            Col(w.FogNearColor, ws.FogNearColor, BaselineFog);
+            Col(w.FogFarColor, ws.FogFarColor, BaselineFog);
+            Col(w.HorizonColor, ws.HorizonColor, BaselineSky);
+            Col(w.SunColor, ws.SunColor, BaselineSun);
+            Col(w.SunlightColor, ws.SunlightColor, BaselineSun);
+            Col(w.AmbientColor, ws.AmbientColor, BaselineSky);
+            Col(w.StarsColor, ws.StarsColor, Color.FromArgb(0, 0, 0, 0));
 
             // Cloud layers: texture + scroll speed + per-ToD colours/alphas, by index 0..31.
             foreach (var cl in ws.Clouds)
@@ -116,9 +134,9 @@ public static partial class Generator
             // Wind. WindSpeed is a Noggog.Percent (0..1). WindDirection/Range are stored as a
             // *fraction of a full circle* (0..1) on disk even though the property is a float — the
             // binary writer rejects values outside 0..1. We author in friendlier degrees, so divide.
-            w.WindSpeed = ToFraction(ws.WindSpeed);
-            w.WindDirection = NormalizeDegrees(ws.WindDirection) / 360f;
-            w.WindDirectionRange = Math.Clamp(ws.WindDirectionRange, 0f, 360f) / 360f;
+            if (!hasTemplate || ws.WindSpeed != 0) w.WindSpeed = ToFraction(ws.WindSpeed);
+            if (!hasTemplate || ws.WindDirection != 0) w.WindDirection = NormalizeDegrees(ws.WindDirection) / 360f;
+            if (!hasTemplate || ws.WindDirectionRange != 0) w.WindDirectionRange = Math.Clamp(ws.WindDirectionRange, 0f, 360f) / 360f;
 
             // Fog distances (only when authored; -1 ⇒ leave the engine baseline of 0).
             if (ws.FogDayNear >= 0) w.FogDistanceDayNear = ws.FogDayNear;
@@ -135,6 +153,7 @@ public static partial class Generator
     // instance step would otherwise hide the outer static.
     private sealed partial class BuildContext
     {
-        public void BuildWeatherRecords() => Generator.BuildWeathers(spec, mod, Warn);
+        public void BuildWeatherRecords() => Generator.BuildWeathers(spec, mod, Warn,
+            r => TryResolveTemplate<IWeatherGetter>(r, out var t) ? t : null);
     }
 }

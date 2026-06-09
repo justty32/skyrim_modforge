@@ -137,8 +137,8 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Weather.cs` | `WeatherSpec`, `WeatherImageSpacesSpec`（per-ToD IMGS refs）, `ClimateSpec` |
-| Build P1 | `Generator.Build.Weather.cs` | 建 weather scalar fields（colors/clouds/wind/fog）|
+| Spec | `Spec.Weather.cs` | `WeatherSpec`（含 `Template`：抄 vanilla 天氣繼承雲/天空）, `WeatherImageSpacesSpec`（per-ToD IMGS refs）, `ClimateSpec` |
+| Build P1 | `Generator.Build.Weather.cs` | 建 weather scalar fields（colors/clouds/wind/fog）；`template` DeepCopy vanilla 天氣後只覆寫 spec 給的（empty clouds/null color 保留 template）|
 | Build P1 | `Generator.Build.Climate.cs` | 建 climate scalar fields（timing/sun/moon/volatility）；weather entries pass 2 接；`WireWeatherLinks`：`WeatherSpec.ImageSpaces` → WTHR per-ToD `ImageSpaces`（`default` 填未設 ToD）|
 | Validate | `Generator.Validate.Weather.cs` | color 範圍、cloud index、timing monotonicity、chance 總和 |
 | Validate | `Generator.Validate.Lighting.cs` | `WeatherImageSpacesSpec` 中每個 IMGS ref 可解（cross-type with IMGS registry）|

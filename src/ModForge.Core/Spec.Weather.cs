@@ -83,6 +83,13 @@ public sealed class WeatherSpec
 {
     public string EditorId { get; set; } = "";
 
+    /// <summary>Optional vanilla weather to DeepCopy as the base ("&lt;master&gt;:0xFORMID", e.g.
+    /// Skyrim.esm:0x10E1F2 = SkyrimClear_A). The clone brings clouds + cloud textures + per-ToD sky
+    /// colours + atmospherics; then ONLY the fields you set below override it (a colour you leave
+    /// null keeps the template's; an empty Clouds list keeps the template's clouds). Without a
+    /// template the weather is built from scratch (vanilla-sane baselines, NO clouds).</summary>
+    public string Template { get; set; } = "";
+
     // Classification flags: any of Pleasant / Cloudy / Rainy / Snow (and the SkyStatics
     // flags). These drive engine behaviour (Rainy/Snow toggle precipitation systems, the
     // ambient soundscape, "is it raining" script checks). Default: Pleasant.

@@ -76,8 +76,10 @@ public static partial class Generator
 
         foreach (var ws in spec.Weathers)
         {
-            if (ws.ImageSpaces is not { } isp) continue;
             var o = $"weather '{ws.EditorId}'";
+            if (!string.IsNullOrWhiteSpace(ws.Template) && !TryExternalRef(ws.Template, out _))
+                problems.Add($"{o} template '{ws.Template}' must be an external <master>:0xFORMID weather ref");
+            if (ws.ImageSpaces is not { } isp) continue;
             foreach (var (slot, r) in new[] { ("default", isp.Default), ("sunrise", isp.Sunrise),
                                               ("day", isp.Day), ("sunset", isp.Sunset), ("night", isp.Night) })
                 if (!string.IsNullOrWhiteSpace(r) && !imgsIds.Contains(r) && !TryExternalRef(r, out _))
