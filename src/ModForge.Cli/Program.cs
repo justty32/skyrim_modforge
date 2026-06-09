@@ -31,6 +31,8 @@ internal static partial class Program
                 case "mgefdiag" when args.Length == 3: return MgefDiag(args[1], args[2]);
                 case "enchdiag" when args.Length == 3: return EnchDiag(args[1], args[2]);
                 case "lightdiag" when args.Length is 2 or 3: return LightDiag(args[1], args.Length == 3 ? args[2] : null);
+                case "lgtmdiag" when args.Length is 2 or 3: return LgtmDiag(args[1], args.Length == 3 ? args[2] : null);
+                case "imgsdiag" when args.Length is 2 or 3: return ImgsDiag(args[1], args.Length == 3 ? args[2] : null);
                 case "packagediag" when args.Length == 3: return PackageDiag(args[1], args[2]);
                 case "pkgsbytemplate" when args.Length == 3: return PkgsByTemplate(args[1], args[2]);
                 case "npcdiag" when args.Length == 3: return NpcDiag(args[1], args[2]);
@@ -79,6 +81,8 @@ internal static partial class Program
         "  mgefdiag <in.esp> <0xFORMID>                 print a MagicEffect's fields (compare gen vs vanilla)\n" +
         "  enchdiag <in.esp> <0xFORMID>                 print an Enchantment (ENCH/ObjectEffect)'s type/cost/effects\n" +
         "  lightdiag <in.esp> [0xFORMID]                a Light's radius/color/flags (no id: list room-fill lights)\n" +
+        "  lgtmdiag <in.esp> [0xFORMID]                a LightingTemplate's ambient/directional/fog/DALC (no id: list all)\n" +
+        "  imgsdiag <in.esp> [0xFORMID]                an ImageSpace's HDR/cinematic/tint (no id: list all)\n" +
         "  packagediag <in.esp> <0xFORMID>              print a Package's template/flags/schedule/data inputs\n" +
         "  npcdiag <in.esp> <0xFORMID>                  print an Npc's race/class/voice/factions/packages/flags (for cross-cell diff vs vanilla)\n" +
         "  cstydiag <in.esp> <0xFORMID>                 print a CombatStyle's offensive/defensive mults + equipment preferences + flags\n" +

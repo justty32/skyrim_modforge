@@ -132,6 +132,55 @@ internal static partial class Program
         return 0;
     }
 
+    // Diagnostic: dump a LightingTemplate's (LGTM) ambient/directional/fog colors + DALC, by FormID
+    // or (no id) list every LGTM in the plugin. Used to verify a built bright template, or to read a
+    // vanilla LGTM's values before copying it as a `template`.
+    private static int LgtmDiag(string inPath, string? formIdHex)
+    {
+        using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE);
+        uint? target = formIdHex is null ? null
+            : Convert.ToUInt32(formIdHex.Replace("0x", "", StringComparison.OrdinalIgnoreCase), 16) & 0xFFFFFF;
+        foreach (var lt in mod.EnumerateMajorRecords<ILightingTemplateGetter>())
+        {
+            if (target is { } t && lt.FormKey.ID != t) continue;
+            Console.WriteLine($"0x{lt.FormKey.ID:X6}  {lt.EditorID}");
+            Console.WriteLine($"  ambient=({lt.AmbientColor.R},{lt.AmbientColor.G},{lt.AmbientColor.B})  "
+                + $"directional=({lt.DirectionalColor.R},{lt.DirectionalColor.G},{lt.DirectionalColor.B})");
+            Console.WriteLine($"  fog near={lt.FogNear} far={lt.FogFar} max={lt.FogMax} clip={lt.FogClipDistance} power={lt.FogPower}  "
+                + $"fogNearColor=({lt.FogNearColor.R},{lt.FogNearColor.G},{lt.FogNearColor.B})");
+            var d = lt.DirectionalAmbientColors;
+            if (d is not null)
+                Console.WriteLine($"  DALC scale={d.Scale} Z+=({d.DirectionalZPlus.R},{d.DirectionalZPlus.G},{d.DirectionalZPlus.B}) "
+                    + $"Z-=({d.DirectionalZMinus.R},{d.DirectionalZMinus.G},{d.DirectionalZMinus.B})");
+            if (target is not null) return 0;
+        }
+        if (target is not null) Console.WriteLine($"0x{target:X6} not a LightingTemplate in {Path.GetFileName(inPath)}");
+        return 0;
+    }
+
+    // Diagnostic: dump an ImageSpace's (IMGS) HDR / cinematic / tint, by FormID or (no id) list all.
+    private static int ImgsDiag(string inPath, string? formIdHex)
+    {
+        using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE);
+        uint? target = formIdHex is null ? null
+            : Convert.ToUInt32(formIdHex.Replace("0x", "", StringComparison.OrdinalIgnoreCase), 16) & 0xFFFFFF;
+        foreach (var img in mod.EnumerateMajorRecords<IImageSpaceGetter>())
+        {
+            if (target is { } t && img.FormKey.ID != t) continue;
+            Console.WriteLine($"0x{img.FormKey.ID:X6}  {img.EditorID}");
+            if (img.Cinematic is { } c)
+                Console.WriteLine($"  cinematic: brightness={c.Brightness} contrast={c.Contrast} saturation={c.Saturation}");
+            if (img.Hdr is { } h)
+                Console.WriteLine($"  hdr: bloomScale={h.BloomScale} bloomThresh={h.BloomThreshold} eyeAdapt={h.EyeAdaptSpeed} "
+                    + $"sunlight={h.SunlightScale} sky={h.SkyScale} white={h.White}");
+            if (img.Tint is { } ti)
+                Console.WriteLine($"  tint: amount={ti.Amount} color=({ti.Color.R},{ti.Color.G},{ti.Color.B})");
+            if (target is not null) return 0;
+        }
+        if (target is not null) Console.WriteLine($"0x{target:X6} not an ImageSpace in {Path.GetFileName(inPath)}");
+        return 0;
+    }
+
     // Diagnostic: list all packages in a master whose PackageTemplate FormID matches a target.
     // Used to find vanilla CONCRETE packages that use a given procedure template (Sandbox /
     // Travel / UseMagic / …) so a new spec author can copy their slot patterns. Necessary because
