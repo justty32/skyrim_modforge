@@ -105,11 +105,15 @@ public static partial class Generator
                 // another record's deferred wire points at it — a package SingleRef target (patrol start /
                 // follow / escort target) or a package Destination location. The engine can drop a
                 // temporary ref that something else links to.
-                bool linkTarget = pl.LinkedRefs.Count > 0
+                bool persistent = pl.Persistent
+                    || pl.LinkedRefs.Count > 0
                     || !string.IsNullOrWhiteSpace(pl.Teleport)
                     || (!string.IsNullOrWhiteSpace(pl.EditorId)
                         && (deferredAnchorEds.Contains(pl.EditorId) || teleportAnchorEds.Contains(pl.EditorId)));
-                (pl.Persistent || linkTarget ? cell.Persistent : cell.Temporary).Add(placedRec);
+
+                if (persistent) cell.Persistent.Add(placedRec);
+                else cell.Temporary.Add(placedRec);
+
                 placed++;
             }
 
@@ -183,7 +187,7 @@ public static partial class Generator
                             formKeyByEd[triggerEd] = trigger.FormKey;
                             recordsByEd[triggerEd] = trigger;
                         }
-                        cell.Persistent.Add(trigger);   // a quest-relevant trigger must persist across save/load
+                        cell.Persistent.Add(trigger);
                         placed++;
                     }
                 }

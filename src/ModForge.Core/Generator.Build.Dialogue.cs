@@ -154,7 +154,7 @@ public static partial class Generator
             void MakeHello(string npcEd, INpcGetter speaker, Quest quest, string? greetingLine)
             {
                 var hello = mod.DialogTopics.AddNew();
-                hello.EditorID = npcEd + "_Hello";
+                hello.EditorID = $"{npcEd}_{quest.EditorID}_Hello";
                 hello.Quest.SetTo(quest);
                 hello.Category = DialogTopic.CategoryEnum.Misc;
                 hello.Subtype = DialogTopic.SubtypeEnum.Hello;

@@ -126,21 +126,24 @@ public static partial class Generator
                 // Sounds (esp. Release = the Thu'um voice for a shout). Each resolves its SNDR ref and
                 // appends a MagicEffectSound of the named phase (default Release). Sounds is null on a
                 // fresh MGEF — materialize the list before appending.
-                if (me.Sounds.Count > 0) mgef.Sounds ??= new();
-                foreach (var snd in me.Sounds)
+                if (me.Sounds.Count > 0)
                 {
-                    if (string.IsNullOrWhiteSpace(snd.Sound)) continue;
-                    if (!Enum.TryParse<MagicEffect.SoundType>(snd.Type, ignoreCase: true, out var phase))
+                    var sounds = mgef.Sounds ??= new();
+                    foreach (var snd in me.Sounds)
                     {
-                        Warn($"  ! magicEffect '{me.EditorId}' sound type '{snd.Type}' invalid (Release/Charge/Ready/SheathDraw/ConcentrationCastLoop/OnHit) — skipped");
-                        continue;
+                        if (string.IsNullOrWhiteSpace(snd.Sound)) continue;
+                        if (!Enum.TryParse<MagicEffect.SoundType>(snd.Type, ignoreCase: true, out var phase))
+                        {
+                            Warn($"  ! magicEffect '{me.EditorId}' sound type '{snd.Type}' invalid (Release/Charge/Ready/SheathDraw/ConcentrationCastLoop/OnHit) — skipped");
+                            continue;
+                        }
+                        Resolve($"magicEffect '{me.EditorId}' sound", snd.Sound, fk =>
+                        {
+                            var ms = new MagicEffectSound { Type = phase };
+                            ms.Sound.SetTo(fk);
+                            sounds.Add(ms);
+                        });
                     }
-                    Resolve($"magicEffect '{me.EditorId}' sound", snd.Sound, fk =>
-                    {
-                        var ms = new MagicEffectSound { Type = phase };
-                        ms.Sound.SetTo(fk);
-                        mgef.Sounds.Add(ms);
-                    });
                 }
             }
         }

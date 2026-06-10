@@ -168,15 +168,13 @@ public static partial class Generator
                     if (au.PlayHourTolerance <= 0)
                         Problems.Add($"scene '{sc.EditorId}' autoStart playHourTolerance must be > 0");
                     if (!string.IsNullOrWhiteSpace(au.GateGlobal))
-                        CheckRef(au.GateGlobal, $"scene '{sc.EditorId}' autoStart gateGlobal");
-                }
-                foreach (var cs in sc.Conditions)
-                    ValidateSceneCondition(cs, $"scene '{sc.EditorId}' condition");
-            }
+                        if (au.GateGlobal is { } gg)
+                                CheckRef(gg, $"scene '{sc.EditorId}' autoStart gateGlobal");
+                        }
+                        }
 
-            ValidateScriptAttachments();
-        }
-
+                        ValidateScriptAttachments();
+                        }
         // Shared CTDA validation for scene/phase conditions (mirrors the stage-condition checks).
         private void ValidateSceneCondition(ConditionSpec cs, string label)
         {

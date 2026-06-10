@@ -40,11 +40,17 @@ public static partial class Generator
                 // explicitly or services are never offered (trade dialogue never opens). The earlier bug
                 // was using a chest REFERENCE target with radius 0 (a degenerate point); removing it
                 // entirely was also wrong. An InCell location needs no radius. Resolve the cell from the
-                // merchant-container placement's `cell` (in-spec editorId or vanilla <master>:0xFORMID).
+                // Resolve the cell from the merchant-container placement's `cell` (in-spec editorId
+                // or vanilla <master>:0xFORMID).
+                FormKey cellFk = default;
                 var chestPlacement = spec.Placements.FirstOrDefault(
                     p => string.Equals(p.EditorId, refStr, StringComparison.OrdinalIgnoreCase));
-                if (chestPlacement is { } cp && !string.IsNullOrWhiteSpace(cp.Cell)
-                    && TryResolveRef(cp.Cell, formKeyByEd, out var cellFk))
+                if (chestPlacement is { } cp && !string.IsNullOrWhiteSpace(cp.Cell))
+                {
+                    TryResolveRef(cp.Cell, formKeyByEd, out cellFk);
+                }
+
+                if (cellFk != default)
                 {
                     var loc = new LocationCell();
                     loc.Link.SetTo(cellFk);
@@ -53,7 +59,7 @@ public static partial class Generator
                 else
                 {
                     Warn($"  ! faction '{factEd}' vendor: could not resolve the merchant cell for VendorLocation " +
-                         $"(chest placement '{refStr}' has no resolvable cell) — GetOffersServicesNow may stay 0 and trade won't open");
+                         $"(chest ref '{refStr}' has no resolvable cell) — GetOffersServicesNow may stay 0 and trade won't open");
                 }
                 linksWired++;
                 if (LooksExternalRef(refStr)) extLinks++;

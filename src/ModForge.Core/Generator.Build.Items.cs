@@ -166,10 +166,15 @@ public static partial class Generator
                 // spec explicitly states armorType/slots (so the user's choice wins over the template's).
                 if (!string.IsNullOrEmpty(a.ArmorType) || a.Slots.Count > 0)
                 {
-                    var bt = new BodyTemplate { ArmorType = ParseArmorType(a.ArmorType) };
-                    foreach (var slot in a.Slots)
-                        if (Enum.TryParse<BipedObjectFlag>(slot, ignoreCase: true, out var f)) bt.FirstPersonFlags |= f;
-                        else Warn($"  ! armor '{a.EditorId}' unknown slot '{slot}' (e.g. Body, Head, Hands, Feet, Forearms, Calves, Shield)");
+                    var bt = r.BodyTemplate ?? new BodyTemplate();
+                    if (!string.IsNullOrEmpty(a.ArmorType)) bt.ArmorType = ParseArmorType(a.ArmorType);
+                    if (a.Slots.Count > 0)
+                    {
+                        bt.FirstPersonFlags = default;
+                        foreach (var slot in a.Slots)
+                            if (Enum.TryParse<BipedObjectFlag>(slot, ignoreCase: true, out var f)) bt.FirstPersonFlags |= f;
+                            else Warn($"  ! armor '{a.EditorId}' unknown slot '{slot}' (e.g. Body, Head, Hands, Feet, Forearms, Calves, Shield)");
+                    }
                     r.BodyTemplate = bt;
                 }
                 // External-resource pipeline: a `model` path overrides the cloned ground/world model .nif.
