@@ -141,9 +141,12 @@ public class VendorTests
     public void Shopkeeper_IsConversable_HasHello()
     {
         var result = Generator.Build(VendorSpecFixture(), Key);
-        // A greeting-only NPC gets an auto Hello topic (Misc/Hello) under a StartGameEnabled quest.
+        // A greeting-only NPC gets an auto Hello topic (Misc/Hello) under a StartGameEnabled
+        // "<npc>_GreetQuest" quest; the topic EditorID is "<npc>_<quest>_Hello" (quest-qualified
+        // since 2d8ab96 to avoid name collisions when an NPC speaks in multiple quests).
+        const string npc = "MF_Shopkeeper";
         var hello = Assert.Single(
-            result.Mod.DialogTopics, t => t.EditorID == "MF_Shopkeeper_Hello");
+            result.Mod.DialogTopics, t => t.EditorID == $"{npc}_{npc}_GreetQuest_Hello");
         Assert.Equal(DialogTopic.SubtypeEnum.Hello, hello.Subtype);
     }
 
