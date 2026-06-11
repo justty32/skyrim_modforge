@@ -17,7 +17,7 @@
 
 **Scene 前提**：Scene 的 Actor 必須是同 Quest 的 Alias（`ForceRefTo()` 填入；注意死亡/解散/未載入時的釋放）；輪詢用 `RegisterForSingleUpdate` 鏈式（勿用 OnUpdate 持續循環——存檔膨脹）。
 
-**語音前提（所有對話想法共通）**：Skyrim 無語音檔的台詞字幕一閃即過。預設假設玩家裝 **Fuz Ro D'oh**；要讓新台詞像「本人」說的需 AI 語音合成（xVASynth voice cloning / ElevenLabs），屬之後的工作流，不在 ModForge 本體。
+**語音前提（所有對話想法共通）**：Skyrim 無語音檔的台詞字幕一閃即過。無語音時預設假設玩家裝 **Fuz Ro D'oh**。AI 語音合成（voice cloning）**已落地進 ModForge 本體（2026-06-10 起，進行中）**——spec `voiceTemplates[]`（f5 zero-shot / 微調 clone）+ `npcs[].voiceTemplate` + `voicelines` CLI（TTS → xwm → .fuz，含 .lip），見 `SPEC-workflow.md § Voice`。
 
 ---
 

@@ -106,6 +106,8 @@
 | Validate | `Generator.Validate.Quests.cs` | speaker NPC ref、quest ref、condition function |
 | Diag | `Diagnostics.Dialogue.cs` | topic / INFO / condition / result-script dump |
 
+> **Voice 註**：dialogue / banter / scene 的 INFO 現在全部補上 EditorID（語音管線 `voicelines` 的 CK 檔名需要 quest/topic EditorID，INFO EditorID 供追蹤）——管線本體見 [CODE_MAP.infra.md](CODE_MAP.infra.md)「語音克隆」段。
+
 ---
 
 ## Banter 隨機台詞

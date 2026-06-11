@@ -21,6 +21,8 @@
 |---------|-----|
 | `ValidateTests.cs` | 跨領域 validate（editorId 唯一性、ref 合法性等通用規則）|
 | `SeqFileTests.cs` | `.seq` manifest 生成（StartGameEnabled quest 列表）|
+| `VoiceTests.cs` | `VoiceFileName` CK 命名格式、`WriteFuz` header（含無 lip 情形）|
+| `VoiceSpeakerTests.cs` | `voicelines` speaker 偵測（GetIsID / alias / faction 條件解析）|
 | `Helpers.cs` | 共用測試 helper（非 test class，供其他 *Tests.cs 使用）|
 
 ---
@@ -42,7 +44,7 @@
 | 層次 | 檔案 | 命令 |
 |-----|-----|-----|
 | CLI | `Program.cs` | `gen` / `find` / diagnostic dispatcher；`ReadSpec` JSON 反序列化 |
-| CLI | `Program.Build.cs` | `build` / `validate` / `package` / `compile` |
+| CLI | `Program.Build.cs` | `build` / `validate` / `package` / `compile` / `voicelines` / `extract-voices` |
 | CLI | `Program.Translate.cs` | `extract` / `apply` / `applyloc` |
 | CLI | `Package.cs` | `package` 完整流程：Papyrus 編譯 + Assets 複製 + MO2 資料夾組裝 |
 
@@ -91,6 +93,23 @@
 |-----|-----|-----|
 | Core | `Assets.cs` | 複製 Meshes/Textures/Sounds 樹到輸出目錄 |
 | CLI | `Package.cs` | 完整 MO2 資料夾組裝（plugin + assets + scripts + seq）|
+
+---
+
+## 語音克隆（TTS → .fuz）
+→ **說明文件**：[SPEC-workflow.md § Voice](SPEC-workflow.md#voice-tts-voice-cloning--fuz)
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.Voice.cs` | `VoiceTemplateSpec`（`engine` f5\|chatterbox\|gptsovits\|xtts——**僅 f5 有實作**、`referenceWav`/`referenceText` zero-shot reference、`modelPath` 微調模型、`rvcModel`、`seed`、`speed`、`exaggeration`、`language`）+ `VoiceLineSpec` 全域輸出設定（`format` fuz\|wav\|xwm、`skipLip`）；`NpcSpec.voiceTemplate`（→ template id）在 `Spec.Actors.cs` |
+| Core | `Voice.cs` | 呼外部 TTS（`MODFORGE_TTS_BIN`；engine/ref/model/seed/**speed/exaggeration/language** 全數傳給 TTS process）；xWMAEncode（`MODFORGE_XWMAENCODE`）與 FaceFXWrapper lip 生成（`MODFORGE_FACEFX` + `MODFORGE_FONIXDATA`）走 Wine |
+| Core | `Fuz.cs` | `.fuz` 容器拆解（FUZE header → lip + audio；audio ext 自動偵測 xwm/wav）|
+| Core | `Generator.Build.Voice.cs` | `WriteFuz`（lip + audio 打包成 .fuz）+ `VoiceFileName` CK 命名（`quest10_topic15_formid8_n.fuz`：quest EditorID 前 10 字 + topic EditorID 前 15 字 + INFO FormID hex8 + response 序號）|
+| Core | `Archives.cs` | Mutagen 讀 BSA/BA2（extract + path filter；`extract-voices` 用）|
+| Validate | `Generator.Validate.Voice.cs` | template id 非空 / engine 枚舉 / `npc.voiceTemplate` ref 存在 / `voiceLine.format` 枚舉；已掛進 `Validate` |
+| CLI | `Program.Build.cs` | `voicelines <spec> <esp>`：走訪建好 esp 的 INFO → 從條件找 speaker（GetIsID + **alias / faction 條件**；解不出 speaker → **loud warning**，不靜默 skip）→ WAV→xwm→fuz 寫到 `Sound/Voice/<plugin>/<voiceType>/`（已存在的檔 skip，無 hash cache）；**xwm 編碼失敗且 format=fuz → 改寫 loose `.wav` + warning（不把裸 WAV 包進 .fuz）**。`extract-voices <bsa> <voiceType> <outDir>`：抽 vanilla .fuz → ffmpeg 轉 wav（做 reference clip）|
+
+環境變數：`MODFORGE_TTS_BIN`（TTS wrapper，必要）、`MODFORGE_XWMAENCODE`、`MODFORGE_FACEFX`、`MODFORGE_FONIXDATA`（後三者 Wine 路徑，缺則退化：無 xwm / 無 lip）。
 
 ---
 

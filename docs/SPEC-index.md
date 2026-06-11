@@ -10,7 +10,7 @@ The spec is a JSON file → `.esp` plugin. Choose a topic:
 | [SPEC-world](SPEC-world.md) | Cells & placements, worldspaces & regions, leveled lists, encounter zones, vendors |
 | [SPEC-items](SPEC-items.md) | Recipes (COBJ), perks, external assets (meshes/sounds), texture sets (TXST) |
 | [SPEC-packages](SPEC-packages.md) | AI packages (Sandbox/Travel/UseMagic/Follow/Sleep/Patrol/Escort), weathers & climates |
-| [SPEC-workflow](SPEC-workflow.md) | CLI workflow (`validate` / `build` / `package`) + not-yet-covered features |
+| [SPEC-workflow](SPEC-workflow.md) | CLI workflow (`validate` / `build` / `package`), voice cloning pipeline (`voicelines` / `extract-voices`) + not-yet-covered features |
 
 Quick CLI reference:
 ```bash
