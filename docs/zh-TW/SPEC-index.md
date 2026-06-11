@@ -10,7 +10,7 @@
 | [SPEC-world](SPEC-world.md) | Cells 與放置、世界空間與地區、等級列表、遭遇區域、商販 |
 | [SPEC-items](SPEC-items.md) | 配方（COBJ）、特技、外部資源（網格/音效）、材質集（TXST） |
 | [SPEC-packages](SPEC-packages.md) | AI 套件（Sandbox/Travel/UseMagic/Follow/Sleep/Patrol/Escort）、天氣與氣候 |
-| [SPEC-workflow](SPEC-workflow.md) | CLI 工作流程（`validate` / `build` / `package`）+ 尚未涵蓋的功能 |
+| [SPEC-workflow](SPEC-workflow.md) | CLI 工作流程（`validate` / `build` / `package`）、語音克隆管線（`voicelines` / `extract-voices`）+ 尚未涵蓋的功能 |
 
 快速 CLI 參考：
 ```bash

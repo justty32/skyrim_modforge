@@ -59,6 +59,150 @@ LIGT 基底 radius 預設 256，fade 預設 1.0。使用 `Dynamic` 讓它照亮�
 （0..255）與 radius > 0。（獨立燈光沒有模型——若要可見的*燈具*，再放置一個原版火炬/燈籠
 靜態物件，或將燈光附在火炬物件上攜帶。）
 
+### lighting（光照）
+Skyrim 的室內昏暗是*創作選擇*，不是引擎限制——光照幾乎完全是記錄層的事。三種記錄類型協同
+運作：
+
+- **LGTM（LightingTemplate）** — 可複用的室內環境光/方向光/霧 + DALC 設定。
+- **IMGS（ImageSpace）** — 螢幕空間 HDR 眼睛適應、bloom、電影感色彩與 tint。
+- **Inline XCLL** — 逐 cell 覆寫特定光照欄位（其餘從 LGTM 繼承）。
+
+```jsonc
+"lightingTemplates": [
+  { "editorId": "MF_BrightCaveLGTM",
+    "template": "Skyrim.esm:0x0300E2",         // DeepCopy DefaultLightingTemplate 當基底
+    "ambientColor":     { "r": 150, "g": 155, "b": 170 },
+    "directionalColor": { "r": 210, "g": 210, "b": 200 },
+    "fogNear": 0, "fogFar": 8192,
+    "directionalAmbient": {                    // DALC — 六方向半球補光
+      "scale": 1.0,
+      "zPlus":  { "r": 200, "g": 205, "b": 215 },
+      "zMinus": { "r": 120, "g": 122, "b": 130 },
+      "xPlus":  { "r": 170, "g": 172, "b": 180 },
+      "xMinus": { "r": 170, "g": 172, "b": 180 },
+      "yPlus":  { "r": 170, "g": 172, "b": 180 },
+      "yMinus": { "r": 170, "g": 172, "b": 180 } } }
+],
+"imageSpaces": [
+  { "editorId": "MF_BrightIMGS",              // 無 template — 從引擎預設起（見下方陷阱）
+    "brightness": 1.35, "saturation": 1.2, "contrast": 1.0,
+    "bloomScale": 0.8, "sunlightScale": 1.2, "white": 1.5 }
+],
+"cells": [
+  { "editorId": "MF_BrightRoom", "name": "Bright Test Room",
+    "template": "Skyrim.esm:0x0165A8",         // 抄 Breezehome env 當結構基底
+    "lightingTemplate": "MF_BrightCaveLGTM",  // spec 內 LGTM editorId（或 "Skyrim.esm:0xFORMID"）
+    "imageSpace": "MF_BrightIMGS" }            // spec 內 IMGS editorId（或 "Skyrim.esm:0xFORMID"）
+]
+```
+
+**創作模型——template-copy + override。** 在 LGTM 或 IMGS 上設 `template` 為某原版記錄
+`"<master>:0xFORMID"`；它會被 DeepCopy 當基底，然後僅你指定的欄位覆寫它（所有欄位皆為選用；
+省略某欄即保留原版值）。無 `template` → 引擎中性預設（空白 IMGS 的 HDR 欄位全為 0——見下方
+陷阱）。
+
+**LGTM 欄位**（`lightingTemplates[]`）：
+`editorId`、`template`（原版 LGTM ref）；顏色 `ambientColor` / `directionalColor` /
+`fogNearColor` / `fogFarColor`（RGB 0..255）；浮點 `directionalRotationXY` /
+`directionalRotationZ` / `directionalFade` / `fogNear` / `fogFar` / `fogMax` /
+`fogClipDistance` / `fogPower` / `lightFadeStart` / `lightFadeEnd`；`directionalAmbient`
+（DALC，見下）。
+
+**DALC — `directionalAmbient`**（`AmbientColorsSpec`）：六方向半球補光——`xPlus` / `xMinus` /
+`yPlus` / `yMinus` / `zPlus` / `zMinus` + `specular`（皆 `ColorSpec`）與 `scale`（float）。
+Skyrim 沒有全域光照；DALC 是從各方向打亮昏暗房間的環境補光的實用替代品。在 LGTM 上對應到
+`DirectionalAmbientColors`；在 inline CELL XCLL 上對應到 `AmbientColors`（不同 Mutagen 欄位、
+相同資料）。
+
+**IMGS 欄位**（`imageSpaces[]`）：
+`editorId`、`template`（原版 IMGS ref）；
+HDR：`eyeAdaptSpeed` / `eyeAdaptStrength` / `bloomBlurRadius` / `bloomThreshold` /
+`bloomScale` / `receiveBloomThreshold` / `white` / `sunlightScale` / `skyScale`；
+電影感（1 = 中性）：`brightness` / `contrast` / `saturation`；
+Tint：`tintAmount` / `tintColor`（ColorSpec）。「明亮、乾淨、飽和」的觀感大半來自 IMGS
+（拉高 `brightness`、`saturation`，降低 `bloomThreshold`）。
+
+**CELL 光照欄位**（在 `cells[]` 條目上）：
+- `lightingTemplate` — spec 內 LGTM `editorId` **或**原版 `"<master>:0xFORMID"` LGTM ref。
+- `imageSpace` — spec 內 IMGS `editorId` **或**原版 `"<master>:0xFORMID"` IMGS ref。
+- `lighting` — inline `CellLightingSpec`：與 LGTM 相同的顏色/霧/fade 欄位（注意：CELL 用
+  `lightFadeBegin`/`lightFadeEnd`，不是 `lightFadeStart`/`lightFadeEnd`）加上
+  `directionalAmbient`（DALC → `AmbientColors`）與 `inherit`（下方旗標名稱清單）。
+
+**繼承旗標規則。** 室內 CELL 必須帶一個 XCLL 記錄，否則會渲染成全黑。`lighting.inherit` 清單
+指名哪些欄位改從 `lightingTemplate` 拉、而非用 inline XCLL。合法旗標名稱：`AmbientColor` /
+`DirectionalColor` / `FogColor` / `FogNear` / `FogFar` / `DirectionalRotation` /
+`DirectionalFade` / `ClipDistance` / `FogPower` / `FogMax` / `LightFadeDistances`。
+特殊情況：
+- 無 inline `lighting` **且**有設 `lightingTemplate` → cell 繼承**所有**旗標（完全由 template
+  驅動；build 會寫出一個每個繼承旗標都設起的 XCLL）。
+- 某欄位 inline 設了又列進 `inherit` → template 勝出（會警告）。
+
+**IMAD vs IMGS。** `imageSpaces[]` 產生 IMGS *base* 記錄（HDR/電影感/tint，掛在 CELL 上）。
+既有的 `imageSpaceModifiers[]`（IMAD）是由法術/腳本觸發的螢幕後處理曲線——不同記錄、不同工作
+流程。
+
+**與 `cells[].template` 共存。** 既有的 `template` 欄位（抄整個原版室內的光照/水體 env 當結構
+基底）仍可用；`lightingTemplate` / `imageSpace` / `lighting` 再疊在其上，精確覆寫你在意的
+欄位。
+
+**陷阱——空白 IMGS。** 一個沒有 `template` 的全新 IMGS 從引擎零值 HDR 起（`bloomThreshold`、
+`eyeAdaptSpeed`、`white` 全為 0），結果是過亮或泛白的觀感。為了合理外觀，建議給 IMGS 一個
+原版 `template`（如 `Skyrim.esm:0x1A27E0` `DefaultImageSpace`）再只調你想要的欄位，而非從零
+創作 HDR。用 `imgsdiag <Skyrim.esm>` 列出原版 IMGS 記錄與其值。
+
+**診斷。**
+- `lgtmdiag <esp> [0xFORMID]` — dump 某 LightingTemplate 的環境光/方向光/霧顏色 + DALC。無
+  FormID = 列出檔案中所有 LGTM。用來驗證 build 結果，或在拿某原版 template 當 `template` 前先
+  讀它的值。
+- `imgsdiag <esp> [0xFORMID]` — dump 某 ImageSpace 的 HDR / 電影感 / tint。無 FormID 時同樣
+  列出全部。
+
+範例：`examples/lighting.json`（明亮室內：自訂 LGTM + IMGS、cell 用 template 驅動光照、DALC
+半球補光）。
+
+**室外 / 天氣 IMGS。** 上述 LGTM + CELL XCLL 路徑**僅限室內**。室外的環境光來自 Weather 記錄
+自己的天空/陽光/環境光顏色通道（`WeatherSpec` 的 `skyUpperColor` / `sunlightColor` /
+`ambientColor` 各時段欄位——已支援）。室外的螢幕空間色彩分級走另一套機制：Weather 記錄的各
+時段 **ImageSpace** 槽。透過 `weathers[].imageSpaces` 設定：
+
+```jsonc
+"imageSpaces": [
+  { "editorId": "MF_OutdoorBrightIMGS", "template": "Skyrim.esm:0x012F88",
+    "brightness": 1.1, "saturation": 1.25, "bloomScale": 0.9, "sunlightScale": 1.2, "skyScale": 0.12 }
+],
+"weathers": [
+  { "editorId": "MF_BrightWeather",
+    "template": "Skyrim.esm:0x10E1F2",                       // SkyrimClear_A — 繼承雲 + 調過的天空
+    "imageSpaces": { "default": "MF_OutdoorBrightIMGS" } }   // default 補滿全部四個時段
+]
+```
+
+`weathers[].imageSpaces` 欄位：`default`（補滿任何未設的時段）、`sunrise`、`day`、`sunset`、
+`night`。每個值是 spec 內 `imageSpaces[]` editorId **或**原版 `"<master>:0xFORMID"` IMGS ref。
+單一 `default` 即足以對全部四個時段一致分級。
+
+**Weather `template`（雲！）。** 一個**從零建的天氣完全沒有雲**（且只有基礎天空色）——天空是
+一片扁平的空漸層。把 `weathers[].template` 設為某原版天氣 `"<master>:0xFORMID"`（如
+`Skyrim.esm:0x10E1F2` = SkyrimClear_A）：克隆會繼承它的雲層 + 雲貼圖 + 各時段天空/陽光/環境光
+顏色 + 大氣，然後你**只**覆寫你設的（顏色留 null 即保留 template 的；空 `clouds` 清單即保留
+template 的雲）。這是建議的室外基底：抄一個原版晴天天氣以得到正確的多雲天空，再透過
+`imageSpaces` 推動螢幕分級。兩個調節桿保持獨立——**天空亮度** = 天氣的 `skyUpperColor`/
+`skyLowerColor` + IMGS 的 `skyScale`；**地面/場景** = `sunlightScale` + 天氣的 `ambientColor`。
+
+> **注意：** LGTM / CELL 路徑**不適用**室外 cell——不要把 `lightingTemplate` 或 `imageSpace`
+> 直接掛在天氣上。天氣自己的顏色欄位驅動室外環境光；天氣上的 IMGS 驅動螢幕空間
+> HDR/bloom/飽和度。
+
+**遊戲內測試（非侵入）。** `fw <weatherFormID>`（ForceWeather）立即啟用該天氣，無需編輯任何
+氣候或世界空間。用 `find <esp> MF_BrightWeather Weather` 找到 FormID，把 hex FormID 傳給
+console 的 `fw`（如 ESL 槽用 `fw 0800`）。用 `weatherdiag <esp> <0xFormID>` 驗證 IMGS 已接線
+——`ImageSpaces` 那行必須對全部四個時段顯示自訂 IMGS 的 FormKey。測視覺結果無需指派
+氣候/世界空間。
+
+範例：`examples/weather_bright.json`（透過 `imageSpaces.default` 的室外 IMGS 分級）。
+交叉參照：見上方室內 **lighting（光照）** 子節的 LGTM / CELL / XCLL。
+
 ### worldspaces（WRLD）與 regions（REGN）— 室外世界與天氣
 建立一個**新的**室外世界空間並附加氣候，並定義 **regions**（世界空間內的區域），其
 **天氣表**決定該處播放哪種天氣：
