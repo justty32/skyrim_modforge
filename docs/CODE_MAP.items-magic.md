@@ -27,6 +27,7 @@
 
 | 測試檔案 | 涵蓋 |
 |---------|-----|
+| `WeaponTests.cs` | templated weapon 傷害：未給傷害保留 template 值 / 顯式傷害覆寫 |
 | `MagicFxTests.cs` | Projectile + Explosion build（scalar + ref 解析 + enum/flag + validate）|
 | `EnchantmentTests.cs` | ENCH scalar fields + effect ref 接線 |
 | `ExternalAssetTests.cs` | external asset 打包（Meshes/Textures/Sounds 複製）|
@@ -45,8 +46,9 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Items.cs` | `WeaponSpec`, `ArmorSpec`, `BookSpec`, `MiscSpec` |
+| Spec | `Spec.Items.cs` | `WeaponSpec`, `ArmorSpec`, `BookSpec`, `MiscSpec`, `MessageSpec`（MESG：editorId/name/description）|
 | Build P1 | `Generator.Build.Items.cs` | 建 Misc/Book/Weapon record（template cloning + base property defaults）|
+| Build P1 | `Generator.Build.Messages.cs` | 建 Message (MESG) record（player-facing message box / notification；無 FormLink、純 pass-1；可被 perk/script 以 editorId 引用，pass-2 解）|
 | Validate | `Generator.Validate.Items.cs` | template ref、keyword ref、enchantment ref |
 | Diag | `Diagnostics.Records.cs` | Weapon/Armor 詳細欄位 dump |
 

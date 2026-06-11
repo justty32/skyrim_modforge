@@ -45,7 +45,7 @@ CLI（Program.cs）
 | 修改 SM build 邏輯 | `src/ModForge.Core/Generator.Build.StoryManager.cs` |
 | 修改對話 build | `src/ModForge.Core/Generator.Build.Dialogue.cs` |
 | 修改條件邏輯 | `src/ModForge.Core/Generator.Build.Conditions.cs` |
-| 修改驗證規則 | `src/ModForge.Core/Generator.Validate.Quests.cs` / `Validate.StoryManager.cs` |
+| 修改驗證規則 | `src/ModForge.Core/Generator.Validate.Quests.cs` / `Generator.Validate.StoryManager.cs` |
 | 修改 CLI 命令 | `src/ModForge.Cli/Program.cs` / `Program.Build.cs` |
 | 修改 dump 輸出 | `src/ModForge.Cli/Diagnostics.*.cs`（對應領域） |
 | 新增 Spec 欄位 | `src/ModForge.Core/Spec.Dialogue.cs` 或對應 `Spec.*.cs` |
