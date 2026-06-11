@@ -14,6 +14,7 @@ public sealed class NpcSpec
     public bool AutoCalcStats { get; set; }        // derive H/M/S + skills from level + class (else flat defaults)
     public List<string> Packages { get; set; } = new(); // refs to PACK records (in-spec or external) — assigned to this NPC's package list
     public string VoiceType { get; set; } = "";      // ref → VTYP (e.g. Skyrim.esm:0x013AE6 = MaleNord); without one, NPC is silent (no hello/idle chatter)
+    public string VoiceTemplate { get; set; } = "";   // ref → voiceTemplates ID; routes this NPC's lines to a cloning engine
     public string CrimeFaction { get; set; } = "";   // ref → FACT (e.g. Skyrim.esm:0x0267EA = CrimeFactionWhiterun); marks the NPC as a member of a city's crime/citizen circle — grants city-traversal rights (without it, cross-cell Travel through city gates is silently rejected)
     public bool Unique { get; set; }                  // Configuration.Flag.Unique — engine treats the actor as a one-off (vs leveled spawn); seems to matter for AI tracking + cross-cell travel
     public bool Essential { get; set; }               // Configuration.Flag.Essential — cannot be killed (drops to bleedout then recovers); use for a non-lethal brawl or a plot-critical NPC

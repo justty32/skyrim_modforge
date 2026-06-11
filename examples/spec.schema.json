@@ -389,6 +389,15 @@
       "type": "array",
       "items": { "$ref": "#/$defs/identity" },
       "description": "Lightweight identity/class system: each identity is a FACT (held signal) + priority + optional grants/acquire. Gate dialogue with identity/primaryIdentity; acquire via a book's OnRead."
+    },
+    "voiceTemplates": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/voiceTemplate" },
+      "description": "named voice recipes for cloning (Spec.Voice.cs)"
+    },
+    "voiceLine": {
+      "$ref": "#/$defs/voiceLine",
+      "description": "global voice output settings"
     }
   },
   "additionalProperties": false,
@@ -1200,6 +1209,10 @@
         "voiceType": {
           "$ref": "#/$defs/ref",
           "description": "VTYP ref (e.g. MaleNord Skyrim.esm:0x013AE6); without one the NPC is silent"
+        },
+        "voiceTemplate": {
+          "type": "string",
+          "description": "ref → voiceTemplates ID; routes this NPC's lines to a cloning engine"
         },
         "crimeFaction": {
           "$ref": "#/$defs/ref",
@@ -4148,6 +4161,66 @@
             ]
           },
           "description": "field-flag names still inherited from the lightingTemplate (template wins); a field both set inline and listed here is inherited + warned"
+        }
+      }
+    },
+    "voiceTemplate": {
+      "type": "object",
+      "required": [ "id" ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "engine": {
+          "type": "string",
+          "enum": [ "f5", "chatterbox", "gptsovits", "xtts" ],
+          "default": "f5"
+        },
+        "referenceWav": {
+          "type": "string",
+          "description": "path to a zero-shot reference clip (rel. to spec)"
+        },
+        "referenceText": {
+          "type": "string",
+          "description": "required transcript for some engines (f5)"
+        },
+        "modelPath": {
+          "type": "string",
+          "description": "optional: path to a fine-tuned model directory"
+        },
+        "rvcModel": {
+          "type": "string",
+          "description": "optional: path to an RVC model for timbre stabilization"
+        },
+        "language": {
+          "type": "string",
+          "default": "en",
+          "description": "TTS language hint forwarded to the engine (engines that infer it from the reference ignore this)"
+        },
+        "seed": {
+          "type": "integer",
+          "description": "for deterministic output"
+        },
+        "exaggeration": {
+          "type": "number",
+          "description": "engine-specific emotion scale; omitted = engine default (f5 ignores it)"
+        },
+        "speed": {
+          "type": "number",
+          "description": "playback speed adjustment (e.g. 0.8 = slower); omitted = engine default"
+        }
+      }
+    },
+    "voiceLine": {
+      "type": "object",
+      "properties": {
+        "skipLip": {
+          "type": "boolean",
+          "default": false,
+          "description": "true = emit zero-size .lip (static mouth)"
+        },
+        "format": {
+          "type": "string",
+          "enum": [ "fuz", "wav", "xwm" ],
+          "default": "fuz"
         }
       }
     }

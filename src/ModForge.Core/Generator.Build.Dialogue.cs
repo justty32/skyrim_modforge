@@ -38,6 +38,7 @@ public static partial class Generator
                 {
                     var hinfo = new DialogResponses(mod)
                     {
+                        EditorID = d.EditorId,
                         Flags = new DialogResponseFlags { Flags = d.Goodbye ? DialogResponses.Flag.Goodbye : default },
                         FavorLevel = FavorLevel.None,
                     };
@@ -93,6 +94,7 @@ public static partial class Generator
                 // invalid is silently dropped from the menu (so the topic never appears at all).
                 var info = new DialogResponses(mod)
                 {
+                    EditorID = d.EditorId,
                     // Goodbye (DialogResponses.Flag, not the per-line DialogResponse.Flag) closes the menu
                     // after the line — set for recruit/dismiss-style lines that carry a result fragment.
                     Flags = new DialogResponseFlags { Flags = d.Goodbye ? DialogResponses.Flag.Goodbye : default },

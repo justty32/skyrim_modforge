@@ -1,3 +1,10 @@
+using System.Diagnostics;
+using System.Text.Json;
+using Mutagen.Bethesda;
+using Mutagen.Bethesda.Plugins;
+using Mutagen.Bethesda.Skyrim;
+using ModForge;
+
 internal static partial class Program
 {
     // -------------------------------------------------------------------------------
@@ -32,6 +39,9 @@ internal static partial class Program
         if (quests.Count > 0)
             Console.WriteLine($"wrote Seq/{Path.GetFileNameWithoutExtension(espPath)}.seq ({quests.Count} start-game-enabled quest(s) — needed for dialogue on existing saves)");
     }
+
+    // voicelines / extract-voices — see Program.Build.Voice.cs (speaker resolution lives in
+    // ModForge.Core: Generator.ResolveVoiceSpeakers / SelectVoiceTargets / PackVoiceAudio).
 
     private static string BuildSummary(BuildStats s, string specPath, string outPath) =>
         $"built {outPath} from {Path.GetFileName(specPath)} " +

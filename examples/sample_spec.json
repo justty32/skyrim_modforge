@@ -19,7 +19,12 @@
       "race": "Skyrim.esm:0x013746",
       "class": "Skyrim.esm:0x013257",
       "outfit": "Skyrim.esm:0x057C4C",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "voiceTemplate": "MF_SmithVoice",
       "factions": ["MF_Guild", "Skyrim.esm:0x0267EA"] }
+  ],
+  "voiceTemplates": [
+    { "id": "MF_SmithVoice", "engine": "f5", "referenceWav": "refs/smith_ref.wav" }
   ],
   "quests": [
     { "editorId": "MF_Q1", "name": "A Forged Errand",

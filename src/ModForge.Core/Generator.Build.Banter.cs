@@ -37,6 +37,7 @@ public static partial class Generator
                 // Random (ENAM) lets the engine random-pick among idle INFOs whose conditions pass; CNAM via FavorLevel.
                 var info = new DialogResponses(mod)
                 {
+                    EditorID = string.IsNullOrEmpty(b.EditorId) ? $"Banter_{b.QuestEditorId}_{b.SpeakerNpcEditorId}_{idx}" : b.EditorId,
                     Flags = new DialogResponseFlags { Flags = DialogResponses.Flag.Random },
                     FavorLevel = FavorLevel.None,
                 };

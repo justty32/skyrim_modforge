@@ -18,6 +18,8 @@ internal static partial class Program
             {
                 case "gen" when args.Length == 2:      GenCmd(args[1]); return 0;
                 case "build" when args.Length == 3:    BuildCmd(args[1], args[2]); return 0;
+                case "voicelines" when args.Length == 3: return VoicelinesCmd(args[1], args[2]);
+                case "extract-voices" when args.Length == 4: return ExtractVoicesCmd(args[1], args[2], args[3]);
                 case "compile" when args.Length == 3:  return CompileCmd(args[1], args[2]);
                 case "package" when args.Length == 3:  return PackageCmd(args[1], args[2], null);
                 case "package" when args.Length == 5 && args[3] == "--assets": return PackageCmd(args[1], args[2], args[4]);
@@ -72,6 +74,8 @@ internal static partial class Program
         "ModForge.Cli\n" +
         "  gen     <out.esp>\n" +
         "  build   <spec.json> <out.esp>\n" +
+        "  voicelines <spec.json> <built.esp>          generate .fuz/.wav from dialogue records\n" +
+        "  extract-voices <bsaPath> <voiceType> <outDir> extract + convert vanilla voices to WAV\n" +
         "  compile <script.psc> <outDir>\n" +
         "  package <spec.json> <outModDir> [--assets <dir>]   esp + scripts + bundled Meshes/Textures/Sounds\n" +
         "  validate <spec.json>\n" +

@@ -27,6 +27,7 @@ public static partial class Generator
         ctx.ValidateExplosions();
         ctx.ValidateImageSpaceModifiers();
         ctx.ValidateIdentities();
+        ctx.ValidateVoice();
         ValidateWeather(spec, ctx.Problems, ctx.Ids, ctx.CheckRef);
         ValidateLights(spec, ctx.Problems);
         ValidateLighting(spec, ctx.Problems);

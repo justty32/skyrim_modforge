@@ -93,7 +93,12 @@ public static partial class Generator
                     topic.SubtypeName = new RecordType("SCEN");
                     topic.Priority = 50f;   // no Branch — scene topics aren't player menu options
 
-                    var info = new DialogResponses(mod) { Flags = new DialogResponseFlags(), FavorLevel = FavorLevel.None };
+                    var info = new DialogResponses(mod)
+                    {
+                        EditorID = topic.EditorID,
+                        Flags = new DialogResponseFlags(),
+                        FavorLevel = FavorLevel.None
+                    };
                     var emotion = Enum.TryParse<Emotion>(ph.Emotion, ignoreCase: true, out var em) ? em : Emotion.Neutral;
                     byte rn = 1;
                     foreach (var line in ph.Lines)
