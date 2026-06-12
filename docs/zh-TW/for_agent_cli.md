@@ -24,6 +24,9 @@ R="dotnet run --project src/ModForge.Cli --no-build --"       # then drive it fa
 $R validate <spec.json>                      # ALWAYS run first; exits non-zero + lists problems
 $R build    <spec.json> <out.esp>            # spec -> plugin (records, dialogue, FormLinks, VMAD)
 $R package  <spec.json> <outModDir>          # build + compile each script `source` -> MO2-ready folder
+$R voicediag <spec.json> <built.esp>         # offline: INFO -> speaker -> voiceType -> template -> expected voice path
+$R voicelines <spec.json> <built.esp> --plan # same plan without generating TTS
+$R voicelines <spec.json> <built.esp>        # generate Sound/Voice/<plugin>/<voiceType>/*.fuz|wav
 $R dump     <plugin.esp>                     # read back: records, names, npc race/class/outfit/factions, weapon/armor stats, effects, cells/placements, keywords, scripts, dialogue, objectives, masters
 $R find     <plugin.esp> <query> [type]      # search a master (e.g. Skyrim.esm) -> "Skyrim.esm:0xFORMID  Type  EditorID"
 $R compile  <script.psc> <outDir>            # .psc -> .pex via the CK PapyrusCompiler under Wine
@@ -58,6 +61,16 @@ $R find "$SKYRIM_ESM" tamriel Worldspace   # -> Skyrim.esm:0x00003C  Tamriel (ex
 3. 執行 `package spec.json OutDir`（或只需插件時用 `build spec.json out.esp`）。
 4. 執行 `dump OutDir/<pluginName>` 並**確認輸出符合需求**（名稱、派系成員、附加腳本 + 屬性數量、對話提示、任務目標）。
 5. 回報你所產生的內容，並如實說明哪些僅為結構性（見「限制」章節）。
+
+### Voice lines workflow
+
+Voice files 不是 plugin record，也不嵌入 ESP/ESM；Skyrim 讀取 loose path
+`Sound/Voice/<plugin>/<voiceType>/<quest>_<topic>_<infoFormId>_<response>.fuz|wav`。
+
+1. 在 spec 中設定 `voiceTemplates[]`，並讓 NPC 用 `voiceTemplate` 指向它；`voiceType` 決定資料夾名稱。
+2. `build` 或 `package` 產出 plugin 後，先跑 `voicediag` 或 `voicelines --plan`。這不需要 TTS，能在花 GPU 時間前抓 speaker/template/path 問題。
+3. 設定 `MODFORGE_TTS_BIN` 指向本機 `voicegen.py` wrapper。`engine: "f5"` 直接由 wrapper 生成；`engine: "fish-s2"` 會再轉呼 `MODFORGE_FISH_SPEECH_BIN`。`MODFORGE_XWMAENCODE` 指向 CK/DirectX 的 `xWMAEncode.exe`；`MODFORGE_FACEFX` + `MODFORGE_FONIXDATA` 用於 lip。
+4. 最穩的包裝順序是先 `package` 到最終 mod folder，再對該資料夾中的 plugin 跑 `voicelines`；或 `build` + `voicelines` 到 staging dir，再 `package --assets <stagingDir>`。
 
 ## 翻譯工作流程
 

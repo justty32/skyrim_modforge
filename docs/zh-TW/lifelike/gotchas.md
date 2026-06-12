@@ -40,7 +40,7 @@
 | **INFO 結果腳本在 `OnEnd` 觸發，但階段不推進**（NPC 說話、字幕顯示，但 `sqv` 顯示階段未變） | 原版 CK 對推進任務的對話使用 **`OnBegin`**，而非 `OnEnd`。`OnEnd` 在完整回應鏈播完後才觸發，而對未配音的自訂 NPC，「結束」可能永遠不會乾淨地註冊 | 在 `DialogResponsesAdapter` 中使用 **`OnBegin`**（在玩家選取台詞的瞬間、NPC 說話之前觸發）。`Generator.Build.Scripts.cs`：`OnBegin = new ScriptFragment { … }`。`OnEnd` 本身並非錯誤，但對未配音台詞不可靠；對任務推進片段而言 OnBegin 才正確 |
 | **玩家選過後，NPC 持續提供相同對話台詞**（推進階段的台詞在每次對話都重新出現） | 沒有 `GetStage` 條件限制該台詞——它不論目前任務階段為何都顯示 | INFO 上的 `GetStage(quest) < setStage` 條件可在任務到達該階段後隱藏它。`package` 現在會為每個 `setStage` 對話台詞**自動加入**此條件（`Generator.Build.Conditions.cs` 的 `WireDialogueConditions`）。若手工撰寫 `resultScript`，請自行為 INFO 的 `conditions[]` 加上 `GetStage < N` |
 | 放置在場景原點 **(0,0,0)** 的無套件 NPC 無法被到達/交談——你最後會啟動附近的原版 NPC 而非他 | (0,0,0) 是場景原點，通常在牆壁內 / 在角落的導航網格之外。It.16-22 的 NPC 從 (0,0,0)「能用」只是因為他們的 Travel/Sandbox 套件立刻把他們走上導航網格；站立（無套件）的 NPC 就只是卡在那裡 | 放置在靠近原版 NPC 的真實室內座標（傾印場景的 ACHR 找出他們的座標）。Actor 會貼齊導航網格，所以任何合理的室內點都行——例如 Sleeping Giant Inn 公共區域 ≈ (-350,180,0) |
-| 自訂對話回應字幕一閃而過 / 難以閱讀（或 NPC 看起來沉默無聲） | 未配音台詞因（缺少的）語音檔而獲得約 0 秒的持續時間——Skyrim 一閃而過 | 安裝 **[Fuz Ro D-oh — Silent Voice](https://www.nexusmods.com/skyrimspecialedition/mods/15109)**（依文字長度為所有未配音台詞計算持續時間），**或**為每句台詞捆綁一個靜音 `.fuz`，路徑 `Sound/Voice/<plugin>/<voicetype>/<info>_<formid>.fuz`。同時開啟對話字幕 |
+| 自訂對話回應字幕一閃而過 / 難以閱讀（或 NPC 看起來沉默無聲） | 未配音台詞因（缺少的）語音檔而獲得約 0 秒的持續時間——Skyrim 一閃而過 | 安裝 **[Fuz Ro D-oh — Silent Voice](https://www.nexusmods.com/skyrimspecialedition/mods/15109)**（依文字長度為所有未配音台詞計算持續時間），或用 `voicediag` / `voicelines --plan` 確認路徑後，為每句台詞生成/捆綁 `.fuz` 或 `.wav`，路徑 `Sound/Voice/<plugin>/<voiceType>/<quest>_<topic>_<infoFormId>_<response>.fuz`。同時開啟對話字幕 |
 
 ## 場景、世界空間、光照
 

@@ -17,10 +17,17 @@ Both paths produce the same plugins and share the same field reference and limit
 - **Spec field reference (both paths):** [SPEC-index.md](SPEC-index.md) · complete example: `../examples/sample_spec.json`
 - **Making NPCs feel alive** (sandbox / daily life / combat / spell use): start with
   [lifelike/](lifelike/README.md) — recipe + two-systems insight + vanilla FormID reference + gotchas.
+- **Vanilla/DLC FormID lookup cache:** start with
+  [`../reference/INDEX-skyrim-masters-local.md`](../reference/INDEX-skyrim-masters-local.md) before
+  crawling the repo. It maps the local `Skyrim.esm`/DLC extraction outputs, cached `find/*.txt`
+  probes, `run-status.tsv`, `skyrim-smtree.txt`, and exact CLI commands for new lookups.
 - **The engine mechanics behind the generator:** [engine-internals.md](engine-internals.md).
 - **Bringing your OWN meshes / textures / sounds / animations** (custom-content mods): the
   external-resource contract — what ModForge references + bundles vs what you author elsewhere —
   is **[external_assets.md](external_assets.md)**.
+- **Voice generation for dialogue:** start with [SPEC-workflow.md § Voice](SPEC-workflow.md#voice-tts-voice-cloning--fuz)
+  and [CODE_MAP.infra.md § 語音克隆](CODE_MAP.infra.md#語音克隆tts--fuz). Always run
+  `voicediag` or `voicelines --plan` before spending time on TTS.
 
 ## Limits — be honest, do not over-claim
 
@@ -78,7 +85,10 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
 - **External/vanilla forms CAN be referenced** (race/class/outfit/keywords/factions/
   magicEffect/placement base+cell+worldspace/leveled+container entries, via `"<master>:0xFORMID"`).
 - **Dialogue** records are valid, but a line actually appearing in conversation can need
-  quest-flag/branch tuning, and there is **no voice** (subtitle only).
+  quest-flag/branch tuning. Voice is optional post-build asset generation: set `voiceType` and
+  `voiceTemplate`, build the plugin, run `voicediag`, then `voicelines`. The resulting files live in
+  `Sound/Voice/<plugin>/<voiceType>/`; they are not embedded in the plugin. Without generated voice
+  files, assume subtitle-only/Fuz Ro D-oh behavior.
 - **Story Manager (SM) event-driven quests:** add `storyEvent` + `aliases` to a quest and the
   build wires SMBN→SMQN automatically under the vanilla event root. Supported events:
   `KillActor`, `ChangeLocation`, `CastMagic`, `AddItem`, `Assault`, `CraftItem`,

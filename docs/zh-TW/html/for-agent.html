@@ -30,6 +30,7 @@
   <a class="nav-item" href="cookbook-npc-basics.html">食譜：基礎 NPC</a>
   <a class="nav-item" href="cookbook-followers.html">食譜：跟隨者</a>
   <a class="nav-item" href="cookbook-world-items.html">食譜：世界 · 物品</a>
+  <a class="nav-item" href="cookbook-presets.html">食譜：預設片段</a>
   <a class="nav-item" href="cookbook-magic.html">食譜：魔法</a>
   <a class="nav-item" href="cookbook-social-quest.html">食譜：社交 · 任務</a>
   <a class="nav-item" href="cookbook-advanced.html">食譜：進階</a>
@@ -54,6 +55,7 @@
 
 - **規格欄位參考（兩種路徑均適用）：** [SPEC-index.md](spec-index.html) · 完整範例：`../examples/sample_spec.json`
 - **讓 NPC 有生命力**（沙盒 / 日常生活 / 戰鬥 / 施法）：從 [lifelike/](lifelike.html) 開始 — 食譜 + 雙系統洞察 + 原版 FormID 參考 + 常見陷阱。
+- **對話語音生成：** built plugin 完成後，用 `voicediag` 或 `voicelines --plan` 先離線檢查 INFO→speaker→voiceType→輸出檔名，再用 `voicelines` 產生 `Sound/Voice/...` loose assets。詳見 [SPEC-workflow.md](spec-workflow.html)。
 - **產生器背後的引擎機制：** [engine-internals.md](engine-internals.html)。
 - **帶入您自己的網格 / 貼圖 / 音效 / 動畫**（自訂內容模組）：外部資源合約 — ModForge 所參考與打包的部分 vs. 您需要在別處製作的部分 — 詳見 **[external_assets.md](external-assets.html)**。
 
@@ -71,7 +73,7 @@ ModForge 輸出的是**結構有效**的記錄。這與**遊戲內可正常運�
 - **AI 行動套件（PACK）：** `packages` 賦予 NPC 決策層行為（「在某處沙盒」、「前往旅店」等）。Skyrim 的 PACK 使用一個原版**程序模板**（`template` *ref*，例如 `Skyrim.esm:0x01C254` = Sandbox）來定義資料輸入結構；套件再填入這些輸入。支援的模板：Sandbox / Travel / UseMagic / Patrol / Follow / Escort（見 [lifelike/formid-reference.md](formid-ref.html)）。`interruptFlags` 陣列（`HellosToPlayer`、`AllowIdleChatter`、`WorldInteractions`…）正是區分一座沉默雕像與一個生動 NPC 的關鍵。透過 `npcs[].packages` 把套件指派給一個角色。用 `packagediag <Skyrim.esm> <0xFORMID>` 傾印一個模板的插槽結構，或檢視任何套件。
 - **更多記錄類型**（相同的規格→建置→dump 模式）：`ingredients`（煉金，含 `effects`）、`ammunitions`（`damage`）、`scrolls`（`effects` + 施放欄位）、`soulGems`（`maximumCapacity`）、`keys`、`keywords`（定義你自己的 → 從任何記錄的 `keywords` 引用它）、`outfits`（物品 *ref*；一個 npc 的 `outfit` 可指向一個規格內的 outfit），以及 `statics`/`activators`（一個 `model` `.nif` 路徑 — 參考一個原版網格 — 作為放置基底）。
 - **可參考外部/原版表單**（race/class/outfit/keywords/factions/magicEffect/放置基底+cell+worldspace/分級+容器條目，透過 `"<master>:0xFORMID"`）。
-- **對話**記錄是有效的，但一條對話實際出現在對話中可能需要任務旗標/分支調整，且**沒有配音**（僅字幕）。
+- **對話**記錄是有效的，但一條對話實際出現在對話中可能需要任務旗標/分支調整。配音是 post-build loose asset workflow：沒有 voice files 時仍需字幕 / Fuz Ro D-oh；有 `voiceTemplates` + TTS wrapper 時可用 `voicelines` 生成 `.fuz`/`.wav`。
 - **Story Manager（SM）事件驅動任務：** 在一個任務中加入 `storyEvent` + `aliases`，建置時就會在原版事件根下自動配線 SMBN→SMQN。支援的事件：`KillActor`、`ChangeLocation`、`CastMagic`、`AddItem`、`Assault`、`CraftItem`、`PlayerRemoveItem`、`Arrest`、`IncreaseLevel`、`ScriptEvent`。別名填充：`fromEvent:<slot>`、`uniqueActor:<ref>`、`forced:<ref>`、`createObject:<ref>@<targetAlias>`（在另一個 alias 處生成一個指向 `<ref>` 的新 ref — 遊戲內確認 2026-06-05）、`findMatching:closest`|`findMatching:any`（以載入區域中最近/第一個符合該 alias `conditions` 的既有 ref 填充，例如最近的 NPC）。一個 alias 也可攜帶一段 Papyrus **alias 腳本**（`script`/`scriptSource`/`scriptProperties`，extends `ReferenceAlias`），它會跟著填入它的任何 ref 一起走 — 例如在一個 `createObject` 生成的 ref 上掛 `OnActivate` 以串接一個 story event（遊戲內確認 2026-06-05）。**遊戲內確認（2026-06-04）**，涵蓋所有變體模式包含 ESL 插件。見 SPEC-dialogue-quests.md → 「Story Manager quests」。
 - **SM 任務上的日誌推進：** 將一個 stage 標記為 `startUpStage:true`，引擎會在任務啟動的瞬間自動執行它，因此一個 SM 觸發的任務無需外部 `SetStage` 即可顯示其開場日誌條目 / 顯示其第一個目標。之後由一個玩家動作搭配一個 alias `script`（其 `OnActivate` 呼叫 `GetOwningQuest().SetStage(N)`）來完成/關閉它（可複用的 `examples/MFSE_AdvanceStage.psc`）。完整劇情弧示範：`examples/story-manager-queststage.json`（施法 → 顯示目標 + 生成箱子 → 開箱 → 完成目標 + 關閉任務）。遊戲內確認 2026-06-05。
 - **一般任務上的別名（無 `storyEvent`）：** `aliases[]` 區塊在一個普通的 StartGameEnabled 任務上也有效 — `forced`/`uniqueActor`/`createObject`/`findMatching` 填充以及一個 alias `script` 全部適用（只有 `fromEvent` 在沒有事件時無效）。它們在任務啟動時（= 遊戲載入）填充。所以一個普通任務也能把一個 NPC/ref 強制填入一個別名、在它上面生成一個物件，並攜帶一段 `OnActivate` alias 腳本，全程不需要 SM 事件。示範 `examples/quest-alias-standalone.json`。遊戲內確認 2026-06-05。

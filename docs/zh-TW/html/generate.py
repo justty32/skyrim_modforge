@@ -43,6 +43,7 @@ SECTIONS = [
         ("lifelike/cookbook-npc-basics.md",   "cookbook-npc-basics.html",  "食譜：基礎 NPC"),
         ("lifelike/cookbook-followers.md",    "cookbook-followers.html",   "食譜：跟隨者"),
         ("lifelike/cookbook-world-items.md",  "cookbook-world-items.html", "食譜：世界 · 物品"),
+        ("lifelike/cookbook-presets.md",      "cookbook-presets.html",     "食譜：預設片段"),
         ("lifelike/cookbook-magic.md",        "cookbook-magic.html",       "食譜：魔法"),
         ("lifelike/cookbook-social-quest.md", "cookbook-social-quest.html","食譜：社交 · 任務"),
         ("lifelike/cookbook-advanced.md",     "cookbook-advanced.html",    "食譜：進階"),

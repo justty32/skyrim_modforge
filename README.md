@@ -15,6 +15,8 @@ pure .NET and runs on Windows or Linux, no Creation Kit needed.
 
 1. **Generate** — spec → `.esp`/`.esl` (NPCs, items, magic, perks, quests, dialogue,
    scenes, AI packages, weather/climate, interior cells, custom worldspaces…).
+   Optional post-build `voicelines` can synthesize dialogue voice assets into
+   `Sound/Voice/<plugin>/<voiceType>/`.
 2. **Translate** — read an existing plugin → extract every translatable string to JSON →
    an AI fills in translations → write back inline, or as a localized plugin + `.STRINGS`.
 3. **Papyrus** — AI writes `.psc` → compiled via the open-source native compiler, or the
@@ -51,6 +53,11 @@ Full library guide (API surface, dynamic composition, when to prefer it over CLI
 dotnet run --project src/ModForge.Cli -- <command> ...
 
   build    <spec.json> <out.esp>             spec -> plugin (records, dialogue, FormLinks, VMAD)
+  voicelines <spec.json> <built.esp> [--dry-run|--plan]
+                                             plan or generate dialogue voice files under Sound/Voice/<plugin>/<voiceType>/
+  voicediag <spec.json> <built.esp>          offline speaker/template/path check for every dialogue INFO
+  extract-voices <bsaPath> <voiceType> <outDir>
+                                             extract vanilla .fuz voices from BSA and convert to WAV reference clips
   package  <spec.json> <outModDir> [--assets <dir>]
                                              build + compile scripts + bundle Meshes/Textures/… -> MO2-ready mod folder
   validate <spec.json>                       semantic check (ids, refs, types) before building
@@ -64,7 +71,7 @@ dotnet run --project src/ModForge.Cli -- <command> ...
                                              <plugin>_chinese.STRINGS (Simplified-Chinese SSE)
 ```
 
-Plus ~20 diagnostic commands (compare generated vs vanilla records, find FormIDs, verify
+Plus diagnostic commands (compare generated vs vanilla records, find FormIDs, verify
 structure) — most take `<in.esp> <0xFORMID>`; run the CLI with no args for exact usage:
 
 ```
@@ -82,6 +89,26 @@ The **spec** format (the JSON the generator consumes) is documented in
 [`docs/SPEC-index.md`](docs/SPEC-index.md) with a JSON Schema at [`examples/spec.schema.json`](examples/spec.schema.json);
 [`examples/sample_spec.json`](examples/sample_spec.json) is a complete working example.
 The agent workflow is in [`docs/for_agent.md`](docs/for_agent.md) (CLI path + library path).
+For local Manjaro/Steam Proton master reference generation, see
+[`docs/local-skyrim-extraction.md`](docs/local-skyrim-extraction.md).
+
+Voice workflow: [`docs/SPEC-workflow.md`](docs/SPEC-workflow.md#voice-tts-voice-cloning--fuz)
+documents `voiceTemplates[]`, `npcs[].voiceTemplate`, `voiceLine`, `MODFORGE_TTS_BIN`,
+`MODFORGE_XWMAENCODE`, `MODFORGE_FACEFX`, `voicediag`, and packaging. Voice files are
+loose Skyrim assets, not bytes embedded inside the `.esp`/`.esm`; either run `voicelines`
+against the final packaged plugin, or bundle the generated `Sound/` tree with `package --assets`.
+
+## Tests
+
+Run the offline-safe harness with:
+
+```bash
+dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj --filter "Category!=RequiresSkyrim"
+```
+
+Tests that clone vanilla templates or copy vanilla cell/worldspace context are marked
+`Category=RequiresSkyrim`; run them with `MODFORGE_SKYRIM_DATA` pointing at the Skyrim
+Special Edition `Data` folder. See [`docs/testing.md`](docs/testing.md).
 
 **Building lifelike NPCs?** See [`docs/lifelike/`](docs/lifelike/README.md) — distilled recipe + the
 two-systems insight (CombatStyle vs AIData) + vanilla FormID reference + diagnostic commands +
@@ -106,6 +133,9 @@ native dialogue (`DialogTopic` prompt + spoken `DialogResponse` lines). Easy to 
 All three pillars are operational. Generation covers NPCs/items/magic/enchantments/perks,
 dialogue/quests/scenes/word walls, AI packages/combat styles, weather/climate/regions,
 interior cells and custom worldspaces (flat terrain cells + loadable navmesh), with script
-attachment (VMAD), SEQ files and MO2-ready packaging; translation supports inline and
+attachment (VMAD), SEQ files and MO2-ready packaging. The voice pipeline can plan and generate
+dialogue voice assets from built INFOs when external TTS/xWMA/lip tools are configured; fake-TTS +
+xWMA FUZ packaging is structurally verified, while real model quality and in-game playback still
+need local Skyrim/Proton confirmation. Translation supports inline and
 localized (`.STRINGS`) output. The full spec surface is documented in
 [`docs/SPEC-index.md`](docs/SPEC-index.md).
