@@ -4,9 +4,11 @@ ModForge 目前是**記錄層**生成器（Mutagen 寫 ESP）＋ 既有的**資�
 
 調查日期 2026-06-08，五份報告各自做了 2026 年現況的 web 調研、Linux/Proton 可行性、逐步工作流、ModForge 整合點與 MVP。**個人單人遊玩用途**貫穿全部——他遊資產轉檔自用合法，但**轉出的資產不得發布**（使用者已確認）。
 
+**狀態更新 2026-06-12：** #01 voice 的 ModForge 核心路徑已部分落地：`voiceTemplates[]`、`npcs[].voiceTemplate`、`voiceLine`、`voicediag`、`voicelines --plan`、TTS wrapper shell-out、Wine `xWMAEncode.exe`、native `.fuz` writer，以及 loose `Sound/Voice/...` 輸出。fake TTS + 真 xWMAEncode 已產出 `.fuz`；真 TTS 模型、lip 工具與 Skyrim/Proton 實機播放仍待確認。其餘 asset pipelines 仍是研究/計劃。
+
 | # | 主題 | 一句話結論 |
 |---|------|-----------|
-| [01](01-voice-cloning-fuz.md) | **語音克隆 → `.fuz`** | 最完整可自動化。ModForge 自己擁有 FormID → 能無 CK 算出正確檔名；`.fuz` 可純 C# 寫出；唯一的牆是 `.lip`（FaceFXWrapper 只有 Windows，但可跳過——嘴不動而已）。 |
+| [01](01-voice-cloning-fuz.md) | **語音克隆 → `.fuz`** | ModForge 核心結構已落地，能從 built plugin 的 INFO 規劃/生成 loose voice assets；`.fuz` writer 與 xWMA Wine 路徑已驗。剩餘牆是真模型設定、`.lip`（FaceFXWrapper/Wine 或跳過）、實機確認。 |
 | [02](02-particle-vfx.md) | **粒子 / 視覺特效** | 分兩層：**EFSH 特效著色器是純記錄層**（貼圖+數值，無 mesh）＝低成本高價值首選；**粒子 `.nif` 是牆**（無程序生成、Blender 不能匯出）只能 NifSkope 改或抄現成 mod。「Effect Seeker」不存在（指 Apply Visual Effect/Director's Tools）。外部 VFX 工具**無法**匯出 Skyrim 粒子，只能貢獻貼圖。 |
 | [03](03-3d-model-import.md) | **3D 模型匯入 → `.nif`** | **靜態物件接近全自動**（甜蜜點）；蒙皮角色半自動（卡綁骨/重定向）。解包：DS（soulstruct-blender，最乾淨）＞ WuWa（FModel/.NET）＞ Genshin（加密，須 Proton 端 3DMigoto dump）。**PyNifly 只有 Windows**——Linux 用 NifTools addon ＋ ck-cmd(Wine)。 |
 | [04](04-map-scene-porting.md) | **地圖 / 場景移植** | 使用者最感興趣。**每個來源引擎的關卡都正好是 `{資產, transform}` 實例清單＝Skyrim placed refs**，所以核心問題化簡為「產出擺放清單＋轉幾何」。**FromSoft MSB 用 C# in-process 直讀**（與 ModForge 同棧，零 Wine）＝決定性首選。內景先做；外景卡 heightmap/LOD（ModForge 已知缺口）。 |
@@ -47,7 +49,7 @@ ModForge 目前是**記錄層**生成器（Mutagen 寫 ESP）＋ 既有的**資�
 跨五條管線，按「最快證明價值 × 最貼合 ModForge 現有強項」排序：
 
 1. **#02 EFSH 特效著色器** — 純 Mutagen 記錄＋既有貼圖打包，零 nif 依賴，立刻給玩家新特效。**最低成本高價值，先做。**
-2. **#01 語音 MVP** — 一個 NPC、一種 vanilla voiceType、3 句、丟 `.wav`（跳過 xwm/lip）。證明 ModForge 的 FormID→檔名映射這條獨家優勢；無 Wine 依賴。
+2. **#01 語音 pipeline polish** — 結構已落地；下一步是真 TTS 參考音/模型、`voicelines --plan` 對照、MO2/Proton 實機播放、lip tier 決策。核心優勢仍是 ModForge 的 FormID→檔名映射。
 3. **#04 地圖移植 MVP（DS1 MSB → 內景 cell）** — 使用者最想要。先做**只有 layout 的 smoke test**（refs 指向 vanilla mesh）證明座標轉換，再換真 mesh。`importscene` 用 SoulsFormats in-process（同棧、零 Wine）。
 4. **#05 動作 OAR 生成器** — `animations[]` → OAR 資料夾+config.json＋IDLE/scene 串接；先做 replacer/單一 OAR submod。最高槓桿的「整合層」自動化，但前置依賴 Linux hkx 工具鏈（serde-hkx/Pandora）就緒。
 5. **#03 靜態模型匯入** — 是 #04 的 mesh 子步驟；可與 #04 合併推進（先 DS map-piece 靜態物件）。蒙皮角色與 #05 的 Havok 牆綁一起，最後做。
@@ -58,6 +60,6 @@ ModForge 目前是**記錄層**生成器（Mutagen 寫 ESP）＋ 既有的**資�
 
 ## 下一步
 
-這些是**研究與計劃**，尚未動程式碼。要落地任一條時，依 CLAUDE.md Workflow 1（增量改 code → 實機 → 補 CODE_MAP/文檔 → commit），並把選定的 MVP 切片當第一個 It.N。建議從上面優先級 #1（EFSH）或 #3（DS1 MSB 內景，使用者最感興趣）起手。
+除 #01 voice 已部分落地外，這些仍主要是**研究與計劃**。要落地任一條時，依 CLAUDE.md Workflow 1（增量改 code → 實機 → 補 CODE_MAP/文檔 → commit），並把選定的 MVP 切片當第一個 It.N。建議從上面優先級 #1（EFSH）或 #3（DS1 MSB 內景，使用者最感興趣）起手；voice 則優先補真模型、lip 與實機驗證。
 
-*狀態：研究完成 2026-06-08。五份報告為 web 調研＋ModForge 既有能力交叉分析；標註的不確定處（`.lip`-on-Wine、Genshin 加密、heightmap、exact 座標 handedness、PyNifly-Wine）需落地時實測確認。*
+*狀態：研究完成 2026-06-08；voice 核心整合 2026-06-12 部分落地。五份報告為 web 調研＋ModForge 既有能力交叉分析；標註的不確定處（`.lip`-on-Wine、Genshin 加密、heightmap、exact 座標 handedness、PyNifly-Wine）需落地時實測確認。*

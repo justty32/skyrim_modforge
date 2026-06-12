@@ -2,7 +2,10 @@
 
 ← [README](README.md) · 上一份：[04-fuz-and-filenames.md](04-fuz-and-filenames.md) · 下一份：[06-standalone-runbook.md](06-standalone-runbook.md)
 
-驗證過的手跑 pipeline（[06]）如何折進產生器。這是設計、非程式碼 —— 但它點名具體檔案、spec 欄位、與必須照抄的既有慣例。以當前 `src` layout 為基礎（讀自 `docs/CODE_MAP.infra.md`）。
+驗證過的手跑 pipeline（[06]）如何折進產生器。這份文件原本是設計，但核心結構已於
+2026-06-12 落地：`voicelines`、`voicediag`、`voiceTemplates`、`voiceLine`、TTS wrapper
+shell-out、Wine xWMA path conversion、native `.fuz` writer 都已存在。現在把此檔視為歷史設計與
+cross-check；目前命令與程式位置以 `SPEC-workflow.md`、`CODE_MAP.infra.md` 為準。
 
 **精確照抄這些既有慣例**（別發明新模式）：
 - **帶 env-var fallback 的 shell-out：** `Papyrus.cs` 是範本 —— `PapyrusOptions` 欄位 `null → MODFORGE_* env → default`，在 Wine *或* native 下驅動 exe。語音工具照抄此形狀。
@@ -80,30 +83,33 @@ Native、無 Wine、可單元測試（如 `Generator.SceneFragments.cs` / `Quest
 
 | Env var | 指向 | 缺則 → |
 |---------|-----------|----------|
-| `MODFORGE_TTS_BIN` | `voicegen.py` venv wrapper（[01]） | skip-with-warn（不生語音） |
+| `MODFORGE_TTS_BIN` | `voicegen.py` venv wrapper（[01]） | 不執行 TTS generation；planning/diag 仍可用 |
 | `MODFORGE_XWMAENCODE` | `xWMAEncode.exe`（走 Wine） | 跳過 xwm，出 WAV |
 | `MODFORGE_FACEFX` | `FaceFXWrapper.exe`（Wine） | 跳過 lip（Tier 0）或用合成（Tier 2） |
 | `MODFORGE_FONIXDATA` | `FonixData.cdf` | 僅在 `MODFORGE_FACEFX` 設時需要 |
 
-每個工具缺 = 帶 warning 優雅降到下一個更低 tier，絕不硬失敗。這是既有的條件式-embed/條件式-工具姿態。
+xWMA/lip 工具缺時會優雅降到較低 tier（`.wav` 或 no lip）。TTS 缺時不能實際生成語音，但
+`voicediag` / `voicelines --plan` 仍提供離線地圖。
 
 ---
 
 ## 5. Package + build-pipeline wiring
 
 - `Assets.cs` 已複製 `Sounds` 樹 —— 確保 `Sound/Voice/<plugin>/<voicetype>/` 被涵蓋（應該落在既有 `Sound/...` 複製裡；驗證 glob 觸及 `Voice/`）。
-- `Package.cs` 扁平 MO2 組裝已處理 `Sound/...`；語音檔搭便車。**無 `.seq` 互動**（語音 ≠ StartGameEnabled quest）。
-- 完整 build 順序：`build` → `voicelines` → `package`。記進 `SPEC-workflow.md`。
+- `Package.cs` 扁平 MO2 組裝會在 `--assets` 或 `spec.assets` 提供 `Sound/...` 樹時複製它；
+  它不會自動發現另一個 build 目錄旁邊的 voice output。**無 `.seq` 互動**（語音 ≠ StartGameEnabled quest）。
+- 可靠順序：先 `package` 到最終 mod folder，再對該 folder 內 plugin 跑 `voicelines`；或
+  `build` + `voicelines` 到 staging dir，再 `package --assets <stagingDir>`。
 
 ---
 
 ## 6. 維護鏈落點（落地時）
 
-依 CLAUDE.md Workflow 1，落地時（非現在 —— 這是研究）：
+依 CLAUDE.md Workflow 1，這些是落地點；多數目前已存在：
 - **程式碼：** `Spec.cs`（+`Spec.Actors.cs`）、`Generator.Build.Voice.cs`、`Voice.cs`、`Program.Build.cs`、`examples/spec.schema.json` + `sample_spec.json`。
 - **CODE_MAP：** 把 `Generator.Build.Voice.cs` / `Voice.cs` 列入 `CODE_MAP.infra.md`；`voicelines` 命令入 CLI 表；spec 欄位 cross-ref 進 `CODE_MAP.dialogue-quests.md`（INFO/voiceType 住那）。加 Tests 列（`VoiceFileNameTests`、`FuzWriterTests`）。
-- **文檔：** `voiceLine`/`voiceTemplate` 欄位入 `SPEC-dialogue-quests.md`（若長大則開新 `SPEC-voice.md`）；`voicelines` 入 `for_agent_cli.md` 與 `SPEC-workflow.md`。
-- 新 diag `voicediag <esp>`（與 `identitydiag` 平行）可不跑遊戲就對照 esp 的 INFO records 驗證 emit 的檔名/路徑 —— 鑑於無聲失敗風險，價值很高。
+- **文檔：** `voiceLine`/`voiceTemplate` 欄位入 SPEC docs；`voicelines` / `voicediag` 入 workflow docs。
+- `voicediag <spec> <built.esp>` 現在可不跑 TTS 或遊戲，就對照 esp 的 INFO records 驗證 emit 的檔名/路徑。
 
 ---
 

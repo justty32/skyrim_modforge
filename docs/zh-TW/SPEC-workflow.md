@@ -12,6 +12,18 @@ dotnet run --project src/ModForge.Cli -- package  myspec.json OutModDir # esp + 
 ```
 `package` 輸出 `OutModDir/<pluginName>` + `Scripts/*.pex` + `Scripts/Source/*.psc`。
 
+## Voice：TTS / voice cloning / FUZ
+
+```bash
+dotnet run --project src/ModForge.Cli -- voicediag  myspec.json out.esp
+dotnet run --project src/ModForge.Cli -- voicelines myspec.json out.esp --plan
+dotnet run --project src/ModForge.Cli -- voicelines myspec.json out.esp
+```
+
+`voicediag` 與 `voicelines --plan` 會離線列出每個 INFO 對應的 speaker、voiceType、template 與輸出路徑，不需要 TTS。實際生成時，`MODFORGE_TTS_BIN` 指向本機 `voicegen.py` wrapper；`voiceTemplates[].engine` 目前可用 `f5`，`fish-s2` 會再轉呼 `MODFORGE_FISH_SPEECH_BIN`。`MODFORGE_XWMAENCODE` 指向 CK/DirectX 的 `xWMAEncode.exe`，在 Wine 下需要 Windows path；缺 xWMA 時降級為 loose `.wav`。`MODFORGE_FACEFX` + `MODFORGE_FONIXDATA` 用於 lip；缺則 no-lip/static mouth。
+
+Voice files 是 loose assets，不嵌入 ESP/ESM。最穩流程是先 `package` 到最終 mod folder，再對該資料夾中的 plugin 跑 `voicelines`；或 `build` + `voicelines` 到 staging dir，再 `package --assets <stagingDir>`。輸出路徑形如 `Sound/Voice/<plugin>/<voiceType>/<quest>_<topic>_<infoFormId>_<response>.fuz`。
+
 **自然語言 → 規格：** 向 AI 代理人（Claude Code）描述需求；代理人根據本文件 / `../examples/spec.schema.json`（依 `for_agent.md`）輸出規格，執行 `validate`（自動修正問題），再執行 `build`/`package`。此代理人驅動循環**即是** NL→規格層——工具本身不含 LLM API（原本規劃的 `describe` 指令已取消），因此無需設定任何 API 金鑰或提供商。
 
 ## 語音（TTS 語音克隆 → .fuz）

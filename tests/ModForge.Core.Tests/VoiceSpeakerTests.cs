@@ -125,6 +125,61 @@ public class VoiceSpeakerTests
         Assert.Equal("VT_B", Assert.Single(Generator.SelectVoiceTargets(res, onlyN2)).VoiceType);
     }
 
+    [Fact]
+    public void BuildVoiceLinePlan_reports_speaker_voicetype_filename_and_path()
+    {
+        var spec = new ModSpec
+        {
+            PluginName = "Test.esp",
+            VoiceTemplates = { new VoiceTemplateSpec { Id = "tpl" } },
+            Factions = { new FactionSpec { EditorId = "F", Name = "F" } },
+            Quests = { new QuestSpec { EditorId = "QuestLongName", Name = "Q" } },
+            Npcs =
+            {
+                new NpcSpec { EditorId = "N1", Name = "N1", Factions = { "F" }, VoiceTemplate = "tpl" },
+                new NpcSpec { EditorId = "N2", Name = "N2", Factions = { "F" } },
+            },
+            Dialogue =
+            {
+                new DialogueSpec
+                {
+                    EditorId = "TopicLongNameForVoice",
+                    QuestEditorId = "QuestLongName",
+                    Prompt = "Hi?",
+                    Responses = { "Hello." },
+                    Conditions = { new ConditionSpec { Function = "GetInFaction", Param = "F", Comparison = "==", Value = 1 } },
+                },
+            },
+        };
+        var mod = TestBuild.Raw(spec).Mod;
+        var vtA = mod.VoiceTypes.AddNew(); vtA.EditorID = "VT_A";
+        var vtB = mod.VoiceTypes.AddNew(); vtB.EditorID = "VT_B";
+        foreach (var n in mod.Npcs) n.Voice.SetTo(n.EditorID == "N1" ? vtA : vtB);
+        var topic = mod.DialogTopics.Single(t => t.EditorID == "TopicLongNameForVoice");
+        var info = topic.Responses[0];
+        var templates = new Dictionary<string, VoiceTemplateSpec?>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["N1"] = spec.VoiceTemplates[0],
+        };
+
+        var plan = Generator.BuildVoiceLinePlan(mod, Cache(mod), templates, "Test.esp", "fuz")
+            .OrderBy(p => p.VoiceType)
+            .ToArray();
+
+        Assert.Equal(2, plan.Length);
+        Assert.Equal("QuestLongN_TopicLongNameFo_" + info.FormKey.ID.ToString("X8") + "_1.fuz", plan[0].FileName);
+        Assert.Equal(Path.Combine("Sound", "Voice", "Test.esp", "VT_A", plan[0].FileName), plan[0].RelativePath);
+        Assert.Equal("N1", Assert.Single(plan[0].Speakers));
+        Assert.Equal("VT_A", plan[0].VoiceType);
+        Assert.True(plan[0].HasVoiceTemplate);
+        Assert.Null(plan[0].SkipReason);
+
+        Assert.Equal("VT_B", plan[1].VoiceType);
+        Assert.Equal("N2", Assert.Single(plan[1].Speakers));
+        Assert.False(plan[1].HasVoiceTemplate);
+        Assert.Contains("voiceTemplate", plan[1].SkipReason);
+    }
+
     // ------------------- 4) Scene phase INFO (no conditions) → SCEN Dialog action → alias → NPC
     [Fact]
     public void Scene_phase_info_resolves_via_the_scene_dialog_action()

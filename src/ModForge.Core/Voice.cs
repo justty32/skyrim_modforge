@@ -153,8 +153,8 @@ public static class Voice
                 UseShellExecute = false,
             };
             psi.ArgumentList.Add(exe);
-            psi.ArgumentList.Add(tempWav);
-            psi.ArgumentList.Add(tempXwm);
+            psi.ArgumentList.Add(WinePath(tempWav));
+            psi.ArgumentList.Add(WinePath(tempXwm));
 
             using var proc = Process.Start(psi) ?? throw new InvalidOperationException("could not start wine for xWMAEncode");
             proc.WaitForExit();
@@ -199,10 +199,10 @@ public static class Voice
             psi.ArgumentList.Add(exe);
             psi.ArgumentList.Add("Skyrim");
             psi.ArgumentList.Add("USEnglish");
-            psi.ArgumentList.Add(cdf);
-            psi.ArgumentList.Add(tempWav);
-            psi.ArgumentList.Add(tempWav); // use same for resampled
-            psi.ArgumentList.Add(tempLip);
+            psi.ArgumentList.Add(WinePath(cdf));
+            psi.ArgumentList.Add(WinePath(tempWav));
+            psi.ArgumentList.Add(WinePath(tempWav)); // use same for resampled
+            psi.ArgumentList.Add(WinePath(tempLip));
             psi.ArgumentList.Add(text);
 
             using var proc = Process.Start(psi) ?? throw new InvalidOperationException("could not start wine for FaceFXWrapper");
@@ -217,6 +217,32 @@ public static class Voice
         {
             if (File.Exists(tempWav)) File.Delete(tempWav);
             if (File.Exists(tempLip)) File.Delete(tempLip);
+        }
+    }
+
+    private static string WinePath(string path)
+    {
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "winepath",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+            };
+            psi.ArgumentList.Add("-w");
+            psi.ArgumentList.Add(path);
+
+            using var proc = Process.Start(psi);
+            if (proc is null) return path;
+            var stdout = proc.StandardOutput.ReadToEnd().Trim();
+            proc.WaitForExit();
+            return proc.ExitCode == 0 && !string.IsNullOrWhiteSpace(stdout) ? stdout : path;
+        }
+        catch
+        {
+            return path;
         }
     }
 }

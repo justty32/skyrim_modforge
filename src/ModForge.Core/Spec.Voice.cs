@@ -5,7 +5,7 @@ namespace ModForge;
 public sealed class VoiceTemplateSpec
 {
     public string Id { get; set; } = "";             // unique name for this template
-    public string Engine { get; set; } = "f5";        // f5 | chatterbox | gptsovits | xtts
+    public string Engine { get; set; } = "f5";        // f5 | chatterbox | gptsovits | xtts | fish-s2
     public string ReferenceWav { get; set; } = "";    // path to a zero-shot reference clip (rel. to spec)
     public string ReferenceText { get; set; } = "";   // required transcript for some engines (f5)
     public string ModelPath { get; set; } = "";       // optional: path to a fine-tuned model directory

@@ -18,7 +18,8 @@ internal static partial class Program
             {
                 case "gen" when args.Length == 2:      GenCmd(args[1]); return 0;
                 case "build" when args.Length == 3:    BuildCmd(args[1], args[2]); return 0;
-                case "voicelines" when args.Length == 3: return VoicelinesCmd(args[1], args[2]);
+                case "voicelines" when args.Length is 3 or 4: return VoicelinesCmd(args[1], args[2], args.Length == 4 ? args[3] : null);
+                case "voicediag" when args.Length == 3: return VoiceDiagCmd(args[1], args[2]);
                 case "extract-voices" when args.Length == 4: return ExtractVoicesCmd(args[1], args[2], args[3]);
                 case "compile" when args.Length == 3:  return CompileCmd(args[1], args[2]);
                 case "package" when args.Length == 3:  return PackageCmd(args[1], args[2], null);
@@ -74,7 +75,8 @@ internal static partial class Program
         "ModForge.Cli\n" +
         "  gen     <out.esp>\n" +
         "  build   <spec.json> <out.esp>\n" +
-        "  voicelines <spec.json> <built.esp>          generate .fuz/.wav from dialogue records\n" +
+        "  voicelines <spec.json> <built.esp> [--dry-run|--plan] generate .fuz/.wav from dialogue records, or print expected voice paths\n" +
+        "  voicediag <spec.json> <built.esp>            offline speaker/template/path check for every dialogue INFO line\n" +
         "  extract-voices <bsaPath> <voiceType> <outDir> extract + convert vanilla voices to WAV\n" +
         "  compile <script.psc> <outDir>\n" +
         "  package <spec.json> <outModDir> [--assets <dir>]   esp + scripts + bundled Meshes/Textures/Sounds\n" +

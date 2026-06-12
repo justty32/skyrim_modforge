@@ -11,7 +11,7 @@
 每個引擎都化簡成同一個 shell 可呼叫的形狀。把它們全都規劃成滿足這個契約，這樣 ModForge（與你的手跑腳本）除了引擎名 + 幾個旋鈕外，永遠不必為某引擎開特例：
 
 ```
-voicegen  --engine {f5|chatterbox|gptsovits}
+voicegen  --engine {f5|fish-s2|chatterbox|gptsovits}
           --ref     <reference.wav>          # 零訓練 ref clip，或微調好的 model 目錄
           --ref-text "<ref 的逐字稿>"        # F5 需要；Chatterbox/GPT-SoVITS 選用
           --text    "<要說的台詞>"
@@ -19,7 +19,7 @@ voicegen  --engine {f5|chatterbox|gptsovits}
           [--seed N] [--exaggeration F] [--speed F] [--lang en]
 ```
 
-具體上這就是 venv 裡一個薄薄的 Python wrapper（`voicegen.py`），依 `--engine` 分派。ModForge 之後就 shell-out 到這支（`MODFORGE_TTS_BIN`），跟它 shell-out Papyrus 編譯器一模一樣。wrapper 保持引擎無關；各引擎怪癖藏在裡面。
+具體上這就是 venv 裡一個薄薄的 Python wrapper（`voicegen.py`），依 `--engine` 分派。ModForge 之後就 shell-out 到這支（`MODFORGE_TTS_BIN`），跟它 shell-out Papyrus 編譯器一模一樣。wrapper 保持引擎無關；各引擎怪癖藏在裡面。`fish-s2` 目前再轉呼 `MODFORGE_FISH_SPEECH_BIN`，讓 Fish 官方 CLI / HTTP API / SGLang server 的變化留在外部 wrapper。
 
 **決定性：** 三者都吃 seed。釘死它，讓同一行重跑能重現同一段音訊（[05] 的快取會用到 —— 沒變的行別重生）。
 
@@ -131,34 +131,80 @@ git clone https://github.com/RVC-Boss/GPT-SoVITS && cd GPT-SoVITS
 
 ---
 
-## 5. VRAM / 適配總表（16 GB）
+## 5. 引擎 D — Fish Speech S2（現代 open clone backend）
+
+Fish Speech S2 是較新的 open TTS family，目標包含 voice cloning、long-form/multispeaker 與較高容量模型。ModForge 端刻意維持薄 wrapper：`voicegen.py --engine fish-s2` 只檢查 `MODFORGE_FISH_SPEECH_BIN`，然後把 `--text`、`--out`、`--ref-audio`、`--ref-text`、`--model`、`--seed`、`--speed`、`--exaggeration`、`--language` 轉交出去。外部 wrapper 必須輸出 WAV。
+
+**安裝草圖：**
+```bash
+uv venv fish-speech && source fish-speech/bin/activate
+uv pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu124
+uv pip install fish-speech
+```
+
+依 Fish Audio 文件下載 model/codec weights。若使用 S2 Pro，本機模型目錄可放在 `voiceTemplates[].modelPath`。
+
+**wrapper 契約：**
+```bash
+fish-s2-wrapper \
+  --text "Stop right there, criminal scum." \
+  --out out/line.wav \
+  --ref-audio refs/malenord.wav \
+  --ref-text "reference transcript" \
+  --model models/fish-s2-pro \
+  --seed 12345 \
+  --speed 1.0 \
+  --language en
+```
+
+`fish-s2-wrapper` 可以自己選擇驅動 Fish 官方 CLI、HTTP API 或 SGLang server；這個細節不要塞進 ModForge，否則 Fish runtime layout 一改，`.fuz` pipeline 就會跟著壞。
+
+**Spec 範例：**
+```jsonc
+"voiceTemplates": [{
+  "id": "SeranaFish",
+  "engine": "fish-s2",
+  "referenceWav": "refs/serana_ref.wav",
+  "referenceText": "I knew you would come.",
+  "modelPath": "models/fish-s2-pro",
+  "language": "en",
+  "seed": 12345
+}]
+```
+
+**何時選 Fish S2：** F5 聽起來太平或長段情緒台詞漂移時，用 Fish 做較高容量模型的比較。F5 保留為快速 baseline，直到 Fish 安裝與品質都確認。
+
+---
+
+## 6. VRAM / 適配總表（16 GB）
 
 | 引擎 | 推論 VRAM | 要訓練？ | 跨多行漂移 | 設定工夫 | 角色 |
 |--------|---------------|-----------|-------------------------|--------------|------|
 | **F5-TTS** | ~8 GB | 無（零訓練） | 中等 | 低 | MVP 主選 |
 | **Chatterbox** | 5–7 GB | 無（零訓練） | 中等；有情緒旋鈕 | 低 | MVP 替選（情緒/tag） |
 | **GPT-SoVITS** | ≥6 GB（DPO ≥12 GB） | 是，吃得下 16 GB | 低（已微調） | 中（訓練步驟） | 保真度/一致性升級 |
+| **Fish Speech S2** | 視模型而定；S2 Pro 較重 | 選用 | 預期低/中 | 中/高 | 現代 clone 比較 |
 | RVC（後處理） | 小 | 是 | —（穩定化） | 中 | 選用最高保真重上色 |
 
 全在 16 GB 內。沒有任何一項逼你上雲或量化。
 
 ---
 
-## 6. 已拒絕／延後的引擎（與理由，別盲目重新考慮）
+## 7. 已拒絕／延後的引擎（與理由，別盲目重新考慮）
 
 - **xVASynth / xVATrainer** —— Skyrim-native、「*就是*某個已知角色」的選擇，但無 **headless-Linux** 文件化 recipe（Electron 前端是 Windows；Python 後端*架構上*可跑但無被驅動成服務的文件）。當你特別想要 canonical vanilla 角色音色、且願意逆向其後端時的逃生口保留。非預設。
 - **XTTS v2（Coqui）** —— 易上手零訓練，但 Coqui 已歇業（權重/fork 仍在）。F5/Chatterbox 是維護更健康的等價物。只在某 fork 更方便時用。
-- **Fish Speech / Qwen3-TTS** —— 2026 強勢新秀、吃得下 16 GB；若 F5/Chatterbox 不滿意，可在同契約下換上。本檔未深究；只在需要時回頭看。
+- **Qwen3-TTS** —— 2026 強勢新秀；若 F5/Chatterbox/Fish 都不滿意，可用同一 wrapper 契約接上。尚未 wired。
 - **Piper** —— Linux-native、CPU 快、*機械音、不克隆*。當**即時占位**驗證 [03]/[04]/[06] plumbing，免等 GPU/克隆品質。
 - **ElevenLabs** —— 業界最佳但雲端 + ToS + 成本。個人用後備而已；違背 local-on-Manjaro 的目標。
 
 ---
 
-## 7. 本檔「完成」長什麼樣
+## 8. 本檔「完成」長什麼樣
 
 你能跑 `voicegen.py --engine f5 --ref ref.wav --ref-text "..." --text "Hello." --out hello.wav` 並拿到可懂、對味的 WAV。光是這個能力就解鎖 [06] 整個 MVP。之後全是打包。
 
 ---
 
 ### 來源
-F5-TTS：[SWivid/F5-TTS](https://github.com/SWivid/F5-TTS)、[CLI 文件（DeepWiki）](https://deepwiki.com/SWivid/F5-TTS/3.2-command-line-interface)、[f5-tts PyPI](https://pypi.org/project/f5-tts/)。Chatterbox：[resemble-ai/chatterbox](https://github.com/resemble-ai/chatterbox)、[chatterbox-tts PyPI](https://pypi.org/project/chatterbox-tts/)、[Chatterbox Turbo](https://www.resemble.ai/chatterbox-turbo/)。GPT-SoVITS：[RVC-Boss/GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS)。Landscape 比較：[BentoML 2026 OSS TTS](https://www.bentoml.com/blog/exploring-the-world-of-open-source-text-to-speech-models)、[SiliconFlow voice-cloning 2026](https://www.siliconflow.com/articles/en/best-open-source-models-for-voice-cloning)。
+F5-TTS：[SWivid/F5-TTS](https://github.com/SWivid/F5-TTS)、[CLI 文件（DeepWiki）](https://deepwiki.com/SWivid/F5-TTS/3.2-command-line-interface)、[f5-tts PyPI](https://pypi.org/project/f5-tts/)。Chatterbox：[resemble-ai/chatterbox](https://github.com/resemble-ai/chatterbox)、[chatterbox-tts PyPI](https://pypi.org/project/chatterbox-tts/)、[Chatterbox Turbo](https://www.resemble.ai/chatterbox-turbo/)。GPT-SoVITS：[RVC-Boss/GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS)。Fish Speech：[fishaudio/fish-speech](https://github.com/fishaudio/fish-speech)、[Fish Audio self-hosted inference](https://docs.fish.audio/developer-guide/self-hosting/running-inference)、[Fish Audio S2 technical report](https://arxiv.org/abs/2603.08823)。Landscape 比較：[BentoML 2026 OSS TTS](https://www.bentoml.com/blog/exploring-the-world-of-open-source-text-to-speech-models)、[SiliconFlow voice-cloning 2026](https://www.siliconflow.com/articles/en/best-open-source-models-for-voice-cloning)。

@@ -12,13 +12,28 @@ internal static partial class Program
     //  scene Dialog action), and TTS one file per distinct voiceType folder.
     //  An unresolved speaker is a LOUD warning + summary count, never a silent skip.
     // -------------------------------------------------------------------------------
-    private static int VoicelinesCmd(string specPath, string espPath)
+    private static int VoicelinesCmd(string specPath, string espPath, string? mode)
     {
+        if (mode is not null && mode is not "--dry-run" and not "--plan")
+        {
+            Console.Error.WriteLine($"ERROR: unknown voicelines option '{mode}'. Expected --dry-run or --plan.");
+            return 2;
+        }
+
         var spec = ReadSpec(specPath);
         var mod = Load(espPath);
         var cache = mod.ToImmutableLinkCache();
         var specDir = Path.GetDirectoryName(Path.GetFullPath(specPath)) ?? ".";
         var pluginName = Path.GetFileName(espPath);
+        var format = spec.VoiceLine?.Format?.ToLowerInvariant() ?? "fuz";
+        var npcToTemplate = BuildNpcVoiceTemplateMap(spec);
+        var npcToVoiceType = BuildNpcVoiceTypeMap(spec);
+
+        if (mode is "--dry-run" or "--plan")
+        {
+            PrintVoicePlan(mod, cache, npcToTemplate, npcToVoiceType, pluginName, format);
+            return 0;
+        }
 
         var options = new VoiceOptions();
         if (string.IsNullOrEmpty(options.ResolvedTtsBin))
@@ -27,12 +42,6 @@ internal static partial class Program
             return 1;
         }
 
-        var templateById = spec.VoiceTemplates.ToDictionary(t => t.Id, t => t, StringComparer.OrdinalIgnoreCase);
-        var npcToTemplate = spec.Npcs
-            .Where(n => !string.IsNullOrEmpty(n.VoiceTemplate))
-            .ToDictionary(n => n.EditorId, n => templateById.GetValueOrDefault(n.VoiceTemplate), StringComparer.OrdinalIgnoreCase);
-
-        var format = spec.VoiceLine?.Format?.ToLowerInvariant() ?? "fuz";
         bool skipLip = spec.VoiceLine?.SkipLip ?? false;
         int generated = 0, existing = 0, failed = 0, emptyText = 0, noTemplate = 0, unresolved = 0;
 
@@ -56,7 +65,7 @@ internal static partial class Program
                     continue;
                 }
 
-                var targets = Generator.SelectVoiceTargets(res, npcToTemplate);
+                var targets = Generator.SelectVoiceTargets(res, npcToTemplate, npcToVoiceType);
                 if (targets.Count == 0)
                 {
                     var who = string.Join(", ", res.Speakers.Select(s => s.Npc.EditorID ?? s.Npc.FormKey.ToString()));
@@ -88,6 +97,69 @@ internal static partial class Program
         if (unresolved > 0 || noTemplate > 0)
             Console.Error.WriteLine($"  !! {unresolved + noTemplate} INFO(s) produced NO voice — see '!!' warnings above.");
         return 0;
+    }
+
+    // -------------------------------------------------------------------------------
+    //  voicediag — same speaker/template/path plan as `voicelines --dry-run`, but with
+    //  a check-style exit code so scripts can fail before spending time on TTS.
+    // -------------------------------------------------------------------------------
+    private static int VoiceDiagCmd(string specPath, string espPath)
+    {
+        var spec = ReadSpec(specPath);
+        var mod = Load(espPath);
+        var cache = mod.ToImmutableLinkCache();
+        var pluginName = Path.GetFileName(espPath);
+        var format = spec.VoiceLine?.Format?.ToLowerInvariant() ?? "fuz";
+        var entries = PrintVoicePlan(mod, cache, BuildNpcVoiceTemplateMap(spec), BuildNpcVoiceTypeMap(spec), pluginName, format);
+        return entries.Any(e => e.SkipReason?.StartsWith("speaker unresolved:", StringComparison.OrdinalIgnoreCase) == true
+                             || e.SkipReason?.StartsWith("no speaker", StringComparison.OrdinalIgnoreCase) == true)
+            ? 1
+            : 0;
+    }
+
+    private static Dictionary<string, VoiceTemplateSpec?> BuildNpcVoiceTemplateMap(ModSpec spec)
+    {
+        var templateById = spec.VoiceTemplates.ToDictionary(t => t.Id, t => t, StringComparer.OrdinalIgnoreCase);
+        return spec.Npcs
+            .Where(n => !string.IsNullOrEmpty(n.VoiceTemplate))
+            .ToDictionary(n => n.EditorId, n => templateById.GetValueOrDefault(n.VoiceTemplate), StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static Dictionary<string, string> BuildNpcVoiceTypeMap(ModSpec spec) =>
+        spec.Npcs
+            .Select(n => new { n.EditorId, VoiceType = Generator.VoiceTypeFolderName(n.VoiceType) })
+            .Where(n => !string.IsNullOrWhiteSpace(n.EditorId) && !string.IsNullOrWhiteSpace(n.VoiceType))
+            .ToDictionary(n => n.EditorId, n => n.VoiceType!, StringComparer.OrdinalIgnoreCase);
+
+    private static List<VoiceLinePlanEntry> PrintVoicePlan(ISkyrimModGetter mod, ILinkCache cache,
+        IReadOnlyDictionary<string, VoiceTemplateSpec?> npcToTemplate,
+        IReadOnlyDictionary<string, string> npcToVoiceType,
+        string pluginName, string format)
+    {
+        var entries = Generator.BuildVoiceLinePlan(mod, cache, npcToTemplate, pluginName, format, npcToVoiceType);
+        foreach (var e in entries)
+        {
+            var info = string.IsNullOrWhiteSpace(e.InfoEditorId) ? $"0x{e.InfoFormId:X8}" : $"{e.InfoEditorId} 0x{e.InfoFormId:X8}";
+            var speakers = e.Speakers.Count == 0 ? "-" : string.Join(", ", e.Speakers);
+            var voiceType = e.VoiceType ?? "-";
+            var path = string.IsNullOrWhiteSpace(e.RelativePath) ? "-" : e.RelativePath;
+            var template = e.TemplateId ?? "-";
+            Console.WriteLine($"INFO {info} topic={e.TopicEditorId} quest={e.QuestEditorId} line={e.ResponseIndex}");
+            Console.WriteLine($"  speaker={speakers} source={(string.IsNullOrWhiteSpace(e.ResolutionSource) ? "-" : e.ResolutionSource)} voiceType={voiceType} template={template}");
+            Console.WriteLine($"  filename={e.FileName}");
+            Console.WriteLine($"  path={path}");
+            if (!string.IsNullOrWhiteSpace(e.Text))
+                Console.WriteLine($"  text=\"{e.Text}\"");
+            if (e.SkipReason is { Length: > 0 })
+                Console.WriteLine($"  !! {e.SkipReason}");
+        }
+
+        var unresolved = entries.Count(e => e.SkipReason?.StartsWith("speaker unresolved:", StringComparison.OrdinalIgnoreCase) == true);
+        var noTemplate = entries.Count(e => e.SkipReason?.StartsWith("no speaker", StringComparison.OrdinalIgnoreCase) == true);
+        var empty = entries.Count(e => e.SkipReason == "empty response text");
+        var deliverable = entries.Count(e => e.SkipReason is null);
+        Console.WriteLine($"Voice plan: {entries.Count} line target(s), {deliverable} deliverable, {empty} empty-text, {noTemplate} missing-template, {unresolved} unresolved.");
+        return entries;
     }
 
     // One (text, voiceType) line: TTS → optional xWMA → fuz/wav/xwm via Generator.PackVoiceAudio

@@ -16,6 +16,8 @@ Quick CLI reference:
 ```bash
 dotnet run --project src/ModForge.Cli -- validate myspec.json
 dotnet run --project src/ModForge.Cli -- build    myspec.json out.esp
+dotnet run --project src/ModForge.Cli -- voicediag myspec.json out.esp
+dotnet run --project src/ModForge.Cli -- voicelines myspec.json out.esp --plan
 dotnet run --project src/ModForge.Cli -- package  myspec.json OutModDir
 ```
 

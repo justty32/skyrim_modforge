@@ -17,8 +17,8 @@ public static partial class Generator
                     Problems.Add($"duplicate voiceTemplate id '{t.Id}'");
                 
                 var engine = (t.Engine ?? "").ToLowerInvariant();
-                if (engine is not ("f5" or "chatterbox" or "gptsovits" or "xtts"))
-                    Problems.Add($"voiceTemplate '{t.Id}': unknown engine '{t.Engine}' (use f5 | chatterbox | gptsovits | xtts)");
+                if (engine is not ("f5" or "chatterbox" or "gptsovits" or "xtts" or "fish" or "fish-s2" or "fishspeech" or "fish-speech"))
+                    Problems.Add($"voiceTemplate '{t.Id}': unknown engine '{t.Engine}' (use f5 | chatterbox | gptsovits | xtts | fish-s2)");
             }
 
             foreach (var n in spec.Npcs)

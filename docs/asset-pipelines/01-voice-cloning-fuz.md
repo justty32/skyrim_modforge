@@ -6,6 +6,12 @@
 
 **Confidence note:** The file-format facts (§1, §5, §6) and the FaceFXWrapper / xVASynth tool facts (§3, §4) are well-corroborated; the `.fuz` layout is confirmed from source code. The biggest *uncertainty* is **Linux-native lip generation** — FaceFXWrapper is Windows-only and the `.lip` step is the one place the pipeline hits a wall (§4). Extrapolations are flagged inline.
 
+**Status update 2026-06-12:** the core ModForge side has landed structurally. Current code has
+`voiceTemplates[]`, `npcs[].voiceTemplate`, `voiceLine`, `voicediag`, `voicelines --plan`, a local
+TTS wrapper contract, Wine `xWMAEncode.exe` path conversion, and a native `.fuz` writer. Fake TTS +
+real xWMAEncode produced valid `.fuz` files locally. Real model setup, lip generation, QA, and
+Skyrim/Proton in-game playback remain open.
+
 ---
 
 ## 1. The `.fuz` format and what Skyrim needs per voiced line
@@ -122,7 +128,9 @@ From **"ModForge emitted N dialogue lines for NPC X (voiceType Y)"**:
 5. **(Auto, Wine)** `.wav`→`.xwm` via xWMAEncode. *(MVP: skip — keep WAV.)*
 6. **(Semi — the wall)** `.lip` via FaceFXWrapper/Runalip under Wine. *(MVP: skip — zero lip.)*
 7. **(Auto, native C#)** Pack `.xwm`(+optional `.lip`)→`.fuz`. *(MVP: zero-lip fuz, or place WAV.)*
-8. **(Auto)** Place at path from step 1; **bundle into the flat MO2 zip** like the existing `package` step copies `Sound/...`.
+8. **(Auto)** Place at path from step 1. Voice files are loose assets, not embedded in the plugin:
+   either run `voicelines` against the plugin inside the final mod folder, or feed the generated
+   staging directory to `package --assets <dir>`.
 
 **Fully automatable:** 1, 3, 4, 5, 7, 8. **One-time human:** 2 (build the voice model). **The wall:** 6 (`.lip`, Wine-dependent, skippable). An end-to-end *audible* pipeline is fully automatable on Linux today; *lipsync* is the only contingent piece.
 
@@ -132,12 +140,15 @@ From **"ModForge emitted N dialogue lines for NPC X (voiceType Y)"**:
 
 Aligned to existing `sounds[]` (SNDR + copy wav/xwm), `package` (copy asset dir), shell-out (Papyrus compiler, xLODGen):
 
-- **New spec concept `voiceTemplate`** (per voiceType or per character): `engine` (`gptsovits`|`xtts`|`f5`|`xvasynth`|`rvc-on-top`), `modelPath`/`referenceWav`/`rvcModel`, `language`, optional pitch/energy/emotion knobs. Mirrors the deferred plan in memory `voice-gen-interface-future`.
+- **Spec concept `voiceTemplate`** (per voiceType or per character): currently implemented with engines such as `f5` and `fish-s2` wired through the local `voicegen.py` contract; `chatterbox`/`gptsovits`/`xtts` remain accepted/reserved names until their wrappers are provided.
 - **`NpcSpec.voiceTemplate`** (or map `voiceType → voiceTemplate` globally) so each NPC's lines route to the right model.
 - **INFO lines already carry text** — no new field for words; optional `voiceLine: { skipLip, format: "wav"|"xwm"|"fuz" }`.
 - **New CLI step `voicelines`** (sibling to `compile`/`package`): walk emitted INFO records, compute filenames (deterministic — ModForge owns the FormIDs, *the big advantage over CK*), shell out to the TTS engine (venv binary path, like `~/tools/papyrus-compiler`), then xWMAEncode/FaceFXWrapper **under Wine via the existing Wine plumbing**, then pack `.fuz` with a **native C# fuz writer** (new `Generator.Build.Voice.cs`), drop files under `Data/Sound/Voice/<plugin>/<voicetype>/`.
-- **`package`** already copies `Sound/...` — ensure `Sound/Voice/...` is included. No `.seq` interaction.
-- **Tooling config:** `MODFORGE_TTS_BIN`, `MODFORGE_FACEFX` (+ `FonixData.cdf`), `MODFORGE_XWMAENCODE`, defaulting to skip-with-warn if absent (the conditional-embed convention).
+- **`package`** copies `Sound/...` when supplied through `--assets` or `spec.assets`; it does not
+  automatically discover voice output from another build directory. No `.seq` interaction.
+- **Tooling config:** `MODFORGE_TTS_BIN`, `MODFORGE_FACEFX` (+ `FonixData.cdf`), `MODFORGE_XWMAENCODE`.
+  Missing xWMA/lip tools degrade to `.wav` or no lip; missing TTS blocks generation but `voicediag`
+  and `voicelines --plan` still work.
 
 ---
 

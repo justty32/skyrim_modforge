@@ -6,6 +6,11 @@
 
 **信心度說明：** 檔案格式事實（§1、§5、§6）以及 FaceFXWrapper / xVASynth 工具事實（§3、§4）都有充分佐證；`.fuz` 佈局已從原始碼確認。最大的*不確定性*是 **Linux-native 唇形（lip）生成** — FaceFXWrapper 是 Windows-only，而 `.lip` 步驟正是管線撞牆之處（§4）。外推之處會在內文標註。
 
+**狀態更新 2026-06-12：** ModForge 核心端已結構性落地。現有程式碼已有
+`voiceTemplates[]`、`npcs[].voiceTemplate`、`voiceLine`、`voicediag`、`voicelines --plan`、本機
+TTS wrapper 契約、Wine `xWMAEncode.exe` path conversion，以及 native `.fuz` writer。fake TTS +
+真 xWMAEncode 已在本機產出 `.fuz`。真模型設定、lip 生成、QA、Skyrim/Proton 實機播放仍待處理。
+
 ---
 
 ## 1. `.fuz` 格式與 Skyrim 每句語音行所需的內容
@@ -122,7 +127,9 @@ FaceFXWrapper Skyrim USEnglish FonixData.cdf in.wav resampled.wav out.lip "the s
 5. **（自動、Wine）** 透過 xWMAEncode 將 `.wav`→`.xwm`。*（MVP：跳過 — 保留 WAV。）*
 6. **（半自動 — 那道牆）** 在 Wine 下透過 FaceFXWrapper/Runalip 產生 `.lip`。*（MVP：跳過 — zero lip。）*
 7. **（自動、原生 C#）** 將 `.xwm`（+選用 `.lip`）打包成 `.fuz`。*（MVP：zero-lip fuz，或放置 WAV。）*
-8. **（自動）** 放到步驟 1 的路徑；**捆綁進扁平的 MO2 zip**，就像現有的 `package` 步驟複製 `Sound/...` 一樣。
+8. **（自動）** 放到步驟 1 的路徑。Voice files 是 loose assets，不嵌入 plugin：
+   可以對最終 mod folder 內的 plugin 直接跑 `voicelines`，或把已生成的 staging directory
+   交給 `package --assets <dir>`。
 
 **完全可自動化：** 1、3、4、5、7、8。**一次性人工：** 2（建立語音模型）。**那道牆：** 6（`.lip`，依賴 Wine，可跳過）。今天在 Linux 上，一條端到端*可聽*的管線是完全可自動化的；*唇形同步*是唯一的權變部分。
 
@@ -132,12 +139,12 @@ FaceFXWrapper Skyrim USEnglish FonixData.cdf in.wav resampled.wav out.lip "the s
 
 對齊既有的 `sounds[]`（SNDR + 複製 wav/xwm）、`package`（複製資源目錄）、shell-out（Papyrus compiler、xLODGen）：
 
-- **新增 spec 概念 `voiceTemplate`**（每 voiceType 或每角色）：`engine`（`gptsovits`|`xtts`|`f5`|`xvasynth`|`rvc-on-top`）、`modelPath`/`referenceWav`/`rvcModel`、`language`、選用的 pitch/energy/emotion 旋鈕。對應 memory `voice-gen-interface-future` 中延後的計畫。
+- **Spec 概念 `voiceTemplate`**（每 voiceType 或每角色）：目前已實作的 engine 包含 `f5` 與透過本機 `voicegen.py` 契約轉呼的 `fish-s2`；`chatterbox`/`gptsovits`/`xtts` 仍是可接受/保留名稱，等各自 wrapper 補上。
 - **`NpcSpec.voiceTemplate`**（或全域 map `voiceType → voiceTemplate`），讓每個 NPC 的行路由到正確的模型。
 - **INFO 行已帶有文字** — 不需新增字串欄位；選用的 `voiceLine: { skipLip, format: "wav"|"xwm"|"fuz" }`。
 - **新增 CLI 步驟 `voicelines`**（與 `compile`/`package` 並列）：走訪發出的 INFO 記錄、計算檔名（確定性 — ModForge 擁有那些 FormID，*相對於 CK 的最大優勢*）、shell out 到 TTS 引擎（venv 二進位路徑，類似 `~/tools/papyrus-compiler`），然後**透過既有 Wine 接線在 Wine 下**執行 xWMAEncode/FaceFXWrapper，再用一個**原生 C# fuz writer**（新檔 `Generator.Build.Voice.cs`）打包 `.fuz`，把檔案放到 `Data/Sound/Voice/<plugin>/<voicetype>/` 下。
-- **`package`** 已複製 `Sound/...` — 確保有包含 `Sound/Voice/...`。無 `.seq` 互動。
-- **工具設定：** `MODFORGE_TTS_BIN`、`MODFORGE_FACEFX`（+ `FonixData.cdf`）、`MODFORGE_XWMAENCODE`，缺檔時預設為 skip-with-warn（條件式 embed 慣例）。
+- **`package`** 會在 `--assets` 或 `spec.assets` 提供 `Sound/...` 時複製它；不會自動發現另一個 build directory 裡的 voice output。無 `.seq` 互動。
+- **工具設定：** `MODFORGE_TTS_BIN`、`MODFORGE_FACEFX`（+ `FonixData.cdf`）、`MODFORGE_XWMAENCODE`。xWMA/lip 工具缺時降級到 `.wav` 或 no lip；TTS 缺時不能生成，但 `voicediag` 與 `voicelines --plan` 仍可用。
 
 ---
 

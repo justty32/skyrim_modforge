@@ -2,7 +2,11 @@
 
 ← parent landscape survey: [../01-voice-cloning-fuz.md](../01-voice-cloning-fuz.md) · folder index: [../README.md](../README.md)
 
-**This folder is the *implementation* plan** (the parent file is the *landscape survey*). It exists so that when you sit down at the home machine you can execute mostly without re-deciding. Research/planning only — no ModForge code has been touched.
+**This folder started as the *implementation* plan** (the parent file is the *landscape survey*).
+As of 2026-06-12, the core ModForge `voicelines` path exists: it can inspect built INFOs, plan
+speaker/template/output paths, shell out to a local TTS wrapper, encode with Wine `xWMAEncode.exe`,
+and write `.fuz` loose assets. The remaining work is real model setup, lip tooling, quality QA, and
+Skyrim/Proton in-game confirmation.
 
 **Plan date:** 2026-06-09. Author target machine: **Manjaro Linux, 16 GB VRAM NVIDIA GPU, CUDA, Wine/Proton available.** Personal single-player use only; generated voice assets are never redistributed.
 
@@ -26,7 +30,7 @@
 | [02-voice-data.md](02-voice-data.md) | Extracting vanilla/follower voiceType audio on Linux; building the reference clip (zero-shot) vs the fine-tune dataset (GPT-SoVITS); normalization specs. | Right after install — you need a reference voice before you can clone. |
 | [03-lip-and-audio-encoding.md](03-lip-and-audio-encoding.md) | The tiered `.lip` plan (none / Wine / synthetic C#); `.lip` format notes + decode plan; `.xwm` encoding; audio normalization. | When you want the mouth to move and/or want real `.fuz` instead of loose WAV. |
 | [04-fuz-and-filenames.md](04-fuz-and-filenames.md) | Native C# `.fuz` writer (byte layout + sketch); the deterministic CK-matched filename rule and how to empirically pin it; on-disk paths; MO2 zip packaging. | When moving from "loose WAV" to packed `.fuz`, and whenever filenames matter (always). |
-| [05-modforge-integration.md](05-modforge-integration.md) | Spec design (`voiceTemplate`, `NpcSpec.voiceTemplate`, `voiceLine`); the `voicelines` CLI step; `Generator.Build.Voice.cs`; shell-out + Wine plumbing; env vars; CODE_MAP/SPEC placement. | When the hand-run pipeline works and you want ModForge to drive it. |
+| [05-modforge-integration.md](05-modforge-integration.md) | Spec design (`voiceTemplate`, `NpcSpec.voiceTemplate`, `voiceLine`); the `voicelines` CLI step; `Generator.Build.Voice.cs`; shell-out + Wine plumbing; env vars; CODE_MAP/SPEC placement. | Historical design + cross-check; implementation now lives in the repo. |
 | [06-standalone-runbook.md](06-standalone-runbook.md) | The exact at-home MVP: copy-paste commands, one NPC / `MaleNord` / 3 lines, end to end, verification, then progressive enhancement. | **Start here on day one.** It links back into 01–04 as needed. |
 
 ---
@@ -63,7 +67,9 @@ Each step proves one new thing and is independently testable. Do not add a tier 
 3. **Add `.xwm`.** Encode via `xWMAEncode.exe` under Wine. Proves the Wine audio path and shrinks disk. ([03](03-lip-and-audio-encoding.md))
 4. **Add lip (movement).** Tier 1 FaceFXWrapper/Runalip under Wine; if Wine fails, Tier 2 synthetic envelope `.lip`. ([03](03-lip-and-audio-encoding.md))
 5. **GPT-SoVITS fidelity track.** For any NPC where the zero-shot clone drifts across many lines, fine-tune and switch that voice's engine. ([01](01-engine-setup.md), [02](02-voice-data.md))
-6. **ModForge `voicelines` CLI step.** Fold the proven hand pipeline into the generator. ([05](05-modforge-integration.md))
+6. **ModForge `voicelines` CLI step.** Implemented structurally. Use `voicediag` / `voicelines --plan`
+   first, then generate. Remaining work: real TTS model install + in-game playback confirmation.
+   ([05](05-modforge-integration.md))
 
 ---
 
@@ -71,7 +77,10 @@ Each step proves one new thing and is independently testable. Do not add a tier 
 
 These are the points the plan *cannot* settle from a Windows desk — flagged so you test them deliberately rather than assume.
 
-- **Filename rule must be byte-pinned.** A one-character mismatch = silent line, no error. Extract 2–3 vanilla `.fuz` filenames first and confirm ModForge's name generator reproduces every segment exactly. ([04](04-fuz-and-filenames.md) §"Pinning the rule"). Memory: [[vanilla-nif-paths-must-be-verified]] is the same class of "wrong path = invisible, no error" trap.
+- **Filename rule is implemented but still deserves in-game confirmation.** ModForge uses
+  `<quest10>_<topic15>_<infoFormId8>_<responseIndex>`. A one-character mismatch = silent line, no
+  error. Extract 2–3 vanilla `.fuz` filenames and confirm the generator reproduces them exactly
+  before trusting large batches. ([04](04-fuz-and-filenames.md) §"Pinning the rule").
 - **FaceFXWrapper under Wine is unconfirmed.** It loads CK DLLs in-memory via MemoryModule — the part most likely to break under Wine. Treat Tier 1 as "try it, ~15 min timebox"; fall straight to Tier 2 (synthetic) or Tier 0 (no lip) if it misbehaves. ([03](03-lip-and-audio-encoding.md))
 - **`.lip` exact byte layout is not yet captured here** (the two authoritative wikis 403 automated fetches). If you go Tier 2, pin it at implementation by reading `fallout.wiki/wiki/LIP_File_Format` in a browser **and** hex-diffing a couple of extracted vanilla `.lip`. Known facts are recorded in [03](03-lip-and-audio-encoding.md) §"`.lip` format".
 - **ffmpeg cannot produce Bethesda-valid `.xwm`.** Use `xWMAEncode.exe` (Wine) or ship loose WAV. Do not trust ffmpeg's xWMA *encoder*. ([03](03-lip-and-audio-encoding.md))
@@ -89,4 +98,6 @@ Personal, single-player, non-redistributed only. Do **not** publish cloned-voice
 
 ---
 
-*Status: implementation plan drafted 2026-06-09 from 2026 web research + ModForge's existing capabilities. Engine APIs (F5-TTS CLI/Python, Chatterbox Python, GPT-SoVITS) and the `.fuz` layout are concrete; the inline-flagged items above need empirical confirmation on the home machine. Written in English to match the sibling reports 01–05; a zh-TW mirror can be added on request.*
+*Status: plan drafted 2026-06-09; ModForge integration partially landed by 2026-06-12. Fake-TTS +
+real xWMA `.fuz` packaging is structurally verified; real TTS model setup, FaceFX/lip behavior, and
+Skyrim/Proton playback still need empirical confirmation on the home machine.*

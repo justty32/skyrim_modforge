@@ -11,7 +11,7 @@ Goal of this file: get **one** engine turning *text + a reference voice* into a 
 Every engine reduces to the same shell-callable shape. Plan all of them to satisfy this so ModForge (and your hand scripts) never special-case an engine beyond a name + a few knobs:
 
 ```
-voicegen  --engine {f5|chatterbox|gptsovits}
+voicegen  --engine {f5|fish-s2|chatterbox|gptsovits}
           --ref     <reference.wav>          # zero-shot ref clip, OR a fine-tuned model dir
           --ref-text "<transcript of ref>"   # F5 needs this; Chatterbox/GPT-SoVITS optional
           --text    "<line to speak>"
@@ -131,34 +131,91 @@ git clone https://github.com/RVC-Boss/GPT-SoVITS && cd GPT-SoVITS
 
 ---
 
-## 5. VRAM / fit summary (16 GB)
+## 5. Engine D — Fish Speech S2 (modern open clone backend)
+
+Fish Audio S2 is a newer open TTS family with voice cloning, long-form/multispeaker ambitions, and
+an SGLang-oriented inference path. Treat it as a heavier but promising engine for important NPCs.
+The ModForge-side integration is intentionally a thin wrapper: `voicegen.py --engine fish-s2`
+forwards to `MODFORGE_FISH_SPEECH_BIN`, which must write the requested WAV.
+
+**Install sketch:**
+
+```bash
+uv venv fish-speech && source fish-speech/bin/activate
+uv pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu124
+uv pip install fish-speech
+```
+
+Download the model/codec weights per the Fish Audio docs. For S2 Pro, use the local model directory
+as `voiceTemplates[].modelPath`.
+
+**ModForge contract wrapper:**
+
+`MODFORGE_FISH_SPEECH_BIN` should accept:
+
+```bash
+fish-s2-wrapper \
+  --text "Line to speak." \
+  --out out.wav \
+  --ref-audio refs/voice.wav \
+  --ref-text "Reference transcript." \
+  --model models/fish-s2-pro \
+  --seed 1234 \
+  --language en
+```
+
+The wrapper can drive Fish's official CLI, HTTP API, or SGLang server. Keep that detail outside
+ModForge so the `.fuz` pipeline does not change when Fish changes its runtime layout.
+
+**Spec example:**
+
+```json
+{
+  "id": "SeranaFish",
+  "engine": "fish-s2",
+  "referenceWav": "refs/serana_ref.wav",
+  "referenceText": "Keep your eyes open.",
+  "modelPath": "models/fish-s2-pro",
+  "language": "en",
+  "seed": 1234
+}
+```
+
+**When to pick Fish S2:** when F5 sounds too flat or drifts on longer emotional dialogue and you
+want to compare a newer, higher-capacity model. Keep F5 as the fast baseline until Fish is installed
+and measured on the same 5-10 Skyrim lines.
+
+---
+
+## 6. VRAM / fit summary (16 GB)
 
 | Engine | Inference VRAM | Training? | Drift across many lines | Setup effort | Role |
 |--------|---------------|-----------|-------------------------|--------------|------|
 | **F5-TTS** | ~8 GB | none (zero-shot) | moderate | low | MVP primary |
 | **Chatterbox** | 5–7 GB | none (zero-shot) | moderate; emotion knob | low | MVP alt (emotion/tags) |
 | **GPT-SoVITS** | ≥6 GB (≥12 GB DPO) | yes, fits 16 GB | low (fine-tuned) | medium (train step) | fidelity/consistency upgrade |
+| **Fish Speech S2** | model-dependent; S2 Pro is heavier | optional | expected low/moderate | medium/high | modern clone comparison |
 | RVC (post-pass) | small | yes | — (stabilizes) | medium | optional max-fidelity recolor |
 
 All comfortably within 16 GB. Nothing here forces cloud or quantization.
 
 ---
 
-## 6. Rejected / deferred engines (and why, so you don't reconsider blindly)
+## 7. Rejected / deferred engines (and why, so you don't reconsider blindly)
 
 - **xVASynth / xVATrainer** — the Skyrim-native, "*is* a known character" choice, but no documented **headless-Linux** recipe (Electron front-end is Windows; Python backend is *architecturally* runnable but undocumented as a driven service). Kept as an escape hatch if you specifically want a canonical vanilla-character timbre and are willing to reverse its backend. Not the default.
 - **XTTS v2 (Coqui)** — easy zero-shot, but Coqui is defunct (weights/forks remain). F5/Chatterbox are healthier maintained equivalents. Use only if a fork proves more convenient.
-- **Fish Speech / Qwen3-TTS** — strong 2026 entrants that fit 16 GB; viable swap-ins under the same contract if F5/Chatterbox disappoint. Not researched in depth here; revisit only if needed.
+- **Qwen3-TTS** — strong 2026 entrant; viable under the same contract if F5/Chatterbox/Fish disappoint. Not wired yet.
 - **Piper** — Linux-native, CPU-fast, *robotic, no cloning*. Keep as an **instant placeholder** to validate the [03]/[04]/[06] plumbing without waiting on GPU/clone quality.
 - **ElevenLabs** — best-in-class but cloud + ToS + cost. Personal-use fallback only; defeats the local-on-Manjaro goal.
 
 ---
 
-## 7. What "done" looks like for this file
+## 8. What "done" looks like for this file
 
 You can run `voicegen.py --engine f5 --ref ref.wav --ref-text "..." --text "Hello." --out hello.wav` and get an intelligible, on-voice WAV. That single capability unblocks [06]'s entire MVP. Everything after is packaging.
 
 ---
 
 ### Sources
-F5-TTS: [SWivid/F5-TTS](https://github.com/SWivid/F5-TTS), [CLI docs (DeepWiki)](https://deepwiki.com/SWivid/F5-TTS/3.2-command-line-interface), [f5-tts PyPI](https://pypi.org/project/f5-tts/). Chatterbox: [resemble-ai/chatterbox](https://github.com/resemble-ai/chatterbox), [chatterbox-tts PyPI](https://pypi.org/project/chatterbox-tts/), [Chatterbox Turbo](https://www.resemble.ai/chatterbox-turbo/). GPT-SoVITS: [RVC-Boss/GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS). Landscape comparisons: [BentoML 2026 OSS TTS](https://www.bentoml.com/blog/exploring-the-world-of-open-source-text-to-speech-models), [SiliconFlow voice-cloning 2026](https://www.siliconflow.com/articles/en/best-open-source-models-for-voice-cloning).
+F5-TTS: [SWivid/F5-TTS](https://github.com/SWivid/F5-TTS), [CLI docs (DeepWiki)](https://deepwiki.com/SWivid/F5-TTS/3.2-command-line-interface), [f5-tts PyPI](https://pypi.org/project/f5-tts/). Chatterbox: [resemble-ai/chatterbox](https://github.com/resemble-ai/chatterbox), [chatterbox-tts PyPI](https://pypi.org/project/chatterbox-tts/), [Chatterbox Turbo](https://www.resemble.ai/chatterbox-turbo/). GPT-SoVITS: [RVC-Boss/GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS). Fish Speech: [fishaudio/fish-speech](https://github.com/fishaudio/fish-speech), [Fish Audio self-hosted inference](https://docs.fish.audio/developer-guide/self-hosting/running-inference), [Fish Audio S2 technical report](https://arxiv.org/abs/2603.08823). Landscape comparisons: [BentoML 2026 OSS TTS](https://www.bentoml.com/blog/exploring-the-world-of-open-source-text-to-speech-models), [SiliconFlow voice-cloning 2026](https://www.siliconflow.com/articles/en/best-open-source-models-for-voice-cloning).

@@ -72,8 +72,8 @@
     { "editorId": "MF_TestRoom", "name": "ModForge Test Room" }
   ],
   "placements": [
-    { "base": "MF_Smith", "cell": "MF_TestRoom",
-      "position": { "x": 0, "y": 0, "z": 0 }, "rotation": { "x": 0, "y": 0, "z": 0 } },
+    { "base": "MF_Smith", "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": -1150, "y": 200, "z": 0 }, "rotation": { "x": 0, "y": 0, "z": 1.783 } },
     { "base": "MF_Coin", "cell": "MF_TestRoom",
       "position": { "x": 40, "y": 0, "z": 0 } },
     { "base": "MF_Chest", "cell": "Skyrim.esm:0x01605E",

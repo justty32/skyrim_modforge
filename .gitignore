@@ -28,3 +28,5 @@ reference/
 /young_test.json
 /venv_voice/
 __pycache__/
+/examples/refs/
+/.venvs/

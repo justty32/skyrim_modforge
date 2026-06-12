@@ -2,7 +2,7 @@
 
 ← [README](README.md) · 上一份：[03-lip-and-audio-encoding.md](03-lip-and-audio-encoding.md) · 下一份：[05-modforge-integration.md](05-modforge-integration.md)
 
-兩件事，都是 native C#（無 Wine）：寫 `.fuz` 容器，與算出引擎要求的**確切 CK-相符檔名**。檔名是成敗關鍵 —— 一個字元不符 = 該行無聲、無報錯。
+兩件事：native C# 寫 `.fuz` 容器，與算出引擎要求的**確切 CK-相符檔名**。檔名是成敗關鍵 —— 一個字元不符 = 該行無聲、無報錯。Wine 只用於 xWMA encoding 或 FaceFX lip generation。
 
 ---
 
@@ -20,7 +20,7 @@
 
 所以 `audioLen = fileLength − 12 − FuzLipSize`。若 `FuzLipSize == 0`，音訊緊接 12-byte header 之後。
 
-**Native C# writer（草稿 —— 住在 `Generator.Build.Voice.cs`，[05]）：**
+**Native C# writer（已落地於 voice pipeline）：**
 ```csharp
 // versionBytes：從一個 vanilla .fuz 抓那 4 bytes 一次，hardcode（通常是個小常數）。
 static byte[] WriteFuz(byte[] xwmOrWav, byte[]? lip)
@@ -35,7 +35,7 @@ static byte[] WriteFuz(byte[] xwmOrWav, byte[]? lip)
     return ms.ToArray();
 }
 ```
-Zero-lip MVP：`WriteFuz(xwm, null)` → `FUZE` + version + `0x00000000` + xwm。**~20 行、無第三方工具、無 Wine。** 讀一個 vanilla `.fuz` header 確認那 4 個 version bytes（別猜）。
+Zero-lip MVP：`WriteFuz(xwm, null)` → `FUZE` + version + `0x00000000` + xwm。**無第三方工具、無 Wine。** fake TTS + 真 xWMAEncode 已在本機產出 `.fuz`。
 
 > 架構筆記：這跟 ModForge 各處姿態一致 —— 格式小且已驗證時就 native emit bytes（像 Mutagen records），只對大型不透明格式 shell-out。Native fuz writer 完全移除 Wine fuz-tool 依賴。
 
@@ -60,9 +60,9 @@ CK 自動生成這些，且**不可更改** —— 音檔必須完全相符否�
 
 ---
 
-## 3. 釘死確切規則（先做、經驗驗證）
+## 3. 釘死確切規則（目前實作 + 待實機驗證）
 
-*形狀*已確認；*確切字串格式*尚未逐 byte 驗證 —— 特別是：段落截斷/長度上限、大小寫、**空 topic** 如何呈現、EditorID 內非英數字元如何處理。搞錯就無聲、無報錯（同類失敗如 [[vanilla-nif-paths-must-be-verified]]）。
+目前 ModForge 已有可用的檔名規則：quest EditorID、topic context、INFO FormID、1-based response index。用 `voicediag` / `voicelines --plan` 可以在生成前列出每個 planned filename。仍值得用 vanilla `.fuz` 與 Skyrim/Proton 實機再確認長字串截斷、大小寫、空 topic 與非英數字元行為。
 
 **步驟（≈30 分鐘，在信任任何生成檔名前）：**
 1. 抽一把某已知 quest 的 **vanilla** `.fuz` 檔名（Lazy Voice Finder，或解 Voices BSA，[02]）。
@@ -90,9 +90,9 @@ CK 自動生成這些，且**不可更改** —— 音檔必須完全相符否�
 
 ---
 
-## 5. 打包進 MO2 zip
+## 5. 打包進 MO2 zip / mod folder
 
-ModForge 既有 `package` step 已把 `Sound/...` 複製進扁平 MO2 zip（[05] 明確 wire 進 `Sound/Voice/...`）。zip 內輸出樹：
+Voice files 是 loose assets，不嵌入 ESP/ESM。`package` 只會複製 `--assets` 或 `spec.assets` 提供的 `Sound/...` 樹，不會自動尋找另一個 build directory 旁邊的 voice output。輸出樹：
 ```
 <zip root>/
   MyMod.esp
@@ -101,14 +101,28 @@ ModForge 既有 `package` step 已把 `Sound/...` 複製進扁平 MO2 zip（[05]
 ```
 無 `.seq` 互動。依記憶 [[mo2-reinstall-reverts-manual-pex]]，一律重建進 zip —— 絕不在 live MO2 mod 資料夾手放檔，重裝會被還原。
 
+可靠順序：
+
+```bash
+# Option A: 先 package 到最終 mod folder，再直接對其中 plugin 產 voice files
+dotnet run --project src/ModForge.Cli -- package spec.json OutModDir
+dotnet run --project src/ModForge.Cli -- voicelines spec.json OutModDir/MyMod.esp
+
+# Option B: staging 產 voice，再把 staging 的 Sound/ 當 assets 打包
+dotnet run --project src/ModForge.Cli -- build spec.json Staging/MyMod.esp
+dotnet run --project src/ModForge.Cli -- voicelines spec.json Staging/MyMod.esp
+dotnet run --project src/ModForge.Cli -- package spec.json OutModDir --assets Staging
+```
+
 ---
 
 ## 6.「完成」長什麼樣
 
-- 一個能對 vanilla `.fuz` round-trip 的 C# `WriteFuz`（解碼→重編→音訊+lip section bytes 一致）。
-- 一個有通過測試的檔名產生器，逐字重現 ≥3 個 vanilla 名，含一個多-response INFO 與一個空-topic case。
+- C# `WriteFuz` 已存在，unit tests 覆蓋 FUZE header；fake-TTS + 真 xWMA generation 已產出 `.fuz`。
+- `voicediag` / `voicelines --plan` 已能在 generation 前列出每個 INFO 的確切路徑。
+- 剩餘：真 TTS 模型、FaceFX/lip、Skyrim/Proton 實機播放確認。
 
-這兩個解鎖 [05] 的 `voicelines` step 與 [06] 的步驟 2+。
+這些檢查用來加固已實作的 [05] `voicelines` step 與 [06] 的實機 runbook。
 
 ---
 

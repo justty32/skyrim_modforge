@@ -101,8 +101,8 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Voice.cs` | `VoiceTemplateSpec`（`engine` f5\|chatterbox\|gptsovits\|xtts——**僅 f5 有實作**、`referenceWav`/`referenceText` zero-shot reference、`modelPath` 微調模型、`rvcModel`、`seed`、`speed`、`exaggeration`、`language`）+ `VoiceLineSpec` 全域輸出設定（`format` fuz\|wav\|xwm、`skipLip`）；`NpcSpec.voiceTemplate`（→ template id）在 `Spec.Actors.cs` |
-| Core | `Voice.cs` | 呼外部 TTS（`MODFORGE_TTS_BIN`；engine/ref/model/seed/**speed/exaggeration/language** 全數傳給 TTS process）；xWMAEncode（`MODFORGE_XWMAENCODE`）與 FaceFXWrapper lip 生成（`MODFORGE_FACEFX` + `MODFORGE_FONIXDATA`）走 Wine |
+| Spec | `Spec.Voice.cs` | `VoiceTemplateSpec`（`engine` f5\|fish-s2\|chatterbox\|gptsovits\|xtts；`fish`/`fishspeech`/`fish-speech` 為 Fish S2 alias；`referenceWav`/`referenceText` zero-shot reference、`modelPath` 微調模型、`rvcModel`、`seed`、`speed`、`exaggeration`、`language`）+ `VoiceLineSpec` 全域輸出設定（`format` fuz\|wav\|xwm、`skipLip`）；`NpcSpec.voiceTemplate`（→ template id）在 `Spec.Actors.cs` |
+| Core | `Voice.cs` | 呼外部 TTS（`MODFORGE_TTS_BIN`；engine/ref/model/seed/**speed/exaggeration/language** 全數傳給 TTS process）；`voicegen.py` 的 Fish S2 分支再呼 `MODFORGE_FISH_SPEECH_BIN`；xWMAEncode（`MODFORGE_XWMAENCODE`）與 FaceFXWrapper lip 生成（`MODFORGE_FACEFX` + `MODFORGE_FONIXDATA`）走 Wine |
 | Core | `Fuz.cs` | `.fuz` 容器拆解（FUZE header → lip + audio；audio ext 自動偵測 xwm/wav）|
 | Core | `Generator.Build.Voice.cs` | `WriteFuz`（lip + audio 打包成 .fuz）+ `VoiceFileName` CK 命名（`quest10_topic15_formid8_n.fuz`：quest EditorID 前 10 字 + topic EditorID 前 15 字 + INFO FormID hex8 + response 序號）|
 | Core | `Generator.Build.Voice.Speakers.cs` | `ResolveVoiceSpeakers`：從建好 esp 的 INFO 條件解 speaker（GetIsID / GetIsAliasRef / GetInFaction / scene Dialog action）→ `VoiceSpeaker`(Npc + voiceType)；一個 INFO 可對多 speaker（faction），`SelectVoiceTargets` 去重成每個 distinct voiceType 一份。解不出 → `VoiceSpeakerResolution.Reason`（CLI 必須大聲報）。在 Core 故可對 in-memory built mod 單測 |
@@ -110,7 +110,7 @@
 | Validate | `Generator.Validate.Voice.cs` | template id 非空 / engine 枚舉 / `npc.voiceTemplate` ref 存在 / `voiceLine.format` 枚舉；已掛進 `Validate` |
 | CLI | `Program.Build.Voice.cs` | `voicelines <spec> <esp>`：走訪建好 esp 的 INFO → 從條件找 speaker（GetIsID + **alias / faction 條件**；解不出 speaker → **loud warning**，不靜默 skip）→ WAV→xwm→fuz 寫到 `Sound/Voice/<plugin>/<voiceType>/`（已存在的檔 skip，無 hash cache）；**xwm 編碼失敗且 format=fuz → 改寫 loose `.wav` + warning（不把裸 WAV 包進 .fuz）**。`extract-voices <bsa> <voiceType> <outDir>`：抽 vanilla .fuz → ffmpeg 轉 wav（做 reference clip）|
 
-環境變數：`MODFORGE_TTS_BIN`（TTS wrapper，必要）、`MODFORGE_XWMAENCODE`、`MODFORGE_FACEFX`、`MODFORGE_FONIXDATA`（後三者 Wine 路徑，缺則退化：無 xwm / 無 lip）。
+環境變數：`MODFORGE_TTS_BIN`（TTS wrapper，必要）、`MODFORGE_FISH_SPEECH_BIN`（僅 Fish S2 engine 需要）、`MODFORGE_XWMAENCODE`、`MODFORGE_FACEFX`、`MODFORGE_FONIXDATA`（後三者 Wine 路徑，缺則退化：無 xwm / 無 lip）。
 
 ---
 

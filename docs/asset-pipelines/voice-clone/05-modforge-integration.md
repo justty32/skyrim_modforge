@@ -2,7 +2,11 @@
 
 ← [README](README.md) · prev: [04-fuz-and-filenames.md](04-fuz-and-filenames.md) · next: [06-standalone-runbook.md](06-standalone-runbook.md)
 
-How the proven hand pipeline ([06]) folds into the generator. This is design, not code — but it names the concrete files, spec fields, and the existing conventions it must mirror. Grounded in the current `src` layout (read from `docs/CODE_MAP.infra.md`).
+How the proven hand pipeline ([06]) folds into the generator. This started as design, but the core
+structure landed by 2026-06-12: `voicelines`, `voicediag`, `voiceTemplates`, `voiceLine`, TTS wrapper
+shell-out, Wine xWMA path conversion, and native `.fuz` writing now exist. Treat this file as the
+historical design/cross-check; use `SPEC-workflow.md` and `CODE_MAP.infra.md` for current commands
+and code locations.
 
 **Mirror these existing conventions exactly** (don't invent new patterns):
 - **Shell-out with env-var fallback:** `Papyrus.cs` is the template — `PapyrusOptions` fields fall back `null → MODFORGE_* env → default`, drive an exe under Wine *or* native. Voice tooling copies this shape.
@@ -80,30 +84,35 @@ Following `Papyrus.cs`/`PapyrusOptions`:
 
 | Env var | Points at | Absent → |
 |---------|-----------|----------|
-| `MODFORGE_TTS_BIN` | the `voicegen.py` venv wrapper ([01]) | skip-with-warn (no voice gen) |
+| `MODFORGE_TTS_BIN` | the `voicegen.py` venv wrapper ([01]) | no TTS generation; planning/diag still works |
 | `MODFORGE_XWMAENCODE` | `xWMAEncode.exe` (run under Wine) | skip xwm, ship WAV |
 | `MODFORGE_FACEFX` | `FaceFXWrapper.exe` (Wine) | skip lip (Tier 0) or use synthetic (Tier 2) |
 | `MODFORGE_FONIXDATA` | `FonixData.cdf` | required only if `MODFORGE_FACEFX` set |
 
-Every tool absent = graceful degrade to the next-lower tier with a warning, never a hard failure. This is the established conditional-embed/conditional-tool posture.
+Missing xWMA/lip tools gracefully degrade to a lower tier (`.wav` or no lip). Missing TTS blocks actual
+generation but `voicediag` / `voicelines --plan` still provide the offline map.
 
 ---
 
 ## 5. Package + build-pipeline wiring
 
 - `Assets.cs` already copies the `Sounds` tree — ensure `Sound/Voice/<plugin>/<voicetype>/` is included (it should fall out of the existing `Sound/...` copy; verify the glob reaches `Voice/`).
-- `Package.cs` flat MO2 assembly already handles `Sound/...`; voice files ride along. **No `.seq` interaction** (voice ≠ StartGameEnabled quests).
-- Order in a full build: `build` → `voicelines` → `package`. Document in `SPEC-workflow.md`.
+- `Package.cs` flat MO2 assembly handles `Sound/...` when that tree is provided through `--assets`
+  or `spec.assets`. It does not discover voice output sitting beside an unrelated build by itself.
+  **No `.seq` interaction** (voice ≠ StartGameEnabled quests).
+- Reliable orders: `package` to the final mod folder, then run `voicelines` against that plugin; or
+  `build` + `voicelines` in a staging dir, then `package --assets <stagingDir>`.
 
 ---
 
 ## 6. Maintenance-chain placement (when this lands)
 
-Per CLAUDE.md Workflow 1, on landing (not now — this is research):
+Per CLAUDE.md Workflow 1, these were the landing points; most are now present:
 - **Code:** `Spec.cs` (+`Spec.Actors.cs`), `Generator.Build.Voice.cs`, `Voice.cs`, `Program.Build.cs`, `examples/spec.schema.json` + `sample_spec.json`.
 - **CODE_MAP:** add `Generator.Build.Voice.cs` / `Voice.cs` rows to `CODE_MAP.infra.md`; the `voicelines` command to the CLI table; the spec fields cross-ref into `CODE_MAP.dialogue-quests.md` (INFO/voiceType live there). Add a Tests row (`VoiceFileNameTests`, `FuzWriterTests`).
-- **Docs:** `voiceLine`/`voiceTemplate` fields into `SPEC-dialogue-quests.md` (or a new `SPEC-voice.md` if it grows); `voicelines` into `for_agent_cli.md` and `SPEC-workflow.md`.
-- A new diag `voicediag <esp>` (sibling to `identitydiag`) could verify emitted filenames/paths against the esp's INFO records without running the game — high value given the silent-failure risk.
+- **Docs:** `voiceLine`/`voiceTemplate` fields in SPEC docs; `voicelines` / `voicediag` in workflow docs.
+- `voicediag <spec> <built.esp>` now verifies emitted filenames/paths against the esp's INFO records
+  without running TTS or the game.
 
 ---
 

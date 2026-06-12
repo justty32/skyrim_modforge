@@ -2,7 +2,10 @@
 
 ← 上層 landscape 調研：[../01-voice-cloning-fuz.md](../01-voice-cloning-fuz.md) · 資料夾索引：[../README.md](../README.md)
 
-**本資料夾是「實作」計劃**（上層那份是「landscape 調研」）。目的是讓你回到家裡的機器時，能幾乎不用重新做決定就直接開工。純研究／規劃，尚未動任何 ModForge 程式碼。
+**本資料夾原本是「實作」計劃**（上層那份是「landscape 調研」）。
+截至 2026-06-12，核心 ModForge `voicelines` 路徑已存在：它能檢查 built INFO、規劃
+speaker/template/output path、shell out 到本機 TTS wrapper、用 Wine `xWMAEncode.exe` 編碼，並寫出
+`.fuz` loose assets。剩餘工作是真模型設定、lip tooling、品質 QA、Skyrim/Proton 實機確認。
 
 **計劃日期：** 2026-06-09。作者目標機器：**Manjaro Linux、16 GB VRAM NVIDIA 顯卡、CUDA、Wine/Proton 可用。** 個人單人遊玩用途；產出的語音資產一律不發布。
 
@@ -26,7 +29,7 @@
 | [02-voice-data.md](02-voice-data.md) | 在 Linux 抽取 vanilla/follower voiceType 音檔；建立 reference clip（零訓練）vs 微調資料集（GPT-SoVITS）；正規化規格。 | 裝完引擎之後 —— 沒有參考聲音就無法克隆。 |
 | [03-lip-and-audio-encoding.md](03-lip-and-audio-encoding.md) | 分層 `.lip` 計劃（無／Wine／合成 C#）；`.lip` 格式筆記與解碼計劃；`.xwm` 編碼；音訊正規化。 | 想讓嘴會動，且／或想要真 `.fuz`（而非鬆散 WAV）時。 |
 | [04-fuz-and-filenames.md](04-fuz-and-filenames.md) | 原生 C# `.fuz` writer（byte layout + 草稿）；決定性的 CK-相符檔名規則與經驗驗證法；on-disk 路徑；MO2 zip 打包。 | 從「鬆散 WAV」進到打包 `.fuz` 時，以及任何檔名重要時（永遠）。 |
-| [05-modforge-integration.md](05-modforge-integration.md) | Spec 設計（`voiceTemplate`、`NpcSpec.voiceTemplate`、`voiceLine`）；`voicelines` CLI step；`Generator.Build.Voice.cs`；shell-out + Wine plumbing；env vars；CODE_MAP/SPEC 落點。 | 手跑 pipeline 成功、想讓 ModForge 來驅動時。 |
+| [05-modforge-integration.md](05-modforge-integration.md) | Spec 設計（`voiceTemplate`、`NpcSpec.voiceTemplate`、`voiceLine`）；`voicelines` CLI step；`Generator.Build.Voice.cs`；shell-out + Wine plumbing；env vars；CODE_MAP/SPEC 落點。 | 歷史設計 + cross-check；實作現在已在 repo 裡。 |
 | [06-standalone-runbook.md](06-standalone-runbook.md) | 確切的回家 MVP：複製貼上指令、一個 NPC / `MaleNord` / 3 句、端到端、驗證、再漸進強化。 | **第一天從這裡開始。** 需要時它會回連 01–04。 |
 
 ---
@@ -63,7 +66,8 @@ ModForge emit INFO 對話行（文字 + voiceType）
 3. **加 `.xwm`。** 走 Wine 用 `xWMAEncode.exe` 編碼。證明 Wine 音訊路徑並縮小檔案。（[03](03-lip-and-audio-encoding.md)）
 4. **加 lip（嘴動）。** Tier 1 走 Wine 的 FaceFXWrapper/Runalip；若 Wine 失敗，Tier 2 合成 envelope `.lip`。（[03](03-lip-and-audio-encoding.md)）
 5. **GPT-SoVITS 保真度軌。** 任何零訓練克隆跨多行會漂移的 NPC，微調後切換該語音的引擎。（[01](01-engine-setup.md)、[02](02-voice-data.md)）
-6. **ModForge `voicelines` CLI step。** 把驗證過的手動 pipeline 折進產生器。（[05](05-modforge-integration.md)）
+6. **ModForge `voicelines` CLI step。** 已結構性實作。先用 `voicediag` / `voicelines --plan`
+   檢查，再實際生成。剩餘工作：真 TTS 模型安裝 + 實機播放確認。（[05](05-modforge-integration.md)）
 
 ---
 

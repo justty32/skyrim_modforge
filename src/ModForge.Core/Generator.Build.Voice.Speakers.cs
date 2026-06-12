@@ -101,13 +101,15 @@ public static partial class Generator
     /// id named a template that doesn't exist).
     /// </summary>
     public static List<VoiceTarget> SelectVoiceTargets(
-        VoiceSpeakerResolution res, IReadOnlyDictionary<string, VoiceTemplateSpec?> templateByNpcEd)
+        VoiceSpeakerResolution res,
+        IReadOnlyDictionary<string, VoiceTemplateSpec?> templateByNpcEd,
+        IReadOnlyDictionary<string, string>? voiceTypeByNpcEd = null)
     {
         var targets = new List<VoiceTarget>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var sp in res.Speakers)
         {
-            var vt = string.IsNullOrEmpty(sp.VoiceType) ? "DefaultVoice" : sp.VoiceType!;
+            var vt = EffectiveVoiceType(sp, voiceTypeByNpcEd);
             if (seen.Contains(vt)) continue;                  // one file per voiceType folder
             if (!templateByNpcEd.TryGetValue(sp.Npc.EditorID ?? "", out var tpl) || tpl is null) continue;
             seen.Add(vt);
@@ -121,6 +123,17 @@ public static partial class Generator
 
     private static VoiceSpeaker MakeSpeaker(INpcGetter npc, ILinkCache cache) =>
         new(npc, npc.Voice.TryResolve(cache)?.EditorID);
+
+    private static string EffectiveVoiceType(VoiceSpeaker sp, IReadOnlyDictionary<string, string>? voiceTypeByNpcEd)
+    {
+        if (!string.IsNullOrEmpty(sp.VoiceType)) return sp.VoiceType!;
+        if (voiceTypeByNpcEd is not null
+            && sp.Npc.EditorID is { Length: > 0 } ed
+            && voiceTypeByNpcEd.TryGetValue(ed, out var vt)
+            && !string.IsNullOrWhiteSpace(vt))
+            return vt;
+        return "DefaultVoice";
+    }
 
     // uniqueActor → the NPC base directly; forcedReference → the placed ACHR → its base NPC.
     private static INpcGetter? ResolveAliasNpc(IQuestAliasGetter alias, ILinkCache cache, out string why)

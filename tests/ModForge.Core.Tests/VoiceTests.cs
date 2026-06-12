@@ -61,6 +61,31 @@ public class VoiceTests
     }
 
     [Fact]
+    public void BuildTtsArgs_ForFishS2_UsesSameWrapperContract()
+    {
+        var t = new VoiceTemplateSpec
+        {
+            Id = "v",
+            Engine = "fish-s2",
+            ReferenceWav = "refs/serana.wav",
+            ReferenceText = "Keep your eyes open.",
+            ModelPath = "models/fish-s2-pro",
+            Seed = 7,
+            Language = "en",
+        };
+        var args = Voice.BuildTtsArgs("I have your back.", t, "/spec", "out.wav");
+
+        Assert.Equal("fish-s2", FlagValue(args, "--engine"));
+        Assert.Equal("I have your back.", FlagValue(args, "--text"));
+        Assert.Equal("out.wav", FlagValue(args, "--out"));
+        Assert.Equal(Path.Combine("/spec", "refs/serana.wav"), FlagValue(args, "--ref-wav"));
+        Assert.Equal("Keep your eyes open.", FlagValue(args, "--ref-text"));
+        Assert.Equal(Path.Combine("/spec", "models/fish-s2-pro"), FlagValue(args, "--model"));
+        Assert.Equal("7", FlagValue(args, "--seed"));
+        Assert.Equal("en", FlagValue(args, "--language"));
+    }
+
+    [Fact]
     public void BuildTtsArgs_EmptyLanguage_OmitsLanguageFlag()
     {
         var t = new VoiceTemplateSpec { Id = "v", Language = "" };
@@ -107,6 +132,16 @@ public class VoiceTests
         // Long Topic ID
         Assert.Equal("Quest_123456789012345_00000001_1.fuz",
             Generator.VoiceFileName("Quest", "1234567890123456789", 1, 1));
+    }
+
+    [Fact]
+    public void VoiceTypeFolderName_MapsCommonVanillaRefsAndSafeFolderIds()
+    {
+        Assert.Equal("MaleNord", Generator.VoiceTypeFolderName("Skyrim.esm:0x013AE6"));
+        Assert.Equal("FemaleEvenToned", Generator.VoiceTypeFolderName("Skyrim.esm:0x013ADD"));
+        Assert.Equal("CustomVoice", Generator.VoiceTypeFolderName("CustomVoice"));
+        Assert.Null(Generator.VoiceTypeFolderName("Other.esm:0x013AE6"));
+        Assert.Null(Generator.VoiceTypeFolderName("../BadVoice"));
     }
 
     [Fact]

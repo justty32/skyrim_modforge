@@ -20,7 +20,7 @@ Two things here, both native C# (no Wine): write the `.fuz` container, and compu
 
 So `audioLen = fileLength − 12 − FuzLipSize`. If `FuzLipSize == 0`, audio sits immediately after the 12-byte header.
 
-**Native C# writer (sketch — lives in `Generator.Build.Voice.cs`, [05]):**
+**Native C# writer (implemented in `Generator.Build.Voice.cs`):**
 ```csharp
 // versionBytes: capture the 4 bytes from a vanilla .fuz once and hardcode (commonly a small constant).
 static byte[] WriteFuz(byte[] xwmOrWav, byte[]? lip)
@@ -28,14 +28,15 @@ static byte[] WriteFuz(byte[] xwmOrWav, byte[]? lip)
     using var ms = new MemoryStream();
     using var w  = new BinaryWriter(ms);
     w.Write(Encoding.ASCII.GetBytes("FUZE")); // 0: magic
-    w.Write(VersionBytes);                     // 4: 4-byte version (pin from a vanilla fuz)
+    w.Write((uint)1);                           // 4: version
     w.Write((uint)(lip?.Length ?? 0));         // 8: FuzLipSize
     if (lip is { Length: > 0 }) w.Write(lip);  // 12: lip (omit if zero)
     w.Write(xwmOrWav);                          // audio
     return ms.ToArray();
 }
 ```
-Zero-lip MVP: `WriteFuz(xwm, null)` → `FUZE` + version + `0x00000000` + xwm. **~20 lines, no third-party tool, no Wine.** Confirm the 4 version bytes by reading one vanilla `.fuz` header (don't guess).
+Zero-lip path: `WriteFuz(xwm, null)` → `FUZE` + version + `0x00000000` + xwm. The writer is native;
+Wine is only needed for xWMA encoding or FaceFX lip generation.
 
 > Architecture note: this matches ModForge's posture everywhere else — emit the bytes natively when the format is small and verified (like Mutagen records), shell out only for the big opaque formats. A native fuz writer removes the Wine fuz-tool dependency entirely.
 
@@ -47,7 +48,7 @@ Zero-lip MVP: `WriteFuz(xwm, null)` → `FUZE` + version + `0x00000000` + xwm. *
 - first segment = **plugin filename exactly** (e.g. `MyMod.esp`)
 - second segment = **voiceType EditorID** (e.g. `MaleNord`)
 
-**Filename convention (confirmed shape):** `(Quest)_(Topic)_(HexBaseID)_(LineNumber)`
+**Filename convention (implemented shape):** `(Quest)_(Topic)_(HexBaseID)_(LineNumber)`
 e.g. `MyQuest_MyTopic_000113C9_1.fuz`. It encodes:
 - parent **quest EditorID**
 - the **topic/INFO context** string
@@ -57,6 +58,10 @@ e.g. `MyQuest_MyTopic_000113C9_1.fuz`. It encodes:
 CK generates these automatically and **they cannot be changed** — the audio file must match exactly or the engine won't play it.
 
 **Why this is free for ModForge:** ModForge *is* the generator. It assigns the QUST EditorID, the INFO FormID, and the response index via Mutagen. So it already holds every input to this filename **and can compute it deterministically without ever opening the Creation Kit.** This is the single hardest part of the manual community workflow, and it's the thing ModForge is uniquely positioned to nail. Everything else in this pipeline is generic plumbing; *this* is the differentiator.
+
+Implementation note: current generator truncates Quest EditorID to 10 chars, Topic EditorID to 15
+chars, strips non-alphanumeric/underscore chars, uses 8-digit uppercase INFO FormID and 1-based
+response index. Use `voicediag` / `voicelines --plan` to inspect every planned filename.
 
 ---
 
@@ -90,25 +95,48 @@ The filename rule (§2/§3) is **identical regardless of container** — only th
 
 ---
 
-## 5. Packaging into the MO2 zip
+## 5. Packaging into the MO2 folder
 
-ModForge's existing `package` step already copies `Sound/...` into the flat MO2 zip ([05] wires `Sound/Voice/...` in explicitly). Output tree inside the zip:
+Voice files are loose assets. They are not embedded in the `.esp`/`.esm`. `package` copies
+`Sound/...` only when it is provided as `--assets <dir>` or via `spec.assets`; it does not
+automatically search another build directory for generated voice output. Output tree:
 ```
 <zip root>/
   MyMod.esp
   Sound/Voice/MyMod.esp/MaleNord/MyQuest_MyTopic_000113C9_1.fuz
   ...
 ```
-No `.seq` interaction. Per memory [[mo2-reinstall-reverts-manual-pex]], always rebuild into the zip — never hand-place files in the live MO2 mod folder, they'll be reverted on reinstall.
+
+Safe workflows:
+
+```bash
+# A: generate voice directly into the final mod folder after package builds the plugin
+dotnet run --project src/ModForge.Cli -- package spec.json OutModDir
+dotnet run --project src/ModForge.Cli -- voicelines spec.json OutModDir/MyMod.esp
+
+# B: generate voice in a staging dir, then bundle that Sound/ tree
+dotnet run --project src/ModForge.Cli -- build spec.json Staging/MyMod.esp
+dotnet run --project src/ModForge.Cli -- voicelines spec.json Staging/MyMod.esp
+dotnet run --project src/ModForge.Cli -- package spec.json OutModDir --assets Staging
+```
+
+No `.seq` interaction beyond the normal dialogue quest `.seq`. Per memory
+[[mo2-reinstall-reverts-manual-pex]], always rebuild into the mod folder — never hand-place files in
+the live MO2 mod folder, they'll be reverted on reinstall.
 
 ---
 
 ## 6. What "done" looks like
 
-- A C# `WriteFuz` that round-trips against a vanilla `.fuz` (decode→re-encode→identical bytes for the audio+lip sections).
-- A filename generator with a passing test that reproduces ≥3 vanilla names exactly, including a multi-response INFO and a blank-topic case.
+- A C# `WriteFuz` exists and unit tests cover the FUZE header; **real F5-TTS + real xWMA generation
+  produced playing `.fuz` files — in-game confirmed 2026-06-13** (cloned MaleNord voice on a custom
+  NPC in the Sleeping Giant Inn, `ModForgeVoiceTest.zip`).
+- `voicediag` / `voicelines --plan` list the exact path for each INFO before generation; the
+  deterministic FormID→filename map was verified to survive a repackage (diff planned vs shipped).
+- Still untested: lip sync (FaceFX not yet set up → static mouth), the loose-`.wav` fallback in-game,
+  and a multi-response / blank-topic name edge case.
 
-Those two unblock [05]'s `voicelines` step and [06]'s steps 2+.
+Those checks harden the already-implemented [05] `voicelines` step and [06]'s in-game runbook.
 
 ---
 
