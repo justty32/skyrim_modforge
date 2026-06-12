@@ -17,9 +17,10 @@ public class ExternalAssetTests
 {
     private static readonly ModKey Key = ModKey.FromNameAndExtension("Test.esp");
 
-    private static (BuildResult Result, ISkyrimMod Mod) Build(ModSpec spec)
+    private static (BuildResult Result, ISkyrimMod Mod) Build(ModSpec spec, string? skyrimDataPath = null)
     {
-        var r = Generator.Build(spec, Key);
+        var options = skyrimDataPath is null ? null : new BuildOptions { SkyrimDataPath = skyrimDataPath };
+        var r = Generator.Build(spec, Key, options);
         return (r, r.Mod);
     }
 
@@ -52,10 +53,18 @@ public class ExternalAssetTests
         {
             MiscItems = { new MiscSpec { EditorId = "M1", Name = "Relic", Template = "Skyrim.esm:0x063B42", Model = @"MyMod\relic.nif" } },
         };
-        var (result, mod) = Build(spec);
-        var mi = Assert.Single(mod.MiscItems);
-        Assert.Equal(@"MyMod\relic.nif", mi.Model!.File.GivenPath);
-        Assert.Contains(result.Warnings, w => w.Contains("M1") && w.Contains("both `template` and `model`"));
+        var emptyDataDir = Directory.CreateTempSubdirectory("mf_no_master_").FullName;
+        try
+        {
+            var (result, mod) = Build(spec, emptyDataDir);
+            var mi = Assert.Single(mod.MiscItems);
+            Assert.Equal(@"MyMod\relic.nif", mi.Model!.File.GivenPath);
+            Assert.Contains(result.Warnings, w => w.Contains("M1") && w.Contains("both `template` and `model`"));
+        }
+        finally
+        {
+            Directory.Delete(emptyDataDir, recursive: true);
+        }
     }
 
     [Fact]

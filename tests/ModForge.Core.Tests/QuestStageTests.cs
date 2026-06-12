@@ -319,6 +319,68 @@ public class QuestStageTests
         Assert.Contains(".EvaluatePackage()", src);
     }
 
+    [Fact]
+    public void Dialogue_setGlobal_generates_SetValue_or_Mod_fragment()
+    {
+        var set = new DialogueSpec
+        {
+            EditorId = "MF_SetRep", QuestEditorId = "MF_Q",
+            Prompt = "You are forgiven", Responses = { "Done." },
+            SetGlobal = new DialogueSetGlobalSpec { Global = "MF_Reputation", Value = 0 },
+        };
+        var setSrc = Generator.GenerateDialogueFragmentSource(set);
+        Assert.Equal("TIF_MF_SetRep", Generator.DialogueFragmentScriptName(set));
+        Assert.Contains($"GlobalVariable Property {Generator.TifSetGlobalPropertyName} Auto", setSrc);
+        Assert.Contains($"{Generator.TifSetGlobalPropertyName}.SetValue(0)", setSrc);
+
+        var mod = new DialogueSpec
+        {
+            EditorId = "MF_AddRep", QuestEditorId = "MF_Q",
+            Prompt = "You helped us", Responses = { "People will remember." },
+            SetGlobal = new DialogueSetGlobalSpec { Global = "MF_Reputation", Delta = 1.5f },
+        };
+        var modSrc = Generator.GenerateDialogueFragmentSource(mod);
+        Assert.Contains($"{Generator.TifSetGlobalPropertyName}.Mod(1.5)", modSrc);
+    }
+
+    [Fact]
+    public void Dialogue_setGlobal_binds_the_global_property_when_compiled_fragment_exists()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "modforge-test-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        try
+        {
+            File.WriteAllText(Path.Combine(dir, "TIF_MF_AddRep.pex"), "");
+            var spec = new ModSpec
+            {
+                PluginName = "Test.esp",
+                Globals = { new GlobalSpec { EditorId = "MF_Reputation", Type = "long", Value = 0 } },
+                Quests = { new QuestSpec { EditorId = "MF_Q", Name = "Q" } },
+                Npcs = { new NpcSpec { EditorId = "MF_Npc", Name = "Npc" } },
+                Dialogue =
+                {
+                    new DialogueSpec
+                    {
+                        EditorId = "MF_AddRep", QuestEditorId = "MF_Q", SpeakerNpcEditorId = "MF_Npc",
+                        Prompt = "I helped.", Responses = { "Noted." },
+                        SetGlobal = new DialogueSetGlobalSpec { Global = "MF_Reputation", Delta = 1 },
+                    },
+                },
+            };
+
+            var r = TestBuild.OkWithCompiledScripts(spec, dir);
+            var global = r.Mod.EnumerateMajorRecords<IGlobalGetter>().Single(g => g.EditorID == "MF_Reputation");
+            var info = r.Mod.EnumerateMajorRecords<IDialogResponsesGetter>().Single(i => i.EditorID == "MF_AddRep");
+            var entry = info.VirtualMachineAdapter!.Scripts.Single(e => e.Name == "TIF_MF_AddRep");
+            var prop = (IScriptObjectPropertyGetter)entry.Properties.Single(p => p.Name == Generator.TifSetGlobalPropertyName);
+            Assert.Equal(global.FormKey, prop.Object.FormKey);
+        }
+        finally
+        {
+            if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true);
+        }
+    }
+
     // ---- validate guardrails ----
 
     private static ModSpec OneQuestSpec(QuestSpec q)
@@ -375,6 +437,43 @@ public class QuestStageTests
             EditorId = "MF_D", QuestEditorId = "MF_Q", Prompt = "p", Responses = { "r" }, SetStage = 50,
         });
         Assert.Contains(Generator.Validate(s), p => p.Contains("setStage 50 has no matching stage"));
+    }
+
+    [Fact]
+    public void Validate_flags_bad_dialogue_setGlobal()
+    {
+        var spec = new ModSpec
+        {
+            Globals = { new GlobalSpec { EditorId = "MF_ConstantRep", Type = "long", Constant = true } },
+            Quests = { new QuestSpec { EditorId = "Q", Name = "Q" } },
+            Npcs = { new NpcSpec { EditorId = "Npc", Name = "Npc" } },
+            Dialogue =
+            {
+                new DialogueSpec
+                {
+                    EditorId = "D", QuestEditorId = "Q", SpeakerNpcEditorId = "Npc",
+                    Prompt = "T", Responses = { "x" },
+                    SetGlobal = new DialogueSetGlobalSpec { Global = "MissingGlobal", Delta = 1 },
+                },
+                new DialogueSpec
+                {
+                    EditorId = "D2", QuestEditorId = "Q", SpeakerNpcEditorId = "Npc",
+                    Prompt = "T2", Responses = { "x" },
+                    SetGlobal = new DialogueSetGlobalSpec { Global = "MissingGlobal", Value = 1, Delta = 1 },
+                },
+                new DialogueSpec
+                {
+                    EditorId = "D3", QuestEditorId = "Q", SpeakerNpcEditorId = "Npc",
+                    Prompt = "T3", Responses = { "x" },
+                    SetGlobal = new DialogueSetGlobalSpec { Global = "MF_ConstantRep", Delta = 1 },
+                },
+            },
+        };
+
+        var problems = Generator.Validate(spec);
+        Assert.Contains(problems, p => p.Contains("setGlobal global") && p.Contains("MissingGlobal"));
+        Assert.Contains(problems, p => p.Contains("setGlobal must set exactly one of value or delta"));
+        Assert.Contains(problems, p => p.Contains("setGlobal targets constant global 'MF_ConstantRep'"));
     }
 
     [Fact]

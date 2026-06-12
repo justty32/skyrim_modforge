@@ -219,7 +219,7 @@ public class LightingTests
 
     // Weather template DeepCopies a vanilla weather → inherits its clouds; spec overrides only what it sets.
     // Needs Skyrim.esm (resolves the vanilla template), like WordWallTests — passes where the game is installed.
-    [Fact]
+    [Fact, Trait("Category", "RequiresSkyrim")]
     public void Weather_Template_InheritsCloudsAndOverridesImageSpace()
     {
         var spec = new ModSpec

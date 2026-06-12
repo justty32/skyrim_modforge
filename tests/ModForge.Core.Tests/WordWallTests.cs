@@ -18,6 +18,7 @@ public class WordWallTests
     private static ModSpec MakeSpec() => new()
     {
         PluginName = "Test.esp",
+        Cells = { new CellSpec { EditorId = "MfTestCell", Name = "Test Cell" } },
         MagicEffects = { new MagicEffectSpec { EditorId = "MfEff", Name = "E", Archetype = "Stagger", CastType = "FireAndForget", TargetType = "Aimed" } },
         Spells =
         {
@@ -49,7 +50,7 @@ public class WordWallTests
             new WordWallSpec
             {
                 EditorId = "MfWall", Name = "Wall", Shout = "MfShout", WordIndex = 1,
-                ScriptName = "MfWallScript", Cell = "Skyrim.esm:0x0371DE",
+                ScriptName = "MfWallScript", Cell = "MfTestCell",
                 Position = new Vec3 { X = 1, Y = 2, Z = 3 },
             },
         },
@@ -120,8 +121,8 @@ public class WordWallTests
     public void Trigger_placed_referencing_word_wall_activator_base()
     {
         var mod = Generator.Build(MakeSpec(), Key).Mod;
-        // The trigger REFR is placed in the overridden vanilla cell; its base is the vanilla
-        // WordWallTrigger activator (0x05095E) by default.
+        // The trigger REFR is placed in the in-spec test cell; its base is the vanilla
+        // WordWallTrigger activator (0x05095E) by FormKey only, so no master read is needed.
         var trigger = mod.EnumerateMajorRecords<IPlacedObjectGetter>()
             .Single(p => p.EditorID == "MfWallTrigger");
         Assert.Equal(0x05095Eu, trigger.Base.FormKey.ID);

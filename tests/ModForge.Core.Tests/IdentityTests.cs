@@ -137,7 +137,7 @@ public class IdentityTests
         var spec = new ModSpec
         {
             PluginName = "Test.esp",
-            Books = { new BookSpec { EditorId = "MF_Tome", Name = "Paladin Tome", Template = "Skyrim.esm:0x0ED161" } },
+            Books = { new BookSpec { EditorId = "MF_Tome", Name = "Paladin Tome" } },
             Identities =
             {
                 new IdentitySpec
@@ -147,7 +147,7 @@ public class IdentityTests
                 },
             },
         };
-        var r = TestBuild.Ok(spec);
+        var r = TestBuild.Raw(spec);
         var book = r.Mod.EnumerateMajorRecords<IBookGetter>().Single(b => b.EditorID == "MF_Tome");
         Assert.NotNull(book.VirtualMachineAdapter);
         var entry = book.VirtualMachineAdapter!.Scripts.Single(e => e.Name == "MFIdentityBook");
@@ -164,7 +164,7 @@ public class IdentityTests
         var spec = new ModSpec
         {
             PluginName = "Test.esp",
-            Books = { new BookSpec { EditorId = "MF_Tome", Name = "Tome", Template = "Skyrim.esm:0x0ED161" } },
+            Books = { new BookSpec { EditorId = "MF_Tome", Name = "Tome" } },
             Perks =
             {
                 new PerkSpec { EditorId = "MF_PerkA", Name = "A" },
@@ -178,7 +178,7 @@ public class IdentityTests
                     GrantPerks = { "MF_PerkB" } },
             },
         };
-        var r = TestBuild.Ok(spec);
+        var r = TestBuild.Raw(spec);
         var perkA = r.Mod.EnumerateMajorRecords<IPerkGetter>().Single(p => p.EditorID == "MF_PerkA").FormKey;
         var perkB = r.Mod.EnumerateMajorRecords<IPerkGetter>().Single(p => p.EditorID == "MF_PerkB").FormKey;
 
@@ -307,6 +307,42 @@ public class IdentityTests
         var worn = info.Conditions.First(c => c.Data is IWornHasKeywordConditionDataGetter);
         Assert.Equal(Condition.RunOnType.Reference, worn.Data.RunOnType);
         Assert.Equal(FormKey.Factory("000014:Skyrim.esm"), worn.Data.Reference.FormKey);
+    }
+
+    [Fact]
+    public void ActiveWhen_can_gate_identity_on_a_reputation_global()
+    {
+        var spec = new ModSpec
+        {
+            PluginName = "Test.esp",
+            Globals = { new GlobalSpec { EditorId = "MF_Reputation", Type = "long", Value = 0 } },
+            Quests = { new QuestSpec { EditorId = "Q", Name = "Q" } },
+            Npcs = { new NpcSpec { EditorId = "NPC", Name = "Guard", Race = "Skyrim.esm:0x013746" } },
+            Identities =
+            {
+                new IdentitySpec
+                {
+                    Id = "Trusted", Faction = "MF_FactTrusted", Priority = 10,
+                    ActiveWhen =
+                    {
+                        new ConditionSpec { Function = "GetGlobalValue", Param = "MF_Reputation", Comparison = ">=", Value = 5 },
+                    },
+                },
+            },
+            Dialogue =
+            {
+                new DialogueSpec { EditorId = "TrustedHello", QuestEditorId = "Q", SpeakerNpcEditorId = "NPC", Hello = true,
+                    Responses = { "You're trusted here." }, Identity = "Trusted" },
+            },
+        };
+        var r = TestBuild.Ok(spec);
+        var rep = r.Mod.EnumerateMajorRecords<IGlobalGetter>().Single(g => g.EditorID == "MF_Reputation").FormKey;
+        var info = r.Mod.EnumerateMajorRecords<IDialogResponsesGetter>().Single(i =>
+            i.Conditions.Any(c => c.Data is IGetGlobalValueConditionDataGetter));
+        var glob = info.Conditions.OfType<IConditionFloatGetter>().Single(c => c.Data is IGetGlobalValueConditionDataGetter);
+        Assert.Equal(CompareOperator.GreaterThanOrEqualTo, glob.CompareOperator);
+        Assert.Equal(5f, glob.ComparisonValue);
+        Assert.Equal(rep, ((IGetGlobalValueConditionDataGetter)glob.Data).Global.Link.FormKey);
     }
 
     [Fact]

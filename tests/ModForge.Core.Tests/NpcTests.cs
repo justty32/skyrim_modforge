@@ -46,10 +46,10 @@ public class NpcTests
     private static ModSpec InventoryFixture() => new()
     {
         PluginName = "Test.esp",
-        Weapons =
+        MiscItems =
         {
             // declared AFTER the NPC in spec order to exercise the forward-ref-safe path
-            new WeaponSpec { EditorId = "MF_CustomBlade", Name = "Custom Blade", Template = "Skyrim.esm:0x012EB7" },
+            new MiscSpec { EditorId = "MF_CustomCoin", Name = "Custom Coin" },
         },
         Npcs =
         {
@@ -61,7 +61,7 @@ public class NpcTests
                 {
                     new NpcItemSpec { Item = "Skyrim.esm:0x012EB7", Count = 1 },   // vanilla iron sword
                     new NpcItemSpec { Item = "Skyrim.esm:0x00000F", Count = 100 }, // gold
-                    new NpcItemSpec { Item = "MF_CustomBlade", Count = 1 },         // in-spec (forward) ref
+                    new NpcItemSpec { Item = "MF_CustomCoin", Count = 1 },          // in-spec (forward) ref
                 },
             },
         },
@@ -92,14 +92,14 @@ public class NpcTests
     }
 
     [Fact]
-    public void Npc_InspecWeaponRef_ResolvesForward()
+    public void Npc_InspecItemRef_ResolvesForward()
     {
         var result = Generator.Build(InventoryFixture(), Key);
         var npc = Assert.Single(result.Mod.Npcs, n => n.EditorID == "MF_Carrier");
-        var blade = Assert.Single(result.Mod.Weapons, w => w.EditorID == "MF_CustomBlade");
+        var coin = Assert.Single(result.Mod.MiscItems, w => w.EditorID == "MF_CustomCoin");
 
-        // the in-spec custom weapon (declared after the NPC) resolved to its FormKey.
-        Assert.Contains(npc.Items!, e => e.Item.Item.FormKey == blade.FormKey && e.Item.Count == 1);
+        // the in-spec custom item (declared after the NPC) resolved to its FormKey.
+        Assert.Contains(npc.Items!, e => e.Item.Item.FormKey == coin.FormKey && e.Item.Count == 1);
     }
 
     [Fact]

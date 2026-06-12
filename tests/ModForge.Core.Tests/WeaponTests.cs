@@ -1,12 +1,14 @@
 using System.Linq;
 using Mutagen.Bethesda.Skyrim;
 using ModForge;
+using Xunit;
 
 namespace ModForge.Tests;
 
 // A templated weapon clones a vanilla weapon (model/anim/equip/keywords) AND must INHERIT its stats
 // (damage/value/weight) when the spec leaves them unset (0) — a bug clobbered them to 0, leaving a
 // 0-damage sword that NPCs rate below their fists and never draw. Needs Skyrim.esm (template clone).
+[Trait("Category", "RequiresSkyrim")]
 public class WeaponTests
 {
     private static IWeaponGetter Build(WeaponSpec w)
