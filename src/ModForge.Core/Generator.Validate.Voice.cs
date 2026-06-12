@@ -7,11 +7,14 @@ public static partial class Generator
         public void ValidateVoice()
         {
             var templateIds = new HashSet<string>(spec.VoiceTemplates.Select(t => t.Id), StringComparer.OrdinalIgnoreCase);
+            var seenTemplateIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             
             foreach (var t in spec.VoiceTemplates)
             {
                 if (string.IsNullOrWhiteSpace(t.Id))
                     Problems.Add("voiceTemplate: empty id");
+                else if (!seenTemplateIds.Add(t.Id))
+                    Problems.Add($"duplicate voiceTemplate id '{t.Id}'");
                 
                 var engine = (t.Engine ?? "").ToLowerInvariant();
                 if (engine is not ("f5" or "chatterbox" or "gptsovits" or "xtts"))

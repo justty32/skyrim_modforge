@@ -91,4 +91,41 @@ public class ValidateTests
         });
         Assert.NotEmpty(problems);
     }
+
+    [Fact]
+    public void VoiceTemplate_DuplicateId_IsRejected()
+    {
+        var problems = Generator.Validate(new ModSpec
+        {
+            VoiceTemplates =
+            {
+                new VoiceTemplateSpec { Id = "VoiceA" },
+                new VoiceTemplateSpec { Id = "voicea" },
+            },
+        });
+
+        Assert.Contains(problems, p => p.Contains("duplicate voiceTemplate id 'voicea'"));
+    }
+
+    [Fact]
+    public void NpcVoiceTemplate_UnknownTemplate_IsRejected()
+    {
+        var problems = Generator.Validate(new ModSpec
+        {
+            Npcs = { new NpcSpec { EditorId = "Npc", Name = "Npc", VoiceTemplate = "MissingVoice" } },
+        });
+
+        Assert.Contains(problems, p => p.Contains("voiceTemplate 'MissingVoice' not found"));
+    }
+
+    [Fact]
+    public void VoiceLine_UnknownFormat_IsRejected()
+    {
+        var problems = Generator.Validate(new ModSpec
+        {
+            VoiceLine = new VoiceLineSpec { Format = "mp3" },
+        });
+
+        Assert.Contains(problems, p => p.Contains("voiceLine: unknown format 'mp3'"));
+    }
 }
