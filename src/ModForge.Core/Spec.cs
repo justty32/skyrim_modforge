@@ -74,6 +74,7 @@ public sealed class ModSpec
     public List<WordWallSpec> WordWalls { get; set; } = new();
     public List<GlobalSpec> Globals { get; set; } = new();   // GlobalVariable (GLOB) — shared flags/counters/constants
     public List<IdentitySpec> Identities { get; set; } = new(); // lightweight identity/class system (Spec.Identity.cs)
+    public PresetCatalogSpec Presets { get; set; } = new(); // non-emitting cookbook fragments for copy/paste recipes
     public List<VoiceTemplateSpec> VoiceTemplates { get; set; } = new(); // named voice recipes (Spec.Voice.cs)
     public VoiceLineSpec? VoiceLine { get; set; } // global voice output settings
     // External-resource pipeline (see docs/external_assets.md): a source directory whose
@@ -82,4 +83,17 @@ public sealed class ModSpec
     // user assets — it does NOT author meshes/anims. A path is relative to the spec file (or
     // absolute); a `package --assets <dir>` CLI arg overrides this.
     public string Assets { get; set; } = "";
+}
+
+/// <summary>
+/// Non-emitting preset/cookbook catalog. The builder intentionally ignores these fragments; they
+/// exist so specs can carry named, schema-valid copy/paste recipes next to the concrete records that
+/// use them. Values are arbitrary JSON objects because each category maps to an existing spec family.
+/// </summary>
+public sealed class PresetCatalogSpec
+{
+    public Dictionary<string, JsonElement> Lighting { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, JsonElement> Weather { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, JsonElement> Packages { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, JsonElement> Identities { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }

@@ -1,0 +1,264 @@
+{
+  "pluginName": "ModForgePresetsCookbook.esp",
+  "esl": true,
+  "_": "Preset/cookbook layer. `presets` is a non-emitting catalog for copy/paste fragments; the concrete top-level arrays below expand every preset once so this file validates and builds as a practical reference.",
+
+  "presets": {
+    "lighting": {
+      "brightInterior": {
+        "_": "Clean, readable interior fill. Copy the LGTM + IMGS into lightingTemplates/imageSpaces and attach them to a cell.",
+        "lightingTemplate": "MF_PresetBrightInteriorLGTM",
+        "imageSpace": "MF_PresetBrightInteriorIMGS"
+      },
+      "warmTavern": {
+        "_": "Warm amber interior with mild bloom and short fog for inns, shops, and halls.",
+        "lightingTemplate": "MF_PresetWarmTavernLGTM",
+        "imageSpace": "MF_PresetWarmTavernIMGS"
+      },
+      "coldDungeon": {
+        "_": "Blue-grey low-saturation dungeon light with pale fog and long falloff.",
+        "lightingTemplate": "MF_PresetColdDungeonLGTM",
+        "imageSpace": "MF_PresetColdDungeonIMGS"
+      }
+    },
+    "weather": {
+      "clearBright": {
+        "_": "Clear vanilla sky base with brighter outdoor grade.",
+        "weather": "MF_PresetClearBrightWeather",
+        "climate": "MF_PresetClearBrightClimate"
+      },
+      "foggyPale": {
+        "_": "Pale cloudy weather with close fog and desaturated image space.",
+        "weather": "MF_PresetFoggyPaleWeather",
+        "climate": "MF_PresetFoggyPaleClimate"
+      },
+      "stormCinematic": {
+        "_": "Rainy storm base with strong contrast, wind, rain SPGD, and cinematic tint.",
+        "weather": "MF_PresetStormCinematicWeather",
+        "climate": "MF_PresetStormCinematicClimate"
+      }
+    },
+    "packages": {
+      "guardPost": {
+        "_": "A guard holds a local post, talks, idles, and reacts to trouble without wandering far.",
+        "package": "MF_PresetGuardPostPackage"
+      },
+      "wanderMerchant": {
+        "_": "A merchant wanders a compact radius, offers service, greets, chats, and uses furniture.",
+        "package": "MF_PresetWanderMerchantPackage"
+      },
+      "campFollower": {
+        "_": "Movement-only companion package; target omitted means follow the player.",
+        "package": "MF_PresetCampFollowerPackage"
+      }
+    },
+    "identities": {
+      "merchant": { "identity": "Merchant", "book": "MF_PresetMerchantLedger" },
+      "guard": { "identity": "Guard", "book": "MF_PresetGuardWrit" },
+      "paladin": { "identity": "Paladin", "book": "MF_PresetPaladinOath" },
+      "dragonborn": { "identity": "Dragonborn", "autoGrantWhen": { "actorValue": "DragonSouls", "threshold": 1 } },
+      "adventurer": { "identity": "Adventurer", "default": true }
+    }
+  },
+
+  "lightingTemplates": [
+    {
+      "editorId": "MF_PresetBrightInteriorLGTM",
+      "template": "Skyrim.esm:0x0300E2",
+      "ambientColor": { "r": 160, "g": 165, "b": 176 },
+      "directionalColor": { "r": 220, "g": 220, "b": 210 },
+      "fogNearColor": { "r": 165, "g": 170, "b": 180 },
+      "fogFarColor": { "r": 120, "g": 130, "b": 145 },
+      "fogNear": 0,
+      "fogFar": 9000,
+      "fogMax": 0.55,
+      "directionalAmbient": {
+        "scale": 1.0,
+        "xPlus": { "r": 175, "g": 178, "b": 184 },
+        "xMinus": { "r": 175, "g": 178, "b": 184 },
+        "yPlus": { "r": 175, "g": 178, "b": 184 },
+        "yMinus": { "r": 175, "g": 178, "b": 184 },
+        "zPlus": { "r": 210, "g": 214, "b": 224 },
+        "zMinus": { "r": 125, "g": 128, "b": 136 }
+      }
+    },
+    {
+      "editorId": "MF_PresetWarmTavernLGTM",
+      "template": "Skyrim.esm:0x0300E2",
+      "ambientColor": { "r": 150, "g": 112, "b": 76 },
+      "directionalColor": { "r": 255, "g": 206, "b": 140 },
+      "fogNearColor": { "r": 130, "g": 92, "b": 58 },
+      "fogFarColor": { "r": 70, "g": 48, "b": 36 },
+      "fogNear": 128,
+      "fogFar": 4500,
+      "fogMax": 0.72,
+      "directionalAmbient": {
+        "scale": 0.95,
+        "xPlus": { "r": 165, "g": 118, "b": 78 },
+        "xMinus": { "r": 135, "g": 96, "b": 68 },
+        "yPlus": { "r": 154, "g": 108, "b": 72 },
+        "yMinus": { "r": 140, "g": 96, "b": 66 },
+        "zPlus": { "r": 208, "g": 158, "b": 104 },
+        "zMinus": { "r": 82, "g": 58, "b": 44 }
+      }
+    },
+    {
+      "editorId": "MF_PresetColdDungeonLGTM",
+      "template": "Skyrim.esm:0x0300E2",
+      "ambientColor": { "r": 74, "g": 90, "b": 108 },
+      "directionalColor": { "r": 118, "g": 148, "b": 176 },
+      "fogNearColor": { "r": 80, "g": 96, "b": 116 },
+      "fogFarColor": { "r": 28, "g": 36, "b": 48 },
+      "fogNear": 64,
+      "fogFar": 5200,
+      "fogMax": 0.88,
+      "directionalAmbient": {
+        "scale": 0.8,
+        "xPlus": { "r": 72, "g": 88, "b": 106 },
+        "xMinus": { "r": 60, "g": 74, "b": 92 },
+        "yPlus": { "r": 70, "g": 86, "b": 104 },
+        "yMinus": { "r": 58, "g": 70, "b": 88 },
+        "zPlus": { "r": 116, "g": 142, "b": 166 },
+        "zMinus": { "r": 36, "g": 44, "b": 56 }
+      }
+    }
+  ],
+
+  "imageSpaces": [
+    { "editorId": "MF_PresetBrightInteriorIMGS", "template": "Skyrim.esm:0x012F88", "brightness": 1.25, "contrast": 1.0, "saturation": 1.15, "bloomScale": 0.75, "white": 1.35 },
+    { "editorId": "MF_PresetWarmTavernIMGS", "template": "Skyrim.esm:0x012F88", "brightness": 1.08, "contrast": 1.04, "saturation": 1.12, "bloomScale": 0.95, "tintAmount": 0.18, "tintColor": { "r": 255, "g": 178, "b": 98 } },
+    { "editorId": "MF_PresetColdDungeonIMGS", "template": "Skyrim.esm:0x012F88", "brightness": 0.92, "contrast": 1.12, "saturation": 0.78, "bloomScale": 0.35, "tintAmount": 0.22, "tintColor": { "r": 116, "g": 154, "b": 190 } },
+    { "editorId": "MF_PresetClearBrightIMGS", "template": "Skyrim.esm:0x012F88", "brightness": 1.12, "contrast": 1.0, "saturation": 1.22, "bloomScale": 0.85, "sunlightScale": 1.25, "skyScale": 0.14 },
+    { "editorId": "MF_PresetFoggyPaleIMGS", "template": "Skyrim.esm:0x012F88", "brightness": 1.02, "contrast": 0.88, "saturation": 0.7, "bloomScale": 0.45, "sunlightScale": 0.65, "skyScale": 0.08, "tintAmount": 0.12, "tintColor": { "r": 210, "g": 220, "b": 224 } },
+    { "editorId": "MF_PresetStormCinematicIMGS", "template": "Skyrim.esm:0x012F88", "brightness": 0.88, "contrast": 1.28, "saturation": 0.82, "bloomScale": 0.35, "sunlightScale": 0.45, "skyScale": 0.06, "tintAmount": 0.2, "tintColor": { "r": 92, "g": 108, "b": 132 } }
+  ],
+
+  "weathers": [
+    {
+      "editorId": "MF_PresetClearBrightWeather",
+      "template": "Skyrim.esm:0x10E1F2",
+      "flags": [ "Pleasant" ],
+      "imageSpaces": { "default": "MF_PresetClearBrightIMGS" },
+      "sunlightColor": { "day": { "r": 255, "g": 244, "b": 216 }, "night": { "r": 92, "g": 105, "b": 128 } },
+      "ambientColor": { "day": { "r": 148, "g": 160, "b": 176 }, "night": { "r": 32, "g": 40, "b": 58 } },
+      "fogDayNear": 12000,
+      "fogDayFar": 60000,
+      "windSpeed": 0.08
+    },
+    {
+      "editorId": "MF_PresetFoggyPaleWeather",
+      "template": "Skyrim.esm:0x10E1F1",
+      "flags": [ "Cloudy" ],
+      "imageSpaces": { "default": "MF_PresetFoggyPaleIMGS" },
+      "skyUpperColor": { "day": { "r": 166, "g": 178, "b": 184 }, "night": { "r": 42, "g": 50, "b": 58 } },
+      "fogNearColor": { "day": { "r": 190, "g": 198, "b": 198 }, "night": { "r": 70, "g": 78, "b": 84 } },
+      "fogFarColor": { "day": { "r": 144, "g": 154, "b": 160 }, "night": { "r": 36, "g": 44, "b": 54 } },
+      "sunlightColor": { "day": { "r": 180, "g": 184, "b": 174 }, "night": { "r": 62, "g": 70, "b": 88 } },
+      "ambientColor": { "day": { "r": 112, "g": 122, "b": 128 }, "night": { "r": 36, "g": 42, "b": 50 } },
+      "fogDayNear": 512,
+      "fogDayFar": 8500,
+      "fogNightNear": 256,
+      "fogNightFar": 5200,
+      "windSpeed": 0.12
+    },
+    {
+      "editorId": "MF_PresetStormCinematicWeather",
+      "template": "Skyrim.esm:0x10E1F0",
+      "flags": [ "Cloudy", "Rainy" ],
+      "imageSpaces": { "default": "MF_PresetStormCinematicIMGS" },
+      "precipitation": "Skyrim.esm:0x10780F",
+      "skyUpperColor": { "day": { "r": 50, "g": 62, "b": 78 }, "night": { "r": 12, "g": 16, "b": 24 } },
+      "fogNearColor": { "day": { "r": 76, "g": 86, "b": 102 }, "night": { "r": 28, "g": 34, "b": 46 } },
+      "fogFarColor": { "day": { "r": 36, "g": 44, "b": 58 }, "night": { "r": 8, "g": 12, "b": 20 } },
+      "sunlightColor": { "day": { "r": 112, "g": 122, "b": 136 }, "night": { "r": 34, "g": 42, "b": 60 } },
+      "ambientColor": { "day": { "r": 60, "g": 70, "b": 86 }, "night": { "r": 18, "g": 24, "b": 36 } },
+      "fogDayNear": 1024,
+      "fogDayFar": 11000,
+      "fogNightNear": 512,
+      "fogNightFar": 7000,
+      "windSpeed": 0.62,
+      "windDirection": 230,
+      "windDirectionRange": 80,
+      "transitionDelta": 0.35
+    }
+  ],
+
+  "climates": [
+    { "editorId": "MF_PresetClearBrightClimate", "weathers": [ { "weather": "MF_PresetClearBrightWeather", "chance": 100 } ], "volatility": 25 },
+    { "editorId": "MF_PresetFoggyPaleClimate", "weathers": [ { "weather": "MF_PresetFoggyPaleWeather", "chance": 80 }, { "weather": "MF_PresetClearBrightWeather", "chance": 20 } ], "volatility": 35 },
+    { "editorId": "MF_PresetStormCinematicClimate", "weathers": [ { "weather": "MF_PresetStormCinematicWeather", "chance": 70 }, { "weather": "MF_PresetFoggyPaleWeather", "chance": 30 } ], "volatility": 70 }
+  ],
+
+  "packages": [
+    {
+      "editorId": "MF_PresetGuardPostPackage",
+      "template": "Skyrim.esm:0x01C254",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [ "HellosToPlayer", "RandomConversations", "ObserveCombatBehavior", "GreetCorpseBehavior", "ReactionToPlayerActions", "FriendlyFireComments", "AggroRadiusBehavior", "AllowIdleChatter", "WorldInteractions" ],
+      "sandbox": {
+        "radius": 256,
+        "allowEating": false,
+        "allowSleeping": false,
+        "allowConversation": true,
+        "allowIdleMarkers": true,
+        "allowSitting": false,
+        "allowWandering": true,
+        "allowSpecialFurniture": true,
+        "energy": 35.0
+      }
+    },
+    {
+      "editorId": "MF_PresetWanderMerchantPackage",
+      "template": "Skyrim.esm:0x01C254",
+      "flags": [ "OffersServices" ],
+      "preferredSpeed": "Walk",
+      "interruptFlags": [ "HellosToPlayer", "RandomConversations", "ReactionToPlayerActions", "FriendlyFireComments", "AllowIdleChatter", "WorldInteractions" ],
+      "sandbox": {
+        "radius": 512,
+        "allowEating": true,
+        "allowSleeping": false,
+        "allowConversation": true,
+        "allowIdleMarkers": true,
+        "allowSitting": true,
+        "allowWandering": true,
+        "allowSpecialFurniture": true,
+        "energy": 45.0
+      }
+    },
+    {
+      "editorId": "MF_PresetCampFollowerPackage",
+      "template": "Skyrim.esm:0x019B2C",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [ "HellosToPlayer", "ObserveCombatBehavior", "ReactionToPlayerActions", "AllowIdleChatter", "WorldInteractions" ],
+      "follow": {
+        "minRadius": 128,
+        "maxRadius": 320,
+        "accompany": true,
+        "rideHorse": false,
+        "needLineOfSight": false
+      }
+    }
+  ],
+
+  "books": [
+    { "editorId": "MF_PresetMerchantLedger", "name": "Merchant's Ledger", "template": "Skyrim.esm:0x0ED161" },
+    { "editorId": "MF_PresetGuardWrit", "name": "Guard's Writ", "template": "Skyrim.esm:0x0ED161" },
+    { "editorId": "MF_PresetPaladinOath", "name": "Paladin's Oath", "template": "Skyrim.esm:0x0ED161" }
+  ],
+
+  "identities": [
+    { "id": "Adventurer", "faction": "MF_PresetFactAdventurer", "priority": 0, "default": true },
+    { "id": "Merchant", "faction": "MF_PresetFactMerchant", "priority": 20, "toggle": true, "acquireBook": "MF_PresetMerchantLedger" },
+    { "id": "Guard", "faction": "MF_PresetFactGuard", "priority": 25, "toggle": true, "acquireBook": "MF_PresetGuardWrit" },
+    {
+      "id": "Paladin",
+      "faction": "MF_PresetFactPaladin",
+      "priority": 30,
+      "acquireBook": "MF_PresetPaladinOath",
+      "activeWhen": [
+        { "function": "WornHasKeyword", "param": "Skyrim.esm:0x06BBD2", "comparison": "==", "value": 1 }
+      ]
+    },
+    { "id": "Dragonborn", "faction": "MF_PresetFactDragonborn", "priority": 40, "autoGrantWhen": { "actorValue": "DragonSouls", "threshold": 1 } }
+  ]
+}

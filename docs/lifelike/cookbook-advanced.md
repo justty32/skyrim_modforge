@@ -62,7 +62,9 @@ Equip it, hold the Shout key: the bolt fires, deals its effect, with the FX soun
 - **No spoken-word voice.** The player yelling the dragon syllables ("FUS RO DAH") is a **recorded
   voice asset** (also a MGEF `Release` sound, but a *voiced* `.fuz`, e.g. `VOCShoutDragon01AFus`). A
   programmatic shout has none, so the word-voice is silent — only the effect FX plays. Supplying it
-  needs a real voice file (see the voice-gen plan). For a 3-level *progressive* effect sound, use 3
+  needs real voice assets under `Sound/Voice/...`; see `SPEC-workflow.md` § Voice. The dialogue
+  `voicelines` pipeline can generate INFO voice files, but shout syllable assets still need a
+  concrete voice/SoundDescriptor plan. For a 3-level *progressive* effect sound, use 3
   MGEFs (one per word-spell) each with its own A/B/C `Release` sound.
 - **Word-wall learning is `OnInit`, not walk-up.** The teaching quest is start-game-enabled, so the
   shout + word 1 are granted **as soon as the plugin loads** — the placed `WordWallTrigger` is

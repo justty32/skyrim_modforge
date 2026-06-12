@@ -390,6 +390,10 @@
       "items": { "$ref": "#/$defs/identity" },
       "description": "Lightweight identity/class system: each identity is a FACT (held signal) + priority + optional grants/acquire. Gate dialogue with identity/primaryIdentity; acquire via a book's OnRead."
     },
+    "presets": {
+      "$ref": "#/$defs/presetCatalog",
+      "description": "Non-emitting cookbook catalog. Named fragments under lighting/weather/packages/identities are ignored by build; copy or expand them into the normal top-level arrays to emit records."
+    },
     "voiceTemplates": {
       "type": "array",
       "items": { "$ref": "#/$defs/voiceTemplate" },
@@ -406,6 +410,37 @@
       "type": "string",
       "minLength": 1,
       "description": "A reference: an in-spec editorId OR an external form '<master>:0xFORMID' (e.g. 'Skyrim.esm:0x013746' = NordRace). Discover FormIDs with the `find` command."
+    },
+    "presetCatalog": {
+      "type": "object",
+      "description": "Named cookbook fragments grouped by existing spec family. This is documentation/data only: the generator does not emit records from presets directly.",
+      "properties": {
+        "lighting": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/presetFragment" },
+          "description": "Interior lighting fragments, usually lightingTemplates/imageSpaces/lights/cell fields."
+        },
+        "weather": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/presetFragment" },
+          "description": "Outdoor weather fragments, usually imageSpaces/weathers/climates/regions."
+        },
+        "packages": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/presetFragment" },
+          "description": "AI package fragments using existing PackageSpec shapes."
+        },
+        "identities": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/presetFragment" },
+          "description": "Identity fragments using existing IdentitySpec plus optional books/perks/spells."
+        }
+      },
+      "additionalProperties": false
+    },
+    "presetFragment": {
+      "type": "object",
+      "description": "A named cookbook fragment. `_` may describe intent; other properties mirror existing top-level spec arrays."
     },
     "effect": {
       "type": "object",
@@ -1746,6 +1781,29 @@
           "type": "boolean",
           "description": "open the BARTER/trade menu with the speaking NPC when picked (vanilla Actor.ShowBarterMenu(), no SKSE); speaker must be a vendor-faction member with a merchant chest; pair with an identity gate for a merchant-only trade option"
         },
+        "setGlobal": {
+          "type": "object",
+          "description": "write or adjust one GlobalVariable when the line is picked. Use value for flags/absolute reputation states (SetValue) or delta for counters (Mod). The GLOB can then gate dialogue/identity.activeWhen via GetGlobalValue.",
+          "required": [ "global" ],
+          "properties": {
+            "global": {
+              "$ref": "#/$defs/ref",
+              "description": "the GLOB to modify"
+            },
+            "value": {
+              "type": "number",
+              "description": "absolute value to write with SetValue"
+            },
+            "delta": {
+              "type": "number",
+              "description": "relative counter change to apply with GlobalVariable.Mod; positive increments, negative decrements"
+            }
+          },
+          "oneOf": [
+            { "required": [ "value" ] },
+            { "required": [ "delta" ] }
+          ]
+        },
         "rewardItem": {
           "$ref": "#/$defs/ref",
           "description": "give the player this item/gold when the line is picked (Game.GetPlayer().AddItem); use with setStage for a quest reward"
@@ -2746,6 +2804,10 @@
         "editorId": {
           "type": "string",
           "minLength": 1
+        },
+        "template": {
+          "$ref": "#/$defs/ref",
+          "description": "optional vanilla weather to DeepCopy as base (e.g. Skyrim.esm:0x10E1F2 = SkyrimClear_A); inherited clouds/colours are kept unless overridden"
         },
         "flags": {
           "type": "array",
@@ -4007,7 +4069,7 @@
         "grantPerks": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "PERKs added on join, removed on leave (e.g. a conditional smite-vs-undead perk); the acquire book grants the first, a default identity grants all" },
         "toggle": { "type": "boolean", "default": false, "description": "reading the acquire book again removes the identity" },
         "default": { "type": "boolean", "default": false, "description": "every player holds this from the start (baseline) — auto-granted by a StartGameEnabled quest (MFIdentityDefault)" },
-        "activeWhen": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "description": "situational CTDA that NARROW when the identity counts as active (e.g. WornHasKeyword/GetBaseActorValue/GetRelationshipRank); each runs on the PLAYER unless it sets a non-default runOn" },
+        "activeWhen": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "description": "situational CTDA that NARROW when the identity counts as active (e.g. WornHasKeyword/GetBaseActorValue/GetRelationshipRank/GetGlobalValue for reputation); each runs on the PLAYER unless it sets a non-default runOn" },
         "acquireBook": { "$ref": "#/$defs/ref", "description": "a BOOK whose OnRead grants/toggles this identity (MFIdentityBook)" },
         "acquireText": { "type": "string", "description": "optional yes/no MessageBox prompt shown on read" },
         "onAcquire": {
@@ -4031,7 +4093,7 @@
       "required": [
         "editorId"
       ],
-      "description": "GLOB — a named number shared game-wide, save-persisted, readable by conditions (GetGlobalValue) + Papyrus + console. `value` is the INITIAL value only (an existing save keeps its own runtime value).",
+      "description": "GLOB — a named number shared game-wide, save-persisted, readable by conditions (GetGlobalValue) + Papyrus + console. `value` is the INITIAL value only (an existing save keeps its own runtime value). Dialogue `setGlobal` can modify non-constant globals at runtime for flags/reputation counters.",
       "properties": {
         "editorId": {
           "type": "string",
@@ -4171,7 +4233,7 @@
         "id": { "type": "string", "minLength": 1 },
         "engine": {
           "type": "string",
-          "enum": [ "f5", "chatterbox", "gptsovits", "xtts" ],
+          "enum": [ "f5", "chatterbox", "gptsovits", "xtts", "fish-s2", "fish", "fishspeech", "fish-speech" ],
           "default": "f5"
         },
         "referenceWav": {
