@@ -47,7 +47,8 @@ public static partial class Generator
                 // User-supplied ResultScript takes priority; the auto-generated TIF (setStage and/or
                 // setPrimaryIdentity override) is the fallback.
                 var needsAutoTif = d.SetStage >= 0 || !string.IsNullOrWhiteSpace(d.SetPrimaryIdentity)
-                    || d.OpenBarter || !string.IsNullOrWhiteSpace(d.RewardItem) || d.EvaluateSpeakerPackages;
+                    || d.OpenBarter || d.SetGlobal is not null || !string.IsNullOrWhiteSpace(d.RewardItem)
+                    || d.EvaluateSpeakerPackages;
                 var scriptName = !string.IsNullOrEmpty(d.ResultScript) ? d.ResultScript
                     : (needsAutoTif && options?.CompiledScriptsDir is not null)
                         ? Generator.DialogueFragmentScriptName(d)
@@ -92,6 +93,15 @@ public static partial class Generator
                         var gp = new ScriptObjectProperty { Name = Generator.IdentityOverrideGlobal, Flags = ScriptProperty.Flag.Edited };
                         if (TryResolveRef(Generator.IdentityOverrideGlobal, formKeyByEd, out var gfk)) gp.Object.SetTo(gfk);
                         else Warn($"  ! TIF '{d.EditorId}': override global '{Generator.IdentityOverrideGlobal}' unresolved");
+                        entry.Properties.Add(gp);
+                        linksWired++;
+                    }
+                    // setGlobal: bind the mutable GlobalVariable so Fragment_0 can SetValue/Mod it.
+                    if (d.SetGlobal is { } sg && !string.IsNullOrWhiteSpace(sg.Global))
+                    {
+                        var gp = new ScriptObjectProperty { Name = Generator.TifSetGlobalPropertyName, Flags = ScriptProperty.Flag.Edited };
+                        if (TryResolveRef(sg.Global, formKeyByEd, out var gfk)) gp.Object.SetTo(gfk);
+                        else Warn($"  ! TIF '{d.EditorId}': setGlobal '{sg.Global}' unresolved");
                         entry.Properties.Add(gp);
                         linksWired++;
                     }

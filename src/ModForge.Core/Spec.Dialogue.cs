@@ -116,6 +116,11 @@ public sealed class DialogueSpec
     // speaker must be a vendor (a member of a Vendor-flagged faction with a merchant chest) for goods/gold
     // to appear. Pair with an `identity:` gate for an identity-specific "fellow merchant" trade option.
     public bool OpenBarter { get; set; }
+    // SetGlobal (optional): when the player picks this topic, write or adjust one GlobalVariable.
+    // Use `value` for flags/absolute reputation states (SetValue) or `delta` for counters (Mod).
+    // The global is save-persisted and can be read by later `conditions` / `identity.activeWhen`
+    // through GetGlobalValue.
+    public DialogueSetGlobalSpec? SetGlobal { get; set; }
     // RewardItem (optional ref) + RewardCount: when the player picks this topic, give the player this
     // item/gold (vanilla `Game.GetPlayer().AddItem(item, count)`). Generates a TIF result fragment. Use
     // for quest rewards (e.g. gold on escort completion). RewardCount defaults to 1.
@@ -125,6 +130,13 @@ public sealed class DialogueSpec
     // packages (`Actor.EvaluatePackage()`) so a package newly enabled by this line's `setStage` (e.g. a
     // follow package gated on GetStage==N) activates immediately instead of on the next periodic re-eval.
     public bool EvaluateSpeakerPackages { get; set; }
+}
+
+public sealed class DialogueSetGlobalSpec
+{
+    public string Global { get; set; } = "";   // ref -> GLOB
+    public float? Value { get; set; }           // absolute SetValue
+    public float? Delta { get; set; }           // relative Mod (counter increment/decrement)
 }
 // PROACTIVE banter — a line the NPC says UNPROMPTED (no player menu), the vanilla follower-comment
 // pattern (see Skyrim.esm `HirelingIdles` 0x055DEB). All banter entries that share a (speaker, quest)

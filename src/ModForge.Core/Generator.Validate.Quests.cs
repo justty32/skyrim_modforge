@@ -66,6 +66,19 @@ public static partial class Generator
                     && !string.Equals(d.SetPrimaryIdentity, "auto", System.StringComparison.OrdinalIgnoreCase)
                     && !spec.Identities.Any(i => string.Equals(i.Id, d.SetPrimaryIdentity, System.StringComparison.OrdinalIgnoreCase)))
                     Problems.Add($"dialogue '{d.EditorId}' setPrimaryIdentity '{d.SetPrimaryIdentity}' is not a known identity id (or 'auto')");
+                if (d.SetGlobal is { } sg)
+                {
+                    if (string.IsNullOrWhiteSpace(sg.Global)) Problems.Add($"dialogue '{d.EditorId}' setGlobal has empty global ref");
+                    else
+                    {
+                        CheckRef(sg.Global, $"dialogue '{d.EditorId}' setGlobal global");
+                        var target = spec.Globals.FirstOrDefault(g => string.Equals(g.EditorId, sg.Global, StringComparison.OrdinalIgnoreCase));
+                        if (target?.Constant == true)
+                            Problems.Add($"dialogue '{d.EditorId}' setGlobal targets constant global '{sg.Global}'");
+                    }
+                    if (sg.Value.HasValue == sg.Delta.HasValue)
+                        Problems.Add($"dialogue '{d.EditorId}' setGlobal must set exactly one of value or delta");
+                }
                 if (!string.IsNullOrWhiteSpace(d.RewardItem)) CheckRef(d.RewardItem, $"dialogue '{d.EditorId}' rewardItem");
                 // A `hello:true` line is the NPC's auto-spoken greeting (Misc/Hello), not a player menu
                 // option, so it has no prompt by design — only require a prompt for normal player topics.

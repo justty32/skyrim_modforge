@@ -1,7 +1,7 @@
 {
   "pluginName": "ModForgeGlobals.esp",
   "esl": true,
-  "_": "GlobalVariable (GLOB) demo. A GLOB is one named number shared across the whole game, persisted in the save and readable by CONDITIONS with zero Papyrus (GetGlobalValue), by Papyrus (GetValue/SetValue), and the console (set/show). Three subtypes: short | long (int) | float. Use as a FLAG / re-arm token (0/1), a COUNTER, a chance/weight, or a tuning CONSTANT. The plugin value is the INITIAL value only — an existing save keeps its own runtime value (new game picks up the new initial). This spec declares one of each type plus a constant, then proves the canonical use: a dialogue line gated on a flag global (the NPC only offers the line while MF_SeenIntro == 0). To FLIP the flag at runtime you'd SetValue it from a result script / quest fragment / alias script (not shown here — this slice is the GLOB record + reference).",
+  "_": "GlobalVariable (GLOB) demo. A GLOB is one named number shared across the whole game, persisted in the save and readable by CONDITIONS with zero Papyrus (GetGlobalValue), by Papyrus (GetValue/SetValue/Mod), and the console (set/show). Three subtypes: short | long (int) | float. Use as a FLAG / re-arm token (0/1), a COUNTER / reputation score, a chance/weight, or a tuning CONSTANT. The plugin value is the INITIAL value only — an existing save keeps its own runtime value (new game picks up the new initial). This spec declares one of each type plus a constant, then proves the canonical use: dialogue result fragments modify globals (`setGlobal.value` flips MF_SeenIntro, `setGlobal.delta` increments MF_KillCount) and later dialogue gates on those values with GetGlobalValue.",
 
   "globals": [
     { "editorId": "MF_SeenIntro", "type": "short", "value": 0, "_": "a 0/1 flag" },
@@ -28,6 +28,28 @@
       "_conditions": "only while the intro flag is still 0 — a GLOB read by a CTDA, zero Papyrus",
       "conditions": [
         { "function": "GetGlobalValue", "param": "MF_SeenIntro", "comparison": "==", "value": 0 }
+      ],
+      "_setGlobal": "flip the intro flag once this line is picked; package emits a generated TIF fragment that calls MF_SeenIntro.SetValue(1)",
+      "setGlobal": { "global": "MF_SeenIntro", "value": 1 }
+    },
+    {
+      "editorId": "MF_ReportGoodDeed",
+      "questEditorId": "MF_GlobQuest",
+      "speakerNpcEditorId": "MF_GlobGuide",
+      "prompt": "I helped someone on the road.",
+      "responses": [ "Word travels. That will count in your favor." ],
+      "_setGlobal": "counter/reputation example: increment MF_KillCount by 1 using GlobalVariable.Mod(1)",
+      "setGlobal": { "global": "MF_KillCount", "delta": 1 }
+    },
+    {
+      "editorId": "MF_TrustedLine",
+      "questEditorId": "MF_GlobQuest",
+      "speakerNpcEditorId": "MF_GlobGuide",
+      "prompt": "Do people trust me here?",
+      "responses": [ "Aye. You've done enough for folk to notice." ],
+      "_conditions": "reputation gate: only appears after MF_KillCount reaches 3",
+      "conditions": [
+        { "function": "GetGlobalValue", "param": "MF_KillCount", "comparison": ">=", "value": 3 }
       ]
     }
   ]
