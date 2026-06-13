@@ -25,6 +25,11 @@ public static partial class Generator
         // We NO LONGER carry TopCell here (handled in WorldspaceOverride directly).
         private void CopyWorldspaceEnv(IWorldspaceGetter src, Worldspace dst)
         {
+            // EditorID (EDID): plain ASCII (no localization). The runtime LOD pipeline builds the
+            // terrain-LOD texture/mesh paths from the worldspace EditorID (e.g. Tamriel.4.x.y.dds in
+            // Textures\Terrain\<EDID>\). An override that omits EDID can load LOD geometry (height shows)
+            // but fail to resolve the terrain texture atlas → terrain renders white. Carry it.
+            dst.EditorID = src.EditorID;
             dst.Flags = src.Flags;
             dst.ObjectBoundsMin = src.ObjectBoundsMin;
             dst.ObjectBoundsMax = src.ObjectBoundsMax;
