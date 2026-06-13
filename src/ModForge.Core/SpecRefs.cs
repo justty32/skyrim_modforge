@@ -158,7 +158,12 @@ public static class SpecRefs
         var target = Pointer(root, src.Pointer)
             ?? throw new SpecRefException($"$ref pointer not found: {(string.IsNullOrEmpty(src.File) ? ctx.DocId : src.File)}#{src.Pointer}");
 
-        return ResolveNode(target, targetCtx, readFile, getEnv, cycle);
+        var key = $"{targetCtx.DocId}#{src.Pointer}";
+        if (cycle.Contains(key))
+            throw new SpecRefException($"$ref cycle: {string.Join(" -> ", cycle)} -> {key}");
+        cycle.Add(key);
+        try { return ResolveNode(target, targetCtx, readFile, getEnv, cycle); }
+        finally { cycle.RemoveAt(cycle.Count - 1); }
     }
 
     private static JsonNode? Pointer(JsonNode? root, string pointer)

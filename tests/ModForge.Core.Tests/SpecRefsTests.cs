@@ -147,4 +147,12 @@ public class SpecRefsTests
         var r = Resolve(json, Files(files))!["thing"]!;
         Assert.Equal(7, r["lux"]!.GetValue<int>());
     }
+
+    [Fact]
+    public void SelfReferentialRef_Throws()
+    {
+        var json = """{ "a": { "$ref": "#/b" }, "b": { "$ref": "#/a" } }""";
+        var ex = Assert.Throws<SpecRefException>(() => Resolve(json));
+        Assert.Contains("cycle", ex.Message);
+    }
 }
