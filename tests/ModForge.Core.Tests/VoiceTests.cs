@@ -38,6 +38,20 @@ public class VoiceTests
         Assert.DoesNotContain("--ref-text", args);
         Assert.DoesNotContain("--model", args);
         Assert.DoesNotContain("--rvc", args);
+        // Emotion is sourced from the INFO record, not the template; omitted when not passed.
+        Assert.DoesNotContain("--emotion", args);
+        Assert.DoesNotContain("--intensity", args);
+    }
+
+    [Fact]
+    public void BuildTtsArgs_PassesEmotionAndIntensity_WhenProvided()
+    {
+        var t = new VoiceTemplateSpec { Id = "v" };
+        // Emotion/intensity come from the dialogue INFO response, passed alongside the template.
+        var args = Voice.BuildTtsArgs("line", t, "/spec", "out.wav", emotion: "Anger", intensity: 75);
+
+        Assert.Equal("Anger", FlagValue(args, "--emotion"));
+        Assert.Equal("75", FlagValue(args, "--intensity"));
     }
 
     [Fact]

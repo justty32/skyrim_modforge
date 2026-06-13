@@ -42,7 +42,8 @@ public static partial class Voice
     /// Builds the TTS command-line argument list for one line. Pure (no I/O) so it is unit-testable.
     /// Optional template fields only emit a flag when set, so engine defaults stay in charge otherwise.
     /// </summary>
-    public static List<string> BuildTtsArgs(string text, VoiceTemplateSpec template, string specDir, string outWav)
+    public static List<string> BuildTtsArgs(string text, VoiceTemplateSpec template, string specDir, string outWav,
+        string? emotion = null, int? intensity = null)
     {
         var args = new List<string>
         {
@@ -50,6 +51,19 @@ public static partial class Voice
             "--text", text,
             "--out", outWav,
         };
+
+        // Delivery emotion sourced from the dialogue INFO record (not the spec). Part of the
+        // ModForge↔voicegen protocol; engines without expressive control note+ignore it.
+        if (!string.IsNullOrWhiteSpace(emotion))
+        {
+            args.Add("--emotion");
+            args.Add(emotion);
+        }
+        if (intensity.HasValue)
+        {
+            args.Add("--intensity");
+            args.Add(intensity.Value.ToString(CultureInfo.InvariantCulture));
+        }
 
         if (!string.IsNullOrWhiteSpace(template.ReferenceWav))
         {
@@ -105,7 +119,8 @@ public static partial class Voice
     /// <summary>
     /// Generates a voice file (WAV) from text using a template and the configured TTS engine.
     /// </summary>
-    public static byte[]? GenerateWav(string text, VoiceTemplateSpec template, string specDir, VoiceOptions options)
+    public static byte[]? GenerateWav(string text, VoiceTemplateSpec template, string specDir, VoiceOptions options,
+        string? emotion = null, int? intensity = null)
     {
         var bin = options.ResolvedTtsBin;
         if (string.IsNullOrEmpty(bin) || !File.Exists(bin)) return null;
@@ -121,7 +136,7 @@ public static partial class Voice
                 UseShellExecute = false,
             };
 
-            foreach (var arg in BuildTtsArgs(text, template, specDir, tempWav))
+            foreach (var arg in BuildTtsArgs(text, template, specDir, tempWav, emotion, intensity))
                 psi.ArgumentList.Add(arg);
 
             Console.WriteLine($"    TTS Command: {bin} {string.Join(" ", psi.ArgumentList)}");

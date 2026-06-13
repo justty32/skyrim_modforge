@@ -15,7 +15,9 @@ public sealed record VoiceLinePlanEntry(
     string RelativePath,
     bool HasVoiceTemplate,
     string? TemplateId,
-    string? SkipReason);
+    string? SkipReason,
+    string Emotion = "Neutral",
+    int Intensity = 0);
 
 public static partial class Generator
 {
@@ -89,14 +91,16 @@ public static partial class Generator
                 {
                     for (int i = 0; i < info.Responses.Count; i++)
                     {
-                        var t = info.Responses[i].Text?.ToString() ?? "";
+                        var resp = info.Responses[i];
+                        var t = resp.Text?.ToString() ?? "";
                         var fn = VoiceFileName(questEd, topicEd, info.FormKey.ID, i + 1, ext);
                         var rel = Path.Combine("Sound", "Voice", pluginName, extv.VoiceType, fn);
                         var skip = string.IsNullOrWhiteSpace(t) ? "empty response text"
                             : extv.Template is null ? "voiceSpeakers entry names a template that doesn't exist" : null;
                         entries.Add(new(questEd, topicEd, infoEd, info.FormKey.ID, i + 1, t, "voiceSpeakers",
                             new[] { extv.Speaker.ToString() }, extv.VoiceType, fn, rel,
-                            extv.Template is not null, extv.Template?.Id, skip));
+                            extv.Template is not null, extv.Template?.Id, skip,
+                            resp.Emotion.ToString(), (int)resp.EmotionValue));
                     }
                     continue;
                 }
@@ -104,14 +108,17 @@ public static partial class Generator
                 var res = ResolveVoiceSpeakers(topic, info, mod, cache);
                 for (int i = 0; i < info.Responses.Count; i++)
                 {
-                    var text = info.Responses[i].Text?.ToString() ?? "";
+                    var resp = info.Responses[i];
+                    var text = resp.Text?.ToString() ?? "";
+                    var emotion = resp.Emotion.ToString();
+                    var intensity = (int)resp.EmotionValue;
                     var fileName = VoiceFileName(questEd, topicEd, info.FormKey.ID, i + 1, ext);
 
                     if (!res.Resolved)
                     {
                         entries.Add(new(questEd, topicEd, infoEd, info.FormKey.ID, i + 1, text, "",
                             Array.Empty<string>(), null, fileName, "", false, null,
-                            $"speaker unresolved: {res.Reason}"));
+                            $"speaker unresolved: {res.Reason}", emotion, intensity));
                         continue;
                     }
 
@@ -141,7 +148,8 @@ public static partial class Generator
                                 : null;
 
                         entries.Add(new(questEd, topicEd, infoEd, info.FormKey.ID, i + 1, text, res.Source,
-                            speakers, voiceType, fileName, rel, tpl is not null, tpl?.Id, skipReason));
+                            speakers, voiceType, fileName, rel, tpl is not null, tpl?.Id, skipReason,
+                            emotion, intensity));
                     }
                 }
             }

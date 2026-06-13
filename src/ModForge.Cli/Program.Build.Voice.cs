@@ -100,11 +100,14 @@ internal static partial class Program
 
                 for (int i = 0; i < info.Responses.Count; i++)
                 {
-                    var text = info.Responses[i].Text?.ToString() ?? "";
+                    var resp = info.Responses[i];
+                    var text = resp.Text?.ToString() ?? "";
                     if (string.IsNullOrWhiteSpace(text)) { emptyText++; continue; }
+                    var emotion = resp.Emotion.ToString();
+                    var intensity = (int)resp.EmotionValue;
                     foreach (var t in targets)
                         switch (GenerateVoiceLine(espPath, pluginName, t, questEd, topicEd, info.FormKey.ID, i + 1,
-                                                  text, format, skipLip, specDir, options))
+                                                  text, format, skipLip, specDir, options, emotion, intensity))
                         {
                             case 1: generated++; break;
                             case 0: existing++; break;
@@ -202,6 +205,7 @@ internal static partial class Program
             var template = e.TemplateId ?? "-";
             Console.WriteLine($"INFO {info} topic={e.TopicEditorId} quest={e.QuestEditorId} line={e.ResponseIndex}");
             Console.WriteLine($"  speaker={speakers} source={(string.IsNullOrWhiteSpace(e.ResolutionSource) ? "-" : e.ResolutionSource)} voiceType={voiceType} template={template}");
+            Console.WriteLine($"  emotion={e.Emotion}/{e.Intensity}");
             Console.WriteLine($"  filename={e.FileName}");
             Console.WriteLine($"  path={path}");
             if (!string.IsNullOrWhiteSpace(e.Text))
@@ -223,7 +227,8 @@ internal static partial class Program
     // Returns 1 = generated, 0 = already on disk, -1 = TTS failed.
     private static int GenerateVoiceLine(string espPath, string pluginName, VoiceTarget target,
         string questEd, string topicEd, uint infoId, int responseIndex,
-        string text, string format, bool skipLip, string specDir, VoiceOptions options)
+        string text, string format, bool skipLip, string specDir, VoiceOptions options,
+        string? emotion = null, int? intensity = null)
     {
         var stem = Path.GetFileNameWithoutExtension(Generator.VoiceFileName(questEd, topicEd, infoId, responseIndex));
         var targetDir = Path.Combine(Path.GetDirectoryName(espPath) ?? ".", "Sound", "Voice", pluginName, target.VoiceType);
@@ -232,8 +237,8 @@ internal static partial class Program
         if (File.Exists(stemPath + ".fuz") || File.Exists(stemPath + ".wav") || File.Exists(stemPath + ".xwm"))
             return 0;   // TODO: hash check for cache
 
-        Console.WriteLine($"  Generating: {target.VoiceType}/{stem} (\"{text}\")");
-        var wav = Voice.GenerateWav(text, target.Template, specDir, options);
+        Console.WriteLine($"  Generating: {target.VoiceType}/{stem} (\"{text}\") emotion={emotion ?? "-"}/{intensity?.ToString() ?? "-"}");
+        var wav = Voice.GenerateWav(text, target.Template, specDir, options, emotion, intensity);
         if (wav == null) { Console.Error.WriteLine($"    ! FAILED to generate WAV for {stem}"); return -1; }
 
         byte[]? xwm = format is "xwm" or "fuz" ? Voice.EncodeXwma(wav, options) : null;

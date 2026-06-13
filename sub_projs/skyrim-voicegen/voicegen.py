@@ -23,15 +23,22 @@ def main():
     # engines that have no use for one simply ignore it (with a stderr note) instead of crashing.
     parser.add_argument("--exaggeration", type=float, default=None)
     parser.add_argument("--language", default=None)
+    # Delivery emotion from the dialogue INFO record (Skyrim's 8: Neutral/Anger/Disgust/
+    # Fear/Sad/Happy/Surprise/Puzzled) + intensity 0-100. Engines map these to expressive
+    # delivery if they can; an engine with no equivalent notes+ignores, like --exaggeration.
+    parser.add_argument("--emotion", default=None)
+    parser.add_argument("--intensity", type=int, default=None)
     args = parser.parse_args()
 
     engine = args.engine.lower()
 
     if engine == "f5":
-        # F5-TTS only supports speed; exaggeration has no equivalent and the language
-        # is inferred from the reference clip/text. Note + ignore rather than fail.
+        # F5-TTS only supports speed; exaggeration/emotion have no equivalent and the
+        # language is inferred from the reference clip/text. Note + ignore rather than fail.
         if args.exaggeration is not None:
             print("NOTE: f5 engine has no exaggeration control; ignoring --exaggeration", file=sys.stderr)
+        if args.emotion is not None and args.emotion not in ("", "Neutral"):
+            print(f"NOTE: f5 engine has no emotion control; ignoring --emotion {args.emotion} (intensity {args.intensity})", file=sys.stderr)
         if args.language is not None and args.language not in ("en", ""):
             print(f"NOTE: f5 engine infers language from the reference; ignoring --language {args.language}", file=sys.stderr)
         try:
@@ -82,6 +89,10 @@ def main():
             cmd += ["--exaggeration", str(args.exaggeration)]
         if args.language:
             cmd += ["--language", args.language]
+        if args.emotion:
+            cmd += ["--emotion", args.emotion]
+        if args.intensity is not None:
+            cmd += ["--intensity", str(args.intensity)]
 
         print(f"    Fish Speech command: {' '.join(cmd)}", file=sys.stderr)
         try:
