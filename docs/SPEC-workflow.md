@@ -57,9 +57,13 @@ setup notes (Blackwell→torch cu128, F5 auto-transcribes ref when `ref_text=""`
 | `MODFORGE_FONIXDATA` | `FonixData.cdf` | required by the `MODFORGE_FACEFX` fallback only |
 
 > Lip sync runs automatically when `format: fuz` and `skipLip` is false. With `MODFORGE_LIPGEN` pointed at the
-> CK `LipGenerator.exe`, `voicelines` packs a real `.lip` into each `.fuz` so NPC mouths move (verified producing
-> a valid `.lip` under Wine on 2026-06-13). With no lip tool configured, `voicelines` prints a one-time warning and
-> the `.fuz` ships without lip data (static mouth) — subtitles still work.
+> CK `LipGenerator.exe`, `voicelines` packs a real `.lip` into each `.fuz` so NPC mouths move — **confirmed in-game
+> 2026-06-13** (the NPC's mouth animates with the syllables). With no lip tool configured, `voicelines` prints a
+> one-time warning and the `.fuz` ships without lip data (static mouth) — subtitles still work.
+>
+> **Folder-name trap:** `voicelines` writes to `Sound/Voice/<PluginName>/…`, so run it on the *packaged* plugin
+> (package first, then voicelines on the packaged esp) — otherwise the voice folder won't match the shipped
+> plugin name and the engine won't find the audio.
 
 **Workflow**
 
