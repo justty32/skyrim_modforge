@@ -17,15 +17,12 @@ public static partial class Generator
             {
                 if (string.IsNullOrWhiteSpace(mm.Worldspace))
                 { Warn($"  ! mapMarker '{mm.EditorId}': no worldspace — skipped"); continue; }
-                // A map marker is a worldspace-PERSISTENT ref — it belongs in the worldspace's persistent
-                // (top) cell alongside the vanilla map markers, not a grid cell. Fall back to the grid
-                // cell only for a custom worldspace (no master persistent cell).
-                var cell = WorldspacePersistentCell(mm.Worldspace);
-                if (cell is null)
-                {
-                    int cx = PosToGrid(mm.Position.X), cy = PosToGrid(mm.Position.Y);
-                    cell = ExteriorCell(mm.Worldspace, cx, cy);
-                }
+                // Place the map marker in a regular exterior grid cell's persistent list. (It would more
+                // "correctly" live in the worldspace persistent cell alongside the vanilla markers, but
+                // overriding that cell crashes the engine — see WorldspaceOverride. A persistent ref in a
+                // grid cell still shows on the world map.)
+                int cx = PosToGrid(mm.Position.X), cy = PosToGrid(mm.Position.Y);
+                var cell = ExteriorCell(mm.Worldspace, cx, cy);
                 if (cell is null) { Warn($"  ! mapMarker '{mm.EditorId}': worldspace '{mm.Worldspace}' unresolved — skipped"); continue; }
                 if (!TryResolveRef(MapMarkerBase, formKeyByEd, out var baseFk)) continue;
 

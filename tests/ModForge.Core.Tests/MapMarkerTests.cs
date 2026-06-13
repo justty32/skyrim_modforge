@@ -37,20 +37,19 @@ public class MapMarkerTests
         Assert.True(marker.MapMarker.Flags.HasFlag(MapMarker.Flag.CanTravelTo));
     }
 
-    // Regression for the blank-map bug: the worldspace override must carry the persistent TopCell
-    // ADDITIVELY (our marker lands in it; no vanilla refs are re-stated) so vanilla map markers survive.
+    // The map marker lands in a regular exterior grid cell's persistent list. We deliberately do NOT
+    // override the worldspace persistent (top) cell — doing so CRASHES the engine (in-game 2026-06-13),
+    // so TopCell stays null on our override.
     [Fact]
     [Trait("Category", "RequiresSkyrim")]
-    public void MapMarker_lands_in_the_persistent_topcell_which_is_carried_additively()
+    public void MapMarker_lands_in_a_grid_cell_and_does_not_touch_the_persistent_topcell()
     {
         var mod = Build(CampSpec());
         var ws = mod.Worldspaces.Single(w => w.FormKey.ID == 0x3C);
-        Assert.NotNull(ws.TopCell);                                  // persistent cell carried (else map blanks)
-        Assert.Equal(0xD74u, ws.TopCell!.FormKey.ID);               // Tamriel persistent cell
-        var marker = ws.TopCell.Persistent.OfType<IPlacedObjectGetter>().Single(r => r.EditorID == "MF_Camp");
+        Assert.Null(ws.TopCell);                                     // must NOT override the persistent cell (crashes)
+        var marker = ws.SubCells.SelectMany(b => b.Items).SelectMany(s => s.Items)
+            .SelectMany(c => c.Persistent).OfType<IPlacedObjectGetter>().Single(r => r.EditorID == "MF_Camp");
         Assert.NotNull(marker.MapMarker);
-        // Additive: ONLY our marker is re-stated; the engine keeps the master's vanilla persistent refs.
-        Assert.Single(ws.TopCell.Persistent);
     }
 
     [Fact]
