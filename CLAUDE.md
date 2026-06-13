@@ -7,6 +7,7 @@
 - 需要本機 `Skyrim.esm` 的測試已標記 `Category=RequiresSkyrim`；一般離線迴歸請排除該 category
 - Commit 訊息用多個 `-m` flag 組多行（PowerShell here-string 易出問題）
 - 重構必須行為不變（behavior-preserving）；不要未經確認就 push 或開新工作
+- 外部工具 / `MODFORGE_*` env var / 資料依賴（含缺檔降級行為）清單見 `docs/TOOLING.md`
 
 **前置步驟（fresh clone 後，`dotnet build` 前必做一次）：**
 `assets/papyrus/MFStoryEventDispatch.pex` 被 `ModForge.Cli.csproj` embed 為 EmbeddedResource，但 `.pex` 在 `.gitignore` 裡不進 repo。需先編譯：
