@@ -12,9 +12,12 @@ public static partial class Generator
         // (we build our own; vanilla cells stay in the master).
         // Also MUST carry:
         //   • HdLodDiffuseTexture/HdLodNormalTexture (TNAM/UNAM) — LOD terrain textures
-        //   • LargeReferences (RNAM ×8455) — LOD large-object list used by world map rendering
-        //   • OffsetData (OFST, 45600 bytes) — engine cell-streaming offset table; omitting this
-        //     causes the world map terrain to render white (engine can't find terrain tiles)
+        // Do NOT carry:
+        //   • LargeReferences (RNAM): vanilla already has them in Skyrim.esm; duplicating into the
+        //     override causes double-rendering LOD objects and visual corruption.
+        //   • OffsetData (OFST): this is a FILE-LAYOUT offset table — the bytes point into
+        //     Skyrim.esm's binary structure. Copying them to our ESP means the engine reads garbage
+        //     data from our file, producing severe visual corruption.
         // We NO LONGER carry TopCell here (handled in WorldspaceOverride directly).
         private void CopyWorldspaceEnv(IWorldspaceGetter src, Worldspace dst)
         {
@@ -42,12 +45,9 @@ public static partial class Generator
             var normal = src.HdLodNormalTexture;
             if (normal is not null && !normal.IsNull)
                 dst.HdLodNormalTexture = new AssetLink<SkyrimTextureAssetType>(normal.GivenPath);
-            // Large References (RNAM): LOD large-object list — needed for world map rendering.
-            foreach (var lr in src.LargeReferences)
-                dst.LargeReferences.Add(lr.DeepCopy());
-            // OffsetData (OFST): engine cell-streaming offset table.
-            if (src.OffsetData is { } od)
-                dst.OffsetData = od.ToArray();
+            // RNAM (LargeReferences) and OFST (OffsetData) intentionally NOT copied.
+            // See comment above: RNAM duplicates vanilla LOD objects (double-render corruption);
+            // OFST is a file-layout offset table specific to Skyrim.esm (copies corrupt our ESP).
         }
 
         // --- Exterior / worldspace placement (It.7d phase 3) ---------------------------------
