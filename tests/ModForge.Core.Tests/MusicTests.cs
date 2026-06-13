@@ -63,4 +63,17 @@ public class MusicTests
         var ws = mod.Worldspaces.Single(w => w.EditorID == "MF_World");
         Assert.Equal(m.FormKey, ws.Music.FormKey);
     }
+
+    [Fact]
+    public void Music_validation_flags_bad_type_singletrack_no_file_and_empty_musc()
+    {
+        var spec = new ModSpec();
+        spec.MusicTracks.Add(new MusicTrackSpec { EditorId = "MF_NoFile", Type = "SingleTrack" });
+        spec.MusicTracks.Add(new MusicTrackSpec { EditorId = "MF_BadType", Type = "Nonsense", File = "Music\\x.xwm" });
+        spec.Music.Add(new MusicTypeSpec { EditorId = "MF_Empty" });
+        var problems = Generator.Validate(spec);
+        Assert.Contains(problems, p => p.Contains("MF_NoFile") && p.Contains("file"));
+        Assert.Contains(problems, p => p.Contains("MF_BadType") && p.Contains("Nonsense"));
+        Assert.Contains(problems, p => p.Contains("MF_Empty") && p.Contains("track"));
+    }
 }

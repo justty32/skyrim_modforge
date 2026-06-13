@@ -26,6 +26,7 @@ public static partial class Generator
         ctx.ValidateProjectiles();
         ctx.ValidateExplosions();
         ctx.ValidateHazards();
+        ctx.ValidateMusic();
         ctx.ValidateImageSpaceModifiers();
         ctx.ValidateIdentities();
         ctx.ValidateVoice();
@@ -120,6 +121,8 @@ public static partial class Generator
             foreach (var pl in spec.Placements) if (!string.IsNullOrWhiteSpace(pl.EditorId)) Reg(pl.EditorId, "placement");
             foreach (var mm in spec.MapMarkers) if (!string.IsNullOrWhiteSpace(mm.EditorId)) Reg(mm.EditorId, "mapMarker");
             foreach (var hz in spec.Hazards) Reg(hz.EditorId, "hazard");
+            foreach (var mt in spec.MusicTracks) Reg(mt.EditorId, "musicTrack");
+            foreach (var m in spec.Music) Reg(m.EditorId, "music");
         }
 
         // GlobalVariable (GLOB): type must be one of the three Skyrim subtypes (short/long/int/float).
