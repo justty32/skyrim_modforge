@@ -28,17 +28,23 @@
 
 ## 待測（active）
 
-### 1. 任務標記大地圖修復（quest-markers map-fix）— 第六次嘗試
+### 1. 任務標記大地圖修復（quest-markers map-fix）— 第八次嘗試
 
-- **累積結果（2026-06-13 第五次，TNAM/UNAM 修復）**：
-  - ✅ CTD 消失、marker 可見、可傳送、不摔死（Z=-3800 修正落地）
-  - ❌ 大地圖**仍白茫茫**（TNAM/UNAM 不是根因）
-- **根因（第六次，2026-06-13）**：binary 比對 vanilla Tamriel WRLD 後發現兩個缺漏：
-  1. **LargeReferences（RNAM ×8455）**：LOD 大物件清單，世界地圖渲染需要；我們從未複製
-  2. **OffsetData（OFST，45600 bytes）**：引擎 cell-streaming offset table；從未複製
-  已在 `CopyWorldspaceEnv` 補上兩者（RNAM DeepCopy loop + `od.ToArray()` for OFST）。ESP 從 ~5KB 增到 1.4MB（WRLD 記錄大小接近 vanilla）。511 tests pass。
-- **zip**：`~/skyrim_mods/mine/ModForgeQuestMarkers-mapfix.zip`（第六次，RNAM+OFST 修復後重建）
-- **怎麼測**：裝好 → 開大地圖確認 Tamriel 底圖有**地形貼圖**（目標：看得到山丘/雪地/海岸等背景地形，不是全白）。
+- **CTD / marker / 傳送早已 OK**（第五次起）：marker 可見、可傳送、不摔死。剩下純粹是大地圖底圖渲染。
+- **逐 subrecord 拆解三次結果**（解碼自 `CopyWorldspaceEnv` 輸出 vs vanilla Skyrim.esm Tamriel WRLD）：
+  | 嘗試 | RNAM | OFST | TNAM/UNAM | 結果 |
+  |------|------|------|-----------|------|
+  | 5 | ✗ | ✗ | ✗ | 白圖 |
+  | 6 | ✓ | ✓ | ✓ | 左上角破圖 |
+  | 7 | ✗ | ✗ | ✓ | 全圖破圖 |
+  | **8** | **✓** | **✗** | **✓** | ← 待測 |
+- **根因解碼（2026-06-13）**：
+  - **OFST** 的 11400 個 uint32 是 **Skyrim.esm 的絕對檔案偏移量**（0–154M，檔案 249M）→ 複製進我們 ESP 後引擎 seek 到垃圾 → 破圖。OFST 在 SSE 是 vestigial（引擎 runtime 重建 cell-offset cache），**永遠不複製**。
+  - **RNAM**（×8455）entry 是 `(FormID, 世界 cell X/Y)` → 可跨檔移植；是 LOD 大物件（山/巨石）清單。full WRLD override 若 drop 掉 → 地圖有貼圖無 LOD 幾何 → 破圖。
+  - 第七次（有 TNAM 無 RNAM）= 全圖破圖證實了「RNAM 必須在」。
+- **第八次組合**：RNAM ✓ + TNAM/UNAM ✓ + **OFST ✗**（唯一不可移植的欄位）。ESP 1.4MB，OFST=0 RNAM=8455 已驗。
+- **zip**：`~/skyrim_mods/mine/ModForgeQuestMarkers-mapfix8.zip`（舊的 mapfix/7 已刪，避免裝錯）
+- **怎麼測**：裝好 → 開大地圖確認 Tamriel 底圖**有地形、不破圖也不全白**（看得到山丘/雪地/海岸）。若還是破圖 → 連 RNAM 也要 revert（回白圖無破圖），白圖根因另查。
 
 ---
 

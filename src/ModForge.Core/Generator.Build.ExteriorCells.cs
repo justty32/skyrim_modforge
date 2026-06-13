@@ -10,14 +10,18 @@ public static partial class Generator
         // ("the whole world is underwater"). We copy land/water defaults, water forms, climate, map,
         // bounds, parent, lighting, etc. but NOT the localized Name or the SubCells block tree
         // (we build our own; vanilla cells stay in the master).
-        // Also MUST carry:
+        // MUST carry (transplantable — FormID/position/path based, valid in any file):
         //   • HdLodDiffuseTexture/HdLodNormalTexture (TNAM/UNAM) — LOD terrain textures
+        //   • LargeReferences (RNAM): the LOD large-object list (mountains, big rocks). Each entry is
+        //     (FormID, world cell X/Y) — world-position based, so it copies cleanly across files. A
+        //     full WRLD override that DROPS these renders the world-map terrain corrupt (the engine
+        //     has texture but no large-object LOD geometry to place). Decoded 2026-06-13.
         // Do NOT carry:
-        //   • LargeReferences (RNAM): vanilla already has them in Skyrim.esm; duplicating into the
-        //     override causes double-rendering LOD objects and visual corruption.
-        //   • OffsetData (OFST): this is a FILE-LAYOUT offset table — the bytes point into
-        //     Skyrim.esm's binary structure. Copying them to our ESP means the engine reads garbage
-        //     data from our file, producing severe visual corruption.
+        //   • OffsetData (OFST): a FILE-LAYOUT offset table — its 11400 uint32 values are ABSOLUTE
+        //     byte offsets into Skyrim.esm (range 0–154M in a 249M file). Copying them into our ESP
+        //     makes the engine seek to garbage positions in OUR file → severe map corruption. OFST is
+        //     vestigial in SSE (engine rebuilds the cell-offset cache at runtime), so omitting it is
+        //     safe; transplanting it is not.
         // We NO LONGER carry TopCell here (handled in WorldspaceOverride directly).
         private void CopyWorldspaceEnv(IWorldspaceGetter src, Worldspace dst)
         {
@@ -45,9 +49,12 @@ public static partial class Generator
             var normal = src.HdLodNormalTexture;
             if (normal is not null && !normal.IsNull)
                 dst.HdLodNormalTexture = new AssetLink<SkyrimTextureAssetType>(normal.GivenPath);
-            // RNAM (LargeReferences) and OFST (OffsetData) intentionally NOT copied.
-            // See comment above: RNAM duplicates vanilla LOD objects (double-render corruption);
-            // OFST is a file-layout offset table specific to Skyrim.esm (copies corrupt our ESP).
+            // Large References (RNAM): LOD large-object list — transplantable (FormID + world pos).
+            // A full WRLD override that drops these renders the world map terrain corrupt.
+            foreach (var lr in src.LargeReferences)
+                dst.LargeReferences.Add(lr.DeepCopy());
+            // OFST (OffsetData) intentionally NOT copied — file-layout offset table specific to
+            // Skyrim.esm's byte layout; transplanting it corrupts our ESP (engine seeks to garbage).
         }
 
         // --- Exterior / worldspace placement (It.7d phase 3) ---------------------------------
