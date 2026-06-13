@@ -78,9 +78,13 @@
 | Build P1 | `Generator.Build.Projectiles.cs` | 建 PROJ scalar fields；pass-2 `WireMagicFxRefs` 解析 light/sound/explosion/objectEffect/imageSpaceModifier FormLink |
 | Spec | `Spec.MagicFx.cs` | `ImageSpaceModifierSpec`（brightnessMultiplier/contrast/saturation/tintColor+tintAmount/duration/animatable）|
 | Build P1 | `Generator.Build.ImageSpace.cs` | 建 IMAD record（每欄寫一個 KeyFrame；tint→ColorFrame，amount=alpha）；無 pass-2（無對外 ref，被 Explosion.imageSpaceModifier 或 Papyrus property 反向引用）|
-| Validate | `Generator.Validate.MagicFx.cs` | enum/flag 合法、radius/speed 正數、ref 完整、editorId 唯一；IMAD brightness/contrast/saturation/duration ≥ 0 |
+| Spec | `Spec.Hazards.cs` | `HazardSpec`（model/radius/lifetime/targetInterval/limit/spell/flags + light/sound/imad/impactDataSet）|
+| Build P1 | `Generator.Build.Hazards.cs` | `BuildHazards`（HAZD scalar/model/flags，BuildFormKeyTable 前建，故 MGEF association / placement base 可引用）；pass-2 `WireHazards` 解析 spell/light/sound/imad/impactDataSet FormLink |
+| Validate | `Generator.Validate.MagicFx.cs` | enum/flag 合法、radius/speed 正數、ref 完整、editorId 唯一；IMAD brightness/contrast/saturation/duration ≥ 0；**`ValidateHazards`：無 model/無 spell 警告、ref 完整、Hazard.Flag 合法** |
 
 法術飛行彈鏈：自訂 EXPL ← PROJ（flag Explosion，explosion=EXPL）← MGEF（projectile=PROJ）← SPEL（Aimed）。MGEF 的 `projectile`/`explosion` ref 欄位沿用既有（無需改 MGEF builder）。`Tests/MagicFxTests.cs`、`Tests/DaylightSpellTests.cs`（IMAD builder + 開關型法術組裝）。
+
+**Hazard（HAZD）兩種用法**：①法術噴出——`magicEffects[].archetype:"SpawnHazard"` + `association:<hazard>`（沿用既有 MGEF archetype/association wiring，無需改 MGEF builder）；②放置——`placements[].base` 是 in-spec HAZD（或 `kind:"hazard"`）→ `Generator.Build.Placements.cs` 建 `PlacedHazard`（見 `CODE_MAP.world.md`）。`Tests/HazardTests.cs`（record/flags/spell wiring、SpawnHazard association、PlacedHazard、validate）。
 
 IMAD（ImageSpace Modifier）：螢幕後處理 record，由 Explosion `imageSpaceModifier` 或 Papyrus `ImageSpaceModifier` property（腳本 `ApplyCrossFade`/`Remove`）套用。頂層 `imageSpaceModifiers[]`。範例 `examples/daylight_spell_spec.json`（開關型「白晝」法術：雙 SPEL Toggle/Active + Light-archetype 跟隨光 + Script-archetype imagespace；註：runtime 端後改走 SKSE plugin 的真實光/cell ambient，imagespace 版為 ESP-only 參考）。`examples/daylight_lights_spec.json` 為配套 SKSE plugin 用的 4 階 LIGH 燈泡。
 

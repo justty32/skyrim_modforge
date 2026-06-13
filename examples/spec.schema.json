@@ -113,6 +113,13 @@
       },
       "description": "Explosion (EXPL): the impact AoE a projectile/spell triggers; a magicEffect.explosion or projectile.explosion ref points here"
     },
+    "hazards": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/hazard"
+      },
+      "description": "Hazard (HAZD): a radius effect applying a spell to actors in it; spell-spawned (MGEF archetype SpawnHazard) or placed (PlacedHazard)"
+    },
     "imageSpaceModifiers": {
       "type": "array",
       "items": {
@@ -2056,6 +2063,7 @@
           "enum": [
             "npc",
             "object",
+            "hazard",
             "xmarker",
             "xmarkerHeading"
           ],
@@ -3928,6 +3936,29 @@
         "coneSpread": {
           "type": "number"
         }
+      }
+    },
+    "hazard": {
+      "type": "object",
+      "required": [ "editorId" ],
+      "description": "HAZD — a radius effect that applies `spell` to actors in it every `targetInterval` seconds. Spawn it with a magicEffect archetype 'SpawnHazard' (+ association = this editorId) or place it (placements[].base = this editorId, or kind:'hazard').",
+      "properties": {
+        "editorId": { "type": "string" },
+        "name": { "type": "string" },
+        "model": { "type": "string", "description": ".nif visual path (verify vs Skyrim.esm; empty = invisible)" },
+        "radius": { "type": "number" },
+        "lifetime": { "type": "number", "description": "seconds (0 = inherit from spawn spell / permanent)" },
+        "targetInterval": { "type": "number", "description": "seconds between applications" },
+        "limit": { "type": "integer", "minimum": 0, "description": "max simultaneous instances (0 = unlimited)" },
+        "spell": { "type": "string", "description": "ref -> SPEL applied periodically" },
+        "flags": {
+          "type": "array",
+          "items": { "enum": [ "AffectsPlayerOnly", "InheritDurationFromSpawnSpell", "AlignToImpactNormal", "InheritRadiusFromSpawnSpell", "DropToGround" ] }
+        },
+        "light": { "type": "string" },
+        "sound": { "type": "string" },
+        "imageSpaceModifier": { "type": "string" },
+        "impactDataSet": { "type": "string" }
       }
     },
     "explosion": {

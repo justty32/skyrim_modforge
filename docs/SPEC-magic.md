@@ -108,6 +108,37 @@ Mutagen models every IMAD field as an animatable curve; the builder writes one k
 which — unlike a screen filter — don't wash out low-albedo objects); the IMAD builder remains a
 general ESP-side capability.
 
+### hazards (HAZD) — radius effect / placed trap
+
+A top-level `hazards: []` of environmental hazards — a fire/frost/poison patch that periodically
+applies a spell to actors inside its radius (the engine's fire-trap / lingering-AoE mechanism).
+
+```jsonc
+"hazards": [
+  { "editorId": "MFHZ_Fire", "name": "Flames",
+    "model": "Meshes/Traps/PressurePlateFire/NorTrapFirePlateFX.nif",  // visual nif (verify vs Skyrim.esm)
+    "radius": 150,            // effect radius
+    "lifetime": 8,           // seconds it persists (0 = inherit from the spawning spell / permanent)
+    "targetInterval": 1,     // seconds between applying `spell` to actors in radius
+    "limit": 0,              // max simultaneous instances (0 = unlimited)
+    "spell": "MFHZ_BurnSpell", // ref -> the SPEL applied periodically (the actual effect)
+    "flags": [ "DropToGround" ], // AffectsPlayerOnly | InheritDurationFromSpawnSpell | AlignToImpactNormal | InheritRadiusFromSpawnSpell | DropToGround
+    "light": "...", "sound": "Skyrim.esm:0x000F57E6", // optional refs (LIGT / SNDR)
+    "imageSpaceModifier": "...", "impactDataSet": "..." } // optional refs (IMAD / IPDS)
+]
+```
+
+**Two ways to use a hazard** (both shipped):
+1. **Spell-spawn** — a `magicEffects[]` entry with `"archetype": "SpawnHazard"` and
+   `"association": "MFHZ_Fire"`, put on a `TargetLocation` spell → a castable spell that drops the
+   hazard on the ground. Reuses the existing MGEF archetype/association wiring (no special fields).
+2. **Placed trap** — a `placements[]` entry whose `base` is the hazard editorId (or `"kind": "hazard"`)
+   → a static `PlacedHazard` in the cell (a dungeon fire trap). See `SPEC-world.md`.
+
+A hazard with no `spell` applies nothing (validate warns); a model-less hazard is invisible (verify
+the nif path vs Skyrim.esm — see vanilla-nif-paths-must-be-verified). Full worked example (both paths):
+`examples/hazard.json`.
+
 ### enchantments (ENCH / Object Effect)
 An **Object Effect** bundles one or more MGEF-based `effects` (the SAME `{ magicEffect, magnitude,
 area, duration }` shape as a spell/potion effect) into a reusable enchantment that a **weapon** or

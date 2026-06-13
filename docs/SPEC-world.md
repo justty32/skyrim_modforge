@@ -32,6 +32,9 @@
 - `base` is a *ref* (in-spec or external); NPCs become `PlacedNpc`, anything else `PlacedObject`
   (`kind` overrides the guess). `rotation` is **degrees**. `persistent: true` puts it in the
   cell's persistent list (needed if a quest/script references it).
+- **Placing a hazard:** when `base` is an in-spec `hazards[]` editorId (or `kind: "hazard"`), the ref
+  is a `PlacedHazard` — a static environmental trap (fire/frost/poison patch). See the HAZD record in
+  `SPEC-magic.md § hazards`.
 - **`kind: "xmarker"` / `"xmarkerHeading"`** — a helper for placing an **invisible anchor**. With an
   empty `base` it defaults to the vanilla XMarker (`Skyrim.esm:0x0000003B`) / XMarkerHeading
   (`0x00000034`) static, and the ref is **forced persistent** (a quest-target anchor must persist or a
