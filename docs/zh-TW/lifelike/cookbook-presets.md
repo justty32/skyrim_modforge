@@ -6,6 +6,22 @@
 
 完整範例：[`examples/presets-cookbook.json`](../../examples/presets-cookbook.json)。它同時包含 catalog 與已展開的具體 records，因此 `validate`/`build` 可以測這些食譜。
 
+## 用 `$ref` / `$env` 把 preset 拉進來
+
+除了 copy-paste，preset 也可以單獨放一個檔案、用 `$ref` 拉進來——完整說明見
+[SPEC-refs](../../SPEC-refs.md)。內附的
+[`examples/presets/bright-interior.json`](../../../examples/presets/bright-interior.json) 放了現成的
+`lgtm` + `imgs`；[`examples/spec-refs-demo.json`](../../../examples/spec-refs-demo.json) 把兩者拉進來：
+
+```json
+"lightingTemplates": [ { "$ref": "presets/bright-interior.json#/lgtm" } ],
+"imageSpaces":       [ { "$ref": "presets/bright-interior.json#/imgs" } ]
+```
+
+`$ref` 旁邊的同層 key 會覆寫 preset（`{ "$ref": "…#/lgtm", "fogFar": 12000 }`）；array 形態的 `$ref`
+可疊多個 preset（後蓋前）；`$env` 用來參數化路徑或值（`{ "$env": "MF_PRESET_DIR", "default": "presets" }`）。
+下方同文件的 `presets` catalog 也可以用 `#/presets/…` 當 `$ref` 目標。
+
 ## Lighting presets
 
 - `brightInterior` — 乾淨、可閱讀的室內補光。把 LGTM + IMGS 用在 `cells[].lightingTemplate` 與 `cells[].imageSpace`。

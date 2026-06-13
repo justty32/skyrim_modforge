@@ -3,6 +3,7 @@
   "$id": "https://modforge/spec.schema.json",
   "title": "ModForge plugin spec",
   "description": "Describes the content of one Skyrim plugin. See docs/SPEC.md. Property names are matched case-insensitively by the generator.",
+  "$comment": "In a spec DATA file, an object { \"$ref\": ... } or { \"$env\": ... } is a ModForge preprocessor directive (see docs/SPEC-refs.md) — $ref splices JSON from a file / file#pointer / same-doc pointer, $env substitutes an environment variable. They are resolved BEFORE deserialization, may appear in place of any value, and never reach the record builder, so this schema does not (and cannot) validate them. This is unrelated to the JSON-Schema $ref used internally within this schema document.",
   "type": "object",
   "properties": {
     "pluginName": {

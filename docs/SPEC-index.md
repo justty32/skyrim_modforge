@@ -11,6 +11,7 @@ The spec is a JSON file → `.esp` plugin. Choose a topic:
 | [SPEC-items](SPEC-items.md) | Recipes (COBJ), perks, external assets (meshes/sounds), texture sets (TXST) |
 | [SPEC-packages](SPEC-packages.md) | AI packages (Sandbox/Travel/UseMagic/Follow/Sleep/Patrol/Escort), weathers & climates |
 | [SPEC-workflow](SPEC-workflow.md) | CLI workflow (`validate` / `build` / `package`), voice cloning pipeline (`voicelines` / `extract-voices`) + not-yet-covered features |
+| [SPEC-refs](SPEC-refs.md) | `$ref` / `$env` includes & parameterization (named preset library, file/pointer/same-doc refs, env vars) |
 
 Quick CLI reference:
 ```bash

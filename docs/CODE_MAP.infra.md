@@ -23,6 +23,7 @@
 | `SeqFileTests.cs` | `.seq` manifest 生成（StartGameEnabled quest 列表）|
 | `VoiceTests.cs` | `BuildTtsArgs`/`BuildLipGenArgs` 命令列、`VoiceFileName` CK 命名格式、`WriteFuz` header（含無 lip 情形）、`GenerateLip` 官方 LipGenerator 端到端（`RequiresSkyrim`，env-gated 自跳過）|
 | `VoiceSpeakerTests.cs` | `voicelines` speaker 偵測（GetIsID / alias / faction 條件解析）|
+| `SpecRefsTests.cs` | `$ref` 三形態（string / array 鏈式 / long-form `{from,pointer}`）、`$env`（value / default / 缺報錯）、`$ref`+`$env` 衝突、cycle、sibling deep-merge、`ResolveFile` disk round-trip |
 | `Helpers.cs` | 共用測試 helper（非 test class，供其他 *Tests.cs 使用）|
 
 ---
@@ -35,6 +36,7 @@
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
 | Spec | `Spec.cs` | `ModSpec`（頂層 DTO，所有 record family 的清單欄位）|
+| Spec | `SpecRefs.cs` | `$ref`/`$env` 反序列化前預處理器（純 `JsonNode` resolver + `ResolveFile` disk 入口；注入 file/env lookup 以可測）；CLI 在 deserialize 前跑。見 [SPEC-refs.md](SPEC-refs.md) |
 
 ---
 
@@ -43,8 +45,8 @@
 
 | 層次 | 檔案 | 命令 |
 |-----|-----|-----|
-| CLI | `Program.cs` | `gen` / `find` / diagnostic dispatcher；`ReadSpec` JSON 反序列化 |
-| CLI | `Program.Build.cs` | `build` / `validate` / `package` / `compile` / `voicelines` / `extract-voices` |
+| CLI | `Program.cs` | `gen` / `find` / diagnostic dispatcher；`ResolveSpecJson`（單一 chokepoint，跑 `SpecRefs.ResolveFile`）→ `ReadSpec` JSON 反序列化 |
+| CLI | `Program.Build.cs` | `build` / `validate` / `package` / `compile` / `voicelines` / `extract-voices`；`validate` 的 `CheckUnknownFields` + deserialize 都跑在 `$ref`/`$env` **解析後**的 JSON |
 | CLI | `Program.Translate.cs` | `extract` / `apply` / `applyloc` |
 | CLI | `Package.cs` | `package` 完整流程：Papyrus 編譯 + Assets 複製 + MO2 資料夾組裝 |
 

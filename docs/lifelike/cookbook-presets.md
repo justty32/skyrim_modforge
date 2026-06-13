@@ -9,6 +9,24 @@ records, expand a preset into the normal top-level arrays (`lightingTemplates`, 
 Worked example: [`examples/presets-cookbook.json`](../../examples/presets-cookbook.json). It includes
 both the catalog and concrete expanded records so `validate`/`build` can exercise the recipes.
 
+## Pulling presets in with `$ref` / `$env`
+
+Instead of copy-pasting, a preset can live in its own file and be pulled in with `$ref` — see
+[SPEC-refs](../SPEC-refs.md) for the full reference. The shipped
+[`examples/presets/bright-interior.json`](../../examples/presets/bright-interior.json) holds a
+ready-to-use `lgtm` + `imgs`; [`examples/spec-refs-demo.json`](../../examples/spec-refs-demo.json)
+pulls both in:
+
+```json
+"lightingTemplates": [ { "$ref": "presets/bright-interior.json#/lgtm" } ],
+"imageSpaces":       [ { "$ref": "presets/bright-interior.json#/imgs" } ]
+```
+
+Keys beside `$ref` override the preset (`{ "$ref": "…#/lgtm", "fogFar": 12000 }`); an array
+`$ref` layers several presets (later wins); and `$env` parameterizes a path or value
+(`{ "$env": "MF_PRESET_DIR", "default": "presets" }`). The same-document `presets` catalog below
+is also a valid `$ref` target via `#/presets/…`.
+
 ## Lighting presets
 
 - `brightInterior` — clean readable interior fill. Use the LGTM + IMGS on `cells[].lightingTemplate`
