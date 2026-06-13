@@ -100,6 +100,16 @@ public sealed class DialogueSpec
     public List<PropertySpec> ResultProperties { get; set; } = new();
     // Goodbye closes the dialogue menu after this line — vanilla recruit/dismiss lines all set it.
     public bool Goodbye { get; set; }
+    // INFO (ENAM) behaviour flags. sayOnce: speak this line at most once ever (VIGILANT's most-used
+    // INFO flag — one-shot story beats). walkAway: the NPC walks off after delivering it. random:
+    // the engine random-picks among sibling INFOs whose conditions pass (line variety). invisibleContinue:
+    // immediately continue to the next INFO in the chain without closing the menu. forceSubtitle: always
+    // show the subtitle even if subtitles are off.
+    public bool SayOnce { get; set; }
+    public bool WalkAway { get; set; }
+    public bool Random { get; set; }
+    public bool InvisibleContinue { get; set; }
+    public bool ForceSubtitle { get; set; }
     // Extra CTDA gates on the INFO (beyond the auto GetIsID speaker gate). e.g. only show a paid
     // recruit line when the player can afford it and isn't already following.
     public List<ConditionSpec> Conditions { get; set; } = new();

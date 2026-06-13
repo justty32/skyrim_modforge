@@ -49,6 +49,34 @@ public class DialogueTests
         Assert.All(infos, i => Assert.Equal(FavorLevel.None, i.FavorLevel));
     }
 
+    // INFO (ENAM) behaviour flags from the spec land on the built INFO (sayOnce is VIGILANT's most-used).
+    [Fact]
+    public void InfoFlags_FromSpec_LandOnEnam()
+    {
+        var r = TestBuild.Ok(new ModSpec
+        {
+            PluginName = "Test.esp",
+            Quests = { new QuestSpec { EditorId = "Q", Name = "Quest" } },
+            Npcs   = { new NpcSpec  { EditorId = "Npc", Name = "Npc", Greeting = "Hello there." } },
+            Dialogue =
+            {
+                new DialogueSpec
+                {
+                    EditorId = "D", QuestEditorId = "Q", SpeakerNpcEditorId = "Npc",
+                    Prompt = "Topic", Responses = { "Line." },
+                    SayOnce = true, WalkAway = true, ForceSubtitle = true,
+                },
+            },
+        });
+        var info = Topics(r).Single(t => t.Subtype == DialogTopic.SubtypeEnum.Custom).Responses.Single();
+        var f = info.Flags!.Flags;
+        Assert.True(f.HasFlag(DialogResponses.Flag.SayOnce));
+        Assert.True(f.HasFlag(DialogResponses.Flag.WalkAway));
+        Assert.True(f.HasFlag(DialogResponses.Flag.ForceSubtitle));
+        Assert.False(f.HasFlag(DialogResponses.Flag.Random));   // not set → absent
+        Assert.False(f.HasFlag(DialogResponses.Flag.Goodbye));
+    }
+
     // GOTCHA: without a Hello the NPC isn't conversable at all. Build auto-emits one Hello topic per
     // speaker: Misc / Hello / SNAM='HELO', no branch, gated GetIsID(speaker).
     [Fact]

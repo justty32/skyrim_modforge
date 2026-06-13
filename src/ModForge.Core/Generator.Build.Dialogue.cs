@@ -2,6 +2,20 @@ namespace ModForge;
 
 public static partial class Generator
 {
+    // Combine a dialogue spec's INFO (ENAM) behaviour flags into one DialogResponses.Flag value.
+    // Shared by the hello and player-topic build sites so both honour the same set.
+    internal static DialogResponses.Flag DialogueInfoFlags(DialogueSpec d)
+    {
+        DialogResponses.Flag f = default;
+        if (d.Goodbye)            f |= DialogResponses.Flag.Goodbye;
+        if (d.SayOnce)            f |= DialogResponses.Flag.SayOnce;
+        if (d.WalkAway)           f |= DialogResponses.Flag.WalkAway;
+        if (d.Random)             f |= DialogResponses.Flag.Random;
+        if (d.InvisibleContinue)  f |= DialogResponses.Flag.InvisibleContinue;
+        if (d.ForceSubtitle)      f |= DialogResponses.Flag.ForceSubtitle;
+        return f;
+    }
+
     private sealed partial class BuildContext
     {
         // --- pass 1: native dialogue — Quest -> DialogBranch -> DialogTopic -> DialogResponses(INFO),
@@ -39,7 +53,7 @@ public static partial class Generator
                     var hinfo = new DialogResponses(mod)
                     {
                         EditorID = d.EditorId,
-                        Flags = new DialogResponseFlags { Flags = d.Goodbye ? DialogResponses.Flag.Goodbye : default },
+                        Flags = new DialogResponseFlags { Flags = DialogueInfoFlags(d) },
                         FavorLevel = FavorLevel.None,
                     };
                     dialogResponsesByEd[d.EditorId] = hinfo;
@@ -97,7 +111,7 @@ public static partial class Generator
                     EditorID = d.EditorId,
                     // Goodbye (DialogResponses.Flag, not the per-line DialogResponse.Flag) closes the menu
                     // after the line — set for recruit/dismiss-style lines that carry a result fragment.
-                    Flags = new DialogResponseFlags { Flags = d.Goodbye ? DialogResponses.Flag.Goodbye : default },
+                    Flags = new DialogResponseFlags { Flags = DialogueInfoFlags(d) },
                     FavorLevel = FavorLevel.None,
                 };
                 dialogResponsesByEd[d.EditorId] = info;

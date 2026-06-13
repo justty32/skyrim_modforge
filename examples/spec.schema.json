@@ -1874,6 +1874,26 @@
           "type": "boolean",
           "description": "close the dialogue menu after this line (vanilla recruit/dismiss lines set it)"
         },
+        "sayOnce": {
+          "type": "boolean",
+          "description": "INFO (ENAM) flag: speak this line at most once ever (VIGILANT's most-used flag — one-shot story beats)"
+        },
+        "walkAway": {
+          "type": "boolean",
+          "description": "INFO (ENAM) flag: the NPC walks off after delivering this line"
+        },
+        "random": {
+          "type": "boolean",
+          "description": "INFO (ENAM) flag: the engine random-picks among sibling INFOs whose conditions pass (line variety)"
+        },
+        "invisibleContinue": {
+          "type": "boolean",
+          "description": "INFO (ENAM) flag: immediately continue to the next INFO in the chain without closing the menu"
+        },
+        "forceSubtitle": {
+          "type": "boolean",
+          "description": "INFO (ENAM) flag: always show the subtitle even when subtitles are off"
+        },
         "hello": {
           "type": "boolean",
           "description": "emit this line as the NPC's auto-spoken GREETING (Misc/Hello) instead of a player menu option; combine with identity/primaryIdentity/conditions to greet differently by state (engine picks the highest-priority matching Hello, else the NPC's plain greeting). prompt is ignored."

@@ -48,6 +48,12 @@ selects the line; use `OnEnd` only for effects that must follow the full voiced 
 to close the menu after the line (vanilla recruit/dismiss lines all do). See
 `examples/follower_paid_spec.json` + `MFHirePaidRecruit.psc` for a paid-follower recruit.
 
+**INFO (ENAM) behaviour flags** (all default false): `sayOnce` (speak at most once ever — VIGILANT's
+most-used INFO flag, for one-shot story beats), `walkAway` (NPC walks off after the line), `random`
+(engine random-picks among sibling INFOs whose conditions pass, for line variety), `invisibleContinue`
+(continue to the next INFO in the chain without closing the menu), `forceSubtitle` (always show the
+subtitle even when subtitles are off). They apply to both player topics and `hello` greetings.
+
 > **Three runtime requirements (not record bugs):** (1) the dialogue only registers on a
 > **game LOAD** — test with a genuine new game, or `save`+`load` after the quest starts;
 > a main-menu `coc` or mid-session `startquest` leaves the NPC mute even with a perfect
