@@ -24,6 +24,8 @@ public static partial class Generator
             {
                 if (m.Tracks.Count == 0)
                     Problems.Add($"music '{m.EditorId}' has no tracks — it plays nothing");
+                if (m.DuckingDecibel < 0 || m.DuckingDecibel > 655)
+                    Problems.Add($"music '{m.EditorId}' duckingDecibel {m.DuckingDecibel} out of range (0–655; positive dB attenuation)");
                 foreach (var tr in m.Tracks) CheckRef(tr, $"music '{m.EditorId}' track");
                 foreach (var f in m.Flags)
                     if (!Enum.TryParse<Mutagen.Bethesda.Skyrim.MusicType.Flag>(f, true, out _))

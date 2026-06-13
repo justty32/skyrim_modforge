@@ -21,7 +21,7 @@ public class MusicTests
         spec.Music.Add(new MusicTypeSpec
         {
             EditorId = "MF_Explore", Flags = { "CycleTracks", "DoesNotQueue" },
-            Priority = 5, DuckingDecibel = -6f, FadeDuration = 4f, Tracks = { "MF_Theme" },
+            Priority = 5, DuckingDecibel = 6f, FadeDuration = 4f, Tracks = { "MF_Theme" },
         });
         var mod = Build(spec);
         var t = mod.MusicTracks.Single(x => x.EditorID == "MF_Theme");
@@ -32,7 +32,7 @@ public class MusicTests
         var m = mod.MusicTypes.Single(x => x.EditorID == "MF_Explore");
         Assert.True(m.Flags.HasFlag(MusicType.Flag.CycleTracks));
         Assert.Equal((ushort)5, m.Data!.Priority);
-        Assert.Equal(-6f, m.Data.DuckingDecibel);
+        Assert.Equal(6f, m.Data.DuckingDecibel);
         Assert.Equal(t.FormKey, m.Tracks.Single().FormKey);   // MUSC -> MUST wired in pass 2
     }
 

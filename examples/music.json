@@ -1,0 +1,14 @@
+{
+  "pluginName": "ModForgeMusic.esp",
+  "esl": true,
+  "cells": [ { "editorId": "MFMU_Room", "name": "Music Test Room", "music": "MFMU_Type" } ],
+  "musicTracks": [
+    { "editorId": "MFMU_A", "type": "SingleTrack", "file": "Music\\ModForge\\a.xwm", "loopBegins": 0, "loopEnds": 60, "loopCount": 0 },
+    { "editorId": "MFMU_B", "type": "SingleTrack", "file": "Music\\ModForge\\b.xwm" },
+    { "editorId": "MFMU_Pool", "type": "Palette", "tracks": [ "MFMU_A", "MFMU_B" ] }
+  ],
+  "music": [
+    { "editorId": "MFMU_Type", "flags": ["CycleTracks"], "priority": 10, "duckingDecibel": 6, "fadeDuration": 4,
+      "tracks": [ "MFMU_Pool" ] }
+  ]
+}

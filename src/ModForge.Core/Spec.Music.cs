@@ -27,7 +27,7 @@ public sealed class MusicTypeSpec
     public string EditorId { get; set; } = "";
     public List<string> Flags { get; set; } = new();
     public uint Priority { get; set; }
-    public float DuckingDecibel { get; set; }
+    public float DuckingDecibel { get; set; }   // POSITIVE dB attenuation applied to other audio (0–655)
     public float FadeDuration { get; set; }
     public List<string> Tracks { get; set; } = new();   // refs -> MUST editorIds
 }
