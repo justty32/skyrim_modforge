@@ -127,6 +127,8 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - **Light (LIGT)**：`LightSpec`（color/radius/fade/flags…），用 placements 放置。
 - **Projectile (PROJ) + Explosion (EXPL)**：自訂法術飛行彈+爆，鏈 EXPL←PROJ←MGEF←SPEL。
 - **NPC inventory**：`NpcSpec.Items`（攜帶/自動裝備/死亡掉落）；`NpcSpec.essential/protected`。
+- **Hazard (HAZD)**（2026-06-13，offline 完整、未實機）：`hazards[]`（model/radius/lifetime/targetInterval/limit/spell/flags + light/sound/imad/impactDataSet）。兩種用法：①法術噴出（MGEF `archetype:"SpawnHazard"` + `association`，複用既有 MGEF wiring）②放置（`placements[].base` 是 HAZD 或 `kind:"hazard"`→`PlacedHazard`）。見 `SPEC-magic.md § hazards`、`CODE_MAP.items-magic.md`、`examples/hazard.json`。
+- **Music (MUSC + MUST)**（2026-06-13，offline 完整、未實機）：`musicTracks[]`（MUST：SingleTrack→`.xwm`／Palette→子軌池／SilentTrack + loop）+ `music[]`（MUSC：flags/priority/`duckingDecibel`(正 dB 0–655)/tracks）。掛 `cells[].music` + `worldspaces[].music`（後者沿用既有 wire）。音檔 loose asset 走 `assets`。見 `SPEC-world.md § music`、`CODE_MAP.items-magic.md`、`examples/music.json`。**踩坑**：`duckingDecibel` 負值記憶體 OK 但 CLI build 寫檔 range-check（0–655）會炸。
 
 **光照管線（明亮室內）**（in-game 確認 2026-06-09，`ModForgeBrightInterior.zip`）：`LightingTemplate (LGTM)` + `ImageSpace (IMGS, ≠ 既有 IMAD)` base record，模板抄 vanilla + 只覆寫亮度欄位；CELL 逐欄光照 `cells[].lightingTemplate/imageSpace/lighting(inline XCLL)`，含 **DALC 六方向環境光**（打亮地城核心：LGTM→`DirectionalAmbientColors`、XCLL→`AmbientColors`）。inline 無給且有 template → 全繼承。診斷 `lgtmdiag`/`imgsdiag`。**欄位/語意見 `SPEC-world.md § lighting`、wiring 見 `CODE_MAP.world.md`。** 踩坑：① interior CELL 無 XCLL = 黑房；② IMGS 不給 `template` 從零起（HDR 欄位全 0）行為可能怪，建議抄 vanilla IMGS 再調；③ build 期 `ResolveLightingRef` 不分型別，靠 Validate 的 cross-type 檢查擋打錯 slot。
 
@@ -159,4 +161,4 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 
 - Scene 演出續做：PlayIdle / 手勢動畫（可能走 scene phase-fragment 或 alias 腳本 `PlayIdle`，需解碼 `SceneAdapter`）；camera shot。
 - 多解 SM 事件（SkillIncrease/Jail/Bribe…，但須 conditions 才安全，見 [[dispatcher-magic-trigger]]）。
-- 新 record：Music / Imagespace / Hazard 等。
+- 新 record：Imagespace（IMGS 已有；指其他如 MGEF archetype 擴充 / Word of Power 等）等。（Music + Hazard 已落地，見上。）
