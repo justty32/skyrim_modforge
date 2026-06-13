@@ -21,6 +21,20 @@
 
 ---
 
+## 下次要做（next session — 2026-06-14 規劃，全部離線/維護向）
+
+四件維護/整理任務（記於 2026-06-13）：
+
+1. **整理本資料夾的 Claude memory**（`~/.claude/projects/-home-lorkhan-repo-ModForge/memory/`）— 通讀所有 memory 檔，去重、刪除過時/錯誤的、修 `[[links]]`、重整 `MEMORY.md` index。**已知過時**：`ingame-test-todos`（寫「no open items」但 quest-markers map-fix 待測——改指向 `docs/INGAME-TEST-QUEUE.md`）。順手確認新加的 `headless-vanilla-strings-provision`、`working-style`（剛改）連結正確。
+
+2. **拆檔與重構**（behavior-preserving，**一次只動一個面向**，見 CLAUDE.md Workflow 2）— **`src/ModForge.Cli/Program.Build.Voice.cs` 已 325 行、超過 300 上限**，優先拆。其餘接近上限的：`Generator.Build.Scene.cs`(283)、`Diagnostics.Records.cs`(280)、`Generator.Build.Identity.cs`(275)、`Package.cs`(272)。拆完跑離線測試確認行為不變 → **立即同步 CODE_MAP**（含 Tests 欄）→ commit。
+
+3. **整理並優化現有工作流** — 檢視 CODE_MAP 維護鏈、build/package/test loop、`scripts/test-offline.sh`、新的三檔分離（CLAUDE / SESSION-LOG / INGAME-TEST-QUEUE）是否順手；找重複手動步驟看能否腳本化（例如 fresh-clone 後那六個 `.psc` 編譯、`build`→`voicelines`→`voicediag`→zip 的語音出貨鏈）。
+
+4. **盤整外部工具依賴**（產出一份清單，建議新檔 `docs/TOOLING.md` 或 CLAUDE.md 一節）— 列出所有外部 binary + `MODFORGE_*` env var，每項標「必需/選配 + 缺了會怎樣（降級/warn/skip）+ 本機路徑」。目前 grep 到的 env：`MODFORGE_SKYRIM_DATA`、`MODFORGE_PAPYRUS_{COMPILER,COMPILER_BIN,HEADERS,BASE}`、`MODFORGE_TTS_BIN`、`MODFORGE_XWMAENCODE`、`MODFORGE_LIPGEN`、`MODFORGE_FACEFX`、`MODFORGE_FONIXDATA`、`MODFORGE_DEBUG`（CLAUDE.md 另提 `MODFORGE_FISH_SPEECH_BIN`——盤整時補齊）。外部 binary：Wine + CK PapyrusCompiler / native `~/tools/papyrus-compiler`、F5-TTS venv（python 3.11 + torch cu128）、`xWMAEncode.exe`、`LipGenerator.exe`、`ffmpeg`、`Skyrim - Interface.bsa`（STRINGS 來源）。
+
+---
+
 ## Session 紀錄（newest first）
 
 ### 2026-06-13
