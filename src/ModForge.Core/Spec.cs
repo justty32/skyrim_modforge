@@ -16,6 +16,7 @@ public sealed class ModSpec
     public List<BookSpec> Books { get; set; } = new();
     public List<WeaponSpec> Weapons { get; set; } = new();
     public List<NpcSpec> Npcs { get; set; } = new();
+    public List<NpcPatchSpec> NpcPatches { get; set; } = new();   // override existing NPCs' AI packages
     public List<QuestSpec> Quests { get; set; } = new();
     public List<DialogueSpec> Dialogue { get; set; } = new();
     public List<BanterSpec> Banter { get; set; } = new();

@@ -165,7 +165,7 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - VIGILANT：`docs/vigilant-{worldspace,story,magic}-decode-2026-06-13.md`（11 自訂 worldspace / 120 quest 78 scene / 712 spell 550 MGEF）
 
 **待補清單（上述解碼浮現,按優先序）**：
-1. **`npcPatches[]`**：override 既有 vanilla NPC 的 `Packages`（AI Overhaul 核心）。`NpcSpec` 目前只有 `EditorId`、無法指既有 NPC。先例=vanilla cell/worldspace override（`Npcs.GetOrAddAsOverride` + 覆寫 Packages,**無需新 package builder**,10 個 PACK 模板已 in-game 驗）。注意 USSEP/load-order 衝突。
+1. **`npcPatches[]`**（**已 scaffold、卡在本地化字串牆**，2026-06-13）：override 既有 vanilla NPC 的 `Packages`（AI Overhaul 核心）。已落地 spec(`NpcPatchSpec` overrideOf/packages/mode)+ validate + `BuildNpcPatches`/`WireNpcPatchPackages` + 測試。**但 override 寫不出**:① `Npcs.GetOrAddAsOverride` 需 Windows plugin-listings path、Linux headless throw；② 手動 `new Npc(fk)+DeepCopyIn(src)` 深拷既有 NPC 的**本地化 Name**→ 觸發 STRINGS/load-order resolve、headless throw（item-clone 靠 mask 跳過 Name,但 NPC 不能沒名字）。目前 catch+warn+skip（不崩 build）。**收尾需:讓 MasterCache 用「能讀 STRINGS 的 master read」**（給 Mutagen strings 來源/GameEnvironment),或接受 NPC 失去名字。10 個 PACK 模板、package 接線、placement 錨已備,只差這層。注意 USSEP/load-order 衝突。
 2. **`MagicEffectSpec` 加 script/VMAD 欄位**：VIGILANT 550 個 MGEF 有 260 個是 `archetype=Script`（Boss 法術編排）。沿用既有 dialogue/quest fragment 機制掛 Papyrus。順便確認 DualValueModifier 的 `SecondActorValue`（78 MGEF 用）。
 3. **FLST builder + `GetIsInList`/`GetInCurrentLocation` CTDA**：Sofia 細緻穿著清單 + 位置評論（builder 的 CTDA 白名單目前無這兩個函式、也無 FLST builder）。
 4. **scene Dialog action 的 `Emotion`/`EmotionValue`** + 泛化 scene phase fragment（不只 PlayIdle 跑 SetStage 等）：VIGILANT 演出靠 headtrack+emotion 取代 CAMS（78 cutscene、0 CAMS → CAMS 可延後）。

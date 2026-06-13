@@ -18,6 +18,7 @@ public static partial class Generator
         var ctx = new ValidateContext(spec);
         ctx.RegisterIdentityFactions();   // auto-built identity FACTs, so conditions can reference them
         ctx.ValidateNpcs();
+        ctx.ValidateNpcPatches();
         ctx.ValidateItems();
         ctx.ValidateQuestsAndDialogue();
         ctx.ValidateWorld();

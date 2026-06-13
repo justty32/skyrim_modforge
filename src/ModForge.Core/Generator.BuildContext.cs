@@ -32,6 +32,7 @@ public static partial class Generator
         private readonly Dictionary<string, Npc> npcsByEd = new();
         private readonly Dictionary<string, Quest> questsByEd = new();
         private readonly Dictionary<string, Cell> cellsByEd = new();
+        private readonly Dictionary<string, Mutagen.Bethesda.Skyrim.Npc> npcPatchesByRef = new();   // npcPatches[] overrides, keyed by overrideOf ref
         // Custom LGTM/IMGS built in pass 1 (before cells), so a CELL can resolve them by editorId.
         private readonly Dictionary<string, LightingTemplate> lgtmByEd = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, ImageSpace> imgsByEd = new(StringComparer.OrdinalIgnoreCase);

@@ -136,5 +136,25 @@ public static partial class Generator
                 }
             }
         }
+
+        // npcPatches[]: override an existing NPC's packages. `overrideOf` must be an existing NPC ref
+        // (an external "<master>:0xFORMID" — you can't patch an in-spec new NPC, use npcs[] for those);
+        // each package ref must resolve; mode must be replace/prepend/append.
+        public void ValidateNpcPatches()
+        {
+            foreach (var p in spec.NpcPatches)
+            {
+                if (string.IsNullOrWhiteSpace(p.OverrideOf))
+                    Problems.Add("npcPatch has no overrideOf (the existing NPC ref '<master>:0xFORMID')");
+                else if (!LooksExternalRef(p.OverrideOf) || !TryExternalRef(p.OverrideOf, out _))
+                    Problems.Add($"npcPatch overrideOf '{p.OverrideOf}' must be an existing NPC ref '<master>:0xFORMID' (in-spec new NPCs go in npcs[])");
+                if (p.Packages.Count == 0)
+                    Problems.Add($"npcPatch '{p.OverrideOf}' has no packages — nothing to change");
+                foreach (var pk in p.Packages) CheckRef(pk, $"npcPatch '{p.OverrideOf}' package");
+                var mode = (p.Mode ?? "").Trim().ToLowerInvariant();
+                if (mode is not ("" or "replace" or "prepend" or "append"))
+                    Problems.Add($"npcPatch '{p.OverrideOf}' invalid mode '{p.Mode}' (replace | prepend | append)");
+            }
+        }
     }
 }

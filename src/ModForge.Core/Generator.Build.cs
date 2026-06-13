@@ -24,6 +24,7 @@ public static partial class Generator
         // --- pass 1: create every record (so all FormKeys exist before any ref is wired) ---
         ctx.BuildItems();                          // Misc / Book / Weapon
         ctx.BuildNpcs();                           // Npc (ACTOR) — kept in npcsByEd for dialogue/packages
+        ctx.BuildNpcPatches();                     // override EXISTING NPCs (deep-copy + swap packages); pkgs wired pass 2
         ctx.BuildQuests();                         // Quest (QUST) — kept in questsByEd for dialogue
         ctx.BuildWordWallQuests();                 // one start-enabled QUST per word wall (after spec quests)
         ctx.BuildDialogue();                        // Quest->Branch->Topic->INFO, DialogView, Hellos
@@ -97,6 +98,7 @@ public static partial class Generator
         ctx.WireShouts();                          // SHOU MenuDisplayObject + per-row Word (WOOP) + Spell (SPEL)
         ctx.BuildPackageData();                    // PACK template dispatch (sandbox/travel/usemagic/patrol/follow/escort)
         ctx.WireNpcPackages();                     // NPC.Packages list
+        ctx.WireNpcPatchPackages();                // override NPCs' new package list (replace/prepend/append)
         ctx.WireOutfits();                         // OTFT contents
         ctx.BuildWorldspacesAndRegions();          // WRLD + REGN (+ NAVM/NAVI) — BEFORE placements so a
                                                    // placement can target a custom in-spec worldspace's
