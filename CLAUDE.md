@@ -90,11 +90,11 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 
 ## 進行中的方向
 
-想法備忘錄在 `docs/IDEAS.md`（隨從擴充、劇情演出、大量劇情生成等）。
-
-**任務標記（quest-markers，2026-06-13 開發中）**:三件套 — **A** `objectives[].targets[]`→QSTA 羅盤/地圖箭頭（指 alias 填的 NPC/地點）、**B** `placements[].kind:"xmarker"/"xmarkerHeading"` 隱形錨點 helper、**C** 新 top-level `mapMarkers[]`（XMRK 地圖圖示）。CODE_MAP/SPEC/schema/tests 已同步（471 離線 + 3 RequiresSkyrim 綠）。**in-game 狀態**:A（任務日誌雙目標 + 羅盤箭頭）已確認;B/C 與「放置進 vanilla Tamriel」連動的**大地圖空白 + CTD** 踩了三次坑,根因已定位=**worldspace override 的持久 cell(Tamriel TopCell 0xD74)必須(1)加性帶上、(2)複製其記錄標頭旗標 `MajorRecordFlagsRaw=0x00040400`(CopyCellEnv 只複製 DATA 旗標,漏了標頭→引擎不認得持久 cell→載 actor CTD)、(3)ref 自身帶 0x400 持久旗(vanilla XMarker/地圖標記全有)**。修好後 esp 已逐位元對齊 vanilla/USSEP,**第三次 in-game 待確認**(`~/skyrim_mods/mine/ModForgeQuestMarkers-mapfix.zip`;安全版 = `ModForgeQuestMarkers.zip`)。細節見 memory `worldspace-override-must-carry-topcell`。
-
-**身份系統 Phase-2/C**:① Adventurer 預設身份自動授予 ✅、② `activeWhen` 情境條件 ✅、④ controller 主身份+手動覆寫 ✅（皆 in-game 確認 2026-06-07）；✅ ⑤ 身份對應互動 **#5a 商人交易 UI + #5b 護衛任務 + #5c 聖騎士 smite 細調（grantPerks）** + **龍裔首吼（autoGrantWhen）**（皆 in-game 確認 2026-06-07，見下「已落地」）；尚未做：③ 聲望/行為追蹤。
+> **當前進度／每個 session 做了什麼 → 寫 `docs/SESSION-LOG.md`（不要寫進本檔）。**
+> 本檔只放 durable 的東西：專案慣例、`已落地功能` 目錄、`鐵律與踩坑`、`之後可做` roadmap。
+> in-flight 狀態（quest-markers 的 in-game 待確認、身份系統各 phase 進度…）與 session 進展都在 session log 就地更新；
+> 功能真正落地後，才把濃縮的一句話 + 實作細節指標移進下面的 `已落地功能`。
+> 想法備忘錄另見 `docs/IDEAS.md`。
 
 ### 已落地功能（時間序；實作細節見 git log / CODE_MAP / SPEC）
 
@@ -163,14 +163,14 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - **盤點**：`docs/mod-survey-2026-06-13.md`（下載 mod 的 Tier 1/2/3 解碼價值；解碼方法的記憶體鐵律；本清單的母索引）
 - 隨從擴充：`docs/sofia-expansion/`（專案夾，`README.md` 為索引）— `follower-decode-2026-06-13.md`（結構+內容索引）、`expansion-plan-2026-06-13.md`（11✅/3🟡/2🔴）、`sofia-personality.md`（性格分析/寫作 brief）
 - NPC 日程：`docs/ai-overhaul-decode-2026-06-13.md`、`docs/ai-overhaul-expansion-plan-2026-06-13.md`（6✅/3🟡/3🔴）
-- VIGILANT：`docs/vigilant-{worldspace,story,magic,scene-dialogue-audit}-decode-2026-06-13.md`（11 自訂 worldspace / 120 quest 78 scene / 712 spell 550 MGEF；scene/對話 vs ModForge **~70% 覆蓋**）。**對話缺口本 session 大批補上（皆 offline 測試）**：✅ `GetIsAliasRef` CTDA（#1 缺口,702 用,`ConditionSpec.Alias`→owning quest alias index,各 quest-scoped 呼叫點傳 `aliasIndexByName`）、✅ 9 個 CTDA 函式（GetQuestRunning/GetInCell/GetInWorldspace/GetEquipped/GetDeadCount/GetSitting/GetGold/GetMapMarkerVisible + 雙參數 GetStageDone 用 `ConditionSpec.Stage`）、✅ INFO(ENAM) 旗標 sayOnce/walkAway/random/invisibleContinue/forceSubtitle（`DialogueInfoFlags` helper）。**仍開**：`IsSceneActionComplete` CTDA(274 用,解鎖目前形同虛設的 `CompletionConditions`,需 Scene+ActionIndex 接線,結構性)/任意 scene-phase·OnBegin·OnEnd fragment/INFO LinkTo(ENAM)·PreviousDialog(PNAM) 對話樹/`GetInCurrentLocation`(Mutagen 0.49 無此型別)
+- VIGILANT：`docs/vigilant-{worldspace,story,magic,scene-dialogue-audit}-decode-2026-06-13.md`（11 自訂 worldspace / 120 quest 78 scene / 712 spell 550 MGEF；scene/對話 vs ModForge **~70% 覆蓋**）。**對話缺口已大批補齊（皆 offline）**：✅ `GetIsAliasRef` CTDA（#1 缺口,702 用,`ConditionSpec.Alias`→owning quest alias index,各 quest-scoped 呼叫點傳 `aliasIndexByName`）、✅ 9 個 CTDA 函式（GetQuestRunning/GetInCell/GetInWorldspace/GetEquipped/GetDeadCount/GetSitting/GetGold/GetMapMarkerVisible + 雙參數 GetStageDone 用 `ConditionSpec.Stage`）、✅ INFO(ENAM) 旗標 sayOnce/walkAway/random/invisibleContinue/forceSubtitle（`DialogueInfoFlags` helper）。**仍開**：`IsSceneActionComplete` CTDA(274 用,解鎖目前形同虛設的 `CompletionConditions`,需 Scene+ActionIndex 接線,結構性)/任意 scene-phase·OnBegin·OnEnd fragment/INFO LinkTo(ENAM)·PreviousDialog(PNAM) 對話樹/`GetInCurrentLocation`(Mutagen 0.49 無此型別)
 - 工作流可行性：`docs/blender-layout-feasibility-2026-06-13.md`（Blender 擺設→`placements[]` JSON,可行、不需新功能、#1 風險=旋轉轉換校準、選配 `staticmap` 子指令）
 - 待解碼候選：RDO（dialogue/INFO）、Moons And Stars（weather/IMGS/climate→region）
 
 **待補清單（上述解碼浮現,按優先序）**：
 1. ~~**`npcPatches[]`**~~ **✅ 完成（2026-06-13，含實機等級 end-to-end 驗證 + RequiresSkyrim 測試）**：override 既有 vanilla NPC 的 `Packages`（AI Overhaul 核心）。**本地化字串牆已破**——根因是 Mutagen 解 localized Name 時要讀 load-order/plugin-listings（headless throw）。解法在 `Generator.BuildContext.Utilities.cs` `ProvisionStrings`：從 `Skyrim - Interface.bsa` **lazy 抽** `<master>_english.{strings,ilstrings,dlstrings}` 到 temp `Strings/`（**檔名須照 ModKey 大小寫**，Linux case-sensitive——`Skyrim_English.STRINGS`，這是踩了「extract 出來名字仍空白」的坑後定位的關鍵），overlay 用 `StringsReadParameters{English,StringsFolderOverride=temp,BsaFolderOverride=temp}` 開（**BsaFolderOverride 指 BSA-free 夾 → 不觸發讀 load-order 的 archive scan**）。輸出 esp non-localized、英文名 inline（玩英文版 + 翻譯 mod 疊上去，符合現代漢化路線）。`examples/npc_patch.json`、`npcdiag` 探。注意 USSEP/load-order 衝突。
 2. **`MagicEffectSpec` 加 script/VMAD 欄位**：VIGILANT 550 個 MGEF 有 260 個是 `archetype=Script`（Boss 法術編排）。沿用既有 dialogue/quest fragment 機制掛 Papyrus。順便確認 DualValueModifier 的 `SecondActorValue`（78 MGEF 用）。
-3. **FLST builder + `GetIsInList`/`GetInCurrentLocation` CTDA**：Sofia 細緻穿著清單 + 位置評論（無 FLST builder；`GetInCurrentLocation` Mutagen 0.49 無此 ConditionData 型別，`GetIsInList` 待查；位置閘的 `GetInCell`/`GetInWorldspace` 本 session 已補）。
+3. **FLST builder + `GetIsInList`/`GetInCurrentLocation` CTDA**：Sofia 細緻穿著清單 + 位置評論（無 FLST builder；`GetInCurrentLocation` Mutagen 0.49 無此 ConditionData 型別，`GetIsInList` 待查；位置閘的 `GetInCell`/`GetInWorldspace` 已補）。
 4. **scene Dialog action 的 `Emotion`/`EmotionValue`** + 泛化 scene phase fragment（不只 PlayIdle 跑 SetStage 等）：VIGILANT 演出靠 headtrack+emotion 取代 CAMS（78 cutscene、0 CAMS → CAMS 可延後）。
 5. **worldspace LAND 高度圖**（自訂地圖地形,VIGILANT realm 的本體）、region-driven weather（REGN）—— 待先確認 ModForge worldspace builder 現況。
 - Scene 演出續做：PlayIdle / 手勢動畫；camera shot（VIGILANT 證明可延後）。
