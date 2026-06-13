@@ -162,3 +162,5 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - Scene 演出續做：PlayIdle / 手勢動畫（可能走 scene phase-fragment 或 alias 腳本 `PlayIdle`，需解碼 `SceneAdapter`）；camera shot。
 - 多解 SM 事件（SkillIncrease/Jail/Bribe…，但須 conditions 才安全，見 [[dispatcher-magic-trigger]]）。
 - 新 record：Imagespace（IMGS 已有；指其他如 MGEF archetype 擴充 / Word of Power 等）等。（Music + Hazard 已落地，見上。）
+- **vanilla NPC AI patch**（override 既有 NPC 的 `Packages` 排日程,如 AI Overhaul；ModForge 目前只建**新** NPC,不改既有）——同 vanilla-cell/worldspace override 思路（`GetOrAddAsOverride` + 改少數欄位）。解碼參考 `docs/ai-overhaul-decode-2026-06-13.md`（424 NPC / 744 package = Sandbox+Eat+Sleep+sit 日程堆疊）。
+- **隨從擴充**：解碼參考 `docs/sofia-follower-decode-2026-06-13.md`（Sofia 完整內容索引 + 五個可複用 pattern,全是已落地能力的規模化組合）。
