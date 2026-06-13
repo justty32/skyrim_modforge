@@ -35,6 +35,14 @@ public class ConditionTests
                     new() { Function = "GetDistance",           Comparison = "<=", Value = 512, Param = "Skyrim.esm:0x000014" },
                     new() { Function = "GetIsCurrentPackage",   Comparison = "==", Value = 1, Param = "Skyrim.esm:0x01C254" },
                     new() { Function = "GetIsVoiceType",        Comparison = "==", Value = 1, Param = "Skyrim.esm:0x0002F7C3" },
+                    new() { Function = "GetQuestRunning",        Comparison = "==", Value = 1, Param = "Q" },
+                    new() { Function = "GetInCell",             Comparison = "==", Value = 1, Param = "Skyrim.esm:0x0165A8" },
+                    new() { Function = "GetInWorldspace",       Comparison = "==", Value = 1, Param = "Skyrim.esm:0x00003C" },
+                    new() { Function = "GetEquipped",           Comparison = "==", Value = 1, Param = "Skyrim.esm:0x012EB7" },
+                    new() { Function = "GetDeadCount",          Comparison = ">=", Value = 1, Param = "Skyrim.esm:0x01327E" },
+                    new() { Function = "GetSitting",            Comparison = "==", Value = 3 },
+                    new() { Function = "GetGold",               Comparison = ">=", Value = 100 },
+                    new() { Function = "GetMapMarkerVisible",   Comparison = "==", Value = 1 },
                 },
             },
         },
@@ -54,6 +62,14 @@ public class ConditionTests
     [InlineData("GetDistanceConditionData")]
     [InlineData("GetIsCurrentPackageConditionData")]
     [InlineData("GetIsVoiceTypeConditionData")]
+    [InlineData("GetQuestRunningConditionData")]
+    [InlineData("GetInCellConditionData")]
+    [InlineData("GetInWorldspaceConditionData")]
+    [InlineData("GetEquippedConditionData")]
+    [InlineData("GetDeadCountConditionData")]
+    [InlineData("GetSittingConditionData")]
+    [InlineData("GetGoldConditionData")]
+    [InlineData("GetMapMarkerVisibleConditionData")]
     public void EachFunction_MapsToItsConditionData(string expectedType)
     {
         var r = BuildAllConditions();

@@ -38,6 +38,8 @@ public static partial class Generator
                 case "haskeyword": case "wornhaskeyword": case "hasperk": case "getisid":
                 case "getisrace": case "getitemcount": case "isspelltarget": case "getinfaction":
                 case "getglobalvalue": case "getstage": case "getrelationshiprank":
+                case "getquestrunning": case "getincell": case "getinworldspace":
+                case "getequipped": case "getdeadcount":
                     if (string.IsNullOrWhiteSpace(cs.Param)) Problems.Add($"{what}: {cs.Function} needs a param ref");
                     else CheckRef(cs.Param, $"{what} param");
                     break;

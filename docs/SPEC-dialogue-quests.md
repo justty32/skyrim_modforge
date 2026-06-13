@@ -235,9 +235,11 @@ A condition is **static gate data**, so it lives in the spec (logic still belong
 ```jsonc
 { "function": "GetItemCount",          // form-arg: HasPerk | GetInFaction | GetItemCount | GetGlobalValue | GetStage | GetIsID | GetRelationshipRank
   //                                    //   GetQuestCompleted(quest) | GetDistance(ref; value=units) | GetIsCurrentPackage(pack) | GetIsVoiceType(VTYP/list)
+  //                                    //   GetQuestRunning(quest) | GetInCell(cell) | GetInWorldspace(wrld) | GetEquipped(item/list) | GetDeadCount(npc base)
   //                                    // actorValue-arg: GetActorValue | GetActorValuePercent (0..1 fraction)
   //                                    // alias-arg: GetIsAliasRef (use "alias", NOT "param" — names an alias on the OWNING quest)
   //                                    // no-arg situational: GetCurrentTime (hour 0..24) | IsInInterior | IsInCombat | GetRandomPercent (0..99) | TemperIsEnchanted (recipe temper guard)
+  //                                    //   GetSitting (sit-state; ==3 sitting, ==4 sleeping) | GetGold (run-on actor's gold) | GetMapMarkerVisible (runOn=Reference to a map marker)
   "comparison": ">=",                  // == != > >= < <=
   "value": 500,
   "param": "Skyrim.esm:0x00000F",      // the function's form arg (faction/item/global/quest/npc) as a ref

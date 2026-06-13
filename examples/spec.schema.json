@@ -3302,7 +3302,15 @@
             "GetDistance",
             "GetIsCurrentPackage",
             "GetIsVoiceType",
-            "GetIsAliasRef"
+            "GetIsAliasRef",
+            "GetQuestRunning",
+            "GetInCell",
+            "GetInWorldspace",
+            "GetEquipped",
+            "GetDeadCount",
+            "GetSitting",
+            "GetGold",
+            "GetMapMarkerVisible"
           ]
         },
         "comparison": {

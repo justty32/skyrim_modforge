@@ -12,6 +12,8 @@ public static partial class Generator
         "TemperIsEnchanted",
         "GetQuestCompleted", "GetDistance", "GetIsCurrentPackage", "GetIsVoiceType",
         "GetIsAliasRef",
+        "GetQuestRunning", "GetInCell", "GetInWorldspace", "GetEquipped", "GetDeadCount",
+        "GetSitting", "GetGold", "GetMapMarkerVisible",
     };
 
     private sealed partial class BuildContext
@@ -75,6 +77,19 @@ public static partial class Generator
                 case "getdistance":         { var d = new GetDistanceConditionData();         if (hasParam) d.Target.Link.SetTo(paramFk);         data = d; break; }
                 case "getiscurrentpackage": { var d = new GetIsCurrentPackageConditionData(); if (hasParam) d.Package.Link.SetTo(paramFk);        data = d; break; }
                 case "getisvoicetype":      { var d = new GetIsVoiceTypeConditionData();      if (hasParam) d.VoiceTypeOrList.Link.SetTo(paramFk); data = d; break; }
+                // More cross-quest / location / state gates (form arg). GetInCell/GetInWorldspace gate by
+                // place; GetEquipped by carried item; GetDeadCount counts dead instances of an NPC base.
+                case "getquestrunning":     { var d = new GetQuestRunningConditionData();      if (hasParam) d.Quest.Link.SetTo(paramFk);          data = d; break; }
+                case "getincell":           { var d = new GetInCellConditionData();           if (hasParam) d.Cell.Link.SetTo(paramFk);           data = d; break; }
+                case "getinworldspace":     { var d = new GetInWorldspaceConditionData();     if (hasParam) d.WorldspaceOrList.Link.SetTo(paramFk); data = d; break; }
+                case "getequipped":         { var d = new GetEquippedConditionData();         if (hasParam) d.ItemOrList.Link.SetTo(paramFk);     data = d; break; }
+                case "getdeadcount":        { var d = new GetDeadCountConditionData();        if (hasParam) d.Npc.Link.SetTo(paramFk);            data = d; break; }
+                // No-arg state functions. getsitting: furniture sit-state (0 none .. 3 sitting / 4 sleeping;
+                // compare ==3); getgold: the run-on actor's gold; getmapmarkervisible: 1 if the run-on
+                // marker is shown on the map (gate on RunOn=Reference to a placed map marker).
+                case "getsitting":          data = new GetSittingConditionData();          break;
+                case "getgold":             data = new GetGoldConditionData();             break;
+                case "getmapmarkervisible": data = new GetMapMarkerVisibleConditionData(); break;
                 case "getisaliasref":       // is the run-on actor the ref filling alias <c.Alias> on the owning quest?
                 {
                     if (string.IsNullOrWhiteSpace(c.Alias))
@@ -129,7 +144,8 @@ public static partial class Generator
                     Warn($"  ! {label}: unsupported function '{c.Function}' "
                         + "(have HasPerk/GetInFaction/GetItemCount/GetGlobalValue/GetStage/GetIsID/GetRelationshipRank/"
                         + "GetActorValue/GetActorValuePercent/GetCurrentTime/IsInInterior/IsInCombat/GetRandomPercent/TemperIsEnchanted/"
-                        + "GetQuestCompleted/GetDistance/GetIsCurrentPackage/GetIsVoiceType/GetIsAliasRef)");
+                        + "GetQuestCompleted/GetDistance/GetIsCurrentPackage/GetIsVoiceType/GetIsAliasRef/"
+                        + "GetQuestRunning/GetInCell/GetInWorldspace/GetEquipped/GetDeadCount/GetSitting/GetGold/GetMapMarkerVisible)");
                     return null;
             }
 

@@ -223,7 +223,7 @@ public class PerkTests
     public void Validate_UnsupportedConditionFunction_IsReported()
     {
         var spec = MakeSpec();
-        spec.Perks[1].Conditions[0].Function = "GetSitting";   // a real but not-yet-supported function
+        spec.Perks[1].Conditions[0].Function = "GetWeekDay";   // a real but not-yet-supported function
         Assert.Contains(Generator.Validate(spec), p => p.Contains("unsupported condition function"));
     }
 
