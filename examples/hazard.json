@@ -1,0 +1,29 @@
+{
+  "pluginName": "ModForgeHazard.esp",
+  "esl": true,
+  "cells": [ { "editorId": "MFHZ_Room", "name": "Hazard Test Room" } ],
+  "magicEffects": [
+    { "editorId": "MFHZ_BurnEffect", "name": "Burning", "archetype": "ValueModifier",
+      "actorValue": "Health", "magicSkill": "Destruction", "resistValue": "ResistFire",
+      "castType": "FireAndForget", "targetType": "Aimed", "baseCost": 5 },
+    { "editorId": "MFHZ_DropFire", "name": "Drop Fire", "archetype": "SpawnHazard",
+      "association": "MFHZ_Fire", "castType": "FireAndForget", "targetType": "TargetLocation" }
+  ],
+  "spells": [
+    { "editorId": "MFHZ_BurnSpell", "name": "Burn", "spellType": "Spell",
+      "castType": "FireAndForget", "targetType": "Aimed",
+      "effects": [ { "magicEffect": "MFHZ_BurnEffect", "magnitude": 5, "area": 0, "duration": 1 } ] },
+    { "editorId": "MFHZ_DropFireSpell", "name": "Conjure Fire Patch", "spellType": "Spell",
+      "castType": "FireAndForget", "targetType": "TargetLocation",
+      "effects": [ { "magicEffect": "MFHZ_DropFire", "magnitude": 1, "area": 0, "duration": 0 } ] }
+  ],
+  "hazards": [
+    { "editorId": "MFHZ_Fire", "name": "Flames",
+      "model": "Meshes/Traps/PressurePlateFire/NorTrapFirePlateFX.nif",
+      "radius": 150, "lifetime": 8, "targetInterval": 1, "limit": 0,
+      "spell": "MFHZ_BurnSpell", "flags": ["DropToGround"], "sound": "Skyrim.esm:0x000F57E6" }
+  ],
+  "placements": [
+    { "editorId": "MFHZ_Trap", "base": "MFHZ_Fire", "cell": "MFHZ_Room", "position": { "x": 0, "y": 0, "z": 0 } }
+  ]
+}
