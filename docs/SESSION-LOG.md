@@ -13,7 +13,9 @@
 
 ## 進行中 / in-flight（跨 session 的活狀態，就地更新）
 
-**任務標記（quest-markers，2026-06-13 開發中）**:三件套 — **A** `objectives[].targets[]`→QSTA 羅盤/地圖箭頭（指 alias 填的 NPC/地點）、**B** `placements[].kind:"xmarker"/"xmarkerHeading"` 隱形錨點 helper、**C** 新 top-level `mapMarkers[]`（XMRK 地圖圖示）。CODE_MAP/SPEC/schema/tests 已同步。**in-game 狀態**:A（任務日誌雙目標 + 羅盤箭頭）已確認;B/C 與「放置進 vanilla Tamriel」連動的**大地圖空白 + CTD** 踩了三次坑,根因已定位=**worldspace override 的持久 cell(Tamriel TopCell 0xD74)必須(1)加性帶上、(2)複製其記錄標頭旗標 `MajorRecordFlagsRaw=0x00040400`(CopyCellEnv 只複製 DATA 旗標,漏了標頭→引擎不認得持久 cell→載 actor CTD)、(3)ref 自身帶 0x400 持久旗(vanilla XMarker/地圖標記全有)**。修好後 esp 已逐位元對齊 vanilla/USSEP,**第三次 in-game 待確認**(`~/skyrim_mods/mine/ModForgeQuestMarkers-mapfix.zip`;安全版 = `ModForgeQuestMarkers.zip`)。細節見 memory `worldspace-override-must-carry-topcell`。
+> **待實機測試的項目 + 測試步驟 → `docs/INGAME-TEST-QUEUE.md`**（不要寫進本檔或 CLAUDE.md）。
+
+**任務標記（quest-markers，2026-06-13）**:三件套 — **A** `objectives[].targets[]`→QSTA 羅盤/地圖箭頭、**B** `placements[].kind:"xmarker"/"xmarkerHeading"` 隱形錨點、**C** `mapMarkers[]`（XMRK）。CODE_MAP/SPEC/schema/tests 已同步。A 已 in-game 確認；**B/C 大地圖修復第三次 in-game 待確認** → 步驟與 zip 見 `docs/INGAME-TEST-QUEUE.md`，根因見 memory `worldspace-override-must-carry-topcell`。
 
 **身份系統 Phase-2/C**:① Adventurer 預設身份自動授予 ✅、② `activeWhen` 情境條件 ✅、④ controller 主身份+手動覆寫 ✅（皆 in-game 確認 2026-06-07）；✅ ⑤ 身份對應互動 **#5a 商人交易 UI + #5b 護衛任務 + #5c 聖騎士 smite 細調（grantPerks）** + **龍裔首吼（autoGrantWhen）**（皆 in-game 確認 2026-06-07，見 CLAUDE.md「已落地」）；尚未做：③ 聲望/行為追蹤。
 
