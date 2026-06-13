@@ -75,10 +75,13 @@ public static partial class Generator
                     Warn($"  ! placement '{pl.EditorId ?? pl.Base}' base is a LeveledNpc list (LVLN) — LVLN bases CTD at load; use an NPC_ actor whose template references the list (e.g. LvlBandit* not LChar*)");
                 bool isNpc = pl.Kind.Equals("npc", StringComparison.OrdinalIgnoreCase)
                     || (string.IsNullOrEmpty(pl.Kind) && recordsByEd.TryGetValue(pl.Base, out var br) && br is INpc);
+                bool isHazard = pl.Kind.Equals("hazard", StringComparison.OrdinalIgnoreCase)
+                    || (string.IsNullOrEmpty(pl.Kind) && recordsByEd.TryGetValue(pl.Base, out var hr) && hr is IHazard);
 
                 IPlaced placedRec;
-                if (isNpc) { var a = new PlacedNpc(mod); a.Base.SetTo(baseFk); a.Placement = placement; placedRec = a; }
-                else       { var o = new PlacedObject(mod); o.Base.SetTo(baseFk); o.Placement = placement; placedRec = o; }
+                if (isHazard)   { var hz = new PlacedHazard(mod); hz.Hazard.SetTo(baseFk); hz.Placement = placement; placedRec = hz; }
+                else if (isNpc) { var a = new PlacedNpc(mod); a.Base.SetTo(baseFk); a.Placement = placement; placedRec = a; }
+                else            { var o = new PlacedObject(mod); o.Base.SetTo(baseFk); o.Placement = placement; placedRec = o; }
 
                 // Per-ref encounter zone (XEZN) — scopes THIS spawn to its own zone (else it inherits the
                 // cell's). EncounterZone lives on both ACHR and REFR (no shared settable interface), so set

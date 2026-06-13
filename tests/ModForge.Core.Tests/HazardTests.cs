@@ -50,4 +50,22 @@ public class HazardTests
         Assert.Equal(MagicEffectArchetype.TypeEnum.SpawnHazard, arch.Type);
         Assert.Equal(haz.FormKey, arch.Association.FormKey);
     }
+
+    [Fact]
+    public void Placement_with_a_hazard_base_makes_a_PlacedHazard()
+    {
+        var spec = new ModSpec();
+        spec.Cells.Add(new CellSpec { EditorId = "Room", Name = "Room" });
+        spec.Hazards.Add(new HazardSpec { EditorId = "MF_Haz", Model = "Meshes/x.nif", Radius = 100f });
+        spec.Placements.Add(new PlacementSpec
+        {
+            EditorId = "Trap", Base = "MF_Haz", Cell = "Room",
+            Position = new Vec3 { X = 1, Y = 2, Z = 3 },
+        });
+        var mod = Build(spec);
+        var haz = mod.Hazards.Single(h => h.EditorID == "MF_Haz");
+        var cell = mod.Cells.SelectMany(b => b.SubBlocks).SelectMany(s => s.Cells).Single(c => c.EditorID == "Room");
+        var placed = cell.Temporary.Concat(cell.Persistent).OfType<IPlacedHazardGetter>().Single(r => r.EditorID == "Trap");
+        Assert.Equal(haz.FormKey, placed.Hazard.FormKey);
+    }
 }
