@@ -163,14 +163,14 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - **盤點**：`docs/mod-survey-2026-06-13.md`（下載 mod 的 Tier 1/2/3 解碼價值；解碼方法的記憶體鐵律；本清單的母索引）
 - 隨從擴充：`docs/sofia-follower-decode-2026-06-13.md`（結構+內容索引）、`docs/sofia-expansion-plan-2026-06-13.md`（11✅/3🟡/2🔴）
 - NPC 日程：`docs/ai-overhaul-decode-2026-06-13.md`、`docs/ai-overhaul-expansion-plan-2026-06-13.md`（6✅/3🟡/3🔴）
-- VIGILANT：`docs/vigilant-{worldspace,story,magic,scene-dialogue-audit}-decode-2026-06-13.md`（11 自訂 worldspace / 120 quest 78 scene / 712 spell 550 MGEF；scene/對話 vs ModForge **~70% 覆蓋**,top 缺口 `GetIsAliasRef` CTDA(702 用)/任意 scene-phase fragment/scene 完成條件白名單）
+- VIGILANT：`docs/vigilant-{worldspace,story,magic,scene-dialogue-audit}-decode-2026-06-13.md`（11 自訂 worldspace / 120 quest 78 scene / 712 spell 550 MGEF；scene/對話 vs ModForge **~70% 覆蓋**）。**對話缺口本 session 大批補上（皆 offline 測試）**：✅ `GetIsAliasRef` CTDA（#1 缺口,702 用,`ConditionSpec.Alias`→owning quest alias index,各 quest-scoped 呼叫點傳 `aliasIndexByName`）、✅ 9 個 CTDA 函式（GetQuestRunning/GetInCell/GetInWorldspace/GetEquipped/GetDeadCount/GetSitting/GetGold/GetMapMarkerVisible + 雙參數 GetStageDone 用 `ConditionSpec.Stage`）、✅ INFO(ENAM) 旗標 sayOnce/walkAway/random/invisibleContinue/forceSubtitle（`DialogueInfoFlags` helper）。**仍開**：`IsSceneActionComplete` CTDA(274 用,解鎖目前形同虛設的 `CompletionConditions`,需 Scene+ActionIndex 接線,結構性)/任意 scene-phase·OnBegin·OnEnd fragment/INFO LinkTo(ENAM)·PreviousDialog(PNAM) 對話樹/`GetInCurrentLocation`(Mutagen 0.49 無此型別)
 - 工作流可行性：`docs/blender-layout-feasibility-2026-06-13.md`（Blender 擺設→`placements[]` JSON,可行、不需新功能、#1 風險=旋轉轉換校準、選配 `staticmap` 子指令）
 - 待解碼候選：RDO（dialogue/INFO）、Moons And Stars（weather/IMGS/climate→region）
 
 **待補清單（上述解碼浮現,按優先序）**：
 1. **`npcPatches[]`**（**已 scaffold、卡在本地化字串牆**，2026-06-13）：override 既有 vanilla NPC 的 `Packages`（AI Overhaul 核心）。已落地 spec(`NpcPatchSpec` overrideOf/packages/mode)+ validate + `BuildNpcPatches`/`WireNpcPatchPackages` + 測試。**但 override 寫不出**:① `Npcs.GetOrAddAsOverride` 需 Windows plugin-listings path、Linux headless throw；② 手動 `new Npc(fk)+DeepCopyIn(src)` 深拷既有 NPC 的**本地化 Name**→ 觸發 STRINGS/load-order resolve、headless throw（item-clone 靠 mask 跳過 Name,但 NPC 不能沒名字）。目前 catch+warn+skip（不崩 build）。**收尾需:讓 MasterCache 用「能讀 STRINGS 的 master read」**（給 Mutagen strings 來源/GameEnvironment),或接受 NPC 失去名字。10 個 PACK 模板、package 接線、placement 錨已備,只差這層。注意 USSEP/load-order 衝突。
 2. **`MagicEffectSpec` 加 script/VMAD 欄位**：VIGILANT 550 個 MGEF 有 260 個是 `archetype=Script`（Boss 法術編排）。沿用既有 dialogue/quest fragment 機制掛 Papyrus。順便確認 DualValueModifier 的 `SecondActorValue`（78 MGEF 用）。
-3. **FLST builder + `GetIsInList`/`GetInCurrentLocation` CTDA**：Sofia 細緻穿著清單 + 位置評論（builder 的 CTDA 白名單目前無這兩個函式、也無 FLST builder）。
+3. **FLST builder + `GetIsInList`/`GetInCurrentLocation` CTDA**：Sofia 細緻穿著清單 + 位置評論（無 FLST builder；`GetInCurrentLocation` Mutagen 0.49 無此 ConditionData 型別，`GetIsInList` 待查；位置閘的 `GetInCell`/`GetInWorldspace` 本 session 已補）。
 4. **scene Dialog action 的 `Emotion`/`EmotionValue`** + 泛化 scene phase fragment（不只 PlayIdle 跑 SetStage 等）：VIGILANT 演出靠 headtrack+emotion 取代 CAMS（78 cutscene、0 CAMS → CAMS 可延後）。
 5. **worldspace LAND 高度圖**（自訂地圖地形,VIGILANT realm 的本體）、region-driven weather（REGN）—— 待先確認 ModForge worldspace builder 現況。
 - Scene 演出續做：PlayIdle / 手勢動畫；camera shot（VIGILANT 證明可延後）。
