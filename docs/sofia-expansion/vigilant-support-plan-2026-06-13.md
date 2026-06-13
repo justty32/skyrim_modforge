@@ -144,6 +144,30 @@ ModForgeSofiaVigilant.esp（masters: Skyrim.esm, Update.esm, Vigilant.esm, Sofia
 
 ---
 
+## 6.5 施工依據（已離線抽出，2026-06-13）
+
+**表 1 — Sofia（`/tmp/sofia_a/SofiaFollower.esp`，CLI `find`）**
+
+| 用途 | EditorID | FormKey |
+|------|----------|---------|
+| 講話對象（speaker 閘 GetIsID） | `JJSofiaFollower` "Sofia" | `SofiaFollower.esp:0x0012C4` |
+| 語音（voiceType，配 voice pipeline） | `JJSofiaVoiceType` | `SofiaFollower.esp:0x0022EE` |
+| 隨從中 faction（替代 speaker 閘） | `SofiaFollowerFaction` | `SofiaFollower.esp:0x060480` |
+
+**表 2 — VIGILANT 可談錨點（v181 English，`find`+`questdiag`；stage 為暫定，logs 本地化、實機再校）**
+
+| 事件 | Quest EditorID | Quest FormKey | 閘 |
+|------|----------------|---------------|----|
+| 初到 Coldharbour | `zzzCHMQ00` "Coldharbour" | `Vigilant.esm:0x12F24E` | `GetStageDone(…,10)` + `GetInWorldspace(Coldharbour, Subject)` |
+| Coldharbour 深處 | `zzzCHMQ00` | `Vigilant.esm:0x12F24E` | `GetStageDone(…,90)` |
+| 「The Grand Inquisitor」記憶後 | `zzzCHMemoryQuest01` "The Grand Inquisitor" | `Vigilant.esm:0x12C4F4` | `GetQuestCompleted` |
+| Coldharbour worldspace | `zCHMolagWorld` | `Vigilant.esm:0x06D275` | （地點維度）|
+
+## 6.6 Vertical slice 狀態（`examples/sofia_vigilant_slice.json`）
+
+✅ **3 事件 vertical slice 已寫好、offline build + validate 通過**（510 測試綠）。`infodiag` 確認每條 INFO 的閘都對：GetIsID(Sofia 0012C4) + GetStageDone/GetQuestCompleted(Vigilant) + GetInWorldspace(runOn=Subject) + GetGlobalValue 自收 + 對話樹 linkTo→topLevel:false 追問。輸出 esp 自動帶 masters `[Vigilant.esm, SofiaFollower.esp]` + 寫 `.seq`。**record 機制完全驗證**。
+**未做（next）**：① 語音（package + `voicelines`，需解 Sofia voiceType 0x0022EE + F5 clone 她的嗓音）；② package 成 zip；③ 實機驗「選項出現時機 / 聊過自收 / 選單清爽 / stage 校準」（進 `INGAME-TEST-QUEUE`）。
+
 ## 7. 下一步
 
 - 先確認要不要做（這份是計劃，不是已開工）。

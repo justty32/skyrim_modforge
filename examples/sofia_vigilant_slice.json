@@ -1,0 +1,90 @@
+{
+  "_note": "Sofia × VIGILANT support — vertical slice (3 events). Player-initiated 'talk to Sofia about it' options that appear after VIGILANT quest-state updates, gated also by Sofia's location. See docs/sofia-expansion/vigilant-support-plan-2026-06-13.md. External refs: Sofia NPC=SofiaFollower.esp:0x0012C4, her voiceType=0x0022EE, follower faction=0x060480; VIGILANT 'Coldharbour' quest=Vigilant.esm:0x12F24E (stages 10/90), 'The Grand Inquisitor'=0x12C4F4, Coldharbour worldspace=0x06D275. STAGES ARE PROVISIONAL (logs localized; pick real beats after in-game). NO VOICE YET — voice is a package+voicelines step needing Sofia voiceType resolution + F5 clone (next step). This validates the record MECHANISM offline.",
+  "pluginName": "ModForgeSofiaVigilant.esp",
+  "esl": true,
+  "globals": [
+    { "editorId": "MF_SofiaTalked_CH1", "type": "short", "value": 0 },
+    { "editorId": "MF_SofiaTalked_CH2", "type": "short", "value": 0 },
+    { "editorId": "MF_SofiaTalked_Inq", "type": "short", "value": 0 }
+  ],
+  "quests": [
+    { "editorId": "MFSofiaVigController", "name": "", "startGameEnabled": true, "priority": 60, "type": "None" }
+  ],
+  "dialogue": [
+    {
+      "editorId": "MFSofiaVig_Coldharbour1",
+      "questEditorId": "MFSofiaVigController",
+      "prompt": "So... Coldharbour. Any thoughts?",
+      "responses": [
+        "Molag Bal's realm. Cosy. Reminds me of my last boyfriend's place... the decor, I mean. Obviously. Why are you looking at me like that."
+      ],
+      "sayOnce": true,
+      "setGlobal": { "global": "MF_SofiaTalked_CH1", "value": 1 },
+      "linkTo": ["MFSofiaVig_Coldharbour1More"],
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x12F24E", "stage": 10, "comparison": "==", "value": 1 },
+        { "function": "GetInWorldspace", "param": "Vigilant.esm:0x06D275", "runOn": "Subject", "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofiaTalked_CH1", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofiaVig_Coldharbour1More",
+      "questEditorId": "MFSofiaVigController",
+      "topLevel": false,
+      "prompt": "You sound almost nervous.",
+      "responses": [
+        "Nervous? Me? Ha. I'm never nervous. ...Just stay close, alright? In case YOU get scared. For your sake. Obviously."
+      ],
+      "goodbye": true,
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 }
+      ]
+    },
+    {
+      "editorId": "MFSofiaVig_Coldharbour2",
+      "questEditorId": "MFSofiaVigController",
+      "prompt": "This place is getting to me. You holding up?",
+      "responses": [
+        "...This realm actually scares me a little. Don't you dare tell anyone I said that. I'll deny it. Loudly."
+      ],
+      "sayOnce": true,
+      "emotion": "Sad",
+      "setGlobal": { "global": "MF_SofiaTalked_CH2", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x12F24E", "stage": 90, "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofiaTalked_CH2", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofiaVig_Inquisitor",
+      "questEditorId": "MFSofiaVigController",
+      "prompt": "About that Grand Inquisitor...",
+      "responses": [
+        "Ugh, that smug zealot. Burning people to feel holy. At least when I'm cruel I have the decency to be funny about it."
+      ],
+      "sayOnce": true,
+      "setGlobal": { "global": "MF_SofiaTalked_Inq", "value": 1 },
+      "linkTo": ["MFSofiaVig_InquisitorMore"],
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetQuestCompleted", "param": "Vigilant.esm:0x12C4F4", "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofiaTalked_Inq", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofiaVig_InquisitorMore",
+      "questEditorId": "MFSofiaVigController",
+      "topLevel": false,
+      "prompt": "You actually felt something back there.",
+      "responses": [
+        "I felt BORED. That's a feeling. ...Fine. Maybe a little something else too. Now drop it before I make YOU the next memory."
+      ],
+      "goodbye": true,
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 }
+      ]
+    }
+  ]
+}
