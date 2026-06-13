@@ -43,6 +43,7 @@ public class ConditionTests
                     new() { Function = "GetSitting",            Comparison = "==", Value = 3 },
                     new() { Function = "GetGold",               Comparison = ">=", Value = 100 },
                     new() { Function = "GetMapMarkerVisible",   Comparison = "==", Value = 1 },
+                    new() { Function = "GetStageDone",          Comparison = "==", Value = 1, Param = "Q", Stage = 20 },
                 },
             },
         },
@@ -70,6 +71,7 @@ public class ConditionTests
     [InlineData("GetSittingConditionData")]
     [InlineData("GetGoldConditionData")]
     [InlineData("GetMapMarkerVisibleConditionData")]
+    [InlineData("GetStageDoneConditionData")]
     public void EachFunction_MapsToItsConditionData(string expectedType)
     {
         var r = BuildAllConditions();
@@ -101,6 +103,19 @@ public class ConditionTests
         var av = info.Conditions
             .Select(c => c.Data).OfType<IGetActorValuePercentConditionDataGetter>().Single();
         Assert.Equal(ActorValue.Health, av.ActorValue);
+    }
+
+    // GetStageDone carries the stage index as a PARAMETER (distinct from the comparison value).
+    [Fact]
+    public void GetStageDone_CarriesStageParameter()
+    {
+        var r = BuildAllConditions();
+        var info = r.Mod.EnumerateMajorRecords<IDialogTopicGetter>()
+                    .Single(t => t.Subtype == DialogTopic.SubtypeEnum.Custom)
+                    .Responses.Single();
+        var sd = info.Conditions
+            .Select(c => c.Data).OfType<IGetStageDoneConditionDataGetter>().Single();
+        Assert.Equal(20, sd.Stage);
     }
 
     // GetIsAliasRef resolves an alias NAME to the owning quest's alias index (the engine compares

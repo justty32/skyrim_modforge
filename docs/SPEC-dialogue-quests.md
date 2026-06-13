@@ -236,6 +236,7 @@ A condition is **static gate data**, so it lives in the spec (logic still belong
 { "function": "GetItemCount",          // form-arg: HasPerk | GetInFaction | GetItemCount | GetGlobalValue | GetStage | GetIsID | GetRelationshipRank
   //                                    //   GetQuestCompleted(quest) | GetDistance(ref; value=units) | GetIsCurrentPackage(pack) | GetIsVoiceType(VTYP/list)
   //                                    //   GetQuestRunning(quest) | GetInCell(cell) | GetInWorldspace(wrld) | GetEquipped(item/list) | GetDeadCount(npc base)
+  //                                    // two-param: GetStageDone(param=quest, stage=N) — 1 if that exact stage was set
   //                                    // actorValue-arg: GetActorValue | GetActorValuePercent (0..1 fraction)
   //                                    // alias-arg: GetIsAliasRef (use "alias", NOT "param" — names an alias on the OWNING quest)
   //                                    // no-arg situational: GetCurrentTime (hour 0..24) | IsInInterior | IsInCombat | GetRandomPercent (0..99) | TemperIsEnchanted (recipe temper guard)

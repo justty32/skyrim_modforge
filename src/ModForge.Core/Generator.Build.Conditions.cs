@@ -13,7 +13,7 @@ public static partial class Generator
         "GetQuestCompleted", "GetDistance", "GetIsCurrentPackage", "GetIsVoiceType",
         "GetIsAliasRef",
         "GetQuestRunning", "GetInCell", "GetInWorldspace", "GetEquipped", "GetDeadCount",
-        "GetSitting", "GetGold", "GetMapMarkerVisible",
+        "GetSitting", "GetGold", "GetMapMarkerVisible", "GetStageDone",
     };
 
     private sealed partial class BuildContext
@@ -80,6 +80,16 @@ public static partial class Generator
                 // More cross-quest / location / state gates (form arg). GetInCell/GetInWorldspace gate by
                 // place; GetEquipped by carried item; GetDeadCount counts dead instances of an NPC base.
                 case "getquestrunning":     { var d = new GetQuestRunningConditionData();      if (hasParam) d.Quest.Link.SetTo(paramFk);          data = d; break; }
+                // Two-param: GetStageDone(quest, stage) → 1 if that exact stage has been set. The quest is
+                // `param`; the stage index is `stage` (a parameter, distinct from the comparison value).
+                case "getstagedone":
+                {
+                    var d = new GetStageDoneConditionData();
+                    if (hasParam) d.Quest.Link.SetTo(paramFk);
+                    if (c.Stage < 0) { Warn($"  ! {label}: GetStageDone needs a 'stage' index (the stage to test)"); return null; }
+                    d.Stage = c.Stage;
+                    data = d; break;
+                }
                 case "getincell":           { var d = new GetInCellConditionData();           if (hasParam) d.Cell.Link.SetTo(paramFk);           data = d; break; }
                 case "getinworldspace":     { var d = new GetInWorldspaceConditionData();     if (hasParam) d.WorldspaceOrList.Link.SetTo(paramFk); data = d; break; }
                 case "getequipped":         { var d = new GetEquippedConditionData();         if (hasParam) d.ItemOrList.Link.SetTo(paramFk);     data = d; break; }
@@ -145,7 +155,7 @@ public static partial class Generator
                         + "(have HasPerk/GetInFaction/GetItemCount/GetGlobalValue/GetStage/GetIsID/GetRelationshipRank/"
                         + "GetActorValue/GetActorValuePercent/GetCurrentTime/IsInInterior/IsInCombat/GetRandomPercent/TemperIsEnchanted/"
                         + "GetQuestCompleted/GetDistance/GetIsCurrentPackage/GetIsVoiceType/GetIsAliasRef/"
-                        + "GetQuestRunning/GetInCell/GetInWorldspace/GetEquipped/GetDeadCount/GetSitting/GetGold/GetMapMarkerVisible)");
+                        + "GetQuestRunning/GetInCell/GetInWorldspace/GetEquipped/GetDeadCount/GetSitting/GetGold/GetMapMarkerVisible/GetStageDone)");
                     return null;
             }
 

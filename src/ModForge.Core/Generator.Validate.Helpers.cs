@@ -49,6 +49,11 @@ public static partial class Generator
                 case "getisaliasref":
                     if (string.IsNullOrWhiteSpace(cs.Alias)) Problems.Add($"{what}: GetIsAliasRef needs an alias (the quest alias name)");
                     break;
+                case "getstagedone":
+                    if (string.IsNullOrWhiteSpace(cs.Param)) Problems.Add($"{what}: GetStageDone needs a param ref (the quest)");
+                    else CheckRef(cs.Param, $"{what} param");
+                    if (cs.Stage < 0) Problems.Add($"{what}: GetStageDone needs a stage index");
+                    break;
             }
         }
 

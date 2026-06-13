@@ -3310,7 +3310,8 @@
             "GetDeadCount",
             "GetSitting",
             "GetGold",
-            "GetMapMarkerVisible"
+            "GetMapMarkerVisible",
+            "GetStageDone"
           ]
         },
         "comparison": {
@@ -3331,6 +3332,10 @@
         "alias": {
           "type": "string",
           "description": "for GetIsAliasRef: an alias NAME on the owning quest (dialogue/banter/scene/stage/objective only) — resolved to its alias index"
+        },
+        "stage": {
+          "type": "integer",
+          "description": "for GetStageDone: the stage INDEX to test (a parameter, distinct from the comparison value)"
         },
         "itemType": {
           "enum": [
