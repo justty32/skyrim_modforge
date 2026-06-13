@@ -191,6 +191,7 @@ public sealed class ConditionSpec
     public string ItemType { get; set; } = "";         // CastSource for GetEquippedItemType (Left | Right | Voice | Instant)
     public string RunOn { get; set; } = "Subject";     // Subject | Target | Reference | CombatTarget | ...
     public string Reference { get; set; } = "";        // the ref read when RunOn=Reference (e.g. player Skyrim.esm:0x000014)
+    public string Alias { get; set; } = "";            // the alias NAME for GetIsAliasRef (resolved to the owning quest's alias index)
     public bool Or { get; set; }                        // OR with the NEXT condition (default AND)
 }
 // Attach a compiled Papyrus script (by Scriptname) to a record (by editorId), with

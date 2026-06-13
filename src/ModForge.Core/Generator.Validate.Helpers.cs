@@ -44,6 +44,9 @@ public static partial class Generator
                 case "getequippeditemtype":
                     if (!string.IsNullOrEmpty(cs.ItemType)) CheckEnum<CastSource>(cs.ItemType, $"{what} itemType");
                     break;
+                case "getisaliasref":
+                    if (string.IsNullOrWhiteSpace(cs.Alias)) Problems.Add($"{what}: GetIsAliasRef needs an alias (the quest alias name)");
+                    break;
             }
         }
 

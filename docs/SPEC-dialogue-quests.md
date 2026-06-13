@@ -236,11 +236,13 @@ A condition is **static gate data**, so it lives in the spec (logic still belong
 { "function": "GetItemCount",          // form-arg: HasPerk | GetInFaction | GetItemCount | GetGlobalValue | GetStage | GetIsID | GetRelationshipRank
   //                                    //   GetQuestCompleted(quest) | GetDistance(ref; value=units) | GetIsCurrentPackage(pack) | GetIsVoiceType(VTYP/list)
   //                                    // actorValue-arg: GetActorValue | GetActorValuePercent (0..1 fraction)
+  //                                    // alias-arg: GetIsAliasRef (use "alias", NOT "param" — names an alias on the OWNING quest)
   //                                    // no-arg situational: GetCurrentTime (hour 0..24) | IsInInterior | IsInCombat | GetRandomPercent (0..99) | TemperIsEnchanted (recipe temper guard)
   "comparison": ">=",                  // == != > >= < <=
   "value": 500,
   "param": "Skyrim.esm:0x00000F",      // the function's form arg (faction/item/global/quest/npc) as a ref
   "actorValue": "",                    // for GetActorValue/GetActorValuePercent instead of param — e.g. "Health", "WaitingForPlayer"
+  "alias": "",                         // for GetIsAliasRef instead of param — an alias NAME on the owning quest (resolved to its index)
   "runOn": "Reference",                // whose value: Subject (default) | Reference | Target | CombatTarget | ...
   "reference": "Skyrim.esm:0x000014",  // the ref read when runOn=Reference (here, the player)
   "or": false }                        // OR with the NEXT condition (default AND)
@@ -249,6 +251,13 @@ A `dialogue` INFO already carries an auto `GetIsID` speaker gate; these are appe
 uses: hide a paid recruit line unless `GetItemCount Gold >= 500` (on the player) **and**
 `GetInFaction CurrentFollowerFaction == 0`; gate a Follow package on `GetInFaction
 CurrentFollowerFaction == 1` so it only runs after recruitment. See `examples/follower_paid_spec.json`.
+
+**`GetIsAliasRef`** gates on **which quest alias the run-on actor fills** (the most-used VIGILANT
+dialogue technique — gate a line by role, e.g. "the Victim alias", not a hardcoded NPC FormID). Give
+the alias by **`alias`** (its name on the **owning quest**), not `param`; build resolves it to the
+alias index. Valid only where there's an owning quest: `dialogue` / `banter` / `scene` (scene-level &
+per-phase) / quest `stages[].conditions` / `objectives[].targets[].conditions`. On a `package` /
+`perk` / recipe condition (no owning quest) it's dropped with a warning.
 
 ### Quest stages, log entries & objective wiring
 A quest's `stages[]` are integer milestones the quest can be **set to** (10, 20, 30…). Each stage

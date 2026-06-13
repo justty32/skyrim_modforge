@@ -3297,7 +3297,12 @@
             "IsInCombat",
             "GetRandomPercent",
             "GetLevel",
-            "TemperIsEnchanted"
+            "TemperIsEnchanted",
+            "GetQuestCompleted",
+            "GetDistance",
+            "GetIsCurrentPackage",
+            "GetIsVoiceType",
+            "GetIsAliasRef"
           ]
         },
         "comparison": {
@@ -3314,6 +3319,10 @@
         "actorValue": {
           "type": "string",
           "description": "ActorValue param for GetBaseActorValue/GetActorValue (e.g. OneHanded, Destruction)"
+        },
+        "alias": {
+          "type": "string",
+          "description": "for GetIsAliasRef: an alias NAME on the owning quest (dialogue/banter/scene/stage/objective only) — resolved to its alias index"
         },
         "itemType": {
           "enum": [

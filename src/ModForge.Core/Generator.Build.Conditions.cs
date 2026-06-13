@@ -11,6 +11,7 @@ public static partial class Generator
         "GetCurrentTime", "IsInInterior", "IsInCombat", "GetRandomPercent", "GetLevel",
         "TemperIsEnchanted",
         "GetQuestCompleted", "GetDistance", "GetIsCurrentPackage", "GetIsVoiceType",
+        "GetIsAliasRef",
     };
 
     private sealed partial class BuildContext
@@ -20,7 +21,11 @@ public static partial class Generator
         // argument and run-on reference are resolved against the formKey table, so this runs in pass 2.
 
         // Build one ConditionFloat from a spec entry, or null (with a warning) if it's malformed.
-        private ConditionFloat? BuildCondition(ConditionSpec c, string label)
+        // aliasIndexByName (optional) lets GetIsAliasRef resolve an alias NAME → the owning quest's
+        // alias index. Only the quest-scoped call sites (dialogue/scene/stage/objective) pass it;
+        // package/perk/recipe have no owning quest, so a GetIsAliasRef there warns and is dropped.
+        private ConditionFloat? BuildCondition(ConditionSpec c, string label,
+            IReadOnlyDictionary<string, int>? aliasIndexByName = null)
         {
             CompareOperator op;
             switch (c.Comparison)
@@ -70,6 +75,16 @@ public static partial class Generator
                 case "getdistance":         { var d = new GetDistanceConditionData();         if (hasParam) d.Target.Link.SetTo(paramFk);         data = d; break; }
                 case "getiscurrentpackage": { var d = new GetIsCurrentPackageConditionData(); if (hasParam) d.Package.Link.SetTo(paramFk);        data = d; break; }
                 case "getisvoicetype":      { var d = new GetIsVoiceTypeConditionData();      if (hasParam) d.VoiceTypeOrList.Link.SetTo(paramFk); data = d; break; }
+                case "getisaliasref":       // is the run-on actor the ref filling alias <c.Alias> on the owning quest?
+                {
+                    if (string.IsNullOrWhiteSpace(c.Alias))
+                    { Warn($"  ! {label}: GetIsAliasRef needs an 'alias' (the quest alias name)"); return null; }
+                    if (aliasIndexByName is null)
+                    { Warn($"  ! {label}: GetIsAliasRef has no owning quest here (only valid on dialogue/scene/stage/objective conditions)"); return null; }
+                    if (!aliasIndexByName.TryGetValue(c.Alias, out var aliasIdx))
+                    { Warn($"  ! {label}: GetIsAliasRef alias '{c.Alias}' not found on the owning quest"); return null; }
+                    data = new GetIsAliasRefConditionData { ReferenceAliasIndex = aliasIdx }; break;
+                }
                 case "getactorvalue":       // ActorValue arg (e.g. WaitingForPlayer), not a form ref
                 {
                     var d = new GetActorValueConditionData();
@@ -114,7 +129,7 @@ public static partial class Generator
                     Warn($"  ! {label}: unsupported function '{c.Function}' "
                         + "(have HasPerk/GetInFaction/GetItemCount/GetGlobalValue/GetStage/GetIsID/GetRelationshipRank/"
                         + "GetActorValue/GetActorValuePercent/GetCurrentTime/IsInInterior/IsInCombat/GetRandomPercent/TemperIsEnchanted/"
-                        + "GetQuestCompleted/GetDistance/GetIsCurrentPackage/GetIsVoiceType)");
+                        + "GetQuestCompleted/GetDistance/GetIsCurrentPackage/GetIsVoiceType/GetIsAliasRef)");
                     return null;
             }
 
@@ -144,11 +159,16 @@ public static partial class Generator
                     continue;
                 }
 
+                // The owning quest (if any) supplies the alias-name→index map for GetIsAliasRef.
+                IReadOnlyDictionary<string, int>? aliasIdx = null;
+                Quest? questRec = null;
+                if (!string.IsNullOrEmpty(d.QuestEditorId) && questsByEd.TryGetValue(d.QuestEditorId, out questRec))
+                    aliasIdx = questRec.Aliases.ToDictionary(a => a.Name ?? "", a => (int)a.ID, StringComparer.OrdinalIgnoreCase);
+
                 // Auto-condition: if this line advances the quest to stage N, only show it when
                 // the quest is still below stage N — prevents the line from repeating after the
                 // player has already picked it. GetStage(quest) < setStage hides it at stage N+.
-                if (d.SetStage >= 0 && !string.IsNullOrEmpty(d.QuestEditorId)
-                    && questsByEd.TryGetValue(d.QuestEditorId, out var questRec))
+                if (d.SetStage >= 0 && questRec is not null)
                 {
                     var sc = new ConditionFloat
                     {
@@ -162,7 +182,7 @@ public static partial class Generator
                 }
 
                 foreach (var c in d.Conditions)
-                    if (BuildCondition(c, $"dialogue '{d.EditorId}' condition") is { } cond) info.Conditions.Add(cond);
+                    if (BuildCondition(c, $"dialogue '{d.EditorId}' condition", aliasIdx) is { } cond) info.Conditions.Add(cond);
 
                 // identity / primaryIdentity tags → player GetInFaction CTDA (lightweight class system).
                 foreach (var c in ExpandIdentityConditions(d.Identity, d.PrimaryIdentity, $"dialogue '{d.EditorId}' identity"))

@@ -258,18 +258,23 @@ public static partial class Generator
             // WireQuestStages). A scene with no conditions leaves every list empty (byte-identical).
             foreach (var (s, scene, phaseMap) in sceneConditionWires)
             {
+                // The scene's owning quest supplies the alias-name→index map for GetIsAliasRef.
+                IReadOnlyDictionary<string, int>? aliasIdx = null;
+                if (!string.IsNullOrEmpty(s.QuestEditorId) && questsByEd.TryGetValue(s.QuestEditorId, out var sq))
+                    aliasIdx = sq.Aliases.ToDictionary(a => a.Name ?? "", a => (int)a.ID, StringComparer.OrdinalIgnoreCase);
+
                 foreach (var cs in s.Conditions)
-                    if (BuildCondition(cs, $"scene '{s.EditorId}' condition") is { } cond)
+                    if (BuildCondition(cs, $"scene '{s.EditorId}' condition", aliasIdx) is { } cond)
                         scene.Conditions.Add(cond);
 
                 foreach (var (specIndex, phase) in phaseMap)
                 {
                     var ph = s.Phases[specIndex];
                     foreach (var cs in ph.StartConditions)
-                        if (BuildCondition(cs, $"scene '{s.EditorId}' phase {specIndex} startCondition") is { } cond)
+                        if (BuildCondition(cs, $"scene '{s.EditorId}' phase {specIndex} startCondition", aliasIdx) is { } cond)
                             phase.StartConditions.Add(cond);
                     foreach (var cs in ph.CompletionConditions)
-                        if (BuildCondition(cs, $"scene '{s.EditorId}' phase {specIndex} completionCondition") is { } cond)
+                        if (BuildCondition(cs, $"scene '{s.EditorId}' phase {specIndex} completionCondition", aliasIdx) is { } cond)
                             phase.CompletionConditions.Add(cond);
                 }
             }

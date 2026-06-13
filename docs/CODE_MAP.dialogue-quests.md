@@ -175,7 +175,7 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Build P2 | `Generator.Build.Conditions.cs` | 所有 CTDA 的 function dispatch + ref 解析（dialogue / stage / banter / package 共用）|
+| Build P2 | `Generator.Build.Conditions.cs` | 所有 CTDA 的 function dispatch + ref 解析（dialogue / stage / banter / package 共用）。**`GetIsAliasRef`**：用 `alias`（owning quest 的 alias 名）→ alias index，由各 quest-scoped 呼叫點傳入 `aliasIndexByName`（dialogue/banter/scene/queststage 各自從 `questsByEd[...].Aliases` 建、ObjectiveTargets 用既有 `idByName`）；package/perk/recipe 無 quest context → 傳 null → 警告丟棄 |
 | Validate | `Generator.Validate.Helpers.cs` | `CheckCondition`（function / comparator / ref）|
 | Diag | `Diagnostics.Dialogue.cs` | condition 欄位 dump |
 

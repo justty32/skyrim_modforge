@@ -87,6 +87,84 @@ public class ConditionTests
         Assert.Equal(ActorValue.Health, av.ActorValue);
     }
 
+    // GetIsAliasRef resolves an alias NAME to the owning quest's alias index (the engine compares
+    // the run-on actor against the ref filling that alias). A wrong index gates the wrong actor.
+    [Fact]
+    public void GetIsAliasRef_ResolvesAliasNameToIndex()
+    {
+        var r = TestBuild.Ok(new ModSpec
+        {
+            Quests =
+            {
+                new QuestSpec
+                {
+                    EditorId = "Q", Name = "Q",
+                    Aliases =
+                    {
+                        new QuestAliasSpec { Name = "Hero",   Fill = "forced:Skyrim.esm:0x000014" },
+                        new QuestAliasSpec { Name = "Victim", Fill = "forced:Skyrim.esm:0x000014" },
+                    },
+                },
+            },
+            Npcs = { new NpcSpec { EditorId = "Npc", Name = "Npc", Greeting = "Hi." } },
+            Dialogue =
+            {
+                new DialogueSpec
+                {
+                    EditorId = "D", QuestEditorId = "Q", SpeakerNpcEditorId = "Npc",
+                    Prompt = "T", Responses = { "x" },
+                    Conditions = { new() { Function = "GetIsAliasRef", Comparison = "==", Value = 1, Alias = "Victim" } },
+                },
+            },
+        });
+        var info = r.Mod.EnumerateMajorRecords<IDialogTopicGetter>()
+                    .Single(t => t.Subtype == DialogTopic.SubtypeEnum.Custom)
+                    .Responses.Single();
+        var ar = info.Conditions
+            .Select(c => c.Data).OfType<IGetIsAliasRefConditionDataGetter>().Single();
+        Assert.Equal(1, ar.ReferenceAliasIndex);   // "Victim" is the 2nd alias → index 1
+    }
+
+    // A GetIsAliasRef with no owning-quest context (e.g. on an AI package) is dropped with a warning,
+    // never emitted as a malformed condition.
+    [Fact]
+    public void GetIsAliasRef_WithoutQuestContext_IsDropped()
+    {
+        var r = TestBuild.Raw(new ModSpec   // Raw: this spec intentionally warns (alias-ref dropped)
+        {
+            Packages =
+            {
+                new PackageSpec
+                {
+                    EditorId = "Pkg", Template = "Skyrim.esm:0x01C254",   // Sandbox
+                    Conditions = { new() { Function = "GetIsAliasRef", Comparison = "==", Value = 1, Alias = "Victim" } },
+                },
+            },
+        });
+        var pkg = r.Mod.EnumerateMajorRecords<IPackageGetter>().Single(p => p.EditorID == "Pkg");
+        Assert.DoesNotContain(pkg.Conditions, c => c.Data is IGetIsAliasRefConditionDataGetter);
+    }
+
+    // Validate flags a GetIsAliasRef with no alias name (it can't resolve an index without one).
+    // Routed through CheckCondition, which validates perk / storyEvent / findMatching conditions.
+    [Fact]
+    public void Validate_GetIsAliasRef_WithoutAlias_IsReported()
+    {
+        var spec = new ModSpec
+        {
+            Perks =
+            {
+                new PerkSpec
+                {
+                    EditorId = "P", Name = "P", NumRanks = 1,
+                    Conditions = { new() { Function = "GetIsAliasRef", Comparison = "==", Value = 1 } },
+                    Effects = { new PerkEffectSpec { Kind = "entryPoint", EntryPoint = "ModAttackDamage", Function = "Multiply", Value = 1f } },
+                },
+            },
+        };
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("GetIsAliasRef needs an alias"));
+    }
+
     // Comparison string → CompareOperator, and `or:true` sets the OR flag.
     [Fact]
     public void Comparison_And_OrFlag_Map()

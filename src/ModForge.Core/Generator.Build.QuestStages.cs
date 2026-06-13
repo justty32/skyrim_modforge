@@ -14,6 +14,7 @@ public static partial class Generator
             foreach (var q in spec.Quests)
             {
                 if (!questsByEd.TryGetValue(q.EditorId, out var qr)) continue;
+                var aliasIdx = qr.Aliases.ToDictionary(a => a.Name ?? "", a => (int)a.ID, StringComparer.OrdinalIgnoreCase);
 
                 // Pass 1: wire log-entry CTDA conditions (need all record editorIds resolved).
                 foreach (var st in q.Stages)
@@ -23,7 +24,7 @@ public static partial class Generator
                     var le = stage?.LogEntries.FirstOrDefault();
                     if (le is null) { Warn($"  ! quest '{q.EditorId}' stage {st.Index} has conditions but no log entry to attach them to"); continue; }
                     foreach (var cs in st.Conditions)
-                        if (BuildCondition(cs, $"quest '{q.EditorId}' stage {st.Index} condition") is { } cond)
+                        if (BuildCondition(cs, $"quest '{q.EditorId}' stage {st.Index} condition", aliasIdx) is { } cond)
                             le.Conditions.Add(cond);
                 }
 

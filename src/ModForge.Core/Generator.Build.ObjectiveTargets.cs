@@ -48,7 +48,7 @@ public static partial class Generator
                             Flags = ts.CompassIgnoresLocks ? Quest.TargetFlag.CompassMarkerIgnoresLocks : 0,
                         };
                         foreach (var c in ts.Conditions)
-                            if (BuildCondition(c, $"quest '{qs.EditorId}' objective {o.Index} target") is { } cond)
+                            if (BuildCondition(c, $"quest '{qs.EditorId}' objective {o.Index} target", idByName) is { } cond)
                                 t.Conditions.Add(cond);
                         obj.Targets.Add(t);
                     }

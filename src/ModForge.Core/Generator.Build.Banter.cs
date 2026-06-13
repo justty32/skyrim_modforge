@@ -61,8 +61,15 @@ public static partial class Generator
         public void WireBanterConditions()
         {
             foreach (var (b, info, label) in banterInfos)
+            {
+                // The owning quest supplies the alias-name→index map for GetIsAliasRef (banter is
+                // commonly gated on which scene alias the speaker fills).
+                IReadOnlyDictionary<string, int>? aliasIdx = null;
+                if (!string.IsNullOrEmpty(b.QuestEditorId) && questsByEd.TryGetValue(b.QuestEditorId, out var bq))
+                    aliasIdx = bq.Aliases.ToDictionary(a => a.Name ?? "", a => (int)a.ID, StringComparer.OrdinalIgnoreCase);
                 foreach (var c in b.Conditions)
-                    if (BuildCondition(c, $"{label} condition") is { } cond) info.Conditions.Add(cond);
+                    if (BuildCondition(c, $"{label} condition", aliasIdx) is { } cond) info.Conditions.Add(cond);
+            }
         }
     }
 }
