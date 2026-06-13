@@ -8,10 +8,14 @@ public static partial class Generator
         // CRITICAL: a worldspace override that omits LandDefaults resets DefaultWaterHeight to 0 —
         // and Tamriel's real default is -14000, so any terrain between -14000 and 0 gets flooded
         // ("the whole world is underwater"). We copy land/water defaults, water forms, climate, map,
-        // bounds, parent, lighting, etc. but NOT the localized Name or the giant child structures
-        // (SubCells block tree — we build our own; TopCell/LargeReferences/OffsetData). All copied
-        // fields are inline / FormLink / sub-objects — no localized string resolution. (Skipped:
-        // the AssetLink LOD/water/map TEXTURE paths — cosmetic, and getter≠setter type.)
+        // bounds, parent, lighting, etc. but NOT the localized Name or the SubCells block tree
+        // (we build our own; vanilla cells stay in the master).
+        // Also MUST carry:
+        //   • HdLodDiffuseTexture/HdLodNormalTexture (TNAM/UNAM) — LOD terrain textures
+        //   • LargeReferences (RNAM ×8455) — LOD large-object list used by world map rendering
+        //   • OffsetData (OFST, 45600 bytes) — engine cell-streaming offset table; omitting this
+        //     causes the world map terrain to render white (engine can't find terrain tiles)
+        // We NO LONGER carry TopCell here (handled in WorldspaceOverride directly).
         private void CopyWorldspaceEnv(IWorldspaceGetter src, Worldspace dst)
         {
             dst.Flags = src.Flags;
@@ -31,6 +35,19 @@ public static partial class Generator
             dst.EncounterZone.SetTo(src.EncounterZone);
             dst.InteriorLighting.SetTo(src.InteriorLighting);
             dst.Music.SetTo(src.Music);
+            // LOD terrain texture paths (TNAM/UNAM)
+            var diffuse = src.HdLodDiffuseTexture;
+            if (diffuse is not null && !diffuse.IsNull)
+                dst.HdLodDiffuseTexture = new AssetLink<SkyrimTextureAssetType>(diffuse.GivenPath);
+            var normal = src.HdLodNormalTexture;
+            if (normal is not null && !normal.IsNull)
+                dst.HdLodNormalTexture = new AssetLink<SkyrimTextureAssetType>(normal.GivenPath);
+            // Large References (RNAM): LOD large-object list — needed for world map rendering.
+            foreach (var lr in src.LargeReferences)
+                dst.LargeReferences.Add(lr.DeepCopy());
+            // OffsetData (OFST): engine cell-streaming offset table.
+            if (src.OffsetData is { } od)
+                dst.OffsetData = od.ToArray();
         }
 
         // --- Exterior / worldspace placement (It.7d phase 3) ---------------------------------

@@ -28,33 +28,30 @@
 
 ## 待測（active）
 
-### 1. 任務標記大地圖修復（quest-markers map-fix）— 第三次嘗試
+### 1. 任務標記大地圖修復（quest-markers map-fix）— 第六次嘗試
 
-- **是什麼**：`mapMarkers[]`（XMRK 地圖圖示）+ `placements[].kind:"xmarker"/"xmarkerHeading"` 放進 **vanilla Tamriel**。前兩次踩到**大地圖全空白 + 載 actor CTD**，根因已定位=worldspace override 的持久 cell（Tamriel TopCell 0xD74）必須(1)加性帶上、(2)複製記錄標頭旗標 `MajorRecordFlagsRaw=0x00040400`、(3)ref 自身帶 0x400 持久旗。修好後 esp 已逐位元對齊 vanilla/USSEP。細節見 memory `worldspace-override-must-carry-topcell`。
-- **zip**：`~/skyrim_mods/mine/ModForgeQuestMarkers-mapfix.zip`（修復版）；`ModForgeQuestMarkers.zip` = 安全版（不放進 vanilla Tamriel，只測 A 任務日誌+羅盤）。
-- **怎麼測**：
-  1. 裝 mapfix 版，新遊戲或乾淨存檔，去 Riverwood 一帶。
-  2. **開大地圖** → 確認：(a) 地圖**有正常底圖、不是全空白**；(b) 我們的地圖標記有出現。
-  3. **在 Riverwood 附近走動、讓 NPC/actor 載入**（如 Dorthe、河木鎮居民）→ 確認**不 CTD**（前兩次就是這裡崩）。
-  4. 任務日誌應有雙目標、羅盤有箭頭（A 已確認過，順帶複驗）。
-- **要盯的 UNKNOWN**：load order 放在 USSEP 之後；若仍崩，抓 CrashLogger log 看是不是還在 cell-load。
-- **已確認的部分**：A（任務日誌雙目標 + 羅盤箭頭）✅。
+- **累積結果（2026-06-13 第五次，TNAM/UNAM 修復）**：
+  - ✅ CTD 消失、marker 可見、可傳送、不摔死（Z=-3800 修正落地）
+  - ❌ 大地圖**仍白茫茫**（TNAM/UNAM 不是根因）
+- **根因（第六次，2026-06-13）**：binary 比對 vanilla Tamriel WRLD 後發現兩個缺漏：
+  1. **LargeReferences（RNAM ×8455）**：LOD 大物件清單，世界地圖渲染需要；我們從未複製
+  2. **OffsetData（OFST，45600 bytes）**：引擎 cell-streaming offset table；從未複製
+  已在 `CopyWorldspaceEnv` 補上兩者（RNAM DeepCopy loop + `od.ToArray()` for OFST）。ESP 從 ~5KB 增到 1.4MB（WRLD 記錄大小接近 vanilla）。511 tests pass。
+- **zip**：`~/skyrim_mods/mine/ModForgeQuestMarkers-mapfix.zip`（第六次，RNAM+OFST 修復後重建）
+- **怎麼測**：裝好 → 開大地圖確認 Tamriel 底圖有**地形貼圖**（目標：看得到山丘/雪地/海岸等背景地形，不是全白）。
 
 ---
 
-## 本 session 離線做好、未打包（要測再跟我說，我打包）
+## 已打包待測（zip 在 ~/skyrim_mods/mine/）
 
-這些都已 offline 測試 + 結構驗證，但**還沒打包成可實機的 zip**。多為宣告式 record/條件接線，會疊進你現有的 spec 用；想實機驗哪個跟我說，我 package 成 zip 放 `~/skyrim_mods/mine/`。
-
-- **`npcPatches[]` override vanilla NPC + 換 AI 包**（已用 `npcdiag` 驗 Carlotta 整筆 override + 英文名 inline）。**怎麼測**：裝後去找該 NPC，觀察行程是否換成新 package（如叫她待在家/去酒館）；注意 USSEP/AI Overhaul load-order 衝突。
-- **新 CTDA 函式 + INFO 旗標**（`GetIsAliasRef` 等 10 個、`sayOnce`/`walkAway`…）。**怎麼測**：寫一條用 `GetIsAliasRef` 綁 alias 的對白或 `sayOnce` 一次性台詞，跑對話確認閘門/一次性行為。
-- **MGEF：Script-archetype 掛 Papyrus + DualValueModifier 第二 AV**。**怎麼測**：做個 `archetype:"Script"` + `scripts[]` 的法術看腳本有沒有跑；DualValueModifier 看是否同時動兩個屬性。
-- **Sofia × VIGILANT slice**（`examples/sofia_vigilant_slice.json`，3 事件）。offline 機制驗過（infodiag 確認閘＋對話樹），**但未含語音、未 package、stage 暫定**。**怎麼測**（要先補語音）：① package 到最終夾 → ② 對 Sofia voiceType 0x0022EE 跑 F5 clone + `voicelines` 補嗓音 → ③ 裝（master 要有 Vigilant.esm v181 + SofiaFollower.esp，排其後）→ ④ 帶 Sofia 玩 VIGILANT 到 Coldharbour，看跟 Sofia 講話時「談論 Coldharbour」選項是否在 `GetStageDone(0x12F24E,10)` 後＋人在 Coldharbour 時才出現、聊過是否消失、追問選項是否接上。**stage 10/90 是暫定**，若時機不對用 `questdiag` 對照實機 SetStage 校準。
-- **`IsSceneActionComplete` scene phase 推進**（⚠️ **行為未驗，最該實機確認的一個**）。record 接線 offline 建好了，但「phase 是否真的等該 action 完成才推進」只能實機看。**怎麼測**：做個多 phase scene，給某 phase 一個 `completionConditions:[{function:"IsSceneActionComplete", sceneActionIndex:N}]`（scene 預設 owning，N 用 `scenediag` 查 action 順序），看演出是否卡在該 phase 直到那個 action（通常是台詞）講完才往下。對照「不給 completion condition」的預設推進行為差異。
-- **Sleeping Giant Inn 逆向 `examples/sleeping_giant_inn.json`**（423 placements 進 vanilla 室內）。**怎麼測**：build+package 後進睡巨人客棧看擺設；**注意**檔頭警告——含 3 個 NPC override 會**複製** vanilla Delphine/Orgnar/Embry，純擺設測試請拿掉 npc 項。
+（目前無其他待測項目）
 
 ---
 
 ## 已確認（in-game confirmed，新→舊；詳見 CLAUDE.md「已落地」與 git log）
 
+- **IsSceneActionComplete CTDA**（2026-06-13）：`sceneActionIndex:1`（SCEN action index 是 1-based）→ phase 1→2 推進正常。
+- **DualValueModifier SecondActorValue**（2026-06-13）：Health+Stamina 同時掉 ✅；Concentration+Aimed 需 `castingArt`+`projectile` 否則 CTD（已加 BarrierFireConcAimed beam refs）。
+- **Sofia×VIGILANT CTDA mechanics**（2026-06-13）：`GetStageDone`/`GetInWorldspace`/`sayOnce`/`linkTo` 全部正常，有 lips，無語音（預期，未加 TTS）。
+- **npcPatches[] AI Overhaul 用法**（2026-06-13）：Carlotta packages override 正常，白天留在家附近 sandbox。
 - 身份系統 Phase-2/C 全套（2026-06-07）、語音管線 + lip sync（2026-06-13）、明亮室內/室外光照（2026-06-09）、Scene PlayIdle（2026-06-07）、SM Kill→quest（2026-06-05）、自訂對話（含 .seq）、navmesh 自訂 worldspace、follower 等。歷史完整清單在 CLAUDE.md。
