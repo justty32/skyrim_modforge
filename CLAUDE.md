@@ -10,16 +10,13 @@
 - 外部工具 / `MODFORGE_*` env var / 資料依賴（含缺檔降級行為）清單見 `docs/TOOLING.md`
 
 **前置步驟（fresh clone 後，`dotnet build` 前必做一次）：**
-`assets/papyrus/MFStoryEventDispatch.pex` 被 `ModForge.Cli.csproj` embed 為 EmbeddedResource，但 `.pex` 在 `.gitignore` 裡不進 repo。需先編譯：
+`assets/papyrus/*.pex` 被 `ModForge.Cli.csproj` embed 為 EmbeddedResource，但 `.pex` 在 `.gitignore` 裡不進 repo。一鍵編譯全部：
 ```
-dotnet run --project src/ModForge.Cli -- compile assets/papyrus/MFStoryEventDispatch.psc assets/papyrus/
-dotnet run --project src/ModForge.Cli -- compile assets/papyrus/MFSceneBanterController.psc assets/papyrus/
-dotnet run --project src/ModForge.Cli -- compile assets/papyrus/MFIdentityBook.psc assets/papyrus/
-dotnet run --project src/ModForge.Cli -- compile assets/papyrus/MFIdentityDefault.psc assets/papyrus/
-dotnet run --project src/ModForge.Cli -- compile assets/papyrus/MFIdentityController.psc assets/papyrus/
-dotnet run --project src/ModForge.Cli -- compile assets/papyrus/MFIdentityAutoGrant.psc assets/papyrus/
+scripts/bootstrap-pex.sh
 ```
-（需要 Wine + CK PapyrusCompiler 環境；native 走 `~/tools/papyrus-compiler` + `MODFORGE_PAPYRUS_HEADERS=~/.cache/modforge/papyrus/Source/Scripts`。）這六個 `.psc`（dispatcher、在場偵測 Scene controller、身份書 MFIdentityBook、預設身份授予 MFIdentityDefault、主身份 controller MFIdentityController、自動授予 trigger MFIdentityAutoGrant）有任何改動時，同樣需要重跑對應步驟並將新的 `.pex` 保留在本機（不 commit）。六個 `.pex` 都被 `ModForge.Cli.csproj` embed 為 EmbeddedResource（條件式：缺檔仍可 build，runtime 才 warn）。
+（編 `assets/papyrus/` 下全部 `.psc`：dispatcher、在場偵測 Scene controller、身份書 MFIdentityBook、預設身份授予 MFIdentityDefault、主身份 controller MFIdentityController、自動授予 trigger MFIdentityAutoGrant。需要 Wine + CK PapyrusCompiler 環境；native 走 `~/tools/papyrus-compiler` + `MODFORGE_PAPYRUS_HEADERS=~/.cache/modforge/papyrus/Source/Scripts`。）這些 `.psc` 有任何改動時，同樣重跑 `scripts/bootstrap-pex.sh` 並將新的 `.pex` 保留在本機（不 commit）。`.pex` 都被 `ModForge.Cli.csproj` embed 為 EmbeddedResource（條件式：缺檔仍可 build，runtime 才 warn）。
+
+**出貨腳本**（`package`→FLAT zip→`~/skyrim_mods/mine/`，自動防 stale-file）：一般 mod 用 `scripts/ship.sh <spec> [zipName] [--clean-prefix]`；語音 mod 用 `scripts/ship-voice.sh <spec> ...`（package→voicelines→voicediag→zip，需 `MODFORGE_TTS_BIN`）。交付目錄可用 `MODFORGE_SHIP_DIR` 覆寫。
 
 ## 程式碼慣例
 

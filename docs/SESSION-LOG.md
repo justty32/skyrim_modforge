@@ -19,6 +19,4 @@
 
 ## 下次要做（open）
 
-**整理並優化現有工作流** — 檢視 CODE_MAP 維護鏈、build/package/test loop、`scripts/test-offline.sh`、三檔分離（CLAUDE / SESSION-LOG / INGAME-TEST-QUEUE）是否順手；找重複手動步驟看能否腳本化（fresh-clone 後那六個 `.psc` 編譯、`build`→`voicelines`→`voicediag`→zip 的語音出貨鏈）。
-
-**外部工具依賴清單** — 盤查草案已產出（全 `MODFORGE_*` env var + 外部 binary + 缺檔降級行為），待整理寫進 `docs/TOOLING.md`。
+（暫無——工作流腳本化 + TOOLING.md 已完成；roadmap 候選見 CLAUDE.md「之後可做」）

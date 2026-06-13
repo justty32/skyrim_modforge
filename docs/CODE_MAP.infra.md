@@ -99,6 +99,19 @@
 
 ---
 
+## 工作流腳本（`scripts/`，bash）
+→ **說明文件**：[TOOLING.md](TOOLING.md)（外部工具 / env var / 依賴）；CLAUDE.md「前置步驟」「出貨腳本」
+
+| 檔案 | 職責 |
+|-----|-----|
+| `scripts/bootstrap-pex.sh` | fresh-clone 一鍵編譯 `assets/papyrus/*.psc`→`.pex`（embed 用，glob 全部、自動納入新增的）。需 Papyrus toolchain；任一失敗 → exit 非零 |
+| `scripts/ship.sh` | 一般 mod 出貨：`package`→FLAT zip（plugin 在根，防 stale-ESP）→`$MODFORGE_SHIP_DIR`（預設 `~/skyrim_mods/mine`）。plugin 名讀自建好的 `.esp`（耐 `$ref`/`$env`）；`--clean-prefix` 清同前綴舊 zip（防 MO2 裝到 stale），否則只 warn |
+| `scripts/ship-voice.sh` | 語音 mod 出貨：`package`→`voicelines`(對 packaged esp 生 `Sound/Voice/<plugin>/…`)→`voicediag`(planned vs shipped)→FLAT zip。需 `MODFORGE_TTS_BIN`，否則 abort |
+| `scripts/test-offline.sh` | `dotnet test --filter "Category!=RequiresSkyrim"`（透傳額外 args）|
+| `scripts/extract-skyrim-masters.sh` | 抽 vanilla master 到 `reference/`（`MODFORGE_SKYRIM_MASTERS`/`MODFORGE_REFERENCE_OUT`）|
+
+---
+
 ## 語音克隆（TTS → .fuz）
 → **說明文件**：[SPEC-workflow.md § Voice](SPEC-workflow.md#voice-tts-voice-cloning--fuz)
 
