@@ -101,6 +101,19 @@ public static class SpecRefs
                     list.AddRange(ParseSources(item, ctx, readFile, getEnv, cycle));
                 return list;
             }
+            case JsonObject o:
+            {
+                foreach (var kv in o)
+                    if (kv.Key is not ("from" or "pointer" or "merge"))
+                        throw new SpecRefException($"unknown key '{kv.Key}' in long-form $ref (allowed: from, pointer, merge)");
+                // 'from' is itself resolvable so it may be driven by $env.
+                var fromNode = ResolveNode(o["from"], ctx, readFile, getEnv, cycle);
+                if (fromNode is not JsonValue fv || !fv.TryGetValue<string>(out var from))
+                    throw new SpecRefException("long-form $ref requires a string 'from'");
+                var baseSrc = SplitRef(from);
+                var ptr = o["pointer"] is JsonValue pv && pv.TryGetValue<string>(out var p) ? p : baseSrc.Pointer;
+                return new() { new Source(baseSrc.File, ptr) };
+            }
             default:
                 throw new SpecRefException("$ref value must be a string, array, or { from, pointer } object");
         }

@@ -90,4 +90,20 @@ public class SpecRefsTests
         Assert.Equal(1, r["tint"]!["r"]!.GetValue<int>());  // base survives
         Assert.Equal(9, r["tint"]!["g"]!.GetValue<int>());  // warm overrides
     }
+
+    [Fact]
+    public void LongFormRef_FromPlusPointer_Resolves()
+    {
+        var files = new Dictionary<string, string> { ["presets/light.json"] = """{ "bright": { "lux": 42 } }""" };
+        var json = """{ "thing": { "$ref": { "from": "presets/light.json", "pointer": "/bright" } } }""";
+        var r = Resolve(json, Files(files))!["thing"]!;
+        Assert.Equal(42, r["lux"]!.GetValue<int>());
+    }
+
+    [Fact]
+    public void LongFormRef_UnknownKey_Throws()
+    {
+        var json = """{ "thing": { "$ref": { "from": "p.json", "bogus": 1 } } }""";
+        Assert.Throws<SpecRefException>(() => Resolve(json, Files(new() { ["p.json"] = "{}" })));
+    }
 }
