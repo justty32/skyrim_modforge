@@ -13,8 +13,6 @@
 
 ## 進行中 / in-flight（跨 session 的活狀態，就地更新；完成即刪）
 
-**拆檔重構**（Workflow 2，behavior-preserving）— `src/ModForge.Cli/Program.Build.Voice.cs`（325 行、超過 300 上限）拆成多個 partial class < 300；subagent 進行中。拆完跑離線測試 → 同步 `docs/CODE_MAP.infra.md` → commit（不 push）。其餘檔案皆未過限，無需動。
-
 **身份系統 Phase-2/C**：尚未做 ③ 聲望/行為追蹤（需先定設計）。其餘子項皆已落地（見 CLAUDE.md「已落地」）。
 
 ---
