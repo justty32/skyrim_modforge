@@ -53,6 +53,8 @@ public static partial class Generator
         ctx.BuildKeys();                           // Key (KEYM)
         ctx.BuildKeywords();                       // Keyword (KYWD)
         ctx.BuildGlobals();                         // GlobalVariable (GLOB) — shared flags/counters/constants
+        ctx.BuildMusicTracks();                     // Music Track (MUST) — before BuildFormKeyTable so cell/worldspace music resolve
+        ctx.BuildMusicTypes();                      // Music Type (MUSC)
         ctx.BuildIdentityGlobals();                 // MF_PrimaryIdentity + MF_IdentityOverride (when primaryIdentity/override used)
         ctx.BuildOutfits();                        // Outfit (OTFT) — contents wired in pass 2
         ctx.BuildStatics();                        // Static (STAT)
@@ -89,6 +91,7 @@ public static partial class Generator
         ctx.WireMagicEffectRefs();                 // MGEF association/projectile/art/explosion
         ctx.WireMagicFxRefs();                     // PROJ + EXPL FormLinks (light/sound/explosion/objectEffect/…)
         ctx.WireHazards();                         // HAZD spell/light/sound/imad/impactDataSet FormLinks
+        ctx.WireMusic();                            // MUSC -> MUST + Palette MUST -> sub-MUST track FormLinks
         ctx.WirePerks();                           // PERK effects/conditions/nextPerk + npc perk grants
         ctx.WireWeatherAndClimateLinks();          // WTHR precipitation + CLMT weather FormLinks
         ctx.WireShouts();                          // SHOU MenuDisplayObject + per-row Word (WOOP) + Spell (SPEL)
