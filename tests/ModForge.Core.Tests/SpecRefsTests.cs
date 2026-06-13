@@ -155,4 +155,22 @@ public class SpecRefsTests
         var ex = Assert.Throws<SpecRefException>(() => Resolve(json));
         Assert.Contains("cycle", ex.Message);
     }
+
+    [Fact]
+    public void ResolveFile_RealTempFiles_RoundTrips()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "mf_specrefs_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        try
+        {
+            File.WriteAllText(Path.Combine(dir, "preset.json"), """{ "fogFar": 9000 }""");
+            File.WriteAllText(Path.Combine(dir, "spec.json"),
+                """{ "name": "x", "light": { "$ref": "preset.json", "fogFar": 12000 } }""");
+
+            var resolved = SpecRefs.ResolveFile(Path.Combine(dir, "spec.json"));
+            var node = JsonNode.Parse(resolved)!;
+            Assert.Equal(12000, node["light"]!["fogFar"]!.GetValue<int>());
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
 }

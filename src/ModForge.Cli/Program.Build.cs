@@ -58,7 +58,7 @@ internal static partial class Program
     // -------------------------------------------------------------------------------
     private static int ValidateCmd(string specPath)
     {
-        var json = File.ReadAllText(specPath);
+        var json = ResolveSpecJson(specPath);
         var unknowns = CheckUnknownFields(json, typeof(ModSpec));
 
         var spec = JsonSerializer.Deserialize<ModSpec>(json, ReadOpts)

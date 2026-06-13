@@ -121,10 +121,18 @@ internal static partial class Program
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
 
-    private static readonly JsonSerializerOptions ReadOpts = new() { PropertyNameCaseInsensitive = true };
+    private static readonly JsonSerializerOptions ReadOpts = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        // $env values arrive as JSON strings; allow them in numeric spec fields.
+        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString,
+    };
+
+    // Single chokepoint: read a spec file and resolve $ref/$env before any deserialize / field check.
+    private static string ResolveSpecJson(string path) => SpecRefs.ResolveFile(path);
 
     private static ModSpec ReadSpec(string path) =>
-        JsonSerializer.Deserialize<ModSpec>(File.ReadAllText(path), ReadOpts)
+        JsonSerializer.Deserialize<ModSpec>(ResolveSpecJson(path), ReadOpts)
         ?? throw new InvalidOperationException("spec deserialized to null");
 
     // Shared loader (also used by the diagnostic commands in Diagnostics.cs).
