@@ -53,6 +53,7 @@ internal static partial class Program
                 case "eczndiag" when args.Length == 3: return EcznDiag(args[1], args[2]);
                 case "refpos" when args.Length == 3: return RefPos(args[1], args[2]);
                 case "bookdiag" when args.Length == 3: return BookDiag(args[1], args[2]);
+                case "booktext" when args.Length == 3: return BookText(args[1], args[2]);
                 case "infodiag" when args.Length is 3 or 4: return InfoDiag(args[1], args[2], args.Length == 4 ? args[3] : null);
                 case "factdiag" when args.Length == 3: return FactDiag(args[1], args[2]);
                 case "reladiag" when args.Length == 3: return RelaDiag(args[1], args[2]);
@@ -106,6 +107,7 @@ internal static partial class Program
         "  regndiag <in.esp> <0xFORMID>                 print a Region's worldspace/area/mapColor + weather table (priority + weather refs + chances)\n" +
         "  eczndiag <in.esp> <0xFORMID>                 print an EncounterZone's level range/rank/flags/owner/location\n" +
         "  bookdiag <in.esp> <0xFORMID>                 print a Book's Teaches (spell/skill/nothing) + flags + model (e.g. a vanilla spell tome)\n" +
+        "  booktext <esm> <0xFORMID>                    print a Book's localized Name + full BookText (lore prose; extracts English STRINGS from the master's BSA)\n" +
         "  refpos <in.esp> <0xFORMID>                   print a placed ref's (REFR/ACHR) position+rotation+base (anchor new placements on known navmesh)\n" +
         "  infodiag <in.esp> <0xFORMID> [substr]        dump dialogue INFO responses + FULL CTDA conditions for a topic, or every topic a quest owns (substr filters EditorID)\n" +
         "  factdiag <in.esp> <0xFORMID>                 print a Faction's flags/ranks/inter-faction relations (the paid-hireling gate is faction membership)\n" +
