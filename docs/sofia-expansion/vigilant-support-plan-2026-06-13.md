@@ -6,6 +6,12 @@
 - ❌ **不做**：自動插話、Sofia 自己開 scene 演出、在 VIGILANT 的 cutscene 中間插嘴（時序脆、會出戲、需重度實機迭代）。
 - ✅ **要做**：VIGILANT 任務/scene 狀態更新後，在 Sofia 身上**新增一個 player dialogue 選項**（如「關於剛剛那個…你怎麼看？」），玩家想聊才聊。選項由 **VIGILANT 的 quest-state 當 condition 閘**控制出現時機，聊開後用**對話樹**展開她的吐槽串。
 
+**兩個閘維度，可單用也可 AND 疊：**
+1. **任務/scene 狀態**（時間維度）：`GetStageDone`/`GetQuestRunning`/`GetQuestCompleted` ── 「這件事發生後」。
+2. **Sofia 所在地點**（空間維度，2026-06-13 使用者補）：`GetInWorldspace`/`GetInCurrentLoc`/`GetInCell`，**run-on = `Subject`（＝ Sofia 本人的位置，不是玩家）** ── 「Sofia 人在這個 realm/這間房時」。
+   - 兩者疊（`AND`）＝「**在對的地方、對的時機**才出現的選項」，例：`GetStageDone(MolagQuest,30)==1 AND GetInWorldspace(Coldharbour, runOn=Subject)==1` → 只有玩家在 Coldharbour 裡、且已見過 Molag Bal，才談得到那段。
+   - 地點也能**讓同一句話換味**（不只 gate 新選項）：用 vanilla「一個 topic 多條 INFO、依 condition 順序選第一個過的」模式（見 memory `conditioned-hello-one-topic-many-infos`），Sofia 的招呼/同一個 talk topic 在不同 realm 給不同台詞。
+
 定位：**這不是新任務**，是疊在 VIGILANT 之上的**可對談反應層**。player topic 掛在 Sofia 身上（`GetIsID Sofia` / 她的 follower faction），用 VIGILANT 的**任務階段**（次要：地點）FormKey 當出現閘。**全部宣告式 record，無 user script。** 這正好是本 session 對話樹 + 跨任務閘的主場。
 
 ---
@@ -19,7 +25,7 @@
 | **任務/scene 狀態更新後浮現新對話選項**（核心） | player topic + `GetStageDone(quest,stage)` / `GetQuestRunning` / `GetQuestCompleted` 當出現閘 | ✅ 本 session 落地（跨任務閘） |
 | **選項只出現一次／聊過就收**（避免選單塞爆） | INFO `sayOnce` 旗標 + 選項點完 setGlobal 自收 | ✅ 本 session 落地 |
 | **聊開後多輪對話**（玩家追問→Sofia 展開吐槽串） | 對話樹 `linkTo` + `topLevel:false` sub-topic | ✅ 本 session 落地 |
-| 進某 realm 時「可以問她對這地方的看法」（次要） | player topic + `GetInWorldspace`/`GetInCurrentLoc` 閘 | ✅ 本 session 落地 |
+| **Sofia 身處某地點影響對話**（gate 新選項／同句換味；runOn=Subject＝她的位置） | `GetInWorldspace`/`GetInCurrentLoc`/`GetInCell`（runOn=Subject）；可與 quest-state AND | ✅ 本 session 落地 |
 | 對特定 NPC/Boss「可以問她的看法」 | `GetIsID` / `GetInCell` / `GetDeadCount` 閘 | ✅（GetIsID 既有，其餘本 session） |
 | Sofia 嗓音講新台詞 | voice pipeline（F5 clone + FUZ） | ✅ 既有（in-game 確認過） |
 
@@ -76,7 +82,8 @@ ModForgeSofiaVigilant.esp（masters: Skyrim.esm, Update.esm, Vigilant.esm, Sofia
 │   │    出現閘 conditions（AND）:
 │   │      ① GetIsID Sofia（或 follower faction）── 只在跟 Sofia 講話時出現
 │   │      ② GetStageDone(VigQuest, N)==1 或 GetQuestRunning/GetQuestCompleted ── 事件發生後才出現
-│   │      ③（選配）GetGlobalValue(MF_SofiaTalked_X)==0 ── 聊過就收（防選單塞爆）
+│   │      ③（選配）GetInWorldspace/GetInCell(runOn=Subject)==1 ── 只在 Sofia 人在該地時出現
+│   │      ④（選配）GetGlobalValue(MF_SofiaTalked_X)==0 ── 聊過就收（防選單塞爆）
 │   ├─ Sofia 的回應 INFO（過性格濾鏡的台詞）+ setGlobal MF_SofiaTalked_X=1
 │   └─ linkTo → 1~2 個追問 sub-topic（topLevel:false），玩家可深聊
 ├─ voiceTemplates[] + npcs[].voiceTemplate：用 Sofia 的 voiceType
@@ -88,6 +95,8 @@ ModForgeSofiaVigilant.esp（masters: Skyrim.esm, Update.esm, Vigilant.esm, Sofia
 **關鍵接法**：
 - **掛在 Sofia 身上**：Sofia NPC FormKey 從 [Sofia 解碼](follower-decode-2026-06-13.md) 拿；topic 的 INFO 加 `GetIsID SofiaFollower.esp:0xXXXX`（不需 override Sofia，只是 speaker 閘）。或用她的 follower faction。
 - **「事件發生後才出現」的閘**：核心是 `GetStageDone(Vigilant.esm:0xQuest, stage)==1`（某 scene/任務狀態確定推進後）；長線用 `GetQuestRunning`/`GetQuestCompleted`。從 [story 解碼](../vigilant-story-decode-2026-06-13.md) 挑「演完一段值得聊」的 quest+stage。
+- **「Sofia 人在某地」的閘（空間維度）**：`GetInWorldspace`/`GetInCurrentLoc`/`GetInCell`，**`runOn` 設 `Subject`**（INFO 的 run-on subject ＝ speaker ＝ Sofia，所以讀的是 **Sofia 的位置**；不設或 runOn=Reference 才是讀別人）。Sofia 跟著玩家跑，通常與玩家同地，但語意上「Sofia 在這」用 Subject 最正確。可單獨用（地點味台詞）或跟 quest-state `AND`（在對的地方＋對的時機）。
+- **同一句換味（不開新選項，只換台詞）**：用「一個 topic 多條 INFO、引擎依 condition 順序取第一個過的」模式（[[conditioned-hello-one-topic-many-infos]]）——Sofia 的招呼或某個固定 talk topic，在 Coldharbour 給 A 版、在 Lamae's Dream 給 B 版、預設給 plain 版（地點 INFO 排前面、plain 墊底）。`GetInWorldspace(runOn=Subject)` 當每條 INFO 的閘。
 - **選項自收**：點完該選項的 result fragment `setGlobal MF_SofiaTalked_X=1`，topic 條件再加 `GetGlobalValue==0`，聊一次就消失（VIGILANT 也大量用 global 當對白開關）。`setGlobal` 是既有 result fragment 能力，無 user script。
 - **語音**：Sofia 全語音 → 靜音 subtitle 出戲，必須過 voice pipeline。`extract-voices <SofiaFollower BSA> <SofiaVoiceType>` 抽 ref → `voicegen-f5.sh` → `voicelines`。voiceType 查 Sofia 解碼。
 - **build 是 offline**：Vigilant/Sofia FormKey 全是 external ref→bare FormKey，不需那兩個 mod 在 build 機（但最終 plugin master 清單要有、實機要裝）。
@@ -100,7 +109,7 @@ ModForgeSofiaVigilant.esp（masters: Skyrim.esm, Update.esm, Vigilant.esm, Sofia
 |---------|--------|------|
 | **任務/scene 狀態更新後浮現「談論」選項**（核心） | 🟢 100% 現在可做 | player topic + `GetStageDone/GetQuestRunning` 閘 + setGlobal 自收；本 session 對話樹+跨任務閘的主場 |
 | **聊開後追問**（對話樹多輪） | 🟢 可做 | `linkTo` + `topLevel:false` sub-topic |
-| **進某 realm 時「可問她對這地方的看法」**（次要） | 🟢 可做 | player topic + `GetInWorldspace`/`GetInCurrentLoc` 閘 |
+| **Sofia 所在地點影響對話**（gate 新選項 或 同句換味；runOn=Subject＝Sofia 位置） | 🟢 可做 | `GetInWorldspace`/`GetInCurrentLoc`/`GetInCell` 當選項閘，或「一 topic 多 INFO 依地點選」換味；可與 quest-state `AND` |
 | **Boss/NPC 在場時「可問她的看法」** | 🟢 可做 | `GetInCell` 鎖 Boss 房 / `GetIsID` 對重要 NPC |
 | ~~自動插話 / Sofia 自開 scene / 在 VIGILANT cutscene 插嘴~~ | ⬛ **刻意不做** | 使用者定調：擾人、時序脆、需重度實機迭代。改用「狀態更新後的可談選項」近似 |
 
