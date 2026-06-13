@@ -31,6 +31,7 @@ public static partial class Generator
         ctx.BuildScenes();                          // SCEN multi-actor conversations (quest aliases + phases + Scene topics)
         ctx.BuildMagicEffects();                   // MagicEffect (MGEF)
         ctx.BuildExplosions();                      // Explosion (EXPL) — built before Projectiles so a PROJ resolves an in-spec explosion
+        ctx.BuildHazards();                         // Hazard (HAZD) — before BuildFormKeyTable so MGEF association / placement base resolve it
         ctx.BuildProjectiles();                    // Projectile (PROJ) — the flying bolt (refs wired in pass 2)
         ctx.BuildImageSpaceModifiers();            // ImageSpace Modifier (IMAD) — screen post-process (no outgoing refs)
         ctx.BuildSpells();                         // Spell (SPEL)
@@ -87,6 +88,7 @@ public static partial class Generator
         ctx.WireEnchantments();                    // ENCH effects + weapon/armor enchantment FormLinks
         ctx.WireMagicEffectRefs();                 // MGEF association/projectile/art/explosion
         ctx.WireMagicFxRefs();                     // PROJ + EXPL FormLinks (light/sound/explosion/objectEffect/…)
+        ctx.WireHazards();                         // HAZD spell/light/sound/imad/impactDataSet FormLinks
         ctx.WirePerks();                           // PERK effects/conditions/nextPerk + npc perk grants
         ctx.WireWeatherAndClimateLinks();          // WTHR precipitation + CLMT weather FormLinks
         ctx.WireShouts();                          // SHOU MenuDisplayObject + per-row Word (WOOP) + Spell (SPEL)

@@ -1,0 +1,35 @@
+using System.Linq;
+using Mutagen.Bethesda.Plugins;
+using Mutagen.Bethesda.Skyrim;
+using ModForge;
+using Xunit;
+
+public class HazardTests
+{
+    private static ISkyrimMod Build(ModSpec spec) =>
+        Generator.Build(spec, ModKey.FromNameAndExtension("Test.esp")).Mod;
+
+    [Fact]
+    public void Hazard_record_builds_scalars_flags_and_wires_spell()
+    {
+        var spec = new ModSpec();
+        spec.Spells.Add(new SpellSpec { EditorId = "MF_Burn", Name = "Burn" });
+        spec.Hazards.Add(new HazardSpec
+        {
+            EditorId = "MF_FireHaz", Name = "Flames", Model = "Meshes/x.nif",
+            Radius = 150f, Lifetime = 5f, TargetInterval = 1f, Limit = 3,
+            Spell = "MF_Burn", Flags = { "DropToGround", "AffectsPlayerOnly" },
+        });
+        var mod = Build(spec);
+        var h = mod.Hazards.Single(x => x.EditorID == "MF_FireHaz");
+        Assert.Equal(150f, h.Radius);
+        Assert.Equal(5f, h.Lifetime);
+        Assert.Equal(1f, h.TargetInterval);
+        Assert.Equal(3u, h.Limit);
+        Assert.Equal("Meshes/x.nif", h.Model!.File);
+        Assert.True(h.Flags.HasFlag(Hazard.Flag.DropToGround));
+        Assert.True(h.Flags.HasFlag(Hazard.Flag.AffectsPlayerOnly));
+        var spell = mod.Spells.Single(s => s.EditorID == "MF_Burn");
+        Assert.Equal(spell.FormKey, h.Spell.FormKey);     // wired in pass 2
+    }
+}

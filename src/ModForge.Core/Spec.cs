@@ -26,6 +26,7 @@ public sealed class ModSpec
     // (EXPL) is the boom on impact. A MagicEffect's projectile/explosion refs point at these.
     public List<ProjectileSpec> Projectiles { get; set; } = new();
     public List<ExplosionSpec> Explosions { get; set; } = new();
+    public List<HazardSpec> Hazards { get; set; } = new();   // Hazard (HAZD) — radius effect / placed trap
     // ImageSpace Modifiers (IMAD): screen-space post-process (brightness/tint) a magic-effect script
     // applies at runtime. Referenced by Explosions[].imageSpaceModifier or a Papyrus property.
     public List<ImageSpaceModifierSpec> ImageSpaceModifiers { get; set; } = new();
