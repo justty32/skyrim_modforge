@@ -106,4 +106,45 @@ public class SpecRefsTests
         var json = """{ "thing": { "$ref": { "from": "p.json", "bogus": 1 } } }""";
         Assert.Throws<SpecRefException>(() => Resolve(json, Files(new() { ["p.json"] = "{}" })));
     }
+
+    [Fact]
+    public void Env_Present_SubstitutesValue()
+    {
+        var json = """{ "dir": { "$env": "MF_DIR" } }""";
+        var r = Resolve(json, env: Env(new() { ["MF_DIR"] = "presets" }))!;
+        Assert.Equal("presets", r["dir"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public void Env_Missing_UsesDefault()
+    {
+        var json = """{ "dir": { "$env": "MF_DIR", "default": "fallback" } }""";
+        var r = Resolve(json)!;
+        Assert.Equal("fallback", r["dir"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public void Env_MissingNoDefault_Throws()
+    {
+        var json = """{ "dir": { "$env": "MF_DIR" } }""";
+        Assert.Throws<SpecRefException>(() => Resolve(json));
+    }
+
+    [Fact]
+    public void RefAndEnvTogether_Throws()
+    {
+        var json = """{ "x": { "$ref": "#/a", "$env": "MF_DIR" }, "a": {} }""";
+        Assert.Throws<SpecRefException>(() => Resolve(json));
+    }
+
+    [Fact]
+    public void Env_DrivesLongFormRefFrom()
+    {
+        var files = new Dictionary<string, string> { ["presets/light.json"] = """{ "bright": { "lux": 7 } }""" };
+        var json = """
+        { "thing": { "$ref": { "from": { "$env": "MF_PRESET", "default": "presets/light.json" }, "pointer": "/bright" } } }
+        """;
+        var r = Resolve(json, Files(files))!["thing"]!;
+        Assert.Equal(7, r["lux"]!.GetValue<int>());
+    }
 }

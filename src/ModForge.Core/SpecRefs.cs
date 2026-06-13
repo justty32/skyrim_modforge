@@ -45,8 +45,12 @@ public static class SpecRefs
     {
         switch (node)
         {
+            case JsonObject obj when obj.ContainsKey("$ref") && obj.ContainsKey("$env"):
+                throw new SpecRefException("a node may not contain both $ref and $env");
             case JsonObject obj when obj.ContainsKey("$ref"):
                 return ResolveRef(obj, ctx, readFile, getEnv, cycle);
+            case JsonObject obj when obj.ContainsKey("$env"):
+                return ResolveEnv(obj, ctx, readFile, getEnv, cycle);
             case JsonObject obj:
             {
                 var result = new JsonObject();
@@ -84,6 +88,17 @@ public static class SpecRefs
             merged = merged is null ? siblings : DeepMerge(merged, siblings);
 
         return merged;
+    }
+
+    private static JsonNode? ResolveEnv(JsonObject obj, Ctx ctx, FileReader readFile, EnvLookup getEnv, List<string> cycle)
+    {
+        var name = obj["$env"] is JsonValue v && v.TryGetValue<string>(out var n)
+            ? n : throw new SpecRefException("$env requires a string variable name");
+        var val = getEnv(name);
+        if (val != null) return JsonValue.Create(val);                 // env value as a JSON string
+        if (obj.TryGetPropertyValue("default", out var def))           // default may itself contain $ref/$env
+            return ResolveNode(def, ctx, readFile, getEnv, cycle);
+        throw new SpecRefException($"$env '{name}' is not set and no default was provided");
     }
 
     private readonly record struct Source(string File, string Pointer);
