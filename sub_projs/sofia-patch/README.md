@@ -1,4 +1,6 @@
-# Sofia 擴充專案（docs/sofia-expansion/）
+# Sofia 擴充專案（sub_projs/sofia-patch/）
+
+> **這是一個獨立專案**，把 ModForge 當工具使用（JSON spec → `.esp`），不與 ModForge 整合。成熟或體量龐大後可移去自己的 repo。
 
 **專案目標**：用 ModForge（JSON spec → 生成 `.esp`）做一個 **Sofia 風格的隨從擴充**——不手改 CK，而是把 Sofia 賴以成立的那些 pattern（在場偵測 banter、GLOB 狀態、小型 controller quest、條件分歧對話、克隆語音）規模化成更多吐槽、更深互動、好感度系統、新演出 scene 與 mini-quest。
 

@@ -13,7 +13,7 @@
 - 深化與玩家互動（任務後感想、好感度觸發對話）
 - 多隨從互相對話（A 評論 B、爭執、調侃）
 
-**施工參考**：[`sofia-expansion/`](sofia-expansion/README.md)（專案夾）→ [`follower-decode-2026-06-13.md`](sofia-expansion/follower-decode-2026-06-13.md) — 解碼 Sofia Follower（30 quest / 28 scene / 1135 INFO / 57 GLOB）拆出五個可複用 pattern（小 controller-quest 星座、每情境一個 comment-scene、GLOB 狀態機、quest-stage+marker、玩家裝備驅動對話）+ ModForge 對應施工表。結論：Sofia 全是 ModForge 已落地能力的規模化組合,直接夠用。
+**施工參考**：[`sub_projs/sofia-patch/`](../sub_projs/sofia-patch/README.md)（獨立專案）→ [`follower-decode-2026-06-13.md`](../sub_projs/sofia-patch/follower-decode-2026-06-13.md) — 解碼 Sofia Follower（30 quest / 28 scene / 1135 INFO / 57 GLOB）拆出五個可複用 pattern（小 controller-quest 星座、每情境一個 comment-scene、GLOB 狀態機、quest-stage+marker、玩家裝備驅動對話）+ ModForge 對應施工表。結論：Sofia 全是 ModForge 已落地能力的規模化組合,直接夠用。
 
 **在場偵測**：不靠多隨從框架，用 vanilla 三層——同 Cell（已載入）→ `GetDistance < 2048`（夠近）→ `HasLOS`（看得見，按需）。「是否在隊」用 `IsPlayerTeammate()`，自訂跟隨機制才讀其 Quest。**已落地為 `MFSceneBanterController` autoStart**（見 CLAUDE.md）。
 
