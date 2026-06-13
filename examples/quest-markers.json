@@ -7,7 +7,7 @@
       "editorId": "MFQM_Camp",
       "name": "ModForge Test Camp",
       "worldspace": "Skyrim.esm:0x00003C",
-      "position": { "x": 0, "y": -9000, "z": 0 },
+      "position": { "x": 0, "y": -9000, "z": -3800 },
       "type": "Camp",
       "flags": ["Visible", "CanTravelTo"]
     }
@@ -18,7 +18,7 @@
       "editorId": "MFQM_Anchor",
       "kind": "xmarker",
       "worldspace": "Skyrim.esm:0x00003C",
-      "position": { "x": 2000, "y": -5000, "z": 0 }
+      "position": { "x": 0, "y": -9000, "z": -3800 }
     }
   ],
 

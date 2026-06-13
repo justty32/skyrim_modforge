@@ -1,0 +1,39 @@
+{
+  "_note": "IsSceneActionComplete CTDA test. Orgnar (OrgnarREF Skyrim.esm:0x013486, base 0x013479) in Sleeping Giant Inn speaks two phase lines. Phase 0 has completionConditions:[IsSceneActionComplete(0)] — if both lines fire in sequence the CTDA wiring is correct. Go to Riverwood / Sleeping Giant Inn to observe.",
+  "pluginName": "ModForgeSceneActTest.esp",
+  "esl": true,
+  "quests": [
+    {
+      "editorId": "MFSceneActTestQuest",
+      "name": "Scene Action Complete Test",
+      "startGameEnabled": true,
+      "priority": 60,
+      "type": "None"
+    }
+  ],
+  "scenes": [
+    {
+      "editorId": "MFSceneActTestScene",
+      "questEditorId": "MFSceneActTestQuest",
+      "beginOnQuestStart": true,
+      "actors": [
+        { "aliasId": 0, "npc": "Skyrim.esm:0x013479", "name": "Orgnar" }
+      ],
+      "phases": [
+        {
+          "speaker": 0,
+          "lines": ["[ModForge Phase 1] IsSceneActionComplete test — this should fire first."],
+          "completionConditions": [
+            { "function": "IsSceneActionComplete", "sceneActionIndex": 1, "comparison": "==", "value": 1 }
+          ]
+        },
+        {
+          "speaker": 0,
+          "lines": ["[ModForge Phase 2] Phase two reached. Completion condition fired correctly."],
+          "emotion": "Happy",
+          "emotionValue": 60
+        }
+      ]
+    }
+  ]
+}

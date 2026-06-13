@@ -1,0 +1,36 @@
+{
+  "_note": "DualValueModifier MGEF test — one spell drains both Health AND Stamina simultaneously (SecondActorValue). Add via console: 'player.addspell XX000D62' (replace XX with the plugin's load-order slot hex). Cast on an enemy in Concentration mode. Both HP and Stamina bars should drain while the beam hits.",
+  "pluginName": "ModForgeDualAVTest.esp",
+  "esl": true,
+  "magicEffects": [
+    {
+      "editorId": "MF_DrainDualEffect",
+      "name": "Drain Vitality",
+      "description": "Drains both Health and Stamina simultaneously.",
+      "archetype": "DualValueModifier",
+      "actorValue": "Health",
+      "secondActorValue": "Stamina",
+      "secondActorValueWeight": 1.0,
+      "magicSkill": "Destruction",
+      "castType": "Concentration",
+      "targetType": "Aimed",
+      "castingArt": "Skyrim.esm:0x01B211",
+      "projectile": "Skyrim.esm:0x012FCF",
+      "baseCost": 2.0,
+      "flags": ["Hostile", "Detrimental", "NoArea"]
+    }
+  ],
+  "spells": [
+    {
+      "editorId": "MF_DrainDualSpell",
+      "name": "Drain Vitality",
+      "spellType": "Spell",
+      "castType": "Concentration",
+      "targetType": "Aimed",
+      "baseCost": 60,
+      "effects": [
+        { "magicEffect": "MF_DrainDualEffect", "magnitude": 5, "area": 0, "duration": 0 }
+      ]
+    }
+  ]
+}
