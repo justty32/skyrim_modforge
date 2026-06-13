@@ -159,10 +159,13 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 
 ### 之後可做
 
-**解碼／計畫參考檔（2026-06-13，5 個 agent 從真 mod 解碼 + 對照 ModForge 可實現性）**：
-- 隨從擴充：`docs/sofia-follower-decode-2026-06-13.md`（結構+內容索引）、`docs/sofia-expansion-plan-2026-06-13.md`（擴充計畫 11✅/3🟡/2🔴）
+**解碼／計畫／可行性參考檔（2026-06-13，真 mod 解碼 + 對照 ModForge 可實現性；全 esp-only 記憶體安全）**：
+- **盤點**：`docs/mod-survey-2026-06-13.md`（下載 mod 的 Tier 1/2/3 解碼價值；解碼方法的記憶體鐵律；本清單的母索引）
+- 隨從擴充：`docs/sofia-follower-decode-2026-06-13.md`（結構+內容索引）、`docs/sofia-expansion-plan-2026-06-13.md`（11✅/3🟡/2🔴）
 - NPC 日程：`docs/ai-overhaul-decode-2026-06-13.md`、`docs/ai-overhaul-expansion-plan-2026-06-13.md`（6✅/3🟡/3🔴）
-- VIGILANT：`docs/vigilant-{worldspace,story,magic}-decode-2026-06-13.md`（11 自訂 worldspace / 120 quest 78 scene / 712 spell 550 MGEF）
+- VIGILANT：`docs/vigilant-{worldspace,story,magic,scene-dialogue-audit}-decode-2026-06-13.md`（11 自訂 worldspace / 120 quest 78 scene / 712 spell 550 MGEF；scene/對話 vs ModForge **~70% 覆蓋**,top 缺口 `GetIsAliasRef` CTDA(702 用)/任意 scene-phase fragment/scene 完成條件白名單）
+- 工作流可行性：`docs/blender-layout-feasibility-2026-06-13.md`（Blender 擺設→`placements[]` JSON,可行、不需新功能、#1 風險=旋轉轉換校準、選配 `staticmap` 子指令）
+- 待解碼候選：RDO（dialogue/INFO）、Moons And Stars（weather/IMGS/climate→region）
 
 **待補清單（上述解碼浮現,按優先序）**：
 1. **`npcPatches[]`**（**已 scaffold、卡在本地化字串牆**，2026-06-13）：override 既有 vanilla NPC 的 `Packages`（AI Overhaul 核心）。已落地 spec(`NpcPatchSpec` overrideOf/packages/mode)+ validate + `BuildNpcPatches`/`WireNpcPatchPackages` + 測試。**但 override 寫不出**:① `Npcs.GetOrAddAsOverride` 需 Windows plugin-listings path、Linux headless throw；② 手動 `new Npc(fk)+DeepCopyIn(src)` 深拷既有 NPC 的**本地化 Name**→ 觸發 STRINGS/load-order resolve、headless throw（item-clone 靠 mask 跳過 Name,但 NPC 不能沒名字）。目前 catch+warn+skip（不崩 build）。**收尾需:讓 MasterCache 用「能讀 STRINGS 的 master read」**（給 Mutagen strings 來源/GameEnvironment),或接受 NPC 失去名字。10 個 PACK 模板、package 接線、placement 錨已備,只差這層。注意 USSEP/load-order 衝突。
