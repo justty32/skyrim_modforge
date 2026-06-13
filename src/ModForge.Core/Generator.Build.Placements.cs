@@ -123,7 +123,15 @@ public static partial class Generator
                     || (!string.IsNullOrWhiteSpace(pl.EditorId)
                         && (deferredAnchorEds.Contains(pl.EditorId) || teleportAnchorEds.Contains(pl.EditorId)));
 
-                if (persistent) cell.Persistent.Add(placedRec);
+                if (persistent)
+                {
+                    // A persistent xmarker/xmarkerHeading quest anchor must carry the 0x400 persistent
+                    // record flag — EVERY vanilla XMarker has it (10890/10890 in Skyrim.esm), and without
+                    // it a forced: alias can lose its target across save/reload. (Other persistent
+                    // placement kinds are left as-is here — tolerated in grid/interior cells.)
+                    if (isXMarker || isXMarkerHeading) placedRec.MajorRecordFlagsRaw |= 0x400;
+                    cell.Persistent.Add(placedRec);
+                }
                 else cell.Temporary.Add(placedRec);
 
                 placed++;

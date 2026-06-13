@@ -25,6 +25,7 @@ public class XMarkerKindTests
         var anchor = cell.Persistent.OfType<IPlacedObjectGetter>().Single(r => r.EditorID == "MeetSpot");
         Assert.Equal(0x3Bu, anchor.Base.FormKey.ID);                 // defaulted to vanilla XMarker
         Assert.Equal("Skyrim.esm", anchor.Base.FormKey.ModKey.FileName);
+        Assert.True((anchor.MajorRecordFlagsRaw & 0x400) != 0);      // 0x400 persistent flag (every vanilla XMarker has it)
     }
 
     [Fact]
