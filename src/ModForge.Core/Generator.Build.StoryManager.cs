@@ -113,10 +113,16 @@ public static partial class Generator
                             ? QuestAlias.TypeEnum.Location
                             : QuestAlias.TypeEnum.Reference;
                     }
-                    else if (kind.Equals("forced", StringComparison.OrdinalIgnoreCase)
-                        && TryResolveRef(arg, formKeyByEd, out var fk))
+                    else if (kind.Equals("forced", StringComparison.OrdinalIgnoreCase))
                     {
-                        alias.ForcedReference.SetTo(fk);
+                        // A forced ref to a vanilla form or an already-built in-spec record resolves now.
+                        // A forced ref to a record that builds LATER (a placement/xmarker anchor or a map
+                        // marker — built after alias passes) is deferred to WireDeferredForcedAliases,
+                        // which runs once those records exist.
+                        if (TryResolveRef(arg, formKeyByEd, out var fk))
+                            alias.ForcedReference.SetTo(fk);
+                        else
+                            deferredForcedAliases.Add((alias, arg));
                     }
                     else if (kind.Equals("uniqueActor", StringComparison.OrdinalIgnoreCase)
                         && TryResolveRef(arg, formKeyByEd, out var uaFk))

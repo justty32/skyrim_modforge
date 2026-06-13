@@ -30,8 +30,12 @@ public static partial class Generator
                 else if (LooksExternalRef(pl.Cell))
                 { if (!TryExternalRef(pl.Cell, out _)) Problems.Add($"placement: malformed external cell ref '{pl.Cell}' (expect <master>:0xFORMID)"); }
                 else if (!cellIds.Contains(pl.Cell)) Problems.Add($"placement references unknown cell '{pl.Cell}' (in-spec cell editorId or <master>:0xFORMID)");
-                if (!string.IsNullOrEmpty(pl.Kind) && !pl.Kind.Equals("npc", StringComparison.OrdinalIgnoreCase) && !pl.Kind.Equals("object", StringComparison.OrdinalIgnoreCase))
-                    Problems.Add($"placement kind '{pl.Kind}' invalid (npc|object)");
+                if (!string.IsNullOrEmpty(pl.Kind)
+                    && !pl.Kind.Equals("npc", StringComparison.OrdinalIgnoreCase)
+                    && !pl.Kind.Equals("object", StringComparison.OrdinalIgnoreCase)
+                    && !pl.Kind.Equals("xmarker", StringComparison.OrdinalIgnoreCase)
+                    && !pl.Kind.Equals("xmarkerHeading", StringComparison.OrdinalIgnoreCase))
+                    Problems.Add($"placement kind '{pl.Kind}' invalid (npc|object|xmarker|xmarkerHeading)");
                 foreach (var lr in pl.LinkedRefs)
                 {
                     if (string.IsNullOrWhiteSpace(lr.Target)) Problems.Add($"placement '{pl.EditorId}' linkedRef has empty target");
@@ -61,6 +65,20 @@ public static partial class Generator
                 if (!teleportByEd.TryGetValue(pl.Teleport, out var back)
                     || !string.Equals(back, pl.EditorId, StringComparison.OrdinalIgnoreCase))
                     Problems.Add($"placement '{pl.EditorId}' teleports to in-spec '{pl.Teleport}' but that door does not teleport back (one-way link — set its teleport to '{pl.EditorId}')");
+            }
+
+            foreach (var mm in spec.MapMarkers)
+            {
+                if (string.IsNullOrWhiteSpace(mm.EditorId)) Problems.Add("mapMarker: empty editorId");
+                if (string.IsNullOrWhiteSpace(mm.Worldspace))
+                    Problems.Add($"mapMarker '{mm.EditorId}' has no worldspace (set an exterior worldspace, e.g. Skyrim.esm:0x00003C)");
+                else if (!LooksExternalRef(mm.Worldspace) || !TryExternalRef(mm.Worldspace, out _))
+                    Problems.Add($"mapMarker '{mm.EditorId}' worldspace '{mm.Worldspace}' must be a well-formed external <master>:0xFORMID ref");
+                if (!string.IsNullOrWhiteSpace(mm.Type) && !Enum.TryParse<MapMarker.MarkerType>(mm.Type, true, out _))
+                    Problems.Add($"mapMarker '{mm.EditorId}' has unknown type '{mm.Type}' (e.g. City/Town/Settlement/Cave/Camp/Fort/Landmark)");
+                foreach (var f in mm.Flags)
+                    if (!Enum.TryParse<MapMarker.Flag>(f, true, out _))
+                        Problems.Add($"mapMarker '{mm.EditorId}' has unknown flag '{f}' (Visible | CanTravelTo | ShowAllIsHidden)");
             }
 
             foreach (var li in spec.LeveledItems)

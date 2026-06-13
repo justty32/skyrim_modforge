@@ -98,6 +98,8 @@ public static partial class Generator
                                                    // cell, and its patrol markers/linked-refs/package
                                                    // start can be wired by the phases that follow.
         ctx.BuildPlacements();                     // world placement (interior/vanilla/exterior cells)
+        ctx.BuildMapMarkers();                     // world-map markers (XMRK PlacedObject on MapMarker static)
+        ctx.WireDeferredForcedAliases();           // forced alias fills whose target (placement/xmarker/mapMarker) built just now
         ctx.WireLinkedRefs();                      // XLKR between placements (patrol routes)
         ctx.WireTeleportDoors();                   // load-door XTEL teleport pairs (player walk-through links)
         ctx.WireDeferredTargets();                 // package SingleRef slot-0 targets (now placements exist)
@@ -119,6 +121,7 @@ public static partial class Generator
         ctx.BuildIdentityAutoGrantQuest();         // StartGameEnabled quest → MFIdentityAutoGrant joins a faction when a player AV crosses a threshold (e.g. Dragonborn)
         ctx.WireDialogueConditions();              // extra CTDA gates on dialogue INFOs
         ctx.WireQuestStages();                     // QSDT log-entry CTDA + stage→objective fragment VMAD
+        ctx.WireObjectiveTargets();                // QOBJ QSTA targets (alias index + flag + CTDA) — after aliases exist
         ctx.WireBanterConditions();                // situational CTDA gates on banter INFOs
         ctx.WirePackageConditions();               // CTDA gates on AI packages (runtime behaviour switch)
 

@@ -55,6 +55,7 @@
 | `ConditionTests.cs` | CTDA condition 函數、comparator、ref 解析 |
 | `DialogueTests.cs` | dialogue topic / INFO / greeting 生成 |
 | `QuestStageTests.cs` | stage log text / objective fragment / VMAD |
+| `ObjectiveTargetTests.cs` | objective QSTA target：QOBJ `QuestObjectiveTarget`（AliasID + CompassMarkerIgnoresLocks flag + CTDA）+ validate（target alias 須在同 quest）|
 | `SceneTests.cs` | SCEN actor / phase / dialogue action；非對話 action（Package→Packages PACK ref / Timer→TimerSeconds）+ beat phase（無 lines→無 Dialog action/topic）+ LastActionIndex；**idle action 發 Timer（hold；純 build 無 VMAD）**；autoStart → controller VMAD 掛接 + 清 BeginOnQuestStart + 調參 props + **重播策略 props（playOnce/playHour/gateGlobal→GLOB object prop）** + validate gate |
 | `SceneFragmentTests.cs` | PlayIdle 純產生器（`SceneNeedsFragmentScript`/`SceneFragmentScriptName`/`GenerateSceneFragmentSource`：extends Scene Hidden、`Fragment_<phase>`、`GetActorRef()`）+ `AttachSceneFragments`（.pex 在才掛 SceneAdapter、PhaseFragments 數/ScriptName/OnStart flag/FragmentName、Actor_ object prop→host quest+alias index）+ validate（idle-only OK、idle+timer hold OK、idle+package 拒）|
 | `IdentityTests.cs` | 身份系統：`IdentitySpec` 預設、每身份建 FACT（外部/已宣告不重建）、validate（dup id / bad grant）、acquireBook → `MFIdentityBook` VMAD + 屬性綁定；**default → `MF_IdentityDefaultQuest`（StartGameEnabled）+ `MFIdentityDefault` VMAD，Factions[]/Grants[] list property（只收 default、grant 去重）、無 default 不建、無 grant 省 list**；**activeWhen 窄化正向閘且跑玩家、不污染高優先序排除**；**controller：primaryIdentity 建 MF_PrimaryIdentity/MF_IdentityOverride GLOB + `MF_IdentityControllerQuest`（Codes[]、無 default 不建 granter）、global-based primary CTDA、setPrimaryIdentity TIF**；**grantPerks → 書綁 GrantPerk[0] + default quest 綁 Perks[]**；**autoGrantWhen → `MF_IdentityAutoGrantQuest` + Factions[]/AvNames[]/Thresholds[] 平行、無 autoGrant 不建** |
@@ -84,12 +85,13 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Dialogue.cs` | `QuestSpec`, `StageSpec`（含 `startUpStage` = QSDT 起始 stage flag）, `ObjectiveSpec` |
+| Spec | `Spec.Dialogue.cs` | `QuestSpec`, `StageSpec`（含 `startUpStage` = QSDT 起始 stage flag）, `ObjectiveSpec`（含 `targets[]`）, **`ObjectiveTargetSpec`（alias 名 + `compassIgnoresLocks` + `conditions[]` → QSTA）** |
 | Build P1 | `Generator.Build.Actors.cs` `BuildQuests` | 建 Quest record + QSDT stages（log/complete/fail flag、`startUpStage`→`QuestStage.Flag.StartUpStage`）+ QOBJ objectives |
 | Build P1 | `Generator.Build.Dialogue.cs` | dialogue Branch + Topic + INFO；greeting 自動生成 |
 | Build P2 | `Generator.Build.QuestStages.cs` | stage log-entry CTDA + objective fragment VMAD（**合併**進既有 QuestAdapter，不覆寫 alias 腳本的 `.Aliases`）|
+| Build P2 | `Generator.Build.ObjectiveTargets.cs` | **`WireObjectiveTargets`**：alias 名→alias index → QOBJ `QuestObjectiveTarget`（QSTA：AliasID + `Quest.TargetFlag.CompassMarkerIgnoresLocks` + per-target CTDA via `BuildCondition`）；在 alias pass 之後跑。**`WireDeferredForcedAliases`**：解析「target 晚於 alias pass 才 build」的 `forced:` alias（placement/xmarker/mapMarker），在 BuildPlacements/BuildMapMarkers 之後跑 |
 | Build P2 | `Generator.QuestFragments.cs` | 自動生 SetObjectiveDisplayed/SetObjectiveCompleted Papyrus fragment |
-| Validate | `Generator.Validate.Quests.cs` | stage index 唯一/遞增、`startUpStage` 至多一個、objective↔stage 連結、script ref 存在；**scene action：idle⊕package、package⊕timer 互斥（idle+timerSeconds=pose hold 合法）、至少一個（idle ref 檢查）** |
+| Validate | `Generator.Validate.Quests.cs` | stage index 唯一/遞增、`startUpStage` 至多一個、objective↔stage 連結、**objective target alias 須是同 quest 的 alias**、script ref 存在；**scene action：idle⊕package、package⊕timer 互斥（idle+timerSeconds=pose hold 合法）、至少一個（idle ref 檢查）** |
 | Diag | `Diagnostics.Quests.cs` | stages / objectives / aliases / VMAD 腳本 dump |
 | Diag | `Diagnostics.Dump.Quest.cs` | quest + scene 結構化完整 dump |
 
@@ -186,7 +188,7 @@
 |-----|-----|-----|
 | Spec | `Spec.StoryManager.cs` | `QuestStoryEventSpec`（event + conditions）、`AliasSpec`（fill 模式：fromEvent/forced/uniqueActor/createObject/findMatching；findMatching 帶 `Conditions`；alias 腳本 `Script`/`ScriptSource`/`ScriptProperties` = OnActivate 等）|
 | Data | `StoryManagerEvents.cs` | 事件登錄表：KillActor/ChangeLocation/CastMagic/AddItem/Assault/CraftItem/PlayerRemoveItem/Arrest/IncreaseLevel/ScriptEvent — FormKey + 槽名；`TryParseFill` / `TryParseCreateObject`（`<ref>@<alias>`）|
-| Build P2 | `Generator.Build.StoryManager.cs` | SMBN→SMQN 掛原版事件根；keyword 過濾條件（GetEventData/GetIsID）；**`BuildQuestAliases(quest,qs,def?)`** 共用 helper 建所有 alias fill（fromEvent 僅 `def!=null` 時；createObject = `CreateReferenceToObject` 在 `aliasIdByName` 目標 alias 處生成；findMatching = `QuestAlias.Flag.MatchingRefInLoadedArea`[+`MatchingRefClosest`] + alias.Conditions；alias 腳本 `AttachAliasScript` = `QuestAdapter.Aliases` 加 `QuestFragmentAlias`[v5/objFmt2、綁 alias ID、flag=Local]）；**`BuildStandaloneQuestAliases()`** 替非 storyEvent quest 建 alias（def=null，跳 fromEvent）|
+| Build P2 | `Generator.Build.StoryManager.cs` | SMBN→SMQN 掛原版事件根；keyword 過濾條件（GetEventData/GetIsID）；**`BuildQuestAliases(quest,qs,def?)`** 共用 helper 建所有 alias fill（fromEvent 僅 `def!=null` 時；createObject = `CreateReferenceToObject` 在 `aliasIdByName` 目標 alias 處生成；findMatching = `QuestAlias.Flag.MatchingRefInLoadedArea`[+`MatchingRefClosest`] + alias.Conditions；alias 腳本 `AttachAliasScript` = `QuestAdapter.Aliases` 加 `QuestFragmentAlias`[v5/objFmt2、綁 alias ID、flag=Local]；**`forced:` 立即解析不到（target 晚 build）→ 排入 `deferredForcedAliases`、由 `WireDeferredForcedAliases` 後補**）；**`BuildStandaloneQuestAliases()`** 替非 storyEvent quest 建 alias（def=null，跳 fromEvent）|
 | Validate | `Generator.Validate.StoryManager.cs` | 事件名合法；**`ValidateQuestAlias(q,a,def?,…)`** 共用（storyEvent 與非 storyEvent quest 都驗 alias fill/ref/script；def=null 時 fromEvent 報錯）；slot 名稱、ScriptEvent 需宣告 keyword |
 | Diag | `Diagnostics.StoryManager.cs` | smtree（事件根列舉）/ SMBN alias fill / event-data slot dump |
 

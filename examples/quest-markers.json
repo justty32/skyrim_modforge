@@ -1,0 +1,44 @@
+{
+  "pluginName": "ModForgeQuestMarkers.esp",
+  "esl": true,
+
+  "mapMarkers": [
+    {
+      "editorId": "MFQM_Camp",
+      "name": "ModForge Test Camp",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": 0, "y": -9000, "z": 0 },
+      "type": "Camp",
+      "flags": ["Visible", "CanTravelTo"]
+    }
+  ],
+
+  "placements": [
+    {
+      "editorId": "MFQM_Anchor",
+      "kind": "xmarker",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": 2000, "y": -5000, "z": 0 }
+    }
+  ],
+
+  "quests": [
+    {
+      "editorId": "MFQM_Quest",
+      "name": "ModForge Markers",
+      "type": "SideQuest",
+      "startGameEnabled": true,
+      "stages": [ { "index": 10, "startUpStage": true, "logEntry": "Find the ModForge test markers." } ],
+      "aliases": [
+        { "name": "CampSpot",   "fill": "forced:MFQM_Camp" },
+        { "name": "AnchorSpot", "fill": "forced:MFQM_Anchor" }
+      ],
+      "objectives": [
+        { "index": 10, "text": "Travel to the ModForge Test Camp", "showStage": 10,
+          "targets": [ { "alias": "CampSpot", "compassIgnoresLocks": true } ] },
+        { "index": 20, "text": "Reach the test anchor", "showStage": 10,
+          "targets": [ { "alias": "AnchorSpot" } ] }
+      ]
+    }
+  ]
+}

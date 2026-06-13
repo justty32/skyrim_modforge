@@ -172,6 +172,13 @@
       },
       "description": "put a base form into a cell at a position/rotation"
     },
+    "mapMarkers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/mapMarker"
+      },
+      "description": "permanent world-map markers (XMRK on the MapMarker static)"
+    },
     "leveledItems": {
       "type": "array",
       "items": {
@@ -1610,6 +1617,19 @@
               "completeStage": {
                 "type": "integer",
                 "description": "stage index that completes this objective (-1 = none)"
+              },
+              "targets": {
+                "type": "array",
+                "description": "QSTA compass/map markers; the arrow follows the named alias's fill",
+                "items": {
+                  "type": "object",
+                  "required": [ "alias" ],
+                  "properties": {
+                    "alias": { "type": "string", "description": "alias NAME on the same quest" },
+                    "compassIgnoresLocks": { "type": "boolean" },
+                    "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" } }
+                  }
+                }
               }
             }
           }
@@ -2035,9 +2055,11 @@
         "kind": {
           "enum": [
             "npc",
-            "object"
+            "object",
+            "xmarker",
+            "xmarkerHeading"
           ],
-          "description": "inferred for in-spec bases; defaults to object for external"
+          "description": "inferred for in-spec bases; defaults to object for external. xmarker/xmarkerHeading default an empty base to the vanilla marker static + force persistent"
         },
         "position": {
           "$ref": "#/$defs/vec3",
@@ -3204,6 +3226,23 @@
         "navmesh": {
           "type": "boolean",
           "description": "generate a flat 4-vertex quad NAVM covering the full cell so NPCs can path on it (no cross-cell links)"
+        }
+      }
+    },
+    "mapMarker": {
+      "type": "object",
+      "required": [ "editorId", "worldspace" ],
+      "description": "A permanent world-map marker (XMRK on the MapMarker static). Also usable as an objective target via a forced: alias.",
+      "properties": {
+        "editorId": { "type": "string" },
+        "name": { "type": "string", "description": "map label" },
+        "worldspace": { "type": "string", "description": "exterior worldspace ref <master>:0xFORMID (Tamriel = Skyrim.esm:0x00003C)" },
+        "position": { "$ref": "#/$defs/vec3" },
+        "type": { "type": "string", "description": "MapMarker.MarkerType name: City/Town/Settlement/Cave/Camp/Fort/Landmark/… (None if empty)" },
+        "flags": {
+          "type": "array",
+          "items": { "enum": [ "Visible", "CanTravelTo", "ShowAllIsHidden" ] },
+          "description": "empty = hidden until discovered"
         }
       }
     },

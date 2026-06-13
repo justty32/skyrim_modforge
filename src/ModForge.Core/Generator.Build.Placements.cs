@@ -44,8 +44,19 @@ public static partial class Generator
                 { Warn($"  ! placement: cell '{pl.Cell}' not found in spec — skipped"); continue; }
                 else cell = inSpec;
 
-                if (!TryResolveRef(pl.Base, formKeyByEd, out var baseFk))
-                { Warn($"  ! placement: base '{pl.Base}' unresolved — skipped"); continue; }
+                // kind:"xmarker"/"xmarkerHeading" is a thin helper: an empty base defaults to the vanilla
+                // XMarker (0x3B) / XMarkerHeading (0x34) static, and the ref is forced persistent below
+                // (a quest-target anchor must exist before its cell loads, else a `forced:` alias resolves
+                // to a dropped temp ref). Bind one with a `forced:<editorId>` alias to use as an objective
+                // target.
+                bool isXMarker = pl.Kind.Equals("xmarker", StringComparison.OrdinalIgnoreCase);
+                bool isXMarkerHeading = pl.Kind.Equals("xmarkerHeading", StringComparison.OrdinalIgnoreCase);
+                var baseRef = pl.Base;
+                if (string.IsNullOrWhiteSpace(baseRef) && isXMarker) baseRef = "Skyrim.esm:0x0000003B";
+                else if (string.IsNullOrWhiteSpace(baseRef) && isXMarkerHeading) baseRef = "Skyrim.esm:0x00000034";
+
+                if (!TryResolveRef(baseRef, formKeyByEd, out var baseFk))
+                { Warn($"  ! placement: base '{baseRef}' unresolved — skipped"); continue; }
 
                 var placement = new Placement
                 {
@@ -106,6 +117,7 @@ public static partial class Generator
                 // follow / escort target) or a package Destination location. The engine can drop a
                 // temporary ref that something else links to.
                 bool persistent = pl.Persistent
+                    || isXMarker || isXMarkerHeading
                     || pl.LinkedRefs.Count > 0
                     || !string.IsNullOrWhiteSpace(pl.Teleport)
                     || (!string.IsNullOrWhiteSpace(pl.EditorId)

@@ -64,6 +64,9 @@ public static partial class Generator
         // destination of a Patrol/Follow/Escort can be an authored marker created later).
         private readonly List<(IPackage Pack, sbyte Slot, string SlotName, string Ed, string Ref)> deferredTargetWires = new();
         private readonly List<(IPackage Pack, sbyte Slot, string SlotName, string Ed, string Ref, uint Radius)> deferredLocationWires = new();
+        // Forced alias fills whose ref builds AFTER the alias passes (a placement/xmarker anchor or a map
+        // marker). Resolved by WireDeferredForcedAliases once those records exist.
+        private readonly List<(Mutagen.Bethesda.Skyrim.QuestAlias Alias, string Ref)> deferredForcedAliases = new();
         private readonly Dictionary<string, IPlaced> placementsByEd = new();
         // editorId → its source PlacementSpec, so a teleport partner's arrival position/rotation can be
         // read once all placements exist (XTEL stores where the player materialises = the partner's pos/rot).

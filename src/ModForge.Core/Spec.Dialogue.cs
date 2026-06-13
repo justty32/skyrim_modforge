@@ -64,6 +64,21 @@ public sealed class ObjectiveSpec
     public string Text { get; set; } = "";
     public int ShowStage { get; set; } = -1;       // stage index that displays this objective (-1 = none)
     public int CompleteStage { get; set; } = -1;   // stage index that completes this objective (-1 = none)
+    // QSTA targets: the alias(es) the compass/map arrow points at. The marker follows whatever the
+    // alias is filled with at runtime — an actor (mark a person) or a location/ref (mark a place).
+    // Several targets = several QSTA (vanilla "any of X/Y/Z"). Wired by WireObjectiveTargets once the
+    // quest's aliases exist.
+    public List<ObjectiveTargetSpec> Targets { get; set; } = new();
+}
+// One QSTA on an objective. `alias` is an alias NAME on the SAME quest (resolved to its alias index).
+// `compassIgnoresLocks` sets the QSTA flag so the compass marker shows through locked doors.
+// `conditions` are per-target CTDA gates (the marker only shows while they pass), built via the
+// shared BuildCondition().
+public sealed class ObjectiveTargetSpec
+{
+    public string Alias { get; set; } = "";
+    public bool CompassIgnoresLocks { get; set; }
+    public List<ConditionSpec> Conditions { get; set; } = new();
 }
 // A dialogue topic: shown under QuestEditorId's branch; targets SpeakerNpcEditorId (GetIsID).
 public sealed class DialogueSpec

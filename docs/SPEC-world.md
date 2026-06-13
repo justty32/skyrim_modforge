@@ -32,9 +32,40 @@
 - `base` is a *ref* (in-spec or external); NPCs become `PlacedNpc`, anything else `PlacedObject`
   (`kind` overrides the guess). `rotation` is **degrees**. `persistent: true` puts it in the
   cell's persistent list (needed if a quest/script references it).
+- **`kind: "xmarker"` / `"xmarkerHeading"`** — a helper for placing an **invisible anchor**. With an
+  empty `base` it defaults to the vanilla XMarker (`Skyrim.esm:0x0000003B`) / XMarkerHeading
+  (`0x00000034`) static, and the ref is **forced persistent** (a quest-target anchor must persist or a
+  `forced:` alias resolves to a dropped temp ref). Give it an `editorId`, bind it with a
+  `forced:<editorId>` alias, and point an `objectives[].targets[]` at that alias to put a quest marker
+  on a fixed spot that has no NPC.
 - **Vanilla placement** (interior cell or exterior worldspace) overrides the cell/worldspace to
   *add* your reference (vanilla contents are untouched — they come from the master). Needs the
-  game's `Data` folder — set `MODFORGE_SKYRIM_DATA` if it isn't at the default Steam path.
+  game's `Data` folder — set `MODFORGE_SKYRIM_DATA` if it isn't at the default Steam path. (Placing
+  into a vanilla worldspace also additively carries its persistent cell, so vanilla map markers and
+  the world map stay intact.)
+
+### map markers (XMRK) — permanent world-map icons
+
+`mapMarkers[]` adds discoverable/fast-travel **location markers** to the world map — independent of any
+quest:
+
+```jsonc
+"mapMarkers": [
+  { "editorId": "MF_HiddenCamp", "name": "Hidden Camp",
+    "worldspace": "Skyrim.esm:0x00003C",                 // Tamriel
+    "position": { "x": 0, "y": -9000, "z": 0 },
+    "type": "Camp",                                       // MarkerType: City/Town/Settlement/Cave/Camp/Fort/Landmark/…
+    "flags": ["Visible", "CanTravelTo"] }                 // empty = hidden until the player discovers it
+]
+```
+
+- Each entry builds a `PlacedObject` on the vanilla **MapMarker** static (`0x10`) carrying an XMRK
+  `MapMarker` (name + type + flags), added to the worldspace's **persistent cell** alongside the
+  vanilla markers. `type` is a `MapMarker.MarkerType` name; `flags` are `Visible | CanTravelTo |
+  ShowAllIsHidden`.
+- Because it's a persistent named ref, a map marker can **also** be an `objectives[].targets[]` source
+  (bind it with a `forced:<editorId>` alias) — a quest arrow that points at a map location. Worked
+  example combining objective markers + an xmarker anchor + a map marker: `examples/quest-markers.json`.
 
 ### lights — custom light sources (LIGT)
 Define a custom light (colour, radius, flicker) and PLACE it like any other base object. ModForge

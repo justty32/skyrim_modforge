@@ -44,6 +44,18 @@ public static partial class Generator
             if (worldspaceOverrides.TryGetValue(wsFk, out var ex)) return ex;
             var ws = new Worldspace(wsFk, SkyrimRelease.SkyrimSE); // override that hosts our block tree
             if (src is not null) CopyWorldspaceEnv(src, ws);       // carry land/water defaults etc.
+            // CRITICAL: carry the worldspace PERSISTENT (top) cell as an ADDITIVE override. This cell
+            // (Tamriel = 0xD74) holds EVERY worldspace-persistent ref — all 347 vanilla map markers, door
+            // markers, quest anchors. Omitting it (TopCell=null) makes the override blank the persistent
+            // cell: in-game every vanilla map marker vanishes and the world map renders EMPTY. We copy
+            // only inline env (it has no localized Name) and re-state NO vanilla refs (additive keeps the
+            // master's); new map markers are added into ws.TopCell.Persistent by BuildMapMarkers.
+            if (src?.TopCell is { } srcTop)
+            {
+                var top = new Cell(srcTop.FormKey, SkyrimRelease.SkyrimSE);
+                CopyCellEnv(srcTop, top);
+                ws.TopCell = top;
+            }
             // Headless can't resolve the master's LOCALIZED worldspace Name; an omitted Name makes the
             // override blank it -> saves/HUD show "unknown location". Restate a plain Name for known
             // worldspaces. (TODO: a spec field for arbitrary worldspaces.)
@@ -102,6 +114,21 @@ public static partial class Generator
             }
             exteriorCells[key] = cell;
             return cell;
+        }
+
+        // The worldspace's PERSISTENT (top) cell override — where worldspace-persistent refs (map
+        // markers) belong. Triggers the worldspace override (which carries the master persistent cell
+        // additively). Null for an in-spec custom worldspace (no master persistent cell) or a master
+        // that doesn't resolve — caller falls back to a grid cell.
+        private Cell? WorldspacePersistentCell(string worldspaceRef)
+        {
+            if (!LooksExternalRef(worldspaceRef)) return null;       // custom worldspace → no master TopCell
+            if (!TryExternalRef(worldspaceRef, out var wsFk)) return null;
+            var masterName = worldspaceRef[..worldspaceRef.IndexOf(':')].Trim();
+            IWorldspaceGetter? wsSrc = null;
+            MasterCache(masterName)?.TryResolve<IWorldspaceGetter>(wsFk, out wsSrc);
+            if (wsSrc?.TopCell is null) return null;
+            return WorldspaceOverride(wsFk, wsSrc).TopCell;
         }
 
         // Get-or-add the exterior cell at grid (cx,cy) inside the worldspace override's block tree.

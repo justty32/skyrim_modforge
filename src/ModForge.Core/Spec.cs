@@ -38,6 +38,7 @@ public sealed class ModSpec
     public List<ScriptAttachSpec> Scripts { get; set; } = new();
     public List<CellSpec> Cells { get; set; } = new();
     public List<PlacementSpec> Placements { get; set; } = new();
+    public List<MapMarkerSpec> MapMarkers { get; set; } = new();   // world-map markers (XMRK on MapMarker static)
     public List<LeveledItemSpec> LeveledItems { get; set; } = new();
     public List<LeveledNpcSpec> LeveledNpcs { get; set; } = new();
     public List<ContainerSpec> Containers { get; set; } = new();

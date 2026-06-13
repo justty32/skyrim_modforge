@@ -285,6 +285,16 @@ complete as stages are set; a `dialogue` line can advance a stage when picked.
 - **`objectives[].showStage` / `.completeStage`** — link an objective to stages: it's
   `SetObjectiveDisplayed` at `showStage` and `SetObjectiveCompleted` at `completeStage`. `-1` (the
   default) means "not stage-linked".
+- **`objectives[].targets[]`** — the compass/map **markers** for an objective (QSTA). Each target is
+  `{ "alias": "<aliasName>", "compassIgnoresLocks": false, "conditions": [...] }`. The marker arrow
+  follows whatever the **alias is filled with** at runtime: fill the alias with an actor to mark a
+  **person**, or with a location/ref (a door, an `kind:"xmarker"` anchor, or a `mapMarkers[]` entry)
+  to mark a **place**. Several targets = several markers (vanilla "kill any of X/Y/Z"). `alias` must
+  name an alias on the **same quest**. `compassIgnoresLocks` shows the compass marker through locked
+  doors; `conditions` are per-target CTDA (the marker only shows while they pass). The objective must
+  be **displayed** (via `showStage` or a script) for its marker to appear. To mark a fixed spot with
+  no NPC, place an `kind:"xmarker"` anchor and bind it with a `forced:<editorId>` alias. See
+  `examples/quest-markers.json`.
 - **`dialogue[].setStage`** — picking that topic advances the host quest to this stage. To advance a
   stage from a NON-dialogue action (e.g. activating a runtime-spawned ref), attach an **alias script**
   (`alias[].script`) whose `OnActivate` calls `GetOwningQuest().SetStage(N)` — the reusable

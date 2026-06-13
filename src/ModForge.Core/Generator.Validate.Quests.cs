@@ -41,6 +41,7 @@ public static partial class Generator
                 if (startUpStages > 1)
                     Problems.Add($"quest '{q.EditorId}' marks {startUpStages} stages as startUpStage (at most one allowed — the engine auto-runs exactly one on quest start)");
                 var objIdx = new HashSet<int>();
+                var aliasNames = new HashSet<string>(q.Aliases.Select(a => a.Name), StringComparer.OrdinalIgnoreCase);
                 foreach (var o in q.Objectives)
                 {
                     if (!objIdx.Add(o.Index))
@@ -49,6 +50,11 @@ public static partial class Generator
                         Problems.Add($"quest '{q.EditorId}' objective {o.Index} showStage {o.ShowStage} has no matching stage");
                     if (o.CompleteStage >= 0 && !seen.Contains(o.CompleteStage))
                         Problems.Add($"quest '{q.EditorId}' objective {o.Index} completeStage {o.CompleteStage} has no matching stage");
+                    foreach (var t in o.Targets)
+                        if (string.IsNullOrWhiteSpace(t.Alias))
+                            Problems.Add($"quest '{q.EditorId}' objective {o.Index} has a target with no alias");
+                        else if (!aliasNames.Contains(t.Alias))
+                            Problems.Add($"quest '{q.EditorId}' objective {o.Index} target alias '{t.Alias}' is not an alias on this quest");
                 }
             }
 
