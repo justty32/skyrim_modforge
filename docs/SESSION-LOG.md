@@ -19,4 +19,6 @@
 
 ## 下次要做（open）
 
-（暫無——工作流腳本化 + TOOLING.md 已完成；roadmap 候選見 CLAUDE.md「之後可做」）
+**語音解耦（Phase 2，自己一個 spec）** — 把 ModForge 收斂成純 JSON→mod 工具的延續。語音**合成**（text+emotion→.wav）移出成獨立基石專案 `sub_projs/skyrim-voicegen/`（`voicegen.py` + wrappers + README；venv/dataset 仍 gitignore 留本機）；ModForge 只留**包裝**（plan/voicediag、.wav→xwm→.fuz、lip、擺進 `Sound/Voice/`）。切點＝把 `MODFORGE_TTS_BIN` 的 stdin/args↔wav 合約正式化成 `PROTOCOL.md`。兩者靠協議連、不整合。（Workflow-2 等級，需先寫 spec。）
+
+**（可選）IDEAS.md 拆分** — 與 ModForge 無關的 idea 抽去別處，只留工具相關的。本次未動，待確認。
