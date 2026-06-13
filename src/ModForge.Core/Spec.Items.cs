@@ -45,6 +45,11 @@ public sealed class LeveledEntrySpec { public string Reference { get; set; } = "
 // LeveledItem (LVLI) / LeveledNpc (LVLN): chanceNone (0-100), flag names, weighted entries.
 public sealed class LeveledItemSpec { public string EditorId { get; set; } = ""; public int ChanceNone { get; set; } public List<string> Flags { get; set; } = new(); public List<LeveledEntrySpec> Entries { get; set; } = new(); }
 public sealed class LeveledNpcSpec { public string EditorId { get; set; } = ""; public int ChanceNone { get; set; } public List<string> Flags { get; set; } = new(); public List<LeveledEntrySpec> Entries { get; set; } = new(); }
+// FormList (FLST): an ordered list of FormIDs of ANY type. `items` are refs (in-spec editorId or
+// vanilla "<master>:0xFORMID"). Use it as the param of a list-taking condition (GetItemCount /
+// GetEquipped / GetIsVoiceType / GetInWorldspace all accept a FormList), as a keyword/clothing set
+// for dialogue/quest gating, or anywhere the game wants a grouped set of forms.
+public sealed class FormListSpec { public string EditorId { get; set; } = ""; public List<string> Items { get; set; } = new(); }
 // Container (CONT): named, with a list of item refs + counts.
 public sealed class ContainerEntrySpec { public string Item { get; set; } = ""; public int Count { get; set; } = 1; }
 public sealed class ContainerSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public float Weight { get; set; } public List<ContainerEntrySpec> Items { get; set; } = new(); }

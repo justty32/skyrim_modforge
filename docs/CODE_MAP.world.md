@@ -118,15 +118,18 @@
 
 ---
 
-## Leveled Lists 等級列表
-→ **說明文件**：[SPEC-world.md § leveled lists & containers](SPEC-world.md#leveled-lists--containers)
+## Leveled Lists 等級列表 + FormList（FLST）
+→ **說明文件**：[SPEC-world.md § leveled lists & containers](SPEC-world.md#leveled-lists--containers) · [SPEC-world.md § formLists](SPEC-world.md#formlists--flst)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Items.cs` | `LeveledItemSpec`, `LeveledNpcSpec` |
-| Build P1 | `Generator.Build.Lists.cs` | 建 leveled-item / leveled-NPC list record（chance-none flags）|
-| Build P2 | `Generator.Build.Lists.Wire.cs` | entry FormLink 接線 |
+| Spec | `Spec.Items.cs` | `LeveledItemSpec`, `LeveledNpcSpec`, `FormListSpec`（editorId + items 任意 record ref）|
+| Build P1 | `Generator.Build.Lists.cs` | 建 leveled-item / leveled-NPC list record（chance-none flags）；`BuildFormLists`（空 FLST，items pass 2）|
+| Build P2 | `Generator.Build.Lists.Wire.cs` | entry FormLink 接線；`WireFormLists`（items → `FormLink<ISkyrimMajorRecordGetter>`，順序保留）|
 | Validate | `Generator.Validate.Items.cs` | leveled list entries ref |
+| Validate | `Generator.Validate.World.cs` / `.cs` | FLST editorId 唯一 + 每個 item ref 可解 |
+
+FLST 用途：當吃 list 的 condition 的 param（`GetItemCount`/`GetEquipped`/`GetIsVoiceType`/`GetInWorldspace` 都收 FormList）、keyword/穿著清單、或任何要「一組 form」的地方。**`GetIsInList` 在 Mutagen 0.49 無對應 ConditionData——FLST 走既有 `*OrList` param，不是獨立函式。**
 
 ---
 

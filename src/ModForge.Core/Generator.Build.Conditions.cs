@@ -13,7 +13,7 @@ public static partial class Generator
         "GetQuestCompleted", "GetDistance", "GetIsCurrentPackage", "GetIsVoiceType",
         "GetIsAliasRef",
         "GetQuestRunning", "GetInCell", "GetInWorldspace", "GetEquipped", "GetDeadCount",
-        "GetSitting", "GetGold", "GetMapMarkerVisible", "GetStageDone",
+        "GetSitting", "GetGold", "GetMapMarkerVisible", "GetStageDone", "GetInCurrentLoc",
     };
 
     private sealed partial class BuildContext
@@ -91,6 +91,7 @@ public static partial class Generator
                     data = d; break;
                 }
                 case "getincell":           { var d = new GetInCellConditionData();           if (hasParam) d.Cell.Link.SetTo(paramFk);           data = d; break; }
+                case "getincurrentloc":     { var d = new GetInCurrentLocConditionData();     if (hasParam) d.Location.Link.SetTo(paramFk);       data = d; break; }
                 case "getinworldspace":     { var d = new GetInWorldspaceConditionData();     if (hasParam) d.WorldspaceOrList.Link.SetTo(paramFk); data = d; break; }
                 case "getequipped":         { var d = new GetEquippedConditionData();         if (hasParam) d.ItemOrList.Link.SetTo(paramFk);     data = d; break; }
                 case "getdeadcount":        { var d = new GetDeadCountConditionData();        if (hasParam) d.Npc.Link.SetTo(paramFk);            data = d; break; }
@@ -155,7 +156,7 @@ public static partial class Generator
                         + "(have HasPerk/GetInFaction/GetItemCount/GetGlobalValue/GetStage/GetIsID/GetRelationshipRank/"
                         + "GetActorValue/GetActorValuePercent/GetCurrentTime/IsInInterior/IsInCombat/GetRandomPercent/TemperIsEnchanted/"
                         + "GetQuestCompleted/GetDistance/GetIsCurrentPackage/GetIsVoiceType/GetIsAliasRef/"
-                        + "GetQuestRunning/GetInCell/GetInWorldspace/GetEquipped/GetDeadCount/GetSitting/GetGold/GetMapMarkerVisible/GetStageDone)");
+                        + "GetQuestRunning/GetInCell/GetInWorldspace/GetEquipped/GetDeadCount/GetSitting/GetGold/GetMapMarkerVisible/GetStageDone/GetInCurrentLoc)");
                     return null;
             }
 

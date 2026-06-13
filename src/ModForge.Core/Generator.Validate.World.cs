@@ -91,6 +91,8 @@ public static partial class Generator
                 foreach (var e in ln.Entries) CheckRef(e.Reference, $"leveledNpc '{ln.EditorId}' entry");
                 foreach (var f in ln.Flags) if (!Enum.TryParse<LeveledNpc.Flag>(f, true, out _)) Problems.Add($"leveledNpc '{ln.EditorId}' invalid flag '{f}'");
             }
+            foreach (var fl in spec.FormLists)
+                foreach (var item in fl.Items) CheckRef(item, $"formList '{fl.EditorId}' item");
             foreach (var ct in spec.Containers)
                 foreach (var e in ct.Items) CheckRef(e.Item, $"container '{ct.EditorId}' item");
 

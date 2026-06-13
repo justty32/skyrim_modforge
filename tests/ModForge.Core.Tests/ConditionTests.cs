@@ -44,6 +44,7 @@ public class ConditionTests
                     new() { Function = "GetGold",               Comparison = ">=", Value = 100 },
                     new() { Function = "GetMapMarkerVisible",   Comparison = "==", Value = 1 },
                     new() { Function = "GetStageDone",          Comparison = "==", Value = 1, Param = "Q", Stage = 20 },
+                    new() { Function = "GetInCurrentLoc",       Comparison = "==", Value = 1, Param = "Skyrim.esm:0x000165A8" },
                 },
             },
         },
@@ -72,6 +73,7 @@ public class ConditionTests
     [InlineData("GetGoldConditionData")]
     [InlineData("GetMapMarkerVisibleConditionData")]
     [InlineData("GetStageDoneConditionData")]
+    [InlineData("GetInCurrentLocConditionData")]
     public void EachFunction_MapsToItsConditionData(string expectedType)
     {
         var r = BuildAllConditions();

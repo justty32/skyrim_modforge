@@ -45,6 +45,7 @@ public sealed class ModSpec
     public List<MapMarkerSpec> MapMarkers { get; set; } = new();   // world-map markers (XMRK on MapMarker static)
     public List<LeveledItemSpec> LeveledItems { get; set; } = new();
     public List<LeveledNpcSpec> LeveledNpcs { get; set; } = new();
+    public List<FormListSpec> FormLists { get; set; } = new();
     public List<ContainerSpec> Containers { get; set; } = new();
     public List<IngredientSpec> Ingredients { get; set; } = new();
     public List<AmmunitionSpec> Ammunitions { get; set; } = new();

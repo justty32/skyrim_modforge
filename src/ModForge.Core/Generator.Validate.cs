@@ -76,6 +76,7 @@ public static partial class Generator
             }
             foreach (var li in spec.LeveledItems) Reg(li.EditorId, "leveledItem");
             foreach (var ln in spec.LeveledNpcs) Reg(ln.EditorId, "leveledNpc");
+            foreach (var fl in spec.FormLists) Reg(fl.EditorId, "formList");
             foreach (var ct in spec.Containers) Reg(ct.EditorId, "container");
             foreach (var i in spec.Ingredients) Reg(i.EditorId, "ingredient");
             foreach (var a in spec.Ammunitions) Reg(a.EditorId, "ammunition");

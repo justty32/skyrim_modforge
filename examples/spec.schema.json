@@ -224,6 +224,19 @@
       },
       "description": "LeveledNpc (LVLN): level-gated weighted npc lists (also a placement `base` for a leveled-actor spawn)"
     },
+    "formLists": {
+      "type": "array",
+      "description": "FormList (FLST): an ordered list of FormIDs of any type; use as a list-taking condition's param (GetItemCount/GetEquipped/GetIsVoiceType/GetInWorldspace), a keyword/clothing set, etc.",
+      "items": {
+        "type": "object",
+        "required": [ "editorId" ],
+        "additionalProperties": false,
+        "properties": {
+          "editorId": { "type": "string" },
+          "items": { "type": "array", "items": { "type": "string" }, "description": "refs (in-spec editorId or vanilla <master>:0xFORMID), any record type; order preserved" }
+        }
+      }
+    },
     "encounterZones": {
       "type": "array",
       "items": {
@@ -3353,7 +3366,8 @@
             "GetSitting",
             "GetGold",
             "GetMapMarkerVisible",
-            "GetStageDone"
+            "GetStageDone",
+            "GetInCurrentLoc"
           ]
         },
         "comparison": {

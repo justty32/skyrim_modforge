@@ -355,6 +355,26 @@ missing file = silence, no crash. Worked example: `examples/music.json`.
 - `containers` (CONT) hold `items`, each an item *ref* + `count`. (To make the container
   appear in the world, place it with a `placement`, same as any object.)
 
+### formLists — FLST
+A **FormList** (`FLST`) is an ordered list of FormIDs of **any** type — a reusable grouped set
+of forms.
+```jsonc
+"formLists": [
+  { "editorId": "MF_FancyClothes",
+    "items": [ "MF_NobleDress", "Skyrim.esm:0x0010DF5", "Skyrim.esm:0x0010CD1" ] }   // refs, any type
+]
+```
+- `items` are *refs* — an in-spec `editorId` or a vanilla `<master>:0xFORMID` — and **order is
+  preserved**.
+- The big use is as the **parameter of a list-taking condition**: `GetItemCount`, `GetEquipped`,
+  `GetIsVoiceType`, and `GetInWorldspace` all accept a FormList in their `param`, so e.g. a dialogue
+  line can gate on "is the player wearing **any** of these" by pointing `GetEquipped`'s `param` at a
+  clothing FLST. FLSTs also serve as keyword/clothing sets and anywhere a grouped set of forms is
+  wanted. (There is **no** standalone `GetIsInList` condition in Mutagen 0.49 — feed the FLST to the
+  existing `*OrList` params instead.)
+- The **`GetInCurrentLoc`** condition gates on whether the run-on actor is in a given **Location**
+  (`param` = a LCTN ref) — useful for location-aware comments.
+
 ### encounter zones & leveled-actor spawns — populating an area with scaled enemies
 Two pieces work together to drop **level-appropriate** enemies into an area:
 

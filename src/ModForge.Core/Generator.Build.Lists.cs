@@ -34,6 +34,16 @@ public static partial class Generator
             }
         }
 
+        // --- pass 1: FormList (FLST) — items wired in pass 2 (WireFormLists) ---
+        public void BuildFormLists()
+        {
+            foreach (var fl in spec.FormLists)
+            {
+                var r = mod.FormLists.AddNew();
+                r.EditorID = fl.EditorId;
+            }
+        }
+
         // --- pass 1: Container (CONT) — contents wired in pass 2 (WireContainers) ---
         public void BuildContainers()
         {

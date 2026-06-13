@@ -21,6 +21,18 @@ public static partial class Generator
             }
         }
 
+        // --- pass 2: FormList (FLST) items — each is a ref to ANY record (in-spec or vanilla) ---
+        public void WireFormLists()
+        {
+            foreach (var fl in spec.FormLists)
+            {
+                if (!recordsByEd.TryGetValue(fl.EditorId, out var rec) || rec is not IFormList list) continue;
+                foreach (var item in fl.Items)
+                    Resolve($"formList '{fl.EditorId}' item", item, fk =>
+                        list.Items.Add(new FormLink<ISkyrimMajorRecordGetter>(fk)));
+            }
+        }
+
         // --- pass 2: LeveledNpc (LVLN) entries — each entry references an npc/list by ref ---
         public void WireLeveledNpcs()
         {

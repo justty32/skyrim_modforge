@@ -68,6 +68,7 @@ public static partial class Generator
         ctx.BuildImageSpaces();                    // ImageSpace (IMGS) base record — before cells (resolve by editorId)
         ctx.BuildLeveledItems();                   // LeveledItem (LVLI)
         ctx.BuildLeveledNpcs();                    // LeveledNpc (LVLN)
+        ctx.BuildFormLists();                      // FormList (FLST) — items wired pass 2
         ctx.BuildContainers();                     // Container (CONT)
         ctx.BuildRecipes();                        // ConstructibleObject (COBJ)
         ctx.BuildCombatStyles();                   // CombatStyle (CSTY)
@@ -114,6 +115,7 @@ public static partial class Generator
         ctx.WireDeferredMerchantContainers();      // FACT merchant chest + VendorLocation (now placements exist)
         ctx.WireLeveledItems();                    // LVLI entries
         ctx.WireLeveledNpcs();                     // LVLN entries
+        ctx.WireFormLists();                       // FLST items
         ctx.WireEncounterZones();                  // ECZN owner/location refs
         ctx.WireCellZones();                       // cell XEZN (encounterZone) refs
         ctx.WireCellMusic();                       // cells[].music -> cell.Music (MUSC)
