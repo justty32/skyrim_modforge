@@ -1,0 +1,23 @@
+{
+  "pluginName": "ModForgeSpecRefsDemo.esp",
+  "esl": true,
+  "_": "Demo of $ref/$env. The LGTM + IMGS records are pulled from examples/presets/bright-interior.json instead of being spelled out here. MF_PRESET_FILE can redirect the preset file (defaults to the bundled one).",
+
+  "lightingTemplates": [
+    { "$ref": { "from": { "$env": "MF_PRESET_FILE", "default": "presets/bright-interior.json" }, "pointer": "/lgtm" } }
+  ],
+
+  "imageSpaces": [
+    { "$ref": "presets/bright-interior.json#/imgs" }
+  ],
+
+  "cells": [
+    {
+      "editorId": "MF_SpecRefsDemoRoom",
+      "name": "Spec Refs Demo Room",
+      "template": "Skyrim.esm:0x0165A8",
+      "lightingTemplate": "MF_BrightInteriorLGTM",
+      "imageSpace": "MF_BrightInteriorIMGS"
+    }
+  ]
+}

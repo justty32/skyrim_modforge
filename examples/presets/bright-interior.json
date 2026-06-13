@@ -1,0 +1,31 @@
+{
+  "_": "Named lighting preset: clean readable bright interior. $ref the sub-nodes into a spec's lightingTemplates[]/imageSpaces[] arrays — e.g. { \"$ref\": \"presets/bright-interior.json#/lgtm\" }. Values mirror the in-game-proven examples/lighting.json.",
+
+  "lgtm": {
+    "editorId": "MF_BrightInteriorLGTM",
+    "template": "Skyrim.esm:0x0300E2",
+    "ambientColor": { "r": 150, "g": 155, "b": 170 },
+    "directionalColor": { "r": 210, "g": 210, "b": 200 },
+    "fogNear": 0,
+    "fogFar": 8192,
+    "directionalAmbient": {
+      "scale": 1.0,
+      "zPlus":  { "r": 200, "g": 205, "b": 215 },
+      "zMinus": { "r": 120, "g": 122, "b": 130 },
+      "xPlus":  { "r": 170, "g": 172, "b": 180 },
+      "xMinus": { "r": 170, "g": 172, "b": 180 },
+      "yPlus":  { "r": 170, "g": 172, "b": 180 },
+      "yMinus": { "r": 170, "g": 172, "b": 180 }
+    }
+  },
+
+  "imgs": {
+    "editorId": "MF_BrightInteriorIMGS",
+    "brightness": 1.35,
+    "saturation": 1.2,
+    "contrast": 1.0,
+    "bloomScale": 0.8,
+    "sunlightScale": 1.2,
+    "white": 1.5
+  }
+}
