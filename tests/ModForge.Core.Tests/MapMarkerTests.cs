@@ -37,19 +37,23 @@ public class MapMarkerTests
         Assert.True(marker.MapMarker.Flags.HasFlag(MapMarker.Flag.CanTravelTo));
     }
 
-    // The map marker lands in a regular exterior grid cell. We deliberately do NOT override the
-    // worldspace persistent (top) cell — doing so CTDs the engine (in-game x2, 2026-06-13) — so TopCell
-    // stays null. KNOWN ISSUE: this blanks the world map; the crash-free persistent-cell override is TODO.
+    // The map marker lands in the worldspace persistent (top) cell, carried additively. The persistent
+    // cell override MUST copy the master's record flags (0x00040400 = Cell Persistent 0x400 + internal
+    // 0x40000) — without them the engine doesn't recognise it as the persistent cell and CTDs queuing
+    // actors (in-game x2 before this was found). The marker ref carries the 0x400 persistent flag too.
     [Fact]
     [Trait("Category", "RequiresSkyrim")]
-    public void MapMarker_lands_in_a_grid_cell_and_does_not_touch_the_persistent_topcell()
+    public void MapMarker_persistent_topcell_copies_the_master_record_flags()
     {
         var mod = Build(CampSpec());
         var ws = mod.Worldspaces.Single(w => w.FormKey.ID == 0x3C);
-        Assert.Null(ws.TopCell);                                     // must NOT override the persistent cell (CTDs)
-        var marker = ws.SubCells.SelectMany(b => b.Items).SelectMany(s => s.Items)
-            .SelectMany(c => c.Persistent).OfType<IPlacedObjectGetter>().Single(r => r.EditorID == "MF_Camp");
+        Assert.NotNull(ws.TopCell);
+        Assert.Equal(0xD74u, ws.TopCell!.FormKey.ID);
+        Assert.Equal(0x00040400, (int)ws.TopCell.MajorRecordFlagsRaw);   // matches vanilla/USSEP (the fix)
+        var marker = ws.TopCell.Persistent.OfType<IPlacedObjectGetter>().Single(r => r.EditorID == "MF_Camp");
         Assert.NotNull(marker.MapMarker);
+        Assert.True((marker.MajorRecordFlagsRaw & 0x400) != 0);
+        Assert.Single(ws.TopCell.Persistent);                        // additive: only our marker re-stated
     }
 
     [Fact]
