@@ -1,6 +1,6 @@
 # Voice-Cloning → Skyrim SE `.fuz` Voiced-Dialogue Pipeline
 
-← index: [README.md](README.md) · related: [IDEAS.md §1](../ideas.md) (voice prereq), memory `voice-gen-interface-future`
+← index: [README.md](README.md) · **deep-dive 子工作流: [voice-clone/](voice-clone/README.md)**（逐步施工計畫）· related: [IDEAS.md §1](../ideas.md) (voice prereq), memory `voice-gen-interface-future`
 
 **Research date:** 2026-06-08. Target: Skyrim SE on Manjaro Linux, MO2 under Proton, CUDA GPU available, Wine/Proton usable, **personal single-player use only**.
 

@@ -1,6 +1,6 @@
 # 3D Model Import Pipeline (External Mesh → Skyrim SE `.nif`)
 
-← index: [README.md](README.md) · related: [IDEAS.md §14](../ideas.md) (format conversion), [external_assets.md](../../../docs/external_assets.md), [04-map-scene-porting.md](04-map-scene-porting.md)
+← index: [README.md](README.md) · **deep-dive 子工作流: [model-porting/](model-porting/README.md)**（逐步施工計畫）· related: [IDEAS.md §14](../ideas.md) (format conversion), [external_assets.md](../../../docs/external_assets.md), [04-map-scene-porting.md](04-map-scene-porting.md)
 
 **Research date:** 2026-06-08. Personal/single-player only — ported commercial-game assets (Genshin/WuWa/Dark Souls, Unity-Store/Nexus packs) are converted and used **locally**, never redistributed.
 

@@ -1,6 +1,6 @@
 # Script Event 入口 實作計畫
 
-> 設計來源：`docs/superpowers/archive/specs/2026-06-04-script-event-entry-spike.md`（記錄形狀已 100% 解碼）。
+> 設計來源：`workflows/specs/archive/2026-06-04-script-event-entry-spike.md`（記錄形狀已 100% 解碼）。
 > 目標：讓 ModForge 內容能**自己發**帶任意 ref payload 的 story event（自訂入口），SM 接到後啟動模板 quest。
 > 與既有 storyEvent 管線高度共用；只多「一個事件表項 + keyword 過濾分支 + 一份通用 dispatcher .pex」。
 

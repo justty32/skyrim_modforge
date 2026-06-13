@@ -8,4 +8,4 @@
 
 ## 進行中 / open
 
-- **身份系統 ③ 聲望/行為追蹤**：尚未做（需先定設計）。GLOB 好感度系統是現成藍圖（見 sofia-patch F6 分析）。其餘身份系統子項皆已落地（見 [landed](landed.md)）。roadmap 條目見 [minor/roadmap](../roadmap.md)。
+- **身份系統 ③ 聲望/行為追蹤**：尚未做（需先定設計）。GLOB 好感度系統是現成藍圖（見 sofia-patch F6 分析）。其餘身份系統子項皆已落地（見 [landed](landed.md)）。roadmap 條目見 [roadmap](../roadmap.md)。

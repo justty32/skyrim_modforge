@@ -1,7 +1,7 @@
 # 多重身份系統(輕量職業/角色)設計
 
 > 日期:2026-06-06 · 狀態:**已 brainstorm 完成,封存待 round 2**
-> 相依前置:**PlayIdle scene-action**(`workflows/specs/2026-06-06-...-playidle-design.md`,先獨立一輪)必須先落地——聖騎士宣誓演出的下跪/祈禱動畫靠它。
+> 相依前置:**PlayIdle scene-action**(`workflows/specs/2026-06-06-playidle-scene-action-design.md`,先獨立一輪)必須先落地——聖騎士宣誓演出的下跪/祈禱動畫靠它。
 > 本文件只是設計成果,**不含實作**;PlayIdle 落地後再單獨跑 spec 自審 → plan → 實作。
 
 ## 為什麼要

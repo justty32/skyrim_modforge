@@ -1,5 +1,7 @@
 # ModForge — External Tooling & Environment Dependencies
 
+← [INDEX](../INDEX.md)｜開發環境（跨機）見 [dev-env.md](dev-env.md)
+
 ModForge is a Skyrim mod **generator**: record-building (the ESP/ESM itself) is pure Mutagen and needs no external tools. External binaries and data files only come into play for **Papyrus compilation**, the **voice pipeline**, and **vanilla-master resolution**. Everything here is optional in the sense that a missing tool degrades or skips one feature — the core build never hard-crashes on a missing dependency (the one exception is a spec `$env` with no default, which is a deliberate hard error).
 
 Conventions in the tables:

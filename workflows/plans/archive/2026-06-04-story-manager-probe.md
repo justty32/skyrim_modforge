@@ -8,7 +8,7 @@
 
 **Tech Stack:** C# / net10.0、Mutagen.Bethesda.Skyrim 0.53.1、現有 xUnit 測試專案、現有 package/zip 流程。
 
-**設計來源：** `docs/superpowers/archive/specs/2026-06-04-story-manager-probe-design.md`
+**設計來源：** `workflows/specs/archive/2026-06-04-story-manager-probe-design.md`
 
 ---
 

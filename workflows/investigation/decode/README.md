@@ -1,6 +1,6 @@
 # 解碼參考檔索引（investigation/decode）
 
-← [investigation](../session-log.md)｜[INDEX](../../../INDEX.md)｜踩坑見 [investigation/gotchas](../gotchas.md)
+← [investigation](../README.md)｜[INDEX](../../../INDEX.md)｜踩坑見 [investigation/gotchas](../gotchas.md)
 
 真 mod 解碼 + 對照 ModForge 可實現性（2026-06-13，全 esp-only 記憶體安全）。這些是**對往後 ModForge 開發有用的調查參考**，不是要實作的清單；浮現的待補項見 [ROADMAP](../../roadmap.md)。
 

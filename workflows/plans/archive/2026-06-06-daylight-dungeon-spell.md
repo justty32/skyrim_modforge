@@ -1,6 +1,6 @@
 # 白晝地城法術 + IMAD builder — 實作計畫
 
-> 對照 spec：`docs/superpowers/archive/specs/2026-06-06-daylight-dungeon-spell-design.md`
+> 對照 spec：`workflows/specs/archive/2026-06-06-daylight-dungeon-spell-design.md`
 
 **Goal:** 新增可重用的 IMAD (ImageSpace Modifier) record builder，並用它組出一個開關型「白晝地城」法術（imagespace 提亮 + Light-archetype 跟隨光），打包成 `ModForgeDaylight.zip` 供 in-game 測試。
 
