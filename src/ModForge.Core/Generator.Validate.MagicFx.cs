@@ -62,5 +62,26 @@ public static partial class Generator
                 if (im.Duration < 0) Problems.Add($"{w} duration {im.Duration} must be >= 0");
             }
         }
+
+        // Hazard (HAZD): a radius effect applying `spell` to actors in it. Needs a model (else invisible)
+        // and a spell (else no effect). All FormLink refs + flag names checked.
+        public void ValidateHazards()
+        {
+            foreach (var hz in spec.Hazards)
+            {
+                if (string.IsNullOrWhiteSpace(hz.Model))
+                    Problems.Add($"hazard '{hz.EditorId}' has no model — it will be invisible (clone a vanilla hazard nif)");
+                if (string.IsNullOrWhiteSpace(hz.Spell))
+                    Problems.Add($"hazard '{hz.EditorId}' has no spell — it applies no effect (set `spell` to the SPEL it should apply)");
+                else CheckRef(hz.Spell, $"hazard '{hz.EditorId}' spell");
+                CheckRef(hz.Light, $"hazard '{hz.EditorId}' light");
+                CheckRef(hz.Sound, $"hazard '{hz.EditorId}' sound");
+                CheckRef(hz.ImageSpaceModifier, $"hazard '{hz.EditorId}' imageSpaceModifier");
+                CheckRef(hz.ImpactDataSet, $"hazard '{hz.EditorId}' impactDataSet");
+                foreach (var f in hz.Flags)
+                    if (!Enum.TryParse<Mutagen.Bethesda.Skyrim.Hazard.Flag>(f, true, out _))
+                        Problems.Add($"hazard '{hz.EditorId}' has unknown flag '{f}' (AffectsPlayerOnly | InheritDurationFromSpawnSpell | AlignToImpactNormal | InheritRadiusFromSpawnSpell | DropToGround)");
+            }
+        }
     }
 }

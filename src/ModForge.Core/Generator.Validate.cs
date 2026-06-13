@@ -25,6 +25,7 @@ public static partial class Generator
         ctx.ValidateGlobals();
         ctx.ValidateProjectiles();
         ctx.ValidateExplosions();
+        ctx.ValidateHazards();
         ctx.ValidateImageSpaceModifiers();
         ctx.ValidateIdentities();
         ctx.ValidateVoice();
@@ -118,6 +119,7 @@ public static partial class Generator
             foreach (var g in spec.Globals) Reg(g.EditorId, "global");
             foreach (var pl in spec.Placements) if (!string.IsNullOrWhiteSpace(pl.EditorId)) Reg(pl.EditorId, "placement");
             foreach (var mm in spec.MapMarkers) if (!string.IsNullOrWhiteSpace(mm.EditorId)) Reg(mm.EditorId, "mapMarker");
+            foreach (var hz in spec.Hazards) Reg(hz.EditorId, "hazard");
         }
 
         // GlobalVariable (GLOB): type must be one of the three Skyrim subtypes (short/long/int/float).

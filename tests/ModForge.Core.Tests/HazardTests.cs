@@ -68,4 +68,14 @@ public class HazardTests
         var placed = cell.Temporary.Concat(cell.Persistent).OfType<IPlacedHazardGetter>().Single(r => r.EditorID == "Trap");
         Assert.Equal(haz.FormKey, placed.Hazard.FormKey);
     }
+
+    [Fact]
+    public void Hazard_validation_flags_missing_spell_and_bad_flag()
+    {
+        var spec = new ModSpec();
+        spec.Hazards.Add(new HazardSpec { EditorId = "MF_Bad", Model = "Meshes/x.nif", Flags = { "Glowing" } });
+        var problems = Generator.Validate(spec);
+        Assert.Contains(problems, p => p.Contains("MF_Bad") && p.Contains("Glowing"));
+        Assert.Contains(problems, p => p.Contains("MF_Bad") && p.Contains("spell"));   // warn: no spell = no effect
+    }
 }
