@@ -21,7 +21,7 @@
 |---------|-----|
 | `ValidateTests.cs` | 跨領域 validate（editorId 唯一性、ref 合法性等通用規則）|
 | `SeqFileTests.cs` | `.seq` manifest 生成（StartGameEnabled quest 列表）|
-| `VoiceTests.cs` | `VoiceFileName` CK 命名格式、`WriteFuz` header（含無 lip 情形）|
+| `VoiceTests.cs` | `BuildTtsArgs`/`BuildLipGenArgs` 命令列、`VoiceFileName` CK 命名格式、`WriteFuz` header（含無 lip 情形）、`GenerateLip` 官方 LipGenerator 端到端（`RequiresSkyrim`，env-gated 自跳過）|
 | `VoiceSpeakerTests.cs` | `voicelines` speaker 偵測（GetIsID / alias / faction 條件解析）|
 | `Helpers.cs` | 共用測試 helper（非 test class，供其他 *Tests.cs 使用）|
 
@@ -102,7 +102,8 @@
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
 | Spec | `Spec.Voice.cs` | `VoiceTemplateSpec`（`engine` f5\|fish-s2\|chatterbox\|gptsovits\|xtts；`fish`/`fishspeech`/`fish-speech` 為 Fish S2 alias；`referenceWav`/`referenceText` zero-shot reference、`modelPath` 微調模型、`rvcModel`、`seed`、`speed`、`exaggeration`、`language`）+ `VoiceLineSpec` 全域輸出設定（`format` fuz\|wav\|xwm、`skipLip`）；`NpcSpec.voiceTemplate`（→ template id）在 `Spec.Actors.cs` |
-| Core | `Voice.cs` | 呼外部 TTS（`MODFORGE_TTS_BIN`；engine/ref/model/seed/**speed/exaggeration/language** 全數傳給 TTS process）；`voicegen.py` 的 Fish S2 分支再呼 `MODFORGE_FISH_SPEECH_BIN`；xWMAEncode（`MODFORGE_XWMAENCODE`）與 FaceFXWrapper lip 生成（`MODFORGE_FACEFX` + `MODFORGE_FONIXDATA`）走 Wine |
+| Core | `Voice.cs` | 呼外部 TTS（`MODFORGE_TTS_BIN`；engine/ref/model/seed/**speed/exaggeration/language** 全數傳給 TTS process）；`voicegen.py` 的 Fish S2 分支再呼 `MODFORGE_FISH_SPEECH_BIN`；`EncodeXwma`（`MODFORGE_XWMAENCODE`）走 Wine；`WinePath`（Unix→`Z:\` 轉換，xwma/lip 共用）|
+| Core | `Voice.Lip.cs` | `.lip` lip-sync 生成（`GenerateLip` 一個入口、兩後端）：**優先**官方 CK `LipGenerator.exe`（`MODFORGE_LIPGEN`，簽名 `<wav> <text> -Language:<lang> -OutputFileName:<lip>`，FonixData.cdf 自 exe 同夾找、免給 cdf 路徑、**已在本機 Wine 實跑產出合法 .lip 2026-06-13**）；**退化**社群 FaceFXWrapper（`MODFORGE_FACEFX` + `MODFORGE_FONIXDATA`）。`BuildLipGenArgs` pure 可單測 |
 | Core | `Fuz.cs` | `.fuz` 容器拆解（FUZE header → lip + audio；audio ext 自動偵測 xwm/wav）|
 | Core | `Generator.Build.Voice.cs` | `WriteFuz`（lip + audio 打包成 .fuz）+ `VoiceFileName` CK 命名（`quest10_topic15_formid8_n.fuz`：quest EditorID 前 10 字 + topic EditorID 前 15 字 + INFO FormID hex8 + response 序號）|
 | Core | `Generator.Build.Voice.Speakers.cs` | `ResolveVoiceSpeakers`：從建好 esp 的 INFO 條件解 speaker（GetIsID / GetIsAliasRef / GetInFaction / scene Dialog action）→ `VoiceSpeaker`(Npc + voiceType)；一個 INFO 可對多 speaker（faction），`SelectVoiceTargets` 去重成每個 distinct voiceType 一份。解不出 → `VoiceSpeakerResolution.Reason`（CLI 必須大聲報）。在 Core 故可對 in-memory built mod 單測 |
@@ -110,7 +111,7 @@
 | Validate | `Generator.Validate.Voice.cs` | template id 非空 / engine 枚舉 / `npc.voiceTemplate` ref 存在 / `voiceLine.format` 枚舉；已掛進 `Validate` |
 | CLI | `Program.Build.Voice.cs` | `voicelines <spec> <esp>`：走訪建好 esp 的 INFO → 從條件找 speaker（GetIsID + **alias / faction 條件**；解不出 speaker → **loud warning**，不靜默 skip）→ WAV→xwm→fuz 寫到 `Sound/Voice/<plugin>/<voiceType>/`（已存在的檔 skip，無 hash cache）；**xwm 編碼失敗且 format=fuz → 改寫 loose `.wav` + warning（不把裸 WAV 包進 .fuz）**。`extract-voices <bsa> <voiceType> <outDir>`：抽 vanilla .fuz → ffmpeg 轉 wav（做 reference clip）|
 
-環境變數：`MODFORGE_TTS_BIN`（TTS wrapper，必要）、`MODFORGE_FISH_SPEECH_BIN`（僅 Fish S2 engine 需要）、`MODFORGE_XWMAENCODE`、`MODFORGE_FACEFX`、`MODFORGE_FONIXDATA`（後三者 Wine 路徑，缺則退化：無 xwm / 無 lip）。
+環境變數：`MODFORGE_TTS_BIN`（TTS wrapper，必要）、`MODFORGE_FISH_SPEECH_BIN`（僅 Fish S2 engine 需要）、`MODFORGE_XWMAENCODE`、`MODFORGE_LIPGEN`（官方 CK LipGenerator.exe，lip 首選）、`MODFORGE_FACEFX` + `MODFORGE_FONIXDATA`（社群 FaceFXWrapper，lip 退化路徑）——皆 Wine 路徑，缺則退化：無 xwm / 無 lip（嘴不動）。`format=fuz` 且未配任何 lip 工具時 `voicelines` 開頭發一次 loud warning。
 
 ---
 

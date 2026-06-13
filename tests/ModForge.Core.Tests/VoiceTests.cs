@@ -114,6 +114,31 @@ public class VoiceTests
     }
 
     [Fact]
+    public void BuildLipGenArgs_ProducesOfficialLipGeneratorCommandLine()
+    {
+        // CK LipGenerator.exe signature: <exe> <wav> <text> -Language:<lang> -OutputFileName:<lip>
+        var args = Voice.BuildLipGenArgs(
+            "/tools/LipGenerator.exe",
+            @"Z:\tmp\in.wav",
+            "I have nothing for you to buy.",
+            @"Z:\tmp\out.lip",
+            "USEnglish");
+
+        Assert.Equal("/tools/LipGenerator.exe", args[0]);   // exe first (wine FileName="wine" adds it)
+        Assert.Equal(@"Z:\tmp\in.wav", args[1]);            // wav is positional arg #1
+        Assert.Equal("I have nothing for you to buy.", args[2]); // transcript is positional arg #2
+        Assert.Contains("-Language:USEnglish", args);
+        Assert.Contains(@"-OutputFileName:Z:\tmp\out.lip", args);
+    }
+
+    [Fact]
+    public void BuildLipGenArgs_ForwardsNonDefaultLanguage()
+    {
+        var args = Voice.BuildLipGenArgs("e.exe", "w.wav", "bonjour", "o.lip", "French");
+        Assert.Contains("-Language:French", args);
+    }
+
+    [Fact]
     public void VoiceFileName_GeneratesCorrectFormat()
     {
         // Simple case
@@ -142,6 +167,27 @@ public class VoiceTests
         Assert.Equal("CustomVoice", Generator.VoiceTypeFolderName("CustomVoice"));
         Assert.Null(Generator.VoiceTypeFolderName("Other.esm:0x013AE6"));
         Assert.Null(Generator.VoiceTypeFolderName("../BadVoice"));
+    }
+
+    // End-to-end through the real CK LipGenerator.exe under Wine. Self-skips unless both
+    //   MODFORGE_LIPGEN    = path to LipGenerator.exe
+    //   MODFORGE_LIP_TESTWAV = path to a real-speech WAV (a tone produces no lip)
+    // are set, so offline/CI runs (and machines without the CK) pass trivially.
+    [Fact, Trait("Category", "RequiresSkyrim")]
+    public void GenerateLip_OfficialLipGenerator_ProducesValidLip()
+    {
+        var lipGen = Environment.GetEnvironmentVariable("MODFORGE_LIPGEN");
+        var testWav = Environment.GetEnvironmentVariable("MODFORGE_LIP_TESTWAV");
+        if (string.IsNullOrEmpty(lipGen) || !File.Exists(lipGen)) return;
+        if (string.IsNullOrEmpty(testWav) || !File.Exists(testWav)) return;
+
+        var wav = File.ReadAllBytes(testWav);
+        var lip = Voice.GenerateLip(wav, "I have nothing for you to buy.", new VoiceOptions { LipGenExe = lipGen });
+
+        Assert.NotNull(lip);
+        Assert.True(lip!.Length > 12, "lip should carry phoneme/animation data, not just a header");
+        // Skyrim .lip version header is 0x00000001 (little-endian).
+        Assert.Equal(1u, BitConverter.ToUInt32(lip, 0));
     }
 
     [Fact]

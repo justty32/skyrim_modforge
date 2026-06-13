@@ -43,6 +43,13 @@ internal static partial class Program
         }
 
         bool skipLip = spec.VoiceLine?.SkipLip ?? false;
+        if (format == "fuz" && !skipLip
+            && string.IsNullOrEmpty(options.ResolvedLipGenExe)
+            && string.IsNullOrEmpty(options.ResolvedFaceFxExe))
+            Console.Error.WriteLine("  !! No lip tool configured (MODFORGE_LIPGEN / MODFORGE_FACEFX) — "
+                + ".fuz files will ship WITHOUT lip sync (mouths won't move). "
+                + "Set MODFORGE_LIPGEN to the CK LipGenerator.exe, or voiceLine.skipLip:true to silence this.");
+
         int generated = 0, existing = 0, failed = 0, emptyText = 0, noTemplate = 0, unresolved = 0;
 
         foreach (var topic in mod.EnumerateMajorRecords<IDialogTopicGetter>())

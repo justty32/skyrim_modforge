@@ -52,8 +52,14 @@ setup notes (Blackwell→torch cu128, F5 auto-transcribes ref when `ref_text=""`
 | `MODFORGE_TTS_BIN` | TTS wrapper script/binary (e.g. an f5 venv wrapper) | required — `voicelines` errors out without it |
 | `MODFORGE_FISH_SPEECH_BIN` | Fish Speech S2 wrapper script/binary | required only when a template uses `engine: "fish-s2"` |
 | `MODFORGE_XWMAENCODE` | `xWMAEncode.exe` (run under Wine) | WAV → xwm encoding (`format: xwm`/`fuz`) |
-| `MODFORGE_FACEFX` | `FaceFXWrapper.exe` (run under Wine) | .lip lipsync generation |
-| `MODFORGE_FONIXDATA` | `FonixData.cdf` | required by FaceFXWrapper |
+| `MODFORGE_LIPGEN` | CK official `LipGenerator.exe` (run under Wine) | **preferred** .lip lipsync generation; ships with the Creation Kit at `Tools/LipGen/LipGenerator/` and auto-finds `FonixData.cdf` next to its own exe (no separate cdf var needed) |
+| `MODFORGE_FACEFX` | community `FaceFXWrapper.exe` (run under Wine) | fallback .lip generation when `MODFORGE_LIPGEN` is unset |
+| `MODFORGE_FONIXDATA` | `FonixData.cdf` | required by the `MODFORGE_FACEFX` fallback only |
+
+> Lip sync runs automatically when `format: fuz` and `skipLip` is false. With `MODFORGE_LIPGEN` pointed at the
+> CK `LipGenerator.exe`, `voicelines` packs a real `.lip` into each `.fuz` so NPC mouths move (verified producing
+> a valid `.lip` under Wine on 2026-06-13). With no lip tool configured, `voicelines` prints a one-time warning and
+> the `.fuz` ships without lip data (static mouth) — subtitles still work.
 
 **Workflow**
 
@@ -110,8 +116,9 @@ downgrades to loose `.wav` instead of writing a likely-silent raw-PCM `.fuz`.
 - xwm encoding fails with `format: fuz` → the line is written as a **loose `.wav`** with a
   warning instead of packing a bare WAV into the .fuz (engine acceptance of WAV-in-fuz is
   unverified).
-- Missing FaceFX env vars → no .lip (same effect as `skipLip`); subtitles still work
-  (Fuz Ro D'oh not needed once real .fuz files exist).
+- No lip tool configured (neither `MODFORGE_LIPGEN` nor `MODFORGE_FACEFX`) → no .lip (same effect
+  as `skipLip`) plus a one-time warning; subtitles still work (Fuz Ro D'oh not needed once real
+  .fuz files exist).
 - `engine: "fish-s2"` with no `MODFORGE_FISH_SPEECH_BIN` → the wrapper exits with a clear error.
 
 ## Not yet covered (extend in `ModForge.Core` `Generator.Build` + a spec class)

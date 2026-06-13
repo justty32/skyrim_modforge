@@ -19,13 +19,24 @@ public sealed class VoiceOptions
     /// <summary>Path to <c>FonixData.cdf</c>. Null → <c>MODFORGE_FONIXDATA</c>.</summary>
     public string? FonixDataCdf { get; set; }
 
+    /// <summary>Path to the CK official <c>LipGenerator.exe</c> (run under Wine). Null → <c>MODFORGE_LIPGEN</c>.
+    /// Preferred over FaceFXWrapper: it auto-finds <c>FonixData.cdf</c> next to its own exe, so no cdf path
+    /// is needed. Ships with the CK at <c>Tools/LipGen/LipGenerator/LipGenerator.exe</c>.</summary>
+    public string? LipGenExe { get; set; }
+
+    /// <summary>LipGenerator language vocabulary (USEnglish / French / German / …). Null → USEnglish.
+    /// Note this is the CK's language name space, distinct from the TTS <c>--language</c> code.</summary>
+    public string? LipLanguage { get; set; }
+
     public string? ResolvedTtsBin => TtsBin ?? Environment.GetEnvironmentVariable("MODFORGE_TTS_BIN");
     public string? ResolvedXwmaEncodeExe => XwmaEncodeExe ?? Environment.GetEnvironmentVariable("MODFORGE_XWMAENCODE");
     public string? ResolvedFaceFxExe => FaceFxExe ?? Environment.GetEnvironmentVariable("MODFORGE_FACEFX");
     public string? ResolvedFonixDataCdf => FonixDataCdf ?? Environment.GetEnvironmentVariable("MODFORGE_FONIXDATA");
+    public string? ResolvedLipGenExe => LipGenExe ?? Environment.GetEnvironmentVariable("MODFORGE_LIPGEN");
+    public string ResolvedLipLanguage => string.IsNullOrWhiteSpace(LipLanguage) ? "USEnglish" : LipLanguage;
 }
 
-public static class Voice
+public static partial class Voice
 {
     /// <summary>
     /// Builds the TTS command-line argument list for one line. Pure (no I/O) so it is unit-testable.
@@ -168,55 +179,6 @@ public static class Voice
         {
             if (File.Exists(tempWav)) File.Delete(tempWav);
             if (File.Exists(tempXwm)) File.Delete(tempXwm);
-        }
-    }
-
-    /// <summary>
-    /// Generates a .lip file from a WAV file and text using FaceFXWrapper.exe under Wine.
-    /// </summary>
-    public static byte[]? GenerateLip(byte[] wav, string text, VoiceOptions options)
-    {
-        var exe = options.ResolvedFaceFxExe;
-        var cdf = options.ResolvedFonixDataCdf;
-        if (string.IsNullOrEmpty(exe) || !File.Exists(exe)) return null;
-        if (string.IsNullOrEmpty(cdf) || !File.Exists(cdf)) return null;
-
-        var tempWav = Path.Combine(Path.GetTempPath(), $"modforge_lip_in_{Guid.NewGuid()}.wav");
-        var tempLip = Path.Combine(Path.GetTempPath(), $"modforge_lip_out_{Guid.NewGuid()}.lip");
-        File.WriteAllBytes(tempWav, wav);
-
-        try
-        {
-            // FaceFXWrapper Skyrim USEnglish FonixData.cdf in.wav resampled.wav out.lip "text"
-            // Note: resampled.wav is optional or handled by the wrapper usually.
-            var psi = new ProcessStartInfo
-            {
-                FileName = "wine",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-            };
-            psi.ArgumentList.Add(exe);
-            psi.ArgumentList.Add("Skyrim");
-            psi.ArgumentList.Add("USEnglish");
-            psi.ArgumentList.Add(WinePath(cdf));
-            psi.ArgumentList.Add(WinePath(tempWav));
-            psi.ArgumentList.Add(WinePath(tempWav)); // use same for resampled
-            psi.ArgumentList.Add(WinePath(tempLip));
-            psi.ArgumentList.Add(text);
-
-            using var proc = Process.Start(psi) ?? throw new InvalidOperationException("could not start wine for FaceFXWrapper");
-            proc.WaitForExit();
-
-            if (File.Exists(tempLip))
-                return File.ReadAllBytes(tempLip);
-
-            return null;
-        }
-        finally
-        {
-            if (File.Exists(tempWav)) File.Delete(tempWav);
-            if (File.Exists(tempLip)) File.Delete(tempLip);
         }
     }
 
