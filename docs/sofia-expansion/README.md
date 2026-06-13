@@ -11,6 +11,7 @@
 | [`sofia-personality.md`](sofia-personality.md) | **性格分析 / 寫作 brief**（本專案中心）——Sofia 的原型、幽默機制、說話癖、不安全感、情緒光譜，附大量原文台詞範例 + 「寫新台詞 checklist」。要生成「聽起來像 Sofia」的新對話先讀這份。 |
 | [`follower-decode-2026-06-13.md`](follower-decode-2026-06-13.md) | **結構+內容解碼**——`SofiaFollower.esp` 的記錄普查（30 quest / 28 scene / 1135 INFO / 57 GLOB）、五個可複用架構 pattern、quest/scene/formlist 內容索引、對 ModForge 的施工法。 |
 | [`expansion-plan-2026-06-13.md`](expansion-plan-2026-06-13.md) | **擴充計畫 + 可行性對照**——F1–F16 十六個具體功能，逐個標 ✅/🟡/🔴 並給 spec 範例與降級方案；含建議實作順序與缺口彙總表。 |
+| [`vigilant-support-plan-2026-06-13.md`](vigilant-support-plan-2026-06-13.md) | **Sofia × VIGILANT 支援計劃**——讓 Sofia 對 VIGILANT 進度有「可對談反應」：任務/scene 狀態更新後在她身上**浮現談論選項**（玩家主動找她聊），用 quest-state condition + 對話樹組裝，**刻意不用 scene/自動插話**。本 session 對話樹+跨任務閘的綜合應用，無新功能缺口。 |
 
 外部參考（repo 主 spec 文檔）：[`../SPEC-dialogue-quests.md`](../SPEC-dialogue-quests.md)、[`../SPEC-packages.md`](../SPEC-packages.md)、[`../SPEC-world.md`](../SPEC-world.md)、[`../SPEC-workflow.md`](../SPEC-workflow.md)。
 
