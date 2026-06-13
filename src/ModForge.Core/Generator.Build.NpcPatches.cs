@@ -9,12 +9,11 @@ public static partial class Generator
     private sealed partial class BuildContext
     {
         // --- pass 1: NPC AI patches. Override an EXISTING NPC and swap its AI packages (the new list is
-        // wired in pass 2). ⚠️ SCAFFOLDED BUT BLOCKED: a faithful override must preserve the NPC's name,
-        // but Skyrim.esm is LOCALIZED — deep-copying its Name (or GetOrAddAsOverride) triggers a STRINGS /
-        // load-order resolve that throws headless on Linux (the same wall the item-template clone dodges
-        // by masking out Name — but an NPC can't drop its name). Until ModForge does a strings-capable
-        // master read (or accepts name loss), each patch is caught + skipped with a warning rather than
-        // crashing the build. See CLAUDE.md 之後可做 「npcPatches」. ---
+        // wired in pass 2). A faithful override deep-copies the whole record (a Skyrim override REPLACES
+        // the master record, so we must carry everything forward — name/stats/inventory/factions — then
+        // change only the packages in pass 2). Skyrim.esm is LOCALIZED, but MasterCache now opens it with
+        // the vanilla English strings provisioned, so DeepCopyIn resolves the NPC's real name headless.
+        // (Players run the English game + a translation mod on top — we ship the English name inline.) ---
         public void BuildNpcPatches()
         {
             foreach (var p in spec.NpcPatches)
@@ -30,7 +29,7 @@ public static partial class Generator
                 }
                 catch (System.Exception ex)
                 {
-                    Warn($"  ! npcPatch '{p.OverrideOf}' override failed (localized-string resolve absent headless — strings-capable master read not yet wired): {ex.GetType().Name} — skipped");
+                    Warn($"  ! npcPatch '{p.OverrideOf}' override failed: {ex.GetType().Name}: {ex.Message} — skipped");
                 }
             }
         }

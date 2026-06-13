@@ -130,6 +130,17 @@
 | Build P2 | `Generator.Build.Conditions.cs` | package condition 接線（共用）|
 | Validate | `Generator.Validate.Npcs.cs` | package template/slot integrity、AI-data enum |
 
+### npcPatches（override 既有 NPC 的 AI 排程）
+→ **說明文件**：[SPEC-packages.md § npcPatches](SPEC-packages.md#npcpatches--override-an-existing-npcs-ai-schedule)
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.NpcPatch.cs` | `NpcPatchSpec`（overrideOf / packages / mode）|
+| Build P1 | `Generator.Build.NpcPatches.cs` `BuildNpcPatches` | `TryResolveTemplate<INpcGetter>` 解 vanilla NPC → `new Npc(fk)+DeepCopyIn` 整筆 override（name/stats/faction 帶上；名字靠 MasterCache 提供的 STRINGS 解出）→ `mod.Npcs.Add` |
+| Build P2 | `Generator.Build.NpcPatches.cs` `WireNpcPatchPackages` | 解 package refs → `r.Packages` replace/prepend/append |
+| Infra | `Generator.BuildContext.Utilities.cs` `MasterCache`/`ProvisionStrings` | **本地化解法**：從 `Skyrim - Interface.bsa` lazy 抽 `<master>_english.{strings,ilstrings,dlstrings}` 到 temp `Strings/`（檔名照 ModKey 大小寫，Linux case-sensitive），overlay 用 `StringsReadParameters{English,StringsFolderOverride,BsaFolderOverride}` 開（BSA-free 夾 → 不觸發讀 load-order 的 archive scan）→ headless 解得 vanilla NPC 名 |
+| Validate | `Generator.Validate.Npcs.cs` `ValidateNpcPatches` | overrideOf 須 external ref、packages 非空、mode ∈ replace/prepend/append |
+
 ---
 
 ## Weather / Climate（天氣 WTHR / 氣候 CLMT）

@@ -1,0 +1,15 @@
+{
+  "_note": "npcPatches[] — override an EXISTING vanilla NPC and swap its AI packages (AI Overhaul core). The override carries the NPC's real English name (MasterCache provisions vanilla STRINGS), and replaces its package list. Players run English + a translation mod, so shipping the English name inline is correct.",
+  "pluginName": "ModForgeNpcPatch.esp",
+  "esl": true,
+  "packages": [
+    { "editorId": "MFCarlottaStayHome", "template": "Skyrim.esm:0x01C254" }
+  ],
+  "npcPatches": [
+    {
+      "overrideOf": "Skyrim.esm:0x013B99",
+      "packages": [ "MFCarlottaStayHome" ],
+      "mode": "replace"
+    }
+  ]
+}

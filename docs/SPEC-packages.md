@@ -174,6 +174,41 @@ THIS chair" beat use **SitTarget** instead.)
 `AggroRadiusBehavior`, `AllowIdleChatter`, `WorldInteractions`. **These are the difference between
 a silent statue and a lifelike NPC.** Vanilla DefaultSandbox enables all of them.
 
+### npcPatches — override an EXISTING NPC's AI schedule
+
+Re-stage a **vanilla (or other-master) NPC** by overriding its record and swapping its AI
+package list — the core move behind mods like *AI Overhaul* (send a townsperson to the tavern
+at night, give a guard a patrol, etc.). You don't recreate the NPC; you carry their whole
+record forward and change only the packages.
+
+```jsonc
+"packages": [ { "editorId": "MFCarlottaStayHome", "template": "Skyrim.esm:0x01C254" } ],
+"npcPatches": [
+  { "overrideOf": "Skyrim.esm:0x013B99",   // the existing NPC ref (Carlotta Valentia)
+    "packages": [ "MFCarlottaStayHome" ],   // PACK refs: in-spec editorId or vanilla <master>:0xFORMID
+    "mode": "replace" }                      // replace | prepend | append  (default replace)
+]
+```
+
+- **`overrideOf`** — the existing NPC as `<master>:0xFORMID`. Resolving it needs the master on
+  disk (`MODFORGE_SKYRIM_DATA`, or the default Steam Data path); if it can't be resolved the
+  patch is skipped with a warning (the build still completes).
+- **`mode`** — `replace` uses ONLY your packages; `prepend`/`append` keep the NPC's existing
+  packages and add yours before/after. **Package order matters** — specific time/place packages
+  must sit above the broad sandbox fallback, so for a "go somewhere at a time" overlay use
+  `prepend`.
+- **The override is a full record override** (a Skyrim override REPLACES the master record), so
+  the build deep-copies the NPC — name, stats, factions, outfit, voice all carried forward — and
+  only the package list changes. The NPC's **real English name** is preserved inline: ModForge
+  extracts the vanilla English `.STRINGS` (from `Skyrim - Interface.bsa`) so the localized name
+  resolves headless. This matches modern practice — players run the **English** game and layer a
+  **translation mod** on top, so shipping the English name inline is correct (a Chinese-translation
+  mod loaded after will re-override it).
+- **Inspect** the result with `npcdiag <esp> <0xFORMID>` (same FormID as `overrideOf`); the
+  `Packages` line shows your new list. See `examples/npc_patch.json`.
+- ⚠️ **Load order** — an `npcPatches` override conflicts with any other mod overriding the same
+  NPC (USSEP, AI Overhaul itself). Last-loaded wins; sort accordingly.
+
 ### weathers & climates — custom skies (WTHR) + weather cycles (CLMT)
 
 A **weather** (`WTHR`) is one *sky*: cloud layers, per-time-of-day colours for the

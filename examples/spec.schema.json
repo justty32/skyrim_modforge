@@ -86,6 +86,20 @@
       },
       "description": "AI Package (PACK); assign via npc.packages. See SPEC.md for the template-input subobjects"
     },
+    "npcPatches": {
+      "type": "array",
+      "description": "override an EXISTING vanilla/other-master NPC and swap its AI package list (AI Overhaul style). Needs the master (MODFORGE_SKYRIM_DATA); the override carries the NPC's real English name inline.",
+      "items": {
+        "type": "object",
+        "required": [ "overrideOf", "packages" ],
+        "additionalProperties": false,
+        "properties": {
+          "overrideOf": { "type": "string", "description": "the existing NPC ref '<master>:0xFORMID' (e.g. Skyrim.esm:0x013B99 = Carlotta Valentia)" },
+          "packages": { "type": "array", "items": { "type": "string" }, "description": "PACK refs (in-spec editorId or vanilla '<master>:0xFORMID') forming the new schedule" },
+          "mode": { "enum": [ "replace", "prepend", "append" ], "description": "replace = use ONLY our packages; prepend/append = keep the NPC's existing packages and add ours before/after (default replace)" }
+        }
+      }
+    },
     "spells": {
       "type": "array",
       "items": {

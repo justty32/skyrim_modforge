@@ -9,24 +9,28 @@ public class NpcPatchTests
     private static ISkyrimMod Build(ModSpec spec) =>
         Generator.Build(spec, ModKey.FromNameAndExtension("Test.esp")).Mod;
 
-    // KNOWN LIMITATION (RequiresSkyrim): overriding a vanilla NPC needs to deep-copy its LOCALIZED name,
-    // which triggers a STRINGS/load-order resolve that throws headless on Linux. Until a strings-capable
-    // master read is wired, BuildNpcPatches catches that and skips — the build must still complete (no
-    // crash) and simply not produce the override. When the strings infra lands, flip this to assert the
-    // real override (same FormKey, name preserved, packages = ours).
+    // RequiresSkyrim: overriding a vanilla NPC deep-copies its LOCALIZED name. MasterCache now provisions
+    // the vanilla English .STRINGS (extracted from Skyrim - Interface.bsa into a loose temp folder), so the
+    // override resolves headless: same FormKey (it IS an override of the master record), the real English
+    // name preserved, and the package list replaced with ours.
     [Fact]
     [Trait("Category", "RequiresSkyrim")]
-    public void NpcPatch_with_master_present_is_gracefully_skipped_not_crashed()
+    public void NpcPatch_overrides_vanilla_npc_preserving_name_and_swapping_packages()
     {
+        var sandbox = FormKey.Factory("01C254:Skyrim.esm");
+        var carlotta = FormKey.Factory("013B99:Skyrim.esm");
         var spec = new ModSpec();
         spec.NpcPatches.Add(new NpcPatchSpec
         {
-            OverrideOf = "Skyrim.esm:0x013B99",   // Carlotta Valentia (resolves; override blocked on strings)
-            Packages = { "Skyrim.esm:0x01C254" },
+            OverrideOf = "Skyrim.esm:0x013B99",   // Carlotta Valentia
+            Packages = { "Skyrim.esm:0x01C254" }, // Sandbox
             Mode = "replace",
         });
-        var mod = Build(spec);                                          // must NOT throw
-        Assert.DoesNotContain(mod.Npcs, n => n.FormKey.ModKey.FileName == "Skyrim.esm");   // override skipped for now
+        var mod = Build(spec);
+        var ov = Assert.Single(mod.Npcs.Where(n => n.FormKey == carlotta));   // the override landed
+        Assert.False(string.IsNullOrWhiteSpace(ov.Name?.String), "the vanilla English name resolved");
+        Assert.Single(ov.Packages);
+        Assert.Equal(sandbox, ov.Packages[0].FormKey);                        // packages replaced with ours
     }
 
     // Offline: a spec carrying an npcPatch builds without crashing (the patch is skipped when the master
