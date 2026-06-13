@@ -18,15 +18,8 @@ reference/
 # git worktrees created by background agents
 .claude/worktrees/
 
-# Voice-cloning experiment artifacts (root-anchored; local experiment data, do not delete)
+# Voice-cloning experiment artifacts (root-anchored; local experiment data)
 /*.wav
-/Seq/
-/transcripts/
-/voice-clones/
-/training_list.txt
-/dialoguege_*.txt
-/young_test.json
-/venv_voice/
 __pycache__/
 /examples/refs/
 /.venvs/
