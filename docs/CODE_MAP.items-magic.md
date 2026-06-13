@@ -59,8 +59,8 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Magic.cs` | `SpellSpec`, `MagicEffectSpec`, `PotionSpec` |
-| Build P1 | `Generator.Build.Magic.cs` | 建 MagicEffect scalar fields + Spell + Potion/Ingestible |
+| Spec | `Spec.Magic.cs` | `SpellSpec`, `MagicEffectSpec`（含 `SecondActorValue`/`SecondActorValueWeight` for DualValueModifier）, `PotionSpec` |
+| Build P1 | `Generator.Build.Magic.cs` | 建 MagicEffect scalar fields（archetype/AV；DualValueModifier 的 `SecondActorValue`+weight 在給時才設）+ Spell + Potion/Ingestible。**Script-archetype MGEF 掛 Papyrus 走通用 `scripts[]`**（`AttachScripts` 反射任何有 writable VMAD 的 record，MGEF 已在 `recordsByEd`，無需 MGEF 專屬接線）|
 | Validate | `Generator.Validate.Items.cs` | ingredient/potion/spell effects ref + magnitude/duration 範圍 |
 | Validate | `Generator.Validate.Helpers.cs` | `CheckEffects`（共用）|
 | Diag | `Diagnostics.Records.cs` | Spell / MagicEffect 欄位 dump |

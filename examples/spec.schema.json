@@ -769,6 +769,14 @@
           "type": "string",
           "description": "the actor value it acts on, e.g. Health, Magicka, Stamina, MagickaRate"
         },
+        "secondActorValue": {
+          "type": "string",
+          "description": "DualValueModifier archetype only: a 2nd affected actor value (e.g. Magicka)"
+        },
+        "secondActorValueWeight": {
+          "type": "number",
+          "description": "DualValueModifier archetype only: how the magnitude splits to the 2nd AV (0 = all to primary)"
+        },
         "magicSkill": {
           "type": "string",
           "description": "school: Alteration|Conjuration|Destruction|Illusion|Restoration (or None)"

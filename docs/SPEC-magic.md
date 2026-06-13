@@ -28,8 +28,10 @@ Define your OWN effect instead of reusing a vanilla one; a spell/potion/ingredie
 then points at it by `editorId` (and the per-cast `magnitude`/`area`/`duration` stay on that effect).
 ```jsonc
 { "editorId": "MF_RestoreHealthEffect", "name": "ModForge Restore Health",
-  "archetype": "ValueModifier",   // ValueModifier (damage/heal/fortify) | SummonCreature | Bound | Light | Paralysis | …
+  "archetype": "ValueModifier",   // ValueModifier (damage/heal/fortify) | DualValueModifier | SummonCreature | Bound | Light | Script | …
   "actorValue": "Health",          // what it acts on: Health | Magicka | Stamina | …
+  "secondActorValue": "Magicka",   // DualValueModifier only: a 2nd affected AV (omit otherwise)
+  "secondActorValueWeight": 0.5,   // DualValueModifier only: how the magnitude splits to the 2nd AV (0 = all to primary)
   "magicSkill": "Restoration",     // school: Alteration|Conjuration|Destruction|Illusion|Restoration
   "resistValue": "ResistFire",     // AV that resists it (optional): ResistFire | ResistFrost | PoisonResist | …
   "castType": "FireAndForget",     // FireAndForget | Concentration | ConstantEffect
@@ -46,6 +48,16 @@ A bare `ValueModifier` MGEF (no visual art/projectile) still applies its value �
 and for potions. A damage spell that *travels* (`targetType: Aimed`) needs a `projectile` (+ usually
 `castingArt`); harvest a vanilla one with `mgefdiag <Skyrim.esm> <0xFORMID>` (e.g. the fire effect
 `FireDamageFFAimed75 0x10F7F1` uses projectile `0x10FBEA` + castingArt `0x01B211`).
+
+- **`DualValueModifier`** affects **two** actor values from one magnitude — set `archetype:
+  "DualValueModifier"`, the primary `actorValue`, plus `secondActorValue` and `secondActorValueWeight`
+  (the fraction of the magnitude routed to the second AV). This is how absorb/transfer-style effects
+  (damage one stat, feed another) are built.
+- **`Script`-archetype MGEF** (boss-spell logic, custom on-apply behaviour) runs **Papyrus**: set
+  `archetype: "Script"` and attach a script with a top-level **`scripts[]`** entry whose
+  `targetEditorId` is this MGEF's `editorId` (the generic VMAD attach works on any record — no special
+  MGEF wiring). The `.psc` extends `ActiveMagicEffect`; `package` compiles `scripts[].source` like any
+  other script attach. See `docs/SPEC-dialogue-quests.md § scripts` for the `scripts[]` shape.
 
 **Flags matter — match the effect's timing (this is the #1 gotcha):**
 - **Instant** restore/damage (`duration` 0) → `["NoDuration", "NoArea"]`, and add `"Detrimental"`

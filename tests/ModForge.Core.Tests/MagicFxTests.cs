@@ -215,4 +215,42 @@ public class MagicFxTests
         var problems = Generator.Validate(spec);
         Assert.DoesNotContain(problems, p => p.Contains("MF_Boom") || p.Contains("MF_Bolt"));
     }
+
+    // DualValueModifier MGEF carries a SECOND ActorValue + its magnitude-split weight (78 vanilla MGEF use it).
+    [Fact]
+    public void DualValueModifier_Carries_SecondActorValue_And_Weight()
+    {
+        var spec = new ModSpec
+        {
+            MagicEffects =
+            {
+                new MagicEffectSpec
+                {
+                    EditorId = "MF_Absorb", Name = "Absorb Health",
+                    Archetype = "DualValueModifier", ActorValue = "Health",
+                    SecondActorValue = "Magicka", SecondActorValueWeight = 0.5f,
+                },
+            },
+        };
+        var mgef = Assert.Single(Build(spec).Mod.MagicEffects, m => m.EditorID == "MF_Absorb");
+        Assert.Equal(ActorValue.Health, mgef.Archetype.ActorValue);
+        Assert.Equal(ActorValue.Magicka, mgef.SecondActorValue);
+        Assert.Equal(0.5f, mgef.SecondActorValueWeight);
+    }
+
+    // A Script-archetype MGEF runs Papyrus via the generic scripts[] attach (every record with a
+    // writable VMAD takes one) — so a Boss-spell effect can drive arbitrary logic. No new MGEF wiring.
+    [Fact]
+    public void ScriptArchetype_Mgef_Takes_A_Vmad_Script_Via_ScriptsAttach()
+    {
+        var spec = new ModSpec
+        {
+            MagicEffects = { new MagicEffectSpec { EditorId = "MF_BossFx", Name = "Boss", Archetype = "Script" } },
+            Scripts = { new ScriptAttachSpec { TargetEditorId = "MF_BossFx", ScriptName = "MFBossEffectScript" } },
+        };
+        var mgef = Assert.Single(Build(spec).Mod.MagicEffects, m => m.EditorID == "MF_BossFx");
+        Assert.Equal(MagicEffectArchetype.TypeEnum.Script, ((IMagicEffectArchetypeGetter)mgef.Archetype).Type);
+        Assert.NotNull(mgef.VirtualMachineAdapter);
+        Assert.Contains(mgef.VirtualMachineAdapter!.Scripts, s => s.Name == "MFBossEffectScript");
+    }
 }

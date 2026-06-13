@@ -34,6 +34,11 @@ public sealed class MagicEffectSpec
     public string Description { get; set; } = "";
     public string Archetype { get; set; } = "ValueModifier";
     public string ActorValue { get; set; } = "";   // affected AV, e.g. Health
+    // DualValueModifier archetype only: a SECOND affected AV. The effect's single magnitude is split
+    // between the primary AV and this one by `secondActorValueWeight` (0 = all to primary). Vanilla
+    // example: an Absorb effect damages one AV and feeds another (78 vanilla MGEF carry a 2nd AV).
+    public string SecondActorValue { get; set; } = "";
+    public float SecondActorValueWeight { get; set; }
     public string MagicSkill { get; set; } = "";    // school, e.g. Destruction
     public string ResistValue { get; set; } = "";    // resisted by, e.g. ResistFire
     public string CastType { get; set; } = "";        // FireAndForget|Concentration|ConstantEffect

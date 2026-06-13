@@ -21,6 +21,13 @@ public static partial class Generator
                 if (Enum.TryParse<MagicEffectArchetype.TypeEnum>(me.Archetype, ignoreCase: true, out var at)) arch.Type = at;
                 arch.ActorValue = Enum.TryParse<ActorValue>(me.ActorValue, ignoreCase: true, out var av) ? av : ActorValue.None;
                 r.Archetype = arch;
+                // DualValueModifier: the 2nd affected AV + how the magnitude splits to it.
+                if (!string.IsNullOrWhiteSpace(me.SecondActorValue)
+                    && Enum.TryParse<ActorValue>(me.SecondActorValue, ignoreCase: true, out var sav))
+                {
+                    r.SecondActorValue = sav;
+                    r.SecondActorValueWeight = me.SecondActorValueWeight;
+                }
                 r.MagicSkill = Enum.TryParse<ActorValue>(me.MagicSkill, ignoreCase: true, out var sk) ? sk : ActorValue.None;
                 r.ResistValue = Enum.TryParse<ActorValue>(me.ResistValue, ignoreCase: true, out var rv) ? rv : ActorValue.None;
                 if (Enum.TryParse<CastType>(me.CastType, ignoreCase: true, out var mct)) r.CastType = mct;

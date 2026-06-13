@@ -89,6 +89,7 @@ public static partial class Generator
             {
                 CheckEnum<MagicEffectArchetype.TypeEnum>(me.Archetype, $"magicEffect '{me.EditorId}' archetype");
                 CheckEnum<ActorValue>(me.ActorValue, $"magicEffect '{me.EditorId}' actorValue");
+                CheckEnum<ActorValue>(me.SecondActorValue, $"magicEffect '{me.EditorId}' secondActorValue");
                 CheckEnum<ActorValue>(me.MagicSkill, $"magicEffect '{me.EditorId}' magicSkill");
                 CheckEnum<ActorValue>(me.ResistValue, $"magicEffect '{me.EditorId}' resistValue");
                 CheckEnum<CastType>(me.CastType, $"magicEffect '{me.EditorId}' castType");
