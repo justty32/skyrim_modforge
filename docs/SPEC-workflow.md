@@ -75,7 +75,21 @@ dotnet run --project src/ModForge.Cli -- package    myspec.json OutModDir # 3. p
 
 # helper: harvest reference clips from a vanilla archive
 dotnet run --project src/ModForge.Cli -- extract-voices "<path>/Skyrim - Voices_en0.bsa" FemaleYoungEager refclips/
+
+# helper: harvest reference clips AND tag each with its source INFO emotion → annotation manifest
+dotnet run --project src/ModForge.Cli -- voice-annotate <esm> <voiceType> <VoicesBSA> <outDir>
 ```
+
+**`voice-annotate`** — like `extract-voices`, but for every clip it also looks up the source INFO (the
+8-hex FormID is in the clip filename) in `<esm>` and writes `<outDir>/voice-annotations.json`: one entry
+per clip with `clip` / `text` / `emotion` (the 7 Skyrim emotions: Neutral/Anger/Disgust/Fear/Sad/Happy/
+Surprise) / `intensity` (0–100) / `infoFormId`, plus blank `override` / `intensityOverride` / `note`
+fields for you to fill after listening. `emotion`/`intensity` come straight from the INFO's
+`Emotion`/`EmotionValue` (the game already labelled every line — a free, authoritative first pass); you
+only correct what the coarse label gets wrong (e.g. labelled Neutral but actually sarcastic — set
+`override`). `<esm>` is `Skyrim.esm` for vanilla voice types, or a mod (`SofiaFollower.esp`, `Vigilant.esm`)
+for that mod's character voices. *(Phase B — `voiceTemplates[].referenceLibrary` consuming the corrected
+manifest to pick an emotion-matched reference clip per line — is a separate later feature.)*
 
 Fish S2 template example:
 

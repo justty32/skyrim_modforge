@@ -23,6 +23,7 @@
 | `SeqFileTests.cs` | `.seq` manifest 生成（StartGameEnabled quest 列表）|
 | `VoiceTests.cs` | `BuildTtsArgs`/`BuildLipGenArgs` 命令列、`VoiceFileName` CK 命名格式、`WriteFuz` header（含無 lip 情形）、`GenerateLip` 官方 LipGenerator 端到端（`RequiresSkyrim`，env-gated 自跳過）|
 | `VoiceSpeakerTests.cs` | `voicelines` speaker 偵測（GetIsID / alias / faction 條件解析）|
+| `VoiceAnnotateTests.cs` | `voice-annotate`：clip 檔名→INFO FormKey 解析 + 從 INFO 讀 emotion/intensity/text 建 manifest entry |
 | `SpecRefsTests.cs` | `$ref` 三形態（string / array 鏈式 / long-form `{from,pointer}`）、`$env`（value / default / 缺報錯）、`$ref`+`$env` 衝突、cycle、sibling deep-merge、`ResolveFile` disk round-trip |
 | `Helpers.cs` | 共用測試 helper（非 test class，供其他 *Tests.cs 使用）|
 
@@ -109,7 +110,9 @@
 | Core | `Fuz.cs` | `.fuz` 容器拆解（FUZE header → lip + audio；audio ext 自動偵測 xwm/wav）|
 | Core | `Generator.Build.Voice.cs` | `WriteFuz`（lip + audio 打包成 .fuz）+ `VoiceFileName` CK 命名（`quest10_topic15_formid8_n.fuz`：quest EditorID 前 10 字 + topic EditorID 前 15 字 + INFO FormID hex8 + response 序號）|
 | Core | `Generator.Build.Voice.Speakers.cs` | `ResolveVoiceSpeakers`：從建好 esp 的 INFO 條件解 speaker（GetIsID / GetIsAliasRef / GetInFaction / scene Dialog action）→ `VoiceSpeaker`(Npc + voiceType)；一個 INFO 可對多 speaker（faction），`SelectVoiceTargets` 去重成每個 distinct voiceType 一份。解不出 → `VoiceSpeakerResolution.Reason`（CLI 必須大聲報）。在 Core 故可對 in-memory built mod 單測 |
-| Core | `Archives.cs` | Mutagen 讀 BSA/BA2（extract + path filter；`extract-voices` 用）|
+| Core | `Archives.cs` | Mutagen 讀 BSA/BA2（extract + path filter；`extract-voices` / `voice-annotate` 用）|
+| Core | `Voice.Annotate.cs` | 情緒標注 index：`VoiceAnnotation`(clip/text/emotion/intensity/infoFormId + 人填 override/intensityOverride/note) model + `VoiceAnnotate.TryParseInfoFormKey`(從 clip 檔名解 INFO FormKey;high byte→master)/`BuildEntry`(從 resolved INFO 讀 Emotion/EmotionValue/Text)。純函式可單測 (`VoiceAnnotateTests.cs`)|
+| CLI | `Program.Build.Voice.cs` `VoiceAnnotateCmd` | `voice-annotate <esm> <voiceType> <bsa> <outDir>`：抽 clip→WAV(Archives.Extract+Fuz+ffmpeg)+ 對每 clip 從 `<esm>` 查 INFO emotion → 寫 `voice-annotations.json`。打底確定性(讀 INFO Emotion);人聽完改 manifest。Phase B(`voiceTemplates[].referenceLibrary` 情緒選 ref)另開 |
 | Validate | `Generator.Validate.Voice.cs` | template id 非空 / engine 枚舉 / `npc.voiceTemplate` ref 存在 / `voiceLine.format` 枚舉；已掛進 `Validate` |
 | CLI | `Program.Build.Voice.cs` | `voicelines <spec> <esp>`：走訪建好 esp 的 INFO → 從條件找 speaker（GetIsID + **alias / faction 條件**；解不出 speaker → **loud warning**，不靜默 skip）→ WAV→xwm→fuz 寫到 `Sound/Voice/<plugin>/<voiceType>/`（已存在的檔 skip，無 hash cache）；**xwm 編碼失敗且 format=fuz → 改寫 loose `.wav` + warning（不把裸 WAV 包進 .fuz）**。`extract-voices <bsa> <voiceType> <outDir>`：抽 vanilla .fuz → ffmpeg 轉 wav（做 reference clip）|
 
