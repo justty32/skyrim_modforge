@@ -21,6 +21,7 @@ internal static partial class Program
                 case "voicelines" when args.Length is 3 or 4: return VoicelinesCmd(args[1], args[2], args.Length == 4 ? args[3] : null);
                 case "voicediag" when args.Length == 3: return VoiceDiagCmd(args[1], args[2]);
                 case "extract-voices" when args.Length == 4: return ExtractVoicesCmd(args[1], args[2], args[3]);
+                case "voice-annotate" when args.Length == 5: return VoiceAnnotateCmd(args[1], args[2], args[3], args[4]);
                 case "compile" when args.Length == 3:  return CompileCmd(args[1], args[2]);
                 case "package" when args.Length == 3:  return PackageCmd(args[1], args[2], null);
                 case "package" when args.Length == 5 && args[3] == "--assets": return PackageCmd(args[1], args[2], args[4]);
@@ -78,6 +79,7 @@ internal static partial class Program
         "  voicelines <spec.json> <built.esp> [--dry-run|--plan] generate .fuz/.wav from dialogue records, or print expected voice paths\n" +
         "  voicediag <spec.json> <built.esp>            offline speaker/template/path check for every dialogue INFO line\n" +
         "  extract-voices <bsaPath> <voiceType> <outDir> extract + convert vanilla voices to WAV\n" +
+        "  voice-annotate <esm> <voiceType> <bsaPath> <outDir>  extract clips + write emotion-annotation manifest (JSON)\n" +
         "  compile <script.psc> <outDir>\n" +
         "  package <spec.json> <outModDir> [--assets <dir>]   esp + scripts + bundled Meshes/Textures/Sounds\n" +
         "  validate <spec.json>\n" +

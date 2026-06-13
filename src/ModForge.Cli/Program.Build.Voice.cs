@@ -265,4 +265,61 @@ internal static partial class Program
             if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
         }
     }
+
+    // -------------------------------------------------------------------------------
+    //  voice-annotate — extract a voiceType's clips to WAV AND write an emotion-annotation
+    //  manifest. Each clip's source INFO (FormID is in the filename) is looked up in <esm>
+    //  for its game-assigned Emotion/EmotionValue/line — the deterministic first-pass index
+    //  the user then corrects by ear (manifest `override`/`note` fields).
+    // -------------------------------------------------------------------------------
+    private static int VoiceAnnotateCmd(string esmPath, string voiceType, string bsaPath, string outDir)
+    {
+        if (!File.Exists(esmPath)) { Console.Error.WriteLine($"  ! esm not found: {esmPath}"); return 1; }
+        if (!File.Exists(bsaPath)) { Console.Error.WriteLine($"  ! bsa not found: {bsaPath}"); return 1; }
+        Directory.CreateDirectory(outDir);
+
+        using var esm = SkyrimMod.CreateFromBinaryOverlay(new Mutagen.Bethesda.Plugins.ModPath(esmPath), SkyrimRelease.SkyrimSE);
+        var cache = esm.ToImmutableLinkCache();
+        var masters = esm.ModHeader.MasterReferences.Select(m => m.Master).ToList();
+        var esmFile = Path.GetFileName(esmPath);
+
+        string filter = $"sound/voice/{esmFile.ToLowerInvariant()}/{voiceType.ToLowerInvariant()}/";
+        var tempDir = Path.Combine(Path.GetTempPath(), $"modforge_annotate_{Guid.NewGuid()}");
+        var entries = new List<VoiceAnnotation>();
+        try
+        {
+            int found = Archives.Extract(bsaPath, tempDir, filter);
+            if (found == 0) { Console.Error.WriteLine($"  ! no clips for {filter}"); return 1; }
+            foreach (var fuzPath in Directory.GetFiles(tempDir, "*.fuz", SearchOption.AllDirectories))
+            {
+                var fileName = Path.GetFileName(fuzPath);
+                var wavName = Path.GetFileNameWithoutExtension(fuzPath) + ".wav";
+                var wavPath = Path.Combine(outDir, wavName);
+                try
+                {
+                    var split = Fuz.Split(File.ReadAllBytes(fuzPath));
+                    var audioPath = Path.Combine(Path.GetTempPath(), $"ta_{Guid.NewGuid()}.{split.AudioExt}");
+                    File.WriteAllBytes(audioPath, split.Audio);
+                    var psi = new ProcessStartInfo { FileName = "ffmpeg", Arguments = $"-y -i \"{audioPath}\" \"{wavPath}\"",
+                        RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
+                    using (var p = Process.Start(psi)) p?.WaitForExit();
+                    if (File.Exists(audioPath)) File.Delete(audioPath);
+                }
+                catch (Exception ex) { Console.Error.WriteLine($"    ! {fileName}: {ex.Message}"); }
+
+                VoiceAnnotation entry;
+                if (VoiceAnnotate.TryParseInfoFormKey(fileName, masters, esm.ModKey, out var fk)
+                    && cache.TryResolve<IDialogResponsesGetter>(fk, out var info))
+                    entry = VoiceAnnotate.BuildEntry(wavName, voiceType, info!, 0);
+                else
+                    entry = new VoiceAnnotation { Clip = wavName, VoiceType = voiceType, Emotion = "Neutral", Note = $"INFO not found in {esmFile}" };
+                entries.Add(entry);
+            }
+            var json = System.Text.Json.JsonSerializer.Serialize(entries, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(Path.Combine(outDir, "voice-annotations.json"), json);
+            Console.WriteLine($"voice-annotate: {entries.Count} clip(s) → {Path.Combine(outDir, "voice-annotations.json")} (+ WAVs)");
+            return 0;
+        }
+        finally { try { Directory.Delete(tempDir, true); } catch { } }
+    }
 }
