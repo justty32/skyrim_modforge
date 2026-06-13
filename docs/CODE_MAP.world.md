@@ -50,8 +50,8 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.World.cs` | `CellSpec`（name / template / encounterZone）|
-| Build P1 | `Generator.Build.Cells.cs` | 建 interior cell record + encounter zone 連結 |
+| Spec | `Spec.World.cs` | `CellSpec`（name / template / encounterZone / **`music`→MUSC**）|
+| Build P1 | `Generator.Build.Cells.cs` | 建 interior cell record + encounter zone 連結（`cells[].music` 由 pass-2 `WireCellMusic` 接到 cell.Music，見 `CODE_MAP.items-magic.md` Music）|
 | Validate | `Generator.Validate.World.cs` | cell ref、encounter zone ref |
 
 ---

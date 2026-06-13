@@ -305,6 +305,36 @@ worldspace) whose **weather table** drives which weathers play there:
   player lands on solid flat terrain. Navmesh-patrol example: `examples/worldspace_navmesh_test_spec.json`
   (guard pacing m1→m2→m3→m1 on the z=4000 mesh) — **in-game confirmed** (2026-06-04).
 
+### music (MUSC / MUST) — custom area music
+
+Two records: **Music Tracks** (`musicTracks[]`, MUST — the audio entries) and **Music Types**
+(`music[]`, MUSC — containers the game selects between and assigns to a place).
+
+```jsonc
+"musicTracks": [
+  { "editorId": "MFMU_A", "type": "SingleTrack",   // SingleTrack | Palette | SilentTrack
+    "file": "Music\\ModForge\\a.xwm",               // audio under Data/Music (.xwm/.wav); a loose asset
+    "loopBegins": 0, "loopEnds": 60, "loopCount": 0, // optional loop (seconds; loopCount 0 = infinite)
+    "fadeOut": 2 },
+  { "editorId": "MFMU_Pool", "type": "Palette", "tracks": [ "MFMU_A", "MFMU_B" ] } // Palette = a pool of MUST
+],
+"music": [
+  { "editorId": "MFMU_Type", "flags": [ "CycleTracks" ], // PlaysOneSelection|AbruptTransition|CycleTracks|MaintainTrackOrder|DucksCurrentTrack|DoesNotQueue
+    "priority": 10,             // higher wins over lower-priority music playing at the same time
+    "duckingDecibel": 6,        // POSITIVE dB attenuation applied to other audio (0–655)
+    "fadeDuration": 4,
+    "tracks": [ "MFMU_Pool" ] } // refs -> MUST (SingleTrack, Palette, or SilentTrack)
+]
+```
+
+**Assign a MUSC** to play it: `cells[].music: "MFMU_Type"` (interior cell) and/or
+`worldspaces[].music: "MFMU_Type"` (whole exterior world). Both take an in-spec MUSC editorId or a
+vanilla `<master>:0xFORMID`.
+
+**Audio assets:** the `.xwm` (or `.wav`) files are loose assets under `Data/Music/...`; the builder only
+writes the path. Ship the files via `package --assets <dir>` / `spec.assets` (like voice files). A
+missing file = silence, no crash. Worked example: `examples/music.json`.
+
 ### leveled lists & containers
 ```jsonc
 "leveledItems": [

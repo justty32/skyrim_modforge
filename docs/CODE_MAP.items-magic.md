@@ -81,6 +81,11 @@
 | Spec | `Spec.Hazards.cs` | `HazardSpec`（model/radius/lifetime/targetInterval/limit/spell/flags + light/sound/imad/impactDataSet）|
 | Build P1 | `Generator.Build.Hazards.cs` | `BuildHazards`（HAZD scalar/model/flags，BuildFormKeyTable 前建，故 MGEF association / placement base 可引用）；pass-2 `WireHazards` 解析 spell/light/sound/imad/impactDataSet FormLink |
 | Validate | `Generator.Validate.MagicFx.cs` | enum/flag 合法、radius/speed 正數、ref 完整、editorId 唯一；IMAD brightness/contrast/saturation/duration ≥ 0；**`ValidateHazards`：無 model/無 spell 警告、ref 完整、Hazard.Flag 合法** |
+| Spec | `Spec.Music.cs` | `MusicTrackSpec`（type/file/fadeOut/loopBegins+loopEnds+loopCount/tracks）, `MusicTypeSpec`（flags/priority/duckingDecibel(0–655 正 dB)/fadeDuration/tracks）|
+| Build P1 | `Generator.Build.Music.cs` | `BuildMusicTracks`(MUST：type/TrackFilename(字串→AssetLink)/FadeOut/Duration/LoopData) + `BuildMusicTypes`(MUSC：Flags/Data{Priority,DuckingDecibel}/FadeDuration)，BuildFormKeyTable 前建；pass-2 `WireMusic`(MUSC→MUST + Palette MUST→子 MUST，**Tracks 清單 null 需先 materialize**) + `WireCellMusic`(`cells[].music`→cell.Music) |
+| Validate | `Generator.Validate.Music.cs` | `ValidateMusic`：track type 合法、SingleTrack 無 file/Palette 無子軌警告、MUSC 無 tracks 警告、duckingDecibel 0–655、flag 合法、ref 完整 |
+
+**Music（MUSC + MUST）**：MUST 音軌(SingleTrack→`.xwm` 檔 / Palette→子軌池 / SilentTrack)；MUSC 容器引用 MUST。掛載：`cells[].music`(pass-2 `WireCellMusic`) + `worldspaces[].music`(**沿用既有 `WorldspaceSpec.Music` 的 pass-2 wire，零 worldspace 改動**)。音檔是 loose asset(`Data/Music/...`)，builder 只寫路徑。`Tests/MusicTests.cs`（record/loop/MUSC-tracks、Palette 子軌、cell+worldspace 掛載、validate）。
 
 法術飛行彈鏈：自訂 EXPL ← PROJ（flag Explosion，explosion=EXPL）← MGEF（projectile=PROJ）← SPEL（Aimed）。MGEF 的 `projectile`/`explosion` ref 欄位沿用既有（無需改 MGEF builder）。`Tests/MagicFxTests.cs`、`Tests/DaylightSpellTests.cs`（IMAD builder + 開關型法術組裝）。
 

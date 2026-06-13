@@ -120,6 +120,16 @@
       },
       "description": "Hazard (HAZD): a radius effect applying a spell to actors in it; spell-spawned (MGEF archetype SpawnHazard) or placed (PlacedHazard)"
     },
+    "musicTracks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/musicTrack" },
+      "description": "Music Track (MUST): an audio entry (SingleTrack/Palette/SilentTrack) referenced by a music (MUSC)"
+    },
+    "music": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/music" },
+      "description": "Music Type (MUSC): a container assigned to cells[].music / worldspaces[].music"
+    },
     "imageSpaceModifiers": {
       "type": "array",
       "items": {
@@ -2001,6 +2011,10 @@
         "imageSpace": {
           "type": "string",
           "description": "optional IMGS ref: an in-spec imageSpaces entry editorId OR a vanilla '<master>:0xFORMID'. Controls HDR eye-adapt / bloom / cinematic look for the cell."
+        },
+        "music": {
+          "type": "string",
+          "description": "optional MUSC ref: an in-spec music[] entry editorId OR a vanilla '<master>:0xFORMID'. The music type that plays in this cell."
         },
         "lighting": {
           "$ref": "#/$defs/cellLighting",
@@ -3936,6 +3950,38 @@
         "coneSpread": {
           "type": "number"
         }
+      }
+    },
+    "musicTrack": {
+      "type": "object",
+      "required": [ "editorId" ],
+      "description": "MUST — an audio entry. SingleTrack plays `file`; Palette shuffles its sub-`tracks`; SilentTrack is a timed silence.",
+      "properties": {
+        "editorId": { "type": "string" },
+        "type": { "enum": [ "SingleTrack", "Palette", "SilentTrack" ] },
+        "file": { "type": "string", "description": "audio path under Data/Music (.xwm/.wav); a loose asset shipped via package --assets" },
+        "fadeOut": { "type": "number" },
+        "duration": { "type": "number" },
+        "loopBegins": { "type": "number", "description": "loop start seconds; -1 (default) = no loop" },
+        "loopEnds": { "type": "number" },
+        "loopCount": { "type": "integer", "description": "0 = infinite when looping" },
+        "tracks": { "type": "array", "items": { "type": "string" }, "description": "Palette: refs -> other musicTracks editorIds" }
+      }
+    },
+    "music": {
+      "type": "object",
+      "required": [ "editorId" ],
+      "description": "MUSC — a music type the game selects by priority and assigns to cells[].music / worldspaces[].music.",
+      "properties": {
+        "editorId": { "type": "string" },
+        "flags": {
+          "type": "array",
+          "items": { "enum": [ "PlaysOneSelection", "AbruptTransition", "CycleTracks", "MaintainTrackOrder", "DucksCurrentTrack", "DoesNotQueue" ] }
+        },
+        "priority": { "type": "integer", "minimum": 0, "description": "higher wins over lower-priority music at the same time" },
+        "duckingDecibel": { "type": "number", "minimum": 0, "maximum": 655, "description": "POSITIVE dB attenuation applied to other audio" },
+        "fadeDuration": { "type": "number" },
+        "tracks": { "type": "array", "items": { "type": "string" }, "description": "refs -> musicTracks (MUST) editorIds" }
       }
     },
     "hazard": {
