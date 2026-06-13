@@ -90,10 +90,10 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 
 ## 進行中的方向
 
-> **當前進度／每個 session 做了什麼 → 寫 `docs/SESSION-LOG.md`（不要寫進本檔）。**
+> **in-flight / open 狀態 + 下次要做 → 寫 `docs/SESSION-LOG.md`（不要寫進本檔）。**
 > **待實機測試的項目 + 該怎麼測 → 寫 `docs/INGAME-TEST-QUEUE.md`（不要寫進本檔或 session log）。**
+> **這兩個檔只放「還沒完成」的東西——完成即移除，不留已完成清單**（完成 → 移進本檔 `已落地功能` + git log）。
 > 本檔只放 durable 的東西：專案慣例、`已落地功能` 目錄、`鐵律與踩坑`、`之後可做` roadmap。
-> in-flight 狀態與 session 進展在 session log；in-game 待確認與測試步驟在 test queue；
 > 功能真正 in-game 落地後，才把濃縮的一句話 + 實作細節指標移進下面的 `已落地功能`。
 > 想法備忘錄另見 `docs/IDEAS.md`。
 

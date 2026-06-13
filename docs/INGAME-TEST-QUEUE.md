@@ -5,7 +5,7 @@
 分工（跟 `docs/SESSION-LOG.md` 同理）：
 - **CLAUDE.md** = durable 參考。
 - **SESSION-LOG.md** = 進度日誌 / in-flight 狀態。
-- **本檔** = 待實機測試的具體項目 + 測試步驟。功能一旦 in-game 確認，就把它從「待測」搬到「已確認」尾段（附日期），並在 CLAUDE.md `已落地` 補上 in-game 確認註記。
+- **本檔** = **只列還沒在遊戲裡確認的待測項目** + 測試步驟。功能一旦 in-game 確認，就**從本檔移除**（不留已確認清單），並在 CLAUDE.md `已落地` 補上 in-game 確認註記；歷史記錄看 git log。
 - 我（Claude）**不能跑遊戲**——只能結構性驗證（diag / 逐位元對齊）+ 打包；真正的驗收門檻是你實機跑。見 memory `ingame-test-workflow`。
 
 ---
@@ -28,15 +28,4 @@
 
 ## 待測（active）
 
-（目前無其他待測項目）
-
----
-
-## 已確認（in-game confirmed，新→舊；詳見 CLAUDE.md「已落地」與 git log）
-
-- **任務標記大地圖修復（quest-markers WRLD override）**（2026-06-13，第九次成功）：Tamriel 大地圖底圖完整渲染（有地形、有貼圖、不破圖不全白）。最終正解 = `CopyWorldspaceEnv` 帶 **EDID + RNAM + TNAM/UNAM，但永不帶 OFST**。除錯鏈（subrecord 逐一拆解 vanilla vs 我們的輸出）：① OFST 是 Skyrim.esm 絕對檔案偏移量（0–154M）→ 複製進別的 ESP = 引擎 seek 垃圾 → 破圖；SSE 裡 vestigial，永不複製。② RNAM ×8455 是 `(FormID, 世界 cell X/Y)` 可移植，是 LOD 大物件清單，缺了 → 地圖破圖。③ 缺 EDID → LOD mesh 能載（看得到高度）但地形貼圖 atlas 路徑（`Textures\Terrain\<EDID>\Tamriel.4.x.y.dds`）解析不到 → 全白。三者到齊才完整。memory `worldspace-override-map-render-fields`。
-- **IsSceneActionComplete CTDA**（2026-06-13）：`sceneActionIndex:1`（SCEN action index 是 1-based）→ phase 1→2 推進正常。
-- **DualValueModifier SecondActorValue**（2026-06-13）：Health+Stamina 同時掉 ✅；Concentration+Aimed 需 `castingArt`+`projectile` 否則 CTD（已加 BarrierFireConcAimed beam refs）。
-- **Sofia×VIGILANT CTDA mechanics**（2026-06-13）：`GetStageDone`/`GetInWorldspace`/`sayOnce`/`linkTo` 全部正常，有 lips，無語音（預期，未加 TTS）。
-- **npcPatches[] AI Overhaul 用法**（2026-06-13）：Carlotta packages override 正常，白天留在家附近 sandbox。
-- 身份系統 Phase-2/C 全套（2026-06-07）、語音管線 + lip sync（2026-06-13）、明亮室內/室外光照（2026-06-09）、Scene PlayIdle（2026-06-07）、SM Kill→quest（2026-06-05）、自訂對話（含 .seq）、navmesh 自訂 worldspace、follower 等。歷史完整清單在 CLAUDE.md。
+（目前無待測項目——全部已確認，已移除；歷史見 CLAUDE.md「已落地」與 git log）
