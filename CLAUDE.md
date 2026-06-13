@@ -128,6 +128,7 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - **Light (LIGT)**：`LightSpec`（color/radius/fade/flags…），用 placements 放置。
 - **Projectile (PROJ) + Explosion (EXPL)**：自訂法術飛行彈+爆，鏈 EXPL←PROJ←MGEF←SPEL。
 - **NPC inventory**：`NpcSpec.Items`（攜帶/自動裝備/死亡掉落）；`NpcSpec.essential/protected`。
+- **Map marker (XMRK) on vanilla worldspace**（in-game 確認 2026-06-13，`ModForgeQuestMarkers-mapfix9.zip`）：`mapMarkers[]`（name/worldspace/position/type/flags）放進 Tamriel persistent cell，可見+可傳送+大地圖底圖完整渲染。**override vanilla WRLD（`CopyWorldspaceEnv`）的兩條鐵律**——詳見「鐵律與踩坑」與 memory [[worldspace-override-must-carry-topcell]]/[[worldspace-override-map-render-fields]]：① 持久 cell（0xD74）要帶 `MajorRecordFlagsRaw=0x00040400`（CopyCellEnv 不複製 record-header flag → CTD）；② 地圖渲染要帶 **EDID + RNAM + TNAM/UNAM 但永不帶 OFST**（OFST=Skyrim.esm 絕對檔案偏移量不可移植；缺 EDID=白圖有高度；缺 RNAM=破圖）。`examples/quest-markers.json`、`mapmarker`/`xmarker` placement kind。
 - **Hazard (HAZD)**（2026-06-13，offline 完整、未實機）：`hazards[]`（model/radius/lifetime/targetInterval/limit/spell/flags + light/sound/imad/impactDataSet）。兩種用法：①法術噴出（MGEF `archetype:"SpawnHazard"` + `association`，複用既有 MGEF wiring）②放置（`placements[].base` 是 HAZD 或 `kind:"hazard"`→`PlacedHazard`）。見 `SPEC-magic.md § hazards`、`CODE_MAP.items-magic.md`、`examples/hazard.json`。
 - **Music (MUSC + MUST)**（2026-06-13，offline 完整、未實機）：`musicTracks[]`（MUST：SingleTrack→`.xwm`／Palette→子軌池／SilentTrack + loop）+ `music[]`（MUSC：flags/priority/`duckingDecibel`(正 dB 0–655)/tracks）。掛 `cells[].music` + `worldspaces[].music`（後者沿用既有 wire）。音檔 loose asset 走 `assets`。見 `SPEC-world.md § music`、`CODE_MAP.items-magic.md`、`examples/music.json`。**踩坑**：`duckingDecibel` 負值記憶體 OK 但 CLI build 寫檔 range-check（0–655）會炸。
 
@@ -155,6 +156,7 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 - **Wine 工具吃 Windows path**：`xWMAEncode.exe` / `LipGenerator.exe` / `FaceFXWrapper.exe` 在 Wine 下要 `Z:\...` 路徑；C# shell-out 前用 `winepath -w`（`LipGenerator` 的 `<wav>` 與 `-OutputFileName:<lip>` 兩個路徑都要轉）。直接傳 Unix `/tmp/...wav` 會讓 xWMAEncode 報「Must specify input and output filenames」並導致 voice pipeline 降級成 loose `.wav`。
 - **adapter 合併**：`WireQuestStages` 要**合併**進既有 `QuestAdapter`（不能 `=` 覆寫，否則清掉 alias 腳本的 `.Aliases`）；`GetOwningQuest()` 在執行時 alias OnActivate 可用，dialogue TIF 在 game-load 是 None。
 - **vanilla nif 路徑必驗證** [[vanilla-nif-paths-must-be-verified]]：假路徑 → 隱形物件（無報錯）。
+- **override vanilla WRLD（Tamriel）** [[worldspace-override-must-carry-topcell]] [[worldspace-override-map-render-fields]]：override 整筆取代記憶體中的 WRLD（last-wins，缺欄位用引擎預設、非繼承），故 `CopyWorldspaceEnv` 要忠實帶。**地圖渲染三欄位**：EDID（地形貼圖 atlas 路徑用 `Textures\Terrain\<EDID>\`，缺→**白圖但有高度**）+ RNAM（×8455 LOD 大物件 `(FormID,世界座標)` 可移植，缺→**破圖**）+ TNAM/UNAM。**永不帶 OFST**（11400 個 uint32 是 Skyrim.esm 絕對檔案偏移量，跨檔=引擎 seek 垃圾→破圖；SSE runtime 自重建，省略安全）。除錯法：byte-parse vanilla vs 輸出 WRLD 逐 subrecord diff。**陷阱**：多欄位同一 commit 加會搞混誰造成什麼，靠 `git show` 確認該 build 實含哪些欄位，別信前一 session 的文字描述。
 - **存檔已固化**：GLOB value / scene `.seq` 只是初值，既有存檔保留 runtime 值。
 - **worktree 並行** [[feature-swarm-branches]]：worktree 一律從 **stale base** 分出（持續性 harness 行為）；先離線解碼 vanilla 再下精確施工單（agent 不負責猜）、分配互斥檔案領域；整合用 cherry-pick + keep-both（同名 test class 用 `--ours` 重貼）。
 

@@ -28,34 +28,13 @@
 
 ## 待測（active）
 
-### 1. 任務標記大地圖修復（quest-markers map-fix）— 第八次嘗試
-
-- **CTD / marker / 傳送早已 OK**（第五次起）：marker 可見、可傳送、不摔死。剩下純粹是大地圖底圖渲染。
-- **逐 subrecord 拆解三次結果**（解碼自 `CopyWorldspaceEnv` 輸出 vs vanilla Skyrim.esm Tamriel WRLD）：
-  | 嘗試 | RNAM | OFST | TNAM/UNAM | 結果 |
-  |------|------|------|-----------|------|
-  | 5 | ✗ | ✗ | ✗ | 白圖 |
-  | 6 | ✓ | ✓ | ✓ | 左上角破圖 |
-  | 7 | ✗ | ✗ | ✓ | 全圖破圖 |
-  | **8** | **✓** | **✗** | **✓** | ← 待測 |
-- **根因解碼（2026-06-13）**：
-  - **OFST** 的 11400 個 uint32 是 **Skyrim.esm 的絕對檔案偏移量**（0–154M，檔案 249M）→ 複製進我們 ESP 後引擎 seek 到垃圾 → 破圖。OFST 在 SSE 是 vestigial（引擎 runtime 重建 cell-offset cache），**永遠不複製**。
-  - **RNAM**（×8455）entry 是 `(FormID, 世界 cell X/Y)` → 可跨檔移植；是 LOD 大物件（山/巨石）清單。full WRLD override 若 drop 掉 → 地圖有貼圖無 LOD 幾何 → 破圖。
-  - 第七次（有 TNAM 無 RNAM）= 全圖破圖證實了「RNAM 必須在」。
-- **第八次組合**：RNAM ✓ + TNAM/UNAM ✓ + **OFST ✗**（唯一不可移植的欄位）。ESP 1.4MB，OFST=0 RNAM=8455 已驗。
-- **zip**：`~/skyrim_mods/mine/ModForgeQuestMarkers-mapfix8.zip`（舊的 mapfix/7 已刪，避免裝錯）
-- **怎麼測**：裝好 → 開大地圖確認 Tamriel 底圖**有地形、不破圖也不全白**（看得到山丘/雪地/海岸）。若還是破圖 → 連 RNAM 也要 revert（回白圖無破圖），白圖根因另查。
-
----
-
-## 已打包待測（zip 在 ~/skyrim_mods/mine/）
-
 （目前無其他待測項目）
 
 ---
 
 ## 已確認（in-game confirmed，新→舊；詳見 CLAUDE.md「已落地」與 git log）
 
+- **任務標記大地圖修復（quest-markers WRLD override）**（2026-06-13，第九次成功）：Tamriel 大地圖底圖完整渲染（有地形、有貼圖、不破圖不全白）。最終正解 = `CopyWorldspaceEnv` 帶 **EDID + RNAM + TNAM/UNAM，但永不帶 OFST**。除錯鏈（subrecord 逐一拆解 vanilla vs 我們的輸出）：① OFST 是 Skyrim.esm 絕對檔案偏移量（0–154M）→ 複製進別的 ESP = 引擎 seek 垃圾 → 破圖；SSE 裡 vestigial，永不複製。② RNAM ×8455 是 `(FormID, 世界 cell X/Y)` 可移植，是 LOD 大物件清單，缺了 → 地圖破圖。③ 缺 EDID → LOD mesh 能載（看得到高度）但地形貼圖 atlas 路徑（`Textures\Terrain\<EDID>\Tamriel.4.x.y.dds`）解析不到 → 全白。三者到齊才完整。memory `worldspace-override-map-render-fields`。
 - **IsSceneActionComplete CTDA**（2026-06-13）：`sceneActionIndex:1`（SCEN action index 是 1-based）→ phase 1→2 推進正常。
 - **DualValueModifier SecondActorValue**（2026-06-13）：Health+Stamina 同時掉 ✅；Concentration+Aimed 需 `castingArt`+`projectile` 否則 CTD（已加 BarrierFireConcAimed beam refs）。
 - **Sofia×VIGILANT CTDA mechanics**（2026-06-13）：`GetStageDone`/`GetInWorldspace`/`sayOnce`/`linkTo` 全部正常，有 lips，無語音（預期，未加 TTS）。
