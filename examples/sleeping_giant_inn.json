@@ -1,0 +1,5993 @@
+{
+ "_note": "REVERSE of vanilla RiverwoodSleepingGiantInn (Skyrim.esm:0x0133C6). Cell has 480 placed refs total: 477 objects + 3 NPCs (4 disabled-skipped). This file reproduces the VISIBLE layout: all 420 non-marker static/furniture/clutter refs + the 3 unique NPCs (Delphine/Orgnar/Embry). The ~57 XMarker(0x34)/XMarkerHeading(0x3B) anchors (Bard-audience + MQ106/MQ201/MQ203 scene markers) are invisible quest helpers, OMITTED. Rotation converted from esm RADIANS to ModForge DEGREES (deg = rad*180/pi). ModForge PlacementSpec has NO scale field (always 1.0); vanilla non-1.0 scales are recorded in _scale_in_vanilla notes only and NOT applied. Placing the 3 NPCs as overrides into a vanilla cell will DUPLICATE the vanilla actors \u2014 drop the npc entries for a clutter-only test. See docs/sleeping-giant-inn-reverse-2026-06-13.md.",
+ "pluginName": "ModForgeSleepingGiantInn.esp",
+ "esl": true,
+ "placements": [
+  {
+   "base": "Skyrim.esm:0x042B9D",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -551.711,
+    "y": 799.968,
+    "z": 35.949
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0F13C4",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 1310.694,
+    "y": 355.125,
+    "z": 1362.319
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   },
+   "_scale_in_vanilla": 3.95
+  },
+  {
+   "base": "Skyrim.esm:0x02EC1F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -23.593,
+    "y": 595.645,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 260.214
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0D5501",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 29.968,
+    "y": 599.447,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 265.462
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x000003",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -320.941,
+    "y": -553.304,
+    "z": 80.699
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 235.382
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0C234D",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -507.832,
+    "y": -353.466,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0C234D",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 2.148,
+    "y": -356.446,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0C234D",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 1.442,
+    "y": 357.058,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0C234D",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -512.856,
+    "y": 357.346,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0C234D",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -258.234,
+    "y": 357.058,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01C153",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 1548.963,
+    "y": 857.042,
+    "z": -190.643
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0F456D",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -686.545,
+    "y": -614.416,
+    "z": 155.939
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0F4530",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 65.652,
+    "y": 1070.462,
+    "z": -224.641
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 348.541
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0ED5F8",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1159.799,
+    "y": -9.758,
+    "z": 56.449
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 319.893
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0ED033",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -727.895,
+    "y": 919.583,
+    "z": 66.737
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 50.603
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0C4EF1",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 266.977,
+    "y": 896.174,
+    "z": -255.013
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 178.327
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x06512C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1272.037,
+    "y": 121.097,
+    "z": 285.404
+   },
+   "rotation": {
+    "x": -19.508,
+    "y": 57.227,
+    "z": 73.94
+   },
+   "_scale_in_vanilla": 0.87
+  },
+  {
+   "base": "Skyrim.esm:0x0C4EF1",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 326.957,
+    "y": 760.369,
+    "z": -255.013
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 270.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0F86FE",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 208.649,
+    "y": 798.35,
+    "z": -190.401
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 126.051
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 223.029,
+    "y": 872.293,
+    "z": -192.399
+   },
+   "rotation": {
+    "x": -0.163,
+    "y": 0.185,
+    "z": 40.112
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x04C3C8",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 253.231,
+    "y": 871.823,
+    "z": -190.582
+   },
+   "rotation": {
+    "x": -93.64,
+    "y": 70.639,
+    "z": 265.55
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0C78A6",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -767.68,
+    "y": -417.609,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0D54FF",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -802.349,
+    "y": 295.401,
+    "z": -2.536
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0C78A3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1024.125,
+    "y": -416.627,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x000032",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -264.682,
+    "y": -340.889,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 359.507
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x038B0E",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1406.203,
+    "y": 185.724,
+    "z": 149.561
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 90.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x038B0E",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1406.203,
+    "y": 185.724,
+    "z": 149.561
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 315.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x038B0E",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1400.294,
+    "y": -149.499,
+    "z": 146.489
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 90.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x038B0E",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1400.294,
+    "y": -87.335,
+    "z": 146.489
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 153.025
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064106",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 96.638,
+    "y": -164.417,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 318.931
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064106",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -216.403,
+    "y": -81.987,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 211.032
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064106",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -773.117,
+    "y": -204.648,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 27.686
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064106",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -787.787,
+    "y": 197.911,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 205.302
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064106",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -359.591,
+    "y": 159.185,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 150.871
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064106",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -875.261,
+    "y": -3.927,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 106.467
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0539F5",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -256.0,
+    "y": 0.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05D6A6",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -512.0,
+    "y": 0.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03807B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1179.01,
+    "y": 112.459,
+    "z": 78.294
+   },
+   "rotation": {
+    "x": 0.175,
+    "y": 0.131,
+    "z": 44.843
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x036340",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -855.46,
+    "y": -815.616,
+    "z": 0.402
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 84.511
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1240.06,
+    "y": -121.177,
+    "z": 0.425
+   },
+   "rotation": {
+    "x": -0.162,
+    "y": -0.009,
+    "z": 2.274
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1257.716,
+    "y": -143.549,
+    "z": 16.46
+   },
+   "rotation": {
+    "x": -0.138,
+    "y": 0.199,
+    "z": 2.245
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1193.097,
+    "y": -107.782,
+    "z": 5.904
+   },
+   "rotation": {
+    "x": -90.119,
+    "y": 68.941,
+    "z": 162.289
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1256.94,
+    "y": -121.242,
+    "z": 0.332
+   },
+   "rotation": {
+    "x": 0.099,
+    "y": 0.001,
+    "z": 250.114
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1201.076,
+    "y": -88.425,
+    "z": 0.333
+   },
+   "rotation": {
+    "x": 0.098,
+    "y": 0.002,
+    "z": 250.114
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1197.25,
+    "y": -71.694,
+    "z": 0.332
+   },
+   "rotation": {
+    "x": 0.099,
+    "y": 0.001,
+    "z": 250.114
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1209.72,
+    "y": -97.173,
+    "z": 0.332
+   },
+   "rotation": {
+    "x": 0.107,
+    "y": -0.007,
+    "z": 250.103
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1141.403,
+    "y": -6.47,
+    "z": 78.317
+   },
+   "rotation": {
+    "x": -0.102,
+    "y": -0.222,
+    "z": 2.282
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1144.394,
+    "y": 65.78,
+    "z": 78.302
+   },
+   "rotation": {
+    "x": 0.146,
+    "y": -0.038,
+    "z": 249.988
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01E3A3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1176.716,
+    "y": 143.499,
+    "z": 77.999
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 37.838
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064B3B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1157.728,
+    "y": 38.773,
+    "z": 79.171
+   },
+   "rotation": {
+    "x": 0.019,
+    "y": -0.158,
+    "z": 262.59
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064B36",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1143.363,
+    "y": 14.463,
+    "z": 79.183
+   },
+   "rotation": {
+    "x": 0.033,
+    "y": -0.215,
+    "z": 90.744
+   },
+   "_scale_in_vanilla": 0.75
+  },
+  {
+   "base": "Skyrim.esm:0x064B34",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1166.371,
+    "y": 8.577,
+    "z": 78.308
+   },
+   "rotation": {
+    "x": 0.01,
+    "y": 0.146,
+    "z": 0.104
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064B35",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1173.67,
+    "y": -153.387,
+    "z": 78.261
+   },
+   "rotation": {
+    "x": -0.158,
+    "y": 0.162,
+    "z": 45.097
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064B33",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1147.767,
+    "y": -70.742,
+    "z": 78.268
+   },
+   "rotation": {
+    "x": -0.021,
+    "y": -0.143,
+    "z": 359.986
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064B32",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1154.353,
+    "y": 21.796,
+    "z": 78.295
+   },
+   "rotation": {
+    "x": 0.143,
+    "y": -0.08,
+    "z": 7.476
+   },
+   "_scale_in_vanilla": 0.75
+  },
+  {
+   "base": "Skyrim.esm:0x064B31",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1138.266,
+    "y": -45.407,
+    "z": 78.197
+   },
+   "rotation": {
+    "x": -0.397,
+    "y": 0.268,
+    "z": 315.025
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x031941",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1158.151,
+    "y": 38.291,
+    "z": 78.296
+   },
+   "rotation": {
+    "x": -0.098,
+    "y": -0.036,
+    "z": 176.661
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05AD5A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1400.294,
+    "y": -149.499,
+    "z": 146.489
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02702E",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1158.966,
+    "y": -96.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02702A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1158.966,
+    "y": -160.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x034D23",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 127.073,
+    "y": 230.121,
+    "z": 284.344
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0A4ABB",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 2.148,
+    "y": -356.446,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x024F20",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -642.404,
+    "y": -0.504,
+    "z": 605.506
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x000845",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1133.666,
+    "y": 370.592,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 215.328
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02702C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1222.966,
+    "y": 160.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 90.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02702E",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1158.966,
+    "y": 32.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02702D",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1222.966,
+    "y": -160.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 270.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x038B0C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1400.294,
+    "y": -149.499,
+    "z": 146.489
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 135.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x038B0F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1400.294,
+    "y": -149.499,
+    "z": 146.489
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x038B0F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1400.294,
+    "y": -149.499,
+    "z": 146.489
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 45.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x038B0D",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1400.294,
+    "y": -149.499,
+    "z": 146.489
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 270.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x038B0C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1400.294,
+    "y": -149.499,
+    "z": 146.489
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 315.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x038B0F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1406.203,
+    "y": 185.724,
+    "z": 149.561
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05AD5A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1406.203,
+    "y": 185.724,
+    "z": 149.561
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 45.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x038B0F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1406.203,
+    "y": 185.724,
+    "z": 149.561
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 135.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x038B0F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1406.203,
+    "y": 185.724,
+    "z": 149.561
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 225.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0A4ABB",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -507.832,
+    "y": -353.466,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02702E",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1222.966,
+    "y": 160.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 90.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02702E",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1222.966,
+    "y": -160.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 270.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02702A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1158.966,
+    "y": 160.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 90.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x059A93",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -771.535,
+    "y": -767.615,
+    "z": 180.169
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x059A93",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1158.642,
+    "y": 0.29,
+    "z": 288.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x059A93",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -130.153,
+    "y": 2.732,
+    "z": 287.88
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05ED82",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1408.0,
+    "y": 0.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05ED80",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 128.0,
+    "y": 0.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x012FDF",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1468.967,
+    "y": 28.269,
+    "z": 0.263
+   },
+   "rotation": {
+    "x": 0.016,
+    "y": -0.014,
+    "z": 322.743
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x024CA5",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1116.732,
+    "y": -578.152,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 271.192
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0185B2",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1491.773,
+    "y": 284.183,
+    "z": 0.826
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 268.327
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x034D2C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1391.558,
+    "y": 61.063,
+    "z": 198.289
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 275.959
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x034D2D",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1390.245,
+    "y": 92.709,
+    "z": 193.602
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 86.414
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x034D30",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1391.034,
+    "y": 116.949,
+    "z": 196.983
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 347.579
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x034D30",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1391.452,
+    "y": 138.482,
+    "z": 196.983
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 196.239
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1523.543,
+    "y": 63.061,
+    "z": 17.693
+   },
+   "rotation": {
+    "x": -0.062,
+    "y": 0.183,
+    "z": 103.603
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1541.865,
+    "y": 136.186,
+    "z": 17.744
+   },
+   "rotation": {
+    "x": 0.241,
+    "y": 0.022,
+    "z": 324.683
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1529.234,
+    "y": 145.908,
+    "z": 17.788
+   },
+   "rotation": {
+    "x": 0.126,
+    "y": 0.061,
+    "z": 324.664
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1524.105,
+    "y": 55.407,
+    "z": 62.729
+   },
+   "rotation": {
+    "x": 0.344,
+    "y": 0.182,
+    "z": 0.021
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x104B40",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1522.862,
+    "y": 58.382,
+    "z": 108.674
+   },
+   "rotation": {
+    "x": 175.186,
+    "y": 1.743,
+    "z": 292.373
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x104B40",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1523.046,
+    "y": 64.993,
+    "z": 104.089
+   },
+   "rotation": {
+    "x": 7.185,
+    "y": -0.871,
+    "z": 304.163
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x104B3F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1525.595,
+    "y": 70.645,
+    "z": 108.642
+   },
+   "rotation": {
+    "x": 179.925,
+    "y": 0.076,
+    "z": 297.211
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x104B3F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1521.891,
+    "y": 81.634,
+    "z": 109.595
+   },
+   "rotation": {
+    "x": -159.625,
+    "y": 6.443,
+    "z": 253.117
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x012FDF",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1533.784,
+    "y": 118.433,
+    "z": 107.849
+   },
+   "rotation": {
+    "x": 0.063,
+    "y": -0.573,
+    "z": 207.916
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1539.629,
+    "y": 49.969,
+    "z": 17.693
+   },
+   "rotation": {
+    "x": 0.022,
+    "y": -0.186,
+    "z": 125.091
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1536.425,
+    "y": 76.149,
+    "z": 17.693
+   },
+   "rotation": {
+    "x": -0.152,
+    "y": 0.122,
+    "z": 70.657
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1531.704,
+    "y": 90.76,
+    "z": 17.788
+   },
+   "rotation": {
+    "x": -0.224,
+    "y": -0.121,
+    "z": 70.661
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1536.206,
+    "y": 103.574,
+    "z": 17.788
+   },
+   "rotation": {
+    "x": 0.221,
+    "y": 0.083,
+    "z": 288.85
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1531.741,
+    "y": 118.881,
+    "z": 17.786
+   },
+   "rotation": {
+    "x": 0.018,
+    "y": 0.215,
+    "z": 288.854
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x012FE9",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1529.707,
+    "y": 132.359,
+    "z": 62.722
+   },
+   "rotation": {
+    "x": 0.005,
+    "y": -0.056,
+    "z": 266.513
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F248",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1152.168,
+    "y": -230.49,
+    "z": 202.295
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F248",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -896.115,
+    "y": -230.49,
+    "z": 202.295
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F248",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -639.841,
+    "y": -230.49,
+    "z": 202.295
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F248",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -384.356,
+    "y": -230.49,
+    "z": 202.295
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F248",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -128.141,
+    "y": -230.49,
+    "z": 202.295
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F248",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -128.465,
+    "y": 230.745,
+    "z": 202.295
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F248",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -383.411,
+    "y": 230.745,
+    "z": 202.295
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F248",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -639.968,
+    "y": 230.745,
+    "z": 202.295
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F248",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1151.6,
+    "y": 230.745,
+    "z": 202.295
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F248",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -895.757,
+    "y": 230.745,
+    "z": 202.295
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F24A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -566.458,
+    "y": 349.684,
+    "z": 64.05
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 258.036
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F24A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -464.572,
+    "y": 350.884,
+    "z": 64.045
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 117.662
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F24A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -41.056,
+    "y": 356.342,
+    "z": 64.05
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 258.036
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F24A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 41.407,
+    "y": 361.42,
+    "z": 64.045
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 78.987
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F24A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -555.149,
+    "y": -356.896,
+    "z": 64.05
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 258.036
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F24A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -457.9,
+    "y": -362.523,
+    "z": 64.045
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 123.391
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F24A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 31.833,
+    "y": -358.205,
+    "z": 64.045
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 114.797
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F24A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -65.165,
+    "y": -367.174,
+    "z": 64.05
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 249.442
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064B3B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 33.281,
+    "y": -319.201,
+    "z": 64.149
+   },
+   "rotation": {
+    "x": -0.25,
+    "y": -0.0,
+    "z": 265.688
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x031941",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 34.09,
+    "y": -320.457,
+    "z": 63.306
+   },
+   "rotation": {
+    "x": 0.072,
+    "y": 0.001,
+    "z": 179.543
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064B33",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 59.068,
+    "y": -352.728,
+    "z": 63.249
+   },
+   "rotation": {
+    "x": 0.104,
+    "y": -0.149,
+    "z": 278.364
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064B31",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 1.15,
+    "y": -376.298,
+    "z": 63.238
+   },
+   "rotation": {
+    "x": -0.251,
+    "y": 0.115,
+    "z": 233.336
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 3.097,
+    "y": -343.952,
+    "z": 63.353
+   },
+   "rotation": {
+    "x": -0.01,
+    "y": -0.163,
+    "z": 280.628
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064B36",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -36.759,
+    "y": -365.26,
+    "z": 63.974
+   },
+   "rotation": {
+    "x": 0.464,
+    "y": -0.062,
+    "z": 9.078
+   },
+   "_scale_in_vanilla": 0.75
+  },
+  {
+   "base": "Skyrim.esm:0x064B32",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -42.453,
+    "y": -353.103,
+    "z": 63.234
+   },
+   "rotation": {
+    "x": 0.388,
+    "y": 0.468,
+    "z": 285.848
+   },
+   "_scale_in_vanilla": 0.75
+  },
+  {
+   "base": "Skyrim.esm:0x064B34",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -17.41,
+    "y": -358.146,
+    "z": 63.252
+   },
+   "rotation": {
+    "x": -0.333,
+    "y": 0.094,
+    "z": 278.459
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x031941",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -50.308,
+    "y": -320.926,
+    "z": 63.275
+   },
+   "rotation": {
+    "x": -0.016,
+    "y": 0.11,
+    "z": 179.547
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064B3B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -51.081,
+    "y": -319.808,
+    "z": 64.088
+   },
+   "rotation": {
+    "x": 0.09,
+    "y": 0.429,
+    "z": 265.3
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -9.728,
+    "y": -340.073,
+    "z": 63.261
+   },
+   "rotation": {
+    "x": 0.155,
+    "y": 0.167,
+    "z": 168.467
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x00000F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -687.118,
+    "y": 479.883,
+    "z": 63.711
+   },
+   "rotation": {
+    "x": -0.246,
+    "y": -0.078,
+    "z": 282.585
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x00000F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -688.566,
+    "y": 494.818,
+    "z": 63.728
+   },
+   "rotation": {
+    "x": -0.269,
+    "y": -0.03,
+    "z": 301.419
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x00000F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -679.59,
+    "y": 502.452,
+    "z": 63.711
+   },
+   "rotation": {
+    "x": 0.109,
+    "y": -0.59,
+    "z": 303.743
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -714.797,
+    "y": 498.01,
+    "z": 63.673
+   },
+   "rotation": {
+    "x": 0.013,
+    "y": -0.46,
+    "z": 134.71
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01397E",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -719.126,
+    "y": 470.801,
+    "z": 64.799
+   },
+   "rotation": {
+    "x": -2.099,
+    "y": 2.519,
+    "z": 321.225
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02F239",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -799.855,
+    "y": 360.07,
+    "z": -0.444
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 91.192
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x00000F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -696.987,
+    "y": 490.339,
+    "z": 63.786
+   },
+   "rotation": {
+    "x": -0.193,
+    "y": 0.576,
+    "z": 268.15
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0D8E7F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -701.121,
+    "y": 476.829,
+    "z": 63.243
+   },
+   "rotation": {
+    "x": -0.095,
+    "y": -0.183,
+    "z": 0.014
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02C35A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -865.804,
+    "y": -875.667,
+    "z": 60.15
+   },
+   "rotation": {
+    "x": 0.199,
+    "y": 0.244,
+    "z": 95.945
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F24A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -839.884,
+    "y": -880.613,
+    "z": 60.561
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 18.357
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02EC1F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -852.838,
+    "y": -881.7,
+    "z": -2.187
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 221.539
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01E3A3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1530.069,
+    "y": 12.473,
+    "z": -0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 267.491
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x10C0E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1531.345,
+    "y": -325.806,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 208.167
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x000845",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1519.235,
+    "y": -270.499,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 127.953
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x10C0E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1480.106,
+    "y": -368.284,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 127.953
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x000845",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1494.823,
+    "y": -210.131,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 192.41
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05C016",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1433.885,
+    "y": 118.284,
+    "z": 0.533
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 78.782
+   },
+   "_scale_in_vanilla": 1.11
+  },
+  {
+   "base": "Skyrim.esm:0x05C015",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1426.062,
+    "y": -114.978,
+    "z": 0.533
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 83.079
+   },
+   "_scale_in_vanilla": 1.11
+  },
+  {
+   "base": "Skyrim.esm:0x038B0C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1400.294,
+    "y": -87.335,
+    "z": 146.489
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 18.025
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x038B0D",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1400.294,
+    "y": -87.335,
+    "z": 146.489
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 333.025
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x038B0F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1400.294,
+    "y": -87.335,
+    "z": 146.489
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 108.025
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x038B0F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1400.294,
+    "y": -87.335,
+    "z": 146.489
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 243.025
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x038B0C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1400.294,
+    "y": -87.335,
+    "z": 146.489
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 198.025
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05AD5A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1400.294,
+    "y": -87.335,
+    "z": 146.489
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 63.025
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05C036",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -5.083,
+    "y": -418.749,
+    "z": 87.833
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   },
+   "_scale_in_vanilla": 0.71
+  },
+  {
+   "base": "Skyrim.esm:0x05C035",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -522.68,
+    "y": -418.749,
+    "z": 93.608
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   },
+   "_scale_in_vanilla": 0.7
+  },
+  {
+   "base": "Skyrim.esm:0x0A4ABB",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 1.442,
+    "y": 357.058,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x059A93",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1049.33,
+    "y": 756.719,
+    "z": 122.715
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 91.673
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05C017",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1013.886,
+    "y": 766.164,
+    "z": 0.533
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 167.591
+   },
+   "_scale_in_vanilla": 1.21
+  },
+  {
+   "base": "Skyrim.esm:0x01E3A3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1228.678,
+    "y": 158.161,
+    "z": 77.999
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 3.461
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05ED83",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -896.0,
+    "y": 0.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02702E",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1158.966,
+    "y": 96.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02702E",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1158.966,
+    "y": -32.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x024F20",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -126.143,
+    "y": 0.182,
+    "z": 601.927
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05C016",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1018.591,
+    "y": -560.685,
+    "z": 0.533
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 344.244
+   },
+   "_scale_in_vanilla": 1.05
+  },
+  {
+   "base": "Skyrim.esm:0x020673",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -705.438,
+    "y": -711.452,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 359.278
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x031941",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -471.888,
+    "y": -317.474,
+    "z": 63.316
+   },
+   "rotation": {
+    "x": -0.081,
+    "y": -0.055,
+    "z": 179.543
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x031941",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -556.285,
+    "y": -317.952,
+    "z": 63.289
+   },
+   "rotation": {
+    "x": 0.204,
+    "y": 0.026,
+    "z": 179.537
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x031941",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -43.736,
+    "y": 322.755,
+    "z": 63.29
+   },
+   "rotation": {
+    "x": -0.004,
+    "y": 0.099,
+    "z": 179.564
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x031941",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 46.318,
+    "y": 325.305,
+    "z": 63.291
+   },
+   "rotation": {
+    "x": -0.282,
+    "y": -0.078,
+    "z": 180.473
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x031941",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -550.721,
+    "y": 323.043,
+    "z": 63.356
+   },
+   "rotation": {
+    "x": -0.111,
+    "y": 0.071,
+    "z": 179.561
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x031941",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -460.665,
+    "y": 325.593,
+    "z": 63.36
+   },
+   "rotation": {
+    "x": -0.112,
+    "y": 0.016,
+    "z": 180.471
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -498.948,
+    "y": -353.985,
+    "z": 63.353
+   },
+   "rotation": {
+    "x": -0.116,
+    "y": -0.115,
+    "z": 322.167
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -505.975,
+    "y": -342.577,
+    "z": 63.261
+   },
+   "rotation": {
+    "x": 0.1,
+    "y": 0.064,
+    "z": 210.007
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -527.236,
+    "y": -355.572,
+    "z": 63.353
+   },
+   "rotation": {
+    "x": -0.121,
+    "y": -0.107,
+    "z": 322.167
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -4.104,
+    "y": 344.835,
+    "z": 63.348
+   },
+   "rotation": {
+    "x": 0.081,
+    "y": -0.175,
+    "z": 273.469
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 0.166,
+    "y": 369.385,
+    "z": 63.266
+   },
+   "rotation": {
+    "x": 0.133,
+    "y": 0.185,
+    "z": 161.304
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 9.759,
+    "y": 356.535,
+    "z": 63.348
+   },
+   "rotation": {
+    "x": 0.081,
+    "y": -0.175,
+    "z": 273.469
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 7.883,
+    "y": 382.827,
+    "z": 63.269
+   },
+   "rotation": {
+    "x": 0.133,
+    "y": 0.139,
+    "z": 161.262
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -436.057,
+    "y": 346.416,
+    "z": 63.353
+   },
+   "rotation": {
+    "x": 0.066,
+    "y": -0.103,
+    "z": 298.816
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -439.345,
+    "y": 361.526,
+    "z": 63.353
+   },
+   "rotation": {
+    "x": -0.015,
+    "y": -0.152,
+    "z": 298.835
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -455.13,
+    "y": 364.517,
+    "z": 63.452
+   },
+   "rotation": {
+    "x": 0.025,
+    "y": -0.11,
+    "z": 51.015
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -494.762,
+    "y": 349.216,
+    "z": 63.313
+   },
+   "rotation": {
+    "x": -0.092,
+    "y": 0.292,
+    "z": 46.094
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -25.444,
+    "y": 341.437,
+    "z": 63.273
+   },
+   "rotation": {
+    "x": 0.133,
+    "y": -0.012,
+    "z": 87.795
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 56.903,
+    "y": 347.275,
+    "z": 63.274
+   },
+   "rotation": {
+    "x": 0.105,
+    "y": 0.054,
+    "z": 76.336
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -588.264,
+    "y": -328.967,
+    "z": 68.509
+   },
+   "rotation": {
+    "x": 91.554,
+    "y": -1.066,
+    "z": 62.704
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -450.03,
+    "y": -337.327,
+    "z": 63.274
+   },
+   "rotation": {
+    "x": 0.026,
+    "y": 0.116,
+    "z": 63.443
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 36.989,
+    "y": -340.037,
+    "z": 63.265
+   },
+   "rotation": {
+    "x": 0.026,
+    "y": 0.116,
+    "z": 63.443
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -66.689,
+    "y": -339.13,
+    "z": 64.053
+   },
+   "rotation": {
+    "x": 11.26,
+    "y": -0.016,
+    "z": 0.221
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x065C97",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -483.675,
+    "y": -344.099,
+    "z": 63.222
+   },
+   "rotation": {
+    "x": 0.485,
+    "y": -0.317,
+    "z": 37.024
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x065C97",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -521.779,
+    "y": -336.911,
+    "z": 63.223
+   },
+   "rotation": {
+    "x": 0.15,
+    "y": -0.286,
+    "z": 321.074
+   },
+   "_scale_in_vanilla": 1.14
+  },
+  {
+   "base": "Skyrim.esm:0x065C97",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 84.018,
+    "y": -349.593,
+    "z": 63.245
+   },
+   "rotation": {
+    "x": -0.125,
+    "y": 0.377,
+    "z": 255.389
+   },
+   "_scale_in_vanilla": 1.14
+  },
+  {
+   "base": "Skyrim.esm:0x065C97",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -502.905,
+    "y": 371.251,
+    "z": 63.354
+   },
+   "rotation": {
+    "x": 0.054,
+    "y": 0.006,
+    "z": 348.07
+   },
+   "_scale_in_vanilla": 1.14
+  },
+  {
+   "base": "Skyrim.esm:0x065C97",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -527.645,
+    "y": 357.61,
+    "z": 63.353
+   },
+   "rotation": {
+    "x": 0.081,
+    "y": -0.07,
+    "z": 41.312
+   },
+   "_scale_in_vanilla": 1.14
+  },
+  {
+   "base": "Skyrim.esm:0x065C97",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -590.0,
+    "y": 361.449,
+    "z": 63.352
+   },
+   "rotation": {
+    "x": 0.058,
+    "y": 0.056,
+    "z": 135.026
+   },
+   "_scale_in_vanilla": 1.22
+  },
+  {
+   "base": "Skyrim.esm:0x065C97",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -72.552,
+    "y": 344.577,
+    "z": 63.23
+   },
+   "rotation": {
+    "x": 0.275,
+    "y": 0.315,
+    "z": 332.813
+   },
+   "_scale_in_vanilla": 1.14
+  },
+  {
+   "base": "Skyrim.esm:0x065C97",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -81.766,
+    "y": 372.259,
+    "z": 63.007
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 67.323
+   },
+   "_scale_in_vanilla": 1.14
+  },
+  {
+   "base": "Skyrim.esm:0x05C035",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -13.086,
+    "y": 419.673,
+    "z": 96.386
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 14.324,
+    "z": 0.0
+   },
+   "_scale_in_vanilla": 0.69
+  },
+  {
+   "base": "Skyrim.esm:0x05C036",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -265.739,
+    "y": 418.578,
+    "z": 89.046
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   },
+   "_scale_in_vanilla": 0.73
+  },
+  {
+   "base": "Skyrim.esm:0x05C037",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -526.234,
+    "y": 419.189,
+    "z": 90.641
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   },
+   "_scale_in_vanilla": 0.71
+  },
+  {
+   "base": "Skyrim.esm:0x02E6CD",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1530.445,
+    "y": 98.446,
+    "z": 0.363
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 268.419
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02E6CD",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1232.65,
+    "y": 377.38,
+    "z": 0.363
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x012FDF",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1261.857,
+    "y": 379.68,
+    "z": 107.727
+   },
+   "rotation": {
+    "x": -0.182,
+    "y": -0.142,
+    "z": 109.035
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x012FE9",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1195.673,
+    "y": 374.315,
+    "z": 62.634
+   },
+   "rotation": {
+    "x": 0.008,
+    "y": -0.062,
+    "z": 266.513
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x065C97",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1279.306,
+    "y": 379.641,
+    "z": 62.576
+   },
+   "rotation": {
+    "x": 0.177,
+    "y": -0.037,
+    "z": 281.014
+   },
+   "_scale_in_vanilla": 1.14
+  },
+  {
+   "base": "Skyrim.esm:0x065C97",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1260.787,
+    "y": 378.474,
+    "z": 62.6
+   },
+   "rotation": {
+    "x": 0.333,
+    "y": 0.005,
+    "z": 255.449
+   },
+   "_scale_in_vanilla": 1.18
+  },
+  {
+   "base": "Skyrim.esm:0x065C97",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1245.614,
+    "y": 380.164,
+    "z": 62.632
+   },
+   "rotation": {
+    "x": -0.103,
+    "y": 0.137,
+    "z": 73.051
+   },
+   "_scale_in_vanilla": 1.18
+  },
+  {
+   "base": "Skyrim.esm:0x065C97",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1225.854,
+    "y": 377.492,
+    "z": 62.632
+   },
+   "rotation": {
+    "x": 0.009,
+    "y": -0.043,
+    "z": 281.219
+   },
+   "_scale_in_vanilla": 1.18
+  },
+  {
+   "base": "Skyrim.esm:0x012FE7",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1206.23,
+    "y": 375.544,
+    "z": 107.683
+   },
+   "rotation": {
+    "x": -0.098,
+    "y": 0.03,
+    "z": 266.514
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01E3A3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1321.882,
+    "y": 370.495,
+    "z": -0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 3.461
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1276.971,
+    "y": 383.43,
+    "z": 17.638
+   },
+   "rotation": {
+    "x": 0.08,
+    "y": 0.097,
+    "z": 189.953
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1259.514,
+    "y": 376.413,
+    "z": 17.723
+   },
+   "rotation": {
+    "x": -0.05,
+    "y": -0.165,
+    "z": 302.114
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1246.474,
+    "y": 385.804,
+    "z": 17.721
+   },
+   "rotation": {
+    "x": 0.093,
+    "y": -0.162,
+    "z": 253.448
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1229.316,
+    "y": 384.976,
+    "z": 17.638
+   },
+   "rotation": {
+    "x": 0.07,
+    "y": 0.105,
+    "z": 112.605
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1215.164,
+    "y": 383.279,
+    "z": 17.733
+   },
+   "rotation": {
+    "x": -0.172,
+    "y": 0.114,
+    "z": 160.337
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1205.043,
+    "y": 370.695,
+    "z": 17.723
+   },
+   "rotation": {
+    "x": 0.165,
+    "y": -0.044,
+    "z": 209.008
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1193.351,
+    "y": 382.596,
+    "z": 17.721
+   },
+   "rotation": {
+    "x": 0.183,
+    "y": 0.037,
+    "z": 181.828
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1182.422,
+    "y": 369.067,
+    "z": 17.723
+   },
+   "rotation": {
+    "x": 0.14,
+    "y": -0.099,
+    "z": 230.494
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05C015",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1017.983,
+    "y": 78.748,
+    "z": 0.533
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 150.401
+   },
+   "_scale_in_vanilla": 1.11
+  },
+  {
+   "base": "Skyrim.esm:0x05C016",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -999.992,
+    "y": -113.17,
+    "z": 0.533
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 78.782
+   },
+   "_scale_in_vanilla": 1.11
+  },
+  {
+   "base": "Skyrim.esm:0x024CA7",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -681.636,
+    "y": -574.174,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 88.809
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05C015",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -781.797,
+    "y": -571.058,
+    "z": 1.368
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 60.161
+   },
+   "_scale_in_vanilla": 0.95
+  },
+  {
+   "base": "Skyrim.esm:0x012FE7",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -682.765,
+    "y": -664.081,
+    "z": 0.277
+   },
+   "rotation": {
+    "x": 0.011,
+    "y": 0.131,
+    "z": 342.812
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03FA2B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -816.132,
+    "y": -935.502,
+    "z": 320.658
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05C037",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -638.022,
+    "y": -816.394,
+    "z": 104.192
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 90.0
+   },
+   "_scale_in_vanilla": 0.82
+  },
+  {
+   "base": "Skyrim.esm:0x013790",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1160.115,
+    "y": -29.108,
+    "z": 18.079
+   },
+   "rotation": {
+    "x": -0.018,
+    "y": 0.043,
+    "z": 0.183
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1159.78,
+    "y": 109.594,
+    "z": 78.337
+   },
+   "rotation": {
+    "x": 0.291,
+    "y": -0.468,
+    "z": 40.226
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1144.885,
+    "y": 93.23,
+    "z": 78.326
+   },
+   "rotation": {
+    "x": 0.326,
+    "y": -0.368,
+    "z": 80.642
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1164.689,
+    "y": 101.327,
+    "z": 16.397
+   },
+   "rotation": {
+    "x": 0.062,
+    "y": -0.457,
+    "z": 115.114
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1167.46,
+    "y": 115.596,
+    "z": 16.37
+   },
+   "rotation": {
+    "x": -0.005,
+    "y": 0.013,
+    "z": 74.819
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1165.763,
+    "y": 84.211,
+    "z": 16.382
+   },
+   "rotation": {
+    "x": 0.253,
+    "y": 0.017,
+    "z": 51.259
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1162.544,
+    "y": 68.6,
+    "z": 21.258
+   },
+   "rotation": {
+    "x": 68.925,
+    "y": -12.996,
+    "z": 4.61
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1165.853,
+    "y": 134.696,
+    "z": 21.28
+   },
+   "rotation": {
+    "x": -64.651,
+    "y": -35.589,
+    "z": 164.081
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1236.877,
+    "y": -146.955,
+    "z": 16.453
+   },
+   "rotation": {
+    "x": -0.091,
+    "y": -0.009,
+    "z": 330.846
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x012FDF",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1234.362,
+    "y": 150.589,
+    "z": 16.151
+   },
+   "rotation": {
+    "x": 0.189,
+    "y": -0.507,
+    "z": 83.261
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x00000F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1178.569,
+    "y": 72.783,
+    "z": 55.883
+   },
+   "rotation": {
+    "x": 0.025,
+    "y": -0.182,
+    "z": 41.453
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x00000F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1174.306,
+    "y": 56.833,
+    "z": 55.883
+   },
+   "rotation": {
+    "x": -0.34,
+    "y": -0.015,
+    "z": 98.491
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x00000F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1174.109,
+    "y": 86.489,
+    "z": 55.886
+   },
+   "rotation": {
+    "x": 0.009,
+    "y": -0.592,
+    "z": 22.614
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x00000F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1180.051,
+    "y": 98.352,
+    "z": 55.888
+   },
+   "rotation": {
+    "x": 0.129,
+    "y": 0.261,
+    "z": 83.224
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x00000F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1165.597,
+    "y": 100.439,
+    "z": 55.883
+   },
+   "rotation": {
+    "x": -0.111,
+    "y": 0.112,
+    "z": 163.092
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0D790C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1174.76,
+    "y": -40.328,
+    "z": 23.805
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   },
+   "_scale_in_vanilla": 0.72
+  },
+  {
+   "base": "Skyrim.esm:0x10C0E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 249.207,
+    "y": -379.797,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 97.404
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x10C0E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 250.661,
+    "y": 377.65,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 63.026
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x000845",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 193.063,
+    "y": 376.525,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 117.457
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x10C0E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 250.738,
+    "y": 318.799,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 144.673
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03FA2B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -965.549,
+    "y": 937.937,
+    "z": 322.237
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03FA2B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -959.925,
+    "y": -934.296,
+    "z": 324.302
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x012FEB",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1121.699,
+    "y": -608.977,
+    "z": 62.249
+   },
+   "rotation": {
+    "x": -0.117,
+    "y": 0.06,
+    "z": 359.999
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x012FDF",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1117.959,
+    "y": -561.255,
+    "z": 62.277
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 41.539
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x034D23",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -125.914,
+    "y": 230.121,
+    "z": 284.344
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03F94E",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1409.375,
+    "y": -107.946,
+    "z": 458.906
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 90.0
+   },
+   "_scale_in_vanilla": 0.88
+  },
+  {
+   "base": "Skyrim.esm:0x03F94E",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1409.375,
+    "y": 109.945,
+    "z": 458.906
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 90.0
+   },
+   "_scale_in_vanilla": 0.88
+  },
+  {
+   "base": "Skyrim.esm:0x012FE6",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -795.966,
+    "y": 452.188,
+    "z": 0.311
+   },
+   "rotation": {
+    "x": -0.105,
+    "y": 0.007,
+    "z": 312.726
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x012FE6",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -674.604,
+    "y": -469.904,
+    "z": 0.251
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x012FEB",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -848.484,
+    "y": 452.039,
+    "z": 0.776
+   },
+   "rotation": {
+    "x": 1.246,
+    "y": -0.268,
+    "z": 0.493
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x012FEA",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1116.476,
+    "y": 449.788,
+    "z": 0.305
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05C036",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1028.214,
+    "y": 929.292,
+    "z": 105.879
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   },
+   "_scale_in_vanilla": 0.88
+  },
+  {
+   "base": "Skyrim.esm:0x05C037",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -773.979,
+    "y": 928.857,
+    "z": 104.981
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.0
+   },
+   "_scale_in_vanilla": 0.9
+  },
+  {
+   "base": "Skyrim.esm:0x03FA2B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -822.717,
+    "y": 937.937,
+    "z": 322.237
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x059A93",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -894.014,
+    "y": 671.156,
+    "z": 252.931
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x024F20",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -896.104,
+    "y": 670.084,
+    "z": 290.406
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x093BB7",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -896.0,
+    "y": 0.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x10CD5B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 252.556,
+    "y": -322.44,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 216.292
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01E3A3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1532.135,
+    "y": -35.547,
+    "z": -0.0
+   },
+   "rotation": {
+    "x": -0.0,
+    "y": -0.0,
+    "z": 277.517
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F248",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1136.007,
+    "y": -669.215,
+    "z": 172.1
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 270.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x059A93",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1011.832,
+    "y": -752.237,
+    "z": 180.169
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x036340",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -936.127,
+    "y": -818.178,
+    "z": 0.402
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 271.192
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F24A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -931.66,
+    "y": -889.277,
+    "z": 60.561
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 48.437
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02EC1F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -943.416,
+    "y": -883.725,
+    "z": -2.187
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 251.62
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x020673",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1092.197,
+    "y": -711.452,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 359.278
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05C015",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1013.119,
+    "y": -779.336,
+    "z": 1.368
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 60.161
+   },
+   "_scale_in_vanilla": 1.02
+  },
+  {
+   "base": "Skyrim.esm:0x03B420",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1091.967,
+    "y": -828.683,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F248",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -656.048,
+    "y": -671.804,
+    "z": 172.1
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 90.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x024F20",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1151.102,
+    "y": -0.504,
+    "z": 605.506
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1527.568,
+    "y": 73.897,
+    "z": 62.693
+   },
+   "rotation": {
+    "x": -0.121,
+    "y": -0.03,
+    "z": 40.128
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1529.125,
+    "y": 93.642,
+    "z": 62.755
+   },
+   "rotation": {
+    "x": -0.574,
+    "y": -0.332,
+    "z": 115.97
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -540.078,
+    "y": 341.164,
+    "z": 63.355
+   },
+   "rotation": {
+    "x": 0.007,
+    "y": 0.017,
+    "z": 87.796
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x036340",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 55.488,
+    "y": -1.433,
+    "z": 0.255
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 281.219
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0185B2",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 217.013,
+    "y": 103.574,
+    "z": 0.826
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 94.538
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0185B6",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 234.524,
+    "y": 217.87,
+    "z": 1.161
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 77.35
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0185B6",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 251.739,
+    "y": -53.974,
+    "z": 1.161
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 0.001
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x031941",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -213.358,
+    "y": 325.305,
+    "z": 63.291
+   },
+   "rotation": {
+    "x": -0.282,
+    "y": -0.078,
+    "z": 180.473
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x031941",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -303.413,
+    "y": 322.755,
+    "z": 63.29
+   },
+   "rotation": {
+    "x": -0.004,
+    "y": 0.099,
+    "z": 179.564
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0A4ABB",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -258.234,
+    "y": 357.058,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F24A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -218.269,
+    "y": 361.42,
+    "z": 64.045
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 78.987
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F24A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -300.732,
+    "y": 356.342,
+    "z": 64.05
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 258.036
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x065C97",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -341.442,
+    "y": 372.259,
+    "z": 63.007
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 67.323
+   },
+   "_scale_in_vanilla": 1.14
+  },
+  {
+   "base": "Skyrim.esm:0x06512C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1285.21,
+    "y": -106.868,
+    "z": 295.058
+   },
+   "rotation": {
+    "x": 7.423,
+    "y": 58.442,
+    "z": 30.142
+   },
+   "_scale_in_vanilla": 0.77
+  },
+  {
+   "base": "Skyrim.esm:0x065C97",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -332.228,
+    "y": 344.577,
+    "z": 63.23
+   },
+   "rotation": {
+    "x": 0.275,
+    "y": 0.315,
+    "z": 332.813
+   },
+   "_scale_in_vanilla": 1.14
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -202.773,
+    "y": 347.275,
+    "z": 63.274
+   },
+   "rotation": {
+    "x": 0.105,
+    "y": 0.054,
+    "z": 76.336
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -285.12,
+    "y": 341.437,
+    "z": 63.273
+   },
+   "rotation": {
+    "x": 0.133,
+    "y": -0.012,
+    "z": 87.795
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -251.794,
+    "y": 382.827,
+    "z": 63.269
+   },
+   "rotation": {
+    "x": 0.133,
+    "y": 0.139,
+    "z": 161.262
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -249.918,
+    "y": 356.535,
+    "z": 63.348
+   },
+   "rotation": {
+    "x": 0.081,
+    "y": -0.175,
+    "z": 273.469
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -259.511,
+    "y": 369.385,
+    "z": 63.266
+   },
+   "rotation": {
+    "x": 0.133,
+    "y": 0.185,
+    "z": 161.304
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -263.78,
+    "y": 344.835,
+    "z": 63.348
+   },
+   "rotation": {
+    "x": 0.081,
+    "y": -0.175,
+    "z": 273.469
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x035F4A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -593.155,
+    "y": -2.123,
+    "z": 21.68
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 268.327
+   },
+   "_scale_in_vanilla": 0.86
+  },
+  {
+   "base": "Skyrim.esm:0x035F4A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -433.677,
+    "y": 2.144,
+    "z": 22.033
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 268.327
+   },
+   "_scale_in_vanilla": 0.81
+  },
+  {
+   "base": "Skyrim.esm:0x035F4A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -513.128,
+    "y": 1.201,
+    "z": 26.592
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 88.809
+   },
+   "_scale_in_vanilla": 0.84
+  },
+  {
+   "base": "Skyrim.esm:0x059B71",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -512.717,
+    "y": -0.1,
+    "z": 170.917
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0F4859",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -512.0,
+    "y": 0.0,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x07F871",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1493.397,
+    "y": -117.404,
+    "z": 5.388
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 88.809
+   },
+   "_scale_in_vanilla": 0.8
+  },
+  {
+   "base": "Skyrim.esm:0x0318FA",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -691.012,
+    "y": 26.273,
+    "z": 28.813
+   },
+   "rotation": {
+    "x": -179.503,
+    "y": -0.163,
+    "z": 273.86
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0318FB",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -654.318,
+    "y": 56.684,
+    "z": 48.351
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x073CC2",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1165.468,
+    "y": -118.559,
+    "z": 75.853
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 147.537
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05C016",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -246.217,
+    "y": -293.816,
+    "z": 0.533
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 150.401
+   },
+   "_scale_in_vanilla": 1.11
+  },
+  {
+   "base": "Skyrim.esm:0x05C015",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -172.058,
+    "y": 97.783,
+    "z": 0.533
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 153.266
+   },
+   "_scale_in_vanilla": 1.11
+  },
+  {
+   "base": "Skyrim.esm:0x05C016",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 33.549,
+    "y": 104.208,
+    "z": 0.533
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 242.075
+   },
+   "_scale_in_vanilla": 1.11
+  },
+  {
+   "base": "Skyrim.esm:0x05C017",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -29.143,
+    "y": -89.606,
+    "z": 0.533
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 203.4
+   },
+   "_scale_in_vanilla": 1.11
+  },
+  {
+   "base": "Skyrim.esm:0x036340",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -37.876,
+    "y": -137.594,
+    "z": 0.402
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 324.19
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x036340",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -63.321,
+    "y": 167.74,
+    "z": 0.402
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 199.572
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0C4D58",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -773.531,
+    "y": 897.468,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x09AF19",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1021.762,
+    "y": 687.714,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.482
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F24A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -946.149,
+    "y": 893.791,
+    "z": 63.319
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 60.366
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F24A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1103.781,
+    "y": 895.424,
+    "z": 63.009
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 303.873
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0D5ACF",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1103.175,
+    "y": 893.019,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0D5ACF",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -946.15,
+    "y": 891.887,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0C5348",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -672.104,
+    "y": 469.05,
+    "z": 63.604
+   },
+   "rotation": {
+    "x": -0.142,
+    "y": -0.046,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -664.157,
+    "y": 485.255,
+    "z": 63.599
+   },
+   "rotation": {
+    "x": 0.153,
+    "y": -0.036,
+    "z": 211.191
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -661.759,
+    "y": 502.85,
+    "z": 63.604
+   },
+   "rotation": {
+    "x": -0.141,
+    "y": 0.05,
+    "z": 37.391
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -662.228,
+    "y": 519.007,
+    "z": 63.687
+   },
+   "rotation": {
+    "x": 0.176,
+    "y": -0.116,
+    "z": 148.978
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064B2E",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -677.44,
+    "y": 538.863,
+    "z": 63.807
+   },
+   "rotation": {
+    "x": -0.354,
+    "y": 0.857,
+    "z": 0.002
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064B2F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -668.961,
+    "y": 547.855,
+    "z": 64.262
+   },
+   "rotation": {
+    "x": -11.3,
+    "y": 5.492,
+    "z": 358.617
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064B2F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -658.973,
+    "y": 543.84,
+    "z": 63.794
+   },
+   "rotation": {
+    "x": -0.129,
+    "y": 0.42,
+    "z": 0.007
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064B2F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -668.687,
+    "y": 566.854,
+    "z": 64.147
+   },
+   "rotation": {
+    "x": 11.675,
+    "y": 8.613,
+    "z": 0.871
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064B2E",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -662.916,
+    "y": 574.072,
+    "z": 70.829
+   },
+   "rotation": {
+    "x": 111.644,
+    "y": 33.199,
+    "z": 289.324
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x064B2E",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -666.744,
+    "y": 557.529,
+    "z": 63.908
+   },
+   "rotation": {
+    "x": -0.016,
+    "y": 0.046,
+    "z": 0.008
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x065C97",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -689.628,
+    "y": 553.914,
+    "z": 63.654
+   },
+   "rotation": {
+    "x": -0.454,
+    "y": -0.225,
+    "z": 0.019
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x065C97",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -687.23,
+    "y": 571.514,
+    "z": 63.555
+   },
+   "rotation": {
+    "x": -0.173,
+    "y": -0.191,
+    "z": 35.954
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x06B28D",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -698.331,
+    "y": 524.598,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 90.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0A0E42",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 52.024,
+    "y": 508.029,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 1.192
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05C015",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 196.445,
+    "y": 617.146,
+    "z": -255.5
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 25.784
+   },
+   "_scale_in_vanilla": 1.13
+  },
+  {
+   "base": "Skyrim.esm:0x097F6A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 102.728,
+    "y": 1074.348,
+    "z": -241.961
+   },
+   "rotation": {
+    "x": -40.926,
+    "y": 36.455,
+    "z": 126.397
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x097F6A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 91.724,
+    "y": 1095.802,
+    "z": -250.582
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 6.2
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x097F54",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 133.638,
+    "y": 1057.02,
+    "z": -232.316
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 83.079
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x00000F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 18.865,
+    "y": 1065.132,
+    "z": -225.492
+   },
+   "rotation": {
+    "x": 0.421,
+    "y": 0.489,
+    "z": 114.433
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x00000F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 36.282,
+    "y": 1066.557,
+    "z": -225.502
+   },
+   "rotation": {
+    "x": -0.269,
+    "y": 0.711,
+    "z": 359.773
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x00000F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 30.702,
+    "y": 1070.67,
+    "z": -225.48
+   },
+   "rotation": {
+    "x": -0.107,
+    "y": -0.26,
+    "z": 249.389
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x00000F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 25.001,
+    "y": 1067.605,
+    "z": -225.479
+   },
+   "rotation": {
+    "x": -0.083,
+    "y": -0.13,
+    "z": 215.968
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0D8E80",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 23.553,
+    "y": 1091.776,
+    "z": -225.554
+   },
+   "rotation": {
+    "x": -0.26,
+    "y": -0.195,
+    "z": 25.785
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x013986",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 20.061,
+    "y": 1074.769,
+    "z": -223.574
+   },
+   "rotation": {
+    "x": 0.329,
+    "y": 0.119,
+    "z": 64.423
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0E25DC",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 33.203,
+    "y": 1078.975,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x06E7A8",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -20.696,
+    "y": 1008.748,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 104.565
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x039BE8",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 523.703,
+    "y": 573.631,
+    "z": -177.461
+   },
+   "rotation": {
+    "x": -0.259,
+    "y": -0.169,
+    "z": 51.566
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03EB32",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 526.933,
+    "y": 586.977,
+    "z": -177.467
+   },
+   "rotation": {
+    "x": 0.239,
+    "y": 0.15,
+    "z": 318.461
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F249",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 436.921,
+    "y": 506.608,
+    "z": -255.5
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 48.907
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01F249",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 556.328,
+    "y": 631.389,
+    "z": -255.5
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 48.907
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03EB38",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 538.763,
+    "y": 784.803,
+    "z": -238.724
+   },
+   "rotation": {
+    "x": -0.298,
+    "y": -0.072,
+    "z": 0.006
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03EB2A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 552.008,
+    "y": 773.722,
+    "z": -238.724
+   },
+   "rotation": {
+    "x": -0.194,
+    "y": -0.142,
+    "z": 312.722
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x039BE8",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 555.622,
+    "y": 761.232,
+    "z": -238.731
+   },
+   "rotation": {
+    "x": -0.138,
+    "y": -0.252,
+    "z": 31.51
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03EAE0",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 554.409,
+    "y": 748.471,
+    "z": -238.729
+   },
+   "rotation": {
+    "x": 0.225,
+    "y": 0.016,
+    "z": 0.001
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03EADD",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 554.063,
+    "y": 733.885,
+    "z": -238.724
+   },
+   "rotation": {
+    "x": 0.004,
+    "y": -0.096,
+    "z": 0.879
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x039B4A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 541.047,
+    "y": 740.766,
+    "z": -238.735
+   },
+   "rotation": {
+    "x": 0.101,
+    "y": 0.329,
+    "z": 12.898
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03EAF2",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 536.287,
+    "y": 722.398,
+    "z": -238.727
+   },
+   "rotation": {
+    "x": 0.029,
+    "y": 0.156,
+    "z": 359.995
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03EAF4",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 553.913,
+    "y": 721.949,
+    "z": -236.833
+   },
+   "rotation": {
+    "x": -0.116,
+    "y": -0.057,
+    "z": 0.001
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03F7F8",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 538.463,
+    "y": 747.62,
+    "z": -188.438
+   },
+   "rotation": {
+    "x": -89.285,
+    "y": 19.264,
+    "z": 28.605
+   },
+   "_scale_in_vanilla": 0.83
+  },
+  {
+   "base": "Skyrim.esm:0x03F7F8",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 552.059,
+    "y": 744.902,
+    "z": -187.769
+   },
+   "rotation": {
+    "x": -90.335,
+    "y": -7.749,
+    "z": 27.529
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03AD71",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 543.734,
+    "y": 778.654,
+    "z": -188.146
+   },
+   "rotation": {
+    "x": 28.606,
+    "y": 49.225,
+    "z": 324.358
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x07E8C5",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 555.404,
+    "y": 733.935,
+    "z": -146.132
+   },
+   "rotation": {
+    "x": -11.701,
+    "y": 3.318,
+    "z": 186.976
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x07E8C5",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 549.57,
+    "y": 719.422,
+    "z": -146.134
+   },
+   "rotation": {
+    "x": -3.797,
+    "y": 11.624,
+    "z": 243.141
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x07E8C5",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 546.222,
+    "y": 727.461,
+    "z": -146.134
+   },
+   "rotation": {
+    "x": 10.766,
+    "y": 5.791,
+    "z": 322.233
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x07E8C5",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 554.246,
+    "y": 725.682,
+    "z": -146.132
+   },
+   "rotation": {
+    "x": -7.468,
+    "y": -9.694,
+    "z": 119.203
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x07E8C5",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 544.009,
+    "y": 735.891,
+    "z": -146.129
+   },
+   "rotation": {
+    "x": -41.348,
+    "y": 28.522,
+    "z": 299.025
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x07EDF5",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 553.344,
+    "y": 746.867,
+    "z": -145.27
+   },
+   "rotation": {
+    "x": -79.091,
+    "y": -12.066,
+    "z": 65.166
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x034CDF",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 549.597,
+    "y": 762.703,
+    "z": -145.499
+   },
+   "rotation": {
+    "x": 0.044,
+    "y": -0.133,
+    "z": 256.314
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03AD6A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 551.832,
+    "y": 782.609,
+    "z": -146.64
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03AD6A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 544.644,
+    "y": 778.288,
+    "z": -140.682
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x045C28",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 537.369,
+    "y": 867.275,
+    "z": -163.034
+   },
+   "rotation": {
+    "x": 21.492,
+    "y": -9.305,
+    "z": 32.193
+   },
+   "_scale_in_vanilla": 0.92
+  },
+  {
+   "base": "Skyrim.esm:0x03AD64",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 556.501,
+    "y": 877.231,
+    "z": -163.878
+   },
+   "rotation": {
+    "x": -2.763,
+    "y": 1.684,
+    "z": 324.529
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03AD73",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 536.65,
+    "y": 881.141,
+    "z": -165.307
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 82.485
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x019B16",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 487.673,
+    "y": 1048.208,
+    "z": -255.5
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05B198",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 466.808,
+    "y": 1091.375,
+    "z": -256.213
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 181.914
+   },
+   "_scale_in_vanilla": 0.57
+  },
+  {
+   "base": "Skyrim.esm:0x05B198",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 549.181,
+    "y": 1012.213,
+    "z": -216.369
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 264.03
+   },
+   "_scale_in_vanilla": 0.46
+  },
+  {
+   "base": "Skyrim.esm:0x05B198",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 548.028,
+    "y": 1013.243,
+    "z": -256.213
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 90.241
+   },
+   "_scale_in_vanilla": 0.57
+  },
+  {
+   "base": "Skyrim.esm:0x019B13",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 511.8,
+    "y": 982.939,
+    "z": -255.101
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0AAA35",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 506.349,
+    "y": 1053.503,
+    "z": -255.854
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 45.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05C015",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 354.097,
+    "y": 947.198,
+    "z": -255.5
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 146.105
+   },
+   "_scale_in_vanilla": 1.13
+  },
+  {
+   "base": "Skyrim.esm:0x05C017",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 392.452,
+    "y": 685.681,
+    "z": -255.5
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 319.425
+   },
+   "_scale_in_vanilla": 1.13
+  },
+  {
+   "base": "Skyrim.esm:0x05C016",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 127.738,
+    "y": 786.531,
+    "z": -255.5
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 197.671
+   },
+   "_scale_in_vanilla": 1.13
+  },
+  {
+   "base": "Skyrim.esm:0x05C016",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -794.696,
+    "y": 787.811,
+    "z": 0.533
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 253.534
+   },
+   "_scale_in_vanilla": 1.13
+  },
+  {
+   "base": "Skyrim.esm:0x05AD5B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 257.163,
+    "y": 806.649,
+    "z": -89.514
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x092B10",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 544.762,
+    "y": 873.522,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 34.377
+   },
+   "_scale_in_vanilla": 1.12
+  },
+  {
+   "base": "Skyrim.esm:0x02E6CD",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 544.341,
+    "y": 762.914,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 90.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0BAD0C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 432.775,
+    "y": 635.885,
+    "z": -255.714
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 137.51
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x06B691",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -694.114,
+    "y": 654.631,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 256.868
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x012FE8",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -667.298,
+    "y": 713.612,
+    "z": 0.373
+   },
+   "rotation": {
+    "x": 0.176,
+    "y": -0.071,
+    "z": 0.065
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x05C009",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 254.964,
+    "y": 804.651,
+    "z": -131.913
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 85.938,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0E2604",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 252.0,
+    "y": 808.0,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 90.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x077DA6",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 240.278,
+    "y": 809.113,
+    "z": -192.4
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 270.951
+   },
+   "_scale_in_vanilla": 0.75
+  },
+  {
+   "base": "Skyrim.esm:0x06B36B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1023.324,
+    "y": 818.261,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 180.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x028332",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 256.0,
+    "y": 1056.0,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x028216",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 0.0,
+    "y": 1056.0,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x093BCC",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 0.0,
+    "y": 800.0,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02821F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 256.0,
+    "y": 800.0,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x028219",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 0.0,
+    "y": 544.0,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02834B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 256.0,
+    "y": 544.0,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x028218",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 512.0,
+    "y": 544.0,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x02834A",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 512.0,
+    "y": 800.0,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x028217",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 512.0,
+    "y": 1056.0,
+    "z": -256.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x012FEB",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -671.721,
+    "y": 896.608,
+    "z": 0.318
+   },
+   "rotation": {
+    "x": -0.058,
+    "y": -0.074,
+    "z": 359.618
+   },
+   "_scale_in_vanilla": 0.75
+  },
+  {
+   "base": "Skyrim.esm:0x097F54",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -870.914,
+    "y": 893.594,
+    "z": 27.621
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 24.351
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -791.272,
+    "y": 887.603,
+    "z": 63.68
+   },
+   "rotation": {
+    "x": -0.054,
+    "y": -0.068,
+    "z": 63.274
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0319E3",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -810.576,
+    "y": 888.242,
+    "z": 63.658
+   },
+   "rotation": {
+    "x": -0.055,
+    "y": 0.327,
+    "z": 321.56
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -741.357,
+    "y": 903.186,
+    "z": 63.605
+   },
+   "rotation": {
+    "x": -0.116,
+    "y": 0.048,
+    "z": 112.382
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -760.105,
+    "y": 888.108,
+    "z": 63.809
+   },
+   "rotation": {
+    "x": -2.283,
+    "y": 0.01,
+    "z": 237.558
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0C5349",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -761.253,
+    "y": 904.356,
+    "z": 63.595
+   },
+   "rotation": {
+    "x": -0.0,
+    "y": -0.17,
+    "z": 360.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0C5349",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -779.456,
+    "y": 899.268,
+    "z": 63.603
+   },
+   "rotation": {
+    "x": 0.09,
+    "y": -0.18,
+    "z": 359.993
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03133B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -801.471,
+    "y": 901.663,
+    "z": 63.601
+   },
+   "rotation": {
+    "x": -0.254,
+    "y": -0.012,
+    "z": 59.653
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x0D9285",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -628.945,
+    "y": 525.436,
+    "z": 134.097
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 90.0
+   },
+   "_scale_in_vanilla": 1.26
+  },
+  {
+   "base": "Skyrim.esm:0x0D790C",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -824.574,
+    "y": 901.823,
+    "z": 62.732
+   },
+   "rotation": {
+    "x": 0.594,
+    "y": 0.16,
+    "z": 91.645
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x08E5FE",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 93.918,
+    "y": 472.175,
+    "z": -217.876
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 1.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x08E5FE",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -2.06,
+    "y": 474.172,
+    "z": -217.876
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 1.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x01397F",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 304.038,
+    "y": 489.759,
+    "z": -256.157
+   },
+   "rotation": {
+    "x": 77.922,
+    "y": 0.515,
+    "z": 0.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x08E5FE",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 287.819,
+    "y": 465.351,
+    "z": -216.808
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 1.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x08E5FE",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": 191.841,
+    "y": 467.348,
+    "z": -216.808
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 1.0
+   }
+  },
+  {
+   "base": "Skyrim.esm:0x03550B",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -211.025,
+    "y": 203.098,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 137.979
+   },
+   "kind": "npc"
+  },
+  {
+   "base": "Skyrim.esm:0x013478",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -495.187,
+    "y": 155.004,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 179.049
+   },
+   "kind": "npc"
+  },
+  {
+   "base": "Skyrim.esm:0x013479",
+   "cell": "Skyrim.esm:0x0133C6",
+   "position": {
+    "x": -1312.75,
+    "y": 18.295,
+    "z": 0.0
+   },
+   "rotation": {
+    "x": 0.0,
+    "y": -0.0,
+    "z": 102.17
+   },
+   "kind": "npc"
+  }
+ ]
+}

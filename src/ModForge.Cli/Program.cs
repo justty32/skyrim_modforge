@@ -32,6 +32,7 @@ internal static partial class Program
                 case "dump" when args.Length == 2:     return Dump(args[1]);
                 case "find" when args.Length is 3 or 4: return Find(args[1], args[2], args.Length == 4 ? args[3] : null);
                 case "cellblk" when args.Length is 2 or 3: return CellBlk(args[1], args.Length == 3 ? args[2] : null);
+                case "cellrefs" when args.Length == 3: return CellRefs(args[1], args[2]);
                 case "mgefdiag" when args.Length == 3: return MgefDiag(args[1], args[2]);
                 case "enchdiag" when args.Length == 3: return EnchDiag(args[1], args[2]);
                 case "lightdiag" when args.Length is 2 or 3: return LightDiag(args[1], args.Length == 3 ? args[2] : null);
@@ -86,6 +87,7 @@ internal static partial class Program
         "  dump    <in.esp>\n" +
         "  find    <in.esp> <query> [type]              search editorId/name -> Skyrim.esm:0xFORMID\n" +
         "  cellblk <in.esp> [0xFORMID]                  show interior cell block/sub-block (FormID grouping)\n" +
+        "  cellrefs <in.esp> <0xFORMID>                 dump one interior cell's placed refs (base+pos+rot[rad]+scale) as CSV — reverse a vanilla cell into placements[]\n" +
         "  mgefdiag <in.esp> <0xFORMID>                 print a MagicEffect's fields (compare gen vs vanilla)\n" +
         "  enchdiag <in.esp> <0xFORMID>                 print an Enchantment (ENCH/ObjectEffect)'s type/cost/effects\n" +
         "  lightdiag <in.esp> [0xFORMID]                a Light's radius/color/flags (no id: list room-fill lights)\n" +
