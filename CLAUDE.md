@@ -92,6 +92,8 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 
 想法備忘錄在 `docs/IDEAS.md`（隨從擴充、劇情演出、大量劇情生成等）。
 
+**任務標記（quest-markers，2026-06-13 開發中）**:三件套 — **A** `objectives[].targets[]`→QSTA 羅盤/地圖箭頭（指 alias 填的 NPC/地點）、**B** `placements[].kind:"xmarker"/"xmarkerHeading"` 隱形錨點 helper、**C** 新 top-level `mapMarkers[]`（XMRK 地圖圖示）。CODE_MAP/SPEC/schema/tests 已同步（471 離線 + 3 RequiresSkyrim 綠）。**in-game 狀態**:A（任務日誌雙目標 + 羅盤箭頭）已確認;B/C 與「放置進 vanilla Tamriel」連動的**大地圖空白 + CTD** 踩了三次坑,根因已定位=**worldspace override 的持久 cell(Tamriel TopCell 0xD74)必須(1)加性帶上、(2)複製其記錄標頭旗標 `MajorRecordFlagsRaw=0x00040400`(CopyCellEnv 只複製 DATA 旗標,漏了標頭→引擎不認得持久 cell→載 actor CTD)、(3)ref 自身帶 0x400 持久旗(vanilla XMarker/地圖標記全有)**。修好後 esp 已逐位元對齊 vanilla/USSEP,**第三次 in-game 待確認**(`~/skyrim_mods/mine/ModForgeQuestMarkers-mapfix.zip`;安全版 = `ModForgeQuestMarkers.zip`)。細節見 memory `worldspace-override-must-carry-topcell`。
+
 **身份系統 Phase-2/C**:① Adventurer 預設身份自動授予 ✅、② `activeWhen` 情境條件 ✅、④ controller 主身份+手動覆寫 ✅（皆 in-game 確認 2026-06-07）；✅ ⑤ 身份對應互動 **#5a 商人交易 UI + #5b 護衛任務 + #5c 聖騎士 smite 細調（grantPerks）** + **龍裔首吼（autoGrantWhen）**（皆 in-game 確認 2026-06-07，見下「已落地」）；尚未做：③ 聲望/行為追蹤。
 
 ### 已落地功能（時間序；實作細節見 git log / CODE_MAP / SPEC）
