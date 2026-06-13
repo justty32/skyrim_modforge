@@ -114,6 +114,7 @@
 
 ## 語音克隆（TTS → .fuz）
 → **說明文件**：[SPEC-workflow.md § Voice](SPEC-workflow.md#voice-tts-voice-cloning--fuz)
+→ **TTS 合成已解耦**：`text+emotion+ref→.wav` 在獨立基石專案 `sub_projs/skyrim-voicegen/`（`voicegen.py` + wrappers），靠 `MODFORGE_TTS_BIN` 協議連，合約見該夾 `PROTOCOL.md`。**下表全是 ModForge 端的「包裝」職責**（plan/解析/.wav→fuz/lip/擺位），不含合成。
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|

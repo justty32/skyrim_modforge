@@ -7,7 +7,6 @@
 | 專案 | 類型 | 說明 |
 |------|------|------|
 | `sofia-patch/` | 消費者 | 用 ModForge 做 Sofia 風格隨從擴充；`README.md` 為索引 |
-
-（規劃中：`skyrim-voicegen/` — 語音合成基石專案，靠 `MODFORGE_TTS_BIN` 協議接 ModForge。見 CLAUDE.md「進行中的方向」。）
+| `skyrim-voicegen/` | 基石 | 語音合成（text+emotion+ref→.wav）；靠 `MODFORGE_TTS_BIN` 協議接 ModForge，合約見 `PROTOCOL.md` |
 
 對比：**對其他 mod 的解碼/調查**（餵 ModForge roadmap 的參考）留在 `docs/`、繼續 committed；只有體量太大的才 gitignore 主體、留摘要。
