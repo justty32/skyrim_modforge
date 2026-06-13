@@ -31,6 +31,10 @@ public class ConditionTests
                     new() { Function = "GetInFaction",          Comparison = "==", Value = 1, Param = "Skyrim.esm:0x05C84E" },
                     new() { Function = "GetGlobalValue",        Comparison = "==", Value = 0, Param = "Skyrim.esm:0x0BCC98" },
                     new() { Function = "GetRelationshipRank",   Comparison = ">=", Value = 1, Param = "Skyrim.esm:0x000014" },
+                    new() { Function = "GetQuestCompleted",     Comparison = "==", Value = 1, Param = "Q" },
+                    new() { Function = "GetDistance",           Comparison = "<=", Value = 512, Param = "Skyrim.esm:0x000014" },
+                    new() { Function = "GetIsCurrentPackage",   Comparison = "==", Value = 1, Param = "Skyrim.esm:0x01C254" },
+                    new() { Function = "GetIsVoiceType",        Comparison = "==", Value = 1, Param = "Skyrim.esm:0x0002F7C3" },
                 },
             },
         },
@@ -46,6 +50,10 @@ public class ConditionTests
     [InlineData("GetInFactionConditionData")]
     [InlineData("GetGlobalValueConditionData")]
     [InlineData("GetRelationshipRankConditionData")]
+    [InlineData("GetQuestCompletedConditionData")]
+    [InlineData("GetDistanceConditionData")]
+    [InlineData("GetIsCurrentPackageConditionData")]
+    [InlineData("GetIsVoiceTypeConditionData")]
     public void EachFunction_MapsToItsConditionData(string expectedType)
     {
         var r = BuildAllConditions();

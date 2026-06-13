@@ -10,6 +10,7 @@ public static partial class Generator
         "GetActorValue", "GetActorValuePercent", "GetBaseActorValue", "GetEquippedItemType",
         "GetCurrentTime", "IsInInterior", "IsInCombat", "GetRandomPercent", "GetLevel",
         "TemperIsEnchanted",
+        "GetQuestCompleted", "GetDistance", "GetIsCurrentPackage", "GetIsVoiceType",
     };
 
     private sealed partial class BuildContext
@@ -63,6 +64,12 @@ public static partial class Generator
                 case "wornhaskeyword":      { var d = new WornHasKeywordConditionData();      if (hasParam) d.Keyword.Link.SetTo(paramFk);   data = d; break; }
                 case "isspelltarget":       { var d = new IsSpellTargetConditionData();       if (hasParam) d.MagicItem.Link.SetTo(paramFk); data = d; break; }
                 case "getrelationshiprank": { var d = new GetRelationshipRankConditionData(); if (hasParam) d.TargetNpc.Link.SetTo(paramFk); data = d; break; }
+                // Cross-quest / contextual gates (form arg). GetDistance is compared to the value as a
+                // distance (units); GetIsVoiceType lets dialogue target a voice type / list.
+                case "getquestcompleted":   { var d = new GetQuestCompletedConditionData();   if (hasParam) d.Quest.Link.SetTo(paramFk);          data = d; break; }
+                case "getdistance":         { var d = new GetDistanceConditionData();         if (hasParam) d.Target.Link.SetTo(paramFk);         data = d; break; }
+                case "getiscurrentpackage": { var d = new GetIsCurrentPackageConditionData(); if (hasParam) d.Package.Link.SetTo(paramFk);        data = d; break; }
+                case "getisvoicetype":      { var d = new GetIsVoiceTypeConditionData();      if (hasParam) d.VoiceTypeOrList.Link.SetTo(paramFk); data = d; break; }
                 case "getactorvalue":       // ActorValue arg (e.g. WaitingForPlayer), not a form ref
                 {
                     var d = new GetActorValueConditionData();
@@ -106,7 +113,8 @@ public static partial class Generator
                 default:
                     Warn($"  ! {label}: unsupported function '{c.Function}' "
                         + "(have HasPerk/GetInFaction/GetItemCount/GetGlobalValue/GetStage/GetIsID/GetRelationshipRank/"
-                        + "GetActorValue/GetActorValuePercent/GetCurrentTime/IsInInterior/IsInCombat/GetRandomPercent/TemperIsEnchanted)");
+                        + "GetActorValue/GetActorValuePercent/GetCurrentTime/IsInInterior/IsInCombat/GetRandomPercent/TemperIsEnchanted/"
+                        + "GetQuestCompleted/GetDistance/GetIsCurrentPackage/GetIsVoiceType)");
                     return null;
             }
 

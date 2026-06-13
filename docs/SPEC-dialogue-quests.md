@@ -234,6 +234,7 @@ A condition is **static gate data**, so it lives in the spec (logic still belong
 `dialogue[].conditions` and `packages[].conditions` take the same shape:
 ```jsonc
 { "function": "GetItemCount",          // form-arg: HasPerk | GetInFaction | GetItemCount | GetGlobalValue | GetStage | GetIsID | GetRelationshipRank
+  //                                    //   GetQuestCompleted(quest) | GetDistance(ref; value=units) | GetIsCurrentPackage(pack) | GetIsVoiceType(VTYP/list)
   //                                    // actorValue-arg: GetActorValue | GetActorValuePercent (0..1 fraction)
   //                                    // no-arg situational: GetCurrentTime (hour 0..24) | IsInInterior | IsInCombat | GetRandomPercent (0..99) | TemperIsEnchanted (recipe temper guard)
   "comparison": ">=",                  // == != > >= < <=
