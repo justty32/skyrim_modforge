@@ -451,6 +451,20 @@
       "items": { "$ref": "#/$defs/voiceTemplate" },
       "description": "named voice recipes for cloning (Spec.Voice.cs)"
     },
+    "voiceSpeakers": {
+      "type": "array",
+      "description": "bind an EXTERNAL dialogue speaker (an NPC from another master the mod-only cache can't resolve, e.g. an existing follower) to a voiceType + voiceTemplate, so voicelines/voicediag can voice lines gated on GetIsID(<that NPC>)",
+      "items": {
+        "type": "object",
+        "required": [ "speaker", "voiceType", "template" ],
+        "additionalProperties": false,
+        "properties": {
+          "speaker": { "type": "string", "description": "the NPC ref the line's GetIsID gates on (<master>:0xFORMID)" },
+          "voiceType": { "type": "string", "description": "that NPC's voiceType (the Sound/Voice/<plugin>/ folder name, e.g. JJSofiaVoiceType)" },
+          "template": { "type": "string", "description": "a voiceTemplates[] id to generate the lines with" }
+        }
+      }
+    },
     "voiceLine": {
       "$ref": "#/$defs/voiceLine",
       "description": "global voice output settings"

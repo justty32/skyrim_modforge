@@ -20,7 +20,7 @@ internal static partial class Program
                 case "build" when args.Length == 3:    BuildCmd(args[1], args[2]); return 0;
                 case "voicelines" when args.Length is 3 or 4: return VoicelinesCmd(args[1], args[2], args.Length == 4 ? args[3] : null);
                 case "voicediag" when args.Length == 3: return VoiceDiagCmd(args[1], args[2]);
-                case "extract-voices" when args.Length == 4: return ExtractVoicesCmd(args[1], args[2], args[3]);
+                case "extract-voices" when args.Length is 4 or 5: return ExtractVoicesCmd(args[1], args[2], args[3], args.Length == 5 ? args[4] : "Skyrim.esm");
                 case "voice-annotate" when args.Length == 5: return VoiceAnnotateCmd(args[1], args[2], args[3], args[4]);
                 case "compile" when args.Length == 3:  return CompileCmd(args[1], args[2]);
                 case "package" when args.Length == 3:  return PackageCmd(args[1], args[2], null);
@@ -79,7 +79,7 @@ internal static partial class Program
         "  build   <spec.json> <out.esp>\n" +
         "  voicelines <spec.json> <built.esp> [--dry-run|--plan] generate .fuz/.wav from dialogue records, or print expected voice paths\n" +
         "  voicediag <spec.json> <built.esp>            offline speaker/template/path check for every dialogue INFO line\n" +
-        "  extract-voices <bsaPath> <voiceType> <outDir> extract + convert vanilla voices to WAV\n" +
+        "  extract-voices <bsaPath> <voiceType> <outDir> [plugin]  extract + convert a voiceType's clips to WAV (plugin default Skyrim.esm; e.g. SofiaFollower.esp for a follower's BSA)\n" +
         "  voice-annotate <esm> <voiceType> <bsaPath> <outDir>  extract clips + write emotion-annotation manifest (JSON)\n" +
         "  compile <script.psc> <outDir>\n" +
         "  package <spec.json> <outModDir> [--assets <dir>]   esp + scripts + bundled Meshes/Textures/Sounds\n" +

@@ -64,7 +64,8 @@ public static partial class Generator
         IReadOnlyDictionary<string, VoiceTemplateSpec?> templateByNpcEd,
         string pluginName,
         string format,
-        IReadOnlyDictionary<string, string>? voiceTypeByNpcEd = null)
+        IReadOnlyDictionary<string, string>? voiceTypeByNpcEd = null,
+        IReadOnlyDictionary<FormKey, (string VoiceType, VoiceTemplateSpec? Template)>? externalByFormKey = null)
     {
         var entries = new List<VoiceLinePlanEntry>();
         var ext = NormalizeVoiceFormat(format);
@@ -81,6 +82,25 @@ public static partial class Generator
                 if (info.Responses.Count == 0) continue;
 
                 var infoEd = info.EditorID ?? "";
+
+                // External speaker (voiceSpeakers[]): bypass NPC resolution — the speaker is a master NPC
+                // the mod-only cache can't load. Emit straight to its declared voiceType + template.
+                if (ResolveExternalSpeakerVoice(info, externalByFormKey) is { } extv)
+                {
+                    for (int i = 0; i < info.Responses.Count; i++)
+                    {
+                        var t = info.Responses[i].Text?.ToString() ?? "";
+                        var fn = VoiceFileName(questEd, topicEd, info.FormKey.ID, i + 1, ext);
+                        var rel = Path.Combine("Sound", "Voice", pluginName, extv.VoiceType, fn);
+                        var skip = string.IsNullOrWhiteSpace(t) ? "empty response text"
+                            : extv.Template is null ? "voiceSpeakers entry names a template that doesn't exist" : null;
+                        entries.Add(new(questEd, topicEd, infoEd, info.FormKey.ID, i + 1, t, "voiceSpeakers",
+                            new[] { extv.Speaker.ToString() }, extv.VoiceType, fn, rel,
+                            extv.Template is not null, extv.Template?.Id, skip));
+                    }
+                    continue;
+                }
+
                 var res = ResolveVoiceSpeakers(topic, info, mod, cache);
                 for (int i = 0; i < info.Responses.Count; i++)
                 {

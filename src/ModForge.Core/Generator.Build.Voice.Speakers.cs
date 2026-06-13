@@ -118,6 +118,24 @@ public static partial class Generator
         return targets;
     }
 
+    /// <summary>If this INFO is gated on GetIsID(Subject) of an EXTERNAL speaker declared in
+    /// `voiceSpeakers[]` (an NPC from another master the mod-only cache can't resolve, e.g. an existing
+    /// follower), returns its (voiceType, template, speaker FormKey) — bypassing NPC resolution. Null
+    /// if no such gate. Checked BEFORE ResolveVoiceSpeakers so an external follower's lines still voice.</summary>
+    public static (string VoiceType, VoiceTemplateSpec? Template, FormKey Speaker)? ResolveExternalSpeakerVoice(
+        IDialogResponsesGetter info,
+        IReadOnlyDictionary<FormKey, (string VoiceType, VoiceTemplateSpec? Template)>? externalByFormKey)
+    {
+        if (externalByFormKey is null) return null;
+        foreach (var cond in info.Conditions)
+            if (cond.Data is IGetIsIDConditionDataGetter id
+                && id.RunOnType == Condition.RunOnType.Subject
+                && !id.Object.Link.IsNull
+                && externalByFormKey.TryGetValue(id.Object.Link.FormKey, out var v))
+                return (v.VoiceType, v.Template, id.Object.Link.FormKey);
+        return null;
+    }
+
     private static VoiceSpeakerResolution Single(INpcGetter npc, ILinkCache cache, string source) =>
         new(new[] { MakeSpeaker(npc, cache) }, source, null);
 

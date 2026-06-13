@@ -82,6 +82,7 @@ public sealed class ModSpec
     public List<IdentitySpec> Identities { get; set; } = new(); // lightweight identity/class system (Spec.Identity.cs)
     public PresetCatalogSpec Presets { get; set; } = new(); // non-emitting cookbook fragments for copy/paste recipes
     public List<VoiceTemplateSpec> VoiceTemplates { get; set; } = new(); // named voice recipes (Spec.Voice.cs)
+    public List<VoiceSpeakerSpec> VoiceSpeakers { get; set; } = new(); // bind an external speaker → voiceType + template
     public VoiceLineSpec? VoiceLine { get; set; } // global voice output settings
     // External-resource pipeline (see docs/external_assets.md): a source directory whose
     // `Meshes/`, `Textures/`, `Sounds/` (and loose `.hkx`) sub-trees `package` copies next to

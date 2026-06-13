@@ -42,6 +42,14 @@ setup notes (Blackwell→torch cu128, F5 auto-transcribes ref when `ref_text=""`
 - `npcs[].voiceTemplate` — ref → a `voiceTemplates` id; routes that NPC's lines to the
   cloning engine. Distinct from `npcs[].voiceType`, which is the in-game VTYP record ref
   (you still need a voiceType — it decides the output folder, see below).
+- `voiceSpeakers[]` — voice lines whose speaker is an **EXTERNAL** NPC (from another master the
+  built plugin can't resolve — e.g. an existing follower like Sofia, gated via a manual
+  `GetIsID(<master>:0xFORMID)` condition). Each entry `{ speaker, voiceType, template }` binds that
+  NPC ref → its `voiceType` (folder name, e.g. `JJSofiaVoiceType`) → a `voiceTemplates` id. Without
+  it the speaker is unresolvable (mod-only cache) and the line gets no voice. **Extract a clone ref
+  from the follower's own BSA** with `extract-voices <Follower.bsa> <VoiceType> <outDir> <Follower.esp>`
+  (the optional 4th arg keys the BSA voice path off that plugin, not Skyrim.esm). This is how you make
+  an existing fully-voiced follower comment on new content in their own voice.
 - `voiceLine` (global, optional) — output settings: `format` (`fuz` | `wav` | `xwm`,
   default `fuz`) and `skipLip` (true = skip .lip generation, static mouth).
 

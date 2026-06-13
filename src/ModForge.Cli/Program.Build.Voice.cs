@@ -28,10 +28,11 @@ internal static partial class Program
         var format = spec.VoiceLine?.Format?.ToLowerInvariant() ?? "fuz";
         var npcToTemplate = BuildNpcVoiceTemplateMap(spec);
         var npcToVoiceType = BuildNpcVoiceTypeMap(spec);
+        var externalByFormKey = BuildExternalVoiceMap(spec);
 
         if (mode is "--dry-run" or "--plan")
         {
-            PrintVoicePlan(mod, cache, npcToTemplate, npcToVoiceType, pluginName, format);
+            PrintVoicePlan(mod, cache, npcToTemplate, npcToVoiceType, pluginName, format, externalByFormKey);
             return 0;
         }
 
@@ -64,22 +65,38 @@ internal static partial class Program
                 if (info.Responses.Count == 0) continue;
                 var infoLabel = $"INFO '{info.EditorID ?? "(no EditorID)"}' [{info.FormKey}] (topic '{topicEd}')";
 
-                var res = Generator.ResolveVoiceSpeakers(topic, info, mod, cache);
-                if (!res.Resolved)
+                List<VoiceTarget> targets;
+                // External speaker (voiceSpeakers[]): generate to the declared voiceType + template,
+                // bypassing NPC resolution (the speaker is a master NPC the mod-only cache can't load).
+                if (Generator.ResolveExternalSpeakerVoice(info, externalByFormKey) is { } extv)
                 {
-                    Console.Error.WriteLine($"  !! UNRESOLVED SPEAKER — NO VOICE GENERATED: {infoLabel}: {res.Reason}");
-                    unresolved++;
-                    continue;
+                    if (extv.Template is null)
+                    {
+                        Console.Error.WriteLine($"  !! NO VOICE TEMPLATE — NO VOICE GENERATED: {infoLabel}: "
+                            + $"voiceSpeakers binds {extv.Speaker} to voiceType '{extv.VoiceType}' but its template id is unknown");
+                        noTemplate++;
+                        continue;
+                    }
+                    targets = new() { new VoiceTarget(extv.VoiceType, extv.Template, extv.Speaker.ToString()) };
                 }
-
-                var targets = Generator.SelectVoiceTargets(res, npcToTemplate, npcToVoiceType);
-                if (targets.Count == 0)
+                else
                 {
-                    var who = string.Join(", ", res.Speakers.Select(s => s.Npc.EditorID ?? s.Npc.FormKey.ToString()));
-                    Console.Error.WriteLine($"  !! NO VOICE TEMPLATE — NO VOICE GENERATED: {infoLabel}: "
-                        + $"speaker(s) [{who}] resolved via {res.Source} but none has a usable voiceTemplate in the spec");
-                    noTemplate++;
-                    continue;
+                    var res = Generator.ResolveVoiceSpeakers(topic, info, mod, cache);
+                    if (!res.Resolved)
+                    {
+                        Console.Error.WriteLine($"  !! UNRESOLVED SPEAKER — NO VOICE GENERATED: {infoLabel}: {res.Reason}");
+                        unresolved++;
+                        continue;
+                    }
+                    targets = Generator.SelectVoiceTargets(res, npcToTemplate, npcToVoiceType);
+                    if (targets.Count == 0)
+                    {
+                        var who = string.Join(", ", res.Speakers.Select(s => s.Npc.EditorID ?? s.Npc.FormKey.ToString()));
+                        Console.Error.WriteLine($"  !! NO VOICE TEMPLATE — NO VOICE GENERATED: {infoLabel}: "
+                            + $"speaker(s) [{who}] resolved via {res.Source} but none has a usable voiceTemplate in the spec");
+                        noTemplate++;
+                        continue;
+                    }
                 }
 
                 for (int i = 0; i < info.Responses.Count; i++)
@@ -117,7 +134,7 @@ internal static partial class Program
         var cache = mod.ToImmutableLinkCache();
         var pluginName = Path.GetFileName(espPath);
         var format = spec.VoiceLine?.Format?.ToLowerInvariant() ?? "fuz";
-        var entries = PrintVoicePlan(mod, cache, BuildNpcVoiceTemplateMap(spec), BuildNpcVoiceTypeMap(spec), pluginName, format);
+        var entries = PrintVoicePlan(mod, cache, BuildNpcVoiceTemplateMap(spec), BuildNpcVoiceTypeMap(spec), pluginName, format, BuildExternalVoiceMap(spec));
         return entries.Any(e => e.SkipReason?.StartsWith("speaker unresolved:", StringComparison.OrdinalIgnoreCase) == true
                              || e.SkipReason?.StartsWith("no speaker", StringComparison.OrdinalIgnoreCase) == true)
             ? 1
@@ -132,6 +149,38 @@ internal static partial class Program
             .ToDictionary(n => n.EditorId, n => templateById.GetValueOrDefault(n.VoiceTemplate), StringComparer.OrdinalIgnoreCase);
     }
 
+    // Build the external-speaker voice map (voiceSpeakers[]): FormKey of the gated NPC → (voiceType
+    // folder, the voiceTemplate to clone with). Lets `voicelines`/`voicediag` voice lines whose speaker
+    // is an NPC from another master (e.g. an existing follower) that the mod-only cache can't resolve.
+    private static Dictionary<FormKey, (string VoiceType, VoiceTemplateSpec? Template)> BuildExternalVoiceMap(ModSpec spec)
+    {
+        var templateById = spec.VoiceTemplates.ToDictionary(t => t.Id, t => (VoiceTemplateSpec?)t, StringComparer.OrdinalIgnoreCase);
+        var d = new Dictionary<FormKey, (string, VoiceTemplateSpec?)>();
+        foreach (var vs in spec.VoiceSpeakers)
+        {
+            if (!TryParseSpecRef(vs.Speaker, out var fk))
+            { Console.Error.WriteLine($"  !! voiceSpeakers: bad speaker ref '{vs.Speaker}' (need <master>:0xFORMID)"); continue; }
+            var vt = Generator.VoiceTypeFolderName(vs.VoiceType) ?? vs.VoiceType;
+            d[fk] = (vt, templateById.GetValueOrDefault(vs.Template));
+        }
+        return d;
+    }
+
+    // Parse a "<master>:0xFORMID" spec ref into a FormKey (24-bit local id).
+    private static bool TryParseSpecRef(string s, out FormKey fk)
+    {
+        fk = default;
+        if (string.IsNullOrWhiteSpace(s)) return false;
+        var i = s.IndexOf(':');
+        if (i <= 0) return false;
+        var plugin = s[..i].Trim();
+        var hex = s[(i + 1)..].Trim();
+        if (hex.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) hex = hex[2..];
+        if (!uint.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out var id)) return false;
+        try { fk = new FormKey(ModKey.FromNameAndExtension(plugin), id & 0x00FFFFFF); return true; }
+        catch { return false; }
+    }
+
     private static Dictionary<string, string> BuildNpcVoiceTypeMap(ModSpec spec) =>
         spec.Npcs
             .Select(n => new { n.EditorId, VoiceType = Generator.VoiceTypeFolderName(n.VoiceType) })
@@ -141,9 +190,10 @@ internal static partial class Program
     private static List<VoiceLinePlanEntry> PrintVoicePlan(ISkyrimModGetter mod, ILinkCache cache,
         IReadOnlyDictionary<string, VoiceTemplateSpec?> npcToTemplate,
         IReadOnlyDictionary<string, string> npcToVoiceType,
-        string pluginName, string format)
+        string pluginName, string format,
+        IReadOnlyDictionary<FormKey, (string VoiceType, VoiceTemplateSpec? Template)>? externalByFormKey = null)
     {
-        var entries = Generator.BuildVoiceLinePlan(mod, cache, npcToTemplate, pluginName, format, npcToVoiceType);
+        var entries = Generator.BuildVoiceLinePlan(mod, cache, npcToTemplate, pluginName, format, npcToVoiceType, externalByFormKey);
         foreach (var e in entries)
         {
             var info = string.IsNullOrWhiteSpace(e.InfoEditorId) ? $"0x{e.InfoFormId:X8}" : $"{e.InfoEditorId} 0x{e.InfoFormId:X8}";
@@ -201,12 +251,13 @@ internal static partial class Program
     // -------------------------------------------------------------------------------
     //  extract-voices
     // -------------------------------------------------------------------------------
-    private static int ExtractVoicesCmd(string bsaPath, string voiceType, string outDir)
+    private static int ExtractVoicesCmd(string bsaPath, string voiceType, string outDir, string plugin = "Skyrim.esm")
     {
-        Console.WriteLine($"Extracting '{voiceType}' from {Path.GetFileName(bsaPath)}...");
+        Console.WriteLine($"Extracting '{voiceType}' ({plugin}) from {Path.GetFileName(bsaPath)}...");
 
-        // Skyrim voices are in Sound/Voice/Skyrim.esm/<VoiceType>/*.fuz
-        string pathFilter = $"sound/voice/skyrim.esm/{voiceType}/";
+        // Voices live in Sound/Voice/<plugin>/<VoiceType>/*.fuz. Vanilla = Skyrim.esm; a follower's BSA
+        // (e.g. SofiaFollower.bsa) keys on its own plugin name — pass it to clone an existing follower.
+        string pathFilter = $"sound/voice/{plugin.ToLowerInvariant()}/{voiceType}/";
         var tempDir = Path.Combine(Path.GetTempPath(), $"modforge_extract_{Guid.NewGuid()}");
 
         try

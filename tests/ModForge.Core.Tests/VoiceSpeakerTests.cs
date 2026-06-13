@@ -180,6 +180,47 @@ public class VoiceSpeakerTests
         Assert.Contains("voiceTemplate", plan[1].SkipReason);
     }
 
+    // External speaker (voiceSpeakers[]): a line gated on GetIsID of an NPC from ANOTHER master (the
+    // mod-only cache can't resolve it) still plans a voice file — voiceType + template come from the map.
+    [Fact]
+    public void BuildVoiceLinePlan_resolves_an_external_speaker_via_voiceSpeakers_map()
+    {
+        var ext = Mutagen.Bethesda.Plugins.FormKey.Factory("0012C4:Other.esp");
+        var spec = new ModSpec
+        {
+            PluginName = "Test.esp",
+            Quests = { new QuestSpec { EditorId = "Q", Name = "Q" } },
+            Dialogue =
+            {
+                new DialogueSpec
+                {
+                    EditorId = "D1", QuestEditorId = "Q", Prompt = "Hi?", Responses = { "Hello." },
+                    // no in-spec speaker — gated manually on an EXTERNAL NPC (like an existing follower)
+                    Conditions = { new ConditionSpec { Function = "GetIsID", Param = "Other.esp:0x0012C4", Comparison = "==", Value = 1 } },
+                },
+            },
+        };
+        var mod = TestBuild.Ok(spec).Mod;
+        var topic = Topic(mod, "D1");
+
+        // mod-only cache CAN'T resolve the external speaker — without the map, it's unresolved.
+        var bare = Generator.BuildVoiceLinePlan(mod, Cache(mod), new Dictionary<string, VoiceTemplateSpec?>(), "Test.esp", "fuz");
+        Assert.Contains("speaker unresolved", Assert.Single(bare).SkipReason);
+
+        var tpl = new VoiceTemplateSpec { Id = "follower-f5" };
+        var external = new Dictionary<Mutagen.Bethesda.Plugins.FormKey, (string, VoiceTemplateSpec?)>
+        { [ext] = ("FollowerVoiceType", tpl) };
+        var plan = Assert.Single(Generator.BuildVoiceLinePlan(
+            mod, Cache(mod), new Dictionary<string, VoiceTemplateSpec?>(), "Test.esp", "fuz", null, external));
+
+        Assert.Equal("voiceSpeakers", plan.ResolutionSource);
+        Assert.Equal("FollowerVoiceType", plan.VoiceType);
+        Assert.Equal("follower-f5", plan.TemplateId);
+        Assert.True(plan.HasVoiceTemplate);
+        Assert.Null(plan.SkipReason);
+        Assert.Equal(Path.Combine("Sound", "Voice", "Test.esp", "FollowerVoiceType", plan.FileName), plan.RelativePath);
+    }
+
     // ------------------- 4) Scene phase INFO (no conditions) → SCEN Dialog action → alias → NPC
     [Fact]
     public void Scene_phase_info_resolves_via_the_scene_dialog_action()
