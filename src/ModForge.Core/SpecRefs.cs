@@ -90,9 +90,20 @@ public static class SpecRefs
 
     private static List<Source> ParseSources(JsonNode? refVal, Ctx ctx, FileReader readFile, EnvLookup getEnv, List<string> cycle)
     {
-        if (refVal is JsonValue v && v.TryGetValue<string>(out var s))
-            return new() { SplitRef(s) };
-        throw new SpecRefException("$ref value must be a string, array, or { from, pointer } object");
+        switch (refVal)
+        {
+            case JsonValue v when v.TryGetValue<string>(out var s):
+                return new() { SplitRef(s) };
+            case JsonArray arr:
+            {
+                var list = new List<Source>();
+                foreach (var item in arr)
+                    list.AddRange(ParseSources(item, ctx, readFile, getEnv, cycle));
+                return list;
+            }
+            default:
+                throw new SpecRefException("$ref value must be a string, array, or { from, pointer } object");
+        }
     }
 
     private static Source SplitRef(string s)

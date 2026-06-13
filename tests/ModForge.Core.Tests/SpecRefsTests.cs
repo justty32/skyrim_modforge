@@ -74,4 +74,20 @@ public class SpecRefsTests
         var r = Resolve(json)!;
         Assert.Equal(7, r["top"]!["v"]!.GetValue<int>());
     }
+
+    [Fact]
+    public void ArrayRef_ChainedDeepMerge_LaterWins()
+    {
+        var json = """
+        { "presets": {
+            "base": { "fogNear": 0, "fogFar": 9000, "tint": { "r": 1, "g": 1 } },
+            "warm": { "fogFar": 5000, "tint": { "g": 9 } } },
+          "thing": { "$ref": [ "#/presets/base", "#/presets/warm" ], "fogNear": 3 } }
+        """;
+        var r = Resolve(json)!["thing"]!;
+        Assert.Equal(3, r["fogNear"]!.GetValue<int>());     // sibling wins over both
+        Assert.Equal(5000, r["fogFar"]!.GetValue<int>());   // warm (later) overrides base
+        Assert.Equal(1, r["tint"]!["r"]!.GetValue<int>());  // base survives
+        Assert.Equal(9, r["tint"]!["g"]!.GetValue<int>());  // warm overrides
+    }
 }
