@@ -159,8 +159,17 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 
 ### 之後可做
 
-- Scene 演出續做：PlayIdle / 手勢動畫（可能走 scene phase-fragment 或 alias 腳本 `PlayIdle`，需解碼 `SceneAdapter`）；camera shot。
-- 多解 SM 事件（SkillIncrease/Jail/Bribe…，但須 conditions 才安全，見 [[dispatcher-magic-trigger]]）。
-- 新 record：Imagespace（IMGS 已有；指其他如 MGEF archetype 擴充 / Word of Power 等）等。（Music + Hazard 已落地，見上。）
-- **vanilla NPC AI patch**（override 既有 NPC 的 `Packages` 排日程,如 AI Overhaul；ModForge 目前只建**新** NPC,不改既有）——同 vanilla-cell/worldspace override 思路（`GetOrAddAsOverride` + 改少數欄位）。解碼參考 `docs/ai-overhaul-decode-2026-06-13.md`（424 NPC / 744 package = Sandbox+Eat+Sleep+sit 日程堆疊）。
-- **隨從擴充**：解碼參考 `docs/sofia-follower-decode-2026-06-13.md`（Sofia 完整內容索引 + 五個可複用 pattern,全是已落地能力的規模化組合）。
+**解碼／計畫參考檔（2026-06-13，5 個 agent 從真 mod 解碼 + 對照 ModForge 可實現性）**：
+- 隨從擴充：`docs/sofia-follower-decode-2026-06-13.md`（結構+內容索引）、`docs/sofia-expansion-plan-2026-06-13.md`（擴充計畫 11✅/3🟡/2🔴）
+- NPC 日程：`docs/ai-overhaul-decode-2026-06-13.md`、`docs/ai-overhaul-expansion-plan-2026-06-13.md`（6✅/3🟡/3🔴）
+- VIGILANT：`docs/vigilant-{worldspace,story,magic}-decode-2026-06-13.md`（11 自訂 worldspace / 120 quest 78 scene / 712 spell 550 MGEF）
+
+**待補清單（上述解碼浮現,按優先序）**：
+1. **`npcPatches[]`**：override 既有 vanilla NPC 的 `Packages`（AI Overhaul 核心）。`NpcSpec` 目前只有 `EditorId`、無法指既有 NPC。先例=vanilla cell/worldspace override（`Npcs.GetOrAddAsOverride` + 覆寫 Packages,**無需新 package builder**,10 個 PACK 模板已 in-game 驗）。注意 USSEP/load-order 衝突。
+2. **`MagicEffectSpec` 加 script/VMAD 欄位**：VIGILANT 550 個 MGEF 有 260 個是 `archetype=Script`（Boss 法術編排）。沿用既有 dialogue/quest fragment 機制掛 Papyrus。順便確認 DualValueModifier 的 `SecondActorValue`（78 MGEF 用）。
+3. **FLST builder + `GetIsInList`/`GetInCurrentLocation` CTDA**：Sofia 細緻穿著清單 + 位置評論（builder 的 CTDA 白名單目前無這兩個函式、也無 FLST builder）。
+4. **scene Dialog action 的 `Emotion`/`EmotionValue`** + 泛化 scene phase fragment（不只 PlayIdle 跑 SetStage 等）：VIGILANT 演出靠 headtrack+emotion 取代 CAMS（78 cutscene、0 CAMS → CAMS 可延後）。
+5. **worldspace LAND 高度圖**（自訂地圖地形,VIGILANT realm 的本體）、region-driven weather（REGN）—— 待先確認 ModForge worldspace builder 現況。
+- Scene 演出續做：PlayIdle / 手勢動畫；camera shot（VIGILANT 證明可延後）。
+- 多解 SM 事件（SkillIncrease/Jail/Bribe…，須 conditions 才安全，見 [[dispatcher-magic-trigger]]）。
+- 新 record：Imagespace / Word of Power 等。（Music + Hazard 已落地，見上。）
