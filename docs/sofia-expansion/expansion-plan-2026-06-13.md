@@ -1,6 +1,6 @@
 # Sofia 擴充計畫（2026-06-13）— 對照 ModForge 可實現性
 
-← 參考：[`sofia-follower-decode-2026-06-13.md`](sofia-follower-decode-2026-06-13.md)（Sofia 架構解碼）、[`SPEC-dialogue-quests.md`](SPEC-dialogue-quests.md)、[`SPEC-packages.md`](SPEC-packages.md)、[`SPEC-world.md`](SPEC-world.md)、[`SPEC-workflow.md`](SPEC-workflow.md)
+← 參考：[`follower-decode-2026-06-13.md`](follower-decode-2026-06-13.md)（Sofia 架構解碼）、[`sofia-personality.md`](sofia-personality.md)（性格/寫作 brief）、[`../SPEC-dialogue-quests.md`](../SPEC-dialogue-quests.md)、[`../SPEC-packages.md`](../SPEC-packages.md)、[`../SPEC-world.md`](../SPEC-world.md)、[`../SPEC-workflow.md`](../SPEC-workflow.md)
 
 ## 1. 目標
 

@@ -161,7 +161,7 @@ Step 4  （視需要）examples/assets 若需更新 → 單獨處理 → commit
 
 **解碼／計畫／可行性參考檔（2026-06-13，真 mod 解碼 + 對照 ModForge 可實現性；全 esp-only 記憶體安全）**：
 - **盤點**：`docs/mod-survey-2026-06-13.md`（下載 mod 的 Tier 1/2/3 解碼價值；解碼方法的記憶體鐵律；本清單的母索引）
-- 隨從擴充：`docs/sofia-follower-decode-2026-06-13.md`（結構+內容索引）、`docs/sofia-expansion-plan-2026-06-13.md`（11✅/3🟡/2🔴）
+- 隨從擴充：`docs/sofia-expansion/`（專案夾，`README.md` 為索引）— `follower-decode-2026-06-13.md`（結構+內容索引）、`expansion-plan-2026-06-13.md`（11✅/3🟡/2🔴）、`sofia-personality.md`（性格分析/寫作 brief）
 - NPC 日程：`docs/ai-overhaul-decode-2026-06-13.md`、`docs/ai-overhaul-expansion-plan-2026-06-13.md`（6✅/3🟡/3🔴）
 - VIGILANT：`docs/vigilant-{worldspace,story,magic,scene-dialogue-audit}-decode-2026-06-13.md`（11 自訂 worldspace / 120 quest 78 scene / 712 spell 550 MGEF；scene/對話 vs ModForge **~70% 覆蓋**）。**對話缺口本 session 大批補上（皆 offline 測試）**：✅ `GetIsAliasRef` CTDA（#1 缺口,702 用,`ConditionSpec.Alias`→owning quest alias index,各 quest-scoped 呼叫點傳 `aliasIndexByName`）、✅ 9 個 CTDA 函式（GetQuestRunning/GetInCell/GetInWorldspace/GetEquipped/GetDeadCount/GetSitting/GetGold/GetMapMarkerVisible + 雙參數 GetStageDone 用 `ConditionSpec.Stage`）、✅ INFO(ENAM) 旗標 sayOnce/walkAway/random/invisibleContinue/forceSubtitle（`DialogueInfoFlags` helper）。**仍開**：`IsSceneActionComplete` CTDA(274 用,解鎖目前形同虛設的 `CompletionConditions`,需 Scene+ActionIndex 接線,結構性)/任意 scene-phase·OnBegin·OnEnd fragment/INFO LinkTo(ENAM)·PreviousDialog(PNAM) 對話樹/`GetInCurrentLocation`(Mutagen 0.49 無此型別)
 - 工作流可行性：`docs/blender-layout-feasibility-2026-06-13.md`（Blender 擺設→`placements[]` JSON,可行、不需新功能、#1 風險=旋轉轉換校準、選配 `staticmap` 子指令）
