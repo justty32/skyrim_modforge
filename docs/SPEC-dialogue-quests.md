@@ -134,6 +134,12 @@ From this one entry the build emits the **whole vanilla chain** (mirrors `scened
       `conditions` do NOTHING on an autoStart scene. To gate a presence-triggered scene, use
       `autoStart.gateGlobal` (a GLOB the controller checks before starting) instead. Per-phase
       `startConditions`/`completionConditions` ARE still evaluated during playback either way.
+    - **`completionConditions` advance a phase.** The standard "advance once the spoken line finishes"
+      gate is **`IsSceneActionComplete`** — on a scene condition the `scene` defaults to the owning scene,
+      so you only give `sceneActionIndex` (the action's index in the built SCEN; find it with `scenediag`).
+      You can also gate on player position to pace a beat — `GetDistance` (≤ N units), `GetInCell`,
+      `GetInCurrentLoc`, `GetInWorldspace`. (⚠️ phase-advance behaviour is **offline-built but not yet
+      in-game-verified** — see `docs/INGAME-TEST-QUEUE.md`.)
 - one **Scene-subtype DialogTopic** (Category=Scene, SNAM=`SCEN`) + **INFO** per phase, carrying the
   spoken `lines` + `emotion`.
 
@@ -263,6 +269,7 @@ A condition is **static gate data**, so it lives in the spec (logic still belong
   //                                    //   GetQuestCompleted(quest) | GetDistance(ref; value=units) | GetIsCurrentPackage(pack) | GetIsVoiceType(VTYP/list)
   //                                    //   GetQuestRunning(quest) | GetInCell(cell) | GetInWorldspace(wrld) | GetEquipped(item/list) | GetDeadCount(npc base) | GetInCurrentLoc(location)
   //                                    // two-param: GetStageDone(param=quest, stage=N) — 1 if that exact stage was set
+  //                                    //   IsSceneActionComplete(scene=<owning by default>, sceneActionIndex=N) — scene phase "advance when action N done"
   //                                    // actorValue-arg: GetActorValue | GetActorValuePercent (0..1 fraction)
   //                                    // alias-arg: GetIsAliasRef (use "alias", NOT "param" — names an alias on the OWNING quest)
   //                                    // no-arg situational: GetCurrentTime (hour 0..24) | IsInInterior | IsInCombat | GetRandomPercent (0..99) | TemperIsEnchanted (recipe temper guard)

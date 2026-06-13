@@ -1836,7 +1836,8 @@
             "Fear",
             "Sad",
             "Happy",
-            "Surprise"
+            "Surprise",
+            "Puzzled"
           ],
           "description": "applied to all response lines (default Neutral)"
         },
@@ -3380,7 +3381,8 @@
             "GetGold",
             "GetMapMarkerVisible",
             "GetStageDone",
-            "GetInCurrentLoc"
+            "GetInCurrentLoc",
+            "IsSceneActionComplete"
           ]
         },
         "comparison": {
@@ -3405,6 +3407,14 @@
         "stage": {
           "type": "integer",
           "description": "for GetStageDone: the stage INDEX to test (a parameter, distinct from the comparison value)"
+        },
+        "scene": {
+          "type": "string",
+          "description": "for IsSceneActionComplete: the scene whose action is tested (a scene editorId ref; omit on a scene condition to default to the owning scene)"
+        },
+        "sceneActionIndex": {
+          "type": "integer",
+          "description": "for IsSceneActionComplete: the action's index in the built SCEN (inspect with scenediag)"
         },
         "itemType": {
           "enum": [
@@ -3725,7 +3735,8 @@
             "Fear",
             "Sad",
             "Happy",
-            "Surprise"
+            "Surprise",
+            "Puzzled"
           ]
         },
         "emotionValue": {
@@ -3846,7 +3857,8 @@
             "Fear",
             "Sad",
             "Happy",
-            "Surprise"
+            "Surprise",
+            "Puzzled"
           ]
         },
         "emotionValue": {

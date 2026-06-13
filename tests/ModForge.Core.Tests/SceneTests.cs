@@ -559,4 +559,29 @@ public class SceneTests
         Assert.Empty(sc.Conditions);
         Assert.All(sc.Phases, p => { Assert.Empty(p.StartConditions); Assert.Empty(p.CompletionConditions); });
     }
+
+    // IsSceneActionComplete in a phase CompletionCondition: scene defaults to the OWNING scene, the
+    // action index is carried — the standard "advance this phase when its line is done" gate.
+    [Fact]
+    public void CompletionCondition_IsSceneActionComplete_DefaultsToOwningScene()
+    {
+        var spec = TwoActorScene();
+        spec.Scenes[0].Phases[0].CompletionConditions.Add(
+            new ConditionSpec { Function = "IsSceneActionComplete", Comparison = "==", Value = 1, SceneActionIndex = 0 });
+        var r = TestBuild.Ok(spec);
+        var sc = TheScene(r);
+        var cond = Assert.Single(sc.Phases[0].CompletionConditions);
+        var data = Assert.IsAssignableFrom<IIsSceneActionCompleteConditionDataGetter>(cond.Data);
+        Assert.Equal(sc.FormKey, data.Scene.Link.FormKey);   // defaulted to this scene
+        Assert.Equal(0, data.SceneActionIndex);
+    }
+
+    [Fact]
+    public void Validate_IsSceneActionComplete_Without_Index_Is_Reported()
+    {
+        var spec = TwoActorScene();
+        spec.Scenes[0].Phases[0].CompletionConditions.Add(
+            new ConditionSpec { Function = "IsSceneActionComplete", Comparison = "==", Value = 1 });   // no index
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("IsSceneActionComplete needs a sceneActionIndex"));
+    }
 }

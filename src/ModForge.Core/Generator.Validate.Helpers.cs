@@ -54,6 +54,10 @@ public static partial class Generator
                     else CheckRef(cs.Param, $"{what} param");
                     if (cs.Stage < 0) Problems.Add($"{what}: GetStageDone needs a stage index");
                     break;
+                case "issceneactioncomplete":
+                    if (!string.IsNullOrWhiteSpace(cs.Scene)) CheckRef(cs.Scene, $"{what} scene");
+                    if (cs.SceneActionIndex < 0) Problems.Add($"{what}: IsSceneActionComplete needs a sceneActionIndex (>= 0)");
+                    break;
             }
         }
 

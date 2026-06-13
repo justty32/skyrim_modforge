@@ -49,6 +49,7 @@
 - **`npcPatches[]` override vanilla NPC + 換 AI 包**（已用 `npcdiag` 驗 Carlotta 整筆 override + 英文名 inline）。**怎麼測**：裝後去找該 NPC，觀察行程是否換成新 package（如叫她待在家/去酒館）；注意 USSEP/AI Overhaul load-order 衝突。
 - **新 CTDA 函式 + INFO 旗標**（`GetIsAliasRef` 等 10 個、`sayOnce`/`walkAway`…）。**怎麼測**：寫一條用 `GetIsAliasRef` 綁 alias 的對白或 `sayOnce` 一次性台詞，跑對話確認閘門/一次性行為。
 - **MGEF：Script-archetype 掛 Papyrus + DualValueModifier 第二 AV**。**怎麼測**：做個 `archetype:"Script"` + `scripts[]` 的法術看腳本有沒有跑；DualValueModifier 看是否同時動兩個屬性。
+- **`IsSceneActionComplete` scene phase 推進**（⚠️ **行為未驗，最該實機確認的一個**）。record 接線 offline 建好了，但「phase 是否真的等該 action 完成才推進」只能實機看。**怎麼測**：做個多 phase scene，給某 phase 一個 `completionConditions:[{function:"IsSceneActionComplete", sceneActionIndex:N}]`（scene 預設 owning，N 用 `scenediag` 查 action 順序），看演出是否卡在該 phase 直到那個 action（通常是台詞）講完才往下。對照「不給 completion condition」的預設推進行為差異。
 - **Sleeping Giant Inn 逆向 `examples/sleeping_giant_inn.json`**（423 placements 進 vanilla 室內）。**怎麼測**：build+package 後進睡巨人客棧看擺設；**注意**檔頭警告——含 3 個 NPC override 會**複製** vanilla Delphine/Orgnar/Embry，純擺設測試請拿掉 npc 項。
 
 ---

@@ -97,7 +97,7 @@ public static partial class Generator
                 if (!d.Hello && string.IsNullOrEmpty(d.Prompt)) Problems.Add($"dialogue '{d.EditorId}' has empty prompt");
                 if (d.Responses.Count == 0) Problems.Add($"dialogue '{d.EditorId}' has no response lines");
                 if (!Enum.TryParse<Emotion>(d.Emotion, true, out _))
-                    Problems.Add($"dialogue '{d.EditorId}' invalid emotion '{d.Emotion}' (Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise)");
+                    Problems.Add($"dialogue '{d.EditorId}' invalid emotion '{d.Emotion}' (Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise|Puzzled)");
             }
 
             // SCENE (SCEN): host quest must exist; actors need a unique aliasId + an NPC; every phase
@@ -141,7 +141,7 @@ public static partial class Generator
                     if (!sceneAliasIds.Contains(ph.Speaker))
                         Problems.Add($"scene '{sc.EditorId}' phase {i} speaker aliasId {ph.Speaker} is not one of the scene's actors");
                     if (!Enum.TryParse<Emotion>(ph.Emotion, true, out _))
-                        Problems.Add($"scene '{sc.EditorId}' phase {i} invalid emotion '{ph.Emotion}' (Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise)");
+                        Problems.Add($"scene '{sc.EditorId}' phase {i} invalid emotion '{ph.Emotion}' (Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise|Puzzled)");
                     if (ph.HeadtrackActor >= 0 && !sceneAliasIds.Contains(ph.HeadtrackActor))
                         Problems.Add($"scene '{sc.EditorId}' phase {i} headtrackActor {ph.HeadtrackActor} is not one of the scene's actors");
                     if (ph.HeadtrackPlayer && ph.HeadtrackActor != -2)
@@ -212,6 +212,11 @@ public static partial class Generator
                 && !Enum.TryParse<CompareOperator>(cs.Comparison, true, out _))
                 Problems.Add($"{label} invalid comparison '{cs.Comparison}'");
             CheckRef(cs.Param, $"{label} param");
+            if (string.Equals(cs.Function, "IsSceneActionComplete", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(cs.Scene)) CheckRef(cs.Scene, $"{label} scene");
+                if (cs.SceneActionIndex < 0) Problems.Add($"{label}: IsSceneActionComplete needs a sceneActionIndex (>= 0)");
+            }
         }
 
         private void ValidateScriptAttachments()

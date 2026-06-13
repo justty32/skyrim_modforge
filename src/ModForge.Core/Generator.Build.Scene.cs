@@ -263,18 +263,21 @@ public static partial class Generator
                 if (!string.IsNullOrEmpty(s.QuestEditorId) && questsByEd.TryGetValue(s.QuestEditorId, out var sq))
                     aliasIdx = sq.Aliases.ToDictionary(a => a.Name ?? "", a => (int)a.ID, StringComparer.OrdinalIgnoreCase);
 
+                // IsSceneActionComplete with no explicit `scene` defaults to THIS scene.
+                var self = scene.FormKey;
+
                 foreach (var cs in s.Conditions)
-                    if (BuildCondition(cs, $"scene '{s.EditorId}' condition", aliasIdx) is { } cond)
+                    if (BuildCondition(cs, $"scene '{s.EditorId}' condition", aliasIdx, self) is { } cond)
                         scene.Conditions.Add(cond);
 
                 foreach (var (specIndex, phase) in phaseMap)
                 {
                     var ph = s.Phases[specIndex];
                     foreach (var cs in ph.StartConditions)
-                        if (BuildCondition(cs, $"scene '{s.EditorId}' phase {specIndex} startCondition", aliasIdx) is { } cond)
+                        if (BuildCondition(cs, $"scene '{s.EditorId}' phase {specIndex} startCondition", aliasIdx, self) is { } cond)
                             phase.StartConditions.Add(cond);
                     foreach (var cs in ph.CompletionConditions)
-                        if (BuildCondition(cs, $"scene '{s.EditorId}' phase {specIndex} completionCondition", aliasIdx) is { } cond)
+                        if (BuildCondition(cs, $"scene '{s.EditorId}' phase {specIndex} completionCondition", aliasIdx, self) is { } cond)
                             phase.CompletionConditions.Add(cond);
                 }
             }

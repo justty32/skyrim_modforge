@@ -37,7 +37,7 @@
 | Package action 跨多 phase 鋪底（`startPhase..endPhase`，1 PACK，54 例） | `SceneActionSpec.StartPhase/EndPhase` + `Package` | ✅ 有 |
 | Package action 每個剛好 1 PACK | `SceneActionSpec.Package`（單 ref） | ✅ 有（VIGILANT 不用多 PACK，無差） |
 | scene Dialog action 帶 **Emotion**（225/225） | `Generator.Build.Scene.cs` 把 `ScenePhaseSpec.Emotion/EmotionValue` 寫到 SceneAction.Emotion ✅ | ✅ 有（但見 ⚠ 粒度，下） |
-| Emotion = **Puzzled**（1 例） | `ScenePhaseSpec.Emotion` 只列 `Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise`，**漏 Puzzled** | ⚠ 語意有差（落 Neutral） |
+| Emotion = **Puzzled**（1 例） | `ScenePhaseSpec.Emotion` 只列 `Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise|Puzzled`，**漏 Puzzled** | ⚠ 語意有差（落 Neutral） |
 | scene Dialog action 帶 **HeadtrackActorID**（225/225） | `ScenePhaseSpec.HeadtrackActor/HeadtrackPlayer/FaceTarget`（phase 級） | ⚠ 粒度差（phase vs per-action） |
 | per-phase **CompletionConditions**（280/281 phase；`IsSceneActionComplete` 274 為主） | `ScenePhaseSpec.CompletionConditions`（**有欄位**，但 BuildCondition 白名單**沒有 `IsSceneActionComplete`**） | ⚠ 欄位有、函式缺 |
 | phase completion 用 `GetDistance:15 / GetInCell:13 / GetInCurrentLoc:3 / GetInWorldspace:2`（等玩家走到才推進） | `CompletionConditions` 欄位有，**這四個函式全不在白名單** | ❌ 缺 |

@@ -88,7 +88,7 @@ public sealed class DialogueSpec
     public string SpeakerNpcEditorId { get; set; } = "";
     public string Prompt { get; set; } = "";
     public List<string> Responses { get; set; } = new();
-    public string Emotion { get; set; } = "Neutral";   // Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise — applied to all response lines
+    public string Emotion { get; set; } = "Neutral";   // Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise|Puzzled — applied to all response lines
     public uint EmotionValue { get; set; } = 50;        // 0..100 intensity
     // Result fragment — Papyrus that runs when the line is PICKED (the INFO's OnEnd fragment). This is
     // the only way to *do* something on a dialogue choice (take gold, join the follower system, set a
@@ -214,6 +214,10 @@ public sealed class ConditionSpec
     public string Reference { get; set; } = "";        // the ref read when RunOn=Reference (e.g. player Skyrim.esm:0x000014)
     public string Alias { get; set; } = "";            // the alias NAME for GetIsAliasRef (resolved to the owning quest's alias index)
     public int Stage { get; set; } = -1;               // the stage INDEX for GetStageDone (a param, not the comparison value); -1 = unset
+    // IsSceneActionComplete: the SCENE whose action is tested (a scene editorId ref; omit on a scene
+    // completion/start condition to default to the OWNING scene) + the action's index in that scene.
+    public string Scene { get; set; } = "";
+    public int SceneActionIndex { get; set; } = -1;
     public bool Or { get; set; }                        // OR with the NEXT condition (default AND)
 }
 // Attach a compiled Papyrus script (by Scriptname) to a record (by editorId), with

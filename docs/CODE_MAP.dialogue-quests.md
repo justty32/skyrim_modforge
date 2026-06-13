@@ -177,7 +177,7 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Build P2 | `Generator.Build.Conditions.cs` | 所有 CTDA 的 function dispatch + ref 解析（dialogue / stage / banter / package 共用）。**`GetIsAliasRef`**：用 `alias`（owning quest 的 alias 名）→ alias index，由各 quest-scoped 呼叫點傳入 `aliasIndexByName`（dialogue/banter/scene/queststage 各自從 `questsByEd[...].Aliases` 建、ObjectiveTargets 用既有 `idByName`）；package/perk/recipe 無 quest context → 傳 null → 警告丟棄 |
+| Build P2 | `Generator.Build.Conditions.cs` | 所有 CTDA 的 function dispatch + ref 解析（dialogue / stage / banter / package 共用）。**`GetIsAliasRef`**：用 `alias`（owning quest 的 alias 名）→ alias index，由各 quest-scoped 呼叫點傳入 `aliasIndexByName`。**`IsSceneActionComplete`**：`BuildCondition` 第 4 參 `owningScene` FormKey，scene-cond 呼叫點（`WireScenes` 的 sceneConditionWires）傳 `scene.FormKey`，author 可用 `c.Scene` 覆寫；`c.SceneActionIndex` 必填。package/perk 等無 scene/quest context → 傳 null → 警告丟棄 |
 | Validate | `Generator.Validate.Helpers.cs` | `CheckCondition`（function / comparator / ref）|
 | Diag | `Diagnostics.Dialogue.cs` | condition 欄位 dump |
 

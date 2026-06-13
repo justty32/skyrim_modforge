@@ -14,6 +14,7 @@ public static partial class Generator
         "GetIsAliasRef",
         "GetQuestRunning", "GetInCell", "GetInWorldspace", "GetEquipped", "GetDeadCount",
         "GetSitting", "GetGold", "GetMapMarkerVisible", "GetStageDone", "GetInCurrentLoc",
+        "IsSceneActionComplete",
     };
 
     private sealed partial class BuildContext
@@ -27,7 +28,7 @@ public static partial class Generator
         // alias index. Only the quest-scoped call sites (dialogue/scene/stage/objective) pass it;
         // package/perk/recipe have no owning quest, so a GetIsAliasRef there warns and is dropped.
         private ConditionFloat? BuildCondition(ConditionSpec c, string label,
-            IReadOnlyDictionary<string, int>? aliasIndexByName = null)
+            IReadOnlyDictionary<string, int>? aliasIndexByName = null, FormKey? owningScene = null)
         {
             CompareOperator op;
             switch (c.Comparison)
@@ -92,6 +93,26 @@ public static partial class Generator
                 }
                 case "getincell":           { var d = new GetInCellConditionData();           if (hasParam) d.Cell.Link.SetTo(paramFk);           data = d; break; }
                 case "getincurrentloc":     { var d = new GetInCurrentLocConditionData();     if (hasParam) d.Location.Link.SetTo(paramFk);       data = d; break; }
+                // Two-param: IsSceneActionComplete(scene, actionIndex) → 1 once that scene action finished.
+                // The standard scene-phase "advance when the line is done" gate. Scene defaults to the
+                // owning scene on a scene completion/start condition; the action index is author-supplied
+                // (the action's position in the built SCEN — inspect with `scenediag`).
+                case "issceneactioncomplete":
+                {
+                    var d = new IsSceneActionCompleteConditionData();
+                    FormKey sceneFk;
+                    if (!string.IsNullOrWhiteSpace(c.Scene))
+                    {
+                        if (!TryResolveRef(c.Scene, formKeyByEd, out sceneFk))
+                        { Warn($"  ! {label}: IsSceneActionComplete scene '{c.Scene}' unresolved"); return null; }
+                    }
+                    else if (owningScene is { } os) sceneFk = os;
+                    else { Warn($"  ! {label}: IsSceneActionComplete needs a 'scene' (only auto-defaulted on a scene condition)"); return null; }
+                    d.Scene.Link.SetTo(sceneFk);
+                    if (c.SceneActionIndex < 0) { Warn($"  ! {label}: IsSceneActionComplete needs a 'sceneActionIndex'"); return null; }
+                    d.SceneActionIndex = c.SceneActionIndex;
+                    data = d; break;
+                }
                 case "getinworldspace":     { var d = new GetInWorldspaceConditionData();     if (hasParam) d.WorldspaceOrList.Link.SetTo(paramFk); data = d; break; }
                 case "getequipped":         { var d = new GetEquippedConditionData();         if (hasParam) d.ItemOrList.Link.SetTo(paramFk);     data = d; break; }
                 case "getdeadcount":        { var d = new GetDeadCountConditionData();        if (hasParam) d.Npc.Link.SetTo(paramFk);            data = d; break; }
@@ -156,7 +177,7 @@ public static partial class Generator
                         + "(have HasPerk/GetInFaction/GetItemCount/GetGlobalValue/GetStage/GetIsID/GetRelationshipRank/"
                         + "GetActorValue/GetActorValuePercent/GetCurrentTime/IsInInterior/IsInCombat/GetRandomPercent/TemperIsEnchanted/"
                         + "GetQuestCompleted/GetDistance/GetIsCurrentPackage/GetIsVoiceType/GetIsAliasRef/"
-                        + "GetQuestRunning/GetInCell/GetInWorldspace/GetEquipped/GetDeadCount/GetSitting/GetGold/GetMapMarkerVisible/GetStageDone/GetInCurrentLoc)");
+                        + "GetQuestRunning/GetInCell/GetInWorldspace/GetEquipped/GetDeadCount/GetSitting/GetGold/GetMapMarkerVisible/GetStageDone/GetInCurrentLoc/IsSceneActionComplete)");
                     return null;
             }
 

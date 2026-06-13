@@ -112,7 +112,7 @@ public sealed class ScenePhaseSpec
 {
     public int Speaker { get; set; }                        // the aliasId (from actors[]) who speaks this phase
     public List<string> Lines { get; set; } = new();        // the spoken line(s) for this phase
-    public string Emotion { get; set; } = "Neutral";        // Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise
+    public string Emotion { get; set; } = "Neutral";        // Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise|Puzzled
     public uint EmotionValue { get; set; } = 50;            // 0..100 intensity
     // HEADTRACK / FACING — where the speaking actor's gaze points during this phase (the SceneAction's
     // HeadtrackActorID + FaceTarget/HeadtrackPlayer flags). headtrackActor: an actor `aliasId` = look at
