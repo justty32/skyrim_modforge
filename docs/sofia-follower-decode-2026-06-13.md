@@ -63,5 +63,67 @@ Masters：Skyrim.esm + Update.esm。前綴 `JJ`（作者 tag）。
 
 **踩坑提醒（沿用既有鐵律）**：scene actor 必須是同 quest alias;在場偵測用 `autoStart.gateGlobal` 不要用 scene-level conditions;dialogue 在 dense 事件上要 conditions 才不劫持原版。
 
+## 內容索引（30 quest / 28 scene / 15 formlist）
+
+### Quest 索引（按角色分組）
+格式：`editorId`（type, SGE）— alias | stages/obj | scenes | topics/INFOs — 用途
+
+**核心 follower 骨幹**
+- `JJSofiaFollowerMain`（Misc, SGE）— SofiaFollower | obj1 | — | — — 核心跟隨 quest（單 alias = Sofia）
+- `JJSofiaScripts`（None, SGE）— Sofia/SofiaHorse/SofiaTempStore | 2 scene（上/下馬）— 主腳本宿主
+- `JJSofiaVariables`（None, SGE）— 無 alias — 全域變數容器
+- `JJSofiaMCM`（None, SGE）— PlayerAlias/SofiaRef — MCM 設定
+- `JJSofiaGetHasSKSE` / `JJSofiaClothingFix` / `JJSofiaWardrobe` — 偵測/修裝/換裝模組（無對話）
+- `JJSofiaRelationship`（None, SGE）— 4 topic/9 INFO — 好感度/關係狀態
+
+**對話樞紐（content 大宗）**
+- `JJSofiaDialogue`（Misc, SGE）— **94 topic / 415 INFO** — 主對話樞紐（玩家問 Sofia、下指令、閒聊選單）
+- `JJSofiaIdleDialogue`（None, SGE）— Sofia/PlayerWornArmour/PlayerRef | 1 scene | **1 topic / 247 INFO** — 海量條件 idle 旁白（一個 topic 多 INFO,gated on 穿著/位置/時間）
+- `JJSofiaMainQuestDialogue`（None, SGE）— **19 topic / 169 INFO** | 2 scene（含 17-phase 過場）— Sofia 背景主線對話
+- `JJSofiaSidequestDialogue`（None, SGE）— 2 topic/9 INFO | 1 scene（賞金任務啟動）
+
+**演出 / 互動模組**
+- `JJSofiaBardSongs`（None, SGE）— **45 topic / 64 INFO | 6 scene** — 吟唱（6 首歌,每首一個多-phase scene）
+- `JJSofiaDrunk`（None）— 6 stage | **5 scene** | 3 topic/26 INFO — 喝醉事件（對飲/鬥毆/醉態）
+- `JJSofiaGiveGift`（None, SGE）— 2 topic/21 INFO | 1 scene — 送禮
+- `JJSofiaCastSpell`（None）— 1 scene（CastNudeBomb 惡搞）
+- `JJSofiaBattleCommands`（None）— SofiaRef/SofiaTarget — 戰鬥指令（無對話,純行為）
+
+**comment（每情境一個 = 在場偵測 banter）**
+- `JJSofia{Nazeem,Carlotta,Braith,Lars,Nelkir,Taarie,Endarie}Comment`（None,非 SGE）— 各 2 alias（Sofia + 目標 NPC）| 1 scene（2-phase 對白）| ~2 topic/7-9 INFO — 靠近特定具名 NPC 時吐槽
+- `JJSofiaGuardComment` — Sofia+GuardRef | 1 scene | 16 INFO — 對「衛兵」泛型吐槽（16 變體）
+
+**真 journal 任務**
+- `JJSofiaQuest`（SideQuest, SGE）— 2 stage | 16 topic/16 INFO — 支線
+- `JJSofiaWeddingCeremony`（SideQuest）— **6 alias / 6 stage / obj | 1 scene（20-phase 婚禮）| 24 topic/26 INFO** — 婚禮線
+- `JJSofiaLeadTheWay`（Misc）— SofiaRef/InnLocation/InnRef | 2 stage — 帶路到旅店
+- `JJSofiaTrackingMarker`（Misc, SGE）— 2 stage / **obj + marker** — 找回走失隨從
+- `JJJarvisDialogue`（Misc,非 SGE）— 1 topic/8 INFO — 互動 NPC Jarvis 的對話
+
+### Scene 索引（28，按類）
+- **吟唱（6）**：DragonBornComes(10ph) / AgeOfTheDragon(5) / LegendaryDuo(6) / TheCaveWasHerHome(7) / BowAndArrow(4) / RagnarTheRed(6)
+- **NPC 吐槽（8）**：{Braith,Carlotta,Endarie,Lars,Nazeem,Nelkir,Taarie}SayComment(各 2ph) + GuardSayComment(1ph)
+- **喝醉（5）**：DrunkDialogue / DrunkBrawlDialogue / DrunkGiveDrinkDialogue / DrunkScene(3ph) / DrunkSceneEnd
+- **主線（2）**：MainQuestDialogueScene(**17ph 過場**) / QuestRecieveReward
+- **婚禮（1）**：SofiaWeddingScene(**20ph / 17 action**)
+- **雜項**：IdleDialogueScene(4ph) / GiveGiftScene / CastNudeBomb / MountHorseScene / DismountHorseScene / BountyQuestStart
+
+### Formlist 索引（15 = 「分類資料表」）
+- **玩家穿著分類（驅動評論）**：`JJGoodOutfits`(118) / `JJBadOutfits`(13) / `JJPlayerCriminalOutfits`(12) / `JJPlayerRevealingOutfits`(6) / `JJPlayerDwarvenOutfits`(22) — armor formlist + condition「玩家穿著清單內物品」→ 設 `JJPlayerOutfitType` GLOB → 對話分歧
+- **喝醉**：`SofiaAlcoholList`(11)
+- **戰鬥切換**：`SofiaCombatStyles`(6) / `SofiaCombatClass`(11) / `SofiaCombatOverridePackageList`(1) / `SofiaCombatOveerrideBrawl`(1)
+- **獎勵/法術**：`JJSofiaRewardGivers`(30 個可給獎 NPC) / `JJSpellTomes`(93) / `SofiaClothingKeywords`(12)
+
+### 狀態機制
+- **FACT（隨從狀態）**：`SofiaFollowerFaction`（跟隨中）/ `SofiaDismissedFaction`（已解散）/ `SofiaBrawlFaction`（鬥毆）— 對話/package condition gate on faction
+- **GLOB（行為/玩家狀態）**：見上 §③
+- **VTYP**：`JJSofiaVoiceType`(Sofia) + Jarvis/CrookedPriest/Colin（互動 NPC）
+- **CLAS（6）**：戰鬥職業,配合 `SofiaCombatClass` formlist 動態切換戰鬥風格
+
+### 擴充時最常複用的三塊
+1. **加 NPC 吐槽** → 仿 `JJSofia<X>Comment`：非 SGE quest + 2 alias + autoStart scene（在場偵測）+ 2-phase 對白
+2. **加穿著/狀態評論** → armor/keyword formlist + condition 設 GLOB + idle INFO 分歧（仿 IdleDialogue 的 247 條）
+3. **加演出**（唱歌/事件）→ 多-phase scene（仿 BardSongs/Wedding),phase 配 dialogue/idle/package action
+
 ## 解碼方法備忘（記憶體安全）
 Linux 限制單 process 記憶體、超限會被終止 → **只 `unrar e` 抽單顆 635KB esp,不碰 78M/34M 的 BSA**;Mutagen `CreateFromBinaryOverlay`（lazy)讀 635KB esp 安全。要更深(看實際 INFO 文字/scene 對白)可再抽,但 BSA 與 1G 級 archive 一律不解。
