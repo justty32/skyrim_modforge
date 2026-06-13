@@ -56,5 +56,13 @@ public static partial class Generator
                         Resolve($"music '{m.EditorId}' track", tr, fk => type.Tracks.Add(new FormLink<IMusicTrackGetter>(fk)));
                 }
         }
+
+        // --- pass 2: cells[].music -> cell.Music (worldspace music is wired in BuildWorldspaces). ---
+        public void WireCellMusic()
+        {
+            foreach (var c in spec.Cells)
+                if (!string.IsNullOrWhiteSpace(c.Music) && cellsByEd.TryGetValue(c.EditorId, out var cell))
+                    Resolve($"cell '{c.EditorId}' music", c.Music, fk => cell.Music.SetTo(fk));
+        }
     }
 }

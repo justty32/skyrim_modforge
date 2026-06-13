@@ -35,4 +35,32 @@ public class MusicTests
         Assert.Equal(-6f, m.Data.DuckingDecibel);
         Assert.Equal(t.FormKey, m.Tracks.Single().FormKey);   // MUSC -> MUST wired in pass 2
     }
+
+    [Fact]
+    public void Palette_track_references_its_sub_tracks()
+    {
+        var spec = new ModSpec();
+        spec.MusicTracks.Add(new MusicTrackSpec { EditorId = "MF_A", File = "Music\\a.xwm" });
+        spec.MusicTracks.Add(new MusicTrackSpec { EditorId = "MF_B", File = "Music\\b.xwm" });
+        spec.MusicTracks.Add(new MusicTrackSpec { EditorId = "MF_Pool", Type = "Palette", Tracks = { "MF_A", "MF_B" } });
+        var mod = Build(spec);
+        var pool = mod.MusicTracks.Single(t => t.EditorID == "MF_Pool");
+        Assert.Equal(2, pool.Tracks!.Count);
+    }
+
+    [Fact]
+    public void Music_assigns_to_cell_and_worldspace()
+    {
+        var spec = new ModSpec();
+        spec.MusicTracks.Add(new MusicTrackSpec { EditorId = "MF_T", File = "Music\\t.xwm" });
+        spec.Music.Add(new MusicTypeSpec { EditorId = "MF_M", Tracks = { "MF_T" } });
+        spec.Cells.Add(new CellSpec { EditorId = "Room", Name = "Room", Music = "MF_M" });
+        spec.Worldspaces.Add(new WorldspaceSpec { EditorId = "MF_World", Name = "W", Music = "MF_M" });
+        var mod = Build(spec);
+        var m = mod.MusicTypes.Single(x => x.EditorID == "MF_M");
+        var cell = mod.Cells.SelectMany(b => b.SubBlocks).SelectMany(s => s.Cells).Single(c => c.EditorID == "Room");
+        Assert.Equal(m.FormKey, cell.Music.FormKey);
+        var ws = mod.Worldspaces.Single(w => w.EditorID == "MF_World");
+        Assert.Equal(m.FormKey, ws.Music.FormKey);
+    }
 }

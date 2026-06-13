@@ -114,6 +114,7 @@ public static partial class Generator
         ctx.WireLeveledNpcs();                     // LVLN entries
         ctx.WireEncounterZones();                  // ECZN owner/location refs
         ctx.WireCellZones();                       // cell XEZN (encounterZone) refs
+        ctx.WireCellMusic();                       // cells[].music -> cell.Music (MUSC)
         ctx.WireContainers();                      // CONT contents
         ctx.WireRecipes();                         // COBJ createdObject/workbench/components
         ctx.AttachScripts();                       // VMAD Papyrus script attachment

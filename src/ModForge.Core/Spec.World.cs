@@ -6,7 +6,7 @@ namespace ModForge;
 // `template` (optional, a vanilla INTERIOR cell ref "<master>:0xFORMID") copies that cell's
 // lighting/water environment so a brand-new cell isn't pitch-black; it still needs a floor
 // static placed in it (a `placement`) so the player doesn't fall into the void.
-public sealed class CellSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Template { get; set; } = ""; public string EncounterZone { get; set; } = ""; public string LightingTemplate { get; set; } = ""; public string ImageSpace { get; set; } = ""; public CellLightingSpec? Lighting { get; set; } } // lightingTemplate/imageSpace: in-spec editorId OR vanilla <master>:0xFORMID; lighting: inline XCLL overrides
+public sealed class CellSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Template { get; set; } = ""; public string EncounterZone { get; set; } = ""; public string LightingTemplate { get; set; } = ""; public string ImageSpace { get; set; } = ""; public string Music { get; set; } = ""; public CellLightingSpec? Lighting { get; set; } } // lightingTemplate/imageSpace: in-spec editorId OR vanilla <master>:0xFORMID; music: ref → MUSC; lighting: inline XCLL overrides
 public sealed class Vec3 { public float X { get; set; } public float Y { get; set; } public float Z { get; set; } }
 // Place a base form (npc/object, in-spec or external) into the world at a position/rotation.
 // TWO targeting modes:
