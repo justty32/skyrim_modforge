@@ -130,6 +130,7 @@ public static partial class Generator
         ctx.BuildIdentityControllerQuest();        // StartGameEnabled quest → MFIdentityController maintains MF_PrimaryIdentity (primary + manual override)
         ctx.BuildIdentityAutoGrantQuest();         // StartGameEnabled quest → MFIdentityAutoGrant joins a faction when a player AV crosses a threshold (e.g. Dragonborn)
         ctx.WireDialogueConditions();              // extra CTDA gates on dialogue INFOs
+        ctx.WireDialogueLinks();                   // dialogue-tree ENAM LinkTo + PNAM PreviousDialog
         ctx.WireQuestStages();                     // QSDT log-entry CTDA + stage→objective fragment VMAD
         ctx.WireObjectiveTargets();                // QOBJ QSTA targets (alias index + flag + CTDA) — after aliases exist
         ctx.WireBanterConditions();                // situational CTDA gates on banter INFOs

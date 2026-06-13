@@ -110,6 +110,17 @@ public sealed class DialogueSpec
     public bool Random { get; set; }
     public bool InvisibleContinue { get; set; }
     public bool ForceSubtitle { get; set; }
+    // --- dialogue TREE (branching conversations) ---
+    // topLevel: a top-level menu option shown the moment you talk to the NPC. Set FALSE for a SUB-topic
+    // that only appears once another line LINKS to it (default true → behaves like a normal top option).
+    public bool TopLevel { get; set; } = true;
+    // linkTo (ENAM): after THIS line plays, surface these dialogue topics as the next player choices —
+    // each is another `dialogue` entry's editorId (its TOPIC), or a vanilla `<master>:0xFORMID` topic.
+    // This is how a conversation branches: greeting → topic → response → linkTo:[follow-ups].
+    public List<string> LinkTo { get; set; } = new();
+    // previousDialog (PNAM): this INFO follows another INFO in a chain — its value is another `dialogue`
+    // entry's editorId (resolved to that INFO). Used to order/chain responses within a flow.
+    public string PreviousDialog { get; set; } = "";
     // Extra CTDA gates on the INFO (beyond the auto GetIsID speaker gate). e.g. only show a paid
     // recruit line when the player can afford it and isn't already following.
     public List<ConditionSpec> Conditions { get; set; } = new();

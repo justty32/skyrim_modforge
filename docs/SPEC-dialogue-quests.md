@@ -54,6 +54,26 @@ most-used INFO flag, for one-shot story beats), `walkAway` (NPC walks off after 
 (continue to the next INFO in the chain without closing the menu), `forceSubtitle` (always show the
 subtitle even when subtitles are off). They apply to both player topics and `hello` greetings.
 
+**Dialogue trees (branching conversations).** By default every `dialogue` entry is a **top-level**
+player option, all shown the moment you talk to the NPC. To build a *tree* — pick a topic, the NPC
+answers, then *new* options appear — use:
+- **`linkTo`** (ENAM, a list): after this line plays, surface these dialogue topics as the next
+  choices. Each entry is another `dialogue`'s `editorId` (resolved to its TOPIC) or a vanilla
+  `<master>:0xFORMID` topic. VIGILANT's #1 tree technique.
+- **`topLevel: false`** on the *target* entries: marks them as **sub-topics** that only appear when
+  something `linkTo`s them (otherwise they'd also show in the initial menu). Default `true`.
+- **`previousDialog`** (PNAM): chain this INFO after another (its value is a `dialogue` `editorId`,
+  resolved to that INFO) — for ordering responses within a flow.
+
+```jsonc
+{ "editorId": "AskAboutCave", "questEditorId": "Q", "speakerNpcEditorId": "Hideko",
+  "prompt": "What's in the cave?", "responses": ["Bandits. And worse."],
+  "linkTo": ["AskHowMany", "AskReward"] },            // → two follow-up options appear
+{ "editorId": "AskHowMany", "questEditorId": "Q", "speakerNpcEditorId": "Hideko",
+  "prompt": "How many bandits?", "responses": ["A dozen, maybe."],
+  "topLevel": false }                                  // a sub-topic — only via the linkTo above
+```
+
 > **Three runtime requirements (not record bugs):** (1) the dialogue only registers on a
 > **game LOAD** — test with a genuine new game, or `save`+`load` after the quest starts;
 > a main-menu `coc` or mid-session `startquest` leaves the NPC mute even with a perfect

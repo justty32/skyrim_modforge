@@ -39,6 +39,9 @@ public static partial class Generator
         // Built INFOs by dialogue editorId, so a pass-2 step can attach result-script fragments
         // (which need ref resolution from the formKey table that only exists in pass 2).
         private readonly Dictionary<string, DialogResponses> dialogResponsesByEd = new();
+        // Player DialogTopics by editorId (topic & INFO share an editorId, so formKeyByEd collides —
+        // this is the reliable way to resolve a dialogue's TOPIC, e.g. for an ENAM LinkTo target).
+        private readonly Dictionary<string, DialogTopic> dialogTopicsByEd = new();
         // Proactive banter INFOs, kept so pass 2 can append their situational conditions (mirrors dialogResponsesByEd).
         private readonly List<(BanterSpec Spec, DialogResponses Info, string Label)> banterInfos = new();
         // Scene actor aliases, kept so pass 2 can bind each to the NPC that fills it (UniqueActor link —

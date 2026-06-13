@@ -1929,6 +1929,19 @@
           "type": "boolean",
           "description": "INFO (ENAM) flag: always show the subtitle even when subtitles are off"
         },
+        "topLevel": {
+          "type": "boolean",
+          "description": "dialogue tree: false = a SUB-topic that only appears when another line linkTo's it (default true = a normal top-level option)"
+        },
+        "linkTo": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "dialogue tree (ENAM): after this line, surface these dialogue topics as the next choices — each is another dialogue's editorId or a vanilla <master>:0xFORMID topic"
+        },
+        "previousDialog": {
+          "type": "string",
+          "description": "dialogue tree (PNAM): chain this INFO after another (a dialogue editorId or <master>:0xFORMID INFO)"
+        },
         "hello": {
           "type": "boolean",
           "description": "emit this line as the NPC's auto-spoken GREETING (Misc/Hello) instead of a player menu option; combine with identity/primaryIdentity/conditions to greet differently by state (engine picks the highest-priority matching Hello, else the NPC's plain greeting). prompt is ignored."

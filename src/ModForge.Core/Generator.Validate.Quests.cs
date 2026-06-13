@@ -58,9 +58,15 @@ public static partial class Generator
                 }
             }
 
+            var dialogueIds = new HashSet<string>(spec.Dialogue.Select(x => x.EditorId), StringComparer.OrdinalIgnoreCase);
             foreach (var d in spec.Dialogue)
             {
                 if (!questIds.Contains(d.QuestEditorId)) Problems.Add($"dialogue '{d.EditorId}' references unknown quest '{d.QuestEditorId}'");
+                foreach (var lt in d.LinkTo)
+                    if (!dialogueIds.Contains(lt) && !LooksExternalRef(lt))
+                        Problems.Add($"dialogue '{d.EditorId}' linkTo '{lt}' is not a known dialogue editorId or a <master>:0xID ref");
+                if (!string.IsNullOrWhiteSpace(d.PreviousDialog) && !dialogueIds.Contains(d.PreviousDialog) && !LooksExternalRef(d.PreviousDialog))
+                    Problems.Add($"dialogue '{d.EditorId}' previousDialog '{d.PreviousDialog}' is not a known dialogue editorId or a <master>:0xID ref");
                 if (d.SetStage >= 0)
                 {
                     if (!stageIndexByQuest.TryGetValue(d.QuestEditorId, out var stages) || !stages.Contains(d.SetStage))

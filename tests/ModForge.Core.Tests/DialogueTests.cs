@@ -77,6 +77,55 @@ public class DialogueTests
         Assert.False(f.HasFlag(DialogResponses.Flag.Goodbye));
     }
 
+    // Dialogue TREE: a parent line's ENAM LinkTo points at the child TOPIC, the child is a non-top-level
+    // sub-topic, and PNAM PreviousDialog points back at the parent INFO.
+    [Fact]
+    public void DialogueTree_LinkTo_TopLevel_And_PreviousDialog_Wire()
+    {
+        var r = TestBuild.Ok(new ModSpec
+        {
+            PluginName = "Test.esp",
+            Quests = { new QuestSpec { EditorId = "Q", Name = "Quest" } },
+            Npcs   = { new NpcSpec  { EditorId = "Npc", Name = "Npc", Greeting = "Hi." } },
+            Dialogue =
+            {
+                new DialogueSpec { EditorId = "Parent", QuestEditorId = "Q", SpeakerNpcEditorId = "Npc",
+                    Prompt = "Tell me more", Responses = { "Sure." }, LinkTo = { "Child" } },
+                new DialogueSpec { EditorId = "Child", QuestEditorId = "Q", SpeakerNpcEditorId = "Npc",
+                    Prompt = "About the cave?", Responses = { "It's haunted." },
+                    TopLevel = false, PreviousDialog = "Parent" },
+            },
+        });
+        var topics = Topics(r);
+        var childTopic = topics.Single(t => t.EditorID == "Child");
+        var parentInfo = topics.Single(t => t.EditorID == "Parent").Responses.Single();
+        var childInfo  = childTopic.Responses.Single();
+
+        // parent INFO ENAM links to the child TOPIC
+        Assert.Contains(parentInfo.LinkTo, l => l.FormKey == childTopic.FormKey);
+        // child PNAM points back at the parent INFO
+        var parentInfoFk = topics.Single(t => t.EditorID == "Parent").Responses.Single().FormKey;
+        Assert.Equal(parentInfoFk, childInfo.PreviousDialog.FormKey);
+        // child's branch is NOT top-level (only appears when linked); parent's IS
+        var childBranch = r.Mod.DialogBranches.Single(b => b.EditorID == "Child_Br");
+        var parentBranch = r.Mod.DialogBranches.Single(b => b.EditorID == "Parent_Br");
+        Assert.False(childBranch.Flags.GetValueOrDefault().HasFlag(DialogBranch.Flag.TopLevel));
+        Assert.True(parentBranch.Flags.GetValueOrDefault().HasFlag(DialogBranch.Flag.TopLevel));
+    }
+
+    [Fact]
+    public void Validate_Flags_Unknown_LinkTo_Target()
+    {
+        var spec = new ModSpec
+        {
+            Quests = { new QuestSpec { EditorId = "Q", Name = "Q" } },
+            Npcs   = { new NpcSpec  { EditorId = "Npc", Name = "Npc", Greeting = "Hi." } },
+            Dialogue = { new DialogueSpec { EditorId = "D", QuestEditorId = "Q", SpeakerNpcEditorId = "Npc",
+                Prompt = "T", Responses = { "x" }, LinkTo = { "NoSuchDialogue" } } },
+        };
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("linkTo 'NoSuchDialogue'"));
+    }
+
     // GOTCHA: without a Hello the NPC isn't conversable at all. Build auto-emits one Hello topic per
     // speaker: Misc / Hello / SNAM='HELO', no branch, gated GetIsID(speaker).
     [Fact]

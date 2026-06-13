@@ -82,8 +82,9 @@ public static partial class Generator
                 branch.Quest.SetTo(quest);
                 branch.Category = DialogBranch.CategoryType.Player;
                 // TopLevel = this branch is a top-level menu option shown the moment you talk to the NPC
-                // (vs. a sub-branch reachable only from another topic). Without it the prompt never appears.
-                branch.Flags = DialogBranch.Flag.TopLevel;
+                // (vs. a sub-branch reachable only from another topic, via an ENAM LinkTo). A normal
+                // dialogue is top-level; a tree SUB-topic sets topLevel:false so it only appears when linked.
+                branch.Flags = d.TopLevel ? DialogBranch.Flag.TopLevel : default(DialogBranch.Flag);
 
                 var topic = mod.DialogTopics.AddNew();
                 topic.EditorID = d.EditorId;
@@ -100,6 +101,7 @@ public static partial class Generator
                 topic.Priority = nextTopicPriority;
                 nextTopicPriority -= 1f;
                 branch.StartingTopic.SetTo(topic);
+                dialogTopicsByEd[d.EditorId] = topic;   // for ENAM LinkTo resolution in pass 2
 
                 // INFO carries the spoken response(s). Leave ResponseData null (so it uses our own
                 // Responses, not a shared INFO) and Prompt null (the menu line comes from topic.Name).
@@ -226,5 +228,36 @@ public static partial class Generator
             }
         }
 
+        // --- pass 2: dialogue TREE links (ENAM LinkTo + PNAM PreviousDialog). Runs after every topic +
+        // INFO exists so a line can link forward or back to another. LinkTo targets a TOPIC (resolved via
+        // dialogTopicsByEd, since topic & INFO share an editorId); PreviousDialog targets an INFO. ---
+        public void WireDialogueLinks()
+        {
+            foreach (var d in spec.Dialogue)
+            {
+                if (d.Hello) continue;
+                if (!dialogResponsesByEd.TryGetValue(d.EditorId, out var info)) continue;
+
+                foreach (var target in d.LinkTo)
+                {
+                    if (dialogTopicsByEd.TryGetValue(target, out var t))
+                        info.LinkTo.Add(new FormLink<IDialogTopicGetter>(t.FormKey));
+                    else if (TryExternalRef(target, out var fk))   // a vanilla topic
+                        info.LinkTo.Add(new FormLink<IDialogTopicGetter>(fk));
+                    else
+                        Warn($"  ! dialogue '{d.EditorId}' linkTo '{target}' is not a built dialogue topic or a <master>:0xID ref");
+                }
+
+                if (!string.IsNullOrWhiteSpace(d.PreviousDialog))
+                {
+                    if (dialogResponsesByEd.TryGetValue(d.PreviousDialog, out var prev))
+                        info.PreviousDialog.SetTo(prev.FormKey);
+                    else if (TryExternalRef(d.PreviousDialog, out var pfk))
+                        info.PreviousDialog.SetTo(pfk);
+                    else
+                        Warn($"  ! dialogue '{d.EditorId}' previousDialog '{d.PreviousDialog}' is not a built dialogue INFO or a <master>:0xID ref");
+                }
+            }
+        }
     }
 }
