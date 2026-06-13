@@ -15,9 +15,9 @@
 | [`expansion-plan-2026-06-13.md`](expansion-plan-2026-06-13.md) | **擴充計畫 + 可行性對照**——F1–F16 十六個具體功能，逐個標 ✅/🟡/🔴 並給 spec 範例與降級方案；含建議實作順序與缺口彙總表。 |
 | [`vigilant-support-plan-2026-06-13.md`](vigilant-support-plan-2026-06-13.md) | **Sofia × VIGILANT 支援計劃**——讓 Sofia 對 VIGILANT 進度有「可對談反應」：任務/scene 狀態更新後在她身上**浮現談論選項**（玩家主動找她聊），用 quest-state condition + 對話樹組裝，**刻意不用 scene/自動插話**。本 session 對話樹+跨任務閘的綜合應用，無新功能缺口。 |
 
-外部參考（repo 主 spec 文檔）：[`../SPEC-dialogue-quests.md`](../SPEC-dialogue-quests.md)、[`../SPEC-packages.md`](../SPEC-packages.md)、[`../SPEC-world.md`](../SPEC-world.md)、[`../SPEC-workflow.md`](../SPEC-workflow.md)。
+外部參考（repo 主 spec 文檔）：[`SPEC-dialogue-quests.md`](../../docs/spec/SPEC-dialogue-quests.md)、[`SPEC-packages.md`](../../docs/spec/SPEC-packages.md)、[`SPEC-world.md`](../../docs/spec/SPEC-world.md)、[`SPEC-workflow.md`](../../docs/spec/SPEC-workflow.md)。
 
-**相關工具（cell 逆向）**：[`../sleeping-giant-inn-reverse-2026-06-13.md`](../sleeping-giant-inn-reverse-2026-06-13.md) — 用新 CLI 子指令 `cellrefs <esp> <0xFORMID>` 把 vanilla interior cell（範例 RiverwoodSleepingGiantInn `0x0133C6`，480 ref）逆向成 `placements[]` JSON（`examples/sleeping_giant_inn.json`）。旋轉 esm radian→ModForge degree、cell-override 寫法、scale 缺欄等坑都記在那。要把 Sofia 演出搬進某個 vanilla 室內、或重佈置一個既有 cell 時用得上。
+**相關工具（cell 逆向）**：[`docs/investigation/decode/sleeping-giant-inn-reverse-2026-06-13.md`](../../workflows/investigation/decode/sleeping-giant-inn-reverse-2026-06-13.md) — 用新 CLI 子指令 `cellrefs <esp> <0xFORMID>` 把 vanilla interior cell（範例 RiverwoodSleepingGiantInn `0x0133C6`，480 ref）逆向成 `placements[]` JSON（`examples/sleeping_giant_inn.json`）。旋轉 esm radian→ModForge degree、cell-override 寫法、scale 缺欄等坑都記在那。要把 Sofia 演出搬進某個 vanilla 室內、或重佈置一個既有 cell 時用得上。
 
 ## 雜七雜八 / misc data
 

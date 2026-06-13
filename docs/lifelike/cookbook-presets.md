@@ -12,7 +12,7 @@ both the catalog and concrete expanded records so `validate`/`build` can exercis
 ## Pulling presets in with `$ref` / `$env`
 
 Instead of copy-pasting, a preset can live in its own file and be pulled in with `$ref` — see
-[SPEC-refs](../SPEC-refs.md) for the full reference. The shipped
+[SPEC-refs](../spec/SPEC-refs.md) for the full reference. The shipped
 [`examples/presets/bright-interior.json`](../../examples/presets/bright-interior.json) holds a
 ready-to-use `lgtm` + `imgs`; [`examples/spec-refs-demo.json`](../../examples/spec-refs-demo.json)
 pulls both in:

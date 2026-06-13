@@ -1,0 +1,19 @@
+# 調查／解碼（investigation）— 工作流入口
+
+← [INDEX](../../INDEX.md)｜[CLAUDE.md](../../CLAUDE.md)
+
+這是本工作流的 **入口**。橫向通則見元工作流 [DEV-GUIDE](../../DEV-GUIDE.md)。
+
+## 流程
+
+離線解碼 vanilla / 既有 mod（**esp-only、記憶體安全**——絕不載 Skyrim.esm 250MB、不 `.ToList()` 整個 record group）對照 ModForge 可實現性 → 產出進 [decode/](decode/README.md)。浮現的待補項進 [roadmap](../roadmap.md)，踩坑進 [gotchas](gotchas.md)。
+
+## 內容
+
+| 路徑 | 內容 |
+|------|------|
+| [decode/](decode/README.md) | **解碼參考檔**（VIGILANT / AI Overhaul / Sofia / blender 等；index 在該夾 README）|
+| [gotchas.md](gotchas.md) | 解碼踩坑（vanilla nif 驗證 / WRLD 覆寫等）|
+| [session-log.md](session-log.md) | 本工作流 open / in-flight 調查（hub 在 repo 根 [SESSION-LOG](../../SESSION-LOG.md)）|
+
+> **archive**：過時的解碼文檔封存進 `investigation/archive/`（學 [specs/](../specs/README.md)）。本入口檔若膨脹，照結構整理原則拆。

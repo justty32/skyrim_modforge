@@ -3,7 +3,7 @@
 The **default** workflow: you write a JSON **spec**, the CLI emits a valid `.esp`/`.esl`
 (+ compiled `.pex`). The spec is the contract — you never hand-write plugin bytes or FormIDs.
 
-← index: [for_agent.md](for_agent.md) · spec fields: [SPEC-index.md](SPEC-index.md) · compute the spec in code instead: [for_agent_lib.md](for_agent_lib.md)
+← index: [for_agent.md](for_agent.md) · spec fields: [SPEC-index.md](spec/SPEC-index.md) · compute the spec in code instead: [for_agent_lib.md](for_agent_lib.md)
 · lifelike NPCs: [lifelike/](lifelike/README.md) · engine mechanics: [engine-internals.md](engine-internals.md)
 
 ## Your job, in one loop

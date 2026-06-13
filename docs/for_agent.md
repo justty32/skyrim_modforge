@@ -14,19 +14,19 @@ plugin bytes or FormIDs — you emit a **spec** and the tool emits a valid `.esp
 Default to CLI + JSON; reach for the library only when the spec must be computed, not authored.
 Both paths produce the same plugins and share the same field reference and limits below.
 
-- **Spec field reference (both paths):** [SPEC-index.md](SPEC-index.md) · complete example: `../examples/sample_spec.json`
+- **Spec field reference (both paths):** [SPEC-index.md](spec/SPEC-index.md) · complete example: `../examples/sample_spec.json`
 - **Making NPCs feel alive** (sandbox / daily life / combat / spell use): start with
   [lifelike/](lifelike/README.md) — recipe + two-systems insight + vanilla FormID reference + gotchas.
 - **Vanilla/DLC FormID lookup cache:** start with
-  [`../reference/INDEX-skyrim-masters-local.md`](../reference/INDEX-skyrim-masters-local.md) before
+  [`../reference/INDEX-skyrim-masters-local.md`](reference/INDEX-skyrim-masters-local.md) before
   crawling the repo. It maps the local `Skyrim.esm`/DLC extraction outputs, cached `find/*.txt`
   probes, `run-status.tsv`, `skyrim-smtree.txt`, and exact CLI commands for new lookups.
 - **The engine mechanics behind the generator:** [engine-internals.md](engine-internals.md).
 - **Bringing your OWN meshes / textures / sounds / animations** (custom-content mods): the
   external-resource contract — what ModForge references + bundles vs what you author elsewhere —
   is **[external_assets.md](external_assets.md)**.
-- **Voice generation for dialogue:** start with [SPEC-workflow.md § Voice](SPEC-workflow.md#voice-tts-voice-cloning--fuz)
-  and [CODE_MAP.infra.md § 語音克隆](CODE_MAP.infra.md#語音克隆tts--fuz). Always run
+- **Voice generation for dialogue:** start with [SPEC-workflow.md § Voice](spec/SPEC-workflow.md#voice-tts-voice-cloning--fuz)
+  and [CODE_MAP.infra.md § 語音克隆](../workflows/common/code-map/CODE_MAP.infra.md#語音克隆tts--fuz). Always run
   `voicediag` or `voicelines --plan` before spending time on TTS.
 
 ## Limits — be honest, do not over-claim

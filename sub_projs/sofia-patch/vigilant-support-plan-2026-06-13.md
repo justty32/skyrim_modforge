@@ -1,6 +1,6 @@
 # Sofia × VIGILANT 支援計劃（2026-06-13）
 
-**一句話**：用 ModForge 做一個 **Sofia-style 隨從對 VIGILANT 進度的「可對談反應」patch**——當 VIGILANT 的某個 scene 演完／某個任務狀態更新後，**Sofia 的對話會多出新選項，玩家可以主動找她談論剛發生的事**。她用那套自戀＋毒舌＋說溜嘴的嘴砲回應。把本 session 解碼的兩塊（[Sofia 性格](sofia-personality.md) + [VIGILANT 解碼](../vigilant-story-decode-2026-06-13.md)）縫起來。
+**一句話**：用 ModForge 做一個 **Sofia-style 隨從對 VIGILANT 進度的「可對談反應」patch**——當 VIGILANT 的某個 scene 演完／某個任務狀態更新後，**Sofia 的對話會多出新選項，玩家可以主動找她談論剛發生的事**。她用那套自戀＋毒舌＋說溜嘴的嘴砲回應。把本 session 解碼的兩塊（[Sofia 性格](sofia-personality.md) + [VIGILANT 解碼](../../workflows/investigation/decode/vigilant-story-decode-2026-06-13.md)）縫起來。
 
 **核心機制（2026-06-13 使用者定調）：以「玩家主動找她談」為主，不用 scene。**
 - ❌ **不做**：自動插話、Sofia 自己開 scene 演出、在 VIGILANT 的 cutscene 中間插嘴（時序脆、會出戲、需重度實機迭代）。
@@ -37,7 +37,7 @@
 
 > 注意（依使用者定調）：realm 評論是**次要**（Phase 3），而且也走「**玩家可問她看法**」的 player topic（`GetInWorldspace` 閘）而非自動吐槽。**主菜是任務高潮的談論選項（Phase 1，看 §5）**。下表是 realm 素材庫，給 Phase 3 與「Sofia 在某 realm 裡聊到該地」的台詞參考。
 
-11 個 realm 素材（[worldspace 解碼](../vigilant-worldspace-decode-2026-06-13.md)）：
+11 個 realm 素材（[worldspace 解碼](../../workflows/investigation/decode/vigilant-worldspace-decode-2026-06-13.md)）：
 
 | realm FormKey | 名字 | Sofia 切入點（性格 hook） |
 |---------------|------|--------------------------|
@@ -94,7 +94,7 @@ ModForgeSofiaVigilant.esp（masters: Skyrim.esm, Update.esm, Vigilant.esm, Sofia
 
 **關鍵接法**：
 - **掛在 Sofia 身上**：Sofia NPC FormKey 從 [Sofia 解碼](follower-decode-2026-06-13.md) 拿；topic 的 INFO 加 `GetIsID SofiaFollower.esp:0xXXXX`（不需 override Sofia，只是 speaker 閘）。或用她的 follower faction。
-- **「事件發生後才出現」的閘**：核心是 `GetStageDone(Vigilant.esm:0xQuest, stage)==1`（某 scene/任務狀態確定推進後）；長線用 `GetQuestRunning`/`GetQuestCompleted`。從 [story 解碼](../vigilant-story-decode-2026-06-13.md) 挑「演完一段值得聊」的 quest+stage。
+- **「事件發生後才出現」的閘**：核心是 `GetStageDone(Vigilant.esm:0xQuest, stage)==1`（某 scene/任務狀態確定推進後）；長線用 `GetQuestRunning`/`GetQuestCompleted`。從 [story 解碼](../../workflows/investigation/decode/vigilant-story-decode-2026-06-13.md) 挑「演完一段值得聊」的 quest+stage。
 - **「Sofia 人在某地」的閘（空間維度）**：`GetInWorldspace`/`GetInCurrentLoc`/`GetInCell`，**`runOn` 設 `Subject`**（INFO 的 run-on subject ＝ speaker ＝ Sofia，所以讀的是 **Sofia 的位置**；不設或 runOn=Reference 才是讀別人）。Sofia 跟著玩家跑，通常與玩家同地，但語意上「Sofia 在這」用 Subject 最正確。可單獨用（地點味台詞）或跟 quest-state `AND`（在對的地方＋對的時機）。
 - **同一句換味（不開新選項，只換台詞）**：用「一個 topic 多條 INFO、引擎依 condition 順序取第一個過的」模式（[[conditioned-hello-one-topic-many-infos]]）——Sofia 的招呼或某個固定 talk topic，在 Coldharbour 給 A 版、在 Lamae's Dream 給 B 版、預設給 plain 版（地點 INFO 排前面、plain 墊底）。`GetInWorldspace(runOn=Subject)` 當每條 INFO 的閘。
 - **選項自收**：點完該選項的 result fragment `setGlobal MF_SofiaTalked_X=1`，topic 條件再加 `GetGlobalValue==0`，聊一次就消失（VIGILANT 也大量用 global 當對白開關）。`setGlobal` 是既有 result fragment 能力，無 user script。
@@ -119,7 +119,7 @@ ModForgeSofiaVigilant.esp（masters: Skyrim.esm, Update.esm, Vigilant.esm, Sofia
 
 **Phase 1 — 任務高潮的「談論」選項（MVP，最高 CP）**
 1. 1 個 controller quest + Sofia speaker 閘 + 一批 `MF_SofiaTalked_X` global。
-2. 從 [story 解碼](../vigilant-story-decode-2026-06-13.md) 挑 ~8–12 個「演完值得聊」的 VIGILANT quest+stage（Coldharbour 入口、見 Molag Bal、各章高潮、結局抉擇…）。
+2. 從 [story 解碼](../../workflows/investigation/decode/vigilant-story-decode-2026-06-13.md) 挑 ~8–12 個「演完值得聊」的 VIGILANT quest+stage（Coldharbour 入口、見 Molag Bal、各章高潮、結局抉擇…）。
 3. 每個事件 = 一條 top-level talk topic（`GetStageDone==1 AND GetGlobalValue(MF_SofiaTalked_X)==0`）+ Sofia 回應（過性格濾鏡）+ setGlobal 自收。
 4. F5 clone Sofia 嗓音 → voice files。
 5. package → 實機驗：選項出現時機對不對、聊過有沒有收掉、選單會不會太雜。
@@ -174,5 +174,5 @@ ModForgeSofiaVigilant.esp（masters: Skyrim.esm, Update.esm, Vigilant.esm, Sofia
 - 要做的話從 **Phase 1** 起：我可以先生一個 **2–3 個高潮事件**的 vertical slice（談論選項 + 對話樹追問 + voice）讓你實機驗「選項出現時機 / 聊過自收 / 選單清爽度」，再量產到 ~10 個事件。
 - **開工前我會先離線抽兩張表**（Phase 1 的施工依據）：
   ① Sofia 的 NPC FormKey + voiceType + follower faction（查 [Sofia 解碼](follower-decode-2026-06-13.md)）；
-  ② VIGILANT「演完值得聊」的 quest+stage 清單（查 [story 解碼](../vigilant-story-decode-2026-06-13.md)，挑 GetStageDone 的閘點）。
+  ② VIGILANT「演完值得聊」的 quest+stage 清單（查 [story 解碼](../../workflows/investigation/decode/vigilant-story-decode-2026-06-13.md)，挑 GetStageDone 的閘點）。
 - 兩張表抽好就能直接寫 spec。這整套是本 session 對話樹 + 跨任務閘 + voice pipeline 的綜合應用，無新功能缺口。

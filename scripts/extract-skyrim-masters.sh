@@ -5,7 +5,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
 data_dir="${MODFORGE_SKYRIM_DATA:-$HOME/.local/share/Steam/steamapps/common/Skyrim Special Edition/Data}"
-out_dir="${MODFORGE_REFERENCE_OUT:-$repo_root/reference/skyrim-masters-local}"
+out_dir="${MODFORGE_REFERENCE_OUT:-$repo_root/docs/reference/skyrim-masters-local}"
 
 if [[ -n "${MODFORGE_SKYRIM_MASTERS:-}" ]]; then
   read -r -a masters <<< "$MODFORGE_SKYRIM_MASTERS"

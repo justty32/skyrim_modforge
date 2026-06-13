@@ -86,13 +86,13 @@ structure) — most take `<in.esp> <0xFORMID>`; run the CLI with no args for exa
 ```
 
 The **spec** format (the JSON the generator consumes) is documented in
-[`docs/SPEC-index.md`](docs/SPEC-index.md) with a JSON Schema at [`examples/spec.schema.json`](examples/spec.schema.json);
+[`docs/SPEC-index.md`](docs/spec/SPEC-index.md) with a JSON Schema at [`examples/spec.schema.json`](examples/spec.schema.json);
 [`examples/sample_spec.json`](examples/sample_spec.json) is a complete working example.
 The agent workflow is in [`docs/for_agent.md`](docs/for_agent.md) (CLI path + library path).
 For local Manjaro/Steam Proton master reference generation, see
 [`docs/local-skyrim-extraction.md`](docs/local-skyrim-extraction.md).
 
-Voice workflow: [`docs/SPEC-workflow.md`](docs/SPEC-workflow.md#voice-tts-voice-cloning--fuz)
+Voice workflow: [`docs/SPEC-workflow.md`](docs/spec/SPEC-workflow.md#voice-tts-voice-cloning--fuz)
 documents `voiceTemplates[]`, `npcs[].voiceTemplate`, `voiceLine`, `MODFORGE_TTS_BIN`,
 `MODFORGE_XWMAENCODE`, `MODFORGE_FACEFX`, `voicediag`, and packaging. Voice files are
 loose Skyrim assets, not bytes embedded inside the `.esp`/`.esm`; either run `voicelines`
@@ -108,7 +108,7 @@ dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj --filter "Categ
 
 Tests that clone vanilla templates or copy vanilla cell/worldspace context are marked
 `Category=RequiresSkyrim`; run them with `MODFORGE_SKYRIM_DATA` pointing at the Skyrim
-Special Edition `Data` folder. See [`docs/testing.md`](docs/testing.md).
+Special Edition `Data` folder. See [`docs/testing.md`](workflows/testing.md).
 
 **Building lifelike NPCs?** See [`docs/lifelike/`](docs/lifelike/README.md) — distilled recipe + the
 two-systems insight (CombatStyle vs AIData) + vanilla FormID reference + diagnostic commands +
@@ -138,4 +138,4 @@ dialogue voice assets from built INFOs when external TTS/xWMA/lip tools are conf
 xWMA FUZ packaging is structurally verified, while real model quality and in-game playback still
 need local Skyrim/Proton confirmation. Translation supports inline and
 localized (`.STRINGS`) output. The full spec surface is documented in
-[`docs/SPEC-index.md`](docs/SPEC-index.md).
+[`docs/SPEC-index.md`](docs/spec/SPEC-index.md).
