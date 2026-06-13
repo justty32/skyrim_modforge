@@ -44,20 +44,13 @@ public static partial class Generator
             if (worldspaceOverrides.TryGetValue(wsFk, out var ex)) return ex;
             var ws = new Worldspace(wsFk, SkyrimRelease.SkyrimSE); // override that hosts our block tree
             if (src is not null) CopyWorldspaceEnv(src, ws);       // carry land/water defaults etc.
-            // Carry the worldspace PERSISTENT (top) cell as an ADDITIVE override (Tamriel = 0xD74). This
-            // cell holds every worldspace-persistent ref — all 347 vanilla map markers etc. Omitting it
-            // (TopCell=null) blanks the world map and drops the vanilla markers; ALL map-intact mods
-            // (USSEP/AI Overhaul/Alternate Start, decoded 2026-06-13) carry it with HasWater + grid(0,0) +
-            // waterHeight + only the SUBSET of refs they touch (the rest stay from master). We CopyCellEnv
-            // to match that env; new map markers are added into ws.TopCell.Persistent by BuildMapMarkers.
-            // (Each added ref MUST set the 0x400 persistent record flag — vanilla map markers all have it;
-            // a flagless ref in the always-loaded persistent cell CTDs the engine.)
-            if (src?.TopCell is { } srcTop)
-            {
-                var top = new Cell(srcTop.FormKey, SkyrimRelease.SkyrimSE);
-                CopyCellEnv(srcTop, top);
-                ws.TopCell = top;
-            }
+            // KNOWN ISSUE: we do NOT override the worldspace PERSISTENT (top) cell (Tamriel 0xD74). Doing
+            // so — even additively (CopyCellEnv + the 0x400 persistent flag on our ref, matching what
+            // USSEP/AI Overhaul do) — CTDs the engine while queuing actors in Tamriel (in-game x2,
+            // 2026-06-13). The structural difference from those map-intact mods' 0xD74 override is not yet
+            // identified. Consequence: because our override wins (last in load order) and drops the
+            // persistent cell, the world map renders blank. Map markers go in a regular grid cell meanwhile
+            // (they still show on the map). Real fix is TODO — decode the byte-level 0xD74 diff offline.
             // Headless can't resolve the master's LOCALIZED worldspace Name; an omitted Name makes the
             // override blank it -> saves/HUD show "unknown location". Restate a plain Name for known
             // worldspaces. (TODO: a spec field for arbitrary worldspaces.)
@@ -116,21 +109,6 @@ public static partial class Generator
             }
             exteriorCells[key] = cell;
             return cell;
-        }
-
-        // The worldspace's PERSISTENT (top) cell override — where worldspace-persistent refs (map
-        // markers) belong, alongside the vanilla markers. Triggers the worldspace override (which carries
-        // the master persistent cell additively). Null for a custom worldspace (no master TopCell) or a
-        // master that doesn't resolve — caller falls back to a grid cell.
-        private Cell? WorldspacePersistentCell(string worldspaceRef)
-        {
-            if (!LooksExternalRef(worldspaceRef)) return null;
-            if (!TryExternalRef(worldspaceRef, out var wsFk)) return null;
-            var masterName = worldspaceRef[..worldspaceRef.IndexOf(':')].Trim();
-            IWorldspaceGetter? wsSrc = null;
-            MasterCache(masterName)?.TryResolve<IWorldspaceGetter>(wsFk, out wsSrc);
-            if (wsSrc?.TopCell is null) return null;
-            return WorldspaceOverride(wsFk, wsSrc).TopCell;
         }
 
         // Get-or-add the exterior cell at grid (cx,cy) inside the worldspace override's block tree.

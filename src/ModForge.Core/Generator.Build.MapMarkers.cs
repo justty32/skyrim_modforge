@@ -17,15 +17,12 @@ public static partial class Generator
             {
                 if (string.IsNullOrWhiteSpace(mm.Worldspace))
                 { Warn($"  ! mapMarker '{mm.EditorId}': no worldspace — skipped"); continue; }
-                // A map marker is a worldspace-PERSISTENT ref — it belongs in the worldspace's persistent
-                // (top) cell alongside the vanilla map markers (keeps the world map intact). Fall back to a
-                // grid cell only for a custom worldspace with no master persistent cell.
-                var cell = WorldspacePersistentCell(mm.Worldspace);
-                if (cell is null)
-                {
-                    int cx = PosToGrid(mm.Position.X), cy = PosToGrid(mm.Position.Y);
-                    cell = ExteriorCell(mm.Worldspace, cx, cy);
-                }
+                // Place the map marker in a regular exterior grid cell (a persistent ref there still shows
+                // on the world map). It would more "correctly" live in the worldspace persistent cell, but
+                // overriding that cell CTDs the engine — see WorldspaceOverride. KNOWN ISSUE: world map
+                // renders blank because our worldspace override drops the persistent cell.
+                int cx = PosToGrid(mm.Position.X), cy = PosToGrid(mm.Position.Y);
+                var cell = ExteriorCell(mm.Worldspace, cx, cy);
                 if (cell is null) { Warn($"  ! mapMarker '{mm.EditorId}': worldspace '{mm.Worldspace}' unresolved — skipped"); continue; }
                 if (!TryResolveRef(MapMarkerBase, formKeyByEd, out var baseFk)) continue;
 
@@ -46,11 +43,6 @@ public static partial class Generator
                     MapMarker = marker,
                 };
                 rec.Base.SetTo(baseFk);
-                // The 0x400 PERSISTENT record flag is MANDATORY for a ref in a persistent group: every
-                // vanilla map marker has it, and a flagless ref in the always-loaded worldspace persistent
-                // cell CTDs the engine (EXCEPTION_ACCESS_VIOLATION while queuing actors — in-game
-                // 2026-06-13). Mutagen does NOT set it just because the ref is in cell.Persistent.
-                rec.MajorRecordFlagsRaw |= 0x400;
                 if (!string.IsNullOrWhiteSpace(mm.EditorId))
                 {
                     rec.EditorID = mm.EditorId;
