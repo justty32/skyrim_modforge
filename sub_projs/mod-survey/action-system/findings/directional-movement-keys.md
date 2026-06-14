@@ -10,6 +10,7 @@
   - **相機方向**（`CameraMovementCMF`）：同一套 0–8 編碼
 - 額外 action key bool 變數（`DMKLeftShift / DMKLeftAlt / DMKQ / DMKE / DMKZ / DMKX`，鍵盤＋手把映射）。
 - SKSE menu 一鍵 convert + 重啟即可，不必手動轉換；支援非 WASD 移動鍵。隨裝隨卸安全。
+- **實檔驗證**：DMK 透過 [BDI](behavior-data-injector.md) 注入這些變數——隨附 `SKSE/Plugins/BehaviorDataInjector/DirecionalMovement_BDI.json`，內含 `DirecionalCycleMoveset`/`CameraMovementCMF`(kInt) + 6 個 `DMK*`(kBool)，`projectPath:"Actors"`。即「DMK = DLL + 一份 BDI config」，無 esp。
 - 若已用 CMF（含同功能）就不需要這支；DMK 是其升級版（多了 NPC + 相機）。
 
 ## 為什麼重要

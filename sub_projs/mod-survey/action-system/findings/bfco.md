@@ -15,7 +15,7 @@
 BFCO 的招式串接**全靠動畫內的自訂事件註釋**驅動，不改 esp：
 - 串接事件（hkanno 加在 hkx）：`BFCO_NextIsAttack1`（首個須在 0.0s，指定下一段 N 攻擊編號）、`BFCO_NextIsPowerAttack2`、`BFCO_NextWinStart`（攻擊窗開）、`BFCO_DIY_EndLoop`（窗關）、`BFCO_DIY_recovery`（可用移動/格擋鍵結束攻擊）。
 - 攻速：`PIE.@SGVF|BFCO_AttackSpeed|1.0`（走 [Payload Interpreter](payload-interpreter.md)）。
-- **攻擊變體 → OAR 條件**（v3.2 起）：行為整數變數 `BFCO_iAttackVariants`（及 `A..E`）。動畫用 `PIE.@SGVI|BFCO_iAttackVariants|1` 設值，再開一個 OAR 動畫資料夾，config 加：
+- **攻擊變體 → OAR 條件**（mod 頁記載的**作者可選範例**，v3.2 起）：行為整數變數 `BFCO_iAttackVariants`（及 `A..E`）。動畫用 `PIE.@SGVI|BFCO_iAttackVariants|1` 設值，再開一個 OAR 動畫資料夾，config 加：
   ```json
   { "condition": "CompareValues", "requiredVersion": "1.0.0.0",
     "Value A": { "graphVariable": "BFCO_iAttackVariants", "graphVariableType": "Int" },
@@ -23,7 +23,9 @@ BFCO 的招式串接**全靠動畫內的自訂事件註釋**驅動，不改 esp�
   ```
   → OAR 即在該資料夾選下一段攻擊動畫（攻擊結束 `BFCO_iAttackVariants` 重置 0）。
 
-> **這正是 ModForge 可生成的部分**：上面那段 OAR condition JSON、整個攻擊變體資料夾結構，都是純確定性 config——唯獨 .hkx 本體與 hkanno 註釋屬動畫管線。
+> **⚠️ 實檔核對（BFCO v3.100.3）**：上面這段 `CompareValues`+`graphVariable` 是 **mod 頁給作者的可選範例**，是合法 OAR 語法；但 **BFCO 自己出貨的 21 個 OAR submod config 用的是 `IsEquippedType` 等裝備條件、不含 graphVariable**（攻擊狀態走 behavior 層 + BDI 變數）。
+> 它出貨的 **BDI config（已驗證）** 是 `BFCO_ComboLocked`(kBool) / `BFCO_LastAttack` / `BFCO_NextNormal` / `BFCO_NextPower`(kInt)——**不是** `BFCO_iAttackVariants`（後者只出現在 Nemesis behavior `.txt`，是 behavior 變數）。出貨的 OAR root config 僅 `{name, description, author}`，submod 才有 `priority`+`conditions[]`，與 [OAR 指南](../oar-replacer-guide.md)一致。
+> **ModForge 可生成的部分**：OAR 資料夾結構 + condition JSON（裝備條件或 graph-variable 條件皆可）+ BDI config，全是確定性產物——唯 .hkx 本體與 hkanno 註釋屬動畫管線。
 
 ## 相容性（值得記）
 - ✅ DMCO（任意版本，攻擊↔閃避互相派生）、SCAR、Perk 大修、True Directional Movement、Elden Counter（勿勾其 vanilla behavior patch）。

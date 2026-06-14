@@ -30,6 +30,8 @@
 
 ModForge 能確定生成的：**第 1 步的 BDI config、第 3 步的 OAR condition JSON 與資料夾結構**。第 2 步的 annotation 屬 hkanno 動畫管線（若日後接該工具鏈，這些固定格式字串也可程序化生成）。
 
+> **實檔已驗證**（樣本在 `raws/` 對應的 `~/Downloads` 包、解壓於 gitignored `game-data/mods/action-system/`）：BDI config schema（flat JSON array, `{projectPath,type:kInt/kBool/kFloat/kEvent,name,value}`）、OAR root config（`{name,description,author}`）+ submod config（`priority`+`conditions[]`，實際用 `IsEquippedType` 等）。注意 BFCO 頁上的 `BFCO_iAttackVariants` CompareValues 是**作者可選範例**，非 BFCO 自帶 config（其自帶 BDI 變數為 `BFCO_ComboLocked/LastAttack/NextNormal/NextPower`）。
+
 ## 對 ModForge 的具體機會（已彙整進 roadmap，待 code 驗證）
 - **OAR 生成器**（最高槓桿）— 純 folder+JSON+CTDA-like 條件；八向/攻擊變體動畫包可模板量產。
 - **BDI config 生成器** — `{project, variables, events}` → config；給 NPC 加自訂狀態變數免 behavior patch。

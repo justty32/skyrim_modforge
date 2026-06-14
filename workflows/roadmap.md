@@ -24,7 +24,7 @@
   - **下一步**：idea → [spec](specs/README.md)（指南 §10 有 spec 欄位草案）→ plan → build。
 - **BDI config 生成器（Behavior Data Injector）** — 讓 ModForge 從 spec 生成 BDI config，往 behavior project 注入自訂 graph variable（Int/Bool/Float）+ animation event，**免 Nemesis/behavior patch**。調查見 [mod-survey/action-system/findings/behavior-data-injector.md](../sub_projs/mod-survey/action-system/findings/behavior-data-injector.md)。
   - **價值**：給 NPC/follower 加自訂狀態變數（戰意、好感階段…）供動畫 annotation 與 OAR 條件讀，全程不碰 behavior binary、不寫 esp script——與 OAR 生成器是同一條「動畫驅動狀態」鏈的上游（鏈圖見 [action-system README](../sub_projs/mod-survey/action-system/README.md)）。
-  - **scope**：`{project, variables:[{name,type,default}], events:[name]}` → BDI config。**前置：先核對 BDI 0.13 的 config 檔實際格式**（GitHub max-su-2019/BehaviorDataInjector）——目前僅知概念、未驗格式。
+  - **scope**：`{projectPath, variables:[{name,type,default}], events:[name]}` → BDI config。**格式已從實檔驗證**（DMK/BFCO 隨附的 `*_BDI.json`）：flat JSON array of `{ "projectPath":"Actors", "type":"kInt|kBool|kFloat|kEvent", "name":..., "value":... }`（event 省 value），放 `SKSE/Plugins/BehaviorDataInjector/<x>_BDI.json`。實作幾近零風險。schema 與樣本見 finding。
   - **邊界**：動畫端的 `PIE.@SGVI/SGVF` 與 AMR `animmotion` annotation 屬 hkanno 動畫管線（非 esp record），僅在 ModForge 接 hkanno 工具鏈後才談生成。
 - **ModForge ↔ Pandora 整合（behavior 生成步驟）** — OAR/自訂動畫的 behavior 基底由 Pandora 產生（2026 取代 Nemesis/FNIS）。調查見 [mod-survey/action-system/pandora.md](../sub_projs/mod-survey/action-system/pandora.md)。模型＝**shell-out**（同 ModForge 驅動 Papyrus/xLODGen）：產出 records+OAR config+.hkx → `Pandora --auto_run --auto_close -o … --tesv:…`。**不能 library 嵌入**（plugin API 不穩）。**spike（需實機）**：① Manjaro 上 native dotnet vs Proton-wrap；② 自動化跑能否 displayless（headless 是 Pandora 未解 feature request，可能需 xvfb）。
 

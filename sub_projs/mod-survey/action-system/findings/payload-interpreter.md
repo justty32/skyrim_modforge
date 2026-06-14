@@ -12,6 +12,7 @@
   - （亦有 bool / 觸發事件等變體，詳見 GitHub: D7ry/PayloadInterpreter）
 - 搭配 [BDI](behavior-data-injector.md) 注入的變數使用：BDI 把變數加進 graph，動畫用 PIE 註釋在特定 frame 設定它，OAR/condition 再讀它。
 - 安裝：MO2 裝好，跑 Nemesis/Pandora patch。對 mod 用戶「啥都不做」，是純 modder resource。
+- **實檔驗證**：出貨 = `PayloadInterpreter.dll` + 一個 `Nemesis_Engine/mod/evfmgo/` behavior patch 包（注入 `evfmgo` event 到全套 behavior project：1hm/bow/magic/shout/horse/stagger…）。即「DLL + Nemesis-format patch」，故需跑 Nemesis/Pandora。無 esp。
 
 ## 在堆疊中的位置
 這三支構成「**動畫驅動狀態**」的鐵三角：
