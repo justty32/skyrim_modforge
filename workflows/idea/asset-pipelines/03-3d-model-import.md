@@ -1,6 +1,6 @@
 # 3D Model Import Pipeline (External Mesh → Skyrim SE `.nif`)
 
-← index: [README.md](README.md) · **deep-dive 子工作流: [model-porting/](model-porting/README.md)**（逐步施工計畫）· related: [IDEAS.md §14](../ideas.md) (format conversion), [external_assets.md](../../../docs/external_assets.md), [04-map-scene-porting.md](04-map-scene-porting.md)
+← index: [README.md](README.md) · **deep-dive 子工作流: [model-porting/](model-porting/README.md)**（逐步施工計畫）· related: [IDEAS.md §14](../ideas.md) (format conversion), [external_assets.md](../../../docs/external_assets.md), [map-scene/](map-scene/README.md)
 
 **Research date:** 2026-06-08. Personal/single-player only — ported commercial-game assets (Genshin/WuWa/Dark Souls, Unity-Store/Nexus packs) are converted and used **locally**, never redistributed.
 
@@ -41,7 +41,7 @@ NIF (NetImmerse/Gamebryo) = a node-graph binary scene: `NiNode` transforms with 
 
 `FBX/OBJ/glTF static model → working Skyrim static .nif`:
 1. **Import to Blender** (built-in importers, native Linux). *Auto.*
-2. **Fix scale & orientation.** Skyrim ≈ Z-up, -Y forward, ~64 units/m (see [04 §4](04-map-scene-porting.md)); sources vary (Unity Y-up/m, UE Z-up/cm, glTF Y-up/m). Apply + bake. *Auto once measured per source.*
+2. **Fix scale & orientation.** Skyrim ≈ Z-up, -Y forward, ~64 units/m (see [04 §4](map-scene/layout-extraction.md)); sources vary (Unity Y-up/m, UE Z-up/cm, glTF Y-up/m). Apply + bake. *Auto once measured per source.*
 3. **Set up `BSLightingShaderProperty` materials** (map source material → Skyrim shader + texture-slot set, §5). *Auto, rule-based.*
 4. **Generate collision** — simple **convex-hull/box** `bhk` shape is enough and **programmatically generable** (hull of the mesh). ck-cmd/PyNifly emit collision; or generate hull verts in the Blender script. *Auto for convex/box; manual only for concave MOPP.*
 5. **Export nif** — NifTools addon → `NiTriShape` (valid in SSE), or ck-cmd `fbx→nif` (Wine). *Auto/headless.*
