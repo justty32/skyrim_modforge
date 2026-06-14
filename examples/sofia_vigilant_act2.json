@@ -1,0 +1,288 @@
+{
+  "_note": "Sofia x VIGILANT — ACT 2 (zzzBM* quest chain). Player-initiated 'talk to Sofia' topics gated by VIGILANT Act-2 quest stages + Sofia present (GetIsID). Lines = de-AI'd bilingual rewrite of sub_projs/sofia-patch/vigilant-screenplay/act2-墮入.md (EN voiced; ZH in screenplay). GATES DECODED from PSC fragments (2026-06-14) — see vigilant-screenplay/_act2-trigger-placement-map.md. Quest chain: Mq01(0x038524 Empty Jails)→Mq02(0x038525 The Wreck)→Mq03(0x038526 Blood Matron). Key stages: Mq01 s0=Act2 start(gCurrentAct=2); s10=Courier done; s20=Search Dungeon+DungeonKey; s30=Maiden Statue found; s50=pre-vampire reveal; s60=Mq02 starts; s100=vampires defeated report; s110=good end. Mq02 s60=Vamp04Ess survivor confession; s70=mercy resolved; s90=Mq03 starts. Mq03 s0=Lamae dream trap→s30 (INSTANT, Fragment_2 fires immediately); s50=Lamae fight (Obj60); s80=LamaeZombie resurrects (Obj90 Break Curse); s90=good end Karma+3 Mq01.s100; s200=bad end AbBloodofLamae Karma-3. DEFERRED: 2-G/2-H dream-entry phantom mechanic (Sofia MoveTo dreammarker during Mq03 s0 window) — implemented here as post-event player topics at s30/s50 respectively. Sofia NPC=SofiaFollower.esp:0x0012C4, voiceType=JJSofiaVoiceType, follower faction=SofiaFollower.esp:0x060480. zzzBMGuide connections: qGuide s10 at Mq02 s70; qGuide s20(CompleteQuest) at Mq03 s0.",
+  "pluginName": "ModForgeSofiaVigilantAct2.esp",
+  "esl": true,
+
+  "voiceTemplates": [
+    { "id": "sofia-f5", "engine": "f5", "referenceWav": "refs/sofia_ref.wav", "referenceText": "", "language": "en" }
+  ],
+
+  "voiceSpeakers": [
+    { "speaker": "SofiaFollower.esp:0x0012C4", "voiceType": "JJSofiaVoiceType", "template": "sofia-f5" }
+  ],
+
+  "globals": [
+    { "editorId": "MF_SofA2_JoinAct2",        "type": "short", "value": 0 },
+    { "editorId": "MF_SofA2_BookScholar",      "type": "short", "value": 0 },
+    { "editorId": "MF_SofA2_WindhelmEntry",    "type": "short", "value": 0 },
+    { "editorId": "MF_SofA2_Sewers",           "type": "short", "value": 0 },
+    { "editorId": "MF_SofA2_SearchParty",      "type": "short", "value": 0 },
+    { "editorId": "MF_SofA2_LamaePalace",      "type": "short", "value": 0 },
+    { "editorId": "MF_SofA2_PostDream",        "type": "short", "value": 0 },
+    { "editorId": "MF_SofA2_DreamScene",       "type": "short", "value": 0 },
+    { "editorId": "MF_SofA2_DoubleLamae",      "type": "short", "value": 0 },
+    { "editorId": "MF_SofA2_ChapterCloseGood", "type": "short", "value": 0 },
+    { "editorId": "MF_SofA2_ChapterCloseBad",  "type": "short", "value": 0 }
+  ],
+
+  "quests": [
+    { "editorId": "MFSofVigAct2Controller", "name": "", "startGameEnabled": true, "priority": 60, "type": "None" }
+  ],
+
+  "dialogue": [
+    {
+      "editorId": "MFSofVig_2A_JoinAct2",
+      "questEditorId": "MFSofVigAct2Controller",
+      "prompt": "The Windhelm guard came looking for us. Thoughts?",
+      "responses": [
+        "...I'd just closed my eyes.",
+        "See that guard's face? That's the 'we have a serious problem and need two idiots to deal with it' face. I recognize it. I've made that face at myself in the mirror.",
+        "Fine. Goodbye, my bed."
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": { "global": "MF_SofA2_JoinAct2", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetQuestRunning", "param": "Vigilant.esm:0x038524", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038524", "stage": 0, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038524", "stage": 10, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA2_JoinAct2", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_2B_BookScholar",
+      "questEditorId": "MFSofVigAct2Controller",
+      "prompt": "You seem to know something about what we're dealing with.",
+      "responses": [
+        "That book — I've read it. Don't look at me like that. I do more than stare at my reflection.",
+        "A long time ago. Back when I read things for knowledge rather than gold. If half of what's in there is accurate... what's ahead of us is worse than I thought."
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": { "global": "MF_SofA2_BookScholar", "value": 1 },
+      "linkTo": ["MFSofVig_2B_BookScholarMore"],
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038524", "stage": 20, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038524", "stage": 50, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA2_BookScholar", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_2B_BookScholarMore",
+      "questEditorId": "MFSofVigAct2Controller",
+      "topLevel": false,
+      "prompt": "You used to be a bookworm?",
+      "responses": [
+        "'Like' is a strong word. I read books. Then I learned most of them lie to you. So I read more, looking for the exceptions. Eventually I decided touching things directly is more informative than a lifetime of reading. And here we are."
+      ],
+      "goodbye": true,
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_2C_WindhelmEntry",
+      "questEditorId": "MFSofVigAct2Controller",
+      "prompt": "Windhelm. Lovely as ever.",
+      "responses": [
+        "Windhelm. Always snowing, always someone arguing, always that smell you can't quite identify...",
+        "...and now we're going *down*, toward whatever is *causing* that smell.",
+        "Remind me to burn these boots afterward."
+      ],
+      "sayOnce": true,
+      "emotion": "Disgust",
+      "setGlobal": { "global": "MF_SofA2_WindhelmEntry", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038524", "stage": 10, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038524", "stage": 20, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA2_WindhelmEntry", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_2D_Sewers",
+      "questEditorId": "MFSofVigAct2Controller",
+      "prompt": "What do you make of this place?",
+      "responses": [
+        "Mud, rats, leaking pipes... oh, and —",
+        "Vampires. Of course.",
+        "You know this outfit is hand-washed only? Hand. Washed. When we get out, you're paying. Bloodstains are extra."
+      ],
+      "sayOnce": true,
+      "emotion": "Disgust",
+      "setGlobal": { "global": "MF_SofA2_Sewers", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038524", "stage": 20, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038524", "stage": 60, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA2_Sewers", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_2E_SearchParty",
+      "questEditorId": "MFSofVigAct2Controller",
+      "prompt": "Some of these people look important.",
+      "responses": [
+        "These ones look like they have names. Real names. Not 'sewer thug number three.'",
+        "You might want to ask what they know first. I know — rare occasion where I'm suggesting *talking*. Take it while it lasts."
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": { "global": "MF_SofA2_SearchParty", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038524", "stage": 30, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038524", "stage": 60, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA2_SearchParty", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_2F_LamaePalace",
+      "_note": "Gate uses Mq02 s90 done (Mq03 just started) + Mq03 s30 not done (dream not yet entered). Window is very brief — Mq03 Fragment_2 fires at stage 0 and immediately sets stage 30. If the window is too small in practice, consider fallback: GetQuestRunning(Mq03)+s30==0.",
+      "questEditorId": "MFSofVigAct2Controller",
+      "prompt": "This place feels different.",
+      "responses": [
+        "This place...",
+        "It's too quiet. Like even the air is afraid to breathe too hard.",
+        "Whatever's sleeping here — I have a feeling we can't just stab our way through this one. Keep it down. Not for politeness. For survival."
+      ],
+      "sayOnce": true,
+      "emotion": "Fear",
+      "setGlobal": { "global": "MF_SofA2_LamaePalace", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038525", "stage": 90, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038526", "stage": 30, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA2_LamaePalace", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_2G_PostDream",
+      "_note": "DEFERRED: dream-entry phantom mechanic not yet implemented. This is a post-event player topic — Sofia waited outside and asks where the player went. Gated on Mq03 s30 done (player was transported to dreammarker) + s50 not done (Lamae fight not yet started).",
+      "questEditorId": "MFSofVigAct2Controller",
+      "prompt": "About that dream with Lamae...",
+      "responses": [
+        "You just... disappeared.",
+        "Eyes closed, and then you were gone. I stood there, counting, got to a pretty large number before I realized this wasn't just you zoning out. You went somewhere I couldn't follow.",
+        "Where did you go."
+      ],
+      "sayOnce": true,
+      "emotion": "Fear",
+      "setGlobal": { "global": "MF_SofA2_PostDream", "value": 1 },
+      "linkTo": ["MFSofVig_2G_PostDreamMore"],
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038526", "stage": 30, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038526", "stage": 50, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA2_PostDream", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_2G_PostDreamMore",
+      "questEditorId": "MFSofVigAct2Controller",
+      "topLevel": false,
+      "prompt": "You were worried about me.",
+      "responses": [
+        "I was calculating the resale value of your gear. That's all.",
+        "...It was a very large number. Drop it."
+      ],
+      "goodbye": true,
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_2H_DreamScene",
+      "_note": "DEFERRED: in-dream Sofia observations not yet implemented as phantom mechanic. This is a post-event player topic about dream content — gated on Mq03 s50 done (Lamae fight phase active) + s80 not done (zombie Lamae not yet resurrected). Sofia draws on her book knowledge about Lamae/the bard.",
+      "questEditorId": "MFSofVigAct2Controller",
+      "prompt": "What did you make of what Lamae showed us?",
+      "responses": [
+        "The bard. Lamae. I've read accounts of this — not because I care about vampires, it was just the book in front of me and I was bored.",
+        "Whatever the bard said that made her trust him — *that's* the real story. Someone said exactly the right things, and it turned a woman into the progenitor of an entire bloodline that's been haunting the world ever since.",
+        "Words are more dangerous than blood. Remember that."
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": { "global": "MF_SofA2_DreamScene", "value": 1 },
+      "linkTo": ["MFSofVig_2H_DreamSceneMore"],
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038526", "stage": 50, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038526", "stage": 80, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA2_DreamScene", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_2H_DreamSceneMore",
+      "questEditorId": "MFSofVigAct2Controller",
+      "topLevel": false,
+      "prompt": "You think she was a victim?",
+      "responses": [
+        "I think she was someone who got used, and then became a force that couldn't stop. Victim, monster — she's trying to kill us right now, that's the practical part."
+      ],
+      "goodbye": true,
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_2I_DoubleLamae",
+      "questEditorId": "MFSofVigAct2Controller",
+      "prompt": "She just got back up. How do we stop this?",
+      "responses": [
+        "She just got back up. I watched you put her down and she *got back up.*",
+        "Okay. Think. Things that won't stay dead usually aren't solved by hitting them harder — we've tried that, you see the results.",
+        "The throne. Something over there is glowing. Stop swinging and go look at the throne. Trust me on this one."
+      ],
+      "sayOnce": true,
+      "emotion": "Anger",
+      "setGlobal": { "global": "MF_SofA2_DoubleLamae", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038526", "stage": 80, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038526", "stage": 90, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA2_DoubleLamae", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_2J_ChapterCloseGood",
+      "questEditorId": "MFSofVigAct2Controller",
+      "prompt": "That's done. How are you holding up?",
+      "responses": [
+        "I've added something new to my personal adventure ledger. 'Fought a vampire progenitor in her own dream palace, watched her come back as a zombie, killed her with a chair.'",
+        "I'm not sure it's something to be proud of, but I'm pretty sure not many people can say it. ...Are you alright? I don't like that look on your face."
+      ],
+      "sayOnce": true,
+      "emotion": "Happy",
+      "setGlobal": { "global": "MF_SofA2_ChapterCloseGood", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038526", "stage": 90, "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofA2_ChapterCloseGood", "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA2_ChapterCloseBad", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_2J_ChapterCloseBad",
+      "_note": "Bad end: player accepted Molag Bal's offer at Mq03 s200. AbBloodofLamae given, Karma-3. Sofia drops deflection — this is the one beat where she's genuinely scared with no joke to close on.",
+      "questEditorId": "MFSofVigAct2Controller",
+      "prompt": "What just happened to you?",
+      "responses": [
+        "You took it.",
+        "I don't know what you were thinking. I don't know what he said that made it sound like a good idea. But I can tell something came in with you — there's something just slightly wrong about your eyes. Just slightly. But I see it.",
+        "We're going to find a way to undo this. Do you hear me. I said *we*."
+      ],
+      "sayOnce": true,
+      "emotion": "Fear",
+      "setGlobal": { "global": "MF_SofA2_ChapterCloseBad", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x038526", "stage": 200, "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofA2_ChapterCloseBad", "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA2_ChapterCloseGood", "comparison": "==", "value": 0 }
+      ]
+    }
+  ]
+}
