@@ -57,7 +57,7 @@ and for potions. A damage spell that *travels* (`targetType: Aimed`) needs a `pr
   `archetype: "Script"` and attach a script with a top-level **`scripts[]`** entry whose
   `targetEditorId` is this MGEF's `editorId` (the generic VMAD attach works on any record — no special
   MGEF wiring). The `.psc` extends `ActiveMagicEffect`; `package` compiles `scripts[].source` like any
-  other script attach. See `docs/SPEC-dialogue-quests.md § scripts` for the `scripts[]` shape.
+  other script attach. See [SPEC-quests](SPEC-quests.md) § scripts for the `scripts[]` shape.
 
 **Flags matter — match the effect's timing (this is the #1 gotcha):**
 - **Instant** restore/damage (`duration` 0) → `["NoDuration", "NoArea"]`, and add `"Detrimental"`

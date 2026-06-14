@@ -40,7 +40,7 @@ guard `TemperIsEnchanted` (`or: true`) before the smithing `HasPerk`:
 **`kind: "smelt"` / `"breakdown"`** — ore → ingot, or break an item down into materials at the
 smelter (`createdObject` = the output ingot, component = the ore/item consumed).
 
-**`conditions`** — each is a shared CTDA (the same `ConditionSpec` as dialogue/package gates — see [SPEC-dialogue-quests](SPEC-dialogue-quests.md)).
+**`conditions`** — each is a shared CTDA (the same `ConditionSpec` as dialogue/package gates — see [SPEC-dialogue](SPEC-dialogue.md)).
 `function` ∈ `HasPerk` | `GetItemCount` | `GetGlobalValue` (each needs a `param` ref) |
 `TemperIsEnchanted` (no param). `comparison` is the operator (`==` `!=` `>` `>=` `<` `<=`, default
 `>=`), `value` the test value, `or: true` OR-chains with the NEXT condition. Use `find Skyrim.esm
@@ -189,7 +189,7 @@ a chance/weight (regions, leveled lists), or a read-only **tuning constant**.
 - **`constant`**: sets the GLOB Constant flag (read-only; can't be `SetValue`'d) — for tuning numbers.
 
 Reference a global by `editorId` anywhere a ref is taken — most usefully a condition's `param` with
-`function: "GetGlobalValue"` (see [conditions](SPEC-dialogue-quests.md#conditions--ctda-gates-on-a-dialogue-info-a-banter-info-or-a-package))
+`function: "GetGlobalValue"` (see [conditions](SPEC-dialogue.md#conditions--ctda-gates-on-a-dialogue-info-a-banter-info-or-a-package))
 or a region's `global`. **Complementary to quest stages:** a stage (`GetStage`) is quest-scoped progress;
 a GLOB is global, scriptless shared state. See `examples/globals.json`.
 

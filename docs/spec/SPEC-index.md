@@ -6,7 +6,9 @@ The spec is a JSON file → `.esp` plugin. Choose a topic:
 |------|----------|
 | [SPEC-intro](SPEC-intro.md) | Cross-references & IDs, top-level shape, full record-type table |
 | [SPEC-magic](SPEC-magic.md) | Gameplay stats, spell/potion effects, custom MGEFs, enchantments (ENCH) |
-| [SPEC-dialogue-quests](SPEC-dialogue-quests.md) | Classes, dialogue, banter, scenes, CTDA conditions, quest stages, Story Manager event quests, Papyrus scripts |
+| [SPEC-dialogue](SPEC-dialogue.md) | Classes, dialogue, banter, scenes (SCEN), CTDA conditions |
+| [SPEC-quests](SPEC-quests.md) | Quest stages & objectives, Story Manager event quests, Papyrus scripts |
+| [SPEC-identities](SPEC-identities.md) | Lightweight class/identity system (book→faction+ability+greeting+merchant toggle) |
 | [SPEC-world](SPEC-world.md) | Cells & placements, map markers, custom lights & lighting (LGTM/IMGS/DALC) |
 | [SPEC-worldspaces](SPEC-worldspaces.md) | Worldspaces & regions, area music, leveled lists & containers, formLists, encounter zones, vendors |
 | [SPEC-items](SPEC-items.md) | Recipes (COBJ), perks, external assets (meshes/sounds), texture sets (TXST) |

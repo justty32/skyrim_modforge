@@ -100,7 +100,7 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
   **alias script** (`script`/`scriptSource`/`scriptProperties`, extends `ReferenceAlias`) that
   travels with whatever ref fills it — e.g. `OnActivate` on a `createObject`-spawned ref to chain a
   story event (in-game confirmed 2026-06-05). **In-game confirmed (2026-06-04)**
-  on all variant patterns including ESL plugins. See SPEC-dialogue-quests.md → "Story Manager
+  on all variant patterns including ESL plugins. See spec/SPEC-quests.md → "Story Manager
   quests".
 - **Journal progression on an SM quest:** mark a stage `startUpStage:true` and the engine auto-runs
   it the instant the quest starts, so an SM-triggered quest shows its opening log entry / displays its
