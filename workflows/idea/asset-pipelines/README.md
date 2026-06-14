@@ -12,7 +12,7 @@ ModForge 目前是**記錄層**生成器（Mutagen 寫 ESP）＋ 既有的**資�
 | [02](02-particle-vfx.md) | **粒子 / 視覺特效** | 分兩層：**EFSH 特效著色器是純記錄層**（貼圖+數值，無 mesh）＝低成本高價值首選；**粒子 `.nif` 是牆**（無程序生成、Blender 不能匯出）只能 NifSkope 改或抄現成 mod。「Effect Seeker」不存在（指 Apply Visual Effect/Director's Tools）。外部 VFX 工具**無法**匯出 Skyrim 粒子，只能貢獻貼圖。 |
 | [03](03-3d-model-import.md) | **3D 模型匯入 → `.nif`** | **靜態物件接近全自動**（甜蜜點）；蒙皮角色半自動（卡綁骨/重定向）。解包：DS（soulstruct-blender，最乾淨）＞ WuWa（FModel/.NET）＞ Genshin（加密，須 Proton 端 3DMigoto dump）。**PyNifly 只有 Windows**——Linux 用 NifTools addon ＋ ck-cmd(Wine)。**已展開子工作流 → [model-porting/](model-porting/README.md)**。 |
 | [04](map-scene/README.md) | **地圖 / 場景移植** | 使用者最感興趣。**每個來源引擎的關卡都正好是 `{資產, transform}` 實例清單＝Skyrim placed refs**，所以核心問題化簡為「產出擺放清單＋轉幾何」。**FromSoft MSB 用 C# in-process 直讀**（與 ModForge 同棧，零 Wine）＝決定性首選。內景先做；外景卡 heightmap/LOD（ModForge 已知缺口）。**已展開子工作流 → [map-scene/](map-scene/README.md)**。 |
-| [05](05-animation-pipeline.md) | **動作 → `.hkx` 資產** | 使用者新增。**動作四層**（clip/skeleton/behavior graph/events），難點在「讓 behavior graph 認得你的 clip」。**OAR（Open Animation Replacer）條件式替換＝純資料夾+JSON，ModForge 可直接生成**＝最高槓桿。Linux：**serde-hkx**（native 轉檔）＋ **Pandora**（取代 Nemesis 的 native behavior engine）解掉兩道歷史牆；剩 Blender→hkx 匯出（PyNifly 只有 Windows）是唯一的牆。 |
+| [05](animation/README.md) | **動作 → `.hkx` 資產** | 使用者新增。**動作四層**（clip/skeleton/behavior graph/events），難點在「讓 behavior graph 認得你的 clip」。**OAR（Open Animation Replacer）條件式替換＝純資料夾+JSON，ModForge 可直接生成**＝最高槓桿。Linux：**serde-hkx**（native 轉檔）＋ **Pandora**（取代 Nemesis 的 native behavior engine）解掉兩道歷史牆；剩 Blender→hkx 匯出（PyNifly 只有 Windows）是唯一的牆。**已展開子工作流 → [animation/](animation/README.md)**。 |
 
 **已展開子工作流**（上表 0X 是概覽；超標的已長成各自的步驟化子工作流）：
 
@@ -21,6 +21,7 @@ ModForge 目前是**記錄層**生成器（Mutagen 寫 ESP）＋ 既有的**資�
 | [voice-clone/](voice-clone/README.md) | [01](01-voice-cloning-fuz.md) | 語音克隆 → `.fuz` 的逐步施工計畫（README + 01~06 步驟檔）。 |
 | [model-porting/](model-porting/README.md) | [03](03-3d-model-import.md) | 外部 mesh → Skyrim `.nif` 的逐步施工計畫（README + 01~10 步驟＋解包來源檔）。 |
 | [map-scene/](map-scene/README.md) | [04](map-scene/README.md) | 外部關卡 → Skyrim cell/worldspace（README + layout-extraction / geometry / workflow-modforge）。 |
+| [animation/](animation/README.md) | [05](animation/README.md) | 動作 → `.hkx`（README + havok-blender / integration-layer / linux-workflow-modforge）。 |
 
 ---
 

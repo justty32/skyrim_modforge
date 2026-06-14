@@ -58,7 +58,7 @@ Wall = the **skeleton + skin**, not the mesh.
 - **Rig to the Skyrim skeleton** — exact bone names (`NPC Spine [Spn1]`, …), **≤4 weights/vertex**, wrapped in **`BSDismemberSkinInstance`** with correct body-part partition flags. Outfit Studio sets default partitions on FBX/OBJ import (80-bone/partition SSE cap).
 - **Retarget from a source skeleton** — Genshin (Unity humanoid), UE skeletal, FromSoft rigs all differ. Build a **source→Skyrim bone-name map once per source skeleton** (Blender Rigify/retarget addons or manual), then reuse — the "write the mapping once" philosophy of IDEAS §13/§14. The per-rig map is human work; applying it is batchable → *semi*-automatable.
 - **Weight transfer** — **Outfit Studio "Copy Bone Weights"** from a reference body (CBBE/UNP/vanilla); the standard armor-refit workflow, mostly point-and-click. Runs under Wine.
-- **Handoff to animation:** a rigged character still needs `.hkx` to move → see [05-animation-pipeline.md](05-animation-pipeline.md). Stop here at "mesh skinned to Skyrim skeleton with valid partitions."
+- **Handoff to animation:** a rigged character still needs `.hkx` to move → see [animation/](animation/README.md). Stop here at "mesh skinned to Skyrim skeleton with valid partitions."
 
 ---
 
@@ -121,7 +121,7 @@ Source PBR → Skyrim `.dds` + correct `BSShaderTextureSet` slot naming.
 4. Clamp ≤4 weights/vertex, build `BSDismemberSkinInstance` partitions (Outfit Studio copy-bone-weights). *[Semi]*
 5. Export skinned nif (PyNifly Windows / Outfit Studio Wine). *[Manual-ish — Linux skin export is the weak spot]*
 6. Textures → dds. *[Auto]*
-7. **Animation/behavior `.hkx`** → handoff to [05](05-animation-pipeline.md). ← **the real wall (Havok)**
+7. **Animation/behavior `.hkx`** → handoff to [05](animation/README.md). ← **the real wall (Havok)**
 8. ModForge `model`/NPC spec + `package`. *[Auto — existing]*
 
 ---

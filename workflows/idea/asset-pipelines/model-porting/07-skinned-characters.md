@@ -61,7 +61,7 @@ After transfer: clamp to ≤4 weights/vertex (Blender weight-tools or Outfit Stu
 
 ## 5. Wall 2 — animation (`.hkx`, out of scope here)
 
-A rigged mesh still needs `.hkx` to move (idle, walk, attack). That's a **separate pipeline** — see the survey [`../05-animation-pipeline.md`](../05-animation-pipeline.md) (OAR/serde-hkx/Pandora). This chapter stops at "mesh skinned to the Skyrim skeleton with valid partitions, exported via PyNifly." If you reuse a vanilla skeleton + race, the character animates with existing Skyrim animations — so you may not need new `.hkx` at all for a first character.
+A rigged mesh still needs `.hkx` to move (idle, walk, attack). That's a **separate pipeline** — see the survey [`../animation/`](../animation/README.md) (OAR/serde-hkx/Pandora). This chapter stops at "mesh skinned to the Skyrim skeleton with valid partitions, exported via PyNifly." If you reuse a vanilla skeleton + race, the character animates with existing Skyrim animations — so you may not need new `.hkx` at all for a first character.
 
 ---
 
@@ -89,4 +89,4 @@ Then — and only if a custom-animated character is wanted — cross into the `.
 ---
 
 ### Sources
-[PyNifly (GH BadDogSkyrim — skinned/partitions/weights, Windows-only)](https://github.com/BadDogSkyrim/PyNifly) · [Outfit Studio — Copy Bone Weights + Building on Linux (GH ousnius wiki)](https://github.com/ousnius/BodySlide-and-Outfit-Studio/wiki/Copying-bone-weights) · [Beyond Skyrim — Rigging in Outfit Studio](https://wiki.beyondskyrim.org/wiki/Arcane_University:Rigging_in_Outfit_Studio) · `BSDismemberSkinInstance` / 80-bone-partition cap (Beyond Skyrim NIF Data Format). Animation handoff: survey [`../05-animation-pipeline.md`](../05-animation-pipeline.md).
+[PyNifly (GH BadDogSkyrim — skinned/partitions/weights, Windows-only)](https://github.com/BadDogSkyrim/PyNifly) · [Outfit Studio — Copy Bone Weights + Building on Linux (GH ousnius wiki)](https://github.com/ousnius/BodySlide-and-Outfit-Studio/wiki/Copying-bone-weights) · [Beyond Skyrim — Rigging in Outfit Studio](https://wiki.beyondskyrim.org/wiki/Arcane_University:Rigging_in_Outfit_Studio) · `BSDismemberSkinInstance` / 80-bone-partition cap (Beyond Skyrim NIF Data Format). Animation handoff: survey [`../animation/`](../animation/README.md).
