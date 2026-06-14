@@ -12,7 +12,9 @@
 
 - **agent 並行 prep（2026-06-14）**：為「其他 agent 並行討論 Sofia 劇情 / 調查 mod」備好兩工作區 + 共用資料 + 工具：① 新 CLI 指令 `gamedata <plugin> <outDir>`（lazy 串流批次抽書/對白/任務/NPC・物品・地點・魔法）；② `sub_projs/game-data/`（已抽 vanilla+DLC+CC + Sofia/VIGILANT/RDO/FCO/IFDL… 文本，`extract.sh` 重生、文本 gitignore）；③ 工作區 `sub_projs/sofia-patch/`（劇情）+ 新 `sub_projs/mod-survey/`（mod 調查），各 symlink game-data/guide/mods；④ 兩份 guide：`workflows/investigation/esm-formid-access.md`、`mod-survey-guide.md`。**大重構期間主 session 不碰這兩工作區 + game-data。**
 - **大重構（拆檔門檻）— 主體完成 2026-06-14**：門檻＝**文檔 8192 bytes**（src/examples 維持 300 行）；DEV-GUIDE 觸發 A + conventions 同步。已拆：`tooling.md`→`tooling/`、`landed.md`→`landed/`（CODE_MAP 五分法）、**完成的 plans+specs→各自 archive**（原則：completed→archive 凍結不拆、現役夾清空）、idea 報告升 L4（`particle-vfx/`/`map-scene/`/`animation/`/`voice-clone/engine-setup/`）。全樹相對連結健檢通過。
-  - **剩餘（你隨筆新指令，待辦）**：① DEV-GUIDE 改**被動式獨立 workflow**（按需取用，類 zh-tw/html，不再貫穿所有 workflow）；② **plans/specs 重構**：檔名去日期、日期移 index；③ `decode/notes-gemini-voice` 微清理、`docs→workflows` 殘留舊路徑校正、`feature-dev/gotchas.md` 檔內分節。idea `01`/`03` 概覽與 `ideas.md` 經判定 **KEEP**（連貫敘事不硬拆）。
+  - ✅ DEV-GUIDE 改**被動參考**（結構整理原則+四級成長按需取用，類 zh-tw/html）；**鐵律上提到 CLAUDE.md always-on**；INDEX/conventions/各 workflow README 的「元工作流/貫穿」標籤同步改被動。
+  - ✅ plans/specs **未來命名去日期**（`<功能>.md` / `<功能>-design.md`，日期記 index）；archived 舊檔保留日期前綴、凍結。
+  - **剩餘（小清理）**：`decode/notes-gemini-voice` 微清理（自述可刪→待確認）、`docs→workflows` 殘留舊路徑（`docs/minor/ideas.md`、`docs/CODE_MAP.*.md`）校正、`feature-dev/gotchas.md` 檔內分節。idea `01`/`03` 概覽與 `ideas.md` 經判定 **KEEP**（連貫敘事不硬拆）。
 - docs/workflows 大重構：`docs/` 回歸 ModForge 使用手冊（cookbook/cheatsheet/spec）；開發流程全移到 repo 頂層 `workflows/`（INDEX / CODE_MAP / DEV-GUIDE / 各工作流 / 踩坑 / roadmap / 調查）。CLAUDE.md 瘦成路由器；`SESSION-LOG.md` + `WAIT_USER.md` 升到 repo 根。
 - 語音合成解耦為基石專案 `sub_projs/skyrim-voicegen/`（協議 PROTOCOL.md）；Sofia 擴充為消費者專案 `sub_projs/sofia-patch/`。
 

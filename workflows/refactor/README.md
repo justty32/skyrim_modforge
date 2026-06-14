@@ -2,7 +2,7 @@
 
 ← [INDEX](../../INDEX.md)｜[CLAUDE.md](../../CLAUDE.md)
 
-behavior-preserving 的拆分 / 模塊化。這是本工作流的 **入口**。拆法（膨脹即拆 / 雜亂即分類 / 平鋪太多即包夾、四級成長軌跡）見元工作流 [DEV-GUIDE「結構整理原則」](../../DEV-GUIDE.md)；碰原始碼時的**程式碼慣例 + CODE_MAP 維護鏈**見 [common/conventions](../common/conventions.md)。
+behavior-preserving 的拆分 / 模塊化。這是本工作流的 **入口**。拆法（膨脹即拆 / 雜亂即分類 / 平鋪太多即包夾、四級成長軌跡）見 [DEV-GUIDE「結構整理原則」](../../DEV-GUIDE.md)（被動參考——**重構正是取用它的時機**）；碰原始碼時的**程式碼慣例 + CODE_MAP 維護鏈**見 [common/conventions](../common/conventions.md)。
 
 ## 流程
 

@@ -1,11 +1,11 @@
-# DEV-GUIDE — 元工作流（貫穿所有工作流的通則）
+# DEV-GUIDE — 結構整理參考（被動 / 按需取用）
 
 ← [INDEX](INDEX.md)
 
-這是**元工作流**：不是某個具體工作流，而是做**任何**工作流時都隱含遵守的共同通則——**結構整理原則**（含成長軌跡）與**鐵律**，**docs/code/任何資料夾**皆適用。
-「**要做什麼**」由 [WORKFLOWS.md](WORKFLOWS.md) 派發、各工作流的**具體流程在它自己的 README**；本檔只管「**怎麼做**」的橫向通則。
+這是一份**被動參考**，**不貫穿日常每個動作**——只在你要**重構 / 整理結構**（拆大檔、分類雜亂資料夾、長出新子工作流）時拿出來用，性質類似 zh-tw / html（需要時才取用，不是 always-on 憲法）。內容＝**結構整理原則**（含四級成長軌跡），docs/code/任何資料夾通用。
 
-> 只在**碰原始碼**時才適用的程式碼慣例與 CODE_MAP 維護鏈，不是全工作流通用，放在 [common/conventions.md](workflows/common/conventions.md)（feature-dev / refactor / specs / plans 指向它）。
+> **always-on 的鐵律**（行為不變、未經確認不 push/不開新工作、各工作流具體流程在自己 README）常駐在 [CLAUDE.md](CLAUDE.md)，**不在本檔重複**。「要做什麼」由 [WORKFLOWS.md](WORKFLOWS.md) 派發。
+> 只在**碰原始碼**時才適用的程式碼慣例與 CODE_MAP 維護鏈放在 [common/conventions.md](workflows/common/conventions.md)（feature-dev / refactor / specs / plans 指向它）。
 
 ---
 
@@ -36,8 +36,6 @@
 
 往哪一級走永遠由「是否膨脹/雜亂」決定，不預先過度設計。降級也成立：子項消失就往回併級。
 
-## 鐵律（任何工作流都適用）
+## 鐵律 → 已上提到 CLAUDE.md（always-on）
 
-- **行為不變**：重構/整理必須 behavior-preserving；改完跑測試（離線至少 `Category!=RequiresSkyrim`）確認。
-- **不要未經確認就 push 或開新工作**：commit 到 master 是慣例，**push 需先確認**。
-- 各工作流的**具體流程**（feature-dev 的「改 code→使用者測試→補 CODE_MAP/文檔→commit」迴圈、refactor 的「一次只動一個面向」步驟、investigation 的解碼產出去向…）在**它自己的 README**，不在本檔——本檔只給橫向通則。
+always-on 的鐵律不放這份**被動**參考裡（否則只在「取用本檔」時才看到，違背 always-on）。常駐在 [CLAUDE.md](CLAUDE.md)：① 重構/整理**行為不變** + 跑測試；② **未經確認不 push/不開新工作**；③ 各工作流具體流程在它自己的 README（feature-dev 的改 code→測試→補 CODE_MAP/文檔→commit、refactor 的一次只動一個面向、investigation 的解碼產出去向…）。

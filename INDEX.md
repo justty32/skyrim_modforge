@@ -30,7 +30,7 @@
 
 工作流的**選擇與入口**見 **[WORKFLOWS.md](WORKFLOWS.md)**——依「你想做什麼」派發到 feature-dev / refactor / investigation / specs / plans / idea / roadmap / tooling / testing。每個工作流的 durable 知識歸在 `workflows/<該工作流>/`（入口＝該夾 README 或主檔，含 `archive/` 封存過時文檔），具體流程在各自 README。
 
-**元工作流** [DEV-GUIDE](DEV-GUIDE.md) 垂直貫穿以上所有工作流——做任何一個都隱含遵守它的橫向通則（程式碼慣例 / 結構整理原則 + 成長軌跡 / CODE_MAP 維護鏈 / 鐵律）。
+[DEV-GUIDE](DEV-GUIDE.md) 是**被動的結構整理參考**（結構整理原則 + 四級成長軌跡）——**只在要重構/整理結構時取用**，不貫穿日常每個動作（類 zh-tw/html）。always-on 的**鐵律**在 [CLAUDE.md](CLAUDE.md)；碰原始碼的**程式碼慣例 + CODE_MAP 維護鏈**在 [common/conventions](workflows/common/conventions.md)。
 
 ## 通用（跨工作流共享）
 

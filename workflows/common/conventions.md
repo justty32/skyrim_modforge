@@ -2,7 +2,7 @@
 
 ← [common/README](README.md)｜[INDEX](../../INDEX.md)
 
-碰原始碼的工作流（[feature-dev](../feature-dev/README.md) / [refactor](../refactor/README.md) / [specs](../specs/README.md) / [plans](../plans/README.md)）共用這套規矩。純文檔/調查類工作流（idea / investigation / tooling…）用不到。橫向的結構原則與鐵律在元工作流 [DEV-GUIDE](../../DEV-GUIDE.md)。
+碰原始碼的工作流（[feature-dev](../feature-dev/README.md) / [refactor](../refactor/README.md) / [specs](../specs/README.md) / [plans](../plans/README.md)）共用這套規矩。純文檔/調查類工作流（idea / investigation / tooling…）用不到。結構整理原則（被動、按需取用）在 [DEV-GUIDE](../../DEV-GUIDE.md)；always-on 鐵律在 [CLAUDE.md](../../CLAUDE.md)。
 
 ## 程式碼慣例
 

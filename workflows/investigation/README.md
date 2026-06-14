@@ -2,7 +2,7 @@
 
 ← [INDEX](../../INDEX.md)｜[CLAUDE.md](../../CLAUDE.md)
 
-這是本工作流的 **入口**。橫向通則見元工作流 [DEV-GUIDE](../../DEV-GUIDE.md)。
+這是本工作流的 **入口**。要整理本工作流結構時參考 [DEV-GUIDE](../../DEV-GUIDE.md)（被動）；always-on 鐵律見 [CLAUDE.md](../../CLAUDE.md)。
 
 ## 流程
 

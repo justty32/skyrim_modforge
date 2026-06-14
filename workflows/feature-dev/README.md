@@ -2,7 +2,7 @@
 
 ← [INDEX](../../INDEX.md)｜[CLAUDE.md](../../CLAUDE.md)
 
-新增 / 修改 ModForge 功能的工作流。這是本工作流的 **入口**：先讀本檔，再往下深入。橫向通則（結構原則 / 鐵律）見元工作流 [DEV-GUIDE](../../DEV-GUIDE.md)；**程式碼慣例 + CODE_MAP 維護鏈**見 [common/conventions](../common/conventions.md)。
+新增 / 修改 ModForge 功能的工作流。這是本工作流的 **入口**：先讀本檔，再往下深入。always-on 鐵律見 [CLAUDE.md](../../CLAUDE.md)；要整理結構時參考 [DEV-GUIDE](../../DEV-GUIDE.md)（被動）；**程式碼慣例 + CODE_MAP 維護鏈**見 [common/conventions](../common/conventions.md)。
 
 ## 流程
 
