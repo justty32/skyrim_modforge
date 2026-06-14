@@ -14,7 +14,7 @@
 - **大重構（拆檔門檻）— 主體完成 2026-06-14**：門檻＝**文檔 8192 bytes**（src/examples 維持 300 行）；DEV-GUIDE 觸發 A + conventions 同步。已拆：`tooling.md`→`tooling/`、`landed.md`→`landed/`（CODE_MAP 五分法）、**完成的 plans+specs→各自 archive**（原則：completed→archive 凍結不拆、現役夾清空）、idea 報告升 L4（`particle-vfx/`/`map-scene/`/`animation/`/`voice-clone/engine-setup/`）。全樹相對連結健檢通過。
   - ✅ DEV-GUIDE 改**被動參考**（結構整理原則+四級成長按需取用，類 zh-tw/html）；**鐵律上提到 CLAUDE.md always-on**；INDEX/conventions/各 workflow README 的「元工作流/貫穿」標籤同步改被動。
   - ✅ plans/specs **未來命名去日期**（`<功能>.md` / `<功能>-design.md`，日期記 index）；archived 舊檔保留日期前綴、凍結。
-  - **剩餘（小清理）**：`decode/notes-gemini-voice` 微清理（自述可刪→待確認）、`docs→workflows` 殘留舊路徑（`docs/minor/ideas.md`、`docs/CODE_MAP.*.md`）校正、`feature-dev/gotchas.md` 檔內分節。idea `01`/`03` 概覽與 `ideas.md` 經判定 **KEEP**（連貫敘事不硬拆）。
+  - ✅ 小清理：`decode/notes-gemini-voice` 已刪；`docs→workflows` 舊路徑 live 檔已校正（archive 凍結容忍）；`feature-dev/gotchas.md` 已檔內分節。idea `01`/`03` 概覽與 `ideas.md` 經判定 **KEEP**（連貫敘事不硬拆）。**大重構全部收尾。**
 - docs/workflows 大重構：`docs/` 回歸 ModForge 使用手冊（cookbook/cheatsheet/spec）；開發流程全移到 repo 頂層 `workflows/`（INDEX / CODE_MAP / DEV-GUIDE / 各工作流 / 踩坑 / roadmap / 調查）。CLAUDE.md 瘦成路由器；`SESSION-LOG.md` + `WAIT_USER.md` 升到 repo 根。
 - 語音合成解耦為基石專案 `sub_projs/skyrim-voicegen/`（協議 PROTOCOL.md）；Sofia 擴充為消費者專案 `sub_projs/sofia-patch/`。
 

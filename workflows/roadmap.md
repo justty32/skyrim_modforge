@@ -35,10 +35,10 @@
     - **`ideas.md`（18K）緩**：入口主檔，按主題拆風險高、價值低，暫不動。
     - 步驟檔（model-porting 01~10、voice-clone 02~06）**全 KEEP**（已是拆分結果）。
   - ~~**specs/** 現役 8 份 design 全 KEEP~~ ✅ 已隨 plans 一併移 `specs/archive/`（見上條；一份 spec/plan=一個整體不拆，完成即進凍結 archive）。
-  - **investigation/decode/** 9 份解碼筆記**全 KEEP**（單篇連貫）；真議題是 decode/ 是否按 mod 開子夾，建議**等下個 mod 解碼進來再分**。`notes-gemini-voice` 微超標且自述「處理完可刪」→ 確認後刪或移 archive。
+  - **investigation/decode/** 解碼筆記**全 KEEP**（單篇連貫）；真議題是 decode/ 是否按 mod 開子夾，建議**等下個 mod 解碼進來再分**。~~`notes-gemini-voice` 微超標且自述「處理完可刪」~~ ✅ 已刪。
   - **refactor**（L2，0 超標）免動。
 
-  順手待辦：plan→spec 反向連結只有 3/8 顯式（lighting/weather/hazard/music/quest-markers 缺 `Design doc:` 行）；docs→workflows 殘留的舊路徑 `docs/minor/ideas.md`、`docs/CODE_MAP.*.md` 仍散見於部分 design 本體與 archive（未動，待全 repo 校正時一併處理）。
+  順手待辦：~~docs→workflows 殘留舊路徑 `docs/minor/ideas.md`、`docs/CODE_MAP.*.md`~~ ✅ 維護鏈上的 live 檔（model-porting/voice-clone 05、blender-layout）已校正指向 `workflows/common/code-map/`；**archive 內的舊路徑保持凍結**（歷史 build 指令、不在導航鏈，依封存慣例容忍 stale）。`docs/zh-TW/` 鏡像的同類舊路徑屬翻譯同步，另計。plan→spec 反向連結缺 `Design doc:` 行的也都在 archive、凍結。
 
 ## 已有設計、待續
 

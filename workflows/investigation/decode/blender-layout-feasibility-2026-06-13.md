@@ -297,7 +297,7 @@ Blender Python API（`bpy`, `matrix_world`, `to_euler`）都是穩定老 API。*
 ## 附：與既有 ModForge 知識的銜接
 
 - 放置語意 / 室內室外 / vanilla-override / grid：`docs/SPEC-world.md § cells & placements`、
-  `docs/CODE_MAP.world.md § Placements`（`Generator.Build.Placements.cs` / `Generator.Build.ExteriorCells.cs`）。
+  `workflows/common/code-map/CODE_MAP.world.md § Placements`（`Generator.Build.Placements.cs` / `Generator.Build.ExteriorCells.cs`）。
 - `$ref`/`$env` 讓匯出檔可獨立：`docs/SPEC-refs.md`。
 - 查 vanilla STAT FormID：既有 `find <Skyrim.esm> <name> Static`（多處引用）。
 - 旋轉是 degrees：`SPEC-world.md` placement 範例 `// rotation in degrees`。

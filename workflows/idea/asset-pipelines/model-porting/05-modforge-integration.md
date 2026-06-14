@@ -2,7 +2,7 @@
 
 ← [README](README.md) · prev: [04-nif-and-collision.md](04-nif-and-collision.md) · next: [06-standalone-runbook.md](06-standalone-runbook.md)
 
-How the verified manual pipeline ([06]) folds into the generator. Design, not code — but it names concrete files, spec fields, and the existing conventions to copy. Grounded in the current `src` layout (`docs/CODE_MAP.infra.md`) and the real `Spec.Items.cs` / `Assets.cs`.
+How the verified manual pipeline ([06]) folds into the generator. Design, not code — but it names concrete files, spec fields, and the existing conventions to copy. Grounded in the current `src` layout (`workflows/common/code-map/CODE_MAP.infra.md`) and the real `Spec.Items.cs` / `Assets.cs`.
 
 **Copy these existing conventions exactly** (don't invent new ones):
 - **Asset layer parallel to the record layer.** ModForge writes records + folder structure and **shells out** to external tools (Blender headless, ck-cmd, Compressonator) — it does **NOT** author nif/dds bytes. `Assets.cs` already says "does NOT author meshes." This is the xLODGen/Papyrus posture.
@@ -119,4 +119,4 @@ Per CLAUDE.md Workflow 1, on landing (this is research):
 ---
 
 ### Sources
-Internal conventions from `docs/CODE_MAP.infra.md`, `src/ModForge.Core/Papyrus.cs`, `src/ModForge.Core/Assets.cs`, `src/ModForge.Core/Spec.Items.cs`, `src/ModForge.Cli/ModForge.Cli.csproj`. Engine/format facts: [01]–[04].
+Internal conventions from `workflows/common/code-map/CODE_MAP.infra.md`, `src/ModForge.Core/Papyrus.cs`, `src/ModForge.Core/Assets.cs`, `src/ModForge.Core/Spec.Items.cs`, `src/ModForge.Cli/ModForge.Cli.csproj`. Engine/format facts: [01]–[04].
