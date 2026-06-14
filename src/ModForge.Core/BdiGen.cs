@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -10,7 +11,8 @@ namespace ModForge;
 // Pure functions (no I/O). Schemas verified against DMK/BFCO (BDI) and Stormcloaks (PIE).
 public static class BdiGen
 {
-    private static readonly JsonSerializerOptions Pretty = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions Pretty =
+        new() { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     public static OarGen.OarFile Generate(BehaviorDataSpec b)
     {

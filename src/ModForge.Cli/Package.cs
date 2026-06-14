@@ -262,6 +262,53 @@ internal static partial class Program
                     $"from {assetsSrc} -> [{string.Join(", ", br.CopiedFolders)}]");
         }
 
+        // 7) Action-system loose-file generation (OAR / BDI / PIE) — non-esp config + asset placing.
+        //    The .hkx animations are user-supplied; ModForge writes the config tree and copies the
+        //    clips it can find (missing clips are reported, not silently dropped).
+        if (spec.AnimationReplacers.Count > 0 || spec.BehaviorData.Count > 0 || spec.PayloadMacros.Count > 0)
+        {
+            string? ResolveHkx(string p)
+            {
+                if (Path.IsPathRooted(p) && File.Exists(p)) return p;
+                if (!string.IsNullOrWhiteSpace(assetsSrc))
+                {
+                    var a = Path.Combine(assetsSrc, p);
+                    if (File.Exists(a)) return a;
+                }
+                var s = Path.Combine(specDir, p);
+                return File.Exists(s) ? s : null;
+            }
+            void WriteLoose(OarGen.OarFile f)
+            {
+                var dest = Path.Combine(outModDir, f.RelPath.Replace('/', Path.DirectorySeparatorChar));
+                Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
+                File.WriteAllText(dest, f.Content);
+            }
+
+            int oarSubmods = 0, hkxPlaced = 0; var hkxMissing = new List<string>();
+            foreach (var r in spec.AnimationReplacers)
+            {
+                foreach (var f in OarGen.Generate(r)) WriteLoose(f);
+                oarSubmods += r.Submods.Count(s => !s.ReplaceVanillaPath);
+                foreach (var copy in OarGen.HkxPlacements(r))
+                {
+                    var src = ResolveHkx(copy.Source);
+                    if (src is null) { hkxMissing.Add(copy.Source); continue; }
+                    var dest = Path.Combine(outModDir, copy.DestRelPath.Replace('/', Path.DirectorySeparatorChar));
+                    Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
+                    File.Copy(src, dest, overwrite: true);
+                    hkxPlaced++;
+                }
+            }
+            foreach (var b in spec.BehaviorData) WriteLoose(BdiGen.Generate(b));
+            foreach (var p in spec.PayloadMacros) WriteLoose(PieGen.Generate(p));
+
+            Console.WriteLine($"action-system: {oarSubmods} OAR submod(s), {spec.BehaviorData.Count} BDI config(s), "
+                + $"{spec.PayloadMacros.Count} PIE table(s), {hkxPlaced} hkx placed");
+            if (hkxMissing.Count > 0)
+                Console.WriteLine($"  ⚠ {hkxMissing.Count} hkx not found (config written, clip missing): {string.Join(", ", hkxMissing)}");
+        }
+
         // Cleanup temp dir.
         try { Directory.Delete(compiledFragmentsDir, recursive: true); } catch { /* best effort */ }
 

@@ -1,3 +1,4 @@
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -16,7 +17,8 @@ public static class OarGen
     public record HkxCopy(string Source, string DestRelPath);
 
     private const string OarBase = "Meshes/actors/character/animations/OpenAnimationReplacer";
-    private static readonly JsonSerializerOptions Pretty = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions Pretty =
+        new() { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     // Windows-illegal filename chars (OAR folder names may contain spaces/&; only these are stripped).
     private static string SanitizeFolder(string name)
