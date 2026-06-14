@@ -21,7 +21,7 @@ uv venv ~/voice-work/f5 && source ~/voice-work/f5/bin/activate
 uv pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu124
 uv pip install f5-tts
 ```
-**Proves:** GPU + engine import. → detail: [01](01-engine-setup.md).
+**Proves:** GPU + engine import. → detail: [01](engine-setup/README.md).
 
 ---
 
@@ -52,7 +52,7 @@ done
 ```
 Listen. If the clone drifts/garbles, try a different reference clip (Step 1) or A/B with Chatterbox ([01] §3) before blaming the pipeline.
 
-**Proves:** text → on-voice WAV. → detail: [01](01-engine-setup.md).
+**Proves:** text → on-voice WAV. → detail: [01](engine-setup/README.md).
 
 ---
 

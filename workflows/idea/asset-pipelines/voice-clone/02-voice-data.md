@@ -1,6 +1,6 @@
 # 02 — Voice data (extract vanilla audio, build the reference/dataset)
 
-← [README](README.md) · prev: [01-engine-setup.md](01-engine-setup.md) · next: [03-lip-and-audio-encoding.md](03-lip-and-audio-encoding.md)
+← [README](README.md) · prev: [01-engine-setup.md](engine-setup/README.md) · next: [03-lip-and-audio-encoding.md](03-lip-and-audio-encoding.md)
 
 You can't clone a voice you don't have. This file gets you from "Skyrim BSAs on disk" to "a clean reference clip (zero-shot) or a clean dataset (GPT-SoVITS)" for one chosen voiceType. All steps are Linux-doable (native or Wine).
 

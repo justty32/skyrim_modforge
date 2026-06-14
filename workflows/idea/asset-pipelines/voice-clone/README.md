@@ -16,7 +16,7 @@ Skyrim/Proton in-game confirmation.
 
 | Topic | Decision | Consequence for this plan |
 |-------|----------|---------------------------|
-| **Primary TTS engine** | **Layered** — zero-shot **F5-TTS** *or* **Chatterbox** for the MVP, **GPT-SoVITS** as the fidelity/consistency upgrade. | Engines sit behind **one swappable contract** (`text + reference → wav`). Start with no-training zero-shot; add a GPT-SoVITS fine-tune track later for NPCs that need tight voice consistency. See [01-engine-setup.md](01-engine-setup.md). |
+| **Primary TTS engine** | **Layered** — zero-shot **F5-TTS** *or* **Chatterbox** for the MVP, **GPT-SoVITS** as the fidelity/consistency upgrade. | Engines sit behind **one swappable contract** (`text + reference → wav`). Start with no-training zero-shot; add a GPT-SoVITS fine-tune track later for NPCs that need tight voice consistency. See [01-engine-setup.md](engine-setup/README.md). |
 | **Lip-sync depth** | **"Mouth moves anyhow is fine"** — accuracy not required, but the mouth should *move* (not be frozen). | Skip the accuracy fight. **Tier 1: FaceFXWrapper/Runalip under Wine** (gives correct movement *for free* if Wine cooperates). **Tier 2 backstop: synthetic envelope-driven `.lip`** written natively in C# (guaranteed Linux-native flapping). **Tier 0 baseline: no lip = static mouth** (always works). See [03-lip-and-audio-encoding.md](03-lip-and-audio-encoding.md). |
 | **Scope of this plan** | **Both** — a standalone hand-run pipeline first, then the ModForge `voicelines` CLI step. | [06-standalone-runbook.md](06-standalone-runbook.md) is the copy-paste at-home runbook; [05-modforge-integration.md](05-modforge-integration.md) is the engineering design for folding it into the generator. |
 
@@ -26,7 +26,7 @@ Skyrim/Proton in-game confirmation.
 
 | File | What it covers | When you need it |
 |------|----------------|------------------|
-| [01-engine-setup.md](01-engine-setup.md) | Manjaro CUDA prereqs; install F5-TTS / Chatterbox / GPT-SoVITS; the swappable engine contract; VRAM budgets; tuning knobs; determinism. | First thing at home — get an engine producing a cloned WAV from text. |
+| [01-engine-setup.md](engine-setup/README.md) | Manjaro CUDA prereqs; install F5-TTS / Chatterbox / GPT-SoVITS; the swappable engine contract; VRAM budgets; tuning knobs; determinism. | First thing at home — get an engine producing a cloned WAV from text. |
 | [02-voice-data.md](02-voice-data.md) | Extracting vanilla/follower voiceType audio on Linux; building the reference clip (zero-shot) vs the fine-tune dataset (GPT-SoVITS); normalization specs. | Right after install — you need a reference voice before you can clone. |
 | [03-lip-and-audio-encoding.md](03-lip-and-audio-encoding.md) | The tiered `.lip` plan (none / Wine / synthetic C#); `.lip` format notes + decode plan; `.xwm` encoding; audio normalization. | When you want the mouth to move and/or want real `.fuz` instead of loose WAV. |
 | [04-fuz-and-filenames.md](04-fuz-and-filenames.md) | Native C# `.fuz` writer (byte layout + sketch); the deterministic CK-matched filename rule and how to empirically pin it; on-disk paths; MO2 zip packaging. | When moving from "loose WAV" to packed `.fuz`, and whenever filenames matter (always). |
@@ -66,7 +66,7 @@ Each step proves one new thing and is independently testable. Do not add a tier 
 2. **Pack `.fuz` (zero-lip).** Swap WAV → native-C#-written `FUZE` + version + `0x00000000` + xwm/wav. Proves the C# fuz writer. ([04](04-fuz-and-filenames.md))
 3. **Add `.xwm`.** Encode via `xWMAEncode.exe` under Wine. Proves the Wine audio path and shrinks disk. ([03](03-lip-and-audio-encoding.md))
 4. **Add lip (movement).** Tier 1 FaceFXWrapper/Runalip under Wine; if Wine fails, Tier 2 synthetic envelope `.lip`. ([03](03-lip-and-audio-encoding.md))
-5. **GPT-SoVITS fidelity track.** For any NPC where the zero-shot clone drifts across many lines, fine-tune and switch that voice's engine. ([01](01-engine-setup.md), [02](02-voice-data.md))
+5. **GPT-SoVITS fidelity track.** For any NPC where the zero-shot clone drifts across many lines, fine-tune and switch that voice's engine. ([01](engine-setup/README.md), [02](02-voice-data.md))
 6. **ModForge `voicelines` CLI step.** Implemented structurally. Use `voicediag` / `voicelines --plan`
    first, then generate. Remaining work: real TTS model install + in-game playback confirmation.
    ([05](05-modforge-integration.md))
@@ -84,9 +84,9 @@ These are the points the plan *cannot* settle from a Windows desk — flagged so
 - **FaceFXWrapper under Wine is unconfirmed.** It loads CK DLLs in-memory via MemoryModule — the part most likely to break under Wine. Treat Tier 1 as "try it, ~15 min timebox"; fall straight to Tier 2 (synthetic) or Tier 0 (no lip) if it misbehaves. ([03](03-lip-and-audio-encoding.md))
 - **`.lip` exact byte layout is not yet captured here** (the two authoritative wikis 403 automated fetches). If you go Tier 2, pin it at implementation by reading `fallout.wiki/wiki/LIP_File_Format` in a browser **and** hex-diffing a couple of extracted vanilla `.lip`. Known facts are recorded in [03](03-lip-and-audio-encoding.md) §"`.lip` format".
 - **ffmpeg cannot produce Bethesda-valid `.xwm`.** Use `xWMAEncode.exe` (Wine) or ship loose WAV. Do not trust ffmpeg's xWMA *encoder*. ([03](03-lip-and-audio-encoding.md))
-- **Zero-shot clones drift** across many lines / long lines. Budget a normalization + QA pass; the GPT-SoVITS fine-tune track exists precisely for voices where drift is unacceptable. ([01](01-engine-setup.md))
+- **Zero-shot clones drift** across many lines / long lines. Budget a normalization + QA pass; the GPT-SoVITS fine-tune track exists precisely for voices where drift is unacceptable. ([01](engine-setup/README.md))
 - **`FonixData.cdf`** (needed only if you ever use the CK/FaceFX path) is Bethesda property — copy from your own CK install, never redistribute.
-- **xVASynth headless-on-Linux** stays *not chosen* (Linux headless recipe undocumented). Kept only as a "canonical character voice" escape hatch. ([01](01-engine-setup.md) §"Rejected/deferred").
+- **xVASynth headless-on-Linux** stays *not chosen* (Linux headless recipe undocumented). Kept only as a "canonical character voice" escape hatch. ([01](engine-setup/README.md) §"Rejected/deferred").
 - **MO2 reinstall reverts hand-patched files** — always rebuild into the zip, never hand-edit inside the MO2 mod folder. (Memory [[mo2-reinstall-reverts-manual-pex]].)
 - **In-game test is manual** — you run the game yourself (memory [[ingame-test-workflow]]); the plan's structural checks (`*diag`, path/filename verification) come first, real MO2/Proton second.
 
