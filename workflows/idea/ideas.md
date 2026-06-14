@@ -38,7 +38,7 @@
 
 做某些事 → 取得身份（聖騎士/商人/冒險者/龍裔…）→ 賦予技能與常駐加成 + 解鎖專屬互動 → 互動回頭強化身份（近似 D&D 職業）。NPC 用「當前主身份」稱呼你；身份可疊加、主身份按優先序解析；取得走「讀書宣誓 / faction 會員」式。
 
-設計見 `workflows/specs/2026-06-06-identity-system-design.md`；**MVP 進行中**（plan `workflows/plans/2026-06-07-identity-system-mvp.md`，待實機）。前置 PlayIdle scene-action 已落地。子專案切分：身份系統本體 → 身份對應互動（交易 UI、護衛任務…）。
+設計見 `workflows/specs/archive/2026-06-06-identity-system-design.md`；**MVP 已落地**（plan `workflows/plans/archive/2026-06-07-identity-system-mvp.md`）。前置 PlayIdle scene-action 已落地。子專案切分：身份系統本體 → 身份對應互動（交易 UI、護衛任務…）。
 
 ---
 

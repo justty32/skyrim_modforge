@@ -33,3 +33,5 @@
 整理docs
 拆workflows
 討論sofia劇情
+把dev-guide弄成被動式，不要每次都貫穿所有workflow，他應該是一個獨立的workflow，只在需要時被使用者拿出來作用，就類似zh tw和html那種。
+然後是plans和specs，我要重構這兩個工作流與其現有內容。其現有內容的檔名不應該含有日期，日期應該放在index部分

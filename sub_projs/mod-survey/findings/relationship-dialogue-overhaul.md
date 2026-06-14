@@ -47,9 +47,46 @@ RDO 適合參考「系統兼容層」：
 - Voice type matrix 可用於 generic followers；Sofia 這類 unique voice 更適合用 GetIsID 或專屬 quest/alias。
 - RDO 的 MCM/variable storage 代表大型 dialogue overhaul 需要集中存放 toggles / once variables，而不是分散在每條台詞。
 
+## 深挖：兼容層與 shared info
+
+RDO 的重點是它很懂 Skyrim 原版 relationship/follower grammar。它不是單一角色模組，而是把大量 NPC 拉回同一套規則：
+
+- relationship rank 決定陌生、朋友、愛人、配偶、敵意語氣。
+- follower faction 決定招募、跟隨、解散、命令、等待等行為。
+- voice type matrix 決定實際可播放的聲音資源。
+- MCM/variable storage 決定大型 overhaul 的開關與 once 狀態。
+- shared info 讓同類 follower command 可以共用條件與 fragment。
+
+對自家 follower expansion 來說，RDO 值得深挖的不是「如何寫個性台詞」，而是「如何不被 generic dialogue overhaul 打亂」。
+
+應特別檢查：
+
+- 招募 topic 是否會被 `a_RDOGenericFollowerDialogue` 接走。
+- dismissal / wait / command shared info 是否和自家 follower framework 重疊。
+- relationship rank 改動是否會讓 spouse/friend dialogue 意外出現。
+- `PlayerFollowerCount`、`CurrentFollowerFaction`、`PotentialFollowerFaction` 是否被正確維護。
+- voice type form list / shared info 是否包含或排除了 unique follower voice。
+
+## 與 unique follower 的邊界
+
+RDO 的 generic 系統可以提供兼容性，但 unique follower 不應把核心角色 arc 交給 RDO 條件。建議邊界如下：
+
+- 招募/解散/命令：若 follower 使用 vanilla framework，可遵守 RDO grammar；若使用自家 framework，應明確排除 RDO generic recruit。
+- 關係稱呼/配偶小反應：可參考 RDO 的 relationship rank 分層。
+- 角色核心對話：應獨立 quest + `GetIsID` / alias gate，不使用 shared voice-type pool。
+- 系統開關：可學 RDO 集中存 variable，但不要把 narrative state 混在 MCM config 裡。
+
+## 可操作參考
+
+RDO 可以作為「衝突測試清單」。每新增一套 follower dialogue，至少要檢查：
+
+- 同一 topic 下 RDO、FCO、自家 INFO 的 priority 與條件是否互斥。
+- 自家 follower 是否被加入任何 generic voice type form list 或 exclusion form list。
+- 招募/解散 fragment 是否會重複執行。
+- 婚姻或 relationship rank 變化後，是否會解鎖不該出現的 generic spouse line。
+
 ## 對 Sofia / roadmap 的意義
 
 - Sofia patch 應檢查與 RDO 的 follower recruit/dismiss/command topics 是否有條件競爭。若 Sofia 使用自家 follower framework，避免被 RDO generic recruit topic 接走。
 - 可借 RDO 的「關係層」概念：friend / spouse / lover / hate / follower command 分層，但 Sofia 應以角色專屬狀態包裝，而非只靠 relationship rank。
 - ModForge roadmap：需要能分析同一 vanilla topic 下多個 plugin 的 INFO priority/conditions，否則很難判斷 RDO/FCO/自家 patch 誰會贏。
-

@@ -42,6 +42,46 @@ IFDL 的主體 pattern 是「vanilla quest stage + 自己的 stage/global/VM que
 
 這和一般「多幾句反應」不同，是把 follower 的價值觀做成玩法約束。
 
+## 深挖：角色 arc 架構
+
+IFDL 的長處是把 Lydia 從「可招募 NPC」變成「有內部狀態的角色」。它的資料結構大致可拆成四層：
+
+- 主狀態 quest：`_ICBLydia` 管 Lydia 的長期關係、主線對話與角色發展。
+- 專題 quest：`0ICB_LydiaExtraConversations`、`0ICB_LydiaMoralObjection`、personal quest 等，把大型功能拆開。
+- scene quest：`0ICBScene_*` 負責需要站位、節奏、雙人互動的段落。
+- vanilla quest gate：用 MQ / Dawnguard / Dragonborn / guild / Daedric quest stage 判斷世界進度。
+
+這個拆法很適合 follower dialogue expansion：主 quest 不應承擔所有話題，否則 branch/topic 樹會很快失控。大型主題應該各自有 quest、globals、objectives、fragments，只把必要結果回寫到主狀態。
+
+IFDL 常見 flow：
+
+1. `Misc/Hello` 或 custom topic 入口檢查 Lydia ID、follower 狀態、quest stage。
+2. 玩家選項進入多個 topic 分支。
+3. INFO fragment 推進自家 stage/global/VM variable。
+4. 必要時啟動 scene、objective、dismiss、move package 或 moral consequence。
+5. 用 once flag/global/quest variable 防止重複觸發。
+
+這比單純 `GetStageDone(MQxxx)` 後塞一句 idle 更穩，因為角色是否已經「談過」和世界是否已經「發生」是兩種狀態。
+
+## 深挖：道德與說服設計
+
+`0ICB_LydiaMoralObjection` 可作為 follower value system 的模板。它不是只有「你做壞事我罵你」，而是把分歧做成可玩的狀態機：
+
+- 觸發：玩家進入某些 quest stage、地點或 faction 狀態。
+- 攔截：用高優先度 `Hello` 讓 Lydia 主動開口。
+- 分支：玩家可以解釋、堅持、說服、利用 romance、用魔法壓制。
+- 判定：Speech / Illusion actor value 對 global threshold。
+- 後果：關係受損、暫時離隊、要求贖罪、或接受玩家選擇。
+
+這對 Sofia 類角色尤其重要。Sofia 的個性可以允許更多調侃或不正經，但只要要做「她有底線」，就需要類似的 moral objection framework；否則所有反應都會退化成無後果吐槽。
+
+## 可操作參考
+
+- 每個重要世界事件都記兩個狀態：vanilla stage 是否達成、自家 follower 是否已反應。
+- 主線/公會/Daedric 反應可以先做 `Hello` 主動對話，再補 ambient idle，不要只做 idle。
+- 玩家選項最好有 personality consequence：敷衍、真誠、說服、威脅、玩笑可以各自推不同 global。
+- 長對話、表白、爭吵、告別、地點回憶應使用 scene quest；普通旅途吐槽用 INFO 即可。
+
 ## 對隨從對話擴展的參考價值
 
 IFDL 是最貼近 Sofia patch 的參考：
@@ -58,4 +98,3 @@ IFDL 是最貼近 Sofia patch 的參考：
 - Sofia patch 可直接借這個架構：一個主 expansion quest 管 Sofia relationship state，若干 scene quests 管特定演出，moral/romance/quest reactions 用獨立 globals/quest vars 防重。
 - 風險：IFDL 對 Lydia 的 follower command topics 有覆蓋；Sofia 不能照搬 vanilla follower topic 寫法，應保持 Sofia unique topic / aliases，以免被 RDO/FCO/NFF 等 generic follower overhaul 影響。
 - ModForge roadmap：需要更好支援 INFO fragment / VMAD、quest variable 條件、branch/topic 樹、stage-driven dialogue graph 的檢視。
-

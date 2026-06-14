@@ -144,7 +144,7 @@
 ---
 
 ## 身份系統（輕量職業/Identity）
-→ **設計**：`workflows/specs/2026-06-06-identity-system-design.md`；**plan**：`workflows/plans/2026-06-07-identity-system-mvp.md`
+→ **設計**：`workflows/specs/archive/2026-06-06-identity-system-design.md`；**plan**：`workflows/plans/archive/2026-06-07-identity-system-mvp.md`
 
 三面向：Acquire（讀書 OnRead）/ Gate（identity·primaryIdentity 標籤 → GetInFaction CTDA）/ Grant（常駐 ability 加/收）。身份狀態存成 FACT（持久訊號，未來原版 GetInFaction 可 gate）。
 
