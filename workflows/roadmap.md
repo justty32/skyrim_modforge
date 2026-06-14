@@ -16,7 +16,7 @@
 
 ## 結構／工具
 
-- ~~**大檔拆分門檻改用 bytes**~~ ✅ 已改（門檻 = **文檔 8192 bytes**；trigger-to-review、非硬上限；本質不可分可超標；archive/ 與 code-map/ 豁免）。**`src/`、`examples/` 維持 300 行**（沿用行數、不改 bytes）→ 無需掃 src bytes。DEV-GUIDE 觸發 A + conventions 已同步。
+- ~~**大檔拆分門檻改用 bytes**~~ ✅ 已改（trigger-to-review、非硬上限；本質不可分可超標；archive/ 與 code-map/ 豁免）。**門檻分兩套**：`workflows/` 開發流程文檔 **8192 bytes**；`docs/` 使用手冊文檔 **300 行**；`src/`、`examples/` **300 行**。DEV-GUIDE 觸發 A + conventions 已同步。
 
   ### workflows 文檔拆檔（已調查，2026-06-14；待執行）
 
