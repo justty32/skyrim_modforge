@@ -48,6 +48,7 @@
 | 3 選擇 | Directional Movement Keys | [findings/directional-movement-keys.md](action-system/findings/directional-movement-keys.md) | 前置；其 graph var 供 OAR 條件 |
 | 4 招式 | BFCO（攻擊框架，+Universal Support） | [findings/bfco.md](action-system/findings/bfco.md) | OAR 變體 config 可生成 |
 | 4 招式 | SCAR（NPC 連段 AI） | [findings/scar.md](action-system/findings/scar.md) | AI 不可生成 |
+| 4 招式 | moveset 實例庫（DAR/OAR/SCAR 真實檔案結構） | [findings/movesets-examples.md](action-system/findings/movesets-examples.md) | **OAR 生成器的輸出規格（已驗證）** |
 
 | 自訂技能樹 | Custom Skills Framework | [custom-skills-framework.md](custom-skills-framework.md) + [custom-skill-tree-guide.md](custom-skill-tree-guide.md) | 自訂技能樹分析 + 實作指南（roadmap 功能項） |
 
