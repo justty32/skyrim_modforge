@@ -35,7 +35,13 @@
 
 **待測（active）**
 
-- **Sofia × VIGILANT 第一幕（2026-06-14）** — 交付 `~/skyrim_mods/mine/SofiaVigilantAct1/`（FLAT mod 夾：esp + Scripts/*.pex + Seq + Sound/Voice）。內容：18 條 Sofia 對話（玩家找她聊）涵蓋 1-A~1-K + Bruiant/Hag's Pond 兩個地點感想，含克隆語音（F5）。spec＝`examples/sofia_vigilant_act1.json`，臺詞＝`sub_projs/sofia-patch/vigilant-screenplay/act1-警戒者.md`。
-  - **怎麼測**：裝 SofiaFollower + Vigilant + 本 mod（本 mod 排兩者之後）；新遊戲或 save+reload 吃 `.seq`；招募 Sofia 跟隨；跑 VIGILANT 第一幕，到各 beat 後**對 Sofia 按對話鍵**看是否浮現對應選項、語音是否播放、嘴型是否動。
-  - **gate 已從 BSA QF_ 碎片解碼**（非猜測，高信心）——放置地圖見 `sub_projs/sofia-patch/vigilant-screenplay/_act1-trigger-placement-map.md`。要回報的：① 哪些選項**沒出現**（stage 解碼有誤）；② **殺/放分支是否正確**（殺女巫=SubQ01 s50 / 放=s230；殺 Carene=GoodEnd s35 / 放=s100——若殺了卻跳「放過」台詞＝分支錯）；③ 1-I 疑 Altano（=Mq08 s200）出現時你是否已招募 Sofia 在場；④ 語音正常播放（非靜音）、**嘴型是否動**（這次有設 LipGenerator，理論上會動，待你確認）。
-  - **已知/後續**：1-B/1-K/Hag's Pond 目前是「玩家可問」（auto-banter 需 override Sofia NPC，後續）；**進入夢境/作動作**機制位置已定（夢 cell 0x00185C、stage25 進）但尚未實作，等你確認 Act 1 對話觸發正確後再做。
+- **Sofia × VIGILANT 第一幕（2026-06-14）** — 兩版交付 `~/skyrim_mods/mine/`：`SofiaVigilantAct1.zip`（v1 對話+語音）、`SofiaVigilantAct1v2.zip`（v2 +PlayIdle 動作）。spec＝`examples/sofia_vigilant_act1{,_v2}.json`，臺詞＝`sub_projs/sofia-patch/vigilant-screenplay/act1-警戒者.md`。
+  - **✅ v1 核心 pipeline 已實機確認（2026-06-14）**：對話有註冊、觸發點對、語音有播（跑了一小段任務線）。
+  - **仍 open（待你續測）**：① **各 beat 完整覆蓋**——把 1-A~1-K 跑滿，看有沒有哪個選項該出現卻沒出現（stage 解碼誤）；② **殺/放分支正確性**（殺女巫=SubQ01 s50 / 放=s230；殺 Carene=GoodEnd s35 / 放=s100——殺了卻跳「放過」台詞＝分支錯）；③ **嘴型**有沒有動（fuz 內嵌 lip，待目視確認）；④ **v2 動作**——換裝 v2（一次只裝一版，editorId 不同），看 1-A 諷刺鼓掌 / 1-E 嘆氣 / 1-H-殺 怒 / 1-I 東張西望 有沒有播。
+  - gate 解碼地圖見 `sub_projs/sofia-patch/vigilant-screenplay/_act1-trigger-placement-map.md`（BSA QF_ 碎片逆向，高信心）。
+  - **後續（非待測，待方向確認後我做）**：夢境/更多動作機制位置已定（夢 cell 0x00185C、stage25 進）未實作。
+
+- **Sofia × VIGILANT 第二/三/四幕（2026-06-14）** — 交付 `~/skyrim_mods/mine/SofiaVigilantAct{2,3,4}.zip`（FLAT，語音齊 + setGlobal pex 齊；Act2=34 fuz/11 pex、Act3=51 fuz/14 pex、Act4=16 fuz/13 pex）。spec＝`examples/sofia_vigilant_act{2,3,4}.json`，臺詞＝`sub_projs/sofia-patch/vigilant-screenplay/act{2,3,4}-*.md`，gate 解碼＝同夾 `_act{2,3,4}-trigger-placement-map.md`。
+  - **與 Act 1 唯一差別：沒嘴型**（這批跳過 lip 避免 LipGenerator wine crash 拖死；對話/語音正常，只是嘴不動）。方向確認後可統一補 lip 重打包。
+  - 測法同 Act 1（裝在 SofiaFollower+Vigilant 後、save+reload 吃 .seq、跑對應幕的任務、到 beat 對 Sofia 按對話鍵）。回報哪些選項沒出現 / 分支對不對 / 語音正常否。
+  - gate 重點：Act2 空牢 0x038524 / 沉船 0x038525 / 血祭母 0x038526；Act3 Child of Oblivion 0x065932；Act4 多數記憶靜默、僅 MeQ01/02/07/Pelinal MeQ10/Molag Bal/Karma 結局有評論。

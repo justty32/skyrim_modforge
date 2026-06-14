@@ -36,7 +36,9 @@ scripts/bootstrap-pex.sh
 `package`→FLAT zip→`MODFORGE_SHIP_DIR`（預設 `~/skyrim_mods/mine/`，自動防 stale-file）：
 
 - 一般 mod：`scripts/ship.sh <spec> [zipName] [--clean-prefix]`
-- 語音 mod：`scripts/ship-voice.sh <spec> ...`（package→voicelines→voicediag→zip，需 `MODFORGE_TTS_BIN`）
+- 語音 mod：`scripts/ship-voice.sh <spec> ...`（package→voicelines→voicediag→zip，需 `MODFORGE_TTS_BIN`；要有聲還需 `MODFORGE_XWMAENCODE`＝SSE `Tools/Audio/xwmaencode.exe`，否則吐無聲 loose wav）
+  - **已知陷阱**：含對話 `setGlobal`/`sayOnce` 的 spec，package 與 ship-voice 的 TIF 內聯自動編譯會 spurious fail（zip 出 0 個 `.pex`）→ 對話照播但 sayOnce 失效（選項重複）。修法：對 package 產出的 `Scripts/Source/TIF_*.psc` 逐一 `dotnet run --project src/ModForge.Cli -- compile <psc> <stage>/Scripts`（單獨 compile 必成），再 `cd <stage> && zip <既有zip> Scripts/*.pex` 補進去（語音不用重做）。
+  - lip 嘴型：設 `MODFORGE_LIPGEN`＝CK `LipGenerator.exe`；但它在 wine 下會 crash/重試把配音拖到極慢，量大時可先**不設＝跳過**（嘴不動），之後再統一補 lip。
 
 ## 通用
 
