@@ -7,7 +7,7 @@
 ## 程式碼慣例
 
 - `partial class` 按領域拆檔：CLI 是 `Program.cs` + `Diagnostics.*.cs` + `Package.cs`；Core 是 `Generator.Build.*.cs`
-- 所有 src 檔案維持在 300 行以下（門檻未來改 4096 bytes，見 [roadmap](../roadmap.md)）。
+- 所有 src 檔案維持在 **4096 bytes** 以下（`partial class` 按領域拆；門檻用 bytes 不用行數——不受行長影響、跨 code/docs 一致；本質不可分者可超標。完整原則見 [DEV-GUIDE 結構整理原則](../../DEV-GUIDE.md)）。
 - **Spec 欄位 breaking change**：新增欄位安全（optional，舊 example 不受影響）；**刪除或改名欄位**前必須先 `grep -r "舊欄位名" examples/`，找出所有受影響的 JSON 並在同一個 commit 裡一起更新。
 - **新增 Spec 欄位後**：手動更新 `examples/spec.schema.json`（IDE autocomplete 用；無自動同步機制，允許偶爾落後，但 commit 前盡量補上）。
 

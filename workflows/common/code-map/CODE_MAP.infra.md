@@ -100,7 +100,7 @@
 ---
 
 ## 工作流腳本（`scripts/`，bash）
-→ **說明文件**：[tooling](../../tooling.md)（外部工具 / env var / 依賴）；CLAUDE.md「前置步驟」「出貨腳本」
+→ **說明文件**：[tooling](../../tooling/README.md)（外部工具 / env var / 依賴）；CLAUDE.md「前置步驟」「出貨腳本」
 
 | 檔案 | 職責 |
 |-----|-----|

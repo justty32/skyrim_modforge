@@ -1,6 +1,6 @@
 # dev-env — 開發環境（跨機）
 
-← [INDEX](../INDEX.md)｜外部工具/env 清單見 [tooling.md](tooling.md)
+← [INDEX](../INDEX.md)｜外部工具/env 清單見 [tooling.md](tooling/README.md)
 
 ModForge 在**兩種機器**上開發，能做的事不同：
 
@@ -41,4 +41,4 @@ scripts/bootstrap-pex.sh
 ## 通用
 
 - Commit 訊息用多個 `-m` flag 組多行（PowerShell here-string 易出問題）。
-- 外部工具 / `MODFORGE_*` env var / 資料依賴（含缺檔降級行為）完整清單見 [tooling.md](tooling.md)。
+- 外部工具 / `MODFORGE_*` env var / 資料依賴（含缺檔降級行為）完整清單見 [tooling.md](tooling/README.md)。

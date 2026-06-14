@@ -23,7 +23,7 @@
   一輪 per-workflow agent 審查已備好拆分地圖。**範圍決定**：此次只動 **`workflows/` 文檔**（`src/` 另排）。**豁免**：`*/archive/`（封存件凍結保脈絡、不在維護鏈）與 `common/code-map/`（CODE_MAP 是 code 鏡像，依**程式碼領域**而非 byte 分檔）一律**不套** 4096 規則。
 
   待執行清單（按工作量）：
-  - **tooling.md**（9.6K）→ 升 L2：`tooling/` + README，按職責分 `env-vars` / `binaries` / `data-assets`（檔內已有對應 `##` 段）。
+  - ~~**tooling.md**（9.6K）→ 升 L2：`tooling/` + README，按職責分 `env-vars` / `binaries` / `data-assets`~~ ✅ 已拆（`workflows/tooling/`）。
   - **feature-dev/landed.md**（14K）→ `landed/` + INDEX，**對齊 CODE_MAP 五分法**（dialogue-quests / world / items-magic / npcs / infra）以利兩套 index 互通。gotchas.md（5K）只需檔內分節，不拆。
   - **plans/** 巨型多階段計畫 → 各成 `plans/<功能>/` + index（升 L4，沿天然 Task/子系統切點）：lighting-pipeline 54K、spec-refs-env 41K、quest-markers 31K(A/B/C 層)、playidle 26K。中型 hazard/music/weather/voice-annotation 為 BORDERLINE（看是否容忍超標）；identity-mvp 8K KEEP。
   - **idea/**：概覽 `01`/`03` 瘦身成「survey + 指向已展開子夾」的導航頁；`02`/`04`/`05` 按內容拆（04 map-scene、05 animation 興趣最高、最可能升 L4 子夾）；`voice-clone/01-engine-setup` 12K 可按引擎再分。步驟檔（model-porting 01~10、voice-clone 02~06）**全 KEEP**（已是拆分結果）。`ideas.md` 18K 按 idea 主題分類拆，但它是入口主檔、可緩。

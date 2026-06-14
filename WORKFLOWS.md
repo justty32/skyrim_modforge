@@ -8,7 +8,7 @@
 
 | 觸發（你說…）| 工作流 | 入口檔（先讀這個）|
 |--------------|--------|-------------------|
-| 「我想用 / 設定某個外部工具」「查 env var / 依賴」 | **tooling** | [workflows/tooling.md](workflows/tooling.md) |
+| 「我想用 / 設定某個外部工具」「查 env var / 依賴」 | **tooling** | [workflows/tooling/README.md](workflows/tooling/README.md) |
 | 「我想開發 / 修改某個 feature」 | **feature-dev** | [workflows/feature-dev/README.md](workflows/feature-dev/README.md) |
 | 「重構 / 拆檔 / 整理結構」 | **refactor** | [workflows/refactor/README.md](workflows/refactor/README.md) |
 | 「解碼 vanilla / 某個 mod」「可行性調查」 | **investigation** | [workflows/investigation/README.md](workflows/investigation/README.md) |

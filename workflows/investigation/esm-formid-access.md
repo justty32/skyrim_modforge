@@ -1,8 +1,8 @@
 # ESM / FormID 存取 — agent 工具參考
 
-← [investigation README](README.md)｜外部工具總表 [tooling.md](../tooling.md)
+← [investigation README](README.md)｜外部工具總表 [tooling.md](../tooling/README.md)
 
-給 AI agent 的「怎麼從 `.esm/.esp` 取出可讀內容 / 查 FormID」操作手冊。配 [tooling.md](../tooling.md)（環境變數、binary、字串依賴的完整表）一起看。
+給 AI agent 的「怎麼從 `.esm/.esp` 取出可讀內容 / 查 FormID」操作手冊。配 [tooling.md](../tooling/README.md)（環境變數、binary、字串依賴的完整表）一起看。
 
 ## 鐵律（先讀，違反會吃光記憶體）
 
@@ -47,4 +47,4 @@ dotnet "$DLL" gamedata <plugin> <outDir>
 ## FormID 慣例
 
 - 印出/比對一律用 24-bit 形式 `0xXXXXXX`（去掉 load-order 高位元組）。
-- 字串解析：在地化主檔的 Name/書內文住在 `.STRINGS`（在 `Skyrim - Interface.bsa` 等 BSA）；`booktext`/`gamedata` 會自動抽 English 版到暫存夾再解。舊 mod 多半 inline、不需此步。詳見 [tooling.md §3](../tooling.md) 與記憶 `headless-vanilla-strings-provision`。
+- 字串解析：在地化主檔的 Name/書內文住在 `.STRINGS`（在 `Skyrim - Interface.bsa` 等 BSA）；`booktext`/`gamedata` 會自動抽 English 版到暫存夾再解。舊 mod 多半 inline、不需此步。詳見 [tooling §3](../tooling/data-assets.md) 與記憶 `headless-vanilla-strings-provision`。
