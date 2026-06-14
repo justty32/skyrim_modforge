@@ -8,6 +8,7 @@ obj/
 *.esl
 *.esm
 *.pex
+*.seq
 strings*.json
 
 # IDE
