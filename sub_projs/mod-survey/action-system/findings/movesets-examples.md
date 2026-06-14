@@ -55,6 +55,11 @@ meshes\actors\character\animations\OpenAnimationReplacer\Holmgang\
 - **連段隨機分支**（Tweaked Conditions 版才加）：`Random`（`Random value:{min,max}` + `Comparison` + `Numeric value`）做機率選招，讓 NPC 連段有變化。
 - **種族/陣營限定**（Tweaked 版）：`IsRace`（plugin|formID）等——把某 moveset 綁特定敵人。
 
+### priority 疊加 + 零參數條件（例：NAMC Magic Casting OAR）
+- **空條件 = 無條件套用**：base submod `"Magic"` 的 `"conditions": []`（priority 21）→ 套所有施法動畫；上面再疊 `"FemaleOnly"`（priority 22）只多一條零參數 `IsFemale`，蓋過 base 給女性專屬版。
+- **模式**：「通用 base（空條件）+ 高 priority 特例（性別/種族/裝備條件）」是 OAR 最常見的疊法。零參數條件（`IsFemale`/`IsPlayerTeammate`…）只需 `{condition, requiredVersion}`。
+- submod 也可**巢狀資料夾**（`NAMC SSE/Magic/…`）分組共用動畫。
+
 ### IsEquippedType 的 `Type.value`（OAR 標準 enum）
 `0`=Fist/空手 `1`=單手劍 `2`=匕首 `3`=單手斧 `4`=單手錘 `5`=雙手劍 `6`=雙手斧/錘 `7`=弓 `8`=法杖 `9`=弩 `11`=盾 `12`=火把。（如「劍+盾」＝右 1、左 11；「匕首」idle＝右 2、左 0。）
 

@@ -10,7 +10,7 @@
 | --- | --- | --- | --- |
 | **0 骨架/rig** | 提供擴充骨骼節點（武器掛點/物理/可調骨） | [XPMSSE](findings/xpmsse.md) | 純前置，不生成 |
 | **1 行為引擎/runtime** | patch 或 runtime 修正 behavior graph | [Pandora](pandora.md)（patcher）、[Universal Behavior Runtime](findings/universal-behavior-runtime.md)（A-Pose Fix + Auto Skeleton Patch，runtime 容錯/轉換） | Pandora=shell-out；UBR=前置 |
-| **2 行為資料注入** | 免 behavior patch 加變數/事件/位移 | [BDI](findings/behavior-data-injector.md)（graph var/event）、[Payload Interpreter](findings/payload-interpreter.md)（annotation→設值）、[AMR](findings/animation-motion-revolution.md)（annotation→位移） | **BDI config 可生成**；annotation 屬動畫管線 |
+| **2 行為資料注入** | 免 behavior patch 加變數/事件/位移 | [BDI](findings/behavior-data-injector.md)（graph var/event）、[Payload Interpreter](findings/payload-interpreter.md)（annotation→設值 + `.ini` 巨集表）、[AMR](findings/animation-motion-revolution.md)（annotation→位移） | **BDI config + PIE `.ini` 巨集可生成**；hkx annotation 屬動畫管線 |
 | **3 動畫選擇** | 依條件在 runtime 換動畫 | [OAR](oar-replacer-guide.md)、[DMK](findings/directional-movement-keys.md)（方向→graph var 供 OAR 條件） | **OAR 結構最高槓桿、可生成** |
 | **4 招式框架** | 把上面拼成連擊/招式/NPC AI | [BFCO](findings/bfco.md)（攻擊框架）、[SCAR](findings/scar.md)（NPC 連段 AI）、[moveset 實例庫](findings/movesets-examples.md)（DAR/OAR/SCAR 真實檔案結構，OAR 生成器的輸出規格） | OAR 變體 config 可生成；.hkx/AI 不可 |
 | — .hkx 資產本體 | 動畫製作管線 | — | 屬 [animation/havok-blender](../../../workflows/idea/asset-pipelines/animation/havok-blender.md) 線，不在本夾 |
