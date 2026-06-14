@@ -19,7 +19,9 @@
 | [`sofia-personality.md`](sofia-personality.md) | **性格分析 / 寫作 brief**（本專案中心）——Sofia 的原型、幽默機制、說話癖、不安全感、情緒光譜，附大量原文台詞範例 + 「寫新台詞 checklist」。要生成「聽起來像 Sofia」的新對話先讀這份。 |
 | [`follower-decode-2026-06-13.md`](follower-decode-2026-06-13.md) | **結構+內容解碼**——`SofiaFollower.esp` 的記錄普查（30 quest / 28 scene / 1135 INFO / 57 GLOB）、五個可複用架構 pattern、quest/scene/formlist 內容索引、對 ModForge 的施工法。 |
 | [`expansion-plan-2026-06-13.md`](expansion-plan-2026-06-13.md) | **擴充計畫 + 可行性對照**——F1–F16 十六個具體功能，逐個標 ✅/🟡/🔴 並給 spec 範例與降級方案；含建議實作順序與缺口彙總表。 |
-| [`vigilant-support-plan-2026-06-13.md`](vigilant-support-plan-2026-06-13.md) | **Sofia × VIGILANT 支援計劃**——讓 Sofia 對 VIGILANT 進度有「可對談反應」：任務/scene 狀態更新後在她身上**浮現談論選項**（玩家主動找她聊），用 quest-state condition + 對話樹組裝，**刻意不用 scene/自動插話**。本 session 對話樹+跨任務閘的綜合應用，無新功能缺口。 |
+| [`vigilant-support-plan-2026-06-13.md`](vigilant-support-plan-2026-06-13.md) | **Sofia × VIGILANT 支援計劃（機制層）**——讓 Sofia 對 VIGILANT 進度有「可對談反應」：任務/scene 狀態更新後在她身上**浮現談論選項**（玩家主動找她聊），用 quest-state condition + 對話樹組裝，**刻意不用 scene/自動插話**。本 session 對話樹+跨任務閘的綜合應用，無新功能缺口。 |
+| [`vigilant-sofia-逐章演出設計.md`](vigilant-sofia-逐章演出設計.md) | **逐章 beat sheet（敘事層設計意圖，2026-06-14）**——VIGILANT 每個劇情節點 Sofia 該做/不做什麼。核心原則：夢/回憶/單人場景＝**Sofia 以「幻影隨身掛件」在場**（她跟入但夢中人無視、只跟玩家吐槽；跟不跟逐場決定）、跟隨合理性＝**命運糾纏**、角色弧＝老練但抗拒成長、**Molag Bal 高位格特例**。**四幕 beat 全到位。** |
+| [`vigilant-screenplay/`](vigilant-screenplay/README.md) | **四幕對白劇本草稿（DRAFT 待審）**——把上面的 beat 寫成 Sofia 的實際台詞，按四幕拆檔（警戒者／墮入／宅邸／冷港）+ README 放共用原則。審核校正後才轉 `examples/*.json`。 |
 
 外部參考（repo 主 spec 文檔）：[`SPEC-dialogue-quests.md`](../../docs/spec/SPEC-dialogue-quests.md)、[`SPEC-packages.md`](../../docs/spec/SPEC-packages.md)、[`SPEC-world.md`](../../docs/spec/SPEC-world.md)、[`SPEC-workflow.md`](../../docs/spec/SPEC-workflow.md)。
 
