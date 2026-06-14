@@ -95,7 +95,22 @@
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
 | Core | `Assets.cs` | 複製 Meshes/Textures/Sounds 樹到輸出目錄 |
-| CLI | `Package.cs` | 完整 MO2 資料夾組裝（plugin + assets + scripts + seq）|
+| CLI | `Package.cs` | 完整 MO2 資料夾組裝（plugin + assets + scripts + seq + action-system loose files）|
+
+---
+
+## 動作系統 asset/config 生成（OAR / BDI / PIE，loose files、非-esp）
+→ **說明文件**：[SPEC-animation.md](../../../docs/spec/SPEC-animation.md) · 設計 [specs/action-system-asset-generation-design.md](../../specs/action-system-asset-generation-design.md) · 調查 [mod-survey/action-system/](../../../sub_projs/mod-survey/action-system/)
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.AnimationReplacer.cs` | DTO：`AnimationReplacerSpec`/`OarSubmodSpec`/`OarConditionSpec`/`NpcMovesetSpec`/`BehaviorDataSpec`/`BdiEntrySpec`/`PayloadMacroSpec`/`PieMacroSpec`（ModSpec 三個 list 在 `Spec.cs`）|
+| Core | `OarConditions.cs` | `OarConditionSpec`→OAR JSON（`Emit`）、`NpcMovesetSpec`→條件束（`Expand`）、武器型 enum（`WeaponType`）、form-ref 解析（`ParseForm`）|
+| Core | `OarGen.cs` | OAR 資料夾樹 + root/submod `config.json`（`Generate`）+ `.hkx` 擺放清單（`HkxPlacements`）|
+| Core | `BdiGen.cs` | BDI flat-array JSON（`BdiGen.Generate`）+ PIE `.ini` 巨集表（`PieGen.Generate`）|
+| Validate | `Generator.Validate.AnimationReplacer.cs` | priority/條件名/武器名/form/BDI type 校驗（`.hkx` 存在性在 `Package.cs` 查）|
+
+`.hkx` 動畫本體**不生成**（使用者自備，經 `assets`/spec 目錄）；Blender→hkx、Pandora、SCAR AI 不在範圍。
 
 ---
 

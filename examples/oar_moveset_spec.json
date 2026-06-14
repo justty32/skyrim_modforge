@@ -1,0 +1,53 @@
+{
+  "pluginName": "SofiaMoveset.esp",
+  "assets": ".",
+  "animationReplacers": [
+    {
+      "mod": "Sofia Katana Moveset",
+      "author": "ModForge",
+      "description": "NPC-only one-handed sword moveset showcase (OAR). .hkx clips are user-supplied.",
+      "submods": [
+        {
+          "name": "Attack - Sword & Shield",
+          "priority": 100008,
+          "replaces": "actors/character/animations/MyMoveset/mco_attack1.hkx",
+          "hkx": ["anims/ss_attack1.hkx"],
+          "npcMoveset": { "rightWeapon": "sword", "leftWeapon": "shield", "playerOnly": false }
+        },
+        {
+          "name": "Attack - Sword & Shield (combo variant)",
+          "priority": 100009,
+          "replaces": "actors/character/animations/MyMoveset/mco_attack2.hkx",
+          "hkx": ["anims/ss_attack2.hkx"],
+          "conditions": [
+            { "condition": "AND", "conditions": [
+              { "condition": "IsEquippedType", "type": 1, "leftHand": false },
+              { "condition": "IsEquippedType", "type": 11, "leftHand": true },
+              { "condition": "IsActorBase", "negated": true, "form": "Skyrim.esm|0x000007" },
+              { "condition": "Random", "randomMin": 0, "randomMax": 1, "comparison": "<", "value": 0.4 }
+            ]}
+          ]
+        }
+      ]
+    }
+  ],
+  "behaviorData": [
+    {
+      "file": "Sofia_BDI",
+      "entries": [
+        { "projectPath": "Actors", "type": "kInt", "name": "MF_SofiaCombat", "value": 0 },
+        { "projectPath": "Actors", "type": "kEvent", "name": "MF_SofiaVow" }
+      ]
+    }
+  ],
+  "payloadMacros": [
+    {
+      "file": "SofiaAxe",
+      "section": "Intensify",
+      "macros": [
+        { "name": "enableIframe", "command": "@SETGHOST|1" },
+        { "name": "disableIframe", "command": "@SETGHOST|0" }
+      ]
+    }
+  ]
+}

@@ -13,6 +13,7 @@ spec 是一個 JSON 檔 → `.esp` plugin。選擇一個主題：
 | [SPEC-worldspaces](SPEC-worldspaces.md) | 世界空間與區域、區域音樂、等級清單與容器、formLists、遭遇區、商販 |
 | [SPEC-items](SPEC-items.md) | 配方（COBJ）、天賦、外部資產（網格/音效）、貼圖組（TXST） |
 | [SPEC-packages](SPEC-packages.md) | AI 套件（Sandbox/Travel/UseMagic/Follow/Sleep/Patrol/Escort）、天氣與氣候 |
+| [SPEC-animation](SPEC-animation.md) | 動作系統散裝檔：OAR replacer/moveset、BDI graph-var 注入、PIE 巨集表（`.hkx` 自備） |
 | [SPEC-workflow](SPEC-workflow.md) | CLI 工作流（`validate` / `build` / `package`）、語音克隆管線（`voicelines` / `extract-voices`）＋尚未涵蓋的功能 |
 | [SPEC-refs](SPEC-refs.md) | `$ref` / `$env` 引入與參數化（具名預設庫、file/pointer/same-doc refs、env vars） |
 

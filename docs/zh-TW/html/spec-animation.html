@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ModForge spec — 動作系統 asset/config（OAR / BDI / PIE） — ModForge 文件</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="sidebar">
+  <div class="logo"><a href="index.html">📖 ModForge 文件</a></div>
+  <div class="nav-section">代理工作流程</div>
+  <a class="nav-item" href="for-agent.html">概覽</a>
+  <a class="nav-item" href="for-agent-cli.html">CLI 驅動</a>
+  <a class="nav-item" href="for-agent-lib.html">函式庫 API</a>
+  <a class="nav-item" href="external-assets.html">外部資源</a>
+  <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
+  <a class="nav-item" href="local-skyrim-extraction.html">本地 Skyrim 抽取</a>
+  <div class="nav-section">規格說明（SPEC）</div>
+  <a class="nav-item" href="spec-index.html">總覽 · 目錄</a>
+  <a class="nav-item" href="spec-intro.html">介紹 · 記錄類型</a>
+  <a class="nav-item" href="spec-magic.html">魔法 · 附魔</a>
+  <a class="nav-item" href="spec-dialogue.html">對話 · 場景</a>
+  <a class="nav-item" href="spec-quests.html">任務 · Story Manager</a>
+  <a class="nav-item" href="spec-identities.html">身分系統</a>
+  <a class="nav-item" href="spec-world.html">Cell · 放置 · 光照</a>
+  <a class="nav-item" href="spec-worldspaces.html">世界空間 · 清單 · 商販</a>
+  <a class="nav-item" href="spec-items.html">配方 · 天賦 · 資源</a>
+  <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
+  <a class="nav-item active" href="spec-animation.html">動作系統 · OAR/BDI/PIE</a>
+  <a class="nav-item" href="spec-workflow.html">工作流程</a>
+  <a class="nav-item" href="spec-refs.html">$ref · 參數化</a>
+  <div class="nav-section">讓 NPC 更有生命力</div>
+  <a class="nav-item" href="lifelike.html">總覽</a>
+  <a class="nav-item" href="cookbook-index.html">食譜手冊 · 目錄</a>
+  <a class="nav-item" href="cookbook-npc-basics.html">食譜：基礎 NPC</a>
+  <a class="nav-item" href="cookbook-followers.html">食譜：跟隨者</a>
+  <a class="nav-item" href="cookbook-world-items.html">食譜：世界 · 物品</a>
+  <a class="nav-item" href="cookbook-presets.html">食譜：預設片段</a>
+  <a class="nav-item" href="cookbook-magic.html">食譜：魔法</a>
+  <a class="nav-item" href="cookbook-social-quest.html">食譜：社交 · 任務</a>
+  <a class="nav-item" href="cookbook-advanced.html">食譜：進階</a>
+  <a class="nav-item" href="cheatsheets.html">速查表</a>
+  <a class="nav-item" href="gotchas.html">常見陷阱</a>
+  <a class="nav-item" href="formid-ref.html">原版 FormID 參考</a>
+</nav>
+<div class="content"><div class="content-inner"><div id="md" class="md"></div></div></div>
+<textarea id="src" hidden>
+# ModForge spec — 動作系統 asset/config（OAR / BDI / PIE）
+
+← [index](spec-index.html)
+
+三個頂層區塊生成**散裝檔（loose files）**（非 `.esp` 記錄），供現代動畫/戰鬥堆疊使用。`package`
+會把它們寫在 plugin 旁、組成 MO2-ready 資料夾。`.hkx` 動畫本體**由使用者自備**——ModForge 寫出
+config 樹並擺放你提供的 clip，**從不**生成 Havok。（調查與實檔分析：
+`sub_projs/mod-survey/action-system/`。）
+
+> **不在範圍**：建立/重定向 `.hkx`（Blender→hkx 那道牆）、behavior graph patch（Pandora）、
+> SCAR AI 註釋。那些屬 record/config 層以外的管線。
+
+---
+
+## `animationReplacers` — OAR（Open Animation Replacer）
+
+條件式執行期動畫替換 mod。每個項目是一個 **replacer-mod**（根 `config.json`）+ 具名的 **submod**
+（各自一個 `config.json` + 它出貨的 clip）。輸出到
+`Meshes/actors/character/animations/OpenAnimationReplacer/<mod>/...`。
+
+```jsonc
+{
+  "animationReplacers": [
+    {
+      "mod": "Sofia Katana",            // replacer-mod 資料夾 + config 名
+      "author": "ModForge",
+      "description": "給隨從的居合刀招式",
+      "submods": [
+        {
+          "name": "Attack - Sword & Shield",
+          "priority": 100008,            // 高者勝；必填（> 0）
+          "replaces": "actors/character/animations/...", // 被替換的 vanilla/MCO 動畫路徑
+          "hkx": ["anims/ss_atk.hkx"],   // 使用者自備 clip（相對 `assets` 或 spec 目錄）
+          "npcMoveset": {                // 語法糖（展開成 `conditions`）——見下
+            "rightWeapon": "sword", "leftWeapon": "shield", "playerOnly": false
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Submod 欄位**：`name`、`description`、`priority`（>0）、`replaces`、`hkx[]`、`variants[]`
+（輸出到 `_variants_<anim>/1.hkx,2.hkx…`）、`conditions[]`、`npcMoveset`、`replaceVanillaPath`
+（純 tier-a replacer：把 clip 直接擺到 vanilla 路徑，無 config/conditions）。
+
+### `conditions[]` — OAR 條件形狀
+
+OAR 用它**自己的**條件名（**不是** Skyrim CTDA function 名）。容器 `AND`/`OR` 把子條件放在
+`conditions[]`。空 `conditions: []` = 套用所有人。form ref 為 `"Plugin.esp|0xFormID"`。
+
+| `condition` | 欄位 |
+|---|---|
+| `IsActorBase` | `form`（+ `negated`）——例如用 `negated:true`、`form:"Skyrim.esm|0x000007"` 排除玩家 |
+| `IsEquippedType` | `type`（武器 enum）、`leftHand` |
+| `IsRace` | `form` |
+| `IsFemale` | （無） |
+| `Random` | `randomMin`、`randomMax`、`comparison`、`value` |
+| `CompareValues` | `graphVariable`、`graphVariableType`（Int/Float/Bool）、`comparison`、`value` |
+| `AND` / `OR` | `conditions[]` |
+
+**`type` 武器 enum**：`fist`=0 `sword`=1 `dagger`=2 `waraxe`=3 `mace`=4 `greatsword`=5
+`battleaxe`/`warhammer`=6 `bow`=7 `staff`=8 `crossbow`=9 `shield`=11 `torch`=12。
+
+### `npcMoveset` 語法糖
+
+反覆出現的 NPC moveset 配方——展開成一個 `AND`：`IsEquippedType(右)` + `IsEquippedType(左)` +
+（當 `playerOnly:false`）`IsActorBase ¬player` +（選用）`IsRace`，並在設了 `randomPick` 時加一條
+同層 `Random`：
+
+| 欄位 | 效果 |
+|---|---|
+| `rightWeapon` / `leftWeapon` | 武器型名 → 兩條 `IsEquippedType` |
+| `playerOnly` | `false` → 加 `IsActorBase ¬player(Skyrim.esm|0x7)`（NPC 專屬 moveset） |
+| `race` | 選用 `IsRace "Plugin.esp|0xFormID"` |
+| `randomPick` | 選用 `Random{0..1} < randomPick`（連段變化） |
+
+---
+
+## `behaviorData` — BDI（Behavior Data Injector）
+
+往 behavior project 注入 graph variable/event，**免 behavior patch**。輸出到
+`SKSE/Plugins/BehaviorDataInjector/<file>.json`，是一個 flat array。
+
+```jsonc
+{
+  "behaviorData": [
+    { "file": "Sofia_BDI", "entries": [
+      { "projectPath": "Actors", "type": "kInt",   "name": "MF_Combat", "value": 0 },
+      { "projectPath": "Actors", "type": "kEvent", "name": "MF_OnVow" }   // kEvent：無 value
+    ]}
+  ]
+}
+```
+
+`type` ∈ `kInt | kBool | kFloat | kEvent`。注入的變數可被 OAR `CompareValues` 條件讀取
+（「動畫驅動狀態」鏈）。
+
+---
+
+## `payloadMacros` — PIE（Payload Interpreter）巨集表
+
+命名巨集 → payload 指令。輸出到 `SKSE/PayloadInterpreter/Config/<file>.ini`。
+
+```jsonc
+{
+  "payloadMacros": [
+    { "file": "SofiaAxe", "section": "Intensify", "macros": [
+      { "name": "enableIframe", "command": "@SETGHOST|1" }   // → "$enableIframe = @SETGHOST|1"
+    ]}
+  ]
+}
+```
+
+---
+
+## 玩家端前置（ModForge 標註、不生成）
+
+OAR + Address Library + Animation Queue Fix；BDI / PIE 的 DLL；moveset 需先跑一次 **Pandora**
+（或 Nemesis）建立 behavior 基底。`.hkx` clip 由作者自備，經 `assets`（打包來源目錄）或相對 spec
+的路徑提供。
+</textarea>
+<script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+<script>
+marked.setOptions({gfm:true,breaks:false});
+document.getElementById('md').innerHTML=marked.parse(document.getElementById('src').value);
+document.querySelectorAll('.nav-item').forEach(function(a){
+  var p=location.pathname.split('/').pop()||'index.html';
+  if(a.getAttribute('href')===p)a.classList.add('active');
+});
+</script>
+</body>
+</html>

@@ -13,6 +13,7 @@ The spec is a JSON file → `.esp` plugin. Choose a topic:
 | [SPEC-worldspaces](SPEC-worldspaces.md) | Worldspaces & regions, area music, leveled lists & containers, formLists, encounter zones, vendors |
 | [SPEC-items](SPEC-items.md) | Recipes (COBJ), perks, external assets (meshes/sounds), texture sets (TXST) |
 | [SPEC-packages](SPEC-packages.md) | AI packages (Sandbox/Travel/UseMagic/Follow/Sleep/Patrol/Escort), weathers & climates |
+| [SPEC-animation](SPEC-animation.md) | Action-system loose files: OAR replacers/movesets, BDI graph-var injection, PIE macro tables (`.hkx` user-supplied) |
 | [SPEC-workflow](SPEC-workflow.md) | CLI workflow (`validate` / `build` / `package`), voice cloning pipeline (`voicelines` / `extract-voices`) + not-yet-covered features |
 | [SPEC-refs](SPEC-refs.md) | `$ref` / `$env` includes & parameterization (named preset library, file/pointer/same-doc refs, env vars) |
 
