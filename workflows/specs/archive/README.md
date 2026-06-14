@@ -23,3 +23,4 @@
 | [2026-06-13-quest-markers-design](2026-06-13-quest-markers-design.md) | 三種標記：objective QSTA / XMarker anchor / 地圖 XMRK。 |
 | [2026-06-13-spec-refs-env-design](2026-06-13-spec-refs-env-design.md) | spec 的 `$ref`/`$env` JSON include + 參數化前處理層。 |
 | [2026-06-13-voice-annotation-index-design](2026-06-13-voice-annotation-index-design.md) | 語音情緒標註索引（INFO Emotion seed → 人工校正）。 |
+| [2026-06-14-action-system-asset-generation-design](2026-06-14-action-system-asset-generation-design.md) | 動作系統散裝檔生成（OAR moveset + BDI config + PIE 巨集，非-esp）。 |

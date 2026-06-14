@@ -21,3 +21,4 @@
 | [2026-06-13-quest-markers](2026-06-13-quest-markers.md) | spec 產出三種標記：QSTA 任務羅盤箭、XMarker 錨點、XMRK 世界地圖標記。 |
 | [2026-06-13-spec-refs-env](2026-06-13-spec-refs-env.md) | spec 的 `$ref`/`$env` 解析層（通用 JSON include + 參數化，預設庫機制）。 |
 | [2026-06-13-voice-annotation-index](2026-06-13-voice-annotation-index.md) | `voice-annotate` CLI — 抽取語音 clip 並產 emotion 標註 manifest。 |
+| [2026-06-14-action-system-asset-generation](2026-06-14-action-system-asset-generation.md) | 動作系統散裝檔生成 7-task（OAR/BDI/PIE，非-esp、`.hkx` 自備）。 |
