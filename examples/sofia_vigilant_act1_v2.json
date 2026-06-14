@@ -1,0 +1,752 @@
+{
+  "_note": "Sofia x VIGILANT — ACT 1 **v2 (action build)**. Identical to ModForgeSofiaVigilantAct1.esp (same dialogue/gates/voice) PLUS a 'gesture while commenting' demo: 4 lines play a fitting vanilla idle animation on Sofia as she speaks (result fragment MFSofVigGesture sets the once-flag GLOB and calls speaker.PlayIdle). A/B test vs v1 — ENABLE ONLY ONE VERSION AT A TIME (shared editorIds). Gestures: 1-A IdleApplaudSarcastic(0x0E9312); 1-E idle_A_sigh_var1Trans(0x04FF00); 1-H kill DialogueAngryMotionDriven(0x10DEA7); 1-I IdleLookAround(0x0F5D98). Idle must play while Sofia is standing (in dialogue she is). Sofia x VIGILANT — ACT 1 (Act of Magnificence / zzzAoM*). Player-initiated 'talk to Sofia' topics gated by VIGILANT Act-1 quest stages + Sofia present (GetIsID)/following. Lines = de-AI'd rewrite of sub_projs/sofia-patch/vigilant-screenplay/act1-警戒者.md (EN voiced; ZH in screenplay). GATES DECODED from BSA QF_/SF_/TIF_ fragments (2026-06-14, 6-agent reverse-eng) — see vigilant-screenplay/_triggers/ + _act1-trigger-placement-map.md. Stage map: 1-A Mq00(0x005CE2) s10 (join=AddToFaction+spell+amulet); 1-B Mq00 s10; 1-C Mq01(0x005CE3) s50 (first vampire hunt done; Mq00 stops at s40); 1-D Mq06(0x009E68) s90 (dream resolved); 1-E Mq07(0x00A3FE) s20 (arrive beacon hall, all dead); 1-F Mq07 s50 (Bal dead; s40=fight start); 1-G SubQ01(0x17576E) running+s10done+s20not (encounter, pre-choice); 1-H kill SubQ01 s50 (Karma-6) / spare s230 (Karma+2); 1-I Mq08(0x00EA8A) s200 (Altano fanaticism surfaces — he IS the traitor zzzAoMVigilantTraitor 0x000D62); 1-J kill MqGoodEnd(0x4D0376) s35 / spare s100; 1-K MqGoodEnd s130 (qAct2.Start). Carene=zzzAoMm08Mother 0x0012D0. Hag's Pond WRLD 0x166857 (SubQ01). Sofia NPC=SofiaFollower.esp:0x0012C4, voiceType=JJSofiaVoiceType (0x0022EE), follower faction=0x060480. DREAM-ENTRY (1-D, future): dream cell 0x00185C 'Jo'vanni Dream Theater', enter@s25 exit@s50, Sofia.MoveTo dreammarker 0x00A3CC. VOICE: package FIRST then voicelines on packaged esp. NOTE: 1-B/1-K/Hag's Pond designed as auto-banter but implemented as player-topics (ModForge banter needs in-spec speaker; Sofia is external — auto-banter = future NPC-override). Bruiant estate moved out (it's Act 3 zzzCOMq01).",
+  "pluginName": "ModForgeSofiaVigilantAct1v2.esp",
+  "esl": true,
+  "voiceTemplates": [
+    {
+      "id": "sofia-f5",
+      "engine": "f5",
+      "referenceWav": "refs/sofia_ref.wav",
+      "referenceText": "",
+      "language": "en"
+    }
+  ],
+  "voiceSpeakers": [
+    {
+      "speaker": "SofiaFollower.esp:0x0012C4",
+      "voiceType": "JJSofiaVoiceType",
+      "template": "sofia-f5"
+    }
+  ],
+  "globals": [
+    {
+      "editorId": "MF_SofA1_JoinedVigilant",
+      "type": "short",
+      "value": 0
+    },
+    {
+      "editorId": "MF_SofA1_EarlyMission",
+      "type": "short",
+      "value": 0
+    },
+    {
+      "editorId": "MF_SofA1_KhajiitDream",
+      "type": "short",
+      "value": 0
+    },
+    {
+      "editorId": "MF_SofA1_BeaconMassacre",
+      "type": "short",
+      "value": 0
+    },
+    {
+      "editorId": "MF_SofA1_BeaconBoss",
+      "type": "short",
+      "value": 0
+    },
+    {
+      "editorId": "MF_SofA1_WitchDoubt",
+      "type": "short",
+      "value": 0
+    },
+    {
+      "editorId": "MF_SofA1_WitchKilled",
+      "type": "short",
+      "value": 0
+    },
+    {
+      "editorId": "MF_SofA1_WitchSpared",
+      "type": "short",
+      "value": 0
+    },
+    {
+      "editorId": "MF_SofA1_AltanoSuspicion",
+      "type": "short",
+      "value": 0
+    },
+    {
+      "editorId": "MF_SofA1_CareneKilled",
+      "type": "short",
+      "value": 0
+    },
+    {
+      "editorId": "MF_SofA1_CareneSpared",
+      "type": "short",
+      "value": 0
+    },
+    {
+      "editorId": "MF_SofA1_LearnRestoration",
+      "type": "short",
+      "value": 0
+    },
+    {
+      "editorId": "MF_SofA1_ChapterClose",
+      "type": "short",
+      "value": 0
+    },
+    {
+      "editorId": "MF_SofA1_RealmHagsPond",
+      "type": "short",
+      "value": 0
+    }
+  ],
+  "quests": [
+    {
+      "editorId": "MFSofVigAct1Controller",
+      "name": "",
+      "startGameEnabled": true,
+      "priority": 60,
+      "type": "None"
+    }
+  ],
+  "dialogue": [
+    {
+      "editorId": "MFSofVig_1A_JoinVigilant",
+      "questEditorId": "MFSofVigAct1Controller",
+      "prompt": "We just joined the Vigilants. Thoughts?",
+      "responses": [
+        "So we're the moral brigade now. Running around smashing things in the name of Stendarr.",
+        "Me? Join? And wear that... grey... thing? I'm not putting that on. I glow, it clashes.",
+        "...Fine. But if they make me swear an oath I'm going to need a drink first. A big one."
+      ],
+      "sayOnce": true,
+      "emotion": "Disgust",
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetStageDone",
+          "param": "Vigilant.esm:0x005CE2",
+          "stage": 10,
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_JoinedVigilant",
+          "comparison": "==",
+          "value": 0
+        }
+      ],
+      "resultScript": "MFSofVigGesture",
+      "resultScriptSource": "scripts/MFSofVigGesture.psc",
+      "resultProperties": [
+        {
+          "name": "TargetGlobal",
+          "type": "object",
+          "objectEditorId": "MF_SofA1_JoinedVigilant"
+        },
+        {
+          "name": "GestureIdle",
+          "type": "object",
+          "objectEditorId": "Skyrim.esm:0x0E9312"
+        }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_1C_EarlyMission",
+      "questEditorId": "MFSofVigAct1Controller",
+      "prompt": "Another den cleared. Anything to add?",
+      "responses": [
+        "Have you noticed these Daedra-worshipping types always live somewhere absolutely dreadful? Wet. Dark. No windows. If you're going to dedicate your life to evil, at least spend a little gold on the décor."
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": {
+        "global": "MF_SofA1_EarlyMission",
+        "value": 1
+      },
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetStageDone",
+          "param": "Vigilant.esm:0x005CE3",
+          "stage": 50,
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_EarlyMission",
+          "comparison": "==",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_1D_KhajiitDream",
+      "questEditorId": "MFSofVigAct1Controller",
+      "prompt": "About that Khajiit's dream...",
+      "responses": [
+        "So you just... stood there. Eyes glazed over. Then you snapped out of it. I was counting your breaths out here. Got to sixty-three. So. What was in there? Don't tell me it was some Khajiit's childhood trauma, my arm's gone numb from standing around."
+      ],
+      "sayOnce": true,
+      "emotion": "Fear",
+      "setGlobal": {
+        "global": "MF_SofA1_KhajiitDream",
+        "value": 1
+      },
+      "linkTo": [
+        "MFSofVig_1D_KhajiitDreamMore"
+      ],
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetStageDone",
+          "param": "Vigilant.esm:0x009E68",
+          "stage": 90,
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_KhajiitDream",
+          "comparison": "==",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_1D_KhajiitDreamMore",
+      "questEditorId": "MFSofVigAct1Controller",
+      "topLevel": false,
+      "prompt": "You were worried about me, weren't you.",
+      "responses": [
+        "Worried? I was calculating how much of your gear I could carry if you died. ...Sixty-three breaths. I'm just saying. Nobody counts sixty-three breaths about someone they don't care about. Shut up. Keep moving."
+      ],
+      "goodbye": true,
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_1E_BeaconMassacre",
+      "questEditorId": "MFSofVigAct1Controller",
+      "prompt": "The Beacon... all of them, dead.",
+      "responses": [
+        "I knew a couple of them. That one by the door — he kept trying to talk to me. I was going to make fun of him for the rest of the year."
+      ],
+      "sayOnce": true,
+      "emotion": "Sad",
+      "linkTo": [
+        "MFSofVig_1E_BeaconMassacreMore"
+      ],
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetStageDone",
+          "param": "Vigilant.esm:0x00A3FE",
+          "stage": 20,
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_BeaconMassacre",
+          "comparison": "==",
+          "value": 0
+        }
+      ],
+      "resultScript": "MFSofVigGesture",
+      "resultScriptSource": "scripts/MFSofVigGesture.psc",
+      "resultProperties": [
+        {
+          "name": "TargetGlobal",
+          "type": "object",
+          "objectEditorId": "MF_SofA1_BeaconMassacre"
+        },
+        {
+          "name": "GestureIdle",
+          "type": "object",
+          "objectEditorId": "Skyrim.esm:0x04FF00"
+        }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_1E_BeaconMassacreMore",
+      "questEditorId": "MFSofVigAct1Controller",
+      "topLevel": false,
+      "prompt": "Are you alright?",
+      "responses": [
+        "I'm fine. I've seen worse. ...I haven't, actually, but that's the thing you're supposed to say. Give me a minute. Just a minute. Then we find whatever did this and we take it apart. That part I'm good at."
+      ],
+      "goodbye": true,
+      "emotion": "Sad",
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_1F_BeaconBoss",
+      "questEditorId": "MFSofVigAct1Controller",
+      "prompt": "That thing beneath the Beacon...",
+      "responses": [
+        "Done. ...I don't really have anything funny to say about this one. The more of them we kill, the bigger this thing gets. I thought it was just bounty work. Kill things, get paid, go drink about it. I'm not sure that's what this is anymore.",
+        "Don't tell anyone I said that. Any of that."
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": {
+        "global": "MF_SofA1_BeaconBoss",
+        "value": 1
+      },
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetStageDone",
+          "param": "Vigilant.esm:0x00A3FE",
+          "stage": 50,
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_BeaconBoss",
+          "comparison": "==",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_1G_WitchDoubt",
+      "questEditorId": "MFSofVigAct1Controller",
+      "prompt": "Altano wants these witches dead. Thoughts?",
+      "responses": [
+        "Hold on. Look at them. No cauldron. No creepy whispering. Not even a black cat. They look like two very frightened ordinary people. What exactly is Altano in such a hurry about?"
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": {
+        "global": "MF_SofA1_WitchDoubt",
+        "value": 1
+      },
+      "linkTo": [
+        "MFSofVig_1G_WitchDoubtMore"
+      ],
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetQuestRunning",
+          "param": "Vigilant.esm:0x17576E",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetStageDone",
+          "param": "Vigilant.esm:0x17576E",
+          "stage": 10,
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetStageDone",
+          "param": "Vigilant.esm:0x17576E",
+          "stage": 20,
+          "comparison": "==",
+          "value": 0
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_WitchDoubt",
+          "comparison": "==",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_1G_WitchDoubtMore",
+      "questEditorId": "MFSofVigAct1Controller",
+      "topLevel": false,
+      "prompt": "Since when do you defend witches?",
+      "responses": [
+        "I'm not defending witches. I hate being used as a blunt instrument. When someone points at a person and says 'monster, go kill' and the person looks nothing like a monster... usually the real monster is the one giving the order. I've been on the other side of that enough times to know."
+      ],
+      "goodbye": true,
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_1H_WitchKilled",
+      "questEditorId": "MFSofVigAct1Controller",
+      "prompt": "We killed the witches.",
+      "responses": [
+        "Done. I'm not saying you were wrong. Orders are orders, and we don't know the full picture. But did you see the way she looked at you at the end. I'm going to remember that look. You should too. Next time Altano sends us somewhere, let's ask a few more questions first."
+      ],
+      "sayOnce": true,
+      "emotion": "Anger",
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetStageDone",
+          "param": "Vigilant.esm:0x17576E",
+          "stage": 50,
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_WitchKilled",
+          "comparison": "==",
+          "value": 0
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_WitchSpared",
+          "comparison": "==",
+          "value": 0
+        }
+      ],
+      "resultScript": "MFSofVigGesture",
+      "resultScriptSource": "scripts/MFSofVigGesture.psc",
+      "resultProperties": [
+        {
+          "name": "TargetGlobal",
+          "type": "object",
+          "objectEditorId": "MF_SofA1_WitchKilled"
+        },
+        {
+          "name": "GestureIdle",
+          "type": "object",
+          "objectEditorId": "Skyrim.esm:0x10DEA7"
+        }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_1H_WitchSpared",
+      "questEditorId": "MFSofVigAct1Controller",
+      "prompt": "I let the witches go.",
+      "responses": [
+        "You let them go. Ha. I knew you would. ...You know what, I'm not even going to make fun of you for that one. If Altano had a real reason to want them dead, he would have explained it himself instead of sending us in blind. We'll see what he says."
+      ],
+      "sayOnce": true,
+      "emotion": "Happy",
+      "setGlobal": {
+        "global": "MF_SofA1_WitchSpared",
+        "value": 1
+      },
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetStageDone",
+          "param": "Vigilant.esm:0x17576E",
+          "stage": 230,
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_WitchSpared",
+          "comparison": "==",
+          "value": 0
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_WitchKilled",
+          "comparison": "==",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_1I_AltanoSuspicion",
+      "questEditorId": "MFSofVigAct1Controller",
+      "prompt": "What do you make of Altano?",
+      "responses": [
+        "That Altano. I can't put my finger on it. His smile is too well-timed. His answers are too clean. I've met a lot of people who smile like that. Usually they're wearing a very nice holy symbol while doing something very not holy. Watch him."
+      ],
+      "sayOnce": true,
+      "emotion": "Disgust",
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetStageDone",
+          "param": "Vigilant.esm:0x00EA8A",
+          "stage": 200,
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_AltanoSuspicion",
+          "comparison": "==",
+          "value": 0
+        }
+      ],
+      "resultScript": "MFSofVigGesture",
+      "resultScriptSource": "scripts/MFSofVigGesture.psc",
+      "resultProperties": [
+        {
+          "name": "TargetGlobal",
+          "type": "object",
+          "objectEditorId": "MF_SofA1_AltanoSuspicion"
+        },
+        {
+          "name": "GestureIdle",
+          "type": "object",
+          "objectEditorId": "Skyrim.esm:0x0F5D98"
+        }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_1J_CareneKilled",
+      "questEditorId": "MFSofVigAct1Controller",
+      "prompt": "About Carene — we put her down.",
+      "responses": [
+        "Clean. I'm not asking if she was innocent. In a fight like this, hesitation gets you killed. You did what you had to."
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": {
+        "global": "MF_SofA1_CareneKilled",
+        "value": 1
+      },
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetStageDone",
+          "param": "Vigilant.esm:0x4D0376",
+          "stage": 35,
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_CareneKilled",
+          "comparison": "==",
+          "value": 0
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_CareneSpared",
+          "comparison": "==",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_1J_CareneSpared",
+      "questEditorId": "MFSofVigAct1Controller",
+      "prompt": "About Carene — I let her live.",
+      "responses": [
+        "You let another one walk. ...You know, one day that habit is going to bite you. But it might also be exactly why I'm still following you around, so. Don't get smug about it."
+      ],
+      "sayOnce": true,
+      "emotion": "Happy",
+      "setGlobal": {
+        "global": "MF_SofA1_CareneSpared",
+        "value": 1
+      },
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetStageDone",
+          "param": "Vigilant.esm:0x4D0376",
+          "stage": 100,
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_CareneSpared",
+          "comparison": "==",
+          "value": 0
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_CareneKilled",
+          "comparison": "==",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_1B_LearnRestoration",
+      "questEditorId": "MFSofVigAct1Controller",
+      "prompt": "About learning Restoration...",
+      "responses": [
+        "Restoration. You want me to learn Restoration. Healing, I can do — someone's always bleeding and it's usually you. But Turn Undead? My relationship with dead things is mostly that I make more of them.",
+        "Okay fine. But if I ever start lecturing anyone about Stendarr's light you have my full permission to hit me. Hard."
+      ],
+      "sayOnce": true,
+      "emotion": "Happy",
+      "setGlobal": {
+        "global": "MF_SofA1_LearnRestoration",
+        "value": 1
+      },
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetStageDone",
+          "param": "Vigilant.esm:0x005CE2",
+          "stage": 10,
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetInFaction",
+          "param": "SofiaFollower.esp:0x060480",
+          "runOn": "Subject",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_LearnRestoration",
+          "comparison": "==",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_1K_ChapterClose",
+      "questEditorId": "MFSofVigAct1Controller",
+      "prompt": "That's the job done. Holding up?",
+      "responses": [
+        "Right. That's done. Can we please stop somewhere? My feet are killing me, and before you say anything — yes I know yours are too but mine are considerably more important. I want something hot to drink, a bed that doesn't leak, and nobody waking me up unless something is actually on fire. Specifically not me. I'm going to need to recover from... whatever that was."
+      ],
+      "sayOnce": true,
+      "emotion": "Happy",
+      "setGlobal": {
+        "global": "MF_SofA1_ChapterClose",
+        "value": 1
+      },
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetStageDone",
+          "param": "Vigilant.esm:0x4D0376",
+          "stage": 130,
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_ChapterClose",
+          "comparison": "==",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_RealmHagsPond",
+      "questEditorId": "MFSofVigAct1Controller",
+      "prompt": "Charming pond. Thoughts?",
+      "responses": [
+        "Witches. Old, ugly, living in a pond. I mean I get it, it's hard out there for a woman, but you'd think they could at least find a pond that doesn't smell like this. Also what is that. Is that a foot. That's a foot."
+      ],
+      "sayOnce": true,
+      "emotion": "Disgust",
+      "setGlobal": {
+        "global": "MF_SofA1_RealmHagsPond",
+        "value": 1
+      },
+      "conditions": [
+        {
+          "function": "GetIsID",
+          "param": "SofiaFollower.esp:0x0012C4",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetInWorldspace",
+          "param": "Vigilant.esm:0x166857",
+          "runOn": "Subject",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetQuestRunning",
+          "param": "Vigilant.esm:0x17576E",
+          "comparison": "==",
+          "value": 1
+        },
+        {
+          "function": "GetGlobalValue",
+          "param": "MF_SofA1_RealmHagsPond",
+          "comparison": "==",
+          "value": 0
+        }
+      ]
+    }
+  ]
+}
