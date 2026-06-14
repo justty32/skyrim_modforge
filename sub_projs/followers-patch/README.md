@@ -27,7 +27,6 @@
 ## 狀態
 
 personality brief 已全部產出（2026-06-14，平行 agent 依 sofia-personality 範本）：
-- ✅ `auri-personality.md`、`morgaine-personality.md`、`onean-personality.md`、`neisa-personality.md`、`remiel-personality.md`、`recorder-personality.md`（後者從原 recorder-patch 移入）。
-- Serana：待 — 原版 Dawnguard Serana 中文線已抽（`../game-data/mods/Dawnguard_vanilla_CHS`，speaker 002B6C），Add-On 文本在 `../game-data/mods/SeranaDialogueAddOn(_CHS)`；brief 尚未寫。
+- ✅ 全 7 份：`auri`、`morgaine`、`onean`、`neisa`、`remiel`、`recorder`（從原 recorder-patch 移入）、`serana`（正典 Dawnguard + Serana Dialogue Add-On）。
 
 備註：Onean/Neisa 無英文原文（mod 本身即中文，EN 抽取為 mojibake，已修為可讀中文）；brief 以中文台詞為據。
