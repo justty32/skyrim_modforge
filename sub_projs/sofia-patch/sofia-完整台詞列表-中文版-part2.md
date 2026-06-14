@@ -1462,25 +1462,29 @@
 
 ### 翻譯覆蓋率
 
-**總進度：98% 完成**
-- Custom Topics: 92 個 — ✅ 100% 完全翻譯
+**本部分 (Part 2) 進度：Custom Topics 67 個 + Misc + Combat**
+- Custom Topics (此處): 67 個 — ✅ 完全翻譯
 - Misc: 6 個 — ✅ 100% 完全翻譯  
 - Combat: 5 個 — ✅ 100% 完全翻譯
 - Scene/Idle: ~98 個 — 尚未開始（可選補充項目）
 
+> **Part 1 + Part 2 + Part 3 合計**：Custom Topics 92 個 100% 完整。  
+> Part 1 含 12 個 topics；Part 2 含 67 個 topics；Part 3 補足遺漏的 25 個（首遇主線 + 婚禮）。
+
 ### 關鍵完成清單
 
-✅ 所有 Custom Topics (92 個) 全譯完成  
 ✅ 所有 Misc 對話 (6 個) 全譯完成  
 ✅ 所有 Combat 台詞 (5 個) 全譯完成  
 ✅ Personal Questions (28 個答案選項) 全譯完成  
 ✅ Bard Songs (6 首，24 行回應) 全譯完成  
-✅ Romance & Wedding 系列全譯完成  
+✅ Romance & Wedding 相關對話全譯完成  
 ✅ Taunt 系列 (58 行完整戰鬥嘲諷) 全譯完成  
-✅ Hello / Goodbye / Pickpocket / Knockover / Bumpinto / Aimedat 全譯完成
+✅ Hello / Goodbye / Pickpocket / Knockover / Bumpinto / Aimedat 全譯完成  
+✅ 首遇主線招募對話 (16 個 topics) — 見 Part 3  
+✅ 婚禮對話 (9 個 topics) — 見 Part 3
 
 ---
 
 **Last Updated**: 2026-06-14  
-**Translation Coverage**: **完全翻譯** (98%+，除Scene/Idle外)  
+**Translation Coverage**: Part 2 本身 100% 完整；Custom Topics 全集完整見 Part 1 + Part 2 + Part 3（Part 3 補足首遇主線 + 婚禮共 25 個 topics）
 **Quality**: 保持 Part 1 的雙語對照格式與 Sofia 角色聲音一致
