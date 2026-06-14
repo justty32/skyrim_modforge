@@ -1,0 +1,297 @@
+XP32 Maximum Skeleton Special Extended - XPMSSE
+Endorsements
+241,645
+Unique DLs
+4,035,544
+Total DLs
+17,115,298
+Total views
+23,085,757
+Version
+5.06
+Add media
+Track
+Endorsed
+Vote
+Download:
+
+Vortex
+Manual
+Last updated
+11 February 2024, 10:52PM
+Original upload
+01 November 2016, 10:01AM
+Created by
+Team XPMSE
+Uploaded by
+Groovtama
+Virus scan
+Safe to use
+Tags for this mod
+Animation - New
+Animation - Modified
+Modder's Resource
+Utilities for Modders
+Utilities for Players
+Skyrim Script Extender (SKSE)
+Xbox One version available
+Enderal
+View more... Tag this mod
+Description
+Files 2
+Images 20
+Videos 4
+Posts 6,384
+Logs
+About this mod
+You last downloaded a file from this mod on 23 Jul 2023
+XP32 Maximum Skeleton Special Extended is the update of XP32 Maximum Skeleton Extended for Skyrim Special Edition.
+
+Share
+Report Abuse
+Requirements
+Permissions and credits
+Translations TurkishSpanishPortuguesePolishMandarinKoreanItalian
+Mirrors
+Changelogs
+Mods using this mod (2765)
+Collections containing this mod
+Included in 1,852 collections
+View all
+
+Get hundreds of curated mods the easy way and make it 1-click with premium.
+
+Immersive & Adult
+
+559 mods
+Adult
+
+DOMAIN: An AE NSFW AIO pack by dae
+
+4,960 mods
+Adult
+
+Constellations - A true RPG
+
+2,297 mods
+Adult
+
+Blood and Lust
+
+1,447 mods
+Adult
+Description
+
+
+XP32 Maximum Skeleton Special  Extended  is the update of XP32 Maximum Skeleton Extended for Skyrim Special Edition..
+ 
+Requirement
+(no mod should overwrite XPMS(S)E, except when a mod author explicitly states it has to)
+
+XPMS(S)E has with Version 5 now 3 different installer versions Minimal, Basic and Extended.
+
+Minimal:
+No requirements
+
+Basic:
+Fores New Idles in Skyrim or Project New Reign - Nemesis Unlimited Behavior Engine
+
+Extended:
+Skeleton Rigs:
+- Fores New Idles in Skyrim or Project New Reign - Nemesis Unlimited Behavior Engine
+XPMS(S)E Racemenu:
+- Racemenu for SE/AE (Nexus) or Racemenu SE/AE (Patreon) (Early access to latest builds for first 3 days on Patreon)
+XPMS(S)E MCM:
+- SKSE64
+- Fores New Idles in Skyrim
+Nemesis users:
+XPMSSE - Nemesis - Papyrus Stack Fix and Optimised Scripts for XPMSSE These mod includes the changes for XPMS(S)E MCM to work with Nemesis and the later one fixes the co-save bloat the original XPMSE - Fixed Scripts mod causes. Don't install the Fixed Scripts mod if you want Proteus to work
+Pandora users:
+Pandora does not implement Alternative Animations, so XPMSE WILL NOT BE ABLE to change animations on the fly regardless of using Nemesis Patches or not.
+Alternatives, you can try if you use Pandora:
+With the XPMSE MCM: OAR﻿ and Weapon Styles
+As replacement of XPMSE MCM: OAR﻿ and Immersive Equipment Displays﻿ and Weapon Styles for IED﻿ instead.
+- Racemenu for SE/AE (Nexus) or Racemenu SE/AE (Patreon) (Early access to latest builds for first 3 days on Patreon) )
+Enhanced Character Edit[/url]\Vanilla users: extract the RaceMenu bsa and install only the nioverride.pex and the skee.dll/ini)
+
+Recommendation when also using Simple Dual Sheath: Auto skeleton patch for XPMSSE Left Hand Sheath Rotation Fix patches also followers and mods based on XPMS(S)E
+
+Installation
+
+
+Use a Mod Manager with Fomod Support:
+Mod Organizer or Vortex work for example
+  
+Uninstallation (completely):
+- Set all XPMSE related sliders in XPMS(S)E MCM and XPMS(S)E RaceMenu Plugin to default. If you forget this you can use NetImmerse Override Cleaner SE to fix things but it might delete more than it needs to
+- Uninstall XPMS(S)E in your mod manager.
+
+Features:
+
+
+Body and Physics Support:
+- Breast and Butt Physics [BBP]
+- Tender Breast and Butt Physics [TBBP]
+- 3 Breasts and Butt Bones[3BBB]
+- HDT Skinned Mesh Physics [HDT-SMP]
+- CBP Physics
+- CBPC - CBP Physics with Collisions for SSE and VR
+ 
+Mods compatible with support:
+- NiOverride Pose Adjustments + Objects SE
+- Deadly Mutilation 
+- Ecotone Dual Sheath
+- Flimsy Ragdolls (included in XPMSE)
+- Magic Nipple 
+- Realistic Ragdoll and Force
+- SAM - Shape Atlas for Men
+- SOS - Schlongs of Skyrim (Full and Lite)
+- The Joy of Perspective
+- UN7B
+- True Spear Combat - Weapons and Animations﻿
+
+Mods compatible without support:
+- Enhanced Character Edit SE (Comes with it's own XPMSE skeleton)
+
+Alternatives
+
+
+Style fitting animations with Weapon Styles - Draw-Sheath animations
+
+
+On the installation step "Ingame Customizing" choose the option "RaceMenu + XPMS(S)E MCM + Weapon Styles" or "XPMS(S)E MCM + Weapon Styles".
+
+Light ESPs
+
+
+XP32 Maximum Skeleton lite
+
+
+XP32 Maximum Skeleton lite allows you to turn XPMSSE into a light esp and keep all features regarding to Racemenu and SOS.
+
+On the installation step "Ingame Customizing" choose the option "RaceMenu". Deleteting files should not be necessary anymore.
+
+SOSRacemenu as light esp
+
+
+You can turn SOSRacemenu.esp into a light esp, when you install the patch from Loverslab
+
+XPMS(S)E Racemenu Plguin and MCM Features:
+
+XPMS(S)E Racemenu Plguin:
+- Weapon styles, moving weapons ingame
+- Scale\Position\Rotation sliders
+- Body related sliders
+- SOS\SAM related sliders
+- Female specific related sliders
+- Beast race specific related sliders
+- Third and first Person scaling
+- Extensible Follower Framework 4﻿ compatible
+
+XPMS(S)E MCM:
+- Weapon styles, moving weapons ingame  
+- Iinformation tab with debug information
+
+XPMS(S)E Racemenu Plguin - Weapons:
+Scale Module:
+- Fixes weapon scale problems with the game for females, thanks Bethesda, good job!
+- Compatible with weapon scale edits in Racemenu
+- Disabled with Enhanced Character Edit SE for compatitibility reasons
+Style Module:
+- Manages styles for player and non-Player characters
+- Manages Arrows\Bolts, Bow\Crossbow, Greatsword\Battleaxe\Warhammer and Magic styles dynamically for fixing visual issues and seperating shared nodes
+- Manages animation switching for styles, such animations are Arrows Draw, Bow Equip, Idle and Attack, Greatsword\Battleaxe\Warhammer Equip and Magic Attack, Cast, Concentration, Idle, Movement and Sprint 
+- Enhanced Character Edit SE supported
+
+XPMSE Lib:
+- Adds common functions for modders to use/copy from, like skeleton checks or manipuilation
+
+Styles (Weapon Positions) List
+
+Axe:
+0: Default
+1: Reversed Axes by Groovtama
+2: Axes on Back by Groovtama
+ 
+Sword:
+0: Default
+1: 1-Handed Swords on Back by xp32
+2: SWP 1-Handed Swords on Back by Metal-Gear-Rex
+3: FSM Swords turned edge up by fushimi
+4: Dual Swords on left waist by Ayame
+5: No More Dangling Swords by Akakus
+
+Dagger:
+0: Default
+1: Daggers on Back Hip by xp32
+2: Daggers on the Ankles by Metal-Gear-Rex
+ 
+Two-Handed (Greatsword and Battleaxe\Warhammer):
+0: Default
+1: SWP Two-Handed Weapons on Back by Metal-Gear-Rex
+2: FSM Two-Handed turned and on waist by fushimi
+ 
+Bow:
+0: Default
+1: Frostfall Bow by Chesko
+2: Reversed Better Bows by Messes With Wolves
+3: FSM Turn Bow by fushimi
+
+Arrow Quiver:
+0: Default
+1: Frostfall Quiver by Chesko
+2: Frostfall Quiver by xp32
+
+Crossbow:
+0: Default
+1: Frostfall Bow by Chesko
+
+Bolt Quiver:
+0: Default
+1: Frostfall Quiver by Chesko
+2: Left Hip Bolt by xp32
+3: Experimental Hip Bolt by xp32
+4: Aesthetic Bolt Quiver by IsharaMeradin
+
+Magic:
+0: Default
+1: Magic Nipple by ElPsyCongroo
+
+Shout:
+0: Default
+1: Schlong Shout by ElPsyCongroo
+
+Endorse those mod authors, show your support!
+Modders\Animators Section
+
+For Modders and Animation related content please see the "MISCELLANEOUS" files.
+ 
+How 2 make tails compatible with the XPMSE tail position sliders:
+1. Open the tail mesh into nifskope
+2. Replace the following node names with the new ones
+- "NPC Pelvis [Pelv]" => "Tail"
+- "NPC Spine [Spn0]" => "NPC Tail Spine [Spn0]"
+- "NPC L Thigh [LThg]" => "NPC Tail L Thigh [LThg]"
+- "NPC R Thigh [RThg]" => "NPC Tail R Thigh [RThg]"
+3. Save the tail mesh
+ 
+FNIS Bone numbers (this has nothing to do with the skeleton):
+- XPMSE HDT rig: 115 Bones
+- XPMSE BBP rig: 129 Bones
+ 
+Bone naming and prefix schema:
+Nodes for meshes and havok animations
+NPC => Mesh bones
+
+HDT Physic exclusive
+HDT => exclusive HDT Motion bones
+
+XPMSE feature exclusive nodes
+CME => Extra CME\RM bones, can be set with custom data when racemenu\vanilla is used ingame, when ECE is used they are off limits
+MOV => Weapon Socket nodes, do not rename them, can be set with custom data
+
+Modders Resource for Animators
+You are an animator? Why don't you check this? The biped, controller rigs by Bakafactory for the newest body types.
+Warning: You must use a bonelist from this mod, Otherwise your animation will be broken.
+
+Human Biped RIg by BakaFactory 1.11V

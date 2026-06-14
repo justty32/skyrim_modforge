@@ -1,0 +1,172 @@
+Directional Movement Keys - DMK
+Endorsements
+446
+Unique DLs
+12,393
+Total DLs
+18,019
+Total views
+43,886
+Version
+1.4.0
+Add media
+Track
+Endorse
+Vote
+Download:
+
+Vortex
+Manual
+Last updated
+04 June 2026, 10:37PM
+Original upload
+12 March 2026, 2:41AM
+Created by
+Viny
+Uploaded by
+xYZeroYx
+Virus scan
+Safe to use
+Tags for this mod
+Gameplay
+Utilities for Modders
+Utilities for Players
+ Tag this mod
+Description
+Files 2
+Images 2
+Videos 2
+Posts 172
+Bugs 0
+Logs
+Stats
+About this mod
+You last downloaded a file from this mod on 14 Jun 2026
+Movement map from player and NPCs, Camera map from player, so you can use as OAR conditions and other stuff :)
+
+Share
+Report Abuse
+Requirements
+Permissions and credits
+Translations Mandarin
+Changelogs
+Mods using this mod (4)
+Donations
+Collections containing this mod
+Included in 12 collections
+View all
+
+Get hundreds of curated mods the easy way and make it 1-click with premium.
+
+The Lustborn Void
+
+2,925 mods
+Adult
+
+Skyrim: Refined Edition
+
+132 mods
+Adult
+
+Wunduniik - Chapter VII
+
+4,586 mods
+Adult
+
+Cookies Modlist: SPANISH EDITION
+
+229 mods
+Adult
+I am just greatful to Jesus for all the help ❤️,
+Also want to thanks all the QTR Team which are Thiago, Raven﻿ and Quantum﻿ who helped me A LOT , 
+And all the others modders and friends that I met along the way!
+But specially BiteYouDeath ﻿(which made the shot from the cape btw)!
+You can vote for the next mod/update and also test betas here ﻿﻿
+Directional Movement Keys
+Yes CMF has this, you dont need this if you use CMF this one is a upgrade now 🫠
+But basically its Dtry Keys without the use of magic effects and stuck problems, Still that but a bit more with NPC handle and Camera movement,
+jus enter in SKSE Menu hit convert restart the game and you good, no need to do the conversion manually.
+Also suports if you dont use WASD as main movement.
+
+
+
+God bless ❤️
+
+Directional Map (8-Way Movement) + No Movement
+
+When creating or editing animations, the DirecionalCycleMoveset and
+Graph Variable uses the following integer values to represent directions:
+
+0 = No Movement
+1 = Forward
+2 = Forward-Right
+3 = Right
+4 = Backward-Right
+5 = Backward
+6 = Backward-Left
+7 = Left
+8 = Forward-Left
+Directional Camera Map (8-Way) + Neutral
+
+When creating or editing animations, the CameraMovementCMF
+Graph Variable uses the following integer values to represent directions:
+
+0 = No Movement
+1 = Forward
+2 = Forward-Right
+3 = Right
+4 = Backward-Right
+5 = Backward
+6 = Backward-Left
+7 = Left
+8 = Forward-Left
+
+Extended Complex Directions (Keyboard Exclusive)
+
+The following combinations represent complex inputs (simultaneous opposite keys or 3 keys at once).
+Note: These are Keyboard Only. Gamepads physically cannot trigger these states. If your moveset or logic reaches a point where you need to rely on these complex 3-key combinations, it is highly recommended to design a 2nd layer (using a modifier key) instead of relying on these states.
+
+
+Spoiler:  Show
+
+
+Extended Action Keys (Dtry Extended)
+These are evaluated using their respective Graph Variables Bool
+(Comparing to Int == 1 for True).
+Here is how you can access them via Keyboard and Gamepad (Controller):
+
+
+DMKLeftShift
+Keyboard: Left Shift
+Gamepad: Right Stick Left
+
+DMKLeftAlt
+Keyboard: Left Alt
+Gamepad: Right Stick Right
+
+DMKQ
+Keyboard: Q
+Gamepad: Right Stick Down
+
+DMKE
+Keyboard: E
+Gamepad: Right Stick Up
+
+DMKZ
+Keyboard: Z
+Gamepad: (No Gamepad Mapping)
+
+DMKX
+Keyboard: X
+Gamepad: (No Gamepad Mapping)
+
+
+F.A.Q
+
+"It works with X mod?"
+I dont know, I know it work with my mods but you need to try and see with yours 😅
+[b]Its safe to install and unistall anytime.﻿
+If you want to support me you can do here
+
+Source
+https://github.com/vinymayan/Direction-Movement

@@ -1,0 +1,149 @@
+A-Pose Bug Fix - Universal Behavior Runtime
+Endorsements
+4,846
+Unique DLs
+123,136
+Total DLs
+214,265
+Total views
+199,446
+Version
+v1.1.0-a
+Add media
+Track
+Endorse
+Vote
+Download:
+
+Vortex
+Manual
+Last updated
+17 March 2026, 8:25PM
+Original upload
+06 January 2026, 3:24AM
+Created by
+Monitor221hz
+Uploaded by
+Monitor221hz
+Virus scan
+Safe to use
+Tags for this mod
+Animation - Modified
+Bug Fixes
+ Tag this mod
+Description
+Files 1
+Images 2
+Videos 0
+Posts 210
+Bugs 0
+Logs
+Stats
+About this mod
+You haven't downloaded this mod yet
+SKSE plugin that corrects animation and behavior errors at runtime, effectively fixing A-pose freezes. Also adds out-of-the-box backwards compatibility with LE animations and behavior mods through just-in-time runtime conversion using the blazing fast Serde-HKX library.
+
+Share
+Report Abuse
+Requirements
+Permissions and credits
+Mods using this mod (1)
+Collections containing this mod
+Included in 91 collections
+View all
+
+Get hundreds of curated mods the easy way and make it 1-click with premium.
+
+DOMAIN: An AE NSFW AIO pack by dae
+
+4,960 mods
+Adult
+
+SKSE and Behaviours Essentials
+
+272 mods
+Adult
+
+Athena, the Goddess Collection
+
+930 mods
+Adult
+
+GTS - Dibellan Arts Sheogorath Style
+
+546 mods
+Adult
+
+﻿This SKSE plugin fixes the common "A-pose" bug that occurs in mod-lists. An A-pose is when characters freeze with their hands slanted at their sides to form the shape of an 'A'. There is an example in the image gallery.
+
+The A-pose is a symptom, not a cause, of errors in either the behavior graph or the loaded animations, so it fixes the various causes for an A-pose ever happening.
+
+This mod is the first of my multi-mod series to be released, Universal Behavior Runtime.
+
+
+
+What this fix does:
+
+When there's an in-game behavior loading error that would normally cause a permanent A-pose, intercept it.
+When there's an in-game animation loading error that would normally cause a temporary A-pose, intercept it.
+
+Then if the behavior/animation exists but is incompatible, it will convert the hkx into a SE/AE compatible format on the fly.
+
+If the resource is a missing behavior graph, a dummy graph is loaded instead.*
+
+Then, loading is allowed to continue successfully. No A-pose!
+
+As a (good) side effect, all LE behaviour and animation mods are now 100% compatible out-of-the-box with SE/AE, as long as this fix is installed.
+
+* If the resource is a missing animation, it is allowed to A-pose, to notify users of the error. That is because this mod cannot create the required animation out of thin air, for obvious reasons. It must be fixed manually.
+
+
+What this fix does NOT do:
+Magically create missing animations out of thin air.
+Magically fix behavior mods that were already broken in the first place.
+Provide one-on-one therapy and counseling for your modding related trauma.
+
+﻿
+SKSE
+Address Library for SKSE Plugins
+Skyrim SE/AE
+﻿VR is not supported (yet), as I don't have the address offsets. If anyone has those (check source for SE/AE offsets) please reach out.
+
+
+﻿1. Install with mod manager.
+﻿2. Done.
+
+
+﻿
+Compatible with behavior engines (recommended to use them). 
+Compatible with Open Animation Replacer.
+Compatible with Dynamic Animation Replacer.
+Compatible with Animation Queue Fix.
+
+Please keep in mind, if you intend to use this mod as a compatibility layer for LE behavior and animation mods, you must use Pandora; this is not because of any forced limitation on my end, but simply because Nemesis SE will refuse to process 32 bit behaviors as was standard at the time.
+
+
+
+﻿
+
+Performance impact?
+
+None. Conversions happen only once, and then the files remain compatible forever. 
+
+The entire conversion library is highly performant and written in Rust by my good friend SARDONYX, so all conversions complete in fractions of a second.
+
+Occasionally, with LE pose packs, my character moves through poses while moving, and then resumes their selected pose on stopping?
+
+Harmless quirk of quick-loading; should go away after restarting the game. 
+
+This mod creates files in my overwrite named *_packed.hkx?
+
+Those are temporary converted files. They're needed because the game can't reload the same behavior file twice in the same session if loading has failed for that file before. You can delete them in between game sessions; the original file has already been converted.
+
+Source?
+
+Here you go.
+
+
+Report bugs on the GitHub and not in the posts section please, so that it's easier for me to stay organized.
+

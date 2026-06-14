@@ -1,0 +1,101 @@
+Auto Skeleton Patch - Universal Behaviour Runtime
+Endorsements
+2,115
+Unique DLs
+87,892
+Total DLs
+139,669
+Total views
+172,895
+Version
+v1.0.4
+Add media
+Track
+Endorse
+Vote
+Download:
+
+Vortex
+Manual
+Last updated
+27 April 2026, 1:19AM
+Original upload
+07 April 2026, 7:45PM
+Created by
+Monitor221hz
+Uploaded by
+Monitor221hz
+Virus scan
+Safe to use
+Tags for this mod
+ Tag this mod
+Description
+Files 1
+Images 1
+Videos 0
+Posts 252
+Bugs 0
+Logs
+Stats
+About this mod
+You haven't downloaded this mod yet
+SKSE plugin that patches humanoid and creature skeleton behaviour for skeleton mods automatically at runtime, removing the need for a behaviour engine for skeleton support. Compatible with XPMSE and other skeleton mods.
+
+Share
+Report Abuse
+Requirements
+Permissions and credits
+Changelogs
+Mods using this mod (1)
+Collections containing this mod
+Included in 82 collections
+View all
+
+Get hundreds of curated mods the easy way and make it 1-click with premium.
+
+DOMAIN: An AE NSFW AIO pack by dae
+
+4,960 mods
+Adult
+
+Blood and Lust
+
+1,447 mods
+Adult
+
+Unadulterated Overhaul
+
+1,389 mods
+Adult
+
+Athena, the Goddess Collection
+
+930 mods
+Adult
+
+Using skeleton mods without a behaviour patch will cause weird blending issues, the worst offenders being:
+
+Hand not moving while casting in motion
+Not playing block animation while strafing
+Wonky bow animations﻿
+Freezing
+CTD
+
+This mod just patches the behaviour dynamically so that you never have to worry about behaviour patching when using skeleton mods. This also means that skeleton mods itself no longer need behaviour engine patching, they can just have this mod installed. 
+
+TL;DR: Behavior patch for Skeleton mod like XPMSSE but written in SKSE and compatible WITH ANY Skeleton. You still need behaviour engines for other types of animation mods!
+
+Source Code
+
+SKSE
+Address Library for SKSE Plugins﻿
+Any Skeleton mod (like XPMSE)
+
+Install:
+1. Download and install with mod manager
+2. Enable mod. 
+
+You may use this mod with any version of Pandora but DO NOT tick the pandora for xpmsse patch as this mod does the same thing but stabler. You have been warned.
+
+
+Compatible with FNIS, Nemesis, Pandora (but do not use universal xpmsse patch)

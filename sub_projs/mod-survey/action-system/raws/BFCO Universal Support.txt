@@ -1,0 +1,113 @@
+BFCO Universal Support
+Endorsements
+2,620
+Unique DLs
+196,918
+Total DLs
+405,945
+Total views
+240,637
+Version
+1.0.0
+Add media
+Track
+Endorse
+Vote
+Download:
+
+Vortex
+Manual
+Last updated
+23 May 2024, 5:23PM
+Original upload
+23 May 2024, 5:23PM
+Created by
+doodlez maxsu
+Uploaded by
+doodlum
+Virus scan
+Safe to use
+Tags for this mod
+Skyrim VR
+ Tag this mod
+Description
+Files 1
+Images 1
+Videos 0
+Posts 45
+Bugs 3
+Logs
+Stats
+About this mod
+You last downloaded a file from this mod on 14 Jun 2026
+BFCO recovery DLL ported to all game versions.
+
+Share
+Report Abuse
+Requirements
+Permissions and credits
+Mods using this mod (2)
+Collections containing this mod
+Included in 58 collections
+View all
+
+Get hundreds of curated mods the easy way and make it 1-click with premium.
+
+Blood and Lust
+
+1,447 mods
+Adult
+
+Unadulterated Overhaul
+
+1,389 mods
+Adult
+
+GTS - BFCO Combat Overhaul Addon
+
+58 mods
+
+Beginner's Guide to 1.6.1170
+
+305 mods
+OVERVIEW
+
+BFCO recovery DLL ported to all game versions.
+
+      
+
+BFCO's recovery SKSE plugin is used to add "recovery" frames to attack animations, which lets the player exit attacks early via directional inputs on supported movesets. 
+
+This plugin should be identical to the original, just with AE/VR support.
+
+This uses the movement vector before True Directional Movement modifies them. Other mods may be able to modify this, but in such a scenario we probably want to recover quickly anyway.
+
+
+REQUIREMENTS
+
+BFCO - Attack Behavior Framework
+
+SE/AE
+Address Library for SKSE Plugins
+
+VR
+VR Address Library for SKSEVR
+
+
+COMPATIBILITY
+
+Compatible with all game versions, although VR is untested and probably useless.
+
+
+SOURCE
+
+doodlum/skyrim-mco-stopgap (github.com)
+https://github.com/doodlum/skyrim-mco-stopgap
+
+CREDITS
+
+dTry for the original mod as well as his other plugins I could learn from. He can do whatever he wants with the source code here.
+distar for information and testing.
+Ersh for his Dodge Framework source code.
+Converting Thumbstick Input to Useful N-Directional Input blog post for the math (not actually needed but looks fancier).
+Maxsu for the original plugin.

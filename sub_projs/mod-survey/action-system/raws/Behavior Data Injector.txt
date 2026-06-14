@@ -1,0 +1,117 @@
+Behavior Data Injector
+Endorsements
+18,042
+Unique DLs
+1,071,808
+Total DLs
+3,601,010
+Total views
+1,856,286
+Version
+v0.13
+Add media
+Track
+Endorse
+Vote
+Download:
+
+Vortex
+Manual
+Last updated
+04 November 2022, 8:29PM
+Original upload
+04 November 2022, 8:29PM
+Created by
+Maxsu and Dropkicker
+Uploaded by
+maxsu2017
+Virus scan
+Safe to use
+Tags for this mod
+Modder's Resource
+Tutorials for Modders
+Utilities for Modders
+Utilities for Players
+Skyrim Script Extender (SKSE)
+ Tag this mod
+Description
+Files 2
+Images 2
+Videos 1
+Posts 161
+Bugs 2
+Logs
+Stats
+About this mod
+You last downloaded a file from this mod on 14 Jun 2026
+SKSE plugin that allows you to add new animation variables & events via config files without nemesis patch.
+
+Share
+Report Abuse
+Requirements
+Permissions and credits
+Mods using this mod (107)
+Collections containing this mod
+Included in 556 collections
+View all
+
+Get hundreds of curated mods the easy way and make it 1-click with premium.
+
+Gate To Sovngarde
+
+1,945 mods
+Adult
+
+DOMAIN: An AE NSFW AIO pack by dae
+
+4,960 mods
+Adult
+
+Constellations - A true RPG
+
+2,297 mods
+Adult
+
+Blood and Lust
+
+1,447 mods
+Adult
+﻿
+
+MOD Descriptions:
+
+BDI - Behavior Data Injector is a SKSE plugin that allows mod authors to inject their custom graph variables (a.k.a animation variables) and animation events into behavior files during game runtime, without the necessary to modify behavior file or create an nemesis patch.
+
+For Graph Variable:
+You can add three type of graph variable: Int, bool, float into behavior projects via BDI. The added variables are all the same as the vanilla existed one, they can be set & get via vanilla papyrus functions or condition functions.
+
+Mod Example of adding graph variable: Stagger Direction Fix
+
+For Animation Event:
+You can add new animation event into behavior projects via BDI, the added event then could be trigger by animation annotations.
+
+Mod Example of adding animation event: Payload Interpreter
+
+How To Create Config Files:
+Check this doc to learn more detail about how to create config files for BDI.
+You can also join my discord for further communication.
+
+
+
+Installation:
+
+Requirement:  
+(1) SKSE for the correspond game version.
+(2) Address Library for SKSE Plugins﻿
+
+Download and Install the mod files with mod manager.
+
+source code
+https://github.com/max-su-2019/BehaviorDataInjector
+
+Credit:
+DropKicker as the co-developer of the mod.
+Ersh, Atmo, alexsylex for gave me useful infos during developing.
+Fudgyduff﻿ for his CommonlibSSE.
+CharmedBaryon  for his CommonlibSSE-NG.
+WilliamsWang﻿﻿ for create artwork picture for the mod.

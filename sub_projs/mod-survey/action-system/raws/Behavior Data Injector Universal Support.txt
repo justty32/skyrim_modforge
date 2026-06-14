@@ -1,0 +1,101 @@
+Behavior Data Injector Universal Support
+Endorsements
+13,782
+Unique DLs
+841,679
+Total DLs
+2,256,609
+Total views
+1,221,589
+Version
+v0.13.0.1
+Add media
+Track
+Endorse
+Vote
+Download:
+
+Vortex
+Manual
+Last updated
+25 March 2023, 6:10AM
+Original upload
+04 November 2022, 9:26PM
+Created by
+doodlum
+Uploaded by
+doodlum
+Virus scan
+Safe to use
+Tags for this mod
+Modder's Resource
+Utilities for Modders
+Utilities for Players
+Skyrim Script Extender (SKSE)
+ Tag this mod
+Description
+Files 1
+Images 1
+Videos 1
+Posts 164
+Bugs 8
+Logs
+Stats
+About this mod
+You last downloaded a file from this mod on 14 Jun 2026
+The latest Behavior Data Injector SKSE plugin with added AE and VR support with a PDB for debugging.
+
+Share
+Report Abuse
+Requirements
+Permissions and credits
+Mods using this mod (38)
+Collections containing this mod
+Included in 524 collections
+View all
+
+Get hundreds of curated mods the easy way and make it 1-click with premium.
+
+Gate To Sovngarde
+
+1,945 mods
+Adult
+
+DOMAIN: An AE NSFW AIO pack by dae
+
+4,960 mods
+Adult
+
+Constellations - A true RPG
+
+2,297 mods
+Adult
+
+Blood and Lust
+
+1,447 mods
+Adult
+Buy Maxsu a Coffee
+
+OVERVIEW
+
+The latest Behavior Data Injector SKSE plugin with added AE and VR support with a PDB for debugging.
+
+This offers no benefit to SSE users over the original.
+Report any issues with this version of the SKSE plugin on this mod page. Do not harass the original author about supporting AE.
+This version of the SKSE plugin may diverge from the original in the future, in order to keep compatibility if Skyrim is updated again.
+
+This is mainly useful for providing optional data that animation and ESP mods (conditions, papyrus) can use. For example, a "warmth" value could be stored on an actor and used by DAR animations. As well as being a simple way to add serialiseable primitive values to actors. For example a "poise" mod could add a "poise health" variable to any actor in the game without tons of behaviour patches.
+
+Check out the original page for more information.
+
+
+REQUIREMENTS
+
+Behavior Data Injector
+
+
+SOURCE
+
+https://github.com/doodlum/BehaviorDataInjector
+max-su-2019/CommonLibSSE/tree/NG

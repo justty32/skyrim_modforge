@@ -32,14 +32,24 @@
 
 > ⚠️ survey agent 對「ModForge 缺什麼」是**推斷**、未查 code，已知有誤判（如 Missives 說「不能生成 alias」其實可——ModForge 有 forced/uniqueActor/createObject/findMatching/alias-script）。roadmap 的缺口清單**待一次 code 驗證 pass** 校正。各 finding 講「mod 怎麼運作」的部分可信。
 
-## 動作 / 動畫系統框架
+## 動作 / 動畫系統框架（2026 完整堆疊）
 
-| 框架 | 文件 | 角色 |
-| --- | --- | --- |
-| 中樞 | [action-system/README.md](action-system/README.md) | 四層堆疊地圖（Pandora→OAR→.hkx→動作 mod）；新動作系統調查的家 |
-| Pandora Behaviour Engine+ | [action-system/pandora.md](action-system/pandora.md) | 2026 行為引擎標準（取代 Nemesis/FNIS）；ModForge shell-out 整合 |
-| Open Animation Replacer | [action-system/oar-replacer-guide.md](action-system/oar-replacer-guide.md) | 條件式動畫替換實作指南 |
-| Custom Skills Framework | [custom-skills-framework.md](custom-skills-framework.md) + [custom-skill-tree-guide.md](custom-skill-tree-guide.md) | 自訂技能樹分析 + 實作指南（roadmap 功能項） |
+中樞 [action-system/README.md](action-system/README.md) 有**五層堆疊地圖**（骨架→行為引擎→行為資料注入→動畫選擇→招式框架）+ 跨層「動畫驅動狀態」鐵三角 + ModForge 生成機會。原始 mod 頁文字存 `action-system/raws/`。
+
+| 層 | 框架 | 文件 | ModForge 可生成性 |
+| --- | --- | --- | --- |
+| 0 骨架 | XPMSSE | [findings/xpmsse.md](action-system/findings/xpmsse.md) | 純前置 |
+| 1 引擎 | Pandora | [action-system/pandora.md](action-system/pandora.md) | shell-out |
+| 1 引擎 | Universal Behavior Runtime（A-Pose Fix + Auto Skeleton） | [findings/universal-behavior-runtime.md](action-system/findings/universal-behavior-runtime.md) | 前置（runtime 容錯/LE→SE 轉換） |
+| 2 注入 | Behavior Data Injector（+Universal Support） | [findings/behavior-data-injector.md](action-system/findings/behavior-data-injector.md) | **config 可生成（roadmap）** |
+| 2 注入 | Payload Interpreter | [findings/payload-interpreter.md](action-system/findings/payload-interpreter.md) | annotation 屬動畫管線 |
+| 2 注入 | Animation Motion Revolution | [findings/animation-motion-revolution.md](action-system/findings/animation-motion-revolution.md) | annotation 屬動畫管線 |
+| 3 選擇 | Open Animation Replacer | [action-system/oar-replacer-guide.md](action-system/oar-replacer-guide.md) | **結構可生成（roadmap，最高槓桿）** |
+| 3 選擇 | Directional Movement Keys | [findings/directional-movement-keys.md](action-system/findings/directional-movement-keys.md) | 前置；其 graph var 供 OAR 條件 |
+| 4 招式 | BFCO（攻擊框架，+Universal Support） | [findings/bfco.md](action-system/findings/bfco.md) | OAR 變體 config 可生成 |
+| 4 招式 | SCAR（NPC 連段 AI） | [findings/scar.md](action-system/findings/scar.md) | AI 不可生成 |
+
+| 自訂技能樹 | Custom Skills Framework | [custom-skills-framework.md](custom-skills-framework.md) + [custom-skill-tree-guide.md](custom-skill-tree-guide.md) | 自訂技能樹分析 + 實作指南（roadmap 功能項） |
 
 ## 修復型
 

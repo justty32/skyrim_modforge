@@ -1,0 +1,128 @@
+Payload Interpreter
+Endorsements
+26,970
+Unique DLs
+1,496,124
+Total DLs
+5,186,735
+Total views
+2,834,959
+Version
+1.0.1
+Add media
+Track
+Endorse
+Vote
+Download:
+
+Vortex
+Manual
+Last updated
+02 June 2023, 10:26AM
+Original upload
+19 March 2022, 6:57AM
+Created by
+dTry alexsylex
+Uploaded by
+dTry
+Virus scan
+Safe to use
+Tags for this mod
+Modder's Resource
+Utilities for Modders
+Skyrim Script Extender (SKSE)
+ Tag this mod
+Description
+Files 1
+Images 1
+Videos 4
+Articles 1
+Posts 477
+Bugs 7
+Logs
+Stats
+About this mod
+You last downloaded a file from this mod on 14 Jun 2026
+SKSE plugin that allows runtime interpretation of animation payloads.
+
+Share
+Report Abuse
+Requirements
+Permissions and credits
+Changelogs
+Mods using this mod (281)
+Collections containing this mod
+Included in 753 collections
+View all
+
+Get hundreds of curated mods the easy way and make it 1-click with premium.
+
+Immersive & Adult
+
+559 mods
+Adult
+
+Gate To Sovngarde
+
+1,945 mods
+Adult
+
+DOMAIN: An AE NSFW AIO pack by dae
+
+4,960 mods
+Adult
+
+Blood and Lust
+
+1,447 mods
+Adult
+For mod users:
+If you're here because this mod is some other mod's requirement, just download it. This mod does nothing on its own and it doesn't bite.
+
+Installation:
+Install using MO2, run the nemesis patch and you're good to go.
+
+For mod authors:
+Refer to the documentation on github﻿.
+
+
+Credits:
+DK for DKUtil
+Ryan for clib
+People of RE discord
+Distar for the behavioral patch and his constant harassment
+绝伦少年 for the cover image
+
+Source:
+GitHub﻿
+https://github.com/D7ry/PayloadInterpreter
+
+Bug Report:
+How to report a bug
+Endorsements
+12
+Total views
+34.4k
+Endorse
+Before posting the bug, make sure that the mod is directly related to the occurance of the bug by:
+1. make a save where the bug happens
+2. disable the mod
+3. launch the game
+4. make sure the bug isn't happening anymore. If it still happens, the mod isn't the cause.
+5. re-enable the mod
+6. launch the game, load the same save
+7. the bug comes back
+
+Please provide adequate information for me to actually be able to help you! Report bugs in the following format:
+
+Title:
+
+brief description of your issue
+
+Text:
+Environment: mod manager you're using(MO2/Vertex/NMM); game version(AE/SE); operating system(windows7/8/9/10.../Linux/MacOS)
+Details: what were you doing when the bug happens? what is happening in game? is there anything specific happening right before/after the bug happens?
+Relevant info: what do you think could be relevant to the occuring of the bug?
+Attempt to debug: what have you tried so far to resolve the bug? 
+Crash log: if the game crashed and you doubt this mod is the culprit, provide a link to either a .net﻿ crashlog(SSE) or a crash logger﻿ log(AE). Don't directly paste your crashlog in text!
+Modlist: provide a link ﻿to your modlist. Don't directly paste your modlist in text!How to report a bug

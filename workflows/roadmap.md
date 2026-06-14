@@ -19,8 +19,13 @@
   - **下一步**：idea → 寫 [spec](specs/README.md)（spec 欄位長相草案已在指南 §10），再 plan → build。
 - **OAR 動畫替換生成（Open Animation Replacer）** — 讓 ModForge 從 spec 生成一個 OAR 替換 mod（condition-based 動畫替換，DAR 後繼、最高槓桿的動畫整合目標）。分析見 [idea/animation/integration-layer.md](idea/asset-pipelines/animation/integration-layer.md) §5，實作指南見 [mod-survey/action-system/oar-replacer-guide.md](../sub_projs/mod-survey/action-system/oar-replacer-guide.md)。
   - **可生成範圍（純確定性 folder+JSON，不需 esp）**：`OpenAnimationReplacer\<Mod>\<Submod>\` 樹 + replacer-mod/submod `config.json`（name/description/priority/conditions）。OAR 的 condition 模型對應 ModForge 既有 CTDA condition 支援；form-ref 用 `Plugin|FormID`。variants/presets/functions/進階 submod 設定可分階段補。
+  - **已知可用 graph-variable 條件源**（生「方向/招式變體動畫包」的一等輸入，2026-06-14 action-system 批次浮現）：`BFCO_iAttackVariants`（[BFCO](../sub_projs/mod-survey/action-system/findings/bfco.md) 攻擊變體，附 `CompareValues` JSON 範例）、`DirecionalCycleMoveset`/`CameraMovementCMF` 八向整數（[DMK](../sub_projs/mod-survey/action-system/findings/directional-movement-keys.md)）。→ 八向移動包、N 段連擊包可模板量產。
   - **邊界**：`.hkx` 動畫本體不在此功能內（屬 [animation/havok-blender](idea/asset-pipelines/animation/havok-blender.md) 線）；OAR 需先跑一次 Nemesis/Pandora 建 base behavior（玩家端前置）。
   - **下一步**：idea → [spec](specs/README.md)（指南 §10 有 spec 欄位草案）→ plan → build。
+- **BDI config 生成器（Behavior Data Injector）** — 讓 ModForge 從 spec 生成 BDI config，往 behavior project 注入自訂 graph variable（Int/Bool/Float）+ animation event，**免 Nemesis/behavior patch**。調查見 [mod-survey/action-system/findings/behavior-data-injector.md](../sub_projs/mod-survey/action-system/findings/behavior-data-injector.md)。
+  - **價值**：給 NPC/follower 加自訂狀態變數（戰意、好感階段…）供動畫 annotation 與 OAR 條件讀，全程不碰 behavior binary、不寫 esp script——與 OAR 生成器是同一條「動畫驅動狀態」鏈的上游（鏈圖見 [action-system README](../sub_projs/mod-survey/action-system/README.md)）。
+  - **scope**：`{project, variables:[{name,type,default}], events:[name]}` → BDI config。**前置：先核對 BDI 0.13 的 config 檔實際格式**（GitHub max-su-2019/BehaviorDataInjector）——目前僅知概念、未驗格式。
+  - **邊界**：動畫端的 `PIE.@SGVI/SGVF` 與 AMR `animmotion` annotation 屬 hkanno 動畫管線（非 esp record），僅在 ModForge 接 hkanno 工具鏈後才談生成。
 - **ModForge ↔ Pandora 整合（behavior 生成步驟）** — OAR/自訂動畫的 behavior 基底由 Pandora 產生（2026 取代 Nemesis/FNIS）。調查見 [mod-survey/action-system/pandora.md](../sub_projs/mod-survey/action-system/pandora.md)。模型＝**shell-out**（同 ModForge 驅動 Papyrus/xLODGen）：產出 records+OAR config+.hkx → `Pandora --auto_run --auto_close -o … --tesv:…`。**不能 library 嵌入**（plugin API 不穩）。**spike（需實機）**：① Manjaro 上 native dotnet vs Proton-wrap；② 自動化跑能否 displayless（headless 是 Pandora 未解 feature request，可能需 xvfb）。
 
 ## mod-survey 浮現的 record/生成缺口（2026-06-14，按價值）
