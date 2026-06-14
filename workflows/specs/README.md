@@ -17,7 +17,7 @@
 
 | 設計 | 日期 | 狀態 | 對應 plan |
 | --- | --- | --- | --- |
-| [action-system-asset-generation-design.md](action-system-asset-generation-design.md)（OAR moveset + BDI config + PIE 巨集生成） | 2026-06-14 | **草案,待自審** | 尚未 |
+| [action-system-asset-generation-design.md](action-system-asset-generation-design.md)（OAR moveset + BDI config + PIE 巨集生成） | 2026-06-14 | **草案,待自審**（plan Task 0 收斂） | [plans/action-system-asset-generation.md](../plans/action-system-asset-generation.md) |
 
 > 草案依據 [mod-survey/action-system/](../../sub_projs/mod-survey/action-system/) 的實檔驗證調查;下一步是 spec 自審 → [plan](../plans/README.md)。
 

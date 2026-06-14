@@ -12,7 +12,11 @@
 
 ## 現役計畫
 
-**目前無現役計畫**——已落地的計畫一律移進 [archive/](archive/README.md)（凍結、不在維護鏈、不套拆檔門檻）。下一個計畫待「身份系統 ③ 聲望/行為追蹤」定設計後才寫（見 [roadmap](../roadmap.md)）。
+| 計畫 | 日期 | 狀態 | 對應 spec |
+| --- | --- | --- | --- |
+| [action-system-asset-generation.md](action-system-asset-generation.md)（OAR moveset + BDI config + PIE 巨集生成） | 2026-06-14 | **待動工**（Task 0 spec 自審先行） | [specs/action-system-asset-generation-design.md](../specs/action-system-asset-generation-design.md) |
+
+> 7 個 task，MVP = OAR 生成器（含 `npcMoveset` 糖 + 條件序列化器）+ BDI config，全離線可測（`.hkx` 自備、Blender→hkx 牆出範圍）。
 
 新計畫命名 **`<功能>.md`（不含日期）**，日期記在現役 index 表的一欄；落地後即移 [archive/](archive/README.md)。（archived 舊檔仍保留歷史日期前綴、凍結不動。）
 
