@@ -1,0 +1,265 @@
+# ModForge spec — AI 套件與天氣
+
+← [index](SPEC-index.md)
+
+### packages — AI 套件（NPC 會「做」什麼）
+一個 `packages` 項目就是一個 AI 套件。Skyrim 的 PACK 記錄是**模板驅動**的：你透過 `template` 引用一個
+原版的「程序模板」form，而該模板定義了資料輸入的 schema
+（slot 索引 + 型別）。我們的套件則為模板定義的那些 slot 填入輸入值。
+
+ModForge 目前實作了八個模板——**Sandbox**（`Skyrim.esm:0x01C254`）、**Sleep**
+（`Skyrim.esm:0x019717`）、**Travel**（`Skyrim.esm:0x016FAA`）、**UseMagic**（`Skyrim.esm:0x0504F5`）、
+**Patrol**（`Skyrim.esm:0x017723`）、**Follow**（`Skyrim.esm:0x019B2C`）、**Escort**
+（`Skyrim.esm:0x023B73`）以及 **SitTarget**（`Skyrim.esm:0x0A9277`）。撰寫對應的子物件
+（`sandbox` / `sleep` / `travel` / `useMagic` / `patrol` / `follow` / `escort` / `sitTarget`），build
+就會填入該模板的 Data slot。若要指向一個 ModForge 尚未處理的
+模板（UseWeapon / …），仍要設定 `template`；套件會產出
+結構上有效但沒有任何 Data 覆寫（套用模板預設值）的結果並附上警告。在加入支援之前，可用
+`packagediag <Skyrim.esm> <0xFORMID>` 探查任一模板的具名 slot schema。
+
+**在特定 ref 上的 Sandbox 與 Travel 的差別：** Sandbox 的 `location` ref 讓 NPC 在那個 ref
+**周圍**遊蕩／進食／坐下（radius 涵蓋附近的家具）。Travel 的 `place` ref 讓 NPC 實際
+**走到**那個 ref，並在其 `radius` 範圍內停下。常見的串接：在同一個 NPC 的 `packages` 清單上放一個 Travel
+套件加一個 Sandbox 套件（Travel 在前）——Travel 一直執行到 NPC 抵達，
+然後由 Sandbox 接手。
+
+```jsonc
+{ "editorId": "MF_HangAtSpotPackage",
+  "template": "Skyrim.esm:0x01C254",        // Sandbox procedure template (find by EditorID "Sandbox")
+  "preferredSpeed": "Walk",
+  "interruptFlags": [                        // the lifelike-NPC switches — leave most ON
+    "HellosToPlayer", "RandomConversations", "ObserveCombatBehavior",
+    "GreetCorpseBehavior", "ReactionToPlayerActions", "FriendlyFireComments",
+    "AggroRadiusBehavior", "AllowIdleChatter", "WorldInteractions" ],
+  "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 0, "dayOfWeek": "Any" },
+  "sandbox": {
+    "radius": 1024,                          // wander distance from the anchor
+    "location": "",                           // empty -> LocationFallback (NPC's editor location);
+                                              // a ref -> LocationTarget anchored at that placed ref
+    "allowEating": true,  "allowSleeping": false,  "allowConversation": true,
+    "allowIdleMarkers": true, "allowSitting": true, "allowWandering": true,
+    "allowSpecialFurniture": true, "energy": 50.0 } }
+```
+然後掛到一個 NPC 上：`"npcs": [{ ..., "packages": [ "MF_HangAtSpotPackage" ] }]`。
+
+**為什麼是這些輸入：** Sandbox 模板為它們命名（見 `packagediag <Skyrim.esm> 0x01C254`）。
+`location: ""` 是最安全的預設值——引擎會把 sandbox 錨定在 NPC 被放置的位置。
+一個特定的 `location` ref（一個 REFR/ACHR FormID）會把 sandbox 錨定在那個 reference 的位置。
+`Allow Sleeping = false` 讓 NPC 全天候 24/7 保持活躍（適合在遊戲內可見的測試）；若要正常的
+日夜循環就保持為 true。`Energy = 50` 是原版預設值（越高越愛遊蕩）。
+
+**Travel 模板（`Skyrim.esm:0x016FAA`）—— `travel` 子物件：**
+```jsonc
+{ "editorId": "MF_GoToWhiterun",
+  "template": "Skyrim.esm:0x016FAA",       // Travel
+  "preferredSpeed": "Walk",
+  "interruptFlags": [ "HellosToPlayer", "AllowIdleChatter" ],
+  "travel": {
+    "place": "Skyrim.esm:0x0567F7",        // a ref to a placed REFR/ACHR (the destination)
+    "radius": 256,                          // arrive within this many units (0 = exact point)
+    "rideHorse": false,                     // template default
+    "preferPath": false } }                 // template default
+```
+Travel 只有 3 個 slot：`Place to Travel` / `Ride Horse if possible?` / `Prefer Preferred Path?`。
+**沒有 `place` ref，NPC 就不會真的移動**——引擎會退回 NearSelf
+（退化情形：移動到你已經所在的位置）而套件變成無作用。在它之後串接一個 Sandbox 套件
+（在 NPC 的 `packages` 清單中以較低優先序），讓 NPC 抵達後有事可做。
+
+**UseMagic 模板（`Skyrim.esm:0x0504F5`）—— `useMagic` 子物件：**
+```jsonc
+{ "editorId": "MF_AltarRitual",
+  "template": "Skyrim.esm:0x0504F5",       // UseMagic
+  "preferredSpeed": "Walk",
+  "interruptFlags": [ "HellosToPlayer", "AllowIdleChatter" ],
+  // For CONTINUOUS casting BOTH knobs are required (see "It.18 gotchas" below):
+  "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 1440, "dayOfWeek": "Any" },
+  "useMagic": {
+    "spell":           "Skyrim.esm:0x043324",   // REQUIRED — FormLink to a SPEL record (Candlelight)
+    "location":        "",                       // optional placed-ref (where to stand); empty -> NearSelf
+    "radius":          256,                      // location radius (template default 500)
+    "target":          "",                       // optional placed-ref (who to cast on); empty -> PackageTargetSelf
+    "holdWhenBlocked": true,
+    "castTimeMin":     1.5, "castTimeMax":     2.5,
+    "cooldownTimeMin": 8.0, "cooldownTimeMax": 12.0,
+    "numToCastMin":    1, "numToCastMax":    1000,
+    "dualCast":        false } }
+```
+UseMagic 有 11 個作用中的 slot（2-12）。**「Spell」slot 是一個指向特定 SPEL 記錄的
+`PackageTargetObjectID` FormLink**——不是 category enum。（`Spell` 實作 `IObjectId`。）當 `target`
+為空時，build 會把 slot 4（Target）寫成 `PackageTargetSelf`，比照原版的自我施法套件
+如 `WCollegePracticeCastWard`；若要對 X 施法，把 `target` 設為一個 placed-ref（原版的
+`WCollegeOnmundPracticeFlames12x4` 指向一個目標假人）。
+
+**It.18 的陷阱（用慘痛代價學到的——3 個遊戲內回合）：**
+1. **Slot 3（Spell）必須是 `PackageTargetObjectID`，不是 `PackageTargetObjectType`。** 模板
+   預設顯示 `PackageTargetObjectType`（一個 category enum），但全部 46 個原版 UseMagic 套件
+   都用 `PackageTargetObjectID`（FormLink）覆寫它。enum 形式能 build、能正常 dump，但在遊戲內無作用。
+2. **Slot 4（Target）必須設定**——自我施法用 `PackageTargetSelf`，否則用
+   `PackageTargetSpecificReference`。讓它停在模板的 `PackageTargetLinkedReference`
+   退路值，實務上同樣會無作用。
+3. **`numToCastMax` 是整個套件生命週期的施法總數**，不是每循環。當 `schedule.durationInMinutes=0`
+   （預設）時，套件會在達到配額的那一刻完成。要連續施法，請同時使用
+   一個很高的上限（像原版 Onmund 的 1000）以及一個非零的 `schedule.durationInMinutes`
+   （例如 1440 = 24h）。
+4. **戰鬥會搶占 UseMagic。** 原版行為——對一個閒置的儀式施法者而言這是正確的（NPC 會切換成
+   攻擊而不是站著施放 Candlelight）。要強迫施法繼續（例如一個 boss 儀式），
+   像原版 `SprigganCallOverride` 那樣加上 `flags: [ "IgnoreCombat" ]`。
+5. **用 `pkgsbytemplate <plugin> <0xFORMID>`** 掃描一個 master 中所有使用某個模板的套件。
+   之所以必要，是因為 `find` 只比對 EditorID，而許多基於模板的套件
+   （例如 `WhiterunTempleCastHealingSpellSoldier`）的 EditorID 並不帶有模板名稱。
+
+**SitTarget 模板（`Skyrim.esm:0x0A9277`）—— `sitTarget` 子物件：**
+```jsonc
+{ "editorId": "MF_BorinSit",
+  "template": "Skyrim.esm:0x0A9277",       // SitTarget ("go use that furniture")
+  "preferredSpeed": "Walk",
+  "sitTarget": {
+    "target":       "InnChair",            // REQUIRED — ref to a placed FURNITURE reference
+                                           //   (vanilla REFR or an in-spec placement editorId)
+    "waitTime":     0,                     // seconds to stay seated (0 = until the package/phase ends)
+    "stopMovement": false } }
+```
+SitTarget 是「走過去並坐下／使用一件家具」的程序（從原版
+`MQ306EsbernSit` 解碼而來）。它填入 3 個作者 slot：**16** `Target`（SingleRef → 家具 ref，REQUIRED）、
+**3** `Wait Time`（float）、**4** `Stop Movement Flag`（bool）。引擎會為 NPC 規劃路徑到家具
+**並且**讓他就座，所以**一個 SitTarget 動作同時涵蓋走過去與坐下**（不需要另外的 Travel）。
+與 Travel 相同的 navmesh 規則：家具必須是 NPC 的 navmesh 上可抵達的 placed ref
+（把它放在同一個室內 cell）。家具 ref 會被自動強制設為**持久（persistent）**（因為它是
+套件的 SingleRef 目標）。沒有 `target`，套件就無作用。主要用途：一個**場景演出節拍**
+——一個場景的 Package action 引用一個 SitTarget 套件，讓一個 actor 在對話中途坐下
+（見 `examples/scene-sit-performance.json`）。
+
+**Activate 模板（`Skyrim.esm:0x019B2D`）—— `activate` 子物件：**
+```jsonc
+{ "editorId": "MF_PullLever",
+  "template": "Skyrim.esm:0x019B2D",       // Activate
+  "preferredSpeed": "Walk",
+  "activate": {
+    "target":           "MF_Lever",        // REQUIRED — ref to the object to activate (placement editorId or vanilla ref)
+    "numberToActivate": 1 } }              // default 1
+```
+NPC 走過去並啟用（ACTIVATE）`target`（一個拉桿／門／activator——觸發它的 OnActivate）。Slot 0
+是 SingleRef 目標（像 Patrol/Follow 的 slot 0 一樣延遲接線，所以它可以是一個 in-spec 的 placement；
+會被自動強制設為**持久**），slot 2 是「Number to Activate」。從原版
+`dunHillgrundsUnlockExteriorDoorActivate` 解碼而來。沒有 `target`，套件就無作用。很適合當作一個場景
+Package-action 節拍（一個 actor 在場景中途拉動鎖鏈／打開一扇門）。與 Travel/SitTarget 相同的
+navmesh 可抵達性規則。
+
+**Eat 模板（`Skyrim.esm:0x019714`）—— `eat` 子物件：**
+```jsonc
+{ "editorId": "MF_TavernMeal",
+  "template": "Skyrim.esm:0x019714",       // Eat
+  "schedule": { "hour": 19, "durationInMinutes": 60 },
+  "eat": {
+    "location":          "",               // optional placed-ref (where to eat); empty -> NearSelf
+    "radius":            500,
+    "allowSitting":      true,
+    "allowWandering":    true,
+    "numFoodItems":      1,
+    "energy":            0,
+    "minWanderDistance": 300 } }
+```
+Eat 是一個基於 LOCATION 的 Sandbox 變體：NPC 走到 `location`，找到食物 + 一張椅子（builder
+產出一個固定的引擎搜尋——slot 1 Food Criteria、4 Found Food、5 Chair Target、6 Found Chair），
+坐下並進食。比照 Sleep 模板的 slot 填充方式建模。用 `schedule` 限定用餐時段。
+「去酒館吃一頓飯。」（注意：這是一個環境（ambient）例行程序——若要精確的場景「坐在
+這張特定椅子上」節拍，請改用 **SitTarget**。）
+
+**Flags（Package.Flag）：** `OffersServices`、`MustComplete`、`MaintainSpeedAtGoal`、`ContinueIfPcNear`、
+`OncePerDay`、`PreferredSpeed`、`AlwaysSneak`、`AllowSwimming`、`IgnoreCombat`、`WeaponsUnequipped`、
+`WeaponDrawn`、`NoCombatAlert`、`WearSleepOutfit`。
+
+**Interrupt flags（Package.InterruptFlag）：** `HellosToPlayer`、`RandomConversations`、
+`ObserveCombatBehavior`、`GreetCorpseBehavior`、`ReactionToPlayerActions`、`FriendlyFireComments`、
+`AggroRadiusBehavior`、`AllowIdleChatter`、`WorldInteractions`。**這些就是
+一座沉默雕像與一個活生生 NPC 之間的差別。** 原版 DefaultSandbox 把它們全部啟用。
+
+### npcPatches — 覆寫一個既有 NPC 的 AI 排程
+
+藉由覆寫一個**原版（或其他 master）NPC** 的記錄並替換其 AI
+套件清單，來重新安排他的行程——這正是像 *AI Overhaul* 這類 mod 背後的核心動作（讓一個鎮民在夜裡
+去酒館、給一個守衛一條巡邏路線等等）。你不是重建那個 NPC；你把他整個
+記錄帶過來，只更改套件。
+
+```jsonc
+"packages": [ { "editorId": "MFCarlottaStayHome", "template": "Skyrim.esm:0x01C254" } ],
+"npcPatches": [
+  { "overrideOf": "Skyrim.esm:0x013B99",   // the existing NPC ref (Carlotta Valentia)
+    "packages": [ "MFCarlottaStayHome" ],   // PACK refs: in-spec editorId or vanilla <master>:0xFORMID
+    "mode": "replace" }                      // replace | prepend | append  (default replace)
+]
+```
+
+- **`overrideOf`**——以 `<master>:0xFORMID` 表示的既有 NPC。解析它需要 master 在
+  磁碟上（`MODFORGE_SKYRIM_DATA`，或預設的 Steam Data 路徑）；若無法解析，
+  該 patch 會被略過並附上警告（build 仍會完成）。
+- **`mode`**——`replace` 只使用你的套件；`prepend`/`append` 會保留 NPC 既有的
+  套件並把你的加在前面／後面。**套件順序很重要**——特定時間／地點的套件
+  必須排在廣泛的 sandbox 退路之上，所以「在某個時間去某個地方」的疊加要用
+  `prepend`。
+- **這個覆寫是完整的記錄覆寫**（一個 Skyrim 覆寫會「取代」master 記錄），所以
+  build 會深拷貝該 NPC——名稱、屬性、陣營、裝束、語音全部帶過來——
+  只有套件清單會改變。NPC 的**真實英文名稱**會被內聯保留：ModForge
+  擷取原版的英文 `.STRINGS`（來自 `Skyrim - Interface.bsa`），讓本地化名稱
+  在 headless 下也能解析。這符合現代做法——玩家跑的是**英文**遊戲，並在上面疊一個
+  **翻譯 mod**，所以內聯出貨英文名稱是正確的（之後載入的中文翻譯
+  mod 會重新覆寫它）。
+- **檢視**結果可用 `npcdiag <esp> <0xFORMID>`（與 `overrideOf` 相同的 FormID）；
+  `Packages` 那一行會顯示你的新清單。見 `examples/npc_patch.json`。
+- ⚠️ **載入順序**——一個 `npcPatches` 覆寫會與任何其他覆寫同一個
+  NPC 的 mod 衝突（USSEP、AI Overhaul 本身）。最後載入者勝；據此排序。
+
+### weathers & climates — 自訂天空（WTHR）+ 天氣循環（CLMT）
+
+一個**天氣**（`WTHR`）是一個*天空*：雲層、各時段的
+天空／霧／雲／太陽顏色、降水、風、霧距。一個**氣候**（`CLMT`）是一個
+*循環*：哪些天氣會出現（每個附帶一個相對的 `chance` 權重）外加日出／日落
+時間與日月貼圖。一個氣候引用多個天氣；兩者合起來給予一個
+世界空間或區域它的氛圍。
+
+```jsonc
+"weathers": [{
+  "editorId": "MF_EerieFog",
+  "flags": ["Cloudy", "Rainy"],          // default ["Pleasant"]
+  "skyUpperColor": {                      // each colour: sunrise/day/sunset/night, RGB 0–255
+    "day":   { "r": 46, "g": 92, "b": 58 },
+    "night": { "r": 8,  "g": 20, "b": 14 }   // omitted times-of-day fall back to `day`
+  },
+  "fogNearColor": { "day": { "r": 60, "g": 120, "b": 70 } },
+  "sunlightColor": { "day": { "r": 120, "g": 170, "b": 110 } },  // directional light on the world
+  "clouds": [{ "index": 0, "texture": "Sky\\SkyrimCloudsUpper04.dds",
+               "xSpeed": 0.012, "ySpeed": -0.006, "alphaDay": 1.0, "alphaNight": 0.8 }],
+  "precipitation": "Skyrim.esm:0x10780F",  // a rain SPGD (find one via weatherdiag on a vanilla rainy WTHR)
+  "windSpeed": 0.35, "windDirection": 210,  // speed 0–1 (or 0–100); direction in degrees
+  "fogDayNear": 256, "fogDayFar": 9000
+}],
+"climates": [{
+  "editorId": "MF_EerieClimate",
+  "weathers": [ { "weather": "MF_EerieFog", "chance": 75 },
+                { "weather": "MF_PlainClear", "chance": 25 } ],   // chances are relative weights
+  "sunriseBegin": "06:00", "sunriseEnd": "09:30",
+  "sunsetBegin": "17:00",  "sunsetEnd": "20:00",
+  "moons": ["Masser", "Secunda"], "volatility": 40
+}]
+```
+
+- **最小即有效。** 一個只有 `editorId` 的天氣就是一個原版般合理的晴天天空；
+  一個氣候只需要一個 `editorId` + 至少一個 `weather`。其餘一切都有預設值。
+- **顏色**是 8-bit RGB（0–255）。任何省略的時段都會從 `day` 衍生，所以一個
+  部分指定的顏色仍然有效。Validate 會標記出超出範圍的分量。
+- **風向**以**度**（0–360）撰寫；在磁碟上以一整圈的分數儲存。
+  **風速**接受 0–1 的分數或 0–100 的百分比。
+- **`precipitation`** 是一個指向 shader-particle-geometry（`SPGD`）的 *ref*。用
+  `weatherdiag <Skyrim.esm> <a-rainy-WTHR-formid>` 找出一個原版的雨（例如 `SkyrimStormRain`
+  → `Skyrim.esm:0x10780F`）。`Rainy`/`Snow` flag 驅動引擎的降水系統。
+- **檢視**一個產生的或原版的記錄可用 `weatherdiag <esp> <0xFORMID>` /
+  `climatediag <esp> <0xFORMID>`，或用 `dump`（兩者都會印出）。
+
+> **指派氣候是一個獨立的步驟。** 產出一個 `WTHR`+`CLMT` 本身**並不會**
+> 改變任何遊戲內的天空。原版遊戲透過一個**世界空間**
+> （`WRLD` 的 `Climate` 欄位）或一個**區域**（`REGN` 的 weather-data）記錄來套用氣候——
+> 兩者都不在這裡建構（世界空間／區域撰寫不在範圍內）。這裡產生的記錄是有效的
+> 目標，可讓這樣的記錄指向它；手動這麼做（或透過未來的 WRLD/REGN 功能）
+> 就是接點。**遊戲內已確認（It.36, 2026-06-02）：** 透過 console 用 `sw <XX>000800`
+> 強制天氣，其中 `XX` = plugin 在載入順序中的 slot（16 進位，見 MO2 右側面板）。`build` 指令在
+> 成功 build 後會為所有 WTHR 記錄印出 `sw` 指令。

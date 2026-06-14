@@ -2,7 +2,7 @@
 
 當靜態 JSON 規格不夠用時 — 您想**以程式碼組合規格**（迴圈、條件判斷、從他處取得的資料）、將產生功能嵌入更大的程式，或讓 AI 代理撰寫直接呼叫 ModForge 的 C# 程式碼。`ModForge.Core` 是可重用的引擎；它操作物件，永遠不接觸主控台、argv 或寫死的檔案路徑。
 
-← 索引：[for_agent.md](for_agent.md) · CLI 路徑：[for_agent_cli.md](for_agent_cli.md) · 規格欄位：[SPEC-index.md](SPEC-index.md)
+← 索引：[for_agent.md](for_agent.md) · CLI 路徑：[for_agent_cli.md](for_agent_cli.md) · 規格欄位：[SPEC-index.md](spec/SPEC-index.md)
 
 ## CLI + JSON vs. 函式庫 — 該用哪一個
 

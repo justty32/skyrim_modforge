@@ -1,0 +1,109 @@
+# ModForge spec — 簡介與記錄類型表
+
+← [index](SPEC-index.md)
+
+**spec** 是一個描述單一 Skyrim 外掛內容的 JSON 檔案。它是意圖（自然語言，由 AI agent 轉成 spec）與決定性生成器（Mutagen）之間的合約。你撰寫／產生一個 spec，`validate` 它，然後 `build` 或 `package` 它。
+
+```
+NL / idea ──(AI agent: Claude Code)──▶ spec.json ──(validate)──▶ ──(build | package)──▶ .esp [+ .pex]
+                                               └─(optional voicelines)──▶ Sound/Voice/<plugin>/<voiceType>/*.fuz
+```
+
+屬性名稱**不分大小寫**（`editorId` == `EditorId`）；範例使用 camelCase。
+
+## 交叉參照與 ID
+
+- 每個記錄都有一個 **`editorId`** — 一個由你選定、穩定且唯一的名稱。它是記錄之間*在 spec 內*互相參照的方式（一個 npc 透過 `editorId` 加入某個陣營；一段 dialogue 透過 `editorId` 指名它的 quest）。它**不是** FormID：Mutagen 會自動指派 FormID 與 masters。
+- `editorId` 在整個 spec 中必須**非空且唯一**（`validate` 會強制檢查）。
+- `esl: true`（預設）會把外掛標記為 light master — 新記錄必須落在 FormID **0x800–0xFFF，即總數 ≤ 2048**。超出是寫入時的硬性錯誤（會附帶清楚的訊息）；若你需要更多，請設 `esl: false` 或把內容拆分到多個外掛。
+
+### 對原版／外部 forms 的參照
+有些欄位是 **refs**：它們接受*在 spec 內的* `editorId`，*或者*另一個外掛中的外部 form，寫成 **`"<master>:0xFORMID"`**（例如 `"Skyrim.esm:0x013746"` = `NordRace`）。外部 refs 讓你的內容能指向原版的種族、職業、裝束、關鍵字、陣營等等。被指名的 master 會在 build 時**自動加入外掛**。
+
+- 用 `find` 指令**探索 FormID**：
+  `find "<Skyrim Data>/Skyrim.esm" <query> [type]` → 印出 `Skyrim.esm:0xFORMID  Type  EditorID`。
+  `[type]`（例如 `Race`、`Class`、`Outfit`、`Keyword`、`Faction`、`Weapon`、`Npc`）會把搜尋縮窄到單一記錄類型。（搜尋／顯示是依 **EditorID**；本地化的顯示*名稱*被打包在 BSA 中，headless 時不會解析 — 像 `NordRace` 這樣的 EditorID 已足夠描述。）
+- `validate` 會檢查 ref 欄位：in-spec ref 必須存在；外部 ref 必須格式正確。
+
+## 頂層結構
+
+```jsonc
+{
+  "pluginName": "MyMod.esp",   // output filename / ModKey
+  "esl": true,                  // light-master flag (default true); ≤2048 new records
+
+  "miscItems": [...], "books": [...], "weapons": [...], "npcs": [...],
+  "quests": [...], "dialogue": [...], "banter": [...], "spells": [...], "potions": [...],
+  "armors": [...], "factions": [...], "messages": [...],
+  "scripts": [...],             // Papyrus attachments (see below)
+  "cells": [...], "placements": [...],  // new interior cells + placing forms in them
+  "leveledItems": [...], "leveledNpcs": [...], "containers": [...],
+  "ingredients": [...], "ammunitions": [...], "scrolls": [...], "soulGems": [...],
+  "keys": [...], "keywords": [...], "outfits": [...], "statics": [...], "activators": [...],
+  "textureSets": [...],          // TXST — retexture an existing mesh without a new .nif
+  "furniture": [...], "sounds": [...],  // custom-mesh furniture + Sound Descriptors (external assets)
+  "assets": "path/to/asset/dir",        // source dir whose Meshes/Textures/Sounds `package` bundles
+  "packages": [...],             // AI Packages — what an NPC DOES (sandbox/travel/use furniture)
+  "weathers": [...], "climates": [...],  // custom skies (WTHR) + weather cycles (CLMT)
+  "encounterZones": [...],       // ECZN — level scaling / respawn for an area (a cell/spawn points at one)
+  "voiceTemplates": [...],       // TTS/voice-clone recipes used by npcs[].voiceTemplate
+  "voiceLine": { "format": "fuz", "skipLip": false }, // global voice output settings
+  "presets": {                   // non-emitting cookbook fragments; expand into arrays above to build
+    "lighting": {}, "weather": {}, "packages": {}, "identities": {}
+  }
+}
+```
+
+## 記錄類型
+
+| section | fields |
+|---------|--------|
+| `miscItems` | `editorId`、`name`、`value`（int≥0）、`weight`（number）、`keywords`（*refs* 陣列）、`template`（用來複製模型的原版 MISC ref）、`model`（自訂 `.nif` 路徑 — 覆蓋 `template` 的網格）、`pickUpSound`/`putDownSound`（SNDR *refs*） — 見 [external_assets.md](../external_assets.md) |
+| `books` | `editorId`、`name`、`text`（書本內文）、`template`（*ref* → 用來複製模型的原版 BOOK — 可拾取／可閱讀的書本**需要**一個，否則 3D 閱讀時會**當機**）、`value`（int；0 ⇒ 保留 template 的）、`weight`（number；0 ⇒ 保留 template 的）、`flags`（`Book.Flag` 名稱陣列，例如 `CantBeTaken`）、`teaches`（選用 — 一本*教學*書；見下文） |
+| `books[].teaches` | `{ "kind": "spell", "spell": <ref> }` — 一本在首次閱讀時授予 SPEL 的**法術書**（`spell` 是 in-spec 的 spell editorId 或原版的 `<master>:0xFORMID`）；或 `{ "kind": "skill", "skill": <name> }` — 一本在首次閱讀時提升某 `Skill`（例如 `Destruction`、`OneHanded`、`Smithing`）的**技能書**；或省略 ⇒ 一本普通書（不教任何東西）。教學書必須有一個 `template`。 |
+| `weapons` | `editorId`、`name`、`value`、`weight`、`damage`（int≥0）、`speed`（number）、`reach`（number）、`keywords`（*refs* 陣列）、`enchantment`（*ref* → ENCH，in-spec 或原版 `<master>:0xFORMID`）、`enchantmentAmount`（int — 武器的充能池，例如 1500–3000；0 = 引擎自動計算）、`template`（原版 WEAP ref — 複製模型／動畫／裝備；需要它以避免裝備時**當機**）、`model`（自訂世界網格 `.nif` 路徑 — 與 `template` **搭配**）、`pickUpSound`/`putDownSound`（SNDR *refs*） |
+| `npcs` | `editorId`、`name`、`factions`（*refs* 陣列）、`race`（*ref*）、`class`（*ref*）、`outfit`（*ref* → DefaultOutfit）、`level`（int）、`autoCalcStats`（bool — 從 level + class 推導 H/M/S 與技能）、`packages`（*refs* 陣列 → PACK；NPC 的 AI 套件清單，依序評估）、`voiceType`（*ref* → VTYP；也決定生成的對話音訊所用的 `Sound/Voice/<plugin>/<voiceType>/` 資料夾）、`voiceTemplate`（ref → `voiceTemplates[].id`，選用的 TTS 路徑）、`crimeFaction`（*ref* → FACT；城市居民身分，跨 cell Travel 時必需）、`unique`（bool — 一次性 actor，有助引擎 AI 追蹤）、`combatStyle`（*ref* → CSTY；AI 如何戰鬥）、`spells`（*refs* 陣列 → SPEL；AI 的法術清單）、`perks`（*refs* 陣列 → PERK；在遊戲開始時以被動能力／入口點 perks 授予該 actor）、`greeting`（string — Hello 台詞；當此 NPC 有自訂 `dialogue` 時，會自動發出一個 Hello info 使其可對話。空值 ⇒ 預設台詞） |
+| `quests` | `editorId`、`name`、`startGameEnabled`（bool，預設 true）、`priority`（0–255）、`objectives`（`{ index (int), text, showStage?, completeStage? }` 陣列）、`stages`（`{ index (int), logEntry?, completeQuest?, failQuest?, conditions? }` 陣列） — 見 [SPEC-quests](SPEC-quests.md) 中的 *Quest stages* |
+| `dialogue` | `editorId`、`questEditorId`、`speakerNpcEditorId`（選用）、`prompt`、`responses`（字串陣列）、`emotion`（選用 — `Neutral`\|`Anger`\|`Disgust`\|`Fear`\|`Sad`\|`Happy`\|`Surprise`）、`emotionValue`（0–100）。`setStage`（int — 選擇此台詞時把 quest 推進到此 stage；`package` 會自動編譯並 VMAD 掛上 TIF fragment，並自動加上一個 `GetStage < N` condition 使台詞不會重複）。選用的**自訂結果 fragment**（覆蓋自動 TIF）：`resultScript`（Scriptname，`Extends TopicInfo`，`Fragment_0`）、`resultScriptSource`（`.psc`）、`resultProperties`（綁定的 props）、`goodbye`（bool — 結束後關閉選單）。Build 會接好整條鏈（Quest→DialogView→Branch→Topic→INFO + 一個 Hello） — 見 [SPEC-dialogue](SPEC-dialogue.md) |
+| `banter` | `editorId`（選用）、`questEditorId`、`speakerNpcEditorId`、`responses`（字串陣列 — 一句未經提示的評論）、`emotion`/`emotionValue`、`conditions`（情境式 CTDA 閘門）。主動式（NPC 發起）的台詞；共享同一 (speaker, quest) 的條目會合併成一個帶有 Random INFOs 的環境 Misc/`IDLE` topic。需要該 speaker 啟用閒聊（一個 Sandbox/follow 套件）。見 [SPEC-dialogue](SPEC-dialogue.md) |
+| `scenes` | `editorId`、`questEditorId`（host quest）、`actors`（`{ aliasId (int), npc (*ref*), name }` 陣列）、`phases`（有序的 `{ speaker (an aliasId), lines (array of strings), emotion, emotionValue }` 陣列）、`beginOnQuestStart`（bool，預設 true）、`stopQuestOnEnd`（bool）。一個 **SCEN** — 兩個 NPC 彼此交談。見 [SPEC-dialogue](SPEC-dialogue.md) |
+| `spells` | `editorId`、`name`、`effects`（*effects* 陣列）、`spellType`、`castType`、`targetType`、`baseCost`（int）、`chargeTime`（number）、`equipType`（EQUP *ref*）。**可施放類型（Spell/Voice/Power/LesserPower）在省略時會自動預設為 EitherHand `Skyrim.esm:0x00013F44`** — 一個沒有 EQUP 的 Voice/shout 法術可以學會但**無法被咆哮**；僅在需覆蓋時才設定 |
+| `magicEffects` | `editorId`、`name`、`description`、`archetype`、`actorValue`、`magicSkill`、`resistValue`、`castType`、`targetType`、`baseCost`（number）、`flags`（陣列）、`association`（*ref*）、`projectile`/`castingArt`/`hitEffectArt`/`explosion`（*refs* — 可見的彈體 + 施放／命中 FX；一個 Aimed 法術／咆哮需要 `projectile`，否則它會無形／無聲地發射）、`sounds`（`{ type (default `Release`), sound (SNDR *ref*) }` 陣列 — `Release` 是施放／效果音效；咆哮所說的力量之語*語音*是錄製的語音資產，無法在此設定） — 一個 `effect` 可指向的自訂 MGEF |
+| `enchantments` | `editorId`、`name`、`enchantType`（`weapon`\|`apparel`\|`staff`）、`castType`/`targetType`（選用覆蓋）、`enchantmentCost`（int — 每次施放充能成本／穿戴成本）、`chargeTime`（number — 法杖蓄力）、`effects`（*effects* 陣列） — 一個武器／護甲的 `enchantment` 欄位指向的 Object Effect（ENCH） |
+| `potions` | `editorId`、`name`、`value`、`weight`、`effects`（*effects* 陣列） |
+| `armors` | `editorId`、`name`、`value`、`weight`、`armorRating`（number）、`armorType`（`light`\|`heavy`\|`clothing`）、`slots`（biped-slot 名稱陣列）、`keywords`（*refs* 陣列）、`enchantment`（*ref* → ENCH，通常是一個 `apparel` 的恆定效果）、`template`（原版 ARMO *ref* — 複製它的 **Armature**（穿戴網格）+ WorldModel；**必需，否則護甲裝備後是隱形的**，例如 `Skyrim.esm:0x00012E49` ArmorIronCuirass）、`model`（自訂地面網格 `.nif` 路徑 — 與 `template` **搭配**） |
+| `factions` | `editorId`、`name`、`vendor`（選用子物件 — 將此轉為商人陣營；見 [SPEC-worldspaces](SPEC-worldspaces.md)） |
+| `classes` | `editorId`、`name`、`description`、`teaches`（Skill）、`maxTrainingLevel`、`healthWeight`/`magickaWeight`/`staminaWeight`（屬性分配）、`skillWeights`（`{ Skill: 0–255 }`） — 一個 npc 的 `class` 可指向它 |
+| `messages` | `editorId`、`name`、`description`（內文文字） |
+| `cells` | `editorId`、`name`、`template`（用來複製照明的原版室內 cell `<master>:0xFORMID` — 否則新 cell 是全黑的）、`encounterZone`（*ref* → ECZN — 整個 cell 的等級縮放／重生） |
+| `placements` | `base`（*ref* — 一個具體的 NPC_ actor 或物件 form；**絕不是原始的 LeveledNpc 清單（LVLN）** — LVLN 作為 ACHR base 會在載入時 CTD，見 [SPEC-world](SPEC-world.md)）；**室內：** `cell`（in-spec editorId **或**原版室內 cell `<master>:0xFORMID`）**或室外：** `worldspace`（`<master>:0xFORMID`，position 是世界座標）；`kind`（`npc`\|`object`）、`position`（`{x,y,z}`）、`rotation`（`{x,y,z}` 度數）、`persistent`（bool）、`encounterZone`（*ref* → ECZN — 對 cell 區域的逐 ref 覆蓋） |
+| `leveledItems` | `editorId`、`chanceNone`（0–100）、`flags`（陣列）、`entries`（`{ reference (*ref*), level (int), count (int) }` 陣列） |
+| `leveledNpcs` | 與 `leveledItems` 同樣結構，但 `reference` 是一個 npc/leveled-npc |
+| `containers` | `editorId`、`name`、`weight`、`items`（`{ item (*ref*), count (int) }` 陣列） |
+| `ingredients` | `editorId`、`name`、`value`、`weight`、`effects`（*effects* 陣列）、`keywords`（*refs* 陣列） |
+| `ammunitions` | `editorId`、`name`、`value`、`weight`、`damage`（number）、`keywords`（*refs* 陣列） |
+| `scrolls` | `editorId`、`name`、`value`、`weight`、`effects`（*effects* 陣列）、`spellType`、`castType`、`targetType`、`baseCost`（int）、`keywords`（*refs* 陣列） |
+| `soulGems` | `editorId`、`name`、`value`、`weight`、`maximumCapacity`（`None`\|`Petty`\|`Lesser`\|`Common`\|`Greater`\|`Grand`）、`keywords`（*refs* 陣列） |
+| `keys` | `editorId`、`name`、`value`、`weight`、`keywords`（*refs* 陣列） |
+| `keywords` | `editorId`（定義你自己的 keyword，讓 in-spec 記錄能在 `keywords` 中列出它） |
+| `outfits` | `editorId`、`items`（*refs* 陣列 → armors/weapons；一個 npc 的 `outfit` 可指向此 editorId） |
+| `statics` | `editorId`、`model`（一個 `.nif` 路徑 — 原版或自訂網格；一個 placement base，無 name）、`alternateTextures`（陣列 — 把網格的紋理替換成一個 TXST；見 [SPEC-items](SPEC-items.md)） |
+| `activators` | `editorId`、`name`、`model`（`.nif` 路徑）、`keywords`（*refs* 陣列）、`alternateTextures`（陣列 — 與 `statics` 相同）、`activationSound`/`loopingSound`（SNDR *refs*）；透過 `scripts` 掛上行為 |
+| `furniture` | `editorId`、`name`、`model`（`.nif` 路徑 — 原版或自訂網格）、`keywords`（*refs* 陣列） — 一個可放置的互動物件（椅子／床／長凳／idle marker）；用一個 `placement` 來放置它 |
+| `sounds` | `editorId`、`files`（Data 相對的 `Sound\...` `.wav`/`.xwm` 路徑陣列）、`category`（SNCT *ref*，預設 AudioCategorySFX）、`outputModel`（SOPM *ref*，預設原版 SFX）、`priority`（0–255）、`staticAttenuation`（dB） — 一個記錄的 sound 欄位指向的 Sound Descriptor（SNDR）。見 [external_assets.md](../external_assets.md) |
+| `voiceTemplates` | `id`、`engine`（`f5`\|`fish-s2`\|`chatterbox`\|`gptsovits`\|`xtts`；只有設定好的 wrappers 才能真正合成）、`referenceWav`、`referenceText`、`modelPath`、`rvcModel`、`language`、`seed`、`speed`、`exaggeration`。由 `npcs[].voiceTemplate` 參照；只被 `voicelines` 使用，不被 `build` 本身使用。見 [SPEC-workflow § Voice](SPEC-workflow.md#voice-tts-voice-cloning--fuz) |
+| `voiceLine` | 全域的 build 後輸出設定：`format`（`fuz`\|`wav`\|`xwm`，預設 `fuz`）與 `skipLip`（true = 靜態嘴型／無 `.lip`）。語音資產是 `Sound/Voice/<plugin>/<voiceType>/` 下的鬆散檔案，不是內嵌的外掛記錄。 |
+| `recipes` | `editorId`、`kind`（`craft`/`temper`/`smelt`/`breakdown`）、`createdObject`（*ref*）、`count`（int）、`workbench`（具名選擇器 `forge`/`sharpeningWheel`/`armorTable`/`smelter`/`tanningRack`/`skyforge` 或一個 keyword *ref*；依 kind 預設）、`components`（`{ item (*ref*), count (int) }` 陣列）、`conditions`（共享的 CTDA `{ function, param (*ref*), comparison, value, or }` 陣列 — perk／物品／技能閘門） — 一個製作／強化／熔煉配方（COBJ） |
+| `packages` | `editorId`、`template`（*ref* → 一個原版程序模板）、`flags`、`interruptFlags`、`preferredSpeed`、`combatStyle`、`ownerQuest`、`schedule`、`sandbox`/`sleep`/`travel`/`useMagic`/`patrol`/`follow`/`escort`（模板子物件）、`conditions` — 見 [SPEC-packages](SPEC-packages.md) |
+| `combatStyles` | `editorId`、`offensiveMult`/`defensiveMult`/`groupOffensiveMult`、`equipMultMelee`/`equipMultMagic`/`equipMultRanged`/`equipMultShout`/`equipMultUnarmed`/`equipMultStaff`、`avoidThreatChance`、`flags`（`Dueling`\|`Flanking`\|`AllowDualWielding`） |
+| `encounterZones` | `editorId`、`minLevel`（0–255）、`maxLevel`（0–255；**0 = 無上限**）、`rank`、`owner`、`location`、`flags`（`NeverResets`\|`MatchPcBelowMinimumLevel`\|`DisableCombatBoundary`） — 見 [SPEC-worldspaces](SPEC-worldspaces.md) |
+| `perks` | `editorId`、`name`、`description`、`playable`/`hidden`/`trait`、`level`、`numRanks`（≥1）、`nextPerk`、`conditions`、`effects`（陣列 — `ability` 或 `entryPoint`） — 見 [SPEC-items](SPEC-items.md) |
+| `wordsOfPower` | `editorId`、`name`（龍語符文）、`translation`（英文釋義） — 一個力量之語（WOOP） |
+| `shouts` | `editorId`、`name`、`description`、`menuDisplayObject`、`words`（最多 3 個 `{ word, spell, recoveryTime }` 的陣列） — 一個 SHOU |
+| `wordWalls` | `editorId`、`name`、`shout`、`wordIndex`（1\|2\|3）、`word`、`scriptName`、`triggerEditorId`/`triggerBase`、placement（`cell`/`worldspace` + `position`/`rotation`） |
+| `textureSets` | `editorId`、八個選用的 `.dds` 槽位路徑（`diffuse`、`normal`、`mask`、`glow`、`height`、`environment`、`multilayer`、`backlight`）相對於 `Data\Textures\`、`flags` — 見 [SPEC-items](SPEC-items.md) |
+| `weathers` | `editorId`、`template`（選用的原版 WTHR，用來複製雲／顏色）、`flags`、各時段顏色、`clouds`、`precipitation`、`windSpeed`/`windDirection`、`fogDayNear`/`fogDayFar`/`fogNightNear`/`fogNightFar`、`transitionDelta` — 見 [SPEC-packages](SPEC-packages.md) |
+| `climates` | `editorId`、`weathers`（`{ weather, chance }` 陣列）、日出/日落時間、`sunTexture`/`sunGlareTexture`、`moons`、`phaseLength`、`volatility` — 見 [SPEC-packages](SPEC-packages.md) |
+| `presets` | 不發出記錄的 cookbook 片段，分組在 `lighting`、`weather`、`packages` 與 `identities` 之下。builder 會忽略此區段；把片段複製／展開到一般陣列中以發出記錄。見 [cookbook-presets](../lifelike/cookbook-presets.md) 與 `examples/presets-cookbook.json` |
+
+一個標記為 *ref* 的欄位接受 in-spec 的 `editorId` **或** `"<master>:0xFORMID"`（見上文*對原版／外部 forms 的參照*）。一個站立的 NPC 至少需要 `race` + `class` 才能在遊戲內表現為真正的 actor；`outfit` 給它衣著／裝備。

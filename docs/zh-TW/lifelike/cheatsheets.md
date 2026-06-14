@@ -1,66 +1,82 @@
-# 速查表 — 診斷、控制台、工作流程
+# 速查表 — 診斷、console、工作流
 
-← 返回 [lifelike 中心](README.md)
+← 回到 [lifelike hub](README.md)
 
 ## 診斷指令
 
 ```bash
 cd ~/repo/ModForge
-# 執行（不重新建置）：dotnet run --project src/ModForge.Cli --no-build -- <cmd> ...
+# run (no rebuild): dotnet run --project src/ModForge.Cli --no-build -- <cmd> ...
 
-# 透過 editorID 子字串尋找原版表單（使用 [Type] 縮小範圍 — 帶類型約 0.9 秒，全 ESM 掃描約 3.3 秒）
+# Find vanilla forms by editorID substring (use [Type] to narrow — ~0.9s typed vs ~3.3s full-ESM scan)
 dotnet run --project src/ModForge.Cli --no-build -- find <Skyrim.esm> "Ysolda" Npc
 dotnet run --project src/ModForge.Cli --no-build -- find <Skyrim.esm> "CrimeFaction" Faction
 
-# 檢查特定記錄類型 — 用於比較原版與我們生成的記錄
-dotnet run ... -- packagediag    <plugin> <0xFORMID>   # PACK：模板、旗標、時程、Data 插槽
-dotnet run ... -- pkgsbytemplate <plugin> <0xFORMID>   # 所有使用特定程序模板的套件
-dotnet run ... -- npcdiag        <plugin> <0xFORMID>   # NPC：種族/職業/語音/派系/CrimeFaction/AIData/套件/法術
-dotnet run ... -- cstydiag       <plugin> <0xFORMID>   # CSTY：攻擊/防禦/裝備倍率/旗標
-dotnet run ... -- eczndiag       <plugin> <0xFORMID>   # ECZN：等級範圍（max 0 = 無上限）/階級/旗標/擁有者/位置
-dotnet run ... -- mgefdiag       <plugin> <0xFORMID>   # MGEF：原型/AV/旗標/投射物/施放藝術
-dotnet run ... -- lightdiag      <plugin> [0xFORMID]   # LIGH（無 ID 時列出房間填充候選）
-dotnet run ... -- refpos         <plugin> <0xFORMID>   # REFR/ACHR：位置+旋轉+基底（用已知導航網格錨定放置）
-dotnet run ... -- cellblk        <plugin> [0xFORMID]   # 依 FormID 查詢 Cell 的區塊/子區塊
-dotnet run ... -- infodiag       <plugin> <0xFORMID> [substr]  # INFO：回應 + 完整 CTDA 條件 + OnEnd VMAD 片段，可針對一個主題或一個 quest 擁有的所有主題
-dotnet run ... -- factdiag       <plugin> <0xFORMID>   # FACT：旗標 / 階級 / 派系間關係
-dotnet run ... -- reladiag       <plugin> <0xFORMID>   # RELA：一筆記錄，或所有以該 FormID 為父/子的 RELA
+# Inspect specific record types — used to diff vanilla vs our generated records
+dotnet run ... -- packagediag    <plugin> <0xFORMID>   # PACK: template, flags, schedule, Data slots
+dotnet run ... -- pkgsbytemplate <plugin> <0xFORMID>   # every package USING a given procedure template
+dotnet run ... -- npcdiag        <plugin> <0xFORMID>   # NPC: race/class/voice/factions/CrimeFaction/AIData/packages/spells
+dotnet run ... -- cstydiag       <plugin> <0xFORMID>   # CSTY: offensive/defensive/equip mults/flags
+dotnet run ... -- eczndiag       <plugin> <0xFORMID>   # ECZN: level range (max 0 = uncapped)/rank/flags/owner/location
+dotnet run ... -- mgefdiag       <plugin> <0xFORMID>   # MGEF: archetype/AV/flags/projectile/casting art
+dotnet run ... -- lightdiag      <plugin> [0xFORMID]   # LIGH (no ID lists room-fill candidates)
+dotnet run ... -- refpos         <plugin> <0xFORMID>   # REFR/ACHR: position+rotation+base (anchor placements on known navmesh)
+dotnet run ... -- cellblk        <plugin> [0xFORMID]   # Cell block/sub-block by FormID
+dotnet run ... -- infodiag       <plugin> <0xFORMID> [substr]  # INFO: responses + FULL CTDA conditions + OnEnd VMAD fragment, for a topic OR every topic a quest owns
+dotnet run ... -- factdiag       <plugin> <0xFORMID>   # FACT: flags / ranks / inter-faction relations
+dotnet run ... -- reladiag       <plugin> <0xFORMID>   # RELA: one record, or every RELA referencing the FormID as parent/child
 
-# 建置 / 檢查往返
-dotnet run ... -- validate <spec.json>              # 永遠先執行
+# Build / inspect round-trip
+dotnet run ... -- validate <spec.json>              # ALWAYS run first
 dotnet run ... -- build    <spec.json> <out.esp>
-dotnet run ... -- dump     <out.esp>                # 查看我們實際寫了什麼
-dotnet run ... -- extract  <out.esp> <strings.json> # 將外掛讀回 JSON（往返驗證；與 dump 不同）
+dotnet run ... -- dump     <out.esp>                # see what we actually wrote
+dotnet run ... -- extract  <out.esp> <strings.json> # read a plugin back to JSON (round-trip verify; distinct from dump)
 dotnet run ... -- package  <spec.json> <outDir>     # esp + .pex
 ```
 
 提示：
-- **`pkgsbytemplate` 是如何為模板找出原版套件的方法** — `find` 只比對 EditorID，所以 EditorID 中不含模板名稱的模板式原版套件（例如 `WhiterunTempleCastHealingSpellSoldier`）對 `find` 不可見。傳入模板 FormID（例如 UseMagic `0x0504F5`）可列出所有使用它的具體套件，再用 `packagediag` 複製其插槽模式。
-- **`cellblk` 對照 `Skyrim.esm`** 可交叉驗證室內區塊/子區塊公式（block = id%10，sub = (id/10)%10）— 無需進行遊戲週期就能確認原版空間覆寫落在正確的 GRUP 中。
-- **`infodiag` 是重用任何原版對話路徑前的必要探測工具。** 倒出主題的 INFO CTDA 堆疊，看看生成的 NPC 必須滿足什麼條件 — 這就是 It.27 跟隨者錯誤被破解的方式（每個付費招募 INFO 都有 `GetIsID==<特定原版傭兵>`，所以自訂 NPC 永遠無法通過；`infodiag Skyrim.esm 0x0BCC84`）。它也會印出每個 INFO 的 OnEnd VMAD 片段，讓您看到原版臺詞是否執行了您需要複製的結果腳本。
-- **`MODFORGE_DEBUG=1`** 在出錯時印出完整堆疊追蹤（否則只顯示 `ERROR: Type: msg`）。
+- **`pkgsbytemplate` 是你為某個 template 採集原版 package 的方法** — `find` 只比對
+  EditorID，所以那些 ID 裡不帶 template 名稱、基於 template 的原版 package（例如 `WhiterunTempleCastHealingSpellSoldier`）
+  對 `find` 是隱形的。傳入一個 template FormID
+  （例如 UseMagic `0x0504F5`）就能列出每個使用它的具體 package，再對其中一個跑 `packagediag` 來
+  複製它的 slot 模式。
+- **對 `Skyrim.esm` 跑 `cellblk`** 可交叉驗證室內 block/sub-block 公式
+  （block = id%10、sub = (id/10)%10）— 用它來確認原版 cell override 落在
+  正確的 GRUP，不必跑一輪遊戲內。
+- **`infodiag` 是重用任何原版對話路徑前 THE probe（首要探針）。** dump 該 topic 的 INFO CTDA
+  堆疊，看一個生成的 NPC 必須滿足什麼 — It.27 follower bug 就是這樣破解的
+  （每個 paid-recruit INFO 都是 `GetIsID==<a specific vanilla mercenary>`，所以自訂 NPC 永遠無法
+  通過；`infodiag Skyrim.esm 0x0BCC84`）。它也會印出每個 INFO 的 OnEnd VMAD fragment，讓你
+  看出某條原版 line 是否會跑你需要複製的 result script。
+- **`MODFORGE_DEBUG=1`** 在出錯時印出完整 stack trace（否則只有 `ERROR: Type: msg`）。
 
-## 遊戲內控制台（用於測試生成的 NPC）
+## 遊戲內 console（用於測試生成的 NPC）
 
 ```
-help "ModForge X" 0                # 尋找 NPC 的執行時 FormID（ESL 為 FExx0XXX 格式）
-prid <FormID>                       # 依 FormID 選取 NPC
-player.moveto <FormID>              # 傳送玩家到 NPC
-moveto player                       # 傳送選取的 NPC 到玩家
-getCurrentPackage                   # 引擎目前在這個 NPC 上執行哪個套件？
-evp                                 # 強制重新評估套件（evaluatePackage 的別名）
-placeatme <baseFormID> <count>      # 生成敵人（例如 placeatme 0x10F2A3 1 → 狼）
-getav health|magicka|stamina        # 讀取選取角色的屬性
-coc <cellEditorID>                  # 傳送到空間（無載入畫面 → LOD 可能短暫中斷）
-tcl                                 # 切換穿牆 / 不穿牆
+help "ModForge X" 0                # find an NPC's runtime FormID (FExx0XXX form for ESL)
+prid <FormID>                       # select an NPC by FormID
+player.moveto <FormID>              # teleport player to NPC
+moveto player                       # teleport selected NPC to player
+getCurrentPackage                   # what package is the engine running on this NPC?
+evp                                 # force re-evaluate packages (alias for evaluatePackage)
+placeatme <baseFormID> <count>      # spawn an enemy (e.g. placeatme 0x10F2A3 1 → wolf)
+getav health|magicka|stamina        # read selected actor's stats
+coc <cellEditorID>                  # teleport to a cell (no load screen → LOD may break briefly)
+tcl                                 # toggle clip / no-clip
 ```
 
 ## Papyrus 前置需求（compile / package-with-scripts）
 
-- 若 CK 不在預設 Steam 路徑，請設定 `MODFORGE_PAPYRUS_COMPILER`（`PapyrusCompiler.exe` 路徑）和 `MODFORGE_PAPYRUS_BASE`（含基礎 `.psc` + `TESV_Papyrus_Flags.flg` 的目錄）。
-- 一次性設定：`unzip <CK>/Data/Scripts.zip "Source/Scripts/*" -d ~/.cache/modforge/papyrus/`（約 14,301 個 `.psc`）。如果腳本使用 SKSE 函式，請將 SKSE `.psc` 加入該目錄。
-- 編譯器**即使失敗也回傳退出碼 0** — 工具會擷取 stdout 中的 `Failed on` 並確認 `.pex` 是否存在；如果您直接呼叫 `wine PapyrusCompiler.exe`，請做同樣的檢查。
+- 若 CK 不在預設的 Steam 路徑，設定 `MODFORGE_PAPYRUS_COMPILER`（指向 `PapyrusCompiler.exe` 的路徑）與 `MODFORGE_PAPYRUS_BASE`
+  （含 base `.psc` + `TESV_Papyrus_Flags.flg` 的目錄）。
+- 一次性：`unzip <CK>/Data/Scripts.zip "Source/Scripts/*" -d ~/.cache/modforge/papyrus/`
+  （≈14,301 個 `.psc`）。若某腳本使用 SKSE 函式，把 SKSE 的 `.psc` 加進該目錄。
+- 編譯器**即使失敗也回傳 exit code 0** — 本工具會掃 stdout 找 `Failed on`
+  並確認 `.pex` 存在；若你曾直接呼叫 `wine PapyrusCompiler.exe`，也照做。
 
-## CJK 本地化（簡體中文）
+## CJK 在地化（簡體中文）
 
-簡體中文 SSE 讀取以 **UTF-8**（非 GBK）編碼的本地化 `<plugin>_chinese.STRINGS`，且語言後綴需為**小寫**（Mutagen 寫出 `_Chinese`；`applyloc` 會將其小寫化 — 在 Linux/Proton 上大小寫有差異）。CJK 文字請使用 `applyloc`，絕對不要用 `apply`/`build`（引擎的 cp1252 會把中文變成 `?`）。
+簡體中文 SSE 讀取 Localized 的 `<plugin>_chinese.STRINGS`，採 **UTF-8**（NOT GBK），語言後綴為
+**lowercase**（Mutagen 寫的是 `_Chinese`；`applyloc` 會將其轉小寫 — 在
+Linux/Proton 上大小寫有差）。CJK 文字請用 `applyloc`，絕不用 `apply`/`build`（inline strings 在
+引擎的 cp1252 下會變成 `?`）。

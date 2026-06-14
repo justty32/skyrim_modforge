@@ -1,9 +1,9 @@
-<!-- 基本 NPC 模式 -->
-# 食譜手冊 — 基本 NPC 模式
+<!-- NPC basic patterns -->
+# 食譜手冊 — NPC 基礎
 
-← [目錄](cookbook-index.md) | [lifelike 主頁](README.md)
+← [cookbook index](cookbook-index.md) | [lifelike hub](README.md)
 
-## 「酒館常客」（僅沙盒模式）
+## 「旅店常客」（僅 Sandbox）
 
 ```jsonc
 { "packages": [
@@ -25,9 +25,9 @@
   ] }
 ```
 
-## 「跨城通勤者」（Travel + 沙盒 + 市民身份）
+## 「跨城通勤者」（Travel + Sandbox + 公民身分）
 
-在上方酒館常客的基礎上新增：
+加到上面的旅店常客之上：
 ```jsonc
 { "packages": [
     { "editorId": "MF_GoOut", "template": "Skyrim.esm:0x016FAA",
@@ -64,11 +64,11 @@
   ] }
 ```
 
-職業應以魔力為主，並側重破壞系魔法的技能權重。
+Class 應以 magicka 為主，並帶有偏好 Destruction 的技能權重。
 
-## 「友善的自我防衛者」（只在受到攻擊時才還手的市鎮居民）
+## 「友善的自衛者」（只在被攻擊時才戰鬥的鎮民）
 
-此設定刻意與戰鬥法師形成對比：**不**使用 `Aggressive`（這樣做有將玩家視為敵對的風險）。Aggression 決定的是*主動發動攻擊*的行為；`Brave` 則決定受到攻擊後是逃跑還是迎戰。
+刻意與戰鬥法師形成對比：**不要**使用 `Aggressive`（它有把玩家當成敵對的風險）。Aggression 掌管的是*發動*；`Brave` 掌管的是被攻擊後逃跑還是堅守。
 
 ```jsonc
 { "npcs": [
@@ -80,7 +80,7 @@
   ] }
 ```
 
-## 「儀式施法者」（UseMagic — 非戰鬥排程施法）
+## 「儀式施法者」（UseMagic — 非戰鬥的排程施法）
 
 ```jsonc
 { "packages": [
@@ -106,11 +106,11 @@
   ] }
 ```
 
-「Spell」欄位是指向特定 SPEL 記錄的 `PackageTargetObjectID` FormLink，**不是**類別列舉。目標欄位預設為 `PackageTargetSelf`（適用於 Candlelight/Healing/Ward 等自身施放的法術）；若需對特定目標施法，請將 `target` 設為已放置的參照物件。戰鬥狀態會搶占 UseMagic 的執行，除非加入 `flags: [ "IgnoreCombat" ]`。
+「Spell」槽是一個指向特定 SPEL 記錄的 `PackageTargetObjectID` FormLink——而不是一個 category enum。target 槽預設為 `PackageTargetSelf`（對 Candlelight/Healing/Ward 這類自我施放的法術是正確的）；要對 X 施法就把 `target` 設成一個 placed-ref。除非你加上 `flags: [ "IgnoreCombat" ]`，否則戰鬥會搶占 UseMagic。
 
-## 「跟隨玩家的同伴」（Follow — 僅限移動層）
+## 「跟在玩家身後的同伴」（Follow — 僅移動層）
 
-一個以玩家為目標的 Follow 套件搭配市民身份食譜，可讓生成的 NPC 跟隨玩家**並在快速旅行後持續存在**（引擎會對執行「跟隨玩家」套件的角色一同進行快速旅行）。*移動層*本身不需要管理用的任務——僱用/解僱對話與跟隨派系（見 [hireable-follower gotcha](gotchas.md)）只是讓玩家能夠自行切換開關的必要條件。
+一個以玩家為目標的 Follow 套件 + 公民身分食譜，會讓一個生成的 NPC 跟在玩家身後**並在快速旅行間持續存在**（引擎會把執行跟隨玩家套件的 actor 一起快速旅行）。*移動*層不需要任何管理用的 quest——僱用／解僱對話 + follow faction（見 [hireable-follower gotcha](gotchas.md)）只是用來讓玩家可切換而已。
 
 ```jsonc
 { "packages": [
