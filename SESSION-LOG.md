@@ -10,15 +10,8 @@
 
 ## 最新進度（幾句話）
 
-- **zh-TW + html 全面重譯重組（2026-06-14）**：`docs/zh-TW/` 整批重譯，1:1 鏡像 EN `docs/`——spec 全移入 `spec/` 子夾並對齊 12 檔結構（dialogue/quests/identities/worldspaces/refs 拆補）、補 `local-skyrim-extraction`、刪 `asset-pipelines/` 孤兒鏡像。逃出鏡像樹的連結補一層 `../`；137 條內連結零斷鏈；`engine-internals` 標題保留英文當 anchor 目標。`generate.py` 的 SECTIONS 更新後重生 html bundle（31 頁）。並行 subagent 翻譯（每檔一支，統一規則+詞彙表）。
-- **冷啟動健檢 + memory/docs 整理（2026-06-14）**：① 補 feature-dev/investigation 入口的冷啟動斷點（feature-dev 流程框補離線測試步驟 + 連 testing/dev-env + 寫明「實機測試一律使用者做」；investigation 連 landed/code-map 判可行性）。② memory 整理：重寫 `working-style`、修 `session-log-test-queue-open-only` 與索引 ×3 的大重構失效路徑、`docs-workflows-split-and-structure-principle` 門檻段更新；25 個 `[[links]]` 無斷鏈。③ **拆檔門檻定案分兩套**：`docs/` 使用手冊 **300 行**、`workflows/` 開發流程 **8192 bytes**、src/examples 300 行（DEV-GUIDE/conventions/roadmap 同步）。④ docs/ 拆檔：`SPEC-world`→world+worldspaces、`SPEC-dialogue-quests`→dialogue+quests+identities，入站連結全改、tracked EN docs 零斷鏈；**zh-TW 鏡像 re-sync 仍 deferred**（落差加大，記 roadmap）。
-- **agent 並行 prep（2026-06-14）**：為「其他 agent 並行討論 Sofia 劇情 / 調查 mod」備好兩工作區 + 共用資料 + 工具：① 新 CLI 指令 `gamedata <plugin> <outDir>`（lazy 串流批次抽書/對白/任務/NPC・物品・地點・魔法）；② `sub_projs/game-data/`（已抽 vanilla+DLC+CC + Sofia/VIGILANT/RDO/FCO/IFDL… 文本，`extract.sh` 重生、文本 gitignore）；③ 工作區 `sub_projs/sofia-patch/`（劇情）+ 新 `sub_projs/mod-survey/`（mod 調查），各 symlink game-data/guide/mods；④ 兩份 guide：`workflows/investigation/esm-formid-access.md`、`mod-survey-guide.md`。**大重構期間主 session 不碰這兩工作區 + game-data。**
-- **大重構（拆檔門檻）— 主體完成 2026-06-14**：門檻＝**文檔 8192 bytes**（src/examples 維持 300 行）；DEV-GUIDE 觸發 A + conventions 同步。已拆：`tooling.md`→`tooling/`、`landed.md`→`landed/`（CODE_MAP 五分法）、**完成的 plans+specs→各自 archive**（原則：completed→archive 凍結不拆、現役夾清空）、idea 報告升 L4（`particle-vfx/`/`map-scene/`/`animation/`/`voice-clone/engine-setup/`）。全樹相對連結健檢通過。
-  - ✅ DEV-GUIDE 改**被動參考**（結構整理原則+四級成長按需取用，類 zh-tw/html）；**鐵律上提到 CLAUDE.md always-on**；INDEX/conventions/各 workflow README 的「元工作流/貫穿」標籤同步改被動。
-  - ✅ plans/specs **未來命名去日期**（`<功能>.md` / `<功能>-design.md`，日期記 index）；archived 舊檔保留日期前綴、凍結。
-  - ✅ 小清理：`decode/notes-gemini-voice` 已刪；`docs→workflows` 舊路徑 live 檔已校正（archive 凍結容忍）；`feature-dev/gotchas.md` 已檔內分節。idea `01`/`03` 概覽與 `ideas.md` 經判定 **KEEP**（連貫敘事不硬拆）。**大重構全部收尾。**
-- docs/workflows 大重構：`docs/` 回歸 ModForge 使用手冊（cookbook/cheatsheet/spec）；開發流程全移到 repo 頂層 `workflows/`（INDEX / CODE_MAP / DEV-GUIDE / 各工作流 / 踩坑 / roadmap / 調查）。CLAUDE.md 瘦成路由器；`SESSION-LOG.md` + `WAIT_USER.md` 升到 repo 根。
-- 語音合成解耦為基石專案 `sub_projs/skyrim-voicegen/`（協議 PROTOCOL.md）；Sofia 擴充為消費者專案 `sub_projs/sofia-patch/`。
+- 目前無跨工作流的 open 項；各工作流的 open 狀態見下表。
+- **近期已落地（細節在 git log）**：docs/workflows 大重構（CLAUDE.md 瘦成路由器、開發流程移到頂層 `workflows/`）→ 拆檔門檻定案（docs 300 行 / workflows 8192 bytes）→ DEV-GUIDE 改被動參考、plans/specs 命名去日期 → docs/ SPEC 拆分 → **zh-TW + html 全面重譯重組（1:1 鏡像 EN，原 deferred 的 re-sync 已補完）**。語音合成已解耦為 `sub_projs/skyrim-voicegen/`、Sofia 擴充為 `sub_projs/sofia-patch/`；`gamedata` CLI + `sub_projs/game-data/` 供並行 agent 取用。
 
 ## 各工作流 session-log
 
@@ -31,10 +24,3 @@
 ## 不屬任何工作流的進度（堆太多 → 拆進 `session_logs/`）
 
 （無）
-
-## justty32 的隨筆
-
-整理 memory
-把dev-guide弄成被動式，不要每次都貫穿所有workflow，他應該是一個獨立的workflow，只在需要時被使用者拿出來作用，就類似zh tw和html那種。
-然後是plans和specs，我要重構這兩個工作流與其現有內容。其現有內容的檔名不應該含有日期，日期應該放在index部分
-4096 bytes做上限還是太小了，換8192會好點。然後其他如src,example的上限還是保持行數三百行。
