@@ -15,6 +15,10 @@
 
 ## 現役設計方案
 
-**目前無現役設計方案**——已落地的 design 一律移進 [archive/](archive/README.md)（凍結、不在維護鏈、不套拆檔門檻）。下一份待「身份系統 ③ 聲望/行為追蹤」開始討論時才產出（見 [roadmap](../roadmap.md)）。
+| 設計 | 日期 | 狀態 | 對應 plan |
+| --- | --- | --- | --- |
+| [action-system-asset-generation-design.md](action-system-asset-generation-design.md)（OAR moveset + BDI config + PIE 巨集生成） | 2026-06-14 | **草案,待自審** | 尚未 |
+
+> 草案依據 [mod-survey/action-system/](../../sub_projs/mod-survey/action-system/) 的實檔驗證調查;下一步是 spec 自審 → [plan](../plans/README.md)。
 
 新設計命名 **`<功能>-design.md`（不含日期）**，日期記在現役 index 表的一欄；對應 [plans/](../plans/README.md) 同名 plan，落地後即移 [archive/](archive/README.md)。（archived 舊檔仍保留歷史日期前綴、凍結不動。）
