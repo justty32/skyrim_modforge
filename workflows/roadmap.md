@@ -17,6 +17,10 @@
   - **MVP scope**：esp 端＝PERK（既有 perk 支援可重用，注意 [[perk-conditiontabcount-ctd]]）+ 3 個 GLOB（level/ratio/legendary）+ Advance/Book/Workbench KYWD；資產端＝產生器輸出 `Data/SKSE/Plugins/CustomSkills/<X>.json`（form-ref 用 `"Plugin.esp|FormId"`，與 ModForge FormId 流程契合）+ 可選 `SKILLS.json`（掛進原版技能頁）+ 一支 init alias script + 訓練 TIF。
   - **進階（後排）**：Fortify-skill 附魔/藥水支援需 `ActorValueData/*.toml` + 原生 SKSE plugin（純 esp+json 做不到）。
   - **下一步**：idea → 寫 [spec](specs/README.md)（spec 欄位長相草案已在指南 §10），再 plan → build。
+- **OAR 動畫替換生成（Open Animation Replacer）** — 讓 ModForge 從 spec 生成一個 OAR 替換 mod（condition-based 動畫替換，DAR 後繼、最高槓桿的動畫整合目標）。分析見 [idea/animation/integration-layer.md](idea/asset-pipelines/animation/integration-layer.md) §5，實作指南見 [idea/animation/oar-replacer-guide.md](idea/asset-pipelines/animation/oar-replacer-guide.md)。
+  - **可生成範圍（純確定性 folder+JSON，不需 esp）**：`OpenAnimationReplacer\<Mod>\<Submod>\` 樹 + replacer-mod/submod `config.json`（name/description/priority/conditions）。OAR 的 condition 模型對應 ModForge 既有 CTDA condition 支援；form-ref 用 `Plugin|FormID`。variants/presets/functions/進階 submod 設定可分階段補。
+  - **邊界**：`.hkx` 動畫本體不在此功能內（屬 [animation/havok-blender](idea/asset-pipelines/animation/havok-blender.md) 線）；OAR 需先跑一次 Nemesis/Pandora 建 base behavior（玩家端前置）。
+  - **下一步**：idea → [spec](specs/README.md)（指南 §10 有 spec 欄位草案）→ plan → build。
 
 ## 結構／工具
 
