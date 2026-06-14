@@ -8,10 +8,13 @@
 
 ```
 修改程式碼（增量）
-  → 使用者測試 → 回報問題 → 修程式碼 → 重複
+  → 跑離線測試（scripts/test-offline.sh = Category!=RequiresSkyrim）綠燈
+  → 交使用者實機測試 → 回報問題 → 修程式碼 → 重複
   → 全數通過後：補齊 CODE_MAP → 補文檔 → commit
 ```
 
+- **離線測試是你（Claude）自己跑**的把關（鐵律：改完跑測試）；指令/分類見 [testing](../testing.md)、跨機差異見 [dev-env](../dev-env.md)。
+- **實機測試一律由使用者做**——Claude 起不了 Skyrim/MO2/Proton（見 [dev-env](../dev-env.md) 機器能力表）。所以先靠離線測試 + 結構驗證把握到極限，再交付；需使用者驗證的記到 [WAIT_USER](../../WAIT_USER.md)。
 - 測試迭代期間，CODE_MAP / 文檔可暫時落後。
 - 跨 session 時在 [session-log.md](session-log.md) 補一行 `[功能名] 文檔/CODE_MAP 待同步`，下個 session 不會誤判已同步。
 - **commit 前**：CODE_MAP + 文檔必須對齊（HTML 不要求，examples/assets 視情況）。
