@@ -8,8 +8,8 @@ bundle can never drift from the source docs. Re-run after editing any zh-TW mark
 
     python docs/zh-TW/html/generate.py
 
-The page set mirrors the semantic Markdown split 1:1 (SPEC = index + 7 parts,
-cookbook = index + 6 parts), NOT the old numbered spec-1..3 / cookbook-1..4 layout.
+The page set mirrors the semantic Markdown split 1:1 (SPEC = index + 11 parts under
+docs/zh-TW/spec/, cookbook = index + 6 parts), tracking the EN docs/ structure.
 """
 import re
 import sys
@@ -21,21 +21,26 @@ ZH = HERE.parent                         # docs/zh-TW
 # Ordered sections -> pages. Each page: (markdown path relative to docs/zh-TW, output .html, nav label).
 SECTIONS = [
     ("代理工作流程", [
-        ("for_agent.md",          "for-agent.html",            "概覽"),
-        ("for_agent_cli.md",      "for-agent-cli.html",        "CLI 驅動"),
-        ("for_agent_lib.md",      "for-agent-lib.html",        "函式庫 API"),
-        ("external_assets.md",    "external-assets.html",      "外部資源"),
-        ("engine-internals.md",   "engine-internals.html",     "引擎內部原理"),
+        ("for_agent.md",               "for-agent.html",               "概覽"),
+        ("for_agent_cli.md",           "for-agent-cli.html",           "CLI 驅動"),
+        ("for_agent_lib.md",           "for-agent-lib.html",           "函式庫 API"),
+        ("external_assets.md",         "external-assets.html",         "外部資源"),
+        ("engine-internals.md",        "engine-internals.html",        "引擎內部原理"),
+        ("local-skyrim-extraction.md", "local-skyrim-extraction.html", "本地 Skyrim 抽取"),
     ]),
     ("規格說明（SPEC）", [
-        ("SPEC-index.md",            "spec-index.html",            "總覽 · 目錄"),
-        ("SPEC-intro.md",            "spec-intro.html",            "介紹 · 記錄類型"),
-        ("SPEC-magic.md",            "spec-magic.html",            "魔法 · 附魔"),
-        ("SPEC-dialogue-quests.md",  "spec-dialogue-quests.html",  "對話 · 任務 · 腳本"),
-        ("SPEC-world.md",            "spec-world.html",            "世界空間 · 地城 · 商販"),
-        ("SPEC-items.md",            "spec-items.html",            "物品 · 配方 · 資源"),
-        ("SPEC-packages.md",         "spec-packages.html",         "AI 套件 · 天氣"),
-        ("SPEC-workflow.md",         "spec-workflow.html",         "工作流程"),
+        ("spec/SPEC-index.md",       "spec-index.html",       "總覽 · 目錄"),
+        ("spec/SPEC-intro.md",       "spec-intro.html",       "介紹 · 記錄類型"),
+        ("spec/SPEC-magic.md",       "spec-magic.html",       "魔法 · 附魔"),
+        ("spec/SPEC-dialogue.md",    "spec-dialogue.html",    "對話 · 場景"),
+        ("spec/SPEC-quests.md",      "spec-quests.html",      "任務 · Story Manager"),
+        ("spec/SPEC-identities.md",  "spec-identities.html",  "身分系統"),
+        ("spec/SPEC-world.md",       "spec-world.html",       "Cell · 放置 · 光照"),
+        ("spec/SPEC-worldspaces.md", "spec-worldspaces.html", "世界空間 · 清單 · 商販"),
+        ("spec/SPEC-items.md",       "spec-items.html",       "配方 · 天賦 · 資源"),
+        ("spec/SPEC-packages.md",    "spec-packages.html",    "AI 套件 · 天氣"),
+        ("spec/SPEC-workflow.md",    "spec-workflow.html",    "工作流程"),
+        ("spec/SPEC-refs.md",        "spec-refs.html",        "$ref · 參數化"),
     ]),
     ("讓 NPC 更有生命力", [
         ("lifelike/README.md",                "lifelike.html",             "總覽"),

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FOR_AGENT — 以 AI 代理身份操作 ModForge — ModForge 文件</title>
+<title>FOR_AGENT — 以 AI agent 身分操作 ModForge — ModForge 文件</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,15 +15,20 @@
   <a class="nav-item" href="for-agent-lib.html">函式庫 API</a>
   <a class="nav-item" href="external-assets.html">外部資源</a>
   <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
+  <a class="nav-item" href="local-skyrim-extraction.html">本地 Skyrim 抽取</a>
   <div class="nav-section">規格說明（SPEC）</div>
   <a class="nav-item" href="spec-index.html">總覽 · 目錄</a>
   <a class="nav-item" href="spec-intro.html">介紹 · 記錄類型</a>
   <a class="nav-item" href="spec-magic.html">魔法 · 附魔</a>
-  <a class="nav-item" href="spec-dialogue-quests.html">對話 · 任務 · 腳本</a>
-  <a class="nav-item" href="spec-world.html">世界空間 · 地城 · 商販</a>
-  <a class="nav-item" href="spec-items.html">物品 · 配方 · 資源</a>
+  <a class="nav-item" href="spec-dialogue.html">對話 · 場景</a>
+  <a class="nav-item" href="spec-quests.html">任務 · Story Manager</a>
+  <a class="nav-item" href="spec-identities.html">身分系統</a>
+  <a class="nav-item" href="spec-world.html">Cell · 放置 · 光照</a>
+  <a class="nav-item" href="spec-worldspaces.html">世界空間 · 清單 · 商販</a>
+  <a class="nav-item" href="spec-items.html">配方 · 天賦 · 資源</a>
   <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
   <a class="nav-item" href="spec-workflow.html">工作流程</a>
+  <a class="nav-item" href="spec-refs.html">$ref · 參數化</a>
   <div class="nav-section">讓 NPC 更有生命力</div>
   <a class="nav-item" href="lifelike.html">總覽</a>
   <a class="nav-item" href="cookbook-index.html">食譜手冊 · 目錄</a>
@@ -40,48 +45,134 @@
 </nav>
 <div class="content"><div class="content-inner"><div id="md" class="md"></div></div></div>
 <textarea id="src" hidden>
-# FOR_AGENT — 以 AI 代理身份操作 ModForge
+# FOR_AGENT — 以 AI agent 身分操作 ModForge
 
-您（一個 AI 代理）驅動 ModForge 將一項內容需求轉換為 Skyrim 外掛，並翻譯外掛文字。ModForge 是確定性的那一半；**您是自然語言 → 規格的那一半。** 您永遠不手寫外掛位元組或 FormID — 您輸出一份**規格**，工具則輸出一個有效的 `.esp`/`.esl`。
+你（一個 AI agent）驅動 ModForge，把內容需求轉成 Skyrim 外掛，並翻譯外掛文字。ModForge 是決定性的那一半；**你是 NL→spec 的那一半。** 你絕不手寫外掛位元組或 FormID——你產出一份 **spec**，工具產出有效的 `.esp`/`.esl`。
 
 ## 驅動 ModForge 的兩種方式
 
-| 路徑 | 適用時機 | 指南 |
+| Path | Use when | Guide |
 |---|---|---|
-| **CLI + JSON**（預設） | 描述一個模組 → 撰寫一份 JSON 規格 → 執行 CLI。可審閱、可差異比較、無需編譯步驟。 | **[for_agent_cli.md](for-agent-cli.html)** |
-| **函式庫**（`ModForge.Core`） | 規格必須以程式*計算*而來 — 迴圈/條件判斷、從他處取得的資料、將產生功能嵌入更大的程式、或以程式碼回應建置警告。 | **[for_agent_lib.md](for-agent-lib.html)** |
+| **CLI + JSON**（預設） | 描述一個 mod → 寫一份 JSON spec → 執行 CLI。可審閱、可 diff、無編譯步驟。 | **[for_agent_cli.md](for-agent-cli.html)** |
+| **Library**（`ModForge.Core`） | 當 spec 必須被 *計算* 出來——迴圈/條件判斷、從別處拉資料、在更大的程式裡嵌入生成流程，或在程式碼中對 build 警告做出反應。 | **[for_agent_lib.md](for-agent-lib.html)** |
 
-預設使用 CLI + JSON；只在規格必須計算而非手寫時才使用函式庫。兩種路徑產生相同的外掛，並共用下方的欄位參考與限制。
+預設使用 CLI + JSON；只有在 spec 必須被計算（而非撰寫）時才動用 library。
+兩條路徑產生相同的外掛，並共用下方相同的欄位參考與限制。
 
-- **規格欄位參考（兩種路徑均適用）：** [SPEC-index.md](spec-index.html) · 完整範例：`../examples/sample_spec.json`
-- **讓 NPC 有生命力**（沙盒 / 日常生活 / 戰鬥 / 施法）：從 [lifelike/](lifelike.html) 開始 — 食譜 + 雙系統洞察 + 原版 FormID 參考 + 常見陷阱。
-- **對話語音生成：** built plugin 完成後，用 `voicediag` 或 `voicelines --plan` 先離線檢查 INFO→speaker→voiceType→輸出檔名，再用 `voicelines` 產生 `Sound/Voice/...` loose assets。詳見 [SPEC-workflow.md](spec-workflow.html)。
-- **產生器背後的引擎機制：** [engine-internals.md](engine-internals.html)。
-- **帶入您自己的網格 / 貼圖 / 音效 / 動畫**（自訂內容模組）：外部資源合約 — ModForge 所參考與打包的部分 vs. 您需要在別處製作的部分 — 詳見 **[external_assets.md](external-assets.html)**。
+- **Spec 欄位參考（兩條路徑通用）：** [SPEC-index.md](spec-index.html) · 完整範例：`../examples/sample_spec.json`
+- **讓 NPC 顯得栩栩如生**（sandbox / 日常生活 / 戰鬥 / 施法）：從
+  [lifelike/](lifelike.html) 開始——配方 + 雙系統洞見 + 原版 FormID 參考 + 陷阱。
+- **原版/DLC FormID 查詢快取：** 在爬整個 repo 之前，先從
+  [`../reference/INDEX-skyrim-masters-local.md`](../reference/INDEX-skyrim-masters-local.md) 開始。它對應到本機的 `Skyrim.esm`/DLC 萃取輸出、快取的 `find/*.txt`
+  探測結果、`run-status.tsv`、`skyrim-smtree.txt`，以及做新查詢的確切 CLI 指令。
+- **生成器背後的引擎機制：** [engine-internals.md](engine-internals.html)。
+- **帶你自己的網格 / 貼圖 / 音效 / 動畫**（自訂內容 mod）：外部資源契約——ModForge 引用 + 打包了什麼，相對於你在別處撰寫的——在
+  **[external_assets.md](external-assets.html)**。
+- **對話的語音生成：** 從 [SPEC-workflow.md § Voice](spec-workflow.html#voice-tts-voice-cloning--fuz)
+  和 [CODE_MAP.infra.md § 語音克隆](../../workflows/common/code-map/CODE_MAP.infra.md#語音克隆tts--fuz) 開始。在花時間於 TTS 之前，永遠先跑
+  `voicediag` 或 `voicelines --plan`。
 
-## 限制 — 請如實說明，不要過度宣稱
+## 限制——誠實以對，不要過度宣稱
 
-ModForge 輸出的是**結構有效**的記錄。這與**遊戲內可正常運作**並不相同：
+ModForge 寫出 **結構上有效** 的記錄。這跟 **遊戲內可運作** 不是同一回事：
 
-- **NPC 現在可以是功能性角色** — 透過原版 ref 設定 `race` + `class`（+ `outfit`），NPC 就會像一個真實角色一樣行動。用 `items` 給 NPC 攜帶裝備（一份 `{ item: <ref>, count: N }` 清單 — 原版或規格內的 weapon/armor/potion/gold）；NPC 攜帶的武器會自動裝備（這就是武裝 NPC 的方式 — 給它真實的 `damage`，或 template 一把原版武器，複製品的傷害會延續過去，否則一把 0 傷害的武器評分會低於拳頭、永遠不會被拔出），而這些物品會在**死亡時**作為戰利品掉落。注意：`essential` NPC 永遠不會死，所以它的裝備無法被搜刮（而一個*活著*的 NPC 身上穿戴/裝備的物品只能透過偷竊看到，且需要 perk 才能取得）— 若希望玩家能殺死並搜刮它們，請改用 `protected`。
-- **放置適用於室內 cell 以及開放世界（室外）：** `placements` 可將 NPC/物件放入 (a) 規格中新建的室內 cell（`cell` = 其 editorId；用 `coc <editorId>` 進入）、(b) 一個**原版室內 cell**（`cell` = `"Skyrim.esm:0xFORMID"`，例如 `0x01605E` = Bannered Mare — `find <Skyrim.esm> <name> Cell`），或 (c) **室外/開放世界**（`worldspace` = `"Skyrim.esm:0x00003C"` = Tamriel — `find <Skyrim.esm> <name> Worldspace`；`position` 此時為世界座標，位於 floor(x/4096)、floor(y/4096) 處的室外 cell 會被找出並覆寫）。所有原版放置都會覆寫 cell/worldspace 以*新增*您的 ref（原版內容不受影響），並讀取遊戲的 `Data` 資料夾 — 若不在預設 Steam 路徑請設定 `MODFORGE_SKYRIM_DATA`。（一個未生成過的室外網格會得到一個全新的 cell — 僅結構性、未經遊戲內驗證；放置在既有地點附近是較安全的做法。）
-- **物品/法術現在帶有遊戲屬性：** 武器有 `damage`/`speed`/`reach`，護甲有 `armorType` + biped `slots`，**法術/藥水有 `effects`**（一個 MagicEffect *ref* + magnitude/area/duration），而法術有 `spellType`/`castType`/`targetType`/`baseCost`。一個帶單一效果的藥水可完全運作；一個法術需要一個效果加上施放欄位。`effects[].magicEffect` *ref* 可以是一個原版 MGEF **或**規格中的一個 `magicEffects` 條目 — 為一個量身打造的效果撰寫一個自訂 MGEF（`archetype`/`actorValue`/`magicSkill`/`resistValue`/`flags`/…）。
-- **分級列表 + 容器：** `leveledItems`/`leveledNpcs`（加權的等級門控條目，每筆為一個 *ref*）與 `containers`（物品 *ref* + 數量）— 戰利品表、商人箱等。
-- **合成：** `recipes`（COBJ）讓一個物品（`createdObject` *ref*）可在一個 `workbench` 關鍵字處合成（預設為鍛造爐），透過消耗 `components`（物品 *ref* + 數量）。
-- **職業：** `classes`（CLAS）定義一個 npc 的「專業」— `healthWeight`/`magickaWeight`/`staminaWeight` + `skillWeights`（技能 → 0-255）+ `teaches`；一個 npc 的 `class` ref 可指向一個。
-- **戰鬥風格（CSTY）+ NPC.spells：** `combatStyles[]` 定義一個 NPC *如何*戰鬥 — 六個 `equipMult*` 欄位是 AI 的每武器類偏好分數（要做一個法師 NPC 就把 `equipMultMagic` 設高；原版 csVampireMagic 用 8.1）。一個 npc 的 `combatStyle` ref 指向一個。搭配 `npcs[].spells`（SPEL ref 陣列，填入 AI 的法術清單），引擎會根據 CombatStyle 偏好從列出的法術中選一個施放。用 `cstydiag <Skyrim.esm> <0xFORMID>` 檢視任何原版 CSTY 的數值。
-- **AI 行動套件（PACK）：** `packages` 賦予 NPC 決策層行為（「在某處沙盒」、「前往旅店」等）。Skyrim 的 PACK 使用一個原版**程序模板**（`template` *ref*，例如 `Skyrim.esm:0x01C254` = Sandbox）來定義資料輸入結構；套件再填入這些輸入。支援的模板：Sandbox / Travel / UseMagic / Patrol / Follow / Escort（見 [lifelike/formid-reference.md](formid-ref.html)）。`interruptFlags` 陣列（`HellosToPlayer`、`AllowIdleChatter`、`WorldInteractions`…）正是區分一座沉默雕像與一個生動 NPC 的關鍵。透過 `npcs[].packages` 把套件指派給一個角色。用 `packagediag <Skyrim.esm> <0xFORMID>` 傾印一個模板的插槽結構，或檢視任何套件。
-- **更多記錄類型**（相同的規格→建置→dump 模式）：`ingredients`（煉金，含 `effects`）、`ammunitions`（`damage`）、`scrolls`（`effects` + 施放欄位）、`soulGems`（`maximumCapacity`）、`keys`、`keywords`（定義你自己的 → 從任何記錄的 `keywords` 引用它）、`outfits`（物品 *ref*；一個 npc 的 `outfit` 可指向一個規格內的 outfit），以及 `statics`/`activators`（一個 `model` `.nif` 路徑 — 參考一個原版網格 — 作為放置基底）。
-- **可參考外部/原版表單**（race/class/outfit/keywords/factions/magicEffect/放置基底+cell+worldspace/分級+容器條目，透過 `"<master>:0xFORMID"`）。
-- **對話**記錄是有效的，但一條對話實際出現在對話中可能需要任務旗標/分支調整。配音是 post-build loose asset workflow：沒有 voice files 時仍需字幕 / Fuz Ro D-oh；有 `voiceTemplates` + TTS wrapper 時可用 `voicelines` 生成 `.fuz`/`.wav`。
-- **Story Manager（SM）事件驅動任務：** 在一個任務中加入 `storyEvent` + `aliases`，建置時就會在原版事件根下自動配線 SMBN→SMQN。支援的事件：`KillActor`、`ChangeLocation`、`CastMagic`、`AddItem`、`Assault`、`CraftItem`、`PlayerRemoveItem`、`Arrest`、`IncreaseLevel`、`ScriptEvent`。別名填充：`fromEvent:<slot>`、`uniqueActor:<ref>`、`forced:<ref>`、`createObject:<ref>@<targetAlias>`（在另一個 alias 處生成一個指向 `<ref>` 的新 ref — 遊戲內確認 2026-06-05）、`findMatching:closest`|`findMatching:any`（以載入區域中最近/第一個符合該 alias `conditions` 的既有 ref 填充，例如最近的 NPC）。一個 alias 也可攜帶一段 Papyrus **alias 腳本**（`script`/`scriptSource`/`scriptProperties`，extends `ReferenceAlias`），它會跟著填入它的任何 ref 一起走 — 例如在一個 `createObject` 生成的 ref 上掛 `OnActivate` 以串接一個 story event（遊戲內確認 2026-06-05）。**遊戲內確認（2026-06-04）**，涵蓋所有變體模式包含 ESL 插件。見 SPEC-dialogue-quests.md → 「Story Manager quests」。
-- **SM 任務上的日誌推進：** 將一個 stage 標記為 `startUpStage:true`，引擎會在任務啟動的瞬間自動執行它，因此一個 SM 觸發的任務無需外部 `SetStage` 即可顯示其開場日誌條目 / 顯示其第一個目標。之後由一個玩家動作搭配一個 alias `script`（其 `OnActivate` 呼叫 `GetOwningQuest().SetStage(N)`）來完成/關閉它（可複用的 `examples/MFSE_AdvanceStage.psc`）。完整劇情弧示範：`examples/story-manager-queststage.json`（施法 → 顯示目標 + 生成箱子 → 開箱 → 完成目標 + 關閉任務）。遊戲內確認 2026-06-05。
-- **一般任務上的別名（無 `storyEvent`）：** `aliases[]` 區塊在一個普通的 StartGameEnabled 任務上也有效 — `forced`/`uniqueActor`/`createObject`/`findMatching` 填充以及一個 alias `script` 全部適用（只有 `fromEvent` 在沒有事件時無效）。它們在任務啟動時（= 遊戲載入）填充。所以一個普通任務也能把一個 NPC/ref 強制填入一個別名、在它上面生成一個物件，並攜帶一段 `OnActivate` alias 腳本，全程不需要 SM 事件。示範 `examples/quest-alias-standalone.json`。遊戲內確認 2026-06-05。
-- **Script Event（自訂 story 觸發）：** 一個 `ScriptEvent` 任務宣告一個 `keyword`；一個 Papyrus 呼叫端發出 `MFStoryEventDispatch.Fire(kw, ref1, ref2, loc)`，引擎將其路由到符合的 SM 任務。派發器 `.pex` 已嵌入 CLI，並由 `package` 自動複製到 `Scripts/`——無需每個模組單獨編譯 Papyrus。**遊戲內確認（2026-06-04）。**
-- **可複用的觸發器函式庫** — 這一行 `Fire()` 呼叫接到四個真實的遊戲內進入點，全部遊戲內確認（2026-06-05）：magic effect（施放一個法術）、potion（飲用）、activator（`OnActivate`，拉動一個拉桿 — 模型必須是一個真實的原版 NIF）、dialogue 對話行（`TopicInfo` `Fragment_0`，NPC 給出一個任務），以及一段 **alias 腳本**（`ReferenceAlias` `OnActivate`，活化一個任務別名持有的 ref — 包括一個由 `createObject` 在執行時生成的）。範例：`story-manager-{magic,potion,activator,dialogue,alias}trigger.json`。
-- 您無法從此處確認任何東西能**在遊戲中**運作 — 那需要一次 Proton/Skyrim 啟動。請說「已產生並透過 dump 結構驗證」，而非「在遊戲中可運作」，除非有人類測試過。
+- **NPC 現在可以是可運作的 actor**——透過原版 ref 設定 `race` + `class`（+ `outfit`），
+  NPC 就會表現得像真正的 actor。用 `items` 給 NPC 攜帶裝備（一個
+  `{ item: <ref>, count: N }` 清單——原版或 spec 內的武器/護甲/藥水/金幣）；他們攜帶的武器會
+  自動裝備（所以這就是你武裝一個 NPC 的方式——給它真實的 `damage`，或以原版武器當 template，
+  clone 的傷害值便會帶過來，否則 0 傷害的武器評價低於拳頭、永遠不會被拔出來），而且這些物品會在
+  **死亡時** 掉落為戰利品。注意：`essential` NPC 永不死亡，所以他們的裝備無法被
+  搜刮（而 *活著* 的 NPC 身上穿戴/裝備的物品只能透過扒竊看到，需要 perk 才能拿）——
+  若你想讓玩家能殺死並搜刮他們，請用 `protected`。
+- **Placement 對 interior cell 與開放世界（exterior）都有效：** `placements` 把一個
+  NPC/物件放進 (a) 一個 spec 內新建的 interior cell（`cell` = 它的 editorId；用
+  `coc <editorId>` 抵達）、(b) 一個 **原版 interior cell**（`cell` = `"Skyrim.esm:0xFORMID"`，例如
+  `0x01605E` = Bannered Mare——`find <Skyrim.esm> <name> Cell`），或 (c) **exterior/開放
+  世界**（`worldspace` = `"Skyrim.esm:0x00003C"` = Tamriel——`find <Skyrim.esm> <name>
+  Worldspace`；此時 `position` 是世界座標，而位於 floor(x/4096),
+  floor(y/4096) 的 exterior cell 會被找到 + 覆寫）。所有原版 placement 都覆寫該 cell/worldspace 以
+  *加入* 你的 ref（原版內容不受影響），並讀取遊戲 `Data` 資料夾——若不在 Steam 預設位置，請設定
+  `MODFORGE_SKYRIM_DATA`。（一個未生成過的 exterior 網格會取得一個全
+  新 cell——僅結構性、未經遊戲內驗證；在既有地點附近放置才是安全的路徑。）
+- **物品/法術現在帶有玩法數值：** 武器吃 `damage`/`speed`/`reach`，護甲
+  吃 `armorType` + biped `slots`，**法術/藥水吃 `effects`**（一個 MagicEffect *ref* +
+  magnitude/area/duration），而法術吃 `spellType`/`castType`/`targetType`/`baseCost`。一個
+  只有一種 effect 的藥水即完全可運作；一個法術需要一個 effect + 那些 cast 欄位。
+  `effects[].magicEffect` *ref* 可以是原版 MGEF **或** spec 內的 `magicEffects` 條目——為一個量身打造的 effect
+  撰寫自訂 MGEF（`archetype`/`actorValue`/`magicSkill`/`resistValue`/`flags`/…）。
+- **Leveled list + container：** `leveledItems`/`leveledNpcs`（加權、受等級限制的條目，
+  每一個都是 *ref*）以及 `containers`（物品 *ref* + 數量）——loot table、商人箱子等等。
+- **製作：** `recipes`（COBJ）讓一個物品（`createdObject` *ref*）可在某個 `workbench`
+  keyword（預設為鍛造爐）藉由消耗 `components`（物品 *ref* + 數量）製作出來。
+- **Class：** `classes`（CLAS）定義一個 npc 的「職業」——`healthWeight`/`magickaWeight`/
+  `staminaWeight` + `skillWeights`（Skill→0-255）+ `teaches`；一個 npc 的 `class` ref 可指向其中之一。
+- **CombatStyles（CSTY）+ NPC.spells：** `combatStyles[]` 定義 NPC 如何戰鬥——那六個
+  `equipMult*` 欄位是 AI 對每種武器類別的偏好分數（為法師 NPC 把 `equipMultMagic` 推高；
+  原版 csVampireMagic 用 8.1）。一個 npc 的 `combatStyle` ref 指向其中之一。
+  搭配 `npcs[].spells`（SPEL ref 陣列，填入 AI 的法術清單）後，引擎會
+  依 CombatStyle 偏好從列出的法術中挑一個來施放。用
+  `cstydiag <Skyrim.esm> <0xFORMID>` 檢視任何原版 CSTY 的數值。
+- **AI Packages（PACK）：** `packages` 給 NPC 決策層的行為（「在某地點 sandbox」、
+  「前往旅店」等等）。Skyrim PACK 使用一個原版 **procedure template**（`template` *ref*，
+  例如 `Skyrim.esm:0x01C254` = Sandbox），它定義資料輸入的 schema；套件填入那些
+  輸入。支援的 template：Sandbox / Travel / UseMagic / Patrol / Follow / Escort（見
+  [lifelike/formid-reference.md](formid-ref.html)）。`interruptFlags` 陣列
+  （`HellosToPlayer`、`AllowIdleChatter`、`WorldInteractions`、…）正是區分沉默雕像
+  與栩栩如生 NPC 的關鍵。透過 `npcs[].packages` 把套件指派給一個 actor。用
+  `packagediag <Skyrim.esm> <0xFORMID>` 傾印一個 template 的 slot schema，或檢視任何套件。
+- **更多記錄型別**（同樣的 spec→build→dump 模式）：`ingredients`（鍊金，吃 `effects`）、
+  `ammunitions`（`damage`）、`scrolls`（`effects` + cast 欄位）、`soulGems`（`maximumCapacity`）、
+  `keys`、`keywords`（定義你自己的 → 從任何記錄的 `keywords` 引用它）、`outfits`
+  （物品 *ref*；一個 npc `outfit` 可指向 spec 內的 outfit），以及 `statics`/`activators`
+  （一個 `model` .nif 路徑——引用一個原版網格——作為 placement base）。
+- **外部/原版 form 可被引用**（race/class/outfit/keywords/factions/
+  magicEffect/placement base+cell+worldspace/leveled+container 條目，透過 `"<master>:0xFORMID"`）。
+- **Dialogue** 記錄是有效的，但一行台詞真正出現在對話中可能需要
+  quest-flag/branch 調校。語音是選用的 build 後資產生成：設定 `voiceType` 與
+  `voiceTemplate`，build 外掛，跑 `voicediag`，然後 `voicelines`。產生的檔案位於
+  `Sound/Voice/<plugin>/<voiceType>/`；它們不嵌入外掛內。沒有生成的語音
+  檔時，假設為僅字幕/Fuz Ro D-oh 的行為。
+- **Story Manager（SM）事件驅動的 quest：** 對一個 quest 加上 `storyEvent` + `aliases`，build 就會
+  自動在原版事件 root 底下接好 SMBN→SMQN。支援的事件：
+  `KillActor`、`ChangeLocation`、`CastMagic`、`AddItem`、`Assault`、`CraftItem`、
+  `PlayerRemoveItem`、`Arrest`、`IncreaseLevel`、`ScriptEvent`。Alias 的填法：
+  `fromEvent:<slot>`、`uniqueActor:<ref>`、`forced:<ref>`、`createObject:<ref>@<targetAlias>`
+  （在另一個 alias 處生成一個指向 `<ref>` 的新 ref——遊戲內確認 2026-06-05）、
+  `findMatching:closest`|`findMatching:any`（以已載入區域中最近的/第一個既有、符合該 alias
+  `conditions` 的 ref 來填，例如最近的 NPC）。一個 alias 也可以帶一段 Papyrus
+  **alias script**（`script`/`scriptSource`/`scriptProperties`，extends `ReferenceAlias`），它會
+  隨著填入它的那個 ref 一起移動——例如在一個 `createObject` 生成的 ref 上用 `OnActivate` 來串接一個
+  story 事件（遊戲內確認 2026-06-05）。**遊戲內確認（2026-06-04）**
+  於所有變體模式，包括 ESL 外掛。見 spec/SPEC-quests.md → 「Story Manager
+  quests」。
+- **SM quest 上的日誌進度：** 把某個 stage 標記為 `startUpStage:true`，引擎就會在
+  quest 啟動的瞬間自動執行它，因此一個 SM 觸發的 quest 會顯示它的開場日誌條目／顯示它的
+  第一個目標，無需外部的 `SetStage`。稍後再用一個玩家動作搭配一段 alias
+  `script`（其 `OnActivate` 呼叫 `GetOwningQuest().SetStage(N)`）來完成/關閉它（可重用的
+  `examples/MFSE_AdvanceStage.psc`）。完整弧線示範：`examples/story-manager-queststage.json`（施法 →
+  目標顯示 + 箱子生成 → 開箱 → 目標完成 + quest 關閉）。遊戲內確認
+  2026-06-05。
+- **一般 quest 上的 alias（無 `storyEvent`）：** `aliases[]` 區塊在一個普通的
+  StartGameEnabled quest 上也有效——`forced`/`uniqueActor`/`createObject`/`findMatching` 填法 + 一段 alias
+  `script` 全都適用（只有 `fromEvent` 在沒有事件時無效）。它們在 quest 啟動時（= 遊戲
+  載入）填入。因此一個普通 quest 也能把一個 NPC/ref 強制塞進一個 alias、在它身上生成一個物件，並帶一段
+  `OnActivate` alias script，而不需要任何 SM 事件。示範 `examples/quest-alias-standalone.json`。遊戲內
+  確認 2026-06-05。
+- **Script Event（自訂 story 觸發器）：** 一個 `ScriptEvent` quest 宣告一個 `keyword`；一個
+  Papyrus 呼叫者觸發 `MFStoryEventDispatch.Fire(kw, ref1, ref2, loc)`，引擎便把
+  它路由到符合的 SM quest。dispatcher 的 `.pex` 嵌在 CLI 內，並由 `package` 自動複製進
+  `Scripts/`——不需要每個 mod 各自編譯 Papyrus。**遊戲內
+  確認（2026-06-04）。**
+- **可重用的觸發器函式庫**——這一行 `Fire()` 呼叫接到四個真實的遊戲內 entry
+  point，全部遊戲內確認（2026-06-05）：magic effect（施放一個法術）、potion（喝下）、
+  activator（`OnActivate`，拉一個拉桿——model 必須是真實的原版 NIF）、dialogue 台詞
+  （`TopicInfo` `Fragment_0`，NPC 給一個 quest），以及一段 **alias script**（`ReferenceAlias`
+  `OnActivate`，啟動一個 quest alias 持有的 ref——包括一個由
+  `createObject` 在執行期生成的 ref）。範例：`story-manager-{magic,potion,activator,dialogue,alias}trigger.json`。
+- 你無法從這裡確認任何東西在 **遊戲內** 可運作——那需要一次 Proton/Skyrim 啟動。
+  除非有人類測試過，否則說「已生成並結構性驗證（dump）」，而不是「在遊戲內可運作」。
 
-當一項需求需要 Limits 清單中的某項時，請直接說明，並提供實際可做的部分。
+當一個需求需要 Limits 清單中的某項東西時，直白地說出來，並提供 *可以* 做到的部分。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>

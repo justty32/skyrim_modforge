@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ModForge spec — 身分（輕量職業／身分系統） — ModForge 文件</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="sidebar">
+  <div class="logo"><a href="index.html">📖 ModForge 文件</a></div>
+  <div class="nav-section">代理工作流程</div>
+  <a class="nav-item" href="for-agent.html">概覽</a>
+  <a class="nav-item" href="for-agent-cli.html">CLI 驅動</a>
+  <a class="nav-item" href="for-agent-lib.html">函式庫 API</a>
+  <a class="nav-item" href="external-assets.html">外部資源</a>
+  <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
+  <a class="nav-item" href="local-skyrim-extraction.html">本地 Skyrim 抽取</a>
+  <div class="nav-section">規格說明（SPEC）</div>
+  <a class="nav-item" href="spec-index.html">總覽 · 目錄</a>
+  <a class="nav-item" href="spec-intro.html">介紹 · 記錄類型</a>
+  <a class="nav-item" href="spec-magic.html">魔法 · 附魔</a>
+  <a class="nav-item" href="spec-dialogue.html">對話 · 場景</a>
+  <a class="nav-item" href="spec-quests.html">任務 · Story Manager</a>
+  <a class="nav-item active" href="spec-identities.html">身分系統</a>
+  <a class="nav-item" href="spec-world.html">Cell · 放置 · 光照</a>
+  <a class="nav-item" href="spec-worldspaces.html">世界空間 · 清單 · 商販</a>
+  <a class="nav-item" href="spec-items.html">配方 · 天賦 · 資源</a>
+  <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
+  <a class="nav-item" href="spec-workflow.html">工作流程</a>
+  <a class="nav-item" href="spec-refs.html">$ref · 參數化</a>
+  <div class="nav-section">讓 NPC 更有生命力</div>
+  <a class="nav-item" href="lifelike.html">總覽</a>
+  <a class="nav-item" href="cookbook-index.html">食譜手冊 · 目錄</a>
+  <a class="nav-item" href="cookbook-npc-basics.html">食譜：基礎 NPC</a>
+  <a class="nav-item" href="cookbook-followers.html">食譜：跟隨者</a>
+  <a class="nav-item" href="cookbook-world-items.html">食譜：世界 · 物品</a>
+  <a class="nav-item" href="cookbook-presets.html">食譜：預設片段</a>
+  <a class="nav-item" href="cookbook-magic.html">食譜：魔法</a>
+  <a class="nav-item" href="cookbook-social-quest.html">食譜：社交 · 任務</a>
+  <a class="nav-item" href="cookbook-advanced.html">食譜：進階</a>
+  <a class="nav-item" href="cheatsheets.html">速查表</a>
+  <a class="nav-item" href="gotchas.html">常見陷阱</a>
+  <a class="nav-item" href="formid-ref.html">原版 FormID 參考</a>
+</nav>
+<div class="content"><div class="content-inner"><div id="md" class="md"></div></div></div>
+<textarea id="src" hidden>
+# ModForge spec — 身分（輕量職業／身分系統）
+
+← [index](spec-index.html) · dialogue → [SPEC-dialogue](spec-dialogue.html) · quests → [SPEC-quests](spec-quests.html)
+
+
+## 身分（輕量職業／身分系統）
+
+賦予玩家角色定位（聖騎士、商人、冒險者……），這些定位授予常駐能力並改變 NPC 對待玩家的方式。每個身分以一個 **faction** 儲存（持久化的「你擁有它」訊號——存檔安全，並為未來原版 `GetInFaction` 條件閘預留空間）。新增一個 `identities[]` 清單：
+
+```jsonc
+"identities": [
+  { "id": "Paladin", "faction": "MF_FactPaladin", "priority": 30,
+    "grants": ["MF_AbilSmite"],                 // SPELs added on join, removed on leave
+    "acquireBook": "MF_PaladinTome",            // reading it joins the faction (MFIdentityBook OnRead)
+    "onAcquire": { "scene": "MF_OathScene" },   // optional performance played on acquire (e.g. a PlayIdle bow)
+    "activeWhen": [                             // only "active" while wearing heavy armor
+      { "function": "WornHasKeyword", "param": "Skyrim.esm:0x06BBD2", "comparison": "==", "value": 1 } ] },
+  { "id": "Merchant", "faction": "MF_FactMerchant", "priority": 20, "toggle": true,
+    "acquireBook": "MF_MerchantLedger" },       // toggle: reading again leaves the identity
+  { "id": "Adventurer", "faction": "MF_FactAdventurer", "priority": 0, "default": true } // baseline, no book
+]
+```
+
+- **`faction`** — 一個 spec 內的裸 editorId 會自動建成普通 FACT；外部的 `<master>:0xID`（原版／Sofia 的 faction）則照原樣使用。
+- **`acquireBook`** — 一個 `books[]` 項目；build 會掛上可重用的 `MFIdentityBook` 腳本（OnRead → AddToFaction + AddSpell(grants) + 選用的 `AcquireScene.Start()`；`toggle` 則反向操作）。`package` 會出貨預建的 `MFIdentityBook.pex`。**鐵律：** 書本腳本 `extends ObjectReference`（OnRead 是 ObjectReference 事件——`extends Book` 永遠不會觸發它）。
+- **`default: true`** — 每位玩家從遊戲開始就持有此身分，無需書本。build 會新增一個 StartGameEnabled 任務（`MFIdentityDefault`，OnInit），把玩家加入每個 default faction 並授予其能力（冪等；會落在 `.seq` 裡，因此既有存檔也會觸發）。用於基準身分（例如冒險者）。`package` 會出貨 `MFIdentityDefault.pex`。
+- **`autoGrantWhen: { actorValue, threshold }`** — 當玩家的 ActorValue 達到門檻時，自動加入該身分的 faction（一個 StartGameEnabled 輪詢控制器 `MFIdentityAutoGrant` 讀取 `GetActorValue(name) >= threshold`——原版，無需 SKSE）。例如龍裔以 `{ "actorValue": "DragonSouls", "threshold": 1 }`（你吸收的第一個龍魂）。它**只授予 faction 訊號**（接著問候／條件閘會套用；此觸發器不會加入能力／perks）。`package` 會出貨 `MFIdentityAutoGrant.pex`。
+- **`activeWhen`** — 一串 CTDA，用來**收窄**身分何時算作 *active*（例如 `WornHasKeyword(heavy armor)`、`GetBaseActorValue(Speech)>=X`、`GetRelationshipRank(npc)>=Y`）。每條預設在**玩家**身上執行。它會被附加到正向的 `identity`／`primaryIdentity` 條件閘——因此持有但未啟用的身分的問候不會觸發。（它**不**參與 primary 排除——一個被否定的條件束無法用 CTDA 表達——所以一個未啟用的較高身分會退回到普通問候，直到玩家手動覆寫 primary；見下文。）
+- **`grants[]`** — 加入時授予、離開時移除的 SPELs（例如一個常駐效果的 Fortify 能力）。
+- **`grantPerks[]`** — 加入時授予、離開時移除的 PERKs（例如一個條件式的「對亡靈造成神罰」perk——一個 `ModAttackDamage` 入口點，以目標的 `ActorTypeUndead`/`ActorTypeDaedra` 關鍵字為條件閘）。acquire 書本授予第一個；`default` 身分授予全部。（perk 的 CTD tab-count 位元組會自動設定——見 perks 章節。）
+
+用兩個 `DialogueSpec` 標籤來為對話加上**條件閘**。`identity: "Paladin"` 只在玩家持有該身分時顯示這句（`GetInFaction ≥ 1`，外加該身分的 `activeWhen`）。`primaryIdentity: "Paladin"` 只在 Paladin 是玩家**當前 primary 身分**時顯示它——由一個控制器任務在執行期解析（`MFIdentityController`，只要有任何對話用到 primaryIdentity 或 `setPrimaryIdentity` 就會建立它）：它維護一個 `MF_PrimaryIdentity` global = 手動覆寫值（若持有）否則是 `priority` 最高的已持有身分，問候則讀取 `GetGlobalValue(MF_PrimaryIdentity) == <code>`。`package` 會出貨 `MFIdentityController.pex`。狀態變化的問候應做成一個 Hello topic 加上數個帶條件的 INFOs（`hello: true`，依「具體優先」排序），而非分開的多個 topics。
+
+**手動覆寫** — 一個帶 `setPrimaryIdentity: "Merchant"`（或 `"auto"` 以清除）的玩家 topic，會讓 NPC 不論 priority 都把玩家視為該身分（一個 TIF 片段設定 `MF_IdentityOverride`；控制器在下次輪詢時反映它）。搭配一個 `identity` 條件閘，讓該選項只在玩家持有時出現。這也解決了持有但未啟用的 `activeWhen` 缺口。
+
+**身分連動互動** — 為任何互動加上 `identity` 條件閘。兩個內建的對話結果動作（生成的 TIF 片段，無需每個 mod 寫腳本）：**`openBarter: true`** 開啟與說話 NPC 的交易選單（`Actor.ShowBarterMenu()`；該 NPC 必須是帶 merchant chest 的 vendor-faction 成員）——例如商人專屬的「來談談生意」；**`rewardItem` + `rewardCount`** 給玩家金幣／物品（`AddItem`）——例如護送獎勵。`evaluateSpeakerPackages: true` 強制說話者重新評估 AI 套件，使一個以 `setStage` 為條件閘的跟隨／護送套件立即啟用。一個**護送任務**因此純粹是記錄資料：一個帶 stages 的任務、一個以 `GetStage==N` 為條件的 Follow PACK，以及以冒險者為條件閘的開始／結束對話（見下文）。
+
+在 acquire 時啟動的 scene（`onAcquire.scene`）由書本**明確地** `Start()`——把該 scene 的 `beginOnQuestStart: false` 設好，使它不會在遊戲載入時也自動播放（`Start()` 是唯一的觸發器；begin-condition 那套很脆弱）。帶 `autoCalcStats` 的 NPC 必須有 `class`，否則它們會以約 0 HP 生成。完整示範見 `examples/identity-paladin.json`（acquire + grant + oath scene + 身分問候 + merchant toggle + `activeWhen` + 手動覆寫 + merchant trade + 護送任務）。用 `identitydiag <plugin>` 檢視已 build 插件的身分接線。**範圍外：** 聲望／行為追蹤、第一次咆哮即龍裔、條件式神罰調校。
+</textarea>
+<script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+<script>
+marked.setOptions({gfm:true,breaks:false});
+document.getElementById('md').innerHTML=marked.parse(document.getElementById('src').value);
+document.querySelectorAll('.nav-item').forEach(function(a){
+  var p=location.pathname.split('/').pop()||'index.html';
+  if(a.getAttribute('href')===p)a.classList.add('active');
+});
+</script>
+</body>
+</html>

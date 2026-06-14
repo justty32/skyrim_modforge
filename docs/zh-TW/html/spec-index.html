@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ModForge 規格說明 — 目錄 — ModForge 文件</title>
+<title>ModForge spec — 索引 — ModForge 文件</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,15 +15,20 @@
   <a class="nav-item" href="for-agent-lib.html">函式庫 API</a>
   <a class="nav-item" href="external-assets.html">外部資源</a>
   <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
+  <a class="nav-item" href="local-skyrim-extraction.html">本地 Skyrim 抽取</a>
   <div class="nav-section">規格說明（SPEC）</div>
   <a class="nav-item active" href="spec-index.html">總覽 · 目錄</a>
   <a class="nav-item" href="spec-intro.html">介紹 · 記錄類型</a>
   <a class="nav-item" href="spec-magic.html">魔法 · 附魔</a>
-  <a class="nav-item" href="spec-dialogue-quests.html">對話 · 任務 · 腳本</a>
-  <a class="nav-item" href="spec-world.html">世界空間 · 地城 · 商販</a>
-  <a class="nav-item" href="spec-items.html">物品 · 配方 · 資源</a>
+  <a class="nav-item" href="spec-dialogue.html">對話 · 場景</a>
+  <a class="nav-item" href="spec-quests.html">任務 · Story Manager</a>
+  <a class="nav-item" href="spec-identities.html">身分系統</a>
+  <a class="nav-item" href="spec-world.html">Cell · 放置 · 光照</a>
+  <a class="nav-item" href="spec-worldspaces.html">世界空間 · 清單 · 商販</a>
+  <a class="nav-item" href="spec-items.html">配方 · 天賦 · 資源</a>
   <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
   <a class="nav-item" href="spec-workflow.html">工作流程</a>
+  <a class="nav-item" href="spec-refs.html">$ref · 參數化</a>
   <div class="nav-section">讓 NPC 更有生命力</div>
   <a class="nav-item" href="lifelike.html">總覽</a>
   <a class="nav-item" href="cookbook-index.html">食譜手冊 · 目錄</a>
@@ -40,21 +45,25 @@
 </nav>
 <div class="content"><div class="content-inner"><div id="md" class="md"></div></div></div>
 <textarea id="src" hidden>
-# ModForge 規格說明 — 目錄
+# ModForge spec — 索引
 
-規格（spec）是一個 JSON 檔案 → `.esp` 插件。選擇主題：
+spec 是一個 JSON 檔 → `.esp` plugin。選擇一個主題：
 
-| 檔案 | 內容 |
-|------|------|
-| [SPEC-intro](spec-intro.html) | 交叉參照與 ID、頂層結構、完整記錄類型表 |
-| [SPEC-magic](spec-magic.html) | 遊戲數值、法術/藥水 effect、自訂 MGEF、附魔（ENCH） |
-| [SPEC-dialogue-quests](spec-dialogue-quests.html) | 職業、對話、閒聊、場景、CTDA 條件、任務階段、Story Manager 事件任務、Papyrus 腳本 |
-| [SPEC-world](spec-world.html) | Cells 與放置、世界空間與地區、等級列表、遭遇區域、商販 |
-| [SPEC-items](spec-items.html) | 配方（COBJ）、特技、外部資源（網格/音效）、材質集（TXST） |
+| File | Contents |
+|------|----------|
+| [SPEC-intro](spec-intro.html) | 交叉參照與 ID、最頂層結構、完整 record 型別表 |
+| [SPEC-magic](spec-magic.html) | 遊戲性數值、法術/藥水效果、自訂 MGEF、附魔（ENCH） |
+| [SPEC-dialogue](spec-dialogue.html) | 職業、對話、閒聊、場景（SCEN）、CTDA 條件 |
+| [SPEC-quests](spec-quests.html) | 任務階段與目標、Story Manager 事件任務、Papyrus 腳本 |
+| [SPEC-identities](spec-identities.html) | 輕量化職業/身分系統（書→陣營+能力+問候+商人切換） |
+| [SPEC-world](spec-world.html) | cell 與放置、地圖標記、自訂光源與照明（LGTM/IMGS/DALC） |
+| [SPEC-worldspaces](spec-worldspaces.html) | 世界空間與區域、區域音樂、等級清單與容器、formLists、遭遇區、商販 |
+| [SPEC-items](spec-items.html) | 配方（COBJ）、天賦、外部資產（網格/音效）、貼圖組（TXST） |
 | [SPEC-packages](spec-packages.html) | AI 套件（Sandbox/Travel/UseMagic/Follow/Sleep/Patrol/Escort）、天氣與氣候 |
-| [SPEC-workflow](spec-workflow.html) | CLI 工作流程（`validate` / `build` / `package` / `voicediag`）、語音克隆管線（`voicelines` / `extract-voices`）+ 尚未涵蓋的功能 |
+| [SPEC-workflow](spec-workflow.html) | CLI 工作流（`validate` / `build` / `package`）、語音克隆管線（`voicelines` / `extract-voices`）＋尚未涵蓋的功能 |
+| [SPEC-refs](spec-refs.html) | `$ref` / `$env` 引入與參數化（具名預設庫、file/pointer/same-doc refs、env vars） |
 
-快速 CLI 參考：
+CLI 快速參考：
 ```bash
 dotnet run --project src/ModForge.Cli -- validate myspec.json
 dotnet run --project src/ModForge.Cli -- build    myspec.json out.esp
@@ -63,7 +72,7 @@ dotnet run --project src/ModForge.Cli -- voicelines myspec.json out.esp --plan
 dotnet run --project src/ModForge.Cli -- package  myspec.json OutModDir
 ```
 
-另請參見：[lifelike 主頁](lifelike.html) — NPC 食譜、Cookbook、常見陷阱、FormID 參考。
+另見：[lifelike hub](lifelike.html) — NPC 食譜、cookbook、陷阱、formid 參考。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>

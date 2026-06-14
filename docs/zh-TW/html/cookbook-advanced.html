@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>食譜手冊 — 進階模式 — ModForge 文件</title>
+<title>食譜手冊 — 進階 — ModForge 文件</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,15 +15,20 @@
   <a class="nav-item" href="for-agent-lib.html">函式庫 API</a>
   <a class="nav-item" href="external-assets.html">外部資源</a>
   <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
+  <a class="nav-item" href="local-skyrim-extraction.html">本地 Skyrim 抽取</a>
   <div class="nav-section">規格說明（SPEC）</div>
   <a class="nav-item" href="spec-index.html">總覽 · 目錄</a>
   <a class="nav-item" href="spec-intro.html">介紹 · 記錄類型</a>
   <a class="nav-item" href="spec-magic.html">魔法 · 附魔</a>
-  <a class="nav-item" href="spec-dialogue-quests.html">對話 · 任務 · 腳本</a>
-  <a class="nav-item" href="spec-world.html">世界空間 · 地城 · 商販</a>
-  <a class="nav-item" href="spec-items.html">物品 · 配方 · 資源</a>
+  <a class="nav-item" href="spec-dialogue.html">對話 · 場景</a>
+  <a class="nav-item" href="spec-quests.html">任務 · Story Manager</a>
+  <a class="nav-item" href="spec-identities.html">身分系統</a>
+  <a class="nav-item" href="spec-world.html">Cell · 放置 · 光照</a>
+  <a class="nav-item" href="spec-worldspaces.html">世界空間 · 清單 · 商販</a>
+  <a class="nav-item" href="spec-items.html">配方 · 天賦 · 資源</a>
   <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
   <a class="nav-item" href="spec-workflow.html">工作流程</a>
+  <a class="nav-item" href="spec-refs.html">$ref · 參數化</a>
   <div class="nav-section">讓 NPC 更有生命力</div>
   <a class="nav-item" href="lifelike.html">總覽</a>
   <a class="nav-item" href="cookbook-index.html">食譜手冊 · 目錄</a>
@@ -40,27 +45,34 @@
 </nav>
 <div class="content"><div class="content-inner"><div id="md" class="md"></div></div></div>
 <textarea id="src" hidden>
-<!-- 進階模式 -->
-# 食譜手冊 — 進階模式
+<!-- Advanced patterns -->
+# 食譜手冊 — 進階
 
-← [目錄](cookbook-index.html) | [lifelike 主頁](lifelike.html)
+← [cookbook index](cookbook-index.html) | [lifelike hub](lifelike.html)
 
-## 「自訂龍吼」——SHOU + WOOP + 字詞之牆（遊戲內已確認 2026-06-01）
+## 「自訂龍吼」 — SHOU + WOOP + word wall（IN-GAME CONFIRMED 2026-06-01）
 
-自訂龍吼的結構為 `MGEF → Voice SPEL → WOOP → SHOU`，加上一種**學習**方式。要讓龍吼在遊戲中實際觸發，除了基本記錄之外還需要四個要素——每一個在遊戲中找出來之前都是一種看不見的失敗：
+自訂龍吼是 `MGEF → Voice SPEL → WOOP → SHOU`，再加上一個**學習**它的方法。要讓龍吼在遊戲內
+真正發動，除了基本記錄之外還得湊齊四個部分——每一個在遊戲內被發現之前都是無形的失敗：
 
-1. **每個 Voice 法術都需要一個裝備槽。** 一個沒有 `EquipmentType` 的 `spellType: "Voice"` SPEL 沒有裝備槽 → 玩家學會了龍吼，但**按下龍吼鍵卻毫無動靜**。Build 現在會**自動預設**可施放類型（Spell/Voice/Power/LesserPower）為 **EitherHand**（`Skyrim.esm:0x00013F44`）——這與每個原版龍吼字詞法術使用的相同 EQUP。（你可以覆寫。）
-2. **MGEF 需要一個 `projectile`**，否則龍吼的力量無聲無息地發出。彈體攜帶移動中的模型、命中效果和命中音效。配合主題——冰霜龍吼用冰霜彈體（`0x02F774` FrostIcicle），力量龍吼用衝擊波（`0x013DF4` VoicePush）。加入 `castingArt` 產生施法時的閃光效果。
-3. **`Release` 音效是效果音效**（雷聲/冰霜特效），透過 `magicEffects[].sounds` 設定。
-4. **SHOU 需要一個 `menuDisplayObject`**（`0x0A59AC`），才能在龍吼選單中顯示預覽圖。
+1. **每個 Voice spell 都需要一個裝備欄位。** 一個沒有 `EquipmentType` 的 `spellType: "Voice"` SPEL
+   沒有欄位 → 玩家學會了龍吼但**按下 Shout 沒有任何反應**。build 現在會把可施放型別
+   （Spell/Voice/Power/LesserPower）**自動預設**為 **EitherHand**
+   （`Skyrim.esm:0x00013F44`）——和每個原版龍吼字詞法術所用的 EQUP 相同。（你可以覆寫。）
+2. **MGEF 需要一個 `projectile`**，否則吐姆會無形且無聲地發動。projectile 攜帶
+   飛行模型、撞擊、以及撞擊音效。配合主題——霜吼要霜 projectile
+   （`0x02F774` FrostIcicle），力吼要衝擊波（`0x013DF4` VoicePush）。
+   加上 `castingArt` 做出施放時的閃光。
+3. **`Release` 音效是 EFFECT 音效**（雷/霜 FX），透過 `magicEffects[].sounds`。
+4. **SHOU 想要一個 `menuDisplayObject`**（`0x0A59AC`），這樣它才會在龍吼選單裡預覽。
 
 ```jsonc
 { "magicEffects": [
     { "editorId": "MF_ForgedVoiceEffect", "archetype": "Stagger",
       "castType": "FireAndForget", "targetType": "Aimed", "flags": [ "NoHitEvent" ],
-      "projectile": "Skyrim.esm:0x00013DF4",               // VoicePush 衝擊波（模型+命中+音效）
+      "projectile": "Skyrim.esm:0x00013DF4",               // VoicePush shockwave (model+impact+sound)
       "sounds": [ { "type": "Release", "sound": "Skyrim.esm:0x000A0F52" } ] } ],  // UnrelentingForce FX
-  "spells": [   // 每個充能等級各一個 Voice 法術——spellType 必須為 "Voice"；equipType 自動 = EitherHand
+  "spells": [   // one Voice spell per charge level — spellType MUST be "Voice"; equipType auto = EitherHand
     { "editorId": "MF_FV1", "name": "Forged Voice", "spellType": "Voice", "castType": "FireAndForget",
       "targetType": "Aimed", "effects": [ { "magicEffect": "MF_ForgedVoiceEffect", "magnitude": 1 } ] },
     { "editorId": "MF_FV2", "name": "Forged Voice", "spellType": "Voice", "castType": "FireAndForget",
@@ -73,30 +85,44 @@
     { "editorId": "MF_Vul", "name": "Vul", "translation": "Forged" } ],
   "shouts": [
     { "editorId": "MF_ForgedVoice", "name": "Forged Voice", "menuDisplayObject": "Skyrim.esm:0x000A59AC",
-      "words": [   // 恰好 3 個：word1 = 點擊，1+2 = 長按，1+2+3 = 完整充能
+      "words": [   // EXACTLY 3: word1 = tap, 1+2 = hold, 1+2+3 = full charge
         { "word": "MF_Dov", "spell": "MF_FV1", "recoveryTime": 12 },
         { "word": "MF_Ah",  "spell": "MF_FV2", "recoveryTime": 18 },
         { "word": "MF_Vul", "spell": "MF_FV3", "recoveryTime": 25 } ] } ],
   "wordWalls": [
     { "editorId": "MF_ForgedVoiceWall", "name": "Forged Voice Word Wall",
-      "shout": "MF_ForgedVoice", "wordIndex": 1,           // 教授字詞 1（MF_Dov，自動推導）
+      "shout": "MF_ForgedVoice", "wordIndex": 1,           // teaches word 1 (MF_Dov, auto-derived)
       "scriptName": "ForgedVoiceWordWallScript",
-      "cell": "Skyrim.esm:0x0371DE",                       // BleakFallsBarrow01——見下方字牆注意事項
+      "cell": "Skyrim.esm:0x0371DE",                       // BleakFallsBarrow01 — see the wall caveat below
       "position": { "x": 0, "y": 0, "z": 0 } } ]
 }
 ```
 
-**主機台測試：** `help "Forged Voice" 0` → `player.addshout <SHOUT>`，然後對每個字詞使用 **`player.teachword <WORD>`**——`teachword`（而非只是 `unlockword`）才能使字形**顯示**在龍吼選單中。裝備它，長按龍吼按鍵：光束飛出，觸發效果，播放特效音效 + 命中效果。
+**Console 測試：** `help "Forged Voice" 0` → `player.addshout <SHOUT>`，接著對每個字詞執行
+**`player.teachword <WORD>`**——是 `teachword`（不只是 `unlockword`）才讓字符在龍吼選單裡**顯示**。
+裝備它，按住 Shout 鍵：彈體發射，造成其效果，伴隨 FX 音效 + 撞擊。
 
-**遊戲內已確認有效：** 可施放的龍吼、投射物 + 命中 + 效果音效、3 個充能等級。
+**遊戲內確認可運作：** 可施放的龍吼、projectile + 撞擊 + 效果音效、3 個充能等級。
 
 **兩個誠實的限制：**
-- **沒有口說龍語。** 玩家呼喊龍語音節（「FUS RO DAH」）是一個**已錄製的語音資產**（它同樣是一個 MGEF `Release` 音效，但是一個*帶語音*的 `.fuz`，例如 `VOCShoutDragon01AFus`）。程式化產生的龍吼沒有語音資產，因此字詞語音為靜音——只有效果特效播放。要提供它需要 `Sound/Voice/...` 下的真實 voice asset；見 `SPEC-workflow.md` 的 Voice 章節。對話用 `voicelines` pipeline 已能生成 INFO voice files，但龍吼音節資產仍需要明確的 voice/SoundDescriptor 設計。若要提供 3 個等級的*漸進式*效果音效，可使用 3 個 MGEF（每個字詞法術各一個），各自帶有其自己的 A/B/C `Release` 音效。
-- **字詞之牆的學習是 `OnInit`，而非走近觸發。** 教授任務在遊戲開始時啟用，因此龍吼 + 字詞 1 在**插件載入後立即授予**——放置的 `WordWallTrigger` 只是裝飾（將其繫結至 `OnTriggerEnter` 以實現真正的走近學習屬於 CK 工作）。而範例 cell `0x0371DE` 是**原版**的力量龍吼房間，因此你在那裡看到的字牆是原版的，不是我們的（我們的位於原點）。藍色的字詞發光 VFX 屬於 CK/網格 + Imagespace——並未產生。**原版**龍吼引用無法自動推導其字詞——請明確設定 `word`。
+- **沒有口語字詞配音。** 玩家喊出龍語音節（「FUS RO DAH」）是一個**錄製的
+  語音資產**（同樣是一個 MGEF `Release` 音效，但是*有配音的* `.fuz`，例如 `VOCShoutDragon01AFus`）。
+  程式化龍吼沒有這個，所以字詞配音是無聲的——只播放效果 FX。要提供它
+  需要 `Sound/Voice/...` 下的真實語音資產；見 `SPEC-workflow.md` § Voice。dialogue
+  `voicelines` pipeline 可以產生 INFO 語音檔，但龍吼音節資產仍需要一個
+  具體的 voice/SoundDescriptor 計畫。要做出 3 等級*漸進式*效果音效，使用 3 個
+  MGEF（每個字詞法術一個），各自帶有自己的 A/B/C `Release` 音效。
+- **Word-wall 學習是 `OnInit`，不是走近觸發。** 教學 quest 是 start-game-enabled，所以
+  龍吼 + 字詞 1 在 **plugin 一載入時就授予**——放置的 `WordWallTrigger` 是
+  裝飾性的（把它綁到 `OnTriggerEnter` 以做真正的走近學習是 CK 的工作）。而範例
+  cell `0x0371DE` 是**原版** Unrelenting Force 房間，所以你在那裡看到的牆是原版的，不是
+  我們的（我們的位於原點）。藍色字詞光芒 VFX 是 CK/mesh + Imagespace——不會發出。一個
+  **原版**龍吼 ref 無法自動推導其字詞——明確設定 `word`。
 
-## 「自訂天空」（WTHR + CLMT——大氣效果，尚未指派）
+## 「自訂天空」（WTHR + CLMT — 大氣層，尚未指派）
 
-一個詭異的綠色霧氣天氣，加上循環此天氣的氣候。完整範例規格：[`../../examples/weather_spec.json`](../../examples/weather_spec.json)。
+一個詭異綠調霧氣天氣加上一個循環它的氣候。完整的可運作 spec：
+[`../../examples/weather_spec.json`](../../../examples/weather_spec.json)。
 
 ```jsonc
 {
@@ -106,10 +132,10 @@
     "flags": ["Cloudy", "Rainy"],
     "skyUpperColor": { "day": { "r": 46, "g": 92, "b": 58 }, "night": { "r": 8, "g": 20, "b": 14 } },
     "fogNearColor":  { "day": { "r": 60, "g": 120, "b": 70 } },
-    "sunlightColor": { "day": { "r": 120, "g": 170, "b": 110 } },   // 灑在世界上的病態綠光
+    "sunlightColor": { "day": { "r": 120, "g": 170, "b": 110 } },   // sickly green light on the world
     "clouds": [{ "index": 0, "texture": "Sky\\SkyrimCloudsUpper04.dds",
                  "xSpeed": 0.012, "ySpeed": -0.006, "alphaNight": 0.8 }],
-    "precipitation": "Skyrim.esm:0x10780F",                          // 原版降雨 SPGD
+    "precipitation": "Skyrim.esm:0x10780F",                          // vanilla rain SPGD
     "windSpeed": 0.35, "windDirection": 210, "fogDayNear": 256, "fogDayFar": 9000
   }],
   "climates": [{
@@ -120,24 +146,32 @@
 }
 ```
 
-結構驗證：`validate` → `build` → `dump`（或 `weatherdiag <esp> <0xFORMID>` / `climatediag <esp> <0xFORMID>`）。要尋找降水 SPGD，對某個原版的多雨天氣執行 `weatherdiag`（`find <Skyrim.esm> Rain Weather` → 例如 `SkyrimStormRain` `0x0C8220`，其 `Precipitation = 0x10780F`）。
+結構性驗證：`validate` → `build` → `dump`（或 `weatherdiag <esp> <0xFORMID>` /
+`climatediag <esp> <0xFORMID>`）。要找一個 precipitation SPGD，對一個原版下雨
+天氣執行 `weatherdiag`（`find <Skyrim.esm> Rain Weather` → 例如 `SkyrimStormRain` `0x0C8220`，其
+`Precipitation = 0x10780F`）。
 
-**讓它在遊戲中毫無作用的唯一原因：** 一個 `WTHR`+`CLMT` 只是資料，直到某個東西*指派*了這個氣候。原版透過**世界空間**（`WRLD` 的 `Climate` 欄位）或**地區**（`REGN` 天氣資料）來實現——這兩者 ModForge 現在*都能*產生（見下一個配方）。因此這個配方交付一個有效、可檢視的氣候，你接著用 WRLD/REGN 指向它。**僅通過結構驗證；天空實際渲染尚未在遊戲中確認。**
+**唯一讓它在遊戲內毫無作用的東西：** 一個 `WTHR`+`CLMT` 在某個東西*指派*該氣候之前
+只是資料而已。原版是透過一個 **worldspace**（`WRLD` `Climate` 欄位）或一個
+**region**（`REGN` weather-data）來做這件事——這兩者 ModForge *現在都能*發出（下一個食譜）。所以這個
+食譜出貨一個有效、可檢視的氣候，你之後要拿一個 WRLD/REGN 指向它。**僅結構性驗證；
+天空實際渲染為遊戲內未確認。**
 
-## 「自訂室外世界空間 + 天氣地區」（WRLD + REGN + 平坦地形）
+## 「自訂外部 worldspace + weather region」（WRLD + REGN + 平坦地形）
 
-建立一個新的室外世界，附加氣候（天空/光照循環），加入可行走的平坦地形 cell，並定義一個天氣地區。這就是接上自訂 Climate/Weather 的掛勾。
+建立一個新的外部世界、附加一個氣候（天空/光照循環）、加入平坦可行走地形
+cell、並定義一個 weather region。這是自訂 Climate/Weather 的掛鉤點。
 
 ```jsonc
-{ "esl": false,                              // 必須——Skyrim 不從 ESL 外掛載入 LAND
+{ "esl": false,                              // REQUIRED — Skyrim does not load LAND from ESL plugins
   "worldspaces": [
     { "editorId": "MFTestWorld", "name": "ModForge Test Vale",
-      "climate": "Skyrim.esm:0x000812",      // 預設氣候——若無此設定，世界將沒有天空循環
-      "water":   "Skyrim.esm:0x000018",      // DefaultWater（可選）
-      "parent":  "Skyrim.esm:0x00003C",      // Tamriel（可選）
+      "climate": "Skyrim.esm:0x000812",      // default climate — WITHOUT this the world has no sky cycle
+      "water":   "Skyrim.esm:0x000018",      // DefaultWater (optional)
+      "parent":  "Skyrim.esm:0x00003C",      // Tamriel (optional)
       "flags":   [ "SmallWorld", "CannotFastTravel" ],
-      "defaultLandHeight": -27000, "defaultWaterHeight": -14000,  // 防淹修正——保留這些值
-      "cells": [ { "x": 0, "y": 0, "navmesh": true } ] } // 平坦地形 + 導航網格；進入：cow MFTestWorld 0 0
+      "defaultLandHeight": -27000, "defaultWaterHeight": -14000,  // FLOOD-FIX — leave these
+      "cells": [ { "x": 0, "y": 0, "navmesh": true } ] } // flat terrain + navmesh; enter: cow MFTestWorld 0 0
   ],
   "regions": [
     { "editorId": "MFTestWorldWeather", "worldspace": "MFTestWorld", "weatherPriority": 60,
@@ -150,11 +184,19 @@
   ] }
 ```
 
-`cells` 中每個條目生成一個 CELL + LAND（平坦 33×33 高度圖；`height` 預設 4000 game units，安全地高於 Z=0 的海平面）。`"navmesh": true` 額外生成一個平坦四邊形 NAVM（4 頂點、2 三角形覆蓋整個 4096×4096 cell）加上一個 NAVI 索引條目——NPC 可在 cell 內導航。無相鄰 cell 邊緣連結；在相鄰 cell 也加上 `navmesh: true` 即可跨 cell 尋路。**實機確認**（2026-06-03）：`cow MFTestWorld 0 0` → 玩家降落在堅實的平坦地面上。用 `worlddiag <Skyrim.esm> 0x00003C` 和 `regndiag <Skyrim.esm> <0xFORMID>` 採集原版數值。完整範例：`examples/worldspace_spec.json`。
+每個 `cells` 項目產生一個 CELL + LAND（平坦 33×33 高度圖；`height` 預設為 4000 game
+units，安全地高於 Z=0 的海平面）。`"navmesh": true` 也會產生一個平坦四邊形 NAVM（4
+頂點、2 三角形覆蓋整個 4096×4096 cell）+ 一個 NAVI 索引項目——NPC 可以在
+cell 內尋路。沒有到相鄰 cell 的 edge-link；對相鄰 cell 加上 `navmesh: true` 以做
+跨 cell 尋路。**遊戲內確認**（2026-06-03）：`cow MFTestWorld 0 0` → 玩家降落
+在堅實平坦的地面上。用 `worlddiag <Skyrim.esm>
+0x00003C` 和 `regndiag <Skyrim.esm> <0xFORMID>` 收割原版值。完整範例：`examples/worldspace_spec.json`。
 
-## 「兩個 NPC 爭論」（SCEN 多角色對話——僅限結構，尚未在遊戲中確認）
+## 「兩個 NPC 爭吵」（SCEN 多 actor 對話 — STRUCTURAL ONLY，尚未遊戲內確認）
 
-`scene` 是讓 NPC **彼此**對話，而非與玩家對話。它由一個任務宿主，任務的**別名**即為參與者；建構程序會產生別名繫結、Scene 記錄，以及每句台詞各一個 Scene/`SCEN` 話題。將兩個 NPC**放置在同一個 cell、彼此靠近**，使他們位於同處以便對話。
+一個 `scene` 是 NPC 彼此**互相**交談，而非對玩家。它由一個 quest 主持，其**別名**
+是參與者；build 發出別名綁定、Scene 記錄、以及每句台詞一個 Scene/`SCEN` topic。把兩個 NPC
+放在**同一個 cell、彼此靠近**，這樣它們才會共處一地以便交談。
 
 ```jsonc
 { "quests": [ { "editorId": "MF_SceneQuest", "name": "...", "startGameEnabled": true } ],
@@ -166,23 +208,31 @@
   "scenes": [
     { "editorId": "MF_TavernArgument", "questEditorId": "MF_SceneQuest", "beginOnQuestStart": true,
       "actors": [ { "aliasId": 0, "npc": "MF_Borin" }, { "aliasId": 1, "npc": "MF_Hilda" } ],
-      "phases": [                                    // 按順序播放；每個 phase 一句台詞
+      "phases": [                                    // played in order; one line per phase
         { "speaker": 0, "emotion": "Anger",   "lines": [ "You still owe me for the ale, Hilda." ] },
         { "speaker": 1, "emotion": "Disgust", "lines": [ "That swill wasn't worth a clipped septim." ] },
         { "speaker": 0, "emotion": "Anger",   "lines": [ "Watch your tongue, or there'll be trouble." ] },
         { "speaker": 1, "emotion": "Happy",   "lines": [ "Ha! Buy me a drink and we're even." ] } ] } ],
-  "placements": [                                    // 同一 cell，相距幾個單位
+  "placements": [                                    // SAME cell, a few units apart
     { "base": "MF_Borin", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 180, "z": 0 } },
     { "base": "MF_Hilda", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 280, "z": 0 },
       "rotation": { "x": 0, "y": 0, "z": 180 } } ] }
 ```
 
-它與原版的對應關係（已透過 `scenediag <Skyrim.esm> <0xFORMID>` 對照 `dunIronbindBeemJaMourningScene` / `MQSkyHavenSparringScene` 驗證）：
-- 宿主任務的每個 `actor` 各有一個 **QuestAlias**，以 `UniqueActor` 繫結至該 NPC——Scene 的 `SceneActors` 參照**別名索引**（`aliasId`），而非直接參照 NPC FormKey；
-- 每個 `phase` → 一個 `ScenePhase` + 一個**對話 `SceneAction`**（說話者 alias、階段窗口、另一個角色作為注視目標）+ 一個**Scene/`SCEN` DialogTopic+INFO** 持有台詞；
-- `beginOnQuestStart` 在任務開始的瞬間播放場景（即遊戲載入時）。
+它如何對應到原版（用 `scenediag <Skyrim.esm> <0xFORMID>` 對
+`dunIronbindBeemJaMourningScene` / `MQSkyHavenSparringScene` 驗證）：
+- 主持 quest 每個 `actor` 取得一個 **QuestAlias**，`UniqueActor`-bound 到該 NPC——Scene 的
+  `SceneActors` 引用**別名索引**（`aliasId`），絕不直接引用 NPC FormKey；
+- 每個 `phase` → 一個 `ScenePhase` + 一個 **Dialog `SceneAction`**（說話的別名、phase window、
+  另一個 actor 作為 headtrack 目標）+ 一個保存台詞的 **Scene/`SCEN` DialogTopic+INFO**；
+- `beginOnQuestStart` 在 quest 啟動那一刻播放場景（亦即在 game load 時）。
 
-**狀態/誠實說明：** `build`/`validate`/`dump` 均乾淨通過，記錄結構逐位元組逐形狀符合原版，但這**尚未在遊戲中確認**（我無法執行 Skyrim）。要讓它穩定播放，可能的後續工作：場景可能需要除 `beginOnQuestStart` 之外的**啟動觸發器**（任務階段 / 腳本 `Start()` 呼叫），演員別名可能需要**填充條件**或在每個 INFO 上加一個 `GetIsAliasRef` 閘，以及 NPC 需要**處於清醒且可到達的狀態**（Sandbox 套件讓他們保持活躍）。使用 `scenediag` 探查任何原版場景以進行比較。參見 `examples/scene_spec.json`。
+**狀態 / 誠實：** `build`/`validate`/`dump` 都乾淨，且記錄形狀在 byte-for-shape 上符合原版，
+但這**尚未在遊戲內確認**（我無法執行 Skyrim）。在它可靠播放之前可能的後續工作：
+場景可能需要一個 `beginOnQuestStart` 之外的**啟動觸發**（一個 quest
+stage / script `Start()` 呼叫）、actor 別名可能想要**填充條件**或在每個 INFO 上有一個 `GetIsAliasRef`
+門檻、且 NPC 需要**清醒且可達**（一個 Sandbox 套件讓它們保持活躍）。用 `scenediag` 探測任何
+原版場景以做比較。見 `examples/scene_spec.json`。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>

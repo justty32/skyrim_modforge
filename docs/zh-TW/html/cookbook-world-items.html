@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>食譜手冊 — 世界建構與物品 — ModForge 文件</title>
+<title>食譜手冊 — 世界與物品 — ModForge 文件</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,15 +15,20 @@
   <a class="nav-item" href="for-agent-lib.html">函式庫 API</a>
   <a class="nav-item" href="external-assets.html">外部資源</a>
   <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
+  <a class="nav-item" href="local-skyrim-extraction.html">本地 Skyrim 抽取</a>
   <div class="nav-section">規格說明（SPEC）</div>
   <a class="nav-item" href="spec-index.html">總覽 · 目錄</a>
   <a class="nav-item" href="spec-intro.html">介紹 · 記錄類型</a>
   <a class="nav-item" href="spec-magic.html">魔法 · 附魔</a>
-  <a class="nav-item" href="spec-dialogue-quests.html">對話 · 任務 · 腳本</a>
-  <a class="nav-item" href="spec-world.html">世界空間 · 地城 · 商販</a>
-  <a class="nav-item" href="spec-items.html">物品 · 配方 · 資源</a>
+  <a class="nav-item" href="spec-dialogue.html">對話 · 場景</a>
+  <a class="nav-item" href="spec-quests.html">任務 · Story Manager</a>
+  <a class="nav-item" href="spec-identities.html">身分系統</a>
+  <a class="nav-item" href="spec-world.html">Cell · 放置 · 光照</a>
+  <a class="nav-item" href="spec-worldspaces.html">世界空間 · 清單 · 商販</a>
+  <a class="nav-item" href="spec-items.html">配方 · 天賦 · 資源</a>
   <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
   <a class="nav-item" href="spec-workflow.html">工作流程</a>
+  <a class="nav-item" href="spec-refs.html">$ref · 參數化</a>
   <div class="nav-section">讓 NPC 更有生命力</div>
   <a class="nav-item" href="lifelike.html">總覽</a>
   <a class="nav-item" href="cookbook-index.html">食譜手冊 · 目錄</a>
@@ -41,115 +46,142 @@
 <div class="content"><div class="content-inner"><div id="md" class="md"></div></div></div>
 <textarea id="src" hidden>
 <!-- World & items patterns -->
-# 食譜手冊 — 世界建構與物品
+# 食譜手冊 — 世界與物品
 
-← [目錄](cookbook-index.html) | [lifelike 主頁](lifelike.html)
+← [cookbook index](cookbook-index.html) | [lifelike hub](lifelike.html)
 
-## 「可用的室內空間」（光照 + 地板，而非漆黑的虛空）
+## 「可用的室內 cell」（光照 + 地板，而非黑色虛空）
 
-全新的室內空間需要三樣東西，否則就會變成漆黑一片、腳下空無一物、會讓你直接墜落的虛空：
+一個全新的室內 cell 需要三樣東西，否則就是一個會讓你墜落的全黑虛空：
 
 ```jsonc
 { "cells": [
     { "editorId": "MF_Hall", "name": "Forged Hall",
-      "template": "Skyrim.esm:0x0165A8" }   // Breezehome — 透過 CopyCellEnv 繼承室內光照
+      "template": "Skyrim.esm:0x0165A8" }   // Breezehome — inherits interior lighting via CopyCellEnv
   ],
-  "statics": [ { "editorId": "MF_Floor", "model": "..." } ],  // 或放置原版 WRIntFloorSTMid01Large 0x1044AA
+  "statics": [ { "editorId": "MF_Floor", "model": "..." } ],  // or place vanilla WRIntFloorSTMid01Large 0x1044AA
   "placements": [
-    // 間距 256 的 3×3 地板網格、一個非 PortalStrict 的全向主光源、牆面元件
+    // a 3×3 floor grid at 256 spacing, a non-PortalStrict omni key light, wall pieces
     { "base": "Skyrim.esm:0x1044AA", "cell": "MF_Hall", "position": { "x": 0,   "y": 0, "z": 0 } },
-    { "base": "Skyrim.esm:0x0C82AE", "cell": "MF_Hall", "position": { "x": 0,   "y": 0, "z": 200 } } // WRShadowOmni 主光源
+    { "base": "Skyrim.esm:0x0C82AE", "cell": "MF_Hall", "position": { "x": 0,   "y": 0, "z": 200 } } // WRShadowOmni key light
   ] }
 ```
 
-光照來自 `template`（程式碼路徑 `CopyCellEnv`）；地板與光源只是放置物件。
-使用非 PortalStrict 的全向光源（`WRShadowOmni 0x0C82AE`）——`PortalStrict` 光源在沒有入口（portal）的空間裡什麼都照不到。
+光照來自 `template`（程式碼路徑 `CopyCellEnv`）；地板 + 燈光只是 placement。
+使用非 PortalStrict 的 omni 燈光（`WRShadowOmni 0x0C82AE`）——在沒有 portal 的 cell 裡，`PortalStrict` 燈光照不亮任何東西。
 
-## 「填充地城（帶等級縮放的敵人）」（遭遇區域 + 等級化重生點）
+## 「以等級調整的敵人填滿地下城」（encounter zone + 等級化生成）
 
-在區域內放置**與等級相符**的敵人：遭遇區域（ECZN）設定等級範圍與重生規則；每個重生點的 `base` 為 **LeveledNpc 列表**，讓引擎在載入時隨機生成一個依等級縮放的角色。
+把**符合等級**的敵人放進一個區域：encounter zone（ECZN）設定等級範圍 +
+重生；每個生成物的 `base` 都是一個 **LeveledNpc list**，引擎會在載入時擲出一個依等級調整的 actor。
 
 ```jsonc
 { "encounterZones": [
-    { "editorId": "MF_BanditDenZone", "minLevel": 4, "maxLevel": 0,   // max 0 = 無上限（隨玩家等級縮放）
+    { "editorId": "MF_BanditDenZone", "minLevel": 4, "maxLevel": 0,   // max 0 = uncapped (scales w/ player)
       "flags": [ "MatchPcBelowMinimumLevel" ] }
   ],
   "cells": [
     { "editorId": "MF_BanditDen", "name": "Bandit Den",
-      "template": "Skyrim.esm:0x0165A8",          // 光照（否則漆黑）— 參見「可用的室內空間」
-      "encounterZone": "MF_BanditDenZone" }       // 整個空間的等級縮放/重生設定
+      "template": "Skyrim.esm:0x0165A8",          // lighting (else black) — see "Usable interior cell"
+      "encounterZone": "MF_BanditDenZone" }       // the whole cell's level scaling/respawn
   ],
   "placements": [
-    // ... 地板網格（WRIntFloorSTMid01Large 0x1044AA），以免掉入虛空 ...
-    { "base": "Skyrim.esm:0x01E79C", "cell": "MF_BanditDen", "kind": "npc",   // LvlBanditMeleeAny（NPC_）
+    // ... a floor grid (WRIntFloorSTMid01Large 0x1044AA) so you don't fall into the void ...
+    { "base": "Skyrim.esm:0x01E79C", "cell": "MF_BanditDen", "kind": "npc",   // LvlBanditMeleeAny (NPC_)
       "position": { "x": -180, "y": 120, "z": 0 } },
-    { "base": "Skyrim.esm:0x01B0D5", "cell": "MF_BanditDen", "kind": "npc",   // LvlBanditMissileNordM（NPC_ 弓手）
+    { "base": "Skyrim.esm:0x01B0D5", "cell": "MF_BanditDen", "kind": "npc",   // LvlBanditMissileNordM (NPC_ archer)
       "position": { "x":  180, "y": 120, "z": 0 } },
-    { "base": "Skyrim.esm:0x01B0E1", "cell": "MF_BanditDen", "kind": "npc",   // LvlBanditBossNordM（NPC_ 首領）
-      "position": { "x": 0, "y": -120, "z": 0 }, "encounterZone": "MF_BanditDenZone" }  // 單一引用的 XEZN（可選）
+    { "base": "Skyrim.esm:0x01B0E1", "cell": "MF_BanditDen", "kind": "npc",   // LvlBanditBossNordM (NPC_ boss)
+      "position": { "x": 0, "y": -120, "z": 0 }, "encounterZone": "MF_BanditDenZone" }  // per-ref XEZN (optional)
   ] }
 ```
 
-- **嚴重——已確認 CTD（It.36，2026-06-02）：** `LChar*` formid（例如 `0x03DECD` `LCharBanditMeleeAny`）是 **LVLN 記錄**，而將原始 LVLN 作為 ACHR 基底**會導致 Skyrim 在載入時崩潰**。請改放置 `LvlBandit*` **NPC_ 包裝器**（`Lvl…` 前綴 = NPC_，可安全放置；`LChar…` 前綴 = LVLN，永遠不要直接放置）。**規格內**的 `leveledNpcs` 基底會自動辨識為角色（建置會為其發出警告）。
-- `maxLevel 0` = 無上限（原版慣例；`HelgenZone` 為最低 6 / 最高 0）。`MatchPcBelowMinimumLevel` 讓低等級玩家獲得依其等級縮放的重生點，而非夾擠到 `minLevel`；`NeverResets` 讓清空的巢穴維持清空狀態。
-- 驗證方式：`validate` → `build` → `dump`（cell 的 `encZone ->`、每個 `placed npc -> base …`、ECZN 的 `levels [min..max]`）以及 `eczndiag <plugin> <0xFORMID>`。可運作的規格範例：`examples/encounter_spec.json`。
-- **導航網格：** 全新空間**沒有導航網格**，因此重生點會站在放置的位置，在你於 CK 中為該空間建立導航網格之前無法移動/追擊。角色會貼齊地板，所以放置座標的容錯度很高，但在建立導航網格之前移動/戰鬥 AI 都不會啟動（在那之前僅限結構層面）。
+- **CRITICAL — confirmed CTD（It.36, 2026-06-02）：** `LChar*` formid（例如 `0x03DECD` `LCharBanditMeleeAny`）
+  是 **LVLN 記錄**，而把一個原始 LVLN 當作 ACHR base 會**讓 Skyrim 在載入時崩潰**。請改放 `LvlBandit*`
+  **NPC_ wrapper**（`Lvl…` 前綴 = NPC_，可安全放置；`LChar…` 前綴 = LVLN，絕不要直接放置）。一個 **in-spec**
+  的 `leveledNpcs` base 會自動偵測為 actor（build 會為此發出警告）。
+- `maxLevel 0` = uncapped（vanilla 慣用法；`HelgenZone` 是 min 6 / max 0）。`MatchPcBelowMinimumLevel`
+  讓低等級玩家獲得依玩家等級調整的生成物，而非被夾在 `minLevel`；`NeverResets` 讓已清除的巢穴維持清除狀態。
+- 驗證：`validate` → `build` → `dump`（cell 的 `encZone ->`、每個 `placed npc -> base …`、ECZN 的
+  `levels [min..max]`）以及 `eczndiag <plugin> <0xFORMID>`。可用的 spec：`examples/encounter_spec.json`。
+- **Navmesh：** 一個全新的 cell **沒有 navmesh**，所以生成物會站在放置的位置、無法尋路/追擊，
+  直到你在 CK 裡為該 cell 製作 navmesh。Actor 會吸附到地板，所以 placement 座標很寬容，但
+  移動/戰鬥 AI 在製作 navmesh 之前不會啟動（在那之前僅限結構性）。
 
-## 「可製作的物品」（COBJ 配方）
+## 「可製作的物品」（COBJ recipe）
 
-比看起來簡單：工作台是一個普通的關鍵字 FormLink（預設為鍛造爐），**而非** CTDA 條件；材料重複使用容器物品/數量的格式；技能樹限制（`conditions`）是可選的，基本配方不需要。
+比看起來簡單：workbench 是一個單純的 keyword FormLink（預設為 forge），**不是**
+CTDA condition；components 重用 container 的 item/count 形狀；perk/skill 閘控（`conditions`）是
+可選的，一個基本 recipe 不需要任何閘控。
 
 ```jsonc
 { "recipes": [
     { "editorId": "MF_ForgeSword", "createdObject": "<MF_MySword>", "count": 1,
-      // "workbench": "forge",   // 具名選擇器——鍛造爐為預設值，可省略
+      // "workbench": "forge",   // named selector — forge is the default, can omit
       "components": [ { "item": "Skyrim.esm:0x05ACE4", "count": 3 },    // IngotIron
                       { "item": "Skyrim.esm:0x0800E4", "count": 1 } ] } // LeatherStrips
   ] }
 ```
 
-## 「無需新網格的重新貼圖」（TXST + alternateTextures）
+## 「不用新 mesh 的重新貼圖」（TXST + alternateTextures）
 
-透過重複使用原版物件的 `.nif`，並將其中一個材質指向你自己的**材質集（TextureSet / TXST）**，來為原版物件換裝。無需製作網格——只需填入貼圖路徑。
+重用一個 vanilla 物件的 `.nif`，並把它的其中一個材質指向你自己的
+**TextureSet（TXST）**，藉此為它重新貼皮。不需要製作 mesh——只需要 texture 路徑。
 
 ```jsonc
 { "textureSets": [
     { "editorId": "MF_GildedRubbleTexture",
-      "diffuse": "ModForge\\rubble\\gilded_rubble_d.dds",   // 相對於 Data\Textures\ — 省略 "Textures\" 前綴
+      "diffuse": "ModForge\\rubble\\gilded_rubble_d.dds",   // relative to Data\Textures\ — OMIT the "Textures\" prefix
       "normal":  "ModForge\\rubble\\gilded_rubble_n.dds",
       "flags": [ "NoSpecularMap" ] }
   ],
   "statics": [
     { "editorId": "MF_GildedRubble",
-      "model": "Dungeons\\Nordic\\Rubble\\NorRubblePiece03.nif",   // 原版網格，直接重複使用
+      "model": "Dungeons\\Nordic\\Rubble\\NorRubblePiece03.nif",   // a VANILLA mesh, reused as-is
       "alternateTextures": [
-        { "name": "NorRubblePiece03:0", "index": 0,                 // .nif 內部的材質/3D 名稱
+        { "name": "NorRubblePiece03:0", "index": 0,                 // material/3D-name inside the .nif
           "textureSet": "MF_GildedRubbleTexture" } ] }
   ] }
 ```
 
-注意事項：
-- **路徑根目錄。** TXST 插槽路徑相對於 `Data\Textures\`，因此須**省略**開頭的 `Textures\`（與 `model` 省略 `Meshes\` 的方式一致）。驗證程序會拒絕多餘的 `Textures\` 前綴。
-- **`name` 必須與網格吻合。** 格式為 `.nif` 著色器屬性中的 `<3DName>:<index>`（CK *Model Data → AltTex*，或 NifSkope 的 `BSLightingShaderProperty` 名稱）。名稱錯誤時什麼都不會替換——且不會有任何提示。可比對原版範例：`txstdiag <Skyrim.esm>` 會列出每個 TXST，`dump` 會印出一筆記錄的 `altTexture` 行，原版 STAT `NorExtRubblePiece03_HeavySN` 即展示了本食譜複製的 `NorRubblePiece03:0` / index 0 模式。
-- **`textureSet` 是一個引用**——規格內的 TXST editorId，或原版的 `<master>:0xFORMID`。
-- **你需要自行製作 `.dds`。** ModForge 負責寫入記錄與引用；它無法建立或渲染貼圖內容，而且無頭工具鏈也無法確認替換看起來是否正確——只有實際啟動 Skyrim 才能。請將你製作好的 `.dds` 檔案放到 mod 資料夾的 `Data/Textures/<你的路徑>/` 之下。
+陷阱：
+- **路徑根目錄。** TXST 槽位路徑相對於 `Data\Textures\`，所以它們會省略開頭的
+  `Textures\`（與 `model` 省略 `Meshes\` 一致）。Validate 會拒絕多餘的 `Textures\` 前綴。
+- **`name` 必須與 mesh 相符。** 它是來自 `.nif` 之 shader properties 的 `<3DName>:<index>`
+  （CK *Model Data → AltTex*，或 NifSkope 的 `BSLightingShaderProperty` 名稱）。錯誤的名稱
+  什麼都不會替換——而且是無聲地。對照一個 vanilla 範例：`txstdiag <Skyrim.esm>` 列出每個 TXST，`dump`
+  印出一筆記錄的 `altTexture` 行，而 vanilla STAT `NorExtRubblePiece03_HeavySN` 展示了本食譜所複製的
+  `NorRubblePiece03:0` / index 0 模式。
+- **`textureSet` 是一個 ref**——一個 in-spec 的 TXST editorId，或一個 vanilla `<master>:0xFORMID`。
+- **`.dds` 由你製作。** ModForge 寫入記錄 + 參照；它無法建立或算繪
+  texture 內容，而 headless 工具鏈也無法確認替換看起來是否正確——只有
+  啟動 Skyrim 才行。請把你製作的 `.dds` 檔放進 mod 資料夾的 `Data/Textures/<your path>/` 之下。
 
-結構驗證：`validate` → `build` → `txstdiag <out.esp>`（已寫入的插槽）以及 `dump <out.esp>`（`altTexture` 接線 + 其 `-> <TXST>` 目標）。
+進行結構性驗證：`validate` → `build` → `txstdiag <out.esp>`（已寫入的槽位）以及
+`dump <out.esp>`（`altTexture` 接線 + 它的 `-> <TXST>` 目標）。
 
-## 「可製作與鍛造的武器」（技能樹限制的鍛造 + 磨刀石淬鍊 + 熔煉）
+## 「可製作 + 可強化的武器」（perk 閘控的 forge + grindstone 強化 + 冶煉）
 
-完整的鍛造流程：鍛造爐製作武器（技能樹限制，唯有取得 SteelSmithing 後才顯示）、磨刀石上強化、礦石熔煉成它所需的礦錠。`workbench` 為**具名選擇器**（`forge`/`sharpeningWheel`/`armorTable`/`smelter`/`tanningRack`/`skyforge`）；配方的 `kind`（`craft`/`temper`/`smelt`/`breakdown`）會設定一個合理的預設工作台，所以通常可以省略。`temper` 配方的 `createdObject` **就是**武器本身，並依原版慣例在 smithing 的 `HasPerk` 之前加入 `TemperIsEnchanted`（`or: true`）防護。Conditions 為共用的 CTDA `ConditionSpec`（`function`/`param`/`comparison`/`value`/`or`）。用 `find Skyrim.esm SteelSmithing Perk` 探查技能樹/材料的 FormID；用 `cobjdiag <esp> <0xID>` 檢視任一配方。完整可執行版本請見 [`examples/smithing_spec.json`](../../examples/smithing_spec.json)。
+一條完整的鍛造鏈：forge 出武器（perk 閘控，所以只有在你取得
+SteelSmithing 之後才會出現）、在 grindstone 改良它、並把礦石冶煉成它所花費的 ingot。`workbench` 是
+一個 **named selector**（`forge`/`sharpeningWheel`/`armorTable`/`smelter`/`tanningRack`/`skyforge`）；
+recipe 的 `kind`（`craft`/`temper`/`smelt`/`breakdown`）會設定一個合理的預設工作台，所以你常常可以
+省略它。一個 `temper` recipe 的 `createdObject` **就是**武器本身，並透過在 smithing 的 `HasPerk` 之前
+加上 `TemperIsEnchanted`(`or: true`) 守衛來對齊 vanilla。Conditions 是共用的
+CTDA `ConditionSpec`（`function`/`param`/`comparison`/`value`/`or`）。用
+`find Skyrim.esm SteelSmithing Perk` 探查 perk/ingredient 的 FormID；用 `cobjdiag <esp> <0xID>` 檢視任一 recipe。
+一個完整可執行的版本是 [`examples/smithing_spec.json`](../../../examples/smithing_spec.json)。
 
 ```jsonc
 { "recipes": [
-    // FORGE — 技能樹限制的製作（SteelSmithing perk = Skyrim.esm:0x0CB40D）
+    // FORGE — perk-gated craft (SteelSmithing perk = Skyrim.esm:0x0CB40D)
     { "editorId": "MF_ForgeBlade", "kind": "craft", "createdObject": "<MF_MyBlade>",
       "workbench": "forge",
       "components": [ { "item": "Skyrim.esm:0x05ACE5", "count": 2 },     // SteelIngot
                       { "item": "Skyrim.esm:0x0800E4", "count": 1 } ],   // LeatherStrips
       "conditions": [ { "function": "HasPerk", "param": "Skyrim.esm:0x0CB40D", "comparison": "==", "value": 1 } ] },
 
-    // GRINDSTONE — 淬鍊（createdObject = 刀刃；附魔防護 + 技能樹，與原版完全相同）
+    // GRINDSTONE — temper (createdObject = the blade; enchant-guard + perk, exactly like vanilla)
     { "editorId": "MF_TemperBlade", "kind": "temper", "createdObject": "<MF_MyBlade>",
       "workbench": "sharpeningWheel",
       "components": [ { "item": "Skyrim.esm:0x05ACE5", "count": 1 } ],   // SteelIngot
@@ -157,13 +189,15 @@
         { "function": "TemperIsEnchanted", "comparison": "!=", "value": 1, "or": true },
         { "function": "HasPerk", "param": "Skyrim.esm:0x0CB40D", "comparison": "==", "value": 1 } ] },
 
-    // SMELTER — 礦石 -> 礦錠（無條件）
+    // SMELTER — ore -> ingot (no conditions)
     { "editorId": "MF_SmeltIron", "kind": "smelt", "createdObject": "Skyrim.esm:0x05ACE4",
       "components": [ { "item": "Skyrim.esm:0x071CF3", "count": 1 } ] }   // IronOre -> IronIngot
   ] }
 ```
 
-已通過結構驗證（`dump`/`cobjdiag` 顯示 temper 配方除了目標/技能樹之外，與原版 `TemperWeaponSteelSword` 逐位元組吻合）。**尚未在遊戲中確認**——配方是否真的出現在工作台/淬鍊是否生效，需要實際執行遊戲才能驗證。
+已通過結構性驗證（`dump`/`cobjdiag` 顯示 temper recipe 除了 target/perk 之外，與 vanilla
+`TemperWeaponSteelSword` 逐位元組相符）。**遊戲內尚未確認**——recipe
+是否真的出現在工作台 / 強化是否生效，需要實際執行遊戲才能確認。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>

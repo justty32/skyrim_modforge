@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ModForge 規格說明 — 遊戲數值、法術與附魔 — ModForge 文件</title>
+<title>ModForge spec — 魔法與屬性 — ModForge 文件</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,15 +15,20 @@
   <a class="nav-item" href="for-agent-lib.html">函式庫 API</a>
   <a class="nav-item" href="external-assets.html">外部資源</a>
   <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
+  <a class="nav-item" href="local-skyrim-extraction.html">本地 Skyrim 抽取</a>
   <div class="nav-section">規格說明（SPEC）</div>
   <a class="nav-item" href="spec-index.html">總覽 · 目錄</a>
   <a class="nav-item" href="spec-intro.html">介紹 · 記錄類型</a>
   <a class="nav-item active" href="spec-magic.html">魔法 · 附魔</a>
-  <a class="nav-item" href="spec-dialogue-quests.html">對話 · 任務 · 腳本</a>
-  <a class="nav-item" href="spec-world.html">世界空間 · 地城 · 商販</a>
-  <a class="nav-item" href="spec-items.html">物品 · 配方 · 資源</a>
+  <a class="nav-item" href="spec-dialogue.html">對話 · 場景</a>
+  <a class="nav-item" href="spec-quests.html">任務 · Story Manager</a>
+  <a class="nav-item" href="spec-identities.html">身分系統</a>
+  <a class="nav-item" href="spec-world.html">Cell · 放置 · 光照</a>
+  <a class="nav-item" href="spec-worldspaces.html">世界空間 · 清單 · 商販</a>
+  <a class="nav-item" href="spec-items.html">配方 · 天賦 · 資源</a>
   <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
   <a class="nav-item" href="spec-workflow.html">工作流程</a>
+  <a class="nav-item" href="spec-refs.html">$ref · 參數化</a>
   <div class="nav-section">讓 NPC 更有生命力</div>
   <a class="nav-item" href="lifelike.html">總覽</a>
   <a class="nav-item" href="cookbook-index.html">食譜手冊 · 目錄</a>
@@ -40,29 +45,39 @@
 </nav>
 <div class="content"><div class="content-inner"><div id="md" class="md"></div></div></div>
 <textarea id="src" hidden>
-<!-- 遊戲數值、法術效果、附魔 -->
-# ModForge 規格說明 — 遊戲數值、法術與附魔
+# ModForge spec — 魔法與屬性
 
-← [目錄](spec-index.html)
+← [index](spec-index.html)
 
-### 遊戲數值
-- **武器：** 提供 `damage`（通常也提供 `value`/`weight`）。設定任何數值時，`speed` 和 `reach` 預設為 `1.0`，使武器可揮舞；可覆蓋以製作更慢/更快或更長/更短的武器。沒有任何數值的武器是惰性物品（可裝備但毫無作用）。
-- **盔甲：** `armorType` 為 `light` / `heavy` / `clothing`（預設 `clothing`）；`slots` 以 `BipedObjectFlag` 名稱列出其佔用的雙足槽位 — `Body`、`Head`、`Hands`、`Feet`、`Forearms`、`Calves`、`Shield`、`Amulet`、`Ring`、`Circlet`…（多個槽位以 OR 結合）。`armorRating` 為防禦值。
+### 遊戲性屬性
+- **武器：** 給一個 `damage`（通常還有 `value`/`weight`）。當設定任何屬性時，`speed` 與 `reach`
+  預設為 `1.0`，讓武器可以揮動；若要更慢/更快或更長/更短的武器則覆寫這些值。完全沒有屬性的武器是
+  惰性物品（會裝備，但不會有任何實際作用）。
+- **護甲：** `armorType` 為 `light` / `heavy` / `clothing`（預設 `clothing`）；`slots`
+  以 `BipedObjectFlag` 名稱列出它佔用的雙足部位 — `Body`、`Head`、`Hands`、
+  `Feet`、`Forearms`、`Calves`、`Shield`、`Amulet`、`Ring`、`Circlet`…（多個部位
+  以 OR 結合）。`armorRating` 是防護值。
 
-### effects（法術與藥水）
-法術或藥水**沒有至少一個 effect 將不起作用**。每個 effect 為：
+### effects（spells 與 potions）
+一個 spell 或 potion **若沒有至少一個 effect，就什麼也不會做**。每個 effect 是：
 ```jsonc
 { "magicEffect": "Skyrim.esm:0x03EB15",  // a MagicEffect *ref* (usually vanilla)
   "magnitude": 25, "area": 0, "duration": 0 }   // duration in seconds; 0 = instant
 ```
-`magicEffect` 為 *ref* — 一個 vanilla 的（`find <Skyrim.esm> <query> MagicEffect`，例如 `AlchRestoreHealth = Skyrim.esm:0x03EB15`、`AlchDamageHealth = Skyrim.esm:0x03EB42`）**或** spec 內部 `magicEffects` 條目的 `editorId`（見下方）。一個藥水有一個 effect 即可完全運作；法術還需要施法/法術類型調整，但 effect 是核心。
+`magicEffect` 是一個 *ref* — 可以是原版的（`find <Skyrim.esm> <query> MagicEffect`，例如
+`AlchRestoreHealth = Skyrim.esm:0x03EB15`、`AlchDamageHealth = Skyrim.esm:0x03EB42`），**或**是
+spec 內某個 `magicEffects` 項目的 `editorId`（見下文）。一個 potion 只要有一個 effect 就完全可用；
+一個 spell 還會想要 cast/spell-type 的調校，但 effect 才是核心。
 
 ### magicEffects（自訂 MGEF）
-定義你**自己的** effect，而非重用 vanilla 的；接著法術/藥水/材料/卷軸的 `effect` 透過 `editorId` 指向它（每次施放的 `magnitude`/`area`/`duration` 仍留在該 effect 上）。
+定義你自己的 effect，而不是重用原版的；一個 spell/potion/ingredient/scroll 的 `effect`
+就以 `editorId` 指向它（而每次施放的 `magnitude`/`area`/`duration` 仍留在該 effect 上）。
 ```jsonc
 { "editorId": "MF_RestoreHealthEffect", "name": "ModForge Restore Health",
-  "archetype": "ValueModifier",   // ValueModifier (damage/heal/fortify) | SummonCreature | Bound | Light | Paralysis | …
+  "archetype": "ValueModifier",   // ValueModifier (damage/heal/fortify) | DualValueModifier | SummonCreature | Bound | Light | Script | …
   "actorValue": "Health",          // what it acts on: Health | Magicka | Stamina | …
+  "secondActorValue": "Magicka",   // DualValueModifier only: a 2nd affected AV (omit otherwise)
+  "secondActorValueWeight": 0.5,   // DualValueModifier only: how the magnitude splits to the 2nd AV (0 = all to primary)
   "magicSkill": "Restoration",     // school: Alteration|Conjuration|Destruction|Illusion|Restoration
   "resistValue": "ResistFire",     // AV that resists it (optional): ResistFire | ResistFrost | PoisonResist | …
   "castType": "FireAndForget",     // FireAndForget | Concentration | ConstantEffect
@@ -75,15 +90,34 @@
   "hitEffectArt": "<ref>",         // ARTO — FX at the impact point
   "explosion": "<ref>" }           // EXPL — AoE explosion on impact
 ```
-一個純 `ValueModifier` 的 MGEF（無視覺特效/投射物）仍會套用其數值——適用於 Self/Touch 與藥水。一個會*飛行*的傷害法術（`targetType: Aimed`）需要一個 `projectile`（+ 通常還有 `castingArt`）；可用 `mgefdiag <Skyrim.esm> <0xFORMID>` 取得 vanilla 的範本（例如火焰效果 `FireDamageFFAimed75 0x10F7F1` 使用 projectile `0x10FBEA` + castingArt `0x01B211`）。
+一個裸的 `ValueModifier` MGEF（沒有視覺 art/projectile）仍會套用其數值 — 適用於 Self/Touch
+與 potions。一個會*飛行*的傷害 spell（`targetType: Aimed`）需要一個 `projectile`（+通常還要
+`castingArt`）；用 `mgefdiag <Skyrim.esm> <0xFORMID>` 收割一個原版的（例如火焰 effect
+`FireDamageFFAimed75 0x10F7F1` 使用 projectile `0x10FBEA` + castingArt `0x01B211`）。
 
-**旗標很重要 — 必須配合 effect 的時序（這是第一大陷阱）：**
-- **瞬間**恢復/傷害（`duration` 為 0）→ `["NoDuration", "NoArea"]`，傷害時加上 `"Detrimental"`（+`"Hostile"`）。**不要**設定 `Recover` — `Recover` 在 effect *結束*時還原數值，而瞬間 effect 立即結束，因此變更會被撤銷（治療套用 +N 後立即移除 → **淨零，看起來像「施法但什麼都沒做」**）。
-- **計時**強化（`duration` > 0，例如 +50 生命值持續 60 秒）→ `["Recover", "NoArea"]`：`Recover` 在計時器到期時乾淨地移除加成。這是 `Recover` 的正確用法。
-保持 `baseCost` 低（vanilla 恢復/傷害 effect 使用約 0.5–3）；法術的魔力消耗由 `baseCost` × `magnitude` 自動計算，因此大的 `baseCost` 會使法術極其昂貴。使用 `mgefdiag <Skyrim.esm> <0xFORMID>` 將任何 effect 與 vanilla 進行比較。
+- **`DualValueModifier`** 以一個 magnitude 影響**兩個** actor value — 設定 `archetype:
+  "DualValueModifier"`、主要的 `actorValue`，加上 `secondActorValue` 與 `secondActorValueWeight`
+  （導向第二個 AV 的 magnitude 比例）。吸收/轉移類型的 effect（傷害一個屬性、餵養另一個）
+  就是這樣建構的。
+- **`Script`-archetype MGEF**（boss 法術邏輯、自訂的施加時行為）執行 **Papyrus**：設定
+  `archetype: "Script"` 並用一個頂層 **`scripts[]`** 項目附加 script，該項目的
+  `targetEditorId` 是此 MGEF 的 `editorId`（通用的 VMAD 附加方式適用於任何 record — MGEF 無需特殊
+  接線）。`.psc` extends `ActiveMagicEffect`；`package` 會像任何其他 script 附加一樣編譯
+  `scripts[].source`。`scripts[]` 的形狀見 [SPEC-quests](spec-quests.html) § scripts。
 
-### projectiles（PROJ）與 explosions（EXPL）— 自訂法術飛行彈與爆炸
-給自訂的毀滅系法術一個**自己的**飛行彈與撞擊爆炸（而非重用 vanilla 的）。由下而上建構的鏈：**EXPL** ← **PROJ**（參照 EXPL）← **MGEF**（`projectile` = 該 PROJ）← **SPEL**（Aimed / FireAndForget）。
+**Flags 很重要 — 要對上 effect 的時序（這是第一名的陷阱）：**
+- **瞬間** restore/damage（`duration` 0）→ `["NoDuration", "NoArea"]`，傷害再加上 `"Detrimental"`
+  （+`"Hostile"`）。**不要**設 `Recover` — `Recover` 會在 effect *結束*時把數值還原，而瞬間 effect
+  立刻結束，所以變更會被撤銷（一次治療套用 +N 然後立刻移除它 → **淨值為零，看起來像「有施放但什麼都沒做」**）。
+- **限時** fortify（`duration` > 0，例如 +50 Health 持續 60s）→ `["Recover", "NoArea"]`：`Recover`
+  會在計時器到期時乾淨地移除加成。這是 `Recover` 的正確用途。
+保持 `baseCost` 偏低（原版 restore/damage effect 用 ~0.5–3）；spell 的 magicka cost 由
+`baseCost` × `magnitude` 自動計算，所以過大的 `baseCost` 會讓 spell 貴得離譜。
+用 `mgefdiag <Skyrim.esm> <0xFORMID>` 把任何 effect 和原版的比較。
+
+### projectiles（PROJ）與 explosions（EXPL）— 自訂的法術飛彈與爆炸
+給自訂的破壞系 spell 它自己的飛行飛彈與撞擊爆炸（而不是重用原版的）。這條鏈，由下而上建構：
+**EXPL** ← **PROJ**（參照 EXPL）← **MGEF**（`projectile` = 該 PROJ）← **SPEL**（Aimed / FireAndForget）。
 ```jsonc
 "explosions": [
   { "editorId": "MF_Boom", "name": "Forged Blast",
@@ -101,11 +135,18 @@
     "light": "Skyrim.esm:0x0001CBB3", "sound": "Skyrim.esm:0x0003C8FE",
     "explosion": "MF_Boom" } ],                     // ref → the in-spec EXPL (built first)
 ```
-接著讓一個 MGEF 指向該飛行彈：在自訂的 `magicEffects` 條目上設 `"projectile": "MF_Bolt"`，並將該 effect 放到一個 Aimed 的 `spells` 條目上（完整可施放鏈見 `examples/projectile-explosion.json`）。**務必驗證 nif/art 路徑**是否存在於 Skyrim.esm（錯誤的 `model` = 隱形投射物，無報錯）——用 Mutagen 解碼一個 vanilla 的 PROJ/EXPL 並複製其 model/light/sound/imagespace。爆炸在投射物之前建構，因此 PROJ 能以 editorId 解析其 `explosion`。兩者都是一般的基礎記錄；`ImpactDataSet`/`ObjectEffect`（AoE MGEF）為可選的 refs。
+然後讓一個 MGEF 指向該飛彈：在自訂的 `magicEffects` 項目上設 `"projectile": "MF_Bolt"`，並把那個
+effect 放到一個 Aimed `spells` 項目上（完整可施放鏈見 `examples/projectile-explosion.json`）。
+**永遠要驗證 nif/art 路徑**對照 Skyrim.esm（錯誤的 `model` = 看不見的 projectile，沒有錯誤）—
+用 Mutagen 解碼一個原版 PROJ/EXPL 並複製它的 model/light/sound/imagespace。Explosions 在 projectiles
+之前建構，所以 PROJ 會以 editorId 解析它的 `explosion`。兩者都是一般的 base record；
+`ImpactDataSet`/`ObjectEffect`（AoE MGEF）是可選的 ref。
 
-### imageSpaceModifiers（IMAD）— 螢幕空間後製
+### imageSpaceModifiers（IMAD）— 螢幕空間後處理
 
-頂層的 `imageSpaceModifiers: []` 是一組螢幕後製記錄（亮度/對比/色調），由 `explosions[].imageSpaceModifier` ref 使用，或從 Papyrus 的 `ImageSpaceModifier` property 套用/移除（`ApplyCrossFade()` / `Remove()`）。
+一個頂層的 `imageSpaceModifiers: []`，是螢幕後處理 record（亮度/對比/色調），由
+`explosions[].imageSpaceModifier` ref 使用，或從 Papyrus `ImageSpaceModifier`
+property 套用/移除（`ApplyCrossFade()` / `Remove()`）。
 
 ```jsonc
 "imageSpaceModifiers": [
@@ -117,16 +158,53 @@
 ]
 ```
 
-Mutagen 將每個 IMAD 欄位都建模為可動畫的曲線；builder 為每個欄位寫入一個關鍵影格（tint = 一個 ColorFrame）。見 `examples/daylight_spell_spec.json`。注意：該範例的*執行期*「白晝」效果最終被移到一個 SKSE 外掛中（真正的跟隨光源 + 即時 cell 環境光，這兩者——不像螢幕濾鏡——不會洗掉低反照率物件）；IMAD builder 仍保留為一個通用的 ESP 端能力。
+Mutagen 把每個 IMAD 欄位都建模成可動畫的曲線；builder 為每個欄位寫入一個關鍵影格（tint = 一個
+ColorFrame）。見 `examples/daylight_spell_spec.json`。注意：該範例的*執行時*「daylight」effect 最終被
+移到一個 SKSE plugin（真正的跟隨光源 + 即時 cell-ambient，這些 — 不像螢幕濾鏡 — 不會把低反照率物件
+洗白）；IMAD builder 仍是一個通用的 ESP 端能力。
 
-### enchantments（ENCH / 物品效果）
-一個**物品效果**將一個或多個基於 MGEF 的 `effects`（與法術/藥水 effect 相同的 `{ magicEffect, magnitude, area, duration }` 結構）打包成一個可重用的附魔，供**武器**或**盔甲**透過其 `enchantment` 欄位參照。`enchantType` 選擇行為類別及其 vanilla 預設施法/目標（已對照 `Skyrim.esm` 驗證）：
+### hazards（HAZD）— 半徑效果 / 放置陷阱
 
-| `enchantType` | EnchantType | 預設 castType / targetType | 充能 | 用途 |
+一個頂層的 `hazards: []`，是環境危害 — 一塊火焰/冰霜/毒物區域，會週期性地對其半徑內的 actor 套用一個
+spell（引擎的火焰陷阱 / 持續 AoE 機制）。
+
+```jsonc
+"hazards": [
+  { "editorId": "MFHZ_Fire", "name": "Flames",
+    "model": "Meshes/Traps/PressurePlateFire/NorTrapFirePlateFX.nif",  // visual nif (verify vs Skyrim.esm)
+    "radius": 150,            // effect radius
+    "lifetime": 8,           // seconds it persists (0 = inherit from the spawning spell / permanent)
+    "targetInterval": 1,     // seconds between applying `spell` to actors in radius
+    "limit": 0,              // max simultaneous instances (0 = unlimited)
+    "spell": "MFHZ_BurnSpell", // ref -> the SPEL applied periodically (the actual effect)
+    "flags": [ "DropToGround" ], // AffectsPlayerOnly | InheritDurationFromSpawnSpell | AlignToImpactNormal | InheritRadiusFromSpawnSpell | DropToGround
+    "light": "...", "sound": "Skyrim.esm:0x000F57E6", // optional refs (LIGT / SNDR)
+    "imageSpaceModifier": "...", "impactDataSet": "..." } // optional refs (IMAD / IPDS)
+]
+```
+
+**使用 hazard 的兩種方式**（兩者皆已出貨）：
+1. **Spell-spawn** — 一個 `magicEffects[]` 項目，帶 `"archetype": "SpawnHazard"` 與
+   `"association": "MFHZ_Fire"`，放到一個 `TargetLocation` spell 上 → 一個可施放的 spell，會把
+   hazard 落在地上。重用既有的 MGEF archetype/association 接線（無特殊欄位）。
+2. **放置陷阱** — 一個 `placements[]` 項目，其 `base` 是 hazard 的 editorId（或 `"kind": "hazard"`）
+   → cell 中一個靜態的 `PlacedHazard`（一個地城火焰陷阱）。見 `SPEC-world.md`。
+
+沒有 `spell` 的 hazard 不會套用任何東西（validate 會警告）；沒有 model 的 hazard 看不見（對照
+Skyrim.esm 驗證 nif 路徑 — 見 vanilla-nif-paths-must-be-verified）。完整實作範例（兩條路徑）：
+`examples/hazard.json`。
+
+### enchantments（ENCH / Object Effect）
+一個 **Object Effect** 把一個或多個基於 MGEF 的 `effects`（與 spell/potion effect 相同的
+`{ magicEffect, magnitude, area, duration }` 形狀）綑成一個可重用的附魔，供 **weapon** 或
+**armor** 透過其 `enchantment` 欄位參照。`enchantType` 挑選行為家族及其
+原版預設的 cast/target（已對照 `Skyrim.esm` 驗證）：
+
+| `enchantType` | EnchantType | default castType / targetType | charge | use |
 |---------------|-------------|-------------------------------|--------|-----|
-| `weapon`  | `Enchantment`      | `FireAndForget` / `Touch` | 武器攜帶充能池（`enchantmentAmount`） | 攻擊時觸發（冰霜/火焰/吸取武器） |
-| `apparel` | `Enchantment`      | `ConstantEffect` / `Self` | 無 — 穿戴時始終啟用 | 強化/抗性/恢復盔甲 |
-| `staff`   | `StaffEnchantment` | `FireAndForget` / `Aimed` | 法杖攜帶充能池 | 法杖「使用時施放」（vanilla 法杖將 `chargeTime` 設為 ~0.5） |
+| `weapon`  | `Enchantment`      | `FireAndForget` / `Touch` | weapon carries the pool (`enchantmentAmount`) | cast-on-strike (frost/fire/absorb weapon) |
+| `apparel` | `Enchantment`      | `ConstantEffect` / `Self` | none — always-on while worn | fortify/resist/regen apparel |
+| `staff`   | `StaffEnchantment` | `FireAndForget` / `Aimed` | staff carries the pool | staff "cast on use" (vanilla staves set `chargeTime` ~0.5) |
 
 ```jsonc
 "enchantments": [
@@ -144,7 +222,12 @@ Mutagen 將每個 IMAD 欄位都建模為可動畫的曲線；builder 為每個�
     "enchantmentAmount": 1500 }          // the weapon's charge pool (casts before recharge)
 ]
 ```
-`apparel`（常效型）附魔以相同方式套用到**盔甲**上（無 `enchantmentAmount` — 裝備為被動）。`enchantment` ref 也可以是一個 **vanilla** 的 ObjectEffect（`find <Skyrim.esm> Ench... ObjectEffect`，例如 `EnchWeaponFrostDamageBase = Skyrim.esm:0x10FB96`）。使用 `enchdiag <in.esp> <0xFORMID>` 檢查已建置或 vanilla 的 ENCH。可參考範例：[`examples/enchantment_spec.json`](../examples/enchantment_spec.json)。*（結構已驗證；附魔在遊戲中實際觸發尚未確認 — 見食譜備注。）*
+一個 `apparel`（constant-effect）附魔以相同方式放到一件 **armor** 上（沒有 `enchantmentAmount` —
+apparel 是被動的）。`enchantment` ref 也可以是一個**原版** ObjectEffect
+（`find <Skyrim.esm> Ench... ObjectEffect`，例如 `EnchWeaponFrostDamageBase = Skyrim.esm:0x10FB96`）。
+用 `enchdiag <in.esp> <0xFORMID>` 檢視已建構或原版的 ENCH。實作範例：
+[`examples/enchantment_spec.json`](../../../examples/enchantment_spec.json)。*（已做結構驗證；附魔
+在遊戲內實際發動尚未確認 — 見 cookbook recipe 的註記。）*
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>

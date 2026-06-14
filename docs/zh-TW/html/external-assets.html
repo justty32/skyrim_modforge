@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>外部資源 — 帶入您自己的網格 / 貼圖 / 音效 / 動畫 — ModForge 文件</title>
+<title>外部資源 — 帶入你自己的網格／貼圖／音效／動畫 — ModForge 文件</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,15 +15,20 @@
   <a class="nav-item" href="for-agent-lib.html">函式庫 API</a>
   <a class="nav-item active" href="external-assets.html">外部資源</a>
   <a class="nav-item" href="engine-internals.html">引擎內部原理</a>
+  <a class="nav-item" href="local-skyrim-extraction.html">本地 Skyrim 抽取</a>
   <div class="nav-section">規格說明（SPEC）</div>
   <a class="nav-item" href="spec-index.html">總覽 · 目錄</a>
   <a class="nav-item" href="spec-intro.html">介紹 · 記錄類型</a>
   <a class="nav-item" href="spec-magic.html">魔法 · 附魔</a>
-  <a class="nav-item" href="spec-dialogue-quests.html">對話 · 任務 · 腳本</a>
-  <a class="nav-item" href="spec-world.html">世界空間 · 地城 · 商販</a>
-  <a class="nav-item" href="spec-items.html">物品 · 配方 · 資源</a>
+  <a class="nav-item" href="spec-dialogue.html">對話 · 場景</a>
+  <a class="nav-item" href="spec-quests.html">任務 · Story Manager</a>
+  <a class="nav-item" href="spec-identities.html">身分系統</a>
+  <a class="nav-item" href="spec-world.html">Cell · 放置 · 光照</a>
+  <a class="nav-item" href="spec-worldspaces.html">世界空間 · 清單 · 商販</a>
+  <a class="nav-item" href="spec-items.html">配方 · 天賦 · 資源</a>
   <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
   <a class="nav-item" href="spec-workflow.html">工作流程</a>
+  <a class="nav-item" href="spec-refs.html">$ref · 參數化</a>
   <div class="nav-section">讓 NPC 更有生命力</div>
   <a class="nav-item" href="lifelike.html">總覽</a>
   <a class="nav-item" href="cookbook-index.html">食譜手冊 · 目錄</a>
@@ -40,44 +45,61 @@
 </nav>
 <div class="content"><div class="content-inner"><div id="md" class="md"></div></div></div>
 <textarea id="src" hidden>
-# 外部資源 — 帶入您自己的網格 / 貼圖 / 音效 / 動畫
+# 外部資源 — 帶入你自己的網格／貼圖／音效／動畫
 
-← 索引：[for_agent.md](for-agent.html) · 規格欄位：[SPEC-index.md](spec-index.html) · CLI：[for_agent_cli.md](for-agent-cli.html)
+← index: [for_agent.md](for-agent.html) · spec fields: [SPEC-index.md](spec-index.html) · CLI: [for_agent_cli.md](for-agent-cli.html)
 
-ModForge 預設透過**複製原版記錄**（武器的 `template` 重用 IronSword 的 `.nif`）來給記錄 3D 外觀。**外部資源管線**讓您改為帶入**自己的**資源 — 自訂網格、貼圖、音效、動畫 — 並讓 ModForge (1) **將 Data 相對路徑寫入記錄**，以及 (2) **將檔案打包**到 `.esp` 旁邊，使打包後的模組可獨立運作 / 相容 MO2。
+預設情況下，ModForge 透過**複製一筆原版記錄**來賦予記錄 3D 外觀（武器的
+`template` 會重用 IronSword 的 `.nif`）。**外部資源管線**讓你改為帶入你
+**自己的**資源——自訂網格、貼圖、音效、動畫——並讓 ModForge（1）**把 Data 相對
+路徑寫入記錄**，以及（2）把檔案**打包**在 `.esp` 旁邊，使打包後的
+mod 自我完備／可直接給 MO2 使用。
 
-## ModForge 負責的 vs. 您必須製作的
+## ModForge 做什麼 vs. 你必須自行製作什麼
 
-ModForge **參考並打包**資源，**不會**製作它們。請誠實面對這個分工：
+ModForge **參照並打包**資源。它**不會**製作資源。請誠實看待這個分工：
 
-| 資源 | ModForge 負責 | 您必須製作（DCC 工具 / Creation Kit） |
+| Asset | ModForge does | You must author (DCC tool / Creation Kit) |
 |---|---|---|
-| `.nif` 網格 | 將路徑寫入記錄的 `MODL`，複製檔案 | 建模（Blender + Nif tools / 3ds Max），設定碰撞、材質 |
-| `.dds` 貼圖 | 打包檔案（`.nif` 在內部指定其貼圖） | 繪製貼圖、產生 mipmap、讓 `.nif` 的 `BSShaderTextureSet` 指向它 |
-| `.wav` / `.xwm` 音效 | 發出指向檔案的 Sound Descriptor（SNDR），連結記錄，打包檔案 | 錄製/製作音訊；`.xwm` 是遊戲內壓縮格式（xWMAEncode） |
-| `.hkx` 動畫 | 打包檔案（若放在已識別的資料夾下） | 製作動畫 + 行為圖（CK / havok 工具）；將動畫接入行為是**不在範圍內**的 |
+| `.nif` mesh | 把路徑寫入記錄的 `MODL`、複製檔案 | 製作網格（Blender + Nif tools / 3ds Max）、設定 collision、materials |
+| `.dds` texture | 打包檔案（`.nif` 在內部指定自己的貼圖） | 繪製貼圖、產生 mipmaps、讓 `.nif` 的 `BSShaderTextureSet` 指向它 |
+| `.wav` / `.xwm` sound | 產出指向檔案的 Sound Descriptor（SNDR）、把記錄連到它、打包檔案 | 錄製／製作音訊；`.xwm` 是壓縮後的遊戲內格式（xWMAEncode） |
+| `.hkx` animation | 打包檔案（若放在可辨識的資料夾下） | 製作動畫＋behaviour graph（CK / havok tools）；把動畫接進 behaviour 是**範圍之外** |
 
-ModForge 無法驗證資源**內容** — 指向壞掉 `.nif` 的路徑可以建置並打包，但遊戲中會當機。工具保證**接線和打包**，不保證位元組的正確性。
+ModForge 無法驗證資源**內容**——一條指向壞掉 `.nif` 的路徑照樣能 build 並打包
+得好好的，卻會在遊戲內崩潰。本工具保證的是**接線與打包**，而不是位元組本身。
 
-## Data 相對路徑規則（這是第一大陷阱）
+## Data 相對路徑規則（這是頭號陷阱）
 
-Skyrim 從遊戲的 `Data/` 資料夾載入散落的檔案。兩種不同的根目錄慣例：
+Skyrim 會從遊戲的 `Data/` 資料夾載入 loose files。有兩種不同的起點慣例：
 
-- **模型路徑（`model` 欄位）**以 **`Data\Meshes\`** 為根目錄。所以引擎路徑 `Data\Meshes\MyMod\bell.nif` 應寫成 **`MyMod\bell.nif`** — **不要**加 `Meshes\` 前綴（ModForge 的 `validate` 會拒絕以 `Meshes\` 開頭的 `model`）。
-  （已從原版確認：IronSword 的模型是 `Weapons\Iron\LongSword.nif`，即磁碟上位於 `Data\Meshes\Weapons\Iron\LongSword.nif`。）
-- **音效檔案路徑（`sounds[].files`）**以 **`Data\`** 為根目錄，並放在 **`Sound\`** 下，例如 `Sound\fx\mymod\bell.wav`（磁碟上是 `Data\Sound\fx\mymod\bell.wav`）。請包含 `Sound\` 區段。
+- **Model 路徑（`model` 欄位）** 以 **`Data\Meshes\`** 為起點。所以引擎路徑
+  `Data\Meshes\MyMod\bell.nif` 寫作 **`MyMod\bell.nif`**——**不要**包含
+  `Meshes\` 前綴（ModForge 的 `validate` 會拒絕以 `Meshes\` 開頭的 `model`）。
+  （已從原版確認：IronSword 的 model 是 `Weapons\Iron\LongSword.nif`，即位於磁碟上的
+  `Data\Meshes\Weapons\Iron\LongSword.nif`。）
+- **Sound 檔案路徑（`sounds[].files`）** 以 **`Data\`** 為起點，並位於 **`Sound\`** 之下，
+  例如 `Sound\fx\mymod\bell.wav`（磁碟上位於 `Data\Sound\fx\mymod\bell.wav`）。要包含
+  `Sound\` 區段。
 
-依 Bethesda 慣例使用**反斜線**（`\`） — ModForge 也接受 `/`，引擎會正規化。路徑必須是**相對路徑**（無 `C:\…`，無前導 `\`，無磁碟機代號）。請選擇以您的模組命名的唯一子資料夾（`MyMod\…`、`Sound\fx\mymod\…`），以免與原版或其他模組衝突。
+依 Bethesda 慣例使用**反斜線**（`\`）——ModForge 也接受 `/`，引擎會
+正規化。路徑必須是**相對**的（不可有 `C:\…`、不可有開頭的 `\`、不可有磁碟機代號）。挑一個
+以你的 mod 命名的獨特子資料夾（`MyMod\…`、`Sound\fx\mymod\…`），這樣你就絕不會與原版或
+另一個 mod 衝突。
 
-## 放置檔案的位置：資源來源目錄
+## 檔案放哪裡：資源來源目錄
 
-`package` 會將一個**來源資源目錄**複製到輸出模組資料夾。透過規格的 `assets` 欄位（相對於規格檔案，或絕對路徑）**或** CLI 的 `--assets <dir>` 覆寫（優先使用）來指定。來源必須包含引擎標準子資料夾；ModForge 僅打包這些（不區分大小寫，保留結構）：
+`package` 會把一個**來源資源目錄**複製到輸出的 mod 資料夾。用 spec 的
+`assets` 欄位（相對於 spec 檔案，或絕對路徑）**或** CLI 的 `--assets <dir>` 覆寫
+（後者勝出）指向它。來源必須包含引擎標準的子資料夾；ModForge 只打包這些，
+不分大小寫，並保留結構：
 
 ```
 Meshes/  Textures/  Sounds/ (or Sound/)  Music/  Seq/
 ```
 
-這些資料夾之外的任何內容（`README.txt`、`Docs/` 目錄）都會**被忽略**。所以請按照 `Data/` 下應有的結構來排列來源：
+這些資料夾以外的任何東西（一個 `README.txt`、一個 `Docs/` 目錄）都會被**忽略**。所以請把來源
+完全照它應該出現在 `Data/` 之下的樣子來擺放：
 
 ```
 my_assets/
@@ -87,9 +109,12 @@ my_assets/
   Meshes/actors/mymod/anims/idle.hkx        # .hkx ride along under Meshes\…
 ```
 
-> 動畫（`.hkx`）在 Skyrim 中放在 **`Meshes\`** 下（例如 `Meshes\actors\character\animations\…`），因此它們作為 `Meshes/` 樹的一部分被打包。將新動畫接入角色的**行為圖**是 Creation Kit / havok 的工作，ModForge 不執行 — 它只攜帶檔案。
+> 動畫（`.hkx`）在 Skyrim 中位於 **`Meshes\` 之下**（例如
+> `Meshes\actors\character\animations\…`），因此會作為 `Meshes/` 樹的一部分被打包。把
+> 新動畫接進角色的 **behaviour graph** 是一項 Creation-Kit / havok 工作，ModForge 並
+> 不執行——它只攜帶檔案。
 
-`package` 後，輸出資料夾是一個可直接拖入 MO2/Vortex 的模組：
+`package` 之後，輸出資料夾就是一個可直接放入的 MO2/Vortex mod：
 
 ```
 OutModDir/
@@ -99,11 +124,13 @@ OutModDir/
   Sound/fx/mymod/bell_chime_01.wav
 ```
 
-## 規格欄位
+## Spec 欄位
 
 ### `model` — 記錄上的自訂網格
 
-在 **statics、activators、furniture、miscItems、weapons** 上設定 `model`（Data 相對 `.nif` 路徑，無 `Meshes\` 前綴）。設定後，ModForge 會將它寫入記錄的模型子記錄，而不是（或同時）複製模板：
+在 **statics、activators、furniture、miscItems、weapons** 上設定 `model`（一條
+Data 相對的 `.nif` 路徑，無 `Meshes\` 前綴）。設定後，ModForge 會把它寫入記錄的 model
+subrecord，而不是（或除了）複製 template：
 
 ```jsonc
 "statics":    [ { "editorId": "MFMonument", "model": "MyMod\\monument.nif" } ],
@@ -112,13 +139,18 @@ OutModDir/
 "miscItems":  [ { "editorId": "MFRelic", "name": "Forged Relic", "value": 250, "model": "MyMod\\relic.nif" } ]
 ```
 
-- **`model` + `template` 同時用於 `miscItem`**：ModForge 會警告，且 **`model` 優先**（您的網格會覆蓋複製模板的網格）。
-- **有 `model` 但沒有 `template` 的 `weapon`** 很可能會**在裝備時當機** — 武器還需要第一人稱模型 / 動畫類型 / 裝備資料，這些只有 `template` 複製才能提供。請將武器 `model` **搭配**相同武器類型的 `template`（`model` 只覆寫世界/第三人稱網格）。ModForge 在武器有 `model` 但無 `template` 時會警告。
-- Statics/activators/furniture 是純網格記錄 — 僅用 `model` 是正常、正確的做法。
+- 在 `miscItem` 上**同時有 `model` + `template`**：ModForge 會警告，且 **`model` 勝出**（你的網格
+  會覆蓋複製 template 的網格）。
+- **有 `model` 但沒有 `template` 的 `weapon`** 很可能會在**裝備時崩潰**——武器還需要
+  1st-person model／animation type／equip data，而這些只有 `template` 複製才能提供。請把武器
+  `model` 與一個相同武器類型的 `template` **搭配**（`model` 接著只會覆蓋
+  world／3rd-person 網格）。當武器有 `model` 卻沒有 `template` 時，ModForge 會警告。
+- Statics/activators/furniture 是純網格記錄——只給 `model` 是正常、正確的做法。
 
-### `sounds` — 自訂 Sound Descriptors（SNDR）
+### `sounds` — 自訂 Sound Descriptor（SNDR）
 
-一個 `sounds` 條目會發出一個指向您的 `.wav`/`.xwm` 的 **Sound Descriptor**。記錄透過 `editorId` 參考它：
+一筆 `sounds` 條目會產出一個指向你的 `.wav`/`.xwm` 的 **Sound Descriptor**。記錄透過
+`editorId` 來參照它：
 
 ```jsonc
 "sounds": [
@@ -133,15 +165,18 @@ OutModDir/
                   "activationSound": "MFBellChimeSD" } ]
 ```
 
-接受 SNDR *ref*（規格內的 `sounds` editorId **或**原版 `<master>:0xFORMID`）的音效連結欄位：
+接受 SNDR *ref*（一個 in-spec 的 `sounds` editorId **或**一個原版
+`<master>:0xFORMID`）的音效連結欄位：
 
-| 記錄 | 欄位 |
+| record | fields |
 |---|---|
-| `activators` | `activationSound`、`loopingSound` |
-| `miscItems` | `pickUpSound`、`putDownSound` |
-| `weapons` | `pickUpSound`、`putDownSound` |
+| `activators` | `activationSound`, `loopingSound` |
+| `miscItems` | `pickUpSound`, `putDownSound` |
+| `weapons` | `pickUpSound`, `putDownSound` |
 
-`category`/`outputModel` 預設為原版 SFX 類別 + 輸出模型，因此音效無需進一步調整即可實際發聲。這個 SNDR 原語在設計上是通用的 — 它也是規劃中的語音/TTS 管線（`.fuz` 語音行）將以之為基礎的根基。
+`category`/`outputModel` 預設為原版 SFX category＋output model，因此音效不需進一步調校
+就確實聽得到。這個 SNDR 基礎元件刻意設計得很通用——它也是規劃中的
+voice/TTS 管線（`.fuz` voice lines）將要建立其上的基礎。
 
 ## 工作流程
 
@@ -155,19 +190,23 @@ dotnet run --project src/ModForge.Cli -- dump OutModDir/MFCustomAssets.esp      
 find OutModDir -type f                                                                # verify bundle
 ```
 
-`validate` 檢查：model 是 `.nif`、沒有 `Meshes\` 前綴、是相對路徑；音效至少有一個 `.wav`/`.xwm` 檔案；音效/類別/輸出模型 ref 可解析。`dump` 會印出每筆記錄的 `model:` 路徑、`activationSound`/`pickUpSound -> …` 連結以及 SNDR 的 `soundFile=` 路徑。
+`validate` 會檢查：model 是 `.nif`、未以 `Meshes\` 為前綴、是相對路徑；一個 sound 至少有一個
+`.wav`/`.xwm` 檔案；sound/category/output-model 的 ref 都能解析。`dump` 會印出每筆記錄的 `model:` 路徑、
+`activationSound`/`pickUpSound -> …` 連結，以及 SNDR 的 `soundFile=` 路徑。
 
-完整工作範例：**`../examples/custom_asset_spec.json`**（含 `../examples/assets/customasset/` 的佔位資源樹 — 僅存根位元組；請替換為真正製作的內容）。
+一個完整的實作範例是 **`../examples/custom_asset_spec.json`**（搭配一棵 placeholder 資源樹
+位於 `../examples/assets/customasset/`——僅為佔位位元組；請替換為真正製作的內容）。
 
-## 限制 — 請誠實說明
+## 限制 — 誠實以對
 
-ModForge 寫出**結構有效**的記錄並**複製您給它的檔案**，但**不會**：
+ModForge 寫出**結構上有效**的記錄，並**複製你給它的檔案**。它**不會**：
 
-- 製作或驗證網格/貼圖/音效/動畫**內容**（壞掉的 `.nif` 在遊戲中仍會當機）；
-- 將動畫接入角色的**行為圖**（這是 CK/havok 的工作）；
-- 從 `.nif` 的貼圖參考產生 `.dds`（您需要同時提供兩者；`.nif` 在內部指定其貼圖）。
+- 製作或驗證 mesh/texture/sound/animation 的**內容**（壞掉的 `.nif` 在遊戲內仍會崩潰）；
+- 把動畫接進角色的 **behaviour graph**（一項 CK/havok 工作）；
+- 從 `.nif` 的貼圖參照產生 `.dds`（兩者都由你提供；`.nif` 會指定自己的貼圖）。
 
-確認自訂資源能實際渲染/播放需要 Proton/Skyrim 啟動 — 詳見 [for_agent.md → Limits](for-agent.html#limits--be-honest-do-not-over-claim)。
+要確認一個自訂資源真的能算繪／播放，需要進行一次 Proton/Skyrim 啟動——見
+[for_agent.md → Limits](for-agent.html#limits--be-honest-do-not-over-claim)。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>

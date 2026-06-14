@@ -18,7 +18,7 @@
 
 - ~~**大檔拆分門檻改用 bytes**~~ ✅ 已改（trigger-to-review、非硬上限；本質不可分可超標；archive/ 與 code-map/ 豁免）。**門檻分兩套**：`workflows/` 開發流程文檔 **8192 bytes**；`docs/` 使用手冊文檔 **300 行**；`src/`、`examples/` **300 行**。DEV-GUIDE 觸發 A + conventions 已同步。
   - **docs/ 拆檔（2026-06-14）**：`SPEC-world`(485)→ `SPEC-world`+`SPEC-worldspaces`；`SPEC-dialogue-quests`(653)→ `SPEC-dialogue`+`SPEC-quests`+`SPEC-identities`。tracked EN docs 零斷鏈。
-  - **待辦：zh-TW 鏡像重新對齊**——EN SPEC 已從 8 檔變 11 檔，但 `docs/zh-TW/` 仍是舊的 `SPEC-dialogue-quests.md`/`SPEC-world.md` 單檔結構（大重構時就決定 zh-TW 整批延後 re-sync，此次拆檔再加大落差）。重譯/重切時對齊新 EN 結構。另 `docs/zh-TW/asset-pipelines/` 的 EN 正本已搬 `workflows/idea/asset-pipelines/`，是孤兒鏡像，一併處理。
+  - ~~**待辦：zh-TW 鏡像重新對齊**~~ ✅ 已做（2026-06-14）：`docs/zh-TW/` 整批重譯並 1:1 鏡像 EN `docs/`——spec 移入 `spec/` 子夾、`SPEC-dialogue-quests`→dialogue+quests+identities、`SPEC-world`→world+worldspaces、新增 `SPEC-refs`、補 `local-skyrim-extraction`；`asset-pipelines/` 孤兒鏡像已刪（EN 正本在 `workflows/idea/`，不屬使用手冊）。逃出鏡像樹的連結補一層 `../`（zh-TW 深一層）；137 條鏡像內連結零斷鏈。`engine-internals` 標題保留英文（跨檔 anchor 目標）。html bundle 經 `generate.py` 重生（31 頁）。
 
   ### workflows 文檔拆檔（已調查，2026-06-14；待執行）
 
