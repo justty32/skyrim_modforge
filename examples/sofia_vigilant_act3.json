@@ -1,0 +1,338 @@
+{
+  "_note": "Sofia x VIGILANT — ACT 3 (zzzCO* quest chain). Player-initiated 'talk to Sofia' topics gated by VIGILANT Act-3 quest stages + Sofia present (GetIsID). Lines = de-AI'd bilingual rewrite of sub_projs/sofia-patch/vigilant-screenplay/act3-宅邸.md (EN voiced; ZH in screenplay). GATES DECODED from PSC fragments (2026-06-14) — see vigilant-screenplay/_act3-trigger-placement-map.md. Quest chain: zzzCOMq01(0x065932 Child of Oblivion) main + zzzCOGuide(0x43CBAE Stendarr Guide) side + zzzCOSubQ01(0x324E7E Successor) martyrdom branch. Key stages: Mq01 s0=Act3 start(gCurrentAct=3); s10=dispatch from Gwyneth; s20=arrived mansion(obj20); s30=investigate(obj30); s40=Julia defeated(BalScene); s45=BalScene ends; s50=Julius phase(obj60 'Defeat Julius'); s70=Julius defeated(Molag Bal appears); s80=MartyrTRG enabled(obj80 'Martyrdom or Corruption'); s90=martyrdom/burn(Fragment_5 → CHMq00/Act4 starts); s200=corruption/Coldharbour deal(Fragment_14 → SubQ01 starts); SubQ01 s0=fadeout/MoveTo; s10=new life marker(after burn); s20=ShowRaceMenu(meta re-roll). BRANCH GATE NOTE: s90=burn+enter Coldharbour(CHMq00); s200=Molag Bal corruption deal(SubQ01 meta). Sofia NPC=SofiaFollower.esp:0x0012C4, voiceType=JJSofiaVoiceType, follower faction=SofiaFollower.esp:0x060480. Bruiant Estate worldspace=Vigilant.esm:0x047CFA (zCOBruiantWorld). Julia boss=zzzCOJuliusChildOblivion(0x0461D8). Baal/Balthoro alias_index=3 in Mq01. No banter section (Sofia external). Act3 tone: Sofia jokes most here to mask fear — highest ambient/active density of the patch.",
+  "pluginName": "ModForgeSofiaVigilantAct3.esp",
+  "esl": true,
+
+  "voiceTemplates": [
+    { "id": "sofia-f5", "engine": "f5", "referenceWav": "refs/sofia_ref.wav", "referenceText": "", "language": "en" }
+  ],
+
+  "voiceSpeakers": [
+    { "speaker": "SofiaFollower.esp:0x0012C4", "voiceType": "JJSofiaVoiceType", "template": "sofia-f5" }
+  ],
+
+  "globals": [
+    { "editorId": "MF_SofA3_MansionEntry",     "type": "short", "value": 0 },
+    { "editorId": "MF_SofA3_ReadText",          "type": "short", "value": 0 },
+    { "editorId": "MF_SofA3_Statues",           "type": "short", "value": 0 },
+    { "editorId": "MF_SofA3_RedWitches",        "type": "short", "value": 0 },
+    { "editorId": "MF_SofA3_JuliaBossPre",      "type": "short", "value": 0 },
+    { "editorId": "MF_SofA3_JuliaBossPost",     "type": "short", "value": 0 },
+    { "editorId": "MF_SofA3_BaalRecognize",     "type": "short", "value": 0 },
+    { "editorId": "MF_SofA3_BaalFollowUp",      "type": "short", "value": 0 },
+    { "editorId": "MF_SofA3_JuliusFire",        "type": "short", "value": 0 },
+    { "editorId": "MF_SofA3_ChoicePre",         "type": "short", "value": 0 },
+    { "editorId": "MF_SofA3_BurnBranch",        "type": "short", "value": 0 },
+    { "editorId": "MF_SofA3_ColdharbourBranch", "type": "short", "value": 0 },
+    { "editorId": "MF_SofA3_BurnAfter",         "type": "short", "value": 0 },
+    { "editorId": "MF_SofA3_MetaCorpse",        "type": "short", "value": 0 }
+  ],
+
+  "quests": [
+    { "editorId": "MFSofVigAct3Controller", "name": "", "startGameEnabled": true, "priority": 60, "type": "None" }
+  ],
+
+  "dialogue": [
+    {
+      "editorId": "MFSofVig_3A_MansionEntry",
+      "_note": "3-A: mansion entry ambient. High-density: three responses played in sequence then sayOnce on topic. Gate: Mq01 s20 (arrived mansion, Obj30 active) through s50 (Julius phase not yet started). Covers the entire exploration window.",
+      "questEditorId": "MFSofVigAct3Controller",
+      "prompt": "What do you make of this place?",
+      "responses": [
+        "Okay. Just… taking it in. Don't mind me.",
+        "This place has that particular smell — old wood, old blood, and something that used to be a person. I know that smell. I hate that smell.",
+        "Are you planning to go *in*? Because the sensible options are, in order: leave, set it on fire from out here, *then* leave. You appear to be considering a fourth option."
+      ],
+      "sayOnce": true,
+      "emotion": "Fear",
+      "setGlobal": { "global": "MF_SofA3_MansionEntry", "value": 1 },
+      "linkTo": ["MFSofVig_3A_MansionEntryAlt"],
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 20, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 50, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA3_MansionEntry", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_3A_MansionEntryAlt",
+      "_note": "3-A follow-up: more ambient reactions. topLevel false so player can re-ask. Gives the extra two ambient lines.",
+      "questEditorId": "MFSofVigAct3Controller",
+      "topLevel": false,
+      "prompt": "Any other observations?",
+      "responses": [
+        "The windows are all dark. Usually that means nobody home. *Here* that means something is making sure nobody can look in.",
+        "You know the rule about old houses: don't touch anything you don't recognize, don't read anything you find, don't answer if something calls your name. ... We are absolutely going to break all three of those."
+      ],
+      "goodbye": true,
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_3B_ReadText",
+      "_note": "3-B: player read a text/book in the mansion. Gate: same exploration window as 3-A.",
+      "questEditorId": "MFSofVigAct3Controller",
+      "prompt": "What do you make of what you just read?",
+      "responses": [
+        "Another diary. Why do people in enormous haunted houses always keep diaries? You'd think they'd notice the correlation.",
+        "Lots of money. No friends. Started talking to things they shouldn't. You know what people with friends do? They go out. They eat food someone else cooked. They don't end up in a journal I'm reading two hundred years later surrounded by whatever *that* is.",
+        "... I have you. I'm fine. I'm not judging."
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": { "global": "MF_SofA3_ReadText", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 20, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 50, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA3_ReadText", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_3C_Statues",
+      "_note": "3-C: touched a statue / entered a new combat area. Gate: s20-s40 (Julia not yet defeated).",
+      "questEditorId": "MFSofVigAct3Controller",
+      "prompt": "You saw me touch that statue.",
+      "responses": [
+        "I saw you touch the statue. I *watched* you touch the statue. I made specific eye contact with you *while* you touched the statue.",
+        "And now there's something in the room with us that wasn't here before. So I just want to be clear on the chain of events.",
+        "Right. Well. Let's go, then."
+      ],
+      "sayOnce": true,
+      "emotion": "Fear",
+      "setGlobal": { "global": "MF_SofA3_Statues", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 20, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 40, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA3_Statues", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_3D_RedWitches",
+      "_note": "3-D: red witches/sorceresses encountered. Gate: same as 3-C (exploration pre-Julia).",
+      "questEditorId": "MFSofVigAct3Controller",
+      "prompt": "Red robes in a house like this.",
+      "responses": [
+        "Red. They wore *red*. In this place. On purpose.",
+        "I have questions. I have so many questions. Starting with: who *decided*? Was it a group vote? Did someone go, \"I know we're running a haunted noble estate, but have you considered — crimson?\"",
+        "Focus. They're better than they look. Which is saying something, because they look *very good* at this."
+      ],
+      "sayOnce": true,
+      "emotion": "Anger",
+      "setGlobal": { "global": "MF_SofA3_RedWitches", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 20, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 40, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA3_RedWitches", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_3E_JuliaBossPre",
+      "_note": "3-E pre-fight: facing Julia (the red sorceress boss / Child of Oblivion). Gate: Mq01 s30 done (investigating) + s40 not done (Julia not yet defeated).",
+      "questEditorId": "MFSofVigAct3Controller",
+      "prompt": "Any read on the woman in charge here?",
+      "responses": [
+        "Look at her. *Look at her.* The posture. The robes. That specific expression people get when they've been the most powerful thing in the room for so long they've forgotten how *bored* they look.",
+        "She's been here a while, doing whatever this is. That's not confidence. That's just... the particular arrogance of someone who's never been interrupted.",
+        "We're about to interrupt her."
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": { "global": "MF_SofA3_JuliaBossPre", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 30, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 40, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA3_JuliaBossPre", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_3E_JuliaBossPost",
+      "_note": "3-E post-fight: Julia defeated (Mq01 s40 done). BalScene is now playing (s40→s45). Window: s40 done, s50 not done.",
+      "questEditorId": "MFSofVigAct3Controller",
+      "prompt": "She's down. How do you feel?",
+      "responses": [
+        "She built all of this. Every room. Every trap. Every poor soul wandering the halls. All of it — to fill something.",
+        "That's the thing nobody talks about. People don't go this far because they're *strong*. They go this far because there's a hole somewhere and they ran out of other ways to fill it.",
+        "Anyway. What's next?"
+      ],
+      "sayOnce": true,
+      "emotion": "Sad",
+      "setGlobal": { "global": "MF_SofA3_JuliaBossPost", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 40, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 50, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA3_JuliaBossPost", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_3F_BaalRecognize",
+      "_note": "3-F: Sofia recognizes Baal/Balthoro as the dream bard from Act 2. Gate: Mq01 s20 done (in mansion) + s40 not done (before Julia fight ends). Baal is alias_index=3 in Mq01; appears at mansion entry (s20 window).",
+      "questEditorId": "MFSofVigAct3Controller",
+      "prompt": "That man. You know him.",
+      "responses": [
+        "That face.",
+        "I know that face.",
+        "The bard. The one from — *him*. He was in the dream. Said exactly the right things, in exactly the right order, to exactly the right people. And now he's here, in a *butler's uniform*, acting like we've never met.",
+        "I'm very easygoing. Ask anyone. But there are two kinds of people I don't forgive: people who lie to *me*, and people who lie to people I care about. He's managed both.",
+        "Don't hold me back. Actually — hold me back. For *one minute*."
+      ],
+      "sayOnce": true,
+      "emotion": "Anger",
+      "setGlobal": { "global": "MF_SofA3_BaalRecognize", "value": 1 },
+      "linkTo": ["MFSofVig_3F_BaalFollowUp"],
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 20, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 40, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA3_BaalRecognize", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_3F_BaalFollowUp",
+      "questEditorId": "MFSofVigAct3Controller",
+      "topLevel": false,
+      "prompt": "What are you going to do?",
+      "responses": [
+        "Nothing. Right now.",
+        "There are more important things in this house. *He* knows that. So do I. He's banking on it.",
+        "Later. We'll have a conversation later. And I will be *very* calm. Very professional. Very measured.",
+        "He should be worried."
+      ],
+      "goodbye": true,
+      "setGlobal": { "global": "MF_SofA3_BaalFollowUp", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_3G_JuliusFire",
+      "_note": "3-G: Julius boss fight, fire fills the arena. Gate: Mq01 s50 done (Fragment_13: 'VS Julius', MusJulius added, Obj60 displayed) + s70 not done (Julius not yet defeated). This is the highest-stakes combat beat.",
+      "questEditorId": "MFSofVigAct3Controller",
+      "prompt": "He's burning the whole place.",
+      "responses": [
+        "He's burning it. He's *burning all of it*. The exit. The ceiling. The floor. *Us*, specifically us, is very much on the list.",
+        "Okay. You know what? I've been scared this whole time. I'm going to stop pretending I haven't. I've been *terrified*, and my hair is now on fire, and I'm still *here*, so clearly that counts for something.",
+        "Stendarr. If you're watching — this is the trial. This is *it*. I see you raising the bar.",
+        "We're not dying here. Not like this. Not *this badly dressed*."
+      ],
+      "sayOnce": true,
+      "emotion": "Anger",
+      "setGlobal": { "global": "MF_SofA3_JuliusFire", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 50, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 70, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA3_JuliusFire", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_3H_ChoicePre",
+      "_note": "3-H pre-choice: Julius defeated (s70), Molag Bal now present, MartyrTRG not yet enabled (s80 not done). Fire persists. Sofia states she'll follow either way.",
+      "questEditorId": "MFSofVigAct3Controller",
+      "prompt": "The fire isn't stopping.",
+      "responses": [
+        "No. It's not.",
+        "Two doors. The fire, or... that. Whatever *that* is.",
+        "I'm not going to tell you which one. This is yours. I've had opinions about everything in this entire building — I'm fresh out for this particular question.",
+        "Whatever you pick: I'm with you. Not because I have to be. Not because of any contract. Just — I'm with you."
+      ],
+      "sayOnce": true,
+      "emotion": "Fear",
+      "setGlobal": { "global": "MF_SofA3_ChoicePre", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 70, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 90, "comparison": "==", "value": 0 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 200, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA3_ChoicePre", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_3H_ColdharbourBranch",
+      "_note": "3-H branch A: player chose Coldharbour / martyrdom path (Mq01 s90 = Fragment_5: CHMq00 starts). Sofia goes through the gate with the player. Mutually exclusive with BurnBranch (GLOB check).",
+      "questEditorId": "MFSofVigAct3Controller",
+      "prompt": "We're going through. Ready?",
+      "responses": [
+        "Into the gate. Sure.",
+        "We've walked into worse. I think. I'm going to *decide* we have.",
+        "Come on then."
+      ],
+      "sayOnce": true,
+      "emotion": "Fear",
+      "setGlobal": { "global": "MF_SofA3_ColdharbourBranch", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 90, "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofA3_ColdharbourBranch", "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA3_BurnBranch", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_3H_BurnBranch",
+      "_note": "3-H branch B: player chose corruption / Molag Bal deal path (Mq01 s200 = Fragment_14: MartyrFire, SubQ01 starts). Sofia burns alongside the player. Mutually exclusive with ColdharbourBranch (GLOB check).",
+      "questEditorId": "MFSofVigAct3Controller",
+      "prompt": "We stand our ground.",
+      "responses": [
+        "Alright.",
+        "Alright.",
+        "Stendarr! We're on our way! We're coming *standing up* — make some room!",
+        "Seemed like the right thing to say."
+      ],
+      "sayOnce": true,
+      "emotion": "Anger",
+      "setGlobal": { "global": "MF_SofA3_BurnBranch", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 200, "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofA3_BurnBranch", "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA3_ColdharbourBranch", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_3H_BurnAfter",
+      "_note": "3-H burn path aftermath: SubQ01 s10 done (player teleported to NewLifeMarker after 'death'). Sofia is confused about surviving — uses Nine's intervention as a light hand-wave. Mutually exclusive with ColdharbourBranch.",
+      "questEditorId": "MFSofVigAct3Controller",
+      "prompt": "You're still here.",
+      "responses": [
+        "I'm still here.",
+        "I was very much on fire. I have specific, detailed memories of being on fire. My boots are singed. That's... real. But here I am.",
+        "The Nine. They do a thing sometimes. I'm not questioning it. We had a good death, I think we earned a second round.",
+        "...You're you, right?"
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": { "global": "MF_SofA3_BurnAfter", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x324E7E", "stage": 10, "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofA3_BurnAfter", "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA3_ColdharbourBranch", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_3I_MetaCorpse",
+      "_note": "3-I optional: Sofia sees the burned body of the first Vigilant (BurntCorpse in SubQ01 PSC). Optional beat — if SubQ01 s20 done (ShowRaceMenu = re-roll happened) + s40 not done (quest not yet complete). LOW confidence: BurntCorpse cell position not confirmed; this topic may be impossible to see in practice if the corpse is in a scene-locked cell.",
+      "questEditorId": "MFSofVigAct3Controller",
+      "prompt": "That burned body.",
+      "responses": [
+        "I... yeah.",
+        "There's something weird about looking at that. I can't put my finger on it. Like looking at something I've seen before, in a dream, in the wrong order.",
+        "Doesn't matter. We're here. The body is there. Let's keep moving — standing around near corpses is how things get worse in places like this."
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": { "global": "MF_SofA3_MetaCorpse", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x324E7E", "stage": 20, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x324E7E", "stage": 40, "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA3_MetaCorpse", "comparison": "==", "value": 0 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,321 @@
+{
+  "_note": "Sofia x VIGILANT — ACT 4 (Coldharbour / zzzCH*). Player-initiated 'talk to Sofia' topics gated by VIGILANT Act-4 quest stages + Sofia present (GetIsID). Lines = de-AI'd bilingual rewrite of sub_projs/sofia-patch/vigilant-screenplay/act4-冷港.md (EN voiced; ZH in screenplay). GATES DECODED from PSC fragments (_bsa-psc-cache/ zzzCH* files, 2026-06-14) — see vigilant-screenplay/_act4-trigger-placement-map.md. CONFIRMED FormIDs: Coldharbour MQ00=Vigilant.esm:0x12F24E; Coldharbour WRLD=0x06D275; Grand Inquisitor MeQ01=0x12C4F4; Mad King MeQ02=0x13712B; Marukh MeQ07=0x06F53C; Pelinal MeQ10=0x2A532E; Karma global zzzCHKarma=0x020B19F4 (GlobalFloat). DESIGN: 13 memory dreams — 9 SILENT (MeQ03/04/05/06/08/09/11/12/13); 3 optional post-exit comments (MeQ01/02/07); 1 full in-realm + post (MeQ10 Pelinal). MeQ11/12 driven entirely by MeQ10 outcome — no player choice, no Sofia line. Molag Bal (4-E) gate = MQ00 s90 (UNCERTAIN — from slice.json; validate in-game). 4-G endings gate = MQ00 s999 (UNCERTAIN — inferred from hub pattern; fallback GetQuestRunning==0). Sofia NPC=SofiaFollower.esp:0x0012C4, voiceType=JJSofiaVoiceType (0x0022EE), follower faction=0x060480. VOICE: package FIRST then voicelines on packaged esp. MeQ08 Nameless Bard → Act3 butler link deferred (marked ? in screenplay).",
+  "pluginName": "ModForgeSofiaVigilantAct4.esp",
+  "esl": true,
+
+  "voiceTemplates": [
+    { "id": "sofia-f5", "engine": "f5", "referenceWav": "refs/sofia_ref.wav", "referenceText": "", "language": "en" }
+  ],
+
+  "voiceSpeakers": [
+    { "speaker": "SofiaFollower.esp:0x0012C4", "voiceType": "JJSofiaVoiceType", "template": "sofia-f5" }
+  ],
+
+  "globals": [
+    { "editorId": "MF_SofA4_Arrival",         "type": "short", "value": 0 },
+    { "editorId": "MF_SofA4_PepeGuide",        "type": "short", "value": 0 },
+    { "editorId": "MF_SofA4_Inquisitor",        "type": "short", "value": 0 },
+    { "editorId": "MF_SofA4_MadKing",           "type": "short", "value": 0 },
+    { "editorId": "MF_SofA4_Marukh",            "type": "short", "value": 0 },
+    { "editorId": "MF_SofA4_PelinalMid",        "type": "short", "value": 0 },
+    { "editorId": "MF_SofA4_PelinalGood",       "type": "short", "value": 0 },
+    { "editorId": "MF_SofA4_PelinalBad",        "type": "short", "value": 0 },
+    { "editorId": "MF_SofA4_MolagBal",          "type": "short", "value": 0 },
+    { "editorId": "MF_SofA4_Depths",            "type": "short", "value": 0 },
+    { "editorId": "MF_SofA4_EndingGood",        "type": "short", "value": 0 },
+    { "editorId": "MF_SofA4_EndingBad",         "type": "short", "value": 0 },
+    { "editorId": "MF_SofA4_EndingNeutral",     "type": "short", "value": 0 }
+  ],
+
+  "quests": [
+    { "editorId": "MFSofVigAct4Controller", "name": "", "startGameEnabled": true, "priority": 60, "type": "None" }
+  ],
+
+  "dialogue": [
+    {
+      "editorId": "MFSofVig_4A_Arrival",
+      "questEditorId": "MFSofVigAct4Controller",
+      "prompt": "So this is Coldharbour.",
+      "responses": [
+        "Molag Bal's living room. ...Cosy. Reminds me of my ex's place — and I mean the décor, before your mind goes somewhere. Stop looking at me like that."
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": { "global": "MF_SofA4_Arrival", "value": 1 },
+      "linkTo": ["MFSofVig_4A_ArrivalMore"],
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x12F24E", "stage": 10, "comparison": "==", "value": 1 },
+        { "function": "GetInWorldspace", "param": "Vigilant.esm:0x06D275", "runOn": "Subject", "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_Arrival", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_4A_ArrivalMore",
+      "questEditorId": "MFSofVigAct4Controller",
+      "topLevel": false,
+      "prompt": "You sound nervous.",
+      "responses": [
+        "Nervous? Me? Ha. I'm never nervous. ...That burning manor I was trapped in once? This is practically a holiday compared to that. Stay close, alright. Not because I'm worried. I'm worried you'll get lost and then I'll have to come find you. That's annoying."
+      ],
+      "goodbye": true,
+      "emotion": "Fear",
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_4B_PepeGuide",
+      "questEditorId": "MFSofVigAct4Controller",
+      "prompt": "Thoughts on Pepe?",
+      "responses": [
+        "Our cursed tour guide. A Marukhati Inquisitor who's been damned for centuries — you can tell, he has that look. The one where you've been wrong about something for so long you've forgotten what right looked like. ...At least he knows where we're going. Probably."
+      ],
+      "sayOnce": true,
+      "emotion": "Disgust",
+      "setGlobal": { "global": "MF_SofA4_PepeGuide", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x12F24E", "stage": 10, "comparison": "==", "value": 1 },
+        { "function": "GetInWorldspace", "param": "Vigilant.esm:0x06D275", "runOn": "Subject", "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_PepeGuide", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "_note": "4-C-1: Optional post-exit comment after Grand Inquisitor memory (MeQ01). GetQuestCompleted fires on either CompleteQuest band (s20=good/s100=bad). Both bands call CompleteQuest, so this is the clean gate.",
+      "editorId": "MFSofVig_4C_Inquisitor",
+      "questEditorId": "MFSofVigAct4Controller",
+      "prompt": "About that Inquisitor...",
+      "responses": [
+        "Burned people to prove his own holiness. The classic move — when you're that scared of being wrong, you make sure everyone else is wrong first, and permanently. ...At least when I'm awful I own it. Mostly."
+      ],
+      "sayOnce": true,
+      "emotion": "Disgust",
+      "setGlobal": { "global": "MF_SofA4_Inquisitor", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetQuestCompleted", "param": "Vigilant.esm:0x12C4F4", "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_Inquisitor", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "_note": "4-C-2: Optional post-exit comment after Mad King memory (MeQ02). GetQuestCompleted fires on either CompleteQuest band (s30=good/s130=bad).",
+      "editorId": "MFSofVig_4C_MadKing",
+      "questEditorId": "MFSofVigAct4Controller",
+      "prompt": "The Mad King...",
+      "responses": [
+        "Rich men and madmen. Nobody tells either of them their ideas are terrible. The only difference is madmen don't have enough gold to make everyone else go along with it. ...Usually."
+      ],
+      "sayOnce": true,
+      "emotion": "Disgust",
+      "setGlobal": { "global": "MF_SofA4_MadKing", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetQuestCompleted", "param": "Vigilant.esm:0x13712B", "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_MadKing", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "_note": "4-C-3: Optional post-exit comment after Temptation of Marukh (MeQ07). GetQuestCompleted fires on either CompleteQuest band (s70=good/s150=bad).",
+      "editorId": "MFSofVig_4C_Marukh",
+      "questEditorId": "MFSofVigAct4Controller",
+      "prompt": "Marukh and the voices...",
+      "responses": [
+        "Another one who started hearing divine instructions. Every time someone gets a direct line to the gods, the world gets a lot messier and the body count goes up. ...I hear voices too, but mine mostly just say 'you look great today, Sofia.' Much safer."
+      ],
+      "sayOnce": true,
+      "emotion": "Disgust",
+      "setGlobal": { "global": "MF_SofA4_Marukh", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetQuestCompleted", "param": "Vigilant.esm:0x06F53C", "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_Marukh", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "_note": "4-D-A: In-realm Sofia comment during Pelinal memory (MeQ10 in progress). Window: stage 30 done (Korn bark) but neither CompleteQuest band done yet.",
+      "editorId": "MFSofVig_4D_PelinalMid",
+      "questEditorId": "MFSofVigAct4Controller",
+      "prompt": "Pelinal...",
+      "responses": [
+        "I've read about him. The books call him a hero. A saint. Alessia's divine champion. ...But look at him. He's not a hero. He's a machine that can't stop. He kills because stopping would mean thinking, and thinking would mean something he's not ready for."
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": { "global": "MF_SofA4_PelinalMid", "value": 1 },
+      "linkTo": ["MFSofVig_4D_PelinalMidMore"],
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetQuestRunning", "param": "Vigilant.esm:0x2A532E", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x2A532E", "stage": 30, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x2A532E", "stage": 180, "comparison": "==", "value": 0 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x2A532E", "stage": 300, "comparison": "==", "value": 0 },
+        { "function": "GetInWorldspace", "param": "Vigilant.esm:0x06D275", "runOn": "Subject", "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_PelinalMid", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_4D_PelinalMidMore",
+      "questEditorId": "MFSofVigAct4Controller",
+      "topLevel": false,
+      "prompt": "Do you want to be legendary?",
+      "responses": [
+        "Me? Gods, no. Legends die badly and look terrible in the paintings afterward. I want to live, look amazing doing it, and be remembered as 'that incredibly attractive woman who was also somehow always right.' That's my version of immortality."
+      ],
+      "goodbye": true,
+      "emotion": "Happy",
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 }
+      ]
+    },
+    {
+      "_note": "4-D-B: Post-Pelinal good ending (spared Mary, GoodScene ran at stage 180).",
+      "editorId": "MFSofVig_4D_PelinalGood",
+      "questEditorId": "MFSofVigAct4Controller",
+      "prompt": "He let her go.",
+      "responses": [
+        "He let her go. The slave. Umaril's woman, who would've been nothing to him but a weakness to cut off. And he let her go. ...Sometimes the legend and the man are the same thing after all. I hate when that happens."
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": { "global": "MF_SofA4_PelinalGood", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x2A532E", "stage": 180, "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_PelinalGood", "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_PelinalBad", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "_note": "4-D-C: Post-Pelinal bad ending (killed Mary, BasScene ran at stage 300).",
+      "editorId": "MFSofVig_4D_PelinalBad",
+      "questEditorId": "MFSofVigAct4Controller",
+      "prompt": "He killed her.",
+      "responses": [
+        "Of course he did. She was in the way. ...I'm not going to pretend I'm surprised. The part of the story where the hero kills the pregnant woman — that's usually the part that gets left out of the songs. Wonder why."
+      ],
+      "sayOnce": true,
+      "emotion": "Sad",
+      "setGlobal": { "global": "MF_SofA4_PelinalBad", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x2A532E", "stage": 300, "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_PelinalBad", "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_PelinalGood", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "_note": "4-E: Molag Bal confrontation. Gate = MQ00 s90 (UNCERTAIN — from slice.json; exact Molag Bal scene stage inside MQ00 not decoded from PSC; validate in-game). High-tension beat: volume-drops moment.",
+      "editorId": "MFSofVig_4E_MolagBal",
+      "questEditorId": "MFSofVigAct4Controller",
+      "prompt": "He looked at you.",
+      "responses": [
+        "He looked through me. ...There's a difference. I've had all kinds of people look at me — the bad kind, the want-you-dead kind, the want-you-in-their-bed kind. This is the first time something looked at me and decided I don't exist. Not dangerous, not useful, not even amusing. Just... nothing."
+      ],
+      "sayOnce": true,
+      "emotion": "Fear",
+      "setGlobal": { "global": "MF_SofA4_MolagBal", "value": 1 },
+      "linkTo": ["MFSofVig_4E_MolagBalMore"],
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x12F24E", "stage": 90, "comparison": "==", "value": 1 },
+        { "function": "GetInWorldspace", "param": "Vigilant.esm:0x06D275", "runOn": "Subject", "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_MolagBal", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "editorId": "MFSofVig_4E_MolagBalMore",
+      "questEditorId": "MFSofVigAct4Controller",
+      "topLevel": false,
+      "prompt": "Are you alright?",
+      "responses": [
+        "...Not really. But here's the thing — if a Daedric Prince doesn't think I'm worth noticing, that means I'm not on the menu. And I like not being on the menu. So get in front of me, hero. He wants you. I'll be right here. Got your back. Obviously."
+      ],
+      "goodbye": true,
+      "emotion": "Fear",
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 }
+      ]
+    },
+    {
+      "_note": "4-F: Coldharbour atmosphere / depths. Available any time player is in CH worldspace after entry. Separate from 4-A arrival topic.",
+      "editorId": "MFSofVig_4F_Depths",
+      "questEditorId": "MFSofVigAct4Controller",
+      "prompt": "Thoughts on this place?",
+      "responses": [
+        "It gets to you. Not all at once — it's gradual, like a really boring inn that's slowly on fire. The grey. The nothing. The way time moves like it's given up. ...I'm not scared. I'm irritated. Those are different things. ...Mostly different things."
+      ],
+      "sayOnce": true,
+      "emotion": "Sad",
+      "setGlobal": { "global": "MF_SofA4_Depths", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x12F24E", "stage": 10, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x12F24E", "stage": 999, "comparison": "==", "value": 0 },
+        { "function": "GetInWorldspace", "param": "Vigilant.esm:0x06D275", "runOn": "Subject", "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_Depths", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "_note": "4-G-1: High-Karma ending. Gate = MQ00 s999 (UNCERTAIN — inferred from hub pattern; fallback GetQuestRunning(MQ00)==0 if s999 doesn't fire correctly). Karma >= 10 distinguishes from neutral.",
+      "editorId": "MFSofVig_4G_EndingGood",
+      "questEditorId": "MFSofVigAct4Controller",
+      "prompt": "We made it out.",
+      "responses": [
+        "Hm. We killed a Daedric Prince. Technically. Or we... convinced him to stop? I'm still not sure what we did. But we walked out. ...You know what the worst part is? I'm going to have to find a new thing to complain about. This was a pretty good thing to complain about."
+      ],
+      "sayOnce": true,
+      "emotion": "Happy",
+      "setGlobal": { "global": "MF_SofA4_EndingGood", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x12F24E", "stage": 999, "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "Vigilant.esm:0x020B19F4", "comparison": ">=", "value": 10 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_EndingGood", "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_EndingBad", "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_EndingNeutral", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "_note": "4-G-2: Low-Karma ending. Karma < 0.",
+      "editorId": "MFSofVig_4G_EndingBad",
+      "questEditorId": "MFSofVigAct4Controller",
+      "prompt": "Was it worth it?",
+      "responses": [
+        "Don't ask me that. ...No, I mean it, don't. Because I'll say something honest and then we'll both feel weird about it. ...You made choices in there. Some of them were — look. We're out. That's the only part I'm keeping score on right now."
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": { "global": "MF_SofA4_EndingBad", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x12F24E", "stage": 999, "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "Vigilant.esm:0x020B19F4", "comparison": "<", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_EndingBad", "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_EndingGood", "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_EndingNeutral", "comparison": "==", "value": 0 }
+      ]
+    },
+    {
+      "_note": "4-G-3: Neutral Karma ending. Karma 0-9 (neither >= 10 nor < 0).",
+      "editorId": "MFSofVig_4G_EndingNeutral",
+      "questEditorId": "MFSofVigAct4Controller",
+      "prompt": "How do you feel about what we did?",
+      "responses": [
+        "I feel like we survived something we probably shouldn't have, made some calls I wouldn't want to explain at dinner, and somehow came out the other side with most of our limbs. ...Not bad. Honestly. For us? Not bad at all."
+      ],
+      "sayOnce": true,
+      "emotion": "Neutral",
+      "setGlobal": { "global": "MF_SofA4_EndingNeutral", "value": 1 },
+      "conditions": [
+        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x12F24E", "stage": 999, "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "Vigilant.esm:0x020B19F4", "comparison": ">=", "value": 0 },
+        { "function": "GetGlobalValue", "param": "Vigilant.esm:0x020B19F4", "comparison": "<", "value": 10 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_EndingNeutral", "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_EndingGood", "comparison": "==", "value": 0 },
+        { "function": "GetGlobalValue", "param": "MF_SofA4_EndingBad", "comparison": "==", "value": 0 }
+      ]
+    }
+  ]
+}
