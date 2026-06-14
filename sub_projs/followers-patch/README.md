@@ -27,6 +27,6 @@
 ## 狀態
 
 personality brief 已全部產出（2026-06-14，平行 agent 依 sofia-personality 範本）：
-- ✅ 全 7 份：`auri`、`morgaine`、`onean`、`neisa`、`remiel`、`recorder`（從原 recorder-patch 移入）、`serana`（正典 Dawnguard + Serana Dialogue Add-On）、`mirai`（SN Mirai 英譯 + more aware；高感知型）。
+- ✅ 全 8 份：`auri`、`morgaine`、`onean`、`neisa`、`remiel`、`recorder`（從原 recorder-patch 移入）、`serana`（正典 Dawnguard + Serana Dialogue Add-On）、`mirai`（SN Mirai 英譯 + more aware；高感知型）。
 
 備註：Onean/Neisa 無英文原文（mod 本身即中文，EN 抽取為 mojibake，已修為可讀中文）；brief 以中文台詞為據。

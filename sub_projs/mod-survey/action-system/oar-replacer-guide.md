@@ -1,7 +1,7 @@
 # 自己動手做一個 Open Animation Replacer 動畫替換（OAR 實作指南）
 
 > 這是一份**動手教學**：跟著走完，你會得到一個能在遊戲裡「在指定條件下、給指定角色、替換掉某個 vanilla 動畫」的 OAR 替換包——**不需要 `.esp`**，整個交付物就是資料夾 + JSON + 你的 `.hkx`。
-> 技術原理（OAR 在四層動畫堆疊裡的定位、為何是最高槓桿整合點）請看姊妹文件 [`integration-layer.md`](integration-layer.md) §5；動畫 `.hkx` 本體怎麼從 Blender/mocap 做出來（Havok 牆、retarget、win32↔amd64 轉換）見 [`havok-blender.md`](havok-blender.md)。本文**不重複**那兩塊，只在需要時連過去。
+> 技術原理（OAR 在四層動畫堆疊裡的定位、為何是最高槓桿整合點）請看姊妹文件 [`integration-layer.md`](../../../workflows/idea/asset-pipelines/animation/integration-layer.md) §5；動畫 `.hkx` 本體怎麼從 Blender/mocap 做出來（Havok 牆、retarget、win32↔amd64 轉換）見 [`havok-blender.md`](../../../workflows/idea/asset-pipelines/animation/havok-blender.md)。本文**不重複**那兩塊，只在需要時連過去。
 > 慣例：散文用繁體中文，所有 JSON key / condition 名 / 路徑 / EditorID 保留 English。
 > 權威來源：OAR 官方 Nexus 頁（#92109，v3.1.5 規格）。
 
@@ -32,11 +32,11 @@ OAR 把「整合層」（讓動畫真的播得出來的那一層）從**改不�
 - **Open Animation Replacer**（Nexus #92109）這個 SKSE plugin 必裝。
 - 對應版本的 **SKSE64**、**Address Library**。
 - **Animation Queue Fix**（除非啟用 skip-preload 實驗選項）、**Paired Animation Improvements**。
-- **跑過一次 Nemesis 或 Pandora** 以建立 base behavior——這一步建立 behavior graph 的基底；**OAR 本身不加任何 behavior 編輯**，只在其上做條件式替換。（Linux/Wine 下 Nemesis 有 thread-race 問題，改用 Pandora；見 [`havok-blender.md`](havok-blender.md) 與 §6 linux-workflow。）
+- **跑過一次 Pandora** 以建立 base behavior（2026 標準；Nemesis/FNIS 已 legacy）——建立 behavior graph 基底；**OAR 本身不加任何 behavior 編輯**，只在其上做條件式替換。（Pandora＝.NET 8 開源跨平台、讀 Nemesis/FNIS mod；Linux 目前建議 Proton-wrap、headless 待驗；見 [`havok-blender.md`](../../../workflows/idea/asset-pipelines/animation/havok-blender.md) 與 §6 linux-workflow §6.0。）
 
 ### 作者端（製作時用得到）
 - 一個文字編輯器寫 JSON（出貨檔必須是**合法 JSON**——本指南範例裡的 `//` 註解是教學用，實檔要拿掉）。
-- 你要替換進去的 `.hkx`：本指南**不負責**怎麼做出這個檔，那是 Havok/Blender 管線的事（見 [`havok-blender.md`](havok-blender.md)：retarget → win32 → serde-hkx 轉 amd64）。本文假設你已經有一個對齊 Skyrim skeleton、`hk_2010`、amd64（SE）的 `.hkx`。
+- 你要替換進去的 `.hkx`：本指南**不負責**怎麼做出這個檔，那是 Havok/Blender 管線的事（見 [`havok-blender.md`](../../../workflows/idea/asset-pipelines/animation/havok-blender.md)：retarget → win32 → serde-hkx 轉 amd64）。本文假設你已經有一個對齊 Skyrim skeleton、`hk_2010`、amd64（SE）的 `.hkx`。
 - 若條件要引用某個 `.esp` 裡的 record（faction、keyword、actor base…），需要那個 plugin 的檔名 + 本地 FormID。
 
 ---
@@ -243,7 +243,7 @@ OAR 的測試主力是**遊戲內編輯器**（預設 **Shift+O** 開）：
 ## 10. 用 ModForge 生成
 
 ### 為什麼這是最高槓桿整合點
-整個 OAR 交付物——**資料夾樹 + 兩層 config.json（name/description/priority/conditions/variants/presets/functions）**——是**純確定性的 record+asset 產物**：沒有 Havok、沒有 `.esp`、沒有 behavior 編輯。這正是 ModForge 的主場（見 [`integration-layer.md`](integration-layer.md) §5）。唯一非確定性的 `.hkx` 動畫本體屬另一條管線（Havok/Blender，見 [`havok-blender.md`](havok-blender.md)），ModForge 只負責「擺檔 + 生 JSON + 接線」。
+整個 OAR 交付物——**資料夾樹 + 兩層 config.json（name/description/priority/conditions/variants/presets/functions）**——是**純確定性的 record+asset 產物**：沒有 Havok、沒有 `.esp`、沒有 behavior 編輯。這正是 ModForge 的主場（見 [`integration-layer.md`](../../../workflows/idea/asset-pipelines/animation/integration-layer.md) §5）。唯一非確定性的 `.hkx` 動畫本體屬另一條管線（Havok/Blender，見 [`havok-blender.md`](../../../workflows/idea/asset-pipelines/animation/havok-blender.md)），ModForge 只負責「擺檔 + 生 JSON + 接線」。
 
 ### 現在能生成（既有能力可重用）
 - **資料夾樹**：`OpenAnimationReplacer\<Mod>\<Submod>\<vanilla 路徑>\` 是純路徑生成。
@@ -253,7 +253,7 @@ OAR 的測試主力是**遊戲內編輯器**（預設 **Shift+O** 開）：
 ### 還缺的 generator
 - **OAR submod 序列化器**：把「替換規格」轉成資料夾樹 + config.json。
 - **CTDA → OAR condition 對映器**：把既有 condition 模型 emit 成 OAR 的 `{condition, requiredVersion, negated, ...}` 形狀（含 static/global/AV/graph 值型別與巢狀容器）。
-- **`.hkx` 本體**：不在此 generator 範圍——交給 Havok/Blender 管線（[`havok-blender.md`](havok-blender.md)），這裡只把成品擺進正確路徑。
+- **`.hkx` 本體**：不在此 generator 範圍——交給 Havok/Blender 管線（[`havok-blender.md`](../../../workflows/idea/asset-pipelines/animation/havok-blender.md)），這裡只把成品擺進正確路徑。
 
 ### 未來 spec 欄位構想（proposal，非現況）
 
@@ -299,14 +299,14 @@ ModForge generator 拿到後：建 `OpenAnimationReplacer\MyIdleSwap\` 樹、emi
 - 用編輯器選 actor 看**條件燈號**除錯——哪條沒亮就改哪條。
 
 **Don't**
-- 別忘了**跑一次 Nemesis/Pandora** 建 base behavior——OAR 不自己改 behavior，沒有基底就沒得替換。
+- 別忘了**跑一次 Pandora**（2026 標準，Nemesis/FNIS 已 legacy）建 base behavior——OAR 不自己改 behavior，沒有基底就沒得替換。
 - 別用**非英文字元**當資料夾名；別讓路徑超過 Windows **260 字元**上限（資料夾名取短）。
 - 別以為 priority 看資料夾名——OAR 看 config.json 的 `priority`（這是與 DAR 的關鍵差異）。
 - 別漏掉執行時前置：SKSE / Address Library / Animation Queue Fix / Paired Animation Improvements。
 - 條件要引用某 `.esp` 的 record（faction / keyword / actor base）時，FormID 用 **`Plugin.esp|0xFormID`** 形式（load-order 無關），別寫裸 index。
-- 別期待這份指南教你做 `.hkx`——動畫本體（Havok 牆、retarget、win32↔amd64）見 [`havok-blender.md`](havok-blender.md)。
+- 別期待這份指南教你做 `.hkx`——動畫本體（Havok 牆、retarget、win32↔amd64）見 [`havok-blender.md`](../../../workflows/idea/asset-pipelines/animation/havok-blender.md)。
 - 別在沒裝 OAR 的環境測——它是 SKSE plugin，缺了就完全不生效（且不報錯）。
 
 ---
 
-> 原理深水區（OAR 在四層動畫堆疊的定位、為何最高槓桿、與 DAR/FNIS/Nemesis/Pandora 的關係）見 [`integration-layer.md`](integration-layer.md) §5；`.hkx` 動畫本體的製作管線見 [`havok-blender.md`](havok-blender.md)。本指南只負責「照著做就能裝出一個會動的 OAR 替換」。
+> 原理深水區（OAR 在四層動畫堆疊的定位、為何最高槓桿、與 DAR/FNIS/Nemesis/Pandora 的關係）見 [`integration-layer.md`](../../../workflows/idea/asset-pipelines/animation/integration-layer.md) §5；`.hkx` 動畫本體的製作管線見 [`havok-blender.md`](../../../workflows/idea/asset-pipelines/animation/havok-blender.md)。本指南只負責「照著做就能裝出一個會動的 OAR 替換」。
