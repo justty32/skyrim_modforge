@@ -150,7 +150,7 @@ downgrades to loose `.wav` instead of writing a likely-silent raw-PCM `.fuz`.
 ## Not yet covered (extend in `ModForge.Core` `Generator.Build` + a spec class)
 World placement now covers new interior cells, vanilla interior cells, **and exterior/worldspace
 cells** (via `worldspace` + world position), and ModForge can now **create** new worldspaces (WRLD)
-+ regions (REGN) — see [SPEC-world](SPEC-world.md) (record layer only; terrain/LOD/navmesh stay
++ regions (REGN) — see [SPEC-worldspaces](SPEC-worldspaces.md) (record layer only; terrain/LOD/navmesh stay
 CK-side). Refs (in-spec or `<master>:0xFORMID`) and the `find` command are the building blocks for
 the external ones. Remaining gaps are long-tail record types/fields and the CK-side terrain/LOD/
 navmesh authoring — the record-side pattern is the same: add a spec class + a loop in `Build`.
