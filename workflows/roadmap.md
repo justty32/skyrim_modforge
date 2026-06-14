@@ -17,6 +17,8 @@
 ## 結構／工具
 
 - ~~**大檔拆分門檻改用 bytes**~~ ✅ 已改（trigger-to-review、非硬上限；本質不可分可超標；archive/ 與 code-map/ 豁免）。**門檻分兩套**：`workflows/` 開發流程文檔 **8192 bytes**；`docs/` 使用手冊文檔 **300 行**；`src/`、`examples/` **300 行**。DEV-GUIDE 觸發 A + conventions 已同步。
+  - **docs/ 拆檔（2026-06-14）**：`SPEC-world`(485)→ `SPEC-world`+`SPEC-worldspaces`；`SPEC-dialogue-quests`(653)→ `SPEC-dialogue`+`SPEC-quests`+`SPEC-identities`。tracked EN docs 零斷鏈。
+  - **待辦：zh-TW 鏡像重新對齊**——EN SPEC 已從 8 檔變 11 檔，但 `docs/zh-TW/` 仍是舊的 `SPEC-dialogue-quests.md`/`SPEC-world.md` 單檔結構（大重構時就決定 zh-TW 整批延後 re-sync，此次拆檔再加大落差）。重譯/重切時對齊新 EN 結構。另 `docs/zh-TW/asset-pipelines/` 的 EN 正本已搬 `workflows/idea/asset-pipelines/`，是孤兒鏡像，一併處理。
 
   ### workflows 文檔拆檔（已調查，2026-06-14；待執行）
 
