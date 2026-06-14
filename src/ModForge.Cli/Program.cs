@@ -31,6 +31,7 @@ internal static partial class Program
                 case "applyloc" when args.Length == 4: return ApplyLocalizedCmd(args[1], args[2], args[3]);
                 case "dump" when args.Length == 2:     return Dump(args[1]);
                 case "gamedata" when args.Length == 3: return GameData(args[1], args[2]);
+                case "gamedata" when args.Length == 5 && args[3] == "--strings": return GameData(args[1], args[2], args[4]);
                 case "find" when args.Length is 3 or 4: return Find(args[1], args[2], args.Length == 4 ? args[3] : null);
                 case "cellblk" when args.Length is 2 or 3: return CellBlk(args[1], args.Length == 3 ? args[2] : null);
                 case "cellrefs" when args.Length == 3: return CellRefs(args[1], args[2]);
@@ -55,6 +56,8 @@ internal static partial class Program
                 case "refpos" when args.Length == 3: return RefPos(args[1], args[2]);
                 case "bookdiag" when args.Length == 3: return BookDiag(args[1], args[2]);
                 case "booktext" when args.Length == 3: return BookText(args[1], args[2]);
+                case "infodiag" when args.Length == 6 && args[4] == "--strings": return InfoDiag(args[1], args[2], args[3], args[5]);
+                case "infodiag" when args.Length == 5 && args[3] == "--strings": return InfoDiag(args[1], args[2], null, args[4]);
                 case "infodiag" when args.Length is 3 or 4: return InfoDiag(args[1], args[2], args.Length == 4 ? args[3] : null);
                 case "factdiag" when args.Length == 3: return FactDiag(args[1], args[2]);
                 case "reladiag" when args.Length == 3: return RelaDiag(args[1], args[2]);

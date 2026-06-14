@@ -70,10 +70,24 @@ internal static partial class Program
     // it to narrow a big quest like DialogueFollower down to the hire topics. Response text is a
     // localized-string landmine on master overlays, so it's read best-effort; conditions are inline
     // binary and always print (they're the point).
-    private static int InfoDiag(string inPath, string formIdHex, string? substr)
+    private static int InfoDiag(string inPath, string formIdHex, string? substr, string? stringsOverride = null)
     {
         uint id = Convert.ToUInt32(formIdHex.Replace("0x", "", StringComparison.OrdinalIgnoreCase), 16) & 0xFFFFFF;
-        using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE);
+        // --strings <dir>: read response text from a caller-supplied STRINGS folder (e.g. a Chinese
+        // 漢化 dir with <base>_English.* symlinked to the localized strings). Default = Mutagen's
+        // auto-resolution from the BSA beside the plugin (English for a vanilla install).
+        BinaryReadParameters prm = BinaryReadParameters.Default;
+        if (stringsOverride is not null)
+            prm = prm with
+            {
+                StringsParam = new StringsReadParameters
+                {
+                    TargetLanguage = Language.English,
+                    StringsFolderOverride = stringsOverride,
+                    BsaFolderOverride = stringsOverride,
+                },
+            };
+        using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE, prm);
         var topics = mod.EnumerateMajorRecords<IDialogTopicGetter>().ToList();
 
         // A localized prompt/response throws on a strings-less overlay; fail soft to null.

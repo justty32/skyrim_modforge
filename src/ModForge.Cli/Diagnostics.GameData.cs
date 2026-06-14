@@ -16,7 +16,7 @@ internal static partial class Program
     //
     // Output files (one walk each; dialogue uses the typed DIAL group for topic grouping):
     //   books.md  dialogue.md  quests.md  npcs.tsv  items.tsv  locations.tsv  magic.tsv  summary.txt
-    private static int GameData(string pluginPath, string outDir)
+    private static int GameData(string pluginPath, string outDir, string? stringsOverride = null)
     {
         pluginPath = Path.GetFullPath(pluginPath);
         if (!File.Exists(pluginPath)) { Console.Error.WriteLine($"  ! not found: {pluginPath}"); return 1; }
@@ -31,7 +31,10 @@ internal static partial class Program
             localized = probe.UsingLocalization;
         if (localized)
         {
-            var stringsDir = ProvisionEnglishStringsAnyBsa(dataDir, baseName);
+            // --strings <dir>: use a caller-supplied STRINGS folder (e.g. a Chinese 漢化 dir with
+            // <base>_English.* symlinked to the localized strings) instead of auto-provisioning English
+            // from a BSA. Lets us extract vanilla content in any language; default path unchanged.
+            var stringsDir = stringsOverride ?? ProvisionEnglishStringsAnyBsa(dataDir, baseName);
             if (stringsDir is not null)
                 prm = BinaryReadParameters.Default with
                 {
