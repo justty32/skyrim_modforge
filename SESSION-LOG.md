@@ -11,7 +11,8 @@
 ## 最新進度（幾句話）
 
 - **agent 並行 prep（2026-06-14）**：為「其他 agent 並行討論 Sofia 劇情 / 調查 mod」備好兩工作區 + 共用資料 + 工具：① 新 CLI 指令 `gamedata <plugin> <outDir>`（lazy 串流批次抽書/對白/任務/NPC・物品・地點・魔法）；② `sub_projs/game-data/`（已抽 vanilla+DLC+CC + Sofia/VIGILANT/RDO/FCO/IFDL… 文本，`extract.sh` 重生、文本 gitignore）；③ 工作區 `sub_projs/sofia-patch/`（劇情）+ 新 `sub_projs/mod-survey/`（mod 調查），各 symlink game-data/guide/mods；④ 兩份 guide：`workflows/investigation/esm-formid-access.md`、`mod-survey-guide.md`。**大重構期間主 session 不碰這兩工作區 + game-data。**
-- **in-flight｜大重構**：拆檔門檻 300 行 → 4096 bytes（更新 DEV-GUIDE + conventions，按 [roadmap](workflows/roadmap.md)「結構/工具」執行 workflows 文檔拆分）。**下一步開工。**
+- **大重構（拆檔門檻）— 主體完成 2026-06-14**：門檻＝**文檔 8192 bytes**（src/examples 維持 300 行）；DEV-GUIDE 觸發 A + conventions 同步。已拆：`tooling.md`→`tooling/`、`landed.md`→`landed/`（CODE_MAP 五分法）、**完成的 plans+specs→各自 archive**（原則：completed→archive 凍結不拆、現役夾清空）、idea 報告升 L4（`particle-vfx/`/`map-scene/`/`animation/`/`voice-clone/engine-setup/`）。全樹相對連結健檢通過。
+  - **剩餘（你隨筆新指令，待辦）**：① DEV-GUIDE 改**被動式獨立 workflow**（按需取用，類 zh-tw/html，不再貫穿所有 workflow）；② **plans/specs 重構**：檔名去日期、日期移 index；③ `decode/notes-gemini-voice` 微清理、`docs→workflows` 殘留舊路徑校正、`feature-dev/gotchas.md` 檔內分節。idea `01`/`03` 概覽與 `ideas.md` 經判定 **KEEP**（連貫敘事不硬拆）。
 - docs/workflows 大重構：`docs/` 回歸 ModForge 使用手冊（cookbook/cheatsheet/spec）；開發流程全移到 repo 頂層 `workflows/`（INDEX / CODE_MAP / DEV-GUIDE / 各工作流 / 踩坑 / roadmap / 調查）。CLAUDE.md 瘦成路由器；`SESSION-LOG.md` + `WAIT_USER.md` 升到 repo 根。
 - 語音合成解耦為基石專案 `sub_projs/skyrim-voicegen/`（協議 PROTOCOL.md）；Sofia 擴充為消費者專案 `sub_projs/sofia-patch/`。
 
@@ -30,8 +31,6 @@
 ## justty32 的隨筆
 
 整理 memory
-整理docs
-拆workflows
-討論sofia劇情
 把dev-guide弄成被動式，不要每次都貫穿所有workflow，他應該是一個獨立的workflow，只在需要時被使用者拿出來作用，就類似zh tw和html那種。
 然後是plans和specs，我要重構這兩個工作流與其現有內容。其現有內容的檔名不應該含有日期，日期應該放在index部分
+4096 bytes做上限還是太小了，換8192會好點。然後其他如src,example的上限還是保持行數三百行。

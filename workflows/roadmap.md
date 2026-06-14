@@ -16,17 +16,24 @@
 
 ## 結構／工具
 
-- ~~**大檔拆分門檻改用 bytes**~~ ✅ 已改：DEV-GUIDE 觸發 A 定 **>4096 bytes**（trigger-to-review、非硬上限；本質不可分可超標；archive/ 與 code-map/ 豁免）、conventions src 規則同步。**待辦**：掃 `src/` 超標檔（src 是此門檻的**原始**適用對象，本輪只動了 workflows 文檔）。
+- ~~**大檔拆分門檻改用 bytes**~~ ✅ 已改（門檻 = **文檔 8192 bytes**；trigger-to-review、非硬上限；本質不可分可超標；archive/ 與 code-map/ 豁免）。**`src/`、`examples/` 維持 300 行**（沿用行數、不改 bytes）→ 無需掃 src bytes。DEV-GUIDE 觸發 A + conventions 已同步。
 
   ### workflows 文檔拆檔（已調查，2026-06-14；待執行）
 
-  一輪 per-workflow agent 審查已備好拆分地圖。**範圍決定**：此次只動 **`workflows/` 文檔**（`src/` 另排）。**豁免**：`*/archive/`（封存件凍結保脈絡、不在維護鏈）與 `common/code-map/`（CODE_MAP 是 code 鏡像，依**程式碼領域**而非 byte 分檔）一律**不套** 4096 規則。
+  一輪 per-workflow agent 審查已備好拆分地圖。**範圍決定**：此次只動 **`workflows/` 文檔**（`src/` 另排）。**豁免**：`*/archive/`（封存件凍結保脈絡、不在維護鏈）與 `common/code-map/`（CODE_MAP 是 code 鏡像，依**程式碼領域**而非 byte 分檔）一律**不套** 8192-byte 規則。
 
   待執行清單（按工作量）：
   - ~~**tooling.md**（9.6K）→ 升 L2：`tooling/` + README，按職責分 `env-vars` / `binaries` / `data-assets`~~ ✅ 已拆（`workflows/tooling/`）。
   - ~~**feature-dev/landed.md**（14K）→ `landed/` + INDEX，**對齊 CODE_MAP 五分法**（dialogue-quests / world / items-magic / npcs / infra）~~ ✅ 已拆（`landed/` + README index）。`infra.md` 5.1K 略超但維持 CODE_MAP 粒度（voice 濃縮句明細在 memory/git）。gotchas.md（5K）只需檔內分節，不拆（暫緩）。
   - ~~**plans/** 巨型多階段計畫 → 升 L4 拆 per-Task~~ ✅ **改決定**：已完成的 plan **不拆**，直接移 `plans/archive/`（凍結、不在維護鏈、不套門檻）。9 個現役 plan 全已落地 → 全移 archive；現役 plans/ 清空（待下個 in-flight 才有新 plan）。同理 **specs/** 9 份 design 也全移 `specs/archive/`（維持 spec↔plan 配對）。維護鏈外部連結（ideas / CODE_MAP.dialogue-quests 的 identity 引用）已改指 archive。
-  - **idea/**：概覽 `01`/`03` 瘦身成「survey + 指向已展開子夾」的導航頁；`02`/`04`/`05` 按內容拆（04 map-scene、05 animation 興趣最高、最可能升 L4 子夾）；`voice-clone/01-engine-setup` 12K 可按引擎再分。步驟檔（model-porting 01~10、voice-clone 02~06）**全 KEEP**（已是拆分結果）。`ideas.md` 18K 按 idea 主題分類拆，但它是入口主檔、可緩。
+  - **idea/**：
+    - ✅ `02` particle-vfx → `particle-vfx/`（L4，efsh-record-layer / particle-nif-wall）。
+    - ✅ `04` map-scene → `map-scene/`（L4，layout-extraction / geometry / workflow-modforge）。
+    - ✅ `05` animation → `animation/`（L4，havok-blender / integration-layer / linux-workflow-modforge）。
+    - ✅ `voice-clone/01-engine-setup` → `voice-clone/engine-setup/`（按引擎：f5/chatterbox/gptsovits/fish-speech）。
+    - **改判定：`01`/`03` 概覽 KEEP 不瘦身**——它們是連貫研究報告（≠混雜索引），已有「已展開子工作流 →」指標；硬瘦身會丟研究內容，套用「不可分敘事 KEEP」原則。
+    - **`ideas.md`（18K）緩**：入口主檔，按主題拆風險高、價值低，暫不動。
+    - 步驟檔（model-porting 01~10、voice-clone 02~06）**全 KEEP**（已是拆分結果）。
   - ~~**specs/** 現役 8 份 design 全 KEEP~~ ✅ 已隨 plans 一併移 `specs/archive/`（見上條；一份 spec/plan=一個整體不拆，完成即進凍結 archive）。
   - **investigation/decode/** 9 份解碼筆記**全 KEEP**（單篇連貫）；真議題是 decode/ 是否按 mod 開子夾，建議**等下個 mod 解碼進來再分**。`notes-gemini-voice` 微超標且自述「處理完可刪」→ 確認後刪或移 archive。
   - **refactor**（L2，0 超標）免動。

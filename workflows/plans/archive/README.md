@@ -4,7 +4,7 @@
 
 描述的功能皆已落地（多數實機驗證過）的舊**實作計畫**。保留作脈絡，**不在維護鏈上**（現況以 git log / [CODE_MAP](../../common/code-map/CODE_MAP.md) / [docs/spec](../../../docs/spec/SPEC-index.md) 為準）。對應的舊設計方案在 [specs/archive/](../../specs/archive/README.md)。
 
-> 封存件**凍結**：不套 4096 bytes 拆檔門檻，內部歷史連結容忍 stale（見 [DEV-GUIDE 結構整理原則](../../../DEV-GUIDE.md)）。已完成的 plan/spec 一律移來這裡、不留在現役夾。
+> 封存件**凍結**：不套 8192-byte 拆檔門檻，內部歷史連結容忍 stale（見 [DEV-GUIDE 結構整理原則](../../../DEV-GUIDE.md)）。已完成的 plan/spec 一律移來這裡、不留在現役夾。
 
 | 封存計畫 | 一句話 |
 |----------|--------|
