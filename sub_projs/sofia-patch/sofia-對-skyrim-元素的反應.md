@@ -362,5 +362,344 @@ Heuurghh! / Heeyyyaggh! / Heeyaaghh! / Hiiyyyaaaghh!
 
 ---
 
-**Last Updated**: 2026-06-14  
+## 對 Skyrim 地點的評論
+
+### Whiterun（白鷹堡）
+
+**對地點的看法**：
+> "Hmm... Well there's Jorrvaskr where the posers go to show off but start crying because they spilt their mead. Then there's Dragonsreach the Jarls palace which is full of pretentious fools, some place called the drunken huntsman which is kind of misleading as there are no drunken huntsmen in there, and some other places not worth a mention. Most importantly though there is an inn."
+
+**特點**：對各地點的毒舌評論（Jorrvaskr = 裝模作樣的酒鬼、Dragonsreach = 自大的傻瓜）、優先考慮有酒的地方。
+
+---
+
+### Whiterun 的人物
+
+| 人物 | 評論 |
+|------|------|
+| **Nazeem** | "There are not enough bad words to describe Nazeem, who is lucky to still be alive." |
+| **Braith**（小孩） | "That kid Braith who thinks she can get away with anything but forgets that one day she will grow up." |
+| **傳道者** | "The annoying preacher that nobody listens to." |
+| **Belethor**（雜貨店) | "Some slime ball called Belethor who runs the general store and frequently sells his family members to the lowest bidder." |
+| **Arcadia**（煉金師） | "The alchemy woman who has pronounced me dead several times to flog her overpriced wares." |
+| **市集商人** | "Some cheap tart at the market who sells her body to every man in Whiterun." |
+
+**特點**：毫不保留的惡毒評論、對虛偽與自大的極度厭惡、對 Nazeem 的特殊仇恨。
+
+---
+
+### 其他地點參考
+
+**提到過的地點**（來自遭遇對話）：
+- **Solitude**（天際城）：「the fletcher in Solitude」
+- **Falkreath**（隱匿森林）：（在對話中被提及但未詳細評論）
+
+---
+
+## 與 NPC 互動的反應
+
+### 初次相遇（任務開始）
+
+#### 喝醉酒後被發現
+
+**Context**: Sofia 被發現醉酒、衣著不整、記憶混亂
+
+> "What? Where am I? Ugh my head! Oh it's you! Uh I mean what? No I've never seen you before. I have no idea who you are. It's not like I've been stalking you or anything."
+
+**特點**：模糊否認、玩笑式的坦白、立刻自我打圓場。
+
+---
+
+#### 受傷時的反應
+
+> "Wait! Don't leave!.. I'm injured... uh yes injured. You have to take me with you otherwise I might die and you wouldn't want that on your conscience."
+
+**特點**：裝作受傷（「呃...是的，受傷」暗示可能是藉口）、用罪惡感綁架、自知地露出真心。
+
+---
+
+### 招募對話（多個選項分支）
+
+#### 玩家質疑她的能力
+
+| 玩家選項 | Sofia 回應 |
+|---------|----------|
+| "You look alright to me." | "Yeah well that's because... OK fine, if you take me with you I will make it worth your while. You won't find anyone tougher than me in Skyrim. Not to mention as good looking." |
+| "You are quite modest then? Fine, welcome aboard." | "Haha, you are so funny. I'm just being honest and anyone who says otherwise is clearly jealous. Can you name someone better than me? I didn't think so. Anyway thanks, I guess." |
+| "OK, but you will be doing me a lot of favours in return." | "Well, we will see about that. I could have you wrapped around my little finger in minutes. Either that or I could have your head as a trophy. Anyway thanks, I'll do what I can to help but don't push your luck." |
+| "I suppose I could use some backup." | "Is that it? Aren't you going to flex your muscles and tell me how great you are? That seems to be the customary greeting in Skyrim. Anyway, there's no suppose about it. Everyone could use someone a little more like me." |
+| "No, I don't do babysitting." | "What you really mean is that you don't like competition. Anyway fine, I get it. People do get a little jealous of me but I've come to accept it. If you change your mind come and find me." |
+
+**關鍵台詞**：
+> "So, if you are so tough and independent, why do you need my help?"
+>> "I don't. I thought I would help you out."
+
+> "I didn't ask for any help though?"
+>> "Well I was hoping you would kind of keep me company. Look I know it sounds weird but it's no fun on my own. You can tell me to leave if you want but surely you can at least give me a chance?"
+
+**特點**：自信與不安全感的完美平衡、「拒絕招募」選項反而讓她暴露脆弱、真心隱藏在口嫌背後。
+
+---
+
+#### 衣著與狀態
+
+> "What happened to your clothes?" / "What?! Ugh I have no idea. My memory is a little fuzzy. If you happen to have any I would appreciate it. Oh and stop staring at my body. It's like you've never seen a semi-naked woman before."
+
+**特點**：既害羞又故意挑逗。
+
+---
+
+#### 自我介紹
+
+> "Oh, I haven't introduced myself have I? My name is Sofia but you probably already knew that. I'm quite well known in Skyrim, although sometimes I'm not sure it's for the right reasons. I kind of see myself as an adventurer although it's no fun without anyone to witness my heroic deeds such as... well I'm sure there's probably something. I like to get drunk, kill stuff and be a nuisance. So what about you?"
+
+**特點**：自我認知的諷刺、對聲譽的弔詭態度（有名但不知道是壞名聲）、對孤獨的真心表露。
+
+---
+
+### 與玩家身份相關的反應
+
+| 玩家身份 | Sofia 的反應 |
+|---------|-----------|
+| **一般冒險者** | "Nice to meet you. I hope to be of some use to you. I am rather talented if I say so myself so I'm sure there must be something I can do for you. Just let me know." |
+| **陌生人** | "Well then it must be your lucky day as I know Skyrim like the back of my hand. Of course I have many other talents so be sure to let me know if you need me." |
+
+---
+
+## 親密與浪漫互動
+
+### 私密問答
+
+Sofia 會主動提出一系列相當露骨的問題，測試玩家：
+
+#### 問題 1：黃金 vs 美貌
+
+> "Would you rather have no gold and be good looking or rich and ugly?"
+
+**玩家回應**：
+- **無金但好看**：「Yeah me too. I would hate being ugly and I can just make gold on my looks. As long as I have enough for booze nothing else matters.」
+- **有金但醜陋**：「As much as I like gold I would never give up my amazing looks. What can you get with gold anyway? A fancy house? A new sword? How boring.」
+- **都不重要**：「Of course it does. It would take a lot of gold to spend time with someone as beautiful as me if you were ugly.」
+
+**特點**：自戀優先於物質、把美貌當貨幣、對玩家的審美有要求。
+
+---
+
+#### 問題 2：個人特質
+
+> "If you had to describe your best personality trait what would it be?"
+
+**選項與回應**：
+- **Strong**：「Pfft. Yeah well I would like to see how you would fare in a fight against me.」
+- **Brave**：「Or what some might call foolish... nah I prefer brave.」
+- **Wise**：「Why don't you go and become a greybeard then so you can sit there praying all day. I bet you must be fun at parties.」
+- **Kind**：「Oh please. You're making me want to vomit. If you're so kind why don't you go and buy me something expensive?」
+- **Evil**：「Yeah right. If you were that evil you would have tried to kill me by now. Well whatever you can continue to prey on the weak. I don't care, they probably deserve it.」
+- **Sly**：「Don't think you can fool me, I am a master manipulator. I can turn men into slaves without doing a thing.」
+
+**特點**：對「溫和」特質的極度厭惡、對實力的重視、自信無比但善於轉向嘲諷。
+
+---
+
+#### 問題 3：對女性身體的偏好（相當露骨）
+
+> "So I have a question for you. What do you prefer on a woman? Boobs, bottom, legs or face?"
+
+**選項與回應**：
+- **胸部**：「I thought as much. Don't think I didn't catch you staring.」
+- **臀部**：「Eww but that's where nasty stuff comes out of. Ok, ok I won't judge.」
+- **腿部**：「You like what's between them more like. Yeah I know your type.」
+- **臉部**：「You mean just like mine. Yeah well I guess not everyone can be as blessed as me.」
+- **如果喜歡男性**：「Everyone finds me attractive so the rules don't apply.」
+- **內在美**：「But that wasn't an option. Aw you're boring.」
+- **拒絕回答**：「I think it is a rather important question. Ah you're no fun.」
+
+**特點**：對玩家審美的直接試探、自信但包容的態度（除了「內在美」選項）、用玩笑包裝真實的好奇心。
+
+---
+
+#### 問題 4：對怪物的性偏好（最露骨）
+
+> "If you had to choose to make love to a hagraven, a werewolf or a vampire which one would you choose?"
+
+**選項與回應**：
+- **Hagraven**：「Really? Wow, you are into some weird stuff. Well I suppose it's not that different from doing it with a really ugly old woman... although the feathers might be a bit weird.」
+- **Werewolf**：「Well I hope you mean when they are in their human form as I'm sure that's illegal otherwise.」
+- **Vampire**：「Wouldn't that be like making love to a corpse. Well I can't say I've tried it so I'll reserve judgement.」
+- **拒絕**：「Aw you're so mean to me. Why won't you just have a little fun.」
+
+**特點**：測試玩家的邊界、用黃色笑話拉近距離、暴露自己對奇異事物的好奇心。
+
+---
+
+### 戀愛進展話題
+
+#### 無意中的真心
+
+> "I don't think I've stuck around with anyone for as long as I have with you. I really like you though and you are one of the bravest and most heroic people I know. If only someone like you was to... uh never mind. I have noticed that you have been giving me a lot of gifts lately. Whilst I appreciate it it does make me wonder whether there is some secret reason. So we have spent quite a while together now and have got to know each other better. You could even say we were quite close."
+
+> "Have you ever found that it is really hard to tell people the way you really feel? You can be close to them and they might even know that, but to actually say the words is difficult. Sorry I'm just rambling."
+
+> "Have you noticed how boring the couples in Skyrim are? I bet we would make a much better couple... uh I mean not that... I was just... uh never mind."
+
+**特點**：慢慢露出的真心、多次自我打斷（怕說太多）、對親密關係既渴望又害怕。
+
+---
+
+#### 察覺分心
+
+> "Are you ok? You seem a little distracted."
+>> "Well there is this person that I have feelings for but I don't know if you... uh I mean they feel the same way. I am good friends with them but I don't want to spoil things between us."
+
+**特點**：直接質問、慢慢暴露真實感受、用「他人」掩蓋其實在說自己。
+
+---
+
+#### 婚禮主題
+
+**Sofia 的主動出擊**：
+> "I'm so happy we are kind of a couple now but don't you think we should make things official? I wouldn't want you thinking you can just find somebody else without any consequences."
+
+**玩家求婚時**：
+> "Really? You mean that? I always dreamt this day would come. Um tell you what, you leave the wedding arrangements to me."
+
+或（如果時機不對）：
+> "Sorry but isn't it a little bit too soon for all that? You kind of come across as desperate."
+
+**特點**：佔有慾強、主動出擊的同時又會因為被拒而自我保護。
+
+---
+
+#### 婚禮現場
+
+**婚禮官人話**（替身發言，代表 Sofia）：
+> "So let us begin. Do you... uh sorry I've forgotten your name... whatever. Do you take this woman, Sofia to be your wife?"
+
+**玩家「I do」**：
+> "You do? Really!? You may wish to reconsider? Well okay, rather you than me."
+
+**婚禮後的金錢問題**：
+- 如果玩家拒絕付錢：「Why does that not surprise me. It seems to be a common occurrence around anyone that has the misfortune to spend time with her.」（婚禮官人的評論，暴露了 Sofia 是「被僱傭」來假結婚的）
+- 如果金錢不足：「This isn't enough money! Bah! She's got to you already. Well enjoy your life of poverty, as every septim you earn will be taken by her.」
+
+**特點**：婚禮設定揭露 Sofia 的經濟狀況（願意被僱傭參加假婚禮）、婚禮官人對她的評論帶有同情與嘲笑。
+
+---
+
+## 特殊場景反應
+
+### 對話中的 Idle 評論
+
+當 Sofia 等待或在旅途中，會自言自語評論各種事物：
+
+#### 對食物的評論
+> "I feel like partying! A shame no one else is in the mood."
+> "You think I'm drunk, but I'm not! I can perfectly walk on a line.. well, okay a wobbly one."
+
+#### 對被注視的反應
+> "I feel like I'm being stared at, but I can't help I'm beautiful."
+
+---
+
+### Bard 歌唱
+
+**可唱歌曲**：
+- The Dragonborn Comes
+- Age Of The Dragon
+- The Legendary Duo （Sofia 自己寫的）
+- The Cave Was Her Home
+- The Bow And Arrow
+- Ragnar The Red
+
+**Sofia 對各曲的反應**：
+- 「Oh, I love that one!」/ 「I'd love to sing for you.」/ 「That's one of my favorites.」/ 「Sure, why not?」
+
+**特點**：樂於表演（展示自己）、對 The Legendary Duo 特別自豪（自作曲）。
+
+---
+
+### 禮物與穿著
+
+#### 接收禮物
+
+> "Oh, what is it?" / "That's very thoughtful of you." / "I could get used to this."
+
+**特點**：出乎預料的感謝（反差）。
+
+#### 穿著命令
+
+> "If you say so." （淡定接受）
+
+---
+
+### 隱密潛行時的反應
+
+**當玩家說話卻沒有隱密時**：
+- 「Ssshhhh Keep it down will you. We're supposed to be stealthy remember.」
+- 「Please tell me you actually know what you are doing.」
+- 「Talking whilst sneaking. Makes sense.」
+- 「I thought you wanted to play this the sneaky way?」
+- 「I really don't think you are taking this stealth thing seriously at all.」
+- 「You're not exactly filling me with confidence right now.」
+
+**戰鬥狀況下催促**：
+- 「What are you waiting for? Now is the time to make a move.」
+- 「Come on, come on. Get on with it. The suspense is killing me.」
+
+**特點**：在緊張時刻用吐槽來自我調節、對玩家的不信任。
+
+---
+
+### 對特定敵人的評論（戰鬥嘲諷）
+
+#### 對「巨魔」的評論
+> "If there is one thing I have learned it is to never try and talk sense into a troll."
+> "Don't just stand there I'm being trolled! Wait, that's not even a word."
+> "I'm sure deep down you are really a sweet troll."
+
+#### 對「精靈」的評論
+> "Now I see why elves are so hated!"
+> "Are you okay? You seem a little off-colour. Oh right, you're an elf!"
+
+#### 對「Argonian」（蜥蜴人）的評論
+> "I heard The Lusty Argonian Maid was written about your mother."
+> "Ugh! You smell like something that just crawled out of a swamp! Oh wait."
+
+#### 對「Redguard」（紅衛兵）的評論
+> "I know of another annoying Redguard that you will never get the chance to meet!"
+> "I heard your mother was a sabrecat and your father a drunken imperial."
+
+#### 對「不死生物」的評論
+> "You died once, now it's time to die again!"
+> "I will feast on your soul! Well not me but my friend will."
+> "Wouldn't that be like making love to a corpse. Well I can't say I've tried it so I'll reserve judgement.」
+
+**特點**：種族刻板印象、對特定敵人的嘲笑有個性化的內容、用黃色笑話來緩解緊張。
+
+---
+
+## 使用指南（補完版）
+
+### 寫新 NPC 反應台詞時
+
+1. **檢查 NPC 身份**：
+   - 是 Skyrim 原生 NPC？（參考「Whiterun 人物」部分的毒舌模式）
+   - 是敵人？（參考「戰鬥嘲諷」系列）
+   - 是戀愛對象？（用親密問答與浪漫進展作為模板）
+
+2. **應用 Sofia 的評價邏輯**：
+   - **自大的人**（Nazeem、Jarl）→ 毒舌
+   - **虛偽的人**（商人、傳道者）→ 冷嘲熱諷
+   - **強者**（Dragonborn、戰士）→ 挑戰意識 + 隱約的吸引力
+   - **弱者**（普通 NPC）→ 不屑 + 玩樂
+
+3. **親密 NPC 對話的梯度**：
+   - **陌生人**：「What's on your mind?」（客氣距離）
+   - **熟人**：「Can I ask you something?」（主動靠近）
+   - **親近**：無限制的黃色問題（信任試探）
+   - **愛侶**：真心漸露，但仍保持嘴硬（防衛機制）
+
+---
+
+**Last Updated**: 2026-06-14（補完至 NPC、任務、親密互動）  
 **Source**: SofiaFollower.esp v2.51 (via ModForge CLI gamedata)
