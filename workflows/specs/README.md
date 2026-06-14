@@ -15,10 +15,6 @@
 
 ## 現役設計方案
 
-| 設計 | 日期 | 狀態 | 對應 plan |
-| --- | --- | --- | --- |
-| [action-system-asset-generation-design.md](action-system-asset-generation-design.md)（OAR moveset + BDI config + PIE 巨集生成） | 2026-06-14 | **已自審,plan 落地中** | [plans/action-system-asset-generation.md](../plans/action-system-asset-generation.md) |
-
-> 草案依據 [mod-survey/action-system/](../../sub_projs/mod-survey/action-system/) 的實檔驗證調查;下一步是 spec 自審 → [plan](../plans/README.md)。
+**目前無現役設計方案**——action-system asset/config 生成（OAR/BDI/PIE）MVP 已落地（2026-06-14），design 已移 [archive/](archive/README.md)。下一份待新功能討論時產出。
 
 新設計命名 **`<功能>-design.md`（不含日期）**，日期記在現役 index 表的一欄；對應 [plans/](../plans/README.md) 同名 plan，落地後即移 [archive/](archive/README.md)。（archived 舊檔仍保留歷史日期前綴、凍結不動。）

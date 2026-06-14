@@ -12,11 +12,7 @@
 
 ## 現役計畫
 
-| 計畫 | 日期 | 狀態 | 對應 spec |
-| --- | --- | --- | --- |
-| [action-system-asset-generation.md](action-system-asset-generation.md)（OAR moveset + BDI config + PIE 巨集生成） | 2026-06-14 | **待動工**（Task 0 spec 自審先行） | [specs/action-system-asset-generation-design.md](../specs/action-system-asset-generation-design.md) |
-
-> 7 個 task，MVP = OAR 生成器（含 `npcMoveset` 糖 + 條件序列化器）+ BDI config，全離線可測（`.hkx` 自備、Blender→hkx 牆出範圍）。
+**目前無現役計畫**——action-system asset/config 生成（OAR/BDI/PIE）7 個 task 全落地（2026-06-14，547 測試綠燈），計畫已移 [archive/](archive/README.md)；落地記錄見 [feature-dev/landed/infra.md](../feature-dev/landed/infra.md)。
 
 新計畫命名 **`<功能>.md`（不含日期）**，日期記在現役 index 表的一欄；落地後即移 [archive/](archive/README.md)。（archived 舊檔仍保留歷史日期前綴、凍結不動。）
 
