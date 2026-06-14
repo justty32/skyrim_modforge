@@ -1,6 +1,6 @@
 # 功能開發踩坑（feature-dev）
 
-← [INDEX](../../INDEX.md)｜本工作流：[landed](landed.md) 已落地 · [session-log](session-log.md) 進度｜跨工作流共通踩坑見 [common/gotchas](../common/gotchas.md)、解碼類見 [investigation/gotchas](../investigation/gotchas.md)
+← [INDEX](../../INDEX.md)｜本工作流：[landed](landed/README.md) 已落地 · [session-log](session-log.md) 進度｜跨工作流共通踩坑見 [common/gotchas](../common/gotchas.md)、解碼類見 [investigation/gotchas](../investigation/gotchas.md)
 
 開發具體功能（SM / scene / dialogue / npc / voice…）時踩到的坑，**含外部工具的內部開發聯動**（Papyrus 編譯、Wine shell-out 等——對應的使用面文檔在 [docs/asset-pipelines](../idea/asset-pipelines/README.md)）。`[[...]]` 連 Claude memory。
 

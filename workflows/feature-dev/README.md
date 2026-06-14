@@ -20,7 +20,7 @@
 
 | 檔案 | 內容 |
 |------|------|
-| [landed.md](landed.md) | **已落地功能目錄**（時間序；功能在哪、實作細節指標）|
+| [landed.md](landed/README.md) | **已落地功能目錄**（時間序；功能在哪、實作細節指標）|
 | [gotchas.md](gotchas.md) | 開發踩坑（含**外部工具內部開發聯動**：Papyrus 編譯 / Wine shell-out）|
 | [session-log.md](session-log.md) | 本工作流 open / in-flight 進度（hub 在 repo 根 [SESSION-LOG](../../SESSION-LOG.md)）|
 

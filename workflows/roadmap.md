@@ -1,6 +1,6 @@
 # Roadmap — 之後可做
 
-← [INDEX](../INDEX.md)｜已完成的見 [feature-dev/landed](feature-dev/landed.md)、解碼依據見 [investigation/decode](investigation/decode/README.md)
+← [INDEX](../INDEX.md)｜已完成的見 [feature-dev/landed](feature-dev/landed/README.md)、解碼依據見 [investigation/decode](investigation/decode/README.md)
 
 **確定未來會做、但不確定何時**做的 backlog（比 [ideas](idea/ideas.md) 的「不確定要不要做」更篤定；非當前 in-flight——in-flight 在各工作流 session-log）。階梯：idea → **roadmap** → [spec](specs/README.md) → [plan](plans/README.md) → build。
 
@@ -12,7 +12,7 @@
 2. **worldspace LAND 高度圖**（自訂地圖地形，VIGILANT realm 的本體）、region-driven weather（REGN）—— 待先確認 ModForge worldspace builder 現況。
 - **Scene 演出續做**：PlayIdle / 手勢動畫；camera shot（VIGILANT 證明可延後）。
 - **多解 SM 事件**（SkillIncrease/Jail/Bribe…，須 conditions 才安全，見 [[dispatcher-magic-trigger]]）。
-- **新 record**：Imagespace / Word of Power 等。（Music + Hazard 已落地，見 [feature-dev/landed](feature-dev/landed.md)。）
+- **新 record**：Imagespace / Word of Power 等。（Music + Hazard 已落地，見 [feature-dev/landed](feature-dev/landed/README.md)。）
 
 ## 結構／工具
 
@@ -24,7 +24,7 @@
 
   待執行清單（按工作量）：
   - ~~**tooling.md**（9.6K）→ 升 L2：`tooling/` + README，按職責分 `env-vars` / `binaries` / `data-assets`~~ ✅ 已拆（`workflows/tooling/`）。
-  - **feature-dev/landed.md**（14K）→ `landed/` + INDEX，**對齊 CODE_MAP 五分法**（dialogue-quests / world / items-magic / npcs / infra）以利兩套 index 互通。gotchas.md（5K）只需檔內分節，不拆。
+  - ~~**feature-dev/landed.md**（14K）→ `landed/` + INDEX，**對齊 CODE_MAP 五分法**（dialogue-quests / world / items-magic / npcs / infra）~~ ✅ 已拆（`landed/` + README index）。`infra.md` 5.1K 略超但維持 CODE_MAP 粒度（voice 濃縮句明細在 memory/git）。gotchas.md（5K）只需檔內分節，不拆（暫緩）。
   - **plans/** 巨型多階段計畫 → 各成 `plans/<功能>/` + index（升 L4，沿天然 Task/子系統切點）：lighting-pipeline 54K、spec-refs-env 41K、quest-markers 31K(A/B/C 層)、playidle 26K。中型 hazard/music/weather/voice-annotation 為 BORDERLINE（看是否容忍超標）；identity-mvp 8K KEEP。
   - **idea/**：概覽 `01`/`03` 瘦身成「survey + 指向已展開子夾」的導航頁；`02`/`04`/`05` 按內容拆（04 map-scene、05 animation 興趣最高、最可能升 L4 子夾）；`voice-clone/01-engine-setup` 12K 可按引擎再分。步驟檔（model-porting 01~10、voice-clone 02~06）**全 KEEP**（已是拆分結果）。`ideas.md` 18K 按 idea 主題分類拆，但它是入口主檔、可緩。
   - **specs/** 現役 8 份 design **全 KEEP**（一份 spec=一個整體，硬拆傷讀）。
