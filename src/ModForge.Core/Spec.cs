@@ -83,6 +83,12 @@ public sealed class ModSpec
     public PresetCatalogSpec Presets { get; set; } = new(); // non-emitting cookbook fragments for copy/paste recipes
     public List<VoiceTemplateSpec> VoiceTemplates { get; set; } = new(); // named voice recipes (Spec.Voice.cs)
     public List<VoiceSpeakerSpec> VoiceSpeakers { get; set; } = new(); // bind an external speaker → voiceType + template
+    // Action-system loose-file generation (Spec.AnimationReplacer.cs) — NON-esp config/asset
+    // products: OAR replacer/moveset folders, BDI graph-variable injection, PIE macro tables.
+    // `package` emits these next to the .esp; the .hkx animations themselves are user-supplied.
+    public List<AnimationReplacerSpec> AnimationReplacers { get; set; } = new();
+    public List<BehaviorDataSpec> BehaviorData { get; set; } = new();   // BDI graph var/event config
+    public List<PayloadMacroSpec> PayloadMacros { get; set; } = new();  // PIE .ini macro table
     public VoiceLineSpec? VoiceLine { get; set; } // global voice output settings
     // External-resource pipeline (see docs/external_assets.md): a source directory whose
     // `Meshes/`, `Textures/`, `Sounds/` (and loose `.hkx`) sub-trees `package` copies next to

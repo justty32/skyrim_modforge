@@ -91,12 +91,31 @@
       "description": "override an EXISTING vanilla/other-master NPC and swap its AI package list (AI Overhaul style). Needs the master (MODFORGE_SKYRIM_DATA); the override carries the NPC's real English name inline.",
       "items": {
         "type": "object",
-        "required": [ "overrideOf", "packages" ],
+        "required": [
+          "overrideOf",
+          "packages"
+        ],
         "additionalProperties": false,
         "properties": {
-          "overrideOf": { "type": "string", "description": "the existing NPC ref '<master>:0xFORMID' (e.g. Skyrim.esm:0x013B99 = Carlotta Valentia)" },
-          "packages": { "type": "array", "items": { "type": "string" }, "description": "PACK refs (in-spec editorId or vanilla '<master>:0xFORMID') forming the new schedule" },
-          "mode": { "enum": [ "replace", "prepend", "append" ], "description": "replace = use ONLY our packages; prepend/append = keep the NPC's existing packages and add ours before/after (default replace)" }
+          "overrideOf": {
+            "type": "string",
+            "description": "the existing NPC ref '<master>:0xFORMID' (e.g. Skyrim.esm:0x013B99 = Carlotta Valentia)"
+          },
+          "packages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "PACK refs (in-spec editorId or vanilla '<master>:0xFORMID') forming the new schedule"
+          },
+          "mode": {
+            "enum": [
+              "replace",
+              "prepend",
+              "append"
+            ],
+            "description": "replace = use ONLY our packages; prepend/append = keep the NPC's existing packages and add ours before/after (default replace)"
+          }
         }
       }
     },
@@ -136,12 +155,16 @@
     },
     "musicTracks": {
       "type": "array",
-      "items": { "$ref": "#/$defs/musicTrack" },
+      "items": {
+        "$ref": "#/$defs/musicTrack"
+      },
       "description": "Music Track (MUST): an audio entry (SingleTrack/Palette/SilentTrack) referenced by a music (MUSC)"
     },
     "music": {
       "type": "array",
-      "items": { "$ref": "#/$defs/music" },
+      "items": {
+        "$ref": "#/$defs/music"
+      },
       "description": "Music Type (MUSC): a container assigned to cells[].music / worldspaces[].music"
     },
     "imageSpaceModifiers": {
@@ -229,11 +252,21 @@
       "description": "FormList (FLST): an ordered list of FormIDs of any type; use as a list-taking condition's param (GetItemCount/GetEquipped/GetIsVoiceType/GetInWorldspace), a keyword/clothing set, etc.",
       "items": {
         "type": "object",
-        "required": [ "editorId" ],
+        "required": [
+          "editorId"
+        ],
         "additionalProperties": false,
         "properties": {
-          "editorId": { "type": "string" },
-          "items": { "type": "array", "items": { "type": "string" }, "description": "refs (in-spec editorId or vanilla <master>:0xFORMID), any record type; order preserved" }
+          "editorId": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "refs (in-spec editorId or vanilla <master>:0xFORMID), any record type; order preserved"
+          }
         }
       }
     },
@@ -439,7 +472,9 @@
     },
     "identities": {
       "type": "array",
-      "items": { "$ref": "#/$defs/identity" },
+      "items": {
+        "$ref": "#/$defs/identity"
+      },
       "description": "Lightweight identity/class system: each identity is a FACT (held signal) + priority + optional grants/acquire. Gate dialogue with identity/primaryIdentity; acquire via a book's OnRead."
     },
     "presets": {
@@ -448,7 +483,9 @@
     },
     "voiceTemplates": {
       "type": "array",
-      "items": { "$ref": "#/$defs/voiceTemplate" },
+      "items": {
+        "$ref": "#/$defs/voiceTemplate"
+      },
       "description": "named voice recipes for cloning (Spec.Voice.cs)"
     },
     "voiceSpeakers": {
@@ -456,18 +493,52 @@
       "description": "bind an EXTERNAL dialogue speaker (an NPC from another master the mod-only cache can't resolve, e.g. an existing follower) to a voiceType + voiceTemplate, so voicelines/voicediag can voice lines gated on GetIsID(<that NPC>)",
       "items": {
         "type": "object",
-        "required": [ "speaker", "voiceType", "template" ],
+        "required": [
+          "speaker",
+          "voiceType",
+          "template"
+        ],
         "additionalProperties": false,
         "properties": {
-          "speaker": { "type": "string", "description": "the NPC ref the line's GetIsID gates on (<master>:0xFORMID)" },
-          "voiceType": { "type": "string", "description": "that NPC's voiceType (the Sound/Voice/<plugin>/ folder name, e.g. JJSofiaVoiceType)" },
-          "template": { "type": "string", "description": "a voiceTemplates[] id to generate the lines with" }
+          "speaker": {
+            "type": "string",
+            "description": "the NPC ref the line's GetIsID gates on (<master>:0xFORMID)"
+          },
+          "voiceType": {
+            "type": "string",
+            "description": "that NPC's voiceType (the Sound/Voice/<plugin>/ folder name, e.g. JJSofiaVoiceType)"
+          },
+          "template": {
+            "type": "string",
+            "description": "a voiceTemplates[] id to generate the lines with"
+          }
         }
       }
     },
     "voiceLine": {
       "$ref": "#/$defs/voiceLine",
       "description": "global voice output settings"
+    },
+    "animationReplacers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/animationReplacer"
+      },
+      "description": "OAR (Open Animation Replacer) replacer/moveset folders generated as LOOSE FILES (no esp). Each is a replacer-mod with named submods; .hkx animations are user-supplied. See docs/spec/SPEC-animation.md."
+    },
+    "behaviorData": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/behaviorData"
+      },
+      "description": "Behavior Data Injector (BDI) configs: inject graph variables/events into a behavior project with no behavior patch. Emitted to SKSE/Plugins/BehaviorDataInjector/<file>.json."
+    },
+    "payloadMacros": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/payloadMacro"
+      },
+      "description": "Payload Interpreter (PIE) macro tables: named macros -> payload commands. Emitted to SKSE/PayloadInterpreter/Config/<file>.ini."
     }
   },
   "additionalProperties": false,
@@ -483,22 +554,30 @@
       "properties": {
         "lighting": {
           "type": "object",
-          "additionalProperties": { "$ref": "#/$defs/presetFragment" },
+          "additionalProperties": {
+            "$ref": "#/$defs/presetFragment"
+          },
           "description": "Interior lighting fragments, usually lightingTemplates/imageSpaces/lights/cell fields."
         },
         "weather": {
           "type": "object",
-          "additionalProperties": { "$ref": "#/$defs/presetFragment" },
+          "additionalProperties": {
+            "$ref": "#/$defs/presetFragment"
+          },
           "description": "Outdoor weather fragments, usually imageSpaces/weathers/climates/regions."
         },
         "packages": {
           "type": "object",
-          "additionalProperties": { "$ref": "#/$defs/presetFragment" },
+          "additionalProperties": {
+            "$ref": "#/$defs/presetFragment"
+          },
           "description": "AI package fragments using existing PackageSpec shapes."
         },
         "identities": {
           "type": "object",
-          "additionalProperties": { "$ref": "#/$defs/presetFragment" },
+          "additionalProperties": {
+            "$ref": "#/$defs/presetFragment"
+          },
           "description": "Identity fragments using existing IdentitySpec plus optional books/perks/spells."
         }
       },
@@ -1689,11 +1768,23 @@
                 "description": "QSTA compass/map markers; the arrow follows the named alias's fill",
                 "items": {
                   "type": "object",
-                  "required": [ "alias" ],
+                  "required": [
+                    "alias"
+                  ],
                   "properties": {
-                    "alias": { "type": "string", "description": "alias NAME on the same quest" },
-                    "compassIgnoresLocks": { "type": "boolean" },
-                    "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" } }
+                    "alias": {
+                      "type": "string",
+                      "description": "alias NAME on the same quest"
+                    },
+                    "compassIgnoresLocks": {
+                      "type": "boolean"
+                    },
+                    "conditions": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/condition"
+                      }
+                    }
                   }
                 }
               }
@@ -1872,7 +1963,9 @@
         "setGlobal": {
           "type": "object",
           "description": "write or adjust one GlobalVariable when the line is picked. Use value for flags/absolute reputation states (SetValue) or delta for counters (Mod). The GLOB can then gate dialogue/identity.activeWhen via GetGlobalValue.",
-          "required": [ "global" ],
+          "required": [
+            "global"
+          ],
           "properties": {
             "global": {
               "$ref": "#/$defs/ref",
@@ -1888,8 +1981,16 @@
             }
           },
           "oneOf": [
-            { "required": [ "value" ] },
-            { "required": [ "delta" ] }
+            {
+              "required": [
+                "value"
+              ]
+            },
+            {
+              "required": [
+                "delta"
+              ]
+            }
           ]
         },
         "rewardItem": {
@@ -1950,7 +2051,9 @@
         },
         "linkTo": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "dialogue tree (ENAM): after this line, surface these dialogue topics as the next choices — each is another dialogue's editorId or a vanilla <master>:0xFORMID topic"
         },
         "previousDialog": {
@@ -3336,17 +3439,39 @@
     },
     "mapMarker": {
       "type": "object",
-      "required": [ "editorId", "worldspace" ],
+      "required": [
+        "editorId",
+        "worldspace"
+      ],
       "description": "A permanent world-map marker (XMRK on the MapMarker static). Also usable as an objective target via a forced: alias.",
       "properties": {
-        "editorId": { "type": "string" },
-        "name": { "type": "string", "description": "map label" },
-        "worldspace": { "type": "string", "description": "exterior worldspace ref <master>:0xFORMID (Tamriel = Skyrim.esm:0x00003C)" },
-        "position": { "$ref": "#/$defs/vec3" },
-        "type": { "type": "string", "description": "MapMarker.MarkerType name: City/Town/Settlement/Cave/Camp/Fort/Landmark/… (None if empty)" },
+        "editorId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "description": "map label"
+        },
+        "worldspace": {
+          "type": "string",
+          "description": "exterior worldspace ref <master>:0xFORMID (Tamriel = Skyrim.esm:0x00003C)"
+        },
+        "position": {
+          "$ref": "#/$defs/vec3"
+        },
+        "type": {
+          "type": "string",
+          "description": "MapMarker.MarkerType name: City/Town/Settlement/Cave/Camp/Fort/Landmark/… (None if empty)"
+        },
         "flags": {
           "type": "array",
-          "items": { "enum": [ "Visible", "CanTravelTo", "ShowAllIsHidden" ] },
+          "items": {
+            "enum": [
+              "Visible",
+              "CanTravelTo",
+              "ShowAllIsHidden"
+            ]
+          },
           "description": "empty = hidden until discovered"
         }
       }
@@ -4071,57 +4196,158 @@
     },
     "musicTrack": {
       "type": "object",
-      "required": [ "editorId" ],
+      "required": [
+        "editorId"
+      ],
       "description": "MUST — an audio entry. SingleTrack plays `file`; Palette shuffles its sub-`tracks`; SilentTrack is a timed silence.",
       "properties": {
-        "editorId": { "type": "string" },
-        "type": { "enum": [ "SingleTrack", "Palette", "SilentTrack" ] },
-        "file": { "type": "string", "description": "audio path under Data/Music (.xwm/.wav); a loose asset shipped via package --assets" },
-        "fadeOut": { "type": "number" },
-        "duration": { "type": "number" },
-        "loopBegins": { "type": "number", "description": "loop start seconds; -1 (default) = no loop" },
-        "loopEnds": { "type": "number" },
-        "loopCount": { "type": "integer", "description": "0 = infinite when looping" },
-        "tracks": { "type": "array", "items": { "type": "string" }, "description": "Palette: refs -> other musicTracks editorIds" }
+        "editorId": {
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "SingleTrack",
+            "Palette",
+            "SilentTrack"
+          ]
+        },
+        "file": {
+          "type": "string",
+          "description": "audio path under Data/Music (.xwm/.wav); a loose asset shipped via package --assets"
+        },
+        "fadeOut": {
+          "type": "number"
+        },
+        "duration": {
+          "type": "number"
+        },
+        "loopBegins": {
+          "type": "number",
+          "description": "loop start seconds; -1 (default) = no loop"
+        },
+        "loopEnds": {
+          "type": "number"
+        },
+        "loopCount": {
+          "type": "integer",
+          "description": "0 = infinite when looping"
+        },
+        "tracks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Palette: refs -> other musicTracks editorIds"
+        }
       }
     },
     "music": {
       "type": "object",
-      "required": [ "editorId" ],
+      "required": [
+        "editorId"
+      ],
       "description": "MUSC — a music type the game selects by priority and assigns to cells[].music / worldspaces[].music.",
       "properties": {
-        "editorId": { "type": "string" },
+        "editorId": {
+          "type": "string"
+        },
         "flags": {
           "type": "array",
-          "items": { "enum": [ "PlaysOneSelection", "AbruptTransition", "CycleTracks", "MaintainTrackOrder", "DucksCurrentTrack", "DoesNotQueue" ] }
+          "items": {
+            "enum": [
+              "PlaysOneSelection",
+              "AbruptTransition",
+              "CycleTracks",
+              "MaintainTrackOrder",
+              "DucksCurrentTrack",
+              "DoesNotQueue"
+            ]
+          }
         },
-        "priority": { "type": "integer", "minimum": 0, "description": "higher wins over lower-priority music at the same time" },
-        "duckingDecibel": { "type": "number", "minimum": 0, "maximum": 655, "description": "POSITIVE dB attenuation applied to other audio" },
-        "fadeDuration": { "type": "number" },
-        "tracks": { "type": "array", "items": { "type": "string" }, "description": "refs -> musicTracks (MUST) editorIds" }
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "higher wins over lower-priority music at the same time"
+        },
+        "duckingDecibel": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 655,
+          "description": "POSITIVE dB attenuation applied to other audio"
+        },
+        "fadeDuration": {
+          "type": "number"
+        },
+        "tracks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "refs -> musicTracks (MUST) editorIds"
+        }
       }
     },
     "hazard": {
       "type": "object",
-      "required": [ "editorId" ],
+      "required": [
+        "editorId"
+      ],
       "description": "HAZD — a radius effect that applies `spell` to actors in it every `targetInterval` seconds. Spawn it with a magicEffect archetype 'SpawnHazard' (+ association = this editorId) or place it (placements[].base = this editorId, or kind:'hazard').",
       "properties": {
-        "editorId": { "type": "string" },
-        "name": { "type": "string" },
-        "model": { "type": "string", "description": ".nif visual path (verify vs Skyrim.esm; empty = invisible)" },
-        "radius": { "type": "number" },
-        "lifetime": { "type": "number", "description": "seconds (0 = inherit from spawn spell / permanent)" },
-        "targetInterval": { "type": "number", "description": "seconds between applications" },
-        "limit": { "type": "integer", "minimum": 0, "description": "max simultaneous instances (0 = unlimited)" },
-        "spell": { "type": "string", "description": "ref -> SPEL applied periodically" },
+        "editorId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string",
+          "description": ".nif visual path (verify vs Skyrim.esm; empty = invisible)"
+        },
+        "radius": {
+          "type": "number"
+        },
+        "lifetime": {
+          "type": "number",
+          "description": "seconds (0 = inherit from spawn spell / permanent)"
+        },
+        "targetInterval": {
+          "type": "number",
+          "description": "seconds between applications"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "max simultaneous instances (0 = unlimited)"
+        },
+        "spell": {
+          "type": "string",
+          "description": "ref -> SPEL applied periodically"
+        },
         "flags": {
           "type": "array",
-          "items": { "enum": [ "AffectsPlayerOnly", "InheritDurationFromSpawnSpell", "AlignToImpactNormal", "InheritRadiusFromSpawnSpell", "DropToGround" ] }
+          "items": {
+            "enum": [
+              "AffectsPlayerOnly",
+              "InheritDurationFromSpawnSpell",
+              "AlignToImpactNormal",
+              "InheritRadiusFromSpawnSpell",
+              "DropToGround"
+            ]
+          }
         },
-        "light": { "type": "string" },
-        "sound": { "type": "string" },
-        "imageSpaceModifier": { "type": "string" },
-        "impactDataSet": { "type": "string" }
+        "light": {
+          "type": "string"
+        },
+        "sound": {
+          "type": "string"
+        },
+        "imageSpaceModifier": {
+          "type": "string"
+        },
+        "impactDataSet": {
+          "type": "string"
+        }
       }
     },
     "explosion": {
@@ -4293,32 +4519,92 @@
     },
     "identity": {
       "type": "object",
-      "required": [ "id", "faction" ],
+      "required": [
+        "id",
+        "faction"
+      ],
       "description": "A lightweight identity/class the player can hold. `faction` is the persistent held-signal FACT (a bare in-spec editorId is auto-built, or an external <master>:0xID is used as-is). `priority` decides which identity wins as the primary greeting.",
       "properties": {
-        "id": { "type": "string", "minLength": 1, "description": "the tag used by identity/primaryIdentity dialogue gates" },
-        "faction": { "$ref": "#/$defs/ref", "description": "the holding FACT — built if it's a bare in-spec editorId, else an external faction ref" },
-        "priority": { "type": "integer", "default": 0, "description": "higher wins as the primary greeting identity" },
-        "grants": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "SPELs/abilities added on join, removed on leave" },
-        "grantPerks": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "description": "PERKs added on join, removed on leave (e.g. a conditional smite-vs-undead perk); the acquire book grants the first, a default identity grants all" },
-        "toggle": { "type": "boolean", "default": false, "description": "reading the acquire book again removes the identity" },
-        "default": { "type": "boolean", "default": false, "description": "every player holds this from the start (baseline) — auto-granted by a StartGameEnabled quest (MFIdentityDefault)" },
-        "activeWhen": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "description": "situational CTDA that NARROW when the identity counts as active (e.g. WornHasKeyword/GetBaseActorValue/GetRelationshipRank/GetGlobalValue for reputation); each runs on the PLAYER unless it sets a non-default runOn" },
-        "acquireBook": { "$ref": "#/$defs/ref", "description": "a BOOK whose OnRead grants/toggles this identity (MFIdentityBook)" },
-        "acquireText": { "type": "string", "description": "optional yes/no MessageBox prompt shown on read" },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "the tag used by identity/primaryIdentity dialogue gates"
+        },
+        "faction": {
+          "$ref": "#/$defs/ref",
+          "description": "the holding FACT — built if it's a bare in-spec editorId, else an external faction ref"
+        },
+        "priority": {
+          "type": "integer",
+          "default": 0,
+          "description": "higher wins as the primary greeting identity"
+        },
+        "grants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          },
+          "description": "SPELs/abilities added on join, removed on leave"
+        },
+        "grantPerks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          },
+          "description": "PERKs added on join, removed on leave (e.g. a conditional smite-vs-undead perk); the acquire book grants the first, a default identity grants all"
+        },
+        "toggle": {
+          "type": "boolean",
+          "default": false,
+          "description": "reading the acquire book again removes the identity"
+        },
+        "default": {
+          "type": "boolean",
+          "default": false,
+          "description": "every player holds this from the start (baseline) — auto-granted by a StartGameEnabled quest (MFIdentityDefault)"
+        },
+        "activeWhen": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/condition"
+          },
+          "description": "situational CTDA that NARROW when the identity counts as active (e.g. WornHasKeyword/GetBaseActorValue/GetRelationshipRank/GetGlobalValue for reputation); each runs on the PLAYER unless it sets a non-default runOn"
+        },
+        "acquireBook": {
+          "$ref": "#/$defs/ref",
+          "description": "a BOOK whose OnRead grants/toggles this identity (MFIdentityBook)"
+        },
+        "acquireText": {
+          "type": "string",
+          "description": "optional yes/no MessageBox prompt shown on read"
+        },
         "onAcquire": {
           "type": "object",
           "description": "optional performance played when the identity is acquired",
-          "properties": { "scene": { "type": "string", "description": "a scene editorId started on acquire" } }
+          "properties": {
+            "scene": {
+              "type": "string",
+              "description": "a scene editorId started on acquire"
+            }
+          }
         },
         "autoGrantWhen": {
           "type": "object",
           "description": "auto-join this identity's faction once the player's ActorValue crosses a threshold (a poll controller reads GetActorValue; e.g. Dragonborn on DragonSouls>=1). Grants the faction signal only.",
           "properties": {
-            "actorValue": { "type": "string", "description": "the ActorValue name to read (e.g. \"DragonSouls\")" },
-            "threshold": { "type": "number", "default": 1, "description": "grant once GetActorValue(name) >= this" }
+            "actorValue": {
+              "type": "string",
+              "description": "the ActorValue name to read (e.g. \"DragonSouls\")"
+            },
+            "threshold": {
+              "type": "number",
+              "default": 1,
+              "description": "grant once GetActorValue(name) >= this"
+            }
           },
-          "required": [ "actorValue" ]
+          "required": [
+            "actorValue"
+          ]
         }
       }
     },
@@ -4357,88 +4643,240 @@
       "type": "object",
       "description": "Six-direction hemisphere ambient light (DALC) — the flat fill that brightens a dark room overall.",
       "properties": {
-        "xPlus":    { "$ref": "#/$defs/color", "description": "+X direction (east)" },
-        "xMinus":   { "$ref": "#/$defs/color", "description": "-X direction (west)" },
-        "yPlus":    { "$ref": "#/$defs/color", "description": "+Y direction (north)" },
-        "yMinus":   { "$ref": "#/$defs/color", "description": "-Y direction (south)" },
-        "zPlus":    { "$ref": "#/$defs/color", "description": "+Z direction (up/sky)" },
-        "zMinus":   { "$ref": "#/$defs/color", "description": "-Z direction (down/ground)" },
-        "specular": { "$ref": "#/$defs/color", "description": "specular highlight colour" },
-        "scale":    { "type": "number", "description": "overall DALC brightness multiplier (1.0 = neutral)" }
+        "xPlus": {
+          "$ref": "#/$defs/color",
+          "description": "+X direction (east)"
+        },
+        "xMinus": {
+          "$ref": "#/$defs/color",
+          "description": "-X direction (west)"
+        },
+        "yPlus": {
+          "$ref": "#/$defs/color",
+          "description": "+Y direction (north)"
+        },
+        "yMinus": {
+          "$ref": "#/$defs/color",
+          "description": "-Y direction (south)"
+        },
+        "zPlus": {
+          "$ref": "#/$defs/color",
+          "description": "+Z direction (up/sky)"
+        },
+        "zMinus": {
+          "$ref": "#/$defs/color",
+          "description": "-Z direction (down/ground)"
+        },
+        "specular": {
+          "$ref": "#/$defs/color",
+          "description": "specular highlight colour"
+        },
+        "scale": {
+          "type": "number",
+          "description": "overall DALC brightness multiplier (1.0 = neutral)"
+        }
       }
     },
     "lightingTemplate": {
       "type": "object",
-      "required": [ "editorId" ],
+      "required": [
+        "editorId"
+      ],
       "description": "LightingTemplate (LGTM): reusable interior lighting authored by copying a vanilla LGTM then overriding fields. All colour/float fields are optional (null = keep the template value).",
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
         "template": {
           "type": "string",
           "description": "optional vanilla LGTM to DeepCopy as base ('<master>:0xFORMID', e.g. Skyrim.esm:0x0300E2 = DefaultLightingTemplate)"
         },
-        "ambientColor":          { "$ref": "#/$defs/color", "description": "flat ambient fill color (RGB 0-255)" },
-        "directionalColor":      { "$ref": "#/$defs/color", "description": "directional light color (RGB 0-255)" },
-        "directionalRotationXY": { "type": "integer", "description": "directional light XY rotation (degrees)" },
-        "directionalRotationZ":  { "type": "integer", "description": "directional light Z rotation (degrees)" },
-        "directionalFade":       { "type": "number",  "description": "directional light fade multiplier" },
-        "fogNearColor":          { "$ref": "#/$defs/color", "description": "near fog color" },
-        "fogFarColor":           { "$ref": "#/$defs/color", "description": "far fog color" },
-        "fogNear":               { "type": "number",  "description": "near fog distance" },
-        "fogFar":                { "type": "number",  "description": "far fog distance" },
-        "fogMax":                { "type": "number",  "description": "maximum fog opacity (0-1)" },
-        "fogClipDistance":       { "type": "number",  "description": "fog clip distance" },
-        "fogPower":              { "type": "number",  "description": "fog power (density curve)" },
-        "lightFadeStart":        { "type": "number",  "description": "distance at which lights start to fade" },
-        "lightFadeEnd":          { "type": "number",  "description": "distance at which lights fully fade" },
-        "directionalAmbient":    { "$ref": "#/$defs/ambientColors", "description": "DALC six-direction hemisphere fill" }
+        "ambientColor": {
+          "$ref": "#/$defs/color",
+          "description": "flat ambient fill color (RGB 0-255)"
+        },
+        "directionalColor": {
+          "$ref": "#/$defs/color",
+          "description": "directional light color (RGB 0-255)"
+        },
+        "directionalRotationXY": {
+          "type": "integer",
+          "description": "directional light XY rotation (degrees)"
+        },
+        "directionalRotationZ": {
+          "type": "integer",
+          "description": "directional light Z rotation (degrees)"
+        },
+        "directionalFade": {
+          "type": "number",
+          "description": "directional light fade multiplier"
+        },
+        "fogNearColor": {
+          "$ref": "#/$defs/color",
+          "description": "near fog color"
+        },
+        "fogFarColor": {
+          "$ref": "#/$defs/color",
+          "description": "far fog color"
+        },
+        "fogNear": {
+          "type": "number",
+          "description": "near fog distance"
+        },
+        "fogFar": {
+          "type": "number",
+          "description": "far fog distance"
+        },
+        "fogMax": {
+          "type": "number",
+          "description": "maximum fog opacity (0-1)"
+        },
+        "fogClipDistance": {
+          "type": "number",
+          "description": "fog clip distance"
+        },
+        "fogPower": {
+          "type": "number",
+          "description": "fog power (density curve)"
+        },
+        "lightFadeStart": {
+          "type": "number",
+          "description": "distance at which lights start to fade"
+        },
+        "lightFadeEnd": {
+          "type": "number",
+          "description": "distance at which lights fully fade"
+        },
+        "directionalAmbient": {
+          "$ref": "#/$defs/ambientColors",
+          "description": "DALC six-direction hemisphere fill"
+        }
       }
     },
     "imageSpace": {
       "type": "object",
-      "required": [ "editorId" ],
+      "required": [
+        "editorId"
+      ],
       "description": "ImageSpace (IMGS): screen-space HDR / cinematic / tint base record attached to a CELL (distinct from IMAD which is a runtime modifier). Copy a vanilla IMGS via `template` then bump.",
       "properties": {
-        "editorId": { "type": "string", "minLength": 1 },
+        "editorId": {
+          "type": "string",
+          "minLength": 1
+        },
         "template": {
           "type": "string",
           "description": "optional vanilla IMGS to DeepCopy as base ('<master>:0xFORMID')"
         },
-        "eyeAdaptSpeed":          { "type": "number", "description": "HDR: how fast eye adapts to brightness changes" },
-        "eyeAdaptStrength":       { "type": "number", "description": "HDR: eye adaptation strength" },
-        "bloomBlurRadius":        { "type": "number", "description": "HDR: bloom blur radius" },
-        "bloomThreshold":         { "type": "number", "description": "HDR: brightness threshold before bloom applies" },
-        "bloomScale":             { "type": "number", "description": "HDR: bloom intensity scale" },
-        "receiveBloomThreshold":  { "type": "number", "description": "HDR: threshold for receiving bloom" },
-        "white":                  { "type": "number", "description": "HDR: white point (overexposure clamp); >1.0 makes it feel washed-out bright" },
-        "sunlightScale":          { "type": "number", "description": "HDR: sunlight scale multiplier" },
-        "skyScale":               { "type": "number", "description": "HDR: sky brightness scale" },
-        "brightness":             { "type": "number", "description": "cinematic brightness (1.0=neutral, >1 = brighter)" },
-        "contrast":               { "type": "number", "description": "cinematic contrast (1.0=neutral)" },
-        "saturation":             { "type": "number", "description": "cinematic saturation (1.0=neutral, >1 = vivid)" },
-        "tintAmount":             { "type": "number", "description": "tint blend factor (0 = no tint)" },
-        "tintColor":              { "$ref": "#/$defs/color", "description": "tint color" }
+        "eyeAdaptSpeed": {
+          "type": "number",
+          "description": "HDR: how fast eye adapts to brightness changes"
+        },
+        "eyeAdaptStrength": {
+          "type": "number",
+          "description": "HDR: eye adaptation strength"
+        },
+        "bloomBlurRadius": {
+          "type": "number",
+          "description": "HDR: bloom blur radius"
+        },
+        "bloomThreshold": {
+          "type": "number",
+          "description": "HDR: brightness threshold before bloom applies"
+        },
+        "bloomScale": {
+          "type": "number",
+          "description": "HDR: bloom intensity scale"
+        },
+        "receiveBloomThreshold": {
+          "type": "number",
+          "description": "HDR: threshold for receiving bloom"
+        },
+        "white": {
+          "type": "number",
+          "description": "HDR: white point (overexposure clamp); >1.0 makes it feel washed-out bright"
+        },
+        "sunlightScale": {
+          "type": "number",
+          "description": "HDR: sunlight scale multiplier"
+        },
+        "skyScale": {
+          "type": "number",
+          "description": "HDR: sky brightness scale"
+        },
+        "brightness": {
+          "type": "number",
+          "description": "cinematic brightness (1.0=neutral, >1 = brighter)"
+        },
+        "contrast": {
+          "type": "number",
+          "description": "cinematic contrast (1.0=neutral)"
+        },
+        "saturation": {
+          "type": "number",
+          "description": "cinematic saturation (1.0=neutral, >1 = vivid)"
+        },
+        "tintAmount": {
+          "type": "number",
+          "description": "tint blend factor (0 = no tint)"
+        },
+        "tintColor": {
+          "$ref": "#/$defs/color",
+          "description": "tint color"
+        }
       }
     },
     "cellLighting": {
       "type": "object",
       "description": "Inline XCLL per-cell lighting overrides. Fields left null are inherited from the cell's lightingTemplate according to the `inherit` flags.",
       "properties": {
-        "ambientColor":          { "$ref": "#/$defs/color" },
-        "directionalColor":      { "$ref": "#/$defs/color" },
-        "directionalRotationXY": { "type": "integer" },
-        "directionalRotationZ":  { "type": "integer" },
-        "directionalFade":       { "type": "number" },
-        "fogNearColor":          { "$ref": "#/$defs/color" },
-        "fogFarColor":           { "$ref": "#/$defs/color" },
-        "fogNear":               { "type": "number" },
-        "fogFar":                { "type": "number" },
-        "fogMax":                { "type": "number" },
-        "fogClipDistance":       { "type": "number" },
-        "fogPower":              { "type": "number" },
-        "lightFadeBegin":        { "type": "number", "description": "distance at which lights start to fade (XCLL uses Begin/End, LGTM uses Start/End)" },
-        "lightFadeEnd":          { "type": "number" },
-        "directionalAmbient":    { "$ref": "#/$defs/ambientColors" },
+        "ambientColor": {
+          "$ref": "#/$defs/color"
+        },
+        "directionalColor": {
+          "$ref": "#/$defs/color"
+        },
+        "directionalRotationXY": {
+          "type": "integer"
+        },
+        "directionalRotationZ": {
+          "type": "integer"
+        },
+        "directionalFade": {
+          "type": "number"
+        },
+        "fogNearColor": {
+          "$ref": "#/$defs/color"
+        },
+        "fogFarColor": {
+          "$ref": "#/$defs/color"
+        },
+        "fogNear": {
+          "type": "number"
+        },
+        "fogFar": {
+          "type": "number"
+        },
+        "fogMax": {
+          "type": "number"
+        },
+        "fogClipDistance": {
+          "type": "number"
+        },
+        "fogPower": {
+          "type": "number"
+        },
+        "lightFadeBegin": {
+          "type": "number",
+          "description": "distance at which lights start to fade (XCLL uses Begin/End, LGTM uses Start/End)"
+        },
+        "lightFadeEnd": {
+          "type": "number"
+        },
+        "directionalAmbient": {
+          "$ref": "#/$defs/ambientColors"
+        },
         "inherit": {
           "type": "array",
           "items": {
@@ -4462,12 +4900,26 @@
     },
     "voiceTemplate": {
       "type": "object",
-      "required": [ "id" ],
+      "required": [
+        "id"
+      ],
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
         "engine": {
           "type": "string",
-          "enum": [ "f5", "chatterbox", "gptsovits", "xtts", "fish-s2", "fish", "fishspeech", "fish-speech" ],
+          "enum": [
+            "f5",
+            "chatterbox",
+            "gptsovits",
+            "xtts",
+            "fish-s2",
+            "fish",
+            "fishspeech",
+            "fish-speech"
+          ],
           "default": "f5"
         },
         "referenceWav": {
@@ -4515,10 +4967,283 @@
         },
         "format": {
           "type": "string",
-          "enum": [ "fuz", "wav", "xwm" ],
+          "enum": [
+            "fuz",
+            "wav",
+            "xwm"
+          ],
           "default": "fuz"
         }
       }
+    },
+    "animationReplacer": {
+      "type": "object",
+      "required": [
+        "mod"
+      ],
+      "description": "OAR replacer-mod: root config {name,author,description} + named submods.",
+      "properties": {
+        "mod": {
+          "type": "string",
+          "description": "replacer-mod folder + config name"
+        },
+        "author": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "submods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/oarSubmod"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "oarSubmod": {
+      "type": "object",
+      "required": [
+        "name",
+        "priority"
+      ],
+      "description": "One OAR submod: config.json {name,description,priority,conditions[]} + shipped .hkx.",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "integer",
+          "description": "higher wins; required >0"
+        },
+        "replaces": {
+          "type": "string",
+          "description": "vanilla/MCO anim path being replaced (relative)"
+        },
+        "hkx": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "user-supplied clips (rel. to Assets/spec dir)"
+        },
+        "variants": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "optional; emitted under _variants_<anim>/"
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/oarCondition"
+          },
+          "description": "empty = applies always"
+        },
+        "npcMoveset": {
+          "$ref": "#/$defs/npcMoveset"
+        },
+        "replaceVanillaPath": {
+          "type": "boolean",
+          "description": "true: plain vanilla-path replacer (no config.json/conditions)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "oarCondition": {
+      "type": "object",
+      "required": [
+        "condition"
+      ],
+      "description": "One OAR condition (OAR JSON shape, not Skyrim CTDA names). AND/OR nest children in conditions[]. Form refs: 'Plugin.esp|0xFormID'.",
+      "properties": {
+        "condition": {
+          "type": "string",
+          "enum": [
+            "IsActorBase",
+            "IsEquippedType",
+            "IsFemale",
+            "IsRace",
+            "Random",
+            "CompareValues",
+            "AND",
+            "OR"
+          ]
+        },
+        "negated": {
+          "type": "boolean"
+        },
+        "form": {
+          "type": "string",
+          "description": "IsActorBase/IsRace: 'Plugin.esp|0xFormID'"
+        },
+        "type": {
+          "type": "integer",
+          "description": "IsEquippedType weapon-type enum"
+        },
+        "leftHand": {
+          "type": "boolean"
+        },
+        "graphVariable": {
+          "type": "string"
+        },
+        "graphVariableType": {
+          "type": "string",
+          "enum": [
+            "Int",
+            "Float",
+            "Bool"
+          ]
+        },
+        "comparison": {
+          "type": "string",
+          "enum": [
+            "==",
+            "!=",
+            ">",
+            ">=",
+            "<",
+            "<="
+          ]
+        },
+        "value": {
+          "type": "number"
+        },
+        "randomMin": {
+          "type": "number"
+        },
+        "randomMax": {
+          "type": "number"
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/oarCondition"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "npcMoveset": {
+      "type": "object",
+      "description": "Sugar: expands to the NPC-moveset condition recipe (IsEquippedType x2 + optional IsActorBase-not-player + IsRace + Random).",
+      "properties": {
+        "rightWeapon": {
+          "type": "string",
+          "description": "weapon-type name: fist/sword/dagger/waraxe/mace/greatsword/battleaxe/warhammer/bow/staff/crossbow/shield/torch"
+        },
+        "leftWeapon": {
+          "type": "string"
+        },
+        "playerOnly": {
+          "type": "boolean",
+          "description": "false adds IsActorBase not-player(Skyrim.esm|0x7)"
+        },
+        "race": {
+          "type": "string",
+          "description": "optional IsRace 'Plugin.esp|0xFormID'"
+        },
+        "randomPick": {
+          "type": "number",
+          "description": "optional Random{0..1} < randomPick"
+        }
+      },
+      "additionalProperties": false
+    },
+    "behaviorData": {
+      "type": "object",
+      "required": [
+        "file"
+      ],
+      "description": "BDI config (flat array) -> SKSE/Plugins/BehaviorDataInjector/<file>.json.",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "output filename stem"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/bdiEntry"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "bdiEntry": {
+      "type": "object",
+      "required": [
+        "type",
+        "name"
+      ],
+      "properties": {
+        "projectPath": {
+          "type": "string",
+          "default": "Actors"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "kInt",
+            "kBool",
+            "kFloat",
+            "kEvent"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number",
+          "description": "initial value; omitted in output for kEvent"
+        }
+      },
+      "additionalProperties": false
+    },
+    "payloadMacro": {
+      "type": "object",
+      "required": [
+        "file"
+      ],
+      "description": "PIE macro table -> SKSE/PayloadInterpreter/Config/<file>.ini.",
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "section": {
+          "type": "string"
+        },
+        "macros": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/pieMacro"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "pieMacro": {
+      "type": "object",
+      "required": [
+        "name",
+        "command"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "macro name (the $ is added on emit)"
+        },
+        "command": {
+          "type": "string",
+          "description": "payload command e.g. @SETGHOST|1"
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

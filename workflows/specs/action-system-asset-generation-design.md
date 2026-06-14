@@ -1,6 +1,6 @@
 # 動作系統 asset/config 生成設計（OAR / BDI / PIE）
 
-> 日期:2026-06-14 · 狀態:**草案（draft），待自審 → plan**
+> 日期:2026-06-14 · 狀態:**已自審，plan 落地中**（[plan](../plans/action-system-asset-generation.md)）。下方「待解」三項已收斂（見段末决定）。
 > 調查依據:[mod-survey/action-system/](../../sub_projs/mod-survey/action-system/)（五層堆疊 + 實檔驗證的 schema）。OAR 實作指南 §10 有更細的欄位雛形:[oar-replacer-guide.md](../../sub_projs/mod-survey/action-system/oar-replacer-guide.md)。
 > roadmap 對應項:OAR 生成、BDI config 生成（皆在 [roadmap](../roadmap.md)）。
 > 本文件只是設計成果,**不含實作**。
@@ -119,3 +119,9 @@ spec → ini 序列化:`{section, macros:[{name, command}]}`。命名巨集映�
 - **`.hkx` 交界**:本 generator 只擺檔,但需定義「使用者怎麼把成品 hkx 餵進來」（路徑?build 產物引用?）——與 havok-blender 管線的介面待定。
 - **DAR vs OAR 輸出**:是否值得維護雙輸出,或 OAR-only(legacy 用戶自行轉)。傾向 OAR-only MVP,DAR 列「之後」。
 - **三子生成器是否同一 spec 區塊**:目前設計讓 `animationReplacer`/`behaviorData`/`payloadMacros` 三個 top-level key 共存於一個 mod spec,共享 form 命名。自審時確認這個邊界。
+
+## 自審收斂（2026-06-14，plan Task 0）
+
+1. **框架 = OAR-mod-centric**（採 `AnimationReplacers[].submods[]`，非 idea §8 的 clip-centric `animations[]`）：一個 replacer-mod 多 submod 共享動畫，貼合實檔（Holmgang/NAMC）且 moveset 天生多 submod。`ship:"replacer"`（vanilla-path 直擺）降為 submod 的 `replaceVanillaPath` flag（無 conditions、不產 config，直接擺 vanilla 路徑）。
+2. **OAR 條件 = 專屬 `OarConditionSpec`，不重用 `ConditionSpec`**：OAR 條件名（`IsActorBase`/`IsEquippedType`/`IsFemale`/`IsRace`/`Random`/`CompareValues`）與 Skyrim CTDA function 名（`GetIsID`/`GetEquippedItemType`…）不一致，硬映射 lossy。只重用 comparison-operator 解析慣例與 form-ref 字串格式（`Plugin.esp|0xFormID`）。MVP 條件集 = 上述六種 + 巢狀 `AND`/`OR` 容器 + `negated`。
+3. **`.hkx` 介面 = 只擺使用者預先匯出的 `.hkx`**：路徑來自 submod 的 `hkx`/`variants` 欄位（相對 `spec.Assets` 或 spec 目錄）。Blender→hkx 匯出牆與 `importanim` shell-out **明列「之後」**（見 idea §8/§9）。
