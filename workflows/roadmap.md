@@ -13,6 +13,10 @@
 - **Scene 演出續做**：PlayIdle / 手勢動畫；camera shot（VIGILANT 證明可延後）。
 - **多解 SM 事件**（SkillIncrease/Jail/Bribe…，須 conditions 才安全，見 [[dispatcher-magic-trigger]]）。
 - **新 record**：Imagespace / Word of Power 等。（Music + Hazard 已落地，見 [feature-dev/landed](feature-dev/landed/README.md)。）
+- **自訂技能樹生成（Custom Skills Framework / CSF）** — 讓 ModForge 從 spec 生成一棵自訂技能樹（VIGILANT/GLENMORIL/Constellations 同款）。研究已完成：分析見 [mod-survey/custom-skills-framework.md](../sub_projs/mod-survey/custom-skills-framework.md)，實作指南見 [mod-survey/custom-skill-tree-guide.md](../sub_projs/mod-survey/custom-skill-tree-guide.md)。
+  - **MVP scope**：esp 端＝PERK（既有 perk 支援可重用，注意 [[perk-conditiontabcount-ctd]]）+ 3 個 GLOB（level/ratio/legendary）+ Advance/Book/Workbench KYWD；資產端＝產生器輸出 `Data/SKSE/Plugins/CustomSkills/<X>.json`（form-ref 用 `"Plugin.esp|FormId"`，與 ModForge FormId 流程契合）+ 可選 `SKILLS.json`（掛進原版技能頁）+ 一支 init alias script + 訓練 TIF。
+  - **進階（後排）**：Fortify-skill 附魔/藥水支援需 `ActorValueData/*.toml` + 原生 SKSE plugin（純 esp+json 做不到）。
+  - **下一步**：idea → 寫 [spec](specs/README.md)（spec 欄位長相草案已在指南 §10），再 plan → build。
 
 ## 結構／工具
 
