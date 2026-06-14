@@ -33,4 +33,9 @@
 
 **MO2 重裝會還原手動塞的檔**：手動 patch 進 MO2 mod 夾的檔，從 zip 重裝會復原成 build-time mtime → 測前 md5/mtime 確認受測檔是新的（memory `mo2-reinstall-reverts-manual-pex`）。
 
-**待測（active）**：（目前無——全部已確認移除；歷史見 [workflows/feature-dev/landed.md](workflows/feature-dev/landed/README.md) 與 git log）
+**待測（active）**
+
+- **Sofia × VIGILANT 第一幕（2026-06-14）** — 交付 `~/skyrim_mods/mine/SofiaVigilantAct1/`（FLAT mod 夾：esp + Scripts/*.pex + Seq + Sound/Voice）。內容：18 條 Sofia 對話（玩家找她聊）涵蓋 1-A~1-K + Bruiant/Hag's Pond 兩個地點感想，含克隆語音（F5）。spec＝`examples/sofia_vigilant_act1.json`，臺詞＝`sub_projs/sofia-patch/vigilant-screenplay/act1-警戒者.md`。
+  - **怎麼測**：裝 SofiaFollower + Vigilant + 本 mod（本 mod 排兩者之後）；新遊戲或 save+reload 吃 `.seq`；招募 Sofia 跟隨；跑 VIGILANT 第一幕，到各 beat 後**對 Sofia 按對話鍵**看是否浮現對應選項、語音是否播放、嘴型是否動。
+  - **重點要回報的（gate 語意離線無法確定，全靠你實測）**：① 哪些 beat 的選項**根本沒出現**（代表那條 VIGILANT stage gate 猜錯——日文 log 空白，我只能挑存在的 stage 號：1-E/1-G 用 GetQuestRunning、1-F=Mq07 s40、1-H 殺=SubQ01 s20/放=s10、1-I=SubQ01 s30、1-J 殺=MqGoodEnd s29/放=s20、1-K=MqGoodEnd s30）；② 殺/放分支是否對應正確（殺女巫卻跳出「放過」台詞＝stage 對調）；③ 語音是否正常播放（不是靜音）、嘴型是否動。
+  - **已知**：1-B/1-K/Bruiant/Hag's Pond 設計上是「環境吐槽自動插話」，但目前實作成「玩家可問」（auto-banter 需 override Sofia NPC record，屬後續）。
