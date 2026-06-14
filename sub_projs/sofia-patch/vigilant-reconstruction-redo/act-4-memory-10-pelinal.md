@@ -83,7 +83,7 @@ Host-quest aliases from `scenediag`:
 Notes:
 - Alias `#7` is not present in the roster (gap between `#6` and `#8`); not an error in this dump, the QUST simply has no alias `#7`.
 - `Bal` (alias `#2`, the talking Molag Bal who runs the custom branches) is filled from NPC `zzzCHBardMemoryPelinal` — an inference about the engine: the same actor record (`2A4000`) doubles as the in-memory Molag Bal avatar; the throne-sitting Molag Bal is a separate record [`2A7A0A`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:797) used as alias `#10` `MolagBal` (the `BasScene` voice). (inference)
-- `GetIsID` object `2A5346` is the conditioning record for the **Umaril** dialogue branch (alias-less; `GetIsID == 2A5346`). It does not resolve to a row in `npcs.tsv`; treated as the in-memory Umaril speaker record. (inference — needs a direct ESM NPC dump of `2A5346`.)
+- `GetIsID` object `2A5346` — **RESOLVED**: is `TalkingActivator zzzCHTalkingActivatorUmaril "Umaril"`, not an NPC. Its placed instance is REFR `2A5347 CHMeq10UmarilTARef` (forcedRef for alias `#8 UmarilTA`), position (0, 3248, −2160) in the memory interior. The TA delivers the pre-boss Umaril dialogue; the combat NPC is alias `#0` `2955ED zzzCHBossUmaril`. Source: CLI `dump | grep 2A5346`, `refpos 0x2A5347`.
 - `Korn` (alias `#5`) is Pelinal's dog: every Korn INFO is `(Bark)` / `(Whine)`.
 
 Trigger:
@@ -266,15 +266,114 @@ Stage-varying greetings in ONE Hello topic (precedence by order — see repo mem
 
 Note: `Splended` = "Splendid" (拼字錯誤，已照語意翻).
 
-## 180 vs 300 — Branch Outcome Map
+## TIF Fragment Routing — RESOLVED
 
-Both completions are unconditional `CompleteQuest` stage logs (no conditions on the stage), so polarity is read off the **dialogue/scene content reachable on each band**, not off `questdiag`.
+All 8 TIF (`CHMeq10_TIF__02<INFO>`) fragments decompiled from `_bsa-psc-cache/`. Each contains a single `GetOwningQuest().SetStage(N)` call.
 
-- **Stage 180 = the MERCY / "good" completion.** The spare-Mary chain runs entirely in the 130-180 band: Mary branch (`2A66A6`, stage 130) → Korn "secure her" (`2A66B3`, stage 140) → Bal's "you didn't kill her?" reaction (`2A66BE`, stage 160) → complete at 180. The `GoodScene` (`2A66C6`, Pelinal's peace/Kyne's-wind monologue) is the EditorID-named "Good" scene and resolves this arc. **(Polarity: mercy/good — strongly supported by EditorID `GoodScene` + the spare-Mary dialogue.)**
-- **Stage 300 = the alternate / "bad" (kill-Mary) completion.** The 190-330 band (stages 190, 300, 310, 320, 330) has **no owned custom-dialogue topics** in `infodiag` — it is driven by stage fragments / packages only (e.g. `zzzCHMeq10PelinalWalkToDie`, `zzzCHMeq10PelinalMeditate`). This is the branch the player reaches by killing Mary at the Bal-04 choice (stage 115), bypassing the Mary/Korn-02/Bal-05 mercy chain. The `BasScene` (`2AA092`, EditorID `BasScene` — inference: "Bad/Base") narrates Molag Bal's grim recounting of Pelinal's historical massacre and dismemberment, fitting the darker outcome. **(Polarity: kill/bad — inference from EditorID `BasScene`, the empty-dialogue 190-330 band, and the kill-routed package names; not as firmly pinned as 180 because no kill-path dialogue exists to quote.)**
+| PSC file | INFO | Branch + prompt | SetStage |
+|---|---|---|---|
+| `chmeq10_tif__022a5339.psc` | `2A5339` | KornB01T02 "Get out, do not bother me" | **32** |
+| `chmeq10_tif__022a5352.psc` | `2A5352` | UmarilB01T03 "Come on. I am here to kill you" | **80** |
+| `chmeq10_tif__022a5361.psc` | `2A5361` | BalB02T01 "What is your purpose?" | **100** |
+| `chmeq10_tif__022a6693.psc` | `2A6693` | BalB03T02 "Nauseating. Follow me." | **110** |
+| `chmeq10_tif__022a669e.psc` | `2A669E` | BalB04T05 "Get out" | **120** → spare-Mary path |
+| `chmeq10_tif__022a66ac.psc` | `2A66AC` | MaryB01T03 "Here, we go" | **140** |
+| `chmeq10_tif__022a66b7.psc` | `2A66B7` | KornB02T02 "Secure her" | **150** |
+| `chmeq10_tif__022a66c2.psc` | `2A66C2` | BalB05T02 "Decision is for life in future" | **170** |
 
-Inference on routing:
-- The **Bal-04 choice** (`2A6694`, stage 115) is the fork. Choosing mercy advances toward stage 130 (Mary branch) → 180. Choosing to kill skips to the 190+ band → 300. Exact stage-set logic lives in the VMAD `OnEnd` fragments (`CHMeQ10_TIF__022A669E` on "Get out", and the stage fragments), which are not decompiled here. (inference)
+Source: PSC files in `_bsa-psc-cache/`.
+
+Two SCEN fragments also set stages:
+- `sf_zzzchmeq10goodscene_022a66c6.psc` Fragment_0: `GetOwningQuest().SetStage(180)` (GoodScene complete → CompleteQuest)
+- `sf_zzzchmeq10basscene_022aa092.psc` Fragment_0: `GetOwningQuest().SetStage(320)` (BasScene complete → post-bad cleanup)
+
+## 180 vs 300 — Branch Outcome Map — RESOLVED
+
+Both completions are unconditional `CompleteQuest` stage logs. The TIF chain above pins the routing exactly.
+
+### Spare-Mary (Good) path — stage 180 CompleteQuest
+
+Full stage chain (dialogue-driven legs shown; stage fragment actions in parentheses):
+
+```
+0(start) → 10 → 20 → 30 → 32[Korn pkg] → 34[Korn disable]
+→ 40s[Auroran battle band] → 50[Prey combat] → 60/62/64[wave gates]
+→ 70[UmarilTA trigger] → 80[Umaril boss fight](TIF:022A5352)
+→ 90[Bal appears] → BalB01 hello + BalB02 dialogue
+→ 100[door opens](TIF:022A5361) → 105[Prey/Umaril disable]
+→ BalB03 artwork dialogue → 110[Mary Health=5, Bal leaves, UnlockTrigger.Enable](TIF:022A6693)
+→ 115[UnlockTrigger.Disable, Mary.Essential=true]
+→ BalB04 dialogue → "Get out"(TIF:022A669E)
+→ 120[Korn to Tower02, Mary pkg, time=17:00]
+→ MaryB01(stage 130) → "Here we go"(TIF:022A66AC)
+→ 140[Mary/Korn pkg, door disable]
+→ KornB02(stage 140) → "Secure her"(TIF:022A66B7)
+→ 150[Bal farewell appear]
+→ BalB05(stage 160) → "Decision is for life"(TIF:022A66C2)
+→ 170 → 175[GoodScene.ForceStart, MusGood.Add]
+→ GoodScene plays → SF.Fragment_0 → 180(CompleteQuest)
+→ [KyneFeather added, player returns to ReturnMarker] → 190(stop)
+```
+
+**Good-path reward:** `MiscObject KyneFeather` added at stage 180 begin (`QF Fragment_47` in `qf_zzzchmemoryquest10_022a532e.psc`). Spell `AdaBlood` removed. Quest stops at 190.
+
+Hub notification: **not triggered on this path** — `qGuide.SetStage(100)` only fires on the kill path (stage 330, see below). GoodScene `EditorID` confirms polarity.
+
+**(Polarity: mercy/good — CONFIRMED. Source: TIF chain + `sf_zzzchmeq10goodscene_022a66c6.psc` + `qf_zzzchmemoryquest10_022a532e.psc` Fragment_47/49/75.)**
+
+### Kill-Mary (Bad) path — stage 300 CompleteQuest
+
+The kill fork is triggered by `UnlockTrigerRef` — an in-world trigger/activator enabled at stage 110 (`UnlockTrigerRef.Enable()` in QF Fragment_35) and disabled at stage 115 (`UnlockTrigerRef.Disable()` in QF Fragment_37). If the player activates `UnlockTrigerRef` during the stage 110–115 window (before choosing "Get out" in BalB04), Mary (Health=5, Essential=false at that moment) is killed and the quest routes to the kill band. (inference — `UnlockTrigerRef` script not in cache; staging inferred from QF Fragment_35/37.)
+
+```
+...(shared up to stage 110)
+→ UnlockTrigerRef activated (Mary killed)
+→ stage 300(CompleteQuest): [BadEndMarker.Enable, PelinalTA.Enable, MolagBal.Enable]
+→ stage 310: BadScene.ForceStart, MusBad.Add, RegisterSceneSkip(self, BadScene, 320, True)
+→ BasScene plays → SF.Fragment_0 → 320
+→ stage 320: [ImpaleActRef.Enable, player fade, player returns to ReturnMarker] → SetStage(330)
+→ stage 330: qGuide.SetStage(100), kmyQuest.ModRadiance(3.0)
+```
+
+**Bad-path reward:** `ModRadiance(3.0)` at stage 330 (`QF Fragment_76`). No KyneFeather. `qGuide.SetStage(100)` triggers the `zzzCHMemoryGuide` hub to mark Dream10 completed and advance Song-of-Pelinal objective 100 → display 110 (see hub section below).
+
+**(Polarity: kill/bad — CONFIRMED by `;;BadEnd` comment in QF + package names `zzzCHMeq10PelinalWalkToDie` / `zzzCHMeq10PelinalMeditate` + hub notification only on this branch. Source: `qf_zzzchmemoryquest10_022a532e.psc` Fragment_51/53/55/76.)**
+
+### Umaril TA speaker — RESOLVED
+
+`GetIsID == 2A5346` (Umaril dialogue branch condition) resolves to:
+- **`2A5346 TalkingActivator zzzCHTalkingActivatorUmaril "Umaril"`** — a placed TA (`CHMeq10UmarilTARef`, REFR `2A5347`, position (0, 3248, −2160) in cell interior). Not an NPC; `npcdiag` returns "not an Npc" as expected for a TA record type. The alias `#8 UmarilTA` is filled via `forcedRef 2A5347` (the placed instance). The TA delivers the pre-boss Umaril confrontation dialogue without being the combat NPC (`2955ED zzzCHBossUmaril` is the combat actor on alias `#0`).
+
+Source: `infodiag 0x2A534D` (GetIsID condition text), `refpos 0x2A5347` (base=2A5346), `dump | grep 2A5346` (type=TalkingActivator, EditorID=zzzCHTalkingActivatorUmaril).
+
+### Song-of-Pelinal hub — RESOLVED
+
+`zzzCHMemoryGuide 0x42E0B1` hub script (`qf_zzzchmemoryguide_0242e0b1.psc`):
+
+Hub startup Fragment_0 (`;;3 Song of Pelinal` comment block):
+```papyrus
+If !Dream10.IsCompleted()
+  SetObjectiveDisplayed(100)
+elseif !Dream11.IsCompleted()
+  SetObjectiveDisplayed(110)
+elseif !Dream12.IsCompleted()
+  SetObjectiveDisplayed(120)
+endif
+```
+
+MeQ10 (Dream10) finish triggers Fragment_20 (hub stage index for Dream10 finished):
+```papyrus
+SetObjectiveCompleted(100)
+SetObjectiveDisplayed(110)
+```
+
+The call `qGuide.SetStage(100)` in MeQ10's QF Fragment_76 (stage 330) is what fires Fragment_20 on the hub quest.
+
+Hub aliases: `Alias_DreamPelinal`, `Alias_DreamAlessia`, `Alias_DreamBull` (DreamPelinal = alias for MeQ10 actor; DreamAlessia/Bull = MeQ12 candidates — inference, hub alias fill not CLI-verified).
+
+Karma / Radiance global: MeQ10 Fragment_76 calls `kmyQuest.ModRadiance(3.0)` (cast as `AoMAchievementPointQuestScript`). This is a **3.0 radiance increment** on the bad (kill-Mary) outcome only. Good outcome gives `KyneFeather` item; no Radiance increment. The karma global `0x020B19F4 zzzCHKarma` from the index is separate from this Radiance call — Radiance is on the `AoM` achievement script; `zzzCHKarma` global is not referenced in MeQ10's PSC fragments (unverified: may be used by hub completion logic elsewhere).
+
+Source: `qf_zzzchmemoryguide_0242e0b1.psc` Fragment_0/Fragment_20, `qf_zzzchmemoryquest10_022a532e.psc` Fragment_76.
 
 ## Related Records
 
@@ -306,13 +405,20 @@ Source-grounded:
 - This memory is [`2A532E zzzCHMemoryQuest10 "Pelinal the Bloody"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401): 40 stages, `StartUpStage` at 0, `CompleteQuest` at 180 and 300, `ShutDownStage` at 999, **no objective text**.
 - It contains **2 `SCEN` records**: `2A66C6 GoodScene` (9 phases, 12 actions, Pelinal's peace monologue) and `2AA092 BasScene` (6 phases, Molag Bal narrating Pelinal's massacre while Pelinal echoes the monologue).
 - It contains **9 custom `DialogBranch` records + 1 Hello topic**, alias-gated: Korn (dog) ×2, Umaril ×1, Bal (Molag Bal) ×5, Mary ×1. The **Bal-04 branch (stage 115)** is the kill-or-spare fork over **Mary**, Umaril's pregnant slave.
-- The mercy path (spare Mary) runs stages 130-180 with the Mary/Korn-02/Bal-05 branches and completes at **180** (`GoodScene`). The kill path runs the empty-dialogue 190-330 band and completes at **300** (`BasScene`).
-- VMAD `OnEnd` fragments (`CHMeq10_TIF__02<INFO>`) on the `Goodbye`/decision INFOs drive stage advancement; exact Papyrus not decoded here.
+- The mercy path (spare Mary) runs stages 120–180 with the Mary/Korn-02/Bal-05 branches and completes at **180** (`GoodScene`); reward = `KyneFeather` item. The kill path is triggered by `UnlockTrigerRef` activator (enabled stage 110, disabled stage 115), routes through stages 300–330 (`BasScene`); reward = `ModRadiance(3.0)`.
+- All 8 TIF `OnEnd` fragments decoded from `_bsa-psc-cache/`; each sets exactly one stage. SCEN fragments set stages 180 (Good) and 320 (Bad). Full chain documented above in "TIF Fragment Routing".
+- `2A5346` confirmed as `TalkingActivator zzzCHTalkingActivatorUmaril "Umaril"` (TA, not NPC) via CLI `dump` + `refpos 0x2A5347`.
+- `4DEF09 zzzCHMeq10GateTrigger "Gate"` confirmed as `Activator` type via CLI `find`. Start-hook script not in PSC cache; exact start mechanism (unverified: likely activates the Stage 0 fragment or a Story Manager event).
+- Hub integration confirmed via `qf_zzzchmemoryguide_0242e0b1.psc`: hub alias `Dream10` = MeQ10; kill path stage 330 calls `qGuide.SetStage(100)` → hub Fragment_20 fires → objective 100 completed, objective 110 displayed.
+- `BasScene` EditorID confirmed as "Bad Scene" by the `;;BadEnd` comment in QF Fragment_51 and the `BadEndMarker`/`PelinalTA`/`MolagBal` enable sequence.
 
-Open verification:
-- Decompile/inspect the TIF fragments (`CHMeq10_TIF__022A5339`, `022A5352`, `022A5361`, `022A6693`, `022A669E`, `022A66AC`, `022A66B7`, `022A66C2`) to confirm which one sets the kill-vs-spare stage path (pin the 180/300 routing exactly).
-- Dump NPC record `2A5346` (the Umaril branch `GetIsID` object) — not found in `npcs.tsv`; confirm it is the in-memory Umaril speaker.
-- Confirm `BasScene` EditorID expansion ("Bad"/"Base") and that the 190-330 band is the kill-Mary outcome (currently inferred from EditorID + empty-dialogue band + `PelinalWalkToDie`/`PelinalMeditate` package names).
-- Dump the QUST aliases/targets and the `4DEF09 zzzCHMeq10GateTrigger` activator + start hook to confirm the trigger and the `UmarilTA`/`PelinalTA` forcedRef placements.
-- Inspect cells/refs for the White-Gold Tower memory (`295516`) and Mythic Place (`0243F1`) if spatial staging matters.
+Open verification (remaining):
+- RESOLVED: TIF routing chain — all 8 TIFs decoded; spare path confirmed SetStage(120)→180, kill path via UnlockTrigerRef → 300→330. (Source: `_bsa-psc-cache/` PSC files + QF script.)
+- RESOLVED: `2A5346` = `TalkingActivator zzzCHTalkingActivatorUmaril "Umaril"` (not NPC). (Source: CLI dump + refpos.)
+- RESOLVED: `BasScene` = "Bad Scene"; 300–330 band confirmed as kill-Mary outcome via `;;BadEnd` comment + `BadEndMarker`/`PelinalTA`/`MolagBal` enable logic. (Source: `qf_zzzchmemoryquest10_022a532e.psc` Fragment_51.)
+- RESOLVED: Hub objective routing — MeQ10 kill-path stage 330 triggers `qGuide.SetStage(100)` → `SetObjectiveCompleted(100)` + `SetObjectiveDisplayed(110)`. Good path (stage 180 stop) does **not** call `qGuide.SetStage(100)`; hub completion via good path relies on `Dream10.IsCompleted()` polling in the hub startup fragment. (Source: QF Fragment_76 + hub PSC Fragment_0/Fragment_20.)
+- PARTIALLY RESOLVED: `4DEF09 zzzCHMeq10GateTrigger` confirmed as `Activator` type; its VMAD script (that starts quest stage 0) is not in PSC cache and cannot be decoded here. (unverified: start-hook mechanism.)
+- UNRESOLVED: `UmarilTA` alias `#8` forcedRef `2A5347` position confirmed (0, 3248, −2160), but its spatial relationship to the dialogue staging area is not verified. `PelinalTA` alias `#11` forcedRef `2AA091` — `refpos 0x2AA091` not run; position unverified.
+- UNRESOLVED: `UnlockTrigerRef` object identity (FormID, EditorID, type) — referenced in QF script but not found via `find` in cache; exact kill trigger mechanism and script are not in PSC cache.
 - The deferred scene-package movement actions (GoodScene actions 1, 2, 7, 8, 9 = `Package` with no topic) carry no text and are not translated here.
+- `zzzCHKarma` global `0x020B19F4` is not referenced in MeQ10's PSC fragments; its role in the overall Act IV karma threshold is not traced here (unverified).

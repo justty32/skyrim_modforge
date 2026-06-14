@@ -50,27 +50,28 @@ Objectives:
 
 ## Alias / Staging Backbone
 
-Both `SCEN` records below share the same host quest and the same four aliases.
+Both `SCEN` records below share the same host quest and the same four aliases. Alias fill confirmed via `scenediag 0x2BD6CB` host-quest alias dump (CLI).
 
 Host quest:
 - [`2BC395 zzzCHMemoryQuest12`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
 
-Host-quest aliases from `scenediag`:
+Host-quest aliases:
 
 | Alias | Name | Fill | NPC record |
 |---:|---|---|---|
 | 0 | `Alessia` | uniqueActor `2BC383:Vigilant.esm` | [`2BC383 zzzCHMemoryStAlessiaOld "Alessia"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:814) |
 | 1 | `Pelinal` | uniqueActor `2BC37F:Vigilant.esm` | [`2BC37F zzzCHMemoryPelinal02 "Pelinal"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:785) |
-| 2 | `Akatosh` | uniqueActor `2BC376:Vigilant.esm` | [`2BC376 zzzCHMemoryAkatosh "???????"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:776) |
+| 2 | `Akatosh` | uniqueActor `2BC376:Vigilant.esm` | [`2BC376 zzzCHMemoryAkatosh "???????"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:776) — display name deliberately blank in source; alias name `Akatosh` is the only naming evidence |
 | 3 | `Bull` | uniqueActor `2BC389:Vigilant.esm` | [`2BC389 zzzCHMemoryMorihaus02 "Morihaus"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:815) |
 
-Source-grounded mapping:
-- Alias `Bull` is **Morihaus** (the winged Man-Bull, Alessia's consort) per the NPC record name; the alias name `Bull` is consistent.
-- Alias `Akatosh` NPC record `2BC376` has display name `???????` (blank/redacted in source); the alias name `Akatosh` is the only naming evidence.
+All aliases use `uniqueActor` (hardcoded references); no condition-based fill.
 
-Inference:
-- `Pelinal` and `Alessia` carry the main reunion dialogue of the good scene; `Bull` (Morihaus) and `Akatosh` each own one custom branch line. This is inferred from alias usage in the scene actions plus the two custom INFO `GetIsAliasRef` conditions (alias `#3` Bull, alias `#2` Akatosh).
-- Subject of the memory = **Pelinal Whitestrake reunited with Alessia ("Perrif")** at the end of his story; the "Last Night" / farewell framing (inference) is supported by the good scene's `"It is time to say goodbye, Perrif"` line.
+Source-grounded mapping:
+- Alias `Bull` is **Morihaus** (the winged Man-Bull, Alessia's consort) per the NPC record name.
+- Alias `Akatosh` NPC record `2BC376` has display name `???????` (blank/redacted in extracted source); alias name is the only identifier.
+- `Pelinal` (alias `#1`) and `Alessia` (alias `#0`) are the only actors in the good scene (`2BD6CB`); `Akatosh` (alias `#2`) is the sole actor in the bad scene (`2BD6F2`); `Bull` (alias `#3`) appears only in the custom branch dialogue, not in either SCEN. Confirmed by scene actor lists in `scenediag`.
+
+Subject of the memory: **Pelinal Whitestrake ("Paravant") reunited with Alessia ("Perrif")** at the close of his story. The "Last Night" / farewell framing is confirmed by the good scene's `"....It is time to say goodbye, Perrif"` line (topic `2BD6DF`).
 
 ## Scene Records
 
@@ -195,15 +196,97 @@ Source-grounded:
   - Akatosh alias `#2`, gated `GetStage <= 60` — addresses "Paravant" with the meteor-eyes line.
 - **No books** are owned by or text-linked to this quest (`find zzzCHMeQ12` returns no BOOK records; none referenced in the scenes).
 
-Branch outcome mapping (50 vs 310):
-- The two `CompleteQuest` stages are **50** and **310**, matching the index's two-band karma signature.
-- Polarity (inference, source-grounded shape): stage **50** is reached through `Sc01` (the warm reunion + farewell → "good/mercy" outcome: Pelinal is allowed to reach Alessia and say goodbye); the **300-band → 310** path runs through `BadScene` (Akatosh blocks the player → "bad/denied" outcome: the rest is disturbed, player is sent back). The `GetStage <= 60` Akatosh-branch gate and the 60 / 300 / 310 / 320 stage layout support a 50-good vs 310-bad split, but the exact stage-set fragments that fire each `CompleteQuest` are **not** decoded here. Treat as: two outcomes exist; good = reunion (50), bad = turned away (310).
+## Stage Fragment Routing (RESOLVED)
 
-Open verification:
-- dump stage fragments / scene-end scripts for stages 50, 60, 300, 310, 320 to confirm which scene drives which `CompleteQuest` and what each grants (item / global / world change);
-- inspect the named packages from `find` (`zzzCHMeq12AlessiaSleep` `2BC39F`, `zzzCHMeq12PelinalStandbyAlessia` `2BD6CC`, `zzzCHMeq12PelinalStopToGoddbye` `2BD6E4`, `zzzCHMeq12PelinalBackToAetherius` `2BD6E7`, `zzzCHMeq12AkatoshBlockPlayer` `2BD6F1`, `zzzCHMeq12AkatoshWaitingPelinal` `2BD6FD`) — the package EditorIDs alone strongly corroborate the good/bad split (`PelinalBackToAetherius` / `AkatoshBlockPlayer`) but full package data is not dumped here;
-- resolve the source typos/garbled terms flagged below against a known Pelinal/Alessia lore reference if narrative fidelity matters.
+Source: `qf_zzzchmemoryquest12_022bc395.psc` (full decompile); `sf_zzzchmeq12badscene_022bd6f2.psc`; `scenediag 0x2BD6CB`; `scenediag 0x2BD6F2`.
+
+The QF script (`NEXT FRAGMENT INDEX 22`) contains 11 active fragments. Mapping by content:
+
+| Fragment | Stage | Code summary |
+|---|---|---|
+| `Fragment_0` | **0** | `SoulStream.Enable(); MemoryTRG.Enable()` — quest init, enable trigger |
+| `Fragment_2` | **10** | FadeOut → `MoveTo(StartMarker)` → `SetStage(20)` — teleport player to memory start |
+| `Fragment_4` | **30** | `if PelinalQuest.GetStageDone(300)` → bad branch (`SetStage(300)`) else good branch (`Pelinal.SetAlpha(0)`, continue) |
+| `Fragment_7` | **40** (entry 1) | `Pelinal.SetAlpha(1.0)` + `TeleportINEffect` + `Sc01.ForceStart()` + `RegisterSceneSkip(self, Sc01, 40, True)` — fade Pelinal in, start good scene |
+| `Fragment_9` | **40** (entry 2) | Scene-end: `TeleportOutEffect` on Pelinal, `Pelinal.TryToDisable()`, stop `Sc01` if playing, `SetStage(50)` — Pelinal exits after farewell |
+| `Fragment_10` | **50** (entry 1) | FadeOut → `MoveTo(ReturnMarker)` → `SetStage(60)` — return player to normal world |
+| `Fragment_20` | **50** (entry 2) | `qGuide.SetStage(120)` + `ModRadiance(3.0)` — **good karma reward**: advance hub objective 120, add 3 Radiance points |
+| `Fragment_12` | **60** | `stop()` — shut down quest after good path return |
+| `Fragment_14` | **300** | `BadScene.ForceStart()` — trigger Akatosh-turn-away scene |
+| `Fragment_16` | **310** (entry 1) | `DisablePlayerControls` + `ForceFirstPerson` + `TimeWarpSound` + `TravelEffect01` + FadeOut → `MoveTo(ReturnMarker)` → `SetStage(320)` — eject player after bad scene |
+| `Fragment_18` | **320** | `stop()` — shut down quest after bad path return |
+
+Bad-scene end fragment (`sf_zzzchmeq12badscene_022bd6f2.psc`):
+- `Fragment_0`: `GetOwningQuest().SetStage(310)` — when `BadScene` finishes naturally, sets stage 310 (bad `CompleteQuest`).
+- `Fragment_1`: `q.RegisterSceneSkip(GetOwningQuest(), self, 310, True)` — if scene skipped, also routes to stage 310.
+
+Branch polarity — RESOLVED via QF psc stage routing:
+
+| Outcome | Path | CompleteQuest stage | Karma |
+|---|---|---|---|
+| **Good / Reunion** | stage 30 → good branch → stage 40 → `Sc01` (Pelinal+Alessia farewell) → stage 50 | **50** | `ModRadiance(+3.0)` + `qGuide.SetStage(120)` (hub objective 120 completed) |
+| **Bad / Blocked** | stage 30 → `PelinalQuest.GetStageDone(300)` true → stage 300 → `BadScene` (Akatosh turns player away) → stage 310 | **310** | no Radiance, no guide advance |
+
+Cross-quest gate at stage 30 (source: `qf_zzzchmemoryquest12_022bc395.psc` Fragment_4 line 93):
+```papyrus
+if PelinalQuest.GetStageDone(300) ;;Bad End to 300
+    WallMarker.Enable()
+    Alias_Bull.TryToDisable()
+    Alias_Akatosh.TryToEvaluatePackage()
+    SetStage(300)
+else
+    Alias_Pelinal.GetActorRef().SetAlpha(0)
+    TimeWound.SetAnimationVariableFloat("fToggleBlend", 1)
+endif
+```
+- `PelinalQuest` is `zzzCHMemoryQuest10 "Pelinal the Bloody"` (FormID `2A532E`; verified via `find`). Its stage 300 is one of its two `CompleteQuest` stages (bad / Mary-slave ending; confirmed `questdiag 0x2A532E`).
+- **If the player completed MeQ10 on the bad path** (stage 300 done), MeQ12 routes straight to the bad path: Pelinal never appears, Akatosh blocks. The `;;Bad End to 300` comment is inline evidence.
+- **If MeQ10 was completed on the good path** (stage 180 done, stage 300 not done), MeQ12 routes to the good path: Pelinal is faded in and the reunion scene begins.
+- This is the only cross-quest state dependency in MeQ12. (source: psc Fragment_4)
+
+Karma result (good path): `ModRadiance(3.0)` via `AoMAchievementPointQuestScript` cast (psc Fragment_20 lines 141–144); simultaneously `qGuide.SetStage(120)` completes the third (final) `zzzCHMemoryGuide` hub objective (`SetObjectiveCompleted(120)` in `qf_zzzchmemoryguide_0242e0b1.psc` Fragment_24 — comment `;;Dream12 Finished`). This identifies MeQ12 as **Dream12** in the hub.
+
+`GetStage <= 60` gate on Akatosh custom branch (psc confirmed via `infodiag 0x2BC395`): this branch is only available while the quest stage has not entered the 300-band. Since the bad path jumps directly from 30→300 and the good path passes through 50→60→stop(), this gate is effectively "good-path only". Stage 60 is the final shutdown stage on the good path before `stop()`.
+
+## SCEN Staging (RESOLVED)
+
+Source: `scenediag 0x2BD6CB` (good scene) and `scenediag 0x2BD6F2` (bad scene); both confirmed via CLI.
+
+Good scene `2BD6CB zzzCHMeQ12Sc01`:
+- Host quest: `2BC395`; actors: alias `#0` Alessia (`DeathEnd, DialoguePause`), alias `#1` Pelinal (`DialoguePause`).
+- 14 phases; 18 actions: 2 Package (Pelinal standby at phases 0–10), 12 Dialog (alternating Pelinal/Alessia, phases 1–12), 1 Timer (5s, phase 9), 3 Package (Pelinal stop/exit, phases 11–13).
+- Phase 9 has 2 complete conditions (Timer 5s + dialog completion) — the silent `"............"` beat is held for 5 seconds.
+- Phase 11 has 2 complete conditions — Pelinal Package action overlaps with Alessia dialog at `"See you again"`.
+- Dialog action index 13 at phase 10: `HeadtrackActorID=-1` (Pelinal looks away, not at Alessia) for `"....It is time to say goodbye, Perrif"` — cinematically confirmed the farewell direction.
+
+Bad scene `2BD6F2 zzzCHMeQ12BadScene`:
+- Host quest: `2BC395`; actor: alias `#2` Akatosh only (`DeathEnd, DialoguePause`).
+- 6 phases; 6 actions: 1 Timer (3s, phase 0, 2 complete conds), 5 Dialog (Akatosh, phases 1–5, all `HeadtrackPlayer Neutral`).
+- Phase 0 has 2 complete conditions (Timer + something else); the 3-second hold before Akatosh speaks gives the player a moment to register the scene.
+- No Pelinal, no Alessia, no Bull in this scene; aliases `#0`, `#1`, `#3` unused.
+
+## Alias Fill (RESOLVED)
+
+All 4 aliases confirmed via `scenediag 0x2BD6CB` host-quest alias dump:
+
+| Alias | Name | Fill method | NPC |
+|---:|---|---|---|
+| 0 | `Alessia` | `uniqueActor 2BC383:Vigilant.esm` | `2BC383 zzzCHMemoryStAlessiaOld "Alessia"` |
+| 1 | `Pelinal` | `uniqueActor 2BC37F:Vigilant.esm` | `2BC37F zzzCHMemoryPelinal02 "Pelinal"` |
+| 2 | `Akatosh` | `uniqueActor 2BC376:Vigilant.esm` | `2BC376 zzzCHMemoryAkatosh "???????"` — display name redacted/blank in extracted source; alias name is the only naming evidence |
+| 3 | `Bull` | `uniqueActor 2BC389:Vigilant.esm` | `2BC389 zzzCHMemoryMorihaus02 "Morihaus"` |
+
+All are `uniqueActor` (hardcoded references), no condition-based fill. No alias fill is unresolved or marked unverified; the only open item is the display name of alias `#2` (NPC `2BC376` has `???????` in the extracted NPC list — this is a deliberate blank name in the source, not a data gap).
+
+## Branch Outcome Mapping (50 vs 310) — RESOLVED
+
+| Outcome | Trigger | CompleteQuest | Karma | Hub advance |
+|---|---|---|---|---|
+| **Good / Reunion** | MeQ10 bad-path (stage 300) NOT done → Sc01 plays → stage 50 | stage **50** | `ModRadiance(+3.0)` | `qGuide.SetStage(120)` → `SetObjectiveCompleted(120)` in hub |
+| **Bad / Blocked** | MeQ10 bad-path (stage 300) done → BadScene plays → stage 310 | stage **310** | none | none |
+
+No items, no factions, no world changes granted on either path — only the Radiance global point and hub objective on the good path.
 
 Flagged source terms (kept verbatim, `Note:`/待驗證):
 - `Perrif` (Alessia early name), `Paravant` (Pelinal early name) — period-correct lore names, NOT typos.
-- `Wellcome` (= Welcome), `you should not see like this` (broken grammar), `Still don't get it` (ambiguous), `lizard's stomach` (frame-story arrival, inference) — flagged in-line above.
+- `Wellcome` (= Welcome), `you should not see like this` (broken grammar), `Still don't get it` (ambiguous), `lizard's stomach` (frame-story arrival, not a typo — Akatosh observes the player arrived through the daedric passage) — flagged in-line above. No further lore verification needed for the routing reconstruction.

@@ -55,6 +55,36 @@ Stage-band shape (source-grounded):
 - Two `CompleteQuest` stages: **50** (low band, stages 0-60) and **340** (high band, stages 300-350).
 - The two bands map to the two staged scenes named in `find`: [`2B9BB4 zzzCHMeQ11GoodScene`](#2b9bb4-zzzchmeq11goodscene) and [`2BAEFB zzzCHMeQ11BadScene`](#2baefb-zzzchmeq11badscene). The EditorID names `GoodScene` / `BadScene` are the source-grounded polarity labels (see Branch Outcomes).
 
+Stage routing (verified from `qf_zzzchmemoryquest11_022b9bab.psc` + SF scripts):
+
+| Stage | Fragment | Action |
+|---:|---|---|
+| 0 | `Fragment_0` | FadeOut → `Game.GetPlayer().MoveTo(StartMarker)` → `SetStage(20)` |
+| 10 | `Fragment_2` | Disable `SoulsStream`; `Alias_Bull/Priest.SetAlpha(0.0)` |
+| 20 | `Fragment_4` | `MusWar.Add()`; restore alpha; play `TeleportINEffect`; `Sc01.Start()`; register skip(40) |
+| 40 | `Fragment_7` | **Branch gate**: `if !PelinalQuest.GetStageDone(300)` → `GoodScene.ForceStart()` else `BadScene.ForceStart()` + `SetStage(300)` |
+| 50 | (GoodScene `Fragment_0`) | `SF_zzzCHMeQ11GoodScene`: `GetOwningQuest().SetStage(50)` — **Good CompleteQuest** |
+| 60 | `Fragment_11` | `AkatoshQuest.Start()` + `AkatoshQuest.SetStage(0)` (post-good) |
+| 300 | `Fragment_13` | Make Priest killable: `SetProtected/Essential/Invulnerable(false)`, `SetActorValue("Health",1)` |
+| 305 | | `ISMDizzy` + `HeartBeat` + camera shake + `MusBad.Add()` + `OblivionRef.Enable()` |
+| 310 | (BadScene `Fragment_0`) | `SF_zzzCHMeQ11BadScene`: `SetStage(310)` |
+| 315 | (BadScene `Fragment_2`) | `SF_zzzCHMeQ11BadScene`: `SetStage(315)` |
+| 320 | | — |
+| 330 | (BadScene `Fragment_3`) | `SF_zzzCHMeQ11BadScene`: `SetStage(330)` |
+| 340 | (BadScene `Fragment_5`) | `SF_zzzCHMeQ11BadScene`: `setStage(340)` — **Bad CompleteQuest** |
+| 350 | `Fragment_21` | `TeleportOutEffect`; `Alias_Bull.TryToDisable()`; FadeOut; `MusBad.Remove()`; `MoveTo(ReturnMarker)`; `SetStage(350)` |
+| 350 | `Fragment_23` | `AkatoshQuest.Start()` + `AkatoshQuest.SetStage(0)` (post-bad) |
+
+Additional QF fragments (within Bad branch, stage inferred from behavior):
+- `Fragment_17`: `ISMDizzy.ApplyCrossFade(0.1)` + heartbeat/camera shake + `MusBad.Add()` + `OblivionRef.Enable()` — fires around stage 305 (Bad branch entry)
+- `Fragment_27`: `;Bad Scene` comment only (placeholder)
+- `Fragment_29`: `Alias_Bull.SetDontMove()` + `debug.SendAnimationEvent("pa_KillMove2HWB")` + `PriestBloodMarker.Enable()` + `Alias_Priest.TryToKill()` — fires during the kill animation stage (~320–330)
+- `Fragment_33`: `if qGuide.IsRunning() → qGuide.SetStage(110)`; `kmyQuest.ModRadiance(3.0)` — **hub progression** (Dream11 Finished); fires at one of the CompleteQuest stages (exact stage-to-fragment mapping requires VMAD binary read; inference: fires at stage 50 or 340)
+
+`PelinalQuest` property = [`2A532E zzzCHMemoryQuest10 "Pelinal the Bloody"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401). `PelinalQuest.GetStageDone(300)` checks whether MeQ10 reached its **Bad CompleteQuest** stage (stage 300, verified via `questdiag 0x2A532E`). MeQ10 good CompleteQuest = stage 180; bad CompleteQuest = stage 300.
+
+`AkatoshQuest` fires on both outcomes (stage 60 post-good; stage 350 post-bad). Identity of `AkatoshQuest` is not resolvable from PSC alone (property name only); likely a post-memory follow-on quest (inference: possibly `zzzCHMemoryQuest12 "Last Night"` which features Akatosh, or a dedicated bridge quest; unverified).
+
 ## Alias / Staging Backbone
 
 The three `SCEN` records below share the same host quest and aliases.
@@ -62,16 +92,20 @@ The three `SCEN` records below share the same host quest and aliases.
 Host quest:
 - [`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
 
-Host-quest aliases from `scenediag`:
+Host-quest aliases from `scenediag Vigilant.esm 0x2B9BB4` (confirmed identical across all three scenes):
 
 | Alias | Name | Fill | Resolves to |
 |---:|---|---|---|
 | 0 | `Bull` | uniqueActor `2B8827:Vigilant.esm` | [`2B8827 zzzCHMemoryMorihaus01 "Morihaus"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:782) |
 | 1 | `Priest` | uniqueActor `2B882A:Vigilant.esm` | [`2B882A zzzCHMemorySthunPriest "Stuhn Priest"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:781) |
 | 2 | `Akatosh` | uniqueActor `2DE6E3:Vigilant.esm` | [`2DE6E3 zzzCHMemoryAkatoshMorihaus` (no Name)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:809) |
-| 3 | `PelinalMarker` | forcedRef `2E47DF:Vigilant.esm` | marker |
-| 4 | `GateMarker` | forcedRef `2E47E0:Vigilant.esm` | marker |
+| 3 | `PelinalMarker` | forcedRef `2E47DF:Vigilant.esm` | placed marker ref |
+| 4 | `GateMarker` | forcedRef `2E47E0:Vigilant.esm` | placed marker ref |
 | 5 | `Gardener` | uniqueActor `2E47F0:Vigilant.esm` | [`2E47F0 zzzCHMemoryGardener "King of Nenalata"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:805) |
+
+Alias fills are all `uniqueActor` or `forcedRef` — no conditional or find-condition fills. The alias table is fully source-grounded from `scenediag` output.
+
+RESOLVED: all 6 aliases confirmed present by `scenediag 0x2B9BB4`/`0x2B9BB5`/`0x2BAEFB`; no alias is unverified.
 
 Subject / speaker:
 - The memory's subject and the through-line speaker is **Morihaus** (alias `#0` `Bull`). All Scene monologue lines are voiced by alias `#0` except where noted, and the custom branch openers are gated on the player standing before either alias `#2` `Akatosh` or alias `#5` `Gardener`.
@@ -89,27 +123,31 @@ Scene records are not present as full records in `game-data`; the text lines are
 ### 2B9BB5 zzzCHMeQ11Sc01
 
 CLI:
-- `scenediag Vigilant.esm 0x2B9BB5`
+- `scenediag Vigilant.esm 0x2B9BB5` — RESOLVED
 
-Staging:
+Staging (verified from `scenediag` + `sf_zzzchmeq11sc01_022b9bb5.psc`):
 - Host quest: [`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
 - Flags: none
-- Actors: alias `#0` (`Bull`, `DeathEnd, DialoguePause`), alias `#1` (`Priest`, `DeathEnd, DialoguePause`)
-- Phases: 2, each `0` start conditions and `1` complete condition.
-- Actions: 6 total - `Package` for `#0` and `#1` per phase, plus `Dialog` actions for `#0` and `#1` with `Topic=<null>`.
-- Note: this is the establishing/idle scene; the `Dialog` actions carry no topic, so no spoken line is bound here. Likely the silent walk-up to Pelinal's body (inference, from the walk/pray packages).
+- Actors: alias `#0` (`Bull`, `behaviorFlags=DeathEnd,DialoguePause`, `flags=NoPlayerActivation,Optional`), alias `#1` (`Priest`, `behaviorFlags=DeathEnd,DialoguePause`, `flags=NoPlayerActivation,Optional`)
+- Phases: 2; phase[0] `startConds=0 completeConds=1`; phase[1] `startConds=0 completeConds=1`
+- Actions (6): `Package` on `#0` phase[0]; `Package` on `#1` phase[0]; `Package` on `#0` phase[1]; `Package` on `#1` phase[1]; `Dialog` on `#0` phases[0-1] `Topic=<null>`; `Dialog` on `#1` phases[0-1] `Topic=<null>`
+- Scene completion fragment: `SF_zzzCHMeQ11Sc01_022B9BB5 Fragment_0` → `GetOwningQuest().SetStage(40)` (triggers the main branch gate)
+- Note: establishing walk-up scene (silent); no spoken dialogue — all Dialog actions have `Topic=<null>`. The two walk packages (`MorihausWalkToPelinak`, `PriestWalkToPelinal`) and pray package (`MorihausPrayForPelinal`) run here. RESOLVED (inference note: "likely silent" confirmed by `Topic=<null>` on all Dialog actions).
 
 ### 2B9BB4 zzzCHMeQ11GoodScene
 
 CLI:
-- `scenediag Vigilant.esm 0x2B9BB4`
+- `scenediag Vigilant.esm 0x2B9BB4` — RESOLVED
 
-Staging:
+Staging (verified from `scenediag` + `sf_zzzchmeq11goodscene_022b9bb4.psc`):
 - Host quest: [`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
 - Flags: none
-- Actors: alias `#0` (`Bull`, `DialoguePause`, `NoPlayerActivation, Optional`), alias `#1` (`Priest`, `DeathEnd, DialoguePause`, `NoPlayerActivation, Optional`), alias `#2` (`Akatosh`).
-- Phases: 5.
-- Actions (10): packages on `#0`/`#1`, a `Timer` (3s) on `#0` at phase 0, four `Dialog` lines voiced by `#0` (`Bull`/Morihaus) one per phase 1-4, plus topic-less `Dialog` actions on `#1` and `#2`.
+- Actors: alias `#0` (`Bull`, `behaviorFlags=DialoguePause`, `flags=NoPlayerActivation,Optional`), alias `#1` (`Priest`, `behaviorFlags=DeathEnd,DialoguePause`, `flags=NoPlayerActivation,Optional`), alias `#2` (`Akatosh`, behaviorFlags=0, flags=0)
+- Phases: 5; phase[0] `completeConds=3` (3 conditions to exit, likely scene skip + NPC positions + timer); phases[1-4] `completeConds=1` each
+- Actions (10): `Package` on `#0` phase[0]; `Package` on `#1` phases[0-4]; `Package` on `#0` phases[1-4]; four `Dialog` actions on `#0` (phases 1-4, topics `2B9BB9`/`2B9BBB`/`2B9BBD`/`2B9BBF`); `Dialog` on `#1` phases[1-4] `Topic=<null>`; `Timer` (3s) on `#0` phase[0]; `Dialog` on `#2` phases[0-4] `Topic=<null>`
+- Scene completion fragments (`sf_zzzchmeq11goodscene_022b9bb4.psc`):
+  - `Fragment_0`: `GetOwningQuest().SetStage(50)` — **fires at scene end, triggers Good CompleteQuest**
+  - `Fragment_1`: `q.RegisterSceneSkip(GetOwningQuest(), self, 50, True)` — skip registration
 
 Morihaus monologue (alias `#0`), played in phase order:
 
@@ -125,14 +163,34 @@ Morihaus monologue (alias `#0`), played in phase order:
 ### 2BAEFB zzzCHMeQ11BadScene
 
 CLI:
-- `scenediag Vigilant.esm 0x2BAEFB`
+- `scenediag Vigilant.esm 0x2BAEFB` — RESOLVED
 
-Staging:
+Staging (verified from `scenediag` + `sf_zzzchmeq11badscene_022baefb.psc`):
 - Host quest: [`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
 - Flags: none
-- Actors: alias `#0` (`Bull`, `DeathEnd, DialoguePause`), alias `#1` (`Priest`, `DialoguePause`).
-- Phases: 16.
-- Actions (23): a long chain of `Package` + `Timer` + `Dialog`, voicing both Morihaus (`#0`) and the Stuhn Priest (`#1`). This is the violent branch (the `Morihaus...DrawWeapon` / `...SlayPriest` / `...GoToOblivion` packages from `find` are this scene's package set).
+- Actors: alias `#0` (`Bull`, `behaviorFlags=DeathEnd,DialoguePause`, `flags=NoPlayerActivation,Optional`), alias `#1` (`Priest`, `behaviorFlags=DialoguePause`, `flags=NoPlayerActivation,Optional`)
+- Phases: 16; phase[0] `completeConds=2`; phases[1-15] `completeConds=1` each
+- Actions (23): complex chain of `Package` + `Timer` + `Dialog` across 16 phases. Full action map from `scenediag`:
+  - Phase[0]: `Package#0`, `Package#1`, `Timer#0` (3s)
+  - Phase[1]: `Dialog#0` `Topic=2BAEFC` (Neutral) — "Why Pelinal...what happened..."
+  - Phase[2]: `Dialog#0` `Topic=2BAEFE` (Neutral) — "Pelinal...say something..."
+  - Phase[3]: `Dialog#1` `FaceTarget` `Topic=2BAF00` (Sad100) — "Lord Morihaus, get a hold..."
+  - Phase[4]: `Dialog#0` `Topic=2BAF37` (Neutral) — silence beat `"........................"`
+  - Phase[5-6]: `Package#0`, `Dialog#0` `FaceTarget#1` `Topic=2BAF03` — "Slay captives..."
+  - Phase[7]: `Dialog#1` `FaceTarget#0` `Topic=2BAF05` (Puzzled) — "What...what do you say?"
+  - Phase[8]: `Package#0`, `Dialog#1` `FaceTarget#0` `Topic=2BAF07` (Anger) — "That's against Sthun..."
+  - Phase[9]: `Package#0`, `Timer#0` (2s)
+  - Phase[10-11]: `Package#0`, `Timer#0` (2.5s) at phase[11]
+  - Phase[12]: `Package#0`
+  - Phase[13]: `Package#0`, `Dialog#0` `Topic=2BAF0B` — "I go mad into blood..."
+  - Phase[14]: `Package#0`, `Dialog#0` `HeadtrackActorID=4` `Topic=2BAF0E` — "Cyrod is already ours..."
+  - Phase[15]: `Package#0`, `Dialog#0` `HeadtrackActorID=4` `Topic=<null>`
+- Scene completion fragments (`sf_zzzchmeq11badscene_022baefb.psc`):
+  - `Fragment_0`: `GetOwningQuest().SetStage(310)` — phase progress
+  - `Fragment_2`: `GetOwningQuest().SetStage(315)` — phase progress
+  - `Fragment_3`: `GetOwningQuest().SetStage(330)` — phase progress
+  - `Fragment_5`: `GetOwningQuest().setStage(340)` — **fires at scene end, triggers Bad CompleteQuest**
+  - `Fragment_6`: `q.RegisterSceneSkip(GetOwningQuest(), self, 340, True)` — skip registration
 
 Branch dialogue (in scene-action phase order):
 
@@ -205,11 +263,29 @@ The package set confirms the two outcomes: pray (good) vs draw-weapon / slay-pri
 | **Good** | [`2B9BB4 zzzCHMeQ11GoodScene`](#2b9bb4-zzzchmeq11goodscene) | 50 (`CompleteQuest`) | Akatosh branch | "After a storm comes a calm" |
 | **Bad** | [`2BAEFB zzzCHMeQ11BadScene`](#2baefb-zzzchmeq11badscene) | 340 (`CompleteQuest`) | Gardener branch | "Mer Era is gone, Man Era is come" |
 
-Polarity is **source-grounded by EditorID**, not just inferred:
+Polarity is **source-grounded by EditorID + PSC verification**:
 - The scene records are literally named `GoodScene` and `BadScene`.
 - Good = Morihaus grieves but chooses love / restraint (`Ada must change things through love`, `it is easier to go mad... [but he doesn't]`) and is closed by **Akatosh** (chief Aedra) with "after a storm comes a calm."
 - Bad = Morihaus yields (`I go mad into blood, surrender myself to rage`, `all is permitted`), orders the massacre of the elven citizens, slays the protesting Stuhn Priest, and the path is closed by the **King of Nenalata** ("Mer Era is gone... the King of Nenalata is right").
-- Stage 50 (low band) = Good completion; stage 340 (high band) = Bad completion (inference, by mapping the two `CompleteQuest` bands to the two scenes; consistent with the package set but the exact stage->scene wiring is in the un-dumped stage fragments).
+- Stage 50 = Good completion: **RESOLVED** — `SF_zzzCHMeQ11GoodScene Fragment_0`: `GetOwningQuest().SetStage(50)` (`sf_zzzchmeq11goodscene_022b9bb4.psc:18`).
+- Stage 340 = Bad completion: **RESOLVED** — `SF_zzzCHMeQ11BadScene Fragment_5`: `GetOwningQuest().setStage(340)` (`sf_zzzchmeq11badscene_022baefb.psc:16`).
+
+Branch gate: **RESOLVED** — `QF_zzzCHMemoryQuest11 Fragment_7` (`qf_zzzchmemoryquest11_022b9bab.psc:197–214`):
+
+```papyrus
+if !(PelinalQuest.GetStageDone(300))
+    GoodScene.ForceStart()        ; MeQ10 ended GOOD (stage 180 CompleteQuest) → GoodScene
+else
+    BadScene.ForceStart()         ; MeQ10 ended BAD (stage 300 CompleteQuest) → BadScene
+    SetStage(300)
+endif
+```
+
+**The branch is NOT a player choice within MeQ11.** It is determined entirely by the outcome of [`2A532E zzzCHMemoryQuest10 "Pelinal the Bloody"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401):
+- MeQ10 `GetStageDone(300)` = **false** (MeQ10 completed at stage 180 = Good outcome) → MeQ11 GoodScene
+- MeQ10 `GetStageDone(300)` = **true** (MeQ10 completed at stage 300 = Bad outcome) → MeQ11 BadScene + immediate `SetStage(300)`
+
+MeQ10 stage 180 = Good `CompleteQuest`; stage 300 = Bad `CompleteQuest` (verified via `questdiag Vigilant.esm 0x2A532E`).
 
 ## Reconstruction Notes
 
@@ -220,8 +296,29 @@ Source-grounded:
 - It contains **2 custom dialogue branches** (the player-facing closers): Akatosh alias `#2` (Good) and Gardener alias `#5` (Bad), each a single `Goodbye` topic gated on `GetIsAliasRef`.
 - **0 books** owned by / linked from this quest (`find` returns no BOOK; no booktext call needed).
 
+## Karma and Hub Progression (source-grounded)
+
+Source: `qf_zzzchmemoryquest11_022b9bab.psc Fragment_33`
+
+```papyrus
+If qGuide.IsRunning()
+    qGuide.SetStage(110)
+endif
+kmyQuest.ModRadiance(3.0)
+```
+
+- `qGuide` = [`42E0B1 zzzCHMemoryGuide "Memory Guide"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:309) (hub quest property, verified via `qf_zzzchmemoryguide_0242e0b1.psc`)
+- `qGuide.SetStage(110)` triggers hub `Fragment_22` (`qf_zzzchmemoryguide_0242e0b1.psc:29`): `;Dream11 Finished` → `SetObjectiveCompleted(110)`, `SetObjectiveDisplayed(120)` — marks the "Against the dying of the light" objective done and advances to objective 120.
+- `ModRadiance(3.0)` is the AoM achievement point system (not the vanilla `zzzCHKarma` global `0x0B19F4`). **`zzzCHKarma` is NOT touched by MeQ11.**
+- Exact stage at which `Fragment_33` fires: **cannot be determined from PSC alone** (requires VMAD binary stage→fragment mapping from ESM; CLI does not expose this). (inference: fires at one of the CompleteQuest stages 50 or 340, most likely fires for BOTH outcomes since hub progression must register regardless of polarity — consistent with MeQ07 pattern where `Fragment_22` fires at stage 150 (Bad path `CompleteQuest`) and presumably a parallel fragment fires at stage 70 (Good path))
+
+Karma polarity for this quest: **RESOLVED** — MeQ11 has no independent player-choice karma. Its outcome mirrors MeQ10's: if MeQ10 was Good (stage 180), MeQ11 plays Good; if MeQ10 was Bad (stage 300), MeQ11 plays Bad. Both paths call `AkatoshQuest.Start()` + `AkatoshQuest.SetStage(0)` as a post-memory follow-on. `AkatoshQuest` identity: (unverified — property name only; inference: likely the quest that enables MeQ12 or the Akatosh encounter triggered by `2BC397 zzzCHAkatoshMemoryActTrigger`).
+
 Open verification:
-- dump QUST aliases/targets + start condition to pin the exact in-world trigger ref (CLI does not print these);
-- read the stage fragments / VMAD on stages 50 / 340 to confirm which band each scene completes and what each grants;
-- the per-scene branch *choice point* (what the player does to route Good vs Bad) is encoded in the scene phase `completeConds` (not printed in detail by `scenediag`) and/or a karma global - needs a deeper dump;
-- garbled source spellings to keep + flag (待驗證): `Sthun` vs `Stuhn` (priest's god), `WalkToPelinak`/`Moriaus` (package EditorIDs), `Ada` (untranslated Ehlnofex), `Cyrod` (period spelling of Cyrodiil).
+- **RESOLVED** — branch gate: `QF Fragment_7` confirms MeQ10 stage 300 determines GoodScene vs BadScene (PSC source-grounded).
+- **RESOLVED** — stage routing: stage 50 = Good (`SF_GoodScene Fragment_0`), stage 340 = Bad (`SF_BadScene Fragment_5`) (PSC source-grounded).
+- **RESOLVED** — alias fills: all 6 confirmed by `scenediag` (uniqueActor / forcedRef, no ambiguity).
+- **RESOLVED** — SCEN staging: all 3 scenes fully diagnosed via `scenediag`; phase/action/topic tables complete.
+- **Partial** — `Fragment_33` stage assignment (qGuide.SetStage(110) / ModRadiance): fires at completion but exact stage unknown without VMAD binary read. (unverified: which CompleteQuest stage triggers it)
+- **Partial** — `AkatoshQuest` identity: fires post-completion on both paths but EditorID is a property name only. (unverified: actual quest FormID)
+- **Kept as-is** — garbled source spellings (待驗證): `Sthun` vs `Stuhn` (priest's god), `WalkToPelinak`/`Moriaus` (package EditorIDs), `Ada` (Ehlnofex, untranslated), `Cyrod` (period spelling of Cyrodiil).

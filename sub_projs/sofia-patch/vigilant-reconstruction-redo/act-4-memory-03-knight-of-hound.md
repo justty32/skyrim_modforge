@@ -173,17 +173,61 @@ Speaker gated by `GetIsID` on [`23611E zzzCHRithoMemory "Ritho"`](/home/lorkhan/
 
 Topic anchor: [`236132 zzzCHMeQ03RithoB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2361). The `GetStage>=100` INFO confirms the 100+ band is the post-fork "good"/exile path (Ritho sends Varla off rather than to battle).
 
+## Branch Routing (VERIFIED via psc)
+
+Full `choice → SetStage → CompleteQuest` chain, read from TIF + QF fragments:
+
+| Player choice | TIF file | Fragment | SetStage | QF effect |
+|---|---|---|---|---|
+| B01T02 "I am honored" (accepted) | `chmeq3_tif__02139664.psc:9` | `Fragment_0` OnEnd | **20** | Advances to B02/B03/B04 |
+| B04T02 "Yes, Your highness..." (obey/kill) | `chmeq3_tif__0213966f.psc:9` | `Fragment_0` OnBegin | **30** | QF Fragment → FadeOut(black), MoveTo Alias_Knight, `Stop()` — **bad CompleteQuest** |
+| B04T07 "Thank you, Your Majesty" (spare) OnBegin | `chmeq3_tif__02139679.psc:18` | `Fragment_1` OnBegin | **100** | QF Fragment → FadeOut, Enola.TryToMoveTo(TravelMarker), Player.MoveTo(Marker02), Bard.EvalPackage — ship departure |
+| B04T07 "Thank you, Your Majesty" (spare) OnEnd | `chmeq3_tif__02139679.psc:9` | `Fragment_0` OnEnd | **105** | QF Fragment → `Karma.Mod(3.0)`, `KarmaUp.Show()` — **good karma reward** |
+| BardB01T03 "Let me refrain" (goodbye) | `chmeq3_tif__02139c2b.psc:9` | `Fragment_0` OnEnd | **110** | QF Fragment → Enola+Bard.EvalPackage |
+| EnolaB01T03 "Come on, let's go" | `chmeq3_tif__02139c33.psc:9` | `Fragment_0` OnEnd | **120** | QF Fragment → Enola.EvalPackage — board ship |
+
+**Stage 130** (good `CompleteQuest`): QF Fragment → `SetObjectiveCompleted(0)`, `qGuide.SetStage(30)`, `kmyQuest.ModRadiance(3.0)`. Fires after stage 120 (inference; ordering from stage band 100→105→110→120→130).
+
+**Stage 40** (bad branch sub-step): QF Fragment → `Karma.Mod(-3.0)`, `KarmaDown.Show()`, Enola `SetGhost(false)` / `SetInvulnerable(false)` / `SetEssential(false)` / `SetAV("Health", 1)` — makes Enola killable after the obey choice.
+
+**Polarity confirmed:** stage 30 = bad/obey/kill (`chmeq3_tif__0213966f.psc` `SetStage(30)`; QF FadeOut black + Stop); stage 130 = good/spare/exile (`SetObjectiveCompleted`, `qGuide.SetStage(30)`, `Radiance+3.0`, preceded by `Karma.Mod(+3.0)`). Previously marked "(inference)" — **RESOLVED** via psc.
+
+### Hub wiring (MemoryGuide)
+
+QF Fragment_24 (stage 130 good completion) calls `qGuide.SetStage(30)` on `Quest Property qGuide` (`42E0B1 zzzCHMemoryGuide`). MemoryGuide stage 30 is one of 13 "Dream finished" stages (stages 10–90 per dream, 100–120 are the Song-of-Pelinal trio). MeQ03 maps to MemoryGuide **stage 30** (Dream03). Karma is tracked via `GlobalVariable Property kARMA` + `Karma.Mod(±3.0)` on each branch; `AoMAchievementPointQuestScript.ModRadiance(3.0)` also fires on the good completion.
+
+## Quest Aliases (VERIFIED via QF psc)
+
+From `qf_zzzchmemoryquest03_0213965a.psc` `ALIAS PROPERTY` block:
+
+| Alias index (from infodiag) | Property name | Type | Notes |
+|---|---|---|---|
+| `#0` | `Emperor` | ReferenceAlias | Belharza (`137E63 zzzCHBelharzaMemory`) — confirmed by infodiag `ReferenceAliasIndex=0` on all Emperor INFOs |
+| `#1` | `Enola` | ReferenceAlias | Enola (`137E65 zzzCHEnolaMemory`) — confirmed by infodiag `ReferenceAliasIndex=1` on Enola INFOs |
+| `#5` | `Bard` | ReferenceAlias | confirmed by infodiag `ReferenceAliasIndex=5` on BardB01 INFOs; **bard ref = unverified (alias target not printed by CLI)** |
+| — | `Knight` | ReferenceAlias | MoveTo target in QF Fragment_4 / Fragment_2 — end-of-quest player teleport anchor |
+| — | `EnolaSkull` | ReferenceAlias | `13965E zzzCHEnolaSkullFull` — presumably placed in scene and acquired on bad branch |
+| — | `ValraMemory` | LocationAlias | the memory cell location |
+| — | `MemoryMarker01` | ReferenceAlias | player start marker (stage 0 Fragment_0) |
+| — | `MemoryMarker02` | ReferenceAlias | player departure marker (stage 100) |
+| — | `EnolaTravelMarker` | ReferenceAlias | Enola teleport target at ship departure |
+
+Alias count vs infodiag: alias indices 0, 1, 5 confirmed by `ReferenceAliasIndex` in infodiag. Alias `#2`–`#4` and indices 6+ are unassigned or unnamed in the psc (QF lists 9 aliases total; numeric index assignment by ESM ordering is not printed by CLI). Bard's actor ref (the `#5` alias fill target) is **unverified** — CLI alias-target dump not available.
+
 ## Reconstruction Notes
 
 Source-grounded:
 - This memory is [`13965A zzzCHMemoryQuest03 "Knight of Hound"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:154), objective [`Blood never separate, but join.`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:155).
 - The player relives the knight **Varla**, ordered by **Emperor Belharza** to execute a surviving Ayleid child, **Enola**, after the sack of Malada.
 - **No `SCEN` records.** 11 custom topics across 7 dialogue branches: Emperor `B01`–`B05`, Bard `B01`, Enola `B01`/`B02`, Ja'zhan `B01`, Ritho `B01`.
-- Two completions: stage **30** (obey/kill, reaffirmed by `B05T01b` at `GetStage==30`) vs stage **130** (refuse/spare; Enola escorted to Alinor via follow/captive packages). Polarity 30=bad / 130=good is **inference** from condition gating + content, not from the empty stage logs.
-- VMAD TIF fragments fire on the pivotal player choices: `02139664` (honored), `0213966F` (obey), `02139679` (spare→Alinor), and the goodbye fragments `02139C2B` / `02139C33`. Exact Papyrus behavior not decoded here.
+- **Branch routing confirmed (psc):** stage 30 = bad/obey (`chmeq3_tif__0213966f.psc:9` `SetStage(30)` → QF FadeOut black); stage 130 = good/spare (`chmeq3_tif__02139679.psc` `SetStage(100)`→`SetStage(105)` → QF `Karma.Mod(+3.0)` → stage 130 QF `qGuide.SetStage(30)` + `ModRadiance(3.0)`).
+- 5 TIF psc files read: `chmeq3_tif__02139664`, `chmeq3_tif__0213966f`, `chmeq3_tif__02139679`, `chmeq3_tif__02139c2b`, `chmeq3_tif__02139c33`.
+- 2 QF psc files read: `qf_zzzchmemoryquest03_0213965a`, `qf_zzzchmemoryguide_0242e0b1`.
+- CLI calls: `questdiag 0x13965A`, `infodiag 0x13965A`, `find 0x13965A`, `find zzzCHMemoryGuide`, `questdiag 0x42E0B1`, `packagediag` × 5.
 
 Open verification:
-- decompile `CHMeq3_TIF__0213966F` (obey) and `CHMeq3_TIF__02139679` (spare) to confirm they set stage 30 vs 130 — this would convert the polarity inference to fact.
-- dump QUST aliases directly to confirm alias `#0`=Belharza, `#1`=Enola, `#5`=Bard, and identify the `#5` bard ref.
-- resolve garbled proper nouns: `Mackamentain`, `Eroisa`/`Polydor`, `Imuga`(Imga), `Shiki`, `Borgas`, `Umariru`(Umaril).
+- ~~decompile `CHMeq3_TIF__0213966F` (obey) and `CHMeq3_TIF__02139679` (spare) to confirm they set stage 30 vs stage 100/105~~ **RESOLVED**: `chmeq3_tif__0213966f.psc:9` `SetStage(30)` (bad); `chmeq3_tif__02139679.psc:18` `SetStage(100)` + `:9` `SetStage(105)` (good). Polarity 30=bad / 130=good confirmed.
+- ~~dump QUST aliases to confirm alias `#0`=Belharza, `#1`=Enola, `#5`=Bard~~ **RESOLVED** via `qf_zzzchmemoryquest03_0213965a.psc` ALIAS PROPERTY block: `Alias_Emperor`=#0, `Alias_Enola`=#1, `Alias_Bard`=#5. Additional aliases: `Alias_Knight`, `Alias_EnolaSkull`, `Alias_ValraMemory`, `Alias_MemoryMarker01`, `Alias_MemoryMarker02`, `Alias_EnolaTravelMarker`.
+- **Alias `#5` bard actor ref** (what NPC fills `Alias_Bard`): `(unverified: CLI packagediag/npcdiag cannot print alias fill target; needs ESM QUST record alias target dump)`.
+- resolve garbled proper nouns: `Mackamentain`, `Eroisa`/`Polydor`, `Imuga`(Imga), `Shiki`, `Borgas`, `Umariru`(Umaril) — `(unverified: no extracted source resolves these; likely Japanese-to-English machine-translation artifacts)`.
 - no story BOOK is owned by this quest (only `zzzCHBalConjureVarla`/`zzzCHBalConjureRitho` "Piece of Bal" spell items exist) — confirm none was intended.

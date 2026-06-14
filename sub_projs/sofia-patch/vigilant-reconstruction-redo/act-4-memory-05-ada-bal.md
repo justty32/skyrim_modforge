@@ -78,14 +78,14 @@ Host-quest aliases from `scenediag` (8):
 
 Inference:
 - `Marukh` alias `#0` and `Pepe` alias `#1` are the two dialogue aliases used by the two custom branches: the Marukh branch INFOs require `GetIsAliasRef alias #0`, the Pepe branch INFOs require `GetIsAliasRef alias #1` (confirmed by `infodiag`).
-- `Adabal` alias `#5` is the red-stone object the memory revolves around (see [`05AE01 zzzCHAdabalMemory "Red Stone"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:1004) in Related Records). Its fill is not printed by the CLI. (inference)
-- `MemoryDulsa` alias `#6` is Dulsa, the woman Marukh addresses in his branch; its fill is not printed by the CLI. (inference)
+- `Adabal` alias `#5`: fill not printed by `scenediag`. QF PSC `Fragment_25` (`qf_zzzchmemoryquest05_0205ae03.psc` line 114–115) calls `Alias_Adabal.GetRef()` to remove the item from the player at stage 50 (good end), confirming alias `#5` holds a placed ref of the red stone item. The specific fill source (forced ref or unique actor) is not printed by CLI. (unverified: alias fill type/source)
+- `MemoryDulsa` alias `#6`: fill not printed by `scenediag` or `questdiag`. Type is `LocationAlias` per QF PSC header (`qf_zzzchmemoryquest05_0205ae03.psc` lines 6–8: `;BEGIN ALIAS PROPERTY MemoryDulsa` / `;ALIAS PROPERTY TYPE LocationAlias`). This is a **location alias**, not an actor alias — it likely marks the ritual site (Dulsa's position), not Dulsa herself as an NPC. No fill source printed by CLI. (unverified: fill source)
 - The `42E0B4` `GuideMarker` ties this memory to the [`42E0B1 zzzCHMemoryGuide` hub](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:309). (inference)
 
-Travel packages owned by the quest (from `find`):
-- [`05AE11 zzzCHMeq05MarukhTravelToPlayer`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:357) — Marukh walks to the player. (Package record; not dumped here.)
-- [`05AE1E zzzCHMeq05PepeTravelToArcane`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:357) — Pepe walks to the "Arcane" (the stone ritual site). (Package record; not dumped here.)
-- Note: `Arcane` is the mod's recurring term for the Al-Ashe stone ritual (see branch text below); kept as source phrase, 待驗證.
+Travel packages owned by the quest (from `find`; `packagediag` run):
+- [`05AE11 zzzCHMeq05MarukhTravelToPlayer`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:357): template `016FAA:Skyrim.esm`, flags `IgnoreCombat NoCombatAlert`, speed `Run`, destination = `LocationFallback(NearEditorLocation)` radius 256 — Marukh runs toward the player's editor-position anchor.
+- [`05AE1E zzzCHMeq05PepeTravelToArcane`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:357): template `016FAA:Skyrim.esm`, flags `IgnoreCombat NoCombatAlert`, speed `Run`, destination = `LocationTarget(05AE0F:Vigilant.esm)` radius 0 — Pepe runs to placed ref `05AE0F` (a `000034:Skyrim.esm` XMarker at position −576, 1504, 42.21; identified via `refpos`). This is the ritual site ("Arcane").
+- Note: `Arcane` in the source dialogue = the Al-Esh stone ritual. Lore source `12905F` uses "Arkayn Cycle" (`the drive to expunge corruption can conquer even the Arkayn Cycle`), which is the probable origin of the machine-translated `Arcane`; see Proper Noun Resolution below.
 
 Dialog views owned by the quest (from `find`, not dumped):
 - `05AE07 zzzCHMeQ05MarukhView`, `05AE16 zzzCHMeQ05PepeView`.
@@ -193,7 +193,7 @@ Source-grounded link points (vanilla "Aurbic Enigma 4" lore text, reproduced ver
 - [the eightfold Staff of Towers, "each segment a semblance of a tower in its Dance"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:1643) — the "Dance" of the objective "Under the moon, Dance on the dead." (inference)
 
 Translation note:
-- The mod's quest title `Ada Bal` and Marukh's `Stone of Al-Ashe` / `Arcane` are the machine-translated reflections of `Adabal` / `Al-Esh` / the Ayleid ritual. The garbling (`Ada Bal`, `Al-Ashe`, `Arcane`, `Sevenety-Seven`) is preserved in the branch tables above with `Note:` 待驗證 rather than silently corrected.
+- The mod's quest title `Ada Bal` and Marukh's `Stone of Al-Ashe` / `Arcane` are the machine-translated reflections of `Adabal` / `Al-Esh` / the Ayleid ritual. The garbling (`Ada Bal`, `Al-Ashe`, `Arcane`, `Sevenety-Seven`) is preserved in the branch tables above with `Note:` for traceability; resolved forms are in the Proper Noun Resolution section.
 
 ## Reconstruction Notes
 
@@ -208,20 +208,82 @@ Source-grounded:
 Trigger (inference):
 - The hub `42E0B1 zzzCHMemoryGuide` (via `GuideMarker` alias `#7`, `42E0B4`) starts the memory; the player enters and the two travel packages move Marukh to the player (`05AE11`) and Pepe to the ritual site (`05AE1E`). A concrete trigger NPC/item is not printed by current CLI; needs the QUST start condition / target-ref dump. TODO.
 
-How 50 vs 120 is chosen, and polarity (inference, source-grounded shape):
-- Two `CompleteQuest` stages = the index's recurring two-band good/bad (karma) memory signature.
-- The branch openers gate on stage: Marukh branch needs `GetStage == 10` (early), Pepe branch needs `GetStage == 40` (later). The player therefore can hear Marukh's justification first, then later reach Pepe.
-- **Polarity is resolvable from the ESM here** (unlike MeQ07, which the index left as "two outcomes exist"):
-  - The Pepe branch terminal line `05AE1B` is the player begging Pepe to **discard the stone**, and Pepe swears **"I promise by Mara"** — a mercy / abort-the-ritual outcome. → **good**.
-  - The Marukh branch terminal line `05AE0E` is Marukh declaring he **"is willing to sacrifice you and my child"** to complete the stone; the only owned scene is literally `zzzCHMeQ05BadScene` and plays the "Dulsa, forgive me, my Nameless Child" sacrifice (`05AE14`, `DeathEnd`). → **bad**.
-  - Mapping to stages (inference, to confirm via fragments): **stage 50 = the Pepe / good (ritual averted) completion**, **stage 120 = the Marukh / bad (sacrifice carried out, BadScene plays) completion**. The fragment scripts `CHMeq05_TIF__0205AE0E` (Marukh end) and `CHMeq05_TIF__0205AE1B` (Pepe begin+end) are the most likely setters of these stages; decode them to confirm the exact stage each sets.
+How 50 vs 120 is chosen, and polarity — RESOLVED:
+
+Stage routing confirmed from PSC cache. Fragment index references are from `qf_zzzchmemoryquest05_0205ae03.psc` and the two TIF files.
+
+Full stage flow:
+
+| Stage | Fragment (QF) | Key Action | PSC source |
+|---:|---|---|---|
+| 0 | `Fragment_0` | `SetObjectiveDisplayed(0)` | QF line 187 |
+| 10 | `Fragment_2` | `AllowPCDialogue(Marukh)` + FadeOut + `MoveTo(StartMarker)` | QF lines 64–68 |
+| 20 | `Fragment_19` | Kill Marukh if alive; enable Pepe; equip torch | QF lines 75–83 |
+| 30 | `Fragment_8` | `Marukh.SetRelationshipRank(−4)` + `StartCombat(player)` | QF lines 54–57 |
+| 40 | `Fragment_11` | If Marukh dead OR stage 30 done → `SetStage(50)` [good shortcut]; else `Karma.Mod(−3)` + KnockOut + `BadScene.ForceStart()` + `RegisterSceneSkip(self, BadScene, 130, True)` | QF lines 160–180 |
+| 45 | `Fragment_23` | `Karma.Mod(+3)` + `KarmaUp.Show()` | QF lines 152–155 |
+| 50 | `Fragment_25` | Remove Adabal from player; `SetObjectiveCompleted(0)`; `qGuide.SetStage(50)`; `ModRadiance(+3.0)` | QF lines 108–124 |
+| 60 | `Fragment_6` | `stop()` | QF line 48 |
+| 120 | `Fragment_4` | FadeOut + `MoveTo(EndMarker)` + `SetStage(60)` | QF lines 98–103 |
+| 130 | `Fragment_13` | FadeOut + `MoveTo(EndMarker)` + `PlayIdle(GetUp)` + `SetStage(140)` | QF lines 138–147 |
+| 140 | `Fragment_17` | `stop()` | QF line 130 |
+
+`Fragment_21` (`Pepe.AddItem(Alias_Adabal.GetRef())`, QF lines 89–91) is at PSC index 21 between Fragment_19 (stage 20) and Fragment_23 (stage 45); exact stage binding cannot be confirmed from fragment index alone since indices are non-contiguous (deleted entries); content suggests stage 40 second-entry or stage 120. (unverified: exact stage for Fragment_21)
+
+TIF fragment routing:
+
+- `CHMeq05_TIF__0205AE0E` (Marukh `Goodbye` on `05AE0E`, `chmeq05_tif__0205ae0e.psc`):
+  - `Fragment_0` (OnEnd): `GetOwningQuest().SetStage(20)` (line 9)
+  - → Marukh finishes his declaration → stage 20 fires → Marukh is killed, Pepe enabled.
+
+- `CHMeq05_TIF__0205AE1B` (Pepe `Goodbye` on `05AE1B`, `chmeq05_tif__0205ae1b.psc`):
+  - `Fragment_0` (OnBegin): `GetOwningQuest().SetStage(45)` (line 9) → Karma+3 + KarmaUp
+  - `Fragment_1` (OnEnd): `GetOwningQuest().SetStage(50)` (line 16) → good CompleteQuest path
+
+- `SF_zzzCHMeQ05BadScene_0205AE10` (`sf_zzzchmeq05badscene_0205ae10.psc`):
+  - `Fragment_0` (scene complete): `GetOwningQuest().SetStage(130)` (line 8) → fade + GetUp → SetStage(140) → stop()
+
+Polarity confirmed (no longer inference):
+- **Stage 50 = good end** (Pepe promises to discard stone; `TIF 05AE1B Fragment_1` sets stage 50; Fragment_25 removes Adabal, completes objective, notifies hub).
+- **Stage 120 = bad end** (Marukh carries out sacrifice; set by what triggers stage 120 — `Fragment_4` (FadeOut + EndMarker + SetStage(60)) runs on stage 120. Stage 120 is reached via: stage 40 combat (player loses) → `BadScene.ForceStart()` → scene complete sets stage 130 → Fragment_13 (SetStage(140) → stop()). Stage 120 itself is set externally — by the `BadScene` trigger chain: `RegisterSceneSkip(self, BadScene, 130, True)` implies if scene is skipped, go to 130 directly. Stage 120 arrival mechanism: QF Fragment_11 (stage 40) does **not** call `SetStage(120)` directly — it triggers BadScene which ends at 130. Stage 120 is a `CompleteQuest` marker that must be set elsewhere; the most likely setter is within the BadScene completion or another QF entry not decoded here. (unverified: exact setter of stage 120)
+
+Karma delta summary:
+- Good path: stage 40 → stage 45: `Karma.Mod(+3.0)` (`Fragment_23`, QF line 153); additionally `ModRadiance(+3.0)` at stage 50 (`Fragment_25`, QF line 123).
+- Bad path (player knocked out): stage 40: `Karma.Mod(−3.0)` (`Fragment_11`, QF line 167). No Radiance mod on bad path.
+- Global: `zzzCHKarma` (`Vigilant.esm:0x0B19F4` GlobalFloat, confirmed by `find` CLI).
+
+Hub notification: stage 50 → `qGuide.SetStage(50)` (QF `Fragment_25`, line 121); hub is `42E0B1 zzzCHMemoryGuide`.
 
 Subject confirmation:
 - "Pepe" is confirmed as a subject of this quest via the `zzzCHMeQ05PepeB01*` topic EditorIDs (`05AE18`, `05AE1A`) owned by `05AE03` — matches the index's subject→quest map. Marukh and Dulsa also feature (aliases `#0`, `#6`).
 
-Open verification:
-- decode VMAD fragments `CHMeq05_TIF__0205AE0E` (Marukh Goodbye) and `CHMeq05_TIF__0205AE1B` (Pepe begin+end) to confirm which sets stage 50 vs 120 and any item/global granted;
-- dump QUST aliases `#5 Adabal` and `#6 MemoryDulsa` fill (not printed by `scenediag`) and the objective[0] target ref;
-- dump the two `Package` records `05AE11` / `05AE1E` if travel staging matters;
-- confirm `05AE01 zzzCHAdabalMemory "Red Stone"` is the object filled into alias `#5` and whether the good ending removes/keeps it;
-- resolve the garbled proper nouns `Al-Ashe` (= `Al-Esh`?), `Arcane`, `Sheol`, `Shezarr`, `Sevenety-Seven` against the lore book `4A8AFD` and Memory 07's `12905F`.
+## Proper Noun Resolution
+
+Garbled source terms resolved against lore books `4A8AFD` and `12905F`:
+
+| Source term (garbled) | Resolved term | Evidence |
+|---|---|---|
+| `Al-Ashe` | **Al-Esh** | [`12905F` line 138](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:138): "the shade of Al-Esh speak to him" — Alessia's Nedic name. |
+| `Sevenety-Seven` / `Senventy-Seven` | **Seventy-Seven** (Inflexible Doctrines) | [`12905F` line 142](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:142): "the Seventy-Seven Inflexible Doctrines" — Marukh's doctrines, etched in simian gore. |
+| `Arcane` (the ritual / site) | **Arkayn** (Cycle) | [`12905F` line 154](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:154): "the Arkayn Cycle"; machine translation rendered `Arkayn` → `Arcane`. The ritual site is the XMarker `05AE0F` confirmed by `packagediag`. |
+| `Stone of Al-Ashe` | **Chim-el-Adabal** | [`4A8AFD` line 1639](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:1639): "Chim-el-Adabal, said to be crystallized blood from the Heart of Lorkhan"; the quest's `Red Stone` item `05AE01` and alias `#5 Adabal` are its memory-form. |
+| `Shezarr` | **Shezarr** (not garbled) | Canonical TES name for Lorkhan's Cyrodilic aspect (missing god). Marukh's line "Misplaced Shezarr" echoes [`4A8AFD` adjacent text](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:1358): "Misplaced Shezarr bless us!" — verbatim match. |
+| `Sheol` | **Sheol** (kept as-is) | Not a canonical TES term; Hebrew/Semitic word for realm of the dead. Marukh's "Sheol…God of freedom defunct endlessly" maps conceptually to Lorkhan's consumed/absent state but no TES lore exact match found. Preserve as source transcription error or intentional syncretic term. (unverified: TES lore mapping) |
+| `Aldomeri` (shattered) | **Aldmeri** (Dominion/lineage) | Marukh's line: "figure of the hero that shattered Aldomeri" = Tiber Septim / Dragonborn who broke the Aldmeri/Ayleid order. Garbling of `Aldmeri`. (inference) |
+
+## Open Verification (remaining)
+
+RESOLVED — decode VMAD fragments:
+- `CHMeq05_TIF__0205AE0E` Fragment_0 (OnEnd): `SetStage(20)` — confirmed. Stage 20 kills Marukh, enables Pepe. (`chmeq05_tif__0205ae0e.psc` line 9)
+- `CHMeq05_TIF__0205AE1B` Fragment_0 (OnBegin): `SetStage(45)` — confirmed. Karma+3. (`chmeq05_tif__0205ae1b.psc` line 9)
+- `CHMeq05_TIF__0205AE1B` Fragment_1 (OnEnd): `SetStage(50)` — confirmed. Good CompleteQuest. (`chmeq05_tif__0205ae1b.psc` line 16)
+
+RESOLVED — Package records `05AE11` / `05AE1E`: dumped via `packagediag`; destinations and templates confirmed; see Alias/Staging Backbone above.
+
+RESOLVED — proper noun resolution: `Al-Ashe`→`Al-Esh`, `Sevenety-Seven`→`Seventy-Seven Inflexible Doctrines`, `Arcane`→`Arkayn (Cycle)`, `Shezarr` is not garbled; see Proper Noun Resolution table above.
+
+Remaining unverified:
+- alias `#5 Adabal` fill type/source: CLI confirms the alias holds the red stone ref (QF calls `Alias_Adabal.GetRef()`), but `scenediag` does not print the fill source (forced ref vs unique). (unverified: fill source)
+- alias `#6 MemoryDulsa` fill source: type is `LocationAlias` (QF PSC header); fill source not printed by CLI. (unverified: fill source)
+- objective[0] target ref: `questdiag` shows `targets=1 target: flags=0 conds=0` but does not print the target FormID; current CLI cannot deep-dump QUST target refs. (unverified: target FormID)
+- exact setter of **stage 120** (bad CompleteQuest): Fragment_11 (stage 40) triggers `BadScene.ForceStart()` and `RegisterSceneSkip(130)`; stage 130 → Fragment_13 → SetStage(140) → stop. Stage 120 is a `CompleteQuest` marker but no QF fragment is identified that calls `SetStage(120)` in the decoded PSC; possibly set by an additional stage-log entry not visible in the PSC cache or by the BadScene's scene-manager `VigSceneManagerQuestScript`. (unverified: stage 120 setter)

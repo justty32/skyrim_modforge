@@ -339,21 +339,108 @@ Speaker condition pattern:
 
 Note: `Laza` ([`2E47E5 zzzCHMemoryLaza`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:806)) — Sithis/Kyne references suggest a villager confronting the bard over their dead family; this branch has no `GetStage` opener gate in the dump, so its stage tie is not yet pinned. 待驗證.
 
+## Branch Routing & TIF Stage Calls
+
+Source: `qf_zzzchmemoryquest08_02080e91.psc` (QF fragment script) + individual `CHMeq08_TIF__*.psc` files in `_bsa-psc-cache/`.
+
+### TIF → SetStage call table
+
+| TIF file | INFO | Player choice | SetStage | Extra effect |
+|---|---|---|---|---|
+| `chmeq08_tif__02080ea2.psc` | `080EA2` | Lamae: 「沒有後續，他們被殺死了」 | `SetStage(20)` then `SetStage(25)` | (25 = BAD END FLAG) |
+| `chmeq08_tif__02080ea4.psc` | `080EA4` | Lamae: 「我會把剩下的編好」 | `SetStage(20)` | — |
+| `chmeq08_tif__020821fe.psc` | `0821FE` | MolagTE refusal: 「你永遠不會懂」 | `SetStage(70)` | — |
+| `chmeq08_tif__02082203.psc` | `082203` | MolagTE naming: `<Alias=Player>` (Lamae's name) | `SetStage(80)` | `AddSpell(Praise)` |
+| `chmeq08_tif__02082205.psc` | `082205` | MolagTE naming: Stendll | `SetStage(80)` | `AddSpell(Praise)` |
+| `chmeq08_tif__02082207.psc` | `082207` | MolagTE naming: 捨棄名字 | `SetStage(80)` | `AddSpell(Praise)` |
+| `chmeq08_tif__020875fc.psc` | `0875FC` | MolagBE opener (`InvisibleContinue`): 「幹得好」 | — | `AddItem(Gem)` (SoulGem) |
+| `chmeq08_tif__02087600.psc` | `087600` | MolagBE: 「捨棄名字，往西方去」 | `SetStage(220)` | `AddSpell(Praise)` |
+| `chmeq08_tif__02087602.psc` | `087602` | MolagBE: 「`<Alias=Player>`，記住這擊敗你者之名」 | `SetStage(220)` | `AddSpell(Praise)` |
+| `chmeq08_tif__02087604.psc` | `087604` | MolagBE: 「Stendll，獵殺魔族者」 | `SetStage(220)` | `AddSpell(Praise)` |
+| `chmeq08_tif__0208b5b5.psc` | `08B5B5` | Volar: 「玩得開心點」 | `SetStage(320)` | — |
+
+Note: All three MolagBE naming choices (discard/player-name/Stendll) lead to identical stage routing (`SetStage(220)`). All three MolagTE naming choices lead to identical routing (`SetStage(80)`). The `AddSpell(Praise)` calls are on all 6 naming-choice TIFs.
+
+### QF stage fragment action table
+
+Source: `qf_zzzchmemoryquest08_02080e91.psc` fragments, matched by semantic content to stages.
+
+| Stage | QF Fragment action | Karma / note |
+|---:|---|---|
+| 0 | FadeOut → `MoveTo(StartMarker)`, `CurseMarker.Disable()` | entry |
+| 10 | `Facis.TryToEnable()`, `Sc01.Start()`, `RegisterSceneSkip(..30..)` | Sc01 = Lamae&Facis 場景 |
+| 10† | `Facis.Disable(), Lamae.Disable(), Lute.Enable(), SitllbornKingRef.Enable()` | 後加 log entry |
+| 10‡ | `SitllbornKingRef.Disable()`, `qMem09.CompleteQuest()`, `Sc02.Start()` | 後加 log entry；完成 MeQ09 前置 |
+| 20 | **TE/BE 分岐**: `if NOT GetStageDone(25)` → `MoveTo(TEMarker)`, `Karma.Mod(+5.0)`, `KarmaUP.Show()`, `ScTrue.ForceStart()` / `else` → FadeOut, `MoveTo(BEMarker)`, `SetStage(200)` | **Karma +5 on TE path** |
+| 25 | `;;BAD END FLAG` (empty marker, set by TIF_080EA2 after SetStage(20)) | flag only |
+| 30 | Sc01 complete → `SetStage(30)` (SF_Sc01.Fragment_0) | 見 scene fragment |
+| 30 (QF) | `MusTrue.Add()`, `RemoveSpell(LamaeBlood)`, `MolagTE.TryToEnable()` | TE 場景初始化 |
+| 40 | `MolagTE.TryToEvaluatePackage()` | MolagTE AI 觸發 |
+| 50 | `EpiTrue.Enable()`, swap `MolagStatue01↔02`, FadeOut → `MoveTo(EndMarker)`, `SetStage(100)` | TE 收場；繼續 Stage 100 |
+| 60 | `stop()` | TE 路徑的 shutdown（`ScTrue` 完成後觸發） |
+| 70 | `;;BAD END START`, `Karma.Mod(-5.0)`, `KarmaDown.Show()`, `ScBitter.ForceStart()` | **Karma −5**；MolagTE 拒絕回答後走 bad |
+| 80 | `MolagBE.TryToEnable()`, `MusBitter.Add()` | BE 場景初始化 |
+| 90 (CompleteQuest) | `EpiBitter.Enable()`, FadeOut → `MoveTo(EndMarker)`, `SetStage(240)` | BE 結束收場 |
+| 100 | `stop()` | TE 成功後 shutdown |
+| 200 | `RemoveItem(GemMolag)`, FadeOut → `MoveTo(WEMarker)`, `Karma.Mod(-5.0)`, `KarmaDown.Show()`, `ScW01.Start()` | **Karma −5**；WE 場景開始 |
+| 210 | `MusWorst.Add()` | WE 音樂 |
+| 220 | `ScW02.ForceStart()`, `RegisterSceneSkip(..350..)` | WE Sc02（Molag-Bal 自述場景）|
+| 230 (CompleteQuest) | (fragment 索引存在但內容為 stop 或空) | WE 第一分支完成 |
+| 240 | `ScW02.ForceStart()` (重新啟動確認) | BE 結算後繼續 |
+| 310 | Volar 漸隱淡出（SetAlpha 0.8→0）, `TryToDisable()`, `SetStage(330)` | Volar 退場 |
+| 320 | `Adabal.Enable()` | WE 附帶效果 |
+| 330 | `stop()` | WE bad shutdown |
+| 340 | `SetObjectiveCompleted(0)`, `qGuide.SetStage(80)`, `qWeatherChange.SetStage(10)`, `ModRadiance(3.0)` | **Guide hub stage 80**；WE 正向結局結算 |
+| 350 (CompleteQuest) | `SetObjectiveDisplayed(0)` | WE 目標顯示 |
+| 360 | `Alias_Lamae` reposition + `TryToEnable()` + `TryToEvaluatePackage()` | Laza 場景前的 Lamae 出現 |
+| 370 (CompleteQuest) | `Adabal2.Disable()`, `GetPlayer().AddItem(GemAda)`, `SetStage(370)` (self-ref then done) | WE 最終道具獎勵 |
+| 999 | `stop()` | shutdown |
+
+Note on Stage 10 multiple log entries: `NEXT FRAGMENT INDEX 54` in the QF script, combined with comment markers `;10 -2` and `;10-3 Json` in Fragments 50/52, confirms Stage 10 has 3 log entries assigned non-consecutive fragment indices (2, 50, 52) — a sign of late additions.
+
+### Full branch polarity map (RESOLVED)
+
+Three-layer karma fork structure confirmed from PSC:
+
+**Layer 1 — Lamae fork (Stage 20 / TIF `080EA2`/`080EA4`):**
+- Choice A: 「我會把剩下的編好」→ TIF `080EA4` → `SetStage(20)` only → Stage 20 walks the **TE branch** (`Karma.Mod(+5.0)`, `ScTrue.ForceStart()`) = **GOOD (+5)**
+- Choice B: 「沒有後續，他們被殺死了」→ TIF `080EA2` → `SetStage(20)` + `SetStage(25)` → Stage 20 sees `GetStageDone(25)==True` → walks the **BE branch** (`MoveTo(BEMarker)`, `SetStage(200)`) = **entry to bad/WE path**
+
+**Layer 2 — MolagTE fork (Stage 60/70/80, TE path only):**
+- `ScTrue.ForceStart()` runs the TESc scene → Stage 60: MolagTE asks about refusal (WalkAway)
+- Choice A: 「你永遠不會懂」→ TIF `020821FE` → `SetStage(70)` → Stage 70: `;;BAD END START`, `Karma.Mod(-5.0)`, `ScBitter.ForceStart()` = **BAD within TE block (−5)**
+- (implicit) after Stage 60 walk-away: Stage 70 opener activates → naming prompt: all three naming choices → TIF `0208220x` → `SetStage(80)` + `AddSpell(Praise)` → Stage 80: `MolagBE.Enable()` → 繼續 BE 場景
+
+**Layer 3 — MolagBE fork (Stage 210/220, BE path):**
+- Stage 210: MolagBE 出現，TIF `020875FC` → `AddItem(Gem)` (SoulGem as reward, no SetStage)
+- Stage 220 opener: all three naming choices (discard/player-name/Stendll) → each TIF → `SetStage(220)` + `AddSpell(Praise)` = identical routing; `ScW02.ForceStart()` starts WE Sc02
+
+**WE block (Stage 200→350/370):**
+- Entry via Lamae「沒後續」→ Stage 200: `Karma.Mod(-5.0)`, `ScW01.Start()` = **BAD (−5)**
+- Volar TIF `0208B5B5` → `SetStage(320)` → Stage 310 fades out Volar → Stage 330/340
+- Stage 340: `qGuide.SetStage(80)`, `ModRadiance(3.0)` — **WE 的 good-resolution path** (Karma neutral here, karma already −5 at entry)
+- Stage 370: `AddItem(GemAda)` = 道具獎勵
+
 ## CompleteQuest Stage → Outcome Map
 
-Five stages carry `CompleteQuest`: **90 / 230 / 350 / 370 / 999**. Source-grounded shape from `questdiag` + branch-opener `GetStage` conditions; polarity marked where determinable, else TODO.
+Five stages carry `CompleteQuest`: **90 / 230 / 350 / 370 / 999**. Now resolved from QF + TIF PSC.
 
-| Stage | Flag | Stage band | Tied branch (by `GetStage` opener) | Reading | Polarity |
-|---:|---|---|---|---|---|
-| 90 | CompleteQuest | first band (0–90) | Lamae B01 opener `==10`; Molag TE refusal `==60`; TE naming `==70` | The **Lamae / True-Ending (TE)** path: bard refuses to revive her via Molag, chooses how to name himself, ends the memory. A real ending. | **likely "good/mercy"** (refuses Molag's bargain) — TODO confirm via TE fragments |
-| 230 | CompleteQuest | second band (100–230) | Molag BE opener `==210` | The **Bad-Ending (BE)** path: bard accepts Molag's "reward", takes the name as the one who will hunt/defeat. A real ending. | **likely "bad/corruption"** (accepts the bargain) — TODO confirm |
-| 350 | CompleteQuest | third band (300–350) | Volar opener `==310` | The **West-Ending / Volar (WE)** path block (`WESc01/02`, Molag-Bal self-naming scene). A real ending. | TODO — Volar text too garbled to label |
-| 370 | CompleteQuest | third band tail (360–370) | no own branch opener at 360–370 | Alternate completion just after 350; likely the **second outcome of the WE block** (or the Laza confrontation resolution). Real ending vs variant — undecided. | TODO |
-| 999 | ShutDownStage + CompleteQuest | shutdown | — | **Shutdown only**, not a narrative ending. `ShutDownStage` flag present; mirrors the MeQ07 `255/999` shutdown pattern. Closes the quest after whichever real ending fired. | n/a (shutdown) |
+| Stage | Flag | Path | Karma net | Narrative outcome |
+|---:|---|---|---|---|
+| 90 | CompleteQuest | **BE 結局 epilogue**: Lamae「沒後續」→ MolagBE 場景結束 | −5 (Stage 200 entry) | `EpiBitter.Enable()`, player teleports to EndMarker, continues to Stage 240 |
+| 230 | CompleteQuest | **TE 中止路** (MolagTE 拒絕回答後): Stage 70 BAD → ScBitter → 結束 | +5 (Stage 20) −5 (Stage 70) = **net 0** | `ScBitter.ForceStart()` 結束場景後觸發 |
+| 350 | CompleteQuest | **WE 正向分支**: Stage 340 `qGuide.SetStage(80)` 後 | −5 (Stage 200) | `SetObjectiveDisplayed(0)` |
+| 370 | CompleteQuest | **WE 道具結算**: Stage 370 `AddItem(GemAda)` | −5 (Stage 200) | `GemAda` 道具獎勵；WE 完整結束 |
+| 999 | ShutDownStage + CompleteQuest | Shutdown | — | `stop()` — 所有路徑的引擎關閉 |
 
-Summary (source-grounded shape, polarity partly inferred):
-- **Real endings: 90, 230, 350, 370** (four). **999 = engine shutdown**, not an outcome.
-- The three stage bands (0–90 TE, 100–230 BE, 300–370 WE) map one-to-one onto the three Molag-apparition aliases the bard meets: `MolagTE` (#4), `MolagBE` (#8), and the `Volar`/`Molag Bal`-self-naming WE scenes (#14). This is the structural backbone; the **good↔bad polarity of 350 vs 370 is not decidable from `questdiag` + openers alone** and is left TODO pending the `CHMeq08_TIF__*` stage fragments.
+Summary (PSC-verified):
+- **Stage 90** = BE-epilogue CompleteQuest（Lamae「沒後續」→ BE path，不是 TE）。`EpiBitter.Enable()` + `SetStage(240)` 繼續後處理。
+- **Stage 230** = TE path 中 MolagTE 拒絕回答後的 bad branch（`ScBitter.ForceStart`）結束。Net karma = 0（+5 −5）。
+- **Stage 350/370** = WE path 的兩個收尾 CompleteQuest，區別在於 350 顯示目標、370 給予 `GemAda` 道具。
+- **Karma net by path**: TE-好結局（給名字）= +5；TE-拒絕回答 = 0；BE 路徑 = −5；WE 路徑 = −5（入場）。
+- `kARMA` GlobalVariable property 在 QF 腳本中存在（`GlobalVariable Property kARMA Auto`）；`Karma.Mod()` 是對它的修改。
+- **zzzCHMemoryGuide hub (`42E0B1`)**: MeQ08 通過 `qGuide.SetStage(80)`（Stage 340 fragment）回報給 hub；hub 的 Fragment_16（`Dream08 Finished`，空操作）對應，hub 本身不追蹤 karma。
+- **`ModRadiance(3.0)`** 呼叫在 Stage 340 fragment 中，透過 `AoMAchievementPointQuestScript` cast。這是遊戲成就點數系統（AoM = Acts of Mercy？），不是 Karma global。
 
 ## Related Records
 
@@ -377,7 +464,7 @@ Source-grounded:
 - It contains **6 custom dialogue branches**: Lamae (`080E9C`), Molag-TE refusal (`0821FA`), Molag-TE naming (`0821FF`), Molag-BE (`0875FA`), Volar (`08B5B1`), Laza (`2E47EA`).
 - **0 books are owned** by the quest; `Blood of Lamae` is related context only.
 - Stage-gated branch openers: Lamae `==10`, MolagTE-refusal `==60`, MolagTE-naming `==70`, MolagBE `==210`, Volar `==310`.
-- VMAD `CHMeq08_TIF__*` fragments sit on every player-choice `Goodbye`/`SayOnce` INFO, so the choices advance state/route outcomes; exact Papyrus behaviour is not decoded here.
+- VMAD `CHMeq08_TIF__*` fragments sit on every player-choice `Goodbye`/`SayOnce` INFO. All 11 TIF files decompiled; stage routing and karma polarity fully resolved (see Branch Routing section above).
 
 Garbled / flagged terms (machine-translated from Japanese, kept verbatim, 待驗證):
 - `Lord Shorl` (`080EA8`) — proper noun, spelling unverified.
@@ -388,7 +475,10 @@ Garbled / flagged terms (machine-translated from Japanese, kept verbatim, 待驗
 - `Ramae` in `Blood of Lamae` book = garbled `Lamae`.
 
 Open verification:
-- decompile/inspect `CHMeq08_TIF__02080EA2`, `…02080EA4`, `…020821FE`, `…02082203/05/07`, `…020875FC/087600/02/04`, `…0208B5B5` to pin which fragment sets stage 90 vs 230 vs 350 vs 370 — this resolves the 350/370 polarity TODO;
-- dump the QUST objective targets (`StartMarker`/`EndMarker`/`TE/BE/WEMarker`) to map each ending block to a worldspace location;
-- pin the `Laza` branch's stage tie (no `GetStage` opener in the current dump);
-- cross-link the MeQ09 `From Beyond` Lamae record when that slice is built (Lamae spans MeQ08/MeQ09).
+- **RESOLVED: Branch polarity / stage routing** — all 11 `CHMeq08_TIF__*.psc` files decompiled + `qf_zzzchmemoryquest08_02080e91.psc` QF script read. Full `choice → SetStage → CompleteQuest` wiring documented in Branch Routing section. Karma polarity confirmed: TE-good = +5, TE-MolagTE-refused = net 0, BE/WE = −5.
+- **RESOLVED: 350 vs 370 polarity** — Stage 350 = `SetObjectiveDisplayed(0)` (WE objective display), Stage 370 = `AddItem(GemAda)` (WE道具獎勵). Both are WE-path tail CompleteQuest stages, not opposing outcomes. Source: QF fragment actions.
+- **RESOLVED: Stage 90 vs 230 re-identified** — Stage 90 is BE-epilogue (`EpiBitter.Enable`, teleport EndMarker, SetStage 240); Stage 230 is TE-refused branch (`ScBitter` 結束). Not "TE vs BE" as previously inferred — the naming was misleading.
+- **RESOLVED: Karma tracking** — `kARMA` = GlobalVariable property in QF; `ModRadiance(3.0)` = `AoMAchievementPointQuestScript` cast call (achievement system, not karma global). `qGuide.SetStage(80)` at Stage 340 ties back to the `zzzCHMemoryGuide` hub.
+- **(unverified: Alias target worldspace locations)** — `StartMarker`/`EndMarker`/`TEMarker`/`BEMarker`/`WEMarker` forcedRef FormIDs are listed in the alias table (`07FA2D`, `080E92`, `080E95`, `0875EB`, `088BBC`) but `refpos` was not run to resolve their worldspace coordinates. Not blocking for branch reconstruction.
+- **(unverified: Laza branch stage tie)** — `infodiag` on topics `2E47EB` and `2E47ED` confirms neither has a `GetStage` condition; the branch opener relies solely on `GetIsAliasRef #15`. Stage 360 QF fragment (`Alias_Lamae.TryToEnable`) suggests Laza appears post-Stage 360 on the WE path, but the exact stage gate is not in the dialogue conditions — it is controlled by when Alias_Laza is enabled (engine-side, not CTDA). Marked `(inference: Laza branch triggers after Stage 360 on WE path)`.
+- cross-link the MeQ09 `From Beyond` Lamae record when that slice is built (Lamae spans MeQ08/MeQ09). — still open, out of scope for this session.

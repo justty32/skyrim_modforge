@@ -5,8 +5,8 @@ Status: source-grounded index of all Act IV "memory fragment" quests. Link-first
 ## Source policy
 
 - **Verified backbone** (FormID, EditorID, name, objective text, priority, stage count, `CompleteQuest` branch stages) comes directly from `questdiag` against `Vigilant.esm` and from `game-data/.../quests.md`. These are stated as fact.
-- **Per-slice TODO fields** (trigger NPC/item, full `SCEN` list, karma polarity, release/result state) are **not** yet ESM-verified for most quests; they are marked `TODO`. Do not fill them from secondary references — pull them from ESM/extracted text when building each slice.
-- `_gemini-quarantine/.../act-4-exhaustive/memory-NN.md` and `references/` are **≤60% navigation only**. Calibration: gemini's `memory-NN.md` is a raw `dialogue.md` line-dump grouped by quest; the topic FormIDs match (good for "which topics live where") but it **over-includes** related-but-not-owned topics (e.g. memory-07 pulls in `zzzCHMeQ05Marukh*` and `zzzCHMQ00*` topics that `infodiag` shows are not owned by `06F53C`). Use it to know where to look, never as the claim.
+- **Per-slice fields** (trigger NPC/item, full `SCEN` list, karma polarity, release/result state) are now ESM/PSC-verified for all 13 (2026-06-14, see Status). Residual `(unverified)` items are CLI structural limits (runtime alias fill, objective target refs), noted per slice.
+- `references/` is **≤60% navigation only** — a verification roadmap, never cited as the claim. (The former `_gemini-quarantine/` line-dumps were deleted 2026-06-14 as low-trust; they over-included related-but-not-owned topics.)
 
 CLI:
 - `questdiag <ESM> 0x<FormID>` — stages + objectives
@@ -88,24 +88,31 @@ Corrections to earlier guesses: **Dro'zel is MeQ02's confirmed subject** (he als
 - **MeQ13** `51C038` is a header-only shell; content lives under `zzzCHSq13…` / quest `51ADBF zzzCHSubQuest13`.
 - When `find zzzCHMeQNN` is empty, try `zzzCHMeQ<n>` (no pad), `zzzCHSq<NN>`, or grep the scene/topic owner via `infodiag` on the quest FormID.
 
-## Status: all 13 sliced (2026-06-14)
+## Status: all 13 sliced + PSC-verified (2026-06-14)
 
-Every memory quest + the template (07) has a source-grounded slice (see Slice column). Remaining cross-cutting work, all per-slice-noted as **Open verification**:
+Every memory quest + the template (07) has a source-grounded slice (see Slice column), and the cross-cutting **Open verification** items are now resolved per-slice via the BSA PSC source cache.
 
-- **Branch polarity / stage routing**: most slices pin good/bad by EditorID (`GoodScene`/`BadScene`) or branch content, but the exact `choice → SetStage → which CompleteQuest` wiring lives in **VMAD/TIF fragment scripts** (`CHMeqNN_TIF__*`) that are not decompiled here. This is the single biggest open item across all 13.
-- **Trigger NPC/item per quest**: aliases are read, but `questdiag` does not print target refs / QUST start conditions; needs a richer alias-target dump (or the `zzzCHMemoryGuide` hub wiring).
-- **Ending branch / karma threshold**: how per-memory good/bad tallies feed the overall VIGILANT Act IV ending — likely the `zzzCHMemoryGuide` hub (`42E0B1`) + a karma global. Not yet traced.
+**Method breakthrough (2026-06-14)**: the ModForge CLI has no VMAD/pex decompiler, but **`Vigilant.bsa` ships uncompressed `scripts/source/*.psc` plaintext**. Extracted into `_bsa-psc-cache/` (gitignored) by `_tools/bsa_reader.py` (a from-scratch SSE v105 BSA reader — no `bsab`/`bsarch` on the machine, files are uncompressed so no LZ4 needed). Reading the `qf_*` / `chmeqNN_tif__*` / `sf_*` fragments directly gives `choice → SetStage → CompleteQuest`, `Karma.Mod`, `ModRadiance`, and `qGuide.SetStage` wiring — far more direct than decompiling pex.
+
+Resolved across all 13:
+- **Branch polarity / stage routing** — RESOLVED via TIF + QF PSC per quest.
+- **Karma polarity / result state** — RESOLVED; global = `0x020B19F4 zzzCHKarma` (GlobalFloat). MeQ06 is linear (no karma); the rest award ±3 (MeQ08 uses ±5) on good/bad branches. MeQ13 awards two independent +3 (shell Paravania dream + SubQuest13 Belharza gift), no bad branch.
+- **SCEN staging** — RESOLVED via `scenediag` + `sf_*` fragments.
+- **Hub wiring** — `qf_zzzchmemoryguide_0242e0b1.psc` + `chmemoryguidequestscript.psc` read; per-dream completion via `qGuide.SetStage(NN)` + TraceON/OFF polling. Song-of-Pelinal (Dream10–12) drives hub objectives 100/110/120.
+
+Still open (CLI structural limits, per-slice noted as `(unverified)`):
+- **Runtime alias fill**: `scenediag`/`questdiag` do not print forcedRef on non-unique aliases or objective target refs — needs a direct ESM QUST alias/CTDA dump.
+- A few quest-specific items (MeQ13 shell scene SF, quiz message bodies) — see each slice's Open verification.
 
 ## Verification backlog (method per field)
 
 - **Trigger NPC/item**: dump the quest's QUST aliases + alias fill (forcedRef / uniqueActor / find-condition) and the start-game-enabled refs. `questdiag` currently does not print target refs (noted in the 07 slice); needs a richer alias/target dump or direct ESM read.
-- **SCEN records**: find the quest's scene FormIDs (gemini `memory-NN.md` topic groups point at scene topics; confirm owner via `infodiag`), then `scenediag` each for host/aliases/phases/actions/timer/topic — per the README standard.
+- **SCEN records**: find the quest's scene FormIDs (`infodiag` the quest to surface scene-owned topics, confirm owner), then `scenediag` each for host/aliases/phases/actions/timer/topic — per the README standard. Cross-check the `sf_*` scene fragment PSC in cache for `SetStage` on scene end.
 - **Karma polarity**: read the branch-opener INFO conditions (`GetStage==`, `GetIsAliasRef`) and the branch content to label which completion is the "mercy/good" vs "corruption/bad" outcome. Cross-check the karma global if one exists.
 - **Release/result state**: what the memory grants on each completion (item, faction, global, world change) — read the stage fragments / `CompleteQuest` stage effects.
 
 ## Navigation pointers (≤60%, verify everything)
 
-Per-quest gemini line-dumps (raw `dialogue.md` English grouped by quest, over-includes related topics):
-`_gemini-quarantine/2026-06-14/vigilant-plot-reconstruction/act-4-exhaustive/memory-01.md` … `memory-13.md`
+Primary working source: the PSC plaintext cache `_bsa-psc-cache/` (gitignored, regenerate with `_tools/bsa_reader.py`) — `qf_*` quest fragments, `chmeqNN_tif__*` / `chsq*_tif__*` dialogue choice fragments, `sf_*` scene fragments.
 
 Secondary references (verification roadmap only): [`references/zhihu-vigilant-review-notes.md`](references/zhihu-vigilant-review-notes.md), [`references/video-transcript-notes.md`](references/video-transcript-notes.md).

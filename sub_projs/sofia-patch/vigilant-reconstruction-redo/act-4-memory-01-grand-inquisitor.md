@@ -63,16 +63,24 @@ The two `SCEN` records below share the same host quest and aliases.
 Host quest:
 - [`12C4F4 zzzCHMemoryQuest01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:140)
 
-Host-quest aliases from `scenediag`:
+Host-quest aliases from `scenediag` (confirmed; all 6 aliases listed):
 
 | Alias | Name | Fill |
 |---:|---|---|
 | 0 | `Mara` | uniqueActor [`0F9649 zzzCHBossShoggothMother "Mary the Dark Virgin"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:262) |
 | 2 | `Inquisitor` | uniqueActor [`12BF48 zzzCHInquisitorPepeMemory "Inquisitor Pepe"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:558) |
-| 3 | `Molag` | not printed by CLI (no static fill) |
+| 3 | `Molag` | no static fill (runtime-filled; see Scene02 Dialog action, actor #3) |
 | 4 | `Door` | forcedRef `12BED7:Vigilant.esm` |
 | 5 | `TravelMarker` | forcedRef `12BF4C:Vigilant.esm` |
-| 6 | `MaraMemory` | not printed by CLI (no static fill) |
+| 6 | `MaraMemory` | **LocationAlias** (not ReferenceAlias); no static fill — confirmed from `qf_zzzchmemoryquest01_0212c4f4.psc`: `LocationAlias Property Alias_MaraMemory Auto` |
+
+Alias notes:
+- Alias `#3 Molag` has no static fill; it is a second scene actor in Scene02 (see below). (unverified: `questdiag` does not print runtime fill conditions; no `find-condition` or `start-game-enabled` ref is visible from CLI alone)
+- Alias `#6 MaraMemory` is a **LocationAlias**, not a ReferenceAlias — it fills a memory location, not an actor. This was only discoverable from the QF psc source (`LocationAlias Property Alias_MaraMemory Auto`), not from `scenediag`.
+
+Trigger NPC/item:
+- No dedicated trigger NPC or item is owned by this quest. Alias fill (#0 Mara, #2 Inquisitor) is by uniqueActor (static). The quest is started externally by `zzzCHMemoryGuide` (`42E0B1`) via `CHMemoryGuideQuestScript.TraceON(Dream01, 0)` → `Dream01.SetStage(0)` (confirmed from `qf_zzzchmemoryguide_0242e0b1.psc`). The hub quest's stage 0 fragment calls `TraceON` on all 13 Dream quests simultaneously. (source: `qf_zzzchmemoryguide_0242e0b1.psc` Fragment_0)
+- The quest does not use a `find-condition` or item-gate alias fill; it is purely stage-driven from the hub.
 
 Inference:
 - The **subject / speaker** of this memory is alias `#2` `Inquisitor` = `Inquisitor Pepe`. Every custom branch INFO is gated on `GetIsAliasRef == 1` for alias `#2`, so the Grand Inquisitor monologue is his.
@@ -175,6 +183,38 @@ Packages (from `find zzzCHMeQ01`) — drive the scene actors:
 Books:
 - No book is owned by this quest. The Pepe/Mara/Alessian-Order theme recurs in several Vigilant in-game notes (e.g. [books.md mentions of Pepe priest + Mary statue](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:9), [Mara burning narrative](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:1274)), but those are not `12C4F4` records; cross-link only, do not attribute. (inference)
 
+## Stage → Fragment Routing (VMAD decoded)
+
+Source: `qf_zzzchmemoryquest01_0212c4f4.psc` (extracted from `Vigilant.bsa`) + raw VMAD parse of QUST `0x0212C4F4`.
+
+CLI: VMAD was read by direct ESM binary parse (Python); the ModForge CLI has no `vmad` or `pex` subcommand. TIF psc files were extracted from `Vigilant.bsa` scripts/source/ folder.
+
+QUST VMAD fragment table (10 entries, fragCount=10, fileName=`QF_zzzCHMemoryQuest01_0212C4F4`):
+
+| Stage | Fragment | PSC Action | Semantic |
+|---:|---|---|---|
+| 0 | `Fragment_11` | `SetObjectiveDisplayed(0)` | Quest start → show objective |
+| 1 | `Fragment_13` | `;1 Stage for Start Quest` (comment only, no-op) | Startup marker |
+| 10 | `Fragment_0` | `SoulEffect.Play` → `MoveTo(Alias_TravelMarker)` | Player teleports into memory |
+| 20 | `Fragment_2` | `;Good` — `Karma.Mod(3.0)`, `KarmaUP.Show()`, open Door, Molag fade+disable | **Good / mercy completion** |
+| 30 | `Fragment_4` | `FadeOut` → `MoveTo(ReturnMarker)` → `SetStage(40)` | Return player to reality (good path) |
+| 40 | `Fragment_7` | `stop()` | Quest shutdown after good path |
+| 100 | `Fragment_3` | `;Bad` — `Karma.Mod(-3.0)`, `KarmaDown.Show()`, `BadScene.ForceStart()` | **Bad / corruption completion** |
+| 110 | `Fragment_6` | `FadeOut` → `MoveTo(ReturnMarker)` → `SetStage(120)` | Return player to reality (bad path) |
+| 120 | `Fragment_5` | `stop()` | Quest shutdown after bad path |
+| 999 | `Fragment_9` | `SetObjectiveCompleted(0)` + `qGuide.SetStage(10)` + `ModRadiance(3.0)` | ShutDown reward (objective complete + hub advance) |
+
+TIF fragments (from `chmeq1_tif__*.psc` in `Vigilant.bsa`):
+- `chmeq1_tif__0212caa3.psc` (INFO `12CAA3`, `T02` "It..." prompt, `Goodbye/SayOnce`): `GetOwningQuest().SetStage(100)` → triggers Fragment_3 = **Bad**
+- `chmeq1_tif__0212d059.psc` (INFO `12D059`, `T10` "......(Stare)" prompt, `Goodbye/SayOnce`): `GetOwningQuest().SetStage(20)` → triggers Fragment_2 = **Good**
+
+## Branch / Karma Polarity (resolved)
+
+- **Good (mercy) outcome**: player stays silent through the entire monologue and only stares (`T10` prompt) → `12D059` TIF fires → `SetStage(20)` → Fragment_2: `Karma.Mod(+3.0)`, KarmaUP message, Door opens, alias `#3 Molag` fades and is disabled. Karma global: `0x020B19F4 zzzCHKarma` (GlobalFloat).
+- **Bad (corruption) outcome**: player breaks silence with "It..." (`T02` prompt, prio 45, fires earlier than T03-T09 `SayOnce` chain) → `12CAA3` TIF fires → `SetStage(100)` → Fragment_3: `Karma.Mod(-3.0)`, KarmaDown message, `BadScene.ForceStart()`. The `BadScene` property (formid `0x0212DBAD`? — unverified: VMAD object property reads `0x0212C4F4` alias encoding) launches an additional scene.
+- Scene02 Fragment (`sf_zzzchmeq01scene02_0212dbad.psc`): `GetOwningQuest().SetStage(110)` — fired when Scene02 completes (Phase 2 end). This routes to Fragment_6 (return to reality, bad path).
+- Karma global `zzzCHKarma` (`0x0B19F4` local, `0x020B19F4` full): confirmed from VMAD Object property for `kARMA` prop in QF script = formid `0x020B19F4`. Range not decoded here; polarity summary: silence/endurance = +3, breaking/answering = -3.
+
 ## Reconstruction Notes
 
 Source-grounded:
@@ -182,23 +222,22 @@ Source-grounded:
 - It contains **two `SCEN` records** (`12DBA7 Scene01`, `12DBAD Scene02`), both staged with `Package` actions; only Scene02 has a single `Dialog` action (alias `#3 Molag`, topic `12DBB0`).
 - It contains **one custom dialogue branch** (`12CA9F`), a 10-topic / 11-INFO single-speaker monologue by `Inquisitor` (alias `#2` = Inquisitor Pepe), all gated on `GetIsAliasRef alias #2` with **no `GetStage` gate**.
 - The subject/speaker is **Inquisitor Pepe**; the addressee is **"Mara"** (alias `#0`). The objective "sink in silence" matches the player's prompts being silence/stare only.
-- VMAD fragments exist on the two `Goodbye/SayOnce` choices (`12CAA3` → `CHMeq1_TIF__0212CAA3.Fragment_0`; `12D059` → `CHMeq1_TIF__0212D059.Fragment_0`), indicating these likely advance quest state / route the completion. Exact Papyrus behavior is not decoded here.
+- VMAD fragment routing is now fully decoded (see Stage → Fragment Routing section above). TIF psc source files were read from `Vigilant.bsa` scripts/source/ folder; QUST VMAD was parsed from raw ESM binary.
 
-How 20 vs 100 is chosen (branch-stage analysis):
-- `questdiag` shows two `CompleteQuest` stages: **20** and **100** — the index's recurring two-band karma signature.
-- **Unlike MeQ07, the branch INFOs here carry NO `GetStage` gate**, so the 20-vs-100 routing is NOT visible as two stage-gated dialogue openers. It must instead be set by the **VMAD fragments** on the two `Goodbye` exits (`12CAA3` = the early angry "burn you tomorrow" exit at `T02`, prio 45; `12D059` = the final "get out" exit at `T10`, prio 55). (inference)
-  - `12CAA3` (`T02`, `Goodbye/SayOnce`, prio 45) is the **early walk-away**: the player breaks silence ("It...") and the Inquisitor cuts it off → plausibly routes the **early completion (stage 20)**. (inference)
-  - `12D059` (`T10`, `Goodbye/SayOnce`, prio 55) is the **end-of-monologue exit** after the player stays silent through the whole speech → plausibly routes the **late completion (stage 100)**. (inference)
-- **Good/bad polarity: UNRESOLVED from condition data.** There is no `GetStage` or karma-global condition on these INFOs to read polarity off. Decoding the two TIF fragment scripts (which stage each calls `SetStage` with) is required to assign which completion is the "endure-in-silence" (likely good) vs the "break/answer" (likely bad) outcome. TODO.
+How 20 vs 100 is chosen (resolved):
+- `questdiag` shows two `CompleteQuest` stages: **20** (Good) and **100** (Bad).
+- The routing is via TIF fragments on the two `Goodbye/SayOnce` INFO exits:
+  - `T02` "It..." → `SetStage(100)` → **Bad** (Karma -3, BadScene)
+  - `T10` "......(Stare)" → `SetStage(20)` → **Good** (Karma +3, Door opens, Molag fades)
+- Stage 30/40 = good path return+shutdown; Stage 110/120 = bad path return+shutdown. Stage 999 = ShutDown with objective completion and hub advance.
 
-Open verification:
-- decompile / inspect the fragment scripts `CHMeq1_TIF__0212CAA3` and `CHMeq1_TIF__0212D059` to confirm which `SetStage` (20 vs 100) each calls — this resolves both the 20/100 routing AND the good/bad polarity;
-- dump the QUST aliases directly to confirm `#3 Molag` and `#6 MaraMemory` runtime fills, and the objective[0] target ref;
-- confirm the runtime fill of alias `#3 Molag` in Scene02 (the only spoken scene line `12DBB1` is his);
-- verify the heavily garbled proper nouns (`Shezarr`/`Shezaru`, `Deidre`, `Edora`, `Imuga`, `Mundasu`→`Mundus`, `Colovia`) against the original Japanese or a cleaner localization before any narrative use — every dialogue cell is flagged 待驗證;
-- inspect refs `12BED7` (Door) and `12BF4C` (TravelMarker) + the four `Pepe*` packages if the prison spatial staging matters.
+Hub wiring (confirmed from `qf_zzzchmemoryguide_0242e0b1.psc`):
+- `zzzCHMemoryGuide` (`42E0B1`) Fragment_0 (its stage 0) calls `TraceON(Dream01, 0)` which calls `Dream01.SetStage(0)` if not completed and not running, or `SetObjectiveDisplayed(0)` if already running.
+- Fragment_2 at the guide's own stage (`;Dream01 Finished`) = no-op (empty body). The per-quest quest's Fragment_9 at stage 999 calls `qGuide.SetStage(10)` to advance the hub.
 
 ## Open verification
 
-- The two TIF fragments are the single most important unknown: they gate both the 20/100 completion split and the unresolved good/bad polarity.
-- All dialogue translations are best-effort over machine-garbled English (Japanese origin); treat as provisional.
+- Alias `#3 Molag` runtime fill: no static fill visible from CLI; identity of the NPC that fills this alias at runtime is unknown. `packagediag` on `12DBA9 zzzCHMeQ01PepeFrocGreet` shows it targets `000014:Skyrim.esm` (the player) via `PackageTargetSpecificReference`, which is the greeting package — not Molag's package. The Molag alias is only present in Scene02 as an actor. (unverified: runtime fill conditions not decodable from CLI without alias condition data)
+- `BadScene` property formid: the VMAD Object property for `BadScene` in the QF script encodes alias index -9299 (as parsed) — the actual formid of BadScene is `0x0212DBAD` (Scene02) by EditorID naming, but this needs direct VMAD alias encoding verification. (inference based on EditorID match `sf_zzzchmeq01scene02_0212dbad`)
+- Refs `12BED7` (Door) and `12BF4C` (TravelMarker): not further decoded; spatial staging not prioritised.
+- All dialogue translations are best-effort over machine-garbled English (Japanese origin); treat as provisional. Proper nouns `Shezarr`/`Shezaru`, `Deidre` (possibly Daedra), `Edora`, `Imuga`, `Mundasu`→`Mundus`, `Colovia` remain 待驗證.

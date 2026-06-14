@@ -57,15 +57,24 @@ Objective:
 
 ## CompleteQuest Stage Map (150 / 200 / 999)
 
-The quest has **three** `CompleteQuest` stages. Polarity is read off the branch openers (below), not from `questdiag`:
+The quest has **three** `CompleteQuest` stages. Polarity is confirmed by PSC decompile of the two TIF fragments.
 
-| Stage | Flags | Mapped outcome (inference unless noted) |
+PSC sources:
+- `chmeq09_tif__022cc214.psc` line 9: `GetOwningQuest().SetStage(200)`
+- `chmeq09_tif__022cc216.psc` line 9: `GetOwningQuest().SetStage(100)`
+
+| Stage | Flags | Mapped outcome |
 |---:|---|---|
-| 150 | CompleteQuest | One of the two Sheogorath-branch endings. The Sheo branch (`2CC20E`) is stage-gated at `GetStage == 50` for its opener `2CC20F`, and its two terminal player choices (`2CC213` "Nevertheless......." and `2CC215` "Enough.......") each carry a `Goodbye`+VMAD fragment — these are the two completions. **Which of 150/200 is "succumb to Sithis/Molag Bal" vs "reject and sleep again" is not decidable from `questdiag` alone — TODO** (decompile `CHMeq09_TIF__022CC214` / `CHMeq09_TIF__022CC216`). |
-| 200 | CompleteQuest | The other Sheogorath-branch ending (paired with 150). TODO polarity. |
-| 999 | ShutDownStage + CompleteQuest | Shutdown / cleanup completion (the standard memory-quest teardown stage). Not a player-choice outcome. |
+| 100 | none | Intermediate stage set by `CHMeq09_TIF__022CC216.Fragment_0` (PSC `chmeq09_tif__022cc216.psc:9`) — "Enough......." choice ("Farewell, Forgotten Brother. Sleep once again"). Leads into the 100→130→140→150 chain (stages 130/140 are set by `SF_zzzCHMeQ09WGBardSc02` Fragment_0/Fragment_2). |
+| 130 | none | Set by `SF_zzzCHMeQ09WGBardSc02_022E47D1.Fragment_0` (`sf_zzzchmeq09wgbardsc02_022e47d1.psc:9`): part of the "sleep again" chain. |
+| 140 | none | Set by `SF_zzzCHMeQ09WGBardSc02_022E47D1.Fragment_2` (`sf_zzzchmeq09wgbardsc02_022e47d1.psc:6`): continuation of the "sleep again" chain. |
+| 150 | CompleteQuest | **"Sleep again" / rejection branch** — reached after the 100→130→140→150 stage chain. Player chose "Enough......." (topic `2CC215`, INFO `2CC216`). Sheogorath says "Farewel, Forgotten Brother. Sleep once again." |
+| 200 | CompleteQuest | **"Accept / become Sithis's new brother" branch** — set directly by `CHMeq09_TIF__022CC214.Fragment_0` (`chmeq09_tif__022cc214.psc:9`). Player chose "Nevertheless......." (topic `2CC213`, INFO `2CC214`). Sheogorath says "Aaah, Black soul reach Sithis now. Welcome, our new brother." |
+| 999 | ShutDownStage + CompleteQuest | Shutdown / cleanup stage (standard memory-quest teardown). Not a player-choice outcome. |
 
-Inference (source-grounded shape only): the two VMAD-bearing terminal choices `2CC214` and `2CC216` are the two branch endings that route to stages 150 vs 200; 999 is teardown. Confirm by decompiling the two fragment scripts.
+Stage routing summary (PSC-confirmed):
+- `2CC213` "Nevertheless......." → `CHMeq09_TIF__022CC214.Fragment_0` → `SetStage(200)` → CompleteQuest directly ("Sithis/black-soul acceptance" branch).
+- `2CC215` "Enough......." → `CHMeq09_TIF__022CC216.Fragment_0` → `SetStage(100)` → `WGBardSc02` Fragment_0 → `SetStage(130)` → Fragment_2 → `SetStage(140)` → (advance) → stage 150 CompleteQuest ("sleep again / rejection" branch). The WGBardSc02 scene (Jacob/WGBardTA02) plays during this post-choice sequence before completion.
 
 ## Alias / Staging Backbone
 
@@ -114,11 +123,15 @@ Scene records are not present as full records in `game-data`; the text lines are
 CLI:
 - `scenediag Vigilant.esm 0x2CC1E3`
 
+PSC:
+- `sf_zzzchmeq09bardsc01_022cc1e3.psc` — Fragment_0 (on complete): `GetOwningQuest().SetStage(20)` (line 9).
+
 Staging:
 - Host quest: [`2CAE30 zzzCHMemoryQuest09`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:265)
 - Flags: none
 - Actor: alias `#3` (`BardTA01`)
 - Phases: 3, each with 0 start conditions and 1 complete condition.
+- On-complete fragment: sets stage 20.
 - Actions (all `Dialog`, `Neutral`):
   - index 1: phase 0, topic [`2CC1E4`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2695).
   - index 2: phase 1, topic [`2CC1E6`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2698).
@@ -136,11 +149,15 @@ Translations:
 CLI:
 - `scenediag Vigilant.esm 0x2CC1EA`
 
+PSC:
+- `sf_zzzchmeq09bardsc02_022cc1ea.psc` — Fragment_0 (on complete): `GetOwningQuest().SetStage(50)` (line 9).
+
 Staging:
 - Host quest: [`2CAE30 zzzCHMemoryQuest09`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:265)
 - Flags: none
 - Actor: alias `#4` (`BardTA02`)
 - Phases: 2, each with 0 start conditions and 1 complete condition.
+- On-complete fragment: sets stage 50 — this is the stage gate that enables the Sheogorath branch opener `2CC20F` (`GetStage == 50` condition).
 - Actions (all `Dialog`, `Neutral`):
   - index 1: phase 0, topic [`2CC1EB`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2704).
   - index 2: phase 1, topic [`2CC1ED`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2707).
@@ -223,11 +240,18 @@ Translation:
 CLI:
 - `scenediag Vigilant.esm 0x2E47D1`
 
+PSC:
+- `sf_zzzchmeq09wgbardsc02_022e47d1.psc` — two fragments:
+  - Fragment_0 (phase 0 complete): `GetOwningQuest().SetStage(130)` (line 9).
+  - Fragment_2 (phase 2 complete): `GetOwningQuest().SetStage(140)` (line 6).
+- Note: NEXT FRAGMENT INDEX=3, fragments are indexed 0 and 2 (no Fragment_1 present in PSC).
+
 Staging:
 - Host quest: [`2CAE30 zzzCHMemoryQuest09`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:265)
 - Flags: none
 - Actors: alias `#11` (`WGBardTA02`) and alias `#9` (`Jacob`), both `NoPlayerActivation`, `Optional`
 - Phases: 3, each with 0 start conditions and 1 complete condition.
+- On-complete fragments: phase 0 → stage 130; phase 2 → stage 140. This scene runs as part of the "sleep again" (stage 100→150) chain after the player picks "Enough.......".
 - Actions:
   - index 1: `Dialog`, actor `#11`, phase 0, topic [`2E47D2`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2773), `Neutral`.
   - index 2: `Package`, actor `#9` (Jacob), phase 1 (no topic).
@@ -272,9 +296,9 @@ Speaker condition pattern:
 | [`2CC213 zzzCHMeQ09SheoB01T03`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2729) | `2CC214` | `Goodbye` | `GetIsAliasRef alias #0`; VMAD `CHMeq09_TIF__022CC214.Fragment_0` on end | Prompt：「即便如此……」 Response：resp1 (Happy)「那是 Molag Bal。遠離 Shezarr 的野獸。只是孱弱、只是粗鄙、只是醜陋。」 resp2 (Surprise)「啊啊，黑色的靈魂如今抵達 Sithis 了。歡迎你，我們的新兄弟。」 |
 | [`2CC215 zzzCHMeQ09SheoB01T04`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2733) | `2CC216` | `Goodbye` | `GetIsAliasRef alias #0`; VMAD `CHMeq09_TIF__022CC216.Fragment_0` on end | Prompt：「夠了……」 Response：resp1 (Disgust)「甦醒的靈魂忘卻一切。所以一切才都在夢中。」 resp2 (Sad)「永別了，被遺忘的兄弟。再次沉睡吧。」 |
 
-Branch structure (inference):
-- `2CC213` ("Nevertheless.......") and `2CC215` ("Enough.......") are the two terminal player choices; each is `Goodbye` and carries a distinct VMAD fragment. These are the two completions routing to stages **150 / 200**.
-- Polarity reading (inference, TODO confirm via fragment decompile): `2CC213` leans "accept / become Sithis's new brother" (the Molag Bal / black-soul acceptance lines); `2CC215` leans "reject / sleep again" ("Farewell, Forgotten Brother. Sleep once again"). Mapping each to the exact stage number is **not** decided here.
+Branch structure (PSC-confirmed):
+- `2CC213` ("Nevertheless.......") → `CHMeq09_TIF__022CC214.Fragment_0` → `SetStage(200)` → CompleteQuest at stage 200. **"Accept / Sithis's new brother" branch.** (`chmeq09_tif__022cc214.psc:9`)
+- `2CC215` ("Enough.......") → `CHMeq09_TIF__022CC216.Fragment_0` → `SetStage(100)` → WGBardSc02 scene chain (130→140) → stage 150 CompleteQuest. **"Reject / sleep again" branch.** (`chmeq09_tif__022cc216.psc:9`)
 
 Translation notes:
 - `beyond oblivion` in [`2CC20F`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2722)：直譯「超越遺忘」；`Oblivion` 可能雙關（湮滅位面），待驗證。
@@ -325,12 +349,37 @@ Source-grounded:
 - It contains **seven** `SCEN` records (`2CC1E3`, `2CC1EA`, `2CC1EF`, `2CC1F0`, `2CC1F1`, `2E47CE`, `2E47D1`) staging short monologues through the `BardTA`, `SheoTA`, and `WGBardTA` aliases; `WGBardSc02` additionally runs two Jacob packages plus a silent headtrack beat.
 - It contains **three** custom dialogue branches:
   - Lamae branch (`2CC20A`), 1 topic, alias `#1`, `Fear`/`Goodbye` recoil line.
-  - Sheogorath branch (`2CC20E`), 4 topics, alias `#0`, opener stage-gated at `GetStage==50`; two VMAD-bearing terminal choices = the 150/200 completions.
+  - Sheogorath branch (`2CC20E`), 4 topics, alias `#0`, opener stage-gated at `GetStage==50` (set by BardSc02 on-complete); two VMAD-bearing terminal choices = stages 200 (accept) and 100→150 (reject).
   - Tsun branch (`2E47D9`), 2 topics, alias `#13`, the "Souless" rejection.
 - Branch count: 3 dialogue branches; Scene count: 7; Book count: 0 owned.
 
-Open verification (TODO):
-- Decompile `CHMeq09_TIF__022CC214` and `CHMeq09_TIF__022CC216` to assign stages 150 vs 200 to the two Sheogorath terminal choices and label good/bad polarity.
-- Dump QUST aliases/targets directly: which alias the objective target points at, and what each `CompleteQuest` stage grants (item/global/world change).
-- Confirm the trigger: the `2CFBCF zzzCHMeq09MovePlayerTRG` activator and the `JacobFindYou` / `FoxEscortPlayer` packages suggest a guided walk-in entry rather than an item read; verify against the `zzzCHMemoryGuide` hub.
-- Resolve the cross-link to MeQ08 (both Lamae) once MeQ08 is sliced; keep MeQ09 records here, MeQ08 records there.
+## Stage → Scene chain (PSC-confirmed)
+
+Full stage flow from PSC fragments and `questdiag`:
+
+```
+stage 0  (start)
+→ BardSc01 completes → SetStage(20)      [sf_zzzchmeq09bardsc01_022cc1e3.psc:9]
+→ BardSc02 completes → SetStage(50)      [sf_zzzchmeq09bardsc02_022cc1ea.psc:9]
+  → unlocks Sheogorath branch opener 2CC20F (GetStage==50 condition)
+    → player choice:
+      "Nevertheless......." (2CC213/2CC214)
+        → CHMeq09_TIF__022CC214.Fragment_0 → SetStage(200)   [chmeq09_tif__022cc214.psc:9]
+        → CompleteQuest (stage 200) = "Sithis/black-soul acceptance"
+      "Enough......." (2CC215/2CC216)
+        → CHMeq09_TIF__022CC216.Fragment_0 → SetStage(100)   [chmeq09_tif__022cc216.psc:9]
+        → WGBardSc02 phase 0 completes → SetStage(130)       [sf_zzzchmeq09wgbardsc02_022e47d1.psc:9]
+        → WGBardSc02 phase 2 completes → SetStage(140)       [sf_zzzchmeq09wgbardsc02_022e47d1.psc:6]
+        → (stage 150) → CompleteQuest = "sleep again / rejection"
+stage 999 = ShutDownStage (teardown)
+```
+
+Stages 10, 30, 40 are present in `questdiag` but have no corresponding PSC fragments in the cache — no scene fragment sets them directly. They may be set by quest alias conditions or world-space triggers not captured in the PSC cache. (unverified: no matching PSC fragment found)
+
+## Open verification (remaining)
+
+- **Trigger / quest-start**: the `zzzCHMeq09MovePlayerTRG` activator (`chmeq09moveplayertriggerscript.psc`) is **marked unused** in v1.8.1 (PSC line 2: `;Unused Script at v1.6.0` — only fires a version-check MessageBox). The `FoxEscortPlayer` and `JacobFindYou` packages suggest an NPC-guided walk-in trigger, but the exact quest-start condition (what starts `zzzCHMemoryQuest09` and populates aliases) is not captured in the PSC cache. (unverified: would need `questdiag` alias-target dump or direct ESM read of quest start conditions)
+- **Karma global / hub wiring**: MeQ09 completion is `Fragment_18` in `qf_zzzchmemoryguide_0242e0b1.psc` (line 21–24), which has an empty body (`;Dream09 Finished` comment only — no `SetObjectiveCompleted`, no karma global call). MeQ09 does NOT contribute to the guide's objective chain (objectives 100/110/120 are set only by Dream10/11/12 per the PSC). There is no karma global found for MeQ09. (confirmed: hub PSC `qf_zzzchmemoryguide_0242e0b1.psc` Fragment_18)
+- **Stages 10/30/40**: present in `questdiag` but no PSC fragment sets them; likely set by world-space or alias conditions outside the PSC cache. (unverified: no matching fragment)
+- **Objective target ref**: `questdiag` prints `target: flags=0 conds=0` with no ref ID; the target FormID is not accessible via `questdiag`. (unverified: CLI does not expose target ref)
+- **Cross-link to MeQ08**: resolve once MeQ08 is sliced; keep MeQ09 records here, MeQ08 records there.

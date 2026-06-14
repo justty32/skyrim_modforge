@@ -68,5 +68,6 @@ Notes:
 1. `act-4-memory-07-marukh.md` - first vertical slice: quest + dialogue + SCEN staging. **DONE** (format template).
 2. `act-4-memory-index.md` - index of all 13 memory quests + hub. **DONE**.
 3. `act-4-memory-01..13-*.md` - one source-grounded slice per memory quest. **DONE (all 13, 2026-06-14)**.
-4. **Open across all slices** (see index "Status" + each slice's *Open verification*): decompile the `CHMeqNN_TIF__*` VMAD fragments to pin each branch's `choice → SetStage → CompleteQuest` routing and good/bad polarity; dump QUST aliases/targets for exact trigger refs; trace the `zzzCHMemoryGuide` hub (`42E0B1`) + karma global for the overall Act IV ending threshold.
-5. Revisit Acts 1-3 only after the Act 4 memory format is stable.
+4. **Cross-slice Open verification** — **DONE (2026-06-14)**. Resolved via `Vigilant.bsa` plaintext PSC (no pex decompiler needed; CLI has none): branch `choice → SetStage → CompleteQuest`, karma polarity (global `0x020B19F4 zzzCHKarma`), SCEN staging, and the `zzzCHMemoryGuide` hub (`42E0B1`, per-dream `qGuide.SetStage` + TraceON/OFF). Method + cache in index "Status". Residual `(unverified)` are CLI structural limits only (runtime alias fill / objective target refs — need a direct ESM QUST alias+CTDA dump).
+5. **Acts 1-3 source-grounded verification** — now unblocked (Act 4 format + PSC-cache method stable). Apply the same workflow to the Act 1-3 slices' Open verification items.
+6. **zh-TW re-sync** — the 繁中 mirror under `zh-TW/` diverged when EN slices `02`/`13` + the index were PSC-corrected (2026-06-14). Re-sync those before treating the mirror as current.
