@@ -2,6 +2,12 @@
 
 > **這是一個獨立專案**，把 ModForge 當工具使用（JSON spec → `.esp`），不與 ModForge 整合。成熟或體量龐大後可移去自己的 repo。
 
+> **🤖 給劇情討論 agent**：本夾就是你的工作區。手邊資源（已 symlink 進來）：
+> - `game-data/` → 全遊戲文本/清單（vanilla+DLC+Sofia+VIGILANT…）：對白 `game-data/*/dialogue.md`、書 `books.md`、任務 `quests.md`、清單 `*.tsv`。
+> - `esm-formid-access.md` → 要補抽/查 FormID 時的 CLI 工具參考。
+> - 既有解碼：下面檔案索引（personality / follower-decode / expansion-plan / vigilant-support）。
+> **記憶體鐵律**：要探 esp 一律走 ModForge CLI（lazy overlay），絕不整載 Skyrim.esm、不 `.ToList()` 整個 group。
+
 **專案目標**：用 ModForge（JSON spec → 生成 `.esp`）做一個 **Sofia 風格的隨從擴充**——不手改 CK，而是把 Sofia 賴以成立的那些 pattern（在場偵測 banter、GLOB 狀態、小型 controller quest、條件分歧對話、克隆語音）規模化成更多吐槽、更深互動、好感度系統、新演出 scene 與 mini-quest。
 
 解碼總結論：**Sofia 沒用到任何 ModForge 做不出的機制**，它是已落地能力的規模化組合，ModForge 直接夠用。

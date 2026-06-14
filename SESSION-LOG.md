@@ -10,6 +10,8 @@
 
 ## 最新進度（幾句話）
 
+- **agent 並行 prep（2026-06-14）**：為「其他 agent 並行討論 Sofia 劇情 / 調查 mod」備好兩工作區 + 共用資料 + 工具：① 新 CLI 指令 `gamedata <plugin> <outDir>`（lazy 串流批次抽書/對白/任務/NPC・物品・地點・魔法）；② `sub_projs/game-data/`（已抽 vanilla+DLC+CC + Sofia/VIGILANT/RDO/FCO/IFDL… 文本，`extract.sh` 重生、文本 gitignore）；③ 工作區 `sub_projs/sofia-patch/`（劇情）+ 新 `sub_projs/mod-survey/`（mod 調查），各 symlink game-data/guide/mods；④ 兩份 guide：`workflows/investigation/esm-formid-access.md`、`mod-survey-guide.md`。**大重構期間主 session 不碰這兩工作區 + game-data。**
+- **in-flight｜大重構**：拆檔門檻 300 行 → 4096 bytes（更新 DEV-GUIDE + conventions，按 [roadmap](workflows/roadmap.md)「結構/工具」執行 workflows 文檔拆分）。**下一步開工。**
 - docs/workflows 大重構：`docs/` 回歸 ModForge 使用手冊（cookbook/cheatsheet/spec）；開發流程全移到 repo 頂層 `workflows/`（INDEX / CODE_MAP / DEV-GUIDE / 各工作流 / 踩坑 / roadmap / 調查）。CLAUDE.md 瘦成路由器；`SESSION-LOG.md` + `WAIT_USER.md` 升到 repo 根。
 - 語音合成解耦為基石專案 `sub_projs/skyrim-voicegen/`（協議 PROTOCOL.md）；Sofia 擴充為消費者專案 `sub_projs/sofia-patch/`。
 
@@ -24,3 +26,10 @@
 ## 不屬任何工作流的進度（堆太多 → 拆進 `session_logs/`）
 
 （無）
+
+## justty32 的隨筆
+
+整理 memory
+整理docs
+拆workflows
+討論sofia劇情

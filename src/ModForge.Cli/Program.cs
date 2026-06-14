@@ -30,6 +30,7 @@ internal static partial class Program
                 case "apply" when args.Length == 4:    ApplyCmd(args[1], args[2], args[3]); return 0;
                 case "applyloc" when args.Length == 4: return ApplyLocalizedCmd(args[1], args[2], args[3]);
                 case "dump" when args.Length == 2:     return Dump(args[1]);
+                case "gamedata" when args.Length == 3: return GameData(args[1], args[2]);
                 case "find" when args.Length is 3 or 4: return Find(args[1], args[2], args.Length == 4 ? args[3] : null);
                 case "cellblk" when args.Length is 2 or 3: return CellBlk(args[1], args.Length == 3 ? args[2] : null);
                 case "cellrefs" when args.Length == 3: return CellRefs(args[1], args[2]);
@@ -86,6 +87,8 @@ internal static partial class Program
         "  package <spec.json> <outModDir> [--assets <dir>]   esp + scripts + bundled Meshes/Textures/Sounds\n" +
         "  validate <spec.json>\n" +
         "  dump    <in.esp>\n" +
+        "  gamedata <plugin> <outDir>                   bulk-extract books/dialogue/quests/npcs/items/locations/magic to a folder (for agent reference)\n" +
+
         "  find    <in.esp> <query> [type]              search editorId/name -> Skyrim.esm:0xFORMID\n" +
         "  cellblk <in.esp> [0xFORMID]                  show interior cell block/sub-block (FormID grouping)\n" +
         "  cellrefs <in.esp> <0xFORMID>                 dump one interior cell's placed refs (base+pos+rot[rad]+scale) as CSV — reverse a vanilla cell into placements[]\n" +
