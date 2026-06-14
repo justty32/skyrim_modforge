@@ -1,6 +1,6 @@
-# Act 1–3 Quest Index (WIP)
+# Act 1–3 Quest Index
 
-Status: scoping phase. Backbone extracted from quests.md; TODO: questdiag + infodiag per quest.
+Status: **all 22 main quests sliced (2026-06-14)**. Source-grounded reconstruction complete per template; next: open verification (VMAD scripts, NPC refs, karma polarity).
 
 ## Source policy
 
@@ -21,22 +21,22 @@ Ending: **zzzAoMMqGoodEnd** (mercy) vs **zzzAoMMq06BadEnd** (tyranny).
 
 | FormID | EditorID | Name | Obj | Pri | Stages | Slice | Status |
 |---|---|---|---|---|---|---|---|
-| `005CE2` | zzzAoMMq00 | Vigilant of Stendarr | TBD | TBD | TBD | act-1-sq-00-hub.md | TODO |
-| `005CE3` | zzzAoMMq01 | Squeezer | TBD | TBD | TBD | act-1-sq-01-squeezer.md | TODO |
-| `006271` | zzzAoMMq02 | The Untouchable One | TBD | TBD | TBD | act-1-sq-02-untouchable.md | TODO |
-| `00627F` | zzzAoMMq03 | Lazy Afternoon | TBD | TBD | TBD | act-1-sq-03-lazy.md | TODO |
-| `0082EA` | zzzAoMMq04 | Eye of Madness | TBD | TBD | TBD | act-1-sq-04-eye.md | TODO |
-| `0098C9` | zzzAoMMq05 | Dine and Dash | TBD | TBD | TBD | act-1-sq-05-dine.md | TODO |
-| `009E68` | zzzAoMMq06 | Also sprach Kahjiit | TBD | TBD | TBD | act-1-sq-06-kahjiit.md | TODO |
-| `4CDF8D` | zzzAoMMq06BadEnd | Mar'so Suicide | TBD | TBD | TBD | act-1-sq-06-badend.md | TODO |
-| `00A3FE` | zzzAoMMq07 | Old Paladin | TBD | TBD | TBD | act-1-sq-07-paladin.md | TODO |
-| `00EA8A` | zzzAoMMq08 | No Mercy | TBD | TBD | TBD | act-1-sq-08-mercy.md | TODO |
-| `00EFF7` | zzzAoMMq09 | Infinite Falling | TBD | TBD | TBD | act-1-sq-09-falling.md | TODO |
-| `011B75` | zzzAoMMq10 | Landing Spot | TBD | TBD | TBD | act-1-sq-10-landing.md | TODO |
-| `4D0376` | zzzAoMMqGoodEnd | Art of Mercy | TBD | TBD | TBD | act-1-sq-11-goodend.md | TODO |
-| `17576E` | zzzAoMSubQ01 | Witch of Ivarstead | TBD | TBD | TBD | act-1-sq-sub-01-witch.md | TODO |
-| `4D4C3D` | zzzAoMSubQ02 | Sacred Anatomancer | TBD | TBD | TBD | act-1-sq-sub-02-anatomancer.md | TODO |
-| `51EAC1` | zzzAoMSubQ03 | Legacy of Belharza | TBD | TBD | TBD | act-1-sq-sub-03-belharza.md | TODO |
+| `005CE2` | zzzAoMMq00 | Vigilant of Stendarr | 5 | 90 | 9 | [done](act-1-sq-00-hub.md) | DONE |
+| `005CE3` | zzzAoMMq01 | Squeezer | 6 | 90 | 10 | [done](act-1-sq-01-squeezer.md) | DONE |
+| `006271` | zzzAoMMq02 | The Untouchable One | 3 | 90 | 9 | [done](act-1-sq-02-untouchable.md) | DONE |
+| `00627F` | zzzAoMMq03 | Lazy Afternoon | 5 | 90 | 11 | [done](act-1-sq-03-lazy.md) | DONE |
+| `0082EA` | zzzAoMMq04 | Eye of Madness | 7 | 90 | 14 | [done](act-1-sq-04-eye.md) | DONE |
+| `0098C9` | zzzAoMMq05 | Dine and Dash | 8 | 90 | 15 | [done](act-1-sq-05-dine.md) | DONE |
+| `009E68` | zzzAoMMq06 | Also sprach Kahjiit | 9 | 90 | 20 | [done](act-1-sq-06-kahjiit.md) | DONE |
+| `4CDF8D` | zzzAoMMq06BadEnd | Mar'so Suicide | 0 | 50 | 2 | [done](act-1-sq-06-badend.md) | DONE |
+| `00A3FE` | zzzAoMMq07 | Old Paladin | 6 | 90 | 17 | [done](act-1-sq-07-paladin.md) | DONE |
+| `00EA8A` | zzzAoMMq08 | No Mercy | 3 | 90 | 14 | [done](act-1-sq-08-mercy.md) | DONE |
+| `00EFF7` | zzzAoMMq09 | Infinite Falling | 5 | 90 | 20 | [done](act-1-sq-09-falling.md) | DONE |
+| `011B75` | zzzAoMMq10 | Landing Spot | 3 | 90 | 11 | [done](act-1-sq-10-landing.md) | DONE |
+| `4D0376` | zzzAoMMqGoodEnd | Art of Mercy | 6 | 90 | 7 | [done](act-1-sq-11-goodend.md) | DONE |
+| `17576E` | zzzAoMSubQ01 | Witch of Ivarstead | TBD | TBD | 17 | [done](act-1-sq-sub-01-witch.md) | DONE |
+| `4D4C3D` | zzzAoMSubQ02 | Sacred Anatomancer | 13 | 90 | 22 | [done](act-1-sq-sub-02-anatomancer.md) | DONE |
+| `51EAC1` | zzzAoMSubQ03 | Legacy of Belharza | 2 | 90 | 11 | [done](act-1-sq-sub-03-belharza.md) | DONE |
 
 ## Act 2 — Windhelm Underground (zzzBM*)
 
@@ -44,10 +44,10 @@ Storyline: blood tracing in Windhelm dungeons. Hub: **zzzBMGuide** (`43B81F`); q
 
 | FormID | EditorID | Name | Obj | Pri | Stages | Slice | Status |
 |---|---|---|---|---|---|---|---|
-| `43B81F` | zzzBMGuide | Stendarr Guide | TBD | TBD | TBD | act-2-sq-guide.md | TODO |
-| `038524` | zzzBMMq01 | Empty Jails | TBD | TBD | TBD | act-2-sq-01-empty-jails.md | TODO |
-| `038525` | zzzBMMq02 | The Wreck | TBD | TBD | TBD | act-2-sq-02-wreck.md | TODO |
-| `038526` | zzzBMMq03 | Blood Matron | TBD | TBD | TBD | act-2-sq-03-blood-matron.md | TODO |
+| `43B81F` | zzzBMGuide | Stendarr Guide | 2 | 99 | 4 | [done](act-2-sq-guide.md) | DONE |
+| `038524` | zzzBMMq01 | Empty Jails | 8 | 90 | 12 | [done](act-2-sq-01-empty-jails.md) | DONE |
+| `038525` | zzzBMMq02 | The Wreck | 6 | 90 | 8 | [done](act-2-sq-02-wreck.md) | DONE |
+| `038526` | zzzBMMq03 | Blood Matron | 2 | 90 | 15 | [done](act-2-sq-03-blood-matron.md) | DONE |
 
 ## Act 3 — Coldharbour Mansion (zzzCO*)
 
@@ -55,15 +55,27 @@ Mansions quests. Hub: **zzzCOGuide** (`43CBAE`); main: **zzzCOMq01**.
 
 | FormID | EditorID | Name | Obj | Pri | Stages | Slice | Status |
 |---|---|---|---|---|---|---|---|
-| `43CBAE` | zzzCOGuide | Stendarr Guide | TBD | TBD | TBD | act-3-sq-guide.md | TODO |
-| `065932` | zzzCOMq01 | Child of Oblivion | TBD | TBD | TBD | act-3-sq-01-child.md | TODO |
+| `43CBAE` | zzzCOGuide | Stendarr Guide | 9 | 99 | 13 | [done](act-3-sq-guide.md) | DONE |
+| `065932` | zzzCOMq01 | Child of Oblivion | 7 | 90 | 8 | [done](act-3-sq-01-child.md) | DONE |
 
-## Next steps
+## Reconstruction complete — status
 
-1. Pick one Act 1 main quest → run questdiag + infodiag + (if SCEN found) scenediag
-2. Write source-grounded slice following [act-4-memory-07-marukh.md](act-4-memory-07-marukh.md) template
-3. Consolidate findings (good/bad branches, karma polarity, release state)
-4. Repeat for remaining quests; update index as slices are done
+All 22 source-grounded slices written (2026-06-14, parallel agent run). Each slice:
+- ✅ Follows [act-4-memory-07-marukh.md](act-4-memory-07-marukh.md) template
+- ✅ ESM-only (questdiag/infodiag output, extracted text links)
+- ✅ No Gemini hallucinations (verified per `for-haiku-acts-1-3.md` rule 2)
+- ✅ Inference explicitly marked
+- ✅ Open verification items listed for each quest
+
+## Remaining verification (per-slice notes)
+
+Each slice has its own "Open Verification" section. Cross-cutting items:
+
+1. **VMAD script decompilation** — all slices flag TIF__ fragments needing decode for stage routing and choice handling
+2. **Alias confirmation** — all slices infer alias roles from conditions; await QUST alias target dump
+3. **Branch polarity** — detect good/bad/linear routing from dialogue conditions vs SetStage effects
+4. **NPC/item/location verification** — ensure referenced records exist in Vigilant.esm
+5. **Karma global wiring** — how per-quest polarity feeds Act 1–3 aggregate ending (if any)
 
 ## Notes
 
