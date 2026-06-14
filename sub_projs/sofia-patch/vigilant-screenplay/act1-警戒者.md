@@ -69,11 +69,11 @@
 > **SOFIA**: Don't tell anyone I said that. Any of that.
 > 〔別告訴別人我說過這些話。全部都不行。〕
 
-## 1-G｜Artano 的女巫任務 — Sofia 的道德質疑 ★
-**【VIGILANT 劇情】** Artano 要玩家去殺某地的女巫；但她們**不太像女巫**。`(對應待核對：act-1-sq-sub-01-witch)`
+## 1-G｜Altano 的女巫任務 — Sofia 的道德質疑 ★
+**【VIGILANT 劇情】** Altano 要玩家去殺某地的女巫；但她們**不太像女巫**。`(對應待核對：act-1-sq-sub-01-witch)`
 **【類型】** 在場·玩家可問（接任務時／抵達時）
-> **SOFIA**: Hold on. Look at them. No cauldron. No creepy whispering. Not even a black cat. They look like two very frightened ordinary people. What exactly is Artano in such a hurry about?
-> 〔等一下。你看看她們。沒有大鍋、沒有詭異的低語、連隻黑貓都沒有。她們看起來就是兩個嚇壞了的普通人。Artano 到底在急什麼？〕
+> **SOFIA**: Hold on. Look at them. No cauldron. No creepy whispering. Not even a black cat. They look like two very frightened ordinary people. What exactly is Altano in such a hurry about?
+> 〔等一下。你看看她們。沒有大鍋、沒有詭異的低語、連隻黑貓都沒有。她們看起來就是兩個嚇壞了的普通人。Altano 到底在急什麼？〕
 
 > └─ 追問 **玩家** / *Player*: Since when do you defend witches? ／ 你什麼時候開始替女巫說話了？
 > &nbsp;&nbsp;&nbsp;&nbsp;**SOFIA**: I'm not defending witches. I hate being used as a blunt instrument. When someone points at a person and says 'monster, go kill' and the person looks nothing like a monster... usually the real monster is the one giving the order. I've been on the other side of that enough times to know.
@@ -84,18 +84,18 @@
 **【類型】** 在場·玩家可問（抉擇後，兩條依分支）
 
 > **SOFIA（玩家選擇殺）** / *(Player kills)*:
-> Done. I'm not saying you were wrong. Orders are orders, and we don't know the full picture. But did you see the way she looked at you at the end. I'm going to remember that look. You should too. Next time Artano sends us somewhere, let's ask a few more questions first.
-> 〔動手了。我不會說你錯，命令就是命令，何況我們又不知道全部真相。但你看到她最後看你的眼神了嗎。那種眼神我會記得。你最好也記得——下次 Artano 再指哪打哪之前，我們多問幾個問題。〕
+> Done. I'm not saying you were wrong. Orders are orders, and we don't know the full picture. But did you see the way she looked at you at the end. I'm going to remember that look. You should too. Next time Altano sends us somewhere, let's ask a few more questions first.
+> 〔動手了。我不會說你錯，命令就是命令，何況我們又不知道全部真相。但你看到她最後看你的眼神了嗎。那種眼神我會記得。你最好也記得——下次 Altano 再指哪打哪之前，我們多問幾個問題。〕
 
 > **SOFIA（玩家選擇放過）** / *(Player spares)*:
-> You let them go. Ha. I knew you would. ...You know what, I'm not even going to make fun of you for that one. If Artano had a real reason to want them dead, he would have explained it himself instead of sending us in blind. We'll see what he says.
-> 〔你放她們走了。哈。我就知道。……你知道嗎，這次我不嫌你心軟。Artano 要是真有正當理由，他自己會解釋，而不是叫我們悶著頭去動手。我們等著看他怎麼說。〕
+> You let them go. Ha. I knew you would. ...You know what, I'm not even going to make fun of you for that one. If Altano had a real reason to want them dead, he would have explained it himself instead of sending us in blind. We'll see what he says.
+> 〔你放她們走了。哈。我就知道。……你知道嗎，這次我不嫌你心軟。Altano 要是真有正當理由，他自己會解釋，而不是叫我們悶著頭去動手。我們等著看他怎麼說。〕
 
-## 1-I｜回信標 — Sofia 覺得 Artano 怪怪的
-**【VIGILANT 劇情】** 回到信標，Sofia 對 Artano 起疑。
+## 1-I｜回信標 — Sofia 覺得 Altano 怪怪的
+**【VIGILANT 劇情】** 回到信標，Sofia 對 Altano 起疑。
 **【類型】** 在場·玩家可問
-> **SOFIA**: That Artano. I can't put my finger on it. His smile is too well-timed. His answers are too clean. I've met a lot of people who smile like that. Usually they're wearing a very nice holy symbol while doing something very not holy. Watch him.
-> 〔那個 Artano。我說不上來哪裡不對。他笑得太剛好、答得太乾淨。我見過很多這樣笑的人——通常他們胸前掛著某個很漂亮的聖徽，幹的卻是最不聖潔的事。盯著他。〕
+> **SOFIA**: That Altano. I can't put my finger on it. His smile is too well-timed. His answers are too clean. I've met a lot of people who smile like that. Usually they're wearing a very nice holy symbol while doing something very not holy. Watch him.
+> 〔那個 Altano。我說不上來哪裡不對。他笑得太剛好、答得太乾淨。我見過很多這樣笑的人——通常他們胸前掛著某個很漂亮的聖徽，幹的卻是最不聖潔的事。盯著他。〕
 
 ## 1-J｜boss 戰 — Carene 闖入，殺 / 不殺 ★ 分支
 **【VIGILANT 劇情】** boss 戰中 **Carene** 跑進來，玩家可選殺或不殺。`(?)` Carene 身份/立場。

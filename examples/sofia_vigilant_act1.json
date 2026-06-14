@@ -1,5 +1,5 @@
 {
-  "_note": "Sofia x VIGILANT — ACT 1 (Vigilant of Stendarr) full slice. Player-initiated 'talk to Sofia' topics + auto-banter (IDLE) ambient lines, gated by VIGILANT Act-1 quest state + Sofia present (GetIsID) / following (GetInFaction). Lines are the de-AI'd rewrite from sub_projs/sofia-patch/vigilant-screenplay/act1-警戒者.md (EN voiced; ZH is in the screenplay). Mechanism/gate map: sub_projs/sofia-patch/vigilant-screenplay/_act1-conversion-spec.md. CONFIRMED gates: 1-A Mq00(0x005CE2) stage5; 1-B Mq00 stage10; 1-D Mq06(0x009E68) stage90; Bruiant WRLD 0x047CFA; Hag's Pond WRLD 0x166857. PROVISIONAL stages (exist in Vigilant.esm but semantics unconfirmed offline — JP-localized logs blank; confirm in-game with questdiag): 1-C Mq00 running; 1-E Mq07(0x00A3FE) running; 1-F Mq07 stage40; 1-G SubQ01(0x17576E) running; 1-H kill SubQ01 stage20 / spare stage10; 1-I SubQ01 stage30; 1-J kill MqGoodEnd(0x4D0376) stage29 / spare stage20; 1-K MqGoodEnd stage30. Sofia NPC=SofiaFollower.esp:0x0012C4, voiceType=JJSofiaVoiceType (0x0022EE), follower faction=0x060480. VOICE: after `package`, run `voicelines` on the PACKAGED esp so Sound/Voice/<plugin>/JJSofiaVoiceType matches. NOTE: 1-B/1-K/Bruiant/Hag's Pond were designed as auto-banter (環境吐槽) but are implemented as player-initiated topics — ModForge `banter` needs a speaker NPC defined in-spec, and Sofia is external; true auto-banter would require overriding her NPC record (future enhancement).",
+  "_note": "Sofia x VIGILANT — ACT 1 (Act of Magnificence / zzzAoM*). Player-initiated 'talk to Sofia' topics gated by VIGILANT Act-1 quest stages + Sofia present (GetIsID)/following. Lines = de-AI'd rewrite of sub_projs/sofia-patch/vigilant-screenplay/act1-警戒者.md (EN voiced; ZH in screenplay). GATES DECODED from BSA QF_/SF_/TIF_ fragments (2026-06-14, 6-agent reverse-eng) — see vigilant-screenplay/_triggers/ + _act1-trigger-placement-map.md. Stage map: 1-A Mq00(0x005CE2) s10 (join=AddToFaction+spell+amulet); 1-B Mq00 s10; 1-C Mq01(0x005CE3) s50 (first vampire hunt done; Mq00 stops at s40); 1-D Mq06(0x009E68) s90 (dream resolved); 1-E Mq07(0x00A3FE) s20 (arrive beacon hall, all dead); 1-F Mq07 s50 (Bal dead; s40=fight start); 1-G SubQ01(0x17576E) running+s10done+s20not (encounter, pre-choice); 1-H kill SubQ01 s50 (Karma-6) / spare s230 (Karma+2); 1-I Mq08(0x00EA8A) s200 (Altano fanaticism surfaces — he IS the traitor zzzAoMVigilantTraitor 0x000D62); 1-J kill MqGoodEnd(0x4D0376) s35 / spare s100; 1-K MqGoodEnd s130 (qAct2.Start). Carene=zzzAoMm08Mother 0x0012D0. Hag's Pond WRLD 0x166857 (SubQ01). Sofia NPC=SofiaFollower.esp:0x0012C4, voiceType=JJSofiaVoiceType (0x0022EE), follower faction=0x060480. DREAM-ENTRY (1-D, future): dream cell 0x00185C 'Jo'vanni Dream Theater', enter@s25 exit@s50, Sofia.MoveTo dreammarker 0x00A3CC. VOICE: package FIRST then voicelines on packaged esp. NOTE: 1-B/1-K/Hag's Pond designed as auto-banter but implemented as player-topics (ModForge banter needs in-spec speaker; Sofia is external — auto-banter = future NPC-override). Bruiant estate moved out (it's Act 3 zzzCOMq01).",
   "pluginName": "ModForgeSofiaVigilantAct1.esp",
   "esl": true,
 
@@ -20,12 +20,11 @@
     { "editorId": "MF_SofA1_WitchDoubt",      "type": "short", "value": 0 },
     { "editorId": "MF_SofA1_WitchKilled",     "type": "short", "value": 0 },
     { "editorId": "MF_SofA1_WitchSpared",     "type": "short", "value": 0 },
-    { "editorId": "MF_SofA1_ArtanoSuspicion", "type": "short", "value": 0 },
+    { "editorId": "MF_SofA1_AltanoSuspicion", "type": "short", "value": 0 },
     { "editorId": "MF_SofA1_CareneKilled",    "type": "short", "value": 0 },
     { "editorId": "MF_SofA1_CareneSpared",    "type": "short", "value": 0 },
     { "editorId": "MF_SofA1_LearnRestoration","type": "short", "value": 0 },
     { "editorId": "MF_SofA1_ChapterClose",    "type": "short", "value": 0 },
-    { "editorId": "MF_SofA1_RealmBruiant",    "type": "short", "value": 0 },
     { "editorId": "MF_SofA1_RealmHagsPond",   "type": "short", "value": 0 }
   ],
 
@@ -48,7 +47,7 @@
       "setGlobal": { "global": "MF_SofA1_JoinedVigilant", "value": 1 },
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
-        { "function": "GetStageDone", "param": "Vigilant.esm:0x005CE2", "stage": 5, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x005CE2", "stage": 10, "comparison": "==", "value": 1 },
         { "function": "GetGlobalValue", "param": "MF_SofA1_JoinedVigilant", "comparison": "==", "value": 0 }
       ]
     },
@@ -64,8 +63,7 @@
       "setGlobal": { "global": "MF_SofA1_EarlyMission", "value": 1 },
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
-        { "function": "GetQuestRunning", "param": "Vigilant.esm:0x005CE2", "comparison": "==", "value": 1 },
-        { "function": "GetStageDone", "param": "Vigilant.esm:0x005CE2", "stage": 10, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x005CE3", "stage": 50, "comparison": "==", "value": 1 },
         { "function": "GetGlobalValue", "param": "MF_SofA1_EarlyMission", "comparison": "==", "value": 0 }
       ]
     },
@@ -112,7 +110,7 @@
       "linkTo": ["MFSofVig_1E_BeaconMassacreMore"],
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
-        { "function": "GetQuestRunning", "param": "Vigilant.esm:0x00A3FE", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x00A3FE", "stage": 20, "comparison": "==", "value": 1 },
         { "function": "GetGlobalValue", "param": "MF_SofA1_BeaconMassacre", "comparison": "==", "value": 0 }
       ]
     },
@@ -143,16 +141,16 @@
       "setGlobal": { "global": "MF_SofA1_BeaconBoss", "value": 1 },
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
-        { "function": "GetStageDone", "param": "Vigilant.esm:0x00A3FE", "stage": 40, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x00A3FE", "stage": 50, "comparison": "==", "value": 1 },
         { "function": "GetGlobalValue", "param": "MF_SofA1_BeaconBoss", "comparison": "==", "value": 0 }
       ]
     },
     {
       "editorId": "MFSofVig_1G_WitchDoubt",
       "questEditorId": "MFSofVigAct1Controller",
-      "prompt": "Artano wants these witches dead. Thoughts?",
+      "prompt": "Altano wants these witches dead. Thoughts?",
       "responses": [
-        "Hold on. Look at them. No cauldron. No creepy whispering. Not even a black cat. They look like two very frightened ordinary people. What exactly is Artano in such a hurry about?"
+        "Hold on. Look at them. No cauldron. No creepy whispering. Not even a black cat. They look like two very frightened ordinary people. What exactly is Altano in such a hurry about?"
       ],
       "sayOnce": true,
       "emotion": "Neutral",
@@ -161,6 +159,8 @@
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
         { "function": "GetQuestRunning", "param": "Vigilant.esm:0x17576E", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x17576E", "stage": 10, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x17576E", "stage": 20, "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA1_WitchDoubt", "comparison": "==", "value": 0 }
       ]
     },
@@ -182,14 +182,14 @@
       "questEditorId": "MFSofVigAct1Controller",
       "prompt": "We killed the witches.",
       "responses": [
-        "Done. I'm not saying you were wrong. Orders are orders, and we don't know the full picture. But did you see the way she looked at you at the end. I'm going to remember that look. You should too. Next time Artano sends us somewhere, let's ask a few more questions first."
+        "Done. I'm not saying you were wrong. Orders are orders, and we don't know the full picture. But did you see the way she looked at you at the end. I'm going to remember that look. You should too. Next time Altano sends us somewhere, let's ask a few more questions first."
       ],
       "sayOnce": true,
       "emotion": "Anger",
       "setGlobal": { "global": "MF_SofA1_WitchKilled", "value": 1 },
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
-        { "function": "GetStageDone", "param": "Vigilant.esm:0x17576E", "stage": 20, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x17576E", "stage": 50, "comparison": "==", "value": 1 },
         { "function": "GetGlobalValue", "param": "MF_SofA1_WitchKilled", "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA1_WitchSpared", "comparison": "==", "value": 0 }
       ]
@@ -199,32 +199,32 @@
       "questEditorId": "MFSofVigAct1Controller",
       "prompt": "I let the witches go.",
       "responses": [
-        "You let them go. Ha. I knew you would. ...You know what, I'm not even going to make fun of you for that one. If Artano had a real reason to want them dead, he would have explained it himself instead of sending us in blind. We'll see what he says."
+        "You let them go. Ha. I knew you would. ...You know what, I'm not even going to make fun of you for that one. If Altano had a real reason to want them dead, he would have explained it himself instead of sending us in blind. We'll see what he says."
       ],
       "sayOnce": true,
       "emotion": "Happy",
       "setGlobal": { "global": "MF_SofA1_WitchSpared", "value": 1 },
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
-        { "function": "GetStageDone", "param": "Vigilant.esm:0x17576E", "stage": 10, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x17576E", "stage": 230, "comparison": "==", "value": 1 },
         { "function": "GetGlobalValue", "param": "MF_SofA1_WitchSpared", "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA1_WitchKilled", "comparison": "==", "value": 0 }
       ]
     },
     {
-      "editorId": "MFSofVig_1I_ArtanoSuspicion",
+      "editorId": "MFSofVig_1I_AltanoSuspicion",
       "questEditorId": "MFSofVigAct1Controller",
-      "prompt": "What do you make of Artano?",
+      "prompt": "What do you make of Altano?",
       "responses": [
-        "That Artano. I can't put my finger on it. His smile is too well-timed. His answers are too clean. I've met a lot of people who smile like that. Usually they're wearing a very nice holy symbol while doing something very not holy. Watch him."
+        "That Altano. I can't put my finger on it. His smile is too well-timed. His answers are too clean. I've met a lot of people who smile like that. Usually they're wearing a very nice holy symbol while doing something very not holy. Watch him."
       ],
       "sayOnce": true,
       "emotion": "Disgust",
-      "setGlobal": { "global": "MF_SofA1_ArtanoSuspicion", "value": 1 },
+      "setGlobal": { "global": "MF_SofA1_AltanoSuspicion", "value": 1 },
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
-        { "function": "GetStageDone", "param": "Vigilant.esm:0x17576E", "stage": 30, "comparison": "==", "value": 1 },
-        { "function": "GetGlobalValue", "param": "MF_SofA1_ArtanoSuspicion", "comparison": "==", "value": 0 }
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x00EA8A", "stage": 200, "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "MF_SofA1_AltanoSuspicion", "comparison": "==", "value": 0 }
       ]
     },
     {
@@ -239,7 +239,7 @@
       "setGlobal": { "global": "MF_SofA1_CareneKilled", "value": 1 },
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
-        { "function": "GetStageDone", "param": "Vigilant.esm:0x4D0376", "stage": 29, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x4D0376", "stage": 35, "comparison": "==", "value": 1 },
         { "function": "GetGlobalValue", "param": "MF_SofA1_CareneKilled", "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA1_CareneSpared", "comparison": "==", "value": 0 }
       ]
@@ -256,7 +256,7 @@
       "setGlobal": { "global": "MF_SofA1_CareneSpared", "value": 1 },
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
-        { "function": "GetStageDone", "param": "Vigilant.esm:0x4D0376", "stage": 20, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x4D0376", "stage": 100, "comparison": "==", "value": 1 },
         { "function": "GetGlobalValue", "param": "MF_SofA1_CareneSpared", "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA1_CareneKilled", "comparison": "==", "value": 0 }
       ]
@@ -291,24 +291,8 @@
       "setGlobal": { "global": "MF_SofA1_ChapterClose", "value": 1 },
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
-        { "function": "GetStageDone", "param": "Vigilant.esm:0x4D0376", "stage": 30, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x4D0376", "stage": 130, "comparison": "==", "value": 1 },
         { "function": "GetGlobalValue", "param": "MF_SofA1_ChapterClose", "comparison": "==", "value": 0 }
-      ]
-    },
-    {
-      "editorId": "MFSofVig_RealmBruiant",
-      "questEditorId": "MFSofVigAct1Controller",
-      "prompt": "This estate. Thoughts?",
-      "responses": [
-        "Rich people. Big house, no furniture, Daedra altar in the basement — classic. Look at that chandelier though. Much better taste than whatever they were praying to. When we're done we could absolutely... confiscate it. As evidence. Obviously."
-      ],
-      "sayOnce": true,
-      "emotion": "Disgust",
-      "setGlobal": { "global": "MF_SofA1_RealmBruiant", "value": 1 },
-      "conditions": [
-        { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
-        { "function": "GetInWorldspace", "param": "Vigilant.esm:0x047CFA", "runOn": "Subject", "comparison": "==", "value": 1 },
-        { "function": "GetGlobalValue", "param": "MF_SofA1_RealmBruiant", "comparison": "==", "value": 0 }
       ]
     },
     {
@@ -324,6 +308,7 @@
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
         { "function": "GetInWorldspace", "param": "Vigilant.esm:0x166857", "runOn": "Subject", "comparison": "==", "value": 1 },
+        { "function": "GetQuestRunning", "param": "Vigilant.esm:0x17576E", "comparison": "==", "value": 1 },
         { "function": "GetGlobalValue", "param": "MF_SofA1_RealmHagsPond", "comparison": "==", "value": 0 }
       ]
     }
