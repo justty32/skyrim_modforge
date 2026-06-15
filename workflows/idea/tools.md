@@ -64,7 +64,8 @@
 - **Creation Companion**：Mutagen-based CK 替代 IDE（2025，active）
 - **Bethesda 官方 Blender 工具**（2024-12）：AssetWatcher 可同步 Blender 場景與遊戲記錄
 - **Spriggit**：ESP → YAML/JSON 文字序列化，可用任何編輯器跨平台編輯
-- **TES5Unity**：實驗性，可載入基本 Skyrim cell 進 Unity，frozen
+- **TES5Unity / ES5Unity**：ES5Unity (Suslanium) 2024 大改版，可解析 ESP/ESM/BSA、重建完整 cell 含光照物理；TES5Unity frozen
+- **Skyrim Content Tools (SCT)**：⭐ **最相關**——Unity-based 視覺關卡編輯器，可載入 1:1 Skyrim worldspace 預覽、輸出場景到 ESP geometry/layout records；由 True Cinematics 專案實際使用中（active 2024-2025）。這基本上就是 §15 想做的東西，而且已存在
 
 **待深挖**：Blender Niftools 能否讀 placed refs + vanilla asset 預覽；xEdit 腳本匯出 REFR JSON 已有 Gemini 生成的範例腳本（`05-xedit-export-script.md`）。
 
