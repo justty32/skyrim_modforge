@@ -201,4 +201,28 @@ Skyrim 光照太陰暗，偏好原神/薩爾達那種明亮——vanilla 只白�
 
 ---
 
+## 15. Unity / Blender 插件作為 CK 替代視覺場景編輯器（2026-06-15）
+
+**Idea**：用 Unity 或 Blender 插件取代 Creation Kit 的「視覺場景搭建」環節——在 Unity/Blender 中擺放物件/設計地圖，插件輸出 ModForge spec JSON，ModForge 產生合法 ESP。
+
+**為何有吸引力**：CK 是 Windows-only、崩潰率高、難腳本化；Unity/Blender 在 Linux 上跑、插件生態成熟、Unity 與 ModForge 同 .NET ecosystem。目標不是「用 Unity/Blender 做所有事」，而是**只替換 CK 最痛的一件事——視覺化物件擺放**，其餘（對話/腳本/記錄邏輯）繼續走 JSON spec。
+
+**兩條技術路線**：
+- **Blender 路（優先候選）**：Python 插件生態成熟；Blender Niftools 已能讀 NIF；插件讀場景 GameObject transform + EditorID 對照表 → 輸出 `placements[]` JSON；ModForge 接手生成 CELL/REFR。現有工具：PyNifly / Blender Niftools。
+- **Unity 路**：C# plugin 直呼 Mutagen 是理論可行；Unity 場景 GameObject → spec；資產匯入可接 §14 glTF/NIF 管線。
+
+**甜蜜點（今天就夠用）**：靜態物件擺放（REFR placed refs）、基本 CELL 佈局。ModForge 的 `placements[]` 規格已完整（含 `linkedRef`、`linkedRefKeyword`、enable/disable parent 欄位），插件只需對齊輸出格式。
+
+**已知難點**：
+- **Navmesh**：CK 自動三角化；替代路是 ModForge 現有靜態 flat-quad 生成（自訂 worldspace 夠用）。
+- **地形（LAND）**：heightmap → LAND record 轉換是技術牆；平坦地形 ModForge 已支援，非平坦還在 roadmap。
+- **LOD**：shell-out xLODGen（§11 已規劃）。
+- **CK 硬限制**：FaceGen 烘焙 / LipGenerator 跑不掉，但這類不是場景編輯的範疇。
+
+**待深挖**：Blender Niftools 能否讀 placed refs + vanilla asset 預覽（即「open render window」平替）；現有社群工具（SSE NIF Exporter、xEdit 腳本）有無視覺場景輸出先例。
+
+**關聯**：§11 M&B worldspace（城池場景擺放是重要下游）；§4 自訂世界（場景搭建）；§14 資產管線（NIF 匯入工具鏈）；§8 程序生成世界。
+
+---
+
 *最後更新：2026-06-04（2026-06-07 壓縮：已完成的實作軌跡移至 CLAUDE.md / git，本檔聚焦想法與決策）*
