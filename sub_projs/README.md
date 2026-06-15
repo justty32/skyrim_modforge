@@ -9,6 +9,7 @@
 | `sofia-patch/` | 消費者 | 用 ModForge 做 Sofia 風格隨從擴充；`README.md` 為索引。**agent 工作區**（劇情討論）|
 | `skyrim-voicegen/` | 基石 | 語音合成（text+emotion+ref→.wav）；靠 `MODFORGE_TTS_BIN` 協議接 ModForge，合約見 `PROTOCOL.md` |
 | `mod-survey/` | agent 工作區 | 調查 `~/skyrim_mods/` 那批已下載 mod；產出 `findings/`。方法見 [investigation/mod-survey-guide](../workflows/investigation/mod-survey-guide.md) |
+| `tool-survey/` | agent 工作區 | 調查 Skyrim 模組製作**工具**（SKSE plugin 框架、編輯器、patcher 等）；評估與 ModForge 的關係。`findings/` 存個別工具調查結果 |
 | `game-data/` | 共用參考 | 抽取出的全遊戲文本/清單（vanilla+DLC+CC+mod）；`extract.sh` 重生，文本 gitignore。給上面兩個工作區唯讀取用 |
 
 對比：**對其他 mod 的解碼/調查**（餵 ModForge roadmap 的參考）留在 `docs/`、繼續 committed；只有體量太大的才 gitignore 主體、留摘要。

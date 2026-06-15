@@ -8,6 +8,15 @@ ModForge 該長出的**生成能力** backlog（解碼浮現 + 已有設計待�
 
 1. **scene Dialog action 的 `Emotion`/`EmotionValue`** + 泛化 scene phase fragment（不只 PlayIdle，能跑 SetStage 等）：VIGILANT 演出靠 headtrack+emotion 取代 CAMS（78 cutscene、0 CAMS → CAMS 可延後）。
 2. **worldspace LAND 高度圖**（自訂地圖地形，VIGILANT realm 的本體）、region-driven weather（REGN）—— 待先確認 ModForge worldspace builder 現況。
+
+3. **擴展 SkyrimIngameEditor — 場景/地景遊戲內編輯器**（取代 CK 場景/landscape 流程）
+   - **目標**：在 SkyrimIngameEditor（[Jonahex/SkyrimIngameEditor](https://github.com/Jonahex/SkyrimIngameEditor)，SKSE + ImGui + C# EspGenerator）基礎上新增：
+     - **Reference/Object 編輯**：在遊戲視角內放置、移動、旋轉物件（NIF reference），結果匯出進 ESP；現有 TargetEditor / NiTransformEditor 已有基礎可延伸。
+     - **Heightmap / LAND 編輯**：遊戲內直接拉高度圖（LAND VHGT/VNML/VCLR），免開 CK landscape editor；需對接 SIE 現有的 SKSE hook + EspGenerator 的 LAND record 序列化。
+   - **動機**：CK landscape editor 在 Wine/Proton 下不穩定，且每次改地形都要離開遊戲；SIE 已有遊戲內即時改 Weather/Cell/Water 的基礎架構，擴展比從零實作成本低。
+   - **技術方向**：fork SkyrimIngameEditor → C++ 端加 LAND/Reference 選取與操作 GUI → C# EspGenerator 端補 LAND VHGT/VNML/VCLR 序列化 + Reference 新增/移動 record。
+   - **前置**：先讀懂 SIE 的 `IngameEditor/Gui/` 模組架構與 `EspGenerator.cs` 的 Cell 定位邏輯（repo 已 clone 至 `sub_projs/tool-survey/repos/SkyrimIngameEditor/`）。
+   - **參考**：F4RefToBlender（[6ooflames/F4RefToBlender](https://github.com/6ooflames/F4RefToBlender)）示範了從 CK reference data + PyNifly 重建 Blender 場景的資料流，可逆向推算 reference 資料結構。
 - **Scene 演出續做**：PlayIdle / 手勢動畫；camera shot（VIGILANT 證明可延後）。
 - **多解 SM 事件**（SkillIncrease/Jail/Bribe…，須 conditions 才安全，見 [[dispatcher-magic-trigger]]）。
 - **新 record**：Imagespace / Word of Power 等。（Music + Hazard 已落地，見 [feature-dev/landed](../feature-dev/landed/README.md)。）
