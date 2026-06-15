@@ -1,0 +1,251 @@
+# Roadmap — Findings 缺口全集
+
+← [roadmap](README.md)
+
+> **本檔由人工逐檔閱讀 `sub_projs/mod-survey/findings/` 全部 32 個檔案後整合（2026-06-15）。**  
+> 每條缺口附來源 findings、scope 與優先級。已在其他 roadmap 檔記錄的缺口打 `→ 見 X.md`；新缺口標 `🆕`。  
+> 優先序：🔴 高（alts 沒有就做不了某類 mod）→ 🟡 中（有替代路但繁瑣）→ 🟢 低（nice-to-have）。
+
+---
+
+## A 組：Radiant Quest / Alias 填充系統（前置必備）
+
+這組是「能不能生 radiant 任務」的根基。來源：**missives.md**、**encounter-mods.md**、**sm-subsystem.md**。  
+→ 缺口 #7 #8 #9 已登入 [mod-survey-gaps.md](mod-survey-gaps.md)，此處僅摘要。
+
+| # | 缺口 | 優先 |
+|---|------|------|
+| 7 | QuestAlias `findMatchingLocation` fill（LocationAlias 型）—— radiant 地點隨機化根基 | 🔴 |
+| 8 | QuestAlias `findMatchingRefNearAlias` (ALNA)——在指定 LocationAlias 範圍內找 ref | 🔴 |
+| 9 | `UpdateCurrentInstanceGlobal` fragment codegen——gather/計數型 quest objective 文字即時更新 | 🟡 |
+
+**PARTIAL（多數已支援，留窄缺口）：**
+- SM branch/quest-node 多層巢狀 SMBN（→ [mod-survey-gaps.md](mod-survey-gaps.md) ⚠️ partial）
+- LVLN alias fill 一等模式（→ [mod-survey-gaps.md](mod-survey-gaps.md) ⚠️ partial）
+
+---
+
+## B 組：Perk 互動式 Entry-Point + Fragment
+
+來源：**perk-entry-points.md**、**arrowblock.md**、**immersive-interactions.md**。  
+→ 缺口 #1 已登入 [mod-survey-gaps.md](mod-survey-gaps.md)，此處僅摘要。
+
+| # | 缺口 | 優先 |
+|---|------|------|
+| 1 | Perk `AddActivateChoice`/`SetText` + PerkAdapter VMAD + `PF_*.psc` fragment 生成器 | 🔴 |
+
+---
+
+## C 組：Package 目標/地點 → Quest Alias 間接
+
+來源：**encounter-mods.md**、**sm-subsystem.md**。  
+→ 缺口 #2 已登入 [mod-survey-gaps.md](mod-survey-gaps.md)。
+
+| # | 缺口 | 優先 |
+|---|------|------|
+| 2 | Package `target`/`location` 支援 quest alias index（`PackageTargetAlias`）—— radiant 演出 package 必需 | 🔴 |
+
+---
+
+## D 組：SKSE Plugin 輔助輸出 Pipeline（次要輸出檔）
+
+ModForge 的 `build` 主輸出是 `.esp`。這組是對應 SKSE framework 的 **ini/json 輔助輸出**，讓 mod 作者免寫 ESP override 就能做到 NPC 標記、物件替換、動畫切換等功能。
+
+### 🆕 D-1 SPID `_DISTR.ini` 輸出
+**來源：** spid.md、common-framework-mods.md  
+**現況：** ModForge 不輸出 `_DISTR.ini`。  
+**Scope：** `spidDistribution:` spec section → `<mod>_DISTR.ini`。  
+語法：`Type|RecordID|StringFilters|FormFilters|LevelFilters|Traits|param|Chance`  
+支援 spell/perk/faction/keyword/package/outfit/item 分發給 NPC（依 race/faction/keyword/level 條件）。  
+**用途：** 無 ESP patch 給 follower/NPC 加 faction、標記 keyword、分發 ability spell；OAR 條件讀 faction → animation 切換。  
+**優先：** 🔴（follower patch 兼容層的標準工具）
+
+### 🆕 D-2 MCM Helper `config.json`/`settings.ini` 輸出
+**來源：** mcm-helper.md  
+**現況：** ModForge 無 `mcm:` spec section，不輸出 MCM Helper 設定檔。  
+**Scope：** `mcm:` spec section → `SKSE/Plugins/MCMHelper/<mod>/config.json` + `SKSE/Plugins/MCMHelper/<mod>/settings.ini`；同時生成配套的無 Papyrus Quest record（`StartGameEnabled`，僅供 MCM 系統掛點）。  
+欄位：頁面/分隔線/開關/滑桿/文字框；`sourceType: ModSettingBool/Int/Float`；`settingName: myKey:mySection`。  
+**用途：** 任何需要玩家設定面板的 mod（難度、開關功能、follower 行為調整）。  
+**優先：** 🟡（有 GlobalVariable 替代，但 MCM 是品質標準）
+
+### 🆕 D-3 SkyPatcher ini 輸出
+**來源：** skypatcher.md  
+**現況：** ModForge 不輸出 SkyPatcher ini。  
+**Scope：** `skyPatcher:` spec section → `SKSE/Plugins/SkyPatcher/<mod>.ini`。  
+支援 29 record types 的 in-memory runtime patch（Hair/Eye/Skin/WNAM/ANAM/…），語法類 SPID。  
+**用途：** 批量修改大量 vanilla NPC 外觀（不衝突，不生 ESP）；NPC 美化 pipeline。  
+**優先：** 🟡（專門用途，與 SPID 互補）
+
+### 🆕 D-4 FormList Manipulator `_FLM.ini` 輸出
+**來源：** formlist-manipulator.md、flst-factory.md  
+**現況：** ModForge 不輸出 `_FLM.ini`。  
+**Scope：** `formListInject:` spec section → `<mod>_FLM.ini`。  
+格式：`Form = <formId>~<plugin>` + `Target = <flstId>~<plugin>` → kDataLoaded 時動態把 form 追加進任意 FLST（含 vanilla/他人 mod），**不衝突**（不需 override）。  
+**用途：** 把自家 spell/item/NPC 加進外部 mod 的 FLST（例如 Spellforge 法術池、SPID 分發目標 FLST）。  
+**優先：** 🟡
+
+### 🆕 D-5 KID `_KID.ini` 輸出
+**來源：** keyword-item-distributor.md  
+**現況：** ModForge 不輸出 `_KID.ini`。  
+**Scope：** `kidDistribution:` spec section → `<mod>_KID.ini`。  
+語法：`Keyword|Type|ItemID|Strings|Traits|Chance`  
+**用途：** 給道具批量加 keyword（品質分類、SPID 配合識別、OAR 條件）。  
+**優先：** 🟢（KID 通常手寫，spec 生成效益有限）
+
+### 🆕 D-6 BOS `_SWAP.ini` 輸出
+**來源：** base-object-swapper.md、common-framework-mods.md  
+**現況：** ModForge 不輸出 `_SWAP.ini`。  
+**Scope：** `objectSwap:` spec section → `<mod>_SWAP.ini`。  
+格式：`[Forms]`/`[References]`/`[Properties]` sections；條件欄位（faction/keyword/race/location/random）；`[Properties]` 可 override scale/activate flag。  
+**用途：** follower home 根據關係進度替換裝飾物；task-based 場景換道具。  
+**優先：** 🟢（場景美化用途，手寫亦可）
+
+### 🆕 D-7 AOS `_ANIO.ini` 輸出
+**來源：** animobject-swapper.md  
+**現況：** ModForge 不輸出 `_ANIO.ini`。  
+**Scope：** 角色化 idle 道具替換（喝酒 idle 中 Sofia 拿特定酒瓶、法師拿書）。條件支援 NPC base/faction/race/keyword。  
+**用途：** follower 角色化演出包（搭配 OAR）。  
+**優先：** 🟢（純視覺細節；低成本但很 low priority）
+
+---
+
+## E 組：Encounter 地點感知 / 冷卻機制
+
+來源：**encounter-mods.md**（IWE/EE）。  
+→ 缺口 #5 #6 已登入 [mod-survey-gaps.md](mod-survey-gaps.md)，此處僅摘要。
+
+| # | 缺口 | 優先 |
+|---|------|------|
+| 5 | LocType keyword 路由 + Hold 偵測 alias 語法糖 | 🟡 |
+| 6 | WITimeout 冷卻模式（Global + alias script cooldown 生成） | 🟡 |
+
+---
+
+## F 組：NavmeshTester 動態生怪模板
+
+來源：**encounter-mods.md**。  
+→ 缺口 #3 已登入 [mod-survey-gaps.md](mod-survey-gaps.md)。
+
+| # | 缺口 | 優先 |
+|---|------|------|
+| 3 | NavmeshTester 動態生怪 Papyrus script 模板（在玩家附近找合法 navmesh 點生 actor） | 🟡 |
+
+---
+
+## G 組：Perk 程序化法術族生成器
+
+來源：**spellforge.md**、**flst-factory.md**。  
+→ 缺口 #4 已登入 [mod-survey-gaps.md](mod-survey-gaps.md)。
+
+| # | 缺口 | 優先 |
+|---|------|------|
+| 4 | 程序化法術族生成器（school × level × delivery 網格 → 對齊 MGEF+SPEL+tome+FLST） | 🟢 |
+
+---
+
+## H 組：Custom Skills Framework 技能樹生成器
+
+來源：**constellations.md**（含 CSF v3 JSON 格式完整文件化）。  
+→ 已登入 [generation.md](generation.md)（含 MVP scope + spec 欄位草案）。
+
+**提醒**：CSF skill tree generator 是 generation.md 待補清單的一環，可接著現有 PERK 生成能力做。  
+MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原版技能頁）+ 3 個 GLOB + 2 個 KYWD + Translations UTF-16 LE BOM + init alias script 模板 + 訓練 TIF。  
+**優先：** 🟡（有完整設計文件，下一步寫 spec）
+
+---
+
+## I 組：MagicEffectSpec inline script-attach（DX 缺口）
+
+來源：**arrowblock.md**、**mgef-vmad.md**。
+
+🆕 **MagicEffectSpec `scripts[]` inline 欄位**  
+**現況：** 通用 `scripts[].targetEditorId` 路徑**已能**把腳本掛到 MGEF（`AttachScripts()` 反射 VMAD）。`MagicEffectSpec` 無專屬 `scripts` 欄位——使用者必須拆到頂層 `scripts[]`，且文件沒說明此繞路方式。  
+**Scope：** 在 `MagicEffectSpec` 加 `scripts: List<ScriptAttachSpec>` inline 欄位，讓 MGEF script-attach 和 record 定義貼在一起；更新 docs。  
+**優先：** 🟢（功能已通，純 DX/文件缺口）
+
+---
+
+## J 組：Papyrus Script 模板（JContainers / PapyrusUtil 模式）
+
+來源：**jcontainers.md**、**papyrusutil.md**、**common-framework-mods.md**。
+
+🆕 **JContainers / PapyrusUtil Papyrus script 模板**  
+**現況：** ModForge 不生成使用 JContainers/PapyrusUtil 的 Papyrus 腳本片段。  
+**Scope：** script-template 功能（非 record），提供常見模式的 snippet：  
+- `StorageUtil.SetIntValue(akActor, "key", val)` 做 per-form KV 狀態（follower 記憶、cooldown）
+- `JFormDB.solveObjLN(root, ".follower.topics.lastSpoken", true)` 做 nested map 狀態表
+- `ActorUtil.AddPackageOverride(akActor, pkg, 0-100)` 臨時 package 覆蓋（帶清理配對）
+- `MiscUtil.ScanCellNPCs(...)` 附近 NPC 偵測  
+**用途：** follower 複雜對話狀態、relationship matrix、dialogue cooldown。  
+**優先：** 🟡（follower expansion 的核心需求，但屬 script-gen 功能非 record-gen）
+
+---
+
+## K 組：Quest Script Global Write（SetValue spec）
+
+來源：**runtime-selector-patterns.md**。
+
+🆕 **Quest script `SetValue(global, val)` 一等 spec 語法**  
+**現況：** Global write 只能在 dialogue TIF fragment（`GetOwningQuest()` 獲取 quest script）裡做，沒有 spec-level「在 QuestStage fragment 或 alias OnInit 裡寫入 GlobalVariable」的一等支援。  
+**Scope：** `QuestStageSpec` 或 `AliasSpec` 支援 `globalWrites: [{global: "MyGlobal", value: 1}]`，自動在對應 fragment 生成 `MyGlobal.SetValue(1)`；或更通用的 `scriptlets: [...]` 語法。  
+**優先：** 🟡（目前手寫 fragment 可繞過，但生成器覆蓋率不完整）
+
+---
+
+## L 組：Dialogue INFO `GetScriptVariable` 條件型
+
+來源：**iwh-ith.md**、**conditional-expressions.md**。
+
+🆕 **`GetScriptVariable(QuestRef, PropertyName)` dialogue INFO 條件**  
+**現況：** 確認 ModForge condition 生成器是否支援 `GetScriptVariable` function type 未驗（⚠️ 需 code pass）。  
+**用途：** 讀取 ITH 的 `PlayerInDialogue` property 做 bark 抑制；讀取 CE 的 drunk/eating global 做 follower dialogue 分支。  
+**Scope：** 確認 `ConditionSpec.Function = GetScriptVariable` 的路徑；若不支援，補 `QuestRef` + `PropertyName` 欄位。  
+**優先：** 🟡（follower ambient bark 系統需要）
+
+---
+
+## M 組：Dialogue INFO 批次建立 + 條件模板
+
+來源：**follower-commentary-overhaul.md**（FCO 設計）、**relationship-dialogue-overhaul.md**（RDO 設計）。
+
+🆕 **INFO 批次建立 + condition template 共享機制**  
+**現況：** ModForge 逐條 spec INFO，無法共享 condition block（FCO 有 265 條共用相同地點/狀態條件）。  
+**Scope：** spec 支援 `conditionTemplates: [...]` 定義命名條件組，`info.useTemplate: MyConditionSet` 展開繼承；或支援 INFO 陣列批次建立（同 topic 多條、共享 conditions）。  
+**用途：** ambient commentary 大量生成（旅途/地點/時間/天氣/玩家狀態反應）。  
+**優先：** 🟡（只要做旅途 commentary 就需要）
+
+---
+
+## 參考：已登入其他 roadmap 檔的非缺口項
+
+以下是 findings 中「ModForge 值得未來支援」但非技術缺口的項目，已在其他檔：
+
+| 項目 | 狀態 | 位置 |
+|------|------|------|
+| OAR animation replacer config 生成 | ✅ **已落地** | generation.md + SPEC-animation.md |
+| BDI behavior variable 注入 config 生成 | ✅ **已落地** | generation.md + SPEC-animation.md |
+| CSF custom skill tree JSON 生成 | 🗂️ 設計完整，待 spec→build | generation.md |
+| Pandora shell-out 整合 | 🗂️ spike 待主機實測 | generation.md |
+| 場景 Emotion/EmotionValue 生成 | 🗂️ 待做 | generation.md |
+
+---
+
+## 快速執行順序建議
+
+按「做了解鎖最多後續功能」排：
+
+1. **A 組 #7 + #8**（LocationAlias + ALNA fill）→ 解鎖所有 radiant quest 生成
+2. **B 組 #1**（Perk AddActivateChoice + fragment）→ 解鎖互動式 perk mod
+3. **C 組 #2**（package alias 間接）→ 解鎖 radiant 演出 package
+4. **D-1**（SPID _DISTR.ini）→ 解鎖無衝突 NPC 標記與兼容 patch
+5. **D-2**（MCM Helper）→ 解鎖玩家設定面板
+6. **D-4**（FLM ini）→ 解鎖外部 FLST 注入（Spellforge/SPID 兼容）
+7. **H 組**（CSF skill tree）→ 接 generation.md 現有設計，已有詳細 spec 草案
+8. **L 組**（GetScriptVariable 條件）→ follower ambient bark 品質
+9. **J 組**（JC/PapyrusUtil 模板）→ follower 複雜狀態管理
+10. **M 組**（INFO 批次 + 條件模板）→ ambient commentary 生成效率
+11. **A 組 #9**（UpdateCurrentInstanceGlobal）→ gather 型任務完整性
+12. **K 組**（quest script global write spec）→ 生成器覆蓋率
+13. **D-3~7**（其餘 ini pipeline）→ 按需
+
+> **說明**：A 組 #5/#6 + E 組（LocType/WITimeout）、F/#3（NavmeshTester）、G/#4（法術族）已在 mod-survey-gaps.md；此處未重列。

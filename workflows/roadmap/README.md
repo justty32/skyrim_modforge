@@ -4,11 +4,12 @@
 
 **確定未來會做、但不確定何時**做的 backlog（比 [ideas](../idea/ideas.md) 的「不確定要不要做」更篤定；非當前 in-flight——in-flight 在各工作流 session-log）。階梯：idea → **roadmap** → [spec](../specs/README.md) → [plan](../plans/README.md) → build。
 
-本 backlog 按**來源／職責**分四檔：
+本 backlog 按**來源／職責**分四檔（+ 一份全集統整）：
 
 | 檔案 | 內容 |
 |------|------|
+| [all-findings-gaps.md](all-findings-gaps.md) | **⭐ findings 缺口全集（2026-06-15 人工逐檔審閱全 32 份 findings）** — 含新發現缺口（SPID/MCM/SkyPatcher/FLM/BOS/KID/AOS ini pipeline、INFO 批次、GetScriptVariable 條件等）+ 指向各分檔的 cross-ref；執行順序建議。 |
 | [generation.md](generation.md) | **解碼浮現的生成能力**待補清單（scene/emotion、worldspace LAND、CSF、OAR/BDI/Pandora…）+ 已有設計、待續（身份系統）。職責：ModForge 該長出的生成能力，餵 spec→build |
-| [mod-survey-gaps.md](mod-survey-gaps.md) | **mod-survey 浮現的 record/生成缺口**（FLST/SM 子樹/MGEF-VMAD/LVLN alias…）。⚠️ 多為推斷、**待一次 code 驗證 pass** |
+| [mod-survey-gaps.md](mod-survey-gaps.md) | **mod-survey 浮現的 record/生成缺口**（#1–9，含 code 驗證 pass 2026-06-15；#7–9 Missives 新增） |
 | [survey-backlog.md](survey-backlog.md) | **通用框架/庫 survey backlog**（A 全新：SkyPatcher/KID/… B 深挖：SPID/PapyrusUtil/… C 系統拆解：SM/PERK entry-point/…）。職責：餵 mod-survey findings，非 build |
 | [structure-tooling.md](structure-tooling.md) | **結構／工具的 open 重構項**（已完成的整批移 [refactor/archive](../refactor/archive/README.md)） |
