@@ -23,7 +23,7 @@
 3. 子資料夾頂層留一個 **index / README** 做導航；若已有 index 則更新它。
 4. 原本的頂層位置只留**精簡指標 + 指向 index 的連結**，不再塞細節。
 
-適用場景同一套：單檔工作流（`workflows/` 下的 `roadmap.md`/`testing.md`）膨脹到撐得起獨立資料夾（`tooling/` 就是膨脹後升 L2 的實例）、code 大檔超過 300 行要拆 partial、docs/workflows 單檔過大要分檔、或一個資料夾變成什麼都丟的雜物抽屜。先分結構、補/更新 index，再讓上層只剩導航。（本次 docs→workflows 大重構就是這原則的實例。）
+適用場景同一套：單檔工作流（`workflows/` 下的 `testing.md` 等）膨脹到撐得起獨立資料夾（`tooling/`、`roadmap/` 就是膨脹後升 L2 的實例）、code 大檔超過 300 行要拆 partial、docs/workflows 單檔過大要分檔、或一個資料夾變成什麼都丟的雜物抽屜。先分結構、補/更新 index，再讓上層只剩導航。（本次 docs→workflows 大重構就是這原則的實例。）
 
 ### 一個工作流的成長軌跡（四級）
 

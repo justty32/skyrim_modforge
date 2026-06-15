@@ -6,9 +6,9 @@
 
 ## 流程
 
-離線解碼 vanilla / 既有 mod（**esp-only、記憶體安全**——絕不載 Skyrim.esm 250MB、不 `.ToList()` 整個 record group）對照 ModForge 可實現性 → 產出進 [decode/](decode/README.md)。浮現的待補項進 [roadmap](../roadmap.md)，踩坑進 [gotchas](gotchas.md)。
+離線解碼 vanilla / 既有 mod（**esp-only、記憶體安全**——絕不載 Skyrim.esm 250MB、不 `.ToList()` 整個 record group）對照 ModForge 可實現性 → 產出進 [decode/](decode/README.md)。浮現的待補項進 [roadmap](../roadmap/README.md)，踩坑進 [gotchas](gotchas.md)。
 
-> **判斷「可不可行」要對照 ModForge 現有能力**：已落地的功能見 [feature-dev/landed](../feature-dev/landed/README.md)，程式碼地圖見 [common/code-map](../common/code-map/CODE_MAP.md)。解碼出的需求若已能做 → 標可行；缺口 → 進 [roadmap](../roadmap.md)。
+> **判斷「可不可行」要對照 ModForge 現有能力**：已落地的功能見 [feature-dev/landed](../feature-dev/landed/README.md)，程式碼地圖見 [common/code-map](../common/code-map/CODE_MAP.md)。解碼出的需求若已能做 → 標可行；缺口 → 進 [roadmap](../roadmap/README.md)。
 
 ## 內容
 

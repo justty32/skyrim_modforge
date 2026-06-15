@@ -2,7 +2,7 @@
 
 ← [INDEX](../../../INDEX.md)（專案地圖）｜[feature-dev README](../README.md)
 
-功能真正 in-game 落地（或 offline 完整）後才濃縮一句話 + 實作細節指標進這裡。實作細節見 git log / [CODE_MAP](../../common/code-map/CODE_MAP.md) / [SPEC-index](../../../docs/spec/SPEC-index.md)。鐵律與踩坑見 [gotchas](../gotchas.md)，未做的見 [ROADMAP](../../roadmap.md)。
+功能真正 in-game 落地（或 offline 完整）後才濃縮一句話 + 實作細節指標進這裡。實作細節見 git log / [CODE_MAP](../../common/code-map/CODE_MAP.md) / [SPEC-index](../../../docs/spec/SPEC-index.md)。鐵律與踩坑見 [gotchas](../gotchas.md)，未做的見 [ROADMAP](../../roadmap/README.md)。
 
 **按 CODE_MAP 五分法分檔**（兩套 index 互通——每檔對應同名 CODE_MAP 子 index）：
 

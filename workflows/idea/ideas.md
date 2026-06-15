@@ -2,9 +2,9 @@
 
 ← [INDEX](../../INDEX.md)
 
-奇思妙想備忘（**不確定要不要做**——確定會做但未排程的進 [roadmap](../roadmap.md)）。未必有優先順序，隨時增補。**已落地功能見 [feature-dev/landed](../feature-dev/landed/README.md) 與 git log**——本檔只留「想做的事」與判斷依據（決策、鐵律、缺口）。
+奇思妙想備忘（**不確定要不要做**——確定會做但未排程的進 [roadmap](../roadmap/README.md)）。未必有優先順序，隨時增補。**已落地功能見 [feature-dev/landed](../feature-dev/landed/README.md) 與 git log**——本檔只留「想做的事」與判斷依據（決策、鐵律、缺口）。
 
-階梯：**idea（要不要做？）** → [roadmap](../roadmap.md)（會做，何時？）→ [spec](../specs/README.md)（討論後方案）→ [plan](../plans/README.md)（動工前詳規）→ build。
+階梯：**idea（要不要做？）** → [roadmap](../roadmap/README.md)（會做，何時？）→ [spec](../specs/README.md)（討論後方案）→ [plan](../plans/README.md)（動工前詳規）→ build。
 
 **子研究**：[asset-pipelines/](asset-pipelines/README.md) —— 五條「想做但還沒蓋」的資產管線（外部工具 → Skyrim 素材）可行性研究（idea-research）。
 

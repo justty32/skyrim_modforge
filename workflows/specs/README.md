@@ -4,7 +4,7 @@
 
 一個 idea / roadmap 項**認真討論後產出的設計方案**：目標、架構、資料流、權衡、取捨。這是本工作流的 **入口**。
 
-階梯：[idea](../idea/ideas.md)（不確定要不要做）→ [roadmap](../roadmap.md)（會做、不確定何時）→ **spec（討論後的方案）** → [plan](../plans/README.md)（動工前的詳細實作規劃）→ build。
+階梯：[idea](../idea/ideas.md)（不確定要不要做）→ [roadmap](../roadmap/README.md)（會做、不確定何時）→ **spec（討論後的方案）** → [plan](../plans/README.md)（動工前的詳細實作規劃）→ build。
 
 - 本夾 `*.md` = 各功能的設計方案（檔名 **`<功能>-design.md`，不含日期**——日期記在下方 index 表）。
 - 對應的逐步實作在 [plans/](../plans/README.md)。

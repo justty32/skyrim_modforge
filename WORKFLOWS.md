@@ -15,7 +15,7 @@
 | 「把一個 idea 討論成設計方案」 | **spec** | [workflows/specs/README.md](workflows/specs/README.md) |
 | 「把設計方案展開成動工計畫」 | **plan** | [workflows/plans/README.md](workflows/plans/README.md) |
 | 「記一個奇思妙想」（不確定要不要做）| **idea** | [workflows/idea/ideas.md](workflows/idea/ideas.md) |
-| 「記一件確定會做、不確定何時的事」 | **roadmap** | [workflows/roadmap.md](workflows/roadmap.md) |
+| 「記一件確定會做、不確定何時的事」 | **roadmap** | [workflows/roadmap/](workflows/roadmap/README.md) |
 | 「跑測試」 | **testing** | [workflows/testing.md](workflows/testing.md) |
 | 「設定 / 了解開發環境」「fresh clone 後要做什麼」「這台機器能做什麼」 | **dev-env** | [workflows/dev-env.md](workflows/dev-env.md) |
 

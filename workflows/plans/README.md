@@ -4,7 +4,7 @@
 
 **真的要動工前**的詳細實作規劃：精確到哪個檔、什麼 code、什麼測試步驟（bite-sized task + 驗證）。這是本工作流的 **入口**。
 
-階梯：[idea](../idea/ideas.md) → [roadmap](../roadmap.md) → [spec（討論後方案）](../specs/README.md) → **plan（動工前詳規）** → build。
+階梯：[idea](../idea/ideas.md) → [roadmap](../roadmap/README.md) → [spec（討論後方案）](../specs/README.md) → **plan（動工前詳規）** → build。
 
 - 本夾 `*.md` = 各功能的逐步實作計畫（檔名 **`<功能>.md`，不含日期**——日期記在下方 index 表）。
 - 對應的設計方案在 [specs/](../specs/README.md)（命名對應：`<功能>.md` ↔ `specs/<功能>-design.md`）。
