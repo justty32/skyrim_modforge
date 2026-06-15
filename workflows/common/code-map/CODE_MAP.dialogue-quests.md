@@ -70,7 +70,7 @@
 ---
 
 ## Classes（職業 CLAS）
-→ **說明文件**：[SPEC-dialogue-quests.md § classes](../../../docs/spec/SPEC-dialogue-quests.md#classes-clas)
+→ **說明文件**：[SPEC-dialogue.md § classes](../../../docs/spec/SPEC-dialogue.md#classes-clas)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
@@ -81,7 +81,7 @@
 ---
 
 ## Quest 基礎（stages / objectives）
-→ **說明文件**：[SPEC-dialogue-quests.md § Quest stages](../../../docs/spec/SPEC-dialogue-quests.md#quest-stages-log-entries--objective-wiring)
+→ **說明文件**：[SPEC-quests.md § Quest stages](../../../docs/spec/SPEC-quests.md#quest-stages-log-entries--objective-wiring)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
@@ -98,7 +98,7 @@
 ---
 
 ## Dialogue 對話樹
-→ **說明文件**：[SPEC-dialogue-quests.md § dialogue](../../../docs/spec/SPEC-dialogue-quests.md#dialogue)
+→ **說明文件**：[SPEC-dialogue.md § dialogue](../../../docs/spec/SPEC-dialogue.md#dialogue)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
@@ -115,7 +115,7 @@
 ---
 
 ## Banter 隨機台詞
-→ **說明文件**：[SPEC-dialogue-quests.md § banter](../../../docs/spec/SPEC-dialogue-quests.md#banter--proactive-unprompted-npc-lines)
+→ **說明文件**：[SPEC-dialogue.md § banter](../../../docs/spec/SPEC-dialogue.md#banter--proactive-unprompted-npc-lines)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
@@ -126,7 +126,7 @@
 ---
 
 ## Scene 多人場景
-→ **說明文件**：[SPEC-dialogue-quests.md § scenes](../../../docs/spec/SPEC-dialogue-quests.md#scenes--two-npcs-talking-to-each-other-scen)
+→ **說明文件**：[SPEC-dialogue.md § scenes](../../../docs/spec/SPEC-dialogue.md#scenes--two-npcs-talking-to-each-other-scen)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
@@ -173,7 +173,7 @@
 ---
 
 ## Conditions（CTDA 條件）
-→ **說明文件**：[SPEC-dialogue-quests.md § conditions](../../../docs/spec/SPEC-dialogue-quests.md#conditions--ctda-gates-on-a-dialogue-info-a-banter-info-or-a-package)
+→ **說明文件**：[SPEC-dialogue.md § conditions](../../../docs/spec/SPEC-dialogue.md#conditions--ctda-gates-on-a-dialogue-info-a-banter-info-or-a-package)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
@@ -184,7 +184,7 @@
 ---
 
 ## Story Manager 事件觸發
-→ **說明文件**：[SPEC-dialogue-quests.md § Story Manager](../../../docs/spec/SPEC-dialogue-quests.md#story-manager-quests--event-driven-start) · [for_agent.md § 限制](../../../docs/for_agent.md#limits--be-honest-do-not-over-claim)
+→ **說明文件**：[SPEC-quests.md § Story Manager](../../../docs/spec/SPEC-quests.md#story-manager-quests--event-driven-start) · [for_agent.md § 限制](../../../docs/for_agent.md#limits--be-honest-do-not-over-claim)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
@@ -219,7 +219,7 @@
 ---
 
 ## ScriptEvent 自訂觸發
-→ **說明文件**：[SPEC-dialogue-quests.md § ScriptEvent](../../../docs/spec/SPEC-dialogue-quests.md#scriptevent--sending-your-own-story-events)
+→ **說明文件**：[SPEC-quests.md § ScriptEvent](../../../docs/spec/SPEC-quests.md#scriptevent--sending-your-own-story-events)
 
 同上 Story Manager 的源碼層（共用 `StoryManagerEvents.cs` / `Generator.Build.StoryManager.cs` / `Generator.Validate.StoryManager.cs`）。
 
@@ -241,7 +241,7 @@
 ---
 
 ## Papyrus 腳本附加
-→ **說明文件**：[SPEC-dialogue-quests.md § scripts](../../../docs/spec/SPEC-dialogue-quests.md#scripts--papyrus-attachment)
+→ **說明文件**：[SPEC-quests.md § scripts](../../../docs/spec/SPEC-quests.md#scripts--papyrus-attachment)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|

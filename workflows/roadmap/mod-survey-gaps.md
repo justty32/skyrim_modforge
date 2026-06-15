@@ -2,18 +2,24 @@
 
 ← [roadmap](README.md)
 
-> ⚠️ 下列缺口多由 survey agent **推斷**、未核 ModForge code，已知部分有誤（ModForge 其實已有 forced/uniqueActor/createObject/findMatching/alias-script 等 alias fill）。**先做一次 code 驗證 pass** 再認定；能做的降級/標掉，真缺的留下補正確 scope。校正所需的機制理解見 [survey-backlog.md](survey-backlog.md) C 組（survey 補機制、code 驗證核對現況，同一件事兩面）。
+> ✅ **已做 code 驗證 pass（2026-06-15）** — 原本由 survey agent 推斷的 9 條缺口已逐條核對 `src/` 實際 builder。結論:**3 條本就支援（撤銷）、2 條降級為 partial、4 條確認真缺**。下方按驗證後狀態重列；每條附 evidence（file:symbol）。機制理解的後續深挖見 [survey-backlog.md](survey-backlog.md) C 組。
 
-一輪 mod 挖掘（survey 在 [sub_projs/mod-survey/](../../sub_projs/mod-survey/)）反覆撞到的 ModForge 生成缺口（2026-06-14，按價值）；多個 mod 共用 → 優先。每條標來源 + scope。
+## ✅ 已支援（原缺口判斷有誤，撤銷）
 
-1. **建立新 FormList（FLST）+ 填 form ref** — 現在 `formLists[]` 只能引用 vanilla、不能建新。來源：Spellforge（整套靠索引對齊的自訂 FLST）。**通用、最高價值**（遠超 magic）。scope：新 FLST record 生成 + ref 填充（含對自家 esp 內 record 的引用）。
-2. **獨立 SM branch/quest-node 子樹 + keyword 路由多候選 quest** — 現在只能把單一 quest 的 `storyEvent` 掛 vanilla 根。來源：Extended Encounters、Immersive World Encounters。隨機事件/遭遇系統核心。scope：生成 SMBN/SMQN 子樹 + 條件路由。參 [[story-manager-kill-recipe]]。
-3. **`MagicEffectSpec` 加 script-attach (VMAD) 欄位** — 能設 `archetype="Script"` 卻綁不上 .psc。來源：Arrowblock。scripted MGEF 必需。scope：MGEF 的 VMAD/script property 綁定（仿既有 dialogue/quest fragment 機制）。
-4. **alias 從 LeveledNpc 清單填** — 現有 alias fill 模式不能 roll LVLN。來源：Immersive World Encounters、Missives(待確認)。遭遇/radiant 變化核心。scope：alias fill 新增 LVLN 模式。
-5. **`placements[]` 加 `linkedRef` 欄位（+ keyword 變體）** — linked-ref 節點鏈＝馬車路線/巡邏路徑的純資料表示。來源：Animated Carriage。scope：placement 間 linkedRef + 具名 keyword link。
-6. **Perk entry-point `AddActivateChoice`/`SetText` + fragment 膠水** — 不在 ModForge EntryPoint 表。來源：Immersive Interactions。情境化「啟用」選項。scope：擴充 EntryPointTabCount 表 + perk fragment（注意 [[perk-conditiontabcount-ctd]]）。
-7. **package/marker 目標指向 quest alias（alias 間接）** — 動態演出 package 需要。來源：Immersive World Encounters。scope：package/PatrolData target 支援 alias 引用。
-8. **navmesh-tester 動態生怪 Papyrus 模板** — 「在玩家附近隨機合法點生成」。來源：Extended Encounters。scope：可重用 Papyrus 模板，補既有 [[programmatic-navmesh]] 的預置法。
-9. **程序化法術族生成器（高階）** — school × level × delivery 網格 → 對齊的 MGEF+SPEL+tome 集。來源：Spellforge（其目錄的反向）。scope：高階 generator，依賴 #1。
+- **~~建立新 FLST + 填 ref~~** — 早有。`Generator.Build.Lists.cs:BuildFormLists()` 從 `spec.FormLists` 建新 FLST record；`Generator.Build.Lists.Wire.cs:WireFormLists()` 經 `Resolve(...)` 填 item，支援 in-spec editorId（自家 esp ref）與 vanilla `Plugin.esm:0xID`。
+- **~~`placements[].linkedRef` 欄位（+ keyword 變體）~~** — 早有。`Generator.Build.PlacementRefs.cs:WireLinkedRefs()` 讀 `pl.LinkedRefs`、設 XLKR，且支援具名 keyword link（`link.KeywordOrReference.SetTo(...)`）。
+- **~~`MagicEffectSpec` script-attach (VMAD)~~** — 用通用機制即可。`Generator.Build.Scripts.cs:AttachScripts()` 是 record-type-agnostic 的:反射任何 record 的 `VirtualMachineAdapter` 掛 `ScriptEntry`+typed property。MGEF 在 Mutagen 有可寫 VMAD，validator 無型別限制 → `scripts[]` 指向 MGEF editorId 今天就能用。**至多是文件缺口**（`MagicEffectSpec` 無專屬 script 欄位，但通用 `scripts[]` 已涵蓋）。
 
-（DAR/OAR `_conditions.txt` 生成器已併入 [generation.md](generation.md) 的 OAR 功能項。）
+## ⚠️ 降級為 partial（大部分已支援，只剩窄缺口）
+
+- **SM branch/quest-node 子樹 + keyword 路由** — `Generator.Build.StoryManager.cs:BuildStoryManager()` 已建 SMBN+SMQN、以 `PreviousSibling` 串同層 quest node、按 `root|keyword` 一分支路由（帶 `GetEventData/GetIsID Keyword` 條件）。**真缺**:只建 vanilla event root 下**單層**分支（兄弟＝quest node），不支援**任意深度/巢狀 SMBN 子樹**或非 vanilla event root。scope 收窄為「多層分支巢狀」，非「子樹生成」通稱。參 [[story-manager-kill-recipe]]。
+- **alias 從 LeveledNpc(LVLN) 填** — 現有 fill 模式:`fromEvent`/`forced`/`uniqueActor`/`createObject`/`findMatching`（`StoryManagerEvents.cs`）。`createObject` 已能 `cro.Object.SetTo(objFk)` 帶 `Level=Easy`、且 base 可為 leveled actor → 用 `createObject:<LVLN>@<alias>` 已能把 leveled actor 生進 alias。**真缺**:沒有**一等的** LVLN-aware fill 模式，也無「createObject 之 ref 可為 LVLN」的 validation。scope:加 LVLN fill 模式，或把 createObject+LVLN 文件化/驗證化。
+
+## ❌ 確認真缺（保留，scope 已校正；按價值）
+
+1. **Perk entry-point `AddActivateChoice` / `SetText` + fragment 膠水** —（最高價值，#6 原序）`Generator.Build.Perks.cs:WirePerks()` 只 emit `PerkEntryPointModifyValue`（+ `ability`），`EntryPointTabCount` 表（`Generator.Build.Perks.EntryPoints.cs`）也沒列這兩個。Immersive Interactions 需 29× AddActivateChoice + 4× SetText。scope:新增 `entrypoint` 子類 emit `PerkEntryPointAddActivateChoice`（帶 GetIsID/keyword/FLST 條件）與 `PerkEntryPointSetText` + Perk-fragment dispatcher（VMAD `Extends Perk`、`Fragment_N`→quest-script call，仿 `Generator.Build.Scripts.cs` 既有 dialogue/scene fragment 膠水）。注意 [[perk-conditiontabcount-ctd]]。
+2. **package/marker 目標指向 quest alias（alias 間接）** —（高價值）package target/location 目前只解到 placed ref 或 NearSelf（`Generator.Build.Packages.Advanced.cs` 用 `PackageTargetSpecificReference`/`PackageTargetObjectID`；`Generator.BuildContext.Utilities.cs:MakeLocationSlot()` 產 `LocationTarget{Link=IPlacedGetter}` 或 NearSelf）。無 `PackageTargetAlias`/alias-index location。radiant 演出 package 在 alias-filled actor 上必需。scope:package `target`/`location` 支援 quest alias index。
+3. **navmesh-tester 動態生怪 Papyrus 模板** — `Generator.Build.Navmesh.cs` 只生靜態 flat-quad NVNM + NAVI override，無 runtime「在玩家附近找合法點生成」模板。屬 **script-template** 功能（非 record），補既有靜態 navmesh 之外的 [[programmatic-navmesh]] 預置法。
+4. **程序化法術族生成器（高階）** — 無此 generator;`Generator.Build.Magic.cs` 是 1:1 spec→record。scope:在既有 builder 之上加「school × level × delivery 網格 → 對齊 MGEF+SPEL+tome」的高階層。依賴 FLST（現已確認支援）。
+
+> 校正前的原始推斷清單見 git 歷史（commit 前一版）。撤銷/降級的依據全為實際 builder symbol。

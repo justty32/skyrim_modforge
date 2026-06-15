@@ -87,7 +87,7 @@
 ---
 
 ## Classes（職業）
-→ **說明文件**：[SPEC-dialogue-quests.md § classes](../../../docs/spec/SPEC-dialogue-quests.md#classes-clas)
+→ **說明文件**：[SPEC-dialogue.md § classes](../../../docs/spec/SPEC-dialogue.md#classes-clas)
 
 （源碼見 [CODE_MAP.dialogue-quests.md § Classes](CODE_MAP.dialogue-quests.md#classes職業-clas)）
 

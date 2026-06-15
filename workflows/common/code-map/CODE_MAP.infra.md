@@ -100,7 +100,7 @@
 ---
 
 ## 動作系統 asset/config 生成（OAR / BDI / PIE，loose files、非-esp）
-→ **說明文件**：[SPEC-animation.md](../../../docs/spec/SPEC-animation.md) · 設計 [specs/action-system-asset-generation-design.md](../../specs/action-system-asset-generation-design.md) · 調查 [mod-survey/action-system/](../../../sub_projs/mod-survey/action-system/)
+→ **說明文件**：[SPEC-animation.md](../../../docs/spec/SPEC-animation.md) · 設計 [specs/archive/2026-06-14-action-system-asset-generation-design.md](../../specs/archive/2026-06-14-action-system-asset-generation-design.md) · 調查 [mod-survey/action-system/](../../../sub_projs/mod-survey/action-system/)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|

@@ -33,7 +33,9 @@
 
 ## C. 淺掌握，要從「別的 finding 順手點到」升級成系統拆解
 
-2026-06-14 機制型批次裡被點到、但**從沒當框架/引擎子系統獨立拆過**的底層機制（多為 vanilla 引擎子系統，非第三方 mod）。每條對應 [mod-survey-gaps.md](mod-survey-gaps.md) 的某條缺口——**深挖目的＝把那條缺口的推斷 scope 坐實**，與該段已標的「一次 code 驗證 pass」是同一件事的兩面（survey 補機制理解、code 驗證核對 ModForge 現況）:
+2026-06-14 機制型批次裡被點到、但**從沒當框架/引擎子系統獨立拆過**的底層機制（多為 vanilla 引擎子系統，非第三方 mod）。
+
+> ✅ **code 驗證 pass 已做（2026-06-15）**，下列各條對應的「缺口」狀態已更新（見 [mod-survey-gaps.md](mod-survey-gaps.md)）:FLST(#1)、MGEF-VMAD(#3)、linkedRef(#5) **本就支援**→ 對應的 C 項降為純機制好奇（低優先）;SM(#2) 降 partial、PERK entry-point(#6) 確認真缺 → 這兩條深挖仍有價值。
 
 - **SM（Story Manager）子系統** — record 結構（SMBN/SMQN/SMEN）、event node 樹、條件路由全貌。來源 Extended Encounters / Immersive World Encounters。坐實缺口 #2。參 [[story-manager-kill-recipe]]。
 - **PERK entry-point 機制** — entry-point 種類全表（`ModIncomingDamage`/`AddActivateChoice`/`SetText`…）+ 各自的 fragment 掛法。來源 Arrowblock / Immersive Interactions。坐實缺口 #6（注意 [[perk-conditiontabcount-ctd]]）。
