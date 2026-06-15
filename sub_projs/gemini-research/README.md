@@ -2,13 +2,13 @@
 
 Gemini CLI（聯網搜尋）生成的**原始研究素材**。品質參差不齊（幻覺嚴重），純粹存放原始輸出供人工篩選（「屎裏掏金」）。
 
-**結構**：每個 idea 開一個子資料夾，每個搜尋 query 一個 `.md` 檔。
+**結構**：每個主題開一個子資料夾，每個搜尋 query 一個 `.md` 檔。
 
 ## 子資料夾
 
-| 資料夾 | 對應 idea |
-|--------|----------|
-| [idea15-ck-visual-editor/](idea15-ck-visual-editor/) | §15 Unity/Blender 插件作為 CK 替代視覺場景編輯器 |
+| 資料夾 | 對應主題 |
+|--------|---------|
+| [npc-beautification/](npc-beautification/) | 通用 NPC 美化（自動覆蓋 mod 角色） |
 
 ## 使用原則
 
