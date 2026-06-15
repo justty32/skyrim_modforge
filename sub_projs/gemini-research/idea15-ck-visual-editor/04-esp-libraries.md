@@ -35,11 +35,11 @@ The rise of web-based modding tools and Electron-based installers has led to sev
 
 | Library | Language | Support (Read/Write) | GitHub URL | Last Commit |
 | :--- | :--- | :--- | :--- | :--- |
-| **tes-data** | TS/JS | Full (Bit-perfect R/W) | [shmup/tes-data](https://github.com/shmup/tes-data) | 2024 |
+| ~~**tes-data**~~ | TS/JS | — | ~~shmup/tes-data~~ | ❌ **GitHub 404, hallucinated** |
 | **SkyrimLib (JS)** | TS/JS | Basic (Experimental Write) | [tstavrianos/SkyrimLib](https://github.com/tstavrianos/SkyrimLib) | 2023 |
-| **skyrim-cell-dump**| JS | Read (Cell/World focused) | [hallada/skyrim-cell-dump](https://github.com/hallada/skyrim-cell-dump) | 2023 |
+| ~~**skyrim-cell-dump**~~ | JS | — | ~~hallada/skyrim-cell-dump~~ | ❌ **GitHub 404, hallucinated** |
 
-*   **Recommendation:** **`tes-data`** is the most modern and robust choice for 2024, specifically designed for bit-perfect reconstruction and lazy parsing of massive files like `Skyrim.esm`.
+*   **Note:** `tes-data` and `skyrim-cell-dump` confirmed 404 — hallucinated repos. JS/TS ESP tooling remains thin; `SkyrimLib` is the only verified option (lightweight).
 
 ### 4. Language-Agnostic Format Documentation
 For developers building their own parsers, these are the definitive references:
