@@ -159,13 +159,29 @@ public static partial class Generator
                     warn($"  ! worldspace '{ws.EditorId}' has both heightmap and cells — using heightmap, ignoring {ws.Cells.Count} flat cell(s)");
 
                 var hm = Heightmap.Load(hmSpec, specDir);
+                // Seam stitching: after encoding cell (cxi, cyi) we decode its east/north edge
+                // and pass those reconstructed heights to the next cell as its west/south edge.
+                // This ensures both sides of every shared boundary reconstruct to identical heights.
+                // Without this, each cell encodes independently and rounding can differ by ±8 units.
+                var stitchEast  = new float[hm.CellsX, 33]; // [cxi, row] — east col=32 of cell cxi
+                var stitchNorth = new float[hm.CellsX, 33]; // [cxi, col] — north row=32 of cell (cxi,cyi)
                 for (int cyi = 0; cyi < hm.CellsY; cyi++)
                     for (int cxi = 0; cxi < hm.CellsX; cxi++)
                     {
                         int gx = hm.OriginX + cxi, gy = hm.OriginY + cyi;
                         var grid = hm.SampleCell(cxi, cyi);
+                        // Stitch south edge first so SW corner is later overwritten by west stitch.
+                        if (cyi > 0)
+                            for (int c = 0; c < 33; c++) grid[0, c] = stitchNorth[cxi, c];
+                        // Stitch west edge (overwrites [0,0] for consistent SW corner).
+                        if (cxi > 0)
+                            for (int r = 0; r < 33; r++) grid[r, 0] = stitchEast[cxi - 1, r];
                         var (offset, deltas) = Vhgt.Encode(grid, warn, $"cell({gx},{gy})");
-                        EmitCell(gx, gy, offset, deltas, navmesh: false);   // MVP: heightmap mode skips navmesh
+                        // Decode reconstructed boundary heights for next cells to stitch against.
+                        var recon = Vhgt.Decode(offset, deltas);
+                        for (int r = 0; r < 33; r++) stitchEast[cxi, r]  = recon[r, 32];
+                        for (int c = 0; c < 33; c++) stitchNorth[cxi, c] = recon[32, c];
+                        EmitCell(gx, gy, offset, deltas, navmesh: false);
                     }
             }
             else

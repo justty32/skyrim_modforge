@@ -87,6 +87,32 @@ public class WorldspaceHeightmapTests
         System.IO.File.Delete(path);
     }
 
+    // 2×1 cells — 共用邊（PNG col 32）兩側重建高度必須逐頂點完全相同。
+    // 此測試在修 seam stitching 前會失敗（兩側獨立 encode，rounding 可差 ±8 units）。
+    [Fact]
+    public void Heightmap_TwoCells_SeamReconstructedHeightsMatch()
+    {
+        // 斜坡 PNG (65×33)：從左到右線性升高，最大坡度 ~6 units/vertex
+        var path = MakePng(65, 33, (x, y) => (ushort)(x * 1000));
+        var spec = new ModSpec { Esl = false, Worldspaces =
+            { World(new HeightmapSpec { Path = path, OriginX = 0, OriginY = 0, MinHeight = 0, MaxHeight = 8000 }) } };
+
+        var w = Generator.Build(spec, Out).Mod.Worldspaces.First(x => x.EditorID == "HMWorld");
+        var cells = w.SubCells.SelectMany(b => b.Items).SelectMany(s => s.Items)
+            .OrderBy(c => c.Grid!.Point.X).ToList();
+        Assert.Equal(2, cells.Count);
+
+        var vhm0 = cells[0].Landscape!.VertexHeightMap!;
+        var vhm1 = cells[1].Landscape!.VertexHeightMap!;
+        var h0 = Vhgt.Decode(vhm0.Offset, vhm0.HeightMap);
+        var h1 = Vhgt.Decode(vhm1.Offset, vhm1.HeightMap);
+
+        for (int row = 0; row < 33; row++)
+            Assert.True(h0[row, 32] == h1[row, 0],
+                $"seam row {row}: cell0 east={h0[row,32]} != cell1 west={h1[row,0]}");
+        System.IO.File.Delete(path);
+    }
+
     [Fact]
     public void Validate_HeightmapMinNotLessThanMax_IsFlagged()
     {
