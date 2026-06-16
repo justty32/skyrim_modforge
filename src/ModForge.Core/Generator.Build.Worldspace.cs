@@ -19,7 +19,7 @@ public static partial class Generator
     //  Returns counts folded into BuildStats + the link tallies.
     // -------------------------------------------------------------------------------
     private static (int Worldspaces, int TerrainCells, int NavmeshCells, int Links, int ExtLinks) BuildWorldspaces(
-        SkyrimMod mod, ModSpec spec, Dictionary<string, FormKey> formKeyByEd, Action<string> warn)
+        SkyrimMod mod, ModSpec spec, Dictionary<string, FormKey> formKeyByEd, Action<string> warn, string specDir = "")
     {
         int worldspaces = 0, terrainCells = 0, navmeshCells = 0, links = 0, extLinks = 0;
         // Per-cell navmeshes collected here → single NAVI override written after all worldspaces
@@ -99,10 +99,16 @@ public static partial class Generator
             // 33×33-vertex heightmap at Z=0 with straight-up normals — no textures needed for
             // collision. Block/sub-block coords follow the same /32 and /8 floor-division the
             // exterior placement code uses (proven against vanilla Skyrim.esm cell groups).
-            foreach (var cs in ws.Cells)
+            // Build one CELL+LAND and slot it into the worldspace's block tree. Shared by the flat
+            // (per-cell Height) path and the heightmap (PNG-derived) path. `heightDeltas` are the
+            // 33×33 VHGT signed-delta bytes; flat cells pass all-zero (terrain at Z = Offset*8).
+            // VertexNormalsHeightMap flag MUST be set or the engine skips VHGT/VNML and the player
+            // falls through. Block/sub-block coords use the same /32 and /8 floor-division as the
+            // exterior placement code (proven against vanilla Skyrim.esm cell groups).
+            void EmitCell(int cx, int cy, float offset, Noggog.Array2d<byte> heightDeltas, bool navmesh)
             {
-                short bx = (short)FloorDiv(cs.X, 32), by = (short)FloorDiv(cs.Y, 32);
-                short sx = (short)FloorDiv(cs.X, 8),  sy = (short)FloorDiv(cs.Y, 8);
+                short bx = (short)FloorDiv(cx, 32), by = (short)FloorDiv(cy, 32);
+                short sx = (short)FloorDiv(cx, 8),  sy = (short)FloorDiv(cy, 8);
 
                 var block = w.SubCells.FirstOrDefault(b => b.BlockNumberX == bx && b.BlockNumberY == by);
                 if (block is null)
@@ -118,36 +124,55 @@ public static partial class Generator
                 }
 
                 var edBase = string.IsNullOrWhiteSpace(ws.EditorId) ? "MF" : ws.EditorId;
-                var xTag = cs.X < 0 ? $"m{-cs.X}" : cs.X.ToString();
-                var yTag = cs.Y < 0 ? $"m{-cs.Y}" : cs.Y.ToString();
+                var xTag = cx < 0 ? $"m{-cx}" : cx.ToString();
+                var yTag = cy < 0 ? $"m{-cy}" : cy.ToString();
                 var cell = new Cell(mod, $"{edBase}_Cell_{xTag}_{yTag}");
-                cell.Grid = new CellGrid { Point = new Noggog.P2Int(cs.X, cs.Y) };
+                cell.Grid = new CellGrid { Point = new Noggog.P2Int(cx, cy) };
 
-                // Flat LAND: all 33×33 height-map deltas = 0 → terrain at Z = Offset*8 = 0.
-                // All normals point straight up (128,128,255 in Skyrim's unsigned-byte encoding).
-                // VertexNormalsHeightMap flag MUST be set; without it the engine skips VHGT/VNML
-                // and the player falls through with no collision.
                 var land = new Landscape(mod);
                 land.Flags = Landscape.Flag.VertexNormalsHeightMap;
                 land.VertexHeightMap = new LandscapeVertexHeightMap
                 {
-                    Offset = cs.Height / 8f,   // VHGT scale: actual_Z = Offset * 8
-                    HeightMap = new Noggog.Array2d<byte>(33, 33, 0),
+                    Offset = offset,           // VHGT scale: actual_Z = Offset * 8
+                    HeightMap = heightDeltas,
                     Unknown = new Noggog.P3UInt8(0, 0, 0),
                 };
+                // MVP: normals straight up (128,128,255). B-route recomputes from neighbour heights.
                 land.VertexNormals = new Noggog.Array2d<Noggog.P3UInt8>(33, 33, new Noggog.P3UInt8(128, 128, 255));
                 cell.Landscape = land;
 
-                // Flat navmesh: a 4-vertex quad covering the cell at terrain height so NPCs can path
-                // across it (built + the NAVI map written in Generator.Build.Navmesh.cs).
-                if (cs.Navmesh)
+                if (navmesh)
                 {
+                    var cs = new WorldspaceCellSpec { X = cx, Y = cy, Navmesh = true };
                     AddFlatCellNavmesh(mod, cell, cs, w.FormKey, navmInfos);
                     navmeshCells++;
                 }
 
                 sub.Items.Add(cell);
                 terrainCells++;
+            }
+
+            if (ws.Heightmap is { } hmSpec)
+            {
+                // Non-flat terrain: derive the cell grid from PNG size and encode each cell's VHGT.
+                if (ws.Cells.Count > 0)
+                    warn($"  ! worldspace '{ws.EditorId}' has both heightmap and cells — using heightmap, ignoring {ws.Cells.Count} flat cell(s)");
+
+                var hm = Heightmap.Load(hmSpec, specDir);
+                for (int cyi = 0; cyi < hm.CellsY; cyi++)
+                    for (int cxi = 0; cxi < hm.CellsX; cxi++)
+                    {
+                        int gx = hm.OriginX + cxi, gy = hm.OriginY + cyi;
+                        var grid = hm.SampleCell(cxi, cyi);
+                        var (offset, deltas) = Vhgt.Encode(grid, warn, $"cell({gx},{gy})");
+                        EmitCell(gx, gy, offset, deltas, navmesh: false);   // MVP: heightmap mode skips navmesh
+                    }
+            }
+            else
+            {
+                // Flat terrain: each cell a uniform-height LAND (all-zero deltas).
+                foreach (var cs in ws.Cells)
+                    EmitCell(cs.X, cs.Y, cs.Height / 8f, new Noggog.Array2d<byte>(33, 33, 0), cs.Navmesh);
             }
         }
 

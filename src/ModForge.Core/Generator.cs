@@ -29,6 +29,13 @@ public sealed class BuildOptions
     /// step needed. Populated by the <c>package</c> command after it compiles the generated sources.
     /// </summary>
     public string? CompiledScriptsDir { get; set; }
+
+    /// <summary>
+    /// Directory the spec file lives in, used to resolve relative asset paths in the spec
+    /// (e.g. a worldspace heightmap PNG). When null/empty, relative paths resolve against the
+    /// current working directory. The CLI sets this to the spec file's folder.
+    /// </summary>
+    public string? SpecDir { get; set; }
 }
 
 /// <summary>The outcome of <see cref="Generator.Build"/>: the in-memory mod plus warnings and stats.</summary>
