@@ -41,6 +41,11 @@
 
 **待測（active）**
 
+- **Worldspace heightmap → 非平坦 LAND（2026-06-16，公司機落地 Task 1–6）** — heightmap PNG 生起伏地形的後端 MVP 已實作、552 離線測試綠。spec＝`examples/worldspace_heightmap.json`（+ `worldspace_heightmap.png`，97×33=3×1 cells 小丘）；設計 `workflows/specs/worldspace-editor-design.md`、計畫 `workflows/plans/worldspace-editor.md`。
+  - **🔴 主力機演算法收尾（Task 7，blocking 真實正確性）**：VHGT 編碼演算法經 Mutagen 原碼 + UESP + xEdit 查證（高信心），但**沒對真實 Tamriel LAND 反解比對過**（公司機無 Skyrim.esm）。請在主力機寫一次性測試：用 Mutagen 讀 Tamriel 某已知斜坡 cell 的 LAND，取 `VertexHeightMap.Offset`+`HeightMap` 餵 `Vhgt.Decode`，比對重建高度與已知地形/xEdit 顯示值。**吻合**→把 design/coord-system 的「待主力機收尾」標記移除；**不吻合**→多半是 `Vhgt` 的 Array2d 索引方向或 row/col 對調，修完離線單測仍綠後回報。
+  - **實機測試（次要，演算法驗過再做）**：`dotnet run --project src/ModForge.Cli -- build examples/worldspace_heightmap.json <out>.esp` → 裝 → `cow HeightmapDemoWorld 0 0`～`2 0` → 確認地形**有起伏小丘**（不是全平）、3 格之間**接縫不裂**。MVP 已知限制：法線全朝上（光照略平）、無 navmesh。
+
+
 - **Sofia × VIGILANT 第一幕（2026-06-14）** — 兩版交付 `~/skyrim_mods/mine/`：`SofiaVigilantAct1.zip`（v1 對話+語音）、`SofiaVigilantAct1v2.zip`（v2 +PlayIdle 動作）。spec＝`examples/sofia_vigilant_act1{,_v2}.json`，臺詞＝`sub_projs/sofia-patch/vigilant-screenplay/act1-警戒者.md`。
   - **✅ v1 核心 pipeline 已實機確認（2026-06-14）**：對話有註冊、觸發點對、語音有播（跑了一小段任務線）。
   - **仍 open（待你續測）**：① **各 beat 完整覆蓋**——把 1-A~1-K 跑滿，看有沒有哪個選項該出現卻沒出現（stage 解碼誤）；② **殺/放分支正確性**（殺女巫=SubQ01 s50 / 放=s230；殺 Carene=GoodEnd s35 / 放=s100——殺了卻跳「放過」台詞＝分支錯）；③ **嘴型**有沒有動（fuz 內嵌 lip，待目視確認）；④ **v2 動作**——換裝 v2（一次只裝一版，editorId 不同），看 1-A 諷刺鼓掌 / 1-E 嘆氣 / 1-H-殺 怒 / 1-I 東張西望 有沒有播。

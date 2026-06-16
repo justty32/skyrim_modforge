@@ -14,7 +14,7 @@
 
 | 計畫 | 出計畫日期 | 對應 spec | 狀態 |
 |---|---|---|---|
-| [worldspace-editor.md](worldspace-editor.md)（heightmap → 非平坦 LAND，7 task） | 2026-06-16 | [specs/worldspace-editor-design.md](../specs/worldspace-editor-design.md) | 待執行（Task 7 主力機收尾） |
+| [worldspace-editor.md](worldspace-editor.md)（heightmap → 非平坦 LAND，7 task） | 2026-06-16 | [specs/worldspace-editor-design.md](../specs/worldspace-editor-design.md) | Task 1–6 落地（552 測試綠）；Task 7 待主力機 |
 
 action-system asset/config 生成（OAR/BDI/PIE）7 個 task 全落地（2026-06-14，547 測試綠燈），計畫已移 [archive/](archive/README.md)；落地記錄見 [feature-dev/landed/infra.md](../feature-dev/landed/infra.md)。
 
