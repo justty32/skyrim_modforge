@@ -1,0 +1,49 @@
+{
+  "pluginName": "ModForgePresetCookbookSkeleton.esp",
+  "esl": true,
+  "lightingTemplates": [
+    {
+      "editorId": "MF_CookbookCleanLGTM",
+      "ambientColor": { "r": 120, "g": 125, "b": 135 },
+      "directionalColor": { "r": 210, "g": 205, "b": 190 },
+      "fogNear": 0,
+      "fogFar": 8192,
+      "directionalAmbient": {
+        "scale": 1.0,
+        "zPlus": { "r": 170, "g": 178, "b": 188 },
+        "zMinus": { "r": 80, "g": 82, "b": 88 },
+        "xPlus": { "r": 130, "g": 134, "b": 142 },
+        "xMinus": { "r": 130, "g": 134, "b": 142 },
+        "yPlus": { "r": 130, "g": 134, "b": 142 },
+        "yMinus": { "r": 130, "g": 134, "b": 142 }
+      }
+    }
+  ],
+  "imageSpaces": [
+    {
+      "editorId": "MF_CookbookCleanIMGS",
+      "brightness": 1.15,
+      "contrast": 1.0,
+      "saturation": 1.08,
+      "bloomScale": 0.65,
+      "sunlightScale": 1.1,
+      "white": 1.25
+    }
+  ],
+  "weathers": [
+    {
+      "editorId": "MF_CookbookClearWeather",
+      "imageSpaces": {
+        "default": "MF_CookbookCleanIMGS"
+      }
+    }
+  ],
+  "identities": [
+    {
+      "id": "Adventurer",
+      "faction": "MF_CookbookAdventurerFaction",
+      "priority": 0,
+      "default": true
+    }
+  ]
+}
