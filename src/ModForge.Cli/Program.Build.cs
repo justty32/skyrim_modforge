@@ -14,7 +14,8 @@ internal static partial class Program
     {
         var spec = ReadSpec(specPath);
         var key = ModKey.FromNameAndExtension(Path.GetFileName(outPath));
-        var result = Generator.Build(spec, key);
+        var specDir = Path.GetDirectoryName(Path.GetFullPath(specPath)) ?? ".";
+        var result = Generator.Build(spec, key, new BuildOptions { SpecDir = specDir });
         PluginIo.Write(result.Mod, outPath);
         foreach (var w in result.Warnings) Console.WriteLine(w);
         Console.WriteLine(BuildSummary(result.Stats, specPath, outPath));

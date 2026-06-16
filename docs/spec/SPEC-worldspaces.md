@@ -54,6 +54,25 @@ worldspace) whose **weather table** drives which weathers play there:
   adjacent cells. For varied terrain/LOD/detailed navmesh use the Creation Kit.
   **ESL LIMIT:** Skyrim's engine ignores LAND records in ESL (light) plugins — specs with `cells`
   must use `"esl": false` (the validator enforces this).
+- **`heightmap`** — **non-flat** terrain from a 16-bit grayscale PNG (mutually exclusive with
+  `cells`; if both are given, heightmap wins and build warns). ModForge derives the whole cell grid
+  from the PNG size and emits a sloped LAND (VHGT) per cell. Replaces the per-cell `cells` list.
+  ```jsonc
+  "heightmap": {
+    "path": "worldspace_heightmap.png",  // relative to the spec file; PNG width MUST be N×32+1,
+    "originX": 0, "originY": 0,           //   height M×32+1 (e.g. 33,65,97…) → N×M cells generated
+    "minHeight": 0,                       // game units at png value 0   (linear map)
+    "maxHeight": 8000                     // game units at png value 65535
+  }
+  ```
+  Image orientation: **bottom-left pixel = cell `(originX, originY)` south-west vertex**; image-right
+  = cell +X (east), image-up = cell +Y (north). Adjacent cells share the boundary pixel column/row, so
+  **seams align to the vertex with zero error**. Per-vertex height = `minHeight + (png/65535) ×
+  (maxHeight − minHeight)`. The per-128-unit slope between vertices is capped at ±1016 game units
+  (VHGT signed-byte limit); terrain steeper than that is clamped and build warns. **MVP scope:**
+  normals point straight up (slightly flat lighting) and no navmesh is generated in heightmap mode.
+  Same **ESL LIMIT** as `cells` (LAND ⇒ `"esl": false`). Worked example:
+  `examples/worldspace_heightmap.json` (+ `worldspace_heightmap.png`, a 97×33 = 3×1-cell hill).
 - **regions** (REGN): an area inside a `worldspace` (an in-spec WRLD `editorId` or a vanilla
   `"<master>:0xFORMID"`). `area` is a polygon of **>=3** world-space points (not cell grid).
   `weather` is the table that picks the active weather — each entry a WTHR *ref* + a relative
