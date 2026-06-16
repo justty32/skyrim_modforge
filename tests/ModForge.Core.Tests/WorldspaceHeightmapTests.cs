@@ -86,4 +86,28 @@ public class WorldspaceHeightmapTests
             Assert.Equal(flatLand.VertexHeightMap!.HeightMap[x, y], hmLand.VertexHeightMap!.HeightMap[x, y]);
         System.IO.File.Delete(path);
     }
+
+    [Fact]
+    public void Validate_HeightmapMinNotLessThanMax_IsFlagged()
+    {
+        var spec = new ModSpec { Esl = false, Worldspaces =
+            { World(new HeightmapSpec { Path = "x.png", OriginX = 0, OriginY = 0, MinHeight = 5000, MaxHeight = 4000 }) } };
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("minHeight"));
+    }
+
+    [Fact]
+    public void Validate_HeightmapEmptyPath_IsFlagged()
+    {
+        var spec = new ModSpec { Esl = false, Worldspaces =
+            { World(new HeightmapSpec { Path = "", MinHeight = 0, MaxHeight = 4000 }) } };
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("heightmap"));
+    }
+
+    [Fact]
+    public void Validate_EslWithHeightmap_IsFlagged()
+    {
+        var ws = World(new HeightmapSpec { Path = "x.png", MinHeight = 0, MaxHeight = 4000 });
+        var spec = new ModSpec { Esl = true, Worldspaces = { ws } };
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("esl"));
+    }
 }
