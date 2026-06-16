@@ -8,6 +8,8 @@
       "climate": "Skyrim.esm:0x000812",
       "water": "Skyrim.esm:0x000018",
       "flags": ["SmallWorld"],
+      "defaultLandHeight": 4000,
+      "defaultWaterHeight": -14000,
       "heightmap": {
         "path": "worldspace_heightmap.png",
         "originX": 0,
