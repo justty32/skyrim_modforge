@@ -80,11 +80,31 @@ Godot（HTerrain）                    ModForge
 
 ---
 
+## 前端結構（`godot/`）
+
+所有 `.gd` 維持 ~100 行，分層拆檔：
+
+| 檔 | 職責 |
+|---|---|
+| `main.gd` | 根場景：組裝、輸入派發、editor/walk 模式切換、display 同步 |
+| `terrain.gd` | 高度資料 + 座標換算 + 碰撞 body（`TerrainGrid`） |
+| `terrain_mesh.gd` | 從高度建 ArrayMesh（vertex/normal/uv + 高度漸層頂點色） |
+| `terrain_brush.gd` | 4 brush 模式（raise/lower/flatten/smooth） |
+| `camera_rig.gd` | orbit 編輯相機（middle orbit / scroll zoom / right pan） |
+| `player_controller.gd` | Walk Mode 人形 `CharacterBody3D`（第一人稱 + WASD/跳/ESC） |
+| `scene_builder.gd` | env / 編輯相機 / cursor / 格線 工廠 |
+| `world_ui.gd` | 側欄（ScrollContainer + slider/spinbox + 模式/筆刷/匯出按鈕） |
+| `io_dialog.gd` | export/import FileDialog |
+| `png16.gd` / `png16_codec.gd` | 16-bit PNG encode/decode + chunk/CRC |
+
+**顯示縮放**：`vis_height_scale`（Y）與 `vis_surface_scale`（X/Z）只影響顯示，資料恆為 game units；`Y=(h-min)·MPU·scale` 讓地板固定 Y=0。**高度著色**：以中間高度為基準，下沉→淺藍→深藍（水），上升→草綠→岩石→雪。
+
 ## Open
 
-- **Godot 專案開啟測試**（需主力機）：用 `godot4`（godot-mono）開 `sub_projs/godot-worldspace-editor/godot/` → 確認專案跑得起來、terrain 顯示、筆刷可刷、Export PNG 能存出 16-bit PNG。
+- **Godot 專案開啟測試**（需主力機）：用 `godot4`（godot-mono）開 `sub_projs/godot-worldspace-editor/godot/` → 確認 terrain 顯示、筆刷、display scale、Walk Mode、Export PNG 能存出 16-bit PNG。
 - **godotPlacements 讀取**（後端）：解 JSON + Godot4_y_up → Skyrim 座標換算 + 合流 placements[]（物件擺放後再做）
 
-~~Godot 前端骨架~~ ✅ 2026-06-16（自製 terrain，不靠 HTerrain：`terrain.gd` + `camera_rig.gd` + `png16.gd` + `main.gd`）
+~~Godot 前端骨架~~ ✅ 2026-06-16（自製 terrain，不靠 HTerrain）
+~~前端拆檔 + display scale + Walk Mode + 高度著色~~ ✅ 2026-06-16
 ~~VNML 重算（後端）~~ ✅ 2026-06-16（`Vnml.cs` + `SampleCellExtended`，35×35 中心差分）
 ~~待主力機收尾：Tamriel VHGT 反解比對~~ ✅ 2026-06-16（20 格 delta 完全一致）

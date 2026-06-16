@@ -26,4 +26,5 @@
 - **Idea #19 Godot Worldspace Editor — 後端+前端骨架完成（2026-06-16）**：
   - **後端**：`Vnml.cs` + `Heightmap.SampleCellExtended` + Generator 接入（604 tests）；`Package.cs` SpecDir bug 修。
   - **Godot 前端骨架**（自製 terrain，不靠 HTerrain）：`project.godot` + `terrain.gd`（ArrayMesh + 中心差分法線 + 4 brush 模式）+ `camera_rig.gd`（orbit/pan/zoom）+ `png16.gd`（16-bit PNG encode/decode）+ `main.gd`（UI panel / 滑桿 / FileDialog export / 鍵盤快捷鍵 / 格線 outline）。
-  - **待測**：① 使用者開 Godot 4（godot-mono）確認專案跑得起來；② 實機確認 VNML 法線光影效果（WAIT_USER）。
+  - **前端功能擴充 + 拆檔（2026-06-16）**：所有 .gd 拆到 ~100 行（新增 `terrain_brush` / `terrain_mesh` / `scene_builder` / `world_ui` / `io_dialog` / `png16_codec` / `player_controller`）。新增：**display scale**（height + surface 雙軸顯示縮放，`Y=(h-min)·MPU·scale` 地板固定 Y=0、camera 即時 `refresh()` 消漂移）、**slider+spinbox** 控件、**ScrollContainer** 側欄、**Walk Mode**（人形 CharacterBody3D + 第一人稱 + WASD/跳/ESC + 按需 trimesh 碰撞）、**高度漸層著色**（深藍水→草綠基準→岩石→雪，頂點色）。
+  - **待測**：① 使用者開 Godot 4（godot-mono）確認專案跑得起來（terrain/筆刷/scale/walk/export）；② 實機確認 VNML 法線光影效果（WAIT_USER）。

@@ -28,6 +28,10 @@ func get_camera() -> Camera3D:
 	return _camera
 
 
+func refresh() -> void:
+	_apply_transform()
+
+
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		match event.button_index:
