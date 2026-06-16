@@ -36,6 +36,37 @@ public static partial class Generator
                     && !pl.Kind.Equals("xmarker", StringComparison.OrdinalIgnoreCase)
                     && !pl.Kind.Equals("xmarkerHeading", StringComparison.OrdinalIgnoreCase))
                     Problems.Add($"placement kind '{pl.Kind}' invalid (npc|object|xmarker|xmarkerHeading)");
+                if (pl.Scale <= 0f)
+                    Problems.Add($"placement '{pl.EditorId ?? pl.Base}' scale must be > 0 (got {pl.Scale})");
+                if (pl.EnableParent is { } ep)
+                {
+                    if (string.IsNullOrWhiteSpace(ep.Ref))
+                        Problems.Add($"placement '{pl.EditorId}' enableParent has empty ref");
+                    else
+                        CheckRef(ep.Ref, $"placement '{pl.EditorId}' enableParent ref");
+                    if (!string.IsNullOrWhiteSpace(ep.Flag)
+                        && ep.Flag is not ("SetEnable" or "SetDisable" or "PopIn"))
+                        Problems.Add($"placement '{pl.EditorId}' enableParent flag '{ep.Flag}' invalid (SetEnable|SetDisable|PopIn)");
+                }
+                if (pl.Lock is { } lk)
+                {
+                    if (string.IsNullOrWhiteSpace(lk.Level))
+                        Problems.Add($"placement '{pl.EditorId}' lock has empty level");
+                    else if (!IsValidLockLevel(lk.Level))
+                        Problems.Add($"placement '{pl.EditorId}' lock level '{lk.Level}' invalid (novice|apprentice|adept|expert|master|requiresKey|inaccessible or 0–255)");
+                    CheckRef(lk.Key, $"placement '{pl.EditorId}' lock key");
+                }
+                if (pl.Ownership is { } own)
+                {
+                    if (string.IsNullOrWhiteSpace(own.Owner))
+                        Problems.Add($"placement '{pl.EditorId}' ownership has empty owner");
+                    else
+                        CheckRef(own.Owner, $"placement '{pl.EditorId}' ownership owner");
+                    if (own.Rank < 0)
+                        Problems.Add($"placement '{pl.EditorId}' ownership rank must be >= 0");
+                }
+                if (pl.Count < 0)
+                    Problems.Add($"placement '{pl.EditorId ?? pl.Base}' count must be >= 0");
                 foreach (var lr in pl.LinkedRefs)
                 {
                     if (string.IsNullOrWhiteSpace(lr.Target)) Problems.Add($"placement '{pl.EditorId}' linkedRef has empty target");
@@ -125,6 +156,13 @@ public static partial class Generator
             }
 
             ValidateWorld2();
+        }
+
+        private static bool IsValidLockLevel(string level)
+        {
+            var s = level.Trim().ToLowerInvariant();
+            return s is "novice" or "apprentice" or "adept" or "expert" or "master" or "requireskey" or "inaccessible"
+                || (int.TryParse(s, out var n) && n >= 0 && n <= 255);
         }
     }
 }

@@ -96,6 +96,73 @@ public static partial class Generator
                 else if (!string.IsNullOrWhiteSpace(pl.EncounterZone))
                     Warn($"  ! placement encounterZone '{pl.EncounterZone}' unresolved — skipped");
 
+                // Scale (XSCL): omit when 1.0 (default). Actors ignore XSCL in-game but we still write it.
+                if (pl.Scale != 1f)
+                {
+                    if (placedRec is PlacedObject scObj) scObj.Scale = pl.Scale;
+                    else if (placedRec is PlacedNpc scNpc) scNpc.Scale = pl.Scale;
+                }
+
+                // InitiallyDisabled: record header flag 0x800 — ref exists but is invisible/non-collidable.
+                if (pl.InitiallyDisabled) placedRec.MajorRecordFlagsRaw |= 0x800;
+
+                // Enable Parent (XESP): this ref's enabled state follows another ref.
+                if (pl.EnableParent is { } ep)
+                {
+                    if (TryResolveRef(ep.Ref, formKeyByEd, out var epFk))
+                    {
+                        var xesp = new EnableParent();
+                        xesp.Reference.SetTo(new FormLink<IPlacedGetter>(epFk));
+                        xesp.Flags = ep.Flag switch
+                        {
+                            "SetDisable" => EnableParent.Flag.SetEnableStateToOppositeOfParent,
+                            "PopIn"      => EnableParent.Flag.PopIn,
+                            _            => 0,  // "SetEnable" = default (no flag)
+                        };
+                        if (placedRec is PlacedObject epObj) epObj.EnableParent = xesp;
+                        else if (placedRec is PlacedNpc epNpc) epNpc.EnableParent = xesp;
+                        linksWired++;
+                        if (LooksExternalRef(ep.Ref)) extLinks++;
+                    }
+                    else Warn($"  ! placement '{pl.EditorId}' enableParent ref '{ep.Ref}' unresolved — skipped");
+                }
+
+                // Lock (XLOC): only PlacedObject (doors, containers); silently ignored on actors.
+                if (pl.Lock is { } lk && placedRec is PlacedObject lockObj)
+                {
+                    var xloc = new LockData { Level = ParseLockLevel(lk.Level) };
+                    if (!string.IsNullOrWhiteSpace(lk.Key))
+                    {
+                        if (TryResolveRef(lk.Key, formKeyByEd, out var keyFk)) xloc.Key.SetTo(keyFk);
+                        else Warn($"  ! placement '{pl.EditorId}' lock key '{lk.Key}' unresolved — skipped");
+                    }
+                    lockObj.Lock = xloc;
+                }
+
+                // Ownership (XOWN): who owns this placed object (theft/crime).
+                if (pl.Ownership is { } own)
+                {
+                    if (TryResolveRef(own.Owner, formKeyByEd, out var ownFk))
+                    {
+                        if (placedRec is PlacedObject ownObj)
+                        {
+                            ownObj.Owner.SetTo(ownFk);
+                            if (own.Rank != 0) ownObj.FactionRank = own.Rank;
+                        }
+                        else if (placedRec is PlacedNpc ownNpc)
+                        {
+                            ownNpc.Owner.SetTo(ownFk);
+                            if (own.Rank != 0) ownNpc.FactionRank = own.Rank;
+                        }
+                        linksWired++;
+                        if (LooksExternalRef(own.Owner)) extLinks++;
+                    }
+                    else Warn($"  ! placement '{pl.EditorId}' ownership owner '{own.Owner}' unresolved — skipped");
+                }
+
+                // Count (XCNT): item stack count on placed object; not meaningful for actors.
+                if (pl.Count > 0 && placedRec is PlacedObject cntObj) cntObj.ItemCount = pl.Count;
+
                 // Named placements register so other refs (patrol start, linkedRefs target) can find
                 // them. A placement that's a linkedRefs *target* must persist across save/load to be a
                 // stable anchor, so we force it Persistent (markers are cheap; this avoids the engine

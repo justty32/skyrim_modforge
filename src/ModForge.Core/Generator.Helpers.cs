@@ -50,6 +50,21 @@ public static partial class Generator
         return (T)Enum.ToObject(typeof(T), acc);
     }
 
+    // LockLevel string → enum. Accepts the named levels (case-insensitive) or a raw integer
+    // (byte-range 0–255). "inaccessible" is 255, which is not a named Mutagen enum member.
+    private static LockLevel ParseLockLevel(string s) => s.Trim().ToLowerInvariant() switch
+    {
+        "novice"       => LockLevel.Novice,
+        "apprentice"   => LockLevel.Apprentice,
+        "adept"        => LockLevel.Adept,
+        "expert"       => LockLevel.Expert,
+        "master"       => LockLevel.Master,
+        "requireskey"  => LockLevel.RequiresKey,
+        "inaccessible" => (LockLevel)255,
+        _ when int.TryParse(s.Trim(), out var n) => (LockLevel)n,
+        _ => LockLevel.Novice,  // should not reach — validate catches bad values
+    };
+
     // -------------------------------------------------------------------------------
     //  Reference resolver (It.7b). A "ref" string is EITHER an in-spec editorId, OR an
     //  external vanilla/master form "<master>:0xFORMID" (e.g. "Skyrim.esm:0x013746").
