@@ -34,3 +34,4 @@
 | 16 | ESL 合併工具 | 工具 | [tools.md](tools.md#16-esl-合併工具modforge-外掛指令2026-06-15) |
 | 17 | 任務節點圖 + 批量隨從反應 | 隨從/NPC | [followers.md](followers.md#17-skyrim-原版任務節點圖--批量隨從反應生成2026-06-15) |
 | 18 | 隨從記憶系統 | 隨從/NPC | [followers.md](followers.md#18-隨從記憶系統任務經歷追蹤與對話更新2026-06-15) |
+| 19 | Godot Worldspace Editor | 工具/世界 | [worldspace-editor/README.md](worldspace-editor/README.md) |

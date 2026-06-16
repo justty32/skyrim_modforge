@@ -23,4 +23,4 @@
 
 ## 不屬任何工作流的進度（堆太多 → 拆進 `session_logs/`）
 
-（無）
+- **Idea #19 Godot Worldspace Editor**（brainstorm 進行中）→ [worldspace-editor/README.md](workflows/idea/worldspace-editor/README.md)。決策已定：三階段 pipeline、Godot 4+HTerrain、單張大 PNG（ModForge 切，seam 零誤差）、擺放用 Godot 原生座標 ModForge 轉、scale 鎖 uniform、物件 metadata 用 `@export editor_id`、NIF→glTF 預覽（PyNifly Windows-only）。**待主力機驗（blocking）**：VHGT delta signed/unsigned + 累積方式、unit→公尺比例（見 [coord-system.md](workflows/idea/worldspace-editor/coord-system.md)）。下一步未定：開 sub_proj vs 繼續 brainstorm（schema 欄位、placements.json 格式、多 cell 切割演算法）。
