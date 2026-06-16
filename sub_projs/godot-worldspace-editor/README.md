@@ -101,10 +101,11 @@ Godot（HTerrain）                    ModForge
 
 ## Open
 
-- **Godot 專案開啟測試**（需主力機）：用 `godot4`（godot-mono）開 `sub_projs/godot-worldspace-editor/godot/` → 確認 terrain 顯示、筆刷、display scale、Walk Mode、Export PNG 能存出 16-bit PNG。
 - **godotPlacements 讀取**（後端）：解 JSON + Godot4_y_up → Skyrim 座標換算 + 合流 placements[]（物件擺放後再做）
 
 ~~Godot 前端骨架~~ ✅ 2026-06-16（自製 terrain，不靠 HTerrain）
 ~~前端拆檔 + display scale + Walk Mode + 高度著色~~ ✅ 2026-06-16
+~~Godot 專案開啟測試~~ ✅ 2026-06-16（使用者主力機驗證：terrain/筆刷/PNG 匯出可用）
 ~~VNML 重算（後端）~~ ✅ 2026-06-16（`Vnml.cs` + `SampleCellExtended`，35×35 中心差分）
 ~~待主力機收尾：Tamriel VHGT 反解比對~~ ✅ 2026-06-16（20 格 delta 完全一致）
+~~VNML axis/編碼驗證~~ ✅ 2026-06-16（對 vanilla Tamriel VNML 逐 byte 比對，修了 3 bug：轉置 / StepUnits 8→128 / signed-byte up=(0,0,127)；見 [landed/world.md](../../workflows/feature-dev/landed/world.md)）
