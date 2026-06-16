@@ -2,6 +2,8 @@
 
 ← [landed index](README.md)｜對應 [CODE_MAP.world](../../common/code-map/CODE_MAP.world.md)
 
+**PlacementSpec 六欄位（Scale/InitiallyDisabled/EnableParent/Lock/Ownership/Count）**（離線落地 2026-06-16）：`PlacementSpec` 補 XSCL/flag-0x800/XESP/XLOC/XOWN/XCNT build + validate。`ParseLockLevel` in `Generator.Helpers.cs`。`PlacementSpecFieldsTests.cs`（29 tests）。doc：`SPEC-world.md § placement extra fields`；schema：`spec.schema.json`；CODE_MAP：`CODE_MAP.world.md § Placements`。（實機測試自行確認新欄位在 ESP 中正確寫入；純 record-field，無 Papyrus 依賴。）
+
 **record builders（world 域）**
 - **Light (LIGT)**：`LightSpec`（color/radius/fade/flags…），用 placements 放置。
 - **Map marker (XMRK) on vanilla worldspace**（in-game 確認 2026-06-13，`ModForgeQuestMarkers-mapfix9.zip`）：`mapMarkers[]`（name/worldspace/position/type/flags）放進 Tamriel persistent cell，可見+可傳送+大地圖底圖完整渲染。**override vanilla WRLD（`CopyWorldspaceEnv`）的兩條鐵律**——詳見 [investigation/gotchas](../../investigation/gotchas.md) 與 memory [[worldspace-override-must-carry-topcell]]/[[worldspace-override-map-render-fields]]：① 持久 cell（0xD74）要帶 `MajorRecordFlagsRaw=0x00040400`（CopyCellEnv 不複製 record-header flag → CTD）；② 地圖渲染要帶 **EDID + RNAM + TNAM/UNAM 但永不帶 OFST**（OFST=Skyrim.esm 絕對檔案偏移量不可移植；缺 EDID=白圖有高度；缺 RNAM=破圖）。`examples/quest-markers.json`、`mapmarker`/`xmarker` placement kind。

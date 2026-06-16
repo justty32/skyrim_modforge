@@ -47,6 +47,49 @@
   into a vanilla worldspace also additively carries its persistent cell, so vanilla map markers and
   the world map stay intact.)
 
+#### placement extra fields
+```jsonc
+"placements": [
+  { "base": "MF_GoldCoins", "cell": "MF_Room",
+    "position": { "x": 0, "y": 50, "z": 80 },
+    "count": 50 },                                      // XCNT: 50-coin stack
+
+  { "base": "MF_LockedChest", "cell": "MF_Room",
+    "position": { "x": 200, "y": 0, "z": 0 },
+    "lock": { "level": "master" },                      // XLOC: master-locked
+    "ownership": { "owner": "MF_BanditFaction" } },     // XOWN: belongs to this faction
+
+  { "base": "MF_Trophy", "cell": "MF_Room",
+    "position": { "x": -100, "y": 0, "z": 100 },
+    "scale": 1.5 },                                     // XSCL: 1.5× size
+
+  { "base": "MF_SecretDoor", "cell": "MF_Room",        // hidden until quest stage fires
+    "editorId": "MF_SecretDoorRef",
+    "initiallyDisabled": true,                          // invisible + non-collidable
+    "enableParent": {                                   // XESP: follows quest marker
+      "ref": "MF_QuestTrigger",
+      "flag": "SetEnable" } }                           //   appears when trigger is enabled
+]
+```
+- **`scale`** (XSCL): uniform scale multiplier. `1.0` = default (subrecord omitted). Valid for
+  statics, furniture, lights; actors ignore it in-game. Must be > 0.
+- **`initiallyDisabled`** (record flag `0x800`): the ref exists in the cell but is invisible and
+  non-collidable until explicitly enabled (via script, quest stage, or `enableParent`). Common
+  pattern: hidden object + `enableParent` pointing at a quest-trigger XMarker.
+- **`enableParent`** (XESP): this ref's enabled state follows another placed ref (`ref` =
+  placement editorId or external ref).
+  - `flag`: `SetEnable` (I enable when my parent enables — default), `SetDisable` (inverted),
+    `PopIn` (appear without the fade-in flash).
+- **`lock`** (XLOC): lock a door or container (`PlacedObject` only).
+  - `level`: `novice` | `apprentice` | `adept` | `expert` | `master` | `requiresKey` |
+    `inaccessible`, or a raw byte value as a string (e.g. `"50"`).
+  - `key` (optional): item ref that bypasses the lock.
+- **`ownership`** (XOWN): who owns this object — picking it up counts as theft.
+  - `owner`: a FACT or NPC ref.
+  - `rank` (optional, int ≥ 0): faction rank required (ignored for NPC owners; `0` = any member).
+- **`count`** (XCNT): item stack count for a placed item (e.g. 50 gold coins). `0` = single
+  instance (subrecord omitted). Not meaningful for actors or statics.
+
 ### map markers (XMRK) — permanent world-map icons
 
 `mapMarkers[]` adds discoverable/fast-travel **location markers** to the world map — independent of any

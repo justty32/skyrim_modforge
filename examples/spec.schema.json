@@ -2308,6 +2308,66 @@
               }
             }
           }
+        },
+        "scale": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "XSCL: uniform scale multiplier (1.0 = default, XSCL subrecord omitted). Valid for statics/furniture/lights; actors ignore it in-game"
+        },
+        "initiallyDisabled": {
+          "type": "boolean",
+          "description": "Record flag 0x800: the ref exists in the cell but is invisible/non-collidable until explicitly enabled. Pair with enableParent to control when it appears"
+        },
+        "enableParent": {
+          "type": "object",
+          "description": "XESP: this ref's enabled state follows another placed ref (the 'enable parent')",
+          "required": ["ref"],
+          "properties": {
+            "ref": {
+              "$ref": "#/$defs/ref",
+              "description": "the controlling placed ref: a placement editorId or <master>:0xFORMID"
+            },
+            "flag": {
+              "enum": ["SetEnable", "SetDisable", "PopIn"],
+              "description": "SetEnable (default): I enable when my parent enables. SetDisable: I disable when my parent enables (inverted). PopIn: no fade-in animation when I appear (avoid the flash)"
+            }
+          }
+        },
+        "lock": {
+          "type": "object",
+          "description": "XLOC: lock a door or container at a given difficulty (PlacedObject only)",
+          "required": ["level"],
+          "properties": {
+            "level": {
+              "type": "string",
+              "description": "difficulty: novice | apprentice | adept | expert | master | requiresKey | inaccessible, or a raw byte value as a string (\"50\")"
+            },
+            "key": {
+              "$ref": "#/$defs/ref",
+              "description": "optional item ref (KEYM or any item) that bypasses the lock"
+            }
+          }
+        },
+        "ownership": {
+          "type": "object",
+          "description": "XOWN: who owns this placed object — picking it up counts as theft if the owner is alive/active",
+          "required": ["owner"],
+          "properties": {
+            "owner": {
+              "$ref": "#/$defs/ref",
+              "description": "FACT or NPC ref: the faction or individual who owns this object"
+            },
+            "rank": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "faction rank required for ownership (0 = any member; ignored when owner is an NPC)"
+            }
+          }
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "XCNT: item stack count for a placed item (e.g. 50 gold coins on a table). 0 = omitted (single instance). Not meaningful for actors or statics"
         }
       }
     },

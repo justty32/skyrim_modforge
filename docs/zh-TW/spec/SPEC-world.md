@@ -46,6 +46,49 @@
   若它不在預設 Steam 路徑，設定 `MODFORGE_SKYRIM_DATA`。（放入一個原版 worldspace 時
   也會附加帶上它的 persistent cell，所以原版的地圖標記與世界地圖會保持完整。）
 
+#### placement 額外欄位
+```jsonc
+"placements": [
+  { "base": "MF_GoldCoins", "cell": "MF_Room",
+    "position": { "x": 0, "y": 50, "z": 80 },
+    "count": 50 },                                      // XCNT: 50 金幣疊放
+
+  { "base": "MF_LockedChest", "cell": "MF_Room",
+    "position": { "x": 200, "y": 0, "z": 0 },
+    "lock": { "level": "master" },                      // XLOC: 大師級鎖
+    "ownership": { "owner": "MF_BanditFaction" } },     // XOWN: 屬於此幫派
+
+  { "base": "MF_Trophy", "cell": "MF_Room",
+    "position": { "x": -100, "y": 0, "z": 100 },
+    "scale": 1.5 },                                     // XSCL: 放大 1.5 倍
+
+  { "base": "MF_SecretDoor", "cell": "MF_Room",        // 任務觸發前隱藏
+    "editorId": "MF_SecretDoorRef",
+    "initiallyDisabled": true,                          // 不可見 + 無碰撞
+    "enableParent": {                                   // XESP: 跟隨任務觸發標記
+      "ref": "MF_QuestTrigger",
+      "flag": "SetEnable" } }                           //   觸發器啟用時一併出現
+]
+```
+- **`scale`**（XSCL）：等比例縮放倍率。`1.0` = 預設（不寫 XSCL 子記錄）。適用於 static、
+  家具、燈光；actor 在遊戲中會忽略它。必須 > 0。
+- **`initiallyDisabled`**（record flag `0x800`）：ref 存在於 cell 中但不可見、無碰撞，
+  直到被明確啟用（透過 script、任務階段、或 `enableParent`）。常見模式：隱藏物件 +
+  `enableParent` 指向任務觸發 XMarker。
+- **`enableParent`**（XESP）：此 ref 的啟用狀態跟隨另一個放置 ref（`ref` =
+  placement editorId 或外部 ref）。
+  - `flag`：`SetEnable`（父啟用時我也啟用 — 預設）、`SetDisable`（反轉）、
+    `PopIn`（出現時不淡入，避免閃爍）。
+- **`lock`**（XLOC）：鎖住門或容器（僅 `PlacedObject`）。
+  - `level`：`novice` | `apprentice` | `adept` | `expert` | `master` | `requiresKey` |
+    `inaccessible`，或原始 byte 值字串（如 `"50"`）。
+  - `key`（選填）：可繞過鎖的物品 ref。
+- **`ownership`**（XOWN）：誰擁有此物件 — 拿走會算偷竊。
+  - `owner`：FACT 或 NPC ref。
+  - `rank`（選填，int ≥ 0）：所需幫派等級（對 NPC 擁有者無效；`0` = 任何成員）。
+- **`count`**（XCNT）：放置物品的堆疊數量（如 50 枚金幣）。`0` = 單個（不寫子記錄）。
+  對 actor 或 static 無意義。
+
 ### map markers (XMRK) — 永久的世界地圖圖示
 
 `mapMarkers[]` 把可發現／可快速旅行的**地點標記**加到世界地圖 — 與任何
