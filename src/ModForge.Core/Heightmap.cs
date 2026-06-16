@@ -63,4 +63,25 @@ public sealed class Heightmap
                 grid[row, col] = _world[baseRow + row, baseCol + col];
         return grid;
     }
+
+    /// <summary>
+    /// 取第 (cellX, cellY) 格的 35×35 高度網格（33×33 cell + 四邊各 1px 邊框），PNG 邊界外夾取最近邊。
+    /// [r, c]：r/c ∈ [0..34]，cell 頂點在 [1..33, 1..33]；邊框供法線計算用（中心差分需鄰格高度）。
+    /// </summary>
+    public float[,] SampleCellExtended(int cellX, int cellY)
+    {
+        var grid = new float[CellVerts + 2, CellVerts + 2];
+        int baseCol = cellX * CellStep;
+        int baseRow = cellY * CellStep;
+        int worldH = _world.GetLength(0);
+        int worldW = _world.GetLength(1);
+        for (int r = 0; r < CellVerts + 2; r++)
+            for (int c = 0; c < CellVerts + 2; c++)
+            {
+                int wr = System.Math.Clamp(baseRow + r - 1, 0, worldH - 1);
+                int wc = System.Math.Clamp(baseCol + c - 1, 0, worldW - 1);
+                grid[r, c] = _world[wr, wc];
+            }
+        return grid;
+    }
 }

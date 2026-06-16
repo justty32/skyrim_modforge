@@ -69,7 +69,7 @@ internal static partial class Program
         //    AttachDialogueResultScripts wire the VMAD for any fragment whose .pex exists.
         var espPath = Path.Combine(outModDir, pluginName);
         var key = ModKey.FromNameAndExtension(pluginName);
-        var result = Generator.Build(spec, key, new BuildOptions { CompiledScriptsDir = compiledFragmentsDir });
+        var result = Generator.Build(spec, key, new BuildOptions { CompiledScriptsDir = compiledFragmentsDir, SpecDir = specDir });
         PluginIo.Write(result.Mod, espPath);
         foreach (var w in result.Warnings) Console.WriteLine(w);
         Console.WriteLine(BuildSummary(result.Stats, specPath, espPath));

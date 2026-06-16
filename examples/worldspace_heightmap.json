@@ -1,5 +1,6 @@
 {
   "name": "WorldspaceHeightmapDemo",
+  "pluginName": "HeightmapDemo.esp",
   "esl": false,
   "worldspaces": [
     {

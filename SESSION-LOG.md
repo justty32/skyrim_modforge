@@ -23,4 +23,4 @@
 
 ## 不屬任何工作流的進度（堆太多 → 拆進 `session_logs/`）
 
-- **Idea #19 Godot Worldspace Editor 後端 MVP — 已完整落地（2026-06-16）**：VHGT + Heightmap + BuildWorldspaces heightmap 分支 + 驗證 + 範例/文件 + Task 7 主力機演算法驗證；實機確認：有起伏✅、cell 接縫不裂✅（597 tests）。踩坑三個修掉：PNG spike bug → 高斯重生；高度範圍 0~8000 → 4000~4500；cell 邊界 ±8 units rounding seam → stitching 修。詳見 [landed/world.md](workflows/feature-dev/landed/world.md)。**Godot 前端（Idea #19 第 1 階段）待下一輪啟動。**
+- **Idea #19 Godot Worldspace Editor 後端 — 進行中**：VHGT + seam stitching + **VNML 重算（2026-06-16）** 已落地（604 tests）。`Vnml.cs`（35×35 中心差分 + E×N cross product，P3UInt8 編碼）+ `Heightmap.SampleCellExtended`（35×35 帶邊框）+ Generator 接入（heightmap path 自動算 VNML）；5 VnmlTests + 2 HeightmapTests 新增。sub_proj README Open 已更新。**待使用者實機確認法線效果**（光影有無異常）。**Godot 前端**：使用者將安裝 HTerrain plugin（或自製），回來後繼續。

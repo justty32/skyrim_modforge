@@ -48,6 +48,42 @@ public class HeightmapTests
         System.IO.File.Delete(path);
     }
 
+    // SampleCellExtended：中心 33×33 與 SampleCell 結果相同
+    [Fact]
+    public void SampleCellExtended_CenterMatchesSampleCell()
+    {
+        var path = MakePng(33, 33, (x, y) => (ushort)(x * 1000 + y * 500));
+        var spec = new HeightmapSpec { Path = path, MinHeight = 0, MaxHeight = 8000 };
+        var hm = Heightmap.Load(spec, System.IO.Path.GetDirectoryName(path)!);
+
+        var cell = hm.SampleCell(0, 0);
+        var ext  = hm.SampleCellExtended(0, 0);
+
+        for (int r = 0; r < 33; r++)
+            for (int c = 0; c < 33; c++)
+                Assert.Equal(cell[r, c], ext[r + 1, c + 1], 3f);
+
+        System.IO.File.Delete(path);
+    }
+
+    // SampleCellExtended：PNG 邊界外夾取最近邊（border clamping）
+    [Fact]
+    public void SampleCellExtended_BorderClamping()
+    {
+        // 單格 PNG，西南角 (col=0, row=0) 高度 = 100
+        var path = MakePng(33, 33, (x, y) => (ushort)(x == 0 && y == 32 ? 1000 : 32768));
+        var spec = new HeightmapSpec { Path = path, MinHeight = 0, MaxHeight = 65535 };
+        var hm = Heightmap.Load(spec, System.IO.Path.GetDirectoryName(path)!);
+
+        var ext = hm.SampleCellExtended(0, 0);
+        // ext[0, 0] 是 PNG 外西南角，應夾取 _world[0, 0] = SampleCell 最南最西頂點
+        var cell = hm.SampleCell(0, 0);
+        Assert.Equal(cell[0, 0], ext[0, 0], 3f);   // 南邊夾取
+        Assert.Equal(cell[0, 0], ext[0, 1], 3f);   // 確認西邊列也夾
+
+        System.IO.File.Delete(path);
+    }
+
     // 2×1 cells（65×33 px）：相鄰格共用第 32 欄 → 邊緣逐頂點相等（seam）
     [Fact]
     public void SampleCell_SharedEdge_MatchesBetweenNeighbors()

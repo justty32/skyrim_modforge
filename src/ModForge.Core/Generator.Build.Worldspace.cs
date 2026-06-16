@@ -105,7 +105,8 @@ public static partial class Generator
             // VertexNormalsHeightMap flag MUST be set or the engine skips VHGT/VNML and the player
             // falls through. Block/sub-block coords use the same /32 and /8 floor-division as the
             // exterior placement code (proven against vanilla Skyrim.esm cell groups).
-            void EmitCell(int cx, int cy, float offset, Noggog.Array2d<byte> heightDeltas, bool navmesh)
+            void EmitCell(int cx, int cy, float offset, Noggog.Array2d<byte> heightDeltas, bool navmesh,
+                          Noggog.Array2d<Noggog.P3UInt8>? normals = null)
             {
                 short bx = (short)FloorDiv(cx, 32), by = (short)FloorDiv(cy, 32);
                 short sx = (short)FloorDiv(cx, 8),  sy = (short)FloorDiv(cy, 8);
@@ -137,8 +138,7 @@ public static partial class Generator
                     HeightMap = heightDeltas,
                     Unknown = new Noggog.P3UInt8(0, 0, 0),
                 };
-                // MVP: normals straight up (128,128,255). B-route recomputes from neighbour heights.
-                land.VertexNormals = new Noggog.Array2d<Noggog.P3UInt8>(33, 33, new Noggog.P3UInt8(128, 128, 255));
+                land.VertexNormals = normals ?? new Noggog.Array2d<Noggog.P3UInt8>(33, 33, new Noggog.P3UInt8(128, 128, 255));
                 cell.Landscape = land;
 
                 if (navmesh)
@@ -181,7 +181,9 @@ public static partial class Generator
                         var recon = Vhgt.Decode(offset, deltas);
                         for (int r = 0; r < 33; r++) stitchEast[cxi, r]  = recon[r, 32];
                         for (int c = 0; c < 33; c++) stitchNorth[cxi, c] = recon[32, c];
-                        EmitCell(gx, gy, offset, deltas, navmesh: false);
+                        // Compute VNML from extended 35×35 sample (1px border for edge central difference).
+                        var normals = Vnml.Compute(hm.SampleCellExtended(cxi, cyi));
+                        EmitCell(gx, gy, offset, deltas, navmesh: false, normals);
                     }
             }
             else

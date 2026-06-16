@@ -82,5 +82,8 @@ Godot（HTerrain）                    ModForge
 
 ## Open
 
-- **待主力機收尾**：對真實 Tamriel 斜坡格反解比對（演算法已高信心，純驗證性，不擋實作）
-- **待確認**：UESP 驗證 game unit → 公尺精確比例（目前採社群共識 1 unit ≈ 1.4286cm，不擋 MVP）
+- **Godot 專案**：建 Godot 4 專案 + HTerrain plugin + 匯出腳本（Phase 1 前端，尚未建立）
+- **VNML 重算**（後端）：邊緣頂點法線需 1px overlap 參考鄰格，不擋 Godot MVP
+- **godotPlacements 讀取**（後端）：解 JSON + Godot4_y_up → Skyrim 座標換算 + 合流 placements[]
+
+~~待主力機收尾：Tamriel VHGT 反解比對~~ ✅ 2026-06-16（20 格 delta 完全一致）
