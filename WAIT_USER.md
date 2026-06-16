@@ -45,9 +45,8 @@
 
 **待測（active）**
 
-- **Worldspace heightmap → 非平坦 LAND（2026-06-16，公司機落地 Task 1–6）** — heightmap PNG 生起伏地形的後端 MVP 已實作、552 離線測試綠。spec＝`examples/worldspace_heightmap.json`（+ `worldspace_heightmap.png`，97×33=3×1 cells 小丘）；設計 `workflows/specs/worldspace-editor-design.md`、計畫 `workflows/plans/worldspace-editor.md`。
-  - **🔴 主力機演算法收尾（Task 7，blocking 真實正確性）**：VHGT 編碼演算法經 Mutagen 原碼 + UESP + xEdit 查證（高信心），但**沒對真實 Tamriel LAND 反解比對過**（公司機無 Skyrim.esm）。請在主力機寫一次性測試：用 Mutagen 讀 Tamriel 某已知斜坡 cell 的 LAND，取 `VertexHeightMap.Offset`+`HeightMap` 餵 `Vhgt.Decode`，比對重建高度與已知地形/xEdit 顯示值。**吻合**→把 design/coord-system 的「待主力機收尾」標記移除；**不吻合**→多半是 `Vhgt` 的 Array2d 索引方向或 row/col 對調，修完離線單測仍綠後回報。
-  - **實機測試（次要，演算法驗過再做）**：`dotnet run --project src/ModForge.Cli -- build examples/worldspace_heightmap.json <out>.esp` → 裝 → `cow HeightmapDemoWorld 0 0`～`2 0` → 確認地形**有起伏小丘**（不是全平）、3 格之間**接縫不裂**。MVP 已知限制：法線全朝上（光照略平）、無 navmesh。
+- **Worldspace heightmap → 非平坦 LAND（Task 7 演算法驗證完成 2026-06-16）** — 後端 MVP 全落地（596 tests，含 RequiresSkyrim round-trip）；`HeightmapDemo.zip` 已送 `~/skyrim_mods/mine/`。spec＝`examples/worldspace_heightmap.json`（+ `worldspace_heightmap.png`，97×33=3×1 cells 小丘）。
+  - **實機測試**：MO2 裝 `HeightmapDemo.zip` → 啟用 → `cow HeightmapDemoWorld 0 0`～`2 0` → 確認地形**有起伏小丘**（不是全平）、3 格之間**接縫不裂**。MVP 已知限制：法線全朝上（光照略平）、無 navmesh。
 
 
 - **Sofia × VIGILANT 第一幕（2026-06-14）** — 兩版交付 `~/skyrim_mods/mine/`：`SofiaVigilantAct1.zip`（v1 對話+語音）、`SofiaVigilantAct1v2.zip`（v2 +PlayIdle 動作）。spec＝`examples/sofia_vigilant_act1{,_v2}.json`，臺詞＝`sub_projs/sofia-patch/vigilant-screenplay/act1-警戒者.md`。

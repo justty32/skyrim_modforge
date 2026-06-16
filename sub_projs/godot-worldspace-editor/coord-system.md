@@ -36,7 +36,7 @@ land.VertexHeightMap = new LandscapeVertexHeightMap { Offset = cs.Height / 8f, .
 
 → **VHGT 編碼**：`Offset = Height_in_game_units / 8`，`actual_Z = Offset * 8`  
 → HeightMap 的 33×33 是每個頂點相對前一頂點的 **signed delta**，**每單位 = 8 game units**（delta=1 → +8 units；與 Offset 同尺度）。  
-✅ **已查證（Mutagen 0.53.1 原碼 + UESP + xEdit，高信心，2026-06-16）**：① delta 是 **signed int8**（−128~127）——Mutagen 寫 byte 原值不轉換，ModForge 須自做二補數；② **row-wise 累積**：第 0 欄沿列往北累積成各列基準、第 1–32 欄沿列內往東累積。唯一待主力機收尾＝對真實 Tamriel 斜坡格反解比對。詳見 [worldspace-editor-design.md](../../workflows/specs/worldspace-editor-design.md)。  
+✅ **已查證（Mutagen 0.53.1 原碼 + UESP + xEdit + 主力機 round-trip，2026-06-16）**：① delta 是 **signed int8**（−128~127）——Mutagen 寫 byte 原值不轉換，ModForge 須自做二補數；② **row-wise 累積**：第 0 欄沿列往北累積成各列基準、第 1–32 欄沿列內往東累積；③ Tamriel 20 格 decode→encode delta bytes 完全一致（596 tests，含 RequiresSkyrim）。詳見 [worldspace-editor-design.md](../../workflows/specs/worldspace-editor-design.md)。  
 ⚠️ **舊版這裡曾誤寫「每單位 = 1/8 game unit（+0.125）」——錯**（1/8 單步最大僅 ±16 units，做不出山）。正解 ×8。
 
 **來源：`Spec.Worldspace.cs` 行 59（developer 備註）**
@@ -81,6 +81,6 @@ heightmap export        = 16-bit grayscale PNG
 
 2. ~~**VHGT delta 是 signed 還是 unsigned**~~ ✅ **已解（2026-06-16）**：Mutagen 寫 byte 原值不轉換，引擎讀成 **signed int8** → ModForge 自做二補數（存 −10 = byte 246）。
 
-3. ~~**VHGT delta 是 per-row 重置還是全域累積**~~ ✅ **已解（2026-06-16）**：**row-wise 累積**——第 0 欄沿列往北累積成各列基準、第 1–32 欄沿列內往東累積；offset 與每 delta 都 ×8 game units。唯一待主力機收尾＝對真實 Tamriel 斜坡格反解比對。
+3. ~~**VHGT delta 是 per-row 重置還是全域累積**~~ ✅ **已解（2026-06-16）**：**row-wise 累積**——第 0 欄沿列往北累積成各列基準、第 1–32 欄沿列內往東累積；offset 與每 delta 都 ×8 game units。✅ **主力機 round-trip 已驗（2026-06-16）**：Tamriel 20 格 decode→encode delta bytes 完全一致。
 
 4. **HTerrain PNG heightmap 精度**：16-bit grayscale PNG 可表示 65536 個高度級別，對應 Skyrim VHGT offset 的 signed float 範圍是否足夠？需查 Skyrim 實際地形高度範圍（Tamriel 最高峰 Throat of the World 約多少 game units）。

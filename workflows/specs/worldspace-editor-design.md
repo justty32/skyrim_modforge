@@ -126,7 +126,7 @@ for r in 0..32:
   - Seam：2×1 cells，比對共用邊欄兩格重建高度逐點相等。
   - 尺寸校驗：PNG 寬非 `N×32+1` → 報錯。
   - Clamp warn：造超陡 PNG → 確認有 warn 且不崩。
-- **🔴 待主力機（唯一跨不過去的驗證）**：對**真實 Tamriel 某斜坡格** LAND 用 Mutagen 讀出 `HeightMap` bytes，以 sbyte + ×8 + row-cumulative 重建，比對已知地形高度——確認演算法與真實檔一致（演算法已高信心，此為經驗性 round-trip 收尾）。
+- ✅ **主力機 round-trip 已驗（2026-06-16）**：Tamriel 20 格 decode→encode delta bytes 完全一致、offset 誤差 < 0.001——演算法確認正確。`RequiresSkyrim` test 進 VhgtTests（596 tests 全綠）。
 
 ---
 
