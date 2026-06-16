@@ -36,7 +36,8 @@
 | `VendorTests.cs` | vendor faction config + merchant container build |
 | `WorldspaceRegionTests.cs` | worldspace record + region polygon/weather build |
 | `HeightmapTests.cs` | PNG load、Y-flip、min/max 映射、33×33 seam 零誤差 |
-| `WorldspaceHeightmapTests.cs` | PNG→cell grid 尺寸推導、VHGT delta 非零、flat PNG = flat cell path、validate（min<max / empty path / ESL 不相容） |
+| `WorldspaceHeightmapTests.cs` | PNG→cell grid 尺寸推導、VHGT delta 非零、flat PNG = flat cell path、**相鄰 cell 邊界重建高度完全一致（seam stitching）**、validate（min<max / empty path / ESL 不相容） |
+| `VhgtTests.cs` | encode（全零 flat、round-trip ±4 units、過陡 clamp+warn）、**RequiresSkyrim：Tamriel 20 格 decode→encode delta bytes 完全一致（主力機驗演算法）** |
 | `GodotPlacementsTests.cs` | Godot placements JSON 座標換算（origin offset、Z 翻轉、m→units）、rotation rad→deg、scale passthrough、instanceId→editorId、error cases |
 | `XMarkerTests.cs` | XMarker 放置（特殊 placement base）|
 | `XMarkerKindTests.cs` | `kind:xmarker/xmarkerHeading` helper（空 base→0x3B/0x34 + persistent）+ `forced:` alias 解析到 xmarker 錨點 |
@@ -117,7 +118,8 @@
 | Build P2 | `Generator.Build.ExteriorCells.cs` | cell group tree 生成（外層結構）|
 | Build P2 | `Generator.Build.Navmesh.cs` | NAVM 4 頂點平面 quad + NAVI 索引（[engine-internals § navmesh](../../../docs/engine-internals.md#programmatic-navmesh-navm--navi--in-game-confirmed-2026-06-03)）|
 | Util | `Heightmap.cs` | 16-bit grayscale PNG → 全域高度網格；`SampleCell` 切 33×33（相鄰格共用邊緣欄 → seam 零誤差）；Y-flip（影像頂=北）|
-| Util | `Vhgt.cs` | VHGT 編解碼：絕對高度 → float offset + 33×33 signed-int8 delta（row-wise 累積，×8 game units）|
+| Util | `Vhgt.cs` | VHGT 編解碼：絕對高度 → float offset + 33×33 signed-int8 delta（row-wise 累積，×8 game units）；`Decode` 接受 `IReadOnlyArray2d<byte>`（相容 Mutagen getter）|
+| Seam | `Generator.Build.Worldspace.cs` | heightmap 迴圈內 **seam stitching**：每格 encode 後 decode 取 east/north edge 重建高度，注入下格 west/south 起點，確保兩側重建值完全一致（消除各自獨立 encode 的 ±8 units rounding seam）|
 | Util | `GodotPlacements.cs` | Godot `godot4_y_up` placements JSON → `List<PlacementSpec>`；座標換算（Z 翻轉、m→units）+ rotation rad→deg |
 | Validate | `Generator.Validate.World.cs` | worldspace ref、boundary、climate ref |
 | Validate | `Generator.Validate.World2.cs` | region / encounter zone / outfit content ref |

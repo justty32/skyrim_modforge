@@ -2,6 +2,8 @@
 
 ← [landed index](README.md)｜對應 [CODE_MAP.world](../../common/code-map/CODE_MAP.world.md)
 
+**Worldspace heightmap → 非平坦 LAND（in-game 確認 2026-06-16）**：`heightmap` spec 欄位（PNG path/originX/originY/minHeight/maxHeight）→ 自動衍生 N×M cell grid + 生起伏 LAND（VHGT）。`Heightmap.cs`（L16 PNG 載入、Y-flip、SampleCell）+ `Vhgt.cs`（signed-int8 row-wise cumulative encode/decode，`IReadOnlyArray2d<byte>`）+ `BuildWorldspaces` heightmap 分支 + **seam stitching**（encode 後 decode east/north edge → 注入鄰格 west/south，消除 ±8 units rounding seam）。踩坑三條：① PNG 生成 spike bug（一點 65535 其餘 0）→ 高斯重生；② 高度範圍 0~8000 → 4000~4500；③ `defaultLandHeight` 預設 −27000 → 須設成等於 PNG minHeight 避免世界邊緣懸崖。Task 7 主力機驗算法：Tamriel 20 格 decode→encode delta bytes 完全一致。`examples/worldspace_heightmap.json` + PNG；597 tests。
+
 **PlacementSpec 六欄位（Scale/InitiallyDisabled/EnableParent/Lock/Ownership/Count）**（離線落地 2026-06-16）：`PlacementSpec` 補 XSCL/flag-0x800/XESP/XLOC/XOWN/XCNT build + validate。`ParseLockLevel` in `Generator.Helpers.cs`。`PlacementSpecFieldsTests.cs`（29 tests）。doc：`SPEC-world.md § placement extra fields`；schema：`spec.schema.json`；CODE_MAP：`CODE_MAP.world.md § Placements`。（實機測試自行確認新欄位在 ESP 中正確寫入；純 record-field，無 Papyrus 依賴。）
 
 **record builders（world 域）**

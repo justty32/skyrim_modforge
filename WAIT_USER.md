@@ -45,10 +45,6 @@
 
 **待測（active）**
 
-- **Worldspace heightmap → 非平坦 LAND（Task 7 演算法驗證完成 2026-06-16）** — 後端 MVP 全落地（596 tests，含 RequiresSkyrim round-trip）；`HeightmapDemo.zip` 已送 `~/skyrim_mods/mine/`。spec＝`examples/worldspace_heightmap.json`（+ `worldspace_heightmap.png`，97×33=3×1 cells 小丘）。
-  - **實機測試**：MO2 裝 `HeightmapDemo.zip` → 啟用 → `cow HeightmapDemoWorld 0 0`～`2 0` → 確認地形**有起伏小丘**（不是全平）、3 格之間**接縫不裂**。MVP 已知限制：法線全朝上（光照略平）、無 navmesh。
-
-
 - **Sofia × VIGILANT 第一幕（2026-06-14）** — 兩版交付 `~/skyrim_mods/mine/`：`SofiaVigilantAct1.zip`（v1 對話+語音）、`SofiaVigilantAct1v2.zip`（v2 +PlayIdle 動作）。spec＝`examples/sofia_vigilant_act1{,_v2}.json`，臺詞＝`sub_projs/sofia-patch/vigilant-screenplay/act1-警戒者.md`。
   - **✅ v1 核心 pipeline 已實機確認（2026-06-14）**：對話有註冊、觸發點對、語音有播（跑了一小段任務線）。
   - **仍 open（待你續測）**：① **各 beat 完整覆蓋**——把 1-A~1-K 跑滿，看有沒有哪個選項該出現卻沒出現（stage 解碼誤）；② **殺/放分支正確性**（殺女巫=SubQ01 s50 / 放=s230；殺 Carene=GoodEnd s35 / 放=s100——殺了卻跳「放過」台詞＝分支錯）；③ **嘴型**有沒有動（fuz 內嵌 lip，待目視確認）；④ **v2 動作**——換裝 v2（一次只裝一版，editorId 不同），看 1-A 諷刺鼓掌 / 1-E 嘆氣 / 1-H-殺 怒 / 1-I 東張西望 有沒有播。

@@ -23,4 +23,4 @@
 
 ## 不屬任何工作流的進度（堆太多 → 拆進 `session_logs/`）
 
-- **Idea #19 Godot Worldspace Editor** → [worldspace-editor/README.md](workflows/idea/worldspace-editor/README.md)。後端 MVP（Task 1–7）全部落地（2026-06-16）：VHGT encode/decode + Heightmap + BuildWorldspaces heightmap 分支 + 驗證 + 範例/文件 + **Task 7 主力機 round-trip 已驗（Tamriel 20 格 delta bytes 完全一致，596 tests）**；`HeightmapDemo.zip` 已送 `~/skyrim_mods/mine/`。**唯一 open**：實機測試（見 WAIT_USER）。Godot placements 格式 brainstorm 已完成；PlacementSpec 六欄位已落地。
+- **Idea #19 Godot Worldspace Editor 後端 MVP — 已完整落地（2026-06-16）**：VHGT + Heightmap + BuildWorldspaces heightmap 分支 + 驗證 + 範例/文件 + Task 7 主力機演算法驗證；實機確認：有起伏✅、cell 接縫不裂✅（597 tests）。踩坑三個修掉：PNG spike bug → 高斯重生；高度範圍 0~8000 → 4000~4500；cell 邊界 ±8 units rounding seam → stitching 修。詳見 [landed/world.md](workflows/feature-dev/landed/world.md)。**Godot 前端（Idea #19 第 1 階段）待下一輪啟動。**

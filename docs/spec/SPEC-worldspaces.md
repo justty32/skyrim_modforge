@@ -61,18 +61,22 @@ worldspace) whose **weather table** drives which weathers play there:
   "heightmap": {
     "path": "worldspace_heightmap.png",  // relative to the spec file; PNG width MUST be N×32+1,
     "originX": 0, "originY": 0,           //   height M×32+1 (e.g. 33,65,97…) → N×M cells generated
-    "minHeight": 0,                       // game units at png value 0   (linear map)
-    "maxHeight": 8000                     // game units at png value 65535
+    "minHeight": 4000,                    // game units at png value 0   (linear map)
+    "maxHeight": 4500                     // game units at png value 65535
   }
   ```
   Image orientation: **bottom-left pixel = cell `(originX, originY)` south-west vertex**; image-right
-  = cell +X (east), image-up = cell +Y (north). Adjacent cells share the boundary pixel column/row, so
-  **seams align to the vertex with zero error**. Per-vertex height = `minHeight + (png/65535) ×
-  (maxHeight − minHeight)`. The per-128-unit slope between vertices is capped at ±1016 game units
-  (VHGT signed-byte limit); terrain steeper than that is clamped and build warns. **MVP scope:**
-  normals point straight up (slightly flat lighting) and no navmesh is generated in heightmap mode.
-  Same **ESL LIMIT** as `cells` (LAND ⇒ `"esl": false`). Worked example:
+  = cell +X (east), image-up = cell +Y (north). Adjacent cells share the boundary pixel column/row —
+  build also propagates reconstructed edge heights between cells (**seam stitching**) so both sides
+  of every shared boundary decode to identical game-unit heights; no visible crack in engine.
+  Per-vertex height = `minHeight + (png/65535) × (maxHeight − minHeight)`. The per-128-unit slope
+  between vertices is capped at ±1016 game units (VHGT signed-byte limit); steeper terrain is
+  clamped and build warns. **`defaultLandHeight` tip:** set it equal to `minHeight` so cells outside
+  the PNG area meet the heightmap perimeter at the same elevation (no cliff at the world boundary).
+  **MVP scope:** normals point straight up (slightly flat lighting) and no navmesh is generated in
+  heightmap mode. Same **ESL LIMIT** as `cells` (LAND ⇒ `"esl": false`). Worked example:
   `examples/worldspace_heightmap.json` (+ `worldspace_heightmap.png`, a 97×33 = 3×1-cell hill).
+  **In-game confirmed** (2026-06-16): terrain has bumps, cell seams closed, no cracks between cells.
 - **regions** (REGN): an area inside a `worldspace` (an in-spec WRLD `editorId` or a vanilla
   `"<master>:0xFORMID"`). `area` is a polygon of **>=3** world-space points (not cell grid).
   `weather` is the table that picks the active weather — each entry a WTHR *ref* + a relative
