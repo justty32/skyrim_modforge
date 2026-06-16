@@ -51,7 +51,7 @@ public static class Vhgt
     }
 
     /// <summary>VHGT offset + delta → 絕對高度網格(game units)。Encode 的逆，供測試與文件。</summary>
-    public static float[,] Decode(float offset, Array2d<byte> deltas)
+    public static float[,] Decode(float offset, IReadOnlyArray2d<byte> deltas)
     {
         var h = new float[Size, Size];
         float col0 = offset;

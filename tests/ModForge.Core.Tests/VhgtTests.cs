@@ -1,3 +1,8 @@
+using System;
+using System.IO;
+using System.Linq;
+using Mutagen.Bethesda.Plugins;
+using Mutagen.Bethesda.Skyrim;
 using ModForge;
 using Xunit;
 
@@ -47,5 +52,50 @@ public class VhgtTests
         Vhgt.Encode(h, _ => warned = true, "cell(0,0)");
 
         Assert.True(warned);
+    }
+
+    // Task 7: 對真實 Tamriel LAND 做 Decode→Encode round-trip，驗算法正確性。
+    // 若 delta bytes 完全一致 → row/col 索引方向、累積邏輯、二補數都正確。
+    [Fact, Trait("Category", "RequiresSkyrim")]
+    public void Decode_TamrielLandCell_RoundTripsExact()
+    {
+        var dataPath = Environment.GetEnvironmentVariable("MODFORGE_SKYRIM_DATA")
+            ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".local", "share", "Steam", "steamapps", "common", "Skyrim Special Edition", "Data");
+        var esmPath = Path.Combine(dataPath, "Skyrim.esm");
+        Assert.True(File.Exists(esmPath), $"Skyrim.esm not found at {esmPath}");
+
+        using var esm = SkyrimMod.CreateFromBinaryOverlay(
+            new ModPath(esmPath), SkyrimRelease.SkyrimSE);
+
+        var tamriel = esm.Worldspaces.Single(w => w.FormKey.ID == 0x3Cu);
+
+        var cells = tamriel.SubCells
+            .SelectMany(b => b.Items)
+            .SelectMany(s => s.Items)
+            .Where(c => c.Landscape?.VertexHeightMap != null)
+            .Take(20)
+            .ToList();
+
+        Assert.NotEmpty(cells);
+
+        foreach (var cell in cells)
+        {
+            var vhm = cell.Landscape!.VertexHeightMap!;
+            var heights = Vhgt.Decode(vhm.Offset, vhm.HeightMap);
+            var (offset2, deltas2) = Vhgt.Encode(heights);
+
+            var cx = cell.Grid?.Point.X ?? 0;
+            var cy = cell.Grid?.Point.Y ?? 0;
+            var label = $"cell ({cx},{cy})";
+
+            Assert.True(Math.Abs(offset2 - vhm.Offset) < 0.001f,
+                $"{label}: offset {offset2} != orig {vhm.Offset}");
+
+            for (int x = 0; x < 33; x++)
+                for (int y = 0; y < 33; y++)
+                    Assert.True(vhm.HeightMap[x, y] == deltas2[x, y],
+                        $"{label} delta[{x},{y}]: got {deltas2[x, y]} expected {vhm.HeightMap[x, y]}");
+        }
     }
 }
