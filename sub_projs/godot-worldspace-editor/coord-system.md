@@ -1,6 +1,6 @@
 # Skyrim ↔ Godot 座標換算
 
-← [worldspace-editor/README.md](README.md)
+← [README.md](README.md)
 
 ## 從 codebase 確認的數值
 
@@ -36,7 +36,7 @@ land.VertexHeightMap = new LandscapeVertexHeightMap { Offset = cs.Height / 8f, .
 
 → **VHGT 編碼**：`Offset = Height_in_game_units / 8`，`actual_Z = Offset * 8`  
 → HeightMap 的 33×33 是每個頂點相對前一頂點的 **signed delta**，**每單位 = 8 game units**（delta=1 → +8 units；與 Offset 同尺度）。  
-✅ **已查證（Mutagen 0.53.1 原碼 + UESP + xEdit，高信心，2026-06-16）**：① delta 是 **signed int8**（−128~127）——Mutagen 寫 byte 原值不轉換，ModForge 須自做二補數；② **row-wise 累積**：第 0 欄沿列往北累積成各列基準、第 1–32 欄沿列內往東累積。唯一待主力機收尾＝對真實 Tamriel 斜坡格反解比對。詳見 [worldspace-editor-design.md](../../specs/worldspace-editor-design.md)。  
+✅ **已查證（Mutagen 0.53.1 原碼 + UESP + xEdit，高信心，2026-06-16）**：① delta 是 **signed int8**（−128~127）——Mutagen 寫 byte 原值不轉換，ModForge 須自做二補數；② **row-wise 累積**：第 0 欄沿列往北累積成各列基準、第 1–32 欄沿列內往東累積。唯一待主力機收尾＝對真實 Tamriel 斜坡格反解比對。詳見 [worldspace-editor-design.md](../../workflows/specs/worldspace-editor-design.md)。  
 ⚠️ **舊版這裡曾誤寫「每單位 = 1/8 game unit（+0.125）」——錯**（1/8 單步最大僅 ±16 units，做不出山）。正解 ×8。
 
 **來源：`Spec.Worldspace.cs` 行 59（developer 備註）**

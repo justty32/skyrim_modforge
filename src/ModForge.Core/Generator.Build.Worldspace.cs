@@ -174,6 +174,10 @@ public static partial class Generator
                 foreach (var cs in ws.Cells)
                     EmitCell(cs.X, cs.Y, cs.Height / 8f, new Noggog.Array2d<byte>(33, 33, 0), cs.Navmesh);
             }
+
+            // Expand Godot placements into spec.Placements for BuildPlacements() (runs after worldspaces).
+            if (ws.GodotPlacements is { } gpSpec)
+                spec.Placements.AddRange(GodotPlacements.Load(gpSpec, specDir, ws.EditorId));
         }
 
         // One additive NAVI override (master 0x00012FB4) carrying every cell's navmesh info.

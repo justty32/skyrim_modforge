@@ -3397,6 +3397,30 @@
           "items": {
             "$ref": "#/$defs/worldspaceCell"
           }
+        },
+        "heightmap": {
+          "type": "object",
+          "description": "16-bit grayscale PNG heightmap (N×32+1 × M×32+1 px). ModForge derives the cell grid from PNG size and encodes each cell's VHGT. Mutually exclusive with `cells`; if both are set, heightmap wins.",
+          "properties": {
+            "path": { "type": "string", "description": "PNG path relative to this spec file" },
+            "originX": { "type": "integer", "description": "cell-grid X of the PNG's west edge (left column)" },
+            "originY": { "type": "integer", "description": "cell-grid Y of the PNG's south edge (bottom row)" },
+            "minHeight": { "type": "number", "description": "game units mapped to PNG pixel 0 (black)" },
+            "maxHeight": { "type": "number", "description": "game units mapped to PNG pixel 65535 (white)", "default": 4000 }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        },
+        "godotPlacements": {
+          "type": "object",
+          "description": "Godot 4 HTerrain placements JSON. Coordinate system 'godot4_y_up' is converted to Skyrim world coords and merged into the placements pipeline. Use alongside `heightmap`; set originX/Y to match.",
+          "properties": {
+            "path": { "type": "string", "description": "placements.json path relative to this spec file" },
+            "originX": { "type": "integer", "description": "cell-grid X of Godot scene's west/south origin (must match heightmap originX)" },
+            "originY": { "type": "integer", "description": "cell-grid Y of Godot scene's west/south origin (must match heightmap originY)" }
+          },
+          "required": ["path"],
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
