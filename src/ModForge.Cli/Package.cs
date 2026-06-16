@@ -142,111 +142,35 @@ internal static partial class Program
             else Console.WriteLine($"  (word-wall script {scriptName}.psc written to Scripts/Source — compile pending: {cr.Message.Split('\n')[0]})");
         }
 
-        // 5b) Ship the generic Script Event dispatcher .pex whenever a quest uses event "ScriptEvent".
-        //     It's the universal entry content calls (MFStoryEventDispatch.Fire(kw, ref…)) to fire a
-        //     story event; one prebuilt .pex (embedded in this CLI) serves every generated mod.
-        if (spec.Quests.Any(q => q.StoryEvent is { } se
-                && se.Event.Equals("ScriptEvent", StringComparison.OrdinalIgnoreCase)))
+        void ShipEmbeddedPex(string name, string label, string onError)
         {
             Directory.CreateDirectory(scriptsDir);
-            using var rs = typeof(Program).Assembly.GetManifestResourceStream("MFStoryEventDispatch.pex");
-            if (rs is null)
-                Console.Error.WriteLine("  ! Script Event dispatcher .pex missing from build — ScriptEvent quests won't fire");
-            else
-            {
-                using var fs = File.Create(Path.Combine(scriptsDir, "MFStoryEventDispatch.pex"));
-                rs.CopyTo(fs);
-                Console.WriteLine("  + bundled MFStoryEventDispatch.pex (Script Event dispatcher)");
-            }
+            using var rs = typeof(Program).Assembly.GetManifestResourceStream(name);
+            if (rs is null) { Console.Error.WriteLine($"  ! {name} missing from build — {onError}"); return; }
+            using var fs = File.Create(Path.Combine(scriptsDir, name)); rs.CopyTo(fs);
+            Console.WriteLine($"  + bundled {name} ({label})");
         }
 
-        // 5c) Ship the reusable presence-gated Scene controller .pex whenever a scene uses `autoStart`.
-        //     ModForge attaches it (extends Quest) to the host quest and wires its properties; one
-        //     prebuilt .pex (embedded in this CLI) serves every generated mod.
+        // 5b-5g) Ship one prebuilt .pex per feature; each is embedded in this CLI and serves every generated mod.
+        if (spec.Quests.Any(q => q.StoryEvent is { } se && se.Event.Equals("ScriptEvent", StringComparison.OrdinalIgnoreCase)))
+            ShipEmbeddedPex("MFStoryEventDispatch.pex", "Script Event dispatcher", "ScriptEvent quests won't fire");
+
         if (spec.Scenes.Any(sc => sc.AutoStart is not null))
-        {
-            Directory.CreateDirectory(scriptsDir);
-            using var rs = typeof(Program).Assembly.GetManifestResourceStream("MFSceneBanterController.pex");
-            if (rs is null)
-                Console.Error.WriteLine("  ! Scene controller .pex missing from build — autoStart scenes won't fire");
-            else
-            {
-                using var fs = File.Create(Path.Combine(scriptsDir, "MFSceneBanterController.pex"));
-                rs.CopyTo(fs);
-                Console.WriteLine("  + bundled MFSceneBanterController.pex (presence-gated Scene controller)");
-            }
-        }
+            ShipEmbeddedPex("MFSceneBanterController.pex", "presence-gated Scene controller", "autoStart scenes won't fire");
 
-        // 5d) Ship the reusable identity-acquire book .pex whenever an identity declares an acquireBook.
-        //     ModForge attaches it (extends ObjectReference — OnRead is an ObjectReference event, NOT
-        //     a Book one) to the BOOK base form + binds its properties; one prebuilt .pex
-        //     (embedded in this CLI) serves every generated mod.
         if (spec.Identities.Any(idn => !string.IsNullOrWhiteSpace(idn.AcquireBook)))
-        {
-            Directory.CreateDirectory(scriptsDir);
-            using var rs = typeof(Program).Assembly.GetManifestResourceStream("MFIdentityBook.pex");
-            if (rs is null)
-                Console.Error.WriteLine("  ! identity book .pex missing from build — acquire books won't grant identities");
-            else
-            {
-                using var fs = File.Create(Path.Combine(scriptsDir, "MFIdentityBook.pex"));
-                rs.CopyTo(fs);
-                Console.WriteLine("  + bundled MFIdentityBook.pex (identity-acquire book)");
-            }
-        }
+            ShipEmbeddedPex("MFIdentityBook.pex", "identity-acquire book", "acquire books won't grant identities");
 
-        // 5e) Ship the reusable default-identity granter .pex whenever an identity is `default:true`.
-        //     ModForge builds a StartGameEnabled quest carrying it (extends Quest); its OnInit adds the
-        //     player to every default identity's faction on game start; one prebuilt .pex serves all mods.
         if (spec.Identities.Any(idn => idn.Default && !string.IsNullOrWhiteSpace(idn.Faction)))
-        {
-            Directory.CreateDirectory(scriptsDir);
-            using var rs = typeof(Program).Assembly.GetManifestResourceStream("MFIdentityDefault.pex");
-            if (rs is null)
-                Console.Error.WriteLine("  ! default-identity .pex missing from build — default identities won't be granted");
-            else
-            {
-                using var fs = File.Create(Path.Combine(scriptsDir, "MFIdentityDefault.pex"));
-                rs.CopyTo(fs);
-                Console.WriteLine("  + bundled MFIdentityDefault.pex (default-identity granter)");
-            }
-        }
+            ShipEmbeddedPex("MFIdentityDefault.pex", "default-identity granter", "default identities won't be granted");
 
-        // 5f) Ship the reusable primary-identity controller .pex whenever dialogue uses primaryIdentity or
-        //     sets the override. ModForge builds a StartGameEnabled quest carrying it (extends Quest); its
-        //     OnInit/poll maintains MF_PrimaryIdentity; one prebuilt .pex serves every generated mod.
         if (spec.Identities.Count > 0 && spec.Dialogue.Any(d =>
                 !string.IsNullOrWhiteSpace(d.PrimaryIdentity) || !string.IsNullOrWhiteSpace(d.SetPrimaryIdentity)))
-        {
-            Directory.CreateDirectory(scriptsDir);
-            using var rs = typeof(Program).Assembly.GetManifestResourceStream("MFIdentityController.pex");
-            if (rs is null)
-                Console.Error.WriteLine("  ! identity controller .pex missing from build — primary-identity greetings won't resolve");
-            else
-            {
-                using var fs = File.Create(Path.Combine(scriptsDir, "MFIdentityController.pex"));
-                rs.CopyTo(fs);
-                Console.WriteLine("  + bundled MFIdentityController.pex (primary-identity controller)");
-            }
-        }
+            ShipEmbeddedPex("MFIdentityController.pex", "primary-identity controller", "primary-identity greetings won't resolve");
 
-        // 5g) Ship the reusable identity auto-grant trigger .pex whenever an identity uses `autoGrantWhen`.
-        //     ModForge builds a StartGameEnabled quest carrying it; it joins a faction when a player AV
-        //     crosses a threshold (e.g. Dragonborn on DragonSouls>=1). One prebuilt .pex serves every mod.
         if (spec.Identities.Any(idn => idn.AutoGrantWhen is { } a && !string.IsNullOrWhiteSpace(a.ActorValue)
                 && !string.IsNullOrWhiteSpace(idn.Faction)))
-        {
-            Directory.CreateDirectory(scriptsDir);
-            using var rs = typeof(Program).Assembly.GetManifestResourceStream("MFIdentityAutoGrant.pex");
-            if (rs is null)
-                Console.Error.WriteLine("  ! identity auto-grant .pex missing from build — autoGrantWhen identities won't be granted");
-            else
-            {
-                using var fs = File.Create(Path.Combine(scriptsDir, "MFIdentityAutoGrant.pex"));
-                rs.CopyTo(fs);
-                Console.WriteLine("  + bundled MFIdentityAutoGrant.pex (identity auto-grant trigger)");
-            }
-        }
+            ShipEmbeddedPex("MFIdentityAutoGrant.pex", "identity auto-grant trigger", "autoGrantWhen identities won't be granted");
 
         // 6) External-resource bundling — copy spec's (or --assets) Meshes/Textures/Sounds/….
         var assetsSrc = !string.IsNullOrWhiteSpace(assetsOverride) ? assetsOverride
