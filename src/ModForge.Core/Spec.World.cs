@@ -38,17 +38,42 @@ public sealed class Vec3 { public float X { get; set; } public float Y { get; se
 // each door's TeleportDestination (XTEL): partner door FormKey + the partner's position/rotation
 // (where the player materialises). Partner may be another in-spec door OR a vanilla door ref
 // "<master>:0xFORMID". Doors with a teleport are forced persistent (the engine must keep the link).
+//
+// SCALE (XSCL): uniform scale multiplier on this placed ref. 1.0 = default size (XSCL subrecord
+// omitted). Valid for statics/furniture/lights — NOT for actors (ACHR ignores XSCL).
+//
+// INITIALLY DISABLED + ENABLE PARENT (XESP): `initiallyDisabled` sets the record-header
+// InitiallyDisabled flag (0x800) — the ref exists in the cell but is invisible/non-collidable
+// until explicitly enabled. `enableParent` wires this ref's enabled state to follow another ref:
+//   SetEnable  — I enable when my parent enables (and disable when it disables)
+//   SetDisable — I disable when my parent enables (inverted)
+//   PopIn      — no fade-in animation when I appear (avoids the fade flash)
+// Common pattern: place a hidden object with initiallyDisabled:true + enableParent pointing at a
+// quest-trigger XMarker. When the quest stage fires EnableRef on the marker, the object appears.
+//
+// LOCK (XLOC): locks a door or container at a given difficulty. Named levels map to the engine
+// byte values: novice=0 / apprentice=25 / adept=50 / expert=75 / master=100 /
+// requiresKey=254 / inaccessible=255. `key` (optional) is the item that bypasses the lock.
+//
+// OWNERSHIP (XOWN): who owns this placed object — determines whether picking it up counts as
+// theft. `owner` is a FACT or NPC ref; `rank` is the faction rank (ignored for NPC owners; 0
+// means any rank in the faction can "own" it).
+//
+// COUNT (XCNT): stack count for a placed item (e.g. place 50 gold coins on a table). Omitted
+// when 0 (= single instance). Not meaningful for actors or statics.
 public sealed class PlacementSpec
 {
     public string Base { get; set; } = "";
     public string EditorId { get; set; } = "";     // optional: names this REFR/ACHR so other refs can target it
                                                     // (patrol start, linkedRefs target, teleport partner). Must be unique if set.
-    public string Cell { get; set; } = "";        // interior: in-spec editorId OR <master>:0xFORMID
-    public string Worldspace { get; set; } = "";   // exterior: worldspace ref; position is world-space
+    public string Cell { get; set; } = "";          // interior: in-spec editorId OR <master>:0xFORMID
+    public string Worldspace { get; set; } = "";    // exterior: worldspace ref; position is world-space
     public string Kind { get; set; } = "";
     public Vec3 Position { get; set; } = new();
     public Vec3 Rotation { get; set; } = new();
+    public float Scale { get; set; } = 1f;          // XSCL; omitted in record if 1.0
     public bool Persistent { get; set; }
+    public bool InitiallyDisabled { get; set; }     // record header flag 0x800
     // Load-door teleport: the PARTNER door this door teleports to (a placement editorId, or a vanilla
     // door ref "<master>:0xFORMID"). Set on BOTH doors of the pair (each pointing at the other) to
     // make a walk-through link. `base` must be a DOOR record. The arrival point is the partner's
@@ -62,6 +87,10 @@ public sealed class PlacementSpec
     // a vanilla placed ref, optionally tagged with a keyword. With no keyword, the link is the
     // engine's "default" linked ref — which is what a Patrol route follows from marker to marker.
     public List<LinkedRefSpec> LinkedRefs { get; set; } = new();
+    public EnableParentSpec? EnableParent { get; set; } // XESP; pair with InitiallyDisabled
+    public LockSpec? Lock { get; set; }                 // XLOC; doors and containers
+    public OwnershipSpec? Ownership { get; set; }       // XOWN; theft/crime system
+    public int Count { get; set; }                      // XCNT; omitted if 0
 }
 // One Linked Reference: `target` is the linked placed ref (a placement editorId or external ref);
 // `keyword` (optional ref → KYWD) tags the link. Empty keyword = the null/default link.
@@ -69,6 +98,27 @@ public sealed class LinkedRefSpec
 {
     public string Target { get; set; } = "";
     public string Keyword { get; set; } = "";
+}
+// Enable Parent (XESP): controls this ref's enabled state via another ref. See PlacementSpec comment.
+// `flag`: SetEnable | SetDisable | PopIn.
+public sealed class EnableParentSpec
+{
+    public string Ref { get; set; } = "";    // controlling REFR: placement editorId or <master>:0xFORMID
+    public string Flag { get; set; } = "";   // SetEnable | SetDisable | PopIn
+}
+// Lock (XLOC): pick difficulty + optional key. `level` accepts named strings (novice / apprentice /
+// adept / expert / master / requiresKey / inaccessible) or a raw byte value as a string ("50").
+public sealed class LockSpec
+{
+    public string Level { get; set; } = "";  // novice/apprentice/adept/expert/master/requiresKey/inaccessible
+    public string Key { get; set; } = "";    // optional ref → key item (KEYM or any MISC/WEAP)
+}
+// Ownership (XOWN): who owns this placed object. `owner` = FACT or NPC ref.
+// `rank` = faction rank required for ownership (0 = any member; ignored when owner is an NPC).
+public sealed class OwnershipSpec
+{
+    public string Owner { get; set; } = "";  // ref → FACT or NPC
+    public int Rank { get; set; }
 }
 // EncounterZone (ECZN): controls level scaling + respawn for an area. A cell's `encounterZone`
 // (and/or a placed spawn's `encounterZone`) points at one; the engine rolls leveled-actor spawns

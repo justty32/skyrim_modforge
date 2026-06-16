@@ -24,18 +24,95 @@
 
 ## 決策記錄（2026-06-16 brainstorm）
 
+### 地形 / 整體架構
+
 | 主題 | 決策 | 演進路線 |
 |---|---|---|
 | Godot 地形系統 | **Godot 4 + HTerrain plugin**（內建筆刷 + PNG 匯出） | — |
 | Heightmap 格式 | **16-bit grayscale PNG**，spec 寫路徑 | — |
 | Heightmap 切割 | **單張大 PNG，ModForge 切**（非 per-cell）：N 格寬→PNG 寬 `N×32+1` px，第 c 格取 `[c×32 .. c×32+32]` 共 33 px，相鄰格共用第 32 欄 → **seam 零誤差** | — |
 | MVP scope | **單格 PNG → LAND → COW 進入、地形有起伏**；物件擺放不含 | — |
-| 物件 metadata | 薄 script + `@export var editor_id`（Inspector 直接填，可擴充 enable parent / linked ref 等欄位） | — |
-| 擺放座標 | **Godot 原生座標（公尺 + Y-up），ModForge 轉**成 game units + Z-up + cell 座標（轉換唯一真相在 ModForge，與 heightmap 一致） | — |
-| 物件 scale | **鎖 uniform**：Godot script 限制等比縮放（或匯出取主軸並 warn），對齊 Skyrim REFR 只支援單一 XSCL float。非等比拉伸不支援（Skyrim 本來就不支援，合理捨棄） | 後做：非等比 → 預變形 NIF 變體（遠超 MVP） |
+| 物件 metadata | 薄 script + `@export var skyrim_base`（base form ref）+ `@export var instance_id`（選填，空=匿名） | — |
+| 擺放座標 | **Godot 原生座標（公尺 + Y-up），ModForge 轉**成 game units + Z-up；轉換唯一真相在 ModForge，Godot plugin 不做 Skyrim-specific 計算 | — |
+| 物件 scale | **鎖 uniform**：Godot script 限制等比縮放（或匯出取主軸並 warn），對齊 Skyrim REFR 只支援單一 XSCL float | 後做：非等比 → 預變形 NIF 變體（遠超 MVP） |
 | 物件預覽 | PyNifly 批量轉 glTF 作視覺代理 | B 先 → C 完整即時預覽 |
 | VTXT 紋理 | 全格套預設 dirt | A 先 → B splatmap→VTXT 映射 → C BSA 預覽 |
 | Navmesh | MVP 跳過，只生 LAND（COW 進入） | C 先 → B Godot 三角化地形匯頂點→NAVM |
+
+### Godot Placements 格式（2026-06-16 brainstorm）
+
+| 主題 | 決策 | 演進路線 |
+|---|---|---|
+| 出圖檔案格式 | **header 包一層**：`{"version":1, "coordinate_system":"godot4_y_up", "placements":[...]}` — 明確標示座標系，未來換工具不破壞 ModForge 解析 | — |
+| 掛進 spec 方式 | **`godotPlacements` 巢狀在 worldspace 節點下**（JSON Schema `$ref` 抽獨立 schema）；ModForge build 時轉換後合流進一般 `placements[]` pipeline | — |
+| Rotation 單位 | **JSON 寫 radians**（Godot 原生），**ModForge 負責轉 degrees**；文件明標「`rotation` 欄位單位為 radians」 | — |
+| Instance editorId | **β 方案**：`instanceId` 選填，**可完全省略**（≠ 空字串）；省略 = 匿名 REFR；有值 = 此 REFR 的 editorId（供 linkedRef / quest alias 指向）。`linkedRefs` 等複雜關係仍走手寫 `placements[]` | γ 後排：`linkedRefs` 也進 Godot |
+
+---
+
+## Godot Placements 格式詳述
+
+### Godot 出圖檔案（`godot_export/placements.json`）
+
+```json
+{
+  "version": 1,
+  "coordinate_system": "godot4_y_up",
+  "placements": [
+    {
+      "base": "Skyrim.esm:0x000D4B52",
+      "position": { "x": 12.5, "y": 3.2, "z": -8.1 },
+      "rotation": { "x": 0.0, "y": 0.785, "z": 0.0 },
+      "scale": 1.5
+    },
+    {
+      "base": "Skyrim.esm:0x000034",
+      "instanceId": "MyPatrolMarker01",
+      "position": { "x": 5.0, "y": 0.1, "z": 2.0 },
+      "rotation": { "x": 0.0, "y": 1.571, "z": 0.0 },
+      "scale": 1.0
+    }
+  ]
+}
+```
+
+| 欄位 | 型別 | 說明 |
+|------|------|------|
+| `version` | int | 格式版本（目前 1） |
+| `coordinate_system` | string | `"godot4_y_up"` — Godot 4 標準座標（X=東、Y=上、Z=南） |
+| `base` | string | Skyrim base form ref（`<master>:0xFORMID` 或 in-spec editorId） |
+| `position` | Vec3 | **公尺**，Godot 原生座標 |
+| `rotation` | Vec3 | **radians**，Godot 原生 Euler；ModForge 讀時轉 degrees |
+| `scale` | float | uniform 縮放；Godot plugin 限制等比，非等比取主軸並 warn |
+| `instanceId` | string? | **選填，可省略**（省略 ≠ `""`）；省略 = 匿名 REFR；有值 = 此 REFR 的 editorId |
+
+### 掛進 worldspace spec
+
+```json
+{
+  "worldspaces": [
+    {
+      "editorId": "MyWorld",
+      "heightmap": { "path": "terrain.png", "originX": 0, "originY": 0, "minHeight": 0, "maxHeight": 8192 },
+      "godotPlacements": { "$include": "godot_export/placements.json" }
+    }
+  ]
+}
+```
+
+`godotPlacements` 巢狀在 worldspace 節點下 → ModForge 從同一節點取 `OriginX/OriginY` 做座標換算，無需額外關聯欄位。
+
+### ModForge 座標換算（`coordinate_system: "godot4_y_up"`）
+
+```
+skyrim_x = OriginX * 4096  +  godot_pos.x / 0.014286
+skyrim_y = OriginY * 4096  -  godot_pos.z / 0.014286   ← Godot +Z 朝南，Skyrim +Y 朝北，方向相反
+skyrim_z =                     godot_pos.y / 0.014286
+```
+
+比例常數 `0.014286 m/unit`（1 unit ≈ 1.4286cm，社群共識；待主力機 UESP 確認，不擋 MVP）。
+
+rotation：各軸 `deg = rad × (180 / π)`；軸對映（Godot XYZ → Skyrim XYZ）待 Godot plugin 實作時對齊確認。
 
 ---
 
