@@ -12,7 +12,11 @@
 
 ## 現役計畫
 
-**目前無現役計畫**——action-system asset/config 生成（OAR/BDI/PIE）7 個 task 全落地（2026-06-14，547 測試綠燈），計畫已移 [archive/](archive/README.md)；落地記錄見 [feature-dev/landed/infra.md](../feature-dev/landed/infra.md)。
+| 計畫 | 出計畫日期 | 對應 spec | 狀態 |
+|---|---|---|---|
+| [worldspace-editor.md](worldspace-editor.md)（heightmap → 非平坦 LAND，7 task） | 2026-06-16 | [specs/worldspace-editor-design.md](../specs/worldspace-editor-design.md) | 待執行（Task 7 主力機收尾） |
+
+action-system asset/config 生成（OAR/BDI/PIE）7 個 task 全落地（2026-06-14，547 測試綠燈），計畫已移 [archive/](archive/README.md)；落地記錄見 [feature-dev/landed/infra.md](../feature-dev/landed/infra.md)。
 
 新計畫命名 **`<功能>.md`（不含日期）**，日期記在現役 index 表的一欄；落地後即移 [archive/](archive/README.md)。（archived 舊檔仍保留歷史日期前綴、凍結不動。）
 
