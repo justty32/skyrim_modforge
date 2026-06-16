@@ -12,8 +12,8 @@
         "path": "worldspace_heightmap.png",
         "originX": 0,
         "originY": 0,
-        "minHeight": 0,
-        "maxHeight": 8000
+        "minHeight": 4000,
+        "maxHeight": 4500
       }
     }
   ]
