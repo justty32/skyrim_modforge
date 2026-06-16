@@ -44,6 +44,24 @@ public sealed class WorldspaceSpec
     // Flat terrain cells to generate. Each gets a CELL + LAND record (height=0, flat normals) placed
     // in the worldspace's SubCell block tree. Enter in-game with: cow <editorId> X Y
     public List<WorldspaceCellSpec> Cells { get; set; } = new();
+
+    // 非平坦地形（可選）。存在時忽略 Cells，依 PNG 尺寸自動衍生 cell grid 並生起伏 LAND。
+    // 與 Cells 互斥；兩者都填時 heightmap 優先且 build 發 warn。null = 走平坦 Cells 路徑（行為不變）。
+    public HeightmapSpec? Heightmap { get; set; }
+}
+
+/// <summary>
+/// 一張覆蓋整個 worldspace 部分區域的 16-bit grayscale PNG heightmap。ModForge 依尺寸切成
+/// N×M 個 cell（寬必須 = N×32+1、高 = M×32+1，相鄰格共用邊緣欄 → seam 零誤差）。
+/// 高度 = MinHeight + (png/65535)×(MaxHeight−MinHeight)，game units。
+/// </summary>
+public sealed class HeightmapSpec
+{
+    public string Path { get; set; } = "";       // PNG 路徑，相對 spec 檔
+    public int OriginX { get; set; }              // PNG 左下角像素對到的 cell 座標 X
+    public int OriginY { get; set; }              // 同上 Y（左下=西南角；影像往上 = cell +Y/北）
+    public float MinHeight { get; set; }          // png=0     → 此高度（game units）
+    public float MaxHeight { get; set; } = 4000f; // png=65535 → 此高度
 }
 
 /// <summary>
