@@ -15,6 +15,10 @@
 
 ## 現役設計方案
 
-**目前無現役設計方案**——action-system asset/config 生成（OAR/BDI/PIE）MVP 已落地（2026-06-14），design 已移 [archive/](archive/README.md)。下一份待新功能討論時產出。
+| 設計方案 | 討論日期 | 對應 idea/roadmap | 狀態 |
+|---|---|---|---|
+| [worldspace-editor-design.md](worldspace-editor-design.md)（heightmap → 非平坦 LAND，後端 MVP） | 2026-06-16 | [Idea #19](../idea/worldspace-editor/README.md) | 設計完成，VHGT 格式已查證；待出 plan |
+
+action-system asset/config 生成（OAR/BDI/PIE）MVP 已落地（2026-06-14），design 已移 [archive/](archive/README.md)。
 
 新設計命名 **`<功能>-design.md`（不含日期）**，日期記在現役 index 表的一欄；對應 [plans/](../plans/README.md) 同名 plan，落地後即移 [archive/](archive/README.md)。（archived 舊檔仍保留歷史日期前綴、凍結不動。）

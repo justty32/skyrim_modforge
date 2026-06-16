@@ -99,6 +99,6 @@ Godot（HTerrain）                    ModForge
 
 ## Open / Blocking
 
-- **🔴 Blocking（主力機，MVP 實作前必解）**：VHGT delta signed/unsigned + 累積方式（row-wise vs 全域）——讀 Tamriel 某格 LAND 反解驗證。詳見 [coord-system.md](coord-system.md) 不確定區。
-- **物件預覽 NIF → glTF（B 路線前置，待人工驗證）**：Gemini 調查存 [`sub_projs/gemini-research/worldspace-editor/nif-gltf-conversion.md`](../../../sub_projs/gemini-research/worldspace-editor/nif-gltf-conversion.md)。要點：① 批量轉換以 **PyNifly + Blender headless** 最可靠，但 **Windows-only**（主力機 Manjaro+Wine 需 Windows 分區）；② Godot 端坑：normal map 需 Flip Y（Skyrim DirectX Y- vs Godot OpenGL Y+）、DDS 非 glTF 原生需轉 PNG；③ 反向 glTF→NIF 可行（ck-cmd / Outfit Studio）但材質需手動重映射。**待驗**：NifSkope glTF export fork、`nif2gltf` Rust CLI 是否真存在。
-- **UESP 確認 game unit → 公尺比例**（主力機；目前採社群共識）
+- ✅ ~~**Blocking：VHGT delta signed/unsigned + 累積方式**~~ **已解（2026-06-16）**：背景 agent 查 Mutagen 0.53.1 原碼 + UESP + xEdit → signed int8（ModForge 自做二補數）、row-wise 累積、delta ×8 game units。設計＋逆推演算法見 [worldspace-editor-design.md](../../specs/worldspace-editor-design.md)。**降級為待主力機收尾**：對真實 Tamriel 斜坡格反解比對（演算法已高信心，純經驗性收尾，不擋實作）。
+- **物件預覽 NIF → glTF（B 路線前置，已查證 2026-06-16）**：工具選 **fo76utils/nifskope**——真實存在、**Linux+Windows 雙平台**（主力機 Manjaro 可直接跑，不必 Windows 分區）、geometry-only glTF export 正好夠視覺代理。**`nif2gltf` Rust CLI 經查證不存在（Gemini 捏造），勿規劃**。PyNifly 真實但 Windows-only（高保真備案）。原 Gemini note 多處錯誤（見該檔頂部修正 banner）：[`sub_projs/gemini-research/worldspace-editor/nif-gltf-conversion.md`](../../../sub_projs/gemini-research/worldspace-editor/nif-gltf-conversion.md)。
+- **UESP 確認 game unit → 公尺比例**（主力機；目前採社群共識，不擋 MVP——高度換算 spec 內自洽即可）

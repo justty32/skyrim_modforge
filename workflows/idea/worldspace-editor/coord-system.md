@@ -35,8 +35,9 @@ land.VertexHeightMap = new LandscapeVertexHeightMap { Offset = cs.Height / 8f, .
 ```
 
 → **VHGT 編碼**：`Offset = Height_in_game_units / 8`，`actual_Z = Offset * 8`  
-→ HeightMap 的 33×33 是每個頂點相對 Offset 的 **delta**，每單位 = 1/8 game unit（delta=1 → +0.125 units 高度差）。  
-⚠️ delta 究竟是 signed（−128~127）還是 unsigned、以及是 row-wise 重置還是全域累積——**尚未確認**，見下方「不確定」區 #2/#3（平坦地形全 0 不受影響，非平坦實作前必解）。
+→ HeightMap 的 33×33 是每個頂點相對前一頂點的 **signed delta**，**每單位 = 8 game units**（delta=1 → +8 units；與 Offset 同尺度）。  
+✅ **已查證（Mutagen 0.53.1 原碼 + UESP + xEdit，高信心，2026-06-16）**：① delta 是 **signed int8**（−128~127）——Mutagen 寫 byte 原值不轉換，ModForge 須自做二補數；② **row-wise 累積**：第 0 欄沿列往北累積成各列基準、第 1–32 欄沿列內往東累積。唯一待主力機收尾＝對真實 Tamriel 斜坡格反解比對。詳見 [worldspace-editor-design.md](../../specs/worldspace-editor-design.md)。  
+⚠️ **舊版這裡曾誤寫「每單位 = 1/8 game unit（+0.125）」——錯**（1/8 單步最大僅 ±16 units，做不出山）。正解 ×8。
 
 **來源：`Spec.Worldspace.cs` 行 59（developer 備註）**
 
@@ -54,8 +55,8 @@ land.VertexHeightMap = new LandscapeVertexHeightMap { Offset = cs.Height / 8f, .
 |---|---|---|
 | 1 cell 寬/高 | 4096 units | ~58.5m（社群共識）或 ~287m（codebase 備註） |
 | LAND 頂點間距（33×33） | 128 units | ~1.83m（社群共識）或 ~9m（codebase 備註） |
-| VHGT 1 delta 單位 | 1/8 = 0.125 units | ~0.002m（社群共識） |
-| 1 signed byte delta（max 127） | 15.875 units | ~0.23m |
+| VHGT 1 delta 單位 | **8 units**（同 Offset 尺度） | ~0.11m |
+| 1 signed byte delta（max 127） | **1016 units** | ~14.5m（單步坡度上限） |
 | player 角色身高（通常引用） | ~128 units | ~1.8m → 1 unit ≈ 1.4cm |
 
 ---
@@ -78,8 +79,8 @@ heightmap export        = 16-bit grayscale PNG
 
 1. **game units → 公尺的精確比例**：codebase 只有 "~280m" 的備註（`Spec.Worldspace.cs:59`），不是精確定義。社群共識（1 unit = 1.4286cm，player 高度 128 units ≈ 1.8m）更可信，但應查 UESP wiki 或 Bethesda 官方資料確認。
 
-2. **VHGT delta 是 signed 還是 unsigned**：Mutagen 的 `Array2d<byte>` 用 unsigned byte（0–255），但 Skyrim VHGT 格式文件說 delta 是 signed（-128~127）。ModForge 平坦地形用全 0 所以沒差，但非平坦地形需確認 Mutagen 的序列化行為。查 `Mutagen.Bethesda.Skyrim/Records/Major Records/Landscape.cs` 的 VHGT 讀寫。
+2. ~~**VHGT delta 是 signed 還是 unsigned**~~ ✅ **已解（2026-06-16）**：Mutagen 寫 byte 原值不轉換，引擎讀成 **signed int8** → ModForge 自做二補數（存 −10 = byte 246）。
 
-3. **VHGT delta 是 per-row 重置還是全域累積**：Skyrim LAND VHGT 的標準說法是每行 delta 相對於行首（row-wise reset）。ModForge 目前全 0 所以不影響，非平坦地形實作時必須確認。
+3. ~~**VHGT delta 是 per-row 重置還是全域累積**~~ ✅ **已解（2026-06-16）**：**row-wise 累積**——第 0 欄沿列往北累積成各列基準、第 1–32 欄沿列內往東累積；offset 與每 delta 都 ×8 game units。唯一待主力機收尾＝對真實 Tamriel 斜坡格反解比對。
 
 4. **HTerrain PNG heightmap 精度**：16-bit grayscale PNG 可表示 65536 個高度級別，對應 Skyrim VHGT offset 的 signed float 範圍是否足夠？需查 Skyrim 實際地形高度範圍（Tamriel 最高峰 Throat of the World 約多少 game units）。
