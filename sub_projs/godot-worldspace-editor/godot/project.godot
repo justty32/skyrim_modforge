@@ -1,0 +1,13 @@
+; Godot Engine configuration file.
+config_version=5
+
+[application]
+
+config/name="Worldspace Editor"
+config/description="Skyrim terrain heightmap editor → 16-bit PNG for ModForge"
+run/main_scene="res://main.gd"
+config/features=PackedStringArray("4.6", "Forward Plus")
+
+[rendering]
+
+renderer/rendering_method="forward_plus"

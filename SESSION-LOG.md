@@ -23,4 +23,7 @@
 
 ## 不屬任何工作流的進度（堆太多 → 拆進 `session_logs/`）
 
-- **Idea #19 Godot Worldspace Editor 後端 — 進行中**：VHGT + seam stitching + **VNML 重算（2026-06-16）** 已落地（604 tests）。`Vnml.cs`（35×35 中心差分 + E×N cross product，P3UInt8 編碼）+ `Heightmap.SampleCellExtended`（35×35 帶邊框）+ Generator 接入（heightmap path 自動算 VNML）；5 VnmlTests + 2 HeightmapTests 新增。sub_proj README Open 已更新。**待使用者實機確認法線效果**（光影有無異常）。**Godot 前端**：使用者將安裝 HTerrain plugin（或自製），回來後繼續。
+- **Idea #19 Godot Worldspace Editor — 後端+前端骨架完成（2026-06-16）**：
+  - **後端**：`Vnml.cs` + `Heightmap.SampleCellExtended` + Generator 接入（604 tests）；`Package.cs` SpecDir bug 修。
+  - **Godot 前端骨架**（自製 terrain，不靠 HTerrain）：`project.godot` + `terrain.gd`（ArrayMesh + 中心差分法線 + 4 brush 模式）+ `camera_rig.gd`（orbit/pan/zoom）+ `png16.gd`（16-bit PNG encode/decode）+ `main.gd`（UI panel / 滑桿 / FileDialog export / 鍵盤快捷鍵 / 格線 outline）。
+  - **待測**：① 使用者開 Godot 4（godot-mono）確認專案跑得起來；② 實機確認 VNML 法線光影效果（WAIT_USER）。

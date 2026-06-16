@@ -82,8 +82,9 @@ Godot（HTerrain）                    ModForge
 
 ## Open
 
-- **Godot 專案**：建 Godot 4 專案 + HTerrain plugin + 匯出腳本（Phase 1 前端，尚未建立）
-- **VNML 重算**（後端）：邊緣頂點法線需 1px overlap 參考鄰格，不擋 Godot MVP
-- **godotPlacements 讀取**（後端）：解 JSON + Godot4_y_up → Skyrim 座標換算 + 合流 placements[]
+- **Godot 專案開啟測試**（需主力機）：用 `godot4`（godot-mono）開 `sub_projs/godot-worldspace-editor/godot/` → 確認專案跑得起來、terrain 顯示、筆刷可刷、Export PNG 能存出 16-bit PNG。
+- **godotPlacements 讀取**（後端）：解 JSON + Godot4_y_up → Skyrim 座標換算 + 合流 placements[]（物件擺放後再做）
 
+~~Godot 前端骨架~~ ✅ 2026-06-16（自製 terrain，不靠 HTerrain：`terrain.gd` + `camera_rig.gd` + `png16.gd` + `main.gd`）
+~~VNML 重算（後端）~~ ✅ 2026-06-16（`Vnml.cs` + `SampleCellExtended`，35×35 中心差分）
 ~~待主力機收尾：Tamriel VHGT 反解比對~~ ✅ 2026-06-16（20 格 delta 完全一致）

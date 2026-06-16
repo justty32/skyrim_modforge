@@ -45,6 +45,8 @@
 
 **待測（active）**
 
+- **Godot 前端骨架（2026-06-16）** — 用 `godot4`（godot-mono）開 `sub_projs/godot-worldspace-editor/godot/project.godot`，確認：① 專案能啟動（無 parse 錯誤）；② 地形 mesh 顯示（綠色，3×2 cells，有坡形）；③ LMB 拖拉可刷高度（Raise/Lower/Flatten/Smooth 切換正確）；④ Middle-drag / scroll / right-drag 相機正常；⑤ Export PNG 能存出檔案（拿去 `modforge build` 驗格式）。若有 GDScript 語法報錯直接貼給我。
+
 - **VNML 法線效果（2026-06-16）** — 重打包 HeightmapDemo（`modforge build examples/worldspace_heightmap.json` + `modforge package ...` → `~/skyrim_mods/mine/HeightmapDemo.zip`），實機確認地形光影正常（坡面有陰影梯度、無異常黑塊或全黑）。之前用全朝上法線，現在改為真實計算，若 axis mapping 有誤會出現光影怪異。
 
 - **Sofia × VIGILANT 第一幕（2026-06-14）** — 兩版交付 `~/skyrim_mods/mine/`：`SofiaVigilantAct1.zip`（v1 對話+語音）、`SofiaVigilantAct1v2.zip`（v2 +PlayIdle 動作）。spec＝`examples/sofia_vigilant_act1{,_v2}.json`，臺詞＝`sub_projs/sofia-patch/vigilant-screenplay/act1-警戒者.md`。
