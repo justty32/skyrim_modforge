@@ -138,7 +138,8 @@ public static partial class Generator
                     HeightMap = heightDeltas,
                     Unknown = new Noggog.P3UInt8(0, 0, 0),
                 };
-                land.VertexNormals = normals ?? new Noggog.Array2d<Noggog.P3UInt8>(33, 33, new Noggog.P3UInt8(128, 128, 255));
+                // Flat-cell default = straight up. Skyrim VNML is signed-byte; up = (0,0,127) (NOT 128,128,255).
+                land.VertexNormals = normals ?? new Noggog.Array2d<Noggog.P3UInt8>(33, 33, new Noggog.P3UInt8(0, 0, 127));
                 cell.Landscape = land;
 
                 if (navmesh)
