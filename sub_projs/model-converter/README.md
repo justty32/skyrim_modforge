@@ -63,5 +63,5 @@
 ## Open
 
 - **批量 nif→glTF 的可行載體**（MVP 第一關，**待主力機實測**）：NifSkope fo76utils fork 有沒有可腳本化的 CLI/headless？agent 查到 GUI 確定、CLI 批量未證。若 GUI-only → 找替代或考慮自寫 NIF 靜態 mesh parser（只需 geometry，門檻不高）。
-- **協議形狀**：本工具如何被 ModForge / Godot editor 呼叫（CLI 合約、輸入輸出目錄約定）——參考 [skyrim-voicegen/PROTOCOL.md](../skyrim-voicegen/README.md) 的掛法。
+- ~~**協議形狀**~~ ✅ 草案 2026-06-17 [PROTOCOL.md](PROTOCOL.md)（離線設計）：掛勾 `MODFORGE_NIF2GLTF_BIN`（黑盒 exec，照 voicegen 慣例）、單檔 `--in/--out/--flat` CLI、批量靠呼叫方給的 `manifest.json`（轉換器不讀 ESM）、exit code、Flip-Y 法線約定。**契約 backend-agnostic，後端載體換掉不動契約**——但載體本身仍待主力機實測（下一項）。
 - **與 model-porting 的邊界**：正向內容留在 model-porting、本 sub_proj 只放工具實作與反向？還是把 model-porting 的 runbook 也收斂進來？（MVP 不碰正向，此邊界 MVP 後再定。）
