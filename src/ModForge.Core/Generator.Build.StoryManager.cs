@@ -169,9 +169,54 @@ public static partial class Generator
                         alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.MatchingRefInLoadedArea;
                         if (arg.Equals("closest", StringComparison.OrdinalIgnoreCase))
                             alias.Flags |= QuestAlias.Flag.MatchingRefClosest;
-                        foreach (var cs in aSpec.Conditions)
-                            if (BuildCondition(cs, $"quest '{qs.EditorId}' alias '{aSpec.Name}' findMatching condition") is { } cond)
-                                alias.Conditions.Add(cond);
+                        WireAliasMatchConditions(alias, qs, aSpec, "findMatching");
+                    }
+                    else if (kind.Equals("findMatchingLocation", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // #7 radiant LocationAlias fill (Missives Alias_Dungeon/Alias_Inn): a LOCATION-type
+                        // alias filled by "Find Matching Location" — pick a child location whose LocType
+                        // keyword matches, optionally narrowed to within a parent location alias.
+                        // arg = "<locTypeKeyword>[@<parentLocationAlias>]". Keyword resolves like any ref
+                        // (in-spec KYWD editorId or Plugin.esm:0xID); parent alias by name (this quest).
+                        var locKw = arg; int? parentIdx = null;
+                        int at = arg.LastIndexOf('@');
+                        if (at > 0 && at < arg.Length - 1)
+                        {
+                            locKw = arg[..at];
+                            if (aliasIdByName.TryGetValue(arg[(at + 1)..], out var pIdx)) parentIdx = (int)pIdx;
+                        }
+                        if (TryResolveRef(locKw, formKeyByEd, out var kwFk))
+                        {
+                            alias.Type = QuestAlias.TypeEnum.Location;
+                            var loc = new LocationAliasReference();
+                            loc.Keyword.SetTo(kwFk);                 // LocType keyword (LocTypeDungeon, …)
+                            if (parentIdx is int pi) loc.AliasID = pi; // search within this location alias
+                            alias.Location = loc;
+                            WireAliasMatchConditions(alias, qs, aSpec, "findMatchingLocation");
+                        }
+                    }
+                    else if (kind.Equals("findInLocationAlias", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // #8 radiant find-ref-in-location fill (Missives Alias_target/Alias_chest): a
+                        // REFERENCE-type alias filled by "Find Matching Reference" scoped to the location
+                        // held by another LOCATION alias — pick a ref of an optional RefType (LCRT, e.g. a
+                        // dungeon BossChest) and/or matching this alias's `conditions`. arg =
+                        // "<locationAlias>[#<refTypeLCRT>]". NOTE: this uses LocationAliasReference (whose
+                        // RefType field is meaningless for a Location-type alias — proving Location doubles
+                        // as the Reference-alias "find ref in location" shape), NOT FindMatchingRefNearAlias
+                        // (verified offline = LinkedRefChild-only; the wrong tool for in-location search).
+                        var locAlias = arg; string refTypeRef = "";
+                        int hash = arg.IndexOf('#');
+                        if (hash > 0 && hash < arg.Length - 1) { locAlias = arg[..hash]; refTypeRef = arg[(hash + 1)..]; }
+                        if (aliasIdByName.TryGetValue(locAlias, out var locIdx))
+                        {
+                            alias.Type = QuestAlias.TypeEnum.Reference;
+                            var loc = new LocationAliasReference { AliasID = (int)locIdx };
+                            if (refTypeRef.Length > 0 && TryResolveRef(refTypeRef, formKeyByEd, out var rtFk))
+                                loc.RefType.SetTo(rtFk);             // LocationReferenceType (LCRT) to match
+                            alias.Location = loc;
+                            WireAliasMatchConditions(alias, qs, aSpec, "findInLocationAlias");
+                        }
                     }
                 }
                 if (aSpec.Optional)
@@ -188,6 +233,15 @@ public static partial class Generator
                 nextId++;
             }
             quest.NextAliasID = nextId;
+        }
+
+        // Wire an alias's match-filter CTDA (shared by findMatching / findMatchingLocation / findNearAlias):
+        // these conditions decide WHICH ref/location in scope the engine picks.
+        private void WireAliasMatchConditions(QuestAlias alias, QuestSpec qs, QuestAliasSpec aSpec, string kindLabel)
+        {
+            foreach (var cs in aSpec.Conditions)
+                if (BuildCondition(cs, $"quest '{qs.EditorId}' alias '{aSpec.Name}' {kindLabel} condition") is { } cond)
+                    alias.Conditions.Add(cond);
         }
 
         // Ordinary (non-storyEvent, StartGameEnabled) quests can ALSO carry aliases — a forced/uniqueActor

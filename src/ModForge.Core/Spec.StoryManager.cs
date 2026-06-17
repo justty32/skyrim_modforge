@@ -18,7 +18,15 @@ public sealed class QuestStoryEventSpec
 // 例如在施法者腳邊生一個寶箱；<targetAlias> 須為同 quest 內另一個 ref 型 alias，不能是 location）或
 // "findMatching:closest"|"findMatching:any"（在 loaded area 裏找一個既有的、符合本 alias `Conditions` 的 ref；
 // closest=最近的一個，any=第一個符合的。= QuestAlias 旗標 MatchingRefInLoadedArea[+MatchingRefClosest]，
-// 解自 vanilla MQGreybeardCall 的 Bystander aliases）。
+// 解自 vanilla MQGreybeardCall 的 Bystander aliases）、
+// "findMatchingLocation:<locTypeKeyword>[@<parentLocationAlias>]"（#7 radiant LocationAlias：建一個 Location 型
+// alias，用 Find Matching Location 挑一個 LocType keyword 符合的子地點，可選縮限在另一個 location alias 範圍內；
+// = QuestAlias.Type=Location + LocationAliasReference{Keyword, AliasID=parent}。Missives 的 Alias_Dungeon/Alias_Inn）或
+// "findInLocationAlias:<locationAlias>[#<refTypeLCRT>]"（#8 radiant 在地點內找 ref：建一個 Reference 型 alias，
+// 在另一個 location alias 所指地點範圍內 Find Matching Reference，可帶 RefType（LCRT，如地城 BossChest）
+// 與/或本 alias 的 `Conditions` 挑 ref（地城 boss、寶箱）；= QuestAlias.Type=Reference +
+// LocationAliasReference{AliasID=locationAlias, RefType}。Missives 的 Alias_target/Alias_chest。
+// 註：不是 FindMatchingRefNearAlias（ALNA，離線驗證＝只 LinkedRefChild，非地點內搜尋））。
 public sealed class QuestAliasSpec
 {
     public string Name { get; set; } = "";

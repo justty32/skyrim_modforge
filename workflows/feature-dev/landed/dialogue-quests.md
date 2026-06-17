@@ -4,7 +4,7 @@
 
 **對話 / 任務 / Story Manager**
 - **SM spec 管線**：`QuestSpec.storyEvent`(event+conditions) + `aliases`；build 自動生 SMBN→SMQN 掛原版根、清 StartGameEnabled。事件表 `StoryManagerEvents`（十個 engine-native 事件）。
-- **alias fill 五種**：`fromEvent:<slot>` / `forced:<ref>` / `uniqueActor:<ref>` / `createObject:<ref>@<alias>` / `findMatching:closest|any`。
+- **alias fill 七種**：`fromEvent:<slot>` / `forced:<ref>` / `uniqueActor:<ref>` / `createObject:<ref>@<alias>` / `findMatching:closest|any` / **`findMatchingLocation:<locType>[@<parentAlias>]`（#7 radiant LocationAlias）** / **`findInLocationAlias:<locAlias>[#<LCRT>]`（#8 在地點內找 ref）**。後兩種＝radiant quest 生成根基（**離線實作 + build/validate 通、10 測綠，2026-06-17**；CK 語義 + 真 FormID 待主力機 xEdit 驗，見 WAIT_USER）。Mutagen shape 反射驗證＝`QuestAlias.Location=LocationAliasReference{AliasID,Keyword,RefType}`；**scope 校正**：#8 原議用 ALNA(`FindMatchingRefNearAlias`)，反射發現其 `TypeEnum` 只 `LinkedRefChild`（非地點內搜尋）→ 改走 `Location` 欄（其 `RefType`/LCRT 對 Location 型 alias 無意義 → 證明 Location 雙用於 Reference alias 的「在地點內找 ref」）。Missives 的 Hold→Dungeon→BossChest 鏈。example `examples/radiant_alias_spec.json`、測 `RadiantAliasTests.cs`。
 - **可複用 trigger 庫（五入口，同一 `Fire()`）**：magic-effect / potion / activator / dialogue / alias-OnActivate。zip `~/skyrim_mods/ModForge{Magic,Potion,Activator,Dialogue,Alias}Trigger.zip`。通用派發器 `assets/papyrus/MFStoryEventDispatch`（embed 進 CLI）。
 - **Quest 階段**：`StageSpec.startUpStage`（啟動自顯 objective）+ stage 推進（`MFSE_AdvanceStage.psc`）；alias 也適用一般（非 storyEvent）quest。
 - **身份系統（輕量職業）Phase-2/C 完成**（in-game 確認 2026-06-07，`ModForgeIdentity.zip`）。**完整欄位/語意見 `SPEC-dialogue-quests.md`「Identities」、build wiring 見 `CODE_MAP.dialogue-quests.md`、建好的 esp 用 `identitydiag` 探。** 一句話地圖：

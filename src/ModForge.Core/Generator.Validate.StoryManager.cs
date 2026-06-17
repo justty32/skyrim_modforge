@@ -55,7 +55,7 @@ public static partial class Generator
         {
             if (!StoryManagerEvents.TryParseFill(a.Fill, out var kind, out var arg))
             {
-                Problems.Add($"{where} alias '{a.Name}' fill '{a.Fill}' is malformed (expect 'fromEvent:<slot>', 'forced:<ref>', 'uniqueActor:<ref>', 'createObject:<ref>@<targetAlias>' or 'findMatching:closest|any')");
+                Problems.Add($"{where} alias '{a.Name}' fill '{a.Fill}' is malformed (expect 'fromEvent:<slot>', 'forced:<ref>', 'uniqueActor:<ref>', 'createObject:<ref>@<targetAlias>', 'findMatching:closest|any', 'findMatchingLocation:<locType>[@<parentAlias>]' or 'findInLocationAlias:<locationAlias>[#<refTypeLCRT>]')");
                 return;
             }
             if (kind.Equals("fromEvent", StringComparison.OrdinalIgnoreCase))
@@ -97,9 +97,48 @@ public static partial class Generator
                 foreach (var cs in a.Conditions)
                     CheckCondition(cs, $"{where} alias '{a.Name}' findMatching condition");
             }
+            else if (kind.Equals("findMatchingLocation", StringComparison.OrdinalIgnoreCase))
+            {
+                // #7: arg = "<locTypeKeyword>[@<parentLocationAlias>]". Keyword must resolve; parent
+                // alias (if given) must be another alias in this quest.
+                var locKw = arg; string? parent = null;
+                int at = arg.LastIndexOf('@');
+                if (at > 0 && at < arg.Length - 1) { locKw = arg[..at]; parent = arg[(at + 1)..]; }
+                if (string.IsNullOrWhiteSpace(locKw))
+                    Problems.Add($"{where} alias '{a.Name}' findMatchingLocation needs a LocType keyword (got '{arg}')");
+                else
+                    CheckRef(locKw, $"{where} alias '{a.Name}' findMatchingLocation LocType keyword");
+                if (parent is not null)
+                {
+                    if (string.Equals(parent, a.Name, StringComparison.OrdinalIgnoreCase))
+                        Problems.Add($"{where} alias '{a.Name}' findMatchingLocation cannot search within itself ('@{parent}')");
+                    else if (!q.Aliases.Any(x => string.Equals(x.Name, parent, StringComparison.OrdinalIgnoreCase)))
+                        Problems.Add($"{where} alias '{a.Name}' findMatchingLocation parent alias '{parent}' is not another alias in this quest");
+                }
+                foreach (var cs in a.Conditions)
+                    CheckCondition(cs, $"{where} alias '{a.Name}' findMatchingLocation condition");
+            }
+            else if (kind.Equals("findInLocationAlias", StringComparison.OrdinalIgnoreCase))
+            {
+                // #8: arg = "<locationAlias>[#<refTypeLCRT>]". The location alias must be another alias in
+                // this quest; refType (if given) must resolve; conditions and/or refType pick the ref.
+                var locAlias = arg; string? refType = null;
+                int hash = arg.IndexOf('#');
+                if (hash > 0 && hash < arg.Length - 1) { locAlias = arg[..hash]; refType = arg[(hash + 1)..]; }
+                if (string.Equals(locAlias, a.Name, StringComparison.OrdinalIgnoreCase))
+                    Problems.Add($"{where} alias '{a.Name}' findInLocationAlias cannot search within itself ('{locAlias}')");
+                else if (!q.Aliases.Any(x => string.Equals(x.Name, locAlias, StringComparison.OrdinalIgnoreCase)))
+                    Problems.Add($"{where} alias '{a.Name}' findInLocationAlias location alias '{locAlias}' is not another alias in this quest");
+                if (refType is not null)
+                    CheckRef(refType, $"{where} alias '{a.Name}' findInLocationAlias refType (LCRT)");
+                if (refType is null && a.Conditions.Count == 0)
+                    Problems.Add($"{where} alias '{a.Name}' findInLocationAlias needs a refType (#<LCRT>) and/or 'conditions' to pick a ref (else it matches nothing useful)");
+                foreach (var cs in a.Conditions)
+                    CheckCondition(cs, $"{where} alias '{a.Name}' findInLocationAlias condition");
+            }
             else
             {
-                Problems.Add($"{where} alias '{a.Name}' fill kind '{kind}' unsupported (use fromEvent | forced | uniqueActor | createObject | findMatching)");
+                Problems.Add($"{where} alias '{a.Name}' fill kind '{kind}' unsupported (use fromEvent | forced | uniqueActor | createObject | findMatching | findMatchingLocation | findInLocationAlias)");
             }
 
             // Optional alias script (alias[].script): its object-properties must resolve. The

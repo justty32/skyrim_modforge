@@ -15,8 +15,8 @@
 
 | # | 缺口 | 優先 |
 |---|------|------|
-| 7 | QuestAlias `findMatchingLocation` fill（LocationAlias 型）—— radiant 地點隨機化根基 | 🔴 |
-| 8 | QuestAlias `findMatchingRefNearAlias` (ALNA)——在指定 LocationAlias 範圍內找 ref | 🔴 |
+| 7 | ✅ QuestAlias `findMatchingLocation` fill（LocationAlias 型）—— radiant 地點隨機化根基 | ✅ 落地 06-17 |
+| 8 | ✅ QuestAlias 在地點內找 ref（`findInLocationAlias`，scope 校正：非 ALNA 而是 LocationAliasReference）| ✅ 落地 06-17 |
 | 9 | `UpdateCurrentInstanceGlobal` fragment codegen——gather/計數型 quest objective 文字即時更新 | 🟡 |
 
 **PARTIAL（多數已支援，留窄缺口）：**
@@ -231,7 +231,7 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 
 按「做了解鎖最多後續功能」排：
 
-1. **A 組 #7 + #8**（LocationAlias + ALNA fill）→ 解鎖所有 radiant quest 生成
+1. ~~**A 組 #7 + #8**（LocationAlias + ALNA fill）~~ ✅ **已落地 2026-06-17**（#7 findMatchingLocation、#8 findInLocationAlias；#8 scope 校正：ALNA 離線驗＝LinkedRefChild-only，改走 LocationAliasReference）→ radiant quest 生成解鎖（CK 語義待主力機驗）
 2. **B 組 #1**（Perk AddActivateChoice + fragment）→ 解鎖互動式 perk mod
 3. **C 組 #2**（package alias 間接）→ 解鎖 radiant 演出 package
 4. ~~**D-1**（SPID _DISTR.ini）~~ ✅ **已落地 2026-06-17** → 無衝突 NPC 標記與兼容 patch

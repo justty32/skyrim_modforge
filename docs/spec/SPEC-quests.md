@@ -167,6 +167,8 @@ cannot be filled the quest silently does not start.
 | `forced:<ref>` | `ForcedReference` | Static ref (e.g. the player `Skyrim.esm:0x000014`). |
 | `createObject:<ref>@<targetAlias>` | `CreateReferenceToObject` | On quest start, **spawns a new reference** to `<ref>` (any placeable base — NPC/container/static/item) AT the ref held by `<targetAlias>` (`Create=At`, `Level=Easy`). `<targetAlias>` must be another **ref-type** alias in the same quest (not a Location), and cannot be itself. E.g. cast a spell → spawn a guardian at the caster. In-game confirmed (2026-06-05). |
 | `findMatching:closest` / `findMatching:any` | `QuestAlias.Flag.MatchingRefInLoadedArea` (+ `MatchingRefClosest` for `closest`) | Fills with an **already-existing reference in the loaded area** matching this alias's `conditions` — `closest` picks the nearest match, `any` the first. The match filter is a CTDA list (same `ConditionSpec` shape) wired onto `QuestAlias.Conditions` (e.g. `HasKeyword ActorTypeNPC` = nearest NPC; `GetIsID <base>` = nearest of a base). **At least one condition is required.** This is the loaded-area "Find Matching Reference" mechanism decoded from vanilla `MQGreybeardCall` Bystander aliases — **not** `FindMatchingRefNearAlias` (that only finds editor-linked-ref children). Whether the alias fills depends on a matching ref actually being in the loaded area at runtime. |
+| `findMatchingLocation:<locTypeKeyword>[@<parentLocationAlias>]` | `QuestAlias.Type = Location` + `LocationAliasReference` | **Radiant LocationAlias (#7).** Fills a **Location**-type alias by "Find Matching Location" — pick a location whose **LocType keyword** matches (`<locTypeKeyword>` = an in-spec KYWD editorId or `Plugin.esm:0xID`), optionally narrowed to a child location **within** `@<parentLocationAlias>` (another Location alias in this quest). Emits `Location = {Keyword=<locType>, AliasID=<parent index>}`. The Missives radiant variety core: a Hold location, then a Dungeon/Inn location within it. |
+| `findInLocationAlias:<locationAlias>[#<refTypeLCRT>]` | `QuestAlias.Type = Reference` + `LocationAliasReference` | **Radiant find-ref-in-location (#8).** Fills a **Reference**-type alias by "Find Matching Reference" scoped to the location held by `<locationAlias>` (a Location alias in this quest) — narrowed by an optional **RefType** LCRT (`#<refTypeLCRT>`, e.g. a dungeon `BossContainer`) and/or this alias's `conditions`. Emits `Location = {AliasID=<location index>, RefType=<LCRT>}`. **A refType and/or at least one condition is required.** Missives' Alias_target/Alias_chest (the boss/loot inside the dungeon). Uses `LocationAliasReference` (NOT `FindMatchingRefNearAlias`, which is verified linked-ref-child-only). |
 
 **Extra alias options:**
 
@@ -183,6 +185,15 @@ This lets a plain always-running quest force an NPC/ref into an alias, spawn an 
 an `OnActivate` alias script — with no Story Manager event. In-game confirmed (2026-06-05); demo
 `examples/quest-alias-standalone.json` (forced player → `createObject` chest at the player → open it →
 alias `OnActivate` advances + closes the quest).
+
+**Radiant chain (`findMatchingLocation` + `findInLocationAlias`):** these compose into the Missives
+variety pattern — `Hold` (`findMatchingLocation:<holdLocType>`) → `Dungeon`
+(`findMatchingLocation:<dungeonLocType>@Hold`) → `BossChest`
+(`findInLocationAlias:Dungeon#<bossLCRT>`). Demo `examples/radiant_alias_spec.json`. ⚠ **Offline limit:**
+the Mutagen `LocationAliasReference` field *shape* is reflection-verified, but the exact CK *semantics*
+(which field drives which constraint) are pending a main-machine xEdit byte-compare against a real
+Missives alias — and the example's LocType/LCRT FormIDs are placeholders (find real ones with
+`gamedata find`). See `WAIT_USER.md`.
 
 #### SM iron laws (engine behaviour, not bugs)
 
