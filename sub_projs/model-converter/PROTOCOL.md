@@ -2,7 +2,7 @@
 
 ← [README](README.md)
 
-**狀態：草案（2026-06-17，離線設計）。** 契約形狀已定，但**後端載體未驗**（NifSkope fo76utils fork 的 CLI/headless 批量能力待主力機實測，見 README Open）。本檔定義「呼叫方看到什麼」，與用哪個後端解耦——後端換掉，契約不動。
+**狀態：契約已實作（2026-06-17）。** 契約形狀已定，且**參考後端已自寫**＝本 sub_proj 的 `nif2gltf` Python 模組（LE+SSE 靜態 mesh、`--flat`、batch manifest，23 測綠）；不再依賴 NifSkope。本檔定義「呼叫方看到什麼」，與用哪個後端解耦——後端換掉，契約不動。**唯一未竟＝對真實 vanilla `.nif` 的 byte 驗證**（離線無素材，見 README Open / WAIT_USER）。
 
 ## 定位（照 [skyrim-voicegen](../skyrim-voicegen/README.md) 的掛法）
 
@@ -72,8 +72,8 @@ nif2gltf --manifest <manifest.json> --outdir <dir>
 ## 環境（不進 repo，照 voicegen 慣例）
 
 - `MODFORGE_NIF2GLTF_BIN` — wrapper 路徑（呼叫方 export）。
-- 後端工具與其環境（NifSkope fork 安裝位置 / venv）是本 sub_proj 內政，gitignore 留本機。
-- ⚠️ **後端待證**：若 NifSkope fork 只有 GUI，wrapper 無法滿足本契約 → 回 README Open，評估替代（自寫靜態 NIF mesh parser，只需 geometry，照本契約輸出 `.gltf`+`.bin`）。
+- **參考 wrapper**：一行殼呼 `python -m nif2gltf "$@"`（在本 sub_proj 的 `.venv` 內）。venv / 後端工具是內政，gitignore 留本機。
+- ✅ **後端已自寫**（取代原「待證 NifSkope」）：`nif2gltf` 純 Python 靜態 NIF mesh parser，照本契約輸出 `.gltf`+`.bin`，不需任何外部 NIF 工具。MVP 後的紋理/蒙皮/正向才可能再掛 PyNifly 等 Windows 後端。
 
 ## 與 ModForge `package` 的關係
 

@@ -34,7 +34,7 @@
 | **ck-cmd** | **FBX**↔nif（**非 glTF**） | Win / Wine | CLI | ✅ 真實，但**不直接吃 glTF**（要 FBX 中轉） |
 | **Compressonator** | dds 編碼 | Linux/Win/Mac | CLI | ✅ 真實（model-porting 已選定） |
 
-**現況關鍵缺口**：**沒有任何已驗證的「批量 nif→glTF」pipeline**。PyNifly+Blender headless 範例存在但卡 Win-only；NifSkope fork 能單檔但批量能力未證。**這是本工具要填的第一個洞。**
+**現況關鍵缺口**：外部工具裡**沒有任何已驗證的「批量 nif→glTF」pipeline**（PyNifly+Blender 卡 Win-only；NifSkope fork 批量未證）。→ **2026-06-17 改自寫**：本 sub_proj 的 `nif2gltf/` 已實作純 Python 靜態 mesh 載體（見下「實作」節），離線測過、不依賴外部 NIF 工具；只剩對真實 vanilla 檔的 byte 驗證待主力機。原表保留作 MVP 後（紋理/蒙皮/正向）後端選型參考。
 
 ---
 
@@ -60,8 +60,25 @@
 
 **完整目標（MVP 後）**：`.nif`+紋理 ↔ glTF/Godot ↔ FBX/OBJ 全矩陣雙向，含紋理重映射與蒙皮（蒙皮走 Windows/PyNifly 後端）。
 
+## 實作（`nif2gltf/` — 自寫載體，2026-06-17 離線）
+
+原本 MVP 第一關卡在「NifSkope fork 有沒有 CLI」。改走 README 自留的後路——**自寫靜態 NIF mesh parser**，因此不再依賴任何外部 NIF 工具，Linux/Win 原生跑。
+
+| 模組 | 職責 |
+|---|---|
+| `nif2gltf/nif_reader.py` | 手寫 Skyrim NIF（20.2.0.7 / user 12）靜態 mesh 解析。**LE**：NiTriShape/NiTriStrips→NiTriShapeData/NiTriStripsData（全 float）；**SSE**：BSTriShape/BSDynamic/BSSubIndex（BSVertexData，走 BSVertexDesc offset 表 + Full_Precision 旗標自描述解碼）。組 NiNode 樹 transform、Skyrim(Z-up)→glTF(Y-up)、含 skin/動畫→拒（exit 3）。**Block Size 給每塊邊界 offset，單塊解析漂移不會骨牌**。 |
+| `nif2gltf/gltf_writer.py` | `Mesh` IR → glTF 2.0（`.gltf`+`.bin`，pygltflib）。POSITION/NORMAL/TEXCOORD_0 + 單一平色 material（`--flat`）。 |
+| `nif2gltf/geometry.py` | `Mesh` 中介表示 + Skyrim→glTF 軸轉。 |
+| `nif2gltf/cli.py` | 照 [PROTOCOL.md](PROTOCOL.md)：`--in/--out/--flat`，batch `--manifest/--outdir`，exit 0/1/2/3。 |
+
+**格式來源**：niftools/nifxml `nif.xml`（逐欄查證，非憑記憶；reference 檔 gitignore）。
+**跑**：`python -m venv .venv && .venv/Scripts/python -m pip install -r requirements.txt`，然後 `python -m nif2gltf --in foo.nif --out foo.gltf --flat`。
+**測**：`.venv/Scripts/python -m pytest`（**23 綠**：glTF writer round-trip 7、NIF reader LE+SSE 合成 fixture 9、CLI 契約 7）。
+⚠️ **離線限制**：合成 fixture 只證「reader 讀回它照 nif.xml 編的東西」，**未對真實 vanilla `.nif` 逐 byte 驗**（離線無遊戲素材）——SSE offset 解碼尤其需真檔確認，列 WAIT_USER。
+
 ## Open
 
-- **批量 nif→glTF 的可行載體**（MVP 第一關，**待主力機實測**）：NifSkope fo76utils fork 有沒有可腳本化的 CLI/headless？agent 查到 GUI 確定、CLI 批量未證。若 GUI-only → 找替代或考慮自寫 NIF 靜態 mesh parser（只需 geometry，門檻不高）。
-- ~~**協議形狀**~~ ✅ 草案 2026-06-17 [PROTOCOL.md](PROTOCOL.md)（離線設計）：掛勾 `MODFORGE_NIF2GLTF_BIN`（黑盒 exec，照 voicegen 慣例）、單檔 `--in/--out/--flat` CLI、批量靠呼叫方給的 `manifest.json`（轉換器不讀 ESM）、exit code、Flip-Y 法線約定。**契約 backend-agnostic，後端載體換掉不動契約**——但載體本身仍待主力機實測（下一項）。
+- **對真實 vanilla `.nif` 驗證載體**（MVP 收尾，**待主力機**）：跑 `nif2gltf` 轉真實 vanilla mesh（LE 與 SSE 各取樣），確認 glTF 進 Godot/Blender 形狀對；SSE 半精度 offset 解碼是最需驗的點。見 WAIT_USER。
+- ~~**批量 nif→glTF 的可行載體**~~ ✅ 自寫 `nif2gltf`（上節），不再卡 NifSkope。
+- ~~**協議形狀**~~ ✅ 草案 2026-06-17 [PROTOCOL.md](PROTOCOL.md)：掛勾 `MODFORGE_NIF2GLTF_BIN`（黑盒 exec）、單檔 `--in/--out/--flat`、批量 `manifest.json`、exit code。**參考後端＝本 sub_proj 的 `nif2gltf`**（wrapper 呼 `python -m nif2gltf`）；契約 backend-agnostic，要換後端不動契約。
 - **與 model-porting 的邊界**：正向內容留在 model-porting、本 sub_proj 只放工具實作與反向？還是把 model-porting 的 runbook 也收斂進來？（MVP 不碰正向，此邊界 MVP 後再定。）
