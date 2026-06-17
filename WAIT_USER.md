@@ -21,6 +21,9 @@
   - **【Idea #20】In-world 技能樹 — 機制已逆向，剩原始碼層級確認（U1–U3，待主力機）**：
     in-world 3D 星樹機制已由 mod-survey 逆向完成：引擎＝**Campfire**（`Campfire.esm` 的 Skill System），**Frostfall** 的 Endurance 樹是其消費者活範例；星＝普通 in-world ACTI、準心 `OnActivate` 點 perk、視覺狀態靠 GLOB、走遠 480u 自毀；公開 API `CampUtil.RegisterPerkTree`。全解見 [`sub_projs/mod-survey/findings/campfire.md`](sub_projs/mod-survey/findings/campfire.md)。設計（玩家+NPC 版）見 [sub_projs/inworld-skill-tree/](sub_projs/inworld-skill-tree/design-inworld-jcontainers.md)。
     → **待你做（主力機讀 BSA 原始碼）**：**U1** Campfire 能否不靠營火、對任意 ref/位置 spawn 樹（讀 `CampCampfire.psc` / `_Camp_PlaceableObjectBase`）；**U2** node 的 `required_perk_rank_global` 是否全域單例（決定 session GLOB 橋接成不成立）；**U3** Frostfall 的 perkPoint 消費/gate 邏輯。結論補回 design 檔 §五。
+  - **【model-converter MVP】批量 nif→glTF 載體 — 待主力機實測**：
+    sub_proj 已開、MVP 鎖＝vanilla nif→glTF 批量代理（[sub_projs/model-converter/](sub_projs/model-converter/README.md)）。**待你做（主力機）**：裝 **NifSkope fo76utils fork**，測它有沒有可腳本化的 **CLI/headless glTF 匯出**（agent 查到 GUI 確定、CLI 批量未證）。若 GUI-only → 回報，再評估替代或自寫靜態 NIF mesh parser。⚠️ 勿用 `amPerl/nif`、`SkyMeshGLTF`（已證幻覺）。
+  - **【Idea #19 紋理】單層 LTEX 替換 byte 驗證 — 待主力機**：離線已反射確認 Mutagen `Landscape` 紋理 API；單層 BaseLayer 生成可離線實作，但比照 VHGT 需 xEdit 對 vanilla Tamriel cell **逐 byte 驗一次**「生的 BaseLayer 與原版一致」（收尾驗證，不擋設計）。
   - **Nexus 下載（美化/body/工具，掃完 ~/skyrim_mods 確認缺）**：
     - **CBBE 3BA**（30174）— OBody 必需的 body framework，現有 CBBE 是舊版
     - **OBody NG**（77016）— 每個 NPC 自動隨機 body preset + ORefit 服裝貼合

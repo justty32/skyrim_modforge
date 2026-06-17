@@ -23,5 +23,6 @@
 
 ## 不屬任何工作流的進度（堆太多 → 拆進 `session_logs/`）
 
-- 目前無 in-flight 項。
-  - **Idea #19 Godot Worldspace Editor**：前端骨架 + VNML 後端皆完成並驗證（2026-06-16）；durable 記錄見 [sub_projs/godot-worldspace-editor/README.md](sub_projs/godot-worldspace-editor/README.md)（含 Open：godotPlacements 後端待物件擺放階段做）與 [landed/world.md](workflows/feature-dev/landed/world.md)（VNML 三 bug 修正＋vanilla byte 驗證）。
+- **Idea #19 Godot Worldspace Editor**：地形鏈（heightmap→VHGT/VNML→LAND）已通並驗證；**godotPlacements 後端其實已完成**（`GodotPlacements.cs`+test，接進 build，2026-06-17 核對校正了 README stale Open）。**剩下 open＝Godot 前端物件擺放 UI + `placements.json` 匯出**（前端只能匯高度 PNG），這半條鏈還沒通。durable 見 [sub_projs/godot-worldspace-editor/README.md](sub_projs/godot-worldspace-editor/README.md)。
+  - **附：紋理圖（splatmap→VTXT）前後端皆缺**。離線已反射確認 Mutagen `Landscape` 紋理 API（BaseLayer=per-quadrant LTEX ref 無 per-vertex、AlphaLayer 才帶 VTXT）→ **單層全格替換最簡單可離線設計+測**，只剩 xEdit byte 收尾驗證待主力機。
+- **model-converter sub_proj（2026-06-17 新開，🔵 規劃中）**：以 `.nif`(+dds) 為中心的模型格式雙向互轉工具；**MVP 已鎖＝vanilla nif→glTF 批量代理**（靜態/Linux 原生/跳紋理平色，餵 worldspace editor 物件擺放）。工具盤點完成（NifSkope fo76utils fork 為 Linux 原生選項；PyNifly Win-only；amPerl/nif、SkyMeshGLTF 是幻覺勿用）。durable＋Open 見 [sub_projs/model-converter/README.md](sub_projs/model-converter/README.md)。**離線可先做**：協議/CLI 合約草案（未做，使用者選擇先收手）。**卡主力機**：見 WAIT_USER。
