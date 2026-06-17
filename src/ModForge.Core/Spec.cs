@@ -89,6 +89,7 @@ public sealed class ModSpec
     public List<AnimationReplacerSpec> AnimationReplacers { get; set; } = new();
     public List<BehaviorDataSpec> BehaviorData { get; set; } = new();   // BDI graph var/event config
     public List<PayloadMacroSpec> PayloadMacros { get; set; } = new();  // PIE .ini macro table
+    public List<SpidDistributionSpec> SpidDistributions { get; set; } = new(); // SPID _DISTR.ini (loose)
     public VoiceLineSpec? VoiceLine { get; set; } // global voice output settings
     // External-resource pipeline (see docs/external_assets.md): a source directory whose
     // `Meshes/`, `Textures/`, `Sounds/` (and loose `.hkx`) sub-trees `package` copies next to

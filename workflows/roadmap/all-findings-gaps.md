@@ -51,14 +51,11 @@
 
 ModForge 的 `build` 主輸出是 `.esp`。這組是對應 SKSE framework 的 **ini/json 輔助輸出**，讓 mod 作者免寫 ESP override 就能做到 NPC 標記、物件替換、動畫切換等功能。
 
-### 🆕 D-1 SPID `_DISTR.ini` 輸出
+### ✅ D-1 SPID `_DISTR.ini` 輸出（**已落地 2026-06-17**）
 **來源：** spid.md、common-framework-mods.md  
-**現況：** ModForge 不輸出 `_DISTR.ini`。  
-**Scope：** `spidDistribution:` spec section → `<mod>_DISTR.ini`。  
-語法：`Type|RecordID|StringFilters|FormFilters|LevelFilters|Traits|param|Chance`  
-支援 spell/perk/faction/keyword/package/outfit/item 分發給 NPC（依 race/faction/keyword/level 條件）。  
-**用途：** 無 ESP patch 給 follower/NPC 加 faction、標記 keyword、分發 ability spell；OAR 條件讀 faction → animation 切換。  
-**優先：** 🔴（follower patch 兼容層的標準工具）
+**狀態：** ✅ 離線實作 `spidDistributions:` spec section → mod 根 `<file>_DISTR.ini`（loose，非 esp）。`Spec.SpidDistribution.cs`（DTO）+ `SpidGen.cs`（emitter，尾段 NONE 修剪、Item count/Package index 第 6 欄）+ `Generator.Validate.Spid.cs`（type/record/chance 校驗）+ `Package.cs` 接 loose-file 段。**14 測綠**；格式逐欄查 spid.md（SPID 7.3）。docs [SPEC-distribution.md](../../docs/spec/SPEC-distribution.md)、example `spid_distribution_spec.json`、schema 已同步。  
+支援 spell/perk/faction/keyword/package/outfit/item 分發給 NPC（依 race/faction/keyword/level/trait 條件）。  
+**用途：** 無 ESP patch 給 follower/NPC 加 faction、標記 keyword、分發 ability spell；OAR 條件讀 faction → animation 切換。
 
 ### 🆕 D-2 MCM Helper `config.json`/`settings.ini` 輸出
 **來源：** mcm-helper.md  
@@ -237,7 +234,7 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 1. **A 組 #7 + #8**（LocationAlias + ALNA fill）→ 解鎖所有 radiant quest 生成
 2. **B 組 #1**（Perk AddActivateChoice + fragment）→ 解鎖互動式 perk mod
 3. **C 組 #2**（package alias 間接）→ 解鎖 radiant 演出 package
-4. **D-1**（SPID _DISTR.ini）→ 解鎖無衝突 NPC 標記與兼容 patch
+4. ~~**D-1**（SPID _DISTR.ini）~~ ✅ **已落地 2026-06-17** → 無衝突 NPC 標記與兼容 patch
 5. **D-2**（MCM Helper）→ 解鎖玩家設定面板
 6. **D-4**（FLM ini）→ 解鎖外部 FLST 注入（Spellforge/SPID 兼容）
 7. **H 組**（CSF skill tree）→ 接 generation.md 現有設計，已有詳細 spec 草案

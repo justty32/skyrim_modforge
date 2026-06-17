@@ -189,7 +189,8 @@ internal static partial class Program
         // 7) Action-system loose-file generation (OAR / BDI / PIE) — non-esp config + asset placing.
         //    The .hkx animations are user-supplied; ModForge writes the config tree and copies the
         //    clips it can find (missing clips are reported, not silently dropped).
-        if (spec.AnimationReplacers.Count > 0 || spec.BehaviorData.Count > 0 || spec.PayloadMacros.Count > 0)
+        if (spec.AnimationReplacers.Count > 0 || spec.BehaviorData.Count > 0 || spec.PayloadMacros.Count > 0
+            || spec.SpidDistributions.Count > 0)
         {
             string? ResolveHkx(string p)
             {
@@ -226,9 +227,10 @@ internal static partial class Program
             }
             foreach (var b in spec.BehaviorData) WriteLoose(BdiGen.Generate(b));
             foreach (var p in spec.PayloadMacros) WriteLoose(PieGen.Generate(p));
+            foreach (var s in spec.SpidDistributions) WriteLoose(SpidGen.Generate(s));
 
             Console.WriteLine($"action-system: {oarSubmods} OAR submod(s), {spec.BehaviorData.Count} BDI config(s), "
-                + $"{spec.PayloadMacros.Count} PIE table(s), {hkxPlaced} hkx placed");
+                + $"{spec.PayloadMacros.Count} PIE table(s), {spec.SpidDistributions.Count} SPID ini(s), {hkxPlaced} hkx placed");
             if (hkxMissing.Count > 0)
                 Console.WriteLine($"  ⚠ {hkxMissing.Count} hkx not found (config written, clip missing): {string.Join(", ", hkxMissing)}");
         }

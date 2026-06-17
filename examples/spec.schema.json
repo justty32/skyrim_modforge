@@ -539,6 +539,13 @@
         "$ref": "#/$defs/payloadMacro"
       },
       "description": "Payload Interpreter (PIE) macro tables: named macros -> payload commands. Emitted to SKSE/PayloadInterpreter/Config/<file>.ini."
+    },
+    "spidDistributions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/spidDistribution"
+      },
+      "description": "SPID (Spell Perk Item Distributor) configs: attach records to NPC actorbases by filter with no ESP patch. Emitted as a loose <file>_DISTR.ini at the mod folder root (= Data/). See docs/spec/SPEC-distribution.md."
     }
   },
   "additionalProperties": false,
@@ -5355,6 +5362,91 @@
         "command": {
           "type": "string",
           "description": "payload command e.g. @SETGHOST|1"
+        }
+      },
+      "additionalProperties": false
+    },
+    "spidDistribution": {
+      "type": "object",
+      "required": [
+        "file"
+      ],
+      "description": "SPID config -> <file>_DISTR.ini at the mod folder root (Data/).",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "output filename stem (SPID requires the _DISTR.ini suffix, added on emit)"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/spidEntry"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "spidEntry": {
+      "type": "object",
+      "required": [
+        "type",
+        "record"
+      ],
+      "description": "One distribution line: Type = RecordID|StringFilters|FormFilters|LevelFilters|Traits|TypeParam|Chance. Trailing NONE fields are trimmed on emit.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "Spell",
+            "Perk",
+            "Item",
+            "Shout",
+            "LevSpell",
+            "Package",
+            "Outfit",
+            "SleepOutfit",
+            "Keyword",
+            "DeathItem",
+            "Faction",
+            "Skin"
+          ],
+          "description": "distribution type (SleepOutfit/Skin must be explicit — SPID can't infer them)"
+        },
+        "record": {
+          "type": "string",
+          "description": "RecordID (field 1, required): '0xFormID~Plugin.esp' or an EditorID. Skyrim/DLC may drop the ~plugin suffix."
+        },
+        "stringFilters": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "field 2: keyword/actorbase EditorID/display name (OR). '-x' excludes, '*x' partial, 'a+b' AND."
+        },
+        "formFilters": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "field 3: Faction/Race/Class/.../FormList FormID|EditorID (OR). '-x' excludes. No wildcards."
+        },
+        "levelFilters": {
+          "type": "string",
+          "description": "field 4 (raw): actor range '25/50' / '10/' / '/40', or skill 'SkillIndex(min/max)' e.g. '14(50/100)'."
+        },
+        "traits": {
+          "type": "string",
+          "description": "field 5 (raw): letters joined by '/' (M/F/U/S/C/L/T), '-' negates. e.g. 'M/U', '-C'."
+        },
+        "count": {
+          "type": "integer",
+          "description": "field 6 for Item: item count (ignored for other types)."
+        },
+        "packageIndex": {
+          "type": "integer",
+          "description": "field 6 for Package: package stack insert index (0 = top; ignored for other types)."
+        },
+        "chance": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "field 7: distribution chance 0-100 (non-unique NPCs only). Omitted -> SPID defaults to 100."
         }
       },
       "additionalProperties": false

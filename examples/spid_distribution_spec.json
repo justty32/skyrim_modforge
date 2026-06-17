@@ -1,0 +1,37 @@
+{
+  "pluginName": "MyFollowerPatch.esp",
+  "spidDistributions": [
+    {
+      "file": "MyFollowerPatch",
+      "entries": [
+        {
+          "_comment": "Attach a faction to specific followers so dialogue/hug mods can recognise them (no ESP patch).",
+          "type": "Faction",
+          "record": "0x000800~MyFollowerPatch.esp",
+          "stringFilters": ["JJSofiaFollower", "PumpkinTheFoxActor"]
+        },
+        {
+          "_comment": "Give every NPC a passive perk so they scale spells with level.",
+          "type": "Perk",
+          "record": "0xCF788~Skyrim.esm",
+          "stringFilters": ["ActorTypeNPC"]
+        },
+        {
+          "_comment": "Flames to level 25-50 female NPCs, 50% chance (non-unique only).",
+          "type": "Spell",
+          "record": "0x12FCD~Skyrim.esm",
+          "levelFilters": "25/50",
+          "traits": "F",
+          "chance": 50
+        },
+        {
+          "_comment": "3000 gold into the inventory of every NPC except Nazeem (count goes in field 6).",
+          "type": "Item",
+          "record": "0xF~Skyrim.esm",
+          "stringFilters": ["ActorTypeNPC", "-Nazeem"],
+          "count": 3000
+        }
+      ]
+    }
+  ]
+}
