@@ -3335,6 +3335,10 @@
         "encounterZone": {
           "$ref": "#/$defs/ref"
         },
+        "baseTexture": {
+          "$ref": "#/$defs/ref",
+          "description": "LTEX ref — single ground texture applied as the BASE layer (BTXT) of every cell's LAND, all 4 quadrants. No per-vertex blend; omit = untextured. Works with cells or heightmap."
+        },
         "flags": {
           "type": "array",
           "items": {

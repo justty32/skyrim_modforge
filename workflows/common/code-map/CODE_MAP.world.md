@@ -35,6 +35,7 @@
 | `TeleportValidateTests.cs` | teleport pair validate（ref 存在、配對完整性）|
 | `VendorTests.cs` | vendor faction config + merchant container build |
 | `WorldspaceRegionTests.cs` | worldspace record + region polygon/weather build |
+| `WorldspaceBaseTextureTests.cs` | `worldspace.baseTexture`（LTEX）→ 每格 LAND 四象限 BTXT base 層（quadrant 全覆蓋、LayerNumber 0、texture FormID）；omit = 無紋理 |
 | `HeightmapTests.cs` | PNG load、Y-flip、min/max 映射、33×33 seam 零誤差 |
 | `WorldspaceHeightmapTests.cs` | PNG→cell grid 尺寸推導、VHGT delta 非零、flat PNG = flat cell path、**相鄰 cell 邊界重建高度完全一致（seam stitching）**、validate（min<max / empty path / ESL 不相容） |
 | `VhgtTests.cs` | encode（全零 flat、round-trip ±4 units、過陡 clamp+warn）、**RequiresSkyrim：Tamriel 20 格 decode→encode delta bytes 完全一致（主力機驗演算法）** |
@@ -109,12 +110,12 @@
 ---
 
 ## Worldspaces + Regions
-→ **說明文件**：[SPEC-world.md § worldspaces & regions](../../../docs/spec/SPEC-world.md#worldspaces-wrld--regions-regn--exterior-worlds--weather)
+→ **說明文件**：[SPEC-worldspaces.md](../../../docs/spec/SPEC-worldspaces.md)（worldspace 細節已從 SPEC-world.md 移來此檔）
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Worldspace.cs` | `WorldspaceSpec`（含 `Heightmap`/`GodotPlacements`）, `HeightmapSpec`, `GodotPlacementsSpec`, `WorldspaceCellSpec`, `WorldMapDataSpec`, `RegionSpec`, `RegionWeatherEntrySpec`, `PointSpec` |
-| Build P1 | `Generator.Build.Worldspace.cs` | 建 worldspace record（climate/water/map bounds）+ cell grid 骨架；**PNG heightmap 路徑**（`Heightmap.Load` → `Vhgt.Encode` per cell）；**Godot placements 展開**（`GodotPlacements.Load` → `spec.Placements.AddRange`，在 `BuildPlacements` 前注入）|
+| Spec | `Spec.Worldspace.cs` | `WorldspaceSpec`（含 `Heightmap`/`GodotPlacements`/**`BaseTexture`**(LTEX ref)）, `HeightmapSpec`, `GodotPlacementsSpec`, `WorldspaceCellSpec`, `WorldMapDataSpec`, `RegionSpec`, `RegionWeatherEntrySpec`, `PointSpec` |
+| Build P1 | `Generator.Build.Worldspace.cs` | 建 worldspace record（climate/water/map bounds）+ cell grid 骨架；**PNG heightmap 路徑**（`Heightmap.Load` → `Vhgt.Encode` per cell）；**單層地形貼圖 `baseTexture`**（resolve LTEX 一次 → `EmitCell` 每格四象限加 `BaseLayer`{`LayerHeader.Texture`/`Quadrant`}）；**Godot placements 展開**（`GodotPlacements.Load` → `spec.Placements.AddRange`，在 `BuildPlacements` 前注入）|
 | Build P1 | `Generator.Build.Regions.cs` | 建 region record（polygon / weather table / priority / map color）|
 | Build P2 | `Generator.Build.ExteriorCells.cs` | cell group tree 生成（外層結構）|
 | Build P2 | `Generator.Build.Navmesh.cs` | NAVM 4 頂點平面 quad + NAVI 索引（[engine-internals § navmesh](../../../docs/engine-internals.md#programmatic-navmesh-navm--navi--in-game-confirmed-2026-06-03)）|
