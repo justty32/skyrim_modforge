@@ -1,5 +1,7 @@
 # NIF ↔ glTF/Godot 轉換調查（Gemini，2026-06-16）
 
+> 📦 **此調查已收斂進 sub_proj** → [sub_projs/model-converter/](../../model-converter/README.md)（模型格式雙向互轉工具）。下方為原始調查素材，正式結論看該 sub_proj 的工具盤點表。
+
 > ⚠️ **查證修正 banner（2026-06-16，背景 agent 對真實 GitHub/release 核對）**——下文 Gemini 原稿多處有誤，採信前看這裡：
 > - ❌ **`nif2gltf` Rust CLI 不存在**（`amPerl/nif` 只是 NIF parser、非 Skyrim 版、無 glTF 輸出；`cargo install nif` 用法是捏的）。**勿規劃此工具。**
 > - ✅ **NifSkope glTF export 真實**，但在 **`fo76utils/nifskope` fork**（非 hexabits、非 CLI 是 GUI），且 **Linux+Windows 雙平台**（最新 build 2025-12-30）。**這是最可信的選擇，主力機 Manjaro 可直接跑。** geometry-only，正好夠視覺代理。

@@ -101,8 +101,11 @@ Godot（HTerrain）                    ModForge
 
 ## Open
 
-- **godotPlacements 讀取**（後端）：解 JSON + Godot4_y_up → Skyrim 座標換算 + 合流 placements[]（物件擺放後再做）
+- **物件擺放（Godot 前端）**：放置物件 UI + `@export skyrim_base` 薄 script + 匯出 `placements.json`。**後端已 ready 等這個檔**——前端只能匯出高度 PNG，產不出 placements，所以「Godot 擺物件 → 進遊戲」這半條鏈還串不起來。
+  - **前置依賴**：物件要能在 Godot 裡看到，需 vanilla `.nif` → glTF 視覺代理 → 此能力收斂到 [model-converter](../model-converter/README.md) sub_proj（nif→glTF 反向轉換，目前無已驗證批量 pipeline）。
+- **紋理圖（splatmap → VTXT）**：前後端皆缺。前端無 splat 筆刷（目前全格預設 dirt）、後端無 VTXT/ATXT 紋理層生成。地形可走但只有單一土質貼圖。見下方「資料流」的 SplatMap 規劃（尚未實作）。
 
+~~godotPlacements 讀取（後端）~~ ✅ 2026-06-16（`GodotPlacements.cs` + test：解 JSON、godot4_y_up→Skyrim 座標換算、rad→deg、合流 `placements[]`，已接進 `Generator.Build.Worldspace.cs:198`）
 ~~Godot 前端骨架~~ ✅ 2026-06-16（自製 terrain，不靠 HTerrain）
 ~~前端拆檔 + display scale + Walk Mode + 高度著色~~ ✅ 2026-06-16
 ~~Godot 專案開啟測試~~ ✅ 2026-06-16（使用者主力機驗證：terrain/筆刷/PNG 匯出可用）

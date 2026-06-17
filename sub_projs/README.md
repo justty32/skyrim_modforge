@@ -15,5 +15,6 @@
 | `gemini-research/` | 原始素材 | 📄 純存檔 | Gemini CLI 聯網搜尋原始輸出（combat-mods/npc-beautification/outfit-fitting/tool-survey）；品質參差，需人工篩選後才搬入正式 finding。 |
 | `godot-worldspace-editor/` | 工具前端 | 🔵 規劃中 | Godot 4 + HTerrain 離線地形編輯器；匯出 PNG heightmap + placements JSON → ModForge LAND/REFR。MVP = 單格 PNG → COW 進入有地形起伏。 |
 | `inworld-skill-tree/` | 消費者 | 🔵 規劃中 | In-world 3D 星樹技能樹生成路線（Idea #20，玩家+NPC）。放棄 CSF，走 Campfire/Frostfall 世界內星樹 + JContainers per-NPC 狀態。主線設計已成稿，待 U1–U5 主力機/code pass 驗證。 |
+| `model-converter/` | 基石/工具 | 🔵 規劃中 | 以 Skyrim `.nif`（+dds）為中心的模型格式雙向互轉工具（↔ glTF/Godot ↔ FBX/OBJ）。收斂 model-porting 正向 + worldspace editor 需要的 nif→glTF 反向。工具盤點完成、缺口＝無已驗證的批量 nif→glTF；MVP 範圍待拍板。 |
 
 對比：**對其他 mod 的解碼/調查**（餵 ModForge roadmap 的參考）留在 `docs/`、繼續 committed；只有體量太大的才 gitignore 主體、留摘要。
