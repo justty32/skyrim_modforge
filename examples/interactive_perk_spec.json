@@ -1,7 +1,7 @@
 {
   "pluginName": "ModForgeInteractivePerk.esp",
   "esl": false,
-  "_": "B組 #1 interactive perk (Immersive Interactions style). A perk that adds an '[E] Examine' choice on objects with a keyword and changes the activation prompt. The choice runs a Papyrus fragment (akTargetRef = the activated object, akActor = the activator). Give the perk to the player via script (AddPerk) — there is no record-only way to grant a player perk at game start. Build with `package` so MF_ExaminePerk_Frags.psc compiles and the PerkAdapter VMAD attaches; without the .pex the choice still builds but the fragment won't run. ⚠ The PerkAdapter byte fields + the Activate fragment signature are reflection-shape-verified but pending a main-machine xEdit compare vs a real Immersive Interactions perk (see WAIT_USER). The keyword/spell FormIDs are PLACEHOLDERS — replace via `gamedata find`.",
+  "_": "B組 #1 interactive perk (Immersive Interactions style). A perk that adds an '[E] Examine' choice on objects with a keyword and changes the activation prompt. The choice runs a Papyrus fragment (akTargetRef = the activated object, akActor = the activator). Give the perk to the player via script (AddPerk) — there is no record-only way to grant a player perk at game start. Build with `package` so MF_ExaminePerk_Frags.psc compiles and the PerkAdapter VMAD attaches; without the .pex the choice still builds but the fragment won't run. ⚠ The PerkAdapter byte fields + the Activate fragment signature are reflection-shape-verified but pending a main-machine xEdit compare vs a real Immersive Interactions perk (see WAIT_USER). FormIDs verified vs Skyrim.esm 2026-06-17: HasKeyword param uses VendorItemClutter (Skyrim.esm:0x000914E9) — a real, broad vanilla clutter keyword chosen as a sensible 'examinable object' target for the demo (intent-only pick; the prior placeholder 0x000914EA was actually VendorItemAnimalHide, too narrow). Swap to whatever keyword your examinable objects carry.",
 
   "perks": [
     {
@@ -13,10 +13,10 @@
       "effects": [
         {
           "kind": "addActivateChoice",
-          "_": "Adds '[E] Examine' on objects that have the (placeholder) keyword. Runs the fragment below.",
+          "_": "Adds '[E] Examine' on objects that have the VendorItemClutter keyword (Skyrim.esm:0x000914E9). Runs the fragment below.",
           "buttonLabel": "Examine",
           "conditions": [
-            { "function": "HasKeyword", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x000914EA", "runOn": "Target" }
+            { "function": "HasKeyword", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x000914E9", "runOn": "Target" }
           ],
           "fragmentBody": "Debug.Notification(\"You examine it closely.\")\nakTargetRef.PlayAnimation(\"Examine\")"
         },
@@ -25,7 +25,7 @@
           "_": "Changes the default activation label on the same matching objects.",
           "text": "Examine",
           "conditions": [
-            { "function": "HasKeyword", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x000914EA", "runOn": "Target" }
+            { "function": "HasKeyword", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x000914E9", "runOn": "Target" }
           ]
         }
       ]

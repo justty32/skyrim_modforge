@@ -1,0 +1,40 @@
+{
+  "name": "WorldspaceTextureDemo",
+  "pluginName": "TextureDemo.esp",
+  "esl": false,
+
+  "_textures": "LTEX FormIDs verified vs Skyrim.esm 2026-06-17 — base LDirt01 → Skyrim.esm:0x000C14 (BTXT layer 0, all 4 quadrants of every cell); blend LFieldGrass01 → Skyrim.esm:0x013428 (ATXT+VTXT layer 1, per-vertex alpha from worldspace_splatmap.png). Splatmap is an 8-bit grayscale PNG sized 97x65 = (3 cells x 32 + 1) x (2 cells x 32 + 1), matching the heightmap grid; non-zero pixels = grass coverage (centre-bright radial gradient).",
+
+  "worldspaces": [
+    {
+      "editorId": "TextureDemoWorld",
+      "name": "Texture Demo",
+      "climate": "Skyrim.esm:0x000812",
+      "water": "Skyrim.esm:0x000018",
+      "flags": ["SmallWorld"],
+      "defaultLandHeight": 4000,
+      "defaultWaterHeight": -14000,
+
+      "baseTexture": "Skyrim.esm:0x000C14",
+
+      "textureLayers": [
+        {
+          "texture": "Skyrim.esm:0x013428",
+          "splatmap": {
+            "path": "worldspace_splatmap.png",
+            "originX": 0,
+            "originY": 0
+          }
+        }
+      ],
+
+      "heightmap": {
+        "path": "worldspace_heightmap.png",
+        "originX": 0,
+        "originY": 0,
+        "minHeight": 4000,
+        "maxHeight": 4500
+      }
+    }
+  ]
+}

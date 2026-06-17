@@ -11,6 +11,8 @@
       "flags": ["SmallWorld"],
       "defaultLandHeight": 4000,
       "defaultWaterHeight": -14000,
+      "_baseTexture": "LTEX FormID verified vs Skyrim.esm 2026-06-17 — LDirt01 → Skyrim.esm:0x000C14 (single-layer BTXT base on every cell's 4 quadrants).",
+      "baseTexture": "Skyrim.esm:0x000C14",
       "heightmap": {
         "path": "worldspace_heightmap.png",
         "originX": 0,

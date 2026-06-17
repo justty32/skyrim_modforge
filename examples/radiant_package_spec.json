@@ -1,7 +1,7 @@
 {
   "pluginName": "ModForgeRadiantPackage.esp",
   "esl": false,
-  "_": "C組 #2 — package target/location → quest alias. A radiant quest fills aliases (a VIP actor + a dungeon location); its performance packages then ACT on those aliases: travel to the dungeon the alias picked, escort the VIP there. Syntax: 'alias:<name>' (the ref/actor the alias holds → PackageTargetAlias / LocationFallback AliasForReference) or 'aliasLoc:<name>' (the location a location-alias holds → LocationFallback AliasForLocation). ownerQuest MUST be in-spec so alias indices resolve. ⚠ Mutagen field shape is reflection-verified, but whether AliasForReference vs AliasForLocation / PackageTargetAlias byte-matches a real radiant package needs a main-machine xEdit compare (see WAIT_USER). LocType FormID is a placeholder.",
+  "_": "C組 #2 — package target/location → quest alias. A radiant quest fills aliases (a VIP actor + a dungeon location); its performance packages then ACT on those aliases: travel to the dungeon the alias picked, escort the VIP there. Syntax: 'alias:<name>' (the ref/actor the alias holds → PackageTargetAlias / LocationFallback AliasForReference) or 'aliasLoc:<name>' (the location a location-alias holds → LocationFallback AliasForLocation). ownerQuest MUST be in-spec so alias indices resolve. ⚠ Mutagen field shape is reflection-verified, but whether AliasForReference vs AliasForLocation / PackageTargetAlias byte-matches a real radiant package needs a main-machine xEdit compare (see WAIT_USER). FormIDs verified vs Skyrim.esm 2026-06-17: VIP forced fill = HousecarlWhiterun(Npc) 0x0A2C8E; Safehouse findMatchingLocation LocType keyword = LocTypeDungeon(Keyword) 0x0130DB; package templates = Travel(PackageTemplate) 0x016FAA + Escort(PackageTemplate) 0x023B73 (both confirmed correct, unchanged).",
 
   "quests": [
     {
@@ -9,8 +9,8 @@
       "name": "Radiant Escort",
       "startGameEnabled": true,
       "aliases": [
-        { "name": "VIP", "_": "alias index 0 — the actor to escort (forced to a real NPC in a real mod).", "fill": "forced:Skyrim.esm:0x000007" },
-        { "name": "Safehouse", "_": "alias index 1 — a Dungeon-type location picked at runtime (placeholder LocType).", "fill": "findMatchingLocation:Skyrim.esm:0x00130DE9" }
+        { "name": "VIP", "_": "alias index 0 — the actor to escort. forced to HousecarlWhiterun (Lydia, Npc 0x0A2C8E) — a canonical escortable NPC; swap for your own in a real mod.", "fill": "forced:Skyrim.esm:0x0A2C8E" },
+        { "name": "Safehouse", "_": "alias index 1 — a Dungeon-type location picked at runtime via LocTypeDungeon keyword (0x0130DB).", "fill": "findMatchingLocation:Skyrim.esm:0x0130DB" }
       ]
     }
   ],

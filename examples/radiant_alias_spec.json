@@ -1,7 +1,7 @@
 {
   "pluginName": "ModForgeRadiant.esp",
   "esl": false,
-  "_": "Radiant quest alias chain (#7 findMatchingLocation + #8 findInLocationAlias), the Missives variety core: a Hold location -> a Dungeon location within that Hold -> the boss container ref within that Dungeon. The quest is StartGameEnabled here for an isolated build/inspect; a real radiant template is usually launched by a Story Manager ChangeLocation event. ⚠ The LocType keyword + LCRT FormIDs below are PLACEHOLDERS (offline cannot verify vanilla FormIDs) — replace with real values via `gamedata find Skyrim.esm <name> Keyword` / `... LocationReferenceType` before building for real. CK semantics of the Location alias fields are pending main-machine xEdit compare vs a real Missives alias (see WAIT_USER).",
+  "_": "Radiant quest alias chain (#7 findMatchingLocation + #8 findInLocationAlias), the Missives variety core: a Hold location -> a Dungeon location within that Hold -> the boss container ref within that Dungeon. The quest is StartGameEnabled here for an isolated build/inspect; a real radiant template is usually launched by a Story Manager ChangeLocation event. FormIDs verified vs Skyrim.esm 2026-06-17: LocTypeHold->0x016771 (Keyword), LocTypeDungeon->0x0130DB (Keyword), BossContainer->0x0130F8 (LocationReferenceType). CK semantics of the Location alias fields are pending main-machine xEdit compare vs a real Missives alias (see WAIT_USER).",
 
   "quests": [
     {
@@ -12,18 +12,18 @@
       "aliases": [
         {
           "name": "Hold",
-          "_": "#7 LocationAlias: pick any location whose LocType keyword = a Hold. No parent -> searched broadly. PLACEHOLDER FormID.",
-          "fill": "findMatchingLocation:Skyrim.esm:0x00016E2A"
+          "_": "#7 LocationAlias: pick any location whose LocType keyword = a Hold. No parent -> searched broadly. LocTypeHold (verified 2026-06-17).",
+          "fill": "findMatchingLocation:Skyrim.esm:0x016771"
         },
         {
           "name": "Dungeon",
-          "_": "#7 LocationAlias narrowed: a Dungeon-type child location WITHIN the Hold alias (@Hold). PLACEHOLDER FormID.",
-          "fill": "findMatchingLocation:Skyrim.esm:0x00130DE9@Hold"
+          "_": "#7 LocationAlias narrowed: a Dungeon-type child location WITHIN the Hold alias (@Hold). LocTypeDungeon (verified 2026-06-17).",
+          "fill": "findMatchingLocation:Skyrim.esm:0x0130DB@Hold"
         },
         {
           "name": "BossChest",
-          "_": "#8 find a reference of LCRT BossContainer WITHIN the Dungeon location alias (#<LCRT>). RefType + conditions both narrow which ref fills. PLACEHOLDER LCRT FormID.",
-          "fill": "findInLocationAlias:Dungeon#Skyrim.esm:0x00130F84",
+          "_": "#8 find a reference of LCRT BossContainer WITHIN the Dungeon location alias (#<LCRT>). RefType + conditions both narrow which ref fills. BossContainer LCRT (verified 2026-06-17).",
+          "fill": "findInLocationAlias:Dungeon#Skyrim.esm:0x0130F8",
           "conditions": [
             { "function": "GetRandomPercent", "comparison": "<", "value": 100, "runOn": "Subject" }
           ]
