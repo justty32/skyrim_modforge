@@ -153,6 +153,17 @@ public static partial class Generator
                     if (hm.MinHeight >= hm.MaxHeight)
                         Problems.Add($"worldspace '{ws.EditorId}' heightmap minHeight ({hm.MinHeight}) must be < maxHeight ({hm.MaxHeight})");
                 }
+
+                CheckRef(ws.BaseTexture, $"worldspace '{ws.EditorId}' baseTexture");
+                for (int li = 0; li < ws.TextureLayers.Count; li++)
+                {
+                    var tl = ws.TextureLayers[li];
+                    if (string.IsNullOrWhiteSpace(tl.Texture))
+                        Problems.Add($"worldspace '{ws.EditorId}' textureLayer[{li}] has empty texture (LTEX ref)");
+                    CheckRef(tl.Texture, $"worldspace '{ws.EditorId}' textureLayer[{li}] texture");
+                    if (string.IsNullOrWhiteSpace(tl.Splatmap.Path))
+                        Problems.Add($"worldspace '{ws.EditorId}' textureLayer[{li}] has empty splatmap path");
+                }
             }
 
             ValidateWorld2();

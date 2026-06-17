@@ -3339,6 +3339,32 @@
           "$ref": "#/$defs/ref",
           "description": "LTEX ref — single ground texture applied as the BASE layer (BTXT) of every cell's LAND, all 4 quadrants. No per-vertex blend; omit = untextured. Works with cells or heightmap."
         },
+        "textureLayers": {
+          "type": "array",
+          "description": "Additional alpha-blended terrain textures stacked on top of baseTexture. Each entry = an LTEX + a grayscale splatmap PNG; non-zero pixels become per-vertex VTXT alpha. Order = stacking order (later entries draw on top).",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["texture", "splatmap"],
+            "properties": {
+              "texture": {
+                "$ref": "#/$defs/ref",
+                "description": "LTEX ref for this alpha layer."
+              },
+              "splatmap": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["path"],
+                "description": "8-bit grayscale PNG; pixel 0..255 -> per-vertex alpha 0..1 for this texture. Same grid rule as heightmap (width N*32+1, height M*32+1, shared edge columns).",
+                "properties": {
+                  "path": { "type": "string", "description": "PNG path, relative to the spec file." },
+                  "originX": { "type": "integer", "description": "Cell X the PNG's bottom-left (SW) pixel maps to; align with the heightmap/cell grid." },
+                  "originY": { "type": "integer", "description": "Cell Y the PNG's bottom-left (SW) pixel maps to." }
+                }
+              }
+            }
+          }
+        },
         "flags": {
           "type": "array",
           "items": {

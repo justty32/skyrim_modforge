@@ -36,6 +36,7 @@
 | `VendorTests.cs` | vendor faction config + merchant container build |
 | `WorldspaceRegionTests.cs` | worldspace record + region polygon/weather build |
 | `WorldspaceBaseTextureTests.cs` | `worldspace.baseTexture`（LTEX）→ 每格 LAND 四象限 BTXT base 層（quadrant 全覆蓋、LayerNumber 0、texture FormID）；omit = 無紋理 |
+| `WorldspaceSplatmapTests.cs` | `worldspace.textureLayers`（多紋理混合）：`Vtxt.BuildLayers` 純函式（quadrant 切分、position=localRow×17+localCol、稀疏、opacity clamp、共用中央頂點）+ 端到端 PNG splatmap（每格四象限 ATXT/VTXT 層、LayerNumber 1、cell 落在圖外不生層）|
 | `HeightmapTests.cs` | PNG load、Y-flip、min/max 映射、33×33 seam 零誤差 |
 | `WorldspaceHeightmapTests.cs` | PNG→cell grid 尺寸推導、VHGT delta 非零、flat PNG = flat cell path、**相鄰 cell 邊界重建高度完全一致（seam stitching）**、validate（min<max / empty path / ESL 不相容） |
 | `VhgtTests.cs` | encode（全零 flat、round-trip ±4 units、過陡 clamp+warn）、**RequiresSkyrim：Tamriel 20 格 decode→encode delta bytes 完全一致（主力機驗演算法）** |
@@ -114,14 +115,16 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Worldspace.cs` | `WorldspaceSpec`（含 `Heightmap`/`GodotPlacements`/**`BaseTexture`**(LTEX ref)）, `HeightmapSpec`, `GodotPlacementsSpec`, `WorldspaceCellSpec`, `WorldMapDataSpec`, `RegionSpec`, `RegionWeatherEntrySpec`, `PointSpec` |
-| Build P1 | `Generator.Build.Worldspace.cs` | 建 worldspace record（climate/water/map bounds）+ cell grid 骨架；**PNG heightmap 路徑**（`Heightmap.Load` → `Vhgt.Encode` per cell）；**單層地形貼圖 `baseTexture`**（resolve LTEX 一次 → `EmitCell` 每格四象限加 `BaseLayer`{`LayerHeader.Texture`/`Quadrant`}）；**Godot placements 展開**（`GodotPlacements.Load` → `spec.Placements.AddRange`，在 `BuildPlacements` 前注入）|
+| Spec | `Spec.Worldspace.cs` | `WorldspaceSpec`（含 `Heightmap`/`GodotPlacements`/**`BaseTexture`**(LTEX ref)/**`TextureLayers`**(多紋理混合)）, `HeightmapSpec`, **`TerrainTextureLayerSpec`**(texture+splatmap), **`SplatmapSpec`**(path/originX/Y), `GodotPlacementsSpec`, `WorldspaceCellSpec`, `WorldMapDataSpec`, `RegionSpec`, `RegionWeatherEntrySpec`, `PointSpec` |
+| Build P1 | `Generator.Build.Worldspace.cs` | 建 worldspace record（climate/water/map bounds）+ cell grid 骨架；**PNG heightmap 路徑**（`Heightmap.Load` → `Vhgt.Encode` per cell）；**單層地形貼圖 `baseTexture`**（resolve LTEX 一次 → `EmitCell` 每格四象限加 `BaseLayer`{`LayerHeader.Texture`/`Quadrant`}）；**多紋理 `textureLayers`**（每層 resolve LTEX + `Splatmap.Load`；`EmitCell` 每格 `TrySampleCell` → `Vtxt.BuildLayers` → 加 `AlphaLayer`，LayerNumber=層序+1）；**Godot placements 展開**（`GodotPlacements.Load` → `spec.Placements.AddRange`，在 `BuildPlacements` 前注入）|
 | Build P1 | `Generator.Build.Regions.cs` | 建 region record（polygon / weather table / priority / map color）|
 | Build P2 | `Generator.Build.ExteriorCells.cs` | cell group tree 生成（外層結構）|
 | Build P2 | `Generator.Build.Navmesh.cs` | NAVM 4 頂點平面 quad + NAVI 索引（[engine-internals § navmesh](../../../docs/engine-internals.md#programmatic-navmesh-navm--navi--in-game-confirmed-2026-06-03)）|
 | Util | `Heightmap.cs` | 16-bit grayscale PNG → 全域高度網格；`SampleCell` 切 33×33（相鄰格共用邊緣欄）；`SampleCellExtended` 切 35×35（+1px 邊框，供 VNML 中心差分）；Y-flip（影像頂=北）|
 | Util | `Vhgt.cs` | VHGT 編解碼：絕對高度 → float offset + 33×33 signed-int8 delta（row-wise 累積，×8 game units）；`Decode` 接受 `IReadOnlyArray2d<byte>`（相容 Mutagen getter）|
-| Util | `Vnml.cs` | VNML 法線計算：從 35×35 高度格（SampleCellExtended 輸出）以中心差分算切線，E×N cross product 得 Skyrim(X=東,Y=北,Z=上) 法線，encode `P3UInt8` byte=round(n×127)+128 |
+| Util | `Vnml.cs` | VNML 法線計算：從 35×35 高度格（SampleCellExtended 輸出）以中心差分算切線，E×N cross product 得 Skyrim(X=東,Y=北,Z=上) 法線，encode `P3UInt8` **signed byte=round(n×127)**（無 +128 偏移；up=(0,0,127)）|
+| Util | `Splatmap.cs` | 8-bit grayscale PNG → per-vertex alpha 網格（同 heightmap 網格約定，Y-flip）；`TrySampleCell(globalCellX,Y)` 切 33×33 alpha 0..1，cell 落在圖涵蓋範圍外回 false |
+| Util | `Vtxt.cs` | ATXT+VTXT 純建構：33×33 alpha 格 + Quadrant → `AlphaLayer`{`LayerHeader`+稀疏`AlphaLayerData`(position/opacity)}；quadrant 切分（Bottom=南/低row、Left=西/低col）、position=localRow×17+localCol、空象限不生層。⚠️ byte 序待主力機 xEdit 驗 |
 | Seam | `Generator.Build.Worldspace.cs` | heightmap 迴圈內 **seam stitching**（VHGT）+ **VNML 重算**：每格 encode 後 decode 取 east/north edge 注入下格，`Vnml.Compute(SampleCellExtended)` 填法線（邊緣頂點帶 1px overlap 無需特判）|
 | Util | `GodotPlacements.cs` | Godot `godot4_y_up` placements JSON → `List<PlacementSpec>`；座標換算（Z 翻轉、m→units）+ rotation rad→deg |
 | Validate | `Generator.Validate.World.cs` | worldspace ref、boundary、climate ref |

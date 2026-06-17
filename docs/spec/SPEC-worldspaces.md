@@ -80,13 +80,29 @@ worldspace) whose **weather table** drives which weathers play there:
 - **`baseTexture`** — optional single-layer terrain texture: an LTEX *ref* applied as the BASE
   layer (BTXT) of **every** cell's LAND, all 4 quadrants. The whole world gets one ground texture
   with no per-vertex blending (`""` / omit = untextured, engine falls back to the default land
-  texture). Works with both `cells` and `heightmap`. Per-vertex splatmap painting (VTXT alpha
-  layers) is a later step — see `sub_projs/godot-worldspace-editor`.
+  texture). Works with both `cells` and `heightmap`. Multi-texture blending is `textureLayers` below.
   ```jsonc
   "baseTexture": "Skyrim.esm:0x000C16"   // LTEX ref; one ground texture for the whole world
   ```
   **Construction-tested offline** (2026-06-17); byte-level parity vs vanilla LAND BTXT is a
   pending xEdit check on the main machine (WAIT_USER).
+- **`textureLayers`** — optional **multi-texture blend** on top of `baseTexture`. Each entry is an
+  LTEX *ref* + a **grayscale splatmap PNG** (same grid rule as the heightmap: width `N×32+1`,
+  shared edge columns). Each splatmap pixel `0..255` → that vertex's alpha `0..1` for that texture;
+  ModForge emits sparse `ATXT`+`VTXT` alpha layers per cell quadrant (vertices with zero alpha are
+  omitted, like vanilla; a quadrant the splatmap doesn't cover gets no layer). List order = stacking
+  order (`baseTexture` = layer 0, then `textureLayers[0]` = layer 1, …). A splatmap's `originX/Y`
+  must align with the heightmap/cell grid; cells outside a splatmap's extent simply skip that layer.
+  ```jsonc
+  "baseTexture": "Skyrim.esm:0x000C16",            // base dirt for the whole world
+  "textureLayers": [
+    { "texture": "Skyrim.esm:0x0008C5",            // grass, painted where the splatmap is non-zero
+      "splatmap": { "path": "grass_alpha.png", "originX": 0, "originY": 0 } }
+  ]
+  ```
+  **Construction-tested offline** (2026-06-17). Byte-level parity vs vanilla `VTXT` (exact point
+  position order, per-quadrant layer-number packing) is a pending xEdit check (WAIT_USER). The Godot
+  splat-paint brush that authors these PNGs is the next front-end step (`godot-worldspace-editor`).
 - **regions** (REGN): an area inside a `worldspace` (an in-spec WRLD `editorId` or a vanilla
   `"<master>:0xFORMID"`). `area` is a polygon of **>=3** world-space points (not cell grid).
   `weather` is the table that picks the active weather — each entry a WTHR *ref* + a relative

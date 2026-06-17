@@ -99,6 +99,28 @@ public static partial class Generator
             FormKey? baseTexFk = null;
             Wire($"worldspace '{ws.EditorId}' baseTexture", ws.BaseTexture, fk => baseTexFk = fk);
 
+            // Additional per-vertex alpha-blended texture layers (ATXT+VTXT). Resolve each LTEX and
+            // load its splatmap PNG once here; EmitCell samples the splatmap per cell and stamps the
+            // alpha layers. Stacking order = list order (base BTXT = layer 0, then 1, 2, …).
+            var texLayers = new List<(FormKey Tex, Splatmap Map)>();
+            for (int li = 0; li < ws.TextureLayers.Count; li++)
+            {
+                var tl = ws.TextureLayers[li];
+                if (string.IsNullOrWhiteSpace(tl.Texture) || string.IsNullOrWhiteSpace(tl.Splatmap.Path))
+                {
+                    warn($"  ! worldspace '{ws.EditorId}' textureLayer[{li}] missing texture ref or splatmap path — skipped");
+                    continue;
+                }
+                if (!TryResolveRef(tl.Texture, formKeyByEd, out var tfk))
+                {
+                    warn($"  ! worldspace '{ws.EditorId}' textureLayer[{li}] texture ref '{tl.Texture}' unresolved — skipped");
+                    continue;
+                }
+                links++;
+                if (LooksExternalRef(tl.Texture)) extLinks++;
+                texLayers.Add((tfk, Splatmap.Load(tl.Splatmap, specDir)));
+            }
+
             // Flat terrain cells: each cell spec gets a CELL + LAND so the player can enter the
             // world via `cow <editorId> X Y` without falling into the void. Terrain is a flat
             // 33×33-vertex heightmap at Z=0 with straight-up normals — no textures needed for
@@ -155,6 +177,14 @@ public static partial class Generator
                         header.Texture.SetTo(btk);
                         land.Layers.Add(new BaseLayer { Header = header });
                     }
+
+                // Per-vertex alpha texture layers: sample each splatmap at this cell and stamp the
+                // ATXT+VTXT layers (sparse; quadrants with no coverage emit nothing). Base = layer 0,
+                // so the i-th splatmap layer = layerNumber i+1.
+                for (int li = 0; li < texLayers.Count; li++)
+                    if (texLayers[li].Map.TrySampleCell(cx, cy, out var alpha))
+                        foreach (var al in Vtxt.BuildLayers(alpha, texLayers[li].Tex, (ushort)(li + 1)))
+                            land.Layers.Add(al);
 
                 cell.Landscape = land;
 

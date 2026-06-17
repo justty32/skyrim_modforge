@@ -29,9 +29,15 @@ public sealed class WorldspaceSpec
     // Single-layer terrain texture: a Landscape Texture (LTEX) ref applied as the BASE layer of
     // every cell's LAND, all 4 quadrants (BTXT). No per-vertex blending — the whole world gets one
     // ground texture. "" = leave LAND untextured (engine falls back to the default land texture).
-    // e.g. Skyrim.esm:0x000C16 (LDirtPath01) / 0x0008C5 (LGrass01). Per-vertex splatmap (VTXT alpha
-    // layers) is a later step — see godot-worldspace-editor README.
+    // e.g. Skyrim.esm:0x000C16 (LDirtPath01) / 0x0008C5 (LGrass01).
     public string BaseTexture { get; set; } = "";     // ref → LTEX (optional)
+
+    // Additional per-vertex alpha-blended texture layers on top of BaseTexture. Each entry is an
+    // LTEX + a grayscale splatmap PNG; ModForge emits ATXT+VTXT alpha layers per cell quadrant from
+    // the splatmap's non-zero alpha (sparse). Order = stacking order (later entries draw on top).
+    // Empty list = single-layer (BaseTexture only) / untextured. Works with both the heightmap and
+    // flat-Cells paths; each splatmap's OriginX/Y must align with the heightmap/cell grid.
+    public List<TerrainTextureLayerSpec> TextureLayers { get; set; } = new();
 
     // Worldspace.Flag names: SmallWorld, CannotFastTravel, NoLodWater, NoLandscape, NoSky,
     // FixedDimensions, NoGrass. A small custom world is usually "SmallWorld" (uses an in-memory
@@ -87,6 +93,29 @@ public sealed class HeightmapSpec
     public int OriginY { get; set; }              // 同上 Y（左下=西南角；影像往上 = cell +Y/北）
     public float MinHeight { get; set; }          // png=0     → 此高度（game units）
     public float MaxHeight { get; set; } = 4000f; // png=65535 → 此高度
+}
+
+/// <summary>
+/// 一個額外的 alpha 混合地形紋理層（疊在 baseTexture 之上）。Texture = LTEX ref；Splatmap = 一張
+/// 8-bit grayscale PNG（與 heightmap 同網格約定），像素 0..255 → 該頂點此紋理 alpha 0..1。
+/// ModForge 依 splatmap 非零 alpha 生 ATXT+VTXT 層（稀疏，每 cell 四象限分別生）。
+/// </summary>
+public sealed class TerrainTextureLayerSpec
+{
+    public string Texture { get; set; } = "";     // ref → LTEX
+    public SplatmapSpec Splatmap { get; set; } = new();
+}
+
+/// <summary>
+/// 一張覆蓋 worldspace 部分區域的 8-bit grayscale PNG，給某個紋理層當 per-vertex alpha 來源。
+/// 尺寸規則同 heightmap（寬 N×32+1、高 M×32+1，相鄰格共用邊緣欄）。OriginX/Y 必須與 heightmap
+/// 一致（決定 PNG 左下角對到的 cell 網格座標）；cell 落在本圖範圍外時該層在該 cell 不生紋理。
+/// </summary>
+public sealed class SplatmapSpec
+{
+    public string Path { get; set; } = "";   // PNG 路徑，相對 spec 檔
+    public int OriginX { get; set; }          // PNG 左下角像素對到的 cell 座標 X
+    public int OriginY { get; set; }          // 同上 Y（左下=西南角；影像往上 = cell +Y/北）
 }
 
 /// <summary>
