@@ -1833,6 +1833,21 @@
                   "$ref": "#/$defs/condition"
                 },
                 "description": "optional CTDA gate on the log entry (e.g. function GetStage, param the quest ref)"
+              },
+              "instanceGlobals": {
+                "type": "array",
+                "description": "Globals bound to THIS quest instance when the stage runs (gather/count radiant quests): the stage fragment calls UpdateCurrentInstanceGlobal(<global>) so objective text '<Global=X>' reads per-instance. Optionally seeds each global first (random range / fixed value).",
+                "items": {
+                  "type": "object",
+                  "required": [ "global" ],
+                  "properties": {
+                    "global": { "type": "string", "description": "GLOB editorId (declare in spec.globals) or a vanilla ref" },
+                    "randomMin": { "type": "integer", "description": "with randomMax → SetValue(Utility.RandomInt(min,max)) before binding" },
+                    "randomMax": { "type": "integer" },
+                    "value": { "type": "number", "description": "else if set → SetValue(value) before binding; omit both to bind without changing the value" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           }

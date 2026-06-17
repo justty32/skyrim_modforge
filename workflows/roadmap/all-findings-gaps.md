@@ -17,7 +17,7 @@
 |---|------|------|
 | 7 | ✅ QuestAlias `findMatchingLocation` fill（LocationAlias 型）—— radiant 地點隨機化根基 | ✅ 落地 06-17 |
 | 8 | ✅ QuestAlias 在地點內找 ref（`findInLocationAlias`，scope 校正：非 ALNA 而是 LocationAliasReference）| ✅ 落地 06-17 |
-| 9 | `UpdateCurrentInstanceGlobal` fragment codegen——gather/計數型 quest objective 文字即時更新 | 🟡 |
+| 9 | ✅ `UpdateCurrentInstanceGlobal` fragment codegen——gather/計數型 quest objective 文字即時更新 | ✅ 落地 06-17 |
 
 **PARTIAL（多數已支援，留窄缺口）：**
 - SM branch/quest-node 多層巢狀 SMBN（→ [mod-survey-gaps.md](mod-survey-gaps.md) ⚠️ partial）
@@ -241,7 +241,7 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 8. **L 組**（GetScriptVariable 條件）→ follower ambient bark 品質
 9. **J 組**（JC/PapyrusUtil 模板）→ follower 複雜狀態管理
 10. **M 組**（INFO 批次 + 條件模板）→ ambient commentary 生成效率
-11. **A 組 #9**（UpdateCurrentInstanceGlobal）→ gather 型任務完整性
+11. ~~**A 組 #9**（UpdateCurrentInstanceGlobal）~~ ✅ **已落地 2026-06-17** → gather 型任務 per-instance 計數 objective
 12. **K 組**（quest script global write spec）→ 生成器覆蓋率
 13. **D-3~7**（其餘 ini pipeline）→ 按需
 

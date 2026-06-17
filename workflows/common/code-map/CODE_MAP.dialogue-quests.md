@@ -22,6 +22,7 @@
 | `examples/showcase-multi2.json` | 多功能 showcase #2：firebolt PROJ/EXPL（spell tome 學）+ NPC 庫存武器 + scene 條件閘（GLOB gate）|
 | `examples/scene-replay-policy.json` | autoStart 重播策略：`playOnce`（只播一次）/ `playHour`/`playHourTolerance`（到某遊戲時辰才播）/ `gateGlobal`（GLOB re-arm token）|
 | `examples/quest_stages_spec.json` | quest stages + objectives + log entries |
+| `examples/gather_quest_spec.json` | **#9 instanceGlobals：gather 型 radiant quest，startUpStage fragment 隨機 SetValue + UpdateCurrentInstanceGlobal 綁 instance，objective `<Global=...>` 顯示 per-instance 計數** |
 | `examples/word_wall_spec.json` | word wall 觸發教字 |
 | `examples/story-manager-kill.json` | KillActor SM 事件 |
 | `examples/story-manager-assault.json` | Assault SM 事件 |
@@ -56,6 +57,7 @@
 | `ConditionTests.cs` | CTDA condition 函數、comparator、ref 解析 |
 | `DialogueTests.cs` | dialogue topic / INFO / greeting 生成 |
 | `QuestStageTests.cs` | stage log text / objective fragment / VMAD |
+| `InstanceGlobalTests.cs` | **#9 instanceGlobals：fragment source（GLOB property 宣告、RandomInt/SetValue/Update、bind-only、與 objective 共用 stage fragment）+ VMAD GLOB object-property 綁定（fake .pex）+ validate（空 global、單邊 random、random+value 衝突、min>max）** |
 | `ObjectiveTargetTests.cs` | objective QSTA target：QOBJ `QuestObjectiveTarget`（AliasID + CompassMarkerIgnoresLocks flag + CTDA）+ validate（target alias 須在同 quest）|
 | `SceneTests.cs` | SCEN actor / phase / dialogue action；非對話 action（Package→Packages PACK ref / Timer→TimerSeconds）+ beat phase（無 lines→無 Dialog action/topic）+ LastActionIndex；**idle action 發 Timer（hold；純 build 無 VMAD）**；autoStart → controller VMAD 掛接 + 清 BeginOnQuestStart + 調參 props + **重播策略 props（playOnce/playHour/gateGlobal→GLOB object prop）** + validate gate |
 | `SceneFragmentTests.cs` | PlayIdle 純產生器（`SceneNeedsFragmentScript`/`SceneFragmentScriptName`/`GenerateSceneFragmentSource`：extends Scene Hidden、`Fragment_<phase>`、`GetActorRef()`）+ `AttachSceneFragments`（.pex 在才掛 SceneAdapter、PhaseFragments 數/ScriptName/OnStart flag/FragmentName、Actor_ object prop→host quest+alias index）+ validate（idle-only OK、idle+timer hold OK、idle+package 拒）|
@@ -87,12 +89,12 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Dialogue.cs` | `QuestSpec`, `StageSpec`（含 `startUpStage` = QSDT 起始 stage flag）, `ObjectiveSpec`（含 `targets[]`）, **`ObjectiveTargetSpec`（alias 名 + `compassIgnoresLocks` + `conditions[]` → QSTA）** |
+| Spec | `Spec.Dialogue.cs` | `QuestSpec`, `StageSpec`（含 `startUpStage` = QSDT 起始 stage flag、**`instanceGlobals[]` = UpdateCurrentInstanceGlobal 綁定**）, **`InstanceGlobalSpec`（global + 可選 randomMin/Max 或 value）**, `ObjectiveSpec`（含 `targets[]`）, **`ObjectiveTargetSpec`（alias 名 + `compassIgnoresLocks` + `conditions[]` → QSTA）** |
 | Build P1 | `Generator.Build.Actors.cs` `BuildQuests` | 建 Quest record + QSDT stages（log/complete/fail flag、`startUpStage`→`QuestStage.Flag.StartUpStage`）+ QOBJ objectives |
 | Build P1 | `Generator.Build.Dialogue.cs` | dialogue Branch + Topic + INFO；greeting 自動生成 |
-| Build P2 | `Generator.Build.QuestStages.cs` | stage log-entry CTDA + objective fragment VMAD（**合併**進既有 QuestAdapter，不覆寫 alias 腳本的 `.Aliases`）|
+| Build P2 | `Generator.Build.QuestStages.cs` | stage log-entry CTDA + objective fragment VMAD（**合併**進既有 QuestAdapter，不覆寫 alias 腳本的 `.Aliases`）；**instanceGlobals → 在 ScriptEntry 綁 GLOB `ScriptObjectProperty`（每 global 一個，prop 名 `InstanceGlobalProperty`）+ 該 stage 的 `QuestScriptFragment`（即使無 objective）** |
 | Build P2 | `Generator.Build.ObjectiveTargets.cs` | **`WireObjectiveTargets`**：alias 名→alias index → QOBJ `QuestObjectiveTarget`（QSTA：AliasID + `Quest.TargetFlag.CompassMarkerIgnoresLocks` + per-target CTDA via `BuildCondition`）；在 alias pass 之後跑。**`WireDeferredForcedAliases`**：解析「target 晚於 alias pass 才 build」的 `forced:` alias（placement/xmarker/mapMarker），在 BuildPlacements/BuildMapMarkers 之後跑 |
-| Build P2 | `Generator.QuestFragments.cs` | 自動生 SetObjectiveDisplayed/SetObjectiveCompleted Papyrus fragment |
+| Build P2 | `Generator.QuestFragments.cs` | 自動生 `<quest>_Stages` Papyrus fragment：SetObjectiveDisplayed/Completed + **instanceGlobals（`GlobalVariable Property` 宣告 + `<g>.SetValue(Utility.RandomInt/值)` + `UpdateCurrentInstanceGlobal(<g>)`）**；`QuestNeedsFragmentScript`/`InstanceGlobalProperty` |
 | Validate | `Generator.Validate.Quests.cs` | stage index 唯一/遞增、`startUpStage` 至多一個、objective↔stage 連結、**objective target alias 須是同 quest 的 alias**、script ref 存在；**scene action：idle⊕package、package⊕timer 互斥（idle+timerSeconds=pose hold 合法）、至少一個（idle ref 檢查）** |
 | Diag | `Diagnostics.Quests.cs` | stages / objectives / aliases / VMAD 腳本 dump |
 | Diag | `Diagnostics.Dump.Quest.cs` | quest + scene 結構化完整 dump |

@@ -36,6 +36,20 @@ public static partial class Generator
                             Problems.Add($"quest '{q.EditorId}' stage {st.Index} condition invalid comparison '{cs.Comparison}'");
                         CheckRef(cs.Param, $"quest '{q.EditorId}' stage {st.Index} condition param");
                     }
+                    foreach (var ig in st.InstanceGlobals)
+                    {
+                        if (string.IsNullOrWhiteSpace(ig.Global))
+                            Problems.Add($"quest '{q.EditorId}' stage {st.Index} instanceGlobal has empty 'global'");
+                        else
+                            CheckRef(ig.Global, $"quest '{q.EditorId}' stage {st.Index} instanceGlobal");
+                        bool hasRandom = ig.RandomMin is not null || ig.RandomMax is not null;
+                        if (hasRandom && (ig.RandomMin is null || ig.RandomMax is null))
+                            Problems.Add($"quest '{q.EditorId}' stage {st.Index} instanceGlobal '{ig.Global}' needs both randomMin and randomMax (or neither)");
+                        else if (ig.RandomMin is int lo && ig.RandomMax is int hi && lo > hi)
+                            Problems.Add($"quest '{q.EditorId}' stage {st.Index} instanceGlobal '{ig.Global}' randomMin {lo} > randomMax {hi}");
+                        if (hasRandom && ig.Value is not null)
+                            Problems.Add($"quest '{q.EditorId}' stage {st.Index} instanceGlobal '{ig.Global}' sets both a random range and a fixed value (use one)");
+                    }
                 }
                 stageIndexByQuest[q.EditorId] = seen;
                 if (startUpStages > 1)

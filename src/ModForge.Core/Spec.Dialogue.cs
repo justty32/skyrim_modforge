@@ -53,6 +53,21 @@ public sealed class StageSpec
     // stage 0 until something else sets a stage (a dialogue line, or an alias-script SetStage).
     public bool StartUpStage { get; set; }
     public List<ConditionSpec> Conditions { get; set; } = new();
+    // Globals to bind to THIS quest instance when this stage runs (gather/count radiant quests). The
+    // generated stage fragment calls UpdateCurrentInstanceGlobal(<global>) so objective text like
+    // "<Global=ItemTotal> bandits" shows per-instance numbers — letting one quest template run many
+    // times at once with different counts. Optionally seeds each global first (random range / fixed
+    // value). Decoded from Missives' StartUpStage fragment (SetValue(Utility.RandomInt) + Update…).
+    public List<InstanceGlobalSpec> InstanceGlobals { get; set; } = new();
+}
+// One global bound to the quest instance in a stage fragment (see StageSpec.InstanceGlobals).
+public sealed class InstanceGlobalSpec
+{
+    public string Global { get; set; } = "";       // GLOB editorId (declare in spec.globals) or a vanilla ref
+    public int? RandomMin { get; set; }             // with RandomMax → SetValue(Utility.RandomInt(min,max)) first
+    public int? RandomMax { get; set; }
+    public float? Value { get; set; }               // else if set → SetValue(value) first
+    // RandomMin/Max and Value both unset → bind only (UpdateCurrentInstanceGlobal without changing value).
 }
 // One quest objective (QOBJ). `index` is the objective number; `text` is the journal display text.
 // `showStage`/`completeStage` (optional) link the objective to stages: the generated quest fragment

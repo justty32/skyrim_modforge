@@ -1,0 +1,40 @@
+{
+  "pluginName": "ModForgeGather.esp",
+  "esl": false,
+  "_": "#9 instance globals (UpdateCurrentInstanceGlobal) — a gather/count radiant quest. The startUpStage fragment rolls a random target into MF_ItemTotal, zeroes MF_ItemCount, and binds BOTH to this quest INSTANCE so the objective text '<Global=MF_ItemCount>/<Global=MF_ItemTotal>' shows per-instance numbers. That instance binding is what lets one template run many times at once with different counts (Missives' core trick). The script that increments MF_ItemCount on pickup is the author's (this demo only sets up the counters + objective). Build with `package` so the generated MF_Gather_Stages.psc compiles and the QuestAdapter binds the GLOB properties.",
+
+  "globals": [
+    { "editorId": "MF_ItemTotal", "type": "short", "value": 0 },
+    { "editorId": "MF_ItemCount", "type": "short", "value": 0 }
+  ],
+
+  "quests": [
+    {
+      "editorId": "MF_Gather",
+      "name": "Gather the Goods",
+      "startGameEnabled": true,
+      "stages": [
+        {
+          "index": 10,
+          "startUpStage": true,
+          "logEntry": "Collect the goods for the client.",
+          "_": "On start: roll target 3..6 into MF_ItemTotal, zero the running MF_ItemCount, bind both to this instance.",
+          "instanceGlobals": [
+            { "global": "MF_ItemTotal", "randomMin": 3, "randomMax": 6 },
+            { "global": "MF_ItemCount", "value": 0 }
+          ]
+        },
+        { "index": 20, "logEntry": "Goods delivered.", "completeQuest": true }
+      ],
+      "objectives": [
+        {
+          "index": 10,
+          "_": "<Global=...> reads the instance-bound values, so each running copy shows its own X/Y.",
+          "text": "Collect goods (<Global=MF_ItemCount>/<Global=MF_ItemTotal>)",
+          "showStage": 10,
+          "completeStage": 20
+        }
+      ]
+    }
+  ]
+}

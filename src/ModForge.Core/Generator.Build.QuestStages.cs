@@ -46,16 +46,30 @@ public static partial class Generator
                 var qa = qr.VirtualMachineAdapter as QuestAdapter
                          ?? new QuestAdapter { Version = 5, ObjectFormat = 2 };
                 qa.FileName = scriptName;
-                if (!qa.Scripts.Any(s => string.Equals(s.Name, scriptName, StringComparison.OrdinalIgnoreCase)))
-                    qa.Scripts.Add(new ScriptEntry { Name = scriptName });
+                var entry = qa.Scripts.FirstOrDefault(s => string.Equals(s.Name, scriptName, StringComparison.OrdinalIgnoreCase));
+                if (entry is null) { entry = new ScriptEntry { Name = scriptName }; qa.Scripts.Add(entry); }
 
-                // One QuestScriptFragment per stage that shows/completes an objective.
-                // Stage = the quest stage number (uint16), StageIndex = log-entry index within stage
-                // (always 0 — we emit one log entry per stage), FragmentName = CK-standard function name
-                // the engine calls when SetStage() fires.
+                // Bind a GlobalVariable object-property for every distinct instance global the stages
+                // reference (the fragment body calls <prop>.SetValue / UpdateCurrentInstanceGlobal(<prop>)).
+                foreach (var gref in q.Stages.SelectMany(s => s.InstanceGlobals).Select(g => g.Global)
+                             .Where(g => !string.IsNullOrWhiteSpace(g)).Distinct(StringComparer.OrdinalIgnoreCase))
+                {
+                    var pname = Generator.InstanceGlobalProperty(gref);
+                    if (entry.Properties.Any(p => string.Equals(p.Name, pname, StringComparison.OrdinalIgnoreCase))) continue;
+                    var prop = new ScriptObjectProperty { Name = pname, Flags = ScriptProperty.Flag.Edited };
+                    if (TryResolveRef(gref, formKeyByEd, out var gfk)) prop.Object.SetTo(gfk);
+                    else Warn($"  ! quest '{q.EditorId}' instanceGlobal '{gref}' unresolved");
+                    entry.Properties.Add(prop);
+                }
+
+                // One QuestScriptFragment per stage that shows/completes an objective OR binds an
+                // instance global. Stage = the quest stage number (uint16), StageIndex = log-entry index
+                // within stage (always 0 — we emit one log entry per stage), FragmentName = CK-standard
+                // function name the engine calls when SetStage() fires.
                 foreach (var st in q.Stages.OrderBy(s => s.Index))
                 {
-                    bool needsFrag = q.Objectives.Any(o => o.ShowStage == st.Index || o.CompleteStage == st.Index);
+                    bool needsFrag = q.Objectives.Any(o => o.ShowStage == st.Index || o.CompleteStage == st.Index)
+                                     || st.InstanceGlobals.Count > 0;
                     if (!needsFrag) continue;
                     // Stage = quest stage number, StageIndex = log-entry index within the stage
                     // (always 0 — we emit one log entry per stage, matching vanilla convention).

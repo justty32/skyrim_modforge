@@ -35,6 +35,15 @@ complete as stages are set; a `dialogue` line can advance a stage when picked.
   shows its opening log entry / displays its first objective with **no external `SetStage`** — without
   it an SM-started quest sits silently at stage 0. At most one per quest. (A `dialogue`/`startGameEnabled`
   quest usually doesn't need one; SM quests do.) **IN-GAME CONFIRMED 2026-06-05.**
+- **`stages[].instanceGlobals[]`** — bind GLOBs to **this quest instance** when the stage runs
+  (gather/count **radiant** quests). The stage fragment calls `UpdateCurrentInstanceGlobal(<global>)` so
+  objective text like `<Global=MF_ItemCount>/<Global=MF_ItemTotal>` shows **per-instance** numbers —
+  one template, many copies at once with different counts (Missives' trick). Each entry: `{ "global":
+  "<GLOB editorId>", "randomMin": N, "randomMax": M }` (seed `SetValue(Utility.RandomInt(N,M))`), or
+  `{ "global": "…", "value": V }` (seed `SetValue(V)`), or `{ "global": "…" }` (bind only). Declare the
+  GLOB in `globals[]`; ModForge binds it as an object-property and ships `<quest>_Stages.psc` for
+  `package` to compile. Put it on the `startUpStage` to roll the target on start. Demo
+  `examples/gather_quest_spec.json`. (The pickup-increment script is yours.)
 - **`objectives[].showStage` / `.completeStage`** — link an objective to stages: it's
   `SetObjectiveDisplayed` at `showStage` and `SetObjectiveCompleted` at `completeStage`. `-1` (the
   default) means "not stage-linked".
