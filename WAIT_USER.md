@@ -23,7 +23,8 @@
     → **待你做（主力機讀 BSA 原始碼）**：**U1** Campfire 能否不靠營火、對任意 ref/位置 spawn 樹（讀 `CampCampfire.psc` / `_Camp_PlaceableObjectBase`）；**U2** node 的 `required_perk_rank_global` 是否全域單例（決定 session GLOB 橋接成不成立）；**U3** Frostfall 的 perkPoint 消費/gate 邏輯。結論補回 design 檔 §五。
   - **【model-converter MVP】批量 nif→glTF 載體 — 待主力機實測**：
     sub_proj 已開、MVP 鎖＝vanilla nif→glTF 批量代理（[sub_projs/model-converter/](sub_projs/model-converter/README.md)）。**待你做（主力機）**：裝 **NifSkope fo76utils fork**，測它有沒有可腳本化的 **CLI/headless glTF 匯出**（agent 查到 GUI 確定、CLI 批量未證）。若 GUI-only → 回報，再評估替代或自寫靜態 NIF mesh parser。⚠️ 勿用 `amPerl/nif`、`SkyMeshGLTF`（已證幻覺）。
-  - **【Idea #19 紋理】單層 LTEX 替換 byte 驗證 — 待主力機**：離線已反射確認 Mutagen `Landscape` 紋理 API；單層 BaseLayer 生成可離線實作，但比照 VHGT 需 xEdit 對 vanilla Tamriel cell **逐 byte 驗一次**「生的 BaseLayer 與原版一致」（收尾驗證，不擋設計）。
+  - **【Idea #19 紋理】單層 LTEX 替換 byte 驗證 — 待主力機**：✅ 後端已離線實作+測（spec `worldspace.baseTexture` → 每格 LAND 四象限 BTXT base 層；`Generator.Build.Worldspace.cs` + `WorldspaceBaseTextureTests` 2 測過）。**待你做（主力機）**：比照 VHGT，用 xEdit 對 vanilla Tamriel cell **逐 byte 驗一次**「生的 BTXT base 層與原版一致」（quadrant 順序 / LayerNumber / texture FormID 對齊）。收尾驗證，不擋使用。
+  - **【Idea #19 物件擺放】Godot 前端 placement — 待主力機 GUI 跑一次**：離線已實作 Place Mode + placement 筆 + box proxy + `placements.json` 匯出/匯入（前端輸出欄位/座標換算已離線核對與後端 `GodotPlacements.cs` 一致）。**待你做（主力機開 Godot）**：開 `sub_projs/godot-worldspace-editor/godot/`，切 Place Mode、填 base ref、點地形擺幾個方塊、存 `placements.json` → 餵 ModForge build 看 REFR 進不進得了遊戲。回報 UI 有無報錯 / 方塊吸不吸地表 / 匯出 JSON 格式對不對。
   - **Nexus 下載（美化/body/工具，掃完 ~/skyrim_mods 確認缺）**：
     - **CBBE 3BA**（30174）— OBody 必需的 body framework，現有 CBBE 是舊版
     - **OBody NG**（77016）— 每個 NPC 自動隨機 body preset + ORefit 服裝貼合
