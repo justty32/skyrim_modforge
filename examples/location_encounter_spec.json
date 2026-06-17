@@ -1,7 +1,7 @@
 {
   "pluginName": "ModForgeLocationEncounter.esp",
   "esl": false,
-  "_": "A組 #5+#6 location-aware encounter. A ChangeLocation Story-Manager quest that fires only when the player enters a location with a LocType keyword (locationFilter, OR'd) and not more often than cooldownHours (anti-spam, the EE_WITimeout pattern). The build appends GetKeywordDataForCurrentLocation conditions to the SM event conditions, creates a <quest>_LastFired GLOB, and attaches the reusable MFEncounterCooldown script (which Stop()s the quest if it re-fired within the window). Add stages/dialogue/aliases to make it actually DO something on fire. ⚠ locationFilter conditions are pure CTDA (offline-verifiable); the cooldown SCRIPT runtime behaviour needs a main-machine in-game check (see WAIT_USER). LocType FormIDs here are real vanilla (LocTypeBanditCamp 0x130F2, LocTypeDungeon 0x130DE) — verify with `gamedata find`.",
+  "_": "A組 #5+#6 + F組 #3 full dynamic encounter. A ChangeLocation Story-Manager quest that fires only in a location with a LocType keyword (locationFilter, OR'd), not more often than cooldownHours (anti-spam, EE_WITimeout), and on fire dynamically spawns 3 bandits near the player on valid navmesh (spawn → MFDynamicSpawn). The build appends GetKeywordDataForCurrentLocation conditions, creates a <quest>_LastFired GLOB + MFEncounterCooldown script, and attaches MFDynamicSpawn with the form/count/distance props. ⚠ locationFilter conditions are pure CTDA (offline-verifiable); the cooldown + spawn SCRIPTS' runtime behaviour (GetCurrentGameTime / PlaceAtMe + EnableAI navmesh snap) need a main-machine in-game check (see WAIT_USER). FormIDs here are real vanilla (LocTypeBanditCamp 0x130F2, LocTypeDungeon 0x130DE, EncBandit01 0x1BCC0) — verify with `gamedata find`.",
 
   "quests": [
     {
@@ -16,7 +16,15 @@
       },
       "aliases": [
         { "name": "NewLocation", "fill": "fromEvent:newLocation" }
-      ]
+      ],
+      "spawn": {
+        "_": "On fire: 3 EncBandit01 placed 1200-3500 units around the player, snapped to navmesh.",
+        "form": "Skyrim.esm:0x0001BCC0",
+        "count": 3,
+        "minDistance": 1200,
+        "maxDistance": 3500,
+        "snapToNavmesh": true
+      }
     }
   ]
 }

@@ -58,6 +58,17 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <!-- The reusable dynamic near-player spawn .pex (extends Quest; OnInit spawns Count of SpawnForm
+       around the player + snaps to navmesh). Embedded so `package` can drop it into Scripts/ for any
+       mod whose quests declare `spawn`. Conditional: build succeeds without it; `package` warns at
+       runtime if missing. Compile it with:
+         dotnet run - - compile assets/papyrus/MFDynamicSpawn.psc assets/papyrus/ -->
+  <ItemGroup Condition="Exists('..\..\assets\papyrus\MFDynamicSpawn.pex')">
+    <EmbeddedResource Include="..\..\assets\papyrus\MFDynamicSpawn.pex">
+      <LogicalName>MFDynamicSpawn.pex</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
   <!-- The reusable identity-acquire book .pex (extends ObjectReference; OnRead joins/leaves an identity faction).
        Embedded so `package` can drop it into Scripts/ for any mod whose identities declare an acquireBook.
        Conditional: build succeeds without it; `package` warns at runtime if missing. Compile it with:

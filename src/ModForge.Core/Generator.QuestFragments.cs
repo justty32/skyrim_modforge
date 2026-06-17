@@ -110,6 +110,10 @@ public static partial class Generator
     /// storyEvent quest declaring `cooldownHours`; one prebuilt .pex serves every generated mod.</summary>
     internal const string EncounterCooldownScript = "MFEncounterCooldown";
 
+    /// <summary>Scriptname of the reusable dynamic near-player spawn (extends Quest). Attached to a quest
+    /// declaring `spawn`; one prebuilt .pex serves every generated mod.</summary>
+    internal const string DynamicSpawnScript = "MFDynamicSpawn";
+
     /// <summary>Scriptname of the reusable primary-identity controller (extends Quest). Maintains the
     /// MF_PrimaryIdentity global; one prebuilt .pex (embedded in the CLI) serves every generated mod.</summary>
     internal const string IdentityController = "MFIdentityController";

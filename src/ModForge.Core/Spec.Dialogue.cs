@@ -33,6 +33,23 @@ public sealed class QuestSpec
     public QuestStoryEventSpec? StoryEvent { get; set; }
     // SM 啟動時要填的 alias。fill="fromEvent:<slot>" 拿事件 ref，"forced:<ref>" 填寫死 ref。
     public List<QuestAliasSpec> Aliases { get; set; } = new();
+    // Optional dynamic spawn (F組 #3): on quest start, spawn N of `form` near the player on valid
+    // navmesh. Attaches the reusable MFDynamicSpawn quest script. See SpawnSpec.
+    public SpawnSpec? Spawn { get; set; }
+}
+// Dynamic near-player spawn (F組 #3 — the EE NavmeshTester trick, self-snapping form). On quest start
+// the MFDynamicSpawn script places `count` copies of `form` (an ActorBase or LeveledNpc) at a random
+// offset (minDistance..maxDistance units) around the player, then toggles EnableAI so each snaps to the
+// nearest navmesh point — a legal, walkable spawn with no pre-placed cell markers. The trigger is the
+// owning quest starting (Story-Manager-launched or StartGameEnabled); pair with locationFilter/cooldownHours
+// for a rate-limited, location-aware encounter.
+public sealed class SpawnSpec
+{
+    public string Form { get; set; } = "";          // ref → ActorBase (NPC_) or LeveledNpc (LVLN) to spawn
+    public int Count { get; set; } = 1;             // how many to spawn (>=1)
+    public float MinDistance { get; set; } = 1500f; // nearest spawn offset from the player (units)
+    public float MaxDistance { get; set; } = 4000f; // farthest spawn offset
+    public bool SnapToNavmesh { get; set; } = true; // EnableAI toggle to snap each spawn to navmesh
 }
 // One quest stage (QSDT). `index` is the stage number (set with SetStage). `logEntry` (optional) is
 // the journal text shown when the quest reaches this stage (a QuestLogEntry / QLOG). `completeQuest`

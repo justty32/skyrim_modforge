@@ -68,6 +68,7 @@
 | `StoryManagerEventsTests.cs` | 事件登錄表欄位（FormKey / slot 對應）|
 | `StoryManagerEventsMoreTests.cs` | 擴充事件（ChangeLocation/CastMagic/AddItem/Assault/ScriptEvent）|
 | `EncounterRoutingTests.cs` | **#5 locationFilter（GetKeywordDataForCurrentLocation、OR 群組）+ #6 cooldownHours（LastFired GLOB + MFEncounterCooldown script + props）+ LocAliasHasKeyword condition + validate（負 cooldown、空 keyword）** |
+| `DynamicSpawnTests.cs` | **#3 quest.spawn → MFDynamicSpawn script（SpawnForm/Count/Min/MaxDistance/SnapToNavmesh props）+ 與 cooldown/locationFilter 共存單一 adapter + validate（空 form、count<1、min>max）** |
 | `StoryManagerValidateTests.cs` | SM validate（事件名、alias 語法、keyword 要求）|
 | `WordWallTests.cs` | word wall 教字 quest fragment（⚠️ 需本機 Skyrim.esm）|
 
@@ -91,7 +92,7 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Dialogue.cs` | `QuestSpec`, `StageSpec`（含 `startUpStage` = QSDT 起始 stage flag、**`instanceGlobals[]` = UpdateCurrentInstanceGlobal 綁定**）, **`InstanceGlobalSpec`（global + 可選 randomMin/Max 或 value）**, `ObjectiveSpec`（含 `targets[]`）, **`ObjectiveTargetSpec`（alias 名 + `compassIgnoresLocks` + `conditions[]` → QSTA）** |
+| Spec | `Spec.Dialogue.cs` | `QuestSpec`（含 **`spawn` = F組 #3 dynamic spawn**）, **`SpawnSpec`（form/count/min/maxDistance/snapToNavmesh）**, `StageSpec`（含 `startUpStage` = QSDT 起始 stage flag、**`instanceGlobals[]` = UpdateCurrentInstanceGlobal 綁定**）, **`InstanceGlobalSpec`（global + 可選 randomMin/Max 或 value）**, `ObjectiveSpec`（含 `targets[]`）, **`ObjectiveTargetSpec`（alias 名 + `compassIgnoresLocks` + `conditions[]` → QSTA）** |
 | Build P1 | `Generator.Build.Actors.cs` `BuildQuests` | 建 Quest record + QSDT stages（log/complete/fail flag、`startUpStage`→`QuestStage.Flag.StartUpStage`）+ QOBJ objectives |
 | Build P1 | `Generator.Build.Dialogue.cs` | dialogue Branch + Topic + INFO；greeting 自動生成 |
 | Build P2 | `Generator.Build.QuestStages.cs` | stage log-entry CTDA + objective fragment VMAD（**合併**進既有 QuestAdapter，不覆寫 alias 腳本的 `.Aliases`）；**instanceGlobals → 在 ScriptEntry 綁 GLOB `ScriptObjectProperty`（每 global 一個，prop 名 `InstanceGlobalProperty`）+ 該 stage 的 `QuestScriptFragment`（即使無 objective）** |
@@ -198,7 +199,9 @@
 | Data | `StoryManagerEvents.cs` | 事件登錄表：KillActor/ChangeLocation/CastMagic/AddItem/Assault/CraftItem/PlayerRemoveItem/Arrest/IncreaseLevel/ScriptEvent — FormKey + 槽名；`TryParseFill` / `TryParseCreateObject`（`<ref>@<alias>`）|
 | Build P2 | `Generator.Build.StoryManager.cs` | SMBN→SMQN 掛原版事件根；keyword 過濾條件（GetEventData/GetIsID）；**`BuildQuestAliases(quest,qs,def?)`** 共用 helper 建所有 alias fill（fromEvent 僅 `def!=null` 時；createObject = `CreateReferenceToObject` 在 `aliasIdByName` 目標 alias 處生成；findMatching = `QuestAlias.Flag.MatchingRefInLoadedArea`[+`MatchingRefClosest`] + alias.Conditions；**findMatchingLocation（#7）= `Type=Location` + `LocationAliasReference{Keyword=locType, AliasID=parent}`；findInLocationAlias（#8）= `Type=Reference` + `LocationAliasReference{AliasID=locAlias, RefType=LCRT}`；條件接線共用 `WireAliasMatchConditions`**；alias 腳本 `AttachAliasScript` = `QuestAdapter.Aliases` 加 `QuestFragmentAlias`[v5/objFmt2、綁 alias ID、flag=Local]；**`forced:` 立即解析不到（target 晚 build）→ 排入 `deferredForcedAliases`、由 `WireDeferredForcedAliases` 後補**）；**`BuildStandaloneQuestAliases()`** 替非 storyEvent quest 建 alias（def=null，跳 fromEvent）。⚠ ALNA(`FindMatchingRefNearAlias`)離線驗證＝只 `LinkedRefChild`，故 #8 走 `Location` 不走 ALNA；CK 語義待主力機 xEdit 比對 |
 | Build P2 | `Generator.Build.StoryManager.cs` | **#5 locationFilter → 在 `quest.EventConditions` 追加 OR'd `GetKeywordDataForCurrentLocation`；#6 `AttachEncounterCooldown`：建 `<quest>_LastFired` float GLOB + 掛 `MFEncounterCooldown` quest script（無條件，prebuilt .pex）** |
+| Build P2 | `Generator.Build.StoryManager.Encounter.cs` `BuildQuestSpawns` | **#3 `quest.spawn` → 掛 `MFDynamicSpawn` quest script（SpawnForm/Count/Min/MaxDistance/SnapToNavmesh props，merge QuestAdapter）；Build.cs 在 BuildStandaloneQuestAliases 後、WireQuestStages 前呼叫** |
 | Asset | `assets/papyrus/MFEncounterCooldown.psc` | **#6 reusable 冷卻（extends Quest，OnInit 比 `GetCurrentGameTime - LastFired < CooldownHours/24` → `Stop()` 中止重觸發）；embed CLI；EE_WITimeout pattern；runtime 待主力機驗** |
+| Asset | `assets/papyrus/MFDynamicSpawn.psc` | **#3 reusable dynamic spawn（extends Quest，OnInit `PlaceAtMe`+`MoveTo` 玩家附近隨機偏移 + `EnableAI` toggle 吸 navmesh）；embed CLI；EE NavmeshTester trick；runtime 待主力機驗** |
 | Validate | `Generator.Validate.StoryManager.cs` | 事件名合法；**locationFilter keyword CheckRef、cooldownHours>=0**；**`ValidateQuestAlias(q,a,def?,…)`** 共用（storyEvent 與非 storyEvent quest 都驗 alias fill/ref/script；def=null 時 fromEvent 報錯；**findMatchingLocation 驗 LocType keyword + 父 alias 同 quest；findInLocationAlias 驗 location alias 同 quest + refType + 需 refType 或 conditions**）；slot 名稱、ScriptEvent 需宣告 keyword |
 | Diag | `Diagnostics.StoryManager.cs` | smtree（事件根列舉）/ SMBN alias fill / event-data slot dump |
 

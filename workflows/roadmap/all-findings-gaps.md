@@ -125,7 +125,7 @@ ModForge 的 `build` 主輸出是 `.esp`。這組是對應 SKSE framework 的 **
 
 | # | 缺口 | 優先 |
 |---|------|------|
-| 3 | NavmeshTester 動態生怪 Papyrus script 模板（在玩家附近找合法 navmesh 點生 actor） | 🟡 |
+| 3 | ✅ NavmeshTester 動態生怪 Papyrus script 模板（quest.spawn → MFDynamicSpawn）| ✅ 落地 06-17 |
 
 ---
 

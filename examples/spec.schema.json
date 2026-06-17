@@ -1884,6 +1884,19 @@
             }
           }
         },
+        "spawn": {
+          "type": "object",
+          "required": [ "form" ],
+          "description": "#3 dynamic near-player spawn: on quest start, place `count` of `form` (ActorBase/LeveledNpc) at a random minDistance..maxDistance offset around the player + snap to navmesh (the EE NavmeshTester trick). Attaches the reusable MFDynamicSpawn quest script.",
+          "properties": {
+            "form": { "$ref": "#/$defs/ref", "description": "ActorBase (NPC_) or LeveledNpc (LVLN) to spawn" },
+            "count": { "type": "integer", "minimum": 1, "default": 1 },
+            "minDistance": { "type": "number", "minimum": 0, "default": 1500 },
+            "maxDistance": { "type": "number", "minimum": 0, "default": 4000 },
+            "snapToNavmesh": { "type": "boolean", "default": true, "description": "EnableAI toggle to snap each spawn to the nearest navmesh point" }
+          },
+          "additionalProperties": false
+        },
         "aliases": {
           "type": "array",
           "description": "Quest aliases filled by the SM event or forced refs.",

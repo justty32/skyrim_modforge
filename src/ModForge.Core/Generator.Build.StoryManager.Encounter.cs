@@ -24,6 +24,32 @@ public static partial class Generator
             scriptsAttached++;
         }
 
+        // F組 #3: a quest declaring `spawn` gets the reusable MFDynamicSpawn quest script (dynamic
+        // near-player navmesh spawn on quest start). Runs after BuildStoryManager/BuildStandaloneQuestAliases
+        // and before WireQuestStages so the QuestAdapter merge keeps alias/stage fragments intact.
+        public void BuildQuestSpawns()
+        {
+            foreach (var qs in spec.Quests)
+            {
+                if (qs.Spawn is not { } sp) continue;
+                if (string.IsNullOrEmpty(qs.EditorId) || !questsByEd.TryGetValue(qs.EditorId, out var quest)) continue;
+
+                var qad = quest.VirtualMachineAdapter as QuestAdapter ?? new QuestAdapter { Version = 5, ObjectFormat = 2 };
+                var entry = new ScriptEntry { Name = Generator.DynamicSpawnScript, Flags = ScriptEntry.Flag.Local };
+                var fp = new ScriptObjectProperty { Name = "SpawnForm", Flags = ScriptProperty.Flag.Edited };
+                if (TryResolveRef(sp.Form, formKeyByEd, out var ffk)) { fp.Object.SetTo(ffk); linksWired++; if (LooksExternalRef(sp.Form)) extLinks++; }
+                else Warn($"  ! quest '{qs.EditorId}' spawn.form '{sp.Form}' unresolved — spawn will no-op");
+                entry.Properties.Add(fp);
+                entry.Properties.Add(new ScriptIntProperty   { Name = "Count",       Data = Math.Max(1, sp.Count), Flags = ScriptProperty.Flag.Edited });
+                entry.Properties.Add(new ScriptFloatProperty { Name = "MinDistance", Data = sp.MinDistance, Flags = ScriptProperty.Flag.Edited });
+                entry.Properties.Add(new ScriptFloatProperty { Name = "MaxDistance", Data = sp.MaxDistance, Flags = ScriptProperty.Flag.Edited });
+                entry.Properties.Add(new ScriptBoolProperty  { Name = "SnapToNavmesh", Data = sp.SnapToNavmesh, Flags = ScriptProperty.Flag.Edited });
+                qad.Scripts.Add(entry);
+                quest.VirtualMachineAdapter = qad;
+                scriptsAttached++;
+            }
+        }
+
         // Wire an alias's match-filter CTDA (shared by findMatching / findMatchingLocation / findInLocationAlias):
         // these conditions decide WHICH ref/location in scope the engine picks.
         private void WireAliasMatchConditions(QuestAlias alias, QuestSpec qs, QuestAliasSpec aSpec, string kindLabel)

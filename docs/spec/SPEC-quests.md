@@ -35,16 +35,14 @@ are set; a `dialogue` line can advance a stage when picked.
   silently at stage 0. At most one per quest. **IN-GAME CONFIRMED 2026-06-05.**
 - **`stages[].instanceGlobals[]`** — bind GLOBs to **this quest instance** when the stage runs
   (gather/count **radiant** quests). The stage fragment calls `UpdateCurrentInstanceGlobal(<global>)` so
-  objective text like `<Global=MF_ItemCount>/<Global=MF_ItemTotal>` shows **per-instance** numbers —
-  one template, many copies at once with different counts (Missives' trick). Each entry: `{ "global":
+  objective text `<Global=MF_ItemCount>/<Global=MF_ItemTotal>` shows **per-instance** counts (one
+  template, many copies with different counts — Missives' trick). Each entry: `{ "global":
   "<GLOB editorId>", "randomMin": N, "randomMax": M }` (seed `SetValue(Utility.RandomInt(N,M))`), or
   `{ "global": "…", "value": V }` (seed `SetValue(V)`), or `{ "global": "…" }` (bind only). Declare the
-  GLOB in `globals[]`; ModForge binds it as an object-property and ships `<quest>_Stages.psc` for
-  `package` to compile. Put it on the `startUpStage` to roll the target on start. Demo
-  `examples/gather_quest_spec.json`. (The pickup-increment script is yours.)
-- **`objectives[].showStage` / `.completeStage`** — link an objective to stages: it's
-  `SetObjectiveDisplayed` at `showStage` and `SetObjectiveCompleted` at `completeStage`. `-1` (the
-  default) means "not stage-linked".
+  GLOB in `globals[]`; ModForge ships `<quest>_Stages.psc` for `package` to compile. Put it on the
+  `startUpStage` to roll the target on start. Demo `examples/gather_quest_spec.json`. (Pickup script is yours.)
+- **`objectives[].showStage` / `.completeStage`** — link an objective to stages: `SetObjectiveDisplayed`
+  at `showStage`, `SetObjectiveCompleted` at `completeStage`. `-1` (default) = "not stage-linked".
 - **`objectives[].targets[]`** — the compass/map **markers** for an objective (QSTA). Each target is
   `{ "alias": "<aliasName>", "compassIgnoresLocks": false, "conditions": [...] }`. The marker arrow
   follows whatever the **alias is filled with** at runtime: fill the alias with an actor to mark a
@@ -187,28 +185,30 @@ cannot be filled the quest silently does not start.
 | `script` / `scriptSource` / `scriptProperties` | — | Attach a Papyrus **alias script** to this alias (a `ReferenceAlias`-extending script stored on the quest's `QuestAdapter.Aliases` VMAD, bound to the alias ID). It travels with **whatever ref fills the alias** — including a `createObject`-spawned or `findMatching`-matched ref that no base-object script could reach. Classic use is `Event OnActivate(ObjectReference akActionRef)`: activating the aliased ref runs it (e.g. call `MFStoryEventDispatch.Fire(...)` to chain a story event). `script` = the Scriptname, `scriptSource` = the `.psc` for `package` to compile, `scriptProperties` bind its Auto properties (same shape as a dialogue `resultProperties`). You supply the compiled `.pex`. In-game confirmed (2026-06-05); reusable helper `examples/MFSE_AliasActivate.psc`. |
 
 **Aliases on an ordinary quest (no `storyEvent`):** the same `aliases[]` block works on a normal
-**StartGameEnabled** quest — `forced` / `uniqueActor` / `createObject` / `findMatching` fills and an
-alias `script` all apply (only `fromEvent` is invalid, since there's no event to pull a ref from — the
-validator flags it). The aliases fill when the quest starts (= game load for a StartGameEnabled quest).
-This lets a plain always-running quest force an NPC/ref into an alias, spawn an object at it, and carry
-an `OnActivate` alias script — with no Story Manager event. In-game confirmed (2026-06-05); demo
-`examples/quest-alias-standalone.json` (forced player → `createObject` chest at the player → open it →
-alias `OnActivate` advances + closes the quest).
+**StartGameEnabled** quest — `forced`/`uniqueActor`/`createObject`/`findMatching` fills + an alias
+`script` all apply (only `fromEvent` is invalid — no event to pull from; validator flags it). Aliases
+fill when the quest starts (= game load). In-game confirmed (2026-06-05); demo
+`examples/quest-alias-standalone.json` (forced player → `createObject` chest → `OnActivate` advances).
 
 **Radiant chain (`findMatchingLocation` + `findInLocationAlias`):** these compose into the Missives
 variety pattern — `Hold` (`findMatchingLocation:<holdLocType>`) → `Dungeon`
 (`findMatchingLocation:<dungeonLocType>@Hold`) → `BossChest`
-(`findInLocationAlias:Dungeon#<bossLCRT>`). Demo `examples/radiant_alias_spec.json`. ⚠ **Offline limit:**
-the Mutagen `LocationAliasReference` field *shape* is reflection-verified, but the exact CK *semantics*
-(which field drives which constraint) are pending a main-machine xEdit byte-compare against a real
-Missives alias — and the example's LocType/LCRT FormIDs are placeholders (find real ones with
-`gamedata find`). See `WAIT_USER.md`.
+(`findInLocationAlias:Dungeon#<bossLCRT>`). Demo `examples/radiant_alias_spec.json`. ⚠ the
+`LocationAliasReference` *shape* is reflection-verified but the CK *semantics* + example LocType/LCRT
+FormIDs need a main-machine xEdit byte-compare (`gamedata find` for real IDs). See `WAIT_USER.md`.
+
+#### `spawn` — dynamic near-player spawn (F組 #3)
+A quest's `spawn` block: on quest start, place `count` copies of `form` (ActorBase / LeveledNpc) at a
+random `minDistance`..`maxDistance` offset around the player, then (`snapToNavmesh`, default true) toggle
+`EnableAI` so each snaps to the nearest navmesh point — a legal walkable spawn with **no pre-placed
+markers** (the EE NavmeshTester trick), via the reusable `MFDynamicSpawn` quest script. Pair with
+`ChangeLocation` + `locationFilter` + `cooldownHours` for a rate-limited location-aware encounter
+(`examples/location_encounter_spec.json`). ⚠ runtime (`PlaceAtMe`+`EnableAI` snap) needs an in-game check; `.pex` compiles on the main machine. See `WAIT_USER.md`.
 
 #### SM iron laws (engine behaviour, not bugs)
 
-- **One event → one quest starts** — the engine tries quest nodes in order and starts the
-  first one whose conditions pass. A second unconditional quest on the same event never starts
-  in the same event firing. Use conditions to differentiate.
+- **One event → one quest starts** — the engine tries quest nodes in order and starts the first one
+  whose conditions pass. A second unconditional quest on the same event never starts. Use conditions.
 - **`SimpleActor` critters don't fire `KillActor`** — killing chickens, rabbits, etc. produces
   no SM event. Target proper actors (bandits, wolves, NPCs).
 - **Any required alias that fails to fill → quest doesn't start, silently.** Make aliases

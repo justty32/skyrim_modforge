@@ -167,6 +167,9 @@ internal static partial class Program
         if (spec.Quests.Any(q => q.StoryEvent is { } se && se.CooldownHours > 0f))
             ShipEmbeddedPex("MFEncounterCooldown.pex", "SM-encounter cooldown", "cooldownHours encounters won't be rate-limited");
 
+        if (spec.Quests.Any(q => q.Spawn is not null))
+            ShipEmbeddedPex("MFDynamicSpawn.pex", "dynamic near-player spawn", "spawn quests won't spawn anything");
+
         if (spec.Identities.Any(idn => !string.IsNullOrWhiteSpace(idn.AcquireBook)))
             ShipEmbeddedPex("MFIdentityBook.pex", "identity-acquire book", "acquire books won't grant identities");
 

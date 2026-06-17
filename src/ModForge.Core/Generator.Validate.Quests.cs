@@ -54,6 +54,14 @@ public static partial class Generator
                 stageIndexByQuest[q.EditorId] = seen;
                 if (startUpStages > 1)
                     Problems.Add($"quest '{q.EditorId}' marks {startUpStages} stages as startUpStage (at most one allowed — the engine auto-runs exactly one on quest start)");
+                if (q.Spawn is { } sp)   // F組 #3 dynamic spawn
+                {
+                    if (string.IsNullOrWhiteSpace(sp.Form)) Problems.Add($"quest '{q.EditorId}' spawn has empty 'form' (an ActorBase/LeveledNpc to spawn)");
+                    else CheckRef(sp.Form, $"quest '{q.EditorId}' spawn.form");
+                    if (sp.Count < 1) Problems.Add($"quest '{q.EditorId}' spawn.count must be >= 1 (got {sp.Count})");
+                    if (sp.MinDistance < 0 || sp.MaxDistance < 0) Problems.Add($"quest '{q.EditorId}' spawn distances must be >= 0");
+                    else if (sp.MinDistance > sp.MaxDistance) Problems.Add($"quest '{q.EditorId}' spawn.minDistance {sp.MinDistance} > maxDistance {sp.MaxDistance}");
+                }
                 var objIdx = new HashSet<int>();
                 var aliasNames = new HashSet<string>(q.Aliases.Select(a => a.Name), StringComparer.OrdinalIgnoreCase);
                 foreach (var o in q.Objectives)
