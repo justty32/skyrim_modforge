@@ -27,6 +27,8 @@ var _painting   := false
 var _ui_width   := 200
 var _grid_lines: Array[Node3D] = []
 var _player: PlayerController = null
+var _placement: PlacementTool = null
+var _place_mode := false
 
 
 func _ready() -> void:
@@ -37,6 +39,9 @@ func _ready() -> void:
 	camera_rig  = SceneBuilder.camera(self, terrain)
 	_cursor     = SceneBuilder.cursor(self)
 	_grid_lines = SceneBuilder.grid_outlines(self, CELLS_X, CELLS_Y, terrain)
+	_placement  = PlacementTool.new()
+	add_child(_placement)
+	_placement.configure(terrain)
 	_setup_ui()
 
 
@@ -49,6 +54,8 @@ func _setup_ui() -> void:
 	canvas.add_child(panel)
 	panel.setup(terrain, _ui_width, _update_cursor, _sync_display,
 		_on_export_png, _on_import_png, _enter_walk_mode)
+	PlacementUi.build(panel.content_vbox(), _placement,
+		_toggle_place_mode, _on_export_placements, _on_import_placements)
 	_lbl_pos   = panel.lbl_pos
 	_lbl_brush = panel.lbl_brush
 
@@ -128,7 +135,14 @@ func _input(event: InputEvent) -> void:
 			KEY_S: terrain.brush_mode = TerrainGrid.BrushMode.SMOOTH
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if not _over_ui(event.position):
+		if _over_ui(event.position):
+			return
+		if _place_mode:
+			if event.pressed:
+				var hit := terrain.get_hit_position(camera_rig.get_camera(), event.position)
+				if hit != Vector3.ZERO:
+					_placement.place_at(hit)
+		else:
 			_painting = event.pressed
 			if _painting and terrain.brush_mode == TerrainGrid.BrushMode.FLATTEN:
 				terrain.flatten_height = _mid_height_at_mouse()
@@ -180,3 +194,17 @@ func _on_export_png() -> void:
 
 func _on_import_png() -> void:
 	IoPng.import_dialog(self, terrain)
+
+
+# ── Placement ───────────────────────────────────────────────────────────────────
+
+# In place mode LMB drops objects instead of painting; brush painting is suspended.
+func _toggle_place_mode(on: bool) -> void:
+	_place_mode = on
+	_painting = false
+
+func _on_export_placements() -> void:
+	PlacementsIo.export_dialog(self, _placement, terrain, _lbl_brush)
+
+func _on_import_placements() -> void:
+	PlacementsIo.import_dialog(self, _placement, terrain, _lbl_brush)

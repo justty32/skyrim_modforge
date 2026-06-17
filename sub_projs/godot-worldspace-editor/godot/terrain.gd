@@ -97,6 +97,35 @@ func vert_to_world(col: int, row: int) -> Vector3:
 	)
 
 
+# Display world pos → canonical Godot-native metres (display scales divided out).
+# placements.json positions are these unscaled metres; ModForge converts to game units.
+# Y: surface height h (game units) maps to canonical y = h × METERS_PER_UNIT, so that
+# ModForge's skyrim_z = y / METERS_PER_UNIT recovers h (object sits on the ground).
+func world_to_canonical_meters(display_world: Vector3) -> Vector3:
+	return Vector3(
+		display_world.x / vis_surface_scale,
+		display_world.y / vis_height_scale + min_height * METERS_PER_UNIT,
+		display_world.z / vis_surface_scale
+	)
+
+
+func canonical_meters_to_world(m: Vector3) -> Vector3:
+	return Vector3(
+		m.x * vis_surface_scale,
+		(m.y - min_height * METERS_PER_UNIT) * vis_height_scale,
+		m.z * vis_surface_scale
+	)
+
+
+# Display-world Y of the terrain surface at the vertex nearest a clicked point.
+# get_hit_position returns the mid-plane Y, not the surface — placement snaps Y here.
+func surface_display_y(display_world: Vector3) -> float:
+	var vc := world_to_vert(display_world)
+	var col := clampi(vc.x, 0, verts_x - 1)
+	var row := clampi(vc.y, 0, verts_y - 1)
+	return (get_height(col, row) - min_height) * METERS_PER_UNIT * vis_height_scale
+
+
 func get_hit_position(camera: Camera3D, screen_pos: Vector2) -> Vector3:
 	if camera == null: return Vector3.ZERO
 	var from := camera.project_ray_origin(screen_pos)

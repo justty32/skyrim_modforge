@@ -4,6 +4,7 @@ extends PanelContainer
 var lbl_pos: Label
 var lbl_brush: Label
 
+var _vbox: VBoxContainer
 var _height_sl: HSlider
 var _surface_sl: HSlider
 
@@ -22,6 +23,7 @@ func setup(terrain: TerrainGrid, ui_width: int, on_cursor_update: Callable,
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	vbox.add_theme_constant_override("separation", 4)
 	scroll.add_child(vbox)
+	_vbox = vbox
 
 	# ── View modes ────────────────────────────────────────────────────────────
 	var btn_edit := Button.new()
@@ -92,6 +94,11 @@ func setup(terrain: TerrainGrid, ui_width: int, on_cursor_update: Callable,
 	btn_exp.pressed.connect(on_export); vbox.add_child(btn_exp)
 	var btn_imp := Button.new(); btn_imp.text = "Load PNG"
 	btn_imp.pressed.connect(on_import); vbox.add_child(btn_imp)
+
+
+# The scrollable content column, so other modules (e.g. PlacementUi) can append sections.
+func content_vbox() -> VBoxContainer:
+	return _vbox
 
 
 # Setting slider.value triggers the value_changed chain → terrain + on_display_sync.
