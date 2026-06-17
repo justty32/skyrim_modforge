@@ -1,6 +1,6 @@
 # Model Converter — 模型格式互轉工具
 
-← [sub_projs 索引](../README.md)
+← [sub_projs 索引](../README.md)｜CLI 契約草案：[PROTOCOL.md](PROTOCOL.md)
 
 **一句話**：以 Skyrim **`.nif`（含 `.dds` 紋理）** 為中心，做與 **Godot 可用格式（glTF）** 及 **各種常用模型格式（FBX / OBJ / glTF）** 的**雙向**互轉工具。定位是 ModForge 生態的**基石工具**——不整合進 ModForge，靠協議/CLI 被消費。
 

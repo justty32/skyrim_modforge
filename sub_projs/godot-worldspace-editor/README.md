@@ -94,8 +94,12 @@ Godot（HTerrain）                    ModForge
 | `player_controller.gd` | Walk Mode 人形 `CharacterBody3D`（第一人稱 + WASD/跳/ESC） |
 | `scene_builder.gd` | env / 編輯相機 / cursor / 格線 工廠 |
 | `world_ui.gd` | 側欄（ScrollContainer + slider/spinbox + 模式/筆刷/匯出按鈕） |
-| `io_dialog.gd` | export/import FileDialog |
+| `io_dialog.gd` | 高度 PNG export/import FileDialog |
 | `png16.gd` / `png16_codec.gd` | 16-bit PNG encode/decode + chunk/CRC |
+| `placement.gd` | `PlacedObject` 薄節點：metadata（base/instanceId/uniform_scale）+ box proxy 視覺 |
+| `placement_tool.gd` | `PlacementTool`：placement 筆狀態 + 物件 list（place 吸地表 / restore / undo / clear）|
+| `placement_ui.gd` | 側欄 PLACEMENT 段（mode 切換、base/instance 欄、rotationY/scale、count、JSON I/O 按鈕）|
+| `placements_io.gd` | `placements.json` 匯出/匯入（顯示 scale 除掉還原 canonical 公尺）|
 
 **顯示縮放**：`vis_height_scale`（Y）與 `vis_surface_scale`（X/Z）只影響顯示，資料恆為 game units；`Y=(h-min)·MPU·scale` 讓地板固定 Y=0。**高度著色**：以中間高度為基準，下沉→淺藍→深藍（水），上升→草綠→岩石→雪。
 

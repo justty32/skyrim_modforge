@@ -13,8 +13,8 @@
 | `tool-survey/` | agent 工作區 | 🟡 部分完成 | SkyrimIngameEditor 完整調查（擴展路徑清楚）；TES5Edit/F4RefToBlender/BodySlide 僅 Gemini raw，尚未深挖。 |
 | `game-data/` | 共用參考 | ✅ 可用（主力機） | 抽取出的全遊戲文本/清單（vanilla+DLC+CC+mod）；`extract.sh` 重生，文本 gitignore。給 mod-survey / sofia-patch 唯讀取用。 |
 | `gemini-research/` | 原始素材 | 📄 純存檔 | Gemini CLI 聯網搜尋原始輸出（combat-mods/npc-beautification/outfit-fitting/tool-survey）；品質參差，需人工篩選後才搬入正式 finding。 |
-| `godot-worldspace-editor/` | 工具前端 | 🔵 規劃中 | Godot 4 + HTerrain 離線地形編輯器；匯出 PNG heightmap + placements JSON → ModForge LAND/REFR。MVP = 單格 PNG → COW 進入有地形起伏。 |
+| `godot-worldspace-editor/` | 工具前端 | 🟡 等實機 | Godot 4 離線地形編輯器；匯出 PNG heightmap + placements JSON → ModForge LAND/REFR。地形鏈已通並實機驗；**物件擺放前端 + 單層 baseTexture 後端已做（2026-06-17，待主力機 Godot GUI 跑一次）**。剩 open＝per-vertex splatmap、box proxy 換真實 glTF。 |
 | `inworld-skill-tree/` | 消費者 | 🔵 規劃中 | In-world 3D 星樹技能樹生成路線（Idea #20，玩家+NPC）。放棄 CSF，走 Campfire/Frostfall 世界內星樹 + JContainers per-NPC 狀態。主線設計已成稿，待 U1–U5 主力機/code pass 驗證。 |
-| `model-converter/` | 基石/工具 | 🔵 規劃中 | 以 Skyrim `.nif`（+dds）為中心的模型格式雙向互轉工具（↔ glTF/Godot ↔ FBX/OBJ）。收斂 model-porting 正向 + worldspace editor 需要的 nif→glTF 反向。工具盤點完成、缺口＝無已驗證的批量 nif→glTF；MVP 範圍待拍板。 |
+| `model-converter/` | 基石/工具 | 🔵 規劃中 | 以 Skyrim `.nif`（+dds）為中心的模型格式雙向互轉工具（↔ glTF/Godot ↔ FBX/OBJ）。收斂 model-porting 正向 + worldspace editor 需要的 nif→glTF 反向。**MVP 鎖＝vanilla nif→glTF 批量代理；CLI 協議契約草案已成（`PROTOCOL.md`）**。缺口＝無已驗證的批量 nif→glTF 載體（待主力機測 NifSkope fork CLI）。 |
 
 對比：**對其他 mod 的解碼/調查**（餵 ModForge roadmap 的參考）留在 `docs/`、繼續 committed；只有體量太大的才 gitignore 主體、留摘要。
