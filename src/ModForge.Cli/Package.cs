@@ -164,6 +164,9 @@ internal static partial class Program
         if (spec.Scenes.Any(sc => sc.AutoStart is not null))
             ShipEmbeddedPex("MFSceneBanterController.pex", "presence-gated Scene controller", "autoStart scenes won't fire");
 
+        if (spec.Quests.Any(q => q.StoryEvent is { } se && se.CooldownHours > 0f))
+            ShipEmbeddedPex("MFEncounterCooldown.pex", "SM-encounter cooldown", "cooldownHours encounters won't be rate-limited");
+
         if (spec.Identities.Any(idn => !string.IsNullOrWhiteSpace(idn.AcquireBook)))
             ShipEmbeddedPex("MFIdentityBook.pex", "identity-acquire book", "acquire books won't grant identities");
 

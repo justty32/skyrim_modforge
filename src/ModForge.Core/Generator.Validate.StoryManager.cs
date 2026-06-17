@@ -23,6 +23,15 @@ public static partial class Generator
                 foreach (var cs in se.Conditions)
                     CheckCondition(cs, $"{where} condition");
 
+                // #5 locationFilter: each entry is a LocType keyword ref (in-spec KYWD or vanilla).
+                foreach (var kw in se.LocationFilter)
+                    if (string.IsNullOrWhiteSpace(kw)) Problems.Add($"{where} locationFilter has an empty keyword");
+                    else CheckRef(kw, $"{where} locationFilter keyword");
+
+                // #6 cooldownHours: non-negative game hours.
+                if (se.CooldownHours < 0f)
+                    Problems.Add($"{where} cooldownHours {se.CooldownHours} must be >= 0");
+
                 // ScriptEvent is the custom entry: it MUST name a keyword (declared in spec.keywords)
                 // so the branch can filter to it. Other events don't use a keyword.
                 if (se.Event.Equals("ScriptEvent", StringComparison.OrdinalIgnoreCase))

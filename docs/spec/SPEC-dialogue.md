@@ -268,6 +268,7 @@ A condition is **static gate data**, so it lives in the spec (logic still belong
 { "function": "GetItemCount",          // form-arg: HasPerk | GetInFaction | GetItemCount | GetGlobalValue | GetStage | GetIsID | GetRelationshipRank
   //                                    //   GetQuestCompleted(quest) | GetDistance(ref; value=units) | GetIsCurrentPackage(pack) | GetIsVoiceType(VTYP/list)
   //                                    //   GetQuestRunning(quest) | GetInCell(cell) | GetInWorldspace(wrld) | GetEquipped(item/list) | GetDeadCount(npc base) | GetInCurrentLoc(location)
+  //                                    //   GetKeywordDataForCurrentLocation(LocType kw) | LocationHasKeyword(LocType kw) | LocAliasHasKeyword(alias=<locAlias>, param=LocType kw) — location-aware encounters
   //                                    // two-param: GetStageDone(param=quest, stage=N) — 1 if that exact stage was set
   //                                    //   IsSceneActionComplete(scene=<owning by default>, sceneActionIndex=N) — scene phase "advance when action N done"
   //                                    // actorValue-arg: GetActorValue | GetActorValuePercent (0..1 fraction)

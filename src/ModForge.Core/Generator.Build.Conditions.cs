@@ -93,6 +93,26 @@ public static partial class Generator
                 }
                 case "getincell":           { var d = new GetInCellConditionData();           if (hasParam) d.Cell.Link.SetTo(paramFk);           data = d; break; }
                 case "getincurrentloc":     { var d = new GetInCurrentLocConditionData();     if (hasParam) d.Location.Link.SetTo(paramFk);       data = d; break; }
+                // Location-keyword tests (A組 #5 location-aware encounters). param = a LocType keyword
+                // (LocTypeCity/LocTypeDungeon/…). GetKeywordDataForCurrentLocation = the player's CURRENT
+                // location (the EE "PlayerLocation.HasKeyword(LocType)" routing); LocationHasKeyword = the
+                // run-on ref's location. Keyword is IFormLinkOrIndex → set via .Keyword.Link.
+                case "getkeyworddataforcurrentlocation":
+                                            { var d = new GetKeywordDataForCurrentLocationConditionData(); if (hasParam) d.Keyword.Link.SetTo(paramFk); data = d; break; }
+                case "locationhaskeyword":  { var d = new LocationHasKeywordConditionData();  if (hasParam) d.Keyword.Link.SetTo(paramFk);        data = d; break; }
+                // LocAliasHasKeyword(aliasName, keyword): does the LOCATION held by alias <c.Alias> have the
+                // keyword? The hold-detection mechanism (a myHoldImperial/… location alias). Needs the owning
+                // quest (alias index), like GetIsAliasRef.
+                case "localiashaskeyword":
+                {
+                    if (string.IsNullOrWhiteSpace(c.Alias))
+                    { Warn($"  ! {label}: LocAliasHasKeyword needs an 'alias' (the location alias name)"); return null; }
+                    if (aliasIndexByName is null || !aliasIndexByName.TryGetValue(c.Alias, out var laIdx))
+                    { Warn($"  ! {label}: LocAliasHasKeyword alias '{c.Alias}' not found on the owning quest"); return null; }
+                    var d = new LocAliasHasKeywordConditionData { LocationAliasIndex = laIdx };
+                    if (hasParam) d.Keyword.Link.SetTo(paramFk);
+                    data = d; break;
+                }
                 // Two-param: IsSceneActionComplete(scene, actionIndex) → 1 once that scene action finished.
                 // The standard scene-phase "advance when the line is done" gate. Scene defaults to the
                 // owning scene on a scene completion/start condition; the action index is author-supplied

@@ -106,6 +106,10 @@ public static partial class Generator
     /// generated mod; Package ships it whenever a scene uses autoStart.</summary>
     internal const string SceneBanterController = "MFSceneBanterController";
 
+    /// <summary>Scriptname of the reusable SM-encounter anti-spam cooldown (extends Quest). Attached to a
+    /// storyEvent quest declaring `cooldownHours`; one prebuilt .pex serves every generated mod.</summary>
+    internal const string EncounterCooldownScript = "MFEncounterCooldown";
+
     /// <summary>Scriptname of the reusable primary-identity controller (extends Quest). Maintains the
     /// MF_PrimaryIdentity global; one prebuilt .pex (embedded in the CLI) serves every generated mod.</summary>
     internal const string IdentityController = "MFIdentityController";

@@ -40,7 +40,13 @@ public static partial class Generator
                 case "getglobalvalue": case "getstage": case "getrelationshiprank":
                 case "getquestrunning": case "getincell": case "getinworldspace":
                 case "getequipped": case "getdeadcount": case "getincurrentloc":
+                case "getkeyworddataforcurrentlocation": case "locationhaskeyword":
                     if (string.IsNullOrWhiteSpace(cs.Param)) Problems.Add($"{what}: {cs.Function} needs a param ref");
+                    else CheckRef(cs.Param, $"{what} param");
+                    break;
+                case "localiashaskeyword":   // location alias keyword (hold detection): needs alias + keyword param
+                    if (string.IsNullOrWhiteSpace(cs.Alias)) Problems.Add($"{what}: LocAliasHasKeyword needs an alias (the location alias name)");
+                    if (string.IsNullOrWhiteSpace(cs.Param)) Problems.Add($"{what}: LocAliasHasKeyword needs a param ref (the LocType keyword)");
                     else CheckRef(cs.Param, $"{what} param");
                     break;
                 case "getequippeditemtype":

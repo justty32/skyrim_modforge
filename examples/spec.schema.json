@@ -1871,6 +1871,16 @@
             "keyword": {
               "type": "string",
               "description": "ScriptEvent only: editorId of a KYWD declared in spec.keywords; the dispatcher passes it to SendStoryEvent and the branch filters on it"
+            },
+            "locationFilter": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "#5 location-aware encounter: LocType keyword refs. Build appends OR'd GetKeywordDataForCurrentLocation event-conditions (fires only when the new location has ANY listed LocType). Best with event=ChangeLocation."
+            },
+            "cooldownHours": {
+              "type": "number",
+              "minimum": 0,
+              "description": "#6 anti-spam cooldown (EE_WITimeout): min in-game hours between firings. Creates a <quest>_LastFired GLOB + attaches the reusable MFEncounterCooldown quest script. 0 = none."
             }
           }
         },

@@ -4,8 +4,8 @@
 
 ### Quest stages, log entries & objective wiring
 A quest's `stages[]` are integer milestones the quest can be **set to** (10, 20, 30…). Each stage
-optionally writes a **journal log entry** and can carry a quest-state flag. Objectives display and
-complete as stages are set; a `dialogue` line can advance a stage when picked.
+optionally writes a **journal log entry** + a quest-state flag. Objectives display/complete as stages
+are set; a `dialogue` line can advance a stage when picked.
 
 ```jsonc
 "quests": [{
@@ -25,16 +25,14 @@ complete as stages are set; a `dialogue` line can advance a stage when picked.
 }]
 ```
 - **`stages[]`** — `index` (unique, **ascending**), `logEntry` (journal text; omit for a silent
-  milestone), `completeQuest` / `failQuest` (set the QuestLogEntry flag that closes / fails the quest
-  when this stage is reached — at most one), `conditions` (optional CTDA gate on the log entry, built
-  with the shared **ConditionSpec**: `function` (a `GetStage`/`GetIsID`/… name), `comparison`
-  (`==`/`>=`/… or `EqualTo`/`GreaterThanOrEqualTo`/…, default `>=`), `value`, `param` (ref → the
-  function's form parameter, e.g. the quest for `GetStage`)).
+  milestone), `completeQuest` / `failQuest` (QuestLogEntry flag that closes / fails the quest at this
+  stage — at most one), `conditions` (optional CTDA gate on the log entry, built with the shared
+  **ConditionSpec**: `function`, `comparison` (`==`/`>=`/… or `EqualTo`/…, default `>=`), `value`,
+  `param` (ref → the function's form parameter, e.g. the quest for `GetStage`)).
 - **`stages[].startUpStage`** — marks the stage the engine **auto-runs `SetStage` to the instant the
-  quest starts** (vanilla QSDT "Start Up Stage" flag). This is how a **Story-Manager-triggered** quest
-  shows its opening log entry / displays its first objective with **no external `SetStage`** — without
-  it an SM-started quest sits silently at stage 0. At most one per quest. (A `dialogue`/`startGameEnabled`
-  quest usually doesn't need one; SM quests do.) **IN-GAME CONFIRMED 2026-06-05.**
+  quest starts** (vanilla QSDT "Start Up Stage" flag). How a **Story-Manager-triggered** quest shows its
+  opening log entry / first objective with **no external `SetStage`** — without it an SM quest sits
+  silently at stage 0. At most one per quest. **IN-GAME CONFIRMED 2026-06-05.**
 - **`stages[].instanceGlobals[]`** — bind GLOBs to **this quest instance** when the stage runs
   (gather/count **radiant** quests). The stage fragment calls `UpdateCurrentInstanceGlobal(<global>)` so
   objective text like `<Global=MF_ItemCount>/<Global=MF_ItemTotal>` shows **per-instance** numbers —
@@ -132,6 +130,8 @@ condition, ESL).
 | `event` | string | Event name — see table below. **Required.** |
 | `keyword` | string | `editorId` of a keyword in this spec. **Required for `ScriptEvent` only.** Multiple quests can share the same keyword (same filter branch). |
 | `conditions` | ConditionSpec[] | Extra CTDA conditions on the SM branch (same shape as `dialogue[].conditions`). Gates whether SM tries to start this quest. |
+| `locationFilter` | string[] | **Location-aware encounter sugar (#5).** LocType keyword refs (`LocTypeBanditCamp`, `LocTypeDungeon`, …). The build appends one `GetKeywordDataForCurrentLocation` event-condition per keyword, **OR'd** together — so the quest fires only when the player's new location has ANY listed LocType. Best with `event: "ChangeLocation"`. Pure CTDA (offline-verifiable). |
+| `cooldownHours` | float | **Anti-spam cooldown (#6, EE_WITimeout pattern).** Min in-game hours between firings. The build creates a `<quest>_LastFired` float GLOB + attaches the reusable `MFEncounterCooldown` quest script (`OnInit` `Stop()`s the quest if it re-fired within the window). 0 = none. ⚠ runtime check needed (prebuilt `.pex` compiles on the main machine; see `WAIT_USER.md`). Hold detection = a `findMatchingLocation` location alias + a `LocAliasHasKeyword` condition (new fns also: `GetKeywordDataForCurrentLocation`, `LocationHasKeyword`). |
 
 #### Supported events
 

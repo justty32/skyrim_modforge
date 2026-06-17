@@ -47,6 +47,17 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <!-- The reusable SM-encounter cooldown .pex (extends Quest; OnInit Stop()s the quest if it re-fired
+       within `cooldownHours`). Embedded so `package` can drop it into Scripts/ for any mod whose
+       storyEvent quests declare cooldownHours. Conditional: build succeeds without it; `package` warns
+       at runtime if missing. Compile it with:
+         dotnet run - - compile assets/papyrus/MFEncounterCooldown.psc assets/papyrus/ -->
+  <ItemGroup Condition="Exists('..\..\assets\papyrus\MFEncounterCooldown.pex')">
+    <EmbeddedResource Include="..\..\assets\papyrus\MFEncounterCooldown.pex">
+      <LogicalName>MFEncounterCooldown.pex</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
   <!-- The reusable identity-acquire book .pex (extends ObjectReference; OnRead joins/leaves an identity faction).
        Embedded so `package` can drop it into Scripts/ for any mod whose identities declare an acquireBook.
        Conditional: build succeeds without it; `package` warns at runtime if missing. Compile it with:

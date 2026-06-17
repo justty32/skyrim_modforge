@@ -113,8 +113,8 @@ ModForge 的 `build` 主輸出是 `.esp`。這組是對應 SKSE framework 的 **
 
 | # | 缺口 | 優先 |
 |---|------|------|
-| 5 | LocType keyword 路由 + Hold 偵測 alias 語法糖 | 🟡 |
-| 6 | WITimeout 冷卻模式（Global + alias script cooldown 生成） | 🟡 |
+| 5 | ✅ LocType keyword 路由 + Hold 偵測（locationFilter + LocAliasHasKeyword）| ✅ 落地 06-17 |
+| 6 | ✅ WITimeout 冷卻模式（cooldownHours → GLOB + MFEncounterCooldown script）| ✅ 落地 06-17 |
 
 ---
 

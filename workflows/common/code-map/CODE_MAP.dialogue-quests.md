@@ -27,6 +27,7 @@
 | `examples/story-manager-kill.json` | KillActor SM 事件 |
 | `examples/story-manager-assault.json` | Assault SM 事件 |
 | `examples/story-manager-changelocation.json` | ChangeLocation SM 事件 |
+| `examples/location_encounter_spec.json` | **#5+#6 地點感知遭遇：ChangeLocation + `locationFilter`（LocType OR'd）+ `cooldownHours`（EE_WITimeout）** |
 | `examples/story-manager-craftitem.json` | CraftItem SM 事件（玩家製作物品；engine-native）|
 | `examples/story-manager-events-demo.json` | 三個 engine-native 事件合一測試（CraftItem/PlayerRemoveItem/Arrest）|
 | `examples/story-manager-events-demo2.json` | IncreaseLevel SM 事件（玩家升級；engine-native，無 ref 槽）|
@@ -66,6 +67,7 @@
 | `RadiantAliasTests.cs` | **#7 findMatchingLocation（Type=Location、Location.Keyword/AliasID=parent）+ #8 findInLocationAlias（Type=Reference、Location.AliasID/RefType、conditions）build + validate（未知 keyword/parent/location alias、自指、缺 refType+conditions）** |
 | `StoryManagerEventsTests.cs` | 事件登錄表欄位（FormKey / slot 對應）|
 | `StoryManagerEventsMoreTests.cs` | 擴充事件（ChangeLocation/CastMagic/AddItem/Assault/ScriptEvent）|
+| `EncounterRoutingTests.cs` | **#5 locationFilter（GetKeywordDataForCurrentLocation、OR 群組）+ #6 cooldownHours（LastFired GLOB + MFEncounterCooldown script + props）+ LocAliasHasKeyword condition + validate（負 cooldown、空 keyword）** |
 | `StoryManagerValidateTests.cs` | SM validate（事件名、alias 語法、keyword 要求）|
 | `WordWallTests.cs` | word wall 教字 quest fragment（⚠️ 需本機 Skyrim.esm）|
 
@@ -181,7 +183,7 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Build P2 | `Generator.Build.Conditions.cs` | 所有 CTDA 的 function dispatch + ref 解析（dialogue / stage / banter / package 共用）。**`GetIsAliasRef`**：用 `alias`（owning quest 的 alias 名）→ alias index，由各 quest-scoped 呼叫點傳入 `aliasIndexByName`。**`IsSceneActionComplete`**：`BuildCondition` 第 4 參 `owningScene` FormKey，scene-cond 呼叫點（`WireScenes` 的 sceneConditionWires）傳 `scene.FormKey`，author 可用 `c.Scene` 覆寫；`c.SceneActionIndex` 必填。package/perk 等無 scene/quest context → 傳 null → 警告丟棄 |
+| Build P2 | `Generator.Build.Conditions.cs` | 所有 CTDA 的 function dispatch + ref 解析（dialogue / stage / banter / package 共用）。**地點感知（#5）：`GetKeywordDataForCurrentLocation`（玩家當前地點 LocType）/`LocationHasKeyword`/`LocAliasHasKeyword`（location alias 的 keyword，hold 偵測，需 owning quest alias index，仿 GetIsAliasRef）。****`GetIsAliasRef`**：用 `alias`（owning quest 的 alias 名）→ alias index，由各 quest-scoped 呼叫點傳入 `aliasIndexByName`。**`IsSceneActionComplete`**：`BuildCondition` 第 4 參 `owningScene` FormKey，scene-cond 呼叫點（`WireScenes` 的 sceneConditionWires）傳 `scene.FormKey`，author 可用 `c.Scene` 覆寫；`c.SceneActionIndex` 必填。package/perk 等無 scene/quest context → 傳 null → 警告丟棄 |
 | Validate | `Generator.Validate.Helpers.cs` | `CheckCondition`（function / comparator / ref）|
 | Diag | `Diagnostics.Dialogue.cs` | condition 欄位 dump |
 
@@ -192,10 +194,12 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.StoryManager.cs` | `QuestStoryEventSpec`（event + conditions）、`AliasSpec`（fill 模式：fromEvent/forced/uniqueActor/createObject/findMatching/**findMatchingLocation（#7 radiant LocationAlias）/findInLocationAlias（#8 在地點內找 ref）**；findMatching/find* 帶 `Conditions`；alias 腳本 `Script`/`ScriptSource`/`ScriptProperties` = OnActivate 等）|
+| Spec | `Spec.StoryManager.cs` | `QuestStoryEventSpec`（event + conditions + **`locationFilter[]`（#5 LocType 路由）+ `cooldownHours`（#6 冷卻）**）、`AliasSpec`（fill 模式：fromEvent/forced/uniqueActor/createObject/findMatching/**findMatchingLocation（#7 radiant LocationAlias）/findInLocationAlias（#8 在地點內找 ref）**；findMatching/find* 帶 `Conditions`；alias 腳本 `Script`/`ScriptSource`/`ScriptProperties` = OnActivate 等）|
 | Data | `StoryManagerEvents.cs` | 事件登錄表：KillActor/ChangeLocation/CastMagic/AddItem/Assault/CraftItem/PlayerRemoveItem/Arrest/IncreaseLevel/ScriptEvent — FormKey + 槽名；`TryParseFill` / `TryParseCreateObject`（`<ref>@<alias>`）|
 | Build P2 | `Generator.Build.StoryManager.cs` | SMBN→SMQN 掛原版事件根；keyword 過濾條件（GetEventData/GetIsID）；**`BuildQuestAliases(quest,qs,def?)`** 共用 helper 建所有 alias fill（fromEvent 僅 `def!=null` 時；createObject = `CreateReferenceToObject` 在 `aliasIdByName` 目標 alias 處生成；findMatching = `QuestAlias.Flag.MatchingRefInLoadedArea`[+`MatchingRefClosest`] + alias.Conditions；**findMatchingLocation（#7）= `Type=Location` + `LocationAliasReference{Keyword=locType, AliasID=parent}`；findInLocationAlias（#8）= `Type=Reference` + `LocationAliasReference{AliasID=locAlias, RefType=LCRT}`；條件接線共用 `WireAliasMatchConditions`**；alias 腳本 `AttachAliasScript` = `QuestAdapter.Aliases` 加 `QuestFragmentAlias`[v5/objFmt2、綁 alias ID、flag=Local]；**`forced:` 立即解析不到（target 晚 build）→ 排入 `deferredForcedAliases`、由 `WireDeferredForcedAliases` 後補**）；**`BuildStandaloneQuestAliases()`** 替非 storyEvent quest 建 alias（def=null，跳 fromEvent）。⚠ ALNA(`FindMatchingRefNearAlias`)離線驗證＝只 `LinkedRefChild`，故 #8 走 `Location` 不走 ALNA；CK 語義待主力機 xEdit 比對 |
-| Validate | `Generator.Validate.StoryManager.cs` | 事件名合法；**`ValidateQuestAlias(q,a,def?,…)`** 共用（storyEvent 與非 storyEvent quest 都驗 alias fill/ref/script；def=null 時 fromEvent 報錯；**findMatchingLocation 驗 LocType keyword + 父 alias 同 quest；findInLocationAlias 驗 location alias 同 quest + refType + 需 refType 或 conditions**）；slot 名稱、ScriptEvent 需宣告 keyword |
+| Build P2 | `Generator.Build.StoryManager.cs` | **#5 locationFilter → 在 `quest.EventConditions` 追加 OR'd `GetKeywordDataForCurrentLocation`；#6 `AttachEncounterCooldown`：建 `<quest>_LastFired` float GLOB + 掛 `MFEncounterCooldown` quest script（無條件，prebuilt .pex）** |
+| Asset | `assets/papyrus/MFEncounterCooldown.psc` | **#6 reusable 冷卻（extends Quest，OnInit 比 `GetCurrentGameTime - LastFired < CooldownHours/24` → `Stop()` 中止重觸發）；embed CLI；EE_WITimeout pattern；runtime 待主力機驗** |
+| Validate | `Generator.Validate.StoryManager.cs` | 事件名合法；**locationFilter keyword CheckRef、cooldownHours>=0**；**`ValidateQuestAlias(q,a,def?,…)`** 共用（storyEvent 與非 storyEvent quest 都驗 alias fill/ref/script；def=null 時 fromEvent 報錯；**findMatchingLocation 驗 LocType keyword + 父 alias 同 quest；findInLocationAlias 驗 location alias 同 quest + refType + 需 refType 或 conditions**）；slot 名稱、ScriptEvent 需宣告 keyword |
 | Diag | `Diagnostics.StoryManager.cs` | smtree（事件根列舉）/ SMBN alias fill / event-data slot dump |
 
 ### 支援事件與槽

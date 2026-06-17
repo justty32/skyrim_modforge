@@ -34,7 +34,27 @@ public static partial class Generator
                     if (BuildCondition(cs, $"quest '{qs.EditorId}' storyEvent condition") is { } cond)
                         quest.EventConditions.Add(cond);
 
+                // #5 locationFilter: OR'd GetKeywordDataForCurrentLocation conditions (fires only when the
+                // new location has ANY listed LocType keyword; the OR group ANDs after the event conditions).
+                for (int li = 0; li < se.LocationFilter.Count; li++)
+                {
+                    var cs = new ConditionSpec
+                    {
+                        Function = "GetKeywordDataForCurrentLocation",
+                        Param = se.LocationFilter[li],
+                        Comparison = "==",
+                        Value = 1,
+                        Or = li < se.LocationFilter.Count - 1,   // OR within the group; last one closes it
+                    };
+                    if (BuildCondition(cs, $"quest '{qs.EditorId}' locationFilter[{li}]") is { } cond)
+                        quest.EventConditions.Add(cond);
+                }
+
                 BuildQuestAliases(quest, qs, def);
+
+                // #6 cooldownHours: anti-spam GLOB + reusable cooldown script (EE_WITimeout pattern).
+                if (se.CooldownHours > 0f)
+                    AttachEncounterCooldown(quest, qs, se.CooldownHours);
 
                 // ScriptEvent quests are gated by a keyword; that keyword keys (and filters) the branch.
                 bool isScriptEvent = se.Event.Equals("ScriptEvent", StringComparison.OrdinalIgnoreCase);
@@ -233,15 +253,6 @@ public static partial class Generator
                 nextId++;
             }
             quest.NextAliasID = nextId;
-        }
-
-        // Wire an alias's match-filter CTDA (shared by findMatching / findMatchingLocation / findNearAlias):
-        // these conditions decide WHICH ref/location in scope the engine picks.
-        private void WireAliasMatchConditions(QuestAlias alias, QuestSpec qs, QuestAliasSpec aSpec, string kindLabel)
-        {
-            foreach (var cs in aSpec.Conditions)
-                if (BuildCondition(cs, $"quest '{qs.EditorId}' alias '{aSpec.Name}' {kindLabel} condition") is { } cond)
-                    alias.Conditions.Add(cond);
         }
 
         // Ordinary (non-storyEvent, StartGameEnabled) quests can ALSO carry aliases — a forced/uniqueActor

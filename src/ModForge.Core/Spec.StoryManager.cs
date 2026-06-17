@@ -10,6 +10,16 @@ public sealed class QuestStoryEventSpec
     // dispatcher passes to SendStoryEvent. The SM branch gets a GetEventData/GetIsID Keyword filter,
     // so this quest starts only when content fires THAT keyword. Ignored for engine-native events.
     public string Keyword { get; set; } = "";
+    // A组 #5 location-aware encounter sugar (ChangeLocation events): LocType keyword refs. The build
+    // appends one GetKeywordDataForCurrentLocation condition per keyword to the quest's event conditions,
+    // OR'd together — so the encounter quest only fires when the player's new location has ANY of these
+    // LocType keywords (e.g. ["LocTypeBanditCamp", "LocTypeDungeon"]). Sugar over hand-writing the CTDA.
+    public List<string> LocationFilter { get; set; } = new();
+    // A组 #6 anti-spam cooldown (ChangeLocation events): minimum GAME HOURS between firings. The build
+    // creates a "<quest>_LastFired" GLOB (GameDaysPassed of last trigger) + ships the reusable
+    // MFEncounterCooldown quest script, which stamps it on start and is gated against re-firing within
+    // the window. 0 = no cooldown. ⚠ runtime behaviour verified on the main machine (see WAIT_USER).
+    public float CooldownHours { get; set; }
 }
 
 // 一條 quest alias。fill 語法："fromEvent:<slot>"（拿事件帶來的 ref）、"forced:<ref>"（寫死特定 ref）、

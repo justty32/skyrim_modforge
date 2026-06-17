@@ -1,0 +1,22 @@
+{
+  "pluginName": "ModForgeLocationEncounter.esp",
+  "esl": false,
+  "_": "A組 #5+#6 location-aware encounter. A ChangeLocation Story-Manager quest that fires only when the player enters a location with a LocType keyword (locationFilter, OR'd) and not more often than cooldownHours (anti-spam, the EE_WITimeout pattern). The build appends GetKeywordDataForCurrentLocation conditions to the SM event conditions, creates a <quest>_LastFired GLOB, and attaches the reusable MFEncounterCooldown script (which Stop()s the quest if it re-fired within the window). Add stages/dialogue/aliases to make it actually DO something on fire. ⚠ locationFilter conditions are pure CTDA (offline-verifiable); the cooldown SCRIPT runtime behaviour needs a main-machine in-game check (see WAIT_USER). LocType FormIDs here are real vanilla (LocTypeBanditCamp 0x130F2, LocTypeDungeon 0x130DE) — verify with `gamedata find`.",
+
+  "quests": [
+    {
+      "editorId": "MFBanditAmbush",
+      "name": "Bandit Ambush",
+      "stages": [ { "index": 10, "startUpStage": true, "logEntry": "You sense danger nearby." } ],
+      "storyEvent": {
+        "event": "ChangeLocation",
+        "_": "Fires only in a bandit camp OR a dungeon, at most once per 12 in-game hours.",
+        "locationFilter": [ "Skyrim.esm:0x000130F2", "Skyrim.esm:0x000130DE" ],
+        "cooldownHours": 12
+      },
+      "aliases": [
+        { "name": "NewLocation", "fill": "fromEvent:newLocation" }
+      ]
+    }
+  ]
+}
