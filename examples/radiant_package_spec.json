@@ -1,0 +1,34 @@
+{
+  "pluginName": "ModForgeRadiantPackage.esp",
+  "esl": false,
+  "_": "C組 #2 — package target/location → quest alias. A radiant quest fills aliases (a VIP actor + a dungeon location); its performance packages then ACT on those aliases: travel to the dungeon the alias picked, escort the VIP there. Syntax: 'alias:<name>' (the ref/actor the alias holds → PackageTargetAlias / LocationFallback AliasForReference) or 'aliasLoc:<name>' (the location a location-alias holds → LocationFallback AliasForLocation). ownerQuest MUST be in-spec so alias indices resolve. ⚠ Mutagen field shape is reflection-verified, but whether AliasForReference vs AliasForLocation / PackageTargetAlias byte-matches a real radiant package needs a main-machine xEdit compare (see WAIT_USER). LocType FormID is a placeholder.",
+
+  "quests": [
+    {
+      "editorId": "MFRadiantEscort",
+      "name": "Radiant Escort",
+      "startGameEnabled": true,
+      "aliases": [
+        { "name": "VIP", "_": "alias index 0 — the actor to escort (forced to a real NPC in a real mod).", "fill": "forced:Skyrim.esm:0x000007" },
+        { "name": "Safehouse", "_": "alias index 1 — a Dungeon-type location picked at runtime (placeholder LocType).", "fill": "findMatchingLocation:Skyrim.esm:0x00130DE9" }
+      ]
+    }
+  ],
+
+  "packages": [
+    {
+      "editorId": "MFTravelToSafehouse",
+      "_": "Travel to the LOCATION the Safehouse alias holds (aliasLoc: → AliasForLocation).",
+      "template": "Skyrim.esm:0x016FAA",
+      "ownerQuest": "MFRadiantEscort",
+      "travel": { "place": "aliasLoc:Safehouse", "radius": 256 }
+    },
+    {
+      "editorId": "MFEscortVIP",
+      "_": "Escort the VIP actor (alias: target) to the Safehouse location (aliasLoc: destination).",
+      "template": "Skyrim.esm:0x023B73",
+      "ownerQuest": "MFRadiantEscort",
+      "escort": { "target": "alias:VIP", "destination": "aliasLoc:Safehouse" }
+    }
+  ]
+}

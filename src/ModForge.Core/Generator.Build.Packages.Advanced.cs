@@ -189,7 +189,7 @@ public static partial class Generator
             // 5 Chair Target = SelfActorEffects, 6 Found Chair objectlist — NOT author-facing; emitted exactly
             // as vanilla so the engine's food/chair seeking works), then the named bool/float/int block.
             var et = pk.Eat;
-            pack.Data[0] = MakeLocationSlot("Eat Location", $"package '{pk.EditorId}' eat", et.Location, et.Radius == 0 ? 500u : et.Radius);
+            pack.Data[0] = MakeLocationSlot("Eat Location", $"package '{pk.EditorId}' eat", et.Location, et.Radius == 0 ? 500u : et.Radius, pk.EditorId);
             pack.Data[1] = new PackageDataTarget
             {
                 Name = "Food Criteria",

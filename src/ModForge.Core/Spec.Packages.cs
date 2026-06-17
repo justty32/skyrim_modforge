@@ -8,6 +8,16 @@ namespace ModForge;
 // our package fills those inputs. `interruptFlags` (HellosToPlayer/AllowIdleChatter/
 // WorldInteractions/…) are the lifelike-NPC switches. Assign to an NPC via NpcSpec.packages.
 // Use `packagediag <Skyrim.esm> <templateFormId>` to discover a template's slot schema.
+//
+// RADIANT alias refs (C組 #2): any target/location slot ref (sandbox/sleep/eat `location`,
+// travel `place`, escort `destination`/`target`, follow `target`, sitTarget/activate `target`,
+// useMagic `location`/`target`, patrol `start`) may name a quest ALIAS instead of a placed ref:
+//   "alias:<name>"    → the ref/actor the ownerQuest's alias <name> is filled with at runtime
+//                       (target → PackageTargetAlias; location → LocationFallback AliasForReference)
+//   "aliasLoc:<name>" → the LOCATION the ownerQuest's location alias <name> holds
+//                       (location → LocationFallback AliasForLocation; not valid as a target)
+// `ownerQuest` MUST be an in-spec quest so its alias indices can be resolved. This is what lets a
+// radiant performance package act on the actor/location an alias filled (e.g. travel to alias:Dungeon).
 public sealed class PackageSpec
 {
     public string EditorId { get; set; } = "";

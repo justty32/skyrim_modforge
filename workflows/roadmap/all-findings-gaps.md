@@ -43,7 +43,7 @@
 
 | # | 缺口 | 優先 |
 |---|------|------|
-| 2 | Package `target`/`location` 支援 quest alias index（`PackageTargetAlias`）—— radiant 演出 package 必需 | 🔴 |
+| 2 | ✅ Package `target`/`location` 支援 quest alias index（`PackageTargetAlias`）—— radiant 演出 package 必需 | ✅ 落地 06-17 |
 
 ---
 
@@ -233,7 +233,7 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 
 1. ~~**A 組 #7 + #8**（LocationAlias + ALNA fill）~~ ✅ **已落地 2026-06-17**（#7 findMatchingLocation、#8 findInLocationAlias；#8 scope 校正：ALNA 離線驗＝LinkedRefChild-only，改走 LocationAliasReference）→ radiant quest 生成解鎖（CK 語義待主力機驗）
 2. ~~**B 組 #1**（Perk AddActivateChoice + fragment）~~ ✅ **已落地 2026-06-17** → 互動式 perk mod（PerkAdapter byte 待主力機驗）
-3. **C 組 #2**（package alias 間接）→ 解鎖 radiant 演出 package
+3. ~~**C 組 #2**（package alias 間接）~~ ✅ **已落地 2026-06-17** → radiant 演出 package（byte 待主力機驗）
 4. ~~**D-1**（SPID _DISTR.ini）~~ ✅ **已落地 2026-06-17** → 無衝突 NPC 標記與兼容 patch
 5. **D-2**（MCM Helper）→ 解鎖玩家設定面板
 6. **D-4**（FLM ini）→ 解鎖外部 FLST 注入（Spellforge/SPID 兼容）

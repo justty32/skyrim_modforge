@@ -15,7 +15,8 @@ public static partial class Generator
                 deferredTargetWires.Select(w => w.Ref)
                     .Concat(deferredLocationWires.Select(w => w.Ref))
                     .Concat(MerchantContainerRefs())   // the merchant chest holds gold/stock — must persist
-                    .Where(r => !string.IsNullOrWhiteSpace(r) && !LooksExternalRef(r)),
+                    // "alias:"/"aliasLoc:" refs name a quest alias, not a placement — exclude them.
+                    .Where(r => !string.IsNullOrWhiteSpace(r) && !LooksExternalRef(r) && !TryParseAliasRef(r, out _, out _)),
                 StringComparer.OrdinalIgnoreCase);
             // EditorIds named as some door's teleport PARTNER — a teleport anchor must persist (the engine
             // drops a temporary door, breaking the link). Both ends of a pair end up here.

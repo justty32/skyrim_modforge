@@ -85,6 +85,22 @@ public static partial class Generator
         {
             foreach (var (pack, slot, slotName, ed, refStr) in deferredTargetWires)
             {
+                // An "alias:<name>" target → PackageTargetAlias (radiant performance package whose target
+                // is filled by the ownerQuest's alias). aliasLoc: is a location form — invalid as a target.
+                if (TryResolveAliasIndex(refStr, ed, out var isLocAlias, out var aliasIdx))
+                {
+                    if (isLocAlias)
+                    { Warn($"  ! package '{ed}' {slotName} '{refStr}': aliasLoc: is a location, not a target — use alias:"); continue; }
+                    if (aliasIdx < 0) continue;   // already warned in TryResolveAliasIndex
+                    pack.Data[slot] = new PackageDataTarget
+                    {
+                        Name = slotName,
+                        Type = PackageDataTarget.Types.SingleRef,
+                        Target = new PackageTargetAlias { Alias = aliasIdx },
+                    };
+                    linksWired++;
+                    continue;
+                }
                 if (!TryResolveRef(refStr, formKeyByEd, out var tgtFk))
                 { Warn($"  ! package '{ed}' {slotName} '{refStr}' unresolved — package will no-op"); continue; }
                 pack.Data[slot] = new PackageDataTarget
@@ -104,7 +120,7 @@ public static partial class Generator
         public void WireDeferredLocations()
         {
             foreach (var (pack, slot, slotName, ed, refStr, radius) in deferredLocationWires)
-                pack.Data[slot] = MakeLocationSlot(slotName, $"package '{ed}' {slotName.ToLowerInvariant()}", refStr, radius);
+                pack.Data[slot] = MakeLocationSlot(slotName, $"package '{ed}' {slotName.ToLowerInvariant()}", refStr, radius, ed);
         }
     }
 }

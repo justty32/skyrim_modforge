@@ -1676,7 +1676,8 @@
           "$ref": "#/$defs/ref"
         },
         "ownerQuest": {
-          "$ref": "#/$defs/ref"
+          "$ref": "#/$defs/ref",
+          "description": "Quest that owns this radiant package. Must be an in-spec quest if any target/location slot uses an 'alias:<name>'/'aliasLoc:<name>' ref (the alias index resolves against this quest's aliases). See SPEC-packages.md."
         },
         "schedule": {
           "type": "object",

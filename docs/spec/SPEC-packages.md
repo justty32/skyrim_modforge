@@ -17,6 +17,24 @@ template ModForge doesn't yet handle (UseWeapon / …), still set `template`; th
 structurally valid but with no Data overrides (template defaults apply) and a warning. Use
 `packagediag <Skyrim.esm> <0xFORMID>` to discover any template's named slot schema before adding support.
 
+**Radiant alias targets (`alias:` / `aliasLoc:`).** Any target/location slot ref (`sandbox`/`sleep`/
+`eat` `location`, `travel` `place`, `escort` `destination`/`target`, `follow` `target`,
+`sitTarget`/`activate` `target`, `useMagic` `location`/`target`, `patrol` `start`) may name a quest
+**alias** instead of a placed reference — the core of a radiant **performance package** that acts on
+whatever an alias was filled with at runtime:
+- **`"alias:<name>"`** → the ref/actor the ownerQuest's alias `<name>` holds. On a *target* slot →
+  `PackageTargetAlias`; on a *location* slot → `LocationFallback(AliasForReference)`.
+- **`"aliasLoc:<name>"`** → the LOCATION a location-alias holds → `LocationFallback(AliasForLocation)`.
+  (Location slots only — not valid as a target.)
+
+The package's **`ownerQuest` must be an in-spec quest** so its alias indices can be resolved (validate
+errors otherwise). E.g. a quest fills `Victim`/`Dungeon` aliases (`findMatchingLocation`,
+`findInLocationAlias`, `forced`, …) and its packages do `travel.place: "aliasLoc:Dungeon"` +
+`escort.target: "alias:Victim"`. Demo `examples/radiant_package_spec.json`. ⚠ **Offline limit:** the
+Mutagen field *shape* is reflection-verified, but the `AliasForReference`/`AliasForLocation` choice and
+`PackageTargetAlias` byte layout need a main-machine xEdit byte-compare vs a real radiant package — see
+`WAIT_USER.md`.
+
 **Sandbox at a specific ref vs Travel:** Sandbox's `location` ref makes the NPC wander/eat/sit
 **around** that ref (radius covers nearby furniture). Travel's `place` ref makes the NPC actually
 **walk to** that ref and stop within `radius` of it. Common chain: a Travel package + a Sandbox

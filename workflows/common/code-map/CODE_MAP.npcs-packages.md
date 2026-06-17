@@ -43,6 +43,7 @@
 | `examples/package3_spec.json` | UseMagic package |
 | `examples/package4_spec.json` | 其他 package 變體 |
 | `examples/escort_spec.json` | Escort package |
+| `examples/radiant_package_spec.json` | **#2 radiant 演出 package：`alias:`/`aliasLoc:` target/location 指向 ownerQuest 的 alias（travel→aliasLoc:Dungeon、escort target→alias:VIP）** |
 | `examples/follow_spec.json` | Follow package |
 | `examples/patrol_spec.json` | Patrol package |
 | `examples/scene-sit-performance.json` | SitTarget package（NPC 走到家具並坐下；scene Package action 驅動的演出 beat）|
@@ -65,6 +66,7 @@
 | 測試檔案 | 涵蓋 |
 |---------|-----|
 | `PackageTests.cs` | AI package 資料槽填充（所有 template 變體）|
+| `PackageAliasTargetTests.cs` | **#2 alias target/location：Travel/Sleep/Activate/Escort 的 alias:/aliasLoc: → PackageTargetAlias / LocationFallback(AliasForReference\|AliasForLocation) + index；validate（無 ownerQuest / 未知 alias / external ownerQuest）** |
 | `RelationshipAndEslTests.cs` | faction relationship build + ESL flag 行為 |
 | `WeatherClimateTests.cs` | weather scalar fields + climate build |
 
@@ -127,8 +129,9 @@
 | Data | `PackageTemplates.cs` | vanilla PACK procedure-template FormKey 登錄（含 `SitTarget`=0x0A9277、`Activate`=0x019B2D、`Eat`=0x019714）|
 | Build P2 | `Generator.Build.Packages.cs` | 資料槽填充 dispatcher（sandbox/sleep/travel/usemagic/patrol/follow/escort/**sittarget/activate/eat**）|
 | Build P2 | `Generator.Build.Packages.Advanced.cs` | 複雜套件槽：Escort/Patrol/Follow/**SitTarget/Activate/Eat**（SitTarget slot16 SingleRef→家具走位+坐；Activate slot0 SingleRef→物件走位+活化〔lever/door〕；Eat 為 location sandbox-variant，固定 food/chair 搜尋）|
+| Build P2 | `Generator.Build.Packages.AliasRefs.cs` | **C組 #2 radiant alias 解析**：`TryParseAliasRef`（`alias:`/`aliasLoc:` 共用，Build+Validate）+ `TryResolveAliasIndex`（對 package 的 in-spec `ownerQuest` 找 alias index）。`MakeLocationSlot`（`Generator.BuildContext.Utilities.cs`）alias→`LocationFallback{AliasForReference\|AliasForLocation, Data=idx}`；`WireDeferredTargets`（`Generator.Build.PlacementRefs.cs`）alias→`PackageTargetAlias{Alias=idx}`。⚠ AliasFor* 選擇 + PackageTargetAlias byte 待主力機 xEdit 比對真 radiant package |
 | Build P2 | `Generator.Build.Conditions.cs` | package condition 接線（共用）|
-| Validate | `Generator.Validate.Npcs.cs` | package template/slot integrity、AI-data enum |
+| Validate | `Generator.Validate.Npcs.cs` | package template/slot integrity、AI-data enum、**alias-capable slot（`PkgSlotRef`）：`alias:`/`aliasLoc:` 需 in-spec ownerQuest + alias 存在** |
 
 ### npcPatches（override 既有 NPC 的 AI 排程）
 → **說明文件**：[SPEC-packages.md § npcPatches](../../../docs/spec/SPEC-packages.md#npcpatches--override-an-existing-npcs-ai-schedule)

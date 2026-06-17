@@ -50,34 +50,46 @@ public static partial class Generator
                     Problems.Add($"package '{pk.EditorId}' template '{pk.Template}' must be a well-formed external <master>:0xFORMID ref");
                 CheckRef(pk.CombatStyle, $"package '{pk.EditorId}' combatStyle");
                 CheckRef(pk.OwnerQuest,  $"package '{pk.EditorId}' ownerQuest");
-                CheckRef(pk.Sandbox.Location, $"package '{pk.EditorId}' sandbox.location");
-                CheckRef(pk.Sleep.Location,   $"package '{pk.EditorId}' sleep.location");
-                CheckRef(pk.Travel.Place, $"package '{pk.EditorId}' travel.place");
-                CheckRef(pk.UseMagic.Location, $"package '{pk.EditorId}' useMagic.location");
-                CheckRef(pk.UseMagic.Target,   $"package '{pk.EditorId}' useMagic.target");
+                // An alias-capable slot ref may be "alias:<name>"/"aliasLoc:<name>" → validate against the
+                // package's in-spec ownerQuest's aliases instead of as a placement/external ref.
+                void PkgSlotRef(string refStr, string label)
+                {
+                    if (!Generator.TryParseAliasRef(refStr, out _, out var aliasName)) { CheckRef(refStr, label); return; }
+                    if (string.IsNullOrWhiteSpace(pk.OwnerQuest))
+                        Problems.Add($"{label}: 'alias:'/'aliasLoc:' needs an in-spec 'ownerQuest' on the package");
+                    else if (spec.Quests.FirstOrDefault(q => string.Equals(q.EditorId, pk.OwnerQuest, StringComparison.OrdinalIgnoreCase)) is not { } oq)
+                        Problems.Add($"{label}: ownerQuest '{pk.OwnerQuest}' is not an in-spec quest (alias refs need the quest's aliases)");
+                    else if (!oq.Aliases.Any(a => string.Equals(a.Name, aliasName, StringComparison.OrdinalIgnoreCase)))
+                        Problems.Add($"{label}: no alias '{aliasName}' on ownerQuest '{pk.OwnerQuest}'");
+                }
+                PkgSlotRef(pk.Sandbox.Location, $"package '{pk.EditorId}' sandbox.location");
+                PkgSlotRef(pk.Sleep.Location,   $"package '{pk.EditorId}' sleep.location");
+                PkgSlotRef(pk.Travel.Place, $"package '{pk.EditorId}' travel.place");
+                PkgSlotRef(pk.UseMagic.Location, $"package '{pk.EditorId}' useMagic.location");
+                PkgSlotRef(pk.UseMagic.Target,   $"package '{pk.EditorId}' useMagic.target");
                 CheckRef(pk.UseMagic.Spell,    $"package '{pk.EditorId}' useMagic.spell");
-                CheckRef(pk.Patrol.Start,      $"package '{pk.EditorId}' patrol.start");
+                PkgSlotRef(pk.Patrol.Start,      $"package '{pk.EditorId}' patrol.start");
                 if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var ptfk) && ptfk == PackageTemplates.Patrol
                     && string.IsNullOrWhiteSpace(pk.Patrol.Start))
                     Problems.Add($"package '{pk.EditorId}' uses Patrol template but patrol.start is empty — NPC has no route and won't patrol");
-                CheckRef(pk.Follow.Target,     $"package '{pk.EditorId}' follow.target");
-                CheckRef(pk.Escort.Target,      $"package '{pk.EditorId}' escort.target");
-                CheckRef(pk.Escort.Destination, $"package '{pk.EditorId}' escort.destination");
+                PkgSlotRef(pk.Follow.Target,     $"package '{pk.EditorId}' follow.target");
+                PkgSlotRef(pk.Escort.Target,      $"package '{pk.EditorId}' escort.target");
+                PkgSlotRef(pk.Escort.Destination, $"package '{pk.EditorId}' escort.destination");
                 if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var etfk) && etfk == PackageTemplates.Escort
                     && string.IsNullOrWhiteSpace(pk.Escort.Destination))
                     Problems.Add($"package '{pk.EditorId}' uses Escort template but escort.destination is empty — NPC won't lead anywhere (falls back to NearSelf)");
                 if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var tfk) && tfk == PackageTemplates.UseMagic
                     && string.IsNullOrWhiteSpace(pk.UseMagic.Spell))
                     Problems.Add($"package '{pk.EditorId}' uses UseMagic template but useMagic.spell is empty — package will no-op in-game");
-                CheckRef(pk.SitTarget.Target, $"package '{pk.EditorId}' sitTarget.target");
+                PkgSlotRef(pk.SitTarget.Target, $"package '{pk.EditorId}' sitTarget.target");
                 if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var sttfk) && sttfk == PackageTemplates.SitTarget
                     && string.IsNullOrWhiteSpace(pk.SitTarget.Target))
                     Problems.Add($"package '{pk.EditorId}' uses SitTarget template but sitTarget.target is empty — NPC has no furniture to use and won't sit");
-                CheckRef(pk.Activate.Target, $"package '{pk.EditorId}' activate.target");
+                PkgSlotRef(pk.Activate.Target, $"package '{pk.EditorId}' activate.target");
                 if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var atfk) && atfk == PackageTemplates.Activate
                     && string.IsNullOrWhiteSpace(pk.Activate.Target))
                     Problems.Add($"package '{pk.EditorId}' uses Activate template but activate.target is empty — Activate has nothing to activate");
-                CheckRef(pk.Eat.Location, $"package '{pk.EditorId}' eat.location");
+                PkgSlotRef(pk.Eat.Location, $"package '{pk.EditorId}' eat.location");
                 foreach (var f in pk.Flags)
                     if (!Enum.TryParse<Mutagen.Bethesda.Skyrim.Package.Flag>(f, true, out _))
                         Problems.Add($"package '{pk.EditorId}' invalid flag '{f}'");
