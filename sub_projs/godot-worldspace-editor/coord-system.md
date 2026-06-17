@@ -61,14 +61,16 @@ land.VertexHeightMap = new LandscapeVertexHeightMap { Offset = cs.Height / 8f, .
 
 ---
 
-## HTerrain 設定建議
+## 地形尺度 / heightmap 換算
+
+> 註：實作走**自製 terrain**（ArrayMesh + 自寫 PNG codec），非 HTerrain plugin；下列換算與網格規則不變，只是由自製程式碼實現。
 
 **換算選定：社群共識（1 unit ≈ 1.4286cm = 0.014286m）**——與 player 角色高度對得上（128 units ≈ 1.8m）；codebase 備註的 ~7cm/unit（1 cell ≈ 287m）與角色比例不符，僅作參考。
 
 ```
 terrain size (per cell) = 4096 × 0.014286 ≈ 58.5m
-HTerrain subdivision    = cell_count × 32        （對齊 33×33 per cell 頂點）
-heightmap export        = 16-bit grayscale PNG
+頂點網格                 = cell_count × 32 + 1     （每 cell 33×33，相鄰格共用邊緣欄）
+heightmap export        = 16-bit grayscale PNG（splatmap = 8-bit grayscale）
 ```
 
 **高度映射**：不需絕對精度。Godot 出 16-bit PNG（0~65535），ModForge 讀檔時自訂 `skyrim_height = png_value / 65535 × max_height_units`，只要在 spec/文件記錄換算係數即可。`max_height_units` 取多少待定（與不確定 #4 PNG 精度連動）。
@@ -83,4 +85,4 @@ heightmap export        = 16-bit grayscale PNG
 
 3. ~~**VHGT delta 是 per-row 重置還是全域累積**~~ ✅ **已解（2026-06-16）**：**row-wise 累積**——第 0 欄沿列往北累積成各列基準、第 1–32 欄沿列內往東累積；offset 與每 delta 都 ×8 game units。✅ **主力機 round-trip 已驗（2026-06-16）**：Tamriel 20 格 decode→encode delta bytes 完全一致。
 
-4. **HTerrain PNG heightmap 精度**：16-bit grayscale PNG 可表示 65536 個高度級別，對應 Skyrim VHGT offset 的 signed float 範圍是否足夠？需查 Skyrim 實際地形高度範圍（Tamriel 最高峰 Throat of the World 約多少 game units）。
+4. **PNG heightmap 精度**：16-bit grayscale PNG 可表示 65536 個高度級別，對應 Skyrim VHGT offset 的 signed float 範圍是否足夠？需查 Skyrim 實際地形高度範圍（Tamriel 最高峰 Throat of the World 約多少 game units）。
