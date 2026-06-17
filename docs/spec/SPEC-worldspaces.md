@@ -73,8 +73,9 @@ worldspace) whose **weather table** drives which weathers play there:
   between vertices is capped at ±1016 game units (VHGT signed-byte limit); steeper terrain is
   clamped and build warns. **`defaultLandHeight` tip:** set it equal to `minHeight` so cells outside
   the PNG area meet the heightmap perimeter at the same elevation (no cliff at the world boundary).
-  **MVP scope:** normals point straight up (slightly flat lighting) and no navmesh is generated in
-  heightmap mode. Same **ESL LIMIT** as `cells` (LAND ⇒ `"esl": false`). Worked example:
+  **MVP scope:** no navmesh is generated in heightmap mode; per-vertex **VNML normals ARE** computed
+  from the heightmap (central-difference, self-verified byte-for-byte vs vanilla Tamriel LAND
+  2026-06-16 — see `landed/world`). Same **ESL LIMIT** as `cells` (LAND ⇒ `"esl": false`). Worked example:
   `examples/worldspace_heightmap.json` (+ `worldspace_heightmap.png`, a 97×33 = 3×1-cell hill).
   **In-game confirmed** (2026-06-16): terrain has bumps, cell seams closed, no cracks between cells.
 - **`baseTexture`** — optional single-layer terrain texture: an LTEX *ref* applied as the BASE
@@ -103,6 +104,15 @@ worldspace) whose **weather table** drives which weathers play there:
   **Construction-tested offline** (2026-06-17). Byte-level parity vs vanilla `VTXT` (exact point
   position order, per-quadrant layer-number packing) is a pending xEdit check (WAIT_USER). The Godot
   splat-paint brush that authors these PNGs is the next front-end step (`godot-worldspace-editor`).
+- **`godotPlacements`** — optional: object placements authored in the `godot-worldspace-editor`
+  front-end, exported as a `placements.json` and converted to REFR. Use **alongside** `heightmap`;
+  set `originX/Y` to match the heightmap grid. Fields: `path` (json relative to the spec file),
+  `originX/Y` (cell-grid origin of the Godot scene's south-west corner). Coordinates are converted
+  from the editor's Y-up space into Skyrim world coords and merged into the placement pipeline.
+  ```jsonc
+  "godotPlacements": { "path": "placements.json", "originX": 0, "originY": 0 }
+  ```
+  **Offline-complete** (2026-06-17); a one-pass Godot GUI run on the main machine is pending (WAIT_USER).
 - **regions** (REGN): an area inside a `worldspace` (an in-spec WRLD `editorId` or a vanilla
   `"<master>:0xFORMID"`). `area` is a polygon of **>=3** world-space points (not cell grid).
   `weather` is the table that picks the active weather — each entry a WTHR *ref* + a relative

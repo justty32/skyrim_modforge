@@ -1909,7 +1909,7 @@
               },
               "fill": {
                 "type": "string",
-                "description": "fromEvent:<slot> (R1/R2/L1/L2) | forced:<ref> | uniqueActor:<ref> | createObject:<ref>@<targetAlias> (spawn a new ref AT another ref-type alias) | findMatching:closest|any (nearest/first existing ref in the loaded area matching this alias's conditions)"
+                "description": "fromEvent:<slot> (R1/R2/L1/L2) | forced:<ref> | uniqueActor:<ref> | createObject:<ref>@<targetAlias> (spawn a new ref AT another ref-type alias) | findMatching:closest|any (nearest/first existing ref in the loaded area matching this alias's conditions) | findMatchingLocation:<locType>[@<parentAlias>] (Location-type alias: pick a location of this LocType keyword, optionally within a parent location alias) | findInLocationAlias:<locationAlias>[#<refTypeLCRT>] (Reference-type alias: find a ref of this LocationRefType within a location alias)"
               },
               "optional": {
                 "type": "boolean",
@@ -3489,7 +3489,7 @@
         },
         "godotPlacements": {
           "type": "object",
-          "description": "Godot 4 HTerrain placements JSON. Coordinate system 'godot4_y_up' is converted to Skyrim world coords and merged into the placements pipeline. Use alongside `heightmap`; set originX/Y to match.",
+          "description": "Godot worldspace-editor placements JSON (exported from the godot-worldspace-editor front-end). Coordinate system 'godot4_y_up' is converted to Skyrim world coords and merged into the placements pipeline. Use alongside `heightmap`; set originX/Y to match.",
           "properties": {
             "path": { "type": "string", "description": "placements.json path relative to this spec file" },
             "originX": { "type": "integer", "description": "cell-grid X of Godot scene's west/south origin (must match heightmap originX)" },
