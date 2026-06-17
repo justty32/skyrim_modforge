@@ -16,7 +16,9 @@ public class DynamicSpawnTests
 
     private static ModSpec SpawnSpecMod(SpawnSpec spawn) => new()
     {
-        Quests = { new QuestSpec { EditorId = "MFSpawnQ", Name = "Spawn", StartGameEnabled = true, Spawn = spawn } },
+        // A startUpStage is required: spawn fires from that stage's fragment on quest start (not OnInit).
+        Quests = { new QuestSpec { EditorId = "MFSpawnQ", Name = "Spawn", StartGameEnabled = true, Spawn = spawn,
+            Stages = { new StageSpec { Index = 10, StartUpStage = true } } } },
     };
 
     private static SpawnSpec Bandits() => new()
@@ -69,6 +71,7 @@ public class DynamicSpawnTests
                 new QuestSpec
                 {
                     EditorId = "MFSpawnQ", Name = "Ambush",
+                    Stages = { new StageSpec { Index = 10, StartUpStage = true } },
                     StoryEvent = new QuestStoryEventSpec
                     {
                         Event = "ChangeLocation",
@@ -91,6 +94,30 @@ public class DynamicSpawnTests
     public void Validate_Clean()
     {
         Assert.DoesNotContain(Validate(SpawnSpecMod(Bandits())), p => p.Contains("spawn"));
+    }
+
+    [Fact]
+    public void Spawn_StartupStageFragment_CallsSpawnNow()
+    {
+        // The startUpStage fragment — not OnInit — drives the spawn, so it re-fires on every quest start.
+        var q = new QuestSpec
+        {
+            EditorId = "MFSpawnQ", Name = "Spawn", StartGameEnabled = true, Spawn = Bandits(),
+            Stages = { new StageSpec { Index = 10, StartUpStage = true } },
+        };
+        Assert.Equal(10, Generator.StartupStageTrigger(q));
+        var src = Generator.GenerateQuestFragmentSource(q);
+        Assert.Contains("Function Fragment_Stage_0010_Item00000()", src);
+        Assert.Contains("self as MFDynamicSpawn", src);
+        Assert.Contains("__spawn.SpawnNow()", src);
+    }
+
+    [Fact]
+    public void Spawn_WithoutStartupStage_IsReported()
+    {
+        var s = new ModSpec { Quests = { new QuestSpec { EditorId = "Q", Name = "Q", Spawn = Bandits() } } };
+        Assert.Contains(Validate(s), p => p.Contains("startUpStage"));
+        Assert.Null(Generator.StartupStageTrigger(s.Quests[0]));
     }
 
     [Fact]

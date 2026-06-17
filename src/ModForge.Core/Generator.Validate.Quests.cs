@@ -62,6 +62,12 @@ public static partial class Generator
                     if (sp.MinDistance < 0 || sp.MaxDistance < 0) Problems.Add($"quest '{q.EditorId}' spawn distances must be >= 0");
                     else if (sp.MinDistance > sp.MaxDistance) Problems.Add($"quest '{q.EditorId}' spawn.minDistance {sp.MinDistance} > maxDistance {sp.MaxDistance}");
                 }
+                // spawn / cooldownHours fire from the startUpStage fragment on quest start (OnInit is
+                // unreliable — it runs once per quest lifetime, not on every SM relaunch). Without a
+                // startUpStage there is nothing to trigger them, so the encounter silently does nothing.
+                bool needsStartup = q.Spawn is not null || (q.StoryEvent is { } cdSe && cdSe.CooldownHours > 0f);
+                if (needsStartup && startUpStages == 0)
+                    Problems.Add($"quest '{q.EditorId}' declares spawn/cooldownHours but has no startUpStage — these trigger from the startUpStage fragment on quest start; add a stage with startUpStage:true or nothing will fire");
                 var objIdx = new HashSet<int>();
                 var aliasNames = new HashSet<string>(q.Aliases.Select(a => a.Name), StringComparer.OrdinalIgnoreCase);
                 foreach (var o in q.Objectives)

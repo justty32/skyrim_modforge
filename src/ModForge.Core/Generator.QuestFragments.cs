@@ -26,11 +26,26 @@ public static partial class Generator
     public static string QuestFragmentScriptName(QuestSpec q) =>
         QuestNeedsFragmentScript(q) ? $"{Sanitize(q.EditorId)}_Stages" : "";
 
-    /// <summary>True when a quest has objectives linked to stages (showStage/completeStage) or any stage
-    /// binds an instance global (UpdateCurrentInstanceGlobal).</summary>
+    /// <summary>True when a quest has objectives linked to stages (showStage/completeStage), any stage
+    /// binds an instance global (UpdateCurrentInstanceGlobal), or a startUpStage must drive a dynamic
+    /// spawn / cooldown gate on quest start (see <see cref="StartupStageTrigger"/>).</summary>
     public static bool QuestNeedsFragmentScript(QuestSpec q) =>
         q.Objectives.Any(o => o.ShowStage >= 0 || o.CompleteStage >= 0)
-        || q.Stages.Any(s => s.InstanceGlobals.Count > 0);
+        || q.Stages.Any(s => s.InstanceGlobals.Count > 0)
+        || StartupStageTrigger(q) is not null;
+
+    /// <summary>The startUpStage index whose fragment must drive the quest's spawn/cooldown on start, or
+    /// null if the quest has neither (or no startUpStage to hang them on). `OnInit` is unusable here —
+    /// it fires once per quest lifetime, but a Story-Manager encounter relaunches the same quest on every
+    /// qualifying event, so the trigger must live on the startUpStage fragment (runs on EVERY start).</summary>
+    public static int? StartupStageTrigger(QuestSpec q)
+    {
+        bool hasTrigger = q.Spawn is not null || (q.StoryEvent is { } se && se.CooldownHours > 0f);
+        if (!hasTrigger) return null;
+        foreach (var s in q.Stages)
+            if (s.StartUpStage) return s.Index;
+        return null;   // spawn/cooldown declared but no startUpStage to fire from (validator warns)
+    }
 
     /// <summary>The Papyrus property name a stage fragment uses to reference an instance global — the
     /// sanitized global editorId (a vanilla ref keeps only its hex tail so it stays identifier-safe).</summary>
@@ -67,16 +82,44 @@ public static partial class Generator
             sb.AppendLine($"GlobalVariable Property {InstanceGlobalProperty(g)} Auto");
         if (instGlobals.Count > 0) sb.AppendLine();
 
-        // Every stage that shows/completes an objective OR binds an instance global, ascending.
+        // The startUpStage fragment (if any) drives the dynamic spawn / cooldown gate on quest start.
+        int? startupTrigger = StartupStageTrigger(q);
+
+        // Every stage that shows/completes an objective, binds an instance global, OR is the startUpStage
+        // carrying a spawn/cooldown trigger — ascending.
         var objStages = q.Objectives.SelectMany(o => new[] { o.ShowStage, o.CompleteStage }).Where(s => s >= 0);
         var instStages = q.Stages.Where(s => s.InstanceGlobals.Count > 0).Select(s => (int)s.Index);
-        var stageNums = objStages.Concat(instStages).Distinct().OrderBy(s => s);
+        var trigStages = startupTrigger is int st ? new[] { st } : System.Array.Empty<int>();
+        var stageNums = objStages.Concat(instStages).Concat(trigStages).Distinct().OrderBy(s => s);
+
+        bool hasSpawn = q.Spawn is not null;
+        bool hasCooldown = q.StoryEvent is { } sev && sev.CooldownHours > 0f;
 
         foreach (var stage in stageNums)
         {
             // CK-standard name: engine calls Fragment_Stage_XXXX_Item00000 on the script when
             // SetStage(XXXX) fires (first log entry = Item00000). No manual binding required.
             sb.AppendLine($"Function Fragment_Stage_{stage:D4}_Item00000()");
+            // startUpStage trigger: cooldown gate first (abort if too soon), then the dynamic spawn.
+            // Both reach their sibling script (attached to the same quest) via `self as <Script>`.
+            if (startupTrigger == stage)
+            {
+                if (hasCooldown)
+                {
+                    sb.AppendLine($"    {EncounterCooldownScript} __cd = self as {EncounterCooldownScript}");
+                    sb.AppendLine("    if __cd && !__cd.TryFire()");
+                    sb.AppendLine("        Stop()                                  ; still on cooldown — abort this encounter");
+                    sb.AppendLine("        return");
+                    sb.AppendLine("    endif");
+                }
+                if (hasSpawn)
+                {
+                    sb.AppendLine($"    {DynamicSpawnScript} __spawn = self as {DynamicSpawnScript}");
+                    sb.AppendLine("    if __spawn");
+                    sb.AppendLine("        __spawn.SpawnNow()");
+                    sb.AppendLine("    endif");
+                }
+            }
             foreach (var o in q.Objectives.Where(o => o.ShowStage == stage))
                 sb.AppendLine($"    SetObjectiveDisplayed({o.Index})   ; show: {OneLine(o.Text)}");
             foreach (var o in q.Objectives.Where(o => o.CompleteStage == stage))

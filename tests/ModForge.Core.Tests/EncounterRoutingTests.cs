@@ -19,7 +19,8 @@ public class EncounterRoutingTests
             new QuestSpec
             {
                 EditorId = "MFEnc", Name = "Enc",
-                Stages = { new StageSpec { Index = 10 } },
+                // startUpStage: the cooldown gate (and any spawn) fires from this stage's fragment on start.
+                Stages = { new StageSpec { Index = 10, StartUpStage = true } },
                 StoryEvent = new QuestStoryEventSpec
                 {
                     Event = "ChangeLocation",

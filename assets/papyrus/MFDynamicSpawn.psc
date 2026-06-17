@@ -1,10 +1,15 @@
 Scriptname MFDynamicSpawn extends Quest
 { ModForge reusable DYNAMIC near-player spawn (F組 #3, the EE NavmeshTester trick). Attached to a
-  quest declaring `spawn`. On quest start (OnInit) it places `Count` copies of `SpawnForm` (an
-  ActorBase or LeveledNpc) at a random offset around the player and snaps each to the nearest navmesh
-  point (EnableAI toggle) — a legal, walkable spawn with no pre-placed cell markers. One prebuilt .pex
-  serves every generated mod; ModForge wires the properties. Pair with a ChangeLocation storyEvent +
-  locationFilter + cooldownHours for a rate-limited, location-aware encounter. }
+  quest declaring `spawn`. SpawnNow() places `Count` copies of `SpawnForm` (an ActorBase or LeveledNpc)
+  at a random offset around the player and snaps each to the nearest navmesh point (EnableAI toggle) —
+  a legal, walkable spawn with no pre-placed cell markers. One prebuilt .pex serves every generated mod;
+  ModForge wires the properties.
+
+  TRIGGER: the owning quest's generated <quest>_Stages startUpStage fragment calls SpawnNow() via
+  `(self as MFDynamicSpawn).SpawnNow()` — NOT OnInit. OnInit fires only ONCE per quest lifetime, so an
+  SM-relaunched encounter would spawn only on its very first start; a startUpStage fragment runs on
+  EVERY quest start (SM-launched or StartGameEnabled), which is what a repeatable encounter needs.
+  Pair with a ChangeLocation storyEvent + locationFilter + cooldownHours for a rate-limited encounter. }
 
 Form Property SpawnForm Auto
 { The ActorBase (NPC_) or LeveledNpc (LVLN) to spawn. }
@@ -16,10 +21,6 @@ Float Property MaxDistance = 4000.0 Auto
 { Farthest spawn offset from the player (units). }
 Bool Property SnapToNavmesh = true Auto
 { Toggle EnableAI on each spawn so it snaps to the nearest navmesh point (legal walkable spot). }
-
-Event OnInit()
-    SpawnNow()
-EndEvent
 
 Function SpawnNow()
     Actor player = Game.GetPlayer()

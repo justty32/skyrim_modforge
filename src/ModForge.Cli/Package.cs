@@ -44,6 +44,18 @@ internal static partial class Program
             File.Copy(pscPath, Path.Combine(sourceDir, scriptName + ".psc"), overwrite: true);
         }
 
+        // A <quest>_Stages startUpStage fragment that drives a dynamic spawn / cooldown casts `self as
+        // MFDynamicSpawn` / `self as MFEncounterCooldown`. The Papyrus compiler resolves those types from
+        // the input file's own directory, so drop their embedded SOURCE beside the fragment .psc here.
+        if (spec.Quests.Any(q => Generator.StartupStageTrigger(q) is not null))
+            foreach (var psc in new[] { "MFDynamicSpawn.psc", "MFEncounterCooldown.psc" })
+            {
+                using var rs = typeof(Program).Assembly.GetManifestResourceStream(psc);
+                if (rs is null) continue;
+                using var fs = File.Create(Path.Combine(compiledFragmentsDir, psc));
+                rs.CopyTo(fs);
+            }
+
         foreach (var q in spec.Quests)
         {
             var src = Generator.GenerateQuestFragmentSource(q);
