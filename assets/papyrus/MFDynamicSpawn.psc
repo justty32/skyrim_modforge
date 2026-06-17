@@ -23,21 +23,30 @@ Bool Property SnapToNavmesh = true Auto
 { Toggle EnableAI on each spawn so it snaps to the nearest navmesh point (legal walkable spot). }
 
 Function SpawnNow()
+    Debug.Notification("MF: SpawnNow entered, count=" + Count)   ; DIAG (remove after verify)
     Actor player = Game.GetPlayer()
     if !player || !SpawnForm
+        Debug.Notification("MF: SpawnNow ABORT — no player or SpawnForm is None")   ; DIAG
         return
     endif
     int i = 0
     while i < Count
         float ang = Utility.RandomFloat(0.0, 360.0)
         float dist = Utility.RandomFloat(MinDistance, MaxDistance)
-        ; place at the player, then shove to a random offset around them
         ObjectReference spawned = player.PlaceAtMe(SpawnForm, 1)
-        spawned.MoveTo(player, dist * Math.Sin(ang), dist * Math.Cos(ang), 0.0)
-        Actor a = spawned as Actor
-        if SnapToNavmesh && a
-            a.EnableAI(false)
-            a.EnableAI(true)        ; re-enabling AI snaps the actor to the nearest navmesh point
+        if spawned
+            ; Shove to a random offset around the player, spawned 128 units ABOVE so the actor free-falls
+            ; onto whatever ground is there. This is far more reliable than a navmesh "snap": a flat z=0
+            ; offset buries the actor inside any rising terrain (→ stuck/invisible), whereas dropping from
+            ; just above always lands them on the surface. dist 0 → leave exactly at the player.
+            if dist >= 1.0
+                spawned.MoveTo(player, dist * Math.Sin(ang), dist * Math.Cos(ang), 128.0)
+            endif
+            Actor a = spawned as Actor
+            if SnapToNavmesh && a
+                a.EnableAI(false)
+                a.EnableAI(true)        ; wakes the actor so it paths onto navmesh after landing
+            endif
         endif
         i += 1
     endwhile

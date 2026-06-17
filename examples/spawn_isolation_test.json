@@ -1,0 +1,20 @@
+{
+  "pluginName": "MFSpawnTest.esp",
+  "esl": false,
+  "_": "ISOLATION TEST for the dynamic-spawn pipeline. A StartGameEnabled quest (NO Story Manager, NO alias, NO event) with a startUpStage + spawn. A StartGameEnabled quest is RUNNING the moment the save loads, so its startUpStage auto-runs the stage-10 fragment immediately — and `setstage MFSpawnTest 10` re-fires it any time (the quest stays running). This decouples the spawn from the SM/ChangeLocation/alias machinery: if THIS spawns (and the diag notifications show), the spawn pipeline works and the encounter's failure is purely the SM-start path; if even this shows nothing, the fragment/pex/binding is the problem. LCharBanditMeleeAny 0x03DECD verified vs Skyrim.esm.",
+  "quests": [
+    {
+      "editorId": "MFSpawnTest",
+      "name": "Spawn Test",
+      "startGameEnabled": true,
+      "stages": [ { "index": 10, "startUpStage": true, "logEntry": "Spawn test running." } ],
+      "spawn": {
+        "form": "Skyrim.esm:0x0003DECD",
+        "count": 3,
+        "minDistance": 400,
+        "maxDistance": 900,
+        "snapToNavmesh": true
+      }
+    }
+  ]
+}

@@ -15,14 +15,15 @@
         "cooldownHours": 12
       },
       "aliases": [
-        { "name": "NewLocation", "fill": "fromEvent:newLocation" }
+        { "name": "NewLocation", "fill": "fromEvent:newLocation", "optional": true,
+          "_": "optional: the spawn doesn't use this alias, and a REQUIRED fromEvent alias can't fill when the quest is started any way OTHER than its event (e.g. console `startquest`) — a required unfillable alias auto-stops the quest before its startUpStage runs. optional lets the quest start (and the alias still fills from a real ChangeLocation event)." }
       ],
       "spawn": {
-        "_": "On fire: 3 random melee bandits (LCharBanditMeleeAny) placed 1200-3500 units around the player, snapped to navmesh.",
+        "_": "On fire: 3 random melee bandits (LCharBanditMeleeAny) placed 400-900 units around the player (visible ambush range), spawned just above ground so they free-fall onto the surface. Earlier 1200-3500 put them out of sight / stuck in terrain.",
         "form": "Skyrim.esm:0x0003DECD",
         "count": 3,
-        "minDistance": 1200,
-        "maxDistance": 3500,
+        "minDistance": 400,
+        "maxDistance": 900,
         "snapToNavmesh": true
       }
     }
