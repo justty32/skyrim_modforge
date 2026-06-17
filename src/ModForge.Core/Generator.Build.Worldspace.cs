@@ -94,6 +94,11 @@ public static partial class Generator
             if (!string.IsNullOrWhiteSpace(ws.EditorId)) formKeyByEd[ws.EditorId] = w.FormKey;
             worldspaces++;
 
+            // Optional single-layer terrain texture: resolve the LTEX once; EmitCell stamps it on
+            // every cell's LAND as the BASE layer of all 4 quadrants (BTXT). No per-vertex blend.
+            FormKey? baseTexFk = null;
+            Wire($"worldspace '{ws.EditorId}' baseTexture", ws.BaseTexture, fk => baseTexFk = fk);
+
             // Flat terrain cells: each cell spec gets a CELL + LAND so the player can enter the
             // world via `cow <editorId> X Y` without falling into the void. Terrain is a flat
             // 33×33-vertex heightmap at Z=0 with straight-up normals — no textures needed for
@@ -140,6 +145,17 @@ public static partial class Generator
                 };
                 // Flat-cell default = straight up. Skyrim VNML is signed-byte; up = (0,0,127) (NOT 128,128,255).
                 land.VertexNormals = normals ?? new Noggog.Array2d<Noggog.P3UInt8>(33, 33, new Noggog.P3UInt8(0, 0, 127));
+
+                // Single-layer texture: one BTXT base layer per quadrant, all referencing the same
+                // LTEX (LayerNumber 0 = base). Per-vertex VTXT alpha layers are a later splatmap step.
+                if (baseTexFk is { } btk)
+                    foreach (var q in System.Enum.GetValues<Mutagen.Bethesda.Plugins.Records.Quadrant>())
+                    {
+                        var header = new LayerHeader { Quadrant = q, LayerNumber = 0 };
+                        header.Texture.SetTo(btk);
+                        land.Layers.Add(new BaseLayer { Header = header });
+                    }
+
                 cell.Landscape = land;
 
                 if (navmesh)

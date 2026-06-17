@@ -77,6 +77,16 @@ worldspace) whose **weather table** drives which weathers play there:
   heightmap mode. Same **ESL LIMIT** as `cells` (LAND ⇒ `"esl": false`). Worked example:
   `examples/worldspace_heightmap.json` (+ `worldspace_heightmap.png`, a 97×33 = 3×1-cell hill).
   **In-game confirmed** (2026-06-16): terrain has bumps, cell seams closed, no cracks between cells.
+- **`baseTexture`** — optional single-layer terrain texture: an LTEX *ref* applied as the BASE
+  layer (BTXT) of **every** cell's LAND, all 4 quadrants. The whole world gets one ground texture
+  with no per-vertex blending (`""` / omit = untextured, engine falls back to the default land
+  texture). Works with both `cells` and `heightmap`. Per-vertex splatmap painting (VTXT alpha
+  layers) is a later step — see `sub_projs/godot-worldspace-editor`.
+  ```jsonc
+  "baseTexture": "Skyrim.esm:0x000C16"   // LTEX ref; one ground texture for the whole world
+  ```
+  **Construction-tested offline** (2026-06-17); byte-level parity vs vanilla LAND BTXT is a
+  pending xEdit check on the main machine (WAIT_USER).
 - **regions** (REGN): an area inside a `worldspace` (an in-spec WRLD `editorId` or a vanilla
   `"<master>:0xFORMID"`). `area` is a polygon of **>=3** world-space points (not cell grid).
   `weather` is the table that picks the active weather — each entry a WTHR *ref* + a relative

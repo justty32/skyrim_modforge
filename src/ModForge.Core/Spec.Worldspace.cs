@@ -26,6 +26,13 @@ public sealed class WorldspaceSpec
     public string Music { get; set; } = "";           // ref → MUSC (optional)
     public string EncounterZone { get; set; } = "";   // ref → ECZN (optional)
 
+    // Single-layer terrain texture: a Landscape Texture (LTEX) ref applied as the BASE layer of
+    // every cell's LAND, all 4 quadrants (BTXT). No per-vertex blending — the whole world gets one
+    // ground texture. "" = leave LAND untextured (engine falls back to the default land texture).
+    // e.g. Skyrim.esm:0x000C16 (LDirtPath01) / 0x0008C5 (LGrass01). Per-vertex splatmap (VTXT alpha
+    // layers) is a later step — see godot-worldspace-editor README.
+    public string BaseTexture { get; set; } = "";     // ref → LTEX (optional)
+
     // Worldspace.Flag names: SmallWorld, CannotFastTravel, NoLodWater, NoLandscape, NoSky,
     // FixedDimensions, NoGrass. A small custom world is usually "SmallWorld" (uses an in-memory
     // grid rather than streamed BSA cells).
