@@ -32,6 +32,12 @@ var vis_surface_scale  := 1.0   # horizontal (X/Z) exaggeration for display only
 # ── Height data ──────────────────────────────────────────────────────────────
 var heights: PackedFloat32Array  # [row * verts_x + col], game units
 
+# ── Splat overlay (display only) ───────────────────────────────────────────────
+# The active splat layer's alpha grid + tint, pushed by SplatTool for visual feedback.
+# Empty alpha = no overlay → mesh colors are pure height shading (behavior unchanged).
+var splat_overlay_alpha: PackedFloat32Array = PackedFloat32Array()
+var splat_overlay_color: Color = Color(0.30, 0.62, 0.25)
+
 # ── Brush ─────────────────────────────────────────────────────────────────────
 enum BrushMode { RAISE = 0, LOWER = 1, FLATTEN = 2, SMOOTH = 3 }
 var brush_mode: int     = BrushMode.RAISE

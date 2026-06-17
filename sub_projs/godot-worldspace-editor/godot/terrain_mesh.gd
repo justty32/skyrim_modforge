@@ -9,6 +9,9 @@ static func build(t: TerrainGrid) -> ArrayMesh:
 	var colors  := PackedColorArray();   colors.resize(t.verts_x * t.verts_y)
 	var indices := PackedInt32Array();   indices.resize((t.verts_x - 1) * (t.verts_y - 1) * 6)
 
+	# Splat overlay active only when an alpha grid of matching size is present.
+	var has_splat := t.splat_overlay_alpha.size() == t.verts_x * t.verts_y
+
 	# Y = (h - min_height) * MPU * vis_height_scale  → terrain floor sits at Y=0
 	for row in t.verts_y:
 		for col in t.verts_x:
@@ -19,7 +22,12 @@ static func build(t: TerrainGrid) -> ArrayMesh:
 				(h - t.min_height) * TerrainGrid.METERS_PER_UNIT * t.vis_height_scale,
 				-row * ds)
 			uvs[idx]    = Vector2(float(col) / (t.verts_x - 1), float(row) / (t.verts_y - 1))
-			colors[idx] = _height_color(clampf((h - t.min_height) * inv_rng, 0.0, 1.0))
+			var c := _height_color(clampf((h - t.min_height) * inv_rng, 0.0, 1.0))
+			if has_splat:
+				var a := t.splat_overlay_alpha[idx]
+				if a > 0.0:
+					c = c.lerp(t.splat_overlay_color, clampf(a, 0.0, 1.0))
+			colors[idx] = c
 
 	# Normals: dH/dX and dH/dZ in display space (both scales applied).
 	for row in t.verts_y:

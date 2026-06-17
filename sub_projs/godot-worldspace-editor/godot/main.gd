@@ -29,6 +29,8 @@ var _grid_lines: Array[Node3D] = []
 var _player: PlayerController = null
 var _placement: PlacementTool = null
 var _place_mode := false
+var _splat: SplatTool = null
+var _splat_mode := false
 
 
 func _ready() -> void:
@@ -42,6 +44,9 @@ func _ready() -> void:
 	_placement  = PlacementTool.new()
 	add_child(_placement)
 	_placement.configure(terrain)
+	_splat      = SplatTool.new()
+	add_child(_splat)
+	_splat.configure(terrain)
 	_setup_ui()
 
 
@@ -56,6 +61,8 @@ func _setup_ui() -> void:
 		_on_export_png, _on_import_png, _enter_walk_mode)
 	PlacementUi.build(panel.content_vbox(), _placement,
 		_toggle_place_mode, _on_export_placements, _on_import_placements)
+	SplatUi.build(panel.content_vbox(), _splat,
+		_toggle_splat_mode, _on_export_splat, _on_import_splat)
 	_lbl_pos   = panel.lbl_pos
 	_lbl_brush = panel.lbl_brush
 
@@ -143,8 +150,9 @@ func _input(event: InputEvent) -> void:
 				if hit != Vector3.ZERO:
 					_placement.place_at(hit)
 		else:
+			# Both height-brush and splat modes paint on LMB drag (routed in _process).
 			_painting = event.pressed
-			if _painting and terrain.brush_mode == TerrainGrid.BrushMode.FLATTEN:
+			if _painting and not _splat_mode and terrain.brush_mode == TerrainGrid.BrushMode.FLATTEN:
 				terrain.flatten_height = _mid_height_at_mouse()
 
 
@@ -165,7 +173,10 @@ func _process(delta: float) -> void:
 			_lbl_pos.text = "col %d  row %d\nH: %.0f units" % [col, row, h]
 
 	if _painting and hit != Vector3.ZERO and not _over_ui(mouse):
-		terrain.apply_brush(hit, delta)
+		if _splat_mode:
+			_splat.paint(hit, delta)
+		else:
+			terrain.apply_brush(hit, delta)
 
 
 func _update_cursor() -> void:
@@ -199,8 +210,10 @@ func _on_import_png() -> void:
 # ── Placement ───────────────────────────────────────────────────────────────────
 
 # In place mode LMB drops objects instead of painting; brush painting is suspended.
+# Place and Splat are mutually exclusive — turning one on clears the other's flag.
 func _toggle_place_mode(on: bool) -> void:
 	_place_mode = on
+	if on: _splat_mode = false
 	_painting = false
 
 func _on_export_placements() -> void:
@@ -208,3 +221,18 @@ func _on_export_placements() -> void:
 
 func _on_import_placements() -> void:
 	PlacementsIo.import_dialog(self, _placement, terrain, _lbl_brush)
+
+
+# ── Splat (texture alpha) ───────────────────────────────────────────────────────
+
+# In splat mode LMB paints the active texture layer's alpha (instead of the height brush).
+func _toggle_splat_mode(on: bool) -> void:
+	_splat_mode = on
+	if on: _place_mode = false
+	_painting = false
+
+func _on_export_splat() -> void:
+	SplatmapIo.export_dialog(self, _splat, terrain, _lbl_brush)
+
+func _on_import_splat() -> void:
+	SplatmapIo.import_dialog(self, _splat, terrain, _lbl_brush)

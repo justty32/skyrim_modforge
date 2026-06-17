@@ -100,6 +100,9 @@ Godot（HTerrain）                    ModForge
 | `placement_tool.gd` | `PlacementTool`：placement 筆狀態 + 物件 list（place 吸地表 / restore / undo / clear）|
 | `placement_ui.gd` | 側欄 PLACEMENT 段（mode 切換、base/instance 欄、rotationY/scale、count、JSON I/O 按鈕）|
 | `placements_io.gd` | `placements.json` 匯出/匯入（顯示 scale 除掉還原 canonical 公尺）|
+| `splat_tool.gd` | `SplatTool`：紋理 alpha 筆（多層，每層 LTEX ref + alpha 格；paint 吸 active 層、radius/strength/erase 帶 falloff）+ 推 overlay 給地形上色 |
+| `splat_ui.gd` | 側欄 TEXTURE 段（Splat Mode 切換、層選擇+新增、LTEX ref、Paint/Erase、radius/strength、清層、splatmap PNG I/O）|
+| `splatmap_io.gd` | splatmap 8-bit 灰階 PNG 匯出/匯入（Y-flip 頂=北，同 Png16/Heightmap 約定）+ 印出可貼進 spec 的 `textureLayers` 片段 |
 
 **顯示縮放**：`vis_height_scale`（Y）與 `vis_surface_scale`（X/Z）只影響顯示，資料恆為 game units；`Y=(h-min)·MPU·scale` 讓地板固定 Y=0。**高度著色**：以中間高度為基準，下沉→淺藍→深藍（水），上升→草綠→岩石→雪。
 
@@ -108,7 +111,7 @@ Godot（HTerrain）                    ModForge
 - **紋理圖（per-vertex splatmap → VTXT）**＝B 路線。**後端兩段都已做（2026-06-17 離線）**，剩**前端 splat 筆刷**：
   - ✅ **單層全格**：spec `worldspace.baseTexture`（LTEX ref）→ 每格 LAND 四象限 BTXT base 層，整個世界一張地貼圖。後端 `Generator.Build.Worldspace.cs`（EmitCell 加 4 BaseLayer），離線測 `WorldspaceBaseTextureTests`。前端不需筆刷（spec 指定即可）。
   - ✅ **多紋理混合（VTXT/ATXT）**：spec `worldspace.textureLayers`（每層 = LTEX + grayscale splatmap PNG）→ 每格四象限稀疏 ATXT+VTXT alpha 層（`Splatmap.cs` 載圖、`Vtxt.cs` 切象限/編 position、EmitCell 接線），離線測 `WorldspaceSplatmapTests`（純函式 + 端到端 PNG）。**byte-verify vs vanilla LAND BTXT/VTXT 待主力機 xEdit**。
-  - ⏳ **剩前端 splat-paint 筆刷**：Godot 端在地形上刷某紋理 → 匯出 grayscale splatmap PNG（餵上面 `textureLayers[].splatmap`）。後端已就緒，前端筆刷是下一步。
+  - ✅ **前端 splat-paint 筆刷**（2026-06-17 離線，**待主力機 Godot GUI 跑一次**）：Splat Mode 在地形上刷紋理 alpha（多層，每層一個 LTEX ref + Paint/Erase + radius/strength），active 層 alpha 即時上色（terrain vertex color blend），匯出 8-bit 灰階 splatmap PNG 並印出可貼進 spec 的 `textureLayers` 片段。檔：`splat_tool.gd`/`splat_ui.gd`/`splatmap_io.gd`；`terrain.gd`+`terrain_mesh.gd` 加 splat overlay（無 splat 時行為不變）；`main.gd` 接 Splat Mode 輸入路由（與 Place Mode 互斥）。PNG 的 Y-flip/網格約定與 heightmap 一致，與後端 `Splatmap.cs` 對齊。
 - **box proxy → 真實 glTF**：目前擺放代理是彩色方塊（不擋擺放/匯出鏈）。換真實外觀需 vanilla `.nif` → glTF 視覺代理 → 收斂到 [model-converter](../model-converter/README.md)（nif→glTF，批量 pipeline 待主力機驗）。
 
 ~~物件擺放（Godot 前端）~~ ✅ 2026-06-17（離線實作，**待主力機 Godot GUI 跑一次**）：Place Mode 切換 + placement 筆（base ref / instanceId / rotationY / scale）+ box proxy（hash 配色，Y 吸地表）+ `placements.json` 匯出/匯入。檔：`placement.gd`（PlacedObject 薄節點）/ `placement_tool.gd`（list + place/undo/clear）/ `placements_io.gd`（JSON I/O，顯示 scale 除掉還原 canonical 公尺）/ `placement_ui.gd`（側欄 PLACEMENT 段）；`terrain.gd` 加 `world_to_canonical_meters`/`canonical_meters_to_world`/`surface_display_y`；`main.gd` 接 Place Mode 輸入路由。**離線已核對**前端輸出欄位 + 座標換算與後端 `GodotPlacements.cs` 逐欄一致（round-trip 自洽）。
