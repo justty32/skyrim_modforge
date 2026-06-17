@@ -9,6 +9,7 @@ public static partial class Generator
     // fall back to 2 (a safe non-zero default >= the single tab-0 group we ever emit).
     private static readonly Dictionary<APerkEntryPointEffect.EntryType, byte> EntryPointTabCount = new()
     {
+        [APerkEntryPointEffect.EntryType.Activate] = 2,
         [APerkEntryPointEffect.EntryType.ApplyBashingSpell] = 2,
         [APerkEntryPointEffect.EntryType.ApplyCombatHitSpell] = 3,
         [APerkEntryPointEffect.EntryType.ApplyReanimateSpell] = 3,

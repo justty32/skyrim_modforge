@@ -53,7 +53,8 @@ Common bench keyword FormIDs (probed from Skyrim.esm): `0x088105` forge, `0x0ADB
 A perk is a passive ability or a quantitative stat/combat modifier — the building block of the skill
 trees, race abilities, and quest-reward bonuses. The trunk carries `name`/`description`, the
 `playable`/`hidden`/`trait` flags, `level` + `numRanks` (≥1), optional player-facing `conditions`
-(perk-level CTDA gates), and a list of `effects`. Two effect kinds are supported:
+(perk-level CTDA gates), and a list of `effects`. Four effect kinds are supported (`ability`,
+`entryPoint`, `addActivateChoice`, `setText`):
 
 ```jsonc
 { "editorId": "MF_IronHidePerk", "name": "Iron Hide", "numRanks": 1,
@@ -87,6 +88,19 @@ trees, race abilities, and quest-reward bonuses. The trunk carries `name`/`descr
   (`itemType` = `Left`/`Right`/`Voice`/`Instant`), `GetRandomPercent`, `GetLevel`. Each takes a
   `comparison` (`EqualTo`/`GreaterThanOrEqualTo`/… or the symbol forms) vs `value`, an optional
   `runOn` (`Subject` default / `Target`), and `or` (OR with the next condition).
+- **`addActivateChoice` / `setText`** (interactive perks, Immersive Interactions style) — add an
+  `[E] <buttonLabel>` choice on objects matching the effect `conditions`, and/or change the activation
+  prompt. `entryPoint` defaults to `Activate`. An `addActivateChoice` runs an optional `spell` on the
+  object **and/or** a Papyrus `fragmentBody` (`akTargetRef` = the activated object, `akActor` = the
+  activator — e.g. `akActor.SetSitState(akTargetRef)`); `replaceDefault: true` replaces the default
+  activation instead of adding a choice. `setText` just sets `text` (the new prompt). A `fragmentBody`
+  makes ModForge generate `<perk>_Frags.psc` (extends Perk) and attach the **PerkAdapter** VMAD — but
+  only on the `package` path once the `.pex` is compiled (a VMAD pointing at an absent `.pex` errors on
+  load; a fragment-less spell-only choice needs no script). Worked example:
+  `examples/interactive_perk_spec.json`. ⚠ **Offline limit:** the entry-point + PerkAdapter Mutagen
+  *shape* is reflection-verified, but the byte fields (PerkAdapter `version`/`objectFormat`,
+  `IndexedScriptFragment` unknowns) and the Activate fragment **signature** need a main-machine xEdit
+  byte-compare vs a real Immersive Interactions perk — see `WAIT_USER.md`.
 - **Attach to an NPC** via `npcs[].perks: ["MF_IronHidePerk", …]` — the actor gains the perk(s)
   passively at game start (each placement carries the perk's `numRanks`). **Granting a perk to the
   PLAYER needs a Papyrus `AddPerk` call** (`scripts` + a quest fragment) — there is no record-only way

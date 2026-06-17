@@ -34,18 +34,30 @@ public sealed class PerkSpec
 //                    ModAttackDamage / ModSpellMagnitude / CalculateMyCriticalHitChance — discover the
 //                    full set with `perkdiag <Skyrim.esm> <perkFormId>` or the docs), `function`
 //                    (Set | Add | Multiply) and `value` (the operand, e.g. 1.2 for +20% with Multiply).
+//   * "addActivateChoice" — add an "[E] <buttonLabel>" choice on objects matching `conditions` (Immersive
+//                    Interactions style): runs `spell` on the object and/or a Papyrus `fragmentBody`
+//                    (akTargetRef + akActor in scope). EntryPoint defaults to "Activate".
+//   * "setText"    — change the activation prompt `text` on objects matching `conditions`. Record-only.
 // `rank`/`priority` order effects when a perk has ranks; `conditions` are EFFECT-level CTDA gates
 // (wrapped as PerkConditions) — e.g. "only when the equipped weapon is one-handed".
 public sealed class PerkEffectSpec
 {
-    public string Kind { get; set; } = "";        // "ability" | "entryPoint"
+    public string Kind { get; set; } = "";        // ability | entryPoint | addActivateChoice | setText
     public int Rank { get; set; }                  // applies at perk rank >= this (0-based; default 0)
     public int Priority { get; set; }              // tie-break ordering among effects (default 0)
     public List<ConditionSpec> Conditions { get; set; } = new();   // effect-level CTDA gates
     // --- ability kind ---
-    public string Spell { get; set; } = "";        // ref → SPEL granted by this perk
+    public string Spell { get; set; } = "";        // ref → SPEL granted by this perk (also used by addActivateChoice)
     // --- entryPoint kind ---
-    public string EntryPoint { get; set; } = "";   // EntryType name (e.g. ModAttackDamage)
+    public string EntryPoint { get; set; } = "";   // EntryType name (e.g. ModAttackDamage; default "Activate" for choice/text)
     public string Function { get; set; } = "Multiply"; // Set | Add | Multiply
     public float Value { get; set; }               // the modifier operand
+    // --- addActivateChoice / setText kind ---
+    public string ButtonLabel { get; set; } = "";  // the "[E] <label>" choice prompt
+    public string Text { get; set; } = "";         // setText: the new activation prompt text
+    public bool ReplaceDefault { get; set; }       // addActivateChoice: replace the default activation (vs add a choice)
+    // addActivateChoice: raw Papyrus run when the choice is picked. akTargetRef (the activated object)
+    // and akActor (the activator) are in scope. Triggers PerkAdapter fragment generation; package ships
+    // the compiled <perk>_Frags.pex. Leave empty for a spell-only / record-only choice.
+    public string FragmentBody { get; set; } = "";
 }

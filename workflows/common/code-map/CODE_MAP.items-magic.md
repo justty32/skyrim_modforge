@@ -13,6 +13,7 @@
 | `examples/spell_tome_spec.json` | spell tome 教學 |
 | `examples/enchantment_spec.json` | weapon / apparel enchantment |
 | `examples/perk_spec.json` | perk entry-point + ability spell |
+| `examples/interactive_perk_spec.json` | **#1 互動式 perk：addActivateChoice（[E] 選項 + spell/fragmentBody）+ setText（改活化提示）；PerkAdapter fragment（package 路徑）** |
 | `examples/shout_spec.json` | 三段 shout + word of power |
 | `examples/texture_set_spec.json` | TXST 8 槽路徑 |
 | `examples/custom_asset_spec.json` | 外部網格 / 貼圖 / 音效打包 |
@@ -32,6 +33,7 @@
 | `EnchantmentTests.cs` | ENCH scalar fields + effect ref 接線 |
 | `ExternalAssetTests.cs` | external asset 打包（Meshes/Textures/Sounds 複製）|
 | `PerkTests.cs` | Perk trunk + entry-point modifier + ability-spell grant |
+| `PerkActivateChoiceTests.cs` | **#1 addActivateChoice（EntryType.Activate/ButtonLabel/Spell/conditions/tab-count）+ setText（Text）+ fragment source（Fragment_N body）+ PerkAdapter VMAD 綁定[fake .pex]（IndexedScriptFragment + Flags.RunImmediately/FragmentIndex）+ 無 .pex 不掛 + validate（空 label / do-nothing / 空 text）** |
 | `ShoutTests.cs` | Shout word-of-power + spell tier + cooldown build |
 | `SpellTomeTests.cs` | spell tome teaching mechanics |
 | `TextureSetTests.cs` | TXST 8 槽路徑 build |
@@ -112,10 +114,13 @@ IMAD（ImageSpace Modifier）：螢幕後處理 record，由 Explosion `imageSpa
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Perks.cs` | `PerkSpec`（ranks / entry-point modifiers / ability spells）|
-| Build P1 | `Generator.Build.Perks.cs` | 建 Perk trunk（name/description/ranks/playable flag）|
-| Build P2 | `Generator.Build.Perks.EntryPoints.cs` | entry-point modifier 接線 + ability-spell grant（含隱藏 tab-count byte）|
-| Validate | `Generator.Validate.Items.cs` | perk entry-point enum、ability spell ref |
+| Spec | `Spec.Perks.cs` | `PerkSpec`、`PerkEffectSpec`（kind=ability / entryPoint / **addActivateChoice / setText**；後二含 buttonLabel/text/spell/fragmentBody/replaceDefault）|
+| Build P1 | `Generator.Build.Perks.cs` `BuildPerks` | 建 Perk trunk（name/description/ranks/playable flag）|
+| Build P2 | `Generator.Build.Perks.cs` `WirePerks` | 所有 effect 接線：ability/entryPoint modify-value/**`PerkEntryPointAddActivateChoice`（EntryType.Activate + ButtonLabel + Spell + Flags）/`PerkEntryPointSetText`（Text）**；perk/effect CTDA；npcs[].perks。**`AttachPerkFragments`**：有 fragmentBody 的 choice → `PerkAdapter` VMAD（`Scripts`+`ScriptFragments.IndexedScriptFragment` 綁 `Fragment_<i>`、choice `Flags=RunImmediately\|FragmentIndex`），gated on `.pex`。`ParsePerkEntry`（預設 Activate）|
+| Build P2 | `Generator.PerkFragments.cs` | perk fragment 純產生器：`<perk>_Frags extends Perk`、`Fragment_<i>(ObjectReference akTargetRef, Actor akActor)` 含 fragmentBody；`PerkNeedsFragmentScript`/`PerkFragmentScriptName`/`PerkFragmentChoices` |
+| EntryPoints | `Generator.Build.Perks.EntryPoints.cs` | `EntryPointTabCount` vanilla 表（含 `Activate`=2）：每 EntryType 的隱藏 tab-count byte（防 CTD）|
+| Validate | `Generator.Validate.Npcs.cs` | perk entry-point enum、ability spell ref、**addActivateChoice（buttonLabel 非空、spell/fragmentBody 至少一）/setText（text 非空）** |
+| Package | `src/ModForge.Cli/Package.cs` | 任一 perk 有 fragmentBody → 編 `<perk>_Frags.psc`（與 quest/dialogue/scene fragment 同段），Build 時掛 PerkAdapter |
 | Diag | `Diagnostics.Perks.cs` | entry-point effects / ability spell / ranks / conditions dump |
 
 ---

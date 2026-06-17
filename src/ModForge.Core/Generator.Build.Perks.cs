@@ -41,6 +41,8 @@ public static partial class Generator
                     if (BuildCondition(cs, $"perk '{pk.EditorId}' condition") is { } c)
                         perk.Conditions.Add(c);
 
+                // addActivateChoice effects carrying a fragmentBody, in declaration order (= FragmentIndex).
+                var fragChoices = new List<PerkEntryPointAddActivateChoice>();
                 foreach (var es in pk.Effects)
                 {
                     APerkEffect? effect = null;
@@ -85,8 +87,52 @@ public static partial class Generator
                             };
                             break;
                         }
+                        case "addactivatechoice":
+                        {
+                            if (ParsePerkEntry(es.EntryPoint, pk.EditorId) is not { } ept) continue;
+                            var ch = new PerkEntryPointAddActivateChoice
+                            {
+                                EntryPoint = ept,
+                                Rank = (byte)Math.Clamp(es.Rank, 0, 255),
+                                Priority = (byte)Math.Clamp(es.Priority, 0, 255),
+                                PerkConditionTabCount = EntryPointTabCount.GetValueOrDefault(ept, (byte)2),
+                                // ReplaceDefault now; RunImmediately + FragmentIndex added in AttachPerkFragments
+                                // (only when the compiled fragment .pex is present).
+                                Flags = new PerkScriptFlag
+                                {
+                                    Flags = es.ReplaceDefault ? PerkScriptFlag.Flag.ReplaceDefault : default,
+                                    FragmentIndex = 0,
+                                },
+                            };
+                            if (!string.IsNullOrWhiteSpace(es.ButtonLabel)) ch.ButtonLabel = es.ButtonLabel;
+                            if (!string.IsNullOrWhiteSpace(es.Spell))
+                            {
+                                if (TryResolveRef(es.Spell, formKeyByEd, out var afk))
+                                { ch.Spell.SetTo(afk); linksWired++; if (LooksExternalRef(es.Spell)) extLinks++; }
+                                else Warn($"  ! perk '{pk.EditorId}' addActivateChoice: spell ref '{es.Spell}' unresolved");
+                            }
+                            if (!string.IsNullOrWhiteSpace(es.FragmentBody)) fragChoices.Add(ch);
+                            effect = ch;
+                            break;
+                        }
+                        case "settext":
+                        {
+                            if (ParsePerkEntry(es.EntryPoint, pk.EditorId) is not { } ept) continue;
+                            var stx = new PerkEntryPointSetText
+                            {
+                                EntryPoint = ept,
+                                Rank = (byte)Math.Clamp(es.Rank, 0, 255),
+                                Priority = (byte)Math.Clamp(es.Priority, 0, 255),
+                                PerkConditionTabCount = EntryPointTabCount.GetValueOrDefault(ept, (byte)2),
+                                Flags = new PerkScriptFlag { Flags = default, FragmentIndex = 0 },
+                            };
+                            if (!string.IsNullOrWhiteSpace(es.Text)) stx.Text = es.Text;
+                            if (!string.IsNullOrWhiteSpace(es.ButtonLabel)) stx.ButtonLabel = es.ButtonLabel;
+                            effect = stx;
+                            break;
+                        }
                         default:
-                            Warn($"  ! perk '{pk.EditorId}' effect has unknown kind '{es.Kind}' (ability|entryPoint) — skipped");
+                            Warn($"  ! perk '{pk.EditorId}' effect has unknown kind '{es.Kind}' (ability|entryPoint|addActivateChoice|setText) — skipped");
                             continue;
                     }
 
@@ -103,6 +149,12 @@ public static partial class Generator
                     }
                     perk.Effects.Add(effect);
                 }
+
+                // Attach the perk fragment VMAD if any choice ships a fragment AND its .pex is compiled
+                // (package path). Without the .pex we leave the choices fragment-less (spell-only/inert),
+                // mirroring quest/dialogue fragment gating — a VMAD pointing at an absent .pex errors on load.
+                if (fragChoices.Count > 0)
+                    AttachPerkFragments(pk, perk, fragChoices);
             }
 
             // Perks granted to NPCs (npcs[].perks → npc.Perks as PerkPlacements). Each placement carries
@@ -124,6 +176,45 @@ public static partial class Generator
                         npcRec.Perks!.Add(pp);
                     });
             }
+        }
+
+        // Parse a perk choice/text EntryType (defaults to "Activate" when unset). null = unknown name.
+        private APerkEntryPointEffect.EntryType? ParsePerkEntry(string name, string ed)
+        {
+            var n = string.IsNullOrWhiteSpace(name) ? "Activate" : name;
+            if (Enum.TryParse<APerkEntryPointEffect.EntryType>(n, ignoreCase: true, out var e)) return e;
+            Warn($"  ! perk '{ed}' addActivateChoice/setText: unknown entryPoint '{name}' — effect skipped");
+            return null;
+        }
+
+        // Attach the PerkAdapter VMAD binding each fragment-bearing addActivateChoice to a Fragment_<i>
+        // function (script extends Perk). Gated on the compiled .pex (package path). ⚠ Byte fields
+        // (Version/ObjectFormat, ExtraBindDataVersion, IndexedScriptFragment Unknowns) + the fragment
+        // signature need a main-machine xEdit compare vs a real Immersive Interactions perk (WAIT_USER).
+        private void AttachPerkFragments(PerkSpec pk, IPerk perk, List<PerkEntryPointAddActivateChoice> choices)
+        {
+            if (options?.CompiledScriptsDir is not { } dir) return;
+            var scriptName = Generator.PerkFragmentScriptName(pk);
+            if (string.IsNullOrEmpty(scriptName) || !File.Exists(Path.Combine(dir, scriptName + ".pex"))) return;
+
+            var pa = perk.VirtualMachineAdapter as PerkAdapter ?? new PerkAdapter { Version = 4, ObjectFormat = 2 };
+            if (!pa.Scripts.Any(s => string.Equals(s.Name, scriptName, StringComparison.OrdinalIgnoreCase)))
+                pa.Scripts.Add(new ScriptEntry { Name = scriptName });
+            pa.ScriptFragments ??= new PerkScriptFragments { FileName = "", ExtraBindDataVersion = 2 };
+
+            for (int i = 0; i < choices.Count; i++)
+            {
+                choices[i].Flags!.Flags |= PerkScriptFlag.Flag.RunImmediately;   // run the fragment on activate
+                choices[i].Flags!.FragmentIndex = (ushort)i;
+                pa.ScriptFragments.Fragments.Add(new IndexedScriptFragment
+                {
+                    FragmentIndex = (ushort)i,
+                    ScriptName = scriptName,
+                    FragmentName = $"Fragment_{i}",
+                });
+            }
+            perk.VirtualMachineAdapter = pa;
+            scriptsAttached++;
         }
     }
 }

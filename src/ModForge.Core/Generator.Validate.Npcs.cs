@@ -130,8 +130,26 @@ public static partial class Generator
                             && es.Function.ToLowerInvariant() is not ("set" or "add" or "multiply" or "mult"))
                             Problems.Add($"perk '{pk.EditorId}' entryPoint effect has invalid function '{es.Function}' (Set|Add|Multiply)");
                     }
+                    else if (kind == "addactivatechoice")
+                    {
+                        // entryPoint defaults to Activate; if given it must be a real EntryType.
+                        if (!string.IsNullOrWhiteSpace(es.EntryPoint) && !perkEntryTypes.Contains(es.EntryPoint))
+                            Problems.Add($"perk '{pk.EditorId}' addActivateChoice has unknown entryPoint '{es.EntryPoint}'");
+                        if (string.IsNullOrWhiteSpace(es.ButtonLabel))
+                            Problems.Add($"perk '{pk.EditorId}' addActivateChoice has empty buttonLabel (the '[E] <label>' prompt)");
+                        if (string.IsNullOrWhiteSpace(es.Spell) && string.IsNullOrWhiteSpace(es.FragmentBody))
+                            Problems.Add($"perk '{pk.EditorId}' addActivateChoice does nothing: give it a 'spell' and/or a 'fragmentBody'");
+                        if (!string.IsNullOrWhiteSpace(es.Spell)) CheckRef(es.Spell, $"perk '{pk.EditorId}' addActivateChoice spell");
+                    }
+                    else if (kind == "settext")
+                    {
+                        if (!string.IsNullOrWhiteSpace(es.EntryPoint) && !perkEntryTypes.Contains(es.EntryPoint))
+                            Problems.Add($"perk '{pk.EditorId}' setText has unknown entryPoint '{es.EntryPoint}'");
+                        if (string.IsNullOrWhiteSpace(es.Text))
+                            Problems.Add($"perk '{pk.EditorId}' setText has empty text (the new activation prompt)");
+                    }
                     else
-                        Problems.Add($"perk '{pk.EditorId}' effect has invalid kind '{es.Kind}' (ability|entryPoint)");
+                        Problems.Add($"perk '{pk.EditorId}' effect has invalid kind '{es.Kind}' (ability|entryPoint|addActivateChoice|setText)");
                     foreach (var cs in es.Conditions) CheckCondition(cs, $"perk '{pk.EditorId}' effect condition");
                 }
             }

@@ -3725,7 +3725,7 @@
     },
     "perkEffect": {
       "type": "object",
-      "description": "One perk effect. kind=ability grants spell; kind=entryPoint modifies a named EntryPoint (entryPoint name + function + value).",
+      "description": "One perk effect. kind=ability grants spell; kind=entryPoint modifies a named EntryPoint; kind=addActivateChoice adds an '[E] <buttonLabel>' choice (spell and/or fragmentBody); kind=setText changes the activation prompt text.",
       "required": [
         "kind"
       ],
@@ -3733,7 +3733,9 @@
         "kind": {
           "enum": [
             "ability",
-            "entryPoint"
+            "entryPoint",
+            "addActivateChoice",
+            "setText"
           ]
         },
         "rank": {
@@ -3774,6 +3776,22 @@
         "value": {
           "type": "number",
           "description": "(entryPoint) the operand, e.g. 1.2 for +20% with Multiply"
+        },
+        "buttonLabel": {
+          "type": "string",
+          "description": "(addActivateChoice/setText) the '[E] <label>' choice prompt"
+        },
+        "text": {
+          "type": "string",
+          "description": "(setText) the new activation prompt text"
+        },
+        "replaceDefault": {
+          "type": "boolean",
+          "description": "(addActivateChoice) replace the default activation instead of adding a choice"
+        },
+        "fragmentBody": {
+          "type": "string",
+          "description": "(addActivateChoice) raw Papyrus run when the choice is picked; akTargetRef (the activated object) + akActor (the activator) are in scope. Triggers PerkAdapter fragment generation (package ships <perk>_Frags.pex)."
         }
       }
     },
