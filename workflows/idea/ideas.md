@@ -35,5 +35,5 @@
 | 17 | 任務節點圖 + 批量隨從反應 | 隨從/NPC | [followers.md](followers.md#17-skyrim-原版任務節點圖--批量隨從反應生成2026-06-15) |
 | 18 | 隨從記憶系統 | 隨從/NPC | [followers.md](followers.md#18-隨從記憶系統任務經歷追蹤與對話更新2026-06-15) |
 | 19 | Godot Worldspace Editor | 工具/世界 | [sub_projs/godot-worldspace-editor/](../../sub_projs/godot-worldspace-editor/README.md) |
-| 20 | CSF NPC 技能樹 | 隨從/NPC | [csf-npc-skill-tree.md](csf-npc-skill-tree.md) |
+| 20 | In-world 技能樹（玩家+NPC） | 隨從/NPC · 養成 | [sub_projs/inworld-skill-tree/](../../sub_projs/inworld-skill-tree/README.md) |
 | 21 | 養成與戰鬥體系擴充（Keystone + 職業核心機制） | 養成/戰鬥 | [progression-combat-overhaul.md](progression-combat-overhaul.md) |

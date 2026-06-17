@@ -79,7 +79,7 @@ Skyrim 原版 perk 樹已有基礎，但缺乏「選了某個 perk 就要全面�
 
 - **CSF 技能樹 spec**（正在討論中）：這個 idea 決定了 CSF spec 的設計目標
 - **身份系統 ③ 聲望/行為追蹤**（[feature-dev/session-log](../feature-dev/session-log.md)）：職業路線可能影響 NPC 反應
-- **CSF NPC 技能樹**（[#20](csf-npc-skill-tree.md)）：若 NPC 也有職業路線，可複用同一套 Keystone 設計
+- **In-world 技能樹**（[#20](inworld-skill-tree.md)）：玩家/NPC 職業路線可複用同一套 Keystone 設計
 
 ---
 

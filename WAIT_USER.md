@@ -18,10 +18,9 @@
 
 - **環境設定**（env var / 權限 / 本機工具安裝）：（無）
 - **外部資源**（Nexus 下載 mod / 外部工具實跑）：
-  - **【Idea #20 參考】Campfire / Frostfall 的 in-world 天賦樹機制（待主力機查看）**：
-    使用者描述：玩家與營火互動後，會有幾顆「星星」懸浮在營火上方（3D 物件），把準星對準星星可看到浮動說明文字，以及「是否啟用此 perk」的選項。整個天賦樹不是獨立 UI 介面，而是遊戲世界中的互動物件。
-    → **與 Idea #20 的關聯**：這個方案等同於「方案 C 的替代路線」——不靠 CSF UI 或 MCM，而是把 perk 選擇做成世界內互動物件，對 NPC 版 perk 管理很有參考價值。
-    → **待你做**：在主力機確認是 Campfire 還是 Frostfall（可能兩者都包含），找到 Nexus ID，看它的機制是否用 3D mesh + collision raycasting + 對話選項，還是另一套做法。找到後把結論補到 [Idea #20](workflows/idea/csf-npc-skill-tree.md)。
+  - **【Idea #20】In-world 技能樹 — 機制已逆向，剩原始碼層級確認（U1–U3，待主力機）**：
+    in-world 3D 星樹機制已由 mod-survey 逆向完成：引擎＝**Campfire**（`Campfire.esm` 的 Skill System），**Frostfall** 的 Endurance 樹是其消費者活範例；星＝普通 in-world ACTI、準心 `OnActivate` 點 perk、視覺狀態靠 GLOB、走遠 480u 自毀；公開 API `CampUtil.RegisterPerkTree`。全解見 [`sub_projs/mod-survey/findings/campfire.md`](sub_projs/mod-survey/findings/campfire.md)。設計（玩家+NPC 版）見 [sub_projs/inworld-skill-tree/](sub_projs/inworld-skill-tree/design-inworld-jcontainers.md)。
+    → **待你做（主力機讀 BSA 原始碼）**：**U1** Campfire 能否不靠營火、對任意 ref/位置 spawn 樹（讀 `CampCampfire.psc` / `_Camp_PlaceableObjectBase`）；**U2** node 的 `required_perk_rank_global` 是否全域單例（決定 session GLOB 橋接成不成立）；**U3** Frostfall 的 perkPoint 消費/gate 邏輯。結論補回 design 檔 §五。
   - **Nexus 下載（美化/body/工具，掃完 ~/skyrim_mods 確認缺）**：
     - **CBBE 3BA**（30174）— OBody 必需的 body framework，現有 CBBE 是舊版
     - **OBody NG**（77016）— 每個 NPC 自動隨機 body preset + ORefit 服裝貼合
