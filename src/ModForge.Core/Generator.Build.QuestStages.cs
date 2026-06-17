@@ -68,8 +68,13 @@ public static partial class Generator
                 // function name the engine calls when SetStage() fires.
                 foreach (var st in q.Stages.OrderBy(s => s.Index))
                 {
+                    // A fragment binding is needed when the stage shows/completes an objective, binds an
+                    // instance global, OR is the startUpStage that drives the spawn/cooldown trigger.
+                    // (Without the binding the engine never calls Fragment_Stage_XXXX even though the
+                    // function exists in the .pex — the cause of "startquest spawns nothing".)
                     bool needsFrag = q.Objectives.Any(o => o.ShowStage == st.Index || o.CompleteStage == st.Index)
-                                     || st.InstanceGlobals.Count > 0;
+                                     || st.InstanceGlobals.Count > 0
+                                     || Generator.StartupStageTrigger(q) == st.Index;
                     if (!needsFrag) continue;
                     // Stage = quest stage number, StageIndex = log-entry index within the stage
                     // (always 0 — we emit one log entry per stage, matching vanilla convention).

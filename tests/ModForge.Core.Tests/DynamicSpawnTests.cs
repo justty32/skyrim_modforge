@@ -113,6 +113,24 @@ public class DynamicSpawnTests
     }
 
     [Fact]
+    public void Spawn_StartupStage_BindsFragmentInVmad()
+    {
+        // The QuestScriptFragment binding MUST be emitted for the startUpStage — without it the engine
+        // never calls Fragment_Stage_XXXX even though the function is in the .pex (the "startquest
+        // spawns nothing" bug). Needs CompiledScriptsDir + a present .pex to run WireQuestStages pass 2.
+        var dir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "mf-spawn-" + System.Guid.NewGuid().ToString("N"));
+        System.IO.Directory.CreateDirectory(dir);
+        try
+        {
+            System.IO.File.WriteAllText(System.IO.Path.Combine(dir, "MFSpawnQ_Stages.pex"), "");
+            var r = TestBuild.OkWithCompiledScripts(SpawnSpecMod(Bandits()), dir);
+            var qa = (QuestAdapter)r.Mod.Quests.Single(q => q.EditorID == "MFSpawnQ").VirtualMachineAdapter!;
+            Assert.Contains(qa.Fragments, f => f.Stage == 10 && f.FragmentName == "Fragment_Stage_0010_Item00000");
+        }
+        finally { if (System.IO.Directory.Exists(dir)) System.IO.Directory.Delete(dir, recursive: true); }
+    }
+
+    [Fact]
     public void Spawn_WithoutStartupStage_IsReported()
     {
         var s = new ModSpec { Quests = { new QuestSpec { EditorId = "Q", Name = "Q", Spawn = Bandits() } } };
