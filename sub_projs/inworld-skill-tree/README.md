@@ -2,7 +2,7 @@
 
 ← [idea #20](../../workflows/idea/inworld-skill-tree.md)｜[ideas 索引](../../workflows/idea/ideas.md)
 
-**一句話**：用 Campfire/Frostfall 的 **in-world 3D 星樹**做 PoE-like 技能樹的 ModForge 生成路線——**玩家與 NPC 通用**。玩家版＝Campfire 原生模式（現成，全域 GLOB）；NPC 版＝加 JContainers per-NPC 狀態橋接，把同一套配點體驗延伸到隨從。
+**一句話**：用 Campfire/Frostfall 的 **in-world 3D 星樹**做 PoE-like 技能樹的 ModForge 生成路線——**玩家與 NPC 通用**。玩家版＝Campfire 原生模式（現成，全域 GLOB）；NPC 版＝加 JContainers per-NPC 狀態橋接。**開樹入口不綁營火**——可做成瞄準法術（施在誰開誰的樹）、自訂活化物（石頭/樹/祭壇）或物品。
 
 **發想來源**：討論 CSF PoE-like 玩家技能 spec 時，冒出「NPC 也能用 CSF 的 perk 嗎？能否對 NPC 開啟 CSF 介面？」的問題。
 **核心問題**：perk 的 **效果層** vs **UI 層**，兩件事可行性截然不同——效果層 100% 可行，UI 層原生不支援，方案差異全在如何補 UI 層。
@@ -117,5 +117,5 @@ Campfire / Frostfall 的天賦樹是**世界內互動物件**：玩家與營火�
 ## Open
 
 - **U1–U5 待驗**（見 [design 檔 §五](design-inworld-jcontainers.md)）——多需主力機讀 `Campfire.bsa` / `Frostfall.bsa` 原始碼，或 code pass `src/`。
-- **下一步離線設計**：Phase 0（純效果成長）+ Phase 1（玩家版 in-world 樹）的 spec 欄位構想——這兩階零/少 unknown，可在公司先細化 ModForge spec 對接。
+- **下一步離線設計**：Phase 0（純效果成長）+ Phase 1（玩家版 in-world 樹）的 spec 欄位構想 + 觸發載體（法術/活化物/物品）spec 形狀——這兩階零/少 unknown，可在公司先細化 ModForge spec 對接。
 - **與玩家技能樹 spec 的關係**：本案玩家版 in-world 樹本身就是一條玩家技能樹路線（取代 CSF）；NPC 樹複用同一套 perk/record 生成邏輯，只多 JContainers 橋接層。

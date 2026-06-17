@@ -57,12 +57,28 @@ JFormDB.solveIntSetter(npc, ".ModForgeNpcSkills.Endurance.nodes.Adaptation", 2, 
 
 ---
 
-## 三、開樹流程（對 NPC 開 — 本設計核心；玩家版見節末）
+## 三、開樹：觸發載體（不綁營火）+ 對 NPC 橋接
 
-Campfire 原生是「玩家對**營火**選 Skills → `CampCampfire.ShowPerkTree()` 在營火位置 spawn 樹」。本設計要改成「玩家對 **NPC** 對話『管理技能』→ 開該 NPC 的樹」。橋接靠一組**全域 session GLOB**（僅描述「當前正在管理的那一個 NPC」），把 Campfire 的全域單例假設與 per-NPC 持久狀態縫起來：
+### 3.1 觸發載體抽象（開樹入口）
+
+Campfire 把開樹綁死在營火 ACTI 的 OnActivate。本設計把「開樹入口」**抽象成任意觸發載體**——營火只是其中一種：
+
+| 載體 | 機制 | target 解析 | 適用 |
+|---|---|---|---|
+| **自訂 activator**（石頭/樹/祭壇/營火…）| `OnActivate` | 載體綁定的 actor（玩家，或這顆石頭代表的某 NPC）| 場景化「修練處」 |
+| **法術 SPEL**（瞄準施放）| script-effect MGEF | `Game.GetCurrentCrosshairRef()` ／被擊中的 actor | **最通用**：施在誰、開誰的樹 |
+| **物品 MISC / 書**（使用）| `OnEquip` / 讀書 | 玩家，或彈選單選 target | 道具感 |
+
+**法術路線最優雅**：它把玩家版/NPC 版統一成同一入口——一個「管理技能」法術，**自施 → target＝玩家 → 開玩家樹（全域 GLOB）；瞄準 NPC → target＝該 NPC → 開 NPC 樹（JFormDB 橋接）**。`target 是不是玩家`是唯一分歧點。
+
+不論哪種載體，職責只有**決定兩件事**：① **target actor**（樹屬於誰、狀態存哪）② **spawn 位置**（樹在哪展開，通常 target 面前）。決定後一律進 3.2 統一流程。
+
+### 3.2 對 NPC 開樹流程（target ≠ 玩家）
+
+target 解析為某 NPC 後，橋接靠一組**全域 session GLOB**（僅描述「當前正在管理的那一個 NPC」），把 Campfire 的全域單例假設與 per-NPC 持久狀態縫起來：
 
 ```
-玩家對 NPC 說「管理你的技能」
+觸發載體（§3.1）解析出 target ＝ NPC X
   │
   1. LoadNpcStateToGlobs(npc, skillId)
   │     JFormDB[npc][skillId].nodes → 灌進 Campfire node 的 required_perk_rank_global（session GLOB）
@@ -81,7 +97,7 @@ Campfire 原生是「玩家對**營火**選 Skills → `CampCampfire.ShowPerkTre
 
 **為何 session GLOB 只需一組**：因為「同一時間只會管理一個 NPC」（玩家一次只對一個 NPC 開樹）。Campfire 用的那組全域 GLOB 在開樹瞬間被當前 NPC「借用」，關樹存回 JFormDB 即釋放。這正是方案 B「代理選單（轉移模型）」的精神，但 GLOB 數量從 `381 = 127 NPC × 3` 降到 `每棵樹的節點數 × 一組`（與 NPC 數無關）。
 
-**玩家版（baseline，零橋接）**：玩家用就是 Campfire 原生流程——對營火開樹、點星寫**全域 GLOB**、效果直接套在玩家身上。沒有「借位/存回」步驟（全域 GLOB 就是玩家的真相，只有一個玩家不會衝突），也**不需 JContainers**。換言之 §二/§三 的 JFormDB + session GLOB 橋接是 NPC 專屬增量；玩家版砍掉這層即可，兩版共用同一套 ACTI/node/line/controller record 與 perk 效果層。**先做玩家版驗證 in-world 樹本身，再加 NPC 橋接**是最穩的路徑。
+**玩家版（baseline，零橋接）**：玩家用就是 Campfire 原生流程——透過載體（自施法術／活化物／真營火）開樹、點星寫**全域 GLOB**、效果直接套在玩家身上。沒有「借位/存回」步驟（全域 GLOB 就是玩家的真相，只有一個玩家不會衝突），也**不需 JContainers**。換言之 §二/§三 的 JFormDB + session GLOB 橋接是 NPC 專屬增量；玩家版砍掉這層即可，兩版共用同一套 ACTI/node/line/controller record 與 perk 效果層。**先做玩家版驗證 in-world 樹本身，再加 NPC 橋接**是最穩的路徑。
 
 ---
 
@@ -102,7 +118,7 @@ Campfire 原生是「玩家對**營火**選 Skills → `CampCampfire.ShowPerkTre
 
 | # | 問題 | 為何重要 | 怎麼查 |
 |---|------|---------|--------|
-| **U1** | Campfire 能否**不靠營火、對任意 ref/位置** spawn 樹？`ShowPerkTree()` 是 `CampCampfire` 的方法（綁營火本體）。 | 決定「對 NPC 開樹」可不可行。退路：開樹時在 NPC 腳下暫生一個隱形 dummy 營火 → ShowPerkTree → 取下（hacky 但或可行）。 | 讀 `CampCampfire.psc` + `_Camp_PlaceableObjectBase` 看 controller spawn 能否獨立呼叫；主力機 `Campfire.bsa` |
+| **U1** | Campfire 能否**不靠營火、對任意 ref/位置** spawn 樹？三種觸發載體（活化物/法術/物品，§3.1）都歸結到「在 target actor 位置 spawn 一棵樹」這一核心能力；`ShowPerkTree()` 是 `CampCampfire` 的方法（綁營火本體）。 | 決定整條「對任意 target 開樹」可不可行（玩家版可用真營火繞過，NPC/法術/物件版必須解此題）。退路：開樹時在 target 腳下暫生隱形 dummy 營火 → ShowPerkTree → 取下（hacky 但或可行）。 | 讀 `CampCampfire.psc` + `_Camp_PlaceableObjectBase` 看 controller spawn 能否獨立呼叫；主力機 `Campfire.bsa` |
 | **U2** | `IncreasePerkRank()` 寫的 `required_perk_rank_global` 是 node **base form 屬性**還是 instance？多 NPC 共用同一棵樹 base，session GLOB 是否真能隔離不互污染？ | 決定 session GLOB 橋接成不成立（本設計地基）。 | 原始碼確認 GLOB 是否全域單例；若是，橋接成立（開樹前灌、關樹後存）|
 | **U3** | Campfire 的 **perkPoint 消費 / gate**（點數不足不能點、prerequisite 未點不能點下游）邏輯在哪？ | NPC 配點要不要受點數限制；Frostfall 用 `EndurancePerkPoints`，需逆向其 gate。 | 讀 Frostfall `_Frost_*` perk point 腳本 + Campfire node gate |
 | **U4** | ModForge 能否生成這套 record：ACTI（node/line/controller）+ VMAD script 屬性互指（downstream node/line）+ PositionRef layout markers + register quest alias？ | 決定產線可不可生成；campfire.md §4 說「大致可，缺 PositionRef layout 模板」。 | code pass `src/`，確認 ACTI+VMAD 屬性互指 + cell ref layout 能力 |
@@ -118,7 +134,8 @@ Campfire 原生是「玩家對**營火**選 Skills → `CampCampfire.ShowPerkTre
 | node rank **GLOB**（session，一組） | `required_perk_rank_global` + `_max`，**與 NPC 數無關** | campfire.md §4 ✅ |
 | perk description **MESG** | 星的浮動說明文字 | campfire.md §4 ✅ |
 | **PositionRef layout 模板** | 一組相對 marker（星擺位）+ ACTI 屬性互指拓樸 | campfire.md §4 ⚠️ 缺模板（唯一明確缺口）|
-| register **quest** + `CampPerkSystemRegister` alias | 一行 `CampUtil.RegisterPerkTree`；本設計另加「對 NPC 開樹」對話片段 | campfire.md §3 ✅ |
+| register **quest** + `CampPerkSystemRegister` alias | 一行 `CampUtil.RegisterPerkTree` 把樹掛進系統 | campfire.md §3 ✅ |
+| **觸發載體** record（§3.1）：SPEL + script-effect MGEF（瞄準法術）／自訂 ACTI（石頭/樹/祭壇）／MISC（物品） | 解析 target actor + spawn 位置 → 呼叫開樹；法術版最通用、統一玩家/NPC | ⚠️ 新增，視 U1 |
 | JFormDB 存取 + GLOB↔JFormDB 橋接 **Papyrus** | LoadNpcStateToGlobs / SaveGlobsToNpcState / SyncPerks | jcontainers.md §三 ⚠️ U5 |
 | 星/線/背板 **NIF** | 重用 Campfire 的（依賴 Campfire.esm 引其 form），免自製美術 | campfire.md §4 ✅ |
 
