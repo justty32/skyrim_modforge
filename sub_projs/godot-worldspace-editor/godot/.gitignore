@@ -9,3 +9,4 @@ texconfig.json
 placements.json
 splat_*.png
 splat_*.png.import
+modelcache/

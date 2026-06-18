@@ -46,6 +46,11 @@ static func build(vbox: VBoxContainer, tool: PlacementTool,
 	btn_clear.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_clear.pressed.connect(tool.clear_all); hbox.add_child(btn_clear)
 
+	# Pull real vanilla meshes (nif→glTF via the CLI) and swap box proxies — the WYSIWYG trigger.
+	# First fetch per base blocks a few seconds; results cache to res://modelcache/.
+	var btn_mdl := Button.new(); btn_mdl.text = "Load real models (WYSIWYG)"
+	btn_mdl.pressed.connect(func(): tool.refresh_models(true)); vbox.add_child(btn_mdl)
+
 	var btn_exp := Button.new(); btn_exp.text = "Save placements.json"
 	btn_exp.pressed.connect(on_export); vbox.add_child(btn_exp)
 	var btn_imp := Button.new(); btn_imp.text = "Load placements.json"

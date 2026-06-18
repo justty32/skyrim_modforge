@@ -7,8 +7,9 @@ extends Node3D
 ## stamps an object with the current base / instance / rotation / scale.
 
 var terrain: TerrainGrid
+var _models: ModelFetch   # resolves base ref → real mesh (may be null/offline)
 
-var current_base: String        = "Skyrim.esm:0x000D4B52"  # placeholder default
+var current_base: String        = "Skyrim.esm:0x018199"   # RockL01 (a visible STAT) by default
 var current_instance_id: String = ""
 var current_scale: float        = 1.0
 var current_rot_y: float        = 0.0  # radians, Godot Y (yaw)
@@ -18,8 +19,22 @@ var _objects: Array[PlacedObject] = []
 signal changed  # count changed → UI label refresh
 
 
-func configure(t: TerrainGrid) -> void:
+func configure(t: TerrainGrid, models: ModelFetch = null) -> void:
 	terrain = t
+	_models = models
+
+
+# Pull every placed object's real vanilla mesh (nif→glTF via ModelFetch) and swap its box proxy.
+# allow_fetch=true runs the slow CLI+convert for uncached bases; the WYSIWYG "Load real models" hook.
+func refresh_models(allow_fetch: bool = false) -> void:
+	if _models == null:
+		return
+	for obj in _objects:
+		if obj.has_model():
+			continue
+		var m := _models.get_model(obj.skyrim_base, allow_fetch)
+		if m != null:
+			obj.set_model(m)
 
 
 # Click placement: keep clicked X/Z, snap Y onto the terrain surface.
@@ -46,6 +61,12 @@ func _spawn(base: String, inst_id: String, pos: Vector3, rot: Vector3, scale_v: 
 	obj.uniform_scale = scale_v
 	obj.scale = Vector3.ONE * scale_v
 	_objects.append(obj)
+	# Show the real mesh if it's already cached (cheap); first fetch of a base is the explicit
+	# "Load real models" action, so placing stays snappy.
+	if _models != null:
+		var m := _models.get_model(base, false)
+		if m != null:
+			obj.set_model(m)
 
 
 func remove_last() -> void:

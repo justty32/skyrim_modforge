@@ -24,6 +24,7 @@ internal static partial class Program
                 case "voice-annotate" when args.Length == 5: return VoiceAnnotateCmd(args[1], args[2], args[3], args[4]);
                 case "compile" when args.Length == 3:  return CompileCmd(args[1], args[2]);
                 case "texexport" when args.Length == 4: return TexExport(args[1], args[2], args[3]);
+                case "nifexport" when args.Length == 4: return NifExport(args[1], args[2], args[3]);
                 case "package" when args.Length == 3:  return PackageCmd(args[1], args[2], null);
                 case "package" when args.Length == 5 && args[3] == "--assets": return PackageCmd(args[1], args[2], args[4]);
                 case "validate" when args.Length == 2: return ValidateCmd(args[1]);
@@ -111,6 +112,7 @@ internal static partial class Program
         "  txstdiag <in.esp> [0xFORMID]                 a TextureSet's 8 texture-map slots+flags (no id: list all TXST)\n" +
         "  landdiag <in.esp> [wsEditorId] [maxCells]    dump LAND texture layers (BTXT/ATXT quad+layer+tex, VTXT pts) — byte-verify vs vanilla\n" +
         "  texexport <dataDir> <outDir> <master:0xLTEX>[,…]  LTEX→diffuse .dds from texture BSAs → PNG (Godot WYSIWYG terrain)\n" +
+        "  nifexport <dataDir> <outDir> <master:0xFORMID>[,…]  placeable base→model .nif from mesh BSAs (Godot WYSIWYG objects; convert via nif2gltf)\n" +
         "  weatherdiag <in.esp> <0xFORMID>              print a Weather's flags/colours/clouds/fog (compare gen vs vanilla)\n" +
         "  climatediag <in.esp> <0xFORMID>              print a Climate's weather list/sun-times/moons/textures\n" +
         "  worlddiag <in.esp> <0xFORMID>                print a Worldspace's climate/water/parent + map bounds + land/water defaults\n" +

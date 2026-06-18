@@ -28,6 +28,7 @@ var _ui_width   := 200
 var _grid_lines: Array[Node3D] = []
 var _player: PlayerController = null
 var _placement: PlacementTool = null
+var _model_fetch: ModelFetch = null
 var _place_mode := false
 var _splat: SplatTool = null
 var _tex_fetch: TexFetch = null
@@ -42,9 +43,11 @@ func _ready() -> void:
 	camera_rig  = SceneBuilder.camera(self, terrain)
 	_cursor     = SceneBuilder.cursor(self)
 	_grid_lines = SceneBuilder.grid_outlines(self, CELLS_X, CELLS_Y, terrain)
+	_model_fetch = ModelFetch.new()
+	add_child(_model_fetch)
 	_placement  = PlacementTool.new()
 	add_child(_placement)
-	_placement.configure(terrain)
+	_placement.configure(terrain, _model_fetch)
 	_tex_fetch  = TexFetch.new()
 	add_child(_tex_fetch)
 	_splat      = SplatTool.new()
