@@ -178,3 +178,44 @@ def build_sse_nif(verts, normals, uvs, tris, node_translation=(0.0, 0.0, 0.0),
         _bstrishape_block(verts, normals, uvs, tris, shape_translation),
     ]
     return _header(types, index, blocks, ["mesh"], BS_SSE) + b"".join(blocks)
+
+
+def _bstrishape_block_fullprec(verts, normals, uvs, tris, translation=(0.0, 0.0, 0.0)):
+    """SSE FULL-precision layout, with the Full_Precision attribute flag deliberately UNSET — this
+    is how real vanilla statics (e.g. RockL01) decode: float3 position, but no flag advertises it.
+    stride 32 = vert(float3@0) bitangentX(float@12) uv(half2@16) normal(byte3@20)."""
+    n = len(verts)
+    stride = 32
+    vdata = bytearray()
+    for i in range(n):
+        block = bytearray(stride)
+        struct.pack_into("<3f", block, 0, *verts[i])     # float3 position (full precision)
+        if uvs:
+            block[16:20] = _half(uvs[i])
+        if normals:
+            nx, ny, nz = normals[i]
+            block[20] = _normbyte(nx); block[21] = _normbyte(ny); block[22] = _normbyte(nz)
+        vdata += block
+
+    attributes = 0x1 | 0x2 | 0x8                # Vertex | UVs | Normals — NO full-precision flag
+    vertex_desc = (stride // 4) & 0xF           # Vertex Data Size = 8 dwords
+    vertex_desc |= (4 & 0xF) << 8               # UV1 Offset = dword 4 (byte 16)
+    vertex_desc |= (5 & 0xF) << 16              # Normal Offset = dword 5 (byte 20)
+    vertex_desc |= (attributes & 0xFFF) << 44
+
+    b = _niavobject(translation)
+    b += _vec3((0, 0, 0)) + _f32(0)
+    b += _i32(-1) + _i32(-1) + _i32(-1)
+    b += _u64(vertex_desc)
+    b += _u16(len(tris)) + _u16(n)
+    b += _u32((stride // 4) * n * 4 + len(tris) * 6)
+    b += bytes(vdata)
+    b += b"".join(struct.pack("<3H", *t) for t in tris)
+    return b
+
+
+def build_sse_nif_fullprec(verts, normals, uvs, tris):
+    """NiNode(child=BSTriShape) with full-precision float3 positions but no Full_Precision flag."""
+    blocks = [_ninode_block([1], (0.0, 0.0, 0.0)),
+              _bstrishape_block_fullprec(verts, normals, uvs, tris)]
+    return _header(["NiNode", "BSTriShape"], [0, 1], blocks, ["mesh"], BS_SSE) + b"".join(blocks)

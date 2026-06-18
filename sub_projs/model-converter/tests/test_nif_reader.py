@@ -6,7 +6,7 @@ import pytest
 
 from nif2gltf.geometry import skyrim_to_gltf_point
 from nif2gltf.nif_reader import NifError, SkinnedNifError, read_nif
-from tests.nif_fixtures import build_le_nif, build_sse_nif
+from tests.nif_fixtures import build_le_nif, build_sse_nif, build_sse_nif_fullprec
 
 TRI = [(0, 1, 2)]
 VERTS = [(1.0, 2.0, 3.0), (4.0, 0.0, 0.0), (0.0, 5.0, 0.0)]
@@ -60,6 +60,18 @@ def test_sse_half_precision_roundtrip():
         assert got == pytest.approx(skyrim_to_gltf_point(*src), abs=1e-3)
     for got, src in zip(m.uvs, uvs):
         assert got == pytest.approx(src, abs=1e-3)
+
+
+def test_sse_full_precision_unflagged():
+    # Real vanilla statics (e.g. RockL01) store float3 positions but DON'T set the Full_Precision
+    # attribute flag. Precision must be inferred from the vertex layout (UV offset >= 12 = float3),
+    # not the flag — otherwise positions get misread as half3 → garbage / NaN.
+    verts = [(132.84, -129.97, 113.68), (51.97, 8e-5, -3.44), (-2.58, -27.02, -3.46)]
+    uvs = [(0.25, 0.5), (0.75, 0.0), (0.5, 1.0)]
+    m = read_nif(build_sse_nif_fullprec(verts, NORMALS, uvs, TRI))[0]
+    for got, src in zip(m.positions, verts):
+        # float3 is exact (no half rounding); axis-swapped to glTF space.
+        assert got == pytest.approx(skyrim_to_gltf_point(*src), abs=1e-2)
 
 
 def test_sse_normals_decoded():

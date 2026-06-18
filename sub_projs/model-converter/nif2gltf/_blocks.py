@@ -204,9 +204,14 @@ def _read_bstrishape(r: _Reader, bs_version: int) -> dict:
     has_uv = attributes & 0x2
     has_normal = attributes & 0x8
     skinned = bool(attributes & 0x40) or skin_ref != -1
-    full_precision = attributes & 0x400
     uv_off = ((vertex_desc >> 8) & 0xF) * 4
     nrm_off = ((vertex_desc >> 16) & 0xF) * 4
+    # Position is float3 (full precision) or half3 — SSE's Full_Precision flag bit is unreliable
+    # across exporters (real vanilla rocks decode as float3 with the bit unset), so infer from the
+    # byte budget before the first following attribute: float3+bitangentX = 16 B → UV@16 / Normal@20,
+    # whereas half3+bitangentX = 8 B → UV@8 / Normal@12. A first offset ≥ 12 can only be float3.
+    _attr_offs = [o for o in (uv_off if has_uv else 0, nrm_off if has_normal else 0) if o > 0]
+    full_precision = (min(_attr_offs) if _attr_offs else stride) >= 12
 
     verts: list = []
     normals: list = []
