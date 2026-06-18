@@ -72,10 +72,32 @@ public static partial class Generator
                     // instance global, OR is the startUpStage that drives the spawn/cooldown trigger.
                     // (Without the binding the engine never calls Fragment_Stage_XXXX even though the
                     // function exists in the .pex — the cause of "startquest spawns nothing".)
+                    bool hasJc = Generator.HasPersist(st) || Generator.HasSyncPerks(st);
                     bool needsFrag = q.Objectives.Any(o => o.ShowStage == st.Index || o.CompleteStage == st.Index)
                                      || st.InstanceGlobals.Count > 0
-                                     || Generator.StartupStageTrigger(q) == st.Index;
+                                     || Generator.StartupStageTrigger(q) == st.Index
+                                     || hasJc;
                     if (!needsFrag) continue;
+                    // JContainers per-stage object properties (Form key for an arbitrary-ref key, Form
+                    // values, Perks), namespaced by the stage prefix to match the generated source.
+                    if (hasJc)
+                    {
+                        var prefix = Generator.StagePropPrefix(st.Index);
+                        if (st.Persist is { } pp)
+                        {
+                            if (Generator.ClassifyPersistKey(pp.Key) == Generator.PersistKeyKind.Ref)
+                                BindFormProp(entry, Generator.PersistKeyProperty(prefix), pp.Key, $"quest '{q.EditorId}' stage {st.Index} persist key");
+                            foreach (var (i, e) in Generator.PersistFormEntries(pp))
+                                BindFormProp(entry, Generator.PersistFormProperty(prefix, i), e.Form, $"quest '{q.EditorId}' stage {st.Index} persist form");
+                        }
+                        if (st.SyncPerks is { } sps)
+                        {
+                            if (Generator.ClassifyPersistKey(sps.Key) == Generator.PersistKeyKind.Ref)
+                                BindFormProp(entry, Generator.SyncKeyProperty(prefix), sps.Key, $"quest '{q.EditorId}' stage {st.Index} syncPerks key");
+                            for (int i = 0; i < sps.Nodes.Count; i++)
+                                BindFormProp(entry, Generator.SyncPerkProperty(prefix, i), sps.Nodes[i].Perk, $"quest '{q.EditorId}' stage {st.Index} syncPerks perk");
+                        }
+                    }
                     // Stage = quest stage number, StageIndex = log-entry index within the stage
                     // (always 0 — we emit one log entry per stage, matching vanilla convention).
                     // Unknown2 = 1 in every vanilla fragment (confirmed vs MS08, MS13, MQ101 etc.).

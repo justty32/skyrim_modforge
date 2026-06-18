@@ -70,6 +70,12 @@ public sealed class StageSpec
     // stage 0 until something else sets a stage (a dialogue line, or an alias-script SetStage).
     public bool StartUpStage { get; set; }
     public List<ConditionSpec> Conditions { get; set; } = new();
+    // JContainers JFormDB writes / perk sync performed when the quest REACHES this stage (the stage
+    // fragment, extends Quest — Idea #20 Phase 0). A stage has no `akSpeakerRef`, so the key must be
+    // "player" or an arbitrary ref (NOT "speaker"). Same shape as the dialogue-line persist/syncPerks
+    // (see Generator.JContainers.cs); use it to bank state on a stage milestone rather than a dialogue pick.
+    public PersistSpec? Persist { get; set; }
+    public SyncPerksSpec? SyncPerks { get; set; }
     // Globals to bind to THIS quest instance when this stage runs (gather/count radiant quests). The
     // generated stage fragment calls UpdateCurrentInstanceGlobal(<global>) so objective text like
     // "<Global=ItemTotal> bandits" shows per-instance numbers — letting one quest template run many

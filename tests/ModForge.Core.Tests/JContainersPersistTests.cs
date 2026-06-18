@@ -157,10 +157,19 @@ public class JContainersPersistTests
     }
 
     [Fact]
-    public void Validate_BadKey_Reported()
+    public void Validate_UnresolvedRefKey_Reported()
     {
-        var d = Line(new PersistSpec { Storage = "S", Key = "stone", Set = { new PersistEntrySpec { Path = ".x", Int = 1 } } });
-        Assert.Contains(Validate(WithLine(d)), p => p.Contains("must be 'speaker' or 'player'"));
+        // A non-token key is treated as an arbitrary ref; an unknown one fails ref resolution.
+        var d = Line(new PersistSpec { Storage = "S", Key = "NoSuchRef", Set = { new PersistEntrySpec { Path = ".x", Int = 1 } } });
+        Assert.Contains(Validate(WithLine(d)), p => p.Contains("unresolved ref 'NoSuchRef'"));
+    }
+
+    [Fact]
+    public void Validate_ResolvableRefKey_Accepted()
+    {
+        // A key that resolves to a spec record is a valid arbitrary-ref key.
+        var d = Line(new PersistSpec { Storage = "S", Key = "MF_Npc", Set = { new PersistEntrySpec { Path = ".x", Int = 1 } } });
+        Assert.DoesNotContain(Validate(WithLine(d)), p => p.Contains("persist key") || p.Contains("unresolved ref 'MF_Npc'"));
     }
 
     [Fact]
@@ -190,5 +199,134 @@ public class JContainersPersistTests
         var d = Line(EndurancePersist(), new SyncPerksSpec { Storage = "ModForgeNpcSkills",
             Nodes = { new SyncPerkNodeSpec { Path = ".Endurance.nodes.Adaptation", Perk = "MF_AdaptPerk", MinRank = 2 } } });
         Assert.DoesNotContain(Validate(WithLine(d)), p => p.Contains("persist") || p.Contains("syncPerks"));
+    }
+
+    // ---- arbitrary-ref key (the key is a bound Form property, not speaker/player) ----
+
+    [Fact]
+    public void Persist_RefKey_DeclaresAndUsesKeyProperty()
+    {
+        var p = new PersistSpec { Storage = "S", Key = "MF_Npc", Set = { new PersistEntrySpec { Path = ".x", Int = 1 } } };
+        var src = Generator.GenerateDialogueFragmentSource(Line(p));
+        Assert.Contains("Form Property PKey Auto", src);
+        Assert.Contains("JFormDB.solveIntSetter(PKey, \".S.x\", 1, true)", src);
+    }
+
+    [Fact]
+    public void SyncPerks_RefKey_DeclaresAndUsesKeyProperty()
+    {
+        var s = new SyncPerksSpec { Storage = "S", Key = "MF_Npc", Nodes = { new SyncPerkNodeSpec { Path = ".n", Perk = "MF_AdaptPerk" } } };
+        var src = Generator.GenerateDialogueFragmentSource(Line(sync: s));
+        Assert.Contains("Form Property SKey Auto", src);
+        Assert.Contains("Actor __sp = SKey as Actor", src);
+        Assert.Contains("If JFormDB.solveInt(SKey, \".S.n\", 0) >= 1", src);
+    }
+
+    [Fact]
+    public void Build_RefKey_BindsKeyPropertyToForm()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "mf-jc-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        try
+        {
+            File.WriteAllText(Path.Combine(dir, "TIF_MF_Train.pex"), "");
+            var spec = new ModSpec
+            {
+                PluginName = "Test.esp",
+                Quests = { new QuestSpec { EditorId = "MF_Q", Name = "Q" } },
+                Npcs = { new NpcSpec { EditorId = "MF_Npc", Name = "Npc" } },
+                Dialogue = { Line(new PersistSpec { Storage = "S", Key = "MF_Npc", Set = { new PersistEntrySpec { Path = ".x", Int = 1 } } }) },
+            };
+            var r = TestBuild.OkWithCompiledScripts(spec, dir);
+            var npc = r.Mod.Npcs.Single(n => n.EditorID == "MF_Npc");
+            var info = r.Mod.EnumerateMajorRecords<IDialogResponsesGetter>().Single(i => i.EditorID == "MF_Train");
+            var props = info.VirtualMachineAdapter!.Scripts.Single(e => e.Name == "TIF_MF_Train").Properties;
+            var pkey = (IScriptObjectPropertyGetter)props.Single(p => p.Name == "PKey");
+            Assert.Equal(npc.FormKey, pkey.Object.FormKey);
+        }
+        finally { if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true); }
+    }
+
+    // ---- stage-fragment persist/syncPerks (the host is a quest STAGE, not a dialogue line) ----
+
+    private static QuestSpec StagePersistQuest() => new()
+    {
+        EditorId = "MF_Q", Name = "Q",
+        Stages =
+        {
+            new StageSpec
+            {
+                Index = 10,
+                Persist = new PersistSpec { Storage = "S", Key = "player", Set = { new PersistEntrySpec { Path = ".won", Int = 1, Delta = true } } },
+                SyncPerks = new SyncPerksSpec { Storage = "S", Key = "player", Nodes = { new SyncPerkNodeSpec { Path = ".n", Perk = "MF_AdaptPerk" } } },
+            },
+        },
+    };
+
+    [Fact]
+    public void StagePersist_EmitsPrefixedPropertiesAndBody()
+    {
+        var q = StagePersistQuest();
+        Assert.True(Generator.QuestNeedsFragmentScript(q));
+        var src = Generator.GenerateQuestFragmentSource(q);
+        // Properties are namespaced by the stage prefix so multiple stages never collide.
+        Assert.Contains("Perk Property S0010_SyncPerk_0 Auto", src);
+        var frag = src.Split("Function Fragment_Stage_0010_Item00000()")[1].Split("EndFunction")[0];
+        Assert.Contains("int __pv0 = JFormDB.solveInt(Game.GetPlayer(), \".S.won\", 0)", frag);
+        Assert.Contains("JFormDB.solveIntSetter(Game.GetPlayer(), \".S.won\", __pv0 + 1, true)", frag);
+        Assert.Contains("Actor __sp = Game.GetPlayer() as Actor", frag);
+        Assert.Contains("__sp.AddPerk(S0010_SyncPerk_0)", frag);
+    }
+
+    [Fact]
+    public void StageBuild_WithPex_BindsPerkPropertyAndFragment()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "mf-jc-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        try
+        {
+            File.WriteAllText(Path.Combine(dir, "MF_Q_Stages.pex"), "");
+            var spec = new ModSpec
+            {
+                PluginName = "Test.esp",
+                Perks = { new PerkSpec { EditorId = "MF_AdaptPerk", Name = "Adaptation" } },
+                Quests = { StagePersistQuest() },
+            };
+            var r = TestBuild.OkWithCompiledScripts(spec, dir);
+            var perk = r.Mod.Perks.Single(p => p.EditorID == "MF_AdaptPerk");
+            var quest = r.Mod.Quests.Single(qq => qq.EditorID == "MF_Q");
+            var qa = (QuestAdapter)quest.VirtualMachineAdapter!;
+            var entry = qa.Scripts.Single(s => s.Name == "MF_Q_Stages");
+            var prop = (IScriptObjectPropertyGetter)entry.Properties.Single(p => p.Name == "S0010_SyncPerk_0");
+            Assert.Equal(perk.FormKey, prop.Object.FormKey);
+            Assert.Contains(qa.Fragments, f => f.Stage == 10 && f.FragmentName == "Fragment_Stage_0010_Item00000");
+        }
+        finally { if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true); }
+    }
+
+    [Fact]
+    public void Validate_StageSpeakerKey_Rejected()
+    {
+        // A quest stage has no akSpeakerRef, so "speaker" (the persist default) must be rejected there.
+        var spec = new ModSpec
+        {
+            PluginName = "Test.esp",
+            Quests = { new QuestSpec { EditorId = "Q", Name = "Q",
+                Stages = { new StageSpec { Index = 10,
+                    Persist = new PersistSpec { Storage = "S", Key = "speaker", Set = { new PersistEntrySpec { Path = ".x", Int = 1 } } } } } } },
+        };
+        Assert.Contains(Validate(spec), p => p.Contains("'speaker' is only valid on a dialogue line"));
+    }
+
+    [Fact]
+    public void Validate_StagePlayerKey_Accepted()
+    {
+        var spec = new ModSpec
+        {
+            PluginName = "Test.esp",
+            Quests = { StagePersistQuest() },
+            Perks = { new PerkSpec { EditorId = "MF_AdaptPerk", Name = "A" } },
+        };
+        Assert.DoesNotContain(Validate(spec), p => p.Contains("persist") || p.Contains("syncPerks"));
     }
 }

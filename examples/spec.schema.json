@@ -555,6 +555,81 @@
       "minLength": 1,
       "description": "A reference: an in-spec editorId OR an external form '<master>:0xFORMID' (e.g. 'Skyrim.esm:0x013746' = NordRace). Discover FormIDs with the `find` command."
     },
+    "persistKey": {
+      "type": "string",
+      "default": "speaker",
+      "description": "the Form the state hangs on. Tokens: 'speaker' (the dialogue NPC, akSpeakerRef — DIALOGUE LINES ONLY) or 'player' (Game.GetPlayer()). Any other value is an arbitrary ref (editorId or '<master>:0xFORMID') bound as a Form property. A quest STAGE has no speaker → use 'player' or a ref."
+    },
+    "persist": {
+      "type": "object",
+      "description": "JContainers JFormDB: write nested per-Form state when this hook fires (Idea #20 in-world skill tree). On a dialogue line it runs in the TIF fragment when the line is picked; on a quest stage it runs when the quest reaches that stage. Emits JFormDB.solveXxxSetter — root-DB path API only, so no retain/release lifecycle. Compiling needs JContainers' .psc on the header path.",
+      "required": [
+        "storage",
+        "set"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "storage": {
+          "type": "string",
+          "description": "JFormDB storageName (the namespace bucket; first path component). One storage holds every keyed Form's entry."
+        },
+        "key": { "$ref": "#/$defs/persistKey" },
+        "set": {
+          "type": "array",
+          "description": "the writes performed, in order",
+          "items": {
+            "type": "object",
+            "required": [
+              "path"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "subpath under the storage, e.g. '.Endurance.nodes.Adaptation' (concatenated after '.<storage>')"
+              },
+              "int": { "type": "integer", "description": "int value (solveIntSetter)" },
+              "float": { "type": "number", "description": "float value (solveFltSetter)" },
+              "str": { "type": "string", "description": "string value (solveStrSetter)" },
+              "form": { "$ref": "#/$defs/ref", "description": "Form value (solveFormSetter), bound as a VMAD property" },
+              "delta": { "type": "boolean", "description": "int/float only: add to the current stored value (read-add-write) instead of replacing — for counters like accumulating XP/ratio" }
+            }
+          }
+        }
+      }
+    },
+    "syncPerks": {
+      "type": "object",
+      "description": "JContainers: AddPerk/RemovePerk on the key actor from its stored JFormDB node ranks when this hook fires (idempotent; runs after persist). Idea #20 SyncPerks — an actor's perks track its stored skill state.",
+      "required": [
+        "storage",
+        "nodes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "storage": {
+          "type": "string",
+          "description": "JFormDB storageName (same bucket as the persist writes)"
+        },
+        "key": { "$ref": "#/$defs/persistKey" },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "perk"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "path": { "type": "string", "description": "subpath to the node's stored rank int (read with solveInt)" },
+              "perk": { "$ref": "#/$defs/ref", "description": "PERK added when stored rank >= minRank, removed below" },
+              "minRank": { "type": "integer", "default": 1, "description": "stored rank at/above which the perk is added (default 1)" }
+            }
+          }
+        }
+      }
+    },
     "presetCatalog": {
       "type": "object",
       "description": "Named cookbook fragments grouped by existing spec family. This is documentation/data only: the generator does not emit records from presets directly.",
@@ -1849,7 +1924,9 @@
                   },
                   "additionalProperties": false
                 }
-              }
+              },
+              "persist": { "$ref": "#/$defs/persist", "description": "JContainers JFormDB writes performed when the quest REACHES this stage (Idea #20 Phase 0). key must be 'player' or a ref — a stage has no speaker." },
+              "syncPerks": { "$ref": "#/$defs/syncPerks", "description": "AddPerk/RemovePerk from stored ranks when the quest reaches this stage. key must be 'player' or a ref." }
             }
           }
         },
@@ -2052,86 +2129,8 @@
           "type": "boolean",
           "description": "force the speaking NPC to re-evaluate AI packages (Actor.EvaluatePackage()) so a package newly enabled by this line's setStage (e.g. a follow package gated on GetStage==N) activates immediately"
         },
-        "persist": {
-          "type": "object",
-          "description": "JContainers JFormDB: write nested per-Form state when the line is picked (Idea #20 in-world skill tree). Emits JFormDB.solveXxxSetter into the line's TIF fragment — root-DB path API only, so no retain/release lifecycle. Compiling needs JContainers' .psc on the header path.",
-          "required": [
-            "storage",
-            "set"
-          ],
-          "additionalProperties": false,
-          "properties": {
-            "storage": {
-              "type": "string",
-              "description": "JFormDB storageName (the namespace bucket; first path component). One storage holds every NPC's entry, keyed by the NPC Form."
-            },
-            "key": {
-              "type": "string",
-              "enum": ["speaker", "player"],
-              "default": "speaker",
-              "description": "the Form the state hangs on: 'speaker' (the NPC you're talking to, akSpeakerRef) or 'player' (Game.GetPlayer())"
-            },
-            "set": {
-              "type": "array",
-              "description": "the writes performed, in order",
-              "items": {
-                "type": "object",
-                "required": [
-                  "path"
-                ],
-                "additionalProperties": false,
-                "properties": {
-                  "path": {
-                    "type": "string",
-                    "description": "subpath under the storage, e.g. '.Endurance.nodes.Adaptation' (concatenated after '.<storage>')"
-                  },
-                  "int": { "type": "integer", "description": "int value (solveIntSetter)" },
-                  "float": { "type": "number", "description": "float value (solveFltSetter)" },
-                  "str": { "type": "string", "description": "string value (solveStrSetter)" },
-                  "form": { "$ref": "#/$defs/ref", "description": "Form value (solveFormSetter), bound as a VMAD property" },
-                  "delta": { "type": "boolean", "description": "int/float only: add to the current stored value (read-add-write) instead of replacing — for counters like accumulating XP/ratio" }
-                }
-              }
-            }
-          }
-        },
-        "syncPerks": {
-          "type": "object",
-          "description": "JContainers: AddPerk/RemovePerk on the key actor from its stored JFormDB node ranks when the line is picked (idempotent; runs after persist). Idea #20 SyncPerks — an NPC's perks track its stored skill state.",
-          "required": [
-            "storage",
-            "nodes"
-          ],
-          "additionalProperties": false,
-          "properties": {
-            "storage": {
-              "type": "string",
-              "description": "JFormDB storageName (same bucket as the persist writes)"
-            },
-            "key": {
-              "type": "string",
-              "enum": ["speaker", "player"],
-              "default": "speaker",
-              "description": "the actor whose perks are synced"
-            },
-            "nodes": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "required": [
-                  "path",
-                  "perk"
-                ],
-                "additionalProperties": false,
-                "properties": {
-                  "path": { "type": "string", "description": "subpath to the node's stored rank int (read with solveInt)" },
-                  "perk": { "$ref": "#/$defs/ref", "description": "PERK added when stored rank >= minRank, removed below" },
-                  "minRank": { "type": "integer", "default": 1, "description": "stored rank at/above which the perk is added (default 1)" }
-                }
-              }
-            }
-          }
-        },
+        "persist": { "$ref": "#/$defs/persist" },
+        "syncPerks": { "$ref": "#/$defs/syncPerks" },
         "resultScript": {
           "type": "string",
           "description": "custom result-script Scriptname (extends TopicInfo) wired as the line's OnBegin Fragment_0; overrides the auto setStage TIF"

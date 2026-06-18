@@ -114,27 +114,23 @@ public static partial class Generator
                         entry.Properties.Add(rp);
                         linksWired++;
                     }
-                    // persist: bind a Form property per FORM-valued JFormDB write (int/float/str values
-                    // are emitted as Papyrus literals and need no property).
+                    // persist: bind the Form key (only for an arbitrary-ref key — speaker/player need
+                    // none) plus a Form property per FORM-valued write (int/float/str are literals).
                     if (d.Persist is { } pp)
+                    {
+                        if (Generator.ClassifyPersistKey(pp.Key) == Generator.PersistKeyKind.Ref)
+                            BindFormProp(entry, Generator.PersistKeyProperty(""), pp.Key, $"TIF '{d.EditorId}': persist key");
                         foreach (var (i, e) in Generator.PersistFormEntries(pp))
-                        {
-                            var fp = new ScriptObjectProperty { Name = Generator.PersistFormProperty(i), Flags = ScriptProperty.Flag.Edited };
-                            if (TryResolveRef(e.Form, formKeyByEd, out var ffk)) fp.Object.SetTo(ffk);
-                            else Warn($"  ! TIF '{d.EditorId}': persist form '{e.Form}' unresolved");
-                            entry.Properties.Add(fp);
-                            linksWired++;
-                        }
-                    // syncPerks: bind the PERK form for each node so Fragment_0 can AddPerk/RemovePerk it.
+                            BindFormProp(entry, Generator.PersistFormProperty("", i), e.Form, $"TIF '{d.EditorId}': persist form");
+                    }
+                    // syncPerks: bind the Form key (arbitrary ref only) + the PERK form for each node.
                     if (d.SyncPerks is { } sps)
+                    {
+                        if (Generator.ClassifyPersistKey(sps.Key) == Generator.PersistKeyKind.Ref)
+                            BindFormProp(entry, Generator.SyncKeyProperty(""), sps.Key, $"TIF '{d.EditorId}': syncPerks key");
                         for (int i = 0; i < sps.Nodes.Count; i++)
-                        {
-                            var pk = new ScriptObjectProperty { Name = Generator.SyncPerkProperty(i), Flags = ScriptProperty.Flag.Edited };
-                            if (TryResolveRef(sps.Nodes[i].Perk, formKeyByEd, out var pfk)) pk.Object.SetTo(pfk);
-                            else Warn($"  ! TIF '{d.EditorId}': syncPerks perk '{sps.Nodes[i].Perk}' unresolved");
-                            entry.Properties.Add(pk);
-                            linksWired++;
-                        }
+                            BindFormProp(entry, Generator.SyncPerkProperty("", i), sps.Nodes[i].Perk, $"TIF '{d.EditorId}': syncPerks perk");
+                    }
                 }
                 // OnBegin fires the moment the player selects the line (before the NPC speaks).
                 info.VirtualMachineAdapter = new DialogResponsesAdapter
@@ -234,6 +230,18 @@ public static partial class Generator
                 sp.Flags = ScriptProperty.Flag.Edited;
                 entry.Properties.Add(sp);
             }
+        }
+
+        // Bind a single Form-typed ScriptObjectProperty (resolving `ref` via the formKey table) onto a
+        // ScriptEntry. Shared by the dialogue-TIF and quest-stage JContainers wiring; `warnLabel` is the
+        // context prefix for the unresolved-ref warning.
+        private void BindFormProp(ScriptEntry entry, string propName, string @ref, string warnLabel)
+        {
+            var p = new ScriptObjectProperty { Name = propName, Flags = ScriptProperty.Flag.Edited };
+            if (TryResolveRef(@ref, formKeyByEd, out var fk)) p.Object.SetTo(fk);
+            else Warn($"  ! {warnLabel} '{@ref}' unresolved");
+            entry.Properties.Add(p);
+            linksWired++;
         }
 
         private ScriptProperty? MakeObjectProp(PropertySpec p)

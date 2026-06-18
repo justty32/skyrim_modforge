@@ -32,7 +32,13 @@ public static partial class Generator
     public static bool QuestNeedsFragmentScript(QuestSpec q) =>
         q.Objectives.Any(o => o.ShowStage >= 0 || o.CompleteStage >= 0)
         || q.Stages.Any(s => s.InstanceGlobals.Count > 0)
+        || q.Stages.Any(s => HasPersist(s) || HasSyncPerks(s))
         || StartupStageTrigger(q) is not null;
+
+    /// <summary>The property-name prefix that namespaces a stage's JContainers persist/syncPerks
+    /// properties (so several stages in one quest script never collide). MUST match between the generated
+    /// source and the VMAD binding (WireQuestStages).</summary>
+    internal static string StagePropPrefix(int stageIndex) => $"S{stageIndex:D4}_";
 
     /// <summary>The startUpStage index whose fragment must drive the quest's spawn/cooldown on start, or
     /// null if the quest has neither (or no startUpStage to hang them on). `OnInit` is unusable here —
@@ -78,9 +84,15 @@ public static partial class Generator
             .SelectMany(s => s.InstanceGlobals)
             .Select(g => g.Global).Where(g => !string.IsNullOrWhiteSpace(g))
             .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        bool anyProp = false;
         foreach (var g in instGlobals)
-            sb.AppendLine($"GlobalVariable Property {InstanceGlobalProperty(g)} Auto");
-        if (instGlobals.Count > 0) sb.AppendLine();
+        { sb.AppendLine($"GlobalVariable Property {InstanceGlobalProperty(g)} Auto"); anyProp = true; }
+        // Per-stage JContainers properties (Form key for an arbitrary-ref key, Form values, Perks),
+        // namespaced by the stage prefix so stages don't collide.
+        foreach (var s in q.Stages)
+            foreach (var decl in JContainersPropertyDecls(StagePropPrefix(s.Index), s.Persist, s.SyncPerks))
+            { sb.AppendLine(decl); anyProp = true; }
+        if (anyProp) sb.AppendLine();
 
         // The startUpStage fragment (if any) drives the dynamic spawn / cooldown gate on quest start.
         int? startupTrigger = StartupStageTrigger(q);
@@ -89,8 +101,9 @@ public static partial class Generator
         // carrying a spawn/cooldown trigger — ascending.
         var objStages = q.Objectives.SelectMany(o => new[] { o.ShowStage, o.CompleteStage }).Where(s => s >= 0);
         var instStages = q.Stages.Where(s => s.InstanceGlobals.Count > 0).Select(s => (int)s.Index);
+        var jcStages = q.Stages.Where(s => HasPersist(s) || HasSyncPerks(s)).Select(s => (int)s.Index);
         var trigStages = startupTrigger is int st ? new[] { st } : System.Array.Empty<int>();
-        var stageNums = objStages.Concat(instStages).Concat(trigStages).Distinct().OrderBy(s => s);
+        var stageNums = objStages.Concat(instStages).Concat(jcStages).Concat(trigStages).Distinct().OrderBy(s => s);
 
         bool hasSpawn = q.Spawn is not null;
         bool hasCooldown = q.StoryEvent is { } sev && sev.CooldownHours > 0f;
@@ -135,6 +148,11 @@ public static partial class Generator
                     sb.AppendLine($"    {p}.SetValue({OneLine(v.ToString(System.Globalization.CultureInfo.InvariantCulture))})");
                 sb.AppendLine($"    UpdateCurrentInstanceGlobal({p})");
             }
+            // JContainers JFormDB writes + perk sync for this stage (keyed on player or an arbitrary ref —
+            // a stage fragment has no akSpeakerRef). Emitted last so a perk sync sees the just-banked ranks.
+            foreach (var stSpec in q.Stages.Where(s => s.Index == stage))
+                foreach (var line in JContainersFragmentBody(StagePropPrefix(stage), stSpec.Persist, stSpec.SyncPerks))
+                    sb.AppendLine("    " + line);
             sb.AppendLine("EndFunction");
             sb.AppendLine();
         }

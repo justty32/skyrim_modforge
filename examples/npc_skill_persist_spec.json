@@ -31,7 +31,21 @@
       "editorId": "MFSkill_Q",
       "name": "Skill Training",
       "_": "StartGameEnabled controller quest so the dialogue is loaded/evaluated. type=None keeps it out of the journal.",
-      "type": "None"
+      "type": "None",
+      "stages": [
+        {
+          "index": 10,
+          "startUpStage": true,
+          "_": "STAGE-FRAGMENT persist demo: on quest start (game load) the engine auto-runs this stage, which banks an init marker keyed on the trainer NPC's base form — an ARBITRARY-REF key (not speaker/player; bound as a Form property). A quest stage has no speaker, so the key must be 'player' or a ref.",
+          "persist": {
+            "storage": "ModForgeNpcSkills",
+            "key": "MFSkill_Trainer",
+            "set": [
+              { "path": ".initialized", "int": 1 }
+            ]
+          }
+        }
+      ]
     }
   ],
 

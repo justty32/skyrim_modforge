@@ -50,6 +50,10 @@ public static partial class Generator
                         if (hasRandom && ig.Value is not null)
                             Problems.Add($"quest '{q.EditorId}' stage {st.Index} instanceGlobal '{ig.Global}' sets both a random range and a fixed value (use one)");
                     }
+                    // Stage-fragment persist/syncPerks (Idea #20 Phase 0). A stage has no akSpeakerRef, so
+                    // "speaker" is rejected — the key must be "player" or an arbitrary ref.
+                    if (st.Persist is { } stp) ValidatePersistBlock(stp, $"quest '{q.EditorId}' stage {st.Index} persist", allowSpeaker: false);
+                    if (st.SyncPerks is { } sts) ValidateSyncPerksBlock(sts, $"quest '{q.EditorId}' stage {st.Index} syncPerks", allowSpeaker: false);
                 }
                 stageIndexByQuest[q.EditorId] = seen;
                 if (startUpStages > 1)
@@ -120,33 +124,9 @@ public static partial class Generator
                         Problems.Add($"dialogue '{d.EditorId}' setGlobal must set exactly one of value or delta");
                 }
                 if (!string.IsNullOrWhiteSpace(d.RewardItem)) CheckRef(d.RewardItem, $"dialogue '{d.EditorId}' rewardItem");
-                if (d.Persist is { } pst)
-                {
-                    if (string.IsNullOrWhiteSpace(pst.Storage)) Problems.Add($"dialogue '{d.EditorId}' persist has empty storage");
-                    if (!IsPersistKey(pst.Key)) Problems.Add($"dialogue '{d.EditorId}' persist key '{pst.Key}' must be 'speaker' or 'player'");
-                    if (pst.Set.Count == 0) Problems.Add($"dialogue '{d.EditorId}' persist has no set entries");
-                    foreach (var e in pst.Set)
-                    {
-                        if (string.IsNullOrWhiteSpace(e.Path)) Problems.Add($"dialogue '{d.EditorId}' persist entry has empty path");
-                        int vals = (e.Int is not null ? 1 : 0) + (e.Float is not null ? 1 : 0)
-                                 + (e.Str is not null ? 1 : 0) + (!string.IsNullOrWhiteSpace(e.Form) ? 1 : 0);
-                        if (vals != 1) Problems.Add($"dialogue '{d.EditorId}' persist entry '{e.Path}' must set exactly one of int/float/str/form (got {vals})");
-                        if (e.Delta && e.Int is null && e.Float is null) Problems.Add($"dialogue '{d.EditorId}' persist entry '{e.Path}' delta only applies to int/float");
-                        if (!string.IsNullOrWhiteSpace(e.Form)) CheckRef(e.Form, $"dialogue '{d.EditorId}' persist entry '{e.Path}' form");
-                    }
-                }
-                if (d.SyncPerks is { } syp)
-                {
-                    if (string.IsNullOrWhiteSpace(syp.Storage)) Problems.Add($"dialogue '{d.EditorId}' syncPerks has empty storage");
-                    if (!IsPersistKey(syp.Key)) Problems.Add($"dialogue '{d.EditorId}' syncPerks key '{syp.Key}' must be 'speaker' or 'player'");
-                    if (syp.Nodes.Count == 0) Problems.Add($"dialogue '{d.EditorId}' syncPerks has no nodes");
-                    foreach (var n in syp.Nodes)
-                    {
-                        if (string.IsNullOrWhiteSpace(n.Path)) Problems.Add($"dialogue '{d.EditorId}' syncPerks node has empty path");
-                        if (string.IsNullOrWhiteSpace(n.Perk)) Problems.Add($"dialogue '{d.EditorId}' syncPerks node '{n.Path}' has empty perk ref");
-                        else CheckRef(n.Perk, $"dialogue '{d.EditorId}' syncPerks node '{n.Path}' perk");
-                    }
-                }
+                // A dialogue line runs in a TIF fragment, so "speaker" (akSpeakerRef) is allowed here.
+                if (d.Persist is { } pst) ValidatePersistBlock(pst, $"dialogue '{d.EditorId}' persist", allowSpeaker: true);
+                if (d.SyncPerks is { } syp) ValidateSyncPerksBlock(syp, $"dialogue '{d.EditorId}' syncPerks", allowSpeaker: true);
                 // A `hello:true` line is the NPC's auto-spoken greeting (Misc/Hello), not a player menu
                 // option, so it has no prompt by design — only require a prompt for normal player topics.
                 if (!d.Hello && string.IsNullOrEmpty(d.Prompt)) Problems.Add($"dialogue '{d.EditorId}' has empty prompt");
@@ -274,11 +254,55 @@ public static partial class Generator
             }
         }
 
-        // A persist/syncPerks Form key must be one of the two supported tokens (the emitter maps them to
-        // akSpeakerRef / Game.GetPlayer() — no VMAD property needed). Arbitrary refs are not yet supported.
-        private static bool IsPersistKey(string k) =>
-            string.Equals(k?.Trim(), "speaker", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(k?.Trim(), "player", StringComparison.OrdinalIgnoreCase);
+        // Shared persist-block validation (dialogue line + quest stage). `allowSpeaker` is false on a
+        // quest stage, which has no akSpeakerRef to key on.
+        private void ValidatePersistBlock(PersistSpec p, string label, bool allowSpeaker)
+        {
+            if (string.IsNullOrWhiteSpace(p.Storage)) Problems.Add($"{label} has empty storage");
+            ValidatePersistKey(p.Key, $"{label} key", allowSpeaker);
+            if (p.Set.Count == 0) Problems.Add($"{label} has no set entries");
+            foreach (var e in p.Set)
+            {
+                if (string.IsNullOrWhiteSpace(e.Path)) Problems.Add($"{label} entry has empty path");
+                int vals = (e.Int is not null ? 1 : 0) + (e.Float is not null ? 1 : 0)
+                         + (e.Str is not null ? 1 : 0) + (!string.IsNullOrWhiteSpace(e.Form) ? 1 : 0);
+                if (vals != 1) Problems.Add($"{label} entry '{e.Path}' must set exactly one of int/float/str/form (got {vals})");
+                if (e.Delta && e.Int is null && e.Float is null) Problems.Add($"{label} entry '{e.Path}' delta only applies to int/float");
+                if (!string.IsNullOrWhiteSpace(e.Form)) CheckRef(e.Form, $"{label} entry '{e.Path}' form");
+            }
+        }
+
+        private void ValidateSyncPerksBlock(SyncPerksSpec s, string label, bool allowSpeaker)
+        {
+            if (string.IsNullOrWhiteSpace(s.Storage)) Problems.Add($"{label} has empty storage");
+            ValidatePersistKey(s.Key, $"{label} key", allowSpeaker);
+            if (s.Nodes.Count == 0) Problems.Add($"{label} has no nodes");
+            foreach (var n in s.Nodes)
+            {
+                if (string.IsNullOrWhiteSpace(n.Path)) Problems.Add($"{label} node has empty path");
+                if (string.IsNullOrWhiteSpace(n.Perk)) Problems.Add($"{label} node '{n.Path}' has empty perk ref");
+                else CheckRef(n.Perk, $"{label} node '{n.Path}' perk");
+            }
+        }
+
+        // A persist/syncPerks Form key is "player", "speaker" (dialogue only — the emitter maps it to the
+        // fragment's akSpeakerRef), or an arbitrary resolvable ref (bound as a Form property). Empty
+        // defaults to "speaker". On a quest stage (allowSpeaker=false) "speaker" is an error.
+        private void ValidatePersistKey(string key, string label, bool allowSpeaker)
+        {
+            switch (Generator.ClassifyPersistKey(key))
+            {
+                case Generator.PersistKeyKind.Speaker:
+                    if (!allowSpeaker)
+                        Problems.Add($"{label} 'speaker' is only valid on a dialogue line (a quest stage has no speaker — use 'player' or a ref)");
+                    break;
+                case Generator.PersistKeyKind.Player:
+                    break;
+                default:
+                    CheckRef(key, label);   // arbitrary ref → must resolve
+                    break;
+            }
+        }
 
         private void ValidateScriptAttachments()
         {
