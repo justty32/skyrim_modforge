@@ -5,8 +5,8 @@ class_name PlacementUi
 
 static func build(vbox: VBoxContainer, tool: PlacementTool,
 		on_mode_toggle: Callable, on_export: Callable, on_import: Callable) -> void:
-	vbox.add_child(HSeparator.new())
-	_lbl(vbox, "PLACEMENT", true)
+	# Whole placement group lives in a collapsible section; fill its content VBox.
+	vbox = UiSection.make(vbox, "OBJECT (PLACEMENT)")
 
 	var btn_mode := Button.new()
 	btn_mode.text = "Place Mode (LMB drops object)"
@@ -27,9 +27,17 @@ static func build(vbox: VBoxContainer, tool: PlacementTool,
 	inst_edit.text_changed.connect(func(t: String): tool.current_instance_id = t)
 	vbox.add_child(inst_edit)
 
-	_lbl(vbox, "Rotation Y (deg):")
+	_lbl(vbox, "Rotation X (deg, tilt):")
+	_slider_spin(vbox, 0.0, 359.0, 0.0, 1.0,
+		func(v: float): tool.current_rot_x = deg_to_rad(v))
+
+	_lbl(vbox, "Rotation Y (deg, yaw):")
 	_slider_spin(vbox, 0.0, 359.0, 0.0, 1.0,
 		func(v: float): tool.current_rot_y = deg_to_rad(v))
+
+	_lbl(vbox, "Rotation Z (deg, tilt):")
+	_slider_spin(vbox, 0.0, 359.0, 0.0, 1.0,
+		func(v: float): tool.current_rot_z = deg_to_rad(v))
 
 	_lbl(vbox, "Scale:")
 	_slider_spin(vbox, 0.1, 10.0, 1.0, 0.1,

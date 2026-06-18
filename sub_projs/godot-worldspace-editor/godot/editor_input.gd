@@ -6,14 +6,8 @@ class_name EditorInput
 static func input(m: WorldspaceEditor, event: InputEvent) -> void:
 	if m._player != null:
 		return  # walk mode owns input
-	if event is InputEventKey and event.pressed and not event.echo:
-		match event.keycode:
-			KEY_R: m.terrain.brush_mode = TerrainGrid.BrushMode.RAISE
-			KEY_L: m.terrain.brush_mode = TerrainGrid.BrushMode.LOWER
-			KEY_F:
-				m.terrain.brush_mode = TerrainGrid.BrushMode.FLATTEN
-				m.terrain.flatten_height = mid_height_at_mouse(m)
-			KEY_S: m.terrain.brush_mode = TerrainGrid.BrushMode.SMOOTH
+	# Brush mode is chosen from the side-panel buttons; WASD now drives camera panning, so the old
+	# R/L/F/S key shortcuts are gone (S would have fought "move back").
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if over_ui(m, event.position):

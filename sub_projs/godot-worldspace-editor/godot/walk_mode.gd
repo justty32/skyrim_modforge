@@ -18,8 +18,9 @@ static func enter(m: WorldspaceEditor) -> void:
 	m._player.global_position = Vector3(cc * ds, gy + 3.0, -cr * ds)
 	m._player.exited.connect(m._exit_walk_mode)
 	m._player.activate()
-	# Suspend editor: stop orbit input, cursor/paint processing.
+	# Suspend editor: stop orbit input, WASD camera pan, cursor/paint processing.
 	m.camera_rig.set_process_input(false)
+	m.camera_rig.set_process(false)
 	m.set_process(false)
 	m._painting = false
 	m._cursor.visible = false
@@ -32,4 +33,5 @@ static func exit(m: WorldspaceEditor) -> void:
 	m._player = null
 	m.camera_rig.get_camera().current = true
 	m.camera_rig.set_process_input(true)
+	m.camera_rig.set_process(true)
 	m.set_process(true)

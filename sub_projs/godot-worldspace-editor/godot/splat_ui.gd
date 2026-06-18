@@ -6,8 +6,8 @@ class_name SplatUi
 static func build(vbox: VBoxContainer, splat: SplatTool,
 		on_mode_toggle: Callable, on_export: Callable, on_import: Callable,
 		on_radius_change: Callable = Callable()) -> void:
-	vbox.add_child(HSeparator.new())
-	_lbl(vbox, "TEXTURE (SPLAT)", true)
+	# Whole texture group lives in a collapsible section; fill its content VBox.
+	vbox = UiSection.make(vbox, "TEXTURE (SPLAT)")
 
 	var btn_mode := Button.new()
 	btn_mode.text = "Splat Mode (LMB paints alpha)"

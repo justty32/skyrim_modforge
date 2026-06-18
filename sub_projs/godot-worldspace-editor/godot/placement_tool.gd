@@ -12,7 +12,9 @@ var _models: ModelFetch   # resolves base ref → real mesh (may be null/offline
 var current_base: String        = "Skyrim.esm:0x018199"   # RockL01 (a visible STAT) by default
 var current_instance_id: String = ""
 var current_scale: float        = 1.0
+var current_rot_x: float        = 0.0  # radians, Godot X (pitch / tilt)
 var current_rot_y: float        = 0.0  # radians, Godot Y (yaw)
+var current_rot_z: float        = 0.0  # radians, Godot Z (roll / tilt)
 
 var _objects: Array[PlacedObject] = []
 
@@ -41,7 +43,8 @@ func refresh_models(allow_fetch: bool = false) -> void:
 func place_at(display_hit: Vector3) -> void:
 	var pos := display_hit
 	pos.y = terrain.surface_display_y(display_hit)
-	_spawn(current_base, current_instance_id, pos, Vector3(0, current_rot_y, 0), current_scale)
+	_spawn(current_base, current_instance_id, pos,
+		Vector3(current_rot_x, current_rot_y, current_rot_z), current_scale)
 	changed.emit()
 
 

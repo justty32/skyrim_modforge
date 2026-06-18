@@ -45,56 +45,58 @@ func setup(terrain: TerrainGrid, ui_width: int, on_cursor_update: Callable,
 	_add_lbl(vbox, "H range: %.0f–%.0f units" % [terrain.min_height, terrain.max_height])
 	_add_sep(vbox)
 
-	# ── Display scale ─────────────────────────────────────────────────────────
-	_add_lbl(vbox, "DISPLAY SCALE")
-	_add_lbl(vbox, "Height (Y):")
-	_height_sl = _add_slider_spin(vbox, 1.0, 50.0, terrain.vis_height_scale, 1.0, "×",
+	# ── HEIGHT (collapsible big section): display scale + brush + status + PNG I/O ───────────
+	var sec := UiSection.make(vbox, "HEIGHT (TERRAIN)")
+
+	_add_lbl(sec, "DISPLAY SCALE")
+	_add_lbl(sec, "Height (Y):")
+	_height_sl = _add_slider_spin(sec, 1.0, 50.0, terrain.vis_height_scale, 1.0, "×",
 		func(v: float):
 			terrain.vis_height_scale = v
 			terrain.rebuild_mesh()
 			on_display_sync.call())
 
-	_add_lbl(vbox, "Surface (X/Z):")
-	_surface_sl = _add_slider_spin(vbox, 0.1, 10.0, terrain.vis_surface_scale, 0.1, "×",
+	_add_lbl(sec, "Surface (X/Z):")
+	_surface_sl = _add_slider_spin(sec, 0.1, 10.0, terrain.vis_surface_scale, 0.1, "×",
 		func(v: float):
 			terrain.vis_surface_scale = v
 			terrain.rebuild_mesh()
 			on_display_sync.call())
-	_add_sep(vbox)
+	_add_sep(sec)
 
 	# ── Brush ─────────────────────────────────────────────────────────────────
-	_add_lbl(vbox, "BRUSH MODE  (R/L/F/S)")
+	_add_lbl(sec, "BRUSH MODE")
 	var bg := ButtonGroup.new()
-	for info: Array in [["Raise (R)", 0], ["Lower (L)", 1], ["Flatten (F)", 2], ["Smooth (S)", 3]]:
+	for info: Array in [["Raise", 0], ["Lower", 1], ["Flatten", 2], ["Smooth", 3]]:
 		var btn := Button.new()
 		btn.text = info[0]; btn.toggle_mode = true; btn.button_group = bg
 		btn.button_pressed = (int(info[1]) == 0)
 		var mode: int = info[1]
 		btn.toggled.connect(func(on: bool): if on: terrain.brush_mode = mode)
-		vbox.add_child(btn)
-	_add_sep(vbox)
+		sec.add_child(btn)
+	_add_sep(sec)
 
-	_add_lbl(vbox, "Radius (verts):")
-	_add_slider_spin(vbox, 0.5, 32.0, terrain.brush_radius, 0.5, "v",
+	_add_lbl(sec, "Radius (verts):")
+	_add_slider_spin(sec, 0.5, 32.0, terrain.brush_radius, 0.5, "v",
 		func(v: float): terrain.brush_radius = v; on_cursor_update.call())
 
-	_add_lbl(vbox, "Strength (units/s):")
-	_add_slider_spin(vbox, 1.0, 100.0, terrain.brush_strength, 1.0, "u/s",
+	_add_lbl(sec, "Strength (units/s):")
+	_add_slider_spin(sec, 1.0, 100.0, terrain.brush_strength, 1.0, "u/s",
 		func(v: float): terrain.brush_strength = v)
-	_add_sep(vbox)
+	_add_sep(sec)
 
 	# ── Status ────────────────────────────────────────────────────────────────
-	_add_lbl(vbox, "POSITION")
-	lbl_pos   = _add_lbl(vbox, "Hover over terrain")
-	lbl_brush = _add_lbl(vbox, "")
-	_add_sep(vbox)
+	_add_lbl(sec, "POSITION")
+	lbl_pos   = _add_lbl(sec, "Hover over terrain")
+	lbl_brush = _add_lbl(sec, "")
+	_add_sep(sec)
 
 	# ── Export ────────────────────────────────────────────────────────────────
-	_add_lbl(vbox, "EXPORT")
+	_add_lbl(sec, "EXPORT")
 	var btn_exp := Button.new(); btn_exp.text = "Save PNG (16-bit)"
-	btn_exp.pressed.connect(on_export); vbox.add_child(btn_exp)
+	btn_exp.pressed.connect(on_export); sec.add_child(btn_exp)
 	var btn_imp := Button.new(); btn_imp.text = "Load PNG"
-	btn_imp.pressed.connect(on_import); vbox.add_child(btn_imp)
+	btn_imp.pressed.connect(on_import); sec.add_child(btn_imp)
 
 
 # The scrollable content column, so other modules (e.g. PlacementUi) can append sections.

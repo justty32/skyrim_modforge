@@ -1,6 +1,7 @@
 class_name CameraRig
 extends Node3D
-## Orbit camera: middle-drag to orbit, scroll to zoom, right-drag to pan.
+## Orbit camera: middle-drag to orbit, scroll to zoom, right-drag to pan, WASD to pan on the
+## ground plane (relative to the camera's facing).
 
 var target := Vector3.ZERO
 var distance := 80.0    # meters
@@ -10,6 +11,7 @@ var pitch := -40.0      # degrees, negative = looking down
 var orbit_speed := 0.25
 var zoom_factor := 0.12   # fraction of current distance per scroll tick
 var pan_speed := 0.04     # fraction of distance per pixel
+var wasd_speed := 0.9     # WASD pan: fraction of current distance per second
 
 var _camera: Camera3D
 var _orbiting := false
@@ -62,6 +64,27 @@ func _input(event: InputEvent) -> void:
 			target -= right * delta.x * pan_speed * distance * 0.01
 			target += fwd   * delta.y * pan_speed * distance * 0.01
 			_apply_transform()
+
+
+# WASD pans the camera target on the ground plane, relative to where the camera faces. Skipped
+# while a text field has focus (so typing a ref doesn't slide the view). W/S = forward/back along
+# the camera's horizontal heading, A/D = left/right.
+func _process(delta: float) -> void:
+	var fo := get_viewport().gui_get_focus_owner()
+	if fo is LineEdit or fo is SpinBox or fo is TextEdit:
+		return
+	var move := Vector3.ZERO
+	var fwd   := Vector3(-sin(deg_to_rad(yaw)), 0, -cos(deg_to_rad(yaw))).normalized()
+	var right := _camera.global_transform.basis.x
+	right.y = 0.0; right = right.normalized()
+	if Input.is_key_pressed(KEY_W): move += fwd
+	if Input.is_key_pressed(KEY_S): move -= fwd
+	if Input.is_key_pressed(KEY_D): move += right
+	if Input.is_key_pressed(KEY_A): move -= right
+	if move == Vector3.ZERO:
+		return
+	target += move.normalized() * distance * wasd_speed * delta
+	_apply_transform()
 
 
 func _apply_transform() -> void:

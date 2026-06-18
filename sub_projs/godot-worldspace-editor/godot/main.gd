@@ -8,10 +8,11 @@ extends Node3D
 ##
 ## Controls:
 ##   Left-click drag   — paint with current brush
+##   WASD              — pan the camera on the ground plane
 ##   Middle-click drag — orbit camera
-##   Scroll            — zoom
+##   Scroll            — zoom   (Shift+Scroll — scroll the side panel)
 ##   Right-click drag  — pan
-##   R / L / F / S     — Raise / Lower / Flatten / Smooth
+##   Brush mode (Raise / Lower / Flatten / Smooth) is chosen from the side panel
 
 const CELLS_X    := 3
 const CELLS_Y    := 2
@@ -77,7 +78,7 @@ func _setup_ui() -> void:
 	var bottom := Label.new()
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	bottom.add_theme_color_override("font_color", Color.WHITE)
-	bottom.text = "Middle-drag: orbit  |  Scroll: zoom  |  Right-drag: pan  |  LMB: paint"
+	bottom.text = "WASD: move  |  Middle-drag: orbit  |  Scroll: zoom  |  Right-drag: pan  |  LMB: paint  |  Shift+Scroll: panel"
 	bottom.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	canvas.add_child(bottom)
 
