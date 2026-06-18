@@ -87,7 +87,24 @@ func _export_and_convert(ref: String, gltf_abs: String) -> bool:
 			"--in", nif_abs, "--out", gltf_abs, "--flat"], out, true) != 0 or not FileAccess.file_exists(gltf_abs):
 		push_warning("ModelFetch: nif2gltf %s failed: %s" % [ref, "\n".join(out)])
 		return false
+	# 3) pull the model's diffuse textures (named in the <stem>.textures.json sidecar) out of the
+	# game BSAs as <basename>.png next to the glTF, so GLTFDocument resolves its image uris → textured.
+	_fetch_textures(cache_dir.path_join(safe + ".textures.json"), cache_dir)
 	return true
+
+
+# Extract the textures a glTF references (sidecar: {png_uri: nif_dds_path}) into out_dir as PNGs.
+# Best-effort — a missing texture just leaves that material untextured, not a failure.
+func _fetch_textures(sidecar_abs: String, out_dir: String) -> void:
+	if not FileAccess.file_exists(sidecar_abs):
+		return
+	var map = JSON.parse_string(FileAccess.get_file_as_string(sidecar_abs))
+	if not (map is Dictionary) or map.is_empty():
+		return
+	var dds_paths: Array = map.values()
+	var out: Array = []
+	OS.execute("dotnet", ["run", "--project", _cli_project, "-c", "Release", "--",
+		"texpath", _data_dir, out_dir, ",".join(dds_paths)], out, true)
 
 
 func _load_gltf(gltf_abs: String) -> Node3D:

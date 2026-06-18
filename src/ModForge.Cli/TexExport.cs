@@ -57,6 +57,36 @@ internal static partial class Program
         return ok == total ? 0 : 1;
     }
 
+    // texpath — extract arbitrary texture path(s) (e.g. "textures\…\foo.dds", as referenced by a NIF
+    // shader) from the game texture BSAs → PNG named "<basename>.png" in <outDir>. Feeds the Godot
+    // object pipeline: a model's glTF references textures by basename, this pulls the real pixels.
+    //   texpath <dataDir> <outDir> <texPath>[,<texPath>…]
+    private static int TexPath(string dataDir, string outDir, string pathsCsv)
+    {
+        Directory.CreateDirectory(outDir);
+        var bsas = Directory.GetFiles(dataDir, "*.bsa")
+            .Where(p => Path.GetFileName(p).Contains("Texture", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        if (bsas.Count == 0) { Console.Error.WriteLine($"no *Texture*.bsa under {dataDir}"); return 2; }
+
+        int ok = 0, total = 0;
+        foreach (var raw in pathsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            total++;
+            var bsaTail = raw.Replace('/', '\\');
+            if (!bsaTail.StartsWith("textures\\", StringComparison.OrdinalIgnoreCase))
+                bsaTail = "textures\\" + bsaTail;
+            // basename only — split on BOTH separators (Linux Path doesn't treat '\' as one).
+            var leaf = raw.Replace('/', '\\').Split('\\').Last();
+            var stem = leaf.Contains('.') ? leaf[..leaf.LastIndexOf('.')] : leaf;
+            var outPng = Path.Combine(outDir, stem + ".png");
+            if (ExtractAndConvert(bsas, bsaTail, outPng)) { Console.WriteLine($"{raw} -> {outPng}"); ok++; }
+            else Console.Error.WriteLine($"texture '{raw}' not found in texture BSAs");
+        }
+        Console.WriteLine($"-- {ok}/{total} texture(s) -> {outDir}");
+        return ok == total ? 0 : 1;
+    }
+
     // Pull one .dds out of whichever texture BSA holds it, convert to PNG via ImageMagick.
     private static bool ExtractAndConvert(List<string> bsas, string bsaTail, string outPng)
     {
