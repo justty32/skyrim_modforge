@@ -1,6 +1,6 @@
 # Godot Worldspace Editor
 
-← [idea #19](../../workflows/idea/ideas.md)｜附屬：[座標系](coord-system.md)　[placements 格式](placements-format.md)
+← [idea #19](../../workflows/idea/ideas.md)｜附屬：[座標系](coord-system.md)　[placements 格式](placements-format.md)　[決策與查證](decisions.md)　[前端結構](frontend-structure.md)
 
 用 **Godot 4**（**自製 terrain**，不靠 HTerrain plugin）離線做地形編輯 → 匯出 → ModForge 生 LAND/REFR → 進遊戲微調。定位是 **Creation Kit 地形/場景編輯的替代前端**（CK 在 Wine/Proton 不穩、難腳本化）。
 
@@ -42,20 +42,7 @@ Godot（自製 terrain）               ModForge
 
 ## 決策（已鎖定）
 
-| 主題 | 決策 |
-|---|---|
-| 地形系統 | **Godot 4 自製 terrain**（ArrayMesh + 自寫高度/splat 筆刷 + 自寫 PNG codec）。原評估 HTerrain plugin，實作時棄用改自製（見下方 landed） |
-| Heightmap 格式 | 16-bit grayscale PNG，spec 寫路徑 |
-| Heightmap 切割 | 單張大 PNG，ModForge 切；N 格寬 → PNG 寬 `N×32+1` px，相鄰格共用邊緣欄 → seam 零誤差 |
-| 物件 metadata | 薄 script + `@export var skyrim_base`（base form ref）+ `@export var instance_id`（選填） |
-| 座標轉換 | Godot 原生座標（公尺 + Y-up），ModForge 轉 game units + Z-up；換算唯一真相在 ModForge |
-| 物件 scale | 鎖 uniform；Godot script 限制等比縮放，非等比取主軸並 warn |
-| 物件預覽 | fo76utils / NifSkope 批量轉 glTF 作視覺代理 |
-| 紋理 | 兩段：單層 `baseTexture`（全格 BTXT）+ 多層 `textureLayers`（每層 LTEX + 灰階 splatmap PNG → VTXT/ATXT alpha 層）。已實作（見下方 landed） |
-| Navmesh | MVP 跳過，只生 LAND |
-| placements.json | header 包一層（`version` + `coordinate_system: "godot4_y_up"`），rotation 單位 radians |
-| instanceId | 選填可省略（≠ 空字串）；省略 = 匿名 REFR；有值 = 此 REFR 的 editorId |
-| 掛進 spec | `godotPlacements` 巢狀在 worldspace 節點下，ModForge 轉換後合流進 `placements[]` pipeline |
+地形系統 / heightmap 格式與切割 / 物件 metadata / 座標轉換 / 紋理 / placements.json 約定等已鎖定決策 → 全表見 [decisions.md](decisions.md)。
 
 ---
 
@@ -76,36 +63,13 @@ Godot（自製 terrain）               ModForge
 
 ## 已查證
 
-- ✅ **VHGT 編碼**：signed int8 delta、row-wise 累積、每 delta = 8 game units（Mutagen 0.53.1 + UESP + xEdit，2026-06-16）——詳見 [worldspace-editor-design.md](../../workflows/specs/worldspace-editor-design.md)
-- ✅ **NIF → glTF**：fo76utils / NifSkope（Linux+Windows 雙平台）；`nif2gltf` Rust CLI 不存在（Gemini 捏造）——見 [`gemini-research/worldspace-editor/nif-gltf-conversion.md`](../gemini-research/worldspace-editor/nif-gltf-conversion.md)
+VHGT 編碼（signed int8 delta、每 delta=8 units）、NIF→glTF 工具選型等查證結論 → 見 [decisions.md](decisions.md)。
 
 ---
 
 ## 前端結構（`godot/`）
 
-所有 `.gd` 維持 ~100 行，分層拆檔：
-
-| 檔 | 職責 |
-|---|---|
-| `main.gd` | 根場景：組裝、輸入派發（height brush / Place / Splat 三模式互斥路由）、editor/walk 模式切換、display 同步 |
-| `terrain.gd` | 高度資料 + 座標換算 + 碰撞 body（`TerrainGrid`） |
-| `terrain_mesh.gd` | 從高度建 ArrayMesh（vertex/normal/uv + 高度漸層頂點色 + active splat 層 alpha overlay blend） |
-| `terrain_brush.gd` | 4 brush 模式（raise/lower/flatten/smooth） |
-| `camera_rig.gd` | orbit 編輯相機（middle orbit / scroll zoom / right pan） |
-| `player_controller.gd` | Walk Mode 人形 `CharacterBody3D`（第一人稱 + WASD/跳/ESC） |
-| `scene_builder.gd` | env / 編輯相機 / cursor / 格線 工廠 |
-| `world_ui.gd` | 側欄（ScrollContainer + slider/spinbox + 模式/筆刷/匯出按鈕） |
-| `io_dialog.gd` | 高度 PNG export/import FileDialog |
-| `png16.gd` / `png16_codec.gd` | 16-bit PNG encode/decode + chunk/CRC |
-| `placement.gd` | `PlacedObject` 薄節點：metadata（base/instanceId/uniform_scale）+ box proxy 視覺 |
-| `placement_tool.gd` | `PlacementTool`：placement 筆狀態 + 物件 list（place 吸地表 / restore / undo / clear）|
-| `placement_ui.gd` | 側欄 PLACEMENT 段（mode 切換、base/instance 欄、rotationY/scale、count、JSON I/O 按鈕）|
-| `placements_io.gd` | `placements.json` 匯出/匯入（顯示 scale 除掉還原 canonical 公尺）|
-| `splat_tool.gd` | `SplatTool`：紋理 alpha 筆（多層，每層 LTEX ref + alpha 格；paint 吸 active 層、radius/strength/erase 帶 falloff）+ 推 overlay 給地形上色 |
-| `splat_ui.gd` | 側欄 TEXTURE 段（Splat Mode 切換、層選擇+新增、LTEX ref、Paint/Erase、radius/strength、清層、splatmap PNG I/O）|
-| `splatmap_io.gd` | splatmap 8-bit 灰階 PNG 匯出/匯入（Y-flip 頂=北，同 Png16/Heightmap 約定）+ 印出可貼進 spec 的 `textureLayers` 片段 |
-
-**顯示縮放**：`vis_height_scale`（Y）與 `vis_surface_scale`（X/Z）只影響顯示，資料恆為 game units；`Y=(h-min)·MPU·scale` 讓地板固定 Y=0。**高度著色**：以中間高度為基準，下沉→淺藍→深藍（水），上升→草綠→岩石→雪。
+`godot/` 各 `.gd`（~100 行/檔）的逐檔職責、顯示縮放與高度著色規則 → 見 [frontend-structure.md](frontend-structure.md)。
 
 ## Open
 
