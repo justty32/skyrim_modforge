@@ -2,7 +2,7 @@
 
 ← [README](README.md)
 
-所有 `.gd` 維持 ~100 行，分層拆檔：
+各 `.gd` 按職責分層拆檔（多數 ~100 行；coordinator `main.gd` 與資料節點 `terrain.gd` 略多）：
 
 | 檔 | 職責 |
 |---|---|

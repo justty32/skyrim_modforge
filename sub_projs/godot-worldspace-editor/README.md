@@ -73,9 +73,9 @@ VHGT 編碼（signed int8 delta、每 delta=8 units）、NIF→glTF 工具選型
 
 ## Open
 
-- **物件模型貼圖**：placement 已顯示真實 glTF 模型（見下），但 glTF 目前**無貼圖**（灰模）。下一步：nif→TXST→DDS（同 `texexport` pattern）給 glTF material 上圖。
+- **小尾巴（不擋使用）**：物件 glTF 只取 diffuse 貼圖（無 normal/spec）；LE-format 真檔 nif 未驗（vanilla 多 SSE）；VTXT position row/col 序待最終目視（見 [WAIT_USER](../../wait_todo/worldspace-editor.md)）。
 
-~~box proxy → 真實 glTF~~ ✅ 2026-06-18（**待主力機 Godot GUI 目視**）：placement 不再只是彩色方塊——按 placement UI 的 **「Load real models」** 從遊戲 BSA 抽 base 的 model NIF → `nif2gltf`（[model-converter](../model-converter/README.md)，已對真實 vanilla SSE nif 修復+驗證）→ glTF → `GLTFDocument` runtime 載入取代 box。CLI `nifexport` + `model_fetch.gd` + `placement.set_model`。同款 BSA-抽取 pipeline as `texexport`。
+~~box proxy → 真實 glTF + 貼圖~~ ✅ **GUI 確認 2026-06-18**：placement 顯示真實 vanilla 模型 + 真實貼圖（非方塊/灰模）。按 placement UI「Load real models」→ CLI `nifexport` 抽 model NIF → `nif2gltf`（解 shape→shader→textureset diffuse，[model-converter](../model-converter/README.md) 已對真實 SSE nif 修復）→ CLI `texpath` 抽貼圖 → `model_fetch.gd` GLTFDocument 載入 + `placement.set_model` 換 box。同款 BSA-抽取 pipeline as `texexport`。
 
 ~~地形紋理 WYSIWYG（Godot 直接顯示真實草/泥土貼圖）~~ ✅ **in-game 確認 2026-06-18**：splat 筆刷下顯示真實 vanilla ground 貼圖（非平色 tint），base + 至多 4 層 per-vertex alpha 混合。CLI `texexport`（LTEX→diffuse .dds 從遊戲 BSA→PNG）+ `tex_fetch.gd`（OS.execute 呼叫、快取 res://texcache/）+ `terrain_material.gd`（ShaderMaterial，無貼圖 fallback 頂點色）。預覽 alpha 格＝匯出 splatmap 同份資料，所見＝VTXT 烘出。
 
