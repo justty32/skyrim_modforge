@@ -16,7 +16,8 @@
 | `world_ui.gd` | 側欄（ScrollContainer + slider/spinbox + 模式/筆刷/匯出按鈕） |
 | `io_dialog.gd` | 高度 PNG export/import FileDialog |
 | `png16.gd` / `png16_codec.gd` | 16-bit PNG encode/decode + chunk/CRC |
-| `placement.gd` | `PlacedObject` 薄節點：metadata（base/instanceId/uniform_scale）+ box proxy 視覺 |
+| `placement.gd` | `PlacedObject` 薄節點：metadata（base/instanceId/uniform_scale）+ box proxy 視覺；`set_model` 換成真實 glTF 模型（game-unit×METERS_PER_UNIT→顯示公尺，box 當 fallback）|
+| `model_fetch.gd` | `ModelFetch`：base ref → 真實模型節點。兩段：CLI `nifexport`（抽 model .nif）→ `nif2gltf`（venv，`env PYTHONPATH=`）轉 glTF，快取 res://modelcache/，`GLTFDocument` runtime 載入。主力機限定，抽不到→留 box |
 | `placement_tool.gd` | `PlacementTool`：placement 筆狀態 + 物件 list（place 吸地表 / restore / undo / clear）|
 | `placement_ui.gd` | 側欄 PLACEMENT 段（mode 切換、base/instance 欄、rotationY/scale、count、JSON I/O 按鈕）|
 | `placements_io.gd` | `placements.json` 匯出/匯入（顯示 scale 除掉還原 canonical 公尺）|
