@@ -127,9 +127,15 @@ func _input(event: InputEvent) -> void: EditorInput.input(self, event)
 func _process(delta: float) -> void:    EditorInput.process(self, delta)
 
 func _update_cursor() -> void:
-	# Cursor disc tracks the ACTIVE tool's radius: splat paint radius in Splat Mode, else the
-	# height-brush radius (so the yellow ring matches what LMB will actually affect).
-	var verts_r := _splat.radius if (_splat_mode and _splat) else terrain.brush_radius
+	# Cursor disc tracks the ACTIVE tool's radius so the yellow ring matches what LMB affects:
+	#   Place Mode — a tiny ring (placement hits a point, not an area);
+	#   Splat Mode — the splat paint radius;
+	#   else       — the height-brush radius.
+	var verts_r := terrain.brush_radius
+	if _place_mode:
+		verts_r = 0.5
+	elif _splat_mode and _splat:
+		verts_r = _splat.radius
 	var r := verts_r * terrain.step * terrain.vis_surface_scale
 	_cursor.scale = Vector3(r, 1.0, r)
 
@@ -151,6 +157,7 @@ func _toggle_place_mode(on: bool) -> void:
 	_place_mode = on
 	if on: _splat_mode = false
 	_painting = false
+	_update_cursor()   # tiny ring in place mode (or back to brush/splat radius)
 
 func _on_export_placements() -> void:
 	PlacementsIo.export_dialog(self, _placement, terrain, _lbl_brush)
