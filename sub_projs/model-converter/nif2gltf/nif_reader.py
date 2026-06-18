@@ -30,6 +30,8 @@ import numpy as np
 
 from ._binreader import NifError, SkinnedNifError, _Reader
 from ._blocks import (
+    _read_bslightingshaderproperty,
+    _read_bsshadertextureset,
     _read_bstrishape,
     _read_le_shape,
     _read_ninode,
@@ -138,12 +140,24 @@ def _assemble_mesh(name: str, world: np.ndarray, verts, normals, uvs, tris) -> M
     return Mesh(name=name, positions=out_pos, normals=out_nrm, uvs=list(uvs), triangles=list(tris))
 
 
+def _resolve_diffuse(blocks: dict, shader_ref) -> str:
+    """shape.shader_ref -> BSLightingShaderProperty.texset_ref -> BSShaderTextureSet.diffuse."""
+    sh = blocks.get(shader_ref)
+    if not sh or sh.get("kind") != "shader":
+        return ""
+    ts = blocks.get(sh.get("texset_ref"))
+    if not ts or ts.get("kind") != "texset":
+        return ""
+    return ts.get("diffuse", "")
+
+
 def read_nif(data: bytes) -> list[Mesh]:
     """Parse NIF bytes -> list[Mesh] in glTF space. Raises NifError / SkinnedNifError."""
     r = _Reader(data)
     hdr = _read_header(r)
     types = hdr["types"]
     offsets = hdr["offsets"]
+    sizes = hdr["block_sizes"]
     bs_version = hdr["bs_version"]
 
     blocks: dict[int, dict] = {}
@@ -155,12 +169,22 @@ def read_nif(data: bytes) -> list[Mesh]:
                 blocks[i] = _read_ninode(r)
             elif t in LE_SHAPE_TYPES:
                 blocks[i] = _read_le_shape(r)
+                # In SSE-format nifs (bs>=100) a NiTriShape ends with its BSShaderProperty + NiAlpha
+                # refs; the shader ref is the second-to-last i32 (block_end - 8). True LE nifs (bs 83)
+                # use a property list instead, so only harvest it for SSE.
+                if bs_version >= 100 and sizes[i] >= 8:
+                    r.seek(offsets[i] + sizes[i] - 8)
+                    blocks[i]["shader_ref"] = r.i32()
             elif t == "NiTriShapeData":
                 blocks[i] = _read_nitrishapedata(r)
             elif t == "NiTriStripsData":
                 blocks[i] = _read_nitristripsdata(r)
             elif t in SSE_SHAPE_TYPES:
                 blocks[i] = _read_bstrishape(r, bs_version)
+            elif t == "BSLightingShaderProperty":
+                blocks[i] = _read_bslightingshaderproperty(r, offsets[i])
+            elif t == "BSShaderTextureSet":
+                blocks[i] = _read_bsshadertextureset(r)
         except NifError:
             # Defensive: a malformed sub-block is skipped, not fatal (boundary seek recovers).
             blocks.pop(i, None)
@@ -188,8 +212,10 @@ def read_nif(data: bytes) -> list[Mesh]:
             if not data or data.get("kind") != "data" or not data["verts"]:
                 continue
             world = _world_matrix(i, parent, local)
-            meshes.append(_assemble_mesh(
-                f"shape_{i}", world, data["verts"], data["normals"], data["uvs"], data["tris"]))
+            mesh = _assemble_mesh(
+                f"shape_{i}", world, data["verts"], data["normals"], data["uvs"], data["tris"])
+            mesh.texture = _resolve_diffuse(blocks, b.get("shader_ref"))
+            meshes.append(mesh)
         elif kind == "sse_shape":
             if b["skinned"]:
                 skinned_seen = True
@@ -197,8 +223,10 @@ def read_nif(data: bytes) -> list[Mesh]:
             if not b["verts"]:
                 continue
             world = _world_matrix(i, parent, local)
-            meshes.append(_assemble_mesh(
-                f"shape_{i}", world, b["verts"], b["normals"], b["uvs"], b["tris"]))
+            mesh = _assemble_mesh(
+                f"shape_{i}", world, b["verts"], b["normals"], b["uvs"], b["tris"])
+            mesh.texture = _resolve_diffuse(blocks, b.get("shader_ref"))
+            meshes.append(mesh)
 
     if not meshes:
         if skinned_seen:

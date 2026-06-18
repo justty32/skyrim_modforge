@@ -188,7 +188,7 @@ def _read_bstrishape(r: _Reader, bs_version: int) -> dict:
         for _ in range(6):
             r.f32()
     skin_ref = r.i32()
-    r.i32()                       # Shader Property
+    shader_ref = r.i32()          # Shader Property (-> BSLightingShaderProperty)
     r.i32()                       # Alpha Property
     vertex_desc = r.u64()
     if bs_version >= 130:         # FO4+: uint triangle count
@@ -240,8 +240,26 @@ def _read_bstrishape(r: _Reader, bs_version: int) -> dict:
         "kind": "sse_shape",
         "local": _local_matrix(trans, rot, scale),
         "skinned": skinned,
+        "shader_ref": shader_ref,
         "verts": verts,
         "normals": normals if len(normals) == len(verts) else [],
         "uvs": uvs if len(uvs) == len(verts) else [],
         "tris": tris,
     }
+
+
+# BSLightingShaderProperty: we only need its Texture Set ref. For Skyrim SSE (stream 100) the
+# ref sits at a fixed byte offset 40 from the block start (verified against real vanilla nifs —
+# rock + multi-shape tree). Block-size seeks recover if a future variant shifts it.
+_LSP_TEXSET_OFFSET = 40
+
+
+def _read_bslightingshaderproperty(r: _Reader, block_start: int) -> dict:
+    r.seek(block_start + _LSP_TEXSET_OFFSET)
+    return {"kind": "shader", "texset_ref": r.i32()}
+
+
+def _read_bsshadertextureset(r: _Reader) -> dict:
+    n = r.u32()
+    paths = [r.sized_string() for _ in range(n)]
+    return {"kind": "texset", "diffuse": paths[0] if paths else ""}

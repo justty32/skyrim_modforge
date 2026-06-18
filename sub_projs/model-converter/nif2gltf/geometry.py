@@ -32,6 +32,8 @@ class Mesh:
     uvs: list[tuple[float, float]] = field(default_factory=list)
     # Triangles as triples of vertex indices into `positions`.
     triangles: list[tuple[int, int, int]] = field(default_factory=list)
+    # Diffuse texture path as declared in the NIF (e.g. "textures\\...\\foo.dds"), or "".
+    texture: str = ""
 
     @property
     def has_normals(self) -> bool:

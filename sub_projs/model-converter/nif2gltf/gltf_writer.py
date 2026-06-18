@@ -7,6 +7,7 @@ glTF space (Y-up) — see geometry.skyrim_to_gltf_*.
 
 from __future__ import annotations
 
+import json
 import os
 
 import numpy as np
@@ -23,15 +24,24 @@ from pygltflib import (
     Attributes,
     Buffer,
     BufferView,
+    Image,
     Material,
     Node,
     PbrMetallicRoughness,
     Primitive,
     Scene,
+    Texture,
+    TextureInfo,
 )
 from pygltflib import Mesh as GltfMesh
 
 from .geometry import Mesh
+
+
+def _png_name(dds_path: str) -> str:
+    """Sanitise a NIF texture path ("textures\\landscape\\foo.dds") to a flat PNG filename."""
+    flat = dds_path.replace("\\", "/").rsplit("/", 1)[-1]
+    return os.path.splitext(flat)[0] + ".png"
 
 
 def _pad4(blob: bytearray) -> None:
@@ -82,6 +92,38 @@ def write_gltf(
     gltf_meshes: list[GltfMesh] = []
     nodes: list[Node] = []
 
+    # Texture registry: each distinct NIF diffuse path -> (material index, image uri). Material 0 is
+    # the flat untextured fallback; textured materials follow. `tex_sidecar` maps the emitted PNG uri
+    # back to the original .dds so the caller can extract+convert it next to the .gltf.
+    images: list[Image] = []
+    textures: list[Texture] = []
+    materials: list[Material] = [Material(
+        name=material_name,
+        pbrMetallicRoughness=PbrMetallicRoughness(
+            baseColorFactor=list(flat_color), metallicFactor=0.0, roughnessFactor=1.0),
+        doubleSided=True,
+    )]
+    mat_for_tex: dict[str, int] = {}
+    tex_sidecar: dict[str, str] = {}
+
+    def material_for(diffuse: str) -> int:
+        if not diffuse:
+            return 0
+        if diffuse not in mat_for_tex:
+            uri = _png_name(diffuse)
+            images.append(Image(uri=uri))
+            textures.append(Texture(source=len(images) - 1))
+            materials.append(Material(
+                name=os.path.splitext(uri)[0],
+                pbrMetallicRoughness=PbrMetallicRoughness(
+                    baseColorTexture=TextureInfo(index=len(textures) - 1),
+                    metallicFactor=0.0, roughnessFactor=1.0),
+                doubleSided=True,
+            ))
+            mat_for_tex[diffuse] = len(materials) - 1
+            tex_sidecar[uri] = diffuse
+        return mat_for_tex[diffuse]
+
     for i, mesh in enumerate(meshes):
         if mesh.is_empty():
             continue
@@ -111,26 +153,18 @@ def write_gltf(
         idx_bv = add_buffer_view(tris.tobytes(), ELEMENT_ARRAY_BUFFER)
         idx_acc = add_accessor(idx_bv, UNSIGNED_INT, len(tris), SCALAR)
 
-        prim = Primitive(attributes=attrs, indices=idx_acc, material=0)
+        prim = Primitive(attributes=attrs, indices=idx_acc, material=material_for(mesh.texture))
         gltf_meshes.append(GltfMesh(primitives=[prim], name=mesh.name or f"shape_{i}"))
         nodes.append(Node(mesh=len(gltf_meshes) - 1, name=mesh.name or f"shape_{i}"))
-
-    material = Material(
-        name=material_name,
-        pbrMetallicRoughness=PbrMetallicRoughness(
-            baseColorFactor=list(flat_color),
-            metallicFactor=0.0,
-            roughnessFactor=1.0,
-        ),
-        doubleSided=True,
-    )
 
     gltf = GLTF2(
         scene=0,
         scenes=[Scene(nodes=list(range(len(nodes))))],
         nodes=nodes,
         meshes=gltf_meshes,
-        materials=[material],
+        materials=materials,
+        images=images,
+        textures=textures,
         accessors=accessors,
         bufferViews=buffer_views,
         buffers=[Buffer(byteLength=len(blob), uri=bin_name)],
@@ -140,4 +174,9 @@ def write_gltf(
     with open(os.path.join(out_dir, bin_name), "wb") as fh:
         fh.write(bytes(blob))
     gltf.save_json(out_path)
+    # Sidecar: emitted PNG uri -> original NIF .dds path, so the caller can pull the real texture
+    # out of the game BSAs (the converter itself never touches game data).
+    if tex_sidecar:
+        with open(os.path.splitext(out_path)[0] + ".textures.json", "w") as fh:
+            json.dump(tex_sidecar, fh, indent=1)
     return out_path
