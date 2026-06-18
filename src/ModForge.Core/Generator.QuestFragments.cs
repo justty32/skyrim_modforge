@@ -33,7 +33,19 @@ public static partial class Generator
         q.Objectives.Any(o => o.ShowStage >= 0 || o.CompleteStage >= 0)
         || q.Stages.Any(s => s.InstanceGlobals.Count > 0)
         || q.Stages.Any(s => HasPersist(s) || HasSyncPerks(s))
-        || StartupStageTrigger(q) is not null;
+        || StartupStageTrigger(q) is not null
+        || StoryTrigger(q);
+
+    /// <summary>True when the quest's dynamic spawn / cooldown trigger must be driven from an
+    /// <c>OnStory&lt;Event&gt;</c> event handler rather than the startUpStage fragment — i.e. the quest is
+    /// Story-Manager-driven (has a <c>storyEvent</c>) and declares a <c>spawn</c> or a <c>cooldownHours</c>.
+    /// IN-GAME 2026-06-19: an SM-started quest fires OnInit + OnStory&lt;Event&gt; but DOES NOT run the
+    /// startUpStage Papyrus fragment (Fragment_Stage_XXXX), so a spawn hung on the startUpStage never
+    /// triggered. The reliable hook is the per-event story handler, which fires on every SM delivery.</summary>
+    public static bool StoryTrigger(QuestSpec q) =>
+        q.StoryEvent is { } se && StoryManagerEvents.TryGet(se.Event, out var d)
+        && !string.IsNullOrEmpty(d.StoryHandler)
+        && (q.Spawn is not null || se.CooldownHours > 0f);
 
     /// <summary>The property-name prefix that namespaces a stage's JContainers persist/syncPerks
     /// properties (so several stages in one quest script never collide). MUST match between the generated
@@ -46,11 +58,14 @@ public static partial class Generator
     /// qualifying event, so the trigger must live on the startUpStage fragment (runs on EVERY start).</summary>
     public static int? StartupStageTrigger(QuestSpec q)
     {
-        bool hasTrigger = q.Spawn is not null || (q.StoryEvent is { } se && se.CooldownHours > 0f);
+        // Story-Manager quests drive their spawn/cooldown from OnStory<Event> (see StoryTrigger) because
+        // the startUpStage Papyrus fragment does NOT run for SM-started quests. Only a NON-storyEvent
+        // (StartGameEnabled) spawn quest fires its trigger from the startUpStage fragment.
+        bool hasTrigger = q.Spawn is not null && q.StoryEvent is null;
         if (!hasTrigger) return null;
         foreach (var s in q.Stages)
             if (s.StartUpStage) return s.Index;
-        return null;   // spawn/cooldown declared but no startUpStage to fire from (validator warns)
+        return null;   // spawn declared but no startUpStage to fire from (validator warns)
     }
 
     /// <summary>The Papyrus property name a stage fragment uses to reference an instance global — the
@@ -107,32 +122,43 @@ public static partial class Generator
 
         bool hasSpawn = q.Spawn is not null;
         bool hasCooldown = q.StoryEvent is { } sev && sev.CooldownHours > 0f;
+        bool storyTrigger = StoryTrigger(q);
+
+        // Emit the cooldown-then-spawn trigger body (shared by the startUpStage fragment for a
+        // StartGameEnabled spawn quest and the OnStory<Event> handler for an SM-driven encounter).
+        // stopAfter=true Stop()s the quest once it has fired so the Story Manager can re-launch it on
+        // the next qualifying event (a running quest is never re-started) — the cooldown then gates the
+        // re-fire; without the Stop() the encounter would fire exactly once for the save's lifetime.
+        void AppendTrigger(bool stopAfter)
+        {
+            if (hasCooldown)
+            {
+                sb.AppendLine($"    {EncounterCooldownScript} __cd = self as {EncounterCooldownScript}");
+                sb.AppendLine("    if __cd && !__cd.TryFire()");
+                sb.AppendLine("        Stop()                                  ; still on cooldown — abort this encounter");
+                sb.AppendLine("        return");
+                sb.AppendLine("    endif");
+            }
+            if (hasSpawn)
+            {
+                sb.AppendLine($"    {DynamicSpawnScript} __spawn = self as {DynamicSpawnScript}");
+                sb.AppendLine("    if __spawn");
+                sb.AppendLine("        __spawn.SpawnNow()");
+                sb.AppendLine("    endif");
+            }
+            if (stopAfter) sb.AppendLine("    Stop()                                  ; re-arm: let the SM relaunch this encounter on the next event");
+        }
 
         foreach (var stage in stageNums)
         {
             // CK-standard name: engine calls Fragment_Stage_XXXX_Item00000 on the script when
             // SetStage(XXXX) fires (first log entry = Item00000). No manual binding required.
             sb.AppendLine($"Function Fragment_Stage_{stage:D4}_Item00000()");
-            // startUpStage trigger: cooldown gate first (abort if too soon), then the dynamic spawn.
-            // Both reach their sibling script (attached to the same quest) via `self as <Script>`.
+            // startUpStage trigger (NON-storyEvent spawn only): cooldown gate first, then the spawn.
+            // SM-driven quests route this through OnStory<Event> below instead (the startUpStage
+            // fragment does not run for an SM-started quest — in-game confirmed 2026-06-19).
             if (startupTrigger == stage)
-            {
-                if (hasCooldown)
-                {
-                    sb.AppendLine($"    {EncounterCooldownScript} __cd = self as {EncounterCooldownScript}");
-                    sb.AppendLine("    if __cd && !__cd.TryFire()");
-                    sb.AppendLine("        Stop()                                  ; still on cooldown — abort this encounter");
-                    sb.AppendLine("        return");
-                    sb.AppendLine("    endif");
-                }
-                if (hasSpawn)
-                {
-                    sb.AppendLine($"    {DynamicSpawnScript} __spawn = self as {DynamicSpawnScript}");
-                    sb.AppendLine("    if __spawn");
-                    sb.AppendLine("        __spawn.SpawnNow()");
-                    sb.AppendLine("    endif");
-                }
-            }
+                AppendTrigger(stopAfter: false);
             foreach (var o in q.Objectives.Where(o => o.ShowStage == stage))
                 sb.AppendLine($"    SetObjectiveDisplayed({o.Index})   ; show: {OneLine(o.Text)}");
             foreach (var o in q.Objectives.Where(o => o.CompleteStage == stage))
@@ -154,6 +180,19 @@ public static partial class Generator
                 foreach (var line in JContainersFragmentBody(StagePropPrefix(stage), stSpec.Persist, stSpec.SyncPerks))
                     sb.AppendLine("    " + line);
             sb.AppendLine("EndFunction");
+            sb.AppendLine();
+        }
+
+        // SM-driven encounter: drive the spawn/cooldown from the per-event OnStory<Event> handler. This is
+        // the hook that actually fires for a Story-Manager-started quest (the startUpStage fragment does
+        // not — in-game confirmed 2026-06-19). The handler signature comes from StoryManagerEvents; the
+        // body is the same cooldown-then-spawn trigger, plus a Stop() so the SM can relaunch it next time.
+        if (storyTrigger && q.StoryEvent is { } se2 && StoryManagerEvents.TryGet(se2.Event, out var sdef)
+            && !string.IsNullOrEmpty(sdef.StoryHandler))
+        {
+            sb.AppendLine($"Event {sdef.StoryHandler}");
+            AppendTrigger(stopAfter: true);
+            sb.AppendLine("EndEvent");
             sb.AppendLine();
         }
         return sb.ToString();

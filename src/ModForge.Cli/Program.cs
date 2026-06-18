@@ -69,6 +69,7 @@ internal static partial class Program
                 case "scenediag" when args.Length == 3: return SceneDiag(args[1], args[2]);
                 case "scnscan" when args.Length is 2 or 3: return ScnScan(args[1], args.Length == 3 ? args[2] : null);
                 case "smtree" when args.Length == 2: return SmTree(args[1]);
+                case "smsub" when args.Length == 3: return SmSub(args[1], args[2]);
                 case "identitydiag" when args.Length == 2: return IdentityDiag(args[1]);
                 default: Usage(); return 1;
             }

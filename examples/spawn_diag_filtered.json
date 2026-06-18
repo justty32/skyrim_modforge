@@ -1,0 +1,27 @@
+{
+  "pluginName": "MFSpawnDiagFiltered.esp",
+  "esl": false,
+  "_": "DIAGNOSTIC B — same as the real encounter (locationFilter = LocTypeBanditCamp OR LocTypeDungeon) but with NO cooldown so LastFired can't mask a re-entry. Test this ONLY if build A spawned (i.e. SM start is confirmed). Enter a bandit camp / dungeon: see bandits → the keyword filter works and the original bug was the cooldown/LastFired or the SM re-fire-while-running issue. See nothing (while A spawns elsewhere) → GetKeywordDataForCurrentLocation == 1 is the wrong test for these LocType keywords (the conditions never pass), and I switch the filter to HasKeyword / the correct data test.",
+
+  "quests": [
+    {
+      "editorId": "MFSpawnDiagFiltered",
+      "name": "Spawn Diag Filtered",
+      "stages": [ { "index": 10, "startUpStage": true } ],
+      "storyEvent": {
+        "event": "ChangeLocation",
+        "locationFilter": [ "Skyrim.esm:0x000130DF", "Skyrim.esm:0x000130DB" ]
+      },
+      "aliases": [
+        { "name": "NewLocation", "fill": "fromEvent:newLocation", "optional": true }
+      ],
+      "spawn": {
+        "form": "Skyrim.esm:0x0003DECD",
+        "count": 3,
+        "minDistance": 200,
+        "maxDistance": 500,
+        "snapToNavmesh": true
+      }
+    }
+  ]
+}

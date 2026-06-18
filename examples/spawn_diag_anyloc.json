@@ -1,0 +1,24 @@
+{
+  "pluginName": "MFSpawnDiagAny.esp",
+  "esl": false,
+  "_": "DIAGNOSTIC A — SM ChangeLocation with NO locationFilter and NO cooldown, so the quest fires the instant the player enters ANY new location. The spawn runs only via the startUpStage fragment, which runs only if the quest STARTED — and that startUpStage→SpawnNow path is already proven by the StartGameEnabled isolation test. So the ONLY variable here is 'did the Story Manager start the quest'. RESULT: see 'MF: SpawnNow entered, count=3' + 3 bandits → SM ChangeLocation DOES start our quest (the real encounter's bug is then the locationFilter keyword / GetKeywordDataForCurrentLocation semantics → test build B). See NOTHING across several location changes → SM never starts our quest (structural SM-node bug, even with zero conditions).",
+
+  "quests": [
+    {
+      "editorId": "MFSpawnDiagAny",
+      "name": "Spawn Diag Any",
+      "stages": [ { "index": 10, "startUpStage": true } ],
+      "storyEvent": { "event": "ChangeLocation" },
+      "aliases": [
+        { "name": "NewLocation", "fill": "fromEvent:newLocation", "optional": true }
+      ],
+      "spawn": {
+        "form": "Skyrim.esm:0x0003DECD",
+        "count": 3,
+        "minDistance": 200,
+        "maxDistance": 500,
+        "snapToNavmesh": true
+      }
+    }
+  ]
+}

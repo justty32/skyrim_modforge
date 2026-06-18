@@ -2,8 +2,12 @@ using Mutagen.Bethesda.Plugins;
 
 namespace ModForge;
 
-// 一個 SM 事件的定義：原版事件根、Quest.Event 碼、可用的 event-data 槽位（slot 名 → 4-byte 索引）。
-public readonly record struct StoryEventDef(FormKey Root, RecordType Code, IReadOnlyDictionary<string, byte[]> Slots);
+// 一個 SM 事件的定義：原版事件根、Quest.Event 碼、可用的 event-data 槽位（slot 名 → 4-byte 索引）、
+// 以及此事件在 Quest 腳本上的 `OnStory<Event>` 處理器簽名（不含 "Event " 前綴與 "EndEvent"）。
+// StoryHandler 是 SM-encounter 觸發的關鍵：SM 啟動的 quest 不會自動跑 startUpStage 的 Papyrus
+// fragment（實機 2026-06-19 確認：OnInit/OnStoryXxx 都觸發、但 Fragment_Stage_XXXX 不跑），所以
+// spawn/cooldown 觸發必須掛在這個 `OnStory<Event>` 事件裏（每次 SM 投遞事件都可靠觸發）。
+public readonly record struct StoryEventDef(FormKey Root, RecordType Code, IReadOnlyDictionary<string, byte[]> Slots, string StoryHandler);
 
 // 內建「事件名 → 定義」表。一個事件一筆；之後加事件 = 加一筆（值離線從 Skyrim.esm vanilla 解出）。
 public static class StoryManagerEvents
@@ -34,7 +38,8 @@ public static class StoryManagerEvents
                 new RecordType("KILL"),
                 Slots(
                     ("victim", R1),   // R1 = killed actor
-                    ("killer", R2))), // R2 = the killer
+                    ("killer", R2)),  // R2 = the killer
+                "OnStoryKillActor(ObjectReference akVictim, ObjectReference akKiller, Location akLocation, int aiCrimeStatus, int aiRelationshipRank)"),
 
             // Change Location — fires when an actor (the player) enters a new location.
             // Root SMEN .Type = ChangeLocationEvent. Slots are LOCATION refs, not actors.
@@ -43,7 +48,8 @@ public static class StoryManagerEvents
                 new RecordType("CLOC"),
                 Slots(
                     ("oldLocation", L1),   // L1 = location departed
-                    ("newLocation", L2))), // L2 = location entered
+                    ("newLocation", L2)),  // L2 = location entered
+                "OnStoryChangeLocation(ObjectReference akActor, Location akOldLocation, Location akNewLocation)"),
 
             // Cast Magic — fires when an actor casts a spell. Root SMEN .Type = CastMagicEvent.
             ["CastMagic"] = new StoryEventDef(
@@ -52,7 +58,8 @@ public static class StoryManagerEvents
                 Slots(
                     ("caster", R1),     // R1 = casting actor
                     ("target", R2),     // R2 = spell target
-                    ("location", L1))), // L1 = where it was cast
+                    ("location", L1)),  // L1 = where it was cast
+                "OnStoryCastMagic(ObjectReference akCastingActor, ObjectReference akSpellTarget, Location akLocation, Form akSpell)"),
 
             // Player Add Item — fires when the player acquires an item.
             // Root SMEN .Type = PlayerAddItem.
@@ -61,7 +68,8 @@ public static class StoryManagerEvents
                 new RecordType("AIPL"),
                 Slots(
                     ("owner", R1),      // R1 = prior owner of the item
-                    ("location", L1))), // L1 = where the item was
+                    ("location", L1)),  // L1 = where the item was
+                "OnStoryAddToPlayer(ObjectReference akOwner, ObjectReference akContainer, Location akLocation, Form akItemBase, int aiAcquireType)"),
 
             // Assault Actor — fires when an actor assaults (attacks) another.
             // Root SMEN .Type = AssaultActorEvent.
@@ -71,7 +79,8 @@ public static class StoryManagerEvents
                 Slots(
                     ("victim", R1),     // R1 = assaulted actor
                     ("attacker", R2),   // R2 = the attacker
-                    ("location", L1))), // L1 = where it happened
+                    ("location", L1)),  // L1 = where it happened
+                "OnStoryAssaultActor(ObjectReference akVictim, ObjectReference akAttacker, Location akLocation, int aiCrime)"),
 
             // Craft Item — fires when the player crafts an item at a workbench/forge/etc.
             // Root SMEN .Type = CraftItem. Vanilla WICraftItem03 fills R1 = the workbench used.
@@ -79,7 +88,8 @@ public static class StoryManagerEvents
                 Root(0x039D86),
                 new RecordType("CRFT"),
                 Slots(
-                    ("workbench", R1))), // R1 = the crafting station used
+                    ("workbench", R1)), // R1 = the crafting station used
+                "OnStoryCraftItem(ObjectReference akBench, Location akLocation, Form akCreatedItem)"),
 
             // Player Remove Item — fires when an item leaves the player's inventory (sold/dropped/given).
             // Root SMEN .Type = PlayerRemoveItem. Vanilla WIRemoveItem01: R1 = new owner, R2 = the item.
@@ -88,7 +98,8 @@ public static class StoryManagerEvents
                 new RecordType("REMP"),
                 Slots(
                     ("owner", R1),   // R1 = who received the item
-                    ("item", R2))),  // R2 = the item removed
+                    ("item", R2)),   // R2 = the item removed
+                "OnStoryRemoveFromPlayer(ObjectReference akOwner, ObjectReference akItem, Location akLocation, Form akItemBase, int aiRemoveType)"),
 
             // Arrest — fires when a guard arrests an actor. Root SMEN .Type = ArrestEvent.
             // Vanilla DGArrestQuest: R1 = the arresting guard, R2 = the criminal.
@@ -97,7 +108,8 @@ public static class StoryManagerEvents
                 new RecordType("ARRT"),
                 Slots(
                     ("guard", R1),      // R1 = the arresting guard
-                    ("criminal", R2))), // R2 = the arrested actor
+                    ("criminal", R2)),  // R2 = the arrested actor
+                "OnStoryArrest(ObjectReference akArrestingGuard, ObjectReference akCriminal, Location akLocation, int aiCrime)"),
 
             // Increase Level — fires when the player levels up. Root SMEN .Type = IncreaseLevel.
             // No event ref slots (vanilla LEVL quests fill aliases via forced/findMatching, never
@@ -105,7 +117,8 @@ public static class StoryManagerEvents
             ["IncreaseLevel"] = new StoryEventDef(
                 Root(0x05BD79),
                 new RecordType("LEVL"),
-                Slots()),
+                Slots(),
+                "OnStoryIncreaseLevel(int aiNewLevel)"),
 
             // Script Event — the GENERIC custom entry. Root SMEN .Type = ScriptEvent (no conditions =
             // listens to every Papyrus SendStoryEvent). A quest under it is gated by a keyword filter
@@ -117,7 +130,8 @@ public static class StoryManagerEvents
                 Slots(
                     ("ref1", R1),       // R1 = akRef1
                     ("ref2", R2),       // R2 = akRef2
-                    ("loc", L1))),      // L1 = akLoc
+                    ("loc", L1)),       // L1 = akLoc
+                "OnStoryScript(Keyword akKeyword, Location akLocation, ObjectReference akRef1, ObjectReference akRef2, int aiValue1, int aiValue2)"),
         };
 
     public static IEnumerable<string> Names => Defs.Keys;

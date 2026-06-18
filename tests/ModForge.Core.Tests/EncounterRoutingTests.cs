@@ -19,7 +19,8 @@ public class EncounterRoutingTests
             new QuestSpec
             {
                 EditorId = "MFEnc", Name = "Enc",
-                // startUpStage: the cooldown gate (and any spawn) fires from this stage's fragment on start.
+                // SM-driven: the cooldown gate (and any spawn) fires from the OnStory<Event> handler, NOT
+                // the startUpStage fragment (an SM-started quest does not run the startUpStage fragment).
                 Stages = { new StageSpec { Index = 10, StartUpStage = true } },
                 StoryEvent = new QuestStoryEventSpec
                 {
@@ -78,6 +79,46 @@ public class EncounterRoutingTests
     {
         var mod = Generator.Build(EncounterSpec(), Mutagen.Bethesda.Plugins.ModKey.FromNameAndExtension("Test.esp")).Mod;
         Assert.DoesNotContain(mod.Globals, g => g.EditorID == "MFEnc_LastFired");
+    }
+
+    // ── SM-driven trigger lives on OnStory<Event>, NOT the startUpStage fragment ──────────────────────
+    // In-game 2026-06-19: an SM-started quest fires OnInit + OnStory<Event> but never runs the
+    // startUpStage Papyrus fragment, so a spawn/cooldown hung on the startUpStage never triggered.
+
+    [Fact]
+    public void StoryEncounter_StartupStageTrigger_IsNull()
+    {
+        // A storyEvent quest routes its trigger through OnStory<Event>, so the startUpStage fragment is
+        // NOT the trigger site (StartupStageTrigger is only for non-storyEvent StartGameEnabled spawns).
+        var q = EncounterSpec(cooldown: 12f).Quests[0];
+        q.Spawn = new SpawnSpec { Form = "Skyrim.esm:0x0003DECD", Count = 3, MinDistance = 200, MaxDistance = 500 };
+        Assert.Null(Generator.StartupStageTrigger(q));
+        Assert.True(Generator.StoryTrigger(q));
+    }
+
+    [Fact]
+    public void StoryEncounter_EmitsOnStoryHandler_WithCooldownSpawnAndStop()
+    {
+        var q = EncounterSpec(cooldown: 12f).Quests[0];
+        q.Spawn = new SpawnSpec { Form = "Skyrim.esm:0x0003DECD", Count = 3, MinDistance = 200, MaxDistance = 500 };
+        var src = Generator.GenerateQuestFragmentSource(q);
+        // The ChangeLocation story handler carries the whole trigger; no Fragment_Stage drives the spawn.
+        Assert.Contains("Event OnStoryChangeLocation(ObjectReference akActor, Location akOldLocation, Location akNewLocation)", src);
+        var handler = src.Split("Event OnStoryChangeLocation")[1].Split("EndEvent")[0];
+        Assert.Contains("self as MFEncounterCooldown", handler);
+        Assert.Contains("__cd.TryFire()", handler);
+        Assert.Contains("__spawn.SpawnNow()", handler);
+        Assert.Contains("Stop()", handler);                       // re-arm so the SM relaunches it next time
+        Assert.DoesNotContain("Function Fragment_Stage_0010_Item00000()", src);
+    }
+
+    [Fact]
+    public void StoryEncounter_CooldownOnly_EmitsOnStoryHandler()
+    {
+        // Cooldown but no spawn (a rate-limited story quest with no dynamic actors) still hooks OnStory.
+        var src = Generator.GenerateQuestFragmentSource(EncounterSpec(cooldown: 12f).Quests[0]);
+        Assert.Contains("Event OnStoryChangeLocation", src);
+        Assert.Contains("__cd.TryFire()", src);
     }
 
     [Fact]
