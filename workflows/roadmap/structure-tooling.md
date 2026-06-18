@@ -12,4 +12,4 @@
 
 ## 待辦（殘留）
 
-- **`docs/zh-TW/` 鏡像的舊路徑同步** — EN 正本已校正指向 `workflows/common/code-map/`；zh-TW 鏡像的同類舊路徑屬**翻譯同步**，另計（非導航鏈 live 檔，低優先）。
+- （無）— `docs/zh-TW/` 鏡像舊路徑同步已完成：zh-TW `.md` 連結皆已指向 `workflows/common/code-map/` 且全數 resolve；`docs/zh-TW/html/for-agent.html` 兩條跨樹連結的 `../` 深度（少一層 `html/`）已補正。
