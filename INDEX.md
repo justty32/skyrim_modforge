@@ -49,4 +49,4 @@
 | 檔案 | 用途 |
 |------|------|
 | [SESSION-LOG](SESSION-LOG.md) | 進度 hub（repo 根）→ 各工作流 session-log（open-only）|
-| [wait_user](WAIT_USER.md) | 待**你**親自做/驗證的（repo 根；實機 / 外部工具 / env / 權限 / Nexus 下載）|
+| [wait_user](WAIT_USER.md) | 待**你**親自做/驗證的精簡入口（repo 根）→ 細項按類別在 [`wait_todo/`](wait_todo/)（roadmap-features / worldspace-editor / ingame-tests / nexus-and-env）|
