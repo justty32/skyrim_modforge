@@ -66,7 +66,9 @@
 
 | 模組 | 職責 |
 |---|---|
-| `nif2gltf/nif_reader.py` | 手寫 Skyrim NIF（20.2.0.7 / user 12）靜態 mesh 解析。**LE**：NiTriShape/NiTriStrips→NiTriShapeData/NiTriStripsData（全 float）；**SSE**：BSTriShape/BSDynamic/BSSubIndex（BSVertexData，走 BSVertexDesc offset 表 + Full_Precision 旗標自描述解碼）。組 NiNode 樹 transform、Skyrim(Z-up)→glTF(Y-up)、含 skin/動畫→拒（exit 3）。**Block Size 給每塊邊界 offset，單塊解析漂移不會骨牌**。 |
+| `nif2gltf/nif_reader.py` | 手寫 Skyrim NIF（20.2.0.7 / user 12）靜態 mesh 解析的**入口與裝配**：標頭解析、NiNode 樹 transform 組合、Skyrim(Z-up)→glTF(Y-up)、含 skin/動畫→拒（exit 3）、`read_nif` 主流程。**Block Size 給每塊邊界 offset，單塊解析漂移不會骨牌**。公開 API（`read_nif`/`NifError`/`SkinnedNifError`）由此 re-export。 |
+| `nif2gltf/_binreader.py` | 二進位讀取原語：`NifError`/`SkinnedNifError` 例外 + `_Reader`（byte cursor、scalar/vec/mat 解碼）。 |
+| `nif2gltf/_blocks.py` | 各 block 型別解碼：**LE** NiTriShape/NiTriStrips→NiTriShapeData/NiTriStripsData（全 float）；**SSE** BSTriShape/BSDynamic/BSSubIndex（BSVertexData，走 BSVertexDesc offset 表 + Full_Precision 旗標自描述解碼）；NiNode、反三角條（de-strip）、半精度解碼。 |
 | `nif2gltf/gltf_writer.py` | `Mesh` IR → glTF 2.0（`.gltf`+`.bin`，pygltflib）。POSITION/NORMAL/TEXCOORD_0 + 單一平色 material（`--flat`）。 |
 | `nif2gltf/geometry.py` | `Mesh` 中介表示 + Skyrim→glTF 軸轉。 |
 | `nif2gltf/cli.py` | 照 [PROTOCOL.md](PROTOCOL.md)：`--in/--out/--flat`，batch `--manifest/--outdir`，exit 0/1/2/3。 |
