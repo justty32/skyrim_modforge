@@ -42,6 +42,24 @@ func refresh_textures(allow_fetch: bool = false) -> void:
 	SplatRender.refresh_textures(self, allow_fetch)
 
 
+# Remap every layer's alpha grid after the terrain grid was resized (TerrainGrid.resize_cells).
+# Old (old_vx × old_vy) values stay at the same (col,row); new verts default to 0 alpha.
+func resize_grid(old_vx: int, old_vy: int) -> void:
+	var nx := _terrain.verts_x
+	var ny := _terrain.verts_y
+	for l in layers:
+		var old: PackedFloat32Array = l["alpha"]
+		var na := PackedFloat32Array()
+		na.resize(nx * ny)
+		na.fill(0.0)
+		for r in mini(old_vy, ny):
+			for c in mini(old_vx, nx):
+				na[r * nx + c] = old[r * old_vx + c]
+		l["alpha"] = na
+	SplatRender.refresh_visual(self)
+	changed.emit()
+
+
 func add_layer(texture: String = "") -> void:
 	var a := PackedFloat32Array()
 	a.resize(_terrain.verts_x * _terrain.verts_y)

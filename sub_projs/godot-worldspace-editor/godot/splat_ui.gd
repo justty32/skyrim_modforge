@@ -4,7 +4,8 @@ class_name SplatUi
 ## Standalone module so world_ui.gd stays focused on terrain/height brushing.
 
 static func build(vbox: VBoxContainer, splat: SplatTool,
-		on_mode_toggle: Callable, on_export: Callable, on_import: Callable) -> void:
+		on_mode_toggle: Callable, on_export: Callable, on_import: Callable,
+		on_radius_change: Callable = Callable()) -> void:
 	vbox.add_child(HSeparator.new())
 	_lbl(vbox, "TEXTURE (SPLAT)", true)
 
@@ -63,7 +64,10 @@ static func build(vbox: VBoxContainer, splat: SplatTool,
 		hb2.add_child(b)
 
 	_lbl(vbox, "Radius (verts):")
-	_slider_spin(vbox, 0.5, 32.0, splat.radius, 0.5, func(v: float): splat.radius = v)
+	_slider_spin(vbox, 0.5, 32.0, splat.radius, 0.5,
+		func(v: float):
+			splat.radius = v
+			if on_radius_change.is_valid(): on_radius_change.call())
 	_lbl(vbox, "Strength (a/s):")
 	_slider_spin(vbox, 0.1, 10.0, splat.strength, 0.1, func(v: float): splat.strength = v)
 

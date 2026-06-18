@@ -14,7 +14,8 @@ func setup(terrain: TerrainGrid, ui_width: int, on_cursor_update: Callable,
 		on_walk: Callable) -> void:
 	custom_minimum_size.x = ui_width
 
-	var scroll := ScrollContainer.new()
+	# ShiftScroll: panel only scrolls on Shift+wheel (plain wheel is reserved for camera zoom).
+	var scroll := ShiftScroll.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	add_child(scroll)

@@ -80,6 +80,30 @@ func configure(cx: int, cy: int, min_h: float, max_h: float) -> void:
 	rebuild_mesh()
 
 
+# Grow/shrink the grid to new_cx × new_cy cells, keeping the SW origin (col 0 / row 0) fixed so
+# existing heights, placements and splatmaps stay coordinate-registered. New verts extend the
+# nearest old edge value (flat continuation, no seam cliff). SplatTool.resize_grid must follow.
+func resize_cells(new_cx: int, new_cy: int) -> void:
+	var old_vx := verts_x
+	var old_vy := verts_y
+	var old := heights
+	cells_x = maxi(1, new_cx)
+	cells_y = maxi(1, new_cy)
+	verts_x = cells_x * 32 + 1
+	verts_y = cells_y * 32 + 1
+	var nh := PackedFloat32Array()
+	nh.resize(verts_x * verts_y)
+	for r in verts_y:
+		var orr := mini(r, old_vy - 1)
+		for c in verts_x:
+			var oc := mini(c, old_vx - 1)
+			nh[r * verts_x + c] = old[orr * old_vx + oc]
+	heights = nh
+	splat_overlay_alpha = PackedFloat32Array()   # stale (old size) → drop; SplatTool repopulates
+	rebuild_mesh()
+	terrain_changed.emit()
+
+
 # ── Accessors ────────────────────────────────────────────────────────────────
 
 func get_height(col: int, row: int) -> float:

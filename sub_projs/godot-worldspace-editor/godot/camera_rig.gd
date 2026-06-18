@@ -42,11 +42,13 @@ func _input(event: InputEvent) -> void:
 				_panning = event.pressed
 				_last_mouse = event.position
 			MOUSE_BUTTON_WHEEL_UP:
-				distance = maxf(2.0, distance * (1.0 - zoom_factor))
-				_apply_transform()
+				if not event.shift_pressed:  # Shift+wheel scrolls the side panel; don't zoom
+					distance = maxf(2.0, distance * (1.0 - zoom_factor))
+					_apply_transform()
 			MOUSE_BUTTON_WHEEL_DOWN:
-				distance = minf(2000.0, distance * (1.0 + zoom_factor))
-				_apply_transform()
+				if not event.shift_pressed:
+					distance = minf(2000.0, distance * (1.0 + zoom_factor))
+					_apply_transform()
 
 	if event is InputEventMouseMotion:
 		if _orbiting:

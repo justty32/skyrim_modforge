@@ -43,7 +43,7 @@ func _ready() -> void:
 	terrain.configure(CELLS_X, CELLS_Y, MIN_HEIGHT, MAX_HEIGHT)
 	camera_rig  = SceneBuilder.camera(self, terrain)
 	_cursor     = SceneBuilder.cursor(self)
-	_grid_lines = SceneBuilder.grid_outlines(self, CELLS_X, CELLS_Y, terrain)
+	_grid_lines = SceneBuilder.grid_outlines(self, terrain.cells_x, terrain.cells_y, terrain)
 	_model_fetch = ModelFetch.new()
 	add_child(_model_fetch)
 	_placement  = PlacementTool.new()
@@ -69,7 +69,8 @@ func _setup_ui() -> void:
 	PlacementUi.build(panel.content_vbox(), _placement,
 		_toggle_place_mode, _on_export_placements, _on_import_placements)
 	SplatUi.build(panel.content_vbox(), _splat,
-		_toggle_splat_mode, _on_export_splat, _on_import_splat)
+		_toggle_splat_mode, _on_export_splat, _on_import_splat, _update_cursor)
+	GridUi.build(panel.content_vbox(), terrain, _add_cells)
 	_lbl_pos   = panel.lbl_pos
 	_lbl_brush = panel.lbl_brush
 
@@ -97,7 +98,23 @@ func _sync_display() -> void:
 func _rebuild_grid_lines() -> void:
 	for mesh in _grid_lines:
 		mesh.queue_free()
-	_grid_lines = SceneBuilder.grid_outlines(self, CELLS_X, CELLS_Y, terrain)
+	_grid_lines = SceneBuilder.grid_outlines(self, terrain.cells_x, terrain.cells_y, terrain)
+
+
+# Grow/shrink the worldspace by (de, dn) cells on East / North. Capture old vert dims first so
+# the splat layers can be remapped, then resize terrain, grid lines and camera. SW origin stays
+# fixed, so placements keep their coordinates.
+func _add_cells(de: int, dn: int) -> void:
+	var ncx := maxi(1, terrain.cells_x + de)
+	var ncy := maxi(1, terrain.cells_y + dn)
+	if ncx == terrain.cells_x and ncy == terrain.cells_y:
+		return
+	var old_vx := terrain.verts_x
+	var old_vy := terrain.verts_y
+	terrain.resize_cells(ncx, ncy)
+	_splat.resize_grid(old_vx, old_vy)
+	_rebuild_grid_lines()
+	_sync_display()
 
 
 # ── Walk mode / Input (delegated) ───────────────────────────────────────────────
@@ -110,7 +127,10 @@ func _input(event: InputEvent) -> void: EditorInput.input(self, event)
 func _process(delta: float) -> void:    EditorInput.process(self, delta)
 
 func _update_cursor() -> void:
-	var r := terrain.brush_radius * terrain.step * terrain.vis_surface_scale
+	# Cursor disc tracks the ACTIVE tool's radius: splat paint radius in Splat Mode, else the
+	# height-brush radius (so the yellow ring matches what LMB will actually affect).
+	var verts_r := _splat.radius if (_splat_mode and _splat) else terrain.brush_radius
+	var r := verts_r * terrain.step * terrain.vis_surface_scale
 	_cursor.scale = Vector3(r, 1.0, r)
 
 
@@ -146,6 +166,7 @@ func _toggle_splat_mode(on: bool) -> void:
 	_splat_mode = on
 	if on: _place_mode = false
 	_painting = false
+	_update_cursor()   # ring resizes to the splat radius (or back to brush radius)
 
 func _on_export_splat() -> void:
 	SplatmapIo.export_dialog(self, _splat, terrain, _lbl_brush)
