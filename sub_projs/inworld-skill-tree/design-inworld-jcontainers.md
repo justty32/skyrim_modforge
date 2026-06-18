@@ -122,7 +122,7 @@ target 解析為某 NPC 後，橋接靠一組**全域 session GLOB**（僅描述
 | **U2** | `IncreasePerkRank()` 寫的 `required_perk_rank_global` 是 node **base form 屬性**還是 instance？多 NPC 共用同一棵樹 base，session GLOB 是否真能隔離不互污染？ | 決定 session GLOB 橋接成不成立（本設計地基）。 | 原始碼確認 GLOB 是否全域單例；若是，橋接成立（開樹前灌、關樹後存）|
 | **U3** | Campfire 的 **perkPoint 消費 / gate**（點數不足不能點、prerequisite 未點不能點下游）邏輯在哪？ | NPC 配點要不要受點數限制；Frostfall 用 `EndurancePerkPoints`，需逆向其 gate。 | 讀 Frostfall `_Frost_*` perk point 腳本 + Campfire node gate |
 | **U4** | ModForge 能否生成這套 record：ACTI（node/line/controller）+ VMAD script 屬性互指（downstream node/line）+ PositionRef layout markers + register quest alias？ | 決定產線可不可生成；campfire.md §4 說「大致可，缺 PositionRef layout 模板」。 | code pass `src/`，確認 ACTI+VMAD 屬性互指 + cell ref layout 能力 |
-| **U5** | JContainers `JFormDB` 的生成 pattern 是否在 ModForge script 生成能力內？（retain/release 生命週期需成對）| 持久層能否生成。 | code pass；jcontainers.md 標「可生成（推斷），未查 src/」|
+| ~~**U5**~~ ✅ 已解（2026-06-18 離線實作） | JContainers `JFormDB` 的生成 pattern 是否在 ModForge script 生成能力內？（retain/release 生命週期需成對）| 持久層能否生成。 | **答：是，且 retain/release footgun 設計上繞開。** 已實作結構化 `persist`/`syncPerks` 對話欄位（`Spec.Persist.cs` + `Generator.JContainers.cs`），只生成 **root-DB path API**（`JFormDB.solveXxxSetter`/`solveInt`）——JContainers 自管、隨存檔持久，**沒有 `JValue.object()/retain()/release()` handle 要成對**。host=對話 TIF fragment（key=speaker/player）；form/perk 值走 VMAD object property。12 測綠、example `npc_skill_persist_spec.json`。⚠ 編 `.psc` 需 JContainers headers 進 `MODFORGE_PAPYRUS_BASE`（主力機，見 WAIT_USER）|
 
 ---
 
@@ -144,6 +144,7 @@ target 解析為某 NPC 後，橋接靠一組**全域 session GLOB**（僅描述
 ## 七、實作分期建議
 
 1. **Phase 0（現在可做，零 unknown）**：方案 A 純效果成長 MVP——JFormDB 資料模型 + SyncPerks + 任務/好感度 gate。不碰 Campfire。先驗證「NPC 靠狀態自動長 perk」。
+   - **🟡 持久層 + SyncPerks 已落地（2026-06-18 離線）**：對話 `persist`（巢狀 JFormDB 寫入，int/float/str/form + delta counter）+ `syncPerks`（依 stored rank AddPerk/RemovePerk），host=TIF fragment、key=speaker/player。解 U5。example `examples/npc_skill_persist_spec.json`。**剩**：① 任務 stage gate / 好感度 gate 觸發路徑（目前只有對話觸發，stage-fragment 版的 persist 是下一增量）；② key 支援任意 ref（石頭代表某 NPC）；③ 主力機編 .pex（需 JContainers headers）+ 實機驗（WAIT_USER）。
 2. **Phase 1：玩家版 in-world 樹（繞過 U1/U2）**——照 Frostfall 模式掛一棵玩家樹到營火（Campfire 原生、全域 GLOB、零橋接）。驗證 in-world 星樹本體可生成可運作；只觸及 U4（generator）不觸及 U1/U2。
 3. **Phase 2（待 U1/U2）**：NPC 版橋接——session GLOB + JFormDB + 對 NPC 開樹。需先在主力機釐清 U1（對任意 ref 開樹）/ U2（session GLOB 隔離）。
 4. **Phase 3（待 U4 收尾）**：ModForge generator——把上述 record 從 spec 自動產出，補 PositionRef layout 模板。

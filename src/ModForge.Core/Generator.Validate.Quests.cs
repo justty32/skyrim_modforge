@@ -120,6 +120,33 @@ public static partial class Generator
                         Problems.Add($"dialogue '{d.EditorId}' setGlobal must set exactly one of value or delta");
                 }
                 if (!string.IsNullOrWhiteSpace(d.RewardItem)) CheckRef(d.RewardItem, $"dialogue '{d.EditorId}' rewardItem");
+                if (d.Persist is { } pst)
+                {
+                    if (string.IsNullOrWhiteSpace(pst.Storage)) Problems.Add($"dialogue '{d.EditorId}' persist has empty storage");
+                    if (!IsPersistKey(pst.Key)) Problems.Add($"dialogue '{d.EditorId}' persist key '{pst.Key}' must be 'speaker' or 'player'");
+                    if (pst.Set.Count == 0) Problems.Add($"dialogue '{d.EditorId}' persist has no set entries");
+                    foreach (var e in pst.Set)
+                    {
+                        if (string.IsNullOrWhiteSpace(e.Path)) Problems.Add($"dialogue '{d.EditorId}' persist entry has empty path");
+                        int vals = (e.Int is not null ? 1 : 0) + (e.Float is not null ? 1 : 0)
+                                 + (e.Str is not null ? 1 : 0) + (!string.IsNullOrWhiteSpace(e.Form) ? 1 : 0);
+                        if (vals != 1) Problems.Add($"dialogue '{d.EditorId}' persist entry '{e.Path}' must set exactly one of int/float/str/form (got {vals})");
+                        if (e.Delta && e.Int is null && e.Float is null) Problems.Add($"dialogue '{d.EditorId}' persist entry '{e.Path}' delta only applies to int/float");
+                        if (!string.IsNullOrWhiteSpace(e.Form)) CheckRef(e.Form, $"dialogue '{d.EditorId}' persist entry '{e.Path}' form");
+                    }
+                }
+                if (d.SyncPerks is { } syp)
+                {
+                    if (string.IsNullOrWhiteSpace(syp.Storage)) Problems.Add($"dialogue '{d.EditorId}' syncPerks has empty storage");
+                    if (!IsPersistKey(syp.Key)) Problems.Add($"dialogue '{d.EditorId}' syncPerks key '{syp.Key}' must be 'speaker' or 'player'");
+                    if (syp.Nodes.Count == 0) Problems.Add($"dialogue '{d.EditorId}' syncPerks has no nodes");
+                    foreach (var n in syp.Nodes)
+                    {
+                        if (string.IsNullOrWhiteSpace(n.Path)) Problems.Add($"dialogue '{d.EditorId}' syncPerks node has empty path");
+                        if (string.IsNullOrWhiteSpace(n.Perk)) Problems.Add($"dialogue '{d.EditorId}' syncPerks node '{n.Path}' has empty perk ref");
+                        else CheckRef(n.Perk, $"dialogue '{d.EditorId}' syncPerks node '{n.Path}' perk");
+                    }
+                }
                 // A `hello:true` line is the NPC's auto-spoken greeting (Misc/Hello), not a player menu
                 // option, so it has no prompt by design — only require a prompt for normal player topics.
                 if (!d.Hello && string.IsNullOrEmpty(d.Prompt)) Problems.Add($"dialogue '{d.EditorId}' has empty prompt");
@@ -246,6 +273,12 @@ public static partial class Generator
                 if (cs.SceneActionIndex < 0) Problems.Add($"{label}: IsSceneActionComplete needs a sceneActionIndex (>= 0)");
             }
         }
+
+        // A persist/syncPerks Form key must be one of the two supported tokens (the emitter maps them to
+        // akSpeakerRef / Game.GetPlayer() — no VMAD property needed). Arbitrary refs are not yet supported.
+        private static bool IsPersistKey(string k) =>
+            string.Equals(k?.Trim(), "speaker", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(k?.Trim(), "player", StringComparison.OrdinalIgnoreCase);
 
         private void ValidateScriptAttachments()
         {

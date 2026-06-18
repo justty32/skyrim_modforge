@@ -197,7 +197,9 @@ public static partial class Generator
         bool setsGlobal = d.SetGlobal is { } sg && !string.IsNullOrWhiteSpace(sg.Global) && (sg.Value.HasValue || sg.Delta.HasValue);
         bool rewards = !string.IsNullOrWhiteSpace(d.RewardItem);
         bool reevals = d.EvaluateSpeakerPackages;
-        if (!setsStage && !setsOverride && !opensBarter && !setsGlobal && !rewards && !reevals) return "";
+        bool persists = HasPersist(d);
+        bool syncs = HasSyncPerks(d);
+        if (!setsStage && !setsOverride && !opensBarter && !setsGlobal && !rewards && !reevals && !persists && !syncs) return "";
         var name = DialogueFragmentScriptName(d);
         var sb = new System.Text.StringBuilder();
         sb.AppendLine($"Scriptname {name} extends TopicInfo Hidden");
@@ -208,6 +210,7 @@ public static partial class Generator
         if (setsOverride) sb.AppendLine($"GlobalVariable Property {IdentityOverrideGlobal} Auto");
         if (setsGlobal) sb.AppendLine($"GlobalVariable Property {TifSetGlobalPropertyName} Auto");
         if (rewards) sb.AppendLine($"Form Property {TifRewardPropertyName} Auto");
+        foreach (var decl in JContainersPropertyDecls(d)) sb.AppendLine(decl);
         sb.AppendLine();
         sb.AppendLine("Function Fragment_0(ObjectReference akSpeakerRef)");
         if (setsStage) sb.AppendLine($"    {TifQuestPropertyName}.SetStage({d.SetStage})");
@@ -230,6 +233,9 @@ public static partial class Generator
             if (reevals)     sb.AppendLine("        __spk.EvaluatePackage()");
             sb.AppendLine("    EndIf");
         }
+        // JContainers JFormDB writes, then perk sync (both keyed on speaker/player). Emitted last so a
+        // perk sync sees the ranks this line just persisted.
+        foreach (var line in JContainersFragmentBody(d)) sb.AppendLine("    " + line);
         sb.AppendLine("EndFunction");
         return sb.ToString();
     }
@@ -237,7 +243,7 @@ public static partial class Generator
     public static string DialogueFragmentScriptName(DialogueSpec d) =>
         (d.SetStage >= 0 || !string.IsNullOrWhiteSpace(d.SetPrimaryIdentity) || d.OpenBarter
          || (d.SetGlobal is { } sg && !string.IsNullOrWhiteSpace(sg.Global)) || !string.IsNullOrWhiteSpace(d.RewardItem)
-         || d.EvaluateSpeakerPackages) ? $"TIF_{Sanitize(d.EditorId)}" : "";
+         || d.EvaluateSpeakerPackages || HasPersist(d) || HasSyncPerks(d)) ? $"TIF_{Sanitize(d.EditorId)}" : "";
 
     private static string Sanitize(string s)
     {

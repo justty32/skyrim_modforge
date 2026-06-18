@@ -1,0 +1,64 @@
+{
+  "pluginName": "ModForgeNpcSkillPersist.esp",
+  "esl": true,
+  "_": "Idea #20 in-world skill tree — Phase 0 (JContainers JFormDB persistence, design §七 Phase 0). A trainer NPC whose 'Train your Endurance' dialogue line PERSISTS per-NPC skill state to a JFormDB storage keyed on the speaker, then SYNCS the matching perk from the stored rank. No Campfire / in-world UI — this is the pure-effect persistence layer ('an NPC grows perks from stored state'). ⚠ REQUIRES JContainers SE installed at runtime, and compiling the generated TIF_*.psc needs JContainers' own .psc on the Papyrus header path (main machine; see WAIT_USER). Lifecycle note: only the root-DB path API (JFormDB.solveXxxSetter/solveInt) is used, so there is no JValue.object()/retain()/release() to balance (design unknown U5 — avoided by construction). The perk here is a trivial inline PERK so the spec is self-contained; swap to your real skill-tree perks.",
+
+  "perks": [
+    {
+      "editorId": "MFSkill_AdaptationPerk",
+      "name": "Adaptation",
+      "description": "Endurance node — the bearer endures and hits a touch harder.",
+      "playable": false,
+      "hidden": true,
+      "numRanks": 1,
+      "_effect": "A trivial self-contained entryPoint so the perk does something when synced; swap for your real node effect.",
+      "effects": [
+        { "kind": "entryPoint", "entryPoint": "ModAttackDamage", "function": "Multiply", "value": 1.1 }
+      ]
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MFSkill_Trainer",
+      "name": "Skill Trainer",
+      "_": "A plain NPC to host the trainer dialogue. Place/spawn it however you like; the skill state hangs on this NPC's Form via JFormDB."
+    }
+  ],
+
+  "quests": [
+    {
+      "editorId": "MFSkill_Q",
+      "name": "Skill Training",
+      "_": "StartGameEnabled controller quest so the dialogue is loaded/evaluated. type=None keeps it out of the journal.",
+      "type": "None"
+    }
+  ],
+
+  "dialogue": [
+    {
+      "editorId": "MFSkill_TrainEndurance",
+      "questEditorId": "MFSkill_Q",
+      "speakerNpcEditorId": "MFSkill_Trainer",
+      "prompt": "Train your Endurance.",
+      "responses": [ "Endure, and you adapt." ],
+      "_": "On pick: bump the speaker's stored Endurance level + ratio (delta = read-add-write counters), set the Adaptation node rank to 2, then sync perks — Adaptation is added once its stored rank reaches 2.",
+      "persist": {
+        "storage": "ModForgeNpcSkills",
+        "key": "speaker",
+        "set": [
+          { "path": ".Endurance.level", "int": 1, "delta": true },
+          { "path": ".Endurance.ratio", "float": 0.25, "delta": true },
+          { "path": ".Endurance.nodes.Adaptation", "int": 2 }
+        ]
+      },
+      "syncPerks": {
+        "storage": "ModForgeNpcSkills",
+        "key": "speaker",
+        "nodes": [
+          { "path": ".Endurance.nodes.Adaptation", "perk": "MFSkill_AdaptationPerk", "minRank": 2 }
+        ]
+      }
+    }
+  ]
+}

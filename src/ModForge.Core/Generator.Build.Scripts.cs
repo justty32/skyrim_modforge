@@ -48,7 +48,7 @@ public static partial class Generator
                 // setPrimaryIdentity override) is the fallback.
                 var needsAutoTif = d.SetStage >= 0 || !string.IsNullOrWhiteSpace(d.SetPrimaryIdentity)
                     || d.OpenBarter || d.SetGlobal is not null || !string.IsNullOrWhiteSpace(d.RewardItem)
-                    || d.EvaluateSpeakerPackages;
+                    || d.EvaluateSpeakerPackages || Generator.HasPersist(d) || Generator.HasSyncPerks(d);
                 var scriptName = !string.IsNullOrEmpty(d.ResultScript) ? d.ResultScript
                     : (needsAutoTif && options?.CompiledScriptsDir is not null)
                         ? Generator.DialogueFragmentScriptName(d)
@@ -114,6 +114,27 @@ public static partial class Generator
                         entry.Properties.Add(rp);
                         linksWired++;
                     }
+                    // persist: bind a Form property per FORM-valued JFormDB write (int/float/str values
+                    // are emitted as Papyrus literals and need no property).
+                    if (d.Persist is { } pp)
+                        foreach (var (i, e) in Generator.PersistFormEntries(pp))
+                        {
+                            var fp = new ScriptObjectProperty { Name = Generator.PersistFormProperty(i), Flags = ScriptProperty.Flag.Edited };
+                            if (TryResolveRef(e.Form, formKeyByEd, out var ffk)) fp.Object.SetTo(ffk);
+                            else Warn($"  ! TIF '{d.EditorId}': persist form '{e.Form}' unresolved");
+                            entry.Properties.Add(fp);
+                            linksWired++;
+                        }
+                    // syncPerks: bind the PERK form for each node so Fragment_0 can AddPerk/RemovePerk it.
+                    if (d.SyncPerks is { } sps)
+                        for (int i = 0; i < sps.Nodes.Count; i++)
+                        {
+                            var pk = new ScriptObjectProperty { Name = Generator.SyncPerkProperty(i), Flags = ScriptProperty.Flag.Edited };
+                            if (TryResolveRef(sps.Nodes[i].Perk, formKeyByEd, out var pfk)) pk.Object.SetTo(pfk);
+                            else Warn($"  ! TIF '{d.EditorId}': syncPerks perk '{sps.Nodes[i].Perk}' unresolved");
+                            entry.Properties.Add(pk);
+                            linksWired++;
+                        }
                 }
                 // OnBegin fires the moment the player selects the line (before the NPC speaks).
                 info.VirtualMachineAdapter = new DialogResponsesAdapter

@@ -101,6 +101,37 @@ an `identity`-gated "I'll escort you" line (`setStage: 10`, `evaluateSpeakerPack
 "we've arrived" line (`conditions: GetStage==10`, `setStage: 20`, `rewardItem`). See
 `examples/identity-paladin.json` (the Adventurer-gated Wary Traveler escort).
 
+#### `persist` / `syncPerks` — JContainers JFormDB per-Form state (Idea #20 skill tree, Phase 0)
+
+A dialogue line can write **nested per-Form state** to a [JContainers](https://www.nexusmods.com/skyrimspecialedition/mods/16495)
+`JFormDB` storage when picked, and apply perks from that stored state — the persistence layer of the
+in-world skill tree (an NPC "grows" perks from saved skill ranks, no Campfire UI). Both emit Papyrus
+into the line's TIF result fragment; the writes appear before the perk sync so a sync sees what the
+line just stored.
+
+- **`persist`** — `{ storage, key?, set: [...] }`. `storage` is the JFormDB storageName (the namespace
+  bucket; becomes the first path component). `key` is the Form the state hangs on: `"speaker"` (default —
+  the NPC you're talking to) or `"player"`. Each `set` entry is `{ path, <value>, delta? }`:
+  - `path` — subpath under the storage, e.g. `".Endurance.nodes.Adaptation"` (the emitted path is
+    `".<storage><path>"`).
+  - exactly one value: `int` / `float` / `str` (→ `solveIntSetter`/`solveFltSetter`/`solveStrSetter`)
+    or `form` (a ref → `solveFormSetter`, bound as a VMAD property).
+  - `delta: true` (int/float only) — **add** to the current stored value (read-add-write) instead of
+    replacing, for counters like accumulating XP/ratio.
+- **`syncPerks`** — `{ storage, key?, nodes: [{ path, perk, minRank? }] }`. For each node, reads the
+  stored rank (`solveInt`) and **AddPerk** when `rank >= minRank` (default 1), else **RemovePerk**, on
+  the key actor. Idempotent — safe to run on every pick.
+
+**Lifecycle**: only the root-DB path API (`JFormDB.solveXxxSetter`/`solveInt`) is generated. JContainers
+owns those roots and persists them with the save, so there is **no** `JValue.object()`/`retain()`/`release()`
+handle to balance — the retain/release footgun is avoided by construction (resolves design unknown U5).
+
+**Runtime/build needs**: JContainers SE must be installed in-game; compiling the generated `TIF_*.psc`
+needs JContainers' own `.psc` on the Papyrus header path (`MODFORGE_PAPYRUS_BASE`) — a main-machine step
+(see WAIT_USER). Worked example: `examples/npc_skill_persist_spec.json` (a trainer NPC). `key` currently
+supports only `speaker`/`player`; an arbitrary-ref key (e.g. a stone representing an NPC) is a later
+increment.
+
 ### Story Manager quests — event-driven start
 
 A quest can be **launched automatically by the Story Manager (SM)** in response to an

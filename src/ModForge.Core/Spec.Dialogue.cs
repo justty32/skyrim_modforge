@@ -198,6 +198,13 @@ public sealed class DialogueSpec
     // packages (`Actor.EvaluatePackage()`) so a package newly enabled by this line's `setStage` (e.g. a
     // follow package gated on GetStage==N) activates immediately instead of on the next periodic re-eval.
     public bool EvaluateSpeakerPackages { get; set; }
+    // Persist (optional, Idea #20): when picked, write nested per-Form state to a JContainers JFormDB
+    // storage (the NPC you're talking to, or the player). Generates the JFormDB.solveXxxSetter calls into
+    // this line's TIF result fragment. See PersistSpec / Generator.JContainers.cs.
+    public PersistSpec? Persist { get; set; }
+    // SyncPerks (optional, Idea #20): when picked, AddPerk/RemovePerk on the key actor from its stored
+    // JFormDB node ranks (idempotent). Runs after `persist`. See SyncPerksSpec.
+    public SyncPerksSpec? SyncPerks { get; set; }
 }
 
 public sealed class DialogueSetGlobalSpec
