@@ -73,7 +73,9 @@ VHGT 編碼（signed int8 delta、每 delta=8 units）、NIF→glTF 工具選型
 
 ## Open
 
-- **box proxy → 真實 glTF**：目前擺放代理是彩色方塊（不擋擺放/匯出鏈）。換真實外觀需 vanilla `.nif` → glTF 視覺代理 → 收斂到 [model-converter](../model-converter/README.md)（nif→glTF，批量 pipeline 待主力機驗）。
+- **box proxy → 真實 glTF**：目前擺放代理是彩色方塊（不擋擺放/匯出鏈）。換真實外觀需 vanilla `.nif` → glTF 視覺代理 → 收斂到 [model-converter](../model-converter/README.md)（nif→glTF，批量 pipeline 待主力機驗）。**這是紋理 WYSIWYG 之後的下一步**——同款 BSA-抽取 pipeline（如 `texexport`），但走 base FormID→model NIF→`nif2gltf`→glTF。
+
+~~地形紋理 WYSIWYG（Godot 直接顯示真實草/泥土貼圖）~~ ✅ **in-game 確認 2026-06-18**：splat 筆刷下顯示真實 vanilla ground 貼圖（非平色 tint），base + 至多 4 層 per-vertex alpha 混合。CLI `texexport`（LTEX→diffuse .dds 從遊戲 BSA→PNG）+ `tex_fetch.gd`（OS.execute 呼叫、快取 res://texcache/）+ `terrain_material.gd`（ShaderMaterial，無貼圖 fallback 頂點色）。預覽 alpha 格＝匯出 splatmap 同份資料，所見＝VTXT 烘出。
 
 > 主力機驗收項（Godot GUI 實跑、xEdit byte-verify）列在 [WAIT_USER](../../WAIT_USER.md)，不擋離線開發。
 
