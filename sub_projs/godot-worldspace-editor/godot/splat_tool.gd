@@ -7,15 +7,7 @@ extends Node
 ##
 ## Alpha grid is [row * verts_x + col], row 0 = south, col 0 = west — the SAME layout the
 ## heightmap uses, so a splatmap PNG co-registers with terrain.png vertex-for-vertex.
-## Visual feedback: the active layer's alpha tints the terrain vertex colors (terrain_mesh.gd).
-
-# Display tints cycled per layer index — purely for in-editor feedback, not exported.
-const LAYER_TINTS := [
-	Color(0.30, 0.62, 0.25),  # grass green
-	Color(0.62, 0.34, 0.20),  # dirt brown
-	Color(0.70, 0.70, 0.74),  # rock grey
-	Color(0.92, 0.92, 0.96),  # snow white
-]
+## Terrain visual (real-texture WYSIWYG blend or tint fallback) is driven by SplatRender.
 
 var _terrain: TerrainGrid
 var _tex_fetch: TexFetch       # resolves LTEX refs → real ground textures (may be null/offline)
@@ -35,32 +27,19 @@ signal changed                # layer set / active / paint changed
 func configure(terrain: TerrainGrid, tex_fetch: TexFetch = null) -> void:
 	_terrain = terrain
 	_tex_fetch = tex_fetch
-	add_layer("Skyrim.esm:0x013428")   # LFieldGrass01 — a real grass layer to start
-	refresh_textures(false)            # load disk-cached PNGs only; no blocking CLI fetch at startup
+	add_layer("Skyrim.esm:0x013428")            # LFieldGrass01 — a real grass layer to start
+	SplatRender.refresh_textures(self, false)   # load disk-cached PNGs only; no blocking fetch at startup
 
 
 func set_base_texture(ref: String) -> void:
 	base_texture = ref
-	refresh_textures(true)             # explicit ref commit → fetch the real texture
+	SplatRender.refresh_textures(self, true)    # explicit ref commit → fetch the real texture
 	changed.emit()
 
 
-# Resolve every layer (+ base) to a real Texture2D and push the WYSIWYG blend into the terrain.
-# allow_fetch=true permits the (slow, blocking) CLI export for refs not yet cached; false only
-# loads what's already on disk. When nothing resolves, apply() keeps the height-gradient fallback.
+# Pull real textures + re-blend (the "Load real textures" hook). allow_fetch=true runs the CLI.
 func refresh_textures(allow_fetch: bool = false) -> void:
-	if _terrain == null:
-		return
-	var base_tex: Texture2D = _tex_fetch.get_texture(base_texture, allow_fetch) if _tex_fetch else null
-	var resolved: Array = []
-	for l in layers:
-		var t: Texture2D = _tex_fetch.get_texture(l["texture"], allow_fetch) if _tex_fetch else null
-		resolved.append({ "tex": t, "alpha": l["alpha"] })
-	_terrain.apply_textures(base_tex, resolved)
-
-
-func _has_real_textures() -> bool:
-	return _tex_fetch != null and _tex_fetch.available()
+	SplatRender.refresh_textures(self, allow_fetch)
 
 
 func add_layer(texture: String = "") -> void:
@@ -73,7 +52,7 @@ func add_layer(texture: String = "") -> void:
 
 func set_active(i: int) -> void:
 	active = clampi(i, 0, layers.size() - 1)
-	_refresh_visual()
+	SplatRender.refresh_visual(self)
 	changed.emit()
 
 
@@ -87,12 +66,12 @@ func active_texture() -> String:
 
 func set_active_texture(t: String) -> void:
 	layers[active]["texture"] = t
-	refresh_textures(true)   # re-fetch the new LTEX's real ground texture
+	SplatRender.refresh_textures(self, true)   # re-fetch the new LTEX's real ground texture
 
 
 func clear_active() -> void:
 	layers[active]["alpha"].fill(0.0)
-	_refresh_visual()
+	SplatRender.refresh_visual(self)
 	changed.emit()
 
 
@@ -119,23 +98,5 @@ func paint(hit_world: Vector3, delta: float) -> void:
 			touched = true
 	if touched:
 		layers[active]["alpha"] = alpha
-		_refresh_visual()
+		SplatRender.refresh_visual(self)
 		changed.emit()
-
-
-# Update the terrain's appearance after an alpha/active/base change. With real textures loaded,
-# rebuild the (cheap) alpha textures and blend; otherwise fall back to the vertex-colour tint
-# (which needs a mesh rebuild). This is why painting with textures is also lighter than before.
-func _refresh_visual() -> void:
-	if _has_real_textures():
-		refresh_textures()
-	else:
-		_push_overlay()
-		_terrain.rebuild_mesh()
-
-
-# Share the active layer's alpha + tint into the terrain so the mesh builder can blend it (the
-# height-gradient fallback used when no real ground textures are available).
-func _push_overlay() -> void:
-	_terrain.splat_overlay_alpha = layers[active]["alpha"]
-	_terrain.splat_overlay_color = LAYER_TINTS[active % LAYER_TINTS.size()]

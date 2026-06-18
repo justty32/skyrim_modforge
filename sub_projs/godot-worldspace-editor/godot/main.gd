@@ -1,3 +1,4 @@
+class_name WorldspaceEditor
 extends Node3D
 ## WorldspaceEditor — root scene.
 ##
@@ -99,109 +100,18 @@ func _rebuild_grid_lines() -> void:
 	_grid_lines = SceneBuilder.grid_outlines(self, CELLS_X, CELLS_Y, terrain)
 
 
-# ── Walk mode ─────────────────────────────────────────────────────────────────
+# ── Walk mode / Input (delegated) ───────────────────────────────────────────────
+# Walk-mode lifecycle lives in WalkMode; input routing + per-frame cursor/paint in EditorInput.
 
-func _enter_walk_mode() -> void:
-	if _player != null:
-		return
-	terrain.refresh_collision()
-	_player = PlayerController.new()
-	add_child(_player)
-	# Spawn at terrain center, dropped in from just above the surface.
-	var ds := terrain.step * terrain.vis_surface_scale
-	var cc := terrain.verts_x / 2
-	var cr := terrain.verts_y / 2
-	var gy := (terrain.get_height(cc, cr) - terrain.min_height) \
-		* TerrainGrid.METERS_PER_UNIT * terrain.vis_height_scale
-	_player.global_position = Vector3(cc * ds, gy + 3.0, -cr * ds)
-	_player.exited.connect(_exit_walk_mode)
-	_player.activate()
-	# Suspend editor: stop orbit input, cursor/paint processing.
-	camera_rig.set_process_input(false)
-	set_process(false)
-	_painting = false
-	_cursor.visible = false
+func _enter_walk_mode() -> void: WalkMode.enter(self)
+func _exit_walk_mode() -> void:  WalkMode.exit(self)
 
-
-func _exit_walk_mode() -> void:
-	if _player == null:
-		return
-	_player.queue_free()
-	_player = null
-	camera_rig.get_camera().current = true
-	camera_rig.set_process_input(true)
-	set_process(true)
-
-
-# ── Input ─────────────────────────────────────────────────────────────────────
-
-func _input(event: InputEvent) -> void:
-	if _player != null:
-		return  # walk mode owns input
-	if event is InputEventKey and event.pressed and not event.echo:
-		match event.keycode:
-			KEY_R: terrain.brush_mode = TerrainGrid.BrushMode.RAISE
-			KEY_L: terrain.brush_mode = TerrainGrid.BrushMode.LOWER
-			KEY_F:
-				terrain.brush_mode = TerrainGrid.BrushMode.FLATTEN
-				terrain.flatten_height = _mid_height_at_mouse()
-			KEY_S: terrain.brush_mode = TerrainGrid.BrushMode.SMOOTH
-
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if _over_ui(event.position):
-			return
-		if _place_mode:
-			if event.pressed:
-				var hit := terrain.get_hit_position(camera_rig.get_camera(), event.position)
-				if hit != Vector3.ZERO:
-					_placement.place_at(hit)
-		else:
-			# Both height-brush and splat modes paint on LMB drag (routed in _process).
-			_painting = event.pressed
-			if _painting and not _splat_mode and terrain.brush_mode == TerrainGrid.BrushMode.FLATTEN:
-				terrain.flatten_height = _mid_height_at_mouse()
-
-
-func _process(delta: float) -> void:
-	var mouse := get_viewport().get_mouse_position()
-	var cam   := camera_rig.get_camera()
-	var hit   := terrain.get_hit_position(cam, mouse)
-
-	_cursor.visible = (hit != Vector3.ZERO and not _over_ui(mouse))
-	if hit != Vector3.ZERO:
-		_cursor.global_position = hit
-		_update_cursor()
-		var vc  := terrain.world_to_vert(hit)
-		var col := clampi(vc.x, 0, terrain.verts_x - 1)
-		var row := clampi(vc.y, 0, terrain.verts_y - 1)
-		var h   := terrain.get_height(col, row)
-		if _lbl_pos:
-			_lbl_pos.text = "col %d  row %d\nH: %.0f units" % [col, row, h]
-
-	if _painting and hit != Vector3.ZERO and not _over_ui(mouse):
-		if _splat_mode:
-			_splat.paint(hit, delta)
-		else:
-			terrain.apply_brush(hit, delta)
-
+func _input(event: InputEvent) -> void: EditorInput.input(self, event)
+func _process(delta: float) -> void:    EditorInput.process(self, delta)
 
 func _update_cursor() -> void:
 	var r := terrain.brush_radius * terrain.step * terrain.vis_surface_scale
 	_cursor.scale = Vector3(r, 1.0, r)
-
-
-func _mid_height_at_mouse() -> float:
-	var cam := camera_rig.get_camera()
-	var hit := terrain.get_hit_position(cam, get_viewport().get_mouse_position())
-	if hit == Vector3.ZERO:
-		return (terrain.min_height + terrain.max_height) * 0.5
-	var vc := terrain.world_to_vert(hit)
-	return terrain.get_height(clampi(vc.x, 0, terrain.verts_x - 1),
-	                           clampi(vc.y, 0, terrain.verts_y - 1))
-
-
-func _over_ui(screen_pos: Vector2) -> bool:
-	return screen_pos.x < _ui_width
 
 
 # ── Export / Import ───────────────────────────────────────────────────────────

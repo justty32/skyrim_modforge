@@ -90,65 +90,25 @@ func set_height(col: int, row: int, h: float) -> void:
 	heights[row * verts_x + col] = clampf(h, min_height, max_height)
 
 
+# Coordinate-system math lives in TerrainCoords (static); these forward to keep the call API stable
+# (same delegation as rebuild_mesh → TerrainMeshBuilder). See terrain_coords.gd for the math.
 func world_to_vert(world_pos: Vector3) -> Vector2i:
-	var ds := step * vis_surface_scale
-	return Vector2i(
-		int(roundf(world_pos.x / ds)),
-		int(roundf(-world_pos.z / ds))
-	)
-
+	return TerrainCoords.world_to_vert(self, world_pos)
 
 func vert_to_world(col: int, row: int) -> Vector3:
-	var ds := step * vis_surface_scale
-	return Vector3(
-		col * ds,
-		(get_height(col, row) - min_height) * METERS_PER_UNIT * vis_height_scale,
-		-row * ds
-	)
+	return TerrainCoords.vert_to_world(self, col, row)
 
-
-# Display world pos → canonical Godot-native metres (display scales divided out).
-# placements.json positions are these unscaled metres; ModForge converts to game units.
-# Y: surface height h (game units) maps to canonical y = h × METERS_PER_UNIT, so that
-# ModForge's skyrim_z = y / METERS_PER_UNIT recovers h (object sits on the ground).
 func world_to_canonical_meters(display_world: Vector3) -> Vector3:
-	return Vector3(
-		display_world.x / vis_surface_scale,
-		display_world.y / vis_height_scale + min_height * METERS_PER_UNIT,
-		display_world.z / vis_surface_scale
-	)
-
+	return TerrainCoords.world_to_canonical_meters(self, display_world)
 
 func canonical_meters_to_world(m: Vector3) -> Vector3:
-	return Vector3(
-		m.x * vis_surface_scale,
-		(m.y - min_height * METERS_PER_UNIT) * vis_height_scale,
-		m.z * vis_surface_scale
-	)
+	return TerrainCoords.canonical_meters_to_world(self, m)
 
-
-# Display-world Y of the terrain surface at the vertex nearest a clicked point.
-# get_hit_position returns the mid-plane Y, not the surface — placement snaps Y here.
 func surface_display_y(display_world: Vector3) -> float:
-	var vc := world_to_vert(display_world)
-	var col := clampi(vc.x, 0, verts_x - 1)
-	var row := clampi(vc.y, 0, verts_y - 1)
-	return (get_height(col, row) - min_height) * METERS_PER_UNIT * vis_height_scale
-
+	return TerrainCoords.surface_display_y(self, display_world)
 
 func get_hit_position(camera: Camera3D, screen_pos: Vector2) -> Vector3:
-	if camera == null: return Vector3.ZERO
-	var from := camera.project_ray_origin(screen_pos)
-	var dir  := camera.project_ray_normal(screen_pos)
-	if absf(dir.y) < 0.001: return Vector3.ZERO
-	var mid_y := (max_height - min_height) * 0.5 * METERS_PER_UNIT * vis_height_scale
-	var t     := (mid_y - from.y) / dir.y
-	if t < 0.0: return Vector3.ZERO
-	var hit := from + dir * t
-	var ds  := step * vis_surface_scale
-	hit.x = clampf(hit.x, 0.0, (verts_x - 1) * ds)
-	hit.z = clampf(hit.z, -(verts_y - 1) * ds, 0.0)
-	return hit
+	return TerrainCoords.get_hit_position(self, camera, screen_pos)
 
 
 # ── Brush / Mesh (delegated) ──────────────────────────────────────────────────
