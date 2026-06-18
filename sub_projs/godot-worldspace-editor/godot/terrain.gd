@@ -46,17 +46,21 @@ var brush_strength      := 50.0
 var flatten_height      := 4000.0
 
 var _mesh_inst: MeshInstance3D
+var _shader_mat: ShaderMaterial   # WYSIWYG terrain blend material
 var _collision: CollisionShape3D  # terrain walk collision (lazily refreshed)
+
+# Ground-texture tiling (how many times a 1024² LTEX repeats across the whole terrain).
+var tex_uv_scale := 24.0
 
 signal terrain_changed
 
 
 func _ready() -> void:
 	_mesh_inst = MeshInstance3D.new()
-	var mat := StandardMaterial3D.new()
-	mat.vertex_color_use_as_albedo = true  # height gradient is baked into vertex colors
-	mat.roughness = 0.9
-	_mesh_inst.material_override = mat
+	# WYSIWYG terrain material: blends real LTEX ground textures by per-vertex alpha, falling back
+	# to the height-gradient vertex colour until textures are pulled in (TerrainMaterial.apply).
+	_shader_mat = TerrainMaterial.make()
+	_mesh_inst.material_override = _shader_mat
 	add_child(_mesh_inst)
 
 	var body := StaticBody3D.new()
@@ -157,6 +161,13 @@ func apply_brush(hit_world: Vector3, delta: float) -> void:
 
 func rebuild_mesh() -> void:
 	_mesh_inst.mesh = TerrainMeshBuilder.build(self)
+
+
+# Update the WYSIWYG blend material. base_tex may be null; layers = Array of
+# { "tex": Texture2D|null, "alpha": PackedFloat32Array } (one per splat layer).
+func apply_textures(base_tex: Texture2D, layers: Array) -> void:
+	if _shader_mat:
+		TerrainMaterial.apply(_shader_mat, base_tex, layers, verts_x, verts_y, tex_uv_scale)
 
 
 # Regenerate walk collision from the current mesh. Call before entering walk mode

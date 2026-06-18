@@ -30,6 +30,7 @@ var _player: PlayerController = null
 var _placement: PlacementTool = null
 var _place_mode := false
 var _splat: SplatTool = null
+var _tex_fetch: TexFetch = null
 var _splat_mode := false
 
 
@@ -44,9 +45,11 @@ func _ready() -> void:
 	_placement  = PlacementTool.new()
 	add_child(_placement)
 	_placement.configure(terrain)
+	_tex_fetch  = TexFetch.new()
+	add_child(_tex_fetch)
 	_splat      = SplatTool.new()
 	add_child(_splat)
-	_splat.configure(terrain)
+	_splat.configure(terrain, _tex_fetch)
 	_setup_ui()
 
 

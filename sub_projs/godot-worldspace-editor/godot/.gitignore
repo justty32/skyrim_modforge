@@ -4,3 +4,5 @@
 # Test export artifacts
 terrain.png
 terrain.png.import
+texcache/
+texconfig.json

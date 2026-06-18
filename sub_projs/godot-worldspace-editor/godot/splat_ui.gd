@@ -14,6 +14,14 @@ static func build(vbox: VBoxContainer, splat: SplatTool,
 	btn_mode.toggled.connect(on_mode_toggle)
 	vbox.add_child(btn_mode)
 
+	# Base ground texture (BTXT) — shown everywhere a layer's alpha is 0. Enter to fetch.
+	_lbl(vbox, "Base texture (LTEX ref):")
+	var base_edit := LineEdit.new()
+	base_edit.placeholder_text = "Skyrim.esm:0xFORMID"
+	base_edit.text = splat.base_texture
+	vbox.add_child(base_edit)
+	base_edit.text_submitted.connect(func(t: String): splat.set_base_texture(t))
+
 	# Layer selector + Add. OptionButton lists one entry per layer.
 	_lbl(vbox, "Layer:")
 	var hbox := HBoxContainer.new(); vbox.add_child(hbox)
@@ -27,7 +35,8 @@ static func build(vbox: VBoxContainer, splat: SplatTool,
 	var tex_edit := LineEdit.new()
 	tex_edit.placeholder_text = "Skyrim.esm:0xFORMID"
 	vbox.add_child(tex_edit)
-	tex_edit.text_changed.connect(func(t: String): splat.set_active_texture(t))
+	# Enter (not per-keystroke) commits the ref and fetches the real ground texture via the CLI.
+	tex_edit.text_submitted.connect(func(t: String): splat.set_active_texture(t))
 
 	# Keep the OptionButton + texture field in sync with the tool's layer state.
 	var refresh := func():
@@ -60,6 +69,11 @@ static func build(vbox: VBoxContainer, splat: SplatTool,
 
 	var btn_clear := Button.new(); btn_clear.text = "Clear Layer Alpha"
 	btn_clear.pressed.connect(splat.clear_active); vbox.add_child(btn_clear)
+
+	# Pull real ground textures from the game BSAs (via the ModForge CLI) and re-blend — the WYSIWYG
+	# trigger. Safe to spam; textures are cached after the first fetch.
+	var btn_tex := Button.new(); btn_tex.text = "Load real textures (WYSIWYG)"
+	btn_tex.pressed.connect(func(): splat.refresh_textures(true)); vbox.add_child(btn_tex)
 
 	var btn_exp := Button.new(); btn_exp.text = "Save splatmap PNG"
 	btn_exp.pressed.connect(on_export); vbox.add_child(btn_exp)
