@@ -74,7 +74,7 @@ $R validate <spec.json>                      # ALWAYS run first; exits non-zero 
 $R build    <spec.json> <out.esp>            # spec -> plugin (records, dialogue, FormLinks, VMAD)
 $R package  <spec.json> <outModDir>          # build + compile each script `source` -> MO2-ready folder
 $R dump     <plugin.esp>                     # read back: records, names, npc race/class/outfit/factions, weapon/armor stats, effects, cells/placements, keywords, scripts, dialogue, objectives, masters
-$R find     <plugin.esp> <query> [type]      # search a master (e.g. Skyrim.esm) -> "Skyrim.esm:0xFORMID  Type  EditorID"
+$R find     <plugin.esp> <query> [type]      # search a master (e.g. Skyrim.esm) -> "Skyrim.esm:0xFORMID  Type  EditorID"  (query 可為 0xFORMID 反查：「這個 FormID 是什麼記錄？」)
 $R compile  <script.psc> <outDir>            # .psc -> .pex via the CK PapyrusCompiler under Wine
 $R extract  <plugin.esp> <strings.json>      # pull translatable strings -> JSON (source/target)
 $R apply    <plugin.esp> <strings.json> <out.esp>     # write targets back (Latin scripts / inline)
@@ -99,6 +99,7 @@ $R find "$SKYRIM_ESM" armorclothing Keyword
 $R find "$SKYRIM_ESM" restorehealth MagicEffect  # -> Skyrim.esm:0x03EB15  AlchRestoreHealth (for a potion `effects`)
 $R find "$SKYRIM_ESM" banneredmare Cell    # -> Skyrim.esm:0x01605E  WhiterunBanneredMare (interior `placement` cell)
 $R find "$SKYRIM_ESM" tamriel Worldspace   # -> Skyrim.esm:0x00003C  Tamriel (exterior `placement` worldspace)
+$R find "$SKYRIM_ESM" 0x000D4B52           # 反查：0xFORMID -> 記錄型別（如確認 placement base 是 STAT 非 REFR）
 ```
 一律執行 `find` 來取得真正的 FormID——**絕不用猜的**。搜尋是依 EditorID
 （具描述性，例如 `NordRace`）；本地化顯示名稱無法在 headless 下解析。一個站立的
