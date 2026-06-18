@@ -69,13 +69,21 @@ internal static partial class Program
         }
 
         var q = query.ToLowerInvariant();
+        // Reverse lookup: if the query parses as a hex FormID (e.g. 0x000D4B52, D4B52, 000d4b52),
+        // match by FormKey.ID instead of EditorID/Name — answers "what *is* this vanilla FormID?".
+        var hexQ = q.StartsWith("0x") ? q[2..] : q;
+        uint? formIdQ = hexQ.Length is > 0 and <= 8 && hexQ.All(Uri.IsHexDigit)
+            ? Convert.ToUInt32(hexQ, 16) & 0xFFFFFF
+            : null;
         const int cap = 300;
         int total = 0, shown = 0;
         foreach (var r in records)
         {
             var ed = r.EditorID;
             var name = NameOf(r);
-            bool hit = (ed is { } e && e.ToLowerInvariant().Contains(q))
+            bool hit = formIdQ is { } fid
+                ? r.FormKey.ID == fid
+                : (ed is { } e && e.ToLowerInvariant().Contains(q))
                     || (name is { } n && n.ToLowerInvariant().Contains(q));
             if (!hit) continue;
             total++;

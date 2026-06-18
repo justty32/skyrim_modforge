@@ -42,7 +42,7 @@ public static class Vtxt
     /// Build the alpha layers for ONE additional texture across all 4 quadrants of a cell.
     /// <paramref name="alpha"/> is a 33×33 grid of per-vertex opacity in [0,1] (alpha[row,col],
     /// row0=south, col0=west). Quadrants with no non-zero alpha are omitted. <paramref name="layerNumber"/>
-    /// is the stacking index (base BTXT = 0, first alpha texture = 1, …).
+    /// is the 0-indexed alpha-layer stacking index (0, 1, …); the BTXT base is the separate 0xFFFF layer.
     /// </summary>
     public static IEnumerable<AlphaLayer> BuildLayers(float[,] alpha, FormKey texture, ushort layerNumber)
     {

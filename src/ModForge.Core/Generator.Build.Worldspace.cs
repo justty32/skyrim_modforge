@@ -2,6 +2,10 @@ namespace ModForge;
 
 public static partial class Generator
 {
+    // LAND base-texture (BTXT) layer index. Vanilla marks the quadrant base layer with 0xFFFF (-1),
+    // distinguishing it from the 0-indexed alpha (ATXT) layers stacked on top.
+    private const ushort BaseLayerNumber = 0xFFFF;
+
     // -------------------------------------------------------------------------------
     //  Worldspace (WRLD) build.
     //
@@ -158,7 +162,12 @@ public static partial class Generator
                 cell.Grid = new CellGrid { Point = new Noggog.P2Int(cx, cy) };
 
                 var land = new Landscape(mod);
+                // VertexNormalsHeightMap = VNML/VHGT present (always). Layers = BTXT/ATXT texture layers
+                // present — REQUIRED or the engine ignores the layers and renders untextured terrain
+                // (byte-verified: vanilla cells set this bit; omitting it was why textures didn't show).
                 land.Flags = Landscape.Flag.VertexNormalsHeightMap;
+                if (baseTexFk is not null || texLayers.Count > 0)
+                    land.Flags |= Landscape.Flag.Layers;
                 land.VertexHeightMap = new LandscapeVertexHeightMap
                 {
                     Offset = offset,           // VHGT scale: actual_Z = Offset * 8
@@ -169,21 +178,23 @@ public static partial class Generator
                 land.VertexNormals = normals ?? new Noggog.Array2d<Noggog.P3UInt8>(33, 33, new Noggog.P3UInt8(0, 0, 127));
 
                 // Single-layer texture: one BTXT base layer per quadrant, all referencing the same
-                // LTEX (LayerNumber 0 = base). Per-vertex VTXT alpha layers are a later splatmap step.
+                // LTEX. The base layer's LayerNumber is 0xFFFF (-1) — vanilla convention for "this is
+                // the quadrant base, not an alpha-blended layer" (byte-verified vs Tamriel cells).
+                // Alpha (ATXT) layers are 0-indexed independently (0,1,2,…), NOT continuing from the base.
                 if (baseTexFk is { } btk)
                     foreach (var q in System.Enum.GetValues<Mutagen.Bethesda.Plugins.Records.Quadrant>())
                     {
-                        var header = new LayerHeader { Quadrant = q, LayerNumber = 0 };
+                        var header = new LayerHeader { Quadrant = q, LayerNumber = BaseLayerNumber };
                         header.Texture.SetTo(btk);
                         land.Layers.Add(new BaseLayer { Header = header });
                     }
 
                 // Per-vertex alpha texture layers: sample each splatmap at this cell and stamp the
-                // ATXT+VTXT layers (sparse; quadrants with no coverage emit nothing). Base = layer 0,
-                // so the i-th splatmap layer = layerNumber i+1.
+                // ATXT+VTXT layers (sparse; quadrants with no coverage emit nothing). Alpha layers are
+                // 0-indexed (the BTXT base is the separate 0xFFFF layer), so splatmap i → layerNumber i.
                 for (int li = 0; li < texLayers.Count; li++)
                     if (texLayers[li].Map.TrySampleCell(cx, cy, out var alpha))
-                        foreach (var al in Vtxt.BuildLayers(alpha, texLayers[li].Tex, (ushort)(li + 1)))
+                        foreach (var al in Vtxt.BuildLayers(alpha, texLayers[li].Tex, (ushort)li))
                             land.Layers.Add(al);
 
                 cell.Landscape = land;

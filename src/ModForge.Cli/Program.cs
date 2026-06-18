@@ -51,6 +51,7 @@ internal static partial class Program
                 case "weatherdiag" when args.Length == 3: return WeatherDiag(args[1], args[2]);
                 case "climatediag" when args.Length == 3: return ClimateDiag(args[1], args[2]);
                 case "worlddiag" when args.Length == 3: return WorldDiag(args[1], args[2]);
+                case "landdiag" when args.Length is 2 or 3 or 4: return LandDiag(args[1], args.Length >= 3 ? args[2] : null, args.Length == 4 ? int.Parse(args[3]) : 1);
                 case "regndiag" when args.Length == 3: return RegnDiag(args[1], args[2]);
                 case "eczndiag" when args.Length == 3: return EcznDiag(args[1], args[2]);
                 case "refpos" when args.Length == 3: return RefPos(args[1], args[2]);
@@ -107,6 +108,7 @@ internal static partial class Program
         "  questdiag <in.esp> <0xFORMID>                print a Quest's stages (log entries + flags) + objectives (display text + targets)\n" +
         "  cobjdiag <in.esp> <0xFORMID>                 print a recipe's (COBJ) createdObject/count/workbench/components/conditions\n" +
         "  txstdiag <in.esp> [0xFORMID]                 a TextureSet's 8 texture-map slots+flags (no id: list all TXST)\n" +
+        "  landdiag <in.esp> [wsEditorId] [maxCells]    dump LAND texture layers (BTXT/ATXT quad+layer+tex, VTXT pts) — byte-verify vs vanilla\n" +
         "  weatherdiag <in.esp> <0xFORMID>              print a Weather's flags/colours/clouds/fog (compare gen vs vanilla)\n" +
         "  climatediag <in.esp> <0xFORMID>              print a Climate's weather list/sun-times/moons/textures\n" +
         "  worlddiag <in.esp> <0xFORMID>                print a Worldspace's climate/water/parent + map bounds + land/water defaults\n" +

@@ -119,15 +119,17 @@ public class WorldspaceSplatmapTests
 
         var land = BuildLand(ws);
 
-        // 4 base (BTXT, layer 0) + 4 alpha (ATXT/VTXT, layer 1). NOTE: AlphaLayer derives from
-        // BaseLayer in Mutagen, so a plain BTXT layer = BaseLayer that is NOT an AlphaLayer.
+        // 4 base (BTXT, layer 0xFFFF) + 4 alpha (ATXT/VTXT, layer 0). The base layer uses the vanilla
+        // 0xFFFF marker; alpha layers are 0-indexed (first splatmap → layer 0). NOTE: AlphaLayer derives
+        // from BaseLayer in Mutagen, so a plain BTXT layer = BaseLayer that is NOT an AlphaLayer.
         var alphaLayers = land.Layers.OfType<IAlphaLayerGetter>().ToList();
         var baseLayers = land.Layers.Where(l => l is not IAlphaLayerGetter).ToList();
         Assert.Equal(4, baseLayers.Count);
         Assert.Equal(4, alphaLayers.Count);
+        Assert.All(baseLayers, l => Assert.Equal(0xFFFF, l.Header.LayerNumber));
         Assert.All(alphaLayers, l =>
         {
-            Assert.Equal(1, l.Header.LayerNumber);
+            Assert.Equal(0, l.Header.LayerNumber);
             Assert.Equal(0x0008C5u, l.Header.Texture.FormKey.ID);
             Assert.Equal(17 * 17, l.AlphaLayerData.Count);     // full quadrant covered
             Assert.All(l.AlphaLayerData, p => Assert.Equal(128f / 255f, p.Opacity, 4));

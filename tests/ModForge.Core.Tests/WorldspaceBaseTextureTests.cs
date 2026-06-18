@@ -44,7 +44,9 @@ public class WorldspaceBaseTextureTests
         foreach (var layer in land.Layers)
         {
             Assert.Equal(0x000C16u, layer.Header.Texture.FormKey.ID);
-            Assert.Equal(0, layer.Header.LayerNumber);
+            // Base layer carries the vanilla "this is the quadrant base" marker 0xFFFF (-1),
+            // distinct from the 0-indexed alpha layers stacked on top.
+            Assert.Equal(0xFFFF, layer.Header.LayerNumber);
         }
         // All four quadrants are covered exactly once.
         var quadrants = land.Layers.Select(l => l.Header.Quadrant).OrderBy(q => q).ToList();
