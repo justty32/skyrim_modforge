@@ -65,13 +65,12 @@ ModForge 的 `build` 主輸出是 `.esp`。這組是對應 SKSE framework 的 **
 **用途：** 任何需要玩家設定面板的 mod（難度、開關功能、follower 行為調整）。  
 ⚠️ **待主力機：** live menu 只能實機驗（裝 MCM Helper + SkyUI，看選單渲染/存讀）；ModForge 只驗結構。
 
-### 🆕 D-3 SkyPatcher ini 輸出
-**來源：** skypatcher.md  
-**現況：** ModForge 不輸出 SkyPatcher ini。  
-**Scope：** `skyPatcher:` spec section → `SKSE/Plugins/SkyPatcher/<mod>.ini`。  
-支援 29 record types 的 in-memory runtime patch（Hair/Eye/Skin/WNAM/ANAM/…），語法類 SPID。  
-**用途：** 批量修改大量 vanilla NPC 外觀（不衝突，不生 ESP）；NPC 美化 pipeline。  
-**優先：** 🟡（專門用途，與 SPID 互補）
+### ✅ D-3 SkyPatcher ini 輸出（**已落地 2026-06-20**）
+**來源：** skypatcher-records-and-config.md、skypatcher-modforge-and-strategy.md  
+**狀態：** ✅ 離線實作 `skyPatchers:` spec section → `SKSE/Plugins/SkyPatcher/<recordType>/<file>.ini`。`Spec.SkyPatcher.cs`/`SkyPatcherGen.cs`/`Generator.Validate.SkyPatcher.cs`/`Package.cs`，docs+example+schema 同步。flat `filterK=v:modK=v`（無 section header）、filters AND 在前、mods 在後；recordType 8 白名單（npc/armor/weapon/ammo/leveledList/formList/race/container）。  
+**MVP：** 欄位**不白名單**（SkyPatcher 欄位集巨大）——verbatim emit `{key,value}` pairs，作者照 SkyPatcher 文件填；高價值用例＝NPC 加 spell/perk by race、leveled list 注入。  
+**用途：** 零衝突批量改 vanilla NPC（外觀/spell/perk/keyword）、注入 leveled list。  
+⚠️ **待主力機：** runtime 由 DLL 對 load order 解析 ref（開詳細 log 驗）。
 
 ### ✅ D-4 FormList Manipulator `_FLM.ini` 輸出（**已落地 2026-06-20**）
 **來源：** formlist-manipulator.md（v1.8.1）、flst-factory.md  
@@ -81,28 +80,18 @@ ModForge 的 `build` 主輸出是 `.esp`。這組是對應 SKSE framework 的 **
 **用途：** 把自家 spell/item/NPC 零衝突加進外部 mod 的 FLST（Spellforge 法術池、SPID 分發目標 FLST、領養禮物池…）；自建 FLST 仍走 esp-side `formLists[]`。  
 ⚠️ **待主力機：** FLST/form ref 由玩家 load order 解析，runtime 才驗（裝 FLM DLL 開 `FormListManipulator_DEBUG.ini` 看 log 確認追加成功）；ModForge 只驗結構。
 
-### 🆕 D-5 KID `_KID.ini` 輸出
-**來源：** keyword-item-distributor.md  
-**現況：** ModForge 不輸出 `_KID.ini`。  
-**Scope：** `kidDistribution:` spec section → `<mod>_KID.ini`。  
-語法：`Keyword|Type|ItemID|Strings|Traits|Chance`  
-**用途：** 給道具批量加 keyword（品質分類、SPID 配合識別、OAR 條件）。  
-**優先：** 🟢（KID 通常手寫，spec 生成效益有限）
+### ✅ D-5 KID `_KID.ini` 輸出（**已落地 2026-06-20**）
+**狀態：** ✅ `kidDistributions:` → `<file>_KID.ini`。`Spec.KidDistribution.cs`/`KidGen.cs`/`Generator.Validate.Kid.cs`，docs+example+schema 同步。`Keyword = kw|type|filters|traits|chance` 尾段 NONE 修剪（仿 SPID）；type 19 白名單；unknown keyword EditorID → KID 自建 KYWD。  
+**用途：** 給道具/record 批量加 keyword（品質分類、SPID/OAR 配合識別）。⚠️ runtime 待主力機驗。
 
-### 🆕 D-6 BOS `_SWAP.ini` 輸出
-**來源：** base-object-swapper.md、common-framework-mods.md  
-**現況：** ModForge 不輸出 `_SWAP.ini`。  
-**Scope：** `objectSwap:` spec section → `<mod>_SWAP.ini`。  
-格式：`[Forms]`/`[References]`/`[Properties]` sections；條件欄位（faction/keyword/race/location/random）；`[Properties]` 可 override scale/activate flag。  
-**用途：** follower home 根據關係進度替換裝飾物；task-based 場景換道具。  
-**優先：** 🟢（場景美化用途，手寫亦可）
+### ✅ D-6 BOS `_SWAP.ini` 輸出（**已落地 2026-06-20**）
+**狀態：** ✅ `objectSwaps:` → `<file>_SWAP.ini`。`Spec.ObjectSwap.cs`/`BosGen.cs`/`Generator.Validate.Bos.cs`，docs+example+schema 同步。MVP＝`[Forms]`/`[Forms|cond]` section + `base|swaps|properties|chance`（gap 留 `||`，多 swap 隨機）。  
+**MVP 範圍外：** 獨立 `[Properties]`（無 swap 的 transform）+ `[References]` section。  
+**用途：** 場景換道具（vanilla clutter → 精緻版、依 location 閘）。⚠️ runtime 待主力機驗。
 
-### 🆕 D-7 AOS `_ANIO.ini` 輸出
-**來源：** animobject-swapper.md  
-**現況：** ModForge 不輸出 `_ANIO.ini`。  
-**Scope：** 角色化 idle 道具替換（喝酒 idle 中 Sofia 拿特定酒瓶、法師拿書）。條件支援 NPC base/faction/race/keyword。  
-**用途：** follower 角色化演出包（搭配 OAR）。  
-**優先：** 🟢（純視覺細節；低成本但很 low priority）
+### ✅ D-7 AOS `_ANIO.ini` 輸出（**已落地 2026-06-20**）
+**狀態：** ✅ `animObjectSwaps:` → `<file>_ANIO.ini`。`Spec.AnimObjectSwap.cs`/`AosGen.cs`/`Generator.Validate.Aos.cs`，docs+example+schema 同步。`[Base|FILTERS|TRAITS]` header + `base|swaps`（隨機池）；換 idle 手持 ANIO（非動畫，動畫走 OAR）。  
+**用途：** follower 角色化（Sofia 喝酒拿特定杯、法師讀特定書），搭配 OAR。⚠️ runtime 待主力機驗。
 
 ---
 
@@ -242,6 +231,6 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 10. **M 組**（INFO 批次 + 條件模板）→ ambient commentary 生成效率
 11. ~~**A 組 #9**（UpdateCurrentInstanceGlobal）~~ ✅ **已落地 2026-06-17** → gather 型任務 per-instance 計數 objective
 12. **K 組**（quest script global write spec）→ 生成器覆蓋率
-13. **D-3~7**（其餘 ini pipeline）→ 按需
+13. ~~**D-3~7**（其餘 ini pipeline：SkyPatcher/KID/BOS/AOS）~~ ✅ **已落地 2026-06-20** → D-group SKSE loose-ini pipeline 完整（runtime 待主力機驗）
 
 > **說明**：A 組 #5/#6 + E 組（LocType/WITimeout）、F/#3（NavmeshTester）、G/#4（法術族）已在 mod-survey-gaps.md；此處未重列。

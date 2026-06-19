@@ -35,6 +35,10 @@ public static partial class Generator
         ctx.ValidateSpidDistributions();
         ctx.ValidateMcmConfigs();
         ctx.ValidateFormListInjects();
+        ctx.ValidateKidDistributions();
+        ctx.ValidateObjectSwaps();
+        ctx.ValidateAnimObjectSwaps();
+        ctx.ValidateSkyPatchers();
         ValidateWeather(spec, ctx.Problems, ctx.Ids, ctx.CheckRef);
         ValidateLights(spec, ctx.Problems);
         ValidateLighting(spec, ctx.Problems);

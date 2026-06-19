@@ -217,7 +217,9 @@ internal static partial class Program
         //    clips it can find (missing clips are reported, not silently dropped).
         if (spec.AnimationReplacers.Count > 0 || spec.BehaviorData.Count > 0 || spec.PayloadMacros.Count > 0
             || spec.SpidDistributions.Count > 0 || spec.McmConfigs.Count > 0
-            || spec.FormListInjects.Count > 0)
+            || spec.FormListInjects.Count > 0 || spec.KidDistributions.Count > 0
+            || spec.ObjectSwaps.Count > 0 || spec.AnimObjectSwaps.Count > 0
+            || spec.SkyPatchers.Count > 0)
         {
             string? ResolveHkx(string p)
             {
@@ -257,10 +259,16 @@ internal static partial class Program
             foreach (var s in spec.SpidDistributions) WriteLoose(SpidGen.Generate(s));
             foreach (var m in spec.McmConfigs) foreach (var f in McmGen.Generate(m)) WriteLoose(f);
             foreach (var fl in spec.FormListInjects) WriteLoose(FlmGen.Generate(fl));
+            foreach (var k in spec.KidDistributions) WriteLoose(KidGen.Generate(k));
+            foreach (var os in spec.ObjectSwaps) WriteLoose(BosGen.Generate(os));
+            foreach (var ao in spec.AnimObjectSwaps) WriteLoose(AosGen.Generate(ao));
+            foreach (var sp in spec.SkyPatchers) WriteLoose(SkyPatcherGen.Generate(sp));
 
             Console.WriteLine($"action-system: {oarSubmods} OAR submod(s), {spec.BehaviorData.Count} BDI config(s), "
                 + $"{spec.PayloadMacros.Count} PIE table(s), {spec.SpidDistributions.Count} SPID ini(s), "
-                + $"{spec.McmConfigs.Count} MCM config(s), {spec.FormListInjects.Count} FLM ini(s), {hkxPlaced} hkx placed");
+                + $"{spec.McmConfigs.Count} MCM config(s), {spec.FormListInjects.Count} FLM ini(s), "
+                + $"{spec.KidDistributions.Count} KID ini(s), {spec.ObjectSwaps.Count} BOS ini(s), "
+                + $"{spec.AnimObjectSwaps.Count} AOS ini(s), {spec.SkyPatchers.Count} SkyPatcher ini(s), {hkxPlaced} hkx placed");
             if (hkxMissing.Count > 0)
                 Console.WriteLine($"  ⚠ {hkxMissing.Count} hkx not found (config written, clip missing): {string.Join(", ", hkxMissing)}");
         }

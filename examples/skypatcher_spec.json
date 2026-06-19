@@ -1,0 +1,36 @@
+{
+  "_comment": "SkyPatcher (D-3). Emits SKSE/Plugins/SkyPatcher/<recordType>/<file>.ini — in-memory runtime record edits by filter, no ESP override = zero conflict. Flat lines: filters (AND) first, then mods, colon-delimited. Requires SkyPatcher.dll at runtime; it resolves refs against the player's load order (ModForge only checks structure).",
+  "pluginName": "MySkyPatch.esp",
+  "skyPatchers": [
+    {
+      "file": "npc-patch",
+      "recordType": "npc",
+      "patches": [
+        {
+          "_comment": "Give every Nord a magic-resist spell + a perk.",
+          "filters": [ { "key": "filterByRaces", "value": "NordRace" } ],
+          "mods": [
+            { "key": "spellsToAdd", "value": "MagicResistance50" },
+            { "key": "perksToAdd", "value": "HalfCostSpells" }
+          ]
+        },
+        {
+          "_comment": "Tag NPCs that already have a keyword (keyword filter → keyword add).",
+          "filters": [ { "key": "filterByKeywords", "value": "ActorTypeNPC" } ],
+          "mods": [ { "key": "keywordsToAdd", "value": "MyCustomKeyword" } ]
+        }
+      ]
+    },
+    {
+      "file": "loot-inject",
+      "recordType": "leveledList",
+      "patches": [
+        {
+          "_comment": "Inject an item into a vanilla leveled list (no esp slot).",
+          "filters": [ { "key": "filterByLists", "value": "DeathItemBanditMelee" } ],
+          "mods": [ { "key": "objectsToAdd", "value": "0x000800~MySkyPatch.esp" } ]
+        }
+      ]
+    }
+  ]
+}

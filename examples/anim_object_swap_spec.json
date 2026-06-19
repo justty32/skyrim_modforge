@@ -1,0 +1,17 @@
+{
+  "_comment": "AnimObject Swapper (AOS, D-7). Emits <file>_ANIO.ini at the mod root — swaps the prop an actor holds during an idle (a mug, a book), no ESP override. Swaps the HELD OBJECT, not the animation (that's OAR). Requires AnimObjectSwapper.dll at runtime; AOS resolves refs against the player's load order (ModForge only checks structure).",
+  "pluginName": "MyAnioPatch.esp",
+  "animObjectSwaps": [
+    {
+      "file": "MyAnioPatch",
+      "entries": [
+        { "_comment": "Anyone drinking randomly holds one of these cups.",
+          "base": "DrinkingCupANIO", "swaps": ["WoodCupANIO", "MeadHornANIO", "GlassCupANIO"] },
+        { "_comment": "Sofia drinks from her special mug (NPC base filter).",
+          "base": "DrinkingCupANIO", "swaps": ["SofiaSpecialMugANIO"], "filters": ["SofiaFollower"] },
+        { "_comment": "Female Thieves Guild members read a ledger (filter + trait).",
+          "base": "BookReadingANIO", "swaps": ["ThievesGuildLedgerANIO"], "filters": ["+ThievesGuildFaction"], "traits": "F" }
+      ]
+    }
+  ]
+}

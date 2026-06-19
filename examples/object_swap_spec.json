@@ -1,0 +1,27 @@
+{
+  "_comment": "Base Object Swapper (BOS, D-6). Emits <file>_SWAP.ini at the mod root — replaces a base object with another when a reference loads, no ESP override = zero conflict. MVP = the [Forms] section. Requires po3_BaseObjectSwapper.dll at runtime; BOS resolves form refs against the player's load order (ModForge only checks structure).",
+  "pluginName": "MySwapPatch.esp",
+  "objectSwaps": [
+    {
+      "file": "MySwapPatch",
+      "groups": [
+        {
+          "_comment": "Unconditional swaps: replace a vanilla barrel/crate with richer clutter forms.",
+          "entries": [
+            { "base": "0x10C0E3~Skyrim.esm", "swaps": ["0x806~MySwapPatch.esp"] },
+            { "_comment": "Random pick from a set, 50% chance, scaled up 1.2x.",
+              "base": "0x10ACC2~Skyrim.esm", "swaps": ["0x81F~MySwapPatch.esp", "0x820~MySwapPatch.esp"],
+              "properties": "scale(1.2/1.2)", "chance": 50 }
+          ]
+        },
+        {
+          "_comment": "Conditional group: only inside Whiterun, not at the Azura shrine.",
+          "conditions": ["WhiterunLocation", "-AzuraShrineLocation"],
+          "entries": [
+            { "base": "0x8E48~Dawnguard.esm", "swaps": ["0x897~MySwapPatch.esp"] }
+          ]
+        }
+      ]
+    }
+  ]
+}

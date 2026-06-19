@@ -1,0 +1,19 @@
+{
+  "_comment": "KID (Keyword Item Distributor, D-5). Emits <file>_KID.ini at the mod root — attaches a Keyword to matching records by filter at start-up, no ESP patch. An unknown keyword EditorID makes KID create a new KYWD. Requires KID.dll at runtime; KID resolves refs against the player's load order (ModForge only checks structure).",
+  "pluginName": "MyKidPatch.esp",
+  "kidDistributions": [
+    {
+      "file": "MyKidPatch",
+      "entries": [
+        { "_comment": "Tag every Magic Effect in an external mod.",
+          "keyword": "MysticismSpells", "type": "Magic Effect", "filters": ["MysticismMagic.esp"] },
+        { "_comment": "Tag iron heavy gauntlets by name, excluding enchanted (traits field).",
+          "keyword": "0x1234~MyKidPatch.esp", "type": "Armor", "filters": ["*Iron"], "traits": "ArmorTypeHeavy+ArmorGauntlet,-E" },
+        { "_comment": "Novice Destruction onto Destruction MGEFs skill 0-25.",
+          "keyword": "NoviceDestruction", "type": "Magic Effect", "traits": "20(0/25)" },
+        { "_comment": "Tag bound ammo at 50% chance.",
+          "keyword": "MysticalAmmo", "type": "Ammo", "filters": ["*Bound"], "chance": 50 }
+      ]
+    }
+  ]
+}

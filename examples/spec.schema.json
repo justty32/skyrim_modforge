@@ -560,6 +560,26 @@
         "$ref": "#/$defs/formListInject"
       },
       "description": "FormList Manipulator (FLM) configs: append forms to any already-loaded FormList at runtime with no ESP override (zero conflict). Emitted as a loose <file>_FLM.ini at the mod folder root (= Data/). Requires FormListManipulator.dll at runtime. See docs/spec/SPEC-distribution.md."
+    },
+    "kidDistributions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/kidDistribution" },
+      "description": "KID (Keyword Item Distributor) configs: attach a Keyword to matching records by filter, no ESP patch. Emitted as a loose <file>_KID.ini at the mod root. Requires KID.dll. See docs/spec/SPEC-distribution.md."
+    },
+    "objectSwaps": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/objectSwap" },
+      "description": "Base Object Swapper (BOS) configs: replace a base object with another when a reference loads, no ESP override. Emitted as a loose <file>_SWAP.ini at the mod root. Requires po3_BaseObjectSwapper.dll. See docs/spec/SPEC-distribution.md."
+    },
+    "animObjectSwaps": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/animObjectSwap" },
+      "description": "AnimObject Swapper (AOS) configs: swap the prop an actor holds during an idle, no ESP override. Emitted as a loose <file>_ANIO.ini at the mod root. Requires AnimObjectSwapper.dll. See docs/spec/SPEC-distribution.md."
+    },
+    "skyPatchers": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/skyPatcher" },
+      "description": "SkyPatcher configs: in-memory runtime record edits by filter, no ESP override. Emitted as a loose SKSE/Plugins/SkyPatcher/<recordType>/<file>.ini. Requires SkyPatcher.dll. See docs/spec/SPEC-distribution.md."
     }
   },
   "additionalProperties": false,
@@ -5805,6 +5825,122 @@
         }
       },
       "additionalProperties": false
+    },
+    "kidDistribution": {
+      "type": "object",
+      "required": ["file"],
+      "description": "KID config -> <file>_KID.ini at the mod root.",
+      "properties": {
+        "file": { "type": "string", "description": "output stem (the _KID.ini suffix is added on emit)" },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["keyword", "type"],
+            "additionalProperties": false,
+            "properties": {
+              "keyword": { "type": "string", "description": "the KYWD to distribute (EditorID / 0xFormID~Plugin.esp); unknown EditorID -> KID creates a new KYWD" },
+              "type": {
+                "enum": ["Weapon", "Armor", "Ammo", "Magic Effect", "Potion", "Scroll", "Location",
+                  "Ingredient", "Book", "Misc Item", "Key", "Soul Gem", "Spell", "Activator",
+                  "Flora", "Furniture", "Race", "Talking Activator", "Enchantment"]
+              },
+              "filters": { "type": "array", "items": { "type": "string" }, "description": "name/EditorID/keyword (OR); +x AND, -x exclude, *x wildcard, 0x..~esp formID, *x.nif model" },
+              "traits": { "type": "string", "description": "type-specific trait filter, raw passthrough" },
+              "chance": { "type": "number", "description": "0.0-100.0 (omit -> 100)" }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "objectSwap": {
+      "type": "object",
+      "required": ["file"],
+      "description": "BOS config -> <file>_SWAP.ini at the mod root.",
+      "properties": {
+        "file": { "type": "string", "description": "output stem (the _SWAP.ini suffix is added on emit)" },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "conditions": { "type": "array", "items": { "type": "string" }, "description": "[Forms|c1,c2] filter: Location/Region/Keyword/Cell/Worldspace by EditorID/FormID; -x excludes" },
+              "entries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["base", "swaps"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "base": { "type": "string", "description": "base form to replace (0xFormID~Plugin.esp / EditorID)" },
+                    "swaps": { "type": "array", "items": { "type": "string" }, "description": "replacement form(s); several -> random pick" },
+                    "properties": { "type": "string", "description": "raw transform string, e.g. scale(1.2/1.2),rot(0/0,0/0,45/45)" },
+                    "chance": { "type": "number", "description": "0.0-100.0 (omit -> always)" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "animObjectSwap": {
+      "type": "object",
+      "required": ["file"],
+      "description": "AOS config -> <file>_ANIO.ini at the mod root.",
+      "properties": {
+        "file": { "type": "string", "description": "output stem (the _ANIO.ini suffix is added on emit)" },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["base", "swaps"],
+            "additionalProperties": false,
+            "properties": {
+              "base": { "type": "string", "description": "the original ANIO to swap (0xFormID~Plugin.esp / EditorID)" },
+              "swaps": { "type": "array", "items": { "type": "string" }, "description": "replacement ANIO(s); several -> random pick per idle" },
+              "filters": { "type": "array", "items": { "type": "string" }, "description": "FILTERS header: NPC/Faction/Race/Keyword ref; +x AND, -x exclude, *x string-match" },
+              "traits": { "type": "string", "description": "TRAITS header: M/F sex, C/-C child" }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "skyPatcher": {
+      "type": "object",
+      "required": ["file", "recordType"],
+      "description": "SkyPatcher config -> SKSE/Plugins/SkyPatcher/<recordType>/<file>.ini.",
+      "properties": {
+        "file": { "type": "string", "description": "output stem" },
+        "recordType": {
+          "enum": ["npc", "armor", "weapon", "ammo", "leveledList", "formList", "race", "container"]
+        },
+        "patches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "filters": { "type": "array", "items": { "$ref": "#/$defs/skyPatcherField" }, "description": "filter key=value pairs (all must match)" },
+              "mods": { "type": "array", "items": { "$ref": "#/$defs/skyPatcherField" }, "description": "modification key=value pairs (at least one)" }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "skyPatcherField": {
+      "type": "object",
+      "required": ["key"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string" },
+        "value": { "type": "string" }
+      }
     },
     "spidEntry": {
       "type": "object",

@@ -114,8 +114,8 @@
 
 ---
 
-## SKSE 分發器 config 生成（SPID `_DISTR.ini` / MCM Helper / FLM `_FLM.ini`，loose、非-esp）
-→ **說明文件**：[SPEC-distribution.md](../../../docs/spec/SPEC-distribution.md) · 格式調查 [mod-survey/findings/spid.md](../../../sub_projs/mod-survey/findings/spid.md)、[mcm-helper-config-json.md](../../../sub_projs/mod-survey/findings/mcm-helper-config-json.md)、[formlist-manipulator-config-core.md](../../../sub_projs/mod-survey/findings/formlist-manipulator-config-core.md)（D 組 ini pipeline，見 [roadmap/all-findings-gaps.md](../../roadmap/all-findings-gaps.md)）
+## SKSE 分發器 config 生成（SPID / MCM / FLM / KID / BOS / AOS / SkyPatcher，loose、非-esp）
+→ **說明文件**：[SPEC-distribution.md](../../../docs/spec/SPEC-distribution.md) · 格式調查 findings：[spid](../../../sub_projs/mod-survey/findings/spid.md)、[mcm-helper-config-json](../../../sub_projs/mod-survey/findings/mcm-helper-config-json.md)、[formlist-manipulator-config-core](../../../sub_projs/mod-survey/findings/formlist-manipulator-config-core.md)、[keyword-item-distributor-config-1](../../../sub_projs/mod-survey/findings/keyword-item-distributor-config-1.md)、[base-object-swapper-config](../../../sub_projs/mod-survey/findings/base-object-swapper-config.md)、[animobject-swapper-overview-config](../../../sub_projs/mod-survey/findings/animobject-swapper-overview-config.md)、[skypatcher-records-and-config](../../../sub_projs/mod-survey/findings/skypatcher-records-and-config.md)（D 組 ini pipeline，見 [roadmap/all-findings-gaps.md](../../roadmap/all-findings-gaps.md)）
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
@@ -128,11 +128,28 @@
 | Spec | `Spec.FormListInject.cs` | DTO：`FormListInjectSpec`/`FlmFilterSpec`/`FlmNamedListSpec`/`FlmCollectionSpec`/`FlmEntrySpec`（ModSpec list `formListInjects` 在 `Spec.cs`）|
 | Core | `FlmGen.cs` | `FormListInjectSpec`→`<file>_FLM.ini`（`Generate`）；`[General]` 後先 emit Filter/Alias/Group/Collection 定義、再 FormList 操作行；filter ref 自動補 `#`|
 | Validate | `Generator.Validate.Flm.cs` | file/target 非空、entry 需 forms、collection formType 白名單、filter 需 conditions（`ValidateFormListInjects`）|
-| CLI | `Package.cs` | loose-file 寫出（與 OAR/BDI/PIE/SPID/MCM 同一段；SPID/FLM→mod 根＝`Data/`、MCM→`MCM/Config/<modName>/`）|
+| Spec | `Spec.KidDistribution.cs` | DTO：`KidDistributionSpec`/`KidEntrySpec`（`kidDistributions`）|
+| Core | `KidGen.cs` | `→<file>_KID.ini`；`Keyword = kw\|type\|filters\|traits\|chance` 尾段 NONE 修剪（仿 SPID）|
+| Validate | `Generator.Validate.Kid.cs` | keyword 必填、type 19 白名單、chance 0–100（`ValidateKidDistributions`）|
+| Spec | `Spec.ObjectSwap.cs` | DTO：`ObjectSwapSpec`/`ObjectSwapGroupSpec`/`ObjectSwapEntrySpec`（`objectSwaps`）|
+| Core | `BosGen.cs` | `→<file>_SWAP.ini`；`[Forms]`/`[Forms\|cond]` + `base\|swaps\|properties\|chance`（gap 留 `\|\|`）|
+| Validate | `Generator.Validate.Bos.cs` | base/swaps 必填、chance 0–100（`ValidateObjectSwaps`）|
+| Spec | `Spec.AnimObjectSwap.cs` | DTO：`AnimObjectSwapSpec`/`AnimObjectSwapEntrySpec`（`animObjectSwaps`）|
+| Core | `AosGen.cs` | `→<file>_ANIO.ini`；`[Base\|FILTERS\|TRAITS]` header + `base\|swaps`（尾段空 segment 修剪）|
+| Validate | `Generator.Validate.Aos.cs` | base/swaps 必填（`ValidateAnimObjectSwaps`）|
+| Spec | `Spec.SkyPatcher.cs` | DTO：`SkyPatcherSpec`/`SkyPatcherLineSpec`/`SkyPatcherFieldSpec`（`skyPatchers`）|
+| Core | `SkyPatcherGen.cs` | `→SKSE/Plugins/SkyPatcher/<recordType>/<file>.ini`；flat `filterK=v:modK=v`（無 section header）|
+| Validate | `Generator.Validate.SkyPatcher.cs` | recordType 8 白名單、每行需 mods、key 非空（`ValidateSkyPatchers`）|
+| CLI | `Package.cs` | loose-file 寫出（與 OAR/BDI/PIE/SPID/MCM/FLM 同一段；多數→mod 根＝`Data/`、MCM→`MCM/Config/<modName>/`、SkyPatcher→`SKSE/Plugins/SkyPatcher/<recordType>/`）|
 
 `_DISTR.ini` 寫在 mod 資料夾**根目錄**（≠ SKSE/Plugins）；RecordID/EditorID 由玩家 load order 解析，ModForge 離線不驗。example：`examples/spid_distribution_spec.json`。
 **MCM Helper**（Idea D-2）：MVP＝純 ini-backed（`ModSettingBool/Int/Float/String`），零 Quest/Papyrus/master，DLL 全自動把玩家改動存到 `MCM/Settings/<modName>.ini`；`config.json` 用 `name`→`pageDisplayName`、value 欄位收進 `valueOptions`。`PropertyValue*`/`action.CallFunction`（需 Quest 掛 `MCM_ConfigBase` script）為範圍外。live menu 只能實機驗。example：`examples/mcm_config_spec.json`。
 **FLM**（Idea D-4）：`_FLM.ini` 寫在 mod 根，runtime 把 form 追加進**任意既有 FLST**（vanilla/他 mod）零 override 零衝突；自建 FLST 仍走 esp-side `formLists[]`。MVP 涵蓋 FormList 操作行 + Filter/Alias/Group/Collection 定義；`ModEvent`（需 Papyrus 發送）+ 特化快捷（Plant/BToys/…）為範圍外。example：`examples/formlist_inject_spec.json`。
+**KID**（D-5）：`_KID.ini`，把 Keyword 依 filter 掛到 record（unknown EditorID → KID 自建 KYWD）。example：`examples/kid_distribution_spec.json`。
+**BOS**（D-6）：`_SWAP.ini`，reference 載入時把 base object 換成另一個（可帶 location 條件/transform/chance），MVP 限 `[Forms]` section。example：`examples/object_swap_spec.json`。
+**AOS**（D-7）：`_ANIO.ini`，換 idle 時手持的 ANIO 道具（隨機池 + NPC/faction/trait 條件）。example：`examples/anim_object_swap_spec.json`。
+**SkyPatcher**（D-3）：`SkyPatcher/<recordType>/<file>.ini`，runtime 依 filter 改 record（NPC 加 spell/perk、leveled list 注入）。MVP 不白名單欄位，verbatim emit。example：`examples/skypatcher_spec.json`。
+> 全 D-group ini 都「離線只驗結構、runtime 由 DLL 對玩家 load order 解析 ref」，實機/log 收尾見 [WAIT_USER](../../../wait_todo/roadmap-features.md)。
 
 ---
 
