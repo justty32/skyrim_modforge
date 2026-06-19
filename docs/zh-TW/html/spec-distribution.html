@@ -55,8 +55,8 @@
 讓一個 mod 能把記錄附加到其他 mod 的 NPC/物品上，而**無須 ESP patch**——這是
 follower/NPC 包的標準相容層。ModForge 寫出設定檔；框架的 `.dll`（玩家自備）負責執行期的工作。
 
-目前已實作：**SPID**、**MCM Helper**、**FLM**。KID / SkyPatcher 遵循同樣的鬆散檔
-模式（roadmap D 組，見 `workflows/roadmap/all-findings-gaps.md`）。
+目前已實作：**SPID**、**MCM Helper**、**FLM**、**KID**、**BOS**、**AOS**、**SkyPatcher**
+（roadmap D 組，見 `workflows/roadmap/all-findings-gaps.md`）。
 
 ---
 
@@ -291,6 +291,157 @@ FormList = 0x000800~SomeSpellMod.esp|0x000D62~MyFlmPatch.esp
 `validate` 只檢查結構：`file`/`target` 非空、每個 entry 有 `forms`、collection 的
 `formType` 在允許集合中、filter 有 conditions。FLM 在執行期才對**玩家的載入順序**解析目標 FLST／
 form ref——ModForge 離線無法驗證它們是否存在。
+
+---
+
+## `kidDistributions` — Keyword Item Distributor (KID, D-5)
+
+[KID](https://www.nexusmods.com/skyrimspecialedition/mods/55728) 在啟動時依過濾器把一個 **Keyword**
+附加到相符的記錄（Weapon/Armor/MagicEffect/…）上，不需要 ESP patch——用於批次物品標記
+（品質類別、其他框架接著讀取的 keyword）。若該 keyword 的 EditorID 在任何已載入的 plugin 中都找不到，
+**KID 會即時建立一個新的 KYWD**。在 mod 根目錄發出 `<file>_KID.ini`。
+
+```json
+{ "kidDistributions": [ { "file": "MyKidPatch", "entries": [
+  { "keyword": "MysticismSpells", "type": "Magic Effect", "filters": ["MysticismMagic.esp"] },
+  { "keyword": "0x1234~MyKidPatch.esp", "type": "Armor", "filters": ["*Iron"], "traits": "ArmorTypeHeavy+ArmorGauntlet,-E" },
+  { "keyword": "MysticalAmmo", "type": "Ammo", "filters": ["*Bound"], "chance": 50 }
+] } ] }
+```
+
+→ `Keyword = <keyword>|<type>|<strings_or_formIDs>|<traits>|<chance>`（結尾 `NONE` 裁掉，與 SPID 相同）：
+```ini
+Keyword = MysticismSpells|Magic Effect|MysticismMagic.esp
+Keyword = 0x1234~MyKidPatch.esp|Armor|*Iron|ArmorTypeHeavy+ArmorGauntlet,-E
+Keyword = MysticalAmmo|Ammo|*Bound|NONE|50
+```
+
+| 欄位 | Pos | 意義 |
+|---|---|---|
+| `keyword` | 1 | **必填。** 要分發的 KYWD——EditorID／`0xFormID~Plugin.esp`。未知的 EditorID → KID 建立一個新的 KYWD。 |
+| `type` | 2 | **必填。** `Weapon` `Armor` `Ammo` `Magic Effect` `Potion` `Scroll` `Location` `Ingredient` `Book` `Misc Item` `Key` `Soul Gem` `Spell` `Activator` `Flora` `Furniture` `Race` `Talking Activator` `Enchantment`。 |
+| `filters` | 3 | 陣列（OR）：name/EditorID/keyword；`+x` AND 須有、`-x` 排除、`*x` 萬用字元、`0x…~esp` FormID、`*x.nif` 模型路徑。空 → 該類型全部。 |
+| `traits` | 4 | 原始字串——依類型而定（Armor `AR(10/50)`、Weapon `OneHandSword`、MGEF `20(0/25)`、Book `S,20`）。 |
+| `chance` | 5 | `0.0`–`100.0`（省略 → 100）。 |
+
+---
+
+## `objectSwaps` — Base Object Swapper (BOS, D-6)
+
+[Base Object Swapper](https://www.nexusmods.com/skyrimspecialedition/mods/49669) 在一個 reference 載入時
+把它的 base object 換成另一個，不需要 ESP override（零衝突）——用於場景佈置（把一個 vanilla 雜物 form
+換成更精緻的、依 location 來 gate）。MVP ＝ `[Forms]` 區段。在 mod 根目錄發出 `<file>_SWAP.ini`。
+
+```json
+{ "objectSwaps": [ { "file": "MySwapPatch", "groups": [
+  { "entries": [
+    { "base": "0x10C0E3~Skyrim.esm", "swaps": ["0x806~MySwapPatch.esp"] },
+    { "base": "0x10ACC2~Skyrim.esm", "swaps": ["0x81F~MySwapPatch.esp", "0x820~MySwapPatch.esp"], "properties": "scale(1.2/1.2)", "chance": 50 }
+  ] },
+  { "conditions": ["WhiterunLocation", "-AzuraShrineLocation"], "entries": [
+    { "base": "0x8E48~Dawnguard.esm", "swaps": ["0x897~MySwapPatch.esp"] }
+  ] }
+] } ] }
+```
+
+→ `[Forms]`（或 `[Forms|cond,…]`）接著 `baseFormID|swapFormID[|properties][|chance]`（空缺保留為 `||`）：
+```ini
+[Forms]
+0x10C0E3~Skyrim.esm|0x806~MySwapPatch.esp
+0x10ACC2~Skyrim.esm|0x81F~MySwapPatch.esp,0x820~MySwapPatch.esp|scale(1.2/1.2)|50
+
+[Forms|WhiterunLocation,-AzuraShrineLocation]
+0x8E48~Dawnguard.esm|0x897~MySwapPatch.esp
+```
+
+| 欄位 | 意義 |
+|---|---|
+| `groups[].conditions` | 可選 `[Forms|c1,c2]` 過濾器——以 EditorID/FormID 指定的 Location/Region/Keyword/Cell/Worldspace；`-x` 排除。空 → 無條件的 `[Forms]`。 |
+| `entries[].base` | **必填。** 要替換的 base form（`0xFormID~Plugin.esp` / EditorID）。 |
+| `entries[].swaps` | **必填。** 替換 form（一個或多個）；多個 → BOS 對每個 reference 隨機挑一個。 |
+| `entries[].properties` | 可選的原始 transform 字串，例如 `scale(1.2/1.2),rot(0/0,0/0,45/45)`。 |
+| `entries[].chance` | `0.0`–`100.0`（省略 → 一律）。 |
+
+> **範圍外（MVP）：** 獨立的 `[Properties]`（沒有 swap 的 transform）與 `[References]`
+> （單一 reference 實例）區段。
+
+---
+
+## `animObjectSwaps` — AnimObject Swapper (AOS, D-7)
+
+AnimObject Swapper 依條件把**一個 actor 在 idle 期間手持的道具**（一個杯子、一本書）換掉，不需要
+ESP override——用於 follower／角色塑造。換的是*手持物件*，不是動畫（那是 OAR）。在 mod 根目錄發出
+`<file>_ANIO.ini`。
+
+```json
+{ "animObjectSwaps": [ { "file": "MyAnioPatch", "entries": [
+  { "base": "DrinkingCupANIO", "swaps": ["WoodCupANIO", "MeadHornANIO", "GlassCupANIO"] },
+  { "base": "DrinkingCupANIO", "swaps": ["SofiaSpecialMugANIO"], "filters": ["SofiaFollower"] },
+  { "base": "BookReadingANIO", "swaps": ["ThievesGuildLedgerANIO"], "filters": ["+ThievesGuildFaction"], "traits": "F" }
+] } ] }
+```
+
+→ `[BaseANIO|FILTERS|TRAITS]` 標頭接著 `baseANIO|swap1,swap2,…`（多個 swap → 隨機挑選）：
+```ini
+[DrinkingCupANIO]
+DrinkingCupANIO|WoodCupANIO,MeadHornANIO,GlassCupANIO
+[DrinkingCupANIO|SofiaFollower]
+DrinkingCupANIO|SofiaSpecialMugANIO
+[BookReadingANIO|+ThievesGuildFaction|F]
+BookReadingANIO|ThievesGuildLedgerANIO
+```
+
+| 欄位 | 意義 |
+|---|---|
+| `base` | **必填。** 要換掉的原始 ANIO（`0xFormID~Plugin.esp` / EditorID）。 |
+| `swaps` | **必填。** 替換 ANIO（一個或多個）；多個 → AOS 對每個 idle 隨機挑一個。 |
+| `filters` | 可選的 FILTERS 標頭片段：NPC base/Faction/Race/Keyword/Spell/Location ref；`+x` AND、`-x` 排除、`*x` 字串比對。 |
+| `traits` | 可選的 TRAITS 片段：`M`/`F` 性別、`C`/`-C` 孩童。只有 traits 的標頭會以空缺撐開 filter 槽（`[Base||F]`）。 |
+
+---
+
+## `skyPatchers` — SkyPatcher (D-3)
+
+[SkyPatcher](https://www.nexusmods.com/skyrimspecialedition/mods/108591) 依過濾器對記錄套用
+**記憶體內的執行期編輯**，不需要 ESP override——這是大量編輯 vanilla
+NPC/armor/weapon 或注入 leveled list 的零衝突方式。發出 `SKSE/Plugins/SkyPatcher/<recordType>/<file>.ini`，
+內容為**平鋪的行，沒有 `[section]` 標頭**。
+
+```json
+{ "skyPatchers": [
+  { "file": "npc-patch", "recordType": "npc", "patches": [
+    { "filters": [ { "key": "filterByRaces", "value": "NordRace" } ],
+      "mods": [ { "key": "spellsToAdd", "value": "MagicResistance50" }, { "key": "perksToAdd", "value": "HalfCostSpells" } ] }
+  ] },
+  { "file": "loot-inject", "recordType": "leveledList", "patches": [
+    { "filters": [ { "key": "filterByLists", "value": "DeathItemBanditMelee" } ],
+      "mods": [ { "key": "objectsToAdd", "value": "0x000800~MySkyPatch.esp" } ] }
+  ] }
+] }
+```
+
+→ `filterKey=value:…:modKey=value:…`（先把 filter AND 起來，再接 mods；以冒號分隔、無空格）：
+```ini
+; SkyPatcher/npc/npc-patch.ini
+filterByRaces=NordRace:spellsToAdd=MagicResistance50:perksToAdd=HalfCostSpells
+; SkyPatcher/leveledList/loot-inject.ini
+filterByLists=DeathItemBanditMelee:objectsToAdd=0x000800~MySkyPatch.esp
+```
+
+| 欄位 | 意義 |
+|---|---|
+| `file` | **必填。** 輸出檔名主幹 → `SkyPatcher/<recordType>/<file>.ini`。 |
+| `recordType` | **必填。** 記錄類型資料夾：`npc` `armor` `weapon` `ammo` `leveledList` `formList` `race` `container`。 |
+| `patches[].filters` | `{ key, value }` 配對（全部須相符）。常用鍵：`filterByRaces`、`filterByKeywords`、`filterByNpcs`、`filterByLists`。同一個鍵可重複（列兩次）。 |
+| `patches[].mods` | `{ key, value }` 配對——即編輯內容。常用鍵：`spellsToAdd`、`perksToAdd`、`keywordsToAdd`、`objectsToAdd`/`objectsToRemove`。**至少需要一個。** |
+
+> **MVP 注意事項：** ModForge 會原封不動發出你給的任何 `key`/`value` 配對——它**不會** whitelist
+> （非常龐大的）SkyPatcher 欄位集合。每種記錄類型的所有 filter/欄位見 SkyPatcher 文件。
+
+### 離線驗證注意事項（KID / BOS / AOS / SkyPatcher）
+四者都只檢查結構（必填名稱、已知的 type/recordType、非空的 swap/mod
+清單）。每個框架都在執行期才對**玩家的載入順序**解析它的 form ref，所以
+實際效果是遊玩時的事——請在遊戲內確認（SkyPatcher/BOS/AOS 有 debug log）。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>
