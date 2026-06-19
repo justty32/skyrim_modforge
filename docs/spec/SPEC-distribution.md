@@ -7,7 +7,7 @@ let a mod attach records to other mods' NPCs/items **without an ESP patch** — 
 compatibility layer for follower/NPC packs. ModForge writes the config; the framework's `.dll`
 (player-supplied) does the runtime work.
 
-Currently implemented: **SPID**, **MCM Helper**. KID / SkyPatcher / FLM follow the same loose-file
+Currently implemented: **SPID**, **MCM Helper**, **FLM**. KID / SkyPatcher follow the same loose-file
 pattern (roadmap D-group, see `workflows/roadmap/all-findings-gaps.md`).
 
 ---
@@ -167,3 +167,80 @@ iDetail=1
 `validate` checks structure only: control `type` and `sourceType` are in the allowed sets, value
 controls have a `"key:Section"` id, sliders have `min`+`max`, `stepper`/`enum` have `options`. The
 **live menu can only be confirmed in-game** — ModForge writes the files; MCM Helper + SkyUI render them.
+
+---
+
+## `formListInjects` — FormList Manipulator (FLM, D-4)
+
+[FormList Manipulator](https://www.nexusmods.com/skyrimspecialedition/mods/74037) (FLM) appends forms
+to **any already-loaded FormList** — vanilla or another mod's — at runtime, with **no ESP override**, so
+there is **zero conflict**. This is the no-conflict way to add your spell/item/NPC into someone else's
+FLST pool (a Spellforge spell list, a SPID target list, an adoption-gift list…).
+
+> **When NOT to use it:** for a FLST you *own*, build it ESP-side with `formLists[]` — that's
+> deterministic and inspectable. FLM's leverage is purely "append to *someone else's* FLST without a
+> patch." Format verified against FLM v1.8.1 (`sub_projs/mod-survey/findings/formlist-manipulator-*.md`).
+
+Each config emits `<file>_FLM.ini` at the **mod folder root** (= `Data/`). Definitions
+(`filters`/`aliases`/`groups`/`collections`) are emitted before the `entries` (the `FormList =` lines)
+that reference them.
+
+```json
+{
+  "formListInjects": [
+    {
+      "file": "MyFlmPatch",
+      "filters": [ { "name": "HFFilter", "conditions": ["+HearthFires.esm"] } ],
+      "aliases": [ { "name": "GiftLists", "items": ["BYOH...GiftChildMale", "BYOH...GiftChildFemale"] } ],
+      "groups":  [ { "name": "Dolls", "items": ["BYOHChefDoll", "BYOHDBDoll"] } ],
+      "collections": [ { "name": "IronWarAxes", "formType": "Weapon", "keywords": ["WeapTypeWarAxe", "WeapMaterialIron"] } ],
+      "entries": [
+        { "target": "#GiftLists", "forms": ["#Dolls"], "filter": "HFFilter" },
+        { "target": "0x000800~SomeSpellMod.esp", "forms": ["0x000D62~MyFlmPatch.esp"] }
+      ]
+    }
+  ]
+}
+```
+
+→ writes `MyFlmPatch_FLM.ini`:
+
+```ini
+[General]
+Filter = HFFilter|+HearthFires.esm
+Alias = GiftLists|BYOH...GiftChildMale, BYOH...GiftChildFemale
+Group = Dolls|BYOHChefDoll, BYOHDBDoll
+Collection = IronWarAxes|Weapon|WeapTypeWarAxe, WeapMaterialIron
+FormList = #GiftLists|#Dolls|#HFFilter
+FormList = 0x000800~SomeSpellMod.esp|0x000D62~MyFlmPatch.esp
+```
+
+### `formListInjects[]`
+| Field | Required | Meaning |
+|---|---|---|
+| `file` | ✅ | Output stem; `_FLM.ini` suffix is added on emit (FLM scans `Data/` for `*_FLM.ini`). |
+| `entries` | | The `FormList =` operation lines (see below). |
+| `filters` / `aliases` / `groups` / `collections` | | Reusable definitions referenced by `entries`. |
+
+### `entries[]` — the operations (`FormList = <FList>|<forms>|<Filter>`)
+| Field | Meaning |
+|---|---|
+| `target` | The FormList to append to: an EditorID, `0xFormID~Plugin.esp`, or `#Alias` (a defined alias of several FLSTs). |
+| `forms` | Tokens to add: a form ref, `*FormList` (expand its contents), `#Group`, or `#Collection`. |
+| `filter` | Optional — a filter name (a leading `#` is added if absent); the line only applies when the filter passes. |
+
+### Definitions
+| Block | Shape | Meaning |
+|---|---|---|
+| `filters[]` | `{ name, conditions[] }` | `conditions` are OR'd; each is `+Plugin.esp` (must be active), `-Plugin.esp` (must be inactive), or `+A.esp&-B.esp` (AND in one). |
+| `aliases[]` | `{ name, items[] }` | Bind several **target FormLists** into one name; reference as `#name` in an entry `target`. |
+| `groups[]` | `{ name, items[] }` | A reusable **form set**; reference as `#name` in an entry `forms`. Items may themselves be refs / `*FormList` / `#Collection`. |
+| `collections[]` | `{ name, formType, keywords[], filter? }` | Batch-select forms of one `formType` carrying **all** listed keywords (`-kw` excludes). `formType` ∈ Armor/Weapon/Ammo/MagicEffect/AlchemyItem/Scroll/Location/Ingredient/Book/Misc/Key/Soulgem/Activator/Flora/Furniture/Race/TalkingActivator/Enchantment/NPC/Spell. |
+
+**Out of scope (MVP):** the `ModEvent =` runtime-dynamic line (needs a Papyrus sender) and the
+specialized shortcut lines (`Plant`/`BToys`/`GToys`/`HairColors`/`AtronachForge`/…).
+
+### Offline-validation note
+`validate` checks structure only: `file`/`target` non-empty, each entry has `forms`, collection
+`formType` is in the allowed set, filters have conditions. FLM resolves the target FLST / form refs
+against the **player's load order** at runtime — ModForge can't verify they exist offline.

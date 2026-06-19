@@ -73,13 +73,13 @@ ModForge 的 `build` 主輸出是 `.esp`。這組是對應 SKSE framework 的 **
 **用途：** 批量修改大量 vanilla NPC 外觀（不衝突，不生 ESP）；NPC 美化 pipeline。  
 **優先：** 🟡（專門用途，與 SPID 互補）
 
-### 🆕 D-4 FormList Manipulator `_FLM.ini` 輸出
-**來源：** formlist-manipulator.md、flst-factory.md  
-**現況：** ModForge 不輸出 `_FLM.ini`。  
-**Scope：** `formListInject:` spec section → `<mod>_FLM.ini`。  
-格式：`Form = <formId>~<plugin>` + `Target = <flstId>~<plugin>` → kDataLoaded 時動態把 form 追加進任意 FLST（含 vanilla/他人 mod），**不衝突**（不需 override）。  
-**用途：** 把自家 spell/item/NPC 加進外部 mod 的 FLST（例如 Spellforge 法術池、SPID 分發目標 FLST）。  
-**優先：** 🟡
+### ✅ D-4 FormList Manipulator `_FLM.ini` 輸出（**已落地 2026-06-20**）
+**來源：** formlist-manipulator.md（v1.8.1）、flst-factory.md  
+**狀態：** ✅ 離線實作 `formListInjects:` spec section → `<file>_FLM.ini`（mod 根＝`Data/`）。`Spec.FormListInject.cs`（DTO）+ `FlmGen.cs`（emit）+ `Generator.Validate.Flm.cs` + `Package.cs` 接 loose-file 段。**11 測綠**；格式逐欄查 formlist-manipulator-config-core/-advanced.md。docs [SPEC-distribution.md](../../docs/spec/SPEC-distribution.md)、example `formlist_inject_spec.json`、schema 已同步。  
+正確語法＝`FormList = <FList>|<forms>|<Filter>`（非 roadmap 原寫的舊 `Form=/Target=`）；涵蓋 FormList 操作行 + Filter/Alias/Group/Collection 定義（Collection 20 FormType 白名單）。  
+**MVP 範圍外：** `ModEvent`（需 Papyrus 發送）+ 特化快捷語法（Plant/BToys/GToys/HairColors/AtronachForge/…）。  
+**用途：** 把自家 spell/item/NPC 零衝突加進外部 mod 的 FLST（Spellforge 法術池、SPID 分發目標 FLST、領養禮物池…）；自建 FLST 仍走 esp-side `formLists[]`。  
+⚠️ **待主力機：** FLST/form ref 由玩家 load order 解析，runtime 才驗（裝 FLM DLL 開 `FormListManipulator_DEBUG.ini` 看 log 確認追加成功）；ModForge 只驗結構。
 
 ### 🆕 D-5 KID `_KID.ini` 輸出
 **來源：** keyword-item-distributor.md  
@@ -235,7 +235,7 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 3. ~~**C 組 #2**（package alias 間接）~~ ✅ **已落地 2026-06-17** → radiant 演出 package（byte 待主力機驗）
 4. ~~**D-1**（SPID _DISTR.ini）~~ ✅ **已落地 2026-06-17** → 無衝突 NPC 標記與兼容 patch
 5. ~~**D-2**（MCM Helper）~~ ✅ **已落地 2026-06-20** → 玩家設定面板（live menu 待主力機實機驗）
-6. **D-4**（FLM ini）→ 解鎖外部 FLST 注入（Spellforge/SPID 兼容）
+6. ~~**D-4**（FLM ini）~~ ✅ **已落地 2026-06-20** → 外部 FLST 注入（Spellforge/SPID 兼容），runtime 待主力機驗
 7. **H 組**（CSF skill tree）→ 接 generation.md 現有設計，已有詳細 spec 草案
 8. ~~**L 組**（GetVMQuestVariable/GetVMScriptVariable 條件）~~ ✅ **已落地 2026-06-20** → follower ambient bark 品質（variableName 字串格式待主力機 xEdit 驗）
 9. **J 組**（JC/PapyrusUtil 模板）→ follower 複雜狀態管理

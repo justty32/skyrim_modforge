@@ -1,0 +1,30 @@
+{
+  "_comment": "FormList Manipulator (FLM, D-4). Emits <file>_FLM.ini at the mod root — appends forms to ANY already-loaded FormList (vanilla / another mod's) at runtime with NO esp override = zero conflict. For a FLST you OWN, build it esp-side with formLists[] instead. Requires FormListManipulator.dll at runtime; FLM resolves the refs against the player's load order (ModForge only checks structure).",
+  "pluginName": "MyFlmPatch.esp",
+  "formListInjects": [
+    {
+      "file": "MyFlmPatch",
+      "filters": [
+        { "_comment": "Only run when HearthFires is active.", "name": "HFFilter", "conditions": ["+HearthFires.esm"] }
+      ],
+      "aliases": [
+        { "_comment": "Group several target FLSTs so one line writes to all of them.", "name": "AdoptionGiftLists",
+          "items": ["BYOHRelationshipAdoptionPlayerGiftChildMale", "BYOHRelationshipAdoptionPlayerGiftChildFemale"] }
+      ],
+      "groups": [
+        { "_comment": "A reusable set of forms.", "name": "Dolls",
+          "items": ["BYOHChefDoll", "BYOHDBDoll", "BYOHDragonbornDoll"] }
+      ],
+      "collections": [
+        { "_comment": "Batch-select by FormType + keyword (all iron war axes).", "name": "IronWarAxes",
+          "formType": "Weapon", "keywords": ["WeapTypeWarAxe", "WeapMaterialIron"] }
+      ],
+      "entries": [
+        { "_comment": "Add the Dolls group to every adoption gift list, only if HearthFires is present.",
+          "target": "#AdoptionGiftLists", "forms": ["#Dolls"], "filter": "HFFilter" },
+        { "_comment": "Add my own spell into an external mod's spell pool FLST (no override).",
+          "target": "0x000800~SomeSpellMod.esp", "forms": ["0x000D62~MyFlmPatch.esp"] }
+      ]
+    }
+  ]
+}

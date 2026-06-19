@@ -553,6 +553,13 @@
         "$ref": "#/$defs/mcmConfig"
       },
       "description": "MCM Helper settings menus: emitted as loose MCM/Config/<modName>/config.json + settings.ini (no ESP record, no Papyrus for the ModSetting* ini-backed path). Requires MCM Helper + SkyUI at runtime. See docs/spec/SPEC-distribution.md."
+    },
+    "formListInjects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/formListInject"
+      },
+      "description": "FormList Manipulator (FLM) configs: append forms to any already-loaded FormList at runtime with no ESP override (zero conflict). Emitted as a loose <file>_FLM.ini at the mod folder root (= Data/). Requires FormListManipulator.dll at runtime. See docs/spec/SPEC-distribution.md."
     }
   },
   "additionalProperties": false,
@@ -5690,6 +5697,111 @@
         "position": {
           "type": "integer",
           "description": "two-column forced column: 0 left | 1 right"
+        }
+      },
+      "additionalProperties": false
+    },
+    "formListInject": {
+      "type": "object",
+      "required": [
+        "file"
+      ],
+      "description": "FLM config -> <file>_FLM.ini at the mod folder root (Data/). Definitions are emitted before the entries that reference them.",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "output filename stem (FLM requires the _FLM.ini suffix, added on emit)"
+        },
+        "filters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "conditions"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "conditions": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "OR'd: +Plugin.esp (active) / -Plugin.esp (inactive) / +A.esp&-B.esp (AND in one)"
+              }
+            }
+          }
+        },
+        "aliases": {
+          "type": "array",
+          "description": "Alias = name|FList,... — bind several target FormLists into one #name.",
+          "items": {
+            "type": "object",
+            "required": ["name", "items"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "items": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "groups": {
+          "type": "array",
+          "description": "Group = name|Form,... — a reusable form set, referenced as #name in an entry's forms.",
+          "items": {
+            "type": "object",
+            "required": ["name", "items"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "items": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "collections": {
+          "type": "array",
+          "description": "Collection = name|FormType|keywords|filter — batch-select forms of one FormType with all listed keywords.",
+          "items": {
+            "type": "object",
+            "required": ["name", "formType"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "formType": {
+                "enum": [
+                  "Armor", "Weapon", "Ammo", "MagicEffect", "AlchemyItem", "Scroll", "Location",
+                  "Ingredient", "Book", "Misc", "Key", "Soulgem", "Activator", "Flora", "Furniture",
+                  "Race", "TalkingActivator", "Enchantment", "NPC", "Spell"
+                ]
+              },
+              "keywords": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "each keyword required (AND); -keyword excludes"
+              },
+              "filter": { "type": "string", "description": "optional filter name (a leading # is added if absent)" }
+            }
+          }
+        },
+        "entries": {
+          "type": "array",
+          "description": "FormList = target|forms|filter — the append operations.",
+          "items": {
+            "type": "object",
+            "required": ["target", "forms"],
+            "additionalProperties": false,
+            "properties": {
+              "target": {
+                "type": "string",
+                "description": "the FormList to append to: EditorID / 0xFormID~Plugin.esp / #Alias"
+              },
+              "forms": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "tokens to add: a form ref / *FormList (expand) / #Group / #Collection"
+              },
+              "filter": {
+                "type": "string",
+                "description": "optional filter name (a leading # is added if absent)"
+              }
+            }
+          }
         }
       },
       "additionalProperties": false

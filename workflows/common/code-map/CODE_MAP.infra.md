@@ -114,8 +114,8 @@
 
 ---
 
-## SKSE 分發器 config 生成（SPID `_DISTR.ini` / MCM Helper，loose、非-esp）
-→ **說明文件**：[SPEC-distribution.md](../../../docs/spec/SPEC-distribution.md) · 格式調查 [mod-survey/findings/spid.md](../../../sub_projs/mod-survey/findings/spid.md)、[mcm-helper-config-json.md](../../../sub_projs/mod-survey/findings/mcm-helper-config-json.md)（D 組 ini pipeline，見 [roadmap/all-findings-gaps.md](../../roadmap/all-findings-gaps.md)）
+## SKSE 分發器 config 生成（SPID `_DISTR.ini` / MCM Helper / FLM `_FLM.ini`，loose、非-esp）
+→ **說明文件**：[SPEC-distribution.md](../../../docs/spec/SPEC-distribution.md) · 格式調查 [mod-survey/findings/spid.md](../../../sub_projs/mod-survey/findings/spid.md)、[mcm-helper-config-json.md](../../../sub_projs/mod-survey/findings/mcm-helper-config-json.md)、[formlist-manipulator-config-core.md](../../../sub_projs/mod-survey/findings/formlist-manipulator-config-core.md)（D 組 ini pipeline，見 [roadmap/all-findings-gaps.md](../../roadmap/all-findings-gaps.md)）
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
@@ -125,10 +125,14 @@
 | Spec | `Spec.Mcm.cs` | DTO：`McmSpec`/`McmPageSpec`/`McmControlSpec`（ModSpec list `mcmConfigs` 在 `Spec.cs`）|
 | Core | `McmGen.cs` | `McmSpec`→`MCM/Config/<modName>/config.json`（`System.Text.Json` JsonObject）+ `settings.ini`（`Generate`/`BuildConfigJson`/`BuildSettingsIni`/`SplitId`）|
 | Validate | `Generator.Validate.Mcm.cs` | control type / sourceType 白名單、value control 需 `key:Section` id、slider 需 min+max、stepper/enum 需 options；**PropertyValue\*/action 為 MVP 範圍外，擋掉**（`ValidateMcmConfigs`）|
-| CLI | `Package.cs` | loose-file 寫出（與 OAR/BDI/PIE/SPID 同一段；SPID→mod 根＝`Data/`、MCM→`MCM/Config/<modName>/`）|
+| Spec | `Spec.FormListInject.cs` | DTO：`FormListInjectSpec`/`FlmFilterSpec`/`FlmNamedListSpec`/`FlmCollectionSpec`/`FlmEntrySpec`（ModSpec list `formListInjects` 在 `Spec.cs`）|
+| Core | `FlmGen.cs` | `FormListInjectSpec`→`<file>_FLM.ini`（`Generate`）；`[General]` 後先 emit Filter/Alias/Group/Collection 定義、再 FormList 操作行；filter ref 自動補 `#`|
+| Validate | `Generator.Validate.Flm.cs` | file/target 非空、entry 需 forms、collection formType 白名單、filter 需 conditions（`ValidateFormListInjects`）|
+| CLI | `Package.cs` | loose-file 寫出（與 OAR/BDI/PIE/SPID/MCM 同一段；SPID/FLM→mod 根＝`Data/`、MCM→`MCM/Config/<modName>/`）|
 
 `_DISTR.ini` 寫在 mod 資料夾**根目錄**（≠ SKSE/Plugins）；RecordID/EditorID 由玩家 load order 解析，ModForge 離線不驗。example：`examples/spid_distribution_spec.json`。
 **MCM Helper**（Idea D-2）：MVP＝純 ini-backed（`ModSettingBool/Int/Float/String`），零 Quest/Papyrus/master，DLL 全自動把玩家改動存到 `MCM/Settings/<modName>.ini`；`config.json` 用 `name`→`pageDisplayName`、value 欄位收進 `valueOptions`。`PropertyValue*`/`action.CallFunction`（需 Quest 掛 `MCM_ConfigBase` script）為範圍外。live menu 只能實機驗。example：`examples/mcm_config_spec.json`。
+**FLM**（Idea D-4）：`_FLM.ini` 寫在 mod 根，runtime 把 form 追加進**任意既有 FLST**（vanilla/他 mod）零 override 零衝突；自建 FLST 仍走 esp-side `formLists[]`。MVP 涵蓋 FormList 操作行 + Filter/Alias/Group/Collection 定義；`ModEvent`（需 Papyrus 發送）+ 特化快捷（Plant/BToys/…）為範圍外。example：`examples/formlist_inject_spec.json`。
 
 ---
 
