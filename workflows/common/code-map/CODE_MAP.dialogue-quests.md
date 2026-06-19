@@ -113,8 +113,8 @@
 | Build P1 | `Generator.Build.Dialogue.cs` | Branch / Topic / INFO 建立；player-topic 優先度管理；**`hello:true` 招呼：同一 (NPC,quest) 的所有招呼合進 **一個** Hello topic 的多條 INFO(conditioned 在前、plain `greeting` 墊底)——**鐵律:招呼靠 INFO 順序選取(第一個條件符合的勝出),不是多個獨立 Hello topic 靠 priority 競爭(那樣引擎只取一個 topic、其他無視);vanilla 237/297 Hello topic 多 INFO**(in-game 2026-06-07 確認身份招呼)|
 | Build P1 | `Generator.Build.Dialogue.cs` `DialogueInfoFlags` | DialogueSpec → INFO (ENAM) flags 合併（`goodbye`/`sayOnce`/`walkAway`/`random`/`invisibleContinue`/`forceSubtitle`）；hello 與 player-topic 兩個建立點共用 |
 | Build P1+P2 | `Generator.Build.Dialogue.cs` | **對話樹**：`topLevel:false` → branch 非 TopLevel（sub-topic，只在被 link 時出現）；topic 註冊進 `dialogTopicsByEd`（topic/INFO 同 editorId，formKeyByEd 會撞，需專屬 map）。pass-2 `WireDialogueLinks`：`linkTo`→INFO `LinkTo`(ENAM，指 target dialogue 的 **topic** 或 vanilla ref)、`previousDialog`→INFO `PreviousDialog`(PNAM，指 target **INFO**)|
-| Build P2 | `Generator.Build.Conditions.cs` | INFO CTDA 條件接線 |
-| Validate | `Generator.Validate.Quests.cs` | speaker NPC ref、quest ref、condition function |
+| Build P2 | `Generator.Build.Conditions.cs` | INFO CTDA 條件接線；**M組 `useConditionTemplates`：把 `ModSpec.ConditionTemplates`（`ConditionTemplateSpec` name+conditions）依名展開到 INFO（inline conditions 之後、同 BuildCondition 路徑、alias-aware）** |
+| Validate | `Generator.Validate.Quests.cs` | speaker NPC ref、quest ref、condition function；**conditionTemplate name 唯一/非空 + 每條 CheckCondition；dialogue useConditionTemplates 引用須存在** |
 | Diag | `Diagnostics.Dialogue.cs` | topic / INFO / condition / result-script dump |
 
 > **Voice 註**：dialogue / banter / scene 的 INFO 現在全部補上 EditorID（語音管線 `voicelines` 的 CK 檔名需要 quest/topic EditorID，INFO EditorID 供追蹤）——管線本體見 [CODE_MAP.infra.md](CODE_MAP.infra.md)「語音克隆」段。

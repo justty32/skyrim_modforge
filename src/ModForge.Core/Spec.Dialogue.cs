@@ -175,6 +175,12 @@ public sealed class DialogueSpec
     // Extra CTDA gates on the INFO (beyond the auto GetIsID speaker gate). e.g. only show a paid
     // recruit line when the player can afford it and isn't already following.
     public List<ConditionSpec> Conditions { get; set; } = new();
+    // Named condition templates (M組) to expand onto this INFO, by name from `conditionTemplates[]`.
+    // The template's conditions are appended exactly like inline `conditions` (same BuildCondition path,
+    // alias-aware). Lets many INFOs share one condition block — e.g. FCO's 265 commentary lines all
+    // gated on the same location/state set. Expansion order: inline `conditions` first, then each named
+    // template in listed order.
+    public List<string> UseConditionTemplates { get; set; } = new();
     // Identity gating (lightweight class system). `identity`: only show this line when the PLAYER holds
     // that identity (GetInFaction(identity.faction) ≥ 1). `primaryIdentity`: same, PLUS exclude every
     // higher-priority identity (GetInFaction == 0) so only the top "primary" greeting fires. Both names
@@ -281,6 +287,14 @@ public sealed class ConditionSpec
     // whose script is read (VM-script); this is the property/variable string.
     public string VariableName { get; set; } = "";
     public bool Or { get; set; }                        // OR with the NEXT condition (default AND)
+}
+// A named, reusable condition block (M組). Referenced by a dialogue line's `useConditionTemplates`
+// (by `name`); its `conditions` are appended to that INFO exactly like inline conditions. Lets many
+// INFOs share one gate set (e.g. ambient-commentary lines all gated on the same location/state).
+public sealed class ConditionTemplateSpec
+{
+    public string Name { get; set; } = "";
+    public List<ConditionSpec> Conditions { get; set; } = new();
 }
 // Attach a compiled Papyrus script (by Scriptname) to a record (by editorId), with
 // typed properties. type ∈ int|float|bool|string|object; object resolves ObjectEditorId.

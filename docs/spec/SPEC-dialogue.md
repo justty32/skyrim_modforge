@@ -291,6 +291,15 @@ uses: hide a paid recruit line unless `GetItemCount Gold >= 500` (on the player)
 `GetInFaction CurrentFollowerFaction == 0`; gate a Follow package on `GetInFaction
 CurrentFollowerFaction == 1` so it only runs after recruitment. See `examples/follower_paid_spec.json`.
 
+**Shared condition templates (`conditionTemplates` + `dialogue[].useConditionTemplates`)** — when many
+INFOs share the same gate set (ambient commentary: a location/state/time block repeated across hundreds
+of lines), define it once and reference it by name. A top-level `conditionTemplates: [{ "name": "X",
+"conditions": [...] }]` declares a named block; a line's `"useConditionTemplates": ["X", "Y"]` appends
+those blocks' conditions to its INFO — **after** the line's inline `conditions`, in listed order, through
+the same builder (so `GetIsAliasRef` etc. resolve against the owning quest). Templates nest no further
+(a template is a flat condition list). `validate` flags a reference to an undefined template and a
+duplicate template name.
+
 **`GetIsAliasRef`** gates on **which quest alias the run-on actor fills** (the most-used VIGILANT
 dialogue technique — gate a line by role, e.g. "the Victim alias", not a hardcoded NPC FormID). Give
 the alias by **`alias`** (its name on the **owning quest**), not `param`; build resolves it to the

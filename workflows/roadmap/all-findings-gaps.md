@@ -191,11 +191,10 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 
 來源：**follower-commentary-overhaul.md**（FCO 設計）、**relationship-dialogue-overhaul.md**（RDO 設計）。
 
-🆕 **INFO 批次建立 + condition template 共享機制**  
-**現況：** ModForge 逐條 spec INFO，無法共享 condition block（FCO 有 265 條共用相同地點/狀態條件）。  
-**Scope：** spec 支援 `conditionTemplates: [...]` 定義命名條件組，`info.useTemplate: MyConditionSet` 展開繼承；或支援 INFO 陣列批次建立（同 topic 多條、共享 conditions）。  
-**用途：** ambient commentary 大量生成（旅途/地點/時間/天氣/玩家狀態反應）。  
-**優先：** 🟡（只要做旅途 commentary 就需要）
+✅ **condition template 共享機制（已落地 2026-06-20）**；INFO 陣列批次建立（待）  
+**狀態（template 部分 ✅）：** `conditionTemplates: [{name, conditions}]` 命名條件組 + `dialogue[].useConditionTemplates: [name…]` 展開到 INFO（inline conditions 之後、同 `BuildCondition` 路徑、alias-aware）。`Spec.Dialogue.cs`（`ConditionTemplateSpec`）+ `Generator.Build.Conditions.cs`（`WireDialogueConditions` 展開）+ `Generator.Validate.Quests.cs`（name 唯一/非空 + 每條 CheckCondition + 引用須存在）。docs SPEC-dialogue、schema、CODE_MAP 同步。**4 測綠**。解決 FCO 265 條共用 gate 的痛點。  
+**剩（INFO 陣列批次建立）：** 同 topic 多條 INFO 一次宣告仍待做（目前逐條 spec INFO，但已可用 template 消除條件重複）——需求度較低，留待有大量 commentary 需求時再做。  
+**用途：** ambient commentary 大量生成（旅途/地點/時間/天氣/玩家狀態反應）。
 
 ---
 
@@ -226,7 +225,7 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 7. **H 組**（CSF skill tree）→ 接 generation.md 現有設計，已有詳細 spec 草案
 8. ~~**L 組**（GetVMQuestVariable/GetVMScriptVariable 條件）~~ ✅ **已落地 2026-06-20** → follower ambient bark 品質（variableName 字串格式待主力機 xEdit 驗）
 9. **J 組**（JC/PapyrusUtil 模板）→ follower 複雜狀態管理
-10. **M 組**（INFO 批次 + 條件模板）→ ambient commentary 生成效率
+10. **M 組**（INFO 批次 + 條件模板）→ ambient commentary 生成效率 — ✅ **條件模板已落地 2026-06-20**（INFO 陣列批次待做）
 11. ~~**A 組 #9**（UpdateCurrentInstanceGlobal）~~ ✅ **已落地 2026-06-17** → gather 型任務 per-instance 計數 objective
 12. ~~**K 組**（quest stage global write spec）~~ ✅ **已落地 2026-06-20**（stage 側；alias 側未做）→ 生成器覆蓋率
 13. ~~**D-3~7**（其餘 ini pipeline：SkyPatcher/KID/BOS/AOS）~~ ✅ **已落地 2026-06-20** → D-group SKSE loose-ini pipeline 完整（runtime 待主力機驗）

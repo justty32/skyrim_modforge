@@ -580,6 +580,11 @@
       "type": "array",
       "items": { "$ref": "#/$defs/skyPatcher" },
       "description": "SkyPatcher configs: in-memory runtime record edits by filter, no ESP override. Emitted as a loose SKSE/Plugins/SkyPatcher/<recordType>/<file>.ini. Requires SkyPatcher.dll. See docs/spec/SPEC-distribution.md."
+    },
+    "conditionTemplates": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/conditionTemplate" },
+      "description": "Named, reusable CTDA blocks referenced by dialogue[].useConditionTemplates — share one gate set across many INFOs (e.g. ambient commentary). See docs/spec/SPEC-dialogue.md."
     }
   },
   "additionalProperties": false,
@@ -2269,7 +2274,22 @@
             "$ref": "#/$defs/condition"
           },
           "description": "extra CTDA gates on the INFO beyond the auto GetIsID speaker gate (e.g. only show a paid recruit line when the player can afford it)"
+        },
+        "useConditionTemplates": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "names of conditionTemplates[] whose conditions are appended to this INFO (after inline conditions, in listed order) — share one gate set across many lines"
         }
+      }
+    },
+    "conditionTemplate": {
+      "type": "object",
+      "required": [ "name" ],
+      "additionalProperties": false,
+      "description": "A named reusable condition block (M group).",
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" } }
       }
     },
     "script": {

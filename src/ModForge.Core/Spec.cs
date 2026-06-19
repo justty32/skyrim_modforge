@@ -96,6 +96,7 @@ public sealed class ModSpec
     public List<ObjectSwapSpec> ObjectSwaps { get; set; } = new();       // BOS <file>_SWAP.ini (loose; Spec.ObjectSwap.cs)
     public List<AnimObjectSwapSpec> AnimObjectSwaps { get; set; } = new(); // AOS <file>_ANIO.ini (loose; Spec.AnimObjectSwap.cs)
     public List<SkyPatcherSpec> SkyPatchers { get; set; } = new();       // SkyPatcher <recordType>/<file>.ini (loose; Spec.SkyPatcher.cs)
+    public List<ConditionTemplateSpec> ConditionTemplates { get; set; } = new(); // named reusable CTDA blocks (M組; Spec.Dialogue.cs)
     public VoiceLineSpec? VoiceLine { get; set; } // global voice output settings
     // External-resource pipeline (see docs/external_assets.md): a source directory whose
     // `Meshes/`, `Textures/`, `Sounds/` (and loose `.hkx`) sub-trees `package` copies next to

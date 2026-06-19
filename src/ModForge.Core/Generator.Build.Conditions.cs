@@ -275,6 +275,16 @@ public static partial class Generator
                 foreach (var c in d.Conditions)
                     if (BuildCondition(c, $"dialogue '{d.EditorId}' condition", aliasIdx) is { } cond) info.Conditions.Add(cond);
 
+                // M組 named condition templates: expand each referenced template's conditions onto the
+                // INFO (after inline conditions, in listed order). Same BuildCondition path → alias-aware.
+                foreach (var tname in d.UseConditionTemplates)
+                {
+                    var tmpl = spec.ConditionTemplates.FirstOrDefault(t => string.Equals(t.Name, tname, StringComparison.OrdinalIgnoreCase));
+                    if (tmpl is null) { Warn($"  ! dialogue '{d.EditorId}': unknown conditionTemplate '{tname}'"); continue; }
+                    foreach (var c in tmpl.Conditions)
+                        if (BuildCondition(c, $"dialogue '{d.EditorId}' template '{tname}'", aliasIdx) is { } cond) info.Conditions.Add(cond);
+                }
+
                 // identity / primaryIdentity tags → player GetInFaction CTDA (lightweight class system).
                 foreach (var c in ExpandIdentityConditions(d.Identity, d.PrimaryIdentity, $"dialogue '{d.EditorId}' identity"))
                     if (BuildCondition(c, $"dialogue '{d.EditorId}' identity") is { } cond) info.Conditions.Add(cond);

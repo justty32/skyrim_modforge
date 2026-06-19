@@ -99,6 +99,15 @@ public static partial class Generator
             }
 
             var dialogueIds = new HashSet<string>(spec.Dialogue.Select(x => x.EditorId), StringComparer.OrdinalIgnoreCase);
+            // M組 condition templates: non-empty unique names; each condition structurally valid.
+            var seenTemplates = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+            foreach (var t in spec.ConditionTemplates)
+            {
+                if (string.IsNullOrWhiteSpace(t.Name)) { Problems.Add("conditionTemplate has empty 'name'"); continue; }
+                if (!seenTemplates.Add(t.Name)) Problems.Add($"conditionTemplate '{t.Name}' is defined more than once");
+                foreach (var c in t.Conditions) CheckCondition(c, $"conditionTemplate '{t.Name}'");
+            }
+
             foreach (var d in spec.Dialogue)
             {
                 if (!questIds.Contains(d.QuestEditorId)) Problems.Add($"dialogue '{d.EditorId}' references unknown quest '{d.QuestEditorId}'");
@@ -114,6 +123,10 @@ public static partial class Generator
                 }
                 if (!string.IsNullOrEmpty(d.SpeakerNpcEditorId) && !npcIds.Contains(d.SpeakerNpcEditorId))
                     Problems.Add($"dialogue '{d.EditorId}' references unknown speaker npc '{d.SpeakerNpcEditorId}'");
+                // M組: every referenced condition template must exist.
+                foreach (var tname in d.UseConditionTemplates)
+                    if (!spec.ConditionTemplates.Any(t => string.Equals(t.Name, tname, System.StringComparison.OrdinalIgnoreCase)))
+                        Problems.Add($"dialogue '{d.EditorId}' useConditionTemplates references unknown template '{tname}'");
                 if (!string.IsNullOrWhiteSpace(d.SetPrimaryIdentity)
                     && !string.Equals(d.SetPrimaryIdentity, "auto", System.StringComparison.OrdinalIgnoreCase)
                     && !spec.Identities.Any(i => string.Equals(i.Id, d.SetPrimaryIdentity, System.StringComparison.OrdinalIgnoreCase)))
