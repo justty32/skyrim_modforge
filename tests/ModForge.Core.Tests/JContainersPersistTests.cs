@@ -400,6 +400,54 @@ public class JContainersPersistTests
         finally { if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true); }
     }
 
+    // ---- SM-event-driven persist: an easy in-game trigger (cast a spell) runs the persist in the
+    //      OnStory<Event> handler, because an SM-started quest never runs its startUpStage fragment ----
+
+    private static QuestSpec CastMagicPersistQuest() => new()
+    {
+        EditorId = "MFSkill_Q", Name = "Q", Type = "None",
+        Stages =
+        {
+            new StageSpec
+            {
+                Index = 10,
+                Persist = new PersistSpec { Storage = "S", Key = "player", Set = { new PersistEntrySpec { Path = ".lvl", Int = 1, Delta = true } } },
+                SyncPerks = new SyncPerksSpec { Storage = "S", Key = "player", Nodes = { new SyncPerkNodeSpec { Path = ".n", Perk = "MF_AdaptPerk" } } },
+            },
+        },
+        StoryEvent = new QuestStoryEventSpec { Event = "CastMagic" },
+    };
+
+    [Fact]
+    public void StoryEventPersist_RunsInOnStoryHandler_NotStageFragment()
+    {
+        var q = CastMagicPersistQuest();
+        Assert.True(Generator.StoryHandlerNeeded(q));
+        Assert.True(Generator.QuestNeedsFragmentScript(q));
+        var src = Generator.GenerateQuestFragmentSource(q);
+        // The persist + sync run inside the per-event handler (the hook that fires for an SM quest).
+        Assert.Contains("Event OnStoryCastMagic", src);
+        var handler = src.Split("Event OnStoryCastMagic")[1];
+        Assert.Contains("JFormDB.solveIntSetter(Game.GetPlayer(), \".S.lvl\"", handler);
+        Assert.Contains("__sp.AddPerk(S0010_SyncPerk_0)", handler);
+        Assert.Contains("Stop()", handler);   // re-arm so the SM relaunches on the next cast
+        // The stage fragment must NOT also carry it (it never runs for an SM quest — would double-bank).
+        var stageFrag = src.Split("Function Fragment_Stage_0010_Item00000()")[1].Split("EndFunction")[0];
+        Assert.DoesNotContain("solveIntSetter", stageFrag);
+    }
+
+    [Fact]
+    public void NonStoryEventPersist_StaysInStageFragment()
+    {
+        // Without a storyEvent the persist stays in the stage fragment (the proven startUpStage path).
+        var q = StagePersistQuest();
+        Assert.False(Generator.StoryHandlerNeeded(q));
+        var src = Generator.GenerateQuestFragmentSource(q);
+        Assert.DoesNotContain("Event OnStory", src);
+        var stageFrag = src.Split("Function Fragment_Stage_0010_Item00000()")[1].Split("EndFunction")[0];
+        Assert.Contains("solveIntSetter", stageFrag);
+    }
+
     [Fact]
     public void Validate_StageSpeakerKey_Rejected()
     {

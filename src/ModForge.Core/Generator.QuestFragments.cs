@@ -47,6 +47,19 @@ public static partial class Generator
         && !string.IsNullOrEmpty(d.StoryHandler)
         && (q.Spawn is not null || se.CooldownHours > 0f);
 
+    /// <summary>True when the quest must emit an <c>OnStory&lt;Event&gt;</c> handler — i.e. it is
+    /// Story-Manager-driven (has a <c>storyEvent</c> with a known handler) and has work to run on each SM
+    /// delivery: a spawn/cooldown (<see cref="StoryTrigger"/>) OR a JContainers persist/syncPerks block on
+    /// any stage. The latter is the "easy in-game trigger" path: an SM-started quest never runs its
+    /// startUpStage fragment (in-game 2026-06-19), so a persist hung there would never fire — it must run
+    /// in the OnStory handler instead. So "cast a spell → bank skill XP" hangs persist on a CastMagic
+    /// quest and lets the handler drive it.</summary>
+    public static bool StoryHandlerNeeded(QuestSpec q) =>
+        q.StoryEvent is { } se && StoryManagerEvents.TryGet(se.Event, out var d)
+        && !string.IsNullOrEmpty(d.StoryHandler)
+        && (q.Spawn is not null || se.CooldownHours > 0f
+            || q.Stages.Any(s => HasPersist(s) || HasSyncPerks(s)));
+
     /// <summary>The property-name prefix that namespaces a stage's JContainers persist/syncPerks
     /// properties (so several stages in one quest script never collide). MUST match between the generated
     /// source and the VMAD binding (WireQuestStages).</summary>
@@ -122,31 +135,37 @@ public static partial class Generator
 
         bool hasSpawn = q.Spawn is not null;
         bool hasCooldown = q.StoryEvent is { } sev && sev.CooldownHours > 0f;
-        bool storyTrigger = StoryTrigger(q);
+        bool storyHandler = StoryHandlerNeeded(q);
 
-        // Emit the cooldown-then-spawn trigger body (shared by the startUpStage fragment for a
-        // StartGameEnabled spawn quest and the OnStory<Event> handler for an SM-driven encounter).
-        // stopAfter=true Stop()s the quest once it has fired so the Story Manager can re-launch it on
-        // the next qualifying event (a running quest is never re-started) — the cooldown then gates the
-        // re-fire; without the Stop() the encounter would fire exactly once for the save's lifetime.
-        void AppendTrigger(bool stopAfter)
+        // The trigger body is built from three pieces, shared by the startUpStage fragment (StartGameEnabled
+        // spawn) and the OnStory<Event> handler (SM-driven). Splitting them lets the OnStory handler run the
+        // JContainers persist/syncPerks BETWEEN the cooldown gate and the spawn (so "cast a spell → bank
+        // skill XP" works on the same hook that an SM encounter spawns from).
+        void AppendCooldownGate()
         {
-            if (hasCooldown)
-            {
-                sb.AppendLine($"    {EncounterCooldownScript} __cd = self as {EncounterCooldownScript}");
-                sb.AppendLine("    if __cd && !__cd.TryFire()");
-                sb.AppendLine("        Stop()                                  ; still on cooldown — abort this encounter");
-                sb.AppendLine("        return");
-                sb.AppendLine("    endif");
-            }
-            if (hasSpawn)
-            {
-                sb.AppendLine($"    {DynamicSpawnScript} __spawn = self as {DynamicSpawnScript}");
-                sb.AppendLine("    if __spawn");
-                sb.AppendLine("        __spawn.SpawnNow()");
-                sb.AppendLine("    endif");
-            }
-            if (stopAfter) sb.AppendLine("    Stop()                                  ; re-arm: let the SM relaunch this encounter on the next event");
+            if (!hasCooldown) return;
+            sb.AppendLine($"    {EncounterCooldownScript} __cd = self as {EncounterCooldownScript}");
+            sb.AppendLine("    if __cd && !__cd.TryFire()");
+            sb.AppendLine("        Stop()                                  ; still on cooldown — abort this encounter");
+            sb.AppendLine("        return");
+            sb.AppendLine("    endif");
+        }
+        void AppendSpawn()
+        {
+            if (!hasSpawn) return;
+            sb.AppendLine($"    {DynamicSpawnScript} __spawn = self as {DynamicSpawnScript}");
+            sb.AppendLine("    if __spawn");
+            sb.AppendLine("        __spawn.SpawnNow()");
+            sb.AppendLine("    endif");
+        }
+        // The JContainers persist/syncPerks of every stage that carries one (an SM quest has no per-stage
+        // fragment that runs, so its persist lives here in the OnStory handler instead).
+        void AppendJcStages()
+        {
+            foreach (var stage in jcStages)
+                foreach (var stSpec in q.Stages.Where(s => s.Index == stage))
+                    foreach (var line in JContainersFragmentBody(StagePropPrefix(stage), stSpec.Persist, stSpec.SyncPerks))
+                        sb.AppendLine("    " + line);
         }
 
         foreach (var stage in stageNums)
@@ -158,7 +177,10 @@ public static partial class Generator
             // SM-driven quests route this through OnStory<Event> below instead (the startUpStage
             // fragment does not run for an SM-started quest — in-game confirmed 2026-06-19).
             if (startupTrigger == stage)
-                AppendTrigger(stopAfter: false);
+            {
+                AppendCooldownGate();
+                AppendSpawn();
+            }
             foreach (var o in q.Objectives.Where(o => o.ShowStage == stage))
                 sb.AppendLine($"    SetObjectiveDisplayed({o.Index})   ; show: {OneLine(o.Text)}");
             foreach (var o in q.Objectives.Where(o => o.CompleteStage == stage))
@@ -176,22 +198,30 @@ public static partial class Generator
             }
             // JContainers JFormDB writes + perk sync for this stage (keyed on player or an arbitrary ref —
             // a stage fragment has no akSpeakerRef). Emitted last so a perk sync sees the just-banked ranks.
-            foreach (var stSpec in q.Stages.Where(s => s.Index == stage))
-                foreach (var line in JContainersFragmentBody(StagePropPrefix(stage), stSpec.Persist, stSpec.SyncPerks))
-                    sb.AppendLine("    " + line);
+            // SKIPPED for an SM quest: that fragment never runs (in-game 2026-06-19), so its persist is
+            // routed to the OnStory<Event> handler below instead.
+            if (!storyHandler)
+                foreach (var stSpec in q.Stages.Where(s => s.Index == stage))
+                    foreach (var line in JContainersFragmentBody(StagePropPrefix(stage), stSpec.Persist, stSpec.SyncPerks))
+                        sb.AppendLine("    " + line);
             sb.AppendLine("EndFunction");
             sb.AppendLine();
         }
 
-        // SM-driven encounter: drive the spawn/cooldown from the per-event OnStory<Event> handler. This is
-        // the hook that actually fires for a Story-Manager-started quest (the startUpStage fragment does
-        // not — in-game confirmed 2026-06-19). The handler signature comes from StoryManagerEvents; the
-        // body is the same cooldown-then-spawn trigger, plus a Stop() so the SM can relaunch it next time.
-        if (storyTrigger && q.StoryEvent is { } se2 && StoryManagerEvents.TryGet(se2.Event, out var sdef)
+        // SM-driven quest: drive the work from the per-event OnStory<Event> handler. This is the hook that
+        // actually fires for a Story-Manager-started quest (the startUpStage fragment does not — in-game
+        // confirmed 2026-06-19). The handler signature comes from StoryManagerEvents; the body is the
+        // cooldown gate, then the persist/syncPerks (so a perk sync sees the just-banked ranks), then the
+        // spawn, then a Stop() so the SM can relaunch the quest on the next qualifying event (a running
+        // quest is never re-started — the cooldown, if any, gates the re-fire).
+        if (storyHandler && q.StoryEvent is { } se2 && StoryManagerEvents.TryGet(se2.Event, out var sdef)
             && !string.IsNullOrEmpty(sdef.StoryHandler))
         {
             sb.AppendLine($"Event {sdef.StoryHandler}");
-            AppendTrigger(stopAfter: true);
+            AppendCooldownGate();
+            AppendJcStages();
+            AppendSpawn();
+            sb.AppendLine("    Stop()                                  ; re-arm: let the SM relaunch this on the next event");
             sb.AppendLine("EndEvent");
             sb.AppendLine();
         }

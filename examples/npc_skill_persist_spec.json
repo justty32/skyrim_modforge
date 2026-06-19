@@ -1,12 +1,12 @@
 {
   "pluginName": "ModForgeNpcSkillPersist.esp",
   "esl": true,
-  "_": "Idea #20 in-world skill tree — Phase 0 (JContainers JFormDB persistence, design §七 Phase 0). A trainer NPC whose 'Train your Endurance' dialogue line PERSISTS per-NPC skill state to a JFormDB storage keyed on the speaker, then SYNCS the matching perk from the stored rank. The 'Reflect on your bond' line shows the AFFINITY GATE (design §四, Sofia F6 blueprint): the bank+sync runs only once the affinity GLOB crosses a threshold, so growth can be gated on a relationship counter with no hand-written Papyrus. No Campfire / in-world UI — this is the pure-effect persistence layer ('an NPC grows perks from stored state'). ⚠ REQUIRES JContainers SE installed at runtime, and compiling the generated TIF_*.psc needs JContainers' own .psc on the Papyrus header path (main machine; see WAIT_USER). Lifecycle note: only the root-DB path API (JFormDB.solveXxxSetter/solveInt) is used, so there is no JValue.object()/retain()/release() to balance (design unknown U5 — avoided by construction). The perk here is a trivial inline PERK so the spec is self-contained; swap to your real skill-tree perks.",
+  "_": "Idea #20 in-world skill tree — Phase 0 (JContainers JFormDB persistence) with an EASY in-game trigger. CAST ANY SPELL to train: a CastMagic Story-Manager quest (MFSkill_Q) starts whenever the PLAYER casts a spell, and its OnStory handler banks Endurance skill state to a JFormDB storage keyed on the player, then syncs the Adaptation perk from the stored rank — no NPC to find, no dialogue. (An SM-started quest never runs its startUpStage fragment — in-game 2026-06-19 — so the persist runs in the OnStory<Event> handler instead; the generator routes it there automatically.) The AFFINITY GATE (design §四, Sofia F6 blueprint) wraps the bank+sync: growth only happens while MFSkill_Affinity >= 4, so the tester flips the gate by console (`set MFSkill_Affinity to 4`) and watches it turn on. ⚠ REQUIRES JContainers SE installed at runtime; compiling the generated MFSkill_Q_Stages.psc needs JContainers' own .psc on the Papyrus header path (main machine — see memory headless-jcontainers-papyrus-headers). Lifecycle: only the root-DB path API (JFormDB.solveXxxSetter/solveInt) is used, so there is no JValue.object()/retain()/release() to balance (design unknown U5, avoided by construction). The perk is a trivial inline PERK so the spec is self-contained; swap for your real skill-tree perks.",
 
   "globals": [
     {
-      "editorId": "MFSkill_TrainerAffinity",
-      "_": "The affinity / relationship counter (Sofia F6 blueprint). Raise it elsewhere (gifts, quests, the dialogue line below); the gated line reads it to decide whether growth unlocks. short = integer flag/counter.",
+      "editorId": "MFSkill_Affinity",
+      "_": "The affinity / relationship counter (Sofia F6 blueprint). In a real mod you'd raise it via gifts/quests; here the tester sets it by console to flip the gate. short = integer flag/counter.",
       "type": "short",
       "value": 0
     }
@@ -27,84 +27,42 @@
     }
   ],
 
-  "npcs": [
-    {
-      "editorId": "MFSkill_Trainer",
-      "name": "Skill Trainer",
-      "_": "A plain NPC to host the trainer dialogue. Place/spawn it however you like; the skill state hangs on this NPC's Form via JFormDB."
-    }
-  ],
-
   "quests": [
     {
       "editorId": "MFSkill_Q",
-      "name": "Skill Training",
-      "_": "StartGameEnabled controller quest so the dialogue is loaded/evaluated. type=None keeps it out of the journal.",
+      "name": "Endurance Training",
+      "_": "CastMagic Story-Manager quest. The engine's Cast Magic story event starts it whenever the player casts a spell (the GetIsID Player condition restricts the trigger to the player — without it every NPC cast would start the quest too). type=None keeps it out of the journal. No aliases: the persist is keyed on the player (Game.GetPlayer()), so nothing needs an event-filled alias (a required fromEvent alias would also block a console `startquest` test).",
       "type": "None",
       "stages": [
         {
           "index": 10,
-          "startUpStage": true,
-          "_": "STAGE-FRAGMENT persist demo: on quest start (game load) the engine auto-runs this stage, which banks an init marker keyed on the trainer NPC's base form — an ARBITRARY-REF key (not speaker/player; bound as a Form property). A quest stage has no speaker, so the key must be 'player' or a ref.",
+          "_": "persist + syncPerks keyed on the PLAYER, both gated on MFSkill_Affinity >= 4. On each qualifying cast: bump Endurance level (+1) and ratio (+0.25) as delta counters, set the Adaptation node to rank 2, then sync — Adaptation is added once its stored rank reaches 2. The stage carries the spec; the OnStory<Event> handler runs it (an SM quest's startUpStage fragment never fires).",
           "persist": {
             "storage": "ModForgeNpcSkills",
-            "key": "MFSkill_Trainer",
+            "key": "player",
             "set": [
-              { "path": ".initialized", "int": 1 }
-            ]
+              { "path": ".Endurance.level", "int": 1, "delta": true },
+              { "path": ".Endurance.ratio", "float": 0.25, "delta": true },
+              { "path": ".Endurance.nodes.Adaptation", "int": 2 }
+            ],
+            "gate": { "global": "MFSkill_Affinity", "atLeast": 4 }
+          },
+          "syncPerks": {
+            "storage": "ModForgeNpcSkills",
+            "key": "player",
+            "nodes": [
+              { "path": ".Endurance.nodes.Adaptation", "perk": "MFSkill_AdaptationPerk", "minRank": 2 }
+            ],
+            "gate": { "global": "MFSkill_Affinity", "atLeast": 4 }
           }
         }
-      ]
-    }
-  ],
-
-  "dialogue": [
-    {
-      "editorId": "MFSkill_TrainEndurance",
-      "questEditorId": "MFSkill_Q",
-      "speakerNpcEditorId": "MFSkill_Trainer",
-      "prompt": "Train your Endurance.",
-      "responses": [ "Endure, and you adapt." ],
-      "_": "On pick: bump the speaker's stored Endurance level + ratio (delta = read-add-write counters), set the Adaptation node rank to 2, then sync perks — Adaptation is added once its stored rank reaches 2.",
-      "persist": {
-        "storage": "ModForgeNpcSkills",
-        "key": "speaker",
-        "set": [
-          { "path": ".Endurance.level", "int": 1, "delta": true },
-          { "path": ".Endurance.ratio", "float": 0.25, "delta": true },
-          { "path": ".Endurance.nodes.Adaptation", "int": 2 }
+      ],
+      "storyEvent": {
+        "event": "CastMagic",
+        "_": "Fires when the player casts any spell. The condition restricts it to the player (GetIsID == Player, Skyrim.esm:0x00000014); the Cast Magic event's subject is the casting actor.",
+        "conditions": [
+          { "function": "GetIsID", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x00000014" }
         ]
-      },
-      "syncPerks": {
-        "storage": "ModForgeNpcSkills",
-        "key": "speaker",
-        "nodes": [
-          { "path": ".Endurance.nodes.Adaptation", "perk": "MFSkill_AdaptationPerk", "minRank": 2 }
-        ]
-      }
-    },
-    {
-      "editorId": "MFSkill_Bond",
-      "questEditorId": "MFSkill_Q",
-      "speakerNpcEditorId": "MFSkill_Trainer",
-      "prompt": "Reflect on your bond.",
-      "responses": [ "Trust earned, strength shared." ],
-      "_": "AFFINITY GATE demo (design §四 好感度 gate, Sofia F6 blueprint): both the bank and the perk sync run only when MFSkill_TrainerAffinity >= 4. Below the threshold the line is inert; once the relationship counter is high enough the Adaptation node is set to rank 2 and the perk applies. Use 'atMost' too for a band (atLeast <= value <= atMost); omit both to gate on the GLOB being non-zero.",
-      "persist": {
-        "storage": "ModForgeNpcSkills",
-        "key": "speaker",
-        "set": [
-          { "path": ".Endurance.nodes.Adaptation", "int": 2 }
-        ],
-        "gate": { "global": "MFSkill_TrainerAffinity", "atLeast": 4 }
-      },
-      "syncPerks": {
-        "storage": "ModForgeNpcSkills",
-        "key": "speaker",
-        "nodes": [
-          { "path": ".Endurance.nodes.Adaptation", "perk": "MFSkill_AdaptationPerk", "minRank": 2 }
-        ],
-        "gate": { "global": "MFSkill_TrainerAffinity", "atLeast": 4 }
       }
     }
   ]

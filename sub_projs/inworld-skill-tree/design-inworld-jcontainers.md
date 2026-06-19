@@ -149,8 +149,9 @@ target 解析為某 NPC 後，橋接靠一組**全域 session GLOB**（僅描述
      - ✅ **host=quest stage fragment 已補（2026-06-18 離線）**：`quest.stages[].persist`/`.syncPerks` — 到達 stage 時觸發（emitter host-agnostic，prop 名以 `S<idx:D4>_` namespace 防多 stage 撞名；stage 無 akSpeakerRef → key 須 player/ref，validation 擋 speaker）。**這就是「任務 stage gate 觸發路徑」**。
      - ✅ **任意-ref key 已補（2026-06-18 離線）**：key 非 speaker/player 即視為 arbitrary ref → 綁 `PKey`/`SKey` Form property 當 JFormDB key（石頭代表某 NPC）。syncPerks 的 ref 須 runtime 是 actor ref（`If (key as Actor)` 守，非 actor no-op）。
      - ✅ **好感度 gate 已補（2026-06-19 離線）**：`persist`/`syncPerks` 可選 `gate: {global, atLeast?, atMost?}` — 綁一個 GLOB（relationship/reputation 計數，Sofia F6 藍圖），把整塊寫入/sync 包進 `If <GLOB>.GetValue() >= n`（atMost→band、皆無→`!= 0`）。GLOB 綁為 `PGate`/`SGate` property、validation 擋未解 GLOB + 反向 band。705 測綠，example `npc_skill_persist_spec.json` 加 `MFSkill_Bond` 對話線（affinity>=4 才 unlock）示範。
-     - ✅ **.pex 已編 + 交付（2026-06-19 主力機）**：JContainers 12 `.psc` 併入 native headers cache + `MODFORGE_PAPYRUS_HEADERS` 指向它 → 3 fragment 全編綠（含 gate 的 `TIF_MFSkill_Bond.pex`），FLAT zip 交付 `~/skyrim_mods/mine/`。memory `[[headless-jcontainers-papyrus-headers]]`。
-     - **剩**：實機驗（需 MO2 裝 JContainers SE；WAIT_USER）。
+     - ✅ **.pex 已編 + 交付（2026-06-19 主力機）**：JContainers 12 `.psc` 併入 native headers cache + `MODFORGE_PAPYRUS_HEADERS` 指向它 → fragment 全編綠，FLAT zip 交付 `~/skyrim_mods/mine/`。memory `[[headless-jcontainers-papyrus-headers]]`。
+     - ✅ **成長來源改「施法即觸發」（2026-06-19 離線）**：原 example 要找 Skill Trainer NPC 太難 → 重做成 **CastMagic SM quest**（玩家施任何法術 → SM 啟動 → `OnStory<Event>` handler 跑 persist+sync，keyed on player）。generator 新增 `StoryHandlerNeeded`：有 storyEvent 的 quest，其 stage persist 自動路由到 `OnStory` handler（SM quest 不跑 startUpStage fragment，沿用 [[dynamic-spawn-debugging]] 真因）。這就是「戰鬥/施法 XP gate」的觸發骨架——任何 SM 事件（KillActor/Assault/CastMagic…）都能掛 persist。707 測綠。
+     - **剩**：實機驗（需 MO2 裝 JContainers SE；WAIT_USER）——施法長技能 + 好感度 gate 翻轉 + CastMagic 的 GetIsID Player 條件。
 2. **Phase 1：玩家版 in-world 樹（繞過 U1/U2）**——照 Frostfall 模式掛一棵玩家樹到營火（Campfire 原生、全域 GLOB、零橋接）。驗證 in-world 星樹本體可生成可運作；只觸及 U4（generator）不觸及 U1/U2。
 3. **Phase 2（待 U1/U2）**：NPC 版橋接——session GLOB + JFormDB + 對 NPC 開樹。需先在主力機釐清 U1（對任意 ref 開樹）/ U2（session GLOB 隔離）。
 4. **Phase 3（待 U4 收尾）**：ModForge generator——把上述 record 從 spec 自動產出，補 PositionRef layout 模板。

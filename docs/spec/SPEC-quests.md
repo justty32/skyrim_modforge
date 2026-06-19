@@ -115,6 +115,14 @@ on **two hosts**:
 
 In both, the writes appear before the perk sync so a sync sees what was just stored.
 
+**Story-Manager-driven trigger** (an easy in-game hook): put a stage `persist`/`syncPerks` on a quest that
+also has a `storyEvent` (e.g. `CastMagic` — see [Story Manager quests](#story-manager-quests--event-driven-start)). An
+SM-started quest never runs its startUpStage fragment (in-game 2026-06-19), so the generator routes that
+stage's persist into the quest's `OnStory<Event>` handler instead — it runs on **every** SM delivery, then
+`Stop()`s to re-arm. So *"cast any spell → bank Endurance XP, gain the perk at rank 2"* is a CastMagic quest
+with the persist keyed on `"player"` and a `GetIsID Player` event condition — no NPC, no dialogue. Worked
+example: `examples/npc_skill_persist_spec.json`.
+
 - **`persist`** — `{ storage, key?, set: [...] }`. `storage` is the JFormDB storageName (the namespace
   bucket; becomes the first path component). `key` is the Form the state hangs on — see **Key** below.
   Each `set` entry is `{ path, <value>, delta? }`:
