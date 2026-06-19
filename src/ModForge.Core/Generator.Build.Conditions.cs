@@ -15,6 +15,7 @@ public static partial class Generator
         "GetQuestRunning", "GetInCell", "GetInWorldspace", "GetEquipped", "GetDeadCount",
         "GetSitting", "GetGold", "GetMapMarkerVisible", "GetStageDone", "GetInCurrentLoc",
         "IsSceneActionComplete",
+        "GetVMQuestVariable", "GetVMScriptVariable",
     };
 
     private sealed partial class BuildContext
@@ -133,6 +134,28 @@ public static partial class Generator
                     d.SceneActionIndex = c.SceneActionIndex;
                     data = d; break;
                 }
+                // Read a Papyrus script PROPERTY from a condition (L組): GetVMQuestVariable reads a
+                // property on a quest's attached script (param = the quest), GetVMScriptVariable reads
+                // one on an object's attached script (param = the object/ref). `variableName` is the
+                // property name string (e.g. ITH's "PlayerInDialogue"); compared against `value`.
+                case "getvmquestvariable":
+                {
+                    if (string.IsNullOrWhiteSpace(c.VariableName))
+                    { Warn($"  ! {label}: GetVMQuestVariable needs a 'variableName' (the quest script property name)"); return null; }
+                    if (!hasParam) { Warn($"  ! {label}: GetVMQuestVariable needs a 'param' (the quest whose script is read)"); return null; }
+                    var d = new GetVMQuestVariableConditionData { VariableName = c.VariableName };
+                    d.Quest.Link.SetTo(paramFk);
+                    data = d; break;
+                }
+                case "getvmscriptvariable":
+                {
+                    if (string.IsNullOrWhiteSpace(c.VariableName))
+                    { Warn($"  ! {label}: GetVMScriptVariable needs a 'variableName' (the script property name)"); return null; }
+                    if (!hasParam) { Warn($"  ! {label}: GetVMScriptVariable needs a 'param' (the object whose attached script is read)"); return null; }
+                    var d = new GetVMScriptVariableConditionData { VariableName = c.VariableName };
+                    d.Target.Link.SetTo(paramFk);
+                    data = d; break;
+                }
                 case "getinworldspace":     { var d = new GetInWorldspaceConditionData();     if (hasParam) d.WorldspaceOrList.Link.SetTo(paramFk); data = d; break; }
                 case "getequipped":         { var d = new GetEquippedConditionData();         if (hasParam) d.ItemOrList.Link.SetTo(paramFk);     data = d; break; }
                 case "getdeadcount":        { var d = new GetDeadCountConditionData();        if (hasParam) d.Npc.Link.SetTo(paramFk);            data = d; break; }
@@ -197,7 +220,7 @@ public static partial class Generator
                         + "(have HasPerk/GetInFaction/GetItemCount/GetGlobalValue/GetStage/GetIsID/GetRelationshipRank/"
                         + "GetActorValue/GetActorValuePercent/GetCurrentTime/IsInInterior/IsInCombat/GetRandomPercent/TemperIsEnchanted/"
                         + "GetQuestCompleted/GetDistance/GetIsCurrentPackage/GetIsVoiceType/GetIsAliasRef/"
-                        + "GetQuestRunning/GetInCell/GetInWorldspace/GetEquipped/GetDeadCount/GetSitting/GetGold/GetMapMarkerVisible/GetStageDone/GetInCurrentLoc/IsSceneActionComplete)");
+                        + "GetQuestRunning/GetInCell/GetInWorldspace/GetEquipped/GetDeadCount/GetSitting/GetGold/GetMapMarkerVisible/GetStageDone/GetInCurrentLoc/IsSceneActionComplete/GetVMQuestVariable/GetVMScriptVariable)");
                     return null;
             }
 

@@ -3760,7 +3760,9 @@
             "GetMapMarkerVisible",
             "GetStageDone",
             "GetInCurrentLoc",
-            "IsSceneActionComplete"
+            "IsSceneActionComplete",
+            "GetVMQuestVariable",
+            "GetVMScriptVariable"
           ]
         },
         "comparison": {
@@ -3785,6 +3787,10 @@
         "stage": {
           "type": "integer",
           "description": "for GetStageDone: the stage INDEX to test (a parameter, distinct from the comparison value)"
+        },
+        "variableName": {
+          "type": "string",
+          "description": "for GetVMQuestVariable/GetVMScriptVariable: the Papyrus property name read off the attached script (param = the quest / the object)"
         },
         "scene": {
           "type": "string",

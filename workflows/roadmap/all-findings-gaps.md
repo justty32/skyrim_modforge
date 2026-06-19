@@ -189,15 +189,14 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 
 ---
 
-## L 組：Dialogue INFO `GetScriptVariable` 條件型
+## L 組：Dialogue INFO 讀 Papyrus property 條件型 — ✅ 落地 2026-06-20
 
 來源：**iwh-ith.md**、**conditional-expressions.md**。
 
-🆕 **`GetScriptVariable(QuestRef, PropertyName)` dialogue INFO 條件**  
-**現況：** 確認 ModForge condition 生成器是否支援 `GetScriptVariable` function type 未驗（⚠️ 需 code pass）。  
-**用途：** 讀取 ITH 的 `PlayerInDialogue` property 做 bark 抑制；讀取 CE 的 drunk/eating global 做 follower dialogue 分支。  
-**Scope：** 確認 `ConditionSpec.Function = GetScriptVariable` 的路徑；若不支援，補 `QuestRef` + `PropertyName` 欄位。  
-**優先：** 🟡（follower ambient bark 系統需要）
+✅ **`GetVMQuestVariable` / `GetVMScriptVariable` condition**（code pass 結論：舊 `GetScriptVariable` 名不對，SSE 讀 Papyrus property 的現代函式是這兩個 VM 變體）。
+離線實作：`ConditionSpec.VariableName` 欄位；`Generator.Build.Conditions.cs` 加兩 case（`GetVMQuestVariable`→`Quest`+`VariableName`、`GetVMScriptVariable`→`Target`+`VariableName`，`param` 帶 quest/object form）；`Generator.Validate.Helpers.cs` 驗 param+variableName 必填；docs/schema/`ConditionTests` 同步，720 測綠。
+**用途：** 讀取 ITH 的 `PlayerInDialogue` property 做 bark 抑制；讀任意 mod 的 quest/object script property 做 follower dialogue 分支。
+⚠️ **待主力機收尾**（見 WAIT_USER）：`variableName` 引擎期望的字串格式（bare property 名 vs backing `::Prop_var`）依目標 script 而定，需 xEdit/實機驗——ModForge verbatim 寫進 CTDA。
 
 ---
 
@@ -238,7 +237,7 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 5. **D-2**（MCM Helper）→ 解鎖玩家設定面板
 6. **D-4**（FLM ini）→ 解鎖外部 FLST 注入（Spellforge/SPID 兼容）
 7. **H 組**（CSF skill tree）→ 接 generation.md 現有設計，已有詳細 spec 草案
-8. **L 組**（GetScriptVariable 條件）→ follower ambient bark 品質
+8. ~~**L 組**（GetVMQuestVariable/GetVMScriptVariable 條件）~~ ✅ **已落地 2026-06-20** → follower ambient bark 品質（variableName 字串格式待主力機 xEdit 驗）
 9. **J 組**（JC/PapyrusUtil 模板）→ follower 複雜狀態管理
 10. **M 組**（INFO 批次 + 條件模板）→ ambient commentary 生成效率
 11. ~~**A 組 #9**（UpdateCurrentInstanceGlobal）~~ ✅ **已落地 2026-06-17** → gather 型任務 per-instance 計數 objective

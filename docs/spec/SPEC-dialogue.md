@@ -272,6 +272,7 @@ A condition is **static gate data**, so it lives in the spec (logic still belong
   //                                    // two-param: GetStageDone(param=quest, stage=N) — 1 if that exact stage was set
   //                                    //   IsSceneActionComplete(scene=<owning by default>, sceneActionIndex=N) — scene phase "advance when action N done"
   //                                    // actorValue-arg: GetActorValue | GetActorValuePercent (0..1 fraction)
+  //                                    // script-property: GetVMQuestVariable(param=quest, variableName=Prop) | GetVMScriptVariable(param=object, variableName=Prop) — read a Papyrus property in a condition
   //                                    // alias-arg: GetIsAliasRef (use "alias", NOT "param" — names an alias on the OWNING quest)
   //                                    // no-arg situational: GetCurrentTime (hour 0..24) | IsInInterior | IsInCombat | GetRandomPercent (0..99) | TemperIsEnchanted (recipe temper guard)
   //                                    //   GetSitting (sit-state; ==3 sitting, ==4 sleeping) | GetGold (run-on actor's gold) | GetMapMarkerVisible (runOn=Reference to a map marker)
@@ -280,6 +281,7 @@ A condition is **static gate data**, so it lives in the spec (logic still belong
   "param": "Skyrim.esm:0x00000F",      // the function's form arg (faction/item/global/quest/npc) as a ref
   "actorValue": "",                    // for GetActorValue/GetActorValuePercent instead of param — e.g. "Health", "WaitingForPlayer"
   "alias": "",                         // for GetIsAliasRef instead of param — an alias NAME on the owning quest (resolved to its index)
+  "variableName": "",                  // for GetVMQuestVariable/GetVMScriptVariable — the Papyrus property name read off the attached script
   "runOn": "Reference",                // whose value: Subject (default) | Reference | Target | CombatTarget | ...
   "reference": "Skyrim.esm:0x000014",  // the ref read when runOn=Reference (here, the player)
   "or": false }                        // OR with the NEXT condition (default AND)
@@ -295,4 +297,14 @@ the alias by **`alias`** (its name on the **owning quest**), not `param`; build 
 alias index. Valid only where there's an owning quest: `dialogue` / `banter` / `scene` (scene-level &
 per-phase) / quest `stages[].conditions` / `objectives[].targets[].conditions`. On a `package` /
 `perk` / recipe condition (no owning quest) it's dropped with a warning.
+
+**`GetVMQuestVariable` / `GetVMScriptVariable`** read a **Papyrus script property in a condition** — the
+way to gate a line on another mod's runtime state without writing Papyrus. `GetVMQuestVariable` reads a
+property off a **quest's** attached script (`param` = the quest); `GetVMScriptVariable` reads one off an
+**object's** attached script (`param` = the object/ref). `variableName` is the property name string, and
+`value`/`comparison` test it (e.g. Inigo-The-Hunters `PlayerInDialogue` bark-suppression: `{ "function":
+"GetVMQuestVariable", "param": "ITH.esp:0x…", "variableName": "PlayerInDialogue", "comparison": "==",
+"value": 0 }`). ⚠️ The exact `variableName` string the engine expects (bare property name vs. a backing
+`::Prop_var` form) **depends on the target script and needs xEdit/in-game verification** — ModForge emits
+whatever string you give verbatim into the CTDA.
 

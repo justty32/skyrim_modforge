@@ -45,6 +45,8 @@ public class ConditionTests
                     new() { Function = "GetMapMarkerVisible",   Comparison = "==", Value = 1 },
                     new() { Function = "GetStageDone",          Comparison = "==", Value = 1, Param = "Q", Stage = 20 },
                     new() { Function = "GetInCurrentLoc",       Comparison = "==", Value = 1, Param = "Skyrim.esm:0x000165A8" },
+                    new() { Function = "GetVMQuestVariable",    Comparison = "==", Value = 0, Param = "Q", VariableName = "PlayerInDialogue" },
+                    new() { Function = "GetVMScriptVariable",   Comparison = "==", Value = 0, Param = "Skyrim.esm:0x000014", VariableName = "MyProp" },
                 },
             },
         },
@@ -74,6 +76,8 @@ public class ConditionTests
     [InlineData("GetMapMarkerVisibleConditionData")]
     [InlineData("GetStageDoneConditionData")]
     [InlineData("GetInCurrentLocConditionData")]
+    [InlineData("GetVMQuestVariableConditionData")]
+    [InlineData("GetVMScriptVariableConditionData")]
     public void EachFunction_MapsToItsConditionData(string expectedType)
     {
         var r = BuildAllConditions();
@@ -196,6 +200,42 @@ public class ConditionTests
             },
         };
         Assert.Contains(Generator.Validate(spec), p => p.Contains("GetIsAliasRef needs an alias"));
+    }
+
+    // GetVMQuestVariable/GetVMScriptVariable carry the property NAME string (else the engine reads
+    // nothing) and the form arg (the quest / the object whose attached script is read).
+    [Fact]
+    public void GetVmVariable_CarriesPropertyNameAndForm()
+    {
+        var r = BuildAllConditions();
+        var info = r.Mod.EnumerateMajorRecords<IDialogTopicGetter>()
+                    .Single(t => t.Subtype == DialogTopic.SubtypeEnum.Custom)
+                    .Responses.Single();
+        var q = info.Conditions.Select(c => c.Data).OfType<IGetVMQuestVariableConditionDataGetter>().Single();
+        Assert.Equal("PlayerInDialogue", q.VariableName);
+        Assert.False(q.Quest.Link.IsNull);
+        var s = info.Conditions.Select(c => c.Data).OfType<IGetVMScriptVariableConditionDataGetter>().Single();
+        Assert.Equal("MyProp", s.VariableName);
+        Assert.False(s.Target.Link.IsNull);
+    }
+
+    // Validate flags a GetVMQuestVariable missing its variableName (the engine would read nothing).
+    [Fact]
+    public void Validate_GetVmQuestVariable_WithoutVariableName_IsReported()
+    {
+        var spec = new ModSpec
+        {
+            Perks =
+            {
+                new PerkSpec
+                {
+                    EditorId = "P", Name = "P", NumRanks = 1,
+                    Conditions = { new() { Function = "GetVMQuestVariable", Comparison = "==", Value = 0, Param = "Skyrim.esm:0x000014" } },
+                    Effects = { new PerkEffectSpec { Kind = "entryPoint", EntryPoint = "ModAttackDamage", Function = "Multiply", Value = 1f } },
+                },
+            },
+        };
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("needs a variableName"));
     }
 
     // Comparison string → CompareOperator, and `or:true` sets the OR flag.

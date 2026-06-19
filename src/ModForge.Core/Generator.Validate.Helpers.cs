@@ -64,6 +64,12 @@ public static partial class Generator
                     if (!string.IsNullOrWhiteSpace(cs.Scene)) CheckRef(cs.Scene, $"{what} scene");
                     if (cs.SceneActionIndex < 0) Problems.Add($"{what}: IsSceneActionComplete needs a sceneActionIndex (>= 0)");
                     break;
+                case "getvmquestvariable":   // read a property off a quest's attached Papyrus script
+                case "getvmscriptvariable":  // read a property off an object's attached Papyrus script
+                    if (string.IsNullOrWhiteSpace(cs.Param)) Problems.Add($"{what}: {cs.Function} needs a param ref (the {(cs.Function.Equals("getvmquestvariable", System.StringComparison.OrdinalIgnoreCase) ? "quest" : "object")} whose script is read)");
+                    else CheckRef(cs.Param, $"{what} param");
+                    if (string.IsNullOrWhiteSpace(cs.VariableName)) Problems.Add($"{what}: {cs.Function} needs a variableName (the script property name)");
+                    break;
             }
         }
 

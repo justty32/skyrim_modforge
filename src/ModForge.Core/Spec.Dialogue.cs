@@ -263,6 +263,10 @@ public sealed class ConditionSpec
     // completion/start condition to default to the OWNING scene) + the action's index in that scene.
     public string Scene { get; set; } = "";
     public int SceneActionIndex { get; set; } = -1;
+    // GetVMQuestVariable / GetVMScriptVariable: the Papyrus property name read off the attached script
+    // (e.g. ITH's quest-script "PlayerInDialogue"). `param` carries the quest (VM-quest) or object
+    // whose script is read (VM-script); this is the property/variable string.
+    public string VariableName { get; set; } = "";
     public bool Or { get; set; }                        // OR with the NEXT condition (default AND)
 }
 // Attach a compiled Papyrus script (by Scriptname) to a record (by editorId), with
