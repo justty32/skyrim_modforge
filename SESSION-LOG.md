@@ -11,7 +11,15 @@
 ## 最新進度（幾句話）
 
 - 目前無跨工作流的 open 項；各工作流的 open 狀態見下表。
-- **最近一次 session（2026-06-20，純離線）**：① **zh-TW 鏡像全補**——SPEC-quests 同步（279→362）+ 補三缺口（**新建 SPEC-distribution** SPID/MCM/FLM、SPEC-worldspaces 補 4 bullet 243→302、SPEC-identities 查證已完整），重生 html 33 頁；② **roadmap L 組落地**——`GetVMQuestVariable`/`GetVMScriptVariable` condition（讀 Papyrus property，code-pass 結論舊名 GetScriptVariable 不對）；③ **roadmap D-2 落地**——MCM Helper `mcmConfigs:` → `config.json`+`settings.ini`（純 ini-backed MVP，零 Quest/Papyrus/master）；④ **roadmap D-4 落地**——FLM `formListInjects:` → `<file>_FLM.ini`（runtime 零衝突追加 form 進外部 FLST，FormList 行 + Filter/Alias/Group/Collection）。**748 測綠**，六 commit。剩 in-game/runtime 驗收（variableName 格式 / MCM live menu / FLM 追加）見 [WAIT_USER](WAIT_USER.md)。
+- **最近一次 session（2026-06-20，純離線大推進，~16 commit、774 測綠）**：一口氣推完一批 roadmap 離線功能 + zh-TW 鏡像全同步。
+  - **zh-TW 鏡像全補**：SPEC-quests 同步（279→362）+ 補缺口（**新建 SPEC-distribution**、SPEC-worldspaces 補 4 bullet、SPEC-identities 查證已完整），SPEC-distribution 隨 D-group 擴成 7 框架全譯；html 重生。
+  - **roadmap L 組**：`GetVMQuestVariable`/`GetVMScriptVariable` condition（讀 Papyrus property；code-pass 結論舊名 GetScriptVariable 不對）。
+  - **D-group SKSE loose-ini 全完成（D-2/3/4/5/6/7）**：MCM Helper（`mcmConfigs:`）、SkyPatcher（`skyPatchers:`）、FLM（`formListInjects:`）、KID（`kidDistributions:`）、BOS（`objectSwaps:`）、AOS（`animObjectSwaps:`）——七個 SKSE 分發器/設定輸出全走 SPID 同款 loose-file pattern（含 SPID 共 7 個），docs 統一進 [SPEC-distribution.md](docs/spec/SPEC-distribution.md)。
+  - **K 組**：quest stage `globalWrites: [{global,value}]` 一等 `SetValue` 語法（SM quest 路由 OnStory）。
+  - **I 組**：`MagicEffectSpec.scripts[]` inline script-attach（DX co-location）。
+  - **M 組**：`conditionTemplates` + `dialogue[].useConditionTemplates` 共用條件模板（FCO 265 條痛點；INFO 陣列批次建立另一半待做）。
+  - **剩 in-game/runtime 驗收**（不擋使用）見 [WAIT_USER](WAIT_USER.md)：L variableName 格式、MCM live menu、FLM/KID/BOS/AOS/SkyPatcher runtime（裝對應 DLL 開 debug log）。
+  - **roadmap 還剩離線可做**：J 組（JC/PapyrusUtil script 模板，scope 較模糊）、H 組（CSF in-game 技能樹，量大、有完整設計草案）——適合下次專注做。
 - **更早一次 session（2026-06-19）**：**動態生怪 SM ChangeLocation 真因破解 + 修復**。診斷三段定位（OnInit/OnStoryChangeLocation MessageBox）實機確認：SM 啟動的 quest **不跑 startUpStage 的 Papyrus fragment**，但 `OnStory<Event>` 每次可靠觸發 → 把 storyEvent encounter 的 spawn/cooldown 觸發改掛 `OnStory<Event>` handler（`Generator.StoryTrigger`），實機生怪成功。`StoryManagerEvents` 加 `StoryHandler` 簽名、`Package.cs` .psc 複製 gate 補 `StoryTrigger`、新增 `smsub` SM 子樹 dump 工具，698 測綠。**剩真實 filtered encounter（走進盜賊營/地城 + 冷卻）的最終實機確認**見 [WAIT_USER](WAIT_USER.md)。詳見 memory `[[dynamic-spawn-debugging]]` + git log。
 - **再更早 session（2026-06-18）**：Godot worldspace editor **WYSIWYG 整鏈全確認**——地形/紋理/物件 build 進遊戲、編輯器內顯示真實草貼圖 + 真實物件模型/貼圖；過程修了 LAND 紋理三鐵律（Layers flag/BTXT 0xFFFF/ATXT 0-indexed）+ nif2gltf SSE 精度 bug；新增 CLI `landdiag`/`texexport`/`nifexport`/`texpath`/`find 反查`；`WAIT_USER.md` 拆成 `wait_todo/`；編輯器 `.gd` 大檔按職責拆。細節在 landed/world.md + git log。
 - **更早已落地**：docs/workflows 大重構、拆檔門檻定案、zh-TW+html 1:1 鏡像；語音 `sub_projs/skyrim-voicegen/`、Sofia `sub_projs/sofia-patch/`、`gamedata` CLI + `sub_projs/game-data/`。
