@@ -40,6 +40,7 @@ SECTIONS = [
         ("spec/SPEC-items.md",       "spec-items.html",       "配方 · 天賦 · 資源"),
         ("spec/SPEC-packages.md",    "spec-packages.html",    "AI 套件 · 天氣"),
         ("spec/SPEC-animation.md",   "spec-animation.html",   "動作系統 · OAR/BDI/PIE"),
+        ("spec/SPEC-distribution.md","spec-distribution.html","SKSE 分發器 · SPID/MCM"),
         ("spec/SPEC-workflow.md",    "spec-workflow.html",    "工作流程"),
         ("spec/SPEC-refs.md",        "spec-refs.html",        "$ref · 參數化"),
     ]),

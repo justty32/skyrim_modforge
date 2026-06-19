@@ -54,6 +54,65 @@
   若要多樣化的地形／LOD／細緻的 navmesh 請使用 Creation Kit。
   **ESL LIMIT：** Skyrim 引擎會忽略 ESL（light）外掛中的 LAND 記錄——含 `cells`
   的 spec 必須使用 `"esl": false`（validator 會強制要求）。
+- **`heightmap`** — 來自一張 16-bit 灰階 PNG 的**非平坦**地形（與 `cells`
+  互斥；若兩者都給了，heightmap 勝出且 build 會警告）。ModForge 從 PNG 尺寸推導出整個 cell 網格，
+  並為每個 cell 發出一筆有坡度的 LAND（VHGT）。取代逐 cell 的 `cells` 清單。
+  ```jsonc
+  "heightmap": {
+    "path": "worldspace_heightmap.png",  // relative to the spec file; PNG width MUST be N×32+1,
+    "originX": 0, "originY": 0,           //   height M×32+1 (e.g. 33,65,97…) → N×M cells generated
+    "minHeight": 4000,                    // game units at png value 0   (linear map)
+    "maxHeight": 4500                     // game units at png value 65535
+  }
+  ```
+  影像方向：**左下角像素＝cell `(originX, originY)` 的西南角頂點**；影像右側
+  ＝cell +X（東）、影像上方＝cell +Y（北）。相鄰 cell 共用邊界的像素欄／列——
+  build 也會在 cell 之間傳遞重建的邊緣高度（**接縫縫合**），使每個共用邊界的兩側
+  都解碼為相同的遊戲單位高度；引擎中無可見裂縫。
+  逐頂點高度 ＝ `minHeight + (png/65535) × (maxHeight − minHeight)`。頂點之間每 128 單位的坡度
+  上限為 ±1016 遊戲單位（VHGT signed-byte 限制）；更陡的地形會被夾住且 build 會警告。
+  **`defaultLandHeight` 訣竅：** 把它設成等於 `minHeight`，讓 PNG 範圍外的 cell
+  在世界邊界處與 heightmap 周邊以相同高度相接（世界邊界沒有懸崖）。
+  **MVP 範圍：** heightmap 模式下不生成 navmesh；逐頂點的 **VNML 法線確實會**從 heightmap
+  計算（中央差分，已自行對照原版 Tamriel LAND 逐位元組驗證
+  2026-06-16——見 `landed/world`）。與 `cells` 同樣的 **ESL LIMIT**（LAND ⇒ `"esl": false`）。完整範例：
+  `examples/worldspace_heightmap.json`（＋ `worldspace_heightmap.png`，一座 97×33 = 3×1-cell 的山丘）。
+  **遊戲內已確認**（2026-06-16）：地形有起伏、cell 接縫閉合、cell 之間無裂縫。
+- **`baseTexture`** — 選用的單層地形貼圖：一個 LTEX *ref*，套用為**每個** cell LAND
+  全部 4 個象限的 BASE 層（BTXT）。整個世界得到一張地面貼圖，
+  沒有逐頂點混合（`""` / 省略 = 無貼圖，引擎退回到預設的 land
+  貼圖）。`cells` 與 `heightmap` 都適用。多貼圖混合是下面的 `textureLayers`。
+  ```jsonc
+  "baseTexture": "Skyrim.esm:0x000C16"   // LTEX ref; one ground texture for the whole world
+  ```
+  **離線建構測試通過**（2026-06-17）；對照原版 LAND BTXT 的位元組級一致性是主力機上
+  尚待進行的 xEdit 檢查（WAIT_USER）。
+- **`textureLayers`** — `baseTexture` 之上的選用**多貼圖混合**。每個項目是一個
+  LTEX *ref* ＋ 一張**灰階 splatmap PNG**（與 heightmap 同樣的網格規則：寬度 `N×32+1`、
+  共用邊緣欄）。每個 splatmap 像素 `0..255` → 該頂點對該貼圖的 alpha `0..1`；
+  ModForge 為每個 cell 象限發出稀疏的 `ATXT`＋`VTXT` alpha 層（alpha 為零的頂點會
+  被省略，如同原版；splatmap 未覆蓋的象限不會有層）。清單順序 = 堆疊
+  順序（`baseTexture` = 層 0，接著 `textureLayers[0]` = 層 1，…）。一張 splatmap 的 `originX/Y`
+  必須與 heightmap/cell 網格對齊；落在某 splatmap 範圍外的 cell 就直接略過該層。
+  ```jsonc
+  "baseTexture": "Skyrim.esm:0x000C16",            // base dirt for the whole world
+  "textureLayers": [
+    { "texture": "Skyrim.esm:0x0008C5",            // grass, painted where the splatmap is non-zero
+      "splatmap": { "path": "grass_alpha.png", "originX": 0, "originY": 0 } }
+  ]
+  ```
+  **離線建構測試通過**（2026-06-17）。對照原版 `VTXT`（確切的點
+  位置順序、每象限的層號打包）的位元組級一致性是尚待進行的 xEdit 檢查（WAIT_USER）。撰寫
+  這些 PNG 的 Godot splat-paint 筆刷是下一個前端步驟（`godot-worldspace-editor`）。
+- **`godotPlacements`** — 選用：在 `godot-worldspace-editor` 前端中撰寫的物件放置，
+  匯出為一份 `placements.json` 並轉換為 REFR。與 `heightmap` **搭配**使用；
+  設定 `originX/Y` 以對齊 heightmap 網格。欄位：`path`（json 相對於 spec 檔）、
+  `originX/Y`（Godot 場景西南角的 cell 網格原點）。座標會從
+  編輯器的 Y-up 空間轉換成 Skyrim 世界座標，並合併進放置管線。
+  ```jsonc
+  "godotPlacements": { "path": "placements.json", "originX": 0, "originY": 0 }
+  ```
+  **離線完成**（2026-06-17）；主力機上一次 Godot GUI 走查尚待進行（WAIT_USER）。
 - **regions** (REGN)：一個 `worldspace`（in-spec 的 WRLD `editorId` 或原版
   `"<master>:0xFORMID"`）內的範圍。`area` 是一個由 **>=3** 個世界空間點組成的多邊形（非 cell 網格）。
   `weather` 是挑選當前天氣的表——每個項目是一個 WTHR *ref* ＋ 一個相對的

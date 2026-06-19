@@ -14,6 +14,7 @@ spec 是一個 JSON 檔 → `.esp` plugin。選擇一個主題：
 | [SPEC-items](SPEC-items.md) | 配方（COBJ）、天賦、外部資產（網格/音效）、貼圖組（TXST） |
 | [SPEC-packages](SPEC-packages.md) | AI 套件（Sandbox/Travel/UseMagic/Follow/Sleep/Patrol/Escort）、天氣與氣候 |
 | [SPEC-animation](SPEC-animation.md) | 動作系統散裝檔：OAR replacer/moveset、BDI graph-var 注入、PIE 巨集表（`.hkx` 自備） |
+| [SPEC-distribution](SPEC-distribution.md) | SKSE 分發器設定（無 ESP patch）：SPID `_DISTR.ini`（依過濾器把 spell/perk/item/faction/keyword 附加到 NPC）、MCM Helper `config.json`＋`settings.ini`（遊戲內設定選單）、FLM `_FLM.ini`（把 form 零衝突追加進外部 FormList） |
 | [SPEC-workflow](SPEC-workflow.md) | CLI 工作流（`validate` / `build` / `package`）、語音克隆管線（`voicelines` / `extract-voices`）＋尚未涵蓋的功能 |
 | [SPEC-refs](SPEC-refs.md) | `$ref` / `$env` 引入與參數化（具名預設庫、file/pointer/same-doc refs、env vars） |
 
