@@ -32,6 +32,7 @@ public static partial class Generator
     public static bool QuestNeedsFragmentScript(QuestSpec q) =>
         q.Objectives.Any(o => o.ShowStage >= 0 || o.CompleteStage >= 0)
         || q.Stages.Any(s => s.InstanceGlobals.Count > 0)
+        || q.Stages.Any(s => s.GlobalWrites.Count > 0)
         || q.Stages.Any(s => HasPersist(s) || HasSyncPerks(s))
         || StartupStageTrigger(q) is not null
         || StoryTrigger(q);
@@ -58,7 +59,8 @@ public static partial class Generator
         q.StoryEvent is { } se && StoryManagerEvents.TryGet(se.Event, out var d)
         && !string.IsNullOrEmpty(d.StoryHandler)
         && (q.Spawn is not null || se.CooldownHours > 0f
-            || q.Stages.Any(s => HasPersist(s) || HasSyncPerks(s)));
+            || q.Stages.Any(s => HasPersist(s) || HasSyncPerks(s))
+            || q.Stages.Any(s => s.GlobalWrites.Count > 0));
 
     /// <summary>The property-name prefix that namespaces a stage's JContainers persist/syncPerks
     /// properties (so several stages in one quest script never collide). MUST match between the generated
@@ -108,9 +110,9 @@ public static partial class Generator
 
         // GlobalVariable properties for every distinct instance global referenced by any stage. The
         // VMAD (WireQuestStages) binds each to its GLOB FormKey; the fragment body uses them by name.
-        var instGlobals = q.Stages
-            .SelectMany(s => s.InstanceGlobals)
-            .Select(g => g.Global).Where(g => !string.IsNullOrWhiteSpace(g))
+        var instGlobals = q.Stages.SelectMany(s => s.InstanceGlobals).Select(g => g.Global)
+            .Concat(q.Stages.SelectMany(s => s.GlobalWrites).Select(g => g.Global))   // K組 plain global writes share the GLOB property pool
+            .Where(g => !string.IsNullOrWhiteSpace(g))
             .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         bool anyProp = false;
         foreach (var g in instGlobals)
@@ -129,9 +131,10 @@ public static partial class Generator
         // carrying a spawn/cooldown trigger — ascending.
         var objStages = q.Objectives.SelectMany(o => new[] { o.ShowStage, o.CompleteStage }).Where(s => s >= 0);
         var instStages = q.Stages.Where(s => s.InstanceGlobals.Count > 0).Select(s => (int)s.Index);
+        var gwStages = q.Stages.Where(s => s.GlobalWrites.Count > 0).Select(s => (int)s.Index);
         var jcStages = q.Stages.Where(s => HasPersist(s) || HasSyncPerks(s)).Select(s => (int)s.Index);
         var trigStages = startupTrigger is int st ? new[] { st } : System.Array.Empty<int>();
-        var stageNums = objStages.Concat(instStages).Concat(jcStages).Concat(trigStages).Distinct().OrderBy(s => s);
+        var stageNums = objStages.Concat(instStages).Concat(gwStages).Concat(jcStages).Concat(trigStages).Distinct().OrderBy(s => s);
 
         bool hasSpawn = q.Spawn is not null;
         bool hasCooldown = q.StoryEvent is { } sev && sev.CooldownHours > 0f;
@@ -167,6 +170,14 @@ public static partial class Generator
                     foreach (var line in JContainersFragmentBody(StagePropPrefix(stage), stSpec.Persist, stSpec.SyncPerks))
                         sb.AppendLine("    " + line);
         }
+        // K組 plain global writes — "<global>.SetValue(value)" for each globalWrite of every stage that
+        // has one (an SM quest's stage fragment never runs, so its writes live in the OnStory handler).
+        void AppendGwStages()
+        {
+            foreach (var stage in gwStages)
+                foreach (var gw in q.Stages.Where(s => s.Index == stage).SelectMany(s => s.GlobalWrites))
+                    sb.AppendLine($"    {InstanceGlobalProperty(gw.Global)}.SetValue({gw.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)})");
+        }
 
         foreach (var stage in stageNums)
         {
@@ -196,6 +207,10 @@ public static partial class Generator
                     sb.AppendLine($"    {p}.SetValue({OneLine(v.ToString(System.Globalization.CultureInfo.InvariantCulture))})");
                 sb.AppendLine($"    UpdateCurrentInstanceGlobal({p})");
             }
+            // K組 plain global writes for this stage (routed to OnStory below for an SM quest).
+            if (!storyHandler)
+                foreach (var gw in q.Stages.Where(s => s.Index == stage).SelectMany(s => s.GlobalWrites))
+                    sb.AppendLine($"    {InstanceGlobalProperty(gw.Global)}.SetValue({gw.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)})");
             // JContainers JFormDB writes + perk sync for this stage (keyed on player or an arbitrary ref —
             // a stage fragment has no akSpeakerRef). Emitted last so a perk sync sees the just-banked ranks.
             // SKIPPED for an SM quest: that fragment never runs (in-game 2026-06-19), so its persist is
@@ -219,6 +234,7 @@ public static partial class Generator
         {
             sb.AppendLine($"Event {sdef.StoryHandler}");
             AppendCooldownGate();
+            AppendGwStages();
             AppendJcStages();
             AppendSpawn();
             sb.AppendLine("    Stop()                                  ; re-arm: let the SM relaunch this on the next event");

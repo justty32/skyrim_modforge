@@ -50,6 +50,14 @@ public static partial class Generator
                         if (hasRandom && ig.Value is not null)
                             Problems.Add($"quest '{q.EditorId}' stage {st.Index} instanceGlobal '{ig.Global}' sets both a random range and a fixed value (use one)");
                     }
+                    // K組 plain global writes — each needs a resolvable GLOB ref.
+                    foreach (var gw in st.GlobalWrites)
+                    {
+                        if (string.IsNullOrWhiteSpace(gw.Global))
+                            Problems.Add($"quest '{q.EditorId}' stage {st.Index} globalWrite has empty 'global'");
+                        else
+                            CheckRef(gw.Global, $"quest '{q.EditorId}' stage {st.Index} globalWrite");
+                    }
                     // Stage-fragment persist/syncPerks (Idea #20 Phase 0). A stage has no akSpeakerRef, so
                     // "speaker" is rejected — the key must be "player" or an arbitrary ref.
                     if (st.Persist is { } stp) ValidatePersistBlock(stp, $"quest '{q.EditorId}' stage {st.Index} persist", allowSpeaker: false);

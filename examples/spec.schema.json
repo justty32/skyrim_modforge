@@ -1959,6 +1959,19 @@
                   "additionalProperties": false
                 }
               },
+              "globalWrites": {
+                "type": "array",
+                "description": "First-class GlobalVariable writes when the quest reaches this stage (K group): the stage fragment emits <global>.SetValue(value). A plain write (no UpdateCurrentInstanceGlobal). For an SM-driven quest it runs in the OnStory<Event> handler.",
+                "items": {
+                  "type": "object",
+                  "required": [ "global", "value" ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "global": { "type": "string", "description": "GLOB editorId (declare in spec.globals) or a vanilla ref" },
+                    "value": { "type": "number", "description": "the value to SetValue" }
+                  }
+                }
+              },
               "persist": { "$ref": "#/$defs/persist", "description": "JContainers JFormDB writes performed when the quest REACHES this stage (Idea #20 Phase 0). key must be 'player' or a ref — a stage has no speaker." },
               "syncPerks": { "$ref": "#/$defs/syncPerks", "description": "AddPerk/RemovePerk from stored ranks when the quest reaches this stage. key must be 'player' or a ref." }
             }

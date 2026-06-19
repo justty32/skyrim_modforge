@@ -52,6 +52,7 @@ public static partial class Generator
                 // Bind a GlobalVariable object-property for every distinct instance global the stages
                 // reference (the fragment body calls <prop>.SetValue / UpdateCurrentInstanceGlobal(<prop>)).
                 foreach (var gref in q.Stages.SelectMany(s => s.InstanceGlobals).Select(g => g.Global)
+                             .Concat(q.Stages.SelectMany(s => s.GlobalWrites).Select(g => g.Global))   // K組 global writes share the GLOB property pool
                              .Where(g => !string.IsNullOrWhiteSpace(g)).Distinct(StringComparer.OrdinalIgnoreCase))
                 {
                     var pname = Generator.InstanceGlobalProperty(gref);
@@ -75,6 +76,7 @@ public static partial class Generator
                     bool hasJc = Generator.HasPersist(st) || Generator.HasSyncPerks(st);
                     bool needsFrag = q.Objectives.Any(o => o.ShowStage == st.Index || o.CompleteStage == st.Index)
                                      || st.InstanceGlobals.Count > 0
+                                     || st.GlobalWrites.Count > 0
                                      || Generator.StartupStageTrigger(q) == st.Index
                                      || hasJc;
                     if (!needsFrag) continue;

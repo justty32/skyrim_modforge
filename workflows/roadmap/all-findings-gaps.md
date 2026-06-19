@@ -171,10 +171,10 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 
 來源：**runtime-selector-patterns.md**。
 
-🆕 **Quest script `SetValue(global, val)` 一等 spec 語法**  
-**現況：** Global write 只能在 dialogue TIF fragment（`GetOwningQuest()` 獲取 quest script）裡做，沒有 spec-level「在 QuestStage fragment 或 alias OnInit 裡寫入 GlobalVariable」的一等支援。  
-**Scope：** `QuestStageSpec` 或 `AliasSpec` 支援 `globalWrites: [{global: "MyGlobal", value: 1}]`，自動在對應 fragment 生成 `MyGlobal.SetValue(1)`；或更通用的 `scriptlets: [...]` 語法。  
-**優先：** 🟡（目前手寫 fragment 可繞過，但生成器覆蓋率不完整）
+✅ **Quest stage `globalWrites: [{global, value}]` 一等 spec 語法（已落地 2026-06-20）**  
+**狀態：** ✅ 離線實作 `StageSpec.globalWrites[]` → stage fragment 生 `<global>.SetValue(value)`（plain write，非 instance bind，無 UpdateCurrentInstanceGlobal）。`Spec.Dialogue.cs`（`GlobalWriteSpec`）+ `Generator.QuestFragments.cs`（property 宣告/per-stage emit/SM quest 路由到 `OnStory<Event>` handler，沿用 persist 真因）+ `Generator.Build.QuestStages.cs`（VMAD GLOB property 綁定 + needsFrag）+ `Generator.Validate.Quests.cs`（global 非空 + CheckRef）。docs SPEC-quests、schema、CODE_MAP 同步。**6 測綠**（含 SM quest OnStory 路由 + build VMAD 綁定）。  
+**剩（alias 側）：** `AliasSpec` 的 OnInit globalWrites 屬不同 codegen 路徑，未做（需求度低，手寫 alias script 可繞）。stage 側已覆蓋主要用例（stage 里程碑設 flag/counter global）。  
+**優先：** 🟡 → ✅ stage 已落地，.pex 隨任何含 fragment 的 quest 一起編（既有 quest-build 路徑，無特殊 headers）。
 
 ---
 
@@ -230,7 +230,7 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 9. **J 組**（JC/PapyrusUtil 模板）→ follower 複雜狀態管理
 10. **M 組**（INFO 批次 + 條件模板）→ ambient commentary 生成效率
 11. ~~**A 組 #9**（UpdateCurrentInstanceGlobal）~~ ✅ **已落地 2026-06-17** → gather 型任務 per-instance 計數 objective
-12. **K 組**（quest script global write spec）→ 生成器覆蓋率
+12. ~~**K 組**（quest stage global write spec）~~ ✅ **已落地 2026-06-20**（stage 側；alias 側未做）→ 生成器覆蓋率
 13. ~~**D-3~7**（其餘 ini pipeline：SkyPatcher/KID/BOS/AOS）~~ ✅ **已落地 2026-06-20** → D-group SKSE loose-ini pipeline 完整（runtime 待主力機驗）
 
 > **說明**：A 組 #5/#6 + E 組（LocType/WITimeout）、F/#3（NavmeshTester）、G/#4（法術族）已在 mod-survey-gaps.md；此處未重列。

@@ -82,6 +82,19 @@ public sealed class StageSpec
     // times at once with different counts. Optionally seeds each global first (random range / fixed
     // value). Decoded from Missives' StartUpStage fragment (SetValue(Utility.RandomInt) + Update…).
     public List<InstanceGlobalSpec> InstanceGlobals { get; set; } = new();
+    // Plain GlobalVariable writes performed when the quest REACHES this stage (K組): the generated stage
+    // fragment emits `<global>.SetValue(value)`. First-class spec sugar for "set a flag/counter global on
+    // a stage milestone" — previously only doable by hand-writing a fragment or via a dialogue TIF. Unlike
+    // `instanceGlobals` this does NOT call UpdateCurrentInstanceGlobal (it's a global write, not an
+    // instance binding). For an SM-driven quest the write runs in the OnStory<Event> handler (the stage
+    // fragment doesn't fire for SM quests — in-game 2026-06-19), same routing as persist.
+    public List<GlobalWriteSpec> GlobalWrites { get; set; } = new();
+}
+// One plain global write in a stage fragment (see StageSpec.GlobalWrites). `value` is required.
+public sealed class GlobalWriteSpec
+{
+    public string Global { get; set; } = "";       // GLOB editorId (declare in spec.globals) or a vanilla ref
+    public float Value { get; set; }               // → <global>.SetValue(value)
 }
 // One global bound to the quest instance in a stage fragment (see StageSpec.InstanceGlobals).
 public sealed class InstanceGlobalSpec

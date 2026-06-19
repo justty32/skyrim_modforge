@@ -41,6 +41,13 @@ are set; a `dialogue` line can advance a stage when picked.
   `{ "global": "…", "value": V }` (seed `SetValue(V)`), or `{ "global": "…" }` (bind only). Declare the
   GLOB in `globals[]`; ModForge ships `<quest>_Stages.psc` for `package` to compile. Put it on the
   `startUpStage` to roll the target on start. Demo `examples/gather_quest_spec.json`. (Pickup script is yours.)
+- **`stages[].globalWrites[]`** — first-class GlobalVariable writes when the quest **reaches** this stage:
+  the stage fragment emits `<global>.SetValue(value)`. Each entry: `{ "global": "<GLOB editorId>",
+  "value": V }`. Use it to set a flag/counter on a stage milestone (previously only doable by
+  hand-writing a fragment or via a dialogue TIF `setGlobal`). Unlike `instanceGlobals` it is a **plain
+  write** (no `UpdateCurrentInstanceGlobal` — not bound to the quest instance). For an SM-driven quest
+  (a `storyEvent`) the write runs in the `OnStory<Event>` handler instead, since the stage fragment
+  doesn't fire for SM quests. Declare the GLOB in `globals[]`.
 - **`objectives[].showStage` / `.completeStage`** — link an objective to stages: `SetObjectiveDisplayed`
   at `showStage`, `SetObjectiveCompleted` at `completeStage`. `-1` (default) = "not stage-linked".
 - **`objectives[].targets[]`** — the compass/map **markers** for an objective (QSTA). Each target is
