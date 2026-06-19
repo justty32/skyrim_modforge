@@ -56,6 +56,11 @@ public sealed class MagicEffectSpec
     // VOICE the player yells (e.g. VOCShoutFX… for "FUS RO DAH"). Without it a shout fires silently
     // even with a projectile. Other phases: SheathDraw / Charge / Ready / ConcentrationCastLoop / OnHit.
     public List<MagicEffectSoundSpec> Sounds { get; set; } = new();
+    // Inline Papyrus script attach (I組 DX): scripts attached to THIS MGEF's VMAD (e.g. an effect that
+    // runs Papyrus on the target via OnEffectStart). Same shape as the top-level `scripts[]`, but the
+    // `targetEditorId` is implied (this effect) and ignored — keeps the script definition next to the
+    // record. `package` compiles each entry's `source` like any top-level script attach.
+    public List<ScriptAttachSpec> Scripts { get; set; } = new();
 }
 // One MGEF sound: which phase + the SoundDescriptor (SNDR) ref. `type` defaults to Release (cast-out).
 public sealed class MagicEffectSoundSpec { public string Type { get; set; } = "Release"; public string Sound { get; set; } = ""; }

@@ -144,6 +144,7 @@ internal static partial class Program
             return true;
         }
         foreach (var sa in spec.Scripts) CompileSource(sa.Source, sa.Source);
+        foreach (var me in spec.MagicEffects) foreach (var sa in me.Scripts) CompileSource(sa.Source, sa.Source);
         foreach (var d in spec.Dialogue) CompileSource(d.ResultScriptSource, d.ResultScriptSource);
         foreach (var q in spec.Quests)
             foreach (var a in q.Aliases) CompileSource(a.ScriptSource, a.ScriptSource);

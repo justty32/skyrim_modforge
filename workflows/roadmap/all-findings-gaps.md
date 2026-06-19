@@ -144,10 +144,8 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 
 來源：**arrowblock.md**、**mgef-vmad.md**。
 
-🆕 **MagicEffectSpec `scripts[]` inline 欄位**  
-**現況：** 通用 `scripts[].targetEditorId` 路徑**已能**把腳本掛到 MGEF（`AttachScripts()` 反射 VMAD）。`MagicEffectSpec` 無專屬 `scripts` 欄位——使用者必須拆到頂層 `scripts[]`，且文件沒說明此繞路方式。  
-**Scope：** 在 `MagicEffectSpec` 加 `scripts: List<ScriptAttachSpec>` inline 欄位，讓 MGEF script-attach 和 record 定義貼在一起；更新 docs。  
-**優先：** 🟢（功能已通，純 DX/文件缺口）
+✅ **MagicEffectSpec `scripts[]` inline 欄位（已落地 2026-06-20）**  
+**狀態：** ✅ `MagicEffectSpec.Scripts: List<ScriptAttachSpec>`（targetEditorId 隱含＝此 effect、忽略）；`AttachScripts` 抽出 `AttachOneScript` helper 共用、`Package.cs` compile loop + `Generator.Validate.Quests.cs`（抽 `CheckScriptProps`）都納入 inline。docs SPEC-magic、schema 同步。**2 測綠**（attach 到 MGEF VMAD + 空 scriptName 驗證）。功能本就通（通用 `scripts[]` 路徑），這是 DX/co-location sugar。
 
 ---
 

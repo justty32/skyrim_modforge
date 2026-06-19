@@ -12,27 +12,38 @@ public static partial class Generator
         public void AttachScripts()
         {
             foreach (var sa in spec.Scripts)
+                AttachOneScript(sa.TargetEditorId, sa.ScriptName, sa.Properties);
+            // Inline MGEF scripts (I組): the target is the effect record itself (targetEditorId implied).
+            foreach (var me in spec.MagicEffects)
+                foreach (var sa in me.Scripts)
+                    AttachOneScript(me.EditorId, sa.ScriptName, sa.Properties);
+        }
+
+        // Attach one Papyrus script (by Scriptname) to a record (by editorId) via its VMAD. The setter
+        // is not on IHaveVirtualMachineAdapter (get-only) and the adapter type varies (Quest ->
+        // QuestAdapter, most -> VirtualMachineAdapter), so reflect the concrete property + create the
+        // right adapter. ScriptEntry.Name must match the compiled .pex's Scriptname.
+        private void AttachOneScript(string targetEditorId, string scriptName, List<PropertySpec> props)
+        {
+            if (!recordsByEd.TryGetValue(targetEditorId, out var target))
+            { Warn($"  ! script attach: target '{targetEditorId}' not found"); return; }
+
+            var vmadProp = target.GetType().GetProperty("VirtualMachineAdapter");
+            if (vmadProp is null || !vmadProp.CanWrite)
+            { Warn($"  ! '{targetEditorId}' ({target.GetType().Name}) takes no script"); return; }
+
+            var vmad = vmadProp.GetValue(target);
+            if (vmad is null)
             {
-                if (!recordsByEd.TryGetValue(sa.TargetEditorId, out var target))
-                { Warn($"  ! script attach: target '{sa.TargetEditorId}' not found"); continue; }
-
-                var vmadProp = target.GetType().GetProperty("VirtualMachineAdapter");
-                if (vmadProp is null || !vmadProp.CanWrite)
-                { Warn($"  ! '{sa.TargetEditorId}' ({target.GetType().Name}) takes no script"); continue; }
-
-                var vmad = vmadProp.GetValue(target);
-                if (vmad is null)
-                {
-                    vmad = System.Activator.CreateInstance(vmadProp.PropertyType);
-                    vmadProp.SetValue(target, vmad);
-                }
-                var scriptsList = (System.Collections.IList)vmad!.GetType().GetProperty("Scripts")!.GetValue(vmad)!;
-
-                var entry = new ScriptEntry { Name = sa.ScriptName };
-                FillProperties(entry, sa.Properties, sa.ScriptName);
-                scriptsList.Add(entry);
-                scriptsAttached++;
+                vmad = System.Activator.CreateInstance(vmadProp.PropertyType);
+                vmadProp.SetValue(target, vmad);
             }
+            var scriptsList = (System.Collections.IList)vmad!.GetType().GetProperty("Scripts")!.GetValue(vmad)!;
+
+            var entry = new ScriptEntry { Name = scriptName };
+            FillProperties(entry, props, scriptName);
+            scriptsList.Add(entry);
+            scriptsAttached++;
         }
 
         // --- pass 2: attach dialogue RESULT-script fragments (the INFO's OnEnd TIF fragment) ---

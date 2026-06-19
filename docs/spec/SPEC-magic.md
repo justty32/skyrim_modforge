@@ -54,10 +54,11 @@ and for potions. A damage spell that *travels* (`targetType: Aimed`) needs a `pr
   (the fraction of the magnitude routed to the second AV). This is how absorb/transfer-style effects
   (damage one stat, feed another) are built.
 - **`Script`-archetype MGEF** (boss-spell logic, custom on-apply behaviour) runs **Papyrus**: set
-  `archetype: "Script"` and attach a script with a top-level **`scripts[]`** entry whose
-  `targetEditorId` is this MGEF's `editorId` (the generic VMAD attach works on any record — no special
-  MGEF wiring). The `.psc` extends `ActiveMagicEffect`; `package` compiles `scripts[].source` like any
-  other script attach. See [SPEC-quests](SPEC-quests.md) § scripts for the `scripts[]` shape.
+  `archetype: "Script"` and attach a script. Two equivalent ways: an **inline** `magicEffects[].scripts[]`
+  entry (the `targetEditorId` is implied — keeps the script next to the effect), or a top-level
+  **`scripts[]`** entry whose `targetEditorId` is this MGEF's `editorId`. Both use the same shape (see
+  [SPEC-quests](SPEC-quests.md) § scripts) and `package` compiles each entry's `source`. The `.psc`
+  extends `ActiveMagicEffect`. Prefer the inline form for readability.
 
 **Flags matter — match the effect's timing (this is the #1 gotcha):**
 - **Instant** restore/damage (`duration` 0) → `["NoDuration", "NoArea"]`, and add `"Detrimental"`

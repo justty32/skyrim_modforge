@@ -1095,6 +1095,21 @@
             }
           },
           "description": "MGEF sound descriptors; Release = the Thuum voice the player yells for a shout"
+        },
+        "scripts": {
+          "type": "array",
+          "description": "Inline Papyrus script attach to THIS MGEF's VMAD (I group). Same shape as top-level scripts[] but targetEditorId is implied (this effect) and ignored.",
+          "items": {
+            "type": "object",
+            "required": [ "scriptName" ],
+            "additionalProperties": false,
+            "properties": {
+              "targetEditorId": { "type": "string", "description": "ignored for inline MGEF scripts (the target is this effect)" },
+              "scriptName": { "type": "string", "minLength": 1, "description": "must match the .pex/.psc Scriptname (extends ActiveMagicEffect)" },
+              "source": { "type": "string", "description": "optional .psc path (rel. to spec); package compiles it" },
+              "properties": { "type": "array", "items": { "$ref": "#/$defs/property" } }
+            }
+          }
         }
       }
     },

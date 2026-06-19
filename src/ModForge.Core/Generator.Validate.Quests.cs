@@ -331,12 +331,24 @@ public static partial class Generator
             {
                 if (string.IsNullOrEmpty(sa.ScriptName)) Problems.Add($"script attach on '{sa.TargetEditorId}' has empty scriptName");
                 if (!Ids.Contains(sa.TargetEditorId)) Problems.Add($"script '{sa.ScriptName}' targets unknown record '{sa.TargetEditorId}'");
-                foreach (var p in sa.Properties)
+                CheckScriptProps(sa.ScriptName, sa.Properties, validTypes);
+            }
+            // Inline MGEF scripts (I組): target is implied (the effect record), so only scriptName + props.
+            foreach (var me in spec.MagicEffects)
+                foreach (var sa in me.Scripts)
                 {
-                    if (!validTypes.Contains(p.Type)) Problems.Add($"script '{sa.ScriptName}' prop '{p.Name}' has invalid type '{p.Type}'");
-                    if (string.Equals(p.Type, "object", StringComparison.OrdinalIgnoreCase))
-                        CheckRef(p.ObjectEditorId, $"script '{sa.ScriptName}' prop '{p.Name}' object");
+                    if (string.IsNullOrEmpty(sa.ScriptName)) Problems.Add($"magicEffect '{me.EditorId}' inline script has empty scriptName");
+                    CheckScriptProps(sa.ScriptName, sa.Properties, validTypes);
                 }
+        }
+
+        void CheckScriptProps(string scriptName, List<PropertySpec> props, HashSet<string> validTypes)
+        {
+            foreach (var p in props)
+            {
+                if (!validTypes.Contains(p.Type)) Problems.Add($"script '{scriptName}' prop '{p.Name}' has invalid type '{p.Type}'");
+                if (string.Equals(p.Type, "object", StringComparison.OrdinalIgnoreCase))
+                    CheckRef(p.ObjectEditorId, $"script '{scriptName}' prop '{p.Name}' object");
             }
         }
     }
