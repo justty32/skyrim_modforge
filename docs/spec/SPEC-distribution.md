@@ -7,8 +7,8 @@ let a mod attach records to other mods' NPCs/items **without an ESP patch** — 
 compatibility layer for follower/NPC packs. ModForge writes the config; the framework's `.dll`
 (player-supplied) does the runtime work.
 
-Currently implemented: **SPID**. KID / SkyPatcher / FLM follow the same loose-file pattern (roadmap
-D-group, see `workflows/roadmap/all-findings-gaps.md`).
+Currently implemented: **SPID**, **MCM Helper**. KID / SkyPatcher / FLM follow the same loose-file
+pattern (roadmap D-group, see `workflows/roadmap/all-findings-gaps.md`).
 
 ---
 
@@ -81,3 +81,89 @@ directly — SPID's leverage is purely "patch *someone else's* NPC without an ES
 `validate` checks structure only: `type` is in the allowed set, `record` is non-empty, `chance`
 is 0-100. SPID resolves `RecordID`/`EditorID` against the **player's load order** at runtime, so
 ModForge can't verify the form actually exists — that's a play-time concern, not a build error.
+
+---
+
+## `mcmConfigs` — MCM Helper settings menu (D-2)
+
+[MCM Helper](https://www.nexusmods.com/skyrimspecialedition/mods/53000) (Parapets) renders an in-game
+**Mod Configuration Menu** page from a JSON file — no Papyrus, no SkyUI scripting. Each config emits two
+loose files:
+
+- `MCM/Config/<modName>/config.json` — the menu layout (**required**)
+- `MCM/Config/<modName>/settings.ini` — the mod's default values
+
+**MVP = the ini-backed path.** Controls whose `sourceType` is `ModSettingBool`/`Int`/`Float`/`String`
+are fully handled by `MCMHelper.dll` with **no Quest record and no Papyrus** — the player's edits persist
+to `MCM/Settings/<modName>.ini` at runtime. (The advanced `PropertyValue*` / `action.CallFunction` path
+needs a Quest script extending `MCM_ConfigBase` and is intentionally **out of scope** — `validate`
+rejects those sourceTypes.) Format verified against `sub_projs/mod-survey/findings/mcm-helper-config-json.md`.
+
+```json
+{
+  "mcmConfigs": [
+    {
+      "modName": "MyMod",
+      "displayName": "My Mod",
+      "pages": [
+        { "name": "General", "content": [
+          { "type": "header", "text": "Features" },
+          { "type": "toggle", "text": "Enable", "id": "bEnable:General",
+            "sourceType": "ModSettingBool", "defaultBool": true },
+          { "type": "slider", "text": "Multiplier", "id": "fMult:General",
+            "sourceType": "ModSettingFloat", "min": 0.5, "max": 3.0, "step": 0.1, "defaultNumber": 1.0 },
+          { "type": "enum", "text": "Detail", "id": "iDetail:General",
+            "sourceType": "ModSettingInt", "options": ["Low","Medium","High"], "defaultNumber": 1 }
+        ] }
+      ]
+    }
+  ]
+}
+```
+
+→ `MCM/Config/MyMod/config.json` (the layout, with `name`→`pageDisplayName` and the value fields nested
+under `valueOptions`) + `MCM/Config/MyMod/settings.ini`:
+
+```ini
+[General]
+bEnable=1
+fMult=1.0
+iDetail=1
+```
+
+### `mcmConfigs[]`
+| Field | Required | Meaning |
+|---|---|---|
+| `modName` | ✅ | Names the `MCM/Config/<modName>/` folder and the MCM identity key. |
+| `displayName` | | Left-list label. Supports a `$TranslationKey`. |
+| `pages` | ✅ | The menu tabs. |
+
+### `mcmConfigs[].pages[]`
+| Field | Required | Meaning |
+|---|---|---|
+| `name` | ✅ | Tab label (emitted as `pageDisplayName`). Supports a `$TranslationKey`. |
+| `cursorFillMode` | | `topToBottom` (default) or `leftToRight` (two-column). |
+| `content` | | The control list. |
+
+### `mcmConfigs[].pages[].content[]`
+| Field | Meaning |
+|---|---|
+| `type` | `toggle` `hiddenToggle` `slider` `stepper` `enum` `keymap` `header` `empty`. `header`/`empty` carry no value. |
+| `id` | `"key:Section"` — the ini key + `[Section]` the value is stored under. **Required for any control with a `sourceType`.** |
+| `text` | Display label. Supports `$Key` and `{value}` interpolation. |
+| `help` | Hover tooltip. |
+| `sourceType` | `ModSettingBool` \| `ModSettingInt` \| `ModSettingFloat` \| `ModSettingString` (the ini-backed set). |
+| `min`/`max`/`step` | Slider range/step. A `slider` needs both `min` and `max`. |
+| `formatString` | Slider display, e.g. `"{0} s"` (int) / `"{1}"` (float). |
+| `options` | `stepper`/`enum` option labels (the int value is an index into this). Required for those types. |
+| `shortNames` | `enum` short display names. |
+| `defaultBool` / `defaultNumber` / `defaultString` | The default; which is read is decided by `sourceType` (Bool→`defaultBool`, Int/Float→`defaultNumber`, String→`defaultString`). Drives both `config.json` `defaultValue` and the `settings.ini` line. |
+| `groupControl` | Int id — marks this control as a group toggle. |
+| `groupCondition` | Int id (or `groupConditionNot:true` → `{"NOT": id}`) — show/hide driven by that group toggle. |
+| `groupBehavior` | `disable` (grey out) or `skip` (hide) the dependent control. |
+| `position` | Two-column forced column: `0` left / `1` right. |
+
+### Offline-validation note
+`validate` checks structure only: control `type` and `sourceType` are in the allowed sets, value
+controls have a `"key:Section"` id, sliders have `min`+`max`, `stepper`/`enum` have `options`. The
+**live menu can only be confirmed in-game** — ModForge writes the files; MCM Helper + SkyUI render them.

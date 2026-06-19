@@ -546,6 +546,13 @@
         "$ref": "#/$defs/spidDistribution"
       },
       "description": "SPID (Spell Perk Item Distributor) configs: attach records to NPC actorbases by filter with no ESP patch. Emitted as a loose <file>_DISTR.ini at the mod folder root (= Data/). See docs/spec/SPEC-distribution.md."
+    },
+    "mcmConfigs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/mcmConfig"
+      },
+      "description": "MCM Helper settings menus: emitted as loose MCM/Config/<modName>/config.json + settings.ini (no ESP record, no Papyrus for the ModSetting* ini-backed path). Requires MCM Helper + SkyUI at runtime. See docs/spec/SPEC-distribution.md."
     }
   },
   "additionalProperties": false,
@@ -5524,6 +5531,165 @@
           "items": {
             "$ref": "#/$defs/spidEntry"
           }
+        }
+      },
+      "additionalProperties": false
+    },
+    "mcmConfig": {
+      "type": "object",
+      "required": [
+        "modName",
+        "pages"
+      ],
+      "description": "MCM Helper config -> MCM/Config/<modName>/config.json + settings.ini.",
+      "properties": {
+        "modName": {
+          "type": "string",
+          "description": "names the MCM/Config/<modName>/ folder + the MCM identity key"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "left-list label (supports a $TranslationKey)"
+        },
+        "pages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mcmPage"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "mcmPage": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "description": "One MCM menu tab (emitted as pageDisplayName).",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "tab label (supports a $TranslationKey)"
+        },
+        "cursorFillMode": {
+          "enum": [
+            "topToBottom",
+            "leftToRight"
+          ],
+          "description": "topToBottom (default) | leftToRight (two-column)"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mcmControl"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "mcmControl": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "description": "One MCM control. header/empty carry no value; value controls need id + sourceType.",
+      "properties": {
+        "type": {
+          "enum": [
+            "toggle",
+            "hiddenToggle",
+            "slider",
+            "stepper",
+            "enum",
+            "keymap",
+            "header",
+            "empty"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "description": "\"key:Section\" — the ini key + [Section] the value is stored under (required for any control with a sourceType)"
+        },
+        "text": {
+          "type": "string",
+          "description": "display label (supports $Key and {value})"
+        },
+        "help": {
+          "type": "string",
+          "description": "hover tooltip"
+        },
+        "sourceType": {
+          "enum": [
+            "ModSettingBool",
+            "ModSettingInt",
+            "ModSettingFloat",
+            "ModSettingString"
+          ],
+          "description": "ini-backed data source (PropertyValue*/action are out of MVP scope)"
+        },
+        "min": {
+          "type": "number",
+          "description": "slider min (a slider needs both min and max)"
+        },
+        "max": {
+          "type": "number",
+          "description": "slider max"
+        },
+        "step": {
+          "type": "number"
+        },
+        "formatString": {
+          "type": "string",
+          "description": "slider display, e.g. \"{0} s\" (int) / \"{1}\" (float)"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "stepper/enum option labels (the int value indexes this)"
+        },
+        "shortNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "enum short display names"
+        },
+        "defaultBool": {
+          "type": "boolean",
+          "description": "default for sourceType ModSettingBool"
+        },
+        "defaultNumber": {
+          "type": "number",
+          "description": "default for sourceType ModSettingInt/Float"
+        },
+        "defaultString": {
+          "type": "string",
+          "description": "default for sourceType ModSettingString"
+        },
+        "groupControl": {
+          "type": "integer",
+          "description": "marks this control as a group toggle (an int id)"
+        },
+        "groupCondition": {
+          "type": "integer",
+          "description": "show/hide driven by the group toggle with this id"
+        },
+        "groupConditionNot": {
+          "type": "boolean",
+          "description": "emit groupCondition as {\"NOT\": id}"
+        },
+        "groupBehavior": {
+          "enum": [
+            "disable",
+            "skip"
+          ],
+          "description": "disable (grey out) | skip (hide) the dependent control"
+        },
+        "position": {
+          "type": "integer",
+          "description": "two-column forced column: 0 left | 1 right"
         }
       },
       "additionalProperties": false

@@ -1,0 +1,53 @@
+{
+  "_comment": "MCM Helper settings menu (D-2). Emits MCM/Config/<modName>/config.json + settings.ini as loose files — NO esp record, NO Papyrus needed for the ModSetting* (ini-backed) path. Requires MCM Helper + SkyUI installed at runtime. Verify the live menu in-game; ModForge only checks structure.",
+  "pluginName": "MyModConfig.esp",
+  "mcmConfigs": [
+    {
+      "modName": "MyMod",
+      "displayName": "My Mod",
+      "pages": [
+        {
+          "name": "General",
+          "cursorFillMode": "topToBottom",
+          "content": [
+            { "_comment": "A visual section title (no value).", "type": "header", "text": "Features" },
+            {
+              "_comment": "Bool toggle stored as [General] bEnableFeature=1 in settings.ini.",
+              "type": "toggle", "text": "Enable Feature", "help": "Turn the main feature on or off.",
+              "id": "bEnableFeature:General", "sourceType": "ModSettingBool", "defaultBool": true
+            },
+            {
+              "_comment": "Float slider; formatString {1} shows the decimal value.",
+              "type": "slider", "text": "Multiplier", "help": "Scales the effect strength.",
+              "id": "fMultiplier:General", "sourceType": "ModSettingFloat",
+              "min": 0.5, "max": 3.0, "step": 0.1, "defaultNumber": 1.0, "formatString": "{1}"
+            },
+            {
+              "_comment": "Enum (int index into options). defaultNumber=1 selects 'Medium'.",
+              "type": "enum", "text": "Detail Level",
+              "id": "iDetail:General", "sourceType": "ModSettingInt",
+              "options": ["Low", "Medium", "High"], "shortNames": ["Lo", "Md", "Hi"], "defaultNumber": 1
+            }
+          ]
+        },
+        {
+          "name": "Advanced",
+          "content": [
+            {
+              "_comment": "A group toggle: when off, the dependent control below is greyed out.",
+              "type": "toggle", "text": "Enable Tuning",
+              "id": "bTuning:Advanced", "sourceType": "ModSettingBool", "defaultBool": false,
+              "groupControl": 1
+            },
+            {
+              "type": "slider", "text": "Tuning Strength",
+              "id": "iStrength:Advanced", "sourceType": "ModSettingInt",
+              "min": 0, "max": 100, "step": 5, "defaultNumber": 50,
+              "groupCondition": 1, "groupBehavior": "disable"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

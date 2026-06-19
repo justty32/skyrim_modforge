@@ -114,17 +114,21 @@
 
 ---
 
-## SKSE 分發器 config 生成（SPID `_DISTR.ini`，loose、非-esp）
-→ **說明文件**：[SPEC-distribution.md](../../../docs/spec/SPEC-distribution.md) · 格式調查 [mod-survey/findings/spid.md](../../../sub_projs/mod-survey/findings/spid.md)（D 組 ini pipeline，見 [roadmap/all-findings-gaps.md](../../roadmap/all-findings-gaps.md)）
+## SKSE 分發器 config 生成（SPID `_DISTR.ini` / MCM Helper，loose、非-esp）
+→ **說明文件**：[SPEC-distribution.md](../../../docs/spec/SPEC-distribution.md) · 格式調查 [mod-survey/findings/spid.md](../../../sub_projs/mod-survey/findings/spid.md)、[mcm-helper-config-json.md](../../../sub_projs/mod-survey/findings/mcm-helper-config-json.md)（D 組 ini pipeline，見 [roadmap/all-findings-gaps.md](../../roadmap/all-findings-gaps.md)）
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
 | Spec | `Spec.SpidDistribution.cs` | DTO：`SpidDistributionSpec`/`SpidEntrySpec`（ModSpec list `spidDistributions` 在 `Spec.cs`）|
 | Core | `SpidGen.cs` | `SpidDistributionSpec`→`<file>_DISTR.ini`（`Generate`）、單行欄位組裝＋尾段 NONE 修剪（`Line`）|
 | Validate | `Generator.Validate.Spid.cs` | type 白名單 / record 必填 / chance 0–100（`ValidateSpidDistributions`）|
-| CLI | `Package.cs` | loose-file 寫出（與 OAR/BDI/PIE 同一段，輸出至 mod 根＝`Data/`）|
+| Spec | `Spec.Mcm.cs` | DTO：`McmSpec`/`McmPageSpec`/`McmControlSpec`（ModSpec list `mcmConfigs` 在 `Spec.cs`）|
+| Core | `McmGen.cs` | `McmSpec`→`MCM/Config/<modName>/config.json`（`System.Text.Json` JsonObject）+ `settings.ini`（`Generate`/`BuildConfigJson`/`BuildSettingsIni`/`SplitId`）|
+| Validate | `Generator.Validate.Mcm.cs` | control type / sourceType 白名單、value control 需 `key:Section` id、slider 需 min+max、stepper/enum 需 options；**PropertyValue\*/action 為 MVP 範圍外，擋掉**（`ValidateMcmConfigs`）|
+| CLI | `Package.cs` | loose-file 寫出（與 OAR/BDI/PIE/SPID 同一段；SPID→mod 根＝`Data/`、MCM→`MCM/Config/<modName>/`）|
 
 `_DISTR.ini` 寫在 mod 資料夾**根目錄**（≠ SKSE/Plugins）；RecordID/EditorID 由玩家 load order 解析，ModForge 離線不驗。example：`examples/spid_distribution_spec.json`。
+**MCM Helper**（Idea D-2）：MVP＝純 ini-backed（`ModSettingBool/Int/Float/String`），零 Quest/Papyrus/master，DLL 全自動把玩家改動存到 `MCM/Settings/<modName>.ini`；`config.json` 用 `name`→`pageDisplayName`、value 欄位收進 `valueOptions`。`PropertyValue*`/`action.CallFunction`（需 Quest 掛 `MCM_ConfigBase` script）為範圍外。live menu 只能實機驗。example：`examples/mcm_config_spec.json`。
 
 ---
 

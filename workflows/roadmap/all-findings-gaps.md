@@ -57,13 +57,13 @@ ModForge 的 `build` 主輸出是 `.esp`。這組是對應 SKSE framework 的 **
 支援 spell/perk/faction/keyword/package/outfit/item 分發給 NPC（依 race/faction/keyword/level/trait 條件）。  
 **用途：** 無 ESP patch 給 follower/NPC 加 faction、標記 keyword、分發 ability spell；OAR 條件讀 faction → animation 切換。
 
-### 🆕 D-2 MCM Helper `config.json`/`settings.ini` 輸出
-**來源：** mcm-helper.md  
-**現況：** ModForge 無 `mcm:` spec section，不輸出 MCM Helper 設定檔。  
-**Scope：** `mcm:` spec section → `SKSE/Plugins/MCMHelper/<mod>/config.json` + `SKSE/Plugins/MCMHelper/<mod>/settings.ini`；同時生成配套的無 Papyrus Quest record（`StartGameEnabled`，僅供 MCM 系統掛點）。  
-欄位：頁面/分隔線/開關/滑桿/文字框；`sourceType: ModSettingBool/Int/Float`；`settingName: myKey:mySection`。  
+### ✅ D-2 MCM Helper `config.json`/`settings.ini` 輸出（**已落地 2026-06-20**）
+**來源：** mcm-helper.md、mcm-helper-config-json.md  
+**狀態：** ✅ 離線實作 `mcmConfigs:` spec section → `MCM/Config/<modName>/config.json`（menu 佈局）+ `settings.ini`（預設值）。`Spec.Mcm.cs`（DTO）+ `McmGen.cs`（`System.Text.Json` 生 config.json + ini）+ `Generator.Validate.Mcm.cs` + `Package.cs` 接 loose-file 段。**17 測綠**；格式逐欄查 mcm-helper-config-json.md（MCM Helper 1.6.1）。docs [SPEC-distribution.md](../../docs/spec/SPEC-distribution.md)、example `mcm_config_spec.json`、schema 已同步。  
+控件：header/empty/toggle/slider/stepper/enum/keymap/hiddenToggle + group/position 佈局；`sourceType: ModSettingBool/Int/Float/String`；id `key:Section` → ini `[Section] key=`。  
+**MVP 範圍：** 純 ini-backed（`ModSetting*`）**零 Quest/Papyrus/master**——DLL 全自動。`PropertyValue*`/`action.CallFunction`（需 Quest 掛 `MCM_ConfigBase` script）**範圍外，validate 擋掉**，留待日後接 Papyrus host。  
 **用途：** 任何需要玩家設定面板的 mod（難度、開關功能、follower 行為調整）。  
-**優先：** 🟡（有 GlobalVariable 替代，但 MCM 是品質標準）
+⚠️ **待主力機：** live menu 只能實機驗（裝 MCM Helper + SkyUI，看選單渲染/存讀）；ModForge 只驗結構。
 
 ### 🆕 D-3 SkyPatcher ini 輸出
 **來源：** skypatcher.md  
@@ -234,7 +234,7 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 2. ~~**B 組 #1**（Perk AddActivateChoice + fragment）~~ ✅ **已落地 2026-06-17** → 互動式 perk mod（PerkAdapter byte 待主力機驗）
 3. ~~**C 組 #2**（package alias 間接）~~ ✅ **已落地 2026-06-17** → radiant 演出 package（byte 待主力機驗）
 4. ~~**D-1**（SPID _DISTR.ini）~~ ✅ **已落地 2026-06-17** → 無衝突 NPC 標記與兼容 patch
-5. **D-2**（MCM Helper）→ 解鎖玩家設定面板
+5. ~~**D-2**（MCM Helper）~~ ✅ **已落地 2026-06-20** → 玩家設定面板（live menu 待主力機實機驗）
 6. **D-4**（FLM ini）→ 解鎖外部 FLST 注入（Spellforge/SPID 兼容）
 7. **H 組**（CSF skill tree）→ 接 generation.md 現有設計，已有詳細 spec 草案
 8. ~~**L 組**（GetVMQuestVariable/GetVMScriptVariable 條件）~~ ✅ **已落地 2026-06-20** → follower ambient bark 品質（variableName 字串格式待主力機 xEdit 驗）

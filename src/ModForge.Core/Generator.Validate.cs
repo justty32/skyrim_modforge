@@ -33,6 +33,7 @@ public static partial class Generator
         ctx.ValidateVoice();
         ctx.ValidateAnimationReplacers();
         ctx.ValidateSpidDistributions();
+        ctx.ValidateMcmConfigs();
         ValidateWeather(spec, ctx.Problems, ctx.Ids, ctx.CheckRef);
         ValidateLights(spec, ctx.Problems);
         ValidateLighting(spec, ctx.Problems);
