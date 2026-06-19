@@ -25,6 +25,6 @@
 
 ## 不屬任何工作流的進度（堆太多 → 拆進 `session_logs/`）
 
-- **Idea #20 in-world 技能樹 — Phase 0 JContainers 持久層已落地**（2026-06-18 離線；🟡 剩「好感度 gate」離線續做 + 主力機編 .pex/實機見 WAIT_USER）：結構化 JFormDB `persist`+`syncPerks`，三 host／key 形態（對話 TIF / quest stage fragment / 任意-ref key），解 design U5，695 測綠。durable [sub_projs/inworld-skill-tree/design-inworld-jcontainers.md](sub_projs/inworld-skill-tree/design-inworld-jcontainers.md)。⚠ zh-TW SPEC-quests 鏡像待同步。
+- **Idea #20 in-world 技能樹 — Phase 0 JContainers 持久層（含好感度 gate）已落地**（2026-06-18~19 離線；🟢 離線 Phase 0 完備，剩主力機編 .pex/實機見 WAIT_USER）：結構化 JFormDB `persist`+`syncPerks`，三 host／key 形態（對話 TIF / quest stage fragment / 任意-ref key），**＋好感度 gate**（`gate:{global,atLeast?,atMost?}` 把寫入/sync 包進 GLOB 閾值 `If`，Sofia F6 藍圖；綁 `PGate`/`SGate` property、validation 擋未解 GLOB+反向 band），解 design U5，705 測綠。durable [sub_projs/inworld-skill-tree/design-inworld-jcontainers.md](sub_projs/inworld-skill-tree/design-inworld-jcontainers.md)。⚠ zh-TW SPEC-quests 鏡像待同步（整個 persist 段落，非僅 gate）。
 
 - **Idea #19 Godot Worldspace Editor — WYSIWYG 整鏈已落地**（2026-06-18 GUI/in-game 全確認）：地形/紋理/物件 build 鏈 + 編輯器**真實貼圖 + 真實物件模型/貼圖**都實機確認；nif2gltf 對真實 vanilla nif 修復；`.gd` 大檔已按職責拆。完整收進 [landed/world.md](workflows/feature-dev/landed/world.md)「Godot 編輯器 WYSIWYG」「model-converter」條。剩非阻塞小尾巴（物件 normal/spec 貼圖、LE-format nif、VTXT position 目視）在 [WAIT_USER](WAIT_USER.md)。

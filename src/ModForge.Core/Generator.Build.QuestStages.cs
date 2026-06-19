@@ -89,6 +89,8 @@ public static partial class Generator
                                 BindFormProp(entry, Generator.PersistKeyProperty(prefix), pp.Key, $"quest '{q.EditorId}' stage {st.Index} persist key");
                             foreach (var (i, e) in Generator.PersistFormEntries(pp))
                                 BindFormProp(entry, Generator.PersistFormProperty(prefix, i), e.Form, $"quest '{q.EditorId}' stage {st.Index} persist form");
+                            if (Generator.HasGate(pp.Gate))
+                                BindFormProp(entry, Generator.PersistGateProperty(prefix), pp.Gate!.Global, $"quest '{q.EditorId}' stage {st.Index} persist gate");
                         }
                         if (st.SyncPerks is { } sps)
                         {
@@ -96,6 +98,8 @@ public static partial class Generator
                                 BindFormProp(entry, Generator.SyncKeyProperty(prefix), sps.Key, $"quest '{q.EditorId}' stage {st.Index} syncPerks key");
                             for (int i = 0; i < sps.Nodes.Count; i++)
                                 BindFormProp(entry, Generator.SyncPerkProperty(prefix, i), sps.Nodes[i].Perk, $"quest '{q.EditorId}' stage {st.Index} syncPerks perk");
+                            if (Generator.HasGate(sps.Gate))
+                                BindFormProp(entry, Generator.SyncGateProperty(prefix), sps.Gate!.Global, $"quest '{q.EditorId}' stage {st.Index} syncPerks gate");
                         }
                     }
                     // Stage = quest stage number, StageIndex = log-entry index within the stage

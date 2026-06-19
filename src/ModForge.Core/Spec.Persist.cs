@@ -12,6 +12,20 @@ namespace ModForge;
 // JValue.object()/retain()/release() handle to balance — the retain/release footgun is avoided by
 // construction, not by careful pairing.
 
+// One `gate` block: a GlobalVariable threshold that guards a persist/syncPerks block — the affinity gate
+// (Sofia F6 blueprint, design §四 "好感度 gate"). The block's JFormDB writes (and/or perk sync) run only
+// when the bound GLOB's value satisfies the threshold, so a growth source like "affinity >= 4 → bank a
+// skill rank" needs no hand-written Papyrus: the GLOB is the affinity counter, the gate the unlock.
+public sealed class GateSpec
+{
+    // The GlobalVariable read at runtime (editorId/ref); bound as a property, value read via GetValue().
+    public string Global { get; set; } = "";
+    // Threshold(s). At least one should be set; both → a band (atLeast <= value <= atMost). With neither
+    // the gate degenerates to "GLOB is non-zero" (a boolean flag).
+    public float? AtLeast { get; set; }   // value >= atLeast
+    public float? AtMost { get; set; }    // value <= atMost
+}
+
 // One `persist` block: a set of nested JFormDB writes keyed on a Form, performed when the line is picked.
 public sealed class PersistSpec
 {
@@ -23,6 +37,8 @@ public sealed class PersistSpec
     public string Key { get; set; } = "speaker";
     // The writes performed, in order. Each sets one leaf at `path` under the storage.
     public List<PersistEntrySpec> Set { get; set; } = new();
+    // Optional affinity gate: when set, the writes run only while the GLOB satisfies the threshold.
+    public GateSpec? Gate { get; set; }
 }
 
 // One JFormDB write. `path` is the subpath UNDER the storage (e.g. ".Endurance.nodes.Adaptation"); it is
@@ -47,6 +63,8 @@ public sealed class SyncPerksSpec
     public string Storage { get; set; } = "";      // JFormDB storageName (same bucket as the persist writes)
     public string Key { get; set; } = "speaker";   // actor whose perks are synced ("speaker" | "player")
     public List<SyncPerkNodeSpec> Nodes { get; set; } = new();
+    // Optional affinity gate: when set, the perk sync runs only while the GLOB satisfies the threshold.
+    public GateSpec? Gate { get; set; }
 }
 
 // One perk-sync node. `path` is the subpath to the node's stored rank int (read with solveInt). `perk`

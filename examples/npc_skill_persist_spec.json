@@ -1,7 +1,16 @@
 {
   "pluginName": "ModForgeNpcSkillPersist.esp",
   "esl": true,
-  "_": "Idea #20 in-world skill tree — Phase 0 (JContainers JFormDB persistence, design §七 Phase 0). A trainer NPC whose 'Train your Endurance' dialogue line PERSISTS per-NPC skill state to a JFormDB storage keyed on the speaker, then SYNCS the matching perk from the stored rank. No Campfire / in-world UI — this is the pure-effect persistence layer ('an NPC grows perks from stored state'). ⚠ REQUIRES JContainers SE installed at runtime, and compiling the generated TIF_*.psc needs JContainers' own .psc on the Papyrus header path (main machine; see WAIT_USER). Lifecycle note: only the root-DB path API (JFormDB.solveXxxSetter/solveInt) is used, so there is no JValue.object()/retain()/release() to balance (design unknown U5 — avoided by construction). The perk here is a trivial inline PERK so the spec is self-contained; swap to your real skill-tree perks.",
+  "_": "Idea #20 in-world skill tree — Phase 0 (JContainers JFormDB persistence, design §七 Phase 0). A trainer NPC whose 'Train your Endurance' dialogue line PERSISTS per-NPC skill state to a JFormDB storage keyed on the speaker, then SYNCS the matching perk from the stored rank. The 'Reflect on your bond' line shows the AFFINITY GATE (design §四, Sofia F6 blueprint): the bank+sync runs only once the affinity GLOB crosses a threshold, so growth can be gated on a relationship counter with no hand-written Papyrus. No Campfire / in-world UI — this is the pure-effect persistence layer ('an NPC grows perks from stored state'). ⚠ REQUIRES JContainers SE installed at runtime, and compiling the generated TIF_*.psc needs JContainers' own .psc on the Papyrus header path (main machine; see WAIT_USER). Lifecycle note: only the root-DB path API (JFormDB.solveXxxSetter/solveInt) is used, so there is no JValue.object()/retain()/release() to balance (design unknown U5 — avoided by construction). The perk here is a trivial inline PERK so the spec is self-contained; swap to your real skill-tree perks.",
+
+  "globals": [
+    {
+      "editorId": "MFSkill_TrainerAffinity",
+      "_": "The affinity / relationship counter (Sofia F6 blueprint). Raise it elsewhere (gifts, quests, the dialogue line below); the gated line reads it to decide whether growth unlocks. short = integer flag/counter.",
+      "type": "short",
+      "value": 0
+    }
+  ],
 
   "perks": [
     {
@@ -72,6 +81,30 @@
         "nodes": [
           { "path": ".Endurance.nodes.Adaptation", "perk": "MFSkill_AdaptationPerk", "minRank": 2 }
         ]
+      }
+    },
+    {
+      "editorId": "MFSkill_Bond",
+      "questEditorId": "MFSkill_Q",
+      "speakerNpcEditorId": "MFSkill_Trainer",
+      "prompt": "Reflect on your bond.",
+      "responses": [ "Trust earned, strength shared." ],
+      "_": "AFFINITY GATE demo (design §四 好感度 gate, Sofia F6 blueprint): both the bank and the perk sync run only when MFSkill_TrainerAffinity >= 4. Below the threshold the line is inert; once the relationship counter is high enough the Adaptation node is set to rank 2 and the perk applies. Use 'atMost' too for a band (atLeast <= value <= atMost); omit both to gate on the GLOB being non-zero.",
+      "persist": {
+        "storage": "ModForgeNpcSkills",
+        "key": "speaker",
+        "set": [
+          { "path": ".Endurance.nodes.Adaptation", "int": 2 }
+        ],
+        "gate": { "global": "MFSkill_TrainerAffinity", "atLeast": 4 }
+      },
+      "syncPerks": {
+        "storage": "ModForgeNpcSkills",
+        "key": "speaker",
+        "nodes": [
+          { "path": ".Endurance.nodes.Adaptation", "perk": "MFSkill_AdaptationPerk", "minRank": 2 }
+        ],
+        "gate": { "global": "MFSkill_TrainerAffinity", "atLeast": 4 }
       }
     }
   ]

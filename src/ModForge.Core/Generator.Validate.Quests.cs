@@ -270,6 +270,7 @@ public static partial class Generator
                 if (e.Delta && e.Int is null && e.Float is null) Problems.Add($"{label} entry '{e.Path}' delta only applies to int/float");
                 if (!string.IsNullOrWhiteSpace(e.Form)) CheckRef(e.Form, $"{label} entry '{e.Path}' form");
             }
+            ValidateGate(p.Gate, $"{label} gate");
         }
 
         private void ValidateSyncPerksBlock(SyncPerksSpec s, string label, bool allowSpeaker)
@@ -283,6 +284,17 @@ public static partial class Generator
                 if (string.IsNullOrWhiteSpace(n.Perk)) Problems.Add($"{label} node '{n.Path}' has empty perk ref");
                 else CheckRef(n.Perk, $"{label} node '{n.Path}' perk");
             }
+            ValidateGate(s.Gate, $"{label} gate");
+        }
+
+        // The affinity gate (Sofia F6 blueprint): the GLOB must resolve, and a band must not be inverted.
+        private void ValidateGate(GateSpec? g, string label)
+        {
+            if (g is null) return;
+            if (string.IsNullOrWhiteSpace(g.Global)) Problems.Add($"{label} has empty global");
+            else CheckRef(g.Global, $"{label} global");
+            if (g.AtLeast is float lo && g.AtMost is float hi && lo > hi)
+                Problems.Add($"{label} atLeast ({lo}) > atMost ({hi}) — band never satisfiable");
         }
 
         // A persist/syncPerks Form key is "player", "speaker" (dialogue only — the emitter maps it to the

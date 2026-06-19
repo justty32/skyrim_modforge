@@ -108,7 +108,7 @@ target 解析為某 NPC 後，橋接靠一組**全域 session GLOB**（僅描述
 - **perk 套用**：`SyncPerks(npc)` 依 JFormDB 的 node rank → `AddPerk`/`RemovePerk`。冪等，可在 NPC OnLoad / 升級時重跑。
 - **成長來源**（寫進 JFormDB，玩家不必配點時的自動路線）：
   - 任務進度 gate（任務 stage → `solveIntSetter` 升 level + 自動點關鍵 node）
-  - 好感度 gate（沿用 Sofia F6 GLOB 藍圖，見 [README 方案 A](README.md#方案-a純效果不開-ui最簡單現在就能做)）
+  - 好感度 gate（沿用 Sofia F6 GLOB 藍圖，見 [README 方案 A](README.md#方案-a純效果不開-ui最簡單現在就能做)）✅ 已落地：`persist`/`syncPerks` 的 `gate: {global, atLeast?, atMost?}`
   - 戰鬥 XP（NPC OnHit / 殺敵 event 累積 ratio）
 - **適合先落地的 MVP**：純效果成長 + 任務 gate，**完全不碰 Campfire/in-world UI**——這條現在就能做，是 idea #20 原本的「方案 A」。in-world UI 是其上的玩家配點加值層。
 
@@ -148,7 +148,8 @@ target 解析為某 NPC 後，橋接靠一組**全域 session GLOB**（僅描述
      - ✅ **host=對話 TIF fragment**（key=speaker/player/ref）。
      - ✅ **host=quest stage fragment 已補（2026-06-18 離線）**：`quest.stages[].persist`/`.syncPerks` — 到達 stage 時觸發（emitter host-agnostic，prop 名以 `S<idx:D4>_` namespace 防多 stage 撞名；stage 無 akSpeakerRef → key 須 player/ref，validation 擋 speaker）。**這就是「任務 stage gate 觸發路徑」**。
      - ✅ **任意-ref key 已補（2026-06-18 離線）**：key 非 speaker/player 即視為 arbitrary ref → 綁 `PKey`/`SKey` Form property 當 JFormDB key（石頭代表某 NPC）。syncPerks 的 ref 須 runtime 是 actor ref（`If (key as Actor)` 守，非 actor no-op）。
-     - **剩**：① 好感度 gate（Sofia F6 GLOB 藍圖，尚未接）；② 主力機編 `.pex`（需 JContainers headers）+ 實機驗（WAIT_USER）。
+     - ✅ **好感度 gate 已補（2026-06-19 離線）**：`persist`/`syncPerks` 可選 `gate: {global, atLeast?, atMost?}` — 綁一個 GLOB（relationship/reputation 計數，Sofia F6 藍圖），把整塊寫入/sync 包進 `If <GLOB>.GetValue() >= n`（atMost→band、皆無→`!= 0`）。GLOB 綁為 `PGate`/`SGate` property、validation 擋未解 GLOB + 反向 band。705 測綠，example `npc_skill_persist_spec.json` 加 `MFSkill_Bond` 對話線（affinity>=4 才 unlock）示範。
+     - **剩**：主力機編 `.pex`（需 JContainers headers）+ 實機驗（WAIT_USER）。
 2. **Phase 1：玩家版 in-world 樹（繞過 U1/U2）**——照 Frostfall 模式掛一棵玩家樹到營火（Campfire 原生、全域 GLOB、零橋接）。驗證 in-world 星樹本體可生成可運作；只觸及 U4（generator）不觸及 U1/U2。
 3. **Phase 2（待 U1/U2）**：NPC 版橋接——session GLOB + JFormDB + 對 NPC 開樹。需先在主力機釐清 U1（對任意 ref 開樹）/ U2（session GLOB 隔離）。
 4. **Phase 3（待 U4 收尾）**：ModForge generator——把上述 record 從 spec 自動產出，補 PositionRef layout 模板。

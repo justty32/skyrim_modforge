@@ -122,6 +122,8 @@ public static partial class Generator
                             BindFormProp(entry, Generator.PersistKeyProperty(""), pp.Key, $"TIF '{d.EditorId}': persist key");
                         foreach (var (i, e) in Generator.PersistFormEntries(pp))
                             BindFormProp(entry, Generator.PersistFormProperty("", i), e.Form, $"TIF '{d.EditorId}': persist form");
+                        if (Generator.HasGate(pp.Gate))
+                            BindFormProp(entry, Generator.PersistGateProperty(""), pp.Gate!.Global, $"TIF '{d.EditorId}': persist gate");
                     }
                     // syncPerks: bind the Form key (arbitrary ref only) + the PERK form for each node.
                     if (d.SyncPerks is { } sps)
@@ -130,6 +132,8 @@ public static partial class Generator
                             BindFormProp(entry, Generator.SyncKeyProperty(""), sps.Key, $"TIF '{d.EditorId}': syncPerks key");
                         for (int i = 0; i < sps.Nodes.Count; i++)
                             BindFormProp(entry, Generator.SyncPerkProperty("", i), sps.Nodes[i].Perk, $"TIF '{d.EditorId}': syncPerks perk");
+                        if (Generator.HasGate(sps.Gate))
+                            BindFormProp(entry, Generator.SyncGateProperty(""), sps.Gate!.Global, $"TIF '{d.EditorId}': syncPerks gate");
                     }
                 }
                 // OnBegin fires the moment the player selects the line (before the NPC speaks).

@@ -137,8 +137,16 @@ In both, the writes appear before the perk sync so a sync sees what was just sto
   represents an NPC). For `syncPerks`, the ref should be an actor reference at runtime — `AddPerk` is
   guarded by `If (key as Actor)`, so a non-actor key simply no-ops.
 
-Property names are namespaced per stage (`S0010_PF_0`, `S0010_SyncPerk_0`, …) so several stages in one
-quest script never collide; a dialogue TIF uses the bare names (`PF_0`, `SyncPerk_0`, `PKey`, `SKey`).
+**Affinity gate** (optional `gate` on `persist` and/or `syncPerks`) — `{ global, atLeast?, atMost? }`.
+A relationship/reputation counter (the Sofia F6 blueprint): the block's writes/sync run only while the
+bound `GlobalVariable` satisfies the threshold, so growth can be gated on affinity with no hand-written
+Papyrus. `atLeast` → `value >= n`; `atMost` → `value <= n`; both → a band (`atLeast <= value <= atMost`);
+neither → gate on the GLOB being non-zero (a boolean flag). `global` must resolve to a GLOB in the spec.
+Raise the counter elsewhere (gifts, quest stages, a dialogue `setGlobal`); the gate just reads it.
+
+Property names are namespaced per stage (`S0010_PF_0`, `S0010_SyncPerk_0`, `S0010_PGate`, …) so several
+stages in one quest script never collide; a dialogue TIF uses the bare names (`PF_0`, `SyncPerk_0`,
+`PKey`, `SKey`, `PGate`, `SGate`).
 
 **Lifecycle**: only the root-DB path API (`JFormDB.solveXxxSetter`/`solveInt`) is generated. JContainers
 owns those roots and persists them with the save, so there is **no** `JValue.object()`/`retain()`/`release()`

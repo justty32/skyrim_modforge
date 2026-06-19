@@ -247,6 +247,102 @@ public class JContainersPersistTests
         finally { if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true); }
     }
 
+    // ---- affinity gate (Sofia F6 blueprint): a GLOB threshold guards the persist / perk sync ----
+
+    [Fact]
+    public void Persist_Gate_WrapsWritesInGlobalThresholdAndDeclaresProperty()
+    {
+        var p = new PersistSpec
+        {
+            Storage = "ModForgeNpcSkills", Key = "speaker",
+            Set = { new PersistEntrySpec { Path = ".Endurance.nodes.Adaptation", Int = 1 } },
+            Gate = new GateSpec { Global = "MF_Affinity", AtLeast = 4 },
+        };
+        var src = Generator.GenerateDialogueFragmentSource(Line(p));
+        Assert.Contains("GlobalVariable Property PGate Auto", src);
+        Assert.Contains("If PGate.GetValue() >= 4", src);
+        // the write sits inside the gate (deeper indent than an ungated write).
+        Assert.Contains("    JFormDB.solveIntSetter(akSpeakerRef, \".ModForgeNpcSkills.Endurance.nodes.Adaptation\", 1, true)", src);
+        Assert.Contains("EndIf", src);
+    }
+
+    [Fact]
+    public void Persist_Gate_Band_EmitsBothBounds()
+    {
+        var p = new PersistSpec { Storage = "S", Set = { new PersistEntrySpec { Path = ".x", Int = 1 } },
+            Gate = new GateSpec { Global = "MF_Affinity", AtLeast = 2, AtMost = 6 } };
+        var src = Generator.GenerateDialogueFragmentSource(Line(p));
+        Assert.Contains("If PGate.GetValue() >= 2 && PGate.GetValue() <= 6", src);
+    }
+
+    [Fact]
+    public void Persist_Gate_NoThreshold_FallsBackToNonZero()
+    {
+        var p = new PersistSpec { Storage = "S", Set = { new PersistEntrySpec { Path = ".x", Int = 1 } },
+            Gate = new GateSpec { Global = "MF_Flag" } };
+        var src = Generator.GenerateDialogueFragmentSource(Line(p));
+        Assert.Contains("If PGate.GetValue() != 0", src);
+    }
+
+    [Fact]
+    public void SyncPerks_Gate_WrapsPerkSyncAndDeclaresProperty()
+    {
+        var s = new SyncPerksSpec { Storage = "S", Key = "speaker",
+            Nodes = { new SyncPerkNodeSpec { Path = ".n", Perk = "MF_AdaptPerk" } },
+            Gate = new GateSpec { Global = "MF_Affinity", AtLeast = 4 } };
+        var src = Generator.GenerateDialogueFragmentSource(Line(sync: s));
+        Assert.Contains("GlobalVariable Property SGate Auto", src);
+        Assert.Contains("If SGate.GetValue() >= 4", src);
+        Assert.Contains("    Actor __sp = akSpeakerRef as Actor", src);
+    }
+
+    [Fact]
+    public void Build_Gate_BindsGlobalProperty()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "mf-jc-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        try
+        {
+            File.WriteAllText(Path.Combine(dir, "TIF_MF_Train.pex"), "");
+            var spec = new ModSpec
+            {
+                PluginName = "Test.esp",
+                Quests = { new QuestSpec { EditorId = "MF_Q", Name = "Q" } },
+                Npcs = { new NpcSpec { EditorId = "MF_Npc", Name = "Npc" } },
+                Globals = { new GlobalSpec { EditorId = "MF_Affinity", Value = 0 } },
+                Dialogue =
+                {
+                    Line(new PersistSpec { Storage = "S", Set = { new PersistEntrySpec { Path = ".x", Int = 1 } },
+                        Gate = new GateSpec { Global = "MF_Affinity", AtLeast = 4 } }),
+                },
+            };
+            var r = TestBuild.OkWithCompiledScripts(spec, dir);
+            var glob = r.Mod.Globals.Single(g => g.EditorID == "MF_Affinity");
+            var info = r.Mod.EnumerateMajorRecords<IDialogResponsesGetter>().Single(i => i.EditorID == "MF_Train");
+            var props = info.VirtualMachineAdapter!.Scripts.Single(e => e.Name == "TIF_MF_Train").Properties;
+            var gp = (IScriptObjectPropertyGetter)props.Single(p => p.Name == "PGate");
+            Assert.Equal(glob.FormKey, gp.Object.FormKey);
+        }
+        finally { if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true); }
+    }
+
+    [Fact]
+    public void Validate_Gate_UnresolvedGlobal_Reported()
+    {
+        var d = Line(new PersistSpec { Storage = "S", Set = { new PersistEntrySpec { Path = ".x", Int = 1 } },
+            Gate = new GateSpec { Global = "NoSuchGlob", AtLeast = 1 } });
+        Assert.Contains(Validate(WithLine(d)), p => p.Contains("persist gate global") && p.Contains("unresolved ref 'NoSuchGlob'"));
+    }
+
+    [Fact]
+    public void Validate_Gate_InvertedBand_Reported()
+    {
+        var spec = WithLine(Line(new PersistSpec { Storage = "S", Set = { new PersistEntrySpec { Path = ".x", Int = 1 } },
+            Gate = new GateSpec { Global = "MF_Aff", AtLeast = 6, AtMost = 2 } }));
+        spec.Globals.Add(new GlobalSpec { EditorId = "MF_Aff" });
+        Assert.Contains(Validate(spec), p => p.Contains("band never satisfiable"));
+    }
+
     // ---- stage-fragment persist/syncPerks (the host is a quest STAGE, not a dialogue line) ----
 
     private static QuestSpec StagePersistQuest() => new()

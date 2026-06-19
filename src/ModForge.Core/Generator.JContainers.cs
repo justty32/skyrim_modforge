@@ -70,6 +70,33 @@ public static partial class Generator
     internal static string PersistKeyProperty(string prefix) => $"{prefix}PKey";
     /// <summary>Property name (namespaced) holding the arbitrary-ref Form key of a syncPerks block.</summary>
     internal static string SyncKeyProperty(string prefix) => $"{prefix}SKey";
+    /// <summary>Property name (namespaced) holding the affinity-gate GlobalVariable of a persist block.</summary>
+    internal static string PersistGateProperty(string prefix) => $"{prefix}PGate";
+    /// <summary>Property name (namespaced) holding the affinity-gate GlobalVariable of a syncPerks block.</summary>
+    internal static string SyncGateProperty(string prefix) => $"{prefix}SGate";
+
+    /// <summary>True when a gate carries a GlobalVariable to bind/read.</summary>
+    internal static bool HasGate(GateSpec? g) => g is { } x && !string.IsNullOrWhiteSpace(x.Global);
+
+    /// <summary>The Papyrus boolean condition for an affinity gate: the bound GLOB's value vs the
+    /// threshold(s). Both bounds → a band; neither → "non-zero" (a boolean flag).</summary>
+    internal static string GateCondition(GateSpec g, string prop)
+    {
+        var parts = new List<string>();
+        if (g.AtLeast is float lo) parts.Add($"{prop}.GetValue() >= {PapyrusFloat(lo)}");
+        if (g.AtMost is float hi) parts.Add($"{prop}.GetValue() <= {PapyrusFloat(hi)}");
+        return parts.Count == 0 ? $"{prop}.GetValue() != 0" : string.Join(" && ", parts);
+    }
+
+    /// <summary>Wrap a block's body lines in its affinity gate (If/EndIf, inner lines indented). No gate →
+    /// the body passes through unchanged.</summary>
+    private static IEnumerable<string> GateWrap(GateSpec? gate, string prop, List<string> body)
+    {
+        if (!HasGate(gate)) { foreach (var l in body) yield return l; yield break; }
+        yield return $"If {GateCondition(gate!, prop)}";
+        foreach (var l in body) yield return "    " + l;
+        yield return "EndIf";
+    }
 
     /// <summary>The Form-valued persist entries of a block (declaration index → entry). Only these bind a
     /// Form property; int/float/string entries carry literals and declare nothing.</summary>
@@ -97,6 +124,8 @@ public static partial class Generator
                 yield return $"Form Property {PersistKeyProperty(prefix)} Auto";
             foreach (var (i, _) in PersistFormEntries(p))
                 yield return $"Form Property {PersistFormProperty(prefix, i)} Auto";
+            if (HasGate(p.Gate))
+                yield return $"GlobalVariable Property {PersistGateProperty(prefix)} Auto";
         }
         if (sync is { } s && s.Nodes.Count > 0)
         {
@@ -104,6 +133,8 @@ public static partial class Generator
                 yield return $"Form Property {SyncKeyProperty(prefix)} Auto";
             for (int i = 0; i < s.Nodes.Count; i++)
                 yield return $"Perk Property {SyncPerkProperty(prefix, i)} Auto";
+            if (HasGate(s.Gate))
+                yield return $"GlobalVariable Property {SyncGateProperty(prefix)} Auto";
         }
     }
     /// <summary>Property declarations for a dialogue line (prefix "").</summary>
@@ -118,30 +149,38 @@ public static partial class Generator
         if (persist is { } p && p.Set.Count > 0)
         {
             var key = JFormDbKeyExpr(p.Key, PersistKeyProperty(prefix));
+            var body = new List<string>();
             for (int i = 0; i < p.Set.Count; i++)
-                foreach (var line in EmitPersistEntry(key, JFormDbPath(p.Storage, p.Set[i].Path), p.Set[i], PersistFormProperty(prefix, i), i))
-                    yield return line;
+                body.AddRange(EmitPersistEntry(key, JFormDbPath(p.Storage, p.Set[i].Path), p.Set[i], PersistFormProperty(prefix, i), i));
+            // The writes run unconditionally, OR only while the affinity gate's GLOB passes its threshold.
+            foreach (var line in GateWrap(p.Gate, PersistGateProperty(prefix), body))
+                yield return line;
         }
         if (sync is { } s && s.Nodes.Count > 0)
         {
             var key = JFormDbKeyExpr(s.Key, SyncKeyProperty(prefix));
-            // The key actor: cast once so AddPerk/RemovePerk resolve (akSpeakerRef/GetPlayer()/a ref are
-            // ObjectReference-or-subtype; `as Actor` returns None for a non-actor ref — the If guards it).
-            yield return $"Actor __sp = {key} as Actor";
-            yield return "If __sp";
+            var body = new List<string>
+            {
+                // The key actor: cast once so AddPerk/RemovePerk resolve (akSpeakerRef/GetPlayer()/a ref are
+                // ObjectReference-or-subtype; `as Actor` returns None for a non-actor ref — the If guards it).
+                $"Actor __sp = {key} as Actor",
+                "If __sp",
+            };
             for (int i = 0; i < s.Nodes.Count; i++)
             {
                 var n = s.Nodes[i];
                 var path = JFormDbPath(s.Storage, n.Path);
                 var prop = SyncPerkProperty(prefix, i);
                 int rank = System.Math.Max(1, n.MinRank);
-                yield return $"    If JFormDB.solveInt({key}, \"{path}\", 0) >= {rank}";
-                yield return $"        __sp.AddPerk({prop})       ; rank >= {rank}";
-                yield return "    Else";
-                yield return $"        __sp.RemovePerk({prop})";
-                yield return "    EndIf";
+                body.Add($"    If JFormDB.solveInt({key}, \"{path}\", 0) >= {rank}");
+                body.Add($"        __sp.AddPerk({prop})       ; rank >= {rank}");
+                body.Add("    Else");
+                body.Add($"        __sp.RemovePerk({prop})");
+                body.Add("    EndIf");
             }
-            yield return "EndIf";
+            body.Add("EndIf");
+            foreach (var line in GateWrap(s.Gate, SyncGateProperty(prefix), body))
+                yield return line;
         }
     }
     /// <summary>Fragment body for a dialogue line (prefix "").</summary>
