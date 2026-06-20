@@ -1,0 +1,25 @@
+{
+  "pluginName": "ModForgeStorageWritesDiag.esp",
+  "esl": true,
+  "_": "ISOLATION TEST for storageWrites (J group), mirroring spawn_isolation_test.json. A StartGameEnabled quest (NO Story Manager, NO CastMagic event) with a startUpStage-10 carrying the three storageWrites. StartGameEnabled => the quest is running the moment the save loads, so the stage-10 fragment auto-runs once on load, and `setstage MFSWD_Q 10` RE-FIRES it any time. This decouples storageWrites from the (never-yet-confirmed) CastMagic SM trigger: if `setstage MFSWD_Q 10` makes the on-screen notification appear and the count climb, the storageWrites FEATURE works and the earlier silence is purely the CastMagic SM-start path; if even this shows nothing, the fragment/pex/VMAD-binding is the problem. The compiled MFSWD_Q_Stages.pex carries a TEST-HARNESS readback (reads each value back via StorageUtil.Get* and Debug.Notification) on top of the generated writes.",
+  "quests": [
+    {
+      "editorId": "MFSWD_Q",
+      "name": "StorageWrites Diag",
+      "type": "None",
+      "startGameEnabled": true,
+      "stages": [
+        {
+          "index": 10,
+          "startUpStage": true,
+          "logEntry": "StorageWrites diag running.",
+          "storageWrites": [
+            { "key": "MFSW_castCount", "target": "player", "int": 1, "delta": true },
+            { "key": "MFSW_castMagicka", "target": "player", "float": 0.5, "delta": true },
+            { "key": "MFSW_lastCast", "target": "player", "str": "cast happened" }
+          ]
+        }
+      ]
+    }
+  ]
+}
