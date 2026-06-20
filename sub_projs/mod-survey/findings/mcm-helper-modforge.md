@@ -4,15 +4,18 @@
 
 ## 三、對 ModForge 的參考價值
 
+> 🛑 **2026-06-20 實機 + 源碼修正**：本節原本（下方畫線處）說「純 ModSetting ini 存讀甚至不需要 Quest + Papyrus」——**這是錯的**，它只查了 config.json 格式、沒查註冊步驟。實機證實：光丟 config.json + 空 esp，選單**完全不出現**。MCM Helper 的最小需求**永遠**包含：① Start-Game-Enabled `QUST`，掛繼承 `MCM_ConfigBase` 的 script；② 一個強制指向玩家的 `PlayerAlias`，掛 `SKI_PlayerLoadGameAlias`（其 `OnPlayerLoadGame` → `SKI_QuestBase.OnGameReload` 每次讀檔重註冊）。**且 config 資料夾名 = 宿主插件檔名 stem，不是 spec 的 modName**——MCM Helper DLL 走 `FormUtil::GetModName(quest) = path(plugin).stem()`（`src/ConfigStore.cpp` → `src/FormUtil.cpp:55`），完全不讀 Papyrus 的 `ModName` property 來找資料夾（那 property 只是錯誤頁的顯示 fallback）。ModForge 已自動生這個註冊 quest（`Generator.Build.Mcm.cs` + 可重用 `ModForgeMCM.pex`）。
+
 ### MCM Helper 要求 esp 提供什麼 Record
 
 **最小需求**：
 
-1. **Quest record**（QUST）：掛載 Papyrus script，script 繼承 `MCM_ConfigBase`（若有 `action.CallFunction` 或 `PropertyValue*` sourceType）。Quest 需設為 Start Game Enabled。
-2. **`modName` 對應的目錄結構**：`Data/MCM/Config/<modName>/config.json`（必須）+ `settings.ini`（可選預設值）。
-3. **`MCMHelper.esp` 為前置**（ESL，幾乎零 form 佔用）。
+1. **Quest record**（QUST）：掛載 Papyrus script，script 繼承 `MCM_ConfigBase`（**任何選單都要，不只 action/PropertyValue**）。Quest 需設為 Start Game Enabled。
+2. **`PlayerAlias`**：強制指向玩家的 ReferenceAlias，掛 `SKI_PlayerLoadGameAlias`。
+3. **目錄結構**：`Data/MCM/Config/<plugin-stem>/config.json`（必須）+ `settings.ini`（可選預設值）。
+4. **`MCMHelper.esp` + SkyUI 為前置**。
 
-**若只有 ModSettingInt/Bool/Float（純 ini 存讀）**：甚至不需要 Quest + Papyrus script，MCM Helper DLL 全自動處理。但實務上大多數 mod 都會有一個 Quest 作為 script host。
+~~**若只有 ModSettingInt/Bool/Float（純 ini 存讀）**：甚至不需要 Quest + Papyrus script，MCM Helper DLL 全自動處理。~~ ← **錯誤，見上方修正框**。
 
 ### ModForge 可生成性分析
 

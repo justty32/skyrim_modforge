@@ -87,17 +87,29 @@ ModForge can't verify the form actually exists — that's a play-time concern, n
 ## `mcmConfigs` — MCM Helper settings menu (D-2)
 
 [MCM Helper](https://www.nexusmods.com/skyrimspecialedition/mods/53000) (Parapets) renders an in-game
-**Mod Configuration Menu** page from a JSON file — no Papyrus, no SkyUI scripting. Each config emits two
-loose files:
+**Mod Configuration Menu** page from a JSON file. **Requires MCM Helper + SkyUI** at runtime. Each config
+emits two loose files **plus an ESP-side registration quest** (auto-generated — see below):
 
-- `MCM/Config/<modName>/config.json` — the menu layout (**required**)
-- `MCM/Config/<modName>/settings.ini` — the mod's default values
+- `MCM/Config/<plugin-stem>/config.json` — the menu layout (**required**)
+- `MCM/Config/<plugin-stem>/settings.ini` — the mod's default values
 
-**MVP = the ini-backed path.** Controls whose `sourceType` is `ModSettingBool`/`Int`/`Float`/`String`
-are fully handled by `MCMHelper.dll` with **no Quest record and no Papyrus** — the player's edits persist
-to `MCM/Settings/<modName>.ini` at runtime. (The advanced `PropertyValue*` / `action.CallFunction` path
-needs a Quest script extending `MCM_ConfigBase` and is intentionally **out of scope** — `validate`
-rejects those sourceTypes.) Format verified against `sub_projs/mod-survey/findings/mcm-helper-config-json.md`.
+> ⚠️ **The folder name is the host plugin's filename stem, NOT the spec `modName`.** MCM Helper's DLL keys
+> the config folder on `FormUtil::GetModName(quest)` = `path(pluginFilename).stem()` — it never reads the
+> Papyrus `ModName` property for the lookup. A `MyMod.esp` plugin → `MCM/Config/MyMod/`. The spec `modName`
+> only feeds the menu's `displayName` fallback; the emitted config.json `modName` field is set to the
+> plugin stem (a self plugin-requirement). Getting this wrong makes MCM Helper read the wrong folder and
+> show *"unknown error: check json syntax"* in-game (confirmed 2026-06-20).
+
+**A loose config.json alone does NOT register a menu** — that was an earlier wrong assumption (it researched
+the config.json *format* but not the *registration* step). MCM Helper requires, at minimum: a
+Start-Game-Enabled `QUST` whose attached script extends `MCM_ConfigBase`, plus a player-forced
+`PlayerAlias` carrying `SKI_PlayerLoadGameAlias`. **ModForge generates this automatically** for every
+`mcmConfigs` entry: the quest carries the reusable `ModForgeMCM` script (one embedded `.pex` serves all
+menus) and `package` ships it into `Scripts/`. The MVP covers the **ini-backed path** (`sourceType` =
+`ModSettingBool`/`Int`/`Float`/`String`) — the player's edits persist to `MCM/Settings/<plugin-stem>.ini`
+at runtime. (The advanced `PropertyValue*` / `action.CallFunction` path needs a per-mod subclass with the
+handler functions and is intentionally **out of scope** — `validate` rejects those sourceTypes.) Verified
+in-game 2026-06-20.
 
 ```json
 {
@@ -121,8 +133,9 @@ rejects those sourceTypes.) Format verified against `sub_projs/mod-survey/findin
 }
 ```
 
-→ `MCM/Config/MyMod/config.json` (the layout, with `name`→`pageDisplayName` and the value fields nested
-under `valueOptions`) + `MCM/Config/MyMod/settings.ini`:
+→ for a host plugin `MyMod.esp`: `MCM/Config/MyMod/config.json` (the layout, with `name`→`pageDisplayName`
+and the value fields nested under `valueOptions`) + `MCM/Config/MyMod/settings.ini` + an auto-generated
+`MF_MCM_*` registration quest in the ESP + `Scripts/ModForgeMCM.pex`:
 
 ```ini
 [General]
@@ -134,7 +147,7 @@ iDetail=1
 ### `mcmConfigs[]`
 | Field | Required | Meaning |
 |---|---|---|
-| `modName` | ✅ | Names the `MCM/Config/<modName>/` folder and the MCM identity key. |
+| `modName` | ✅ | The menu's `displayName` fallback. **Does NOT name the folder** — the folder is the host plugin's filename stem (MCM Helper keys on the plugin name, not this field). |
 | `displayName` | | Left-list label. Supports a `$TranslationKey`. |
 | `pages` | ✅ | The menu tabs. |
 

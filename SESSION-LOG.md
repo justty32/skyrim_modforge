@@ -11,6 +11,12 @@
 ## 最新進度（幾句話）
 
 - 目前無跨工作流的 open 項；各工作流的 open 狀態見下表。
+- **2026-06-20 D 組分發器實機 + MCM 補完整 session（接續同日大確認）**：
+  - 🔧 **6 個 DLL loose-ini zip 全用 masterless-fix 後的 CLI 重 build**（先前是 fix 之前 build、esp 42b masterless 會被丟）；現在 esp 都正確掛 Skyrim.esm master（73b）。送 `~/skyrim_mods/mine/`。
+  - ✅ **SkyPatcher（D-3）IN-GAME CONFIRMED**：`filterByRaces=NordRace:height=1.5` → 全 Nord NPC 變高 1.5×。**坑：NPC 尺寸 key 是 `height` 不是 `setScale`**（後者被 SkyPatcher 忽略）。新 visible-test `examples/skypatcher_scale_test_spec.json`。
+  - ✅ **MCM Helper（D-2）從零補成完整功能 + IN-GAME CONFIRMED**：原本只生 loose config.json → **選單根本不出現**（早期「零 Quest/Papyrus」假設錯）。補了 ESP 端註冊：`Generator.Build.Mcm.cs`（`BuildMcmQuests` 生 Start-Game-Enabled QUST + `ModForgeMCM`/extends MCM_ConfigBase + `PlayerAlias`/`SKI_PlayerLoadGameAlias`）+ 可重用 `assets/papyrus/ModForgeMCM.psc`（embed .pex，編譯需 MCM Helper+SkyUI headers）+ `Package.cs` ShipEmbeddedPex gated。
+    - 🔴→✅ **第二坑（config「check json syntax」）**：MCMHelper.log 顯示它找 `MCM/Config/<plugin-stem>/`，但 McmGen 寫到 `<spec-modName>/`。查 MCM Helper **C++ 源碼**（`ConfigStore.cpp`→`FormUtil.cpp:55` `path(plugin).stem()`）確認**資料夾名永遠 = 插件檔名 stem，不讀 Papyrus ModName property**。修 McmGen 用 `identity`（插件 stem）當資料夾 + config.json `modName` 欄位（self required-plugin）。+1 regression 測，796 綠。
+    - **修正了誤導實作的錯誤 findings**（`mcm-helper-modforge.md`「純 ini 不需 Quest」、`mcm-helper-config-json.md`「modName=目錄名」）。docs（SPEC-distribution EN+zh-TW+html）、CODE_MAP.infra 同步。memory [[mcm-helper-registration-recipe]]。
 - **2026-06-20 主力機實機大確認 session（接續 J+M）**：一個下午連續實機驗收多個離線功能 + 抓修一個系統性 bug。
   - ✅ **storageWrites（J 組）IN-GAME CONFIRMED**（見上條 + memory [[storage-writes-ingame-confirmed]]）。
   - ✅ **動態生怪管線 IN-GAME re-CONFIRMED**：MFSpawnDiagAny 走出旅館即生 3 怪（OnStoryChangeLocation 無過濾）。

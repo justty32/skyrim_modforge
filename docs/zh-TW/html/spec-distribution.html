@@ -135,17 +135,26 @@ ModForge 無法驗證該 form 是否真的存在——那是遊玩時的事，�
 ## `mcmConfigs` — MCM Helper 設定選單 (D-2)
 
 [MCM Helper](https://www.nexusmods.com/skyrimspecialedition/mods/53000)（Parapets）從一個 JSON 檔
-渲染一個遊戲內的 **Mod Configuration Menu** 頁面——無須 Papyrus、無須 SkyUI 腳本。每個 config 發出兩個
-鬆散檔：
+渲染一個遊戲內的 **Mod Configuration Menu** 頁面。**執行期需 MCM Helper ＋ SkyUI**。每個 config 發出兩個
+鬆散檔，**外加一個 ESP 端的註冊 quest**（自動生成，見下）：
 
-- `MCM/Config/<modName>/config.json` — 選單版面（**必填**）
-- `MCM/Config/<modName>/settings.ini` — 該 mod 的預設值
+- `MCM/Config/<plugin-stem>/config.json` — 選單版面（**必填**）
+- `MCM/Config/<plugin-stem>/settings.ini` — 該 mod 的預設值
 
-**MVP ＝ ini-backed 路徑。** 那些 `sourceType` 為 `ModSettingBool`/`Int`/`Float`/`String`
-的控制項，完全由 `MCMHelper.dll` 處理，**無須 Quest 記錄、無須 Papyrus**——玩家的編輯會在執行期
-持久化到 `MCM/Settings/<modName>.ini`。（進階的 `PropertyValue*` / `action.CallFunction` 路徑
-需要一個衍生自 `MCM_ConfigBase` 的 Quest 腳本，刻意**不在範圍內**——`validate`
-會拒絕那些 sourceType。）格式已對照 `sub_projs/mod-survey/findings/mcm-helper-config-json.md` 驗證。
+> ⚠️ **資料夾名是宿主插件的檔名 stem，不是 spec 的 `modName`。** MCM Helper 的 DLL 走
+> `FormUtil::GetModName(quest)` = `path(pluginFilename).stem()` 來找 config 資料夾——它**不讀** Papyrus
+> 的 `ModName` property。`MyMod.esp` → `MCM/Config/MyMod/`。spec 的 `modName` 只當選單 `displayName`
+> 的 fallback；發出的 config.json `modName` 欄位設成插件 stem（自我前置）。搞錯會讓 MCM Helper 讀錯資料夾、
+> 遊戲內跳 *"unknown error: check json syntax"*（已於 2026-06-20 實機確認）。
+
+**光丟 config.json 不會註冊選單**——這是早期的錯誤假設（只查了 config.json *格式*、沒查*註冊*步驟）。
+MCM Helper 最少需要：一個 Start-Game-Enabled 的 `QUST`，掛一個衍生自 `MCM_ConfigBase` 的腳本，外加一個
+強制指向玩家的 `PlayerAlias`（掛 `SKI_PlayerLoadGameAlias`）。**ModForge 會為每個 `mcmConfigs` 自動生成
+這些**：quest 掛可重用的 `ModForgeMCM` 腳本（一顆 embed 的 `.pex` 服務所有選單），`package` 會把它放進
+`Scripts/`。MVP 涵蓋 **ini-backed 路徑**（`sourceType` ＝ `ModSettingBool`/`Int`/`Float`/`String`）——玩家的
+編輯會在執行期持久化到 `MCM/Settings/<plugin-stem>.ini`。（進階的 `PropertyValue*` / `action.CallFunction`
+路徑需要 per-mod 子類＋handler function，刻意**不在範圍內**——`validate` 會拒絕那些 sourceType。）
+已於 2026-06-20 實機確認。
 
 ```json
 {
@@ -169,8 +178,9 @@ ModForge 無法驗證該 form 是否真的存在——那是遊玩時的事，�
 }
 ```
 
-→ `MCM/Config/MyMod/config.json`（版面，其中 `name`→`pageDisplayName`，值欄位巢狀
-在 `valueOptions` 之下）＋ `MCM/Config/MyMod/settings.ini`：
+→ 對宿主插件 `MyMod.esp`：`MCM/Config/MyMod/config.json`（版面，其中 `name`→`pageDisplayName`，值欄位巢狀
+在 `valueOptions` 之下）＋ `MCM/Config/MyMod/settings.ini` ＋ ESP 內一個自動生成的 `MF_MCM_*` 註冊 quest
+＋ `Scripts/ModForgeMCM.pex`：
 
 ```ini
 [General]
@@ -182,7 +192,7 @@ iDetail=1
 ### `mcmConfigs[]`
 | Field | Required | Meaning |
 |---|---|---|
-| `modName` | ✅ | 命名 `MCM/Config/<modName>/` 資料夾與 MCM 身分鍵。 |
+| `modName` | ✅ | 選單的 `displayName` fallback。**不命名資料夾**——資料夾是宿主插件的檔名 stem（MCM Helper 以插件名為鍵，不用此欄位）。 |
 | `displayName` | | 左側清單標籤。支援 `$TranslationKey`。 |
 | `pages` | ✅ | 各選單分頁。 |
 

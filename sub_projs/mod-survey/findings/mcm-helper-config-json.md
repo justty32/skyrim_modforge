@@ -17,7 +17,7 @@
 
 | 欄位 | 型別 | 說明 |
 |------|------|------|
-| `modName` | string | **關鍵**：對應 `Data/MCM/Config/<modName>/` 目錄名，也是 MCM 識別 mod 的 key |
+| `modName` | string | ⚠️ **不是目錄名**（2026-06-20 源碼修正）。目錄名 = 宿主插件檔名 stem（`FormUtil::GetModName` = `path(plugin).stem()`），與此欄位無關。此欄位實為「**required plugins**」，慣例設成插件 stem（自我前置，永遠滿足）。見 [mcm-helper-modforge](mcm-helper-modforge.md) 修正框 |
 | `displayName` | string | MCM 左側 mod 列表顯示的名稱，可用 `$Key` 做翻譯 |
 | `customContent` | object（可選） | 自訂 SWF 畫面（如 splash logo），`source` = SWF 路徑 |
 | `pages` | array | 頁面陣列，每個元素是一個頁面 |
