@@ -1,0 +1,31 @@
+{
+  "pluginName": "ModForgeSWEslDiag.esp",
+  "esl": true,
+  "_": "ROOT-CAUSE isolation for the silent load failure. Identical to storage_writes_spawn_diag (spawn + storageWrites + Skyrim.esm master + StartGameEnabled) EXCEPT esl:true. The earlier masterless+ESL diag (MFSWD_Q) failed to load; the master+non-ESL one (MFSWSpawn_Q) loaded and worked. This flips ONLY the ESL bit back on while keeping the master, to tell whether the load killer was 'masterless' or 'ESL'. If `setstage MFSWEsl_Q 10` loads and works -> ESL is fine, MASTERLESS was the killer (fix = ModForge should ensure every plugin masters Skyrim.esm). If 'not found' -> ESL itself is implicated. LCharBanditMeleeAny 0x03DECD verified vs Skyrim.esm.",
+  "quests": [
+    {
+      "editorId": "MFSWEsl_Q",
+      "name": "StorageWrites ESL Diag",
+      "startGameEnabled": true,
+      "stages": [
+        {
+          "index": 10,
+          "startUpStage": true,
+          "logEntry": "StorageWrites ESL diag running.",
+          "storageWrites": [
+            { "key": "MFSW_castCount", "target": "player", "int": 1, "delta": true },
+            { "key": "MFSW_castMagicka", "target": "player", "float": 0.5, "delta": true },
+            { "key": "MFSW_lastCast", "target": "player", "str": "cast happened" }
+          ]
+        }
+      ],
+      "spawn": {
+        "form": "Skyrim.esm:0x0003DECD",
+        "count": 3,
+        "minDistance": 400,
+        "maxDistance": 900,
+        "snapToNavmesh": true
+      }
+    }
+  ]
+}

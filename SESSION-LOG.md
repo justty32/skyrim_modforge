@@ -16,7 +16,8 @@
   - **M 組（INFO 陣列批次 `variants`）**：`dialogue[].variants: [{responses, conditions?, emotion?, sayOnce?}]` → 同 topic 掛多條 sibling INFO，各帶 `Random` flag、共用 parent 的 speaker gate + conditions + templates + identity，再各接自有 conditions。parent `responses` 空→純批次 header。正解 FCO 265 條 ambient commentary 痛點（條件模板那半上次已落地）。
   - 兩組 docs（SPEC-quests/SPEC-dialogue）、schema、CODE_MAP、roadmap all-findings-gaps 同步。
   - **zh-TW 鏡像已同步**：SPEC-quests 補 storageWrites 段、SPEC-dialogue 補 variants + 「對選取做出反應」段，html 重生（spec-quests/spec-dialogue 兩頁）。
-  - ⚠ **剩唯一尾巴**：編譯 storageWrites fragment 需 **PapyrusUtil .psc 上 header path**（主力機步驟，同 JContainers）；runtime 實機驗收非阻塞。
+  - ✅ **storageWrites 實機確認（2026-06-20 主力機）**：PapyrusUtil 4 個 .psc（StorageUtil/PapyrusUtil/ActorUtil/MiscUtil）複製進 native headers cache `~/.cache/modforge/papyrus/Source/Scripts`（同 JContainers provisioning），`MODFORGE_PAPYRUS_HEADERS` 指它即可編 storageWrites fragment。用 spawn-isolation 隔離骨架（`examples/storage_writes_spawn_diag_spec.json`，setstage 觸發 + readback `Debug.Notification`）驗：`setstage MFSWSpawn_Q 10` → StorageUtil.AdjustInt/Float/SetString 寫入 + 讀回 round-trip 全成立，畫面 count 累加。example：`storage_writes_spec`（CastMagic SM）+ `storage_writes_diag`（純 setstage）+ `storage_writes_spawn_diag`（疊 spawn）。
+  - 🔴 **附帶抓到一個真 bug（調查中）**：**masterless + ESL 的 esp 遊戲靜默丟棄**（不報錯、console `help`/`setstage` 都 not-found、MO2 勾了也沒用）。原 `storage_writes_diag`（無外部 ref → masterless + esl:true）載入失敗；改 master+非 ESL 即正常。已做 ESL+master 單變數隔離（`storage_writes_esl_diag_spec.json`）定兇手＝masterless 還是 ESL；確認後對 ModForge 下修（output 一律 master Skyrim.esm，或 validate warn masterless）。
 - **更早一次 session（2026-06-20，純離線大推進，~16 commit、774 測綠）**：一口氣推完一批 roadmap 離線功能 + zh-TW 鏡像全同步。
   - **zh-TW 鏡像全補**：SPEC-quests 同步（279→362）+ 補缺口（**新建 SPEC-distribution**、SPEC-worldspaces 補 4 bullet、SPEC-identities 查證已完整），SPEC-distribution 隨 D-group 擴成 7 框架全譯；html 重生。
   - **roadmap L 組**：`GetVMQuestVariable`/`GetVMScriptVariable` condition（讀 Papyrus property；code-pass 結論舊名 GetScriptVariable 不對）。
