@@ -1,0 +1,57 @@
+{
+  "pluginName": "ModForgeSkillPersistDiag.esp",
+  "esl": true,
+  "_": "ISOLATION TEST for the JContainers JFormDB persist + syncPerks machinery (Idea #20 Phase 0), decoupled from the (now-suspect) CastMagic SM trigger. A StartGameEnabled quest with a startUpStage-10 carrying persist + syncPerks (keyed on the player), so `setstage MFSkillD_Q 10` runs the JFormDB write + perk sync deterministically — no CastMagic, no Story Manager. The compiled MFSkillD_Q_Stages.pex carries a TEST-HARNESS readback (Debug.Notification of the banked level/rank + HasPerk). If `setstage MFSkillD_Q 10` banks the level and adds Adaptation, the JFormDB/perk feature works and the earlier silence is purely the CastMagic SM trigger; the affinity gate (MFSkillD_Affinity >= 4) wraps both, so set it by console to flip growth on/off. REQUIRES JContainers SE at runtime.",
+
+  "globals": [
+    { "editorId": "MFSkillD_Affinity", "type": "short", "value": 0 }
+  ],
+
+  "perks": [
+    {
+      "editorId": "MFSkillD_AdaptationPerk",
+      "name": "Adaptation",
+      "description": "Endurance node — the bearer endures and hits a touch harder.",
+      "playable": false,
+      "hidden": true,
+      "numRanks": 1,
+      "effects": [
+        { "kind": "entryPoint", "entryPoint": "ModAttackDamage", "function": "Multiply", "value": 1.1 }
+      ]
+    }
+  ],
+
+  "quests": [
+    {
+      "editorId": "MFSkillD_Q",
+      "name": "Skill Persist Diag",
+      "type": "None",
+      "startGameEnabled": true,
+      "stages": [
+        {
+          "index": 10,
+          "startUpStage": true,
+          "logEntry": "Skill persist diag running.",
+          "persist": {
+            "storage": "ModForgeNpcSkills",
+            "key": "player",
+            "set": [
+              { "path": ".Endurance.level", "int": 1, "delta": true },
+              { "path": ".Endurance.ratio", "float": 0.25, "delta": true },
+              { "path": ".Endurance.nodes.Adaptation", "int": 2 }
+            ],
+            "gate": { "global": "MFSkillD_Affinity", "atLeast": 4 }
+          },
+          "syncPerks": {
+            "storage": "ModForgeNpcSkills",
+            "key": "player",
+            "nodes": [
+              { "path": ".Endurance.nodes.Adaptation", "perk": "MFSkillD_AdaptationPerk", "minRank": 2 }
+            ],
+            "gate": { "global": "MFSkillD_Affinity", "atLeast": 4 }
+          }
+        }
+      ]
+    }
+  ]
+}
