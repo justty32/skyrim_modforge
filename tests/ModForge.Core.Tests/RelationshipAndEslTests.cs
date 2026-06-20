@@ -31,6 +31,51 @@ public class RelationshipAndEslTests
         Assert.False(Generator.Build(new ModSpec { Esl = false, MiscItems = { new MiscSpec { EditorId = "M", Name = "M" } } }, TestBuild.Key).Mod.IsSmallMaster);
     }
 
+    // GOTCHA: a plugin that references NO external form ends up MASTERLESS, which the Skyrim engine
+    // silently refuses to load (in-game confirmed 2026-06-20). PluginIo.Write adds Skyrim.esm as the
+    // sole master in that case. Verify the written-and-reloaded plugin masters Skyrim.esm.
+    [Fact]
+    public void Masterless_Build_GetsSkyrimEsmMaster_OnWrite()
+    {
+        // A lone misc item references no external form -> would be masterless without the guard.
+        var mod = Generator.Build(new ModSpec { Esl = true, MiscItems = { new MiscSpec { EditorId = "M", Name = "M" } } }, TestBuild.Key).Mod;
+        var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"mf-masterless-{Guid.NewGuid():N}.esp");
+        try
+        {
+            PluginIo.Write(mod, path);
+            var reloaded = PluginIo.Load(path);
+            Assert.Single(reloaded.MasterReferences);
+            Assert.Equal("Skyrim.esm", reloaded.MasterReferences[0].Master.FileName);
+            // FormID stays in the ESL object range despite the added master (Mutagen maps own-ModKey
+            // FormKeys to the correct master index — no collision with Skyrim.esm 0x800).
+            Assert.Equal(0x800u, reloaded.EnumerateMajorRecords<IMiscItemGetter>().Single().FormKey.ID);
+        }
+        finally { if (System.IO.File.Exists(path)) System.IO.File.Delete(path); }
+    }
+
+    // The masterless guard must NOT disturb the normal path: a plugin that already references an
+    // external master (a Relationship's Child defaults to Skyrim.esm:0x14) keeps exactly that master,
+    // with no duplicate Skyrim.esm entry.
+    [Fact]
+    public void WithExternalRef_MastersUnchanged_NoDuplicate()
+    {
+        var mod = Generator.Build(new ModSpec
+        {
+            Esl = true,
+            Npcs = { new NpcSpec { EditorId = "Npc", Name = "Npc" } },
+            Relationships = { new RelationshipSpec { EditorId = "Rel", Parent = "Npc" } },
+        }, TestBuild.Key).Mod;
+        var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"mf-extref-{Guid.NewGuid():N}.esp");
+        try
+        {
+            PluginIo.Write(mod, path);
+            var reloaded = PluginIo.Load(path);
+            Assert.Single(reloaded.MasterReferences);
+            Assert.Equal("Skyrim.esm", reloaded.MasterReferences[0].Master.FileName);
+        }
+        finally { if (System.IO.File.Exists(path)) System.IO.File.Delete(path); }
+    }
+
     // GOTCHA: an ESL may hold at most 2048 records; PluginIo.Write pre-empts Mutagen's raw compaction
     // exception with an actionable message. Verify the guard fires (not a silent/raw throw at write).
     [Fact]

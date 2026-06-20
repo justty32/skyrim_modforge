@@ -24,7 +24,32 @@ public static class PluginIo
                     $"ESL plugin has {count} records but the light-master limit is 2048 (FormIDs 0x800–0xFFF). " +
                     "Set \"esl\": false in the spec, or split the content across multiple plugins.");
         }
-        mod.WriteToBinary(outPath, new BinaryWriteParameters { ModKey = ModKeyOption.NoCheck });
+        // A plugin that references NO external form ends up MASTERLESS, which the Skyrim engine
+        // silently refuses to load: no error, the records report as missing to console
+        // help/setstage, and the plugin is dropped even when enabled in the load order
+        // (in-game confirmed 2026-06-20 — a masterless ESL did not load; the identical content
+        // mastering Skyrim.esm loaded and ran). Every real Skyrim plugin masters Skyrim.esm, so
+        // when the build produced zero external references we add Skyrim.esm as the sole master
+        // and write the masters list verbatim (NoCheck) — Mutagen still maps each record's
+        // own-ModKey FormKey to the correct master index, so FormIDs stay correct. When external
+        // refs DO exist we keep the default Iterate, letting Mutagen compute the exact master set.
+        bool hasExternalRef = mod.EnumerateMajorRecords()
+            .SelectMany(r => r.EnumerateFormLinks())
+            .Any(l => !l.FormKey.IsNull && l.FormKey.ModKey != mod.ModKey);
+        if (!hasExternalRef)
+        {
+            var skyrim = ModKey.FromNameAndExtension("Skyrim.esm");
+            if (!mod.ModHeader.MasterReferences.Any(m => m.Master == skyrim))
+                mod.ModHeader.MasterReferences.Add(new MasterReference { Master = skyrim });
+        }
+
+        mod.WriteToBinary(outPath, new BinaryWriteParameters
+        {
+            ModKey = ModKeyOption.NoCheck,
+            MastersListContent = hasExternalRef
+                ? MastersListContentOption.Iterate
+                : MastersListContentOption.NoCheck,
+        });
 
         // NOTE: a "NVNM parent-byte shift" post-pass once lived here. It was a mis-diagnosis made
         // under stale-ESP test conditions and has been removed. Mutagen already writes the
