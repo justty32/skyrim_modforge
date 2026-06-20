@@ -1,0 +1,17 @@
+{
+  "_comment": "VISIBLE in-game acceptance test for the SkyPatcher path. Scales every NordRace NPC to 1.5x — unmissable when you walk into any town. Requires SkyPatcher.dll. Targets only the vanilla NordRace editorID, so no placeholder forms involved.",
+  "pluginName": "MySkyScale.esp",
+  "skyPatchers": [
+    {
+      "file": "nord-giant-test",
+      "recordType": "npc",
+      "patches": [
+        {
+          "_comment": "Every Nord NPC becomes 1.5x tall.",
+          "filters": [ { "key": "filterByRaces", "value": "NordRace" } ],
+          "mods": [ { "key": "height", "value": "1.5" } ]
+        }
+      ]
+    }
+  ]
+}

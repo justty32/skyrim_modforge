@@ -199,6 +199,11 @@ internal static partial class Program
                 && !string.IsNullOrWhiteSpace(idn.Faction)))
             ShipEmbeddedPex("MFIdentityAutoGrant.pex", "identity auto-grant trigger", "autoGrantWhen identities won't be granted");
 
+        // MCM Helper menus register via a Start-Game-Enabled QUST carrying ModForgeMCM (extends
+        // MCM_ConfigBase). Without this .pex the quest's script is missing → no menu appears.
+        if (spec.McmConfigs.Count > 0)
+            ShipEmbeddedPex("ModForgeMCM.pex", "MCM Helper config host", "MCM menus won't register/appear");
+
         // 6) External-resource bundling — copy spec's (or --assets) Meshes/Textures/Sounds/….
         var assetsSrc = !string.IsNullOrWhiteSpace(assetsOverride) ? assetsOverride
                       : !string.IsNullOrWhiteSpace(spec.Assets)

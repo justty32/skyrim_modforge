@@ -130,6 +130,7 @@ public static partial class Generator
         ctx.BuildDefaultIdentityQuest();           // StartGameEnabled quest → auto-grant `default:true` identities on game start
         ctx.BuildIdentityControllerQuest();        // StartGameEnabled quest → MFIdentityController maintains MF_PrimaryIdentity (primary + manual override)
         ctx.BuildIdentityAutoGrantQuest();         // StartGameEnabled quest → MFIdentityAutoGrant joins a faction when a player AV crosses a threshold (e.g. Dragonborn)
+        ctx.BuildMcmQuests();                      // StartGameEnabled quest (ModForgeMCM + PlayerAlias) → registers each MCM Helper config menu
         ctx.WireDialogueConditions();              // extra CTDA gates on dialogue INFOs
         ctx.WireDialogueLinks();                   // dialogue-tree ENAM LinkTo + PNAM PreviousDialog
         ctx.WireQuestStages();                     // QSDT log-entry CTDA + stage→objective fragment VMAD
