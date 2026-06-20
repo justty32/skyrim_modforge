@@ -130,7 +130,7 @@
 | Build P2 | `Generator.Build.Packages.cs` | 資料槽填充 dispatcher（sandbox/sleep/travel/usemagic/patrol/follow/escort/**sittarget/activate/eat**）|
 | Build P2 | `Generator.Build.Packages.Advanced.cs` | 複雜套件槽：Escort/Patrol/Follow/**SitTarget/Activate/Eat**（SitTarget slot16 SingleRef→家具走位+坐；Activate slot0 SingleRef→物件走位+活化〔lever/door〕；Eat 為 location sandbox-variant，固定 food/chair 搜尋）|
 | Build P2 | `Generator.Build.Packages.AliasRefs.cs` | **C組 #2 radiant alias 解析**：`TryParseAliasRef`（`alias:`/`aliasLoc:` 共用，Build+Validate）+ `TryResolveAliasIndex`（對 package 的 in-spec `ownerQuest` 找 alias index）。`MakeLocationSlot`（`Generator.BuildContext.Utilities.cs`）alias→`LocationFallback{AliasForReference\|AliasForLocation, Data=idx}`；`WireDeferredTargets`（`Generator.Build.PlacementRefs.cs`）alias→`PackageTargetAlias{Alias=idx}`。⚠ AliasFor* 選擇 + PackageTargetAlias byte 待主力機 xEdit 比對真 radiant package |
-| Build P2 | `Generator.Build.Conditions.cs` | package condition 接線（共用）|
+| Build P2 | `Generator.Build.Conditions.Wire.cs` `WirePackageConditions` | package condition 接線（`BuildCondition` dispatch 仍在 `Generator.Build.Conditions.cs`）|
 | Validate | `Generator.Validate.Npcs.cs` | package template/slot integrity、AI-data enum、**alias-capable slot（`PkgSlotRef`）：`alias:`/`aliasLoc:` 需 in-spec ownerQuest + alias 存在** |
 
 ### npcPatches（override 既有 NPC 的 AI 排程）
