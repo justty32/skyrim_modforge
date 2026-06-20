@@ -669,6 +669,28 @@
         }
       }
     },
+    "storageWrites": {
+      "type": "array",
+      "description": "J組 — PapyrusUtil StorageUtil per-Form KV writes performed when this hook fires (dialogue line: TIF fragment on pick; quest stage: when the quest reaches that stage). The lightweight, save-managed, flat-KV counterpart to `persist` (JContainers JFormDB) — follower memory, interaction cooldowns, per-NPC flags. Emits StorageUtil.Set/Adjust{Int,Float,String}Value. Compiling needs PapyrusUtil's .psc on the header path.",
+      "items": {
+        "type": "object",
+        "required": ["key"],
+        "additionalProperties": false,
+        "properties": {
+          "key": { "type": "string", "description": "the StorageUtil string key (e.g. 'mymod_lastGreet')" },
+          "target": {
+            "type": "string",
+            "default": "speaker",
+            "enum": ["speaker", "player", "none", "global", ""],
+            "description": "the Form the value hangs on: 'speaker' (the dialogue NPC, akSpeakerRef — DIALOGUE LINES ONLY; default), 'player', or 'none'/'global' (a process-global KV not tied to any Form). A quest STAGE has no speaker → use 'player' or 'none'."
+          },
+          "int": { "type": "integer", "description": "int value (SetIntValue / AdjustIntValue with delta)" },
+          "float": { "type": "number", "description": "float value (SetFloatValue / AdjustFloatValue with delta)" },
+          "str": { "type": "string", "description": "string value (SetStringValue; no delta form)" },
+          "delta": { "type": "boolean", "description": "int/float only: Adjust…Value (atomic read-add-write) instead of Set — for counters" }
+        }
+      }
+    },
     "presetCatalog": {
       "type": "object",
       "description": "Named cookbook fragments grouped by existing spec family. This is documentation/data only: the generator does not emit records from presets directly.",
@@ -1993,7 +2015,8 @@
                 }
               },
               "persist": { "$ref": "#/$defs/persist", "description": "JContainers JFormDB writes performed when the quest REACHES this stage (Idea #20 Phase 0). key must be 'player' or a ref — a stage has no speaker." },
-              "syncPerks": { "$ref": "#/$defs/syncPerks", "description": "AddPerk/RemovePerk from stored ranks when the quest reaches this stage. key must be 'player' or a ref." }
+              "syncPerks": { "$ref": "#/$defs/syncPerks", "description": "AddPerk/RemovePerk from stored ranks when the quest reaches this stage. key must be 'player' or a ref." },
+              "storageWrites": { "$ref": "#/$defs/storageWrites", "description": "J組 PapyrusUtil StorageUtil per-Form KV writes when the quest REACHES this stage. target must be 'player' or 'none' — a stage has no speaker." }
             }
           }
         },
@@ -2279,6 +2302,23 @@
           "type": "array",
           "items": { "type": "string" },
           "description": "names of conditionTemplates[] whose conditions are appended to this INFO (after inline conditions, in listed order) — share one gate set across many lines"
+        },
+        "storageWrites": { "$ref": "#/$defs/storageWrites", "description": "J組 PapyrusUtil StorageUtil per-Form KV writes performed in this line's TIF fragment when picked (target defaults to 'speaker')" },
+        "variants": {
+          "type": "array",
+          "description": "M組 INFO array batch — declare many sibling INFOs under THIS one topic, each with the Random flag (the engine random-picks among those whose conditions pass). Every variant shares this entry's speaker gate + conditions + useConditionTemplates + identity, plus its own conditions/lines. The ambient-commentary generator (FCO's 265-line shared-gate use case). When variants are set and this entry's own `responses` is empty, no parent INFO is emitted; result fragments / setStage / linkTo stay on the parent entry.",
+          "items": {
+            "type": "object",
+            "required": ["responses"],
+            "additionalProperties": false,
+            "properties": {
+              "responses": { "type": "array", "items": { "type": "string" }, "description": "the spoken line(s) for this variant INFO" },
+              "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "description": "this variant's OWN extra CTDA gates (appended after the shared gate)" },
+              "emotion": { "type": "string", "description": "override emotion for this variant (default: inherit the parent entry's emotion)" },
+              "emotionValue": { "type": "integer", "description": "override emotion intensity 0..100 (default: inherit the parent entry's)" },
+              "sayOnce": { "type": "boolean", "description": "mark this variant as a one-shot (said at most once ever)" }
+            }
+          }
         }
       }
     },

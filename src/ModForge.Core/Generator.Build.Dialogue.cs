@@ -16,6 +16,10 @@ public static partial class Generator
         return f;
     }
 
+    // The editorId / dialogResponsesByEd key of variant INFO <i> of a dialogue batch (M組). Stable across
+    // pass 1 (build) and pass 2 (condition wiring) so each variant's gates land on the right INFO.
+    internal static string DialogueVariantId(string parentEditorId, int i) => $"{parentEditorId}_v{i}";
+
     private sealed partial class BuildContext
     {
         // --- pass 1: native dialogue — Quest -> DialogBranch -> DialogTopic -> DialogResponses(INFO),
@@ -108,38 +112,67 @@ public static partial class Generator
                 // Flags (ENAM) + FavorLevel (CNAM) MUST be present: a vanilla player INFO always carries
                 // both, and an INFO missing ENAM is treated as invalid — a topic whose only INFO is
                 // invalid is silently dropped from the menu (so the topic never appears at all).
-                var info = new DialogResponses(mod)
+                // The auto GetIsID speaker gate every INFO under this topic carries (without it EVERY NPC
+                // would speak the line). Shared by the parent INFO and each variant INFO.
+                void AddSpeakerGate(DialogResponses inf)
                 {
-                    EditorID = d.EditorId,
-                    // Goodbye (DialogResponses.Flag, not the per-line DialogResponse.Flag) closes the menu
-                    // after the line — set for recruit/dismiss-style lines that carry a result fragment.
-                    Flags = new DialogResponseFlags { Flags = DialogueInfoFlags(d) },
-                    FavorLevel = FavorLevel.None,
-                };
-                dialogResponsesByEd[d.EditorId] = info;
-                var emotion = Enum.TryParse<Emotion>(d.Emotion, ignoreCase: true, out var em) ? em : Emotion.Neutral;
-                byte rn = 1;
-                foreach (var line in d.Responses)
-                    info.Responses.Add(new DialogResponse { Text = line, ResponseNumber = rn++, Emotion = emotion, EmotionValue = d.EmotionValue });
-
-                if (!string.IsNullOrEmpty(d.SpeakerNpcEditorId))
-                {
+                    if (string.IsNullOrEmpty(d.SpeakerNpcEditorId)) return;
                     if (npcsByEd.TryGetValue(d.SpeakerNpcEditorId, out var speaker))
                     {
-                        var cond = new ConditionFloat
-                        {
-                            CompareOperator = CompareOperator.EqualTo,
-                            ComparisonValue = 1f,
-                            Data = new GetIsIDConditionData(),
-                        };
+                        var cond = new ConditionFloat { CompareOperator = CompareOperator.EqualTo, ComparisonValue = 1f, Data = new GetIsIDConditionData() };
                         ((GetIsIDConditionData)cond.Data).Object.Link.SetTo(speaker);
-                        info.Conditions.Add(cond);
+                        inf.Conditions.Add(cond);
                     }
                     else
-                        // No GetIsID gate => EVERY NPC would speak this line. Warn (validate also catches this).
                         Warn($"  ! dialogue '{d.EditorId}' speaker '{d.SpeakerNpcEditorId}' not found in spec — line has NO speaker gate (any NPC may say it)");
                 }
-                topic.Responses.Add(info);
+                var emotion = Enum.TryParse<Emotion>(d.Emotion, ignoreCase: true, out var em) ? em : Emotion.Neutral;
+
+                // Parent INFO — built unless this is a pure variant batch (M組: variants set + no own
+                // responses, so the entry is just a batch header and emits no parent line).
+                if (d.Responses.Count > 0 || d.Variants.Count == 0)
+                {
+                    var info = new DialogResponses(mod)
+                    {
+                        EditorID = d.EditorId,
+                        // Goodbye (DialogResponses.Flag, not the per-line DialogResponse.Flag) closes the menu
+                        // after the line — set for recruit/dismiss-style lines that carry a result fragment.
+                        Flags = new DialogResponseFlags { Flags = DialogueInfoFlags(d) },
+                        FavorLevel = FavorLevel.None,
+                    };
+                    dialogResponsesByEd[d.EditorId] = info;
+                    byte rn = 1;
+                    foreach (var line in d.Responses)
+                        info.Responses.Add(new DialogResponse { Text = line, ResponseNumber = rn++, Emotion = emotion, EmotionValue = d.EmotionValue });
+                    AddSpeakerGate(info);
+                    topic.Responses.Add(info);
+                }
+
+                // M組 variant INFOs — each a sibling under THIS topic with the Random flag (the engine
+                // random-picks among siblings whose conditions currently pass = ambient-commentary variety).
+                // Shares the speaker gate; the parent's shared conditions/templates/identity + each variant's
+                // own conditions wire in pass 2 (WireDialogueConditions), keyed by DialogueVariantId.
+                for (int vi = 0; vi < d.Variants.Count; vi++)
+                {
+                    var v = d.Variants[vi];
+                    DialogResponses.Flag vflags = DialogResponses.Flag.Random;
+                    if (v.SayOnce) vflags |= DialogResponses.Flag.SayOnce;
+                    var vinfo = new DialogResponses(mod)
+                    {
+                        EditorID = DialogueVariantId(d.EditorId, vi),
+                        Flags = new DialogResponseFlags { Flags = vflags },
+                        FavorLevel = FavorLevel.None,
+                    };
+                    dialogResponsesByEd[DialogueVariantId(d.EditorId, vi)] = vinfo;
+                    var vem = !string.IsNullOrEmpty(v.Emotion) && Enum.TryParse<Emotion>(v.Emotion, ignoreCase: true, out var ve) ? ve : emotion;
+                    var vev = v.EmotionValue ?? d.EmotionValue;
+                    byte vrn = 1;
+                    foreach (var line in v.Responses)
+                        vinfo.Responses.Add(new DialogResponse { Text = line, ResponseNumber = vrn++, Emotion = vem, EmotionValue = vev });
+                    AddSpeakerGate(vinfo);
+                    topic.Responses.Add(vinfo);
+                }
+
                 if (!branchesByQuest.TryGetValue(d.QuestEditorId, out var bag))
                     branchesByQuest[d.QuestEditorId] = bag = (quest, new List<DialogBranch>());
                 bag.branches.Add(branch);

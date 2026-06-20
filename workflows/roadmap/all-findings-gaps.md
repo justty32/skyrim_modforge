@@ -153,15 +153,10 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 
 來源：**jcontainers.md**、**papyrusutil.md**、**common-framework-mods.md**。
 
-🆕 **JContainers / PapyrusUtil Papyrus script 模板**  
-**現況：** ModForge 不生成使用 JContainers/PapyrusUtil 的 Papyrus 腳本片段。  
-**Scope：** script-template 功能（非 record），提供常見模式的 snippet：  
-- `StorageUtil.SetIntValue(akActor, "key", val)` 做 per-form KV 狀態（follower 記憶、cooldown）
-- `JFormDB.solveObjLN(root, ".follower.topics.lastSpoken", true)` 做 nested map 狀態表
-- `ActorUtil.AddPackageOverride(akActor, pkg, 0-100)` 臨時 package 覆蓋（帶清理配對）
-- `MiscUtil.ScanCellNPCs(...)` 附近 NPC 偵測  
-**用途：** follower 複雜對話狀態、relationship matrix、dialogue cooldown。  
-**優先：** 🟡（follower expansion 的核心需求，但屬 script-gen 功能非 record-gen）
+✅ **PapyrusUtil StorageUtil per-Form KV `storageWrites`（已落地 2026-06-20）**  
+**狀態：** JContainers 的 nested per-Form 狀態（`JFormDB.solve…`）其實已由 **persist/syncPerks**（Idea #20）覆蓋；J 組真缺的「簡單 + 自動管理」那半（eval 標為**最高槓桿、最固定**）已補：`storageWrites: [{key, target, int/float/str, delta?}]` → `StorageUtil.Set/Adjust{Int,Float,String}Value`，掛 **dialogue line TIF** 與 **quest stage fragment**（與 persist 同機制 + SM quest 路由 `OnStory<Event>`）。target=speaker/player/none 皆**純 Papyrus 表達式 → body-only、零 VMAD property**，故無 binding-site 改動。新增 `Generator.StorageWrites.cs`，改 `Generator.QuestFragments.cs`（5 處 gate/emit）+ `Build.Scripts.cs`/`Build.QuestStages.cs`（needs-frag gate）+ `Spec.Dialogue.cs`（`StorageWriteSpec`）+ `Generator.Validate.Quests.cs`（`ValidateStorageWrites`）。docs SPEC-quests/SPEC-dialogue、schema、CODE_MAP 同步。**17 測綠**。  
+**剩（未做，需求度低）：** arbitrary-**ref** target（需綁 Form property + 改各 binding site）；`ActorUtil.AddPackageOverride`（臨時 package 覆蓋，需成對清理 = 兩 fragment）、`MiscUtil.ScanCellNPCs`（情境偵測，需條件分支語法）、`JsonUtil`/`JValue.readFromFile` 外部 config 讀取。屬 follower expansion 真正需要時再長。  
+**優先：** 🟡 → ✅ 核心 KV 已落地，.pex 隨任何含 fragment 的 quest/dialogue 編（需 PapyrusUtil .psc 上 header path）。
 
 ---
 
@@ -191,10 +186,10 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 
 來源：**follower-commentary-overhaul.md**（FCO 設計）、**relationship-dialogue-overhaul.md**（RDO 設計）。
 
-✅ **condition template 共享機制（已落地 2026-06-20）**；INFO 陣列批次建立（待）  
+✅ **condition template 共享機制 + INFO 陣列批次建立（兩半皆已落地 2026-06-20）**  
 **狀態（template 部分 ✅）：** `conditionTemplates: [{name, conditions}]` 命名條件組 + `dialogue[].useConditionTemplates: [name…]` 展開到 INFO（inline conditions 之後、同 `BuildCondition` 路徑、alias-aware）。`Spec.Dialogue.cs`（`ConditionTemplateSpec`）+ `Generator.Build.Conditions.cs`（`WireDialogueConditions` 展開）+ `Generator.Validate.Quests.cs`（name 唯一/非空 + 每條 CheckCondition + 引用須存在）。docs SPEC-dialogue、schema、CODE_MAP 同步。**4 測綠**。解決 FCO 265 條共用 gate 的痛點。  
-**剩（INFO 陣列批次建立）：** 同 topic 多條 INFO 一次宣告仍待做（目前逐條 spec INFO，但已可用 template 消除條件重複）——需求度較低，留待有大量 commentary 需求時再做。  
-**用途：** ambient commentary 大量生成（旅途/地點/時間/天氣/玩家狀態反應）。
+**INFO 陣列批次建立 ✅（2026-06-20）：** `dialogue[].variants: [{responses, conditions?, emotion?, emotionValue?, sayOnce?}]` → 同一 topic 掛多條 sibling INFO，各帶 `Random` flag（引擎在條件符合的 sibling 隨機選），**共用** parent entry 的 speaker gate + `conditions` + `useConditionTemplates` + `identity`，再各接自有 conditions/lines。parent `responses` 空 → 純批次 header 不發 parent INFO。`Generator.Build.Dialogue.cs`（`DialogueVariantId(ed,i)` + variant INFO 建立）+ `Generator.Build.Conditions.cs`（`ApplyShared` 套 parent 與每 variant）+ `Spec.Dialogue.cs`（`DialogueVariantSpec`）+ `Generator.Validate.Quests.cs`（variant responses/emotion/conditions + hello 互斥）。docs SPEC-dialogue、schema、CODE_MAP 同步。**11 測綠**。正解 FCO 265 條共用 gate 痛點。  
+**剩：** 兩半皆已落地；commentary 大量生成（旅途/地點/時間/天氣/玩家狀態反應）所需的 spec 語法齊備。
 
 ---
 
@@ -224,8 +219,8 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 6. ~~**D-4**（FLM ini）~~ ✅ **已落地 2026-06-20** → 外部 FLST 注入（Spellforge/SPID 兼容），runtime 待主力機驗
 7. **H 組**（CSF skill tree）→ 接 generation.md 現有設計，已有詳細 spec 草案
 8. ~~**L 組**（GetVMQuestVariable/GetVMScriptVariable 條件）~~ ✅ **已落地 2026-06-20** → follower ambient bark 品質（variableName 字串格式待主力機 xEdit 驗）
-9. **J 組**（JC/PapyrusUtil 模板）→ follower 複雜狀態管理
-10. **M 組**（INFO 批次 + 條件模板）→ ambient commentary 生成效率 — ✅ **條件模板已落地 2026-06-20**（INFO 陣列批次待做）
+9. ~~**J 組**（JC/PapyrusUtil 模板）~~ ✅ **storageWrites 已落地 2026-06-20**（StorageUtil per-Form KV；ActorUtil/MiscUtil/ref-target 留尾）→ follower 輕量狀態管理
+10. ~~**M 組**（INFO 批次 + 條件模板）~~ ✅ **兩半皆已落地 2026-06-20**（條件模板 + `variants` INFO 陣列批次）→ ambient commentary 生成效率
 11. ~~**A 組 #9**（UpdateCurrentInstanceGlobal）~~ ✅ **已落地 2026-06-17** → gather 型任務 per-instance 計數 objective
 12. ~~**K 組**（quest stage global write spec）~~ ✅ **已落地 2026-06-20**（stage 側；alias 側未做）→ 生成器覆蓋率
 13. ~~**D-3~7**（其餘 ini pipeline：SkyPatcher/KID/BOS/AOS）~~ ✅ **已落地 2026-06-20** → D-group SKSE loose-ini pipeline 完整（runtime 待主力機驗）

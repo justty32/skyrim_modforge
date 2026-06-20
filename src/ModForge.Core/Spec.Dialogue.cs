@@ -89,6 +89,11 @@ public sealed class StageSpec
     // instance binding). For an SM-driven quest the write runs in the OnStory<Event> handler (the stage
     // fragment doesn't fire for SM quests — in-game 2026-06-19), same routing as persist.
     public List<GlobalWriteSpec> GlobalWrites { get; set; } = new();
+    // PapyrusUtil StorageUtil per-Form KV writes performed when the quest REACHES this stage (J組). The
+    // generated stage fragment emits StorageUtil.Set/Adjust{Int,Float,String}Value. A stage has no
+    // akSpeakerRef, so `target` must be "player" or "none"/"global" (NOT "speaker"). Lightweight, save-
+    // managed counterpart to `persist` (JContainers JFormDB); see StorageWriteSpec / Generator.StorageWrites.cs.
+    public List<StorageWriteSpec> StorageWrites { get; set; } = new();
 }
 // One plain global write in a stage fragment (see StageSpec.GlobalWrites). `value` is required.
 public sealed class GlobalWriteSpec
@@ -175,6 +180,16 @@ public sealed class DialogueSpec
     // Extra CTDA gates on the INFO (beyond the auto GetIsID speaker gate). e.g. only show a paid
     // recruit line when the player can afford it and isn't already following.
     public List<ConditionSpec> Conditions { get; set; } = new();
+    // Variants (M組 — INFO array batch): declare MANY sibling INFOs under this ONE topic in a single
+    // entry, instead of repeating the topic/speaker/conditions for each. Each variant becomes its own INFO
+    // (Random flag, so the engine random-picks among those whose conditions currently pass) that SHARES
+    // this entry's speaker gate + `conditions` + `useConditionTemplates` + `identity`, plus its own extra
+    // `conditions` and own `responses`. This is the ambient-commentary generator: dozens of travel/location/
+    // time/weather reaction lines on one shared gate (FCO's 265-line pain point). When `variants` is set and
+    // this entry's own `responses` is EMPTY, no parent INFO is emitted (the entry is a pure batch header);
+    // if `responses` is non-empty the parent line plays as one more sibling. Variants are line-variety only
+    // — result fragments / setStage / linkTo stay on the parent entry.
+    public List<DialogueVariantSpec> Variants { get; set; } = new();
     // Named condition templates (M組) to expand onto this INFO, by name from `conditionTemplates[]`.
     // The template's conditions are appended exactly like inline `conditions` (same BuildCondition path,
     // alias-aware). Lets many INFOs share one condition block — e.g. FCO's 265 commentary lines all
@@ -230,8 +245,39 @@ public sealed class DialogueSpec
     // SyncPerks (optional, Idea #20): when picked, AddPerk/RemovePerk on the key actor from its stored
     // JFormDB node ranks (idempotent). Runs after `persist`. See SyncPerksSpec.
     public SyncPerksSpec? SyncPerks { get; set; }
+    // StorageWrites (optional, J組): when picked, write lightweight per-Form scalar state via PapyrusUtil
+    // StorageUtil into this line's TIF result fragment. `target` = "speaker" (the NPC you're talking to —
+    // the default), "player", or "none"/"global". The save-managed, flat-KV counterpart to `persist` —
+    // follower memory, cooldown timestamps, per-NPC flags. See StorageWriteSpec / Generator.StorageWrites.cs.
+    public List<StorageWriteSpec> StorageWrites { get; set; } = new();
+}
+// One PapyrusUtil StorageUtil per-Form KV write (J組 — see DialogueSpec/StageSpec.StorageWrites). `key`
+// is the StorageUtil string key; `target` is the Form the value hangs on (speaker | player | none/global —
+// none = a process-global KV not tied to any Form). Set exactly one of int/float/str. `delta` (int/float
+// only) emits Adjust{Int,Float}Value (atomic read-add-write) instead of Set; a string write has no delta.
+public sealed class StorageWriteSpec
+{
+    public string Key { get; set; } = "";        // StorageUtil string key (e.g. "mymod_lastGreet")
+    public string Target { get; set; } = "";       // speaker (default) | player | none | global
+    public int? Int { get; set; }
+    public float? Float { get; set; }
+    public string? Str { get; set; }
+    public bool Delta { get; set; }                // int/float only → Adjust…Value (read-add-write)
 }
 
+// One INFO variant in a dialogue batch (M組 — see DialogueSpec.Variants). Becomes a sibling INFO under the
+// parent topic with the Random flag. `responses` are its spoken line(s); `conditions` are its OWN extra
+// CTDA gates (appended after the parent's shared gate + conditions + templates + identity). `emotion`/
+// `emotionValue` default to the parent's when unset. `sayOnce` marks a one-shot variant (a story beat said
+// at most once). Pure line-variety — no result fragment / setStage (those live on the parent entry).
+public sealed class DialogueVariantSpec
+{
+    public List<string> Responses { get; set; } = new();
+    public List<ConditionSpec> Conditions { get; set; } = new();
+    public string Emotion { get; set; } = "";       // "" → inherit the parent entry's emotion
+    public uint? EmotionValue { get; set; }           // null → inherit the parent entry's emotionValue
+    public bool SayOnce { get; set; }
+}
 public sealed class DialogueSetGlobalSpec
 {
     public string Global { get; set; } = "";   // ref -> GLOB

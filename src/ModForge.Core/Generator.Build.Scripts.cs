@@ -59,7 +59,8 @@ public static partial class Generator
                 // setPrimaryIdentity override) is the fallback.
                 var needsAutoTif = d.SetStage >= 0 || !string.IsNullOrWhiteSpace(d.SetPrimaryIdentity)
                     || d.OpenBarter || d.SetGlobal is not null || !string.IsNullOrWhiteSpace(d.RewardItem)
-                    || d.EvaluateSpeakerPackages || Generator.HasPersist(d) || Generator.HasSyncPerks(d);
+                    || d.EvaluateSpeakerPackages || Generator.HasPersist(d) || Generator.HasSyncPerks(d)
+                    || Generator.HasStorageWrites(d);
                 var scriptName = !string.IsNullOrEmpty(d.ResultScript) ? d.ResultScript
                     : (needsAutoTif && options?.CompiledScriptsDir is not null)
                         ? Generator.DialogueFragmentScriptName(d)

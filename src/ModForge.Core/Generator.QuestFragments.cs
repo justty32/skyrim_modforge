@@ -34,6 +34,7 @@ public static partial class Generator
         || q.Stages.Any(s => s.InstanceGlobals.Count > 0)
         || q.Stages.Any(s => s.GlobalWrites.Count > 0)
         || q.Stages.Any(s => HasPersist(s) || HasSyncPerks(s))
+        || q.Stages.Any(s => HasStorageWrites(s))
         || StartupStageTrigger(q) is not null
         || StoryTrigger(q);
 
@@ -60,6 +61,7 @@ public static partial class Generator
         && !string.IsNullOrEmpty(d.StoryHandler)
         && (q.Spawn is not null || se.CooldownHours > 0f
             || q.Stages.Any(s => HasPersist(s) || HasSyncPerks(s))
+            || q.Stages.Any(s => HasStorageWrites(s))
             || q.Stages.Any(s => s.GlobalWrites.Count > 0));
 
     /// <summary>The property-name prefix that namespaces a stage's JContainers persist/syncPerks
@@ -133,8 +135,9 @@ public static partial class Generator
         var instStages = q.Stages.Where(s => s.InstanceGlobals.Count > 0).Select(s => (int)s.Index);
         var gwStages = q.Stages.Where(s => s.GlobalWrites.Count > 0).Select(s => (int)s.Index);
         var jcStages = q.Stages.Where(s => HasPersist(s) || HasSyncPerks(s)).Select(s => (int)s.Index);
+        var swStages = q.Stages.Where(s => HasStorageWrites(s)).Select(s => (int)s.Index);
         var trigStages = startupTrigger is int st ? new[] { st } : System.Array.Empty<int>();
-        var stageNums = objStages.Concat(instStages).Concat(gwStages).Concat(jcStages).Concat(trigStages).Distinct().OrderBy(s => s);
+        var stageNums = objStages.Concat(instStages).Concat(gwStages).Concat(jcStages).Concat(swStages).Concat(trigStages).Distinct().OrderBy(s => s);
 
         bool hasSpawn = q.Spawn is not null;
         bool hasCooldown = q.StoryEvent is { } sev && sev.CooldownHours > 0f;
@@ -168,6 +171,15 @@ public static partial class Generator
             foreach (var stage in jcStages)
                 foreach (var stSpec in q.Stages.Where(s => s.Index == stage))
                     foreach (var line in JContainersFragmentBody(StagePropPrefix(stage), stSpec.Persist, stSpec.SyncPerks))
+                        sb.AppendLine("    " + line);
+        }
+        // J組 PapyrusUtil StorageUtil per-Form KV writes of every stage that carries one (an SM quest's
+        // stage fragment never runs, so its storage writes live in the OnStory handler — same routing as persist).
+        void AppendStorageStages()
+        {
+            foreach (var stage in swStages)
+                foreach (var stSpec in q.Stages.Where(s => s.Index == stage))
+                    foreach (var line in StorageWritesBody(stSpec.StorageWrites))
                         sb.AppendLine("    " + line);
         }
         // K組 plain global writes — "<global>.SetValue(value)" for each globalWrite of every stage that
@@ -219,6 +231,11 @@ public static partial class Generator
                 foreach (var stSpec in q.Stages.Where(s => s.Index == stage))
                     foreach (var line in JContainersFragmentBody(StagePropPrefix(stage), stSpec.Persist, stSpec.SyncPerks))
                         sb.AppendLine("    " + line);
+            // J組 StorageUtil per-Form KV writes for this stage (routed to OnStory below for an SM quest).
+            if (!storyHandler)
+                foreach (var stSpec in q.Stages.Where(s => s.Index == stage))
+                    foreach (var line in StorageWritesBody(stSpec.StorageWrites))
+                        sb.AppendLine("    " + line);
             sb.AppendLine("EndFunction");
             sb.AppendLine();
         }
@@ -236,6 +253,7 @@ public static partial class Generator
             AppendCooldownGate();
             AppendGwStages();
             AppendJcStages();
+            AppendStorageStages();
             AppendSpawn();
             sb.AppendLine("    Stop()                                  ; re-arm: let the SM relaunch this on the next event");
             sb.AppendLine("EndEvent");
@@ -302,7 +320,8 @@ public static partial class Generator
         bool reevals = d.EvaluateSpeakerPackages;
         bool persists = HasPersist(d);
         bool syncs = HasSyncPerks(d);
-        if (!setsStage && !setsOverride && !opensBarter && !setsGlobal && !rewards && !reevals && !persists && !syncs) return "";
+        bool storages = HasStorageWrites(d);
+        if (!setsStage && !setsOverride && !opensBarter && !setsGlobal && !rewards && !reevals && !persists && !syncs && !storages) return "";
         var name = DialogueFragmentScriptName(d);
         var sb = new System.Text.StringBuilder();
         sb.AppendLine($"Scriptname {name} extends TopicInfo Hidden");
@@ -339,6 +358,8 @@ public static partial class Generator
         // JContainers JFormDB writes, then perk sync (both keyed on speaker/player). Emitted last so a
         // perk sync sees the ranks this line just persisted.
         foreach (var line in JContainersFragmentBody(d)) sb.AppendLine("    " + line);
+        // J組 PapyrusUtil StorageUtil per-Form KV writes (speaker/player/none — body-only, no bound property).
+        foreach (var line in StorageWritesBody(d.StorageWrites)) sb.AppendLine("    " + line);
         sb.AppendLine("EndFunction");
         return sb.ToString();
     }
@@ -346,7 +367,7 @@ public static partial class Generator
     public static string DialogueFragmentScriptName(DialogueSpec d) =>
         (d.SetStage >= 0 || !string.IsNullOrWhiteSpace(d.SetPrimaryIdentity) || d.OpenBarter
          || (d.SetGlobal is { } sg && !string.IsNullOrWhiteSpace(sg.Global)) || !string.IsNullOrWhiteSpace(d.RewardItem)
-         || d.EvaluateSpeakerPackages || HasPersist(d) || HasSyncPerks(d)) ? $"TIF_{Sanitize(d.EditorId)}" : "";
+         || d.EvaluateSpeakerPackages || HasPersist(d) || HasSyncPerks(d) || HasStorageWrites(d)) ? $"TIF_{Sanitize(d.EditorId)}" : "";
 
     private static string Sanitize(string s)
     {

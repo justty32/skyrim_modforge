@@ -78,7 +78,8 @@ public static partial class Generator
                                      || st.InstanceGlobals.Count > 0
                                      || st.GlobalWrites.Count > 0
                                      || Generator.StartupStageTrigger(q) == st.Index
-                                     || hasJc;
+                                     || hasJc
+                                     || Generator.HasStorageWrites(st);
                     if (!needsFrag) continue;
                     // JContainers per-stage object properties (Form key for an arbitrary-ref key, Form
                     // values, Perks), namespaced by the stage prefix to match the generated source.

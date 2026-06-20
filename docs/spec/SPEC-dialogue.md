@@ -81,6 +81,37 @@ answers, then *new* options appear — use:
 > origin **(0,0,0)** lands off-navmesh and can't be reached. (3) Unvoiced lines flash past;
 > install **Fuz Ro D-oh** (or bundle silent `.fuz`) and enable subtitles. See `lifelike/gotchas.md`.
 
+**INFO array batch (`variants`).** To generate **many sibling lines under one topic** — ambient
+commentary that reacts to travel / location / time / weather / player state — declare them all in **one**
+`dialogue` entry's `variants` array instead of repeating the topic, speaker, and gate for each. Each
+`variants[]` entry becomes its own INFO with the **`random`** flag (the engine random-picks among the
+siblings whose conditions currently pass), and **shares** the parent entry's speaker gate, `conditions`,
+`useConditionTemplates`, and `identity` — plus its own extra `conditions` and `responses`. This is the
+generator for FCO-style 265-line commentary on one shared gate. A `variants[]` entry is
+`{ responses, conditions?, emotion?, emotionValue?, sayOnce? }` (`emotion`/`emotionValue` inherit the
+parent when unset). When `variants` is set and the parent `responses` is **empty**, no parent INFO is
+emitted (the entry is a pure batch header); a non-empty parent `responses` plays as one more sibling.
+Variants are line-variety only — result fragments / `setStage` / `linkTo` stay on the parent entry, and
+`variants` is not supported on a `hello` line. Pair with `conditionTemplates` to share the gate set across
+*several* batches.
+
+```jsonc
+{ "editorId": "LydiaTravelBanter", "questEditorId": "Q", "speakerNpcEditorId": "Lydia",
+  "prompt": "", "useConditionTemplates": ["Following"],     // shared gate: only while following
+  "variants": [
+    { "responses": ["Lovely day for it."], "conditions": [{ "function": "GetCurrentTime", "comparison": "<", "value": 18 }] },
+    { "responses": ["Getting dark. We should make camp."], "conditions": [{ "function": "GetCurrentTime", "comparison": ">=", "value": 18 }] },
+    { "responses": ["I used to dream of adventure. Be careful what you wish for."], "sayOnce": true }
+  ] }
+```
+
+**Acting on a pick — `persist` / `syncPerks` / `storageWrites`.** A dialogue line can bank state when
+picked: `persist`/`syncPerks` (JContainers JFormDB nested per-Form state, Idea #20) and `storageWrites`
+(PapyrusUtil StorageUtil flat per-Form KV — follower memory, cooldowns, flags). Both emit into the line's
+TIF result fragment. Same shapes as on a quest stage — see [persist/syncPerks](SPEC-quests.md#persist--syncperks--jcontainers-jformdb-per-form-state-idea-20-skill-tree-phase-0)
+and [storageWrites](SPEC-quests.md#storagewrites--papyrusutil-storageutil-per-form-kv-j-group) in SPEC-quests
+(on a dialogue line `target`/`key` may be `"speaker"`).
+
 ### banter — proactive (unprompted) NPC lines
 A `banter` entry is a line the NPC says **on its own**, with no player menu — the vanilla
 follower-comment pattern (`HirelingIdles`). Shape: `editorId` (optional), `questEditorId`,

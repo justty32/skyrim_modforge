@@ -62,6 +62,7 @@ public static partial class Generator
                     // "speaker" is rejected — the key must be "player" or an arbitrary ref.
                     if (st.Persist is { } stp) ValidatePersistBlock(stp, $"quest '{q.EditorId}' stage {st.Index} persist", allowSpeaker: false);
                     if (st.SyncPerks is { } sts) ValidateSyncPerksBlock(sts, $"quest '{q.EditorId}' stage {st.Index} syncPerks", allowSpeaker: false);
+                    ValidateStorageWrites(st.StorageWrites, $"quest '{q.EditorId}' stage {st.Index} storageWrite", allowSpeaker: false);
                 }
                 stageIndexByQuest[q.EditorId] = seen;
                 if (startUpStages > 1)
@@ -148,12 +149,27 @@ public static partial class Generator
                 // A dialogue line runs in a TIF fragment, so "speaker" (akSpeakerRef) is allowed here.
                 if (d.Persist is { } pst) ValidatePersistBlock(pst, $"dialogue '{d.EditorId}' persist", allowSpeaker: true);
                 if (d.SyncPerks is { } syp) ValidateSyncPerksBlock(syp, $"dialogue '{d.EditorId}' syncPerks", allowSpeaker: true);
+                ValidateStorageWrites(d.StorageWrites, $"dialogue '{d.EditorId}' storageWrite", allowSpeaker: true);
                 // A `hello:true` line is the NPC's auto-spoken greeting (Misc/Hello), not a player menu
                 // option, so it has no prompt by design — only require a prompt for normal player topics.
                 if (!d.Hello && string.IsNullOrEmpty(d.Prompt)) Problems.Add($"dialogue '{d.EditorId}' has empty prompt");
-                if (d.Responses.Count == 0) Problems.Add($"dialogue '{d.EditorId}' has no response lines");
+                // A normal entry needs response lines; a M組 variant batch may carry its lines in `variants`
+                // instead (the parent `responses` is then an optional extra sibling, allowed to be empty).
+                if (d.Responses.Count == 0 && d.Variants.Count == 0) Problems.Add($"dialogue '{d.EditorId}' has no response lines");
                 if (!Enum.TryParse<Emotion>(d.Emotion, true, out _))
                     Problems.Add($"dialogue '{d.EditorId}' invalid emotion '{d.Emotion}' (Neutral|Anger|Disgust|Fear|Sad|Happy|Surprise|Puzzled)");
+                // M組 INFO batch variants: a Hello path doesn't emit variants; each variant needs lines, a
+                // valid emotion, and its own conditions must be well-formed.
+                if (d.Variants.Count > 0 && d.Hello)
+                    Problems.Add($"dialogue '{d.EditorId}' variants are not supported on a hello line");
+                for (int vi = 0; vi < d.Variants.Count; vi++)
+                {
+                    var v = d.Variants[vi];
+                    if (v.Responses.Count == 0) Problems.Add($"dialogue '{d.EditorId}' variant {vi} has no response lines");
+                    if (!string.IsNullOrEmpty(v.Emotion) && !Enum.TryParse<Emotion>(v.Emotion, true, out _))
+                        Problems.Add($"dialogue '{d.EditorId}' variant {vi} invalid emotion '{v.Emotion}'");
+                    foreach (var c in v.Conditions) CheckCondition(c, $"dialogue '{d.EditorId}' variant {vi}");
+                }
             }
 
             // SCENE (SCEN): host quest must exist; actors need a unique aliasId + an NPC; every phase
@@ -334,6 +350,25 @@ public static partial class Generator
                 default:
                     CheckRef(key, label);   // arbitrary ref → must resolve
                     break;
+            }
+        }
+
+        // J組 PapyrusUtil StorageUtil per-Form KV writes (dialogue line + quest stage). Each write needs a
+        // non-empty key, exactly one of int/float/str, delta only on int/float, and a recognised target. A
+        // quest stage has no akSpeakerRef, so target "speaker" (the default) is rejected there (allowSpeaker
+        // is false) — use "player" or "none"/"global".
+        private void ValidateStorageWrites(List<StorageWriteSpec> writes, string label, bool allowSpeaker)
+        {
+            foreach (var w in writes)
+            {
+                if (string.IsNullOrWhiteSpace(w.Key)) Problems.Add($"{label} has empty key");
+                int vals = (w.Int is not null ? 1 : 0) + (w.Float is not null ? 1 : 0) + (w.Str is not null ? 1 : 0);
+                if (vals != 1) Problems.Add($"{label} '{w.Key}' must set exactly one of int/float/str (got {vals})");
+                if (w.Delta && w.Int is null && w.Float is null) Problems.Add($"{label} '{w.Key}' delta only applies to int/float");
+                if (!Generator.StorageTargetTokens.Contains((w.Target ?? "").Trim()))
+                    Problems.Add($"{label} '{w.Key}' bad target '{w.Target}' (use speaker | player | none/global)");
+                else if (!allowSpeaker && Generator.ClassifyStorageTarget(w.Target ?? "") == Generator.StorageTargetKind.Speaker)
+                    Problems.Add($"{label} '{w.Key}' target 'speaker' is only valid on a dialogue line (a quest stage has no speaker — use 'player' or 'none')");
             }
         }
 

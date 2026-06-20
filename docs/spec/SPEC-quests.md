@@ -171,6 +171,28 @@ handle to balance — the retain/release footgun is avoided by construction (res
 `<quest>_Stages.psc` needs JContainers' own `.psc` on the Papyrus header path (`MODFORGE_PAPYRUS_BASE`) —
 a main-machine step (see WAIT_USER). Worked example: `examples/npc_skill_persist_spec.json` (a trainer NPC).
 
+#### `storageWrites` — PapyrusUtil StorageUtil per-Form KV (J group)
+
+A lighter alternative to `persist` for **flat, save-managed scalar state**: `storageWrites` emits
+[PapyrusUtil](https://www.nexusmods.com/skyrimspecialedition/mods/58705) `StorageUtil.Set/Adjust{Int,Float,String}Value`
+calls into the same two hosts — a **dialogue line** (`dialogue[].storageWrites`, runs in the TIF fragment
+when picked) and a **quest stage** (`quest.stages[].storageWrites`, runs when the stage is reached, routed
+to the `OnStory<Event>` handler for an SM-driven quest, exactly like `persist`). Where `persist` (JContainers
+JFormDB) is for nested paths and Form-as-key, StorageUtil is the "simple + auto-managed" half: follower
+memory, interaction cooldowns, per-NPC flags. The save manages the values; nothing to retain/release.
+
+Each entry is `{ key, target?, <value>, delta? }`:
+- `key` — the StorageUtil string key (e.g. `"mymod_lastGreet"`).
+- `target` — the Form the value hangs on: `"speaker"` (the dialogue NPC, `akSpeakerRef` — **dialogue lines
+  only**; the default), `"player"`, or `"none"`/`"global"` (a process-global KV not tied to any Form). A
+  quest stage has no speaker → use `"player"` or `"none"` (validation rejects `"speaker"`/the default there).
+- exactly one value: `int` / `float` (→ `Set{Int,Float}Value`) or `str` (→ `SetStringValue`).
+- `delta: true` (int/float only) — `Adjust{Int,Float}Value`, an atomic read-add-write for counters.
+
+Unlike `persist`, the three supported targets are pure Papyrus expressions, so `storageWrites` binds **no**
+VMAD property (no arbitrary-ref target yet). Compiling the generated fragment needs PapyrusUtil's `.psc` on
+the header path (main-machine step; PapyrusUtil must be installed in-game).
+
 ### Story Manager quests — event-driven start
 
 A quest can be **launched automatically by the Story Manager (SM)** in response to an
