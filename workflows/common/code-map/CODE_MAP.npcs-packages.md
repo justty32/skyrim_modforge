@@ -67,7 +67,7 @@
 |---------|-----|
 | `PackageTests.cs` | AI package 資料槽填充（所有 template 變體）|
 | `PackageAliasTargetTests.cs` | **#2 alias target/location：Travel/Sleep/Activate/Escort 的 alias:/aliasLoc: → PackageTargetAlias / LocationFallback(AliasForReference\|AliasForLocation) + index；validate（無 ownerQuest / 未知 alias / external ownerQuest）** |
-| `RelationshipAndEslTests.cs` | faction relationship build + ESL flag 行為 |
+| `RelationshipAndEslTests.cs` | faction relationship build + ESL flag 行為 + **masterless 防呆**（`PluginIo.Write` 對零外部 ref 的 esp 補 Skyrim.esm master；有 ref 不重複）|
 | `WeatherClimateTests.cs` | weather scalar fields + climate build |
 
 ---

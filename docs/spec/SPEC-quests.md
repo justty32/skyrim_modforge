@@ -123,12 +123,20 @@ on **two hosts**:
 In both, the writes appear before the perk sync so a sync sees what was just stored.
 
 **Story-Manager-driven trigger** (an easy in-game hook): put a stage `persist`/`syncPerks` on a quest that
-also has a `storyEvent` (e.g. `CastMagic` — see [Story Manager quests](#story-manager-quests--event-driven-start)). An
+also has a `storyEvent` (see [Story Manager quests](#story-manager-quests--event-driven-start)). An
 SM-started quest never runs its startUpStage fragment (in-game 2026-06-19), so the generator routes that
 stage's persist into the quest's `OnStory<Event>` handler instead — it runs on **every** SM delivery, then
-`Stop()`s to re-arm. So *"cast any spell → bank Endurance XP, gain the perk at rank 2"* is a CastMagic quest
-with the persist keyed on `"player"` and a `GetIsID Player` event condition — no NPC, no dialogue. Worked
-example: `examples/npc_skill_persist_spec.json`.
+`Stop()`s to re-arm.
+
+> ⚠️ **Do NOT use `event: "CastMagic"` for a "cast to train" trigger.** The engine's passive Cast Magic SM
+> event does **not** fire on normal player spell casts (in-game 2026-06-20: an `OnStoryCastMagic` handler
+> never ran; `package`/`build` now warns when you wire it). Use a **scripted magic effect** instead: a
+> self-cast custom spell whose magic effect carries `MFSE_SpellTrigger` (`OnEffectStart → MFStoryEventDispatch.Fire(keyword, caster)`)
+> → a `ScriptEvent` quest whose `OnStoryScript` handler banks the state. This is the in-game-confirmed
+> path (2026-06-20: persist + perk sync + affinity gate all work, the level climbs on each recast).
+> Worked example: **`examples/skill_cast_spec.json`** (cast "Endurance Drill" on yourself to train Endurance →
+> Adaptation perk at rank 2). `examples/npc_skill_persist_spec.json` is kept only as a reference for the
+> persist/`syncPerks` **structure** + `OnStory` routing — its CastMagic trigger does not fire.
 
 - **`persist`** — `{ storage, key?, set: [...] }`. `storage` is the JFormDB storageName (the namespace
   bucket; becomes the first path component). `key` is the Form the state hangs on — see **Key** below.
@@ -229,7 +237,7 @@ condition, ESL).
 |---|---|---|
 | `KillActor` | Any actor killed | `victim`, `killer`, `location` |
 | `ChangeLocation` | Actor enters a new location | `oldLocation`, `newLocation` |
-| `CastMagic` | Spell cast | `caster`, `target`, `location` |
+| `CastMagic` | Spell cast — ⚠️ **does NOT fire on normal player casts** (in-game 2026-06-20; build warns). For a cast trigger use `ScriptEvent` via `MFSE_SpellTrigger` (see `examples/skill_cast_spec.json`). | `caster`, `target`, `location` |
 | `AddItem` | Item added to inventory | `owner`, `location` |
 | `Assault` | Actor assaulted | `victim`, `attacker`, `location` |
 | `CraftItem` | Player crafts an item at a station | `workbench` |

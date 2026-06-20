@@ -206,7 +206,7 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Core | `PluginIo.cs` | Mutagen load/write 包裝；ESL 2048 record 安全檢查 |
+| Core | `PluginIo.cs` | Mutagen load/write 包裝；ESL 2048 record 安全檢查；**masterless 防呆**：write 前掃 FormLinks，若零外部 ref（會 masterless → 遊戲靜默丟棄整個 esp，help/setstage not-found 但 MO2 顯示啟用，in-game 2026-06-20）自動補 Skyrim.esm 為唯一 master + `MastersListContent=NoCheck`（Mutagen 仍按 FormKey 正確映射 master index，FormID 不變、byte 同天生有 master 的 esp）；有外部 ref 維持 `Iterate`。測 `RelationshipAndEslTests`(masterless→補 master、有 ref→不重複) |
 | Core | `SeqFile.cs` | 寫 `.seq` manifest（StartGameEnabled quest 強制啟動）|
 
 ---

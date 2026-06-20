@@ -165,12 +165,18 @@ IN-GAME CONFIRMED It.36 2026-06-02**）：
 在兩者中，寫入都排在 perk 同步之前，使同步能看見剛剛存入的內容。
 
 **由 Story Manager 驅動的觸發**（一個簡單的遊戲內掛點）：把一個階段 `persist`/`syncPerks` 放在一個
-同時也帶 `storyEvent`（例如 `CastMagic`——見 [Story Manager quests](#story-manager-quests--event-driven-start)）的任務上。一個
+同時也帶 `storyEvent`（見 [Story Manager quests](#story-manager-quests--event-driven-start)）的任務上。一個
 SM 啟動的任務永遠不會執行它的 startUpStage 片段（in-game 2026-06-19），所以產生器改把該
 階段的 persist 路由到該任務的 `OnStory<Event>` handler 中——它會在**每一次** SM 投遞時執行，然後
-`Stop()` 以重新待命。於是「*施放任何法術 → 存入 Endurance XP，在 rank 2 時取得 perk*」就是一個帶 persist
-（以 `"player"` 為 key、附 `GetIsID Player` 事件條件）的 CastMagic 任務——沒有 NPC、沒有對話。完整
-範例：`examples/npc_skill_persist_spec.json`。
+`Stop()` 以重新待命。
+
+> ⚠️ **不要用 `event: "CastMagic"` 做「施法練功」觸發。** 引擎被動的 Cast Magic SM 事件**不會**對玩家普通施法
+> 觸發（in-game 2026-06-20：`OnStoryCastMagic` handler 從不執行；`package`/`build` 現在會在你接上它時警告）。
+> 改用**有腳本的魔法效果**：一顆自施的自訂法術，其魔法效果掛 `MFSE_SpellTrigger`（`OnEffectStart → MFStoryEventDispatch.Fire(keyword, caster)`）
+> → 一個 `ScriptEvent` 任務，其 `OnStoryScript` handler 存入狀態。這是遊戲內已確認的路徑（2026-06-20：persist +
+> perk 同步 + 好感度 gate 全部有效，每次重施等級會累加）。完整範例：**`examples/skill_cast_spec.json`**（對自己施放
+> 「Endurance Drill」訓練 Endurance → rank 2 取得 Adaptation perk）。`examples/npc_skill_persist_spec.json` 僅
+> 保留作 persist/`syncPerks` **結構** + `OnStory` 路由的參考——它的 CastMagic 觸發不會 fire。
 
 - **`persist`** — `{ storage, key?, set: [...] }`。`storage` 是 JFormDB 的 storageName（命名空間
   桶；成為路徑的第一個元件）。`key` 是狀態所掛附的 Form——見下面的 **Key**。
@@ -271,7 +277,7 @@ condition、ESL）。
 |---|---|---|
 | `KillActor` | 任何 actor 被殺 | `victim`、`killer`、`location` |
 | `ChangeLocation` | actor 進入新位置 | `oldLocation`、`newLocation` |
-| `CastMagic` | 施放法術 | `caster`、`target`、`location` |
+| `CastMagic` | 施放法術 — ⚠️ **不會對玩家普通施法觸發**（in-game 2026-06-20；build 會警告）。施法觸發改用 `ScriptEvent` 經 `MFSE_SpellTrigger`（見 `examples/skill_cast_spec.json`）。 | `caster`、`target`、`location` |
 | `AddItem` | 物品加入物品欄 | `owner`、`location` |
 | `Assault` | actor 被攻擊 | `victim`、`attacker`、`location` |
 | `CraftItem` | 玩家在工作台製作物品 | `workbench` |
