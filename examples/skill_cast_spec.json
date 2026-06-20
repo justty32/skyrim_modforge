@@ -1,0 +1,97 @@
+{
+  "pluginName": "ModForgeSkillCast.esp",
+  "esl": false,
+  "_": "REAL cast-to-train trigger for the JFormDB skill tree, using the PROVEN dispatcher path (story-manager-magictrigger.json, SM side in-game 2026-06-04) instead of the engine's passive CastMagicEvent (which does NOT fire on normal player casts — in-game 2026-06-20). A self-cast custom spell (MFSkillC_CallSpell) carries MFSkillC_TriggerEffect, whose attached MFSE_SpellTrigger script fires MFStoryEventDispatch.Fire(MFSkillC_KW, caster) on OnEffectStart -> the SM ScriptEvent root (keyword-filtered) starts MFSkillC_Q -> its OnStoryScript handler banks Endurance to JFormDB (keyed on the player) and syncs the Adaptation perk. Re-triggerable: cast again and the level climbs. Non-ESL so the spell FormID is XX0008xx (XX = load order) for an easy `player.addspell`. Affinity gate (MFSkillC_Affinity >= 4) wraps bank+sync; set it by console to flip growth. REQUIRES JContainers SE at runtime. VERIFY: player.addspell <spell formid>, equip+cast it on yourself, watch the on-screen MFSkillC notification (level/rank/perk); set MFSkillC_Affinity 4 to unlock.",
+
+  "keywords": [ { "editorId": "MFSkillC_KW" } ],
+
+  "globals": [
+    { "editorId": "MFSkillC_Affinity", "type": "short", "value": 0 }
+  ],
+
+  "perks": [
+    {
+      "editorId": "MFSkillC_AdaptationPerk",
+      "name": "Adaptation",
+      "description": "Endurance node — the bearer endures and hits a touch harder.",
+      "playable": false,
+      "hidden": true,
+      "numRanks": 1,
+      "effects": [
+        { "kind": "entryPoint", "entryPoint": "ModAttackDamage", "function": "Multiply", "value": 1.1 }
+      ]
+    }
+  ],
+
+  "magicEffects": [
+    {
+      "editorId": "MFSkillC_TriggerEffect",
+      "name": "Endurance Drill",
+      "description": "Trains endurance.",
+      "_": "Token Restoration self-heal so OnEffectStart fires on the caster; the payload is the attached MFSE_SpellTrigger script.",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "magicSkill": "Restoration",
+      "castType": "FireAndForget",
+      "targetType": "Self",
+      "baseCost": 0.5,
+      "flags": [ "NoDuration", "NoArea" ]
+    }
+  ],
+
+  "spells": [
+    {
+      "editorId": "MFSkillC_CallSpell",
+      "name": "Endurance Drill",
+      "_": "Self-cast — the tester casts it on themselves, no target needed.",
+      "spellType": "Spell",
+      "castType": "FireAndForget",
+      "targetType": "Self",
+      "baseCost": 10,
+      "effects": [
+        { "magicEffect": "MFSkillC_TriggerEffect", "magnitude": 1, "area": 0, "duration": 0 }
+      ]
+    }
+  ],
+
+  "scripts": [
+    {
+      "targetEditorId": "MFSkillC_TriggerEffect",
+      "scriptName": "MFSE_SpellTrigger",
+      "source": "MFSE_SpellTrigger.psc",
+      "properties": [ { "name": "TheKW", "type": "object", "objectEditorId": "MFSkillC_KW" } ]
+    }
+  ],
+
+  "quests": [
+    {
+      "editorId": "MFSkillC_Q",
+      "name": "Endurance Training (cast)",
+      "type": "None",
+      "storyEvent": { "event": "ScriptEvent", "keyword": "MFSkillC_KW" },
+      "stages": [
+        {
+          "index": 10,
+          "persist": {
+            "storage": "ModForgeNpcSkills",
+            "key": "player",
+            "set": [
+              { "path": ".Endurance.level", "int": 1, "delta": true },
+              { "path": ".Endurance.ratio", "float": 0.25, "delta": true },
+              { "path": ".Endurance.nodes.Adaptation", "int": 2 }
+            ],
+            "gate": { "global": "MFSkillC_Affinity", "atLeast": 4 }
+          },
+          "syncPerks": {
+            "storage": "ModForgeNpcSkills",
+            "key": "player",
+            "nodes": [
+              { "path": ".Endurance.nodes.Adaptation", "perk": "MFSkillC_AdaptationPerk", "minRank": 2 }
+            ],
+            "gate": { "global": "MFSkillC_Affinity", "atLeast": 4 }
+          }
+        }
+      ]
+    }
+  ]
+}
