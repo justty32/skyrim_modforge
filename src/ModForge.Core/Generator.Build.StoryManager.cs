@@ -28,6 +28,14 @@ public static partial class Generator
                 if (string.IsNullOrEmpty(qs.EditorId) || !questsByEd.TryGetValue(qs.EditorId, out var quest)) continue;
                 if (!StoryManagerEvents.TryGet(se.Event, out var def)) continue; // validator 已擋未知事件
 
+                // The engine's passive CastMagicEvent SM root does NOT fire on normal player spell casts
+                // (in-game 2026-06-20: an OnStoryCastMagic handler never ran). The wiring builds fine but
+                // never triggers. For a cast trigger, use a scripted magic effect that calls
+                // MFStoryEventDispatch.Fire -> a ScriptEvent quest (see examples/skill_cast_spec.json or
+                // story-manager-magictrigger.json — that path is in-game confirmed).
+                if (se.Event.Equals("CastMagic", StringComparison.OrdinalIgnoreCase))
+                    Warn($"  ! quest '{qs.EditorId}' storyEvent 'CastMagic': the passive Cast Magic SM event does NOT fire on normal player casts — use a scripted magic effect -> MFStoryEventDispatch.Fire -> a ScriptEvent quest (see examples/skill_cast_spec.json)");
+
                 quest.Event = def.Code;
                 quest.Flags &= ~Quest.Flag.StartGameEnabled;
                 foreach (var cs in se.Conditions)

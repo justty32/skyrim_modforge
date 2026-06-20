@@ -11,6 +11,13 @@
 ## 最新進度（幾句話）
 
 - 目前無跨工作流的 open 項；各工作流的 open 狀態見下表。
+- **2026-06-20 主力機實機大確認 session（接續 J+M）**：一個下午連續實機驗收多個離線功能 + 抓修一個系統性 bug。
+  - ✅ **storageWrites（J 組）IN-GAME CONFIRMED**（見上條 + memory [[storage-writes-ingame-confirmed]]）。
+  - ✅ **動態生怪管線 IN-GAME re-CONFIRMED**：MFSpawnDiagAny 走出旅館即生 3 怪（OnStoryChangeLocation 無過濾）。
+  - ✅ **Idea #20 技能樹 Phase 0「施法練功」全鏈 IN-GAME CONFIRMED**：自訂法術 → MFSE_SpellTrigger → MFStoryEventDispatch.Fire → SM ScriptEvent → quest OnStoryScript → **JFormDB 持久（重複施放 lvl 累加）+ Adaptation perk 同步 + 好感度 gate（set Affinity 0 即停）** 全部實機通過。新 example `examples/skill_cast_spec.json`（含 dispatcher/spell-trigger/handler 三 .pex）。memory [[storage-writes-ingame-confirmed]] 旁附 JFormDB。
+  - 🔴 **發現 + 修 + 防呆**：**引擎被動 CastMagicEvent SM root 不會對玩家普通施法觸發**（OnStoryCastMagic 從不跑；root 0x046829 雖合法存在）。原 flagship `npc_skill_persist_spec.json` 用它 → 死路。**修**：技能 demo 改走已驗證的 MGEF→dispatcher→ScriptEvent 路徑（`skill_cast_spec.json`）；**防呆**：`BuildStoryManager` 對 `storyEvent.event=CastMagic` 出 build-time Warn 指向 skill_cast；原 example 加 `_WARNING` 註記。memory [[masterless-plugin-silent-load-failure]] 同 session 的姊妹發現。
+  - ✅ **修掉 masterless 靜默不載入 bug**（見下方 J+M 條的 🔴→✅）：根因 masterless（非 ESL），`PluginIo.Write` 零外部 ref 自動補 Skyrim.esm master。+2 測。
+  - **測試方法論**：實機驗收靠「手工在生成的 fragment 加 Debug.Notification readback + 用 native Go papyrus-compiler 重編」把不可見的 KV/JFormDB 寫入變成畫面數字；單變數隔離 zip（masterless vs ESL）定位載入失敗根因。詳見 memory。
 - **最近一次 session（2026-06-20 續，純離線，J + M 兩 roadmap 組收尾，~28 新測、793 測綠）**：
   - **J 組（PapyrusUtil StorageUtil `storageWrites`）**：`dialogue[].storageWrites` / `stages[].storageWrites: [{key, target, int/float/str, delta?}]` → `StorageUtil.Set/Adjust{Int,Float,String}Value`，掛 dialogue TIF 與 stage fragment（與 persist 同機制 + SM quest 路由 `OnStory<Event>`）。target=speaker/player/none 皆純表達式 → **body-only 零 VMAD property**。新增 `Generator.StorageWrites.cs`。JContainers 的 nested 狀態本就由 persist 覆蓋，這補「簡單+自動管理」那半（eval 最高槓桿點）。**剩 ActorUtil/MiscUtil/ref-target 留尾**（需求度低）。
   - **M 組（INFO 陣列批次 `variants`）**：`dialogue[].variants: [{responses, conditions?, emotion?, sayOnce?}]` → 同 topic 掛多條 sibling INFO，各帶 `Random` flag、共用 parent 的 speaker gate + conditions + templates + identity，再各接自有 conditions。parent `responses` 空→純批次 header。正解 FCO 265 條 ambient commentary 痛點（條件模板那半上次已落地）。
