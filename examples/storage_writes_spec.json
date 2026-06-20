@@ -1,0 +1,32 @@
+{
+  "pluginName": "ModForgeStorageWrites.esp",
+  "esl": true,
+  "_": "J group — PapyrusUtil StorageUtil per-Form KV (storageWrites) in-game demo, mirroring the easy CastMagic trigger of npc_skill_persist_spec.json. CAST ANY SPELL: a CastMagic Story-Manager quest (MFSW_Q) starts whenever the PLAYER casts a spell, and its OnStory<Event> handler writes three StorageUtil values keyed on the player — an int delta counter, a float delta accumulator, and a string stamp — exercising all three StorageWritesBody code paths (SetInt/AdjustInt, SetFloat/AdjustFloat, SetString). An SM-started quest never runs its startUpStage fragment (in-game 2026-06-19), so storageWrites routes to the OnStory handler automatically. ⚠ REQUIRES PapyrusUtil installed at runtime; compiling the generated MFSW_Q_Stages.psc needs PapyrusUtil's StorageUtil.psc on the Papyrus header path (main machine — already provisioned into ~/.cache/modforge/papyrus/Source/Scripts). StorageUtil values live in the SKSE co-save (auto save-managed, no JContainers). VERIFY in-game via console: cast a spell a few times, then `cgf \"StorageUtil.GetIntValue\" 14 \"MFSW_castCount\" -1` should return the cast count (14 = player), `cgf \"StorageUtil.GetFloatValue\" 14 \"MFSW_castMagicka\" -1` the float accumulator, `cgf \"StorageUtil.GetStringValue\" 14 \"MFSW_lastCast\" \"none\"` the stamp; save+reload and the int persists.",
+
+  "quests": [
+    {
+      "editorId": "MFSW_Q",
+      "name": "StorageWrites Demo",
+      "_": "CastMagic Story-Manager quest. The engine's Cast Magic story event starts it whenever the player casts a spell (GetIsID Player restricts the trigger to the player). type=None keeps it out of the journal. No aliases: every write is keyed on the player (Game.GetPlayer()) or none(global), so nothing needs an event-filled alias.",
+      "type": "None",
+      "stages": [
+        {
+          "index": 10,
+          "_": "Three storageWrites keyed on the player, exercising every StorageWritesBody path. delta int → StorageUtil.AdjustIntValue (atomic +1 each cast); delta float → AdjustFloatValue (+0.5 each cast); str → SetStringValue (overwrite stamp). The stage carries the spec; the OnStory<Event> handler runs it (an SM quest's startUpStage fragment never fires). target=player is a pure Game.GetPlayer() expression → body-only, zero VMAD property.",
+          "storageWrites": [
+            { "key": "MFSW_castCount", "target": "player", "int": 1, "delta": true },
+            { "key": "MFSW_castMagicka", "target": "player", "float": 0.5, "delta": true },
+            { "key": "MFSW_lastCast", "target": "player", "str": "cast happened" }
+          ]
+        }
+      ],
+      "storyEvent": {
+        "event": "CastMagic",
+        "_": "Fires when the player casts any spell. The condition restricts it to the player (GetIsID == Player, Skyrim.esm:0x00000014); the Cast Magic event's subject is the casting actor.",
+        "conditions": [
+          { "function": "GetIsID", "comparison": "==", "value": 1, "param": "Skyrim.esm:0x00000014" }
+        ]
+      }
+    }
+  ]
+}
