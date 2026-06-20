@@ -147,11 +147,11 @@
 `_DISTR.ini` 寫在 mod 資料夾**根目錄**（≠ SKSE/Plugins）；RecordID/EditorID 由玩家 load order 解析，ModForge 離線不驗。example：`examples/spid_distribution_spec.json`。
 **MCM Helper**（Idea D-2，**in-game 確認 2026-06-20**）：MVP＝ini-backed（`ModSettingBool/Int/Float/String`），DLL 把玩家改動存到 `MCM/Settings/<plugin-stem>.ini`；`config.json` 用 `name`→`pageDisplayName`、value 欄位收進 `valueOptions`。⚠️ **光丟 config.json 不出選單**（早期「零 Quest/Papyrus」假設是錯的）——ModForge 自動生 Start-Game-Enabled 註冊 QUST（`ModForgeMCM` + `PlayerAlias`/`SKI_PlayerLoadGameAlias`），需 MCM Helper+SkyUI。⚠️ **資料夾名＝插件 stem，非 spec modName**（MCM Helper `FormUtil::GetModName`＝`path(plugin).stem()`，不讀 Papyrus ModName property；錯了會 in-game 跳「check json syntax」）。`PropertyValue*`/`action.CallFunction`（需 per-mod 子類）為範圍外。example：`examples/mcm_config_spec.json`。
 **FLM**（Idea D-4）：`_FLM.ini` 寫在 mod 根，runtime 把 form 追加進**任意既有 FLST**（vanilla/他 mod）零 override 零衝突；自建 FLST 仍走 esp-side `formLists[]`。MVP 涵蓋 FormList 操作行 + Filter/Alias/Group/Collection 定義；`ModEvent`（需 Papyrus 發送）+ 特化快捷（Plant/BToys/…）為範圍外。example：`examples/formlist_inject_spec.json`。
-**KID**（D-5）：`_KID.ini`，把 Keyword 依 filter 掛到 record（unknown EditorID → KID 自建 KYWD）。example：`examples/kid_distribution_spec.json`。
-**BOS**（D-6）：`_SWAP.ini`，reference 載入時把 base object 換成另一個（可帶 location 條件/transform/chance），MVP 限 `[Forms]` section。example：`examples/object_swap_spec.json`。
-**AOS**（D-7）：`_ANIO.ini`，換 idle 時手持的 ANIO 道具（隨機池 + NPC/faction/trait 條件）。example：`examples/anim_object_swap_spec.json`。
-**SkyPatcher**（D-3）：`SkyPatcher/<recordType>/<file>.ini`，runtime 依 filter 改 record（NPC 加 spell/perk、leveled list 注入）。MVP 不白名單欄位，verbatim emit。example：`examples/skypatcher_spec.json`。
-> 全 D-group ini 都「離線只驗結構、runtime 由 DLL 對玩家 load order 解析 ref」，實機/log 收尾見 [WAIT_USER](../../../wait_todo/roadmap-features.md)。
+**KID**（D-5，**in-game 確認 2026-06-20**）：`_KID.ini`，把 Keyword 依 filter 掛到 record（unknown EditorID → KID 自建 KYWD）。syntax example：`examples/kid_distribution_spec.json`；known-good log-test：`examples/kid_keyword_test_spec.json`（新 KYWD→鐵武器，`po3_KeywordItemDistributor.log` 看 `added to N`）。
+**BOS**（D-6，**in-game 確認 2026-06-20**）：`_SWAP.ini`，reference 載入時把 base object 換成另一個（可帶 location 條件/transform/chance），MVP 限 `[Forms]` section。syntax example：`examples/object_swap_spec.json`；known-good visible-test：`examples/bos_treeswap_visible_spec.json`（全松樹→白楊；遠景 LOD 不換、只看近處）。
+**AOS**（D-7，**in-game 確認 2026-06-20**）：`_ANIO.ini`，換 idle 時手持的 ANIO 道具（隨機池 + NPC/faction/trait 條件）。syntax example：`examples/anim_object_swap_spec.json`；known-good visible-test：`examples/aos_bucket_test_spec.json`（酒館酒杯→水桶）。
+**SkyPatcher**（D-3，**in-game 確認 2026-06-20**）：`SkyPatcher/<recordType>/<file>.ini`，runtime 依 filter 改 record（NPC 加 spell/perk、leveled list 注入）。MVP 不白名單欄位，verbatim emit。syntax example：`examples/skypatcher_spec.json`；known-good visible-test：`examples/skypatcher_scale_test_spec.json`（Nord `height=1.5`；尺寸 key 是 `height` 非 `setScale`）。
+> **全 D-group 七個分發器（SPID/MCM/FLM/KID/BOS/AOS/SkyPatcher）皆 IN-GAME CONFIRMED 2026-06-20**。離線只驗結構、runtime 由 DLL 對玩家 load order 解析 ref；各框架的 known-good 測試 + SKSE log 路徑見 memory `dll-loose-ini-distributors-confirmed`。
 
 ---
 
@@ -179,6 +179,7 @@
 | Core | `Voice.Lip.cs` | `.lip` lip-sync 生成（`GenerateLip` 一個入口、兩後端）：**優先**官方 CK `LipGenerator.exe`（`MODFORGE_LIPGEN`，簽名 `<wav> <text> -Language:<lang> -OutputFileName:<lip>`，FonixData.cdf 自 exe 同夾找、免給 cdf 路徑、**已在本機 Wine 實跑產出合法 .lip 2026-06-13**）；**退化**社群 FaceFXWrapper（`MODFORGE_FACEFX` + `MODFORGE_FONIXDATA`）。`BuildLipGenArgs` pure 可單測 |
 | Core | `Fuz.cs` | `.fuz` 容器拆解（FUZE header → lip + audio；audio ext 自動偵測 xwm/wav）|
 | Core | `Generator.Build.Voice.cs` | `WriteFuz`（lip + audio 打包成 .fuz）+ `VoiceFileName` CK 命名（`quest10_topic15_formid8_n.fuz`：quest EditorID 前 10 字 + topic EditorID 前 15 字 + INFO FormID hex8 + response 序號）|
+| Core | `Generator.Build.Voice.Plan.cs` | `VoiceLinePlanEntry` record + `BuildVoiceLinePlan`（每個 INFO response → speaker(s)/voiceType 資料夾/引擎檔名的可交付計畫，供 CLI dry-run/`voicediag` 用）+ `VoiceTypeFolderName`（spec voiceType ref → `Sound/Voice` 資料夾名，含 `SkyrimVoiceTypeFolders` 表）+ `NormalizeVoiceFormat`/`IsSafeVoiceFolder` |
 | Core | `Generator.Build.Voice.Speakers.cs` | `ResolveVoiceSpeakers`：從建好 esp 的 INFO 條件解 speaker（GetIsID / GetIsAliasRef / GetInFaction / scene Dialog action）→ `VoiceSpeaker`(Npc + voiceType)；一個 INFO 可對多 speaker（faction），`SelectVoiceTargets` 去重成每個 distinct voiceType 一份。解不出 → `VoiceSpeakerResolution.Reason`（CLI 必須大聲報）。**`ResolveExternalSpeakerVoice`**：INFO gated on GetIsID(Subject) 的**外部 master NPC**（mod-only cache 解不了，如既有隨從 Sofia）→ 用 `voiceSpeakers[]`（`Spec.Voice.cs` `VoiceSpeakerSpec`：speaker ref→voiceType+template）直接給，繞過 NPC 解析；`BuildVoiceLinePlan` 與 voicelines loop 都先查它。在 Core 故可對 in-memory built mod 單測 |
 | Core | `Archives.cs` | Mutagen 讀 BSA/BA2（extract + path filter；`extract-voices` / `voice-annotate` 用）|
 | Core | `Voice.Annotate.cs` | 情緒標注 index：`VoiceAnnotation`(clip/text/emotion/intensity/infoFormId + 人填 override/intensityOverride/note) model + `VoiceAnnotate.TryParseInfoFormKey`(從 clip 檔名解 INFO FormKey;high byte→master)/`BuildEntry`(從 resolved INFO 讀 Emotion/EmotionValue/Text)。純函式可單測 (`VoiceAnnotateTests.cs`)|
@@ -225,6 +226,8 @@
 | CLI | `Diagnostics.Voice.cs` | `voicediag <esp>`：走訪所有 dialogue INFO，印出每個 response 期望的 `.fuz` 路徑（`Sound/Voice/<plugin>/<voiceType>/<quest>_<topic>_<formId>_<n>.fuz`）與 speaker/voiceType；reuse Core 的 `ResolveVoiceSpeakers`；無需 spec/Skyrim.esm/TTS|
 | CLI | `Diagnostics.Records.cs` | targeted 單記錄 diag（lazy overlay，不 materialize 250MB master）：`cellblk`/`mgefdiag`/`lightdiag`/`refpos`/`packagediag` 等 |
 | CLI | `Diagnostics.CellRefs.cs` | **`cellrefs <esp> <0xFORMID>`**：dump 單一 interior cell 的所有 placed REFR/ACHR（base FormKey + cell-local pos + rotation **RADIANS** + scale）成 CSV——逆向 vanilla cell 成 `placements[]`。記憶體安全：lazily 走 CELL block tree，命中 target FormID 後只處理那顆 cell 的 child group（Temporary+Persistent，數百 ref）就 return，絕不列舉所有 cell 的 children。rotation 是 esm 原生 radian，轉成 ModForge spec 的 degree 需 `*180/pi`。範例見 `docs/investigation/decode/sleeping-giant-inn-reverse-2026-06-13.md` + `examples/sleeping_giant_inn.json`。|
+| CLI | `Diagnostics.GameData.cs` | **`gamedata <plugin> <outDir> [--strings <dir>]`**：streamed overlay 一趟 major-record pass，把 books/dialogue/quests/npcs/items/locations/magic 批次匯出成資料夾（給 agent 當參考；不 full-materialize、不 `.ToList` record group，跑得動 250MB master）。`ProvisionEnglishStringsAnyBsa` 從任一 BSA 抽 English STRINGS 解 localized Name |
+| CLI | `Diagnostics.BookText.cs` | **`booktext <esm> <0xFORMID>`**：印一本 BOOK 的 localized Name + 全文 BookText（lore prose）；`ProvisionEnglishStrings` 從 master BSA 抽 English STRINGS |
 
 各領域 Diagnostics 見對應子 index。
 
