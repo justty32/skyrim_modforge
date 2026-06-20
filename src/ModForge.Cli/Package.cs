@@ -263,7 +263,9 @@ internal static partial class Program
             foreach (var b in spec.BehaviorData) WriteLoose(BdiGen.Generate(b));
             foreach (var p in spec.PayloadMacros) WriteLoose(PieGen.Generate(p));
             foreach (var s in spec.SpidDistributions) WriteLoose(SpidGen.Generate(s));
-            foreach (var m in spec.McmConfigs) foreach (var f in McmGen.Generate(m)) WriteLoose(f);
+            // MCM Helper keys the config folder on the host plugin's filename stem (not the spec modName).
+            var mcmIdentity = Path.GetFileNameWithoutExtension(pluginName);
+            foreach (var m in spec.McmConfigs) foreach (var f in McmGen.Generate(m, mcmIdentity)) WriteLoose(f);
             foreach (var fl in spec.FormListInjects) WriteLoose(FlmGen.Generate(fl));
             foreach (var k in spec.KidDistributions) WriteLoose(KidGen.Generate(k));
             foreach (var os in spec.ObjectSwaps) WriteLoose(BosGen.Generate(os));

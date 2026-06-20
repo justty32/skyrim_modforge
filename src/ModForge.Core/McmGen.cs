@@ -6,11 +6,17 @@ using System.Text.Json.Nodes;
 
 namespace ModForge;
 
-// Generates the MCM Helper config tree as loose files (no esp record):
-//   MCM/Config/<modName>/config.json    (the menu layout)
-//   MCM/Config/<modName>/settings.ini   (default values for every ModSetting* control)
-// Pure functions (no I/O) — `package` writes the OarFiles. Format verified against
-// sub_projs/mod-survey/findings/mcm-helper-config-json.md (MCM Helper 1.6.1).
+// Generates the MCM Helper config tree as loose files:
+//   MCM/Config/<identity>/config.json    (the menu layout)
+//   MCM/Config/<identity>/settings.ini   (default values for every ModSetting* control)
+// `identity` is the host plugin's filename stem (e.g. MyMod.esp -> "MyMod"). MCM Helper's DLL keys
+// the config folder on FormUtil::GetModName(quest) = path(plugin).stem() (src/ConfigStore.cpp ->
+// FormUtil.cpp:55), so the folder name and the config.json `modName` field (a self plugin-requirement)
+// MUST be the plugin stem — the Papyrus `ModName` property is NOT consulted for the folder (only an
+// error-page display fallback). Using the spec's modName here makes MCM Helper look in the wrong folder
+// ("Failed to open file: MCM/Config/<plugin>/config.json" → "check json syntax"), confirmed in-game
+// 2026-06-20. The spec's modName becomes the displayName fallback. Pure functions (no I/O) — `package`
+// writes the OarFiles. Format verified against sub_projs/mod-survey/findings/mcm-helper-config-json.md.
 public static class McmGen
 {
     private static readonly JsonSerializerOptions Pretty =
@@ -20,20 +26,23 @@ public static class McmGen
     private static readonly HashSet<string> ValueTypes = new(StringComparer.OrdinalIgnoreCase)
     { "toggle", "hiddenToggle", "slider", "stepper", "enum", "keymap" };
 
-    public static List<OarGen.OarFile> Generate(McmSpec m)
+    public static List<OarGen.OarFile> Generate(McmSpec m, string identity)
     {
-        var dir = $"MCM/Config/{m.ModName}";
+        var dir = $"MCM/Config/{identity}";
         return new List<OarGen.OarFile>
         {
-            new($"{dir}/config.json", BuildConfigJson(m)),
+            new($"{dir}/config.json", BuildConfigJson(m, identity)),
             new($"{dir}/settings.ini", BuildSettingsIni(m)),
         };
     }
 
-    public static string BuildConfigJson(McmSpec m)
+    public static string BuildConfigJson(McmSpec m, string identity)
     {
-        var root = new JsonObject { ["modName"] = m.ModName };
-        if (!string.IsNullOrEmpty(m.DisplayName)) root["displayName"] = m.DisplayName;
+        // `modName` is the folder/self-plugin-requirement (the plugin stem); `displayName` is the menu
+        // label (falls back to the spec's modName, then the identity). Both are schema-required.
+        var root = new JsonObject { ["modName"] = identity };
+        root["displayName"] = !string.IsNullOrEmpty(m.DisplayName) ? m.DisplayName
+            : !string.IsNullOrEmpty(m.ModName) ? m.ModName : identity;
 
         var pages = new JsonArray();
         foreach (var p in m.Pages)
