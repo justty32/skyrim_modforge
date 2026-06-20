@@ -163,6 +163,29 @@ root 並隨存檔一起持久化它們，所以**沒有** `JValue.object()`/`ret
 `<quest>_Stages.psc` 需要 JContainers 自身的 `.psc` 在 Papyrus header 路徑上（`MODFORGE_PAPYRUS_BASE`）——
 這是一個主力機步驟（見 WAIT_USER）。完整範例：`examples/npc_skill_persist_spec.json`（一名訓練師 NPC）。
 
+#### `storageWrites`——PapyrusUtil StorageUtil 每個 Form 的 KV（J 組）
+
+`persist` 的輕量替代，用於**扁平、隨存檔自動管理的純量狀態**：`storageWrites` 把
+[PapyrusUtil](https://www.nexusmods.com/skyrimspecialedition/mods/58705) 的
+`StorageUtil.Set/Adjust{Int,Float,String}Value` 呼叫產生進相同的兩個 host——一個**對話行**
+（`dialogue[].storageWrites`，被選取時在 TIF 片段中執行）與一個**任務階段**
+（`quest.stages[].storageWrites`，達到階段時執行，對 SM 驅動的任務會路由到 `OnStory<Event>`
+handler，與 `persist` 完全相同）。`persist`（JContainers JFormDB）是為巢狀路徑與 Form-as-key
+而生，而 StorageUtil 是「簡單 + 自動管理」那半：隨從記憶、互動冷卻、每個 NPC 的旗標。值由存檔
+管理，沒有要 retain/release 的東西。
+
+每個條目是 `{ key, target?, <value>, delta? }`：
+- `key`——StorageUtil 的字串鍵（例如 `"mymod_lastGreet"`）。
+- `target`——值所掛的 Form：`"speaker"`（對話 NPC，`akSpeakerRef`——**僅對話行**；預設）、`"player"`、
+  或 `"none"`/`"global"`（不綁任何 Form 的行程全域 KV）。任務階段沒有說話者 → 用 `"player"` 或
+  `"none"`（驗證會在階段上拒絕 `"speaker"`/預設）。
+- 恰好一個值：`int` / `float`（→ `Set{Int,Float}Value`）或 `str`（→ `SetStringValue`）。
+- `delta: true`（僅 int/float）——`Adjust{Int,Float}Value`，計數器用的原子 read-add-write。
+
+與 `persist` 不同，三種支援的 target 都是純 Papyrus 表達式，所以 `storageWrites` **不**綁任何
+VMAD 屬性（尚無 arbitrary-ref target）。編譯產生的片段需要 PapyrusUtil 的 `.psc` 在 header 路徑上
+（主力機步驟；遊戲內須安裝 PapyrusUtil）。
+
 ### Story Manager 任務——事件驅動的啟動
 
 任務可以**由 Story Manager（SM）自動啟動**以回應一個

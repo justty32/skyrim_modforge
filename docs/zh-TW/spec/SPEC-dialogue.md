@@ -80,6 +80,36 @@ NPC 的「職業」——把某個 npc 的 `class` ref 設成其中一個。它�
 > 原點 **(0,0,0)** 會落在 navmesh 外、無法被接近。(3) 無配音的台詞會一閃而過；
 > 安裝 **Fuz Ro D-oh**（或附帶靜音 `.fuz`）並啟用字幕。見 `lifelike/gotchas.md`。
 
+**INFO 陣列批次 (`variants`)。** 要在**一個 topic 下生成多條同層台詞**——對旅途／地點／時間／天氣
+／玩家狀態反應的 ambient commentary——把它們全宣告在**一個** `dialogue` 條目的 `variants` 陣列裡，
+不必為每條重複 topic、說話者與閘。每個 `variants[]` 條目成為自己的 INFO（帶 **`random`** 旗標，引擎
+在當下條件通過的同層 INFO 之間隨機挑選），並**共用** parent 條目的說話者閘、`conditions`、
+`useConditionTemplates` 與 `identity`——再加上它自己的額外 `conditions` 與 `responses`。這就是 FCO 式
+265 條共用一組閘的 commentary 的生成器。一個 `variants[]` 條目是
+`{ responses, conditions?, emotion?, emotionValue?, sayOnce? }`（`emotion`/`emotionValue` 未設時繼承
+parent）。當 `variants` 已設且 parent `responses` 為**空**時，不會發出 parent INFO（該條目是純批次
+header）；非空的 parent `responses` 會作為多一條同層台詞播放。Variants 僅供台詞變化——結果片段／
+`setStage`／`linkTo` 留在 parent 條目上，且 `variants` 不支援於 `hello` 行。搭配 `conditionTemplates`
+可跨**多個**批次共用同一組閘。
+
+```jsonc
+{ "editorId": "LydiaTravelBanter", "questEditorId": "Q", "speakerNpcEditorId": "Lydia",
+  "prompt": "", "useConditionTemplates": ["Following"],     // 共用閘：僅在跟隨時
+  "variants": [
+    { "responses": ["Lovely day for it."], "conditions": [{ "function": "GetCurrentTime", "comparison": "<", "value": 18 }] },
+    { "responses": ["Getting dark. We should make camp."], "conditions": [{ "function": "GetCurrentTime", "comparison": ">=", "value": 18 }] },
+    { "responses": ["I used to dream of adventure. Be careful what you wish for."], "sayOnce": true }
+  ] }
+```
+
+**對選取做出反應——`persist` / `syncPerks` / `storageWrites`。** 一個對話行被選取時可以記錄狀態：
+`persist`/`syncPerks`（JContainers JFormDB 巢狀的每個 Form 狀態，Idea #20）與 `storageWrites`
+（PapyrusUtil StorageUtil 扁平的每個 Form KV——隨從記憶、冷卻、旗標）。兩者都產生進該行的 TIF 結果片段。
+形狀與在任務階段上相同——見 SPEC-quests 的
+[persist/syncPerks](SPEC-quests.md#persist--syncperks--jcontainers-jformdb-per-form-state-idea-20-skill-tree-phase-0)
+與 [storageWrites](SPEC-quests.md#storagewrites--papyrusutil-storageutil-per-form-kv-j-group)
+（在對話行上 `target`/`key` 可為 `"speaker"`）。
+
 ### 閒談 (banter) — 主動（未經提示）的 NPC 台詞
 一個 `banter` 條目是 NPC **自行**說出的台詞，沒有玩家選單——即原版
 隨從評論模式（`HirelingIdles`）。形狀：`editorId`（選填）、`questEditorId`、

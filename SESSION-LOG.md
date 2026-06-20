@@ -15,7 +15,8 @@
   - **J 組（PapyrusUtil StorageUtil `storageWrites`）**：`dialogue[].storageWrites` / `stages[].storageWrites: [{key, target, int/float/str, delta?}]` → `StorageUtil.Set/Adjust{Int,Float,String}Value`，掛 dialogue TIF 與 stage fragment（與 persist 同機制 + SM quest 路由 `OnStory<Event>`）。target=speaker/player/none 皆純表達式 → **body-only 零 VMAD property**。新增 `Generator.StorageWrites.cs`。JContainers 的 nested 狀態本就由 persist 覆蓋，這補「簡單+自動管理」那半（eval 最高槓桿點）。**剩 ActorUtil/MiscUtil/ref-target 留尾**（需求度低）。
   - **M 組（INFO 陣列批次 `variants`）**：`dialogue[].variants: [{responses, conditions?, emotion?, sayOnce?}]` → 同 topic 掛多條 sibling INFO，各帶 `Random` flag、共用 parent 的 speaker gate + conditions + templates + identity，再各接自有 conditions。parent `responses` 空→純批次 header。正解 FCO 265 條 ambient commentary 痛點（條件模板那半上次已落地）。
   - 兩組 docs（SPEC-quests/SPEC-dialogue）、schema、CODE_MAP、roadmap all-findings-gaps 同步。
-  - ⚠ **待續尾巴**：① **zh-TW 鏡像待同步**（SPEC-quests 的 storageWrites 段 + SPEC-dialogue 的 variants/storageWrites 段 + html 重生）；② 編譯 storageWrites fragment 需 **PapyrusUtil .psc 上 header path**（主力機步驟，同 JContainers）；runtime 實機驗收非阻塞。
+  - **zh-TW 鏡像已同步**：SPEC-quests 補 storageWrites 段、SPEC-dialogue 補 variants + 「對選取做出反應」段，html 重生（spec-quests/spec-dialogue 兩頁）。
+  - ⚠ **剩唯一尾巴**：編譯 storageWrites fragment 需 **PapyrusUtil .psc 上 header path**（主力機步驟，同 JContainers）；runtime 實機驗收非阻塞。
 - **更早一次 session（2026-06-20，純離線大推進，~16 commit、774 測綠）**：一口氣推完一批 roadmap 離線功能 + zh-TW 鏡像全同步。
   - **zh-TW 鏡像全補**：SPEC-quests 同步（279→362）+ 補缺口（**新建 SPEC-distribution**、SPEC-worldspaces 補 4 bullet、SPEC-identities 查證已完整），SPEC-distribution 隨 D-group 擴成 7 框架全譯；html 重生。
   - **roadmap L 組**：`GetVMQuestVariable`/`GetVMScriptVariable` condition（讀 Papyrus property；code-pass 結論舊名 GetScriptVariable 不對）。
