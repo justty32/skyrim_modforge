@@ -260,10 +260,9 @@ iDetail=1
 }
 ```
 
-→ 寫出 `MyFlmPatch_FLM.ini`：
+→ 寫出 `MyFlmPatch_FLM.ini`（無區段頭——檔首若有 `[General]`，FLM v1.8.1 會 log `Config file is empty` 並跳過整檔；2026-06-20 實機驗證）：
 
 ```ini
-[General]
 Filter = HFFilter|+HearthFires.esm
 Alias = GiftLists|BYOH...GiftChildMale, BYOH...GiftChildFemale
 Group = Dolls|BYOHChefDoll, BYOHDBDoll

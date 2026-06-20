@@ -128,7 +128,7 @@
 | Asset | `assets/papyrus/ModForgeMCM.psc` | 可重用空子類 `extends MCM_ConfigBase`；一顆 `.pex` 服務所有 MCM 選單（差別只在 VMAD `ModName`）。**編譯需 MCM Helper+SkyUI SDK headers**（非香草）：供 `MCM_ConfigBase.psc`/`SKI_*.psc` 進 header cache 再編；`.pex` embed 進 CLI、gitignore |
 | Validate | `Generator.Validate.Mcm.cs` | control type / sourceType 白名單、value control 需 `key:Section` id、slider 需 min+max、stepper/enum 需 options；**PropertyValue\*/action 為 MVP 範圍外，擋掉**（`ValidateMcmConfigs`）|
 | Spec | `Spec.FormListInject.cs` | DTO：`FormListInjectSpec`/`FlmFilterSpec`/`FlmNamedListSpec`/`FlmCollectionSpec`/`FlmEntrySpec`（ModSpec list `formListInjects` 在 `Spec.cs`）|
-| Core | `FlmGen.cs` | `FormListInjectSpec`→`<file>_FLM.ini`（`Generate`）；`[General]` 後先 emit Filter/Alias/Group/Collection 定義、再 FormList 操作行；filter ref 自動補 `#`|
+| Core | `FlmGen.cs` | `FormListInjectSpec`→`<file>_FLM.ini`（`Generate`）；**無區段頭**（檔首 `[General]` 會讓 FLM v1.8.1 判 `Config file is empty` 跳過整檔，IN-GAME 2026-06-20）；先 emit Filter/Alias/Group/Collection 定義、再 FormList 操作行；filter ref 自動補 `#`|
 | Validate | `Generator.Validate.Flm.cs` | file/target 非空、entry 需 forms、collection formType 白名單、filter 需 conditions（`ValidateFormListInjects`）|
 | Spec | `Spec.KidDistribution.cs` | DTO：`KidDistributionSpec`/`KidEntrySpec`（`kidDistributions`）|
 | Core | `KidGen.cs` | `→<file>_KID.ini`；`Keyword = kw\|type\|filters\|traits\|chance` 尾段 NONE 修剪（仿 SPID）|

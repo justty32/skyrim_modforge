@@ -75,8 +75,9 @@ DragonbornSpiderCrafting = <Recipe>|<Result>|<Filter>
 
 ### 完整範例 ini
 
+> ⚠️ **更正（IN-GAME 2026-06-20）**：下方原本的 `[General]` 區段頭為臆測且**有害**——FLM v1.8.1 見到它會判 `Config file is empty` 跳過整檔。實際 config 無區段頭，直接從定義/操作行開始。
+
 ```ini
-[General]
 ; 定義別名（多個目標 FLST 合一）
 Alias = TestAlias|0x8246~HearthFires.esm, 0x03008246~HearthFires.esm
 

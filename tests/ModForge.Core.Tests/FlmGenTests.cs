@@ -16,8 +16,10 @@ public class FlmGenTests
             Entries = { new FlmEntrySpec { Target = "BYOHGiftList", Forms = { "0x8246~HearthFires.esm" } } },
         });
         Assert.Equal("MyMod_FLM.ini", f.RelPath);   // mod root (= Data/), not under SKSE/
-        Assert.Contains("[General]", f.Content);
-        Assert.Contains("FormList = BYOHGiftList|0x8246~HearthFires.esm", f.Content);
+        // NO section header: a leading [General] makes FLM v1.8.1 log "Config file is empty" and skip
+        // the whole file (IN-GAME 2026-06-20). FLM wants a flat list of `Key = ...` lines.
+        Assert.DoesNotContain("[General]", f.Content);
+        Assert.StartsWith("FormList = BYOHGiftList|0x8246~HearthFires.esm", f.Content);
     }
 
     [Fact]

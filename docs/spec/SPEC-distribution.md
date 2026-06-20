@@ -216,10 +216,10 @@ that reference them.
 }
 ```
 
-→ writes `MyFlmPatch_FLM.ini`:
+→ writes `MyFlmPatch_FLM.ini` (no section header — a leading `[General]` makes FLM v1.8.1 log
+`Config file is empty` and skip the whole file; verified in-game 2026-06-20):
 
 ```ini
-[General]
 Filter = HFFilter|+HearthFires.esm
 Alias = GiftLists|BYOH...GiftChildMale, BYOH...GiftChildFemale
 Group = Dolls|BYOHChefDoll, BYOHDBDoll

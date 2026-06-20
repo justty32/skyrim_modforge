@@ -1,0 +1,13 @@
+{
+  "_comment": "FormList Manipulator (FLM, D-4) LOG-VERIFIED test. Appends the vanilla IronSword (0x012EB7~Skyrim.esm) to the vanilla FormList WerewolfDispelList at runtime, no esp override. Harmless target (only read in werewolf context; an extra weapon form there does nothing visible) chosen purely to prove the FLM write applies -> acceptance = the FLM debug log line. Requires FormListManipulator.dll + an empty Data/FormListManipulator_DEBUG.ini to turn on verbose logging. FLST + form verified against Skyrim.esm via `find`.",
+  "pluginName": "MyFlmTest.esp",
+  "formListInjects": [
+    {
+      "file": "MyFlmTest",
+      "entries": [
+        { "_comment": "Add IronSword to WerewolfDispelList (target by EditorID, form by FormID~plugin).",
+          "target": "WerewolfDispelList", "forms": ["0x012EB7~Skyrim.esm"] }
+      ]
+    }
+  ]
+}

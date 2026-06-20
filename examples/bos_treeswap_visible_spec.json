@@ -1,0 +1,21 @@
+{
+  "_comment": "Base Object Swapper (BOS, D-6) VISIBLE in-game test. Swaps all 5 vanilla pine-forest trees -> a random aspen, both pure Skyrim.esm forms (no esp content needed). The central pine belt (Riverwood/Whiterun/Falkreath/Helgen) turns into golden Rift-style aspen forest -> unmistakable. BOS reads Data/MyTreeSwap_SWAP.ini regardless of the esp; the esp just carries the Skyrim.esm master. Requires po3_BaseObjectSwapper.dll. FormIDs verified against Skyrim.esm via `find`. Note: distant tree LOD billboards stay pine until you get close -> judge by the trees NEAR you.",
+  "pluginName": "MyTreeSwap.esp",
+  "objectSwaps": [
+    {
+      "file": "MyTreeSwap",
+      "groups": [
+        {
+          "_comment": "Every base pine -> a random pick from the 6 aspen variants (BOS random-picks across a comma swap list).",
+          "entries": [
+            { "base": "0x01306D~Skyrim.esm", "swaps": ["0x06A9E6~Skyrim.esm", "0x06C9D5~Skyrim.esm", "0x06C9D4~Skyrim.esm", "0x05FADA~Skyrim.esm", "0x07614B~Skyrim.esm", "0x07614A~Skyrim.esm"] },
+            { "base": "0x018A02~Skyrim.esm", "swaps": ["0x06A9E6~Skyrim.esm", "0x06C9D5~Skyrim.esm", "0x06C9D4~Skyrim.esm", "0x05FADA~Skyrim.esm", "0x07614B~Skyrim.esm", "0x07614A~Skyrim.esm"] },
+            { "base": "0x04B016~Skyrim.esm", "swaps": ["0x06A9E6~Skyrim.esm", "0x06C9D5~Skyrim.esm", "0x06C9D4~Skyrim.esm", "0x05FADA~Skyrim.esm", "0x07614B~Skyrim.esm", "0x07614A~Skyrim.esm"] },
+            { "base": "0x04FBB0~Skyrim.esm", "swaps": ["0x06A9E6~Skyrim.esm", "0x06C9D5~Skyrim.esm", "0x06C9D4~Skyrim.esm", "0x05FADA~Skyrim.esm", "0x07614B~Skyrim.esm", "0x07614A~Skyrim.esm"] },
+            { "base": "0x051126~Skyrim.esm", "swaps": ["0x06A9E6~Skyrim.esm", "0x06C9D5~Skyrim.esm", "0x06C9D4~Skyrim.esm", "0x05FADA~Skyrim.esm", "0x07614B~Skyrim.esm", "0x07614A~Skyrim.esm"] }
+          ]
+        }
+      ]
+    }
+  ]
+}

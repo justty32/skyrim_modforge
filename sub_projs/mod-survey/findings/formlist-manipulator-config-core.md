@@ -30,8 +30,9 @@ FLM 自動處理 light plugin（ESL/ESPFE）與 standard plugin 的 FormID，不
 
 ### 主操作行：FormList
 
+> ⚠️ **更正（IN-GAME 2026-06-20）**：**不要**寫 `[General]` 區段頭。FLM v1.8.1 的 config 解析器吃**裸的 `Key = ...` 行清單**；一旦檔首有 `[General]`，FLM 會 log `Config file is empty` 並**整檔跳過**（實機抓到，ModForge `FlmGen` 已移除）。真實能跑的 config（如 `ImGladYoureHere_FLM.ini`）皆無區段頭。下面示例原本的 `[General]` 為早期臆測，已誤。
+
 ```ini
-[General]
 FormList = <FList>|<Form>, <Form>, *<FormList>, #<Group>, #<Collection>|<Filter>
 ```
 

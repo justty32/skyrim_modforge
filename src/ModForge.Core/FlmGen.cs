@@ -4,15 +4,17 @@ namespace ModForge;
 
 // Generates a FormList Manipulator config as a loose file at the mod folder root:
 //   <File>_FLM.ini   (FLM scans Data/ for every *_FLM.ini at start-up)
-// Pure function (no I/O) — package writes the OarFile. Line format verified against FLM v1.8.1
-// (sub_projs/mod-survey/findings/formlist-manipulator-config-core.md / -advanced.md). Definitions
-// (Filter/Alias/Group/Collection) are emitted before the FormList operation lines that reference them.
+// Pure function (no I/O) — package writes the OarFile. Line format verified IN-GAME against FLM
+// v1.8.1 (sub_projs/mod-survey/findings/formlist-manipulator-config-core.md / -advanced.md).
+// Definitions (Filter/Alias/Group/Collection) are emitted before the FormList operation lines that
+// reference them. NO section header: FLM parses a flat list of `Key = ...` lines; a leading
+// `[General]` makes FLM log "Config file is empty" and SKIP the whole file (IN-GAME 2026-06-20; the
+// earlier doc-inferred `[General]` was wrong — real working configs like ImGladYoureHere_FLM.ini have none).
 public static class FlmGen
 {
     public static OarGen.OarFile Generate(FormListInjectSpec s)
     {
         var sb = new StringBuilder();
-        sb.Append("[General]\n");
 
         foreach (var f in s.Filters)
             sb.Append("Filter = ").Append(f.Name).Append('|').Append(Join(f.Conditions)).Append('\n');

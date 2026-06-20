@@ -1,0 +1,13 @@
+{
+  "_comment": "AnimObject Swapper (AOS, D-7) VISIBLE test. Swaps the tavern drinking tankard (AnimObjectTankard 0x097274) for a bucket (AnimObjectBucket 0x0B18F0) -> NPCs drinking in any tavern hold a BUCKET instead of a mug. Unmistakable and harmless. Swaps the held prop, not the animation. Requires AnimObjectSwapper.dll. Both ANIO verified against Skyrim.esm via `find`. FormID~plugin form (no editorID-cache dependency).",
+  "pluginName": "MyAnioTest.esp",
+  "animObjectSwaps": [
+    {
+      "file": "MyAnioTest",
+      "entries": [
+        { "_comment": "Anyone doing a drink idle holds a bucket instead of the tankard.",
+          "base": "0x097274~Skyrim.esm", "swaps": ["0x0B18F0~Skyrim.esm"] }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "_comment": "KID (Keyword Item Distributor, D-5) LOG-VERIFIED test. Creates a NEW keyword ModForgeKidTest and distributes it to every Weapon carrying the vanilla WeapMaterialIron keyword (all iron weapons). KID has no visible effect, but writes a count to its log -> acceptance = the log line. Requires KID.dll (po3 Keyword Item Distributor). Filter keyword + IronSword verified against Skyrim.esm via `find`.",
+  "pluginName": "MyKidTest.esp",
+  "kidDistributions": [
+    {
+      "file": "MyKidTest",
+      "entries": [
+        { "_comment": "New KYWD -> every iron weapon. Filter by the vanilla material keyword for a precise set.",
+          "keyword": "ModForgeKidTest", "type": "Weapon", "filters": ["WeapMaterialIron"] }
+      ]
+    }
+  ]
+}
