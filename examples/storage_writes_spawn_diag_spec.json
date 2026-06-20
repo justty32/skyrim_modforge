@@ -1,0 +1,31 @@
+{
+  "pluginName": "ModForgeSWSpawnDiag.esp",
+  "esl": false,
+  "_": "storageWrites isolation, piggybacked on the PROVEN spawn isolation harness (spawn_isolation_test.json — confirmed in-game to load and to fire on setstage). Non-ESL, references Skyrim.esm (so it has a master), StartGameEnabled. Stage 10 BOTH spawns 3 bandits AND runs the three storageWrites. `setstage MFSWSpawn_Q 10` re-fires it. Outcomes: (a) bandits drop AND the MFSW notification shows -> storageWrites works end-to-end; (b) bandits drop but NO MFSW notification -> storageWrites/PapyrusUtil is the problem; (c) neither -> MO2 isn't deploying this esp at all (since this esp's structure is proven to load). The compiled MFSWSpawn_Q_Stages.pex carries a TEST-HARNESS readback (Debug.Notification of the values read back via StorageUtil.Get*) on top of the generated writes. LCharBanditMeleeAny 0x03DECD verified vs Skyrim.esm.",
+  "quests": [
+    {
+      "editorId": "MFSWSpawn_Q",
+      "name": "StorageWrites Spawn Diag",
+      "startGameEnabled": true,
+      "stages": [
+        {
+          "index": 10,
+          "startUpStage": true,
+          "logEntry": "StorageWrites spawn diag running.",
+          "storageWrites": [
+            { "key": "MFSW_castCount", "target": "player", "int": 1, "delta": true },
+            { "key": "MFSW_castMagicka", "target": "player", "float": 0.5, "delta": true },
+            { "key": "MFSW_lastCast", "target": "player", "str": "cast happened" }
+          ]
+        }
+      ],
+      "spawn": {
+        "form": "Skyrim.esm:0x0003DECD",
+        "count": 3,
+        "minDistance": 400,
+        "maxDistance": 900,
+        "snapToNavmesh": true
+      }
+    }
+  ]
+}
