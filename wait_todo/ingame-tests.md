@@ -15,15 +15,6 @@
 
 ## 待測（active）
 
-- **【Idea #20 Phase 1】in-world 技能樹 — ✅ 零外部依賴 standalone 版（2026-06-21，使用者明確不想裝 Campfire/Frostfall）**：交付 `~/skyrim_mods/mine/ModForgeSkillTree.zip`（FLAT：esp 在根 + `Scripts/MFSkillNode.pex`+source）。spec＝`examples/inworld_skill_tree_standalone_spec.json`，腳本＝`examples/MFSkillNode.psc`（已用 native compiler 對 vanilla header cache 編綠）。**只依賴 Skyrim.esm**。
-  - 不是 Campfire 那種營火 radial menu，而是**最直白的 in-world 樹**：3 顆漂浮水晶節點（vanilla `WispCrystal01.nif`）擺在**白漫酒館 Bannered Mare**（vanilla cell 0x01605E override，非自建房間），各掛我自己寫的 `MFSkillNode` 腳本（純 vanilla 型別）。點擊 → gate 檢查（前置節點 + 點數）→ 給一個自訂 Fortify ability + 扣 1 點。Forged Resolve（root，永遠可點）/ Forged Vigor / Forged Mastery（各給 Fortify Health/Stamina/CarryWeight）。MFSkill_PointsAvail 預設 3。
-  - **改放 Bannered Mare 的原因（2026-06-21 二修）**：第一版放自建內景 cell `coc MFSkillTreeRoom`，使用者回報**完全沒反應**。改放 vanilla cell → `coc WhiterunBanneredMare` 是遊戲內建、100% 會傳送 + 有地板有燈，**同時當診斷**：若傳送進酒館卻沒看到水晶＝plugin 沒載入（非 coc 問題）。座標 (-119/-49/21, -504, 150) 取自已出貨 `interior_spec.json` 的確認開放地板點，橫排在眼睛高度（不用抬頭）。
-  - **結構已全驗**（dump 輸出 esp）：**masters 只有 Skyrim.esm（零 Campfire/Frostfall）**；cell 0x01605E override 帶 3 個節點 ref；MFSkillNode 屬性全解析無 null；gating 鏈正確（Node0 無 prereq、Node1.prereq=N0_Rank、Node2.prereq=N1_Rank）；3 個 Ability/ConstantEffect/Self spell 包對應 ValueModifier MGEF。
-  - **怎麼測**：裝 zip+**確認 MO2 右欄勾選啟用** → 進遊戲（既有存檔即可）→ console `coc WhiterunBanneredMare` → 一定傳送進酒館 → **環顧找 3 顆並排漂浮發光水晶**（約眼睛高度）→ 準心對**最左**那顆（Forged Resolve）按 [E] → 跳通知「Learned: Forged Resolve — 2 point(s) left」+ Magic>Active Effects 出現 Fortify Health → 中間、右邊依序。**先別點最左、直接點中/右 → 應跳「Locked. Learn the node below it first.」**（驗 gating）。
-  - **三種結果**：① 看得到水晶 + 可點 + 學到 ability + gating 正確 → Phase 1 過，「JSON spec → 可點 in-world 節點樹 + 自編腳本 + 給效果」整條成立。② **傳送進酒館了但沒半顆水晶** → plugin 沒載入：查 MO2 右欄 plugin 有沒有勾、是不是 ESL 載入位置、`help "Forged Resolve" 4` 看找不找得到 SPEL（找不到＝沒載）。③ 水晶在但點了沒反應/CTD → 回報我 + `Papyrus.0.log`。
-  - **快速隔離**：console `getglobalvalue MFSkill_N0_Rank`（點前 0、點後 1）、`player.getav Health`（學 Resolve 後 +50）。
-  - **備註**：Campfire radial-menu 版（`examples/inworld_skill_tree_spec.json`）留在 repo 當 Phase 3 設計範本，不交付。
-
 - **VNML 法線效果（2026-06-16）— 已自驗修正，下面只剩「想看再看」的選配確認**：axis/編碼/尺度已對 vanilla Tamriel LAND 逐 byte 驗過（修了三個 bug，見 SESSION-LOG），不必硬測。新 zip 已交付 `~/skyrim_mods/mine/HeightmapDemo.zip`（FLAT）。**若你某次順手進遊戲**：進 HeightmapDemo worldspace 走坡面，背光側偏暗、向光偏亮、平順漸層即正常——若看到整片黑塊／詭異反光／上下顛倒陰影再回報（理論上不會）。
 
 - **Sofia × VIGILANT 第一幕（2026-06-14）** — 兩版交付 `~/skyrim_mods/mine/`：`SofiaVigilantAct1.zip`（v1 對話+語音）、`SofiaVigilantAct1v2.zip`（v2 +PlayIdle 動作）。spec＝`examples/sofia_vigilant_act1{,_v2}.json`，臺詞＝`sub_projs/sofia-patch/vigilant-screenplay/act1-警戒者.md`。
