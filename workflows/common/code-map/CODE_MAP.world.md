@@ -22,6 +22,10 @@
 | `examples/showcase-multi.json` | 多功能 showcase（Light + scene headtrack + SitTarget，一包一次測）|
 | `examples/lighting.json` | 明亮室內：自訂 LGTM + IMGS + CELL 逐欄光照（含 DALC）|
 | `examples/weather_bright.json` | 室外天氣 IMGS 調色：自訂 IMGS + Weather `imageSpaces.default` 填全 ToD |
+| `examples/skill_tree_spec.json` | **in-world 技能樹 generator**（`skillTrees:` 高階 macro，**這是正規用法**）IN-GAME CONFIRMED |
+| `examples/inworld_skill_tree_standalone_spec.json` | 同結果**手刻低階版**（直接寫 activators/placements/scripts；Phase 1 實機驗證範本，可對照 generator 展開出什麼）|
+| `examples/inworld_skill_tree_spec.json` | Campfire-radial-menu 路線設計範本（**不交付、需裝 Campfire**；留作未來 radial 版參考）|
+| `examples/assets/skilltree/` | 技能樹美術 kit：Campfire 星/線 nif（loose）+ 9 個 vanilla 貼圖；spec `assets` 帶上 |
 
 ---
 
@@ -48,6 +52,7 @@
 | `PlacementSpecFieldsTests.cs` | Scale(XSCL) / InitiallyDisabled(flag) / EnableParent(XESP) / Lock(XLOC) / Ownership(XOWN) / Count(XCNT) build + validate |
 | `LightTests.cs` | 自訂 Light（LIGT）color/radius/fade/flags build + validate |
 | `LightingTests.cs` | LGTM/IMGS build + CELL XCLL inherit + validate guardrails |
+| `SkillTreeTests.cs` | `skillTrees:` macro-expansion（points/rank GLOB、node+line ACTI、垂直堆疊 placement、line 中點+rot+scale、gating 鏈 prereq/downLine、root 無 prereq、idempotent guard）+ build（temp refs、node 掛 MFSkillNode）+ validate（id 唯一/cell/name/ability 必填）|
 
 ---
 
