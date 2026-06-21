@@ -1,6 +1,7 @@
 Scriptname MFSkillNode extends ObjectReference
 { ModForge self-contained in-world skill node. Click the node to learn its ability;
-  gated on a prerequisite node. ZERO external-mod dependency — only vanilla types. }
+  gated on a prerequisite node. Lights up (OwnedWild) when learned and lights its
+  connector line (Unlock). ZERO external-mod dependency — only vanilla types. }
 
 Spell property nodeAbility auto
 { The ability spell granted to the player when this node is learned. }
@@ -16,6 +17,20 @@ GlobalVariable property pointsGlobal auto
 
 String property nodeName = "this node" auto
 { Display name used in the on-screen notifications. }
+
+ObjectReference property downLine auto
+{ Optional: the connector-line ref between this node and its prerequisite. Plays "Unlock"
+  (lights up) when this node is learned. Leave UNSET on a root node. }
+
+; Keep the learned visual after a cell reload: replay the lit animations when the 3D loads.
+Event OnLoad()
+    if rankGlobal.GetValueInt() >= 1
+        PlayAnimation("OwnedWild")
+        if downLine
+            downLine.PlayAnimation("Unlock")
+        endIf
+    endIf
+EndEvent
 
 Event OnActivate(ObjectReference akActionRef)
     if akActionRef != Game.GetPlayer()
@@ -36,5 +51,9 @@ Event OnActivate(ObjectReference akActionRef)
     Game.GetPlayer().AddSpell(nodeAbility, false)
     rankGlobal.SetValueInt(1)
     pointsGlobal.SetValueInt(pointsGlobal.GetValueInt() - 1)
-    Debug.Notification("Learned: " + nodeName + " — " + pointsGlobal.GetValueInt() + " point(s) left")
+    PlayAnimation("OwnedWild")
+    if downLine
+        downLine.PlayAnimation("Unlock")
+    endIf
+    Debug.Notification("Learned: " + nodeName + " - " + pointsGlobal.GetValueInt() + " point(s) left")
 EndEvent

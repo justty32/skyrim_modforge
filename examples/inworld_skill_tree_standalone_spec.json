@@ -43,7 +43,9 @@
   "activators": [
     { "editorId": "MFSkill_Node0", "name": "Forged Resolve", "model": "campfire\\_camp_intperkstars01.nif" },
     { "editorId": "MFSkill_Node1", "name": "Forged Vigor",   "model": "campfire\\_camp_intperkstars01.nif" },
-    { "editorId": "MFSkill_Node2", "name": "Forged Mastery", "model": "campfire\\_camp_intperkstars01.nif" }
+    { "editorId": "MFSkill_Node2", "name": "Forged Mastery", "model": "campfire\\_camp_intperkstars01.nif" },
+    { "editorId": "MFSkill_Line01", "model": "campfire\\_camp_intperkline01.nif", "_": "connector Resolve->Vigor; dim until the upper node is learned, then plays Unlock" },
+    { "editorId": "MFSkill_Line12", "model": "campfire\\_camp_intperkline01.nif", "_": "connector Vigor->Mastery" }
   ],
 
   "_cells_removed": "No custom cell — we place into the VANILLA Whiterun Bannered Mare (Skyrim.esm:0x01605E) so `coc WhiterunBanneredMare` is guaranteed to teleport (vanilla cell + real floor + lighting). The two floor coords below (-119,-504,68 / -49,-504,68) are from the shipped interior_spec.json example, confirmed-open floor.",
@@ -54,7 +56,13 @@
     { "base": "MFSkill_Node1", "editorId": "MFSkill_Node1Ref", "cell": "Skyrim.esm:0x01605E",
       "position": { "x": -49, "y": -504, "z": 175 }, "_": "middle star" },
     { "base": "MFSkill_Node2", "editorId": "MFSkill_Node2Ref", "cell": "Skyrim.esm:0x01605E",
-      "position": { "x": -49, "y": -504, "z": 240 }, "_": "top star" }
+      "position": { "x": -49, "y": -504, "z": 240 }, "_": "top star" },
+
+    { "base": "MFSkill_Line01", "editorId": "MFSkill_Line01Ref", "cell": "Skyrim.esm:0x01605E",
+      "position": { "x": -49, "y": -504, "z": 142 }, "rotation": { "x": 90, "y": 0, "z": 180 },
+      "_": "connector at the midpoint between Node0 and Node1; rotation = Frostfall's vertical-line value (pitch 90 + yaw 180). Orientation is the one part not verifiable offline — may need a tweak." },
+    { "base": "MFSkill_Line12", "editorId": "MFSkill_Line12Ref", "cell": "Skyrim.esm:0x01605E",
+      "position": { "x": -49, "y": -504, "z": 207 }, "rotation": { "x": 90, "y": 0, "z": 180 } }
   ],
 
   "scripts": [
@@ -79,7 +87,8 @@
         { "name": "rankGlobal",   "type": "object", "objectEditorId": "MFSkill_N1_Rank" },
         { "name": "prereqGlobal", "type": "object", "objectEditorId": "MFSkill_N0_Rank" },
         { "name": "pointsGlobal", "type": "object", "objectEditorId": "MFSkill_PointsAvail" },
-        { "name": "nodeName",     "type": "string", "str": "Forged Vigor" }
+        { "name": "nodeName",     "type": "string", "str": "Forged Vigor" },
+        { "name": "downLine",     "type": "object", "objectEditorId": "MFSkill_Line01Ref" }
       ]
     },
     {
@@ -91,7 +100,8 @@
         { "name": "rankGlobal",   "type": "object", "objectEditorId": "MFSkill_N2_Rank" },
         { "name": "prereqGlobal", "type": "object", "objectEditorId": "MFSkill_N1_Rank" },
         { "name": "pointsGlobal", "type": "object", "objectEditorId": "MFSkill_PointsAvail" },
-        { "name": "nodeName",     "type": "string", "str": "Forged Mastery" }
+        { "name": "nodeName",     "type": "string", "str": "Forged Mastery" },
+        { "name": "downLine",     "type": "object", "objectEditorId": "MFSkill_Line12Ref" }
       ]
     }
   ]
