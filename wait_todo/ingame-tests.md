@@ -15,6 +15,7 @@
 
 ## 待測（active）
 
+- **【Idea #20 Phase 1 視覺修正】漂浮星星重測（2026-06-21）**：核心 pipeline 已實機確認（可點/gating/給 ability），這次只改**視覺**——把節點從掉地上的水晶換成 Campfire 的天賦星 `_camp_intperkstars01.nif`（loose 打包進 mod，不裝 Campfire；貼圖全 vanilla），3 顆**垂直漂浮**排列。重新交付 `~/skyrim_mods/mine/ModForgeSkillTree.zip`（FLAT，多了 `Meshes/campfire/*.nif`）。**怎麼測**：重裝 zip → `coc WhiterunBanneredMare` → 應看到 **3 顆漂浮的發光星星疊成一直行**（不再掉地上）→ 點擊行為同前（最下面那顆先可點）。**只要確認：星星有漂浮 + 外觀是星不是水晶 + 仍可點。** 若星星變紫/隱形＝貼圖沒解析到（回報我）；若還是掉地上＝那顆星 mesh 的 havok 也是 dynamic（回報我，改抽碰撞）。
 - **VNML 法線效果（2026-06-16）— 已自驗修正，下面只剩「想看再看」的選配確認**：axis/編碼/尺度已對 vanilla Tamriel LAND 逐 byte 驗過（修了三個 bug，見 SESSION-LOG），不必硬測。新 zip 已交付 `~/skyrim_mods/mine/HeightmapDemo.zip`（FLAT）。**若你某次順手進遊戲**：進 HeightmapDemo worldspace 走坡面，背光側偏暗、向光偏亮、平順漸層即正常——若看到整片黑塊／詭異反光／上下顛倒陰影再回報（理論上不會）。
 
 - **Sofia × VIGILANT 第一幕（2026-06-14）** — 兩版交付 `~/skyrim_mods/mine/`：`SofiaVigilantAct1.zip`（v1 對話+語音）、`SofiaVigilantAct1v2.zip`（v2 +PlayIdle 動作）。spec＝`examples/sofia_vigilant_act1{,_v2}.json`，臺詞＝`sub_projs/sofia-patch/vigilant-screenplay/act1-警戒者.md`。
