@@ -54,11 +54,14 @@ public static partial class Generator
 
                 spec.Globals.Add(new GlobalSpec { EditorId = rankGlobal, Type = "short", Value = 0 });
                 spec.Activators.Add(new ActivatorSpec { EditorId = nodeEd, Name = n.Name, Model = nodeModel });
+                // NB: NOT persistent — the IN-GAME-CONFIRMED hand-authored tree placed these as temporary
+                // refs (the only state that must persist is the rank GLOBs, which are; the lit visual is
+                // re-applied by MFSkillNode.OnLoad). Persistent scripted refs were the one structural diff
+                // vs the confirmed-good build, so keep parity.
                 spec.Placements.Add(new PlacementSpec
                 {
                     Base = nodeEd, EditorId = nodeRef, Cell = st.Cell,
                     Position = new Vec3 { X = st.Origin.X, Y = st.Origin.Y, Z = z },
-                    Persistent = true,
                 });
 
                 string downLineRef = "";
@@ -76,7 +79,6 @@ public static partial class Generator
                         Position = new Vec3 { X = st.Origin.X, Y = st.Origin.Y, Z = midZ },
                         Rotation = new Vec3 { X = 90f, Y = 0f, Z = 180f },
                         Scale = st.Spacing / SkillLineNativeSpacing,
-                        Persistent = true,
                     });
                 }
 

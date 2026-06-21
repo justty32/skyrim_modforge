@@ -64,7 +64,7 @@ public class SkillTreeTests
         Assert.Equal(132.5f, line1.Position.Z);          // midpoint between A(100) and B(165)
         Assert.Equal(90f, line1.Rotation.X);             // Frostfall vertical-line rotation
         Assert.Equal(180f, line1.Rotation.Z);
-        Assert.True(nodeA.Persistent);
+        Assert.False(nodeA.Persistent);   // temporary refs — matches the IN-GAME-CONFIRMED hand-authored tree
     }
 
     [Fact]
