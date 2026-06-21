@@ -1,0 +1,45 @@
+{
+  "pluginName": "ModForgeSkillTreeGen.esp",
+  "esl": true,
+
+  "_comment": "Idea #20 Phase 3 — the `skillTrees:` GENERATOR. This whole tree (3 floating clickable star nodes + connector lines + per-node rank globals + points pool + MFSkillNode scripts wiring gate/learn/light-up) is produced from the compact `skillTrees` block below; the generator macro-expands it into the low-level activators/placements/globals/scripts. Compare examples/inworld_skill_tree_standalone_spec.json (the same result hand-authored). Only Skyrim.esm is a master. ART: the default star/line meshes are bundled loose via `assets` (no Campfire install). TEST: package, install, `coc WhiterunBanneredMare`, click the bottom star. MVP = vertical linear chain (branching is a future extension).",
+
+  "assets": "assets/skilltree",
+
+  "magicEffects": [
+    { "editorId": "MFGen_FortifyHealthEff",  "name": "Forged Resolve",
+      "description": "Your body is hardened. Fortifies Health.",
+      "archetype": "ValueModifier", "actorValue": "Health",  "castType": "ConstantEffect", "targetType": "Self", "baseCost": 0 },
+    { "editorId": "MFGen_FortifyStaminaEff", "name": "Forged Vigor",
+      "description": "Your endurance deepens. Fortifies Stamina.",
+      "archetype": "ValueModifier", "actorValue": "Stamina", "castType": "ConstantEffect", "targetType": "Self", "baseCost": 0 },
+    { "editorId": "MFGen_FortifyCarryEff",   "name": "Forged Mastery",
+      "description": "You bear more with ease. Fortifies Carry Weight.",
+      "archetype": "ValueModifier", "actorValue": "CarryWeight", "castType": "ConstantEffect", "targetType": "Self", "baseCost": 0 }
+  ],
+
+  "spells": [
+    { "editorId": "MFGen_Node0Ability", "name": "Forged Resolve", "spellType": "Ability", "castType": "ConstantEffect", "targetType": "Self",
+      "effects": [ { "magicEffect": "MFGen_FortifyHealthEff", "magnitude": 50, "area": 0, "duration": 0 } ] },
+    { "editorId": "MFGen_Node1Ability", "name": "Forged Vigor", "spellType": "Ability", "castType": "ConstantEffect", "targetType": "Self",
+      "effects": [ { "magicEffect": "MFGen_FortifyStaminaEff", "magnitude": 50, "area": 0, "duration": 0 } ] },
+    { "editorId": "MFGen_Node2Ability", "name": "Forged Mastery", "spellType": "Ability", "castType": "ConstantEffect", "targetType": "Self",
+      "effects": [ { "magicEffect": "MFGen_FortifyCarryEff", "magnitude": 100, "area": 0, "duration": 0 } ] }
+  ],
+
+  "skillTrees": [
+    {
+      "editorId": "MFForgeTree",
+      "name": "Forge Mastery",
+      "cell": "Skyrim.esm:0x01605E",
+      "origin": { "x": -49, "y": -504, "z": 110 },
+      "spacing": 65,
+      "startingPoints": 3,
+      "nodes": [
+        { "editorId": "Resolve", "name": "Forged Resolve", "ability": "MFGen_Node0Ability" },
+        { "editorId": "Vigor",   "name": "Forged Vigor",   "ability": "MFGen_Node1Ability" },
+        { "editorId": "Mastery", "name": "Forged Mastery", "ability": "MFGen_Node2Ability" }
+      ]
+    }
+  ]
+}

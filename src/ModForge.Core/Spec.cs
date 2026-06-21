@@ -97,7 +97,12 @@ public sealed class ModSpec
     public List<AnimObjectSwapSpec> AnimObjectSwaps { get; set; } = new(); // AOS <file>_ANIO.ini (loose; Spec.AnimObjectSwap.cs)
     public List<SkyPatcherSpec> SkyPatchers { get; set; } = new();       // SkyPatcher <recordType>/<file>.ini (loose; Spec.SkyPatcher.cs)
     public List<ConditionTemplateSpec> ConditionTemplates { get; set; } = new(); // named reusable CTDA blocks (M組; Spec.Dialogue.cs)
+    public List<SkillTreeSpec> SkillTrees { get; set; } = new(); // in-world clickable perk tree (Idea #20; Spec.SkillTree.cs) — macro-expands to globals/activators/placements/scripts
     public VoiceLineSpec? VoiceLine { get; set; } // global voice output settings
+
+    // Guard so the skillTree macro-expansion (Generator.ExpandSkillTrees) runs at most once per spec
+    // object even if Build is invoked twice in one process. Not serialized.
+    [System.Text.Json.Serialization.JsonIgnore] internal bool SkillTreesExpanded { get; set; }
     // External-resource pipeline (see docs/external_assets.md): a source directory whose
     // `Meshes/`, `Textures/`, `Sounds/` (and loose `.hkx`) sub-trees `package` copies next to
     // the .esp so the packaged mod is self-contained / MO2-ready. ModForge REFERENCES + BUNDLES

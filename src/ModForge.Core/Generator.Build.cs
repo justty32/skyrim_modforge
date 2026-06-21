@@ -19,6 +19,10 @@ public static partial class Generator
     /// </summary>
     public static BuildResult Build(ModSpec spec, ModKey outputKey, BuildOptions? options = null)
     {
+        // pass 0: macro-expand high-level sugar into low-level records BEFORE anything reads the spec
+        // (skillTrees → globals/activators/placements/scripts). Idempotent (guarded on the spec).
+        ExpandSkillTrees(spec);
+
         var ctx = new BuildContext(spec, outputKey, options);
 
         // --- pass 1: create every record (so all FormKeys exist before any ref is wired) ---

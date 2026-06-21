@@ -288,3 +288,56 @@ for all four ToD. No climate/worldspace assignment needed to test the visual res
 Worked example: `examples/weather_bright.json` (outdoor IMGS grading via `imageSpaces.default`).
 Cross-reference: see the indoor [lighting](#lighting) subsection above for LGTM / CELL / XCLL.
 
+
+---
+
+## in-world skill trees (`skillTrees`)
+
+A **clickable, in-world perk tree** — floating star nodes the player walks up to and activates to
+spend points and learn abilities, with prerequisite gating and lit-up visual feedback. **Zero
+external-mod dependency** (only `Skyrim.esm`); IN-GAME CONFIRMED. `skillTrees` is a high-level
+*macro*: the generator expands it into the low-level records (per-node rank globals, a shared points
+global, node + connector-line activators, their placements, and the `MFSkillNode` script wiring) —
+the same records a hand-authored tree would use.
+
+```jsonc
+"skillTrees": [
+  { "editorId": "MFForgeTree", "name": "Forge Mastery",
+    "cell": "Skyrim.esm:0x01605E",                 // where it lives (vanilla interior or in-spec cell)
+    "origin": { "x": -49, "y": -504, "z": 110 },   // world pos of the ROOT (bottom) node
+    "spacing": 65,                                  // vertical gap; 65 = the line mesh's native fit
+    "startingPoints": 3,                            // points the player starts with
+    "nodes": [                                      // ORDERED bottom→top; node[i] gated on node[i-1]
+      { "editorId": "Resolve", "name": "Forged Resolve", "ability": "MFGen_Node0Ability" },
+      { "editorId": "Vigor",   "name": "Forged Vigor",   "ability": "MFGen_Node1Ability" },
+      { "editorId": "Mastery", "name": "Forged Mastery", "ability": "MFGen_Node2Ability" }
+    ] }
+],
+"assets": "assets/skilltree"                        // bundle the star/line meshes (see below)
+```
+
+In-game: the player activates a node → if its prerequisite is owned and a point is available, the
+node's `ability` is added to the player, the star lights up, the connector line lights, and a point
+is spent. Re-activating a learned node, or one whose prerequisite isn't met, is refused with a
+notification.
+
+**Fields** (`skillTrees[]`): `editorId` (prefixes all generated ids), `name`, `cell` (in-spec
+interior editorId **or** vanilla `"<master>:0xFORMID"`), `origin` (Vec3, the root node's position),
+`spacing` (default 65), `pointsGlobal` (existing GLOB to drive the pool from elsewhere — empty
+auto-creates `<editorId>_Points` seeded with `startingPoints`), `startingPoints` (default 3),
+`nodeModel` / `lineModel` (Data-relative mesh overrides), and `nodes`.
+**Node** (`nodes[]`): `editorId` (unique in the tree), `name` (activate prompt + notification),
+`ability` (a SPEL ref — usually an in-spec `spells[]` ability, or vanilla — granted on learn).
+
+**Abilities are yours.** A node references an `ability` you define in `spells[]`/`magicEffects[]`
+(or a vanilla SPEL). The tree drives the *learning UX*; the *effect* is an ordinary ability.
+
+**Art (no Campfire install).** The default node/line meshes are Campfire's star/line nifs — but they
+are NOT a master dependency: bundle the kit (the two `.nif` + their all-vanilla textures) as loose
+files via `assets` (provided at `examples/assets/skilltree`). Override `nodeModel`/`lineModel` to use
+your own meshes. The `MFSkillNode.pex` (node behaviour) ships automatically with `package`.
+
+**MVP scope.** A **vertical linear chain** (nodes stacked, each gated on the one below, connected by
+vertical lines) — the IN-GAME-CONFIRMED layout. Branching / free 2-D layouts are a future extension
+(diagonal connector orientation needs calibration). Worked example: `examples/skill_tree_spec.json`
+(the generator) vs `examples/inworld_skill_tree_standalone_spec.json` (the same result hand-authored).

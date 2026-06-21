@@ -80,6 +80,23 @@
 
 ---
 
+## In-world Skill Trees 技能樹（Idea #20）
+→ **說明文件**：[SPEC-world.md § in-world skill trees](../../../docs/spec/SPEC-world.md#in-world-skill-trees-skilltrees) · memory `inworld-skill-tree-standalone-confirmed`
+
+零外部依賴的可點 in-world 養成樹。**macro-expansion** 架構：在 `Build()` pass-0 把高階 `skillTrees:` 展開成既有低階記錄（globals / node+line ACTI / placements / `scripts:` 的 MFSkillNode 掛載），重用所有既有 pass。IN-GAME CONFIRMED 2026-06-21（手刻版）。MVP = 垂直線性鏈。
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.SkillTree.cs` | `SkillTreeSpec`（editorId/name/cell/origin/spacing/pointsGlobal/startingPoints/nodeModel/lineModel）+ `SkillNodeSpec`（editorId/name/ability）|
+| Spec | `Spec.cs` | `ModSpec.SkillTrees` + `SkillTreesExpanded` 守衛旗標 |
+| Expand P0 | `Generator.SkillTrees.cs` | **`ExpandSkillTrees`**：每 tree → points GLOB + 每 node 的 rank GLOB / star ACTI / placement（垂直堆疊 origin+i*spacing）/ MFSkillNode script-attach（ability/rank/points/name + i>0 的 prereq+downLine）；每邊 → line ACTI + placement（中點、rot 90/0/180、scale=spacing/65）。常數 `SkillNodeScript`/`DefaultSkillNodeModel`/`DefaultSkillLineModel` |
+| Build | `Generator.Build.cs` | pass-0 呼叫 `ExpandSkillTrees(spec)`（在 `new BuildContext` 前）|
+| Validate | `Generator.Validate.SkillTrees.cs` | `ValidateSkillTrees`：tree/node editorId 唯一、cell/name/ability 必填、ability CheckRef、spacing>0 |
+| Papyrus | `assets/papyrus/MFSkillNode.psc` | 節點行為（extends ObjectReference）：OnActivate gate（prereq rank + points）→ AddSpell + PlayAnimation("OwnedWild") + downLine "Unlock" + 扣點；OnLoad 重播亮起（持久）。嵌入 CLI、`package` 在有 skillTree 時 `ShipEmbeddedPex("MFSkillNode.pex")` |
+| Art | `examples/assets/skilltree/` | Campfire 星/線 nif（loose 打包，非 master）+ 9 個 vanilla 貼圖；作者經 spec `assets` 帶上 |
+
+---
+
 ## Lights 自訂光源（LIGT）
 → **說明文件**：[SPEC-world.md § lights](../../../docs/spec/SPEC-world.md#lights--custom-light-sources-ligt)
 

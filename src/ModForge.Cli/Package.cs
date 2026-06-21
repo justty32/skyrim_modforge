@@ -185,6 +185,10 @@ internal static partial class Program
         if (spec.Quests.Any(q => q.Spawn is not null))
             ShipEmbeddedPex("MFDynamicSpawn.pex", "dynamic near-player spawn", "spawn quests won't spawn anything");
 
+        // In-world skill-tree node behaviour (Idea #20). One .pex serves every node of every tree.
+        if (spec.SkillTrees.Count > 0)
+            ShipEmbeddedPex("MFSkillNode.pex", "in-world skill-tree node", "skill-tree nodes won't respond to activation");
+
         if (spec.Identities.Any(idn => !string.IsNullOrWhiteSpace(idn.AcquireBook)))
             ShipEmbeddedPex("MFIdentityBook.pex", "identity-acquire book", "acquire books won't grant identities");
 

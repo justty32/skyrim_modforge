@@ -70,6 +70,17 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <!-- The reusable in-world skill-tree node .pex (extends ObjectReference; OnActivate gate-checks +
+       AddSpell + PlayAnimation "OwnedWild"/line "Unlock"; Idea #20). Embedded so `package` can drop it
+       into Scripts/ for any mod that declares a skillTree. Conditional: build succeeds without it;
+       `package` warns at runtime if missing. Compile it with:
+         dotnet run - - compile assets/papyrus/MFSkillNode.psc assets/papyrus/ -->
+  <ItemGroup Condition="Exists('..\..\assets\papyrus\MFSkillNode.pex')">
+    <EmbeddedResource Include="..\..\assets\papyrus\MFSkillNode.pex">
+      <LogicalName>MFSkillNode.pex</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
   <!-- The reusable dynamic near-player spawn .pex (extends Quest; OnInit spawns Count of SpawnForm
        around the player + snaps to navmesh). Embedded so `package` can drop it into Scripts/ for any
        mod whose quests declare `spawn`. Conditional: build succeeds without it; `package` warns at

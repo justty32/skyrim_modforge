@@ -585,6 +585,11 @@
       "type": "array",
       "items": { "$ref": "#/$defs/conditionTemplate" },
       "description": "Named, reusable CTDA blocks referenced by dialogue[].useConditionTemplates — share one gate set across many INFOs (e.g. ambient commentary). See docs/spec/SPEC-dialogue.md."
+    },
+    "skillTrees": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/skillTree" },
+      "description": "In-world clickable perk trees (Idea #20). Macro-expands into node/line activators + placements + rank/points globals + MFSkillNode scripts. Zero external-mod dependency. MVP = vertical linear chain. See docs/spec/SPEC-world.md."
     }
   },
   "additionalProperties": false,
@@ -593,6 +598,38 @@
       "type": "string",
       "minLength": 1,
       "description": "A reference: an in-spec editorId OR an external form '<master>:0xFORMID' (e.g. 'Skyrim.esm:0x013746' = NordRace). Discover FormIDs with the `find` command."
+    },
+    "skillTree": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["editorId", "cell", "nodes"],
+      "properties": {
+        "editorId": { "type": "string", "description": "Unique id; prefixes the generated node/line/global editorIds." },
+        "name": { "type": "string", "description": "Display name of the tree." },
+        "cell": { "$ref": "#/$defs/ref", "description": "Where to place the tree: an in-spec interior cell editorId OR a vanilla interior cell '<master>:0xFORMID' (e.g. Skyrim.esm:0x01605E = Whiterun Bannered Mare)." },
+        "origin": { "$ref": "#/$defs/vec3", "description": "World position of the ROOT (bottom) node in that cell; nodes stack upward in +Z." },
+        "spacing": { "type": "number", "default": 65, "description": "Vertical gap between nodes. 65 = the calibrated spacing where the default line mesh fits at scale 1.0; other values uniformly scale the line." },
+        "pointsGlobal": { "type": "string", "description": "Existing GLOB editorId for the point pool. Empty -> auto-create '<editorId>_Points' seeded with startingPoints." },
+        "startingPoints": { "type": "integer", "default": 3, "description": "Initial points when auto-creating the points global." },
+        "nodeModel": { "type": "string", "description": "Data-relative node mesh path. Empty -> bundled Campfire star (campfire\\_camp_intperkstars01.nif)." },
+        "lineModel": { "type": "string", "description": "Data-relative connector-line mesh path. Empty -> bundled Campfire line." },
+        "nodes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/skillNode" },
+          "description": "Ordered list (bottom->top). node[i] is gated on node[i-1]; node[0] is the always-available root."
+        }
+      }
+    },
+    "skillNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["editorId", "name", "ability"],
+      "properties": {
+        "editorId": { "type": "string", "description": "Unique within the tree." },
+        "name": { "type": "string", "description": "Shown on the activate prompt + learn notification." },
+        "ability": { "$ref": "#/$defs/ref", "description": "A SPEL (in-spec ability or vanilla) granted to the player when this node is learned." }
+      }
     },
     "persistKey": {
       "type": "string",
