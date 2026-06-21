@@ -61,4 +61,9 @@ public sealed class QuestAliasSpec
     public string Script { get; set; } = "";
     public string ScriptSource { get; set; } = "";
     public List<PropertySpec> ScriptProperties { get; set; } = new();
+    // AI packages that OVERRIDE this alias's actor while the alias is filled (the ReferenceAlias
+    // "Packages" tab / ALPS). Highest priority first. Each entry is an in-spec PACK editorId or a
+    // Plugin.esm:0xID. THIS is what actually drives a radiant escort/travel: the package record alone
+    // (even with a correct PackageTargetAlias) never runs unless it's listed on the actor's alias here.
+    public List<string> Packages { get; set; } = new();
 }

@@ -9,7 +9,7 @@
       "name": "Radiant Escort",
       "startGameEnabled": true,
       "aliases": [
-        { "name": "VIP", "_": "alias index 0 — the actor to escort. forced to HousecarlWhiterun (Lydia, Npc 0x0A2C8E) — a canonical escortable NPC; swap for your own in a real mod.", "fill": "forced:Skyrim.esm:0x0A2C8E" },
+        { "name": "VIP", "_": "alias index 0 — forced to HousecarlWhiterun (Lydia, Npc 0x0A2C8E). The `packages` list is the ALPS alias-override that actually DRIVES her: while this alias is filled she runs MFTravelToSafehouse (highest priority first), so she walks to the runtime-picked Safehouse location. WITHOUT this list the PACK record exists but never runs — the package's PackageTargetAlias/LocationFallback alone do nothing.", "fill": "forced:Skyrim.esm:0x0A2C8E", "packages": ["MFTravelToSafehouse"] },
         { "name": "Safehouse", "_": "alias index 1 — a Dungeon-type location picked at runtime via LocTypeDungeon keyword (0x0130DB).", "fill": "findMatchingLocation:Skyrim.esm:0x0130DB" }
       ]
     }

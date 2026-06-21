@@ -55,6 +55,8 @@ internal static partial class Program
                     Console.WriteLine($"      Location({locOther.GetType().Name})");
                 if (!a.ForcedReference.IsNull)
                     Console.WriteLine($"      ForcedReference={a.ForcedReference.FormKey}");
+                if (a.PackageData.Count > 0)
+                    Console.WriteLine($"      PackageData (ALPS alias-override packages): {string.Join(", ", a.PackageData.Select(p => p.FormKey.ToString()))}");
                 if (a.CreateReferenceToObject is { } cro)
                     Console.WriteLine($"      CreateReferenceToObject: Object={cro.Object.FormKey}");
                 if (a.FindMatchingRefFromEvent is { } fmr)

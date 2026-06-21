@@ -64,6 +64,27 @@ public class PackageAliasTargetTests
     }
 
     [Fact]
+    public void AliasPackages_AttachToAliasPackageData()
+    {
+        // The ALPS alias-override list — what actually DRIVES a radiant escort/travel. Byte-shape matches
+        // vanilla MS13 Camilla alias (PackageData = the per-alias AI package list). Without it the PACK
+        // record's PackageTargetAlias/LocationFallback never run.
+        var spec = new ModSpec
+        {
+            Quests = { new QuestSpec { EditorId = "Q", Name = "Q", StartGameEnabled = true,
+                Aliases = { new QuestAliasSpec { Name = "VIP", Fill = "forced:Skyrim.esm:0x000007",
+                    Packages = { "GoTo" } } } } },
+            Packages = { new PackageSpec { EditorId = "GoTo", Template = TravelTemplate, OwnerQuest = "Q",
+                Travel = new TravelSpec { Place = "Skyrim.esm:0x000007" } } },
+        };
+        var r = TestBuild.Ok(spec);
+        var alias = r.Mod.Quests.Single().Aliases.Single(a => a.Name == "VIP");
+        var pkg = Pkg(r, "GoTo");
+        var bound = Assert.Single(alias.PackageData);
+        Assert.Equal(pkg.FormKey, bound.FormKey);
+    }
+
+    [Fact]
     public void Location_Alias_RefForm_BindsAliasForReference()
     {
         // alias: (not aliasLoc:) on a location slot → AliasForReference (the alias holds a ref).

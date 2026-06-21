@@ -322,6 +322,7 @@ condition、ESL）。
 | Field | Default | Notes |
 |---|---|---|
 | `allowReserved` | `false` | 若目標 NPC 可能被另一個任務保留（`ReservesLocationOrReference`）則設為 `true`。沒有它，別名會填入失敗而任務不啟動。`uniqueActor` 會強制開啟它。 |
+| `packages` | `[]` | 當此別名被填入時**覆寫該別名 actor 的 AI** 的 package（`ReferenceAlias` 的「Packages」分頁 / ALPS，寫進 `QuestAlias.PackageData`），優先序高的在前。每項 = spec 內的 PACK editorId 或 `Plugin.esm:0xID`。**這才是真正驅動 radiant escort/travel 演出的東西**——光有 package record（即使 `PackageTargetAlias`/`LocationFallback` 都對）也不會跑，除非在這裡把它列進該 actor 的別名。byte 形狀對齊 vanilla `MS13` Camilla 別名。示範 `examples/radiant_package_spec.json`（VIP 別名 → `MFTravelToSafehouse` → Lydia 走向 runtime 挑中的 Safehouse 地點）。 |
 | `script` / `scriptSource` / `scriptProperties` | — | 將一個 Papyrus **別名腳本**附加到此別名（一個 `ReferenceAlias` 衍生的腳本，存放在任務的 `QuestAdapter.Aliases` VMAD 上，綁定到別名 ID）。它隨**填入該別名的任何 ref** 一同移動——包括 `createObject` 生成或 `findMatching` 比對到、任何 base-object 腳本都搆不到的 ref。經典用法是 `Event OnActivate(ObjectReference akActionRef)`：啟動該別名化的 ref 會執行它（例如呼叫 `MFStoryEventDispatch.Fire(...)` 以串接一個 story event）。`script` = Scriptname、`scriptSource` = 供 `package` 編譯的 `.psc`、`scriptProperties` 綁定它的 Auto 屬性（形狀同對話的 `resultProperties`）。你需自行提供編譯好的 `.pex`。遊戲內確認（2026-06-05）；可重用的輔助工具 `examples/MFSE_AliasActivate.psc`。 |
 
 **一般任務（無 `storyEvent`）上的別名：** 同一個 `aliases[]` 區塊在一般

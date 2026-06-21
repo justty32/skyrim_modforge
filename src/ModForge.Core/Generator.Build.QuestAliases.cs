@@ -169,6 +169,15 @@ public static partial class Generator
                 // and a required alias that can't fill blocks the whole quest from starting.
                 if (aSpec.AllowReserved)
                     alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.AllowReserved;
+                // Alias package overrides (ALPS): the AI packages that drive WHATEVER actor fills this
+                // alias, highest priority first. Without this an escort/travel PACK never runs — the
+                // record exists but is unassigned. Packages are top-level records created in pass 1, so
+                // their editorIds resolve here. (Deferred-safe: resolved by FormKey, no build order dep.)
+                foreach (var pkgRef in aSpec.Packages)
+                    if (TryResolveRef(pkgRef, formKeyByEd, out var pkgFk))
+                        alias.PackageData.Add(pkgFk.ToLink<IPackageGetter>());
+                    else
+                        Warn($"  ! quest '{qs.EditorId}' alias '{aSpec.Name}' package '{pkgRef}' unresolved — alias won't run it");
                 quest.Aliases.Add(alias);
                 if (!string.IsNullOrEmpty(aSpec.Script))
                     AttachAliasScript(quest, alias.ID, aSpec);
