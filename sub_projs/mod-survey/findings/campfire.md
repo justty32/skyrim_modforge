@@ -63,7 +63,7 @@ PlacementSystem.ReleaseLock(self)
 
 ### 2.4 互動與生命週期
 
-- **點 perk**：星 = `CampPerkNode extends ObjectReference`。`OnActivate` → `controller.NodeActivated(self)` → `IncreasePerkRank()`：讀 `required_perk_rank_global`，<max 就 +1、寫回 GLOB、`PlayAnimation("OwnedWild")`（星亮起）、播 `_Camp_UISkillsPerkSelect` 音效、`UpdateLines()` 讓下游連線播 `Unlock`。
+- **點 perk**（2026-06-21 原始碼覆核更正）：星 = `CampPerkNode extends ObjectReference`。`OnActivate` → `controller.NodeActivated(self)`（`campperknode.psc:46`）。**不是直連 `IncreasePerkRank`**——`NodeActivated`（`campperknodecontrollerbehavior.psc:25-60`）先 gate：可買 iff **起始 node 或下游 child node 已買**（`downstream_node_*.required_perk_rank_global >= 1`，注意是「**下游 child 已買**」不是「parent rank」——Frostfall 樹根在底、`downstream` 指向原點）且 未滿 rank 且 `required_perk_points_available > 0`；通過後彈 Yes/No 確認選單，選 Yes 才 `IncreasePerkRank()`（+1 寫回 rank GLOB、`PlayAnimation("OwnedWild")`、`UpdateLines()` 下游連線播 `Unlock`）+ 點數池 `-1` + `SendEvent_CampfirePerkPurchased()`（`:117-124`）。**spend/gate/確認選單全在 Campfire 自己的 `CampPerkNodeControllerBehavior`，消費端（Frostfall）只負責賺點數（增 `required_perk_points_available` GLOB）。**
 - **視覺狀態靠 GLOB 重建**：`AssignController` 時讀 `required_perk_rank_global.GetValueInt()`，>0 就立刻播 `OwnedWild`——所以**已點的 perk 每次開樹都正確顯示亮起**，狀態全存在 GLOB（存檔安全）。
 - **連線拓樸**：每個 node 有 `downstream_node_1/2` + `downstream_line_1/2`（指 Activator base form）。`AssignDownstreamNodes()` 用 controller 的 `NodeActMap`/`NodeRefMap` 把 base form 解析成 runtime ref。**樹形是在 esp 裡用屬性連好的**，不是 JSON。
 - **自毀**：`_Camp_PerkNavController.CheckConditions()` 每 3 秒檢查 `Player.GetDistance(self) > 480` → `TakeDownPerkTree()` + 全部 `TryToDisableAndDeleteRef`。另有 `OnCellAttach/Detach` 失效偵測 + `FindClosestReferenceOfType` failsafe 回收漏網 ref——因為這些是 temp ref，**絕不能殘留存檔**。

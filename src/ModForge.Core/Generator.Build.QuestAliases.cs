@@ -113,11 +113,27 @@ public static partial class Generator
                         }
                         if (TryResolveRef(locKw, formKeyByEd, out var kwFk))
                         {
+                            // A "Find Matching Location" radiant fill (Missives Alias_Dungeon) is NOT a
+                            // LocationAliasReference — byte-compare vs the shipping Missives _M_QuestWhiterunKillBandit
+                            // 'Dungeon' alias (2026-06-21) shows a Location-type alias filled by CTDA match
+                            // conditions: LocationHasKeyword==1 (the LocType), plus GetInCurrentLocAlias==1
+                            // (LocationAliasIndex=parent) when narrowed to a parent location alias. The engine
+                            // ignores LocationAliasReference.Keyword on a Location alias, so the old encoding
+                            // never filled. StoresText lets the <Alias=Name> token render the picked location.
                             alias.Type = QuestAlias.TypeEnum.Location;
-                            var loc = new LocationAliasReference();
-                            loc.Keyword.SetTo(kwFk);                 // LocType keyword (LocTypeDungeon, …)
-                            if (parentIdx is int pi) loc.AliasID = pi; // search within this location alias
-                            alias.Location = loc;
+                            alias.Flags = alias.Flags.GetValueOrDefault() | QuestAlias.Flag.StoresText;
+                            var kwData = new LocationHasKeywordConditionData();
+                            kwData.Keyword.Link.SetTo(kwFk);
+                            alias.Conditions.Add(new ConditionFloat
+                            {
+                                CompareOperator = CompareOperator.EqualTo, ComparisonValue = 1, Data = kwData,
+                            });
+                            if (parentIdx is int pi)
+                                alias.Conditions.Add(new ConditionFloat
+                                {
+                                    CompareOperator = CompareOperator.EqualTo, ComparisonValue = 1,
+                                    Data = new GetInCurrentLocAliasConditionData { LocationAliasIndex = pi },
+                                });
                             WireAliasMatchConditions(alias, qs, aSpec, "findMatchingLocation");
                         }
                     }

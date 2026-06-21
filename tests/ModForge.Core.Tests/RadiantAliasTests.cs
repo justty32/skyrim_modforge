@@ -42,22 +42,32 @@ public class RadiantAliasTests
         mod.Quests.First(q => q.EditorID == "MFRadiant").Aliases.First(a => a.Name == name);
 
     [Fact]
-    public void FindMatchingLocation_NoParent_IsLocationTypeWithKeyword()
+    public void FindMatchingLocation_NoParent_IsLocationTypeWithKeywordCondition()
     {
+        // Byte-shape verified vs shipping Missives (2026-06-21): a Find-Matching-Location radiant fill is a
+        // Location-type alias with a LocationHasKeyword==1 CTDA (NOT a LocationAliasReference.Keyword, which
+        // the engine ignores on a Location alias). No parent → exactly one condition.
         var hold = Alias(Build(ChainSpec()), "Hold");
         Assert.Equal(QuestAlias.TypeEnum.Location, hold.Type);
-        Assert.NotNull(hold.Location);
-        Assert.False(hold.Location!.Keyword.IsNull);          // LocTypeHold keyword bound
-        Assert.Null(hold.Location.AliasID);                    // no parent narrowing
+        Assert.Null(hold.Location);                            // no LocationAliasReference — conditions do the matching
+        Assert.True(hold.Flags!.Value.HasFlag(QuestAlias.Flag.StoresText)); // <Alias=Hold> token renders
+        var kw = Assert.Single(hold.Conditions);
+        Assert.IsType<LocationHasKeywordConditionData>(((IConditionFloatGetter)kw).Data);
     }
 
     [Fact]
-    public void FindMatchingLocation_WithParent_SetsParentAliasId()
+    public void FindMatchingLocation_WithParent_AddsGetInCurrentLocAliasCondition()
     {
+        // Narrowed to a parent location alias (@Hold): add a GetInCurrentLocAlias==1 CTDA whose
+        // LocationAliasIndex points at the parent (Hold = alias index 0) — Missives Alias_Dungeon shape.
         var dungeon = Alias(Build(ChainSpec()), "Dungeon");
         Assert.Equal(QuestAlias.TypeEnum.Location, dungeon.Type);
-        Assert.False(dungeon.Location!.Keyword.IsNull);        // LocTypeDungeon
-        Assert.Equal(0, dungeon.Location.AliasID);             // search within Hold (alias index 0)
+        Assert.Null(dungeon.Location);
+        Assert.Contains(dungeon.Conditions, c =>
+            ((IConditionFloatGetter)c).Data is LocationHasKeywordConditionData);
+        var inAlias = Assert.Single(dungeon.Conditions, c =>
+            ((IConditionFloatGetter)c).Data is GetInCurrentLocAliasConditionData);
+        Assert.Equal(0, ((GetInCurrentLocAliasConditionData)((IConditionFloatGetter)inAlias).Data).LocationAliasIndex);
     }
 
     [Fact]

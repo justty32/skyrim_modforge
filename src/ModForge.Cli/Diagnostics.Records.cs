@@ -261,6 +261,7 @@ internal static partial class Program
                             IPackageTargetSpecificReferenceGetter s => s.Reference.FormKey.IsNull   ? "" : $"({s.Reference.FormKey})",
                             IPackageTargetLinkedReferenceGetter  lk => lk.Keyword.FormKey.IsNull    ? "" : $"(keyword={lk.Keyword.FormKey})",
                             IPackageTargetSelfGetter          self  => "(self)",
+                            IPackageTargetAliasGetter         al    => $"(alias#{al.Alias})",
                             _                                       => "",
                         };
                         extra = $" type={tg.Type} target={tgt}{inner}";

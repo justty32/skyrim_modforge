@@ -41,6 +41,27 @@ internal static partial class Program
                 foreach (var t in o.Targets)
                     Console.WriteLine($"      target: flags={t.Flags} conds={t.Conditions.Count}");
             }
+            // Aliases (radiant fill shape): Type + Flags + the fill sub-record. Location aliases (#7) and
+            // find-ref-in-location aliases (#8) both ride QuestAlias.Location=LocationAliasReference
+            // {AliasID, Keyword(LocType), RefType(LCRT)}; forced fills ride ForcedReference; create fills
+            // ride CreateReferenceToObject. Probe a real Missives alias to byte-compare these fields.
+            Console.WriteLine($"  Aliases ({q.Aliases.Count}):  NextAliasID={q.NextAliasID}");
+            foreach (var a in q.Aliases.OrderBy(a => a.ID))
+            {
+                Console.WriteLine($"    alias[{a.ID}] name={a.Name} type={a.Type} flags={a.Flags} conds={a.Conditions.Count}");
+                if (a.Location is ILocationAliasReferenceGetter lar)
+                    Console.WriteLine($"      Location(LocationAliasReference): AliasID={lar.AliasID} Keyword={lar.Keyword.FormKey} RefType={lar.RefType.FormKey}");
+                else if (a.Location is { } locOther)
+                    Console.WriteLine($"      Location({locOther.GetType().Name})");
+                if (!a.ForcedReference.IsNull)
+                    Console.WriteLine($"      ForcedReference={a.ForcedReference.FormKey}");
+                if (a.CreateReferenceToObject is { } cro)
+                    Console.WriteLine($"      CreateReferenceToObject: Object={cro.Object.FormKey}");
+                if (a.FindMatchingRefFromEvent is { } fmr)
+                    Console.WriteLine($"      FindMatchingRefFromEvent: FromEvent={fmr.FromEvent} EventData={fmr.EventData}");
+                foreach (var c in a.Conditions)
+                    PrintCondition(c, "        cond: ");
+            }
             return 0;
         }
         Console.WriteLine($"{formIdOrEditorId} not a Quest in {Path.GetFileName(inPath)}");

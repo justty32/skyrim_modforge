@@ -265,7 +265,7 @@ condition、ESL）。
 | `forced:<ref>` | `ForcedReference` | 靜態 ref（例如玩家 `Skyrim.esm:0x000014`）。 |
 | `createObject:<ref>@<targetAlias>` | `CreateReferenceToObject` | 在任務啟動時，於 `<targetAlias>` 所持有的 ref 處**生成一個指向 `<ref>` 的新參考**（任何可放置的 base——NPC/container/static/物品）（`Create=At`、`Level=Easy`）。`<targetAlias>` 必須是同一任務中另一個 **ref 型**別名（不是 Location），且不能是它自己。例如施放法術 → 在施法者處生成一名守護者。遊戲內確認（2026-06-05）。 |
 | `findMatching:closest` / `findMatching:any` | `QuestAlias.Flag.MatchingRefInLoadedArea`（`closest` 時加上 `MatchingRefClosest`） | 以**載入區域中一個已存在、符合此別名 `conditions` 的參考**填入——`closest` 取最近的符合者，`any` 取第一個。比對過濾器是一個 CTDA 清單（同樣的 `ConditionSpec` 形狀）串接到 `QuestAlias.Conditions`（例如 `HasKeyword ActorTypeNPC` = 最近的 NPC；`GetIsID <base>` = 某 base 的最近者）。**至少需要一個 condition。** 這是從原版 `MQGreybeardCall` Bystander 別名解碼出來的載入區域「Find Matching Reference」機制——**不是** `FindMatchingRefNearAlias`（那只找編輯器連結 ref 的子項）。別名是否填入取決於執行階段是否真的有符合的 ref 在載入區域內。 |
-| `findMatchingLocation:<locTypeKeyword>[@<parentLocationAlias>]` | `QuestAlias.Type = Location` + `LocationAliasReference` | **Radiant LocationAlias（#7）。** 以「Find Matching Location」填入一個 **Location** 型別名——挑選一個其 **LocType keyword** 相符（`<locTypeKeyword>` = spec 內的 KYWD editorId 或 `Plugin.esm:0xID`）的位置，可選地縮小到 `@<parentLocationAlias>`（本任務中另一個 Location 別名）**之內**的子位置。發出 `Location = {Keyword=<locType>, AliasID=<parent index>}`。Missives radiant 多樣性的核心：先一個 Hold 位置，再在其中一個 Dungeon/Inn 位置。 |
+| `findMatchingLocation:<locTypeKeyword>[@<parentLocationAlias>]` | `QuestAlias.Type = Location` + 匹配 CTDA | **Radiant LocationAlias（#7）。** 以「Find Matching Location」填入一個 **Location** 型別名——挑選一個其 **LocType keyword** 相符（`<locTypeKeyword>` = spec 內的 KYWD editorId 或 `Plugin.esm:0xID`）的位置，可選地縮小到 `@<parentLocationAlias>`（本任務中另一個 Location 別名）**之內**的子位置。發出 `LocationHasKeyword == 1` 條件（LocType）+ 縮小時加 `GetInCurrentLocAlias == 1` 條件（`LocationAliasIndex` = 父）+ 設 `StoresText`（讓 `<Alias=Name>` token 顯示挑中位置名）。**已對 shipping Missives `_M_QuestWhiterunKillBandit` byte 驗證（2026-06-21）**——引擎在 Location 型別名上忽略 `LocationAliasReference.Keyword`，故是 conditions-based、**非** `LocationAliasReference`。Missives radiant 多樣性的核心：先一個 Hold 位置，再在其中一個 Dungeon/Inn 位置。 |
 | `findInLocationAlias:<locationAlias>[#<refTypeLCRT>]` | `QuestAlias.Type = Reference` + `LocationAliasReference` | **Radiant 在位置中找 ref（#8）。** 以「Find Matching Reference」填入一個 **Reference** 型別名，範圍限定在 `<locationAlias>`（本任務中一個 Location 別名）所持有的位置——以一個可選的 **RefType** LCRT（`#<refTypeLCRT>`，例如地城的 `BossContainer`）與／或此別名的 `conditions` 縮小範圍。發出 `Location = {AliasID=<location index>, RefType=<LCRT>}`。**需要一個 refType 與／或至少一個 condition。** Missives 的 Alias_target/Alias_chest（地城內的 boss/戰利品）。使用 `LocationAliasReference`（**不是** `FindMatchingRefNearAlias`，後者已驗證僅限連結 ref 的子項）。 |
 
 **額外的別名選項：**
@@ -284,9 +284,11 @@ condition、ESL）。
 **Radiant 鏈（`findMatchingLocation` + `findInLocationAlias`）：** 這些可組合成 Missives 的
 多樣性模式——`Hold`（`findMatchingLocation:<holdLocType>`）→ `Dungeon`
 （`findMatchingLocation:<dungeonLocType>@Hold`）→ `BossChest`
-（`findInLocationAlias:Dungeon#<bossLCRT>`）。示範 `examples/radiant_alias_spec.json`。⚠ 那個
-`LocationAliasReference` 的*形狀*已用 reflection 驗證，但 CK 的*語意* + 範例的 LocType/LCRT
-FormID 需要在主力機做 xEdit byte-compare（用 `gamedata find` 取得真實 ID）。見 `WAIT_USER.md`。
+（`findInLocationAlias:Dungeon#<bossLCRT>`）。示範 `examples/radiant_alias_spec.json`。✅ **已對 shipping
+Missives byte 驗證（2026-06-21，`questdiag`）：** #7 = conditions-based（`LocationHasKeyword` +
+`GetInCurrentLocAlias`）逐欄位對上 Missives `Dungeon` 別名；#8 = `LocationAliasReference{AliasID, RefType}`
+完全對上 Missives `Target` 別名。剩最後一關 = 實機 alias fill（啟動後 `sqv MFRadiantBounty`；
+`ModForgeRadiantAlias.zip`）。見 `WAIT_USER.md`。
 
 #### `spawn`——動態的玩家附近生成（F組 #3）
 任務的 `spawn` 區塊：在任務啟動時，於玩家周圍一個隨機 `minDistance`..`maxDistance` 偏移處放置
