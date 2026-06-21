@@ -44,22 +44,15 @@
     { "editorId": "MFSkill_Node2", "name": "Forged Mastery", "model": "Clutter\\Ingredients\\WispCrystal01.nif" }
   ],
 
-  "cells": [
-    { "editorId": "MFSkillTreeRoom", "name": "ModForge Skill Tree",
-      "lightingTemplate": "Skyrim.esm:0x0B2157",
-      "_": "a small custom interior you reach with `coc MFSkillTreeRoom`; RiftenInteriors LGTM lights it" }
-  ],
+  "_cells_removed": "No custom cell — we place into the VANILLA Whiterun Bannered Mare (Skyrim.esm:0x01605E) so `coc WhiterunBanneredMare` is guaranteed to teleport (vanilla cell + real floor + lighting). The two floor coords below (-119,-504,68 / -49,-504,68) are from the shipped interior_spec.json example, confirmed-open floor.",
 
   "placements": [
-    { "base": "Skyrim.esm:0x1044AA", "cell": "MFSkillTreeRoom", "position": { "x": 0, "y": 0, "z": 0 },
-      "_": "WRIntFloorSTMid01Large — a big Whiterun floor tile so you land on something solid after coc" },
-
-    { "base": "MFSkill_Node0", "editorId": "MFSkill_Node0Ref", "cell": "MFSkillTreeRoom",
-      "position": { "x": 0, "y": 260, "z": 110 }, "_": "root node — always learnable" },
-    { "base": "MFSkill_Node1", "editorId": "MFSkill_Node1Ref", "cell": "MFSkillTreeRoom",
-      "position": { "x": 0, "y": 260, "z": 170 } },
-    { "base": "MFSkill_Node2", "editorId": "MFSkill_Node2Ref", "cell": "MFSkillTreeRoom",
-      "position": { "x": 0, "y": 260, "z": 230 } }
+    { "base": "MFSkill_Node0", "editorId": "MFSkill_Node0Ref", "cell": "Skyrim.esm:0x01605E",
+      "position": { "x": -119, "y": -504, "z": 150 }, "_": "root node — always learnable; floats at ~head height over confirmed-open floor" },
+    { "base": "MFSkill_Node1", "editorId": "MFSkill_Node1Ref", "cell": "Skyrim.esm:0x01605E",
+      "position": { "x": -49, "y": -504, "z": 150 } },
+    { "base": "MFSkill_Node2", "editorId": "MFSkill_Node2Ref", "cell": "Skyrim.esm:0x01605E",
+      "position": { "x": 21, "y": -504, "z": 150 } }
   ],
 
   "scripts": [
