@@ -15,6 +15,13 @@
 
 ## 待測（active）
 
+- **【Idea #20 Phase 1】玩家版 in-world 技能樹 — 驗證 Campfire 技能樹 pipeline 本體（2026-06-21）**：交付 `~/skyrim_mods/mine/ModForgeSkillTree.zip`（FLAT：esp 在根 + `Seq/`）。spec＝`examples/inworld_skill_tree_spec.json`。**手刻範本**（鏡像 Frostfall 能跑的 Endurance 樹 + Campfire 1.11SE .psc 原始碼解碼），目的＝在寫 generator 前先確認「JSON spec → in-world 3D 星樹」這條路在遊戲裡真的成立。3 node 垂直鏈：Resolve（root，永遠可買）→ Vigor → Mastery。
+  - **結構已全驗**（dump 輸出 esp）：masters=Campfire.esm+Skyrim.esm；3 個 CampPerkNode + 1 個 CampPerkNodeControllerBehavior 的所有 object 屬性全解析到真 FormKey（無 null）；downstream 鏈正確；7 個 PositionRef marker（center=XMarker、node/plane=Campfire `_Camp_PerkNodePosRefDummy` 0x043811、line=`_Camp_PerkLinePosRefDummy` 0x043832，全 persistent）；register quest（StartGameEnabled）alias 填 player + `CampPerkSystemRegister{required_node_controller, mod_name}`。**三支腳本（CampPerkNode/ControllerBehavior/SystemRegister）ship 在 Campfire.bsa，不用編 .pex**——ModForge 只 VMAD 引名 + 綁屬性。
+  - **依賴**：載入順序要有 **Campfire.esm + Frostfall.esp**（API≥4；Frostfall 提供營火 Skills 選單入口）。MFSkill_PointsAvail GLOB 預設 3 → 玩家一進場就有 3 點可花（免 grind）。
+  - **怎麼測**：裝 zip+啟用（排 Campfire/Frostfall 之後）→ 全新遊戲或 save+reload（StartGameEnabled，吃 .seq + 讓 register OnInit 跑）→ **點營火選 Tend/Skills → 用導覽螢火蟲（Next/Prev bug）翻頁找到「ModForge Test Tree」**（console `getglobalvalue MFSkill_N0_Rank` 應 0）→ 準心對最下面那顆星按 [E] → 彈「Are you sure you want this perk?」選 Yes → 看星亮起、`MFSkill_N0_Rank` 變 1、`MFSkill_PointsAvail` 變 2、第二顆星解鎖（連線播 Unlock 動畫）。
+  - **三種結果**：① **整棵樹正常渲染 + 可點 + rank 遞增 + 上游解鎖** → Phase 1 過，pipeline 成立，可放心寫 Phase 3 generator。② **樹出現但歪/星重疊/連線錯位** → 渲染成立、只是 layout 座標要調（cosmetic，回報我改 PositionRef）。③ **選單裡根本沒這棵樹 / 點了沒反應 / CTD** → 回報我，附 SKSE/Papyrus log（`Campfire.log`、`Papyrus.0.log`），多半是 register 沒跑或某屬性綁錯。
+  - **快速隔離**：若沒出現，console `help "ModForge Test Tree"` 找 MESG、`sqv MFSkillRegisterQuest` 看 quest 有沒有 running（alias filled=player）。register 失敗會在 Papyrus log 印 `[Campfire] ERROR: Unable to register...`。
+
 - **VNML 法線效果（2026-06-16）— 已自驗修正，下面只剩「想看再看」的選配確認**：axis/編碼/尺度已對 vanilla Tamriel LAND 逐 byte 驗過（修了三個 bug，見 SESSION-LOG），不必硬測。新 zip 已交付 `~/skyrim_mods/mine/HeightmapDemo.zip`（FLAT）。**若你某次順手進遊戲**：進 HeightmapDemo worldspace 走坡面，背光側偏暗、向光偏亮、平順漸層即正常——若看到整片黑塊／詭異反光／上下顛倒陰影再回報（理論上不會）。
 
 - **Sofia × VIGILANT 第一幕（2026-06-14）** — 兩版交付 `~/skyrim_mods/mine/`：`SofiaVigilantAct1.zip`（v1 對話+語音）、`SofiaVigilantAct1v2.zip`（v2 +PlayIdle 動作）。spec＝`examples/sofia_vigilant_act1{,_v2}.json`，臺詞＝`sub_projs/sofia-patch/vigilant-screenplay/act1-警戒者.md`。
