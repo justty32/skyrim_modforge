@@ -1,7 +1,7 @@
 {
   "pluginName": "ModForgeRadiantPackage.esp",
   "esl": false,
-  "_": "C組 #2 — package target/location → quest alias. A radiant quest fills aliases (a VIP actor + a dungeon location); its performance packages then ACT on those aliases: travel to the dungeon the alias picked, escort the VIP there. Syntax: 'alias:<name>' (the ref/actor the alias holds → PackageTargetAlias / LocationFallback AliasForReference) or 'aliasLoc:<name>' (the location a location-alias holds → LocationFallback AliasForLocation). ownerQuest MUST be in-spec so alias indices resolve. ⚠ Mutagen field shape is reflection-verified, but whether AliasForReference vs AliasForLocation / PackageTargetAlias byte-matches a real radiant package needs a main-machine xEdit compare (see WAIT_USER). FormIDs verified vs Skyrim.esm 2026-06-17: VIP forced fill = HousecarlWhiterun(Npc) 0x0A2C8E; Safehouse findMatchingLocation LocType keyword = LocTypeDungeon(Keyword) 0x0130DB; package templates = Travel(PackageTemplate) 0x016FAA + Escort(PackageTemplate) 0x023B73 (both confirmed correct, unchanged).",
+  "_": "C組 #2 — package target/location → quest alias. A radiant quest fills aliases (a VIP actor + a dungeon location); its performance packages then ACT on those aliases: travel to the dungeon the alias picked, escort the VIP there. Syntax: 'alias:<name>' (the ref/actor the alias holds → PackageTargetAlias / LocationFallback AliasForReference) or 'aliasLoc:<name>' (the location a location-alias holds → LocationFallback AliasForLocation). ownerQuest MUST be in-spec so alias indices resolve. ⚠ Mutagen field shape is reflection-verified, but whether AliasForReference vs AliasForLocation / PackageTargetAlias byte-matches a real radiant package needs a main-machine xEdit compare (see WAIT_USER). FormIDs verified vs Skyrim.esm: VIP forced fill = Thoring(Npc) 0x013621 (the Windpeak Inn bartender in Dawnstar — leaving his inn to walk off is an obvious in-game tell); Safehouse findMatchingLocation LocType keyword = LocTypeDungeon(Keyword) 0x0130DB; package templates = Travel(PackageTemplate) 0x016FAA + Escort(PackageTemplate) 0x023B73 (both confirmed correct, unchanged).",
 
   "quests": [
     {
@@ -9,7 +9,7 @@
       "name": "Radiant Escort",
       "startGameEnabled": true,
       "aliases": [
-        { "name": "VIP", "_": "alias index 0 — forced to HousecarlWhiterun (Lydia, Npc 0x0A2C8E). The `packages` list is the ALPS alias-override that actually DRIVES her: while this alias is filled she runs MFTravelToSafehouse (highest priority first), so she walks to the runtime-picked Safehouse location. WITHOUT this list the PACK record exists but never runs — the package's PackageTargetAlias/LocationFallback alone do nothing.", "fill": "forced:Skyrim.esm:0x0A2C8E", "packages": ["MFTravelToSafehouse"] },
+        { "name": "VIP", "_": "alias index 0 — forced to Thoring (Windpeak Inn bartender, Dawnstar; Npc 0x013621). The `packages` list is the ALPS alias-override that actually DRIVES him: while this alias is filled he runs MFTravelToSafehouse (highest priority first), so he leaves the inn and walks to the runtime-picked Safehouse location. WITHOUT this list the PACK record exists but never runs — the package's PackageTargetAlias/LocationFallback alone do nothing.", "fill": "forced:Skyrim.esm:0x013621", "packages": ["MFTravelToSafehouse"] },
         { "name": "Safehouse", "_": "alias index 1 — a Dungeon-type location picked at runtime via LocTypeDungeon keyword (0x0130DB).", "fill": "findMatchingLocation:Skyrim.esm:0x0130DB" }
       ]
     }
