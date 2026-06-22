@@ -1,0 +1,28 @@
+{
+  "pluginName": "ModForgeStorageJsonRefDiag.esp",
+  "esl": true,
+  "_": "ISOLATION TEST for the two J-group storageWrites extensions (2026-06-22): (1) arbitrary-ref target — a storageWrite whose `target` is an in-spec NPC editorId (MFSW_TestNpc) hangs the value on THAT form (bound as SWRef_<i>), proving per-Form memory distinct from the player; (2) fromJson — the value is read at runtime from data/skse/plugins/StorageUtilData/ModForgeJsonDiag/config.json via JsonUtil, with the literal as the missing default. A StartGameEnabled quest (no Story Manager) with startUpStage 10 carries all three writes, so the stage-10 fragment auto-runs once on load and `setstage MFSWJR_Q 10` re-fires it. The compiled MFSWJR_Q_Stages.pex gets a TEST-HARNESS readback (Debug.Notification of each value via StorageUtil.Get*) injected on top of the generated writes. SHIP the config.json alongside; deleting its keys should make fromJson fall back to the literal defaults.",
+  "npcs": [
+    { "editorId": "MFSW_TestNpc", "name": "Storage Ref Test Dummy" }
+  ],
+  "quests": [
+    {
+      "editorId": "MFSWJR_Q",
+      "name": "Storage Json/Ref Diag",
+      "type": "None",
+      "startGameEnabled": true,
+      "stages": [
+        {
+          "index": 10,
+          "startUpStage": true,
+          "logEntry": "Storage json/ref diag running.",
+          "storageWrites": [
+            { "key": "MFSW_refCount", "target": "MFSW_TestNpc", "int": 1, "delta": true },
+            { "key": "MFSW_jsonDiff", "target": "player", "int": 7, "fromJson": { "file": "ModForgeJsonDiag/config.json", "key": "difficulty" } },
+            { "key": "MFSW_jsonName", "target": "player", "str": "fallback-name", "fromJson": { "file": "ModForgeJsonDiag/config.json", "key": "name" } }
+          ]
+        }
+      ]
+    }
+  ]
+}
