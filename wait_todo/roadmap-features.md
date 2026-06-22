@@ -6,8 +6,6 @@
 
 - ✅ **D 組七個分發器全部 IN-GAME CONFIRMED（2026-06-20）**：SPID / MCM / FLM / KID / BOS / AOS / SkyPatcher 皆實機收掉，移出本清單（細節進 git log + landed）。
 
-- **【J 組 storageWrites 兩擴充】arbitrary-ref target + `fromJson` JsonUtil 讀檔 — 待主力機編 .pex + runtime 驗（2026-06-22 離線落地）**：✅ 已離線實作 + 823 測綠。① **arbitrary-ref target**：`storageWrites.target` 接受任意 ref（placed-ref EDID / `Master:0xFORMID`）→ 綁 `SWRef_<i>` Form property（仿 persist key），per-NPC/per-container 記憶；VMAD 綁定離線反射測過。② **`fromJson:{file,key}`**：值改由 `JsonUtil.Get{Int,Float,String}Value(file,key,<literal 作 missing default>)` 取。⚠️ **待你驗**：㉠ 編一個用這兩者的 fragment（fromJson 需 **`JsonUtil.psc`** 一併上 `~/.cache/modforge/papyrus/Source/Scripts`，同 StorageUtil provisioning）；㉡ runtime 確認 ref-target 寫入確實掛在那個 ref 上（手加 readback Debug.Notification 或 console `getstoragevalue` 類驗）、fromJson 能讀到隨包 JSON 值（缺鍵時回 missing default）。收尾驗證，不擋使用。
-
 
 - **【L 組 GetVMQuestVariable/GetVMScriptVariable condition】variableName 字串格式 — 待主力機 xEdit 驗（2026-06-20 離線落地）**：✅ 已離線實作 condition 讀 Papyrus property（`ConditionSpec.VariableName` + builder 兩 case + validate + docs/schema/test，720 測綠）。⚠️ **待你驗**：用 xEdit 開一個真實用 `GetVMQuestVariable`/`GetVMScriptVariable` 的 mod（如 Inigo/ITH 讀 `PlayerInDialogue`，或任何讀 quest-script property 的 INFO condition），對照引擎期望的 `variableName` 字串究竟是 **bare property 名**（`PlayerInDialogue`）還是 **backing var**（`::PlayerInDialogue_var`）——ModForge verbatim 寫進 CTDA，author 給什麼寫什麼。確認後把正確格式補進 [SPEC-dialogue.md § conditions](../docs/spec/SPEC-dialogue.md) 的 GetVMQuestVariable 範例。收尾驗證，不擋使用。
 
