@@ -8,8 +8,9 @@
 
 | 檔案 | 內容 |
 |------|------|
-| [all-findings-gaps.md](all-findings-gaps.md) | **⭐ findings 缺口全集（2026-06-15 人工逐檔審閱全 32 份 findings）** — 含新發現缺口（SPID/MCM/SkyPatcher/FLM/BOS/KID/AOS ini pipeline、INFO 批次、GetScriptVariable 條件等）+ 指向各分檔的 cross-ref；執行順序建議。 |
+| [all-findings-gaps.md](all-findings-gaps.md) | **精簡活檔**：只列 findings 缺口的 open 殘餘（G 🧊 / H ⏸️ / A-partial / J 尾巴）；2026-06-15 完整審閱已凍結，指向 [archive/findings-audit-2026-06-15.md](archive/findings-audit-2026-06-15.md)。 |
 | [generation.md](generation.md) | **解碼浮現的生成能力**待補清單（scene/emotion、worldspace LAND、CSF、OAR/BDI/Pandora…）+ 已有設計、待續（身份系統）。職責：ModForge 該長出的生成能力，餵 spec→build |
 | [mod-survey-gaps.md](mod-survey-gaps.md) | **mod-survey 浮現的 record/生成缺口**（#1–9，含 code 驗證 pass 2026-06-15；#7–9 Missives 新增） |
 | [survey-backlog.md](survey-backlog.md) | **通用框架/庫 survey backlog**（A 全新：SkyPatcher/KID/… B 深挖：SPID/PapyrusUtil/… C 系統拆解：SM/PERK entry-point/…）。職責：餵 mod-survey findings，非 build |
 | [structure-tooling.md](structure-tooling.md) | **結構／工具的 open 重構項**（已完成的整批移 [refactor/archive](../refactor/archive/README.md)） |
+| [archive/](archive/README.md) | **凍結的一次性 roadmap 產物**（findings 審閱快照等），保留脈絡、不在維護鏈上。 |
