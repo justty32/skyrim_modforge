@@ -10,7 +10,8 @@
       "startGameEnabled": true,
       "aliases": [
         { "name": "VIP", "_": "alias index 0 — forced to Thoring (Windpeak Inn bartender, Dawnstar; Npc 0x013621). The `packages` list is the ALPS alias-override that actually DRIVES him: while this alias is filled he runs MFTravelToSafehouse (highest priority first), so he leaves the inn and walks to the runtime-picked Safehouse location. WITHOUT this list the PACK record exists but never runs — the package's PackageTargetAlias/LocationFallback alone do nothing.", "fill": "forced:Skyrim.esm:0x013621", "packages": ["MFTravelToSafehouse"] },
-        { "name": "Safehouse", "_": "alias index 1 — a Dungeon-type location picked at runtime via LocTypeDungeon keyword (0x0130DB).", "fill": "findMatchingLocation:Skyrim.esm:0x0130DB" }
+        { "name": "Hold", "_": "alias index 1 — broad findMatchingLocation anchor (LocTypeHold 0x016771). A 'Find Matching Location' alias is resolved relative to the player's current location hierarchy; the player is ALWAYS inside some Hold so this fills, giving Safehouse a parent to search within. WITHOUT this anchor a bare Dungeon findMatchingLocation fails at StartGameEnabled time (player isn't in a dungeon) → required-alias failure cascades and clears ALL aliases incl. the forced VIP (root cause of the 2026-06-21 'running but both empty' in-game result). Mirrors the IN-GAME CONFIRMED radiant_alias Hold→Dungeon@Hold chain.", "fill": "findMatchingLocation:Skyrim.esm:0x016771" },
+        { "name": "Safehouse", "_": "alias index 2 — a Dungeon-type location (LocTypeDungeon 0x0130DB) picked at runtime WITHIN the Hold alias (@Hold), so it has a search anchor and actually fills.", "fill": "findMatchingLocation:Skyrim.esm:0x0130DB@Hold" }
       ]
     }
   ],
