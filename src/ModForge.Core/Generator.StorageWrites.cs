@@ -122,9 +122,21 @@ public static partial class Generator
 
     /// <summary>The value expression for a storageWrites entry: the literal (<paramref name="literal"/>,
     /// already Papyrus-formatted), or — when `fromJson` is set — a JsonUtil read of the given scalar type
-    /// using that literal as the missing default. <paramref name="t"/> is "Int" / "Float" / "String".</summary>
+    /// using that literal as the missing default. <paramref name="t"/> is "Int" / "Float" / "String".
+    /// Uses the <c>GetPath…Value</c> (Path API) form, NOT <c>Get…Value</c>: the latter reads only JsonUtil's
+    /// own SetXxxValue-written flat namespace (empty for a hand-authored external config), while the Path
+    /// API navigates arbitrary external JSON — confirmed in-game 2026-06-22 (GetIntValue → fallback,
+    /// GetPathIntValue → the real value).</summary>
     private static string StorageJsonOrLiteral(StorageWriteSpec w, string t, string literal) =>
         w.FromJson is { } j
-            ? $"JsonUtil.Get{t}Value(\"{EscapeStr(j.File)}\", \"{EscapeStr(j.Key)}\", {literal})"
+            ? $"JsonUtil.GetPath{t}Value(\"{EscapeStr(j.File)}\", \"{EscapeStr(JsonPath(j.Key))}\", {literal})"
             : literal;
+
+    /// <summary>Normalize a fromJson key into a JsonUtil Path-API path: it needs a leading '.', so a bare
+    /// key ("difficulty") becomes ".difficulty" while an already-dotted path (".tuning.spawnCount") is kept.</summary>
+    private static string JsonPath(string key)
+    {
+        var k = (key ?? "").Trim();
+        return k.StartsWith(".") ? k : "." + k;
+    }
 }

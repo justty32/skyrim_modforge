@@ -204,11 +204,16 @@ Each entry is `{ key, target?, <value>, delta?, fromJson? }`:
 - `delta: true` (int/float only) — `Adjust{Int,Float}Value`, an atomic read-add-write for counters.
 - `fromJson: { file, key }` (optional) — **read the value from an external [PapyrusUtil JsonUtil] file at
   runtime** instead of using the literal. The written value becomes
-  `JsonUtil.Get{Int,Float,String}Value("<file>", "<key>", <the int/float/str literal>)`, where the literal
-  serves as the **missing default** (returned when the JSON key is absent). `file` is relative to
-  `data/skse/plugins/StorageUtilData/` (`"../"` climbs out); `key` is a JsonUtil key or dotted `.path`. This
-  is the "player-editable / tool-written config → runtime state" bridge (e.g. read a difficulty knob from a
-  shipped JSON into a player KV the rest of the mod reads).
+  `JsonUtil.GetPath{Int,Float,String}Value("<file>", ".<key>", <the int/float/str literal>)`, where the
+  literal serves as the **missing default** (returned when the JSON key is absent). `file` is relative to
+  `data/skse/plugins/StorageUtilData/` (`"../"` climbs out); `key` is a JsonUtil **path** — a bare top-level
+  key (`difficulty`) gets a leading `.` automatically, or pass a nested dotted path yourself
+  (`.tuning.spawnCount`, `.list[0]`). This is the "player-editable / tool-written config → runtime state"
+  bridge (e.g. read a difficulty knob from a shipped JSON into a player KV the rest of the mod reads).
+  > **Why the Path API, not `GetIntValue`:** plain `JsonUtil.GetIntValue(file, key)` reads only JsonUtil's
+  > *own* `SetIntValue`-written flat namespace, which is **empty for a hand-authored external config** — it
+  > silently returns the default. The `GetPath…Value` family navigates arbitrary external JSON. (In-game
+  > confirmed 2026-06-22: `GetIntValue` → fallback, `GetPathIntValue` → the real value.)
 
 `speaker`/`player`/`none` are pure Papyrus expressions (no bound property); an **arbitrary-ref target** binds
 one `Form` property per entry. Compiling the generated fragment needs PapyrusUtil's `.psc` on the header path

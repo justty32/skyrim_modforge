@@ -217,13 +217,15 @@ public class StorageWritesTests
     // ---- fromJson value source (PapyrusUtil JsonUtil external-config read) ----
 
     [Fact]
-    public void FromJson_Int_EmitsJsonUtilGetIntValue_LiteralIsMissingDefault()
+    public void FromJson_Int_EmitsJsonUtilGetPathIntValue_LiteralIsMissingDefault()
     {
+        // Path API (GetPath…Value, leading-dot path) — Get…Value reads only JsonUtil's own flat namespace,
+        // which is empty for a hand-authored external config (in-game confirmed 2026-06-22).
         var src = Generator.GenerateDialogueFragmentSource(Line(
             new StorageWriteSpec { Key = "diff", Target = "player", Int = 1,
                 FromJson = new JsonReadSpec { File = "MyMod/config.json", Key = "difficulty" } }));
         Assert.Contains(
-            "StorageUtil.SetIntValue(Game.GetPlayer(), \"diff\", JsonUtil.GetIntValue(\"MyMod/config.json\", \"difficulty\", 1))",
+            "StorageUtil.SetIntValue(Game.GetPlayer(), \"diff\", JsonUtil.GetPathIntValue(\"MyMod/config.json\", \".difficulty\", 1))",
             src);
     }
 
@@ -235,8 +237,17 @@ public class StorageWritesTests
                 FromJson = new JsonReadSpec { File = "c.json", Key = "rate" } },
             new StorageWriteSpec { Key = "name", Target = "none", Str = "x",
                 FromJson = new JsonReadSpec { File = "c.json", Key = "name" } }));
-        Assert.Contains("StorageUtil.SetFloatValue(None, \"rate\", JsonUtil.GetFloatValue(\"c.json\", \"rate\", 0.5))", src);
-        Assert.Contains("StorageUtil.SetStringValue(None, \"name\", JsonUtil.GetStringValue(\"c.json\", \"name\", \"x\"))", src);
+        Assert.Contains("StorageUtil.SetFloatValue(None, \"rate\", JsonUtil.GetPathFloatValue(\"c.json\", \".rate\", 0.5))", src);
+        Assert.Contains("StorageUtil.SetStringValue(None, \"name\", JsonUtil.GetPathStringValue(\"c.json\", \".name\", \"x\"))", src);
+    }
+
+    [Fact]
+    public void FromJson_DottedPathKept_BareKeyGetsLeadingDot()
+    {
+        var src = Generator.GenerateDialogueFragmentSource(Line(
+            new StorageWriteSpec { Key = "n", Target = "player", Int = 0,
+                FromJson = new JsonReadSpec { File = "c.json", Key = ".tuning.spawnCount" } }));
+        Assert.Contains("JsonUtil.GetPathIntValue(\"c.json\", \".tuning.spawnCount\", 0)", src);
     }
 
     [Fact]
@@ -245,7 +256,7 @@ public class StorageWritesTests
         var src = Generator.GenerateDialogueFragmentSource(Line(
             new StorageWriteSpec { Key = "bonus", Target = "player", Int = 0, Delta = true,
                 FromJson = new JsonReadSpec { File = "c.json", Key = "bonus" } }));
-        Assert.Contains("StorageUtil.AdjustIntValue(Game.GetPlayer(), \"bonus\", JsonUtil.GetIntValue(\"c.json\", \"bonus\", 0))", src);
+        Assert.Contains("StorageUtil.AdjustIntValue(Game.GetPlayer(), \"bonus\", JsonUtil.GetPathIntValue(\"c.json\", \".bonus\", 0))", src);
     }
 
     [Fact]

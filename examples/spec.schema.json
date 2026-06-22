@@ -726,12 +726,12 @@
           "delta": { "type": "boolean", "description": "int/float only: Adjust…Value (atomic read-add-write) instead of Set — for counters" },
           "fromJson": {
             "type": "object",
-            "description": "optional: read the VALUE from an external PapyrusUtil JsonUtil file at runtime instead of the literal — JsonUtil.Get{Int,Float,String}Value(file, key, <int/float/str literal as missing default>). The 'player-editable / tool-written config → runtime state' bridge. Compiling then also needs JsonUtil.psc on the header path.",
+            "description": "optional: read the VALUE from an external PapyrusUtil JsonUtil file at runtime instead of the literal — JsonUtil.GetPath{Int,Float,String}Value(file, .key, <int/float/str literal as missing default>). Uses the Path API (NOT GetIntValue, which reads only JsonUtil's own flat namespace — empty for a hand-authored config). The 'player-editable / tool-written config → runtime state' bridge. Compiling then also needs JsonUtil.psc on the header path.",
             "required": ["file", "key"],
             "additionalProperties": false,
             "properties": {
               "file": { "type": "string", "description": "JSON file relative to data/skse/plugins/StorageUtilData/ ('../' climbs out), e.g. 'MyMod/config.json'" },
-              "key": { "type": "string", "description": "JsonUtil key or dotted .path, e.g. 'difficulty' or '.tuning.spawnCount'" }
+              "key": { "type": "string", "description": "JsonUtil Path-API path — a bare top-level key ('difficulty') auto-gets a leading '.', or pass a nested dotted path ('.tuning.spawnCount', '.list[0]')" }
             }
           }
         }

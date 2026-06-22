@@ -242,10 +242,14 @@ handler，與 `persist` 完全相同）。`persist`（JContainers JFormDB）是�
 - 恰好一個值：`int` / `float`（→ `Set{Int,Float}Value`）或 `str`（→ `SetStringValue`）。
 - `delta: true`（僅 int/float）——`Adjust{Int,Float}Value`，計數器用的原子 read-add-write。
 - `fromJson: { file, key }`（選用）——**在 runtime 從外部 [PapyrusUtil JsonUtil] 檔讀取值**，而不用字面值。
-  寫入的值變成 `JsonUtil.Get{Int,Float,String}Value("<file>", "<key>", <int/float/str 字面值>)`，其中字面值
+  寫入的值變成 `JsonUtil.GetPath{Int,Float,String}Value("<file>", ".<key>", <int/float/str 字面值>)`，其中字面值
   作為 **missing default**（JSON 鍵不存在時回傳）。`file` 相對於 `data/skse/plugins/StorageUtilData/`
-  （`"../"` 可往上跳）；`key` 是 JsonUtil 鍵或點分 `.path`。這是「玩家可改／工具寫入的設定檔 → runtime 狀態」
-  的橋接（例如從隨包 JSON 讀一個難度旋鈕進玩家 KV，供 mod 其餘部分讀）。
+  （`"../"` 可往上跳）；`key` 是 JsonUtil **path**——裸 top-level key（`difficulty`）會自動補前導 `.`，或自己給
+  巢狀點分路徑（`.tuning.spawnCount`、`.list[0]`）。這是「玩家可改／工具寫入的設定檔 → runtime 狀態」的橋接
+  （例如從隨包 JSON 讀一個難度旋鈕進玩家 KV，供 mod 其餘部分讀）。
+  > **為何用 Path API 而非 `GetIntValue`：** 純 `JsonUtil.GetIntValue(file, key)` 只讀 JsonUtil **自己**用
+  > `SetIntValue` 寫的扁平命名空間，對**手寫的外部設定檔是空的**——會靜默回 default。`GetPath…Value` 系列才
+  > 能巡覽任意外部 JSON。（2026-06-22 實機確認：`GetIntValue`→fallback、`GetPathIntValue`→真值。）
 
 `speaker`/`player`/`none` 是純 Papyrus 表達式（不綁屬性）；**arbitrary-ref target** 每條綁一個 `Form` 屬性。
 編譯產生的片段需要 PapyrusUtil 的 `.psc` 在 header 路徑上（主力機步驟；遊戲內須安裝 PapyrusUtil）——任何條目用
