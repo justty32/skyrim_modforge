@@ -142,10 +142,11 @@ public class StorageWritesTests
     }
 
     [Fact]
-    public void Validate_BadTarget_Reported()
+    public void Validate_UnresolvedRefTarget_Reported()
     {
+        // A non-keyword target is treated as an arbitrary ref; an unknown one must be reported.
         var d = Line(new StorageWriteSpec { Key = "k", Target = "nonsense", Int = 1 });
-        Assert.Contains(Validate(WithLine(d)), p => p.Contains("bad target 'nonsense'"));
+        Assert.Contains(Validate(WithLine(d)), p => p.Contains("target") && p.Contains("unresolved ref 'nonsense'"));
     }
 
     [Fact]
@@ -153,6 +154,109 @@ public class StorageWritesTests
     {
         var d = Line(new StorageWriteSpec { Key = "k", Target = "player", Int = 1, Delta = true });
         Assert.DoesNotContain(Validate(WithLine(d)), p => p.Contains("storageWrite"));
+    }
+
+    // ---- arbitrary-ref target (a placed-ref / base form, bound as a Form property) ----
+
+    [Fact]
+    public void RefTarget_DeclaresFormProperty_AndBodyUsesIt()
+    {
+        // An external-ref target classifies as Ref → SWRef_0 Form property, body keys on it.
+        var src = Generator.GenerateDialogueFragmentSource(Line(
+            new StorageWriteSpec { Key = "metPlayer", Target = "Skyrim.esm:0x000014", Int = 1 }));
+        Assert.Contains("Form Property SWRef_0 Auto", src);
+        Assert.Contains("StorageUtil.SetIntValue(SWRef_0, \"metPlayer\", 1)", src);
+    }
+
+    [Fact]
+    public void RefTarget_OnlyRefEntriesDeclareProperties()
+    {
+        // Entry 0 = player (no prop), entry 1 = ref (SWRef_1 — index is the LIST position, not a ref counter).
+        var src = Generator.GenerateDialogueFragmentSource(Line(
+            new StorageWriteSpec { Key = "a", Target = "player", Int = 1 },
+            new StorageWriteSpec { Key = "b", Target = "Skyrim.esm:0x000014", Int = 2 }));
+        Assert.DoesNotContain("Form Property SWRef_0 Auto", src);
+        Assert.Contains("Form Property SWRef_1 Auto", src);
+        Assert.Contains("StorageUtil.SetIntValue(Game.GetPlayer(), \"a\", 1)", src);
+        Assert.Contains("StorageUtil.SetIntValue(SWRef_1, \"b\", 2)", src);
+    }
+
+    [Fact]
+    public void Build_RefTarget_BindsFormPropertyToFormKey()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "mf-swref-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        try
+        {
+            File.WriteAllText(Path.Combine(dir, "TIF_MF_Greet.pex"), "");
+            // Target the in-spec NPC base form by editorId → SWRef_0 binds to its FormKey.
+            var spec = new ModSpec
+            {
+                PluginName = "Test.esp",
+                Quests = { new QuestSpec { EditorId = "MF_Q", Name = "Q" } },
+                Npcs = { new NpcSpec { EditorId = "MF_Npc", Name = "Npc" } },
+                Dialogue = { Line(new StorageWriteSpec { Key = "k", Target = "MF_Npc", Int = 1 }) },
+            };
+            var r = TestBuild.OkWithCompiledScripts(spec, dir);
+            var npc = r.Mod.EnumerateMajorRecords<INpcGetter>().Single(n => n.EditorID == "MF_Npc");
+            var info = r.Mod.EnumerateMajorRecords<IDialogResponsesGetter>().Single(i => i.EditorID == "MF_Greet");
+            var prop = info.VirtualMachineAdapter!.Scripts.Single(e => e.Name == "TIF_MF_Greet")
+                .Properties.OfType<IScriptObjectPropertyGetter>().Single(p => p.Name == "SWRef_0");
+            Assert.Equal(npc.FormKey, prop.Object.FormKey);
+        }
+        finally { if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true); }
+    }
+
+    [Fact]
+    public void Validate_ResolvedRefTarget_NoProblem()
+    {
+        var d = Line(new StorageWriteSpec { Key = "k", Target = "MF_Npc", Int = 1 });
+        Assert.DoesNotContain(Validate(WithLine(d)), p => p.Contains("storageWrite") || p.Contains("unresolved ref"));
+    }
+
+    // ---- fromJson value source (PapyrusUtil JsonUtil external-config read) ----
+
+    [Fact]
+    public void FromJson_Int_EmitsJsonUtilGetIntValue_LiteralIsMissingDefault()
+    {
+        var src = Generator.GenerateDialogueFragmentSource(Line(
+            new StorageWriteSpec { Key = "diff", Target = "player", Int = 1,
+                FromJson = new JsonReadSpec { File = "MyMod/config.json", Key = "difficulty" } }));
+        Assert.Contains(
+            "StorageUtil.SetIntValue(Game.GetPlayer(), \"diff\", JsonUtil.GetIntValue(\"MyMod/config.json\", \"difficulty\", 1))",
+            src);
+    }
+
+    [Fact]
+    public void FromJson_FloatAndString()
+    {
+        var src = Generator.GenerateDialogueFragmentSource(Line(
+            new StorageWriteSpec { Key = "rate", Target = "none", Float = 0.5f,
+                FromJson = new JsonReadSpec { File = "c.json", Key = "rate" } },
+            new StorageWriteSpec { Key = "name", Target = "none", Str = "x",
+                FromJson = new JsonReadSpec { File = "c.json", Key = "name" } }));
+        Assert.Contains("StorageUtil.SetFloatValue(None, \"rate\", JsonUtil.GetFloatValue(\"c.json\", \"rate\", 0.5))", src);
+        Assert.Contains("StorageUtil.SetStringValue(None, \"name\", JsonUtil.GetStringValue(\"c.json\", \"name\", \"x\"))", src);
+    }
+
+    [Fact]
+    public void FromJson_WithDelta_AdjustsByJsonValue()
+    {
+        var src = Generator.GenerateDialogueFragmentSource(Line(
+            new StorageWriteSpec { Key = "bonus", Target = "player", Int = 0, Delta = true,
+                FromJson = new JsonReadSpec { File = "c.json", Key = "bonus" } }));
+        Assert.Contains("StorageUtil.AdjustIntValue(Game.GetPlayer(), \"bonus\", JsonUtil.GetIntValue(\"c.json\", \"bonus\", 0))", src);
+    }
+
+    [Fact]
+    public void Validate_FromJson_EmptyFileOrKey_Reported()
+    {
+        var noFile = Line(new StorageWriteSpec { Key = "k", Target = "player", Int = 1,
+            FromJson = new JsonReadSpec { File = "", Key = "x" } });
+        Assert.Contains(Validate(WithLine(noFile)), p => p.Contains("fromJson has empty file"));
+        var noKey = Line(new StorageWriteSpec { Key = "k", Target = "player", Int = 1,
+            FromJson = new JsonReadSpec { File = "c.json", Key = "" } });
+        Assert.Contains(Validate(WithLine(noKey)), p => p.Contains("fromJson has empty key"));
     }
 
     // ---- stage-fragment storage writes (host is a quest STAGE, no akSpeakerRef) ----
@@ -178,6 +282,21 @@ public class StorageWritesTests
         var src = Generator.GenerateQuestFragmentSource(q);
         var frag = src.Split("Function Fragment_Stage_0010_Item00000()")[1].Split("EndFunction")[0];
         Assert.Contains("StorageUtil.AdjustIntValue(Game.GetPlayer(), \"won\", 1)", frag);
+    }
+
+    [Fact]
+    public void StageRefTarget_DeclaresPrefixedFormProperty()
+    {
+        // A stage ref target namespaces its Form property by the stage prefix (S0010_) so stages don't collide.
+        var q = new QuestSpec
+        {
+            EditorId = "MF_Q", Name = "Q",
+            Stages = { new StageSpec { Index = 10,
+                StorageWrites = { new StorageWriteSpec { Key = "k", Target = "Skyrim.esm:0x000014", Int = 1 } } } },
+        };
+        var src = Generator.GenerateQuestFragmentSource(q);
+        Assert.Contains("Form Property S0010_SWRef_0 Auto", src);
+        Assert.Contains("StorageUtil.SetIntValue(S0010_SWRef_0, \"k\", 1)", src);
     }
 
     [Fact]

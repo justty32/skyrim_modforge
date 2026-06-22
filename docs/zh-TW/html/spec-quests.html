@@ -229,17 +229,27 @@ handler，與 `persist` 完全相同）。`persist`（JContainers JFormDB）是�
 而生，而 StorageUtil 是「簡單 + 自動管理」那半：隨從記憶、互動冷卻、每個 NPC 的旗標。值由存檔
 管理，沒有要 retain/release 的東西。
 
-每個條目是 `{ key, target?, <value>, delta? }`：
+每個條目是 `{ key, target?, <value>, delta?, fromJson? }`：
 - `key`——StorageUtil 的字串鍵（例如 `"mymod_lastGreet"`）。
-- `target`——值所掛的 Form：`"speaker"`（對話 NPC，`akSpeakerRef`——**僅對話行**；預設）、`"player"`、
-  或 `"none"`/`"global"`（不綁任何 Form 的行程全域 KV）。任務階段沒有說話者 → 用 `"player"` 或
-  `"none"`（驗證會在階段上拒絕 `"speaker"`/預設）。
+- `target`——值所掛的 Form：
+  - `"speaker"`（對話 NPC，`akSpeakerRef`——**僅對話行**；預設）、
+  - `"player"`、
+  - `"none"`/`"global"`（不綁任何 Form 的行程全域 KV），**或**
+  - **任何其他 token＝任意 ref**——一個 placed-ref editorId 或 `Master:0xFORMID`——讓值掛在**那個特定的
+    actor/物件**上（per-NPC／per-container 記憶）。該 ref 會像 `persist` 的 key 一樣綁成片段 VMAD 裡的
+    `Form` 屬性，且必須能解析。
+  - 任務階段沒有說話者 → 用 `"player"`、`"none"` 或一個 ref（驗證會在階段上拒絕 `"speaker"`/預設）。
 - 恰好一個值：`int` / `float`（→ `Set{Int,Float}Value`）或 `str`（→ `SetStringValue`）。
 - `delta: true`（僅 int/float）——`Adjust{Int,Float}Value`，計數器用的原子 read-add-write。
+- `fromJson: { file, key }`（選用）——**在 runtime 從外部 [PapyrusUtil JsonUtil] 檔讀取值**，而不用字面值。
+  寫入的值變成 `JsonUtil.Get{Int,Float,String}Value("<file>", "<key>", <int/float/str 字面值>)`，其中字面值
+  作為 **missing default**（JSON 鍵不存在時回傳）。`file` 相對於 `data/skse/plugins/StorageUtilData/`
+  （`"../"` 可往上跳）；`key` 是 JsonUtil 鍵或點分 `.path`。這是「玩家可改／工具寫入的設定檔 → runtime 狀態」
+  的橋接（例如從隨包 JSON 讀一個難度旋鈕進玩家 KV，供 mod 其餘部分讀）。
 
-與 `persist` 不同，三種支援的 target 都是純 Papyrus 表達式，所以 `storageWrites` **不**綁任何
-VMAD 屬性（尚無 arbitrary-ref target）。編譯產生的片段需要 PapyrusUtil 的 `.psc` 在 header 路徑上
-（主力機步驟；遊戲內須安裝 PapyrusUtil）。
+`speaker`/`player`/`none` 是純 Papyrus 表達式（不綁屬性）；**arbitrary-ref target** 每條綁一個 `Form` 屬性。
+編譯產生的片段需要 PapyrusUtil 的 `.psc` 在 header 路徑上（主力機步驟；遊戲內須安裝 PapyrusUtil）——任何條目用
+`fromJson` 時還需 **`JsonUtil.psc`**。
 
 ### Story Manager 任務——事件驅動的啟動
 

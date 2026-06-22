@@ -189,17 +189,31 @@ to the `OnStory<Event>` handler for an SM-driven quest, exactly like `persist`).
 JFormDB) is for nested paths and Form-as-key, StorageUtil is the "simple + auto-managed" half: follower
 memory, interaction cooldowns, per-NPC flags. The save manages the values; nothing to retain/release.
 
-Each entry is `{ key, target?, <value>, delta? }`:
+Each entry is `{ key, target?, <value>, delta?, fromJson? }`:
 - `key` — the StorageUtil string key (e.g. `"mymod_lastGreet"`).
-- `target` — the Form the value hangs on: `"speaker"` (the dialogue NPC, `akSpeakerRef` — **dialogue lines
-  only**; the default), `"player"`, or `"none"`/`"global"` (a process-global KV not tied to any Form). A
-  quest stage has no speaker → use `"player"` or `"none"` (validation rejects `"speaker"`/the default there).
+- `target` — the Form the value hangs on:
+  - `"speaker"` (the dialogue NPC, `akSpeakerRef` — **dialogue lines only**; the default),
+  - `"player"`,
+  - `"none"`/`"global"` (a process-global KV not tied to any Form), **or**
+  - **any other token = an arbitrary ref** — a placed-ref editorId or a `Master:0xFORMID` — so the value
+    hangs on **that specific actor/object** (per-NPC / per-container memory). The ref is bound as a `Form`
+    property in the fragment VMAD (like `persist`'s arbitrary-ref key) and must resolve.
+  - A quest stage has no speaker → use `"player"`, `"none"`, or a ref (validation rejects `"speaker"`/the
+    default there).
 - exactly one value: `int` / `float` (→ `Set{Int,Float}Value`) or `str` (→ `SetStringValue`).
 - `delta: true` (int/float only) — `Adjust{Int,Float}Value`, an atomic read-add-write for counters.
+- `fromJson: { file, key }` (optional) — **read the value from an external [PapyrusUtil JsonUtil] file at
+  runtime** instead of using the literal. The written value becomes
+  `JsonUtil.Get{Int,Float,String}Value("<file>", "<key>", <the int/float/str literal>)`, where the literal
+  serves as the **missing default** (returned when the JSON key is absent). `file` is relative to
+  `data/skse/plugins/StorageUtilData/` (`"../"` climbs out); `key` is a JsonUtil key or dotted `.path`. This
+  is the "player-editable / tool-written config → runtime state" bridge (e.g. read a difficulty knob from a
+  shipped JSON into a player KV the rest of the mod reads).
 
-Unlike `persist`, the three supported targets are pure Papyrus expressions, so `storageWrites` binds **no**
-VMAD property (no arbitrary-ref target yet). Compiling the generated fragment needs PapyrusUtil's `.psc` on
-the header path (main-machine step; PapyrusUtil must be installed in-game).
+`speaker`/`player`/`none` are pure Papyrus expressions (no bound property); an **arbitrary-ref target** binds
+one `Form` property per entry. Compiling the generated fragment needs PapyrusUtil's `.psc` on the header path
+(main-machine step; PapyrusUtil must be installed in-game) — including **`JsonUtil.psc`** when any entry uses
+`fromJson`.
 
 ### Story Manager quests — event-driven start
 

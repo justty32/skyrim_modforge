@@ -11,6 +11,7 @@
 ## 最新進度（幾句話）
 
 - 目前無跨工作流的 open 項；各工作流的 open 狀態見下表。
+- **2026-06-22 roadmap 收尾 session**：① **roadmap 離線項清空盤點** — CSF（H 組）標 ⏸️ 暫緩、程序化法術族（G #4）標 🧊 冷凍、身份系統 ③ 聲望追蹤標 🧊 冷凍（前提「等 JContainers」其實已解除，純擱置決定）。② **做掉 J 組兩擴充**（使用者指定）：**arbitrary-ref target**（`storageWrites.target` 接任意 ref → 綁 `SWRef_<i>` Form property，仿 persist key，per-NPC/per-container 記憶）+ **`fromJson:{file,key}` JsonUtil 讀檔**（值改由 `JsonUtil.Get{Int,Float,String}Value(file,key,<literal 作 missing default>)`，外部 config→runtime 狀態橋接）。改 `Generator.StorageWrites.cs`（加 `Ref` kind/`StorageRefProperty`/`StorageRefEntries`/`StorageWritesPropertyDecls`/`StorageJsonOrLiteral`）+ DialogueFragments/QuestFragments（decl + body 帶 prefix）+ Build.Scripts/Build.QuestStages（bind `SWRef`）+ Validate（target→ref CheckRef、fromJson file/key 非空）+ `Spec.Dialogue.cs`（`FromJson`/`JsonReadSpec`）。docs SPEC-quests（EN+zh-TW+html 重生）、schema、CODE_MAP.dialogue-quests、roadmap all-findings-gaps J 組同步。**+10 測，823 綠**。⚠ 編 .pex（fromJson 需 `JsonUtil.psc` 上 header）+ runtime 驗見 [WAIT_USER](wait_todo/roadmap-features.md)。J 組剩 ActorUtil.AddPackageOverride / MiscUtil.ScanCellNPCs（需求低，後者要控制流 DSL）。
 - **2026-06-20 D 組分發器實機 + MCM 補完整 session（接續同日大確認）**：
   - 🔧 **6 個 DLL loose-ini zip 全用 masterless-fix 後的 CLI 重 build**（先前是 fix 之前 build、esp 42b masterless 會被丟）；現在 esp 都正確掛 Skyrim.esm master（73b）。送 `~/skyrim_mods/mine/`。
   - ✅ **SkyPatcher（D-3）IN-GAME CONFIRMED**：`filterByRaces=NordRace:height=1.5` → 全 Nord NPC 變高 1.5×。**坑：NPC 尺寸 key 是 `height` 不是 `setScale`**（後者被 SkyPatcher 忽略）。新 visible-test `examples/skypatcher_scale_test_spec.json`。
@@ -53,7 +54,7 @@
 
 | 工作流 | session-log | open 摘要 |
 |--------|-------------|----------|
-| 功能開發 | [workflows/feature-dev/session-log](workflows/feature-dev/session-log.md) | 身份系統 ③ 聲望/行為追蹤（待設計）|
+| 功能開發 | [workflows/feature-dev/session-log](workflows/feature-dev/session-log.md) | 🧊 身份系統 ③ 聲望/行為追蹤（2026-06-22 冷凍，等很有空再做）|
 | 重構整理 | [workflows/refactor/session-log](workflows/refactor/session-log.md) | 無 |
 | 調查／解碼 | [workflows/investigation/session-log](workflows/investigation/session-log.md) | 無 |
 

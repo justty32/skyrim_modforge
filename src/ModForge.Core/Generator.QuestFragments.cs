@@ -124,6 +124,10 @@ public static partial class Generator
         foreach (var s in q.Stages)
             foreach (var decl in JContainersPropertyDecls(StagePropPrefix(s.Index), s.Persist, s.SyncPerks))
             { sb.AppendLine(decl); anyProp = true; }
+        // J組 storageWrites arbitrary-ref Form properties, namespaced per stage to match the body/binding.
+        foreach (var s in q.Stages)
+            foreach (var decl in StorageWritesPropertyDecls(StagePropPrefix(s.Index), s.StorageWrites))
+            { sb.AppendLine(decl); anyProp = true; }
         if (anyProp) sb.AppendLine();
 
         // The startUpStage fragment (if any) drives the dynamic spawn / cooldown gate on quest start.
@@ -179,7 +183,7 @@ public static partial class Generator
         {
             foreach (var stage in swStages)
                 foreach (var stSpec in q.Stages.Where(s => s.Index == stage))
-                    foreach (var line in StorageWritesBody(stSpec.StorageWrites))
+                    foreach (var line in StorageWritesBody(stSpec.StorageWrites, StagePropPrefix(stage)))
                         sb.AppendLine("    " + line);
         }
         // K組 plain global writes — "<global>.SetValue(value)" for each globalWrite of every stage that
@@ -234,7 +238,7 @@ public static partial class Generator
             // J組 StorageUtil per-Form KV writes for this stage (routed to OnStory below for an SM quest).
             if (!storyHandler)
                 foreach (var stSpec in q.Stages.Where(s => s.Index == stage))
-                    foreach (var line in StorageWritesBody(stSpec.StorageWrites))
+                    foreach (var line in StorageWritesBody(stSpec.StorageWrites, StagePropPrefix(stage)))
                         sb.AppendLine("    " + line);
             sb.AppendLine("EndFunction");
             sb.AppendLine();

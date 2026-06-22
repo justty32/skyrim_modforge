@@ -105,6 +105,10 @@ public static partial class Generator
                                 BindFormProp(entry, Generator.SyncGateProperty(prefix), sps.Gate!.Global, $"quest '{q.EditorId}' stage {st.Index} syncPerks gate");
                         }
                     }
+                    // J組 storageWrites arbitrary-ref targets: bind a Form property each, namespaced per stage
+                    // to match the generated source (speaker/player/none targets bind nothing).
+                    foreach (var (i, w) in Generator.StorageRefEntries(st.StorageWrites))
+                        BindFormProp(entry, Generator.StorageRefProperty(Generator.StagePropPrefix(st.Index), i), w.Target, $"quest '{q.EditorId}' stage {st.Index} storageWrite ref");
                     // Stage = quest stage number, StageIndex = log-entry index within the stage
                     // (always 0 — we emit one log entry per stage, matching vanilla convention).
                     // Unknown2 = 1 in every vanilla fragment (confirmed vs MS08, MS13, MQ101 etc.).

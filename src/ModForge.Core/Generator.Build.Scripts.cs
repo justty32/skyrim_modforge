@@ -147,6 +147,9 @@ public static partial class Generator
                         if (Generator.HasGate(sps.Gate))
                             BindFormProp(entry, Generator.SyncGateProperty(""), sps.Gate!.Global, $"TIF '{d.EditorId}': syncPerks gate");
                     }
+                    // storageWrites: bind a Form property per arbitrary-ref target (speaker/player/none need none).
+                    foreach (var (i, w) in Generator.StorageRefEntries(d.StorageWrites))
+                        BindFormProp(entry, Generator.StorageRefProperty("", i), w.Target, $"TIF '{d.EditorId}': storageWrite ref");
                 }
                 // OnBegin fires the moment the player selects the line (before the NPC speaks).
                 info.VirtualMachineAdapter = new DialogResponsesAdapter

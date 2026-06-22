@@ -73,6 +73,8 @@ public static partial class Generator
         if (setsGlobal) sb.AppendLine($"GlobalVariable Property {TifSetGlobalPropertyName} Auto");
         if (rewards) sb.AppendLine($"Form Property {TifRewardPropertyName} Auto");
         foreach (var decl in JContainersPropertyDecls(d)) sb.AppendLine(decl);
+        // J組 storageWrites arbitrary-ref targets bind a Form property each (speaker/player/none declare nothing).
+        foreach (var decl in StorageWritesPropertyDecls("", d.StorageWrites)) sb.AppendLine(decl);
         sb.AppendLine();
         sb.AppendLine("Function Fragment_0(ObjectReference akSpeakerRef)");
         if (setsStage) sb.AppendLine($"    {TifQuestPropertyName}.SetStage({d.SetStage})");
@@ -98,8 +100,9 @@ public static partial class Generator
         // JContainers JFormDB writes, then perk sync (both keyed on speaker/player). Emitted last so a
         // perk sync sees the ranks this line just persisted.
         foreach (var line in JContainersFragmentBody(d)) sb.AppendLine("    " + line);
-        // J組 PapyrusUtil StorageUtil per-Form KV writes (speaker/player/none — body-only, no bound property).
-        foreach (var line in StorageWritesBody(d.StorageWrites)) sb.AppendLine("    " + line);
+        // J組 PapyrusUtil StorageUtil per-Form KV writes (speaker/player/none = pure expressions; an
+        // arbitrary-ref target reads the bound SWRef_<i> Form property; fromJson sources the value via JsonUtil).
+        foreach (var line in StorageWritesBody(d.StorageWrites, "")) sb.AppendLine("    " + line);
         sb.AppendLine("EndFunction");
         return sb.ToString();
     }

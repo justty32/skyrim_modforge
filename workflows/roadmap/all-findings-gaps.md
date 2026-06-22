@@ -125,18 +125,20 @@ ModForge 的 `build` 主輸出是 `.esp`。這組是對應 SKSE framework 的 **
 
 | # | 缺口 | 優先 |
 |---|------|------|
-| 4 | 程序化法術族生成器（school × level × delivery 網格 → 對齊 MGEF+SPEL+tome+FLST） | 🟢 |
+| 4 | 程序化法術族生成器（school × level × delivery 網格 → 對齊 MGEF+SPEL+tome+FLST）— 🧊 **不必做（2026-06-22 冷凍，等非常有空再考慮）**；純便利層、不解鎖新 mod 類型 | 🟢 |
 
 ---
 
-## H 組：Custom Skills Framework 技能樹生成器
+## H 組：Custom Skills Framework 技能樹生成器 — ⏸️ 暫緩（暫時先不做）
 
 來源：**constellations.md**（含 CSF v3 JSON 格式完整文件化）。  
 → 已登入 [generation.md](generation.md)（含 MVP scope + spec 欄位草案）。
 
+> ⏸️ **2026-06-22 決定暫緩**：研究與 spec 草案皆完整，但暫時先不動工，等之後再排。
+
 **提醒**：CSF skill tree generator 是 generation.md 待補清單的一環，可接著現有 PERK 生成能力做。  
 MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原版技能頁）+ 3 個 GLOB + 2 個 KYWD + Translations UTF-16 LE BOM + init alias script 模板 + 訓練 TIF。  
-**優先：** 🟡（有完整設計文件，下一步寫 spec）
+**優先：** 🟡（有完整設計文件，下一步寫 spec）— **目前 ⏸️ 暫緩**
 
 ---
 
@@ -155,7 +157,9 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 
 ✅ **PapyrusUtil StorageUtil per-Form KV `storageWrites`（已落地 2026-06-20）**  
 **狀態：** JContainers 的 nested per-Form 狀態（`JFormDB.solve…`）其實已由 **persist/syncPerks**（Idea #20）覆蓋；J 組真缺的「簡單 + 自動管理」那半（eval 標為**最高槓桿、最固定**）已補：`storageWrites: [{key, target, int/float/str, delta?}]` → `StorageUtil.Set/Adjust{Int,Float,String}Value`，掛 **dialogue line TIF** 與 **quest stage fragment**（與 persist 同機制 + SM quest 路由 `OnStory<Event>`）。target=speaker/player/none 皆**純 Papyrus 表達式 → body-only、零 VMAD property**，故無 binding-site 改動。新增 `Generator.StorageWrites.cs`，改 `Generator.QuestFragments.cs`（5 處 gate/emit）+ `Build.Scripts.cs`/`Build.QuestStages.cs`（needs-frag gate）+ `Spec.Dialogue.cs`（`StorageWriteSpec`）+ `Generator.Validate.Quests.cs`（`ValidateStorageWrites`）。docs SPEC-quests/SPEC-dialogue、schema、CODE_MAP 同步。**17 測綠**。  
-**剩（未做，需求度低）：** arbitrary-**ref** target（需綁 Form property + 改各 binding site）；`ActorUtil.AddPackageOverride`（臨時 package 覆蓋，需成對清理 = 兩 fragment）、`MiscUtil.ScanCellNPCs`（情境偵測，需條件分支語法）、`JsonUtil`/`JValue.readFromFile` 外部 config 讀取。屬 follower expansion 真正需要時再長。  
+✅ **arbitrary-ref target 已落地（2026-06-22）**：`storageWrites.target` 接受任意 ref（placed-ref EDID / `Master:0xFORMID`）→ 綁 `SWRef_<i>` Form property（仿 persist key），dialogue TIF + quest stage 皆通，per-NPC/per-container 記憶。  
+✅ **JsonUtil 讀檔已落地（2026-06-22）**：`storageWrites[].fromJson:{file,key}` → value 改由 `JsonUtil.Get{Int,Float,String}Value(file,key,<literal 作 missing default>)` 取（PapyrusUtil 外部 config 讀取）；複用 storageWrites 全套 target 機制、int/float/str 對稱。編 fragment 多需 `JsonUtil.psc` 上 header path。  
+**剩（未做，需求度低）：** `ActorUtil.AddPackageOverride`（臨時 package 覆蓋，需成對清理 = 兩 fragment）、`MiscUtil.ScanCellNPCs`（情境偵測，需條件分支語法 = 大坑）。屬 follower expansion 真正需要時再長。  
 **優先：** 🟡 → ✅ 核心 KV 已落地，.pex 隨任何含 fragment 的 quest/dialogue 編（需 PapyrusUtil .psc 上 header path）。
 
 ---
@@ -217,7 +221,7 @@ MVP 輸出：`SKSE/Plugins/CustomSkills/<X>.json` + `SKILLS.json`（整合進原
 4. ~~**D-1**（SPID _DISTR.ini）~~ ✅ **已落地 2026-06-17** → 無衝突 NPC 標記與兼容 patch
 5. ~~**D-2**（MCM Helper）~~ ✅ **已落地 2026-06-20** → 玩家設定面板（live menu 待主力機實機驗）
 6. ~~**D-4**（FLM ini）~~ ✅ **已落地 2026-06-20** → 外部 FLST 注入（Spellforge/SPID 兼容），runtime 待主力機驗
-7. **H 組**（CSF skill tree）→ 接 generation.md 現有設計，已有詳細 spec 草案
+7. ⏸️ **H 組**（CSF skill tree）→ **暫緩（2026-06-22 決定暫時先不做）**；接 generation.md 現有設計，已有詳細 spec 草案，之後再排
 8. ~~**L 組**（GetVMQuestVariable/GetVMScriptVariable 條件）~~ ✅ **已落地 2026-06-20** → follower ambient bark 品質（variableName 字串格式待主力機 xEdit 驗）
 9. ~~**J 組**（JC/PapyrusUtil 模板）~~ ✅ **storageWrites 已落地 2026-06-20**（StorageUtil per-Form KV；ActorUtil/MiscUtil/ref-target 留尾）→ follower 輕量狀態管理
 10. ~~**M 組**（INFO 批次 + 條件模板）~~ ✅ **兩半皆已落地 2026-06-20**（條件模板 + `variants` INFO 陣列批次）→ ambient commentary 生成效率

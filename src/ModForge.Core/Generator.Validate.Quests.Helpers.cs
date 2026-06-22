@@ -86,9 +86,10 @@ public static partial class Generator
         }
 
         // J組 PapyrusUtil StorageUtil per-Form KV writes (dialogue line + quest stage). Each write needs a
-        // non-empty key, exactly one of int/float/str, delta only on int/float, and a recognised target. A
-        // quest stage has no akSpeakerRef, so target "speaker" (the default) is rejected there (allowSpeaker
-        // is false) — use "player" or "none"/"global".
+        // non-empty key, exactly one of int/float/str, and delta only on int/float. The target is "speaker"
+        // (dialogue only — a quest stage has no akSpeakerRef, so allowSpeaker is false there), "player",
+        // "none"/"global", or an arbitrary ref that must resolve (bound as a Form property). An optional
+        // fromJson source needs a non-empty file + key.
         private void ValidateStorageWrites(List<StorageWriteSpec> writes, string label, bool allowSpeaker)
         {
             foreach (var w in writes)
@@ -97,10 +98,24 @@ public static partial class Generator
                 int vals = (w.Int is not null ? 1 : 0) + (w.Float is not null ? 1 : 0) + (w.Str is not null ? 1 : 0);
                 if (vals != 1) Problems.Add($"{label} '{w.Key}' must set exactly one of int/float/str (got {vals})");
                 if (w.Delta && w.Int is null && w.Float is null) Problems.Add($"{label} '{w.Key}' delta only applies to int/float");
-                if (!Generator.StorageTargetTokens.Contains((w.Target ?? "").Trim()))
-                    Problems.Add($"{label} '{w.Key}' bad target '{w.Target}' (use speaker | player | none/global)");
-                else if (!allowSpeaker && Generator.ClassifyStorageTarget(w.Target ?? "") == Generator.StorageTargetKind.Speaker)
-                    Problems.Add($"{label} '{w.Key}' target 'speaker' is only valid on a dialogue line (a quest stage has no speaker — use 'player' or 'none')");
+                switch (Generator.ClassifyStorageTarget(w.Target ?? ""))
+                {
+                    case Generator.StorageTargetKind.Speaker:
+                        if (!allowSpeaker)
+                            Problems.Add($"{label} '{w.Key}' target 'speaker' is only valid on a dialogue line (a quest stage has no speaker — use 'player', 'none', or a ref)");
+                        break;
+                    case Generator.StorageTargetKind.Player:
+                    case Generator.StorageTargetKind.None:
+                        break;
+                    default:   // arbitrary ref → must resolve (bound as a Form property)
+                        CheckRef(w.Target ?? "", $"{label} '{w.Key}' target");
+                        break;
+                }
+                if (w.FromJson is { } j)
+                {
+                    if (string.IsNullOrWhiteSpace(j.File)) Problems.Add($"{label} '{w.Key}' fromJson has empty file");
+                    if (string.IsNullOrWhiteSpace(j.Key)) Problems.Add($"{label} '{w.Key}' fromJson has empty key");
+                }
             }
         }
 

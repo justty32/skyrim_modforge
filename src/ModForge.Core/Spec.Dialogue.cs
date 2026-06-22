@@ -118,17 +118,31 @@ public sealed class DialogueSpec
     public List<StorageWriteSpec> StorageWrites { get; set; } = new();
 }
 // One PapyrusUtil StorageUtil per-Form KV write (J組 — see DialogueSpec/StageSpec.StorageWrites). `key`
-// is the StorageUtil string key; `target` is the Form the value hangs on (speaker | player | none/global —
-// none = a process-global KV not tied to any Form). Set exactly one of int/float/str. `delta` (int/float
-// only) emits Adjust{Int,Float}Value (atomic read-add-write) instead of Set; a string write has no delta.
+// is the StorageUtil string key; `target` is the Form the value hangs on: "speaker" (the NPC, dialogue
+// only — the default), "player", "none"/"global" (a process-global KV tied to no Form), OR any other token
+// = an arbitrary REF (a placed-ref editorId or a "Master:0xFORMID") — bound as a Form property so the value
+// hangs on THAT specific actor/object (per-NPC / per-container memory). Set exactly one of int/float/str.
+// `delta` (int/float only) emits Adjust{Int,Float}Value (atomic read-add-write) instead of Set; a string
+// write has no delta. `fromJson` (optional) sources the VALUE from a PapyrusUtil JsonUtil file at runtime
+// instead of using the literal — the int/float/str field then serves as the missing default.
 public sealed class StorageWriteSpec
 {
     public string Key { get; set; } = "";        // StorageUtil string key (e.g. "mymod_lastGreet")
-    public string Target { get; set; } = "";       // speaker (default) | player | none | global
+    public string Target { get; set; } = "";       // speaker (default) | player | none | global | <ref editorId / Master:0xFORMID>
     public int? Int { get; set; }
     public float? Float { get; set; }
     public string? Str { get; set; }
     public bool Delta { get; set; }                // int/float only → Adjust…Value (read-add-write)
+    public JsonReadSpec? FromJson { get; set; }    // optional: read the value from a JsonUtil file (literal = missing default)
+}
+
+// A PapyrusUtil JsonUtil external-config read source (see StorageWriteSpec.FromJson). `file` is relative to
+// data/skse/plugins/StorageUtilData/ ("../" climbs out); `key` is the JsonUtil key (or dotted .path). The
+// owning storageWrite's scalar type picks Get{Int,Float,String}Value and its literal is the missing default.
+public sealed class JsonReadSpec
+{
+    public string File { get; set; } = "";   // e.g. "MyMod/config.json"
+    public string Key { get; set; } = "";     // e.g. "difficulty" or ".tuning.spawnCount"
 }
 
 // One INFO variant in a dialogue batch (M組 — see DialogueSpec.Variants). Becomes a sibling INFO under the
