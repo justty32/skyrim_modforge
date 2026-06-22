@@ -9,3 +9,4 @@
 | 封存件 | 一句話 |
 |--------|--------|
 | [findings-audit-2026-06-15.md](findings-audit-2026-06-15.md) | 2026-06-15 人工逐檔審閱全 32 份 findings 後整合的缺口全集完整快照（A~M 組 + D-1~D-7 細節 + 執行順序）。 |
+| [mod-survey-resolved-2026-06-15.md](mod-survey-resolved-2026-06-15.md) | 2026-06-15 code 驗證後撤銷的 mod-survey 誤判缺口（推斷為缺口、實則早已支援的 3 項）。 |

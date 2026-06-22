@@ -4,11 +4,7 @@
 
 > ✅ **已做 code 驗證 pass（2026-06-15）** — 原本由 survey agent 推斷的 9 條缺口已逐條核對 `src/` 實際 builder。結論:**3 條本就支援（撤銷）、2 條降級為 partial、4 條確認真缺**。下方按驗證後狀態重列；每條附 evidence（file:symbol）。機制理解的後續深挖見 [survey-backlog.md](survey-backlog.md) C 組。
 
-## ✅ 已支援（原缺口判斷有誤，撤銷）
-
-- **~~建立新 FLST + 填 ref~~** — 早有。`Generator.Build.Lists.cs:BuildFormLists()` 從 `spec.FormLists` 建新 FLST record；`Generator.Build.Lists.Wire.cs:WireFormLists()` 經 `Resolve(...)` 填 item，支援 in-spec editorId（自家 esp ref）與 vanilla `Plugin.esm:0xID`。
-- **~~`placements[].linkedRef` 欄位（+ keyword 變體）~~** — 早有。`Generator.Build.PlacementRefs.cs:WireLinkedRefs()` 讀 `pl.LinkedRefs`、設 XLKR，且支援具名 keyword link（`link.KeywordOrReference.SetTo(...)`）。
-- **~~`MagicEffectSpec` script-attach (VMAD)~~** — 用通用機制即可。`Generator.Build.Scripts.cs:AttachScripts()` 是 record-type-agnostic 的:反射任何 record 的 `VirtualMachineAdapter` 掛 `ScriptEntry`+typed property。MGEF 在 Mutagen 有可寫 VMAD，validator 無型別限制 → `scripts[]` 指向 MGEF editorId 今天就能用。**至多是文件缺口**（`MagicEffectSpec` 無專屬 script 欄位，但通用 `scripts[]` 已涵蓋）。
+> 2026-06-15 code 驗證撤銷的誤判缺口（早已支援）見 [archive/mod-survey-resolved-2026-06-15.md](archive/mod-survey-resolved-2026-06-15.md)。
 
 ## ⚠️ 降級為 partial（大部分已支援，只剩窄缺口）
 
