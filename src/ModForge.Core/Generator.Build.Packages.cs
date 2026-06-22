@@ -45,6 +45,15 @@ public static partial class Generator
                 {
                     Warn($"  ! package '{pk.EditorId}': template {tfk} is not yet supported (known: sandbox=0x01C254, sleep=0x019717, travel=0x016FAA, usemagic=0x0504F5, patrol=0x017723, follow=0x019B2C, escort=0x023B73, sittarget=0x0A9277, activate=0x019B2D, eat=0x019714) — emitting package with no Data overrides; template defaults apply");
                 }
+
+                // A templated package MUST carry the template's PKCU DataInputVersion + 1-byte XNAM
+                // marker, else the engine ignores all Data inputs (alias-location/target slots never
+                // resolve → the actor fills the alias but never acts on it). Mirror the template.
+                if (PackageTemplates.TryGetDataInputMeta(tfk, out var dataInputVersion, out var xnamByte))
+                {
+                    pack.DataInputVersion = dataInputVersion;
+                    pack.XnamMarker = new byte[] { xnamByte };
+                }
             }
         }
 

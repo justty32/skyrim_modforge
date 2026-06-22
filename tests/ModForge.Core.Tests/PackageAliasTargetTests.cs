@@ -159,4 +159,20 @@ public class PackageAliasTargetTests
         Assert.Equal(LocationTargetRadius.LocationType.AliasForLocation, dest.Type);
         Assert.Equal(1, dest.Data);                     // Safehouse
     }
+
+    // A templated package MUST mirror the template's PKCU DataInputVersion + 1-byte XNAM marker, or the
+    // engine ignores its Data inputs and the actor never acts (in-game: Thoring filled the alias but
+    // never travelled, 2026-06-22). Values verified against the template PACKs in Skyrim.esm.
+    [Fact]
+    public void TemplatedPackage_CarriesTemplateDataInputVersionAndXnam()
+    {
+        var r = TestBuild.Ok(RadiantSpec());
+        var travel = Pkg(r, "GoToDungeon");             // Travel template 0x016FAA
+        Assert.Equal(3, travel.DataInputVersion);
+        Assert.Equal(new byte[] { 0x05 }, travel.XnamMarker.ToArray());
+
+        var activate = Pkg(r, "GrabVictim");            // Activate template 0x019B2D
+        Assert.Equal(13, activate.DataInputVersion);
+        Assert.Equal(new byte[] { 0x06 }, activate.XnamMarker.ToArray());
+    }
 }

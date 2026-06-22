@@ -25,4 +25,30 @@ internal static class PackageTemplates
     public static readonly FormKey SitTarget = Of(0x0A9277); //  3 author slots (16/3/4) — sit at furniture
     public static readonly FormKey Activate = Of(0x019B2D);  //  2 author slots (0 Target, 2 Number)
     public static readonly FormKey Eat      = Of(0x019714);  // location sandbox-variant (fixed food/chair search)
+
+    // Per-template PKCU DataInputVersion + the 1-byte XNAM marker. A concrete package that uses a
+    // template MUST carry the SAME pair as the template itself (verified: vanilla WERoad12Travel /
+    // BardAudienceTravelToLoc4, both Travel-template, copy Travel's 3 / 0x05). Without them the engine
+    // ignores the package's Data inputs — the alias-location/target slots never resolve, so a templated
+    // travel/escort package fills its alias but the actor never moves (in-game: Thoring, 2026-06-22).
+    // Values read from each template PACK in Skyrim.esm (DataInputVersion + XNAM byte).
+    private static readonly Dictionary<FormKey, (int Version, byte Xnam)> DataInputMeta = new()
+    {
+        [Sandbox]   = (10, 0x20),
+        [Sleep]     = (6,  0x1B),
+        [Travel]    = (3,  0x05),
+        [UseMagic]  = (1,  0x0D),
+        [Patrol]    = (3,  0x09),
+        [Follow]    = (4,  0x09),
+        [Escort]    = (8,  0x12),
+        [SitTarget] = (2,  0x11),
+        [Activate]  = (13, 0x06),
+        [Eat]       = (8,  0x24),
+    };
+
+    public static bool TryGetDataInputMeta(FormKey template, out int version, out byte xnam)
+    {
+        if (DataInputMeta.TryGetValue(template, out var m)) { version = m.Version; xnam = m.Xnam; return true; }
+        version = 0; xnam = 0; return false;
+    }
 }
