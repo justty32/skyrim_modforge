@@ -45,10 +45,26 @@ func available() -> bool:
 		and FileAccess.file_exists(_mc_python)
 
 
+# A ref is "<master>:0xFORMID". Reject anything with path separators / ".." so a hand-typed ref can't
+# escape the cache dir when turned into a filename, and so junk never reaches the CLI args.
+static func _valid_ref(ref: String) -> bool:
+	var i := ref.findn(":0x")
+	if i <= 0:
+		return false
+	var master := ref.substr(0, i)
+	var formid := ref.substr(i + 3)
+	if master == "" or master.contains("/") or master.contains("\\") or master.contains(".."):
+		return false
+	return formid != "" and formid.is_valid_hex_number(false)
+
+
 # A fresh instance of the model for `ref`, or null. allow_fetch=true permits the slow CLI+convert
 # for an uncached ref; false only loads an already-built glTF (keeps placing/startup snappy).
 func get_model(ref: String, allow_fetch: bool = false) -> Node3D:
 	if ref == "":
+		return null
+	if not _valid_ref(ref):   # user-entered text → keep it out of cache filenames / CLI args
+		push_warning("ModelFetch: ignoring malformed ref '%s' (expected '<master>:0xFORMID')" % ref)
 		return null
 	if not _cache.has(ref):
 		_cache[ref] = _build_template(ref, allow_fetch)

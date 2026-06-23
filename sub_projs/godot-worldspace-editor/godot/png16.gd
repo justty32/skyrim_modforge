@@ -50,25 +50,20 @@ static func save(path: String, verts_x: int, verts_y: int,
 
 
 ## Load a PNG heightmap and return heights (game units, row0=south).
-## Uses Godot's Image to load (8-bit precision sufficient for re-editing).
+## Decodes the 16-bit samples directly (Godot's Image PNG loader downsamples to 8-bit, which would
+## throw away ~99% of the height resolution this codec exists to preserve), so a save→load round-trip
+## is lossless and re-editing an externally-edited heightmap keeps full precision.
 static func load_heights(path: String, verts_x: int, verts_y: int,
 		min_h: float, max_h: float) -> PackedFloat32Array:
-	var img := Image.load_from_file(path)
-	if img == null:
-		push_error("Png16.load: cannot load " + path)
-		return PackedFloat32Array()
-	if img.get_width() != verts_x or img.get_height() != verts_y:
-		push_error("Png16.load: size mismatch (expected %dx%d, got %dx%d)" % [
-			verts_x, verts_y, img.get_width(), img.get_height()])
-		return PackedFloat32Array()
-
-	img.convert(Image.FORMAT_L8)
-	var range_h := max_h - min_h
+	var samples := Png16Codec.decode_l16(path, verts_x, verts_y)  # row-major, img-order (top=north)
+	if samples.is_empty():
+		return PackedFloat32Array()   # decode_l16 already push_error'd the reason
+	var range_h := maxf(max_h - min_h, 1.0)   # must match save()'s divisor or the scale won't round-trip
 	var result := PackedFloat32Array()
 	result.resize(verts_x * verts_y)
 	for img_y in verts_y:
-		var world_row := (verts_y - 1) - img_y
+		var world_row := (verts_y - 1) - img_y   # PNG top = north; undo the save() Y-flip
 		for col in verts_x:
-			var norm := img.get_pixel(col, img_y).r
+			var norm := float(samples[img_y * verts_x + col]) / 65535.0
 			result[world_row * verts_x + col] = min_h + norm * range_h
 	return result

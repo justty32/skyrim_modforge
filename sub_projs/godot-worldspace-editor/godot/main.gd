@@ -114,8 +114,7 @@ func _add_cells(de: int, dn: int) -> void:
 	var old_vy := terrain.verts_y
 	terrain.resize_cells(ncx, ncy)
 	_splat.resize_grid(old_vx, old_vy)
-	_rebuild_grid_lines()
-	_sync_display()
+	_sync_display()   # rebuilds grid lines itself, so no separate _rebuild_grid_lines() here
 
 
 # ── Walk mode / Input (delegated) ───────────────────────────────────────────────

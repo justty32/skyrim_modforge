@@ -49,6 +49,15 @@ var _mesh_inst: MeshInstance3D
 var _shader_mat: ShaderMaterial   # WYSIWYG terrain blend material
 var _collision: CollisionShape3D  # terrain walk collision (lazily refreshed)
 
+# Persistent mesh arrays (owned here, filled by TerrainMeshBuilder) so a brush stroke updates only
+# the touched region instead of reallocating + recomputing the whole grid every tick.
+var _arr_mesh: ArrayMesh
+var _m_verts: PackedVector3Array   = PackedVector3Array()
+var _m_normals: PackedVector3Array = PackedVector3Array()
+var _m_uvs: PackedVector2Array     = PackedVector2Array()
+var _m_colors: PackedColorArray    = PackedColorArray()
+var _m_indices: PackedInt32Array   = PackedInt32Array()
+
 # Ground-texture tiling (how many times a 1024² LTEX repeats across the whole terrain).
 var tex_uv_scale := 24.0
 
@@ -139,12 +148,17 @@ func get_hit_position(camera: Camera3D, screen_pos: Vector2) -> Vector3:
 
 func apply_brush(hit_world: Vector3, delta: float) -> void:
 	if TerrainBrush.apply(self, hit_world, delta):
-		rebuild_mesh()
+		# Brush touched the vert box within ceil(brush_radius) of the hit centre (same bounds as
+		# TerrainBrush.apply); update just that region instead of rebuilding the whole mesh.
+		var cv := world_to_vert(hit_world)
+		var r := int(ceilf(brush_radius))
+		TerrainMeshBuilder.update_region(self, cv.x - r, cv.y - r, cv.x + r, cv.y + r)
 		terrain_changed.emit()
 
 
 func rebuild_mesh() -> void:
-	_mesh_inst.mesh = TerrainMeshBuilder.build(self)
+	TerrainMeshBuilder.build_full(self)
+	_mesh_inst.mesh = _arr_mesh
 
 
 # Update the WYSIWYG blend material. base_tex may be null; layers = Array of

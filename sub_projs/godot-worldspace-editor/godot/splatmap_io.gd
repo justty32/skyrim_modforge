@@ -38,8 +38,7 @@ static func import_dialog(host: Node, splat: SplatTool, terrain: TerrainGrid, lb
 		var a := load_alpha(dlg.current_path, terrain)
 		if not a.is_empty():
 			splat.layers[splat.active]["alpha"] = a
-			splat._push_overlay()
-			terrain.rebuild_mesh()
+			SplatRender.refresh_visual(splat)   # rebuilds overlay + mesh (was a call to nonexistent SplatTool._push_overlay)
 			splat.changed.emit()
 			if lbl: lbl.text = "Loaded: " + dlg.current_path.get_file()
 		dlg.queue_free())
