@@ -53,12 +53,12 @@ Skyrim 原版 perk 樹已有基礎，但缺乏「選了某個 perk 就要全面�
 三個可能的實作層次（由淺到深）：
 
 **層次 A：Keystone perk（取捨感）**
-在 CSF 自訂技能樹的末端放幾個「互斥 Keystone」——選了一個就改變整個 build 的基礎假設。例如：
+在 Campfire 式 in-world 3D 技能樹的末端放幾個「互斥 Keystone」——選了一個就改變整個 build 的基礎假設。例如：
 - 「死戰之心」：最大魔力值變成 0，技能改消耗生命（Blood Magic 移植）
 - 「鋼鐵之軀」：無法造成暴擊，但攻擊永遠命中（RT 移植）
 - 「異靈護盾」：最大生命值變成 1，但免疫毒素並獲得大量魔力護盾（CI 移植）
 
-這層靠 PERK + MGEF（修改 actor value）就能做，CSF 技術可行性高。
+效果層靠 PERK + MGEF（修改 actor value）即可；選點 UI 與玩家/NPC 共用狀態則沿用 Idea #20 的 Campfire 星樹 + JContainers 路線。
 
 **層次 B：職業核心資源系統**
 給不同「職業路線」一個專屬資源（除了 HP/Magicka/Stamina）：
@@ -69,7 +69,7 @@ Skyrim 原版 perk 樹已有基礎，但缺乏「選了某個 perk 就要全面�
 這層需要 GLOB 追蹤 + Papyrus 事件 + MGEF，難度中等，但更接近「職業感」。
 
 **層次 C：多技能樹互動（完整體系）**
-多棵 CSF 技能樹（近戰/魔法/敏捷/信仰…），Keystone 跨樹影響，形成一個完整的自訂養成體系，取代或大幅擴充原版 perk 系統。
+多棵 in-world 3D 技能樹（近戰/魔法/敏捷/信仰…），Keystone 跨樹影響，形成一個完整的自訂養成體系，取代或大幅擴充原版 perk 系統。
 
 難度最高，需要完整規劃才能動手。
 
@@ -77,7 +77,7 @@ Skyrim 原版 perk 樹已有基礎，但缺乏「選了某個 perk 就要全面�
 
 ## 關聯
 
-- **CSF 技能樹 spec**（正在討論中）：這個 idea 決定了 CSF spec 的設計目標
+- **In-world 技能樹 spec**：這個 idea 提供 Keystone 與職業核心資源的效果設計；UI、節點與玩家/NPC 狀態模型由 Idea #20 承接
 - **身份系統 ③ 聲望/行為追蹤**（[feature-dev/session-log](../feature-dev/session-log.md)）：職業路線可能影響 NPC 反應
 - **In-world 技能樹**（[#20](inworld-skill-tree.md)）：玩家/NPC 職業路線可複用同一套 Keystone 設計
 
@@ -85,6 +85,6 @@ Skyrim 原版 perk 樹已有基礎，但缺乏「選了某個 perk 就要全面�
 
 ## 下一步
 
-- 先聚焦**層次 A（Keystone perk）**，納入正在討論的 CSF spec
+- 先聚焦**層次 A（Keystone perk）**，納入 Idea #20 的 in-world 技能樹 spec
 - 決定要移植哪幾個 Keystone 概念到 Skyrim 語境（機制要用 Skyrim 的資源系統重新描述）
 - 層次 B/C 是更遠的 roadmap 項，目前留在 idea 層

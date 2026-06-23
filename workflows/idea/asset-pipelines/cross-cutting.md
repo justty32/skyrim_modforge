@@ -22,9 +22,9 @@
 
 **反覆出現的牆：PyNifly 只有 Windows**（粒子#02、模型#03、動作#03/#05 都撞到）。蒙皮 mesh 匯出與 Blender→hkx 匯出是兩處需要 Windows VM 或 fragile Wine-Blender 的點。靜態物件、記錄層、轉檔則全部 Linux 可行。
 
-**3. 兩個對既有 baseline / 文檔的修正建議**（待使用者確認後再改 IDEAS.md，本資料夾僅研究，不動維護鏈）：
-- **IDEAS.md §14**：「PyNifly / ck-cmd」在 Linux 上應為 **NifTools addon / ck-cmd**（PyNifly 只有 Windows）。並建議材質目標走 **True PBR**（CS baseline 已含），讓 glTF→Skyrim 貼圖映射變成乾淨的 channel-repack。
-- **IDEAS.md §11-C baseline**：動作整合在 Linux 上應 **Nemesis → Pandora**（Nemesis 在 Wine 下 thread-race 常失敗；Pandora 原生跨平台且吃 Nemesis 格式）。
+**3. 既有 baseline / 文檔修正（2026-06-23 已同步）**：
+- **IDEAS §14**：Linux 路徑已改為 **NifTools addon / ck-cmd**（PyNifly 只保留 Windows 蒙皮／動畫升級路徑），材質目標納入 **True PBR**。
+- **IDEAS §11-C baseline**：動作整合已由 **Nemesis 改為 Pandora**（Pandora 原生跨平台且吃 Nemesis 格式）。
 
 **4. 結構先行驗證。** 使用者無法自己跑遊戲（記憶 `ingame-test-workflow`），所有管線的 MVP 都先做**結構驗證**（xEdit / `*diag` 探 esp、確認檔名/路徑/transform 合理）再交手動 MO2/Proton 實機。錯路徑＝隱形物件/無聲音、無報錯（記憶 `vanilla-nif-paths-must-be-verified`）；MO2 重裝會還原手 patch 的檔（記憶 `mo2-reinstall-reverts-manual-pex`）。
 
@@ -48,4 +48,4 @@
 
 除 #01 voice 已部分落地外，這些仍主要是**研究與計劃**。要落地任一條時，依 CLAUDE.md Workflow 1（增量改 code → 實機 → 補 CODE_MAP/文檔 → commit），並把選定的 MVP 切片當第一個 It.N。建議從上面優先級 #1（EFSH）或 #3（DS1 MSB 內景，使用者最感興趣）起手；voice 則優先補真模型、lip 與實機驗證。
 
-*狀態：研究完成 2026-06-08；voice 核心整合 2026-06-12 部分落地。五份報告為 web 調研＋ModForge 既有能力交叉分析；標註的不確定處（`.lip`-on-Wine、Genshin 加密、heightmap、exact 座標 handedness、PyNifly-Wine）需落地時實測確認。*
+*狀態：研究完成 2026-06-08；voice 核心整合 2026-06-12 部分落地。五份報告為 web 調研＋ModForge 既有能力交叉分析；標註的不確定處（`.lip`-on-Wine、Genshin 加密、heightmap、exact 座標 handedness、PyNifly Windows handoff）需落地時實測確認。*

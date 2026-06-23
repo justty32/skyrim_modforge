@@ -43,7 +43,7 @@
 - 武將是靈魂：每個 lord 是真 NPC record，招降 = 改 faction + AI package + 解鎖對話。
 - 風險：守軍須 spawn-on-demand（LvlN，絕不 persistent）；每小時級精細模擬要考慮 SKSE native；攻城戰演出最難。
 
-**引擎硬限制（決定設計上限）**：同屏活躍戰鬥 AI 超過 ~30-50 就掉幀 / AI 崩壞 → 百人會戰不能硬做，要分波增援 / 戰場區隔 / 小隊抽象；Skyrim 無「大地圖」→ 世界地圖 + 快速旅行事件化，或選單 / 書本 UI 抽象外交封地。先研究 Open Civil War / Immersive Patrols 怎麼處理規模。
+**引擎硬限制（決定設計上限）**：同屏活躍戰鬥 AI 超過 ~30-50 就掉幀 / AI 崩壞 → 百人會戰不能硬做，要分波增援 / 戰場區隔 / 小隊抽象；Skyrim 無「大地圖」→ 世界地圖 + 快速旅行事件化，或選單 / 書本 UI 抽象外交封地。已解碼 Immersive Patrols（靜態巡邏/戰區）、Populated Skyrim Civil War（純 placed population）、OBIS Patrols Addon（route alias factory）、WARZONES（marker/activator warzone factory）與 Civil War Overhaul Redux（alias 固定席位 + reinforcement tickets）；Open Civil War 尚待取得 plugin 做 record 級解碼。
 
 **與其他想法交集**：部隊跟隨 = §1 多隨從放大；商隊護衛/劫掠 = §3 共用；募兵/外交對話 = §9 餵內容；大規模事件調度 = §9 Story Manager；架空 worldspace = §4/§8 應用。
 
@@ -57,10 +57,10 @@
 
 - **A. 玩家定位＝混合**——M&B 傭兵起步、後期解鎖三國志君主玩法；最小可玩先做 M&B 前段（募兵+野戰）。
 - **B. 時間行軍＝即時派**——真的帶兵走、敵軍世界內真實移動（AI package 巡邏），「野外撞見敵軍」不事件化。
-- **C. 依賴基線（適用所有想法，視為玩家標配）**：SKSE + SkyUI + JContainers + po3 Extender/Tweaks + Fuz Ro D'oh + **Nemesis** + **Community Shaders**（含 Light Limit Fix）。ModForge 配合：Papyrus 編譯認得第三方腳本源（PO3/JContainers/SKSE/SkyUI import path）、可考慮 MCM 鷹架生成、`package` 輸出 Nemesis 認得的目錄結構、美術可假設 Light Limit Fix（解除每 mesh 4 燈限，放大 §12）。
+- **C. 依賴基線（適用所有想法，視為玩家標配）**：SKSE + SkyUI + JContainers + po3 Extender/Tweaks + Fuz Ro D'oh + **Pandora Behaviour Engine+** + **Community Shaders**（含 Light Limit Fix）。ModForge 配合：Papyrus 編譯認得第三方腳本源（PO3/JContainers/SKSE/SkyUI import path）、可考慮 MCM 鷹架生成、`package` 輸出 Pandora 認得的 Nemesis-format / native Pandora 目錄結構，美術可假設 Light Limit Fix（解除每 mesh 4 燈限，放大 §12）。
 - **D. 世界規模＝先小後大**——~8×8 cells、3-5 城起步，霧遮遠景；「世界是 spec 生成的」保證日後重生成大世界不是重做。
 - **E. 勢力/武將**按「N 勢力 M 武將」參數化，原型 3×5、成品 5-8 勢力 ×30+ 武將。
 - **F. 兵種樹架空設計**，全用 vanilla 裝備模型拼。
 - **G. 第一個垂直切片＝波次會戰原型**——平地 + 兩隊 spawn + 波次增援，驗證難題①手感；是整個企劃的試金石，且對 ModForge 需求最小。
 
-**待深挖**：(a) 戰略層資料模型（城/武將/勢力狀態怎麼存、AI 決策規則）；(b) 聚落量產（一座城 spec → placed refs + N 勢力 marker 組）；(c) 玩家循環（募兵→帶兵→受封→自立的機制接點）。
+**待深挖**：(a) Open Civil War plugin（war-map/策略層 UI 與 cut city battle 接法）；(b) 戰略層資料模型（城/武將/勢力狀態怎麼存、AI 決策規則）；(c) 聚落量產（一座城 spec → placed refs + N 勢力 marker 組）；(d) 玩家循環（募兵→帶兵→受封→自立的機制接點）。

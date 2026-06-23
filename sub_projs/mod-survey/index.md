@@ -8,6 +8,8 @@
 | Improved Follower Dialogue - Lydia | [findings/improved-follower-dialogue-lydia.md](findings/improved-follower-dialogue-lydia.md) | `ImprovedCompanionsBoogaloo.esp` | 高 | unique follower arc；stage/global/VM quest variable；moral objection；scene quests |
 | Relationship Dialogue Overhaul | [findings/relationship-dialogue-overhaul.md](findings/relationship-dialogue-overhaul.md) | `Relationship Dialogue Overhaul.esp` | 高 | relationship/follower system overhaul；shared info；voice type matrix；generic recruit/command compatibility |
 | I'm Glad You're Here | [findings/im-glad-youre-here.md](findings/im-glad-youre-here.md) | `ImGladYoureHere.esp` | 高（動作層） | follower/family hug action service；scene protection；camera/idle/package cleanup；Sofia compatibility hooks |
+| Immersive Patrols SE/AE | [findings/immersive-patrols.md](findings/immersive-patrols.md) | `Immersive Patrols II.esp` | 低（系統高） | no quest/dialogue；static placed patrols + patrol/follow packages + custom aggro factions；M&B static patrol slice reference |
+| Civil War Lines Expansion | [findings/civil-war-lines-expansion.md](findings/civil-war-lines-expansion.md) | `Civil War Lines Expansion.esp` | 中 | 415 combat/idle/hello bark lines；faction/voice/equipment/location/random condition matrix；voice + seq pipeline reference |
 
 ## 框架型
 
@@ -19,6 +21,7 @@
 | Conditional Expressions（深挖） | [findings/conditional-expressions.md](findings/conditional-expressions.md) | `Conditional Expressions.esp` + 16 .psc | 高（表情層） | MFG SetModifier/SetPhoneme/SetExpressionOverride 全索引表；16 種狀態 effect 機制；busy gate 設計；三段式漸變 pattern；GlobalVariable 中介狀態可用於 dialogue condition |
 | I'm Walking Here + I'm Talkin' Here | [findings/iwh-ith.md](findings/iwh-ith.md) | `ImWalkinHere.dll`（SKSE）+ `ImTalkinHere.esp` | 中（品質層） | IWH：TOML 四開關碰撞抑制，無 API，純被動；ITH：`PlayerInDialogue` Conditional property，bark condition hook；follower mod 可讀 GetScriptVariable 或自實作 PlayerBusy global |
 | Nether's Follower Framework | [findings/nether-follower-framework.md](findings/nether-follower-framework.md) | `nwsFollowerFramework.esp` | 高（主要 follower 框架） | DialogueFollower slot expansion；regular vs imported followers；Sofia import/export；NoImport faction；sandbox/regard/home/storage |
+| Extensible Follower Framework | [findings/extensible-follower-framework.md](findings/extensible-follower-framework.md) | `EFFCore.esm` + `EFFDialogue.esp` | 高（slot-bank follower framework） | 100 follower aliases + 100 hidden inventory containers；plugin quests；dialogue menu；alias package override stack；slotFactory reference |
 | Base Object Swapper (BOS) | [findings/base-object-swapper.md](findings/base-object-swapper.md) | `po3_BaseObjectSwapper.dll`（SKSE，無 ESP） | 中（場景佈置層） | `_SWAP.ini` runtime 替換 base form；`[Forms/Properties/References/Transforms]` 四 section；FormID `0xID~Plugin` 語法；location/region/keyword/cell/worldspace filter；chance 機率；transform 覆蓋（pos/rot/scale/flags）；follower home set dressing 無 patch 方案 |
 | AnimObject Swapper (AOS) | [findings/animobject-swapper.md](findings/animobject-swapper.md) | `po3_AnimObjectSwapper.dll`（SKSE，無 ESP） | 低→中（角色化演出層） | `_ANIO.ini` runtime 替換 idle ANIO；`[BaseANIO\|FILTERS\|TRAITS]` section 格式；ALL(+)/NOT(-)/MATCH/ANY(*) filter；faction/race/keyword/spell/NPC/FormList 條件；sex/child traits；多值隨機池；OAR 換動作 + AOS 換道具 配對模式 |
 | SkyPatcher | [findings/skypatcher.md](findings/skypatcher.md) | `SkyPatcher.dll`（SKSE，CommonLibSSE-NG） | 高（策略層） | 通用 ini-based runtime patcher；28+ record 類型；kDataLoaded 套用；NPC 視覺/數值/法術/perk 批量修改；esp vs config 產物策略核心 |
@@ -47,6 +50,10 @@
 | FLST 工廠模式 | [findings/flst-factory.md](findings/flst-factory.md) | FLST record | 高（缺口撤銷，模式有價值） | 索引對齊池 / 分類容器 / FLM 追加 三種模式 |
 | Global-as-Selector + linkedRef 鏈 | [findings/runtime-selector-patterns.md](findings/runtime-selector-patterns.md) | GLOB/XLKR | 中 | runtime 狀態共享 + 路線節點鏈 + OAR/DAR condition 銜接 |
 | PERK entry-point 機制 | [findings/perk-entry-points.md](findings/perk-entry-points.md) | PERK record | 高（缺口 #1） | entry-point 種類全表 + fragment 膠水 + AddActivateChoice 深挖 |
+| Civil War Overhaul Redux | [findings/civil-war-overhaul-redux.md](findings/civil-war-overhaul-redux.md) | `Civil War Overhaul.esp` | 高（M&B / 戰略戰役參考） | campaign GLOB state machine；fixed attacker/defender aliases；ticket-based reinforcement controller；fort/city siege phase triggers |
+| WARZONES - Civil Unrest | [findings/warzones-civil-unrest.md](findings/warzones-civil-unrest.md) | `WARZONES - SSE - Civil Unrest.esp` | 高（M&B ambient warzone） | marker/activator-driven encounter sites；spawnometer activators；global/MCM toggles；leveled spawn pools |
+| Populated Skyrim Civil War | [findings/populated-skyrim-civil-war.md](findings/populated-skyrim-civil-war.md) | `Populated Skyrim Civil War.esp` | 中（world population） | 430 NPC bases + placed civil-war actors；no quest/dialogue controller；static battlefield density baseline |
+| OBIS SE Patrols Addon | [findings/obis-patrols-addon.md](findings/obis-patrols-addon.md) | `OBIS SE Patrols Addon.esp` | 高（route spawn pattern） | 100-alias patrol quest；CreateReferenceToObject from leveled lists；ALPS package override per route；book/MCM globals |
 
 > ⚠️ survey agent 對「ModForge 缺什麼」是**推斷**、未查 code，已知有誤判（如 Missives 說「不能生成 alias」其實可——ModForge 有 forced/uniqueActor/createObject/findMatching/alias-script）。roadmap 的缺口清單**待一次 code 驗證 pass** 校正。各 finding 講「mod 怎麼運作」的部分可信。
 
