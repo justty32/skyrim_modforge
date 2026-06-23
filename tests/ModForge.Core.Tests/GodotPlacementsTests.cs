@@ -44,8 +44,10 @@ public class GodotPlacementsTests
     }
 
     [Fact]
-    public void Load_RotationConvertedToDegrees()
+    public void Load_RotationConvertedToDegrees_AndAxisRemapped()
     {
+        // A Godot yaw (rotation about +Y/up) must become a Skyrim yaw (rotation about +Z/up),
+        // not a Skyrim Y(north-axis) rotation — the axes follow the same change of basis as position.
         var path = WriteTempJson("""
             {
               "version": 1,
@@ -60,7 +62,34 @@ public class GodotPlacementsTests
         {
             var spec = new GodotPlacementsSpec { Path = path };
             var results = GodotPlacements.Load(spec, "", "TestWorld");
-            Assert.Equal(90f, results[0].Rotation.Y, precision: 3);   // π/2 → 90°
+            Assert.Equal(0f,  results[0].Rotation.X, precision: 3);
+            Assert.Equal(0f,  results[0].Rotation.Y, precision: 3);
+            Assert.Equal(90f, results[0].Rotation.Z, precision: 3);   // Godot +Y yaw (π/2) → Skyrim +Z yaw 90°
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void Load_RotationAxisRemap_GodotZToNegativeSkyrimY()
+    {
+        // Godot +Z(south) rotation → Skyrim −Y(north) rotation (sign flips, mirroring the position flip).
+        var path = WriteTempJson("""
+            {
+              "version": 1,
+              "coordinate_system": "godot4_y_up",
+              "placements": [
+                { "base": "Skyrim.esm:0x000001", "position": {"x":0,"y":0,"z":0},
+                  "rotation": {"x":0.0,"y":0.0,"z":1.5707963}, "scale":1.0 }
+              ]
+            }
+            """);
+        try
+        {
+            var spec = new GodotPlacementsSpec { Path = path };
+            var results = GodotPlacements.Load(spec, "", "TestWorld");
+            Assert.Equal(0f,   results[0].Rotation.X, precision: 3);
+            Assert.Equal(-90f, results[0].Rotation.Y, precision: 3);
+            Assert.Equal(0f,   results[0].Rotation.Z, precision: 3);
         }
         finally { File.Delete(path); }
     }

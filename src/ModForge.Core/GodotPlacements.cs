@@ -10,7 +10,13 @@ namespace ModForge;
 //   skyrim_y = OriginY×4096 − godot_z / k   （Godot +Z 朝南，Skyrim +Y 朝北，方向相反）
 //   skyrim_z =               godot_y / k
 //   k = 0.014286 m/unit（社群共識；1 unit ≈ 1.4286cm，player 高度 128 units ≈ 1.8m）
-// rotation：各軸 radians → degrees（PlacementSpec 存 degrees，generator 再轉回 radians 給 Mutagen）。
+// rotation：rad → deg，且軸要跟著座標系換（用與 position 同一個基底變換 M = Rx(90°)）。
+//   座標換軸 M 把 (gx,gy,gz)→(gx,−gz,gy)；旋轉軸經同一個 M 共軛後得到同樣的 per-axis 對應：
+//     skyrim_rotX =  godot_rotX        （東軸不變）
+//     skyrim_rotY = −godot_rotZ        （Godot 繞 +Z〔南〕→ Skyrim 繞 −Y〔北〕，角度反號）
+//     skyrim_rotZ =  godot_rotY        （Godot 繞 +Y〔上〕yaw → Skyrim 繞 +Z〔上〕yaw；Skyrim RotZ=heading）
+//   單軸旋轉（編輯器的主要情境，多為 yaw）下完全正確；複合 Euler 因兩邊 Euler 套用順序不同會有殘差，
+//   待主力機實機對朝向校準（見 wait_todo/worldspace-editor.md「rotation 軸對應」）。
 public static class GodotPlacements
 {
     private const float MetersPerUnit = 0.014286f;
@@ -65,9 +71,9 @@ public static class GodotPlacements
                 },
                 Rotation = new Vec3
                 {
-                    X = e.Rotation.X * RadToDeg,
-                    Y = e.Rotation.Y * RadToDeg,
-                    Z = e.Rotation.Z * RadToDeg,
+                    X =  e.Rotation.X * RadToDeg,   // east axis unchanged
+                    Y = -e.Rotation.Z * RadToDeg,   // Godot +Z(south) → Skyrim −Y(north)
+                    Z =  e.Rotation.Y * RadToDeg,   // Godot +Y(up) yaw → Skyrim +Z(up) yaw
                 },
                 Scale = e.Scale,
             });

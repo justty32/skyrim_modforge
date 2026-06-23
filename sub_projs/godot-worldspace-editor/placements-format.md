@@ -62,4 +62,10 @@ skyrim_z =                     godot_pos.y / 0.014286
 
 比例常數 `0.014286 m/unit`（1 unit ≈ 1.4286cm，社群共識；待主力機 UESP 確認，不擋 MVP）。
 
-rotation：各軸 `deg = rad × (180 / π)`；軸對映（Godot XYZ → Skyrim XYZ）待 Godot plugin 實作時對齊確認。
+rotation：各軸 `deg = rad × (180 / π)`，且軸跟著座標系換（與 position 同一個基底變換 M=Rx(90°)）：
+```
+skyrim_rotX =  godot_rot.x   ← 東軸不變
+skyrim_rotY = -godot_rot.z   ← Godot +Z(南) → Skyrim −Y(北)，反號
+skyrim_rotZ =  godot_rot.y   ← Godot +Y(上) yaw → Skyrim +Z(上) yaw＝heading
+```
+單軸旋轉（編輯器主要情境，多為 yaw）完全正確；複合 Euler 因兩邊套用順序不同有殘差，待主力機實機對朝向校準。
