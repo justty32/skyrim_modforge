@@ -28,7 +28,7 @@
 
 調查 8 個人口類 mod（[Populated 全家桶](../../sub_projs/mod-survey/findings/populated-skyrim-family.md)＋[prison-cells](../../sub_projs/mod-survey/findings/populated-prison-cells.md)、[Immersive Citizens AIO](../../sub_projs/mod-survey/findings/immersive-citizens-ai-overhaul.md)、[Immersive Wenches](../../sub_projs/mod-survey/findings/immersive-wenches.md)、[Cutting Room Floor](../../sub_projs/mod-survey/findings/cutting-room-floor.md)、[settlement-npc-expansions](../../sub_projs/mod-survey/findings/settlement-npc-expansions.md)、[wench-derivatives](../../sub_projs/mod-survey/findings/wench-derivatives.md)、[JK's set-dressing](../../sub_projs/mod-survey/findings/jks-skyrim-setdressing.md)）。**一致結論：每個低階機制都已 landed**（NPC base、全 PACK 模板、LeveledNpc、ACHR placement、additive cell-override、Vendor faction、RELA、SM 觸發 scene、radiant quest、MCM——各 finding 附 `src/` symbol evidence）。缺口集中在**便利層 + 一個小 PACK 模板**：
 
-1. ❌ **聚落量產 macro-expansion spec section（最高價值，= idea #22 待深挖 a）** — 照 `skillTrees:` pass-0 macro-expand 模式，一個高階 section 展開成既有低階記錄。調查浮現 5 種人口原型，應作為此 section 的參數化模式：
+1. ❌ **聚落量產 macro-expansion spec section（最高價值，= idea #22 待深挖 a）** — 📐 **已出設計方案 [specs/settlement-population-design.md](../specs/settlement-population-design.md)（2026-06-24）**：MVP=具名住民+靜態 ACHR+綁錨點作息+vendor（5 原型收斂成「誰×怎麼生」兩軸，MVP 取確定性那格）。以下 5 原型即該設計的參數化模式來源：
    - **靜態密度**（Populated 系）：base + package + ACHR mass placement，無 controller。
    - **腳本生怪**（Immersive Wenches）：XMarker spawn point + LeveledNpc + count GLOB + controller script。
    - **固定具名住民**（CRF）：unique NPC + faction 三件套（town/vendor/house）+ per-NPC 日程 + 可選在地 radiant。
