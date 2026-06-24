@@ -18,7 +18,7 @@
 | 設計方案 | 討論日期 | 對應 idea/roadmap | 狀態 |
 |---|---|---|---|
 | [worldspace-editor-design.md](worldspace-editor-design.md)（heightmap → 非平坦 LAND，後端 MVP） | 2026-06-16 | [Idea #19](../idea/worldspace-editor/README.md) | 設計完成，VHGT 格式已查證；待出 plan |
-| [settlement-population-design.md](settlement-population-design.md)（`settlements:` 聚落量產 macro，人口填充） | 2026-06-24 | [Idea #22](../idea/world-building.md#22-漂泊開拓慢活移動基地--程序生成異域--開拓經營) · [roadmap 🏘️](../roadmap/mod-survey-gaps.md) | 設計完成（MVP=具名住民+靜態 ACHR+綁錨點作息+vendor）；待討論開放問題→出 plan |
+| [settlement-population-design.md](settlement-population-design.md)（`settlements:` 聚落量產 macro，人口填充） | 2026-06-24 | [Idea #22](../idea/world-building.md#22-漂泊開拓慢活移動基地--程序生成異域--開拓經營) · [roadmap 🏘️](../roadmap/mod-survey-gaps.md) | 設計完成、開放問題已拍板，**plan-ready**（MVP=具名住民+靜態 ACHR+綁錨點作息+vendor）|
 
 action-system asset/config 生成（OAR/BDI/PIE）MVP 已落地（2026-06-14），design 已移 [archive/](archive/README.md)。
 

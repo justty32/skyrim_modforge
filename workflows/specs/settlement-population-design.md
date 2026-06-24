@@ -90,9 +90,11 @@ settlements:
 - **Phase 1（本設計 MVP）**：`settlements[]` 具名住民 + 靜態 ACHR + 綁錨點作息 + 可選 vendor + faction 三件套。全確定性、離線可驗。
 - **Phase 2**：`crowd:` 匿名群眾（leveled 靜態 / controller 動態 spawn，後者需 .pex）；`reaction:`（依 `flee` PACK template）；inline npc；RELA 自動友好網；`routine` 進階（per-weekday、季節）。
 
-## 開放問題（待討論/查證）
+## 已拍板決策（2026-06-24，使用者授權代決）
 
-1. `spawnAt` 給 marker editorId vs 直接給 position——MVP 兩者都收還是只收 marker？（marker 較貼 Godot 工作流）
-2. `dailyRoutine` 的 work 用 `Sandbox+Location` 還是 `UseFurniture`？vanilla 工匠多為 sandbox-near-workstation——傾向 Sandbox+小 Radius，待主力機看 NPC 是否真的去工作站。
-3. 自動建的 settlement faction 要不要預設居民互友（RELA）？小聚落要、大的可能不必——預設關閉、`friendlyResidents: true` 開。
-4. vendor merchant container 的擺放 cell——跟住民同 cell 還是專屬後室？沿用 `Build.Vendor` 現行約定。
+1. **`spawnAt` 兩者都收，marker 優先**：給 marker editorId → 取其座標（貼 Godot 工作流）；也允許直接給 position 當 fallback。
+2. **work 作息用 `Sandbox + 小 Radius`**（錨在 work ref），不用 `UseFurniture`——vanilla 工匠多為 sandbox-near-workstation。NPC 是否真的走到工作站 = 主力機實機驗收項（屬「只有使用者能驗」那類，到時我會用白話問結果）。
+3. **居民互友 RELA 預設關，`friendlyResidents: true` 才開**——避免大聚落意外全互友。
+4. **vendor merchant container 沿用 `Build.Vendor` 現行約定**（不另設後室）。
+
+> 設計即 plan-ready；剩下的不確定都收斂成「實機驗收項」，動工後進 [WAIT_USER](../../WAIT_USER.md)。
