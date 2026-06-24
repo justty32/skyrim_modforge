@@ -24,6 +24,22 @@
 8. ✅ **QuestAlias 在地點內找 ref fill 模式（來源：Missives）（已落地 2026-06-17，scope 已校正）** — **原 scope 假設用 ALNA（`FindMatchingRefNearAlias`）；反射驗證發現 ALNA `TypeEnum` 只有 `LinkedRefChild`（＝只找 editor-linked-ref 子物件，非地點內搜尋，證實既有 findMatching 註記）。** 改用 `LocationAliasReference`（其 `RefType`/LCRT 欄位對 Location 型 alias 無意義 → 證明它在 Reference 型 alias 上＝「在某 location alias 範圍內找 RefType 的 ref」）。落地 fill：`findInLocationAlias:<locationAlias>[#<refTypeLCRT>]` → `Type=Reference` + `LocationAliasReference{AliasID=locAlias, RefType=LCRT}` + conditions。Missives 的 Alias_target/Alias_chest。⚠ 同 #7，CK 語義待主力機驗。
 9. ✅ **`UpdateCurrentInstanceGlobal` fragment codegen（來源：Missives）（已落地 2026-06-17）** — `StageSpec.instanceGlobals[]`（`InstanceGlobalSpec{global, randomMin/Max?, value?}`）→ `<quest>_Stages` fragment 在該 stage 生成 `<g>.SetValue(Utility.RandomInt(min,max)|值)` + `UpdateCurrentInstanceGlobal(<g>)`，把 GLOB 綁到 quest instance 讓 `<Global=X>` objective 文字顯示 per-instance 計數（同模板多開不同數量）。`Generator.QuestFragments.cs`（source + property 宣告）+ `Generator.Build.QuestStages.cs`（綁 GLOB `ScriptObjectProperty` + 該 stage QuestScriptFragment）+ `Generator.Validate.Quests.cs`（global ref/random 一致性）。**11 測綠**，example `gather_quest_spec.json`。⚠ per-instance 計數 objective 的 runtime（`SetValue`+`UpdateCurrentInstanceGlobal` 綁到當前 instance、`<Global=X>` 文字更新）待主力機驗（WAIT_USER）。**A 組 #7/#8/#9 全收 → radiant gather/bounty quest 生成鏈完整。**
 
+## 🏘️ 人口 / 聚落量產缺口（人口 mod 調查 2026-06-24，餵 idea #22）
+
+調查 8 個人口類 mod（[Populated 全家桶](../../sub_projs/mod-survey/findings/populated-skyrim-family.md)＋[prison-cells](../../sub_projs/mod-survey/findings/populated-prison-cells.md)、[Immersive Citizens AIO](../../sub_projs/mod-survey/findings/immersive-citizens-ai-overhaul.md)、[Immersive Wenches](../../sub_projs/mod-survey/findings/immersive-wenches.md)、[Cutting Room Floor](../../sub_projs/mod-survey/findings/cutting-room-floor.md)、[settlement-npc-expansions](../../sub_projs/mod-survey/findings/settlement-npc-expansions.md)、[wench-derivatives](../../sub_projs/mod-survey/findings/wench-derivatives.md)、[JK's set-dressing](../../sub_projs/mod-survey/findings/jks-skyrim-setdressing.md)）。**一致結論：每個低階機制都已 landed**（NPC base、全 PACK 模板、LeveledNpc、ACHR placement、additive cell-override、Vendor faction、RELA、SM 觸發 scene、radiant quest、MCM——各 finding 附 `src/` symbol evidence）。缺口集中在**便利層 + 一個小 PACK 模板**：
+
+1. ❌ **聚落量產 macro-expansion spec section（最高價值，= idea #22 待深挖 a）** — 照 `skillTrees:` pass-0 macro-expand 模式，一個高階 section 展開成既有低階記錄。調查浮現 5 種人口原型，應作為此 section 的參數化模式：
+   - **靜態密度**（Populated 系）：base + package + ACHR mass placement，無 controller。
+   - **腳本生怪**（Immersive Wenches）：XMarker spawn point + LeveledNpc + count GLOB + controller script。
+   - **固定具名住民**（CRF）：unique NPC + faction 三件套（town/vendor/house）+ per-NPC 日程 + 可選在地 radiant。
+   - **店家/服務面**（settlement-npc-expansions）：**per-NPC Vendor faction**（非 rank 公會，是迷你商圈：Vendor flag + 營業時段 + sellBuyList FLST + MerchantContainer）。
+   - **室內抽卡填充**（prison-cells）：carrier NPC → LeveledNpc 兩層 template 抽卡。
+   建議參數雛形：`settlementPopulation:`/`wildernessPopulation:`/`spawnPoints[]`（cell + markers + residents/leveled + count-global + 可選 controller + dailySchedule + shops）。
+2. ❌ **`flee` PACK template（小 record 缺口，來源 Immersive Citizens AIO）** — Flee-template package + 預擺安全點（Location to Flee）+ 可選 CombatStyle，讓受襲聚落有反應（平民逃、守衛迎戰）。慢活聚落需要。
+3. 📌 **配方鐵律（非缺口，是借鏡）**：日程 package **必須綁實際擺放的床/攤位/工作站 ref**——純抽象 sandbox 會讓 NPC 呆站（ICAIO/CRF/settlement-expansions 三方印證）。聚落量產 section 生 NPC 時須連帶生家具錨點。這跟 [Godot 程序化擺放](../../sub_projs/godot-worldspace-editor/stitching.md#相關gdscript-程序化擺放) 接得上（擺家具時一併產日程錨點）。
+4. 🧊 **輕量便利層（低優先）**：`leveledListInject[]`（純資料把 form 注入既有 LeveledNpc，來源 Deadly Wenches）；非破壞 `enableState[]` toggle（CRF 的 ChangeLocation 狀態機 enable/disable 既有 ref）。
+5. ✅ **set-dressing = placement volume（非缺口，已解）** — JK's 系 18550 靜態 REFR/零任務，`cellrefs` 欄位與 Godot 編輯器 `placements.json` **1:1 對齊**；聚落佈景是 placement-volume 問題，現有 placement 管線 + Godot 編輯器即天然 authoring 工具，BOS 作 runtime 補。
+
 > **延伸調查**：缺口 #2（alias indirection）、#3（navmesh-tester）以及 LVLN fill（partial）均由 IWE/EE encounter mod 調查交叉驗證，見 [sub_projs/mod-survey/findings/encounter-mods.md](../../sub_projs/mod-survey/findings/encounter-mods.md)。
 
 > 校正前的原始推斷清單見 git 歷史（commit 前一版）。撤銷/降級的依據全為實際 builder symbol。
