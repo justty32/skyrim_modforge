@@ -37,3 +37,4 @@
 | 19 | Godot Worldspace Editor | 工具/世界 | [sub_projs/godot-worldspace-editor/](../../sub_projs/godot-worldspace-editor/README.md) |
 | 20 | In-world 技能樹（玩家+NPC） | 隨從/NPC · 養成 | [sub_projs/inworld-skill-tree/](../../sub_projs/inworld-skill-tree/README.md) |
 | 21 | 養成與戰鬥體系擴充（Keystone + 職業核心機制） | 養成/戰鬥 | [progression-combat-overhaul.md](progression-combat-overhaul.md) |
+| 22 | 漂泊開拓慢活（統整 #3+#4+#8，含可行性盤點） | 世界/玩法 | [world-building.md](world-building.md#22-漂泊開拓慢活移動基地--程序生成異域--開拓經營) |
