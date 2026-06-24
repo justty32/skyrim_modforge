@@ -1,6 +1,6 @@
 # Godot Worldspace Editor
 
-← [idea #19](../../workflows/idea/ideas.md)｜附屬：[座標系](coord-system.md)　[placements 格式](placements-format.md)　[決策與查證](decisions.md)　[前端結構](frontend-structure.md)
+← [idea #19](../../workflows/idea/ideas.md)｜附屬：[座標系](coord-system.md)　[placements 格式](placements-format.md)　[分塊拼大圖](stitching.md)　[決策與查證](decisions.md)　[前端結構](frontend-structure.md)
 
 用 **Godot 4**（**自製 terrain**，不靠 HTerrain plugin）離線做地形編輯 → 匯出 → ModForge 生 LAND/REFR → 進遊戲微調。定位是 **Creation Kit 地形/場景編輯的替代前端**（CK 在 Wine/Proton 不穩、難腳本化）。
 
@@ -37,6 +37,10 @@ Godot（自製 terrain）               ModForge
 - **Cell seam**：高度已靠單張 PNG 共用邊緣欄自動對齊；殘留風險是 **VNML 法線**——邊緣頂點重算法線需參考鄰格高度，切割後要保留 1px overlap
 - **NIF 預覽**：Godot 不讀 NIF，靠 glTF proxy（fo76utils / NifSkope 批量轉換前置，Linux+Windows 雙平台可用）
 - **Navmesh**：複雜地形 flat-quad 會卡 NPC，精確 navmesh 後排
+
+**大世界＝分塊編輯 → 拼大圖**：一次編十幾格 cell 的 chunk，最後把各 chunk 的 PNG **合成成一張大 PNG**（先合成再讓 ModForge 切，VNML 邊界縫自動消失）+ 合併 placements。邊界**手動對齊**（開新塊先 import 鄰邊起步），stitch 工具純貼上不混合。完整工作流與鎖定決策見 [stitching.md](stitching.md)。
+
+**物件擺放可程序化（GDScript）**：除手動 Place Mode，可寫 GDScript 用 `terrain.get_height()`+`PlacementTool` 迴圈/noise 程序生成、貼地、按現成匯出鈕出 `placements.json`（ModForge 零改動）。scatter/grid/聚落量產的最佳前端——詳見 [stitching.md § GDScript](stitching.md#相關gdscript-程序化擺放)。
 
 ---
 

@@ -101,4 +101,4 @@
 
 **與其他想法交集**：吸收 #3/#4/#8；UI 靠 #7（CEF）；建設/解鎖重用 #20（in-world 技能樹）的 macro-expand + 扣點 gate pattern；NPC/對話/Scene/語音重用既有隨從管線；worldspace 重用既有生成全鏈。
 
-**待深挖**：(a) 聚落量產 spec section 設計（一座聚落 → placed refs，參數化／macro-expand）；(b) 生活循環資料模型（資源/體力/收成/好感怎麼用 StorageUtil 存、每日 tick 規則）；(c) 移動基地事件化的具體接法（家 cell + 地圖目的地選單 + 抵達演出）；(d) 程序生成多樣性的種子化生成器設計（一個 spec 模板 → N 套手氣不同的 worldspace）；(e) ⑥ UI：CEF 可行性 vs 書本保底的取捨原型。
+**待深挖**：(a) 聚落量產 spec section 設計（一座聚落 → placed refs，參數化／macro-expand）；(b) 生活循環資料模型（資源/體力/收成/好感怎麼用 StorageUtil 存、每日 tick 規則）；(c) 移動基地事件化的具體接法（家 cell + 地圖目的地選單 + 抵達演出）；(d) 程序生成多樣性的種子化生成器設計（一個 spec 模板 → N 套手氣不同的 worldspace）；(e) ⑥ UI：CEF 可行性 vs 書本保底的取捨原型；(f) **大圖分塊工作流**（Godot 分塊編輯 + 手動對齊 → stitch 合成大 PNG；GDScript 程序化擺放）——決策已定，見 [godot-editor stitching.md](../../sub_projs/godot-worldspace-editor/stitching.md)；缺 LCTN 可發現地點記錄生成。
