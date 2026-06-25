@@ -24,3 +24,4 @@
 | [2026-06-13-spec-refs-env-design](2026-06-13-spec-refs-env-design.md) | spec 的 `$ref`/`$env` JSON include + 參數化前處理層。 |
 | [2026-06-13-voice-annotation-index-design](2026-06-13-voice-annotation-index-design.md) | 語音情緒標註索引（INFO Emotion seed → 人工校正）。 |
 | [2026-06-14-action-system-asset-generation-design](2026-06-14-action-system-asset-generation-design.md) | 動作系統散裝檔生成（OAR moveset + BDI config + PIE 巨集，非-esp）。 |
+| [2026-06-24-settlement-population-design](2026-06-24-settlement-population-design.md) | `settlements:` 聚落量產 macro（具名住民 + 靜態 ACHR + 綁錨點作息 + vendor）；MVP 2026-06-25 落地。 |

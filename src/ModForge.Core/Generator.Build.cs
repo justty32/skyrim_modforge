@@ -22,6 +22,9 @@ public static partial class Generator
         // pass 0: macro-expand high-level sugar into low-level records BEFORE anything reads the spec
         // (skillTrees → globals/activators/placements/scripts). Idempotent (guarded on the spec).
         ExpandSkillTrees(spec);
+        // (settlements → npcs' packages/factions + ACHR placements + vendor FACT/container + RELA).
+        // Runs after ExpandSkillTrees; both feed pass 1. Idempotent (guarded on the spec).
+        ExpandSettlements(spec);
 
         var ctx = new BuildContext(spec, outputKey, options);
 

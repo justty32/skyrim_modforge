@@ -62,7 +62,11 @@ public static partial class Generator
             // Mirrors DefaultSandboxCurrentLocation256 (Skyrim.esm:0x0956B8) — concrete sandboxes
             // explicitly set all 12 named slots; we do the same so behaviour is deterministic.
             var sb = pk.Sandbox;
-            pack.Data[0] = MakeLocationSlot("Location", $"package '{pk.EditorId}' sandbox", sb.Location, sb.Radius, pk.EditorId);
+            // DEFERRED (like Travel's Place / Escort's Destination): `location` may be an IN-SPEC placement
+            // editorId (e.g. a forge/wander XMarker, esp. from the `settlements:` macro) not registered
+            // until the placement loop runs. Resolving eagerly here would miss it and fall back to NearSelf;
+            // vanilla refs / aliases / empty all still resolve correctly in the deferred pass.
+            deferredLocationWires.Add((pack, 0, "Location", pk.EditorId, sb.Location, sb.Radius));
             void SBool(sbyte slot, string name, bool? user, bool def)
                 => pack.Data[slot] = new PackageDataBool { Name = name, Data = user ?? def };
             SBool(1,  "Allow Eating",            sb.AllowEating,           true);
@@ -85,7 +89,9 @@ public static partial class Generator
             // internal bools — NOT author-facing; emitted exactly as vanilla so bed-seeking works),
             // then the named bool/float block. The sleep window is the package Schedule, not a slot.
             var sl = pk.Sleep;
-            pack.Data[0] = MakeLocationSlot("Sleep Location", $"package '{pk.EditorId}' sleep", sl.Location, sl.Radius == 0 ? 500u : sl.Radius, pk.EditorId);
+            // DEFERRED (see ApplySandboxData): a `location` bed anchor may be an in-spec placement editorId
+            // (the `settlements:` macro binds Sleep to a placed bed/marker) registered only in the placement loop.
+            deferredLocationWires.Add((pack, 0, "Sleep Location", pk.EditorId, sl.Location, sl.Radius == 0 ? 500u : sl.Radius));
             pack.Data[1] = new PackageDataTarget
             {
                 Name = "Search Criteria:",

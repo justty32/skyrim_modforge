@@ -341,3 +341,63 @@ your own meshes. The `MFSkillNode.pex` (node behaviour) ships automatically with
 vertical lines) — the IN-GAME-CONFIRMED layout. Branching / free 2-D layouts are a future extension
 (diagonal connector orientation needs calibration). Worked example: `examples/skill_tree_spec.json`
 (the generator) vs `examples/inworld_skill_tree_standalone_spec.json` (the same result hand-authored).
+
+## populated settlements (`settlements`)
+
+A **populated settlement** — named residents who LIVE in a cell, each with a sleep/work/wander daily
+routine bound to placed anchor refs, optional shop, and shared faction. `settlements` is a high-level
+*macro* (like `skillTrees`): the generator expands each resident into the low-level records every
+build pass already handles — an ACHR placement, 2–3 schedule packages, faction membership, and (for a
+shopkeeper) a vendor FACT + a placed merchant chest. **No new record type, no runtime script** — pure
+data expansion, so it is fully verifiable offline. It turns ~100 hand-authored records (10 residents ×
+packages + factions + vendors + placements) into a dozen lines.
+
+```jsonc
+"settlements": [
+  { "editorId": "MFV_Riverwatch",
+    "cell": "MFV_RiverwatchInterior",          // in-spec cell editorId OR vanilla "<master>:0xFORMID"
+    "settlementFaction": "",                    // empty → auto "<editorId>_Faction" every resident joins
+    "crimeFaction": "Skyrim.esm:0x0267EA",      // optional → each resident's CrimeFaction (city-traversal)
+    "friendlyResidents": true,                  // optional → pairwise Friend RELA between residents (default off)
+    "dailyRoutine": {                           // settlement default; a resident's `routine` overrides per-window
+      "sleep": { "from": 22, "to": 7 },         // hours 0..24; a window may wrap midnight (from > to)
+      "work":  { "from": 8,  "to": 18 }
+    },
+    "residents": [
+      { "npc": "MFV_Brelin",                    // ref → an existing npcs[] editorId (the resident)
+        "home":    "MFV_BrelinBed",             // ref → a placed bed/marker REFR (Sleep anchor)
+        "work":    "MFV_BrelinForge",           // ref → a placed workstation/marker REFR (Work anchor); optional
+        "spawnAt": "MFV_BrelinSpawn",           // ref → a placed XMarker (ACHR spawns at its coords)
+        "vendor": { "sellBuyList": "Skyrim.esm:0x06CB48", "notSellBuyList": true,
+                    "startHour": 9, "endHour": 18, "gold": 500 } },
+      { "npc": "MFV_Millie", "home": "MFV_MillieBed", "spawnAt": "MFV_MillieSpawn",
+        "routine": { "sleep": { "from": 21, "to": 6 } } }   // override just the sleep window
+    ] }
+]
+```
+
+**Each resident expands to:** an **ACHR placement** at the spawn marker's coords (or `spawnPosition`
+fallback) in the settlement cell; a **Sleep package** (anchored at `home`) gated on the sleep window; a
+small-radius **Sandbox "work" package** (anchored at `work`) gated on the work window — emitted only if
+a `work` anchor is given; an always-on large-radius **Sandbox "wander" package** (lowest priority); and
+faction membership. With `vendor`, a Vendor-flagged FACT (the resident joins it, plus the engine's
+`JobMerchantFaction`) + a placed merchant chest holding `gold`. Packages are ordered by schedule hour
+(wander last) — vanilla package precedence.
+
+**Anchor philosophy.** `home`/`work`/`spawnAt` are editorIds of refs YOU place (in the Godot editor or
+`placements[]`). The macro only BINDS packages to them — it never conjures abstract sandbox points (a
+purely abstract sandbox = an NPC standing idle). Place a bed/forge/marker, give it an editorId, and the
+routine wires to it. (Sleep actively searches for a real bed near its anchor — in a bare custom cell
+with no bed furniture the NPC won't lie down; place a vanilla bed near the `home` anchor, or build in a
+vanilla cell that already has beds.)
+
+**Fields** (`settlements[]`): `editorId`, `cell`, `settlementFaction` (empty → auto-create),
+`crimeFaction`, `dailyRoutine` (`sleep`/`work` each `{from,to}` hours), `friendlyResidents` (default
+false), `residents`. **Resident** (`residents[]`): `npc` (in-spec npcs[] ref), `home`/`work`/`spawnAt`
+(placed-ref editorIds), `spawnPosition` (Vec3 fallback when no `spawnAt`), `vendor`
+(`sellBuyList`/`notSellBuyList`/`startHour`/`endHour`/`gold`), `routine` (per-resident override).
+
+**MVP scope.** Named residents + static ACHR + anchored routine + optional vendor (the deterministic,
+offline-verifiable quadrant). **Phase 2** (not yet): `crowd:` anonymous masses (leveled-static or a
+spawn-controller `.pex`), `reaction: flee|fight` (needs a `flee` PACK template), inline npc, advanced
+per-weekday/seasonal routines. Worked example: `examples/settlement_spec.json`.

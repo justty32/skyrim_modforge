@@ -24,6 +24,7 @@
 | `examples/weather_bright.json` | 室外天氣 IMGS 調色：自訂 IMGS + Weather `imageSpaces.default` 填全 ToD |
 | `examples/skill_tree_spec.json` | **in-world 技能樹 generator**（`skillTrees:` 高階 macro，**這是正規用法**）IN-GAME CONFIRMED |
 | `examples/inworld_skill_tree_standalone_spec.json` | 同結果**手刻低階版**（直接寫 activators/placements/scripts；Phase 1 實機驗證範本，可對照 generator 展開出什麼）|
+| `examples/settlement_spec.json` | **聚落人口 generator**（`settlements:` 高階 macro）：2 住民（鐵匠+vendor / 廚子+作息覆寫）+ 錨點作息 + 自動 faction |
 | `examples/inworld_skill_tree_spec.json` | Campfire-radial-menu 路線設計範本（**不交付、需裝 Campfire**；留作未來 radial 版參考）|
 | `examples/assets/skilltree/` | 技能樹美術 kit：Campfire 星/線 nif（loose）+ 9 個 vanilla 貼圖；spec `assets` 帶上 |
 
@@ -53,6 +54,7 @@
 | `LightTests.cs` | 自訂 Light（LIGT）color/radius/fade/flags build + validate |
 | `LightingTests.cs` | LGTM/IMGS build + CELL XCLL inherit + validate guardrails |
 | `SkillTreeTests.cs` | `skillTrees:` macro-expansion（points/rank GLOB、node+line ACTI、垂直堆疊 placement、line 中點+rot+scale、gating 鏈 prereq/downLine、root 無 prereq、idempotent guard）+ build（temp refs、node 掛 MFSkillNode）+ validate（id 唯一/cell/name/ability 必填）|
+| `SettlementTests.cs` | `settlements:` macro-expansion（ACHR spawn 座標/fallback、Sleep/Work/Wander package + wrap-midnight 時長 + 錨點、npc.Packages 排序、routine 覆寫、auto/explicit faction、crimeFaction、vendor FACT/chest/gold、friendlyResidents RELA、idempotent）+ build（**Sleep location 解析到 in-spec 床錨**的 deferred 修回歸測）+ validate（npc 非 in-spec、缺 spawn、sleep 無 home、未知錨、重複住民、vendor 時數、缺 cell/residents）|
 
 ---
 
@@ -99,6 +101,22 @@
 | Validate | `Generator.Validate.SkillTrees.cs` | `ValidateSkillTrees`：tree/node editorId 唯一、cell/name/ability 必填、ability CheckRef、spacing>0 |
 | Papyrus | `assets/papyrus/MFSkillNode.psc` | 節點行為（extends ObjectReference）：OnActivate gate（prereq rank + points）→ AddSpell + PlayAnimation("OwnedWild") + downLine "Unlock" + 扣點；OnLoad 重播亮起（持久）。嵌入 CLI、`package` 在有 skillTree 時 `ShipEmbeddedPex("MFSkillNode.pex")` |
 | Art | `examples/assets/skilltree/` | Campfire 星/線 nif（loose 打包，非 master）+ 9 個 vanilla 貼圖；作者經 spec `assets` 帶上 |
+
+---
+
+## Populated Settlements 聚落人口（Idea #22）
+→ **說明文件**：[SPEC-world.md § populated settlements](../../../docs/spec/SPEC-world.md#populated-settlements-settlements) · 設計 [settlement-population-design](../../specs/archive/README.md)
+
+把「住滿活人的聚落」一鍵展開成既有低階記錄的 **macro**（同 skillTrees 架構，`Build()` pass-0）。MVP = 具名住民 + 靜態 ACHR + 綁錨點作息 + 可選 vendor + faction 三件套；**零新 record 型別、零 runtime 腳本**，純資料展開、離線完全可驗。
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.Settlement.cs` | `SettlementSpec`（editorId/cell/settlementFaction/crimeFaction/friendlyResidents/dailyRoutine/residents）+ `ResidentSpec`（npc/home/work/spawnAt/spawnPosition/vendor/routine）+ `RoutineSpec`（sleep/work）+ `RoutineWindowSpec`（from/to）+ `SettlementVendorSpec`（sellBuyList/notSellBuyList/startHour/endHour/gold）|
+| Spec | `Spec.cs` | `ModSpec.Settlements` + `SettlementsExpanded` 守衛旗標 |
+| Expand P0 | `Generator.Settlements.cs` | **`ExpandSettlements`**：每聚落 → settlement FACT（空則自建）；每住民 → ACHR placement（spawn marker 座標 / spawnPosition fallback）+ Sleep/Work/Wander package（綁 home/work/spawnAt 錨點，schedule 帶 wrap-midnight 時長）+ npc.Packages（排程 by hour、wander 最後）+ faction 三件套 + 可選 vendor FACT/chest（gold）/JobMerchantFaction；`friendlyResidents` → 兩兩 Friend RELA。常數 `SandboxTemplateRef`/`SleepTemplateRef`/`GoldRef`/`JobMerchantFactionRef` |
+| Build | `Generator.Build.cs` | pass-0 呼叫 `ExpandSettlements(spec)`（在 `ExpandSkillTrees` 後、`new BuildContext` 前）|
+| Validate | `Generator.Validate.Settlements.cs` | `ValidateSettlements`：settlement/resident id 唯一、cell 必填、residents 非空、npc 必為 in-spec npcs[]、需 spawnAt 或 spawnPosition、sleep window 需 home 錨、home/work/spawnAt 須為 placement/external、vendor 時數 0..24/gold≥0、routine 時數合法 |
+| **錨點解析修** | `Generator.Build.Packages.cs` | `ApplySandboxData`/`ApplySleepData` 的 location slot 改 **deferred**（加進 `deferredLocationWires`，仿 Travel/Escort）——原本 eager 解析時 placement 還沒註冊 → in-spec 錨點一律 fallback NearSelf；現在 placement loop 後才解析，in-spec marker/bed 錨點正確解析（且自動被強制 persistent）|
 
 ---
 

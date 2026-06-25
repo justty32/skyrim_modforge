@@ -1,0 +1,79 @@
+{
+  "pluginName": "MFSettlement.esp",
+  "esl": true,
+
+  "//": "Idea #22 — the `settlements:` POPULATION MACRO. The compact `settlements` block at the bottom macro-expands (pass 0, like `skillTrees:`) into the low-level records every build pass already handles: for each resident an ACHR placement + 2–3 schedule packages bound to the author's anchor refs (home bed / work station / wander marker) + settlement-faction membership + (optional) a vendor FACT and a placed merchant chest. NO new record type, NO runtime script — pure data expansion, fully verifiable offline. Compare examples/vendor_spec.json (one merchant, hand-authored) and examples/package_spec.json (one schedule package, hand-authored): the macro produces the same kind of records, in bulk.",
+
+  "//anchors": "ANCHOR PHILOSOPHY: home/work/spawnAt are editorIds of refs YOU place (here: XMarkerHeading 0x34 markers + the floor grid). The macro only BINDS packages to them; it never conjures abstract sandbox points. Place a bed/forge/marker in the Godot editor (or here), give it an editorId, and the routine wires to it. In a custom cell with no real bed furniture the Sleep package has nothing to actually lie on — for true in-game sleeping place a vanilla bed near the `home` marker, or build the settlement in a vanilla cell that already has beds.",
+
+  "cells": [
+    { "editorId": "MFV_RiverwatchInterior", "name": "Riverwatch Longhouse", "template": "Skyrim.esm:0x0165A8" }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MFV_Brelin", "name": "Brelin the Smith",
+      "race": "Skyrim.esm:0x013746", "voiceType": "Skyrim.esm:0x013AE6", "unique": true,
+      "greeting": "Need a blade mended? You've come to the right forge."
+    },
+    {
+      "editorId": "MFV_Millie", "name": "Old Millie",
+      "race": "Skyrim.esm:0x0008883C", "voiceType": "Skyrim.esm:0x0013ADD", "unique": true,
+      "greeting": "Sit yourself down, the stew's nearly ready."
+    }
+  ],
+
+  "placements": [
+    { "//": "FLOOR 3x3 grid (WRIntFloorSTMid01Large 0x1044AA, 256 spacing) so the residents stand instead of falling into the void.",
+      "base": "Skyrim.esm:0x1044AA", "cell": "MFV_RiverwatchInterior", "position": { "x": -256, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MFV_RiverwatchInterior", "position": { "x":    0, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MFV_RiverwatchInterior", "position": { "x":  256, "y": -256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MFV_RiverwatchInterior", "position": { "x": -256, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MFV_RiverwatchInterior", "position": { "x":    0, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MFV_RiverwatchInterior", "position": { "x":  256, "y":    0, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MFV_RiverwatchInterior", "position": { "x": -256, "y":  256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MFV_RiverwatchInterior", "position": { "x":    0, "y":  256, "z": 0 } },
+    { "base": "Skyrim.esm:0x1044AA", "cell": "MFV_RiverwatchInterior", "position": { "x":  256, "y":  256, "z": 0 } },
+
+    { "//": "Lights so the longhouse is visible.", "base": "Skyrim.esm:0x0C82AE", "cell": "MFV_RiverwatchInterior", "position": { "x": 0, "y": 0, "z": 300 } },
+    { "base": "Skyrim.esm:0x06ED46", "cell": "MFV_RiverwatchInterior", "position": { "x": -220, "y": 0, "z": 220 } },
+    { "base": "Skyrim.esm:0x06ED46", "cell": "MFV_RiverwatchInterior", "position": { "x":  220, "y": 0, "z": 220 } },
+
+    { "//": "ANCHORS — XMarkerHeading (0x34) refs the macro binds packages to. Give them editorIds; nothing else references them directly.",
+      "editorId": "MFV_BrelinBed",     "base": "Skyrim.esm:0x00000034", "cell": "MFV_RiverwatchInterior", "position": { "x": -200, "y": 200, "z": 0 } },
+    { "editorId": "MFV_BrelinForge",   "base": "Skyrim.esm:0x00000034", "cell": "MFV_RiverwatchInterior", "position": { "x":  200, "y": -200, "z": 0 } },
+    { "editorId": "MFV_BrelinSpawn",   "base": "Skyrim.esm:0x00000034", "cell": "MFV_RiverwatchInterior", "position": { "x":  100, "y": 0, "z": 0 } },
+    { "editorId": "MFV_MillieBed",     "base": "Skyrim.esm:0x00000034", "cell": "MFV_RiverwatchInterior", "position": { "x": -200, "y": -200, "z": 0 } },
+    { "editorId": "MFV_MillieHearth",  "base": "Skyrim.esm:0x00000034", "cell": "MFV_RiverwatchInterior", "position": { "x":    0, "y": 200, "z": 0 } },
+    { "editorId": "MFV_MillieSpawn",   "base": "Skyrim.esm:0x00000034", "cell": "MFV_RiverwatchInterior", "position": { "x": -100, "y": 0, "z": 0 } }
+  ],
+
+  "settlements": [
+    {
+      "editorId": "MFV_Riverwatch",
+      "cell": "MFV_RiverwatchInterior",
+      "//settlementFaction": "omitted -> the macro auto-creates MFV_Riverwatch_Faction and joins every resident",
+      "friendlyResidents": true,
+      "dailyRoutine": {
+        "sleep": { "from": 22, "to": 7 },
+        "work":  { "from": 8,  "to": 18 }
+      },
+      "residents": [
+        {
+          "npc": "MFV_Brelin",
+          "home":    "MFV_BrelinBed",
+          "work":    "MFV_BrelinForge",
+          "spawnAt": "MFV_BrelinSpawn",
+          "vendor": { "sellBuyList": "Skyrim.esm:0x06CB48", "notSellBuyList": true, "startHour": 9, "endHour": 18, "gold": 500 }
+        },
+        {
+          "npc": "MFV_Millie",
+          "home":    "MFV_MillieBed",
+          "work":    "MFV_MillieHearth",
+          "spawnAt": "MFV_MillieSpawn",
+          "routine": { "sleep": { "from": 21, "to": 6 } }
+        }
+      ]
+    }
+  ]
+}

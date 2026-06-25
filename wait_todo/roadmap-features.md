@@ -6,6 +6,8 @@
 
 - ✅ **D 組七個分發器全部 IN-GAME CONFIRMED（2026-06-20）**：SPID / MCM / FLM / KID / BOS / AOS / SkyPatcher 皆實機收掉，移出本清單（細節進 git log + landed）。
 
+- **【聚落人口 macro `settlements:`（Idea #22 MVP）】NPC 作息行為 runtime 驗收 — 待主力機（2026-06-25 離線落地，834 測綠）**：✅ 已離線實作 + build/validate/dump 全驗（`Spec.Settlement.cs`/`Generator.Settlements.cs`/`Generator.Validate.Settlements.cs`，example `settlement_spec.json`；ACHR/package/FACT/chest/RELA 都正確展開、Sleep/Work location 已解析到 in-spec 錨點）。⚠️ **待你驗（純 runtime 行為，離線跨不過）**：build 一個真實聚落（建議擺在**有真實床/家具的 vanilla 室內**，或在自訂 cell 內於 `home` 錨點旁擺一張 vanilla 床），確認：① 工作時段 NPC 是否**真的走到 `work` 錨點**附近 sandbox（設計決策 #2 標的實機驗收點：Sandbox+小半徑錨在 work ref，不確定引擎是否讓 NPC 走到工作站）；② 睡眠時段是否**真的上床**（Sleep 模板找錨點附近的床——自訂空房無床則不躺）；③ vendor 住民營業時段對話出現「交易」選項、開張賣貨。**不擋使用、不擋離線續做**——收尾確認。Phase 2（crowd/flee PACK/inline npc）未做。
+
 
 - **【L 組 GetVMQuestVariable/GetVMScriptVariable condition】variableName 字串格式 — 待主力機 xEdit 驗（2026-06-20 離線落地）**：✅ 已離線實作 condition 讀 Papyrus property（`ConditionSpec.VariableName` + builder 兩 case + validate + docs/schema/test，720 測綠）。⚠️ **待你驗**：用 xEdit 開一個真實用 `GetVMQuestVariable`/`GetVMScriptVariable` 的 mod（如 Inigo/ITH 讀 `PlayerInDialogue`，或任何讀 quest-script property 的 INFO condition），對照引擎期望的 `variableName` 字串究竟是 **bare property 名**（`PlayerInDialogue`）還是 **backing var**（`::PlayerInDialogue_var`）——ModForge verbatim 寫進 CTDA，author 給什麼寫什麼。確認後把正確格式補進 [SPEC-dialogue.md § conditions](../docs/spec/SPEC-dialogue.md) 的 GetVMQuestVariable 範例。收尾驗證，不擋使用。
 

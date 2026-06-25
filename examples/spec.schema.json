@@ -590,6 +590,11 @@
       "type": "array",
       "items": { "$ref": "#/$defs/skillTree" },
       "description": "In-world clickable perk trees (Idea #20). Macro-expands into node/line activators + placements + rank/points globals + MFSkillNode scripts. Zero external-mod dependency. MVP = vertical linear chain. See docs/spec/SPEC-world.md."
+    },
+    "settlements": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/settlement" },
+      "description": "Populated settlements (Idea #22). Macro-expands each resident into an ACHR placement + sleep/work/wander schedule packages bound to placed anchors + faction membership + (optional) vendor FACT/chest. No new record type, no runtime script — fully offline-verifiable. See docs/spec/SPEC-world.md."
     }
   },
   "additionalProperties": false,
@@ -629,6 +634,66 @@
         "editorId": { "type": "string", "description": "Unique within the tree." },
         "name": { "type": "string", "description": "Shown on the activate prompt + learn notification." },
         "ability": { "$ref": "#/$defs/ref", "description": "A SPEL (in-spec ability or vanilla) granted to the player when this node is learned." }
+      }
+    },
+    "settlement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["editorId", "cell", "residents"],
+      "properties": {
+        "editorId": { "type": "string", "description": "Unique id; prefixes the generated package/faction/container/placement editorIds." },
+        "cell": { "$ref": "#/$defs/ref", "description": "Where residents live: an in-spec interior cell editorId OR a vanilla cell '<master>:0xFORMID'. All resident ACHR + the merchant chest land here." },
+        "settlementFaction": { "type": "string", "description": "FACT editorId every resident joins (townsfolk). Empty -> auto-create '<editorId>_Faction'." },
+        "crimeFaction": { "$ref": "#/$defs/ref", "description": "Optional crime/citizen FACT applied to every resident's CrimeFaction (grants city-traversal rights)." },
+        "friendlyResidents": { "type": "boolean", "default": false, "description": "Generate pairwise Friend RELA between residents. Default off (a large settlement's all-friendly net is N*(N-1) records)." },
+        "dailyRoutine": { "$ref": "#/$defs/routine", "description": "Settlement-default daily routine; a resident inherits it unless its own `routine` overrides per window." },
+        "residents": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/resident" },
+          "description": "The named residents who live here."
+        }
+      }
+    },
+    "resident": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["npc"],
+      "properties": {
+        "npc": { "type": "string", "description": "Ref -> an existing npcs[] editorId. The resident is placed from this NPC base." },
+        "home": { "$ref": "#/$defs/ref", "description": "Ref -> a placed bed/marker REFR editorId; the Sleep package anchor. Required if a sleep window applies." },
+        "work": { "$ref": "#/$defs/ref", "description": "Ref -> a placed workstation/marker REFR editorId; the Work package anchor. Optional (no work package without it)." },
+        "spawnAt": { "$ref": "#/$defs/ref", "description": "Ref -> a placed XMarker editorId; the ACHR spawns at its coords. Preferred over spawnPosition." },
+        "spawnPosition": { "$ref": "#/$defs/vec3", "description": "Fallback spawn coords when `spawnAt` is not given. One of spawnAt/spawnPosition is required." },
+        "vendor": { "$ref": "#/$defs/settlementVendor", "description": "Optional -> makes this resident a shopkeeper (vendor FACT + merchant chest + JobMerchantFaction)." },
+        "routine": { "$ref": "#/$defs/routine", "description": "Optional per-resident routine override (merged over the settlement's dailyRoutine, per window)." }
+      }
+    },
+    "routine": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sleep": { "$ref": "#/$defs/routineWindow", "description": "Sleep window -> a Sleep package anchored at the resident's `home`." },
+        "work": { "$ref": "#/$defs/routineWindow", "description": "Work window -> a small-radius Sandbox package anchored at the resident's `work`." }
+      }
+    },
+    "routineWindow": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "from": { "type": "integer", "minimum": 0, "maximum": 24, "description": "Start hour (0..24). A window may wrap midnight (from > to, e.g. sleep 22->7)." },
+        "to": { "type": "integer", "minimum": 0, "maximum": 24, "description": "End hour (0..24)." }
+      }
+    },
+    "settlementVendor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sellBuyList": { "$ref": "#/$defs/ref", "description": "FormList ref of VendorItem keywords naming the traded categories (e.g. Skyrim.esm:0x06CB48 = VendorItemsMisc)." },
+        "notSellBuyList": { "type": "boolean", "default": false, "description": "sellBuyList is a NOT-sell list (sell everything except those categories)." },
+        "startHour": { "type": "integer", "default": 8, "minimum": 0, "maximum": 24, "description": "Shop opens." },
+        "endHour": { "type": "integer", "default": 18, "minimum": 0, "maximum": 24, "description": "Shop closes." },
+        "gold": { "type": "integer", "default": 500, "minimum": 0, "description": "Gold placed in the merchant chest (the trade float)." }
       }
     },
     "persistKey": {
