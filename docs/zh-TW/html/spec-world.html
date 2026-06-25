@@ -335,6 +335,113 @@ weather 以取得正常的多雲天空，再透過 `imageSpaces` 推動螢幕分
 
 完整範例：`examples/weather_bright.json`（透過 `imageSpaces.default` 的室外 IMGS 分級）。
 交叉參照：見上方室內 [lighting](#lighting) 小節的 LGTM / CELL / XCLL。
+
+## in-world 技能樹（`skillTrees`）
+
+一棵**可點擊的 in-world 養成樹** — 漂浮的星節點，玩家走上前活化以消耗點數、學會 ability，
+帶前置 gate 與亮起的視覺回饋。**零外部 mod 依賴**（只 `Skyrim.esm`）；IN-GAME CONFIRMED。
+`skillTrees` 是一個高階 *macro*：generator 把它展開成低階記錄（per-node rank globals、共享
+points global、節點 + 連線 activators、它們的 placements、以及 `MFSkillNode` 腳本接線）——
+就是一棵手刻樹會用到的同一批記錄。
+
+```jsonc
+"skillTrees": [
+  { "editorId": "MFForgeTree", "name": "Forge Mastery",
+    "cell": "Skyrim.esm:0x01605E",                 // 它住在哪（原版室內或 in-spec cell）
+    "origin": { "x": -49, "y": -504, "z": 110 },   // ROOT（最底）節點的世界座標
+    "spacing": 65,                                  // 垂直間距；65 = 線 mesh 的原生貼合值
+    "startingPoints": 3,                            // 玩家起始點數
+    "nodes": [                                      // 由下往上 ORDERED；node[i] gate 在 node[i-1]
+      { "editorId": "Resolve", "name": "Forged Resolve", "ability": "MFGen_Node0Ability" },
+      { "editorId": "Vigor",   "name": "Forged Vigor",   "ability": "MFGen_Node1Ability" },
+      { "editorId": "Mastery", "name": "Forged Mastery", "ability": "MFGen_Node2Ability" }
+    ] }
+],
+"assets": "assets/skilltree"                        // 打包星/線 meshes（見下方）
+```
+
+遊戲內：玩家活化一個節點 → 若其前置已擁有且有點數可用，該節點的 `ability` 會加給玩家、
+星星亮起、連線亮起、扣一點。重新活化已學會的節點、或前置未滿足的節點，會被拒絕並彈出
+通知。
+
+**欄位**（`skillTrees[]`）：`editorId`（前綴所有生成的 id）、`name`、`cell`（in-spec 室內
+editorId **或**原版 `"<master>:0xFORMID"`）、`origin`（Vec3，root 節點位置）、`spacing`
+（預設 65）、`pointsGlobal`（用既有 GLOB 從別處驅動點池 — 空則自動建 `<editorId>_Points`
+並以 `startingPoints` 播種）、`startingPoints`（預設 3）、`nodeModel` / `lineModel`
+（Data-relative mesh 覆寫）、以及 `nodes`。
+**Node**（`nodes[]`）：`editorId`（樹內唯一）、`name`（活化提示 + 通知）、`ability`
+（一個 SPEL ref — 通常是 in-spec `spells[]` ability，或原版 — 學會時給）。
+
+**Ability 是你的。** 一個節點參照你在 `spells[]`/`magicEffects[]` 裡定義的 `ability`
+（或一個原版 SPEL）。樹驅動*學習 UX*；*效果*是一個普通 ability。
+
+**美術（不需裝 Campfire）。** 預設節點/線 meshes 是 Campfire 的星/線 nifs — 但它們**不是**
+master 依賴：把這套件（兩個 `.nif` + 它們全原版的貼圖）經 `assets` 以 loose 檔打包
+（提供於 `examples/assets/skilltree`）。覆寫 `nodeModel`/`lineModel` 以使用你自己的 meshes。
+`MFSkillNode.pex`（節點行為）會隨 `package` 自動出貨。
+
+**MVP 範圍。** 一條**垂直線性鏈**（節點堆疊，各 gate 在下方那個，由垂直線連接）——
+IN-GAME-CONFIRMED 的佈局。分支 / 自由 2-D 佈局是未來擴充（對角連線方向需校準）。
+範例：`examples/skill_tree_spec.json`（generator）vs
+`examples/inworld_skill_tree_standalone_spec.json`（同結果手刻版）。
+
+## 聚落人口（`settlements`）
+
+一座**住滿活人的聚落** — 具名住民住在一個 cell 裡，各帶綁在已擺放錨點 ref 上的睡/工作/
+遊蕩日程作息、可選店家、共享 faction。`settlements` 是一個高階 *macro*（同 `skillTrees`）：
+generator 把每個住民展開成既有 build pass 都已處理的低階記錄 —— 一個 ACHR placement、2–3 個
+日程 package、faction 成員、以及（店家用的）vendor FACT + 一個放置的 merchant chest。**零新
+record 型別、零 runtime 腳本** —— 純資料展開，故離線完全可驗。它把約 100 筆手刻記錄（10 住民 ×
+packages + factions + vendors + placements）壓成十幾行。
+
+```jsonc
+"settlements": [
+  { "editorId": "MFV_Riverwatch",
+    "cell": "MFV_RiverwatchInterior",          // in-spec cell editorId 或原版 "<master>:0xFORMID"
+    "settlementFaction": "",                    // 空 → 自動建 "<editorId>_Faction"，每個住民加入
+    "crimeFaction": "Skyrim.esm:0x0267EA",      // 選填 → 每個住民的 CrimeFaction（城內通行權）
+    "friendlyResidents": true,                  // 選填 → 住民兩兩 Friend RELA（預設關）
+    "dailyRoutine": {                           // 聚落預設；住民的 `routine` 逐時段覆寫
+      "sleep": { "from": 22, "to": 7 },         // 時數 0..24；時段可跨午夜（from > to）
+      "work":  { "from": 8,  "to": 18 }
+    },
+    "residents": [
+      { "npc": "MFV_Brelin",                    // ref → 既有 npcs[] editorId（住民）
+        "home":    "MFV_BrelinBed",             // ref → 已放置的 bed/marker REFR（Sleep 錨點）
+        "work":    "MFV_BrelinForge",           // ref → 已放置的工作站/marker REFR（Work 錨點）；選填
+        "spawnAt": "MFV_BrelinSpawn",           // ref → 已放置的 XMarker（ACHR 生在其座標）
+        "vendor": { "sellBuyList": "Skyrim.esm:0x06CB48", "notSellBuyList": true,
+                    "startHour": 9, "endHour": 18, "gold": 500 } },
+      { "npc": "MFV_Millie", "home": "MFV_MillieBed", "spawnAt": "MFV_MillieSpawn",
+        "routine": { "sleep": { "from": 21, "to": 6 } } }   // 只覆寫睡眠時段
+    ] }
+]
+```
+
+**每個住民展開成：**一個在 spawn marker 座標（或 `spawnPosition` fallback）、在聚落 cell 裡的
+**ACHR placement**；一個 gate 在睡眠時段、錨在 `home` 的 **Sleep package**；一個 gate 在工作
+時段、錨在 `work` 的小半徑 **Sandbox「工作」package** —— 只在有給 `work` 錨點時才生；一個
+always-on 大半徑 **Sandbox「遊蕩」package**（最低優先序）；以及 faction 成員。有 `vendor` 時，
+一個 Vendor-flag FACT（住民加入它，外加引擎的 `JobMerchantFaction`）+ 一個含 `gold` 的放置
+merchant chest。Package 依日程時數排序（wander 最後）—— 原版 package 優先序。
+
+**錨點哲學。** `home`/`work`/`spawnAt` 是**你**擺放的 ref 的 editorId（在 Godot 編輯器或
+`placements[]`）。macro 只負責把 package **綁**上去 —— 絕不憑空生抽象 sandbox 點（純抽象
+sandbox = NPC 呆站）。擺一張床/攤位/marker，給它 editorId，作息就接上去。（Sleep 會主動搜尋
+錨點附近的真實床 —— 在一個沒有床家具的空白自訂 cell 裡 NPC 不會躺下；在 `home` 錨點旁擺一張
+原版床，或蓋在已有床的原版 cell 裡。）
+
+**欄位**（`settlements[]`）：`editorId`、`cell`、`settlementFaction`（空 → 自動建）、
+`crimeFaction`、`dailyRoutine`（`sleep`/`work` 各 `{from,to}` 時數）、`friendlyResidents`
+（預設 false）、`residents`。**Resident**（`residents[]`）：`npc`（in-spec npcs[] ref）、
+`home`/`work`/`spawnAt`（已放置 ref 的 editorId）、`spawnPosition`（無 `spawnAt` 時的 Vec3
+fallback）、`vendor`（`sellBuyList`/`notSellBuyList`/`startHour`/`endHour`/`gold`）、`routine`
+（逐住民覆寫）。
+
+**MVP 範圍。** 具名住民 + 靜態 ACHR + 綁錨點作息 + 可選 vendor（確定性、離線可驗那格）。
+**Phase 2**（未做）：`crowd:` 匿名群眾（leveled 靜態或 spawn-controller `.pex`）、
+`reaction: flee|fight`（需 `flee` PACK 模板）、inline npc、進階逐 weekday/季節作息。
+範例：`examples/settlement_spec.json`。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>
