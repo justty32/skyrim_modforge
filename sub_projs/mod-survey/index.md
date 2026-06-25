@@ -31,6 +31,7 @@
 | Keyword Item Distributor（KID） | [findings/keyword-item-distributor.md](findings/keyword-item-distributor.md) | `po3_KeywordItemDistributor.dll`（SKSE，無 ESP） | 中（分發層工具） | `_KID.ini` 批次把 KYWD 掛到 item/armor/weapon/MGEF 等；與 SPID 正交（KID 管物件，SPID 管 NPC）；可輸出 ini 替代 override |
 | Sound Record Distributor（SRD） | [findings/sound-record-distributor.md](findings/sound-record-distributor.md) | SRD SKSE plugin | 中 | 音效分發（SPID 的 sound 版）；esp-side vs SRD 取捨 |
 | FormList Manipulator（FLM） | [findings/formlist-manipulator.md](findings/formlist-manipulator.md) | `FormListManipulator.dll`（SKSE，無 ESP） | 中（FLST 追加層） | `_FLM.ini` 把 form 加入任意 FLST（含 vanilla/外部 mod），零衝突；補 ESP-side FLST 無法無衝突追加外部 FLST 的死角 |
+| Enchantments and Potions Work for NPCs（EPW4NPCs） | [findings/epw4npcs.md](findings/epw4npcs.md) | 純 SPID `EPW4NPCs_DISTR.ini`（無 plugin/DLL/script） | 低（SPID 全域注入 pattern） | 整包就 2 行：把 vanilla EntryPoint perk `PerkSkillBoosts`(0xCF788)/`AlchemySkillBoosts`(0xA725C) SPID 廣播給 `ActorTypeNPC`，補回 NPC 缺的附魔/藥水 entry-point 通路；**ModForge 已可 100% 等價生成（SpidGen Perk+StringFilter 已驗證），無新缺口**；「global NPC perk via SPID」recipe 範本，對 vendor/settlements 全 NPC 注入有用；NPCsUsePotions(67489) 才是不可生成的喝藥 AI controller |
 
 ## 系統 / 機制型（2026-06-14 批次）
 
@@ -73,6 +74,7 @@
 | --- | --- | --- | --- |
 | Trade & Barter (kryptopyr) | [findings/trade-and-barter.md](findings/trade-and-barter.md) | MCM 可調**經濟/商販 overhaul**：barter 率、Speech 影響、商人金幣隨城市大小、地點/身份/種族/知識(Smithing→鐵匠)定價、庫存刷新——**「一串條件化 EntryPoint perk（ModBuy/SellPrices）+ 一個 MCM 腳本」近乎純 perk overhaul**，依賴 SKSE+SkyUI、無 DLL/SPID | **已驗證**：ModForge 已支援 `ModBuyPrices`/`ModSellPrices` EntryPoint（`Generator.Build.Perks.EntryPoints.cs` L31/L55）+ perk/effect CTDA + MCM + vendor faction → **條件化定價 perk + MCM 的 tweak mod 今天就能生**。**唯一硬缺口＝無 GMST/game-setting 編輯**（`src/` 證實缺）；MCM 切換→GLOB→perk 條件接線待補一例 |
 | Honed Metal（NPC 打造/附魔服務） | [findings/honed-metal.md](findings/honed-metal.md) | 付費請 NPC 鐵匠/附魔師代工（打造/強化/附魔/充能），成本隨 NPC 技能+barter；**框架型 + 原生 C++ SKSE DLL**；faction-tag NPC + 條件對話 + FormList 材料 + 「開容器→腳本開原生製作選單」核心 trick；依賴 SKSE+SkyUI | scaffolding（faction 服務對話+MCM+FormList+扣金幣 fragment+storage）**可生成**；**controller（開原生選單、成本數學、perk/技能 gate、強化套用）須 bespoke Papyrus，原生選單 trick 可能要附帶預建 DLL**；浮現 `services:` macro + 「付錢→給/改物件」交易 pattern 兩個候選 |
+| Real Estate（Nexus 14408 v3.2） | [findings/real-estate.md](findings/real-estate.md) | 玩家側**房產投資經濟**：買下 vanilla 房子→被動收租/礦產/農產→賣出。**vanilla-only（僅 SkyUI，無 DLL/PapyrusUtil/JContainers）**；機制＝每棟房外手擺一個腳本化 **Property Sign Activator**（`Owned`/`Not owned` state machine）+ 計價/收益 GLOB 組 + `RegisterForUpdateGameTime` 被動收租 + `SetActorOwner`/token-replacement 所有權 + relationship PERK + `SKI_ConfigBase` MCM + 教學 quest；告示牌＝在既有世界疊一層玩家系統的低衝突 pattern | **已驗證**：GLOB/QUST/ACTI script-attach/XOWN(`OwnershipSpec`)/PERK/RELA/MCM/收租 fragment **全已 landed**。**唯一硬缺口＝`MessageSpec` 無多按鈕選單欄位**（`Spec.Items.cs:42` 只有 EditorId/Name/Description）→ 生不出買/賣 message-box 選單（跨多互動 mod 的通用缺口，建議優先補 `buttons:[]`）。settlements macro 缺 `ownership:`/`income:` 維度（#22 收益面）|
 
 ## 動作 / 動畫系統框架（2026 完整堆疊）
 
