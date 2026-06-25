@@ -65,6 +65,15 @@
 
 > ⚠️ survey agent 對「ModForge 缺什麼」是**推斷**、未查 code，已知有誤判（如 Missives 說「不能生成 alias」其實可——ModForge 有 forced/uniqueActor/createObject/findMatching/alias-script）。roadmap 的缺口清單**待一次 code 驗證 pass** 校正。各 finding 講「mod 怎麼運作」的部分可信。
 
+## 經濟 / 商販 / 服務型（2026-06-25 批次，使用者指定）
+
+接 vendor + `settlements:` 落地後查兩個商販/服務 mod。**缺口已對 `src/` 驗證**（非推斷）。
+
+| Mod | Finding | 機制重點 | ModForge 缺口 |
+| --- | --- | --- | --- |
+| Trade & Barter (kryptopyr) | [findings/trade-and-barter.md](findings/trade-and-barter.md) | MCM 可調**經濟/商販 overhaul**：barter 率、Speech 影響、商人金幣隨城市大小、地點/身份/種族/知識(Smithing→鐵匠)定價、庫存刷新——**「一串條件化 EntryPoint perk（ModBuy/SellPrices）+ 一個 MCM 腳本」近乎純 perk overhaul**，依賴 SKSE+SkyUI、無 DLL/SPID | **已驗證**：ModForge 已支援 `ModBuyPrices`/`ModSellPrices` EntryPoint（`Generator.Build.Perks.EntryPoints.cs` L31/L55）+ perk/effect CTDA + MCM + vendor faction → **條件化定價 perk + MCM 的 tweak mod 今天就能生**。**唯一硬缺口＝無 GMST/game-setting 編輯**（`src/` 證實缺）；MCM 切換→GLOB→perk 條件接線待補一例 |
+| Honed Metal（NPC 打造/附魔服務） | [findings/honed-metal.md](findings/honed-metal.md) | 付費請 NPC 鐵匠/附魔師代工（打造/強化/附魔/充能），成本隨 NPC 技能+barter；**框架型 + 原生 C++ SKSE DLL**；faction-tag NPC + 條件對話 + FormList 材料 + 「開容器→腳本開原生製作選單」核心 trick；依賴 SKSE+SkyUI | scaffolding（faction 服務對話+MCM+FormList+扣金幣 fragment+storage）**可生成**；**controller（開原生選單、成本數學、perk/技能 gate、強化套用）須 bespoke Papyrus，原生選單 trick 可能要附帶預建 DLL**；浮現 `services:` macro + 「付錢→給/改物件」交易 pattern 兩個候選 |
+
 ## 動作 / 動畫系統框架（2026 完整堆疊）
 
 中樞 [action-system/README.md](action-system/README.md) 有**五層堆疊地圖**（骨架→行為引擎→行為資料注入→動畫選擇→招式框架）+ 跨層「動畫驅動狀態」鐵三角 + ModForge 生成機會。原始 mod 頁文字存 `action-system/raws/`。
