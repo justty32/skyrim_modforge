@@ -1,0 +1,122 @@
+{
+  "pluginName": "MFLivingAdvSpike.esp",
+  "esl": true,
+  "_": "living-adventurers SPIKE — proves the abstract-ghost-sim + materialize-on-co-location loop (idea #23). ONE named adventurer (Kjeld the Wanderer) lives an off-stage adventuring life: a controller quest (MFLA_Ctrl, startGameEnabled) runs MFAdvController, which (1) every SimIntervalHours in-game hours increments MFLA_DeedCount while Kjeld is OFF-STAGE at MFLA_HoldMarker (no actor processed) — standing in for 'cleared another dungeon', and (2) polls real-time presence and MoveTo's the SINGLE persistent Kjeld ref (MFLA_KjeldRef) into the Sleeping Giant Inn when the player is there, back to the holding marker when they leave. Bjorn the bard offers a Rumors topic gated on MFLA_DeedCount>=1 ('傳唱'): the tavern talks about Kjeld's off-stage deeds. THREE proofs: deed counter advances off-screen / Kjeld appears+vanishes with the player / rumor reflects the count. NEXT (not in this spike): real missive tasks need roadmap #7-9; cast sourced from real standalone-follower mods; player can poach/hire/fund. TEST: new game or save+reload, `coc RiverwoodSleepingGiantInn` → Kjeld materializes; leave (coc Riverwood) + return → he re-materializes; wait a few in-game hours (or `set MFLA_DeedCount to 3`) → talk to Bjorn → rumor line appears. `getglobalvalue MFLA_DeedCount` shows the off-stage progress.",
+
+  "globals": [
+    { "editorId": "MFLA_DeedCount", "type": "long", "value": 0, "_": "abstract-sim deed counter; ticked off-stage by the controller, read by the rumor INFO via GetGlobalValue" }
+  ],
+
+  "classes": [
+    {
+      "editorId": "MFLA_AdvClass",
+      "name": "Wandering Adventurer",
+      "_": "autoCalcStats needs a class or the NPC spawns ~0 HP (memory autocalc-without-class-dead-npc)",
+      "healthWeight": 60, "magickaWeight": 15, "staminaWeight": 25,
+      "skillWeights": { "OneHanded": 75, "Block": 50, "LightArmor": 50, "Archery": 40 }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MFLA_Kjeld",
+      "name": "Kjeld the Wanderer",
+      "greeting": "Just passing through. There's always another contract on the board.",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MFLA_AdvClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "unique": true, "essential": true, "level": 10, "autoCalcStats": true,
+      "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
+    },
+    {
+      "editorId": "MFLA_Bard",
+      "name": "Bjorn Song-Thread",
+      "greeting": "Pull up a chair, friend. I've a tale or two.",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MFLA_AdvClass",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE7",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "unique": true, "essential": true, "level": 4, "autoCalcStats": true,
+      "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
+    }
+  ],
+
+  "placements": [
+    {
+      "_": "Kjeld's persistent ref. Placed off-stage at the holding marker spot (Tamriel, buried) — the controller teleports him in/out. editorId MFLA_KjeldRef so the controller's Adventurer property (objectEditorId) and any forced: alias can bind the PLACED ACHR (forcing the NPC_ base silently fails — memory radiant_package_spec note).",
+      "editorId": "MFLA_KjeldRef",
+      "base": "MFLA_Kjeld",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": 0, "y": -9000, "z": -5000 }
+    },
+    {
+      "_": "Off-stage holding marker (same buried Tamriel spot). Kjeld sits here, frozen and unprocessed, while the player is elsewhere — this is the 'abstract' state made concrete.",
+      "editorId": "MFLA_HoldMarker",
+      "kind": "xmarker",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": 0, "y": -9000, "z": -5000 }
+    },
+    {
+      "_": "On-stage materialize point inside the Sleeping Giant Inn (RiverwoodSleepingGiantInn 0x0133C6). MoveTo snaps Kjeld to the inn navmesh here when the player arrives.",
+      "editorId": "MFLA_InnMarker",
+      "kind": "xmarker",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": -300, "y": 250, "z": 0 }
+    },
+    {
+      "_": "Bjorn the bard lives in the inn full-time — he does the 傳唱.",
+      "base": "MFLA_Bard",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": -350, "y": 120, "z": 0 }
+    }
+  ],
+
+  "quests": [
+    {
+      "_": "Controller host + dialogue host. startGameEnabled so MFAdvController.OnInit arms both the game-time sim tick and the real-time presence poll the moment the save loads. type=None: pure background controller, no journal.",
+      "editorId": "MFLA_Ctrl",
+      "name": "Living Adventurers (spike)",
+      "type": "None",
+      "startGameEnabled": true,
+      "priority": 50,
+      "objectives": []
+    }
+  ],
+
+  "scripts": [
+    {
+      "_": "Bind MFAdvController to the host quest. Adventurer/InnMarker/HoldMarker are object props bound to the PLACED refs by editorId; DeedCount to the GLOB; the two floats tune cadence.",
+      "targetEditorId": "MFLA_Ctrl",
+      "scriptName": "MFAdvController",
+      "source": "./MFAdvController.psc",
+      "properties": [
+        { "name": "Adventurer",      "type": "object", "objectEditorId": "MFLA_KjeldRef" },
+        { "name": "InnMarker",       "type": "object", "objectEditorId": "MFLA_InnMarker" },
+        { "name": "HoldMarker",      "type": "object", "objectEditorId": "MFLA_HoldMarker" },
+        { "name": "DeedCount",       "type": "object", "objectEditorId": "MFLA_DeedCount" },
+        { "name": "SimIntervalHours", "type": "float", "float": 2.0 },
+        { "name": "PollInterval",     "type": "float", "float": 5.0 }
+      ]
+    }
+  ],
+
+  "dialogue": [
+    {
+      "_": "The 傳唱: Bjorn talks about Kjeld's OFF-STAGE deeds, gated on the abstract-sim counter. Only surfaces once MFLA_DeedCount >= 1 — proof the rumor reflects what the ghost-sim did while the player wasn't watching. Real version (#17 pipeline) would template many such lines per deed-type.",
+      "editorId": "MFLA_Rumor",
+      "questEditorId": "MFLA_Ctrl",
+      "speakerNpcEditorId": "MFLA_Bard",
+      "prompt": "Heard any rumors lately?",
+      "responses": [
+        "Aye — Kjeld the Wanderer's been busy. Cleared another barrow single-handed, they say.",
+        "Folk are starting to know his name. There'll be a song in it before long."
+      ],
+      "conditions": [
+        { "function": "GetGlobalValue", "param": "MFLA_DeedCount", "comparison": ">=", "value": 1 }
+      ]
+    }
+  ]
+}

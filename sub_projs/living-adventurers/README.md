@@ -1,0 +1,39 @@
+# living-adventurers — 給 standalone follower 一條命
+
+ModForge 消費者專案。設計源 idea [#23](../../workflows/idea/living-adventurers.md)（架構、拍板決策、archetype 框架、風險）。**怎麼做** → [design.md](design.md)（踩在 ModForge 既有機制上的工程設計 + 六階段建造順序）。本檔只記**這個子專案在幹嘛 + 目前進度**。
+
+## 一句話
+
+**人口增加 / 沈浸感增強型** mod：讓天際省**有人氣、有人在活動、是個活的世界**。但人口不是匿名填充——是一小撮**具名、持久、有故事的冒險者**，平時各自過冒險人生（接 missive、清地牢、採資源、送信、打強盜營），玩家在酒館 / 領主廳 / 野外撞見他們，酒館傳唱他們的戰功。
+
+**靈魂**：Nexus 上一堆純好看的 standalone follower 只是站著等招募，浪費了——**首選 cast 來源就是那些既有的 follower mod**，給它們一條命。專案形態＝ patch 生成器（比照 sofia-patch / followers-patch）。
+
+## 核心架構（一句話版，細節進 idea #23）
+
+Skyrim 只跑玩家附近的 AI，所以離場冒險者＝**純資料**（StorageUtil/GLOB），timer 推進；**玩家同地點才把那個常駐唯一 actor `MoveTo` 進場**。具名路線 → 一人一個 persistent ref，進出靠 MoveTo，無 spawn/despawn churn。
+
+## 進度
+
+| 階段 | 狀態 |
+|---|---|
+| idea #23 設計定稿（卡司=具名 / 玩家=可互動 / 模擬=抽象幽靈） | ✅ |
+| **spike：證明模擬迴圈** | 🔵 草稿已寫，待 build + 主力機實機 |
+| 任務層（真 missive 隨機地點） | ⏸ 卡 roadmap #7–9（LocationAlias / nested ReferenceAlias / UpdateCurrentInstanceGlobal） |
+| cast 來源接真 standalone follower mod | ⏸ 未開 |
+| 玩家互動（搶任務 / 雇用 / 資助破壞） | ⏸ 未開 |
+
+## spike（`spike/`）
+
+最小可驗證迴圈——**一個**具名冒險者 Kjeld，**不依賴** roadmap #7–9：
+
+- `living_adventurers_spike.json` — spec
+- `MFAdvController.psc` — 雙層控制器（game-time 抽象 tick + real-time 在場 poll，idiom 抄 MFSceneBanterController）
+
+**三個要證明的事**：
+1. **離場推進**：Kjeld 在 holding marker 凍結時，`MFLA_DeedCount` 每數遊戲時 +1（沒有 actor 在跑）。
+2. **就地實體化**：玩家進 Sleeping Giant Inn → Kjeld `MoveTo` 現身；離開 → 回 holding；再進 → 再現身（無重複）。
+3. **酒館傳唱**：吟遊詩人 Bjorn 的 Rumors 對話 gated on `MFLA_DeedCount>=1` → 講 Kjeld 的離場戰功。
+
+**測試**（主力機，新檔或存檔 reload）：`coc RiverwoodSleepingGiantInn` 看 Kjeld 是否現身；`coc Riverwood` 再回看是否重現；等幾遊戲時或 `set MFLA_DeedCount to 3` → 跟 Bjorn 對話看 rumor；`getglobalvalue MFLA_DeedCount` 看離場進度。
+
+跑通 spike → 進 roadmap / spec 展開任務層與真 follower cast。
