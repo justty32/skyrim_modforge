@@ -16,8 +16,9 @@ Skyrim 只跑玩家附近的 AI，所以離場冒險者＝**純資料**（Storag
 
 | 階段 | 狀態 |
 |---|---|
-| idea #23 設計定稿（卡司=具名 / 玩家=可互動 / 模擬=抽象幽靈） | ✅ |
-| **spike：證明模擬迴圈** | 🔵 草稿已寫，待 build + 主力機實機 |
+| idea #23 設計定稿（卡司=具名 / 玩家=可互動 / 模擬=抽象幽靈）+ design.md 工程設計 | ✅ |
+| **spike：證明模擬迴圈**（`spike/`，1 NPC，build 綠） | 🔵 待主力機 package + 實機 |
+| **P1：泛化控制器**（`p1/`，2 NPC / 2 archetype，build 綠零警告） | 🔵 待主力機 package（編 .pex）+ 實機；發現 2 個 core 缺口見 design.md §6 |
 | 任務層（真 missive 隨機地點） | ⏸ 卡 roadmap #7–9（LocationAlias / nested ReferenceAlias / UpdateCurrentInstanceGlobal） |
 | cast 來源接真 standalone follower mod | ⏸ 未開 |
 | 玩家互動（搶任務 / 雇用 / 資助破壞） | ⏸ 未開 |

@@ -1,0 +1,159 @@
+{
+  "pluginName": "MFLivingAdvP1.esp",
+  "esl": true,
+  "_": "living-adventurers P1 — GENERALISED controller, hand-wired (the macro that auto-generates this wiring is P2). Proves the shared MFLivingWorldController (one host quest, ONE game-time tick + ONE real-time poll over a roster of reference aliases) drives TWO living NPCs of TWO archetypes. Kjeld (adventurer) rotates between the Sleeping Giant Inn (Riverwood 0x0133C6) and the Bannered Mare (Whiterun 0x01605E) — he appears in different city inns as his abstract location advances. Falas (mageApprentice) haunts the Bannered Mare. Per-NPC abstract progress = a deed GLOB ticked off-stage; tavern bard Bjorn's rumor topics gate on each deed GLOB (傳唱). Archetype is a small int → a fixed branch in MFLivingNpcAlias, so adding another adventurer/mage is pure data (a new alias + markers, no code). Off-stage state is the deed GLOB + the alias script's anchorIdx; richer per-NPC KV (task/playerRel) lands in P3 via StorageUtil. NOTE: distinct-CITY anchors here use two verified vanilla interior cells; spreading anchors to e.g. the College of Winterhold needs a main-machine-verified cell FormID (P1.5). TEST: new game / save+reload; `coc RiverwoodSleepingGiantInn` then `coc WhiterunBanneredMare`, waiting a few in-game hours between → Kjeld materialises in whichever matches his current anchor; `getglobalvalue MFLW_KjeldDeeds` climbs off-stage; talk to Bjorn for the rumor once deeds>=1; `set MFLW_KjeldDeeds to 3` to force the rumor.",
+
+  "globals": [
+    { "editorId": "MFLW_KjeldDeeds", "type": "long", "value": 0, "_": "Kjeld's off-stage deed counter; rumor gates on it" },
+    { "editorId": "MFLW_FalasDeeds", "type": "long", "value": 0, "_": "Falas's off-stage study counter" }
+  ],
+
+  "classes": [
+    {
+      "editorId": "MFLW_AdvClass", "name": "Wandering Adventurer",
+      "healthWeight": 60, "magickaWeight": 15, "staminaWeight": 25,
+      "skillWeights": { "OneHanded": 75, "Block": 50, "LightArmor": 50, "Archery": 40 }
+    },
+    {
+      "editorId": "MFLW_MageClass", "name": "College Apprentice",
+      "healthWeight": 25, "magickaWeight": 60, "staminaWeight": 15,
+      "skillWeights": { "Destruction": 75, "Alteration": 50, "Restoration": 40, "Conjuration": 40 }
+    }
+  ],
+
+  "packages": [
+    {
+      "_": "Shared 'sandbox wherever I currently am' package (no Location → NearSelf). After MoveTo drops the NPC at an anchor, EvaluatePackage makes him sandbox that room instead of standing. Both archetypes use it in P1; archetype-specific packages (merchant travel, mage casting) are P3 polish via alias ALPS.",
+      "editorId": "MFLW_SandboxHere",
+      "template": "Skyrim.esm:0x01C254",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [ "HellosToPlayer", "RandomConversations", "AllowIdleChatter", "WorldInteractions" ],
+      "sandbox": {
+        "radius": 512, "allowEating": true, "allowSleeping": false, "allowConversation": true,
+        "allowIdleMarkers": true, "allowSitting": true, "allowWandering": true, "allowSpecialFurniture": true, "energy": 50.0
+      }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MFLW_Kjeld", "name": "Kjeld the Wanderer",
+      "greeting": "Just passing through. There's always another contract on the board.",
+      "race": "Skyrim.esm:0x013746", "class": "MFLW_AdvClass", "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE6", "crimeFaction": "Skyrim.esm:0x0267EA",
+      "packages": [ "MFLW_SandboxHere" ],
+      "unique": true, "essential": true, "level": 10, "autoCalcStats": true,
+      "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
+    },
+    {
+      "editorId": "MFLW_Falas", "name": "Falas Indaryn",
+      "greeting": "I'm only here to gather reagents. The College keeps me busy enough.",
+      "race": "Skyrim.esm:0x013742", "class": "MFLW_MageClass", "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x0136BF", "crimeFaction": "Skyrim.esm:0x0267EA",
+      "packages": [ "MFLW_SandboxHere" ],
+      "unique": true, "essential": true, "level": 8, "autoCalcStats": true,
+      "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
+    },
+    {
+      "editorId": "MFLW_Bard", "name": "Bjorn Song-Thread",
+      "greeting": "Pull up a chair, friend. I've a tale or two.",
+      "race": "Skyrim.esm:0x013746", "class": "MFLW_AdvClass", "outfit": "Skyrim.esm:0x09D5DF",
+      "voiceType": "Skyrim.esm:0x013AE7", "crimeFaction": "Skyrim.esm:0x0267EA",
+      "unique": true, "essential": true, "level": 4, "autoCalcStats": true,
+      "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50
+    }
+  ],
+
+  "formLists": [
+    { "editorId": "MFLW_KjeldMarkers", "items": [ "MFLW_HoldMarker", "MFLW_KjeldInn", "MFLW_KjeldMare" ], "_": "index 0 = hold marker; 1.. = anchors. Kjeld rotates between the Sleeping Giant Inn AND the Bannered Mare. (One FLST because alias props can't resolve a placement REFR directly — see design.md gap.)" },
+    { "editorId": "MFLW_FalasMarkers", "items": [ "MFLW_HoldMarker", "MFLW_FalasMare" ], "_": "index 0 = hold; Falas haunts the Bannered Mare (single anchor in P1)" }
+  ],
+
+  "placements": [
+    { "_": "Kjeld's persistent ref, parked off-stage at the hold marker (Tamriel, buried). persistent:true is REQUIRED — a forced-alias ACHR that's MoveTo'd around must not be engine-dropped, and the deferred-anchor auto-persist set does NOT cover forced-alias targets (only package location/target slots + merchant chests). P2 macro must always emit this.", "editorId": "MFLW_KjeldRef", "base": "MFLW_Kjeld", "persistent": true, "worldspace": "Skyrim.esm:0x00003C", "position": { "x": 0, "y": -9000, "z": -5000 } },
+    { "_": "Falas's persistent ref, off-stage.", "editorId": "MFLW_FalasRef", "base": "MFLW_Falas", "persistent": true, "worldspace": "Skyrim.esm:0x00003C", "position": { "x": 200, "y": -9000, "z": -5000 } },
+    { "_": "Shared off-stage holding marker (both NPCs MoveTo here when the player is elsewhere; they overlap underground, harmless).", "editorId": "MFLW_HoldMarker", "kind": "xmarker", "worldspace": "Skyrim.esm:0x00003C", "position": { "x": 0, "y": -9000, "z": -5000 } },
+
+    { "_": "Kjeld anchor A — Sleeping Giant Inn (Riverwood).", "editorId": "MFLW_KjeldInn", "kind": "xmarker", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 250, "z": 0 } },
+    { "_": "Kjeld anchor B — Bannered Mare (Whiterun).", "editorId": "MFLW_KjeldMare", "kind": "xmarker", "cell": "Skyrim.esm:0x01605E", "position": { "x": 250, "y": 120, "z": 0 } },
+    { "_": "Falas anchor — Bannered Mare (Whiterun).", "editorId": "MFLW_FalasMare", "kind": "xmarker", "cell": "Skyrim.esm:0x01605E", "position": { "x": -250, "y": -50, "z": 0 } },
+
+    { "_": "Bjorn the bard lives in the Sleeping Giant Inn full-time — he does the 傳唱.", "base": "MFLW_Bard", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -350, "y": 120, "z": 0 } }
+  ],
+
+  "quests": [
+    {
+      "_": "Host quest. startGameEnabled so MFLivingWorldController.OnInit arms the roster tick + poll on load. type=None: background controller. Two reference aliases, one per living NPC, each carrying MFLivingNpcAlias with its archetype/anchors/holdMarker/deedGlob bound as scriptProperties; forced-filled with the placed ACHR (forcing the NPC_ base silently fails — memory).",
+      "editorId": "MFLW_Ctrl",
+      "name": "Living Adventurers (P1)",
+      "type": "None",
+      "startGameEnabled": true,
+      "priority": 50,
+      "objectives": [],
+      "aliases": [
+        {
+          "name": "Living0_Kjeld",
+          "fill": "forced:MFLW_KjeldRef",
+          "script": "MFLivingNpcAlias",
+          "scriptSource": "./MFLivingNpcAlias.psc",
+          "scriptProperties": [
+            { "name": "Archetype", "type": "int", "int": 0 },
+            { "name": "Markers",   "type": "object", "objectEditorId": "MFLW_KjeldMarkers" },
+            { "name": "DeedCount", "type": "object", "objectEditorId": "MFLW_KjeldDeeds" }
+          ]
+        },
+        {
+          "name": "Living1_Falas",
+          "fill": "forced:MFLW_FalasRef",
+          "script": "MFLivingNpcAlias",
+          "scriptSource": "./MFLivingNpcAlias.psc",
+          "scriptProperties": [
+            { "name": "Archetype", "type": "int", "int": 1 },
+            { "name": "Markers",   "type": "object", "objectEditorId": "MFLW_FalasMarkers" },
+            { "name": "DeedCount", "type": "object", "objectEditorId": "MFLW_FalasDeeds" }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "scripts": [
+    {
+      "_": "The shared world controller on the host quest. AliasCount=2 → it loops aliases 0..1 each tick/poll.",
+      "targetEditorId": "MFLW_Ctrl",
+      "scriptName": "MFLivingWorldController",
+      "source": "./MFLivingWorldController.psc",
+      "properties": [
+        { "name": "SimIntervalHours", "type": "float", "float": 2.0 },
+        { "name": "PollInterval",     "type": "float", "float": 5.0 },
+        { "name": "AliasCount",       "type": "int",   "int": 2 }
+      ]
+    }
+  ],
+
+  "dialogue": [
+    {
+      "_": "傳唱 about Kjeld, gated on his off-stage deeds.",
+      "editorId": "MFLW_RumorKjeld",
+      "questEditorId": "MFLW_Ctrl",
+      "speakerNpcEditorId": "MFLW_Bard",
+      "prompt": "Heard any rumors of adventurers?",
+      "responses": [
+        "Aye — Kjeld the Wanderer's been busy. Cleared another barrow single-handed, they say.",
+        "Folk in two holds know his name now. There'll be a song in it before long."
+      ],
+      "conditions": [ { "function": "GetGlobalValue", "param": "MFLW_KjeldDeeds", "comparison": ">=", "value": 1 } ]
+    },
+    {
+      "_": "傳唱 about Falas, gated on his study progress — proves per-NPC rumor.",
+      "editorId": "MFLW_RumorFalas",
+      "questEditorId": "MFLW_Ctrl",
+      "speakerNpcEditorId": "MFLW_Bard",
+      "prompt": "Any news from the College?",
+      "responses": [
+        "That Dunmer apprentice, Falas — word is his conjurations are turning heads up at Winterhold."
+      ],
+      "conditions": [ { "function": "GetGlobalValue", "param": "MFLW_FalasDeeds", "comparison": ">=", "value": 1 } ]
+    }
+  ]
+}

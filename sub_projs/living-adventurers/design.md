@@ -104,3 +104,16 @@ MFLivingWorldController extends Quest          ; 一個 host quest
 - **per-ref 狀態**：StorageUtil `Generator.StorageWrites.cs:34-121`（target=ref→`SWRef_<i>` Form prop）；或 JFormDB `Generator.JContainers.cs`（per-Form KV + affinity gate）。核心用 StorageUtil（無 JContainers 依賴）。
 - **dynamic spawn / AI package**：`Generator.Build.StoryManager.Encounter.cs:30-51`（MFDynamicSpawn 綁定）；`Generator.Build.Packages.Advanced.cs:7-23`（Travel/Sandbox，deferred slot）。
 - **alias package（ALPS）**：radiant package（memory `radiant-alias-package-byte-truths`，已修「package 未掛 alias」gap）。
+
+## 6. P1 實作筆記（2026-06-27，`p1/`，離線 build 綠）
+
+寫出泛化控制器 + 手寫 2-NPC/2-archetype spec，**build 零警告**（9 record / 2 dialogue / 3 script attach / 7 placement in 2 vanilla inn）：
+- `MFLivingWorldController.psc`（host quest，單一 roster 迴圈跑 game-time tick + real-time poll，`AliasCount` 屬性界定 alias 0..N）。
+- `MFLivingNpcAlias.psc`（per-NPC，extends ReferenceAlias，`Archetype` int 分支 + `Markers` FLST + `DeedCount` GLOB；StorageUtil 狀態留 P3）。
+- `living_adventurers_p1.json`：Kjeld（adventurer，在 Sleeping Giant Inn `0x0133C6` ↔ Bannered Mare `0x01605E` 之間輪替現身）+ Falas（mageApprentice，Bannered Mare）+ 吟遊詩人 Bjorn 兩條 per-NPC rumor。
+
+**發現的兩個 core 缺口（P2 macro 前要在 core 修，現用 workaround）**：
+1. **alias `scriptProperties` 的 object prop 不能解析 placement REFR**（`Generator.Build.Scripts.cs:266 MakeObjectProp` 在 alias 建立階段查 `formKeyByEd`，但 placement 那時還沒進表 → null + warn）。能解析 GLOB/FLST/NPC（早建記錄）。**workaround**：把 hold marker + anchors 併成一個 FLST（index 0=hold，1..N=anchor）傳進去。**正解**：core 加 `deferredAliasPropWires`，比照 `deferredForcedAliases`/`deferredLocationWires`，placement 註冊後再解析 → P2 可直接傳 ObjectReference props。
+2. **forced-alias 的 ACHR 不被自動 persistent**（`Generator.Build.Placements.cs` 的 `deferredAnchorEds` 只涵蓋 package location/target slot + merchant chest，**不含 `deferredForcedAliases`**）。被 forced 進 alias 又被 MoveTo 的 NPC ref 若非 persistent 會被引擎丟。**workaround**：placement 顯式 `persistent:true`（同 settlements merchant-chest 已驗機制）。**正解**：core 把 forced-alias 目標也加進 `deferredAnchorEds`；P2 macro 一律對 living-NPC ref 標 persistent。
+
+**狀態**：離線 build 綠；**.psc 未編譯驗證**（新 .pex 非預編，`package` 時才從 `source` 編，需主力機 Papyrus compiler）+ **未實機**。P1 驗收 = 主力機 `package` → 實機看兩 NPC 各過各生活、跨旅館現身、per-NPC rumor。
