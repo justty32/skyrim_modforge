@@ -451,13 +451,22 @@ in/out — **no LVLN spawn churn, no duplicates**.
 **archetype = a fixed branch** in `MFLivingNpcAlias.psc`. Adding an NPC of an *existing* archetype is
 pure data (one more entry). Adding a *new* life-type means extending the script's switch (occasional).
 
-**Fields** — section: `simIntervalHours`, `pollInterval`, `rumorSpeaker`, `npcs`. **livingNpc**: `ref`
-(required), `name`, `archetype`, `alignment`, `backstory`, `anchors` (≥1 to ever appear), `rumors`.
-**anchor**: `cell` (required), `position`, `kind` (label). Compiling the two `.pex` needs a Papyrus
-machine (`package` ships them; the build embeds conditionally). Worked example:
-`examples/living_npcs_spec.json`.
+**Player interactions & alignment (`interactions`, `alignment`).** Talking to a living NPC can offer
+interactions, each a dialogue topic that adjusts a per-NPC **favor global** (`MFLiving_<tag>_Favor`) —
+the relationship-memory substrate future content gates on. Kinds: `fund` (give coin, favor +1),
+`praise` (compliment their deeds, +1, gated on deed ≥ 1), `parley` (de-escalate / try to understand,
++5 — for a neutral or hostile NPC). `alignment` (`friendly`/`neutral`/`hostile`) is recorded; a
+**hostile in-spec** NPC is set `Aggression=Aggressive` (the bandit genuinely fights — anchor him at a
+camp, not an inn). External-follower refs keep their own AI (the macro only adjusts in-spec NPCs).
 
-**MVP scope.** Named cast + abstract sim + materialize + rumor. **Phase 2+** (not yet): player
-interaction (poach a contract / hire / parley a hostile), real missive task targets (needs roadmap #7–9
-LocationAlias fill), alignment/hostile branches, LAL origin-seeded relationships, an anonymous "crowd"
-tier. Design: `sub_projs/living-adventurers/` (idea #23 + design.md).
+**Fields** — section: `simIntervalHours`, `pollInterval`, `rumorSpeaker`, `npcs`. **livingNpc**: `ref`
+(required), `name`, `archetype`, `alignment`, `backstory`, `anchors` (≥1 to ever appear), `rumors`,
+`interactions`. **anchor**: `cell` (required), `position`, `kind` (label). Compiling the `.pex` (and the
+interaction `setGlobal` TIF fragments) needs a Papyrus machine (`package` ships them; the build embeds
+conditionally). Worked example: `examples/living_npcs_spec.json`.
+
+**MVP scope.** Named cast + abstract sim + materialize + rumor + interaction/favor + alignment.
+**Phase 3.5+** (not yet): hire-as-follower, surfacing parley on a hostile-in-combat NPC (needs a
+non-combat approach mechanic), real missive task targets (needs roadmap #7–9 LocationAlias fill), the
+controller reading favor/alignment to change behaviour, LAL origin-seeded relationships, an anonymous
+"crowd" tier. Design: `sub_projs/living-adventurers/` (idea #23 + design.md).

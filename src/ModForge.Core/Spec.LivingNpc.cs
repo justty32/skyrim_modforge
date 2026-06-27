@@ -46,6 +46,12 @@ public sealed class LivingNpcSpec
     public List<LivingAnchorSpec> Anchors { get; set; } = new();
     // 傳唱 lines spoken by the section's rumorSpeaker once this NPC's deed global >= 1. Empty -> no rumor.
     public List<string> Rumors { get; set; } = new();
+    // Player interactions offered when talking to this NPC (P3). Each kind → a dialogue topic that adjusts
+    // a per-NPC favor global (the relationship-memory substrate future content gates on). Known kinds:
+    //   fund   — give coin for their venture (favor +1)
+    //   praise — compliment their deeds (favor +1; only once deed global >= 1)
+    //   parley — de-escalate / try to understand (favor +5; for neutral/hostile NPCs)
+    public List<string> Interactions { get; set; } = new();
 }
 
 // One place a living NPC can appear: a vanilla (or in-spec) cell + a position in it.

@@ -671,7 +671,8 @@
           "items": { "$ref": "#/$defs/livingAnchor" },
           "description": "The places this NPC appears (vanilla cells the player visits). One xmarker per anchor; Presence() materialises at whichever matches the current abstract location. At least one is required to ever appear."
         },
-        "rumors": { "type": "array", "items": { "type": "string" }, "description": "傳唱 lines voiced by the section's rumorSpeaker once this NPC's deed global >= 1." }
+        "rumors": { "type": "array", "items": { "type": "string" }, "description": "傳唱 lines voiced by the section's rumorSpeaker once this NPC's deed global >= 1." },
+        "interactions": { "type": "array", "items": { "type": "string", "enum": ["fund", "praise", "parley"] }, "description": "Player interactions offered when talking to this NPC (P3). Each → a dialogue topic adjusting a per-NPC favor global (relationship memory). fund (+1) / praise (+1, gated on deed>=1) / parley (+5, de-escalate a neutral/hostile NPC)." }
       }
     },
     "livingAnchor": {

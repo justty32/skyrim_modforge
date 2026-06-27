@@ -489,15 +489,23 @@ actor 在跑。玩家進入符合該 NPC 當前錨點的 cell 時，他**唯一*
 **archetype = 固定分支**（在 `MFLivingNpcAlias.psc`）。加一個*既有* archetype 的 NPC 是純資料
 （多一個 entry）。加一個*全新*生活型態才需擴腳本的 switch（偶爾）。
 
-**欄位** —— section：`simIntervalHours`、`pollInterval`、`rumorSpeaker`、`npcs`。**livingNpc**：
-`ref`（必填）、`name`、`archetype`、`alignment`、`backstory`、`anchors`（≥1 才會現身）、`rumors`。
-**anchor**：`cell`（必填）、`position`、`kind`（標籤）。編兩個 `.pex` 需 Papyrus 機器（`package`
-會 ship；build 條件式嵌入）。範例：`examples/living_npcs_spec.json`。
+**玩家互動 & alignment（`interactions`、`alignment`）。** 跟活 NPC 對話可提供互動，每個是一條
+調整該 NPC **favor global**（`MFLiving_<tag>_Favor`）的對話 topic —— 那是未來內容據以 gate 的
+關係記憶基底。種類：`fund`（給錢，favor +1）、`praise`（誇他的事蹟，+1，gate 在 deed ≥ 1）、
+`parley`（緩和 / 嘗試理解，+5 —— 給中立或敵對 NPC）。`alignment`（`friendly`/`neutral`/`hostile`）
+會被記錄；**敵對的 in-spec** NPC 被設 `Aggression=Aggressive`（強盜真的會打 —— 把他的錨點放在
+營地而非旅館）。外部 follower ref 保留自己的 AI（macro 只改 in-spec NPC）。
 
-**MVP 範圍。** 具名卡司 + 抽象模擬 + 就地實體化 + 傳唱。**Phase 2+**（未做）：玩家互動（搶任務 /
-雇用 / parley 敵對）、真 missive 任務目標（卡 roadmap #7–9 LocationAlias fill）、alignment/敵對
-分岔、LAL 出身 seed 關係、匿名「群像」層。設計：`sub_projs/living-adventurers/`（idea #23 +
-design.md）。
+**欄位** —— section：`simIntervalHours`、`pollInterval`、`rumorSpeaker`、`npcs`。**livingNpc**：
+`ref`（必填）、`name`、`archetype`、`alignment`、`backstory`、`anchors`（≥1 才會現身）、`rumors`、
+`interactions`。**anchor**：`cell`（必填）、`position`、`kind`（標籤）。編 `.pex`（與互動的
+`setGlobal` TIF fragment）需 Papyrus 機器（`package` 會 ship；build 條件式嵌入）。範例：
+`examples/living_npcs_spec.json`。
+
+**MVP 範圍。** 具名卡司 + 抽象模擬 + 就地實體化 + 傳唱 + 互動/favor + alignment。**Phase 3.5+**
+（未做）：雇用為隨從、在敵對-交戰中的 NPC 上浮現 parley（需非戰鬥接近機制）、真 missive 任務
+目標（卡 roadmap #7–9 LocationAlias fill）、controller 讀 favor/alignment 改行為、LAL 出身 seed
+關係、匿名「群像」層。設計：`sub_projs/living-adventurers/`（idea #23 + design.md）。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>

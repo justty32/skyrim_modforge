@@ -40,6 +40,17 @@ public static partial class Generator
     // editorIds never contain ':'; a "<master>.es[pm]:0xFORMID" ref does.
     private static bool LivingIsExternalRef(string r) => r.Contains(':');
 
+    // P3 interaction copy: (prompt, response, favorDelta, gatedOnDeed). prompt == null → unknown kind.
+    private static (string?, string, float, bool) LivingInteraction(string kind) => (kind ?? "").Trim().ToLowerInvariant() switch
+    {
+        "fund"   => ("Here's some coin for your next venture.", "Appreciated — I'll put it to good use.", 1f, false),
+        "praise" => ("Your deeds are the talk of the taverns.", "Ha! Music to my ears.", 1f, true),
+        "parley" => ("Lower your weapon. Let's talk.",          "...Fine. Talk, then.",              5f, false),
+        _        => (null, "", 0f, false),
+    };
+
+    private static readonly string[] LivingInteractionKinds = { "fund", "praise", "parley" };
+
     public static void ExpandLivingNpcs(ModSpec spec)
     {
         if (spec.LivingNpcsExpanded) return;
@@ -116,9 +127,14 @@ public static partial class Generator
                     Worldspace = "Skyrim.esm:0x00003C", Position = new Vec3 { X = 0, Y = -9000, Z = -5000 },
                 });
                 fill = $"forced:{refEd}";
-                // give the in-spec NPC the shared sandbox package so it behaves when materialised
-                if (npcByEd.TryGetValue(ln.Ref, out var npc) && !npc.Packages.Contains(LivingSandboxPackageEd))
-                    npc.Packages.Add(LivingSandboxPackageEd);
+                if (npcByEd.TryGetValue(ln.Ref, out var npc))
+                {
+                    // give the in-spec NPC the shared sandbox package so it behaves when materialised
+                    if (!npc.Packages.Contains(LivingSandboxPackageEd)) npc.Packages.Add(LivingSandboxPackageEd);
+                    // a hostile living NPC genuinely fights (the bandit has a bandit's life); external refs keep their AI
+                    if (ln.Alignment.Trim().Equals("hostile", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(npc.Aggression))
+                        npc.Aggression = "Aggressive";
+                }
             }
 
             ctrl.Aliases.Add(new QuestAliasSpec
@@ -148,6 +164,33 @@ public static partial class Generator
                     Responses = new List<string>(ln.Rumors),
                     Conditions = { new ConditionSpec { Function = "GetGlobalValue", Param = deedEd, Comparison = ">=", Value = 1 } },
                 });
+            }
+
+            // --- P3: relationship layer — a per-NPC favor global + interaction topics on the NPC ---
+            // Talking to the living NPC offers interactions that adjust its favor global (the
+            // relationship-memory substrate future content / alignment branches gate on). Uses the
+            // existing dialogue setGlobal (a TIF result fragment `package` compiles).
+            if (ln.Interactions.Count > 0)
+            {
+                string favorEd = $"{prefix}_Favor";
+                spec.Globals.Add(new GlobalSpec { EditorId = favorEd, Type = "long", Value = 0 });
+                foreach (var kind in ln.Interactions)
+                {
+                    var (prompt, response, delta, deedGated) = LivingInteraction(kind);
+                    if (prompt is null) continue; // unknown kind — validation reports it
+                    var dlg = new DialogueSpec
+                    {
+                        EditorId = $"{prefix}_Act_{kind.Trim().ToLowerInvariant()}",
+                        QuestEditorId = LivingCtrlQuestEd,
+                        SpeakerNpcEditorId = ln.Ref,
+                        Prompt = prompt,
+                        Responses = new List<string> { response },
+                        SetGlobal = new DialogueSetGlobalSpec { Global = favorEd, Delta = delta },
+                    };
+                    if (deedGated)
+                        dlg.Conditions.Add(new ConditionSpec { Function = "GetGlobalValue", Param = deedEd, Comparison = ">=", Value = 1 });
+                    spec.Dialogue.Add(dlg);
+                }
             }
         }
 

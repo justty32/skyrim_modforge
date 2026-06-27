@@ -40,6 +40,14 @@ public static partial class Generator
 
                 if (ln.Rumors.Count > 0 && string.IsNullOrWhiteSpace(sec.RumorSpeaker))
                     Problems.Add($"{who}: has rumors but the section has no rumorSpeaker — the 傳唱 won't surface");
+
+                if (!new[] { "friendly", "neutral", "hostile" }.Contains((ln.Alignment ?? "").Trim().ToLowerInvariant()))
+                    Problems.Add($"{who}: unknown alignment '{ln.Alignment}' (friendly|neutral|hostile)");
+                foreach (var k in ln.Interactions)
+                    if (!new[] { "fund", "praise", "parley" }.Contains((k ?? "").Trim().ToLowerInvariant()))
+                        Problems.Add($"{who}: unknown interaction '{k}' (fund|praise|parley)");
+                if (external && ln.Alignment.Trim().Equals("hostile", StringComparison.OrdinalIgnoreCase))
+                    Problems.Add($"{who}: alignment hostile on an external ref can't set aggression (the macro only adjusts in-spec NPCs); the follower keeps its own AI");
             }
         }
     }

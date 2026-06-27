@@ -30,15 +30,17 @@
           { "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 250, "z": 0 }, "kind": "inn" },
           { "cell": "Skyrim.esm:0x01605E", "position": { "x": 250, "y": 120, "z": 0 }, "kind": "inn" }
         ],
-        "rumors": [ "Aye — Kjeld the Wanderer's been busy. Cleared another barrow single-handed, they say.", "Folk in two holds know his name now. There'll be a song in it before long." ]
+        "rumors": [ "Aye — Kjeld the Wanderer's been busy. Cleared another barrow single-handed, they say.", "Folk in two holds know his name now. There'll be a song in it before long." ],
+        "interactions": [ "fund", "praise" ]
       },
       {
-        "ref": "MFLN_Falas", "name": "Falas Indaryn", "archetype": "mageApprentice", "alignment": "friendly",
-        "backstory": "A Dunmer apprentice of the College, forever short of coin and reagents.",
+        "ref": "MFLN_Falas", "name": "Falas Indaryn", "archetype": "mageApprentice", "alignment": "neutral",
+        "backstory": "A Dunmer apprentice of the College, forever short of coin and reagents — wary of strangers.",
         "anchors": [
           { "cell": "Skyrim.esm:0x01605E", "position": { "x": -250, "y": -50, "z": 0 }, "kind": "inn" }
         ],
-        "rumors": [ "That Dunmer apprentice, Falas — word is his conjurations are turning heads up at Winterhold." ]
+        "rumors": [ "That Dunmer apprentice, Falas — word is his conjurations are turning heads up at Winterhold." ],
+        "interactions": [ "fund", "parley" ]
       }
     ]
   }

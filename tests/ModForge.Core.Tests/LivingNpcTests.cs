@@ -138,6 +138,52 @@ public class LivingNpcTests
         Assert.DoesNotContain(r.Mod.EnumerateMajorRecords<IPlacedNpcGetter>(), n => n.EditorID == "MFLiving_N0Ref");
     }
 
+    // --- P3: interactions (favor global + topics) + alignment ---
+
+    [Fact]
+    public void Interactions_EmitFavorGlobal_AndTopicsWithResponses()
+    {
+        var spec = Spec();
+        spec.LivingNpcs!.Npcs[0].Interactions = new() { "fund", "praise" };
+        var r = TestBuild.Ok(spec);
+        Assert.Contains(r.Mod.Globals, g => g.EditorID == "MFLiving_Kjeld_Favor");
+        var lines = r.Mod.DialogTopics.SelectMany(t => t.Responses).SelectMany(i => i.Responses).Select(rr => rr.Text.String ?? "").ToList();
+        Assert.Contains(lines, s => s.Contains("Appreciated"));       // fund response
+        Assert.Contains(lines, s => s.Contains("Music to my ears"));  // praise response
+    }
+
+    [Fact]
+    public void HostileInSpecNpc_SetsAggressionAggressive()
+    {
+        var spec = Spec(withRumor: false);
+        spec.LivingNpcs!.Npcs[0].Alignment = "hostile";
+        var r = TestBuild.Ok(spec);
+        var npc = r.Mod.Npcs.First(n => n.EditorID == "Kjeld");
+        Assert.Equal(Aggression.Aggressive, npc.AIData!.Aggression);
+    }
+
+    [Fact]
+    public void Validate_Flags_UnknownInteraction_And_Alignment()
+    {
+        var spec = new ModSpec { PluginName = "Test.esp" };
+        spec.Npcs.Add(new NpcSpec { EditorId = "X", Name = "X", Greeting = "." });
+        spec.LivingNpcs = new LivingNpcsSpec
+        {
+            Npcs =
+            {
+                new LivingNpcSpec
+                {
+                    Ref = "X", Archetype = "adventurer", Alignment = "chaotic",
+                    Anchors = { new LivingAnchorSpec { Cell = "Skyrim.esm:0x01605E" } },
+                    Interactions = { "bribe" },
+                },
+            },
+        };
+        var problems = Generator.Validate(spec).ToArray();
+        Assert.Contains(problems, p => p.Contains("unknown interaction"));
+        Assert.Contains(problems, p => p.Contains("unknown alignment"));
+    }
+
     [Fact]
     public void Validate_Flags_MissingAnchors_And_UnknownArchetype_And_OrphanRumors()
     {
