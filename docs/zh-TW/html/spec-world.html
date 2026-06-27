@@ -442,6 +442,62 @@ fallback）、`vendor`（`sellBuyList`/`notSellBuyList`/`startHour`/`endHour`/`g
 **Phase 2**（未做）：`crowd:` 匿名群眾（leveled 靜態或 spawn-controller `.pex`）、
 `reaction: flee|fight`（需 `flee` PACK 模板）、inline npc、進階逐 weekday/季節作息。
 範例：`examples/settlement_spec.json`。
+
+## 活世界 NPC（`livingNpcs`）
+
+一小撮**具名、持久、過著自己離場人生的 NPC** —— 接任務的冒險者、學院學徒、跑商的行商 ——
+玩家在世界各處不斷撞見他們，酒館傳唱他們的事蹟。不像 `settlements`（住民錨在單一 cell），
+活 NPC 會遊走：引擎無法模擬離場 actor，所以 `livingNpcs` 跑那條經典的**抽象幽靈模擬 + 就地
+實體化**迴圈。它是個 macro，展開成一個 controller quest + 每 NPC 的接線，**並 ship 兩個可重用
+`.pex`**（所以它**會**帶 runtime 腳本，跟 `settlements` 不同）。**產品的核心是 on-ramp：加一個
+既有 archetype 的 NPC = 一個極小 entry —— 一個 ref、一個 archetype、幾個錨點。**
+
+```jsonc
+"livingNpcs": {
+  "simIntervalHours": 2,                         // 每隔幾遊戲時推進一次離場「戰功」（sim tick）
+  "pollInterval": 5,                             // 每幾秒檢查一次在場
+  "rumorSpeaker": "MFLN_Bard",                   // 可選：講傳唱的 npc（或 "<master>:0xFORMID"）
+  "npcs": [
+    { "ref": "MFLN_Kjeld",                       // in-spec npcs[] editorId（放置+forced）或外部 follower "Mod.esp:0xID"（uniqueActor）
+      "name": "Kjeld the Wanderer",              // 標 rumor 對話的 prompt
+      "archetype": "adventurer",                 // adventurer|mageApprentice|merchant|herbalist|priest|bandit
+      "alignment": "friendly",                   // friendly|neutral|hostile（Phase-2 parley；現在先記）
+      "backstory": "一個逃離戰爭的傭兵…",
+      "anchors": [                               // 他會現身的 vanilla cell；輪替
+        { "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 250, "z": 0 }, "kind": "inn" },
+        { "cell": "Skyrim.esm:0x01605E", "position": { "x": 250, "y": 120, "z": 0 }, "kind": "inn" }
+      ],
+      "rumors": [ "聽說 Kjeld 又一個人清了一座墓穴。" ] }
+  ]
+}
+```
+
+**section 展開成：**一個 StartGameEnabled controller quest 掛 `MFLivingWorldController`（單一
+game-time tick + 單一 real-time 在場 poll 掃整個 roster —— cost **不**隨 NPC 數線性膨脹）；一個
+共享離場 hold marker + 一個共享「在當地 sandbox」package。**每個 NPC 展開成：**controller quest
+上一個 reference alias 掛 `MFLivingNpcAlias`（`Archetype`/`HoldMarker`/`Anchors`/`DeedCount`），
+forced 填一個放置 ACHR（in-spec）或 `uniqueActor`（外部 follower —— *給那個美麗的 standalone
+follower 一條命*）；每個錨點一個 xmarker + 一個 Anchors FormList；一個 deed GlobalVariable；以及
+—— 當 section 有 `rumorSpeaker` 且 NPC 有 `rumors` —— 一個 gate 在 deed global（`GetGlobalValue
+>= 1`）的傳唱對話。
+
+**運作方式。** 離場時 controller 推進每個 NPC 的 deed global、輪替他「在」哪個錨點 —— 沒有
+actor 在跑。玩家進入符合該 NPC 當前錨點的 cell 時，他**唯一**的 persistent ref 被 `MoveTo` 進場
+並 `EvaluatePackage`（讓 sandbox package 生效）；玩家離開就送回 hold marker。具名卡司 ⇒ 一人
+一個 persistent ref、MoveTo 進出 —— **無 LVLN spawn churn、無重複**。
+
+**archetype = 固定分支**（在 `MFLivingNpcAlias.psc`）。加一個*既有* archetype 的 NPC 是純資料
+（多一個 entry）。加一個*全新*生活型態才需擴腳本的 switch（偶爾）。
+
+**欄位** —— section：`simIntervalHours`、`pollInterval`、`rumorSpeaker`、`npcs`。**livingNpc**：
+`ref`（必填）、`name`、`archetype`、`alignment`、`backstory`、`anchors`（≥1 才會現身）、`rumors`。
+**anchor**：`cell`（必填）、`position`、`kind`（標籤）。編兩個 `.pex` 需 Papyrus 機器（`package`
+會 ship；build 條件式嵌入）。範例：`examples/living_npcs_spec.json`。
+
+**MVP 範圍。** 具名卡司 + 抽象模擬 + 就地實體化 + 傳唱。**Phase 2+**（未做）：玩家互動（搶任務 /
+雇用 / parley 敵對）、真 missive 任務目標（卡 roadmap #7–9 LocationAlias fill）、alignment/敵對
+分岔、LAL 出身 seed 關係、匿名「群像」層。設計：`sub_projs/living-adventurers/`（idea #23 +
+design.md）。
 </textarea>
 <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
 <script>
