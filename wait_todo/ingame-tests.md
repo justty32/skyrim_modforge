@@ -15,6 +15,20 @@
 
 ## 待測（active）
 
+- **living-adventurers 整鏈 P0–P3（2026-06-27）— 全離線建構 + 848 測綠，但 .pex 從未編譯、從未實機**（idea #23 / `sub_projs/living-adventurers/`）。這是「抽象幽靈模擬 + 就地實體化 + 傳唱 + 互動/favor + alignment」的 **runtime 第一次驗證**，是 P0–P3 共同的 acceptance gate。測 `examples/living_npcs_spec.json`（macro 版，涵蓋全部；spike/p1 是過程原型，不必另測）。
+
+  **打包（主力機，需 Papyrus toolchain）**：
+  1. `scripts/bootstrap-pex.sh` —— 把 `assets/papyrus/*.psc` 全編成 `.pex`（含新的 `MFLivingWorldController` / `MFLivingNpcAlias`；它們是 conditional EmbeddedResource，沒 .pex 就不嵌入、runtime 缺腳本）。需 `MODFORGE_PAPYRUS_HEADERS`（native）或 Wine+CK。
+  2. `scripts/ship.sh examples/living_npcs_spec.json` —— build + package + FLAT zip → `~/skyrim_mods/mine/MFLivingNpcs.zip`。
+  3. **TIF 陷阱**（memory + dev-env）：互動 `setGlobal` 會生 `TIF_*` result fragment，package 內聯自動編譯**可能 spurious fail（zip 出 0 個 TIF .pex）**→ 互動點了 favor 不加。`unzip -l ~/skyrim_mods/mine/MFLivingNpcs.zip | grep TIF`；若缺，逐一 `dotnet run --project src/ModForge.Cli -- compile <stage>/Scripts/Source/TIF_*.psc <stage>/Scripts` 再 `zip` 補進去。
+
+  **實機驗（新遊戲或 save+reload — StartGameEnabled quest + 對話 + `.seq`）**：
+  - **① 離場推進**：`getglobalvalue MFLiving_MFLN_Kjeld_Deeds` → 過幾遊戲時（可調 timescale）再看，**你不在 Kjeld 身邊時它也會爬**；每 tick 跳通知「Kjeld the Wanderer completed another contract.」（Falas＝「pores over a tome…」）。
+  - **② 就地實體化**：`coc RiverwoodSleepingGiantInn` ↔ `coc WhiterunBanneredMare`（中間等 tick 讓 anchor 輪替）→ Kjeld 出現在「他當前 anchor」那間旅館；離開再回 → 重新現身且**不重複**。Falas 只在 Bannered Mare。
+  - **③ 傳唱**：Sleeping Giant Inn 找 Bjorn 對話 → Kjeld deeds≥1 後出現「Any word of Kjeld the Wanderer?」→ 傳唱台詞（`set MFLiving_MFLN_Kjeld_Deeds to 3` 可強逼）。
+  - **④ 互動 + favor（P3）**：Kjeld 現身時對話 → 「Here's some coin…」(fund) / deeds≥1 後「Your deeds are the talk…」(praise) → 點完 `getglobalvalue MFLiving_MFLN_Kjeld_Favor` 應 +1。Falas（neutral）給 parley「Lower your weapon. Let's talk.」。
+  - **回報**：四層各 OK／怪／空白／CTD；通知有沒有跳；favor/deed 有沒有動。**這是架構成不成立的第一個經驗證據**——哪層不動回報現象我來定位（最可能的雷：alias 沒填到 ref、MoveTo 後沒 EvaluatePackage、TIF 沒編進 zip）。
+
 - **VNML 法線效果（2026-06-16）— 已自驗修正，下面只剩「想看再看」的選配確認**：axis/編碼/尺度已對 vanilla Tamriel LAND 逐 byte 驗過（修了三個 bug，見 SESSION-LOG），不必硬測。新 zip 已交付 `~/skyrim_mods/mine/HeightmapDemo.zip`（FLAT）。**若你某次順手進遊戲**：進 HeightmapDemo worldspace 走坡面，背光側偏暗、向光偏亮、平順漸層即正常——若看到整片黑塊／詭異反光／上下顛倒陰影再回報（理論上不會）。
 
 - **Sofia × VIGILANT 第一幕（2026-06-14）** — 兩版交付 `~/skyrim_mods/mine/`：`SofiaVigilantAct1.zip`（v1 對話+語音）、`SofiaVigilantAct1v2.zip`（v2 +PlayIdle 動作）。spec＝`examples/sofia_vigilant_act1{,_v2}.json`，臺詞＝`sub_projs/sofia-patch/vigilant-screenplay/act1-警戒者.md`。
