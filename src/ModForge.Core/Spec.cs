@@ -99,6 +99,7 @@ public sealed class ModSpec
     public List<ConditionTemplateSpec> ConditionTemplates { get; set; } = new(); // named reusable CTDA blocks (M組; Spec.Dialogue.cs)
     public List<SkillTreeSpec> SkillTrees { get; set; } = new(); // in-world clickable perk tree (Idea #20; Spec.SkillTree.cs) — macro-expands to globals/activators/placements/scripts
     public List<SettlementSpec> Settlements { get; set; } = new(); // populated settlement (Idea #22; Spec.Settlement.cs) — macro-expands to npcs/packages/placements/factions/containers
+    public LivingNpcsSpec? LivingNpcs { get; set; } // living-world NPCs (Idea #23; Spec.LivingNpc.cs) — macro-expands to a controller quest + per-NPC alias/markers/global/rumor + ships MFLivingNpc* .pex
     public VoiceLineSpec? VoiceLine { get; set; } // global voice output settings
 
     // Guard so the skillTree macro-expansion (Generator.ExpandSkillTrees) runs at most once per spec
@@ -106,6 +107,8 @@ public sealed class ModSpec
     [System.Text.Json.Serialization.JsonIgnore] internal bool SkillTreesExpanded { get; set; }
     // Guard so the settlement macro-expansion (Generator.ExpandSettlements) runs at most once. Not serialized.
     [System.Text.Json.Serialization.JsonIgnore] internal bool SettlementsExpanded { get; set; }
+    // Guard so the living-NPC macro-expansion (Generator.ExpandLivingNpcs) runs at most once. Not serialized.
+    [System.Text.Json.Serialization.JsonIgnore] internal bool LivingNpcsExpanded { get; set; }
     // External-resource pipeline (see docs/external_assets.md): a source directory whose
     // `Meshes/`, `Textures/`, `Sounds/` (and loose `.hkx`) sub-trees `package` copies next to
     // the .esp so the packaged mod is self-contained / MO2-ready. ModForge REFERENCES + BUNDLES

@@ -401,3 +401,63 @@ false), `residents`. **Resident** (`residents[]`): `npc` (in-spec npcs[] ref), `
 offline-verifiable quadrant). **Phase 2** (not yet): `crowd:` anonymous masses (leveled-static or a
 spawn-controller `.pex`), `reaction: flee|fight` (needs a `flee` PACK template), inline npc, advanced
 per-weekday/seasonal routines. Worked example: `examples/settlement_spec.json`.
+
+## living-world NPCs (`livingNpcs`)
+
+A small cast of **named, persistent NPCs who live their own off-stage lives** — an adventurer taking
+contracts, a College apprentice, a merchant on the road — whom the player keeps bumping into across the
+world, with the tavern gossiping about their deeds. Unlike `settlements` (residents anchored to one
+cell), a living NPC roams: the engine can't simulate an off-screen actor, so `livingNpcs` runs the
+canonical **abstract ghost-sim + materialize-on-co-location** loop. It is a macro that expands into a
+controller quest + per-NPC wiring AND ships two reusable `.pex` (so it DOES carry a runtime script,
+unlike `settlements`). **The product is the on-ramp: adding one NPC of an existing archetype is one
+small entry — a ref, an archetype, a few anchors.**
+
+```jsonc
+"livingNpcs": {
+  "simIntervalHours": 2,                         // in-game hours between off-stage "deeds" (the sim tick)
+  "pollInterval": 5,                             // real seconds between presence checks
+  "rumorSpeaker": "MFLN_Bard",                   // optional npc (or "<master>:0xFORMID") who voices the 傳唱
+  "npcs": [
+    { "ref": "MFLN_Kjeld",                       // in-spec npcs[] editorId (placed+forced) OR external follower "Mod.esp:0xID" (uniqueActor)
+      "name": "Kjeld the Wanderer",              // labels the rumor topic prompt
+      "archetype": "adventurer",                 // adventurer|mageApprentice|merchant|herbalist|priest|bandit
+      "alignment": "friendly",                   // friendly|neutral|hostile (Phase-2 parley; recorded now)
+      "backstory": "A mercenary who left the war…",
+      "anchors": [                               // the vanilla cells he appears in; rotates through them
+        { "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 250, "z": 0 }, "kind": "inn" },
+        { "cell": "Skyrim.esm:0x01605E", "position": { "x": 250, "y": 120, "z": 0 }, "kind": "inn" }
+      ],
+      "rumors": [ "Kjeld cleared another barrow single-handed, they say." ] }
+  ]
+}
+```
+
+**The section expands to:** one StartGameEnabled controller quest carrying `MFLivingWorldController`
+(one game-time tick + one real-time presence poll over the whole roster — cost does NOT scale per-NPC);
+one shared off-stage hold marker + one shared "sandbox where I am" package. **Each NPC expands to:** a
+reference alias on the controller quest carrying `MFLivingNpcAlias` (`Archetype`/`HoldMarker`/`Anchors`/
+`DeedCount`), forced-filled to a placed ACHR (in-spec) or `uniqueActor` (external follower — *give that
+gorgeous standalone follower a life*); one xmarker per anchor + an Anchors FormList; a deed
+GlobalVariable; and — when the section has a `rumorSpeaker` and the NPC has `rumors` — a 傳唱 topic
+gated on the deed global (`GetGlobalValue >= 1`).
+
+**How it works.** Off-stage, the controller ticks each NPC's deed global and rotates which anchor he
+"is" at — no actor processed. When the player enters a cell matching that NPC's current anchor, his ONE
+persistent ref is `MoveTo`'d on-stage and `EvaluatePackage`'d (so the sandbox package kicks in); when
+the player leaves, he's sent back to the hold marker. Named cast ⇒ one persistent ref each, MoveTo
+in/out — **no LVLN spawn churn, no duplicates**.
+
+**archetype = a fixed branch** in `MFLivingNpcAlias.psc`. Adding an NPC of an *existing* archetype is
+pure data (one more entry). Adding a *new* life-type means extending the script's switch (occasional).
+
+**Fields** — section: `simIntervalHours`, `pollInterval`, `rumorSpeaker`, `npcs`. **livingNpc**: `ref`
+(required), `name`, `archetype`, `alignment`, `backstory`, `anchors` (≥1 to ever appear), `rumors`.
+**anchor**: `cell` (required), `position`, `kind` (label). Compiling the two `.pex` needs a Papyrus
+machine (`package` ships them; the build embeds conditionally). Worked example:
+`examples/living_npcs_spec.json`.
+
+**MVP scope.** Named cast + abstract sim + materialize + rumor. **Phase 2+** (not yet): player
+interaction (poach a contract / hire / parley a hostile), real missive task targets (needs roadmap #7–9
+LocationAlias fill), alignment/hostile branches, LAL origin-seeded relationships, an anonymous "crowd"
+tier. Design: `sub_projs/living-adventurers/` (idea #23 + design.md).

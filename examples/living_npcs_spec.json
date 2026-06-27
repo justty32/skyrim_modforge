@@ -1,0 +1,45 @@
+{
+  "pluginName": "MFLivingNpcs.esp",
+  "esl": true,
+  "_": "livingNpcs: macro (Idea #23, sub_projs/living-adventurers). Declare a small cast of named, persistent NPCs who live their own off-stage lives; the macro EXPANDS each into a controller-quest alias + anchor xmarkers + a deed global + a 傳唱 rumor, and ships the reusable MFLivingWorldController/MFLivingNpcAlias .pex (abstract ghost-sim + materialize-on-co-location). Adding another living NPC of an existing archetype = one more entry in livingNpcs.npcs — pure data. Here: Kjeld (adventurer) rotates between the Sleeping Giant Inn (Riverwood 0x0133C6) and the Bannered Mare (Whiterun 0x01605E); Falas (mageApprentice) haunts the Bannered Mare; the bard Bjorn voices both rumors once each NPC's deed global climbs. TEST (after package compiles the .pex on a Papyrus machine): new game / save+reload, `coc RiverwoodSleepingGiantInn` ↔ `coc WhiterunBanneredMare` waiting in-game hours between → each NPC materialises at his current anchor; `getglobalvalue MFLiving_MFLN_Kjeld_Deeds` climbs off-stage; talk to Bjorn for the rumor (or `set MFLiving_MFLN_Kjeld_Deeds to 3`).",
+
+  "classes": [
+    { "editorId": "MFLN_AdvClass", "name": "Wandering Adventurer", "healthWeight": 60, "magickaWeight": 15, "staminaWeight": 25, "skillWeights": { "OneHanded": 75, "Block": 50, "LightArmor": 50 } },
+    { "editorId": "MFLN_MageClass", "name": "College Apprentice", "healthWeight": 25, "magickaWeight": 60, "staminaWeight": 15, "skillWeights": { "Destruction": 75, "Alteration": 50, "Conjuration": 40 } }
+  ],
+
+  "npcs": [
+    { "editorId": "MFLN_Kjeld", "name": "Kjeld the Wanderer", "greeting": "Just passing through. There's always another contract on the board.", "race": "Skyrim.esm:0x013746", "class": "MFLN_AdvClass", "outfit": "Skyrim.esm:0x09D5DF", "voiceType": "Skyrim.esm:0x013AE6", "crimeFaction": "Skyrim.esm:0x0267EA", "unique": true, "essential": true, "level": 10, "autoCalcStats": true, "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50 },
+    { "editorId": "MFLN_Falas", "name": "Falas Indaryn", "greeting": "I'm only here for reagents. The College keeps me busy.", "race": "Skyrim.esm:0x013742", "class": "MFLN_MageClass", "outfit": "Skyrim.esm:0x09D5DF", "voiceType": "Skyrim.esm:0x0136BF", "crimeFaction": "Skyrim.esm:0x0267EA", "unique": true, "essential": true, "level": 8, "autoCalcStats": true, "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50 },
+    { "editorId": "MFLN_Bard", "name": "Bjorn Song-Thread", "greeting": "Pull up a chair, friend. I've a tale or two.", "race": "Skyrim.esm:0x013746", "class": "MFLN_AdvClass", "outfit": "Skyrim.esm:0x09D5DF", "voiceType": "Skyrim.esm:0x013AE7", "crimeFaction": "Skyrim.esm:0x0267EA", "unique": true, "essential": true, "level": 4, "autoCalcStats": true, "aggression": "Unaggressive", "confidence": "Average", "assistance": "HelpsFriendsAndAllies", "energyLevel": 50 }
+  ],
+
+  "placements": [
+    { "_": "The rumor speaker is an author NPC (not a living NPC), so place him yourself — Bjorn lives in the Sleeping Giant Inn.", "base": "MFLN_Bard", "cell": "Skyrim.esm:0x0133C6", "position": { "x": -350, "y": 120, "z": 0 } }
+  ],
+
+  "livingNpcs": {
+    "simIntervalHours": 2,
+    "pollInterval": 5,
+    "rumorSpeaker": "MFLN_Bard",
+    "npcs": [
+      {
+        "ref": "MFLN_Kjeld", "name": "Kjeld the Wanderer", "archetype": "adventurer", "alignment": "friendly",
+        "backstory": "A mercenary who left the war and now lives off contract boards across the holds.",
+        "anchors": [
+          { "cell": "Skyrim.esm:0x0133C6", "position": { "x": -300, "y": 250, "z": 0 }, "kind": "inn" },
+          { "cell": "Skyrim.esm:0x01605E", "position": { "x": 250, "y": 120, "z": 0 }, "kind": "inn" }
+        ],
+        "rumors": [ "Aye — Kjeld the Wanderer's been busy. Cleared another barrow single-handed, they say.", "Folk in two holds know his name now. There'll be a song in it before long." ]
+      },
+      {
+        "ref": "MFLN_Falas", "name": "Falas Indaryn", "archetype": "mageApprentice", "alignment": "friendly",
+        "backstory": "A Dunmer apprentice of the College, forever short of coin and reagents.",
+        "anchors": [
+          { "cell": "Skyrim.esm:0x01605E", "position": { "x": -250, "y": -50, "z": 0 }, "kind": "inn" }
+        ],
+        "rumors": [ "That Dunmer apprentice, Falas — word is his conjurations are turning heads up at Winterhold." ]
+      }
+    ]
+  }
+}

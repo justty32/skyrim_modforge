@@ -25,6 +25,9 @@ public static partial class Generator
         // (settlements → npcs' packages/factions + ACHR placements + vendor FACT/container + RELA).
         // Runs after ExpandSkillTrees; both feed pass 1. Idempotent (guarded on the spec).
         ExpandSettlements(spec);
+        // (livingNpcs → controller quest + per-NPC alias/markers/global/rumor + world-controller script).
+        // After ExpandSettlements; feeds pass 1. Idempotent (guarded on the spec).
+        ExpandLivingNpcs(spec);
 
         var ctx = new BuildContext(spec, outputKey, options);
 

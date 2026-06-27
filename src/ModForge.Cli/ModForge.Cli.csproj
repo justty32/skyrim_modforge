@@ -81,6 +81,24 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <!-- Living-world NPCs (Idea #23). Two reusable .pex serve every generated mod: the per-mod world
+       controller (roster game-time tick + real-time presence poll) and the per-NPC alias script
+       (abstract ghost-sim + materialize on co-location). Embedded so `package` drops them into Scripts/
+       for any mod with a `livingNpcs:` section. Conditional: build succeeds without them; `package`
+       warns at runtime if missing. Compile them with:
+         dotnet run - - compile assets/papyrus/MFLivingWorldController.psc assets/papyrus/
+         dotnet run - - compile assets/papyrus/MFLivingNpcAlias.psc assets/papyrus/ -->
+  <ItemGroup Condition="Exists('..\..\assets\papyrus\MFLivingWorldController.pex')">
+    <EmbeddedResource Include="..\..\assets\papyrus\MFLivingWorldController.pex">
+      <LogicalName>MFLivingWorldController.pex</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('..\..\assets\papyrus\MFLivingNpcAlias.pex')">
+    <EmbeddedResource Include="..\..\assets\papyrus\MFLivingNpcAlias.pex">
+      <LogicalName>MFLivingNpcAlias.pex</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
   <!-- The reusable dynamic near-player spawn .pex (extends Quest; OnInit spawns Count of SpawnForm
        around the player + snaps to navmesh). Embedded so `package` can drop it into Scripts/ for any
        mod whose quests declare `spawn`. Conditional: build succeeds without it; `package` warns at

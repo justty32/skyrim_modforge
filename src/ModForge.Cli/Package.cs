@@ -189,6 +189,14 @@ internal static partial class Program
         if (spec.SkillTrees.Count > 0)
             ShipEmbeddedPex("MFSkillNode.pex", "in-world skill-tree node", "skill-tree nodes won't respond to activation");
 
+        // Living-world NPCs (Idea #23). Two .pex: the per-mod world controller (roster tick + presence
+        // poll) and the per-NPC alias script (abstract sim + materialize). One pair serves every mod.
+        if (spec.LivingNpcs is { } livingNpcs && livingNpcs.Npcs.Count > 0)
+        {
+            ShipEmbeddedPex("MFLivingWorldController.pex", "living-world roster controller", "living NPCs won't tick/materialise");
+            ShipEmbeddedPex("MFLivingNpcAlias.pex", "living-NPC alias behaviour", "living NPCs won't tick/materialise");
+        }
+
         if (spec.Identities.Any(idn => !string.IsNullOrWhiteSpace(idn.AcquireBook)))
             ShipEmbeddedPex("MFIdentityBook.pex", "identity-acquire book", "acquire books won't grant identities");
 
