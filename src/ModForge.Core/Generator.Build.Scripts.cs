@@ -235,13 +235,32 @@ public static partial class Generator
         {
             foreach (var p in props)
             {
+                if ((p.Type ?? "").Equals("object", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Object (Form) props resolve via the formKey table. An alias-script's properties are
+                    // filled in BuildStandaloneQuestAliases (BEFORE placements build), so a prop pointing at
+                    // a placement/xmarker editorId can't resolve yet — queue it for
+                    // WireDeferredScriptObjectProps (after placements), like a deferred forced alias. Props
+                    // filled after placements (top-level/dialogue scripts) resolve inline and never queue.
+                    if (string.IsNullOrEmpty(p.ObjectEditorId))
+                    {
+                        Warn($"  ! script '{scriptName}' prop '{p.Name}' object with no objectEditorId");
+                        continue;
+                    }
+                    var op = new ScriptObjectProperty { Name = p.Name, Flags = ScriptProperty.Flag.Edited };
+                    if (TryResolveRef(p.ObjectEditorId, formKeyByEd, out var fk))
+                        op.Object.SetTo(fk);
+                    else
+                        deferredScriptObjectProps.Add((op, p.ObjectEditorId!, $"script '{scriptName}' prop '{p.Name}'"));
+                    entry.Properties.Add(op);
+                    continue;
+                }
                 ScriptProperty? sp = (p.Type ?? "").ToLowerInvariant() switch
                 {
                     "int"    => new ScriptIntProperty { Data = p.Int },
                     "float"  => new ScriptFloatProperty { Data = p.Float },
                     "bool"   => new ScriptBoolProperty { Data = p.Bool },
                     "string" => new ScriptStringProperty { Data = p.Str },
-                    "object" => MakeObjectProp(p),
                     _        => null,
                 };
                 if (sp is null) { Warn($"  ! script '{scriptName}' prop '{p.Name}' bad type/ref '{p.Type}'"); continue; }
@@ -249,6 +268,18 @@ public static partial class Generator
                 sp.Flags = ScriptProperty.Flag.Edited;
                 entry.Properties.Add(sp);
             }
+        }
+
+        // Resolve object (Form) props queued by FillProperties because their target (a placement/xmarker)
+        // hadn't been built when the script was attached. Runs after placements exist; mirrors
+        // WireDeferredForcedAliases — the queued ScriptObjectProperty is mutated in place on the VMAD.
+        public void WireDeferredScriptObjectProps()
+        {
+            foreach (var (prop, refStr, warn) in deferredScriptObjectProps)
+                if (TryResolveRef(refStr, formKeyByEd, out var fk))
+                    prop.Object.SetTo(fk);
+                else
+                    Warn($"  ! {warn} object ref '{refStr}' unresolved");
         }
 
         // Bind a single Form-typed ScriptObjectProperty (resolving `ref` via the formKey table) onto a
@@ -263,13 +294,5 @@ public static partial class Generator
             linksWired++;
         }
 
-        private ScriptProperty? MakeObjectProp(PropertySpec p)
-        {
-            if (string.IsNullOrEmpty(p.ObjectEditorId) || !TryResolveRef(p.ObjectEditorId, formKeyByEd, out var fk))
-                return null;
-            var op = new ScriptObjectProperty();
-            op.Object.SetTo(fk);
-            return op;
-        }
     }
 }

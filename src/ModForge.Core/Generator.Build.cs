@@ -144,6 +144,7 @@ public static partial class Generator
         ctx.WireObjectiveTargets();                // QOBJ QSTA targets (alias index + flag + CTDA) — after aliases exist
         ctx.WireBanterConditions();                // situational CTDA gates on banter INFOs
         ctx.WirePackageConditions();               // CTDA gates on AI packages (runtime behaviour switch)
+        ctx.WireDeferredScriptObjectProps();       // alias-script object props whose target (placement/xmarker) built after the alias pass
 
         return ctx.Finish();
     }

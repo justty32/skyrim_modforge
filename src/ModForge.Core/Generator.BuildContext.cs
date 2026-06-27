@@ -71,6 +71,10 @@ public static partial class Generator
         // Forced alias fills whose ref builds AFTER the alias passes (a placement/xmarker anchor or a map
         // marker). Resolved by WireDeferredForcedAliases once those records exist.
         private readonly List<(Mutagen.Bethesda.Skyrim.QuestAlias Alias, string Ref)> deferredForcedAliases = new();
+        // Object (Form) script properties whose target builds AFTER the script is attached. An alias-script's
+        // properties fill in BuildStandaloneQuestAliases (before placements), so a prop pointing at a
+        // placement/xmarker editorId is queued here and resolved by WireDeferredScriptObjectProps.
+        private readonly List<(Mutagen.Bethesda.Skyrim.ScriptObjectProperty Prop, string Ref, string Warn)> deferredScriptObjectProps = new();
         private readonly Dictionary<string, IPlaced> placementsByEd = new();
         // editorId → its source PlacementSpec, so a teleport partner's arrival position/rotation can be
         // read once all placements exist (XTEL stores where the player materialises = the partner's pos/rot).

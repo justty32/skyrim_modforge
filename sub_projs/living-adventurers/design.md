@@ -112,8 +112,8 @@ MFLivingWorldController extends Quest          ; 一個 host quest
 - `MFLivingNpcAlias.psc`（per-NPC，extends ReferenceAlias，`Archetype` int 分支 + `Markers` FLST + `DeedCount` GLOB；StorageUtil 狀態留 P3）。
 - `living_adventurers_p1.json`：Kjeld（adventurer，在 Sleeping Giant Inn `0x0133C6` ↔ Bannered Mare `0x01605E` 之間輪替現身）+ Falas（mageApprentice，Bannered Mare）+ 吟遊詩人 Bjorn 兩條 per-NPC rumor。
 
-**發現的兩個 core 缺口（P2 macro 前要在 core 修，現用 workaround）**：
-1. **alias `scriptProperties` 的 object prop 不能解析 placement REFR**（`Generator.Build.Scripts.cs:266 MakeObjectProp` 在 alias 建立階段查 `formKeyByEd`，但 placement 那時還沒進表 → null + warn）。能解析 GLOB/FLST/NPC（早建記錄）。**workaround**：把 hold marker + anchors 併成一個 FLST（index 0=hold，1..N=anchor）傳進去。**正解**：core 加 `deferredAliasPropWires`，比照 `deferredForcedAliases`/`deferredLocationWires`，placement 註冊後再解析 → P2 可直接傳 ObjectReference props。
-2. **forced-alias 的 ACHR 不被自動 persistent**（`Generator.Build.Placements.cs` 的 `deferredAnchorEds` 只涵蓋 package location/target slot + merchant chest，**不含 `deferredForcedAliases`**）。被 forced 進 alias 又被 MoveTo 的 NPC ref 若非 persistent 會被引擎丟。**workaround**：placement 顯式 `persistent:true`（同 settlements merchant-chest 已驗機制）。**正解**：core 把 forced-alias 目標也加進 `deferredAnchorEds`；P2 macro 一律對 living-NPC ref 標 persistent。
+**發現的兩個 core 缺口 → 已在 core 修掉（2026-06-27，836 測綠，2 條新回歸測 `AliasScriptObjectPropTests`）**：
+1. ~~alias `scriptProperties` object prop 不能解析 placement REFR~~ **已修**：`FillProperties` 對未解析的 object prop 改 queue 到新的 `deferredScriptObjectProps`，由 `WireDeferredScriptObjectProps()`（placements 後跑）解析，比照 `deferredForcedAliases`。移除舊 `MakeObjectProp`。→ macro 可**直接傳 ObjectReference props**，不必 FLST workaround（P1 spec 仍用 FLST，無妨）。
+2. ~~forced-alias 的 ACHR 不被自動 persistent~~ **已修**：`deferredForcedAliases.Select(w => w.Ref)` 併入 `Generator.Build.Placements.cs` 的 `deferredAnchorEds` → forced-alias 目標自動 persistent。→ macro **不必對 living-NPC ref 顯式標 persistent**（P1 spec 仍標，無妨）。
 
 **狀態**：離線 build 綠；**.psc 未編譯驗證**（新 .pex 非預編，`package` 時才從 `source` 編，需主力機 Papyrus compiler）+ **未實機**。P1 驗收 = 主力機 `package` → 實機看兩 NPC 各過各生活、跨旅館現身、per-NPC rumor。

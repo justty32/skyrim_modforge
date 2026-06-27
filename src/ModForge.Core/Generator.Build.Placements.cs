@@ -14,6 +14,9 @@ public static partial class Generator
             var deferredAnchorEds = new HashSet<string>(
                 deferredTargetWires.Select(w => w.Ref)
                     .Concat(deferredLocationWires.Select(w => w.Ref))
+                    .Concat(deferredForcedAliases.Select(w => w.Ref))  // a forced-alias ACHR/marker (e.g. a
+                                                                       // living NPC's ref MoveTo'd around) must
+                                                                       // persist or the engine drops it
                     .Concat(MerchantContainerRefs())   // the merchant chest holds gold/stock — must persist
                     // "alias:"/"aliasLoc:" refs name a quest alias, not a placement — exclude them.
                     .Where(r => !string.IsNullOrWhiteSpace(r) && !LooksExternalRef(r) && !TryParseAliasRef(r, out _, out _)),
