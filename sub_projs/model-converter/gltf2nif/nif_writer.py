@@ -58,7 +58,10 @@ def _nbyte(c: float) -> int:
 #     block). Values taken from a real shipped SSE opaque+normal-mapped static mesh; the
 #     two "reserved" NiObjectNET words at +4/+8 are copied verbatim from vanilla (a -1 ref
 #     and a 0). See README for the full offset table. ---
-_LSP_SHADER_FLAGS1 = 0x82408009
+# SLSF1: vanilla static combo (Specular | Recv_Shadows | Cast_Shadows | engine-default
+# high bits), verified vs Skyrim.esm SFarmhouseSilo. The earlier 0x82408009 (copied from
+# a mod mesh) carried Vertex_Alpha on a mesh with NO vertex colors — bad combo.
+_LSP_SHADER_FLAGS1 = 0x82400301
 _LSP_SHADER_FLAGS2 = 0x00008021
 _LSP_GLOSSINESS = 80.0
 _LSP_SPEC_STRENGTH = 1.0
@@ -102,12 +105,24 @@ def _havok_filter(w: _Writer, layer: int) -> None:
 
 # ---------------------------------------------------------------- block builders
 
-def _build_ninode(name_idx: int, child_refs, collision_ref: int) -> bytes:
+def _build_bsxflags(name_idx: int, value: int) -> bytes:
+    # NiIntegerExtraData: vanilla statics hang a BSXFlags off the root
+    # (0x2 = Havok/collision present).
+    w = _Writer()
+    w.u32(name_idx)          # Name ("BSX")
+    w.u32(value)             # Integer Data
+    return bytes(w.buf)
+
+
+def _build_ninode(name_idx: int, child_refs, collision_ref: int,
+                  extra_refs: list[int] | None = None) -> bytes:
     w = _Writer()
     w.u32(name_idx)          # Name
-    w.u32(0)                 # Num Extra Data List
+    w.u32(len(extra_refs or []))  # Num Extra Data List
+    for e in (extra_refs or []):
+        w.i32(e)
     w.i32(-1)                # Controller
-    w.u32(0x0000000E)        # Flags
+    w.u32(0x0008000E)        # Flags (vanilla statics: 0x8000E, not 0xE)
     w.vec3((0.0, 0.0, 0.0))  # Translation
     w.mat33(np.eye(3))       # Rotation
     w.f32(1.0)               # Scale
@@ -141,7 +156,7 @@ def _build_bstrishape(name_idx: int, shader_ref: int, mesh: Mesh) -> bytes:
     w.u32(name_idx)          # Name
     w.u32(0)                 # Num Extra Data List
     w.i32(-1)                # Controller
-    w.u32(0x0000000E)        # Flags
+    w.u32(0x0008000E)        # Flags (match vanilla static shapes)
     w.vec3((0.0, 0.0, 0.0))  # Translation
     w.mat33(np.eye(3))       # Rotation
     w.f32(1.0)               # Scale
@@ -312,11 +327,14 @@ def build_nif(meshes: list[Mesh], texprefix: str, normal_map_flags: list[bool],
             raise ValueError(f"shape '{m.name}' has {len(m.positions)} verts > 65535 "
                              "(SSE BSTriShape is 16-bit; split the mesh)")
 
-    strings: list[str] = [root_name]
+    strings: list[str] = [root_name, "BSX"]
     blocks: list[tuple[str, bytes]] = []
 
-    # Reserve index 0 for the root NiNode; fill it in last (needs child + collision refs).
-    blocks.append(("NiNode", b""))
+    # Reserve index 0 for the root; fill it in last (needs child + collision refs).
+    # Vanilla statics root on a BSFadeNode with a BSXFlags extra (block 1) — mirror that.
+    blocks.append(("BSFadeNode", b""))
+    bsx_ref = len(blocks)
+    blocks.append(("BSXFlags", _build_bsxflags(1, 0x2 if hulls else 0x0)))
     shape_refs: list[int] = []
 
     for m in meshes:
@@ -346,7 +364,8 @@ def build_nif(meshes: list[Mesh], texprefix: str, normal_map_flags: list[bool],
             blocks.append(("bhkConvexVerticesShape", _build_convex_vertices(h)))
         collision_ref = col_idx
 
-    blocks[0] = ("NiNode", _build_ninode(0, shape_refs, collision_ref))
+    blocks[0] = ("BSFadeNode", _build_ninode(0, shape_refs, collision_ref,
+                                             extra_refs=[bsx_ref]))
 
     return _assemble(blocks, strings)
 
