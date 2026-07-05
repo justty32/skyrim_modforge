@@ -185,6 +185,11 @@ def _build_bstrishape(name_idx: int, shader_ref: int, mesh: Mesh) -> bytes:
 
     for a, b, c in mesh.triangles:
         w.u16(a); w.u16(b); w.u16(c)
+    # Trailing u32(0): present in every vanilla SSE BSTriShape (byte-verified vs
+    # Skyrim.esm SFarmhouseSilo — 4 zero bytes after the triangle list, included in
+    # the block size). The engine reads blocks SEQUENTIALLY, so omitting it shifts
+    # every later field by 4 and a length field becomes garbage -> giant memcpy CTD.
+    w.u32(0)
     return bytes(w.buf)
 
 
