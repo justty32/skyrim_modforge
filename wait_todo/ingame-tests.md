@@ -15,9 +15,7 @@
 
 ## 待測（active）
 
-- **darksouls-port P0 收尾目視（2026-07-05）— `DSPortP0.zip`（20:45 版）已重交付**（`sub_projs/darksouls-port/`）。**碰撞已實機確認**（cube 直掛 + m0046 57-hull list 都能撞能站＝路線 A 定案）；前一版「大部分看不到」＝mesh0（一半頂點）的 `m19_wall_13` 貼圖漏抽（藏在 m18_0003 分卷），已補齊。
-  - **只剩目視**：裝新 zip → `cow Tamriel -23,4` → ① 整件結構看得到（不再大面積缺失/紫色）② DS 石牆質感大致對 ③ 順手再踩一圈地板確認碰撞沒退化。
-  - 已知非阻塞：`_s` 光澤未接、地形交界處懸空/半埋。過了＝P0 全收，P1「空殼院」（43 塊全擺）開跑。
+- **darksouls-port P1「空殼院」（未開工，P0 已全數實機收官 2026-07-05）**：P0 三段驗收全過（mesh/貼圖/碰撞——路線 A + 57-hull list 免 Mopp 實機成立）。m0046 單塊＝一面牆組件，完整空間感等 P1 全量擺放（43 map pieces + 47 碰撞件，自有 SmallWorld worldspace 平地 LAND，不再與 vanilla 地形搏鬥）。P1 交付後再開新驗收條目。
 
 - **living-adventurers 整鏈 P0–P3（2026-06-27）— 全離線建構 + 848 測綠，但 .pex 從未編譯、從未實機**（idea #23 / `sub_projs/living-adventurers/`）。這是「抽象幽靈模擬 + 就地實體化 + 傳唱 + 互動/favor + alignment」的 **runtime 第一次驗證**，是 P0–P3 共同的 acceptance gate。測 `examples/living_npcs_spec.json`（macro 版，涵蓋全部；spike/p1 是過程原型，不必另測）。
 
