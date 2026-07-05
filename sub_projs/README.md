@@ -16,7 +16,7 @@
 | `godot-worldspace-editor/` | 工具前端 | 🟡 等實機 | Godot 4（自製 terrain）離線地形編輯器；匯出 PNG heightmap + splatmap + placements JSON → ModForge LAND/REFR。地形鏈已通並實機驗；**物件擺放 + 紋理（單層 BTXT + 多層 VTXT splatmap，含前端 splat 筆刷）整鏈離線完成（2026-06-17，待主力機 Godot GUI + xEdit byte-verify）**。剩 open＝box proxy 換真實 glTF（收斂到 model-converter）。 |
 | `inworld-skill-tree/` | 消費者 | 🔵 規劃中 | In-world 3D 星樹技能樹生成路線（Idea #20，玩家+NPC）。放棄 CSF，走 Campfire/Frostfall 世界內星樹 + JContainers per-NPC 狀態。主線設計已成稿，待 U1–U5 主力機/code pass 驗證。 |
 | `living-adventurers/` | 消費者 | 🔵 規劃中 | 給 standalone follower 一條命：人口/沈浸型 mod，一小撮具名持久冒險者過自主冒險人生（抽象幽靈模擬 + MoveTo 就地實體化），玩家各處撞見、酒館傳唱。idea #23。spike spec 已草（一個冒險者證迴圈），待 build + 主力機實機；任務層卡 roadmap #7–9。 |
-| `darksouls-port/` | 消費者 | 🔵 規劃完成 | 本機 DS Remastered 地圖移植成 Skyrim worldspace（首目標：北方不死院 m18_01_00_00）。MSB→spec placements、FLVER→glTF→NIF（吃 model-converter 反向）、碰撞為頭號牆。待 P0 spike（單塊 map piece 端到端）。**移植資產僅本機、不發佈**。 |
+| `darksouls-port/` | 消費者 | 🟢 P0 實機收官 | 本機 DS Remastered 地圖移植成 Skyrim worldspace（首目標：北方不死院 m18_01_00_00）。P0 三段驗收全過（2026-07-05）：mesh/貼圖/**碰撞路線 A（凸分解免 Mopp）實機成立**；gltf2nif 反向後端隨之落地 model-converter。下一步 P1「空殼院」全量擺放。**移植資產僅本機、不發佈**。 |
 | `model-converter/` | 基石/工具 | 🟡 載體已實作、等實機驗 | 以 Skyrim `.nif`（+dds）為中心的模型格式雙向互轉工具（↔ glTF/Godot ↔ FBX/OBJ）。收斂 model-porting 正向 + worldspace editor 需要的 nif→glTF 反向。**MVP 鎖＝vanilla nif→glTF 批量代理**。**2026-06-17 離線自寫參考後端 `nif2gltf/`**（Python+pygltflib）：手寫 Skyrim NIF 靜態 mesh parser（LE NiTriShape + SSE BSTriShape）、NiNode transform、Z-up→Y-up、含 skin→exit 3、batch manifest，**23 測綠**，不依賴 NifSkope。CLI 契約 `PROTOCOL.md`。剩 open＝對真實 vanilla `.nif` byte 驗證（待主力機，SSE 半精度 offset 最需驗）。 |
 
 對比：**對其他 mod 的解碼/調查**（餵 ModForge roadmap 的參考）留在 `docs/`、繼續 committed；只有體量太大的才 gitignore 主體、留摘要。
