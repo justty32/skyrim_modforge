@@ -108,10 +108,16 @@ def test_collision_blocks_present_and_unscaled():
     assert max(abs(c) for v in verts for c in v[:3]) < 5.0  # metres, not units
 
 
-def test_block_sizes_reach_eof():
+def test_footer_follows_last_block():
+    # Blocks end 8 bytes before EOF: NiFooter = Num Roots (1) + root ref (block 0).
+    # The engine reads the footer after the last block; without it the runtime
+    # parses garbage as the root count (heap corruption in-game).
+    import struct
     data = build_nif([_tri(), _cube()], "t", [False, False])
     h = _read_header(_Reader(data))
-    assert h["offsets"][-1] + h["block_sizes"][-1] == len(data)
+    end = h["offsets"][-1] + h["block_sizes"][-1]
+    assert end + 8 == len(data)
+    assert struct.unpack_from("<Ii", data, end) == (1, 0)
 
 
 def test_too_many_verts_rejected():

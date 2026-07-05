@@ -390,4 +390,12 @@ def _assemble(blocks: list[tuple[str, bytes]], strings: list[str]) -> bytes:
     out = bytearray(h.buf)
     for _, b in blocks:
         out += b
+    # NiFooter: the engine reads Num Roots + root refs after the last block.
+    # Omitting it makes the runtime parse past the end of the block data
+    # (garbage root count -> heap corruption in-game), even though offline
+    # readers that stop at the last block never notice.
+    footer = _Writer()
+    footer.u32(1)                 # Num Roots
+    footer.i32(0)                 # -> root NiNode (block 0)
+    out += footer.buf
     return bytes(out)
