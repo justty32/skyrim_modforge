@@ -1,0 +1,15 @@
+{
+  "pluginName": "DSPortCubeNH.esp",
+  "esl": true,
+  "_what": "P0 diag arm C2: the SAME minimal cube as arm C but WITHOUT the collision hull. Post vanilla-shape fixes, every crashing variant carried collision blocks; this isolates them. Stable here + arm C crashing = bhk block layout guilty; crash here = mesh core guilty even at minimum.",
+  "statics": [
+    { "editorId": "DSD_CubeNH", "model": "DsPort\\dscube.nif" }
+  ],
+  "placements": [
+    {
+      "base": "DSD_CubeNH",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": -89876.8, "y": 18397.19, "z": -3655 }
+    }
+  ]
+}
