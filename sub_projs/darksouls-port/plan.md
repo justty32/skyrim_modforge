@@ -43,7 +43,7 @@ FLVER/TPF ──(extractor)──> glTF + DDS ──(model-converter 反向)─�
 
 ## 分階段
 
-- **P0 spike「一塊石頭」**（🟡 離線全鏈完成 2026-07-05，剩實機）：m0046B1A18 FLVER→glTF→NIF + DDS + h0501 凸包碰撞 → Tamriel 室外 placement（`p0/ds_port_p0_spec.json`）→ `DSPortP0.zip` 已交付。實機證三件事：mesh 轉換、貼圖、**碰撞（站得上去＝路線 A 定案）**。過程抓修一個 core 坑：gltf2nif 對零厚度共面 hull 原靜默丟棄（地板破洞），改沿法線 ±2.5cm 擠出。
+- **P0 spike「一塊石頭」**（🟢 碰撞已實機確認 2026-07-05；剩貼圖目視收尾）：**路線 A 實機定案**——單 hull 直掛（cube）與 **57-hull `bhkListShape` 不包 Mopp**（m0046）都能撞能站。過程修掉 gltf2nif 四個引擎級 bug（NiFooter 缺失→heap 損毀、共面 hull 靜默丟棄→地板破洞、BSTriShape 尾 u32 缺失→循序讀全盤位移、bhk 鏈前向引用→null link CTD），方法＝crash log 定位 + 對 vanilla 逐 byte（SFarmhouseSilo/Basket01/Bucket01）。貼圖第一輪漏抽 `m19_wall_13`（**教訓：tpf 分卷要全掃**，m18_0003 才有），已補齊重交付。
 - **P1「空殼院」**：extractor 讀 MSB → 全 43 塊按 transform 擺進小 worldspace（`SmallWorld`，平 LAND 沉到樓下當保底）；碰撞可先只做地板大件；coc 進去逛一圈。
 - **P2「能走能看」**：完整碰撞 + programmatic navmesh + 照明/天氣（lighting pipeline 已驗；陰鬱多霧 IMGS/LGTM）+ 少量關鍵 obj（大門、電梯以 Skyrim door/activator 替代優先）+ map marker。
 - **P3「有生命」（可選）**：敵人以 Skyrim 生物 leveled 替代（chr 移植不做）；篝火 = ACTI + dispatcher（已有全套經驗）；Oscar 事件用 quest/dialogue/scene 重現。

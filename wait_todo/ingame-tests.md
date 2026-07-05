@@ -15,11 +15,9 @@
 
 ## 待測（active）
 
-- **darksouls-port P0「一塊石頭」（2026-07-05）— 已交付 `~/skyrim_mods/mine/DSPortP0.zip`（FLAT）**（`sub_projs/darksouls-port/`）。一塊不死院 map piece（m0046B1A18，牆+地板，1684 tri）+ 57 凸包碰撞（h0501 元件式凸分解），擺在 Tamriel 室外。spec＝`sub_projs/darksouls-port/p0/ds_port_p0_spec.json`。
-  - **測法**：裝 zip → 進遊戲 console `cow Tamriel -23,4` → 附近找一座石造結構（~18×24m，DS 石牆/石地板貼圖）。
-  - **驗收三段**：① **看得到**（隱形＝model path / NIF 佈局錯）② **貼圖對**（紫色＝貼圖路徑錯；黑/怪光澤＝shader flags 再調，非阻塞）③ **站得上去**——走上它的地板、撞它的牆不穿過（碰撞路線 A 的定案驗證；穿地＝凸包有洞，回報站不住的具體位置）。`tcl` 可輔助上下對照。
-  - 已知非阻塞：DS 的 `_s` spec 貼圖未接（光澤可能偏怪）；地形起伏處件的邊緣可能懸空/半埋（P0 不管）。
-  - **這一測定生死**：③ 過＝碰撞路線 A 成立，P1「空殼院」直接開跑；不過＝回報現象，切路線 B（wine MOPP 工具鏈）。
+- **darksouls-port P0 收尾目視（2026-07-05）— `DSPortP0.zip`（20:45 版）已重交付**（`sub_projs/darksouls-port/`）。**碰撞已實機確認**（cube 直掛 + m0046 57-hull list 都能撞能站＝路線 A 定案）；前一版「大部分看不到」＝mesh0（一半頂點）的 `m19_wall_13` 貼圖漏抽（藏在 m18_0003 分卷），已補齊。
+  - **只剩目視**：裝新 zip → `cow Tamriel -23,4` → ① 整件結構看得到（不再大面積缺失/紫色）② DS 石牆質感大致對 ③ 順手再踩一圈地板確認碰撞沒退化。
+  - 已知非阻塞：`_s` 光澤未接、地形交界處懸空/半埋。過了＝P0 全收，P1「空殼院」（43 塊全擺）開跑。
 
 - **living-adventurers 整鏈 P0–P3（2026-06-27）— 全離線建構 + 848 測綠，但 .pex 從未編譯、從未實機**（idea #23 / `sub_projs/living-adventurers/`）。這是「抽象幽靈模擬 + 就地實體化 + 傳唱 + 互動/favor + alignment」的 **runtime 第一次驗證**，是 P0–P3 共同的 acceptance gate。測 `examples/living_npcs_spec.json`（macro 版，涵蓋全部；spike/p1 是過程原型，不必另測）。
 
