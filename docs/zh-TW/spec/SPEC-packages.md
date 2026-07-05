@@ -17,6 +17,24 @@ ModForge 目前實作了八個模板——**Sandbox**（`Skyrim.esm:0x01C254`）
 結構上有效但沒有任何 Data 覆寫（套用模板預設值）的結果並附上警告。在加入支援之前，可用
 `packagediag <Skyrim.esm> <0xFORMID>` 探查任一模板的具名 slot schema。
 
+**Radiant 別名目標（`alias:` / `aliasLoc:`）。** 任何目標／地點 slot ref（`sandbox`/`sleep`/
+`eat` 的 `location`、`travel` 的 `place`、`escort` 的 `destination`/`target`、`follow` 的 `target`、
+`sitTarget`/`activate` 的 `target`、`useMagic` 的 `location`/`target`、`patrol` 的 `start`）都可以指名
+一個任務**別名**而非一個已放置的參考——這是 radiant **演出套件**的核心，讓套件作用於執行階段
+別名實際填入的內容：
+- **`"alias:<name>"`** → ownerQuest 的別名 `<name>` 所持有的 ref/actor。用在 *target* slot 上 →
+  `PackageTargetAlias`；用在 *location* slot 上 → `LocationFallback(AliasForReference)`。
+- **`"aliasLoc:<name>"`** → 一個位置別名所持有的**地點** → `LocationFallback(AliasForLocation)`。
+  （僅限 location slot ——不能用作 target。）
+
+套件的 **`ownerQuest` 必須是一個 spec 內的任務**，才能解析其別名索引（否則 validate 會報錯）。
+例如一個任務填入 `Victim`/`Dungeon` 別名（`findMatchingLocation`、`findInLocationAlias`、
+`forced`、……），其套件則做 `travel.place: "aliasLoc:Dungeon"` +
+`escort.target: "alias:Victim"`。示範 `examples/radiant_package_spec.json`。⚠ **離線限制：**
+Mutagen 欄位*結構*已用反射驗證過，但 `AliasForReference`/`AliasForLocation` 的選擇與
+`PackageTargetAlias` 的位元組配置需要主力機上對一個真正的 radiant package 做 xEdit 位元組比對 —
+見 `WAIT_USER.md`。
+
 **在特定 ref 上的 Sandbox 與 Travel 的差別：** Sandbox 的 `location` ref 讓 NPC 在那個 ref
 **周圍**遊蕩／進食／坐下（radius 涵蓋附近的家具）。Travel 的 `place` ref 讓 NPC 實際
 **走到**那個 ref，並在其 `radius` 範圍內停下。常見的串接：在同一個 NPC 的 `packages` 清單上放一個 Travel

@@ -102,10 +102,11 @@ spec 內某個 `magicEffects` 項目的 `editorId`（見下文）。一個 potio
   （導向第二個 AV 的 magnitude 比例）。吸收/轉移類型的 effect（傷害一個屬性、餵養另一個）
   就是這樣建構的。
 - **`Script`-archetype MGEF**（boss 法術邏輯、自訂的施加時行為）執行 **Papyrus**：設定
-  `archetype: "Script"` 並用一個頂層 **`scripts[]`** 項目附加 script，該項目的
-  `targetEditorId` 是此 MGEF 的 `editorId`（通用的 VMAD 附加方式適用於任何 record — MGEF 無需特殊
-  接線）。`.psc` extends `ActiveMagicEffect`；`package` 會像任何其他 script 附加一樣編譯
-  `scripts[].source`。`scripts[]` 的形狀見 [SPEC-quests](spec-quests.html) § scripts。
+  `archetype: "Script"` 並附加一個 script。兩種等效寫法：**inline** 的 `magicEffects[].scripts[]`
+  項目（`targetEditorId` 是隱含的 — 讓 script 貼著 effect 放），或一個頂層 **`scripts[]`** 項目，
+  其 `targetEditorId` 是此 MGEF 的 `editorId`。兩者形狀相同（見
+  [SPEC-quests](spec-quests.html) § scripts），`package` 都會編譯各項目的 `source`。`.psc`
+  extends `ActiveMagicEffect`。為求可讀性優先用 inline 寫法。
 
 **Flags 很重要 — 要對上 effect 的時序（這是第一名的陷阱）：**
 - **瞬間** restore/damage（`duration` 0）→ `["NoDuration", "NoArea"]`，傷害再加上 `"Detrimental"`

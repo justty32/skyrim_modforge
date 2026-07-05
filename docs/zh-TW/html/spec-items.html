@@ -102,7 +102,8 @@
 一個 perk 是一個被動能力或一個量化的數值/戰鬥修正——是技能樹、種族能力與任務獎勵
 加成的基本建構單元。主幹攜帶 `name`/`description`、`playable`/`hidden`/`trait` 旗標、
 `level` + `numRanks`（≥1）、選用的面向玩家的 `conditions`（perk-level CTDA 守衛條件），
-以及一個 `effects` 清單。支援兩種 effect 類型：
+以及一個 `effects` 清單。支援四種 effect 類型（`ability`、`entryPoint`、`addActivateChoice`、
+`setText`）：
 
 ```jsonc
 { "editorId": "MF_IronHidePerk", "name": "Iron Hide", "numRanks": 1,
@@ -136,6 +137,19 @@
   （`itemType` = `Left`/`Right`/`Voice`/`Instant`）、`GetRandomPercent`、`GetLevel`。每一個都帶一個
   `comparison`（`EqualTo`/`GreaterThanOrEqualTo`/… 或符號形式）對比 `value`、一個選用的
   `runOn`（`Subject` 預設 / `Target`），以及 `or`（與下一個 condition 做 OR）。
+- **`addActivateChoice` / `setText`**（互動式 perk，Immersive Interactions 風格）— 在符合 effect
+  `conditions` 的物件上加一個 `[E] <buttonLabel>` 選項，及/或改變 activation 提示文字。
+  `entryPoint` 預設為 `Activate`。一個 `addActivateChoice` 會在物件上執行一個選用的 `spell`
+  **及/或**一段 Papyrus `fragmentBody`（`akTargetRef` = 被 activate 的物件、`akActor` = 執行者 —
+  例如 `akActor.SetSitState(akTargetRef)`）；`replaceDefault: true` 會取代預設 activation
+  而非新增一個選項。`setText` 只設定 `text`（新提示文字）。有 `fragmentBody` 會讓 ModForge
+  產生 `<perk>_Frags.psc`（extends Perk）並附加 **PerkAdapter** VMAD ——但只在 `package` 階段、
+  且 `.pex` 已編譯完成時才會附加（VMAD 指向不存在的 `.pex` 會在載入時報錯；沒有 fragment、
+  只有 spell 的選項則不需要 script）。實作範例：`examples/interactive_perk_spec.json`。
+  ⚠ **離線限制：** entry-point + PerkAdapter 的 Mutagen *結構*已用反射驗證過，但位元組欄位
+  （PerkAdapter 的 `version`/`objectFormat`、`IndexedScriptFragment` 未知欄位）與 Activate
+  fragment 的**簽章**需要主力機上對一個真正的 Immersive Interactions perk 做 xEdit 位元組比對 —
+  見 `WAIT_USER.md`。
 - **附加到一個 NPC** 透過 `npcs[].perks: ["MF_IronHidePerk", …]` — 該 actor 會在遊戲開始時
   被動取得這些 perk（每次 placement 攜帶該 perk 的 `numRanks`）。**把一個 perk 賦予
   玩家需要一個 Papyrus `AddPerk` 呼叫**（`scripts` + 一個 quest fragment）——沒有任何純記錄的方式
