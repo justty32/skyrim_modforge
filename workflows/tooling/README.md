@@ -18,4 +18,4 @@ Conventions in the tables:
 
 ## Fresh-clone prerequisite
 
-Before the first `dotnet build`, the six dispatcher/controller `.psc` must be compiled to `.pex` (they're embedded as conditional `EmbeddedResource` but `.pex` is gitignored). See CLAUDE.md「前置步驟」for the exact `compile` commands. Missing `.pex` only *warns* at build time — the relevant Fire()-routed trigger / identity feature won't work at runtime until the `.pex` exists locally.
+Before the first `dotnet build`, the six dispatcher/controller `.psc` must be compiled to `.pex` (they're embedded as conditional `EmbeddedResource` but `.pex` is gitignored). See [dev-env.md](../dev-env.md)「前置步驟」for the exact `compile` commands. Missing `.pex` only *warns* at build time — the relevant Fire()-routed trigger / identity feature won't work at runtime until the `.pex` exists locally.

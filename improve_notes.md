@@ -2,28 +2,9 @@
 
 逐一讀過 WORKFLOWS.md、各工作流入口檔、DEV-GUIDE、SESSION-LOG、WAIT_USER 後的觀察。分層路由的骨架本身很健康（薄 CLAUDE.md → 派發表 → 入口檔，每層只指下一層），以下是骨架上長出來的偏差，按影響排序。
 
+> **已處理**：§1（SESSION-LOG 清倉 + 條目格式）、§2（specs/plans 狀態欄去重）、§3（五個過期指標）已於 2026-07-05 完成並移除；以下保留尚未動工的 §4–§8。
+
 ---
-
-## 1. SESSION-LOG.md 已嚴重超標，且違反自己的 open-only 規則（最大單一改進點）
-
-- **現況**：23.6 KB ≈ 門檻 8192 bytes 的 3 倍。檔頭自己寫了「膨脹就拆 → `session_logs/`」的觸發條款，但一直沒觸發。
-- **更根本的問題**：檔頭說「只放還沒完成的」，實際條目大量是**已完成敘事**——2026-06-20 的多條 ✅ IN-GAME CONFIRMED、已修完 bug 的完整過程、mod 調查批的全部結論。這些照規則該濃縮進 `feature-dev/landed/` 與 git log，SESSION-LOG 每條只留 open 尾巴。living-adventurers 一條就 ~2500 字，其中 open 的其實只有最後一句「剩主力機 package + 實機」。
-- **為什麼重要**：SESSION-LOG 是每個 session 開頭最可能被整讀的檔，越肥每次啟動越貴，而且 open 項被淹在 done 敘事裡反而難找。
-- **建議**：① 立即做一次清倉——done 部分移 landed/ 或直接刪（git log 已有）；② 給條目定強制格式：「**一行 open 狀態 + 指向細節的連結**」，細節（設計決策、修了什麼）落到該工作流或 sub_proj 的文件裡；③ 完成即整條刪除，不留「✅ 已確認」條目。
-
-## 2. 規劃管線的狀態欄多處重複，已實際漂移
-
-- **證據**：worldspace-editor 的狀態同時活在 specs README 現役表、plans README 現役表、SESSION-LOG（Idea #19 條）、wait_todo/worldspace-editor.md 至少四處。而且**已經漂了**：`specs/README.md:20` 還寫「待出 plan」，但 `plans/README.md:17` 早已列出該 plan 且 Task 1–6 落地。
-- **建議**：狀態只留一個 source of truth（建議 plans 表；未出 plan 的留 specs 表），其他地方**只留連結、不留狀態欄**。specs 表的狀態欄可整個刪掉——「在現役夾＝現役、在 archive/＝落地」已由檔案位置隱含。
-- **同類重複**：specs 與 plans 兩份 README 各有一段幾乎相同的「命名不含日期 + 落地即 archive」規則文字，改一處必須記得改另一處；可抽成一段、另一邊留一行指標。
-
-## 3. 一批過期指標／自相矛盾敘述（低成本、一次修完）
-
-1. `WORKFLOWS.md:38`「單檔工作流（tooling / roadmap / testing）」——**tooling 與 roadmap 都已是資料夾型**（tooling/ 4 檔、roadmap/ 6 檔 + archive）。順帶建議：這種「逐一點名」的正面清單每次升級都會過期，改成描述性規則（單檔＝還沒長成資料夾者），點名交給上面的派發表。
-2. `workflows/tooling/README.md:21`「See CLAUDE.md『前置步驟』」——前置步驟早已搬到 `dev-env.md`，CLAUDE.md 已無此段。
-3. `workflows/feature-dev/README.md:26` 連結文字寫 `landed.md`、實指 `landed/README.md`——landed 已升級成資料夾，標籤沒跟上。
-4. idea #20 雙入口不一致：`ideas.md` 索引直接指 `sub_projs/inworld-skill-tree/`，但 `workflows/idea/inworld-skill-tree.md` 仍存在、且被 progression-combat-overhaul.md 與 sub_proj README 反向連結。要嘛索引恢復指 idea 檔、要嘛 idea 檔內容併進 sub_proj README 後刪除。
-5. `WAIT_USER.md`「各工作流的待你項」段永遠是「目前無」——實際待驗項全在 `wait_todo/` 分類檔裡。這段只增加一個「要記得更新」的位置，建議刪除。
 
 ## 4. testing.md：重複、誤導、語言不一致
 
@@ -58,10 +39,8 @@
 
 ---
 
-### 建議動手順序
+### 建議動手順序（§1–§3 已完成，以下為剩餘項）
 
-1. SESSION-LOG 清倉 + 定條目格式（§1）——收益最大。
-2. 一次修完 §3 的五個過期指標 + §2 的狀態欄去重（都是純文檔行為不變修正）。
-3. testing/dev-env 去重 + gotcha 搬家（§4、§6）。
-4. 派發表補觸發詞 + gotchas 決策表（§5）。
-5. roadmap 兩檔拆分視需要排程（§7），spec 消歧義順手做（§8）。
+1. testing/dev-env 去重 + gotcha 搬家（§4、§6）。
+2. 派發表補觸發詞 + gotchas 決策表（§5）。
+3. roadmap 兩檔拆分視需要排程（§7），spec 消歧義順手做（§8）。

@@ -6,11 +6,7 @@
 
 **只列還沒做的**——做完即移除（不留已完成清單）；功能類確認後濃縮句進 [workflows/feature-dev/landed.md](workflows/feature-dev/landed/README.md)，歷史看 git log。
 
-> 本檔是**精簡入口**。待你項已按類別拆進 [`wait_todo/`](wait_todo/)（2026-06-18，照 [DEV-GUIDE「結構整理原則」](DEV-GUIDE.md)）；本檔只留導航 + 各工作流指標。新增待你項放對應類別檔；某類膨脹再於 `wait_todo/` 內續拆。
-
-## 各工作流的待你項
-
-屬於某工作流的待你事項連到該工作流（`workflows/<wf>/`）。目前各工作流無此類 open 項目。
+> 本檔是**精簡入口**。待你項已按類別拆進 [`wait_todo/`](wait_todo/)（2026-06-18，照 [DEV-GUIDE「結構整理原則」](DEV-GUIDE.md)）；本檔只留導航到 `wait_todo/` 分類檔。新增待你項放對應類別檔；某類膨脹再於 `wait_todo/` 內續拆。
 
 ## 待你項分類（`wait_todo/`）
 
