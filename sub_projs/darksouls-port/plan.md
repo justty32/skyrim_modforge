@@ -43,7 +43,7 @@ FLVER/TPF ──(extractor)──> glTF + DDS ──(model-converter 反向)─�
 
 ## 分階段
 
-- **P0 spike「一塊石頭」**：挑 1 塊小 map piece → FLVER→glTF→NIF + DDS → 放進 vanilla 測試 cell（`placements`）→ 實機**看得到、站得上去**。證三件事：mesh 轉換、貼圖、碰撞。❗碰撞方案在此定案。
+- **P0 spike「一塊石頭」**（🟡 離線全鏈完成 2026-07-05，剩實機）：m0046B1A18 FLVER→glTF→NIF + DDS + h0501 凸包碰撞 → Tamriel 室外 placement（`p0/ds_port_p0_spec.json`）→ `DSPortP0.zip` 已交付。實機證三件事：mesh 轉換、貼圖、**碰撞（站得上去＝路線 A 定案）**。過程抓修一個 core 坑：gltf2nif 對零厚度共面 hull 原靜默丟棄（地板破洞），改沿法線 ±2.5cm 擠出。
 - **P1「空殼院」**：extractor 讀 MSB → 全 43 塊按 transform 擺進小 worldspace（`SmallWorld`，平 LAND 沉到樓下當保底）；碰撞可先只做地板大件；coc 進去逛一圈。
 - **P2「能走能看」**：完整碰撞 + programmatic navmesh + 照明/天氣（lighting pipeline 已驗；陰鬱多霧 IMGS/LGTM）+ 少量關鍵 obj（大門、電梯以 Skyrim door/activator 替代優先）+ map marker。
 - **P3「有生命」（可選）**：敵人以 Skyrim 生物 leveled 替代（chr 移植不做）；篝火 = ACTI + dispatcher（已有全套經驗）；Oscar 事件用 quest/dialogue/scene 重現。

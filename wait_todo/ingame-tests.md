@@ -15,6 +15,12 @@
 
 ## 待測（active）
 
+- **darksouls-port P0「一塊石頭」（2026-07-05）— 已交付 `~/skyrim_mods/mine/DSPortP0.zip`（FLAT）**（`sub_projs/darksouls-port/`）。一塊不死院 map piece（m0046B1A18，牆+地板，1684 tri）+ 57 凸包碰撞（h0501 元件式凸分解），擺在 Tamriel 室外。spec＝`sub_projs/darksouls-port/p0/ds_port_p0_spec.json`。
+  - **測法**：裝 zip → 進遊戲 console `cow Tamriel -23,4` → 附近找一座石造結構（~18×24m，DS 石牆/石地板貼圖）。
+  - **驗收三段**：① **看得到**（隱形＝model path / NIF 佈局錯）② **貼圖對**（紫色＝貼圖路徑錯；黑/怪光澤＝shader flags 再調，非阻塞）③ **站得上去**——走上它的地板、撞它的牆不穿過（碰撞路線 A 的定案驗證；穿地＝凸包有洞，回報站不住的具體位置）。`tcl` 可輔助上下對照。
+  - 已知非阻塞：DS 的 `_s` spec 貼圖未接（光澤可能偏怪）；地形起伏處件的邊緣可能懸空/半埋（P0 不管）。
+  - **這一測定生死**：③ 過＝碰撞路線 A 成立，P1「空殼院」直接開跑；不過＝回報現象，切路線 B（wine MOPP 工具鏈）。
+
 - **living-adventurers 整鏈 P0–P3（2026-06-27）— 全離線建構 + 848 測綠，但 .pex 從未編譯、從未實機**（idea #23 / `sub_projs/living-adventurers/`）。這是「抽象幽靈模擬 + 就地實體化 + 傳唱 + 互動/favor + alignment」的 **runtime 第一次驗證**，是 P0–P3 共同的 acceptance gate。測 `examples/living_npcs_spec.json`（macro 版，涵蓋全部；spike/p1 是過程原型，不必另測）。
 
   **打包（主力機，需 Papyrus toolchain）**：

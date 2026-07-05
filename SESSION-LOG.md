@@ -26,5 +26,5 @@
 
 - **Idea #23 living-adventurers**：剩主力機 `package`（編全部 .pex：spike/P1/canonical + 互動 setGlobal TIF）+ 實機驗收（P0–P3 整鏈第一次 runtime，共同 acceptance gate）——見 [WAIT_USER](WAIT_USER.md) → [wait_todo/ingame-tests.md](wait_todo/ingame-tests.md)。設計/進度 → idea [#23](workflows/idea/living-adventurers.md)、sub_proj [README](sub_projs/living-adventurers/README.md) + [design.md](sub_projs/living-adventurers/design.md)。
 - **Idea #20 in-world 技能樹**：Phase 0 離線完備 + .pex 已編交付，剩實機驗收——見 [WAIT_USER](WAIT_USER.md) → [wait_todo/roadmap-features.md](wait_todo/roadmap-features.md)。sub_proj [inworld-skill-tree](sub_projs/inworld-skill-tree/README.md)。
-- **darksouls-port（DS1 北方不死院 → Skyrim worldspace）**：sub_proj 已開、規劃完成，待 P0 spike（單塊 map piece FLVER→NIF 端到端 + 碰撞路線定案）——[sub_projs/darksouls-port/plan.md](sub_projs/darksouls-port/plan.md)。
+- **darksouls-port（DS1 北方不死院 → Skyrim worldspace）**：P0 離線全鏈完成（extractor + gltf2nif + 碰撞凸分解 + 打包），`DSPortP0.zip` 已交付待實機——見 [WAIT_USER](WAIT_USER.md) → [wait_todo/ingame-tests.md](wait_todo/ingame-tests.md)；規劃 [plan.md](sub_projs/darksouls-port/plan.md)。
 - **Idea #19 Godot Worldspace Editor**：整鏈已落地（[landed/world](workflows/feature-dev/landed/world.md) +「Godot 編輯器 WYSIWYG」條 / [godot-editor](workflows/feature-dev/landed/godot-editor.md)），剩非阻塞小尾巴——見 [WAIT_USER](WAIT_USER.md) → [wait_todo/worldspace-editor.md](wait_todo/worldspace-editor.md)。
