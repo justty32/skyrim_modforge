@@ -53,8 +53,22 @@ MVP 已改自寫純 Python 後端（見下「實作」節），不再依賴外�
 **測**：`.venv/Scripts/python -m pytest`（**23 綠**：glTF writer round-trip 7、NIF reader LE+SSE 合成 fixture 9、CLI 契約 7）。
 ⚠️ **離線限制**：合成 fixture 只證「reader 讀回它照 nif.xml 編的東西」，**未對真實 vanilla `.nif` 逐 byte 驗**（離線無遊戲素材）——SSE offset 解碼尤其需真檔確認，列 WAIT_USER。
 
+## 實作（`gltf2nif/` — 反向後端，2026-07-05）
+
+反向缺口（glTF 靜態 mesh → SSE `.nif`）已補：見 **[gltf2nif/README.md](gltf2nif/README.md)**。鏡射 `nif2gltf` 的結構，以它的 parser 為佈局權威（寫出→讀回 round-trip 是主驗證），並對真實 vanilla SSE nif 逐位元組核過欄位。
+
+```
+python -m gltf2nif <in.gltf> <out.nif> [--texprefix textures\dsport\m18] [--collision hulls.json]
+```
+
+- **幾何** `BSTriShape`（full-precision 佈局 stride 28，座標 glTF Y-up 公尺 → Skyrim Z-up ×70.03）
+- **材質** `BSLightingShaderProperty`+`BSShaderTextureSet`（material 基名 → `<texprefix>\<基名>.dds` + 探測到的 `_n` normal map）
+- **碰撞** `--collision` hulls JSON → `bhkCollisionObject→bhkRigidBody→bhkListShape→bhkConvexVerticesShape`（Havok 公尺、不乘 70；STATIC/STONE/MOTION_FIXED）
+- 服務 [darksouls-port](../darksouls-port/plan.md) 的 `FLVER→glTF→NIF` 管線；m0046B1A18 實件已跑（5 shape / 1684 tri / 64 KB，round-trip 位置誤差 ~1.7e-6 m）。
+
 ## Open
 
+- **反向產出實機驗證**（**待主力機**）：`gltf2nif` 輸出的 `.nif`（含碰撞）進遊戲測試 cell，確認看得到、站得上去。離線 round-trip + 對 vanilla byte 核已過，剩實機 acceptance。
 - **對真實 vanilla `.nif` 驗證載體**（MVP 收尾，**待主力機**）：跑 `nif2gltf` 轉真實 vanilla mesh（LE 與 SSE 各取樣），確認 glTF 進 Godot/Blender 形狀對；SSE 半精度 offset 解碼是最需驗的點。見 WAIT_USER。
 - ~~**批量 nif→glTF 的可行載體**~~ ✅ 自寫 `nif2gltf`（上節），不再卡 NifSkope。
 - ~~**協議形狀**~~ ✅ 草案 2026-06-17 [PROTOCOL.md](PROTOCOL.md)：掛勾 `MODFORGE_NIF2GLTF_BIN`（黑盒 exec）、單檔 `--in/--out/--flat`、批量 `manifest.json`、exit code。**參考後端＝本 sub_proj 的 `nif2gltf`**（wrapper 呼 `python -m nif2gltf`）；契約 backend-agnostic，要換後端不動契約。

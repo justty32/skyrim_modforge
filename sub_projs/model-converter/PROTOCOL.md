@@ -75,6 +75,28 @@ nif2gltf --manifest <manifest.json> --outdir <dir>
 - **參考 wrapper**：一行殼呼 `python -m nif2gltf "$@"`（在本 sub_proj 的 `.venv` 內）。venv / 後端工具是內政，gitignore 留本機。
 - ✅ **後端已自寫**（取代原「待證 NifSkope」）：`nif2gltf` 純 Python 靜態 NIF mesh parser，照本契約輸出 `.gltf`+`.bin`，不需任何外部 NIF 工具。MVP 後的紋理/蒙皮/正向才可能再掛 PyNifly 等 Windows 後端。
 
+## 反向命令：glTF → NIF（`gltf2nif`，2026-07-05）
+
+nif→glTF 的鏡像方向，供 [darksouls-port](../darksouls-port/plan.md) 的資產移植管線消費。**dumb 工具**：一個 glTF → 一個 `.nif`，不認呼叫方、不讀 ESM。參考後端＝本 sub_proj 的 `gltf2nif` Python 模組（欄位表與選值見 [gltf2nif/README.md](gltf2nif/README.md)）。
+
+```
+gltf2nif <in.gltf> <out.nif> [--texprefix <textures\prefix>] [--collision <hulls.json>] [--root-name <name>]
+```
+
+| 旗標 | 必填 | 語意 |
+|---|---|---|
+| `in.gltf` | ✅ | 來源 glTF/glb（靜態三角 mesh；一 primitive→一 `BSTriShape`） |
+| `out.nif` | ✅ | 目標 SSE `.nif`（20.2.0.7 / user 12 / BSVersion 100） |
+| `--texprefix` | | 貼圖路徑前綴（預設 `textures\dsport`）；material 基名 → slot0 `<prefix>\<基名>.dds`、slot1 `<基名>_n.dds`（探測到才填） |
+| `--collision` | | hulls JSON（公尺 / DS Y-up）→ `bhkConvexVerticesShape` 串（不乘 70；STATIC/STONE/MOTION_FIXED） |
+| `--root-name` | | 根 `NiNode` 名 |
+
+**座標約定**：glTF Y-up 公尺 → Skyrim Z-up units，`(x,y,z)→(x,−z,y)×70.03`（幾何）；碰撞 hull 只軸變換不乘尺度（bhk 內部＝Havok 公尺）。
+
+**Exit code**：`0` 成功／`1` 一般錯誤（args、寫檔、碰撞解析）／`2` glTF 解析失敗。
+
+**驗證保證**：輸出可被本 sub_proj 的 `nif2gltf` parser 讀回，三角形/頂點座標（誤差容忍內）/UV/貼圖路徑與輸入一致；每個位元組佈局對過真實 vanilla SSE nif。契約 backend-agnostic。
+
 ## 與 ModForge `package` 的關係
 
-本契約是**反向**（nif→glTF，純預覽代理）。**正向**（外部→nif）的產出由 ModForge `package`（`StaticSpec.Model`）打包，不走本契約；正向決策真相在 [model-porting/](../../workflows/idea/asset-pipelines/model-porting/README.md)。
+nif→glTF 是**反向**（純預覽代理）；glTF→nif（`gltf2nif`，上節）是**移植方向**，產出的 `.nif`+`.dds` 進 ModForge spec 的 `assets/`，由 `package`（`StaticSpec.Model`）打包。正向（一般外部→nif）決策真相在 [model-porting/](../../workflows/idea/asset-pipelines/model-porting/README.md)。
