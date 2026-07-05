@@ -46,7 +46,7 @@ public static partial class Generator
                 foreach (var k in ln.Interactions)
                     if (!new[] { "fund", "praise", "parley" }.Contains((k ?? "").Trim().ToLowerInvariant()))
                         Problems.Add($"{who}: unknown interaction '{k}' (fund|praise|parley)");
-                if (external && ln.Alignment.Trim().Equals("hostile", StringComparison.OrdinalIgnoreCase))
+                if (external && (ln.Alignment ?? "").Trim().Equals("hostile", StringComparison.OrdinalIgnoreCase))
                     Problems.Add($"{who}: alignment hostile on an external ref can't set aggression (the macro only adjusts in-spec NPCs); the follower keeps its own AI");
             }
         }
