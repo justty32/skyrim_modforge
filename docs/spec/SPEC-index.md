@@ -1,5 +1,7 @@
 # ModForge spec — index
 
+> **"spec" disambiguation:** this folder is the **JSON spec field manual** (what keys a spec `.json` may contain). Design proposals live in `workflows/specs/`; the spec `.json` files themselves live in `examples/`.
+
 The spec is a JSON file → `.esp` plugin. Choose a topic:
 
 | File | Contents |

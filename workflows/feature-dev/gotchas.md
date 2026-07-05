@@ -27,6 +27,12 @@
 ## Voice assets
 
 - **Voice assets 不是 plugin record**：Skyrim voice 檔必須在 loose path `Sound/Voice/<PluginName.esp>/<VoiceType>/<CK-name>.fuz|wav|xwm`，ESP/ESM 只提供 INFO FormID/Quest/Topic 查找依據；`package` 只會複製 `--assets`/`spec.assets` 的 `Sound/`，不會自動抓另一個 build 目錄旁邊的 voice output。產 voice 的最穩流程是「先 package 到最終資料夾，再對該資料夾內 plugin 跑 `voicelines`」，或「build+voicelines 到 staging dir → package --assets staging dir」。
+
+## Voice / ship-voice
+
+- **TIF 內聯編譯 spurious fail** [[sofia-vigilant-pipeline-confirmed]]：含對話 `setGlobal`/`sayOnce` 的 spec，`package` 與 `ship-voice.sh` 的 TIF 內聯自動編譯會 spurious fail（zip 出 0 個 `.pex`）→ 對話照播但 sayOnce 失效（選項重複）。修法：對 package 產出的 `Scripts/Source/TIF_*.psc` 逐一 `dotnet run --project src/ModForge.Cli -- compile <psc> <stage>/Scripts`（單獨 compile 必成），再 `cd <stage> && zip <既有zip> Scripts/*.pex` 補進去（語音不用重做）。
+- **LipGenerator wine crash** [[voice-gen-interface-future]]：lip 嘴型設 `MODFORGE_LIPGEN`＝CK `LipGenerator.exe`；但它在 wine 下會 crash/重試把配音拖到極慢，量大時可先**不設＝跳過**（嘴不動），之後再統一補 lip。
+
 ## adapter / quest stages
 
 - **adapter 合併**：`WireQuestStages` 要**合併**進既有 `QuestAdapter`（不能 `=` 覆寫，否則清掉 alias 腳本的 `.Aliases`）；`GetOwningQuest()` 在執行時 alias OnActivate 可用，dialogue TIF 在 game-load 是 None。

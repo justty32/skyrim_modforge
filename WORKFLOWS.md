@@ -9,15 +9,20 @@
 | 觸發（你說…）| 工作流 | 入口檔（先讀這個）|
 |--------------|--------|-------------------|
 | 「我想用 / 設定某個外部工具」「查 env var / 依賴」 | **tooling** | [workflows/tooling/README.md](workflows/tooling/README.md) |
-| 「我想開發 / 修改某個 feature」 | **feature-dev** | [workflows/feature-dev/README.md](workflows/feature-dev/README.md) |
+| 「我想開發 / 修改某個 feature」「**修 bug**」 | **feature-dev** | [workflows/feature-dev/README.md](workflows/feature-dev/README.md) |
 | 「重構 / 拆檔 / 整理結構」 | **refactor** | [workflows/refactor/README.md](workflows/refactor/README.md) |
 | 「解碼 vanilla / 某個 mod」「可行性調查」 | **investigation** | [workflows/investigation/README.md](workflows/investigation/README.md) |
-| 「把一個 idea 討論成設計方案」 | **spec** | [workflows/specs/README.md](workflows/specs/README.md) |
+| 「把一個 idea 討論成設計方案」（**設計方案**，非 `docs/spec/` 的欄位手冊）| **spec** | [workflows/specs/README.md](workflows/specs/README.md) |
 | 「把設計方案展開成動工計畫」 | **plan** | [workflows/plans/README.md](workflows/plans/README.md) |
 | 「記一個奇思妙想」（不確定要不要做）| **idea** | [workflows/idea/ideas.md](workflows/idea/ideas.md) |
 | 「記一件確定會做、不確定何時的事」 | **roadmap** | [workflows/roadmap/](workflows/roadmap/README.md) |
 | 「跑測試」 | **testing** | [workflows/testing.md](workflows/testing.md) |
 | 「設定 / 了解開發環境」「fresh clone 後要做什麼」「這台機器能做什麼」 | **dev-env** | [workflows/dev-env.md](workflows/dev-env.md) |
+| 「**打包出貨 / ship**」（package→zip→交付）| **dev-env** | [workflows/dev-env.md](workflows/dev-env.md) |
+| 「**同步 zh-TW / 重生 html**」 | **zh-tw-sync** | [workflows/zh-tw-sync.md](workflows/zh-tw-sync.md) |
+| 「**記 / 查踩坑**」 | **gotchas** | [workflows/common/gotchas.md](workflows/common/gotchas.md) |
+
+**都不符 → 看 [INDEX.md](INDEX.md)**（repo 頂層結構地圖）。
 
 **規劃管線**（一個想法的成熟過程）：idea（要不要做？）→ roadmap（會做，何時？）→ spec（討論後方案）→ plan（動工前詳規）→ build（feature-dev）。
 
