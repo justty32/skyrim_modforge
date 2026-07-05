@@ -7,6 +7,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- ThirdParty/ holds gitignored source clones (SoulsFormats fallback, and
+       Python soulstruct/soulstruct-havok used by tools/). Never compile them
+       into this C# project. -->
+  <ItemGroup>
+    <Compile Remove="ThirdParty/**/*.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="JuicerMV.SoulsFormats" Version="0.1.4" />
     <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.6" />

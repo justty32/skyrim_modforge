@@ -23,6 +23,7 @@ if (args.Length == 0)
     Console.Error.WriteLine("  msb-dump    <msb>          <out.json>");
     Console.Error.WriteLine("  flver2gltf  <flver.dcx>    <outdir>");
     Console.Error.WriteLine("  tpf-extract <tpfbhd>       <outdir> [--filter <substr>]");
+    Console.Error.WriteLine("  hkx-extract <hkxbhd>       <outdir> [--piece <substr>]");
     return 1;
 }
 
@@ -37,6 +38,11 @@ try
             int fi = Array.IndexOf(args, "--filter");
             if (fi >= 0 && fi + 1 < args.Length) filter = args[fi + 1];
             return TpfExtract(args[1], args[2], filter);
+        case "hkx-extract":
+            string? piece = null;
+            int pi = Array.IndexOf(args, "--piece");
+            if (pi >= 0 && pi + 1 < args.Length) piece = args[pi + 1];
+            return HkxExtract(args[1], args[2], piece);
         default:
             Console.Error.WriteLine($"unknown subcommand: {args[0]}");
             return 1;
@@ -232,6 +238,55 @@ static int TpfExtract(string bhdPath, string outDir, string? filter)
     Console.WriteLine($"BXF3: {bhdPath}");
     Console.WriteLine($"  files={bxf.Files.Count} tpf={tpfCount} skipped(non-TPF)={skipped}");
     Console.WriteLine($"  wrote {ddsCount} DDS -> {outDir}" + (filter != null ? $" (filter='{filter}')" : ""));
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// hkx-extract : BXF3 (hkxbhd + hkxbdt) -> per-piece DCX-decompressed .hkx.
+//
+// This ONLY unpacks the container. DS(R) collision hkx are Havok 2015 TAG0
+// *tagfiles* (SDKV "20150100") holding a CustomParamStorageExtendedMeshShape
+// (FromSoft subclass of hkpStorageExtendedMeshShape — uncompressed triangle
+// storage). No C# SoulsFormats/HKX2/HKLib package on NuGet parses DSR 2015
+// tagfiles (JuicerMV.SoulsFormats has no HKX type; HKLib is 2018-only). So the
+// triangle extraction + convex decomposition is done Python-side by
+// tools/collision_hulls.py (soulstruct-havok). This command produces the raw
+// .hkx that tool consumes. See README "hkx-extract / hulls".
+// ---------------------------------------------------------------------------
+static int HkxExtract(string bhdPath, string outDir, string? piece)
+{
+    string bdtPath = bhdPath.Replace(".hkxbhd", ".hkxbdt");
+    if (!File.Exists(bdtPath)) { Console.Error.WriteLine($"missing bdt: {bdtPath}"); return 1; }
+
+    BXF3 bxf = BXF3.Read(bhdPath, bdtPath);
+    Directory.CreateDirectory(outDir);
+
+    int written = 0;
+    Console.WriteLine($"BXF3: {bhdPath}  files={bxf.Files.Count}");
+    foreach (var f in bxf.Files)
+    {
+        // BXF entry names use Windows separators (m18_01_00_00\hXXXX...hkx.dcx);
+        // Linux Path.GetFileName won't split on '\', so split manually.
+        string raw = (f.Name ?? "unnamed").Replace('\\', '/');
+        string name = raw.Substring(raw.LastIndexOf('/') + 1);
+        if (piece != null && !name.Contains(piece, StringComparison.OrdinalIgnoreCase)) continue;
+
+        byte[] bytes = f.Bytes;
+        bool wasDcx = DCX.Is(bytes);
+        if (wasDcx) bytes = DCX.Decompress(bytes);
+        if (name.EndsWith(".dcx", StringComparison.OrdinalIgnoreCase)) name = name[..^4];
+
+        // Sanity: expect a Havok TAG0 tagfile (bytes 4..8 == "TAG0").
+        string tag = bytes.Length >= 8 ? System.Text.Encoding.ASCII.GetString(bytes, 4, 4) : "?";
+        string sdkv = bytes.Length >= 24 ? System.Text.Encoding.ASCII.GetString(bytes, 16, 8) : "?";
+
+        File.WriteAllBytes(Path.Combine(outDir, name), bytes);
+        written++;
+        Console.WriteLine($"  {name,-22} bytes={bytes.Length,-8} dcx={(wasDcx ? "Y" : "N")} magic={tag} sdkv={sdkv}");
+    }
+
+    Console.WriteLine($"wrote {written} .hkx -> {outDir}" + (piece != null ? $" (piece~='{piece}')" : ""));
+    Console.WriteLine("NOTE: triangle extraction + convex hulls -> tools/collision_hulls.py (Python/soulstruct-havok).");
     return 0;
 }
 
