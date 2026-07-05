@@ -276,7 +276,9 @@ def _build_rigidbody(shape_ref: int) -> bytes:
     w.u8(0)                          # Response Modifier Flags
     w.u8(3)                          # Num Shape Keys in Contact Point
     w.u8(0)                          # Force Collided Onto PPU
-    w.raw(b"\x00" * 12)              # Unused04
+    # Unused04: vanilla (SFarmhouseSilo AND Basket01) both carry -1 in the first
+    # dword of this region; keep byte parity with the engine's own files.
+    w.raw(b"\xff\xff\xff\xff" + b"\x00" * 8)
     w.u32(0)                         # Num Constraints
     w.u16(0)                         # Body Flags (BSVER >= 76)
     return bytes(w.buf)
@@ -342,6 +344,29 @@ def build_nif(meshes: list[Mesh], texprefix: str, normal_map_flags: list[bool],
     blocks.append(("BSXFlags", _build_bsxflags(1, 0x2 if hulls else 0x0)))
     shape_refs: list[int] = []
 
+    # Collision chain BEFORE the meshes, children before parents (convex -> list ->
+    # rigid body -> collision object). Every vanilla sample (SFarmhouseSilo, Basket01,
+    # Bucket01) orders bhk blocks bottom-up; our old top-down order made every bhk ref
+    # a FORWARD reference and the engine's sequential loader linked a not-yet-built
+    # child -> null hkpShape -> CTD while streaming the model in.
+    collision_ref = -1
+    if hulls:
+        convex_start = len(blocks)
+        for h in hulls:
+            blocks.append(("bhkConvexVerticesShape", _build_convex_vertices(h)))
+        if len(hulls) > 1:
+            shape_for_rb = len(blocks)
+            blocks.append(("bhkListShape", _build_listshape(
+                list(range(convex_start, convex_start + len(hulls))))))
+        else:
+            # Single hull: hang the convex shape straight off the rigid body,
+            # exactly like vanilla Basket01 (no bhkListShape indirection).
+            shape_for_rb = convex_start
+        rb_idx = len(blocks)
+        blocks.append(("bhkRigidBody", _build_rigidbody(shape_for_rb)))
+        collision_ref = len(blocks)
+        blocks.append(("bhkCollisionObject", _build_collision_object(0, rb_idx)))
+
     for m in meshes:
         shape_idx = len(blocks)
         lsp_idx = shape_idx + 1
@@ -354,20 +379,6 @@ def build_nif(meshes: list[Mesh], texprefix: str, normal_map_flags: list[bool],
         blocks.append(("BSShaderTextureSet",
                        _build_texset(_slot_paths(m, texprefix, has_n))))
         shape_refs.append(shape_idx)
-
-    collision_ref = -1
-    if hulls:
-        col_idx = len(blocks)
-        rb_idx = col_idx + 1
-        list_idx = col_idx + 2
-        convex_start = col_idx + 3
-        convex_refs = [convex_start + i for i in range(len(hulls))]
-        blocks.append(("bhkCollisionObject", _build_collision_object(0, rb_idx)))
-        blocks.append(("bhkRigidBody", _build_rigidbody(list_idx)))
-        blocks.append(("bhkListShape", _build_listshape(convex_refs)))
-        for h in hulls:
-            blocks.append(("bhkConvexVerticesShape", _build_convex_vertices(h)))
-        collision_ref = col_idx
 
     blocks[0] = ("BSFadeNode", _build_ninode(0, shape_refs, collision_ref,
                                              extra_refs=[bsx_ref]))

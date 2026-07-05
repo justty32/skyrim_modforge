@@ -96,9 +96,21 @@ def test_collision_blocks_present_and_unscaled():
     assert len(read_nif(data)) == 1
     h = _read_header(_Reader(data))
     assert "bhkConvexVerticesShape" in h["types"]
-    assert "bhkListShape" in h["types"]
+    # single hull hangs straight off the rigid body (vanilla Basket01 pattern)
+    assert "bhkListShape" not in h["types"]
     assert "bhkRigidBody" in h["types"]
     assert "bhkCollisionObject" in h["types"]
+    # two hulls go through a bhkListShape; bhk chain sits BEFORE the meshes,
+    # children before parents (the engine's sequential loader cannot handle
+    # forward refs inside the bhk chain — in-game CTD otherwise)
+    data2 = build_nif([_tri()], "t", [False], hulls=[hull, hull])
+    h2 = _read_header(_Reader(data2))
+    assert "bhkListShape" in h2["types"]
+    order = h2["types"]
+    bt = [order[i] for i in h2["type_index"]] if "type_index" in h2 else None
+    if bt:
+        assert bt.index("bhkConvexVerticesShape") < bt.index("bhkListShape") \
+            < bt.index("bhkRigidBody") < bt.index("bhkCollisionObject") < bt.index("BSTriShape")
     # convex vertices are Havok metres (max coord ~1, NOT ~70)
     i = h["types"].index("bhkConvexVerticesShape")
     o = h["offsets"][i]
