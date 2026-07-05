@@ -118,3 +118,20 @@ def test_too_many_verts_rejected():
     big = Mesh(positions=[(0.0, 0.0, 0.0)] * 70000, normals=[], uvs=[], triangles=[(0, 1, 2)])
     with pytest.raises(ValueError):
         build_nif([big], "t", [False])
+
+
+def test_coplanar_hull_extruded_not_dropped(tmp_path):
+    # A perfectly flat floor patch (4 coplanar verts) must survive as a thickened
+    # hull, not be silently dropped (holes in walkable collision otherwise).
+    import json as _json
+    from gltf2nif.collision import load_hulls
+    p = tmp_path / "flat.hulls.json"
+    p.write_text(_json.dumps({"hulls": [
+        {"vertices": [[0, 5, 0], [4, 5, 0], [4, 5, -4], [0, 5, -4]]}
+    ]}))
+    hulls = load_hulls(str(p))
+    assert len(hulls) == 1
+    h = hulls[0]
+    assert len(h.vertices) == 8 and h.planes
+    zs = sorted({round(float(v[2]), 3) for v in h.vertices})
+    assert zs == [4.975, 5.025]  # Y-up 5m floor -> Z-up, +-2.5cm extrusion

@@ -44,8 +44,31 @@ def load_hulls(path: str) -> list[Hull]:
         verts = np.array([gltf_to_skyrim_dir(float(x), float(y), float(z)) for x, y, z in pts],
                          dtype=np.float64)
         planes = convex_hull_planes(verts)
+        if not planes and len(verts) >= 3:
+            # Coplanar hull (flat floor/wall patch straight out of the components
+            # decomposition): a zero-thickness polygon has no valid half-spaces, but
+            # dropping it would punch a hole in walkable collision. Extrude +-2.5cm
+            # along the best-fit plane normal and rebuild.
+            verts = _extrude_coplanar(verts)
+            planes = convex_hull_planes(verts)
         if len(verts) >= 4 and planes:
             hulls.append(Hull(verts, planes))
     if not hulls:
         raise GltfError("hulls JSON: no usable convex hulls (need >=4 non-coplanar verts each)")
     return hulls
+
+
+_EXTRUDE_HALF_THICKNESS = 0.025  # Havok metres (~1.75 Skyrim units)
+
+
+def _extrude_coplanar(verts: np.ndarray) -> np.ndarray:
+    """Give a flat vertex set physical thickness along its best-fit plane normal."""
+    centred = verts - verts.mean(axis=0)
+    # Best-fit plane normal = singular vector of the smallest singular value.
+    _, _, vt = np.linalg.svd(centred, full_matrices=False)
+    normal = vt[-1]
+    n = np.linalg.norm(normal)
+    if n == 0.0:
+        return verts
+    offset = (normal / n) * _EXTRUDE_HALF_THICKNESS
+    return np.vstack([verts + offset, verts - offset])
