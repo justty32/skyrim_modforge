@@ -13,7 +13,7 @@ DS1 北方不死院（`m18_01_00_00`）在 Skyrim 裡**能 coc 進去、看得�
 | `map/MapStudio/m18_01_00_00.msb` | 全部 part 的 placement（map piece / object / enemy / collision，含 transform）| → ModForge placements 的來源 |
 | `map/m18_01_00_00/m*B1A18.flver.dcx` ×43 | map piece 靜態幾何（FLVER）| → NIF |
 | `map/m18/*.tpfbhd/bdt` | 貼圖分卷（TPF 內是 DDS）| → 直取 DDS |
-| `map/m18_01_00_00/h*/l*.hkxbhd/bdt` | 高/低精度 Havok 碰撞（DS 版 Havok，**不能直搬**）| 只當參考；Skyrim 碰撞另生 |
+| `map/m18_01_00_00/h*/l*.hkxbhd/bdt` | 高/低精度 Havok 碰撞（DS 版 Havok，**不能直搬**）| **碰撞管線的輸入**（FromSoft 手工優化的專用碰撞低模；抽幾何 → 重生 Skyrim 碰撞，不用視覺 FLVER 硬算）|
 | `map/m18_01_00_00/*.nvmbnd.dcx` + `.mcg/.mcp` | NVM navmesh + AI 圖 | 參考；Skyrim NAVM 另生（programmatic navmesh 已驗）|
 | `obj/*.objbnd.dcx` ×752（全遊戲）| 門/雕像/籠子等 | P2/P3 選用 |
 | `chr/` | 敵人模型（骨架/動畫牆極高）| P3 用 Skyrim 生物替代優先 |
@@ -32,7 +32,11 @@ FLVER/TPF ──(extractor)──> glTF + DDS ──(model-converter 反向)─�
 
 ## 技術牆（風險排序，P0 spike 逐一驗）
 
-1. **碰撞**（walkable 的前提）：DS 的 hkx 是舊版 Havok、SSE 是 64-bit Havok 2010→2015 重打包，不可直轉。選項：① Blender + PyNifly 匯出 bhkCollision（對靜態 mesh 支援度要驗）② ck-cmd ③ 先 bhkNiTriStripsShape 這類簡單 shape（效能差但小場景可接受）。**P0 就要定案**。
+1. **碰撞**（walkable 的前提；**路線已定案 2026-07-05：A→B→C 順序試**）：
+   - **輸入＝DS 自帶 h/l 碰撞網格**（不用視覺 FLVER）。巧合紅利：bhk shape 內部存 Havok 公尺（Skyrim units ÷69.99）、DS 本來就公尺制 → 碰撞頂點近乎 1:1，只有渲染 mesh 要 ×70。
+   - **A（首選）凸分解繞開 MOPP**：MOPP 只有凹網格需要；V-HACD 把碰撞網格拆成凸包串 → `bhkListShape` + `bhkConvexVerticesShape`（免 MOPP）。全程自寫程式碼、離線可重跑。風險＝樓梯/拱門的凸包數量與精度，spike 實測；局部不行可手補 box。
+   - **B（保底）LE MOPP 工具鏈 + wine**：NifUtilsSuite/ChunkMerge（內嵌 Havok 2010，真算 MOPP，LE `bhkPackedNiTriStripsShape`）→ SSE NIF Optimizer 轉 `bhkCompressedMeshShape`。vanilla 品質保證，代價＝wine 下兩個黑盒。
+   - **C（最後）Blender + PyNifly**：SSE 靜態網格碰撞支援度未驗，且為碰撞引入 Blender 大依賴，性價比低。
 2. **FLVER 材質 → BSLightingShaderProperty**：diffuse/normal/specular 對映、DS normal map 慣例（G 反轉？）、alpha/雙面 flag。錯了頂多醜，不擋走。
 3. **NIF 寫出器正確性**：以 nif2gltf parser 反向 + 對 vanilla nif byte-diff 驗（repo 已有 `landdiag`/byte-diff 方法論）。
 4. 體量：43 塊 map piece 是小數目，不是牆；obj/chr 才是，全推遲。
@@ -50,7 +54,7 @@ FLVER/TPF ──(extractor)──> glTF + DDS ──(model-converter 反向)─�
 | 決策 | 傾向 | 定案時機 |
 |------|------|---------|
 | worldspace vs interior cell 群 | worldspace（院子有天空；SmallWorld + LAND 保底）| P1 |
-| 碰撞路線 ①②③ | spike 驗完再說 | **P0** |
+| ~~碰撞路線~~ | ✅ 已定案（2026-07-05）：輸入＝DS h/l 碰撞網格；A 凸分解 → B LE-MOPP+wine → C PyNifly 依序試 | ~~P0~~ 剩 A 的實測 |
 | glTF→NIF 放哪邊 | model-converter 反向後端（Python，鏡射 nif2gltf）| P0 |
 | 資產移植 vs Skyrim 資產重砌 | 移植（本專案的意義所在）；重砌只當個別缺件備援 | — |
 
