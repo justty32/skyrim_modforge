@@ -62,7 +62,11 @@ def _nbyte(c: float) -> int:
 # high bits), verified vs Skyrim.esm SFarmhouseSilo. The earlier 0x82408009 (copied from
 # a mod mesh) carried Vertex_Alpha on a mesh with NO vertex colors — bad combo.
 _LSP_SHADER_FLAGS1 = 0x82400301
-_LSP_SHADER_FLAGS2 = 0x00008021
+# SLSF2: vanilla static base 0x8021 + Double_Sided (0x10). DS map pieces are authored
+# to be viewed from INSIDE (wall front faces point into the corridor); single-sided
+# rendering makes flat walls invisible from outside while thin trims still show.
+# Double-sided sidesteps the whole orientation question for ported geometry.
+_LSP_SHADER_FLAGS2 = 0x00008021 | 0x00000010
 _LSP_GLOSSINESS = 80.0
 _LSP_SPEC_STRENGTH = 1.0
 _LSP_EMISSIVE_MULT = 1.0
