@@ -44,7 +44,7 @@ FLVER/TPF ──(extractor)──> glTF + DDS ──(model-converter 反向)─�
 ## 分階段
 
 - **P0 spike「一塊石頭」**（✅ 全數實機收官 2026-07-05）：**路線 A 實機定案**——單 hull 直掛（cube）與 **57-hull `bhkListShape` 不包 Mopp**（m0046）都能撞能站。過程修掉 gltf2nif 四個引擎級 bug（NiFooter 缺失→heap 損毀、共面 hull 靜默丟棄→地板破洞、BSTriShape 尾 u32 缺失→循序讀全盤位移、bhk 鏈前向引用→null link CTD），方法＝crash log 定位 + 對 vanilla 逐 byte（SFarmhouseSilo/Basket01/Bucket01）。貼圖第一輪漏抽 `m19_wall_13`（**教訓：tpf 分卷要全掃**，m18_0003 才有）已補齊。目視確認 5/5 mesh 全渲染——m0046 本體＝一面牆組件（主牆+窗緣飾條+側邊條），「房間感」屬鄰塊（m0045 等），P1 全量擺放後才成形。已知 P2 事項：DS 多層貼圖混合材質目前只取第一層；lightmap 未接。
-- **P1「空殼院」**：extractor 讀 MSB → 全 43 塊按 transform 擺進小 worldspace（`SmallWorld`，平 LAND 沉到樓下當保底）；碰撞可先只做地板大件；coc 進去逛一圈。
+- **P1「空殼院」**（🟡 離線完成、已交付待實機 2026-07-06，`DSPortP1.zip` 94MB）：MSB 45 個 MapPiece 全部 baked 在 `(0,200,0)` identity → **免 per-piece transform，全部同錨點擺放**；錨點選在讓 MSB 玩家出生點＝cell(0,0) 中心（`cow DSPortWorld 0 0` + `player.setpos z 19935` 進場）。38 塊渲染 NIF（排除 m9000/m9100/m5201 巨型遠景 + m9999 黑幕 + m0160 未引用；m5101/m9100 的 MSB 重複 part 是完全重疊 → 去重）+ **碰撞全量**：47 件 4893 hulls 按 ≤57/塊（P0 實機規模）切成 116 個「迷你三角形載體 NIF」——渲染/碰撞完全解耦，不做 h→m 配對、大地板 >64 hull 問題直接繞開（共平面合併留 P2 精修）。工具鏈換 SoulsFormatsNEXT 源碼引用（NuGet fork 讀不動 m0001 的 layout/stride mismatch；壞 normal/位置垃圾三角形在 extractor 端 sanitize/丟棄）。批量 driver＝`tools/p1_batch.py`（可重跑：flver→gltf 批次、hull 切塊、貼圖聯集、spec 生成一條龍）。
 - **P2「能走能看」**：完整碰撞 + programmatic navmesh + 照明/天氣（lighting pipeline 已驗；陰鬱多霧 IMGS/LGTM）+ 少量關鍵 obj（大門、電梯以 Skyrim door/activator 替代優先）+ map marker。
 - **P3「有生命」（可選）**：敵人以 Skyrim 生物 leveled 替代（chr 移植不做）；篝火 = ACTI + dispatcher（已有全套經驗）；Oscar 事件用 quest/dialogue/scene 重現。
 - 每階段落地物 = extractor 可重跑輸出 + 一個 spec；離線結構驗證 → 主力機實機（acceptance gate 照舊）。

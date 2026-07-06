@@ -1,0 +1,2308 @@
+{
+ "pluginName": "DSPortP1.esp",
+ "esl": false,
+ "_what": "P1 'empty shell asylum': all Undead Asylum map pieces (38 render NIFs) + full DS collision as 116 carrier NIFs (<=57 hulls each, P0-confirmed scale) in a custom SmallWorld worldspace over a flat LAND safety net at z=4000. Excluded: m9000/m9100/m5201 giant backdrops, m9999 black occluder (P2).",
+ "_coords": "All MSB pieces are baked at one origin -> every placement sits at ANCHOR (3010.9,-1068.3,21000.0); world = ANCHOR + (x*70.03, -z*70.03, y*70.03) of DS-local metres. MSB player start maps to the centre of cell (0,0). IN-GAME: cow DSPortWorld 0 0  then  player.setpos z 19935 (start-room floor ~19928; LAND net is 16 km below the asylum \u2014 cow drops you on the net, setpos lifts you into the start room).",
+ "worldspaces": [
+  {
+   "editorId": "DSPortWorld",
+   "name": "Northern Undead Asylum",
+   "climate": "Skyrim.esm:0x000812",
+   "water": "Skyrim.esm:0x000018",
+   "flags": [
+    "SmallWorld",
+    "CannotFastTravel"
+   ],
+   "defaultLandHeight": 4000,
+   "defaultWaterHeight": -14000,
+   "cells": [
+    {
+     "x": -3,
+     "y": -2,
+     "height": 4000
+    },
+    {
+     "x": -3,
+     "y": -1,
+     "height": 4000
+    },
+    {
+     "x": -3,
+     "y": 0,
+     "height": 4000
+    },
+    {
+     "x": -3,
+     "y": 1,
+     "height": 4000
+    },
+    {
+     "x": -3,
+     "y": 2,
+     "height": 4000
+    },
+    {
+     "x": -3,
+     "y": 3,
+     "height": 4000
+    },
+    {
+     "x": -3,
+     "y": 4,
+     "height": 4000
+    },
+    {
+     "x": -2,
+     "y": -2,
+     "height": 4000
+    },
+    {
+     "x": -2,
+     "y": -1,
+     "height": 4000
+    },
+    {
+     "x": -2,
+     "y": 0,
+     "height": 4000
+    },
+    {
+     "x": -2,
+     "y": 1,
+     "height": 4000
+    },
+    {
+     "x": -2,
+     "y": 2,
+     "height": 4000
+    },
+    {
+     "x": -2,
+     "y": 3,
+     "height": 4000
+    },
+    {
+     "x": -2,
+     "y": 4,
+     "height": 4000
+    },
+    {
+     "x": -1,
+     "y": -2,
+     "height": 4000
+    },
+    {
+     "x": -1,
+     "y": -1,
+     "height": 4000
+    },
+    {
+     "x": -1,
+     "y": 0,
+     "height": 4000
+    },
+    {
+     "x": -1,
+     "y": 1,
+     "height": 4000
+    },
+    {
+     "x": -1,
+     "y": 2,
+     "height": 4000
+    },
+    {
+     "x": -1,
+     "y": 3,
+     "height": 4000
+    },
+    {
+     "x": -1,
+     "y": 4,
+     "height": 4000
+    },
+    {
+     "x": 0,
+     "y": -2,
+     "height": 4000
+    },
+    {
+     "x": 0,
+     "y": -1,
+     "height": 4000
+    },
+    {
+     "x": 0,
+     "y": 0,
+     "height": 4000
+    },
+    {
+     "x": 0,
+     "y": 1,
+     "height": 4000
+    },
+    {
+     "x": 0,
+     "y": 2,
+     "height": 4000
+    },
+    {
+     "x": 0,
+     "y": 3,
+     "height": 4000
+    },
+    {
+     "x": 0,
+     "y": 4,
+     "height": 4000
+    },
+    {
+     "x": 1,
+     "y": -2,
+     "height": 4000
+    },
+    {
+     "x": 1,
+     "y": -1,
+     "height": 4000
+    },
+    {
+     "x": 1,
+     "y": 0,
+     "height": 4000
+    },
+    {
+     "x": 1,
+     "y": 1,
+     "height": 4000
+    },
+    {
+     "x": 1,
+     "y": 2,
+     "height": 4000
+    },
+    {
+     "x": 1,
+     "y": 3,
+     "height": 4000
+    },
+    {
+     "x": 1,
+     "y": 4,
+     "height": 4000
+    },
+    {
+     "x": 2,
+     "y": -2,
+     "height": 4000
+    },
+    {
+     "x": 2,
+     "y": -1,
+     "height": 4000
+    },
+    {
+     "x": 2,
+     "y": 0,
+     "height": 4000
+    },
+    {
+     "x": 2,
+     "y": 1,
+     "height": 4000
+    },
+    {
+     "x": 2,
+     "y": 2,
+     "height": 4000
+    },
+    {
+     "x": 2,
+     "y": 3,
+     "height": 4000
+    },
+    {
+     "x": 2,
+     "y": 4,
+     "height": 4000
+    },
+    {
+     "x": 3,
+     "y": -2,
+     "height": 4000
+    },
+    {
+     "x": 3,
+     "y": -1,
+     "height": 4000
+    },
+    {
+     "x": 3,
+     "y": 0,
+     "height": 4000
+    },
+    {
+     "x": 3,
+     "y": 1,
+     "height": 4000
+    },
+    {
+     "x": 3,
+     "y": 2,
+     "height": 4000
+    },
+    {
+     "x": 3,
+     "y": 3,
+     "height": 4000
+    },
+    {
+     "x": 3,
+     "y": 4,
+     "height": 4000
+    },
+    {
+     "x": 4,
+     "y": -2,
+     "height": 4000
+    },
+    {
+     "x": 4,
+     "y": -1,
+     "height": 4000
+    },
+    {
+     "x": 4,
+     "y": 0,
+     "height": 4000
+    },
+    {
+     "x": 4,
+     "y": 1,
+     "height": 4000
+    },
+    {
+     "x": 4,
+     "y": 2,
+     "height": 4000
+    },
+    {
+     "x": 4,
+     "y": 3,
+     "height": 4000
+    },
+    {
+     "x": 4,
+     "y": 4,
+     "height": 4000
+    }
+   ]
+  }
+ ],
+ "statics": [
+  {
+   "editorId": "DSP_m0000B1A18",
+   "model": "DsPort\\m0000B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0001B1A18",
+   "model": "DsPort\\m0001B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0005B1A18",
+   "model": "DsPort\\m0005B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0010B1A18",
+   "model": "DsPort\\m0010B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0015B1A18",
+   "model": "DsPort\\m0015B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0020B1A18",
+   "model": "DsPort\\m0020B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0030B1A18",
+   "model": "DsPort\\m0030B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0035B1A18",
+   "model": "DsPort\\m0035B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0040B1A18",
+   "model": "DsPort\\m0040B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0041B1A18",
+   "model": "DsPort\\m0041B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0045B1A18",
+   "model": "DsPort\\m0045B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0046B1A18",
+   "model": "DsPort\\m0046B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0050B1A18",
+   "model": "DsPort\\m0050B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0060B1A18",
+   "model": "DsPort\\m0060B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0061B1A18",
+   "model": "DsPort\\m0061B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0062B1A18",
+   "model": "DsPort\\m0062B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0070B1A18",
+   "model": "DsPort\\m0070B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0080B1A18",
+   "model": "DsPort\\m0080B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0090B1A18",
+   "model": "DsPort\\m0090B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0100B1A18",
+   "model": "DsPort\\m0100B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0110B1A18",
+   "model": "DsPort\\m0110B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0120B1A18",
+   "model": "DsPort\\m0120B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0130B1A18",
+   "model": "DsPort\\m0130B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0140B1A18",
+   "model": "DsPort\\m0140B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0150B1A18",
+   "model": "DsPort\\m0150B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0200B1A18",
+   "model": "DsPort\\m0200B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0201B1A18",
+   "model": "DsPort\\m0201B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0210B1A18",
+   "model": "DsPort\\m0210B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0300B1A18",
+   "model": "DsPort\\m0300B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0301B1A18",
+   "model": "DsPort\\m0301B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0310B1A18",
+   "model": "DsPort\\m0310B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m0320B1A18",
+   "model": "DsPort\\m0320B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m5000B1A18",
+   "model": "DsPort\\m5000B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m5001B1A18",
+   "model": "DsPort\\m5001B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m5010B1A18",
+   "model": "DsPort\\m5010B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m5100B1A18",
+   "model": "DsPort\\m5100B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m5101B1A18",
+   "model": "DsPort\\m5101B1A18.nif"
+  },
+  {
+   "editorId": "DSP_m5200B1A18",
+   "model": "DsPort\\m5200B1A18.nif"
+  },
+  {
+   "editorId": "DSPC_h0000B1A18_c0",
+   "model": "DsPort\\col\\h0000B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0001B0A18_c0",
+   "model": "DsPort\\col\\h0001B0A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0001B1A18_c0",
+   "model": "DsPort\\col\\h0001B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0001B1A18_c1",
+   "model": "DsPort\\col\\h0001B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0001B1A18_c2",
+   "model": "DsPort\\col\\h0001B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h0001B1A18_c3",
+   "model": "DsPort\\col\\h0001B1A18_c3.nif"
+  },
+  {
+   "editorId": "DSPC_h0002B1A18_c0",
+   "model": "DsPort\\col\\h0002B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0003B1A18_c0",
+   "model": "DsPort\\col\\h0003B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0003B1A18_c1",
+   "model": "DsPort\\col\\h0003B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0003B1A18_c2",
+   "model": "DsPort\\col\\h0003B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h0004B1A18_c0",
+   "model": "DsPort\\col\\h0004B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0004B1A18_c1",
+   "model": "DsPort\\col\\h0004B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0004B1A18_c2",
+   "model": "DsPort\\col\\h0004B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h0005B1A18_c0",
+   "model": "DsPort\\col\\h0005B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0005B1A18_c1",
+   "model": "DsPort\\col\\h0005B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0005B1A18_c2",
+   "model": "DsPort\\col\\h0005B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h0005B1A18_c3",
+   "model": "DsPort\\col\\h0005B1A18_c3.nif"
+  },
+  {
+   "editorId": "DSPC_h0005B1A18_c4",
+   "model": "DsPort\\col\\h0005B1A18_c4.nif"
+  },
+  {
+   "editorId": "DSPC_h0005B1A18_c5",
+   "model": "DsPort\\col\\h0005B1A18_c5.nif"
+  },
+  {
+   "editorId": "DSPC_h0005B1A18_c6",
+   "model": "DsPort\\col\\h0005B1A18_c6.nif"
+  },
+  {
+   "editorId": "DSPC_h0006B1A18_c0",
+   "model": "DsPort\\col\\h0006B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0007B1A18_c0",
+   "model": "DsPort\\col\\h0007B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0008B1A18_c0",
+   "model": "DsPort\\col\\h0008B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0008B1A18_c1",
+   "model": "DsPort\\col\\h0008B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0008B1A18_c2",
+   "model": "DsPort\\col\\h0008B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h0008B1A18_c3",
+   "model": "DsPort\\col\\h0008B1A18_c3.nif"
+  },
+  {
+   "editorId": "DSPC_h0008B1A18_c4",
+   "model": "DsPort\\col\\h0008B1A18_c4.nif"
+  },
+  {
+   "editorId": "DSPC_h0008B1A18_c5",
+   "model": "DsPort\\col\\h0008B1A18_c5.nif"
+  },
+  {
+   "editorId": "DSPC_h0008B1A18_c6",
+   "model": "DsPort\\col\\h0008B1A18_c6.nif"
+  },
+  {
+   "editorId": "DSPC_h0008B1A18_c7",
+   "model": "DsPort\\col\\h0008B1A18_c7.nif"
+  },
+  {
+   "editorId": "DSPC_h0008B1A18_c8",
+   "model": "DsPort\\col\\h0008B1A18_c8.nif"
+  },
+  {
+   "editorId": "DSPC_h0009B1A18_c0",
+   "model": "DsPort\\col\\h0009B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0010B1A18_c0",
+   "model": "DsPort\\col\\h0010B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0010B1A18_c1",
+   "model": "DsPort\\col\\h0010B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0010B1A18_c2",
+   "model": "DsPort\\col\\h0010B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h0011B1A18_c0",
+   "model": "DsPort\\col\\h0011B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0011B1A18_c1",
+   "model": "DsPort\\col\\h0011B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0012B1A18_c0",
+   "model": "DsPort\\col\\h0012B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0013B1A18_c0",
+   "model": "DsPort\\col\\h0013B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0013B1A18_c1",
+   "model": "DsPort\\col\\h0013B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0013B1A18_c2",
+   "model": "DsPort\\col\\h0013B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h0013B1A18_c3",
+   "model": "DsPort\\col\\h0013B1A18_c3.nif"
+  },
+  {
+   "editorId": "DSPC_h0013B1A18_c4",
+   "model": "DsPort\\col\\h0013B1A18_c4.nif"
+  },
+  {
+   "editorId": "DSPC_h0013B1A18_c5",
+   "model": "DsPort\\col\\h0013B1A18_c5.nif"
+  },
+  {
+   "editorId": "DSPC_h0014B1A18_c0",
+   "model": "DsPort\\col\\h0014B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0014B1A18_c1",
+   "model": "DsPort\\col\\h0014B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0014B1A18_c2",
+   "model": "DsPort\\col\\h0014B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h0014B1A18_c3",
+   "model": "DsPort\\col\\h0014B1A18_c3.nif"
+  },
+  {
+   "editorId": "DSPC_h0014B1A18_c4",
+   "model": "DsPort\\col\\h0014B1A18_c4.nif"
+  },
+  {
+   "editorId": "DSPC_h0015B1A18_c0",
+   "model": "DsPort\\col\\h0015B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0015B1A18_c1",
+   "model": "DsPort\\col\\h0015B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0016B1A18_c0",
+   "model": "DsPort\\col\\h0016B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0017B1A18_c0",
+   "model": "DsPort\\col\\h0017B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0050B1A18_c0",
+   "model": "DsPort\\col\\h0050B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0050B1A18_c1",
+   "model": "DsPort\\col\\h0050B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0050B1A18_c2",
+   "model": "DsPort\\col\\h0050B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h0051B1A18_c0",
+   "model": "DsPort\\col\\h0051B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0051B1A18_c1",
+   "model": "DsPort\\col\\h0051B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0052B1A18_c0",
+   "model": "DsPort\\col\\h0052B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0052B1A18_c1",
+   "model": "DsPort\\col\\h0052B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0052B1A18_c2",
+   "model": "DsPort\\col\\h0052B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h0052B1A18_c3",
+   "model": "DsPort\\col\\h0052B1A18_c3.nif"
+  },
+  {
+   "editorId": "DSPC_h0052B1A18_c4",
+   "model": "DsPort\\col\\h0052B1A18_c4.nif"
+  },
+  {
+   "editorId": "DSPC_h0052B1A18_c5",
+   "model": "DsPort\\col\\h0052B1A18_c5.nif"
+  },
+  {
+   "editorId": "DSPC_h0053B1A18_c0",
+   "model": "DsPort\\col\\h0053B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0053B1A18_c1",
+   "model": "DsPort\\col\\h0053B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0053B1A18_c2",
+   "model": "DsPort\\col\\h0053B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h0054B1A18_c0",
+   "model": "DsPort\\col\\h0054B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0054B1A18_c1",
+   "model": "DsPort\\col\\h0054B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0054B1A18_c2",
+   "model": "DsPort\\col\\h0054B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h0070B1A18_c0",
+   "model": "DsPort\\col\\h0070B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0090B1A18_c0",
+   "model": "DsPort\\col\\h0090B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0091B1A18_c0",
+   "model": "DsPort\\col\\h0091B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0092B1A18_c0",
+   "model": "DsPort\\col\\h0092B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0093B1A18_c0",
+   "model": "DsPort\\col\\h0093B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0098B1A18_c0",
+   "model": "DsPort\\col\\h0098B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0099B1A18_c0",
+   "model": "DsPort\\col\\h0099B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0100B1A18_c0",
+   "model": "DsPort\\col\\h0100B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0100B1A18_c1",
+   "model": "DsPort\\col\\h0100B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0399B1A18_c0",
+   "model": "DsPort\\col\\h0399B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0400B1A18_c0",
+   "model": "DsPort\\col\\h0400B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0401B1A18_c0",
+   "model": "DsPort\\col\\h0401B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0401B1A18_c1",
+   "model": "DsPort\\col\\h0401B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0401B1A18_c2",
+   "model": "DsPort\\col\\h0401B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h0401B1A18_c3",
+   "model": "DsPort\\col\\h0401B1A18_c3.nif"
+  },
+  {
+   "editorId": "DSPC_h0401B1A18_c4",
+   "model": "DsPort\\col\\h0401B1A18_c4.nif"
+  },
+  {
+   "editorId": "DSPC_h0401B1A18_c5",
+   "model": "DsPort\\col\\h0401B1A18_c5.nif"
+  },
+  {
+   "editorId": "DSPC_h0500B1A18_c0",
+   "model": "DsPort\\col\\h0500B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0500B1A18_c1",
+   "model": "DsPort\\col\\h0500B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h0501B1A18_c0",
+   "model": "DsPort\\col\\h0501B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0550B1A18_c0",
+   "model": "DsPort\\col\\h0550B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h0899B1A18_c0",
+   "model": "DsPort\\col\\h0899B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h1100B1A18_c0",
+   "model": "DsPort\\col\\h1100B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h1100B1A18_c1",
+   "model": "DsPort\\col\\h1100B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h1100B1A18_c2",
+   "model": "DsPort\\col\\h1100B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h1100B1A18_c3",
+   "model": "DsPort\\col\\h1100B1A18_c3.nif"
+  },
+  {
+   "editorId": "DSPC_h1100B1A18_c4",
+   "model": "DsPort\\col\\h1100B1A18_c4.nif"
+  },
+  {
+   "editorId": "DSPC_h1100B1A18_c5",
+   "model": "DsPort\\col\\h1100B1A18_c5.nif"
+  },
+  {
+   "editorId": "DSPC_h1100B1A18_c6",
+   "model": "DsPort\\col\\h1100B1A18_c6.nif"
+  },
+  {
+   "editorId": "DSPC_h1101B1A18_c0",
+   "model": "DsPort\\col\\h1101B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h1101B1A18_c1",
+   "model": "DsPort\\col\\h1101B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h1101B1A18_c2",
+   "model": "DsPort\\col\\h1101B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h1101B1A18_c3",
+   "model": "DsPort\\col\\h1101B1A18_c3.nif"
+  },
+  {
+   "editorId": "DSPC_h1101B1A18_c4",
+   "model": "DsPort\\col\\h1101B1A18_c4.nif"
+  },
+  {
+   "editorId": "DSPC_h1101B1A18_c5",
+   "model": "DsPort\\col\\h1101B1A18_c5.nif"
+  },
+  {
+   "editorId": "DSPC_h1399B1A18_c0",
+   "model": "DsPort\\col\\h1399B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h1400B1A18_c0",
+   "model": "DsPort\\col\\h1400B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h1400B1A18_c1",
+   "model": "DsPort\\col\\h1400B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h1600B1A18_c0",
+   "model": "DsPort\\col\\h1600B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h1600B1A18_c1",
+   "model": "DsPort\\col\\h1600B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h1600B1A18_c2",
+   "model": "DsPort\\col\\h1600B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h1601B1A18_c0",
+   "model": "DsPort\\col\\h1601B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h1601B1A18_c1",
+   "model": "DsPort\\col\\h1601B1A18_c1.nif"
+  },
+  {
+   "editorId": "DSPC_h1601B1A18_c2",
+   "model": "DsPort\\col\\h1601B1A18_c2.nif"
+  },
+  {
+   "editorId": "DSPC_h1699B1A18_c0",
+   "model": "DsPort\\col\\h1699B1A18_c0.nif"
+  },
+  {
+   "editorId": "DSPC_h5099B1A18_c0",
+   "model": "DsPort\\col\\h5099B1A18_c0.nif"
+  }
+ ],
+ "placements": [
+  {
+   "base": "DSP_m0000B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0001B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0005B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0010B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0015B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0020B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0030B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0035B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0040B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0041B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0045B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0046B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0050B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0060B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0061B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0062B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0070B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0080B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0090B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0100B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0110B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0120B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0130B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0140B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0150B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0200B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0201B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0210B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0300B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0301B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0310B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m0320B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m5000B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m5001B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m5010B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m5100B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m5101B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSP_m5200B1A18",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0000B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0001B0A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0001B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0001B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0001B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0001B1A18_c3",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0002B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0003B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0003B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0003B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0004B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0004B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0004B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0005B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0005B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0005B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0005B1A18_c3",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0005B1A18_c4",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0005B1A18_c5",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0005B1A18_c6",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0006B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0007B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0008B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0008B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0008B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0008B1A18_c3",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0008B1A18_c4",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0008B1A18_c5",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0008B1A18_c6",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0008B1A18_c7",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0008B1A18_c8",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0009B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0010B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0010B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0010B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0011B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0011B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0012B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0013B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0013B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0013B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0013B1A18_c3",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0013B1A18_c4",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0013B1A18_c5",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0014B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0014B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0014B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0014B1A18_c3",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0014B1A18_c4",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0015B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0015B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0016B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0017B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0050B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0050B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0050B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0051B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0051B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0052B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0052B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0052B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0052B1A18_c3",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0052B1A18_c4",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0052B1A18_c5",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0053B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0053B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0053B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0054B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0054B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0054B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0070B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0090B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0091B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0092B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0093B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0098B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0099B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0100B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0100B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0399B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0400B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0401B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0401B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0401B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0401B1A18_c3",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0401B1A18_c4",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0401B1A18_c5",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0500B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0500B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0501B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0550B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h0899B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1100B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1100B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1100B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1100B1A18_c3",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1100B1A18_c4",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1100B1A18_c5",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1100B1A18_c6",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1101B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1101B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1101B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1101B1A18_c3",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1101B1A18_c4",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1101B1A18_c5",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1399B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1400B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1400B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1600B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1600B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1600B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1601B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1601B1A18_c1",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1601B1A18_c2",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h1699B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  },
+  {
+   "base": "DSPC_h5099B1A18_c0",
+   "worldspace": "DSPortWorld",
+   "position": {
+    "x": 3010.9,
+    "y": -1068.3,
+    "z": 21000.0
+   }
+  }
+ ]
+}

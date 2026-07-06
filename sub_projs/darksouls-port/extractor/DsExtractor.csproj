@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -15,7 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="JuicerMV.SoulsFormats" Version="0.1.4" />
+    <!-- SoulsFormatsNEXT source clone replaces the JuicerMV.SoulsFormats NuGet:
+         the NuGet fork throws on DS1R layout/stride mismatch (m0001B1A18),
+         SFNEXT carries DarkSoulsRemasteredFix() for exactly that. -->
+    <ProjectReference Include="ThirdParty/SoulsFormatsNEXT/SoulsFormats/SoulsFormats.csproj" />
     <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.6" />
   </ItemGroup>
 
