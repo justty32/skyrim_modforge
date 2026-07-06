@@ -6,6 +6,8 @@ ModForge = **JSON spec → Skyrim `.esp` 生成工具**（AI-agent 友善）。�
 
 跨機開發：**Manjaro 主力機**（完整，含實機測試 / Wine / CK / 語音）與**離線機 fresh clone**（無 Skyrim / Wine / 遊戲，只做離線開發與測試）。build / 測試 / 前置 / 出貨指令與**各機能做什麼**全在 **[workflows/dev-env.md](workflows/dev-env.md)**。
 
+因為跨機，**不用 Claude 本機 memory**——需要記憶的一律寫進 repo 檔案（歸到所屬工作流那一層）。
+
 ## 先讀哪裡
 
 - **使用者要你動手做某件事** → **[WORKFLOWS.md](WORKFLOWS.md)**：依使用者意圖派發到對應工作流，再讀該工作流入口。
