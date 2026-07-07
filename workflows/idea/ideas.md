@@ -39,3 +39,4 @@
 | 21 | 養成與戰鬥體系擴充（Keystone + 職業核心機制） | 養成/戰鬥 | [progression-combat-overhaul.md](progression-combat-overhaul.md) |
 | 22 | 漂泊開拓慢活（統整 #3+#4+#8，含可行性盤點） | 世界/玩法 | [world-building.md](world-building.md#22-漂泊開拓慢活移動基地--程序生成異域--開拓經營) |
 | 23 | 具名冒險者的活世界模擬（給 standalone follower 一條命） | 隨從/NPC · 世界 | [living-adventurers.md](living-adventurers.md) |
+| 24 | 遊戲內編輯器：施法即編輯 → 快照 cell → patch mod（擺物/放 NPC/錄行為/改地形） | 工具 · 隨從/NPC · 世界 | [tools.md](tools.md#24-遊戲內編輯器施法即編輯--快照-cell-狀態--生成-patch-mod2026-07-07) |
