@@ -114,7 +114,7 @@
 
 [Tundra Defense](../../../sub_projs/mod-survey/findings/tundra-defense.md) 是**能力②「施法擺設」的現成完整成品**：喝一瓶 `Plans: X` Ingestible → script-MGEF 觸發 spawner `PlaceAtMe` → `aaaFortMainQuestScript` 即時 follow/rotate/confirm 定位狀態機 → 確認落地為 Enabled REFR。**北極星情境的「喝瓶蓋房子」互動就是照抄這套**。
 
-**定位軸：Tundra 有旋轉+距離、沒縮放（2026-07-08 使用者要縮放，逆讀 .pex 查證）**——`aaaFortMainQuestScript` 的 state 機有 `MODE_ROTATE_X/Y/Z`+`AXIS_X/Y/Z`+`ChangeRotationAxis`+`RotationSpeed`（三軸旋轉）、`MODE_DISTANCE`+`placeDistance`+`DistanceSpeed`（推遠拉近），**但無 `MODE_SCALE`/`SetScale`**。→ **旋轉照抄 Tundra；縮放要在 placement-controller 補一個 `MODE_SCALE`**（`ObjectReference.SetScale(float)`＝vanilla Papyrus，Plus/Minus 調、很便宜）。**ModForge 生成端兩者都已支援**（`PlacementSpec.Rotation` Vec3 度 + `PlacementSpec.Scale` XSCL），匯出/生成**零改動**，只差 runtime controller 加那一段。⚠️ **XSCL 對 actor 無效（ACHR 忽略縮放，`Spec.World.cs:43`）**——縮放只對靜物/家具/光生效，**拓印的 NPC 不能縮放**。ModForge 對 Tundra 的裁決（見 [settlements-phase2](../../roadmap/mod-survey-gaps/settlements-phase2.md)）：**所有靜態零件可生成**，唯一不可生成的是那支**常駐 placement-controller `.pex`**（irreducibly bespoke Papyrus）——但 ModForge 有「隨附 reusable `.pex` + `scriptAttach` 掛接」的成熟先例（MCM-Helper/dispatcher/PapyrusUtil）。→ **建議 ModForge 內建一支泛用 placement-controller `.pex`**，本 idea 的「施法擺設」與 settlements Phase-2 的 `buildables:` **共用同一支 controller**，兩條線合流。
+**定位軸：Tundra 有旋轉+距離、沒縮放也沒自由位移（2026-07-08 使用者要縮放+位移，逆讀 .pex 查證）**——`aaaFortMainQuestScript` 的 state 機有 `MODE_ROTATE_X/Y/Z`+`AXIS_X/Y/Z`+`ChangeRotationAxis`+`RotationSpeed`（三軸旋轉）、`MODE_DISTANCE`+`placeDistance`+`DistanceSpeed`（沿視線推遠拉近）+`MODE_RESET`，**但無 `MODE_SCALE`、也無 `MODE_TRANSLATE`（自由三軸位移微調）**——Tundra 定位是「看哪擺哪 + 距離」，沒有把物件沿 X/Y/Z 精確 nudge（例如把牆貼齊另一面牆）的能力。→ **旋轉照抄 Tundra；縮放 + 位移要在 placement-controller 各補一個 mode**：`MODE_SCALE`（`SetScale`）、`MODE_TRANSLATE`（讀 `GetPositionX/Y/Z`+delta→`SetPosition`，或 `TranslateTo` offset；沿軸 nudge）——都是 vanilla Papyrus、共用 `AXIS_X/Y/Z`+Plus/Minus 輸入、很便宜。**ModForge 生成端三者全已支援**（`PlacementSpec.Position`/`Rotation`/`Scale`(XSCL)），匯出/生成**零改動**，只差 runtime controller 加這兩個 mode。⚠️ **XSCL 對 actor 無效（ACHR 忽略縮放，`Spec.World.cs:43`）**——縮放只對靜物/家具/光，**拓印的 NPC 不能縮放**（位移/旋轉對 actor 都正常）。ModForge 對 Tundra 的裁決（見 [settlements-phase2](../../roadmap/mod-survey-gaps/settlements-phase2.md)）：**所有靜態零件可生成**，唯一不可生成的是那支**常駐 placement-controller `.pex`**（irreducibly bespoke Papyrus）——但 ModForge 有「隨附 reusable `.pex` + `scriptAttach` 掛接」的成熟先例（MCM-Helper/dispatcher/PapyrusUtil）。→ **建議 ModForge 內建一支泛用 placement-controller `.pex`**，本 idea 的「施法擺設」與 settlements Phase-2 的 `buildables:` **共用同一支 controller**，兩條線合流。
 
 ---
 
@@ -123,7 +123,7 @@
 | 環節 | 狀態 | 缺口 / 依賴 |
 |---|---|---|
 | ① 快照 → override CELL + `placements[]` | 生成端 **可** | 缺**採集橋 DLL**（讀 cell ref 狀態 → JSON）|
-| ② 施法擺設定位（含旋轉/縮放）| 靜態零件 **可**；ModForge `Rotation`/`Scale`(XSCL) **已支援**；定位行為**需 controller** | 內建泛用 placement-controller `.pex`（同 Tundra，合流 settlements P2）；**旋轉+距離照抄 Tundra，縮放要補 `MODE_SCALE`（SetScale）**；XSCL 不作用於 actor |
+| ② 施法擺設定位（旋轉/縮放/位移）| 靜態零件 **可**；ModForge `Position`/`Rotation`/`Scale`(XSCL) **全已支援**；定位行為**需 controller** | 內建泛用 placement-controller `.pex`（同 Tundra，合流 settlements P2）；**旋轉+距離照抄 Tundra，縮放補 `MODE_SCALE`(SetScale)、位移補 `MODE_TRANSLATE`(SetPosition)**；XSCL 不作用於 actor |
 | §E 滴管取樣 + 具名插槽（開放調色盤）| **ModForge 側零改動**；能力全在 runtime | 滴管法術讀準星 base + StorageUtil 插槽 + 命名 UI（runtime）；**匯出時 FormID→`<plugin>:0xID` 反解＝採集橋 SKSE 的活**；ModForge 自動加 master（`PluginIo.cs:35` 已驗）|
 | §A 拓印玩家：perk/裝備/法術/技能 → NPC | **可**（`NpcSpec.Perks`/`Outfit`/`Items`）| — |
 | §A 拓印玩家：**外貌 facegen** | **✅ 由 PROTEUS 補位** | 路徑 A（採納，clone 穩定可引用）繞過 GAP；路徑 B（ModForge 自建 facegen）降為未來「可散布獨立 NPC」選項 |
