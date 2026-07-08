@@ -2,6 +2,18 @@ namespace ModForge;
 
 public static partial class Generator
 {
+    // Run every pass-0 macro-expansion in dependency order. Each is idempotent (guarded on the spec),
+    // so this is safe to call more than once — e.g. PackageCmd calls it BEFORE compiling dialogue/quest
+    // fragments (so macro-GENERATED fragments, like an npcRole's openBarter trade topic, are compiled),
+    // then Build() calls it again as a no-op. Keeping the ordered list in one place avoids drift.
+    public static void ExpandMacros(ModSpec spec)
+    {
+        ExpandSkillTrees(spec);   // → globals/activators/placements/scripts
+        ExpandSettlements(spec);  // → npcs' packages/factions + ACHR placements + vendor FACT/container + RELA
+        ExpandLivingNpcs(spec);   // → controller quest + per-NPC alias/markers/global/rumor + world-controller script
+        ExpandNpcRoles(spec);     // → host quest + greeting + package + (vendor: FACT/chest + openBarter topic)
+    }
+
     // --- NPC role macro-expansion (Idea #24 §D — in-game scene export) -------------------------
     // A scene-captured NPC gets a job ROLE; this macro EXPANDS it into the low-level records the
     // validated build passes already handle, so every battle-tested pass (dialogue Hello, NpcPatch
@@ -117,6 +129,19 @@ public static partial class Generator
                     SellBuyList = BlacksmithVendorList,   // VendorItemsBlacksmith
                     MerchantContainer = chestRef,
                 },
+            });
+            // Explicit trade topic (reliable, IN-GAME confirmed for openBarter). Relying on vanilla's
+            // generic services dialogue (GetOffersServicesNow-gated) does NOT reliably surface for a
+            // custom NPC; a "Let me see your wares." topic that calls ShowBarterMenu() on the speaker
+            // opens the barter with this NPC's vendor-faction stock directly. (Emits a TIF_ fragment .pex.)
+            spec.Dialogue.Add(new DialogueSpec
+            {
+                EditorId = "MFRole_" + safe + "_Trade",
+                QuestEditorId = RoleHostQuestEd,
+                SpeakerNpcEditorId = nr.Npc,
+                Prompt = "Let me see your wares.",
+                Responses = new System.Collections.Generic.List<string> { "Have a look." },
+                OpenBarter = true,
             });
         }
 

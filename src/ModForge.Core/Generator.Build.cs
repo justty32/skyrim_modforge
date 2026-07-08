@@ -19,18 +19,10 @@ public static partial class Generator
     /// </summary>
     public static BuildResult Build(ModSpec spec, ModKey outputKey, BuildOptions? options = null)
     {
-        // pass 0: macro-expand high-level sugar into low-level records BEFORE anything reads the spec
-        // (skillTrees → globals/activators/placements/scripts). Idempotent (guarded on the spec).
-        ExpandSkillTrees(spec);
-        // (settlements → npcs' packages/factions + ACHR placements + vendor FACT/container + RELA).
-        // Runs after ExpandSkillTrees; both feed pass 1. Idempotent (guarded on the spec).
-        ExpandSettlements(spec);
-        // (livingNpcs → controller quest + per-NPC alias/markers/global/rumor + world-controller script).
-        // After ExpandSettlements; feeds pass 1. Idempotent (guarded on the spec).
-        ExpandLivingNpcs(spec);
-        // (npcRoles → host quest + conditioned greeting + sandbox package via NpcPatch, on an external
-        // captured NPC). After ExpandLivingNpcs; feeds pass 1. Idempotent (guarded on the spec).
-        ExpandNpcRoles(spec);
+        // pass 0: macro-expand high-level sugar into low-level records BEFORE anything reads the spec.
+        // Idempotent (each guarded on the spec), so package-time pre-expansion (so macro-generated
+        // dialogue fragments compile) doesn't double-expand here.
+        ExpandMacros(spec);
 
         var ctx = new BuildContext(spec, outputKey, options);
 
