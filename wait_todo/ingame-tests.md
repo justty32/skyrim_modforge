@@ -48,7 +48,7 @@
   - 測法同 Act 1（裝在 SofiaFollower+Vigilant 後、save+reload 吃 .seq、跑對應幕的任務、到 beat 對 Sofia 按對話鍵）。回報哪些選項沒出現 / 分支對不對 / 語音正常否。
   - gate 重點：Act2 空牢 0x038524 / 沉船 0x038525 / 血祭母 0x038526；Act3 Child of Oblivion 0x065932；Act4 多數記憶靜默、僅 MeQ01/02/07/Pelinal MeQ10/Molag Bal/Karma 結局有評論。
 
-- **遊戲內場景匯出 · blacksmith 場景（Idea #24 §D，2026-07-08，座標+NPC 已修）** — greeting/vendor **記錄已驗**（dump）；**實機待複驗**。`~/skyrim_mods/mine/ModForgeSceneBlacksmith.zip`（純 record 無 .pex）。
-  - **兩處修正**：① 座標從亂填的 (0,−9000,−3800)〔山區、懸空 790u、摔死〕搬到白漫馬廄凍原地面 Z=−4590（實測 vanilla marker），再**南移 200** 避開馬廄鑲嵌；② 鐵匠原本用 Uthgerd（vanilla **unique** NPC → 引擎只留一個實例、複製的看不到）**改成新 in-spec NPC「Brynja the Smith」**（Nord，可放置、會現身；即真實 PROTEUS clone 的形態）。
-  - **驗**：地圖 **Forgewatch** marker（白漫馬廄東南）→ 快旅（不該摔死）→ 面前 Farmhouse01 房子 + 站著的 **Brynja the Smith** + 篝火 + 商店箱。對 Brynja 講話 → ① 問候「Need something forged?」② vanilla **「I'd like to trade.」**開交易（鐵匠貨 +500 金）。
-  - **回報**：傳送安全否、房子貼地否、**Brynja 有沒有站在那**、問候+交易通否。（Brynja 是從零建的 NPC，臉可能是預設 Nord/略陽春——能站、能講、能交易就算過；美化是後話。）
+- **遊戲內場景匯出 · blacksmith 場景（Idea #24 §D，2026-07-08，多輪修正）** — 記錄全驗（dump）；**實機複驗**。`~/skyrim_mods/mine/ModForgeSceneBlacksmith.zip`（**現含 1 個 TIF pex**——openBarter 片段，非純 record 了）。
+  - **修正累積**：座標搬白漫馬廄凍原 Z=−4590 + **總共南移 2200** 避開馬廄鑲嵌；鐵匠改新 in-spec NPC **Brynja the Smith**（vanilla unique 不能複製）；交易改 **openBarter「Let me see your wares.」topic**（原本靠 vanilla services faction 不會浮現——沒有通用自動交易對話）。
+  - **驗**：地圖 **Forgewatch** marker（白漫馬廄東南更遠）→ 快旅（不摔死）→ 房子 + **Brynja** + 篝火 + 商店。對 Brynja 講話 → 問候「Need something forged?」→ 選單有 **「Let me see your wares.」** → 開交易（鐵匠貨 + 500 金）。
+  - **回報**：傳送安全否、房子貼地否、Brynja 在否、問候+**交易選單**通否。（Brynja 從零建、無 facegen，臉可能陽春/暗臉——能站能講能交易就算過。）
