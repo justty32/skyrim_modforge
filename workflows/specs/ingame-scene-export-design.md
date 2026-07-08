@@ -55,8 +55,12 @@
 
 - **① placement-controller `.pex`**：irreducibly bespoke Papyrus（Tundra §3.3 的 `aaaFortMainQuestScript` 等價）。ModForge 有「隨附 reusable `.pex` + `scriptAttach`」先例（MCM-Helper/dispatcher/PapyrusUtil）。**與 settlements P2 的 `buildables:` controller 是同一支，兩線合流**——本 spec 不重複設計，指向 settlements P2 design。
 - **② PROTEUS**：消費、不改（native 閉源）。**crux 已拍板：clone 穩定、可被 esp 引用**（2026-07-08 使用者確認）→ 路徑 A 成立，facegen GAP 繞過。
-- **③ 採集橋 SKSE DLL**：**唯一 net-new 的重工程**。走訪目標 cell 的 placed refs、讀每個 base+transform+enable、記 §B 語意標記與 §D 身份、收 PROTEUS clone 的 ActorRef，序列化成 scene.json。**本 spec 定義它的 output 契約**（下節）；內部實作（SKSE API、UI 走 [SKSE Menu Framework 3](../../sub_projs/mod-survey/findings/skse-menu-framework-3.md) ImGui）另立子專案。
+- **③ 採集橋 SKSE DLL**：**唯一 net-new 的重工程**。走訪目標 cell 的 placed refs、讀每個 base+transform+enable、記 §B 語意標記與 §D 身份、收 PROTEUS clone 的 ActorRef，序列化成 scene.json。**本 spec 定義它的 output 契約**（下節）；內部實作（SKSE API、UI 走 [SKSE Menu Framework 3](../../sub_projs/mod-survey/findings/skse-menu-framework-3.md) ImGui）另立子專案。**含「滴管取樣」子能力**（見下）——採集橋負責的一個關鍵 runtime 責任是 **FormID → 耐久 `<plugin>:0xLOCALID` 反解**（`TESDataHandler`），因為 runtime FormID 高位元組是 load-order index、跨載入順序不穩，匯出前必須反解成插件相對 ID。
 - **④ ModForge**：讀 scene.json → 既有生成鏈。**幾乎零 net-new 生成碼**（見「落點」）。
+
+### ③附：滴管取樣 + 具名插槽（開放式調色盤，idea #24 §E）
+
+Tundra 的可擺清單是設計期寫死的 FormID；本系統改用**遊戲內滴管**：滴管法術讀準星 ref 的 base（`GetCurrentCrosshairRef`→`GetBaseObject`）→ 存進 **StorageUtil 具名插槽**（string-key KV，命名走 UILib/ImGui 文字輸入）→ 選插槽 `PlaceAtMe` → 進 placement-controller 定位。**這是純 runtime 能力**（滴管法術 + 插槽 + 命名 UI，屬 controller/採集橋層），**對 scene.json 契約與 ModForge 生成端衝擊＝零**：吸來的 base 一樣以 `<plugin>:0xLOCALID` 進 `placements[].base`，而 **ModForge 對外部 ref 自動加來源 mod 為 master（已驗，`PluginIo.cs:35` 用 Mutagen 預設 `Iterate` 算精確 master 集）**。唯一連帶效果：**產物 patch 的 master 清單隨吸過的物件增長**（可接受；匯出時宜提示「本場景依賴這些 mod」）。→ 採集橋的 FormID 反解是讓「當次 session 能擺的 runtime Form」變成「耐久可 build 的插件相對 ref」的橋。
 
 ---
 

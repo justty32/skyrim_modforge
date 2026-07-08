@@ -21,7 +21,7 @@
 ## 能力光譜（由易到難，可各自獨立落地）
 
 - **① 快照 cell 狀態 → patch**（地基能力）：SKSE 列舉當前 cell 的 placed refs（座標/旋轉/縮放/enable state）→ diff vanilla → 輸出 override CELL + `placements[]`。ModForge 已有 cell/worldspace override 生成基礎（見記憶 [[worldspace-override-must-carry-topcell]]）。**這是整個框架的核心，先做這個**；「export 整座城鎮」（§C）就是這條放大到整片區域。
-- **② 施法擺設 / 移動物件**：一支「擺放法杖」spawn / grab / 旋轉 / 吸附 refs（先例：SIGE 遊戲內 3D gizmo，見 #15 Gemini 調查）→ 快照時一起收進 ①。**Tundra Defense 就是這條的現成成品藍本**（喝瓶→定位→確認，見下 §D）。
+- **② 施法擺設 / 移動物件**：一支「擺放法杖」spawn / grab / 旋轉 / 吸附 refs（先例：SIGE 遊戲內 3D gizmo，見 #15 Gemini 調查）→ 快照時一起收進 ①。**Tundra Defense 就是這條的現成成品藍本**（喝瓶→定位→確認，見「Tundra 角色定位」段）。**但 Tundra 的可擺清單是設計期寫死的 REFR FormID——本 idea 用 §E 的「滴管取樣」把調色盤變開放式**。
 - **③ 施法錄製 NPC 行為**（原 #24 小野心）：走一條路徑，沿途取樣座標放 PatrolMarker/IdleMarker + 停留動作 → 輸出 sandbox/travel/patrol package（見記憶 [[radiant-alias-package-byte-truths]]：package 掛在 alias 的 ALPS 上）。
 - **④ 施法擺放 NPC / 拓印玩家角色 → 靠 PROTEUS**：用 [PROTEUS](../../../sub_projs/mod-survey/findings/proteus.md) 遊戲內生成 / 定位 / 控制 NPC 的既有能力當「放 NPC」前端；**進一步（本次新增）把 PROTEUS「序列化整個角色 build」的能力拿來把玩家自己拓印成獨立 NPC**——見下 §A。⚠️ PROTEUS 核心是**閉源 native DLL**，只能**消費**它、不能改它；若要自建放置也可走既有 `quest.spawn`（見記憶 [[dynamic-spawn-debugging]]）。
 - **⑤ 施法修改地形（LAND）**：野心項，**技術牆**。runtime 編輯 LAND heightmap 極難，ModForge 目前僅支援平坦地形（見 #14/#15 地形段）。先擱置，優先做 cell 內物件 / NPC。
@@ -89,6 +89,23 @@
 
 ---
 
+## §E. 開放式調色盤：滴管取樣 + 具名插槽（取代 Tundra 的寫死目錄，2026-07-08 使用者定調）
+
+**Tundra 的死穴**：可擺的建物是**設計期寫死的 REFR/base FormID**（109 個 `Plans:` Ingestible 一一對應固定 Activator，見 finding §2）。要加新東西得改 esp。**使用者要的**：一支**滴管法術**——施放時記下**準星指向目標的 base FormID**（像小畫家滴管吸色），存進一個插槽；之後選那個插槽就能擺該物件。**多插槽 + 可自行命名**，等於玩家在遊戲內即時建自己的**開放式調色盤**（想擺什麼就吸什麼——任何 mod 的牆、樹、家具、雕像…）。
+
+**機制（grounded，API 標「待驗確切呼叫」）**：
+
+1. **吸取**：滴管法術 OnEffectStart → 讀**準星 ref**（`Game.GetCurrentCrosshairRef()`，SKSE；比「投射物命中」穩，因 STAT 靜物不吃魔法效果）→ 取其 **base**（`ObjectReference.GetBaseObject()` → Form）→ 拿 FormID。**吸 base 不吸該 REFR**：滴管取的是「顏料＝物件種類」，之後 `PlaceAtMe(base)` 刷新副本，正是滴管語意。
+2. **具名插槽**：把吸到的 Form 存進 **StorageUtil KV**（string-key map：`slot 名 → Form`，memory [[storage-writes-ingame-confirmed]] J-group 已實機）。多插槽＝多 key；命名走文字輸入 UI（PROTEUS 用的 UILib `TextInputMenu`，或 [SKSE Menu Framework 3](../../../sub_projs/mod-survey/findings/skse-menu-framework-3.md) ImGui 輸入框——與編輯器面板同一套 UI 元件）。
+3. **擺放**：選插槽 → `PlaceAtMe(slot.Form)` → 進 §②/Tundra 的 placement-controller 定位模式落地。**滴管只是把「喝哪瓶」從固定目錄換成動態插槽**，落地那半段完全共用 controller。
+4. **⚠️ 耐久 FormID 的關鍵坑（runtime 側，非 ModForge 側）**：runtime FormID 的高位元組 = load-order index，**跨載入順序不穩**。當次 session 內擺放無妨（StorageUtil 存 runtime Form 直接可 `PlaceAtMe`）；但**匯出進 scene.json 時必須反解成耐久的 `<plugin>:0xLOCALID`**——這要 SKSE `TESDataHandler`（`LookupModByIndex`/把 formID 高位→mod 名 + 取本地 ID），純 Papyrus 做不到。→ **這是採集橋 SKSE DLL 的活**（見 §C / spec 的採集橋元件），不是 controller 或 ModForge 的。
+
+**對 ModForge 側的衝擊＝零（已驗 2026-07-08）**：滴管吸來的 base 進 `placements[].base`（形如 `SomeMod.esp:0x001234`），而 **ModForge 對外部 ref 會自動把來源 mod 加為 master**（`PluginIo.cs:35`：有外部 ref 就用 Mutagen 預設 `Iterate` 算精確 master 集；`TryResolveRef` 全面吃 `<plugin>:0xID`）。所以「吸任意 mod 物件 → 擺 → 匯出 → build」在生成端**天然成立、零改動**——代價只是**產物 patch 的 master 清單會隨你吸過的東西增長**（可接受；且可在匯出時提示「本場景依賴這些 mod」）。
+
+→ **§E 把 §② 從「固定目錄」升級成「開放調色盤」，且不動 scene.json 契約也不動 ModForge**：新增能力全落在 runtime 側（滴管法術 + StorageUtil 插槽 + 命名 UI + 採集橋的 FormID 反解）。這是相對 Tundra 最有感的體驗升級。
+
+---
+
 ## PROTEUS 的角色定位（更新）
 
 不是要改它，而是它三點正好補位——(a) 遊戲內生成/控制 NPC（能力 ④ 前端）、(b) **序列化整個玩家 build（含外貌 facegen）＝ ModForge 最弱環節的補丁**（§A）、(c)「遊戲中 JSON 序列化狀態」概念先例（與 ModForge build-time JSON 方向相反、schema 互通）。核心 native 閉源、無可生成成分（見 finding 結論），所以是**消費 / 補位 / 仿概念**，非依賴元件；理想終局（路徑 B）是把 facegen 生成能力自建進 ModForge，讓產物不依賴玩家端 PROTEUS。
@@ -105,6 +122,7 @@
 |---|---|---|
 | ① 快照 → override CELL + `placements[]` | 生成端 **可** | 缺**採集橋 DLL**（讀 cell ref 狀態 → JSON）|
 | ② 施法擺設定位 | 靜態零件 **可**；定位行為**需 controller** | 內建泛用 placement-controller `.pex`（同 Tundra，合流 settlements P2）|
+| §E 滴管取樣 + 具名插槽（開放調色盤）| **ModForge 側零改動**；能力全在 runtime | 滴管法術讀準星 base + StorageUtil 插槽 + 命名 UI（runtime）；**匯出時 FormID→`<plugin>:0xID` 反解＝採集橋 SKSE 的活**；ModForge 自動加 master（`PluginIo.cs:35` 已驗）|
 | §A 拓印玩家：perk/裝備/法術/技能 → NPC | **可**（`NpcSpec.Perks`/`Outfit`/`Items`）| — |
 | §A 拓印玩家：**外貌 facegen** | **✅ 由 PROTEUS 補位** | 路徑 A（採納，clone 穩定可引用）繞過 GAP；路徑 B（ModForge 自建 facegen）降為未來「可散布獨立 NPC」選項 |
 | §B marker / 特效 / 標籤 | **可**（XMRK/HAZD/Light/KYWD 全有）| 缺採集橋輸出 `{kind,at,params}` |

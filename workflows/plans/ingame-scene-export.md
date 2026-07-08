@@ -183,7 +183,7 @@ Expected: 生出 esp，`dump` 見房子 REFR + NPC-role 的 dialogue/package/ven
 ## 依賴 / 後續（非本 plan）
 
 - **M3 placement-controller**：合流 [settlements P2](../roadmap/mod-survey-gaps/settlements-phase2.md)。
-- **M4 採集橋 SKSE DLL**：獨立子專案（本 plan 的 scene.json 契約 = 它的 output 目標）。
+- **M4 採集橋 SKSE DLL**：獨立子專案（本 plan 的 scene.json 契約 = 它的 output 目標）。**含 idea #24 §E 滴管取樣**（滴管法術讀準星 base + StorageUtil 具名插槽 + FormID→`<plugin>:0xID` 反解）——純 runtime，對本 plan 的 ModForge 側零衝擊（吸來的 base 一樣進 `placements[].base`，ModForge 自動加 master）。
 - **M5 PROTEUS 拓印**：需先驗 clone ActorRef 取得方式（idea #24 §A 已拍板穩定可引用）。
 - **role 全集 + AI 對話文本**：blacksmith 之外接 #23 archetype 框架 / #17 生成管線。
 </content>
