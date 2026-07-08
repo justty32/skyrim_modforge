@@ -53,7 +53,7 @@
                                         └─────────────────────────────────┘
 ```
 
-- **① placement-controller `.pex`**：irreducibly bespoke Papyrus（Tundra §3.3 的 `aaaFortMainQuestScript` 等價）。ModForge 有「隨附 reusable `.pex` + `scriptAttach`」先例（MCM-Helper/dispatcher/PapyrusUtil）。**與 settlements P2 的 `buildables:` controller 是同一支，兩線合流**——本 spec 不重複設計，指向 settlements P2 design。
+- **① placement-controller `.pex`**：irreducibly bespoke Papyrus（Tundra §3.3 的 `aaaFortMainQuestScript` 等價）。ModForge 有「隨附 reusable `.pex` + `scriptAttach`」先例（MCM-Helper/dispatcher/PapyrusUtil）。**與 settlements P2 的 `buildables:` controller 是同一支，兩線合流**——本 spec 不重複設計，指向 settlements P2 design。**定位軸**：Tundra 已有三軸**旋轉**（`MODE_ROTATE_X/Y/Z`+`ChangeRotationAxis`）+**距離**（`MODE_DISTANCE`），**但無縮放**——本控制器要**多加一個 `MODE_SCALE`**（`ObjectReference.SetScale`，vanilla Papyrus，Plus/Minus 調）。ModForge 側 `PlacementSpec.Rotation`+`Scale`(XSCL) **均已支援**，scene.json 契約已帶（見下 `placements[]`），故**匯出/生成零改動**，只差 controller 補 scale 那段。⚠️ **XSCL 不作用於 actor**（`Spec.World.cs:43`）→ 縮放只對靜物/家具/光，拓印 NPC 不可縮放。
 - **② PROTEUS**：消費、不改（native 閉源）。**crux 已拍板：clone 穩定、可被 esp 引用**（2026-07-08 使用者確認）→ 路徑 A 成立，facegen GAP 繞過。
 - **③ 採集橋 SKSE DLL**：**唯一 net-new 的重工程**。走訪目標 cell 的 placed refs、讀每個 base+transform+enable、記 §B 語意標記與 §D 身份、收 PROTEUS clone 的 ActorRef，序列化成 scene.json。**本 spec 定義它的 output 契約**（下節）；內部實作（SKSE API、UI 走 [SKSE Menu Framework 3](../../sub_projs/mod-survey/findings/skse-menu-framework-3.md) ImGui）另立子專案。**含「滴管取樣」子能力**（見下）——採集橋負責的一個關鍵 runtime 責任是 **FormID → 耐久 `<plugin>:0xLOCALID` 反解**（`TESDataHandler`），因為 runtime FormID 高位元組是 load-order index、跨載入順序不穩，匯出前必須反解成插件相對 ID。
 - **④ ModForge**：讀 scene.json → 既有生成鏈。**幾乎零 net-new 生成碼**（見「落點」）。
