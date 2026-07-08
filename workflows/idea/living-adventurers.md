@@ -1,6 +1,6 @@
 # Idea #23 — 活世界人口框架：給每張捏臉一條命（living-adventurers）
 
-← [ideas 索引](ideas.md)｜相關：[#17 任務節點圖](followers.md#17-skyrim-原版任務節點圖--批量隨從反應生成2026-06-15) · [#18 隨從記憶系統](followers.md#18-隨從記憶系統任務經歷追蹤與對話更新2026-06-15) · [#3 商隊與船隊生活](world-building.md) · [#1 擴充停更隨從](followers.md#1-擴充停止更新的隨從模組) · `settlements:` macro
+← [ideas 索引](ideas.md)｜相關：[#17 任務節點圖](followers.md#17-skyrim-原版任務節點圖--批量隨從反應生成2026-06-15) · [#18 隨從記憶系統](followers.md#18-隨從記憶系統任務經歷追蹤與對話更新2026-06-15) · [#3 商隊與船隊生活](world-building/03-caravans-fleets.md) · [#1 擴充停更隨從](followers.md#1-擴充停止更新的隨從模組) · `settlements:` macro
 
 **狀態**：idea（模擬迴圈未驗,屬可行性待證）。候選獨立子專案 `sub_projs/living-adventurers/`。子名沿用 living-adventurers,但**範圍已不限冒險者**（見下）。
 

@@ -1,6 +1,6 @@
 # 設計方案：`settlements:` 聚落量產 macro（人口填充 spec section）
 
-← [specs README](README.md)｜idea [#22 漂泊開拓慢活](../idea/world-building.md#22-漂泊開拓慢活移動基地--程序生成異域--開拓經營)｜roadmap [mod-survey-gaps 🏘️](../roadmap/mod-survey-gaps.md)｜先例 [`skillTrees:` macro](../../src/ModForge.Core/Spec.SkillTree.cs)
+← [specs README](README.md)｜idea [#22 漂泊開拓慢活](../idea/world-building/22-wandering-frontier.md)｜roadmap [mod-survey-gaps 🏘️](../roadmap/mod-survey-gaps.md)｜先例 [`skillTrees:` macro](../../src/ModForge.Core/Spec.SkillTree.cs)
 
 ## 目標
 

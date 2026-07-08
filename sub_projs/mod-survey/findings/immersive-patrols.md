@@ -15,7 +15,7 @@
 - Type: world encounter / patrol population mod.
 - Plugin: yes, single ESP.
 - Narrative value: low.
-- Systems value: high for `world-building.md §11` because it is the smallest concrete example of road patrols and warzone battles without a quest controller.
+- Systems value: high for `world-building/11-mount-and-blade.md` because it is the smallest concrete example of road patrols and warzone battles without a quest controller.
 
 ## Record shape
 
