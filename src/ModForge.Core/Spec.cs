@@ -100,6 +100,7 @@ public sealed class ModSpec
     public List<SkillTreeSpec> SkillTrees { get; set; } = new(); // in-world clickable perk tree (Idea #20; Spec.SkillTree.cs) — macro-expands to globals/activators/placements/scripts
     public List<SettlementSpec> Settlements { get; set; } = new(); // populated settlement (Idea #22; Spec.Settlement.cs) — macro-expands to npcs/packages/placements/factions/containers
     public LivingNpcsSpec? LivingNpcs { get; set; } // living-world NPCs (Idea #23; Spec.LivingNpc.cs) — macro-expands to a controller quest + per-NPC alias/markers/global/rumor + ships MFLivingNpc* .pex
+    public List<SceneNpcRoleSpec> NpcRoles { get; set; } = new(); // in-game scene export: tag an external NPC with a job role (Idea #24 §D; Spec.SceneExport.cs) — macro-expands to a host quest + conditioned greeting + sandbox package. NOT the player-facing Identities.
     public VoiceLineSpec? VoiceLine { get; set; } // global voice output settings
 
     // Guard so the skillTree macro-expansion (Generator.ExpandSkillTrees) runs at most once per spec
@@ -107,6 +108,8 @@ public sealed class ModSpec
     [System.Text.Json.Serialization.JsonIgnore] internal bool SkillTreesExpanded { get; set; }
     // Guard so the settlement macro-expansion (Generator.ExpandSettlements) runs at most once. Not serialized.
     [System.Text.Json.Serialization.JsonIgnore] internal bool SettlementsExpanded { get; set; }
+    // Guard so the npc-role macro-expansion (Generator.ExpandNpcRoles) runs at most once. Not serialized.
+    [System.Text.Json.Serialization.JsonIgnore] internal bool NpcRolesExpanded { get; set; }
     // Guard so the living-NPC macro-expansion (Generator.ExpandLivingNpcs) runs at most once. Not serialized.
     [System.Text.Json.Serialization.JsonIgnore] internal bool LivingNpcsExpanded { get; set; }
     // External-resource pipeline (see docs/external_assets.md): a source directory whose

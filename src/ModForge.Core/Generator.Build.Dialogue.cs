@@ -71,8 +71,18 @@ public static partial class Generator
                         ((GetIsIDConditionData)hc.Data).Object.Link.SetTo(hspk);
                         hinfo.Conditions.Add(hc);
                     }
+                    // External captured NPC (Idea #24 §D): speaker is a "<plugin>.esp:0xID" base NPC not
+                    // in this spec — gate on its FormKey so the greeting is still bound to that one NPC.
+                    else if (!string.IsNullOrEmpty(d.SpeakerNpcEditorId) && TryResolveRef(d.SpeakerNpcEditorId, formKeyByEd, out var hextFk))
+                    {
+                        var hc = new ConditionFloat { CompareOperator = CompareOperator.EqualTo, ComparisonValue = 1f, Data = new GetIsIDConditionData() };
+                        ((GetIsIDConditionData)hc.Data).Object.Link.SetTo(hextFk);
+                        hinfo.Conditions.Add(hc);
+                    }
                     else if (string.IsNullOrEmpty(d.SpeakerNpcEditorId))
                         Warn($"  ! dialogue '{d.EditorId}' hello: no speaker — every NPC would use this greeting");
+                    else
+                        Warn($"  ! dialogue '{d.EditorId}' hello: speaker '{d.SpeakerNpcEditorId}' not found in spec or as an external ref — greeting has NO speaker gate");
                     var hkey = d.SpeakerNpcEditorId + "|" + quest.FormKey;
                     if (!conditionedHellos.TryGetValue(hkey, out var hlist))
                         conditionedHellos[hkey] = hlist = new List<DialogResponses>();
@@ -123,8 +133,15 @@ public static partial class Generator
                         ((GetIsIDConditionData)cond.Data).Object.Link.SetTo(speaker);
                         inf.Conditions.Add(cond);
                     }
+                    // External captured NPC (Idea #24 §D): resolve a "<plugin>.esp:0xID" base NPC by FormKey.
+                    else if (TryResolveRef(d.SpeakerNpcEditorId, formKeyByEd, out var extFk))
+                    {
+                        var cond = new ConditionFloat { CompareOperator = CompareOperator.EqualTo, ComparisonValue = 1f, Data = new GetIsIDConditionData() };
+                        ((GetIsIDConditionData)cond.Data).Object.Link.SetTo(extFk);
+                        inf.Conditions.Add(cond);
+                    }
                     else
-                        Warn($"  ! dialogue '{d.EditorId}' speaker '{d.SpeakerNpcEditorId}' not found in spec — line has NO speaker gate (any NPC may say it)");
+                        Warn($"  ! dialogue '{d.EditorId}' speaker '{d.SpeakerNpcEditorId}' not found in spec or as an external ref — line has NO speaker gate (any NPC may say it)");
                 }
                 var emotion = Enum.TryParse<Emotion>(d.Emotion, ignoreCase: true, out var em) ? em : Emotion.Neutral;
 
@@ -202,10 +219,12 @@ public static partial class Generator
             var npcSpecByEd = spec.Npcs.Where(n => !string.IsNullOrEmpty(n.EditorId))
                                        .GroupBy(n => n.EditorId).ToDictionary(g => g.Key, g => g.First());
             // Local: emit one Hello (Misc/Hello/HELO, no branch, GetIsID(speaker), ENAM+CNAM) under a quest.
-            void MakeHello(string npcEd, INpcGetter speaker, Quest quest, string? greetingLine)
+            // speakerFk gates the fallback greeting via GetIsID. Accepts an in-spec NPC's FormKey OR an
+            // external captured NPC's FormKey (Idea #24 §D) — GetIsIDConditionData.Object.Link takes a FormKey.
+            void MakeHello(string npcEd, FormKey speakerFk, Quest quest, string? greetingLine)
             {
                 var hello = mod.DialogTopics.AddNew();
-                hello.EditorID = $"{npcEd}_{quest.EditorID}_Hello";
+                hello.EditorID = $"{SanitizeEd(npcEd)}_{quest.EditorID}_Hello";
                 hello.Quest.SetTo(quest);
                 hello.Category = DialogTopic.CategoryEnum.Misc;
                 hello.Subtype = DialogTopic.SubtypeEnum.Hello;
@@ -220,7 +239,7 @@ public static partial class Generator
                 var hinfo = new DialogResponses(mod) { Flags = new DialogResponseFlags(), FavorLevel = FavorLevel.None };
                 hinfo.Responses.Add(new DialogResponse { Text = greet, ResponseNumber = 1, Emotion = Emotion.Neutral, EmotionValue = 50 });
                 var hcond = new ConditionFloat { CompareOperator = CompareOperator.EqualTo, ComparisonValue = 1f, Data = new GetIsIDConditionData() };
-                ((GetIsIDConditionData)hcond.Data).Object.Link.SetTo(speaker);
+                ((GetIsIDConditionData)hcond.Data).Object.Link.SetTo(speakerFk);
                 hinfo.Conditions.Add(hcond);
                 hello.Responses.Add(hinfo);
             }
@@ -231,10 +250,14 @@ public static partial class Generator
             {
                 if (string.IsNullOrEmpty(d.SpeakerNpcEditorId)) continue;
                 if (string.IsNullOrEmpty(d.QuestEditorId) || !questsByEd.TryGetValue(d.QuestEditorId, out var quest)) continue;
-                if (!npcsByEd.TryGetValue(d.SpeakerNpcEditorId, out var speaker)) continue;
+                // In-spec NPC → its FormKey; else an external captured NPC (§D) resolved by ref. Skip only
+                // if neither resolves (a truly unknown speaker — the conditioned INFO already warned).
+                FormKey speakerFk;
+                if (npcsByEd.TryGetValue(d.SpeakerNpcEditorId, out var speaker)) speakerFk = speaker.FormKey;
+                else if (!TryResolveRef(d.SpeakerNpcEditorId, formKeyByEd, out speakerFk)) continue;
                 if (!helloDone.Add(d.SpeakerNpcEditorId + "|" + quest.FormKey)) continue;
                 npcSpecByEd.TryGetValue(d.SpeakerNpcEditorId, out var ns);
-                MakeHello(d.SpeakerNpcEditorId, speaker, quest, ns?.Greeting);
+                MakeHello(d.SpeakerNpcEditorId, speakerFk, quest, ns?.Greeting);
                 helloedNpcs.Add(d.SpeakerNpcEditorId);
             }
 
@@ -256,7 +279,7 @@ public static partial class Generator
                 gq.Name = string.Empty;
                 gq.Flags |= Quest.Flag.StartGameEnabled;   // must run so its Hello is served
                 gq.Priority = 50;
-                MakeHello(n.EditorId, speaker, gq, n.Greeting);
+                MakeHello(n.EditorId, speaker.FormKey, gq, n.Greeting);
                 helloedNpcs.Add(n.EditorId);
             }
         }

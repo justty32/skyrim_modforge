@@ -28,6 +28,9 @@ public static partial class Generator
         // (livingNpcs → controller quest + per-NPC alias/markers/global/rumor + world-controller script).
         // After ExpandSettlements; feeds pass 1. Idempotent (guarded on the spec).
         ExpandLivingNpcs(spec);
+        // (npcRoles → host quest + conditioned greeting + sandbox package via NpcPatch, on an external
+        // captured NPC). After ExpandLivingNpcs; feeds pass 1. Idempotent (guarded on the spec).
+        ExpandNpcRoles(spec);
 
         var ctx = new BuildContext(spec, outputKey, options);
 

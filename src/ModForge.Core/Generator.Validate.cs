@@ -42,6 +42,7 @@ public static partial class Generator
         ctx.ValidateSkillTrees();
         ctx.ValidateSettlements();
         ctx.ValidateLivingNpcs();
+        ctx.ValidateNpcRoles();
         ValidateWeather(spec, ctx.Problems, ctx.Ids, ctx.CheckRef);
         ValidateLights(spec, ctx.Problems);
         ValidateLighting(spec, ctx.Problems);

@@ -1,0 +1,41 @@
+{
+  "pluginName": "ModForgeSceneBlacksmith.esp",
+  "esl": true,
+  "_comment": "Idea #24 §D M0 contract fixture — a hand-authored scene.json (what the in-game 採集橋 will emit). Proves the ModForge-side pipeline: placements + a captured NPC tagged with a role + a semantic map marker + a VFX anchor → a patch. Refs are verified vanilla FormIDs (Farmhouse01 static 0x00084A, Carlotta 0x013B99 as the captured-NPC stand-in). Coords are a demo spot in Tamriel (0x00003C).",
+
+  "placements": [
+    { "editorId": "MFScene_House", "base": "Skyrim.esm:0x00084A", "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": 0, "y": -9000, "z": -3800 }, "rotation": { "x": 0, "y": 0, "z": 0 } },
+    { "editorId": "MFScene_Smith", "base": "Skyrim.esm:0x013B99", "kind": "npc", "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": 180, "y": -9000, "z": -3800 }, "rotation": { "x": 0, "y": 0, "z": 180 } },
+    { "editorId": "MFScene_Campfire", "base": "MFScene_Fire", "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": 300, "y": -8900, "z": -3800 } }
+  ],
+
+  "mapMarkers": [
+    { "editorId": "MFScene_TownMarker", "name": "Forgewatch", "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": 0, "y": -9000, "z": -3700 }, "type": "Town", "flags": ["Visible", "CanTravelTo"] }
+  ],
+
+  "magicEffects": [
+    { "editorId": "MFScene_BurnEffect", "name": "Burning", "archetype": "ValueModifier",
+      "actorValue": "Health", "magicSkill": "Destruction", "resistValue": "ResistFire",
+      "castType": "FireAndForget", "targetType": "Aimed", "baseCost": 5 }
+  ],
+  "spells": [
+    { "editorId": "MFScene_BurnSpell", "name": "Burn", "spellType": "Spell",
+      "castType": "FireAndForget", "targetType": "Aimed",
+      "effects": [ { "magicEffect": "MFScene_BurnEffect", "magnitude": 5, "area": 0, "duration": 1 } ] }
+  ],
+  "hazards": [
+    { "editorId": "MFScene_Fire", "name": "Campfire",
+      "model": "Meshes/Traps/PressurePlateFire/NorTrapFirePlateFX.nif",
+      "radius": 150, "lifetime": 8, "targetInterval": 1, "limit": 0,
+      "spell": "MFScene_BurnSpell", "flags": ["DropToGround"] }
+  ],
+
+  "npcRoles": [
+    { "npc": "Skyrim.esm:0x013B99", "role": "blacksmith",
+      "backstory": "Once forged blades for the Legion; now keeps the only anvil in Forgewatch." }
+  ]
+}

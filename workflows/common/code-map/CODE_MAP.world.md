@@ -141,6 +141,24 @@
 
 ---
 
+## 遊戲內場景匯出 · NPC 角色 macro（Idea #24 §D）
+→ **設計**：[specs/ingame-scene-export-design.md](../../specs/ingame-scene-export-design.md) · plan [plans/ingame-scene-export.md](../../plans/ingame-scene-export.md) · idea [tools/24-ingame-editor.md](../../idea/tools/24-ingame-editor.md)
+
+給一個**外部 captured NPC**（PROTEUS clone / follower base）一個職業 `role`，pass-0 macro 展開成該 NPC 的 conditioned 問候 + 行為。**非玩家向 `IdentitySpec`**（那是玩家加入 FACT gate 玩家對話）；與 `ResidentSpec` 差別＝keyed on **外部 base NPC ref** 且自帶對話。切片只做 `blacksmith`。scene.json ＝一份 `ModSpec` 片段（`placements`/`mapMarkers`/`hazards`/`npcRoles`），生成端 placements/marker/hazard **全已具備**。
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.SceneExport.cs` | `SceneNpcRoleSpec`（npc=外部 base ref／role／backstory）|
+| Spec | `Spec.cs` | `ModSpec.NpcRoles` + `NpcRolesExpanded` 守衛旗標 |
+| Expand P0 | `Generator.SceneNpcRoles.cs` | **`ExpandNpcRoles`**：每 role → 共享 StartGameEnabled host quest `MF_SceneNpcRolesQ`；blacksmith → Hello `DialogueSpec`（GetIsID npc）+ sandbox `PackageSpec`（無 location＝editor-location fallback）+ `NpcPatchSpec`（overrideOf npc, append）。未知 role 不展開（Validate 警告）。`SanitizeEd` 把外部 ref 轉成合法 editorId 片段 |
+| Build | `Generator.Build.cs` | pass-0 呼叫 `ExpandNpcRoles(spec)`（在 `ExpandLivingNpcs` 後）|
+| **core 前置修** | `Generator.Build.Dialogue.cs` | **外部 speaker Hello 支援**：conditioned-hello 建構 + `AddSpeakerGate` 兩處，in-spec `npcsByEd` 失敗時 fallback `TryResolveRef` 解析 `<plugin>:0xID` → GetIsID FormKey；`MakeHello` 改吃 `FormKey`（非 `INpcGetter`）並在 hello 材質化迴圈解析外部 speaker（否則外部 NPC 的 Hello topic 永不生成）。回歸測全綠 |
+| Validate | `Generator.Validate.SceneNpcRoles.cs` | `ValidateNpcRoles`：npc 必填、role 必填且須已知（`KnownRoles`={blacksmith}）|
+| Example | `examples/scene-export-blacksmith.scene.json` | M0 契約 fixture：farmhouse(0x00084A)+Carlotta(0x013B99 as 替身)+town marker+campfire hazard+blacksmith role |
+| Tests | `SceneNpcRolesTests.cs` | validate（缺 npc／未知 role）+ expand（host quest/greeting/package/patch、idempotent、未知 role emit 空、無 npcRoles no-op）+ build（Hello INFO GetIsID gate 到外部 NPC FormKey）|
+
+---
+
 ## Lights 自訂光源（LIGT）
 → **說明文件**：[SPEC-world.md § lights](../../../docs/spec/SPEC-world.md#lights--custom-light-sources-ligt)
 
