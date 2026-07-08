@@ -2,7 +2,7 @@
 
 ← [sub_proj README](README.md)
 
-**這是什麼**：把 idea #20 的[方案 A（純效果成長）](README.md#方案-a純效果不開-ui最簡單現在就能做)、**Campfire/Frostfall 的 in-world 3D 技能樹**（[替代路線](README.md#替代路線待主力機查證見-wait_user)）、與 **JContainers per-NPC 狀態**三者綜合成一條可實作路線。使用者選定方向（2026-06-17），**玩家與 NPC 通用**。
+**這是什麼**：把 idea #20 的[方案 A（純效果成長）](options-history.md#方案-a純效果不開-ui最簡單現在就能做)、**Campfire/Frostfall 的 in-world 3D 技能樹**（[替代路線](options-history.md#替代路線待主力機查證見-wait_user-in-world-3d-互動天賦樹)）、與 **JContainers per-NPC 狀態**三者綜合成一條可實作路線。使用者選定方向（2026-06-17），**玩家與 NPC 通用**。
 
 **玩家版 vs NPC 版（兩種複雜度）**：
 - **玩家版 = Campfire 原生模式，零橋接**：玩家對營火開樹、點星、全域 GLOB 記 rank——這正是 Frostfall Endurance 樹的現成做法。只有一個玩家、全域 GLOB 不衝突，**不需 JContainers**。是 baseline，現成可生成。
@@ -108,7 +108,7 @@ target 解析為某 NPC 後，橋接靠一組**全域 session GLOB**（僅描述
 - **perk 套用**：`SyncPerks(npc)` 依 JFormDB 的 node rank → `AddPerk`/`RemovePerk`。冪等，可在 NPC OnLoad / 升級時重跑。
 - **成長來源**（寫進 JFormDB，玩家不必配點時的自動路線）：
   - 任務進度 gate（任務 stage → `solveIntSetter` 升 level + 自動點關鍵 node）
-  - 好感度 gate（沿用 Sofia F6 GLOB 藍圖，見 [README 方案 A](README.md#方案-a純效果不開-ui最簡單現在就能做)）✅ 已落地：`persist`/`syncPerks` 的 `gate: {global, atLeast?, atMost?}`
+  - 好感度 gate（沿用 Sofia F6 GLOB 藍圖，見 [options-history 方案 A](options-history.md#方案-a純效果不開-ui最簡單現在就能做)）✅ 已落地：`persist`/`syncPerks` 的 `gate: {global, atLeast?, atMost?}`
   - 戰鬥 XP（NPC OnHit / 殺敵 event 累積 ratio）
 - **適合先落地的 MVP**：純效果成長 + 任務 gate，**完全不碰 Campfire/in-world UI**——這條現在就能做，是 idea #20 原本的「方案 A」。in-world UI 是其上的玩家配點加值層。
 
