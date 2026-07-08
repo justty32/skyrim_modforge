@@ -20,6 +20,7 @@
 | 設計方案 | 討論日期 | 對應 idea/roadmap |
 |---|---|---|
 | [worldspace-editor-design.md](worldspace-editor-design.md)（heightmap → 非平坦 LAND，後端 MVP） | 2026-06-16 | [Idea #19](../../sub_projs/godot-worldspace-editor/README.md) |
+| [ingame-scene-export-design.md](ingame-scene-export-design.md)（遊戲內蓋城鎮 → scene JSON → patch；ModForge 側契約 + 最小切片 M0–M2） | 2026-07-08 | [Idea #24](../idea/tools/24-ingame-editor.md) |
 
 action-system asset/config 生成（OAR/BDI/PIE）MVP 已落地（2026-06-14），design 已移 [archive/](archive/README.md)。
 

@@ -43,13 +43,10 @@
 | **法術 / 技能 / 屬性** | **大致能** | spell 授予、AV 設定走既有 actor 生成；`autoCalcStats` 記憶 [[autocalc-without-class-dead-npc]]（要配 class）|
 | **外貌（headpart / tint / 髮色 / 臉 morph / 體重）** | **❌ GAP（facegen）** | `Spec.Actors.cs` 無任何 headpart/tint/face 欄；grep 全 `src/ModForge.Core/` 無 facegen 生成。這是 **CK/facegen 領域**（NPC_ 記錄 + FaceGeom NIF + tint DDS），ModForge 目前不生 |
 
-→ **關鍵洞見（分工天成）**：**外貌/facegen 正是 ModForge 最弱、而 PROTEUS（native DLL）最強的地方**。PROTEUS 的 6 個 JSON 模板（`Proteus_Character_GeneralInfo/_Skills/_Armor/_Weapon/_Spell`，見 finding）就是它 runtime 序列化整個角色 build（含外貌）的 schema。所以有兩條路，**這是本 idea 待拍板的最大岔路**：
+→ **關鍵洞見（分工天成）**：**外貌/facegen 正是 ModForge 最弱、而 PROTEUS（native DLL）最強的地方**。PROTEUS 的 6 個 JSON 模板（`Proteus_Character_GeneralInfo/_Skills/_Armor/_Weapon/_Spell`，見 finding）就是它 runtime 序列化整個角色 build（含外貌）的 schema。兩條路：
 
-- **路徑 A：消費（比照 [#23 living-adventurers](../living-adventurers.md) 的「指向既有 ActorRef」哲學）**——讓 **PROTEUS 在遊戲內把玩家 clone 成一個實體 NPC**（外貌由它的 native code 現成搞定，白賺 facegen），ModForge **只指向那個 persistent ActorRef**，在外圈生成身份/對話/行為/擺放的 patch。
-  - **⚠️ 待驗（照 repo 規矩查證，勿臆測）**：PROTEUS 的 clone 到底是**跨存檔穩定、能被 esp 以 FormID 引用的 NPC_ base 記錄**，還是**只是 runtime `PlaceAtMe` 出來的 dynamic ref（FF-form）**？後者無穩定 FormID，ModForge 無從引用。**這決定路徑 A 是否成立**——進 mod-survey 實測 PROTEUS 生成的 NPC 在存檔/plugin 層是什麼形態。
-- **路徑 B：生成（硬路）**——PROTEUS **序列化玩家外貌成 JSON** → ModForge 讀 JSON **生一個真的 NPC_ base 記錄含 facegen**。需要 ModForge 新增 **facegen 生成能力**（headpart/tint/morph → NPC_ + 匯出 FaceGeom NIF + tint DDS）。**這是大 GAP**（CK-territory，但有 headless facegen 工具可調查，接 asset-pipelines 那批研究）。好處：產物是**完全自足、可散布的獨立 NPC**，不依賴玩家端裝 PROTEUS。
-
-**建議**：先走**路徑 A 的最小 spike**（能不能拿到穩定 ActorRef），拿到答案再決定要不要投資路徑 B 的 facegen 生成。ModForge 「指向外部 ActorRef 生 patch」是熟路（#23、sofia-patch、`esm-formid-access`）。
+- **✅ 路徑 A（採納）：消費（比照 [#23 living-adventurers](../living-adventurers.md) 的「指向既有 ActorRef」哲學）**——讓 **PROTEUS 在遊戲內把玩家 clone 成一個實體 NPC**（外貌由它的 native code 現成搞定，白賺 facegen），ModForge **只指向那個 persistent ActorRef**，在外圈生成身份/對話/行為/擺放的 patch。**crux 已拍板（2026-07-08，使用者確認）：PROTEUS clone 是穩定、可引用的**——路徑 A 成立，facegen GAP 直接繞過。ModForge「指向外部 ActorRef 生 patch」是熟路（#23、sofia-patch、`esm-formid-access`）。→ 已進 spec，見 [ingame-scene-export-design](../../specs/ingame-scene-export-design.md)。
+- **路徑 B（降為未來選項，非阻塞）**——PROTEUS **序列化玩家外貌成 JSON** → ModForge 讀 JSON **生一個真的 NPC_ base 記錄含 facegen**，讓產物**不依賴玩家端裝 PROTEUS**（完全自足、可散布）。需 ModForge 新增 facegen 生成（headpart/tint/morph → NPC_ + FaceGeom NIF + tint DDS，CK-territory 大 GAP，接 asset-pipelines headless facegen 研究）。路徑 A 跑通後若要「可散布獨立 NPC」再投資。
 
 ---
 
@@ -109,7 +106,7 @@
 | ① 快照 → override CELL + `placements[]` | 生成端 **可** | 缺**採集橋 DLL**（讀 cell ref 狀態 → JSON）|
 | ② 施法擺設定位 | 靜態零件 **可**；定位行為**需 controller** | 內建泛用 placement-controller `.pex`（同 Tundra，合流 settlements P2）|
 | §A 拓印玩家：perk/裝備/法術/技能 → NPC | **可**（`NpcSpec.Perks`/`Outfit`/`Items`）| — |
-| §A 拓印玩家：**外貌 facegen** | **GAP** | 路徑 A＝PROTEUS 消費（待驗 ActorRef 穩定性）；路徑 B＝ModForge 自建 facegen 生成（大 GAP）|
+| §A 拓印玩家：**外貌 facegen** | **✅ 由 PROTEUS 補位** | 路徑 A（採納，clone 穩定可引用）繞過 GAP；路徑 B（ModForge 自建 facegen）降為未來「可散布獨立 NPC」選項 |
 | §B marker / 特效 / 標籤 | **可**（XMRK/HAZD/Light/KYWD 全有）| 缺採集橋輸出 `{kind,at,params}` |
 | §C export 整場景 | 生成型別 **全可** | 採集橋（同①放大）；**navmesh 即時採集是硬項** |
 | §D 身份 → 對話/行為 | **可**（identity 系統 + 對話 INFO + package + vendor 全實機）| 遊戲內只貼 tag；文本可接 #17 AI 生成 |
@@ -121,7 +118,7 @@
 
 ## 建議的最小垂直切片（驗證北極星）
 
-照北極星情境切最小可跑：**擺 1 棟房子（喝瓶→定位→落地，②/Tundra controller）+ 拓印玩家成 1 個 NPC 並標 identity=blacksmith（④/§A 路徑 A + §D）+ 放 1 個地圖 marker + 1 個特效錨點（§B）+ 快照整片 → ModForge build 出可造訪的迷你據點（§C）**。先驗「能擺、能拓印、能標註、能匯出、住民有對話」五件事，再擴。**先決調查**：PROTEUS clone 的 ActorRef 穩定性（決定 §A 路徑 A/B）；**先決生成改動**：無（§B/§D 已具備，②的 controller 與 settlements P2 合流一起做）。
+照北極星情境切最小可跑：**擺 1 棟房子（喝瓶→定位→落地，②/Tundra controller）+ 拓印玩家成 1 個 NPC 並標 identity=blacksmith（④/§A 路徑 A + §D）+ 放 1 個地圖 marker + 1 個特效錨點（§B）+ 快照整片 → ModForge build 出可造訪的迷你據點（§C）**。先驗「能擺、能拓印、能標註、能匯出、住民有對話」五件事，再擴。**先決調查**：✅ 已解（PROTEUS clone 穩定可引用，走路徑 A）；**先決生成改動**：無（§B/§D 已具備，②的 controller 與 settlements P2 合流一起做）。→ 已展開成 spec，見 [ingame-scene-export-design](../../specs/ingame-scene-export-design.md)。
 
 ## 關聯
 
