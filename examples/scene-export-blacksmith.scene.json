@@ -1,41 +1,129 @@
 {
   "pluginName": "ModForgeSceneBlacksmith.esp",
   "esl": true,
-  "_comment": "Idea #24 §D M0 contract fixture — a hand-authored scene.json (what the in-game 採集橋 will emit). Proves the ModForge-side pipeline: placements + a captured NPC tagged with a role + a semantic map marker + a VFX anchor → a patch. Refs are verified vanilla FormIDs (Farmhouse01 static 0x00084A, Uthgerd 0x0918E2 as the captured-NPC stand-in — a non-vendor NPC, so the added shop is clearly ours). Coords are the flat Whiterun-stables tundra (ground Z=-4590, verified from vanilla markers) so fast-travel is safe and objects sit on the ground — earlier (0,-9000,-3800) was ~790u above the mountainous ground (floating house, lethal fall).",
-
+  "_comment": "Idea #24 §D M0 contract fixture — a hand-authored scene.json (what the in-game 採集橋 will emit). Proves the ModForge-side pipeline: placements + a captured NPC tagged with a role + a semantic map marker + a VFX anchor → a patch. Refs are verified vanilla FormIDs (Farmhouse01 static 0x00084A, an in-spec NPC 'Brynja the Smith' as the captured-clone stand-in (a vanilla UNIQUE NPC like Uthgerd can't be duplicated by a placement — the engine keeps one instance, so nothing appears; a real PROTEUS clone is a fresh NPC like this)). Coords are the flat Whiterun-stables tundra (ground Z=-4590, verified from vanilla markers) so fast-travel is safe and objects sit on the ground — earlier (0,-9000,-3800) was ~790u above the mountainous ground (floating house, lethal fall).",
   "placements": [
-    { "editorId": "MFScene_House", "base": "Skyrim.esm:0x00084A", "worldspace": "Skyrim.esm:0x00003C",
-      "position": { "x": 18650, "y": -10665, "z": -4590 }, "rotation": { "x": 0, "y": 0, "z": -40 } },
-    { "editorId": "MFScene_Smith", "base": "Skyrim.esm:0x0918E2", "kind": "npc", "worldspace": "Skyrim.esm:0x00003C",
-      "position": { "x": 18430, "y": -10520, "z": -4590 }, "rotation": { "x": 0, "y": 0, "z": 140 } },
-    { "editorId": "MFScene_Campfire", "base": "MFScene_Fire", "worldspace": "Skyrim.esm:0x00003C",
-      "position": { "x": 18520, "y": -10780, "z": -4590 } }
+    {
+      "editorId": "MFScene_House",
+      "base": "Skyrim.esm:0x00084A",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": {
+        "x": 18650,
+        "y": -10865,
+        "z": -4590
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -40
+      }
+    },
+    {
+      "editorId": "MFScene_Smith",
+      "base": "MFSceneSmith",
+      "kind": "npc",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": {
+        "x": 18430,
+        "y": -10720,
+        "z": -4590
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 140
+      }
+    },
+    {
+      "editorId": "MFScene_Campfire",
+      "base": "MFScene_Fire",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": {
+        "x": 18520,
+        "y": -10980,
+        "z": -4590
+      }
+    }
   ],
-
   "mapMarkers": [
-    { "editorId": "MFScene_TownMarker", "name": "Forgewatch", "worldspace": "Skyrim.esm:0x00003C",
-      "position": { "x": 18650, "y": -10250, "z": -4590 }, "type": "Town", "flags": ["Visible", "CanTravelTo"] }
+    {
+      "editorId": "MFScene_TownMarker",
+      "name": "Forgewatch",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": {
+        "x": 18650,
+        "y": -10450,
+        "z": -4590
+      },
+      "type": "Town",
+      "flags": [
+        "Visible",
+        "CanTravelTo"
+      ]
+    }
   ],
-
   "magicEffects": [
-    { "editorId": "MFScene_BurnEffect", "name": "Burning", "archetype": "ValueModifier",
-      "actorValue": "Health", "magicSkill": "Destruction", "resistValue": "ResistFire",
-      "castType": "FireAndForget", "targetType": "Aimed", "baseCost": 5 }
+    {
+      "editorId": "MFScene_BurnEffect",
+      "name": "Burning",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "magicSkill": "Destruction",
+      "resistValue": "ResistFire",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
+      "baseCost": 5
+    }
   ],
   "spells": [
-    { "editorId": "MFScene_BurnSpell", "name": "Burn", "spellType": "Spell",
-      "castType": "FireAndForget", "targetType": "Aimed",
-      "effects": [ { "magicEffect": "MFScene_BurnEffect", "magnitude": 5, "area": 0, "duration": 1 } ] }
+    {
+      "editorId": "MFScene_BurnSpell",
+      "name": "Burn",
+      "spellType": "Spell",
+      "castType": "FireAndForget",
+      "targetType": "Aimed",
+      "effects": [
+        {
+          "magicEffect": "MFScene_BurnEffect",
+          "magnitude": 5,
+          "area": 0,
+          "duration": 1
+        }
+      ]
+    }
   ],
   "hazards": [
-    { "editorId": "MFScene_Fire", "name": "Campfire",
+    {
+      "editorId": "MFScene_Fire",
+      "name": "Campfire",
       "model": "Meshes/Traps/PressurePlateFire/NorTrapFirePlateFX.nif",
-      "radius": 150, "lifetime": 8, "targetInterval": 1, "limit": 0,
-      "spell": "MFScene_BurnSpell", "flags": ["DropToGround"] }
+      "radius": 150,
+      "lifetime": 8,
+      "targetInterval": 1,
+      "limit": 0,
+      "spell": "MFScene_BurnSpell",
+      "flags": [
+        "DropToGround"
+      ]
+    }
   ],
-
   "npcRoles": [
-    { "npc": "Skyrim.esm:0x0918E2", "role": "blacksmith",
-      "backstory": "Once forged blades for the Legion; now keeps the only anvil in Forgewatch." }
+    {
+      "npc": "MFSceneSmith",
+      "role": "blacksmith",
+      "backstory": "Once forged blades for the Legion; now keeps the only anvil in Forgewatch."
+    }
+  ],
+  "npcs": [
+    {
+      "editorId": "MFSceneSmith",
+      "name": "Brynja the Smith",
+      "race": "Skyrim.esm:0x013746",
+      "voiceType": "Skyrim.esm:0x013ADD",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "crimeFaction": "Skyrim.esm:0x0267EA",
+      "confidence": "Brave",
+      "unique": true
+    }
   ]
 }

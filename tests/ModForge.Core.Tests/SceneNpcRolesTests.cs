@@ -103,6 +103,28 @@ public class SceneNpcRolesTests
         Assert.Contains(Generator.JobMerchantFactionRef, patch.Factions);
     }
 
+    // In-spec NPC (a fresh clone stand-in — the only kind that can be PLACED & appear): package + vendor
+    // FACT attach DIRECTLY to the NpcSpec (no NpcPatch), and BuildNpcs auto-adds JobMerchant.
+    [Fact]
+    public void Expand_Blacksmith_InSpecNpc_AttachesDirectly_NoPatch()
+    {
+        var s = new ModSpec
+        {
+            PluginName = "M.esp",
+            Npcs = { new NpcSpec { EditorId = "Smith", Name = "Brynja", Race = "Skyrim.esm:0x013746" } },
+            Placements = { new PlacementSpec { EditorId = "SmithRef", Base = "Smith", Kind = "npc",
+                Worldspace = "Skyrim.esm:0x00003C", Position = new Vec3 { X = 1, Y = 2, Z = 3 } } },
+            NpcRoles = { new SceneNpcRoleSpec { Npc = "Smith", Role = "blacksmith" } },
+        };
+        Generator.ExpandNpcRoles(s);
+
+        var smith = s.Npcs.Single();
+        var vendorFac = s.Factions.Single(f => f.Vendor is not null);
+        Assert.Contains("MFRole_Smith_1_Sandbox", smith.Packages);   // package attached directly
+        Assert.Contains(vendorFac.EditorId, smith.Factions);          // vendor FACT joined directly
+        Assert.Empty(s.NpcPatches);                                   // in-spec path uses NO NpcPatch
+    }
+
     [Fact]
     public void Expand_Blacksmith_NoCompanionPlacement_SkipsVendor()
     {

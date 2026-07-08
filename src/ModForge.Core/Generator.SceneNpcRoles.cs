@@ -57,25 +57,28 @@ public static partial class Generator
         }
     }
 
-    // blacksmith: conditioned greeting + a sandbox-where-you-stand package attached via NpcPatch.
+    // blacksmith: conditioned greeting + sandbox behaviour + (if a shop location is known) vendor.
+    // Two attach modes by whether `npc` is IN-SPEC (a fresh NpcSpec — e.g. a PROTEUS-clone stand-in, the
+    // only kind that can actually be PLACED and appear) or EXTERNAL (a vanilla/other-master base, patched
+    // via override). NOTE: a vanilla UNIQUE NPC can't be duplicated by a placement (the engine keeps one
+    // instance), so to see the smith standing in the scene the spec should use an in-spec NPC.
     private static void ExpandBlacksmith(ModSpec spec, SceneNpcRoleSpec nr, string safe, System.Action ensureHost)
     {
         ensureHost();
 
-        // Greeting (Hello): GetIsID(npc) gates it to this NPC (slice text; a later pass can hand the
-        // backstory to the #17 AI dialogue pipeline for bespoke lines).
+        // Greeting (Hello, shared): GetIsID(npc) — in-spec resolves via npcsByEd, external via the
+        // speaker-gate TryResolveRef fallback. (Slice text; #17 AI pipeline can rewrite from backstory.)
         spec.Dialogue.Add(new DialogueSpec
         {
             EditorId = "MFRole_" + safe + "_Hello",
             QuestEditorId = RoleHostQuestEd,
-            SpeakerNpcEditorId = nr.Npc,   // external ref resolved via the speaker-gate fallback
+            SpeakerNpcEditorId = nr.Npc,
             Hello = true,
             Responses = new System.Collections.Generic.List<string> { "Need something forged? You've come to the right anvil." },
             Emotion = "Neutral",
         });
 
-        // Behaviour: sandbox with no location ⇒ LocationFallback (sandbox around the actor's placed
-        // spot). Attached by overriding the external base NPC and appending our package to its schedule.
+        // Behaviour: sandbox with no location ⇒ LocationFallback (sandbox where the actor is placed).
         string pkgEd = "MFRole_" + safe + "_Sandbox";
         spec.Packages.Add(new PackageSpec
         {
@@ -83,25 +86,18 @@ public static partial class Generator
             Template = SandboxTemplateRef,   // Skyrim.esm:0x01C254 (shared const on Generator.Settlements)
             Sandbox = new SandboxSpec { Radius = 256 },
         });
-        var patch = new NpcPatchSpec
-        {
-            OverrideOf = nr.Npc,
-            Packages = new System.Collections.Generic.List<string> { pkgEd },
-            Mode = "append",   // keep the NPC's own packages; add ours as a low-priority fallback
-        };
-        spec.NpcPatches.Add(patch);
 
-        // Vendor service: a blacksmith trades. Needs a shop LOCATION — reuse the companion placement
-        // that puts this NPC in the world (base == npc, kind:npc). Co-locate a merchant chest there;
-        // VendorLocation resolves to that cell so trade opens near the smith. Membership in the vendor
-        // FACT + JobMerchantFaction surfaces the VANILLA "I'd like to trade" (no dialogue authoring).
-        // No companion placement ⇒ no shop location ⇒ skip vendor (greeting + package still apply).
+        // Vendor service (a blacksmith trades) needs a shop LOCATION — reuse the companion placement that
+        // puts this NPC in the world (base == npc, kind:npc). Co-locate a merchant chest there so
+        // VendorLocation resolves to that cell. No companion placement ⇒ skip vendor (greeting+package stay).
+        var inSpec = spec.Npcs.FirstOrDefault(n => string.Equals(n.EditorId, nr.Npc, System.StringComparison.OrdinalIgnoreCase));
         var place = spec.Placements.FirstOrDefault(pl => RefsMatch(pl.Base, nr.Npc));
+        string? vendorFac = null;
         if (place is not null)
         {
             string chestEd = "MFRole_" + safe + "_Chest";
             string chestRef = chestEd + "Ref";
-            string vendorFac = "MFRole_" + safe + "_Merchant";
+            vendorFac = "MFRole_" + safe + "_Merchant";
             spec.Containers.Add(new ContainerSpec
             {
                 EditorId = chestEd, Name = "Blacksmith Merchant Chest",
@@ -122,8 +118,32 @@ public static partial class Generator
                     MerchantContainer = chestRef,
                 },
             });
-            patch.Factions.Add(vendorFac);
-            patch.Factions.Add(JobMerchantFactionRef);   // vanilla — gates the "I'd like to trade" topic
+        }
+
+        if (inSpec is not null)
+        {
+            // IN-SPEC NPC: attach package + faction directly (BuildNpcs auto-adds JobMerchantFaction for
+            // an in-spec vendor FACT, so the vanilla "I'd like to trade" surfaces).
+            if (!inSpec.Packages.Contains(pkgEd, System.StringComparer.OrdinalIgnoreCase)) inSpec.Packages.Add(pkgEd);
+            if (vendorFac is not null && !inSpec.Factions.Contains(vendorFac, System.StringComparer.OrdinalIgnoreCase))
+                inSpec.Factions.Add(vendorFac);
+        }
+        else
+        {
+            // EXTERNAL NPC: override + append package; add vendor + JobMerchant faction (BuildNpcs'
+            // auto-JobMerchant runs for in-spec NPCs only, so add it explicitly here).
+            var patch = new NpcPatchSpec
+            {
+                OverrideOf = nr.Npc,
+                Packages = new System.Collections.Generic.List<string> { pkgEd },
+                Mode = "append",
+            };
+            if (vendorFac is not null)
+            {
+                patch.Factions.Add(vendorFac);
+                patch.Factions.Add(JobMerchantFactionRef);
+            }
+            spec.NpcPatches.Add(patch);
         }
     }
 
