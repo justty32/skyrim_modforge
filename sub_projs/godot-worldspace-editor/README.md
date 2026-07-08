@@ -1,8 +1,8 @@
 # Godot Worldspace Editor
 
-← [idea #19](../../workflows/idea/ideas.md)｜附屬：[座標系](coord-system.md)　[placements 格式](placements-format.md)　[分塊拼大圖](stitching.md)　[決策與查證](decisions.md)　[前端結構](frontend-structure.md)
+← [idea #19](../../workflows/idea/ideas.md)｜設計文檔：[design/](design/README.md)（座標系／placements 格式／分塊拼大圖／決策與查證／前端結構）｜前端程式碼：[godot/](godot/)
 
-> **⚠️ 架構轉向（2026-06-24,未實作）**:擬棄「自製 app 殼」改吃 **Godot 原生編輯器**（.tscn 模板 + `@tool` 匯出腳本）。下述 app 形式的 UI/相機/輸入描述屆時會大改;地形格式/座標/匯出/對接 ModForge 不變。詳 [native-editor-pivot.md](native-editor-pivot.md)。
+> **⚠️ 架構轉向（2026-06-24,未實作）**:擬棄「自製 app 殼」改吃 **Godot 原生編輯器**（.tscn 模板 + `@tool` 匯出腳本）。下述 app 形式的 UI/相機/輸入描述屆時會大改;地形格式/座標/匯出/對接 ModForge 不變。詳 [native-editor-pivot.md](design/native-editor-pivot.md)。
 
 用 **Godot 4**（**自製 terrain**，不靠 HTerrain plugin）離線做地形編輯 → 匯出 → ModForge 生 LAND/REFR → 進遊戲微調。定位是 **Creation Kit 地形/場景編輯的替代前端**（CK 在 Wine/Proton 不穩、難腳本化）。
 
@@ -40,15 +40,15 @@ Godot（自製 terrain）               ModForge
 - **NIF 預覽**：Godot 不讀 NIF，靠 glTF proxy（fo76utils / NifSkope 批量轉換前置，Linux+Windows 雙平台可用）
 - **Navmesh**：複雜地形 flat-quad 會卡 NPC，精確 navmesh 後排
 
-**大世界＝分塊編輯 → 拼大圖**：一次編十幾格 cell 的 chunk，最後把各 chunk 的 PNG **合成成一張大 PNG**（先合成再讓 ModForge 切，VNML 邊界縫自動消失）+ 合併 placements。邊界**手動對齊**（開新塊先 import 鄰邊起步），stitch 工具純貼上不混合。完整工作流與鎖定決策見 [stitching.md](stitching.md)。
+**大世界＝分塊編輯 → 拼大圖**：一次編十幾格 cell 的 chunk，最後把各 chunk 的 PNG **合成成一張大 PNG**（先合成再讓 ModForge 切，VNML 邊界縫自動消失）+ 合併 placements。邊界**手動對齊**（開新塊先 import 鄰邊起步），stitch 工具純貼上不混合。完整工作流與鎖定決策見 [stitching.md](design/stitching.md)。
 
-**物件擺放可程序化（GDScript）**：除手動 Place Mode，可寫 GDScript 用 `terrain.get_height()`+`PlacementTool` 迴圈/noise 程序生成、貼地、按現成匯出鈕出 `placements.json`（ModForge 零改動）。scatter/grid/聚落量產的最佳前端——詳見 [stitching.md § GDScript](stitching.md#相關gdscript-程序化擺放)。
+**物件擺放可程序化（GDScript）**：除手動 Place Mode，可寫 GDScript 用 `terrain.get_height()`+`PlacementTool` 迴圈/noise 程序生成、貼地、按現成匯出鈕出 `placements.json`（ModForge 零改動）。scatter/grid/聚落量產的最佳前端——詳見 [stitching.md § GDScript](design/stitching.md#相關gdscript-程序化擺放)。
 
 ---
 
 ## 決策（已鎖定）
 
-地形系統 / heightmap 格式與切割 / 物件 metadata / 座標轉換 / 紋理 / placements.json 約定等已鎖定決策 → 全表見 [decisions.md](decisions.md)。
+地形系統 / heightmap 格式與切割 / 物件 metadata / 座標轉換 / 紋理 / placements.json 約定等已鎖定決策 → 全表見 [decisions.md](design/decisions.md)。
 
 ---
 
@@ -69,13 +69,13 @@ Godot（自製 terrain）               ModForge
 
 ## 已查證
 
-VHGT 編碼（signed int8 delta、每 delta=8 units）、NIF→glTF 工具選型等查證結論 → 見 [decisions.md](decisions.md)。
+VHGT 編碼（signed int8 delta、每 delta=8 units）、NIF→glTF 工具選型等查證結論 → 見 [decisions.md](design/decisions.md)。
 
 ---
 
 ## 前端結構（`godot/`）
 
-`godot/` 各 `.gd`（~100 行/檔）的逐檔職責、顯示縮放與高度著色規則 → 見 [frontend-structure.md](frontend-structure.md)。
+`godot/` 各 `.gd`（~100 行/檔）的逐檔職責、顯示縮放與高度著色規則 → 見 [frontend-structure.md](design/frontend-structure.md)。
 
 ## Open
 

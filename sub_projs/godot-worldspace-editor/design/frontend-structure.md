@@ -1,6 +1,6 @@
 # 前端結構（`godot/`）
 
-← [README](README.md)
+← [design index](README.md)｜sub_proj：[README](../README.md)
 
 各 `.gd` 按職責分層拆檔（多數 ~100 行；coordinator `main.gd` 與資料節點 `terrain.gd` 略多）：
 

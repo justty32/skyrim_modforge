@@ -14,7 +14,7 @@
    - **室內抽卡填充**（prison-cells）：carrier NPC → LeveledNpc 兩層 template 抽卡。
    建議參數雛形：`settlementPopulation:`/`wildernessPopulation:`/`spawnPoints[]`（cell + markers + residents/leveled + count-global + 可選 controller + dailySchedule + shops）。
 2. ❌ **`flee` PACK template（小 record 缺口，來源 Immersive Citizens AIO）** — Flee-template package + 預擺安全點（Location to Flee）+ 可選 CombatStyle，讓受襲聚落有反應（平民逃、守衛迎戰）。慢活聚落需要。
-3. 📌 **配方鐵律（非缺口，是借鏡）**：日程 package **必須綁實際擺放的床/攤位/工作站 ref**——純抽象 sandbox 會讓 NPC 呆站（ICAIO/CRF/settlement-expansions 三方印證）。聚落量產 section 生 NPC 時須連帶生家具錨點。這跟 [Godot 程序化擺放](../../../sub_projs/godot-worldspace-editor/stitching.md#相關gdscript-程序化擺放) 接得上（擺家具時一併產日程錨點）。
+3. 📌 **配方鐵律（非缺口，是借鏡）**：日程 package **必須綁實際擺放的床/攤位/工作站 ref**——純抽象 sandbox 會讓 NPC 呆站（ICAIO/CRF/settlement-expansions 三方印證）。聚落量產 section 生 NPC 時須連帶生家具錨點。這跟 [Godot 程序化擺放](../../../sub_projs/godot-worldspace-editor/design/stitching.md#相關gdscript-程序化擺放) 接得上（擺家具時一併產日程錨點）。
 4. 🧊 **輕量便利層（低優先）**：`leveledListInject[]`（純資料把 form 注入既有 LeveledNpc，來源 Deadly Wenches）；非破壞 `enableState[]` toggle（CRF 的 ChangeLocation 狀態機 enable/disable 既有 ref）。
 5. ✅ **set-dressing = placement volume（非缺口，已解）** — JK's 系 18550 靜態 REFR/零任務，`cellrefs` 欄位與 Godot 編輯器 `placements.json` **1:1 對齊**；聚落佈景是 placement-volume 問題，現有 placement 管線 + Godot 編輯器即天然 authoring 工具，BOS 作 runtime 補。
 

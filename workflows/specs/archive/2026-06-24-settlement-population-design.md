@@ -54,7 +54,7 @@ settlements:
         routine: { sleep: { from: 21, to: 6 } }   # 覆寫聚落預設
 ```
 
-**錨點哲學（呼應配方鐵律）**：`home`/`work`/`spawnAt` 都是**已擺放的 REFR/marker 的 editorId**，由使用者在 Godot 編輯器擺好（或手寫 placements[]）。macro **只負責把 package 綁到這些錨點**——絕不憑空生抽象 sandbox（三方印證：純抽象 = NPC 呆站）。這把 macro 跟 [Godot 程序化擺放](../../sub_projs/godot-worldspace-editor/stitching.md#相關gdscript-程序化擺放) 接起來：擺床/攤位時順手給 editorId，macro 自動接成作息。
+**錨點哲學（呼應配方鐵律）**：`home`/`work`/`spawnAt` 都是**已擺放的 REFR/marker 的 editorId**，由使用者在 Godot 編輯器擺好（或手寫 placements[]）。macro **只負責把 package 綁到這些錨點**——絕不憑空生抽象 sandbox（三方印證：純抽象 = NPC 呆站）。這把 macro 跟 [Godot 程序化擺放](../../sub_projs/godot-worldspace-editor/design/stitching.md#相關gdscript-程序化擺放) 接起來：擺床/攤位時順手給 editorId，macro 自動接成作息。
 
 ## 展開規則（→ 既有記錄，附真實欄位）
 

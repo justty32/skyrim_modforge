@@ -1,5 +1,5 @@
 class_name PlacementsIo
-## Export / import placements.json (see placements-format.md). Positions are
+## Export / import placements.json (see ../design/placements-format.md). Positions are
 ## written as canonical Godot-native metres (display scales divided out) so they
 ## round-trip through ModForge's godot4_y_up → Skyrim conversion.
 
