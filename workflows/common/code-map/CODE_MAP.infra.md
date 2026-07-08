@@ -50,6 +50,7 @@
 | CLI | `Program.Build.cs` | `build` / `validate` / `package` / `compile` / `voicelines` / `extract-voices`；`validate` 的 `CheckUnknownFields` + deserialize 都跑在 `$ref`/`$env` **解析後**的 JSON |
 | CLI | `Program.Translate.cs` | `extract` / `apply` / `applyloc` |
 | CLI | `Package.cs` | `package` 完整流程：Papyrus 編譯 + Assets 複製 + MO2 資料夾組裝 |
+| CLI | `Package.Compile.cs` | `Package.cs` 的 static helper：生成片段編譯（`CompileGeneratedFragment`）、embedded `.pex` 出貨（`ShipEmbeddedPex`）、action-system loose file 寫出（`WriteLooseFile`）|
 
 ---
 

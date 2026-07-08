@@ -27,21 +27,14 @@ internal static partial class Program
         Directory.CreateDirectory(compiledFragmentsDir);
         int autoCompiled = 0;
 
-        void CompileGenerated(string pscSource, string scriptName, string label)
+        bool CompileGenerated(string pscSource, string scriptName, string label)
         {
-            Directory.CreateDirectory(sourceDir);
-            var pscPath = Path.Combine(compiledFragmentsDir, scriptName + ".psc");
-            File.WriteAllText(pscPath, pscSource);
-            var cr = Papyrus.CompileBest(pscPath, compiledFragmentsDir);
-            if (cr.Success)
+            if (CompileGeneratedFragment(pscSource, scriptName, label, compiledFragmentsDir, sourceDir))
             {
-                Console.WriteLine($"  compiled {label} -> {scriptName}.pex");
                 autoCompiled++;
+                return true;
             }
-            else
-                Console.WriteLine($"  (auto-compile skipped for {label}: {cr.Message.Split('\n')[0]})");
-            // Always write the .psc to Scripts/Source for the author's reference.
-            File.Copy(pscPath, Path.Combine(sourceDir, scriptName + ".psc"), overwrite: true);
+            return false;
         }
 
         // A <quest>_Stages fragment that drives a dynamic spawn / cooldown casts `self as MFDynamicSpawn`
@@ -163,14 +156,8 @@ internal static partial class Program
             else Console.WriteLine($"  (word-wall script {scriptName}.psc written to Scripts/Source — compile pending: {cr.Message.Split('\n')[0]})");
         }
 
-        void ShipEmbeddedPex(string name, string label, string onError)
-        {
-            Directory.CreateDirectory(scriptsDir);
-            using var rs = typeof(Program).Assembly.GetManifestResourceStream(name);
-            if (rs is null) { Console.Error.WriteLine($"  ! {name} missing from build — {onError}"); return; }
-            using var fs = File.Create(Path.Combine(scriptsDir, name)); rs.CopyTo(fs);
-            Console.WriteLine($"  + bundled {name} ({label})");
-        }
+        void ShipEmbeddedPex(string name, string label, string onError) =>
+            Program.ShipEmbeddedPex(scriptsDir, name, label, onError);
 
         // 5b-5g) Ship one prebuilt .pex per feature; each is embedded in this CLI and serves every generated mod.
         if (spec.Quests.Any(q => q.StoryEvent is { } se && se.Event.Equals("ScriptEvent", StringComparison.OrdinalIgnoreCase)))
@@ -250,12 +237,7 @@ internal static partial class Program
                 var s = Path.Combine(specDir, p);
                 return File.Exists(s) ? s : null;
             }
-            void WriteLoose(OarGen.OarFile f)
-            {
-                var dest = Path.Combine(outModDir, f.RelPath.Replace('/', Path.DirectorySeparatorChar));
-                Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
-                File.WriteAllText(dest, f.Content);
-            }
+            void WriteLoose(OarGen.OarFile f) => WriteLooseFile(f, outModDir);
 
             int oarSubmods = 0, hkxPlaced = 0; var hkxMissing = new List<string>();
             foreach (var r in spec.AnimationReplacers)
