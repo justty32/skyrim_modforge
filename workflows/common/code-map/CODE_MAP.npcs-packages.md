@@ -138,9 +138,9 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.NpcPatch.cs` | `NpcPatchSpec`（overrideOf / packages / mode）|
+| Spec | `Spec.NpcPatch.cs` | `NpcPatchSpec`（overrideOf / packages / mode / **factions**）|
 | Build P1 | `Generator.Build.NpcPatches.cs` `BuildNpcPatches` | `TryResolveTemplate<INpcGetter>` 解 vanilla NPC → `new Npc(fk)+DeepCopyIn` 整筆 override（name/stats/faction 帶上；名字靠 MasterCache 提供的 STRINGS 解出）→ `mod.Npcs.Add` |
-| Build P2 | `Generator.Build.NpcPatches.cs` `WireNpcPatchPackages` | 解 package refs → `r.Packages` replace/prepend/append |
+| Build P2 | `Generator.Build.NpcPatches.cs` `WireNpcPatchPackages` / **`WireNpcPatchFactions`** | package refs → `r.Packages` replace/prepend/append；**factions refs → ADD `RankPlacement`(rank 0) 到 `r.Factions`（additive、去重）**——給既有 NPC 加 membership（如 vendor FACT + JobMerchantFaction，見 CODE_MAP.world Idea #24 §D）|
 | Infra | `Generator.BuildContext.Utilities.cs` `MasterCache`/`ProvisionStrings` | **本地化解法**：從 `Skyrim - Interface.bsa` lazy 抽 `<master>_english.{strings,ilstrings,dlstrings}` 到 temp `Strings/`（檔名照 ModKey 大小寫，Linux case-sensitive），overlay 用 `StringsReadParameters{English,StringsFolderOverride,BsaFolderOverride}` 開（BSA-free 夾 → 不觸發讀 load-order 的 archive scan）→ headless 解得 vanilla NPC 名 |
 | Validate | `Generator.Validate.Npcs.cs` `ValidateNpcPatches` | overrideOf 須 external ref、packages 非空、mode ∈ replace/prepend/append |
 

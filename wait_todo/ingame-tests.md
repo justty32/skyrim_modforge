@@ -47,3 +47,8 @@
   - **與 Act 1 唯一差別：沒嘴型**（這批跳過 lip 避免 LipGenerator wine crash 拖死；對話/語音正常，只是嘴不動）。方向確認後可統一補 lip 重打包。
   - 測法同 Act 1（裝在 SofiaFollower+Vigilant 後、save+reload 吃 .seq、跑對應幕的任務、到 beat 對 Sofia 按對話鍵）。回報哪些選項沒出現 / 分支對不對 / 語音正常否。
   - gate 重點：Act2 空牢 0x038524 / 沉船 0x038525 / 血祭母 0x038526；Act3 Child of Oblivion 0x065932；Act4 多數記憶靜默、僅 MeQ01/02/07/Pelinal MeQ10/Molag Bal/Karma 結局有評論。
+
+- **遊戲內場景匯出 · blacksmith vendor（Idea #24 §D，2026-07-08）** — greeting 已實機確認；**新增的 vendor 交易待驗**。重打包 `~/skyrim_mods/mine/ModForgeSceneBlacksmith.zip`（替身改 Uthgerd 0x0918E2＝非原版商人，故交易確定是我們加的；純 record、無 .pex）。
+  - **驗**：快旅到 Tamriel 地圖 marker **Forgewatch**（0,−9000 附近）→ 找站在那的 **Uthgerd**（複本）對話 → ① 問候「Need something forged?」② 應出現 vanilla **「I'd like to trade.」** → 開得了交易選單、裡面有鐵匠貨（VendorItemsBlacksmith）+ 商人有 ~500 金。旁邊有 Farmhouse01 房子 + 篝火特效。
+  - **注意**：交易只在 **Forgewatch（商店 chest 所在 cell）** 開得了；白漫遇到的另一個 Uthgerd 只會講問候不能交易（VendorLocation 綁在 chest 的 cell）——這是預期行為（真實用途裡 NPC 與店同地）。
+  - **回報**：問候有無、交易選單開不開、貨對不對。缺哪個我來定位（雷點：VendorLocation cell 沒解到 / JobMerchantFaction 沒加 / chest 沒放到）。

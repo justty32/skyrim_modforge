@@ -26,9 +26,9 @@
 **對原 plan 的偏離（實作時的更優解）**：
 - **不需獨立 `SceneImport --scene` 合併**：scene.json 就是一份合法 `ModSpec`，`build scene.json out.esp` 直接可跑（`placements`/`mapMarkers`/`hazards`/`npcRoles` 同名欄位）。原 Task 2 的 `--scene` 合併＝未來「骨架 spec + 採集場景」才需要，非本切片必需，延後。
 - **`SceneNpcRoleSpec.ActorRef` 改名 `Npc`**：keyed on **base NPC ref**（GetIsID/NpcPatch/placement base 三者都吃 base ref），與全 repo 一致。
-- **vendor 段未做**：`NpcPatch` 只換 package、不能加 faction membership → vendor-on-external-NPC 是本切片外的小 GAP（spec §D 已記），待補 faction-add。切片以「conditioned 問候 + sandbox 行為」證成核心。
+- **vendor 段（後補完成 2026-07-08）**：原 `NpcPatch` 只換 package、不能加 faction；已擴 `NpcPatchSpec.Factions`（`WireNpcPatchFactions`）→ blacksmith 有 companion placement 時自動生 Vendor FACT + merchant chest + 加 vendor/JobMerchant faction，vanilla 交易對話浮現。IN-GAME 待驗。
 
-**下一步**：M2 實機（[wait_todo/ingame-tests](../../wait_todo/ingame-tests.md)）；之後 vendor faction-add、`removals[]`（橡皮擦）、M3–M5 runtime 元件。下面原始 task 清單保留作歷史脈絡。
+**下一步**：M2 實機（含 vendor 交易，[wait_todo/ingame-tests](../../wait_todo/ingame-tests.md)）；之後 `removals[]`（橡皮擦）、M3–M5 runtime 元件。下面原始 task 清單保留作歷史脈絡。
 
 ---
 

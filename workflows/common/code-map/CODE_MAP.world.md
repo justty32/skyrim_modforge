@@ -150,7 +150,7 @@
 |-----|-----|-----|
 | Spec | `Spec.SceneExport.cs` | `SceneNpcRoleSpec`（npc=外部 base ref／role／backstory）|
 | Spec | `Spec.cs` | `ModSpec.NpcRoles` + `NpcRolesExpanded` 守衛旗標 |
-| Expand P0 | `Generator.SceneNpcRoles.cs` | **`ExpandNpcRoles`**：每 role → 共享 StartGameEnabled host quest `MF_SceneNpcRolesQ`；blacksmith → Hello `DialogueSpec`（GetIsID npc）+ sandbox `PackageSpec`（無 location＝editor-location fallback）+ `NpcPatchSpec`（overrideOf npc, append）。未知 role 不展開（Validate 警告）。`SanitizeEd` 把外部 ref 轉成合法 editorId 片段 |
+| Expand P0 | `Generator.SceneNpcRoles.cs` | **`ExpandNpcRoles`**：每 role → 共享 StartGameEnabled host quest `MF_SceneNpcRolesQ`；blacksmith → Hello `DialogueSpec`（GetIsID npc）+ sandbox `PackageSpec`（無 location＝editor-location fallback）+ `NpcPatchSpec`（overrideOf npc, append）。**vendor**：有 companion placement（base==npc，`RefsMatch`）時 → Vendor FACT（`VendorItemsBlacksmith` 0x066333/8-20 時）+ merchant chest（gold）共置 placement + `patch.Factions` 加 vendor FACT + `JobMerchantFaction`（vanilla 交易對話）；無 placement 跳過 vendor。未知 role 不展開（Validate 警告）。`SanitizeEd` 把外部 ref 轉成合法 editorId 片段。常數 `BlacksmithGold`/`BlacksmithVendorList` |
 | Build | `Generator.Build.cs` | pass-0 呼叫 `ExpandNpcRoles(spec)`（在 `ExpandLivingNpcs` 後）|
 | **core 前置修** | `Generator.Build.Dialogue.cs` | **外部 speaker Hello 支援**：conditioned-hello 建構 + `AddSpeakerGate` 兩處，in-spec `npcsByEd` 失敗時 fallback `TryResolveRef` 解析 `<plugin>:0xID` → GetIsID FormKey；`MakeHello` 改吃 `FormKey`（非 `INpcGetter`）並在 hello 材質化迴圈解析外部 speaker（否則外部 NPC 的 Hello topic 永不生成）。回歸測全綠 |
 | Validate | `Generator.Validate.SceneNpcRoles.cs` | `ValidateNpcRoles`：npc 必填、role 必填且須已知（`KnownRoles`={blacksmith}）|
