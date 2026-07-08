@@ -110,10 +110,19 @@ public static partial class Generator
             string chestEd = "MFRole_" + safe + "_Chest";
             string chestRef = chestEd + "Ref";
             vendorFac = "MFRole_" + safe + "_Merchant";
+            // Stock = the vanilla blacksmith merchant leveled lists (what a real forge chest holds) so the
+            // barter shows actual wares + a vendor's gold pool — NOT a flat gold pile (which shows nothing
+            // to buy). Each leveled-list entry rolls to level-appropriate stock at runtime.
             spec.Containers.Add(new ContainerSpec
             {
                 EditorId = chestEd, Name = "Blacksmith Merchant Chest",
-                Items = new System.Collections.Generic.List<ContainerEntrySpec> { new() { Item = GoldRef, Count = BlacksmithGold } },
+                Items = new System.Collections.Generic.List<ContainerEntrySpec>
+                {
+                    new() { Item = BlacksmithVendorGold, Count = 1 },   // VendorGoldBlacksmith → the shop's gold
+                    new() { Item = BlacksmithWeapons,    Count = 1 },   // LItemBlacksmithWeapon100
+                    new() { Item = BlacksmithArmor,      Count = 1 },   // LItemBlacksmithArmor100
+                    new() { Item = BlacksmithMisc,       Count = 1 },   // LItemBlacksmithSpecialLoot100 (ingots/misc)
+                },
             });
             spec.Placements.Add(new PlacementSpec
             {
@@ -172,8 +181,11 @@ public static partial class Generator
         }
     }
 
-    private const int BlacksmithGold = 500;
-    private const string BlacksmithVendorList = "Skyrim.esm:0x066333"; // VendorItemsBlacksmith
+    private const string BlacksmithVendorList = "Skyrim.esm:0x066333"; // VendorItemsBlacksmith (buy/sell categories)
+    private const string BlacksmithVendorGold = "Skyrim.esm:0x072AE9"; // VendorGoldBlacksmith (leveled → shop gold)
+    private const string BlacksmithWeapons = "Skyrim.esm:0x0173D2";    // LItemBlacksmithWeapon100
+    private const string BlacksmithArmor = "Skyrim.esm:0x0173D1";      // LItemBlacksmithArmor100
+    private const string BlacksmithMisc = "Skyrim.esm:0x017363";       // LItemBlacksmithSpecialLoot100
 
     // Two refs point at the same base: exact match, or case-insensitive "<plugin>:0xID" with the FormID
     // hex compared numerically (0x00013B99 == 0x13B99). Good enough for matching a companion placement.

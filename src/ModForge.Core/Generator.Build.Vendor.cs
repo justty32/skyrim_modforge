@@ -50,7 +50,18 @@ public static partial class Generator
                     TryResolveRef(cp.Cell, formKeyByEd, out cellFk);
                 }
 
-                if (cellFk != default)
+                // EXTERIOR shop (worldspace placement) → anchor the sell area at the merchant chest REFR
+                // with a radius (a sphere around the stall). Checked FIRST because the placement loop may
+                // back-fill an exterior placement's `cell` with the auto-derived cell, whose link doesn't
+                // survive as a LocationCell target — the ref-anchored radius is the reliable exterior model.
+                // A ref target with radius 0 is a degenerate point (nothing is ever "in" it) — real radius.
+                if (chestPlacement is { } exCp && !string.IsNullOrWhiteSpace(exCp.Worldspace))
+                {
+                    var loc = new LocationTarget();
+                    loc.Link.SetTo(fk);   // fk = the merchant chest REFR resolved above
+                    fact.VendorLocation = new LocationTargetRadius { Target = loc, Radius = 4096 };
+                }
+                else if (cellFk != default)
                 {
                     var loc = new LocationCell();
                     loc.Link.SetTo(cellFk);

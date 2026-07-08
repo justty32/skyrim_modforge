@@ -92,7 +92,10 @@ public class SceneNpcRolesTests
         var vendorFac = s.Factions.Single(f => f.Vendor is not null);
         Assert.Equal("Skyrim.esm:0x066333", vendorFac.Vendor!.SellBuyList);
         var chest = s.Containers.Single();
-        Assert.Contains(chest.Items, e => e.Item == Generator.GoldRef && e.Count > 0);
+        // Stocked with the vanilla blacksmith merchant leveled lists (gold + weapons/armor/misc), not a
+        // flat gold pile — so the barter shows real wares + a vendor gold pool.
+        Assert.Contains(chest.Items, e => e.Item == "Skyrim.esm:0x072AE9");   // VendorGoldBlacksmith
+        Assert.True(chest.Items.Count >= 3, "chest should hold gold + weapon/armor/misc stock lists");
         var chestRef = s.Placements.Single(p => p.Base == chest.EditorId);
         Assert.Equal("Skyrim.esm:0x00003C", chestRef.Worldspace);   // co-located with the smith
         Assert.Equal(180f, chestRef.Position.X);
