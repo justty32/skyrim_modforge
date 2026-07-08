@@ -11,7 +11,7 @@
 北極星最小切片（**在遊戲內**做，**ModForge build 出**）：
 
 1. **擺**：喝一瓶「Plans: 木屋」→ 定位模式 → 房子落地（placement-controller `.pex`，照 Tundra）。
-2. **拓印**：用 PROTEUS 把當前玩家 clone 成一個站在原地的獨立 NPC（外貌/裝備/perk 由 PROTEUS 現成搞定），採集橋記下他的**穩定 ActorRef** + 玩家標的 **identity=blacksmith**。
+2. **拓印**：用 PROTEUS 把當前玩家 clone 成一個站在原地的獨立 NPC（外貌/裝備/perk 由 PROTEUS 現成搞定），採集橋記下他的**穩定 ActorRef** + 玩家標的 **role=blacksmith**。
 3. **標註**：村口放 1 個地圖 marker、廣場放 1 個特效錨點（採集橋記成語意標記）。
 4. **匯出**：施法**快照整片區域** → 採集橋吐一份 **scene JSON**。
 5. **生成**：`dotnet run -- build scene.json` → patch esp：房子在該 cell、鐵匠站著且**講 ModForge 生成的鐵匠對話**、marker 上地圖可快旅、特效在廣場。
@@ -24,7 +24,7 @@
 |---|---|
 | 採集橋 → scene JSON 契約定義（本 spec 的核心產物）| 採集橋 DLL 內部實作（子專案，本 spec 只定 output 契約）|
 | scene JSON → 既有 `placements[]`/NPC-ref/marker/hazard/keyword 的映射 | placement-controller `.pex` 內部（與 [settlements P2](../roadmap/mod-survey-gaps/settlements-phase2.md) 合流，另 design）|
-| §D 身份 tag → ModForge 灌對話/行為的 macro（1 個 archetype：blacksmith）| 多 archetype 全集、AI 生成對話文本（接 #17，後排）|
+| §D role tag → ModForge 灌對話/行為的 macro（1 個 role：blacksmith）| 多 archetype 全集、AI 生成對話文本（接 #17，後排）|
 | PROTEUS clone 的**引用**（路徑 A，clone 穩定已拍板）| 路徑 B（ModForge 自建 facegen 生成獨立 NPC）——未來「可散布」才做 |
 | 單 cell / 小片區域快照 | 整片 worldspace + 即時 navmesh 採集（硬項，後排）|
 | import 既有 record 型別（ModForge 已能生者）| 新記錄型別（無——切片內不需要）|
@@ -43,7 +43,7 @@
   ├─────────────────────────┤        ┌──────────── scene.json ───────────┐
   │ ③ 採集橋 SKSE DLL        │───────▶│  placements[] / npcRefs[] /        │
   │    （net-new 子專案）    │  匯出   │  mapMarkers[] / hazards[] /        │
-  │  走訪 cell、讀 transform │        │  tags[] / identities[]             │
+  │  走訪 cell、讀 transform │        │  tags[] / npcRoles[]               │
   │  /enable、收 §B 語意標記 │        └────────────────┬───────────────────┘
   │  /記 clone ActorRef+身份 │                         │
   └─────────────────────────┘                         ▼
@@ -67,14 +67,14 @@
 | scene.json 段 | 採集橋放什麼 | 對映的既有 ModForge 型別 | 證據 |
 |---|---|---|---|
 | `placements[]` | 每個擺放 ref 的 base + cell/worldspace + position/rotation/scale + enable state | **`PlacementSpec`**（已含全部欄位：Base/Cell/Worldspace/Position/Rotation/Scale/Persistent/InitiallyDisabled/EnableParent/Ownership/Lock/LinkedRefs）| `Spec.World.cs` PlacementSpec |
-| `npcRefs[]` | PROTEUS clone 的穩定 ActorRef（`<plugin>.esp:0xFORMID`）+ 位置 + **identity tag** | **`PlacementSpec`（base = 外部 ActorRef）** + §D 身份 macro（見下）| PlacementSpec base 支援 `<master>:0xFORMID`（It.7d）|
+| `npcRefs[]` | PROTEUS clone 的穩定 ActorRef（`<plugin>.esp:0xFORMID`）+ 位置 + **role tag** | **`PlacementSpec`（base = 外部 ActorRef）** + §D 角色 macro（見下）| PlacementSpec base 支援 `<master>:0xFORMID`（It.7d）|
 | `mapMarkers[]` | 座標 + Name + Type（Town/City…）+ flags（Visible\|CanTravelTo）| **`MapMarkerSpec`** | `Spec.MapMarkers.cs`（實機 [[worldspace-override-map-render-fields]]）|
 | `hazards[]` | 特效錨點座標 + model/light/spell/imad | **`HazardSpec`** + `LightSpec` | `Spec.Lights.cs`/`Generator.Build.Hazards.cs` |
 | `tags[]` | 功能/身份標籤 → 掛到 ref/cell 的 keyword | 既有 KYWD 生成 + FormListInject | `Spec.FormListInject.cs` 等 |
-| `identities[]` | `{ actorRef, archetype, backstory }`（§D 的核心新欄）| **§D 身份 macro**（下節，唯一 net-new schema）| #1c [[identity-system-confirmed]] |
+| `npcRoles[]` | `{ actorRef, role, backstory }`（§D 的核心新欄）| **§D `SceneNpcRoleSpec` macro**（下節，唯一 net-new schema）| 重用 SettlementVendorSpec/package/conditioned-Hello |
 | `cell` / `worldspace` | 快照的目標 cell（override 目標）| **`CellSpec`** override + worldspace override | `Spec.World.cs`/[[worldspace-override-must-carry-topcell]] |
 
-→ **落點裁決**：`placements`/`mapMarkers`/`hazards`/`tags`/`cell` 段 **ModForge 今天就能吃**（採集橋只要吐對形狀）。**唯一 net-new 的 ModForge schema = `identities[]` 這一段的身份 macro**（下節）。
+→ **落點裁決**：`placements`/`mapMarkers`/`hazards`/`tags`/`cell` 段 **ModForge 今天就能吃**（採集橋只要吐對形狀）。**唯一 net-new 的 ModForge schema = `npcRoles[]` 這一段的角色 macro**（下節）。
 
 ### 座標契約（採集橋 must-honor）
 
@@ -84,23 +84,28 @@
 
 ---
 
-## §D 身份 macro（唯一 net-new ModForge schema）
+## §D NPC 角色 macro（唯一 net-new ModForge schema）
 
-scene.json 的 `identities[]` 每筆 = `{ actorRef, archetype, backstory }`。ModForge build 時吃 archetype → **macro-expand 成既有生成型別**（對話 INFO + package + faction/service），全部已實機（[[identity-system-confirmed]]/[[conditioned-hello-one-topic-many-infos]]/[[radiant-alias-package-byte-truths]]），**macro 只是把它們串起來**：
+scene.json 的 `npcRoles[]` 每筆 = `{ actorRef, role, backstory }`。ModForge build 時吃 role → **macro-expand 成既有生成型別**（對話 INFO + package + faction/service），底層零件全已實機——**macro 只是把它們串起來**：
 
 ```
-identity: { actorRef: "SkyrimTown.esp:0x001234", archetype: "blacksmith",
-            backstory: "曾是帝國軍鐵匠，戰後在此開鋪" }
-   │  build-time macro-expand（1 個 archetype = 一包既有型別的組合）：
-   ├─▶ 對話：conditioned Hello 問候 INFO（GetIsID actorRef）+ 服務 topic  ← 既有
-   ├─▶ 行為：blacksmith sandbox package（綁鐵匠鋪 furniture/anvil）        ← 既有
-   ├─▶ 服務：vendor faction + merchant container（賣鐵匠貨）                ← 既有
+npcRole: { actorRef: "SkyrimTown.esp:0x001234", role: "blacksmith",
+           backstory: "曾是帝國軍鐵匠，戰後在此開鋪" }
+   │  build-time macro-expand（1 個 role = 一包既有型別的組合）：
+   ├─▶ 對話：conditioned Hello 問候 INFO（GetIsID actorRef）+ 服務 topic  ← [[conditioned-hello-one-topic-many-infos]]
+   ├─▶ 行為：blacksmith sandbox package（綁鐵匠鋪 furniture/anvil）        ← [[radiant-alias-package-byte-truths]]
+   ├─▶ 服務：vendor faction + merchant container（賣鐵匠貨）                ← 既有 Build.Vendor / SettlementVendorSpec
    └─▶ backstory → 對話文本（切片內手填；後續接 #17 AI 生成）
 ```
 
-- **對話仍 build-time 由 ModForge 生**（使用者定調）——遊戲內只**貼 identity tag**，不在遊戲內生對話。
-- **切片只做 1 個 archetype（blacksmith）**證明管線；archetype 全集（守衛/商人/冒險者…）沿用 [#23 living-adventurers 的 archetype 框架](../idea/living-adventurers.md)，一個 archetype = 一包資料（對話池/package/service），引擎不變。
-- **net-new schema 極小**：`IdentitySpec { ActorRef, Archetype, Backstory }` + 一張 archetype→（package/service/對話模板）對照表（先只填 blacksmith）。生成器把對照表展開成既有 `dialogue`/`packages`/`vendors`/`npcPatches` 呼叫。
+**⚠️ 用對既有機件（recon 2026-07-08 校正）**——兩個看似相關的既有型別都**不是**直接載體，別誤用：
+- 既有 **`IdentitySpec`（[[identity-system-confirmed]]）是玩家向**：一個玩家加入的 FACT，`identity`/`primaryIdentity` tag 展開成**玩家**對話的 GetInFaction gate。**與 §D 無關**（§D 是給某個 NPC 一個職業角色，不是給玩家一個身份）。
+- 既有 **`SettlementSpec.ResidentSpec` 最接近**，但它的 `Npc` 欄指向**in-spec** NpcSpec editorId、且以「住滿聚落」為框；§D 要的是**掛在外部 captured ActorRef 上**、且要**帶 conditioned-Hello 對話**。
+
+→ **net-new = 一個小 sibling 型別 `SceneNpcRoleSpec { ActorRef, Role, Backstory }` + 一張 role→(package/vendor/對話模板) 對照表**（先只填 blacksmith）。生成器把對照表展開，**vendor 段重用 `SettlementVendorSpec`/Build.Vendor、package 段重用既有 package attach、對話段重用 conditioned-Hello（GetIsID 外部 ActorRef）**——零件全現成，只差這層 role→零件的薄 macro + 「keyed on 外部 ActorRef」這一點與 ResidentSpec 的差異。
+
+- **對話仍 build-time 由 ModForge 生**（使用者定調）——遊戲內只**貼 role tag**，不在遊戲內生對話。
+- **切片只做 1 個 role（blacksmith）**證明管線；role 全集（守衛/商人/冒險者…）沿用 [#23 living-adventurers 的 archetype 框架](../idea/living-adventurers.md)，一個 role = 一包資料（對話池/package/service），引擎不變。
 
 ---
 
@@ -111,13 +116,13 @@ identity: { actorRef: "SkyrimTown.esp:0x001234", archetype: "blacksmith",
 | `placements[]`（含 transform/enable/scale/ownership）| ✅ **已具備** | `PlacementSpec` 欄位全齊，零改動 |
 | `npcRefs[]`（引用 PROTEUS clone ActorRef）| ✅ **已具備** | PlacementSpec base = 外部 `.esp:0xFORMID`（跨 master 引用熟路）|
 | `mapMarkers[]` / `hazards[]` / `tags[]` / `cell` override | ✅ **已具備** | MapMarkerSpec/HazardSpec/LightSpec/keyword/CellSpec override |
-| **`identities[]` 身份 macro** | 🔨 **net-new（小）** | `IdentitySpec` + archetype→型別對照表（切片只填 blacksmith）；展開全走既有生成 |
-| scene.json 讀取 / 併入 spec | 🔨 **net-new（小）** | 一支 `SceneImport`：讀 scene.json → 填進既有 `Spec` 物件的對應 list，再走原 build。不改既有生成路徑（行為不變）|
+| **`npcRoles[]` 角色 macro** | 🔨 **net-new（小）** | `SceneNpcRoleSpec` + role→型別對照表（切片只填 blacksmith）；展開重用既有 vendor/package/conditioned-Hello 零件 |
+| scene.json 讀取 / 併入 spec | 🔨 **net-new（小，有先例）** | `SceneImport` = **推廣既有 `GodotPlacements.Load()`**（已在做「外部 JSON → `spec.Placements.AddRange()`」，見 `Generator.Build.Worldspace.cs:255`）：讀 scene.json → AddRange 進 `Placements`/`MapMarkers`/`Hazards`/`npcRoles`，再走原 build。不改既有生成路徑（行為不變）|
 | ① placement-controller `.pex` | 🔨 **net-new（runtime，合流 settlements P2）** | 隨附 reusable `.pex` + `scriptAttach`；與 `buildables:` 同一支 |
 | ③ 採集橋 SKSE DLL | 🔨 **net-new（runtime，獨立子專案）** | 唯一重工程；本 spec 只定 output 契約 |
 | ② PROTEUS facegen | ✅ **外部補位** | 消費，路徑 A |
 
-**一句話**：ModForge 側 net-new 只有**兩小塊**（`identities[]` macro + `SceneImport` 讀檔併入），其餘生成全已具備；**重工程在兩個 runtime 元件**（採集橋 DLL 獨立、controller 與 settlements P2 合流）。
+**一句話**：ModForge 側 net-new 只有**兩小塊**（`npcRoles[]` 角色 macro + `SceneImport` 讀檔併入），其餘生成全已具備；**重工程在兩個 runtime 元件**（採集橋 DLL 獨立、controller 與 settlements P2 合流）。
 
 ---
 
@@ -125,8 +130,8 @@ identity: { actorRef: "SkyrimTown.esp:0x001234", archetype: "blacksmith",
 
 **里程碑序（每步可獨立驗）**：
 
-1. **M0 契約凍結**：手寫一份 scene.json（不經採集橋）含 1 house placement + 1 npcRef（指向任一既有 standalone follower ActorRef 當 clone 替身）+ 1 mapMarker + 1 hazard + 1 identity=blacksmith → 定案 schema。
-2. **M1 ModForge 側**：實作 `SceneImport` + `IdentitySpec`(blacksmith) → `build` M0 的 scene.json → patch esp。**離線可驗**（`Category!=RequiresSkyrim`：斷言生成的 records = 房子 REFR + NPC ref + XMRK + HAZD + 鐵匠 dialogue INFO + package + vendor）。**行為不變測**：不帶 scene.json 的既有 spec 生成位元不變。
+1. **M0 契約凍結**：手寫一份 scene.json（不經採集橋）含 1 house placement + 1 npcRef（指向任一既有 standalone follower ActorRef 當 clone 替身）+ 1 mapMarker + 1 hazard + 1 npcRole=blacksmith → 定案 schema。
+2. **M1 ModForge 側**：實作 `SceneImport` + `SceneNpcRoleSpec`(blacksmith) → `build` M0 的 scene.json → patch esp。**離線可驗**（`Category!=RequiresSkyrim`：斷言生成的 records = 房子 REFR + NPC ref + XMRK + HAZD + 鐵匠 dialogue INFO + package + vendor）。**行為不變測**：不帶 scene.json 的既有 spec 生成位元不變。
 3. **M2 實機（主力機）**：載入 M1 的 patch → 房子在、marker 可快旅、特效可見、鐵匠有問候/服務對話。**此步不需採集橋/controller/PROTEUS**——用手寫 scene.json + 既有 follower ActorRef 替身，先證 ModForge 側管線通。
 4. **M3 controller**：接 settlements P2 的 placement-controller → 遊戲內喝瓶擺 1 棟房子。
 5. **M4 採集橋 spike**：最小 DLL 走訪 cell 吐 placements → 餵回 M1 → 閉環。
@@ -138,7 +143,7 @@ identity: { actorRef: "SkyrimTown.esp:0x001234", archetype: "blacksmith",
 
 - **離線單元（`Category!=RequiresSkyrim`）**：
   - scene.json round-trip：手造 scene.json → `SceneImport` → 斷言填進 `Spec` 的 list 內容正確。
-  - identity macro：blacksmith archetype → 斷言展開出 dialogue INFO（GetIsID condition）+ sandbox package + vendor faction。
+  - role macro：blacksmith role → 斷言展開出 dialogue INFO（GetIsID condition）+ sandbox package + vendor faction。
   - **行為不變**：既有無 scene-import 的 spec → 生成位元不變（scene 只是另一資料來源）。
   - 座標映射：interior local vs exterior world 兩路各一 placement，斷言落在對的 cell。
 - **實機（主力機，`RequiresSkyrim` / WAIT_USER）**：M2 起的城鎮就位 + 對話 + marker + 特效；M5 的玩家臉拓印。
