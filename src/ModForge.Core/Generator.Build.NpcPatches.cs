@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
 
@@ -58,6 +59,26 @@ public static partial class Generator
                         foreach (var l in resolved) r.Packages.Add(l);
                         break;
                 }
+            }
+        }
+
+        // --- pass 2: ADD faction membership to the override NPC (after in-spec FACTs built). Additive
+        // only (rank 0), deduped against the NPC's carried-forward factions — used e.g. to make an
+        // existing NPC a vendor (its merchant FACT + JobMerchantFaction). ---
+        public void WireNpcPatchFactions()
+        {
+            foreach (var p in spec.NpcPatches)
+            {
+                if (p.Factions.Count == 0) continue;
+                if (!npcPatchesByRef.TryGetValue(p.OverrideOf, out var r)) continue;
+                foreach (var facRef in p.Factions)
+                    Resolve($"npcPatch '{p.OverrideOf}' faction", facRef, fk =>
+                    {
+                        if (r.Factions.Any(rp => rp.Faction.FormKey == fk)) return;   // already a member
+                        var rp = new RankPlacement { Rank = 0 };
+                        rp.Faction.SetTo(fk);
+                        r.Factions.Add(rp);
+                    });
             }
         }
     }

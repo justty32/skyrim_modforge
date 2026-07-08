@@ -15,4 +15,9 @@ public sealed class NpcPatchSpec
     public string OverrideOf { get; set; } = "";
     public List<string> Packages { get; set; } = new();
     public string Mode { get; set; } = "replace";   // replace | prepend | append
+    // FACT refs ADDED to the override (rank 0), on top of the NPC's carried-forward factions. Used to
+    // give an existing NPC new membership without touching packages — e.g. a vendor FACT + vanilla
+    // JobMerchantFaction (Skyrim.esm:0x051596) so the vanilla "I'd like to trade" surfaces. In-spec
+    // editorId or "<master>:0xFORMID"; duplicates (already-present factions) are skipped.
+    public List<string> Factions { get; set; } = new();
 }

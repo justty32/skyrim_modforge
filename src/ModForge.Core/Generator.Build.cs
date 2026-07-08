@@ -114,6 +114,7 @@ public static partial class Generator
         ctx.BuildPackageData();                    // PACK template dispatch (sandbox/travel/usemagic/patrol/follow/escort)
         ctx.WireNpcPackages();                     // NPC.Packages list
         ctx.WireNpcPatchPackages();                // override NPCs' new package list (replace/prepend/append)
+        ctx.WireNpcPatchFactions();                // override NPCs' ADDED faction membership (e.g. vendor + JobMerchant)
         ctx.WireOutfits();                         // OTFT contents
         ctx.BuildWorldspacesAndRegions();          // WRLD + REGN (+ NAVM/NAVI) — BEFORE placements so a
                                                    // placement can target a custom in-spec worldspace's
