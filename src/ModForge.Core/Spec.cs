@@ -42,6 +42,7 @@ public sealed class ModSpec
     public List<ScriptAttachSpec> Scripts { get; set; } = new();
     public List<CellSpec> Cells { get; set; } = new();
     public List<PlacementSpec> Placements { get; set; } = new();
+    public List<string> Removals { get; set; } = new(); // refs "<master>:0xFORMID" of EXISTING vanilla placed refs to remove (disable + bury). The in-game eraser spell (Idea #24 §E) feeds this. See Generator.Build.Removals.cs
     public List<MapMarkerSpec> MapMarkers { get; set; } = new();   // world-map markers (XMRK on MapMarker static)
     public List<LeveledItemSpec> LeveledItems { get; set; } = new();
     public List<LeveledNpcSpec> LeveledNpcs { get; set; } = new();

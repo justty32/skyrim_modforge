@@ -25,5 +25,18 @@ public static partial class Generator
                     Problems.Add($"{who}: unknown role '{nr.Role}' (supported: {string.Join(", ", KnownRoles)}) — would expand to nothing");
             }
         }
+
+        // Idea #24 §E eraser — each removal must be an external "<master>:0xFORMID" ref (an existing
+        // placed ref to disable); an in-spec editorId can't be removed (it's ours to just not emit).
+        public void ValidateRemovals()
+        {
+            foreach (var r in spec.Removals)
+            {
+                if (string.IsNullOrWhiteSpace(r))
+                    Problems.Add("removal: empty ref");
+                else if (!LooksExternalRef(r) || !TryExternalRef(r, out _))
+                    Problems.Add($"removal '{r}': must be a well-formed external \"<master>:0xFORMID\" ref of an existing placed ref");
+            }
+        }
     }
 }

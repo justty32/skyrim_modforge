@@ -125,5 +125,8 @@
       "confidence": "Brave",
       "unique": true
     }
+  ],
+  "removals": [
+    "Skyrim.esm:0x0D1991"
   ]
 }
