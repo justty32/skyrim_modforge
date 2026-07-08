@@ -84,7 +84,7 @@ Tundra 的可擺清單是設計期寫死的 FormID；本系統改用**遊戲內�
 | `hazards[]` | 特效錨點座標 + model/light/spell/imad | **`HazardSpec`** + `LightSpec` | `Spec.Lights.cs`/`Generator.Build.Hazards.cs` |
 | `tags[]` | 功能/身份標籤 → 掛到 ref/cell 的 keyword | 既有 KYWD 生成 + FormListInject | `Spec.FormListInject.cs` 等 |
 | `npcRoles[]` | `{ actorRef, role, backstory }`（§D 的核心新欄）| **§D `SceneNpcRoleSpec` macro**（下節，唯一 net-new schema）| 重用 SettlementVendorSpec/package/conditioned-Hello |
-| `removals[]` | 橡皮擦法術標記要移除的**既有 vanilla ref**（`<master>:0xFORMID`）| **🔨 net-new：disable/delete override**（見下 §E 段）| GAP——ModForge 目前只能 disable 新 ref，見落點 |
+| `removals[]` | 橡皮擦法術標記要移除的**既有 vanilla ref**（`<master>:0xFORMID`）| **✅ `BuildRemovals`**（GetOrAddAsOverride + InitiallyDisabled + 深埋）| 已落地 2026-07-08 |
 | `cell` / `worldspace` | 快照的目標 cell（override 目標）| **`CellSpec`** override + worldspace override | `Spec.World.cs`/[[worldspace-override-must-carry-topcell]] |
 
 → **落點裁決**：`placements`/`mapMarkers`/`hazards`/`tags`/`cell` 段 **ModForge 今天就能吃**（採集橋只要吐對形狀）。**唯一 net-new 的 ModForge schema = `npcRoles[]` 這一段的角色 macro**（下節）。
@@ -130,7 +130,7 @@ npcRole: { actorRef: "SkyrimTown.esp:0x001234", role: "blacksmith",
 | `npcRefs[]`（引用 PROTEUS clone ActorRef）| ✅ **已具備** | PlacementSpec base = 外部 `.esp:0xFORMID`（跨 master 引用熟路）|
 | `mapMarkers[]` / `hazards[]` / `tags[]` / `cell` override | ✅ **已具備** | MapMarkerSpec/HazardSpec/LightSpec/keyword/CellSpec override |
 | **`npcRoles[]` 角色 macro** | 🔨 **net-new（小）** | `SceneNpcRoleSpec` + role→型別對照表（切片只填 blacksmith）；展開重用既有 vendor/package/conditioned-Hello 零件 |
-| **`removals[]` 移除既有 vanilla ref**（橡皮擦法術）| 🔨 **net-new（小 GAP）** | ModForge 目前只能 disable 新 ref；補「override 既有 REFR by FormID → InitiallyDisabled+深埋/Delete」，`VanillaCellOverride` 地基現成。**非 M0–M2 必需，隨 M4 補** |
+| **`removals[]` 移除既有 vanilla ref**（橡皮擦法術）| ✅ **已落地 2026-07-08** | `BuildRemovals`：master link cache `TryResolveContext<IPlaced>` → `GetOrAddAsOverride` → InitiallyDisabled + 深埋 Z−30000。RequiresSkyrim |
 | §E 滴管/範圍吸取（base+rot+scale→placements）| ✅ **已具備** | 進既有 `placements[]`（Position/Rotation/Scale 全有）；外部 ref 自動加 master |
 | scene.json 讀取 / 併入 spec | 🔨 **net-new（小，有先例）** | `SceneImport` = **推廣既有 `GodotPlacements.Load()`**（已在做「外部 JSON → `spec.Placements.AddRange()`」，見 `Generator.Build.Worldspace.cs:255`）：讀 scene.json → AddRange 進 `Placements`/`MapMarkers`/`Hazards`/`npcRoles`，再走原 build。不改既有生成路徑（行為不變）|
 | ① placement-controller `.pex` | 🔨 **net-new（runtime，合流 settlements P2）** | 隨附 reusable `.pex` + `scriptAttach`；與 `buildables:` 同一支 |

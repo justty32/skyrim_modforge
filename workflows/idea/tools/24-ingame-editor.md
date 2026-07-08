@@ -25,7 +25,7 @@
   - **滴管（單點吸取）**：準星吸一個 ref 的 base+旋轉+縮放進具名插槽（+吸中成功特效）→ 選插槽擺放。
   - **範圍吸取**：一次吸半徑內所有 ref（整叢佈景）進捕獲集。
   - **移除物件（橡皮擦）**：準星指一個 ref → 移除（自擺的直接刪；既有 vanilla ref → `removals[]` 生 disable/delete override）。
-  - 三支細節 + ModForge 落點見 **§E**（滴管/範圍吸取生成端零改動；移除既有 vanilla ref 是唯一小 net-new）。
+  - 三支細節 + ModForge 落點見 **§E**（滴管/範圍吸取生成端零改動；移除既有 vanilla ref＝`removals[]`，**已落地** 2026-07-08）。
 - **③ 施法錄製 NPC 行為**（原 #24 小野心）：走一條路徑，沿途取樣座標放 PatrolMarker/IdleMarker + 停留動作 → 輸出 sandbox/travel/patrol package（見記憶 [[radiant-alias-package-byte-truths]]：package 掛在 alias 的 ALPS 上）。
 - **④ 施法擺放 NPC / 拓印玩家角色 → 靠 PROTEUS**：用 [PROTEUS](../../../sub_projs/mod-survey/findings/proteus.md) 遊戲內生成 / 定位 / 控制 NPC 的既有能力當「放 NPC」前端；**進一步（本次新增）把 PROTEUS「序列化整個角色 build」的能力拿來把玩家自己拓印成獨立 NPC**——見下 §A。⚠️ PROTEUS 核心是**閉源 native DLL**，只能**消費**它、不能改它；若要自建放置也可走既有 `quest.spawn`（見記憶 [[dynamic-spawn-debugging]]）。
 - **⑤ 施法修改地形（LAND）**：野心項，**技術牆**。runtime 編輯 LAND heightmap 極難，ModForge 目前僅支援平坦地形（見 #14/#15 地形段）。先擱置，優先做 cell 內物件 / NPC。
@@ -113,9 +113,9 @@
 |---|---|---|---|
 | **① 滴管（單點吸取）** | 準星吸一個 ref 的 base+rot+scale 進插槽 + 成功特效 | 上述 `GetCurrentCrosshairRef`→`GetBaseObject`/`GetAngle`/`GetScale` + `EffectShader.Play` | **零**（進 `placements[]`）|
 | **② 範圍吸取** | 一次吸**半徑內所有 ref**（整叢建物/佈景）進捕獲集或群組插槽 | 需**列舉半徑內 refs**——SKSE（PO3 Papyrus Extender `FindAllReferencesOfType`/`FindAllReferencesWithKeyword`）或**重用採集橋的 cell 走訪、以半徑 bound**；每個 ref 取 base+transform+scale | **零**（一樣是一批 `placements[]`；只是來源是範圍不是單點）|
-| **③ 移除物件（橡皮擦）** | 準星指一個 ref → 標記移除 | session 內自擺的 dynamic ref → 直接 `Delete()`；**既有 vanilla ref → 記進 scene.json `removals[]`** | **🔨 net-new GAP**（見下）|
+| **③ 移除物件（橡皮擦）** | 準星指一個 ref → 標記移除 | session 內自擺的 dynamic ref → 直接 `Delete()`；**既有 vanilla ref → 記進 scene.json `removals[]`** | **✅ 已落地**（`BuildRemovals`）|
 
-**③ 移除物件的 ModForge GAP（唯一，已 grep 驗證 2026-07-08）**：ModForge 的 placements 一律 `AddNew` 新 REFR、只能對**新 ref** 設 `InitiallyDisabled`；**沒有「抓既有 vanilla REFR by FormID → disable/delete」的路徑**（全域搜 `IsDeleted`/`SetDelete` 零命中）。→ 移除**既有 vanilla 物件**（清雜物、拆原版建物讓位）要**補一個小 net-new**：scene.json 加 `removals: [ "<master>:0xFORMID", … ]` → 生成器在該 ref 所屬 cell 的 **override**（`VanillaCellOverride` 地基現成）裡，把該子 ref 拿成 override 記錄 + 設 `InitiallyDisabled`(0x800)（通常配深埋 Z −30000 避免 disabled-but-havok）或 Delete flag。**這是「disable vanilla clutter」的標準 patch 做法**，Mutagen 易做，只是 ModForge 目前沒這個 spec 欄位/生成碼。→ 記為 §E 的唯一 ModForge 待補項（小），其餘三支法術生成端全零改動。
+**③ 移除物件（已落地 2026-07-08）**：`removals: ["<master>:0xFORMID", …]` → `BuildRemovals` 用 master link cache `TryResolveContext<IPlaced>` → `GetOrAddAsOverride(mod)`（自動把 parent cell/worldspace 一起 override 進來）→ 設 `InitiallyDisabled`(0x800) + 深埋 Z−30000（避 havok 殘留）。標準「disable vanilla clutter」patch、可逆。RequiresSkyrim（要 master link cache）。其餘兩支法術（滴管/範圍吸取）生成端仍零改動。
 
 → **§E 把 §② 從「固定目錄」升級成「開放調色盤」，且不動 scene.json 契約也不動 ModForge**：新增能力全落在 runtime 側（滴管法術 + StorageUtil 插槽 + 命名 UI + 採集橋的 FormID 反解）。這是相對 Tundra 最有感的體驗升級。
 
@@ -139,7 +139,7 @@
 |---|---|---|
 | ① 快照 → override CELL + `placements[]` | 生成端 **可** | 缺**採集橋 DLL**（讀 cell ref 狀態 → JSON）|
 | ② 施法擺設定位（旋轉/縮放/位移）| 靜態零件 **可**；ModForge `Position`/`Rotation`/`Scale`(XSCL) **全已支援**；定位行為**需 controller** | 內建泛用 placement-controller `.pex`（同 Tundra，合流 settlements P2）；**旋轉+距離照抄 Tundra，縮放補 `MODE_SCALE`(SetScale)、位移補 `MODE_TRANSLATE`(SetPosition)**；XSCL 不作用於 actor |
-| §E 編輯法術組（滴管/範圍吸取/移除）| 滴管+範圍吸取 **ModForge 零改動**；**移除既有 vanilla ref = 小 net-new GAP** | 滴管吸 base+rot+scale+成功特效、範圍吸取（SKSE 列舉半徑 refs）→ 都進 `placements[]`；命名插槽 StorageUtil；**匯出 FormID→`<plugin>:0xID` 反解＝採集橋 SKSE**；**移除既有 vanilla ref 需補 `removals[]` + disable/delete override 生成**（`VanillaCellOverride` 地基現成）|
+| §E 編輯法術組（滴管/範圍吸取/移除）| 滴管+範圍吸取 **ModForge 零改動**；**移除＝`removals[]` 已落地** | 滴管吸 base+rot+scale+成功特效、範圍吸取（SKSE 列舉半徑 refs）→ 都進 `placements[]`；命名插槽 StorageUtil；**匯出 FormID→`<plugin>:0xID` 反解＝採集橋 SKSE**；**移除既有 vanilla ref＝`BuildRemovals`（GetOrAddAsOverride+disable+深埋，✅）**|
 | §A 拓印玩家：perk/裝備/法術/技能 → NPC | **可**（`NpcSpec.Perks`/`Outfit`/`Items`）| — |
 | §A 拓印玩家：**外貌 facegen** | **✅ 由 PROTEUS 補位** | 路徑 A（採納，clone 穩定可引用）繞過 GAP；路徑 B（ModForge 自建 facegen）降為未來「可散布獨立 NPC」選項 |
 | §B marker / 特效 / 標籤 | **可**（XMRK/HAZD/Light/KYWD 全有）| 缺採集橋輸出 `{kind,at,params}` |
