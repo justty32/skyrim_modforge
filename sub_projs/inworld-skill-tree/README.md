@@ -43,7 +43,7 @@ CSF 追蹤的 GLOB（level/ratio/legendary）是**全域值**（GlobalVariable�
 
 ## 社群現有 mod 調查（2026-06-16，Gemini 搜尋）
 
-原始輸出存 [`../gemini-research/csf-npc-perk-ui-mods.md`](../gemini-research/csf-npc-perk-ui-mods.md)。
+原始輸出存 [`../gemini-research/npc-perk-management/csf-npc-perk-ui-mods.md`](../gemini-research/npc-perk-management/csf-npc-perk-ui-mods.md)。
 
 | Mod | Nexus ID | 方法 | 驗證 |
 |-----|----------|------|------|
