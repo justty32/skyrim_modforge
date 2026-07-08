@@ -95,12 +95,23 @@
 
 **機制（grounded，API 標「待驗確切呼叫」）**：
 
-1. **吸取**：滴管法術 OnEffectStart → 讀**準星 ref**（`Game.GetCurrentCrosshairRef()`，SKSE；比「投射物命中」穩，因 STAT 靜物不吃魔法效果）→ 取其 **base**（`ObjectReference.GetBaseObject()` → Form）→ 拿 FormID。**吸 base 不吸該 REFR**：滴管取的是「顏料＝物件種類」，之後 `PlaceAtMe(base)` 刷新副本，正是滴管語意。
-2. **具名插槽**：把吸到的 Form 存進 **StorageUtil KV**（string-key map：`slot 名 → Form`，memory [[storage-writes-ingame-confirmed]] J-group 已實機）。多插槽＝多 key；命名走文字輸入 UI（PROTEUS 用的 UILib `TextInputMenu`，或 [SKSE Menu Framework 3](../../../sub_projs/mod-survey/findings/skse-menu-framework-3.md) ImGui 輸入框——與編輯器面板同一套 UI 元件）。
-3. **擺放**：選插槽 → `PlaceAtMe(slot.Form)` → 進 §②/Tundra 的 placement-controller 定位模式落地。**滴管只是把「喝哪瓶」從固定目錄換成動態插槽**，落地那半段完全共用 controller。
+1. **吸取**：滴管法術 OnEffectStart → 讀**準星 ref**（`Game.GetCurrentCrosshairRef()`，SKSE；比「投射物命中」穩，因 STAT 靜物不吃魔法效果）→ 取其 **base**（`ObjectReference.GetBaseObject()` → Form）+ **當前旋轉/縮放**（`GetAngleX/Y/Z()` + `GetScale()`，2026-07-08 使用者要一起吸）→ 拿 FormID + rot + scale。**吸 base + transform**：滴管取的不只「顏料＝物件種類」，還帶被吸物件的姿態（轉了 45°、放大 2× 的那個樣子），之後 `PlaceAtMe(base)` 落地時**預設回填吸到的 rot/scale**，再用 controller 微調。
+   - **✨ 吸取成功特效（2026-07-08 使用者要）**：吸中瞬間在**被吸 ref 上播一個夠明顯的視覺回饋**——`EffectShader.Play(crosshairRef, ~1.5s)`（vanilla 有現成發光 shader，如 soul-trap/transmute 那類）或 `crosshairRef.PlaceAtMe(ArtObject)` + 一聲 UI 音效。**純 runtime 回饋，不進 scene.json、與 ModForge 無關**；只需選/附一個 EffectShader 資產。
+2. **具名插槽**：把吸到的 `{Form, rot, scale}` 存進 **StorageUtil KV**（string-key：`slot 名 → Form` + 平行存 rot/scale，memory [[storage-writes-ingame-confirmed]] J-group 已實機）。多插槽＝多 key；命名走文字輸入 UI（PROTEUS 用的 UILib `TextInputMenu`，或 [SKSE Menu Framework 3](../../../sub_projs/mod-survey/findings/skse-menu-framework-3.md) ImGui 輸入框——與編輯器面板同一套 UI 元件）。
+3. **擺放**：選插槽 → `PlaceAtMe(slot.Form)` → **回填 slot 的 rot/scale**（`SetAngle`/`SetScale`）→ 進 §②/Tundra 的 placement-controller 定位模式微調落地。**滴管只是把「喝哪瓶」從固定目錄換成動態插槽**，落地那半段完全共用 controller。
 4. **⚠️ 耐久 FormID 的關鍵坑（runtime 側，非 ModForge 側）**：runtime FormID 的高位元組 = load-order index，**跨載入順序不穩**。當次 session 內擺放無妨（StorageUtil 存 runtime Form 直接可 `PlaceAtMe`）；但**匯出進 scene.json 時必須反解成耐久的 `<plugin>:0xLOCALID`**——這要 SKSE `TESDataHandler`（`LookupModByIndex`/把 formID 高位→mod 名 + 取本地 ID），純 Papyrus 做不到。→ **這是採集橋 SKSE DLL 的活**（見 §C / spec 的採集橋元件），不是 controller 或 ModForge 的。
 
 **對 ModForge 側的衝擊＝零（已驗 2026-07-08）**：滴管吸來的 base 進 `placements[].base`（形如 `SomeMod.esp:0x001234`），而 **ModForge 對外部 ref 會自動把來源 mod 加為 master**（`PluginIo.cs:35`：有外部 ref 就用 Mutagen 預設 `Iterate` 算精確 master 集；`TryResolveRef` 全面吃 `<plugin>:0xID`）。所以「吸任意 mod 物件 → 擺 → 匯出 → build」在生成端**天然成立、零改動**——代價只是**產物 patch 的 master 清單會隨你吸過的東西增長**（可接受；且可在匯出時提示「本場景依賴這些 mod」）。
+
+### §E 的編輯法術組（2026-07-08 使用者擴充：不只單點滴管，要三支法術）
+
+| 法術 | 幹嘛 | 機制（runtime）| ModForge 側衝擊 |
+|---|---|---|---|
+| **① 滴管（單點吸取）** | 準星吸一個 ref 的 base+rot+scale 進插槽 + 成功特效 | 上述 `GetCurrentCrosshairRef`→`GetBaseObject`/`GetAngle`/`GetScale` + `EffectShader.Play` | **零**（進 `placements[]`）|
+| **② 範圍吸取** | 一次吸**半徑內所有 ref**（整叢建物/佈景）進捕獲集或群組插槽 | 需**列舉半徑內 refs**——SKSE（PO3 Papyrus Extender `FindAllReferencesOfType`/`FindAllReferencesWithKeyword`）或**重用採集橋的 cell 走訪、以半徑 bound**；每個 ref 取 base+transform+scale | **零**（一樣是一批 `placements[]`；只是來源是範圍不是單點）|
+| **③ 移除物件（橡皮擦）** | 準星指一個 ref → 標記移除 | session 內自擺的 dynamic ref → 直接 `Delete()`；**既有 vanilla ref → 記進 scene.json `removals[]`** | **🔨 net-new GAP**（見下）|
+
+**③ 移除物件的 ModForge GAP（唯一，已 grep 驗證 2026-07-08）**：ModForge 的 placements 一律 `AddNew` 新 REFR、只能對**新 ref** 設 `InitiallyDisabled`；**沒有「抓既有 vanilla REFR by FormID → disable/delete」的路徑**（全域搜 `IsDeleted`/`SetDelete` 零命中）。→ 移除**既有 vanilla 物件**（清雜物、拆原版建物讓位）要**補一個小 net-new**：scene.json 加 `removals: [ "<master>:0xFORMID", … ]` → 生成器在該 ref 所屬 cell 的 **override**（`VanillaCellOverride` 地基現成）裡，把該子 ref 拿成 override 記錄 + 設 `InitiallyDisabled`(0x800)（通常配深埋 Z −30000 避免 disabled-but-havok）或 Delete flag。**這是「disable vanilla clutter」的標準 patch 做法**，Mutagen 易做，只是 ModForge 目前沒這個 spec 欄位/生成碼。→ 記為 §E 的唯一 ModForge 待補項（小），其餘三支法術生成端全零改動。
 
 → **§E 把 §② 從「固定目錄」升級成「開放調色盤」，且不動 scene.json 契約也不動 ModForge**：新增能力全落在 runtime 側（滴管法術 + StorageUtil 插槽 + 命名 UI + 採集橋的 FormID 反解）。這是相對 Tundra 最有感的體驗升級。
 
@@ -124,7 +135,7 @@
 |---|---|---|
 | ① 快照 → override CELL + `placements[]` | 生成端 **可** | 缺**採集橋 DLL**（讀 cell ref 狀態 → JSON）|
 | ② 施法擺設定位（旋轉/縮放/位移）| 靜態零件 **可**；ModForge `Position`/`Rotation`/`Scale`(XSCL) **全已支援**；定位行為**需 controller** | 內建泛用 placement-controller `.pex`（同 Tundra，合流 settlements P2）；**旋轉+距離照抄 Tundra，縮放補 `MODE_SCALE`(SetScale)、位移補 `MODE_TRANSLATE`(SetPosition)**；XSCL 不作用於 actor |
-| §E 滴管取樣 + 具名插槽（開放調色盤）| **ModForge 側零改動**；能力全在 runtime | 滴管法術讀準星 base + StorageUtil 插槽 + 命名 UI（runtime）；**匯出時 FormID→`<plugin>:0xID` 反解＝採集橋 SKSE 的活**；ModForge 自動加 master（`PluginIo.cs:35` 已驗）|
+| §E 編輯法術組（滴管/範圍吸取/移除）| 滴管+範圍吸取 **ModForge 零改動**；**移除既有 vanilla ref = 小 net-new GAP** | 滴管吸 base+rot+scale+成功特效、範圍吸取（SKSE 列舉半徑 refs）→ 都進 `placements[]`；命名插槽 StorageUtil；**匯出 FormID→`<plugin>:0xID` 反解＝採集橋 SKSE**；**移除既有 vanilla ref 需補 `removals[]` + disable/delete override 生成**（`VanillaCellOverride` 地基現成）|
 | §A 拓印玩家：perk/裝備/法術/技能 → NPC | **可**（`NpcSpec.Perks`/`Outfit`/`Items`）| — |
 | §A 拓印玩家：**外貌 facegen** | **✅ 由 PROTEUS 補位** | 路徑 A（採納，clone 穩定可引用）繞過 GAP；路徑 B（ModForge 自建 facegen）降為未來「可散布獨立 NPC」選項 |
 | §B marker / 特效 / 標籤 | **可**（XMRK/HAZD/Light/KYWD 全有）| 缺採集橋輸出 `{kind,at,params}` |

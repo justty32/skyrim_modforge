@@ -60,7 +60,15 @@
 
 ### ③附：滴管取樣 + 具名插槽（開放式調色盤，idea #24 §E）
 
-Tundra 的可擺清單是設計期寫死的 FormID；本系統改用**遊戲內滴管**：滴管法術讀準星 ref 的 base（`GetCurrentCrosshairRef`→`GetBaseObject`）→ 存進 **StorageUtil 具名插槽**（string-key KV，命名走 UILib/ImGui 文字輸入）→ 選插槽 `PlaceAtMe` → 進 placement-controller 定位。**這是純 runtime 能力**（滴管法術 + 插槽 + 命名 UI，屬 controller/採集橋層），**對 scene.json 契約與 ModForge 生成端衝擊＝零**：吸來的 base 一樣以 `<plugin>:0xLOCALID` 進 `placements[].base`，而 **ModForge 對外部 ref 自動加來源 mod 為 master（已驗，`PluginIo.cs:35` 用 Mutagen 預設 `Iterate` 算精確 master 集）**。唯一連帶效果：**產物 patch 的 master 清單隨吸過的物件增長**（可接受；匯出時宜提示「本場景依賴這些 mod」）。→ 採集橋的 FormID 反解是讓「當次 session 能擺的 runtime Form」變成「耐久可 build 的插件相對 ref」的橋。
+Tundra 的可擺清單是設計期寫死的 FormID；本系統改用**遊戲內編輯法術組**（idea #24 §E，3 支）：
+
+- **① 滴管（單點）**：讀準星 ref 的 **base + rot + scale**（`GetCurrentCrosshairRef`→`GetBaseObject`/`GetAngle`/`GetScale`）→ 存進 **StorageUtil 具名插槽**（命名走 UILib/ImGui）→ 選插槽 `PlaceAtMe` + 回填 rot/scale → placement-controller 微調。吸中瞬間在被吸 ref 播**成功特效**（`EffectShader.Play`，純 runtime 回饋、不進 scene.json）。
+- **② 範圍吸取**：一次吸半徑內所有 ref（SKSE PO3 `FindAllReferences*` 或重用採集橋 cell 走訪 bound 半徑）→ 每個取 base+transform+scale。
+- **③ 移除物件（橡皮擦）**：標記移除；session 內自擺 dynamic ref 直接 `Delete()`，**既有 vanilla ref → scene.json `removals[]`**。
+
+**①② 對 ModForge 衝擊＝零**：吸來的 base 一樣以 `<plugin>:0xLOCALID` 進 `placements[].base`，**ModForge 對外部 ref 自動加來源 mod 為 master（已驗，`PluginIo.cs:35`）**；連帶只是**產物 master 清單隨吸過的物件增長**（匯出宜提示依賴哪些 mod）。採集橋的 **FormID→`<plugin>:0xLOCALID` 反解**（`TESDataHandler`）是讓「當次 session 的 runtime Form」變「耐久可 build 的插件相對 ref」的橋。
+
+**③ 是唯一 net-new 生成項（`removals[]`，GAP 已 grep 驗證）**：ModForge placements 一律 `AddNew`、只能 disable **新** ref，**無「抓既有 vanilla REFR by FormID → disable/delete」路徑**。補法（小）：`removals: ["<master>:0xFORMID", …]` → 生成器在該 ref 所屬 cell 的 override（`VanillaCellOverride` 地基現成）裡把該子 ref 拿成 override 記錄 + 設 `InitiallyDisabled`(0x800)＋深埋（Z −30000，避 disabled havok）或 Delete flag。標準「disable vanilla clutter」patch，Mutagen 易做。→ 非 M0–M2 必需（切片不含移除），列為 §E 隨採集橋（M4）一起補的小生成項。
 
 ---
 
@@ -76,6 +84,7 @@ Tundra 的可擺清單是設計期寫死的 FormID；本系統改用**遊戲內�
 | `hazards[]` | 特效錨點座標 + model/light/spell/imad | **`HazardSpec`** + `LightSpec` | `Spec.Lights.cs`/`Generator.Build.Hazards.cs` |
 | `tags[]` | 功能/身份標籤 → 掛到 ref/cell 的 keyword | 既有 KYWD 生成 + FormListInject | `Spec.FormListInject.cs` 等 |
 | `npcRoles[]` | `{ actorRef, role, backstory }`（§D 的核心新欄）| **§D `SceneNpcRoleSpec` macro**（下節，唯一 net-new schema）| 重用 SettlementVendorSpec/package/conditioned-Hello |
+| `removals[]` | 橡皮擦法術標記要移除的**既有 vanilla ref**（`<master>:0xFORMID`）| **🔨 net-new：disable/delete override**（見下 §E 段）| GAP——ModForge 目前只能 disable 新 ref，見落點 |
 | `cell` / `worldspace` | 快照的目標 cell（override 目標）| **`CellSpec`** override + worldspace override | `Spec.World.cs`/[[worldspace-override-must-carry-topcell]] |
 
 → **落點裁決**：`placements`/`mapMarkers`/`hazards`/`tags`/`cell` 段 **ModForge 今天就能吃**（採集橋只要吐對形狀）。**唯一 net-new 的 ModForge schema = `npcRoles[]` 這一段的角色 macro**（下節）。
@@ -121,6 +130,8 @@ npcRole: { actorRef: "SkyrimTown.esp:0x001234", role: "blacksmith",
 | `npcRefs[]`（引用 PROTEUS clone ActorRef）| ✅ **已具備** | PlacementSpec base = 外部 `.esp:0xFORMID`（跨 master 引用熟路）|
 | `mapMarkers[]` / `hazards[]` / `tags[]` / `cell` override | ✅ **已具備** | MapMarkerSpec/HazardSpec/LightSpec/keyword/CellSpec override |
 | **`npcRoles[]` 角色 macro** | 🔨 **net-new（小）** | `SceneNpcRoleSpec` + role→型別對照表（切片只填 blacksmith）；展開重用既有 vendor/package/conditioned-Hello 零件 |
+| **`removals[]` 移除既有 vanilla ref**（橡皮擦法術）| 🔨 **net-new（小 GAP）** | ModForge 目前只能 disable 新 ref；補「override 既有 REFR by FormID → InitiallyDisabled+深埋/Delete」，`VanillaCellOverride` 地基現成。**非 M0–M2 必需，隨 M4 補** |
+| §E 滴管/範圍吸取（base+rot+scale→placements）| ✅ **已具備** | 進既有 `placements[]`（Position/Rotation/Scale 全有）；外部 ref 自動加 master |
 | scene.json 讀取 / 併入 spec | 🔨 **net-new（小，有先例）** | `SceneImport` = **推廣既有 `GodotPlacements.Load()`**（已在做「外部 JSON → `spec.Placements.AddRange()`」，見 `Generator.Build.Worldspace.cs:255`）：讀 scene.json → AddRange 進 `Placements`/`MapMarkers`/`Hazards`/`npcRoles`，再走原 build。不改既有生成路徑（行為不變）|
 | ① placement-controller `.pex` | 🔨 **net-new（runtime，合流 settlements P2）** | 隨附 reusable `.pex` + `scriptAttach`；與 `buildables:` 同一支 |
 | ③ 採集橋 SKSE DLL | 🔨 **net-new（runtime，獨立子專案）** | 唯一重工程；本 spec 只定 output 契約 |
