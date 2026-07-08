@@ -55,24 +55,25 @@ CSF 追蹤的 GLOB（level/ratio/legendary）是**全域值**（GlobalVariable�
 
 ---
 
-## 待調查（阻擋設計拍板的關鍵問題）
+## 待調查（阻擋設計拍板的關鍵問題，2026-06-16 提出，早於下方 2026-06-17 方向底定）
 
-- `RegisterForCustomSkillIncrease` 的觸發時機是否能精確捕捉「玩家在選單裡點下某個節點的瞬間」，還是只在「技能等級提升時」觸發？——**待查（需主力機測試 CSF v3 event semantics）**，是方案 B 的核心技術風險。
-- 方案 B 的 Papyrus 腳本是否在 ModForge 現有的 fragment / script 生成能力範圍內？——**待查**。
-- Campfire/Frostfall in-world 天賦樹的實作機制——**待主力機查看**（[wait_user](../../WAIT_USER.md)）。
-- 其餘 Nexus ID（FPSM/NPC Perk Tree Management/Party Sheet/Be a Leader）人工驗證。
+> 下列問題提出於方向底定前。方案 A+ 相關的 Campfire/Frostfall 機制問題已全數解掉（見 [design 檔 §五 U1–U5](design-inworld-jcontainers.md)）；方案 B 專屬的問題隨 B 淘汰而作廢，僅保留列示脈絡。
+
+- ~~`RegisterForCustomSkillIncrease` 的觸發時機是否能精確捕捉「玩家在選單裡點下某個節點的瞬間」，還是只在「技能等級提升時」觸發？~~——**已隨方案 B 淘汰作廢**（CSF UI 路線放棄，見上方 2026-06-17 決定）。
+- ~~方案 B 的 Papyrus 腳本是否在 ModForge 現有的 fragment / script 生成能力範圍內？~~——**已隨方案 B 淘汰作廢**。
+- ~~Campfire/Frostfall in-world 天賦樹的實作機制——待主力機查看~~——**✅ 已解（2026-06-21 原始碼逆向）**，見 [design 檔 §五 U1–U3](design-inworld-jcontainers.md)。
+- 其餘 Nexus ID（FPSM/NPC Perk Tree Management/Party Sheet/Be a Leader）人工驗證——**仍未驗，非阻擋項**。
 
 ---
 
 ## 設計推進（本 sub_proj 的工作面）
 
-**主線設計（2026-06-17 定）→ [design-inworld-jcontainers.md](design-inworld-jcontainers.md)**：方案 A+ ＝ 方案 A 純效果成長 + Campfire/Frostfall in-world 3D 星樹（取代 CSF UI）+ JContainers `JFormDB` per-NPC 狀態（取代 381 GLOB 海）。三者角色、JFormDB 資料模型、「對 NPC 開樹」橋接流程、5 個待驗 unknown（U1–U5）、ModForge 後端需新增、三期實作建議全在該檔。
+**主線設計（2026-06-17 定）→ [design-inworld-jcontainers.md](design-inworld-jcontainers.md)**：方案 A+ ＝ 方案 A 純效果成長 + Campfire/Frostfall in-world 3D 星樹（取代 CSF UI）+ JContainers `JFormDB` per-NPC 狀態（取代 381 GLOB 海）。三者角色、JFormDB 資料模型、「對 NPC 開樹」橋接流程、5 個 unknown（U1–U5，**全數已解**）、ModForge 後端需新增、三期實作建議全在該檔。
 
-**離線可先推進**：Phase 0（純效果成長 MVP，零 unknown）的資料模型 + spec 對接細化。
-**待主力機 / code pass**：U1（對任意 ref 開樹）、U2（session GLOB 隔離）、U4（generator 能力）、U5（JFormDB 生成）。
+**現況（2026-06-21）**：U1–U5 全數解掉；Phase 0（純效果成長）+ Phase 1（玩家版 in-world 樹，零外部 master）+ Phase 3（generator `skillTrees:`）皆已離線落地並 **IN-GAME CONFIRMED**。詳細分期狀態見 [design 檔 §七](design-inworld-jcontainers.md)。
 
 ## Open
 
-- **U1–U5 待驗**（見 [design 檔 §五](design-inworld-jcontainers.md)）——多需主力機讀 `Campfire.bsa` / `Frostfall.bsa` 原始碼，或 code pass `src/`。
-- **下一步離線設計**：Phase 0（純效果成長）+ Phase 1（玩家版 in-world 樹）的 spec 欄位構想 + 觸發載體（法術/活化物/物品）spec 形狀——這兩階零/少 unknown，可在公司先細化 ModForge spec 對接。
+- **Phase 2：NPC 版橋接尚未實作**——session GLOB + JFormDB + 對 NPC 開樹，unknown 已清零（U1/U2 已解），純粹是還沒動工。見 [design 檔 §三](design-inworld-jcontainers.md) 流程 + [design 檔 §七 Phase 2](design-inworld-jcontainers.md)。
+- **Phase 0 實機驗收待你**：施法長技能 + 好感度 gate 翻轉 + CastMagic 條件，需 MO2 裝 JContainers SE——見 [WAIT_USER](../../WAIT_USER.md)。
 - **與玩家技能樹 spec 的關係**：本案玩家版 in-world 樹本身就是一條玩家技能樹路線（取代 CSF）；NPC 樹複用同一套 perk/record 生成邏輯，只多 JContainers 橋接層。
