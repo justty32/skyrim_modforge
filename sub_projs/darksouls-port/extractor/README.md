@@ -6,16 +6,17 @@
 
 > ⚠️ IP：抽出的任何遊戲資產（FLVER/DDS/glTF/NIF…）**僅本機個人使用、絕不發佈**，一律 gitignore。repo 只 commit 本工具原始碼。
 
-## 依賴（走通的路：NuGet）
+## 依賴（P1 起：SoulsFormatsNEXT 源碼引用）
 
-| 套件 | 版本 | 用途 |
+| 依賴 | 形式 | 用途 |
 |------|------|------|
-| [`JuicerMV.SoulsFormats`](https://www.nuget.org/packages/JuicerMV.SoulsFormats) | 0.1.4 | 讀 DCX/BND3/BXF3/FLVER2/TPF/MSB1（社群維護的 SoulsFormats fork，MIT）|
-| [`SharpGLTF.Toolkit`](https://www.nuget.org/packages/SharpGLTF.Toolkit) | 1.0.6 | 寫 glTF 2.0 |
+| [SoulsFormatsNEXT](https://github.com/soulsmods/SoulsFormatsNEXT) | `ThirdParty/SoulsFormatsNEXT` 源碼 clone（ProjectReference，gitignore）| 讀 DCX/BND3/BXF3/FLVER2/TPF/MSB1 |
+| [`SharpGLTF.Toolkit`](https://www.nuget.org/packages/SharpGLTF.Toolkit) 1.0.6 | NuGet | 寫 glTF 2.0 |
 
-- **官方 JKAnderson/SoulsFormats 沒有上 NuGet**；`JuicerMV.SoulsFormats` 這個 fork 的 API 與上游一致（`FLVER2` / `MSB1` / `TPF` / `BXF3` / `DCX` 型別齊全），實測讀 DS**R** v1.04 的 `m18` 資料 OK，**不需 clone 原始碼**。
-- 兩個套件都由 `DsExtractor.csproj` 的 `<PackageReference>` 宣告，`dotnet build` 會自動還原。
-- **備援（若哪天 NuGet 套件失效）**：`git clone https://github.com/JKAnderson/SoulsFormats extractor/ThirdParty/SoulsFormats`（或社群 fork `SoulsFormatsNEXT`），把 `<PackageReference Include="JuicerMV.SoulsFormats">` 換成 `<ProjectReference Include="ThirdParty/SoulsFormats/SoulsFormats.csproj">`。`ThirdParty/` 已 gitignore。
+- **P0 用的 `JuicerMV.SoulsFormats` NuGet（0.1.4）在 P1 被換掉**：它讀 DS1R 的 layout/stride mismatch FLVER（`m0001B1A18`）直接 throw；SFNEXT 內建 `DarkSoulsRemasteredFix()` 能解。API 差異僅 `FLVER2.Texture.Type` → `ParamName`。
+- SFNEXT 目標 net9.0 → `DsExtractor.csproj` 升 **net10.0**（本機 runtime 只有 8/10；net10 exe 引用 net9 lib OK）。
+- fresh clone 重建：`git clone --depth 1 https://github.com/soulsmods/SoulsFormatsNEXT extractor/ThirdParty/SoulsFormatsNEXT` 後 `dotnet build -c Release`。
+- **DS1R 髒資料防護（P1 加）**：stride-mismatch buffer 讀出的壞 normal（零長/NaN）→ 正規化或回退 `+Y`；壞位置（±1e38）的三角形→**直接丟**（log 印 `droppedTris`，m0001 丟 740 個 decal/特效三角形，其餘 42 塊全 0）。
 
 ## Build
 
@@ -81,13 +82,18 @@ h18_.hkxbhd/bdt ──(C# hkx-extract)──> 每塊 .hkx
 python tools/collision_hulls.py <piece.hkx> <outdir> [--method components|vhacd] \
     [--planar-thresh 1.5] [--resolution 100000] [--max-hulls 63] [--no-mesh-json]
 ```
-Python 依賴（離線可重跑，`ThirdParty/` 已 gitignore）：
+Python 依賴（離線可重跑；venv 在 **sub_proj 根 `venv/`**，clone 在 `extractor/ThirdParty/`，皆 gitignore）：
 ```bash
-python3 -m venv venv && . venv/bin/activate
-git clone https://github.com/Grimrukh/soulstruct
-git clone https://github.com/Grimrukh/soulstruct-havok
-pip install -e ./soulstruct && pip install --no-deps -e ./soulstruct-havok
-pip install numpy scipy colorama networkx vhacdx trimesh
+cd sub_projs/darksouls-port
+python3 -m venv venv
+# clone（若 ThirdParty 已有就跳過）
+git clone https://github.com/Grimrukh/soulstruct        extractor/ThirdParty/soulstruct
+git clone https://github.com/Grimrukh/soulstruct-havok  extractor/ThirdParty/soulstruct-havok
+./venv/bin/pip install -e ./extractor/ThirdParty/soulstruct
+./venv/bin/pip install --no-deps -e ./extractor/ThirdParty/soulstruct-havok
+./venv/bin/pip install numpy scipy colorama networkx vhacdx trimesh
+# 驗：import 路徑是 soulstruct.havok（不是 soulstruct_havok）
+./venv/bin/python -c "from soulstruct.havok.fromsoft.darksouls1r import MapCollisionModel; print('ok')"
 ```
 > 用 `pip install -e`（editable）：soulstruct 靠一堆 package-data JSON（emevd 等），非 editable 安裝會漏檔 → `FileNotFoundError`。PyPI 上 `soulstruct` 只到 2.3.2 < havok 要求的 2.4.0，故從 GitHub 源碼裝。Oodle DLL 警告可忽略（DSR 用 zlib DCX，非 Krak）。
 

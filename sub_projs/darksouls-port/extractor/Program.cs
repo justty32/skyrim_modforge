@@ -117,7 +117,7 @@ static int Flver2Gltf(string flverPath, string outDir)
     var matCache = new Dictionary<string, MaterialBuilder>();
     var referencedTextures = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
 
-    long totalVerts = 0, totalTris = 0;
+    long totalVerts = 0, totalTris = 0, droppedTris = 0;
     var bbMin = new Vector3(float.MaxValue);
     var bbMax = new Vector3(float.MinValue);
     int meshOut = 0;
@@ -139,8 +139,8 @@ static int Flver2Gltf(string flverPath, string outDir)
         {
             var mat = flver.Materials[mesh.MaterialIndex];
             var tex = mat.Textures.FirstOrDefault(t =>
-                          t.Type.Contains("Diffuse", StringComparison.OrdinalIgnoreCase) ||
-                          t.Type.Contains("Albedo", StringComparison.OrdinalIgnoreCase))
+                          t.ParamName.Contains("Diffuse", StringComparison.OrdinalIgnoreCase) ||
+                          t.ParamName.Contains("Albedo", StringComparison.OrdinalIgnoreCase))
                       ?? mat.Textures.FirstOrDefault();
             if (tex != null && !string.IsNullOrEmpty(tex.Path))
                 diffuse = Path.GetFileName(tex.Path.Replace('\\', '/'));
@@ -162,6 +162,10 @@ static int Flver2Gltf(string flverPath, string outDir)
         {
             Vector3 pos = v.Position;
             Vector3 nrm = v.Normal;
+            // Some DS1R buffers (layout/stride-mismatch pieces, e.g. m0001) carry
+            // zero/NaN normals that fail glTF validation — sanitize to unit length.
+            float len = nrm.Length();
+            nrm = (float.IsFinite(len) && len > 1e-6f) ? nrm / len : Vector3.UnitY;
             Vector2 uv = v.UVs.Count > 0 ? new Vector2(v.UVs[0].X, v.UVs[0].Y) : Vector2.Zero;
             if (pos.X < bbMin.X) bbMin.X = pos.X;
             if (pos.Y < bbMin.Y) bbMin.Y = pos.Y;
@@ -173,16 +177,27 @@ static int Flver2Gltf(string flverPath, string outDir)
                 new VertexPositionNormal(pos, nrm), new VertexTexture1(uv));
         }
 
+        // Positions from stride-mismatch DS1R buffers can be garbage (±1e38,
+        // e.g. m0001 decal/effect submeshes) — drop any triangle touching one.
+        static bool SanePos(Vector3 p) =>
+            float.IsFinite(p.X) && float.IsFinite(p.Y) && float.IsFinite(p.Z) &&
+            Math.Abs(p.X) < 1e6f && Math.Abs(p.Y) < 1e6f && Math.Abs(p.Z) < 1e6f;
+
         for (int i = 0; i + 2 < indices.Count; i += 3)
         {
             int a = indices[i], b = indices[i + 1], c = indices[i + 2];
             if (a == b || b == c || a == c) continue; // degenerate guard
+            if (!SanePos(mesh.Vertices[a].Position) || !SanePos(mesh.Vertices[b].Position) ||
+                !SanePos(mesh.Vertices[c].Position)) { droppedTris++; continue; }
             prim.AddTriangle(ToVB(mesh.Vertices[a]), ToVB(mesh.Vertices[b]), ToVB(mesh.Vertices[c]));
             totalTris++;
         }
         totalVerts += mesh.Vertices.Count;
-        scene.AddRigidMesh(mb, Matrix4x4.Identity);
-        meshOut++;
+        if (!mb.Primitives.All(p => p.Triangles.Count == 0))
+        {
+            scene.AddRigidMesh(mb, Matrix4x4.Identity);
+            meshOut++;
+        }
     }
 
     var model = scene.ToGltf2();
@@ -196,7 +211,7 @@ static int Flver2Gltf(string flverPath, string outDir)
     Vector3 size = (meshOut > 0) ? bbMax - bbMin : Vector3.Zero;
     Console.WriteLine($"FLVER: {flverPath}");
     Console.WriteLine($"  flver meshes={flver.Meshes.Count} materials={flver.Materials.Count}");
-    Console.WriteLine($"  emitted glTF meshes={meshOut} vertices={totalVerts} triangles={totalTris} indices={totalTris * 3}");
+    Console.WriteLine($"  emitted glTF meshes={meshOut} vertices={totalVerts} triangles={totalTris} indices={totalTris * 3} droppedTris={droppedTris}");
     Console.WriteLine($"  bbox min=({bbMin.X:F2},{bbMin.Y:F2},{bbMin.Z:F2}) max=({bbMax.X:F2},{bbMax.Y:F2},{bbMax.Z:F2})");
     Console.WriteLine($"  bbox size (metres) = ({size.X:F2} x {size.Y:F2} x {size.Z:F2})");
     Console.WriteLine($"  referenced textures: {string.Join(", ", referencedTextures)}");
