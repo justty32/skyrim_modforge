@@ -1,6 +1,6 @@
 # 第三幕：可怕的宅邸（Mansion Mystery）
 
-> 劇本草稿（2026-06-14 重寫，de-AI bilingual）。共用原則見 [`README.md`](README.md)。設計 beat 見 [`../vigilant-sofia-逐章演出設計.md`](../vigilant-sofia-逐章演出設計.md) §3。對應 reconstruction：`act-3-sq-01-child` 等。觸發機制見 [`_act3-trigger-placement-map.md`](_act3-trigger-placement-map.md)。
+> 劇本草稿（2026-06-14 重寫，de-AI bilingual）。共用原則見 [`README.md`](README.md)。設計 beat 見 [`../plans/vigilant-sofia-逐章演出設計.md`](../plans/vigilant-sofia-逐章演出設計.md) §3。對應 reconstruction：`act-3-sq-01-child` 等。觸發機制見 [`_act3-trigger-placement-map.md`](_act3-trigger-placement-map.md)。
 > **本幕 Sofia 定調特殊**：恐怖宅邸，她**為掩飾恐懼而不斷主動插科打諢**——這是全 patch 她主動話最多、最密的一章。嘴砲底下藏著怕。
 
 ---

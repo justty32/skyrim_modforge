@@ -17,12 +17,12 @@
 | `docs/spec/SPEC-dialogue.md` | Authoritative field definitions for `dialogue` / `banter` / `scene` / `conditions` |
 | `docs/spec/SPEC-quests.md` | Quest shape, aliases, story-event |
 | `docs/spec/SPEC-workflow.md` | CLI sequence, voice pipeline |
-| `sub_projs/sofia-patch/follower-decode-2026-06-13.md` | Five reusable Sofia patterns; banter 踩坑 |
-| `sub_projs/sofia-patch/expansion-plan-2026-06-13.md` | F1–F16 feasibility; banter vs autoStart guidance |
+| `sub_projs/sofia-patch/reference/follower-decode-2026-06-13.md` | Five reusable Sofia patterns; banter 踩坑 |
+| `sub_projs/sofia-patch/plans/expansion-plan-2026-06-13.md` | F1–F16 feasibility; banter vs autoStart guidance |
 | `sub_projs/game-data/mods/Vigilant/quests.md` | VIGILANT quest FormIDs and objective/stage text |
 | `sub_projs/game-data/mods/Vigilant/locations.tsv` | VIGILANT worldspace/cell FormIDs |
 | `sub_projs/game-data/mods/SofiaFollower/npcs.tsv` | Sofia NPC FormID confirmed |
-| `sub_projs/sofia-patch/vigilant-support-plan-2026-06-13.md` | voiceType 0x0022EE cross-reference |
+| `sub_projs/sofia-patch/plans/vigilant-support-plan-2026-06-13.md` | voiceType 0x0022EE cross-reference |
 
 ---
 
@@ -34,8 +34,8 @@
 |---|---|---|---|
 | Sofia NPC FormID | `SofiaFollower.esp:0x0012C4` | npcs.tsv row `0012C4 JJSofiaFollower Sofia` | CONFIRMED |
 | Sofia NPC editorId | `JJSofiaFollower` | npcs.tsv | CONFIRMED |
-| Sofia voiceType editorId | `JJSofiaVoiceType` | follower-decode-2026-06-13.md §VTYP section | CONFIRMED |
-| Sofia voiceType FormID | `SofiaFollower.esp:0x0022EE` | vigilant-support-plan-2026-06-13.md table | CONFIRMED (used in slice _note) |
+| Sofia voiceType editorId | `JJSofiaVoiceType` | reference/follower-decode-2026-06-13.md §VTYP section | CONFIRMED |
+| Sofia voiceType FormID | `SofiaFollower.esp:0x0022EE` | plans/vigilant-support-plan-2026-06-13.md table | CONFIRMED (used in slice _note) |
 | Follower faction | `SofiaFollower.esp:0x060480` | slice _note | CONFIRMED (carried over from slice) |
 | Master string in conditions | `SofiaFollower.esp` | slice + summary.txt "SofiaFollower" | CONFIRMED |
 

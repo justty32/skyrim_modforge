@@ -1,7 +1,7 @@
 # Sofia × VIGILANT 對白劇本（四幕，DRAFT 待審核）
 
 > **這是給你審核用的劇本草稿，不是最終 JSON。** 流程：你校正劇情/對白 → 我才轉成 `examples/*.json`。
-> 2026-06-14 從單檔 `vigilant-screenplay-DRAFT.md` **拆成四幕**（依使用者要求）。設計依據：[`../vigilant-sofia-逐章演出設計.md`](../vigilant-sofia-逐章演出設計.md)（beat 與原則的家）＋ [`../vigilant-reconstruction-redo/`](../vigilant-reconstruction-redo/README.md)（source-grounded 劇情）。
+> 2026-06-14 從單檔 `vigilant-screenplay-DRAFT.md` **拆成四幕**（依使用者要求）。設計依據：[`../plans/vigilant-sofia-逐章演出設計.md`](../plans/vigilant-sofia-逐章演出設計.md)（beat 與原則的家）＋ [`../vigilant-reconstruction-redo/`](../vigilant-reconstruction-redo/README.md)（source-grounded 劇情）。
 
 ## 四幕
 

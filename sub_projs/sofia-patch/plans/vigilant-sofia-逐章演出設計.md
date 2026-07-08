@@ -5,8 +5,8 @@
 >
 > 與姊妹檔的分工：
 > - 機制/技術怎麼做（player topic + quest-state 閘 + 對話樹 + realm 素材）→ [`vigilant-support-plan-2026-06-13.md`](vigilant-support-plan-2026-06-13.md)
-> - VIGILANT 本體每個 quest/scene 的 source-grounded 解碼（FormID / stage / SCEN）→ [`vigilant-reconstruction-redo/`](vigilant-reconstruction-redo/README.md)（beat 對應的 quest slice 在此核對）
-> - Sofia 角色聲音 → [`sofia-personality.md`](sofia-personality.md)
+> - VIGILANT 本體每個 quest/scene 的 source-grounded 解碼（FormID / stage / SCEN）→ [`vigilant-reconstruction-redo/`](../vigilant-reconstruction-redo/README.md)（beat 對應的 quest slice 在此核對）
+> - Sofia 角色聲音 → [`sofia-personality.md`](../reference/sofia-personality.md)
 >
 > 下面 beat 與 VIGILANT quest slice 的精確 FormID/EditorID 對應**尚待核對**（標 `(對應待核對)`）。
 

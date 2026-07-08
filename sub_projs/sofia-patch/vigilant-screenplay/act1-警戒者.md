@@ -1,6 +1,6 @@
 # 第一幕：史丹達的警戒者
 
-> 劇本草稿（待審）。共用原則與讀法見 [`README.md`](README.md)。設計 beat 見 [`../vigilant-sofia-逐章演出設計.md`](../vigilant-sofia-逐章演出設計.md) §1。
+> 劇本草稿（待審）。共用原則與讀法見 [`README.md`](README.md)。設計 beat 見 [`../plans/vigilant-sofia-逐章演出設計.md`](../plans/vigilant-sofia-逐章演出設計.md) §1。
 > 基調：加入警戒者、出任務獵 daedra，偵探＋恐怖；**末段急轉嚴肅（信標屠殺）**。
 
 ## 1-A｜加入警戒者、安排 Sofia 一起入會

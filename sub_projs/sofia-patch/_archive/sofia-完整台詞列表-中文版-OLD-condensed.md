@@ -1085,5 +1085,5 @@
 ---
 
 **Last Updated**: 2026-06-14  
-**Source**: sofia-完整台詞列表.md (English version)  
+**Source**: ../dialogue-lists/sofia-完整台詞列表.md (English version)  
 **Translation Notes**: 繁體中文版本，保留英文原文供對照。

@@ -1,7 +1,7 @@
 # 第四幕：冷港（Coldharbour）
 
 > 劇本（de-AI'd bilingual draft，2026-06-14）。EN = voiced lines；〔ZH〕= 繁中對照。
-> 設計 beat 見 ../vigilant-sofia-逐章演出設計.md §4。
+> 設計 beat 見 ../plans/vigilant-sofia-逐章演出設計.md §4。
 > 觸發對照見 _act4-trigger-placement-map.md。
 > **本幕核心規則**：13 段記憶 Sofia 大部分不跟入；只 Pelinal（MeQ10）跟入；出來後只有 MeQ01/02/07 給輕量可問；Molag Bal 對峙高張力；Karma 結局分歧。寧缺勿濫。
 

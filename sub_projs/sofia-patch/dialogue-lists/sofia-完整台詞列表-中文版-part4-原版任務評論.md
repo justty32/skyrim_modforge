@@ -740,4 +740,4 @@
 
 **Last Updated**: 2026-06-14
 **來源**: `sub_projs/game-data/mods/SofiaFollower/dialogue.md`（speaker 0012C4 = Sofia）
-**風格參考**: `sofia-完整台詞列表-中文版-part2.md` / `sofia-personality.md`（賤嘴酒鬼味，減 AI 翻譯腔）
+**風格參考**: `sofia-完整台詞列表-中文版-part2.md` / `../reference/sofia-personality.md`（賤嘴酒鬼味，減 AI 翻譯腔）
