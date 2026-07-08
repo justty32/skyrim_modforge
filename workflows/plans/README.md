@@ -15,7 +15,7 @@
 | 計畫 | 出計畫日期 | 對應 spec | 狀態 |
 |---|---|---|---|
 | [worldspace-editor.md](worldspace-editor.md)（heightmap → 非平坦 LAND，7 task） | 2026-06-16 | [specs/worldspace-editor-design.md](../specs/worldspace-editor-design.md) | Task 1–6 落地（552 測試綠）；Task 7 待主力機 |
-| [ingame-scene-export.md](ingame-scene-export.md)（scene.json → patch；ModForge 側 M0–M2，7 task） | 2026-07-08 | [specs/ingame-scene-export-design.md](../specs/ingame-scene-export-design.md) | **M0–M1 落地**（npcRoles macro + 外部-speaker Hello，856 tests 綠、端到端 build 已驗）；M2 實機待主力機（[wait_todo/ingame-tests](../../wait_todo/ingame-tests.md)）|
+| [ingame-scene-export.md](ingame-scene-export.md)（scene.json → patch；ModForge 側 M0–M2，7 task） | 2026-07-08 | [specs/ingame-scene-export-design.md](../specs/ingame-scene-export-design.md) | **M0–M2 落地（IN-GAME 確認 2026-07-08）**——npcRoles macro + 外部-speaker Hello，白漫 Carlotta 講鐵匠問候；落地記錄 [landed/dialogue-quests](../feature-dev/landed/dialogue-quests.md)。後續：vendor faction-add / `removals[]` / M3–M5 runtime |
 
 action-system asset/config 生成（OAR/BDI/PIE）7 個 task 全落地（2026-06-14，547 測試綠燈），計畫已移 [archive/](archive/README.md)；落地記錄見 [feature-dev/landed/infra.md](../feature-dev/landed/infra.md)。
 

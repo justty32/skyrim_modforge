@@ -14,7 +14,9 @@
 
 ---
 
-## 實作進度（2026-07-08，M0–M1 落地）
+## 實作進度（2026-07-08，M0–M2 落地 · IN-GAME 確認）
+
+**✅ M2 實機確認（2026-07-08）**：白漫 Carlotta（當 clone 替身）對話講出鐵匠問候「Need something forged?」——§D 核心（貼 role → ModForge 生該 NPC 專屬 conditioned 問候）實機成立。落地記錄 [landed/dialogue-quests](../feature-dev/landed/dialogue-quests.md)。
 
 **已完成、離線全綠（856 tests）、端到端 build 已驗**（commit `feat(scene-export)`）：
 - `SceneNpcRoleSpec` + `ModSpec.NpcRoles` + `ExpandNpcRoles`（blacksmith → host quest + Hello + sandbox package + NpcPatch）+ `ValidateNpcRoles`。
