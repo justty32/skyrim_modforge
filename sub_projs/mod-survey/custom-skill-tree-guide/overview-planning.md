@@ -1,6 +1,6 @@
 # Step 1：總覽 + 前置需求 + 規劃技能樹
 
-← [custom-skill-tree-guide](custom-skill-tree-guide.md)
+← [custom-skill-tree-guide](README.md)
 
 ## 1. 總覽：要做出一棵技能樹，需要哪些拼圖
 

@@ -1,6 +1,6 @@
 # Campfire — Complete Camping System（求生框架 + in-world 3D 技能樹）
 
-← [survey index](../index.md)｜姊妹文件：[custom-skills-framework.md](../custom-skills-framework.md)（CSF＝**另一條**自訂技能樹路線）
+← [survey index](../index.md)｜姊妹文件：[custom-skills-framework/README.md](../custom-skills-framework/README.md)（CSF＝**另一條**自訂技能樹路線）
 
 | 項目 | 值 |
 | --- | --- |
@@ -17,7 +17,7 @@
 
 Campfire 的天賦樹**不是 Scaleform/UI 選單**。它在玩家面前的**真實世界座標**裡，用 Papyrus 動態 spawn 出一堆**普通的 in-world ObjectReference**——星點是 NIF activator、連線是 NIF activator、背板是一張 static「art plane」——排成一棵樹的形狀、整體轉向面對玩家；玩家用準心**啟動（OnActivate）**某顆星來點 perk，走遠 480 unit 整棵樹自動 disable+delete。這套引擎透過公開 API `CampUtil.RegisterPerkTree(...)` 開放給任何 mod 掛自己的樹（Frostfall 的「Endurance」就是這樣掛上去的）。
 
-對照組：[CSF（Custom Skills Framework）](../custom-skills-framework.md) 走的是 Scaleform 假 perk-skydome 選單（重用原版星座菜單外殼）。**Campfire 與 CSF 是兩條完全不同的自訂技能樹技術路線**——CSF＝改 UI 層、Campfire＝擺世界物件。
+對照組：[CSF（Custom Skills Framework）](../custom-skills-framework/README.md) 走的是 Scaleform 假 perk-skydome 選單（重用原版星座菜單外殼）。**Campfire 與 CSF 是兩條完全不同的自訂技能樹技術路線**——CSF＝改 UI 層、Campfire＝擺世界物件。
 
 ---
 
@@ -96,7 +96,7 @@ Event AttemptRegistration()
 
 ## 4. 對 ModForge / roadmap 的意義
 
-**這是 [custom-skill-tree-guide.md](../custom-skill-tree-guide.md) 之外的第二條自訂技能樹生成路線，且全部落在 ModForge 現有能力域內**（無需 CSF 那種 Scaleform JSON）：
+**這是 [custom-skill-tree-guide/README.md](../custom-skill-tree-guide/README.md) 之外的第二條自訂技能樹生成路線，且全部落在 ModForge 現有能力域內**（無需 CSF 那種 Scaleform JSON）：
 
 | Campfire 路線零件 | ModForge 現況 |
 | --- | --- |
@@ -109,7 +109,7 @@ Event AttemptRegistration()
 
 **槓桿點**：相較 CSF（要 native dll 玩家端 + Scaleform JSON + UTF-16 翻譯檔），**Campfire 路線的玩家端依賴只有 Campfire.esm 本身**，產物全是 ESP record + 薄 Papyrus——對 AI-agent 友善的「JSON spec → 技能樹」更貼合。代價：外觀固定（營火旁 3D 樹）、節點上限 12/樹、且綁 survival 情境（要先有營火）。
 
-**建議 roadmap 動作**：把本檔與 [custom-skills-framework.md](../custom-skills-framework.md) 並列為「自訂技能樹兩條路線」，在 roadmap 標注 Campfire 路線為**低依賴 MVP 候選**（純 record 可生成，只缺 layout 模板生成器）。
+**建議 roadmap 動作**：把本檔與 [custom-skills-framework/README.md](../custom-skills-framework/README.md) 並列為「自訂技能樹兩條路線」，在 roadmap 標注 Campfire 路線為**低依賴 MVP 候選**（純 record 可生成，只缺 layout 模板生成器）。
 
 ---
 

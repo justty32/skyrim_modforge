@@ -1,6 +1,6 @@
 # Constellations 參考實作：現代 X.json schema
 
-← [custom-skills-framework](custom-skills-framework.md)
+← [custom-skills-framework](README.md)
 
 ## 範例研究：Constellations（現代 JSON 格式參考實作）
 

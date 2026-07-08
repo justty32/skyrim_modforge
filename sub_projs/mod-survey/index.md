@@ -102,8 +102,13 @@
 | 4 招式 | SCAR（NPC 連段 AI） | [findings/scar.md](action-system/findings/scar.md) | AI 不可生成 |
 | 4 招式 | moveset 實例庫（DAR/OAR/SCAR 真實檔案結構） | [findings/movesets-examples.md](action-system/findings/movesets-examples.md) | **OAR 生成器的輸出規格（已驗證）** |
 
-| 自訂技能樹 | Custom Skills Framework | [custom-skills-framework.md](custom-skills-framework.md) + [custom-skill-tree-guide.md](custom-skill-tree-guide.md) | 自訂技能樹分析 + 實作指南（roadmap 功能項） |
-| 自訂技能樹 | Constellations（CSF 最高品質參考實作） | [findings/constellations.md](findings/constellations.md) | CSF 路線確認正確；MVP = JSON+PERK+GLOB+KYWD+薄 Papyrus；Fortify 附魔 native dll 超出 MVP |
+## 自訂技能樹（Custom Skills Framework）
+
+| 主題 | 文件 | 重點 |
+| --- | --- | --- |
+| Custom Skills Framework 技術調查 | [custom-skills-framework/README.md](custom-skills-framework/README.md) | CSF 架構、兩代格式斷層、案例研究（VIGILANT/GLENMORIL）、Constellations schema/接線 |
+| 實作指南（動手教學） | [custom-skill-tree-guide/README.md](custom-skill-tree-guide/README.md) | 自訂技能樹分析 + 實作指南（roadmap 功能項） |
+| Constellations（CSF 最高品質參考實作） | [findings/constellations.md](findings/constellations.md) | CSF 路線確認正確；MVP = JSON+PERK+GLOB+KYWD+薄 Papyrus；Fortify 附魔 native dll 超出 MVP |
 
 ## 求生 / 框架系統型（Campfire 堆疊 + PROTEUS）
 

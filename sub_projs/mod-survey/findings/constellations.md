@@ -4,7 +4,7 @@
 > 本機解壓：`~/skyrim_mods/unzip/Constellations-117352-1-0-2-1730665883/`
 > 目的：理解 Constellations 的技術架構，與 CSF 做比較，評估對 ModForge 技能樹生成路線的影響。
 > 慣例：散文用繁體中文，config 欄位 / record type / API 名稱 / FormId 保留 English。
-> 姊妹文件：[custom-skills-framework.md](../custom-skills-framework.md)（CSF 框架深挖）、[custom-skill-tree-guide.md](../custom-skill-tree-guide.md)（實作指南）
+> 姊妹文件：[custom-skills-framework/README.md](../custom-skills-framework/README.md)（CSF 框架深挖）、[custom-skill-tree-guide/README.md](../custom-skill-tree-guide/README.md)（實作指南）
 
 ---
 

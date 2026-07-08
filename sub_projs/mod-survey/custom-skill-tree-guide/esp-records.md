@@ -1,6 +1,6 @@
 # Step 2：在 esp 裡建記錄
 
-← [custom-skill-tree-guide](custom-skill-tree-guide.md)
+← [custom-skill-tree-guide](README.md)
 
 ## 4. Step 2 — 在 esp 裡建記錄
 

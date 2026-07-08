@@ -1,6 +1,6 @@
 # Step 5：XP / 升級 / 訓練接線
 
-← [custom-skill-tree-guide](custom-skill-tree-guide.md)
+← [custom-skill-tree-guide](README.md)
 
 ## 7. Step 5 — XP / 升級 / 訓練接線
 

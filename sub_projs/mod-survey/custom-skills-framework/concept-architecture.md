@@ -1,6 +1,6 @@
 # CSF 是什麼 + 架構細節
 
-← [custom-skills-framework](custom-skills-framework.md)
+← [custom-skills-framework](README.md)
 
 ## 1. CSF 是什麼
 

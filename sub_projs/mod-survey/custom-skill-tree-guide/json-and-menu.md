@@ -1,6 +1,6 @@
 # Step 3–4：寫 X.json + 掛進選單
 
-← [custom-skill-tree-guide](custom-skill-tree-guide.md)
+← [custom-skill-tree-guide](README.md)
 
 ## 5. Step 3 — 寫 `<X>.json`（逐欄帶寫）
 

@@ -1,6 +1,6 @@
 # Step 6–7：在地化 + 測試 + 用 ModForge 生成 + Checklist
 
-← [custom-skill-tree-guide](custom-skill-tree-guide.md)
+← [custom-skill-tree-guide](README.md)
 
 ## 8. Step 6 — 在地化
 
@@ -110,4 +110,4 @@ ModForge generator 拿到這份 spec 後：自動建 level/ratio/legendary 三�
 
 ---
 
-> 深水區（兩代格式斷層、舊 INI 對照、VIGILANT/GLENMORIL 案例、完整 schema 欄位表）見 [`custom-skills-framework.md`](custom-skills-framework.md)。本指南只負責「照著做就能跑」。
+> 深水區（兩代格式斷層、舊 INI 對照、VIGILANT/GLENMORIL 案例、完整 schema 欄位表）見 [`custom-skills-framework/README.md`](../custom-skills-framework/README.md)。本指南只負責「照著做就能跑」。

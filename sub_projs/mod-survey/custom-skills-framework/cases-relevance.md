@@ -1,6 +1,6 @@
 # 案例研究（VIGILANT / GLENMORIL）+ 對 ModForge 相關性
 
-← [custom-skills-framework](custom-skills-framework.md)
+← [custom-skills-framework](README.md)
 
 ## 3. 案例研究：VIGILANT 技能樹
 

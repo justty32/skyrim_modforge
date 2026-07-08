@@ -1,6 +1,6 @@
 # Constellations 參考實作：SKSE/Papyrus 接線 + 在地化 + 意義修正
 
-← [custom-skills-framework](custom-skills-framework.md)
+← [custom-skills-framework](README.md)
 
 ### 6.3 SKSE plugin + Papyrus 接線
 
