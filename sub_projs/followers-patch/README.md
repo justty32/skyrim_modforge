@@ -8,25 +8,6 @@
 
 **素材來源**：各隨從的對白抽取在 `../game-data/mods/<Mod>/`（gitignored 本地參考；英文本體 + 官方中文化對照，中文化的 mojibake 已修）。寫 personality 以**英文本體**理解角色，產出用**繁體中文**。
 
-## 目標隨從與素材
-
-| 隨從 | 角色定位（待 brief 確認）| 主要素材夾 |
-|---|---|---|
-| **Auri** | Song of the Green，木精靈女獵手 | `Auri_SongOfTheGreen`（EN）+ `Auri_VIGILANTpatch`（她在 VIGILANT 的吐槽）|
-| **Morgaine** | 全語音獨立隨從 | `Morgaine`（EN）+ `Morgaine_CHS` |
-| **Onean** | 自訂隨從 | `Onean`（EN）+ `Onean_CHT` |
-| **Neisa** | 自訂隨從 | `Neisa`（EN）+ `Neisa_CHT` |
-| **Remiel** | Dwemer Specialist，矮人科技狂 | `Remiel_DwemerSpecialist`（EN，核心 6210 行）+ LOTD/BeyondReach/DeepElf/ThograBanter 評論 |
-| **Recorder** | 記錄者，已有 brief（官方繁中＝`Recorder_CHT`）| `Recorder`（EN）；brief 見本資料夾 `recorder-personality.md` |
-| **Serana** | DLC 半正典，Dialogue Add-On 大幅擴充 | `SeranaDialogueAddOn`（EN，7295 行）|
-
 ## 產出檔
 
-每隨從一份 `<隨從>-personality.md`，比照 sofia-personality 的節次與深度。
-
-## 狀態
-
-personality brief 已全部產出（2026-06-14，平行 agent 依 sofia-personality 範本）：
-- ✅ 全 8 份：`auri`、`morgaine`、`onean`、`neisa`、`remiel`、`recorder`（從原 recorder-patch 移入）、`serana`（正典 Dawnguard + Serana Dialogue Add-On）、`mirai`（SN Mirai 英譯 + more aware；高感知型）。
-
-備註：Onean/Neisa 無英文原文（mod 本身即中文，EN 抽取為 mojibake，已修為可讀中文）；brief 以中文台詞為據。
+8 隨從、8 份 `<隨從>-personality.md`（角色定位、素材來源、狀態）→ **[personalities/](personalities/)**。已全部產出（2026-06-14，平行 agent 依 sofia-personality 範本）。
