@@ -14,6 +14,22 @@
 
 ---
 
+## 實作進度（2026-07-08，M0–M1 落地）
+
+**已完成、離線全綠（856 tests）、端到端 build 已驗**（commit `feat(scene-export)`）：
+- `SceneNpcRoleSpec` + `ModSpec.NpcRoles` + `ExpandNpcRoles`（blacksmith → host quest + Hello + sandbox package + NpcPatch）+ `ValidateNpcRoles`。
+- **core 前置修（Task 0 Step 4 預判的最小點）**：`Generator.Build.Dialogue.cs` 讓 **外部 `<plugin>:0xID` speaker** 也能生 conditioned Hello（兩處 speaker-gate fallback `TryResolveRef` + `MakeHello` 改吃 `FormKey` 並在材質化迴圈解析外部 speaker，否則外部 NPC 的 Hello topic 根本不生成）。
+- 範例 `examples/scene-export-blacksmith.scene.json`（M0 契約）+ `SceneNpcRolesTests.cs`（8 測）。
+
+**對原 plan 的偏離（實作時的更優解）**：
+- **不需獨立 `SceneImport --scene` 合併**：scene.json 就是一份合法 `ModSpec`，`build scene.json out.esp` 直接可跑（`placements`/`mapMarkers`/`hazards`/`npcRoles` 同名欄位）。原 Task 2 的 `--scene` 合併＝未來「骨架 spec + 採集場景」才需要，非本切片必需，延後。
+- **`SceneNpcRoleSpec.ActorRef` 改名 `Npc`**：keyed on **base NPC ref**（GetIsID/NpcPatch/placement base 三者都吃 base ref），與全 repo 一致。
+- **vendor 段未做**：`NpcPatch` 只換 package、不能加 faction membership → vendor-on-external-NPC 是本切片外的小 GAP（spec §D 已記），待補 faction-add。切片以「conditioned 問候 + sandbox 行為」證成核心。
+
+**下一步**：M2 實機（[wait_todo/ingame-tests](../../wait_todo/ingame-tests.md)）；之後 vendor faction-add、`removals[]`（橡皮擦）、M3–M5 runtime 元件。下面原始 task 清單保留作歷史脈絡。
+
+---
+
 ### Task 0: 前置確認（只讀，不改碼）
 
 **Files:** 無（只讀）
