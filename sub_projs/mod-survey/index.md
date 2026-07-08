@@ -39,7 +39,7 @@
 
 ## 系統 / 機制型（2026-06-14 批次）
 
-逐 mod 機制拆解 + 對 ModForge 的「可生成 / 需新支援 / 純參考」標記。共通缺口已彙整進 [roadmap](../../workflows/roadmap.md)「mod-survey 浮現的 record/生成缺口」。
+逐 mod 機制拆解 + 對 ModForge 的「可生成 / 需新支援 / 純參考」標記。共通缺口已彙整進 [roadmap](../../workflows/roadmap/README.md)「mod-survey 浮現的 record/生成缺口」。
 
 | Mod | Finding | 機制重點 | ModForge 缺口 |
 | --- | --- | --- | --- |

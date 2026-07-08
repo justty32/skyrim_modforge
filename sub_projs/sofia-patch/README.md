@@ -21,7 +21,7 @@
 | [`dialogue-lists/`](dialogue-lists/README.md) | **完整台詞列表**——EN 全本 + 繁中四部（Custom Topics / Misc+Combat / 首遇與婚禮 / 原版任務評論），從 `SofiaFollower.esp` 提取的全部對白。 |
 | [`vigilant-screenplay/`](vigilant-screenplay/README.md) | **四幕對白劇本草稿（DRAFT 待審）**——把 `plans/` 的 beat 寫成 Sofia 的實際台詞，按四幕拆檔（警戒者／墮入／宅邸／冷港）+ README 放共用原則。審核校正後才轉 `examples/*.json`。 |
 
-外部參考（repo 主 spec 文檔）：[`SPEC-dialogue-quests.md`](../../docs/spec/SPEC-dialogue-quests.md)、[`SPEC-packages.md`](../../docs/spec/SPEC-packages.md)、[`SPEC-world.md`](../../docs/spec/SPEC-world.md)、[`SPEC-workflow.md`](../../docs/spec/SPEC-workflow.md)。
+外部參考（repo 主 spec 文檔）：[`SPEC-dialogue-quests.md`](../../docs/spec/SPEC-dialogue.md)、[`SPEC-packages.md`](../../docs/spec/SPEC-packages.md)、[`SPEC-world.md`](../../docs/spec/SPEC-world.md)、[`SPEC-workflow.md`](../../docs/spec/SPEC-workflow.md)。
 
 **相關工具（cell 逆向）**：[`docs/investigation/decode/sleeping-giant-inn-reverse-2026-06-13.md`](../../workflows/investigation/decode/sleeping-giant-inn-reverse-2026-06-13.md) — 用新 CLI 子指令 `cellrefs <esp> <0xFORMID>` 把 vanilla interior cell（範例 RiverwoodSleepingGiantInn `0x0133C6`，480 ref）逆向成 `placements[]` JSON（`examples/sleeping_giant_inn.json`）。旋轉 esm radian→ModForge degree、cell-override 寫法、scale 缺欄等坑都記在那。要把 Sofia 演出搬進某個 vanilla 室內、或重佈置一個既有 cell 時用得上。
 

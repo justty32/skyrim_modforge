@@ -1,6 +1,6 @@
 # 設計方案：`settlements:` 聚落量產 macro（人口填充 spec section）
 
-← [specs README](README.md)｜idea [#22 漂泊開拓慢活](../idea/world-building/22-wandering-frontier.md)｜roadmap [mod-survey-gaps 🏘️](../roadmap/mod-survey-gaps.md)｜先例 [`skillTrees:` macro](../../src/ModForge.Core/Spec.SkillTree.cs)
+← [specs README](README.md)｜idea [#22 漂泊開拓慢活](../../idea/world-building/22-wandering-frontier.md)｜roadmap [mod-survey-gaps 🏘️](../../roadmap/mod-survey-gaps.md)｜先例 [`skillTrees:` macro](../../../src/ModForge.Core/Spec.SkillTree.cs)
 
 ## 目標
 
@@ -97,4 +97,4 @@ settlements:
 3. **居民互友 RELA 預設關，`friendlyResidents: true` 才開**——避免大聚落意外全互友。
 4. **vendor merchant container 沿用 `Build.Vendor` 現行約定**（不另設後室）。
 
-> 設計即 plan-ready；剩下的不確定都收斂成「實機驗收項」，動工後進 [WAIT_USER](../../WAIT_USER.md)。
+> 設計即 plan-ready；剩下的不確定都收斂成「實機驗收項」，動工後進 [WAIT_USER](../../../WAIT_USER.md)。

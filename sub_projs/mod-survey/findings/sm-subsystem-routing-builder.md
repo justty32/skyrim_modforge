@@ -67,7 +67,7 @@
 
 ### 4b. 確認缺口（已在 roadmap 驗證，直接引用）
 
-引用自 [roadmap/mod-survey-gaps.md](../../workflows/roadmap/mod-survey-gaps.md) 的「降級為 partial」條目：
+引用自 [roadmap/mod-survey-gaps.md](../../../workflows/roadmap/mod-survey-gaps.md) 的「降級為 partial」條目：
 
 > **SM branch/quest-node 子樹 + keyword 路由（降級為 partial）**
 > `BuildStoryManager()` 已建 SMBN+SMQN、以 `PreviousSibling` 串同層 quest node、按 `root|keyword` 一分支路由（帶 `GetEventData/GetIsID Keyword` 條件）。**真缺**：只建 vanilla event root 下**單層**分支（兄弟 = quest node），不支援**任意深度/巢狀 SMBN 子樹**或非 vanilla event root。scope 收窄為「多層分支巢狀」。

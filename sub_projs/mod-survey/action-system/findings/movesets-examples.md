@@ -3,7 +3,7 @@
 ← [action-system 中樞](../README.md)
 
 > 樣本來源：`~/skyrim_mods/hdd/Animatecc/`（~57 個 MCO/SCAR/OAR/DAR movesets，玩家＋NPC）。解壓樣本於 gitignored `game-data/mods/action-system/movesets/`。
-> **價值**：這是未來 ModForge [OAR 生成器](../../../workflows/roadmap.md)的**確切輸出規格**——把「條件式動畫包」從概念釘到真實 JSON/資料夾佈局。以下全是實檔驗證。
+> **價值**：這是未來 ModForge [OAR 生成器](../../../../workflows/roadmap/README.md)的**確切輸出規格**——把「條件式動畫包」從概念釘到真實 JSON/資料夾佈局。以下全是實檔驗證。
 
 ## 三種佈局並存（同一目的、不同世代）
 

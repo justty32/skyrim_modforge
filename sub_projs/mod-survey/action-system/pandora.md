@@ -17,7 +17,7 @@
 ## 對 ModForge 的整合
 - **可行模型＝shell-out**（與 ModForge 已驅動 Papyrus compiler / xLODGen 同套）：ModForge 產出 records + OAR config + `.hkx` 資產後，呼叫 `Pandora --auto_run --auto_close -o "<out>" --tesv:"<gamedir>"` 生成 behavior 基底。
 - **不能 library 嵌入**：Pandora 以 app 出貨，其 .NET plugin API（`IEngineConfigurationPlugin` + `plugin.json`）明示「不穩定、隨時破壞」——「兩者都是 .NET」**不等於**能 NuGet reference。
-- roadmap spike：① 確認 native-Linux vs Proton；② 自動化跑能否 displayless。見 [roadmap](../../../workflows/roadmap.md) 的 ModForge↔Pandora 項。
+- roadmap spike：① 確認 native-Linux vs Proton；② 自動化跑能否 displayless。見 [roadmap](../../../workflows/roadmap/README.md) 的 ModForge↔Pandora 項。
 
 ## 在動作系統中的定位
 四層動畫/動作堆疊：**Pandora（behavior patch 基底）→ OAR（條件式替換，見 [oar-replacer-guide](oar-replacer-guide.md)）→ .hkx 動畫資產（[havok-blender](../../../workflows/idea/asset-pipelines/animation/havok-blender.md) 線）→ 觸發層（IDLE/perk/SKSE）**。即將調查的整套新動作系統（MCO/movesets 等）會疊在這個基底上。

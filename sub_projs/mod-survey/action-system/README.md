@@ -37,7 +37,7 @@ ModForge 能確定生成的：**第 1 步的 BDI config、第 3 步的 OAR condi
 - **OAR 生成器**（最高槓桿）— 純 folder+JSON+CTDA-like 條件；八向/攻擊變體動畫包可模板量產。
 - **BDI config 生成器** — `{project, variables, events}` → config；給 NPC 加自訂狀態變數免 behavior patch。
 - **Pandora shell-out** — 生 behavior 基底（headless/Linux 待 Manjaro 實機驗，見 [pandora.md](pandora.md)）。
-- 詳見 [roadmap](../../../workflows/roadmap.md) 的動作系統相關項。
+- 詳見 [roadmap](../../../workflows/roadmap/README.md) 的動作系統相關項。
 
 ## 與其他層的邊界
 - **不可生成**（純 SKSE DLL，僅列前置）：XPMSSE、Pandora 引擎本體、UBR、BDI/PIE/AMR 的 DLL、SCAR、DMK。

@@ -1,6 +1,6 @@
 # worldspace-editor 後端 — 設計方案（heightmap → 非平坦 LAND）
 
-← [specs 入口](README.md)｜idea：[worldspace-editor/README.md](../idea/worldspace-editor/README.md)｜座標：[coord-system.md](../idea/worldspace-editor/coord-system.md)
+← [specs 入口](README.md)｜idea：[worldspace-editor/README.md](../../sub_projs/godot-worldspace-editor/README.md)｜座標：[coord-system.md](../../sub_projs/godot-worldspace-editor/design/coord-system.md)
 
 本 spec 只涵蓋 **Idea #19 三階段 pipeline 的第 2 階段（ModForge 後端）的 MVP**：讀一張 16-bit grayscale PNG heightmap → 自動衍生 cell grid → 生非平坦 LAND（VHGT 起伏）→ COW 可進入、地形有起伏。Godot 前端（第 1 階段）與遊戲內微調（第 3 階段）不在本 spec。
 

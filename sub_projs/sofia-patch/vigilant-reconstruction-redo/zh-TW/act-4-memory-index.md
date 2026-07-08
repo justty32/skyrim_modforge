@@ -108,4 +108,4 @@ ESM 路徑：`/home/lorkhan/skyrim_mods/unzip/Vigilant SE v181/10 English/Vigila
 每個任務的 Gemini 轉儲 (按任務分組的原始 `dialogue.md` 英文文本，過度包含相關話題)：
 `_gemini-quarantine/2026-06-14/vigilant-plot-reconstruction/act-4-exhaustive/memory-01.md` … `memory-13.md`
 
-次要參考資料 (僅供驗證路線圖)：[`references/zhihu-vigilant-review-notes.md`](references/zhihu-vigilant-review-notes.md), [`references/video-transcript-notes.md`](references/video-transcript-notes.md)。
+次要參考資料 (僅供驗證路線圖)：[`references/zhihu-vigilant-review-notes.md`](../references/zhihu-vigilant-review-notes.md), [`references/video-transcript-notes.md`](../references/video-transcript-notes.md)。

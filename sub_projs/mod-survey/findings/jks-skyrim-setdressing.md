@@ -69,7 +69,7 @@
 - **新 interior cell from-scratch + vendor faction + merchant container + 店主 NPC/package** — 全 landed。
 - **NavMesh override**（custom NAVM+NAVI）— landed（記憶 `programmatic-navmesh`）；這是 set-dressing 量產時**必須一起生**的配套。
 
-**真正的契合點 = Godot worldspace editor 就是 set-dressing 的天然 authoring 前端。** [`sub_projs/godot-worldspace-editor`](../../sub_projs/godot-worldspace-editor/README.md) 的匯出格式 `placements.json`（`base / position(m) / rotation(rad) / scale / instanceId?`）與本調查 `cellrefs` 倒出的 cell 內容**逐欄 1:1**——JK's 那 106 筆/cell 的雜物擺放，正是「在 WYSIWYG 編輯器裡 hand-place 或 GDScript 程序化散佈」最適合做的事，做完一鍵 `godotPlacements: {$include}` 掛進 worldspace spec → ModForge 生 REFR。**JK's 是用 CK 手刷出來的；ModForge + Godot editor 是這套手藝的可腳本化替代前端。**
+**真正的契合點 = Godot worldspace editor 就是 set-dressing 的天然 authoring 前端。** [`sub_projs/godot-worldspace-editor`](../../../sub_projs/godot-worldspace-editor/README.md) 的匯出格式 `placements.json`（`base / position(m) / rotation(rad) / scale / instanceId?`）與本調查 `cellrefs` 倒出的 cell 內容**逐欄 1:1**——JK's 那 106 筆/cell 的雜物擺放，正是「在 WYSIWYG 編輯器裡 hand-place 或 GDScript 程序化散佈」最適合做的事，做完一鍵 `godotPlacements: {$include}` 掛進 worldspace spec → ModForge 生 REFR。**JK's 是用 CK 手刷出來的；ModForge + Godot editor 是這套手藝的可腳本化替代前端。**
 
 對照兩種 set-dressing 路線：
 | | JK's（本檔，靜態）| BOS（[base-object-swapper](base-object-swapper.md)，runtime）|

@@ -10,7 +10,7 @@
 > - ⚠️ 原文 SkyMeshGLTF 連結錯，正解 `github.com/nlaha/SkyMeshGLTF`。
 > - 結論已併入 [worldspace-editor-design.md](../../../workflows/specs/worldspace-editor-design.md) 與 idea README。
 
-關聯：[workflows/idea/worldspace-editor/README.md](../../../workflows/idea/worldspace-editor/README.md)
+關聯：[workflows/idea/worldspace-editor/README.md](../../godot-worldspace-editor/README.md)
 先讀：[workflows/idea/asset-pipelines/model-porting/README.md](../../../workflows/idea/asset-pipelines/model-porting/README.md)（2026-06-09 靜態 mesh pipeline 研究，tool 確認度較高）
 
 ---

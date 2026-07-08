@@ -13,7 +13,7 @@
 ## A 組：Radiant Quest / Alias 填充系統（前置必備）
 
 這組是「能不能生 radiant 任務」的根基。來源：**missives.md**、**encounter-mods.md**、**sm-subsystem.md**。  
-→ 缺口 #7 #8 #9 已登入 [mod-survey-gaps.md](mod-survey-gaps.md)，此處僅摘要。
+→ 缺口 #7 #8 #9 已登入 [mod-survey-gaps.md](../mod-survey-gaps.md)，此處僅摘要。
 
 | # | 缺口 | 優先 |
 |---|------|------|
@@ -22,15 +22,15 @@
 | 9 | ✅ `UpdateCurrentInstanceGlobal` fragment codegen——gather/計數型 quest objective 文字即時更新 | ✅ 落地 06-17 |
 
 **PARTIAL（多數已支援，留窄缺口）：**
-- SM branch/quest-node 多層巢狀 SMBN（→ [mod-survey-gaps.md](mod-survey-gaps.md) ⚠️ partial）
-- LVLN alias fill 一等模式（→ [mod-survey-gaps.md](mod-survey-gaps.md) ⚠️ partial）
+- SM branch/quest-node 多層巢狀 SMBN（→ [mod-survey-gaps.md](../mod-survey-gaps.md) ⚠️ partial）
+- LVLN alias fill 一等模式（→ [mod-survey-gaps.md](../mod-survey-gaps.md) ⚠️ partial）
 
 ---
 
 ## B 組：Perk 互動式 Entry-Point + Fragment
 
 來源：**perk-entry-points.md**、**arrowblock.md**、**immersive-interactions.md**。  
-→ 缺口 #1 已登入 [mod-survey-gaps.md](mod-survey-gaps.md)，此處僅摘要。
+→ 缺口 #1 已登入 [mod-survey-gaps.md](../mod-survey-gaps.md)，此處僅摘要。
 
 | # | 缺口 | 優先 |
 |---|------|------|
@@ -41,7 +41,7 @@
 ## C 組：Package 目標/地點 → Quest Alias 間接
 
 來源：**encounter-mods.md**、**sm-subsystem.md**。  
-→ 缺口 #2 已登入 [mod-survey-gaps.md](mod-survey-gaps.md)。
+→ 缺口 #2 已登入 [mod-survey-gaps.md](../mod-survey-gaps.md)。
 
 | # | 缺口 | 優先 |
 |---|------|------|
@@ -55,13 +55,13 @@ ModForge 的 `build` 主輸出是 `.esp`。這組是對應 SKSE framework 的 **
 
 ### ✅ D-1 SPID `_DISTR.ini` 輸出（**已落地 2026-06-17**）
 **來源：** spid.md、common-framework-mods.md  
-**狀態：** ✅ 離線實作 `spidDistributions:` spec section → mod 根 `<file>_DISTR.ini`（loose，非 esp）。`Spec.SpidDistribution.cs`（DTO）+ `SpidGen.cs`（emitter，尾段 NONE 修剪、Item count/Package index 第 6 欄）+ `Generator.Validate.Spid.cs`（type/record/chance 校驗）+ `Package.cs` 接 loose-file 段。**14 測綠**；格式逐欄查 spid.md（SPID 7.3）。docs [SPEC-distribution.md](../../docs/spec/SPEC-distribution.md)、example `spid_distribution_spec.json`、schema 已同步。  
+**狀態：** ✅ 離線實作 `spidDistributions:` spec section → mod 根 `<file>_DISTR.ini`（loose，非 esp）。`Spec.SpidDistribution.cs`（DTO）+ `SpidGen.cs`（emitter，尾段 NONE 修剪、Item count/Package index 第 6 欄）+ `Generator.Validate.Spid.cs`（type/record/chance 校驗）+ `Package.cs` 接 loose-file 段。**14 測綠**；格式逐欄查 spid.md（SPID 7.3）。docs [SPEC-distribution.md](../../../docs/spec/SPEC-distribution.md)、example `spid_distribution_spec.json`、schema 已同步。  
 支援 spell/perk/faction/keyword/package/outfit/item 分發給 NPC（依 race/faction/keyword/level/trait 條件）。  
 **用途：** 無 ESP patch 給 follower/NPC 加 faction、標記 keyword、分發 ability spell；OAR 條件讀 faction → animation 切換。
 
 ### ✅ D-2 MCM Helper `config.json`/`settings.ini` 輸出（**已落地 2026-06-20**）
 **來源：** mcm-helper.md、mcm-helper-config-json.md  
-**狀態：** ✅ 離線實作 `mcmConfigs:` spec section → `MCM/Config/<modName>/config.json`（menu 佈局）+ `settings.ini`（預設值）。`Spec.Mcm.cs`（DTO）+ `McmGen.cs`（`System.Text.Json` 生 config.json + ini）+ `Generator.Validate.Mcm.cs` + `Package.cs` 接 loose-file 段。**17 測綠**；格式逐欄查 mcm-helper-config-json.md（MCM Helper 1.6.1）。docs [SPEC-distribution.md](../../docs/spec/SPEC-distribution.md)、example `mcm_config_spec.json`、schema 已同步。  
+**狀態：** ✅ 離線實作 `mcmConfigs:` spec section → `MCM/Config/<modName>/config.json`（menu 佈局）+ `settings.ini`（預設值）。`Spec.Mcm.cs`（DTO）+ `McmGen.cs`（`System.Text.Json` 生 config.json + ini）+ `Generator.Validate.Mcm.cs` + `Package.cs` 接 loose-file 段。**17 測綠**；格式逐欄查 mcm-helper-config-json.md（MCM Helper 1.6.1）。docs [SPEC-distribution.md](../../../docs/spec/SPEC-distribution.md)、example `mcm_config_spec.json`、schema 已同步。  
 控件：header/empty/toggle/slider/stepper/enum/keymap/hiddenToggle + group/position 佈局；`sourceType: ModSettingBool/Int/Float/String`；id `key:Section` → ini `[Section] key=`。  
 **MVP 範圍：** 純 ini-backed（`ModSetting*`）**零 Quest/Papyrus/master**——DLL 全自動。`PropertyValue*`/`action.CallFunction`（需 Quest 掛 `MCM_ConfigBase` script）**範圍外，validate 擋掉**，留待日後接 Papyrus host。  
 **用途：** 任何需要玩家設定面板的 mod（難度、開關功能、follower 行為調整）。  
@@ -76,7 +76,7 @@ ModForge 的 `build` 主輸出是 `.esp`。這組是對應 SKSE framework 的 **
 
 ### ✅ D-4 FormList Manipulator `_FLM.ini` 輸出（**已落地 2026-06-20**）
 **來源：** formlist-manipulator.md（v1.8.1）、flst-factory.md  
-**狀態：** ✅ 離線實作 `formListInjects:` spec section → `<file>_FLM.ini`（mod 根＝`Data/`）。`Spec.FormListInject.cs`（DTO）+ `FlmGen.cs`（emit）+ `Generator.Validate.Flm.cs` + `Package.cs` 接 loose-file 段。**11 測綠**；格式逐欄查 formlist-manipulator-config-core/-advanced.md。docs [SPEC-distribution.md](../../docs/spec/SPEC-distribution.md)、example `formlist_inject_spec.json`、schema 已同步。  
+**狀態：** ✅ 離線實作 `formListInjects:` spec section → `<file>_FLM.ini`（mod 根＝`Data/`）。`Spec.FormListInject.cs`（DTO）+ `FlmGen.cs`（emit）+ `Generator.Validate.Flm.cs` + `Package.cs` 接 loose-file 段。**11 測綠**；格式逐欄查 formlist-manipulator-config-core/-advanced.md。docs [SPEC-distribution.md](../../../docs/spec/SPEC-distribution.md)、example `formlist_inject_spec.json`、schema 已同步。  
 正確語法＝`FormList = <FList>|<forms>|<Filter>`（非 roadmap 原寫的舊 `Form=/Target=`）；涵蓋 FormList 操作行 + Filter/Alias/Group/Collection 定義（Collection 20 FormType 白名單）。  
 **MVP 範圍外：** `ModEvent`（需 Papyrus 發送）+ 特化快捷語法（Plant/BToys/GToys/HairColors/AtronachForge/…）。  
 **用途：** 把自家 spell/item/NPC 零衝突加進外部 mod 的 FLST（Spellforge 法術池、SPID 分發目標 FLST、領養禮物池…）；自建 FLST 仍走 esp-side `formLists[]`。  
@@ -100,7 +100,7 @@ ModForge 的 `build` 主輸出是 `.esp`。這組是對應 SKSE framework 的 **
 ## E 組：Encounter 地點感知 / 冷卻機制
 
 來源：**encounter-mods.md**（IWE/EE）。  
-→ 缺口 #5 #6 已登入 [mod-survey-gaps.md](mod-survey-gaps.md)，此處僅摘要。
+→ 缺口 #5 #6 已登入 [mod-survey-gaps.md](../mod-survey-gaps.md)，此處僅摘要。
 
 | # | 缺口 | 優先 |
 |---|------|------|
@@ -112,7 +112,7 @@ ModForge 的 `build` 主輸出是 `.esp`。這組是對應 SKSE framework 的 **
 ## F 組：NavmeshTester 動態生怪模板
 
 來源：**encounter-mods.md**。  
-→ 缺口 #3 已登入 [mod-survey-gaps.md](mod-survey-gaps.md)。
+→ 缺口 #3 已登入 [mod-survey-gaps.md](../mod-survey-gaps.md)。
 
 | # | 缺口 | 優先 |
 |---|------|------|
@@ -123,7 +123,7 @@ ModForge 的 `build` 主輸出是 `.esp`。這組是對應 SKSE framework 的 **
 ## G 組：Perk 程序化法術族生成器
 
 來源：**spellforge.md**、**flst-factory.md**。  
-→ 缺口 #4 已登入 [mod-survey-gaps.md](mod-survey-gaps.md)。
+→ 缺口 #4 已登入 [mod-survey-gaps.md](../mod-survey-gaps.md)。
 
 | # | 缺口 | 優先 |
 |---|------|------|
@@ -134,7 +134,7 @@ ModForge 的 `build` 主輸出是 `.esp`。這組是對應 SKSE framework 的 **
 ## H 組：Custom Skills Framework 技能樹生成器 — ⏸️ 暫緩（暫時先不做）
 
 來源：**constellations.md**（含 CSF v3 JSON 格式完整文件化）。  
-→ 已登入 [generation.md](generation.md)（含 MVP scope + spec 欄位草案）。
+→ 已登入 [generation.md](../generation.md)（含 MVP scope + spec 欄位草案）。
 
 > ⏸️ **2026-06-22 決定暫緩**：研究與 spec 草案皆完整，但暫時先不動工，等之後再排。
 

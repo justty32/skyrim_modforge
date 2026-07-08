@@ -1049,7 +1049,7 @@ git commit -m "docs(lighting): bright-interior example + schema (LGTM + IMGS + C
 
 ```markdown
 ## Lighting Templates + ImageSpaces 室內光照（LGTM / IMGS / CELL XCLL）
-→ **說明文件**：[SPEC-world.md § lighting](../../docs/spec/SPEC-world.md#lighting)
+→ **說明文件**：[SPEC-world.md § lighting](../../../docs/spec/SPEC-world.md#lighting)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
