@@ -48,8 +48,7 @@
   - 測法同 Act 1（裝在 SofiaFollower+Vigilant 後、save+reload 吃 .seq、跑對應幕的任務、到 beat 對 Sofia 按對話鍵）。回報哪些選項沒出現 / 分支對不對 / 語音正常否。
   - gate 重點：Act2 空牢 0x038524 / 沉船 0x038525 / 血祭母 0x038526；Act3 Child of Oblivion 0x065932；Act4 多數記憶靜默、僅 MeQ01/02/07/Pelinal MeQ10/Molag Bal/Karma 結局有評論。
 
-- **遊戲內場景匯出 · blacksmith 場景（Idea #24 §D，2026-07-08，座標已修）** — greeting 已確認；**vendor 交易 + 場景擺放待驗**。重打包 `~/skyrim_mods/mine/ModForgeSceneBlacksmith.zip`（替身 Uthgerd 0x0918E2＝非原版商人；純 record 無 .pex）。
-  - **座標修正**：前一版把場景擺在 (0,−9000) 亂填 z=−3800，實際地形在山區、比它低約 790u → 房子飄天上、傳送摔死。已搬到**白漫馬廄旁的平坦凍原**（地面 Z=−4590，實測 vanilla marker 得來），傳送安全、物件落地。
-  - **驗**：地圖上 **Forgewatch** marker 在白漫馬廄東邊一點 → 快旅過去（應**不再摔死**）→ 面前有 Farmhouse01 房子 + 站著的 **Uthgerd**（複本）+ 篝火 + 商店。對 Uthgerd 講話 → ① 問候「Need something forged?」② vanilla **「I'd like to trade.」**開交易（鐵匠貨 + ~500 金）。
-  - **注意**：交易只在此地（chest 所在 cell）開得了；白漫城裡遇到的另一個 Uthgerd 只會講問候（VendorLocation 綁 chest cell，預期行為）。場景擺在馬廄旁開闊凍原，可能與地形小幅高低差（房子若仍略浮/略陷回報，我微調 Z）。
-  - **回報**：傳送有無摔死、房子在不在地面、Uthgerd 在不在、問候+交易通不通。
+- **遊戲內場景匯出 · blacksmith 場景（Idea #24 §D，2026-07-08，座標+NPC 已修）** — greeting/vendor **記錄已驗**（dump）；**實機待複驗**。`~/skyrim_mods/mine/ModForgeSceneBlacksmith.zip`（純 record 無 .pex）。
+  - **兩處修正**：① 座標從亂填的 (0,−9000,−3800)〔山區、懸空 790u、摔死〕搬到白漫馬廄凍原地面 Z=−4590（實測 vanilla marker），再**南移 200** 避開馬廄鑲嵌；② 鐵匠原本用 Uthgerd（vanilla **unique** NPC → 引擎只留一個實例、複製的看不到）**改成新 in-spec NPC「Brynja the Smith」**（Nord，可放置、會現身；即真實 PROTEUS clone 的形態）。
+  - **驗**：地圖 **Forgewatch** marker（白漫馬廄東南）→ 快旅（不該摔死）→ 面前 Farmhouse01 房子 + 站著的 **Brynja the Smith** + 篝火 + 商店箱。對 Brynja 講話 → ① 問候「Need something forged?」② vanilla **「I'd like to trade.」**開交易（鐵匠貨 +500 金）。
+  - **回報**：傳送安全否、房子貼地否、**Brynja 有沒有站在那**、問候+交易通否。（Brynja 是從零建的 NPC，臉可能是預設 Nord/略陽春——能站、能講、能交易就算過；美化是後話。）
