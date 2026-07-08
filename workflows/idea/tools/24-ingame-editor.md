@@ -21,7 +21,11 @@
 ## 能力光譜（由易到難，可各自獨立落地）
 
 - **① 快照 cell 狀態 → patch**（地基能力）：SKSE 列舉當前 cell 的 placed refs（座標/旋轉/縮放/enable state）→ diff vanilla → 輸出 override CELL + `placements[]`。ModForge 已有 cell/worldspace override 生成基礎（見記憶 [[worldspace-override-must-carry-topcell]]）。**這是整個框架的核心，先做這個**；「export 整座城鎮」（§C）就是這條放大到整片區域。
-- **② 施法擺設 / 移動物件**：一支「擺放法杖」spawn / grab / 旋轉 / 吸附 refs（先例：SIGE 遊戲內 3D gizmo，見 #15 Gemini 調查）→ 快照時一起收進 ①。**Tundra Defense 就是這條的現成成品藍本**（喝瓶→定位→確認，見「Tundra 角色定位」段）。**但 Tundra 的可擺清單是設計期寫死的 REFR FormID——本 idea 用 §E 的「滴管取樣」把調色盤變開放式**。
+- **② 施法擺設 / 移動物件**：一支「擺放法杖」spawn / grab / 旋轉 / 吸附 refs（先例：SIGE 遊戲內 3D gizmo，見 #15 Gemini 調查）→ 快照時一起收進 ①。**Tundra Defense 就是這條的現成成品藍本**（喝瓶→定位→確認，見「Tundra 角色定位」段）；定位軸 Tundra 有旋轉+距離、**縮放/位移要自補 mode**（見該段）。**但 Tundra 的可擺清單是設計期寫死的 REFR FormID——本 idea 用 §E 的「編輯法術組」把它變開放式**：
+  - **滴管（單點吸取）**：準星吸一個 ref 的 base+旋轉+縮放進具名插槽（+吸中成功特效）→ 選插槽擺放。
+  - **範圍吸取**：一次吸半徑內所有 ref（整叢佈景）進捕獲集。
+  - **移除物件（橡皮擦）**：準星指一個 ref → 移除（自擺的直接刪；既有 vanilla ref → `removals[]` 生 disable/delete override）。
+  - 三支細節 + ModForge 落點見 **§E**（滴管/範圍吸取生成端零改動；移除既有 vanilla ref 是唯一小 net-new）。
 - **③ 施法錄製 NPC 行為**（原 #24 小野心）：走一條路徑，沿途取樣座標放 PatrolMarker/IdleMarker + 停留動作 → 輸出 sandbox/travel/patrol package（見記憶 [[radiant-alias-package-byte-truths]]：package 掛在 alias 的 ALPS 上）。
 - **④ 施法擺放 NPC / 拓印玩家角色 → 靠 PROTEUS**：用 [PROTEUS](../../../sub_projs/mod-survey/findings/proteus.md) 遊戲內生成 / 定位 / 控制 NPC 的既有能力當「放 NPC」前端；**進一步（本次新增）把 PROTEUS「序列化整個角色 build」的能力拿來把玩家自己拓印成獨立 NPC**——見下 §A。⚠️ PROTEUS 核心是**閉源 native DLL**，只能**消費**它、不能改它；若要自建放置也可走既有 `quest.spawn`（見記憶 [[dynamic-spawn-debugging]]）。
 - **⑤ 施法修改地形（LAND）**：野心項，**技術牆**。runtime 編輯 LAND heightmap 極難，ModForge 目前僅支援平坦地形（見 #14/#15 地形段）。先擱置，優先做 cell 內物件 / NPC。
