@@ -55,11 +55,9 @@
   - **⚠ 白天測**:vendor 8-20 營業(GetOffersServicesNow 含時間),夜間交易會空——快旅後若是夜晚,`set timescale`/等到白天再試。庫存已放 vanilla 鐵匠 leveled lists(武防+雜貨+金),VendorLocation 錨在店周圍 4096。
   - **回報**:傳送安全否、房子貼地否、Brynja 在否、問候+**交易(有貨有金)**通否。(Brynja 從零建、無 facegen,臉可能陽春/暗臉——能站能講能交易就算過。)
 
-## P1 統一 marker 系統（scene-capture-bridge，2026-07-10 離線齊備）
+## P1 統一 marker 系統 — ✅ MVP 驗收全過（2026-07-10 IN-GAME，含目視山羊）
 
-已部署 `mods/SceneCaptureBridge/`（新 DLL + `SceneCaptureTools.esp`）。**MO2 按 F5 refresh，勾 mod、勾 `SceneCaptureTools.esp` plugin**（esp 沒勾也能測——DLL 會 fallback 到 vanilla 召喚圈 base，log 會說用了哪個）。
+四步全過（明細移至 [landed/world.md](../workflows/feature-dev/landed/world.md)）。**殘項（open）**：
 
-1. ~~F9~~ **（2026-07-10 實測：F9 撞 vanilla 快速讀檔，已改 F11＋面板 `place marker here` 鈕；新 DLL 已部署，下次啟動生效）** 按 **F11** → 腳下召喚圈 + log `Markers: placed`。F11 若也無反應回報（0x57 未實機驗過）。
-2. **面板**：F1 → `Scene Capture Bridge` → `Markers`：改名（label 打 `goat` 按 Enter 或 apply）、改 kind、del。改名後準星指 proxy 應顯示新名字（SetDisplayName）。
-3. **匯出**：放 3 個 marker（至少一個在室外）→ F10 → `scene-export.json` 應有 `annotations` 段：seq/label/kind/position/angleZ/cell 或 worldspace。**proxy 本身不得出現在 `placements[]`**（log 的 `marker proxies excluded` 應等於 marker 數）。
-4. ~~agent 工作流 demo~~ ✅ **2026-07-10 閉環**——`mods/SCB Goat Demo/SCBGoatDemo.esp`（PlacedNpc EncGoatDomestic @ goat marker 座標）。**勾起來進遊戲，走到你標 goat 的地方看羊**（最後一哩的目視確認）。
+- **F11 hotkey 複核**：F9→F11 的新 DLL 已部署，0x57 未實機按過（面板 `place marker here` 鈕是備援路徑）。
+- **讀檔後 prune 複核**：讀檔 → F1 Markers 頁不該再列出死 proxy 的鬼條目。

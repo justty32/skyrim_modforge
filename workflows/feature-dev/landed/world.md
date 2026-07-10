@@ -40,3 +40,14 @@
 已知取捨：玩家**移動/縮放過的 vanilla ref** 不採（需 emit 既有 ref 的 override，`scene.json` 尚未建模）。NPC 來源預設走 ModForge 直接生的「大眾臉」；PROTEUS 拓印為可選。
 
 **遊戲內面板（2026-07-10 IN-GAME）**：`src/UI.cpp` 消費 [SKSE Menu Framework 3](../../../sub_projs/mod-survey/findings/skse-menu-framework-3.md)，F1 面板出現 `Scene Capture Bridge` section，`Export player cell` 按鈕與 F10 走同一支 `ExportPlayerCellToFile()`。軟相依（`GetModuleHandleW` 探測，import 表無框架），沒裝框架只剩 hotkey。⚠️ `sse-imgui` 在 AE 不能用，理由見 finding。
+
+## P1 統一 marker 系統（Idea #24 遊戲內編輯器 MVP）· IN-GAME 2026-07-10
+
+「玩家在遊戲裡指一個地方說要什麼 → AI 把它變成 mod」端到端閉環，含最後一哩目視確認：
+
+1. **標記**：hotkey 在玩家腳下放發光召喚圈 proxy（`SCB_MarkerACTI`＝vanilla `Magic\SummonTargetFX.nif`，工具 esp 缺席時 fallback vanilla base）；F1 面板改名/改 kind/刪。使用者實機標 `goat`（Tamriel）。
+2. **匯出**：F10 → `scene.json` 的 `annotations[]`（advisory 段，ModForge build 永不生成、只 log）。實測 3 筆全對：label/kind 編輯生效、angleZ 度數、worldspace 歸位、proxy 排除數=3（editor chrome 不漏進 placements）。
+3. **agent authoring**：agent 讀 annotations → spec（`EncGoatDomestic` + marker 座標/朝向）→ build → `PlacedNpc @ (116031.1, 111485.6, -7744)` cell(28,27) 自動歸位，master 僅 Skyrim.esm。
+4. **目視**：使用者進遊戲在標記處看到山羊。
+
+實戰教訓（皆已記 plan）：**F9 是 vanilla 快速讀檔**（sink 只觀察不吞鍵，遊戲同時處理→讀檔抹掉剛放的 proxy）→ 改 F11 + 面板放置鈕；**外部 NPC base 必須明示 `kind:"npc"`**（isNpc 自動判定只認 in-spec base，落成 REFR 不生怪——dump 看到 PlacedObject 才抓到）；kPostLoadGame → PruneDeadProxies。MO2 refresh 後新 mod 資料夾預設不勾。
