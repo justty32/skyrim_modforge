@@ -33,6 +33,10 @@ scripts/bootstrap-pex.sh
 - 語音 mod：`scripts/ship-voice.sh <spec> ...`（package→voicelines→voicediag→zip，需 `MODFORGE_TTS_BIN`；要有聲還需 `MODFORGE_XWMAENCODE`＝SSE `Tools/Audio/xwmaencode.exe`，否則吐無聲 loose wav）
   - **已知陷阱**（TIF 內聯編譯 spurious fail 完整修法、LipGenerator wine crash）→ 見 [feature-dev/gotchas](feature-dev/gotchas.md)「Voice / ship-voice」。
 
+## 實機狀態查詢（**僅 Manjaro**）
+
+遊戲跑著的時候，`scripts/skylink/skylink-bridge.sh up` 把 [SkyLink AI](tooling/skylink.md) 的 MCP server 接上，agent 就能直接查執行中遊戲的 load order / cell / quest stage / FormID，不必靠人轉述。實機**體感**（動畫、對嘴、崩不崩）仍只有人能判。
+
 ## 通用
 
 - Commit 訊息用多個 `-m` flag 組多行（PowerShell here-string 易出問題，見上「離線機＝Windows 注意」）。
