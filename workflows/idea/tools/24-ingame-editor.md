@@ -6,7 +6,7 @@
 
 **最初目標：不依靠 Creation Kit** 去編輯場景、NPC、劇情等各種東西，且最好**在 Skyrim 遊戲內**做——所見即所得。動機：使用者是 Linux 玩家，CK 實際不可用，只能出此下策——但這也是機會。**終極目標＝把 Skyrim 自身變成 Creation Kit**。下文的「蓋城鎮」北極星只是這個更大目標的一個用例。
 
-**不重造輪子**：in-game 編輯器已有先行者——[SkyrimIngameEditor](https://github.com/Jonahex/SkyrimIngameEditor)（**開源** SKSE；天氣/光照/渲染）、[PROTEUS](../../../sub_projs/mod-survey/findings/proteus.md)（NPC/武器裝甲/法術）。**唯獨缺「場景編輯」**（使用者未搜到現成的；2026-07-10 已派 agent 搜尋驗證中）。方向是**擴充這些工具＋補上缺的場景編輯**，不是全部重寫。SkyrimIngameEditor 開源，可讀 source 學它的 in-game 即時預覽。
+**不重造輪子**：in-game 編輯器已有先行者——[SkyrimIngameEditor](https://github.com/Jonahex/SkyrimIngameEditor)（**開源** SKSE；天氣/光照/渲染）、[PROTEUS](../../../sub_projs/mod-survey/findings/proteus.md)（NPC/武器裝甲/法術）。**唯獨缺「場景編輯」**（**2026-07-10 agent 搜尋證實：不存在**——定位類 mod 全部只持久化到存檔/JSON/ini，無人在 runtime 寫 esp；最接近的 In-Game Patcher 出 BOS/KID ini。原始報告與對我們的三點意義見 [gemini-research/2026-07-10-ingame-scene-editor-prior-art.md](../../../sub_projs/gemini-research/2026-07-10-ingame-scene-editor-prior-art.md)：niche 真空、Jaxonz/Cobb 是 M7a 抓取 UX 藍本、Debug Menu 證明 navmesh 可在遊戲內視覺化）。方向是**擴充這些工具＋補上缺的場景編輯**，不是全部重寫。SkyrimIngameEditor 開源，可讀 source 學它的 in-game 即時預覽。
 
 **分工哲學（本 idea 的憲法）**：遊戲內 plugin＝**薄記錄器**——玩家施法或按快捷鍵，plugin 把資訊（座標/狀態/意圖）記下來、吐 json；**實際的麻煩工作交給 ModForge**（或其他工具）在 build-time 做。沒必要把所有東西塞進單一 plugin/mod/程式。範例（navmesh）：施法→記玩家腳下座標→跑到別處再施→點列輸出 .json→ModForge 生成 NAVM——比在 CK 手拉有趣得多。開放細節：能否在遊戲內把 navmesh 顯示出來直觀編輯；點與點怎麼連（哪個座標連到哪個座標）。
 
