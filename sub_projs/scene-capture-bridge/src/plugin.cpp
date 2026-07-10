@@ -1,12 +1,60 @@
 #include "log.h"
 #include "SceneExporter.h"
 
+#include <chrono>
+
+using namespace std::chrono_literals;
+
+namespace {
+    // DirectInput scancode, NOT a virtual-key code. 0x44 = F10.
+    constexpr std::uint32_t kExportKey = 0x44;
+
+    std::chrono::steady_clock::time_point g_lastPress{};
+
+    // Shape lifted from my_skyrim_plugin_1's FollowLight::HotkeySink (in-game
+    // proven). One poll can carry several events chained through `next`, so walk
+    // the list rather than reading only the head.
+    class HotkeySink : public RE::BSTEventSink<RE::InputEvent*>
+    {
+    public:
+        static HotkeySink* GetSingleton() { static HotkeySink s; return &s; }
+
+        RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* a_events,
+            RE::BSTEventSource<RE::InputEvent*>*) override
+        {
+            if (!a_events) {
+                return RE::BSEventNotifyControl::kContinue;
+            }
+            for (auto* e = *a_events; e; e = e->next) {
+                auto* btn = e->AsButtonEvent();
+                if (!btn || !btn->IsDown()) continue;
+                if (btn->GetDevice() != RE::INPUT_DEVICE::kKeyboard) continue;
+                if (btn->GetIDCode() != kExportKey) continue;
+
+                const auto now = std::chrono::steady_clock::now();
+                if (now - g_lastPress < 200ms) continue;  // debounce
+                g_lastPress = now;
+
+                SceneExporter::ExportPlayerCellToFile();
+            }
+            return RE::BSEventNotifyControl::kContinue;
+        }
+    };
+}
+
 void OnDataLoaded() {
-    // TODO(M4): register the export trigger. Options, cheapest → richest:
-    //   1. SKSE input event sink → hotkey → SceneExporter::ExportPlayerCellToFile()
-    //   2. console command / Papyrus-callable native
-    //   3. ImGui panel (SKSE Menu Framework 3) for §B/§D/§E semantic markup
-    // The spike (M4) only needs option 1 to prove cell-walk → scene.json.
+    // M4 spike: option 1 (hotkey) only — enough to prove cell-walk → scene.json.
+    // Richer triggers (console command / Papyrus native / ImGui panel for the
+    // §B/§D/§E semantic markup) come later.
+    if (auto* idm = RE::BSInputDeviceManager::GetSingleton()) {
+        idm->AddEventSink(HotkeySink::GetSingleton());
+        SKSE::log::info(
+            "SceneCaptureBridge: export hotkey registered (scancode 0x{:X})",
+            kExportKey);
+    } else {
+        SKSE::log::error(
+            "SceneCaptureBridge: BSInputDeviceManager null — export hotkey NOT registered");
+    }
     SKSE::log::info("SceneCaptureBridge: data loaded, exporter ready");
 }
 
