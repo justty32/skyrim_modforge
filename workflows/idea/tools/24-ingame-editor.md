@@ -161,7 +161,7 @@
 
 ## 關聯
 
-- **[settlements Phase-2](../../roadmap/mod-survey-gaps/settlements-phase2.md)**：`buildables:` 的 placement-controller 與本 idea 的「施法擺設」**共用同一支 controller**——兩線合流，是最強的協同。
+- **[settlements Phase-2](../../roadmap/mod-survey-gaps/settlements-phase2.md)**：~~共用同一支 controller~~ **（2026-07-10 修正）共用的是設計，不是程式碼**。兩者部署限制不同：本 idea 的編輯器 controller 跑在**作者的編輯 session**，載體是 `SceneCaptureBridge.dll`，可以直接寫 C++；settlements P2 的 `buildables:` controller 跑在**玩家的遊戲**裡、在 ModForge 生的 mod 中，**必須是 `.pex`**（生成的 mod 夾帶不了 DLL）。詳見 [plan](../../plans/scene-capture-bridge.md#m7滴管e-)。
 - **[#23 living-adventurers](../living-adventurers.md)**：§A 路徑 A 的「指向既有 ActorRef」哲學同源；拓印出的 NPC 可直接 enroll 進活世界模擬。
 - **[#1c 多重身份系統](../followers.md#1c-多重身份--輕量職業系統)**（記憶 [[identity-system-confirmed]]）：§D 身份→對話的既有落地基礎。
 - #15（CK 替代視覺編輯器，本 idea 是遊戲內路線）；#19 Godot Worldspace Editor（外部編輯器另一路）；#17（任務節點圖，§D 對話 AI 生成管線）。

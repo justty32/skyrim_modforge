@@ -109,16 +109,36 @@ struct Entry {
 
 ---
 
-## M7：滴管（§E ①）
+## M7：滴管（§E ①）—— 拆成 a/b，b 擋在契約決定後面
 
 **規模**：runtime 側中等；ModForge **零改動**（吸來的 base 進 `placements[].base`，`PluginIo.cs:35` 會自動把來源 mod 加為 master）。
 
 準星吸取一個 ref 的 **base + 當前 rotation + scale** 進一個**具名插槽**；之後選插槽 `PlaceAtMe(base)` 落地並回填 rot/scale。等於玩家在遊戲內即時建自己的開放式調色盤——想擺什麼就吸什麼，取代 Tundra Defense 那種設計期寫死的 REFR 目錄。
 
+### M7a：吸取 + 擺放 + 微調**新** ref（契約零改動，可立即做）
+
 - 吸取用 `CrosshairPickData`（同 M6，已確認）。**不要**用「投射物命中」——STAT 靜物不吃魔法效果。
 - 吸中回饋：`EffectShader.Play(ref, ~1.5s)`（vanilla 有現成發光 shader）。純 runtime，不進 `scene.json`。
 - 插槽存哪：idea §E 原本寫 StorageUtil KV（需 PapyrusUtil）。**但我們現在有 C++ 面板**——直接存 DLL 記憶體 + 一個 sidecar json 即可，不必拉 PapyrusUtil 相依。命名走 ImGui `InputText`，不必 UILib。
-- ⚠️ **這一步會撞上技術債**：吸一面牆擺下去，你自然會想把它對齊既有的牆——那時 vanilla ref 被移動了，而 `scene.json` 沒有「既有 ref 的 override」形狀。見下。
+- 微調：`SetPosition` / `SetAngle` / `SetScale`（`TESObjectREFR.h:458/464/466`，皆已確認存在）。**只作用在自己剛擺的 dynamic ref 上**，所以 vanilla diff 照常把它們 emit 進 `placements[]`，契約零改動。
+
+### M7b：移動**既有** ref（擋在「override 形狀」拍板之後）
+
+吸一面牆擺下去，你自然會想把它對齊既有的牆——那面既有的牆被移動了，而 `scene.json` 沒有「既有 ref 的 override」形狀。**必須明示登記**（不能用 diff，`GetPosition()` 就是 `data.location`，且 havok 會自己移動東西）。詳見「技術債 / 未決」與 [spec](../specs/ingame-scene-export-design.md)。
+
+> **M7a 先做，M7b 等 M6 累積實感後再拍契約。** 這樣滴管的主體價值（開放調色盤）不必等契約決定。
+
+### ⚠️ placement controller：C++ 還是 `.pex`？——**兩者都要，但不是同一支**
+
+idea #24 §② 寫「本 idea 的施法擺設與 settlements Phase-2 的 `buildables:` **共用同一支 controller**——兩線合流，是最強的協同」。**這句話是錯的**（2026-07-10 修正）。兩者的**部署限制不同**：
+
+| | 編輯器 controller（idea #24 §②） | 出貨 controller（settlements P2 `buildables:`） |
+|---|---|---|
+| 何時跑 | **作者的編輯 session** | **玩家的遊戲**裡，在 ModForge 生的 mod 中 |
+| 載體 | 我們的 `SceneCaptureBridge.dll`（作者機器上一定有） | **必須是 `.pex`**——ModForge 生的 mod 夾帶不了 DLL |
+| 實作 | C++，每幀、直接 `SetPosition`/`SetAngle`/`SetScale`，共用 ImGui 面板 | Papyrus 狀態機（Tundra `aaaFortMainQuestScript` 等價），`scriptAttach` 掛上 |
+
+所以**共用的是設計（模式/軸/輸入語彙），不是程式碼**。M7a 的微調直接寫 C++，不必等 settlements P2 的 `.pex`，也不必為它寫 Papyrus。反之 settlements P2 仍需要那支 `.pex`（`.pex` 那條 [settlements P2](../roadmap/mod-survey-gaps/settlements-phase2.md) 的判定不受影響）。
 
 ## M8：範圍吸取（§E ②）
 
