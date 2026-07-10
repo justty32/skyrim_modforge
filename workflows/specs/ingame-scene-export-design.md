@@ -111,6 +111,32 @@ cell 走訪看得到**cell 裡的每一個 ref**。若全部吐出來，ModForge
 
 **⚠️ MVP 取捨（刻意，非疏漏）**：玩家**移動/縮放過的 vanilla ref** 會被跳過。要採到它，得 emit 一份既有 ref 的 **override**，而不是一筆新 placement —— 那是 scene.json 目前沒建模的形狀（只有 `removals[]` 碰既有 ref）。要做的話得先擴契約。
 
+### ✅ 座標契約 round-trip（2026-07-10 離線閉環，不開遊戲）
+
+拿 houseCARL 讀到的 vanilla 真值造一份採集橋形狀的 scene.json → `build` → 拆產出 esp 的 REFR `DATA` 子記錄：
+
+```
+vanilla plugin   rot.z = 2.2730167 rad   （01605E:Skyrim.esm Temporary[15]）
+  ↓ 採集橋 kRadToDeg
+scene.json       rot.z = 130.23426°
+  ↓ ModForge Deg2Rad
+產出 plugin      rot.z = 2.2730169 rad   差 2.3e-7 rad（float32 捨入，可忽略）
+```
+
+position 三分量完全一致。`dump` 確認 vanilla cell 是**加法式 override**（`temporary=1`），master 僅 `Skyrim.esm`。**唯一還沒驗的是 runtime 端**：遊戲內 `ref.data.location` 對 interior 是否即 cell-local。
+
+### ⚠️ 採集橋輸出必須是合法 ModSpec（2026-07-10 修正）
+
+`scene.json` **就是一份 ModSpec**，而 `ReadOpts`（`Program.cs:145`）**沒設 `UnmappedMemberHandling`** → System.Text.Json 預設**靜默忽略未知鍵**。所以採集橋吐的每一個鍵都必須是真的 ModSpec 成員，否則無聲消失。首編後發現三處不合：
+
+- ❌ `npcRefs[]` 不是 ModSpec 成員（ModSpec 只有一個 `Placements` list）→ 整段被丟掉。**修正：actor 與物件一律進 `placements[]`**（actor base 會讓 ModForge 生 ACHR；XSCL 對 actor 無效故不帶 scale）。本節開頭契約表的 `npcRefs[]` 那列**是概念分段，不是 JSON 鍵名**。
+- ❌ 頂層 `cell` / `worldspace` 不是 ModSpec 成員 → 被丟掉。**歸屬欄位在每一筆 `PlacementSpec` 上**（`Spec.World.cs:6-7`）。
+- ❌ 兩者皆空的 placement 會被 `Generator.Build.Placements.cs:48` 以 `cell '' not found in spec — skipped` 丟棄。採集橋現在在解不出 cell/worldspace 時直接中止並 warn。
+
+### 🔴 開放問題：PROTEUS clone 的 ref 是 dynamic
+
+vanilla diff 用「ref 解不出耐久 id ⇒ 玩家擺的」。PROTEUS clone 出來的 actor **ref 必然是 dynamic**（`PlaceAtMe`），所以會被正確判為玩家擺的 —— 但 `npcRoles[].actorRef` 需要一個**耐久**的 ref id 來指名它，而 dynamic ref 沒有。若 clone 的 **NPC_ base 本身也是 runtime 生成**，`ResolveDurableId(base)` 也會失敗，該 actor 會落進 `skipped`。idea §A「crux 已拍板：PROTEUS clone 是穩定、可引用的」需要在實機重新檢視是指 base 還是 ref。
+
 ### ESL local-id 寬度（2026-07-10 以 houseCARL 離線核對，已拆 TODO）
 
 `file->IsLight() ? (rawId & 0xFFF) : (rawId & 0xFFFFFF)` **正確**：`ccBGSSSE037-Curios.esl` 的 local id 最大 `0x88E`（全 < 0x1000，12 位元）；`Skyrim.esm` 的 `01605E` 是 24 位元。兩者都能 round-trip 成 ModForge 要的 `<plugin>:0xLOCALID`（6 位 hex 補零）。

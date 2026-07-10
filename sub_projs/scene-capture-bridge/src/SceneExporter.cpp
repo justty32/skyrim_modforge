@@ -44,9 +44,12 @@ namespace SceneExporter {
     }
 
     nlohmann::json ExportCell(RE::TESObjectCELL* cell) {
+        // scene.json IS a ModSpec (see workflows/plans/ingame-scene-export.md):
+        // `build scene.json out.esp` deserializes it straight into ModSpec, and
+        // ModForge's reader SILENTLY IGNORES unknown keys. So every key we emit
+        // must be a real ModSpec member or it vanishes without a word.
         nlohmann::json scene;
         scene["placements"] = nlohmann::json::array();
-        scene["npcRefs"] = nlohmann::json::array();
 
         if (!cell) {
             SKSE::log::warn("ExportCell: null cell, nothing to export");
@@ -55,22 +58,36 @@ namespace SceneExporter {
 
         const bool isInterior = cell->IsInteriorCell();
 
-        // Cell / worldspace header (§契約 coordinate contract):
+        // Cell / worldspace attribution (§契約 coordinate contract):
         //  - interior: `cell` = the cell's durable id, positions are cell-local.
         //  - exterior: `worldspace` = the worldspace's durable id, positions
         //    are world-space (ModForge finds the right sub-cell to override).
+        //
+        // These live on EACH PlacementSpec, not at the top level — ModSpec has
+        // no top-level `cell`/`worldspace`, and a placement carrying neither is
+        // dropped with "cell '' not found in spec — skipped"
+        // (Generator.Build.Placements.cs:48).
+        std::string cellId;
+        std::string worldspaceId;
         if (isInterior) {
             if (auto id = ResolveDurableId(cell)) {
-                scene["cell"] = *id;
+                cellId = *id;
             }
         } else if (auto* ws = cell->GetRuntimeData().worldSpace) {
             if (auto id = ResolveDurableId(ws)) {
-                scene["worldspace"] = *id;
+                worldspaceId = *id;
             }
+        }
+        if (cellId.empty() && worldspaceId.empty()) {
+            SKSE::log::warn(
+                "ExportCell: neither cell nor worldspace resolved to a durable "
+                "id — every placement would be dropped by build; aborting");
+            return scene;
         }
 
         std::size_t skipped = 0;
         std::size_t preexisting = 0;
+        std::size_t actors = 0;
         // ForEachReference hands the callback a POINTER, not a reference.
         cell->ForEachReference([&](RE::TESObjectREFR* refPtr) -> RE::BSContainer::ForEachResult {
             if (!refPtr) {
@@ -119,6 +136,11 @@ namespace SceneExporter {
             const RE::NiPoint3& ang = ref.data.angle;
             nlohmann::json entry;
             entry["base"] = *baseId;
+            if (!cellId.empty()) {
+                entry["cell"] = cellId;
+            } else {
+                entry["worldspace"] = worldspaceId;
+            }
             entry["position"] = Vec3(pos);
             entry["rotation"] = nlohmann::json{
                 {"x", ang.x * kRadToDeg},
@@ -126,15 +148,18 @@ namespace SceneExporter {
                 {"z", ang.z * kRadToDeg},
             };
 
+            // Actors and objects both land in `placements[]` — ModSpec has one
+            // PlacementSpec list and no `npcRefs` member (an `npcRefs` key would
+            // be silently dropped). An actor base makes ModForge emit an ACHR.
+            // The §D role/backstory tagging is a separate `npcRoles[]` authored
+            // by the editor UI, not by a raw sweep.
             const bool isActor = ref.GetFormType() == RE::FormType::ActorCharacter;
             if (isActor) {
-                // §契約 npcRefs[]: a placed actor (e.g. PROTEUS clone). XSCL does
-                // not apply to actors, so no scale field. role/backstory are
-                // layered in by the editor UI (§D), not by a raw sweep.
-                scene["npcRefs"].push_back(std::move(entry));
+                ++actors;  // XSCL is ignored on actors, so emit no scale field.
+                scene["placements"].push_back(std::move(entry));
             } else {
-                // §契約 placements[]: static/furniture/light. Carry scale + the
-                // InitiallyDisabled state so ModForge reproduces both.
+                // Carry scale + the InitiallyDisabled state so ModForge
+                // reproduces both.
                 entry["scale"] = ref.GetScale();
                 if ((ref.GetFormFlags() & kInitiallyDisabled) != 0) {
                     entry["initiallyDisabled"] = true;
@@ -145,10 +170,9 @@ namespace SceneExporter {
         });
 
         SKSE::log::info(
-            "ExportCell: {} placements, {} npcRefs, {} pre-existing (skipped), "
-            "{} skipped (dynamic bases)",
-            scene["placements"].size(), scene["npcRefs"].size(), preexisting,
-            skipped);
+            "ExportCell: {} placements ({} of them actors), {} pre-existing "
+            "(skipped), {} skipped (dynamic bases)",
+            scene["placements"].size(), actors, preexisting, skipped);
         return scene;
     }
 
