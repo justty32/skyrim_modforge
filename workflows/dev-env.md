@@ -35,7 +35,7 @@ scripts/bootstrap-pex.sh
 
 ## 實機狀態查詢（**僅 Manjaro**）
 
-遊戲跑著的時候，`scripts/skylink/skylink-bridge.sh up` 把 [SkyLink AI](tooling/skylink.md) 的 MCP server 接上，agent 就能直接查執行中遊戲的 load order / cell / quest stage / FormID，不必靠人轉述。實機**體感**（動畫、對嘴、崩不崩）仍只有人能判。
+遊戲跑著的時候，`scripts/skylink/skylink-bridge.sh up` 把 [SkyLink](skylink/README.md) 的 MCP server 接上，agent 就能直接查執行中遊戲的 load order / cell / quest stage / FormID，不必靠人轉述。實機**體感**（動畫、對嘴、崩不崩）仍只有人能判。
 
 ## 通用
 

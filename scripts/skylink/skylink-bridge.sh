@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SkyLink AI bridge — Manjaro only. See workflows/tooling/skylink.md.
+# SkyLink AI bridge — Manjaro only. See workflows/skylink/README.md.
 #
 #   Skyrim (Proton prefix)                                    Linux
 #   SKSE plugin --\\.\pipe\SkyrimMCP--> relay.exe --TCP--> socat --> /tmp/CoreFxPipe_SkyrimMCP --> SkyrimMCP.dll

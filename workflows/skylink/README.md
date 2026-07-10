@@ -1,10 +1,10 @@
-# SkyLink AI — 實機狀態查詢橋（Manjaro 專屬）
+# SkyLink — 實機狀態查詢橋（Manjaro 專屬）
 
-← [tooling](README.md)｜開發環境見 [dev-env.md](../dev-env.md)
+← [WORKFLOWS](../../WORKFLOWS.md)｜開發環境見 [dev-env.md](../dev-env.md)｜踩坑見 [gotchas.md](gotchas.md)
 
 [SkyLink AI](https://www.nexusmods.com/skyrimspecialedition/mods/175682) 是一個 SKSE plugin + MCP server，把**執行中的 Skyrim** 以 87 個 MCP tool 暴露出來。接上之後，agent 可以直接查遊戲當下的 load order、cell、quest stage、NPC、FormID，不必每件事都靠人回報。
 
-> 這條橋只在 **Manjaro 主力機**成立（需要 Skyrim + Proton + MO2）。離線機沒有遊戲，這裡的一切都跳過。
+> 這條橋只在 **Manjaro 主力機**成立（需要 Skyrim + Proton + MO2）。離線機沒有遊戲，這裡的一切都跳過。腳本在 `scripts/skylink/`（照 repo 慣例，可執行的東西住 `scripts/`）。
 
 ## 為什麼需要橋
 
@@ -66,20 +66,7 @@ scripts/skylink/skylink-bridge.sh game-load-latest   # 挑最新 .ess，load_sav
 - crash log（CrashLogger）在 prefix 的 `Documents/My Games/Skyrim Special Edition/SKSE/crash-*.log`，Linux 端直接讀。
 - **`load_most_recent_save` 是壞的**（無論如何都回 `{"loading":false}`），所以 `game-load-latest` 自己按 mtime 挑最新 `.ess`，再用 `load_save` 指名載入。主選單下 `get_game_safety` 可用、`get_cell_info` 會 `isError`——後者正好拿來判斷存檔載完沒。
 - **MO2 lock**：MO2 啟動 executable 期間會把自己鎖住並顯示 `Mod Organizer is locked while the application is running / SkyrimSE.exe (<pid>) / [Unlock]`，**鎖住時拒絕再啟動任何 executable**。遊戲乾淨退出 → MO2 自動解鎖 → `moshortcut` 可用（`game-restart` 就是靠這個）。
-- **未驗**：真 CTD 時若 `SkyrimSE.exe` 滯留（使用者回報還會多一個 wine 對話框），MO2 會**停在鎖定狀態**、`game_running()` 也會誤判成「還在跑」，`game-restart` 兩邊都過不去。解鎖那顆按鈕只能靠人點（見上面「Agent 使用範圍」的桌面輸入規矩），所以清場邏輯大概得走「先確認行程真死 → 殺掉殘骸」而不是點 UI。下次真崩了才驗得到，見 [wait_todo/nexus-and-env.md](../../wait_todo/nexus-and-env.md)。目前 `game-restart` 只在乾淨退出後驗證過。
-
-## Gotchas
-
-- **`up` 會在遊戲沒跑時拒絕動作**，這是刻意的。在 Steam 背後對那顆 prefix 起一個 wineserver，會讓下次啟動卡死（Proton reaper 永遠等不到）。收拾方式一律 `wineserver -k`。
-- 橋斷了（遊戲關掉、relay 死掉）時，tool call 回 `An error occurred invoking '<tool>'`，不會 hang。先 `status`。
-- **遊戲內的 MessageBox 不擋 SkyLink**。載入存檔時 vanilla 會跳 Survival Mode 詢問（`ccQDRSSE001-SurvivalMode.esl`），此時 `get_menu_state` 回 `openMenus:["MessageBoxMenu"]`、`gameIsPaused:true`，但 pipe 照常回話，讀寫 tool（`get_cell_info` / `search_forms` / `save_game`）全部可用。**沒有任何 tool 能回答 MessageBox**（`call_papyrus_function` 也不行——它 blocking 在 UI 輸入上），只能人點。所以看到 `isPaused:true` 不代表橋掛了。
-- **`search_forms` 的 `type` 會靜默退回**：不支援的值（如 `"food"`）不報錯，直接當 `all` 搜——結果看起來「有回傳」其實 filter 沒生效。食物是 ALCH → `type:"potion"`。另外 `type:"all"` **不含 GLOBAL**，要撈 GLOBAL 必須明寫 `type:"global"`。
-- **`call_papyrus_function` 只吃 string/int/float/bool，傳不了 Form**。所以以 Form 為 key 的 `StorageUtil.*Value(form, …)` 一律回 `result:null`（靜默失敗，不報錯）；`JsonUtil.SetIntValue(file,key,val)` 這種全 string/int 簽章可用，實測寫 42 讀回 42。`Game.GetPlayer()` 回 `"complex_type"`，無法再餵回去當參數。
-- **沒有任何移動控制**。`teleport` / console `player.setpos` / `player.moveto` 都是瞬移（不吃碰撞與 navmesh），`play_idle` 只播動畫。要真的走路只能對遊戲視窗送鍵盤輸入——受上面的桌面輸入規矩約束。
-- **`add_item` 認 FormID 不認名字**（`"Sweetroll"` 直接失敗）。先 `search_forms` 反查再用 FormID，**不要憑記憶填**：`00064B3F` 是 Cabbage，Sweet Roll 是 `00064B3D`。
-- 依賴：`x86_64-w64-mingw32-gcc`、`socat`、`protontricks`、`dotnet` ≥10。
-- prefix 用 Proton 9.0 (Beta)（`compatdata/489830/config_info`）。`protontricks-launch` 會自動挑對版本並掛進既有 wineserver。
-- **`relay.exe` 不進 git**（gitignore），fresh clone 後跑 `build`。
+- **未驗**：真 CTD 時若 `SkyrimSE.exe` 滯留（使用者回報還會多一個 wine 對話框），MO2 會**停在鎖定狀態**、`game_running()` 也會誤判成「還在跑」，`game-restart` 兩邊都過不去。解鎖那顆按鈕只能靠人點（見下面「Agent 使用範圍」的桌面輸入規矩），所以清場邏輯大概得走「先確認行程真死 → 殺掉殘骸」而不是點 UI。下次真崩了才驗得到，見 [wait_todo/nexus-and-env.md](../../wait_todo/nexus-and-env.md)。目前 `game-restart` 只在乾淨退出後驗證過。
 
 ## Agent 使用範圍
 

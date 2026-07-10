@@ -15,7 +15,6 @@ ModForge 是 Skyrim mod **生成器**：record 建構（ESP/ESM 本體）純用 
 | [env-vars.md](env-vars.md) | `MODFORGE_*` 環境變數（指向什麼 / 是否必須 / 缺失行為 / 讀取點）|
 | [binaries.md](binaries.md) | 外部 binary（wine / PapyrusCompiler / TTS / xWMAEncode / LipGen / ffmpeg…）+ gotchas |
 | [data-assets.md](data-assets.md) | 執行期讀的外部資料/資產（Skyrim.esm / STRINGS BSA / Papyrus headers / 語音 BSA…）|
-| [skylink.md](skylink.md) | SkyLink AI 實機狀態查詢橋（Manjaro 專屬；agent 直接查執行中遊戲的 load order / cell / quest stage）|
 
 ## Fresh-clone 前置
 

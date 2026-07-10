@@ -17,6 +17,7 @@
 | 「記一個奇思妙想」（不確定要不要做）| **idea** | [workflows/idea/ideas.md](workflows/idea/ideas.md) |
 | 「記一件確定會做、不確定何時的事」 | **roadmap** | [workflows/roadmap/](workflows/roadmap/README.md) |
 | 「跑測試」 | **testing** | [workflows/testing.md](workflows/testing.md) |
+| 「查 / 操作**執行中的 Skyrim**」「實機狀態」「遊戲崩了自己爬起來」（僅 Manjaro）| **skylink** | [workflows/skylink/README.md](workflows/skylink/README.md) |
 | 「設定 / 了解開發環境」「fresh clone 後要做什麼」「這台機器能做什麼」 | **dev-env** | [workflows/dev-env.md](workflows/dev-env.md) |
 | 「**打包出貨 / ship**」（package→zip→交付）| **dev-env** | [workflows/dev-env.md](workflows/dev-env.md) |
 | 「**同步 zh-TW / 重生 html**」 | **zh-tw-sync** | [workflows/zh-tw-sync.md](workflows/zh-tw-sync.md) |

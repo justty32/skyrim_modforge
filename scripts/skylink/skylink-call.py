@@ -2,7 +2,7 @@
 """Drive SkyLink's SkyrimMCP.dll over MCP stdio without registering it as an MCP server.
 
 Useful when the bridge is up but the current Claude Code session predates the
-`claude mcp add` registration. See workflows/tooling/skylink.md.
+`claude mcp add` registration. See workflows/skylink/README.md.
 
 usage: skylink-call.py --list
        skylink-call.py <tool_name> [json_args]
