@@ -146,6 +146,7 @@
       },
       "description": "Explosion (EXPL): the impact AoE a projectile/spell triggers; a magicEffect.explosion or projectile.explosion ref points here"
     },
+    "annotations": {"type": "array", "items": {"$ref": "#/$defs/annotation"}, "description": "In-game editor marker anchors (Idea #24 P1) — ADVISORY ONLY: build never creates records from these; a human/AI agent reads label+kind+position to author the next round"},
     "hazards": {
       "type": "array",
       "items": {
@@ -603,6 +604,7 @@
   },
   "additionalProperties": false,
   "$defs": {
+    "annotation": {"type": "object", "properties": {"seq": {"type": "integer"}, "label": {"type": "string"}, "kind": {"type": "string"}, "position": {"$ref": "#/$defs/vec3"}, "angleZ": {"type": "number"}, "cell": {"type": "string"}, "worldspace": {"type": "string"}}},
     "ref": {
       "type": "string",
       "minLength": 1,

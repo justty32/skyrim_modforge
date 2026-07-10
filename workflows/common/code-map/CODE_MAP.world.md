@@ -149,6 +149,7 @@
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
 | Spec | `Spec.SceneExport.cs` | `SceneNpcRoleSpec`（npc=外部 base ref／role／backstory）|
+| Spec | `Spec.Annotations.cs` | `AnnotationSpec`（seq/label/kind/position/angleZ/cell/worldspace）——遊戲內編輯器 marker 錨點（Idea #24 P1），**advisory only**：build 永不生記錄，僅 `Program.Build.cs` log 數量；agent 讀它 author 下一輪 spec |
 | Spec | `Spec.cs` | `ModSpec.NpcRoles` + `NpcRolesExpanded` 守衛旗標 |
 | Expand P0 | `Generator.SceneNpcRoles.cs` | **`ExpandNpcRoles`**：每 role → 共享 StartGameEnabled host quest `MF_SceneNpcRolesQ`；blacksmith → Hello `DialogueSpec`（GetIsID npc）+ sandbox `PackageSpec`（無 location＝editor-location fallback）+ `NpcPatchSpec`（overrideOf npc, append）。**vendor**：有 companion placement（base==npc，`RefsMatch`）時 → Vendor FACT（`VendorItemsBlacksmith` 0x066333/8-20 時）+ merchant chest（gold）共置 placement + `patch.Factions` 加 vendor FACT + `JobMerchantFaction`（vanilla 交易對話）；無 placement 跳過 vendor。未知 role 不展開（Validate 警告）。`SanitizeEd` 把外部 ref 轉成合法 editorId 片段。常數 `BlacksmithGold`/`BlacksmithVendorList` |
 | Build | `Generator.Build.cs` | pass-0 呼叫 `ExpandNpcRoles(spec)`（在 `ExpandLivingNpcs` 後）|

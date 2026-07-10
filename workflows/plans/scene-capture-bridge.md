@@ -68,7 +68,7 @@ MarkerEntry {
 | | 去處 | 優點 | 缺點 |
 |---|---|---|---|
 | a | `_annotations`（底線鍵，scene.json 內） | 一個檔；已驗 `Program.Schema.cs:13` 放行 `_`/`//` 前綴 | 語意上是註解空間；deserialize 靜默忽略 |
-| **b（傾向）** | 一等公民 `ModSpec.Annotations` | validate 安全；build log「N annotations (advisory)」；agent 讀一個檔 | ModSpec 混入不生成的欄位，語意要寫明 |
+| **b（✅ 拍板 2026-07-10）** | 一等公民 `ModSpec.Annotations` | validate 安全；build log「N annotations (advisory)」；agent 讀一個檔 | ModSpec 混入不生成的欄位，語意要寫明 |
 | c | sidecar `scene-annotations.json` | ModSpec 純淨 | agent 讀兩個檔；配對靠命名慣例 |
 
 ## Task 0：前置驗證（只讀，不改碼；`ForEachReference` 簽名憑印象寫錯的前車之鑑）

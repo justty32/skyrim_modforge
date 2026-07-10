@@ -19,6 +19,9 @@ internal static partial class Program
         PluginIo.Write(result.Mod, outPath);
         foreach (var w in result.Warnings) Console.WriteLine(w);
         Console.WriteLine(BuildSummary(result.Stats, specPath, outPath));
+        if (spec.Annotations.Count > 0)
+            // Advisory marker anchors from the in-game editor — deliberately NOT built (Spec.Annotations.cs).
+            Console.WriteLine($"{spec.Annotations.Count} annotation(s) — advisory marker anchors, not built");
         WriteSeq(outPath, Path.GetDirectoryName(Path.GetFullPath(outPath)) ?? ".");
         if (spec.Weathers.Count > 0)
         {
