@@ -66,9 +66,31 @@
 2. **屬性清單必須映射到 record 欄位，否則匯出說謊**。`PlacementSpec` 已有：`Lock`(XLOC)/`Ownership`(XOWN)/`Count`(XCNT)/`InitiallyDisabled`/`EnableParent`/`LinkedRefs`/`Teleport`。**待查**：門的「預設開啟」flag、火把燃燒狀態（火把/火盆常見是 enable-parent 對偶或 lit/unlit 兩個 base——可能得先標 advisory）。GUI 屬性列表**只列能存活到 esp 的屬性**，或明確標示「僅本次遊戲、不會匯出」。
 3. **預覽輪廓機制待驗**：EffectShader（vanilla ghost/ethereal 類）能否給綠/紅半透明；預覽 ghost 要不要關碰撞（`SetMotionType`？待驗）；泛光用哪個 shader。編輯器工具 esp 自帶自訂 shader 記錄，順帶承載色盲選項。
 
+### 細摳③：動態物件（2026-07-10）
+
+走靜態物件同一條路（新增/修改/刪除、同一套確認流程），差別只在**物理**：
+
+- 被指向性法術選中後 → **凍結物理**（tcl 效果——喪失物理特性；光照/渲染等保留，細節實作時再議）→ 編輯 → **結束後回復物理**。
+- 機制候選：`SetMotionType(Keyframed)`（Papyrus 同名函式的 C++ 對應；**待驗**）。
+- **誠實註記（WYSIWYG 邊界）**：物理回復後 havok 會重新模擬——擺懸空的杯子會掉、穿模的會彈開。匯出的是 **authored 位置**（你編輯時定的），遊戲載入後物件自行沉降——這與 CK modder 擺 clutter 的行為**一致**（vanilla 本來就這樣），不是 bug，但要在文件/面板講清楚。
+- 契約**零改動**：動態物件（MSTT/misc…）跟靜態一樣進 `placements[]`（base + transform）；物理凍結純屬編輯期 runtime 行為。
+
+### 細摳③附：檢視法術（編輯痕跡的可視化）
+
+選中的輪廓/泛光效果在**結束編輯後消失**。另提供一支**持續施展**的檢視法術，施展期間把編輯痕跡重新顯示出來，方便玩家知道自己改了啥。**可能做四種：新增／修改／刪除／全部**。
+
+- 實作：DLL 迭代 session 登記簿（新增清單／修改清單／removals 清單——三者本來就存在於設計中），對各套上對應 shader；法術一樣只是模式開關。
+- **待驗**：顯示「被刪除的」有個坑——被擦掉的 vanilla ref 是 disabled，**不會被渲染**。要嘛暫時 enable + 紅 shader、收法再 disable；要嘛在原位放臨時紅色 marker。實作時定。
+
+### 細摳③附：真刪除語意（使用者定調）
+
+**被刪除的物件如果是我們先前新增的，刪了就是真的刪了**——不進 removals[]（原本就如此）、**也不留在任何登記簿**，檢視法術（含「刪除」模式）不會顯示紅輪廓。無痕跡。
+
+- 與 M6 資料流一致並延伸：dynamic ref 刪除 = 從「新增」登記簿移除 + 世界中銷毀（`Delete()` 是否存在仍是 Task 0 驗證項；Papyrus 慣例是 `Disable()`+`Delete()` 標記引擎回收）。
+
 ### 對既有 milestone 的映射
 
-**M6＝刪除**（原橡皮擦，補上紅輪廓確認流程與 GUI 列表路徑）、**M7a＝新增**（palette＋指向性放置＋綠輪廓確認）、**新增 M7c＝修改編輯模式**（numpad transform＋屬性 GUI）。M7b（override 形狀）的**偵測**由修改流程天然提供，只剩契約拍板。
+**M6＝刪除**（原橡皮擦，補上紅輪廓確認流程與 GUI 列表路徑）、**M7a＝新增**（palette＋指向性放置＋綠輪廓確認）、**新增 M7c＝修改編輯模式**（numpad transform＋屬性 GUI）、**新增 M7d＝動態物件物理凍結＋檢視法術**（細摳③）。M7b（override 形狀）的**偵測**由修改流程天然提供，只剩契約拍板。
 
 ---
 
