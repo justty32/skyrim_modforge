@@ -47,6 +47,26 @@ scripts/skylink/skylink-call.py get_cell_info
 scripts/skylink/skylink-call.py get_nearby_np_cs '{"radius":4000}'
 ```
 
+## 崩潰復原迴圈
+
+遊戲 CTD 之後 agent 可以自己爬起來，**全程不碰 Steam、不 `wineserver -k`**——關鍵在行程樹：
+
+```
+reaper → proton → SkyrimSELauncher.exe(stub) → ModOrganizer.exe → SkyrimSE.exe
+```
+
+**MO2 不會跟著遊戲一起死**，而它的 `ModOrganizer.ini` 裡第一個 configured executable 標題是 `SKSE`。所以對還活著的 MO2 送一發 `moshortcut://:SKSE` 就能重拉遊戲。relay 與 socat 也活過 CTD（獨立行程），pipe 一回來就自動接上，**橋會自癒**。
+
+```bash
+scripts/skylink/skylink-bridge.sh crashlog           # 最新 crash-*.log 路徑
+scripts/skylink/skylink-bridge.sh game-restart       # moshortcut://:SKSE，等到 pipe 活過來
+scripts/skylink/skylink-bridge.sh game-load-latest   # 挑最新 .ess，load_save
+```
+
+- crash log（CrashLogger）在 prefix 的 `Documents/My Games/Skyrim Special Edition/SKSE/crash-*.log`，Linux 端直接讀。
+- **`load_most_recent_save` 是壞的**（無論如何都回 `{"loading":false}`），所以 `game-load-latest` 自己按 mtime 挑最新 `.ess`，再用 `load_save` 指名載入。主選單下 `get_game_safety` 可用、`get_cell_info` 會 `isError`——後者正好拿來判斷存檔載完沒。
+- **未驗**：真 CTD 會彈一個 wine 對話框。滯留的 `SkyrimSE.exe` 會讓 `game_running()` 誤判、MO2 也可能拒絕再啟動。下次真崩了才驗得到，見 [wait_todo/nexus-and-env.md](../../wait_todo/nexus-and-env.md)。目前 `game-restart` 只在乾淨退出後驗證過。
+
 ## Gotchas
 
 - **`up` 會在遊戲沒跑時拒絕動作**，這是刻意的。在 Steam 背後對那顆 prefix 起一個 wineserver，會讓下次啟動卡死（Proton reaper 永遠等不到）。收拾方式一律 `wineserver -k`。

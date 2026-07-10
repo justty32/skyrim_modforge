@@ -72,9 +72,11 @@ def main():
         if "error" in m:
             print("ERROR:", json.dumps(m["error"], ensure_ascii=False, indent=2))
             return 1
+        # A failed tool call is a normal result carrying isError, not a JSON-RPC
+        # error. Scripts polling this must see a nonzero exit.
         for c in m["result"].get("content", []):
             print(c.get("text", json.dumps(c, ensure_ascii=False)))
-        return 0
+        return 1 if m["result"].get("isError") else 0
 
     print("no response (is the bridge up? is the game running?)", file=sys.stderr)
     return 1

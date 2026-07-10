@@ -14,10 +14,16 @@ PORT=${SKYLINK_PORT:-8770}
 UDS=/tmp/CoreFxPipe_SkyrimMCP
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RELAY="$HERE/relay.exe"
+CALL="$HERE/skylink-call.py"
+MO2="/home/lorkhan/games/mod-organizer-2-skyrimspecialedition/modorganizer2/ModOrganizer.exe"
+DOCS="/home/lorkhan/.steam/steam/steamapps/compatdata/$APPID/pfx/drive_c/users/steamuser/Documents/My Games/Skyrim Special Edition"
 
 game_running() { pgrep -f 'SkyrimSE\.ex[e]' >/dev/null; }
+mo2_running() { pgrep -f 'ModOrganize[r]\.exe' >/dev/null; }
 relay_running() { pgrep -f 'rela[y]\.exe' >/dev/null; }
 socat_running() { pgrep -f "UNIX-LISTEN:${UDS}" >/dev/null; }
+
+newest() { find "$1" -name "$2" -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-; }
 
 case "${1:-status}" in
 build)
@@ -48,11 +54,45 @@ down)
     rm -f "$UDS"
     echo "bridge down"
     ;;
+crashlog)
+    CL="$(newest "$DOCS/SKSE" 'crash-*.log')"
+    [ -n "$CL" ] || { echo "no crash log found"; exit 1; }
+    echo "$CL"
+    ;;
+game-restart)
+    # MO2 survives a game CTD, so recovery never touches Steam or wineserver --
+    # which is what keeps us clear of the zombie-wineserver hang.
+    mo2_running || { echo "MO2 is not running; relaunch the game through Steam by hand"; exit 1; }
+    game_running && { echo "game already running"; exit 0; }
+
+    nohup protontricks-launch --appid "$APPID" "$MO2" 'moshortcut://:SKSE' \
+        >/tmp/skylink-mo2launch.log 2>&1 &
+    for _ in $(seq 1 60); do game_running && break; sleep 1; done
+    game_running || { echo "game did not start -- see /tmp/skylink-mo2launch.log"; exit 1; }
+
+    # The SKSE pipe comes back on its own; relay/socat outlive the crash.
+    for _ in $(seq 1 45); do "$CALL" get_game_safety >/dev/null 2>&1 && break; sleep 2; done
+    "$CALL" get_game_safety >/dev/null 2>&1 \
+        && echo "game up, pipe alive (main menu)" \
+        || { echo "game up but pipe unreachable"; exit 1; }
+    ;;
+game-load-latest)
+    # load_most_recent_save is broken upstream (always returns loading:false),
+    # so pick the newest .ess ourselves and load it by name.
+    SAVE="$(newest "$DOCS/Saves" '*.ess')"
+    [ -n "$SAVE" ] || { echo "no save found"; exit 1; }
+    STEM="$(basename "$SAVE" .ess)"
+    echo "loading $STEM"
+    "$CALL" load_save "{\"saveName\":\"$STEM\"}" || exit 1
+    for _ in $(seq 1 45); do "$CALL" get_cell_info >/dev/null 2>&1 && break; sleep 2; done
+    "$CALL" get_cell_info >/dev/null 2>&1 && echo "save loaded" || { echo "save did not load"; exit 1; }
+    ;;
 status)
     game_running  && echo "game:  running" || echo "game:  not running"
+    mo2_running   && echo "mo2:   running" || echo "mo2:   not running"
     relay_running && echo "relay: up"      || echo "relay: down"
     socat_running && echo "socat: up"      || echo "socat: down"
     ;;
 *)
-    echo "usage: $0 {build|up|down|status}"; exit 2;;
+    echo "usage: $0 {build|up|down|status|crashlog|game-restart|game-load-latest}"; exit 2;;
 esac
