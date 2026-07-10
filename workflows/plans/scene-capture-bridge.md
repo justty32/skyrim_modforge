@@ -142,7 +142,10 @@ UI 上大概是「站到那個位置 → 面板選 kind → 填參數 → Add」
 
 ## 技術債 / 未決
 
-**`scene.json` 需要「既有 ref 的 override」形狀。** 目前只有 `removals[]` 碰既有 ref。玩家移動/縮放過的 vanilla ref 一律被 vanilla diff 跳過。M6 繞得過，**M7 繞不過**（滴管擺完就想對齊既有的牆）。屆時要決定：`placements[]` 加一個 `overrideOf` 欄位？還是新開一段 `overrides[]`？——先做 M6 累積實感再決定，不要現在拍板。
+**`scene.json` 需要「既有 ref 的 override」形狀。** 兩案（`placements[].overrideOf` vs 新開 `overrides[]`）與取捨已寫進 [spec](../specs/ingame-scene-export-design.md)「既有 ref 的 override 形狀」。ModForge 側成本低（`BuildRemovals` 已有整套 `GetOrAddAsOverride` 機件，約 30 行）。**先做 M6 累積實感再拍板。**
+
+- ⚠️ **「怎麼知道 ref 被移動過」不能用 diff**：`GetPosition()` 的定義就是 `return data.location;`（`TESObjectREFR.h:405`），採集橋沒有 authored 基準，而 havok 會自己移動東西。必須走**明示登記**（只有經編輯器移動的 ref 才算）。這讓 **M7 的真實範圍比 idea 原本寫的大**——需要一支「抓取/移動既有 ref」的 placement controller，不只是「吸取 + 擺放」。
+- ⚠️ `SceneExporter.cpp` 裡「authored transform, not live physics pose」是 stub 留下的**未驗證宣稱，待修**。
 
 **`TESObjectREFR::Delete()` 是否存在。** 未確認。影響「玩家自擺物件能不能真的刪掉，還是只能隱藏」。
 

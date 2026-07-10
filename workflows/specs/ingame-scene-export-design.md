@@ -135,6 +135,40 @@ position 三分量完全一致。`dump` 確認 vanilla cell 是**加法式 overr
 - ❌ 頂層 `cell` / `worldspace` 不是 ModSpec 成員 → 被丟掉。**歸屬欄位在每一筆 `PlacementSpec` 上**（`Spec.World.cs:6-7`）。
 - ❌ 兩者皆空的 placement 會被 `Generator.Build.Placements.cs:48` 以 `cell '' not found in spec — skipped` 丟棄。採集橋現在在解不出 cell/worldspace 時直接中止並 warn。
 
+### 🟡 未定案：既有 ref 的 override 形狀（擋著 M7 滴管）
+
+**問題**：`scene.json` 目前只有 `removals[]` 碰既有 ref。玩家**移動/縮放過的 vanilla ref** 一律被 vanilla diff 跳過。M6 橡皮擦繞得過；**M7 滴管繞不過**——吸一面牆擺下去，玩家自然會想把它對齊既有的牆，那面既有的牆就被移動了。
+
+#### ModForge 側成本：低
+
+`BuildRemovals`（`Generator.Build.Removals.cs:21`）**已經有整套機件**：`cache.TryResolveContext<IPlaced, IPlacedGetter>(fk, out ctx)` → `ctx.GetOrAddAsOverride(mod)`（連帶 override parent cell/worldspace）→ 直接改 `ov.Placement.Position`。改 rotation/scale 是同一個物件上的欄位。所以生成端大概 30 行。
+
+#### 契約形狀：兩案
+
+| | A. `placements[].overrideOf` | B. 新開頂層 `overrides[]` |
+|---|---|---|
+| net-new schema | `PlacementSpec` 加一個 `string OverrideOf` | 新型別 + 新頂層 list |
+| 採集橋輸出 | 同一個 entry 形狀多一個欄位 | 另一段 |
+| 生成端分支 | `if (overrideOf != "") 走 GetOrAddAsOverride，否則 AddNew` | 獨立一段 |
+| 語意風險 | `base` 欄位在 override 時無意義（必須留空或與既有 base 相符），需驗證 | 乾淨，`base` 不出現 |
+
+**傾向 A**：`PlacementSpec` 已經帶 position/rotation/scale，採集橋吐的 entry 只多一個欄位，`scene.json` 不長新段。代價是要在 validate 加一條「`overrideOf` 與 `base` 互斥」的檢查。**先做 M6 累積實感再拍板**，不要現在定。
+
+#### ⚠️ 「怎麼知道 ref 被移動過」——不能用 diff
+
+`TESObjectREFR::GetPosition()` 的定義**就是** `return data.location;`（`TESObjectREFR.h:405`）。所以 `data.location` 是引擎回報的**當前**位置，不是 authored 值。`SceneExporter.cpp` 裡「authored transform, not live physics pose」那句註解是 stub 留下的**未經驗證宣稱，待修**。
+
+後果：採集橋手上**沒有 authored 基準**可比對。而且 havok 會自己移動東西（杯子從桌上滾下來），純 diff 會吐出一堆假的 override。
+
+兩條路，與 removals 的決策同構：
+
+- **推導（不推薦）**：session 開始時快照全 cell 的 authored ref transform，匯出時 diff。717 個 ref 的記憶體成本可忽略，但 **havok 造成的位移無法與玩家的刻意移動區分**，且存檔重載後基準遺失。
+- **明示（推薦）**：只有**經過編輯器移動**的 ref 才被登記。與 M6 橡皮擦「記憶體清單 + 明示 adopt」同一個模型——**明示優於推導**，因為推導的誤判在這裡有物理來源（havok），比 removals 那邊的任務腳本更難排除。
+
+明示模型也意味著 **M7 需要一支「抓取/移動既有 ref」的工具**（Tundra 式的 placement controller，idea §② / settlements P2 合流），而不只是「吸取 + 擺放」。這是 M7 真正的範圍，比 idea 原本寫的大。
+
+---
+
 ### NPC 來源：PROTEUS 是**可選**，預設走「大眾臉」（2026-07-10 使用者定調）
 
 原設計把 §A 拓印玩家（PROTEUS）當成 NPC 的唯一來源。改為兩條並列，**預設是後者**：
