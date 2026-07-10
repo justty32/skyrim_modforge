@@ -28,6 +28,50 @@
 
 ---
 
+## 細摳②：靜態物件——使用者 UX 定稿（2026-07-10）
+
+「實現這些功能的程式碼就是那樣，**重點是操作方式**。」分三種：**新增、修改、刪除**；修改再分 transform（位置/大小/角度）與**屬性**（火把燃燒與否、門開關與否…）。
+
+### 新增
+
+- **路徑 A（最簡）**：GUI 選單先選一個靜態物件 → 施放指向性法術 → 物件出現在命中點。
+- **路徑 B**：先施法在命中點放 marker → 再到 GUI 選「在那個 marker 生成」。
+- **確認流程**：生成時先出現**綠色半透明輪廓**預覽 → 過幾秒（或玩家再施一法）→ 跳選單問「這樣可不可以」→ 確定 OK 才實際生成。
+
+### 刪除
+
+- **路徑 A**：指向性法術擊中目標靜態物件。
+- **路徑 B**：GUI 直接列出指定 cell 的靜態物件選擇刪除——**我們新增的單獨放一掛、最新生成的在最前面**（採集橋本來就有這份資料）。
+- **確認流程**：先變**紅色半透明輪廓** → 幾秒或再施法 → 確認選單。
+- **色盲考量（使用者自provisions）**：紅綠對色盲不友善 → 提供色彩調整選項。實作：編輯器工具 esp 自帶多套 EffectShader 記錄，面板切換。
+
+### 持續施法變體（新增與刪除共用）
+
+指向性法術多做一個 **concentration 版**：指哪打哪，指到的物件即時套上半透明輪廓，**結束施法時選定最後被擊中者**。
+
+→ **實作洞見**：法術＝**模式開關＋美學**；實際選取＝DLL 每幀輪詢 `CrosshairPickData`（API 已確認）。這樣**不需要 projectile impact hook**，也繞開「STAT 靜物不吃魔法效果」的限制——spell 只負責告訴 DLL「現在在選取模式」。
+
+### 修改（快捷鍵編輯模式）
+
+- 指向性法術選中 → 物件套**泛光**效果（**不要**半透明——與刪除預覽視覺區隔）。
+- **numpad 操作**：`2468` 位移、`1379` 旋轉、`+ −` 縮放、`* /` ＋ `5` 在屬性 GUI 中選擇要改哪個屬性、`Enter` 或 `0` 結束編輯。
+- 同時跳出 GUI 視窗列出該物件的屬性。
+- **編輯模式中按鍵必須吞掉**、不給遊戲——SKSE Menu Framework 的 `AddInputEvent` callback 回傳 bool 即 block（[finding](../../sub_projs/mod-survey/findings/skse-menu-framework-3.md) 已載明此能力）。
+- scancode 全部**實測取得**（Task 0 慣例），不假設 DIK 值。
+- 進入編輯模式時**快照原 transform** → cancel 可還原（per-edit undo）。
+
+### 三個設計後果
+
+1. **「修改既有 ref」的流程本身就是明示登記**。被法術選中且實際動過的既有 ref，自然進 override 清單——先前「不能用 diff 偵測移動」（havok 假陽性）的問題被這個 UX 直接解掉，M7b 不必另造登記機制。剩下的只有契約形狀（`overrideOf` vs `overrides[]`）要拍板。
+2. **屬性清單必須映射到 record 欄位，否則匯出說謊**。`PlacementSpec` 已有：`Lock`(XLOC)/`Ownership`(XOWN)/`Count`(XCNT)/`InitiallyDisabled`/`EnableParent`/`LinkedRefs`/`Teleport`。**待查**：門的「預設開啟」flag、火把燃燒狀態（火把/火盆常見是 enable-parent 對偶或 lit/unlit 兩個 base——可能得先標 advisory）。GUI 屬性列表**只列能存活到 esp 的屬性**，或明確標示「僅本次遊戲、不會匯出」。
+3. **預覽輪廓機制待驗**：EffectShader（vanilla ghost/ethereal 類）能否給綠/紅半透明；預覽 ghost 要不要關碰撞（`SetMotionType`？待驗）；泛光用哪個 shader。編輯器工具 esp 自帶自訂 shader 記錄，順帶承載色盲選項。
+
+### 對既有 milestone 的映射
+
+**M6＝刪除**（原橡皮擦，補上紅輪廓確認流程與 GUI 列表路徑）、**M7a＝新增**（palette＋指向性放置＋綠輪廓確認）、**新增 M7c＝修改編輯模式**（numpad transform＋屬性 GUI）。M7b（override 形狀）的**偵測**由修改流程天然提供，只剩契約拍板。
+
+---
+
 ## M6：橡皮擦（§E ③）
 
 **為何先做**：生成端**零改動**。`BuildRemovals`（`Generator.Build.Removals.cs:21`，已讀原始碼）吃 `<master>:0xFORMID` 的既有 placed ref → master link cache 解 `IPlaced` → `GetOrAddAsOverride`（連帶 override parent cell/worldspace）→ 設 `InitiallyDisabled`(0x800) → Z 埋 −30000 避 havok 殘留。而 `ResolveDurableId(&ref)` 吐的正是那個格式。採集橋只要把字串塞進 `removals[]`。
@@ -191,7 +235,7 @@ idea #24 §② 寫「本 idea 的施法擺設與 settlements Phase-2 的 `builda
 
 **`scene.json` 需要「既有 ref 的 override」形狀。** 兩案（`placements[].overrideOf` vs 新開 `overrides[]`）與取捨已寫進 [spec](../specs/ingame-scene-export-design.md)「既有 ref 的 override 形狀」。ModForge 側成本低（`BuildRemovals` 已有整套 `GetOrAddAsOverride` 機件，約 30 行）。**先做 M6 累積實感再拍板。**
 
-- ⚠️ **「怎麼知道 ref 被移動過」不能用 diff**：`GetPosition()` 的定義就是 `return data.location;`（`TESObjectREFR.h:405`），採集橋沒有 authored 基準，而 havok 會自己移動東西。必須走**明示登記**（只有經編輯器移動的 ref 才算）。這讓 **M7 的真實範圍比 idea 原本寫的大**——需要一支「抓取/移動既有 ref」的 placement controller，不只是「吸取 + 擺放」。
+- ~~「怎麼知道 ref 被移動過」~~ **已解（2026-07-10 細摳②）**：使用者的修改 UX（法術選中→numpad 編輯）本身就是明示登記——被選中且動過的才進清單，havok 假陽性天然排除。剩契約形狀（`overrideOf` vs `overrides[]`）待拍板。
 - ⚠️ `SceneExporter.cpp` 裡「authored transform, not live physics pose」是 stub 留下的**未驗證宣稱，待修**。
 
 **`TESObjectREFR::Delete()` 是否存在。** 未確認。影響「玩家自擺物件能不能真的刪掉，還是只能隱藏」。
