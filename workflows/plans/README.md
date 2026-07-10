@@ -16,6 +16,7 @@
 |---|---|---|---|
 | [worldspace-editor.md](worldspace-editor.md)（heightmap → 非平坦 LAND，7 task） | 2026-06-16 | [specs/worldspace-editor-design.md](../specs/worldspace-editor-design.md) | Task 1–6 落地（552 測試綠）；Task 7 待主力機 |
 | [ingame-scene-export.md](ingame-scene-export.md)（scene.json → patch；ModForge 側 M0–M2，7 task） | 2026-07-08 | [specs/ingame-scene-export-design.md](../specs/ingame-scene-export-design.md) | **M0–M2 落地（IN-GAME 確認 2026-07-08）**——npcRoles macro + 外部-speaker Hello，白漫 Carlotta 講鐵匠問候；落地記錄 [landed/dialogue-quests](../feature-dev/landed/dialogue-quests.md)。後續：vendor faction-add / `removals[]` / M3–M5 runtime |
+| [scene-capture-bridge.md](scene-capture-bridge.md)（採集橋 runtime 工具：橡皮擦／滴管／範圍吸取／語意標記／role tag，M6–M10） | 2026-07-10 | [specs/ingame-scene-export-design.md](../specs/ingame-scene-export-design.md)（共用） | **規劃中**——M4 spike + 面板已 IN-GAME（[landed/world](../feature-dev/landed/world.md)）；M6 橡皮擦待審 |
 
 action-system asset/config 生成（OAR/BDI/PIE）7 個 task 全落地（2026-06-14，547 測試綠燈），計畫已移 [archive/](archive/README.md)；落地記錄見 [feature-dev/landed/infra.md](../feature-dev/landed/infra.md)。
 
