@@ -1,4 +1,5 @@
 #include "log.h"
+#include "Editor.h"
 #include "Eraser.h"
 #include "Palette.h"
 #include "Markers.h"
@@ -44,6 +45,9 @@ namespace {
                 if (!btn || !btn->IsDown()) continue;
                 if (btn->GetDevice() != RE::INPUT_DEVICE::kKeyboard) continue;
                 const auto code = btn->GetIDCode();
+                // Edit mode owns the numpad; numpad-5 enters it. Consumed keys
+                // must not fall through to the F-key hotkeys.
+                if (Editor::HandleKey(code)) continue;
                 if (code != kExportKey && code != kMarkerKey && code != kEraseKey &&
                     code != kPickKey && code != kPlaceKey) continue;
 

@@ -32,4 +32,8 @@ namespace UI {
         void __stdcall Render();
     }
 
+    namespace EditorPage {
+        void __stdcall Render();
+    }
+
 }  // namespace UI

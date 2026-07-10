@@ -1,5 +1,6 @@
 #include "UI.h"
 
+#include "Editor.h"
 #include "Eraser.h"
 #include "Palette.h"
 #include "Markers.h"
@@ -46,6 +47,7 @@ void UI::Register() {
     SKSEMenuFramework::AddSectionItem("Markers", MarkersPage::Render);
     SKSEMenuFramework::AddSectionItem("Eraser", EraserPage::Render);
     SKSEMenuFramework::AddSectionItem("Palette", PalettePage::Render);
+    SKSEMenuFramework::AddSectionItem("Editor", EditorPage::Render);
     SKSE::log::info("SKSE Menu Framework panel registered");
 }
 
@@ -243,4 +245,23 @@ void __stdcall UI::PalettePage::Render() {
         ::Palette::Remove(removeIdx);
         g_slotBufs.clear();  // indices shifted — rebuild lazily next frame
     }
+}
+
+void __stdcall UI::EditorPage::Render() {
+    const auto st = ::Editor::Current();
+    if (!st.active) {
+        ImGuiMCP::TextWrapped(
+            "Aim at something YOU placed and press numpad 5 to edit it. "
+            "Authored (vanilla/mod) refs are refused until the overrides[] "
+            "contract lands.");
+        return;
+    }
+    ImGuiMCP::Text("Editing: %s", st.name);
+    ImGuiMCP::BulletText("pos (%.1f, %.1f, %.1f)", st.pos.x, st.pos.y, st.pos.z);
+    ImGuiMCP::BulletText("yaw %.1f deg   scale %.2f", st.yawDeg, st.scale);
+    ImGuiMCP::Separator();
+    ImGuiMCP::TextWrapped(
+        "numpad: 8/2 fwd/back - 4/6 left/right - 1/3 down/up - 7/9 yaw - "
+        "+/- scale - 0 commit - . cancel");
+    if (ImGuiMCP::Button("cancel (restore)")) { ::Editor::Cancel(); }
 }

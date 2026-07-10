@@ -77,3 +77,11 @@
 2. **擺**：看著想放的位置按 **F7** → 該物在準星處出現、帶著吸取時的旋轉/縮放。
 3. **匯出**：F10 → 擺的東西進 `placements[]`；若是 actor，該筆應自動帶 `"kind": "npc"`（源頭修掉山羊陷阱——json 裡直接可見）。
 4. **串橡皮擦**：F7 擺錯 → F8 對它按 → 無痕消失（真刪除語意）。
+
+## P2 numpad 編輯模式（2026-07-10 離線齊備，新 DLL 已部署）
+
+1. F7 擺個東西 → 準星指著它按 **numpad 5** → log 進編輯模式，F1 → `Editor` 頁顯示 live transform。
+2. numpad 8/2/4/6/1/3 推動、7/9 轉、+/− 縮放——**若哪個鍵沒反應**，編輯模式會把未映射的 scancode 印進 log（numpad DIK 常數未驗），亂按一輪把 log 給我即可。
+3. **numpad 0** commit；再選、按 **numpad .** → 應還原到選中時的 transform。
+4. 對 vanilla 物件按 numpad 5 → 應被拒絕並 log「awaits the overrides[] contract」。
+5. 移動後 F10 匯出 → placements 座標應是**移動後**的（live pose）。
