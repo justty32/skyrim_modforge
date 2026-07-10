@@ -3,6 +3,8 @@
 #include "SceneExporter.h"
 #include "log.h"
 
+#include <cmath>
+
 namespace {
     constexpr float kRadToDeg = 57.2957795f;
 
@@ -37,17 +39,10 @@ namespace {
 
 namespace Markers {
 
-    bool PlaceAtPlayer() {
-        auto* player = RE::PlayerCharacter::GetSingleton();
-        auto* base = ProxyBase();
-        if (!player || !base) {
-            SKSE::log::error("Markers: no player or no proxy base — marker not placed");
-            return false;
-        }
-
+    // Durable anchor of the player's current cell/worldspace.
+    static void CellAnchor(RE::PlayerCharacter* player, std::string& anchor, bool& interior) {
         RE::TESObjectCELL* cell = player->GetParentCell();
-        std::string anchor;
-        bool interior = false;
+        interior = false;
         if (cell && cell->IsInteriorCell()) {
             interior = true;
             if (auto id = SceneExporter::ResolveDurableId(cell)) anchor = *id;
@@ -55,31 +50,127 @@ namespace Markers {
             if (auto* ws = cell->GetRuntimeData().worldSpace)
                 if (auto id = SceneExporter::ResolveDurableId(ws)) anchor = *id;
         }
+    }
+
+    static bool PlaceAt(const RE::NiPoint3& pos, const char* how) {
+        auto* player = RE::PlayerCharacter::GetSingleton();
+        auto* base = ProxyBase();
+        if (!player || !base) {
+            SKSE::log::error("Markers: no player or no proxy base — marker not placed");
+            return false;
+        }
+        std::string anchor;
+        bool interior = false;
+        CellAnchor(player, anchor, interior);
 
         RE::NiPointer<RE::TESObjectREFR> proxy = player->PlaceObjectAtMe(base, false);
         if (!proxy) {
             SKSE::log::error("Markers: PlaceObjectAtMe failed");
             return false;
         }
+        proxy->SetPosition(pos);
 
         Entry e;
         e.seq = g_nextSeq++;
         e.label = std::format("marker-{}", e.seq);
-        e.position = player->GetPosition();   // player feet, fixed now
+        e.position = pos;                               // fixed now, not the proxy's live pose
         e.angleZDeg = player->GetAngleZ() * kRadToDeg;  // engine radians -> contract degrees
         e.cellOrWs = std::move(anchor);
         e.isInterior = interior;
         e.proxy = proxy->GetHandle();
 
         // Label doubles as the proxy's display name — display names persist in
-        // the savegame, which keeps a label-recovery path open across reloads.
+        // the savegame, which is what AdoptOrphans() recovers labels from.
         proxy->SetDisplayName(e.label.c_str(), true);
 
-        SKSE::log::info("Markers: placed #{} '{}' at ({:.1f}, {:.1f}, {:.1f}) in {}",
-            e.seq, e.label, e.position.x, e.position.y, e.position.z,
+        SKSE::log::info("Markers: placed #{} '{}' ({}) at ({:.1f}, {:.1f}, {:.1f}) in {}",
+            e.seq, e.label, how, pos.x, pos.y, pos.z,
             e.cellOrWs.empty() ? "(unresolved)" : e.cellOrWs);
         g_entries.push_back(std::move(e));
         return true;
+    }
+
+    bool PlaceAtPlayer() {
+        auto* player = RE::PlayerCharacter::GetSingleton();
+        return player && PlaceAt(player->GetPosition(), "feet");
+    }
+
+    // Havok ray from eye level along the player's facing. Sign convention on
+    // pitch is UNVERIFIED in-game — if markers land behind/above, flip it.
+    static bool LookHit(RE::PlayerCharacter* player, RE::NiPoint3& out) {
+        auto* cell = player->GetParentCell();
+        auto* world = cell ? cell->GetbhkWorld() : nullptr;
+        if (!world) return false;
+
+        RE::NiPoint3 from = player->GetPosition();
+        from.z += 120.f;  // eye-ish; good enough for a ground pick
+        const float pitch = player->data.angle.x;  // radians; positive = down
+        const float yaw = player->data.angle.z;
+        const RE::NiPoint3 dir{
+            std::sin(yaw) * std::cos(pitch),
+            std::cos(yaw) * std::cos(pitch),
+            -std::sin(pitch),
+        };
+        constexpr float kRange = 4096.f;
+        const RE::NiPoint3 to = from + dir * kRange;
+
+        const float scale = RE::bhkWorld::GetWorldScale();
+        RE::bhkPickData pick;
+        pick.rayInput.from = RE::hkVector4(from * scale);
+        pick.rayInput.to = RE::hkVector4(to * scale);
+        bool hit = false;
+        {
+            RE::BSReadLockGuard lock(world->worldLock);
+            hit = world->PickObject(pick) && pick.rayOutput.HasHit();
+        }
+        if (!hit) return false;
+        out = from + dir * (kRange * pick.rayOutput.hitFraction);
+        return true;
+    }
+
+    bool PlaceAimed() {
+        auto* player = RE::PlayerCharacter::GetSingleton();
+        if (!player) return false;
+        RE::NiPoint3 hit;
+        if (LookHit(player, hit)) return PlaceAt(hit, "aimed");
+        SKSE::log::info("Markers: ray hit nothing within range — falling back to feet");
+        return PlaceAt(player->GetPosition(), "feet-fallback");
+    }
+
+    std::size_t AdoptOrphans() {
+        auto* player = RE::PlayerCharacter::GetSingleton();
+        auto* base = ProxyBase();
+        RE::TESObjectCELL* cell = player ? player->GetParentCell() : nullptr;
+        if (!cell || !base) return 0;
+
+        std::string anchor;
+        bool interior = false;
+        CellAnchor(player, anchor, interior);
+
+        std::size_t adopted = 0;
+        cell->ForEachReference([&](RE::TESObjectREFR* ref) -> RE::BSContainer::ForEachResult {
+            if (!ref || ref->IsDeleted() || ref->IsDisabled()) return RE::BSContainer::ForEachResult::kContinue;
+            if (ref->GetBaseObject() != base) return RE::BSContainer::ForEachResult::kContinue;
+            const auto h = ref->GetHandle();
+            for (const auto& e : g_entries)
+                if (e.proxy == h) return RE::BSContainer::ForEachResult::kContinue;  // already ours
+
+            Entry e;
+            e.seq = g_nextSeq++;
+            const char* dn = ref->GetDisplayFullName();
+            e.label = (dn && *dn) ? dn : std::format("marker-{}", e.seq);
+            e.position = ref->GetPosition();
+            e.angleZDeg = ref->GetAngleZ() * kRadToDeg;
+            e.cellOrWs = anchor;
+            e.isInterior = interior;
+            e.proxy = h;
+            SKSE::log::info("Markers: adopted '{}' at ({:.1f}, {:.1f}, {:.1f})",
+                e.label, e.position.x, e.position.y, e.position.z);
+            g_entries.push_back(std::move(e));
+            ++adopted;
+            return RE::BSContainer::ForEachResult::kContinue;
+        });
+        return adopted;
     }
 
     std::vector<Entry>& All() { return g_entries; }

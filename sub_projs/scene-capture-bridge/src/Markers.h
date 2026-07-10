@@ -34,6 +34,17 @@ namespace Markers {
     // "record where I stand"). Returns false when no proxy base resolves.
     bool PlaceAtPlayer();
 
+    // Place a marker where the player is LOOKING: havok ray from eye level
+    // along the facing direction (range 4096). Falls back to the feet when
+    // nothing is hit — one key serves both, no extra scancode risk.
+    bool PlaceAimed();
+
+    // Adopt proxies that exist in the player's cell but not in the registry —
+    // markers from a previous session survive in the SAVEGAME (dynamic refs +
+    // display names persist), while this registry lives in the DLL. Label is
+    // recovered from the proxy's display name. Returns how many were adopted.
+    std::size_t AdoptOrphans();
+
     [[nodiscard]] std::vector<Entry>& All();
 
     // True when `ref` is one of our proxies — by registry handle, or by base

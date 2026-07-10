@@ -77,6 +77,7 @@ MarkerEntry {
 - [x] **放置 hotkey 的 scancode**：F9=0x43 實機確認 sink 有收到——**但 F9 是 vanilla 快速讀檔**，遊戲同時處理（sink 只觀察不吞鍵）→ 改 **F11=0x57**（DIK 表在 F10 後跳號，非連續；vanilla 未綁），另在面板加 `place marker here` 鈕（零衝突路徑）。**教訓：選 hotkey 先查 vanilla 綁定表。**
 - [x] **label 持久化 trick**（✅ `TESObjectREFR::SetDisplayName(BSFixedString,bool)` 存在，`TESObjectREFR.h:460`；已接上——改名同步寫 proxy 顯示名）：`ExtraTextDisplayData`（SetDisplayName 等價）改 proxy 顯示名——顯示名**存進存檔**，若可行則 save/reload 後 adopt 掃描能**連標籤一起**復原，登記簿的跨 session 問題免費解決。驗 CommonLibSSE API 是否存在可寫路徑。
 - [ ] **（Task 4 用）指向性放置**：A 案符文式（引擎原生把物件放在瞄準命中點；驗放置面限制、`iMaxAttachedRunes`）vs B 案 `bhkPickData` 射線（驗 API 形狀）。
+- [x] **（Task 4 裁決，2026-07-10）指向性放置走 B 案射線**——A 案符文**不成立**：讀 vanilla `FireRune`（05DB90）→ MGEF `RuneFireFFLocation`（TargetLocation + FXPersist + Projectile 05DB91），符文機制是 **projectile 黏表面＋近接引爆**，沒有任何 placed ref 可認領。B 案已實作：`bhkPickData` + `bhkWorld::PickObject`（`GetWorldScale` 縮放、`BSReadLockGuard` 上鎖、eye+120 起點、range 4096、無命中 fallback 腳下）。**pitch 正負號未實機驗**——若 marker 落點詭異（身後/天上），翻符號即可（`Markers.cpp` `LookHit` 有註記）。
 - [x]（存在，暫未使用）**（選配）`TESActivateEvent` sink**：玩家 E 鍵啟動 marker → 面板跳到該筆。沒有也不擋——面板列表夠用。
 
 ## Task 1：ModForge 側標註段（等形狀拍板；若 b 案 ≈ 20 行）
@@ -104,11 +105,12 @@ MarkerEntry {
 - [x] 列表：seq、label（`InputText` 就地改名）、kind（下拉或自由文字）、所在 cell、刪除鈕。最新在前。
 - [x] `Stats` 加 marker 計數；Export 頁顯示「N markers → annotations」。
 
-## Task 4：指向性放置（依 Task 0 裁決）
+## Task 4：指向性放置（✅ 2026-07-10 離線實作，B 案射線）
 
-- [ ] A 案：工具 esp 的符文式法術（爆炸 PlacedObject＝我們的 MarkerACTI）→ dynamic proxy 出現在命中點 → DLL 認領進登記簿（TESActivateEvent 或輪詢新 ref of our base）。
-- [ ] B 案：concentration 法術當模式開關 + DLL 射線取命中點 `PlaceAtMe`。
-- [ ] 法術美學是使用者願景語彙——就算 B 案，spell 殼還是要有（工具 esp）。
+- [x] ~~A 案符文~~ **不成立**（vanilla 符文＝projectile 黏表面＋近接引爆，無 placed ref——見 Task 0 裁決記錄）。
+- [x] B 案：F11 → `PlaceAimed()`——射線命中點放 marker，無命中 fallback 腳下（一鍵兩用，零新 scancode 風險）。pitch 符號待實機驗。
+- [x] **`AdoptOrphans()` 順帶落地**：面板 `adopt this cell` 鈕——上一 session 的 proxy 和顯示名都活在存檔裡，掃當前 cell 認領回登記簿（label 從顯示名復原）。跨 session 復原閉環（`SetDisplayName` trick 的消費端）。
+- [ ] 法術殼（美學）後補——工具 esp 加一支 self 法術當模式開關即可，不擋功能。
 
 ## Task 5：工具 esp（ModForge dogfood）
 

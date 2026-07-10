@@ -95,6 +95,12 @@ void __stdcall UI::MarkersPage::Render() {
     if (ImGuiMCP::Button("place marker here")) {
         ::Markers::PlaceAtPlayer();   // hotkey-free path — immune to key conflicts
     }
+    ImGuiMCP::SameLine();
+    if (ImGuiMCP::Button("adopt this cell")) {
+        // Recover markers from a previous session: their proxies + display
+        // names live in the savegame, only this registry was lost.
+        ::Markers::AdoptOrphans();
+    }
     ImGuiMCP::Separator();
 
     std::uint32_t removeSeq = 0;

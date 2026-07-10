@@ -46,8 +46,8 @@ namespace {
                 if (code == kExportKey) {
                     SceneExporter::ExportPlayerCellToFile();
                 } else {
-                    SKSE::log::info("hotkey: scancode 0x{:X} -> place marker", code);
-                    Markers::PlaceAtPlayer();
+                    SKSE::log::info("hotkey: scancode 0x{:X} -> place marker (aimed)", code);
+                    Markers::PlaceAimed();
                 }
             }
             return RE::BSEventNotifyControl::kContinue;

@@ -59,5 +59,6 @@
 
 四步全過（明細移至 [landed/world.md](../workflows/feature-dev/landed/world.md)）。**殘項（open）**：
 
-- **F11 hotkey 複核**：F9→F11 的新 DLL 已部署，0x57 未實機按過（面板 `place marker here` 鈕是備援路徑）。
+- **F11 aimed 放置**：新 DLL 已部署——F11 現在放在**準星指的位置**（射線，無命中 fallback 腳下）。0x57 未實機按過；**pitch 符號未驗**——若 marker 落在身後/天上，回報，翻個符號就好。
 - **讀檔後 prune 複核**：讀檔 → F1 Markers 頁不該再列出死 proxy 的鬼條目。
+- **adopt 複核**：存檔重載後面板按 `adopt this cell` → 上一 session 放的 marker 應**連名字**回到列表（顯示名活在存檔裡）。
