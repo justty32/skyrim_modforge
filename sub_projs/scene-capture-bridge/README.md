@@ -31,6 +31,20 @@
 - **PROTEUS clone 的 ref 是 dynamic**：`npcRoles[].actorRef` 需要耐久 ref id，dynamic ref 沒有。PROTEUS 已降為**可選**（預設走 ModForge 直接生的「大眾臉」NPC，ref 耐久），故不阻塞；見 [spec](../../workflows/specs/ingame-scene-export-design.md)「NPC 來源」。
 - **§B 語意標記 / §D role tag / §E 滴管·範圍吸取·橡皮擦**：UI 骨架（`src/UI.cpp`）已接上 SKSE Menu Framework，剩下的是把這些工具畫進面板。
 
+## 使用流程：marker → agent → 世界改變（P1，實機閉環 2026-07-10）
+
+玩家側：遊戲內 **F11** 在準星處放 marker（無命中落腳下；面板 `place marker here` 為備援）→ **F1 → Markers** 改 label/kind → **F10** 匯出。存檔重載後按 `adopt this cell` 連名字認領回來。
+
+**agent 對接配方**（拿到需求如「在 goat 放一隻山羊」時照做）：
+
+1. 讀 `.../compatdata/489830/pfx/drive_c/users/steamuser/Documents/My Games/Skyrim Special Edition/SKSE/scene-export.json` 的 `annotations[]`——每筆有 seq/label/kind/position/angleZ/cell 或 worldspace。
+2. 查 base：houseCARL `cross_plugin_query`（如 `editorid_contains=EncGoat`）。
+3. author spec：`placements[]` 帶 marker 的 position/angleZ（rotation.z）＋歸屬欄位。**⚠️ 外部 NPC base 必須 `"kind": "npc"`**——isNpc 自動判定只認 in-spec base，漏了會生成 REFR（不生怪、無報錯，dump 看到 `PlacedObject` 而非 `PlacedNpc` 即中招）。
+4. `build` → `dump` 驗座標與記錄型別 → 產物放 `<MO2>/mods/<新資料夾>/`。
+5. 提醒使用者：**MO2 F5 refresh 後新 mod 預設不勾**，要手動勾 mod＋plugin。
+
+先例：`mods/SCB Goat Demo/`（本 README 同日的實機驗收產物）。
+
 ## 建置踩坑（2026-07-10 首編）
 
 - **`ports/` overlay 必須存在**。`CMakePresets.json` 的 `vcpkg-clang-linux` 指向 `${sourceDir}/ports`；`commonlibsse-ng-fork/fix-clang-delete.patch` 是 clang-cl 編 CommonLibSSE-NG 的**必要**修補，`directxtk` 也得走 overlay（registry 版在 `x64-windows-skse-clang` 下編不過）。從 `my_skyrim_plugin_1/ports/` 整包搬。
