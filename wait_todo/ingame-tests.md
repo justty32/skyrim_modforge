@@ -59,7 +59,7 @@
 
 已部署 `mods/SceneCaptureBridge/`（新 DLL + `SceneCaptureTools.esp`）。**MO2 按 F5 refresh，勾 mod、勾 `SceneCaptureTools.esp` plugin**（esp 沒勾也能測——DLL 會 fallback 到 vanilla 召喚圈 base，log 會說用了哪個）。
 
-1. **放置**：遊戲內按 **F9** → 腳下出現發光召喚圈 + `SceneCaptureBridge.log` 出現 `Markers: placed #1 'marker-1' at (...)`。若無反應：log 找 `hotkey: scancode` 行——F9=0x43 是從 F10=0x44 推的，錯了告訴我實際值。
+1. ~~F9~~ **（2026-07-10 實測：F9 撞 vanilla 快速讀檔，已改 F11＋面板 `place marker here` 鈕；新 DLL 已部署，下次啟動生效）** 按 **F11** → 腳下召喚圈 + log `Markers: placed`。F11 若也無反應回報（0x57 未實機驗過）。
 2. **面板**：F1 → `Scene Capture Bridge` → `Markers`：改名（label 打 `goat` 按 Enter 或 apply）、改 kind、del。改名後準星指 proxy 應顯示新名字（SetDisplayName）。
 3. **匯出**：放 3 個 marker（至少一個在室外）→ F10 → `scene-export.json` 應有 `annotations` 段：seq/label/kind/position/angleZ/cell 或 worldspace。**proxy 本身不得出現在 `placements[]`**（log 的 `marker proxies excluded` 應等於 marker 數）。
-4. **agent 工作流 demo（驗收核心）**：把 json 給 agent 說「在 `goat` 那個 marker 放一隻山羊」→ agent 寫 spec → build → 驗 ACHR 座標＝marker 座標。
+4. ~~agent 工作流 demo~~ ✅ **2026-07-10 閉環**——`mods/SCB Goat Demo/SCBGoatDemo.esp`（PlacedNpc EncGoatDomestic @ goat marker 座標）。**勾起來進遊戲，走到你標 goat 的地方看羊**（最後一哩的目視確認）。

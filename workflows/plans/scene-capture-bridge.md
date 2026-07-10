@@ -74,7 +74,7 @@ MarkerEntry {
 ## Task 0：前置驗證（只讀，不改碼；`ForEachReference` 簽名憑印象寫錯的前車之鑑）
 
 - [x] **proxy 的 base**（✅ 2026-07-10）：工具 esp `SCB_MarkerACTI`（model=`Magic\SummonTargetFX.nif`，vanilla 召喚圈，路徑讀自 `07CD55:Skyrim.esm`——保證有效）；**DLL 在 esp 缺席時 fallback 到 vanilla `SummonTargetFXActivator`**，hotkey 路徑不依賴工具 esp。原候選評估：挑一個**看得見**的載體（vanilla XMarker 遊戲內不渲染）。候選：發光小物（wisp/燭火類 ACTI 或 MSTT）。模型路徑**必須用 houseCARL/`find` 對 Skyrim.esm 驗**（[[vanilla-nif-paths-must-be-verified]]：錯路徑＝隱形物件無報錯）。裁決同時定「用 vanilla base」vs「工具 esp 自帶 MarkerACTI」（後者辨識乾淨——base 來自我們的 esp，adopt 掃描零誤判；工具 esp ≠ 出貨產物，ModForge 生一次即可，dogfood）。
-- [x] **放置 hotkey 的 scancode**：F9=0x43，自已實機確認的 F10=0x44 連續 DIK F 鍵區推得；DLL log 首次按下時印 scancode 供複核。
+- [x] **放置 hotkey 的 scancode**：F9=0x43 實機確認 sink 有收到——**但 F9 是 vanilla 快速讀檔**，遊戲同時處理（sink 只觀察不吞鍵）→ 改 **F11=0x57**（DIK 表在 F10 後跳號，非連續；vanilla 未綁），另在面板加 `place marker here` 鈕（零衝突路徑）。**教訓：選 hotkey 先查 vanilla 綁定表。**
 - [x] **label 持久化 trick**（✅ `TESObjectREFR::SetDisplayName(BSFixedString,bool)` 存在，`TESObjectREFR.h:460`；已接上——改名同步寫 proxy 顯示名）：`ExtraTextDisplayData`（SetDisplayName 等價）改 proxy 顯示名——顯示名**存進存檔**，若可行則 save/reload 後 adopt 掃描能**連標籤一起**復原，登記簿的跨 session 問題免費解決。驗 CommonLibSSE API 是否存在可寫路徑。
 - [ ] **（Task 4 用）指向性放置**：A 案符文式（引擎原生把物件放在瞄準命中點；驗放置面限制、`iMaxAttachedRunes`）vs B 案 `bhkPickData` 射線（驗 API 形狀）。
 - [x]（存在，暫未使用）**（選配）`TESActivateEvent` sink**：玩家 E 鍵啟動 marker → 面板跳到該筆。沒有也不擋——面板列表夠用。
@@ -121,7 +121,8 @@ MarkerEntry {
 
 - [ ] **實機**：放 3 個 marker（含一個 exterior）、面板改名（`camp-1`／`raise-terrain-here`／`goat`）→ Export。
 - [ ] **離線**：json 的標註段座標與 `get_cell_info`/houseCARL 對照；`validate` 零問題。
-- [ ] **agent 工作流 demo**：拿著 json 對 agent 說「在 `goat` 那個 marker 放一隻山羊」→ agent 寫 spec（`placements[].base` = 山羊 NPC_/LVLN + marker 座標）→ `build` → `dump`/houseCARL 驗 ACHR 位置 = marker 座標。**這一步過了，MVP 的價值主張就閉環了。**
+- [x] **agent 工作流 demo**（✅ 2026-07-10）：使用者實機標 `goat`（Tamriel (116031, 111486, -7744)）→ 匯出 → agent 從 annotations author spec（`EncGoatDomestic` 04359C + marker 座標/朝向）→ build → dump 驗 `PlacedNpc @ (116031.1, 111485.6, -7744)`，cell (28,27) 自動歸位。**MVP 價值主張閉環。**產物 `mods/SCB Goat Demo/`，勾起來進遊戲看羊。
+  - **⚠️ agent authoring 陷阱（實測撞到）**：`isNpc` 自動判定只認 in-spec base（`recordsByEd`），**外部 NPC base 必須明示 `kind: "npc"`**，否則落成 REFR（NPC base 的 REFR 不生怪）。`Generator.Build.Placements.cs:79-83`。
 
 ---
 

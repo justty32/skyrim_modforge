@@ -9,10 +9,12 @@ using namespace std::chrono_literals;
 
 namespace {
     // DirectInput scancodes, NOT virtual-key codes. 0x44 = F10 (in-game
-    // confirmed). 0x43 = F9, inferred from the contiguous DIK F1..F10 block
-    // anchored by that confirmation — the log line below verifies on first use.
+    // confirmed). Marker key was F9 (0x43, fired correctly) but F9 is
+    // vanilla QUICKLOAD — the game acted on it too. F11 = 0x57 (the DIK
+    // table jumps after F10; NOT contiguous) is unbound in vanilla; the log
+    // line below verifies on first use.
     constexpr std::uint32_t kExportKey = 0x44;
-    constexpr std::uint32_t kMarkerKey = 0x43;
+    constexpr std::uint32_t kMarkerKey = 0x57;
 
     std::chrono::steady_clock::time_point g_lastPress{};
 
@@ -75,6 +77,10 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg) {
     case SKSE::MessagingInterface::kDataLoaded:
         SKSE::log::info("kDataLoaded: game data loaded");
         OnDataLoaded();
+        break;
+    case SKSE::MessagingInterface::kPostLoadGame:
+        // A load wipes pre-load dynamic refs; drop registry ghosts.
+        Markers::PruneDeadProxies();
         break;
     default:
         break;

@@ -127,4 +127,12 @@ namespace Markers {
         }
     }
 
+    void PruneDeadProxies() {
+        std::size_t before = g_entries.size();
+        std::erase_if(g_entries, [](const Entry& e) { return !e.proxy.get(); });
+        if (before != g_entries.size())
+            SKSE::log::info("Markers: pruned {} marker(s) whose proxy died with the old save",
+                before - g_entries.size());
+    }
+
 }  // namespace Markers

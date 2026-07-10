@@ -44,4 +44,9 @@ namespace Markers {
     void SetKind(std::uint32_t seq, const std::string& kind);
     void Remove(std::uint32_t seq);  // destroys the proxy too — no trace
 
+    // After a game load, proxies from the pre-load session are gone (dynamic
+    // refs live in the save, our registry lives in the DLL). Drop entries
+    // whose proxy no longer resolves so the panel doesn't list ghosts.
+    void PruneDeadProxies();
+
 }  // namespace Markers

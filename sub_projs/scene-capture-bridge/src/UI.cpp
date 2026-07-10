@@ -90,7 +90,11 @@ namespace {
 
 void __stdcall UI::MarkersPage::Render() {
     auto& all = ::Markers::All();
-    ImGuiMCP::Text("%zu marker(s). F9 drops one at your feet.", all.size());
+    ImGuiMCP::Text("%zu marker(s). F11 drops one at your feet.", all.size());
+    ImGuiMCP::SameLine();
+    if (ImGuiMCP::Button("place marker here")) {
+        ::Markers::PlaceAtPlayer();   // hotkey-free path — immune to key conflicts
+    }
     ImGuiMCP::Separator();
 
     std::uint32_t removeSeq = 0;
