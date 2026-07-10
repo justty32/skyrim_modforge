@@ -7,7 +7,7 @@
 - **類型**：基石聯動（它的 output 契約 = ModForge 的 input；兩者靠 scene.json 協議接，不整合）
 - **契約權威**：scene.json 的每個欄位對映**既有 ModForge spec 型別**，本子專案**只擁有 output 形狀**，生成端全在 ModForge。契約定義見 [spec §契約](../../workflows/specs/ingame-scene-export-design.md)。
 - **建置**：[BUILD.md](BUILD.md)（C++23 + CommonLibSSE-NG + vcpkg + CMake presets；靜態 CRT standalone DLL）
-- **狀態**：🟡 **骨架 + SceneExporter 實作 stub 離線落地（2026-07-09）**，未編譯、未實機。
+- **狀態**：🟢 **編譯通過**（2026-07-10，主力機 clang-cl 跨編譯，產物 `build/release-clang-cl-linux/SceneCaptureBridge.dll`）；M4 hotkey 已接；**未實機**。
 
 ## 建置架構來源
 
@@ -20,16 +20,23 @@
 
 | 檔 | 內容 |
 |---|---|
-| `plugin.cpp` | SKSE 入口 + message handler；`kDataLoaded` 就緒（export 觸發器待 M4 接 hotkey/console/ImGui）|
-| `SceneExporter.{h,cpp}` | **核心**：`ExportCell` 走訪 cell → `placements[]`（static+transform+scale+enable）/`npcRefs[]`（actor）；`ResolveDurableId` FormID→`<plugin>:0xLOCALID`（TESFile origin + ESL/full 遮罩）；`WriteSceneFile` 吐 json |
+| `plugin.cpp` | SKSE 入口 + message handler；`kDataLoaded` 註冊 **F10（scancode 0x44）export hotkey**（sink 形狀抄 my_skyrim_plugin_1 的 `FollowLight::HotkeySink`）|
+| `SceneExporter.{h,cpp}` | **核心**：`ExportCell` 走訪 cell → **vanilla diff**（ref 解得出耐久 id ⇒ 既有 ⇒ 跳過；解不出 ⇒ 玩家 `PlaceAtMe` 擺的 ⇒ emit）→ `placements[]`（actor 與物件同一個 list，因 ModSpec 沒有 `npcRefs` 成員）；`ResolveDurableId` FormID→`<plugin>:0xLOCALID`；`WriteSceneFile` 吐 json |
 | `PCH.h` / `log.h` | CommonLibSSE PCH（含 nlohmann）＋ spdlog file logger |
 
 ## 尚未做（依 spec 里程碑）
 
-- **編譯驗證**：離線機無 MSVC/vcpkg → 待主力機 clang-cl 或 CI。見 [WAIT_USER](../../WAIT_USER.md)。
-- **`ResolveDurableId` 的 ESL 局部 ID 寬度**、`data.location` 對 exterior 的座標語意、`InitiallyDisabled` flag 讀法 → 皆標 `TODO(runtime-verify)`，需實機對真實 ref 核。
-- **§B 語意標記 / §D role tag / §E 滴管·範圍吸取·橡皮擦 removals[]**：這些不是裸 cell sweep 能產出的，要遊戲內編輯 UI（ImGui / SKSE Menu Framework 3），M4 之後接。
-- **export 觸發器**（hotkey → `ExportPlayerCellToFile()`）＝ M4 spike 的最小可驗面。
+- **實機**（唯一的大缺口）。⚠️ 先驗 **clang-cl 產物載不載得起來**——`BUILD.md` 明訂此路徑僅供編譯驗證，且它的產物從未進過遊戲。步驟見 [wait_todo/ingame-tests.md](../../wait_todo/ingame-tests.md)。
+- **`data.location` 對 interior 是否即 cell-local**：唯一還沒離線驗掉的契約條目（旋轉單位、ESL 遮罩、scale 省略、整條 round-trip 都已用 houseCARL 離線核完，見 [spec](../../workflows/specs/ingame-scene-export-design.md)）。
+- **PROTEUS clone 的 ref 是 dynamic**：`npcRoles[].actorRef` 需要耐久 ref id，dynamic ref 沒有。開放問題，見 spec。
+- **§B 語意標記 / §D role tag / §E 滴管·範圍吸取·橡皮擦**：不是裸 cell sweep 能產出的，要遊戲內編輯 UI（ImGui / SKSE Menu Framework 3），M4 之後接。
+
+## 建置踩坑（2026-07-10 首編）
+
+- **`ports/` overlay 必須存在**。`CMakePresets.json` 的 `vcpkg-clang-linux` 指向 `${sourceDir}/ports`；`commonlibsse-ng-fork/fix-clang-delete.patch` 是 clang-cl 編 CommonLibSSE-NG 的**必要**修補，`directxtk` 也得走 overlay（registry 版在 `x64-windows-skse-clang` 下編不過）。從 `my_skyrim_plugin_1/ports/` 整包搬。
+- `CMakeLists.txt` 需 `find_package(directxtk CONFIG REQUIRED)`——CommonLibSSE 的 export target 在 link interface 裡具名 `Microsoft::DirectXTK`。
+- **改過 preset / vcpkg.json 後必須 `rm -rf build/release-clang-cl-linux`**。stale `CMakeCache.txt` 會讓 vcpkg.cmake 跳過 chainload toolchain，clang-cl 就不帶 `/winsysroot`，錯誤訊息長得像「編譯器壞了」。
+- `ForEachReference` 的 callback 收 `TESObjectREFR*`（指標），不收 reference。
 
 ## 里程碑對位（spec §最小垂直切片）
 

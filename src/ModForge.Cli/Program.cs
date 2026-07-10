@@ -152,9 +152,19 @@ internal static partial class Program
     // Single chokepoint: read a spec file and resolve $ref/$env before any deserialize / field check.
     private static string ResolveSpecJson(string path) => SpecRefs.ResolveFile(path);
 
-    private static ModSpec ReadSpec(string path) =>
-        JsonSerializer.Deserialize<ModSpec>(ResolveSpecJson(path), ReadOpts)
-        ?? throw new InvalidOperationException("spec deserialized to null");
+    private static ModSpec ReadSpec(string path)
+    {
+        var json = ResolveSpecJson(path);
+        // ReadOpts leaves UnmappedMemberHandling at the default (Skip), so a
+        // misspelled or invented field deserializes to nothing at all and the
+        // build "succeeds" having silently dropped it. `validate` has always
+        // reported these; surface them here too so `build` cannot swallow them.
+        foreach (var u in CheckUnknownFields(json, typeof(ModSpec)))
+            Console.Error.WriteLine($"  ! {u}");
+
+        return JsonSerializer.Deserialize<ModSpec>(json, ReadOpts)
+            ?? throw new InvalidOperationException("spec deserialized to null");
+    }
 
     // Shared loader (also used by the diagnostic commands in Diagnostics.cs).
     private static ISkyrimMod Load(string path) => PluginIo.Load(path);
