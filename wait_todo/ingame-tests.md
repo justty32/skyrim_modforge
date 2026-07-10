@@ -85,3 +85,4 @@
 3. **numpad 0** commit；再選、按 **numpad .** → 應還原到選中時的 transform。
 4. 對 vanilla 物件按 numpad 5 → 應被拒絕並 log「awaits the overrides[] contract」。
 5. 移動後 F10 匯出 → placements 座標應是**移動後**的（live pose）。
+6. **物理凍結**：F7 擺一個會滾的東西（書/杯子類）→ numpad 5 選中（log `physics frozen`）→ 推到半空 → 不掉；numpad 0 commit（log `physics restored`）→ 掉下來沉降。

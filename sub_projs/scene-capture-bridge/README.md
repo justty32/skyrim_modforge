@@ -24,6 +24,10 @@
 | `SceneExporter.{h,cpp}` | **核心**：`ExportCell` 走訪 cell → **vanilla diff**（ref 解得出耐久 id ⇒ 既有 ⇒ 跳過；解不出 ⇒ 玩家 `PlaceAtMe` 擺的 ⇒ emit）→ `placements[]`（actor 與物件同一個 list，因 ModSpec 沒有 `npcRefs` 成員）；`ResolveDurableId` FormID→`<plugin>:0xLOCALID`；`WriteSceneFile` 吐 json |
 | `UI.{h,cpp}` | 遊戲內面板（[SKSE Menu Framework 3](../mod-survey/findings/skse-menu-framework-3.md) / Dear ImGui）：顯示所在 cell、Export 按鈕、上次匯出的 placements / pre-existing 統計。**軟相依**——`IsInstalled()` 是 `GetModuleHandleW` 探測，沒裝框架就只有 F10 |
 | `extern/SKSEMenuFramework/` | vendored 消費者 header（LGPL-2.1，`GetProcAddress` shim，不連結 DLL）|
+| `Aim.{h,cpp}` | 共用視角射線（`bhkPickData`＋`PickObject`；Markers/Palette 同用；pitch 符號待實機驗）|
+| `Eraser.{h,cpp}` | **F8** 橡皮擦：authored→disable＋登記→`removals[]`；自己的 dynamic→真刪除無痕；`scan disabled refs` 明示 adopt |
+| `Palette.{h,cpp}` | **F6** 滴管吸 base＋姿態進具名插槽、**F7** 擺在準星處（runtime-only base 拒收）|
+| `Editor.{h,cpp}` | **numpad 5** 選中自己擺的 ref → numpad 微調（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、. cancel）；havok-movable 類型編輯期物理凍結；authored ref 拒絕（等 overrides[] 契約）|
 | `PCH.h` / `log.h` | CommonLibSSE PCH（含 nlohmann）＋ spdlog file logger |
 
 ## 尚未做（依 spec 里程碑）

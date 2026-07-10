@@ -31,10 +31,31 @@ namespace {
     constexpr float kYawStep = 5.f;      // degrees per tap
     constexpr float kScaleStep = 0.02f;
 
+    // Only these base types get the physics freeze: they are the naturally
+    // havok-Dynamic clutter (cups, books, weapons on tables). Restoring a
+    // STAT/FURN to kDynamic would knock walls loose, so anything not on this
+    // list is left alone entirely.
+    bool HavokMovable(RE::TESBoundObject* base) {
+        switch (base ? base->GetFormType() : RE::FormType::None) {
+        case RE::FormType::MovableStatic:
+        case RE::FormType::Misc:
+        case RE::FormType::Weapon:
+        case RE::FormType::Ammo:
+        case RE::FormType::Book:
+        case RE::FormType::AlchemyItem:
+        case RE::FormType::Ingredient:
+        case RE::FormType::SoulGem:
+            return true;
+        default:
+            return false;
+        }
+    }
+
     struct State {
         bool active = false;
         RE::ObjectRefHandle handle;
         bool isActor = false;
+        bool frozen = false;   // we keyframed it on select; restore on release
         RE::NiPoint3 origPos;
         RE::NiPoint3 origAngle;
         float origScale = 1.f;
@@ -42,6 +63,15 @@ namespace {
     State g;
 
     RE::NiPointer<RE::TESObjectREFR> Target() { return g.handle.get(); }
+
+    void ReleasePhysics() {
+        if (!g.frozen) return;
+        if (auto ref = Target()) {
+            ref->SetMotionType(RE::hkpMotion::MotionType::kDynamic, true);
+            SKSE::log::info("Editor: physics restored — the object will settle");
+        }
+        g.frozen = false;
+    }
 
     void Apply(RE::TESObjectREFR* ref, const RE::NiPoint3& pos, const RE::NiPoint3& angle) {
         ref->SetPosition(pos);
@@ -74,6 +104,11 @@ namespace {
         g.origPos = ref->GetPosition();
         g.origAngle = ref->data.angle;
         g.origScale = ref->GetScale();
+        // Freeze havok while editing, or physics fights every nudge (細摳③).
+        if (HavokMovable(ref->GetBaseObject())) {
+            g.frozen = ref->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
+            if (g.frozen) SKSE::log::info("Editor: physics frozen while editing");
+        }
         SKSE::log::info("Editor: editing dynamic ref at ({:.1f}, {:.1f}, {:.1f}) — "
             "numpad 8/2 fwd/back, 4/6 left/right, 1/3 down/up, 7/9 yaw, +/- scale, "
             "0 commit, . cancel", g.origPos.x, g.origPos.y, g.origPos.z);
@@ -111,6 +146,7 @@ namespace Editor {
         case kCommit:
             SKSE::log::info("Editor: committed at ({:.1f}, {:.1f}, {:.1f})",
                 pos.x, pos.y, pos.z);
+            ReleasePhysics();
             g = {};
             if (code == kSelect) TrySelect();
             return true;
@@ -145,6 +181,7 @@ namespace Editor {
             if (!g.isActor) ref->SetScale(g.origScale);
             SKSE::log::info("Editor: cancelled — transform restored");
         }
+        ReleasePhysics();
         g = {};
     }
 
