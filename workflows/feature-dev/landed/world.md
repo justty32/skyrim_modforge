@@ -27,3 +27,14 @@
 **in-world 技能樹 generator `skillTrees:`（Idea #20 Phase 3，落地 2026-06-21，804 測綠）**：高階 spec section 一鍵生成可點 in-world 養成樹（漂浮星節點＋連線＋per-node rank GLOB＋points pool＋gate＋學會給 ability＋亮起），**零外部 master（只 Skyrim.esm）**。架構＝**macro-expansion**：`Generator.ExpandSkillTrees` 在 `Build()` pass-0 把 `skillTrees:` 展開成既有低階記錄（globals/node+line ACTI/placements/`scripts:` 掛 MFSkillNode），重用全部既有 pass，新建記錄碼極少。線方向/scale **build-time C# 算**（node[i] 堆 origin+i*spacing、line 在中點 rot(90,0,180) scale=spacing/65），不需 runtime 腳本。節點行為 `assets/papyrus/MFSkillNode.psc`（extends ObjectReference：OnActivate gate→AddSpell+PlayAnimation"OwnedWild"+downLine"Unlock"+扣點；OnLoad 持久亮起），嵌入 CLI、`package` `ShipEmbeddedPex("MFSkillNode.pex")`；星/線 nif+9 貼圖 loose kit 經 `assets` 打包（非 master）。**生成輸出 dump 驗證與已實機確認的手刻版結構完全一致**。MVP=垂直線性鏈；分支/2D 待後續。檔：`Spec.SkillTree.cs`/`Generator.SkillTrees.cs`/`Generator.Validate.SkillTrees.cs`，example `skill_tree_spec.json`，docs SPEC-world §in-world skill trees。memory [[inworld-skill-tree-standalone-confirmed]]。
 
 - **removals[]（Idea #24 §E 橡皮擦，2026-07-08）**：`ModSpec.Removals`（`<master>:0xFORMID` 既有 placed ref）→ `Generator.Build.Removals.cs` `BuildRemovals` 用 master link cache `TryResolveContext<IPlaced>` → `GetOrAddAsOverride(mod)`（自動把 parent cell/worldspace 一起 override）→ 設 `InitiallyDisabled`(0x800) + 深埋 Z−30000（避 havok 殘留）。標準「disable vanilla clutter」patch、可逆、headless-safe。`ValidateRemovals` 驗外部 ref 格式。RequiresSkyrim（需 master link cache）。測 `RemovalsTests.cs`（含 RequiresSkyrim：白漫馬廄 Skulvar 鋤頭 0x0D1991 override 後 InitiallyDisabled+Z−34603）。IN-GAME 待驗。
+
+## scene-capture-bridge M4 spike — 遊戲內採集橋（Idea #24 元件③）· IN-GAME 2026-07-10
+
+一支 SKSE C++ DLL（`sub_projs/scene-capture-bridge/`）走訪玩家所在 cell，把玩家擺放的 ref 序列化成 `scene.json`（＝一份合法 `ModSpec`）→ ModForge `build` 出 patch esp。實機驗收：
+
+- **clang-cl 跨編譯的 SKSE DLL 可直接實機**：`skse64.log` → `plugin SceneCaptureBridge.dll (...) loaded correctly (handle 53)`。import 表只有系統 DLL、靜態 CRT。`BUILD.md` 原本假設此路徑僅供編譯驗證——有反例了（出貨仍走 Windows CI，因未驗 address-library 跨版本行為）。
+- **vanilla diff**：`ResolveDurableId(&ref)` 解得出 ⇒ 既有 ref ⇒ 跳過；解不出（dynamic `0xFF......`，`GetFile(0)==nullptr`）⇒ 玩家 `PlaceAtMe` 擺的 ⇒ emit。The Bannered Mare (`01605E`) 按 F10：`0 placements, 717 pre-existing`。`placeatme` 兩個之後：`2 placements, 717 pre-existing`。
+- **座標契約結案**：plugin 存弧度、Papyrus `GetAngle*` 回度數、C++ `GetAngle()` 回弧度、`scene.json` 一律度數；`interior` 的 `data.location` 就是 cell-local（匯出座標與 `get_cell_info` 玩家座標一字不差）；vanilla `scale==1.0` 時省略 XSCL。round-trip 誤差 2.3e-7 rad（float32 捨入）。
+- **整鏈**：真實 `scene.json` → `validate` 零問題 → `build` → 2 placement 掛在 vanilla interior cell 的加法 override，master 僅 `Skyrim.esm`。
+
+已知取捨：玩家**移動/縮放過的 vanilla ref** 不採（需 emit 既有 ref 的 override，`scene.json` 尚未建模）。NPC 來源預設走 ModForge 直接生的「大眾臉」；PROTEUS 拓印為可選。

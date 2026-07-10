@@ -14,3 +14,23 @@
 - 依賴：`x86_64-w64-mingw32-gcc`、`socat`、`protontricks`、`dotnet` ≥10。
 - prefix 用 Proton 9.0 (Beta)（`compatdata/489830/config_info`）。`protontricks-launch` 會自動挑對版本並掛進既有 wineserver。
 - **`relay.exe` 不進 git**（gitignore），fresh clone 後跑 `build`。
+
+## agent 按不了鍵（2026-07-10）
+
+`xdotool` 在這台機器上**完全驅動不了遊戲**，而且失敗得很安靜：
+
+- Wayland 合成器不允許 XTest 指標 warp。`xdotool mousemove 900 500` 回傳成功，但 `xdotool getmouselocation` 顯示指標紋風不動。**MO2 的 Run 按鈕點不下去**（點擊「成功」，MO2 的 log 卻沒有任何新行）。
+- Skyrim 讀 raw input，所以 `xdotool key`（XTest）和 `xdotool key --window`（XSendEvent）都被忽略。主選單的 CONTINUE 也按不動。
+
+`xdotool windowactivate` / `windowclose` / `search` **有效**——那些走 X 協定訊息，不是 XTest。所以「找視窗、拉前景、截圖」可以，「送輸入」不行。
+
+解法是 `skylink-bridge.sh key <hexscan>`（見 [bridge.md](bridge.md)）。另外兩條繞道：
+
+- 主選單進遊戲：不要試著按 CONTINUE，用 `execute_console_command "coc <CellEditorID>"`（console 在遊戲行程內執行）。
+- 啟動遊戲：不要點 MO2 的 Run，用 `skylink-bridge.sh game-restart`（`protontricks-launch` + `moshortcut://:SKSE`，會轉交給已在跑的 MO2 instance）。
+
+## `pkill -f` / `ps | grep` 會匹配到自己的指令字串（2026-07-10）
+
+`pkill -9 -f 'ModOrganizer.exe'` 把發出指令的那個 shell 一起殺了——因為 shell 的 cmdline 裡就含 `ModOrganizer.exe` 這串字。同理 `ps -eo cmd | grep -qi 'SkyrimSE.exe'` 永遠為真。
+
+本檔其他腳本用 `pgrep -f 'SkyrimSE\.ex[e]'` 的字元類技巧正是為此。臨時要殺行程時**用 PID**，不要用 pattern。

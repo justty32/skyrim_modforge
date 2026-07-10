@@ -49,6 +49,10 @@
 
 → **關鍵洞見（分工天成）**：**外貌/facegen 正是 ModForge 最弱、而 PROTEUS（native DLL）最強的地方**。PROTEUS 的 6 個 JSON 模板（`Proteus_Character_GeneralInfo/_Skills/_Armor/_Weapon/_Spell`，見 finding）就是它 runtime 序列化整個角色 build（含外貌）的 schema。兩條路：
 
+> **🔄 2026-07-10 使用者定調：PROTEUS 降為可選。** 預設的 NPC 來源是 **「大眾臉」路徑 C**——ModForge 直接生 `NpcSpec`（有 `Race`，**無** headpart/tint/facegen 欄位 → 引擎用種族預設頭）。這條**今天就能跑**（vendor / hireable follower / identity 系統都實機出貨過），產物完全自足、玩家端不需裝任何東西，而且它的 placement 是 in-spec authored ⇒ **ref 有耐久 id**，`npcRoles[].actorRef` 指得到。想要一群沒名字的村民時，facegen GAP 根本不在關鍵路徑上。
+>
+> 路徑 A（拓印玩家本人的臉）保留為**可選加值**，不再是 §A 的唯一解、也不再阻塞 MVP。它另有一個未解風險：clone 出來的 actor **ref 必然是 dynamic**（`PlaceAtMe`），拿不到耐久 ref id；若其 NPC_ base 也是 runtime 生成，採集橋會直接把它 `skipped`。下面「crux 已拍板：clone 穩定可引用」須釐清指的是 **base 還是 ref**——實機待驗。
+
 - **✅ 路徑 A（採納）：消費（比照 [#23 living-adventurers](../living-adventurers.md) 的「指向既有 ActorRef」哲學）**——讓 **PROTEUS 在遊戲內把玩家 clone 成一個實體 NPC**（外貌由它的 native code 現成搞定，白賺 facegen），ModForge **只指向那個 persistent ActorRef**，在外圈生成身份/對話/行為/擺放的 patch。**crux 已拍板（2026-07-08，使用者確認）：PROTEUS clone 是穩定、可引用的**——路徑 A 成立，facegen GAP 直接繞過。ModForge「指向外部 ActorRef 生 patch」是熟路（#23、sofia-patch、`esm-formid-access`）。→ 已進 spec，見 [ingame-scene-export-design](../../specs/ingame-scene-export-design.md)。
 - **路徑 B（降為未來選項，非阻塞）**——PROTEUS **序列化玩家外貌成 JSON** → ModForge 讀 JSON **生一個真的 NPC_ base 記錄含 facegen**，讓產物**不依賴玩家端裝 PROTEUS**（完全自足、可散布）。需 ModForge 新增 facegen 生成（headpart/tint/morph → NPC_ + FaceGeom NIF + tint DDS，CK-territory 大 GAP，接 asset-pipelines headless facegen 研究）。路徑 A 跑通後若要「可散布獨立 NPC」再投資。
 

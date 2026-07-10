@@ -7,7 +7,7 @@
 - **類型**：基石聯動（它的 output 契約 = ModForge 的 input；兩者靠 scene.json 協議接，不整合）
 - **契約權威**：scene.json 的每個欄位對映**既有 ModForge spec 型別**，本子專案**只擁有 output 形狀**，生成端全在 ModForge。契約定義見 [spec §契約](../../workflows/specs/ingame-scene-export-design.md)。
 - **建置**：[BUILD.md](BUILD.md)（C++23 + CommonLibSSE-NG + vcpkg + CMake presets；靜態 CRT standalone DLL）
-- **狀態**：🟢 **編譯通過**（2026-07-10，主力機 clang-cl 跨編譯，產物 `build/release-clang-cl-linux/SceneCaptureBridge.dll`）；M4 hotkey 已接；**未實機**。
+- **狀態**：✅ **M4 spike 實機全過**（2026-07-10）。clang-cl 跨編譯產物直接載入遊戲、vanilla diff 成立、`scene.json` → ModForge `build` 整鏈閉環。驗收明細見 [landed/world.md](../../workflows/feature-dev/landed/world.md)。
 
 ## 建置架構來源
 
@@ -26,9 +26,7 @@
 
 ## 尚未做（依 spec 里程碑）
 
-- **實機**（唯一的大缺口）。⚠️ 先驗 **clang-cl 產物載不載得起來**——`BUILD.md` 明訂此路徑僅供編譯驗證，且它的產物從未進過遊戲。步驟見 [wait_todo/ingame-tests.md](../../wait_todo/ingame-tests.md)。
-- **`data.location` 對 interior 是否即 cell-local**：唯一還沒離線驗掉的契約條目（旋轉單位、ESL 遮罩、scale 省略、整條 round-trip 都已用 houseCARL 離線核完，見 [spec](../../workflows/specs/ingame-scene-export-design.md)）。
-- **PROTEUS clone 的 ref 是 dynamic**：`npcRoles[].actorRef` 需要耐久 ref id，dynamic ref 沒有。開放問題，見 spec。
+- **PROTEUS clone 的 ref 是 dynamic**：`npcRoles[].actorRef` 需要耐久 ref id，dynamic ref 沒有。PROTEUS 已降為**可選**（預設走 ModForge 直接生的「大眾臉」NPC，ref 耐久），故不阻塞；見 [spec](../../workflows/specs/ingame-scene-export-design.md)「NPC 來源」。
 - **§B 語意標記 / §D role tag / §E 滴管·範圍吸取·橡皮擦**：不是裸 cell sweep 能產出的，要遊戲內編輯 UI（ImGui / SKSE Menu Framework 3），M4 之後接。
 
 ## 建置踩坑（2026-07-10 首編）

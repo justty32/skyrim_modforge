@@ -11,8 +11,9 @@ obj/
 *.seq
 strings*.json
 
-# SkyLink relay: mingw build output, rebuilt via scripts/skylink/skylink-bridge.sh build
+# SkyLink mingw build outputs, rebuilt via scripts/skylink/skylink-bridge.sh build
 scripts/skylink/relay.exe
+scripts/skylink/sendkey.exe
 
 # IDE
 .vs/

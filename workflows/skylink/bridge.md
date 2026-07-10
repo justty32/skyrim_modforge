@@ -23,11 +23,20 @@ SKSE plugin ──\\.\pipe\SkyrimMCP──> relay.exe ──TCP:8770──> soca
 ## 用法
 
 ```bash
-scripts/skylink/skylink-bridge.sh build     # 首次 / 改了 relay.c（需 mingw-w64-gcc）
+scripts/skylink/skylink-bridge.sh build     # 首次 / 改了 relay.c 或 sendkey.c（需 mingw-w64-gcc）
 scripts/skylink/skylink-bridge.sh up        # 遊戲已啟動並載入存檔後才跑
 scripts/skylink/skylink-bridge.sh status
+scripts/skylink/skylink-bridge.sh key 44    # 在遊戲裡按一個鍵（hex DirectInput scancode，44 = F10）
 scripts/skylink/skylink-bridge.sh down
 ```
+
+### `key` — agent 唯一能按鍵的方式（2026-07-10 加）
+
+SkyLink 的 tool 都在**遊戲行程內**執行，繞過輸入層，所以查狀態、跑 console 都沒問題。但**按鍵不行**，而有些 SKSE plugin（例如 [scene-capture-bridge](../../sub_projs/scene-capture-bridge/README.md)）的觸發器只有 hotkey。
+
+Linux 這側完全按不動：Wayland 合成器擋掉 XTest（`xdotool mousemove` 連指標都不會動，`getmouselocation` 可自證），而 Skyrim 讀 raw input，`xdotool key --window` 的合成 X 事件也被忽略。**連主選單的 CONTINUE 都按不了。**
+
+`sendkey.c` 走跟 `relay.c` 同一條路：mingw 靜態編成 PE，用 `protontricks-launch --appid 489830` 塞進**遊戲既有的** wineserver。在那個行程裡呼叫 `SendInput()`，送進的就是 dinput8 讀的那條佇列。`key` 子命令會先 `xdotool windowactivate` 把遊戲拉到前景（視窗操作走 X 協定，不是 XTest，這個有效），再注入。
 
 MCP server 以 `local` scope 註冊（存 `~/.claude.json`，不進 repo，離線機不受影響）：
 

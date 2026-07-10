@@ -123,7 +123,9 @@ scene.json       rot.z = 130.23426°
 產出 plugin      rot.z = 2.2730169 rad   差 2.3e-7 rad（float32 捨入，可忽略）
 ```
 
-position 三分量完全一致。`dump` 確認 vanilla cell 是**加法式 override**（`temporary=1`），master 僅 `Skyrim.esm`。**唯一還沒驗的是 runtime 端**：遊戲內 `ref.data.location` 對 interior 是否即 cell-local。
+position 三分量完全一致。`dump` 確認 vanilla cell 是**加法式 override**（`temporary=1`），master 僅 `Skyrim.esm`。
+
+**✅ runtime 端也驗完了（2026-07-10 實機）**：在 `01605E`（The Bannered Mare）`player.placeatme` 後匯出，`position = (48.99, 259.99, 321.48)`，與 SkyLink `get_cell_info` 回報的玩家座標**一字不差**，且與同 cell 的 vanilla ref `(-453.7, -965.8, 67.8)` 同一空間 → **interior 的 `ref.data.location` 就是 cell-local**。座標契約全部條目結案。
 
 ### ⚠️ 採集橋輸出必須是合法 ModSpec（2026-07-10 修正）
 
@@ -133,9 +135,18 @@ position 三分量完全一致。`dump` 確認 vanilla cell 是**加法式 overr
 - ❌ 頂層 `cell` / `worldspace` 不是 ModSpec 成員 → 被丟掉。**歸屬欄位在每一筆 `PlacementSpec` 上**（`Spec.World.cs:6-7`）。
 - ❌ 兩者皆空的 placement 會被 `Generator.Build.Placements.cs:48` 以 `cell '' not found in spec — skipped` 丟棄。採集橋現在在解不出 cell/worldspace 時直接中止並 warn。
 
-### 🔴 開放問題：PROTEUS clone 的 ref 是 dynamic
+### NPC 來源：PROTEUS 是**可選**，預設走「大眾臉」（2026-07-10 使用者定調）
 
-vanilla diff 用「ref 解不出耐久 id ⇒ 玩家擺的」。PROTEUS clone 出來的 actor **ref 必然是 dynamic**（`PlaceAtMe`），所以會被正確判為玩家擺的 —— 但 `npcRoles[].actorRef` 需要一個**耐久**的 ref id 來指名它，而 dynamic ref 沒有。若 clone 的 **NPC_ base 本身也是 runtime 生成**，`ResolveDurableId(base)` 也會失敗，該 actor 會落進 `skipped`。idea §A「crux 已拍板：PROTEUS clone 是穩定、可引用的」需要在實機重新檢視是指 base 還是 ref。
+原設計把 §A 拓印玩家（PROTEUS）當成 NPC 的唯一來源。改為兩條並列，**預設是後者**：
+
+| 路徑 | 外貌 | ref 耐久性 | 產物自足 |
+|---|---|---|---|
+| **C. 大眾臉（預設）** — ModForge 直接生 `NpcSpec` | 種族預設（`NpcSpec` 有 `Race`，**無** headpart/tint/facegen 欄位 → 引擎用預設頭） | **耐久**（in-spec authored placement，`npcRoles[].actorRef` 指得到） | ✅ 玩家端不需裝任何東西 |
+| **A. 拓印玩家（可選）** — 消費 PROTEUS clone | 玩家本人的臉（PROTEUS native facegen） | ⚠️ 見下 | ❌ 依賴玩家端裝 PROTEUS |
+
+大眾臉路徑**今天就能跑**：`NpcSpec` 生出來的 NPC 已在實機出貨過（vendor / hireable follower / identity 系統）。要「一群沒名字的村民」時它才是對的工具——facegen GAP 根本不在關鍵路徑上。
+
+**⚠️ 路徑 A 的未解風險**（降為可選後不再阻塞 MVP）：vanilla diff 用「ref 解不出耐久 id ⇒ 玩家擺的」。PROTEUS clone 的 actor **ref 必然是 dynamic**（`PlaceAtMe`），會被正確判為玩家擺的——但 `npcRoles[].actorRef` 需要**耐久** ref id 才指得到它。若 clone 的 **NPC_ base 本身也是 runtime 生成**，`ResolveDurableId(base)` 一併失敗，該 actor 直接落進 `skipped`。idea §A「crux 已拍板：PROTEUS clone 是穩定、可引用的」須釐清指的是 base 還是 ref——**實機待驗**。
 
 ### ESL local-id 寬度（2026-07-10 以 houseCARL 離線核對，已拆 TODO）
 

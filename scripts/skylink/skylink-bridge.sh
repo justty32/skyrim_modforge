@@ -14,6 +14,7 @@ PORT=${SKYLINK_PORT:-8770}
 UDS=/tmp/CoreFxPipe_SkyrimMCP
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RELAY="$HERE/relay.exe"
+SENDKEY="$HERE/sendkey.exe"
 CALL="$HERE/skylink-call.py"
 MO2="/home/lorkhan/games/mod-organizer-2-skyrimspecialedition/modorganizer2/ModOrganizer.exe"
 DOCS="/home/lorkhan/.steam/steam/steamapps/compatdata/$APPID/pfx/drive_c/users/steamuser/Documents/My Games/Skyrim Special Edition"
@@ -29,6 +30,25 @@ case "${1:-status}" in
 build)
     x86_64-w64-mingw32-gcc "$HERE/relay.c" -o "$RELAY" -lws2_32 -static -O2 -Wall || exit 1
     echo "built $RELAY"
+    x86_64-w64-mingw32-gcc "$HERE/sendkey.c" -o "$SENDKEY" -static -O2 -s -Wall || exit 1
+    echo "built $SENDKEY"
+    ;;
+key)
+    # Press one key IN the game. Nothing on the Linux side can: Wayland blocks
+    # XTest and Skyrim reads raw input. So run SendInput() inside the game's own
+    # wineserver, the same injection trick `up` uses for relay.exe.
+    game_running || { echo "refusing: SkyrimSE.exe is not running"; exit 1; }
+    [ -x "$SENDKEY" ] || { echo "missing $SENDKEY -- run '$0 build'"; exit 1; }
+    SCAN="${2:-44}"   # hex DirectInput scancode; 44 = F10
+    W="$(DISPLAY=${DISPLAY:-:1} xdotool search --name '^Skyrim Special Edition$' 2>/dev/null | head -1)"
+    nohup protontricks-launch --appid "$APPID" "$SENDKEY" "$SCAN" 2500 \
+        >/tmp/skylink-sendkey.log 2>&1 &
+    sleep 2
+    [ -n "$W" ] && DISPLAY=${DISPLAY:-:1} xdotool windowactivate "$W" 2>/dev/null
+    sleep 6
+    grep -q 'down=1 up=1' /tmp/skylink-sendkey.log \
+        && echo "sent scancode 0x$SCAN" \
+        || { echo "sendkey failed -- see /tmp/skylink-sendkey.log"; exit 1; }
     ;;
 up)
     game_running || { echo "refusing: SkyrimSE.exe is not running (start the game first)"; exit 1; }
@@ -94,5 +114,5 @@ status)
     socat_running && echo "socat: up"      || echo "socat: down"
     ;;
 *)
-    echo "usage: $0 {build|up|down|status|crashlog|game-restart|game-load-latest}"; exit 2;;
+    echo "usage: $0 {build|up|down|status|key <hexscan>|crashlog|game-restart|game-load-latest}"; exit 2;;
 esac
