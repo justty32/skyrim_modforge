@@ -2,6 +2,24 @@
 
 ← index: [README.md](README.md) · [ideas 索引](../ideas.md)
 
+## 核心宗旨（2026-07-10 使用者重述——本節優先於下文早先框架）
+
+**最初目標：不依靠 Creation Kit** 去編輯場景、NPC、劇情等各種東西，且最好**在 Skyrim 遊戲內**做——所見即所得。動機：使用者是 Linux 玩家，CK 實際不可用，只能出此下策——但這也是機會。**終極目標＝把 Skyrim 自身變成 Creation Kit**。下文的「蓋城鎮」北極星只是這個更大目標的一個用例。
+
+**不重造輪子**：in-game 編輯器已有先行者——[SkyrimIngameEditor](https://github.com/Jonahex/SkyrimIngameEditor)（**開源** SKSE；天氣/光照/渲染）、[PROTEUS](../../../sub_projs/mod-survey/findings/proteus.md)（NPC/武器裝甲/法術）。**唯獨缺「場景編輯」**（使用者未搜到現成的；2026-07-10 已派 agent 搜尋驗證中）。方向是**擴充這些工具＋補上缺的場景編輯**，不是全部重寫。SkyrimIngameEditor 開源，可讀 source 學它的 in-game 即時預覽。
+
+**分工哲學（本 idea 的憲法）**：遊戲內 plugin＝**薄記錄器**——玩家施法或按快捷鍵，plugin 把資訊（座標/狀態/意圖）記下來、吐 json；**實際的麻煩工作交給 ModForge**（或其他工具）在 build-time 做。沒必要把所有東西塞進單一 plugin/mod/程式。範例（navmesh）：施法→記玩家腳下座標→跑到別處再施→點列輸出 .json→ModForge 生成 NAVM——比在 CK 手拉有趣得多。開放細節：能否在遊戲內把 navmesh 顯示出來直觀編輯；點與點怎麼連（哪個座標連到哪個座標）。
+
+**場景的組成（我們要處理的東西）**：地形高度圖、靜態物件、動態物件、生物、以及各種 area / marker / trigger / event。
+
+**最初核心功能（概述，逐項細摳中）**：
+1. **修改指定 cell**——抬升/下降地形高度；添加/刪除靜態或動態物件；修改/新增/刪除 NPC 或生物的擺放位置。
+2. **將指定 cell 的修改記錄下來**。
+
+對照現況（2026-07-10）：添加物件/NPC＝已實機（採集橋 M4）；刪除＝M6 橡皮擦（[plan](../../plans/scene-capture-bridge.md) 規劃中）；移動既有 ref＝「override 形狀」技術債（M7b）；**地形高度＝清單中唯一的新大件**——記錄意圖可行（同 navmesh 模式）、ModForge 生成端已落地（worldspace-editor 的 heightmap→非平坦 LAND），**即時預覽是硬題**（LAND 不是 ref，引擎沒有 runtime 變形地形的路；改完要 export→build→重啟才看得到，天生半所見即所得）。
+
+---
+
 **核心 Idea**：把**遊戲內本身**當成編輯器。玩家施放一組「編輯法術」直接在遊戲裡擺物件 / 放 NPC / 錄行為 /（野心）改地形，然後施法**快照當前房間（cell）狀態**，diff vs vanilla → ModForge 生成一份 **patch mod（override 記錄）**。等於用真實遊戲鏡頭 + 物理當所見即所得的編輯台，取代 CK。
 
 **為何吸引 / 為何優於外部編輯器（決策依據，2026-07-07）**：CK 崩、Windows-only；外部編輯器（#15 Blender/CK 替代、#19 Godot Worldspace Editor）擺完**看不到真實渲染態**。使用者經驗回饋：**現有 [Godot worldspace editor](../../../sub_projs/godot-worldspace-editor/README.md) 實際用起來不好用**——它重建的是近似場景，不是玩家實際會看到的畫面。遊戲內編輯的決定性優勢是**吻合指定渲染狀態**：ENB、光照、特效、天氣、後處理全部就位，「你看到什麼就是成品」（真 WYSIWYG）。外部工具永遠追不上 ENB/community shaders 那層。→ **本 idea（遊戲內路線）相對 #15/#19（外部路線）是更受青睞的方向**；外部路線退為輔助/離線批次用途。
