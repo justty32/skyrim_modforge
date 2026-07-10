@@ -70,3 +70,10 @@
 3. **真刪除**：F11 放個 marker 再對它按 F8 → marker 連登記簿一起消失（Markers 頁也不見）。
 4. **adopt**：擦幾個 → 存檔 → 重載（登記簿死）→ `scan disabled refs in this cell` → 候選列出、逐筆 adopt → 回到清單。
 5. **匯出**：F10 → json 有 `removals` 段 → 交給 agent build → 載入 patch 後那張椅子該永久消失。
+
+## P2 滴管／擺放（2026-07-10 離線齊備，新 DLL 已部署）
+
+1. **吸**：準星指任何東西（桌椅、mod 的雕像、NPC）按 **F6** → log `Palette: picked`，F1 → `Palette` 頁出現插槽（含姿態與 scale）。
+2. **擺**：看著想放的位置按 **F7** → 該物在準星處出現、帶著吸取時的旋轉/縮放。
+3. **匯出**：F10 → 擺的東西進 `placements[]`；若是 actor，該筆應自動帶 `"kind": "npc"`（源頭修掉山羊陷阱——json 裡直接可見）。
+4. **串橡皮擦**：F7 擺錯 → F8 對它按 → 無痕消失（真刪除語意）。

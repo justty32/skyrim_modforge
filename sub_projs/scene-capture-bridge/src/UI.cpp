@@ -1,12 +1,14 @@
 #include "UI.h"
 
 #include "Eraser.h"
+#include "Palette.h"
 #include "Markers.h"
 #include "SceneExporter.h"
 #include "log.h"
 
 #include "SKSEMenuFramework.h"
 
+#include <array>
 #include <cstdio>
 #include <unordered_map>
 
@@ -43,6 +45,7 @@ void UI::Register() {
     SKSEMenuFramework::AddSectionItem("Export", Export::Render);
     SKSEMenuFramework::AddSectionItem("Markers", MarkersPage::Render);
     SKSEMenuFramework::AddSectionItem("Eraser", EraserPage::Render);
+    SKSEMenuFramework::AddSectionItem("Palette", PalettePage::Render);
     SKSE::log::info("SKSE Menu Framework panel registered");
 }
 
@@ -197,5 +200,47 @@ void __stdcall UI::EraserPage::Render() {
             ImGuiMCP::PopID();
         }
         if (adopt != SIZE_MAX) ::Eraser::AdoptCandidate(adopt);
+    }
+}
+
+namespace {
+    std::unordered_map<std::size_t, std::array<char, 64>> g_slotBufs;
+}
+
+void __stdcall UI::PalettePage::Render() {
+    constexpr ImGuiMCP::ImVec4 kWarn{1.f, 0.55f, 0.25f, 1.f};
+
+    auto& slots = ::Palette::All();
+    ImGuiMCP::Text("%zu slot(s). F6 picks the crosshair target; F7 places the "
+                   "selected slot where you aim.", slots.size());
+    ImGuiMCP::Separator();
+
+    std::size_t removeIdx = SIZE_MAX;
+    for (std::size_t i = 0; i < slots.size(); ++i) {
+        auto& s = slots[i];
+        ImGuiMCP::PushID(reinterpret_cast<const void*>(static_cast<std::uintptr_t>(i + 1)));
+
+        const bool selected = (i == ::Palette::SelectedIndex());
+        if (ImGuiMCP::Button(selected ? "[use]" : " use ")) ::Palette::Select(i);
+        ImGuiMCP::SameLine();
+
+        auto [it, inserted] = g_slotBufs.try_emplace(i);
+        if (inserted) std::snprintf(it->second.data(), it->second.size(), "%s", s.name.c_str());
+        ImGuiMCP::SetNextItemWidth(160.f);
+        if (ImGuiMCP::InputText("##slotname", it->second.data(), it->second.size(),
+                ImGuiMCP::ImGuiInputTextFlags_EnterReturnsTrue)) {
+            ::Palette::Rename(i, it->second.data());
+        }
+        ImGuiMCP::SameLine();
+        if (s.addsMaster) ImGuiMCP::TextColored(kWarn, "%s", s.baseId.c_str());
+        else              ImGuiMCP::Text("%s", s.baseId.c_str());
+        ImGuiMCP::SameLine();
+        if (ImGuiMCP::Button("del")) removeIdx = i;
+
+        ImGuiMCP::PopID();
+    }
+    if (removeIdx != SIZE_MAX) {
+        ::Palette::Remove(removeIdx);
+        g_slotBufs.clear();  // indices shifted — rebuild lazily next frame
     }
 }

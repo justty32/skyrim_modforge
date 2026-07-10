@@ -28,4 +28,8 @@ namespace UI {
         void __stdcall Render();
     }
 
+    namespace PalettePage {
+        void __stdcall Render();
+    }
+
 }  // namespace UI

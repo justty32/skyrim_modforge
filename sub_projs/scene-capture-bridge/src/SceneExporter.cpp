@@ -182,6 +182,10 @@ namespace SceneExporter {
             const bool isActor = ref.GetFormType() == RE::FormType::ActorCharacter;
             if (isActor) {
                 ++actors;  // XSCL is ignored on actors, so emit no scale field.
+                // ModForge's isNpc auto-detect only covers in-spec bases; an
+                // external NPC base without explicit kind builds a REFR that
+                // silently spawns nothing. Stamp it at the source.
+                entry["kind"] = "npc";
                 scene["placements"].push_back(std::move(entry));
             } else {
                 // Carry scale + the InitiallyDisabled state so ModForge
