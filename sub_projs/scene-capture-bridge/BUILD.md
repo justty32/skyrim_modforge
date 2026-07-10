@@ -21,6 +21,17 @@ cmake --preset build-release-msvc; if ($?) { cmake --build build/release-msvc }
 產出 `build/release-msvc/SceneCaptureBridge.dll`（靜態 CRT，不依賴 vcredist）。
 Debug 把 `release-msvc` 換 `debug-msvc`。改過 `vcpkg.json` / triplet → 先 `Remove-Item -Recurse -Force build` 再 configure（避免舊 CRT cache 的 LNK2038）。
 
+## 部署到 MO2（開發迭代）
+
+`CMakeLists.txt` 已內建：configure 時若 `SKYRIM_MODS_FOLDER` 指到 MO2 的 `mods/`，post-build 會把 DLL 複製進 `<mods>/SceneCaptureBridge <BuildType>/SKSE/Plugins/`。
+
+```bash
+export SKYRIM_MODS_FOLDER=/home/lorkhan/games/mod-organizer-2-skyrimspecialedition/modorganizer2/mods
+rm -rf build/release-clang-cl-linux && cmake --preset build-release-clang-cl-linux && cmake --build build/release-clang-cl-linux
+```
+
+**不要丟進 MO2 的 `overwrite/`**：那是傾倒區，plugin 擺在那裡幾乎不可見、會被「清空 overwrite」沖掉，而且 F10 熱鍵會在日常遊玩時一直掛著。用真的 mod 資料夾，開關權留給 MO2 的勾選框。改完 DLL 後 MO2 要 F5 refresh 才看得到新資料夾。
+
 ## Manjaro（clang-cl 跨編譯，僅驗證）
 
 ```bash

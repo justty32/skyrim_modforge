@@ -7,7 +7,7 @@
 - **類型**：基石聯動（它的 output 契約 = ModForge 的 input；兩者靠 scene.json 協議接，不整合）
 - **契約權威**：scene.json 的每個欄位對映**既有 ModForge spec 型別**，本子專案**只擁有 output 形狀**，生成端全在 ModForge。契約定義見 [spec §契約](../../workflows/specs/ingame-scene-export-design.md)。
 - **建置**：[BUILD.md](BUILD.md)（C++23 + CommonLibSSE-NG + vcpkg + CMake presets；靜態 CRT standalone DLL）
-- **狀態**：✅ **M4 spike 實機全過**（2026-07-10）。clang-cl 跨編譯產物直接載入遊戲、vanilla diff 成立、`scene.json` → ModForge `build` 整鏈閉環。驗收明細見 [landed/world.md](../../workflows/feature-dev/landed/world.md)。
+- **狀態**：✅ **M4 spike 實機全過**（2026-07-10）。clang-cl 跨編譯產物直接載入遊戲、vanilla diff 成立、`scene.json` → ModForge `build` 整鏈閉環。遊戲內 ImGui 面板亦已實機（F1 → `Scene Capture Bridge` → `Export player cell`）。驗收明細見 [landed/world.md](../../workflows/feature-dev/landed/world.md)。
 
 ## 建置架構來源
 
