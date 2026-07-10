@@ -88,6 +88,15 @@
 
 - 與 M6 資料流一致並延伸：dynamic ref 刪除 = 從「新增」登記簿移除 + 世界中銷毀（`Delete()` 是否存在仍是 Task 0 驗證項；Papyrus 慣例是 `Disable()`+`Delete()` 標記引擎回收）。
 
+### 細摳④（stub）：NPC／生物擺放——含 leveled encounter（使用者 2026-07-10 確認要）
+
+待使用者細摳。先標一個**採集側的關鍵坑**：
+
+- **`placeatme` 一個 LVLN 會立刻抽選**——引擎當場生出一個具體的 NPC（抽中的那隻土匪），dynamic ref 的 base 是**抽選結果的 NPC_**，不是 LVLN。所以「靠採集 dynamic ref 拿 base」這條路（靜態物件的做法）**對 leveled encounter 不成立**。
+- **解法＝palette 授權**：玩家在 GUI 選單選的是 LVLN → 登記簿記下**選單裡選的 LVLN id**＋落點 transform；遊戲內生出來的那隻只是**視覺代理**（讓你看位置對不對）。匯出時 `placements[].base` 寫 LVLN id，不看世界裡站的是誰。
+- vanilla 先例：野外/地城的 leveled 遭遇就是 ACHR 指向 LCharBandit 之類的 LVLN base。
+- **ModForge 側待驗**：placement builder 對 base=LVLN 是否正確生 ACHR（Mutagen 的 PlacedNpc base 應涵蓋 LeveledNpc，需 grep 驗證）；LVLN 記錄本身的生成已存在（`WireLeveledNpcs`）。
+
 ### 對既有 milestone 的映射
 
 **M6＝刪除**（原橡皮擦，補上紅輪廓確認流程與 GUI 列表路徑）、**M7a＝新增**（palette＋指向性放置＋綠輪廓確認）、**新增 M7c＝修改編輯模式**（numpad transform＋屬性 GUI）、**新增 M7d＝動態物件物理凍結＋檢視法術**（細摳③）。M7b（override 形狀）的**偵測**由修改流程天然提供，只剩契約拍板。
