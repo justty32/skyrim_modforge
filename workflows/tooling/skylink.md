@@ -65,7 +65,8 @@ scripts/skylink/skylink-bridge.sh game-load-latest   # 挑最新 .ess，load_sav
 
 - crash log（CrashLogger）在 prefix 的 `Documents/My Games/Skyrim Special Edition/SKSE/crash-*.log`，Linux 端直接讀。
 - **`load_most_recent_save` 是壞的**（無論如何都回 `{"loading":false}`），所以 `game-load-latest` 自己按 mtime 挑最新 `.ess`，再用 `load_save` 指名載入。主選單下 `get_game_safety` 可用、`get_cell_info` 會 `isError`——後者正好拿來判斷存檔載完沒。
-- **未驗**：真 CTD 會彈一個 wine 對話框。滯留的 `SkyrimSE.exe` 會讓 `game_running()` 誤判、MO2 也可能拒絕再啟動。下次真崩了才驗得到，見 [wait_todo/nexus-and-env.md](../../wait_todo/nexus-and-env.md)。目前 `game-restart` 只在乾淨退出後驗證過。
+- **MO2 lock**：MO2 啟動 executable 期間會把自己鎖住並顯示 `Mod Organizer is locked while the application is running / SkyrimSE.exe (<pid>) / [Unlock]`，**鎖住時拒絕再啟動任何 executable**。遊戲乾淨退出 → MO2 自動解鎖 → `moshortcut` 可用（`game-restart` 就是靠這個）。
+- **未驗**：真 CTD 時若 `SkyrimSE.exe` 滯留（使用者回報還會多一個 wine 對話框），MO2 會**停在鎖定狀態**、`game_running()` 也會誤判成「還在跑」，`game-restart` 兩邊都過不去。解鎖那顆按鈕只能靠人點（見上面「Agent 使用範圍」的桌面輸入規矩），所以清場邏輯大概得走「先確認行程真死 → 殺掉殘骸」而不是點 UI。下次真崩了才驗得到，見 [wait_todo/nexus-and-env.md](../../wait_todo/nexus-and-env.md)。目前 `game-restart` 只在乾淨退出後驗證過。
 
 ## Gotchas
 
@@ -77,6 +78,10 @@ scripts/skylink/skylink-bridge.sh game-load-latest   # 挑最新 .ess，load_sav
 
 ## Agent 使用範圍
 
-使用者授權**讀寫全開**：查詢類（`get_*` / `search_forms` / `poll_events`）與變更類（`set_quest_stage` / `add_item` / `execute_console` / `teleport` / `kill_npc`）都可自行判斷使用。
+**SkyLink 的 tool 授權讀寫全開**：查詢類（`get_*` / `search_forms` / `poll_events`）與變更類（`set_quest_stage` / `add_item` / `execute_console` / `teleport` / `kill_npc`）都可自行判斷使用。
+
+**任何會動到桌面的操作另有規矩**——滑鼠移動／點擊、鍵盤輸入、**以及視窗焦點切換（`xdotool windowactivate` / `windowfocus` / `windowraise`）**：只有在**使用者不在電腦前**時才可以做（他出門、健身、洗澡，且明講了人不在）。人在電腦前一律不碰，這些都會當場打斷他。遊戲內的對話框（例如載入存檔時 vanilla 的 Survival Mode 詢問）留給使用者自己按；agent 只負責看螢幕、講清楚那是什麼。
+
+> **唯讀的觀察不受此限**：`import -window <id>`（`DISPLAY=:1`，Wayland 下 Proton 走 XWayland）截圖、`xdotool search --name` / `getwindowgeometry` / `xprop` 查詢都不改變任何狀態。MO2 與遊戲的 `WM_CLASS` 都是 `steam_app_489830`，靠 `getwindowpid` 分辨。
 
 實機**體感**仍然只有人能判——動畫對不對、嘴型有沒有動、崩不崩、觀感如何。這條橋補的是**狀態事實**：esp 有沒有載入、record 在不在、stage 有沒有推進、FormID 解析成什麼。兩者不互相取代，測試流程見 [testing.md](../testing.md)。
