@@ -88,9 +88,15 @@
 
 - 與 M6 資料流一致並延伸：dynamic ref 刪除 = 從「新增」登記簿移除 + 世界中銷毀（`Delete()` 是否存在仍是 Task 0 驗證項；Papyrus 慣例是 `Disable()`+`Delete()` 標記引擎回收）。
 
-### 細摳④（stub）：NPC／生物擺放——含 leveled encounter（使用者 2026-07-10 確認要）
+### 細摳④：NPC／生物——**先不細摳，全走統一 marker 流**（使用者 2026-07-10 裁決）
 
-待使用者細摳。先標一個**採集側的關鍵坑**：
+「npc、生物這些，暫時先不用弄太細。剩下這些其實都可以用同一套——**用指向性法術打上 marker，玩家跟 marker 互動（或在 GUI 內編輯）修改該 marker 的標籤，最後輸出到 json，用 ModForge 讓 AI 在這些 marker 上擺東西**——來完成。後面如果有需要額外的操作，那就之後再說。**甚至動態物件都可以先用這套。**」
+
+→ 也就是：marker（M9）不是輔助功能，是 **MVP 的骨幹編輯模態**。玩家在世界裡標「這裡放一個土匪營地」，AI agent 讀 json 拿座標＋標籤，authoring 交給 ModForge 側（placements/npcs/LVLN/packages…全是既有生成能力）。細摳②的完整 UX（palette／輪廓確認／numpad）保留給靜態物件的富路徑，**但不擋 MVP**。
+
+leveled encounter 走 marker 流時原本的採集坑自動消失（不 placeatme、不抽選——marker 只記座標＋標籤，base 由 agent 在 spec 裡指定 LVLN id）。原 stub 保留如下，供日後做「富路徑」時參考：
+
+先前標的**採集側關鍵坑**（palette 直擺路徑才會遇到）：
 
 - **`placeatme` 一個 LVLN 會立刻抽選**——引擎當場生出一個具體的 NPC（抽中的那隻土匪），dynamic ref 的 base 是**抽選結果的 NPC_**，不是 LVLN。所以「靠採集 dynamic ref 拿 base」這條路（靜態物件的做法）**對 leveled encounter 不成立**。
 - **解法＝palette 授權**：玩家在 GUI 選單選的是 LVLN → 登記簿記下**選單裡選的 LVLN id**＋落點 transform；遊戲內生出來的那隻只是**視覺代理**（讓你看位置對不對）。匯出時 `placements[].base` 寫 LVLN id，不看世界裡站的是誰。
@@ -99,7 +105,16 @@
 
 ### 對既有 milestone 的映射
 
-**M6＝刪除**（原橡皮擦，補上紅輪廓確認流程與 GUI 列表路徑）、**M7a＝新增**（palette＋指向性放置＋綠輪廓確認）、**新增 M7c＝修改編輯模式**（numpad transform＋屬性 GUI）、**新增 M7d＝動態物件物理凍結＋檢視法術**（細摳③）。M7b（override 形狀）的**偵測**由修改流程天然提供，只剩契約拍板。
+**M6＝刪除**（原橡皮擦，補上紅輪廓確認流程與 GUI 列表路徑）、**M7a＝新增**（palette＋指向性放置＋綠輪廓確認）、**新增 M7c＝修改編輯模式**（numpad transform＋屬性 GUI）、**新增 M7d＝動態物件物理凍結＋檢視法術**（細摳③）。
+
+### 優先序（2026-07-10 細摳收斂後）
+
+1. **M9 統一 marker 系統**——升格為第一優先。施法放 marker → 互動/GUI 改標籤 → 匯出 json → AI agent 據此 authoring。它一次解鎖：NPC/生物/leveled encounter 擺放指令、地形高度指令、動態物件（初版）、未來 navmesh 記點。
+2. **M6 刪除**（靜態的紅輪廓確認流）＋ **M7a 新增**（palette 直擺）——靜態物件的富路徑。
+3. **M7c 修改編輯模式**（numpad）→ 帶動 override 契約形狀拍板。
+4. M7d 動態物件富路徑、M8 範圍吸取、M10 role tag——後排。
+
+**因此「標註段的形狀」（M9 那三案：`_annotations`／一等公民 `Annotations`／sidecar）從次要問題升為 MVP 的核心契約決定，待使用者拍板。**M7b（override 形狀）的**偵測**由修改流程天然提供，只剩契約拍板。
 
 ---
 
