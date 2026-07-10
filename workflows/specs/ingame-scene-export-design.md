@@ -94,6 +94,11 @@ Tundra 的可擺清單是設計期寫死的 FormID；本系統改用**遊戲內�
 - interior：`cell` = 目標 cell 的 `<master>:0xFORMID`，`position` = **cell-local**。
 - exterior：`worldspace` = worldspace ref，`position` = **world-space**（ModForge 自動找 `floor(x/4096),floor(y/4096)` 的 cell 並 override 加 ref，It.7d-p3）。
 - `rotation` 度數。採集橋讀遊戲內 ref 的 world transform，**須與此約定一致**（若遊戲內拿到的是弧度/象限差，採集橋負責轉換，不是 ModForge）。
+- **✅ 已用 houseCARL 離線核對 vanilla 基準真相（2026-07-10，不需開遊戲）**：
+  - **旋轉單位**：`01605E:Skyrim.esm`（WhiterunBanneredMare）的 `Temporary[15]`（YsoldasChairREF）`Placement.Rotation = 0,-0,2.2730167` → **plugin 記錄存弧度**。ModForge 已在生成端轉換（`Generator.Helpers.cs:15` `Deg2Rad`，套用於 `Generator.Build.Placements.cs:68/275`、`Generator.Build.PlacementRefs.cs:53`）。→ **scene.json 一律吐度數**。⚠️ 兩條路線的來源單位不同，別搞混：**Papyrus** `GetAngleX/Y/Z()` 回**度數**（直接吐）；**C++ native** `TESObjectREFR::GetAngle()` 回**弧度**（必須轉，`SceneExporter.cpp:8,93-96` 的 `kRadToDeg` 已處理）。
+  - **Scale 省略**：同一 ref `Scale = (absent)`；`Spec.World.cs:74` 註解 `// XSCL; omitted in record if 1.0`。→ 採集橋**不要無條件寫 `scale: 1.0`**（會與 vanilla 位元組不同）；ModForge 側已處理。
+  - **尚未驗**：interior 的 runtime 座標是否即 cell-local（需實機比對 `getpos` vs 此處 `Placement.Position = -453.7385,-965.83203,67.837296`）。
+  - **規模參考**：該 cell 有 **662 個 `Temporary` ref**。逐個 `execute_console_command` 取 transform 只適合驗證，真正採集需要 batch tool（見「採集橋 vs SkyLink」）。
 
 ---
 

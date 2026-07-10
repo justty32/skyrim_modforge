@@ -13,6 +13,9 @@ if(DEFINED ENV{SKYRIM_MODS_FOLDER} AND IS_DIRECTORY "$ENV{SKYRIM_MODS_FOLDER}")
 endif()
 
 find_package(CommonLibSSE CONFIG REQUIRED)
+# CommonLibSSE's exported target names Microsoft::DirectXTK in its link
+# interface, so the imported target must exist before it is consumed.
+find_package(directxtk CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 
 include(cmake/headerlist.cmake)

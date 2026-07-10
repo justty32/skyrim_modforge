@@ -68,7 +68,13 @@ namespace SceneExporter {
         }
 
         std::size_t skipped = 0;
-        cell->ForEachReference([&](RE::TESObjectREFR& ref) -> RE::BSContainer::ForEachResult {
+        // ForEachReference hands the callback a POINTER, not a reference.
+        cell->ForEachReference([&](RE::TESObjectREFR* refPtr) -> RE::BSContainer::ForEachResult {
+            if (!refPtr) {
+                return RE::BSContainer::ForEachResult::kContinue;
+            }
+            RE::TESObjectREFR& ref = *refPtr;
+
             RE::TESBoundObject* base = ref.GetBaseObject();
             if (!base || ref.IsDeleted()) {
                 return RE::BSContainer::ForEachResult::kContinue;
