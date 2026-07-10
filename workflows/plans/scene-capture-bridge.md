@@ -130,7 +130,7 @@ MarkerEntry {
 
 # P2–P4：概要（開工前再展開成 Task）
 
-- **P2 刪除**：原 M6 plan 全文有效（資料流/Task 0–5/驗收見 git 歷史 `62b9724` 前版本；開工時搬回）。補細摳②的紅輪廓確認流與 GUI 列表路徑（自己加的單獨一掛、最新在前）。
+- **P2 刪除（✅ 核心離線落地 2026-07-10）**：`src/Eraser.{h,cpp}`——**F8** 擦準星目標（authored→`Disable()`+登記耐久 id；自己的 dynamic→真刪除無痕；marker proxy→轉交 Markers::Remove）；面板 `Eraser` 頁（undo／clear／外部 master 警告色／`scan disabled refs`→逐筆確認 adopt，明示不推導）；匯出寫 `removals[]`（全域），marked 不計入 preexisting，disabled dynamic ref 不匯出。消費端離線驗過（removals→build→REFR flags=0x800、Z=−34603）。**待實機**（wait_todo）。NG 坑：`CrosshairPickData` 成員是 per-VR-device 陣列，flat 取 `[0]`。**未做（富路徑）**：紅輪廓確認流、GUI 列出 cell 內物件直選、持續施法變體。
 - **P2 新增**：palette（GUI 選物）＋指向性落點＋綠輪廓確認；持續施法變體（法術＝模式開關、`CrosshairPickData` 每幀輪詢——不需 projectile hook、繞開 STAT 不吃魔法效果）。
 - **P2 修改**：numpad 編輯模式（`2468` 位移/`1379` 旋轉/`+−` 縮放/`*/`+`5` 選屬性/`Enter`/`0` 結束）；編輯模式吞按鍵（框架 `AddInputEvent` 回傳 bool block）；進場快照 transform 供 cancel。**開工前拍板 override 契約形狀**（`overrideOf` vs `overrides[]`，spec 已載兩案）——偵測已由「選中且動過＝明示登記」天然解決。
 - **P3 動態物件**：選中凍結物理（`SetMotionType(Keyframed)` 待驗）→ 編輯 → 回復。誠實邊界：匯出 authored 位置，載入後 havok 自行沉降（與 CK 慣例一致）。檢視法術（新增/修改/刪除/全部四種；顯示被刪的 vanilla ref 需暫時 enable 或臨時紅 marker，實作時定）。

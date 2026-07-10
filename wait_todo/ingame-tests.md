@@ -62,3 +62,11 @@
 - **F11 aimed 放置**：新 DLL 已部署——F11 現在放在**準星指的位置**（射線，無命中 fallback 腳下）。0x57 未實機按過；**pitch 符號未驗**——若 marker 落在身後/天上，回報，翻個符號就好。
 - **讀檔後 prune 複核**：讀檔 → F1 Markers 頁不該再列出死 proxy 的鬼條目。
 - **adopt 複核**：存檔重載後面板按 `adopt this cell` → 上一 session 放的 marker 應**連名字**回到列表（顯示名活在存檔裡）。
+
+## P2 橡皮擦（2026-07-10 離線齊備，新 DLL 已部署）
+
+1. **擦**：準星指一張 vanilla 椅子按 **F8** → 椅子消失，log `Eraser: marked Skyrim.esm:0x... for removal`。
+2. **面板**：F1 → `Eraser`：列表有那筆；`undo` → 椅子回來；再擦掉。指 mod 的物件擦一個 → 該列橘色警告「patch will depend on X.esp」。
+3. **真刪除**：F11 放個 marker 再對它按 F8 → marker 連登記簿一起消失（Markers 頁也不見）。
+4. **adopt**：擦幾個 → 存檔 → 重載（登記簿死）→ `scan disabled refs in this cell` → 候選列出、逐筆 adopt → 回到清單。
+5. **匯出**：F10 → json 有 `removals` 段 → 交給 agent build → 載入 patch 後那張椅子該永久消失。

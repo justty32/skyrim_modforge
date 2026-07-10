@@ -1,5 +1,6 @@
 #include "UI.h"
 
+#include "Eraser.h"
 #include "Markers.h"
 #include "SceneExporter.h"
 #include "log.h"
@@ -41,6 +42,7 @@ void UI::Register() {
     SKSEMenuFramework::SetSection("Scene Capture Bridge");
     SKSEMenuFramework::AddSectionItem("Export", Export::Render);
     SKSEMenuFramework::AddSectionItem("Markers", MarkersPage::Render);
+    SKSEMenuFramework::AddSectionItem("Eraser", EraserPage::Render);
     SKSE::log::info("SKSE Menu Framework panel registered");
 }
 
@@ -146,5 +148,54 @@ void __stdcall UI::MarkersPage::Render() {
     if (removeSeq != 0) {
         ::Markers::Remove(removeSeq);
         g_rows.erase(removeSeq);
+    }
+}
+
+void __stdcall UI::EraserPage::Render() {
+    constexpr ImGuiMCP::ImVec4 kWarn{1.f, 0.55f, 0.25f, 1.f};
+
+    auto& marked = ::Eraser::All();
+    ImGuiMCP::Text("%zu marked for removal. F8 erases the crosshair target.", marked.size());
+    ImGuiMCP::SameLine();
+    if (ImGuiMCP::Button("undo")) { ::Eraser::Undo(); }
+    ImGuiMCP::SameLine();
+    if (ImGuiMCP::Button("clear (re-enable all)")) { ::Eraser::Clear(); }
+    ImGuiMCP::Separator();
+
+    for (const auto& e : marked) {
+        if (e.addsMaster) {
+            ImGuiMCP::TextColored(kWarn, "%s", e.id.c_str());
+            ImGuiMCP::SameLine();
+            ImGuiMCP::TextColored(kWarn, "-- patch will depend on %s", e.plugin.c_str());
+        } else {
+            ImGuiMCP::Text("%s", e.id.c_str());
+        }
+    }
+
+    ImGuiMCP::Separator();
+    // Explicit adoption, never inference: the scan only PROPOSES; each row is
+    // confirmed by hand, so quest-disabled clutter can't sneak in.
+    if (ImGuiMCP::Button("scan disabled refs in this cell")) {
+        ::Eraser::ScanDisabled();
+    }
+    auto& cands = ::Eraser::Candidates();
+    if (!cands.empty()) {
+        ImGuiMCP::SameLine();
+        if (ImGuiMCP::Button("dismiss")) { ::Eraser::DismissCandidates(); }
+        ImGuiMCP::TextWrapped(
+            "%zu disabled candidate(s) — runtime-disabled, record not "
+            "InitiallyDisabled. Adopt only what YOU erased; quest-hidden "
+            "clutter looks identical.", cands.size());
+        std::size_t adopt = SIZE_MAX;
+        for (std::size_t i = 0; i < cands.size(); ++i) {
+            const auto& c = cands[i];
+            ImGuiMCP::PushID(reinterpret_cast<const void*>(static_cast<std::uintptr_t>(i + 1)));
+            if (ImGuiMCP::Button("adopt")) adopt = i;
+            ImGuiMCP::SameLine();
+            if (c.addsMaster) ImGuiMCP::TextColored(kWarn, "%s  %s", c.id.c_str(), c.name.c_str());
+            else              ImGuiMCP::Text("%s  %s", c.id.c_str(), c.name.c_str());
+            ImGuiMCP::PopID();
+        }
+        if (adopt != SIZE_MAX) ::Eraser::AdoptCandidate(adopt);
     }
 }

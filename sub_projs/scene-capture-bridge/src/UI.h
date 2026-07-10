@@ -24,4 +24,8 @@ namespace UI {
         void __stdcall Render();
     }
 
+    namespace EraserPage {
+        void __stdcall Render();
+    }
+
 }  // namespace UI

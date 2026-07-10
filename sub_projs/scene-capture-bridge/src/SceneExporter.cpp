@@ -1,5 +1,6 @@
 #include "SceneExporter.h"
 
+#include "Eraser.h"
 #include "Markers.h"
 
 #include "log.h"
@@ -97,6 +98,7 @@ namespace SceneExporter {
         std::size_t preexisting = 0;
         std::size_t actors = 0;
         std::size_t markerProxies = 0;
+        std::size_t removalsPending = 0;
         // ForEachReference hands the callback a POINTER, not a reference.
         cell->ForEachReference([&](RE::TESObjectREFR* refPtr) -> RE::BSContainer::ForEachResult {
             if (!refPtr) {
@@ -135,8 +137,16 @@ namespace SceneExporter {
             // a new placement — a different scene.json shape the contract does
             // not model yet (only `removals[]` touches existing refs). Deliberate
             // MVP cut, not an oversight.
-            if (ResolveDurableId(&ref)) {
-                ++preexisting;
+            if (auto refId = ResolveDurableId(&ref)) {
+                // A ref marked by the eraser is not "pre-existing kept as-is" —
+                // it exports through removals[], counted separately.
+                if (Eraser::MarkedIds().contains(*refId)) ++removalsPending;
+                else ++preexisting;
+                return RE::BSContainer::ForEachResult::kContinue;
+            }
+            // A disabled dynamic ref is one of our own placements the player
+            // erased — true deletion semantics: it leaves no trace.
+            if (ref.IsDisabled()) {
                 return RE::BSContainer::ForEachResult::kContinue;
             }
 
@@ -185,6 +195,17 @@ namespace SceneExporter {
             return RE::BSContainer::ForEachResult::kContinue;
         });
 
+        // Every marked removal exports — global, not per-cell (BuildRemovals
+        // resolves via the master link cache, so cross-room erasures are fine).
+        {
+            const auto& marked = Eraser::All();
+            if (!marked.empty()) {
+                auto arr = nlohmann::json::array();
+                for (const auto& e : marked) arr.push_back(e.id);
+                scene["removals"] = std::move(arr);
+            }
+        }
+
         // Every marker in the registry exports as an advisory annotation —
         // global, not per-cell (an agent needs anchors from every room you
         // marked, same reasoning as removals[]).
@@ -215,13 +236,15 @@ namespace SceneExporter {
         g_last.skipped = skipped;
         g_last.cell = cellId.empty() ? worldspaceId : cellId;
         g_last.markers = markerProxies;
+        g_last.removals = Eraser::All().size();
 
         SKSE::log::info(
             "ExportCell: {} placements ({} of them actors), {} pre-existing "
             "(skipped), {} skipped (dynamic bases), {} marker proxies excluded, "
-            "{} annotations",
+            "{} annotations, {} removals ({} in this cell)",
             scene["placements"].size(), actors, preexisting, skipped,
-            markerProxies, Markers::All().size());
+            markerProxies, Markers::All().size(), Eraser::All().size(),
+            removalsPending);
         return scene;
     }
 

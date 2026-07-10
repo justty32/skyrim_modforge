@@ -1,4 +1,5 @@
 #include "log.h"
+#include "Eraser.h"
 #include "Markers.h"
 #include "SceneExporter.h"
 #include "UI.h"
@@ -15,6 +16,9 @@ namespace {
     // line below verifies on first use.
     constexpr std::uint32_t kExportKey = 0x44;
     constexpr std::uint32_t kMarkerKey = 0x57;
+    // F8 = 0x42, from the same confirmed contiguous DIK F1..F10 block as F10.
+    // Vanilla binds F5 (quicksave) and F9 (quickload); F8 is free.
+    constexpr std::uint32_t kEraseKey = 0x42;
 
     std::chrono::steady_clock::time_point g_lastPress{};
 
@@ -37,7 +41,7 @@ namespace {
                 if (!btn || !btn->IsDown()) continue;
                 if (btn->GetDevice() != RE::INPUT_DEVICE::kKeyboard) continue;
                 const auto code = btn->GetIDCode();
-                if (code != kExportKey && code != kMarkerKey) continue;
+                if (code != kExportKey && code != kMarkerKey && code != kEraseKey) continue;
 
                 const auto now = std::chrono::steady_clock::now();
                 if (now - g_lastPress < 200ms) continue;  // debounce
@@ -45,9 +49,12 @@ namespace {
 
                 if (code == kExportKey) {
                     SceneExporter::ExportPlayerCellToFile();
-                } else {
+                } else if (code == kMarkerKey) {
                     SKSE::log::info("hotkey: scancode 0x{:X} -> place marker (aimed)", code);
                     Markers::PlaceAimed();
+                } else {
+                    SKSE::log::info("hotkey: scancode 0x{:X} -> erase crosshair target", code);
+                    Eraser::MarkCrosshair();
                 }
             }
             return RE::BSEventNotifyControl::kContinue;
