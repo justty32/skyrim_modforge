@@ -73,36 +73,36 @@ MarkerEntry {
 
 ## Task 0：前置驗證（只讀，不改碼；`ForEachReference` 簽名憑印象寫錯的前車之鑑）
 
-- [ ] **proxy 的 base**：挑一個**看得見**的載體（vanilla XMarker 遊戲內不渲染）。候選：發光小物（wisp/燭火類 ACTI 或 MSTT）。模型路徑**必須用 houseCARL/`find` 對 Skyrim.esm 驗**（[[vanilla-nif-paths-must-be-verified]]：錯路徑＝隱形物件無報錯）。裁決同時定「用 vanilla base」vs「工具 esp 自帶 MarkerACTI」（後者辨識乾淨——base 來自我們的 esp，adopt 掃描零誤判；工具 esp ≠ 出貨產物，ModForge 生一次即可，dogfood）。
-- [ ] **放置 hotkey 的 scancode**：`HotkeySink` log `GetIDCode()` 實測，不假設 DIK 值。
-- [ ] **label 持久化 trick**：`ExtraTextDisplayData`（SetDisplayName 等價）改 proxy 顯示名——顯示名**存進存檔**，若可行則 save/reload 後 adopt 掃描能**連標籤一起**復原，登記簿的跨 session 問題免費解決。驗 CommonLibSSE API 是否存在可寫路徑。
+- [x] **proxy 的 base**（✅ 2026-07-10）：工具 esp `SCB_MarkerACTI`（model=`Magic\SummonTargetFX.nif`，vanilla 召喚圈，路徑讀自 `07CD55:Skyrim.esm`——保證有效）；**DLL 在 esp 缺席時 fallback 到 vanilla `SummonTargetFXActivator`**，hotkey 路徑不依賴工具 esp。原候選評估：挑一個**看得見**的載體（vanilla XMarker 遊戲內不渲染）。候選：發光小物（wisp/燭火類 ACTI 或 MSTT）。模型路徑**必須用 houseCARL/`find` 對 Skyrim.esm 驗**（[[vanilla-nif-paths-must-be-verified]]：錯路徑＝隱形物件無報錯）。裁決同時定「用 vanilla base」vs「工具 esp 自帶 MarkerACTI」（後者辨識乾淨——base 來自我們的 esp，adopt 掃描零誤判；工具 esp ≠ 出貨產物，ModForge 生一次即可，dogfood）。
+- [x] **放置 hotkey 的 scancode**：F9=0x43，自已實機確認的 F10=0x44 連續 DIK F 鍵區推得；DLL log 首次按下時印 scancode 供複核。
+- [x] **label 持久化 trick**（✅ `TESObjectREFR::SetDisplayName(BSFixedString,bool)` 存在，`TESObjectREFR.h:460`；已接上——改名同步寫 proxy 顯示名）：`ExtraTextDisplayData`（SetDisplayName 等價）改 proxy 顯示名——顯示名**存進存檔**，若可行則 save/reload 後 adopt 掃描能**連標籤一起**復原，登記簿的跨 session 問題免費解決。驗 CommonLibSSE API 是否存在可寫路徑。
 - [ ] **（Task 4 用）指向性放置**：A 案符文式（引擎原生把物件放在瞄準命中點；驗放置面限制、`iMaxAttachedRunes`）vs B 案 `bhkPickData` 射線（驗 API 形狀）。
-- [ ] **（選配）`TESActivateEvent` sink**：玩家 E 鍵啟動 marker → 面板跳到該筆。沒有也不擋——面板列表夠用。
+- [x]（存在，暫未使用）**（選配）`TESActivateEvent` sink**：玩家 E 鍵啟動 marker → 面板跳到該筆。沒有也不擋——面板列表夠用。
 
 ## Task 1：ModForge 側標註段（等形狀拍板；若 b 案 ≈ 20 行）
 
 **Files:** `Spec.cs`（或新 `Spec.Annotations.cs`）、`Program.Build.cs`（log）、測試、`examples/`。
 
-- [ ] `AnnotationSpec { Label, Kind, Position, AngleZ, Cell, Worldspace, Seq }` + `ModSpec.Annotations`。
-- [ ] build：**不生成任何記錄**，log 一行 `N annotation(s) (advisory, not built)`。
-- [ ] validate：欄位型別檢查即可（`CheckUnknownFields` 自動涵蓋）。
-- [ ] 離線測試 + 一個 example json。**行為不變**：無 annotations 的既有 spec 生成位元不變（鐵律①）。
+- [x] `AnnotationSpec { Label, Kind, Position, AngleZ, Cell, Worldspace, Seq }` + `ModSpec.Annotations`。
+- [x] build：**不生成任何記錄**，log 一行 `N annotation(s) (advisory, not built)`。
+- [x] validate：欄位型別檢查即可（`CheckUnknownFields` 自動涵蓋）。
+- [x] 離線測試 + 一個 example json。**行為不變**：無 annotations 的既有 spec 生成位元不變（鐵律①）。
 
 ## Task 2：DLL marker 登記簿 + 腳下放置
 
 **Files:** 新 `src/Markers.{h,cpp}`；`plugin.cpp`（hotkey 分支）；`SceneExporter.cpp`（整合）。
 
-- [ ] 登記簿（session 記憶體；模型同 M6 橡皮擦清單）＋ `Place()`：hotkey → **玩家腳下**放 proxy（`PlaceAtMe`，零新 API——使用者的 navmesh 願景本來就是「記錄玩家腳下位置」）＋ 記 position/angleZ/cellOrWs。
-- [ ] **`ExportCell` 排除 proxy**：proxy 是 dynamic ref，不排除就會被 vanilla diff 當成玩家擺的物件收進 `placements[]`——**這是正確性問題**，不是最佳化。登記簿 handle 查表跳過，另計 `markers` 統計。
-- [ ] 匯出：登記簿 → 標註段（依拍板形狀）。跨 cell 的 marker 也全部匯出（登記簿是全域的，同 removals 理由）。
-- [ ] 刪 marker：銷毀 proxy + 移出登記簿（真刪除語意，無痕）。
+- [x] 登記簿（session 記憶體；模型同 M6 橡皮擦清單）＋ `Place()`：hotkey → **玩家腳下**放 proxy（`PlaceAtMe`，零新 API——使用者的 navmesh 願景本來就是「記錄玩家腳下位置」）＋ 記 position/angleZ/cellOrWs。
+- [x] **`ExportCell` 排除 proxy**：proxy 是 dynamic ref，不排除就會被 vanilla diff 當成玩家擺的物件收進 `placements[]`——**這是正確性問題**，不是最佳化。登記簿 handle 查表跳過，另計 `markers` 統計。
+- [x] 匯出：登記簿 → 標註段（依拍板形狀）。跨 cell 的 marker 也全部匯出（登記簿是全域的，同 removals 理由）。
+- [x] 刪 marker：銷毀 proxy + 移出登記簿（真刪除語意，無痕）。
 
 ## Task 3：面板 Markers 頁
 
 **Files:** `src/UI.cpp`。
 
-- [ ] 列表：seq、label（`InputText` 就地改名）、kind（下拉或自由文字）、所在 cell、刪除鈕。最新在前。
-- [ ] `Stats` 加 marker 計數；Export 頁顯示「N markers → annotations」。
+- [x] 列表：seq、label（`InputText` 就地改名）、kind（下拉或自由文字）、所在 cell、刪除鈕。最新在前。
+- [x] `Stats` 加 marker 計數；Export 頁顯示「N markers → annotations」。
 
 ## Task 4：指向性放置（依 Task 0 裁決）
 
@@ -114,7 +114,7 @@ MarkerEntry {
 
 **Files:** `examples/` 或 `sub_projs/scene-capture-bridge/tools-spec.json`。
 
-- [ ] ModForge 生：MarkerACTI（驗過的可見模型）+ 放置法術（+ 之後的檢視法術、選取法術殼）。**編輯器工具 esp ≠ 出貨產物**。
+- [x] ModForge 生：MarkerACTI（驗過的可見模型）+ 放置法術（+ 之後的檢視法術、選取法術殼）。**編輯器工具 esp ≠ 出貨產物**。
 - [ ] 部署：跟 DLL 一起進 `mods/SceneCaptureBridge/`。
 
 ## Task 6：端到端驗收（就是使用者的工作流）

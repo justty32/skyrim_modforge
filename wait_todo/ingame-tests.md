@@ -54,3 +54,12 @@
   - **移除物件(§E 橡皮擦)demo**:例子加了 `removals:[0x0D1991]`——白漫馬廄 Skulvar 的一把鋤頭應**消失**(去馬廄看那把鋤頭沒了=橡皮擦成立)。
   - **⚠ 白天測**:vendor 8-20 營業(GetOffersServicesNow 含時間),夜間交易會空——快旅後若是夜晚,`set timescale`/等到白天再試。庫存已放 vanilla 鐵匠 leveled lists(武防+雜貨+金),VendorLocation 錨在店周圍 4096。
   - **回報**:傳送安全否、房子貼地否、Brynja 在否、問候+**交易(有貨有金)**通否。(Brynja 從零建、無 facegen,臉可能陽春/暗臉——能站能講能交易就算過。)
+
+## P1 統一 marker 系統（scene-capture-bridge，2026-07-10 離線齊備）
+
+已部署 `mods/SceneCaptureBridge/`（新 DLL + `SceneCaptureTools.esp`）。**MO2 按 F5 refresh，勾 mod、勾 `SceneCaptureTools.esp` plugin**（esp 沒勾也能測——DLL 會 fallback 到 vanilla 召喚圈 base，log 會說用了哪個）。
+
+1. **放置**：遊戲內按 **F9** → 腳下出現發光召喚圈 + `SceneCaptureBridge.log` 出現 `Markers: placed #1 'marker-1' at (...)`。若無反應：log 找 `hotkey: scancode` 行——F9=0x43 是從 F10=0x44 推的，錯了告訴我實際值。
+2. **面板**：F1 → `Scene Capture Bridge` → `Markers`：改名（label 打 `goat` 按 Enter 或 apply）、改 kind、del。改名後準星指 proxy 應顯示新名字（SetDisplayName）。
+3. **匯出**：放 3 個 marker（至少一個在室外）→ F10 → `scene-export.json` 應有 `annotations` 段：seq/label/kind/position/angleZ/cell 或 worldspace。**proxy 本身不得出現在 `placements[]`**（log 的 `marker proxies excluded` 應等於 marker 數）。
+4. **agent 工作流 demo（驗收核心）**：把 json 給 agent 說「在 `goat` 那個 marker 放一隻山羊」→ agent 寫 spec → build → 驗 ACHR 座標＝marker 座標。

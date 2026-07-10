@@ -1,5 +1,7 @@
 #include "SceneExporter.h"
 
+#include "Markers.h"
+
 #include "log.h"
 
 #include <fstream>
@@ -94,6 +96,7 @@ namespace SceneExporter {
         std::size_t skipped = 0;
         std::size_t preexisting = 0;
         std::size_t actors = 0;
+        std::size_t markerProxies = 0;
         // ForEachReference hands the callback a POINTER, not a reference.
         cell->ForEachReference([&](RE::TESObjectREFR* refPtr) -> RE::BSContainer::ForEachResult {
             if (!refPtr) {
@@ -107,6 +110,13 @@ namespace SceneExporter {
             }
             // Skip the player and refs whose base cannot be durably referenced.
             if (ref.IsPlayerRef()) {
+                return RE::BSContainer::ForEachResult::kContinue;
+            }
+            // Marker proxies are editor chrome, not content — without this they
+            // are dynamic refs and the vanilla diff would export them as
+            // player-placed objects.
+            if (Markers::IsProxy(refPtr)) {
+                ++markerProxies;
                 return RE::BSContainer::ForEachResult::kContinue;
             }
 
@@ -175,17 +185,43 @@ namespace SceneExporter {
             return RE::BSContainer::ForEachResult::kContinue;
         });
 
+        // Every marker in the registry exports as an advisory annotation —
+        // global, not per-cell (an agent needs anchors from every room you
+        // marked, same reasoning as removals[]).
+        {
+            const auto& marks = Markers::All();
+            if (!marks.empty()) {
+                auto arr = nlohmann::json::array();
+                for (const auto& m : marks) {
+                    nlohmann::json a;
+                    a["seq"] = m.seq;
+                    a["label"] = m.label;
+                    a["kind"] = m.kind;
+                    a["position"] = Vec3(m.position);
+                    a["angleZ"] = m.angleZDeg;
+                    if (!m.cellOrWs.empty()) {
+                        a[m.isInterior ? "cell" : "worldspace"] = m.cellOrWs;
+                    }
+                    arr.push_back(std::move(a));
+                }
+                scene["annotations"] = std::move(arr);
+            }
+        }
+
         g_last.valid = true;
         g_last.placements = scene["placements"].size();
         g_last.actors = actors;
         g_last.preexisting = preexisting;
         g_last.skipped = skipped;
         g_last.cell = cellId.empty() ? worldspaceId : cellId;
+        g_last.markers = markerProxies;
 
         SKSE::log::info(
             "ExportCell: {} placements ({} of them actors), {} pre-existing "
-            "(skipped), {} skipped (dynamic bases)",
-            scene["placements"].size(), actors, preexisting, skipped);
+            "(skipped), {} skipped (dynamic bases), {} marker proxies excluded, "
+            "{} annotations",
+            scene["placements"].size(), actors, preexisting, skipped,
+            markerProxies, Markers::All().size());
         return scene;
     }
 

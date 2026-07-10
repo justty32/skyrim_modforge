@@ -1,9 +1,13 @@
 #include "UI.h"
 
+#include "Markers.h"
 #include "SceneExporter.h"
 #include "log.h"
 
 #include "SKSEMenuFramework.h"
+
+#include <cstdio>
+#include <unordered_map>
 
 namespace {
     // Resolve the cell the player is standing in, for display. Cheap enough to
@@ -36,6 +40,7 @@ void UI::Register() {
     }
     SKSEMenuFramework::SetSection("Scene Capture Bridge");
     SKSEMenuFramework::AddSectionItem("Export", Export::Render);
+    SKSEMenuFramework::AddSectionItem("Markers", MarkersPage::Render);
     SKSE::log::info("SKSE Menu Framework panel registered");
 }
 
@@ -70,5 +75,66 @@ void __stdcall UI::Export::Render() {
     }
     if (!s.path.empty()) {
         ImGuiMCP::TextWrapped("Wrote %s", s.path.c_str());
+    }
+}
+
+namespace {
+    // Per-row edit buffers, keyed by marker seq. Initialised from the entry
+    // once; afterwards the buffer is the user's in-progress edit.
+    struct RowBufs {
+        char label[64];
+        char kind[24];
+    };
+    std::unordered_map<std::uint32_t, RowBufs> g_rows;
+}
+
+void __stdcall UI::MarkersPage::Render() {
+    auto& all = ::Markers::All();
+    ImGuiMCP::Text("%zu marker(s). F9 drops one at your feet.", all.size());
+    ImGuiMCP::Separator();
+
+    std::uint32_t removeSeq = 0;
+    // Newest first — the one you just placed is the one you want to rename.
+    for (auto it = all.rbegin(); it != all.rend(); ++it) {
+        auto& e = *it;
+        ImGuiMCP::PushID(reinterpret_cast<const void*>(static_cast<std::uintptr_t>(e.seq)));
+
+        auto [row, inserted] = g_rows.try_emplace(e.seq);
+        if (inserted) {
+            std::snprintf(row->second.label, sizeof(row->second.label), "%s", e.label.c_str());
+            std::snprintf(row->second.kind, sizeof(row->second.kind), "%s", e.kind.c_str());
+        }
+        auto& b = row->second;
+
+        ImGuiMCP::Text("#%u", e.seq);
+        ImGuiMCP::SameLine();
+        ImGuiMCP::SetNextItemWidth(180.f);
+        if (ImGuiMCP::InputText("##label", b.label, sizeof(b.label),
+                ImGuiMCP::ImGuiInputTextFlags_EnterReturnsTrue)) {
+            ::Markers::Rename(e.seq, b.label);
+        }
+        ImGuiMCP::SameLine();
+        ImGuiMCP::SetNextItemWidth(90.f);
+        if (ImGuiMCP::InputText("##kind", b.kind, sizeof(b.kind),
+                ImGuiMCP::ImGuiInputTextFlags_EnterReturnsTrue)) {
+            ::Markers::SetKind(e.seq, b.kind);
+        }
+        ImGuiMCP::SameLine();
+        if (ImGuiMCP::Button("apply")) {
+            ::Markers::Rename(e.seq, b.label);
+            ::Markers::SetKind(e.seq, b.kind);
+        }
+        ImGuiMCP::SameLine();
+        if (ImGuiMCP::Button("del")) {
+            removeSeq = e.seq;
+        }
+        ImGuiMCP::SameLine();
+        ImGuiMCP::Text("%s", e.cellOrWs.empty() ? "(unresolved)" : e.cellOrWs.c_str());
+
+        ImGuiMCP::PopID();
+    }
+    if (removeSeq != 0) {
+        ::Markers::Remove(removeSeq);
+        g_rows.erase(removeSeq);
     }
 }

@@ -37,6 +37,7 @@ namespace SceneExporter {
         std::size_t actors = 0;       // subset of `placements` that are ACHR
         std::size_t preexisting = 0;  // authored refs skipped (the vanilla diff)
         std::size_t skipped = 0;      // dynamic bases, not esp-referenceable
+        std::size_t markers = 0;      // marker proxies excluded (editor chrome, not content)
         std::string cell;             // durable id of the exported cell/worldspace
         std::string path;             // where the last WriteSceneFile went
     };

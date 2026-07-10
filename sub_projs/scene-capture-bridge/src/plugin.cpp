@@ -1,4 +1,5 @@
 #include "log.h"
+#include "Markers.h"
 #include "SceneExporter.h"
 #include "UI.h"
 
@@ -7,8 +8,11 @@
 using namespace std::chrono_literals;
 
 namespace {
-    // DirectInput scancode, NOT a virtual-key code. 0x44 = F10.
+    // DirectInput scancodes, NOT virtual-key codes. 0x44 = F10 (in-game
+    // confirmed). 0x43 = F9, inferred from the contiguous DIK F1..F10 block
+    // anchored by that confirmation — the log line below verifies on first use.
     constexpr std::uint32_t kExportKey = 0x44;
+    constexpr std::uint32_t kMarkerKey = 0x43;
 
     std::chrono::steady_clock::time_point g_lastPress{};
 
@@ -30,13 +34,19 @@ namespace {
                 auto* btn = e->AsButtonEvent();
                 if (!btn || !btn->IsDown()) continue;
                 if (btn->GetDevice() != RE::INPUT_DEVICE::kKeyboard) continue;
-                if (btn->GetIDCode() != kExportKey) continue;
+                const auto code = btn->GetIDCode();
+                if (code != kExportKey && code != kMarkerKey) continue;
 
                 const auto now = std::chrono::steady_clock::now();
                 if (now - g_lastPress < 200ms) continue;  // debounce
                 g_lastPress = now;
 
-                SceneExporter::ExportPlayerCellToFile();
+                if (code == kExportKey) {
+                    SceneExporter::ExportPlayerCellToFile();
+                } else {
+                    SKSE::log::info("hotkey: scancode 0x{:X} -> place marker", code);
+                    Markers::PlaceAtPlayer();
+                }
             }
             return RE::BSEventNotifyControl::kContinue;
         }

@@ -20,4 +20,8 @@ namespace UI {
         void __stdcall Render();
     }
 
+    namespace MarkersPage {
+        void __stdcall Render();
+    }
+
 }  // namespace UI
