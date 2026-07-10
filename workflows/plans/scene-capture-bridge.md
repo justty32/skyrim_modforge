@@ -22,6 +22,8 @@
 | NPC 來源 | 預設「大眾臉」——ModForge 直接生 `NpcSpec`（有 `Race`，無 headpart/tint/facegen → 引擎用種族預設頭）。**PROTEUS 拓印降為可選** | 使用者 2026-07-10 |
 | 橡皮擦的 removals 狀態 | **記憶體（session）+ 面板的 `Adopt disabled refs` 掃描鍵**（推導只在按下去時發生，不靜默誤判任務關掉的雜物） | 使用者 2026-07-10 |
 | 擦到外部 mod 的 ref | **允許，但面板醒目標示**（「這會讓你的 patch 依賴 `X.esp`」），匯出時 log 列出新增的 master | 使用者 2026-07-10 |
+| 地形高度 | **遊戲內不做地形雕刻**——runtime 無法變形 LAND，且「地形高度不太需要在遊戲中修改」。走既有離線路：Godot worldspace editor（idea #19）或 PNG heightmap → ModForge（heightmap→非平坦 LAND **已落地**）。遊戲內只做**輔助**：標註 marker（見 M9） | 使用者 2026-07-10 |
+| 標註 marker 的定位 | 指向性法術/射線在命中點放 marker → 可改名 → 匯出 json → **給 AI agent 下指令的座標錨點**（「這個 marker 所在座標的地形要抬升…」）。是玩家→agent 的通訊通道 | 使用者 2026-07-10 |
 | 玩家移動/縮放過的 vanilla ref | **不採**（需 `scene.json` 長出「既有 ref 的 override」形狀）。橡皮擦繞過它；**滴管會撞上**——見下方技術債 | spec §契約 |
 
 ---
@@ -146,11 +148,36 @@ idea #24 §② 寫「本 idea 的施法擺設與 settlements Phase-2 的 `builda
 
 面板要能預覽「這次會吸到 N 個」再確認——半徑掃描很容易一口氣吸進整個房間。
 
-## M9：語意標記（§B）
+## M9：marker／標註系統（§B 語意標記 ＋ 地形/任意標註，合併為一個系統）
 
-在面板上下「意圖標記」而非實體物件：地圖 marker / 特效錨點 / 功能標籤。採集橋只要輸出 `{kind, at, params}`，展開成 `mapMarkers[]` / `hazards[]` / `tags[]`——**這三段 ModForge 今天就吃得下**（`Spec.MapMarkers.cs` / `Generator.Build.Hazards.cs` / KYWD 生成）。
+**（2026-07-10 細摳後重定義）**原本 §B 只涵蓋「會被 ModForge 展開成記錄」的語意標記。使用者的地形細摳揭示了一個更通用的原語：**具名座標 marker**，一個 `kind` 欄位決定它是**生成性**還是**建議性**：
 
-UI 上大概是「站到那個位置 → 面板選 kind → 填參數 → Add」。座標取玩家當前位置即可。
+| kind | 匯出到 | ModForge 行為 |
+|---|---|---|
+| `mapMarker` / `vfx` / `tag`（§B 原有） | `mapMarkers[]` / `hazards[]` / `tags[]` | **展開成真記錄**（生成端已全備） |
+| `note`（自由文字，例：「這裡地形抬升」） | 標註段（形狀見下） | **不生成**——給人/AI agent 讀的座標錨點 |
+| `navmesh`（有序點列；idea 的 navmesh 記點願景） | 標註段 | 未來餵 navmesh 生成（三角化在 ModForge 側；`programmatic-navmesh` 已實機） |
+
+**放置機制（兩案，皆待驗）**：
+
+- **A. 符文式法術（rune-style）**：引擎原生機制——符文法術（如 Fire Rune）本來就把一個物件放在**瞄準的表面命中點**上，純 esp、零 SKSE 碼，且放出來的是 dynamic ref → **vanilla diff 自動採到**。待驗：符文的放置面限制（地板/牆？）、`iMaxAttachedRunes` 上限、以及編輯器自用 esp 怎麼來（**編輯器工具 esp ≠ 出貨產物**，手做一次或 ModForge 生一次都行，不挑剔）。
+- **B. C++ 射線（bhkPickData raycast）**：從鏡頭射線取任意命中點 → `PlaceAtMe` marker。更自由（不受符文面限制），但 raycast API 待驗（CommonLibSSE 的 `bhkPickData`；**不憑印象寫**——`ForEachReference` 前車之鑑）。
+
+法術美學（使用者的願景語彙是「施放法術」）偏 A；技術自由度偏 B。可以 A 起步、B 補位。
+
+**改名 UX**：marker 是 dynamic ref，名字存 DLL 記憶體（同 M6 橡皮擦的清單模型）；面板列出所有 marker + ImGui `InputText` 改名。不需要 UILib/activate 對話框。
+
+**標註段的形狀（三案，待使用者拍板）**：
+
+| | 去處 | 優點 | 缺點 |
+|---|---|---|---|
+| a. `_annotations`（底線鍵） | scene.json 內 | 一個檔；**已驗**：`Program.Schema.cs:13` 刻意放行 `_`/`//` 前綴（註解慣例），validate 不叫 | 語意上是「註解空間」，工具鏈可能視為可剝除；deserialize 一樣靜默忽略 |
+| b. 一等公民 `Annotations` 欄位 | `ModSpec` 加 ~5 行 | validate 安全、build 可 log「N annotations (advisory)」、agent 讀一個檔 | ModSpec 混入一個「不生成」的欄位，語意要寫清楚 |
+| c. sidecar（`scene-annotations.json`） | 獨立檔 | ModSpec 純淨 | agent 要讀兩個檔；檔案配對靠命名慣例 |
+
+傾向 **b**（明確、一個檔、有 no-op log），但等使用者審。
+
+**navmesh 記點（願景項，遠期）**：同一個 marker 系統，`kind=navmesh` + 序號。已知先例：**Debug Menu mod 能在遊戲內視覺化 navmesh**（見 [gemini-research 報告](../../sub_projs/gemini-research/2026-07-10-ingame-scene-editor-prior-art.md)），「能不能顯示出來」答案是能，讀它怎麼畫。點怎麼連（三角化）歸 ModForge 側，不在遊戲內做。
 
 ## M10：role tag（§D）
 
