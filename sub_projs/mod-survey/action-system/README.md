@@ -42,3 +42,7 @@ ModForge 能確定生成的：**第 1 步的 BDI config、第 3 步的 OAR condi
 ## 與其他層的邊界
 - **不可生成**（純 SKSE DLL，僅列前置）：XPMSSE、Pandora 引擎本體、UBR、BDI/PIE/AMR 的 DLL、SCAR、DMK。
 - **屬動畫資產管線**（非 esp record 層）：.hkx、hkanno 註釋——見 [havok-blender](../../../workflows/idea/asset-pipelines/animation/havok-blender.md)。
+
+## 待研究（queue）
+
+- **[Skyrim-Behavior-Editor](https://github.com/BrannigansLaw/Skyrim-Behavior-Editor-)**（2026-07-10 使用者丟入，待找時間研究）：Qt C++ GUI，直接檢視/編輯 Havok behavior（hkx-xml）＋動畫資料（translation/rotation/cache），可加/刪動畫、改 behavior graph、合併動畫專案。MIT、C++ 98.6%。落點＝本堆疊**層1（行為引擎）**，與 Pandora 相鄰但性質不同：Pandora 是 build-time patcher，這是**人工圖形編輯器**。注意：README 稱需 LE 版原始檔（非 SSE）＋依賴 hkxcmd 轉檔；Qt/QMake 有 Linux 編譯潛力（hkxcmd 走 wine）——對「Linux 無 CK」處境是潛在的 behavior 編輯出路。未驗證，研究時先確認 SSE 相容性。
