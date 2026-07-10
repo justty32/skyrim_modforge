@@ -54,3 +54,18 @@
   - **移除物件(§E 橡皮擦)demo**:例子加了 `removals:[0x0D1991]`——白漫馬廄 Skulvar 的一把鋤頭應**消失**(去馬廄看那把鋤頭沒了=橡皮擦成立)。
   - **⚠ 白天測**:vendor 8-20 營業(GetOffersServicesNow 含時間),夜間交易會空——快旅後若是夜晚,`set timescale`/等到白天再試。庫存已放 vanilla 鐵匠 leveled lists(武防+雜貨+金),VendorLocation 錨在店周圍 4096。
   - **回報**:傳送安全否、房子貼地否、Brynja 在否、問候+**交易(有貨有金)**通否。(Brynja 從零建、無 facegen,臉可能陽春/暗臉——能站能講能交易就算過。)
+
+## scene-capture-bridge M4 spike（Idea #24 採集橋，2026-07-10 離線齊備）
+
+`sub_projs/scene-capture-bridge/build/release-clang-cl-linux/SceneCaptureBridge.dll`（PE32+ x64，1.0M）。
+
+**⚠️ 出貨前的先決問題**：這是 **clang-cl 跨編譯**產物，`BUILD.md` 明訂「只做編譯驗證，不出貨」。此路徑的產物**從未進過遊戲**——參考 repo 的 `DaylightDungeon.dll` 也只停在 repo 的 build 目錄、沒部署進 MO2。所以第一步其實是驗「clang-cl 出的 SKSE DLL 載不載得起來」，而非驗採集邏輯。若載不起來，改走 Windows CI。
+
+驗收順序：
+
+1. **載入**：把 DLL 放進一個 MO2 mod 的 `SKSE/Plugins/`，進遊戲後看 `Documents/My Games/Skyrim Special Edition/SKSE/SceneCaptureBridge.log` 是否出現 `SceneCaptureBridge loaded` + `export hotkey registered (scancode 0x44)`。
+2. **採集**：進一個 vanilla 室內（例：Bannered Mare），按 **F10**。log 應寫出 `ExportCell: 0 placements, 0 npcRefs, N pre-existing (skipped), ...`——**vanilla 房間應該全部落在 `pre-existing`，placements 為 0**。若 placements 非 0，代表 vanilla diff 的判別式（`ResolveDurableId(&ref)`）在實機不成立。
+3. **玩家擺放**：`player.placeatme <某個 STAT base>` 放幾個物件，再按 F10。這幾個應該（且只有這幾個）出現在 `placements[]`，且 `base` 形如 `Skyrim.esm:0x0XXXXX`。
+4. **座標契約**：拿 `scene-export.json` 的 position/rotation 跟 houseCARL 讀出的同 cell vanilla ref 對照（rotation 單位、interior 是否 cell-local）。這是唯一還沒離線驗掉的契約條目。
+
+輸出檔：SKSE log 目錄下的 `scene-export.json`。
