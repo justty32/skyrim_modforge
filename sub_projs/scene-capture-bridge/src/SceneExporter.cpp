@@ -32,9 +32,11 @@ namespace SceneExporter {
         }
 
         const std::uint32_t rawId = form->GetFormID();
-        // TODO(runtime-verify): confirm light-plugin (ESL, 0xFExxxYYY) local-id
-        // width is 12 bits here and full-plugin is 24 bits. IsLight() should key
-        // off TESFile kSmallFile; verify against a known CC/ESL ref in-game.
+        // Light plugins (ESL/ESPFE) are 0xFExxxYYY -> 12-bit local id; full
+        // plugins are 0xXXyyyyyy -> 24-bit. Verified offline against
+        // ccBGSSSE037-Curios.esl, whose local ids top out at 0x88E (all < 0x1000),
+        // and Skyrim.esm's 0x01605E (24-bit). Both round-trip through the
+        // "{}:0x{:06X}" form ModForge expects.
         const std::uint32_t localId =
             file->IsLight() ? (rawId & 0x00000FFFu) : (rawId & 0x00FFFFFFu);
 
@@ -68,6 +70,7 @@ namespace SceneExporter {
         }
 
         std::size_t skipped = 0;
+        std::size_t preexisting = 0;
         // ForEachReference hands the callback a POINTER, not a reference.
         cell->ForEachReference([&](RE::TESObjectREFR* refPtr) -> RE::BSContainer::ForEachResult {
             if (!refPtr) {
@@ -83,6 +86,27 @@ namespace SceneExporter {
             if (ref.IsPlayerRef()) {
                 return RE::BSContainer::ForEachResult::kContinue;
             }
+
+            // The vanilla diff. A cell sweep sees EVERY reference in it, so
+            // exporting all of them would make ModForge re-place the whole
+            // vanilla room on top of itself (Bannered Mare: 662 refs, every
+            // chair doubled). What we want is only what the player ADDED.
+            //
+            // The discriminator is free: a ref authored in some plugin resolves
+            // to a durable id, while a ref spawned at runtime (PlaceAtMe) lives
+            // in the dynamic 0xFF...... range and has no source file. So an
+            // authored ref is pre-existing; an unresolvable one is player-placed.
+            //
+            // LIMITATION: a vanilla ref the player MOVED/SCALED is skipped here.
+            // Capturing that means emitting an override of the existing ref, not
+            // a new placement — a different scene.json shape the contract does
+            // not model yet (only `removals[]` touches existing refs). Deliberate
+            // MVP cut, not an oversight.
+            if (ResolveDurableId(&ref)) {
+                ++preexisting;
+                return RE::BSContainer::ForEachResult::kContinue;
+            }
+
             auto baseId = ResolveDurableId(base);
             if (!baseId) {
                 ++skipped;  // dynamic / runtime-only base — not esp-referenceable
@@ -121,8 +145,10 @@ namespace SceneExporter {
         });
 
         SKSE::log::info(
-            "ExportCell: {} placements, {} npcRefs, {} skipped (dynamic bases)",
-            scene["placements"].size(), scene["npcRefs"].size(), skipped);
+            "ExportCell: {} placements, {} npcRefs, {} pre-existing (skipped), "
+            "{} skipped (dynamic bases)",
+            scene["placements"].size(), scene["npcRefs"].size(), preexisting,
+            skipped);
         return scene;
     }
 

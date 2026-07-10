@@ -100,6 +100,21 @@ Tundra 的可擺清單是設計期寫死的 FormID；本系統改用**遊戲內�
   - **尚未驗**：interior 的 runtime 座標是否即 cell-local（需實機比對 `getpos` vs 此處 `Placement.Position = -453.7385,-965.83203,67.837296`）。
   - **規模參考**：該 cell 有 **662 個 `Temporary` ref**。逐個 `execute_console_command` 取 transform 只適合驗證，真正採集需要 batch tool（見「採集橋 vs SkyLink」）。
 
+### vanilla diff：採集橋只吐「玩家加的東西」（2026-07-10 定調）
+
+cell 走訪看得到**cell 裡的每一個 ref**。若全部吐出來，ModForge 會把整個 vanilla 房間在原地再擺一份（Bannered Mare 662 個 ref，每張椅子疊兩張）。所以採集橋必須自己做 diff。
+
+**判別式是免費的**：任何在某個 plugin 裡被 authored 的 ref 都解得出耐久 id；玩家在遊戲內 `PlaceAtMe` 生出來的 ref 活在 **dynamic `0xFF......` 範圍、`GetFile(0) == nullptr`**。
+
+- `ResolveDurableId(&ref)` **成功** → 既有 ref → **跳過**（計入 `preexisting`）。
+- `ResolveDurableId(&ref)` **失敗** → 玩家擺的 → emit 進 `placements[]` / `npcRefs[]`（其 `base` 仍解得出耐久 id）。
+
+**⚠️ MVP 取捨（刻意，非疏漏）**：玩家**移動/縮放過的 vanilla ref** 會被跳過。要採到它，得 emit 一份既有 ref 的 **override**，而不是一筆新 placement —— 那是 scene.json 目前沒建模的形狀（只有 `removals[]` 碰既有 ref）。要做的話得先擴契約。
+
+### ESL local-id 寬度（2026-07-10 以 houseCARL 離線核對，已拆 TODO）
+
+`file->IsLight() ? (rawId & 0xFFF) : (rawId & 0xFFFFFF)` **正確**：`ccBGSSSE037-Curios.esl` 的 local id 最大 `0x88E`（全 < 0x1000，12 位元）；`Skyrim.esm` 的 `01605E` 是 24 位元。兩者都能 round-trip 成 ModForge 要的 `<plugin>:0xLOCALID`（6 位 hex 補零）。
+
 ---
 
 ## §D NPC 角色 macro（唯一 net-new ModForge schema）
