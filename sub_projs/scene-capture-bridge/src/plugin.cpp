@@ -1,5 +1,6 @@
 #include "log.h"
 #include "SceneExporter.h"
+#include "UI.h"
 
 #include <chrono>
 
@@ -55,6 +56,7 @@ void OnDataLoaded() {
         SKSE::log::error(
             "SceneCaptureBridge: BSInputDeviceManager null — export hotkey NOT registered");
     }
+    UI::Register();  // no-op when SKSE Menu Framework is absent
     SKSE::log::info("SceneCaptureBridge: data loaded, exporter ready");
 }
 

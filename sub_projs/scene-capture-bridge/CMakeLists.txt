@@ -27,6 +27,11 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE src/PCH.h)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
+# SKSE Menu Framework: header-only GetProcAddress shim (LGPL-2.1, vendored).
+# NOT linked — the framework DLL is a soft runtime dependency, probed via
+# GetModuleHandleW, so the plugin still works without it (hotkey only).
+target_include_directories(${PROJECT_NAME} PRIVATE extern/SKSEMenuFramework)
+
 # When SKSE .dll is compiled, copy it (and optional config/) into the mods folder.
 if(DEFINED OUTPUT_FOLDER)
     set(DLL_FOLDER "${OUTPUT_FOLDER}/SKSE/Plugins")

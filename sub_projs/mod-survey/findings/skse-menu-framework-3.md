@@ -85,3 +85,20 @@ Render 函式裡能直接呼 CommonLib `RE::` 遊戲 API（範例：查 FormID �
 ## 結論
 
 開源、可讀 source 的**遊戲內 Dear ImGui 選單框架**（D3D11 hook + WndProc 攔輸入 + freezeTime 暫停），消費者以純 C++ header（GetProcAddress shim）註冊選單/視窗/HUD/輸入 hook，**無 ESP、無 Papyrus、無資料驅動**。對 ModForge：**純參考**（生成器域外）。**價值＝它是 idea #7/#24「遊戲內原生互動 GUI／編輯器面板」在技術上最現成的答案**，但落地路徑是「**寫一支消費此框架的 SKSE plugin**」而非 ModForge 生成——ModForge 端最多只在旁邊接「編輯器快照 JSON → esp」的既有管線。
+
+---
+
+## 為何不是 `sse-imgui`（2026-07-10 實測排除）
+
+[ryobg/sse-imgui](https://github.com/ryobg/sse-imgui) 看起來是同類東西，**在 AE 上不能用**：
+
+- 它的功能靠相依鏈 `sse-imgui → sse-gui → sse-hooks`（DLL 內字串 `Accepted SSEGUI interface v`、`.refptr.ssegui`，執行期經 SKSE messaging 取 SSE-GUI 介面）。三者都停在 2020 年、鎖 SE 1.5.97。
+- `sse-imgui.dll` 只匯出舊式 `SKSEPlugin_Query` / `SKSEPlugin_Load`，**沒有 `SKSEPlugin_Version`**；import `msvcrt.dll`、字串含 `Mingw-w64 runtime failure`。本機 runtime 是 SKSE **1.6.1170（AE）**。
+- 對照：`SKSEMenuFramework.dll` 匯出 `SKSEPlugin_Version`（v3.12.0），CommonLibSSE-NG 建置，upstream 2026-07 仍在動。
+
+## 落地（2026-07-10）：`scene-capture-bridge` 就是它的消費者 plugin
+
+本 finding 原本的結論是「#24 的 GUI 層＝一個獨立 native 子專案」。**不必獨立**——[`sub_projs/scene-capture-bridge`](../../scene-capture-bridge/README.md) 已經是一支編得過、實機驗過的 CommonLibSSE-NG SKSE plugin，面板直接長在它上面（`src/UI.cpp`）。
+
+- 消費者 header `resources/SKSEMenuFramework.h` vendored 到 `extern/SKSEMenuFramework/`（LGPL-2.1；**離線機必須能 build**，故不用 `file(DOWNLOAD)`）。header 自足，只要 `windows.h` + std。
+- **軟相依**：`IsInstalled()` 是 `GetModuleHandleW(L"SKSEMenuFramework")` 探測。編出來的 DLL import 表仍只有 5 個系統 DLL、無此框架的 import name → 沒裝框架的玩家照樣拿到 F10 hotkey，且動態連結符合 LGPL。

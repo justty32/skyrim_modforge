@@ -19,6 +19,12 @@ namespace {
 
 namespace SceneExporter {
 
+    namespace {
+        Stats g_last;
+    }
+
+    const Stats& LastExport() { return g_last; }
+
     std::optional<std::string> ResolveDurableId(const RE::TESForm* form) {
         if (!form) {
             return std::nullopt;
@@ -169,6 +175,13 @@ namespace SceneExporter {
             return RE::BSContainer::ForEachResult::kContinue;
         });
 
+        g_last.valid = true;
+        g_last.placements = scene["placements"].size();
+        g_last.actors = actors;
+        g_last.preexisting = preexisting;
+        g_last.skipped = skipped;
+        g_last.cell = cellId.empty() ? worldspaceId : cellId;
+
         SKSE::log::info(
             "ExportCell: {} placements ({} of them actors), {} pre-existing "
             "(skipped), {} skipped (dynamic bases)",
@@ -207,7 +220,10 @@ namespace SceneExporter {
             SKSE::log::error("ExportPlayerCellToFile: no log_directory");
             return;
         }
-        WriteSceneFile(scene, *dir / "scene-export.json");
+        const auto out = *dir / "scene-export.json";
+        if (WriteSceneFile(scene, out)) {
+            g_last.path = out.string();
+        }
     }
 
 }  // namespace SceneExporter

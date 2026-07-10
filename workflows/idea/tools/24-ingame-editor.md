@@ -149,7 +149,7 @@
 | §B marker / 特效 / 標籤 | **可**（XMRK/HAZD/Light/KYWD 全有）| 缺採集橋輸出 `{kind,at,params}` |
 | §C export 整場景 | 生成型別 **全可** | 採集橋（同①放大）；**navmesh 即時採集是硬項** |
 | §D 身份 → 對話/行為 | **可**（identity 系統 + 對話 INFO + package + vendor 全實機）| 遊戲內只貼 tag；文本可接 #17 AI 生成 |
-| 編輯器 UI（遊戲內面板）| **純參考、非可生成** | [SKSE Menu Framework 3](../../../sub_projs/mod-survey/findings/skse-menu-framework-3.md)（ImGui）現成前端，但選單是編譯進消費 DLL 的 C++ |
+| 編輯器 UI（遊戲內面板）| **非可生成，但已落地** | [SKSE Menu Framework 3](../../../sub_projs/mod-survey/findings/skse-menu-framework-3.md)（ImGui）＝前端；消費者 plugin **就是** [`scene-capture-bridge`](../../../sub_projs/scene-capture-bridge/README.md)（`src/UI.cpp`，2026-07-10 接上，軟相依：沒裝框架仍有 F10）。不必另開子專案。⚠️ `sse-imgui` 在 AE 上不能用，見 finding |
 
 **收斂成一句**：整條管線的**生成端 ModForge 幾乎都有**（唯一真 GAP＝外貌 facegen 生成，且可用 PROTEUS 消費繞過）；**真正要蓋的是中間那支 bespoke 消費 SKSE DLL**——採集橋（讀狀態/貼標籤 → JSON）+ 一支泛用 placement-controller `.pex`。同 Tundra/Honed Metal「須附 native/Papyrus controller」判定。
 
