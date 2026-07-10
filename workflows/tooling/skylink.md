@@ -72,6 +72,7 @@ scripts/skylink/skylink-bridge.sh game-load-latest   # 挑最新 .ess，load_sav
 
 - **`up` 會在遊戲沒跑時拒絕動作**，這是刻意的。在 Steam 背後對那顆 prefix 起一個 wineserver，會讓下次啟動卡死（Proton reaper 永遠等不到）。收拾方式一律 `wineserver -k`。
 - 橋斷了（遊戲關掉、relay 死掉）時，tool call 回 `An error occurred invoking '<tool>'`，不會 hang。先 `status`。
+- **遊戲內的 MessageBox 不擋 SkyLink**。載入存檔時 vanilla 會跳 Survival Mode 詢問（`ccQDRSSE001-SurvivalMode.esl`），此時 `get_menu_state` 回 `openMenus:["MessageBoxMenu"]`、`gameIsPaused:true`，但 pipe 照常回話，讀寫 tool（`get_cell_info` / `search_forms` / `save_game`）全部可用。**沒有任何 tool 能回答 MessageBox**（`call_papyrus_function` 也不行——它 blocking 在 UI 輸入上），只能人點。所以看到 `isPaused:true` 不代表橋掛了。
 - 依賴：`x86_64-w64-mingw32-gcc`、`socat`、`protontricks`、`dotnet` ≥10。
 - prefix 用 Proton 9.0 (Beta)（`compatdata/489830/config_info`）。`protontricks-launch` 會自動挑對版本並掛進既有 wineserver。
 - **`relay.exe` 不進 git**（gitignore），fresh clone 後跑 `build`。
