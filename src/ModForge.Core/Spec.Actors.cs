@@ -64,13 +64,15 @@ public sealed class NpcSpec
 }
 // One face tint layer (TINI/TINC/TINV/TIAS): an entry of the race's tint mask list applied at a
 // colour + interpolation strength. Index/preset are engine-assigned ids from the race's tint masks
-// (capture them from a live NPC rather than authoring by hand); value is 0–1 strength.
+// (capture them from a live NPC rather than authoring by hand). `value` uses the ENGINE's raw
+// 0–100 scale (what the TINV subrecord stores and what the capture DLL exports; verified against
+// vanilla Mirabelle 2026-07-11) — Build divides by 100 for Mutagen's 0–1 InterpolationValue view.
 public sealed class TintLayerSpec
 {
     public int Index { get; set; }        // TINI — tint mask index in the race's chargen list
     public int Preset { get; set; }        // TIAS — preset entry (-1/0 when free-form)
-    public float Value { get; set; }       // TINV — interpolation 0..1
-    public ColorSpec? Color { get; set; }  // TINC — RGBA 0–255
+    public float Value { get; set; }       // TINV — interpolation strength 0–100 (raw engine scale)
+    public ColorSpec? Color { get; set; }  // TINC — RGBA 0–255 (vanilla face tints carry A=0)
 }
 // One inventory entry on an NPC: a ref to a carriable item (weapon/armor/misc/potion/gold/ammo —
 // vanilla <master>:0xFORMID or an in-spec editorId) plus a Count (defaults to 1; use larger counts

@@ -70,7 +70,8 @@ public static partial class Generator
                     {
                         Index = (ushort)Math.Clamp(t.Index, 0, ushort.MaxValue),
                         Preset = (short)Math.Clamp(t.Preset, short.MinValue, short.MaxValue),
-                        InterpolationValue = t.Value,
+                        // spec value is the engine's raw 0–100 (TINV/DLL scale); Mutagen views it 0–1
+                        InterpolationValue = t.Value / 100f,
                         Color = t.Color is { } tc
                             ? System.Drawing.Color.FromArgb(Math.Clamp(tc.A, 0, 255),
                                 Math.Clamp(tc.R, 0, 255), Math.Clamp(tc.G, 0, 255), Math.Clamp(tc.B, 0, 255))

@@ -48,8 +48,8 @@ public static partial class Generator
                 for (int t = 0; t < n.TintLayers.Count; t++)
                 {
                     var tl = n.TintLayers[t];
-                    if (tl.Value is < 0f or > 1f)
-                        Problems.Add($"npc '{n.EditorId}': tintLayers[{t}] value {tl.Value} out of range (0–1 interpolation)");
+                    if (tl.Value is < 0f or > 100f)
+                        Problems.Add($"npc '{n.EditorId}': tintLayers[{t}] value {tl.Value} out of range (0–100 raw engine scale)");
                     CheckColor(tl.Color, $"npc '{n.EditorId}' tintLayers[{t}] color");
                 }
             }

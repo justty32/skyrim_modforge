@@ -32,7 +32,7 @@ public class CapturedNpcsTests
         HeadParts = { "Skyrim.esm:0x051111", "Skyrim.esm:0x051112" },
         TintLayers =
         {
-            new TintLayerSpec { Index = 22, Preset = 1, Value = 0.65f, Color = new ColorSpec { R = 120, G = 60, B = 50, A = 255 } },
+            new TintLayerSpec { Index = 22, Preset = 1, Value = 65f, Color = new ColorSpec { R = 120, G = 60, B = 50, A = 255 } },
         },
         FaceMorphs = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f, -0.1f, -0.2f, -0.3f, -0.4f, -0.5f, -0.6f, -0.7f, -0.8f },
         FaceParts = { 3, 0, 2, 1 },
@@ -120,7 +120,7 @@ public class CapturedNpcsTests
         Assert.Equal("Skyrim.esm:0x0A26B4", n.FaceTexture);
         Assert.Equal(2, n.HeadParts.Count);
         var tl = Assert.Single(n.TintLayers);
-        Assert.Equal(22, tl.Index); Assert.Equal(0.65f, tl.Value); Assert.Equal(255, tl.Color!.A);
+        Assert.Equal(22, tl.Index); Assert.Equal(65f, tl.Value); Assert.Equal(255, tl.Color!.A);
         Assert.Equal(18, n.FaceMorphs.Count);
         Assert.Equal(new[] { 3, 0, 2, 1 }, n.FaceParts);
         Assert.Equal("Skyrim.esm:0x0581E7", Assert.Single(n.Perks));   // ref only; rank is advisory
@@ -245,7 +245,7 @@ public class CapturedNpcsTests
         Assert.Equal(FormKey.Factory("051111:Skyrim.esm"), npc.HeadParts[0].FormKey);
         var tint = Assert.Single(npc.TintLayers);
         Assert.Equal((ushort)22, tint.Index);
-        Assert.Equal(0.65f, tint.InterpolationValue);
+        Assert.Equal(0.65f, tint.InterpolationValue);   // 65 raw → /100 for Mutagen
         Assert.Equal(120, tint.Color!.Value.R);
         var parts = npc.FaceParts!;
         Assert.Equal(3u, parts.Nose); Assert.Equal(0u, parts.Unknown);
@@ -274,7 +274,7 @@ public class CapturedNpcsTests
               "faceTexture": "Skyrim.esm:0x0A26B4",
               "defaultOutfit": "Skyrim.esm:0x0209A6",
               "headParts": ["Skyrim.esm:0x051111"],
-              "tintLayers": [{"index": 22, "preset": 1, "value": 0.65, "color": {"r": 120, "g": 60, "b": 50, "a": 255}}],
+              "tintLayers": [{"index": 22, "preset": 652, "value": 100, "color": {"r": 172, "g": 159, "b": 151, "a": 0}}],
               "faceMorphs": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.8],
               "faceParts": [3, 0, 2, 1],
               "perks": [{"perk": "Skyrim.esm:0x0581E7", "rank": 1}],
@@ -291,7 +291,7 @@ public class CapturedNpcsTests
         var cn = Assert.Single(s.CapturedNpcs);
         Assert.Equal("Skyrim.esm:0x0A99EB", cn.HairColor!.Id);   // nested object shapes survived
         Assert.Equal(18, cn.FaceMorphs.Count);
-        Assert.Equal(255, Assert.Single(cn.TintLayers).Color!.A);
+        Assert.Equal(100f, Assert.Single(cn.TintLayers).Value);   // the DLL exports the raw 0-100 scale
         Assert.Equal("Skyrim.esm:0x0001CEAD", Assert.Single(cn.ActiveEffects).Source);
 
         Assert.DoesNotContain(Validate(s), p => p.Contains("capturedNpc"));
