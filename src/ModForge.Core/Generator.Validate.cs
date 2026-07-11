@@ -43,6 +43,7 @@ public static partial class Generator
         ctx.ValidateSettlements();
         ctx.ValidateLivingNpcs();
         ctx.ValidateNpcRoles();
+        ctx.ValidateCapturedItems();
         ctx.ValidateRemovals();
         ctx.ValidateOverrides();
         ValidateWeather(spec, ctx.Problems, ctx.Ids, ctx.CheckRef);

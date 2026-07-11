@@ -109,6 +109,18 @@ IMAD（ImageSpace Modifier）：螢幕後處理 record，由 Explosion `imageSpa
 
 ---
 
+## Captured items（capturedItems[] 遊戲內「定義滴管」消費，Idea #24）
+scene-capture-bridge DLL `sc cap` 匯出的 `capturedItems[]` → macro 展開成既有 WEAP/ARMO(+新鑄 ENCH)/ALCH/INGR。
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.CapturedItems.cs` | `CapturedItemSpec`（kind/name/editorId?/base?/enchantment?/effects）＋`CapturedEnchantSpec`（target/base?/amount/effects）|
+| Expand P0 | `Generator.CapturedItems.cs` `ExpandCapturedItems`（接進 `Generator.SceneNpcRoles.cs` `ExpandMacros`）| weapon/armor→WeaponSpec/ArmorSpec `Template`=base clone；附魔：durable `enchantment.base` 直接引用／否則從 effects 新鑄 in-spec ENCH（weapon vs apparel）；potion/ingredient→Effects 直填。editorId `MFCap_<name>_<i>`（1-based 解同名重複）|
+| Validate | `Generator.Validate.SceneNpcRoles.cs` `ValidateCapturedItems` | kind 白名單、base/enchant.base external ref 格式、gear 無 base 且無附魔／consumable 無 effects／effect 缺 magicEffect |
+| Tests | `CapturedItemsTests.cs` | validate＋expand（新鑄／引用／potion／ingredient／同名唯一／idempotent）離線；模板複製 1 RequiresSkyrim |
+
+---
+
 ## Perks（特技 PERK）
 → **說明文件**：[SPEC-items.md § perks](../../../docs/spec/SPEC-items.md#perks-perk) · [engine-internals.md § Perk entry points](../../../docs/engine-internals.md#perk-entry-points-carry-a-hidden-tab-count-byte)
 
