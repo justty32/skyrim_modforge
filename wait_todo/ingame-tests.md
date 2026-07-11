@@ -76,7 +76,6 @@
 
 **2026-07-11 端到端全通**：`sc cap` 模式（F11）吸 Mirabelle → Export → 消費 → build → 進遊戲**分身在學院庭院原地出現** ✅（OPEN-A 核心流程、OPEN-C 18-morph 修復、消費端 Phase 1 一次實證；落地記錄 [landed/npcs](../workflows/feature-dev/landed/npcs.md)）。殘餘：
 
-**OPEN-A 殘餘（模式制小項複驗，順手做即可）**：① `sc cap er1` → F11 可吸樹/靜物（射線）、`sc cap er0` 切回準星；② 存檔完全重開 → capture 的 aim source（er0/er1）還原（co-save SETT v4）。另留意：模式制下重複按 F11 會吸出重複列（items 曾出現同名兩筆——正常行為，消費端 editorId 已防撞）。
+**OPEN-A 殘餘（最後一小項）**：存檔完全重開 → capture 的 aim source（er0/er1）還原（co-save SETT v4）。（`sc cap er1` 射線吸取 2026-07-11 已實證 OK。）另留意：模式制下重複按 F11 會吸出重複列（正常行為，消費端 editorId 已防撞）。
 
-**OPEN-B（PROTEUS 關鍵驗，待使用者裝好 PROTEUS）**：PROTEUS clone 出玩家 → 進擷取模式吸 clone → 匯出的 `faceMorphs`/`tintLayers`/`headParts` **是不是玩家本人的臉**？**若全是預設值＝PROTEUS 走 NiNode live override 沒寫 TESNPC**（README 警告 a），這條路要改招。使用者尚未裝 PROTEUS，下次再測。
-   - 提醒：DLL 只收「臉的定義」（headParts+morphs+race+weight），**沒收 baked FaceGeom nif、RaceMenu/NiOverride 雕塑、BodySlide 身形**——真臉/真身重現要 facegen 烘焙（Phase 2，[plans/captured-npcs-consumption.md](../workflows/plans/captured-npcs-consumption.md)）。
+**PROTEUS clone 玩家分身驗收（`~/skyrim_mods/mine/MFCapPrisoner.zip` 待裝）**：OPEN-B 已結案（PROTEUS 寫 TESNPC ✅，見 [landed/npcs](../workflows/feature-dev/landed/npcs.md)）；分身 zip 已出貨——裝了進遊戲看：**你自己的分身**應站在擷取點（Tamriel (109098, 103520, -9017)，冬堡往學院方向），臉形/髮型/鬍子/髮色/體重＝你的角色。**預期落差（非 bug）**：①戰紋/膚色細節層可能沒有（PROTEUS 沒把 tintLayers 寫回 TESNPC）；②服裝可能不對（defaultOutfit 指向 PROTEUS.esp runtime 模板，esp 檔上是空殼）；③RaceMenu 雕塑/overlay 本來就不在配方層。masters：Skyrim.esm＋PROTEUS.esp＋nwsFollowerFramework.esp。

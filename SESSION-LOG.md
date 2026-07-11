@@ -13,8 +13,8 @@
 ## 最新進度
 
 - **採集橋「擷取器」＋兩端消費：端到端 IN-GAME 確認（2026-07-11）**——`sc cap` 模式吸 Mirabelle → Export → `capturedNpcs[]` 消費 → build → 分身在學院庭院原地出現 ✅。落地記錄：[landed/npcs](workflows/feature-dev/landed/npcs.md)（capturedNpcs Phase 1＋NpcSpec 外貌配方欄）＋[landed/items-magic](workflows/feature-dev/landed/items-magic.md)（capturedItems）。剩餘 open：
-  - **OPEN-A 殘餘（小項）**：`sc cap` 的 er0/er1 射線切換＋co-save v4 aim-source 還原，順手複驗（[wait_todo](wait_todo/ingame-tests.md)）。
-  - **OPEN-B（PROTEUS 關鍵驗，待使用者裝 PROTEUS）**：clone 臉是否寫 TESNPC。
+  - **OPEN-A 殘餘（最後一小項）**：完全重開後 capture aim-source（er0/er1）還原（co-save v4）；er1 射線吸取已實證 OK（[wait_todo](wait_todo/ingame-tests.md)）。
+  - **OPEN-B ✅ 結案（2026-07-11）：PROTEUS 寫 TESNPC**——吸 PROTEUS 玩家 clone，faceMorphs/headParts/hairColor/faceTexture/weight 全是玩家真值；caveat：tintLayers 空（戰紋等留在 SKEE 側）、base/outfit 指 PROTEUS.esp runtime 模板（esp 上空殼，引用不可靠——MINT 路線不受影響）。分身 zip `MFCapPrisoner.zip` 已出貨待裝看。
   - **Phase 2 烘焙臉（未排，優先級⬇）**：實測分身臉正常——頭形引擎 runtime 生、臉色 Face Discoloration Fix SE 補；只剩「發佈給無 FDF 環境」或「完全自足產物」才需要烘。三路評估與界線在 [plans/captured-npcs-consumption.md](workflows/plans/captured-npcs-consumption.md)。
 
 ## 各工作流 session-log
