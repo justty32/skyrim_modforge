@@ -1,5 +1,6 @@
 #include "Console.h"
 
+#include "Captures.h"
 #include "Editor.h"
 #include "Eraser.h"
 #include "Markers.h"
@@ -40,6 +41,7 @@ namespace {
         Print("  sc del|pk|ed|cap er0 / er1         aim by crosshair / ray");
         Print("  sc ed ax / sc ed                  enter rotate sub-mode / back to move");
         Print("  sc delc                           erase the console-selected ref");
+        Print("  sc capc                           capture the console-selected ref (item or NPC)");
         Print("  sc cap  -> capture mode: aim at item/NPC, press the action key");
     }
 
@@ -79,6 +81,19 @@ namespace {
             case Eraser::MarkResult::kDuplicate:   Print("SCB: already marked"); break;
             case Eraser::MarkResult::kMarkerProxy: Print("SCB: that's a marker gem"); break;
             default: Print("SCB: no console ref selected (or it's an actor)"); break;
+            }
+            return true;
+        }
+
+        // Capture the console-selected ref — the aim-free eyedropper (items AND
+        // actors; the capture-mode crosshair/ray path can't reach an NPC that's
+        // easier to click than to aim at).
+        if (a1 == "capc") {
+            switch (Captures::CaptureConsoleRef()) {
+            case Captures::Result::kCaptured:    Print("SCB: captured console ref"); break;
+            case Captures::Result::kNotItem:     Print("SCB: not capturable (weapon/armour/potion/ingredient/NPC)"); break;
+            case Captures::Result::kMarkerProxy: Print("SCB: that's a marker gem"); break;
+            default: Print("SCB: no console ref selected (or nothing to capture)"); break;
             }
             return true;
         }
@@ -144,7 +159,7 @@ namespace Console {
             };
             cmd->functionName = "sc";
             cmd->shortName = "sc";
-            cmd->helpString = "SceneCaptureBridge: sc mk|del|pk|pl|ed|cap|off, sc mk dp0|dp1";
+            cmd->helpString = "SceneCaptureBridge: sc mk|del|pk|pl|ed|cap|off, sc delc|capc, sc mk dp0|dp1";
             cmd->referenceFunction = false;
             cmd->SetParameters(params);
             cmd->executeFunction = &Execute;

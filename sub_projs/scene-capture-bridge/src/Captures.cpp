@@ -151,6 +151,32 @@ namespace {
             }
         }
 
+        // Class + effective level: what ModForge needs to autoCalc believable
+        // stats (a class-less NPC_ with autoCalc computes ~0 HP).
+        if (auto* cls = npc->npcClass) {
+            if (auto id = SceneExporter::ResolveDurableId(cls)) n.npcClass = *id;
+        }
+        n.level = actor->GetLevel();
+
+        // Equipped: worn armour from the inventory + whatever the hands hold.
+        // This dresses the clone even when defaultOutfit is a runtime shell
+        // (PROTEUS template records are empty on disk).
+        auto addEquipped = [&](RE::TESForm* f) {
+            if (!f) return;
+            if (!f->IsWeapon() && !f->Is(RE::FormType::Light) && !f->IsArmor()) return;
+            if (auto id = SceneExporter::ResolveDurableId(f)) {
+                if (std::find(n.equipped.begin(), n.equipped.end(), *id) == n.equipped.end())
+                    n.equipped.push_back(*id);
+            }
+        };
+        for (auto& [obj, data] : actor->GetInventory()) {
+            auto& [cnt, entry] = data;
+            if (cnt <= 0 || !entry || !entry->IsWorn()) continue;
+            addEquipped(obj);
+        }
+        addEquipped(actor->GetEquippedObject(false));  // right hand
+        addEquipped(actor->GetEquippedObject(true));   // left hand
+
         n.position = ref->GetPosition();
         const RE::NiPoint3& ang = ref->data.angle;
         n.angleDeg = {ang.x * kRadToDeg, ang.y * kRadToDeg, ang.z * kRadToDeg};
@@ -250,6 +276,7 @@ namespace Captures {
 
     Result CaptureCrosshair() { return CaptureRef(Aim::CrosshairRef(), "crosshair"); }
     Result CaptureByRay() { return CaptureRef(Aim::RayRef(), "ray"); }
+    Result CaptureConsoleRef() { return CaptureRef(RE::Console::GetSelectedRef(), "console"); }
 
     std::vector<Entry>& All() { return g_entries; }
 

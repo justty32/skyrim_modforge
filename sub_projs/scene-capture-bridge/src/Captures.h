@@ -93,6 +93,11 @@ namespace Captures {
         std::vector<std::int32_t> parts;   // faceData NAMA (4 part presets)
         std::vector<PerkEntry> perks;      // base perks (durable id + rank)
         std::vector<ActiveEffect> activeEffects;  // current buffs — runtime snapshot
+        std::string npcClass;              // durable CLAS id (drives ModForge autoCalcStats)
+        std::int16_t level = 0;            // actor's effective level at capture time
+        std::vector<std::string> equipped; // durable ids of worn armour + held weapons/torch
+                                           // (dresses the clone even when defaultOutfit is a
+                                           // runtime shell, e.g. a PROTEUS template record)
         RE::NiPoint3 position;     // world coords at capture time
         RE::NiPoint3 angleDeg;     // facing (degrees)
         std::string cellOrWs;      // durable anchor at capture time
@@ -118,8 +123,9 @@ namespace Captures {
     // Outcome of a capture attempt — the console/panel word things by this.
     enum class Result { kNone, kCaptured, kNothing, kNotItem, kMarkerProxy };
 
-    Result CaptureCrosshair();  // `sc cap`   — the activatable crosshair target
-    Result CaptureByRay();      // `sc cap r` — the look-ray target (statics/trees)
+    Result CaptureCrosshair();  // capture mode, crosshair aim — the activatable target
+    Result CaptureByRay();      // capture mode, ray aim — the look-ray target
+    Result CaptureConsoleRef(); // `sc capc` — the console-selected ref (items AND actors)
 
     [[nodiscard]] std::vector<Entry>& All();
     [[nodiscard]] const char* KindName(Kind k);  // "weapon"/"armor"/"potion"/"ingredient"

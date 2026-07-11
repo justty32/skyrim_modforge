@@ -23,7 +23,7 @@ namespace {
     constexpr std::uint32_t kVerMkrs = 2;  // v2: full angle (3f) + scale, was angleZ only
     constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
     constexpr std::uint32_t kVerOvrd = 1;
-    constexpr std::uint32_t kVerCaps = 3;  // v2 adds kNpc payload; v3 adds npc flags/perks/buffs
+    constexpr std::uint32_t kVerCaps = 4;  // v2 kNpc payload; v3 flags/perks/buffs; v4 class/level/equipped
 
     // ---- primitives -------------------------------------------------------
 
@@ -301,6 +301,11 @@ namespace {
             si->WriteRecordData(a.duration);
             si->WriteRecordData(a.elapsed);
         }
+        // v4 appendix: class + level + equipped.
+        WriteStr(si, n.npcClass);
+        si->WriteRecordData(n.level);
+        si->WriteRecordData(static_cast<std::uint32_t>(n.equipped.size()));
+        for (const auto& eq : n.equipped) WriteStr(si, eq);
     }
 
     void LoadNpcPayload(const SKSE::SerializationInterface* si, Captures::NpcData& n, std::uint32_t version) {
@@ -356,6 +361,13 @@ namespace {
                 si->ReadRecordData(a.elapsed);
                 n.activeEffects.push_back(std::move(a));
             }
+        }
+        if (version >= 4) {
+            n.npcClass = ReadStr(si);
+            si->ReadRecordData(n.level);
+            std::uint32_t cnt = 0;
+            si->ReadRecordData(cnt);
+            for (std::uint32_t k = 0; k < cnt; ++k) n.equipped.push_back(ReadStr(si));
         }
     }
 

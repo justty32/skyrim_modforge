@@ -294,6 +294,9 @@ namespace SceneExporter {
                     }
                     if (!n.morphs.empty()) c["faceMorphs"] = n.morphs;
                     if (!n.parts.empty()) c["faceParts"] = n.parts;
+                    if (!n.npcClass.empty()) c["class"] = n.npcClass;
+                    if (n.level > 0) c["level"] = n.level;
+                    if (!n.equipped.empty()) c["equipped"] = n.equipped;
                     if (!n.perks.empty()) {
                         auto pj = nlohmann::json::array();
                         for (const auto& p : n.perks)
