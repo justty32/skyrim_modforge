@@ -5,11 +5,12 @@
 // Numpad 5 selects the crosshair target; the numpad then nudges it; numpad 0
 // commits, numpad . (Del) cancels and restores the original transform.
 //
-// MVP scope is deliberately narrow: only OUR OWN dynamic refs are editable —
-// their live pose is what the exporter already emits, so this is contract-
-// zero. An AUTHORED ref is refused with a log line: editing those is the
-// `overrides[]`-shape decision (plan 技術債), and this refusal is where the
-// explicit-registration hook will land once that shape is picked.
+// Two kinds of target (contract decided 2026-07-11):
+//   * OUR OWN dynamic refs — contract-zero: their live pose is what the
+//     exporter already emits into `placements[]`.
+//   * AUTHORED refs (vanilla or any mod) — commit registers the ref in the
+//     Overrides registry, which exports as the top-level `overrides[]`
+//     (explicit registration, never diff-inferred — havok noise).
 //
 // Key map (one deviation from the user spec, marked for review): 8/2 =
 // forward/back (player-relative), 4/6 = left/right, 7/9 = yaw, +/- = scale,

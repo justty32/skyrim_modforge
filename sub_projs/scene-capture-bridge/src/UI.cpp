@@ -2,8 +2,9 @@
 
 #include "Editor.h"
 #include "Eraser.h"
-#include "Palette.h"
 #include "Markers.h"
+#include "Overrides.h"
+#include "Palette.h"
 #include "SceneExporter.h"
 #include "log.h"
 
@@ -248,20 +249,47 @@ void __stdcall UI::PalettePage::Render() {
 }
 
 void __stdcall UI::EditorPage::Render() {
+    constexpr ImGuiMCP::ImVec4 kWarn{1.f, 0.55f, 0.25f, 1.f};
+
     const auto st = ::Editor::Current();
     if (!st.active) {
         ImGuiMCP::TextWrapped(
-            "Aim at something YOU placed and press numpad 5 to edit it. "
-            "Authored (vanilla/mod) refs are refused until the overrides[] "
-            "contract lands.");
-        return;
+            "Aim at anything and press numpad 5 to edit it. Your own refs "
+            "export their live pose; an authored (vanilla/mod) ref becomes an "
+            "overrides[] entry when you commit.");
+    } else {
+        ImGuiMCP::Text("Editing: %s", st.name);
+        ImGuiMCP::BulletText("pos (%.1f, %.1f, %.1f)", st.pos.x, st.pos.y, st.pos.z);
+        ImGuiMCP::BulletText("yaw %.1f deg   scale %.2f", st.yawDeg, st.scale);
+        ImGuiMCP::Separator();
+        ImGuiMCP::TextWrapped(
+            "numpad: 8/2 fwd/back - 4/6 left/right - 1/3 down/up - 7/9 yaw - "
+            "+/- scale - 0 commit - . cancel");
+        if (ImGuiMCP::Button("cancel (restore)")) { ::Editor::Cancel(); }
     }
-    ImGuiMCP::Text("Editing: %s", st.name);
-    ImGuiMCP::BulletText("pos (%.1f, %.1f, %.1f)", st.pos.x, st.pos.y, st.pos.z);
-    ImGuiMCP::BulletText("yaw %.1f deg   scale %.2f", st.yawDeg, st.scale);
+
+    // Committed edits of AUTHORED refs — these export as overrides[]. Revert
+    // moves the ref back to its pre-edit baseline and unregisters it.
     ImGuiMCP::Separator();
-    ImGuiMCP::TextWrapped(
-        "numpad: 8/2 fwd/back - 4/6 left/right - 1/3 down/up - 7/9 yaw - "
-        "+/- scale - 0 commit - . cancel");
-    if (ImGuiMCP::Button("cancel (restore)")) { ::Editor::Cancel(); }
+    auto& moved = ::Overrides::All();
+    ImGuiMCP::Text("%zu authored ref override(s)", moved.size());
+    if (!moved.empty()) {
+        ImGuiMCP::SameLine();
+        if (ImGuiMCP::Button("revert all")) { ::Overrides::Clear(); }
+    }
+    std::size_t revert = SIZE_MAX;
+    for (std::size_t i = 0; i < moved.size(); ++i) {
+        const auto& e = moved[i];
+        ImGuiMCP::PushID(reinterpret_cast<const void*>(static_cast<std::uintptr_t>(i + 1)));
+        if (ImGuiMCP::Button("revert")) revert = i;
+        ImGuiMCP::SameLine();
+        if (e.addsMaster) {
+            ImGuiMCP::TextColored(kWarn, "%s  %s -- patch will depend on %s",
+                e.id.c_str(), e.name.c_str(), e.plugin.c_str());
+        } else {
+            ImGuiMCP::Text("%s  %s", e.id.c_str(), e.name.c_str());
+        }
+        ImGuiMCP::PopID();
+    }
+    if (revert != SIZE_MAX) ::Overrides::Revert(revert);
 }

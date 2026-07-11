@@ -2,6 +2,7 @@
 
 #include "Eraser.h"
 #include "Markers.h"
+#include "Overrides.h"
 
 #include "log.h"
 
@@ -99,6 +100,7 @@ namespace SceneExporter {
         std::size_t actors = 0;
         std::size_t markerProxies = 0;
         std::size_t removalsPending = 0;
+        std::size_t overridesPending = 0;
         // ForEachReference hands the callback a POINTER, not a reference.
         cell->ForEachReference([&](RE::TESObjectREFR* refPtr) -> RE::BSContainer::ForEachResult {
             if (!refPtr) {
@@ -139,8 +141,10 @@ namespace SceneExporter {
             // MVP cut, not an oversight.
             if (auto refId = ResolveDurableId(&ref)) {
                 // A ref marked by the eraser is not "pre-existing kept as-is" —
-                // it exports through removals[], counted separately.
+                // it exports through removals[], counted separately. Same for a
+                // ref moved through the editor: it exports through overrides[].
                 if (Eraser::MarkedIds().contains(*refId)) ++removalsPending;
+                else if (Overrides::Contains(*refId)) ++overridesPending;
                 else ++preexisting;
                 return RE::BSContainer::ForEachResult::kContinue;
             }
@@ -210,6 +214,38 @@ namespace SceneExporter {
             }
         }
 
+        // Every registered override exports — global, like removals (the
+        // registry spans cells; BuildOverrides resolves via the master link
+        // cache). Prefer the LIVE pose when the ref is still loaded: physics
+        // settle after commit (kDynamic restore) is part of what the player
+        // sees, same reasoning as placements. Actors get no scale (dead XSCL).
+        {
+            const auto& moved = Overrides::All();
+            if (!moved.empty()) {
+                auto arr = nlohmann::json::array();
+                for (const auto& e : moved) {
+                    RE::NiPoint3 pos = e.pos, ang = e.angle;
+                    float scale = e.scale;
+                    if (auto live = e.handle.get()) {
+                        pos = live->GetPosition();
+                        ang = live->data.angle;
+                        scale = live->GetScale();
+                    }
+                    nlohmann::json o;
+                    o["ref"] = e.id;
+                    o["position"] = Vec3(pos);
+                    o["rotation"] = nlohmann::json{
+                        {"x", ang.x * kRadToDeg},
+                        {"y", ang.y * kRadToDeg},
+                        {"z", ang.z * kRadToDeg},
+                    };
+                    if (!e.isActor) o["scale"] = scale;
+                    arr.push_back(std::move(o));
+                }
+                scene["overrides"] = std::move(arr);
+            }
+        }
+
         // Every marker in the registry exports as an advisory annotation —
         // global, not per-cell (an agent needs anchors from every room you
         // marked, same reasoning as removals[]).
@@ -241,14 +277,16 @@ namespace SceneExporter {
         g_last.cell = cellId.empty() ? worldspaceId : cellId;
         g_last.markers = markerProxies;
         g_last.removals = Eraser::All().size();
+        g_last.overrides = Overrides::All().size();
 
         SKSE::log::info(
             "ExportCell: {} placements ({} of them actors), {} pre-existing "
             "(skipped), {} skipped (dynamic bases), {} marker proxies excluded, "
-            "{} annotations, {} removals ({} in this cell)",
+            "{} annotations, {} removals ({} in this cell), {} overrides ({} in "
+            "this cell)",
             scene["placements"].size(), actors, preexisting, skipped,
             markerProxies, Markers::All().size(), Eraser::All().size(),
-            removalsPending);
+            removalsPending, Overrides::All().size(), overridesPending);
         return scene;
     }
 

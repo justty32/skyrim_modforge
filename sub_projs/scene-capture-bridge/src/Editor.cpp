@@ -1,6 +1,7 @@
 #include "Editor.h"
 
 #include "Markers.h"
+#include "Overrides.h"
 #include "SceneExporter.h"
 #include "log.h"
 
@@ -56,6 +57,7 @@ namespace {
         RE::ObjectRefHandle handle;
         bool isActor = false;
         bool frozen = false;   // we keyframed it on select; restore on release
+        std::string authoredId;  // non-empty = authored ref -> commit registers an override
         RE::NiPoint3 origPos;
         RE::NiPoint3 origAngle;
         float origScale = 1.f;
@@ -90,15 +92,13 @@ namespace {
             SKSE::log::info("Editor: marker proxies are anchors — not editable");
             return false;
         }
-        if (auto id = SceneExporter::ResolveDurableId(ref.get())) {
-            // The honest MVP boundary: moving an authored ref needs the
-            // overrides[] contract shape, which is not decided yet.
-            SKSE::log::info(
-                "Editor: {} is an authored ref — editing existing refs awaits "
-                "the overrides[] contract (see plan)", *id);
-            return false;
-        }
+        // An authored ref is editable too (contract decided 2026-07-11):
+        // commit registers it in the Overrides registry -> `overrides[]`.
+        std::string authoredId;
+        if (auto id = SceneExporter::ResolveDurableId(ref.get()))
+            authoredId = *id;
         g.active = true;
+        g.authoredId = std::move(authoredId);
         g.handle = ref->GetHandle();
         g.isActor = ref->GetFormType() == RE::FormType::ActorCharacter;
         g.origPos = ref->GetPosition();
@@ -109,9 +109,11 @@ namespace {
             g.frozen = ref->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
             if (g.frozen) SKSE::log::info("Editor: physics frozen while editing");
         }
-        SKSE::log::info("Editor: editing dynamic ref at ({:.1f}, {:.1f}, {:.1f}) — "
+        SKSE::log::info("Editor: editing {} ref at ({:.1f}, {:.1f}, {:.1f}) — "
             "numpad 8/2 fwd/back, 4/6 left/right, 1/3 down/up, 7/9 yaw, +/- scale, "
-            "0 commit, . cancel", g.origPos.x, g.origPos.y, g.origPos.z);
+            "0 commit, . cancel",
+            g.authoredId.empty() ? "dynamic" : "AUTHORED",
+            g.origPos.x, g.origPos.y, g.origPos.z);
         return true;
     }
 }
@@ -146,6 +148,11 @@ namespace Editor {
         case kCommit:
             SKSE::log::info("Editor: committed at ({:.1f}, {:.1f}, {:.1f})",
                 pos.x, pos.y, pos.z);
+            // An authored ref's committed edit becomes an overrides[] entry
+            // (a dynamic ref needs nothing — its live pose exports as-is).
+            if (!g.authoredId.empty())
+                Overrides::Register(g.authoredId, ref.get(),
+                    g.origPos, g.origAngle, g.origScale);
             ReleasePhysics();
             g = {};
             if (code == kSelect) TrySelect();

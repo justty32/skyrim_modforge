@@ -5,6 +5,7 @@ set(headers ${headers}
     src/Editor.h
     src/Eraser.h
     src/Markers.h
+    src/Overrides.h
     src/Palette.h
     src/SceneExporter.h
     src/UI.h

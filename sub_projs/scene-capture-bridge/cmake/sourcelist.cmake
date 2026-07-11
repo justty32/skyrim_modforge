@@ -4,6 +4,7 @@ set(sources ${sources}
     src/Editor.cpp
     src/Eraser.cpp
     src/Markers.cpp
+    src/Overrides.cpp
     src/Palette.cpp
     src/SceneExporter.cpp
     src/UI.cpp
