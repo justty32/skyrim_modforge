@@ -59,6 +59,8 @@ F11 準星放置（pitch 對）、F8 擦除/undo、F6/F7 滴管（含姿態）�
 - **跨行程 adopt**：遊戲內讀檔登記簿還在 RAM，沒考到 adopt——**完全關遊戲重開**再讀檔（面板應空）→ Markers 頁 `adopt this cell` 應連名字撿回 marker；Eraser 頁 `scan disabled refs` → 逐筆 adopt 撿回擦除。
 - **零星未實證小項**：① 擦 mod 物件時 Eraser 列橘色「patch will depend on X.esp」警告；② F8 對自家 marker 按 → 連 Markers 頁登記一起無痕消失。
 
+> **⚠️ P5 鍵位遷移（2026-07-11）**：最新 DLL 已改模式制——下面兩批（P4/QoL）寫的舊鍵這樣換算：**F11→`sc mk` 後按動作鍵（預設 F11）；F8→`sc del`＋動作鍵；F6→`sc pk`＋動作鍵；F7→`sc pl`＋動作鍵；numpad 5→`sc ed`＋動作鍵；F10→F1 面板 Export 鈕**。numpad 編輯內部鍵與 numpad * 射線不變。P1–P3 殘項的 adopt 語意也已升級（co-save，見 P5 批①⑤）。
+
 ## scene-capture-bridge P4 overrides[]——移動 authored ref（2026-07-11 離線齊備，新 DLL 已部署）
 
 契約拍板 B 案並全鏈落地（ModForge 881 測綠＋DLL 編譯部署）。驗收：
@@ -80,4 +82,12 @@ F11 準星放置（pitch 對）、F8 擦除/undo、F6/F7 滴管（含姿態）�
 3. **cell 過濾**：Markers/Eraser 頁勾 `this cell only` → 只列當前 cell 的條目；換房間再看，列表跟著變。
 4. **palette 跨存檔**：F6 吸幾個 → **完全關遊戲重開** → F1 Palette 插槽還在（unavailable 邏輯要 mod 卸載才看得到，可跳過）；F7 照擺。
 5. **射線明示選取**：站在樹前（準星無提示）→ Editor 頁 `select by ray` 或 **numpad \*** → 選中樹（log 帶 `(ray)`）→ numpad 推動＋commit → overrides 列表出現；Eraser 頁 `erase by ray` 擦樹、Palette 頁 `pick by ray` 吸樹同理。**F8/F6/numpad 5 的準星手感應完全不變**（按空＝no-op，不會誤抓牆）。
-6. **室內一輪**：隨便進間屋子把 F11/F8/F6/F7/numpad 5 各按一次 → F10 → json 歸屬是 `cell`（interior），座標 cell-local。
+6. **室內一輪**：隨便進間屋子把五種模式各按一輪動作鍵 → 面板 Export → json 歸屬是 `cell`（interior），座標 cell-local。
+
+## scene-capture-bridge P5 模式制（2026-07-11 離線齊備，DLL 已部署；esp 不動）
+
+1. **`sc` 指令**：console 打 `sc` → 印當前模式＋用法（若 console 完全沒反應＝ObScript 劫持失敗，回報 log 裡的 donor 名；面板 Settings 頁切模式是備援）。`sc mk` → 跳通知「SCB mode: marker」→ 按 **F11** 放 marker。依次 `sc del`/`sc pk`/`sc pl`/`sc ed` 各驗動作鍵行為（同一顆 F11，按模式變功能）。`sc off` → F11 應無反應。
+2. **舊直達鍵已死**：`sc off` 狀態下 F6/F7/F8/F10/numpad 5 全部應**無任何反應**（export 只剩面板鈕）。
+3. **rebind**：F1 → Settings → 挑一個模式按 `rebind` → 按新鍵（如 F12）→ 該模式動作鍵變新鍵；其他模式仍 F11（重複允許，一次只有一個模式活著）。
+4. **`sc mk dp0` / `dp1`**：放幾個 marker → `dp0` 光球全隱形（面板列表與匯出**不受影響**，F10…面板 Export 出來 annotations 照在）→ `dp1` 顯回。
+5. **co-save**：改鍵位＋放 marker＋擦個東西＋移個 vanilla 物件 → 存檔 → **完全關遊戲重開** → 讀檔 → Settings 鍵位還原、Markers（含 note）/Eraser/Overrides 三本登記簿自動回來（不用 adopt）→ 面板 Export，annotations/removals/overrides 全在。讀一個**沒玩過的舊存檔** → 登記簿應是乾淨的（revert 清空）。

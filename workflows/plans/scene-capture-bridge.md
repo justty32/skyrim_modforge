@@ -137,7 +137,7 @@ MarkerEntry {
 - **P4 範圍吸取**：`ForEachReferenceInRange` bound 半徑；面板先預覽「會吸到 N 個」再確認。
 - **QoL 四件套（✅ 2026-07-11 離線落地，使用者實測後需求）**：① Markers/Eraser 頁 `this cell only` 過濾（Eraser entry 補記 cell）；② Palette 落盤 `scene-capture-palette.json` 跨存檔（unavailable 槽不炸）；③ **射線選取＝明示入口**（使用者拍板：準星手感不變，`select/erase/pick by ray` 鈕＋numpad \*——牆/地板都是 ref，自動 fallback 會把按空變誤抓，理由在 `Aim.h`）；④ marker 模型改**懸浮發光靈魂石**（`SoulGemGrand01.nif`，讀自 Skyrim.esm STAT 10D18B；舊召喚圈**無碰撞**故 E/準星選不到＋特效播完隱形；clutter havok 用放置即凍解）＋ **E 開編輯視窗**（AddWindow；label/kind/**note**/delete）＋ note 全鏈進 `annotations[].note`（AnnotationSpec.Note，881 測綠）。
 
-# P5：console 指令集＋模式制（📋 規劃中，2026-07-11 使用者提出，未動工）
+# P5：console 指令集＋模式制（✅ 2026-07-11 同日實作＋部署，待實機——commit e4f8fb7；下方為規劃記錄）
 
 **動機（使用者原話意旨）**：快捷鍵太多了（F6/F7/F8/F10/F11＋整排 numpad）。改成**模式制**：console 切模式，之後**同一顆動作鍵（F11）按當前模式做事**。例：`mode_marker` 後 F11=放 marker；`mode_delete` 後 F11=擦除。**指令越短越好**（使用者明示）。
 
