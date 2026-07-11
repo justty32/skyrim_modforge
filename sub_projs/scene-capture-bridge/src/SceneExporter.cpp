@@ -252,9 +252,9 @@ namespace SceneExporter {
             scene["overrides"] = std::move(arr);
         }
 
-        // capturedItems[] — semantic definitions (enchant/effects) for ModForge
-        // to mint fresh authored records (ENCH+WEAP / ALCH / …). Runtime-only
-        // content that has no durable base to reference goes here, not placements[].
+        // Captured DEFINITIONS — content with no durable base to reference, so
+        // ModForge mints fresh authored records. Items (enchant/effects) go to
+        // capturedItems[]; actors (appearance/identity) to capturedNpcs[].
         if (const auto& caps = Captures::All(); !caps.empty()) {
             auto effJson = [](const std::vector<Captures::Effect>& effs) {
                 auto a = nlohmann::json::array();
@@ -263,8 +263,39 @@ namespace SceneExporter {
                         {"area", ef.area}, {"duration", ef.duration}});
                 return a;
             };
-            auto arr = nlohmann::json::array();
+            auto items = nlohmann::json::array();
+            auto npcs = nlohmann::json::array();
             for (const auto& e : caps) {
+                if (e.kind == Captures::Kind::kNpc) {
+                    const auto& n = e.npc;
+                    nlohmann::json c;
+                    c["name"] = e.name;
+                    if (!e.base.empty()) c["base"] = e.base;   // origin NPC_ if durable
+                    if (!n.race.empty()) c["race"] = n.race;
+                    c["female"] = n.female;
+                    c["weight"] = n.weight;
+                    c["height"] = n.height;
+                    c["bodyTint"] = {{"r", n.bodyR}, {"g", n.bodyG}, {"b", n.bodyB}};
+                    if (!n.hairColor.empty())
+                        c["hairColor"] = {{"id", n.hairColor}, {"r", n.hairR}, {"g", n.hairG}, {"b", n.hairB}};
+                    if (!n.faceTexture.empty()) c["faceTexture"] = n.faceTexture;
+                    if (!n.defaultOutfit.empty()) c["defaultOutfit"] = n.defaultOutfit;
+                    if (!n.headParts.empty()) c["headParts"] = n.headParts;
+                    if (!n.tints.empty()) {
+                        auto tj = nlohmann::json::array();
+                        for (const auto& t : n.tints)
+                            tj.push_back({{"index", t.index}, {"preset", t.preset}, {"value", t.value},
+                                {"color", {{"r", t.r}, {"g", t.g}, {"b", t.b}, {"a", t.a}}}});
+                        c["tintLayers"] = std::move(tj);
+                    }
+                    if (!n.morphs.empty()) c["faceMorphs"] = n.morphs;
+                    if (!n.parts.empty()) c["faceParts"] = n.parts;
+                    c["position"] = Vec3(n.position);
+                    c["rotation"] = Vec3(n.angleDeg);   // already degrees
+                    if (!n.cellOrWs.empty()) c[n.isInterior ? "cell" : "worldspace"] = n.cellOrWs;
+                    npcs.push_back(std::move(c));
+                    continue;
+                }
                 nlohmann::json c;
                 c["name"] = e.name;
                 c["kind"] = Captures::KindName(e.kind);
@@ -279,9 +310,10 @@ namespace SceneExporter {
                 } else {
                     c["effects"] = effJson(e.effects);
                 }
-                arr.push_back(std::move(c));
+                items.push_back(std::move(c));
             }
-            scene["capturedItems"] = std::move(arr);
+            if (!items.empty()) scene["capturedItems"] = std::move(items);
+            if (!npcs.empty()) scene["capturedNpcs"] = std::move(npcs);
         }
 
         if (const auto& marks = Markers::All(); !marks.empty()) {

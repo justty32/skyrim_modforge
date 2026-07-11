@@ -165,10 +165,10 @@ void __stdcall UI::CapturesPage::Render() {
     UI::ModeLine();
     auto& caps = ::Captures::All();
 
-    ImGuiMCP::TextWrapped("%zu captured definition(s) -> capturedItems[]. Point at "
-        "an enchanted weapon/armour, a potion or an ingredient and capture its "
-        "effects for ModForge to mint a fresh record. (`sc cap` / `sc cap r`)",
-        caps.size());
+    ImGuiMCP::TextWrapped("%zu captured definition(s). Point at an enchanted "
+        "weapon/armour, potion or ingredient (-> capturedItems[]) or an NPC "
+        "(-> capturedNpcs[], unique NPCs skipped) and capture it for ModForge to "
+        "rebuild. (`sc cap` / `sc cap r`)", caps.size());
     if (ImGuiMCP::Button("capture crosshair")) { ::Captures::CaptureCrosshair(); }
     ImGuiMCP::SameLine();
     // Trees/architecture the crosshair never sees — explicit entry, see Aim.h.
@@ -185,9 +185,17 @@ void __stdcall UI::CapturesPage::Render() {
         ImGuiMCP::PushID(std::to_string(e.seq).c_str());
         if (ImGuiMCP::Button("undo")) { undoSeq = e.seq; doUndo = true; }
         ImGuiMCP::SameLine();
-        ImGuiMCP::Text("%s  [%s]  %zu effect(s)%s", e.name.c_str(),
-            ::Captures::KindName(e.kind), e.effects.size(),
-            e.base.empty() ? "  (runtime base)" : "");
+        if (e.kind == ::Captures::Kind::kNpc) {
+            ImGuiMCP::Text("%s  [npc]  %s %s, %zu headpart(s), %zu tint(s)%s",
+                e.name.c_str(), e.npc.female ? "female" : "male",
+                e.npc.race.empty() ? "?" : e.npc.race.c_str(),
+                e.npc.headParts.size(), e.npc.tints.size(),
+                e.base.empty() ? "  (runtime base)" : "");
+        } else {
+            ImGuiMCP::Text("%s  [%s]  %zu effect(s)%s", e.name.c_str(),
+                ::Captures::KindName(e.kind), e.effects.size(),
+                e.base.empty() ? "  (runtime base)" : "");
+        }
         ImGuiMCP::PopID();
     }
     if (doUndo) ::Captures::UndoEntry(undoSeq);

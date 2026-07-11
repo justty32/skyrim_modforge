@@ -23,7 +23,7 @@ namespace {
     constexpr std::uint32_t kVerMkrs = 2;  // v2: full angle (3f) + scale, was angleZ only
     constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
     constexpr std::uint32_t kVerOvrd = 1;
-    constexpr std::uint32_t kVerCaps = 1;
+    constexpr std::uint32_t kVerCaps = 2;  // v2 adds the kNpc payload (v1 was items only)
 
     // ---- primitives -------------------------------------------------------
 
@@ -255,6 +255,91 @@ namespace {
         }
     }
 
+    void SaveNpcPayload(const SKSE::SerializationInterface* si, const Captures::NpcData& n) {
+        WriteStr(si, n.race);
+        si->WriteRecordData(static_cast<std::uint8_t>(n.female ? 1 : 0));
+        si->WriteRecordData(n.weight);
+        si->WriteRecordData(n.height);
+        si->WriteRecordData(n.bodyR); si->WriteRecordData(n.bodyG); si->WriteRecordData(n.bodyB);
+        WriteStr(si, n.hairColor);
+        si->WriteRecordData(n.hairR); si->WriteRecordData(n.hairG); si->WriteRecordData(n.hairB);
+        WriteStr(si, n.faceTexture);
+        WriteStr(si, n.defaultOutfit);
+        si->WriteRecordData(static_cast<std::uint32_t>(n.headParts.size()));
+        for (const auto& hp : n.headParts) WriteStr(si, hp);
+        si->WriteRecordData(static_cast<std::uint32_t>(n.tints.size()));
+        for (const auto& t : n.tints) {
+            si->WriteRecordData(t.index); si->WriteRecordData(t.preset); si->WriteRecordData(t.value);
+            si->WriteRecordData(t.r); si->WriteRecordData(t.g); si->WriteRecordData(t.b); si->WriteRecordData(t.a);
+        }
+        si->WriteRecordData(static_cast<std::uint32_t>(n.morphs.size()));
+        for (float m : n.morphs) si->WriteRecordData(m);
+        si->WriteRecordData(static_cast<std::uint32_t>(n.parts.size()));
+        for (std::int32_t p : n.parts) si->WriteRecordData(p);
+        WriteVec3(si, n.position);
+        WriteVec3(si, n.angleDeg);
+        WriteStr(si, n.cellOrWs);
+        si->WriteRecordData(static_cast<std::uint8_t>(n.isInterior ? 1 : 0));
+    }
+
+    void LoadNpcPayload(const SKSE::SerializationInterface* si, Captures::NpcData& n) {
+        std::uint8_t female = 0, interior = 0;
+        std::uint32_t cnt = 0;
+        n.race = ReadStr(si);
+        si->ReadRecordData(female); n.female = female != 0;
+        si->ReadRecordData(n.weight);
+        si->ReadRecordData(n.height);
+        si->ReadRecordData(n.bodyR); si->ReadRecordData(n.bodyG); si->ReadRecordData(n.bodyB);
+        n.hairColor = ReadStr(si);
+        si->ReadRecordData(n.hairR); si->ReadRecordData(n.hairG); si->ReadRecordData(n.hairB);
+        n.faceTexture = ReadStr(si);
+        n.defaultOutfit = ReadStr(si);
+        si->ReadRecordData(cnt);
+        for (std::uint32_t k = 0; k < cnt; ++k) n.headParts.push_back(ReadStr(si));
+        si->ReadRecordData(cnt);
+        for (std::uint32_t k = 0; k < cnt; ++k) {
+            Captures::TintLayer t;
+            si->ReadRecordData(t.index); si->ReadRecordData(t.preset); si->ReadRecordData(t.value);
+            si->ReadRecordData(t.r); si->ReadRecordData(t.g); si->ReadRecordData(t.b); si->ReadRecordData(t.a);
+            n.tints.push_back(t);
+        }
+        si->ReadRecordData(cnt);
+        for (std::uint32_t k = 0; k < cnt; ++k) { float m = 0.f; si->ReadRecordData(m); n.morphs.push_back(m); }
+        si->ReadRecordData(cnt);
+        for (std::uint32_t k = 0; k < cnt; ++k) { std::int32_t p = 0; si->ReadRecordData(p); n.parts.push_back(p); }
+        ReadVec3(si, n.position);
+        ReadVec3(si, n.angleDeg);
+        n.cellOrWs = ReadStr(si);
+        si->ReadRecordData(interior); n.isInterior = interior != 0;
+    }
+
+    void SaveItemPayload(const SKSE::SerializationInterface* si, const Captures::Entry& e) {
+        WriteStr(si, e.enchantBase);
+        si->WriteRecordData(e.enchantAmount);
+        si->WriteRecordData(static_cast<std::uint32_t>(e.effects.size()));
+        for (const auto& ef : e.effects) {
+            WriteStr(si, ef.magicEffect);
+            si->WriteRecordData(ef.magnitude);
+            si->WriteRecordData(ef.area);
+            si->WriteRecordData(ef.duration);
+        }
+    }
+
+    void LoadItemPayload(const SKSE::SerializationInterface* si, Captures::Entry& e) {
+        std::uint32_t nEff = 0;
+        e.enchantBase = ReadStr(si);
+        si->ReadRecordData(e.enchantAmount);
+        si->ReadRecordData(nEff);
+        for (std::uint32_t k = 0; k < nEff; ++k) {
+            Captures::Effect ef;
+            ef.magicEffect = ReadStr(si);
+            si->ReadRecordData(ef.magnitude);
+            si->ReadRecordData(ef.area);
+            si->ReadRecordData(ef.duration);
+            e.effects.push_back(std::move(ef));
+        }
+    }
+
     void SaveCaptures(const SKSE::SerializationInterface* si) {
         const auto& all = Captures::All();
         si->WriteRecordData(static_cast<std::uint32_t>(all.size()));
@@ -263,42 +348,26 @@ namespace {
             si->WriteRecordData(static_cast<std::uint8_t>(e.kind));
             WriteStr(si, e.name);
             WriteStr(si, e.base);
-            WriteStr(si, e.enchantBase);
-            si->WriteRecordData(e.enchantAmount);
-            si->WriteRecordData(static_cast<std::uint32_t>(e.effects.size()));
-            for (const auto& ef : e.effects) {
-                WriteStr(si, ef.magicEffect);
-                si->WriteRecordData(ef.magnitude);
-                si->WriteRecordData(ef.area);
-                si->WriteRecordData(ef.duration);
-            }
+            if (e.kind == Captures::Kind::kNpc) SaveNpcPayload(si, e.npc);
+            else SaveItemPayload(si, e);
         }
     }
 
-    void LoadCaptures(const SKSE::SerializationInterface* si) {
+    void LoadCaptures(const SKSE::SerializationInterface* si, std::uint32_t version) {
         std::uint32_t count = 0;
         si->ReadRecordData(count);
         auto& all = Captures::All();
         for (std::uint32_t i = 0; i < count; ++i) {
             Captures::Entry e;
             std::uint8_t kind = 0;
-            std::uint32_t nEff = 0;
             si->ReadRecordData(e.seq);
             si->ReadRecordData(kind);
             e.kind = static_cast<Captures::Kind>(kind);
             e.name = ReadStr(si);
             e.base = ReadStr(si);
-            e.enchantBase = ReadStr(si);
-            si->ReadRecordData(e.enchantAmount);
-            si->ReadRecordData(nEff);
-            for (std::uint32_t k = 0; k < nEff; ++k) {
-                Captures::Effect ef;
-                ef.magicEffect = ReadStr(si);
-                si->ReadRecordData(ef.magnitude);
-                si->ReadRecordData(ef.area);
-                si->ReadRecordData(ef.duration);
-                e.effects.push_back(std::move(ef));
-            }
+            // v1 only ever held item kinds (kNpc didn't exist), so always item payload.
+            if (version >= 2 && e.kind == Captures::Kind::kNpc) LoadNpcPayload(si, e.npc);
+            else LoadItemPayload(si, e);
             all.push_back(std::move(e));
         }
     }
@@ -324,7 +393,7 @@ namespace {
             case kMkrs: LoadMarkers(si, version); break;
             case kErsr: LoadEraser(si, version); break;
             case kOvrd: LoadOverrides(si); break;
-            case kCaps: LoadCaptures(si); break;
+            case kCaps: LoadCaptures(si, version); break;
             default:
                 SKSE::log::warn("CoSave: unknown record 0x{:X} — skipped", type);
                 break;

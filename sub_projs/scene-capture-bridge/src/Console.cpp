@@ -89,8 +89,8 @@ namespace {
             const bool ray = (a2 == "r");
             const auto r = ray ? Captures::CaptureByRay() : Captures::CaptureCrosshair();
             switch (r) {
-            case Captures::Result::kCaptured:   Print("SCB: captured enchant/effects"); break;
-            case Captures::Result::kIsNpc:      Print("SCB: NPC capture not wired yet (items only)"); break;
+            case Captures::Result::kCaptured:   Print("SCB: captured (item enchant/effects or NPC appearance)"); break;
+            case Captures::Result::kUniqueNpc:  Print("SCB: that's a UNIQUE npc — skipped (can't duplicate)"); break;
             case Captures::Result::kNotItem:    Print("SCB: no enchant/effects to capture there"); break;
             case Captures::Result::kMarkerProxy:Print("SCB: that's a marker gem"); break;
             default: Print("SCB: nothing under the %s", ray ? "ray" : "crosshair"); break;

@@ -8,6 +8,8 @@
 #include <algorithm>
 
 namespace {
+    constexpr float kRadToDeg = 57.2957795f;
+
     std::vector<Captures::Entry> g_entries;
     std::uint32_t g_nextSeq = 1;
 
@@ -54,6 +56,75 @@ namespace {
         if (auto id = SceneExporter::ResolveDurableId(ench)) e.enchantBase = *id;
     }
 
+    // Read a captured actor's TESNPC appearance/identity into the entry. Unique
+    // check is the caller's — this just harvests. (See header caveat: whether the
+    // TESNPC reflects a live-override tool like PROTEUS is IN-GAME TBD.)
+    bool ReadNpc(Captures::Entry& e, RE::TESObjectREFR* ref) {
+        auto* actor = ref->As<RE::Actor>();
+        auto* npc = actor ? actor->GetActorBase() : nullptr;
+        if (!npc) return false;
+        auto& n = e.npc;
+
+        if (auto* race = npc->GetRace()) {
+            if (auto id = SceneExporter::ResolveDurableId(race)) n.race = *id;
+        }
+        n.female = npc->IsFemale();
+        n.weight = npc->weight;
+        n.height = npc->height;
+        n.bodyR = npc->bodyTintColor.red;
+        n.bodyG = npc->bodyTintColor.green;
+        n.bodyB = npc->bodyTintColor.blue;
+
+        if (auto* hrd = npc->headRelatedData) {
+            if (auto* hc = hrd->hairColor) {
+                if (auto id = SceneExporter::ResolveDurableId(hc)) n.hairColor = *id;
+                n.hairR = hc->color.red;
+                n.hairG = hc->color.green;
+                n.hairB = hc->color.blue;
+            }
+            if (auto* ft = hrd->faceDetails) {
+                if (auto id = SceneExporter::ResolveDurableId(ft)) n.faceTexture = *id;
+            }
+        }
+        if (auto* outfit = npc->defaultOutfit) {
+            if (auto id = SceneExporter::ResolveDurableId(outfit)) n.defaultOutfit = *id;
+        }
+
+        if (npc->headParts && npc->numHeadParts > 0) {
+            for (std::int8_t i = 0; i < npc->numHeadParts; ++i) {
+                auto* hp = npc->headParts[i];
+                if (!hp) continue;
+                if (auto id = SceneExporter::ResolveDurableId(hp)) n.headParts.push_back(*id);
+            }
+        }
+        if (npc->tintLayers) {
+            for (auto* layer : *npc->tintLayers) {
+                if (!layer) continue;
+                Captures::TintLayer t;
+                t.index = layer->tintIndex;
+                t.preset = layer->preset;
+                t.value = layer->interpolationValue;
+                t.r = layer->tintColor.red;
+                t.g = layer->tintColor.green;
+                t.b = layer->tintColor.blue;
+                t.a = layer->tintColor.alpha;
+                n.tints.push_back(t);
+            }
+        }
+        if (npc->faceData) {
+            for (float m : npc->faceData->morphs) n.morphs.push_back(m);
+            for (std::int32_t p : npc->faceData->parts) n.parts.push_back(p);
+        }
+
+        n.position = ref->GetPosition();
+        const RE::NiPoint3& ang = ref->data.angle;
+        n.angleDeg = {ang.x * kRadToDeg, ang.y * kRadToDeg, ang.z * kRadToDeg};
+        const auto anchor = SceneExporter::AnchorOf(ref);
+        n.cellOrWs = anchor.id;
+        n.isInterior = anchor.interior;
+        return true;
+    }
+
     Captures::Result CaptureRef(RE::NiPointer<RE::TESObjectREFR> ref, const char* how) {
         if (!ref) {
             SKSE::log::info("Captures: {} has no target", how);
@@ -63,11 +134,36 @@ namespace {
             SKSE::log::info("Captures: {} target is a marker gem — nothing to capture", how);
             return Captures::Result::kMarkerProxy;
         }
-        // NPC appearance capture is increment ② — route it out loudly, never a
-        // silent no-op (CLAUDE.md no-silent-drop).
+        // NPC capture (increment ②): harvest the actor's appearance/identity.
+        // A UNIQUE npc is refused (can't be duplicated meaningfully).
         if (ref->GetFormType() == RE::FormType::ActorCharacter) {
-            SKSE::log::info("Captures: {} target is an NPC — NPC capture not wired yet", how);
-            return Captures::Result::kIsNpc;
+            auto* actor = ref->As<RE::Actor>();
+            auto* npcBase = actor ? actor->GetActorBase() : nullptr;
+            Captures::Entry e;
+            const char* dn = ref->GetDisplayFullName();
+            e.name = (dn && *dn) ? dn : "";
+            if (auto* b = ref->GetBaseObject()) {
+                if (auto id = SceneExporter::ResolveDurableId(b)) e.base = *id;
+            }
+            if (npcBase && npcBase->IsUnique()) {
+                SKSE::log::info("Captures: '{}' is a UNIQUE npc — not captured "
+                    "(can't be duplicated)", e.name);
+                return Captures::Result::kUniqueNpc;
+            }
+            e.kind = Captures::Kind::kNpc;
+            if (!ReadNpc(e, ref.get())) {
+                SKSE::log::info("Captures: {} npc has no actor base — nothing captured", how);
+                return Captures::Result::kNothing;
+            }
+            e.seq = g_nextSeq++;
+            SKSE::log::info("Captures: captured NPC '{}' ({}) race={} {} — {} headpart(s), "
+                "{} tint layer(s), face morphs {}", e.name,
+                e.base.empty() ? "runtime base" : e.base,
+                e.npc.race.empty() ? "?" : e.npc.race, e.npc.female ? "female" : "male",
+                e.npc.headParts.size(), e.npc.tints.size(),
+                e.npc.morphs.empty() ? "none" : "captured");
+            g_entries.push_back(std::move(e));
+            return Captures::Result::kCaptured;
         }
         auto* base = ref->GetBaseObject();
         if (!base) {
@@ -133,6 +229,7 @@ namespace Captures {
         case Kind::kArmor: return "armor";
         case Kind::kPotion: return "potion";
         case Kind::kIngredient: return "ingredient";
+        case Kind::kNpc: return "npc";
         default: return "item";
         }
     }
