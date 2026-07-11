@@ -62,10 +62,11 @@ namespace Editor {
     void SetYawStep(float v);
     void SetScaleStep(float v);
 
-    // Which euler axis the 7/9 rotate keys drive: 0 = yaw(Z), 1 = pitch(X),
-    // 2 = roll(Y). Set by `sc ed ax0/ax1/ax2`; persisted in the co-save.
-    [[nodiscard]] int RotAxis();
-    void SetRotAxis(int axis);
-    [[nodiscard]] const char* RotAxisName();
+    // Pure-rotation sub-mode (`sc ed ax` toggles). On: numpad drives rotation
+    // (4/6 yaw, 1/3 pitch, 7/9 roll, 8/2 reset angle). Off: numpad moves.
+    // Persisted in the co-save.
+    [[nodiscard]] bool RotateMode();
+    void SetRotateMode(bool on);
+    bool ToggleRotateMode();  // returns the new state
 
 }  // namespace Editor

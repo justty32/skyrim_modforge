@@ -38,7 +38,7 @@ namespace {
         Print("  sc mk | del | pk | pl | ed | off   switch mode");
         Print("  sc mk dp0 / dp1                    hide / show marker gems");
         Print("  sc del|pk|ed er0 / er1             aim by crosshair / ray");
-        Print("  sc ed ax0 / ax1 / ax2             rotate yaw / pitch / roll");
+        Print("  sc ed ax                          toggle rotate sub-mode");
         Print("  sc delc                           erase the console-selected ref");
     }
 
@@ -100,13 +100,11 @@ namespace {
                     Print("SCB: %s aim -> %s", Modes::Name(m), a2 == "er1" ? "ray" : "crosshair");
                     return true;
                 }
-                if (m == Modes::Mode::kEdit && a2.size() == 3 && a2.rfind("ax", 0) == 0) {
-                    const int axis = a2[2] - '0';  // ax0/ax1/ax2
-                    if (axis >= 0 && axis <= 2) {
-                        Editor::SetRotAxis(axis);
-                        Print("SCB: edit rotate axis -> %s", Editor::RotAxisName());
-                        return true;
-                    }
+                if (m == Modes::Mode::kEdit && a2 == "ax") {  // toggle rotate sub-mode
+                    const bool on = Editor::ToggleRotateMode();
+                    Print("SCB: edit %s (4/6 yaw, 1/3 pitch, 7/9 roll, 8/2 reset)",
+                        on ? "ROTATE mode" : "move mode");
+                    return true;
                 }
             }
             Print("SCB: unknown arg '%s' for '%s'", a2.c_str(), a1.c_str());

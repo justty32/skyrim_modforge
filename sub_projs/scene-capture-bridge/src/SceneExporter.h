@@ -65,6 +65,11 @@ namespace SceneExporter {
     // Convenience: export the cell the player is currently in.
     [[nodiscard]] nlohmann::json ExportPlayerCell();
 
+    // Export placements from EVERY loaded cell (interior = one; exterior = the
+    // streamed grid) plus the global registries once. Placements in cells that
+    // have unloaded can't be recovered — logged, never silently dropped.
+    [[nodiscard]] nlohmann::json ExportAll();
+
     // Serialise a scene.json object to disk (pretty-printed, 2-space indent).
     // Returns true on success. Default target: SKSE/Plugins/SceneCaptureBridge/.
     bool WriteSceneFile(const nlohmann::json& scene, const std::filesystem::path& path);
@@ -72,5 +77,9 @@ namespace SceneExporter {
     // Full one-shot: export the player's cell and write it next to the log
     // dir as scene-export.json. Wired to a hotkey / console once UI lands.
     void ExportPlayerCellToFile();
+
+    // Same, but ExportAll() — every loaded cell. Writes the same
+    // scene-export.json (it's "the current export"); the log/stats say which.
+    void ExportAllToFile();
 
 }  // namespace SceneExporter

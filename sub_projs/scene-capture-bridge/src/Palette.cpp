@@ -44,9 +44,7 @@ namespace {
         return form ? form->As<RE::TESBoundObject>() : nullptr;
     }
 
-    void Save() {
-        const auto path = StorePath();
-        if (path.empty()) return;
+    nlohmann::json SlotsJson() {
         nlohmann::json j = nlohmann::json::array();
         for (const auto& s : g_slots) {
             j.push_back({
@@ -55,8 +53,14 @@ namespace {
                 {"scale", s.scale}, {"isActor", s.isActor},
             });
         }
+        return j;
+    }
+
+    void Save() {
+        const auto path = StorePath();
+        if (path.empty()) return;
         std::ofstream out(path, std::ios::trunc);
-        if (out) out << j.dump(2);
+        if (out) out << SlotsJson().dump(2);
     }
 
     // Refactored core: both pick entries land here. Rejections are loud —
@@ -203,6 +207,19 @@ namespace Palette {
         }
         SKSE::log::info("Palette: loaded {} slot(s) from '{}' (appended)", added, filename);
         return added;
+    }
+
+    bool SaveToFile(const std::string& filename) {
+        auto dir = SKSE::log::log_directory();
+        if (!dir || filename.empty()) return false;
+        std::ofstream out(*dir / filename, std::ios::trunc);
+        if (!out) {
+            SKSE::log::warn("Palette: cannot write '{}'", filename);
+            return false;
+        }
+        out << SlotsJson().dump(2);
+        SKSE::log::info("Palette: saved {} slot(s) to '{}'", g_slots.size(), filename);
+        return true;
     }
 
     std::vector<Slot>& All() { return g_slots; }

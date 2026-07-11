@@ -176,15 +176,17 @@ MarkerEntry {
 
 ## 之後再做
 
-### ✅ 已做（P7 backlog 一輪，2026-07-11，DLL `79e611e8`，待實機）
+### ✅ 已做（P7 backlog，2026-07-11，DLL `79e611e8`→`a46ed0b2`，待實機）
 - `sc del/pk/ed er0/er1`：該模式動作鍵準星↔物理射線切換（`Modes::UseRay` per-mode，co-save SETT v3）。取代「numpad * 專用鍵才能射線」的需求。
-- `sc ed ax0/ax1/ax2`：編輯 7/9 旋轉軸＝yaw(Z)/pitch(X)/roll(Y)（沿用 `sc <tool> <arg>` 文法，零新增鍵；`Editor::g_rotAxis`，co-save）。
+- **`sc ed ax`（純旋轉子模式，使用者第二輪定案取代 ax0/1/2）**：ON 時 numpad 4/6＝yaw、1/3＝pitch、7/9＝roll、8/2＝角度歸零；OFF 時照舊位移。`Editor::g_rotateMode`，co-save。
 - `sc delc`：擦除 `RE::Console::GetSelectedRef()` 選中的 ref，走 `Eraser::MarkConsoleRef`；actor 拒絕（先只做物件）。
 - 編輯指向靈魂石 marker → numpad 0 commit 更新該 marker 登記簿座標（`Markers::SetTransform`），不進 overrides；orphan proxy 就地 adopt。
-- palette「load from file」鈕＋文字框（`Palette::LoadFromFile`，讀 SKSE 夾下指定檔，**append** 進現有插槽並存回）。
-- Settings 頁顯示 aim source／旋轉軸現況（console 設定的可視化）。
+- palette「load from file」鈕（append）＋**「save to file」鈕**（`Palette::LoadFromFile`/`SaveToFile`，讀寫 SKSE 夾下具名檔）。
+- **Export「Export all (loaded cells)」鈕**：`SceneExporter::ExportAll` 走訪全部已載入 cell 收 placements＋registries 一次（registries 本就全域；未載入 cell 的 placements 撈不到，log 說明）。重構出 `AppendPlacements`/`AppendRegistries`/`RecordStats`。
+- Settings 頁顯示 aim source／旋轉子模式現況（console 設定的可視化）。
 
 ### 仍未做
+- **紅/綠半透明輪廓高亮**（使用者第二輪：`sc del dp1` 被刪物件紅框、`sc pl dp1` 新增物件綠框，顏色/透明度 Settings 可調）——**較難、非必做**（需 render/shader 或 highlight 效果）。
 - marker 編輯視窗下拉：寶石種類 ＋ 發光開關（需 SceneCaptureTools.esp 多個 ACTI 變體或動態換 model，較大工程）。
 - rebind 重作（找出 in-game 抓錯鍵主因：可能是 rebind armed 當幀把移動鍵也吃進去；目前 Settings 隱藏、固定 F11）。
 

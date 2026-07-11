@@ -71,7 +71,7 @@ namespace {
         si->WriteRecordData(Editor::ScaleStep());  // v2
         for (auto m : {Modes::Mode::kDelete, Modes::Mode::kPick, Modes::Mode::kEdit})
             si->WriteRecordData(static_cast<std::uint8_t>(Modes::UseRay(m) ? 1 : 0));  // v3
-        si->WriteRecordData(static_cast<std::uint8_t>(Editor::RotAxis()));  // v3
+        si->WriteRecordData(static_cast<std::uint8_t>(Editor::RotateMode() ? 1 : 0));  // v3
     }
 
     void LoadSettings(const SKSE::SerializationInterface* si, std::uint32_t version) {
@@ -101,9 +101,9 @@ namespace {
                 si->ReadRecordData(ray);
                 Modes::SetUseRay(m, ray != 0);
             }
-            std::uint8_t axis = 0;
-            si->ReadRecordData(axis);
-            Editor::SetRotAxis(axis);
+            std::uint8_t rot = 0;
+            si->ReadRecordData(rot);
+            Editor::SetRotateMode(rot != 0);
         }
         if (mode < static_cast<std::uint8_t>(Modes::Mode::kTotal))
             Modes::Set(static_cast<Modes::Mode>(mode));

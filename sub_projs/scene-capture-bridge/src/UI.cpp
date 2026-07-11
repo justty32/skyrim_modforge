@@ -82,6 +82,12 @@ void __stdcall UI::Export::Render() {
     if (ImGuiMCP::Button("Export player cell")) {
         SceneExporter::ExportPlayerCellToFile();
     }
+    ImGuiMCP::SameLine();
+    // Every loaded cell + all registries. Placements in unloaded cells can't be
+    // captured (registries — markers/erasures/overrides — are always global).
+    if (ImGuiMCP::Button("Export all (loaded cells)")) {
+        SceneExporter::ExportAllToFile();
+    }
 
     ImGuiMCP::Separator();
 
@@ -167,17 +173,21 @@ void __stdcall UI::PalettePage::Render() {
     // Trees/architecture the crosshair never sees — explicit entry, see Aim.h.
     if (ImGuiMCP::Button("pick by ray")) { ::Palette::PickByRay(); }
 
-    // Load another palette json (by filename, next to scene-capture-palette.json)
-    // and append its slots — share/reuse curated palettes across playthroughs.
-    static char loadName[128] = "";
+    // Named palette file (in the SKSE folder): load appends its slots, save
+    // writes the current set — share/reuse curated palettes across playthroughs.
+    static char fileName[128] = "";
     ImGuiMCP::SetNextItemWidth(260.f);
-    ImGuiMCP::InputText("##loadfile", loadName, sizeof(loadName));
+    ImGuiMCP::InputText("##palfile", fileName, sizeof(fileName));
     ImGuiMCP::SameLine();
     if (ImGuiMCP::Button("load from file")) {
-        if (loadName[0]) { ::Palette::LoadFromFile(loadName); g_slotBufs.clear(); }
+        if (fileName[0]) { ::Palette::LoadFromFile(fileName); g_slotBufs.clear(); }
     }
     ImGuiMCP::SameLine();
-    ImGuiMCP::TextWrapped("(in the SKSE folder)");
+    if (ImGuiMCP::Button("save to file")) {
+        if (fileName[0]) ::Palette::SaveToFile(fileName);
+    }
+    ImGuiMCP::SameLine();
+    ImGuiMCP::TextWrapped("(SKSE folder; e.g. my-palette.json)");
     ImGuiMCP::Separator();
 
     std::size_t removeIdx = SIZE_MAX;
@@ -236,9 +246,15 @@ void __stdcall UI::EditorPage::Render() {
         ImGuiMCP::BulletText("pos (%.1f, %.1f, %.1f)", st.pos.x, st.pos.y, st.pos.z);
         ImGuiMCP::BulletText("yaw %.1f deg   scale %.2f", st.yawDeg, st.scale);
         ImGuiMCP::Separator();
-        ImGuiMCP::TextWrapped(
-            "numpad: 8/2 fwd/back - 4/6 left/right - 1/3 down/up - 7/9 rotate "
-            "(%s) - +/- scale - 5 reset - 0 commit - . cancel", ::Editor::RotAxisName());
+        if (::Editor::RotateMode()) {
+            ImGuiMCP::TextWrapped(
+                "ROTATE mode (sc ed ax): 4/6 yaw - 1/3 pitch - 7/9 roll - "
+                "8/2 reset angle - +/- scale - 5 reset all - 0 commit - . cancel");
+        } else {
+            ImGuiMCP::TextWrapped(
+                "numpad: 8/2 fwd/back - 4/6 left/right - 1/3 down/up - 7/9 yaw - "
+                "+/- scale - 5 reset - 0 commit - . cancel  (sc ed ax = rotate mode)");
+        }
         if (ImGuiMCP::Button("cancel (restore)")) { ::Editor::Cancel(); }
     }
 

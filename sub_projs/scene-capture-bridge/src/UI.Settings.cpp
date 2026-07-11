@@ -62,7 +62,8 @@ void __stdcall UI::SettingsPage::Render() {
         ImGuiMCP::BulletText("%-6s %s", Modes::Name(m),
             Modes::UseRay(m) ? "ray" : "crosshair");
     }
-    ImGuiMCP::Text("Edit rotate axis (sc ed ax0/1/2): %s", Editor::RotAxisName());
+    ImGuiMCP::Text("Edit numpad mode (sc ed ax): %s",
+        Editor::RotateMode() ? "ROTATE" : "move");
     ImGuiMCP::Separator();
 
     // --- marker gem visibility (mirrors sc mk dp0/dp1) ---

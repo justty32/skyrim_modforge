@@ -45,6 +45,10 @@ namespace Palette {
     // many were added; the merged set is then saved to the default store.
     std::size_t LoadFromFile(const std::string& filename);
 
+    // Panel "save to file": write the current slots to a named json (same
+    // folder) — export a curated palette to share or reload later.
+    bool SaveToFile(const std::string& filename);
+
     [[nodiscard]] std::vector<Slot>& All();
     [[nodiscard]] std::size_t SelectedIndex();
     void Select(std::size_t index);

@@ -36,9 +36,12 @@ namespace {
     float g_yawStep = 5.f;       // degrees per tap
     float g_scaleStep = 0.02f;   // scale factor per tap
 
-    // Which euler axis the 7/9 rotate keys drive (`sc ed ax0/ax1/ax2`).
-    // 0 = Z (yaw), 1 = X (pitch), 2 = Y (roll). Persisted in the co-save.
-    int g_rotAxis = 0;
+    // Pure-rotation sub-mode (`sc ed ax` toggles it). When on, the numpad
+    // directional keys drive rotation instead of movement:
+    //   4/6 = yaw(Z) -/+,  1/3 = pitch(X) -/+,  7/9 = roll(Y) -/+,
+    //   8/2 = reset rotation to the pre-edit angle (position/scale untouched).
+    // Off (default): 8/2 fwd/back, 4/6 left/right, 1/3 down/up, 7/9 yaw.
+    bool g_rotateMode = false;
 
     // Only these base types get the physics freeze: they are the naturally
     // havok-Dynamic clutter (cups, books, weapons on tables). Restoring a
@@ -205,20 +208,38 @@ namespace Editor {
             RE::DebugNotification("SCB: edit cancelled");
             Cancel();
             return true;
-        case kFwd:     Apply(ref.get(), pos + fwd * g_moveStep, angle); return true;
-        case kBack:    Apply(ref.get(), pos - fwd * g_moveStep, angle); return true;
-        case kLeft:    Apply(ref.get(), pos - right * g_moveStep, angle); return true;
-        case kRight:   Apply(ref.get(), pos + right * g_moveStep, angle); return true;
-        case kUp:      pos.z += g_moveStep; Apply(ref.get(), pos, angle); return true;
-        case kDown:    pos.z -= g_moveStep; Apply(ref.get(), pos, angle); return true;
+        // 7/9 rotate roll(Y) in rotate mode, yaw(Z) in move mode.
         case kYawPos:
         case kYawNeg: {
             const float d = (code == kYawPos ? 1.f : -1.f) * g_yawStep * kDegToRad;
-            float& a = g_rotAxis == 1 ? angle.x : g_rotAxis == 2 ? angle.y : angle.z;
-            a += d;
+            (g_rotateMode ? angle.y : angle.z) += d;
             Apply(ref.get(), pos, angle);
             return true;
         }
+        // 4/6 and 1/3: rotate (yaw / pitch) in rotate mode, move in move mode.
+        case kLeft:
+            if (g_rotateMode) angle.z -= g_yawStep * kDegToRad;
+            else pos = pos - right * g_moveStep;
+            Apply(ref.get(), pos, angle); return true;
+        case kRight:
+            if (g_rotateMode) angle.z += g_yawStep * kDegToRad;
+            else pos = pos + right * g_moveStep;
+            Apply(ref.get(), pos, angle); return true;
+        case kDown:  // numpad 1
+            if (g_rotateMode) angle.x -= g_yawStep * kDegToRad;
+            else pos.z -= g_moveStep;
+            Apply(ref.get(), pos, angle); return true;
+        case kUp:    // numpad 3
+            if (g_rotateMode) angle.x += g_yawStep * kDegToRad;
+            else pos.z += g_moveStep;
+            Apply(ref.get(), pos, angle); return true;
+        // 8/2: move fwd/back in move mode; reset rotation in rotate mode.
+        case kFwd:
+            if (g_rotateMode) { Apply(ref.get(), pos, g.origAngle); return true; }
+            Apply(ref.get(), pos + fwd * g_moveStep, angle); return true;
+        case kBack:
+            if (g_rotateMode) { Apply(ref.get(), pos, g.origAngle); return true; }
+            Apply(ref.get(), pos - fwd * g_moveStep, angle); return true;
         case kScaleUp:
             if (!g.isActor) { ref->SetScale(ref->GetScale() + g_scaleStep); ref->Update3DPosition(true); }
             return true;
@@ -265,11 +286,9 @@ namespace Editor {
     void SetYawStep(float v) { if (v > 0.f) g_yawStep = v; }
     void SetScaleStep(float v) { if (v > 0.f) g_scaleStep = v; }
 
-    int RotAxis() { return g_rotAxis; }
-    void SetRotAxis(int axis) { if (axis >= 0 && axis <= 2) g_rotAxis = axis; }
-    const char* RotAxisName() {
-        return g_rotAxis == 1 ? "pitch (X)" : g_rotAxis == 2 ? "roll (Y)" : "yaw (Z)";
-    }
+    bool RotateMode() { return g_rotateMode; }
+    void SetRotateMode(bool on) { g_rotateMode = on; }
+    bool ToggleRotateMode() { g_rotateMode = !g_rotateMode; return g_rotateMode; }
 
     Status Current() {
         Status s;

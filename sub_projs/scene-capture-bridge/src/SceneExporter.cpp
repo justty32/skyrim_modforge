@@ -67,19 +67,25 @@ namespace SceneExporter {
         return a;
     }
 
-    nlohmann::json ExportCell(RE::TESObjectCELL* cell) {
-        // scene.json IS a ModSpec (see workflows/plans/ingame-scene-export.md):
-        // `build scene.json out.esp` deserializes it straight into ModSpec, and
-        // ModForge's reader SILENTLY IGNORES unknown keys. So every key we emit
-        // must be a real ModSpec member or it vanishes without a word.
-        nlohmann::json scene;
-        scene["placements"] = nlohmann::json::array();
+    namespace {
+        // Running tallies while sweeping one or more cells for placements.
+        struct PlacementCounters {
+            std::size_t actors = 0;
+            std::size_t preexisting = 0;
+            std::size_t skipped = 0;
+            std::size_t markerProxies = 0;
+            std::size_t removalsPending = 0;   // in swept cells (log only)
+            std::size_t overridesPending = 0;  // in swept cells (log only)
+        };
+    }
 
-        if (!cell) {
-            SKSE::log::warn("ExportCell: null cell, nothing to export");
-            return scene;
-        }
-
+    // Sweep ONE cell's placed refs (the vanilla diff) and append the
+    // player-added ones to scene["placements"]. No registry/global segments —
+    // those are emitted once by AppendRegistries so export-all doesn't repeat
+    // them per cell.
+    static void AppendPlacements(RE::TESObjectCELL* cell, nlohmann::json& scene,
+        PlacementCounters& counters) {
+        if (!cell) return;
         const bool isInterior = cell->IsInteriorCell();
 
         // Cell / worldspace attribution (§契約 coordinate contract):
@@ -104,17 +110,11 @@ namespace SceneExporter {
         }
         if (cellId.empty() && worldspaceId.empty()) {
             SKSE::log::warn(
-                "ExportCell: neither cell nor worldspace resolved to a durable "
-                "id — every placement would be dropped by build; aborting");
-            return scene;
+                "AppendPlacements: cell/worldspace unresolved — placements here "
+                "would be dropped by build; skipping this cell");
+            return;
         }
 
-        std::size_t skipped = 0;
-        std::size_t preexisting = 0;
-        std::size_t actors = 0;
-        std::size_t markerProxies = 0;
-        std::size_t removalsPending = 0;
-        std::size_t overridesPending = 0;
         // ForEachReference hands the callback a POINTER, not a reference.
         cell->ForEachReference([&](RE::TESObjectREFR* refPtr) -> RE::BSContainer::ForEachResult {
             if (!refPtr) {
@@ -134,7 +134,7 @@ namespace SceneExporter {
             // are dynamic refs and the vanilla diff would export them as
             // player-placed objects.
             if (Markers::IsProxy(refPtr)) {
-                ++markerProxies;
+                ++counters.markerProxies;
                 return RE::BSContainer::ForEachResult::kContinue;
             }
 
@@ -157,9 +157,9 @@ namespace SceneExporter {
                 // A ref marked by the eraser is not "pre-existing kept as-is" —
                 // it exports through removals[], counted separately. Same for a
                 // ref moved through the editor: it exports through overrides[].
-                if (Eraser::MarkedIds().contains(*refId)) ++removalsPending;
-                else if (Overrides::Contains(*refId)) ++overridesPending;
-                else ++preexisting;
+                if (Eraser::MarkedIds().contains(*refId)) ++counters.removalsPending;
+                else if (Overrides::Contains(*refId)) ++counters.overridesPending;
+                else ++counters.preexisting;
                 return RE::BSContainer::ForEachResult::kContinue;
             }
             // A disabled dynamic ref is one of our own placements the player
@@ -170,7 +170,7 @@ namespace SceneExporter {
 
             auto baseId = ResolveDurableId(base);
             if (!baseId) {
-                ++skipped;  // dynamic / runtime-only base — not esp-referenceable
+                ++counters.skipped;  // dynamic / runtime-only base — not esp-referenceable
                 return RE::BSContainer::ForEachResult::kContinue;
             }
 
@@ -199,7 +199,7 @@ namespace SceneExporter {
             // by the editor UI, not by a raw sweep.
             const bool isActor = ref.GetFormType() == RE::FormType::ActorCharacter;
             if (isActor) {
-                ++actors;  // XSCL is ignored on actors, so emit no scale field.
+                ++counters.actors;  // XSCL is ignored on actors, so emit no scale field.
                 // ModForge's isNpc auto-detect only covers in-spec bases; an
                 // external NPC base without explicit kind builds a REFR that
                 // silently spawns nothing. Stamp it at the source.
@@ -216,92 +216,119 @@ namespace SceneExporter {
             }
             return RE::BSContainer::ForEachResult::kContinue;
         });
+    }
 
-        // Every marked removal exports — global, not per-cell (BuildRemovals
-        // resolves via the master link cache, so cross-room erasures are fine).
-        {
-            const auto& marked = Eraser::All();
-            if (!marked.empty()) {
-                auto arr = nlohmann::json::array();
-                for (const auto& e : marked) arr.push_back(e.id);
-                scene["removals"] = std::move(arr);
-            }
+    // Append the three cell-independent registry segments ONCE. removals[],
+    // overrides[] and annotations[] each span every cell (their registries do),
+    // so ModForge resolves them via the master link cache regardless of which
+    // cell was swept — exporting the player's cell already carries the lot.
+    static void AppendRegistries(nlohmann::json& scene) {
+        if (const auto& marked = Eraser::All(); !marked.empty()) {
+            auto arr = nlohmann::json::array();
+            for (const auto& e : marked) arr.push_back(e.id);
+            scene["removals"] = std::move(arr);
         }
 
-        // Every registered override exports — global, like removals (the
-        // registry spans cells; BuildOverrides resolves via the master link
-        // cache). Prefer the LIVE pose when the ref is still loaded: physics
-        // settle after commit (kDynamic restore) is part of what the player
-        // sees, same reasoning as placements. Actors get no scale (dead XSCL).
-        {
-            const auto& moved = Overrides::All();
-            if (!moved.empty()) {
-                auto arr = nlohmann::json::array();
-                for (const auto& e : moved) {
-                    RE::NiPoint3 pos = e.pos, ang = e.angle;
-                    float scale = e.scale;
-                    if (auto live = e.handle.get()) {
-                        pos = live->GetPosition();
-                        ang = live->data.angle;
-                        scale = live->GetScale();
-                    }
-                    nlohmann::json o;
-                    o["ref"] = e.id;
-                    o["position"] = Vec3(pos);
-                    o["rotation"] = nlohmann::json{
-                        {"x", ang.x * kRadToDeg},
-                        {"y", ang.y * kRadToDeg},
-                        {"z", ang.z * kRadToDeg},
-                    };
-                    if (!e.isActor) o["scale"] = scale;
-                    arr.push_back(std::move(o));
+        if (const auto& moved = Overrides::All(); !moved.empty()) {
+            auto arr = nlohmann::json::array();
+            for (const auto& e : moved) {
+                RE::NiPoint3 pos = e.pos, ang = e.angle;
+                float scale = e.scale;
+                if (auto live = e.handle.get()) {  // prefer the settled live pose
+                    pos = live->GetPosition();
+                    ang = live->data.angle;
+                    scale = live->GetScale();
                 }
-                scene["overrides"] = std::move(arr);
+                nlohmann::json o;
+                o["ref"] = e.id;
+                o["position"] = Vec3(pos);
+                o["rotation"] = nlohmann::json{
+                    {"x", ang.x * kRadToDeg}, {"y", ang.y * kRadToDeg}, {"z", ang.z * kRadToDeg},
+                };
+                if (!e.isActor) o["scale"] = scale;
+                arr.push_back(std::move(o));
             }
+            scene["overrides"] = std::move(arr);
         }
 
-        // Every marker in the registry exports as an advisory annotation —
-        // global, not per-cell (an agent needs anchors from every room you
-        // marked, same reasoning as removals[]).
-        {
-            const auto& marks = Markers::All();
-            if (!marks.empty()) {
-                auto arr = nlohmann::json::array();
-                for (const auto& m : marks) {
-                    nlohmann::json a;
-                    a["seq"] = m.seq;
-                    a["label"] = m.label;
-                    a["kind"] = m.kind;
-                    a["position"] = Vec3(m.position);
-                    a["angleZ"] = m.angleZDeg;
-                    if (!m.note.empty()) a["note"] = m.note;  // free-form agent brief
-                    if (!m.cellOrWs.empty()) {
-                        a[m.isInterior ? "cell" : "worldspace"] = m.cellOrWs;
-                    }
-                    arr.push_back(std::move(a));
-                }
-                scene["annotations"] = std::move(arr);
+        if (const auto& marks = Markers::All(); !marks.empty()) {
+            auto arr = nlohmann::json::array();
+            for (const auto& m : marks) {
+                nlohmann::json a;
+                a["seq"] = m.seq;
+                a["label"] = m.label;
+                a["kind"] = m.kind;
+                a["position"] = Vec3(m.position);
+                a["angleZ"] = m.angleZDeg;
+                if (!m.note.empty()) a["note"] = m.note;  // free-form agent brief
+                if (!m.cellOrWs.empty()) a[m.isInterior ? "cell" : "worldspace"] = m.cellOrWs;
+                arr.push_back(std::move(a));
             }
+            scene["annotations"] = std::move(arr);
         }
+    }
 
+    static void RecordStats(const nlohmann::json& scene, const PlacementCounters& c,
+        const std::string& cellLabel) {
         g_last.valid = true;
         g_last.placements = scene["placements"].size();
-        g_last.actors = actors;
-        g_last.preexisting = preexisting;
-        g_last.skipped = skipped;
-        g_last.cell = cellId.empty() ? worldspaceId : cellId;
-        g_last.markers = markerProxies;
+        g_last.actors = c.actors;
+        g_last.preexisting = c.preexisting;
+        g_last.skipped = c.skipped;
+        g_last.cell = cellLabel;
+        g_last.markers = c.markerProxies;
         g_last.removals = Eraser::All().size();
         g_last.overrides = Overrides::All().size();
-
         SKSE::log::info(
-            "ExportCell: {} placements ({} of them actors), {} pre-existing "
-            "(skipped), {} skipped (dynamic bases), {} marker proxies excluded, "
-            "{} annotations, {} removals ({} in this cell), {} overrides ({} in "
-            "this cell)",
-            scene["placements"].size(), actors, preexisting, skipped,
-            markerProxies, Markers::All().size(), Eraser::All().size(),
-            removalsPending, Overrides::All().size(), overridesPending);
+            "Export[{}]: {} placements ({} actors), {} pre-existing, {} skipped "
+            "(dynamic bases), {} marker proxies excluded, {} annotations, {} "
+            "removals, {} overrides", cellLabel, scene["placements"].size(),
+            c.actors, c.preexisting, c.skipped, c.markerProxies,
+            Markers::All().size(), Eraser::All().size(), Overrides::All().size());
+    }
+
+    nlohmann::json ExportCell(RE::TESObjectCELL* cell) {
+        // scene.json IS a ModSpec (see workflows/plans/ingame-scene-export.md):
+        // `build scene.json out.esp` deserializes it straight into ModSpec, and
+        // ModForge's reader SILENTLY IGNORES unknown keys, so every key must be
+        // a real ModSpec member.
+        nlohmann::json scene;
+        scene["placements"] = nlohmann::json::array();
+        if (!cell) {
+            SKSE::log::warn("ExportCell: null cell, nothing to export");
+            return scene;
+        }
+        PlacementCounters c;
+        AppendPlacements(cell, scene, c);
+        AppendRegistries(scene);
+        std::string label;
+        if (cell->IsInteriorCell()) {
+            if (auto id = ResolveDurableId(cell)) label = *id;
+        } else if (auto* ws = cell->GetRuntimeData().worldSpace) {
+            if (auto wid = ResolveDurableId(ws)) label = *wid;
+        }
+        RecordStats(scene, c, label);
+        return scene;
+    }
+
+    nlohmann::json ExportAll() {
+        // Sweep every LOADED cell for placements (interior = just this one;
+        // exterior = the whole streamed grid), then the global registries once.
+        // Objects placed in cells that have since unloaded can't be recovered —
+        // logged so "export all" never silently under-reports.
+        nlohmann::json scene;
+        scene["placements"] = nlohmann::json::array();
+        PlacementCounters c;
+        std::size_t cells = 0;
+        if (auto* tes = RE::TES::GetSingleton()) {
+            tes->ForEachCell([&](RE::TESObjectCELL* cell) {
+                if (cell && cell->IsAttached()) { AppendPlacements(cell, scene, c); ++cells; }
+            });
+        }
+        AppendRegistries(scene);
+        RecordStats(scene, c, std::format("ALL/{} loaded cells", cells));
+        SKSE::log::info("ExportAll: swept {} loaded cell(s) — placements in "
+            "unloaded cells are not captured (visit them, or export per-cell)", cells);
         return scene;
     }
 
@@ -334,6 +361,19 @@ namespace SceneExporter {
         auto dir = SKSE::log::log_directory();
         if (!dir) {
             SKSE::log::error("ExportPlayerCellToFile: no log_directory");
+            return;
+        }
+        const auto out = *dir / "scene-export.json";
+        if (WriteSceneFile(scene, out)) {
+            g_last.path = out.string();
+        }
+    }
+
+    void ExportAllToFile() {
+        auto scene = ExportAll();
+        auto dir = SKSE::log::log_directory();
+        if (!dir) {
+            SKSE::log::error("ExportAllToFile: no log_directory");
             return;
         }
         const auto out = *dir / "scene-export.json";
