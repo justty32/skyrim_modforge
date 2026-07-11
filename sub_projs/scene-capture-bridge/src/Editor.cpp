@@ -175,8 +175,13 @@ namespace Editor {
             if (!g.isActor) { ref->SetScale(ref->GetScale() - kScaleStep); ref->Update3DPosition(true); }
             return true;
         default:
-            // Self-diagnosis for the unverified numpad DIK constants.
-            SKSE::log::info("Editor: unmapped scancode 0x{:X} in edit mode", code);
+            // Self-diagnosis for numpad DIK constants only. Movement keys
+            // (WASD/Alt) land here too while editing and flooded the log
+            // (in-game 2026-07-11: 0x11/0x1F/0x20/0x38 noise).
+            // 0x47..0x53 = numpad block; 0x37/0xB5/0x9C = num * / Enter.
+            if ((code >= 0x47 && code <= 0x53) || code == 0x37 || code == 0xB5 || code == 0x9C) {
+                SKSE::log::info("Editor: unmapped scancode 0x{:X} in edit mode", code);
+            }
             return true;  // swallow everything while editing
         }
     }
