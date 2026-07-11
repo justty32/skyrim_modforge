@@ -146,10 +146,11 @@ MarkerEntry {
 - **指令形狀：✅ 拍板 b 案（使用者 2026-07-11）——一字前綴**：`sc mk` / `sc del` / `sc pk` / `sc pl` / `sc ed` / `sc off`。短且零撞名風險。（未選：a 無前綴極短——撞名要逐驗；c `mode_marker`——太長。）
 - **回饋**：切模式時 `DebugNotification`「SCB mode: marker」＋面板頂部常駐顯示當前模式；`F11` 在 `off` 模式提示先切模式。
 - **實作路徑（待研究定案）**：SKSE 自訂 console 指令的成熟做法＝**劫持 vanilla 冷門 ObScript 指令**（改 name/handler，如慣例犯 `ClearAchievement`）或 console 輸入 hook；也可考慮軟依賴 ConsoleUtilSSE。研究時查 CommonLibSSE-NG 的 `SCRIPT_FUNCTION` 改寫先例。
-- **遷移**：模式制落地後，現有 F6/F7/F8/F11 直達鍵**保留一段過渡**（老手感不砍），面板加開關「classic hotkeys」可關。
-- **✅ 設定哲學拍板（使用者 2026-07-11）：不用 ini**。所有設定用 console 指令調（如動作鍵改綁也走 `sc` 指令）；需要持久化的設定**直接放存檔**（SKSE co-save / SerializationInterface）。
+- **遷移**：模式制落地後，F6/F7/F8 直達鍵收進「classic hotkeys」面板開關（**預設關**——少佔鍵原則優先）。
+- **✅ 設定哲學拍板（使用者 2026-07-11）：不用 ini**。所有設定用 console 指令調；需要持久化的設定**直接放存檔**（SKSE co-save / SerializationInterface）。
+- **✅ 快捷鍵哲學拍板（使用者 2026-07-11）：佔用越少越好，且具體鍵位在 F1 面板可設**。目標形狀＝**F1（框架自帶）＋一顆動作鍵（預設 F11）＋F10 export**，其餘全走 `sc` 模式與面板；面板加 Keybinds 區（點擊→按下一鍵完成改綁，鍵位存 co-save）。模式制落地後 F6/F7/F8 直達鍵改為**預設關**的「classic hotkeys」開關（原規劃的預設開改掉——少佔鍵原則優先）。
 - **co-save 的副作用（提案，implementation 時評估）**：既然引入 SKSE co-save 存設定，**Markers/Eraser/Overrides 登記簿也可以一起進 co-save**——登記簿隨存檔走，關遊戲重開不再歸零，adopt 從主要機制降級為救援機制（撿別的存檔/舊 session 的孤兒用）。這會把「持久化與 adopt 語意」表的三個「要 adopt」格子大部分變成「自動」。
-- **🔴 open（等使用者）**：`edit` 模式入口是「F11 按語境選中進編輯」還是維持 numpad 5。
+- **🔴 open（等使用者）**：`edit` 模式入口是「F11 按語境選中進編輯」還是維持 numpad 5（少佔鍵原則傾向前者；numpad 編輯模式**內**的 8/2/4/6… 不算佔用，是模式內操作）。
 
 ---
 
