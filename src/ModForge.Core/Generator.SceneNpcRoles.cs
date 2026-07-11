@@ -13,6 +13,7 @@ public static partial class Generator
         ExpandLivingNpcs(spec);   // → controller quest + per-NPC alias/markers/global/rumor + world-controller script
         ExpandNpcRoles(spec);     // → host quest + greeting + package + (vendor: FACT/chest + openBarter topic)
         ExpandCapturedItems(spec); // → WEAP/ARMO(+minted ENCH) / ALCH / INGR from the in-game definition eyedropper
+        ExpandCapturedNpcs(spec); // → NpcSpec (identity + face/body recipe) + ACHR placement from the actor eyedropper
     }
 
     // --- NPC role macro-expansion (Idea #24 §D — in-game scene export) -------------------------

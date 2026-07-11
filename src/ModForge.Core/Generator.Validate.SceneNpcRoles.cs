@@ -93,6 +93,57 @@ public static partial class Generator
             }
         }
 
+        // capturedNpcs[] — the actor eyedropper (Generator.ExpandCapturedNpcs). Validated at the
+        // capture level (the expansion runs at build pass 0, after Validate): identity refs must be
+        // well-formed, the recipe arrays must be the engine's fixed sizes (18 morphs / 4 parts),
+        // and colour/weight components must be in range. `dead`/`activeEffects`/perk ranks are
+        // advisory (never consumed) so they get no checks.
+        public void ValidateCapturedNpcs()
+        {
+            for (int i = 0; i < spec.CapturedNpcs.Count; i++)
+            {
+                var cn = spec.CapturedNpcs[i];
+                string who = $"capturedNpc[{i}]" + (string.IsNullOrWhiteSpace(cn.Name) ? "" : $" ('{cn.Name}')");
+                // An NPC_ without a race is broken in-game (invisible/CTD territory). Base-game race
+                // refs always resolve durably in the DLL, so an empty race means something odd upstream.
+                if (string.IsNullOrWhiteSpace(cn.Race))
+                    Problems.Add($"{who}: missing race (a raceless NPC_ is broken in-game; base-game races always export durably — check the capture)");
+                CheckRef(cn.Race, $"{who} race");
+                CheckRef(cn.HairColor?.Id ?? "", $"{who} hairColor.id");
+                CheckRef(cn.FaceTexture, $"{who} faceTexture");
+                CheckRef(cn.DefaultOutfit, $"{who} defaultOutfit");
+                foreach (var hp in cn.HeadParts) CheckRef(hp, $"{who} headPart");
+                foreach (var p in cn.Perks)
+                    if (string.IsNullOrWhiteSpace(p.Perk)) Problems.Add($"{who}: a perk entry is missing its perk ref");
+                    else CheckRef(p.Perk, $"{who} perk");
+                if (!string.IsNullOrWhiteSpace(cn.Cell) && !string.IsNullOrWhiteSpace(cn.Worldspace))
+                    Problems.Add($"{who}: has BOTH cell and worldspace (the anchor is one or the other)");
+                CheckRef(cn.Cell, $"{who} cell");
+                CheckRef(cn.Worldspace, $"{who} worldspace");
+                if (cn.FaceMorphs.Count != 0 && cn.FaceMorphs.Count != 18)
+                    Problems.Add($"{who}: faceMorphs has {cn.FaceMorphs.Count} values (the engine's morph array is exactly 18, or omit it)");
+                if (cn.FaceParts.Count != 0 && cn.FaceParts.Count != 4)
+                    Problems.Add($"{who}: faceParts has {cn.FaceParts.Count} values (exactly 4 — nose/unknown/eyes/mouth — or omit it)");
+                if (cn.Weight is < 0f or > 100f)
+                    Problems.Add($"{who}: weight {cn.Weight} out of range (0–100)");
+                CheckColor(cn.BodyTint, $"{who} bodyTint");
+                for (int t = 0; t < cn.TintLayers.Count; t++)
+                {
+                    var tl = cn.TintLayers[t];
+                    if (tl.Value is < 0f or > 1f)
+                        Problems.Add($"{who}: tintLayers[{t}] value {tl.Value} out of range (0–1 interpolation)");
+                    CheckColor(tl.Color, $"{who} tintLayers[{t}] color");
+                }
+            }
+        }
+
+        private void CheckColor(ColorSpec? c, string what)
+        {
+            if (c is null) return;
+            if (c.R is < 0 or > 255 || c.G is < 0 or > 255 || c.B is < 0 or > 255 || c.A is < 0 or > 255)
+                Problems.Add($"{what}: colour component out of range (0–255)");
+        }
+
         // Idea #24 numpad editor — overrides[] re-stamps the transform of an existing placed ref.
         // Same ref-shape rule as removals, plus: a ref in BOTH lists is a contradiction (move it or
         // remove it, not both — build lets the removal win, but say so here instead of silently).

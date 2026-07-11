@@ -33,6 +33,25 @@ public static partial class Generator
                 CheckEnum<Confidence>(n.Confidence, $"npc '{n.EditorId}' confidence");
                 CheckEnum<Assistance>(n.Assistance, $"npc '{n.EditorId}' assistance");
                 CheckEnum<Mood>(n.Mood, $"npc '{n.EditorId}' mood");
+                // Appearance recipe (same engine-fixed shapes the captured-NPC checks enforce —
+                // hand-authored NPCs get the same guardrails).
+                CheckRef(n.HairColor, $"npc '{n.EditorId}' hairColor");
+                CheckRef(n.FaceTexture, $"npc '{n.EditorId}' faceTexture");
+                foreach (var hp in n.HeadParts) CheckRef(hp, $"npc '{n.EditorId}' headPart");
+                if (n.FaceMorphs.Count != 0 && n.FaceMorphs.Count != 18)
+                    Problems.Add($"npc '{n.EditorId}': faceMorphs has {n.FaceMorphs.Count} values (the engine's morph array is exactly 18, or omit it)");
+                if (n.FaceParts.Count != 0 && n.FaceParts.Count != 4)
+                    Problems.Add($"npc '{n.EditorId}': faceParts has {n.FaceParts.Count} values (exactly 4, or omit it)");
+                if (n.Weight is { } w && (w < 0f || w > 100f))
+                    Problems.Add($"npc '{n.EditorId}': weight {w} out of range (0–100)");
+                CheckColor(n.BodyTint, $"npc '{n.EditorId}' bodyTint");
+                for (int t = 0; t < n.TintLayers.Count; t++)
+                {
+                    var tl = n.TintLayers[t];
+                    if (tl.Value is < 0f or > 1f)
+                        Problems.Add($"npc '{n.EditorId}': tintLayers[{t}] value {tl.Value} out of range (0–1 interpolation)");
+                    CheckColor(tl.Color, $"npc '{n.EditorId}' tintLayers[{t}] color");
+                }
             }
             foreach (var cs in spec.CombatStyles)
                 foreach (var f in cs.Flags)

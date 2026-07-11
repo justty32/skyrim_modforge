@@ -4,7 +4,7 @@
 
 **Goal:** 讓 scene-capture-bridge DLL `sc cap` 吸到的 `capturedNpcs[]`（活體 actor 的 TESNPC 外貌/身份）能被 ModForge `build` 成一個真的 NPC_ 記錄 + 一個 ACHR placement，讓那個 NPC 出現在世界裡。這是擷取器消費的 ②（① items 已完成）。
 
-> **本檔是給下一個 session（可能是 fable）接手的設計交接**。探勘結論（2026-07-11）已固化在下方「地形」節，不必重跑。
+> **狀態：Phase 1（T1–T6）已落地 2026-07-11**（離線 912 測綠含 15 新測；`CapturedNpcsTests.cs`）→ 實機驗收見 [wait_todo OPEN-E](../../wait_todo/ingame-tests.md)。本檔保留作 Phase 2（烘焙）的界線記錄與映射表出處。探勘結論已固化在下方「地形」節，不必重跑。
 
 ---
 

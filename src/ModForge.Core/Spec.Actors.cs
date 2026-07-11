@@ -45,6 +45,32 @@ public sealed class NpcSpec
     // the NPC's best, so it's how you arm an NPC; loot drops on death. (Separate from VendorSpec —
     // those are the merchant's sale categories; these are what THIS actor physically carries.)
     public List<NpcItemSpec> Items { get; set; } = new();
+    // --- Appearance (the TESNPC face/body "recipe") ------------------------------------------
+    // These author the RECIPE half of a Skyrim face: the record fields the engine combines with
+    // baked FaceGeom/<plugin>/<formid>.nif + facetint .dds assets. ModForge writes only the recipe
+    // today — a custom-faced NPC without baked assets renders with the gray/dark-face bug (body
+    // shape, hair colour, skin tone and identity are still correct). Baking is a later milestone
+    // (see workflows/plans/captured-npcs-consumption.md Phase 2).
+    public bool Female { get; set; }                  // Configuration.Flag.Female (default: male)
+    public float? Weight { get; set; }                // NAM7, 0–100 body-slider blend (0 is valid → nullable; null = engine default)
+    public float? Height { get; set; }                // NAM6 scale multiplier (1.0 = default; null = leave default)
+    public ColorSpec? BodyTint { get; set; }          // QNAM "texture lighting" — the skin tint (A unused)
+    public string HairColor { get; set; } = "";      // ref → CLFM colour record (HCLF)
+    public string FaceTexture { get; set; } = "";    // ref → TXST face texture set (FTST; Mutagen property is HeadTexture)
+    public List<string> HeadParts { get; set; } = new(); // refs → HDPT (hair/eyes/scars/brows…); a modded part (e.g. high-poly head) makes that mod a master
+    public List<TintLayerSpec> TintLayers { get; set; } = new(); // TINI/TINC/TINV/TIAS face paint/dirt/lip layers
+    public List<float> FaceMorphs { get; set; } = new(); // NAM9 — exactly 18 floats (engine morph order; see plan's index↔field table) or empty
+    public List<int> FaceParts { get; set; } = new();    // NAMA — exactly 4 ints (nose/unknown/eyes/mouth preset indices) or empty
+}
+// One face tint layer (TINI/TINC/TINV/TIAS): an entry of the race's tint mask list applied at a
+// colour + interpolation strength. Index/preset are engine-assigned ids from the race's tint masks
+// (capture them from a live NPC rather than authoring by hand); value is 0–1 strength.
+public sealed class TintLayerSpec
+{
+    public int Index { get; set; }        // TINI — tint mask index in the race's chargen list
+    public int Preset { get; set; }        // TIAS — preset entry (-1/0 when free-form)
+    public float Value { get; set; }       // TINV — interpolation 0..1
+    public ColorSpec? Color { get; set; }  // TINC — RGBA 0–255
 }
 // One inventory entry on an NPC: a ref to a carriable item (weapon/armor/misc/potion/gold/ammo —
 // vanilla <master>:0xFORMID or an in-spec editorId) plus a Count (defaults to 1; use larger counts

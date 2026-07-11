@@ -82,7 +82,11 @@
 
 **OPEN-C（faceMorphs bug，看實機 json 發現）**：`ReadNpc` `for (float m : npc->faceData->morphs)`（Captures.cpp:119）把 `morphs` 整個陣列灌進去，實機匯出**第 19 個值＝`3.4e+38`(FLT_MAX)哨兵**，前 18 個正常 [-1,1]。faceData->morphs 尾端有個 sentinel/非 morph 欄，**✅ 已修（DLL `604efd0a`，部署雙夾，未 commit）**：根因＝`TESNPC.h` `FaceData::Morphs::kTotal=19`，但 index 18＝`kUnk`（未用槽，FLT_MAX 垃圾）；有效 morph 是 index 0–17（18 個）。修法 Captures.cpp:119 range-for 改 `for (int i=0;i<RE::TESNPC::FaceData::Morphs::kUnk;++i) n.morphs.push_back(npc->faceData->morphs[i]);`。**待實機複驗**：吸 NPC → 匯出 `faceMorphs` 應剩 18 個、無 FLT_MAX。
 
-**OPEN-D（實機 json 觀察，非 bug）**：① 同一把 Staff of Magelight 出現**兩筆**重複 capturedItems（使用者可能 `sc cap` 兩次，或雙吸；改模式制後留意）。② Staff of Magelight 有**耐久 vanilla base + 耐久附魔**（base `0x0BE121`、ench `0x04DEDD`）→ 對這種既有耐久 base 的 vanilla 物，ModForge 其實直接引用 base 即可，Captures 是給 runtime-only（玩家自附魔/無 base）用的；此次只是驗管線通。③ activeEffects 含**常駐 ability（dur=0）**不只暫時 buff（Nirya 的種族 ability、XPMSE 骨架）——ModForge 消費時若只要真 buff 要 filter `duration>0`。④ 實機證實 NpcSpec schema gap：`female`/`weight`/`race`/facegen 欄 capture 全有、現行 NpcSpec 全無。
+**OPEN-D（實機 json 觀察，非 bug）**：① 同一把 Staff of Magelight 出現**兩筆**重複 capturedItems（使用者可能 `sc cap` 兩次，或雙吸；改模式制後留意）。② Staff of Magelight 有**耐久 vanilla base + 耐久附魔**（base `0x0BE121`、ench `0x04DEDD`）→ 對這種既有耐久 base 的 vanilla 物，ModForge 其實直接引用 base 即可，Captures 是給 runtime-only（玩家自附魔/無 base）用的；此次只是驗管線通。③ activeEffects 含**常駐 ability（dur=0）**不只暫時 buff（Nirya 的種族 ability、XPMSE 骨架）——ModForge 消費時若只要真 buff 要 filter `duration>0`。④ ~~實機證實 NpcSpec schema gap~~（已補：NpcSpec 外貌配方欄＋capturedNpcs 消費已落地，見 OPEN-E）。
+
+**OPEN-E（capturedNpcs 消費端 Phase 1 驗收，2026-07-11 落地、離線 912 測綠 → 待實機）**：`capturedNpcs[]` → `NpcSpec`（身份＋TESNPC 臉/身配方）＋擷取點 ACHR（[plans/captured-npcs-consumption.md](../workflows/plans/captured-npcs-consumption.md)）。
+   - **驗**：① 遊戲裡 `sc cap` 吸一個 NPC（建議挑特徵明顯的：非預設髮色/胖瘦/女性）→ Export json；② json 餵 `validate`＋`build`＋`package` → zip 進 MO2；③ 進遊戲到擷取地點看：**NPC 出現在原地、性別/身形(weight)/髮色/膚色/服裝(outfit)對**；④ **臉細節（morph/tint）預期可能灰/暗臉**——這是 Phase 1 已知界線（Q1 已拍板接受），不是 bug；⑤ 順手抽查：吸 vanilla NPC（如 Hulda/Lydia）對照本尊外觀＝faceMorph 映射的實機 belt-and-suspenders。
+   - 注意：擷取 json 的 `dead`/`activeEffects`/perk rank/hairColor rgb 是 advisory 不消費（by design）。
 
 **OPEN-B（PROTEUS 關鍵驗，待使用者裝好 PROTEUS）**：PROTEUS clone 出玩家 → 進擷取模式吸 clone → 匯出的 `faceMorphs`/`tintLayers`/`headParts` **是不是玩家本人的臉**？**若全是預設值＝PROTEUS 走 NiNode live override 沒寫 TESNPC**（README 警告 a），這條路要改招。使用者尚未裝 PROTEUS，下次再測。
    - 提醒：DLL 只收「臉的定義」（headParts+morphs+race+weight），**沒收 baked FaceGeom nif、RaceMenu/NiOverride 雕塑、BodySlide 身形**——真臉/真身重現要 facegen 烘焙（ModForge 下游）。

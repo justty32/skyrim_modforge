@@ -105,6 +105,7 @@ public sealed class ModSpec
     public LivingNpcsSpec? LivingNpcs { get; set; } // living-world NPCs (Idea #23; Spec.LivingNpc.cs) — macro-expands to a controller quest + per-NPC alias/markers/global/rumor + ships MFLivingNpc* .pex
     public List<SceneNpcRoleSpec> NpcRoles { get; set; } = new(); // in-game scene export: tag an external NPC with a job role (Idea #24 §D; Spec.SceneExport.cs) — macro-expands to a host quest + conditioned greeting + sandbox package. NOT the player-facing Identities.
     public List<CapturedItemSpec> CapturedItems { get; set; } = new(); // in-game "definition eyedropper" (Idea #24; Spec.CapturedItems.cs) — macro-expands to WEAP/ARMO(+minted ENCH)/ALCH/INGR
+    public List<CapturedNpcSpec> CapturedNpcs { get; set; } = new(); // eyedropped live actors (Idea #24; Spec.CapturedNpcs.cs) — macro-expands to an NpcSpec (identity + face/body recipe) + an ACHR placement at the capture spot
     public VoiceLineSpec? VoiceLine { get; set; } // global voice output settings
 
     // Guard so the skillTree macro-expansion (Generator.ExpandSkillTrees) runs at most once per spec
@@ -118,6 +119,8 @@ public sealed class ModSpec
     [System.Text.Json.Serialization.JsonIgnore] internal bool LivingNpcsExpanded { get; set; }
     // Guard so the captured-item macro-expansion (Generator.ExpandCapturedItems) runs at most once. Not serialized.
     [System.Text.Json.Serialization.JsonIgnore] internal bool CapturedItemsExpanded { get; set; }
+    // Guard so the captured-NPC macro-expansion (Generator.ExpandCapturedNpcs) runs at most once. Not serialized.
+    [System.Text.Json.Serialization.JsonIgnore] internal bool CapturedNpcsExpanded { get; set; }
     // External-resource pipeline (see docs/external_assets.md): a source directory whose
     // `Meshes/`, `Textures/`, `Sounds/` (and loose `.hkx`) sub-trees `package` copies next to
     // the .esp so the packaged mod is self-contained / MO2-ready. ModForge REFERENCES + BUNDLES

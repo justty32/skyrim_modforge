@@ -30,6 +30,52 @@ public static partial class Generator
                 // Essential is what keeps a non-lethal brawl (scene brawlOnEnd) from ending in a corpse.
                 if (n.Essential) r.Configuration.Flags |= NpcConfiguration.Flag.Essential;
                 if (n.Protected) r.Configuration.Flags |= NpcConfiguration.Flag.Protected;
+                // --- Appearance recipe (record-local half; ref'd parts — hairColor/faceTexture/
+                // headParts — are wired in pass 2). This is the TESNPC RECIPE only: without baked
+                // FaceGeom .nif + facetint .dds assets the engine renders a custom face gray/dark
+                // (body shape, skin tone, hair colour and identity are still correct). Baking is a
+                // later milestone (plans/captured-npcs-consumption.md Phase 2).
+                if (n.Female) r.Configuration.Flags |= NpcConfiguration.Flag.Female;
+                if (n.Weight is { } wt) r.Weight = wt;
+                if (n.Height is { } ht) r.Height = ht;
+                if (n.BodyTint is { } bt)
+                    r.TextureLighting = System.Drawing.Color.FromArgb(
+                        Math.Clamp(bt.R, 0, 255), Math.Clamp(bt.G, 0, 255), Math.Clamp(bt.B, 0, 255));
+                // NAM9 face morphs: the spec carries the engine's 18-slot array (RE::TESNPC::FaceData::
+                // Morphs order, which byte-matches Mutagen's NpcFaceMorph declaration order — both are
+                // NAM9 file order; verified 2026-07-11, table in the plan). Slot 18 (kUnk) stays 0.
+                if (n.FaceMorphs.Count == 18)
+                {
+                    var m = n.FaceMorphs;
+                    r.FaceMorph = new NpcFaceMorph
+                    {
+                        NoseLongVsShort = m[0], NoseUpVsDown = m[1],
+                        JawUpVsDown = m[2], JawNarrowVsWide = m[3], JawForwardVsBack = m[4],
+                        CheeksUpVsDown = m[5], CheeksForwardVsBack = m[6],
+                        EyesUpVsDown = m[7], EyesInVsOut = m[8],
+                        BrowsUpVsDown = m[9], BrowsInVsOut = m[10], BrowsForwardVsBack = m[11],
+                        LipsUpVsDown = m[12], LipsInVsOut = m[13],
+                        ChinNarrowVsWide = m[14], ChinUpVsDown = m[15], ChinUnderbiteVsOverbite = m[16],
+                        EyesForwardVsBack = m[17],
+                    };
+                }
+                if (n.FaceParts.Count == 4)
+                    r.FaceParts = new NpcFaceParts
+                    {
+                        Nose = (uint)n.FaceParts[0], Unknown = (uint)n.FaceParts[1],
+                        Eyes = (uint)n.FaceParts[2], Mouth = (uint)n.FaceParts[3],
+                    };
+                foreach (var t in n.TintLayers)
+                    r.TintLayers.Add(new TintLayer
+                    {
+                        Index = (ushort)Math.Clamp(t.Index, 0, ushort.MaxValue),
+                        Preset = (short)Math.Clamp(t.Preset, short.MinValue, short.MaxValue),
+                        InterpolationValue = t.Value,
+                        Color = t.Color is { } tc
+                            ? System.Drawing.Color.FromArgb(Math.Clamp(tc.A, 0, 255),
+                                Math.Clamp(tc.R, 0, 255), Math.Clamp(tc.G, 0, 255), Math.Clamp(tc.B, 0, 255))
+                            : null,
+                    });
                 // AIData — Aggression/Confidence are the difference between "fights" and "flees".
                 // Default Aggression=Unaggressive + Confidence=Cowardly means the NPC runs from any
                 // threat (the "mage just flees, never casts" symptom). Author Aggression=Aggressive
@@ -134,6 +180,15 @@ public static partial class Generator
                 Resolve($"npc '{n.EditorId}' crimeFaction", n.CrimeFaction, fk => npcRec.CrimeFaction.SetTo(fk));
                 // CombatStyle: HOW the AI fights — picks magic/melee/staff based on equipMult* weights.
                 Resolve($"npc '{n.EditorId}' combatStyle", n.CombatStyle, fk => npcRec.CombatStyle.SetTo(fk));
+                // Appearance refs (the record-local recipe half is set in pass 1 / BuildNpcs):
+                // HCLF hair colour → a CLFM record; FTST face texture set (Mutagen property is
+                // HeadTexture); PNAM head parts (hair/eyes/brows/scars — a modded HDPT such as a
+                // high-poly head simply makes that mod a master of the output).
+                Resolve($"npc '{n.EditorId}' hairColor", n.HairColor, fk => npcRec.HairColor.SetTo(fk));
+                Resolve($"npc '{n.EditorId}' faceTexture", n.FaceTexture, fk => npcRec.HeadTexture.SetTo(fk));
+                foreach (var hp in n.HeadParts)
+                    Resolve($"npc '{n.EditorId}' headPart", hp, fk =>
+                        npcRec.HeadParts.Add(new FormLink<IHeadPartGetter>(fk)));
                 // Spells: populates npc.ActorEffect — the AI's spell list. Combat AI consults this when
                 // its CombatStyle says "prefer magic"; without spells, no casting (the spell list is
                 // empty). Reuse the existing ref resolver — works for in-spec spells AND vanilla refs.
