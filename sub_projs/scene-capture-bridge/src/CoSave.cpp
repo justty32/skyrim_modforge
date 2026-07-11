@@ -18,7 +18,7 @@ namespace {
 
     // Per-record versions (an older save's record is read with its own layout).
     constexpr std::uint32_t kVerSett = 3;  // v2 adds editor step sizes; v3 adds aim/axis
-    constexpr std::uint32_t kVerMkrs = 1;
+    constexpr std::uint32_t kVerMkrs = 2;  // v2: full angle (3f) + scale, was angleZ only
     constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
     constexpr std::uint32_t kVerOvrd = 1;
 
@@ -121,14 +121,15 @@ namespace {
             WriteStr(si, e.kind);
             WriteStr(si, e.note);
             WriteVec3(si, e.position);
-            si->WriteRecordData(e.angleZDeg);
+            WriteVec3(si, e.angleDeg);   // v2 (was a single angleZ float)
+            si->WriteRecordData(e.scale);  // v2
             WriteStr(si, e.cellOrWs);
             si->WriteRecordData(static_cast<std::uint8_t>(e.isInterior ? 1 : 0));
             si->WriteRecordData(FormIdOf(e.proxy));
         }
     }
 
-    void LoadMarkers(const SKSE::SerializationInterface* si) {
+    void LoadMarkers(const SKSE::SerializationInterface* si, std::uint32_t version) {
         std::uint32_t count = 0;
         si->ReadRecordData(count);
         auto& all = Markers::All();
@@ -142,7 +143,14 @@ namespace {
             e.kind = ReadStr(si);
             e.note = ReadStr(si);
             ReadVec3(si, e.position);
-            si->ReadRecordData(e.angleZDeg);
+            if (version >= 2) {
+                ReadVec3(si, e.angleDeg);
+                si->ReadRecordData(e.scale);
+            } else {
+                float angleZ = 0.f;  // v1 stored only the Z angle
+                si->ReadRecordData(angleZ);
+                e.angleDeg = {0.f, 0.f, angleZ};
+            }
             e.cellOrWs = ReadStr(si);
             si->ReadRecordData(interior);
             si->ReadRecordData(proxyId);
@@ -154,7 +162,7 @@ namespace {
                 // save — hand the note/kind to Markers so the load-time adopt
                 // scan can merge them back by position, instead of losing them.
                 ++dropped;
-                Markers::AddPendingOrphan(e.position, e.label, e.kind, e.note, e.angleZDeg);
+                Markers::AddPendingOrphan(e.position, e.label, e.kind, e.note);
                 continue;
             }
             all.push_back(std::move(e));
@@ -260,7 +268,7 @@ namespace {
         while (si->GetNextRecordInfo(type, version, length)) {
             switch (type) {
             case kSett: LoadSettings(si, version); break;
-            case kMkrs: LoadMarkers(si); break;
+            case kMkrs: LoadMarkers(si, version); break;
             case kErsr: LoadEraser(si, version); break;
             case kOvrd: LoadOverrides(si); break;
             default:

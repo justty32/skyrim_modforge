@@ -27,7 +27,8 @@ namespace Markers {
                                      // Registry-only: NOT recoverable by adopt (the savegame
                                      // stores just the display name = label).
         RE::NiPoint3 position;       // fixed at placement time (not the proxy's live pose)
-        float angleZDeg = 0.f;       // player facing at placement, degrees
+        RE::NiPoint3 angleDeg;       // full orientation, degrees (the dagger tip points along it)
+        float scale = 1.f;           // proxy scale (edit mode can change it)
         std::string cellOrWs;        // durable id of the containing cell/worldspace
         bool isInterior = false;
         RE::ObjectRefHandle proxy;
@@ -57,8 +58,10 @@ namespace Markers {
     void Rename(std::uint32_t seq, const std::string& label);
     void SetKind(std::uint32_t seq, const std::string& kind);
     void SetNote(std::uint32_t seq, const std::string& note);
-    // Update a marker's exported pose (edit mode commits a moved gem here).
-    void SetTransform(std::uint32_t seq, const RE::NiPoint3& position, float angleZDeg);
+    // Update a marker's exported pose (edit mode commits a moved proxy here):
+    // full position + orientation (degrees) + scale.
+    void SetTransform(std::uint32_t seq, const RE::NiPoint3& position,
+        const RE::NiPoint3& angleDeg, float scale);
     void Remove(std::uint32_t seq);  // destroys the proxy too — no trace
 
     // Lookup for the E-interaction path: activating a proxy opens its editor
@@ -86,7 +89,7 @@ namespace Markers {
     // onto the re-found gem by a position match. ClearPending resets the stash
     // at revert time, before the new save's markers are read.
     void AddPendingOrphan(const RE::NiPoint3& position, const std::string& label,
-        const std::string& kind, const std::string& note, float angleZDeg);
+        const std::string& kind, const std::string& note);
     void ClearPending();
 
     // CoSave hands the registry back after a load: re-sync the seq counter,

@@ -22,7 +22,6 @@ namespace {
     struct PendingOrphan {
         RE::NiPoint3 position;
         std::string label, kind, note;
-        float angleZDeg = 0.f;
     };
     std::vector<PendingOrphan> g_pending;
 
@@ -49,15 +48,12 @@ namespace {
     }
 
     // The visible proxy base. Preferred: the tooling esp's MarkerACTI — model
-    // is now Clutter\SoulGem\SoulGemGrand01.nif (glowing gem; read from
-    // Skyrim.esm STAT 10D18B via houseCARL, collision + glow controllers
-    // verified via nif_inspect). Collision matters: the old SummonTargetFX
-    // model had NO bhk blocks, so the crosshair could never target a marker
-    // and E-interaction was impossible. The gem's clutter rigidbody would
-    // FALL, so PlaceAt freezes it (SetMotionType kKeyframed — the same
-    // in-game-proven primitive the editor uses). Fallback: vanilla
-    // SummonTargetFXActivator 0x0007CD55 (no collision -> no E, hotkeys only)
-    // so the plugin still works without the tooling esp.
+    // is Weapons\Iron\IronDagger.nif (verified via houseCARL against WEAP
+    // 01397E). A dagger over the soul gem because its tip VISUALISES the
+    // marker's orientation (the user records + edits full rotation now). It has
+    // weapon clutter havok so it would fall — PlaceAt freezes it (SetMotionType
+    // kKeyframed). Fallback: vanilla SummonTargetFXActivator 0x0007CD55 (no
+    // collision -> no E, hotkeys only) so the plugin still works without the esp.
     RE::TESBoundObject* ProxyBase() {
         static RE::TESBoundObject* base = [] {
             auto* dh = RE::TESDataHandler::GetSingleton();
@@ -99,16 +95,21 @@ namespace Markers {
             return false;
         }
         proxy->SetPosition(pos);
-        // The gem model has clutter havok — freeze it or it falls / gets kicked.
+        // Orient the dagger along the player's facing so its tip points somewhere
+        // meaningful from the start (edit mode can re-aim it).
+        const RE::NiPoint3 ang{0.f, 0.f, player->GetAngleZ()};
+        proxy->SetAngle(ang);
+        // The weapon model has clutter havok — freeze it or it falls / gets kicked.
         // The 3D is not loaded yet here, so freeze on the task queue once it is
-        // (the EXPORTED position is fixed right now regardless).
+        // (the EXPORTED pose is fixed right now regardless).
         FreezeDeferred(proxy->GetHandle(), 60);
 
         Entry e;
         e.seq = g_nextSeq++;
         e.label = std::format("marker-{}", e.seq);
         e.position = pos;                               // fixed now, not the proxy's live pose
-        e.angleZDeg = player->GetAngleZ() * kRadToDeg;  // engine radians -> contract degrees
+        e.angleDeg = ang * kRadToDeg;                   // engine radians -> contract degrees
+        e.scale = proxy->GetScale();
         e.cellOrWs = std::move(anchor);
         e.isInterior = interior;
         e.proxy = proxy->GetHandle();
@@ -151,7 +152,8 @@ namespace Markers {
         // note is NOT recoverable: only the display name (= label) lives in
         // the savegame. Documented in the README persistence table.
         e.position = ref->GetPosition();
-        e.angleZDeg = ref->GetAngleZ() * kRadToDeg;
+        e.angleDeg = ref->data.angle * kRadToDeg;
+        e.scale = ref->GetScale();
         const auto a = SceneExporter::AnchorOf(ref);
         e.cellOrWs = a.id;
         e.isInterior = a.interior;
@@ -238,12 +240,16 @@ namespace Markers {
             e->note = note;
     }
 
-    void SetTransform(std::uint32_t seq, const RE::NiPoint3& position, float angleZDeg) {
+    void SetTransform(std::uint32_t seq, const RE::NiPoint3& position,
+        const RE::NiPoint3& angleDeg, float scale) {
         if (auto* e = FindBySeq(seq)) {
-            e->position = position;    // the exported coordinate follows the gem
-            e->angleZDeg = angleZDeg;
-            SKSE::log::info("Markers: #{} moved to ({:.1f}, {:.1f}, {:.1f})",
-                seq, position.x, position.y, position.z);
+            e->position = position;    // the exported pose follows the proxy
+            e->angleDeg = angleDeg;
+            e->scale = scale;
+            SKSE::log::info("Markers: #{} moved to ({:.1f}, {:.1f}, {:.1f}) "
+                "rot({:.0f},{:.0f},{:.0f}) scale {:.2f}", seq,
+                position.x, position.y, position.z,
+                angleDeg.x, angleDeg.y, angleDeg.z, scale);
         }
     }
 
@@ -293,8 +299,8 @@ namespace Markers {
     bool ProxiesVisible() { return g_display; }
 
     void AddPendingOrphan(const RE::NiPoint3& position, const std::string& label,
-        const std::string& kind, const std::string& note, float angleZDeg) {
-        g_pending.push_back({position, label, kind, note, angleZDeg});
+        const std::string& kind, const std::string& note) {
+        g_pending.push_back({position, label, kind, note});
     }
 
     void ClearPending() { g_pending.clear(); }

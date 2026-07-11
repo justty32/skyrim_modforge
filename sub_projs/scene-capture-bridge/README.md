@@ -70,7 +70,7 @@ Export 頁有 **Export player cell** 與 **Export all (loaded cells)** 兩鈕：
 ## 使用流程：marker → agent → 世界改變（P1，實機閉環 2026-07-10）
 
 玩家側：console `sc mk` 進標記模式 → **動作鍵（預設 F11）**在準星處放 marker（無命中落腳下；面板 `place marker here` 為備援）→ 對著 marker **按 E 開編輯視窗**（改 label/kind、寫 **note** 給 agent 的補充指示、刪除）或 **F1 → Markers** → **F1 → Export 鈕**匯出。登記簿隨存檔走（co-save）；跨存檔撿孤兒才用 `adopt this cell`。
-marker 的樣子＝**懸浮發光的大靈魂石**（`Clutter\SoulGem\SoulGemGrand01.nif`，讀自 Skyrim.esm STAT 10D18B；有碰撞才能被 E/準星選到——舊召喚圈模型無碰撞且特效播完隱形；clutter havok 會掉 → 放置當下 `SetMotionType(kKeyframed)` 凍住）。
+marker 的樣子＝**鐵匕首**（`Weapons\Iron\IronDagger.nif`，houseCARL 對 WEAP 01397E 驗過）——換掉靈魂石是因為 marker 現在會**記錄＋可編輯完整朝向與大小**，匕首的**劍尖方向**剛好把朝向視覺化。有碰撞才能被 E/準星選到；weapon clutter havok 會掉 → 放置當下 `SetMotionType(kKeyframed)` 凍住。marker 匯出的 `annotations[]` 現在帶 `rotation{x,y,z}`＋`scale`（`angleZ` 仍在＝`rotation.z`，向後相容）。
 
 **agent 對接配方**（拿到需求如「在 goat 放一隻山羊」時照做）：
 

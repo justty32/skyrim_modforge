@@ -259,7 +259,10 @@ namespace SceneExporter {
                 a["label"] = m.label;
                 a["kind"] = m.kind;
                 a["position"] = Vec3(m.position);
-                a["angleZ"] = m.angleZDeg;
+                a["angleZ"] = m.angleDeg.z;  // back-compat (== rotation.z)
+                a["rotation"] = nlohmann::json{
+                    {"x", m.angleDeg.x}, {"y", m.angleDeg.y}, {"z", m.angleDeg.z}};
+                a["scale"] = m.scale;
                 if (!m.note.empty()) a["note"] = m.note;  // free-form agent brief
                 if (!m.cellOrWs.empty()) a[m.isInterior ? "cell" : "worldspace"] = m.cellOrWs;
                 arr.push_back(std::move(a));

@@ -13,7 +13,9 @@ public sealed class AnnotationSpec
     public string Kind { get; set; } = "note";      // advisory taxonomy: note | navmesh | mapMarker | vfx | tag | ...
     public string Note { get; set; } = "";          // free-form brief for the agent ("face the door", "a vendor here")
     public Vec3 Position { get; set; } = new();
-    public float AngleZ { get; set; }               // player facing at placement (degrees)
+    public float AngleZ { get; set; }               // player facing at placement (degrees) — == Rotation.Z
+    public Vec3 Rotation { get; set; } = new();      // full proxy orientation (degrees); tip points along it
+    public float Scale { get; set; } = 1f;           // proxy scale at placement/last edit
     public string Cell { get; set; } = "";          // interior: "<master>:0xFORMID"
     public string Worldspace { get; set; } = "";    // exterior: "<master>:0xFORMID"
 }

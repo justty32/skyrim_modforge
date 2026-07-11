@@ -175,11 +175,16 @@ namespace Editor {
         const RE::NiPoint3 right{std::cos(yaw), -std::sin(yaw), 0.f};
 
         switch (code) {
-        case kSelect:  // numpad 5 — revert to the pre-edit pose, KEEP editing
-            Apply(ref.get(), g.origPos, g.origAngle);
-            if (!g.isActor) { ref->SetScale(g.origScale); ref->Update3DPosition(true); }
-            SKSE::log::info("Editor: reset to pre-edit pose (still editing)");
-            RE::DebugNotification("SCB: reset to pre-edit pose");
+        case kSelect:  // numpad 5 — mode-scoped reset, KEEP editing
+            if (g_rotateMode) {
+                // Rotate mode: 5 (like 8/2) zeroes only the angle.
+                Apply(ref.get(), ref->GetPosition(), g.origAngle);
+                RE::DebugNotification("SCB: rotation reset");
+            } else {
+                Apply(ref.get(), g.origPos, g.origAngle);
+                if (!g.isActor) { ref->SetScale(g.origScale); ref->Update3DPosition(true); }
+                RE::DebugNotification("SCB: reset to pre-edit pose");
+            }
             return true;
         case kSelectRay:  // numpad * — commit, then ray-select the next target
         case kCommit:     // numpad 0 — commit and exit
@@ -191,7 +196,7 @@ namespace Editor {
             // NOT show up in the Editor page's override list).
             if (g.isMarker) {
                 Markers::SetTransform(g.markerSeq, ref->GetPosition(),
-                    ref->data.angle.z * kRadToDeg);
+                    ref->data.angle * kRadToDeg, ref->GetScale());
                 RE::DebugNotification("SCB: marker moved");
             } else if (!g.authoredId.empty()) {
                 Overrides::Register(g.authoredId, ref.get(),
