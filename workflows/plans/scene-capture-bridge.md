@@ -136,6 +136,22 @@ MarkerEntry {
 - **P3 動態物件**：選中凍結物理（`SetMotionType(Keyframed)` 待驗）→ 編輯 → 回復。誠實邊界：匯出 authored 位置，載入後 havok 自行沉降（與 CK 慣例一致）。檢視法術（新增/修改/刪除/全部四種；顯示被刪的 vanilla ref 需暫時 enable 或臨時紅 marker，實作時定）。
 - **P4 範圍吸取**：`ForEachReferenceInRange` bound 半徑；面板先預覽「會吸到 N 個」再確認。
 
+# P5：console 指令集＋模式制（📋 規劃中，2026-07-11 使用者提出，未動工）
+
+**動機（使用者原話意旨）**：快捷鍵太多了（F6/F7/F8/F10/F11＋整排 numpad）。改成**模式制**：console 切模式，之後**同一顆動作鍵（F11）按當前模式做事**。例：`mode_marker` 後 F11=放 marker；`mode_delete` 後 F11=擦除。**指令越短越好**（使用者明示）。
+
+**設計草案**：
+
+- **模式**：`marker` / `del`（擦除）/ `pick`（滴管吸）/ `place`（擺放）/ `edit`（進 numpad 編輯）/ `off`。F10 export 維持全域不入模式；numpad 編輯內部鍵不變（那是模式內操作，不是入口）。
+- **指令形狀（越短越好，三案待使用者挑）**：
+  - a. 無前綴極短：`mk` / `del` / `pk` / `pl` / `ed` / `off`——最短，但要逐一驗證不撞 vanilla console 指令。
+  - b. 一字前綴：`sc mk` / `sc del` …——短且零撞名風險，tab 心智負擔小。
+  - c. 使用者原例形狀：`mode_marker` / `mode_delete`——自我說明但最長。
+- **回饋**：切模式時 `DebugNotification`「SCB mode: marker」＋面板頂部常駐顯示當前模式；`F11` 在 `off` 模式提示先切模式。
+- **實作路徑（待研究定案）**：SKSE 自訂 console 指令的成熟做法＝**劫持 vanilla 冷門 ObScript 指令**（改 name/handler，如慣例犯 `ClearAchievement`）或 console 輸入 hook；也可考慮軟依賴 ConsoleUtilSSE。研究時查 CommonLibSSE-NG 的 `SCRIPT_FUNCTION` 改寫先例。
+- **遷移**：模式制落地後，現有 F6/F7/F8/F11 直達鍵**保留一段過渡**（老手感不砍），面板加開關「classic hotkeys」可關。
+- **🔴 open（等使用者）**：① 指令形狀挑 a/b/c（或自報一套）；② 動作鍵要不要可設定（F11 寫死 vs ini）；③ `edit` 模式是「F11 選中目標進編輯」還是維持 numpad 5。
+
 ---
 
 # 附錄：細摳記錄（需求原文，2026-07-10）
