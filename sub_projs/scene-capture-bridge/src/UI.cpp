@@ -49,20 +49,21 @@ void UI::Register() {
     SKSEMenuFramework::AddSectionItem("Eraser", EraserPage::Render);
     SKSEMenuFramework::AddSectionItem("Palette", PalettePage::Render);
     SKSEMenuFramework::AddSectionItem("Editor", EditorPage::Render);
+    SKSEMenuFramework::AddSectionItem("Settings", SettingsPage::Render);
     MarkerEditor::Init();  // the standalone E-interaction window
     SKSE::log::info("SKSE Menu Framework panel registered");
 }
 
 void __stdcall UI::Export::Render() {
+    UI::ModeLine();
     const auto label = CurrentCellLabel();
     ImGuiMCP::Text("Cell: %s", label.c_str());
     ImGuiMCP::Separator();
 
+    // Export deliberately has no hotkey (user-decided): this button is it.
     if (ImGuiMCP::Button("Export player cell")) {
         SceneExporter::ExportPlayerCellToFile();
     }
-    ImGuiMCP::SameLine();
-    ImGuiMCP::Text("(or press F10)");
 
     ImGuiMCP::Separator();
 
@@ -90,11 +91,13 @@ void __stdcall UI::Export::Render() {
 // MarkersPage + MarkerEditor live in UI.Markers.cpp (300-line convention).
 
 void __stdcall UI::EraserPage::Render() {
+    UI::ModeLine();
     constexpr ImGuiMCP::ImVec4 kWarn{1.f, 0.55f, 0.25f, 1.f};
     static bool thisCellOnly = false;
 
     auto& marked = ::Eraser::All();
-    ImGuiMCP::Text("%zu marked for removal. F8 erases the crosshair target.", marked.size());
+    ImGuiMCP::Text("%zu marked for removal. In delete mode (sc del) the action "
+                   "key erases the crosshair target.", marked.size());
     if (ImGuiMCP::Button("undo")) { ::Eraser::Undo(); }
     ImGuiMCP::SameLine();
     if (ImGuiMCP::Button("clear (re-enable all)")) { ::Eraser::Clear(); }
@@ -150,11 +153,13 @@ namespace {
 }
 
 void __stdcall UI::PalettePage::Render() {
+    UI::ModeLine();
     constexpr ImGuiMCP::ImVec4 kWarn{1.f, 0.55f, 0.25f, 1.f};
 
     auto& slots = ::Palette::All();
-    ImGuiMCP::Text("%zu slot(s). F6 picks the crosshair target; F7 places the "
-                   "selected slot where you aim. Slots persist across saves.", slots.size());
+    ImGuiMCP::Text("%zu slot(s). Pick mode (sc pk) eyedrops the crosshair "
+                   "target; place mode (sc pl) spawns the selected slot where "
+                   "you aim. Slots persist across saves.", slots.size());
     // Trees/architecture the crosshair never sees — explicit entry, see Aim.h.
     if (ImGuiMCP::Button("pick by ray")) { ::Palette::PickByRay(); }
     ImGuiMCP::Separator();
@@ -196,15 +201,16 @@ void __stdcall UI::PalettePage::Render() {
 }
 
 void __stdcall UI::EditorPage::Render() {
+    UI::ModeLine();
     constexpr ImGuiMCP::ImVec4 kWarn{1.f, 0.55f, 0.25f, 1.f};
 
     const auto st = ::Editor::Current();
     if (!st.active) {
         ImGuiMCP::TextWrapped(
-            "Aim at anything and press numpad 5 to edit it (numpad * ray-"
-            "selects trees/statics the crosshair misses). Your own refs "
-            "export their live pose; an authored (vanilla/mod) ref becomes an "
-            "overrides[] entry when you commit.");
+            "Edit mode (sc ed): aim and press the action key to edit the "
+            "target (numpad * ray-selects trees/statics the crosshair "
+            "misses). Your own refs export their live pose; an authored "
+            "(vanilla/mod) ref becomes an overrides[] entry when you commit.");
         if (ImGuiMCP::Button("select by ray")) { ::Editor::SelectByRay(); }
     } else {
         ImGuiMCP::Text("Editing: %s", st.name);

@@ -4,6 +4,7 @@
 #include "SceneExporter.h"
 #include "log.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace {
@@ -11,6 +12,7 @@ namespace {
 
     std::vector<Markers::Entry> g_entries;
     std::uint32_t g_nextSeq = 1;
+    bool g_display = true;  // sc mk dp0/dp1 — persists via co-save
 
     // The visible proxy base. Preferred: the tooling esp's MarkerACTI — model
     // is now Clutter\SoulGem\SoulGemGrand01.nif (glowing gem; read from
@@ -80,6 +82,7 @@ namespace Markers {
         // Label doubles as the proxy's display name — display names persist in
         // the savegame, which is what AdoptOrphans() recovers labels from.
         proxy->SetDisplayName(e.label.c_str(), true);
+        if (!g_display) proxy->Disable();  // dp0 active: new gems follow it
 
         SKSE::log::info("Markers: placed #{} '{}' ({}) at ({:.1f}, {:.1f}, {:.1f}) in {}",
             e.seq, e.label, how, pos.x, pos.y, pos.z,
@@ -211,6 +214,41 @@ namespace Markers {
         for (auto& e : g_entries)
             if (auto proxy = e.proxy.get())
                 proxy->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
+    }
+
+    void SetProxiesVisible(bool visible) {
+        g_display = visible;
+        std::size_t touched = 0;
+        for (auto& e : g_entries) {
+            if (auto proxy = e.proxy.get()) {
+                if (visible) proxy->Enable(false);
+                else         proxy->Disable();
+                ++touched;
+            }
+        }
+        SKSE::log::info("Markers: {} {} gem(s)", visible ? "showed" : "hid", touched);
+        if (visible) {
+            // Enable re-spawns the 3D with live clutter havok — re-freeze.
+            for (auto& e : g_entries)
+                if (auto proxy = e.proxy.get())
+                    proxy->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
+        }
+    }
+
+    bool ProxiesVisible() { return g_display; }
+
+    void OnRegistryRestored() {
+        std::uint32_t maxSeq = 0;
+        for (const auto& e : g_entries) maxSeq = std::max(maxSeq, e.seq);
+        g_nextSeq = maxSeq + 1;
+        PruneDeadProxies();  // drops unresolvable, re-freezes the rest
+        if (!g_display) {
+            for (auto& e : g_entries)
+                if (auto proxy = e.proxy.get())
+                    proxy->Disable();
+        }
+        SKSE::log::info("Markers: registry restored from co-save — {} marker(s)",
+            g_entries.size());
     }
 
 }  // namespace Markers

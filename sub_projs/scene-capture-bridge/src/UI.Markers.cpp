@@ -87,9 +87,10 @@ void __stdcall UI::MarkerEditor::Render() {
 }
 
 void __stdcall UI::MarkersPage::Render() {
+    UI::ModeLine();
     auto& all = ::Markers::All();
-    ImGuiMCP::Text("%zu marker(s). F11 places a gem where you aim; E on a gem "
-                   "opens its editor.", all.size());
+    ImGuiMCP::Text("%zu marker(s). Marker mode (sc mk): the action key places "
+                   "a gem where you aim; E on a gem opens its editor.", all.size());
     if (ImGuiMCP::Button("place marker here")) {
         ::Markers::PlaceAtPlayer();   // hotkey-free path — immune to key conflicts
     }

@@ -60,4 +60,10 @@ namespace Eraser {
     void AdoptCandidate(std::size_t index);      // move one candidate into the marked list
     void DismissCandidates();                    // drop the current scan results
 
+    // Co-save plumbing (CoSave.cpp). DropAll clears the REGISTRY ONLY — no
+    // Enable() calls, unlike Clear(): on a save-load revert the incoming save
+    // carries its own disable states and the old world must not be touched.
+    void DropAll();
+    void OnRegistryRestored();  // rebuild the id set after entries are loaded
+
 }  // namespace Eraser

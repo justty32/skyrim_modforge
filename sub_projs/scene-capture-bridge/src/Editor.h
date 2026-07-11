@@ -2,9 +2,11 @@
 
 // Editor — the numpad transform mode (Idea #24 細摳②「修改」, plan P2).
 //
-// Numpad 5 selects the crosshair target; numpad * ray-selects (explicit entry
-// for trees/non-activatable statics); the numpad then nudges the selection;
-// numpad 0 commits, numpad . (Del) cancels and restores the original transform.
+// ENTRY (P5): the edit mode's action key (Modes.cpp -> EnterSelect, crosshair)
+// or numpad * (explicit ray-select for trees/non-activatable statics). The
+// numpad then nudges the selection; numpad 0 commits, numpad . (Del) cancels
+// and restores the original transform. Numpad 5 is no longer an entry key —
+// in-mode it still means "commit, then select what I'm looking at now".
 //
 // Two kinds of target (contract decided 2026-07-11):
 //   * OUR OWN dynamic refs — contract-zero: their live pose is what the
@@ -31,9 +33,13 @@ namespace Editor {
 
     // Explicit physics-ray selection (panel button; numpad * is the key
     // equivalent) — for trees and non-activatable statics the crosshair never
-    // sees. Deliberately NOT a fallback of numpad 5: the ray always hits some
-    // ref (walls/floors), so a fallback would make "no target" impossible.
+    // sees. Deliberately NOT a fallback of the crosshair: the ray always hits
+    // some ref (walls/floors), so a fallback would make "no target" impossible.
     bool SelectByRay();
+
+    // The edit mode's action-key entry (Modes.cpp): select the crosshair
+    // target and enter numpad edit mode. No-op while already editing.
+    bool EnterSelect();
 
     void Cancel();  // restore the original transform and leave edit mode
 

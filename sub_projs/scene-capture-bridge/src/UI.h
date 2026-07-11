@@ -18,7 +18,15 @@ namespace UI {
     // Register the panel. Safe to call when the framework is absent (no-op).
     void Register();
 
+    // "Mode: <name>" + separator — every page calls it first so the current
+    // mode is always in sight (P5).
+    void ModeLine();
+
     namespace Export {
+        void __stdcall Render();
+    }
+
+    namespace SettingsPage {  // modes, keybinds, gem visibility (UI.Settings.cpp)
         void __stdcall Render();
     }
 

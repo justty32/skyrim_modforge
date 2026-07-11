@@ -52,4 +52,8 @@ namespace Overrides {
     bool Revert(std::size_t index);  // restore the baseline transform + unregister
     void Clear();                    // revert everything
 
+    // Co-save plumbing (CoSave.cpp): registry-only clear — no world touches,
+    // unlike Clear(), which physically moves refs back.
+    void DropAll();
+
 }  // namespace Overrides

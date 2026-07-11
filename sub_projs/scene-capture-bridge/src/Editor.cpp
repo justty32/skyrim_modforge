@@ -132,9 +132,12 @@ namespace Editor {
 
     bool HandleKey(std::uint32_t code) {
         if (!g.active) {
-            if (code != kSelect && code != kSelectRay) return false;
-            TrySelect(code == kSelectRay);
-            return true;  // consume the select keys either way
+            // P5: edit mode is ENTERED via the edit mode's action key
+            // (Modes.cpp -> EnterSelect). Numpad * stays as the explicit
+            // ray-select entry; numpad 5 is no longer an entry key.
+            if (code != kSelectRay) return false;
+            TrySelect(true);
+            return true;
         }
 
         auto ref = Target();
@@ -198,6 +201,11 @@ namespace Editor {
     bool SelectByRay() {
         if (g.active) return false;  // finish (0) or cancel (.) first
         return TrySelect(true);
+    }
+
+    bool EnterSelect() {
+        if (g.active) return false;  // finish (0) or cancel (.) first
+        return TrySelect(false);     // the crosshair, classic feel
     }
 
     void Cancel() {

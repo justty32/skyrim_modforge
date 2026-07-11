@@ -142,4 +142,17 @@ namespace Eraser {
 
     void DismissCandidates() { g_candidates.clear(); }
 
+    void DropAll() {
+        g_entries.clear();
+        g_ids.clear();
+        g_candidates.clear();
+    }
+
+    void OnRegistryRestored() {
+        g_ids.clear();
+        for (const auto& e : g_entries) g_ids.insert(e.id);
+        SKSE::log::info("Eraser: registry restored from co-save — {} mark(s)",
+            g_entries.size());
+    }
+
 }  // namespace Eraser

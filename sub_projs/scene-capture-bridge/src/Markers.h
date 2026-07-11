@@ -72,4 +72,15 @@ namespace Markers {
     // whose proxy no longer resolves so the panel doesn't list ghosts.
     void PruneDeadProxies();
 
+    // `sc mk dp0` / `dp1`: hide/show every gem. Visual only — positions were
+    // fixed at placement and the exporter excludes proxies before it ever
+    // looks at the disabled flag, so nothing downstream changes. Hidden gems
+    // have no collision, so E-interaction needs dp1 first.
+    void SetProxiesVisible(bool visible);
+    [[nodiscard]] bool ProxiesVisible();
+
+    // CoSave hands the registry back after a load: re-sync the seq counter,
+    // re-freeze the gems' clutter havok, re-apply the display state.
+    void OnRegistryRestored();
+
 }  // namespace Markers

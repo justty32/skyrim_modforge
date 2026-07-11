@@ -86,4 +86,6 @@ namespace Overrides {
         while (!g_entries.empty()) Revert(g_entries.size() - 1);
     }
 
+    void DropAll() { g_entries.clear(); }
+
 }  // namespace Overrides

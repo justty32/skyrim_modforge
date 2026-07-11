@@ -9,4 +9,8 @@ set(sources ${sources}
     src/SceneExporter.cpp
     src/UI.cpp
     src/UI.Markers.cpp
+    src/UI.Settings.cpp
+    src/Modes.cpp
+    src/Console.cpp
+    src/CoSave.cpp
 )
