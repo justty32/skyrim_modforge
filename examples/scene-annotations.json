@@ -4,6 +4,7 @@
   "esl": true,
   "annotations": [
     { "seq": 1, "label": "goat", "kind": "note", "angleZ": 130.2,
+      "note": "a domestic goat, facing the bar",
       "position": { "x": -453.7, "y": -965.8, "z": 67.8 },
       "cell": "Skyrim.esm:0x01605E" },
     { "seq": 2, "label": "raise-terrain-here", "kind": "note", "angleZ": 0,

@@ -608,7 +608,7 @@
   "additionalProperties": false,
   "$defs": {
     "npcRole": {"type": "object", "properties": {"npc": {"type": "string"}, "role": {"type": "string"}, "backstory": {"type": "string"}}},
-    "annotation": {"type": "object", "properties": {"seq": {"type": "integer"}, "label": {"type": "string"}, "kind": {"type": "string"}, "position": {"$ref": "#/$defs/vec3"}, "angleZ": {"type": "number"}, "cell": {"type": "string"}, "worldspace": {"type": "string"}}},
+    "annotation": {"type": "object", "properties": {"seq": {"type": "integer"}, "label": {"type": "string"}, "kind": {"type": "string"}, "note": {"type": "string", "description": "free-form brief for the agent (\"face the door\", \"a vendor here\")"}, "position": {"$ref": "#/$defs/vec3"}, "angleZ": {"type": "number"}, "cell": {"type": "string"}, "worldspace": {"type": "string"}}},
     "override": {"type": "object", "required": ["ref", "position", "rotation"], "properties": {"ref": {"type": "string", "description": "\"<master>:0xFORMID\" of the existing placed ref (REFR/ACHR)"}, "position": {"$ref": "#/$defs/vec3"}, "rotation": {"$ref": "#/$defs/vec3", "description": "degrees"}, "scale": {"type": "number", "description": "omitted = keep original scale; 1.0 = reset to engine default (XSCL dropped)"}}},
     "ref": {
       "type": "string",

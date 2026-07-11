@@ -18,7 +18,7 @@ public class AnnotationTests
         {
           "pluginName": "T.esp",
           "annotations": [
-            { "seq": 1, "label": "goat", "kind": "note",
+            { "seq": 1, "label": "goat", "kind": "note", "note": "face the door",
               "position": { "x": 1.5, "y": -2.0, "z": 3.0 }, "angleZ": 90.0,
               "cell": "Skyrim.esm:0x01605E" }
           ]
@@ -30,6 +30,7 @@ public class AnnotationTests
         Assert.Equal(1, a.Seq);
         Assert.Equal("goat", a.Label);
         Assert.Equal("note", a.Kind);
+        Assert.Equal("face the door", a.Note);   // the free-form agent brief rides along
         Assert.Equal(1.5f, a.Position.X);
         Assert.Equal(90.0f, a.AngleZ);
         Assert.Equal("Skyrim.esm:0x01605E", a.Cell);

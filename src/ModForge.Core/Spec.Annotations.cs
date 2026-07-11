@@ -11,6 +11,7 @@ public sealed class AnnotationSpec
     public int Seq { get; set; }                    // placement order — ordered kinds (navmesh) rely on it
     public string Label { get; set; } = "";         // free text, renamed in the editor panel
     public string Kind { get; set; } = "note";      // advisory taxonomy: note | navmesh | mapMarker | vfx | tag | ...
+    public string Note { get; set; } = "";          // free-form brief for the agent ("face the door", "a vendor here")
     public Vec3 Position { get; set; } = new();
     public float AngleZ { get; set; }               // player facing at placement (degrees)
     public string Cell { get; set; } = "";          // interior: "<master>:0xFORMID"
