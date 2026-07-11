@@ -10,8 +10,8 @@ public static partial class Generator
     //
     // Deliberately NOT consumed (advisory fields; see Spec.CapturedNpcs.cs header): `base` (Q2:
     // always MINT a fresh NPC_, never override the origin), `dead`, `activeEffects`, hairColor rgb,
-    // perk ranks. AutoCalcStats is NOT set — a captured actor has no class, and autoCalc with no
-    // class computes ~0 HP (the permanent-bleedout footgun); flat default stats are correct here.
+    // perk ranks. AutoCalcStats turns on ONLY when the capture carried a class — autoCalc with no
+    // class computes ~0 HP (the permanent-bleedout footgun); class-less captures keep flat defaults.
     // AI fields are left at spec defaults (an appearance clone is docile until authored otherwise).
     public static void ExpandCapturedNpcs(ModSpec spec)
     {
@@ -30,7 +30,15 @@ public static partial class Generator
                 // identity
                 Race = cn.Race, Female = cn.Female,
                 Unique = cn.Unique, Essential = cn.Essential, Protected = cn.Protected,
-                Outfit = cn.DefaultOutfit,
+                // Wardrobe: the equipped list wins over defaultOutfit. A PROTEUS clone's outfit
+                // ref points at a runtime template that's an EMPTY SHELL on disk (in-game
+                // confirmed: naked clone), while `equipped` is what the actor actually wore —
+                // consumed as inventory items below (the engine auto-equips the best).
+                Outfit = cn.Equipped.Count > 0 ? "" : cn.DefaultOutfit,
+                // Stats: class + level + autoCalc make the clone's H/M/S believable. autoCalc
+                // ONLY with a class (class-less autoCalc = ~0 HP permanent-bleedout footgun).
+                Class = cn.Class, Level = cn.Level,
+                AutoCalcStats = !string.IsNullOrWhiteSpace(cn.Class),
                 // face/body recipe
                 Weight = cn.Weight, Height = cn.Height,
                 BodyTint = cn.BodyTint,
@@ -47,6 +55,8 @@ public static partial class Generator
             };
             foreach (var p in cn.Perks)
                 if (!string.IsNullOrWhiteSpace(p.Perk)) n.Perks.Add(p.Perk);
+            foreach (var eq in cn.Equipped)
+                if (!string.IsNullOrWhiteSpace(eq)) n.Items.Add(new NpcItemSpec { Item = eq, Count = 1 });
             spec.Npcs.Add(n);
 
             // Place the clone where it was captured. A capture with no anchor (the DLL couldn't

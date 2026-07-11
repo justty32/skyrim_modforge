@@ -78,6 +78,9 @@
 
 **OPEN-A 殘餘（最後一小項）**：存檔完全重開 → capture 的 aim source（er0/er1）還原（co-save SETT v4）。（`sc cap er1` 射線吸取 2026-07-11 已實證 OK。）另留意：模式制下重複按 F11 會吸出重複列（正常行為，消費端 editorId 已防撞）。
 
+**P10 擷取器補完（DLL crc `923e348b` 已部署雙夾，co-save SCCP 升 v4——舊存檔照讀）**：NPC 擷取新收 **class＋level＋equipped**（worn 護甲＋手持武器/火把）；新指令 **`sc capc`**＝console 點選誰就吸誰（物品與 NPC 都行，不用準星）。消費端同步：class/level 直通＋有 class 開 autoCalcStats；**equipped→inventory（自動穿最好的）且非空時 skip outfit**（治 PROTEUS 裸體）。⚠️ 完全關遊戲重開吃新 DLL。
+   - **驗**：① 重開遊戲 → **重吸一次 PROTEUS clone**（console 點 clone → `sc capc` 最省事）→ Export → 交給我重 build → 分身應**穿你身上的裝備＋數值照 class/level 算**；② 順手：console 點一把武器 `sc capc` 應吸進 capturedItems。
+
  wait_todo — 實機測試（in-game，MO2 / Proton）
 
 ← [WAIT_USER](../WAIT_USER.md)（總入口）
@@ -157,5 +160,8 @@
 **2026-07-11 端到端全通**：`sc cap` 模式（F11）吸 Mirabelle → Export → 消費 → build → 進遊戲**分身在學院庭院原地出現** ✅（OPEN-A 核心流程、OPEN-C 18-morph 修復、消費端 Phase 1 一次實證；落地記錄 [landed/npcs](../workflows/feature-dev/landed/npcs.md)）。殘餘：
 
 **OPEN-A 殘餘（最後一小項）**：存檔完全重開 → capture 的 aim source（er0/er1）還原（co-save SETT v4）。（`sc cap er1` 射線吸取 2026-07-11 已實證 OK。）另留意：模式制下重複按 F11 會吸出重複列（正常行為，消費端 editorId 已防撞）。
+
+**P10 擷取器補完（DLL crc `923e348b` 已部署雙夾，co-save SCCP 升 v4——舊存檔照讀）**：NPC 擷取新收 **class＋level＋equipped**（worn 護甲＋手持武器/火把）；新指令 **`sc capc`**＝console 點選誰就吸誰（物品與 NPC 都行，不用準星）。消費端同步：class/level 直通＋有 class 開 autoCalcStats；**equipped→inventory（自動穿最好的）且非空時 skip outfit**（治 PROTEUS 裸體）。⚠️ 完全關遊戲重開吃新 DLL。
+   - **驗**：① 重開遊戲 → **重吸一次 PROTEUS clone**（console 點 clone → `sc capc` 最省事）→ Export → 交給我重 build → 分身應**穿你身上的裝備＋數值照 class/level 算**；② 順手：console 點一把武器 `sc capc` 應吸進 capturedItems。
 
 **PROTEUS clone 玩家分身驗收（`~/skyrim_mods/mine/MFCapPrisoner.zip` 待裝）**：OPEN-B 已結案（PROTEUS 寫 TESNPC ✅，見 [landed/npcs](../workflows/feature-dev/landed/npcs.md)）；分身 zip 已出貨——裝了進遊戲看：**你自己的分身**應站在擷取點（Tamriel (109098, 103520, -9017)，冬堡往學院方向），臉形/髮型/鬍子/髮色/體重＝你的角色。**預期落差（非 bug）**：①戰紋/膚色細節層可能沒有（PROTEUS 沒把 tintLayers 寫回 TESNPC）；②服裝可能不對（defaultOutfit 指向 PROTEUS.esp runtime 模板，esp 檔上是空殼）；③RaceMenu 雕塑/overlay 本來就不在配方層。masters：Skyrim.esm＋PROTEUS.esp＋nwsFollowerFramework.esp。

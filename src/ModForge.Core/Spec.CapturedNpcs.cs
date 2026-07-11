@@ -6,10 +6,10 @@ namespace ModForge;
 // macro-EXPANDS each entry into an ordinary NpcSpec (+ an ACHR PlacementSpec at the capture spot)
 // so the battle-tested NPC build/wire passes do the real work. See Generator.ExpandCapturedNpcs.
 //
-// What is consumed: identity (race/female/unique/essential/protected/outfit/perks) + the full
-// TESNPC face/body recipe (weight/height/bodyTint/hairColor/faceTexture/headParts/tintLayers/
-// faceMorphs/faceParts). What rides along UNCONSUMED (advisory, kept so nothing is silently
-// dropped): `base` (the origin NPC_ — we always MINT a fresh NPC, never override the original),
+// What is consumed: identity (race/female/unique/essential/protected/outfit/perks/class/level/
+// equipped) + the full TESNPC face/body recipe (weight/height/bodyTint/hairColor/faceTexture/
+// headParts/tintLayers/faceMorphs/faceParts). What rides along UNCONSUMED (advisory, kept so
+// nothing is silently dropped): `base` (the origin NPC_ — we always MINT, never override),
 // `dead` (an ACHR "starts dead" concept, not a TESNPC field), `activeEffects` (a runtime buff
 // snapshot, not a durable trait), `hairColor.r/g/b` (the CLFM record itself carries the colour)
 // and `perks[].rank` (wiring uses each perk's own NumRanks). Faces render gray/dark until the
@@ -36,6 +36,12 @@ public sealed class CapturedNpcSpec
     public List<float> FaceMorphs { get; set; } = new();       // 18 floats (idx 0–17) or empty
     public List<int> FaceParts { get; set; } = new();          // 4 ints or empty
     public List<CapturedNpcPerkSpec> Perks { get; set; } = new();
+    public string Class { get; set; } = "";        // ref → CLAS; when present the expansion turns on autoCalcStats (class+level drive believable H/M/S)
+    public int Level { get; set; }                  // actor's effective level at capture time (0 = unknown → engine default)
+    // Worn armour + held weapons/torch (durable refs). Consumed as NpcSpec.Items (best gets
+    // auto-equipped) — and when non-empty the expansion SKIPS defaultOutfit: a PROTEUS clone's
+    // outfit is a runtime shell (empty on disk), while the equipped list is what it actually wore.
+    public List<string> Equipped { get; set; } = new();
     public List<CapturedActiveEffectSpec> ActiveEffects { get; set; } = new(); // advisory (not consumed)
     public Vec3 Position { get; set; } = new();
     public Vec3 Rotation { get; set; } = new();    // degrees (DLL converts)

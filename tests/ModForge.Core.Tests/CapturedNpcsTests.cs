@@ -37,6 +37,9 @@ public class CapturedNpcsTests
         FaceMorphs = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f, -0.1f, -0.2f, -0.3f, -0.4f, -0.5f, -0.6f, -0.7f, -0.8f },
         FaceParts = { 3, 0, 2, 1 },
         Perks = { new CapturedNpcPerkSpec { Perk = "Skyrim.esm:0x0581E7", Rank = 1 } },
+        Class = "Skyrim.esm:0x01CE78",   // CombatWarrior1H-ish — drives autoCalcStats
+        Level = 12,
+        Equipped = { "Skyrim.esm:0x012EB7", "Skyrim.esm:0x03619E" },   // iron sword + college robes
         Dead = false,
         ActiveEffects = { new CapturedActiveEffectSpec { MagicEffect = "Skyrim.esm:0x0003EB42", Magnitude = 10, Duration = 60, Elapsed = 5 } },
         Position = new Vec3 { X = 100f, Y = 200f, Z = 300f },
@@ -112,7 +115,12 @@ public class CapturedNpcsTests
         Assert.Equal(NordRace, n.Race);
         Assert.True(n.Female);
         Assert.True(n.Unique); Assert.True(n.Essential); Assert.True(n.Protected);
-        Assert.Equal("Skyrim.esm:0x0209A6", n.Outfit);
+        Assert.Equal("", n.Outfit);   // equipped list present → defaultOutfit skipped (PROTEUS shell)
+        Assert.Equal("Skyrim.esm:0x01CE78", n.Class);
+        Assert.Equal(12, n.Level);
+        Assert.True(n.AutoCalcStats);   // class present → stats calc on
+        Assert.Equal(2, n.Items.Count);
+        Assert.Equal("Skyrim.esm:0x012EB7", n.Items[0].Item);
         Assert.Equal(60f, n.Weight);
         Assert.Equal(1.02f, n.Height);
         Assert.Equal(230, n.BodyTint!.R);
@@ -160,6 +168,23 @@ public class CapturedNpcsTests
 
         Assert.Single(s.Npcs);        // the NPC_ still mints (usable via placeatme)
         Assert.Empty(s.Placements);
+    }
+
+    [Fact]
+    public void Expand_NoEquipped_KeepsOutfit_AndNoAutoCalcWithoutClass()
+    {
+        // The Mirabelle case: a vanilla NPC whose outfit ref has real on-disk content and whose
+        // capture carried no equipped list — the outfit passes through. No class → autoCalc off.
+        var s = new ModSpec { PluginName = "M.esp" };
+        var cn = FullSample();
+        cn.Equipped.Clear(); cn.Class = ""; cn.Level = 0;
+        s.CapturedNpcs.Add(cn);
+        Generator.ExpandCapturedNpcs(s);
+
+        var n = Assert.Single(s.Npcs);
+        Assert.Equal("Skyrim.esm:0x0209A6", n.Outfit);
+        Assert.Empty(n.Items);
+        Assert.False(n.AutoCalcStats);   // class-less autoCalc = the 0-HP bleedout footgun
     }
 
     [Fact]
@@ -278,6 +303,8 @@ public class CapturedNpcsTests
               "faceMorphs": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.8],
               "faceParts": [3, 0, 2, 1],
               "perks": [{"perk": "Skyrim.esm:0x0581E7", "rank": 1}],
+              "class": "Skyrim.esm:0x01CE78", "level": 12,
+              "equipped": ["Skyrim.esm:0x012EB7", "Skyrim.esm:0x03619E"],
               "activeEffects": [{"magicEffect": "Skyrim.esm:0x0003EB42", "magnitude": 10.0, "duration": 60.0, "elapsed": 5.0, "source": "Skyrim.esm:0x0001CEAD"}],
               "position": {"x": 100.0, "y": 200.0, "z": 300.0},
               "rotation": {"x": 0.0, "y": 0.0, "z": 90.0},
@@ -298,6 +325,11 @@ public class CapturedNpcsTests
         Generator.ExpandCapturedNpcs(s);
         var n = Assert.Single(s.Npcs);
         Assert.True(n.Female);
+        Assert.Equal("Skyrim.esm:0x01CE78", n.Class);
+        Assert.Equal(12, n.Level);
+        Assert.True(n.AutoCalcStats);
+        Assert.Equal(2, n.Items.Count);   // equipped → inventory (auto-equipped in-game)
+        Assert.Equal("", n.Outfit);       // equipped present → outfit skipped
         Assert.Equal("Skyrim.esm:0x01605E", Assert.Single(s.Placements).Cell);
     }
 

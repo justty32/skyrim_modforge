@@ -116,6 +116,10 @@ public static partial class Generator
                 foreach (var p in cn.Perks)
                     if (string.IsNullOrWhiteSpace(p.Perk)) Problems.Add($"{who}: a perk entry is missing its perk ref");
                     else CheckRef(p.Perk, $"{who} perk");
+                CheckRef(cn.Class, $"{who} class");
+                if (cn.Level < 0)
+                    Problems.Add($"{who}: level {cn.Level} is negative");
+                foreach (var eq in cn.Equipped) CheckRef(eq, $"{who} equipped");
                 if (!string.IsNullOrWhiteSpace(cn.Cell) && !string.IsNullOrWhiteSpace(cn.Worldspace))
                     Problems.Add($"{who}: has BOTH cell and worldspace (the anchor is one or the other)");
                 CheckRef(cn.Cell, $"{who} cell");
