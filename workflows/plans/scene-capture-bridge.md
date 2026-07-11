@@ -188,6 +188,7 @@ MarkerEntry {
 - **marker 記錄完整朝向＋大小**（使用者第三輪）：Entry `angleZDeg`→`angleDeg{x,y,z}`＋`scale`；匯出 `annotations[]` 帶 `rotation`＋`scale`（ModForge `AnnotationSpec.Rotation/Scale`，869 測綠）；co-save MKRS v2（舊 v1 只有 angleZ→補 0）。**marker 模型改鐵匕首**（`Weapons\Iron\IronDagger.nif`，劍尖視覺化朝向；tools-spec.json 改 model 重建 esp，houseCARL 驗 WEAP 01397E）。
 
 ### 仍未做
+- **`sc pkc [XXX]`（使用者 2026-07-11 晚）**：滴管吸取的 console-selected 版——console 點選 ref 後 `sc pkc` 吸進 palette（同 `delc`/`capc` 的 aim-free 模式）；帶選用標號 `sc pkc XXX` ＝吸取當下直接把該 palette 條目改名為 XXX（識別用）。⚠️ 標號要用未 `Lower()` 的 raw 參數（保留大小寫，同 [player-capture-capp](player-capture-capp.md) 的 label 坑）。
 - **紅/綠半透明輪廓高亮**（使用者第二輪：`sc del dp1` 被刪物件紅框、`sc pl dp1` 新增物件綠框，顏色/透明度 Settings 可調）——**較難、非必做**（需 render/shader 或 highlight 效果）。
 - marker 編輯視窗下拉：寶石種類 ＋ 發光開關（需 SceneCaptureTools.esp 多個 ACTI 變體或動態換 model，較大工程）。
 - rebind 重作（找出 in-game 抓錯鍵主因：可能是 rebind armed 當幀把移動鍵也吃進去；目前 Settings 隱藏、固定 F11）。
