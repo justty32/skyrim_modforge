@@ -30,11 +30,11 @@ sc off   啥都不做
 sc       印當前模式＋用法
 sc mk dp0 / dp1        隱藏／顯示所有 marker 光球（純視覺，登記簿與匯出不受影響）
 sc del|pk|ed er0 / er1  該模式動作鍵用準星／物理射線（樹、純裝飾 static）
-sc ed ax                切換編輯的「純旋轉子模式」（見下）
+sc ed ax                進編輯「純旋轉子模式」（見下）；回普通模式打 sc ed
 sc delc                 擦除 console 滑鼠點選的 ref（先只做物件，非 actor）
 ```
 
-**編輯純旋轉子模式**（`sc ed ax` 切換）：ON 時 numpad 方向鍵改成旋轉——**4/6＝yaw、1/3＝pitch、7/9＝roll、8/2＝角度歸零**（位置/縮放不動）；OFF（預設）時 8/2 前後、4/6 左右、1/3 升降、7/9 yaw。numpad 5 一律「復原到編輯前姿態」。
+**編輯純旋轉子模式**：`sc ed ax` 進入，**`sc ed` 退回**普通移動模式。ON 時 numpad 方向鍵改成旋轉——**4/6＝yaw、1/3＝pitch、7/9＝roll、8/2＝角度歸零**（位置/縮放不動），numpad 5 也＝角度歸零；OFF（預設）時 8/2 前後、4/6 左右、1/3 升降、7/9 yaw，numpad 5＝復原到編輯前姿態。
 
 編輯模式的目標若是 **marker 光球**：numpad 微調＋0 commit＝**移動該 marker**（更新登記簿座標，不進 overrides）。`er` 切換、旋轉子模式、編輯步長全部**存進存檔**（co-save SETT v3）。
 

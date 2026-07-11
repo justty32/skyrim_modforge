@@ -58,7 +58,7 @@
 
 1. **`sc delc`**：console 點一個物件（滑鼠點畫面中的桶/椅，console 顯示其 ref）→ 打 `sc delc` → 物件消失、Eraser 頁多一列。點 NPC 打 `sc delc` → 應拒絕（印「actor」）。
 2. **準星↔射線切換**：`sc del er1` → 刪除模式動作鍵改用射線（可擦樹）；`sc del er0` 切回準星。`sc pk er1`/`sc ed er1` 同理（吸樹/編輯樹不必再按 numpad *）。Settings 頁應顯示各模式現況。
-3. **純旋轉子模式**：`sc ed` 選中物件 → **`sc ed ax`** → Editor 頁提示行變 ROTATE → numpad **4/6＝yaw、1/3＝pitch、7/9＝roll、8/2＝角度歸零**（位置不變）；再 `sc ed ax` 切回移動模式（4/6/1/3 回到位移）。numpad 5 兩模式都「復原到編輯前」。
+3. **純旋轉子模式**：`sc ed` 選中物件 → **`sc ed ax`** → Editor 頁提示行變 ROTATE → numpad **4/6＝yaw、1/3＝pitch、7/9＝roll、8/2＝角度歸零**（位置不變）；打 **`sc ed`** 退回移動模式（4/6/1/3 回到位移）。
 4. **編輯 marker 位置**：`sc ed` 準星對一個匕首 marker → 動作鍵選中（log `editing MARKER`）→ numpad 推移＋**0 commit** → 匕首移到新位置、跳「marker moved」；F1 Markers 頁該筆座標更新、**不**進 Editor overrides 列。numpad 5 可復原、`.` 取消。
 5. **palette load / save from file**：`sc pk` 吸幾個 → Palette 頁文字框輸入檔名（如 `my-palette.json`）→ **save to file** → SKSE 夾生出該檔。清空插槽（或換存檔）→ 同檔名 **load from file** → 插槽**追加**回來、排最上。
 6. **Export all**：室外站著放幾個物件、走幾格再放 → Export 頁 **Export all (loaded cells)** → json 的 `placements` 應含**多個已載入 cell** 的（單 cell 匯出只會有當前 cell）；統計行 cell 顯示「ALL/N loaded cells」。（未載入 cell 的撈不到＝正常，log 有講。）

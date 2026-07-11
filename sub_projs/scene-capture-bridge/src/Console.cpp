@@ -38,7 +38,7 @@ namespace {
         Print("  sc mk | del | pk | pl | ed | off   switch mode");
         Print("  sc mk dp0 / dp1                    hide / show marker gems");
         Print("  sc del|pk|ed er0 / er1             aim by crosshair / ray");
-        Print("  sc ed ax                          toggle rotate sub-mode");
+        Print("  sc ed ax / sc ed                  enter rotate sub-mode / back to move");
         Print("  sc delc                           erase the console-selected ref");
     }
 
@@ -100,10 +100,10 @@ namespace {
                     Print("SCB: %s aim -> %s", Modes::Name(m), a2 == "er1" ? "ray" : "crosshair");
                     return true;
                 }
-                if (m == Modes::Mode::kEdit && a2 == "ax") {  // toggle rotate sub-mode
-                    const bool on = Editor::ToggleRotateMode();
-                    Print("SCB: edit %s (4/6 yaw, 1/3 pitch, 7/9 roll, 8/2 reset)",
-                        on ? "ROTATE mode" : "move mode");
+                if (m == Modes::Mode::kEdit && a2 == "ax") {  // enter rotate sub-mode
+                    Editor::SetRotateMode(true);
+                    Print("SCB: edit ROTATE mode (4/6 yaw, 1/3 pitch, 7/9 roll, "
+                        "8/2 reset) — `sc ed` to go back to move mode");
                     return true;
                 }
             }
@@ -111,10 +111,12 @@ namespace {
             return true;
         }
 
-        // Bare mode switch.
+        // Bare mode switch. Entering edit mode also drops the rotate sub-mode,
+        // so `sc ed` is the way back from `sc ed ax`.
         const Modes::Mode m = ModeOf(a1);
         if (m != Modes::Mode::kTotal) {
             Modes::Set(m);
+            if (m == Modes::Mode::kEdit) Editor::SetRotateMode(false);
             Print("SCB mode: %s", Modes::Name(m));
             return true;
         }
