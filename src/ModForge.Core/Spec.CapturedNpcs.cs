@@ -38,20 +38,30 @@ public sealed class CapturedNpcSpec
     public List<CapturedNpcPerkSpec> Perks { get; set; } = new();
     public string Class { get; set; } = "";        // ref → CLAS; when present the expansion turns on autoCalcStats (class+level drive believable H/M/S)
     public int Level { get; set; }                  // actor's effective level at capture time (0 = unknown → engine default)
-    // What the actor actually wore/held (durable refs), split by consumption route — the engine
-    // only auto-WEARS armour that comes from an OUTFIT (inventory armour stays in the pocket;
-    // in-game confirmed on the boots-in-pocket clone), while weapons/torch auto-equip from
-    // inventory. So armour MINTS an in-spec OTFT (replacing defaultOutfit, which for a PROTEUS
-    // clone is a runtime shell that's empty on disk) and weapons become NpcSpec.Items.
+    // The actor's full carry (durable refs), split by consumption route — the engine only
+    // auto-WEARS armour that comes from an OUTFIT (inventory armour stays in the pocket;
+    // in-game confirmed on the boots-in-pocket clone), while weapons auto-equip from inventory.
+    // So worn armour MINTS an in-spec OTFT (replacing defaultOutfit, which for a PROTEUS clone
+    // is a runtime shell that's empty on disk) and `inventory` rows (weapons/staves/food/
+    // potions/gold…) become NpcSpec.Items with their counts.
     public List<string> EquippedArmor { get; set; } = new();
-    public List<string> EquippedWeapons { get; set; } = new();
-    // Legacy single mixed list (DLL exports before the armor/weapons split) — folded into armour.
+    public List<CapturedNpcItemSpec> Inventory { get; set; } = new();
+    // Legacy pre-split shapes: `equipped` (one mixed list) folds into armour; `equippedWeapons`
+    // (the brief v5 shape) folds into inventory at count 1.
     public List<string> Equipped { get; set; } = new();
+    public List<string> EquippedWeapons { get; set; } = new();
     public List<CapturedActiveEffectSpec> ActiveEffects { get; set; } = new(); // advisory (not consumed)
     public Vec3 Position { get; set; } = new();
     public Vec3 Rotation { get; set; } = new();    // degrees (DLL converts)
     public string Cell { get; set; } = "";        // interior anchor ref — exactly one of cell/worldspace is set
     public string Worldspace { get; set; } = "";  // exterior anchor ref
+}
+
+// One carried-inventory row: a durable item ref + stack count (green apples ×3, gold ×250…).
+public sealed class CapturedNpcItemSpec
+{
+    public string Item { get; set; } = "";
+    public int Count { get; set; } = 1;
 }
 
 // The DLL exports hairColor as an object: the durable CLFM ref plus its resolved RGB. Only the ref

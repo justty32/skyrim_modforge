@@ -79,7 +79,7 @@
 **OPEN-A 殘餘（最後一小項）**：存檔完全重開 → capture 的 aim source（er0/er1）還原（co-save SETT v4）。（`sc cap er1` 射線吸取 2026-07-11 已實證 OK。）另留意：模式制下重複按 F11 會吸出重複列（正常行為，消費端 editorId 已防撞）。
 
 **P10 擷取器補完（DLL crc `923e348b` 已部署雙夾，co-save SCCP 升 v4——舊存檔照讀）**：NPC 擷取新收 **class＋level＋equipped**（worn 護甲＋手持武器/火把）；新指令 **`sc capc`**＝console 點選誰就吸誰（物品與 NPC 都行，不用準星）。消費端同步：class/level 直通＋有 class 開 autoCalcStats；**equipped→inventory（自動穿最好的）且非空時 skip outfit**（治 PROTEUS 裸體）。⚠️ 完全關遊戲重開吃新 DLL。
-   - 第一輪實機（2026-07-11 晚）：數值 50/50/50＝autoCalc 於 level 1 的正確輸出（clone 自報 L1）；**靴子在口袋沒穿**→已修：equipped 護甲改**鑄 in-spec OTFT**（引擎只穿 outfit 護甲）、武器留 inventory；DLL 匯出改 split `equippedArmor`/`equippedWeapons`（crc `24692bd8` 已部署，SCCP v5；legacy `equipped` 消費端折進護甲）。**MFCapHatak.zip 已重出貨**（舊 MFCapPrisoner 記得停用）。
+   - 第一輪實機（2026-07-11 晚）：數值 50/50/50＝autoCalc 於 level 1 的正確輸出（clone 自報 L1）；**靴子在口袋沒穿**→已修：equipped 護甲改**鑄 in-spec OTFT**（引擎只穿 outfit 護甲）、武器留 inventory；DLL 匯出改 `equippedArmor`＋**`inventory[]`（全攜帶含數量——法杖/青蘋果/金幣都收）**（crc `0457e41c` 已部署，SCCP v6；legacy 兩代 shape 消費端都吃）。**MFCapHatak.zip 已重出貨**（舊 MFCapPrisoner 記得停用）。⚠️ 自製附魔法杖的實例附魔（extra data）還吸不到——會變素法杖；vanilla 法杖不受影響（附魔在 base 上）。
    - **驗**：① 重裝 MFCapHatak → 分身 Hatak 應**穿著學院法師靴**（不再放口袋）；② 活 clone 若明顯穿整套但只吸到靴子 → PROTEUS 穿衣走 runtime outfit 填充、inventory 沒 worn 旗標——回報實況，要的話 DLL 再補一路；③ 想讓分身有等級：json 的 `"level"` 手改（如 30）再叫我重 build——clone 自報 L1 是 PROTEUS 行為，吸取是忠實的；④ 順手：console 點武器 `sc capc` 應吸進 capturedItems。
 
  wait_todo — 實機測試（in-game，MO2 / Proton）
@@ -163,7 +163,7 @@
 **OPEN-A 殘餘（最後一小項）**：存檔完全重開 → capture 的 aim source（er0/er1）還原（co-save SETT v4）。（`sc cap er1` 射線吸取 2026-07-11 已實證 OK。）另留意：模式制下重複按 F11 會吸出重複列（正常行為，消費端 editorId 已防撞）。
 
 **P10 擷取器補完（DLL crc `923e348b` 已部署雙夾，co-save SCCP 升 v4——舊存檔照讀）**：NPC 擷取新收 **class＋level＋equipped**（worn 護甲＋手持武器/火把）；新指令 **`sc capc`**＝console 點選誰就吸誰（物品與 NPC 都行，不用準星）。消費端同步：class/level 直通＋有 class 開 autoCalcStats；**equipped→inventory（自動穿最好的）且非空時 skip outfit**（治 PROTEUS 裸體）。⚠️ 完全關遊戲重開吃新 DLL。
-   - 第一輪實機（2026-07-11 晚）：數值 50/50/50＝autoCalc 於 level 1 的正確輸出（clone 自報 L1）；**靴子在口袋沒穿**→已修：equipped 護甲改**鑄 in-spec OTFT**（引擎只穿 outfit 護甲）、武器留 inventory；DLL 匯出改 split `equippedArmor`/`equippedWeapons`（crc `24692bd8` 已部署，SCCP v5；legacy `equipped` 消費端折進護甲）。**MFCapHatak.zip 已重出貨**（舊 MFCapPrisoner 記得停用）。
+   - 第一輪實機（2026-07-11 晚）：數值 50/50/50＝autoCalc 於 level 1 的正確輸出（clone 自報 L1）；**靴子在口袋沒穿**→已修：equipped 護甲改**鑄 in-spec OTFT**（引擎只穿 outfit 護甲）、武器留 inventory；DLL 匯出改 `equippedArmor`＋**`inventory[]`（全攜帶含數量——法杖/青蘋果/金幣都收）**（crc `0457e41c` 已部署，SCCP v6；legacy 兩代 shape 消費端都吃）。**MFCapHatak.zip 已重出貨**（舊 MFCapPrisoner 記得停用）。⚠️ 自製附魔法杖的實例附魔（extra data）還吸不到——會變素法杖；vanilla 法杖不受影響（附魔在 base 上）。
    - **驗**：① 重裝 MFCapHatak → 分身 Hatak 應**穿著學院法師靴**（不再放口袋）；② 活 clone 若明顯穿整套但只吸到靴子 → PROTEUS 穿衣走 runtime outfit 填充、inventory 沒 worn 旗標——回報實況，要的話 DLL 再補一路；③ 想讓分身有等級：json 的 `"level"` 手改（如 30）再叫我重 build——clone 自報 L1 是 PROTEUS 行為，吸取是忠實的；④ 順手：console 點武器 `sc capc` 應吸進 capturedItems。
 
 **PROTEUS clone 玩家分身驗收（`~/skyrim_mods/mine/MFCapPrisoner.zip` 待裝）**：OPEN-B 已結案（PROTEUS 寫 TESNPC ✅，見 [landed/npcs](../workflows/feature-dev/landed/npcs.md)）；分身 zip 已出貨——裝了進遊戲看：**你自己的分身**應站在擷取點（Tamriel (109098, 103520, -9017)，冬堡往學院方向），臉形/髮型/鬍子/髮色/體重＝你的角色。**預期落差（非 bug）**：①戰紋/膚色細節層可能沒有（PROTEUS 沒把 tintLayers 寫回 TESNPC）；②服裝可能不對（defaultOutfit 指向 PROTEUS.esp runtime 模板，esp 檔上是空殼）；③RaceMenu 雕塑/overlay 本來就不在配方層。masters：Skyrim.esm＋PROTEUS.esp＋nwsFollowerFramework.esp。

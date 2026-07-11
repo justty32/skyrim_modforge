@@ -40,7 +40,11 @@ public class CapturedNpcsTests
         Class = "Skyrim.esm:0x01CE78",   // CombatWarrior1H-ish — drives autoCalcStats
         Level = 12,
         EquippedArmor = { "Skyrim.esm:0x03619E" },     // college robes — must become an OUTFIT
-        EquippedWeapons = { "Skyrim.esm:0x012EB7" },   // iron sword — inventory (auto-equips)
+        Inventory =
+        {
+            new CapturedNpcItemSpec { Item = "Skyrim.esm:0x012EB7", Count = 1 },   // iron sword (auto-equips)
+            new CapturedNpcItemSpec { Item = "Skyrim.esm:0x064B3F", Count = 3 },   // green apples ×3
+        },
         Dead = false,
         ActiveEffects = { new CapturedActiveEffectSpec { MagicEffect = "Skyrim.esm:0x0003EB42", Magnitude = 10, Duration = 60, Elapsed = 5 } },
         Position = new Vec3 { X = 100f, Y = 200f, Z = 300f },
@@ -125,7 +129,9 @@ public class CapturedNpcsTests
         Assert.Equal("Skyrim.esm:0x01CE78", n.Class);
         Assert.Equal(12, n.Level);
         Assert.True(n.AutoCalcStats);   // class present → stats calc on
-        Assert.Equal("Skyrim.esm:0x012EB7", Assert.Single(n.Items).Item);   // weapon → inventory
+        Assert.Equal(2, n.Items.Count);   // carry → inventory rows with counts
+        Assert.Equal("Skyrim.esm:0x012EB7", n.Items[0].Item);
+        Assert.Equal(3, n.Items[1].Count);   // the apples kept their stack count
         Assert.Equal(60f, n.Weight);
         Assert.Equal(1.02f, n.Height);
         Assert.Equal(230, n.BodyTint!.R);
@@ -182,7 +188,7 @@ public class CapturedNpcsTests
         // capture carried no equipped list — the outfit passes through. No class → autoCalc off.
         var s = new ModSpec { PluginName = "M.esp" };
         var cn = FullSample();
-        cn.EquippedArmor.Clear(); cn.EquippedWeapons.Clear(); cn.Class = ""; cn.Level = 0;
+        cn.EquippedArmor.Clear(); cn.Inventory.Clear(); cn.Class = ""; cn.Level = 0;
         s.CapturedNpcs.Add(cn);
         Generator.ExpandCapturedNpcs(s);
 
@@ -311,7 +317,7 @@ public class CapturedNpcsTests
               "perks": [{"perk": "Skyrim.esm:0x0581E7", "rank": 1}],
               "class": "Skyrim.esm:0x01CE78", "level": 12,
               "equippedArmor": ["Skyrim.esm:0x03619E"],
-              "equippedWeapons": ["Skyrim.esm:0x012EB7"],
+              "inventory": [{"item": "Skyrim.esm:0x012EB7", "count": 1}, {"item": "Skyrim.esm:0x064B3F", "count": 3}],
               "activeEffects": [{"magicEffect": "Skyrim.esm:0x0003EB42", "magnitude": 10.0, "duration": 60.0, "elapsed": 5.0, "source": "Skyrim.esm:0x0001CEAD"}],
               "position": {"x": 100.0, "y": 200.0, "z": 300.0},
               "rotation": {"x": 0.0, "y": 0.0, "z": 90.0},
@@ -335,7 +341,8 @@ public class CapturedNpcsTests
         Assert.Equal("Skyrim.esm:0x01CE78", n.Class);
         Assert.Equal(12, n.Level);
         Assert.True(n.AutoCalcStats);
-        Assert.Single(n.Items);                      // weapon → inventory
+        Assert.Equal(2, n.Items.Count);              // carry → inventory (with counts)
+        Assert.Equal(3, n.Items[1].Count);
         Assert.Equal(n.EditorId + "_Outfit", n.Outfit);   // armour → minted OTFT
         Assert.Single(s.Outfits);
         Assert.Equal("Skyrim.esm:0x01605E", Assert.Single(s.Placements).Cell);

@@ -62,7 +62,10 @@ public static partial class Generator
             };
             foreach (var p in cn.Perks)
                 if (!string.IsNullOrWhiteSpace(p.Perk)) n.Perks.Add(p.Perk);
-            foreach (var eq in cn.EquippedWeapons)
+            foreach (var it in cn.Inventory)
+                if (!string.IsNullOrWhiteSpace(it.Item))
+                    n.Items.Add(new NpcItemSpec { Item = it.Item, Count = Math.Max(1, it.Count) });
+            foreach (var eq in cn.EquippedWeapons)   // legacy v5 shape — count-1 inventory rows
                 if (!string.IsNullOrWhiteSpace(eq)) n.Items.Add(new NpcItemSpec { Item = eq, Count = 1 });
             spec.Npcs.Add(n);
 

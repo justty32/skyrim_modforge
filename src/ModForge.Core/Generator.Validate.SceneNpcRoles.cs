@@ -120,6 +120,9 @@ public static partial class Generator
                 if (cn.Level < 0)
                     Problems.Add($"{who}: level {cn.Level} is negative");
                 foreach (var eq in cn.EquippedArmor) CheckRef(eq, $"{who} equippedArmor");
+                foreach (var it in cn.Inventory)
+                    if (string.IsNullOrWhiteSpace(it.Item)) Problems.Add($"{who}: an inventory row is missing its item ref");
+                    else CheckRef(it.Item, $"{who} inventory");
                 foreach (var eq in cn.EquippedWeapons) CheckRef(eq, $"{who} equippedWeapons");
                 foreach (var eq in cn.Equipped) CheckRef(eq, $"{who} equipped");
                 if (!string.IsNullOrWhiteSpace(cn.Cell) && !string.IsNullOrWhiteSpace(cn.Worldspace))
