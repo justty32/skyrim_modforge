@@ -76,7 +76,9 @@
 
 **2026-07-11 實機：#1–#5 全過**——DLL 活、物品吸取（法杖看得出有吸到）、NPC 吸取 OK、Export OK、持久化（save→完全重開→load）成功。剩下兩條 OPEN：
 
-**OPEN-A（設計缺口，優先）**：`sc cap` 現在是**一次性 console 指令**，但使用者（合理）預期它該比照 `sc pk`/`sc pl`——**`sc cap` 進「擷取模式」→ 準星對目標 → 按 F11（模式動作鍵）吸**，跟其它工具一致。要把 Captures 做成 `Modes.cpp` 的一個 mode（動作鍵預設 F11、`sc cap r` 併成該模式的 `er0/er1` 射線切換），下次動工。
+**OPEN-A（✅ 已實作，DLL crc `5b9f1aa1`，部署 `mods/SceneCaptureBridge/`，未 commit → 待實機複驗）**：把 Captures 做成 `Modes.cpp` 的第 6 個 mode（`kCapture`，動作鍵預設 F11，co-save SETT 升 **v4** 收其 aim source）。`sc cap` 現為**進擷取模式**（不再一次性）→ 準星對目標 → **按 F11（模式動作鍵）吸**，跟 `sc pk`/`sc ed` 一致；`sc cap er0`/`sc cap er1` 切準星/射線（取代舊 `sc cap r`）；面板 Settings 頁多 `cap` 按鈕＋aim source 列，Captures 頁「capture crosshair/by ray」按鈕保留。
+   - ⚠️ **完全關遊戲重開吃新 DLL**；co-save SETT 升 v4（舊存檔少讀 1 byte，向下相容，不致命）。
+   - **驗**：① `sc cap` → 應跳「SCB mode: capture」通知、不立即吸東西；② 準星對法杖/附魔武器 → **F11** → 吸進 capturedItems（Captures 頁列數 +1）；③ 對 NPC → F11 → 吸進 capturedNpcs；④ `sc cap er1` → F11 可吸樹/靜物（射線）、`sc cap er0` 切回準星；⑤ Export → json 正常；⑥ 存檔完全重開 → aim source（er0/er1）還原。
 
 **OPEN-C（faceMorphs bug，看實機 json 發現）**：`ReadNpc` `for (float m : npc->faceData->morphs)`（Captures.cpp:119）把 `morphs` 整個陣列灌進去，實機匯出**第 19 個值＝`3.4e+38`(FLT_MAX)哨兵**，前 18 個正常 [-1,1]。faceData->morphs 尾端有個 sentinel/非 morph 欄，**✅ 已修（DLL `604efd0a`，部署雙夾，未 commit）**：根因＝`TESNPC.h` `FaceData::Morphs::kTotal=19`，但 index 18＝`kUnk`（未用槽，FLT_MAX 垃圾）；有效 morph 是 index 0–17（18 個）。修法 Captures.cpp:119 range-for 改 `for (int i=0;i<RE::TESNPC::FaceData::Morphs::kUnk;++i) n.morphs.push_back(npc->faceData->morphs[i]);`。**待實機複驗**：吸 NPC → 匯出 `faceMorphs` 應剩 18 個、無 FLT_MAX。
 

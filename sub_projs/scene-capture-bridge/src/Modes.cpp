@@ -1,5 +1,6 @@
 #include "Modes.h"
 
+#include "Captures.h"
 #include "Editor.h"
 #include "Eraser.h"
 #include "Markers.h"
@@ -17,7 +18,7 @@ namespace {
     Modes::Mode g_mode = Modes::Mode::kOff;
     // Index by Mode; slot 0 (kOff) exists but is never read.
     std::uint32_t g_binds[static_cast<std::size_t>(Modes::Mode::kTotal)] = {
-        0, kDefaultBind, kDefaultBind, kDefaultBind, kDefaultBind, kDefaultBind};
+        0, kDefaultBind, kDefaultBind, kDefaultBind, kDefaultBind, kDefaultBind, kDefaultBind};
     // Per-mode aim source (false = crosshair). Same indexing as g_binds.
     bool g_useRay[static_cast<std::size_t>(Modes::Mode::kTotal)] = {false};
 
@@ -34,6 +35,7 @@ namespace {
         case Modes::Mode::kPick:   ray ? Palette::PickByRay() : Palette::PickCrosshair(); break;
         case Modes::Mode::kPlace:  Palette::PlaceSelected(); break;
         case Modes::Mode::kEdit:   ray ? Editor::SelectByRay() : Editor::EnterSelect(); break;
+        case Modes::Mode::kCapture: ray ? Captures::CaptureByRay() : Captures::CaptureCrosshair(); break;
         default: break;
         }
     }
@@ -58,6 +60,7 @@ namespace Modes {
         case Mode::kPick:   return "pick";
         case Mode::kPlace:  return "place";
         case Mode::kEdit:   return "edit";
+        case Mode::kCapture: return "capture";
         default:            return "off";
         }
     }
@@ -69,6 +72,7 @@ namespace Modes {
         case Mode::kPick:   return "pk";
         case Mode::kPlace:  return "pl";
         case Mode::kEdit:   return "ed";
+        case Mode::kCapture: return "cap";
         default:            return "off";
         }
     }

@@ -167,8 +167,9 @@ void __stdcall UI::CapturesPage::Render() {
 
     ImGuiMCP::TextWrapped("%zu captured definition(s). Point at an enchanted "
         "weapon/armour, potion or ingredient (-> capturedItems[]) or an NPC "
-        "(-> capturedNpcs[], unique NPCs skipped) and capture it for ModForge to "
-        "rebuild. (`sc cap` / `sc cap r`)", caps.size());
+        "(-> capturedNpcs[], unique NPCs included) and capture it for ModForge to "
+        "rebuild. (`sc cap` mode, action key; `sc cap er0/er1` crosshair/ray)",
+        caps.size());
     if (ImGuiMCP::Button("capture crosshair")) { ::Captures::CaptureCrosshair(); }
     ImGuiMCP::SameLine();
     // Trees/architecture the crosshair never sees — explicit entry, see Aim.h.

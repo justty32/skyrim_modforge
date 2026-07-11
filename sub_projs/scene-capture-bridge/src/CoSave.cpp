@@ -19,7 +19,7 @@ namespace {
     constexpr std::uint32_t kCaps = 'SCCP';
 
     // Per-record versions (an older save's record is read with its own layout).
-    constexpr std::uint32_t kVerSett = 3;  // v2 adds editor step sizes; v3 adds aim/axis
+    constexpr std::uint32_t kVerSett = 4;  // v2 adds editor step sizes; v3 adds aim/axis; v4 adds capture aim
     constexpr std::uint32_t kVerMkrs = 2;  // v2: full angle (3f) + scale, was angleZ only
     constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
     constexpr std::uint32_t kVerOvrd = 1;
@@ -75,6 +75,7 @@ namespace {
         for (auto m : {Modes::Mode::kDelete, Modes::Mode::kPick, Modes::Mode::kEdit})
             si->WriteRecordData(static_cast<std::uint8_t>(Modes::UseRay(m) ? 1 : 0));  // v3
         si->WriteRecordData(static_cast<std::uint8_t>(Editor::RotateMode() ? 1 : 0));  // v3
+        si->WriteRecordData(static_cast<std::uint8_t>(Modes::UseRay(Modes::Mode::kCapture) ? 1 : 0));  // v4
     }
 
     void LoadSettings(const SKSE::SerializationInterface* si, std::uint32_t version) {
@@ -107,6 +108,11 @@ namespace {
             std::uint8_t rot = 0;
             si->ReadRecordData(rot);
             Editor::SetRotateMode(rot != 0);
+        }
+        if (version >= 4) {
+            std::uint8_t ray = 0;
+            si->ReadRecordData(ray);
+            Modes::SetUseRay(Modes::Mode::kCapture, ray != 0);
         }
         if (mode < static_cast<std::uint8_t>(Modes::Mode::kTotal))
             Modes::Set(static_cast<Modes::Mode>(mode));

@@ -1,6 +1,5 @@
 #include "Console.h"
 
-#include "Captures.h"
 #include "Editor.h"
 #include "Eraser.h"
 #include "Markers.h"
@@ -36,18 +35,19 @@ namespace {
 
     void PrintUsage() {
         Print("SCB mode: %s", Modes::Name(Modes::Current()));
-        Print("  sc mk | del | pk | pl | ed | off   switch mode");
+        Print("  sc mk | del | pk | pl | ed | cap | off  switch mode");
         Print("  sc mk dp0 / dp1                    hide / show marker gems");
-        Print("  sc del|pk|ed er0 / er1             aim by crosshair / ray");
+        Print("  sc del|pk|ed|cap er0 / er1         aim by crosshair / ray");
         Print("  sc ed ax / sc ed                  enter rotate sub-mode / back to move");
         Print("  sc delc                           erase the console-selected ref");
-        Print("  sc cap / sc cap r                 capture item enchant/effects (crosshair / ray)");
+        Print("  sc cap  -> capture mode: aim at item/NPC, press the action key");
     }
 
     // Map a tool word ("del"/"pk"/"ed"/...) to its mode, or kTotal if none.
     Modes::Mode ModeOf(const std::string& word) {
         for (auto m : {Modes::Mode::kOff, Modes::Mode::kMarker, Modes::Mode::kDelete,
-                 Modes::Mode::kPick, Modes::Mode::kPlace, Modes::Mode::kEdit})
+                 Modes::Mode::kPick, Modes::Mode::kPlace, Modes::Mode::kEdit,
+                 Modes::Mode::kCapture})
             if (word == Modes::Cmd(m)) return m;
         return Modes::Mode::kTotal;
     }
@@ -83,20 +83,6 @@ namespace {
             return true;
         }
 
-        // Capture the aimed item's enchantment/effects into capturedItems[].
-        // `sc cap` = crosshair, `sc cap r` = look-ray (statics/trees).
-        if (a1 == "cap") {
-            const bool ray = (a2 == "r");
-            const auto r = ray ? Captures::CaptureByRay() : Captures::CaptureCrosshair();
-            switch (r) {
-            case Captures::Result::kCaptured:   Print("SCB: captured (item enchant/effects or NPC snapshot)"); break;
-            case Captures::Result::kNotItem:    Print("SCB: no enchant/effects to capture there"); break;
-            case Captures::Result::kMarkerProxy:Print("SCB: that's a marker gem"); break;
-            default: Print("SCB: nothing under the %s", ray ? "ray" : "crosshair"); break;
-            }
-            return true;
-        }
-
         // Second layer: `sc <tool> <arg>`.
         if (!a2.empty()) {
             if (a1 == "mk") {  // sc mk dp0/dp1
@@ -110,7 +96,8 @@ namespace {
                 return true;
             }
             const Modes::Mode m = ModeOf(a1);
-            if (m == Modes::Mode::kDelete || m == Modes::Mode::kPick || m == Modes::Mode::kEdit) {
+            if (m == Modes::Mode::kDelete || m == Modes::Mode::kPick ||
+                m == Modes::Mode::kEdit || m == Modes::Mode::kCapture) {
                 if (a2 == "er0" || a2 == "er1") {  // aim source
                     Modes::SetUseRay(m, a2 == "er1");
                     Print("SCB: %s aim -> %s", Modes::Name(m), a2 == "er1" ? "ray" : "crosshair");
@@ -157,7 +144,7 @@ namespace Console {
             };
             cmd->functionName = "sc";
             cmd->shortName = "sc";
-            cmd->helpString = "SceneCaptureBridge: sc mk|del|pk|pl|ed|off, sc mk dp0|dp1";
+            cmd->helpString = "SceneCaptureBridge: sc mk|del|pk|pl|ed|cap|off, sc mk dp0|dp1";
             cmd->referenceFunction = false;
             cmd->SetParameters(params);
             cmd->executeFunction = &Execute;
