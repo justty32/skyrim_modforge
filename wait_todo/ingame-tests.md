@@ -55,34 +55,9 @@
   - **⚠ 白天測**:vendor 8-20 營業(GetOffersServicesNow 含時間),夜間交易會空——快旅後若是夜晚,`set timescale`/等到白天再試。庫存已放 vanilla 鐵匠 leveled lists(武防+雜貨+金),VendorLocation 錨在店周圍 4096。
   - **回報**:傳送安全否、房子貼地否、Brynja 在否、問候+**交易(有貨有金)**通否。(Brynja 從零建、無 facegen,臉可能陽春/暗臉——能站能講能交易就算過。)
 
-## P1 統一 marker 系統 — ✅ MVP 驗收全過（2026-07-10 IN-GAME，含目視山羊）
+## scene-capture-bridge P1–P3 — ✅ 主線驗收全過（2026-07-11 IN-GAME，Winterhold）
 
-四步全過（明細移至 [landed/world.md](../workflows/feature-dev/landed/world.md)）。**殘項（open）**：
+F11 準星放置（pitch 對）、F8 擦除/undo、F6/F7 滴管（含姿態）、numpad 編輯（5/3/0/. 實證，無未映射 numpad）、物理凍結→commit→沉降、F10→build→esp 閉環（removals 深埋＋placements＋annotations）、**patch 實機生效**（擦的長凳消失、擺的長凳＋沉降法杖出現）、遊戲內 save/load 後 disable 狀態與 marker 都持久。明細見 [landed/world.md](../workflows/feature-dev/landed/world.md)。**殘項（open，順手驗即可）**：
 
-- **F11 aimed 放置**：新 DLL 已部署——F11 現在放在**準星指的位置**（射線，無命中 fallback 腳下）。0x57 未實機按過；**pitch 符號未驗**——若 marker 落在身後/天上，回報，翻個符號就好。
-- **讀檔後 prune 複核**：讀檔 → F1 Markers 頁不該再列出死 proxy 的鬼條目。
-- **adopt 複核**：存檔重載後面板按 `adopt this cell` → 上一 session 放的 marker 應**連名字**回到列表（顯示名活在存檔裡）。
-
-## P2 橡皮擦（2026-07-10 離線齊備，新 DLL 已部署）
-
-1. **擦**：準星指一張 vanilla 椅子按 **F8** → 椅子消失，log `Eraser: marked Skyrim.esm:0x... for removal`。
-2. **面板**：F1 → `Eraser`：列表有那筆；`undo` → 椅子回來；再擦掉。指 mod 的物件擦一個 → 該列橘色警告「patch will depend on X.esp」。
-3. **真刪除**：F11 放個 marker 再對它按 F8 → marker 連登記簿一起消失（Markers 頁也不見）。
-4. **adopt**：擦幾個 → 存檔 → 重載（登記簿死）→ `scan disabled refs in this cell` → 候選列出、逐筆 adopt → 回到清單。
-5. **匯出**：F10 → json 有 `removals` 段 → 交給 agent build → 載入 patch 後那張椅子該永久消失。
-
-## P2 滴管／擺放（2026-07-10 離線齊備，新 DLL 已部署）
-
-1. **吸**：準星指任何東西（桌椅、mod 的雕像、NPC）按 **F6** → log `Palette: picked`，F1 → `Palette` 頁出現插槽（含姿態與 scale）。
-2. **擺**：看著想放的位置按 **F7** → 該物在準星處出現、帶著吸取時的旋轉/縮放。
-3. **匯出**：F10 → 擺的東西進 `placements[]`；若是 actor，該筆應自動帶 `"kind": "npc"`（源頭修掉山羊陷阱——json 裡直接可見）。
-4. **串橡皮擦**：F7 擺錯 → F8 對它按 → 無痕消失（真刪除語意）。
-
-## P2 numpad 編輯模式（2026-07-10 離線齊備，新 DLL 已部署）
-
-1. F7 擺個東西 → 準星指著它按 **numpad 5** → log 進編輯模式，F1 → `Editor` 頁顯示 live transform。
-2. numpad 8/2/4/6/1/3 推動、7/9 轉、+/− 縮放——**若哪個鍵沒反應**，編輯模式會把未映射的 scancode 印進 log（numpad DIK 常數未驗），亂按一輪把 log 給我即可。
-3. **numpad 0** commit；再選、按 **numpad .** → 應還原到選中時的 transform。
-4. 對 vanilla 物件按 numpad 5 → 應被拒絕並 log「awaits the overrides[] contract」。
-5. 移動後 F10 匯出 → placements 座標應是**移動後**的（live pose）。
-6. **物理凍結**：F7 擺一個會滾的東西（書/杯子類）→ numpad 5 選中（log `physics frozen`）→ 推到半空 → 不掉；numpad 0 commit（log `physics restored`）→ 掉下來沉降。
+- **跨行程 adopt**：遊戲內讀檔登記簿還在 RAM，沒考到 adopt——**完全關遊戲重開**再讀檔（面板應空）→ Markers 頁 `adopt this cell` 應連名字撿回 marker；Eraser 頁 `scan disabled refs` → 逐筆 adopt 撿回擦除。
+- **零星未實證小項**：① 擦 mod 物件時 Eraser 列橘色「patch will depend on X.esp」警告；② F8 對自家 marker 按 → 連 Markers 頁登記一起無痕消失；③ 對 vanilla 物件按 numpad 5 → 拒絕並 log「awaits the overrides[] contract」。

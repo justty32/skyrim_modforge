@@ -7,7 +7,7 @@
 - **類型**：基石聯動（它的 output 契約 = ModForge 的 input；兩者靠 scene.json 協議接，不整合）
 - **契約權威**：scene.json 的每個欄位對映**既有 ModForge spec 型別**，本子專案**只擁有 output 形狀**，生成端全在 ModForge。契約定義見 [spec §契約](../../workflows/specs/ingame-scene-export-design.md)。
 - **建置**：[BUILD.md](BUILD.md)（C++23 + CommonLibSSE-NG + vcpkg + CMake presets；靜態 CRT standalone DLL）
-- **狀態**：✅ **M4 spike 實機全過**（2026-07-10）。clang-cl 跨編譯產物直接載入遊戲、vanilla diff 成立、`scene.json` → ModForge `build` 整鏈閉環。遊戲內 ImGui 面板亦已實機（F1 → `Scene Capture Bridge` → `Export player cell`）。驗收明細見 [landed/world.md](../../workflows/feature-dev/landed/world.md)。
+- **狀態**：✅ **P1–P3 主線實機全過**（2026-07-11；前情 M4 spike＋P1 marker 閉環 2026-07-10）。clang-cl 跨編譯產物直接載入遊戲；F11 marker、F8 橡皮擦、F6/F7 滴管、numpad 編輯＋物理凍結、F10 匯出→ModForge `build`→patch 實機生效整鏈閉環。面板：F1 → `Scene Capture Bridge`。驗收明細見 [landed/world.md](../../workflows/feature-dev/landed/world.md)；殘項見 [wait_todo/ingame-tests.md](../../wait_todo/ingame-tests.md)。
 
 ## 建置架構來源
 
@@ -24,7 +24,7 @@
 | `SceneExporter.{h,cpp}` | **核心**：`ExportCell` 走訪 cell → **vanilla diff**（ref 解得出耐久 id ⇒ 既有 ⇒ 跳過；解不出 ⇒ 玩家 `PlaceAtMe` 擺的 ⇒ emit）→ `placements[]`（actor 與物件同一個 list，因 ModSpec 沒有 `npcRefs` 成員）；`ResolveDurableId` FormID→`<plugin>:0xLOCALID`；`WriteSceneFile` 吐 json |
 | `UI.{h,cpp}` | 遊戲內面板（[SKSE Menu Framework 3](../mod-survey/findings/skse-menu-framework-3.md) / Dear ImGui）：顯示所在 cell、Export 按鈕、上次匯出的 placements / pre-existing 統計。**軟相依**——`IsInstalled()` 是 `GetModuleHandleW` 探測，沒裝框架就只有 F10 |
 | `extern/SKSEMenuFramework/` | vendored 消費者 header（LGPL-2.1，`GetProcAddress` shim，不連結 DLL）|
-| `Aim.{h,cpp}` | 共用視角射線（`bhkPickData`＋`PickObject`；Markers/Palette 同用；pitch 符號待實機驗）|
+| `Aim.{h,cpp}` | 共用視角射線（`bhkPickData`＋`PickObject`；Markers/Palette 同用；pitch 符號實機驗過）|
 | `Eraser.{h,cpp}` | **F8** 橡皮擦：authored→disable＋登記→`removals[]`；自己的 dynamic→真刪除無痕；`scan disabled refs` 明示 adopt |
 | `Palette.{h,cpp}` | **F6** 滴管吸 base＋姿態進具名插槽、**F7** 擺在準星處（runtime-only base 拒收）|
 | `Editor.{h,cpp}` | **numpad 5** 選中自己擺的 ref → numpad 微調（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、. cancel）；havok-movable 類型編輯期物理凍結；authored ref 拒絕（等 overrides[] 契約）|
@@ -48,6 +48,26 @@
 5. 提醒使用者：**MO2 F5 refresh 後新 mod 預設不勾**，要手動勾 mod＋plugin。
 
 先例：`mods/SCB Goat Demo/`（本 README 同日的實機驗收產物）。
+
+## 持久化與 adopt 語意
+
+DLL 有兩層狀態，跨存檔/跨 session 行為不一樣：
+
+1. **存檔（savegame）**：所有實際操作都持久——F7/PlaceAtMe 生的動態 ref（`0xFF......`）連同 transform 存進存檔；被 F8 擦除的物件其 `Disable()` 狀態存進存檔；marker proxy 物件連同改過的顯示名（`SetDisplayName`）存進存檔。2026-07-11 實機確認：遊戲內 save→load 後，擦除維持、markers 原地都在。
+2. **登記簿（in-memory registry）**：Markers 列表、Eraser 標記列表活在 DLL 記憶體。遊戲內讀檔不會清掉它（行程沒重啟）；**完全關遊戲重開**才會歸零。
+
+匯出的 vanilla diff 判別是無狀態的（見 `SceneExporter.cpp`）：ref 能解析出來源檔 ⇒ authored（跳過）；解析不出（`0xFF......` 動態 ref）⇒ 玩家放的（進 `placements[]`）。所以重開遊戲後，誰需要靠 UI「adopt」重新登記、誰不需要：
+
+| 東西 | 存檔記得嗎 | 重開遊戲後匯出 |
+|---|---|---|
+| 新增物件（F7 擺的、丟在地上的裝備） | ✅ 動態 ref | **自動**，免 adopt——身份證在 ref 自己身上 |
+| 真刪除的自家物件 | ✅ disabled 動態 ref | 自動跳過（無痕），免 adopt |
+| marker 位置＋名字 | ✅ proxy＋顯示名 | 物件照樣被排除在 `placements[]` 外（認 base），但 `annotations[]` 來自登記簿 → 要 Markers 頁 `adopt this cell`（`Markers::AdoptOrphans()`，連名字撿回）|
+| 擦除 vanilla/mod 物件 | ✅ disabled 狀態 | diff 分不清是你擦的還是任務腳本 disable 的 → 要 Eraser 頁 `scan disabled refs in this cell` 逐筆 `adopt`（刻意不自動全收，只提案不推論）才進 `removals[]` |
+
+一句話：**存檔記得你做過什麼，adopt 讓重開後的 DLL 重新知道「哪些是你的意圖」**。若工作流是做完馬上 F10 匯出，adopt 用不到；它服務跨 session 累積編輯（先擺/先擦，隔幾天回來接著改，再匯出）。
+
+**2026-07-11 實機驗收**：F11 準星放置（pitch 正確）、F8 擦除/undo、F6/F7 滴管（含姿態）、numpad 編輯（5 選/3 升/0 commit/. 取消還原；編輯中 log 出現的 unmapped `0x11`/`0x1F`/`0x20`/`0x38` 是 WASD/Alt，非 numpad 問題）、物理凍結→commit→沉降（匯出為沉降後姿態）、F10 匯出→ModForge build→esp 閉環（removals 深埋 Z-30000、Tamriel override 自動帶 TopCell、ESL）。
 
 ## 建置踩坑（2026-07-10 首編）
 
