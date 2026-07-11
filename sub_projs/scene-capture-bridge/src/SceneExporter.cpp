@@ -273,6 +273,10 @@ namespace SceneExporter {
                     if (!e.base.empty()) c["base"] = e.base;   // origin NPC_ if durable
                     if (!n.race.empty()) c["race"] = n.race;
                     c["female"] = n.female;
+                    if (n.unique) c["unique"] = true;
+                    if (n.essential) c["essential"] = true;
+                    if (n.protectedActor) c["protected"] = true;
+                    if (n.dead) c["dead"] = true;
                     c["weight"] = n.weight;
                     c["height"] = n.height;
                     c["bodyTint"] = {{"r", n.bodyR}, {"g", n.bodyG}, {"b", n.bodyB}};
@@ -290,6 +294,22 @@ namespace SceneExporter {
                     }
                     if (!n.morphs.empty()) c["faceMorphs"] = n.morphs;
                     if (!n.parts.empty()) c["faceParts"] = n.parts;
+                    if (!n.perks.empty()) {
+                        auto pj = nlohmann::json::array();
+                        for (const auto& p : n.perks)
+                            pj.push_back({{"perk", p.perk}, {"rank", p.rank}});
+                        c["perks"] = std::move(pj);
+                    }
+                    if (!n.activeEffects.empty()) {
+                        auto aj = nlohmann::json::array();
+                        for (const auto& a : n.activeEffects) {
+                            nlohmann::json o{{"magicEffect", a.magicEffect}, {"magnitude", a.magnitude},
+                                {"duration", a.duration}, {"elapsed", a.elapsed}};
+                            if (!a.source.empty()) o["source"] = a.source;
+                            aj.push_back(std::move(o));
+                        }
+                        c["activeEffects"] = std::move(aj);   // runtime buff snapshot
+                    }
                     c["position"] = Vec3(n.position);
                     c["rotation"] = Vec3(n.angleDeg);   // already degrees
                     if (!n.cellOrWs.empty()) c[n.isInterior ? "cell" : "worldspace"] = n.cellOrWs;

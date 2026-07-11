@@ -83,9 +83,10 @@
 4. **Export**（player cell 或 all）→ 開 `SKSE/…/SceneCaptureBridge/scene-export.json`：`capturedItems[]` 每筆有 `name`/`kind`/`base`，武防帶 `enchantment{target,effects[{magicEffect,magnitude,area,duration}]}`，藥水/材料帶 `effects[]`。**MGEF id 對不對是重點**（`Skyrim.esm:0x…`）。
 5. **持久**：吸幾個 → save → 完全重開 → load → Captures 頁該在（`'SCCP'` co-save）。逐列 **undo**、**clear** работают。
 
-**② NPC 外貌吸取 → `capturedNpcs[]`**（PROTEUS 收尾）
-6. 準星對一個**普通 NPC**（非唯一，例如衛兵/隨機村民）→ `sc cap` → Captures 頁列 `名字 [npc] male/female race, N headpart(s), M tint(s)`。
-7. 對一個**唯一 NPC**（有名有姓的，如 Lydia/Ulfric）→ 應被拒：「that's a UNIQUE npc — skipped」。
-8. **Export** → `capturedNpcs[]` 該筆：`race`/`female`/`weight`/`headParts[]`/`tintLayers[]`/`faceMorphs[19]`/`hairColor`/`position`。**看數值合不合理**（race id 對、morphs 不是全 0）。
-9. **PROTEUS 關鍵驗**：用 PROTEUS clone 出玩家 → `sc cap` 那個 clone → 匯出的 `faceMorphs`/`tintLayers`/`headParts` **是不是玩家本人的臉**？**若全是預設值＝PROTEUS 走 NiNode live override 沒寫 TESNPC**（README 警告 a），這條路要改招，回報我。
-   - 註：就算擷到對的臉，**遊戲內重現真臉還需 facegen 烘焙**（ModForge 下游），本回合不驗那段——這裡只驗「DLL 有沒有吸到正確來源資料」。
+**② NPC 快照吸取 → `capturedNpcs[]`**（PROTEUS 收尾；DLL `d3e1b5d0` 起，co-save `'SCCP'` 升 v3）
+6. 準星對**普通 NPC**（衛兵/隨機村民）→ `sc cap` → Captures 頁列 `名字 [npc] male/female race, N headpart, M tint, P perk, B buff`。
+7. **唯一 NPC 也收了**（改設計）：對 Lydia/衛兵隊長之類 → 應成功、列上標 **UNIQUE**；匯出帶 `"unique": true`。
+8. **Export** → `capturedNpcs[]` 該筆看數值合不合理：`race`/`female`/`weight`/`headParts[]`/`tintLayers[]`/`faceMorphs[19]`/`hairColor`/`perks[{perk,rank}]`/`activeEffects[]`/`unique`/`dead`/`essential`/`position`。（race id 對、morphs 不全 0、perk id 對）。
+   - **buff 驗**：先給目標施個增益（或找個帶光環的）再 `sc cap` → `activeEffects[]` 該有那個 MGEF。**生死**：殺掉再吸 → `"dead": true`。
+9. **PROTEUS 關鍵驗**：PROTEUS clone 出玩家 → `sc cap` clone → 匯出的 `faceMorphs`/`tintLayers`/`headParts` **是不是玩家本人的臉**？**若全是預設值＝PROTEUS 走 NiNode live override 沒寫 TESNPC**（README 警告 a），這條路要改招，回報我。
+   - **注意「mesh」不在這**：DLL 只收「臉的定義」（headParts+morphs+race+weight），**沒收 baked FaceGeom nif、也沒收 RaceMenu/NiOverride 雕塑與 BodySlide 身形**——真臉/真身重現要 facegen 烘焙（ModForge 下游）。這裡只驗「DLL 有沒有吸到正確來源定義」。

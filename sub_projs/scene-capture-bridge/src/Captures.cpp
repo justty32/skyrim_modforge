@@ -69,6 +69,10 @@ namespace {
             if (auto id = SceneExporter::ResolveDurableId(race)) n.race = *id;
         }
         n.female = npc->IsFemale();
+        n.unique = npc->IsUnique();
+        n.essential = npc->IsEssential();
+        n.dead = actor->IsDead();
+        n.protectedActor = actor->IsProtected();
         n.weight = npc->weight;
         n.height = npc->height;
         n.bodyR = npc->bodyTintColor.red;
@@ -116,6 +120,37 @@ namespace {
             for (std::int32_t p : npc->faceData->parts) n.parts.push_back(p);
         }
 
+        // Perks (base BGSPerkRankArray): durable perk id + rank.
+        if (npc->perks && npc->perkCount > 0) {
+            for (std::uint32_t i = 0; i < npc->perkCount; ++i) {
+                auto& pr = npc->perks[i];
+                if (!pr.perk) continue;
+                if (auto id = SceneExporter::ResolveDurableId(pr.perk))
+                    n.perks.push_back({*id, pr.currentRank});
+            }
+        }
+
+        // Current buffs — live active-effect snapshot (source spell + base MGEF).
+        if (auto* mt = actor->GetMagicTarget()) {
+            if (auto* list = mt->GetActiveEffectList()) {
+                for (auto* ae : *list) {
+                    if (!ae) continue;
+                    auto* mgef = ae->GetBaseObject();
+                    if (!mgef) continue;
+                    Captures::ActiveEffect a;
+                    if (auto id = SceneExporter::ResolveDurableId(mgef)) a.magicEffect = *id;
+                    else continue;  // runtime MGEF — can't name it
+                    if (ae->spell) {
+                        if (auto id = SceneExporter::ResolveDurableId(ae->spell)) a.source = *id;
+                    }
+                    a.magnitude = ae->magnitude;
+                    a.duration = ae->duration;
+                    a.elapsed = ae->elapsedSeconds;
+                    n.activeEffects.push_back(std::move(a));
+                }
+            }
+        }
+
         n.position = ref->GetPosition();
         const RE::NiPoint3& ang = ref->data.angle;
         n.angleDeg = {ang.x * kRadToDeg, ang.y * kRadToDeg, ang.z * kRadToDeg};
@@ -135,20 +170,14 @@ namespace {
             return Captures::Result::kMarkerProxy;
         }
         // NPC capture (increment ②): harvest the actor's appearance/identity.
-        // A UNIQUE npc is refused (can't be duplicated meaningfully).
+        // Unique NPCs are captured too (user-decided) — the `unique` flag rides
+        // along for ModForge to act on.
         if (ref->GetFormType() == RE::FormType::ActorCharacter) {
-            auto* actor = ref->As<RE::Actor>();
-            auto* npcBase = actor ? actor->GetActorBase() : nullptr;
             Captures::Entry e;
             const char* dn = ref->GetDisplayFullName();
             e.name = (dn && *dn) ? dn : "";
             if (auto* b = ref->GetBaseObject()) {
                 if (auto id = SceneExporter::ResolveDurableId(b)) e.base = *id;
-            }
-            if (npcBase && npcBase->IsUnique()) {
-                SKSE::log::info("Captures: '{}' is a UNIQUE npc — not captured "
-                    "(can't be duplicated)", e.name);
-                return Captures::Result::kUniqueNpc;
             }
             e.kind = Captures::Kind::kNpc;
             if (!ReadNpc(e, ref.get())) {
@@ -156,11 +185,12 @@ namespace {
                 return Captures::Result::kNothing;
             }
             e.seq = g_nextSeq++;
-            SKSE::log::info("Captures: captured NPC '{}' ({}) race={} {} — {} headpart(s), "
-                "{} tint layer(s), face morphs {}", e.name,
+            SKSE::log::info("Captures: captured NPC '{}' ({}) race={} {}{} — {} headpart(s), "
+                "{} tint(s), {} perk(s), {} buff(s), face morphs {}", e.name,
                 e.base.empty() ? "runtime base" : e.base,
                 e.npc.race.empty() ? "?" : e.npc.race, e.npc.female ? "female" : "male",
-                e.npc.headParts.size(), e.npc.tints.size(),
+                e.npc.unique ? " UNIQUE" : "", e.npc.headParts.size(), e.npc.tints.size(),
+                e.npc.perks.size(), e.npc.activeEffects.size(),
                 e.npc.morphs.empty() ? "none" : "captured");
             g_entries.push_back(std::move(e));
             return Captures::Result::kCaptured;

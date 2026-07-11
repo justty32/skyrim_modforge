@@ -186,10 +186,12 @@ void __stdcall UI::CapturesPage::Render() {
         if (ImGuiMCP::Button("undo")) { undoSeq = e.seq; doUndo = true; }
         ImGuiMCP::SameLine();
         if (e.kind == ::Captures::Kind::kNpc) {
-            ImGuiMCP::Text("%s  [npc]  %s %s, %zu headpart(s), %zu tint(s)%s",
-                e.name.c_str(), e.npc.female ? "female" : "male",
-                e.npc.race.empty() ? "?" : e.npc.race.c_str(),
-                e.npc.headParts.size(), e.npc.tints.size(),
+            const auto& n = e.npc;
+            ImGuiMCP::Text("%s  [npc%s%s]  %s %s, %zu headpart(s), %zu tint(s), "
+                "%zu perk(s), %zu buff(s)%s", e.name.c_str(),
+                n.unique ? " UNIQUE" : "", n.dead ? " DEAD" : "",
+                n.female ? "female" : "male", n.race.empty() ? "?" : n.race.c_str(),
+                n.headParts.size(), n.tints.size(), n.perks.size(), n.activeEffects.size(),
                 e.base.empty() ? "  (runtime base)" : "");
         } else {
             ImGuiMCP::Text("%s  [%s]  %zu effect(s)%s", e.name.c_str(),

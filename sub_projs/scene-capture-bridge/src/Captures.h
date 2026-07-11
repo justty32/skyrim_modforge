@@ -17,8 +17,9 @@
 //
 // Scope: increment ① ITEMS (weapon/armour enchant + potion/ingredient effects);
 // increment ② NPC appearance (the PROTEUS payoff — race/sex/weight + head parts,
-// tint layers, face morphs, hair/skin colour). A UNIQUE NPC is refused (can't be
-// duplicated meaningfully — user-decided "唯一的 npc 就放棄").
+// tint layers, face morphs, hair/skin colour). UNIQUE NPCs are captured too
+// (user-decided 2026-07-11, reversing the earlier skip); the `unique` flag rides
+// along so ModForge can decide what to do with a one-of-a-kind actor.
 //
 // NPC caveat (IN-GAME TBD): the capture reads the actor's TESNPC record. If a
 // tool (PROTEUS) applies its look via live NiNode overrides WITHOUT writing the
@@ -52,11 +53,33 @@ namespace Captures {
         std::uint8_t r = 0, g = 0, b = 0, a = 0;  // TINC colour
     };
 
+    // A perk the actor's base carries (durable BGSPerk id + rank).
+    struct PerkEntry {
+        std::string perk;
+        std::int32_t rank = 0;
+    };
+
+    // One active magic effect on the actor at capture time (a "current buff"):
+    // the source spell/ability + its base MGEF, with the live magnitude/timing.
+    // This is a runtime SNAPSHOT, not a durable trait — ModForge decides whether
+    // to bake it as an ability, ignore transient ones, etc.
+    struct ActiveEffect {
+        std::string source;       // durable id of the source spell/ability (SPEL/ENCH/…), if any
+        std::string magicEffect;  // durable MGEF id
+        float magnitude = 0.f;
+        float duration = 0.f;     // <=0 = ability / no timer
+        float elapsed = 0.f;      // seconds already elapsed
+    };
+
     // Appearance/identity of a captured actor — everything an NPC_ face record
     // carries, plus the placement transform so ModForge can position the rebuild.
     struct NpcData {
         std::string race;          // durable RACE id
         bool female = false;
+        bool unique = false;       // ACBS Unique flag — ModForge decides how to treat a one-of-a-kind
+        bool dead = false;         // live death state at capture time
+        bool essential = false;    // ACBS Essential
+        bool protectedActor = false;  // ACBS Protected
         float weight = 0.f;        // NAM7 (0..100)
         float height = 1.f;        // NAM6
         std::uint8_t bodyR = 0, bodyG = 0, bodyB = 0;  // QNAM skin tone
@@ -68,6 +91,8 @@ namespace Captures {
         std::vector<TintLayer> tints;
         std::vector<float> morphs;         // faceData NAM9 (19 sliders)
         std::vector<std::int32_t> parts;   // faceData NAMA (4 part presets)
+        std::vector<PerkEntry> perks;      // base perks (durable id + rank)
+        std::vector<ActiveEffect> activeEffects;  // current buffs — runtime snapshot
         RE::NiPoint3 position;     // world coords at capture time
         RE::NiPoint3 angleDeg;     // facing (degrees)
         std::string cellOrWs;      // durable anchor at capture time
@@ -91,7 +116,7 @@ namespace Captures {
     };
 
     // Outcome of a capture attempt — the console/panel word things by this.
-    enum class Result { kNone, kCaptured, kNothing, kNotItem, kMarkerProxy, kUniqueNpc };
+    enum class Result { kNone, kCaptured, kNothing, kNotItem, kMarkerProxy };
 
     Result CaptureCrosshair();  // `sc cap`   — the activatable crosshair target
     Result CaptureByRay();      // `sc cap r` — the look-ray target (statics/trees)
