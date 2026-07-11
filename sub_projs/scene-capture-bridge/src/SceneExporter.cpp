@@ -1,5 +1,6 @@
 #include "SceneExporter.h"
 
+#include "Captures.h"
 #include "Eraser.h"
 #include "Markers.h"
 #include "Overrides.h"
@@ -251,6 +252,38 @@ namespace SceneExporter {
             scene["overrides"] = std::move(arr);
         }
 
+        // capturedItems[] — semantic definitions (enchant/effects) for ModForge
+        // to mint fresh authored records (ENCH+WEAP / ALCH / …). Runtime-only
+        // content that has no durable base to reference goes here, not placements[].
+        if (const auto& caps = Captures::All(); !caps.empty()) {
+            auto effJson = [](const std::vector<Captures::Effect>& effs) {
+                auto a = nlohmann::json::array();
+                for (const auto& ef : effs)
+                    a.push_back({{"magicEffect", ef.magicEffect}, {"magnitude", ef.magnitude},
+                        {"area", ef.area}, {"duration", ef.duration}});
+                return a;
+            };
+            auto arr = nlohmann::json::array();
+            for (const auto& e : caps) {
+                nlohmann::json c;
+                c["name"] = e.name;
+                c["kind"] = Captures::KindName(e.kind);
+                if (!e.base.empty()) c["base"] = e.base;  // physical template source
+                if (e.kind == Captures::Kind::kWeapon || e.kind == Captures::Kind::kArmor) {
+                    nlohmann::json ench;
+                    ench["target"] = (e.kind == Captures::Kind::kWeapon) ? "weapon" : "armor";
+                    if (!e.enchantBase.empty()) ench["base"] = e.enchantBase;
+                    if (e.enchantAmount) ench["amount"] = e.enchantAmount;
+                    ench["effects"] = effJson(e.effects);
+                    c["enchantment"] = std::move(ench);
+                } else {
+                    c["effects"] = effJson(e.effects);
+                }
+                arr.push_back(std::move(c));
+            }
+            scene["capturedItems"] = std::move(arr);
+        }
+
         if (const auto& marks = Markers::All(); !marks.empty()) {
             auto arr = nlohmann::json::array();
             for (const auto& m : marks) {
@@ -282,6 +315,7 @@ namespace SceneExporter {
         g_last.markers = c.markerProxies;
         g_last.removals = Eraser::All().size();
         g_last.overrides = Overrides::All().size();
+        g_last.captures = Captures::All().size();
         SKSE::log::info(
             "Export[{}]: {} placements ({} actors), {} pre-existing, {} skipped "
             "(dynamic bases), {} marker proxies excluded, {} annotations, {} "

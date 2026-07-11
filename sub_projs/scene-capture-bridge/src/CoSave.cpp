@@ -1,5 +1,6 @@
 #include "CoSave.h"
 
+#include "Captures.h"
 #include "Editor.h"
 #include "Eraser.h"
 #include "Markers.h"
@@ -15,12 +16,14 @@ namespace {
     constexpr std::uint32_t kMkrs = 'MKRS';
     constexpr std::uint32_t kErsr = 'ERSR';
     constexpr std::uint32_t kOvrd = 'OVRD';
+    constexpr std::uint32_t kCaps = 'SCCP';
 
     // Per-record versions (an older save's record is read with its own layout).
     constexpr std::uint32_t kVerSett = 3;  // v2 adds editor step sizes; v3 adds aim/axis
     constexpr std::uint32_t kVerMkrs = 2;  // v2: full angle (3f) + scale, was angleZ only
     constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
     constexpr std::uint32_t kVerOvrd = 1;
+    constexpr std::uint32_t kVerCaps = 1;
 
     // ---- primitives -------------------------------------------------------
 
@@ -252,6 +255,54 @@ namespace {
         }
     }
 
+    void SaveCaptures(const SKSE::SerializationInterface* si) {
+        const auto& all = Captures::All();
+        si->WriteRecordData(static_cast<std::uint32_t>(all.size()));
+        for (const auto& e : all) {
+            si->WriteRecordData(e.seq);
+            si->WriteRecordData(static_cast<std::uint8_t>(e.kind));
+            WriteStr(si, e.name);
+            WriteStr(si, e.base);
+            WriteStr(si, e.enchantBase);
+            si->WriteRecordData(e.enchantAmount);
+            si->WriteRecordData(static_cast<std::uint32_t>(e.effects.size()));
+            for (const auto& ef : e.effects) {
+                WriteStr(si, ef.magicEffect);
+                si->WriteRecordData(ef.magnitude);
+                si->WriteRecordData(ef.area);
+                si->WriteRecordData(ef.duration);
+            }
+        }
+    }
+
+    void LoadCaptures(const SKSE::SerializationInterface* si) {
+        std::uint32_t count = 0;
+        si->ReadRecordData(count);
+        auto& all = Captures::All();
+        for (std::uint32_t i = 0; i < count; ++i) {
+            Captures::Entry e;
+            std::uint8_t kind = 0;
+            std::uint32_t nEff = 0;
+            si->ReadRecordData(e.seq);
+            si->ReadRecordData(kind);
+            e.kind = static_cast<Captures::Kind>(kind);
+            e.name = ReadStr(si);
+            e.base = ReadStr(si);
+            e.enchantBase = ReadStr(si);
+            si->ReadRecordData(e.enchantAmount);
+            si->ReadRecordData(nEff);
+            for (std::uint32_t k = 0; k < nEff; ++k) {
+                Captures::Effect ef;
+                ef.magicEffect = ReadStr(si);
+                si->ReadRecordData(ef.magnitude);
+                si->ReadRecordData(ef.area);
+                si->ReadRecordData(ef.duration);
+                e.effects.push_back(std::move(ef));
+            }
+            all.push_back(std::move(e));
+        }
+    }
+
     // ---- SKSE callbacks ----------------------------------------------------
 
     void OnSave(SKSE::SerializationInterface* si) {
@@ -259,8 +310,10 @@ namespace {
         if (si->OpenRecord(kMkrs, kVerMkrs)) SaveMarkers(si);
         if (si->OpenRecord(kErsr, kVerErsr)) SaveEraser(si);
         if (si->OpenRecord(kOvrd, kVerOvrd)) SaveOverrides(si);
-        SKSE::log::info("CoSave: saved {} marker(s), {} erasure(s), {} override(s)",
-            Markers::All().size(), Eraser::All().size(), Overrides::All().size());
+        if (si->OpenRecord(kCaps, kVerCaps)) SaveCaptures(si);
+        SKSE::log::info("CoSave: saved {} marker(s), {} erasure(s), {} override(s), {} capture(s)",
+            Markers::All().size(), Eraser::All().size(), Overrides::All().size(),
+            Captures::All().size());
     }
 
     void OnLoad(SKSE::SerializationInterface* si) {
@@ -271,6 +324,7 @@ namespace {
             case kMkrs: LoadMarkers(si, version); break;
             case kErsr: LoadEraser(si, version); break;
             case kOvrd: LoadOverrides(si); break;
+            case kCaps: LoadCaptures(si); break;
             default:
                 SKSE::log::warn("CoSave: unknown record 0x{:X} — skipped", type);
                 break;
@@ -278,8 +332,10 @@ namespace {
         }
         Markers::OnRegistryRestored();   // seq counter + freeze + display state
         Eraser::OnRegistryRestored();    // rebuild the marked-id set
-        SKSE::log::info("CoSave: loaded {} marker(s), {} erasure(s), {} override(s)",
-            Markers::All().size(), Eraser::All().size(), Overrides::All().size());
+        Captures::OnRegistryRestored();  // reseed the capture seq counter
+        SKSE::log::info("CoSave: loaded {} marker(s), {} erasure(s), {} override(s), {} capture(s)",
+            Markers::All().size(), Eraser::All().size(), Overrides::All().size(),
+            Captures::All().size());
     }
 
     // Runs before every load AND on new game: wipe registries (no world
@@ -290,6 +346,7 @@ namespace {
         Markers::ClearPending();  // stale orphan notes from the previous load
         Eraser::DropAll();
         Overrides::DropAll();
+        Captures::DropAll();
         Modes::ResetDefaults();
         Markers::SetProxiesVisible(true);  // registry is empty: flag only
     }

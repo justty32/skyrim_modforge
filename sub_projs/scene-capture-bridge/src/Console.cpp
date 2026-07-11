@@ -1,5 +1,6 @@
 #include "Console.h"
 
+#include "Captures.h"
 #include "Editor.h"
 #include "Eraser.h"
 #include "Markers.h"
@@ -40,6 +41,7 @@ namespace {
         Print("  sc del|pk|ed er0 / er1             aim by crosshair / ray");
         Print("  sc ed ax / sc ed                  enter rotate sub-mode / back to move");
         Print("  sc delc                           erase the console-selected ref");
+        Print("  sc cap / sc cap r                 capture item enchant/effects (crosshair / ray)");
     }
 
     // Map a tool word ("del"/"pk"/"ed"/...) to its mode, or kTotal if none.
@@ -77,6 +79,21 @@ namespace {
             case Eraser::MarkResult::kDuplicate:   Print("SCB: already marked"); break;
             case Eraser::MarkResult::kMarkerProxy: Print("SCB: that's a marker gem"); break;
             default: Print("SCB: no console ref selected (or it's an actor)"); break;
+            }
+            return true;
+        }
+
+        // Capture the aimed item's enchantment/effects into capturedItems[].
+        // `sc cap` = crosshair, `sc cap r` = look-ray (statics/trees).
+        if (a1 == "cap") {
+            const bool ray = (a2 == "r");
+            const auto r = ray ? Captures::CaptureByRay() : Captures::CaptureCrosshair();
+            switch (r) {
+            case Captures::Result::kCaptured:   Print("SCB: captured enchant/effects"); break;
+            case Captures::Result::kIsNpc:      Print("SCB: NPC capture not wired yet (items only)"); break;
+            case Captures::Result::kNotItem:    Print("SCB: no enchant/effects to capture there"); break;
+            case Captures::Result::kMarkerProxy:Print("SCB: that's a marker gem"); break;
+            default: Print("SCB: nothing under the %s", ray ? "ray" : "crosshair"); break;
             }
             return true;
         }

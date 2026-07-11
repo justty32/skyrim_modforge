@@ -55,4 +55,8 @@ namespace UI {
         void __stdcall Render();
     }
 
+    namespace CapturesPage {  // captured item enchant/effects -> capturedItems[]
+        void __stdcall Render();
+    }
+
 }  // namespace UI

@@ -1,0 +1,166 @@
+#include "Captures.h"
+
+#include "Aim.h"
+#include "Markers.h"
+#include "SceneExporter.h"
+#include "log.h"
+
+#include <algorithm>
+
+namespace {
+    std::vector<Captures::Entry> g_entries;
+    std::uint32_t g_nextSeq = 1;
+
+    // A MagicItem's effect list — shared by ENCH (weapon/armour enchant), ALCH
+    // (potion) and INGR (ingredient). A runtime-only MGEF can't be named in an
+    // esp, so it is dropped from the list (rare; kept quiet — the entry still
+    // carries the effects that DO resolve).
+    std::vector<Captures::Effect> ReadEffects(const RE::MagicItem* magic) {
+        std::vector<Captures::Effect> out;
+        if (!magic) return out;
+        for (const auto* eff : magic->effects) {
+            if (!eff || !eff->baseEffect) continue;
+            auto id = SceneExporter::ResolveDurableId(eff->baseEffect);
+            if (!id) continue;
+            Captures::Effect e;
+            e.magicEffect = *id;
+            e.magnitude = eff->effectItem.magnitude;
+            e.area = static_cast<std::int32_t>(eff->effectItem.area);
+            e.duration = static_cast<std::int32_t>(eff->effectItem.duration);
+            out.push_back(std::move(e));
+        }
+        return out;
+    }
+
+    // The enchantment ACTUALLY on this instance: a player-applied enchant lives
+    // on the ref's ExtraEnchantment (base stays the vanilla weapon); a
+    // pre-enchanted base carries formEnchanting. Prefer the instance's.
+    void CaptureEnchant(Captures::Entry& e, RE::TESObjectREFR* ref, RE::TESEnchantableForm* form) {
+        RE::EnchantmentItem* ench = nullptr;
+        std::uint16_t charge = 0;
+        if (ref) {
+            if (auto* x = ref->extraList.GetByType<RE::ExtraEnchantment>(); x && x->enchantment) {
+                ench = x->enchantment;
+                charge = x->charge;
+            }
+        }
+        if (!ench && form) {
+            ench = form->formEnchanting;
+            charge = form->amountofEnchantment;
+        }
+        if (!ench) return;
+        e.effects = ReadEffects(ench);
+        e.enchantAmount = charge;
+        if (auto id = SceneExporter::ResolveDurableId(ench)) e.enchantBase = *id;
+    }
+
+    Captures::Result CaptureRef(RE::NiPointer<RE::TESObjectREFR> ref, const char* how) {
+        if (!ref) {
+            SKSE::log::info("Captures: {} has no target", how);
+            return Captures::Result::kNothing;
+        }
+        if (Markers::IsProxy(ref.get())) {
+            SKSE::log::info("Captures: {} target is a marker gem — nothing to capture", how);
+            return Captures::Result::kMarkerProxy;
+        }
+        // NPC appearance capture is increment ② — route it out loudly, never a
+        // silent no-op (CLAUDE.md no-silent-drop).
+        if (ref->GetFormType() == RE::FormType::ActorCharacter) {
+            SKSE::log::info("Captures: {} target is an NPC — NPC capture not wired yet", how);
+            return Captures::Result::kIsNpc;
+        }
+        auto* base = ref->GetBaseObject();
+        if (!base) {
+            SKSE::log::info("Captures: {} target has no base", how);
+            return Captures::Result::kNothing;
+        }
+
+        Captures::Entry e;
+        const char* dn = ref->GetDisplayFullName();
+        e.name = (dn && *dn) ? dn : "";
+        if (auto id = SceneExporter::ResolveDurableId(base)) e.base = *id;
+
+        switch (base->GetFormType()) {
+        case RE::FormType::Weapon:
+            e.kind = Captures::Kind::kWeapon;
+            CaptureEnchant(e, ref.get(), static_cast<RE::TESObjectWEAP*>(base));
+            break;
+        case RE::FormType::Armor:
+            e.kind = Captures::Kind::kArmor;
+            CaptureEnchant(e, ref.get(), static_cast<RE::TESObjectARMO*>(base));
+            break;
+        case RE::FormType::AlchemyItem:
+            e.kind = Captures::Kind::kPotion;
+            e.effects = ReadEffects(static_cast<RE::AlchemyItem*>(base));
+            break;
+        case RE::FormType::Ingredient:
+            e.kind = Captures::Kind::kIngredient;
+            e.effects = ReadEffects(static_cast<RE::IngredientItem*>(base));
+            break;
+        default:
+            SKSE::log::info("Captures: {} target '{}' is not a capturable item "
+                "(weapon/armour/potion/ingredient)", how, e.name);
+            return Captures::Result::kNotItem;
+        }
+
+        // Nothing to mint: a plain (unenchanted) weapon/armour or an empty potion
+        // has no definition worth an authored record — ModForge can reference the
+        // base directly. Reject loudly so the player knows why nothing landed.
+        if (e.effects.empty()) {
+            SKSE::log::info("Captures: '{}' has no enchantment / effects to capture", e.name);
+            return Captures::Result::kNotItem;
+        }
+
+        e.seq = g_nextSeq++;
+        SKSE::log::info("Captures: captured '{}' [{}] ({}) — {} effect(s){}", e.name,
+            Captures::KindName(e.kind), e.base.empty() ? "runtime base" : e.base,
+            e.effects.size(), e.enchantBase.empty() ? "" : " (+authored ENCH)");
+        g_entries.push_back(std::move(e));
+        return Captures::Result::kCaptured;
+    }
+}
+
+namespace Captures {
+
+    Result CaptureCrosshair() { return CaptureRef(Aim::CrosshairRef(), "crosshair"); }
+    Result CaptureByRay() { return CaptureRef(Aim::RayRef(), "ray"); }
+
+    std::vector<Entry>& All() { return g_entries; }
+
+    const char* KindName(Kind k) {
+        switch (k) {
+        case Kind::kWeapon: return "weapon";
+        case Kind::kArmor: return "armor";
+        case Kind::kPotion: return "potion";
+        case Kind::kIngredient: return "ingredient";
+        default: return "item";
+        }
+    }
+
+    bool Undo() {
+        if (g_entries.empty()) return false;
+        g_entries.pop_back();
+        return true;
+    }
+
+    bool UndoEntry(std::uint32_t seq) {
+        auto it = std::find_if(g_entries.begin(), g_entries.end(),
+            [seq](const Entry& e) { return e.seq == seq; });
+        if (it == g_entries.end()) return false;
+        g_entries.erase(it);
+        return true;
+    }
+
+    void Clear() { g_entries.clear(); }
+
+    void DropAll() { g_entries.clear(); }
+
+    void OnRegistryRestored() {
+        // Reseed the counter past the highest loaded seq so new captures don't
+        // collide with restored ones (same pattern as Markers).
+        std::uint32_t hi = 0;
+        for (const auto& e : g_entries) hi = std::max(hi, e.seq);
+        g_nextSeq = hi + 1;
+    }
+
+}  // namespace Captures

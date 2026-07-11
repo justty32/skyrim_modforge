@@ -32,6 +32,7 @@ sc mk dp0 / dp1        隱藏／顯示所有 marker 光球（純視覺，登記�
 sc del|pk|ed er0 / er1  該模式動作鍵用準星／物理射線（樹、純裝飾 static）
 sc ed ax                進編輯「純旋轉子模式」（見下）；回普通模式打 sc ed
 sc delc                 擦除 console 滑鼠點選的 ref（先只做物件，非 actor）
+sc cap / sc cap r       擷取準星／射線目標的附魔＋效果（附魔武防、藥水、材料）進 capturedItems[]
 ```
 
 **編輯純旋轉子模式**：`sc ed ax` 進入，**`sc ed` 退回**普通移動模式。ON 時 numpad 方向鍵改成旋轉——**4/6＝yaw、1/3＝pitch、7/9＝roll、8/2＝角度歸零**（位置/縮放不動），numpad 5 也＝角度歸零；OFF（預設）時 8/2 前後、4/6 左右、1/3 升降、7/9 yaw，numpad 5＝復原到編輯前姿態。
@@ -49,7 +50,7 @@ Export 頁有 **Export player cell** 與 **Export all (loaded cells)** 兩鈕：
 | `plugin.cpp` | SKSE 入口 + message handler；input sink 三層：rebind 捕捉 → 編輯模式內部鍵 → 當前模式動作鍵（sink 形狀抄 my_skyrim_plugin_1 的 `FollowLight::HotkeySink`）|
 | `Modes.{h,cpp}` | P5 模式管理：一次一模式、每模式鍵位（預設 F11、允許重複）、動作分派、rebind 流程（下一鍵完成、Esc 取消）|
 | `Console.{h,cpp}` | `sc` console 指令（ObScript 劫持：`LocateConsoleCommand` 改寫 inert donor 的 name/params/executeFunction）|
-| `CoSave.{h,cpp}` | SKSE SerializationInterface（UID `'SCBR'`）：設定＋Markers/Eraser/Overrides 三本登記簿隨存檔走；revert 只清登記不碰世界；FormID 經 `ResolveFormID` 重解析 |
+| `CoSave.{h,cpp}` | SKSE SerializationInterface（UID `'SCBR'`）：設定＋Markers/Eraser/Overrides/Captures 四本登記簿隨存檔走；revert 只清登記不碰世界；FormID 經 `ResolveFormID` 重解析（Captures 只存耐久 id，無 handle）|
 | `UI.Settings.cpp` | Settings 頁：模式切換鈕、每模式鍵位表＋rebind、marker 光球開關；`UI::ModeLine()` 各頁頂部常駐當前模式 |
 | `SceneExporter.{h,cpp}` | **核心**：`ExportCell` 走訪 cell → **vanilla diff**（ref 解得出耐久 id ⇒ 既有 ⇒ 跳過；解不出 ⇒ 玩家 `PlaceAtMe` 擺的 ⇒ emit）→ `placements[]`（actor 與物件同一個 list，因 ModSpec 沒有 `npcRefs` 成員）；`ResolveDurableId` FormID→`<plugin>:0xLOCALID`；`WriteSceneFile` 吐 json |
 | `UI.{h,cpp}` | 遊戲內面板（[SKSE Menu Framework 3](../mod-survey/findings/skse-menu-framework-3.md) / Dear ImGui）：顯示所在 cell、Export 按鈕、上次匯出統計；Eraser/Palette/Editor 各頁帶 **`… by ray` 明示射線鈕**與 **this cell only 過濾**。**軟相依**——`IsInstalled()` 是 `GetModuleHandleW` 探測，沒裝框架就只有 hotkey |
@@ -58,6 +59,7 @@ Export 頁有 **Export player cell** 與 **Export all (loaded cells)** 兩鈕：
 | `Aim.{h,cpp}` | 共用視角射線＋**兩種選取入口**：`CrosshairRef()`（互動準星，老手感）與 `RayRef()`（物理射線→反查 ref，樹/純裝飾 static 用）。**射線絕不做自動 fallback**（使用者拍板 2026-07-11）——牆/地板都是 ref，自動 fallback 會把「按空」變誤抓；射線只走明示按鈕/專用鍵 |
 | `Eraser.{h,cpp}` | 橡皮擦（`sc del` 模式動作）：authored→disable＋登記→`removals[]`；自己的 dynamic→真刪除無痕；entry 記 name/座標/cell（面板逐列顯示＋過濾）；undo 逐列/逐 cell/最近一筆；`erase by ray` 明示射線入口。（`scan disabled` 跨存檔救援已移除——co-save 持久化耐久 id 後冗餘）|
 | `Palette.{h,cpp}` | 滴管（`sc pk` 吸、`sc pl` 擺；runtime-only base 拒收）；`pick by ray` 明示入口；**插槽落盤 `scene-capture-palette.json`（跨存檔跨 session）**，base 解析不回（plugin 移除）標 unavailable 不炸 |
+| `Captures.{h,cpp}` | 定義擷取器（Palette 的姊妹：吸「沒有耐久 base 可引用」的內容）。`sc cap`／面板讀 live form 的語意內容（附魔/藥水/材料的 MGEF 效果）→ 匯出 `capturedItems[]` 給 ModForge **鑄新記錄**（ENCH+WEAP／ALCH…）。**增量①＝物品**（附魔武防＋藥水/材料效果）；NPC 外貌擷取（PROTEUS 的臉）＝增量②，遇 actor 明示擋下不靜默。登記簿隨 co-save（record `'SCCP'`，只存耐久 id）|
 | `Editor.{h,cpp}` | 編輯模式（`sc ed` 動作鍵選中準星目標；**numpad \* ＝射線選取**）→ numpad 微調（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、. cancel、**5＝復原續編**）；步長 runtime 可調（Settings/co-save）；havok-movable 類型編輯期物理凍結；自己的 ref＝live pose 直接匯出（不進 overrides 列，正常），**authored ref＝commit 時登記進 Overrides**（2026-07-11 契約拍板）|
 | `Overrides.{h,cpp}` | authored ref 被編輯 commit 後的登記簿（比照 Eraser：明示、不 diff——havok 噪音）→ 匯出頂層 `overrides[]`（ref/position/rotation°/scale；actor 不帶 scale）；Editor 面板頁逐筆/全部 revert 回 baseline |
 | `PCH.h` / `log.h` | CommonLibSSE PCH（含 nlohmann）＋ spdlog file logger |
@@ -99,6 +101,7 @@ DLL 有兩層狀態，**P5 起兩層都隨存檔走**：
 | 擦除 vanilla/mod 物件 | **co-save 登記簿**＋存檔 disable 狀態 | **自動**進 `removals[]` |
 | 移動 authored ref（overrides） | **co-save 登記簿**（baseline＋commit pose）＋存檔 live pose | **自動**進 `overrides[]`，revert 也還能回 baseline |
 | Palette 插槽 | **磁碟**（`scene-capture-palette.json`） | 天生跨存檔；plugin 移出 load order 的槽標 unavailable |
+| Captures 擷取定義（附魔/效果） | **co-save 登記簿**（record `'SCCP'`，純耐久 id） | **自動**進 `capturedItems[]`；無 handle 需重解析，讀檔即回 |
 | 模式/鍵位/dp 狀態 | **co-save** | 隨存檔還原 |
 
 **adopt 降級為救援機制**：marker 的 `adopt this cell` 現在讀檔會**自動跑一次**（掃當前 cell），只有跨到別的 cell 才需手動按。擦除的 `scan disabled refs` 已整個移除——co-save 存的是耐久 id，重解析穩定，跨存檔救援冗餘。真要**換一個存檔**撿另一條時間線的 marker，走 Markers 頁 `adopt this cell`。

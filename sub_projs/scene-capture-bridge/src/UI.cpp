@@ -1,5 +1,6 @@
 #include "UI.h"
 
+#include "Captures.h"
 #include "Editor.h"
 #include "Eraser.h"
 #include "Markers.h"
@@ -48,6 +49,7 @@ void UI::Register() {
     SKSEMenuFramework::AddSectionItem("Markers", MarkersPage::Render);
     SKSEMenuFramework::AddSectionItem("Eraser", EraserPage::Render);
     SKSEMenuFramework::AddSectionItem("Palette", PalettePage::Render);
+    SKSEMenuFramework::AddSectionItem("Captures", CapturesPage::Render);
     SKSEMenuFramework::AddSectionItem("Editor", EditorPage::Render);
     SKSEMenuFramework::AddSectionItem("Settings", SettingsPage::Render);
     MarkerEditor::Init();  // the standalone E-interaction window
@@ -102,6 +104,7 @@ void __stdcall UI::Export::Render() {
     ImGuiMCP::BulletText("%zu added (placements, %zu actors)", s.placements, s.actors);
     ImGuiMCP::BulletText("%zu modified (overrides[])", s.overrides);
     ImGuiMCP::BulletText("%zu removed (removals[])", s.removals);
+    if (s.captures) ImGuiMCP::BulletText("%zu captured items (capturedItems[])", s.captures);
     // The number that proves the vanilla diff: authored refs are recognised and
     // skipped, so `build` does not re-place the whole room on top of itself.
     ImGuiMCP::BulletText("%zu pre-existing (skipped)", s.preexisting);
@@ -156,6 +159,38 @@ void __stdcall UI::EraserPage::Render() {
         ImGuiMCP::PopID();
     }
     if (!undoId.empty()) ::Eraser::UndoEntry(undoId);
+}
+
+void __stdcall UI::CapturesPage::Render() {
+    UI::ModeLine();
+    auto& caps = ::Captures::All();
+
+    ImGuiMCP::TextWrapped("%zu captured definition(s) -> capturedItems[]. Point at "
+        "an enchanted weapon/armour, a potion or an ingredient and capture its "
+        "effects for ModForge to mint a fresh record. (`sc cap` / `sc cap r`)",
+        caps.size());
+    if (ImGuiMCP::Button("capture crosshair")) { ::Captures::CaptureCrosshair(); }
+    ImGuiMCP::SameLine();
+    // Trees/architecture the crosshair never sees — explicit entry, see Aim.h.
+    if (ImGuiMCP::Button("capture by ray")) { ::Captures::CaptureByRay(); }
+    ImGuiMCP::SameLine();
+    if (ImGuiMCP::Button("clear")) { ::Captures::Clear(); }
+    ImGuiMCP::Separator();
+
+    // Each row: [undo] name [kind] N effect(s). Newest first, matching undo order.
+    std::uint32_t undoSeq = 0;
+    bool doUndo = false;
+    for (auto it = caps.rbegin(); it != caps.rend(); ++it) {
+        const auto& e = *it;
+        ImGuiMCP::PushID(std::to_string(e.seq).c_str());
+        if (ImGuiMCP::Button("undo")) { undoSeq = e.seq; doUndo = true; }
+        ImGuiMCP::SameLine();
+        ImGuiMCP::Text("%s  [%s]  %zu effect(s)%s", e.name.c_str(),
+            ::Captures::KindName(e.kind), e.effects.size(),
+            e.base.empty() ? "  (runtime base)" : "");
+        ImGuiMCP::PopID();
+    }
+    if (doUndo) ::Captures::UndoEntry(undoSeq);
 }
 
 namespace {
