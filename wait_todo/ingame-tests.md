@@ -51,3 +51,14 @@
   - **移除物件(§E 橡皮擦)demo**:例子加了 `removals:[0x0D1991]`——白漫馬廄 Skulvar 的一把鋤頭應**消失**(去馬廄看那把鋤頭沒了=橡皮擦成立)。
   - **⚠ 白天測**:vendor 8-20 營業(GetOffersServicesNow 含時間),夜間交易會空——快旅後若是夜晚,`set timescale`/等到白天再試。庫存已放 vanilla 鐵匠 leveled lists(武防+雜貨+金),VendorLocation 錨在店周圍 4096。
   - **回報**:傳送安全否、房子貼地否、Brynja 在否、問候+**交易(有貨有金)**通否。(Brynja 從零建、無 facegen,臉可能陽春/暗臉——能站能講能交易就算過。)
+
+## scene-capture-bridge P7 backlog 一輪（2026-07-11 晚，DLL `79e611e8` 已部署，esp 不動）
+
+⚠️ 完全關遊戲重開吃新 DLL；co-save 又升版（SETT v3）——舊存檔的設定記錄跳過一次（登記簿的 marker/eraser/overrides 不受影響，marker 仍自動 adopt）。
+
+1. **`sc delc`**：console 點一個物件（滑鼠點畫面中的桶/椅，console 顯示其 ref）→ 打 `sc delc` → 物件消失、Eraser 頁多一列。點 NPC 打 `sc delc` → 應拒絕（印「actor」）。
+2. **準星↔射線切換**：`sc del er1` → 刪除模式動作鍵改用射線（可擦樹）；`sc del er0` 切回準星。`sc pk er1`/`sc ed er1` 同理（吸樹/編輯樹不必再按 numpad *）。Settings 頁應顯示各模式現況。
+3. **旋轉軸**：`sc ed` 選中物件 → `sc ed ax1` → numpad 7/9 改繞 pitch（前後翻）；`ax2` roll（側翻）；`ax0` 回 yaw。Editor 頁 numpad 提示行應顯示當前軸。
+4. **編輯 marker 位置**：`sc ed` 準星對一顆靈魂石 marker → 動作鍵選中（log `editing MARKER`）→ numpad 推移＋**0 commit** → 光球移到新位置、跳「marker moved」；F1 Markers 頁該筆座標更新、**不**進 Editor overrides 列。numpad 5 可復原、`.` 取消。
+5. **palette load from file**：先 `sc pk` 吸幾個存著（自動寫 `scene-capture-palette.json`）→ 複製一份改名放 SKSE 夾（如 `my-palette.json`）→ Palette 頁文字框輸入該檔名 → `load from file` → 插槽**追加**進來、排最上。
+6. **co-save v3**：改 er/ax/步長 → 存檔重開 → 設定還原。

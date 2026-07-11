@@ -40,6 +40,11 @@ namespace Palette {
     void Load();  // kDataLoaded: read scene-capture-palette.json, re-resolve bases
                   // (writes happen automatically on pick/rename/remove)
 
+    // Panel "load from file": read another palette json (by filename, resolved
+    // next to scene-capture-palette.json) and APPEND its slots. Returns how
+    // many were added; the merged set is then saved to the default store.
+    std::size_t LoadFromFile(const std::string& filename);
+
     [[nodiscard]] std::vector<Slot>& All();
     [[nodiscard]] std::size_t SelectedIndex();
     void Select(std::size_t index);

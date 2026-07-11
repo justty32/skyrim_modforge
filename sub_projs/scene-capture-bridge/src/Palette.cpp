@@ -168,6 +168,43 @@ namespace Palette {
             unavailable ? std::format(" ({} unavailable)", unavailable) : "");
     }
 
+    std::size_t LoadFromFile(const std::string& filename) {
+        auto dir = SKSE::log::log_directory();
+        if (!dir || filename.empty()) return 0;
+        const auto path = *dir / filename;
+        if (!std::filesystem::exists(path)) {
+            SKSE::log::warn("Palette: load-from-file '{}' not found", path.string());
+            return 0;
+        }
+        std::ifstream in(path);
+        nlohmann::json j;
+        try { in >> j; } catch (const std::exception& e) {
+            SKSE::log::warn("Palette: '{}' unreadable ({})", path.string(), e.what());
+            return 0;
+        }
+        std::size_t added = 0;
+        for (const auto& item : j) {
+            Slot s;
+            s.name = item.value("name", "");
+            s.baseId = item.value("base", "");
+            if (s.baseId.empty()) continue;
+            if (auto a = item.find("angle"); a != item.end())
+                s.angle = {a->value("x", 0.f), a->value("y", 0.f), a->value("z", 0.f)};
+            s.scale = item.value("scale", 1.f);
+            s.isActor = item.value("isActor", false);
+            s.addsMaster = AddsMaster(s.baseId);
+            s.base = ResolveBase(s.baseId);  // null when the plugin isn't loaded
+            g_slots.push_back(std::move(s));
+            ++added;
+        }
+        if (added) {
+            g_selected = g_slots.size() - 1;
+            Save();  // fold the import into the persistent store
+        }
+        SKSE::log::info("Palette: loaded {} slot(s) from '{}' (appended)", added, filename);
+        return added;
+    }
+
     std::vector<Slot>& All() { return g_slots; }
     std::size_t SelectedIndex() { return g_selected; }
     void Select(std::size_t index) { if (index < g_slots.size()) g_selected = index; }

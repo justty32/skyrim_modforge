@@ -28,8 +28,13 @@ sc pl    擺放模式（動作鍵＝把選中插槽擺在準星處）
 sc ed    編輯模式（動作鍵＝選中準星目標進 numpad 微調）
 sc off   啥都不做
 sc       印當前模式＋用法
-sc mk dp0 / dp1   隱藏／顯示所有 marker 光球（純視覺，登記簿與匯出不受影響）
+sc mk dp0 / dp1        隱藏／顯示所有 marker 光球（純視覺，登記簿與匯出不受影響）
+sc del|pk|ed er0 / er1  該模式動作鍵用準星／物理射線（樹、純裝飾 static）
+sc ed ax0 / ax1 / ax2   編輯模式 7/9 旋轉軸＝yaw(Z)／pitch(X)／roll(Y)
+sc delc                 擦除 console 滑鼠點選的 ref（先只做物件，非 actor）
 ```
+
+編輯模式的目標若是 **marker 光球**：numpad 微調＋0 commit＝**移動該 marker**（更新登記簿座標，不進 overrides）。`er` 切換與 `ax` 軸選、編輯步長全部**存進存檔**（co-save SETT v3）。
 
 模式內操作不算佔鍵：numpad 編輯（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、`.` cancel、**5＝復原到編輯前姿態並續留編輯**）與 **numpad \*＝射線選取**照舊；位移/yaw/縮放**步長在 Settings 頁可調**（存 co-save）。當前模式/dp 狀態＋三個步長＋三本登記簿全部**存進存檔**（SKSE co-save，使用者的無 ini 原則）。動作鍵目前固定 F11（rebind 暫時隱藏，捕捉流程待重作）。`sc` 指令的實作＝劫持一個 retail 無作用的 vanilla console 指令（候選鏈首個命中者，2026-07-11 實機 donor＝`ClearAchievement`；全滅時面板 Settings 頁照樣能切模式）。
 

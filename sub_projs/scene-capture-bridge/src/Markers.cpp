@@ -238,6 +238,15 @@ namespace Markers {
             e->note = note;
     }
 
+    void SetTransform(std::uint32_t seq, const RE::NiPoint3& position, float angleZDeg) {
+        if (auto* e = FindBySeq(seq)) {
+            e->position = position;    // the exported coordinate follows the gem
+            e->angleZDeg = angleZDeg;
+            SKSE::log::info("Markers: #{} moved to ({:.1f}, {:.1f}, {:.1f})",
+                seq, position.x, position.y, position.z);
+        }
+    }
+
     void Remove(std::uint32_t seq) {
         for (auto it = g_entries.begin(); it != g_entries.end(); ++it) {
             if (it->seq != seq) continue;

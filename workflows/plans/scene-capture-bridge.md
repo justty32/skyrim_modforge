@@ -174,15 +174,19 @@ MarkerEntry {
 - **編輯步長可調**：`Editor` 三個步長常數改 runtime 變數＋Settings 頁 `InputFloat`＋co-save **SETT v2** 持久化。
 - **co-save 版本**：改 per-record 版本號（`kVerSett=2`/`kVerErsr=2`，其餘 1），OnLoad 傳 version 給各 loader → 舊存檔各記錄按自身 layout 讀（不再全表跳過）。
 
-## 之後再做（本輪只規劃，未實作）
+## 之後再做
 
-- `sc del er0/er1`（刪除模式準星↔射線切換）＋編輯模式同型 console 切換（取代 numpad * 專用鍵）。
-- `sc delc`：刪 console 滑鼠點選的 ref（先只做物件；讀 `RE::Console` 選中 ref）。
-- numpad 旋轉多軸（7/9 現只 yaw；加 pitch/roll 軸切換）。
-- 編輯指向靈魂石 marker 時 numpad 0 套用到該 marker 位置（不進 overrides）。
-- marker 編輯視窗下拉：寶石種類 ＋ 發光開關（需多個 proxy base / 動態換 model）。
-- palette「load from file」鈕＋文字框。
-- rebind 重作（找出 in-game 抓錯鍵主因：可能是 rebind armed 當幀把移動鍵也吃進去）。
+### ✅ 已做（P7 backlog 一輪，2026-07-11，DLL `79e611e8`，待實機）
+- `sc del/pk/ed er0/er1`：該模式動作鍵準星↔物理射線切換（`Modes::UseRay` per-mode，co-save SETT v3）。取代「numpad * 專用鍵才能射線」的需求。
+- `sc ed ax0/ax1/ax2`：編輯 7/9 旋轉軸＝yaw(Z)/pitch(X)/roll(Y)（沿用 `sc <tool> <arg>` 文法，零新增鍵；`Editor::g_rotAxis`，co-save）。
+- `sc delc`：擦除 `RE::Console::GetSelectedRef()` 選中的 ref，走 `Eraser::MarkConsoleRef`；actor 拒絕（先只做物件）。
+- 編輯指向靈魂石 marker → numpad 0 commit 更新該 marker 登記簿座標（`Markers::SetTransform`），不進 overrides；orphan proxy 就地 adopt。
+- palette「load from file」鈕＋文字框（`Palette::LoadFromFile`，讀 SKSE 夾下指定檔，**append** 進現有插槽並存回）。
+- Settings 頁顯示 aim source／旋轉軸現況（console 設定的可視化）。
+
+### 仍未做
+- marker 編輯視窗下拉：寶石種類 ＋ 發光開關（需 SceneCaptureTools.esp 多個 ACTI 變體或動態換 model，較大工程）。
+- rebind 重作（找出 in-game 抓錯鍵主因：可能是 rebind armed 當幀把移動鍵也吃進去；目前 Settings 隱藏、固定 F11）。
 
 ---
 

@@ -56,6 +56,15 @@ void __stdcall UI::SettingsPage::Render() {
         Editor::SetScaleStep(sc);
     ImGuiMCP::Separator();
 
+    // --- aim source + rotate axis (set via console; shown here for reference) ---
+    ImGuiMCP::Text("Aim source (sc del|pk|ed er0/er1):");
+    for (auto m : {Modes::Mode::kDelete, Modes::Mode::kPick, Modes::Mode::kEdit}) {
+        ImGuiMCP::BulletText("%-6s %s", Modes::Name(m),
+            Modes::UseRay(m) ? "ray" : "crosshair");
+    }
+    ImGuiMCP::Text("Edit rotate axis (sc ed ax0/1/2): %s", Editor::RotAxisName());
+    ImGuiMCP::Separator();
+
     // --- marker gem visibility (mirrors sc mk dp0/dp1) ---
     bool show = Markers::ProxiesVisible();
     if (ImGuiMCP::Checkbox("marker gems visible", &show)) {

@@ -57,6 +57,8 @@ namespace Markers {
     void Rename(std::uint32_t seq, const std::string& label);
     void SetKind(std::uint32_t seq, const std::string& kind);
     void SetNote(std::uint32_t seq, const std::string& note);
+    // Update a marker's exported pose (edit mode commits a moved gem here).
+    void SetTransform(std::uint32_t seq, const RE::NiPoint3& position, float angleZDeg);
     void Remove(std::uint32_t seq);  // destroys the proxy too — no trace
 
     // Lookup for the E-interaction path: activating a proxy opens its editor

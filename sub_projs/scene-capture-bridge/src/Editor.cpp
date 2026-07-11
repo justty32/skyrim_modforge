@@ -36,6 +36,10 @@ namespace {
     float g_yawStep = 5.f;       // degrees per tap
     float g_scaleStep = 0.02f;   // scale factor per tap
 
+    // Which euler axis the 7/9 rotate keys drive (`sc ed ax0/ax1/ax2`).
+    // 0 = Z (yaw), 1 = X (pitch), 2 = Y (roll). Persisted in the co-save.
+    int g_rotAxis = 0;
+
     // Only these base types get the physics freeze: they are the naturally
     // havok-Dynamic clutter (cups, books, weapons on tables). Restoring a
     // STAT/FURN to kDynamic would knock walls loose, so anything not on this
@@ -62,6 +66,8 @@ namespace {
         bool isActor = false;
         bool frozen = false;   // we keyframed it on select; restore on release
         std::string authoredId;  // non-empty = authored ref -> commit registers an override
+        bool isMarker = false;   // target is a marker gem -> commit updates its registry pose
+        std::uint32_t markerSeq = 0;
         RE::NiPoint3 origPos;
         RE::NiPoint3 origAngle;
         float origScale = 1.f;
@@ -97,16 +103,25 @@ namespace {
                 byRay ? "ray" : "crosshair");
             return false;
         }
+        // A marker gem IS editable now (2026-07-11): moving it and committing
+        // updates the marker's registry pose (not an override entry). Adopt an
+        // orphan proxy on the spot so it never falls through to the authored
+        // path (its base resolves to the tooling esp, which would be wrong).
+        std::uint32_t markerSeq = 0;
         if (Markers::IsProxy(ref.get())) {
-            SKSE::log::info("Editor: marker proxies are anchors — not editable");
-            return false;
+            markerSeq = Markers::SeqOf(ref.get());
+            if (!markerSeq) markerSeq = Markers::AdoptOne(ref.get());
         }
         // An authored ref is editable too (contract decided 2026-07-11):
         // commit registers it in the Overrides registry -> `overrides[]`.
+        // A marker never counts as authored (its own registry owns it).
         std::string authoredId;
-        if (auto id = SceneExporter::ResolveDurableId(ref.get()))
-            authoredId = *id;
+        if (!markerSeq)
+            if (auto id = SceneExporter::ResolveDurableId(ref.get()))
+                authoredId = *id;
         g.active = true;
+        g.isMarker = markerSeq != 0;
+        g.markerSeq = markerSeq;
         g.authoredId = std::move(authoredId);
         g.handle = ref->GetHandle();
         g.isActor = ref->GetFormType() == RE::FormType::ActorCharacter;
@@ -119,9 +134,9 @@ namespace {
             if (g.frozen) SKSE::log::info("Editor: physics frozen while editing");
         }
         SKSE::log::info("Editor: editing {} ref{} at ({:.1f}, {:.1f}, {:.1f}) — "
-            "numpad 8/2 fwd/back, 4/6 left/right, 1/3 down/up, 7/9 yaw, +/- scale, "
+            "numpad 8/2 fwd/back, 4/6 left/right, 1/3 down/up, 7/9 rot, +/- scale, "
             "0 commit, . cancel",
-            g.authoredId.empty() ? "dynamic" : "AUTHORED",
+            g.isMarker ? "MARKER" : g.authoredId.empty() ? "dynamic" : "AUTHORED",
             byRay ? " (ray)" : "",
             g.origPos.x, g.origPos.y, g.origPos.z);
         return true;
@@ -167,10 +182,15 @@ namespace Editor {
         case kCommit:     // numpad 0 — commit and exit
             SKSE::log::info("Editor: committed at ({:.1f}, {:.1f}, {:.1f})",
                 pos.x, pos.y, pos.z);
-            // An authored ref's committed edit becomes an overrides[] entry
-            // (a dynamic ref needs nothing — its live pose exports as-is, so
-            // it correctly does NOT show up in the Editor page's override list).
-            if (!g.authoredId.empty()) {
+            // Three commit targets: a marker gem updates its own registry pose;
+            // an authored ref becomes an overrides[] entry; our own dynamic ref
+            // needs nothing (its live pose exports as-is, so it correctly does
+            // NOT show up in the Editor page's override list).
+            if (g.isMarker) {
+                Markers::SetTransform(g.markerSeq, ref->GetPosition(),
+                    ref->data.angle.z * kRadToDeg);
+                RE::DebugNotification("SCB: marker moved");
+            } else if (!g.authoredId.empty()) {
                 Overrides::Register(g.authoredId, ref.get(),
                     g.origPos, g.origAngle, g.origScale);
                 RE::DebugNotification("SCB: edit committed (overrides[])");
@@ -191,8 +211,14 @@ namespace Editor {
         case kRight:   Apply(ref.get(), pos + right * g_moveStep, angle); return true;
         case kUp:      pos.z += g_moveStep; Apply(ref.get(), pos, angle); return true;
         case kDown:    pos.z -= g_moveStep; Apply(ref.get(), pos, angle); return true;
-        case kYawPos:  angle.z += g_yawStep * kDegToRad; Apply(ref.get(), pos, angle); return true;
-        case kYawNeg:  angle.z -= g_yawStep * kDegToRad; Apply(ref.get(), pos, angle); return true;
+        case kYawPos:
+        case kYawNeg: {
+            const float d = (code == kYawPos ? 1.f : -1.f) * g_yawStep * kDegToRad;
+            float& a = g_rotAxis == 1 ? angle.x : g_rotAxis == 2 ? angle.y : angle.z;
+            a += d;
+            Apply(ref.get(), pos, angle);
+            return true;
+        }
         case kScaleUp:
             if (!g.isActor) { ref->SetScale(ref->GetScale() + g_scaleStep); ref->Update3DPosition(true); }
             return true;
@@ -238,6 +264,12 @@ namespace Editor {
     void SetMoveStep(float v) { if (v > 0.f) g_moveStep = v; }
     void SetYawStep(float v) { if (v > 0.f) g_yawStep = v; }
     void SetScaleStep(float v) { if (v > 0.f) g_scaleStep = v; }
+
+    int RotAxis() { return g_rotAxis; }
+    void SetRotAxis(int axis) { if (axis >= 0 && axis <= 2) g_rotAxis = axis; }
+    const char* RotAxisName() {
+        return g_rotAxis == 1 ? "pitch (X)" : g_rotAxis == 2 ? "roll (Y)" : "yaw (Z)";
+    }
 
     Status Current() {
         Status s;

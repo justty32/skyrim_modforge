@@ -76,6 +76,18 @@ namespace Eraser {
     MarkResult MarkCrosshair() { return MarkRef(Aim::CrosshairRef(), "crosshair"); }
     MarkResult MarkByRay() { return MarkRef(Aim::RayRef(), "ray"); }
 
+    MarkResult MarkConsoleRef() {
+        auto ref = RE::Console::GetSelectedRef();
+        if (!ref) return MarkResult::kNone;
+        // "Objects only for now" (user-decided): actors have their own lifecycle
+        // (disable/kill) and don't belong in removals[].
+        if (ref->GetFormType() == RE::FormType::ActorCharacter) {
+            SKSE::log::info("Eraser: console ref is an actor — objects only for now");
+            return MarkResult::kNone;
+        }
+        return MarkRef(ref, "console");
+    }
+
     std::vector<Entry>& All() { return g_entries; }
     const std::unordered_set<std::string>& MarkedIds() { return g_ids; }
 

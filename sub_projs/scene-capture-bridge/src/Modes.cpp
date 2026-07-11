@@ -18,6 +18,8 @@ namespace {
     // Index by Mode; slot 0 (kOff) exists but is never read.
     std::uint32_t g_binds[static_cast<std::size_t>(Modes::Mode::kTotal)] = {
         0, kDefaultBind, kDefaultBind, kDefaultBind, kDefaultBind, kDefaultBind};
+    // Per-mode aim source (false = crosshair). Same indexing as g_binds.
+    bool g_useRay[static_cast<std::size_t>(Modes::Mode::kTotal)] = {false};
 
     bool g_rebindArmed = false;
     Modes::Mode g_rebindTarget = Modes::Mode::kOff;
@@ -25,12 +27,13 @@ namespace {
     std::chrono::steady_clock::time_point g_lastAction{};
 
     void RunAction(Modes::Mode m) {
+        const bool ray = Modes::UseRay(m);
         switch (m) {
         case Modes::Mode::kMarker: Markers::PlaceAimed(); break;
-        case Modes::Mode::kDelete: Eraser::MarkCrosshair(); break;
-        case Modes::Mode::kPick:   Palette::PickCrosshair(); break;
+        case Modes::Mode::kDelete: ray ? Eraser::MarkByRay() : Eraser::MarkCrosshair(); break;
+        case Modes::Mode::kPick:   ray ? Palette::PickByRay() : Palette::PickCrosshair(); break;
         case Modes::Mode::kPlace:  Palette::PlaceSelected(); break;
-        case Modes::Mode::kEdit:   Editor::EnterSelect(); break;
+        case Modes::Mode::kEdit:   ray ? Editor::SelectByRay() : Editor::EnterSelect(); break;
         default: break;
         }
     }
@@ -80,6 +83,16 @@ namespace Modes {
         SKSE::log::info("Modes: bind {} -> {} (0x{:X})", Name(m), KeyName(scancode), scancode);
     }
 
+    bool UseRay(Mode m) {
+        return m < Mode::kTotal ? g_useRay[static_cast<std::size_t>(m)] : false;
+    }
+
+    void SetUseRay(Mode m, bool useRay) {
+        if (m == Mode::kOff || m >= Mode::kTotal) return;
+        g_useRay[static_cast<std::size_t>(m)] = useRay;
+        SKSE::log::info("Modes: {} aim source -> {}", Name(m), useRay ? "ray" : "crosshair");
+    }
+
     bool HandleKey(std::uint32_t scancode) {
         if (g_rebindArmed) {
             if (scancode == kEsc) {
@@ -118,8 +131,10 @@ namespace Modes {
 
     void ResetDefaults() {
         g_mode = Mode::kOff;
-        for (std::size_t i = 1; i < static_cast<std::size_t>(Mode::kTotal); ++i)
+        for (std::size_t i = 1; i < static_cast<std::size_t>(Mode::kTotal); ++i) {
             g_binds[i] = kDefaultBind;
+            g_useRay[i] = false;
+        }
         g_rebindArmed = false;
     }
 

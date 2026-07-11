@@ -40,6 +40,13 @@ namespace Modes {
     [[nodiscard]] std::uint32_t Bind(Mode m);
     void SetBind(Mode m, std::uint32_t scancode);
 
+    // Per-mode aim source: false = the interaction crosshair (classic feel),
+    // true = a physics ray (trees / non-activatable statics). Toggled by
+    // `sc del er0/er1`, `sc pk ...`, `sc ed ...`. Only delete/pick/edit read
+    // it (marker/place are inherently aimed). Persists in the co-save.
+    [[nodiscard]] bool UseRay(Mode m);
+    void SetUseRay(Mode m, bool useRay);
+
     // Feed a key-down. Returns true when consumed: either it completed a
     // pending rebind, or it matched the current mode's binding and ran the
     // mode's action (debounced).

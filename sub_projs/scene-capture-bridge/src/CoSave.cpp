@@ -17,7 +17,7 @@ namespace {
     constexpr std::uint32_t kOvrd = 'OVRD';
 
     // Per-record versions (an older save's record is read with its own layout).
-    constexpr std::uint32_t kVerSett = 2;  // v2 adds editor step sizes
+    constexpr std::uint32_t kVerSett = 3;  // v2 adds editor step sizes; v3 adds aim/axis
     constexpr std::uint32_t kVerMkrs = 1;
     constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
     constexpr std::uint32_t kVerOvrd = 1;
@@ -69,6 +69,9 @@ namespace {
         si->WriteRecordData(Editor::MoveStep());   // v2
         si->WriteRecordData(Editor::YawStep());    // v2
         si->WriteRecordData(Editor::ScaleStep());  // v2
+        for (auto m : {Modes::Mode::kDelete, Modes::Mode::kPick, Modes::Mode::kEdit})
+            si->WriteRecordData(static_cast<std::uint8_t>(Modes::UseRay(m) ? 1 : 0));  // v3
+        si->WriteRecordData(static_cast<std::uint8_t>(Editor::RotAxis()));  // v3
     }
 
     void LoadSettings(const SKSE::SerializationInterface* si, std::uint32_t version) {
@@ -91,6 +94,16 @@ namespace {
             Editor::SetMoveStep(mv);
             Editor::SetYawStep(yaw);
             Editor::SetScaleStep(sc);
+        }
+        if (version >= 3) {
+            for (auto m : {Modes::Mode::kDelete, Modes::Mode::kPick, Modes::Mode::kEdit}) {
+                std::uint8_t ray = 0;
+                si->ReadRecordData(ray);
+                Modes::SetUseRay(m, ray != 0);
+            }
+            std::uint8_t axis = 0;
+            si->ReadRecordData(axis);
+            Editor::SetRotAxis(axis);
         }
         if (mode < static_cast<std::uint8_t>(Modes::Mode::kTotal))
             Modes::Set(static_cast<Modes::Mode>(mode));

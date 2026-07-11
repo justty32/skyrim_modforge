@@ -1,5 +1,7 @@
 #include "Console.h"
 
+#include "Editor.h"
+#include "Eraser.h"
 #include "Markers.h"
 #include "Modes.h"
 #include "log.h"
@@ -35,6 +37,17 @@ namespace {
         Print("SCB mode: %s", Modes::Name(Modes::Current()));
         Print("  sc mk | del | pk | pl | ed | off   switch mode");
         Print("  sc mk dp0 / dp1                    hide / show marker gems");
+        Print("  sc del|pk|ed er0 / er1             aim by crosshair / ray");
+        Print("  sc ed ax0 / ax1 / ax2             rotate yaw / pitch / roll");
+        Print("  sc delc                           erase the console-selected ref");
+    }
+
+    // Map a tool word ("del"/"pk"/"ed"/...) to its mode, or kTotal if none.
+    Modes::Mode ModeOf(const std::string& word) {
+        for (auto m : {Modes::Mode::kOff, Modes::Mode::kMarker, Modes::Mode::kDelete,
+                 Modes::Mode::kPick, Modes::Mode::kPlace, Modes::Mode::kEdit})
+            if (word == Modes::Cmd(m)) return m;
+        return Modes::Mode::kTotal;
     }
 
     bool Execute(const RE::SCRIPT_PARAMETER* a_paramInfo,
@@ -54,23 +67,58 @@ namespace {
             PrintUsage();
             return true;
         }
-        if (a1 == "mk" && !a2.empty()) {  // tool subcommand layer: sc mk dp0/dp1
-            if (a2 == "dp0" || a2 == "dp1") {
-                const bool show = (a2 == "dp1");
-                Markers::SetProxiesVisible(show);
-                Print("SCB: marker gems %s", show ? "shown" : "hidden");
-            } else {
-                Print("SCB: unknown mk arg '%s' (dp0 | dp1)", a2.c_str());
+
+        // Single-word tool command: erase the console's currently selected ref
+        // (click an object in the console, then `sc delc`). Objects only.
+        if (a1 == "delc") {
+            switch (Eraser::MarkConsoleRef()) {
+            case Eraser::MarkResult::kMarked:      Print("SCB: erased console ref"); break;
+            case Eraser::MarkResult::kOwnDeleted:  Print("SCB: deleted your ref (no trace)"); break;
+            case Eraser::MarkResult::kDuplicate:   Print("SCB: already marked"); break;
+            case Eraser::MarkResult::kMarkerProxy: Print("SCB: that's a marker gem"); break;
+            default: Print("SCB: no console ref selected (or it's an actor)"); break;
             }
             return true;
         }
-        for (auto m : {Modes::Mode::kOff, Modes::Mode::kMarker, Modes::Mode::kDelete,
-                 Modes::Mode::kPick, Modes::Mode::kPlace, Modes::Mode::kEdit}) {
-            if (a1 == Modes::Cmd(m)) {
-                Modes::Set(m);
-                Print("SCB mode: %s", Modes::Name(m));
+
+        // Second layer: `sc <tool> <arg>`.
+        if (!a2.empty()) {
+            if (a1 == "mk") {  // sc mk dp0/dp1
+                if (a2 == "dp0" || a2 == "dp1") {
+                    const bool show = (a2 == "dp1");
+                    Markers::SetProxiesVisible(show);
+                    Print("SCB: marker gems %s", show ? "shown" : "hidden");
+                } else {
+                    Print("SCB: unknown mk arg '%s' (dp0 | dp1)", a2.c_str());
+                }
                 return true;
             }
+            const Modes::Mode m = ModeOf(a1);
+            if (m == Modes::Mode::kDelete || m == Modes::Mode::kPick || m == Modes::Mode::kEdit) {
+                if (a2 == "er0" || a2 == "er1") {  // aim source
+                    Modes::SetUseRay(m, a2 == "er1");
+                    Print("SCB: %s aim -> %s", Modes::Name(m), a2 == "er1" ? "ray" : "crosshair");
+                    return true;
+                }
+                if (m == Modes::Mode::kEdit && a2.size() == 3 && a2.rfind("ax", 0) == 0) {
+                    const int axis = a2[2] - '0';  // ax0/ax1/ax2
+                    if (axis >= 0 && axis <= 2) {
+                        Editor::SetRotAxis(axis);
+                        Print("SCB: edit rotate axis -> %s", Editor::RotAxisName());
+                        return true;
+                    }
+                }
+            }
+            Print("SCB: unknown arg '%s' for '%s'", a2.c_str(), a1.c_str());
+            return true;
+        }
+
+        // Bare mode switch.
+        const Modes::Mode m = ModeOf(a1);
+        if (m != Modes::Mode::kTotal) {
+            Modes::Set(m);
+            Print("SCB mode: %s", Modes::Name(m));
+            return true;
         }
         Print("SCB: unknown command '%s'", a1.c_str());
         PrintUsage();

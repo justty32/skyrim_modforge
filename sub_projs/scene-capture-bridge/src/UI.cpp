@@ -166,6 +166,18 @@ void __stdcall UI::PalettePage::Render() {
                    "you aim. Slots persist across saves.", slots.size());
     // Trees/architecture the crosshair never sees — explicit entry, see Aim.h.
     if (ImGuiMCP::Button("pick by ray")) { ::Palette::PickByRay(); }
+
+    // Load another palette json (by filename, next to scene-capture-palette.json)
+    // and append its slots — share/reuse curated palettes across playthroughs.
+    static char loadName[128] = "";
+    ImGuiMCP::SetNextItemWidth(260.f);
+    ImGuiMCP::InputText("##loadfile", loadName, sizeof(loadName));
+    ImGuiMCP::SameLine();
+    if (ImGuiMCP::Button("load from file")) {
+        if (loadName[0]) { ::Palette::LoadFromFile(loadName); g_slotBufs.clear(); }
+    }
+    ImGuiMCP::SameLine();
+    ImGuiMCP::TextWrapped("(in the SKSE folder)");
     ImGuiMCP::Separator();
 
     std::size_t removeIdx = SIZE_MAX;
@@ -225,8 +237,8 @@ void __stdcall UI::EditorPage::Render() {
         ImGuiMCP::BulletText("yaw %.1f deg   scale %.2f", st.yawDeg, st.scale);
         ImGuiMCP::Separator();
         ImGuiMCP::TextWrapped(
-            "numpad: 8/2 fwd/back - 4/6 left/right - 1/3 down/up - 7/9 yaw - "
-            "+/- scale - 0 commit - . cancel");
+            "numpad: 8/2 fwd/back - 4/6 left/right - 1/3 down/up - 7/9 rotate "
+            "(%s) - +/- scale - 5 reset - 0 commit - . cancel", ::Editor::RotAxisName());
         if (ImGuiMCP::Button("cancel (restore)")) { ::Editor::Cancel(); }
     }
 

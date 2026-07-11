@@ -34,6 +34,7 @@ namespace Eraser {
     // What the marking did — the panel and log word things by this.
     enum class MarkResult { kNone, kMarked, kOwnDeleted, kDuplicate, kMarkerProxy };
 
+    MarkResult MarkConsoleRef();  // `sc delc` — the console's selected ref (objects only)
     MarkResult MarkCrosshair();  // F8 — the activatable crosshair target, old feel
     // Explicit physics-ray erase (panel button) for trees/non-activatable
     // statics. NOT a fallback of F8: the ray always hits some ref (walls),
