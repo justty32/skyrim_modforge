@@ -4,7 +4,7 @@
 
 **Goal:** 讓 scene-capture-bridge DLL `sc cap` 吸到的 `capturedNpcs[]`（活體 actor 的 TESNPC 外貌/身份）能被 ModForge `build` 成一個真的 NPC_ 記錄 + 一個 ACHR placement，讓那個 NPC 出現在世界裡。這是擷取器消費的 ②（① items 已完成）。
 
-> **狀態：Phase 1（T1–T6）已落地 2026-07-11**（離線 912 測綠含 15 新測；`CapturedNpcsTests.cs`）→ 實機驗收見 [wait_todo OPEN-E](../../wait_todo/ingame-tests.md)。本檔保留作 Phase 2（烘焙）的界線記錄與映射表出處。探勘結論已固化在下方「地形」節，不必重跑。
+> **狀態：Phase 1（T1–T6）IN-GAME 確認 2026-07-11**——實機吸 Mirabelle Ervine → build → 分身在學院庭院原地出現（[landed/npcs](../feature-dev/landed/npcs.md)）；同場逮到 tint value 標度 bug（DLL/TINV 原生 0–100 vs Mutagen 0–1 視圖，spec 定 0–100、Build ÷100）。本檔保留作 Phase 2（烘焙）的界線記錄與映射表出處。探勘結論已固化在下方「地形」節，不必重跑。
 
 ---
 

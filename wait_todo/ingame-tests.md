@@ -74,19 +74,9 @@
 
 ## scene-capture-bridge P9 擷取器（DLL `d3e1b5d0`，co-save `'SCCP'` v3）
 
-**2026-07-11 實機：#1–#5 全過**——DLL 活、物品吸取（法杖看得出有吸到）、NPC 吸取 OK、Export OK、持久化（save→完全重開→load）成功。剩下兩條 OPEN：
+**2026-07-11 端到端全通**：`sc cap` 模式（F11）吸 Mirabelle → Export → 消費 → build → 進遊戲**分身在學院庭院原地出現** ✅（OPEN-A 核心流程、OPEN-C 18-morph 修復、消費端 Phase 1 一次實證；落地記錄 [landed/npcs](../workflows/feature-dev/landed/npcs.md)）。殘餘：
 
-**OPEN-A（✅ 已實作，DLL crc `5b9f1aa1`，部署 `mods/SceneCaptureBridge/`，未 commit → 待實機複驗）**：把 Captures 做成 `Modes.cpp` 的第 6 個 mode（`kCapture`，動作鍵預設 F11，co-save SETT 升 **v4** 收其 aim source）。`sc cap` 現為**進擷取模式**（不再一次性）→ 準星對目標 → **按 F11（模式動作鍵）吸**，跟 `sc pk`/`sc ed` 一致；`sc cap er0`/`sc cap er1` 切準星/射線（取代舊 `sc cap r`）；面板 Settings 頁多 `cap` 按鈕＋aim source 列，Captures 頁「capture crosshair/by ray」按鈕保留。
-   - ⚠️ **完全關遊戲重開吃新 DLL**；co-save SETT 升 v4（舊存檔少讀 1 byte，向下相容，不致命）。
-   - **驗**：① `sc cap` → 應跳「SCB mode: capture」通知、不立即吸東西；② 準星對法杖/附魔武器 → **F11** → 吸進 capturedItems（Captures 頁列數 +1）；③ 對 NPC → F11 → 吸進 capturedNpcs；④ `sc cap er1` → F11 可吸樹/靜物（射線）、`sc cap er0` 切回準星；⑤ Export → json 正常；⑥ 存檔完全重開 → aim source（er0/er1）還原。
-
-**OPEN-C（faceMorphs bug，看實機 json 發現）**：`ReadNpc` `for (float m : npc->faceData->morphs)`（Captures.cpp:119）把 `morphs` 整個陣列灌進去，實機匯出**第 19 個值＝`3.4e+38`(FLT_MAX)哨兵**，前 18 個正常 [-1,1]。faceData->morphs 尾端有個 sentinel/非 morph 欄，**✅ 已修（DLL `604efd0a`，部署雙夾，未 commit）**：根因＝`TESNPC.h` `FaceData::Morphs::kTotal=19`，但 index 18＝`kUnk`（未用槽，FLT_MAX 垃圾）；有效 morph 是 index 0–17（18 個）。修法 Captures.cpp:119 range-for 改 `for (int i=0;i<RE::TESNPC::FaceData::Morphs::kUnk;++i) n.morphs.push_back(npc->faceData->morphs[i]);`。**待實機複驗**：吸 NPC → 匯出 `faceMorphs` 應剩 18 個、無 FLT_MAX。
-
-**OPEN-D（實機 json 觀察，非 bug）**：① 同一把 Staff of Magelight 出現**兩筆**重複 capturedItems（使用者可能 `sc cap` 兩次，或雙吸；改模式制後留意）。② Staff of Magelight 有**耐久 vanilla base + 耐久附魔**（base `0x0BE121`、ench `0x04DEDD`）→ 對這種既有耐久 base 的 vanilla 物，ModForge 其實直接引用 base 即可，Captures 是給 runtime-only（玩家自附魔/無 base）用的；此次只是驗管線通。③ activeEffects 含**常駐 ability（dur=0）**不只暫時 buff（Nirya 的種族 ability、XPMSE 骨架）——ModForge 消費時若只要真 buff 要 filter `duration>0`。④ ~~實機證實 NpcSpec schema gap~~（已補：NpcSpec 外貌配方欄＋capturedNpcs 消費已落地，見 OPEN-E）。
-
-**OPEN-E（capturedNpcs 消費端 Phase 1 驗收——zip 已出貨，只剩進遊戲看）**：2026-07-11 使用者實機吸了 **Mirabelle Ervine** → export json → 消費管線全通（validate 0 problem、build、package），**`~/skyrim_mods/mine/MFCapMirabelle.zip`** 待裝。結構驗證已做完：built esp 讀回與 vanilla 本尊 `0x01C1A0` **逐欄一致**（faceMorphs 18 值逐 index 全中＝映射實機對照完成、faceParts 含 -1、3 tint layers interp 1/0.45/0.41、QNAM、weight 30、7 headParts 含 race-default 合併）。過程中逮到並修掉 tint `value` 標度 bug（DLL 0–100 vs Mutagen 0–1）。
-   - **驗（只剩這個）**：裝 zip → 到冬堡學院外擷取點（worldspace Tamriel (116835, 112034, -7744)，coc WinterholdCollege 附近）→ **分身 Mirabelle 站在原地、女性/身形/膚色/學院袍對**；臉細節可能灰/暗臉＝Phase 1 已知界線（Q1 拍板），不是 bug。
-   - 注意：esp 有 **nwsFollowerFramework.esp master**（她身上有 NFF 注入的 perk，capture 忠實帶回）——你本機有 NFF 沒差；要發佈就得去掉該 perk 再 build。`dead`/`activeEffects`/perk rank/hairColor rgb advisory 不消費（by design）。
+**OPEN-A 殘餘（模式制小項複驗，順手做即可）**：① `sc cap er1` → F11 可吸樹/靜物（射線）、`sc cap er0` 切回準星；② 存檔完全重開 → capture 的 aim source（er0/er1）還原（co-save SETT v4）。另留意：模式制下重複按 F11 會吸出重複列（items 曾出現同名兩筆——正常行為，消費端 editorId 已防撞）。
 
 **OPEN-B（PROTEUS 關鍵驗，待使用者裝好 PROTEUS）**：PROTEUS clone 出玩家 → 進擷取模式吸 clone → 匯出的 `faceMorphs`/`tintLayers`/`headParts` **是不是玩家本人的臉**？**若全是預設值＝PROTEUS 走 NiNode live override 沒寫 TESNPC**（README 警告 a），這條路要改招。使用者尚未裝 PROTEUS，下次再測。
-   - 提醒：DLL 只收「臉的定義」（headParts+morphs+race+weight），**沒收 baked FaceGeom nif、RaceMenu/NiOverride 雕塑、BodySlide 身形**——真臉/真身重現要 facegen 烘焙（ModForge 下游）。
+   - 提醒：DLL 只收「臉的定義」（headParts+morphs+race+weight），**沒收 baked FaceGeom nif、RaceMenu/NiOverride 雕塑、BodySlide 身形**——真臉/真身重現要 facegen 烘焙（Phase 2，[plans/captured-npcs-consumption.md](../workflows/plans/captured-npcs-consumption.md)）。
