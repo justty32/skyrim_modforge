@@ -296,7 +296,8 @@ namespace SceneExporter {
                     if (!n.parts.empty()) c["faceParts"] = n.parts;
                     if (!n.npcClass.empty()) c["class"] = n.npcClass;
                     if (n.level > 0) c["level"] = n.level;
-                    if (!n.equipped.empty()) c["equipped"] = n.equipped;
+                    if (!n.equippedArmor.empty()) c["equippedArmor"] = n.equippedArmor;
+                    if (!n.equippedWeapons.empty()) c["equippedWeapons"] = n.equippedWeapons;
                     if (!n.perks.empty()) {
                         auto pj = nlohmann::json::array();
                         for (const auto& p : n.perks)

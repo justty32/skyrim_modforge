@@ -95,9 +95,12 @@ namespace Captures {
         std::vector<ActiveEffect> activeEffects;  // current buffs — runtime snapshot
         std::string npcClass;              // durable CLAS id (drives ModForge autoCalcStats)
         std::int16_t level = 0;            // actor's effective level at capture time
-        std::vector<std::string> equipped; // durable ids of worn armour + held weapons/torch
-                                           // (dresses the clone even when defaultOutfit is a
-                                           // runtime shell, e.g. a PROTEUS template record)
+        // What the actor actually wears/holds (durable ids), split by consumption route:
+        // armour must become an OUTFIT (the engine only auto-wears outfit armour — inventory
+        // armour stays in the pocket, in-game confirmed), weapons/torch go to inventory
+        // (auto-equipped). Dresses the clone even when defaultOutfit is a runtime shell.
+        std::vector<std::string> equippedArmor;
+        std::vector<std::string> equippedWeapons;
         RE::NiPoint3 position;     // world coords at capture time
         RE::NiPoint3 angleDeg;     // facing (degrees)
         std::string cellOrWs;      // durable anchor at capture time

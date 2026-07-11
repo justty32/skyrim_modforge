@@ -23,7 +23,7 @@ namespace {
     constexpr std::uint32_t kVerMkrs = 2;  // v2: full angle (3f) + scale, was angleZ only
     constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
     constexpr std::uint32_t kVerOvrd = 1;
-    constexpr std::uint32_t kVerCaps = 4;  // v2 kNpc payload; v3 flags/perks/buffs; v4 class/level/equipped
+    constexpr std::uint32_t kVerCaps = 5;  // v2 kNpc payload; v3 flags/perks/buffs; v4 class/level/equipped; v5 splits equipped armor/weapons
 
     // ---- primitives -------------------------------------------------------
 
@@ -301,11 +301,13 @@ namespace {
             si->WriteRecordData(a.duration);
             si->WriteRecordData(a.elapsed);
         }
-        // v4 appendix: class + level + equipped.
+        // v4 appendix: class + level; v5 splits equipped into armor + weapons.
         WriteStr(si, n.npcClass);
         si->WriteRecordData(n.level);
-        si->WriteRecordData(static_cast<std::uint32_t>(n.equipped.size()));
-        for (const auto& eq : n.equipped) WriteStr(si, eq);
+        si->WriteRecordData(static_cast<std::uint32_t>(n.equippedArmor.size()));
+        for (const auto& eq : n.equippedArmor) WriteStr(si, eq);
+        si->WriteRecordData(static_cast<std::uint32_t>(n.equippedWeapons.size()));
+        for (const auto& eq : n.equippedWeapons) WriteStr(si, eq);
     }
 
     void LoadNpcPayload(const SKSE::SerializationInterface* si, Captures::NpcData& n, std::uint32_t version) {
@@ -367,7 +369,12 @@ namespace {
             si->ReadRecordData(n.level);
             std::uint32_t cnt = 0;
             si->ReadRecordData(cnt);
-            for (std::uint32_t k = 0; k < cnt; ++k) n.equipped.push_back(ReadStr(si));
+            // v4 held one mixed list; it was worn-armour-dominated, so fold it into armour.
+            for (std::uint32_t k = 0; k < cnt; ++k) n.equippedArmor.push_back(ReadStr(si));
+            if (version >= 5) {
+                si->ReadRecordData(cnt);
+                for (std::uint32_t k = 0; k < cnt; ++k) n.equippedWeapons.push_back(ReadStr(si));
+            }
         }
     }
 

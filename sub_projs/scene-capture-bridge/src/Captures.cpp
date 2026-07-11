@@ -161,21 +161,25 @@ namespace {
         // Equipped: worn armour from the inventory + whatever the hands hold.
         // This dresses the clone even when defaultOutfit is a runtime shell
         // (PROTEUS template records are empty on disk).
-        auto addEquipped = [&](RE::TESForm* f) {
-            if (!f) return;
-            if (!f->IsWeapon() && !f->Is(RE::FormType::Light) && !f->IsArmor()) return;
-            if (auto id = SceneExporter::ResolveDurableId(f)) {
-                if (std::find(n.equipped.begin(), n.equipped.end(), *id) == n.equipped.end())
-                    n.equipped.push_back(*id);
-            }
+        auto addTo = [](std::vector<std::string>& list, const std::string& id) {
+            if (std::find(list.begin(), list.end(), id) == list.end()) list.push_back(id);
         };
         for (auto& [obj, data] : actor->GetInventory()) {
             auto& [cnt, entry] = data;
             if (cnt <= 0 || !entry || !entry->IsWorn()) continue;
-            addEquipped(obj);
+            if (!obj) continue;
+            if (auto id = SceneExporter::ResolveDurableId(obj)) {
+                if (obj->IsArmor()) addTo(n.equippedArmor, *id);
+                else if (obj->IsWeapon() || obj->Is(RE::FormType::Light)) addTo(n.equippedWeapons, *id);
+            }
         }
-        addEquipped(actor->GetEquippedObject(false));  // right hand
-        addEquipped(actor->GetEquippedObject(true));   // left hand
+        auto addHand = [&](RE::TESForm* f) {
+            if (!f) return;
+            if (!f->IsWeapon() && !f->Is(RE::FormType::Light)) return;
+            if (auto id = SceneExporter::ResolveDurableId(f)) addTo(n.equippedWeapons, *id);
+        };
+        addHand(actor->GetEquippedObject(false));  // right hand
+        addHand(actor->GetEquippedObject(true));   // left hand
 
         n.position = ref->GetPosition();
         const RE::NiPoint3& ang = ref->data.angle;
