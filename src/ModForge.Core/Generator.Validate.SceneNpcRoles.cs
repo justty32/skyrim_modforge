@@ -119,6 +119,8 @@ public static partial class Generator
                 CheckRef(cn.Class, $"{who} class");
                 if (cn.Level < 0)
                     Problems.Add($"{who}: level {cn.Level} is negative");
+                foreach (var eq in cn.EquippedArmor) CheckRef(eq, $"{who} equippedArmor");
+                foreach (var eq in cn.EquippedWeapons) CheckRef(eq, $"{who} equippedWeapons");
                 foreach (var eq in cn.Equipped) CheckRef(eq, $"{who} equipped");
                 if (!string.IsNullOrWhiteSpace(cn.Cell) && !string.IsNullOrWhiteSpace(cn.Worldspace))
                     Problems.Add($"{who}: has BOTH cell and worldspace (the anchor is one or the other)");

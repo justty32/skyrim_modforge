@@ -24,17 +24,24 @@ public static partial class Generator
         {
             i++;
             string ed = CapturedNpcEd(cn, i);
+            // Wardrobe: worn armour must arrive via an OUTFIT — the engine only auto-wears
+            // outfit armour; inventory armour stays in the pocket (in-game confirmed: the clone
+            // carried its boots instead of wearing them). So captured armour MINTS an in-spec
+            // OTFT, replacing defaultOutfit (a PROTEUS clone's outfit ref is a runtime template
+            // that's an EMPTY SHELL on disk — in-game confirmed: naked clone). Weapons/torch go
+            // to inventory below (auto-equip works for those). Legacy mixed `equipped` = armour.
+            var armor = cn.EquippedArmor.Concat(cn.Equipped)
+                .Where(a => !string.IsNullOrWhiteSpace(a)).Distinct().ToList();
+            string outfitEd = armor.Count > 0 ? ed + "_Outfit" : "";
+            if (armor.Count > 0)
+                spec.Outfits.Add(new OutfitSpec { EditorId = outfitEd, Items = armor });
             var n = new NpcSpec
             {
                 EditorId = ed, Name = cn.Name,
                 // identity
                 Race = cn.Race, Female = cn.Female,
                 Unique = cn.Unique, Essential = cn.Essential, Protected = cn.Protected,
-                // Wardrobe: the equipped list wins over defaultOutfit. A PROTEUS clone's outfit
-                // ref points at a runtime template that's an EMPTY SHELL on disk (in-game
-                // confirmed: naked clone), while `equipped` is what the actor actually wore —
-                // consumed as inventory items below (the engine auto-equips the best).
-                Outfit = cn.Equipped.Count > 0 ? "" : cn.DefaultOutfit,
+                Outfit = armor.Count > 0 ? outfitEd : cn.DefaultOutfit,
                 // Stats: class + level + autoCalc make the clone's H/M/S believable. autoCalc
                 // ONLY with a class (class-less autoCalc = ~0 HP permanent-bleedout footgun).
                 Class = cn.Class, Level = cn.Level,
@@ -55,7 +62,7 @@ public static partial class Generator
             };
             foreach (var p in cn.Perks)
                 if (!string.IsNullOrWhiteSpace(p.Perk)) n.Perks.Add(p.Perk);
-            foreach (var eq in cn.Equipped)
+            foreach (var eq in cn.EquippedWeapons)
                 if (!string.IsNullOrWhiteSpace(eq)) n.Items.Add(new NpcItemSpec { Item = eq, Count = 1 });
             spec.Npcs.Add(n);
 

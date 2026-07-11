@@ -96,7 +96,7 @@ scene-capture-bridge DLL `sc cap` 對準活體 actor 匯出的 `capturedNpcs[]` 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
 | Spec | `Spec.CapturedNpcs.cs` | `CapturedNpcSpec`（逐欄對齊 DLL json；含 class/level/equipped）＋`CapturedHairColorSpec`（{id,r,g,b}——只消費 id）＋`CapturedNpcPerkSpec`（rank advisory）＋`CapturedActiveEffectSpec`（整組 advisory）|
-| Expand P0 | `Generator.CapturedNpcs.cs` `ExpandCapturedNpcs`（`ExpandMacros` 尾端）| 每筆→`NpcSpec`（身份+外貌配方+class/level；**有 class 才開 autoCalcStats**——無 class 的 0 血陷阱；perk 只取 ref；**equipped→Items 且非空時 SKIP outfit**——PROTEUS outfit 是 runtime 空殼、equipped 才是真穿著）＋有 cell/worldspace anchor 才生 `PlacementSpec`（Kind=npc、Persistent）。editorId `MFCapNpc_<name>_<i>`。**不消費（advisory）：base（Q2 只 MINT 不 override 本尊）/dead/activeEffects/hairColor rgb/perk rank** |
+| Expand P0 | `Generator.CapturedNpcs.cs` `ExpandCapturedNpcs`（`ExpandMacros` 尾端）| 每筆→`NpcSpec`（身份+外貌配方+class/level；**有 class 才開 autoCalcStats**——無 class 的 0 血陷阱；perk 只取 ref；**equippedArmor→鑄 in-spec OTFT**（引擎只穿 outfit 護甲、inventory 護甲不穿——實機「靴子放口袋」證實）＋**equippedWeapons→Items**（武器 auto-equip）；legacy 混合 `equipped` 折進護甲。PROTEUS 空殼 defaultOutfit 被取代）＋有 cell/worldspace anchor 才生 `PlacementSpec`（Kind=npc、Persistent）。editorId `MFCapNpc_<name>_<i>`。**不消費（advisory）：base（Q2 只 MINT 不 override 本尊）/dead/activeEffects/hairColor rgb/perk rank** |
 | Validate | `Generator.Validate.SceneNpcRoles.cs` `ValidateCapturedNpcs` | race 必填、身份/配方 ref 格式、cell⊕worldspace 互斥、faceMorphs=0\|18、faceParts=0\|4、weight/色域/tint value 範圍 |
 | Tests | `CapturedNpcsTests.cs` | validate＋expand＋**faceMorph index↔具名欄映射鎖定測試**（18 相異值讀回）＋DLL-shaped json 端到端；vanilla refs resolve 1 RequiresSkyrim |
 

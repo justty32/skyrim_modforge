@@ -39,7 +39,8 @@ public class CapturedNpcsTests
         Perks = { new CapturedNpcPerkSpec { Perk = "Skyrim.esm:0x0581E7", Rank = 1 } },
         Class = "Skyrim.esm:0x01CE78",   // CombatWarrior1H-ish — drives autoCalcStats
         Level = 12,
-        Equipped = { "Skyrim.esm:0x012EB7", "Skyrim.esm:0x03619E" },   // iron sword + college robes
+        EquippedArmor = { "Skyrim.esm:0x03619E" },     // college robes — must become an OUTFIT
+        EquippedWeapons = { "Skyrim.esm:0x012EB7" },   // iron sword — inventory (auto-equips)
         Dead = false,
         ActiveEffects = { new CapturedActiveEffectSpec { MagicEffect = "Skyrim.esm:0x0003EB42", Magnitude = 10, Duration = 60, Elapsed = 5 } },
         Position = new Vec3 { X = 100f, Y = 200f, Z = 300f },
@@ -115,12 +116,16 @@ public class CapturedNpcsTests
         Assert.Equal(NordRace, n.Race);
         Assert.True(n.Female);
         Assert.True(n.Unique); Assert.True(n.Essential); Assert.True(n.Protected);
-        Assert.Equal("", n.Outfit);   // equipped list present → defaultOutfit skipped (PROTEUS shell)
+        // Worn armour arrives via a MINTED outfit (engine only auto-wears outfit armour —
+        // inventory armour stays in the pocket); the PROTEUS shell defaultOutfit is dropped.
+        Assert.Equal(n.EditorId + "_Outfit", n.Outfit);
+        var otf = Assert.Single(s.Outfits);
+        Assert.Equal(n.Outfit, otf.EditorId);
+        Assert.Equal("Skyrim.esm:0x03619E", Assert.Single(otf.Items));
         Assert.Equal("Skyrim.esm:0x01CE78", n.Class);
         Assert.Equal(12, n.Level);
         Assert.True(n.AutoCalcStats);   // class present → stats calc on
-        Assert.Equal(2, n.Items.Count);
-        Assert.Equal("Skyrim.esm:0x012EB7", n.Items[0].Item);
+        Assert.Equal("Skyrim.esm:0x012EB7", Assert.Single(n.Items).Item);   // weapon → inventory
         Assert.Equal(60f, n.Weight);
         Assert.Equal(1.02f, n.Height);
         Assert.Equal(230, n.BodyTint!.R);
@@ -177,12 +182,13 @@ public class CapturedNpcsTests
         // capture carried no equipped list — the outfit passes through. No class → autoCalc off.
         var s = new ModSpec { PluginName = "M.esp" };
         var cn = FullSample();
-        cn.Equipped.Clear(); cn.Class = ""; cn.Level = 0;
+        cn.EquippedArmor.Clear(); cn.EquippedWeapons.Clear(); cn.Class = ""; cn.Level = 0;
         s.CapturedNpcs.Add(cn);
         Generator.ExpandCapturedNpcs(s);
 
         var n = Assert.Single(s.Npcs);
         Assert.Equal("Skyrim.esm:0x0209A6", n.Outfit);
+        Assert.Empty(s.Outfits);
         Assert.Empty(n.Items);
         Assert.False(n.AutoCalcStats);   // class-less autoCalc = the 0-HP bleedout footgun
     }
@@ -304,7 +310,8 @@ public class CapturedNpcsTests
               "faceParts": [3, 0, 2, 1],
               "perks": [{"perk": "Skyrim.esm:0x0581E7", "rank": 1}],
               "class": "Skyrim.esm:0x01CE78", "level": 12,
-              "equipped": ["Skyrim.esm:0x012EB7", "Skyrim.esm:0x03619E"],
+              "equippedArmor": ["Skyrim.esm:0x03619E"],
+              "equippedWeapons": ["Skyrim.esm:0x012EB7"],
               "activeEffects": [{"magicEffect": "Skyrim.esm:0x0003EB42", "magnitude": 10.0, "duration": 60.0, "elapsed": 5.0, "source": "Skyrim.esm:0x0001CEAD"}],
               "position": {"x": 100.0, "y": 200.0, "z": 300.0},
               "rotation": {"x": 0.0, "y": 0.0, "z": 90.0},
@@ -328,9 +335,26 @@ public class CapturedNpcsTests
         Assert.Equal("Skyrim.esm:0x01CE78", n.Class);
         Assert.Equal(12, n.Level);
         Assert.True(n.AutoCalcStats);
-        Assert.Equal(2, n.Items.Count);   // equipped → inventory (auto-equipped in-game)
-        Assert.Equal("", n.Outfit);       // equipped present → outfit skipped
+        Assert.Single(n.Items);                      // weapon → inventory
+        Assert.Equal(n.EditorId + "_Outfit", n.Outfit);   // armour → minted OTFT
+        Assert.Single(s.Outfits);
         Assert.Equal("Skyrim.esm:0x01605E", Assert.Single(s.Placements).Cell);
+    }
+
+    [Fact]
+    public void Expand_LegacyMixedEquipped_FoldsIntoOutfit()
+    {
+        // Pre-split DLL exports had one mixed "equipped" list — folded into armour → outfit.
+        var s = new ModSpec { PluginName = "M.esp" };
+        var cn = FullSample();
+        cn.EquippedArmor.Clear(); cn.EquippedWeapons.Clear();
+        cn.Equipped.Add("Skyrim.esm:0x06B46C");   // the boots-in-pocket clone
+        s.CapturedNpcs.Add(cn);
+        Generator.ExpandCapturedNpcs(s);
+
+        var n = Assert.Single(s.Npcs);
+        Assert.Equal(n.EditorId + "_Outfit", n.Outfit);
+        Assert.Equal("Skyrim.esm:0x06B46C", Assert.Single(Assert.Single(s.Outfits).Items));
     }
 
     // --- build (resolving the recipe refs against the real master) ---------------------------

@@ -38,9 +38,14 @@ public sealed class CapturedNpcSpec
     public List<CapturedNpcPerkSpec> Perks { get; set; } = new();
     public string Class { get; set; } = "";        // ref → CLAS; when present the expansion turns on autoCalcStats (class+level drive believable H/M/S)
     public int Level { get; set; }                  // actor's effective level at capture time (0 = unknown → engine default)
-    // Worn armour + held weapons/torch (durable refs). Consumed as NpcSpec.Items (best gets
-    // auto-equipped) — and when non-empty the expansion SKIPS defaultOutfit: a PROTEUS clone's
-    // outfit is a runtime shell (empty on disk), while the equipped list is what it actually wore.
+    // What the actor actually wore/held (durable refs), split by consumption route — the engine
+    // only auto-WEARS armour that comes from an OUTFIT (inventory armour stays in the pocket;
+    // in-game confirmed on the boots-in-pocket clone), while weapons/torch auto-equip from
+    // inventory. So armour MINTS an in-spec OTFT (replacing defaultOutfit, which for a PROTEUS
+    // clone is a runtime shell that's empty on disk) and weapons become NpcSpec.Items.
+    public List<string> EquippedArmor { get; set; } = new();
+    public List<string> EquippedWeapons { get; set; } = new();
+    // Legacy single mixed list (DLL exports before the armor/weapons split) — folded into armour.
     public List<string> Equipped { get; set; } = new();
     public List<CapturedActiveEffectSpec> ActiveEffects { get; set; } = new(); // advisory (not consumed)
     public Vec3 Position { get; set; } = new();
