@@ -70,3 +70,14 @@ F11 準星放置（pitch 對）、F8 擦除/undo、F6/F7 滴管（含姿態）�
 5. **cancel 不登記**：選另一個 vanilla 物件 → 推走 → **`.`** cancel → 物件彈回、Editor 頁列表**不**新增。
 6. **匯出閉環**：F10 → json 有頂層 `overrides[]`（ref/position/rotation/scale）→ 交給 agent `build` → 裝 patch → 那張椅子在**新位置**（記得同存檔測時 runtime 移動也在存檔裡——用舊存檔或新遊戲看最乾淨）。
 7. **順手**：對移過的椅子再按 F8 擦 → validate 應警告 removals×overrides 矛盾（agent build 時看得到；removal 贏）。
+
+## scene-capture-bridge QoL 四件套（2026-07-11 使用者實測後需求，離線齊備，DLL＋新 esp 已部署）
+
+⚠️ 這批**換了 SceneCaptureTools.esp**（marker 模型改懸浮發光靈魂石）——重開遊戲吃新 esp。ref 只記 base id、模型跟著 base 記錄走，所以**舊存檔已放的 marker 讀回來也會變成靈魂石**。
+
+1. **marker 新視覺＋E 互動**：F11 放 marker → 應出現**發光大靈魂石**懸浮在命中點（不掉＝物理凍結生效；掉在地上回報）→ 準星對它應出現互動提示（顯示 label）→ **按 E** → 彈出編輯視窗（遊戲暫停）：改 label、kind、**note 多行**、`delete marker`。存 → 面板列表同步。
+2. **note 進 json**：寫了 note 的 marker F10 匯出 → `annotations[]` 該筆帶 `"note"`；沒寫的不帶。
+3. **cell 過濾**：Markers/Eraser 頁勾 `this cell only` → 只列當前 cell 的條目；換房間再看，列表跟著變。
+4. **palette 跨存檔**：F6 吸幾個 → **完全關遊戲重開** → F1 Palette 插槽還在（unavailable 邏輯要 mod 卸載才看得到，可跳過）；F7 照擺。
+5. **射線明示選取**：站在樹前（準星無提示）→ Editor 頁 `select by ray` 或 **numpad \*** → 選中樹（log 帶 `(ray)`）→ numpad 推動＋commit → overrides 列表出現；Eraser 頁 `erase by ray` 擦樹、Palette 頁 `pick by ray` 吸樹同理。**F8/F6/numpad 5 的準星手感應完全不變**（按空＝no-op，不會誤抓牆）。
+6. **室內一輪**：隨便進間屋子把 F11/F8/F6/F7/numpad 5 各按一次 → F10 → json 歸屬是 `cell`（interior），座標 cell-local。

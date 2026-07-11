@@ -135,6 +135,7 @@ MarkerEntry {
 - **P2 修改（✅ 2026-07-10 MVP 實機過；✅ 2026-07-11 authored ref 解鎖——overrides[] 契約拍板 B 案並全鏈落地）**：`src/Editor.{h,cpp}`——numpad 5 選準星目標進編輯模式、8/2 前後、4/6 左右、**1/3 高低（與細摳②的 1379 全旋轉不同——spec 沒給高度軸，家具擺放對 Z 的需求遠大於第二旋轉軸；每鍵一個常數，要改隨時改）**、7/9 yaw、+/− 縮放（actor 略過）、0 commit、`.` cancel（還原快照）。5/3/0/. 實機實證（2026-07-11），無未映射 numpad。**authored ref**：commit 時明示登記進 `src/Overrides.{h,cpp}`（比照 Eraser；重複編輯更新既有筆、baseline 不動）→ 匯出頂層 `overrides[]`（live pose；actor 無 scale）→ ModForge `BuildOverrides`（`Spec.Overrides.cs`，同 removals 解析機件）。Editor 面板頁列 overrides、逐筆/全部 revert。契約拍板理由全文在 [spec](../specs/ingame-scene-export-design.md)「拍板」節。**未做**：泛光選中效果、屬性 GUI（`*/`+`5`，需 record-representable 映射）、持續按鍵重複、跨行程 override 重登記（重編輯一次即可，MVP 接受）。
 - **P3 動態物件**：選中凍結物理（`SetMotionType(Keyframed)` 待驗）→ 編輯 → 回復。誠實邊界：匯出 authored 位置，載入後 havok 自行沉降（與 CK 慣例一致）。檢視法術（新增/修改/刪除/全部四種；顯示被刪的 vanilla ref 需暫時 enable 或臨時紅 marker，實作時定）。
 - **P4 範圍吸取**：`ForEachReferenceInRange` bound 半徑；面板先預覽「會吸到 N 個」再確認。
+- **QoL 四件套（✅ 2026-07-11 離線落地，使用者實測後需求）**：① Markers/Eraser 頁 `this cell only` 過濾（Eraser entry 補記 cell）；② Palette 落盤 `scene-capture-palette.json` 跨存檔（unavailable 槽不炸）；③ **射線選取＝明示入口**（使用者拍板：準星手感不變，`select/erase/pick by ray` 鈕＋numpad \*——牆/地板都是 ref，自動 fallback 會把按空變誤抓，理由在 `Aim.h`）；④ marker 模型改**懸浮發光靈魂石**（`SoulGemGrand01.nif`，讀自 Skyrim.esm STAT 10D18B；舊召喚圈**無碰撞**故 E/準星選不到＋特效播完隱形；clutter havok 用放置即凍解）＋ **E 開編輯視窗**（AddWindow；label/kind/**note**/delete）＋ note 全鏈進 `annotations[].note`（AnnotationSpec.Note，881 測綠）。
 
 # P5：console 指令集＋模式制（📋 規劃中，2026-07-11 使用者提出，未動工）
 
