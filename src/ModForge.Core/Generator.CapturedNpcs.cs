@@ -24,28 +24,71 @@ public static partial class Generator
         {
             i++;
             string ed = CapturedNpcEd(cn, i);
-            // Wardrobe: worn armour must arrive via an OUTFIT — the engine only auto-wears
-            // outfit armour; inventory armour stays in the pocket (in-game confirmed: the clone
-            // carried its boots instead of wearing them). So captured armour MINTS an in-spec
-            // OTFT, replacing defaultOutfit (a PROTEUS clone's outfit ref is a runtime template
-            // that's an EMPTY SHELL on disk — in-game confirmed: naked clone). Weapons/torch go
-            // to inventory below (auto-equip works for those). Legacy mixed `equipped` = armour.
-            var armor = cn.EquippedArmor.Concat(cn.Equipped)
+            // Carry: each row routes to the OUTFIT (worn armour — the engine only auto-wears
+            // outfit armour; inventory armour stays in the pocket, in-game confirmed on the
+            // boots-in-pocket clone) or to inventory (weapons auto-equip; food/potions/gold ride
+            // with their counts). An INSTANCE-enchanted row (a player-crafted staff/armour whose
+            // enchant lives on the item instance, not the base) first MINTS a WEAP/ARMO template
+            // clone carrying the referenced-or-minted ENCH — the same machinery capturedItems
+            // uses — and the route consumes the minted editorId. The minted outfit replaces
+            // defaultOutfit (a PROTEUS clone's outfit ref is an empty runtime shell on disk —
+            // in-game confirmed: naked clone). Legacy shapes: `equipped` = worn armour ids,
+            // `equippedWeapons` = count-1 inventory ids.
+            var outfitItems = cn.EquippedArmor.Concat(cn.Equipped)
                 .Where(a => !string.IsNullOrWhiteSpace(a)).Distinct().ToList();
-            string outfitEd = armor.Count > 0 ? ed + "_Outfit" : "";
-            if (armor.Count > 0)
-                spec.Outfits.Add(new OutfitSpec { EditorId = outfitEd, Items = armor });
+            var invRows = new List<NpcItemSpec>();
+            int j = 0;
+            foreach (var row in cn.Inventory)
+            {
+                j++;
+                if (string.IsNullOrWhiteSpace(row.Item)) continue;
+                string itemRef = row.Item;
+                var e = row.Enchantment;
+                if (e is not null && (!string.IsNullOrWhiteSpace(e.Base) || e.Effects.Count > 0))
+                {
+                    string mintedEd = $"{ed}_Inv{j}";
+                    bool apparel = row.Worn || string.Equals(e.Target, "armor", StringComparison.OrdinalIgnoreCase);
+                    string? ench = ResolveOrMintEnchant(spec, e, mintedEd, apparel);
+                    if (apparel)
+                        spec.Armors.Add(new ArmorSpec
+                        {
+                            EditorId = mintedEd, Name = row.Name, Template = row.Item,
+                            Enchantment = ench ?? "",
+                        });
+                    else
+                    {
+                        var w = new WeaponSpec { EditorId = mintedEd, Name = row.Name, Template = row.Item };
+                        if (ench is not null)
+                        {
+                            w.Enchantment = ench;
+                            if (e.Amount > 0) w.EnchantmentAmount = e.Amount;
+                        }
+                        spec.Weapons.Add(w);
+                    }
+                    itemRef = mintedEd;
+                }
+                if (row.Worn) outfitItems.Add(itemRef);
+                else invRows.Add(new NpcItemSpec { Item = itemRef, Count = Math.Max(1, row.Count) });
+            }
+            foreach (var eq in cn.EquippedWeapons)   // legacy v5 shape — count-1 inventory rows
+                if (!string.IsNullOrWhiteSpace(eq)) invRows.Add(new NpcItemSpec { Item = eq, Count = 1 });
+            string outfitEd = outfitItems.Count > 0 ? ed + "_Outfit" : "";
+            if (outfitItems.Count > 0)
+                spec.Outfits.Add(new OutfitSpec { EditorId = outfitEd, Items = outfitItems });
             var n = new NpcSpec
             {
                 EditorId = ed, Name = cn.Name,
                 // identity
                 Race = cn.Race, Female = cn.Female,
                 Unique = cn.Unique, Essential = cn.Essential, Protected = cn.Protected,
-                Outfit = armor.Count > 0 ? outfitEd : cn.DefaultOutfit,
+                Outfit = outfitItems.Count > 0 ? outfitEd : cn.DefaultOutfit,
                 // Stats: class + level + autoCalc make the clone's H/M/S believable. autoCalc
                 // ONLY with a class (class-less autoCalc = ~0 HP permanent-bleedout footgun).
                 Class = cn.Class, Level = cn.Level,
                 AutoCalcStats = !string.IsNullOrWhiteSpace(cn.Class),
+                // behaviour: what the AI casts, HOW it fights, and its voice
+                CombatStyle = cn.CombatStyle, VoiceType = cn.VoiceType,
+                Spells = cn.Spells.Where(sp => !string.IsNullOrWhiteSpace(sp)).ToList(),
                 // face/body recipe
                 Weight = cn.Weight, Height = cn.Height,
                 BodyTint = cn.BodyTint,
@@ -62,11 +105,7 @@ public static partial class Generator
             };
             foreach (var p in cn.Perks)
                 if (!string.IsNullOrWhiteSpace(p.Perk)) n.Perks.Add(p.Perk);
-            foreach (var it in cn.Inventory)
-                if (!string.IsNullOrWhiteSpace(it.Item))
-                    n.Items.Add(new NpcItemSpec { Item = it.Item, Count = Math.Max(1, it.Count) });
-            foreach (var eq in cn.EquippedWeapons)   // legacy v5 shape — count-1 inventory rows
-                if (!string.IsNullOrWhiteSpace(eq)) n.Items.Add(new NpcItemSpec { Item = eq, Count = 1 });
+            n.Items.AddRange(invRows);
             spec.Npcs.Add(n);
 
             // Place the clone where it was captured. A capture with no anchor (the DLL couldn't

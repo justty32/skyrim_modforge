@@ -117,12 +117,29 @@ public static partial class Generator
                     if (string.IsNullOrWhiteSpace(p.Perk)) Problems.Add($"{who}: a perk entry is missing its perk ref");
                     else CheckRef(p.Perk, $"{who} perk");
                 CheckRef(cn.Class, $"{who} class");
+                CheckRef(cn.CombatStyle, $"{who} combatStyle");
+                CheckRef(cn.VoiceType, $"{who} voiceType");
+                foreach (var sp in cn.Spells) CheckRef(sp, $"{who} spell");
                 if (cn.Level < 0)
                     Problems.Add($"{who}: level {cn.Level} is negative");
                 foreach (var eq in cn.EquippedArmor) CheckRef(eq, $"{who} equippedArmor");
-                foreach (var it in cn.Inventory)
-                    if (string.IsNullOrWhiteSpace(it.Item)) Problems.Add($"{who}: an inventory row is missing its item ref");
-                    else CheckRef(it.Item, $"{who} inventory");
+                for (int r = 0; r < cn.Inventory.Count; r++)
+                {
+                    var it = cn.Inventory[r];
+                    if (string.IsNullOrWhiteSpace(it.Item)) Problems.Add($"{who}: inventory[{r}] is missing its item ref");
+                    else CheckRef(it.Item, $"{who} inventory[{r}]");
+                    // instance enchantment: same rules as a captured item's enchant
+                    if (it.Enchantment is { } ie)
+                    {
+                        if (!string.IsNullOrWhiteSpace(ie.Base)
+                            && (!LooksExternalRef(ie.Base) || !TryExternalRef(ie.Base, out _)))
+                            Problems.Add($"{who}: inventory[{r}] enchantment.base '{ie.Base}' must be a well-formed external ENCH ref");
+                        if (string.IsNullOrWhiteSpace(ie.Base))
+                            foreach (var ef in ie.Effects)
+                                if (string.IsNullOrWhiteSpace(ef.MagicEffect))
+                                    Problems.Add($"{who}: inventory[{r}] enchantment effect is missing its magicEffect ref");
+                    }
+                }
                 foreach (var eq in cn.EquippedWeapons) CheckRef(eq, $"{who} equippedWeapons");
                 foreach (var eq in cn.Equipped) CheckRef(eq, $"{who} equipped");
                 if (!string.IsNullOrWhiteSpace(cn.Cell) && !string.IsNullOrWhiteSpace(cn.Worldspace))

@@ -39,11 +39,23 @@ public class CapturedNpcsTests
         Perks = { new CapturedNpcPerkSpec { Perk = "Skyrim.esm:0x0581E7", Rank = 1 } },
         Class = "Skyrim.esm:0x01CE78",   // CombatWarrior1H-ish — drives autoCalcStats
         Level = 12,
-        EquippedArmor = { "Skyrim.esm:0x03619E" },     // college robes — must become an OUTFIT
+        CombatStyle = "Skyrim.esm:0x02B928",
+        VoiceType = "Skyrim.esm:0x013AE6",
+        Spells = { "Skyrim.esm:0x012FCD" },   // Flames
         Inventory =
         {
+            new CapturedNpcItemSpec { Item = "Skyrim.esm:0x03619E", Worn = true },  // college robes — outfit route
             new CapturedNpcItemSpec { Item = "Skyrim.esm:0x012EB7", Count = 1 },   // iron sword (auto-equips)
             new CapturedNpcItemSpec { Item = "Skyrim.esm:0x064B3F", Count = 3 },   // green apples ×3
+            new CapturedNpcItemSpec                                                 // player-crafted staff — instance ench
+            {
+                Item = "Skyrim.esm:0x029B78", Name = "Hatak's Staff",
+                Enchantment = new CapturedEnchantSpec
+                {
+                    Target = "weapon", Amount = 500,
+                    Effects = { new EffectSpec { MagicEffect = "Skyrim.esm:0x0001CEAD", Magnitude = 25 } },
+                },
+            },
         },
         Dead = false,
         ActiveEffects = { new CapturedActiveEffectSpec { MagicEffect = "Skyrim.esm:0x0003EB42", Magnitude = 10, Duration = 60, Elapsed = 5 } },
@@ -129,9 +141,22 @@ public class CapturedNpcsTests
         Assert.Equal("Skyrim.esm:0x01CE78", n.Class);
         Assert.Equal(12, n.Level);
         Assert.True(n.AutoCalcStats);   // class present → stats calc on
-        Assert.Equal(2, n.Items.Count);   // carry → inventory rows with counts
+        Assert.Equal("Skyrim.esm:0x02B928", n.CombatStyle);
+        Assert.Equal("Skyrim.esm:0x013AE6", n.VoiceType);
+        Assert.Equal("Skyrim.esm:0x012FCD", Assert.Single(n.Spells));
+        Assert.Equal(3, n.Items.Count);   // sword + apples + MINTED staff
         Assert.Equal("Skyrim.esm:0x012EB7", n.Items[0].Item);
         Assert.Equal(3, n.Items[1].Count);   // the apples kept their stack count
+        // the instance-enchanted staff minted a WEAP template clone + a fresh ENCH
+        var staff = Assert.Single(s.Weapons);
+        Assert.Equal(n.EditorId + "_Inv4", staff.EditorId);
+        Assert.Equal("Hatak's Staff", staff.Name);
+        Assert.Equal("Skyrim.esm:0x029B78", staff.Template);
+        Assert.Equal((ushort)500, staff.EnchantmentAmount);
+        var ench = Assert.Single(s.Enchantments);
+        Assert.Equal(staff.Enchantment, ench.EditorId);
+        Assert.Equal("weapon", ench.EnchantType);
+        Assert.Equal(staff.EditorId, n.Items[2].Item);   // inventory row consumes the minted id
         Assert.Equal(60f, n.Weight);
         Assert.Equal(1.02f, n.Height);
         Assert.Equal(230, n.BodyTint!.R);
@@ -188,7 +213,7 @@ public class CapturedNpcsTests
         // capture carried no equipped list — the outfit passes through. No class → autoCalc off.
         var s = new ModSpec { PluginName = "M.esp" };
         var cn = FullSample();
-        cn.EquippedArmor.Clear(); cn.Inventory.Clear(); cn.Class = ""; cn.Level = 0;
+        cn.Inventory.Clear(); cn.Class = ""; cn.Level = 0;
         s.CapturedNpcs.Add(cn);
         Generator.ExpandCapturedNpcs(s);
 
@@ -316,8 +341,16 @@ public class CapturedNpcsTests
               "faceParts": [3, 0, 2, 1],
               "perks": [{"perk": "Skyrim.esm:0x0581E7", "rank": 1}],
               "class": "Skyrim.esm:0x01CE78", "level": 12,
+              "combatStyle": "Skyrim.esm:0x02B928", "voiceType": "Skyrim.esm:0x013AE6",
+              "spells": ["Skyrim.esm:0x012FCD"],
               "equippedArmor": ["Skyrim.esm:0x03619E"],
-              "inventory": [{"item": "Skyrim.esm:0x012EB7", "count": 1}, {"item": "Skyrim.esm:0x064B3F", "count": 3}],
+              "inventory": [
+                {"item": "Skyrim.esm:0x03619E", "count": 1, "worn": true},
+                {"item": "Skyrim.esm:0x064B3F", "count": 3},
+                {"item": "Skyrim.esm:0x029B78", "count": 1, "name": "Hatak's Staff",
+                 "enchantment": {"target": "weapon", "amount": 500,
+                   "effects": [{"magicEffect": "Skyrim.esm:0x0001CEAD", "magnitude": 25.0, "area": 0, "duration": 0}]}}
+              ],
               "activeEffects": [{"magicEffect": "Skyrim.esm:0x0003EB42", "magnitude": 10.0, "duration": 60.0, "elapsed": 5.0, "source": "Skyrim.esm:0x0001CEAD"}],
               "position": {"x": 100.0, "y": 200.0, "z": 300.0},
               "rotation": {"x": 0.0, "y": 0.0, "z": 90.0},
@@ -341,10 +374,14 @@ public class CapturedNpcsTests
         Assert.Equal("Skyrim.esm:0x01CE78", n.Class);
         Assert.Equal(12, n.Level);
         Assert.True(n.AutoCalcStats);
-        Assert.Equal(2, n.Items.Count);              // carry → inventory (with counts)
-        Assert.Equal(3, n.Items[1].Count);
-        Assert.Equal(n.EditorId + "_Outfit", n.Outfit);   // armour → minted OTFT
+        Assert.Equal("Skyrim.esm:0x012FCD", Assert.Single(n.Spells));
+        Assert.Equal(2, n.Items.Count);              // apples + minted staff
+        Assert.Equal(3, n.Items[0].Count);
+        Assert.Equal(n.EditorId + "_Outfit", n.Outfit);   // worn row → minted OTFT
         Assert.Single(s.Outfits);
+        var staff = Assert.Single(s.Weapons);        // instance ench → minted WEAP + ENCH
+        Assert.Equal("Hatak's Staff", staff.Name);
+        Assert.Single(s.Enchantments);
         Assert.Equal("Skyrim.esm:0x01605E", Assert.Single(s.Placements).Cell);
     }
 
@@ -354,7 +391,7 @@ public class CapturedNpcsTests
         // Pre-split DLL exports had one mixed "equipped" list — folded into armour → outfit.
         var s = new ModSpec { PluginName = "M.esp" };
         var cn = FullSample();
-        cn.EquippedArmor.Clear(); cn.EquippedWeapons.Clear();
+        cn.Inventory.Clear();
         cn.Equipped.Add("Skyrim.esm:0x06B46C");   // the boots-in-pocket clone
         s.CapturedNpcs.Add(cn);
         Generator.ExpandCapturedNpcs(s);

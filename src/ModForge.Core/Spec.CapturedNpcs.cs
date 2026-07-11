@@ -38,6 +38,9 @@ public sealed class CapturedNpcSpec
     public List<CapturedNpcPerkSpec> Perks { get; set; } = new();
     public string Class { get; set; } = "";        // ref → CLAS; when present the expansion turns on autoCalcStats (class+level drive believable H/M/S)
     public int Level { get; set; }                  // actor's effective level at capture time (0 = unknown → engine default)
+    public string CombatStyle { get; set; } = "";  // ref → CSTY; HOW the AI fights (without a magic-leaning one, spells go uncast)
+    public string VoiceType { get; set; } = "";    // ref → VTYP; without one the clone is mute (no hello/idle chatter)
+    public List<string> Spells { get; set; } = new(); // refs → SPEL; base spell list + runtime-added — the combat AI's castable set
     // The actor's full carry (durable refs), split by consumption route — the engine only
     // auto-WEARS armour that comes from an OUTFIT (inventory armour stays in the pocket;
     // in-game confirmed on the boots-in-pocket clone), while weapons auto-equip from inventory.
@@ -57,11 +60,18 @@ public sealed class CapturedNpcSpec
     public string Worldspace { get; set; } = "";  // exterior anchor ref
 }
 
-// One carried-inventory row: a durable item ref + stack count (green apples ×3, gold ×250…).
+// One carried-inventory row: a durable item ref + stack count (green apples ×3, gold ×250…),
+// plus the item INSTANCE's enchantment when the DLL found one on the entry's extra data (a
+// player-crafted staff/armour enchant lives on the instance, not the base). `worn: true` marks
+// worn armour (→ the outfit route). An enchanted row expands into a minted WEAP/ARMO template
+// clone (reusing the capturedItems enchant machinery) with `name` as its display name.
 public sealed class CapturedNpcItemSpec
 {
     public string Item { get; set; } = "";
     public int Count { get; set; } = 1;
+    public bool Worn { get; set; }
+    public string Name { get; set; } = "";              // instance display name (enchanted rows)
+    public CapturedEnchantSpec? Enchantment { get; set; } // target + durable base | captured effects
 }
 
 // The DLL exports hairColor as an object: the durable CLFM ref plus its resolved RGB. Only the ref
