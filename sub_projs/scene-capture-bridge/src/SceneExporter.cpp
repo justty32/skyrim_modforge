@@ -297,7 +297,12 @@ namespace SceneExporter {
                     if (!n.npcClass.empty()) c["class"] = n.npcClass;
                     if (n.level > 0) c["level"] = n.level;
                     if (!n.equippedArmor.empty()) c["equippedArmor"] = n.equippedArmor;
-                    if (!n.equippedWeapons.empty()) c["equippedWeapons"] = n.equippedWeapons;
+                    if (!n.inventory.empty()) {
+                        auto inv = nlohmann::json::array();
+                        for (const auto& it : n.inventory)
+                            inv.push_back({{"item", it.item}, {"count", it.count}});
+                        c["inventory"] = std::move(inv);
+                    }
                     if (!n.perks.empty()) {
                         auto pj = nlohmann::json::array();
                         for (const auto& p : n.perks)

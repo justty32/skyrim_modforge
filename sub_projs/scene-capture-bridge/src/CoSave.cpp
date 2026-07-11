@@ -23,7 +23,7 @@ namespace {
     constexpr std::uint32_t kVerMkrs = 2;  // v2: full angle (3f) + scale, was angleZ only
     constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
     constexpr std::uint32_t kVerOvrd = 1;
-    constexpr std::uint32_t kVerCaps = 5;  // v2 kNpc payload; v3 flags/perks/buffs; v4 class/level/equipped; v5 splits equipped armor/weapons
+    constexpr std::uint32_t kVerCaps = 6;  // v2 kNpc; v3 flags/perks/buffs; v4 class/level/equipped; v5 armor/weapons split; v6 full inventory
 
     // ---- primitives -------------------------------------------------------
 
@@ -306,8 +306,8 @@ namespace {
         si->WriteRecordData(n.level);
         si->WriteRecordData(static_cast<std::uint32_t>(n.equippedArmor.size()));
         for (const auto& eq : n.equippedArmor) WriteStr(si, eq);
-        si->WriteRecordData(static_cast<std::uint32_t>(n.equippedWeapons.size()));
-        for (const auto& eq : n.equippedWeapons) WriteStr(si, eq);
+        si->WriteRecordData(static_cast<std::uint32_t>(n.inventory.size()));
+        for (const auto& it : n.inventory) { WriteStr(si, it.item); si->WriteRecordData(it.count); }
     }
 
     void LoadNpcPayload(const SKSE::SerializationInterface* si, Captures::NpcData& n, std::uint32_t version) {
@@ -371,9 +371,18 @@ namespace {
             si->ReadRecordData(cnt);
             // v4 held one mixed list; it was worn-armour-dominated, so fold it into armour.
             for (std::uint32_t k = 0; k < cnt; ++k) n.equippedArmor.push_back(ReadStr(si));
-            if (version >= 5) {
+            if (version == 5) {  // v5: a weapons id list → inventory rows (count 1)
                 si->ReadRecordData(cnt);
-                for (std::uint32_t k = 0; k < cnt; ++k) n.equippedWeapons.push_back(ReadStr(si));
+                for (std::uint32_t k = 0; k < cnt; ++k) n.inventory.push_back({ReadStr(si), 1});
+            }
+            if (version >= 6) {  // v6: full inventory with counts
+                si->ReadRecordData(cnt);
+                for (std::uint32_t k = 0; k < cnt; ++k) {
+                    Captures::NpcData::InvItem it;
+                    it.item = ReadStr(si);
+                    si->ReadRecordData(it.count);
+                    n.inventory.push_back(std::move(it));
+                }
             }
         }
     }

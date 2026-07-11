@@ -161,25 +161,22 @@ namespace {
         // Equipped: worn armour from the inventory + whatever the hands hold.
         // This dresses the clone even when defaultOutfit is a runtime shell
         // (PROTEUS template records are empty on disk).
-        auto addTo = [](std::vector<std::string>& list, const std::string& id) {
-            if (std::find(list.begin(), list.end(), id) == list.end()) list.push_back(id);
-        };
+        // Full carry sweep: worn armour → equippedArmor (→ outfit downstream), everything
+        // else durable → inventory rows with counts (a held weapon IS an inventory entry, so
+        // no separate hand scan — it lands here and auto-equips on the clone).
         for (auto& [obj, data] : actor->GetInventory()) {
             auto& [cnt, entry] = data;
-            if (cnt <= 0 || !entry || !entry->IsWorn()) continue;
-            if (!obj) continue;
+            if (cnt <= 0 || !obj) continue;
             if (auto id = SceneExporter::ResolveDurableId(obj)) {
-                if (obj->IsArmor()) addTo(n.equippedArmor, *id);
-                else if (obj->IsWeapon() || obj->Is(RE::FormType::Light)) addTo(n.equippedWeapons, *id);
+                if (entry && entry->IsWorn() && obj->IsArmor()) {
+                    if (std::find(n.equippedArmor.begin(), n.equippedArmor.end(), *id) ==
+                        n.equippedArmor.end())
+                        n.equippedArmor.push_back(*id);
+                } else {
+                    n.inventory.push_back({*id, cnt});
+                }
             }
         }
-        auto addHand = [&](RE::TESForm* f) {
-            if (!f) return;
-            if (!f->IsWeapon() && !f->Is(RE::FormType::Light)) return;
-            if (auto id = SceneExporter::ResolveDurableId(f)) addTo(n.equippedWeapons, *id);
-        };
-        addHand(actor->GetEquippedObject(false));  // right hand
-        addHand(actor->GetEquippedObject(true));   // left hand
 
         n.position = ref->GetPosition();
         const RE::NiPoint3& ang = ref->data.angle;
