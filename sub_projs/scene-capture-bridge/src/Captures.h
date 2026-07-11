@@ -95,17 +95,31 @@ namespace Captures {
         std::vector<ActiveEffect> activeEffects;  // current buffs — runtime snapshot
         std::string npcClass;              // durable CLAS id (drives ModForge autoCalcStats)
         std::int16_t level = 0;            // actor's effective level at capture time
-        // One carried-inventory row (durable base + stack count).
+        std::string combatStyle;           // durable CSTY id — HOW the AI fights (magic vs melee)
+        std::string voiceType;             // durable VTYP id — without one the clone is mute
+        std::vector<std::string> spells;   // durable SPEL ids: base spell list + actor addedSpells
+                                           // (→ NpcSpec.spells / ActorEffect — what combat AI casts)
+        // One carried-inventory row: durable base + stack count + role flags + the item
+        // INSTANCE's enchantment (ExtraEnchantment extra data — a player-crafted staff/armour
+        // enchant that lives on the instance, not the base). A durable instance-ENCH is
+        // referenced (`enchBase`); a runtime one is captured as MGEF effects for ModForge to
+        // mint. `name` = instance display name (only filled when enchanted — the minted clone
+        // needs it, a plain base ref keeps its own name).
         struct InvItem {
             std::string item;
             std::int32_t count = 1;
+            bool worn = false;         // worn armour → outfit route downstream
+            bool armorTarget = false;  // ench family when enchanted: armor(apparel) vs weapon
+            std::string name;
+            std::string enchBase;
+            std::uint16_t enchAmount = 0;
+            std::vector<Effect> enchEffects;
         };
-        // The actor's full carry, split by consumption route: WORN armour must become an
-        // OUTFIT (the engine only auto-wears outfit armour — inventory armour stays in the
-        // pocket, in-game confirmed), everything else carried (weapons/staves/food/potions/
-        // gold…) is plain inventory (weapons auto-equip from there). Dresses + stocks the
-        // clone even when defaultOutfit is a runtime shell.
-        std::vector<std::string> equippedArmor;
+        // The actor's full carry. WORN armour rows become an OUTFIT downstream (the engine
+        // only auto-wears outfit armour — inventory armour stays in the pocket, in-game
+        // confirmed); everything else (weapons/staves/food/potions/gold…) is plain inventory
+        // (weapons auto-equip). Dresses + stocks the clone even when defaultOutfit is a
+        // runtime shell.
         std::vector<InvItem> inventory;
         RE::NiPoint3 position;     // world coords at capture time
         RE::NiPoint3 angleDeg;     // facing (degrees)

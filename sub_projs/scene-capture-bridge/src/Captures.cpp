@@ -157,25 +157,57 @@ namespace {
             if (auto id = SceneExporter::ResolveDurableId(cls)) n.npcClass = *id;
         }
         n.level = actor->GetLevel();
+        // Combat behaviour + voice + castable spells. combatStyle decides whether the AI
+        // even considers magic; voiceType keeps the clone from being mute; spells = the base
+        // record's spell list + the actor's runtime-added ones (deduped).
+        if (auto* cs = npc->combatStyle) {
+            if (auto id = SceneExporter::ResolveDurableId(cs)) n.combatStyle = *id;
+        }
+        if (auto* vt = npc->voiceType) {
+            if (auto id = SceneExporter::ResolveDurableId(vt)) n.voiceType = *id;
+        }
+        auto addSpell = [&](RE::SpellItem* sp) {
+            if (!sp) return;
+            if (auto id = SceneExporter::ResolveDurableId(sp)) {
+                if (std::find(n.spells.begin(), n.spells.end(), *id) == n.spells.end())
+                    n.spells.push_back(*id);
+            }
+        };
+        if (auto* se = npc->actorEffects; se && se->spells)
+            for (std::uint32_t k = 0; k < se->numSpells; ++k) addSpell(se->spells[k]);
+        for (auto* sp : actor->GetActorRuntimeData().addedSpells) addSpell(sp);
 
         // Equipped: worn armour from the inventory + whatever the hands hold.
         // This dresses the clone even when defaultOutfit is a runtime shell
         // (PROTEUS template records are empty on disk).
-        // Full carry sweep: worn armour → equippedArmor (→ outfit downstream), everything
-        // else durable → inventory rows with counts (a held weapon IS an inventory entry, so
-        // no separate hand scan — it lands here and auto-equips on the clone).
+        // Full carry sweep — every durable inventory entry becomes a row (worn armour is
+        // flagged for the outfit route downstream; a held weapon IS an inventory entry, so no
+        // separate hand scan). The row also harvests the INSTANCE enchantment (ExtraEnchantment)
+        // so a player-crafted staff/armour keeps its magic: durable ENCH → referenced, runtime
+        // ENCH → its MGEF effects (ModForge mints a fresh ENCH from them).
         for (auto& [obj, data] : actor->GetInventory()) {
             auto& [cnt, entry] = data;
             if (cnt <= 0 || !obj) continue;
-            if (auto id = SceneExporter::ResolveDurableId(obj)) {
-                if (entry && entry->IsWorn() && obj->IsArmor()) {
-                    if (std::find(n.equippedArmor.begin(), n.equippedArmor.end(), *id) ==
-                        n.equippedArmor.end())
-                        n.equippedArmor.push_back(*id);
-                } else {
-                    n.inventory.push_back({*id, cnt});
+            auto id = SceneExporter::ResolveDurableId(obj);
+            if (!id) continue;
+            Captures::NpcData::InvItem row;
+            row.item = *id;
+            row.count = cnt;
+            row.worn = entry && entry->IsWorn() && obj->IsArmor();
+            row.armorTarget = obj->IsArmor();
+            if (entry && entry->extraLists) {
+                for (auto* xl : *entry->extraLists) {
+                    if (!xl) continue;
+                    auto* xe = xl->GetByType<RE::ExtraEnchantment>();
+                    if (!xe || !xe->enchantment) continue;
+                    if (auto eid = SceneExporter::ResolveDurableId(xe->enchantment)) row.enchBase = *eid;
+                    else row.enchEffects = ReadEffects(xe->enchantment);
+                    row.enchAmount = xe->charge;
+                    if (const char* dn = entry->GetDisplayName(); dn && *dn) row.name = dn;
+                    break;
                 }
             }
+            n.inventory.push_back(std::move(row));
         }
 
         n.position = ref->GetPosition();

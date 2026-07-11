@@ -23,7 +23,7 @@ namespace {
     constexpr std::uint32_t kVerMkrs = 2;  // v2: full angle (3f) + scale, was angleZ only
     constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
     constexpr std::uint32_t kVerOvrd = 1;
-    constexpr std::uint32_t kVerCaps = 6;  // v2 kNpc; v3 flags/perks/buffs; v4 class/level/equipped; v5 armor/weapons split; v6 full inventory
+    constexpr std::uint32_t kVerCaps = 7;  // v2 kNpc; v3 flags/perks/buffs; v4 class/level/equipped; v5 armor/weapons; v6 inventory; v7 rows+instance-ench
 
     // ---- primitives -------------------------------------------------------
 
@@ -301,13 +301,30 @@ namespace {
             si->WriteRecordData(a.duration);
             si->WriteRecordData(a.elapsed);
         }
-        // v4 appendix: class + level; v5 splits equipped into armor + weapons.
+        // v4 appendix: class + level; v7 adds combatStyle/voiceType/spells + full carry rows.
         WriteStr(si, n.npcClass);
         si->WriteRecordData(n.level);
-        si->WriteRecordData(static_cast<std::uint32_t>(n.equippedArmor.size()));
-        for (const auto& eq : n.equippedArmor) WriteStr(si, eq);
+        WriteStr(si, n.combatStyle);
+        WriteStr(si, n.voiceType);
+        si->WriteRecordData(static_cast<std::uint32_t>(n.spells.size()));
+        for (const auto& sp : n.spells) WriteStr(si, sp);
         si->WriteRecordData(static_cast<std::uint32_t>(n.inventory.size()));
-        for (const auto& it : n.inventory) { WriteStr(si, it.item); si->WriteRecordData(it.count); }
+        for (const auto& it : n.inventory) {
+            WriteStr(si, it.item);
+            si->WriteRecordData(it.count);
+            si->WriteRecordData(static_cast<std::uint8_t>(it.worn ? 1 : 0));
+            si->WriteRecordData(static_cast<std::uint8_t>(it.armorTarget ? 1 : 0));
+            WriteStr(si, it.name);
+            WriteStr(si, it.enchBase);
+            si->WriteRecordData(it.enchAmount);
+            si->WriteRecordData(static_cast<std::uint32_t>(it.enchEffects.size()));
+            for (const auto& ef : it.enchEffects) {
+                WriteStr(si, ef.magicEffect);
+                si->WriteRecordData(ef.magnitude);
+                si->WriteRecordData(ef.area);
+                si->WriteRecordData(ef.duration);
+            }
+        }
     }
 
     void LoadNpcPayload(const SKSE::SerializationInterface* si, Captures::NpcData& n, std::uint32_t version) {
@@ -368,19 +385,61 @@ namespace {
             n.npcClass = ReadStr(si);
             si->ReadRecordData(n.level);
             std::uint32_t cnt = 0;
-            si->ReadRecordData(cnt);
-            // v4 held one mixed list; it was worn-armour-dominated, so fold it into armour.
-            for (std::uint32_t k = 0; k < cnt; ++k) n.equippedArmor.push_back(ReadStr(si));
-            if (version == 5) {  // v5: a weapons id list → inventory rows (count 1)
+            if (version >= 7) {
+                n.combatStyle = ReadStr(si);
+                n.voiceType = ReadStr(si);
                 si->ReadRecordData(cnt);
-                for (std::uint32_t k = 0; k < cnt; ++k) n.inventory.push_back({ReadStr(si), 1});
+                for (std::uint32_t k = 0; k < cnt; ++k) n.spells.push_back(ReadStr(si));
             }
-            if (version >= 6) {  // v6: full inventory with counts
+            si->ReadRecordData(cnt);
+            // v4/v5/v6 legacy shapes all fold into v7 rows. v4: one mixed worn-armour-
+            // dominated list; v5/v6: an armour id list first. (v7+ skips this block — its
+            // first count belongs to the full-row list below.)
+            if (version <= 6)
+                for (std::uint32_t k = 0; k < cnt; ++k) {
+                    Captures::NpcData::InvItem it;
+                    it.item = ReadStr(si);
+                    it.worn = true; it.armorTarget = true;
+                    n.inventory.push_back(std::move(it));
+                }
+            if (version == 5) {  // weapons id list → plain rows (count 1)
+                si->ReadRecordData(cnt);
+                for (std::uint32_t k = 0; k < cnt; ++k) {
+                    Captures::NpcData::InvItem it;
+                    it.item = ReadStr(si);
+                    n.inventory.push_back(std::move(it));
+                }
+            }
+            if (version == 6) {  // {item,count} rows
                 si->ReadRecordData(cnt);
                 for (std::uint32_t k = 0; k < cnt; ++k) {
                     Captures::NpcData::InvItem it;
                     it.item = ReadStr(si);
                     si->ReadRecordData(it.count);
+                    n.inventory.push_back(std::move(it));
+                }
+            }
+            if (version >= 7) {  // full rows incl. instance enchantment (cnt read above)
+                for (std::uint32_t k = 0; k < cnt; ++k) {
+                    Captures::NpcData::InvItem it;
+                    std::uint8_t worn = 0, at = 0;
+                    it.item = ReadStr(si);
+                    si->ReadRecordData(it.count);
+                    si->ReadRecordData(worn); it.worn = worn != 0;
+                    si->ReadRecordData(at); it.armorTarget = at != 0;
+                    it.name = ReadStr(si);
+                    it.enchBase = ReadStr(si);
+                    si->ReadRecordData(it.enchAmount);
+                    std::uint32_t ec = 0;
+                    si->ReadRecordData(ec);
+                    for (std::uint32_t x = 0; x < ec; ++x) {
+                        Captures::Effect ef;
+                        ef.magicEffect = ReadStr(si);
+                        si->ReadRecordData(ef.magnitude);
+                        si->ReadRecordData(ef.area);
+                        si->ReadRecordData(ef.duration);
+                        it.enchEffects.push_back(std::move(ef));
+                    }
                     n.inventory.push_back(std::move(it));
                 }
             }

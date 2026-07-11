@@ -296,11 +296,25 @@ namespace SceneExporter {
                     if (!n.parts.empty()) c["faceParts"] = n.parts;
                     if (!n.npcClass.empty()) c["class"] = n.npcClass;
                     if (n.level > 0) c["level"] = n.level;
-                    if (!n.equippedArmor.empty()) c["equippedArmor"] = n.equippedArmor;
+                    if (!n.combatStyle.empty()) c["combatStyle"] = n.combatStyle;
+                    if (!n.voiceType.empty()) c["voiceType"] = n.voiceType;
+                    if (!n.spells.empty()) c["spells"] = n.spells;
                     if (!n.inventory.empty()) {
                         auto inv = nlohmann::json::array();
-                        for (const auto& it : n.inventory)
-                            inv.push_back({{"item", it.item}, {"count", it.count}});
+                        for (const auto& it : n.inventory) {
+                            nlohmann::json o{{"item", it.item}, {"count", it.count}};
+                            if (it.worn) o["worn"] = true;
+                            if (!it.enchBase.empty() || !it.enchEffects.empty()) {
+                                if (!it.name.empty()) o["name"] = it.name;
+                                nlohmann::json ench;
+                                ench["target"] = it.armorTarget ? "armor" : "weapon";
+                                if (!it.enchBase.empty()) ench["base"] = it.enchBase;
+                                if (it.enchAmount) ench["amount"] = it.enchAmount;
+                                if (!it.enchEffects.empty()) ench["effects"] = effJson(it.enchEffects);
+                                o["enchantment"] = std::move(ench);
+                            }
+                            inv.push_back(std::move(o));
+                        }
                         c["inventory"] = std::move(inv);
                     }
                     if (!n.perks.empty()) {
