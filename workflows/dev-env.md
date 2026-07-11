@@ -23,7 +23,7 @@ ModForge 在**兩種機器**上開發，能做的事不同：
 scripts/bootstrap-pex.sh
 ```
 
-把 `assets/papyrus/*.psc` 編成 `.pex`（被 CLI embed 為 EmbeddedResource；`.pex` 不進 repo，任何 `.psc` 改動同樣重跑、新 `.pex` 留本機不 commit）。需 Wine + CK PapyrusCompiler（native 走 `~/tools/papyrus-compiler` + `MODFORGE_PAPYRUS_HEADERS`）。**離線機沒有 Wine/CK → 跳過**（build 仍可，runtime 才 warn 缺 `.pex`）。
+把 `assets/papyrus/*.psc` 編成 `.pex`（被 CLI embed 為 EmbeddedResource；`.pex` 不進 repo，任何 `.psc` 改動同樣重跑、新 `.pex` 留本機不 commit）。需 Wine + CK PapyrusCompiler（native 走 `~/tools/papyrus-compiler` + `MODFORGE_PAPYRUS_HEADERS`）。**離線機沒有 Wine/CK → 跳過**（build 仍可，runtime 才 warn 缺 `.pex`）。**腳本若叫 SKSE 擴充函式**（如 `GetDisplayName`）：header cache 是純 vanilla，錯誤只會是「undefined function」——把 SKSE 版 headers 疊進 cache：`cp "<Steam>/Skyrim Special Edition/Data/Scripts/Source/"*.psc ~/.cache/modforge/papyrus/Source/Scripts/`（64 檔＝SKSE 安裝時放的 vanilla+SKSE 合併版；2026-07-11 為 `MFLivingNpcAlias` 補過，同 JContainers/PapyrusUtil 慣例）。
 
 ## 出貨腳本（**僅 Manjaro**）
 

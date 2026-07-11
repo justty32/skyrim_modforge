@@ -21,12 +21,9 @@
   - 已知排除（P2 再說）：m9000/m9100（±1.5–2.9km 天幕遠山）、m5201（±550m 遠景地形）、m9999（黑幕 occluder）→ 地平線只有天空與平地，正常。
   - 回報：哪裡缺塊/破洞/穿地板/黑面/CTD，CrashLoggerSSE log 最好。
 
-- **living-adventurers 整鏈 P0–P3（2026-06-27）— 全離線建構 + 848 測綠，但 .pex 從未編譯、從未實機**（idea #23 / `sub_projs/living-adventurers/`）。這是「抽象幽靈模擬 + 就地實體化 + 傳唱 + 互動/favor + alignment」的 **runtime 第一次驗證**，是 P0–P3 共同的 acceptance gate。測 `examples/living_npcs_spec.json`（macro 版，涵蓋全部；spike/p1 是過程原型，不必另測）。
-
-  **打包（主力機，需 Papyrus toolchain）**：
-  1. `scripts/bootstrap-pex.sh` —— 把 `assets/papyrus/*.psc` 全編成 `.pex`（含新的 `MFLivingWorldController` / `MFLivingNpcAlias`；它們是 conditional EmbeddedResource，沒 .pex 就不嵌入、runtime 缺腳本）。需 `MODFORGE_PAPYRUS_HEADERS`（native）或 Wine+CK。
-  2. `scripts/ship.sh examples/living_npcs_spec.json` —— build + package + FLAT zip → `~/skyrim_mods/mine/MFLivingNpcs.zip`。
-  3. **TIF 陷阱**（memory + dev-env）：互動 `setGlobal` 會生 `TIF_*` result fragment，package 內聯自動編譯**可能 spurious fail（zip 出 0 個 TIF .pex）**→ 互動點了 favor 不加。`unzip -l ~/skyrim_mods/mine/MFLivingNpcs.zip | grep TIF`；若缺，逐一 `dotnet run --project src/ModForge.Cli -- compile <stage>/Scripts/Source/TIF_*.psc <stage>/Scripts` 再 `zip` 補進去。
+- **living-adventurers 整鏈 P0–P3 — ✅ 已打包交付 `~/skyrim_mods/mine/MFLivingNpcs.zip`（2026-07-11，FLAT）**（idea #23 / `sub_projs/living-adventurers/`）。這是「抽象幽靈模擬 + 就地實體化 + 傳唱 + 互動/favor + alignment」的 **runtime 第一次驗證**，是 P0–P3 共同的 acceptance gate。測 `examples/living_npcs_spec.json`（macro 版，涵蓋全部；spike/p1 是過程原型，不必另測）。
+  - zip 內容已結構驗證：esp（13 records、quest StartGameEnabled、4 globals、6 topics）＋ `.seq` ＋ 6 pex（`MFLivingWorldController`/`MFLivingNpcAlias`＋**4 個 TIF 全數內聯編譯成功**，這次沒踩 spurious-fail）＋ TIF 源碼。7 scripts attached（quest 1 + alias 2 + TIF 4；dump 不渲染 alias 層 VMAD，數字對帳自 build summary）。
+  - 打包途中踩了一雷已修＋記進 dev-env：`MFLivingNpcAlias` 用 SKSE 的 `GetDisplayName` → 純 vanilla header cache 編不過（undefined function）→ SKSE 版 headers（Steam Data/Scripts/Source 64 檔）疊進 cache 後過。
 
   **實機驗（新遊戲或 save+reload — StartGameEnabled quest + 對話 + `.seq`）**：
   - **① 離場推進**：`getglobalvalue MFLiving_MFLN_Kjeld_Deeds` → 過幾遊戲時（可調 timescale）再看，**你不在 Kjeld 身邊時它也會爬**；每 tick 跳通知「Kjeld the Wanderer completed another contract.」（Falas＝「pores over a tome…」）。
