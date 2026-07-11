@@ -16,7 +16,7 @@
 1. **修改指定 cell**——抬升/下降地形高度；添加/刪除靜態或動態物件；修改/新增/刪除 NPC 或生物的擺放位置。
 2. **將指定 cell 的修改記錄下來**。
 
-對照現況（2026-07-10）：添加物件/NPC＝已實機（採集橋 M4）；刪除＝M6 橡皮擦（[plan](../../plans/scene-capture-bridge.md) 規劃中）；移動既有 ref＝「override 形狀」技術債（M7b）；**地形高度＝清單中唯一的新大件**——記錄意圖可行（同 navmesh 模式）、ModForge 生成端已落地（worldspace-editor 的 heightmap→非平坦 LAND），**即時預覽是硬題**（LAND 不是 ref，引擎沒有 runtime 變形地形的路；改完要 export→build→重啟才看得到，天生半所見即所得）。
+對照現況（2026-07-10）：添加物件/NPC＝已實機（採集橋 M4）；刪除＝M6 橡皮擦（[plan](../../plans/scene-capture-bridge/README.md) 規劃中）；移動既有 ref＝「override 形狀」技術債（M7b）；**地形高度＝清單中唯一的新大件**——記錄意圖可行（同 navmesh 模式）、ModForge 生成端已落地（worldspace-editor 的 heightmap→非平坦 LAND），**即時預覽是硬題**（LAND 不是 ref，引擎沒有 runtime 變形地形的路；改完要 export→build→重啟才看得到，天生半所見即所得）。
 
 ---
 
@@ -46,7 +46,7 @@
   - 三支細節 + ModForge 落點見 **§E**（滴管/範圍吸取生成端零改動；移除既有 vanilla ref＝`removals[]`，**已落地** 2026-07-08）。
 - **③ 施法錄製 NPC 行為**（原 #24 小野心）：走一條路徑，沿途取樣座標放 PatrolMarker/IdleMarker + 停留動作 → 輸出 sandbox/travel/patrol package（見記憶 [[radiant-alias-package-byte-truths]]：package 掛在 alias 的 ALPS 上）。
 - **④ 施法擺放 NPC / 拓印玩家角色 → 靠 PROTEUS**：用 [PROTEUS](../../../sub_projs/mod-survey/findings/proteus.md) 遊戲內生成 / 定位 / 控制 NPC 的既有能力當「放 NPC」前端；**進一步（本次新增）把 PROTEUS「序列化整個角色 build」的能力拿來把玩家自己拓印成獨立 NPC**——見下 §A。⚠️ PROTEUS 核心是**閉源 native DLL**，只能**消費**它、不能改它；若要自建放置也可走既有 `quest.spawn`（見記憶 [[dynamic-spawn-debugging]]）。
-- **⑤ 施法修改地形（LAND）**：~~野心項，技術牆，先擱置~~ **（2026-07-10 使用者定調：遊戲內不做）**——「地形高度不太需要在遊戲中修改」，走既有離線路（Godot worldspace editor / PNG heightmap → ModForge，heightmap→非平坦 LAND 已落地）。遊戲內只做**輔助標註**：指向性法術在命中點放 marker、可改名、匯出 json → 給 AI agent 下指令的座標錨點（「這個 marker 所在座標的地形要抬升/下降…」）。詳見 [plan M9](../../plans/scene-capture-bridge.md)。
+- **⑤ 施法修改地形（LAND）**：~~野心項，技術牆，先擱置~~ **（2026-07-10 使用者定調：遊戲內不做）**——「地形高度不太需要在遊戲中修改」，走既有離線路（Godot worldspace editor / PNG heightmap → ModForge，heightmap→非平坦 LAND 已落地）。遊戲內只做**輔助標註**：指向性法術在命中點放 marker、可改名、匯出 json → 給 AI agent 下指令的座標錨點（「這個 marker 所在座標的地形要抬升/下降…」）。詳見 [plan](../../plans/scene-capture-bridge/README.md)。
 - **⑥ 語意標註（本次新增）**：不只擺實體物件，也**下「意圖標記」**——這裡放一個地圖 marker、那裡放一個特效錨點、門口貼一個身份/功能標籤 → ModForge build 時**展開成真記錄**（XMRK map marker / HAZD 或 placed VFX / KYWD tag）。見下 §B。**這是把編輯器從「擺模型」升級成「標作者意圖」的關鍵一步**，且幾乎全 generable-today。
 - **⑦（最大野心，暫緩）**：變身 NPC + 錄軌跡途中施法插事件節點（對話/idle/換場景）→ 生成任務/scene。狀態機複雜，最後再碰。
 
@@ -179,7 +179,7 @@
 
 ## 關聯
 
-- **[settlements Phase-2](../../roadmap/mod-survey-gaps/settlements-phase2.md)**：~~共用同一支 controller~~ **（2026-07-10 修正）共用的是設計，不是程式碼**。兩者部署限制不同：本 idea 的編輯器 controller 跑在**作者的編輯 session**，載體是 `SceneCaptureBridge.dll`，可以直接寫 C++；settlements P2 的 `buildables:` controller 跑在**玩家的遊戲**裡、在 ModForge 生的 mod 中，**必須是 `.pex`**（生成的 mod 夾帶不了 DLL）。詳見 [plan](../../plans/scene-capture-bridge.md#m7滴管e-)。
+- **[settlements Phase-2](../../roadmap/mod-survey-gaps/settlements-phase2.md)**：~~共用同一支 controller~~ **（2026-07-10 修正）共用的是設計，不是程式碼**。兩者部署限制不同：本 idea 的編輯器 controller 跑在**作者的編輯 session**，載體是 `SceneCaptureBridge.dll`，可以直接寫 C++；settlements P2 的 `buildables:` controller 跑在**玩家的遊戲**裡、在 ModForge 生的 mod 中，**必須是 `.pex`**（生成的 mod 夾帶不了 DLL）。詳見 [plan](../../plans/scene-capture-bridge/phases.md)。
 - **[#23 living-adventurers](../living-adventurers.md)**：§A 路徑 A 的「指向既有 ActorRef」哲學同源；拓印出的 NPC 可直接 enroll 進活世界模擬。
 - **[#1c 多重身份系統](../followers.md#1c-多重身份--輕量職業系統)**（記憶 [[identity-system-confirmed]]）：§D 身份→對話的既有落地基礎。
 - #15（CK 替代視覺編輯器，本 idea 是遊戲內路線）；#19 Godot Worldspace Editor（外部編輯器另一路）；#17（任務節點圖，§D 對話 AI 生成管線）。

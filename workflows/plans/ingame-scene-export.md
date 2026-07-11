@@ -201,7 +201,7 @@ Expected: 生出 esp，`dump` 見房子 REFR + NPC-role 的 dialogue/package/ven
 ## 依賴 / 後續（非本 plan）
 
 - **M3 placement-controller**：合流 [settlements P2](../roadmap/mod-survey-gaps/settlements-phase2.md)。
-- **M4 採集橋 SKSE DLL**：獨立子專案 [scene-capture-bridge](../../sub_projs/scene-capture-bridge/README.md)（本 plan 的 scene.json 契約 = 它的 output 目標）。**M4 spike 已 IN-GAME 2026-07-10**。後續的 §B/§D/§E 編輯器工具（橡皮擦／滴管／範圍吸取／語意標記／role tag）另立 plan：[scene-capture-bridge.md](scene-capture-bridge.md)。純 runtime，對本 plan 的 ModForge 側零衝擊（吸來的 base 一樣進 `placements[].base`，ModForge 自動加 master）。
+- **M4 採集橋 SKSE DLL**：獨立子專案 [scene-capture-bridge](../../sub_projs/scene-capture-bridge/README.md)（本 plan 的 scene.json 契約 = 它的 output 目標）。**M4 spike 已 IN-GAME 2026-07-10**。後續的 §B/§D/§E 編輯器工具（橡皮擦／滴管／範圍吸取／語意標記／role tag）另立 plan：[scene-capture-bridge](scene-capture-bridge/README.md)。純 runtime，對本 plan 的 ModForge 側零衝擊（吸來的 base 一樣進 `placements[].base`，ModForge 自動加 master）。
   - 滴管的插槽**不必走 StorageUtil**（原 idea 的假設）——採集橋現在有 C++ 面板，直接 DLL 記憶體 + sidecar json，省掉 PapyrusUtil 相依。
 - **M5 PROTEUS 拓印**：需先驗 clone ActorRef 取得方式（idea #24 §A 已拍板穩定可引用）。
 - **role 全集 + AI 對話文本**：blacksmith 之外接 #23 archetype 框架 / #17 生成管線。
