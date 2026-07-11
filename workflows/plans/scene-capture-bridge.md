@@ -144,7 +144,8 @@ MarkerEntry {
 **設計草案**：
 
 - **模式**：`marker` / `del`（擦除）/ `pick`（滴管吸）/ `place`（擺放）/ `edit`（進 numpad 編輯）/ `off`。**export 不佔鍵（使用者拍板 2026-07-11）——一律走 F1 面板 Export 鈕**（已存在，與 F10 同一支函式）；numpad 編輯內部鍵不變（那是模式內操作，不是入口）。
-- **指令形狀：✅ 拍板 b 案（使用者 2026-07-11）——一字前綴**：`sc mk` / `sc del` / `sc pk` / `sc pl` / `sc ed` / `sc off`。短且零撞名風險。（未選：a 無前綴極短——撞名要逐驗；c `mode_marker`——太長。）
+- **指令形狀：✅ 拍板 b 案（使用者 2026-07-11）——一字前綴**：`sc mk` / `sc del` / `sc pk`（滴管吸）/ `sc pl`（擺放）/ `sc ed` / `sc off`。短且零撞名風險。（未選：a 無前綴極短——撞名要逐驗；c `mode_marker`——太長。）
+- **指令文法第二層（使用者 2026-07-11 定調）**：`sc <工具> <短參數>`——無參數＝切模式；帶參數＝工具子指令，參數走**極簡縮寫**風格。首例：`sc mk dp0`＝所有 marker 發光體暫時隱形（只是看不到，登記簿與匯出不受影響——座標放置當下已取定，且 proxy 在 exporter 是先於 disabled 判斷被排除的）、`sc mk dp1`＝顯回來。同型模式日後複用（如 `sc del dp0` 隱藏擦除高亮之類）。
 - **回饋**：切模式時 `DebugNotification`「SCB mode: marker」＋面板頂部常駐顯示當前模式；`F11` 在 `off` 模式提示先切模式。
 - **實作路徑（待研究定案）**：SKSE 自訂 console 指令的成熟做法＝**劫持 vanilla 冷門 ObScript 指令**（改 name/handler，如慣例犯 `ClearAchievement`）或 console 輸入 hook；也可考慮軟依賴 ConsoleUtilSSE。研究時查 CommonLibSSE-NG 的 `SCRIPT_FUNCTION` 改寫先例。
 - **遷移**：模式制落地後，F6/F7/F8/F10 直達鍵收進「classic hotkeys」面板開關（**預設關**——少佔鍵原則優先）。
