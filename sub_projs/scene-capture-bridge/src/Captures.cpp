@@ -116,7 +116,7 @@ namespace {
             }
         }
         if (npc->faceData) {
-            for (float m : npc->faceData->morphs) n.morphs.push_back(m);
+            for (int i = 0; i < RE::TESNPC::FaceData::Morphs::kUnk; ++i) n.morphs.push_back(npc->faceData->morphs[i]);
             for (std::int32_t p : npc->faceData->parts) n.parts.push_back(p);
         }
 

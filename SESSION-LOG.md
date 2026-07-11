@@ -12,7 +12,9 @@
 
 ## 最新進度
 
-- **採集橋「擷取器」已落地 DLL 端（2026-07-11，DLL `d3e1b5d0`，commit `fe8e803`/`5dec468`/`0676b01`）**：滴管吸「無耐久 base 可引用」的定義 → `capturedItems[]`（附魔武防＋藥水/材料效果）＋`capturedNpcs[]`（TESNPC 外貌/perk/當前 buff/生死旗標；唯一也收）。co-save `'SCCP'` v3。實機待驗見 [wait_todo P9](wait_todo/ingame-tests.md)。
+- **採集橋「擷取器」DLL 端已落地＋實機部分過（2026-07-11，DLL `d3e1b5d0`，commit `fe8e803`/`5dec468`/`0676b01`）**：滴管吸「無耐久 base 可引用」的定義 → `capturedItems[]`（附魔武防＋藥水/材料效果）＋`capturedNpcs[]`（TESNPC 外貌/perk/當前 buff/生死旗標；唯一也收）。co-save `'SCCP'` v3。**實機 #1–#5 過**（DLL 活、物品/NPC 吸取、Export、save→完全重開→load 持久化）。
+  - **OPEN-A（擷取器改成模式制，優先動工）**：使用者實機回饋 `sc cap` 現為一次性 console 指令，應比照 `sc pk`/`sc pl`——`sc cap` 進「擷取模式」→ 準星對目標 → F11（模式動作鍵）吸；`sc cap r` 併成該模式 `er0/er1` 射線切換。改法＝把 Captures 接進 `Modes.cpp`。詳見 [wait_todo P9 OPEN-A](wait_todo/ingame-tests.md)。
+  - **OPEN-B（PROTEUS 關鍵驗，待使用者裝 PROTEUS）**：使用者尚未裝/未熟 PROTEUS，clone 臉是否寫 TESNPC 的關鍵驗下次再測。
   - **OPEN 下一步（ModForge 端消費，尚未動工，設計已定）**：① `capturedItems[]` → macro 展開成既有 spec（weapon/armor 附魔＝Template=base clone＋Enchantment 指新鑄 ENCH 或直接引用 vanilla ENCH 耐久 id；potion/ingredient＝Effects 直填）；新增 `CapturedItemSpec`＋`ModSpec.CapturedItems`＋`ExpandCapturedItems`＋validate＋離線測。② `capturedNpcs[]` 消費**較大**（NpcSpec 目前無 sex/weight/facegen 欄，需擴 schema＋Mutagen 寫 NPC_ 臉子記錄）。
   - **像素級臉/身（RaceMenu/高模頭/BodySlide）＝後面里程碑**：TESNPC 只存「配方」，真臉是 facegeom NIF+facetint DDS（SKEE/NiOverride 雕塑不在 TESNPC）。三路已評估（**推薦 A：烘 NIF+DDS 資產、產物自足**；B：DLL 扒 live 3D；C：讀 SKEE 配方但需玩家端 RaceMenu）——確切 API 待查證。
 
