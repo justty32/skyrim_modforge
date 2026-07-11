@@ -161,12 +161,12 @@ DLL 匯出的 json 形狀（`SceneExporter.cpp:269-316` verbatim，schema 必須
 
 ---
 
-## 開放問題（給使用者/fable）
+## 開放問題（2026-07-11 使用者拍板：全照建議 → 可動工）
 
-- **Q1（分段接受度）**：Phase 1 只寫配方 → 臉可能灰/暗臉直到 Phase 2 烘焙。可以先接受「身份對、身形/髮色對、臉待烘焙」的中間態嗎？（若否，得先把 Phase 2 烘焙一起排，工程大很多。）
-- **Q2（unique 處理）**：captured unique NPC 預設 MINT 分身；要不要提供 override-本尊 路線（改 vanilla 臉、需 RequiresSkyrim、動 vanilla 記錄）？建議先只 MINT。
+- **Q1（分段接受度）**：✅ **接受**——Phase 1 只寫配方，「身份對、身形/髮色對、臉待烘焙（可能灰/暗）」的中間態 OK；Phase 2 烘焙另排。
+- **Q2（unique 處理）**：✅ **只 MINT 分身**——不做 override-本尊路線。
 - **Q3（faceMorph 驗證素材）**：~~需要一次實機鎖定 index↔名 map~~ **已解決（2026-07-11 離線結構比對）**——CommonLibSSE `FaceData::Morphs` 枚舉與 Mutagen `NpcFaceMorph` 具名欄逐一同序（見地形節映射表），並由 T5 的 18-相異值讀回測試鎖死。實機吸 vanilla NPC 對照本尊＝可選抽查，併入 Phase 1 驗收順手做。
-- **Q4（activeEffects/dead）**：確認先不消費（advisory 帶著）。
+- **Q4（activeEffects/dead）**：✅ **先不消費**（advisory 帶著）。
 
 ---
 
