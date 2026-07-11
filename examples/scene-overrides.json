@@ -1,0 +1,10 @@
+{
+  "_comment": "Idea #24 numpad editor — `overrides[]` moves EXISTING placed refs (the sibling of `removals[]`: remove existing / move existing). Each entry re-stamps position/rotation (degrees, full new transform not a delta) on a ref another plugin authored, via GetOrAddAsOverride; the parent cell/worldspace comes along automatically. `scale` omitted = keep the record's original scale; 1.0 = reset to engine default. This example nudges Skulvar's hoe at the Whiterun stables (same guinea-pig ref as the removals demo) 64 units up and spins it flat.",
+  "pluginName": "SceneOverridesExample.esp",
+  "esl": true,
+  "overrides": [
+    { "ref": "Skyrim.esm:0x0D1991",
+      "position": { "x": 19265.9, "y": -12816.5, "z": -4539.0 },
+      "rotation": { "x": 0, "y": 0, "z": 90.0 } }
+  ]
+}

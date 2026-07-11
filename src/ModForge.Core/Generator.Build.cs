@@ -114,7 +114,8 @@ public static partial class Generator
                                                    // start can be wired by the phases that follow.
         ctx.BuildPlacements();                     // world placement (interior/vanilla/exterior cells)
         ctx.BuildMapMarkers();                     // world-map markers (XMRK PlacedObject on MapMarker static)
-        ctx.BuildRemovals();                       // disable+bury EXISTING vanilla placed refs (Idea #24 §E eraser)
+        ctx.BuildOverrides();                      // re-stamp transform on EXISTING placed refs (Idea #24 numpad editor)
+        ctx.BuildRemovals();                       // disable+bury EXISTING vanilla placed refs (Idea #24 §E eraser) — after overrides so a removal wins on overlap
         ctx.WireDeferredForcedAliases();           // forced alias fills whose target (placement/xmarker/mapMarker) built just now
         ctx.WireLinkedRefs();                      // XLKR between placements (patrol routes)
         ctx.WireTeleportDoors();                   // load-door XTEL teleport pairs (player walk-through links)

@@ -147,6 +147,7 @@
       "description": "Explosion (EXPL): the impact AoE a projectile/spell triggers; a magicEffect.explosion or projectile.explosion ref points here"
     },
     "removals": {"type": "array", "items": {"type": "string"}, "description": "Refs \"<master>:0xFORMID\" of EXISTING placed refs to remove (disable + bury) — the in-game eraser feeds this (Generator.Build.Removals.cs)"},
+    "overrides": {"type": "array", "items": {"$ref": "#/$defs/override"}, "description": "Transform overrides of EXISTING placed refs (move/rotate/rescale in place) — the in-game numpad editor feeds this (Generator.Build.Overrides.cs). scale omitted = keep the original record's scale"},
     "npcRoles": {"type": "array", "items": {"$ref": "#/$defs/npcRole"}, "description": "Tag an external NPC with a job role — macro-expands to host quest + conditioned greeting + package (Spec.SceneExport.cs)"},
     "annotations": {"type": "array", "items": {"$ref": "#/$defs/annotation"}, "description": "In-game editor marker anchors (Idea #24 P1) — ADVISORY ONLY: build never creates records from these; a human/AI agent reads label+kind+position to author the next round"},
     "hazards": {
@@ -608,6 +609,7 @@
   "$defs": {
     "npcRole": {"type": "object", "properties": {"npc": {"type": "string"}, "role": {"type": "string"}, "backstory": {"type": "string"}}},
     "annotation": {"type": "object", "properties": {"seq": {"type": "integer"}, "label": {"type": "string"}, "kind": {"type": "string"}, "position": {"$ref": "#/$defs/vec3"}, "angleZ": {"type": "number"}, "cell": {"type": "string"}, "worldspace": {"type": "string"}}},
+    "override": {"type": "object", "required": ["ref", "position", "rotation"], "properties": {"ref": {"type": "string", "description": "\"<master>:0xFORMID\" of the existing placed ref (REFR/ACHR)"}, "position": {"$ref": "#/$defs/vec3"}, "rotation": {"$ref": "#/$defs/vec3", "description": "degrees"}, "scale": {"type": "number", "description": "omitted = keep original scale; 1.0 = reset to engine default (XSCL dropped)"}}},
     "ref": {
       "type": "string",
       "minLength": 1,

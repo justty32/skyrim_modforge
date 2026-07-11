@@ -38,5 +38,24 @@ public static partial class Generator
                     Problems.Add($"removal '{r}': must be a well-formed external \"<master>:0xFORMID\" ref of an existing placed ref");
             }
         }
+
+        // Idea #24 numpad editor — overrides[] re-stamps the transform of an existing placed ref.
+        // Same ref-shape rule as removals, plus: a ref in BOTH lists is a contradiction (move it or
+        // remove it, not both — build lets the removal win, but say so here instead of silently).
+        public void ValidateOverrides()
+        {
+            var removed = new HashSet<string>(spec.Removals, System.StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < spec.Overrides.Count; i++)
+            {
+                var o = spec.Overrides[i];
+                string who = $"override[{i}]" + (string.IsNullOrWhiteSpace(o.Ref) ? "" : $" ('{o.Ref}')");
+                if (string.IsNullOrWhiteSpace(o.Ref))
+                    Problems.Add($"{who}: empty ref");
+                else if (!LooksExternalRef(o.Ref) || !TryExternalRef(o.Ref, out _))
+                    Problems.Add($"{who}: must be a well-formed external \"<master>:0xFORMID\" ref of an existing placed ref");
+                else if (removed.Contains(o.Ref))
+                    Problems.Add($"{who}: also listed in removals[] — contradictory (the removal wins); drop one");
+            }
+        }
     }
 }

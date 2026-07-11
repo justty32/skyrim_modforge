@@ -43,6 +43,7 @@ public sealed class ModSpec
     public List<CellSpec> Cells { get; set; } = new();
     public List<PlacementSpec> Placements { get; set; } = new();
     public List<string> Removals { get; set; } = new(); // refs "<master>:0xFORMID" of EXISTING vanilla placed refs to remove (disable + bury). The in-game eraser spell (Idea #24 §E) feeds this. See Generator.Build.Removals.cs
+    public List<OverrideSpec> Overrides { get; set; } = new(); // transform overrides of EXISTING placed refs (move/rotate/rescale in place). The in-game numpad editor feeds this. See Spec.Overrides.cs / Generator.Build.Overrides.cs
     public List<AnnotationSpec> Annotations { get; set; } = new(); // in-game editor marker anchors (Idea #24 P1; Spec.Annotations.cs) — ADVISORY ONLY, build never turns these into records; a human/agent reads them to author the next round
     public List<MapMarkerSpec> MapMarkers { get; set; } = new();   // world-map markers (XMRK on MapMarker static)
     public List<LeveledItemSpec> LeveledItems { get; set; } = new();
