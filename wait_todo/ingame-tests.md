@@ -60,4 +60,16 @@
 F11 準星放置（pitch 對）、F8 擦除/undo、F6/F7 滴管（含姿態）、numpad 編輯（5/3/0/. 實證，無未映射 numpad）、物理凍結→commit→沉降、F10→build→esp 閉環（removals 深埋＋placements＋annotations）、**patch 實機生效**（擦的長凳消失、擺的長凳＋沉降法杖出現）、遊戲內 save/load 後 disable 狀態與 marker 都持久。明細見 [landed/world.md](../workflows/feature-dev/landed/world.md)。**殘項（open，順手驗即可）**：
 
 - **跨行程 adopt**：遊戲內讀檔登記簿還在 RAM，沒考到 adopt——**完全關遊戲重開**再讀檔（面板應空）→ Markers 頁 `adopt this cell` 應連名字撿回 marker；Eraser 頁 `scan disabled refs` → 逐筆 adopt 撿回擦除。
-- **零星未實證小項**：① 擦 mod 物件時 Eraser 列橘色「patch will depend on X.esp」警告；② F8 對自家 marker 按 → 連 Markers 頁登記一起無痕消失；③ 對 vanilla 物件按 numpad 5 → 拒絕並 log「awaits the overrides[] contract」。
+- **零星未實證小項**：① 擦 mod 物件時 Eraser 列橘色「patch will depend on X.esp」警告；② F8 對自家 marker 按 → 連 Markers 頁登記一起無痕消失。
+
+## scene-capture-bridge P4 overrides[]——移動 authored ref（2026-07-11 離線齊備，新 DLL 已部署）
+
+契約拍板 B 案並全鏈落地（ModForge 881 測綠＋DLL 編譯部署）。驗收：
+
+1. **選中 vanilla 物件**：準星指一張 vanilla 椅子按 **numpad 5** → 不再被拒絕，log `editing AUTHORED ref`；havok 雜物（杯/書）照樣 `physics frozen`。
+2. **編輯＋commit**：numpad 推走＋轉 → **0** commit → log `Overrides: registered Skyrim.esm:0x...`；F1 → Editor 頁下方列出該筆（mod 物件應帶橘色 addsMaster 警告）。
+3. **revert**：面板按 `revert` → 椅子回到編輯前位置、列表清掉。再編輯一次（後面要用）。
+4. **重複編輯**：同一張椅子再 numpad 5 → 微調 → 0 → log `updated (baseline kept)`，列表仍一筆；revert 應回**最初**位置（不是中間 commit 點）。
+5. **cancel 不登記**：選另一個 vanilla 物件 → 推走 → **`.`** cancel → 物件彈回、Editor 頁列表**不**新增。
+6. **匯出閉環**：F10 → json 有頂層 `overrides[]`（ref/position/rotation/scale）→ 交給 agent `build` → 裝 patch → 那張椅子在**新位置**（記得同存檔測時 runtime 移動也在存檔裡——用舊存檔或新遊戲看最乾淨）。
+7. **順手**：對移過的椅子再按 F8 擦 → validate 應警告 removals×overrides 矛盾（agent build 時看得到；removal 贏）。

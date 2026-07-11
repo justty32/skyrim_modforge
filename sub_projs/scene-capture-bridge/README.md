@@ -27,7 +27,8 @@
 | `Aim.{h,cpp}` | 共用視角射線（`bhkPickData`＋`PickObject`；Markers/Palette 同用；pitch 符號實機驗過）|
 | `Eraser.{h,cpp}` | **F8** 橡皮擦：authored→disable＋登記→`removals[]`；自己的 dynamic→真刪除無痕；`scan disabled refs` 明示 adopt |
 | `Palette.{h,cpp}` | **F6** 滴管吸 base＋姿態進具名插槽、**F7** 擺在準星處（runtime-only base 拒收）|
-| `Editor.{h,cpp}` | **numpad 5** 選中自己擺的 ref → numpad 微調（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、. cancel）；havok-movable 類型編輯期物理凍結；authored ref 拒絕（等 overrides[] 契約）|
+| `Editor.{h,cpp}` | **numpad 5** 選中準星目標 → numpad 微調（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、. cancel）；havok-movable 類型編輯期物理凍結；自己的 ref＝live pose 直接匯出，**authored ref＝commit 時登記進 Overrides**（2026-07-11 契約拍板）|
+| `Overrides.{h,cpp}` | authored ref 被編輯 commit 後的登記簿（比照 Eraser：明示、不 diff——havok 噪音）→ 匯出頂層 `overrides[]`（ref/position/rotation°/scale；actor 不帶 scale）；Editor 面板頁逐筆/全部 revert 回 baseline |
 | `PCH.h` / `log.h` | CommonLibSSE PCH（含 nlohmann）＋ spdlog file logger |
 
 ## 尚未做（依 spec 里程碑）
@@ -64,6 +65,7 @@ DLL 有兩層狀態，跨存檔/跨 session 行為不一樣：
 | 真刪除的自家物件 | ✅ disabled 動態 ref | 自動跳過（無痕），免 adopt |
 | marker 位置＋名字 | ✅ proxy＋顯示名 | 物件照樣被排除在 `placements[]` 外（認 base），但 `annotations[]` 來自登記簿 → 要 Markers 頁 `adopt this cell`（`Markers::AdoptOrphans()`，連名字撿回）|
 | 擦除 vanilla/mod 物件 | ✅ disabled 狀態 | diff 分不清是你擦的還是任務腳本 disable 的 → 要 Eraser 頁 `scan disabled refs in this cell` 逐筆 `adopt`（刻意不自動全收，只提案不推論）才進 `removals[]` |
+| 移動 vanilla/mod 物件（numpad 編輯 authored ref） | ✅ 新 pose 在存檔 | diff 分不清是你移的還是 havok 滾的 → **不會自動重登記**；重新編輯一次（numpad 5 → 微調 → 0 commit）即回 `overrides[]`（MVP 接受的限制） |
 
 一句話：**存檔記得你做過什麼，adopt 讓重開後的 DLL 重新知道「哪些是你的意圖」**。若工作流是做完馬上 F10 匯出，adopt 用不到；它服務跨 session 累積編輯（先擺/先擦，隔幾天回來接著改，再匯出）。
 
