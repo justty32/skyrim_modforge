@@ -103,6 +103,17 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg) {
     case SKSE::MessagingInterface::kPostLoadGame:
         // A load wipes pre-load dynamic refs; drop registry ghosts.
         Markers::PruneDeadProxies();
+        // Marker proxies are dynamic refs — their FormIDs aren't reliably
+        // remapped across a full restart, so the co-save drops them. The gems
+        // DO persist in the savegame, so re-adopt them from the current cell
+        // (deferred one frame so the cell's refs have settled) and merge back
+        // any pending notes. No more manual "adopt this cell" for the common case.
+        if (auto* task = SKSE::GetTaskInterface()) {
+            task->AddTask([]() {
+                if (auto n = Markers::AdoptOrphans())
+                    SKSE::log::info("Markers: auto-adopted {} orphan(s) on load", n);
+            });
+        }
         break;
     default:
         break;

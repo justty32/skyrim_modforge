@@ -30,9 +30,11 @@ namespace {
     constexpr std::uint32_t kScaleUp = 0x4E;  // numpad +
     constexpr std::uint32_t kScaleDn = 0x4A;  // numpad -
 
-    constexpr float kMoveStep = 5.f;     // units per tap
-    constexpr float kYawStep = 5.f;      // degrees per tap
-    constexpr float kScaleStep = 0.02f;
+    // Editing step sizes — player-adjustable in the Settings page, persisted
+    // in the co-save (SETT v2). Defaults match the original constants.
+    float g_moveStep = 5.f;      // units per tap
+    float g_yawStep = 5.f;       // degrees per tap
+    float g_scaleStep = 0.02f;   // scale factor per tap
 
     // Only these base types get the physics freeze: they are the naturally
     // havok-Dynamic clutter (cups, books, weapons on tables). Restoring a
@@ -155,36 +157,47 @@ namespace Editor {
         const RE::NiPoint3 right{std::cos(yaw), -std::sin(yaw), 0.f};
 
         switch (code) {
-        case kSelect:     // re-select something else: commit current first
-        case kSelectRay:
-        case kCommit:
+        case kSelect:  // numpad 5 — revert to the pre-edit pose, KEEP editing
+            Apply(ref.get(), g.origPos, g.origAngle);
+            if (!g.isActor) { ref->SetScale(g.origScale); ref->Update3DPosition(true); }
+            SKSE::log::info("Editor: reset to pre-edit pose (still editing)");
+            RE::DebugNotification("SCB: reset to pre-edit pose");
+            return true;
+        case kSelectRay:  // numpad * — commit, then ray-select the next target
+        case kCommit:     // numpad 0 — commit and exit
             SKSE::log::info("Editor: committed at ({:.1f}, {:.1f}, {:.1f})",
                 pos.x, pos.y, pos.z);
             // An authored ref's committed edit becomes an overrides[] entry
-            // (a dynamic ref needs nothing — its live pose exports as-is).
-            if (!g.authoredId.empty())
+            // (a dynamic ref needs nothing — its live pose exports as-is, so
+            // it correctly does NOT show up in the Editor page's override list).
+            if (!g.authoredId.empty()) {
                 Overrides::Register(g.authoredId, ref.get(),
                     g.origPos, g.origAngle, g.origScale);
+                RE::DebugNotification("SCB: edit committed (overrides[])");
+            } else {
+                RE::DebugNotification("SCB: edit committed (your ref exports as-is)");
+            }
             ReleasePhysics();
             g = {};
             if (code != kCommit) TrySelect(code == kSelectRay);
             return true;
         case kCancel:
+            RE::DebugNotification("SCB: edit cancelled");
             Cancel();
             return true;
-        case kFwd:     Apply(ref.get(), pos + fwd * kMoveStep, angle); return true;
-        case kBack:    Apply(ref.get(), pos - fwd * kMoveStep, angle); return true;
-        case kLeft:    Apply(ref.get(), pos - right * kMoveStep, angle); return true;
-        case kRight:   Apply(ref.get(), pos + right * kMoveStep, angle); return true;
-        case kUp:      pos.z += kMoveStep; Apply(ref.get(), pos, angle); return true;
-        case kDown:    pos.z -= kMoveStep; Apply(ref.get(), pos, angle); return true;
-        case kYawPos:  angle.z += kYawStep * kDegToRad; Apply(ref.get(), pos, angle); return true;
-        case kYawNeg:  angle.z -= kYawStep * kDegToRad; Apply(ref.get(), pos, angle); return true;
+        case kFwd:     Apply(ref.get(), pos + fwd * g_moveStep, angle); return true;
+        case kBack:    Apply(ref.get(), pos - fwd * g_moveStep, angle); return true;
+        case kLeft:    Apply(ref.get(), pos - right * g_moveStep, angle); return true;
+        case kRight:   Apply(ref.get(), pos + right * g_moveStep, angle); return true;
+        case kUp:      pos.z += g_moveStep; Apply(ref.get(), pos, angle); return true;
+        case kDown:    pos.z -= g_moveStep; Apply(ref.get(), pos, angle); return true;
+        case kYawPos:  angle.z += g_yawStep * kDegToRad; Apply(ref.get(), pos, angle); return true;
+        case kYawNeg:  angle.z -= g_yawStep * kDegToRad; Apply(ref.get(), pos, angle); return true;
         case kScaleUp:
-            if (!g.isActor) { ref->SetScale(ref->GetScale() + kScaleStep); ref->Update3DPosition(true); }
+            if (!g.isActor) { ref->SetScale(ref->GetScale() + g_scaleStep); ref->Update3DPosition(true); }
             return true;
         case kScaleDn:
-            if (!g.isActor) { ref->SetScale(ref->GetScale() - kScaleStep); ref->Update3DPosition(true); }
+            if (!g.isActor) { ref->SetScale(ref->GetScale() - g_scaleStep); ref->Update3DPosition(true); }
             return true;
         default:
             // Self-diagnosis for numpad DIK constants only. Movement keys
@@ -218,6 +231,13 @@ namespace Editor {
         ReleasePhysics();
         g = {};
     }
+
+    float MoveStep() { return g_moveStep; }
+    float YawStep() { return g_yawStep; }
+    float ScaleStep() { return g_scaleStep; }
+    void SetMoveStep(float v) { if (v > 0.f) g_moveStep = v; }
+    void SetYawStep(float v) { if (v > 0.f) g_yawStep = v; }
+    void SetScaleStep(float v) { if (v > 0.f) g_scaleStep = v; }
 
     Status Current() {
         Status s;

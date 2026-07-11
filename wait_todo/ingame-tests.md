@@ -56,8 +56,8 @@
 
 F11 準星放置（pitch 對）、F8 擦除/undo、F6/F7 滴管（含姿態）、numpad 編輯（5/3/0/. 實證，無未映射 numpad）、物理凍結→commit→沉降、F10→build→esp 閉環（removals 深埋＋placements＋annotations）、**patch 實機生效**（擦的長凳消失、擺的長凳＋沉降法杖出現）、遊戲內 save/load 後 disable 狀態與 marker 都持久。明細見 [landed/world.md](../workflows/feature-dev/landed/world.md)。**殘項（open，順手驗即可）**：
 
-- **跨行程 adopt**：遊戲內讀檔登記簿還在 RAM，沒考到 adopt——**完全關遊戲重開**再讀檔（面板應空）→ Markers 頁 `adopt this cell` 應連名字撿回 marker；Eraser 頁 `scan disabled refs` → 逐筆 adopt 撿回擦除。
-- **零星未實證小項**：① 擦 mod 物件時 Eraser 列橘色「patch will depend on X.esp」警告；② F8 對自家 marker 按 → 連 Markers 頁登記一起無痕消失。
+- **零星未實證小項**：① 擦 mod 物件時 Eraser 列橘色「adds a master」警告；② `sc del` 對自家 marker 按 → 連 Markers 頁登記一起無痕消失。
+  - （跨行程 adopt 已升級：Eraser 的 `scan disabled refs` 已移除〔co-save 冗餘〕；marker 讀檔改**自動 adopt**——見 P6 批。）
 
 > **⚠️ P5 鍵位遷移（2026-07-11）**：最新 DLL 已改模式制——下面兩批（P4/QoL）寫的舊鍵這樣換算：**F11→`sc mk` 後按動作鍵（預設 F11）；F8→`sc del`＋動作鍵；F6→`sc pk`＋動作鍵；F7→`sc pl`＋動作鍵；numpad 5→`sc ed`＋動作鍵；F10→F1 面板 Export 鈕**。numpad 編輯內部鍵與 numpad * 射線不變。P1–P3 殘項的 adopt 語意也已升級（co-save，見 P5 批①⑤）。
 
@@ -91,3 +91,24 @@ F11 準星放置（pitch 對）、F8 擦除/undo、F6/F7 滴管（含姿態）�
 3. **rebind**：F1 → Settings → 挑一個模式按 `rebind` → 按新鍵（如 F12）→ 該模式動作鍵變新鍵；其他模式仍 F11（重複允許，一次只有一個模式活著）。
 4. **`sc mk dp0` / `dp1`**：放幾個 marker → `dp0` 光球全隱形（面板列表與匯出**不受影響**，F10…面板 Export 出來 annotations 照在）→ `dp1` 顯回。
 5. **co-save**：改鍵位＋放 marker＋擦個東西＋移個 vanilla 物件 → 存檔 → **完全關遊戲重開** → 讀檔 → Settings 鍵位還原、Markers（含 note）/Eraser/Overrides 三本登記簿自動回來（不用 adopt）→ 面板 Export，annotations/removals/overrides 全在。讀一個**沒玩過的舊存檔** → 登記簿應是乾淨的（revert 清空）。
+
+## scene-capture-bridge P6 實機 polish 一輪（2026-07-11 晚，使用者第一輪實測後需求；DLL `ec88c2b2` 已部署，esp 不動）
+
+⚠️ **完全關遊戲重開**吃新 DLL。co-save 格式升版（SETT v2 / ERSR v2）——**舊存檔的 Eraser/Overrides 登記簿會被跳過一次**（marker 靠自動 adopt 撿回），建議開新存檔或接受這次清空。
+
+1. **靈魂石不再被踢走（#2 修）**：`sc mk` 放 marker → 用腳踢、跑過去撞 → **不動**（延後凍結：3D 載入後才凍，log 應無「不凍」跡象）。
+2. **讀檔自動撿回 marker（#10 修）**：放幾個 marker（含 E 寫 note）→ 存檔 → **完全關遊戲重開讀檔** → **不用**手動 adopt，marker 應自動回來（log `auto-adopted N orphan(s) on load`），且 **note 也在**（座標配對貼回）。同 cell 的才會自動撿；別的 cell 走過去仍靠 Markers 頁 `adopt this cell`。
+3. **numpad 5 = 復原續編（#6a 修）**：`sc ed` 選中 → 推走轉大 → **numpad 5** → 彈回編輯前姿態但**仍在編輯**（可繼續推）；螢幕跳「reset to pre-edit pose」。numpad 0 commit / `.` cancel 各跳提示（自己的 dynamic ref commit 跳「exports as-is」——**不進 overrides 列是正常的**，#6b）。
+4. **匯出三計數（#9）**：Export 頁應分列 **added / modified / removed**（placements / overrides / removals），另有玩家 **XYZ** 與 **World** 名稱（Winterhold 應顯示 worldspace 名）。
+5. **Eraser 頁強化**：每列 `undo` 鈕（逐列復原）＋顯示**名稱＋原座標**；勾 `this cell only` 時上方 `undo` 只退**本 cell** 最後一筆。`scan disabled refs` 鈕**已移除**（確認不見）。
+6. **Editor overrides 列**：每列顯示名稱＋新座標（比照 eraser）。
+7. **Palette 頁**：最後吸取的排**最上**；名稱欄可自由改名（Bed→GoodBed，Enter 存）且**加寬**。
+8. **Settings 頁**：`rebind` 功能**已隱藏**（顯示「Action key: F11 for every mode」）；新增 **edit step sizes** 三欄（move/yaw/scale 步長）可調 → 調完進 `sc ed` 實測步幅變化 → 存檔重開應保留（SETT v2）。
+
+### 之後再做（已規劃，未實作——本輪只記錄）
+- `sc del er0/er1`（刪除模式準星↔射線切換）＋編輯模式同理的 console 切換（取代 numpad * 專用鍵的需求）。
+- `sc delc`：刪除 console 滑鼠點選的 ref（先只做物件）。
+- numpad 旋轉多軸（7/9 現只 yaw）。
+- 編輯模式指向靈魂石 marker 時，numpad 0 套用到該 marker 位置（不進 overrides）。
+- marker 編輯視窗加下拉：寶石種類選擇 ＋ 發光開關。
+- palette「load from file」鈕＋文字框（讀指定資料夾的指定檔）。

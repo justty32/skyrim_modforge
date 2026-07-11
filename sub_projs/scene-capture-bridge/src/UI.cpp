@@ -58,6 +58,24 @@ void __stdcall UI::Export::Render() {
     UI::ModeLine();
     const auto label = CurrentCellLabel();
     ImGuiMCP::Text("Cell: %s", label.c_str());
+
+    // Human-readable location + the player's world coords, so the exported
+    // anchor can be sanity-checked against where you're actually standing.
+    if (auto* player = RE::PlayerCharacter::GetSingleton()) {
+        RE::TESObjectCELL* cell = player->GetParentCell();
+        if (cell && !cell->IsInteriorCell()) {
+            if (auto* ws = cell->GetRuntimeData().worldSpace) {
+                const char* wn = ws->GetFullName();
+                if (!wn || !*wn) wn = ws->GetFormEditorID();
+                ImGuiMCP::Text("World: %s", (wn && *wn) ? wn : "(unnamed)");
+            }
+        } else if (cell) {
+            const char* cn = cell->GetFullName();
+            if (cn && *cn) ImGuiMCP::Text("Cell name: %s", cn);
+        }
+        const auto p = player->GetPosition();
+        ImGuiMCP::Text("Player XYZ: (%.1f, %.1f, %.1f)", p.x, p.y, p.z);
+    }
     ImGuiMCP::Separator();
 
     // Export deliberately has no hotkey (user-decided): this button is it.
@@ -74,7 +92,10 @@ void __stdcall UI::Export::Render() {
     }
 
     ImGuiMCP::Text("Last export — %s", s.cell.c_str());
-    ImGuiMCP::BulletText("%zu placements (%zu actors)", s.placements, s.actors);
+    // Added / modified / removed each count independently (user-requested).
+    ImGuiMCP::BulletText("%zu added (placements, %zu actors)", s.placements, s.actors);
+    ImGuiMCP::BulletText("%zu modified (overrides[])", s.overrides);
+    ImGuiMCP::BulletText("%zu removed (removals[])", s.removals);
     // The number that proves the vanilla diff: authored refs are recognised and
     // skipped, so `build` does not re-place the whole room on top of itself.
     ImGuiMCP::BulletText("%zu pre-existing (skipped)", s.preexisting);
@@ -96,9 +117,14 @@ void __stdcall UI::EraserPage::Render() {
     static bool thisCellOnly = false;
 
     auto& marked = ::Eraser::All();
+    const std::string here = SceneExporter::AnchorOf(nullptr).id;
+
     ImGuiMCP::Text("%zu marked for removal. In delete mode (sc del) the action "
                    "key erases the crosshair target.", marked.size());
-    if (ImGuiMCP::Button("undo")) { ::Eraser::Undo(); }
+    // With "this cell only" on, undo pops the last mark made in THIS cell.
+    if (ImGuiMCP::Button("undo")) {
+        if (thisCellOnly) ::Eraser::UndoInCell(here); else ::Eraser::Undo();
+    }
     ImGuiMCP::SameLine();
     if (ImGuiMCP::Button("clear (re-enable all)")) { ::Eraser::Clear(); }
     ImGuiMCP::SameLine();
@@ -108,44 +134,22 @@ void __stdcall UI::EraserPage::Render() {
     ImGuiMCP::Checkbox("this cell only", &thisCellOnly);
     ImGuiMCP::Separator();
 
-    const std::string here = thisCellOnly ? SceneExporter::AnchorOf(nullptr).id : "";
-    for (const auto& e : marked) {
+    // Each row: [undo] id  name  (x, y, z). Newest first, matching undo order.
+    std::string undoId;
+    for (auto it = marked.rbegin(); it != marked.rend(); ++it) {
+        const auto& e = *it;
         if (thisCellOnly && e.cellOrWs != here) continue;
-        if (e.addsMaster) {
-            ImGuiMCP::TextColored(kWarn, "%s", e.id.c_str());
-            ImGuiMCP::SameLine();
-            ImGuiMCP::TextColored(kWarn, "-- patch will depend on %s", e.plugin.c_str());
-        } else {
-            ImGuiMCP::Text("%s", e.id.c_str());
-        }
-    }
-
-    ImGuiMCP::Separator();
-    // Explicit adoption, never inference: the scan only PROPOSES; each row is
-    // confirmed by hand, so quest-disabled clutter can't sneak in.
-    if (ImGuiMCP::Button("scan disabled refs in this cell")) {
-        ::Eraser::ScanDisabled();
-    }
-    auto& cands = ::Eraser::Candidates();
-    if (!cands.empty()) {
+        ImGuiMCP::PushID(e.id.c_str());
+        if (ImGuiMCP::Button("undo")) undoId = e.id;
         ImGuiMCP::SameLine();
-        if (ImGuiMCP::Button("dismiss")) { ::Eraser::DismissCandidates(); }
-        ImGuiMCP::TextWrapped(
-            "%zu disabled candidate(s) — runtime-disabled, record not "
-            "InitiallyDisabled. Adopt only what YOU erased; quest-hidden "
-            "clutter looks identical.", cands.size());
-        std::size_t adopt = SIZE_MAX;
-        for (std::size_t i = 0; i < cands.size(); ++i) {
-            const auto& c = cands[i];
-            ImGuiMCP::PushID(reinterpret_cast<const void*>(static_cast<std::uintptr_t>(i + 1)));
-            if (ImGuiMCP::Button("adopt")) adopt = i;
-            ImGuiMCP::SameLine();
-            if (c.addsMaster) ImGuiMCP::TextColored(kWarn, "%s  %s", c.id.c_str(), c.name.c_str());
-            else              ImGuiMCP::Text("%s  %s", c.id.c_str(), c.name.c_str());
-            ImGuiMCP::PopID();
-        }
-        if (adopt != SIZE_MAX) ::Eraser::AdoptCandidate(adopt);
+        const auto& col = e.addsMaster ? kWarn : ImGuiMCP::ImVec4{1.f, 1.f, 1.f, 1.f};
+        ImGuiMCP::TextColored(col, "%s  %s  (%.0f, %.0f, %.0f)%s",
+            e.id.c_str(), e.name.empty() ? "" : e.name.c_str(),
+            e.position.x, e.position.y, e.position.z,
+            e.addsMaster ? "  -- adds a master" : "");
+        ImGuiMCP::PopID();
     }
+    if (!undoId.empty()) ::Eraser::UndoEntry(undoId);
 }
 
 namespace {
@@ -165,7 +169,9 @@ void __stdcall UI::PalettePage::Render() {
     ImGuiMCP::Separator();
 
     std::size_t removeIdx = SIZE_MAX;
-    for (std::size_t i = 0; i < slots.size(); ++i) {
+    // Newest first — the slot you just eyedropped is the one you want to name.
+    for (std::size_t n = 0; n < slots.size(); ++n) {
+        const std::size_t i = slots.size() - 1 - n;
         auto& s = slots[i];
         ImGuiMCP::PushID(reinterpret_cast<const void*>(static_cast<std::uintptr_t>(i + 1)));
 
@@ -173,9 +179,10 @@ void __stdcall UI::PalettePage::Render() {
         if (ImGuiMCP::Button(selected ? "[use]" : " use ")) ::Palette::Select(i);
         ImGuiMCP::SameLine();
 
+        // The name is freely editable (Bed -> GoodBed); Enter commits + saves.
         auto [it, inserted] = g_slotBufs.try_emplace(i);
         if (inserted) std::snprintf(it->second.data(), it->second.size(), "%s", s.name.c_str());
-        ImGuiMCP::SetNextItemWidth(160.f);
+        ImGuiMCP::SetNextItemWidth(260.f);
         if (ImGuiMCP::InputText("##slotname", it->second.data(), it->second.size(),
                 ImGuiMCP::ImGuiInputTextFlags_EnterReturnsTrue)) {
             ::Palette::Rename(i, it->second.data());
@@ -238,12 +245,11 @@ void __stdcall UI::EditorPage::Render() {
         ImGuiMCP::PushID(reinterpret_cast<const void*>(static_cast<std::uintptr_t>(i + 1)));
         if (ImGuiMCP::Button("revert")) revert = i;
         ImGuiMCP::SameLine();
-        if (e.addsMaster) {
-            ImGuiMCP::TextColored(kWarn, "%s  %s -- patch will depend on %s",
-                e.id.c_str(), e.name.c_str(), e.plugin.c_str());
-        } else {
-            ImGuiMCP::Text("%s  %s", e.id.c_str(), e.name.c_str());
-        }
+        const auto& col = e.addsMaster ? kWarn : ImGuiMCP::ImVec4{1.f, 1.f, 1.f, 1.f};
+        ImGuiMCP::TextColored(col, "%s  %s  (%.0f, %.0f, %.0f)%s",
+            e.id.c_str(), e.name.empty() ? "" : e.name.c_str(),
+            e.pos.x, e.pos.y, e.pos.z,
+            e.addsMaster ? "  -- adds a master" : "");
         ImGuiMCP::PopID();
     }
     if (revert != SIZE_MAX) ::Overrides::Revert(revert);

@@ -14,6 +14,40 @@ namespace {
     std::uint32_t g_nextSeq = 1;
     bool g_display = true;  // sc mk dp0/dp1 — persists via co-save
 
+    // Marker data that came back from the co-save but whose proxy FormID no
+    // longer resolves (dynamic refs are not reliably remapped across a full
+    // restart). The physical gem DID persist in the savegame, so an adopt scan
+    // re-finds it; we hold the note/kind/label here and merge them back by a
+    // position match, so a restart no longer silently drops the note.
+    struct PendingOrphan {
+        RE::NiPoint3 position;
+        std::string label, kind, note;
+        float angleZDeg = 0.f;
+    };
+    std::vector<PendingOrphan> g_pending;
+
+    // Freeze the gem's clutter havok so it can't be kicked or fall. The catch:
+    // right after PlaceObjectAtMe the 3D (hence the rigid body) is not loaded,
+    // so an immediate SetMotionType silently no-ops (log: "Target does not have
+    // 3D"). Retry on the SKSE task queue until Get3D() is live — one frame is
+    // usually enough, cap the retries so a never-loading proxy can't spin.
+    void FreezeDeferred(RE::ObjectRefHandle h, int retries) {
+        auto* task = SKSE::GetTaskInterface();
+        if (!task) {  // no queue (very early) — best-effort immediate
+            if (auto r = h.get()) r->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
+            return;
+        }
+        task->AddTask([h, retries]() {
+            auto ref = h.get();
+            if (!ref) return;
+            if (ref->Get3D()) {
+                ref->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
+                return;
+            }
+            if (retries > 0) FreezeDeferred(h, retries - 1);
+        });
+    }
+
     // The visible proxy base. Preferred: the tooling esp's MarkerACTI — model
     // is now Clutter\SoulGem\SoulGemGrand01.nif (glowing gem; read from
     // Skyrim.esm STAT 10D18B via houseCARL, collision + glow controllers
@@ -65,10 +99,10 @@ namespace Markers {
             return false;
         }
         proxy->SetPosition(pos);
-        // The gem model has clutter havok — freeze it or it falls. Best-effort:
-        // if the 3D is not loaded yet this fails silently and the gem settles
-        // on the ground; harmless, the EXPORTED position is fixed right here.
-        proxy->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
+        // The gem model has clutter havok — freeze it or it falls / gets kicked.
+        // The 3D is not loaded yet here, so freeze on the task queue once it is
+        // (the EXPORTED position is fixed right now regardless).
+        FreezeDeferred(proxy->GetHandle(), 60);
 
         Entry e;
         e.seq = g_nextSeq++;
@@ -122,8 +156,22 @@ namespace Markers {
         e.cellOrWs = a.id;
         e.isInterior = a.interior;
         e.proxy = ref->GetHandle();
+        // Merge back a co-save record whose proxy FormID didn't resolve: match
+        // by position (gems are static) so the note/kind survive a restart.
+        for (auto it = g_pending.begin(); it != g_pending.end(); ++it) {
+            const auto d = it->position - e.position;
+            if (d.x * d.x + d.y * d.y + d.z * d.z <= 16.f * 16.f) {
+                if (!it->label.empty()) e.label = it->label;
+                e.kind = it->kind;
+                e.note = it->note;
+                if (auto proxy = ref->GetHandle().get())
+                    proxy->SetDisplayName(e.label.c_str(), true);
+                g_pending.erase(it);
+                break;
+            }
+        }
         // Re-created from the save with its nif's clutter havok — freeze again.
-        ref->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
+        FreezeDeferred(ref->GetHandle(), 60);
         SKSE::log::info("Markers: adopted '{}' at ({:.1f}, {:.1f}, {:.1f})",
             e.label, e.position.x, e.position.y, e.position.z);
         const auto seq = e.seq;
@@ -212,8 +260,7 @@ namespace Markers {
         // Survivors were re-created from the save with live clutter havok —
         // re-freeze so the gems don't drop after every load.
         for (auto& e : g_entries)
-            if (auto proxy = e.proxy.get())
-                proxy->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
+            FreezeDeferred(e.proxy, 60);
     }
 
     void SetProxiesVisible(bool visible) {
@@ -230,12 +277,18 @@ namespace Markers {
         if (visible) {
             // Enable re-spawns the 3D with live clutter havok — re-freeze.
             for (auto& e : g_entries)
-                if (auto proxy = e.proxy.get())
-                    proxy->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
+                FreezeDeferred(e.proxy, 60);
         }
     }
 
     bool ProxiesVisible() { return g_display; }
+
+    void AddPendingOrphan(const RE::NiPoint3& position, const std::string& label,
+        const std::string& kind, const std::string& note, float angleZDeg) {
+        g_pending.push_back({position, label, kind, note, angleZDeg});
+    }
+
+    void ClearPending() { g_pending.clear(); }
 
     void OnRegistryRestored() {
         std::uint32_t maxSeq = 0;

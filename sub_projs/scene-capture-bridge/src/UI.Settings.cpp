@@ -3,6 +3,7 @@
 
 #include "UI.h"
 
+#include "Editor.h"
 #include "Markers.h"
 #include "Modes.h"
 
@@ -34,21 +35,25 @@ void __stdcall UI::SettingsPage::Render() {
         "marker gems.");
     ImGuiMCP::Separator();
 
-    // --- per-mode action keys (duplicates allowed — one active mode) ---
-    ImGuiMCP::Text("Action keys (stored in the savegame):");
-    for (auto m : kActionModes) {
-        ImGuiMCP::PushID(static_cast<int>(m));
-        ImGuiMCP::Text("%-6s", Modes::Name(m));
-        ImGuiMCP::SameLine();
-        ImGuiMCP::Text("%s", Modes::KeyName(Modes::Bind(m)));
-        ImGuiMCP::SameLine();
-        if (Modes::RebindArmed() && Modes::RebindTarget() == m) {
-            ImGuiMCP::Text("... press a key (Esc cancels)");
-        } else if (ImGuiMCP::Button("rebind")) {
-            Modes::BeginRebind(m);
-        }
-        ImGuiMCP::PopID();
-    }
+    // --- per-mode action key: fixed at F11 for now ---
+    // Rebinding is temporarily hidden — the capture flow grabbed the wrong keys
+    // in-game (e.g. movement W). The action key stays F11 for every mode until
+    // it's reworked. (Modes::BeginRebind still exists, just not surfaced here.)
+    ImGuiMCP::TextWrapped("Action key: F11 for every mode (rebinding disabled "
+                          "pending a fix).");
+    ImGuiMCP::Separator();
+
+    // --- edit-mode step sizes (persist in the co-save SETT v2) ---
+    ImGuiMCP::Text("Edit step sizes:");
+    float mv = Editor::MoveStep();
+    if (ImGuiMCP::InputFloat("move (units/tap)", &mv, 1.f, 10.f, "%.1f"))
+        Editor::SetMoveStep(mv);
+    float yaw = Editor::YawStep();
+    if (ImGuiMCP::InputFloat("yaw (deg/tap)", &yaw, 1.f, 15.f, "%.1f"))
+        Editor::SetYawStep(yaw);
+    float sc = Editor::ScaleStep();
+    if (ImGuiMCP::InputFloat("scale (per tap)", &sc, 0.01f, 0.1f, "%.3f"))
+        Editor::SetScaleStep(sc);
     ImGuiMCP::Separator();
 
     // --- marker gem visibility (mirrors sc mk dp0/dp1) ---

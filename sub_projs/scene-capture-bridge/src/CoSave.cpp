@@ -1,5 +1,6 @@
 #include "CoSave.h"
 
+#include "Editor.h"
 #include "Eraser.h"
 #include "Markers.h"
 #include "Modes.h"
@@ -10,11 +11,16 @@
 
 namespace {
     constexpr std::uint32_t kUID = 'SCBR';
-    constexpr std::uint32_t kVersion = 1;
     constexpr std::uint32_t kSett = 'SETT';
     constexpr std::uint32_t kMkrs = 'MKRS';
     constexpr std::uint32_t kErsr = 'ERSR';
     constexpr std::uint32_t kOvrd = 'OVRD';
+
+    // Per-record versions (an older save's record is read with its own layout).
+    constexpr std::uint32_t kVerSett = 2;  // v2 adds editor step sizes
+    constexpr std::uint32_t kVerMkrs = 1;
+    constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
+    constexpr std::uint32_t kVerOvrd = 1;
 
     // ---- primitives -------------------------------------------------------
 
@@ -60,9 +66,12 @@ namespace {
         for (auto m : {Modes::Mode::kMarker, Modes::Mode::kDelete, Modes::Mode::kPick,
                  Modes::Mode::kPlace, Modes::Mode::kEdit})
             si->WriteRecordData(Modes::Bind(m));
+        si->WriteRecordData(Editor::MoveStep());   // v2
+        si->WriteRecordData(Editor::YawStep());    // v2
+        si->WriteRecordData(Editor::ScaleStep());  // v2
     }
 
-    void LoadSettings(const SKSE::SerializationInterface* si) {
+    void LoadSettings(const SKSE::SerializationInterface* si, std::uint32_t version) {
         std::uint8_t mode = 0, display = 1;
         si->ReadRecordData(mode);
         si->ReadRecordData(display);
@@ -70,7 +79,18 @@ namespace {
                  Modes::Mode::kPlace, Modes::Mode::kEdit}) {
             std::uint32_t bind = 0;
             si->ReadRecordData(bind);
-            if (bind) Modes::SetBind(m, bind);
+            // Keybind rebinding is hidden pending a fix — read the byte to keep
+            // the stream aligned, but ignore it so binds stay at the F11
+            // default (a stored bad bind from the buggy UI can't stick).
+        }
+        if (version >= 2) {
+            float mv = 0.f, yaw = 0.f, sc = 0.f;
+            si->ReadRecordData(mv);
+            si->ReadRecordData(yaw);
+            si->ReadRecordData(sc);
+            Editor::SetMoveStep(mv);
+            Editor::SetYawStep(yaw);
+            Editor::SetScaleStep(sc);
         }
         if (mode < static_cast<std::uint8_t>(Modes::Mode::kTotal))
             Modes::Set(static_cast<Modes::Mode>(mode));
@@ -115,7 +135,15 @@ namespace {
             si->ReadRecordData(proxyId);
             e.isInterior = interior != 0;
             e.proxy = ResolveHandle(si, proxyId);
-            if (!e.proxy.get()) { ++dropped; continue; }  // proxy died with the save
+            if (!e.proxy.get()) {
+                // Proxy FormID didn't resolve (dynamic refs aren't reliably
+                // remapped across a full restart). The gem still exists in the
+                // save — hand the note/kind to Markers so the load-time adopt
+                // scan can merge them back by position, instead of losing them.
+                ++dropped;
+                Markers::AddPendingOrphan(e.position, e.label, e.kind, e.note, e.angleZDeg);
+                continue;
+            }
             all.push_back(std::move(e));
         }
         if (dropped)
@@ -130,11 +158,13 @@ namespace {
             WriteStr(si, e.plugin);
             si->WriteRecordData(static_cast<std::uint8_t>(e.addsMaster ? 1 : 0));
             WriteStr(si, e.cellOrWs);
+            WriteStr(si, e.name);       // v2
+            WriteVec3(si, e.position);  // v2
             si->WriteRecordData(FormIdOf(e.handle));
         }
     }
 
-    void LoadEraser(const SKSE::SerializationInterface* si) {
+    void LoadEraser(const SKSE::SerializationInterface* si, std::uint32_t version) {
         std::uint32_t count = 0;
         si->ReadRecordData(count);
         auto& all = Eraser::All();
@@ -146,6 +176,10 @@ namespace {
             e.plugin = ReadStr(si);
             si->ReadRecordData(adds);
             e.cellOrWs = ReadStr(si);
+            if (version >= 2) {
+                e.name = ReadStr(si);
+                ReadVec3(si, e.position);
+            }
             si->ReadRecordData(formId);
             e.addsMaster = adds != 0;
             // A dead handle is fine: the durable id is what exports; undo on a
@@ -200,10 +234,10 @@ namespace {
     // ---- SKSE callbacks ----------------------------------------------------
 
     void OnSave(SKSE::SerializationInterface* si) {
-        if (si->OpenRecord(kSett, kVersion)) SaveSettings(si);
-        if (si->OpenRecord(kMkrs, kVersion)) SaveMarkers(si);
-        if (si->OpenRecord(kErsr, kVersion)) SaveEraser(si);
-        if (si->OpenRecord(kOvrd, kVersion)) SaveOverrides(si);
+        if (si->OpenRecord(kSett, kVerSett)) SaveSettings(si);
+        if (si->OpenRecord(kMkrs, kVerMkrs)) SaveMarkers(si);
+        if (si->OpenRecord(kErsr, kVerErsr)) SaveEraser(si);
+        if (si->OpenRecord(kOvrd, kVerOvrd)) SaveOverrides(si);
         SKSE::log::info("CoSave: saved {} marker(s), {} erasure(s), {} override(s)",
             Markers::All().size(), Eraser::All().size(), Overrides::All().size());
     }
@@ -211,15 +245,10 @@ namespace {
     void OnLoad(SKSE::SerializationInterface* si) {
         std::uint32_t type = 0, version = 0, length = 0;
         while (si->GetNextRecordInfo(type, version, length)) {
-            if (version != kVersion) {
-                SKSE::log::warn("CoSave: record 0x{:X} version {} != {} — skipped",
-                    type, version, kVersion);
-                continue;
-            }
             switch (type) {
-            case kSett: LoadSettings(si); break;
+            case kSett: LoadSettings(si, version); break;
             case kMkrs: LoadMarkers(si); break;
-            case kErsr: LoadEraser(si); break;
+            case kErsr: LoadEraser(si, version); break;
             case kOvrd: LoadOverrides(si); break;
             default:
                 SKSE::log::warn("CoSave: unknown record 0x{:X} — skipped", type);
@@ -237,6 +266,7 @@ namespace {
     // a save without our records starts from defaults.
     void OnRevert(SKSE::SerializationInterface*) {
         Markers::All().clear();
+        Markers::ClearPending();  // stale orphan notes from the previous load
         Eraser::DropAll();
         Overrides::DropAll();
         Modes::ResetDefaults();

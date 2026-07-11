@@ -9,11 +9,10 @@
 // clutter" patch. Marking one of OUR OWN dynamic refs is true deletion: it is
 // disabled and leaves no trace anywhere (user-decided semantics).
 //
-// State model (user-decided): session memory + an explicit adopt scan — no
-// silent inference. ScanDisabled() only proposes CANDIDATES (already-disabled
-// authored refs whose record is not InitiallyDisabled); each one must be
-// confirmed by hand in the panel, so quest-disabled clutter is never adopted
-// by accident.
+// State model: the marked list rides in the co-save (durable ids re-resolve
+// reliably), so the old cross-save "scan disabled refs + adopt" rescue was
+// removed as redundant (2026-07-11). Undo re-enables (per-row / per-cell /
+// most-recent); Clear re-enables everything.
 
 #include <cstdint>
 #include <string>
@@ -27,6 +26,8 @@ namespace Eraser {
         std::string plugin;  // "Skyrim.esm"
         bool addsMaster;     // not one of the 5 base-game masters (CC counts as adding)
         std::string cellOrWs;  // durable anchor at mark time — panel cell filter
+        std::string name;    // display name at mark time — panel row info
+        RE::NiPoint3 position;  // world coords at mark time — panel row info
         RE::ObjectRefHandle handle;
     };
 
@@ -44,21 +45,8 @@ namespace Eraser {
 
     bool Undo();   // re-enable the most recent mark
     void Clear();  // re-enable everything
-
-    // Candidates for adoption: authored + currently disabled + record NOT
-    // InitiallyDisabled (i.e. someone disabled it at runtime — possibly a past
-    // eraser session whose registry died with the DLL).
-    struct Candidate {
-        std::string id;
-        std::string name;    // display name, for the human deciding
-        bool addsMaster;
-        std::string cellOrWs;  // scan cell's anchor — kept on adopt
-        RE::ObjectRefHandle handle;
-    };
-    std::size_t ScanDisabled();                  // fills Candidates() from the player's cell
-    [[nodiscard]] std::vector<Candidate>& Candidates();
-    void AdoptCandidate(std::size_t index);      // move one candidate into the marked list
-    void DismissCandidates();                    // drop the current scan results
+    bool UndoEntry(const std::string& id);       // per-row undo (panel button)
+    bool UndoInCell(const std::string& cellId);  // undo the last mark in one cell
 
     // Co-save plumbing (CoSave.cpp). DropAll clears the REGISTRY ONLY — no
     // Enable() calls, unlike Clear(): on a save-load revert the incoming save

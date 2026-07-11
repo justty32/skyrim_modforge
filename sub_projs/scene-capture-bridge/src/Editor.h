@@ -6,7 +6,7 @@
 // or numpad * (explicit ray-select for trees/non-activatable statics). The
 // numpad then nudges the selection; numpad 0 commits, numpad . (Del) cancels
 // and restores the original transform. Numpad 5 is no longer an entry key —
-// in-mode it still means "commit, then select what I'm looking at now".
+// in-mode it RESETS the target to its pre-edit pose without leaving edit mode.
 //
 // Two kinds of target (contract decided 2026-07-11):
 //   * OUR OWN dynamic refs — contract-zero: their live pose is what the
@@ -52,5 +52,14 @@ namespace Editor {
         float scale = 1.f;
     };
     [[nodiscard]] Status Current();
+
+    // Per-tap edit step sizes (Settings page; persisted in the co-save SETT
+    // v2). Setters ignore non-positive values.
+    [[nodiscard]] float MoveStep();
+    [[nodiscard]] float YawStep();
+    [[nodiscard]] float ScaleStep();
+    void SetMoveStep(float v);
+    void SetYawStep(float v);
+    void SetScaleStep(float v);
 
 }  // namespace Editor

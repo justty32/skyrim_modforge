@@ -79,6 +79,14 @@ namespace Markers {
     void SetProxiesVisible(bool visible);
     [[nodiscard]] bool ProxiesVisible();
 
+    // A co-save marker whose proxy FormID no longer resolves: stash its
+    // label/kind/note so an adopt scan (auto-run on load) can merge them back
+    // onto the re-found gem by a position match. ClearPending resets the stash
+    // at revert time, before the new save's markers are read.
+    void AddPendingOrphan(const RE::NiPoint3& position, const std::string& label,
+        const std::string& kind, const std::string& note, float angleZDeg);
+    void ClearPending();
+
     // CoSave hands the registry back after a load: re-sync the seq counter,
     // re-freeze the gems' clutter havok, re-apply the display state.
     void OnRegistryRestored();

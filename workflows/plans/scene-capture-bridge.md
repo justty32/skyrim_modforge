@@ -152,7 +152,37 @@ MarkerEntry {
 - **✅ 設定哲學拍板（使用者 2026-07-11）：不用 ini**。所有設定用 console 指令調；需要持久化的設定**直接放存檔**（SKSE co-save / SerializationInterface）。
 - **✅ 快捷鍵哲學拍板（使用者 2026-07-11）：佔用越少越好，且具體鍵位在 F1 面板可設**。**鍵位模型（使用者 2026-07-11 定稿）：每個模式一格鍵位、允許重複**——新增/刪除/修改/打標記/滴管吸取各自在 F1 面板 Keybinds 區設定動作鍵（點擊→按下一鍵改綁，存 co-save），**預設全部 F11**；因為一次只啟用一個模式，同鍵不衝突。這同時支援兩種用法：全設同鍵（靠 `sc` 切模式，佔鍵最少）或各配不同鍵（免切模式直達，自己選擇多佔鍵）。F1 是 SKSE Menu Framework 自己的開關鍵（框架共用，非我們綁的）；F10 砍掉（export 走面板鈕）。
 - **co-save 的副作用（提案，implementation 時評估）**：既然引入 SKSE co-save 存設定，**Markers/Eraser/Overrides 登記簿也可以一起進 co-save**——登記簿隨存檔走，關遊戲重開不再歸零，adopt 從主要機制降級為救援機制（撿別的存檔/舊 session 的孤兒用）。這會把「持久化與 adopt 語意」表的三個「要 adopt」格子大部分變成「自動」。
-- **🔴 open（等使用者）**：`edit` 模式入口是「F11 按語境選中進編輯」還是維持 numpad 5（少佔鍵原則傾向前者；numpad 編輯模式**內**的 8/2/4/6… 不算佔用，是模式內操作）。
+- **✅ 拍板（實作定案）**：`edit` 入口＝動作鍵（F11）準星選中；numpad * 保留為射線選取入口；numpad 5 退役為「復原到編輯前姿態、續留編輯」（見 P6）。
+
+**P5 實機（2026-07-11）**：`sc` 劫持成功（donor `ClearAchievement`），模式切換＋F11 動作鍵行為、`sc mk dp0/dp1`、co-save 三登記簿全數確認。唯 rebind 捕捉到錯鍵（W）→ P6 暫時隱藏。
+
+---
+
+# P6：實機 polish 一輪（✅ 2026-07-11 晚實作＋部署，待實機——DLL `ec88c2b2`；esp 不動）
+
+使用者第一輪實測（P4/QoL/P5）後即時反饋，全部當場落地：
+
+- **#2 靈魂石被踢走**：放置當下 3D 未載入 → `SetMotionType` 靜默失敗（log `Target does not have 3D`）。改**延後凍結**：SKSE task 佇列重試至 `Get3D()` 就緒才凍（`FreezeDeferred`，上限 60 幀）。placement/adopt/prune/dp1 全改走它。
+- **#10 marker 讀檔要手動 adopt**：光球是 dynamic ref，FormID 過完整重啟不保證重解析 → co-save 認不回。改 **kPostLoadGame 自動 adopt**（延後一幀掃當前 cell）；並把 co-save 讀到、proxy 解不出的那筆 note/kind/label 存進 `g_pending`，adopt 時用**座標配對**（≤16 units）貼回 → **note 不再因重啟而掉**。
+- **#6a numpad 5**：從「commit＋再選」改為**復原到編輯前姿態、續留編輯**；commit（0）/ ray-commit（*）/ cancel（.）各補 `DebugNotification`。
+- **#6b 自家 ref commit「沒反應」**：確認**設計正確**——dynamic ref 以 live pose 直接匯出、不進 overrides 列（那是給 authored ref 的）。只補提示消除疑惑。
+- **#9 匯出計數**：Export 頁分列 added/modified/removed（placements/overrides/removals，`Stats` 早分開算）＋玩家 XYZ ＋ worldspace 名。
+- **Eraser 頁**：逐列 `undo`＋顯示 name＋原座標；`this cell only` 時上方 undo 只退本 cell 最後一筆（`UndoInCell`/`UndoEntry`）。**移除 `scan disabled refs`＋整套 Candidate 機制**（co-save 已持久化耐久 id，跨存檔救援冗餘）。
+- **Editor overrides 列**：加名稱＋新座標。
+- **Palette 頁**：最新吸取排最上；名稱欄加寬、可自由改名。
+- **#8 rebind 隱藏**：捕捉流程 in-game 抓到錯鍵（W），Settings 頁隱藏 rebind、顯示固定 F11；co-save 讀鍵位的 byte 照讀但**不套用**（清掉存進去的壞綁定）。`Modes::BeginRebind` 保留待日後重作。
+- **編輯步長可調**：`Editor` 三個步長常數改 runtime 變數＋Settings 頁 `InputFloat`＋co-save **SETT v2** 持久化。
+- **co-save 版本**：改 per-record 版本號（`kVerSett=2`/`kVerErsr=2`，其餘 1），OnLoad 傳 version 給各 loader → 舊存檔各記錄按自身 layout 讀（不再全表跳過）。
+
+## 之後再做（本輪只規劃，未實作）
+
+- `sc del er0/er1`（刪除模式準星↔射線切換）＋編輯模式同型 console 切換（取代 numpad * 專用鍵）。
+- `sc delc`：刪 console 滑鼠點選的 ref（先只做物件；讀 `RE::Console` 選中 ref）。
+- numpad 旋轉多軸（7/9 現只 yaw；加 pitch/roll 軸切換）。
+- 編輯指向靈魂石 marker 時 numpad 0 套用到該 marker 位置（不進 overrides）。
+- marker 編輯視窗下拉：寶石種類 ＋ 發光開關（需多個 proxy base / 動態換 model）。
+- palette「load from file」鈕＋文字框。
+- rebind 重作（找出 in-game 抓錯鍵主因：可能是 rebind armed 當幀把移動鍵也吃進去）。
 
 ---
 

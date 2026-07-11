@@ -31,7 +31,7 @@ sc       印當前模式＋用法
 sc mk dp0 / dp1   隱藏／顯示所有 marker 光球（純視覺，登記簿與匯出不受影響）
 ```
 
-模式內操作不算佔鍵：numpad 編輯（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、`.` cancel、5＝commit＋再選）與 **numpad \*＝射線選取**照舊。鍵位/當前模式/dp 狀態＋三本登記簿全部**存進存檔**（SKSE co-save，使用者的無 ini 原則）。`sc` 指令的實作＝劫持一個 retail 無作用的 vanilla console 指令（候選鏈首個命中者，log 記 donor；全滅時面板 Settings 頁照樣能切模式）。
+模式內操作不算佔鍵：numpad 編輯（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、`.` cancel、**5＝復原到編輯前姿態並續留編輯**）與 **numpad \*＝射線選取**照舊；位移/yaw/縮放**步長在 Settings 頁可調**（存 co-save）。當前模式/dp 狀態＋三個步長＋三本登記簿全部**存進存檔**（SKSE co-save，使用者的無 ini 原則）。動作鍵目前固定 F11（rebind 暫時隱藏，捕捉流程待重作）。`sc` 指令的實作＝劫持一個 retail 無作用的 vanilla console 指令（候選鏈首個命中者，2026-07-11 實機 donor＝`ClearAchievement`；全滅時面板 Settings 頁照樣能切模式）。
 
 ## 現在有什麼（`src/`）
 
@@ -47,9 +47,9 @@ sc mk dp0 / dp1   隱藏／顯示所有 marker 光球（純視覺，登記簿與
 | `UI.Markers.cpp` | Markers 頁（this-cell 過濾、每列 `edit` 鈕）＋ **marker 編輯視窗**（E 按 marker 開啟：label／kind／**note 多行**／delete；`AddWindow` 獨立視窗，開著會暫停遊戲收輸入）|
 | `extern/SKSEMenuFramework/` | vendored 消費者 header（LGPL-2.1，`GetProcAddress` shim，不連結 DLL）|
 | `Aim.{h,cpp}` | 共用視角射線＋**兩種選取入口**：`CrosshairRef()`（互動準星，老手感）與 `RayRef()`（物理射線→反查 ref，樹/純裝飾 static 用）。**射線絕不做自動 fallback**（使用者拍板 2026-07-11）——牆/地板都是 ref，自動 fallback 會把「按空」變誤抓；射線只走明示按鈕/專用鍵 |
-| `Eraser.{h,cpp}` | 橡皮擦（`sc del` 模式動作）：authored→disable＋登記→`removals[]`；自己的 dynamic→真刪除無痕；`scan disabled refs` 明示 adopt；entry 記 cell（面板過濾用）；`erase by ray` 明示射線入口 |
+| `Eraser.{h,cpp}` | 橡皮擦（`sc del` 模式動作）：authored→disable＋登記→`removals[]`；自己的 dynamic→真刪除無痕；entry 記 name/座標/cell（面板逐列顯示＋過濾）；undo 逐列/逐 cell/最近一筆；`erase by ray` 明示射線入口。（`scan disabled` 跨存檔救援已移除——co-save 持久化耐久 id 後冗餘）|
 | `Palette.{h,cpp}` | 滴管（`sc pk` 吸、`sc pl` 擺；runtime-only base 拒收）；`pick by ray` 明示入口；**插槽落盤 `scene-capture-palette.json`（跨存檔跨 session）**，base 解析不回（plugin 移除）標 unavailable 不炸 |
-| `Editor.{h,cpp}` | 編輯模式（`sc ed` 動作鍵選中準星目標；**numpad \* ＝射線選取**）→ numpad 微調（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、. cancel、5＝commit＋再選）；havok-movable 類型編輯期物理凍結；自己的 ref＝live pose 直接匯出，**authored ref＝commit 時登記進 Overrides**（2026-07-11 契約拍板）|
+| `Editor.{h,cpp}` | 編輯模式（`sc ed` 動作鍵選中準星目標；**numpad \* ＝射線選取**）→ numpad 微調（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、. cancel、**5＝復原續編**）；步長 runtime 可調（Settings/co-save）；havok-movable 類型編輯期物理凍結；自己的 ref＝live pose 直接匯出（不進 overrides 列，正常），**authored ref＝commit 時登記進 Overrides**（2026-07-11 契約拍板）|
 | `Overrides.{h,cpp}` | authored ref 被編輯 commit 後的登記簿（比照 Eraser：明示、不 diff——havok 噪音）→ 匯出頂層 `overrides[]`（ref/position/rotation°/scale；actor 不帶 scale）；Editor 面板頁逐筆/全部 revert 回 baseline |
 | `PCH.h` / `log.h` | CommonLibSSE PCH（含 nlohmann）＋ spdlog file logger |
 
@@ -86,13 +86,13 @@ DLL 有兩層狀態，**P5 起兩層都隨存檔走**：
 |---|---|---|
 | 新增物件（擺的、丟在地上的裝備） | 存檔（動態 ref） | **自動**——身份證在 ref 自己身上，從來不需要登記 |
 | 真刪除的自家物件 | 存檔（disabled 動態 ref） | 自動跳過（無痕） |
-| marker（位置/label/kind/**note**） | **co-save 登記簿**＋存檔裡的 proxy | **自動**——同一存檔讀回來連 note 都在 |
+| marker（位置/label/kind/**note**） | **co-save 登記簿**＋存檔裡的 proxy | **自動**——proxy 是動態 ref、FormID 過完整重啟未必重解析，故讀檔時 co-save 認不回的那筆改**自動 adopt**（`kPostLoadGame` 掃當前 cell），並用**座標配對**把 co-save 的 note/kind 貼回撿到的光球；別的 cell 走過去仍靠 `adopt this cell` |
 | 擦除 vanilla/mod 物件 | **co-save 登記簿**＋存檔 disable 狀態 | **自動**進 `removals[]` |
 | 移動 authored ref（overrides） | **co-save 登記簿**（baseline＋commit pose）＋存檔 live pose | **自動**進 `overrides[]`，revert 也還能回 baseline |
 | Palette 插槽 | **磁碟**（`scene-capture-palette.json`） | 天生跨存檔；plugin 移出 load order 的槽標 unavailable |
 | 模式/鍵位/dp 狀態 | **co-save** | 隨存檔還原 |
 
-**adopt 降級為救援機制**：`adopt this cell`／`scan disabled refs` 只在 co-save 拿不到的場合用——**換一個存檔**撿另一條時間線的 marker/擦除（proxy 與 disable 狀態活在那個存檔裡，登記簿記錄不在）、或舊版 DLL 時代留下的孤兒。同存檔工作流不再需要它。
+**adopt 降級為救援機制**：marker 的 `adopt this cell` 現在讀檔會**自動跑一次**（掃當前 cell），只有跨到別的 cell 才需手動按。擦除的 `scan disabled refs` 已整個移除——co-save 存的是耐久 id，重解析穩定，跨存檔救援冗餘。真要**換一個存檔**撿另一條時間線的 marker，走 Markers 頁 `adopt this cell`。
 
 **2026-07-11 實機驗收**：F11 準星放置（pitch 正確）、F8 擦除/undo、F6/F7 滴管（含姿態）、numpad 編輯（5 選/3 升/0 commit/. 取消還原；編輯中 log 出現的 unmapped `0x11`/`0x1F`/`0x20`/`0x38` 是 WASD/Alt，非 numpad 問題）、物理凍結→commit→沉降（匯出為沉降後姿態）、F10 匯出→ModForge build→esp 閉環（removals 深埋 Z-30000、Tamriel override 自動帶 TopCell、ESL）。
 
