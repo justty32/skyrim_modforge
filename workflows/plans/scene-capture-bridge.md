@@ -188,6 +188,11 @@ MarkerEntry {
 - **marker 記錄完整朝向＋大小**（使用者第三輪）：Entry `angleZDeg`→`angleDeg{x,y,z}`＋`scale`；匯出 `annotations[]` 帶 `rotation`＋`scale`（ModForge `AnnotationSpec.Rotation/Scale`，869 測綠）；co-save MKRS v2（舊 v1 只有 angleZ→補 0）。**marker 模型改鐵匕首**（`Weapons\Iron\IronDagger.nif`，劍尖視覺化朝向；tools-spec.json 改 model 重建 esp，houseCARL 驗 WEAP 01397E）。
 
 ### 仍未做
+- **Export 檔名帶場景＋日期（使用者 2026-07-11 晚）**：目前 ExportCell / ExportAll 都固定寫 `scene-export.json`（SceneExporter.cpp L478/L491）→ 連續 export 互相覆蓋。改成 `scene-export_<cell名或所在>_<YYYYMMDD-HHMM>.json`（interior 用 cell EditorID；exterior 用 worldspace＋grid；名稱要 sanitize 成檔名安全字元）。
+- **Captures 獨立 Export 鈕（使用者 2026-07-11 晚）**：`sc cap` 記下的東西（capturedItems/capturedNpcs）要有**自己的 export 按鈕、輸出獨立檔案**（如 `captures_<日期時間>.json`），和 cell 場景 export 分開——現在混在同一份 scene-export.json 裡。
+- **📌 Scope 反轉拍板（使用者 2026-07-11 晚，推翻先前指示）**：cell export **不再涵蓋我們新增的 NPC 等**——太麻煩；cell export ＝純場景/物件 placements ＋ marker（annotations），**NPC 這類交給 ModForge 按 marker 去擺**。實作＝ExportCell 掃描時排除 actor refs（現在 actor 會以 `kind:"npc"` 進 placements[]，SceneExporter.cpp L201-208）。⚠️ 動工時同步更新 [spec](../specs/ingame-scene-export-design.md) 契約節。
+- **`sc cap` 物件類 vs `sc pk` 分工（使用者再想，先照舊）**：`sc cap` 記 NPC/player 含全身物品＋extra data（v7 已落地）；物件類 capture 與 `sc pk` 滴管感覺功能重複，使用者還要想想——**傾向仍記錄**，暫不動。
+- **`sc pk ed0/ed1`＋`sc pl ed0/ed1`（使用者 2026-07-11 晚）**：滴管/擺放的 extra-data 開關。現況＝`sc pk` 只吸 durable base、不吸實例附魔（Palette.cpp 只取 GetBaseObject）。`ed1` ＝吸取時連 ExtraEnchantment 等 extra data 一起記（palette 條目要能帶實例資料，擺放/匯出時走 capturedItems 式鑄造＋引用）；`sc pl ed1` ＝擺放時帶上 extra data。per-mode 設定、進 co-save SETT（同 er0/er1 模式）。
 - **`sc pkc [XXX]`（使用者 2026-07-11 晚）**：滴管吸取的 console-selected 版——console 點選 ref 後 `sc pkc` 吸進 palette（同 `delc`/`capc` 的 aim-free 模式）；帶選用標號 `sc pkc XXX` ＝吸取當下直接把該 palette 條目改名為 XXX（識別用）。⚠️ 標號要用未 `Lower()` 的 raw 參數（保留大小寫，同 [player-capture-capp](player-capture-capp.md) 的 label 坑）。
 - **紅/綠半透明輪廓高亮**（使用者第二輪：`sc del dp1` 被刪物件紅框、`sc pl dp1` 新增物件綠框，顏色/透明度 Settings 可調）——**較難、非必做**（需 render/shader 或 highlight 效果）。
 - marker 編輯視窗下拉：寶石種類 ＋ 發光開關（需 SceneCaptureTools.esp 多個 ACTI 變體或動態換 model，較大工程）。
