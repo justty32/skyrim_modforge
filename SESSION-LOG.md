@@ -15,6 +15,7 @@
 - **採集橋「擷取器」＋兩端消費：端到端 IN-GAME 確認（2026-07-11）**——`sc cap` 模式吸 Mirabelle → Export → `capturedNpcs[]` 消費 → build → 分身在學院庭院原地出現 ✅。落地記錄：[landed/npcs](workflows/feature-dev/landed/npcs.md)（capturedNpcs Phase 1＋NpcSpec 外貌配方欄）＋[landed/items-magic](workflows/feature-dev/landed/items-magic.md)（capturedItems）。剩餘 open：
   - **OPEN-A 殘餘（最後一小項）**：完全重開後 capture aim-source（er0/er1）還原（co-save v4）；er1 射線吸取已實證 OK（[wait_todo](wait_todo/ingame-tests.md)）。
   - **OPEN-B ✅ 結案（2026-07-11）：PROTEUS 寫 TESNPC**——吸 PROTEUS 玩家 clone，faceMorphs/headParts/hairColor/faceTexture/weight 全是玩家真值；caveat：tintLayers 空（戰紋等留在 SKEE 側）、base/outfit 指 PROTEUS.esp runtime 模板（esp 上空殼，引用不可靠——MINT 路線不受影響）。玩家分身實機驗收過：臉型/身形＝本人。follow-up 四輪全落地（2026-07-11 晚，DLL crc `145a456e`／SCCP v7）：class/level/combatStyle/voiceType/spells＋完整 inventory 列（{item,count,worn,name?,enchantment?}——**實例附魔也吸**，durable 引用／runtime 鑄 ENCH）＋`sc capc`；消費端 worn→鑄 OTFT（引擎只穿 outfit 護甲——「靴子放口袋」實機教訓）、附魔列→鑄 WEAP/ARMO、其餘直通（914 測綠）。**待實機：使用者重開遊戲重吸 clone → 我重 build → 完全體分身**（[wait_todo P10](wait_todo/ingame-tests.md)）。
+  - **`sc capp <label>` 直接吸玩家（去 PROTEUS 化）：規劃完成待實作**（2026-07-11 晚，使用者拍板方向、指示離峰再動工）——玩家 chargen 就寫在 base TESNPC 上，DLL 直讀即可；順帶顯式 H/M/S＋18 技能（DNAM 非 autocalc）、玩家 perks（PlayerCharacter.addedPerks）、label→editorId、SCCP v8。完整計畫 [plans/player-capture-capp.md](workflows/plans/player-capture-capp.md)。
   - **Phase 2 烘焙臉（未排，優先級⬇）**：實測分身臉正常——頭形引擎 runtime 生、臉色 Face Discoloration Fix SE 補；只剩「發佈給無 FDF 環境」或「完全自足產物」才需要烘。三路評估與界線在 [plans/captured-npcs-consumption.md](workflows/plans/captured-npcs-consumption.md)。
 
 ## 各工作流 session-log
