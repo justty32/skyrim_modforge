@@ -15,7 +15,7 @@
 - **採集橋「擷取器」＋兩端消費：端到端 IN-GAME 確認（2026-07-11）**——`sc cap` 模式吸 Mirabelle → Export → `capturedNpcs[]` 消費 → build → 分身在學院庭院原地出現 ✅。落地記錄：[landed/npcs](workflows/feature-dev/landed/npcs.md)（capturedNpcs Phase 1＋NpcSpec 外貌配方欄）＋[landed/items-magic](workflows/feature-dev/landed/items-magic.md)（capturedItems）。剩餘 open：
   - **OPEN-A 殘餘（小項）**：`sc cap` 的 er0/er1 射線切換＋co-save v4 aim-source 還原，順手複驗（[wait_todo](wait_todo/ingame-tests.md)）。
   - **OPEN-B（PROTEUS 關鍵驗，待使用者裝 PROTEUS）**：clone 臉是否寫 TESNPC。
-  - **Phase 2 烘焙臉（未排）**：FaceGeom .nif＋facetint .dds 產出（無它自訂臉灰/暗）。三路已評估（推薦 A：烘資產、產物自足；B：DLL 扒 live 3D＝可收 RaceMenu 雕塑；C：讀 SKEE 配方但需玩家端 RaceMenu）——要動工先開新 plan（界線記錄在 [plans/captured-npcs-consumption.md](workflows/plans/captured-npcs-consumption.md)）。
+  - **Phase 2 烘焙臉（未排，優先級⬇）**：實測分身臉正常——頭形引擎 runtime 生、臉色 Face Discoloration Fix SE 補；只剩「發佈給無 FDF 環境」或「完全自足產物」才需要烘。三路評估與界線在 [plans/captured-npcs-consumption.md](workflows/plans/captured-npcs-consumption.md)。
 
 ## 各工作流 session-log
 

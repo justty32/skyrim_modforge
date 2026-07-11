@@ -158,6 +158,7 @@ DLL 匯出的 json 形狀（`SceneExporter.cpp:269-316` verbatim，schema 必須
 
 ### Phase 2 — 烘焙臉（後面里程碑，本計畫不實作，只記界線）
 - FaceGeom `.nif` + facetint `.dds` 產生。需 CK `FaceGen` 或外部工具（見 SESSION-LOG「三路已評估，推薦 A：烘 NIF+DDS 資產、產物自足」）。這是 `package` 階段的資產產出，非 build。**開新 plan / idea 再談**。
+- **⬇️ 優先級下修（2026-07-11 實機觀察）**：Mirabelle 分身**臉完全正常、沒灰/暗臉**。兩層原因：① 頭形——FaceGeom 缺時引擎本來就 runtime 從配方生頭（玩家臉路徑），形狀/morph 都對；② 臉色——經典暗臉的真凶是 facetint 缺/不匹配，但使用者 modlist 有 **`Face Discoloration Fix SE`**（SKSE 插件，缺 tint 時強制 runtime 重生）。**結論：本機用途 Phase 2 幾乎不需要**；只在「發佈給沒裝 FDF 的人」或「要完全自足產物」時才要烘（或照 NPC mod 圈慣例把 FDF 列 requirements）。
 
 ---
 
