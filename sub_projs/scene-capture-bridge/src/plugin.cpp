@@ -26,6 +26,37 @@ namespace {
 
     std::chrono::steady_clock::time_point g_lastPress{};
 
+    // E on a marker gem -> its edit window. TESActivateEvent is a NOTIFICATION
+    // (fires after the fact, kStop only stops other sinks) — that is fine: the
+    // proxy ACTI has no script/sound/name, so default activation is a no-op
+    // and there is nothing to suppress. An orphaned proxy (previous session)
+    // is adopted on the spot so the window can still open on it.
+    class ActivateSink : public RE::BSTEventSink<RE::TESActivateEvent>
+    {
+    public:
+        static ActivateSink* GetSingleton() { static ActivateSink s; return &s; }
+
+        RE::BSEventNotifyControl ProcessEvent(const RE::TESActivateEvent* e,
+            RE::BSTEventSource<RE::TESActivateEvent>*) override
+        {
+            if (!e || !e->objectActivated || !e->actionRef ||
+                !e->actionRef->IsPlayerRef()) {
+                return RE::BSEventNotifyControl::kContinue;
+            }
+            auto* ref = e->objectActivated.get();
+            if (!Markers::IsProxy(ref)) {
+                return RE::BSEventNotifyControl::kContinue;
+            }
+            auto seq = Markers::SeqOf(ref);
+            if (!seq) seq = Markers::AdoptOne(ref);
+            if (seq) {
+                SKSE::log::info("Markers: proxy #{} activated -> edit window", seq);
+                UI::MarkerEditor::Open(seq);
+            }
+            return RE::BSEventNotifyControl::kContinue;
+        }
+    };
+
     // Shape lifted from my_skyrim_plugin_1's FollowLight::HotkeySink (in-game
     // proven). One poll can carry several events chained through `next`, so walk
     // the list rather than reading only the head.
@@ -89,7 +120,11 @@ void OnDataLoaded() {
         SKSE::log::error(
             "SceneCaptureBridge: BSInputDeviceManager null — export hotkey NOT registered");
     }
-    UI::Register();  // no-op when SKSE Menu Framework is absent
+    if (auto* holder = RE::ScriptEventSourceHolder::GetSingleton()) {
+        holder->AddEventSink<RE::TESActivateEvent>(ActivateSink::GetSingleton());
+    }
+    UI::Register();      // no-op when SKSE Menu Framework is absent
+    Palette::Load();     // slots persist on disk, across saves and sessions
     SKSE::log::info("SceneCaptureBridge: data loaded, exporter ready");
 }
 

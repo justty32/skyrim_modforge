@@ -53,6 +53,20 @@ namespace SceneExporter {
         return std::format("{}:0x{:06X}", file->fileName, localId);
     }
 
+    Anchor AnchorOf(RE::TESObjectREFR* ref) {
+        Anchor a;
+        if (!ref) ref = RE::PlayerCharacter::GetSingleton();
+        RE::TESObjectCELL* cell = ref ? ref->GetParentCell() : nullptr;
+        if (!cell) return a;
+        if (cell->IsInteriorCell()) {
+            a.interior = true;
+            if (auto id = ResolveDurableId(cell)) a.id = *id;
+        } else if (auto* ws = cell->GetRuntimeData().worldSpace) {
+            if (auto id = ResolveDurableId(ws)) a.id = *id;
+        }
+        return a;
+    }
+
     nlohmann::json ExportCell(RE::TESObjectCELL* cell) {
         // scene.json IS a ModSpec (see workflows/plans/ingame-scene-export.md):
         // `build scene.json out.esp` deserializes it straight into ModSpec, and
@@ -260,6 +274,7 @@ namespace SceneExporter {
                     a["kind"] = m.kind;
                     a["position"] = Vec3(m.position);
                     a["angleZ"] = m.angleZDeg;
+                    if (!m.note.empty()) a["note"] = m.note;  // free-form agent brief
                     if (!m.cellOrWs.empty()) {
                         a[m.isInterior ? "cell" : "worldspace"] = m.cellOrWs;
                     }

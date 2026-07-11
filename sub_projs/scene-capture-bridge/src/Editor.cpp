@@ -1,5 +1,6 @@
 #include "Editor.h"
 
+#include "Aim.h"
 #include "Markers.h"
 #include "Overrides.h"
 #include "SceneExporter.h"
@@ -14,7 +15,8 @@ namespace {
     // Numpad DIK scancodes. NOT from the verified F-key block — if a key does
     // nothing in-game, edit mode logs the actual code of every unmapped press,
     // so one session of tapping reveals any wrong constant.
-    constexpr std::uint32_t kSelect = 0x4C;   // numpad 5
+    constexpr std::uint32_t kSelect = 0x4C;     // numpad 5 — crosshair select
+    constexpr std::uint32_t kSelectRay = 0x37;  // numpad * — EXPLICIT ray select (trees/statics)
     constexpr std::uint32_t kCommit = 0x52;   // numpad 0
     constexpr std::uint32_t kCancel = 0x53;   // numpad . (Del)
     constexpr std::uint32_t kFwd = 0x48;      // numpad 8
@@ -81,11 +83,16 @@ namespace {
         ref->Update3DPosition(true);  // SetPosition alone can leave the visual behind
     }
 
-    bool TrySelect() {
-        auto* pick = RE::CrosshairPickData::GetSingleton();
-        RE::NiPointer<RE::TESObjectREFR> ref = pick ? pick->target[0].get() : nullptr;
+    // byRay = the explicit physics-ray entry (panel button / numpad *) for
+    // trees and non-activatable statics. NEVER an automatic fallback of the
+    // crosshair: the ray always hits SOMETHING (walls and floors are refs), so
+    // falling back silently would turn "numpad 5 on empty" into "grabbed the
+    // wall behind" — the crosshair keeps its exact old feel.
+    bool TrySelect(bool byRay) {
+        RE::NiPointer<RE::TESObjectREFR> ref = byRay ? Aim::RayRef() : Aim::CrosshairRef();
         if (!ref) {
-            SKSE::log::info("Editor: crosshair has no target");
+            SKSE::log::info("Editor: {} has no target",
+                byRay ? "ray" : "crosshair");
             return false;
         }
         if (Markers::IsProxy(ref.get())) {
@@ -109,10 +116,11 @@ namespace {
             g.frozen = ref->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
             if (g.frozen) SKSE::log::info("Editor: physics frozen while editing");
         }
-        SKSE::log::info("Editor: editing {} ref at ({:.1f}, {:.1f}, {:.1f}) — "
+        SKSE::log::info("Editor: editing {} ref{} at ({:.1f}, {:.1f}, {:.1f}) — "
             "numpad 8/2 fwd/back, 4/6 left/right, 1/3 down/up, 7/9 yaw, +/- scale, "
             "0 commit, . cancel",
             g.authoredId.empty() ? "dynamic" : "AUTHORED",
+            byRay ? " (ray)" : "",
             g.origPos.x, g.origPos.y, g.origPos.z);
         return true;
     }
@@ -124,9 +132,9 @@ namespace Editor {
 
     bool HandleKey(std::uint32_t code) {
         if (!g.active) {
-            if (code != kSelect) return false;
-            TrySelect();
-            return true;  // consume numpad-5 either way
+            if (code != kSelect && code != kSelectRay) return false;
+            TrySelect(code == kSelectRay);
+            return true;  // consume the select keys either way
         }
 
         auto ref = Target();
@@ -144,7 +152,8 @@ namespace Editor {
         const RE::NiPoint3 right{std::cos(yaw), -std::sin(yaw), 0.f};
 
         switch (code) {
-        case kSelect:   // re-select something else: commit current first
+        case kSelect:     // re-select something else: commit current first
+        case kSelectRay:
         case kCommit:
             SKSE::log::info("Editor: committed at ({:.1f}, {:.1f}, {:.1f})",
                 pos.x, pos.y, pos.z);
@@ -155,7 +164,7 @@ namespace Editor {
                     g.origPos, g.origAngle, g.origScale);
             ReleasePhysics();
             g = {};
-            if (code == kSelect) TrySelect();
+            if (code != kCommit) TrySelect(code == kSelectRay);
             return true;
         case kCancel:
             Cancel();
@@ -184,6 +193,11 @@ namespace Editor {
             }
             return true;  // swallow everything while editing
         }
+    }
+
+    bool SelectByRay() {
+        if (g.active) return false;  // finish (0) or cancel (.) first
+        return TrySelect(true);
     }
 
     void Cancel() {

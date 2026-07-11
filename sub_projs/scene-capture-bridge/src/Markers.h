@@ -23,6 +23,9 @@ namespace Markers {
         std::uint32_t seq = 0;       // placement order; ordered kinds (navmesh) rely on it
         std::string label;
         std::string kind = "note";   // note | navmesh | mapMarker | vfx | tag | ...
+        std::string note;            // free-form brief for the agent -> annotations[].note.
+                                     // Registry-only: NOT recoverable by adopt (the savegame
+                                     // stores just the display name = label).
         RE::NiPoint3 position;       // fixed at placement time (not the proxy's live pose)
         float angleZDeg = 0.f;       // player facing at placement, degrees
         std::string cellOrWs;        // durable id of the containing cell/worldspace
@@ -53,7 +56,16 @@ namespace Markers {
 
     void Rename(std::uint32_t seq, const std::string& label);
     void SetKind(std::uint32_t seq, const std::string& kind);
+    void SetNote(std::uint32_t seq, const std::string& note);
     void Remove(std::uint32_t seq);  // destroys the proxy too — no trace
+
+    // Lookup for the E-interaction path: activating a proxy opens its editor
+    // window. SeqOf returns 0 when the ref is an orphaned proxy not in the
+    // registry — AdoptOne then claims exactly that ref (label from its saved
+    // display name) so the window can still open on it.
+    [[nodiscard]] Entry* FindBySeq(std::uint32_t seq);
+    [[nodiscard]] std::uint32_t SeqOf(RE::TESObjectREFR* ref);
+    std::uint32_t AdoptOne(RE::TESObjectREFR* ref);  // returns the new seq, 0 on refusal
 
     // After a game load, proxies from the pre-load session are gone (dynamic
     // refs live in the save, our registry lives in the DLL). Drop entries

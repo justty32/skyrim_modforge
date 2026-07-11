@@ -1,5 +1,6 @@
 #include "Eraser.h"
 
+#include "Aim.h"
 #include "Markers.h"
 #include "SceneExporter.h"
 #include "log.h"
@@ -30,13 +31,9 @@ namespace {
 
 namespace Eraser {
 
-    MarkResult MarkCrosshair() {
-        auto* pick = RE::CrosshairPickData::GetSingleton();
-        // NG layout: crosshair members are per-VR-device arrays; flat runtime
-        // reads device 0.
-        RE::NiPointer<RE::TESObjectREFR> ref = pick ? pick->target[0].get() : nullptr;
+    static MarkResult MarkRef(RE::NiPointer<RE::TESObjectREFR> ref, const char* how) {
         if (!ref) {
-            SKSE::log::info("Eraser: crosshair has no target");
+            SKSE::log::info("Eraser: {} has no target", how);
             return MarkResult::kNone;
         }
         // A marker proxy is editor chrome — route to the marker system so it
@@ -55,9 +52,10 @@ namespace Eraser {
         if (auto id = SceneExporter::ResolveDurableId(ref.get())) {
             if (g_ids.contains(*id)) return MarkResult::kDuplicate;
             ref->Disable();  // the visual feedback: it vanishes right now
-            Entry e{*id, PluginOf(*id), false, ref->GetHandle()};
+            Entry e{*id, PluginOf(*id), false,
+                    SceneExporter::AnchorOf(ref.get()).id, ref->GetHandle()};
             e.addsMaster = AddsMaster(e.plugin);
-            SKSE::log::info("Eraser: marked {} for removal{}", e.id,
+            SKSE::log::info("Eraser: marked {} for removal ({}){}", e.id, how,
                 e.addsMaster ? " (adds a master!)" : "");
             g_ids.insert(e.id);
             g_entries.push_back(std::move(e));
@@ -70,6 +68,9 @@ namespace Eraser {
         SKSE::log::info("Eraser: own dynamic ref erased (no trace)");
         return MarkResult::kOwnDeleted;
     }
+
+    MarkResult MarkCrosshair() { return MarkRef(Aim::CrosshairRef(), "crosshair"); }
+    MarkResult MarkByRay() { return MarkRef(Aim::RayRef(), "ray"); }
 
     std::vector<Entry>& All() { return g_entries; }
     const std::unordered_set<std::string>& MarkedIds() { return g_ids; }
@@ -98,6 +99,7 @@ namespace Eraser {
         RE::TESObjectCELL* cell = player ? player->GetParentCell() : nullptr;
         if (!cell) return 0;
 
+        const std::string anchor = SceneExporter::AnchorOf(nullptr).id;
         cell->ForEachReference([&](RE::TESObjectREFR* ref) -> RE::BSContainer::ForEachResult {
             if (!ref || ref->IsDeleted() || !ref->IsDisabled())
                 return RE::BSContainer::ForEachResult::kContinue;
@@ -114,6 +116,7 @@ namespace Eraser {
             const char* dn = ref->GetDisplayFullName();
             c.name = (dn && *dn) ? dn : "(unnamed)";
             c.addsMaster = AddsMaster(PluginOf(*id));
+            c.cellOrWs = anchor;
             c.handle = ref->GetHandle();
             g_candidates.push_back(std::move(c));
             return RE::BSContainer::ForEachResult::kContinue;
@@ -131,7 +134,7 @@ namespace Eraser {
         if (!g_ids.contains(c.id)) {
             // Already disabled in-world; adopting only records the intent.
             g_ids.insert(c.id);
-            g_entries.push_back(Entry{c.id, PluginOf(c.id), c.addsMaster, c.handle});
+            g_entries.push_back(Entry{c.id, PluginOf(c.id), c.addsMaster, c.cellOrWs, c.handle});
             SKSE::log::info("Eraser: adopted {}", c.id);
         }
         g_candidates.erase(g_candidates.begin() + static_cast<std::ptrdiff_t>(index));

@@ -28,6 +28,16 @@ namespace SceneExporter {
     // created runtime-only forms), which cannot be referenced from an esp.
     [[nodiscard]] std::optional<std::string> ResolveDurableId(const RE::TESForm* form);
 
+    // Durable anchor of the cell containing `ref` (the player when null):
+    // interior -> the cell's durable id, exterior -> the worldspace's.
+    // Shared by Markers (marker attribution), Eraser (per-entry cell for the
+    // panel's this-cell-only filter) and the UI header line.
+    struct Anchor {
+        std::string id;        // empty when unresolvable
+        bool interior = false;
+    };
+    [[nodiscard]] Anchor AnchorOf(RE::TESObjectREFR* ref);
+
     // What the last ExportCell saw. The log line is not enough once a UI wants
     // to show the same numbers — and the pre-existing count is the one that
     // tells you the vanilla diff is working.

@@ -1,8 +1,8 @@
 {
-  "_comment": "Editor tooling esp (NOT a shipped product) — built by ModForge itself (dogfood). SCB_MarkerACTI is the visible marker proxy the DLL PlaceObjectAtMe's: model = vanilla summon-circle FX (read from Skyrim.esm 07CD55 via houseCARL, guaranteed-valid path). The DLL looks this up as SceneCaptureTools.esp:0x800 and falls back to the vanilla activator when this esp is absent, so the plugin works without it. Rebuild: dotnet run --project src/ModForge.Cli -- build sub_projs/scene-capture-bridge/tools-spec.json <out>/SceneCaptureTools.esp",
+  "_comment": "Editor tooling esp (NOT a shipped product) — built by ModForge itself (dogfood). SCB_MarkerACTI is the visible marker proxy the DLL PlaceObjectAtMe's: model = grand soul gem (read from Skyrim.esm STAT 10D18B LoadScreenSoulGemGrand01 via houseCARL; nif_inspect confirms bhk collision — needed for crosshair/E targeting — plus glow controllers; the old Magic\\SummonTargetFX.nif had NO collision and its FX plays once then goes invisible). The gem's clutter havok would fall, so the DLL freezes each proxy on placement (SetMotionType kKeyframed). The DLL looks this up as SceneCaptureTools.esp:0x800 and falls back to the vanilla summon-circle activator when this esp is absent (no collision -> hotkeys only, no E). Rebuild: dotnet run --project src/ModForge.Cli -- build sub_projs/scene-capture-bridge/tools-spec.json <out>/SceneCaptureTools.esp",
   "pluginName": "SceneCaptureTools.esp",
   "esl": true,
   "activators": [
-    { "editorId": "SCB_MarkerACTI", "name": "SCB Marker", "model": "Magic\\SummonTargetFX.nif" }
+    { "editorId": "SCB_MarkerACTI", "name": "SCB Marker", "model": "Clutter\\SoulGem\\SoulGemGrand01.nif" }
   ]
 }

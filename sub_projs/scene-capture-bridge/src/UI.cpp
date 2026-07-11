@@ -49,6 +49,7 @@ void UI::Register() {
     SKSEMenuFramework::AddSectionItem("Eraser", EraserPage::Render);
     SKSEMenuFramework::AddSectionItem("Palette", PalettePage::Render);
     SKSEMenuFramework::AddSectionItem("Editor", EditorPage::Render);
+    MarkerEditor::Init();  // the standalone E-interaction window
     SKSE::log::info("SKSE Menu Framework panel registered");
 }
 
@@ -86,89 +87,27 @@ void __stdcall UI::Export::Render() {
     }
 }
 
-namespace {
-    // Per-row edit buffers, keyed by marker seq. Initialised from the entry
-    // once; afterwards the buffer is the user's in-progress edit.
-    struct RowBufs {
-        char label[64];
-        char kind[24];
-    };
-    std::unordered_map<std::uint32_t, RowBufs> g_rows;
-}
-
-void __stdcall UI::MarkersPage::Render() {
-    auto& all = ::Markers::All();
-    ImGuiMCP::Text("%zu marker(s). F11 drops one at your feet.", all.size());
-    ImGuiMCP::SameLine();
-    if (ImGuiMCP::Button("place marker here")) {
-        ::Markers::PlaceAtPlayer();   // hotkey-free path — immune to key conflicts
-    }
-    ImGuiMCP::SameLine();
-    if (ImGuiMCP::Button("adopt this cell")) {
-        // Recover markers from a previous session: their proxies + display
-        // names live in the savegame, only this registry was lost.
-        ::Markers::AdoptOrphans();
-    }
-    ImGuiMCP::Separator();
-
-    std::uint32_t removeSeq = 0;
-    // Newest first — the one you just placed is the one you want to rename.
-    for (auto it = all.rbegin(); it != all.rend(); ++it) {
-        auto& e = *it;
-        ImGuiMCP::PushID(reinterpret_cast<const void*>(static_cast<std::uintptr_t>(e.seq)));
-
-        auto [row, inserted] = g_rows.try_emplace(e.seq);
-        if (inserted) {
-            std::snprintf(row->second.label, sizeof(row->second.label), "%s", e.label.c_str());
-            std::snprintf(row->second.kind, sizeof(row->second.kind), "%s", e.kind.c_str());
-        }
-        auto& b = row->second;
-
-        ImGuiMCP::Text("#%u", e.seq);
-        ImGuiMCP::SameLine();
-        ImGuiMCP::SetNextItemWidth(180.f);
-        if (ImGuiMCP::InputText("##label", b.label, sizeof(b.label),
-                ImGuiMCP::ImGuiInputTextFlags_EnterReturnsTrue)) {
-            ::Markers::Rename(e.seq, b.label);
-        }
-        ImGuiMCP::SameLine();
-        ImGuiMCP::SetNextItemWidth(90.f);
-        if (ImGuiMCP::InputText("##kind", b.kind, sizeof(b.kind),
-                ImGuiMCP::ImGuiInputTextFlags_EnterReturnsTrue)) {
-            ::Markers::SetKind(e.seq, b.kind);
-        }
-        ImGuiMCP::SameLine();
-        if (ImGuiMCP::Button("apply")) {
-            ::Markers::Rename(e.seq, b.label);
-            ::Markers::SetKind(e.seq, b.kind);
-        }
-        ImGuiMCP::SameLine();
-        if (ImGuiMCP::Button("del")) {
-            removeSeq = e.seq;
-        }
-        ImGuiMCP::SameLine();
-        ImGuiMCP::Text("%s", e.cellOrWs.empty() ? "(unresolved)" : e.cellOrWs.c_str());
-
-        ImGuiMCP::PopID();
-    }
-    if (removeSeq != 0) {
-        ::Markers::Remove(removeSeq);
-        g_rows.erase(removeSeq);
-    }
-}
+// MarkersPage + MarkerEditor live in UI.Markers.cpp (300-line convention).
 
 void __stdcall UI::EraserPage::Render() {
     constexpr ImGuiMCP::ImVec4 kWarn{1.f, 0.55f, 0.25f, 1.f};
+    static bool thisCellOnly = false;
 
     auto& marked = ::Eraser::All();
     ImGuiMCP::Text("%zu marked for removal. F8 erases the crosshair target.", marked.size());
-    ImGuiMCP::SameLine();
     if (ImGuiMCP::Button("undo")) { ::Eraser::Undo(); }
     ImGuiMCP::SameLine();
     if (ImGuiMCP::Button("clear (re-enable all)")) { ::Eraser::Clear(); }
+    ImGuiMCP::SameLine();
+    // Trees/architecture the crosshair never sees — explicit entry, see Aim.h.
+    if (ImGuiMCP::Button("erase by ray")) { ::Eraser::MarkByRay(); }
+    ImGuiMCP::SameLine();
+    ImGuiMCP::Checkbox("this cell only", &thisCellOnly);
     ImGuiMCP::Separator();
 
+    const std::string here = thisCellOnly ? SceneExporter::AnchorOf(nullptr).id : "";
     for (const auto& e : marked) {
+        if (thisCellOnly && e.cellOrWs != here) continue;
         if (e.addsMaster) {
             ImGuiMCP::TextColored(kWarn, "%s", e.id.c_str());
             ImGuiMCP::SameLine();
@@ -215,7 +154,9 @@ void __stdcall UI::PalettePage::Render() {
 
     auto& slots = ::Palette::All();
     ImGuiMCP::Text("%zu slot(s). F6 picks the crosshair target; F7 places the "
-                   "selected slot where you aim.", slots.size());
+                   "selected slot where you aim. Slots persist across saves.", slots.size());
+    // Trees/architecture the crosshair never sees — explicit entry, see Aim.h.
+    if (ImGuiMCP::Button("pick by ray")) { ::Palette::PickByRay(); }
     ImGuiMCP::Separator();
 
     std::size_t removeIdx = SIZE_MAX;
@@ -235,8 +176,14 @@ void __stdcall UI::PalettePage::Render() {
             ::Palette::Rename(i, it->second.data());
         }
         ImGuiMCP::SameLine();
-        if (s.addsMaster) ImGuiMCP::TextColored(kWarn, "%s", s.baseId.c_str());
-        else              ImGuiMCP::Text("%s", s.baseId.c_str());
+        if (!s.base) {
+            // The slot's plugin left the load order — kept, but F7 refuses it.
+            ImGuiMCP::TextColored(kWarn, "%s (unavailable)", s.baseId.c_str());
+        } else if (s.addsMaster) {
+            ImGuiMCP::TextColored(kWarn, "%s", s.baseId.c_str());
+        } else {
+            ImGuiMCP::Text("%s", s.baseId.c_str());
+        }
         ImGuiMCP::SameLine();
         if (ImGuiMCP::Button("del")) removeIdx = i;
 
@@ -254,9 +201,11 @@ void __stdcall UI::EditorPage::Render() {
     const auto st = ::Editor::Current();
     if (!st.active) {
         ImGuiMCP::TextWrapped(
-            "Aim at anything and press numpad 5 to edit it. Your own refs "
+            "Aim at anything and press numpad 5 to edit it (numpad * ray-"
+            "selects trees/statics the crosshair misses). Your own refs "
             "export their live pose; an authored (vanilla/mod) ref becomes an "
             "overrides[] entry when you commit.");
+        if (ImGuiMCP::Button("select by ray")) { ::Editor::SelectByRay(); }
     } else {
         ImGuiMCP::Text("Editing: %s", st.name);
         ImGuiMCP::BulletText("pos (%.1f, %.1f, %.1f)", st.pos.x, st.pos.y, st.pos.z);

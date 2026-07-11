@@ -26,13 +26,18 @@ namespace Eraser {
         std::string id;      // "Skyrim.esm:0x0D1991" — durable ref id
         std::string plugin;  // "Skyrim.esm"
         bool addsMaster;     // not one of the 5 base-game masters (CC counts as adding)
+        std::string cellOrWs;  // durable anchor at mark time — panel cell filter
         RE::ObjectRefHandle handle;
     };
 
-    // What the crosshair marking did — the panel and log word things by this.
+    // What the marking did — the panel and log word things by this.
     enum class MarkResult { kNone, kMarked, kOwnDeleted, kDuplicate, kMarkerProxy };
 
-    MarkResult MarkCrosshair();
+    MarkResult MarkCrosshair();  // F8 — the activatable crosshair target, old feel
+    // Explicit physics-ray erase (panel button) for trees/non-activatable
+    // statics. NOT a fallback of F8: the ray always hits some ref (walls),
+    // so F8-on-empty must stay a no-op, not "erased the wall behind".
+    MarkResult MarkByRay();
 
     [[nodiscard]] std::vector<Entry>& All();
     [[nodiscard]] const std::unordered_set<std::string>& MarkedIds();
@@ -47,6 +52,7 @@ namespace Eraser {
         std::string id;
         std::string name;    // display name, for the human deciding
         bool addsMaster;
+        std::string cellOrWs;  // scan cell's anchor — kept on adopt
         RE::ObjectRefHandle handle;
     };
     std::size_t ScanDisabled();                  // fills Candidates() from the player's cell

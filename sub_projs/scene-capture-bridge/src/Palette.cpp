@@ -5,6 +5,8 @@
 #include "SceneExporter.h"
 #include "log.h"
 
+#include <fstream>
+
 namespace {
     constexpr float kRadToDeg = 57.2957795f;
 
@@ -20,20 +22,52 @@ namespace {
             if (id.starts_with(b)) return false;
         return true;
     }
-}
 
-namespace Palette {
+    std::filesystem::path StorePath() {
+        auto dir = SKSE::log::log_directory();
+        return dir ? (*dir / "scene-capture-palette.json") : std::filesystem::path{};
+    }
 
-    bool PickCrosshair() {
-        auto* pick = RE::CrosshairPickData::GetSingleton();
-        // NG layout: per-VR-device arrays; flat runtime reads device 0.
-        RE::NiPointer<RE::TESObjectREFR> ref = pick ? pick->target[0].get() : nullptr;
+    // "<plugin>:0xHEX" -> live form. The stored id is already the LOCAL id
+    // (ESL 12-bit / full 24-bit — ResolveDurableId's output), which is exactly
+    // what TESDataHandler::LookupForm composes against the current load order.
+    RE::TESBoundObject* ResolveBase(const std::string& id) {
+        const auto colon = id.rfind(':');
+        if (colon == std::string::npos) return nullptr;
+        const std::string plugin = id.substr(0, colon);
+        std::uint32_t local = 0;
+        try {
+            local = static_cast<std::uint32_t>(std::stoul(id.substr(colon + 1), nullptr, 16));
+        } catch (...) { return nullptr; }
+        auto* dh = RE::TESDataHandler::GetSingleton();
+        RE::TESForm* form = dh ? dh->LookupForm(local, plugin) : nullptr;
+        return form ? form->As<RE::TESBoundObject>() : nullptr;
+    }
+
+    void Save() {
+        const auto path = StorePath();
+        if (path.empty()) return;
+        nlohmann::json j = nlohmann::json::array();
+        for (const auto& s : g_slots) {
+            j.push_back({
+                {"name", s.name}, {"base", s.baseId},
+                {"angle", {{"x", s.angle.x}, {"y", s.angle.y}, {"z", s.angle.z}}},
+                {"scale", s.scale}, {"isActor", s.isActor},
+            });
+        }
+        std::ofstream out(path, std::ios::trunc);
+        if (out) out << j.dump(2);
+    }
+
+    // Refactored core: both pick entries land here. Rejections are loud —
+    // a slot that can never build is worse than no slot.
+    bool PickRef(RE::NiPointer<RE::TESObjectREFR> ref, const char* how) {
         if (!ref) {
-            SKSE::log::info("Palette: crosshair has no target");
+            SKSE::log::info("Palette: {} has no target", how);
             return false;
         }
         if (Markers::IsProxy(ref.get())) {
-            SKSE::log::info("Palette: crosshair is a marker proxy — nothing to pick");
+            SKSE::log::info("Palette: {} target is a marker proxy — nothing to pick", how);
             return false;
         }
         RE::TESBoundObject* base = ref->GetBaseObject();
@@ -46,7 +80,7 @@ namespace Palette {
             return false;
         }
 
-        Slot s;
+        Palette::Slot s;
         s.baseId = *baseId;
         s.base = base;
         s.angle = ref->data.angle;      // captured pose, radians
@@ -56,13 +90,20 @@ namespace Palette {
         const char* dn = ref->GetDisplayFullName();
         s.name = (dn && *dn) ? dn : *baseId;
 
-        SKSE::log::info("Palette: picked '{}' ({}) rotZ={:.1f} scale={:.2f}{}",
-            s.name, s.baseId, s.angle.z * kRadToDeg, s.scale,
+        SKSE::log::info("Palette: picked '{}' ({}, {}) rotZ={:.1f} scale={:.2f}{}",
+            s.name, s.baseId, how, s.angle.z * kRadToDeg, s.scale,
             s.addsMaster ? " (adds a master!)" : "");
         g_slots.push_back(std::move(s));
         g_selected = g_slots.size() - 1;
+        Save();
         return true;
     }
+}
+
+namespace Palette {
+
+    bool PickCrosshair() { return PickRef(Aim::CrosshairRef(), "crosshair"); }
+    bool PickByRay() { return PickRef(Aim::RayRef(), "ray"); }
 
     bool PlaceSelected() {
         if (g_selected >= g_slots.size()) {
@@ -71,7 +112,12 @@ namespace Palette {
         }
         auto* player = RE::PlayerCharacter::GetSingleton();
         const auto& s = g_slots[g_selected];
-        if (!player || !s.base) return false;
+        if (!player) return false;
+        if (!s.base) {
+            SKSE::log::warn("Palette: '{}' ({}) is unavailable — its plugin is "
+                "not in the load order", s.name, s.baseId);
+            return false;
+        }
 
         RE::NiPoint3 pos;
         const bool aimed = Aim::LookHit(pos);
@@ -91,18 +137,53 @@ namespace Palette {
         return true;   // a plain dynamic ref — the vanilla diff exports it
     }
 
+    void Load() {
+        const auto path = StorePath();
+        if (path.empty() || !std::filesystem::exists(path)) return;
+        std::ifstream in(path);
+        nlohmann::json j;
+        try { in >> j; } catch (const std::exception& e) {
+            SKSE::log::warn("Palette: {} unreadable ({}) — starting empty",
+                path.string(), e.what());
+            return;
+        }
+        g_slots.clear();
+        std::size_t unavailable = 0;
+        for (const auto& item : j) {
+            Slot s;
+            s.name = item.value("name", "");
+            s.baseId = item.value("base", "");
+            if (auto a = item.find("angle"); a != item.end()) {
+                s.angle = {a->value("x", 0.f), a->value("y", 0.f), a->value("z", 0.f)};
+            }
+            s.scale = item.value("scale", 1.f);
+            s.isActor = item.value("isActor", false);
+            s.addsMaster = AddsMaster(s.baseId);
+            s.base = ResolveBase(s.baseId);  // null when the plugin left the load order
+            if (!s.base) ++unavailable;
+            g_slots.push_back(std::move(s));
+        }
+        g_selected = g_slots.empty() ? 0 : g_slots.size() - 1;
+        SKSE::log::info("Palette: loaded {} slot(s) from disk{}", g_slots.size(),
+            unavailable ? std::format(" ({} unavailable)", unavailable) : "");
+    }
+
     std::vector<Slot>& All() { return g_slots; }
     std::size_t SelectedIndex() { return g_selected; }
     void Select(std::size_t index) { if (index < g_slots.size()) g_selected = index; }
 
     void Rename(std::size_t index, const std::string& name) {
-        if (index < g_slots.size() && !name.empty()) g_slots[index].name = name;
+        if (index < g_slots.size() && !name.empty()) {
+            g_slots[index].name = name;
+            Save();
+        }
     }
 
     void Remove(std::size_t index) {
         if (index >= g_slots.size()) return;
         g_slots.erase(g_slots.begin() + static_cast<std::ptrdiff_t>(index));
         if (g_selected >= g_slots.size() && g_selected > 0) g_selected = g_slots.size() - 1;
+        Save();
     }
 
 }  // namespace Palette

@@ -11,6 +11,8 @@
 // needs — see workflows/idea/tools/24-ingame-editor.md and
 // sub_projs/mod-survey/findings/skse-menu-framework-3.md.
 
+#include <cstdint>
+
 namespace UI {
 
     // Register the panel. Safe to call when the framework is absent (no-op).
@@ -21,6 +23,15 @@ namespace UI {
     }
 
     namespace MarkersPage {
+        void __stdcall Render();
+    }
+
+    // The standalone marker-edit window (E on a marker gem opens it; the
+    // Markers page's per-row `edit` button is the hotkey-free path). Lives in
+    // UI.Markers.cpp with the page.
+    namespace MarkerEditor {
+        void Init();                     // AddWindow (no-op sans framework)
+        void Open(std::uint32_t seq);    // fill buffers + show
         void __stdcall Render();
     }
 

@@ -12,11 +12,16 @@ namespace {
     std::vector<Markers::Entry> g_entries;
     std::uint32_t g_nextSeq = 1;
 
-    // The visible proxy base. Preferred: the tooling esp's MarkerACTI (clean
-    // identification — its base can ONLY be ours). Fallback: vanilla
-    // SummonTargetFXActivator 0x0007CD55 (the glowing summon circle,
-    // Magic\SummonTargetFX.nif — verified via houseCARL), so the hotkey path
-    // works even without the tooling esp installed.
+    // The visible proxy base. Preferred: the tooling esp's MarkerACTI — model
+    // is now Clutter\SoulGem\SoulGemGrand01.nif (glowing gem; read from
+    // Skyrim.esm STAT 10D18B via houseCARL, collision + glow controllers
+    // verified via nif_inspect). Collision matters: the old SummonTargetFX
+    // model had NO bhk blocks, so the crosshair could never target a marker
+    // and E-interaction was impossible. The gem's clutter rigidbody would
+    // FALL, so PlaceAt freezes it (SetMotionType kKeyframed — the same
+    // in-game-proven primitive the editor uses). Fallback: vanilla
+    // SummonTargetFXActivator 0x0007CD55 (no collision -> no E, hotkeys only)
+    // so the plugin still works without the tooling esp.
     RE::TESBoundObject* ProxyBase() {
         static RE::TESBoundObject* base = [] {
             auto* dh = RE::TESDataHandler::GetSingleton();
@@ -40,19 +45,6 @@ namespace {
 
 namespace Markers {
 
-    // Durable anchor of the player's current cell/worldspace.
-    static void CellAnchor(RE::PlayerCharacter* player, std::string& anchor, bool& interior) {
-        RE::TESObjectCELL* cell = player->GetParentCell();
-        interior = false;
-        if (cell && cell->IsInteriorCell()) {
-            interior = true;
-            if (auto id = SceneExporter::ResolveDurableId(cell)) anchor = *id;
-        } else if (cell) {
-            if (auto* ws = cell->GetRuntimeData().worldSpace)
-                if (auto id = SceneExporter::ResolveDurableId(ws)) anchor = *id;
-        }
-    }
-
     static bool PlaceAt(const RE::NiPoint3& pos, const char* how) {
         auto* player = RE::PlayerCharacter::GetSingleton();
         auto* base = ProxyBase();
@@ -60,9 +52,10 @@ namespace Markers {
             SKSE::log::error("Markers: no player or no proxy base — marker not placed");
             return false;
         }
-        std::string anchor;
-        bool interior = false;
-        CellAnchor(player, anchor, interior);
+        // Durable anchor of the player's current cell/worldspace.
+        const auto a = SceneExporter::AnchorOf(nullptr);
+        std::string anchor = a.id;
+        bool interior = a.interior;
 
         RE::NiPointer<RE::TESObjectREFR> proxy = player->PlaceObjectAtMe(base, false);
         if (!proxy) {
@@ -70,6 +63,10 @@ namespace Markers {
             return false;
         }
         proxy->SetPosition(pos);
+        // The gem model has clutter havok — freeze it or it falls. Best-effort:
+        // if the 3D is not loaded yet this fails silently and the gem settles
+        // on the ground; harmless, the EXPORTED position is fixed right here.
+        proxy->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
 
         Entry e;
         e.seq = g_nextSeq++;
@@ -105,37 +102,41 @@ namespace Markers {
         return PlaceAt(player->GetPosition(), "feet-fallback");
     }
 
+    std::uint32_t AdoptOne(RE::TESObjectREFR* ref) {
+        if (!ref || ref->IsDeleted() || ref->IsDisabled()) return 0;
+        if (ref->GetBaseObject() != ProxyBase() || !ProxyBase()) return 0;
+        if (const auto seq = SeqOf(ref)) return seq;  // already ours
+
+        Entry e;
+        e.seq = g_nextSeq++;
+        const char* dn = ref->GetDisplayFullName();
+        e.label = (dn && *dn) ? dn : std::format("marker-{}", e.seq);
+        // note is NOT recoverable: only the display name (= label) lives in
+        // the savegame. Documented in the README persistence table.
+        e.position = ref->GetPosition();
+        e.angleZDeg = ref->GetAngleZ() * kRadToDeg;
+        const auto a = SceneExporter::AnchorOf(ref);
+        e.cellOrWs = a.id;
+        e.isInterior = a.interior;
+        e.proxy = ref->GetHandle();
+        // Re-created from the save with its nif's clutter havok — freeze again.
+        ref->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
+        SKSE::log::info("Markers: adopted '{}' at ({:.1f}, {:.1f}, {:.1f})",
+            e.label, e.position.x, e.position.y, e.position.z);
+        const auto seq = e.seq;
+        g_entries.push_back(std::move(e));
+        return seq;
+    }
+
     std::size_t AdoptOrphans() {
         auto* player = RE::PlayerCharacter::GetSingleton();
-        auto* base = ProxyBase();
         RE::TESObjectCELL* cell = player ? player->GetParentCell() : nullptr;
-        if (!cell || !base) return 0;
-
-        std::string anchor;
-        bool interior = false;
-        CellAnchor(player, anchor, interior);
+        if (!cell || !ProxyBase()) return 0;
 
         std::size_t adopted = 0;
         cell->ForEachReference([&](RE::TESObjectREFR* ref) -> RE::BSContainer::ForEachResult {
-            if (!ref || ref->IsDeleted() || ref->IsDisabled()) return RE::BSContainer::ForEachResult::kContinue;
-            if (ref->GetBaseObject() != base) return RE::BSContainer::ForEachResult::kContinue;
-            const auto h = ref->GetHandle();
-            for (const auto& e : g_entries)
-                if (e.proxy == h) return RE::BSContainer::ForEachResult::kContinue;  // already ours
-
-            Entry e;
-            e.seq = g_nextSeq++;
-            const char* dn = ref->GetDisplayFullName();
-            e.label = (dn && *dn) ? dn : std::format("marker-{}", e.seq);
-            e.position = ref->GetPosition();
-            e.angleZDeg = ref->GetAngleZ() * kRadToDeg;
-            e.cellOrWs = anchor;
-            e.isInterior = interior;
-            e.proxy = h;
-            SKSE::log::info("Markers: adopted '{}' at ({:.1f}, {:.1f}, {:.1f})",
-                e.label, e.position.x, e.position.y, e.position.z);
-            g_entries.push_back(std::move(e));
-            ++adopted;
+            if (ref && ref->GetBaseObject() == ProxyBase() && !SeqOf(ref))
+                if (AdoptOne(ref)) ++adopted;
             return RE::BSContainer::ForEachResult::kContinue;
         });
         return adopted;
@@ -154,14 +155,22 @@ namespace Markers {
         return false;
     }
 
-    static Entry* Find(std::uint32_t seq) {
+    Entry* FindBySeq(std::uint32_t seq) {
         for (auto& e : g_entries)
             if (e.seq == seq) return &e;
         return nullptr;
     }
 
+    std::uint32_t SeqOf(RE::TESObjectREFR* ref) {
+        if (!ref) return 0;
+        const auto h = ref->GetHandle();
+        for (const auto& e : g_entries)
+            if (e.proxy == h) return e.seq;
+        return 0;
+    }
+
     void Rename(std::uint32_t seq, const std::string& label) {
-        if (auto* e = Find(seq)) {
+        if (auto* e = FindBySeq(seq)) {
             e->label = label;
             if (auto proxy = e->proxy.get())
                 proxy->SetDisplayName(label.c_str(), true);
@@ -169,8 +178,13 @@ namespace Markers {
     }
 
     void SetKind(std::uint32_t seq, const std::string& kind) {
-        if (auto* e = Find(seq))
+        if (auto* e = FindBySeq(seq))
             e->kind = kind.empty() ? "note" : kind;
+    }
+
+    void SetNote(std::uint32_t seq, const std::string& note) {
+        if (auto* e = FindBySeq(seq))
+            e->note = note;
     }
 
     void Remove(std::uint32_t seq) {
@@ -192,6 +206,11 @@ namespace Markers {
         if (before != g_entries.size())
             SKSE::log::info("Markers: pruned {} marker(s) whose proxy died with the old save",
                 before - g_entries.size());
+        // Survivors were re-created from the save with live clutter havok —
+        // re-freeze so the gems don't drop after every load.
+        for (auto& e : g_entries)
+            if (auto proxy = e.proxy.get())
+                proxy->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
     }
 
 }  // namespace Markers

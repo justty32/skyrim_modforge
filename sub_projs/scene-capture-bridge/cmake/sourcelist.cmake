@@ -8,4 +8,5 @@ set(sources ${sources}
     src/Palette.cpp
     src/SceneExporter.cpp
     src/UI.cpp
+    src/UI.Markers.cpp
 )
