@@ -40,10 +40,22 @@ namespace Palette {
     void Load();  // kDataLoaded: read scene-capture-palette.json, re-resolve bases
                   // (writes happen automatically on pick/rename/remove)
 
-    // Panel "load from file": read another palette json (by filename, resolved
-    // next to scene-capture-palette.json) and APPEND its slots. Returns how
-    // many were added; the merged set is then saved to the default store.
+    // FILE ORDER == PANEL ORDER (2026-07-12): every palette json lists the
+    // TOP-most slot first (newest first), so a file reads like what you see.
+    // The internal vector keeps the opposite convention (index 0 = oldest =
+    // bottom of the panel) — the file I/O is where the two meet.
+
+    // Panel "load from file (append)": read another palette json (by filename,
+    // resolved next to scene-capture-palette.json) and APPEND its slots ON TOP
+    // of the existing ones, keeping the file's own order. Returns how many were
+    // added; the merged set is then saved to the default store.
     std::size_t LoadFromFile(const std::string& filename);
+
+    // Panel "replace from file": same read, but the file REPLACES the whole
+    // palette (existing slots are dropped). Refuses to wipe on a missing /
+    // unreadable / slot-less file — the palette is only cleared once the new
+    // slots are in hand. Returns how many slots the palette now holds.
+    std::size_t ReplaceFromFile(const std::string& filename);
 
     // Panel "save to file": write the current slots to a named json (same
     // folder) — export a curated palette to share or reload later.

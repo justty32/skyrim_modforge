@@ -63,8 +63,10 @@ namespace Editor {
     void SetScaleStep(float v);
 
     // Pure-rotation sub-mode (`sc ed ax` toggles). On: numpad drives rotation
-    // (4/6 yaw, 1/3 pitch, 7/9 roll, 8/2 reset angle). Off: numpad moves.
-    // Persisted in the co-save.
+    // (4/6 yaw, 1/3 pitch, 7/9 roll) and each pair's middle key REVERTS only
+    // its own axis to the pre-edit value (2 = pitch, 5 = yaw, 8 = roll —
+    // revert, not zero: the object may have been rotated already). Off: numpad
+    // moves, and 5 restores the whole pre-edit pose. Persisted in the co-save.
     [[nodiscard]] bool RotateMode();
     void SetRotateMode(bool on);
     bool ToggleRotateMode();  // returns the new state

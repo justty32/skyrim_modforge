@@ -39,8 +39,13 @@ namespace {
     // Pure-rotation sub-mode (`sc ed ax` toggles it). When on, the numpad
     // directional keys drive rotation instead of movement:
     //   4/6 = yaw(Z) -/+,  1/3 = pitch(X) -/+,  7/9 = roll(Y) -/+,
-    //   8/2 = reset rotation to the pre-edit angle (position/scale untouched).
-    // Off (default): 8/2 fwd/back, 4/6 left/right, 1/3 down/up, 7/9 yaw.
+    // and each pair's MIDDLE key REVERTS only its own axis to the pre-edit
+    // value (user 2026-07-12 — "undo what 1/3 did", not "set to zero": the
+    // object may well have been rotated to begin with):
+    //   2 = revert pitch(X),  5 = revert yaw(Z),  8 = revert roll(Y).
+    // Position/scale are never touched in this sub-mode.
+    // Off (default): 8/2 fwd/back, 4/6 left/right, 1/3 down/up, 7/9 yaw,
+    // 5 = restore the whole pre-edit pose (per-mode, P7).
     bool g_rotateMode = false;
 
     // Only these base types get the physics freeze: they are the naturally
@@ -175,11 +180,12 @@ namespace Editor {
         const RE::NiPoint3 right{std::cos(yaw), -std::sin(yaw), 0.f};
 
         switch (code) {
-        case kSelect:  // numpad 5 — mode-scoped reset, KEEP editing
+        case kSelect:  // numpad 5 — mode-scoped revert, KEEP editing
             if (g_rotateMode) {
-                // Rotate mode: 5 (like 8/2) zeroes only the angle.
-                Apply(ref.get(), ref->GetPosition(), g.origAngle);
-                RE::DebugNotification("SCB: rotation reset");
+                // Rotate mode: 5 sits between 4/6 (yaw) -> revert THAT axis only.
+                angle.z = g.origAngle.z;
+                Apply(ref.get(), pos, angle);
+                RE::DebugNotification("SCB: yaw reverted");
             } else {
                 Apply(ref.get(), g.origPos, g.origAngle);
                 if (!g.isActor) { ref->SetScale(g.origScale); ref->Update3DPosition(true); }
@@ -238,12 +244,24 @@ namespace Editor {
             if (g_rotateMode) angle.x += g_yawStep * kDegToRad;
             else pos.z += g_moveStep;
             Apply(ref.get(), pos, angle); return true;
-        // 8/2: move fwd/back in move mode; reset rotation in rotate mode.
+        // 8/2: move fwd/back in move mode; PER-AXIS revert in rotate mode —
+        // 8 sits between 7/9 (roll), 2 sits between 1/3 (pitch), so each key
+        // undoes only its own pair's rotation, back to the pre-edit value.
         case kFwd:
-            if (g_rotateMode) { Apply(ref.get(), pos, g.origAngle); return true; }
+            if (g_rotateMode) {
+                angle.y = g.origAngle.y;
+                Apply(ref.get(), pos, angle);
+                RE::DebugNotification("SCB: roll reverted");
+                return true;
+            }
             Apply(ref.get(), pos + fwd * g_moveStep, angle); return true;
         case kBack:
-            if (g_rotateMode) { Apply(ref.get(), pos, g.origAngle); return true; }
+            if (g_rotateMode) {
+                angle.x = g.origAngle.x;
+                Apply(ref.get(), pos, angle);
+                RE::DebugNotification("SCB: pitch reverted");
+                return true;
+            }
             Apply(ref.get(), pos - fwd * g_moveStep, angle); return true;
         case kScaleUp:
             if (!g.isActor) { ref->SetScale(ref->GetScale() + g_scaleStep); ref->Update3DPosition(true); }

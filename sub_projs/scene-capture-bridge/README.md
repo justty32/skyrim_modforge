@@ -41,11 +41,11 @@ sc capp [Label]         擷取「玩家自己」（臉/數值/perk/裝備全帶�
 
 **`[Label]` ＝身份標籤，大小寫保留**（`sc` 的參數解析會全轉小寫——label 走未 `Lower()` 的 raw 參數）。匯出成 `editorId: "MFCap_<label>"`，ModForge 的「顯式 editorId 優先」規則讓同一個 label 永遠對應同一筆記錄（再吸一次＝更新同一個人，不會多生一個）。計畫全文：[plans/player-capture-capp.md](../../workflows/plans/player-capture-capp.md)。
 
-**編輯純旋轉子模式**：`sc ed ax` 進入，**`sc ed` 退回**普通移動模式。ON 時 numpad 方向鍵改成旋轉——**4/6＝yaw、1/3＝pitch、7/9＝roll、8/2＝角度歸零**（位置/縮放不動），numpad 5 也＝角度歸零；OFF（預設）時 8/2 前後、4/6 左右、1/3 升降、7/9 yaw，numpad 5＝復原到編輯前姿態。
+**編輯純旋轉子模式**：`sc ed ax` 進入，**`sc ed` 退回**普通移動模式。ON 時 numpad 方向鍵改成旋轉——**4/6＝yaw、1/3＝pitch、7/9＝roll**（位置/縮放不動），**每組的中間鍵＝只還原自己那一軸**（2026-07-12 使用者拍板）：**2＝還原 pitch、5＝還原 yaw、8＝還原 roll**——**還原＝回到進編輯前的該軸原值，不是設成 0**（物件本來就可能有角度）。OFF（預設）時 8/2 前後、4/6 左右、1/3 升降、7/9 yaw，numpad 5＝復原到編輯前姿態（整個編輯）。
 
 編輯模式的目標若是 **marker 光球**：numpad 微調＋0 commit＝**移動該 marker**（更新登記簿座標，不進 overrides）。`er` 切換、旋轉子模式、編輯步長全部**存進存檔**（co-save SETT v3）。
 
-Export 頁有 **Export player cell**、**Export all (loaded cells)** 與 **Export captures** 三鈕：registries（marker/擦除/override）本就全 cell 全域，`all` 只多掃**已載入的其他 cell** 的 placements（未載入 cell 的 placements 撈不到，log 會講）。Palette 頁的具名檔可 **load from file（追加）／ save to file**。
+Export 頁有 **Export player cell**、**Export all (loaded cells)** 與 **Export captures** 三鈕：registries（marker/擦除/override）本就全 cell 全域，`all` 只多掃**已載入的其他 cell** 的 placements（未載入 cell 的 placements 撈不到，log 會講）。Palette 頁的具名檔有三鈕：**load from file (append)**（載入的插槽**疊在列表最上面**，保留檔內順序）／**replace from file**（**清掉現有插槽**再載入；檔案不存在或無可用插槽＝什麼都不動，不會誤清）／**save to file**。**檔內順序＝面板順序**（最上面那筆排第一），所以 json 讀起來就是你在面板看到的樣子。
 
 **匯出檔名（2026-07-12 起，每次一個新檔、永不覆蓋）**：
 

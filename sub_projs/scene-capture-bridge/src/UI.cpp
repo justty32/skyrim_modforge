@@ -249,21 +249,30 @@ void __stdcall UI::PalettePage::Render() {
     // Trees/architecture the crosshair never sees — explicit entry, see Aim.h.
     if (ImGuiMCP::Button("pick by ray")) { ::Palette::PickByRay(); }
 
-    // Named palette file (in the SKSE folder): load appends its slots, save
-    // writes the current set — share/reuse curated palettes across playthroughs.
+    // Named palette file (in the SKSE folder). Two load flavours, one save:
+    //   load from file (append)  — the file's slots land ON TOP, keeping yours
+    //   replace from file        — the file BECOMES the palette (yours are dropped)
+    // The file lists slots in this list's order (top first), so it reads like
+    // what you see here.
     static char fileName[128] = "";
     ImGuiMCP::SetNextItemWidth(260.f);
     ImGuiMCP::InputText("##palfile", fileName, sizeof(fileName));
     ImGuiMCP::SameLine();
-    if (ImGuiMCP::Button("load from file")) {
+    if (ImGuiMCP::Button("load from file (append)")) {
         if (fileName[0]) { ::Palette::LoadFromFile(fileName); g_slotBufs.clear(); }
+    }
+    ImGuiMCP::SameLine();
+    if (ImGuiMCP::Button("replace from file")) {
+        if (fileName[0]) { ::Palette::ReplaceFromFile(fileName); g_slotBufs.clear(); }
     }
     ImGuiMCP::SameLine();
     if (ImGuiMCP::Button("save to file")) {
         if (fileName[0]) ::Palette::SaveToFile(fileName);
     }
-    ImGuiMCP::SameLine();
-    ImGuiMCP::TextWrapped("(SKSE folder; e.g. my-palette.json)");
+    ImGuiMCP::TextWrapped("(SKSE folder; e.g. my-palette.json) — append: the "
+                          "loaded slots go to the top of the list. replace: "
+                          "clears the current slots first (a missing or empty "
+                          "file changes nothing).");
     ImGuiMCP::Separator();
 
     std::size_t removeIdx = SIZE_MAX;
@@ -325,7 +334,8 @@ void __stdcall UI::EditorPage::Render() {
         if (::Editor::RotateMode()) {
             ImGuiMCP::TextWrapped(
                 "ROTATE mode (sc ed ax): 4/6 yaw - 1/3 pitch - 7/9 roll - "
-                "8/2 reset angle - +/- scale - 5 reset all - 0 commit - . cancel");
+                "per-axis revert: 5 yaw, 2 pitch, 8 roll (back to the pre-edit "
+                "angle) - +/- scale - 0 commit - . cancel (restores everything)");
         } else {
             ImGuiMCP::TextWrapped(
                 "numpad: 8/2 fwd/back - 4/6 left/right - 1/3 down/up - 7/9 yaw - "

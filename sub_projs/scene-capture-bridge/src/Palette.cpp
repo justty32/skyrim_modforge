@@ -44,9 +44,14 @@ namespace {
         return form ? form->As<RE::TESBoundObject>() : nullptr;
     }
 
+    // The file lists slots in PANEL order — newest (top of the list) first —
+    // so a palette json reads like what the panel shows. The vector keeps the
+    // opposite order (index 0 = oldest = bottom), hence the reverse walk here
+    // and the reverse insert in Adopt().
     nlohmann::json SlotsJson() {
         nlohmann::json j = nlohmann::json::array();
-        for (const auto& s : g_slots) {
+        for (auto it = g_slots.rbegin(); it != g_slots.rend(); ++it) {
+            const auto& s = *it;
             j.push_back({
                 {"name", s.name}, {"base", s.baseId},
                 {"angle", {{"x", s.angle.x}, {"y", s.angle.y}, {"z", s.angle.z}}},
@@ -54,6 +59,52 @@ namespace {
             });
         }
         return j;
+    }
+
+    // Read a palette json into slots, in FILE order (= panel order, top first).
+    // Bases are re-resolved against the current load order; a slot whose plugin
+    // is gone stays listed but unavailable (base == nullptr).
+    std::vector<Palette::Slot> ParseSlots(const std::filesystem::path& path) {
+        std::vector<Palette::Slot> out;
+        std::ifstream in(path);
+        nlohmann::json j;
+        try { in >> j; } catch (const std::exception& e) {
+            SKSE::log::warn("Palette: {} unreadable ({})", path.string(), e.what());
+            return out;
+        }
+        if (!j.is_array()) {
+            SKSE::log::warn("Palette: {} is not a slot array", path.string());
+            return out;
+        }
+        for (const auto& item : j) {
+            Palette::Slot s;
+            s.name = item.value("name", "");
+            s.baseId = item.value("base", "");
+            if (s.baseId.empty()) continue;
+            if (auto a = item.find("angle"); a != item.end())
+                s.angle = {a->value("x", 0.f), a->value("y", 0.f), a->value("z", 0.f)};
+            s.scale = item.value("scale", 1.f);
+            s.isActor = item.value("isActor", false);
+            s.addsMaster = AddsMaster(s.baseId);
+            s.base = ResolveBase(s.baseId);  // null when the plugin isn't loaded
+            out.push_back(std::move(s));
+        }
+        return out;
+    }
+
+    // Push parsed (file/panel-order) slots onto the vector so they land ON TOP
+    // of whatever is already there, in the file's own order — the panel's
+    // newest-first convention (same as a fresh pick).
+    void Adopt(std::vector<Palette::Slot>& parsed) {
+        for (auto it = parsed.rbegin(); it != parsed.rend(); ++it)
+            g_slots.push_back(std::move(*it));
+        g_selected = g_slots.empty() ? 0 : g_slots.size() - 1;
+    }
+
+    std::size_t Unavailable() {
+        std::size_t n = 0;
+        for (const auto& s : g_slots) if (!s.base) ++n;
+        return n;
     }
 
     void Save() {
@@ -144,30 +195,10 @@ namespace Palette {
     void Load() {
         const auto path = StorePath();
         if (path.empty() || !std::filesystem::exists(path)) return;
-        std::ifstream in(path);
-        nlohmann::json j;
-        try { in >> j; } catch (const std::exception& e) {
-            SKSE::log::warn("Palette: {} unreadable ({}) — starting empty",
-                path.string(), e.what());
-            return;
-        }
+        auto parsed = ParseSlots(path);
         g_slots.clear();
-        std::size_t unavailable = 0;
-        for (const auto& item : j) {
-            Slot s;
-            s.name = item.value("name", "");
-            s.baseId = item.value("base", "");
-            if (auto a = item.find("angle"); a != item.end()) {
-                s.angle = {a->value("x", 0.f), a->value("y", 0.f), a->value("z", 0.f)};
-            }
-            s.scale = item.value("scale", 1.f);
-            s.isActor = item.value("isActor", false);
-            s.addsMaster = AddsMaster(s.baseId);
-            s.base = ResolveBase(s.baseId);  // null when the plugin left the load order
-            if (!s.base) ++unavailable;
-            g_slots.push_back(std::move(s));
-        }
-        g_selected = g_slots.empty() ? 0 : g_slots.size() - 1;
+        Adopt(parsed);
+        const auto unavailable = Unavailable();
         SKSE::log::info("Palette: loaded {} slot(s) from disk{}", g_slots.size(),
             unavailable ? std::format(" ({} unavailable)", unavailable) : "");
     }
@@ -180,33 +211,42 @@ namespace Palette {
             SKSE::log::warn("Palette: load-from-file '{}' not found", path.string());
             return 0;
         }
-        std::ifstream in(path);
-        nlohmann::json j;
-        try { in >> j; } catch (const std::exception& e) {
-            SKSE::log::warn("Palette: '{}' unreadable ({})", path.string(), e.what());
+        auto parsed = ParseSlots(path);
+        const std::size_t added = parsed.size();
+        if (!added) {
+            SKSE::log::warn("Palette: '{}' has no usable slot", filename);
             return 0;
         }
-        std::size_t added = 0;
-        for (const auto& item : j) {
-            Slot s;
-            s.name = item.value("name", "");
-            s.baseId = item.value("base", "");
-            if (s.baseId.empty()) continue;
-            if (auto a = item.find("angle"); a != item.end())
-                s.angle = {a->value("x", 0.f), a->value("y", 0.f), a->value("z", 0.f)};
-            s.scale = item.value("scale", 1.f);
-            s.isActor = item.value("isActor", false);
-            s.addsMaster = AddsMaster(s.baseId);
-            s.base = ResolveBase(s.baseId);  // null when the plugin isn't loaded
-            g_slots.push_back(std::move(s));
-            ++added;
-        }
-        if (added) {
-            g_selected = g_slots.size() - 1;
-            Save();  // fold the import into the persistent store
-        }
-        SKSE::log::info("Palette: loaded {} slot(s) from '{}' (appended)", added, filename);
+        Adopt(parsed);   // appended ON TOP, in the file's order
+        Save();          // fold the import into the persistent store
+        SKSE::log::info("Palette: appended {} slot(s) from '{}' on top ({} total)",
+            added, filename, g_slots.size());
         return added;
+    }
+
+    std::size_t ReplaceFromFile(const std::string& filename) {
+        auto dir = SKSE::log::log_directory();
+        if (!dir || filename.empty()) return 0;
+        const auto path = *dir / filename;
+        if (!std::filesystem::exists(path)) {
+            SKSE::log::warn("Palette: replace-from-file '{}' not found — palette untouched",
+                path.string());
+            return 0;
+        }
+        auto parsed = ParseSlots(path);
+        if (parsed.empty()) {
+            // Never wipe on a bad read: an unreadable or slot-less file would
+            // silently destroy the whole (disk-persisted) palette.
+            SKSE::log::warn("Palette: '{}' has no usable slot — palette untouched", filename);
+            return 0;
+        }
+        const std::size_t dropped = g_slots.size();
+        g_slots.clear();
+        Adopt(parsed);
+        Save();
+        SKSE::log::info("Palette: replaced {} slot(s) with {} from '{}'",
+            dropped, g_slots.size(), filename);
+        return g_slots.size();
     }
 
     bool SaveToFile(const std::string& filename) {

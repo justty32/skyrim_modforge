@@ -150,8 +150,8 @@ namespace {
                 }
                 if (m == Modes::Mode::kEdit && a2 == "ax") {  // enter rotate sub-mode
                     Editor::SetRotateMode(true);
-                    Print("SCB: edit ROTATE mode (4/6 yaw, 1/3 pitch, 7/9 roll, "
-                        "8/2 reset) — `sc ed` to go back to move mode");
+                    Print("SCB: edit ROTATE mode (4/6 yaw, 1/3 pitch, 7/9 roll; "
+                        "5/2/8 revert that axis) — `sc ed` to go back to move mode");
                     return true;
                 }
             }

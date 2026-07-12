@@ -58,9 +58,9 @@
 
 1. **`sc delc`**：console 點一個物件（滑鼠點畫面中的桶/椅，console 顯示其 ref）→ 打 `sc delc` → 物件消失、Eraser 頁多一列。點 NPC 打 `sc delc` → 應拒絕（印「actor」）。
 2. **準星↔射線切換**：`sc del er1` → 刪除模式動作鍵改用射線（可擦樹）；`sc del er0` 切回準星。`sc pk er1`/`sc ed er1` 同理（吸樹/編輯樹不必再按 numpad *）。Settings 頁應顯示各模式現況。
-3. **純旋轉子模式**：`sc ed` 選中物件 → **`sc ed ax`** → Editor 頁提示行變 ROTATE → numpad **4/6＝yaw、1/3＝pitch、7/9＝roll、8/2＝角度歸零**（位置不變）；打 **`sc ed`** 退回移動模式（4/6/1/3 回到位移）。
+3. **純旋轉子模式**：`sc ed` 選中物件 → **`sc ed ax`** → Editor 頁提示行變 ROTATE → numpad **4/6＝yaw、1/3＝pitch、7/9＝roll**（位置不變）；打 **`sc ed`** 退回移動模式（4/6/1/3 回到位移）。（**歸零鍵語意 2026-07-12 已改 per-axis**，見本檔最後一節。）
 4. **編輯 marker 位置**：`sc ed` 準星對一個匕首 marker → 動作鍵選中（log `editing MARKER`）→ numpad 推移＋**0 commit** → 匕首移到新位置、跳「marker moved」；F1 Markers 頁該筆座標更新、**不**進 Editor overrides 列。numpad 5 可復原、`.` 取消。
-5. **palette load / save from file**：`sc pk` 吸幾個 → Palette 頁文字框輸入檔名（如 `my-palette.json`）→ **save to file** → SKSE 夾生出該檔。清空插槽（或換存檔）→ 同檔名 **load from file** → 插槽**追加**回來、排最上。
+5. **palette load / save from file**：`sc pk` 吸幾個 → Palette 頁文字框輸入檔名（如 `my-palette.json`）→ **save to file** → SKSE 夾生出該檔。清空插槽（或換存檔）→ 同檔名 **load from file (append)** → 插槽**追加**回來、排最上。（**append 排序＋新增 replace 鈕 2026-07-12**，見本檔最後一節。）
 6. **Export all**：室外站著放幾個物件、走幾格再放 → Export 頁 **Export all (loaded cells)** → json 的 `placements` 應含**多個已載入 cell** 的（單 cell 匯出只會有當前 cell）；統計行 cell 顯示「ALL/N loaded cells」。（未載入 cell 的撈不到＝正常，log 有講。）
 7. **co-save v3**：改 er／`sc ed ax`／步長 → 存檔重開 → 設定還原。
 
@@ -70,7 +70,7 @@
 
 1. **marker＝鐵匕首**：`sc mk` 放 → 應出現懸浮**鐵匕首**（劍尖朝玩家面向）、不掉不被踢；準星/E 照樣選得到、開編輯視窗。
 2. **記錄朝向＋大小**：`sc ed` 選中匕首 marker → `sc ed ax` 進旋轉模式轉個角度、`+/−` 改大小 → **numpad 0** → Markers 頁該筆更新 → **Export** → `annotations[]` 該筆帶 `rotation{x,y,z}`（非 0）＋`scale`。
-3. **numpad 5 per-mode**：編輯**移動模式**下 5＝整個復原到編輯前；`sc ed ax` 進**旋轉模式**下 5＝只把角度歸零（位置/大小不動）。
+3. **numpad 5 per-mode**：編輯**移動模式**下 5＝整個復原到編輯前；`sc ed ax` 進**旋轉模式**下 5＝只還原角度（**2026-07-12 起只還原 yaw 那一軸**，見本檔最後一節；位置/大小仍不動）。
 
 ## scene-capture-bridge P9 擷取器（DLL `d3e1b5d0`，co-save `'SCCP'` v3）
 
@@ -103,3 +103,22 @@
 4. **順手複驗（不破舊路）**：對一個**普通 vanilla NPC** `sc capc` → 匯出的那筆現在也該多出 `health/magicka/stamina/skills`，且 build 出來的分身**不再開 autoCalcStats**（數值照抄本尊）。舊 capture json（沒這些欄位的）照舊走 class-autocalc——**不該壞**。
 
 **回報**：① `sc capp` 有沒有吸到、label 大小寫對不對；② 分身的數值/perk/裝備對不對；③ voiceType/物品欄的落差要不要修。
+
+## scene-capture-bridge — 旋轉 per-axis 還原 ＋ palette replace（2026-07-12，DLL crc `9cae7ff1`，**尚未部署**）
+
+⚠️ **完全關遊戲重開**吃新 DLL（esp 不動、co-save 不升版、palette json 相容——只是**檔內順序改成「最上面那筆排第一」**，舊檔讀進來順序會上下顛倒一次，之後就穩定了）。
+
+**改了什麼**：① 旋轉子模式的歸零鍵改成 **per-axis 還原**（不是全軸、也不是設成 0，是**還原成進編輯前的該軸原值**）；② palette 的 `load from file` 明確「載入的排最上面」＋新增 **`replace from file`**（清空再載入）。
+
+1. **per-axis 還原**：找一個**本來就有角度**的物件（斜靠的木板、歪的椅子都行）→ `sc ed` 動作鍵選中 → **`sc ed ax`**（Editor 頁提示行應顯示「per-axis revert: 5 yaw, 2 pitch, 8 roll」）→
+   - **1/3 轉 pitch** 幾下 → 按 **numpad 2** → **只有 pitch 彈回原本的角度**（yaw/roll 保持你剛剛轉的、位置/大小不動）；螢幕跳「SCB: pitch reverted」。
+   - **4/6 轉 yaw** → 按 **numpad 5** → 只有 yaw 回原值（跳「SCB: yaw reverted」）。
+   - **7/9 轉 roll** → 按 **numpad 8** → 只有 roll 回原值（跳「SCB: roll reverted」）。
+   - **關鍵驗**：物件**原本就有的角度不該被吃掉**——三軸都按一遍還原後，物件應回到你選中它時的樣子（**不是**變成軸對齊的 0 度）。
+   - 移動模式（`sc ed` 退回）**不受影響**：numpad 5 仍＝整個編輯復原（位置＋角度＋大小）。
+2. **palette append 排最上**：`sc pk` 吸 2 個（A、B）→ 檔名框打 `pal-x.json` → **save to file** → 再吸 1 個 C（面板最上面是 C）→ **load from file (append)** → 面板應變成 **A、B 在最上面**（檔內順序，A 在最頂）、C 及原有的在下面；總數 = 原本 3 + 載入 2 = 5。
+3. **palette replace**：**replace from file** 同一個 `pal-x.json` → 插槽**只剩檔案裡那 2 筆**（原有的全清掉）、順序照檔案。
+   - **防呆**：檔名框打一個**不存在**的檔名再按 replace → **什麼都不該發生**（插槽不該被清空）；SKSE log 有 warn。
+4. **落盤**：關遊戲重開（palette 是磁碟持久、不隨存檔）→ 插槽＝你最後一次操作的結果。
+
+**回報**：① 三個歸零鍵是不是各管各軸、且還原成「原本的角度」而非 0；② append 有沒有排最上、replace 有沒有清乾淨、打錯檔名會不會誤清。
