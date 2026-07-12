@@ -65,6 +65,63 @@ public class PlacementSpecFieldsTests
         Assert.True((Object(r, "P").MajorRecordFlagsRaw & 0x800) == 0, "InitiallyDisabled flag 0x800 unexpectedly set");
     }
 
+    // --- NoHavokSettle (record flag 0x20000000) ----------------------------------------
+    // The engine havok-settles a ref when its cell loads; that pass is what flings
+    // hand-placed clutter. The flag skips it. Set by the in-game editor's `sc pl py0`.
+
+    [Fact]
+    public void NoHavokSettle_SetsHeaderFlag()
+    {
+        var spec = BaseSpec();
+        spec.Placements.Add(new PlacementSpec { EditorId = "P", Base = "Obj", Cell = "Room", NoHavokSettle = true });
+        var r = TestBuild.Ok(spec);
+        Assert.True(((uint)Object(r, "P").MajorRecordFlagsRaw & 0x20000000) != 0,
+            "DontHavokSettle flag 0x20000000 not set");
+    }
+
+    [Fact]
+    public void NoHavokSettle_False_DoesNotSetFlag()
+    {
+        // The back-compat pin: every spec written before this field existed deserializes
+        // with NoHavokSettle = false and MUST build byte-identically to before.
+        var spec = BaseSpec();
+        spec.Placements.Add(new PlacementSpec { EditorId = "P", Base = "Obj", Cell = "Room" });
+        var r = TestBuild.Ok(spec);
+        Assert.True(((uint)Object(r, "P").MajorRecordFlagsRaw & 0x20000000) == 0,
+            "DontHavokSettle flag 0x20000000 unexpectedly set on a placement that never asked for it");
+    }
+
+    [Fact]
+    public void NoHavokSettle_CoexistsWithInitiallyDisabled()
+    {
+        var spec = BaseSpec();
+        spec.Placements.Add(new PlacementSpec
+        {
+            EditorId = "P", Base = "Obj", Cell = "Room",
+            NoHavokSettle = true, InitiallyDisabled = true,
+        });
+        var r = TestBuild.Ok(spec);
+        var flags = (uint)Object(r, "P").MajorRecordFlagsRaw;
+        Assert.True((flags & 0x20000000) != 0, "DontHavokSettle lost");
+        Assert.True((flags & 0x800) != 0, "InitiallyDisabled lost");
+    }
+
+    [Fact]
+    public void NoHavokSettle_OnNpcPlacement_IsIgnored()
+    {
+        // An ACHR has no havok-settle semantics — the flag bit means something else there,
+        // so it must never be written onto an actor placement.
+        var spec = BaseSpec();
+        spec.Npcs.Add(new NpcSpec { EditorId = "Bob", Name = "Bob", Race = "Skyrim.esm:0x013746" });
+        spec.Placements.Add(new PlacementSpec
+        {
+            EditorId = "BobRef", Base = "Bob", Cell = "Room", Kind = "npc", NoHavokSettle = true,
+        });
+        var r = TestBuild.Ok(spec);
+        Assert.True(((uint)Npc(r, "BobRef").MajorRecordFlagsRaw & 0x20000000) == 0,
+            "DontHavokSettle must not be written on an ACHR");
+    }
+
     // --- EnableParent ------------------------------------------------------------------
 
     [Fact]

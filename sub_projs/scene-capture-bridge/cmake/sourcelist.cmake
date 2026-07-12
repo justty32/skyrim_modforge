@@ -7,6 +7,8 @@ set(sources ${sources}
     src/Markers.cpp
     src/Overrides.cpp
     src/Palette.cpp
+    src/Palette.Placed.cpp
+    src/Physics.cpp
     src/Referrer.cpp
     src/SceneExporter.cpp
     src/UI.cpp

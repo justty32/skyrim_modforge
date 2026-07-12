@@ -2774,6 +2774,10 @@
           "type": "boolean",
           "description": "Record flag 0x800: the ref exists in the cell but is invisible/non-collidable until explicitly enabled. Pair with enableParent to control when it appears"
         },
+        "noHavokSettle": {
+          "type": "boolean",
+          "description": "Record flag 0x20000000 (DontHavokSettle): the engine SKIPS the havok settle pass it runs on this ref when the cell loads, so the object stays exactly at the authored transform instead of being flung/dropped. Use on hand-placed clutter (cups, books, weapons on a table). Vanilla Skyrim.esm sets it on 3791 refs. Objects only (ignored on NPC placements)"
+        },
         "enableParent": {
           "type": "object",
           "description": "XESP: this ref's enabled state follows another placed ref (the 'enable parent')",

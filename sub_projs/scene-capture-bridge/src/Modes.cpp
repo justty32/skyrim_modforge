@@ -24,6 +24,20 @@ namespace {
     // Per-mode aim source (false = crosshair). Same indexing as g_binds.
     bool g_useRay[static_cast<std::size_t>(Modes::Mode::kTotal)] = {false};
 
+    // Per-mode physics ("physics is KEPT" — py1 = true, so it reads straight off
+    // the command). The defaults are NOT uniform, which is the whole point:
+    // a PLACED object keeps its physics (py1), an EDITED one loses it while you
+    // drive it (py0 — the P3 freeze-on-select behaviour, now switchable).
+    // Indices: off, marker, delete, pick, place, edit, capture, referrer.
+    void ApplyPhysicsDefaults(bool (&p)[static_cast<std::size_t>(Modes::Mode::kTotal)]) {
+        for (auto& v : p) v = true;  // "keep physics" is the neutral value
+        p[static_cast<std::size_t>(Modes::Mode::kEdit)] = false;  // py0 = freeze while editing
+    }
+    bool g_physics[static_cast<std::size_t>(Modes::Mode::kTotal)] = {
+        true, true, true, true, true, /*kEdit*/ false, true, true};
+    // Per-mode extra data (pick/place). Off = durable base only (historic).
+    bool g_extraData[static_cast<std::size_t>(Modes::Mode::kTotal)] = {false};
+
     bool g_rebindArmed = false;
     Modes::Mode g_rebindTarget = Modes::Mode::kOff;
 
@@ -104,6 +118,28 @@ namespace Modes {
         SKSE::log::info("Modes: {} aim source -> {}", Name(m), useRay ? "ray" : "crosshair");
     }
 
+    bool Physics(Mode m) {
+        return m < Mode::kTotal ? g_physics[static_cast<std::size_t>(m)] : true;
+    }
+
+    void SetPhysics(Mode m, bool keepPhysics) {
+        if (m == Mode::kOff || m >= Mode::kTotal) return;
+        g_physics[static_cast<std::size_t>(m)] = keepPhysics;
+        SKSE::log::info("Modes: {} physics -> {}", Name(m),
+            keepPhysics ? "kept (py1)" : "OFF (py0)");
+    }
+
+    bool ExtraData(Mode m) {
+        return m < Mode::kTotal ? g_extraData[static_cast<std::size_t>(m)] : false;
+    }
+
+    void SetExtraData(Mode m, bool on) {
+        if (m == Mode::kOff || m >= Mode::kTotal) return;
+        g_extraData[static_cast<std::size_t>(m)] = on;
+        SKSE::log::info("Modes: {} extra data -> {}", Name(m),
+            on ? "carried (ed1)" : "base only (ed0)");
+    }
+
     bool HandleKey(std::uint32_t scancode) {
         if (g_rebindArmed) {
             if (scancode == kEsc) {
@@ -145,7 +181,9 @@ namespace Modes {
         for (std::size_t i = 1; i < static_cast<std::size_t>(Mode::kTotal); ++i) {
             g_binds[i] = kDefaultBind;
             g_useRay[i] = false;
+            g_extraData[i] = false;
         }
+        ApplyPhysicsDefaults(g_physics);  // place = py1, edit = py0
         g_rebindArmed = false;
     }
 

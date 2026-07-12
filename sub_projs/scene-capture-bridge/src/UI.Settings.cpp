@@ -68,6 +68,37 @@ void __stdcall UI::SettingsPage::Render() {
         Editor::RotateMode() ? "ROTATE" : "move");
     ImGuiMCP::Separator();
 
+    // --- physics (sc pl py0/py1, sc ed py0/py1) ---
+    // Console-set, shown here (same convention as the aim source above).
+    ImGuiMCP::Text("Physics (sc pl / sc ed  py0 = off, py1 = on):");
+    ImGuiMCP::BulletText("place   %s",
+        Modes::Physics(Modes::Mode::kPlace) ? "py1 — placed objects keep full physics"
+                                            : "py0 — frozen on placement + exported noHavokSettle");
+    ImGuiMCP::BulletText("edit    %s",
+        Modes::Physics(Modes::Mode::kEdit) ? "py1 — physics keeps running while you edit"
+                                           : "py0 — frozen while you control the object");
+    ImGuiMCP::TextWrapped(
+        "`sc pl py0` is the one that ships: the export flags the REFR DontHavokSettle, "
+        "so the built esp's object survives the engine's load-time havok settle (what "
+        "otherwise flings hand-placed clutter across the room). The in-game freeze alone "
+        "would die with the savegame.");
+    ImGuiMCP::Separator();
+
+    // --- instance extra data (sc pk ed0/ed1, sc pl ed0/ed1) ---
+    ImGuiMCP::Text("Extra data (sc pk / sc pl  ed0 = base only, ed1 = carry):");
+    ImGuiMCP::BulletText("pick    %s",
+        Modes::ExtraData(Modes::Mode::kPick) ? "ed1 — base + the instance's enchantment"
+                                             : "ed0 — the durable base only");
+    ImGuiMCP::BulletText("place   %s",
+        Modes::ExtraData(Modes::Mode::kPlace) ? "ed1 — export mints the enchanted item"
+                                              : "ed0 — the plain base");
+    ImGuiMCP::TextWrapped(
+        "A player-applied enchant lives on the REF, not the base — pick it with ed0 and "
+        "you get a plain iron sword. With pick+place on ed1 the export writes a "
+        "capturedItems[] record for the enchanted item and points the placement's base at "
+        "it (mint + reference, in the same file).");
+    ImGuiMCP::Separator();
+
     // --- marker gem visibility (mirrors sc mk dp0/dp1) ---
     bool show = Markers::ProxiesVisible();
     if (ImGuiMCP::Checkbox("marker gems visible", &show)) {

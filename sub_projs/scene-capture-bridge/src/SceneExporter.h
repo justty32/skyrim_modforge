@@ -52,6 +52,12 @@ namespace SceneExporter {
         std::size_t overrides = 0;    // moved authored refs exported via overrides[]
         std::size_t references = 0;   // named existing refs exported via references[]
         std::size_t referencesSkipped = 0;  // referrers whose in-file target wasn't in this export
+        // `sc pl py0` placements: exported with `noHavokSettle` -> the REFR's
+        // DontHavokSettle flag, so the built esp's object stays where you put it.
+        std::size_t noHavokSettle = 0;
+        // `sc pl ed1` placements: their `base` names a MINTED capturedItems[] record
+        // (an enchanted clone) emitted into this same file — an in-file dependency.
+        std::size_t mintedItems = 0;
         std::string cell;             // durable id of the exported cell/worldspace
         std::string path;             // where the last WriteSceneFile went
     };

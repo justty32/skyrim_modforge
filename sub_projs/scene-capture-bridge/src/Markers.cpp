@@ -1,6 +1,7 @@
 #include "Markers.h"
 
 #include "Aim.h"
+#include "Physics.h"
 #include "SceneExporter.h"
 #include "log.h"
 
@@ -25,27 +26,10 @@ namespace {
     };
     std::vector<PendingOrphan> g_pending;
 
-    // Freeze the gem's clutter havok so it can't be kicked or fall. The catch:
-    // right after PlaceObjectAtMe the 3D (hence the rigid body) is not loaded,
-    // so an immediate SetMotionType silently no-ops (log: "Target does not have
-    // 3D"). Retry on the SKSE task queue until Get3D() is live — one frame is
-    // usually enough, cap the retries so a never-loading proxy can't spin.
-    void FreezeDeferred(RE::ObjectRefHandle h, int retries) {
-        auto* task = SKSE::GetTaskInterface();
-        if (!task) {  // no queue (very early) — best-effort immediate
-            if (auto r = h.get()) r->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
-            return;
-        }
-        task->AddTask([h, retries]() {
-            auto ref = h.get();
-            if (!ref) return;
-            if (ref->Get3D()) {
-                ref->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
-                return;
-            }
-            if (retries > 0) FreezeDeferred(h, retries - 1);
-        });
-    }
+    // Freeze the gem's clutter havok so it can't be kicked or fall. The deferred
+    // retry (the 3D isn't loaded yet right after PlaceObjectAtMe) now lives in
+    // Physics.h — Palette's place path needed the same thing.
+    using Physics::FreezeDeferred;
 
     // The visible proxy base. Preferred: the tooling esp's MarkerACTI — model
     // is Weapons\Iron\IronDagger.nif (verified via houseCARL against WEAP

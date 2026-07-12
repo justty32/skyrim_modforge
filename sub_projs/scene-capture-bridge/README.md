@@ -31,14 +31,35 @@ sc off   啥都不做
 sc       印當前模式＋用法
 sc mk dp0 / dp1            隱藏／顯示所有 marker 光球（純視覺，登記簿與匯出不受影響）
 sc del|pk|ed|cap|ref er0/er1  該模式動作鍵用準星／物理射線（樹、純裝飾 static）
+sc pl py1 / py0            擺出的物件保留／關閉物理（py1 預設；見下「物理開關」）
+sc ed py0 / py1            控制期間凍結／保留物理（py0 預設＝現行行為）
+sc pk ed0 / ed1            滴管只吸耐久 base／連實例 extra data（附魔）一起吸（ed0 預設）
+sc pl ed0 / ed1            擺放只帶 base／帶上插槽的 extra data（ed0 預設）
 sc ed ax                   進編輯「純旋轉子模式」（見下）；回普通模式打 sc ed
 sc delc                    擦除 console 滑鼠點選的 ref（先只做物件，非 actor）
+sc pkc [Label]             滴管吸 console 滑鼠點選的 ref 進 palette（aim-free；Label ＝當場改插槽名）
 sc cap / sc cap r          擷取準星／射線目標的附魔＋效果（附魔武防、藥水、材料）進 capturedItems[]
 sc capc [Label]            擷取 console 滑鼠點選的 ref（物品或 NPC 皆可）
 sc capp [Label]            擷取「玩家自己」（臉/數值/perk/裝備全帶）→ capturedNpcs[]
 sc ref <Label>             命名當前指的既有 ref（一次到位：標下＋打標籤）→ references[]
 sc refc [Label]            命名 console 滑鼠點選的 ref（aim-free）
 ```
+
+**物理開關（`py`，2026-07-12）——重點是「哪一半會進 esp」**：
+
+| | `sc pl py0/py1`（擺放） | `sc ed py0/py1`（編輯，含 `ax`） |
+|---|---|---|
+| 預設 | **`py1`** ＝保留完整物理 | **`py0`** ＝控制期間凍結（＝現行 P3 行為） |
+| `py0` 做什麼 | ① **當下凍結**（`SetMotionType(kKeyframed)`，延後到 3D 載入才凍）② **匯出帶 `noHavokSettle`** | 選中即凍結，commit/cancel 時放開 → 物件沉降 |
+| `py1` 做什麼 | 什麼都不做（物件正常受物理） | 控制期間**不凍**，havok 照跑 |
+
+⚠️ **只有 (②) 那一半會 ship**：DLL 的 `SetMotionType` 是 runtime 狀態，隨存檔死掉、進不了 esp。真正讓「蓋好的房間裡杯子不亂飛」的是 **`PlacementSpec.noHavokSettle` → REFR 記錄旗標 `DontHavokSettle`（0x20000000）**——它叫引擎**跳過 cell 載入時的 havok settle pass**（那一下就是把手擺的杯子彈飛的元兇，物件跟桌面稍微交疊時尤其慘）。**這是 Bethesda 自己的做法，不是偏方**：Skyrim.esm 的 693,333 個 REFR 裡 **3,791 個**帶這個旗標，型別分佈正是雜物（MoveableStatic 995／MiscItem 724／Activator 564／Weapon 321／**Static 247**／藥水 245／Armor 159／Book 87…）。因為連 STAT 都在名單上，**匯出旗標不按型別過濾**（runtime 凍結才過濾——keyframe 一個 STAT 沒有意義）。ACHR 不寫（actor 無此語意）。
+
+**Extra data 開關（`ed`，2026-07-12）**：現況 `sc pk` 只取 `GetBaseObject()`，所以**玩家自己附魔的劍吸進來是一把白鐵劍**——附魔活在 **ref 的 `ExtraEnchantment`**，不在 base 上。
+
+- **`sc pk ed1`** ＝吸取時連實例附魔一起記進插槽（durable ENCH → 直接引用；玩家自製的 runtime ENCH → 記下 MGEF effects 待鑄造）。
+- **`sc pl ed1`** ＝該插槽擺出去時，**匯出走「鑄造＋引用」**：同一份 scene 檔裡吐一筆 `capturedItems[]`（`editorId: MFPal_<插槽名>_<seq>`，`base` ＝實體模板、`enchantment` ＝吸到的附魔），而該 placement 的 **`base` 指那個 editorId**——**檔內相依**，跟 referrer 的 `references[]` 同一招（所以**必須同一個檔**：capturedItems 落到另一份 json，build 會解不到 base 而丟掉 placement）。ModForge 端 `ExpandCapturedItems` 把它展成 WEAP/ARMO ＋ 一顆新 ENCH，**C# 零改動**。
+- 擺放當下若附魔是 **durable ENCH**，世界裡那顆也會真的帶上（`ExtraEnchantment`）；**runtime ENCH 不套**（它是存檔綁定的 form，而 palette 插槽是**落盤跨存檔**的，快取那個指標＝懸空指標）——匯出照樣鑄造，ship 出去的東西不受影響。
 
 **`sc capp` ＝直接吸玩家（2026-07-12，去 PROTEUS 化）**：引擎把玩家的 chargen 寫在 base TESNPC（`Skyrim.esm:0x000007`）上，DLL 直讀同一處即可，**不必經 PROTEUS clone**（clone 自報 level 1／50-50-50、不寫 tintLayers、outfit 是空殼）。順帶所有 actor 的擷取都改帶**顯式數值**：H/M/S ＋ 18 技能（引擎 AV 6..23，＝Mutagen `Skill` 序）→ ModForge 直接寫 DNAM、**不開 autoCalcStats**（autocalc 只是拿 class+level 估算，載入時還會覆蓋掉）。玩家 perk 讀 `PlayerCharacter::addedPerks`（玩家 base 的 perk array 是空的）。
 
@@ -98,7 +119,9 @@ Export 頁有 **Export player cell**、**Export all (loaded cells)** 與 **Expor
 | `extern/SKSEMenuFramework/` | vendored 消費者 header（LGPL-2.1，`GetProcAddress` shim，不連結 DLL）|
 | `Aim.{h,cpp}` | 共用視角射線＋**兩種選取入口**：`CrosshairRef()`（互動準星，老手感）與 `RayRef()`（物理射線→反查 ref，樹/純裝飾 static 用）。**射線絕不做自動 fallback**（使用者拍板 2026-07-11）——牆/地板都是 ref，自動 fallback 會把「按空」變誤抓；射線只走明示按鈕/專用鍵 |
 | `Eraser.{h,cpp}` | 橡皮擦（`sc del` 模式動作）：authored→disable＋登記→`removals[]`；自己的 dynamic→真刪除無痕；entry 記 name/座標/cell（面板逐列顯示＋過濾）；undo 逐列/逐 cell/最近一筆；`erase by ray` 明示射線入口。（`scan disabled` 跨存檔救援已移除——co-save 持久化耐久 id 後冗餘）|
-| `Palette.{h,cpp}` | 滴管（`sc pk` 吸、`sc pl` 擺；runtime-only base 拒收）；`pick by ray` 明示入口；**插槽落盤 `scene-capture-palette.json`（跨存檔跨 session）**，base 解析不回（plugin 移除）標 unavailable 不炸 |
+| `Palette.{h,cpp}` | 滴管（`sc pk` 吸、`sc pl` 擺、**`sc pkc [Label]` console 選取版**；runtime-only base 拒收）；`pick by ray` 明示入口；**插槽落盤 `scene-capture-palette.json`（跨存檔跨 session）**，base 解析不回（plugin 移除）標 unavailable 不炸。**`sc pk ed1` 連實例 `ExtraEnchantment` 一起吸**（durable ENCH 引用／runtime ENCH 記 MGEF effects；runtime ENCH 的**指標絕不快取**——插槽會落盤，那是存檔綁定的 form）|
+| `Palette.Placed.cpp` | **我們擺出去、匯出時要多講一句話的 ref 登記簿**（`sc pl py0` → `noHavokSettle`；`sc pl ed1` → 鑄造的 `capturedItems[]`）。一般擺放**不建列**（vanilla diff 本來就吐得完美）。identity ＝ handle，dead handle 用 **base+座標**在匯出掃 cell 時就地撿回（不必 kPostLoadGame hook）。co-save `'PLEX'` |
+| `Physics.{h,cpp}` | havok 凍結/放開的共用原語（`HavokMovable` 判定 ＋ `FreezeDeferred` 延後到 3D 載入才 `SetMotionType`）。Markers/Editor/Palette 三處共用（原本各抄一份）。**⚠️ 這一層是 runtime、進不了 esp**——真正 ship 的是 `noHavokSettle` 記錄旗標 |
 | `Captures.{h,cpp}` | 定義擷取器（Palette 的姊妹：吸「沒有耐久 base 可引用」的內容）。`sc cap`／面板讀 live form 的語意內容 → ModForge **鑄新記錄**。**①物品**：附魔武防（實例 ExtraEnchantment 優先，否則 base formEnchanting）＋藥水/材料效果 → `capturedItems[]`（效果 shape = EffectSpec）。**②NPC**：`TESNPC` 外貌（race/sex/weight/height＋headParts/tintLayers/faceMorphs+parts/hair/skin/FTST/outfit）＋**base perks（id+rank）**＋**當前 buff（active-effect 快照：source spell＋MGEF＋mag/dur/elapsed）**＋**旗標（unique/dead/essential/protected）**＋**顯式數值（H/M/S＋18 技能，讀 base actor values；所有 actor 都收）**＋擺位 → `capturedNpcs[]`。**③玩家**：`sc capp` 直讀玩家 base TESNPC（chargen 就在那），perk 走 `PlayerCharacter::addedPerks`。**唯一 NPC 也收**（2026-07-11 使用者反轉，帶 `unique` 旗標給 ModForge 判斷）。登記簿隨 co-save（record `'SCCP'` **v8**：+label +H/M/S +skills，只存耐久 id）。**⚠️ NPC 待驗/未涵蓋**：(a) PROTEUS 若用 NiNode live override 不寫 TESNPC，擷到的臉是 base 的非套用後的；(b) **身形/臉部「mesh」本身不收**——只收「定義」（headParts+morphs+race+weight，臉/身是由這些＋facegen 烘焙生成的），baked FaceGeom nif 與 RaceMenu/NiOverride 雕塑不在 TESNPC，需 facegen 烘焙＝ModForge 下游活 |
 | `Editor.{h,cpp}` | 編輯模式（`sc ed` 動作鍵選中準星目標；**numpad \* ＝射線選取**）→ numpad 微調（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、. cancel、**5＝復原續編**）；步長 runtime 可調（Settings/co-save）；havok-movable 類型編輯期物理凍結；自己的 ref＝live pose 直接匯出（不進 overrides 列，正常），**authored ref＝commit 時登記進 Overrides**（2026-07-11 契約拍板）|
 | `Referrer.{h,cpp}` | referrer（`sc ref` / `sc refc`）：**命名**一個既有 ref——只記身份＋label，**世界完全不動**（與 Eraser 的唯一差別）→ 匯出頂層 `references[]`。(乙) 檔內目標（我們 `sc pl` 擺的 dynamic ref）identity ＝ **handle**，匯出時給該 placement 蓋 `EditorIdOf()` ＝ `MFRef_<label>_<seq>`；(甲) 外部 authored ref 記耐久 id。拒收 marker proxy／自家 actor／重複 label。co-save `'RFRR'`；`ReacquireOrphans()` 讀檔按 base+座標撿回檔內目標 |
@@ -145,7 +168,8 @@ DLL 有兩層狀態，**P5 起兩層都隨存檔走**：
 | Palette 插槽 | **磁碟**（`scene-capture-palette.json`） | 天生跨存檔；plugin 移出 load order 的槽標 unavailable |
 | Captures 擷取定義（物品附魔/效果、NPC 外貌/數值、玩家） | **co-save 登記簿**（record `'SCCP'` v8，純耐久 id） | **自動**進 `capturedItems[]`／`capturedNpcs[]`；無 handle，讀檔即回 |
 | referrer（命名既有 ref） | **co-save 登記簿**（record `'RFRR'` v1） | **外部目標**＝耐久 id，自動進 `references[]`；**檔內目標**（我們自己擺的）身份是 dynamic handle → 讀檔 `ReacquireOrphans` 按 base+座標撿回；撿不回就標 `TARGET LOST` 並**跳過該筆**（不吐 build 對不上的 editorId） |
-| 模式/鍵位/dp 狀態 | **co-save** | 隨存檔還原 |
+| **`sc pl py0/ed1` 擺出的物件**（旗標／附魔） | **co-save 登記簿**（record `'PLEX'` v1） | 匯出自動帶 `noHavokSettle` ／ 鑄造的 `capturedItems[]` ＋ placement 的 `base` 指它；handle 跨重啟死掉 → 匯出掃 cell 時按 **base＋座標**就地撿回 |
+| 模式/鍵位/dp 狀態 ＋ **物理/extra-data 開關** | **co-save**（SETT **v6**） | 隨存檔還原（v≤5 舊存檔＝預設：place py1、edit py0、extra data 全關） |
 
 **adopt 降級為救援機制**：marker 的 `adopt this cell` 現在讀檔會**自動跑一次**（掃當前 cell），只有跨到別的 cell 才需手動按。擦除的 `scan disabled refs` 已整個移除——co-save 存的是耐久 id，重解析穩定，跨存檔救援冗餘。真要**換一個存檔**撿另一條時間線的 marker，走 Markers 頁 `adopt this cell`。
 

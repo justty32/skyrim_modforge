@@ -74,6 +74,15 @@ public sealed class PlacementSpec
     public float Scale { get; set; } = 1f;          // XSCL; omitted in record if 1.0
     public bool Persistent { get; set; }
     public bool InitiallyDisabled { get; set; }     // record header flag 0x800
+    // Record header flag 0x20000000 (DontHavokSettle): tell the engine to SKIP the havok "settle"
+    // pass it runs on this ref when the cell loads. That pass is what launches a hand-placed cup
+    // across the room (worse the moment the object slightly intersects the table it sits on) — with
+    // the flag the ref simply stays at the authored transform. This is the canonical mechanism, not
+    // a trick: Skyrim.esm sets it on 3791 refs, overwhelmingly clutter (MoveableStatic / MiscItem /
+    // Weapon / Book / potions), but also on 247 plain Statics — so it is NOT type-gated here either.
+    // Objects only: an ACHR has no such semantics, so it is ignored on NPC placements.
+    // The in-game editor sets this from `sc pl py0` ("place with physics off").
+    public bool NoHavokSettle { get; set; }
     // Load-door teleport: the PARTNER door this door teleports to (a placement editorId, or a vanilla
     // door ref "<master>:0xFORMID"). Set on BOTH doors of the pair (each pointing at the other) to
     // make a walk-through link. `base` must be a DOOR record. The arrival point is the partner's

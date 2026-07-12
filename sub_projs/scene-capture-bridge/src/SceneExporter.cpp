@@ -4,6 +4,7 @@
 #include "Eraser.h"
 #include "Markers.h"
 #include "Overrides.h"
+#include "Palette.h"
 #include "Referrer.h"
 
 #include "log.h"
@@ -87,6 +88,12 @@ namespace SceneExporter {
             // this export — the only ones AppendReferences may emit (a `ref` pointing
             // at an editorId that is not in the file would be dropped by build).
             std::unordered_set<std::uint32_t> inFileRefsEmitted;
+            // Palette placed-ref rows (`sc pl ed1`) whose placement was emitted with a
+            // MINTED base — AppendMintedItems must emit exactly these as capturedItems[]
+            // rows, or the placement's `base` would name an editorId that is not in the
+            // file. Same in-file-dependency discipline as inFileRefsEmitted above.
+            std::vector<const Palette::PlacedInfo*> mintedEmitted;
+            std::size_t noHavokSettle = 0;   // placements exported with the flag (log/panel)
         };
     }
 
@@ -202,6 +209,32 @@ namespace SceneExporter {
             const RE::NiPoint3& ang = ref.data.angle;
             nlohmann::json entry;
             entry["base"] = *baseId;
+
+            // Did we place this one with a rider (`sc pl py0` / `sc pl ed1`)?
+            if (const auto* pi = Palette::PlacedInfoFor(refPtr)) {
+                // py0 — physics off. The in-session SetMotionType freeze dies with the
+                // savegame; THIS is the half that ships. `noHavokSettle` becomes the
+                // REFR's DontHavokSettle record flag (0x20000000), which tells the
+                // engine to skip the load-time havok settle pass — the pass that
+                // launches a hand-placed cup across the room. Vanilla Skyrim.esm uses
+                // it on 3791 refs (clutter AND statics), so it is NOT type-gated here.
+                if (pi->noHavokSettle) {
+                    entry["noHavokSettle"] = true;
+                    ++counters.noHavokSettle;
+                }
+                // ed1 — the slot carried instance extra data (a player-applied
+                // enchantment). The durable base is a PLAIN iron sword: pointing the
+                // placement at it would ship the un-enchanted item. Instead point
+                // `base` at a MINTED capturedItems[] record (emitted by
+                // AppendMintedItems into THIS file) whose template IS that base and
+                // whose enchantment is the captured one. Mint + reference — the same
+                // in-file dependency the referrer uses for `references[]`.
+                if (pi->extra.present) {
+                    entry["base"] = Palette::MintedEditorIdOf(*pi);
+                    counters.mintedEmitted.push_back(pi);
+                }
+            }
+
             // (B) IN-FILE DEPENDENCY — the referrer's core trick. This dynamic ref
             // has NO durable FormID, so a `references[]` row cannot name it by id
             // (the id is not portable and means nothing after the build). Give the
@@ -352,6 +385,54 @@ namespace SceneExporter {
                 "was not exported (see the lines above)", unreachable);
         }
         if (!arr.empty()) scene["references"] = std::move(arr);
+    }
+
+    // One capturedItems[] enchantment block — shared by the Captures registry and
+    // the palette's minted items (they expand through the SAME ModForge path:
+    // ExpandCapturedItems -> WeaponSpec/ArmorSpec with a referenced-or-minted ENCH).
+    static nlohmann::json EnchantJson(const std::string& target, const std::string& enchBase,
+        std::uint16_t amount, const std::vector<Captures::Effect>& effects) {
+        nlohmann::json ench;
+        ench["target"] = target;                       // weapon | armor
+        if (!enchBase.empty()) ench["base"] = enchBase;  // durable ENCH -> referenced
+        if (amount) ench["amount"] = amount;
+        if (!effects.empty()) {                        // runtime ENCH -> minted from MGEFs
+            auto a = nlohmann::json::array();
+            for (const auto& ef : effects)
+                a.push_back({{"magicEffect", ef.magicEffect}, {"magnitude", ef.magnitude},
+                    {"area", ef.area}, {"duration", ef.duration}});
+            ench["effects"] = std::move(a);
+        }
+        return ench;
+    }
+
+    // capturedItems[] rows for objects placed with `sc pl ed1` — the MINT half of
+    // the mint+reference path. AppendPlacements already pointed each such
+    // placement's `base` at MintedEditorIdOf(row); this emits the record that
+    // editorId names, INTO THE SAME FILE (a scene export otherwise carries no
+    // capturedItems — the 2026-07-12 scope split sends the Captures registry to its
+    // own file). It has to be the same file: an in-file dependency that lands in a
+    // different json would be an unresolvable base, and build would drop the
+    // placement.
+    //
+    // Must run AFTER AppendPlacements, and it emits ONLY the rows whose placement
+    // was actually emitted — never a record nothing points at.
+    static void AppendMintedItems(nlohmann::json& scene, const PlacementCounters& counters) {
+        if (counters.mintedEmitted.empty()) return;
+        auto arr = nlohmann::json::array();
+        for (const auto* pi : counters.mintedEmitted) {
+            nlohmann::json c;
+            c["editorId"] = Palette::MintedEditorIdOf(*pi);  // what the placement's `base` names
+            c["kind"] = pi->extra.kind;                      // weapon | armor
+            c["name"] = pi->name;                            // the instance's display name
+            if (!pi->baseId.empty()) c["base"] = pi->baseId; // physical template to clone
+            c["enchantment"] = EnchantJson(pi->extra.kind, pi->extra.enchBase,
+                pi->extra.enchAmount, pi->extra.effects);
+            arr.push_back(std::move(c));
+        }
+        SKSE::log::info("AppendMintedItems: {} minted item(s) for `sc pl ed1` placements",
+            arr.size());
+        scene["capturedItems"] = std::move(arr);
     }
 
     // Captured DEFINITIONS — content with no durable base to reference, so
@@ -509,14 +590,17 @@ namespace SceneExporter {
         g_last.overrides = Overrides::All().size();
         g_last.references = scene.contains("references") ? scene["references"].size() : 0;
         g_last.referencesSkipped = Referrer::All().size() - g_last.references;
+        g_last.noHavokSettle = c.noHavokSettle;
+        g_last.mintedItems = c.mintedEmitted.size();
         SKSE::log::info(
             "Export[{}]: {} placements, {} actors excluded (NPCs are ModForge's "
             "job), {} pre-existing, {} skipped (dynamic bases), {} marker "
             "proxies excluded, {} annotations, {} removals, {} overrides, "
-            "{} references",
+            "{} references, {} noHavokSettle (sc pl py0), {} minted items (sc pl ed1)",
             cellLabel, scene["placements"].size(), c.actorsExcluded,
             c.preexisting, c.skipped, c.markerProxies, Markers::All().size(),
-            Eraser::All().size(), Overrides::All().size(), g_last.references);
+            Eraser::All().size(), Overrides::All().size(), g_last.references,
+            c.noHavokSettle, c.mintedEmitted.size());
     }
 
     nlohmann::json ExportCell(RE::TESObjectCELL* cell) {
@@ -533,7 +617,8 @@ namespace SceneExporter {
         PlacementCounters c;
         AppendPlacements(cell, scene, c);   // must precede AppendReferences (in-file targets)
         AppendRegistries(scene);
-        AppendReferences(scene, c);
+        AppendReferences(scene, c);   // in-file targets: needs AppendPlacements first
+        AppendMintedItems(scene, c);  // in-file minted bases: likewise
         std::string label;
         if (cell->IsInteriorCell()) {
             if (auto id = ResolveDurableId(cell)) label = *id;
@@ -559,7 +644,8 @@ namespace SceneExporter {
             });
         }
         AppendRegistries(scene);
-        AppendReferences(scene, c);
+        AppendReferences(scene, c);   // in-file targets: needs AppendPlacements first
+        AppendMintedItems(scene, c);  // in-file minted bases: likewise
         RecordStats(scene, c, std::format("ALL/{} loaded cells", cells));
         SKSE::log::info("ExportAll: swept {} loaded cell(s) — placements in "
             "unloaded cells are not captured (visit them, or export per-cell)", cells);

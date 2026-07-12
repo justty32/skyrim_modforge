@@ -6,6 +6,7 @@
 #include "Markers.h"
 #include "Modes.h"
 #include "Overrides.h"
+#include "Palette.h"
 #include "Referrer.h"
 #include "log.h"
 
@@ -19,14 +20,16 @@ namespace {
     constexpr std::uint32_t kOvrd = 'OVRD';
     constexpr std::uint32_t kCaps = 'SCCP';
     constexpr std::uint32_t kRfrr = 'RFRR';  // referrer registry (references[])
+    constexpr std::uint32_t kPlex = 'PLEX';  // palette placed-ref riders (noHavokSettle / extra data)
 
     // Per-record versions (an older save's record is read with its own layout).
-    constexpr std::uint32_t kVerSett = 5;  // v2 adds editor step sizes; v3 adds aim/axis; v4 adds capture aim; v5 adds referrer aim
+    constexpr std::uint32_t kVerSett = 6;  // v2 adds editor step sizes; v3 adds aim/axis; v4 adds capture aim; v5 adds referrer aim; v6 adds per-mode physics (place/edit) + extra data (pick/place)
     constexpr std::uint32_t kVerMkrs = 2;  // v2: full angle (3f) + scale, was angleZ only
     constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
     constexpr std::uint32_t kVerOvrd = 1;
     constexpr std::uint32_t kVerCaps = 9;  // v2 kNpc; v3 flags/perks/buffs; v4 class/level/equipped; v5 armor/weapons; v6 inventory; v7 rows+instance-ench; v8 label + explicit H/M/S + 18 skills; v9 isPlayer flag
     constexpr std::uint32_t kVerRfrr = 1;
+    constexpr std::uint32_t kVerPlex = 1;
 
     // ---- primitives -------------------------------------------------------
 
@@ -57,6 +60,21 @@ namespace {
         return ref ? ref->GetHandle() : RE::ObjectRefHandle{};
     }
 
+    // "<plugin>:0xLOCALID" -> live form, for the one pointer we DO cache across a
+    // load: a DURABLE enchantment on a palette-placed ref (a runtime, player-crafted
+    // ENCH is savegame-bound and is never cached — Palette.cpp ReadExtra explains).
+    RE::EnchantmentItem* ResolveEnchant(const std::string& id) {
+        const auto colon = id.rfind(':');
+        if (colon == std::string::npos) return nullptr;
+        std::uint32_t local = 0;
+        try {
+            local = static_cast<std::uint32_t>(std::stoul(id.substr(colon + 1), nullptr, 16));
+        } catch (...) { return nullptr; }
+        auto* dh = RE::TESDataHandler::GetSingleton();
+        RE::TESForm* f = dh ? dh->LookupForm(local, id.substr(0, colon)) : nullptr;
+        return f ? f->As<RE::EnchantmentItem>() : nullptr;
+    }
+
     void WriteVec3(const SKSE::SerializationInterface* si, const RE::NiPoint3& v) {
         si->WriteRecordData(v.x); si->WriteRecordData(v.y); si->WriteRecordData(v.z);
     }
@@ -80,6 +98,12 @@ namespace {
         si->WriteRecordData(static_cast<std::uint8_t>(Editor::RotateMode() ? 1 : 0));  // v3
         si->WriteRecordData(static_cast<std::uint8_t>(Modes::UseRay(Modes::Mode::kCapture) ? 1 : 0));  // v4
         si->WriteRecordData(static_cast<std::uint8_t>(Modes::UseRay(Modes::Mode::kReferrer) ? 1 : 0));  // v5
+        // v6: the per-mode physics + extra-data switches. Written in a fixed order
+        // so LoadSettings can read them back positionally (same discipline as v3).
+        si->WriteRecordData(static_cast<std::uint8_t>(Modes::Physics(Modes::Mode::kPlace) ? 1 : 0));
+        si->WriteRecordData(static_cast<std::uint8_t>(Modes::Physics(Modes::Mode::kEdit) ? 1 : 0));
+        si->WriteRecordData(static_cast<std::uint8_t>(Modes::ExtraData(Modes::Mode::kPick) ? 1 : 0));
+        si->WriteRecordData(static_cast<std::uint8_t>(Modes::ExtraData(Modes::Mode::kPlace) ? 1 : 0));
     }
 
     void LoadSettings(const SKSE::SerializationInterface* si, std::uint32_t version) {
@@ -122,6 +146,16 @@ namespace {
             std::uint8_t ray = 0;
             si->ReadRecordData(ray);
             Modes::SetUseRay(Modes::Mode::kReferrer, ray != 0);
+        }
+        if (version >= 6) {
+            // Per-mode physics + extra data. A pre-v6 save simply doesn't reach
+            // here, so it keeps the defaults OnRevert already installed (place =
+            // py1, edit = py0, extra data off) — old saves behave exactly as before.
+            std::uint8_t b = 0;
+            si->ReadRecordData(b); Modes::SetPhysics(Modes::Mode::kPlace, b != 0);
+            si->ReadRecordData(b); Modes::SetPhysics(Modes::Mode::kEdit, b != 0);
+            si->ReadRecordData(b); Modes::SetExtraData(Modes::Mode::kPick, b != 0);
+            si->ReadRecordData(b); Modes::SetExtraData(Modes::Mode::kPlace, b != 0);
         }
         if (mode < static_cast<std::uint8_t>(Modes::Mode::kTotal))
             Modes::Set(static_cast<Modes::Mode>(mode));
@@ -322,6 +356,79 @@ namespace {
             e.isActor = actor != 0;
             e.handle = ResolveHandle(si, formId);  // dead handle kept — see the note above
             all.push_back(std::move(e));
+        }
+    }
+
+    // Palette placed-ref riders: the rows for objects we placed with `sc pl py0`
+    // (-> noHavokSettle in the export) and/or `sc pl ed1` (-> a minted enchanted
+    // item the placement's `base` points at). The palette SLOTS themselves are NOT
+    // here — they are disk-persisted (scene-capture-palette.json) and savegame-
+    // agnostic by design. These rows are the opposite: they name refs inside ONE
+    // savegame, so they ride the co-save like Eraser/Overrides/Referrer.
+    //
+    // A dynamic FormID is not reliably remapped across a full restart, so a row can
+    // come back with a dead handle. It is KEPT: base + position let PlacedInfoFor
+    // re-bind it lazily while the exporter walks the cell (same rescue as Referrer,
+    // no extra sweep).
+    void SavePlaced(const SKSE::SerializationInterface* si) {
+        const auto& all = Palette::Placed();
+        si->WriteRecordData(static_cast<std::uint32_t>(all.size()));
+        for (const auto& p : all) {
+            si->WriteRecordData(p.seq);
+            WriteStr(si, p.name);
+            WriteStr(si, p.baseId);
+            WriteVec3(si, p.position);
+            si->WriteRecordData(static_cast<std::uint8_t>(p.noHavokSettle ? 1 : 0));
+            si->WriteRecordData(static_cast<std::uint8_t>(p.extra.present ? 1 : 0));
+            WriteStr(si, p.extra.kind);
+            WriteStr(si, p.extra.enchBase);
+            si->WriteRecordData(p.extra.enchAmount);
+            si->WriteRecordData(static_cast<std::uint32_t>(p.extra.effects.size()));
+            for (const auto& ef : p.extra.effects) {
+                WriteStr(si, ef.magicEffect);
+                si->WriteRecordData(ef.magnitude);
+                si->WriteRecordData(ef.area);
+                si->WriteRecordData(ef.duration);
+            }
+            si->WriteRecordData(FormIdOf(p.handle));
+        }
+    }
+
+    void LoadPlaced(const SKSE::SerializationInterface* si, std::uint32_t) {
+        std::uint32_t count = 0;
+        si->ReadRecordData(count);
+        auto& all = Palette::Placed();
+        for (std::uint32_t i = 0; i < count; ++i) {
+            Palette::PlacedInfo p;
+            std::uint8_t noSettle = 0, hasExtra = 0;
+            std::uint32_t formId = 0, nEff = 0;
+            si->ReadRecordData(p.seq);
+            p.name = ReadStr(si);
+            p.baseId = ReadStr(si);
+            ReadVec3(si, p.position);
+            si->ReadRecordData(noSettle);
+            si->ReadRecordData(hasExtra);
+            p.extra.kind = ReadStr(si);
+            p.extra.enchBase = ReadStr(si);
+            si->ReadRecordData(p.extra.enchAmount);
+            si->ReadRecordData(nEff);
+            for (std::uint32_t k = 0; k < nEff; ++k) {
+                Captures::Effect ef;
+                ef.magicEffect = ReadStr(si);
+                si->ReadRecordData(ef.magnitude);
+                si->ReadRecordData(ef.area);
+                si->ReadRecordData(ef.duration);
+                p.extra.effects.push_back(std::move(ef));
+            }
+            si->ReadRecordData(formId);
+            p.noHavokSettle = noSettle != 0;
+            p.extra.present = hasExtra != 0;
+            // The live ENCH pointer is intentionally NOT serialised — only a DURABLE
+            // enchantment may be cached, and that one re-resolves from enchBase.
+            if (p.extra.present && !p.extra.enchBase.empty())
+                p.extra.ench = ResolveEnchant(p.extra.enchBase);
+            p.handle = ResolveHandle(si, formId);  // dead handle kept — see the note above
+            all.push_back(std::move(p));
         }
     }
 
@@ -605,10 +712,11 @@ namespace {
         if (si->OpenRecord(kOvrd, kVerOvrd)) SaveOverrides(si);
         if (si->OpenRecord(kCaps, kVerCaps)) SaveCaptures(si);
         if (si->OpenRecord(kRfrr, kVerRfrr)) SaveReferrer(si);
+        if (si->OpenRecord(kPlex, kVerPlex)) SavePlaced(si);
         SKSE::log::info("CoSave: saved {} marker(s), {} erasure(s), {} override(s), "
-            "{} capture(s), {} reference(s)",
+            "{} capture(s), {} reference(s), {} placed-ref rider(s)",
             Markers::All().size(), Eraser::All().size(), Overrides::All().size(),
-            Captures::All().size(), Referrer::All().size());
+            Captures::All().size(), Referrer::All().size(), Palette::Placed().size());
     }
 
     void OnLoad(SKSE::SerializationInterface* si) {
@@ -621,6 +729,7 @@ namespace {
             case kOvrd: LoadOverrides(si); break;
             case kCaps: LoadCaptures(si, version); break;
             case kRfrr: LoadReferrer(si, version); break;
+            case kPlex: LoadPlaced(si, version); break;
             default:
                 SKSE::log::warn("CoSave: unknown record 0x{:X} — skipped", type);
                 break;
@@ -630,10 +739,11 @@ namespace {
         Eraser::OnRegistryRestored();    // rebuild the marked-id set
         Captures::OnRegistryRestored();  // reseed the capture seq counter
         Referrer::OnRegistryRestored();  // reseed the seq counter; report dead in-file handles
+        Palette::OnPlacedRegistryRestored();  // reseed the seq counter; report dead handles
         SKSE::log::info("CoSave: loaded {} marker(s), {} erasure(s), {} override(s), "
-            "{} capture(s), {} reference(s)",
+            "{} capture(s), {} reference(s), {} placed-ref rider(s)",
             Markers::All().size(), Eraser::All().size(), Overrides::All().size(),
-            Captures::All().size(), Referrer::All().size());
+            Captures::All().size(), Referrer::All().size(), Palette::Placed().size());
     }
 
     // Runs before every load AND on new game: wipe registries (no world
@@ -646,7 +756,8 @@ namespace {
         Overrides::DropAll();
         Captures::DropAll();
         Referrer::DropAll();
-        Modes::ResetDefaults();
+        Palette::DropAllPlaced();  // registry only — the palette SLOTS live on disk, untouched
+        Modes::ResetDefaults();    // incl. place = py1, edit = py0, extra data off
         Markers::SetProxiesVisible(true);  // registry is empty: flag only
     }
 }

@@ -91,6 +91,48 @@
 
 **回報**：① `sc capp` 有沒有吸到、label 大小寫對不對；② 分身的數值/perk/裝備對不對；③ voiceType/物品欄的落差要不要修。
 
+## scene-capture-bridge — 模式開關套件 `py` / `ed` / `pkc`（2026-07-12，DLL crc `5434abd4`，**已部署**）
+
+⚠️ **完全關遊戲重開**吃新 DLL（esp 不動）。co-save：`SETT` 升 **v6**、新 record **`'PLEX'` v1**——**舊存檔照讀**（讀不到就落回預設：place `py1`、edit `py0`、extra data 全關＝跟以前一模一樣）。
+
+**這是什麼**：四個 per-mode 開關 ＋ 一個 aim-free 滴管。核心是 **`sc pl py0`＝「擺好的東西不要被物理彈飛」**，而且**這次真的會 ship 進 esp**（不只是遊戲內凍住）。
+
+**離線已閉環**（不用你驗）：手寫 DLL 形狀 json → build → REFR 帶 `0x20000000`（DontHavokSettle）、鑄造的附魔劍 WEAP+ENCH 都在、placement 的 base 解得到它；C# 932 測綠。**要你驗的是遊戲內那一半。**
+
+1. **`sc pl py0/py1` — 擺放物理（最重要，先驗這個）**
+   - `sc pk` 吸一個**雜物**（杯子/盤子/書/武器——havok 會動的那種），`sc pl` 進擺放模式。
+   - **先看壞的樣子**：`sc pl py1`（預設）→ 動作鍵（**F11**）在**桌面上**擺一個 → 它會**掉下來/滾走/被你走過去撞飛**。這是現況，正常。
+   - **再看好的樣子**：`sc pl py0` → console 應印 `placed objects have physics OFF (py0)` ＋ 一行說明 → 再擺一個 → **它應該定在原地**（不掉、撞不動）。
+   - **console `sc` 印出來的 usage** 應該看得到 `sc pl py1 / py0`、`sc ed py0 / py1`、`sc pk ed0 / ed1`、`sc pl ed0 / ed1`、`sc pkc [Label]` 這幾行。**F1 → Settings** 也應該有 `Physics (…)` 與 `Extra data (…)` 兩節，顯示 place/edit/pick/place 的現況。
+   - **🔑 真正的驗收在 esp（這是這條的重點）**：把 `Export player cell` 出來的 json 給我 → 我 build → **裝進去看那些杯子還在不在桌上**。（json 裡那幾筆 placement 應帶 `"noHavokSettle": true`。）**遊戲內凍結是活不過存檔的**——會 ship 的是這個記錄旗標。
+   - ⚠️ 預期邊界：`py0` **只擋「載入時被 havok settle 彈飛」**，不是把物件變成不可推的石頭——玩家還是可以撿/撞。這是 vanilla 杯子的行為（Bethesda 自己 3791 個 REFR 就是這樣做的）。若你要的是「連撞都不動」，回報，那要另一條路（script keyframed）。
+
+2. **`sc ed py0/py1` — 編輯期物理**
+   - `sc ed`（預設 `py0`）→ 選中一個雜物 → numpad 微調 → 物件**不會跟你打架**（現行行為，不該有變化——這條主要是**回歸**：確認我抽共用碼沒把它弄壞）。
+   - `sc ed py1` → 再選一個 → 控制期間 **havok 還跑著**（推它時會晃/掉）。切回 `sc ed py0` 應恢復凍結。
+
+3. **`sc pk ed1` / `sc pl ed1` — 實例附魔（extra data）**
+   - 準備一把**你自己附魔的武器**（或撿一把**已附魔的 vanilla 武器**）**丟在地上**。
+   - **先看壞的樣子**：`sc pk ed0`（預設）→ `sc pk` 吸它 → `sc pl` 擺出來 → 撿起來看：**是白板武器**（附魔沒了）。這就是要修的現況。
+   - **好的樣子**：`sc pk ed1` → 再吸一次 → palette 頁該插槽（log 會印 `+extra[weapon ench …]`）→ `sc pl ed1` → 擺出來。
+     - **durable 附魔**（撿到的 vanilla 附魔武器）：擺出來那把**應該真的帶附魔**（撿起來看名字/附魔）。
+     - **你自己附魔的**（runtime ENCH）：世界裡那把**是白板**（預期！那顆 ENCH 是存檔綁定的 form，不能快取在落盤的 palette 上）——但**匯出照樣鑄造**，見下。
+   - **驗收在 json**：`Export player cell` → 該份檔應同時有
+     - 一段 **`capturedItems[]`**（`"editorId": "MFPal_<插槽名>_<seq>"`、`"kind": "weapon"`、`"base"` ＝實體模板、`"enchantment"` 帶 base 或 effects），且
+     - `placements[]` 裡那筆的 **`"base"` 正是那個 `MFPal_…` editorId**（**不是** `Skyrim.esm:0x...`——看到耐久 id 就是沒吃到 `ed1`，回報）。
+   - 把該 json 給我 → build → 裝進去 → **撿起來應該是那把附魔武器**。
+
+4. **`sc pkc [XXX]` — console 選取版滴管**
+   - console 點選一個物件（滑鼠點它，console 左上會顯示它）→ `sc pkc` → 該物件進 palette（`SCB: picked console ref into the palette`）。
+   - 帶標號：`sc pkc MyChair` → palette 該插槽名字**就是 `MyChair`（大小寫保留**——不是 `mychair`，這是 `sc capp` 踩過的坑）。
+   - 也吃 `sc pk ed1`（若開著，`pkc` 一樣會連附魔吸進來）。
+
+5. **跨存檔/重開（co-save `SETT` v6 ＋ `'PLEX'`）**：`sc pl py0` 擺幾個、`sc pl ed1` 擺一把附魔武器 → **存檔 → 完全關遊戲 → 重開 → 讀檔** →
+   - Settings 頁的四個開關**還是你設的值**。
+   - 走回那個 cell → `Export player cell` → 那幾筆**仍帶 `noHavokSettle`／仍指 `MFPal_…`**（DLL 會按 base＋座標把 dynamic ref 撿回；log 會說 `re-acquired placed ref #N`）。**若掉了**（旗標/附魔沒了）**回報**——我要知道 reacquire 撿不回的頻率。
+
+**回報**：① `sc pl py0` 擺的東西在**遊戲內**定不定得住；② **build 出來裝進遊戲後**，杯子還在不在桌上（這條才是真的驗收）；③ `ed1` 吸的附魔武器擺出來/匯出/build 後撿起來有沒有附魔；④ `sc pkc XXX` 的大小寫有沒有留住；⑤ `sc ed` 的凍結有沒有被我改壞（回歸）。
+
 ## scene-capture-bridge — referrer 原語 `sc ref` / `sc refc`（2026-07-12，DLL crc `112be269`，**已部署**）
 
 ⚠️ **完全關遊戲重開**吃新 DLL（esp 不動）。co-save 新增 record `'RFRR'` v1、`SETT` 升 **v5**——**舊存檔照讀**（沒有 referrer 記錄＝空登記簿）。

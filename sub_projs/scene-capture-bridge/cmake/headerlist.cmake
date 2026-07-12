@@ -6,7 +6,9 @@ set(headers ${headers}
     src/Eraser.h
     src/Markers.h
     src/Overrides.h
+    src/Captures.h
     src/Palette.h
+    src/Physics.h
     src/Referrer.h
     src/SceneExporter.h
     src/UI.h

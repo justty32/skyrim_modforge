@@ -115,6 +115,12 @@ public static partial class Generator
                 // InitiallyDisabled: record header flag 0x800 — ref exists but is invisible/non-collidable.
                 if (pl.InitiallyDisabled) placedRec.MajorRecordFlagsRaw |= 0x800;
 
+                // NoHavokSettle: record header flag 0x20000000 (DontHavokSettle) — the engine skips
+                // the havok settle pass it would otherwise run on this ref at cell load, so a
+                // deliberately-placed object stays exactly where it was authored instead of being
+                // flung. REFR only (an ACHR has no settle semantics). See PlacementSpec.NoHavokSettle.
+                if (pl.NoHavokSettle && placedRec is PlacedObject) placedRec.MajorRecordFlagsRaw |= 0x20000000;
+
                 // Enable Parent (XESP): this ref's enabled state follows another ref.
                 if (pl.EnableParent is { } ep)
                 {

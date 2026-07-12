@@ -2,7 +2,9 @@
 
 #include "Aim.h"
 #include "Markers.h"
+#include "Modes.h"
 #include "Overrides.h"
+#include "Physics.h"
 #include "SceneExporter.h"
 #include "log.h"
 
@@ -48,25 +50,9 @@ namespace {
     // 5 = restore the whole pre-edit pose (per-mode, P7).
     bool g_rotateMode = false;
 
-    // Only these base types get the physics freeze: they are the naturally
-    // havok-Dynamic clutter (cups, books, weapons on tables). Restoring a
-    // STAT/FURN to kDynamic would knock walls loose, so anything not on this
-    // list is left alone entirely.
-    bool HavokMovable(RE::TESBoundObject* base) {
-        switch (base ? base->GetFormType() : RE::FormType::None) {
-        case RE::FormType::MovableStatic:
-        case RE::FormType::Misc:
-        case RE::FormType::Weapon:
-        case RE::FormType::Ammo:
-        case RE::FormType::Book:
-        case RE::FormType::AlchemyItem:
-        case RE::FormType::Ingredient:
-        case RE::FormType::SoulGem:
-            return true;
-        default:
-            return false;
-        }
-    }
+    // The freeze predicate + the SetMotionType calls now live in Physics.h
+    // (Markers and Palette need the same ones). Semantics unchanged.
+    using Physics::HavokMovable;
 
     struct State {
         bool active = false;
@@ -86,8 +72,7 @@ namespace {
 
     void ReleasePhysics() {
         if (!g.frozen) return;
-        if (auto ref = Target()) {
-            ref->SetMotionType(RE::hkpMotion::MotionType::kDynamic, true);
+        if (auto ref = Target(); ref && Physics::Release(ref.get())) {
             SKSE::log::info("Editor: physics restored — the object will settle");
         }
         g.frozen = false;
@@ -136,10 +121,17 @@ namespace {
         g.origPos = ref->GetPosition();
         g.origAngle = ref->data.angle;
         g.origScale = ref->GetScale();
-        // Freeze havok while editing, or physics fights every nudge (細摳③).
+        // Freeze havok while editing, or physics fights every nudge (細摳③) —
+        // the P3 behaviour, now a SETTING. `sc ed py0` (the DEFAULT) freezes;
+        // `sc ed py1` leaves havok running so the object reacts while you drive
+        // it (useful when you WANT it to settle onto something as you nudge).
         if (HavokMovable(ref->GetBaseObject())) {
-            g.frozen = ref->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
-            if (g.frozen) SKSE::log::info("Editor: physics frozen while editing");
+            if (Modes::Physics(Modes::Mode::kEdit)) {
+                SKSE::log::info("Editor: physics LEFT RUNNING while editing (sc ed py1)");
+            } else {
+                g.frozen = ref->SetMotionType(RE::hkpMotion::MotionType::kKeyframed, false);
+                if (g.frozen) SKSE::log::info("Editor: physics frozen while editing (sc ed py0)");
+            }
         }
         SKSE::log::info("Editor: editing {} ref{} at ({:.1f}, {:.1f}, {:.1f}) — "
             "numpad 8/2 fwd/back, 4/6 left/right, 1/3 down/up, 7/9 rot, +/- scale, "

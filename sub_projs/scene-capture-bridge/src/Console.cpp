@@ -5,6 +5,7 @@
 #include "Eraser.h"
 #include "Markers.h"
 #include "Modes.h"
+#include "Palette.h"
 #include "Referrer.h"
 #include "log.h"
 
@@ -40,8 +41,13 @@ namespace {
         Print("  sc mk | del | pk | pl | ed | cap | ref | off  switch mode");
         Print("  sc mk dp0 / dp1                    hide / show marker gems");
         Print("  sc del|pk|ed|cap|ref er0 / er1     aim by crosshair / ray");
+        Print("  sc pl py1 / py0                   placed objects keep / lose physics (py1 default)");
+        Print("  sc ed py0 / py1                   freeze / keep physics while editing (py0 default)");
+        Print("  sc pk ed0 / ed1                   eyedrop base only / base + instance extra data");
+        Print("  sc pl ed0 / ed1                   place base only / base + the slot's extra data");
         Print("  sc ed ax / sc ed                  enter rotate sub-mode / back to move");
         Print("  sc delc                           erase the console-selected ref");
+        Print("  sc pkc [Label]                    eyedrop the console-selected ref into the palette");
         Print("  sc capc [Label]                   capture the console-selected ref (item or NPC)");
         Print("  sc capp [Label]                   capture the PLAYER (face/stats/perks/gear)");
         Print("  sc cap  -> capture mode: aim at item/NPC, press the action key");
@@ -117,6 +123,21 @@ namespace {
             return true;
         }
 
+        // Eyedrop the console-selected ref into the palette — the aim-free pick
+        // (click it in the console, then `sc pkc`), sibling of delc/capc/refc.
+        // An optional label RENAMES the new slot on the spot, so a palette of 20
+        // things stays identifiable. Honours `sc pk ed1` like any other pick.
+        if (a1 == "pkc") {
+            if (Palette::PickConsoleRef(label)) {
+                Print("SCB: picked console ref into the palette%s",
+                    label.empty() ? "" : (" as '" + label + "'").c_str());
+            } else {
+                Print("SCB: nothing picked (no console ref selected, a marker gem, "
+                      "or a runtime-only base)");
+            }
+            return true;
+        }
+
         // Capture the console-selected ref — the aim-free eyedropper (items AND
         // actors; the capture-mode crosshair/ray path can't reach an NPC that's
         // easier to click than to aim at). Optional label → the entry's editorId.
@@ -169,29 +190,68 @@ namespace {
                 return true;
             }
             const Modes::Mode m = ModeOf(a1);
-            if (m == Modes::Mode::kDelete || m == Modes::Mode::kPick ||
+            const bool aimable = m == Modes::Mode::kDelete || m == Modes::Mode::kPick ||
                 m == Modes::Mode::kEdit || m == Modes::Mode::kCapture ||
-                m == Modes::Mode::kReferrer) {
-                if (a2 == "er0" || a2 == "er1") {  // aim source
-                    Modes::SetUseRay(m, a2 == "er1");
-                    Print("SCB: %s aim -> %s", Modes::Name(m), a2 == "er1" ? "ray" : "crosshair");
-                    return true;
+                m == Modes::Mode::kReferrer;
+
+            if (aimable && (a2 == "er0" || a2 == "er1")) {  // aim source
+                Modes::SetUseRay(m, a2 == "er1");
+                Print("SCB: %s aim -> %s", Modes::Name(m), a2 == "er1" ? "ray" : "crosshair");
+                return true;
+            }
+
+            // PHYSICS (py1 = physics kept, py0 = physics off). Two modes, opposite
+            // defaults — `sc pl` defaults py1 (a placed object behaves normally),
+            // `sc ed` defaults py0 (freeze while you drive it, the P3 behaviour).
+            if ((m == Modes::Mode::kPlace || m == Modes::Mode::kEdit) &&
+                (a2 == "py0" || a2 == "py1")) {
+                const bool keep = (a2 == "py1");
+                Modes::SetPhysics(m, keep);
+                if (m == Modes::Mode::kPlace) {
+                    Print("SCB: placed objects %s",
+                        keep ? "keep full physics (py1)" : "have physics OFF (py0)");
+                    if (!keep)
+                        Print("SCB:   frozen on placement AND exported with noHavokSettle "
+                              "(the REFR stays put in the built esp)");
+                } else {
+                    Print("SCB: edit mode %s while you control the object",
+                        keep ? "KEEPS physics (py1)" : "freezes physics (py0)");
                 }
-                if (m == Modes::Mode::kEdit && a2 == "ax") {  // enter rotate sub-mode
-                    Editor::SetRotateMode(true);
-                    Print("SCB: edit ROTATE mode (4/6 yaw, 1/3 pitch, 7/9 roll; "
-                        "5/2/8 revert that axis) — `sc ed` to go back to move mode");
-                    return true;
+                return true;
+            }
+
+            // EXTRA DATA (ed1 = carry the instance's extra data, ed0 = base only).
+            // `sc pk` decides what the eyedropper TAKES; `sc pl` decides what a
+            // placement CARRIES into the export.
+            if ((m == Modes::Mode::kPick || m == Modes::Mode::kPlace) &&
+                (a2 == "ed0" || a2 == "ed1")) {
+                const bool on = (a2 == "ed1");
+                Modes::SetExtraData(m, on);
+                if (m == Modes::Mode::kPick) {
+                    Print("SCB: eyedropper takes %s",
+                        on ? "base + instance extra data (enchantment)" : "the durable base only");
+                } else {
+                    Print("SCB: placements carry %s",
+                        on ? "the slot's extra data (exported as a minted item)"
+                           : "the plain base only");
                 }
-                // `sc ref <Label>` — one-shot: NAME what you are aiming at, right now,
-                // with that label. Anything that isn't er0/er1 IS the label (raw param:
-                // case preserved, spaces kept), because a label is free-form text.
-                if (m == Modes::Mode::kReferrer) {
-                    const bool ray = Modes::UseRay(m);
-                    PrintRefResult(ray ? Referrer::MarkByRay(label) : Referrer::MarkCrosshair(label),
-                        label);
-                    return true;
-                }
+                return true;
+            }
+
+            if (m == Modes::Mode::kEdit && a2 == "ax") {  // enter rotate sub-mode
+                Editor::SetRotateMode(true);
+                Print("SCB: edit ROTATE mode (4/6 yaw, 1/3 pitch, 7/9 roll; "
+                    "5/2/8 revert that axis) — `sc ed` to go back to move mode");
+                return true;
+            }
+            // `sc ref <Label>` — one-shot: NAME what you are aiming at, right now,
+            // with that label. Anything that isn't er0/er1 IS the label (raw param:
+            // case preserved, spaces kept), because a label is free-form text.
+            if (m == Modes::Mode::kReferrer) {
+                const bool ray = Modes::UseRay(m);
+                PrintRefResult(ray ? Referrer::MarkByRay(label) : Referrer::MarkCrosshair(label),
+                    label);
+                return true;
             }
             Print("SCB: unknown arg '%s' for '%s'", a2.c_str(), a1.c_str());
             return true;
@@ -227,7 +287,7 @@ namespace Console {
             };
             cmd->functionName = "sc";
             cmd->shortName = "sc";
-            cmd->helpString = "SceneCaptureBridge: sc mk|del|pk|pl|ed|cap|ref|off, sc delc|capc [Label]|capp [Label]|ref <Label>|refc [Label], sc mk dp0|dp1";
+            cmd->helpString = "SceneCaptureBridge: sc mk|del|pk|pl|ed|cap|ref|off, sc delc|pkc [Label]|capc [Label]|capp [Label]|ref <Label>|refc [Label], sc mk dp0|dp1, sc pl py0|py1|ed0|ed1, sc ed py0|py1";
             cmd->referenceFunction = false;
             cmd->SetParameters(params);
             cmd->executeFunction = &Execute;

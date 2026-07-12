@@ -50,6 +50,39 @@ namespace Modes {
     [[nodiscard]] bool UseRay(Mode m);
     void SetUseRay(Mode m, bool useRay);
 
+    // Per-mode PHYSICS switch — `sc pl py0/py1` and `sc ed py0/py1`. The stored
+    // value is "physics is KEPT", so it reads straight off the command: py1 =
+    // true, py0 = false. Defaults differ per mode (that is the whole point):
+    //
+    //   kPlace  DEFAULT py1 (physics kept) — a placed object behaves normally.
+    //           `sc pl py0` = physics OFF: the object is havok-frozen the moment
+    //           it is placed AND the export carries `noHavokSettle` so the
+    //           SHIPPED esp keeps it put (the engine's load-time havok settle
+    //           pass is what launches a hand-placed cup across the room).
+    //   kEdit   DEFAULT py0 (physics off while you drive it) — the existing P3
+    //           freeze-on-select behaviour. `sc ed py1` leaves havok running.
+    //
+    // Only place/edit read this. Persists in the co-save (SETT v6).
+    [[nodiscard]] bool Physics(Mode m);
+    void SetPhysics(Mode m, bool keepPhysics);
+
+    // Per-mode EXTRA-DATA switch — `sc pk ed0/ed1` and `sc pl ed0/ed1`. False
+    // (the default) = the durable BASE only, the historic behaviour. True:
+    //
+    //   kPick   the eyedropper also records the INSTANCE's extra data (a
+    //           player-applied ExtraEnchantment lives on the ref, not the base),
+    //           so the palette slot carries it.
+    //   kPlace  a slot placed with it on is exported through the MINT+REFERENCE
+    //           path: the scene file gets a `capturedItems[]` row for the
+    //           enchanted item and the placement's `base` points at that row's
+    //           editorId (a file-internal dependency, same trick as the
+    //           referrer's in-file `references[]`). With it off the same slot
+    //           places/exports as the plain unenchanted base.
+    //
+    // Only pick/place read this. Persists in the co-save (SETT v6).
+    [[nodiscard]] bool ExtraData(Mode m);
+    void SetExtraData(Mode m, bool on);
+
     // Feed a key-down. Returns true when consumed: either it completed a
     // pending rebind, or it matched the current mode's binding and ran the
     // mode's action (debounced).
