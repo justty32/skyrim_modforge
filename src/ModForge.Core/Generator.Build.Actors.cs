@@ -21,6 +21,30 @@ public static partial class Generator
                 // have to `resurrect` it in console). Warn loudly; the fix is to give the NPC a `class`.
                 if (n.AutoCalcStats && string.IsNullOrWhiteSpace(n.Class))
                     Warn($"  ! npc '{n.EditorId}': autoCalcStats set but NO class — stats calc to ~0 HP; an essential NPC will spawn in permanent bleedout (appears dead). Give it a `class`.");
+                // --- Explicit stats (DNAM) — the non-autocalc route. For an actor WITHOUT the
+                // AutoCalcStats flag the engine reads these values verbatim, so this is how a
+                // captured real actor (`sc capp`) keeps its true health pool and skill spread
+                // instead of a class+level ESTIMATE. Skill values are bytes; H/M/S are ushorts.
+                // Both routes at once is a spec error (autocalc recomputes at load and the
+                // authored numbers are ignored) — warn rather than silently pick one.
+                bool explicitStats = n.Health > 0 || n.Magicka > 0 || n.Stamina > 0 || n.Skills.Count == 18;
+                if (explicitStats)
+                {
+                    if (n.AutoCalcStats)
+                        Warn($"  ! npc '{n.EditorId}': explicit health/magicka/stamina/skills AND autoCalcStats — the engine recomputes stats from class+level and the authored numbers are ignored. Drop one.");
+                    var ps = r.PlayerSkills ??= new PlayerSkills();
+                    if (n.Health > 0) ps.Health = (ushort)Math.Clamp(n.Health, 0, ushort.MaxValue);
+                    if (n.Magicka > 0) ps.Magicka = (ushort)Math.Clamp(n.Magicka, 0, ushort.MaxValue);
+                    if (n.Stamina > 0) ps.Stamina = (ushort)Math.Clamp(n.Stamina, 0, ushort.MaxValue);
+                    if (n.Skills.Count == 18)
+                    {
+                        // Spec order == Mutagen's Skill enum order (OneHanded=6 … Enchanting=23),
+                        // which is the engine's ActorValue order the capture DLL exports in.
+                        var skillOrder = Enum.GetValues<Skill>();   // 18 members, sorted by value
+                        for (int si = 0; si < skillOrder.Length && si < n.Skills.Count; si++)
+                            ps.SkillValues[skillOrder[si]] = (byte)Math.Clamp(n.Skills[si], 0, byte.MaxValue);
+                    }
+                }
                 // Configuration.Flag.Unique: marks the actor as a one-off (vs a leveled/respawning
                 // template instance). Vanilla cross-cell-travelling NPCs (Ysolda, Carlotta, …) all
                 // have this. Suspected to matter for the engine's persistent AI-tracking that lets a

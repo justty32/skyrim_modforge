@@ -29,6 +29,17 @@ public static partial class Generator
                     if (it.Count == 0)
                         Problems.Add($"npc '{n.EditorId}' item '{it.Item}' has count 0 (must be non-zero)");
                 }
+                // Explicit stats (DNAM) — the alternative to autoCalcStats. Same engine-fixed
+                // shapes the captured-NPC checks enforce: H/M/S are ushorts, the skill array is
+                // exactly 18 (Mutagen `Skill` order) with byte values.
+                CheckStat(n.Health, "health", $"npc '{n.EditorId}'");
+                CheckStat(n.Magicka, "magicka", $"npc '{n.EditorId}'");
+                CheckStat(n.Stamina, "stamina", $"npc '{n.EditorId}'");
+                if (n.Skills.Count != 0 && n.Skills.Count != 18)
+                    Problems.Add($"npc '{n.EditorId}': skills has {n.Skills.Count} values (the engine's skill array is exactly 18 — OneHanded..Enchanting — or omit it)");
+                for (int sk = 0; sk < n.Skills.Count; sk++)
+                    if (n.Skills[sk] is < 0 or > 255)
+                        Problems.Add($"npc '{n.EditorId}': skills[{sk}] is {n.Skills[sk]} (DNAM skill values are bytes: 0–255)");
                 CheckEnum<Aggression>(n.Aggression, $"npc '{n.EditorId}' aggression");
                 CheckEnum<Confidence>(n.Confidence, $"npc '{n.EditorId}' confidence");
                 CheckEnum<Assistance>(n.Assistance, $"npc '{n.EditorId}' assistance");

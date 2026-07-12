@@ -1725,6 +1725,31 @@
           "type": "boolean",
           "description": "derive H/M/S + skills from level + class (else flat 50/50/50 defaults)"
         },
+        "health": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535,
+          "description": "explicit DNAM base health (0 = engine default). The non-autocalc route: the engine reads DNAM verbatim for an actor without autoCalcStats. Do NOT combine with autoCalcStats (autocalc recomputes and overwrites these)."
+        },
+        "magicka": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535,
+          "description": "explicit DNAM base magicka (0 = engine default); see health"
+        },
+        "stamina": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535,
+          "description": "explicit DNAM base stamina (0 = engine default); see health"
+        },
+        "skills": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0, "maximum": 255 },
+          "minItems": 18,
+          "maxItems": 18,
+          "description": "explicit DNAM skill values — exactly 18 (or omit), in engine order: OneHanded, TwoHanded, Archery, Block, Smithing, HeavyArmor, LightArmor, Pickpocket, Lockpicking, Sneak, Alchemy, Speech, Alteration, Conjuration, Destruction, Illusion, Restoration, Enchanting"
+        },
         "packages": {
           "type": "array",
           "items": {

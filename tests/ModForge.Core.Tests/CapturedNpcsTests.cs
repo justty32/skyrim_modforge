@@ -385,6 +385,156 @@ public class CapturedNpcsTests
         Assert.Equal("Skyrim.esm:0x01605E", Assert.Single(s.Placements).Cell);
     }
 
+    // --- explicit stats (`sc capp` / any v8+ capture): DNAM beats class autocalc ---------------
+
+    // 18 skills in Mutagen `Skill` order (= engine AV 6..23 = the DLL's export order).
+    private static List<int> Skills18() =>
+        new() { 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58 };
+
+    [Fact]
+    public void Expand_ExplicitStats_TurnAutoCalcOff_AndCarryThrough()
+    {
+        var s = new ModSpec { PluginName = "M.esp" };
+        var cn = FullSample();            // FullSample HAS a class — autocalc would normally be on
+        cn.Health = 320f; cn.Magicka = 150f; cn.Stamina = 210f;
+        cn.Skills = Skills18();
+        s.CapturedNpcs.Add(cn);
+        Generator.ExpandCapturedNpcs(s);
+
+        var n = Assert.Single(s.Npcs);
+        Assert.False(n.AutoCalcStats);   // explicit values win — autocalc would overwrite them
+        Assert.Equal("Skyrim.esm:0x01CE78", n.Class);   // class still rides (AI/training semantics)
+        Assert.Equal(320, n.Health);
+        Assert.Equal(150, n.Magicka);
+        Assert.Equal(210, n.Stamina);
+        Assert.Equal(18, n.Skills.Count);
+        Assert.Equal(41, n.Skills[0]);
+        Assert.Equal(58, n.Skills[17]);
+    }
+
+    [Fact]
+    public void Expand_NoExplicitStats_KeepsClassAutoCalc()
+    {
+        // The pre-v8 capture shape (no stats fields at all) must behave exactly as before —
+        // the in-game-confirmed class-autocalc route.
+        var s = new ModSpec { PluginName = "M.esp" };
+        s.CapturedNpcs.Add(FullSample());
+        Generator.ExpandCapturedNpcs(s);
+
+        var n = Assert.Single(s.Npcs);
+        Assert.True(n.AutoCalcStats);
+        Assert.Equal(0, n.Health);
+        Assert.Empty(n.Skills);
+    }
+
+    [Fact]
+    public void Build_ExplicitStats_LandOnDnam_AndAutoCalcFlagIsOff()
+    {
+        var s = new ModSpec { PluginName = "M.esp" };
+        var cn = FullSample();
+        cn.Health = 320f; cn.Magicka = 150f; cn.Stamina = 210f;
+        cn.Skills = Skills18();
+        s.CapturedNpcs.Add(cn);
+        var r = TestBuild.Ok(s);
+
+        var npc = r.Mod.Npcs.Single();
+        Assert.False(npc.Configuration.Flags.HasFlag(NpcConfiguration.Flag.AutoCalcStats));
+        Assert.Equal((ushort)320, npc.PlayerSkills!.Health);
+        Assert.Equal((ushort)150, npc.PlayerSkills!.Magicka);
+        Assert.Equal((ushort)210, npc.PlayerSkills!.Stamina);
+        // index → Skill mapping lock: spec[0] = OneHanded … spec[17] = Enchanting.
+        Assert.Equal((byte)41, npc.PlayerSkills!.SkillValues[Skill.OneHanded]);
+        Assert.Equal((byte)45, npc.PlayerSkills!.SkillValues[Skill.Smithing]);
+        Assert.Equal((byte)58, npc.PlayerSkills!.SkillValues[Skill.Enchanting]);
+    }
+
+    [Fact]
+    public void Build_ClassButNoExplicitStats_KeepsAutoCalcFlag()
+    {
+        // The already-in-game-confirmed route must not regress.
+        var s = new ModSpec { PluginName = "M.esp" };
+        s.CapturedNpcs.Add(FullSample());
+        var r = TestBuild.Ok(s);
+        Assert.True(r.Mod.Npcs.Single().Configuration.Flags.HasFlag(NpcConfiguration.Flag.AutoCalcStats));
+    }
+
+    [Fact]
+    public void Validate_BadSkillCountAndRange_AreProblems()
+    {
+        var s = new ModSpec { PluginName = "M.esp" };
+        s.CapturedNpcs.Add(new CapturedNpcSpec { Name = "H", Race = NordRace, Skills = { 10, 20 } });
+        Assert.Contains(Validate(s), p => p.Contains("capturedNpc") && p.Contains("skills has 2"));
+
+        var s2 = new ModSpec { PluginName = "M.esp" };
+        var cn = new CapturedNpcSpec { Name = "H", Race = NordRace, Skills = Skills18() };
+        cn.Skills[3] = 300;   // DNAM skill values are bytes
+        s2.CapturedNpcs.Add(cn);
+        Assert.Contains(Validate(s2), p => p.Contains("capturedNpc") && p.Contains("skills[3]"));
+    }
+
+    [Fact]
+    public void Validate_StatOutOfUshortRange_IsAProblem()
+    {
+        var s = new ModSpec { PluginName = "M.esp" };
+        s.CapturedNpcs.Add(new CapturedNpcSpec { Name = "H", Race = NordRace, Health = 70000f });
+        Assert.Contains(Validate(s), p => p.Contains("capturedNpc") && p.Contains("health"));
+    }
+
+    [Fact]
+    public void Json_PlayerCapture_DllShape_ExplicitStatsAndLabelEditorId()
+    {
+        // `sc capp Hero` → editorId "MFCap_Hero" + explicit H/M/S + 18 skills + player perks.
+        const string json = """
+        {
+          "pluginName": "Cap.esp",
+          "capturedNpcs": [
+            { "name": "Dovahkiin", "editorId": "MFCap_Hero",
+              "base": "Skyrim.esm:0x000007", "race": "Skyrim.esm:0x013746",
+              "female": false, "weight": 50.0, "height": 1.0,
+              "class": "Skyrim.esm:0x01CE78", "level": 34,
+              "health": 320.0, "magicka": 150.0, "stamina": 210.0,
+              "skills": [41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58],
+              "perks": [{"perk": "Skyrim.esm:0x0BABE4", "rank": 1}],
+              "position": {"x": 1.0, "y": 2.0, "z": 3.0},
+              "rotation": {"x": 0.0, "y": 0.0, "z": 45.0},
+              "cell": "Skyrim.esm:0x01605E" }
+          ]
+        }
+        """;
+        var s = JsonSerializer.Deserialize<ModSpec>(json,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+
+        var cn = Assert.Single(s.CapturedNpcs);
+        Assert.Equal("MFCap_Hero", cn.EditorId);
+        Assert.Equal(18, cn.Skills.Count);
+        Assert.DoesNotContain(Validate(s), p => p.Contains("capturedNpc"));
+
+        Generator.ExpandCapturedNpcs(s);
+        var n = Assert.Single(s.Npcs);
+        Assert.Equal("MFCap_Hero", n.EditorId);   // the label IS the identity (explicit editorId wins)
+        Assert.False(n.AutoCalcStats);
+        Assert.Equal(320, n.Health);
+        Assert.Equal("Skyrim.esm:0x0BABE4", Assert.Single(n.Perks));
+        Assert.Equal("MFCap_Hero_Ref", Assert.Single(s.Placements).EditorId);
+    }
+
+    [Fact]
+    public void Build_HandAuthoredNpc_ExplicitStats_LandOnDnam()
+    {
+        // The same DNAM route is available to a hand-written npcs[] entry (no capture involved).
+        var s = new ModSpec { PluginName = "M.esp" };
+        s.Npcs.Add(new NpcSpec
+        {
+            EditorId = "MF_Statty", Name = "Statty", Race = NordRace,
+            Health = 500, Magicka = 100, Stamina = 250, Skills = Skills18(),
+        });
+        var r = TestBuild.Ok(s);
+        var npc = r.Mod.Npcs.Single();
+        Assert.Equal((ushort)500, npc.PlayerSkills!.Health);
+        Assert.Equal((byte)48, npc.PlayerSkills!.SkillValues[Skill.Pickpocket]);
+        Assert.False(npc.Configuration.Flags.HasFlag(NpcConfiguration.Flag.AutoCalcStats));
+    }
+
     [Fact]
     public void Expand_LegacyMixedEquipped_FoldsIntoOutfit()
     {

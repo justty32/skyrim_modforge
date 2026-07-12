@@ -122,6 +122,16 @@ public static partial class Generator
                 foreach (var sp in cn.Spells) CheckRef(sp, $"{who} spell");
                 if (cn.Level < 0)
                     Problems.Add($"{who}: level {cn.Level} is negative");
+                // Explicit stats (DNAM): H/M/S are ushorts, skill values are bytes, and the skill
+                // array is the engine's fixed 18 (AV 6..23) or absent.
+                CheckStat(cn.Health, "health", who);
+                CheckStat(cn.Magicka, "magicka", who);
+                CheckStat(cn.Stamina, "stamina", who);
+                if (cn.Skills.Count != 0 && cn.Skills.Count != 18)
+                    Problems.Add($"{who}: skills has {cn.Skills.Count} values (the engine's skill array is exactly 18 — OneHanded..Enchanting — or omit it)");
+                for (int sk = 0; sk < cn.Skills.Count; sk++)
+                    if (cn.Skills[sk] is < 0 or > 255)
+                        Problems.Add($"{who}: skills[{sk}] is {cn.Skills[sk]} (DNAM skill values are bytes: 0–255)");
                 foreach (var eq in cn.EquippedArmor) CheckRef(eq, $"{who} equippedArmor");
                 for (int r = 0; r < cn.Inventory.Count; r++)
                 {
@@ -168,6 +178,14 @@ public static partial class Generator
             if (c is null) return;
             if (c.R is < 0 or > 255 || c.G is < 0 or > 255 || c.B is < 0 or > 255 || c.A is < 0 or > 255)
                 Problems.Add($"{what}: colour component out of range (0–255)");
+        }
+
+        // One DNAM attribute pool (health/magicka/stamina): a ushort in the record, so a negative
+        // or >65535 value is a broken capture, not something to silently clamp.
+        private void CheckStat(float v, string field, string who)
+        {
+            if (v < 0f || v > ushort.MaxValue)
+                Problems.Add($"{who}: {field} {v} out of range (DNAM stores it as a ushort: 0–65535)");
         }
 
         // Idea #24 numpad editor — overrides[] re-stamps the transform of an existing placed ref.

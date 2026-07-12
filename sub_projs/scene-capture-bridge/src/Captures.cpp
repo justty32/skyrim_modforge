@@ -6,6 +6,7 @@
 #include "log.h"
 
 #include <algorithm>
+#include <cmath>
 
 namespace {
     constexpr float kRadToDeg = 57.2957795f;
@@ -120,13 +121,38 @@ namespace {
             for (std::int32_t p : npc->faceData->parts) n.parts.push_back(p);
         }
 
-        // Perks (base BGSPerkRankArray): durable perk id + rank.
-        if (npc->perks && npc->perkCount > 0) {
+        // Perks. An ordinary NPC carries them on its base's BGSPerkRankArray; the PLAYER's
+        // base array is EMPTY — every perk the player ever took lives in PlayerCharacter's
+        // runtime `addedPerks`. Same durable id + rank either way.
+        if (auto* pc = actor->As<RE::PlayerCharacter>()) {
+            for (auto* pr : pc->GetPlayerRuntimeData().addedPerks) {
+                if (!pr || !pr->perk) continue;
+                if (auto id = SceneExporter::ResolveDurableId(pr->perk))
+                    n.perks.push_back({*id, pr->currentRank});
+            }
+        } else if (npc->perks && npc->perkCount > 0) {
             for (std::uint32_t i = 0; i < npc->perkCount; ++i) {
                 auto& pr = npc->perks[i];
                 if (!pr.perk) continue;
                 if (auto id = SceneExporter::ResolveDurableId(pr.perk))
                     n.perks.push_back({*id, pr.currentRank});
+            }
+        }
+
+        // EXPLICIT stats (all actors, not just the player): the base actor values ARE the
+        // numbers the engine runs on. Capturing them lets ModForge write DNAM straight and
+        // skip autoCalcStats — which only ESTIMATES H/M/S from class+level (and reports a
+        // flat 50/50/50 level-1 for a PROTEUS-style clone). Skills are AV 6..23 in engine
+        // order = Mutagen's Skill enum order (OneHanded..Enchanting), so the array index IS
+        // the mapping.
+        if (auto* avo = actor->AsActorValueOwner()) {
+            n.health = avo->GetBaseActorValue(RE::ActorValue::kHealth);
+            n.magicka = avo->GetBaseActorValue(RE::ActorValue::kMagicka);
+            n.stamina = avo->GetBaseActorValue(RE::ActorValue::kStamina);
+            for (int av = static_cast<int>(RE::ActorValue::kOneHanded);
+                 av <= static_cast<int>(RE::ActorValue::kEnchanting); ++av) {
+                const float v = avo->GetBaseActorValue(static_cast<RE::ActorValue>(av));
+                n.skills.push_back(static_cast<std::int32_t>(std::lround(v)));
             }
         }
 
@@ -219,7 +245,8 @@ namespace {
         return true;
     }
 
-    Captures::Result CaptureRef(RE::NiPointer<RE::TESObjectREFR> ref, const char* how) {
+    Captures::Result CaptureRef(RE::NiPointer<RE::TESObjectREFR> ref, const char* how,
+                                const std::string& label = "") {
         if (!ref) {
             SKSE::log::info("Captures: {} has no target", how);
             return Captures::Result::kNothing;
@@ -235,6 +262,7 @@ namespace {
             Captures::Entry e;
             const char* dn = ref->GetDisplayFullName();
             e.name = (dn && *dn) ? dn : "";
+            e.label = label;
             if (auto* b = ref->GetBaseObject()) {
                 if (auto id = SceneExporter::ResolveDurableId(b)) e.base = *id;
             }
@@ -244,12 +272,16 @@ namespace {
                 return Captures::Result::kNothing;
             }
             e.seq = g_nextSeq++;
-            SKSE::log::info("Captures: captured NPC '{}' ({}) race={} {}{} — {} headpart(s), "
-                "{} tint(s), {} perk(s), {} buff(s), face morphs {}", e.name,
+            SKSE::log::info("Captures: captured NPC '{}'{} ({}) race={} {}{} — lvl {} "
+                "H/M/S {:.0f}/{:.0f}/{:.0f}, {} skill(s), {} headpart(s), {} tint(s), "
+                "{} perk(s), {} buff(s), {} item(s), face morphs {}", e.name,
+                e.label.empty() ? "" : std::format(" [label '{}']", e.label),
                 e.base.empty() ? "runtime base" : e.base,
                 e.npc.race.empty() ? "?" : e.npc.race, e.npc.female ? "female" : "male",
-                e.npc.unique ? " UNIQUE" : "", e.npc.headParts.size(), e.npc.tints.size(),
-                e.npc.perks.size(), e.npc.activeEffects.size(),
+                e.npc.unique ? " UNIQUE" : "", e.npc.level,
+                e.npc.health, e.npc.magicka, e.npc.stamina, e.npc.skills.size(),
+                e.npc.headParts.size(), e.npc.tints.size(),
+                e.npc.perks.size(), e.npc.activeEffects.size(), e.npc.inventory.size(),
                 e.npc.morphs.empty() ? "none" : "captured");
             g_entries.push_back(std::move(e));
             return Captures::Result::kCaptured;
@@ -263,6 +295,7 @@ namespace {
         Captures::Entry e;
         const char* dn = ref->GetDisplayFullName();
         e.name = (dn && *dn) ? dn : "";
+        e.label = label;
         if (auto id = SceneExporter::ResolveDurableId(base)) e.base = *id;
 
         switch (base->GetFormType()) {
@@ -309,7 +342,22 @@ namespace Captures {
 
     Result CaptureCrosshair() { return CaptureRef(Aim::CrosshairRef(), "crosshair"); }
     Result CaptureByRay() { return CaptureRef(Aim::RayRef(), "ray"); }
-    Result CaptureConsoleRef() { return CaptureRef(RE::Console::GetSelectedRef(), "console"); }
+
+    Result CaptureConsoleRef(const std::string& label) {
+        return CaptureRef(RE::Console::GetSelectedRef(), "console", label);
+    }
+
+    // The player is just another actor to the capture path — the engine keeps its chargen
+    // (race/head parts/tints/morphs/weight) on the base TESNPC (Skyrim.esm:0x000007), which
+    // ReadNpc already reads. That is why no PROTEUS clone is needed as an intermediary.
+    Result CapturePlayer(const std::string& label) {
+        auto* pc = RE::PlayerCharacter::GetSingleton();
+        if (!pc) {
+            SKSE::log::info("Captures: no player singleton");
+            return Result::kNothing;
+        }
+        return CaptureRef(RE::NiPointer<RE::TESObjectREFR>(pc), "player", label);
+    }
 
     std::vector<Entry>& All() { return g_entries; }
 

@@ -75,6 +75,17 @@ namespace Captures {
     // carries, plus the placement transform so ModForge can position the rebuild.
     struct NpcData {
         std::string race;          // durable RACE id
+        // EXPLICIT stats (DNAM), captured for every actor — not just the player. The base
+        // actor values are the truth the engine actually runs on; class+autocalc is only an
+        // ESTIMATE of them (and a PROTEUS-style clone reports a flat level-1 50/50/50). With
+        // these present ModForge writes DNAM directly and leaves autoCalcStats OFF.
+        float health = 0.f;   // kHealth base AV (0 = not captured)
+        float magicka = 0.f;  // kMagicka base AV
+        float stamina = 0.f;  // kStamina base AV
+        // The 18 skills, in ActorValue order 6..23 (kOneHanded..kEnchanting) — which is
+        // exactly Mutagen's `Skill` enum order, so the C# side maps index→Skill 1:1.
+        // Empty when unavailable; otherwise always 18 entries.
+        std::vector<std::int32_t> skills;
         bool female = false;
         bool unique = false;       // ACBS Unique flag — ModForge decides how to treat a one-of-a-kind
         bool dead = false;         // live death state at capture time
@@ -134,6 +145,11 @@ namespace Captures {
         std::uint32_t seq = 0;
         Kind kind = Kind::kWeapon;
         std::string name;         // display name at capture time (row label)
+        // Free identity label the player typed (`sc capp Hero`, `sc capc Sword`). Case is
+        // PRESERVED (the console parser lower-cases its args — the label must not go through
+        // that path). Exported as `editorId: "MFCap_<sanitised label>"`, which ModForge's
+        // "explicit editorId wins" rule turns into the record's stable identity.
+        std::string label;
         std::string base;         // origin base durable id (physical template); "" if runtime-only
         // Item payload (weapon/armour/potion/ingredient).
         std::string enchantBase;  // durable ENCH id when the enchant itself is authored; else ""
@@ -148,7 +164,13 @@ namespace Captures {
 
     Result CaptureCrosshair();  // capture mode, crosshair aim — the activatable target
     Result CaptureByRay();      // capture mode, ray aim — the look-ray target
-    Result CaptureConsoleRef(); // `sc capc` — the console-selected ref (items AND actors)
+    // `sc capc [label]` — the console-selected ref (items AND actors).
+    Result CaptureConsoleRef(const std::string& label = "");
+    // `sc capp [label]` — THE PLAYER, read straight off its base TESNPC (0x7). The engine
+    // writes chargen (race/tints/morphs/head parts) onto that record, so no PROTEUS clone is
+    // needed as an intermediary; perks come from PlayerCharacter's runtime addedPerks (the
+    // player's base perk array is empty) and stats from the base actor values.
+    Result CapturePlayer(const std::string& label = "");
 
     [[nodiscard]] std::vector<Entry>& All();
     [[nodiscard]] const char* KindName(Kind k);  // "weapon"/"armor"/"potion"/"ingredient"

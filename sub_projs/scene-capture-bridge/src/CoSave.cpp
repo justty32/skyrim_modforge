@@ -23,7 +23,7 @@ namespace {
     constexpr std::uint32_t kVerMkrs = 2;  // v2: full angle (3f) + scale, was angleZ only
     constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
     constexpr std::uint32_t kVerOvrd = 1;
-    constexpr std::uint32_t kVerCaps = 7;  // v2 kNpc; v3 flags/perks/buffs; v4 class/level/equipped; v5 armor/weapons; v6 inventory; v7 rows+instance-ench
+    constexpr std::uint32_t kVerCaps = 8;  // v2 kNpc; v3 flags/perks/buffs; v4 class/level/equipped; v5 armor/weapons; v6 inventory; v7 rows+instance-ench; v8 label + explicit H/M/S + 18 skills
 
     // ---- primitives -------------------------------------------------------
 
@@ -325,6 +325,12 @@ namespace {
                 si->WriteRecordData(ef.duration);
             }
         }
+        // v8 appendix: explicit base stats (DNAM) — H/M/S + the 18 skills (AV 6..23).
+        si->WriteRecordData(n.health);
+        si->WriteRecordData(n.magicka);
+        si->WriteRecordData(n.stamina);
+        si->WriteRecordData(static_cast<std::uint32_t>(n.skills.size()));
+        for (std::int32_t s : n.skills) si->WriteRecordData(s);
     }
 
     void LoadNpcPayload(const SKSE::SerializationInterface* si, Captures::NpcData& n, std::uint32_t version) {
@@ -444,6 +450,18 @@ namespace {
                 }
             }
         }
+        if (version >= 8) {  // explicit base stats (DNAM): H/M/S + the 18 skills
+            si->ReadRecordData(n.health);
+            si->ReadRecordData(n.magicka);
+            si->ReadRecordData(n.stamina);
+            std::uint32_t sc = 0;
+            si->ReadRecordData(sc);
+            for (std::uint32_t k = 0; k < sc; ++k) {
+                std::int32_t v = 0;
+                si->ReadRecordData(v);
+                n.skills.push_back(v);
+            }
+        }
     }
 
     void SaveItemPayload(const SKSE::SerializationInterface* si, const Captures::Entry& e) {
@@ -481,6 +499,7 @@ namespace {
             si->WriteRecordData(static_cast<std::uint8_t>(e.kind));
             WriteStr(si, e.name);
             WriteStr(si, e.base);
+            WriteStr(si, e.label);  // v8 — the player-typed identity label (case preserved)
             if (e.kind == Captures::Kind::kNpc) SaveNpcPayload(si, e.npc);
             else SaveItemPayload(si, e);
         }
@@ -498,6 +517,7 @@ namespace {
             e.kind = static_cast<Captures::Kind>(kind);
             e.name = ReadStr(si);
             e.base = ReadStr(si);
+            if (version >= 8) e.label = ReadStr(si);
             // v1 only ever held item kinds (kNpc didn't exist), so always item payload.
             if (version >= 2 && e.kind == Captures::Kind::kNpc) LoadNpcPayload(si, e.npc, version);
             else LoadItemPayload(si, e);

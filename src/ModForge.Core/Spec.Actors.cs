@@ -12,6 +12,19 @@ public sealed class NpcSpec
     public string Outfit { get; set; } = "";      // ref -> DefaultOutfit
     public int Level { get; set; }                 // fixed level (0 = leave default); needed for class stat auto-calc
     public bool AutoCalcStats { get; set; }        // derive H/M/S + skills from level + class (else flat defaults)
+    // --- Explicit stats (DNAM) — the other route, and the one the engine actually reads for a
+    // NON-autocalc actor. AutoCalcStats makes the ENGINE compute H/M/S + skills from class+level;
+    // these author them outright (what an in-game capture of a real actor produces — `sc capp`).
+    // The two are alternatives: set explicit values and leave autoCalcStats OFF (Build warns if
+    // both are on — autocalc overwrites them at load). 0 = leave the engine default.
+    public int Health { get; set; }                 // DNAM base health (ushort range)
+    public int Magicka { get; set; }                // DNAM base magicka
+    public int Stamina { get; set; }                // DNAM base stamina
+    // DNAM skill values: exactly 18 (or empty), each 0–255, in Mutagen's `Skill` enum order —
+    // OneHanded, TwoHanded, Archery, Block, Smithing, HeavyArmor, LightArmor, Pickpocket,
+    // Lockpicking, Sneak, Alchemy, Speech, Alteration, Conjuration, Destruction, Illusion,
+    // Restoration, Enchanting (= engine ActorValue 6..23, the capture DLL's export order).
+    public List<int> Skills { get; set; } = new();
     public List<string> Packages { get; set; } = new(); // refs to PACK records (in-spec or external) — assigned to this NPC's package list
     public string VoiceType { get; set; } = "";      // ref → VTYP (e.g. Skyrim.esm:0x013AE6 = MaleNord); without one, NPC is silent (no hello/idle chatter)
     public string VoiceTemplate { get; set; } = "";   // ref → voiceTemplates ID; routes this NPC's lines to a cloning engine

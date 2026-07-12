@@ -290,6 +290,19 @@ namespace SceneExporter {
                         {"area", ef.area}, {"duration", ef.duration}});
                 return a;
             };
+            // A capture's LABEL (`sc capp Hero` / `sc capc Sword`) becomes the record's
+            // editorId: "MFCap_<label>", with everything an EditorID can't hold folded to
+            // '_'. ModForge's "explicit editorId wins" rule then makes the label the stable
+            // identity of the generated record (re-capture the same hero → same editorId →
+            // the same record, not a second one).
+            auto editorIdOf = [](const std::string& label) {
+                std::string out = "MFCap_";
+                for (const char ch : label) {
+                    const auto uc = static_cast<unsigned char>(ch);
+                    out.push_back(std::isalnum(uc) ? ch : '_');
+                }
+                return out;
+            };
             auto items = nlohmann::json::array();
             auto npcs = nlohmann::json::array();
             for (const auto& e : caps) {
@@ -297,6 +310,7 @@ namespace SceneExporter {
                     const auto& n = e.npc;
                     nlohmann::json c;
                     c["name"] = e.name;
+                    if (!e.label.empty()) c["editorId"] = editorIdOf(e.label);
                     if (!e.base.empty()) c["base"] = e.base;   // origin NPC_ if durable
                     if (!n.race.empty()) c["race"] = n.race;
                     c["female"] = n.female;
@@ -323,6 +337,13 @@ namespace SceneExporter {
                     if (!n.parts.empty()) c["faceParts"] = n.parts;
                     if (!n.npcClass.empty()) c["class"] = n.npcClass;
                     if (n.level > 0) c["level"] = n.level;
+                    // EXPLICIT stats (DNAM): the base actor values the engine really runs on.
+                    // Present → ModForge writes them straight and leaves autoCalcStats OFF
+                    // (class+level only ESTIMATE these; a cloned actor reports 50/50/50).
+                    if (n.health > 0.f) c["health"] = n.health;
+                    if (n.magicka > 0.f) c["magicka"] = n.magicka;
+                    if (n.stamina > 0.f) c["stamina"] = n.stamina;
+                    if (!n.skills.empty()) c["skills"] = n.skills;  // 18, in Skill-enum order
                     if (!n.combatStyle.empty()) c["combatStyle"] = n.combatStyle;
                     if (!n.voiceType.empty()) c["voiceType"] = n.voiceType;
                     if (!n.spells.empty()) c["spells"] = n.spells;
@@ -369,6 +390,7 @@ namespace SceneExporter {
                 nlohmann::json c;
                 c["name"] = e.name;
                 c["kind"] = Captures::KindName(e.kind);
+                if (!e.label.empty()) c["editorId"] = editorIdOf(e.label);
                 if (!e.base.empty()) c["base"] = e.base;  // physical template source
                 if (e.kind == Captures::Kind::kWeapon || e.kind == Captures::Kind::kArmor) {
                     nlohmann::json ench;

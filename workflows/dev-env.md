@@ -33,6 +33,18 @@ scripts/bootstrap-pex.sh
 - 語音 mod：`scripts/ship-voice.sh <spec> ...`（package→voicelines→voicediag→zip，需 `MODFORGE_TTS_BIN`；要有聲還需 `MODFORGE_XWMAENCODE`＝SSE `Tools/Audio/xwmaencode.exe`，否則吐無聲 loose wav）
   - **已知陷阱**（TIF 內聯編譯 spurious fail 完整修法、LipGenerator wine crash）→ 見 [feature-dev/gotchas](feature-dev/gotchas.md)「Voice / ship-voice」。
 
+## 部署 SKSE DLL 到 MO2（**僅 Manjaro**）——🔴 絕不 `cp` 覆寫執行中的 DLL
+
+**用 `sub_projs/scene-capture-bridge/scripts/deploy.sh`，不要手打 `cp`。**
+
+**症狀（2026-07-12 真的把使用者的遊戲弄死過）**：遊戲跑著的時候把新 DLL `cp` 蓋進 `mods/<mod>/SKSE/Plugins/` → 遊戲**無聲暴斃、連 crash log 都沒有**。看起來像「新 DLL 是壞的」，其實 DLL 沒問題。
+
+**成因**：Windows 會鎖住載入中的 DLL，**Linux/Proton 不會**。`cp new target` ＝ `open(O_TRUNC)` **寫回同一個 inode**；而已載入 DLL 的程式碼頁是**從該檔 demand-page 進來的**（用到才 fault-in）。檔案在腳下被換掉 → 下一次 page-in 從**新檔**的同一個 offset 讀 bytes，那個位置在**舊檔**裡是別的東西 → 指令流變垃圾 → 死。（crash handler 自己可能也還沒 fault-in，所以連 log 都寫不出來。）
+
+**正確做法**：**永遠不要寫穿既有 inode** —— `cp new target.tmp && mv target.tmp target`（`rename(2)` ＝原子換 inode；執行中的遊戲繼續指向舊的、已 unlink 的 inode，安然跑完，下次啟動才讀到新的）。`deploy.sh` 就是這個，而且會先 `pgrep -f SkyrimSE.exe`：**遊戲在跑就直接拒絕**（`--force` 才會用 tmp+rename 硬上；即使如此，新碼仍要**完全重開遊戲**才吃得到）。
+
+> 同一類坑：`mods/<mod>/` 底下**任何**執行中程序 mmap 的檔（.dll/.exe）都適用。純資料檔（esp/json/pex）沒有 demand-paging 問題，但 MO2 重裝仍會還原手動塞的檔（見 memory `mo2-reinstall-reverts-manual-pex`）。
+
 ## 實機狀態查詢（**僅 Manjaro**）
 
 遊戲跑著的時候，`scripts/skylink/skylink-bridge.sh up` 把 [SkyLink](skylink/README.md) 的 MCP server 接上，agent 就能直接查執行中遊戲的 load order / cell / quest stage / FormID，不必靠人轉述。實機**體感**（動畫、對嘴、崩不崩）仍只有人能判。

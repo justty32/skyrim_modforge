@@ -36,8 +36,21 @@ public sealed class CapturedNpcSpec
     public List<float> FaceMorphs { get; set; } = new();       // 18 floats (idx 0–17) or empty
     public List<int> FaceParts { get; set; } = new();          // 4 ints or empty
     public List<CapturedNpcPerkSpec> Perks { get; set; } = new();
-    public string Class { get; set; } = "";        // ref → CLAS; when present the expansion turns on autoCalcStats (class+level drive believable H/M/S)
+    public string Class { get; set; } = "";        // ref → CLAS; drives autoCalcStats ONLY when no explicit stats came along (see below)
     public int Level { get; set; }                  // actor's effective level at capture time (0 = unknown → engine default)
+    // EXPLICIT stats (DNAM) — the base actor values the engine really runs on, captured off the
+    // live actor. They BEAT class autocalc: when any of these is present the expansion writes them
+    // to DNAM and leaves autoCalcStats OFF (autocalc only ESTIMATES H/M/S from class+level, and a
+    // PROTEUS-style clone reports a flat level-1 50/50/50). 0 = not captured → the class-autocalc
+    // route, exactly as before (so a pre-v8 capture json behaves identically).
+    public float Health { get; set; }
+    public float Magicka { get; set; }
+    public float Stamina { get; set; }
+    // The 18 skills in engine ActorValue order 6..23 (OneHanded, TwoHanded, Archery, Block,
+    // Smithing, HeavyArmor, LightArmor, Pickpocket, Lockpicking, Sneak, Alchemy, Speech,
+    // Alteration, Conjuration, Destruction, Illusion, Restoration, Enchanting) — which is exactly
+    // Mutagen's `Skill` enum order, so index → Skill is 1:1. Empty (pre-v8 capture) or 18.
+    public List<int> Skills { get; set; } = new();
     public string CombatStyle { get; set; } = "";  // ref → CSTY; HOW the AI fights (without a magic-leaning one, spells go uncast)
     public string VoiceType { get; set; } = "";    // ref → VTYP; without one the clone is mute (no hello/idle chatter)
     public List<string> Spells { get; set; } = new(); // refs → SPEL; base spell list + runtime-added — the combat AI's castable set

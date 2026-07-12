@@ -1,6 +1,24 @@
 # Player capture — `sc capp <label>`（去 PROTEUS 化）
 
-**狀態：規劃完成，未實作**（2026-07-11；使用者指示先規劃、離峰再做）。
+**狀態：✅ 已落地，待實機**（2026-07-12；DLL crc `f8afc170`，co-save SCCP v8，C# 923 測綠）。實機步驟見 [wait_todo/ingame-tests.md](../../wait_todo/ingame-tests.md)「`sc capp` 直接吸玩家」。
+
+## 落地摘要（2026-07-12）
+
+| 計畫項 | 落地 |
+|---|---|
+| `sc capp [Label]` / `sc capc [Label]` | `Console.cpp`：label 取**未 `Lower()` 的 raw2**（`Trim()`，去空白與引號）。usage/helpString 更新 |
+| 玩家＝一般 actor | `Captures::CapturePlayer` ＝ `CaptureRef(PlayerCharacter::GetSingleton(), "player", label)`——chargen 本來就在 base TESNPC（`Skyrim.esm:0x000007`），`ReadNpc` 原封不動就讀得到，**無 PROTEUS 中介** |
+| 玩家 perks | `ReadNpc`：`actor->As<PlayerCharacter>()` → `GetPlayerRuntimeData().addedPerks`（玩家 base 的 perk array 是空的）；一般 NPC 照舊走 `npc->perks` |
+| 顯式數值（**所有 actor**） | `AsActorValueOwner()->GetBaseActorValue()`：kHealth/kMagicka/kStamina ＋ AV 6..23 的 18 技能（＝Mutagen `Skill` enum 序，index 即映射） |
+| label → editorId | `SceneExporter::AppendCaptures`：`editorId = "MFCap_" + sanitize(label)`（非 alnum → `_`），item/npc 兩段都吐 |
+| co-save | `kVerCaps = 8`：entry 追加 `label`；NpcPayload 追加 H/M/S ＋ skills。v≤7 舊存檔照舊讀（欄位缺省 0） |
+| C# 消費 | `CapturedNpcSpec`／`NpcSpec` 加 `Health/Magicka/Stamina/Skills`；`BuildNpcs` 寫 `PlayerSkills`（DNAM）；`ExpandCapturedNpcs` **優先序＝顯式數值 ＞ class autocalc**（有顯式值 → `AutoCalcStats=false`，class 仍帶）；兩處 validator 收邊界（skills 0\|18・0–255、H/M/S 0–65535）；`BuildNpcs` 對「顯式值 ＋ autoCalc 同開」`Warn` |
+
+**未做（等實機結果再決定）**：玩家 base voiceType 若為空 → 分身啞巴（先照實輸出，不 fallback）；玩家物品欄全吸不過濾。
+
+---
+
+## 原始計畫（2026-07-11 拍板）
 
 ## 動機
 

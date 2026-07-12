@@ -41,8 +41,20 @@ namespace {
         Print("  sc del|pk|ed|cap er0 / er1         aim by crosshair / ray");
         Print("  sc ed ax / sc ed                  enter rotate sub-mode / back to move");
         Print("  sc delc                           erase the console-selected ref");
-        Print("  sc capc                           capture the console-selected ref (item or NPC)");
+        Print("  sc capc [Label]                   capture the console-selected ref (item or NPC)");
+        Print("  sc capp [Label]                   capture the PLAYER (face/stats/perks/gear)");
         Print("  sc cap  -> capture mode: aim at item/NPC, press the action key");
+    }
+
+    // The `sc` parser lower-cases its args (mode words are case-insensitive), but an identity
+    // LABEL must keep the case the player typed — it becomes the record's editorId. So the
+    // label always comes from the RAW param, never from `a2`.
+    std::string Trim(const char* s) {
+        std::string out = s ? s : "";
+        const auto b = out.find_first_not_of(" \t\"");
+        if (b == std::string::npos) return {};
+        const auto e = out.find_last_not_of(" \t\"");
+        return out.substr(b, e - b + 1);
     }
 
     // Map a tool word ("del"/"pk"/"ed"/...) to its mode, or kTotal if none.
@@ -65,6 +77,7 @@ namespace {
             a_thisObj, a_containingObj, a_scriptObj, a_locals, raw1, raw2);
         const std::string a1 = Lower(raw1);
         const std::string a2 = Lower(raw2);
+        const std::string label = Trim(raw2);  // identity label — case PRESERVED (see Trim)
         a_result = 1.0;
 
         if (a1.empty()) {
@@ -87,13 +100,30 @@ namespace {
 
         // Capture the console-selected ref — the aim-free eyedropper (items AND
         // actors; the capture-mode crosshair/ray path can't reach an NPC that's
-        // easier to click than to aim at).
+        // easier to click than to aim at). Optional label → the entry's editorId.
         if (a1 == "capc") {
-            switch (Captures::CaptureConsoleRef()) {
-            case Captures::Result::kCaptured:    Print("SCB: captured console ref"); break;
+            switch (Captures::CaptureConsoleRef(label)) {
+            case Captures::Result::kCaptured:
+                Print("SCB: captured console ref%s", label.empty() ? "" : (" as '" + label + "'").c_str());
+                break;
             case Captures::Result::kNotItem:     Print("SCB: not capturable (weapon/armour/potion/ingredient/NPC)"); break;
             case Captures::Result::kMarkerProxy: Print("SCB: that's a marker gem"); break;
             default: Print("SCB: no console ref selected (or nothing to capture)"); break;
+            }
+            return true;
+        }
+
+        // Capture THE PLAYER. The engine keeps the player's chargen on its base TESNPC
+        // (0x7), so the DLL reads the same record it reads for any NPC — no PROTEUS clone
+        // in the middle (which reported level 1 / 50-50-50 and wrote no tints). Perks come
+        // from PlayerCharacter's runtime addedPerks; H/M/S + the 18 skills from the base
+        // actor values, exported explicitly so ModForge writes DNAM instead of autocalc.
+        if (a1 == "capp") {
+            switch (Captures::CapturePlayer(label)) {
+            case Captures::Result::kCaptured:
+                Print("SCB: captured the player%s", label.empty() ? "" : (" as '" + label + "'").c_str());
+                break;
+            default: Print("SCB: could not capture the player (see the log)"); break;
             }
             return true;
         }
@@ -159,7 +189,7 @@ namespace Console {
             };
             cmd->functionName = "sc";
             cmd->shortName = "sc";
-            cmd->helpString = "SceneCaptureBridge: sc mk|del|pk|pl|ed|cap|off, sc delc|capc, sc mk dp0|dp1";
+            cmd->helpString = "SceneCaptureBridge: sc mk|del|pk|pl|ed|cap|off, sc delc|capc [Label]|capp [Label], sc mk dp0|dp1";
             cmd->referenceFunction = false;
             cmd->SetParameters(params);
             cmd->executeFunction = &Execute;

@@ -243,7 +243,26 @@ interior 用 cell 的 EditorID（如 `WhiterunBanneredMare`）；exterior 用 wo
 
 ---
 
+### ✅ 拍板＋落地（2026-07-12）：`sc capp` **直接吸玩家**（去 PROTEUS 化）＋ 顯式數值＋label→editorId
+
+推翻下面「NPC 來源」節的**路徑 A（拓印玩家＝消費 PROTEUS clone）**：PROTEUS 能複製玩家的臉，只因引擎把 chargen 寫在**玩家的 base TESNPC**（`Skyrim.esm:0x000007`）上——DLL 直讀同一處即可，**不需要中介**。DLL 端已落地（crc `f8afc170`，co-save SCCP v8）；計畫全文＋落地摘要見 [plans/player-capture-capp.md](../plans/player-capture-capp.md)。契約變更三條：
+
+**① `sc capp [Label]` ＝把玩家當一般 actor 擷取** → 一筆 `capturedNpcs[]`（外貌/perk/裝備/擺位全帶）。`base` 出來是 `Skyrim.esm:0x000007`（advisory，ModForge 只 MINT 不 override）。順手解掉 PROTEUS 路線三個缺陷：clone 自報 level 1／50-50-50、不寫 tintLayers、defaultOutfit 是空殼 → 裸體。玩家 perk 讀 `PlayerCharacter::addedPerks`（玩家 base 的 perk array 是空的），一般 NPC 照舊讀 base。
+
+**② `capturedNpcs[]` 新增顯式數值欄（所有 actor 都吐，不只玩家）**：
+```jsonc
+"health": 320.0, "magicka": 150.0, "stamina": 210.0,   // base actor values（引擎真正跑的數字）
+"skills": [41, 42, ...]                                // 18 個，引擎 AV 6..23 序
+```
+skills 的順序 ＝ `OneHanded, TwoHanded, Archery, Block, Smithing, HeavyArmor, LightArmor, Pickpocket, Lockpicking, Sneak, Alchemy, Speech, Alteration, Conjuration, Destruction, Illusion, Restoration, Enchanting` ＝ **Mutagen `Skill` enum 序**，index 即映射。**ModForge 消費優先序＝顯式數值 ＞ class autocalc**：有顯式值就寫 DNAM 且 `autoCalcStats` 關（autocalc 只是拿 class+level 估，載入時還會覆蓋掉寫死的值）；沒有才走舊的 class-autocalc 路（**舊 capture json 因此原樣相容**，欄位缺省 0）。
+
+**③ `capturedItems[]` / `capturedNpcs[]` 可帶 `editorId`（label 機制）**：`sc capp <Label>` / `sc capc <Label>` 的標籤 → `editorId: "MFCap_<sanitised label>"`（非 alnum → `_`）。ModForge 既有的「顯式 editorId 優先」規則即為身份機制——**同一個 label 再吸一次＝同一筆記錄**（不會多生一個）。⚠️ label 走**未 `Lower()` 的 raw 參數**（`sc` 的參數解析會全轉小寫；`pkc`/referrer 的標號同此坑）。
+
+---
+
 ### NPC 來源：PROTEUS 是**可選**，預設走「大眾臉」（2026-07-10 使用者定調）
+
+> 🔴 **路徑 A（PROTEUS）已被 2026-07-12 拍板取代**——見上節 `sc capp`：直接吸玩家 base TESNPC，不需要 PROTEUS。以下保留為歷史脈絡。
 
 原設計把 §A 拓印玩家（PROTEUS）當成 NPC 的唯一來源。改為兩條並列，**預設是後者**：
 

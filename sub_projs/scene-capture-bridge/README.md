@@ -33,7 +33,13 @@ sc del|pk|ed er0 / er1  該模式動作鍵用準星／物理射線（樹、純�
 sc ed ax                進編輯「純旋轉子模式」（見下）；回普通模式打 sc ed
 sc delc                 擦除 console 滑鼠點選的 ref（先只做物件，非 actor）
 sc cap / sc cap r       擷取準星／射線目標的附魔＋效果（附魔武防、藥水、材料）進 capturedItems[]
+sc capc [Label]         擷取 console 滑鼠點選的 ref（物品或 NPC 皆可）
+sc capp [Label]         擷取「玩家自己」（臉/數值/perk/裝備全帶）→ capturedNpcs[]
 ```
+
+**`sc capp` ＝直接吸玩家（2026-07-12，去 PROTEUS 化）**：引擎把玩家的 chargen 寫在 base TESNPC（`Skyrim.esm:0x000007`）上，DLL 直讀同一處即可，**不必經 PROTEUS clone**（clone 自報 level 1／50-50-50、不寫 tintLayers、outfit 是空殼）。順帶所有 actor 的擷取都改帶**顯式數值**：H/M/S ＋ 18 技能（引擎 AV 6..23，＝Mutagen `Skill` 序）→ ModForge 直接寫 DNAM、**不開 autoCalcStats**（autocalc 只是拿 class+level 估算，載入時還會覆蓋掉）。玩家 perk 讀 `PlayerCharacter::addedPerks`（玩家 base 的 perk array 是空的）。
+
+**`[Label]` ＝身份標籤，大小寫保留**（`sc` 的參數解析會全轉小寫——label 走未 `Lower()` 的 raw 參數）。匯出成 `editorId: "MFCap_<label>"`，ModForge 的「顯式 editorId 優先」規則讓同一個 label 永遠對應同一筆記錄（再吸一次＝更新同一個人，不會多生一個）。計畫全文：[plans/player-capture-capp.md](../../workflows/plans/player-capture-capp.md)。
 
 **編輯純旋轉子模式**：`sc ed ax` 進入，**`sc ed` 退回**普通移動模式。ON 時 numpad 方向鍵改成旋轉——**4/6＝yaw、1/3＝pitch、7/9＝roll、8/2＝角度歸零**（位置/縮放不動），numpad 5 也＝角度歸零；OFF（預設）時 8/2 前後、4/6 左右、1/3 升降、7/9 yaw，numpad 5＝復原到編輯前姿態。
 
@@ -71,7 +77,7 @@ Export 頁有 **Export player cell**、**Export all (loaded cells)** 與 **Expor
 | `Aim.{h,cpp}` | 共用視角射線＋**兩種選取入口**：`CrosshairRef()`（互動準星，老手感）與 `RayRef()`（物理射線→反查 ref，樹/純裝飾 static 用）。**射線絕不做自動 fallback**（使用者拍板 2026-07-11）——牆/地板都是 ref，自動 fallback 會把「按空」變誤抓；射線只走明示按鈕/專用鍵 |
 | `Eraser.{h,cpp}` | 橡皮擦（`sc del` 模式動作）：authored→disable＋登記→`removals[]`；自己的 dynamic→真刪除無痕；entry 記 name/座標/cell（面板逐列顯示＋過濾）；undo 逐列/逐 cell/最近一筆；`erase by ray` 明示射線入口。（`scan disabled` 跨存檔救援已移除——co-save 持久化耐久 id 後冗餘）|
 | `Palette.{h,cpp}` | 滴管（`sc pk` 吸、`sc pl` 擺；runtime-only base 拒收）；`pick by ray` 明示入口；**插槽落盤 `scene-capture-palette.json`（跨存檔跨 session）**，base 解析不回（plugin 移除）標 unavailable 不炸 |
-| `Captures.{h,cpp}` | 定義擷取器（Palette 的姊妹：吸「沒有耐久 base 可引用」的內容）。`sc cap`／面板讀 live form 的語意內容 → ModForge **鑄新記錄**。**①物品**：附魔武防（實例 ExtraEnchantment 優先，否則 base formEnchanting）＋藥水/材料效果 → `capturedItems[]`（效果 shape = EffectSpec）。**②NPC**：`TESNPC` 外貌（race/sex/weight/height＋headParts/tintLayers/faceMorphs+parts/hair/skin/FTST/outfit）＋**base perks（id+rank）**＋**當前 buff（active-effect 快照：source spell＋MGEF＋mag/dur/elapsed）**＋**旗標（unique/dead/essential/protected）**＋擺位 → `capturedNpcs[]`。**唯一 NPC 也收**（2026-07-11 使用者反轉，帶 `unique` 旗標給 ModForge 判斷）。登記簿隨 co-save（record `'SCCP'` v3，只存耐久 id）。**⚠️ NPC 待驗/未涵蓋**：(a) PROTEUS 若用 NiNode live override 不寫 TESNPC，擷到的臉是 base 的非套用後的；(b) **身形/臉部「mesh」本身不收**——只收「定義」（headParts+morphs+race+weight，臉/身是由這些＋facegen 烘焙生成的），baked FaceGeom nif 與 RaceMenu/NiOverride 雕塑不在 TESNPC，需 facegen 烘焙＝ModForge 下游活 |
+| `Captures.{h,cpp}` | 定義擷取器（Palette 的姊妹：吸「沒有耐久 base 可引用」的內容）。`sc cap`／面板讀 live form 的語意內容 → ModForge **鑄新記錄**。**①物品**：附魔武防（實例 ExtraEnchantment 優先，否則 base formEnchanting）＋藥水/材料效果 → `capturedItems[]`（效果 shape = EffectSpec）。**②NPC**：`TESNPC` 外貌（race/sex/weight/height＋headParts/tintLayers/faceMorphs+parts/hair/skin/FTST/outfit）＋**base perks（id+rank）**＋**當前 buff（active-effect 快照：source spell＋MGEF＋mag/dur/elapsed）**＋**旗標（unique/dead/essential/protected）**＋**顯式數值（H/M/S＋18 技能，讀 base actor values；所有 actor 都收）**＋擺位 → `capturedNpcs[]`。**③玩家**：`sc capp` 直讀玩家 base TESNPC（chargen 就在那），perk 走 `PlayerCharacter::addedPerks`。**唯一 NPC 也收**（2026-07-11 使用者反轉，帶 `unique` 旗標給 ModForge 判斷）。登記簿隨 co-save（record `'SCCP'` **v8**：+label +H/M/S +skills，只存耐久 id）。**⚠️ NPC 待驗/未涵蓋**：(a) PROTEUS 若用 NiNode live override 不寫 TESNPC，擷到的臉是 base 的非套用後的；(b) **身形/臉部「mesh」本身不收**——只收「定義」（headParts+morphs+race+weight，臉/身是由這些＋facegen 烘焙生成的），baked FaceGeom nif 與 RaceMenu/NiOverride 雕塑不在 TESNPC，需 facegen 烘焙＝ModForge 下游活 |
 | `Editor.{h,cpp}` | 編輯模式（`sc ed` 動作鍵選中準星目標；**numpad \* ＝射線選取**）→ numpad 微調（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、. cancel、**5＝復原續編**）；步長 runtime 可調（Settings/co-save）；havok-movable 類型編輯期物理凍結；自己的 ref＝live pose 直接匯出（不進 overrides 列，正常），**authored ref＝commit 時登記進 Overrides**（2026-07-11 契約拍板）|
 | `Overrides.{h,cpp}` | authored ref 被編輯 commit 後的登記簿（比照 Eraser：明示、不 diff——havok 噪音）→ 匯出頂層 `overrides[]`（ref/position/rotation°/scale；actor 不帶 scale）；Editor 面板頁逐筆/全部 revert 回 baseline |
 | `PCH.h` / `log.h` | CommonLibSSE PCH（含 nlohmann）＋ spdlog file logger |
@@ -113,7 +119,7 @@ DLL 有兩層狀態，**P5 起兩層都隨存檔走**：
 | 擦除 vanilla/mod 物件 | **co-save 登記簿**＋存檔 disable 狀態 | **自動**進 `removals[]` |
 | 移動 authored ref（overrides） | **co-save 登記簿**（baseline＋commit pose）＋存檔 live pose | **自動**進 `overrides[]`，revert 也還能回 baseline |
 | Palette 插槽 | **磁碟**（`scene-capture-palette.json`） | 天生跨存檔；plugin 移出 load order 的槽標 unavailable |
-| Captures 擷取定義（物品附魔/效果、NPC 外貌） | **co-save 登記簿**（record `'SCCP'` v2，純耐久 id） | **自動**進 `capturedItems[]`／`capturedNpcs[]`；無 handle，讀檔即回 |
+| Captures 擷取定義（物品附魔/效果、NPC 外貌/數值、玩家） | **co-save 登記簿**（record `'SCCP'` v8，純耐久 id） | **自動**進 `capturedItems[]`／`capturedNpcs[]`；無 handle，讀檔即回 |
 | 模式/鍵位/dp 狀態 | **co-save** | 隨存檔還原 |
 
 **adopt 降級為救援機制**：marker 的 `adopt this cell` 現在讀檔會**自動跑一次**（掃當前 cell），只有跨到別的 cell 才需手動按。擦除的 `scan disabled refs` 已整個移除——co-save 存的是耐久 id，重解析穩定，跨存檔救援冗餘。真要**換一個存檔**撿另一條時間線的 marker，走 Markers 頁 `adopt this cell`。

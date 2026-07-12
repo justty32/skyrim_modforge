@@ -75,6 +75,14 @@ public static partial class Generator
             string outfitEd = outfitItems.Count > 0 ? ed + "_Outfit" : "";
             if (outfitItems.Count > 0)
                 spec.Outfits.Add(new OutfitSpec { EditorId = outfitEd, Items = outfitItems });
+            // Stats, in priority order: EXPLICIT captured values > class autocalc. The base actor
+            // values are what the engine really runs on, so when the capture carried them (DLL
+            // co-save v8+) they are authored to DNAM and autoCalc stays OFF — autocalc would
+            // recompute (and overwrite) them from class+level at load, which is only an estimate.
+            // A capture with no stats (a pre-v8 json) keeps the old route: autoCalc ONLY with a
+            // class (class-less autoCalc = the ~0-HP permanent-bleedout footgun). `class` is
+            // carried either way — it still drives AI/training semantics.
+            bool explicitStats = cn.Health > 0f || cn.Magicka > 0f || cn.Stamina > 0f || cn.Skills.Count == 18;
             var n = new NpcSpec
             {
                 EditorId = ed, Name = cn.Name,
@@ -82,10 +90,12 @@ public static partial class Generator
                 Race = cn.Race, Female = cn.Female,
                 Unique = cn.Unique, Essential = cn.Essential, Protected = cn.Protected,
                 Outfit = outfitItems.Count > 0 ? outfitEd : cn.DefaultOutfit,
-                // Stats: class + level + autoCalc make the clone's H/M/S believable. autoCalc
-                // ONLY with a class (class-less autoCalc = ~0 HP permanent-bleedout footgun).
+                // stats
                 Class = cn.Class, Level = cn.Level,
-                AutoCalcStats = !string.IsNullOrWhiteSpace(cn.Class),
+                AutoCalcStats = !explicitStats && !string.IsNullOrWhiteSpace(cn.Class),
+                Health = (int)Math.Round(cn.Health), Magicka = (int)Math.Round(cn.Magicka),
+                Stamina = (int)Math.Round(cn.Stamina),
+                Skills = new List<int>(cn.Skills),
                 // behaviour: what the AI casts, HOW it fights, and its voice
                 CombatStyle = cn.CombatStyle, VoiceType = cn.VoiceType,
                 Spells = cn.Spells.Where(sp => !string.IsNullOrWhiteSpace(sp)).ToList(),

@@ -23,14 +23,17 @@ Debug 把 `release-msvc` 換 `debug-msvc`。改過 `vcpkg.json` / triplet → �
 
 ## 部署到 MO2（開發迭代）
 
-`CMakeLists.txt` 已內建：configure 時若 `SKYRIM_MODS_FOLDER` 指到 MO2 的 `mods/`，post-build 會把 DLL 複製進 `<mods>/SceneCaptureBridge <BuildType>/SKSE/Plugins/`。
-
 ```bash
-export SKYRIM_MODS_FOLDER=/home/lorkhan/games/mod-organizer-2-skyrimspecialedition/modorganizer2/mods
-rm -rf build/release-clang-cl-linux && cmake --preset build-release-clang-cl-linux && cmake --build build/release-clang-cl-linux
+scripts/deploy.sh          # 建完之後跑這個。不要手打 cp。
 ```
 
-**不要丟進 MO2 的 `overwrite/`**：那是傾倒區，plugin 擺在那裡幾乎不可見、會被「清空 overwrite」沖掉，而且 F10 熱鍵會在日常遊玩時一直掛著。用真的 mod 資料夾，開關權留給 MO2 的勾選框。改完 DLL 後 MO2 要 F5 refresh 才看得到新資料夾。
+**🔴 絕不用 `cp` 就地覆寫 `mods/.../SKSE/Plugins/*.dll`**——遊戲跑著的時候這麼做會讓它**無聲暴斃、沒有 crash log**（Linux 不像 Windows 會鎖住載入中的 DLL；`cp` 寫穿同一個 inode，而 DLL 程式碼頁是從該檔 demand-page 進來的）。`deploy.sh` 做兩件事：① `pgrep -f SkyrimSE.exe`，**遊戲在跑就拒絕**；② `cp → .tmp` 再 `mv`（`rename(2)` 換 inode，執行中的 mapping 不受影響）。成因全文見 [dev-env § 部署 SKSE DLL 到 MO2](../../workflows/dev-env.md)。
+
+**遊戲用的是帶 esp 的 `mods/SceneCaptureBridge/`**（`SceneCaptureBridge Release/` 是備份夾）；`deploy.sh` 兩個都更新。新 DLL 要**完全關遊戲重開**才吃得到。
+
+`CMakeLists.txt` 也有個 post-build copy（configure 時 `OUTPUT_FOLDER` 有設才啟用；本機的 preset **沒設**，所以是關的）——要用的話它只會寫 `<mods>/SceneCaptureBridge <BuildType>/`，**不會**碰遊戲在用的那個夾。
+
+**不要丟進 MO2 的 `overwrite/`**：那是傾倒區，plugin 擺在那裡幾乎不可見、會被「清空 overwrite」沖掉。用真的 mod 資料夾，開關權留給 MO2 的勾選框。改完 DLL 後 MO2 要 F5 refresh 才看得到新資料夾。
 
 ## Manjaro（clang-cl 跨編譯，僅驗證）
 
