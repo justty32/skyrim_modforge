@@ -84,13 +84,22 @@
 
 **PROTEUS clone 玩家分身驗收（`~/skyrim_mods/mine/MFCapPrisoner.zip` 待裝）**：OPEN-B 已結案（PROTEUS 寫 TESNPC ✅，見 [landed/npcs](../workflows/feature-dev/landed/npcs.md)）；分身 zip 已出貨——裝了進遊戲看：**你自己的分身**應站在擷取點（Tamriel (109098, 103520, -9017)，冬堡往學院方向），臉形/髮型/鬍子/髮色/體重＝你的角色。**預期落差（非 bug）**：①戰紋/膚色細節層可能沒有（PROTEUS 沒把 tintLayers 寫回 TESNPC）；②服裝可能不對（defaultOutfit 指向 PROTEUS.esp runtime 模板，esp 檔上是空殼）；③RaceMenu 雕塑/overlay 本來就不在配方層。masters：Skyrim.esm＋PROTEUS.esp＋nwsFollowerFramework.esp。
 
-## scene-capture-bridge — `sc capp` 直接吸玩家（2026-07-12，DLL crc `f8afc170` 已部署雙夾）
+## scene-capture-bridge — `sc capp` 直接吸玩家（2026-07-12，DLL crc `c5049c78`，**尚未部署**）
 
-⚠️ **完全關遊戲重開**吃新 DLL（esp 不動）。co-save **SCCP 升 v8**（+label +顯式 H/M/S +18 技能）——舊存檔的 captures 照讀（缺的欄位＝0，行為同以前）。
+⚠️ **完全關遊戲重開**吃新 DLL（esp 不動）。co-save **SCCP 維持 v8**（+label +顯式 H/M/S +18 技能）——舊存檔的 captures 照讀（缺的欄位＝0，行為同以前）。
 
-**這是什麼**：`sc capp` 直接讀玩家 base TESNPC（chargen 就寫在那）→ **不再需要 PROTEUS clone 當中介**。順帶所有 actor 的擷取都改帶**真實數值**（H/M/S＋18 技能，讀 base actor values）→ ModForge 寫 DNAM、不再靠 class autocalc 估算（那正是「clone 自報 L1、50/50/50」的來源）。計畫＋落地：[plans/player-capture-capp.md](../workflows/plans/player-capture-capp.md)。
+**這是什麼**：`sc capp` 直接讀玩家（外貌走 base TESNPC，進度走 runtime actor）→ **不再需要 PROTEUS clone 當中介**。順帶所有 actor 的擷取都改帶**真實數值**（H/M/S＋18 技能）→ ModForge 寫 DNAM、不再靠 class autocalc 估算（那正是「clone 自報 L1、50/50/50」的來源）。計畫＋落地：[plans/player-capture-capp.md](../workflows/plans/player-capture-capp.md)。
 
+> **2026-07-12 第一輪 export 的「出廠值」是誤報**：`captures_20260712-0958.json` 裡玩家 lvl 1 / 100-100-100 / 種族起始技能，看起來像讀到 base 出廠值——**但那個測試角色（Hatak）本來就是全新 1 級布萊頓**（存檔 header：level 1、XP 0.0/100、0 技能升過）。那些數字是**真值**。同一份 export 的 Ancano（lvl 15 / 167-143-50 / 破壞 51）也對。
+> 但「讀 base actor value」在**練過的角色**上確實是錯的（等級/血魔耐/技能的成長存在 **permanent modifier**，base 永遠停在 chargen 起始表）——所以還是改成 **`GetPermanentActorValue`**（base＋永久修正，**不含**藥水/裝備附魔/受傷）。**沒練過的角色兩種讀法結果一樣**，所以下面第 0 步務必先把角色練起來，不然驗不出差別。
+
+0. **⚠️ 先讓角色「有進度」，否則這輪等於沒驗**（Hatak 是 1 級白紙，base 讀法和新讀法會吐出一模一樣的數字）。用**練過的角色**存檔，或 console 現場造一個：
+   - `player.advskill destruction 20000`、`player.advskill onehanded 20000`（技能會跳好幾級，並累積升級點數）
+   - 升級（背包 → 技能畫面按升級）幾次，**每次選 +10 生命/魔力/耐力**
+   - 記下 console 的 **`player.getav health`**（含 buff）、**`player.getbaseav health`**（＝chargen 100）、以及角色實際的等級/技能，等一下比對。
 1. **吸自己**：隨便站哪（**室內比較好驗**，之後分身就站那）→ console 打 **`sc capp Hero`**（label 隨你取，大小寫會保留）→ console 應印 `SCB: captured the player as 'Hero'`。
+   - **關鍵驗（本輪重點）**：匯出的 json 裡 `level` / `health` / `skills` 應該是**你練出來的數字**——`health` 應該 > 100（100 是 chargen 值，**看到 100 就是又讀到 base 了，回報**），`skills` 的破壞/單手應該是你剛練上去的等級，不是 15。
+   - **buff 不該吸進來**：喝一瓶**強化生命/技能**的藥水再 `sc capp` → 吸到的數字應該**跟沒喝一樣**（永久值不含臨時 buff；`player.getav` 會變、我們吸的不該變）。
    - **F1 → Captures 頁**應多一列（kind=npc、你的角色名）。
    - **驗 label 大小寫**：`sc capp MyHero` 之後匯出的 json 裡 `editorId` 應是 `MFCap_MyHero`（**不是** `mfcap_myhero`）——大小寫沒了就是踩到 `Lower()` 坑，回報。
 2. **匯出**：**F1 → Export 頁（或 Captures 頁）→ `Export captures`** → SKSE 夾生出 `captures_<時間>.json`。**把這個檔給我**（或直接說檔名，我去讀）。
@@ -99,7 +108,8 @@
    - **數值＝你的真實血/魔/耐＋18 技能**（不是 50/50/50，不是 L1）。
    - **perk ＝你點過的 perk**（玩家 perk 存在 `addedPerks`，這次才收得到）。
    - **裝備**：穿在身上的護甲應該有穿（走鑄 OTFT 路），武器/雜物在物品欄。
-   - **可能落差（先照實回報，不算 bug）**：① 玩家 base 的 **voiceType 可能是空的** → 分身啞巴（不會 hello/閒聊）；② 物品欄**全吸**（含任務物品/金幣/鑰匙）→ 分身身上東西很多。這兩項要不要處理等你看了再說。
+   - **可能落差（先照實回報，不算 bug）**：① 玩家 base 的 **voiceType 可能是空的** → 分身啞巴（不會 hello/閒聊）——0958 那份 export 玩家那筆確實**沒有** `voiceType` 欄，已實證；② 物品欄**全吸**（含任務物品/金幣/鑰匙）→ 分身身上東西很多。這兩項要不要處理等你看了再說。
+   - **`weight: 0.0` 不是 bug**：那是你 chargen 的體重滑桿真值（Skyrim.esm 裡 Player base 是 100，我們吸到 0 → 正好證明讀的是**存檔改寫過的** TESNPC 而不是磁碟原始記錄；Ancano 的 0 也跟 Skyrim.esm 一字不差）。想對照就 console `player.getnpcweight`。
 4. **順手複驗（不破舊路）**：對一個**普通 vanilla NPC** `sc capc` → 匯出的那筆現在也該多出 `health/magicka/stamina/skills`，且 build 出來的分身**不再開 autoCalcStats**（數值照抄本尊）。舊 capture json（沒這些欄位的）照舊走 class-autocalc——**不該壞**。
 
 **回報**：① `sc capp` 有沒有吸到、label 大小寫對不對；② 分身的數值/perk/裝備對不對；③ voiceType/物品欄的落差要不要修。

@@ -139,19 +139,32 @@ namespace {
             }
         }
 
-        // EXPLICIT stats (all actors, not just the player): the base actor values ARE the
-        // numbers the engine runs on. Capturing them lets ModForge write DNAM straight and
-        // skip autoCalcStats — which only ESTIMATES H/M/S from class+level (and reports a
-        // flat 50/50/50 level-1 for a PROTEUS-style clone). Skills are AV 6..23 in engine
-        // order = Mutagen's Skill enum order (OneHanded..Enchanting), so the array index IS
-        // the mapping.
+        // EXPLICIT stats (all actors, not just the player). Capturing them lets ModForge write
+        // DNAM straight and skip autoCalcStats — which only ESTIMATES H/M/S from class+level.
+        // Skills are AV 6..23 in engine order = Mutagen's Skill enum order (OneHanded..
+        // Enchanting), so the array index IS the mapping.
+        //
+        // PERMANENT, not base. An actor value is `base + modifiers[permanent|temporary|damage]`
+        // (see Actor::avStorage). The three reads mean different things:
+        //   GetActorValue()          base + permanent + temporary - damage → includes potions,
+        //                            worn-enchantment fortifies and current damage. NOT wanted:
+        //                            a clone must not inherit the buffs that happened to be up.
+        //   GetBaseActorValue()      base ONLY. For an NPC that IS the character sheet (the
+        //                            engine autocalcs stats into base at load). For the PLAYER
+        //                            it is the CHARGEN value — level-up gains and skill
+        //                            advancement are applied as PERMANENT modifiers, so base
+        //                            stays at the race's starting table forever.
+        //   GetPermanentActorValue() base + permanent → the character sheet WITHOUT buffs.
+        //                            Correct for both: an NPC with no permanent modifiers reads
+        //                            identical to base (Ancano still exports lvl 15 / 167-143-50),
+        //                            while a levelled player finally exports his real numbers.
         if (auto* avo = actor->AsActorValueOwner()) {
-            n.health = avo->GetBaseActorValue(RE::ActorValue::kHealth);
-            n.magicka = avo->GetBaseActorValue(RE::ActorValue::kMagicka);
-            n.stamina = avo->GetBaseActorValue(RE::ActorValue::kStamina);
+            n.health = avo->GetPermanentActorValue(RE::ActorValue::kHealth);
+            n.magicka = avo->GetPermanentActorValue(RE::ActorValue::kMagicka);
+            n.stamina = avo->GetPermanentActorValue(RE::ActorValue::kStamina);
             for (int av = static_cast<int>(RE::ActorValue::kOneHanded);
                  av <= static_cast<int>(RE::ActorValue::kEnchanting); ++av) {
-                const float v = avo->GetBaseActorValue(static_cast<RE::ActorValue>(av));
+                const float v = avo->GetPermanentActorValue(static_cast<RE::ActorValue>(av));
                 n.skills.push_back(static_cast<std::int32_t>(std::lround(v)));
             }
         }
@@ -347,9 +360,18 @@ namespace Captures {
         return CaptureRef(RE::Console::GetSelectedRef(), "console", label);
     }
 
-    // The player is just another actor to the capture path — the engine keeps its chargen
-    // (race/head parts/tints/morphs/weight) on the base TESNPC (Skyrim.esm:0x000007), which
-    // ReadNpc already reads. That is why no PROTEUS clone is needed as an intermediary.
+    // The player is just another actor to the capture path — but only HALF of him lives where
+    // an NPC's does, and the split is worth knowing:
+    //   base TESNPC (Skyrim.esm:0x000007)  APPEARANCE. Chargen/RaceMenu write race, head parts,
+    //       tints, morphs, hair colour, weight straight onto the player's TESNPC, and the save
+    //       carries that modified record. (Proof: the on-disk record has weight 100; a captured
+    //       player reads his chargen weight instead.) ReadNpc harvests it unchanged — which is
+    //       why no PROTEUS clone is needed as an intermediary.
+    //   RUNTIME actor                      PROGRESSION. Perks are in PlayerCharacter's
+    //       addedPerks (the base's perk array is empty), and level / H-M-S / the 18 skills are
+    //       actor values whose growth is stored as PERMANENT MODIFIERS — the TESNPC's own
+    //       numbers never leave the chargen starting table. Hence GetPermanentActorValue in
+    //       ReadNpc, never the base value.
     Result CapturePlayer(const std::string& label) {
         auto* pc = RE::PlayerCharacter::GetSingleton();
         if (!pc) {
