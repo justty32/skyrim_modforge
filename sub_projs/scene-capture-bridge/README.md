@@ -57,6 +57,8 @@ sc refc [Label]            命名 console 滑鼠點選的 ref（aim-free）
 
 **DLL 一律不填 `anchor`**（留白＝`none`）：persistent 逃生門要不要開、開哪種，是 ModForge／authoring agent 的判斷，不是採集端的。
 
+**label 大小寫保留**（同 `sc capp`：走未 `Lower()` 的 raw 參數）。⚠️ console 參數以空白分隔——**含空格的 label 要加引號**（`sc ref "sofia's chair"`），或在 References 頁改名（面板不受此限）。
+
 **拒收**：① **marker 光球**（editor chrome，本來就被 `ExportCell` 排除 → 檔內 reference 永遠解不到；而且 marker 自己就有 label/note，走 `annotations[]`）；② **我們自己生的 actor**（cell 匯出不含 actor ⇒ 沒有 placement 可指；要複製那個 NPC 走 `sc cap`）；③ **重複 label**（label 在 ModForge 是**全域名字空間**——它就是可解析的 id，撞名會讓 validate 炸整份 spec，所以面板改名/打標當場擋掉）。**vanilla NPC 的 ACHR 可以指**（它有耐久 id，走 (甲)）。
 
 面板 **References 頁**：最新在前、label／note 就地改名、顯示 ref id（檔內目標顯示**將寫進 json 的 editorId**）／base／cell／座標、逐列刪除（**只刪登記列，世界不動**）。登記簿隨 co-save（record `'RFRR'` v1）；檔內目標的身份是 **handle**，完整重啟後 dynamic FormID 未必重解析 → 讀檔自動 `ReacquireOrphans`（按 base＋座標在當前 cell 重新綁回，同 marker 的 adopt 救援），撿不回的列**保留**但標 `TARGET LOST`、匯出時跳過（不吐一個 build 對不上的 editorId）。

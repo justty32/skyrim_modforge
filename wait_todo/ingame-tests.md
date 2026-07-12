@@ -103,13 +103,13 @@
    - 找個空地／室內 → `sc pk` 吸一張椅子（或任何家具）→ `sc pl` **擺一張出來**（這是 dynamic ref，沒有耐久 FormID）。
    - `sc ref`（進 referrer 模式）→ 對著**剛擺的那張椅子**按動作鍵（**F11**）→ 螢幕/console 應說 `SCB: reference recorded`。（指不到？`sc ref er1` 改用射線再按。）
    - **F1 → References 頁**：應有一列，**綠字** `ours -> MFRef_ref_1_1`（＝將寫進 json 的 editorId）＋ base ＋座標。把 label 改成 `sofia's chair`（欄位打字後按 Enter 或按 `apply`）。
-   - **一次到位版**：再擺一張，直接 console `sc ref my chair 2`（**大小寫/空格保留**）——不必先進面板。
+   - **一次到位版**：再擺一張，直接 console `sc ref SofiaChair2`（**大小寫保留**）——不必先進面板。⚠️ console 參數以空白分隔：**有空格的 label 要加引號**（`sc ref "sofia's chair"`），或乾脆在 References 頁改名（面板打什麼都行）。
    - **擋撞名**：把第二列的 label 也改成 `sofia's chair` → **應該改不動**，橘字說 label already used。（ModForge 那邊 label 是全域名字，撞名會炸整份 spec，所以在這裡就擋。）
    - **F1 → Export 頁 → `Export player cell`** → 開那份 `scene-export_*.json`：
      - `placements[]` 裡那張椅子那筆**多了 `"editorId": "MFRef_sofia_s_chair_1"`**；
      - 頂層多一段 **`references[]`**，其 `"ref"` **正是同一個 editorId**（不是 `0xFF......` 的 FormID——**看到 FormID 就是錯的，回報**），`"label": "sofia's chair"`，帶 base/position/rotation/cell 或 worldspace，**沒有 `anchor` 欄位**（正確，那是 ModForge 的選擇權）。
 2. **(甲) 外部既有 ref**（vanilla 的東西）：
-   - 對一張 **vanilla 椅子/桌子** → `sc ref skulvar's hoe`（或任何 label），或 console 點選它再 `sc refc <label>`（aim-free，跟 `delc`/`capc` 同路）。
+   - 對一張 **vanilla 椅子/桌子** → `sc ref InnChair`（或任何 label），或 console 點選它再 `sc refc InnChair`（aim-free，跟 `delc`/`capc` 同路）。
    - References 頁該列是**白字**、ref id 長 `Skyrim.esm:0x0XXXXX`。匯出的 `references[].ref` 就是這個耐久 id。**該 vanilla 椅子不該有任何變化**（沒消失、沒移動——referrer 不碰世界）。
 3. **拒收三類（每個試一下，看有沒有照講的話拒絕）**：
    - 對 **marker 光球**按動作鍵 → `SCB: that's a marker gem`（marker 本來就有 label，走 `annotations[]`）。
