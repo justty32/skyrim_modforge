@@ -3,20 +3,29 @@
 // Modes — the P5 mode system (user-decided 2026-07-11).
 //
 // One mode is active at a time; each mode has its OWN action-key binding
-// (panel-configurable, duplicates allowed — with a single active mode the
-// same key can serve every mode, which is the default: everything on F11).
-// `sc <cmd>` in the console switches modes (Console.cpp); the panel Settings
-// page switches and rebinds too.
+// (duplicates allowed — with a single active mode the same key can serve every
+// mode, which is the default: everything on F11). `sc <cmd>` in the console
+// switches modes (Console.cpp); the panel Settings page switches too.
 //
 // There are NO classic direct hotkeys (user-decided: removed entirely, not
 // toggled off). The whole input surface is: per-mode action key + the numpad
 // keys INSIDE the editor's edit mode + numpad * ray-select. Export is a panel
 // button only.
 //
-// Bindings and the current mode persist in the SAVEGAME via the SKSE co-save
-// (CoSave.cpp) — the user's no-ini decision.
+// KEYS ARE CONFIGURED IN AN .INI, NOT IN-GAME (user-decided 2026-07-12, after
+// the second in-game rebind attempt failed). SceneCaptureBridge.ini in the SKSE
+// folder holds one line per mode (KeyIni.cpp); the in-game key-capture flow is
+// GONE — grabbing a key from a panel that does not pause the game, while the
+// player's hand is still on WASD, never worked reliably. Nothing to arm, no
+// input sink to fight.
+//
+// The current mode and the binds still ride the SAVEGAME (co-save, SETT v7) —
+// but the INI WINS over a co-save bind for any mode the ini names (see
+// ApplyCoSaveBind): the ini is the user's explicit configuration, the co-save is
+// only this save's state.
 
 #include <cstdint>
+#include <string>
 
 namespace Modes {
 
@@ -41,6 +50,22 @@ namespace Modes {
     // Per-mode action key (DIK scancode). kOff has no binding.
     [[nodiscard]] std::uint32_t Bind(Mode m);
     void SetBind(Mode m, std::uint32_t scancode);
+
+    // ---- where a bind comes from (ini > co-save > F11) ---------------------
+    //
+    // SetIniBind: the value SceneCaptureBridge.ini gave this mode (KeyIni.cpp).
+    // It is remembered, so it survives OnRevert (ResetDefaults re-applies it)
+    // and beats whatever the loaded savegame carries.
+    void SetIniBind(Mode m, std::uint32_t scancode);
+    void ClearIniBinds();                       // KeyIni re-parse starts clean
+    [[nodiscard]] bool BindFromIni(Mode m);     // panel: "(ini)" vs "(save)"
+
+    // ApplyCoSaveBind: the co-save's stored bind (CoSave.cpp SETT v7). Applied
+    // ONLY when the ini did not name this mode — the ini is the explicit
+    // configuration, the save is just this playthrough's state. Also revalidated
+    // against IsBindable: a save written by the old (removed) in-game rebind UI
+    // can carry a reserved scancode such as W, and that bug must not outlive it.
+    void ApplyCoSaveBind(Mode m, std::uint32_t scancode);
 
     // Per-mode aim source: false = the interaction crosshair (classic feel),
     // true = a physics ray (trees / non-activatable statics). Toggled by
@@ -83,44 +108,27 @@ namespace Modes {
     [[nodiscard]] bool ExtraData(Mode m);
     void SetExtraData(Mode m, bool on);
 
-    // Feed a key-down. Returns true when consumed: either it captured (or
-    // ignored) a rebind key, or it matched the current mode's binding and
-    // ran the mode's action (debounced).
+    // Feed a key-down. Returns true when it matched the current mode's binding
+    // and ran the mode's action (debounced).
     bool HandleKey(std::uint32_t scancode);
 
-    // Feed a key-UP. Only meaningful while a rebind is armed: confirms the
-    // pending candidate (see BeginRebind). Returns true when consumed.
-    bool HandleKeyUp(std::uint32_t scancode);
-
-    // Panel rebind flow (reworked 2026-07-12 — see backlog postmortem):
-    //   1. BeginRebind(m) arms; Esc cancels at any time.
-    //   2. The first BINDABLE key-DOWN becomes the candidate (does not bind
-    //      yet) — see IsBindable. A held-over key (e.g. WASD the player was
-    //      already walking with) can never surface here: ButtonEvent::IsDown()
-    //      only fires on the up->down transition, never for a key already down.
-    //   3. That SAME key's key-UP confirms the bind. A different key going
-    //      down while a candidate is pending replaces it (last one wins);
-    //      nothing commits until a matching release.
-    // While armed, HandleKey/HandleKeyUp consume every keyboard event so
-    // nothing leaks to the mode action key or the editor.
-    void BeginRebind(Mode m);
-    void CancelRebind();
-    [[nodiscard]] bool RebindArmed();
-    [[nodiscard]] Mode RebindTarget();
-    // The key currently held as the pending rebind candidate (0 = none yet).
-    // Exposed for the panel's "release to confirm" status line.
-    [[nodiscard]] std::uint32_t RebindCandidate();
-
-    // False for keys that must never become an action-key binding: Esc
-    // (cancel), the console key, Tab/Enter (ImGui/console chrome), and the
-    // movement keys (WASD/Space/Shift/Ctrl) a player's hand is naturally
-    // still on when they click "Rebind" — the historic bug (backlog:
-    // "rebind armed 當幀把移動鍵也吃進去") was this list being empty.
+    // False for keys that must never become an action-key binding: Esc, the
+    // console key, Tab/Enter (ImGui/console chrome) and the movement keys
+    // (WASD/Space/Shift/Ctrl). Now that binding happens in an .ini this is a
+    // VALIDATOR, not a capture filter: it rejects a self-inflicted foot-gun in
+    // the ini (and any reserved bind left in an old savegame by the removed
+    // in-game rebind UI, which is exactly how the bug used to persist).
     [[nodiscard]] bool IsBindable(std::uint32_t scancode);
 
-    void ResetDefaults();  // off + every binding back to F11 (new game / no co-save)
+    // off + every binding back to F11, THEN the ini's binds re-applied (they
+    // outlive a savegame revert — they are configuration, not save state).
+    void ResetDefaults();
 
-    // Short scancode label for the panel ("F11", "numpad 5", "0x2A").
+    // Short scancode label ("F11", "numpad 5", "0x2A") and its inverse — the
+    // ini writes/reads these names, so a player never types a raw scancode.
     [[nodiscard]] const char* KeyName(std::uint32_t scancode);
+    // "F11" / "numpad 5" / "0x57" / "87" -> scancode; 0 when unrecognised.
+    // Case- and space-insensitive ("NumPad5" == "numpad 5").
+    [[nodiscard]] std::uint32_t KeyCode(const std::string& name);
 
 }  // namespace Modes

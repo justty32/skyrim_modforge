@@ -6,6 +6,10 @@
 
 ---
 
+## ❌ 已否決（別再做第三次）
+
+- **遊戲內 rebind（面板抓鍵改動作鍵）——放棄，改走 `.ini`**（使用者 2026-07-12 實機後拍板：「這太麻煩了，先隱藏掉這個功能吧，我們之後把他擺進 .ini 設定」）。**為什麼不再試**：面板（SKSE Menu Framework）**不暫停遊戲**，所以「抓玩家想綁的那顆鍵」永遠在跟**玩家手上還按著的鍵**搶同一條輸入串流——人剛用滑鼠點完 `Rebind`，手多半還在 WASD 上。**兩次嘗試、兩種設計都在實機失敗**：① P5（2026-07-11）armed 後來者不拒 → 綁成 W；② 重作（`ddf6324`，2026-07-12）加了保留鍵黑名單＋按下再放開才 commit → **使用者實機回報仍失敗**。現況＝**`SceneCaptureBridge.ini`**（SKSE 資料夾、缺檔自動生成、寫鍵名不寫 scancode、面板一顆 `reload keys from ini`）——檔案沒有那條賽道可輸：沒有 armed 狀態、沒有 input sink、沒有時序。實作與完整驗屍見 [phases.md](phases.md) 該兩節；抓鍵狀態機已從 `Modes`／`plugin.cpp` 移除（要看舊碼去 git `ddf6324`）。
+
 ## 仍未做
 
 - **🐞 已修待實機驗（2026-07-12，未部署）：`isPlayer` 永遠 false ＋ 玩家 perk 吸不到**。`Captures.cpp` 用 `actor->As<RE::PlayerCharacter>()` 判玩家身份——**該 cast 對任何 actor（含玩家）都必定回傳 nullptr**：`TESForm::As<T>()` 是 `switch (GetFormType())`（CommonLibSSE `FormTraits.h`），只肯從 FORM_TYPE 的具體類別**往 base 轉**；玩家 ref 的 form type 是 `kCharacter` → 具體類別 `Character`，而 switch 裡沒有 `PlayerCharacter` case（它沒有自己的 FORM_TYPE）⇒ 向下轉型、`is_convertible` false ⇒ 靜默 null。已改為**單例指標比對** `actor == RE::PlayerCharacter::GetSingleton()`，`isPlayer` 與 perk 路徑一併修好。全 DLL 其餘 4 處 `As<>` 皆為 upcast／formtype 精確命中，安全。**待驗**：`sc capp` 的 log 要印出 `PLAYER`、匯出 json 要有 `"isPlayer": true`，且**點過 perk 後**要吸得到玩家真正的 perk。細節見 [plans/player-capture-capp.md](../player-capture-capp.md) 末節。

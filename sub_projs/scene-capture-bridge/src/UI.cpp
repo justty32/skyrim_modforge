@@ -301,6 +301,35 @@ void __stdcall UI::PalettePage::Render() {
                           "loaded slots go to the top of the list. replace: "
                           "clears the current slots first (a missing or empty "
                           "file changes nothing).");
+
+    // Clear the whole palette. The slots are DISK-persisted and save-agnostic —
+    // this throws away work from every playthrough, and unlike `replace from
+    // file` there is no incoming file to make it worth it. Hence two guards: a
+    // confirmation click, and an undo that survives until the game closes.
+    // `save to file` above is the way to keep a copy first, and it says so.
+    static bool confirmClear = false;
+    if (!confirmClear) {
+        if (ImGuiMCP::Button("clear all slots")) confirmClear = true;
+    } else {
+        ImGuiMCP::TextColored(kWarn, "really clear all %zu slot(s)?", slots.size());
+        ImGuiMCP::SameLine();
+        if (ImGuiMCP::Button("yes, clear")) {
+            ::Palette::Clear();
+            g_slotBufs.clear();
+            confirmClear = false;
+        }
+        ImGuiMCP::SameLine();
+        if (ImGuiMCP::Button("cancel")) confirmClear = false;
+    }
+    if (const auto undoable = ::Palette::ClearedCount(); undoable) {
+        ImGuiMCP::SameLine();
+        if (ImGuiMCP::Button("undo clear")) {
+            ::Palette::UndoClear();
+            g_slotBufs.clear();
+        }
+        ImGuiMCP::SameLine();
+        ImGuiMCP::TextDisabled("(%zu slot(s) recoverable until you quit)", undoable);
+    }
     ImGuiMCP::Separator();
 
     std::size_t removeIdx = SIZE_MAX;

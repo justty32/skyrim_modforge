@@ -14,6 +14,9 @@ namespace {
 
     std::vector<Palette::Slot> g_slots;
     std::size_t g_selected = 0;
+    // The last Clear()'s slots, held so the panel can offer an undo. Session-
+    // lived on purpose: it is a safety net for a misclick, not a second store.
+    std::vector<Palette::Slot> g_cleared;
 
     bool AddsMaster(const std::string& id) {
         static const char* kBase[] = {
@@ -406,6 +409,30 @@ namespace Palette {
             dropped, g_slots.size(), filename);
         return g_slots.size();
     }
+
+    void Clear() {
+        if (g_slots.empty()) return;
+        g_cleared = g_slots;   // the undo buffer — copy, the slots are about to go
+        const auto n = g_slots.size();
+        g_slots.clear();
+        g_selected = 0;
+        Save();                // the empty palette IS the new truth on disk
+        SKSE::log::info("Palette: cleared {} slot(s) (undo available this session)", n);
+    }
+
+    bool UndoClear() {
+        if (g_cleared.empty()) return false;
+        // Restore ON TOP of whatever has been picked since (a pick after a clear
+        // is not something the undo should throw away in turn).
+        for (auto& s : g_cleared) g_slots.push_back(std::move(s));
+        g_cleared.clear();
+        g_selected = g_slots.empty() ? 0 : g_slots.size() - 1;
+        Save();
+        SKSE::log::info("Palette: undo clear — {} slot(s) restored", g_slots.size());
+        return true;
+    }
+
+    std::size_t ClearedCount() { return g_cleared.size(); }
 
     bool SaveToFile(const std::string& filename) {
         auto dir = SKSE::log::log_directory();

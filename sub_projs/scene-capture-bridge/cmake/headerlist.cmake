@@ -14,6 +14,7 @@ set(headers ${headers}
     src/SceneExporter.h
     src/UI.h
     src/Modes.h
+    src/KeyIni.h
     src/Console.h
     src/CoSave.h
 )

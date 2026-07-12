@@ -2,6 +2,7 @@
 #include "Console.h"
 #include "CoSave.h"
 #include "Editor.h"
+#include "KeyIni.h"
 #include "Markers.h"
 #include "Modes.h"
 #include "Palette.h"
@@ -41,18 +42,19 @@ namespace {
         }
     };
 
-    // The P5 input surface — three layers, nothing else (the classic F6/F7/
-    // F8/F10/F11 direct hotkeys are GONE, user-decided, not toggled off):
-    //   1. an armed panel rebind captures a press-then-release of one key,
-    //   2. edit-mode numpad internals (+ numpad * ray-select entry),
-    //   3. the current mode's action key (per-mode binding, default F11).
+    // The P5 input surface — two layers, nothing else (the classic F6/F7/F8/
+    // F10/F11 direct hotkeys are GONE, user-decided, not toggled off):
+    //   1. edit-mode numpad internals (+ numpad * ray-select entry),
+    //   2. the current mode's action key (per-mode binding, default F11).
     // Sink shape lifted from my_skyrim_plugin_1's FollowLight::HotkeySink
     // (in-game proven). One poll can carry several events chained through
     // `next`, so walk the list rather than reading only the head.
     //
-    // Key-UP events are forwarded too (2026-07-12, rebind rework): Modes
-    // needs them to confirm a rebind candidate on release. HandleKeyUp is a
-    // no-op when no rebind is armed, so this changes nothing outside that flow.
+    // There is NO key-capture layer any more (2026-07-12): rebinding moved to
+    // SceneCaptureBridge.ini (KeyIni.cpp). Reading a keypress out of THIS stream
+    // to bind it is precisely what failed in-game twice — the panel does not
+    // pause the game, so the stream is full of the movement keys the player's
+    // hand is still on. The sink is now read-only with respect to bindings.
     class HotkeySink : public RE::BSTEventSink<RE::InputEvent*>
     {
     public:
@@ -68,16 +70,8 @@ namespace {
                 auto* btn = e->AsButtonEvent();
                 if (!btn) continue;
                 if (btn->GetDevice() != RE::INPUT_DEVICE::kKeyboard) continue;
-                const auto code = btn->GetIDCode();
-                if (btn->IsUp()) {
-                    Modes::HandleKeyUp(code);
-                    continue;
-                }
                 if (!btn->IsDown()) continue;
-                if (Modes::RebindArmed()) {  // capture beats everything
-                    Modes::HandleKey(code);
-                    continue;
-                }
+                const auto code = btn->GetIDCode();
                 if (Editor::HandleKey(code)) continue;
                 Modes::HandleKey(code);
             }
@@ -87,6 +81,11 @@ namespace {
 }
 
 void OnDataLoaded() {
+    // Action keys come from SceneCaptureBridge.ini (created with defaults on the
+    // first run). Read BEFORE the sink goes up, and before any save is loaded —
+    // the co-save's binds are then applied only where the ini stayed silent
+    // (Modes::ApplyCoSaveBind).
+    KeyIni::Load();
     if (auto* idm = RE::BSInputDeviceManager::GetSingleton()) {
         idm->AddEventSink(HotkeySink::GetSingleton());
         SKSE::log::info("SceneCaptureBridge: input sink registered (mode system, "

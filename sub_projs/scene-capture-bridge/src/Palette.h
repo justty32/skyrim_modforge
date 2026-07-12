@@ -107,6 +107,18 @@ namespace Palette {
     // folder) — export a curated palette to share or reload later.
     bool SaveToFile(const std::string& filename);
 
+    // Panel "clear all slots": drop every slot and persist the empty palette.
+    //
+    // This is the ONE destructive palette action with nothing behind it: unlike
+    // an erasure or an override (savegame state, revertable), the slots are a
+    // DISK store that outlives every save — clearing it throws away work from
+    // other playthroughs. So it is guarded twice: the panel makes you click a
+    // confirmation, and Clear() keeps the dropped slots in memory so UndoClear()
+    // can put them back (this session; the store is rewritten either way).
+    void Clear();
+    bool UndoClear();                                   // false = nothing to undo
+    [[nodiscard]] std::size_t ClearedCount();           // slots the undo would restore
+
     [[nodiscard]] std::vector<Slot>& All();
     [[nodiscard]] std::size_t SelectedIndex();
     void Select(std::size_t index);

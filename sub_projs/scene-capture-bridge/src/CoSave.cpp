@@ -23,7 +23,11 @@ namespace {
     constexpr std::uint32_t kPlex = 'PLEX';  // palette placed-ref riders (noHavokSettle / extra data)
 
     // Per-record versions (an older save's record is read with its own layout).
-    constexpr std::uint32_t kVerSett = 7;  // v2 adds editor step sizes; v3 adds aim/axis; v4 adds capture aim; v5 adds referrer aim; v6 adds per-mode physics (place/edit) + extra data (pick/place); v7 rebind rework — binds now round-trip (were write-only before), + capture/referrer binds (missing since P5)
+    // v7's binds still round-trip (that fix stays); what changed 2026-07-12 is WHO
+    // WINS: SceneCaptureBridge.ini beats a stored bind for any mode it names, and
+    // the co-save value only fills the gaps (Modes::ApplyCoSaveBind). Same bytes,
+    // no version bump.
+    constexpr std::uint32_t kVerSett = 7;  // v2 adds editor step sizes; v3 adds aim/axis; v4 adds capture aim; v5 adds referrer aim; v6 adds per-mode physics (place/edit) + extra data (pick/place); v7 binds actually applied on load (were write-only before), + capture/referrer binds (missing since P5)
     constexpr std::uint32_t kVerMkrs = 2;  // v2: full angle (3f) + scale, was angleZ only
     constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
     constexpr std::uint32_t kVerOvrd = 1;
@@ -118,17 +122,11 @@ namespace {
                  Modes::Mode::kPlace, Modes::Mode::kEdit}) {
             std::uint32_t bind = 0;
             si->ReadRecordData(bind);
-            // Rebind rework (v7): apply the stored bind now that the capture
-            // flow can't grab a bad key anymore (Modes::IsBindable). Still
-            // re-validate on load — a record written by the old buggy UI (or
-            // hand-edited) could carry a reserved scancode (e.g. W); rather
-            // than trust it blindly, fall back to F11 for that one mode.
-            if (bind != 0 && Modes::IsBindable(bind)) {
-                Modes::SetBind(m, bind);
-            } else if (bind != 0) {
-                SKSE::log::warn("CoSave: dropped reserved bind 0x{:X} for {} "
-                    "(stale/bad save data) — kept F11", bind, Modes::Name(m));
-            }
+            // The binds DO round-trip (v7 fixed them being written-but-discarded)
+            // — but the ini outranks them, and a reserved scancode left behind by
+            // the removed in-game rebind is refused. Both rules live in
+            // Modes::ApplyCoSaveBind; this is just the wire format.
+            Modes::ApplyCoSaveBind(m, bind);
         }
         if (version >= 2) {
             float mv = 0.f, yaw = 0.f, sc = 0.f;
@@ -174,12 +172,7 @@ namespace {
             for (auto m : {Modes::Mode::kCapture, Modes::Mode::kReferrer}) {
                 std::uint32_t bind = 0;
                 si->ReadRecordData(bind);
-                if (bind != 0 && Modes::IsBindable(bind)) {
-                    Modes::SetBind(m, bind);
-                } else if (bind != 0) {
-                    SKSE::log::warn("CoSave: dropped reserved bind 0x{:X} for {} "
-                        "(stale/bad save data) — kept F11", bind, Modes::Name(m));
-                }
+                Modes::ApplyCoSaveBind(m, bind);
             }
         }
         if (mode < static_cast<std::uint8_t>(Modes::Mode::kTotal))

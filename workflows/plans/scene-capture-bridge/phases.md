@@ -287,7 +287,11 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
 - **驗證**：`Analyze(scene, captures)` 刻意拆成**純函式**（不碰遊戲狀態），離線用 stub header 編**真的 `Requires.cpp`** 跑一份含 9 個 mod 的擬真測資 → 六類排除全部命中（`Conditional Expressions.esp`／`Immersive Armors.esp`／`Wyrmstooth.esp` 只出現在假依賴欄位 ⇒ **報告裡一個字都沒有**），而 `PROTEUS.esp`／`Ordinator.esp` 照樣列出、**歸因到真正拉它進來的那一行**（`spells[1]`／`perks[0].perk`，不是 activeEffects）。
 - **C# 端零改動**（這是純 DLL 側的新輸出）。
 
-## ✅ 已做（rebind 重作，2026-07-12，DLL crc `378d3c6c`，**已部署**，待實機）
+## ❌ 已撤回（rebind 重作，2026-07-12，DLL crc `378d3c6c`）——**實機仍失敗，遊戲內 rebind 整個放棄，改走 .ini**（見下一節）
+
+> **這一節保留當歷史**：它記的是**第二次**（也是最後一次）想在遊戲內抓鍵的嘗試。診斷（面板不暫停遊戲 ⇒ 抓鍵在跟玩家還按著的移動鍵搶輸入）是對的，**但兩道防線加完，使用者實機回報「rebind 仍失敗」** ⇒ 使用者拍板：**這功能先拿掉，改用 .ini 設定檔**。UI 與 `Modes` 的抓鍵狀態機（`BeginRebind`/`HandleKeyUp`/`RebindArmed`…）與 `plugin.cpp` 的 key-up 轉發**全部移除**（不留死碼；要回頭看實作去 git `ddf6324`）。
+>
+> **留下來的兩個修正是對的、繼續活著**（它們跟 rebind UI 無關，是獨立的正確性 bug）：① SETT v7 讓鍵位**真的套用**（過去寫進 co-save 卻在讀取時丟棄）；② `kCapture`／`kReferrer` 兩個模式的鍵位 P5 之後**從沒進過 co-save**（漏寫），v7 補上。**鍵位的持久化機制是活的**，只是「在遊戲內改鍵」這個入口沒了。
 
 - **真正的根因（不是「同一幀」）**：P5 實機（2026-07-11，見上「唯 rebind 捕捉到錯鍵（W）」）撞到的不是 backlog 猜的「armed 那一幀」同批次事件——`BeginRebind()` 由面板滑鼠點擊觸發（ImGui render pass），跟鍵盤 input-poll 批次不是同一次呼叫，物理上不可能同幀撞在一起。真正原因是**舊實作對 armed 後收到的第一個鍵盤 down-event 完全不設防**：不篩鍵、不等放開，來什麼綁什麼。而面板本身**不暫停遊戲**（`Editor.cpp` 的獨立證據：編輯模式當下 WASD/Alt 的 down-event 照樣灌進同一支 sink，見該檔 `0x11/0x1F/0x20/0x38` 那段 log 註記）——玩家點「Rebind」的手多半還在 WASD 上，下一個鍵盤事件十之八九是移動鍵的殘餘按壓，不是玩家真正要按的目標鍵。`UI.Settings.cpp` 原本的隱藏註解（"grabbed the wrong keys in-game (e.g. movement W)"）與此診斷一致——backlog 的直覺方向對，但機制描述（同幀）不準確。
 - **修法**（`Modes.{h,cpp}`）：
@@ -296,4 +300,22 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
   - Esc 取消（**沿用既有**——舊碼已經有，只是被隱藏而已，不是新做的）；`plugin.cpp` 的 `HotkeySink` 補收 key-UP 並轉給新的 `Modes::HandleKeyUp`。
   - `UI.Settings.cpp`：restore 每模式一顆 `Rebind##<mode>` 鈕＋目前鍵位文字；armed 時顯示「Rebinding <mode> -- press a key」／「-- release <key> to confirm」的黃字狀態列＋ `Cancel rebind` 鈕；rebind 中其餘模式的 Rebind 鈕 disable（`igBeginDisabled`），避免同時兩個 rebind 打架。
   - `CoSave.cpp`：SETT **v6→v7**。① 過去 5 個模式的鍵位欄位是**寫進去但讀出來直接丟掉**（防呆舊 bug——現在改成真的套用，並用 `Modes::IsBindable` 二次驗證，遇到保留鍵字節就當壞資料丟掉、退回 F11，不盲信存檔內容）；② `kCapture`／`kReferrer` 兩個模式的鍵位 P5 之後**從來沒進過 co-save**（漏寫，不是這次才有的 bug），v7 補上。
-- **收尾**：F1 → Settings 頁 rebind 鈕全部復原可見；README 鍵位表那句「動作鍵目前固定 F11（rebind 暫時隱藏）」需同步（見 README 本節更新）。**待實機**：見 `wait_todo/ingame-tests.md`。
+- **實機結果（同日）：仍失敗**。使用者回報「rebind 仍失敗」，並拍板「這太麻煩了，先隱藏掉這個功能吧，我們之後把他擺進 .ini 設定」。**兩次嘗試、兩種設計（來者不拒／黑名單＋按放開）都輸給同一件事**：面板不暫停遊戲，抓鍵永遠在跟玩家手上的鍵搶。**結論：遊戲內抓鍵這條路封掉，不再嘗試第三次。**
+
+## ✅ 已做（動作鍵改走 `.ini` ＋ palette clear 鈕，2026-07-12，DLL crc `2507aa3c`，**未部署**——使用者正在遊戲中，deploy.sh 擋下）
+
+**① 動作鍵＝ `SceneCaptureBridge.ini`（新檔 `src/KeyIni.{h,cpp}`）**
+
+- **為什麼 ini 一定會贏過遊戲內抓鍵**：ini **沒有那條賽道可輸**——沒有 armed 狀態、沒有 input sink、沒有時序、沒有「玩家手還按在 WASD 上」。上一節那個根因在檔案面前不存在。
+- **位置＝ SKSE 資料夾**（`…/My Games/Skyrim Special Edition/SKSE/SceneCaptureBridge.ini`），跟 palette store／所有匯出檔同一個資料夾。**刻意不放 `Data/SKSE/Plugins/`**（SKSE 慣例位置）：那裡在 MO2 mod 資料夾內，**重裝 zip 會把使用者的設定默默還原掉**（本 repo 的舊傷：memory「MO2 reinstall reverts manual pex」）。
+- **缺檔自動生成**：帶完整鍵名表＋保留鍵說明的註解模板 → 功能自我說明，不必先讀文件。
+- **值寫鍵名不寫 scancode**：`Modes` 內新增**單一 DIK 表**，`KeyName(code)`／`KeyCode(name)` 雙向（面板顯示、ini 讀寫共用同一份詞彙，round-trip 無損）。大小寫/空白不計（`NumPad 5`＝`numpad5`＝`num5`），另留 `0x57`／`87` 原始 code 逃生門。離線用同一份表跑過 round-trip＋人類拼法測試（全表 name→code→name、`numpad -`、`num5`、hex/dec、拒收不存在的鍵）。
+- **保留鍵黑名單留著、換了身份**：從「抓鍵時的過濾器」變成**驗證器**——ini 寫了 WASD/Space/Shift/Ctrl/Esc/Tab/Enter/console 會被拒（log 講原因、該模式維持原鍵）。**舊存檔裡 rebind 時代綁壞的鍵也照樣過這關**（那正是 bug 過去能存活的路徑）。
+- **`reload keys from ini` 鈕**（Settings 頁）：改完不必重開遊戲。重讀＝純重新套用（先 `ClearIniBinds` 再 parse，所以**刪掉一行真的會讓那個模式退回舊行為**，不是 merge 殘留）。
+- **ini vs co-save 優先序：ini 贏**（`Modes::ApplyCoSaveBind` 一處決策）。理由：ini 是**使用者的設定**、co-save 只是**這個存檔的狀態**；「我改了 ini 卻沒生效」是不可接受的失敗模式。**ini 沒提到的模式**才吃存檔的值（→ 舊存檔優雅降級，不會被硬蓋成 F11），再沒有就 F11。`ResetDefaults()`（OnRevert）也會**重新套回 ini 的鍵**——設定不該被「載入一個沒有我們記錄的存檔」洗掉。
+- **移除**：`Modes` 的 rebind 狀態機、`plugin.cpp` 的 key-up 轉發（input sink 從三層變**兩層**）、Settings 頁的 Rebind 鈕（改成唯讀鍵位表＋來源標記 `(ini)`／`(save / default)`）。
+
+**② Palette `clear all slots` 鈕（使用者要求）**
+
+- 防呆**兩道**：① 按一下先變 `really clear all N slot(s)?` ＋ `yes, clear`／`cancel`，**要再按一次**；② 清完出現 **`undo clear`**（session 內有效，整批回來並重寫回磁碟）。
+- **為什麼比 `replace from file` 更需要防呆**：插槽是**落盤跨存檔**的（不像 eraser/override 是可 revert 的存檔狀態），清掉＝丟掉別的 playthrough 攢的東西；而且 clear **沒有**「載入的新檔」當補償——`replace` 至少換來一份新插槽，clear 是純損失。（`replace` 既有的防呆＝檔案不存在/無可用插槽就完全不動，照舊。）

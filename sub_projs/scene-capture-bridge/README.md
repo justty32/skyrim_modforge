@@ -90,6 +90,8 @@ sc refc [Label]            命名 console 滑鼠點選的 ref（aim-free）
 
 Export 頁有 **Export player cell**、**Export all (loaded cells)**、**Export captures** 與 **Export requires** 四鈕：registries（marker/擦除/override）本就全 cell 全域，`all` 只多掃**已載入的其他 cell** 的 placements（未載入 cell 的 placements 撈不到，log 會講）。Palette 頁的具名檔有三鈕：**load from file (append)**（載入的插槽**疊在列表最上面**，保留檔內順序）／**replace from file**（**清掉現有插槽**再載入；檔案不存在或無可用插槽＝什麼都不動，不會誤清）／**save to file**。**檔內順序＝面板順序**（最上面那筆排第一），所以 json 讀起來就是你在面板看到的樣子。
 
+另有 **clear all slots**（2026-07-12）＝**清空整個 palette**。插槽是**落盤跨存檔**的（不像擦除/override 那樣是可 revert 的存檔狀態）——清掉＝丟掉別的 playthrough 攢的東西，所以**兩道防呆**：① 按下去先變成 `really clear all N slot(s)?` ＋ `yes, clear` / `cancel`，要**再按一次**才真的清；② 清完出現 **`undo clear`**（本次 session 有效，按了整批回來、並重寫回磁碟）。想留備份就先按 `save to file`。
+
 **匯出檔名（2026-07-12 起，每次一個新檔、永不覆蓋）**：
 
 | 鈕 | 檔名 | 內容 |
@@ -124,17 +126,43 @@ Export 頁有 **Export player cell**、**Export all (loaded cells)**、**Export 
 
 **Scope（使用者 2026-07-12 拍板）**：cell 匯出＝**純場景/物件**，掃描時 **actor 一律排除**（面板/log 顯示 `N actor(s) excluded`）——NPC 交給 ModForge **按 marker（`annotations[]`）去擺**；真要複製某個 NPC 走 `sc cap` → 獨立的 `capturedNpcs[]` 檔。captures 是**跨 cell 的定義資料庫**，所以拆檔：一把附魔劍不屬於你剛好站的那間房。兩種檔都是合法 ModSpec，`build` 各吃各的（ModForge C# 端零改動）。
 
-模式內操作不算佔鍵：numpad 編輯（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、`.` cancel、**5＝復原到編輯前姿態並續留編輯**）與 **numpad \*＝射線選取**照舊；位移/yaw/縮放**步長在 Settings 頁可調**（存 co-save）。當前模式/dp 狀態＋三個步長＋三本登記簿全部**存進存檔**（SKSE co-save，使用者的無 ini 原則）。**動作鍵可在 F1 → Settings 頁逐模式改綁**（2026-07-12 rebind 重作，DLL crc `378d3c6c`）：按該模式的 `Rebind` 鈕，面板顯示「Rebinding <mode> -- press a key」，按住並放開想要的鍵才會 commit（移動鍵 WASD/Space/Shift/Ctrl、Esc、Tab、Enter、console 反引號一律不接受、armed 狀態不解除，面板會提示「that key is reserved, press another」）；Esc 隨時取消。鍵位每模式獨立、允許重複（預設全 F11），存進 co-save（SETT v7），重開遊戲跟著存檔還原。舊版曾把「armed 之後收到的第一個鍵」不篩不等放開就直接綁定，導致玩家還按著 WASD 走位時被誤綁成移動鍵（P5 實機 2026-07-11 撞到，故一度隱藏成固定 F11）——新流程加了保留鍵黑名單＋等放開才 commit 兩道防線。`sc` 指令的實作＝劫持一個 retail 無作用的 vanilla console 指令（候選鏈首個命中者，2026-07-11 實機 donor＝`ClearAchievement`；全滅時面板 Settings 頁照樣能切模式）。
+模式內操作不算佔鍵：numpad 編輯（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、`.` cancel、**5＝復原到編輯前姿態並續留編輯**）與 **numpad \*＝射線選取**照舊；位移/yaw/縮放**步長在 Settings 頁可調**（存 co-save）。當前模式/dp 狀態＋三個步長＋三本登記簿全部**存進存檔**（SKSE co-save）。`sc` 指令的實作＝劫持一個 retail 無作用的 vanilla console 指令（候選鏈首個命中者，2026-07-11 實機 donor＝`ClearAchievement`；全滅時面板 Settings 頁照樣能切模式）。
+
+### 改鍵＝改 `SceneCaptureBridge.ini`（2026-07-12 拍板，**遊戲內 rebind 已移除**）
+
+**檔案位置**：SKSE 資料夾（`…/Documents/My Games/Skyrim Special Edition/SKSE/SceneCaptureBridge.ini`）——跟 palette 存檔、所有匯出檔**同一個資料夾**。首次啟動**自動生成**（帶完整鍵名表註解），不用手動建。**刻意不放 `Data/SKSE/Plugins/`**：那裡在 MO2 mod 資料夾內，重裝 zip 會把它默默還原掉。
+
+```ini
+[Keys]
+marker   = F11
+delete   = F4
+pick     = numpad 5
+place    = F11
+edit     = G
+capture  = F11
+referrer = F11
+```
+
+- **一行一模式**（`marker`/`delete`/`pick`/`place`/`edit`/`capture`/`referrer`，也吃 console 縮寫 `mk`/`del`/`pk`/`pl`/`ed`/`cap`/`ref`）。
+- **值寫鍵名不寫 scan code**：`F1`–`F12`、`numpad 0`–`numpad 9`／`numpad . * - + /`／`numpad Enter`、字母數字、`Home`/`End`/`PageUp`/`PageDown`/`Insert`/`Delete`、方向鍵、`LAlt`/`RAlt`… 大小寫與空白不計（`NumPad 5` ＝ `numpad5` ＝ `num5`）；真要寫原始 DIK code 也行（`0x57` 或 `87`）。**生成的 ini 註解裡就有完整清單**。
+- **保留鍵一律拒收**（WASD／Space／Shift／Ctrl／Esc／Tab／Enter／console 反引號）——寫了會被拒、該模式維持原鍵，SKSE log 講原因。
+- **改完不必重開遊戲**：F1 → Settings 頁 → **`reload keys from ini`**。
+- 鍵位每模式獨立、允許重複（預設全 F11）。
+
+**ini vs co-save 的優先序：ini 贏。** 鍵位仍照樣**寫進 co-save**（SETT v7，跟著存檔走），但**讀回來時 ini 有指定的模式一律以 ini 為準**（co-save 那個值只寫進 log 說「被 ini 蓋掉」）；**ini 沒提到的模式**才吃存檔裡的值（沒有就 F11）。理由：ini 是**使用者的設定**，co-save 只是**這個存檔的狀態**——「我改了 ini 卻沒生效」是不可接受的失敗模式，而舊存檔裡可能還躺著 rebind 時代綁壞的鍵（載入時照樣過保留鍵驗證，壞的丟掉）。
+
+**為什麼放棄遊戲內 rebind**：面板**不暫停遊戲**，抓鍵就等於在玩家手還按在 WASD 上的時候去搶輸入串流——**兩次嘗試都在實機失敗**（P5 2026-07-11 綁成 W；2026-07-12 的「保留鍵黑名單＋按下再放開才 commit」重作，使用者實機回報仍失敗）。ini 沒有這條賽道可輸：沒有 armed 狀態、沒有 input sink、沒有時序、沒有已按住的鍵。
 
 ## 現在有什麼（`src/`）
 
 | 檔 | 內容 |
 |---|---|
-| `plugin.cpp` | SKSE 入口 + message handler；input sink 三層：rebind 捕捉 → 編輯模式內部鍵 → 當前模式動作鍵（sink 形狀抄 my_skyrim_plugin_1 的 `FollowLight::HotkeySink`）|
-| `Modes.{h,cpp}` | P5 模式管理：一次一模式、每模式鍵位（預設 F11、允許重複）、動作分派、rebind 流程（下一鍵完成、Esc 取消）|
+| `plugin.cpp` | SKSE 入口 + message handler；input sink **兩層**：編輯模式內部鍵 → 當前模式動作鍵（sink 形狀抄 my_skyrim_plugin_1 的 `FollowLight::HotkeySink`）。**沒有抓鍵層**了——改鍵走 ini |
+| `Modes.{h,cpp}` | P5 模式管理：一次一模式、每模式鍵位（預設 F11、允許重複）、動作分派；鍵位來源仲裁（`ApplyCoSaveBind`＝**ini > co-save > F11**）＋ DIK 鍵名表（`KeyName`/`KeyCode` 雙向，ini 靠它讀寫人類看得懂的鍵名）|
+| `KeyIni.{h,cpp}` | **`SceneCaptureBridge.ini`（SKSE 資料夾）＝動作鍵設定檔**：缺檔就寫一份帶完整鍵名表註解的預設檔；`kDataLoaded` 讀一次，面板 `reload keys from ini` 可隨時重讀；保留鍵（WASD/Space/Shift/Ctrl/Esc/Tab/Enter/console）拒收。**遊戲內 rebind 已移除**（面板不暫停遊戲＝抓鍵永遠在跟玩家還按著的移動鍵搶，兩次實機都失敗）|
 | `Console.{h,cpp}` | `sc` console 指令（ObScript 劫持：`LocateConsoleCommand` 改寫 inert donor 的 name/params/executeFunction）|
 | `CoSave.{h,cpp}` | SKSE SerializationInterface（UID `'SCBR'`）：設定＋Markers/Eraser/Overrides/Captures 四本登記簿隨存檔走；revert 只清登記不碰世界；FormID 經 `ResolveFormID` 重解析（Captures 只存耐久 id，無 handle）|
-| `UI.Settings.cpp` | Settings 頁：模式切換鈕、每模式鍵位表＋rebind、marker 光球開關；`UI::ModeLine()` 各頁頂部常駐當前模式 |
+| `UI.Settings.cpp` | Settings 頁：模式切換鈕、**每模式鍵位（唯讀顯示＋標來源 `(ini)`／`(save / default)`）＋ `reload keys from ini` 鈕**、編輯步長、marker 光球開關；`UI::ModeLine()` 各頁頂部常駐當前模式 |
 | `SceneExporter.{h,cpp}` | **核心**：`ExportCell` 走訪 cell → **vanilla diff**（ref 解得出耐久 id ⇒ 既有 ⇒ 跳過；解不出 ⇒ 玩家 `PlaceAtMe` 擺的 ⇒ emit）→ `placements[]`（**只有物件**：actor 掃描時排除，2026-07-12 拍板）；`ExportCaptures` 另出 captures 檔；`ResolveDurableId` FormID→`<plugin>:0xLOCALID`；`WriteSceneFile` 吐 json（檔名帶場景＋時間戳） |
 | `UI.{h,cpp}` | 遊戲內面板（[SKSE Menu Framework 3](../mod-survey/findings/skse-menu-framework-3.md) / Dear ImGui）：顯示所在 cell、Export 按鈕、上次匯出統計；Eraser/Palette/Editor/Markers 各頁帶 **this cell only 過濾**與逐列 undo/revert/del。**2026-07-12 清掉「按一下就執行世界動作」的按鈕**（place marker here／erase by ray／pick by ray／capture crosshair・by ray／select by ray／cancel (restore)）——這批動作全走 `sc` console 指令＋每模式動作鍵（P5 之後 UI 觸發是多餘的），面板只留設定/檢視/清單類。**軟相依**——`IsInstalled()` 是 `GetModuleHandleW` 探測，沒裝框架就只有 hotkey |
 | `UI.Markers.cpp` | Markers 頁（this-cell 過濾、每列 `edit` 鈕）＋ **marker 編輯視窗**（E 按 marker 開啟：label／kind／**note 多行**／delete；`AddWindow` 獨立視窗，開著會暫停遊戲收輸入）|
@@ -188,11 +216,12 @@ DLL 有兩層狀態，**P5 起兩層都隨存檔走**：
 | marker（位置/label/kind/**note**） | **co-save 登記簿**＋存檔裡的 proxy | **自動**——proxy 是動態 ref、FormID 過完整重啟未必重解析，故讀檔時 co-save 認不回的那筆改**自動 adopt**（`kPostLoadGame` 掃當前 cell），並用**座標配對**把 co-save 的 note/kind 貼回撿到的光球；別的 cell 走過去仍靠 `adopt this cell` |
 | 擦除 vanilla/mod 物件 | **co-save 登記簿**＋存檔 disable 狀態 | **自動**進 `removals[]` |
 | 移動 authored ref（overrides） | **co-save 登記簿**（baseline＋commit pose）＋存檔 live pose | **自動**進 `overrides[]`，revert 也還能回 baseline |
-| Palette 插槽 | **磁碟**（`scene-capture-palette.json`） | 天生跨存檔；plugin 移出 load order 的槽標 unavailable |
+| Palette 插槽 | **磁碟**（`scene-capture-palette.json`） | 天生跨存檔；plugin 移出 load order 的槽標 unavailable；面板 `clear all slots` 清空（二次確認＋ `undo clear`） |
 | Captures 擷取定義（物品附魔/效果、NPC 外貌/數值、玩家） | **co-save 登記簿**（record `'SCCP'` v8，純耐久 id） | **自動**進 `capturedItems[]`／`capturedNpcs[]`；無 handle，讀檔即回 |
 | referrer（命名既有 ref） | **co-save 登記簿**（record `'RFRR'` v1） | **外部目標**＝耐久 id，自動進 `references[]`；**檔內目標**（我們自己擺的）身份是 dynamic handle → 讀檔 `ReacquireOrphans` 按 base+座標撿回；撿不回就標 `TARGET LOST` 並**跳過該筆**（不吐 build 對不上的 editorId） |
 | **`sc pl py0/ed1` 擺出的物件**（旗標／附魔） | **co-save 登記簿**（record `'PLEX'` v1） | 匯出自動帶 `noHavokSettle` ／ 鑄造的 `capturedItems[]` ＋ placement 的 `base` 指它；handle 跨重啟死掉 → 匯出掃 cell 時按 **base＋座標**就地撿回 |
-| 模式/鍵位/dp 狀態 ＋ **物理/extra-data 開關** | **co-save**（SETT **v6**） | 隨存檔還原（v≤5 舊存檔＝預設：place py1、edit py0、extra data 全關） |
+| 模式/dp 狀態 ＋ **物理/extra-data 開關** | **co-save**（SETT **v7**） | 隨存檔還原（v≤5 舊存檔＝預設：place py1、edit py0、extra data 全關） |
+| **動作鍵** | **`SceneCaptureBridge.ini`**（磁碟，SKSE 資料夾）＋ co-save（SETT v7，仍照寫照讀） | **ini 贏**：ini 有寫的模式一律吃 ini，存檔裡的值只進 log；ini 沒寫的才吃存檔（再沒有就 F11）。ini 天生跨存檔跨 session |
 
 **adopt 降級為救援機制**：marker 的 `adopt this cell` 現在讀檔會**自動跑一次**（掃當前 cell），只有跨到別的 cell 才需手動按。擦除的 `scan disabled refs` 已整個移除——co-save 存的是耐久 id，重解析穩定，跨存檔救援冗餘。真要**換一個存檔**撿另一條時間線的 marker，走 Markers 頁 `adopt this cell`。
 

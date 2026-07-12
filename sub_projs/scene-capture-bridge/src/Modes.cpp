@@ -8,6 +8,8 @@
 #include "Referrer.h"
 #include "log.h"
 
+#include <algorithm>
+#include <cctype>
 #include <chrono>
 
 using namespace std::chrono_literals;
@@ -38,11 +40,62 @@ namespace {
     // Per-mode extra data (pick/place). Off = durable base only (historic).
     bool g_extraData[static_cast<std::size_t>(Modes::Mode::kTotal)] = {false};
 
-    bool g_rebindArmed = false;
-    Modes::Mode g_rebindTarget = Modes::Mode::kOff;
-    std::uint32_t g_rebindCandidate = 0;  // key currently down-while-armed, awaiting release
+    // The bind SceneCaptureBridge.ini gave each mode (0 = the ini said nothing
+    // about it). Kept SEPARATELY from g_binds because it is configuration, not
+    // save state: it must survive OnRevert (which wipes everything a savegame
+    // owns) and it must beat whatever bind the loaded save carries.
+    std::uint32_t g_iniBinds[static_cast<std::size_t>(Modes::Mode::kTotal)] = {0};
 
     std::chrono::steady_clock::time_point g_lastAction{};
+
+    // DIK scancode <-> human name. ONE table, both directions: the panel shows
+    // Name(code), the ini is written with it and parsed back through Code(name),
+    // so a round trip through the file is lossless and nobody types hex.
+    struct KeyRow { std::uint32_t code; const char* name; };
+    constexpr KeyRow kKeyTable[] = {
+        {0x01, "Esc"}, {0x0E, "Backspace"}, {0x0F, "Tab"}, {0x1C, "Enter"},
+        {0x39, "Space"}, {0x3A, "CapsLock"}, {0x29, "`"},
+        {0x1D, "LCtrl"}, {0x9D, "RCtrl"}, {0x2A, "LShift"}, {0x36, "RShift"},
+        {0x38, "LAlt"}, {0xB8, "RAlt"},
+        {0x3B, "F1"}, {0x3C, "F2"}, {0x3D, "F3"}, {0x3E, "F4"}, {0x3F, "F5"},
+        {0x40, "F6"}, {0x41, "F7"}, {0x42, "F8"}, {0x43, "F9"}, {0x44, "F10"},
+        {0x57, "F11"}, {0x58, "F12"},
+        {0x02, "1"}, {0x03, "2"}, {0x04, "3"}, {0x05, "4"}, {0x06, "5"},
+        {0x07, "6"}, {0x08, "7"}, {0x09, "8"}, {0x0A, "9"}, {0x0B, "0"},
+        {0x0C, "-"}, {0x0D, "="}, {0x1A, "["}, {0x1B, "]"}, {0x27, ";"},
+        {0x28, "'"}, {0x2B, "\\"}, {0x33, ","}, {0x34, "."}, {0x35, "/"},
+        {0x1E, "A"}, {0x30, "B"}, {0x2E, "C"}, {0x20, "D"}, {0x12, "E"},
+        {0x21, "F"}, {0x22, "G"}, {0x23, "H"}, {0x17, "I"}, {0x24, "J"},
+        {0x25, "K"}, {0x26, "L"}, {0x32, "M"}, {0x31, "N"}, {0x18, "O"},
+        {0x19, "P"}, {0x10, "Q"}, {0x13, "R"}, {0x1F, "S"}, {0x14, "T"},
+        {0x16, "U"}, {0x2F, "V"}, {0x11, "W"}, {0x2D, "X"}, {0x15, "Y"},
+        {0x2C, "Z"},
+        {0x52, "numpad 0"}, {0x4F, "numpad 1"}, {0x50, "numpad 2"},
+        {0x51, "numpad 3"}, {0x4B, "numpad 4"}, {0x4C, "numpad 5"},
+        {0x4D, "numpad 6"}, {0x47, "numpad 7"}, {0x48, "numpad 8"},
+        {0x49, "numpad 9"}, {0x53, "numpad ."}, {0x37, "numpad *"},
+        {0x4A, "numpad -"}, {0x4E, "numpad +"}, {0xB5, "numpad /"},
+        {0x9C, "numpad Enter"},
+        {0xC7, "Home"}, {0xCF, "End"}, {0xC9, "PageUp"}, {0xD1, "PageDown"},
+        {0xD2, "Insert"}, {0xD3, "Delete"},
+        {0xC8, "Up"}, {0xD0, "Down"}, {0xCB, "Left"}, {0xCD, "Right"},
+        {0x45, "NumLock"}, {0x46, "ScrollLock"},
+    };
+
+    // Fold a written name onto the table's own spelling: lower-case, drop spaces
+    // and underscores ("NumPad 5" / "numpad_5" / "numpad5" all collide), and let
+    // "num5" mean "numpad5". Punctuation names ("-", "numpad -") survive because
+    // only whitespace/underscore is stripped, never the glyph itself.
+    std::string Normalise(std::string s) {
+        std::string out;
+        for (char c : s) {
+            if (c == ' ' || c == '\t' || c == '_') continue;
+            out.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
+        }
+        if (out.starts_with("num") && !out.starts_with("numpad") && out != "numlock")
+            out = "numpad" + out.substr(3);
+        return out;
+    }
 
     void RunAction(Modes::Mode m) {
         const bool ray = Modes::UseRay(m);
@@ -109,6 +162,41 @@ namespace Modes {
         SKSE::log::info("Modes: bind {} -> {} (0x{:X})", Name(m), KeyName(scancode), scancode);
     }
 
+    void SetIniBind(Mode m, std::uint32_t scancode) {
+        if (m == Mode::kOff || m >= Mode::kTotal || scancode == 0) return;
+        g_iniBinds[static_cast<std::size_t>(m)] = scancode;
+        SetBind(m, scancode);
+    }
+
+    void ClearIniBinds() {
+        for (auto& b : g_iniBinds) b = 0;
+    }
+
+    bool BindFromIni(Mode m) {
+        return m < Mode::kTotal && g_iniBinds[static_cast<std::size_t>(m)] != 0;
+    }
+
+    void ApplyCoSaveBind(Mode m, std::uint32_t scancode) {
+        if (m == Mode::kOff || m >= Mode::kTotal || scancode == 0) return;
+        if (BindFromIni(m)) {
+            // The ini named this mode: it wins. Saying so out loud matters —
+            // otherwise "I edited the ini and nothing changed" would be a silent
+            // mystery whenever an older save carried a different key.
+            if (scancode != Bind(m)) {
+                SKSE::log::info("Modes: co-save bind {} for {} ignored — the ini says {}",
+                    KeyName(scancode), Name(m), KeyName(Bind(m)));
+            }
+            return;
+        }
+        if (!IsBindable(scancode)) {
+            SKSE::log::warn("Modes: dropped reserved co-save bind 0x{:X} for {} "
+                "(stale save data from the removed in-game rebind) — kept {}",
+                scancode, Name(m), KeyName(Bind(m)));
+            return;
+        }
+        SetBind(m, scancode);
+    }
+
     bool UseRay(Mode m) {
         return m < Mode::kTotal ? g_useRay[static_cast<std::size_t>(m)] : false;
     }
@@ -143,7 +231,7 @@ namespace Modes {
 
     bool IsBindable(std::uint32_t scancode) {
         switch (scancode) {
-        case kEsc:              // Esc — cancels, never binds
+        case kEsc:              // Esc — menus
         case 0x29:               // ` / ~ — opens the console
         case 0x0F:                // Tab — ImGui focus navigation
         case 0x1C:                // Enter — confirms ImGui widgets / console lines
@@ -159,31 +247,6 @@ namespace Modes {
     }
 
     bool HandleKey(std::uint32_t scancode) {
-        if (g_rebindArmed) {
-            if (scancode == kEsc) {
-                CancelRebind();
-                return true;
-            }
-            if (!IsBindable(scancode)) {
-                // This is the historic bug (backlog: "rebind armed 當幀把移動鍵
-                // 也吃進去"): the panel doesn't pause the game, so the player's
-                // hand is often still on WASD (or the console/Tab/Enter fire
-                // incidentally) the instant they click "Rebind". Swallow the
-                // reserved key and stay armed instead of binding it.
-                SKSE::log::info("Modes: rebind ignored reserved key 0x{:X}", scancode);
-                RE::DebugNotification("SCB: that key is reserved, press another");
-                return true;
-            }
-            // Don't bind yet — only remember the candidate. A key already
-            // held when the rebind armed can never reach this branch at all
-            // (ButtonEvent::IsDown() fires only on the up->down transition),
-            // and requiring the matching key-UP (HandleKeyUp) below rejects
-            // any stray double-tap before it commits.
-            g_rebindCandidate = scancode;
-            SKSE::log::info("Modes: rebind candidate {} (0x{:X}) — release to confirm",
-                KeyName(scancode), scancode);
-            return true;
-        }
         if (g_mode == Mode::kOff || scancode != Bind(g_mode)) return false;
 
         const auto now = std::chrono::steady_clock::now();
@@ -195,37 +258,6 @@ namespace Modes {
         return true;
     }
 
-    bool HandleKeyUp(std::uint32_t scancode) {
-        if (!g_rebindArmed) return false;
-        if (g_rebindCandidate && scancode == g_rebindCandidate) {
-            SetBind(g_rebindTarget, scancode);
-            RE::DebugNotification(
-                std::format("SCB: {} bound to {}", Name(g_rebindTarget), KeyName(scancode))
-                    .c_str());
-            g_rebindArmed = false;
-            g_rebindCandidate = 0;
-        }
-        return true;  // swallow every key-up while armed, matched or not
-    }
-
-    void BeginRebind(Mode m) {
-        if (m == Mode::kOff || m >= Mode::kTotal) return;
-        g_rebindArmed = true;
-        g_rebindTarget = m;
-        g_rebindCandidate = 0;
-        SKSE::log::info("Modes: rebinding {} — press a key (Esc cancels)", Name(m));
-    }
-
-    void CancelRebind() {
-        g_rebindArmed = false;
-        g_rebindCandidate = 0;
-        SKSE::log::info("Modes: rebind cancelled");
-    }
-
-    bool RebindArmed() { return g_rebindArmed; }
-    Mode RebindTarget() { return g_rebindTarget; }
-    std::uint32_t RebindCandidate() { return g_rebindCandidate; }
-
     void ResetDefaults() {
         g_mode = Mode::kOff;
         for (std::size_t i = 1; i < static_cast<std::size_t>(Mode::kTotal); ++i) {
@@ -234,29 +266,34 @@ namespace Modes {
             g_extraData[i] = false;
         }
         ApplyPhysicsDefaults(g_physics);  // place = py1, edit = py0
-        g_rebindArmed = false;
-        g_rebindCandidate = 0;
+        // The ini is CONFIGURATION, not save state — a revert (new game / a save
+        // without our records) must not throw the player's keys away. Everything
+        // else above legitimately goes back to defaults.
+        for (std::size_t i = 1; i < static_cast<std::size_t>(Mode::kTotal); ++i)
+            if (g_iniBinds[i]) g_binds[i] = g_iniBinds[i];
     }
 
     const char* KeyName(std::uint32_t scancode) {
-        // The keys a player is likely to bind; anything else shows as hex.
-        switch (scancode) {
-        case 0x3B: return "F1";  case 0x3C: return "F2";  case 0x3D: return "F3";
-        case 0x3E: return "F4";  case 0x3F: return "F5";  case 0x40: return "F6";
-        case 0x41: return "F7";  case 0x42: return "F8";  case 0x43: return "F9";
-        case 0x44: return "F10"; case 0x57: return "F11"; case 0x58: return "F12";
-        case 0x47: return "numpad 7"; case 0x48: return "numpad 8"; case 0x49: return "numpad 9";
-        case 0x4B: return "numpad 4"; case 0x4C: return "numpad 5"; case 0x4D: return "numpad 6";
-        case 0x4F: return "numpad 1"; case 0x50: return "numpad 2"; case 0x51: return "numpad 3";
-        case 0x52: return "numpad 0"; case 0x53: return "numpad ."; case 0x37: return "numpad *";
-        case 0x4A: return "numpad -"; case 0x4E: return "numpad +";
-        case 0x2A: return "LShift"; case 0x1D: return "LCtrl"; case 0x38: return "LAlt";
-        default: {
-            static char buf[16];
-            std::snprintf(buf, sizeof(buf), "0x%X", scancode);
-            return buf;
-        }
-        }
+        for (const auto& r : kKeyTable)
+            if (r.code == scancode) return r.name;
+        static char buf[16];
+        std::snprintf(buf, sizeof(buf), "0x%X", scancode);
+        return buf;
+    }
+
+    std::uint32_t KeyCode(const std::string& name) {
+        const auto want = Normalise(name);
+        if (want.empty()) return 0;
+        for (const auto& r : kKeyTable)
+            if (Normalise(r.name) == want) return r.code;
+        // Escape hatch: a raw DIK scancode, hex ("0x57") or decimal ("87"), for
+        // the odd keyboard key the table above doesn't have a name for.
+        try {
+            const bool hex = want.starts_with("0x");
+            const auto v = std::stoul(hex ? want.substr(2) : want, nullptr, hex ? 16 : 10);
+            if (v > 0 && v <= 0xFF) return static_cast<std::uint32_t>(v);
+        } catch (...) {}
+        return 0;
     }
 
 }  // namespace Modes

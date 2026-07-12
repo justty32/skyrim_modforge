@@ -17,6 +17,7 @@ set(sources ${sources}
     src/UI.References.cpp
     src/UI.Settings.cpp
     src/Modes.cpp
+    src/KeyIni.cpp
     src/Console.cpp
     src/CoSave.cpp
 )

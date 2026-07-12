@@ -4,6 +4,7 @@
 #include "UI.h"
 
 #include "Editor.h"
+#include "KeyIni.h"
 #include "Markers.h"
 #include "Modes.h"
 
@@ -17,6 +18,7 @@ namespace {
         Modes::Mode::kPlace, Modes::Mode::kEdit, Modes::Mode::kCapture,
         Modes::Mode::kReferrer,
     };
+    constexpr ImGuiMCP::ImVec4 kWarn{1.f, 0.55f, 0.25f, 1.f};
 }
 
 void UI::ModeLine() {
@@ -38,44 +40,37 @@ void __stdcall UI::SettingsPage::Render() {
         "marker gems.");
     ImGuiMCP::Separator();
 
-    // --- per-mode action key: rebindable (reworked 2026-07-12) ---
-    // The old flow bound whatever keyboard key arrived first once armed —
-    // since the panel doesn't pause the game, that was often a leftover WASD
-    // tap, not the key the player meant to press. The fix (Modes.cpp):
-    // reserved keys (movement/console/Tab/Enter/Esc) are never accepted, and
-    // the accepted key must be pressed AND released while armed before it
-    // commits — so a stray tap can't half-finish a bind either.
-    if (Modes::RebindArmed()) {
-        const auto cand = Modes::RebindCandidate();
-        if (cand) {
-            ImGuiMCP::TextColored({1.f, 0.85f, 0.2f, 1.f},
-                "Rebinding %s -- release %s to confirm (Esc cancels)",
-                Modes::Name(Modes::RebindTarget()), Modes::KeyName(cand));
-        } else {
-            ImGuiMCP::TextColored({1.f, 0.85f, 0.2f, 1.f},
-                "Rebinding %s -- press a key (Esc cancels; WASD/Space/Shift/"
-                "Ctrl/console/Tab/Enter don't count)",
-                Modes::Name(Modes::RebindTarget()));
-        }
-        ImGuiMCP::SameLine();
-        if (ImGuiMCP::Button("Cancel rebind")) Modes::CancelRebind();
-        ImGuiMCP::Separator();
-    }
-    ImGuiMCP::Text("Action keys (per mode):");
+    // --- per-mode action key: READ-ONLY here, configured in the .ini ---
+    //
+    // In-game rebinding is GONE (user-decided 2026-07-12, after the second
+    // attempt failed in-game). Capturing a key needs the panel to own the input
+    // stream, and the panel does not pause the game: the stream is full of the
+    // movement keys the player's hand is still on. Two designs (bind-first-key;
+    // reserved-key blacklist + press-and-release) both lost that race. A file
+    // has no race to lose — see KeyIni.cpp.
+    ImGuiMCP::Text("Action keys (per mode) — edit SceneCaptureBridge.ini:");
     for (auto m : kActionModes) {
-        const bool armingThis = Modes::RebindArmed() && Modes::RebindTarget() == m;
-        ImGuiMCP::Text("%-8s %s", Modes::Name(m), Modes::KeyName(Modes::Bind(m)));
-        ImGuiMCP::SameLine();
-        if (armingThis) {
-            ImGuiMCP::TextDisabled("(waiting for key...)");
-        } else {
-            const std::string btnId = std::string("Rebind##") + Modes::Cmd(m);
-            const bool disable = Modes::RebindArmed();  // one rebind at a time
-            if (disable) ImGuiMCP::BeginDisabled(true);
-            if (ImGuiMCP::Button(btnId.c_str())) Modes::BeginRebind(m);
-            if (disable) ImGuiMCP::EndDisabled();
-        }
+        ImGuiMCP::BulletText("%-9s %-12s %s", Modes::Name(m),
+            Modes::KeyName(Modes::Bind(m)),
+            Modes::BindFromIni(m) ? "(ini)" : "(save / default)");
     }
+    if (ImGuiMCP::Button("reload keys from ini")) KeyIni::Load();
+    ImGuiMCP::SameLine();
+    const auto& ki = KeyIni::Last();
+    if (!ki.loaded) {
+        ImGuiMCP::TextColored(kWarn, "ini not readable — keys are the defaults");
+    } else if (!ki.problem.empty()) {
+        ImGuiMCP::TextColored(kWarn, "ini: %s", ki.problem.c_str());
+    } else {
+        ImGuiMCP::Text("%zu key(s) from the ini", ki.applied);
+    }
+    ImGuiMCP::TextWrapped("%s", KeyIni::PathString().c_str());
+    ImGuiMCP::TextWrapped(
+        "One line per mode (marker/delete/pick/place/edit/capture/referrer), e.g. "
+        "`delete = F4`. Names, not scancodes: F1-F12, numpad 0-9, letters, arrows... "
+        "The file lists them all. WASD/Space/Shift/Ctrl/Esc/Tab/Enter/console are "
+        "refused. The ini WINS over the key stored in a savegame; a mode the ini "
+        "doesn't mention keeps the save's key (or F11).");
     ImGuiMCP::Separator();
 
     // --- edit-mode step sizes (persist in the co-save SETT v2) ---

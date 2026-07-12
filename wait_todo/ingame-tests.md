@@ -207,25 +207,23 @@
 
 **回報**：① 三個歸零鍵是不是各管各軸、且還原成「原本的角度」而非 0；② append 有沒有排最上、replace 有沒有清乾淨、打錯檔名會不會誤清。
 
-## scene-capture-bridge — rebind 重作（2026-07-12，DLL crc `378d3c6c`，**已部署**）
+## scene-capture-bridge — 動作鍵改走 `.ini` ＋ palette `clear` 鈕（2026-07-12，DLL crc `2507aa3c`，**未部署**）
 
-⚠️ **完全關遊戲重開**吃新 DLL（esp 不動）。co-save `SETT` 升 **v6→v7**——舊存檔照讀（過去被丟棄不用的鍵位資料現在會**真的套用**，並過一次保留鍵過濾；`kCapture`/`kReferrer` 這兩個模式過去從沒存過鍵位，這次補上）。
+⚠️ **部署前置**：你當時正在玩，`deploy.sh` 擋下（這是對的）。**先關遊戲**（順手確認沒有殘留的 `ModOrganizer.exe` 吊住 wineserver）→ 跑 `bash sub_projs/scene-capture-bridge/scripts/deploy.sh` → 再開遊戲。esp 不動，只換 DLL。
 
-**背景**：P5 實機（2026-07-11）撞到 rebind 捕捉抓錯鍵（誤綁成 W），當時暫時隱藏、固定 F11。這輪重作：armed 狀態下 WASD/Space/Shift/Ctrl/Esc/Tab/Enter/console 反引號**一律不接受**（面板/畫面會提示「that key is reserved, press another」），且必須**按下＋放開同一顆鍵**才真的 commit（面板顯示「release X to confirm」）。Esc 隨時取消。
+**背景**：遊戲內 rebind **兩次實機都失敗**（P5 綁成 W；`ddf6324` 的黑名單＋按放開版你回報仍失敗）→ 依你的拍板，**遊戲內 rebind 整個移除**，鍵位改由 **`SceneCaptureBridge.ini`** 設定。co-save 仍照存鍵位（SETT v7 不變），但**ini 有寫的模式以 ini 為準**。
 
-1. **基本 rebind（先驗這個）**：F1 → Settings 頁 → 找 `del`（刪除模式）那一列 → 按它旁邊的 `Rebind##del` 鈕 →
-   - 面板應立刻變黃字：`Rebinding delete -- press a key (Esc cancels; ...)`，且**其他模式的 Rebind 鈕應變灰不能按**（一次只能改一個）。
-   - 按一個沒用過的鍵，例如 **F2** → 面板文字應變成 `Rebinding delete -- release F2 to confirm`（還沒放開就先按住看這句）。
-   - 放開 F2 → 面板應跳回正常列表，`del` 那一列的鍵位文字應顯示 **F2**、黃字狀態列消失、其他模式的 Rebind 鈕恢復可按。
-   - 進 `sc del` 模式（console 或按鈕），瞄準一個東西按 **F2** → 應該真的觸發擦除（原本的 F11 對 `del` 這個模式應該**不再有反應**）。
-2. **保留鍵防呆（這是這次修的重點）**：對另一個模式（例如 `pick`）按 `Rebind` → armed 狀態下依序按著移動：
-   - 按 **W**（或 A/S/D/Space/LShift/LCtrl）→ 畫面應跳一個小提示（例如「that key is reserved, press another」），**面板應維持在 armed 狀態**（還是「press a key」，不會變成「release ... to confirm」，更不會直接把 pick 綁到 W）。
-   - 按 **Tab**、**Enter**、**`**（console 鍵）也應該一樣被拒絕、不解除 armed。
-   - 最後按一個正常鍵（例如 F3）並放開 → 才真的綁上。
-   - **這一步就是驗收核心**：只要**全程沒有任何一次把某模式意外綁成 W/A/S/D 之類的移動鍵**，這輪修復就算過。
-3. **Esc 取消**：按 `Rebind` armed 後、按 **Esc** → 面板應跳回正常（沒有黃字），該模式的鍵位**維持原樣沒被改動**。
-4. **同時移動 + rebind（最貼近原本撞坑的情境）**：走位時**手不離開 WASD**、順手用滑鼠點某模式的 `Rebind` 鈕、然後保持按著或反覆點按 W/S 幾下模擬「還沒騰出手」的狀態，最後才按你真正想要的鍵（例如 F4）並放開 → 綁定結果**必須是 F4**，不能是 W 或 S。這是最初 bug 的實際重現路徑，務必測。
-5. **持久化（co-save v7）**：把 2–3 個模式改綁成不同的鍵（例如 F2/F3/F4）→ 存檔 → **完全關遊戲重開** → 讀檔 → F1 → Settings 頁確認**改過的鍵位全部還原**（不是退回 F11）→ 用其中一個改過的鍵實際觸發一次動作確認真的生效。
-6. **`sc capp` 直接吸的組合場景要沒事**（回歸檢查，不是新功能）：任意切換模式、按 F11（其餘沒改綁的模式應該還是預設 F11）確認**沒改綁的模式完全不受影響**。
+1. **ini 自動生成**：新 DLL 進遊戲一次 → 去 `…/Documents/My Games/Skyrim Special Edition/SKSE/`（＝ palette／匯出檔那個資料夾）→ 應該出現 **`SceneCaptureBridge.ini`**，內含 `[Keys]` 七行（全 F11）＋一大段註解（可用鍵名清單、保留鍵說明）。**先確認這個檔存在且看得懂**。
+2. **改鍵生效**：用文字編輯器把 `delete = F11` 改成 **`delete = F4`**、`edit = G`（存檔）→ 回遊戲 F1 → Settings 頁按 **`reload keys from ini`** →
+   - 鍵位表應顯示 `delete  F4  (ini)`、`edit  G  (ini)`，其餘仍 F11。
+   - `sc del` → 瞄準東西按 **F4** 應真的擦除；按 **F11** 對 delete 模式應**沒反應**（其他沒改的模式 F11 照常）。
+   - **不重開遊戲就生效**（這顆鈕的重點）；重開遊戲後也應維持。
+3. **保留鍵拒收**：ini 寫 `pick = W`（或 Space/Shift/Ctrl/Tab/Enter/`）→ `reload keys from ini` → 面板應出現橘字（`ini: pick: 'W' is reserved`），`pick` **維持原鍵不變**，SKSE log 有 warn。**這是防呆核心**：ini 不能把你綁死在移動鍵上。
+4. **鍵名容錯**：試 `capture = numpad 5`、`marker = NumPad5`、`place = 0x3E`（＝F4）都應該吃得下（面板顯示 `numpad 5` / `F4`）；亂打 `pick = Banana` → 橘字報 unknown key、該模式維持原鍵。
+5. **ini vs 存檔優先序**：讀一個**舊存檔**（裡面可能存著舊鍵位）→ Settings 頁的鍵位應該**還是 ini 那組**（標 `(ini)`），不是被存檔蓋回去。把 ini 裡某一行**整行刪掉**再 reload → 該模式改吃存檔/預設（標 `(save / default)`）。
+6. **palette `clear all slots`（新鈕）**：Palette 頁 →
+   - 先 `sc pk` 吸 2–3 個東西 → 按 **`clear all slots`** → 應**先變成** `really clear all N slot(s)?` ＋ `yes, clear` / `cancel` → 按 **cancel** → **什麼都不該發生**。
+   - 再按一次 → `yes, clear` → 插槽全空，且出現 **`undo clear (N slot(s) recoverable...)`**。
+   - 按 **`undo clear`** → 插槽**全部回來**。再 clear 一次、**關遊戲重開** → 插槽應該是空的（clear 有寫回磁碟；undo 只在本次 session 有效，這是預期行為）。
 
-**回報**：① 第 2 步（保留鍵防呆）有沒有守住——這是本輪修復要不要算過的關鍵；② rebind 完的鍵位實際觸發動作有沒有生效、舊鍵（如原本的 F11）對該模式是否確實失效；③ 重開遊戲後鍵位有沒有正確還原；④ 面板的黃字狀態列/其他鈕變灰有沒有出現。
+**回報**：① ini 有沒有自動生成、看不看得懂；② 改鍵 + `reload keys from ini` 有沒有真的生效（含舊鍵失效）；③ 保留鍵（W 之類）有沒有被拒；④ 舊存檔會不會蓋掉 ini；⑤ palette clear 的二次確認 / undo 有沒有照走。
