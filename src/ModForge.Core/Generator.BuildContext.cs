@@ -76,6 +76,9 @@ public static partial class Generator
         // placement/xmarker editorId is queued here and resolved by WireDeferredScriptObjectProps.
         private readonly List<(Mutagen.Bethesda.Skyrim.ScriptObjectProperty Prop, string Ref, string Warn)> deferredScriptObjectProps = new();
         private readonly Dictionary<string, IPlaced> placementsByEd = new();
+        // refs an anchor:"replace" reference stood in for — BuildRemovals disables+buries them alongside
+        // the spec's own removals[] (our persistent copy took the vanilla original's place).
+        private readonly List<string> referenceRemovals = new();
         // editorId → its source PlacementSpec, so a teleport partner's arrival position/rotation can be
         // read once all placements exist (XTEL stores where the player materialises = the partner's pos/rot).
         private readonly Dictionary<string, PlacementSpec> placementSpecByEd = new(StringComparer.OrdinalIgnoreCase);

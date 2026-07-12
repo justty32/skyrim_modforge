@@ -18,9 +18,13 @@ public static partial class Generator
         // NOTE: relies on the master link cache (MODFORGE_SKYRIM_DATA / Steam path). Unresolvable refs
         // are warned and skipped. Interior refs in named cells also work (GetOrAddAsOverride copies the
         // cell's Name FormID reference, not a re-resolved string, so it's headless-safe).
+        //
+        // Also consumes `referenceRemovals` — the vanilla originals that an anchor:"replace" reference
+        // stood in for (BuildReferences authored our own persistent copy in their place, so the original
+        // has to go or the player sees two chairs).
         public void BuildRemovals()
         {
-            foreach (var refStr in spec.Removals)
+            foreach (var refStr in spec.Removals.Concat(referenceRemovals))
             {
                 if (string.IsNullOrWhiteSpace(refStr)) continue;
                 if (!TryExternalRef(refStr, out var fk))

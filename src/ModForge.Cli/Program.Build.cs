@@ -22,6 +22,11 @@ internal static partial class Program
         if (spec.Annotations.Count > 0)
             // Advisory marker anchors from the in-game editor — deliberately NOT built (Spec.Annotations.cs).
             Console.WriteLine($"{spec.Annotations.Count} annotation(s) — advisory marker anchors, not built");
+        if (spec.References.Count > 0)
+            // Named EXISTING refs (the in-game referrer) — no records of their own; each `label` is now a
+            // name any ref field can resolve (Spec.References.cs).
+            Console.WriteLine($"{spec.References.Count} reference(s) — labels bound to existing refs: "
+                + string.Join(", ", spec.References.Select(r => $"'{r.Label}'")));
         WriteSeq(outPath, Path.GetDirectoryName(Path.GetFullPath(outPath)) ?? ".");
         if (spec.Weathers.Count > 0)
         {

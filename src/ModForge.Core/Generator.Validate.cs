@@ -17,6 +17,7 @@ public static partial class Generator
     {
         var ctx = new ValidateContext(spec);
         ctx.RegisterIdentityFactions();   // auto-built identity FACTs, so conditions can reference them
+        ctx.RegisterReferenceLabels();    // references[] labels, so any ref field can point at one by name
         ctx.ValidateNpcs();
         ctx.ValidateNpcPatches();
         ctx.ValidateItems();
@@ -47,6 +48,7 @@ public static partial class Generator
         ctx.ValidateCapturedNpcs();
         ctx.ValidateRemovals();
         ctx.ValidateOverrides();
+        ctx.ValidateReferences();
         ValidateWeather(spec, ctx.Problems, ctx.Ids, ctx.CheckRef);
         ValidateLights(spec, ctx.Problems);
         ValidateLighting(spec, ctx.Problems);

@@ -148,6 +148,7 @@
     },
     "removals": {"type": "array", "items": {"type": "string"}, "description": "Refs \"<master>:0xFORMID\" of EXISTING placed refs to remove (disable + bury) — the in-game eraser feeds this (Generator.Build.Removals.cs)"},
     "overrides": {"type": "array", "items": {"$ref": "#/$defs/override"}, "description": "Transform overrides of EXISTING placed refs (move/rotate/rescale in place) — the in-game numpad editor feeds this (Generator.Build.Overrides.cs). scale omitted = keep the original record's scale"},
+    "references": {"type": "array", "items": {"$ref": "#/$defs/reference"}, "description": "NAME EXISTING placed refs so the rest of the spec can point at them by `label` — the in-game referrer (`sc ref`) feeds this (Generator.Build.References.cs). Third sibling of removals[] (erase existing) / overrides[] (move existing): never creates the ref it points at"},
     "npcRoles": {"type": "array", "items": {"$ref": "#/$defs/npcRole"}, "description": "Tag an external NPC with a job role — macro-expands to host quest + conditioned greeting + package (Spec.SceneExport.cs)"},
     "annotations": {"type": "array", "items": {"$ref": "#/$defs/annotation"}, "description": "In-game editor marker anchors (Idea #24 P1) — ADVISORY ONLY: build never creates records from these; a human/AI agent reads label+kind+position to author the next round"},
     "hazards": {
@@ -610,6 +611,18 @@
     "npcRole": {"type": "object", "properties": {"npc": {"type": "string"}, "role": {"type": "string"}, "backstory": {"type": "string"}}},
     "annotation": {"type": "object", "properties": {"seq": {"type": "integer"}, "label": {"type": "string"}, "kind": {"type": "string"}, "note": {"type": "string", "description": "free-form brief for the agent (\"face the door\", \"a vendor here\")"}, "position": {"$ref": "#/$defs/vec3"}, "angleZ": {"type": "number"}, "cell": {"type": "string"}, "worldspace": {"type": "string"}}},
     "override": {"type": "object", "required": ["ref", "position", "rotation"], "properties": {"ref": {"type": "string", "description": "\"<master>:0xFORMID\" of the existing placed ref (REFR/ACHR)"}, "position": {"$ref": "#/$defs/vec3"}, "rotation": {"$ref": "#/$defs/vec3", "description": "degrees"}, "scale": {"type": "number", "description": "omitted = keep original scale; 1.0 = reset to engine default (XSCL dropped)"}}},
+    "reference": {"type": "object", "required": ["ref", "label"], "description": "NAME an EXISTING placed ref (Idea #24 referrer `sc ref`). TWO TARGET CLASSES: (B) IN-FILE — `ref` is a placements[] editorId in THIS spec (the object the player placed with `sc pl`); build FORCES IT PERSISTENT (0x400 + the cell's Persistent group), which is exactly what an alias/package specific-reference target needs — THE CLEAN PATH. (A) EXTERNAL — `ref` is a vanilla '<master>:0xFORMID'; build warns when that ref is TEMPORARY (most vanilla scenery is → a poor alias/package target) and `anchor` authors a persistent stand-in of our own.", "properties": {
+      "ref": {"type": "string", "description": "REQUIRED. An in-spec placements[] editorId (in-file path) OR a vanilla '<master>:0xFORMID' (external path). references[] NEVER creates the ref — it must already exist."},
+      "label": {"type": "string", "description": "REQUIRED, unique across the spec. The free-form name typed in-game (\"sofia's chair\"). Registered as a resolvable id → usable in ANY ref field: a package's sandbox `location` / travel `place`, a quest alias `forced:`, `linkedRefs.target`, `enableParent.ref`, an objective target, a script Form property."},
+      "base": {"type": "string", "description": "The target's base form (what the referrer recorded). Advisory, EXCEPT anchor:\"replace\", which re-places it."},
+      "position": {"$ref": "#/$defs/vec3", "description": "Where the target stands — cell-local (interior) or world (exterior), same contract as placements[]. Needed by the anchor modes (falls back to the master record's value)."},
+      "rotation": {"$ref": "#/$defs/vec3", "description": "degrees"},
+      "scale": {"type": "number", "description": "The target's XSCL. Advisory; copied onto an anchor:\"replace\" stand-in."},
+      "cell": {"type": "string", "description": "interior: in-spec cell editorId OR '<master>:0xFORMID' — where an anchor would be placed"},
+      "worldspace": {"type": "string", "description": "exterior: worldspace ref; position is world-space"},
+      "anchor": {"type": "string", "enum": ["none", "marker", "replace"], "description": "Persistent fallback for an EXTERNAL target (meaningless on an in-file ref — already ours, already persistent). none (default) = just name the vanilla ref and take the temporary-ref warning. marker = author a persistent XMarkerHeading at that spot; the label binds to IT (right when you only need a PLACE: sandbox/travel/patrol anchor). replace = author our own persistent copy of the object (same base/transform) + add the vanilla original to removals[] (disable+bury, no duplicate); the label binds to our copy (right when the anchor must BE THE OBJECT — sit in THAT chair)."},
+      "note": {"type": "string", "description": "free-form brief for the agent authoring the next round (advisory)"}
+    }},
     "ref": {
       "type": "string",
       "minLength": 1,

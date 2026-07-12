@@ -1,0 +1,69 @@
+{
+  "pluginName": "SceneReferencesExample.esp",
+  "esl": true,
+  "_comment": "Idea #24 referrer (`sc ref`) — `references[]` NAMES an existing placed ref so the rest of the spec can point at it by `label`. The third sibling of `removals[]` (erase existing) and `overrides[]` (move existing): none of them creates the thing it points at. THIS FILE DEMOS THE CLEAN 'IN-FILE' PATH (plan backlog 🔑): the player placed a chair in-game with `sc pl` (so the exporter emitted it into placements[] with a stable editorId), then aimed at it with `sc ref` and typed a label. ModForge OWNS that object, so build FORCES IT PERSISTENT (0x400 + the cell's Persistent group) — which is exactly what 'a package/alias can target this ref' requires. The label then works in ANY ref field: here Sofia's sandbox package is anchored on 'sofia's chair' with a 128-unit radius + allowSitting, so she keeps coming back to sit in THAT chair. The OTHER path (`ref` = a vanilla \"<master>:0xFORMID\") is shown in the last entry: vanilla scenery is usually a TEMPORARY ref (a poor specific-reference target), so build warns and `anchor` lets you author a persistent stand-in — \"marker\" (an XMarkerHeading at the spot: a PLACE to sandbox/travel to) or \"replace\" (our own persistent copy of the object + a removal of the vanilla original: the anchor IS the object). Coords = the flat Whiterun-stables tundra (ground Z=-4590, same verified spot as scene-export-blacksmith).",
+  "npcs": [
+    {
+      "editorId": "MFRefSofia",
+      "name": "Sofia",
+      "race": "Skyrim.esm:0x013746",
+      "voiceType": "Skyrim.esm:0x013ADD",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "confidence": "Brave",
+      "unique": true,
+      "greeting": "This chair is mine. Find your own.",
+      "packages": ["MFRefSofiaSit"]
+    }
+  ],
+  "packages": [
+    {
+      "editorId": "MFRefSofiaSit",
+      "template": "Skyrim.esm:0x01C254",
+      "_comment": "Sandbox. `location` is the LABEL from references[] — that is the whole point of the primitive. A tight radius + allowSitting = 'sandbox around that chair', which is how vanilla makes an NPC habitually use one piece of furniture.",
+      "sandbox": {
+        "location": "sofia's chair",
+        "radius": 128,
+        "allowSitting": true,
+        "allowWandering": false,
+        "allowSleeping": false
+      }
+    }
+  ],
+  "placements": [
+    {
+      "editorId": "MFRef_SofiaChair",
+      "_comment": "The chair the player placed in-game with `sc pl`. A plain placement — it is `references[]` that makes it persistent.",
+      "base": "Skyrim.esm:0x0B9C04",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": 18700, "y": -12700, "z": -4590 },
+      "rotation": { "x": 0, "y": 0, "z": 180 }
+    },
+    {
+      "editorId": "MFRef_Sofia",
+      "base": "MFRefSofia",
+      "kind": "npc",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": 18790, "y": -12700, "z": -4590 },
+      "rotation": { "x": 0, "y": 0, "z": 180 }
+    }
+  ],
+  "references": [
+    {
+      "ref": "MFRef_SofiaChair",
+      "label": "sofia's chair",
+      "base": "Skyrim.esm:0x0B9C04",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": 18700, "y": -12700, "z": -4590 },
+      "rotation": { "x": 0, "y": 0, "z": 180 },
+      "note": "she should always come back to this one"
+    },
+    {
+      "ref": "Skyrim.esm:0x0D1991",
+      "label": "skulvar's hoe",
+      "_comment": "The EXTERNAL path, anchor-free: we just NAME a vanilla ref (Skulvar's hoe at the Whiterun stables). Build resolves it in the master link cache, sees it carries no 0x400 flag, and WARNS — the label still resolves, but a quest alias's specific-reference fill or a package SingleRef target may not hold across save/load. Add \"anchor\": \"marker\" or \"anchor\": \"replace\" (plus base/position/worldspace) to get a persistent anchor of our own.",
+      "base": "Skyrim.esm:0x02F2F4",
+      "worldspace": "Skyrim.esm:0x00003C",
+      "position": { "x": 19265.9, "y": -12816.5, "z": -4603.4 }
+    }
+  ]
+}

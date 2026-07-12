@@ -85,6 +85,8 @@ Tundra 的可擺清單是設計期寫死的 FormID；本系統改用**遊戲內�
 | `tags[]` | 功能/身份標籤 → 掛到 ref/cell 的 keyword | 既有 KYWD 生成 + FormListInject | `Spec.FormListInject.cs` 等 |
 | `npcRoles[]` | `{ actorRef, role, backstory }`（§D 的核心新欄）| **§D `SceneNpcRoleSpec` macro**（下節，唯一 net-new schema）| 重用 SettlementVendorSpec/package/conditioned-Hello |
 | `removals[]` | 橡皮擦法術標記要移除的**既有 vanilla ref**（`<master>:0xFORMID`）| **✅ `BuildRemovals`**（GetOrAddAsOverride + InitiallyDisabled + 深埋）| 已落地 2026-07-08 |
+| `overrides[]` | numpad 編輯器 commit 過的**既有 ref 新 transform** | **✅ `OverrideSpec` / `BuildOverrides`** | 已落地 2026-07-11（下面「既有 ref 的 override 形狀」節）|
+| `references[]` | referrer（`sc ref`）標記的**既有 ref 身份＋自由 label**（檔內 placement editorId，或外部 `<master>:0xFORMID`）| **✅ `ReferenceSpec` / `BuildReferences`**——label 註冊成可解析的名字，任何 ref 欄位可指它；檔內目標強制 persistent；外部 temporary → 警告＋`anchor` 逃生門 | 已落地 2026-07-12（下面「referrer 的形狀」節）|
 | `cell` / `worldspace` | 快照的目標 cell（override 目標）| **`CellSpec`** override + worldspace override | `Spec.World.cs`/[[worldspace-override-must-carry-topcell]] |
 
 → **落點裁決**：`placements`/`mapMarkers`/`hazards`/`tags`/`cell` 段 **ModForge 今天就能吃**（採集橋只要吐對形狀）。**唯一 net-new 的 ModForge schema = `npcRoles[]` 這一段的角色 macro**（下節）。
@@ -164,6 +166,60 @@ position/rotation（度）必填＝新的完整 transform（不是 delta）；`s
 #### 「怎麼知道 ref 被移動過」——不能用 diff，維持明示模型（已照此實作）
 
 `TESObjectREFR::GetPosition()` 的定義**就是** `return data.location;`（`TESObjectREFR.h:405`）——引擎回報的是**當前**位置，不是 authored 值，且 havok 會自己移動東西（杯子從桌上滾下來），純 diff 會吐出一堆假的 override。所以與 removals 決策同構走**明示**：只有**經過 numpad 編輯器 commit** 的 authored ref 才進 `Overrides` 登記簿（`src/Overrides.{h,cpp}`，比照 Eraser），匯出時 emit live pose（commit 後物理沉降照實）。登記簿在 RAM：**關遊戲重開後，移動過的 pose 活在存檔裡但不會自動重新登記**——重新編輯一次（numpad 5 → 微調 → 0）即可，MVP 接受此限制（README「持久化與 adopt」表有列）。revert 按鈕回到 first-select baseline（havok 已滾動過的物件，baseline 是滾動後的 pose——不影響匯出，只影響 revert 落點）。
+
+---
+
+### ✅ 拍板（2026-07-12）：referrer 的形狀＝頂層 `references[]`（ModForge 消費端已落地）
+
+**問題**（backlog「📌 pointer/referrer 原語」）：marker 標的是**空座標**（「這裡放東西」）；referrer 標的是**一個已存在 ref 的身份**（vanilla 椅子，或玩家自己 `sc pl` 擺的椅子）＋自由標籤，好讓下游 spec 拿標籤去引用它（例：給 Sofia 的 sandbox package 一個「sofia 的椅子」錨點）。
+
+**定案形狀**（`Spec.References.cs` / `Generator.Build.References.cs` / `Generator.Validate.References.cs`，2026-07-12 C# 端全鏈落地）：
+
+```json
+"references": [
+  { "ref": "MFRef_SofiaChair",          // (乙) 檔內 placements[] 的 editorId
+    "label": "sofia's chair",           // 必填、全 spec 唯一
+    "base": "Skyrim.esm:0x0B9C04",
+    "worldspace": "Skyrim.esm:0x00003C",
+    "position": { "x": 18700, "y": -12700, "z": -4590 },
+    "rotation": { "x": 0, "y": 0, "z": 180 },
+    "note": "she should always come back to this one" },
+
+  { "ref": "Skyrim.esm:0x0D1991",       // (甲) 外部既有 vanilla ref
+    "label": "skulvar's hoe",
+    "base": "Skyrim.esm:0x02F2F4",
+    "worldspace": "Skyrim.esm:0x00003C",
+    "position": { "x": 19265.9, "y": -12816.5, "z": -4603.4 },
+    "anchor": "replace" }               // persistent 逃生門（見下）
+]
+```
+
+**核心語意＝`label` 是一個「可解析的名字」**：build 把它註冊進 pass-2 的 editorId→FormKey 表（`formKeyByEd`），所以 **spec 裡任何一個 ref 欄位都能直接寫這個 label** —— package 的 `sandbox.location` / `travel.place`、quest alias 的 `forced:`、`linkedRefs.target`、`enableParent.ref`、objective target、script Form property。消費站點**零改動**。ModForge **不生成**該 ref（唯一例外＝下面的 anchor）。三兄弟並列：`removals[]` 擦掉既有、`overrides[]` 移動既有、`references[]` **命名**既有。
+
+**兩類目標（backlog 🔑 洞察，語意不同）：**
+
+| | (乙) 檔內相依 | (甲) 外部既有 ref |
+|---|---|---|
+| `ref` | 同檔 `placements[]` 的 **editorId** | `<master>:0xFORMID` |
+| 誰擁有它 | **我們**（玩家 `sc pl` 擺的，exporter 寫進 placements[]） | vanilla / 他 mod |
+| persistent | build **強制** persistent（0x400 ＋ cell 的 Persistent group；機制同 linkedRefs target / package anchor） | 看它自己 |
+| 🔴 坑 | 無——**乾淨路徑** | vanilla 場景物件多為 **temporary** → 不是可靠的 specific-reference 目標 |
+| 離線可測 | ✅ | ❌（要 master link cache 查 0x400） |
+
+**🔴 persistent 坑的處置（甲路徑）**：build 用 master link cache 解出該 ref，檢查 record header 的 **0x400 persistent flag**：
+
+- 有 → 無警告，label 直接指它。
+- 沒有 → **明確警告**（temporary ref；quest alias 的 specific-reference fill / package SingleRef target 可能撐不過 save/load），label 仍指它（不靜默丟）。
+- `anchor` ＝逃生門，**ModForge 在該點放自己的 persistent 錨點**：
+  - `"marker"` → 該座標生一支 **persistent XMarkerHeading**（0x400），**label 綁到 marker**。適用「只需要一個*地點*」（sandbox / travel / patrol 錨點）。
+  - `"replace"` → 用 `base` 在該點生**我們自己的 persistent 複製品**（同 base/transform），**label 綁到複製品**，並把 vanilla 原件**自動加進 removals**（disable＋深埋，避免兩張椅子疊在一起）。適用「錨點必須*就是那個物件*」（坐**那張**椅子）。
+  - 乙路徑上設 `anchor` ＝ validate 報錯（本來就是我們的、本來就 persistent）。
+
+**Build 順序**（`Build.cs`）：`BuildPlacements` → `BuildMapMarkers` → **`BuildReferences`** → `BuildOverrides` → `BuildRemovals` → 全部 wire 步驟。必須在 placements 之後（檔內目標要先存在）、在 wire 之前（label 才解析得到）。`references[]` 為空時**不生任何記錄**（行為不變）。
+
+**DLL 端（scene-capture-bridge）還缺的**：`sc ref` / `sc refc` 指令＋ References 面板頁；exporter 要偵測 referrer 目標 handle **∈ 本次匯出的 placements** → 給該 placement 發一個穩定 editorId、`references[].ref` 指那個 editorId（**否則 dynamic FormID 不可攜、build 後對不上**）；目標是外部既有 ref 時照記耐久 `<plugin>:0xLOCALID` ＋ `base` ＋座標＋（可得的話）rotation/scale，`anchor` 的選擇權留給 ModForge/agent。
+
+**範例**：`examples/scene-references.json`（乙路徑端到端：椅子 placement → reference label → Sofia 的 sandbox package 以 label 當 location；build 出的 esp 裡 package slot 0 ＝ `LocationTarget(該椅子 REFR)`，椅子落在 cell 的 Persistent group 且帶 0x400）。測試：`tests/ModForge.Core.Tests/ReferencesTests.cs`。
 
 ### ✅ 拍板（2026-07-12，使用者）：**場景匯出不含 NPC** ＋ **captures 拆成獨立檔**
 

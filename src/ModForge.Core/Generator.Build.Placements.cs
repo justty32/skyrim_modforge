@@ -18,6 +18,11 @@ public static partial class Generator
                                                                        // living NPC's ref MoveTo'd around) must
                                                                        // persist or the engine drops it
                     .Concat(MerchantContainerRefs())   // the merchant chest holds gold/stock — must persist
+                    // a references[] target (the in-game referrer's IN-FILE path: "sofia's chair" IS this
+                    // placement) — the whole point of naming it is that something else can target it, so it
+                    // must survive save/load. This is what makes the clean path clean: the object is ours,
+                    // so "an alias/package can point at it" is satisfied by construction.
+                    .Concat(spec.References.Select(r => r.Ref))
                     // "alias:"/"aliasLoc:" refs name a quest alias, not a placement — exclude them.
                     .Where(r => !string.IsNullOrWhiteSpace(r) && !LooksExternalRef(r) && !TryParseAliasRef(r, out _, out _)),
                 StringComparer.OrdinalIgnoreCase);
