@@ -169,9 +169,6 @@ void __stdcall UI::EraserPage::Render() {
     ImGuiMCP::SameLine();
     if (ImGuiMCP::Button("clear (re-enable all)")) { ::Eraser::Clear(); }
     ImGuiMCP::SameLine();
-    // Trees/architecture the crosshair never sees — explicit entry, see Aim.h.
-    if (ImGuiMCP::Button("erase by ray")) { ::Eraser::MarkByRay(); }
-    ImGuiMCP::SameLine();
     ImGuiMCP::Checkbox("this cell only", &thisCellOnly);
     ImGuiMCP::Separator();
 
@@ -202,11 +199,6 @@ void __stdcall UI::CapturesPage::Render() {
         "(-> capturedNpcs[], unique NPCs included) and capture it for ModForge to "
         "rebuild. (`sc cap` mode, action key; `sc cap er0/er1` crosshair/ray)",
         caps.size());
-    if (ImGuiMCP::Button("capture crosshair")) { ::Captures::CaptureCrosshair(); }
-    ImGuiMCP::SameLine();
-    // Trees/architecture the crosshair never sees — explicit entry, see Aim.h.
-    if (ImGuiMCP::Button("capture by ray")) { ::Captures::CaptureByRay(); }
-    ImGuiMCP::SameLine();
     if (ImGuiMCP::Button("clear")) { ::Captures::Clear(); }
     ImGuiMCP::SameLine();
     // Own file (captures_<stamp>.json), separate from any scene export — same
@@ -255,8 +247,6 @@ void __stdcall UI::PalettePage::Render() {
     ImGuiMCP::Text("%zu slot(s). Pick mode (sc pk) eyedrops the crosshair "
                    "target; place mode (sc pl) spawns the selected slot where "
                    "you aim. Slots persist across saves.", slots.size());
-    // Trees/architecture the crosshair never sees — explicit entry, see Aim.h.
-    if (ImGuiMCP::Button("pick by ray")) { ::Palette::PickByRay(); }
 
     // Named palette file (in the SKSE folder). Two load flavours, one save:
     //   load from file (append)  — the file's slots land ON TOP, keeping yours
@@ -334,7 +324,6 @@ void __stdcall UI::EditorPage::Render() {
             "target (numpad * ray-selects trees/statics the crosshair "
             "misses). Your own refs export their live pose; an authored "
             "(vanilla/mod) ref becomes an overrides[] entry when you commit.");
-        if (ImGuiMCP::Button("select by ray")) { ::Editor::SelectByRay(); }
     } else {
         ImGuiMCP::Text("Editing: %s", st.name);
         ImGuiMCP::BulletText("pos (%.1f, %.1f, %.1f)", st.pos.x, st.pos.y, st.pos.z);
@@ -350,7 +339,6 @@ void __stdcall UI::EditorPage::Render() {
                 "numpad: 8/2 fwd/back - 4/6 left/right - 1/3 down/up - 7/9 yaw - "
                 "+/- scale - 5 reset - 0 commit - . cancel  (sc ed ax = rotate mode)");
         }
-        if (ImGuiMCP::Button("cancel (restore)")) { ::Editor::Cancel(); }
     }
 
     // Committed edits of AUTHORED refs — these export as overrides[]. Revert

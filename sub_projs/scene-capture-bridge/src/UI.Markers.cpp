@@ -91,10 +91,6 @@ void __stdcall UI::MarkersPage::Render() {
     auto& all = ::Markers::All();
     ImGuiMCP::Text("%zu marker(s). Marker mode (sc mk): the action key places "
                    "a gem where you aim; E on a gem opens its editor.", all.size());
-    if (ImGuiMCP::Button("place marker here")) {
-        ::Markers::PlaceAtPlayer();   // hotkey-free path — immune to key conflicts
-    }
-    ImGuiMCP::SameLine();
     if (ImGuiMCP::Button("adopt this cell")) {
         // Recover markers from a previous session: their proxies + display
         // names live in the savegame, only this registry was lost.

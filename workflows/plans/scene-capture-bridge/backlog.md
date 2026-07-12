@@ -6,6 +6,19 @@
 
 ---
 
+## ✅ 已做（F1 面板清掉冗餘動作鈕，2026-07-12，DLL crc `6498c57b`，**已部署**，待實機）
+- **逐頁盤點後砍掉 7 顆「按一下就在世界裡執行一個動作」的按鈕**（P5 `sc` console 指令＋每模式鍵位落地後，這些面板觸發鈕與 mode+action key 完全重複）：
+  - Markers 頁 `place marker here`（`Markers::PlaceAtPlayer`，只放腳下）→ 已被 `sc mk` 模式的動作鍵取代（`Markers::PlaceAimed`，準星瞄準＋無命中自動落腳下，一鍵蓋兩種情境）。
+  - Eraser 頁 `erase by ray` → `sc del er1`（切射線）＋動作鍵，同一個 `Eraser::MarkByRay()`。
+  - Captures 頁 `capture crosshair` / `capture by ray` → `sc cap` 模式（預設 er0=準星）／`sc cap er1`＋動作鍵，同一組 `Captures::CaptureCrosshair/CaptureByRay()`。
+  - Palette 頁 `pick by ray` → `sc pk er1`＋動作鍵，同一個 `Palette::PickByRay()`。
+  - Editor 頁 `select by ray` → `sc ed er1`＋動作鍵，或永遠可用的 numpad `*`（`Editor.h` 原文即標「numpad * is the key equivalent」），同一個 `Editor::SelectByRay()`。
+  - Editor 頁 `cancel (restore)`（編輯中）→ numpad `.`／Del（`Editor::Cancel()`，面板文字本來就寫著「. cancel」）。
+  - 每顆都核對過 `Console.cpp` 指令表＋`Modes.cpp` 的 `RunAction`／`Editor::HandleKey` 派送，確認底層函式仍被 mode+key 路徑呼叫（**只拔 UI 觸發，不動邏輯**）；`Markers::PlaceAtPlayer()` 拔完按鈕後在 DLL 內已無其他呼叫者，**保留原函式**（宣告在 `Markers.h`，非 static，無 unused-function 警告，之後若要救援回來成本為零）。
+- **留下的**：Export 三鈕（Export player cell / Export all / Export captures，產出檔案不是改世界，且面板是**唯一**入口，`sc` 沒有 export 指令）；各頁的逐列 undo/revert/del（Eraser 的 `undo`/`clear (re-enable all)`、Captures 的 `undo`/`clear`、Editor 的 `revert`/`revert all`——這些是**復原**既有動作，不是「觸發新世界動作」，且都**沒有 `sc` 替代路徑**）；Markers 頁 `adopt this cell`（跨 cell 孤兒救援，無 `sc` 對應指令，co-save 只在同 cell 自動跑）；marker 編輯視窗 `delete marker`（`sc del` 明文拒收 marker gem，唯一刪除入口）；Palette 的 `[use]`／rename／`del`／三顆檔案 I/O 鈕（`load from file`/`replace from file`/`save to file`，無 `sc` 對應）；References/Markers 的改名/kind/note/apply/del；Settings 頁模式切換鈕與各項顯示。
+- **邊界檢查**：backlog 原文提醒的「palette『place slot N』」類按鈕在目前面板**不存在**（每列只有 `[use]` 選取＋`del`，沒有逐列「place」鈕），故無需請示。
+- 純 C++（`sub_projs/scene-capture-bridge/src/UI.cpp`、`UI.Markers.cpp`），未碰 C#；`build-release-clang-cl-linux` 編過（撞到 stale cache，`rm -rf build/release-clang-cl-linux` 後重編成功）。
+
 ## ✅ 已做（模式開關套件：`py`／`ed`／`pkc` 五項，2026-07-12，DLL crc `5434abd4`，**已部署**，待實機）
 - **`sc pl py0/py1`（擺放物理，`py1` 預設）＋ `sc ed py0/py1`（編輯期物理，`py0` 預設）**。DLL 端凍結複用 P3 機制（抽成新的 `src/Physics.{h,cpp}`：`HavokMovable` 判定 ＋ `FreezeDeferred` 延後到 3D 載入才凍；Markers/Editor 原本各抄一份，現三處共用，**行為不變**）。`sc ed py0` ＝把現行凍結行為做成可切；`py1` ＝控制期間 havok 照跑。
 - **🔑 持久到 esp ＝「Don't Havok Settle」記錄旗標（查證後拍板，不走 script `SetMotionType`）**：`PlacementSpec.NoHavokSettle` → REFR header flag **`0x20000000`**。**決定性證據**（Mutagen 直接掃 Skyrim.esm，非推論）：693,333 個 PlacedObject 裡 **3,791 個帶此旗標**，base 型別分佈正是雜物類——MoveableStatic 995／MiscItem 724／Activator 564／Weapon 321／**Static 247**／Ingestible 245／Armor 159／Ammo 141／Flora 102／Ingredient 96／Book 87／Container 56…（樣本 `GlazedPot02Nordic`、`RuinsFloorCandleStandSmall`、`CrateOpen`）⇒ **Bethesda 自己擺完雜物就是靠它定住的**。它跳過的正是 **cell 載入時的 havok settle pass**（把手擺物件彈飛的元兇，物件與桌面稍有交疊時尤烈）。成本：純 record header 旗標、與 `Persistent 0x400`／`InitiallyDisabled 0x800` 同一條 code path，**零 script／零 VMAD／零 pex／不多 master**；script 路要給每顆 ref 掛 Papyrus（VMAD＋pex＋OnCellAttach），工程量爆炸只換來「連玩家撞都推不動」的邊際差異，且那是 runtime 狀態、沒 script 跑就不存在。
@@ -68,7 +81,6 @@
 - **`sc cap` 物件類 vs `sc pk` 分工（使用者再想，先照舊）**：`sc cap` 記 NPC/player 含全身物品＋extra data（v7 已落地）；物件類 capture 與 `sc pk` 滴管感覺功能重複，使用者還要想想——**傾向仍記錄**，暫不動。
 - **📌 導航網格（navmesh）——「超重要，之後得開始考慮」（使用者 2026-07-11 晚）**：編輯器流程目前完全沒碰 navmesh——擺出的建築/障礙物會擋住 vanilla navmesh 但 NPC 照原網格走（穿模/卡住），marker 生的 NPC 若落在無網格處也不會動。ModForge 已有程式化 navmesh 能力可接（custom worldspace NAVM＋NAVI additive override Skyrim.esm:0x12FB4 in-game 驗過，見 idea/asset-pipelines/map-scene/geometry.md 一帶＋Vigilant.esm 解碼參考）；難點在**編輯 vanilla cell**：要 override 既有 NAVM（cut/finalize 語意）而不只是新建。方向未定（DLL 端記錄擺放物 footprint → ModForge 端裁切？或先只處理「新增小平台補網格」？），需要時開獨立 plan。
   - **✅ 已開獨立 plan（2026-07-12）：[plans/navmesh.md](../navmesh.md)**——兩個結論：① **「擺的東西擋住 NPC」根本不必改 navmesh**：用 vanilla 的 **L_NAVCUT 碰撞體積**（`CollisionMarker` 0x000021 ＋ `CollisionLayer=49` ＋ Primitive box，**HearthFires 蓋房子用了 1220 筆**）就能 runtime 裁切，純 Mutagen 一筆 REFR（⚠️ 光加 Obstacle flag 無效——L_STATIC 不是 NavmeshObstacle 層）。② **「NPC 走上新平台」非寫 NAVM 不可，而 override vanilla NAVM 可行**（Mutagen no-op override 離線 byte-diff ＝ IDENTICAL；USSEP 807 筆真的這麼幹；NAVI 是加法式 merge 不是地雷）；鐵律＝**永不重新編號 triangle**（鄰居的 EdgeLink 存的是你的 triangle index）。分期 P1 診斷 → P2(T2.0) navcut → P0 spike → P3 add+link → P4 遊戲內採集。
-- **F1 面板清掉冗餘動作鈕（使用者 2026-07-11 晚）**：各頁面上諸如 "place marker here" / "erase by ray" / "pick by ray"… 這類動作觸發鈕都刪掉——現在這些動作全走 `sc` console 指令＋鍵位（P5 模式制之後 UI 觸發已多餘）。面板保留設定/檢視/清單類（改名、kind、逐列 undo、步長、palette 列表…），只砍「在面板按一下就執行世界動作」那批。動工時逐頁盤點哪些是動作鈕、哪些是設定項。
 - **紅/綠半透明輪廓高亮**（使用者第二輪：`sc del dp1` 被刪物件紅框、`sc pl dp1` 新增物件綠框，顏色/透明度 Settings 可調）——**較難、非必做**（需 render/shader 或 highlight 效果）。
 - marker 編輯視窗下拉：寶石種類 ＋ 發光開關（需 SceneCaptureTools.esp 多個 ACTI 變體或動態換 model，較大工程）。
 - rebind 重作（找出 in-game 抓錯鍵主因：可能是 rebind armed 當幀把移動鍵也吃進去；目前 Settings 隱藏、固定 F11）。
