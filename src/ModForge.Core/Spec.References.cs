@@ -7,8 +7,19 @@ namespace ModForge;
 // they placed with `sc pl` — and tags it with a free-form label ("sofia's chair"). ModForge does NOT
 // author these refs (they exist already, or they are in this same file's `placements[]`); it consumes
 // them as ANCHORS: the `label` becomes a name usable in EVERY "ref" field of the spec (a package's
-// sandbox `location` / travel `place`, a quest alias `forced:`, `linkedRefs`, `enableParent`, an
+// sitTarget `target` / travel `place`, a quest alias `forced:`, `linkedRefs`, `enableParent`, an
 // objective target, a script Form property …).
+//
+// 🔴 WHICH SLOT YOU PUT THE LABEL IN DECIDES WHETHER IT LOCKS ONTO THAT ONE OBJECT.
+//   SingleRef TARGET slots (sitTarget.target, activate.target, follow.target, patrol.start,
+//     escort.target) → PackageTargetSpecificReference(FormKey): the engine acts on THAT REF, period.
+//   LOCATION slots (sandbox.location, travel.place, sleep.location, eat.location) → LocationTarget +
+//     radius: an AREA anchored at that ref's position; the engine then picks whatever furniture/bed/
+//     food it likes INSIDE the radius.
+// So `sandbox.location: "sofia's chair"` does NOT mean "sit in that chair" — it means "hang around
+// where that chair is", and she may sit in a DIFFERENT chair, with NO warning and NO error (builds
+// clean, dumps clean, wrong in-game). For "she must use THAT object" always use a SingleRef slot.
+// Worked example with a control group: examples/referrer-chair-anchor.json.
 //
 // SIBLINGS: `removals[]` (erase existing), `overrides[]` (move existing), `references[]` (NAME
 // existing). All three carry an EXISTING ref; none of them creates the thing they point at (the one

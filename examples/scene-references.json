@@ -1,7 +1,9 @@
 {
   "pluginName": "SceneReferencesExample.esp",
   "esl": true,
-  "_comment": "Idea #24 referrer (`sc ref`) — `references[]` NAMES an existing placed ref so the rest of the spec can point at it by `label`. The third sibling of `removals[]` (erase existing) and `overrides[]` (move existing): none of them creates the thing it points at. THIS FILE DEMOS THE CLEAN 'IN-FILE' PATH (plan backlog 🔑): the player placed a chair in-game with `sc pl` (so the exporter emitted it into placements[] with a stable editorId), then aimed at it with `sc ref` and typed a label. ModForge OWNS that object, so build FORCES IT PERSISTENT (0x400 + the cell's Persistent group) — which is exactly what 'a package/alias can target this ref' requires. The label then works in ANY ref field: here Sofia's sandbox package is anchored on 'sofia's chair' with a 128-unit radius + allowSitting, so she keeps coming back to sit in THAT chair. The OTHER path (`ref` = a vanilla \"<master>:0xFORMID\") is shown in the last entry: vanilla scenery is usually a TEMPORARY ref (a poor specific-reference target), so build warns and `anchor` lets you author a persistent stand-in — \"marker\" (an XMarkerHeading at the spot: a PLACE to sandbox/travel to) or \"replace\" (our own persistent copy of the object + a removal of the vanilla original: the anchor IS the object). Coords = the flat Whiterun-stables tundra (ground Z=-4590, same verified spot as scene-export-blacksmith).",
+  "_comment": "Idea #24 referrer (`sc ref`) — `references[]` NAMES an existing placed ref so the rest of the spec can point at it by `label`. The third sibling of `removals[]` (erase existing) and `overrides[]` (move existing): none of them creates the thing it points at. THIS FILE'S JOB is the EXTERNAL (甲) path + the `anchor` escape hatch (the last references[] entry) — for the clean IN-FILE (乙) path end-to-end, and for the ONLY pattern that actually pins an NPC to ONE SPECIFIC object, read `examples/referrer-chair-anchor.json` instead (that one is the shipped in-game proof, with a control chair). Here: the player placed a chair in-game with `sc pl` (so the exporter emitted it into placements[] with a stable editorId), then aimed at it with `sc ref` and typed a label. ModForge OWNS that object, so build FORCES IT PERSISTENT (0x400 + the cell's Persistent group) — which is exactly what 'a package/alias can target this ref' requires. The label then works in ANY ref field. Coords = the flat Whiterun-stables tundra (ground Z=-4590, same verified spot as scene-export-blacksmith).",
+
+  "_which_slot_you_put_the_label_in_decides_everything": "⚠️ A label gives you a NAME; whether it LOCKS ON TO THAT ONE OBJECT depends on WHICH SLOT you put it in. A package **SingleRef target** slot (sitTarget.target, activate.target, follow.target, patrol.start, escort.target) becomes a `PackageTargetSpecificReference(FormKey)` — the engine acts on THAT REF, no other. A package **location** slot (sandbox.location, travel.place, sleep.location, eat.location) becomes a `LocationTarget` — it anchors an AREA at that ref's position, and the engine then picks whatever furniture/food/bed it likes INSIDE `radius`. So `sandbox.location: \"sofia's chair\"` does NOT mean 'sit in that chair' — it means 'hang around where that chair is', and she may well sit in a DIFFERENT chair nearby, with NO warning and NO error. For 'she must use THAT object' always use a SingleRef slot (below: sitTarget). This example used to anchor Sofia with `sandbox.location` — it built, it dumped clean, and it could never have proved anything in-game. That is exactly the failure mode this note exists to stop.",
   "npcs": [
     {
       "editorId": "MFRefSofia",
@@ -18,14 +20,14 @@
   "packages": [
     {
       "editorId": "MFRefSofiaSit",
-      "template": "Skyrim.esm:0x01C254",
-      "_comment": "Sandbox. `location` is the LABEL from references[] — that is the whole point of the primitive. A tight radius + allowSitting = 'sandbox around that chair', which is how vanilla makes an NPC habitually use one piece of furniture.",
-      "sandbox": {
-        "location": "sofia's chair",
-        "radius": 128,
-        "allowSitting": true,
-        "allowWandering": false,
-        "allowSleeping": false
+      "template": "Skyrim.esm:0x0A9277",
+      "_comment": "SitTarget ('walk to and use THAT furniture'). `target` is the LABEL from references[] — that is the whole point of the primitive, and a SingleRef slot is what makes the label bind to ONE REF: build emits `PackageTargetSpecificReference(<the chair's FormKey>)`. No quest alias needed. See the `_which_slot_...` note at the top for why `sandbox.location` is NOT a substitute here.",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [ "HellosToPlayer", "ObserveCombatBehavior", "ReactionToPlayerActions" ],
+      "sitTarget": {
+        "target": "sofia's chair",
+        "waitTime": 0,
+        "stopMovement": false
       }
     }
   ],
