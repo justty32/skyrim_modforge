@@ -50,6 +50,7 @@ public static partial class Generator
         ctx.ValidateOverrides();
         ctx.ValidateReferences();
         ctx.ValidateNavCuts();
+        ctx.ValidateNavmeshOverrides();
         ValidateWeather(spec, ctx.Problems, ctx.Ids, ctx.CheckRef);
         ValidateLights(spec, ctx.Problems);
         ValidateLighting(spec, ctx.Problems);

@@ -15,7 +15,44 @@
 
 ## 待測（active）
 
+- **🧪 navmesh P0 — no-op override 證偽實驗（2026-07-12 交付 `~/skyrim_mods/mine/ModForgeNavmeshNoop.zip`，FLAT，**非 ESL**，只吃 Skyrim.esm）**
+  計畫：[plans/navmesh.md](../workflows/plans/navmesh.md)。spec：`examples/navmesh_noop_spike_spec.json`。**可以跟 T2.0 一起測**（兩份 esp 互不衝突：navcut 那份只加一顆盒子，這份只搬 navmesh）。
+
+  **這份 esp 裡什麼都沒有——只有 10 張「原封不動的 vanilla navmesh」。** 沒 NPC、沒擺放、沒腳本。離線已逐位元組確認：這 10 張的 NVNM 與 Skyrim.esm 裡的**一個 byte 都不差**（`navdiag` 驗的，vanilla 那側直接讀 esm 原始位元組）。
+
+  **問題**：引擎肯不肯用「來自 plugin 的 navmesh」？**這是整條 navmesh 路線的地基**——過了，才談得上之後「裁掉你蓋房子那塊」「補一塊平台讓 NPC 走上去」；沒過，NAVM 這條路直接作廢。
+
+  **裝**：MO2 裝 zip → 啟用 → **load order 排最後（USSEP 之後）**。
+  > ⚠️ 一定要排在 USSEP 後面，不然 USSEP 贏、我們的記錄根本沒被用到＝白測。代價：USSEP 也修過我們這 10 張裡的 7 張（白漫外景那批），排在它後面等於**暫時把那 7 張退回 vanilla 版**——測試用 plugin，**測完把它移除**就好。
+
+  **不需要新遊戲**，既有存檔直接進（沒有對話、沒有 `.seq`）。
+
+  **走三個點看：**
+  ```
+  coc WhiterunBanneredMare        ← ① 內裝（1 張網格，318 個三角形，2 個 door triangle）
+  coc WhiterunPlainsDistrict01    ← ② 白漫大門進來那段（Warmaiden's 前）
+  coc WhiterunPLainsDistrict03    ← ③ 白漫大街（Breezehome→市集；是的 Bethesda 自己把 L 打成大寫）
+  ```
+
+  **成功長什麼樣**：**什麼都沒發生。** 三個地方的 NPC 全部照常走動——
+  - ① Bannered Mare：Hulda 在吧台後面繞、Saadia 端酒穿過大廳、Mikael 走到火爐邊彈琴、客人進進出出。
+  - ②③ 白漫大街：衛兵**照常來回巡邏**、路人走上走下、小孩跑來跑去；**大街上的 NPC 會走進/走出 Breezehome、Bannered Mare 的門**（door triangle 有沒有活著就看這個）。
+  - 從大門一路走到市集（跨 ②→③ 兩個 cell）：NPC 跟你一樣**跨得過 cell 邊界**，不會走到邊界就卡住。
+  - 不 CTD、地圖正常、白漫的名字還在。
+
+  **失敗長什麼樣**（這就是「引擎拒收」的樣子——**沉默、沒有錯誤訊息、通常也不 CTD**）：
+  - **那個 cell 的 NPC 全部站著不動**／原地踏步／卡在原地轉圈。Bannered Mare 裡的人全部釘在原地，衛兵不再巡邏。
+  - 或者：NPC 會動，但**走到門口就不進門**、**走到 cell 邊界就停住**（＝ door triangle / 跨 mesh 連結掉了）。
+  - 或者：一進白漫就 CTD（最壞情況，附 CrashLoggerSSE log）。
+
+  > ⏳ 剛 `coc` 進去 NPC 可能要幾秒才「醒」——等個 10-20 秒再判斷。**對照組就是你自己的記憶**：把 esp 停用再進同一個地方，走法應該一模一樣。
+
+  **順手多測（可選）**：console `tnm`（toggle navmesh info）畫不畫得出網格？畫得出的話往後每一階段的驗收都快十倍。
+
+  **回報**：① 三個地方的 NPC 有沒有照常走（尤其**衛兵巡邏**和 **Bannered Mare 的人**）；② 有沒有人卡在門口/cell 邊界；③ 有沒有 CTD；④ 白漫大地圖/地圖標記/名字正不正常；⑤ `tnm` 有沒有反應。
+
 - **🧪 navmesh T2.0 — navcut 證偽實驗（2026-07-12 交付 `~/skyrim_mods/mine/ModForgeNavcutSpike.zip`，FLAT，ESL，只吃 Skyrim.esm）**
+  > **2026-07-12 重新出貨過一次**（內容不變，只修了一個既有 bug：我們的 WhiterunWorld override 少帶 `FULL` → 會把「Whiterun」這個 worldspace 名字清空）。**請用最新的 zip**（MO2 重裝一次）。
   計畫：[plans/navmesh.md](../workflows/plans/navmesh.md)。spec：`examples/navcut_spike_spec.json`。
 
   **這是要「證偽」的實驗，不是展示。** 問題：ModForge 生的 **L_NAVCUT 碰撞體積**（vanilla 蓋房子用的那套：base `CollisionMarker` + `CollisionLayer=49` + XPRM box）到底能不能在 runtime 把 vanilla navmesh 關掉，讓 NPC 繞開？**繞得開 → 整個症狀①（NPC 穿過你蓋的房子）就此結案，NAVM 都不用碰。走不動搖 → 這條路死，我改走 NAVM cut。**

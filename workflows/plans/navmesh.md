@@ -11,7 +11,14 @@
 > | **P1 診斷警告** | ✅ **已落地**（`Generator.Build.NavmeshIndex.cs` ＋ `Generator.Build.NavmeshCheck.cs`；症狀①②③全覆蓋；離線優雅降級＝完全沉默）|
 > | **T2.0 navcut spike** | ✅ 已出貨 → **🎮 等實機**（`~/skyrim_mods/mine/ModForgeNavcutSpike.zip`；驗收步驟見 [wait_todo/ingame-tests](../../wait_todo/ingame-tests.md)）|
 > | **`navCuts[]` 契約 ＋ 自動裁切** | ✅ **已落地**（`Spec.NavCuts.cs` / `Generator.Build.NavCuts.cs`；使用者拍板的欄位形狀見 §7-2）|
-> | P0 / P2.1 / P3 / P4 | 未動（照原順序） |
+> | **P0 — T0.1 `navdiag`** | ✅ **已落地**（`Diagnostics.Navmesh.cs`；GO/NO-GO 閘已跑：**10/10 NVNM byte-identical**，見下）|
+> | **P0 — `navmeshOverrides[]` 契約 ＋ no-op override** | ✅ **已落地**（`Spec.NavmeshOverrides.cs` / `Generator.Build.NavmeshOverrides.cs`；形狀見 §7-5）|
+> | **P0 — T0.2 上機** | ✅ 已出貨 → **🎮 等實機**（`~/skyrim_mods/mine/ModForgeNavmeshNoop.zip`；`examples/navmesh_noop_spike_spec.json`；驗收見 wait_todo）|
+> | P2.1 / P3 / P4 | 未動（照原順序） |
+>
+> **P0 的離線證據（2026-07-12，正式化的 T0.1）**：`navdiag out/ModForgeNavmeshNoop.esp` → **10 張 NAVM 全部 `IDENTICAL`**（Bannered Mare 10582B、白漫大街 0x105319 **33428B**〔1106 triangle / 41 跨 mesh EdgeLink / 10 door triangle〕、其餘 8 張）。**vanilla 那一側不經 Mutagen**：直接掃 Skyrim.esm 的 NAVM record header → zlib 解壓（vanilla NAVM 帶 Compressed flag 0x40000）→ 走子記錄取 NVNM 原始 bytes。（拿 Mutagen 的輸出比 Mutagen 的輸出證明不了任何事。）group 結構也已 raw-dump 確認：內裝 `CELL→GRUP6→GRUP9→NAVM`、外景 `WRLD→GRUP1→TopCell(flags 0x40400)→GRUP4→GRUP5→CELL→GRUP6→GRUP9→NAVM`，**零 NAVI 記錄**，masters 只有 Skyrim.esm。
+>
+> **順手修掉的既有 bug（會同時影響 T2.0）**：`WorldspaceOverride` 沒帶 master 的 `Name`(FULL) → 我們的 WhiterunWorld override 會把「Whiterun」這個名字**清空**（本地地圖/存檔位置）。成因是那段程式寫在 `MasterCache` 還沒 provision 英文 STRINGS 的年代（只硬編碼了 Tamriel）。現在讀得到就直接帶。**`ModForgeNavcutSpike.zip` 已用同一份修正重新出貨**（內容不變，只多了名字）。
 >
 > **三個實作時發現、與原文不同的事實**（原文照舊留著，這裡是修正）：
 > 1. **XPRM `Bounds` ＝ 全尺寸，不是半徑**。原文 §3 的 `Bounds = (187, 170, 60)` 抄自 HearthFires `004104`，但沒說那是半徑還是全寬。**已用 vanilla 判定**：`00410D` 的盒是 116×52.8×46.9，而它包的那口箱子（`TreasBanditChestEMPTY`）OBND 是 96×49×48 —— 三軸比值 0.98–1.2，是**貼著箱子的全尺寸盒**；若為半徑則盒會是箱子的 2.4 倍。→ ModForge 的 `size` **1:1 寫進 Bounds**。
@@ -143,15 +150,16 @@ new PlacedObject {
 
 驗收欄標記：**〔離線〕**＝我自己驗得完；**🎮**＝只有使用者能驗（實機）。
 
-### P0 — 最小可證偽 spike：`navdiag` ＋ no-op override 上機（**格式層已在離線過關，這階段是把它釘死**）
+### ✅ P0 — 最小可證偽 spike：`navdiag` ＋ no-op override 上機（**已落地 2026-07-12，🎮 等實機**）
 
-- **T0.1〔離線〕** `navdiag` CLI 子命令（比照既有 `landdiag`/`questdiag`）：
-  - `navdiag <plugin> <cellRef>` → 印該 cell 的 NAVM 清單：FormID / 頂點數 / triangle 數 / edgeLinks（＋對端 mesh）/ doorTriangles / grid divisor / Min-Max / cover 數 / parent 種類。
-  - `navdiag roundtrip <cellRef>` → no-op override → 寫檔 → **NVNM 逐位元組比對 vanilla**，印 IDENTICAL/DIFF。**這是 GO/NO-GO 閘**（已預跑：兩個樣本都 IDENTICAL）。
-  - `navdiag under <cellRef> <x> <y> [z]` → 該點正下方/最近的 triangle（距離、triangle index、頂點高度）。**P1 的診斷靠它。**
-  - 驗收〔離線〕：對 `01605E`（Bannered Mare）、`0009BB9`（白漫外景）跑 roundtrip ＝ IDENTICAL；新增測試 `NavmeshTests`（標 `RequiresSkyrim`）。
-- **T0.2 🎮** 出一份**只含 no-op NAVM override**（內裝一張＋外景一張，什麼都不改）的 esp → 進遊戲：**不 CTD、NPC 在該 cell 照常走動、開/關門正常**。
-  - **這一步證明的事**：我們重新序列化的 NVNM 被引擎接受、parent chain（CELL/WRLD override）沒有副作用。**沒過就整條 B 路線作廢**，直接退回 C ＋ D。
+- **✅ T0.1〔離線〕`navdiag`**（`src/ModForge.Cli/Diagnostics.Navmesh.cs`，比照既有 `landdiag`/`questdiag`）：
+  - `navdiag <plugin>` → 列出 plugin 內每張 NAVM（FormID / 頂點 / triangle〔含 Deleted 數〕/ **跨 mesh EdgeLinks** / doorTriangles / cover / grid bytes＋divisor / Min-Max / parent 種類 / record flags），**並把每張「override 了 master」的 NVNM 與 master 的原始位元組逐 byte 比對** → `IDENTICAL` / `DIFF (first difference at byte N)`；有 DIFF 就 **exit 1**。**這就是 GO/NO-GO 閘。**
+  - `navdiag <esm> <0xCELL>` / `navdiag <esm> <0xWRLD> <x> <y>` → 偵察某個 vanilla cell 有哪些網格（挑實驗地點就是用它挑的）。
+  - **關鍵設計**：vanilla 那一側**不經 Mutagen**——自己掃 record header、zlib 解壓、走子記錄找 NVNM（含 XXXX 超長度）。若兩側都用 Mutagen 序列化，那只證明 `DeepCopy` 穩定，**證不了 Mutagen 的 parse 沒丟東西**。
+  - **✅ 驗收〔離線〕**：`ModForgeNavmeshNoop.esp` 的 **10/10 IDENTICAL**（含 33428B 的白漫大街網格）。測試 `NavmeshOverrideTests.cs`（逐 triangle/vertex/EdgeLink/grid blob 比對；`RequiresSkyrim`）。
+- **✅ T0.2 🎮 已出貨**：`examples/navmesh_noop_spike_spec.json` → `~/skyrim_mods/mine/ModForgeNavmeshNoop.zip`。整份 esp **只有** 10 張原封不動的 vanilla NAVM（Bannered Mare 內裝 ＋ 白漫外景 (5,-2)/(5,-3)）——**沒 NPC、沒擺放、沒腳本**，所以失敗只有一個可能成因。`esl:false`（U7 是另一顆未知數，不混進實驗）。驗收步驟／成功失敗長相見 [wait_todo/ingame-tests](../../wait_todo/ingame-tests.md)。
+  - **這一步證明的事**：我們重新序列化的 NVNM 被引擎接受、parent chain（CELL/WRLD override）沒有副作用、NAVI 不必補（U4）、鄰居 cell 不必動（U5——(5,-3)→(5,-2) 是「我們的網格→我們的網格」，(5,-2)→(6,-2) 是「我們的→vanilla 的」，兩個方向都在測）。**沒過就整條 B 路線作廢**，直接退回 C ＋ D。
+  - ⚠️ **載入順序**：要當贏家才測得到 → **排在 USSEP 之後（最後）**。代價：**USSEP 也 override 了我們 10 張裡的 7 張**（0x105319/0x051575/0x037DE2/0x05BEF2/0x0941E3/0x05156A/0x05156C），排在它後面等於把那 7 張暫時退回 vanilla 版。測試用 plugin，測完移除即可——但這正是 **U10** 的實例：**NAVM 沒有加法式合併，後蓋前**。（未來若要對外出貨，build 應該警告「這張 navmesh 已被 X 動過」。）
 
 ### ✅ P1 — 診斷與警告（**已落地 2026-07-12**）
 
@@ -223,7 +231,7 @@ new PlacedObject {
 
 | # | 假設 | 影響 | 怎麼驗 |
 |---|---|---|---|
-| **U1** | Mutagen NVNM 讀寫無損 | 全部 | ✅ **已驗**（離線 byte-diff，2 個樣本 IDENTICAL） |
+| **U1** | Mutagen NVNM 讀寫無損 | 全部 | ✅ **已驗**（正式化為 `navdiag`：**10/10 IDENTICAL**，vanilla 側直接讀 Skyrim.esm 原始 bytes、不經 Mutagen） |
 | **U2** | 引擎的尋路**尊重 triangle 的 Deleted flag**（不走它） | **P2 的全部** | 🎮 P2 驗收（白漫擺牆）。不成立 → 內裝改真刪＋修 DoorTriangle index；外景退回路線 A/D |
 | **U3** | 改幾何後把 NavmeshGrid 換成 divisor=1 單桶（或自建 divisor² 桶）引擎能接受 | P3 | 🎮 P3 驗收；先用 `navdiag` 確認自建 grid 的 byte layout 與 vanilla 同構 |
 | **U4** | override 既有 NAVM 時**不必**碰 NAVI（vanilla NVMI 條目仍有效） | P2/P3 的複雜度 | 🎮 P0/P2 驗收時觀察。不成立 → 補 NVMI（`Unknown=0x00`），機制已有（`WriteNaviInfoMap`） |
@@ -281,6 +289,26 @@ new PlacedObject {
 **「自動」的三道 guard（缺一不可，這是它敢預設開的原因）**：① 物件（非 ACHR/hazard）；② 落在 **vanilla** cell/worldspace（自建 cell 沒有 vanilla 網格可裁）；③ **真的蓋到 ≥1 個 live 三角形**（沒東西可裁就不生記錄）。→ 只在**真的會出事**的地方生記錄，而且第③條讓**離線機（無 Skyrim.esm）＝零產出＝位元不變**。
 
 **還有一條需要你點頭**：`autoNavCuts` **預設 true** 表示既有 spec 只要在 vanilla 世界擺了大體積物件，下次 build 就會多出 navcut REFR。這正是拍板要的行為（也正是那些 mod 一直有的 bug），但它會**改動既有已出貨 mod 的產物**。若你想「先觀望到 T2.0 實機過了再開」，把 `Spec.NavCuts.cs` 的 `AutoNavCuts` 預設改成 `false` 即可（一行）。
+
+### ✅ 5. `navmeshOverrides[]` 的欄位形狀（P0 落地，2026-07-12）
+
+與 `removals[]`/`overrides[]`/`references[]`/`navCuts[]` 同一家族——**碰「既有世界」的操作住頂層**：
+
+```jsonc
+"navmeshOverrides": [
+  { "cell": "Skyrim.esm:0x01605E" },                          // vanilla 內裝：該 cell 的每一張 NAVM
+  { "worldspace": "Skyrim.esm:0x01A26F", "x": 5, "y": -2 },   // 外景：一格 cell（x/y ＝ **格座標**，不是世界單位）
+  { "worldspace": "Skyrim.esm:0x01A26F",                      // …或用格內任一點指定那一格
+    "position": {"x":21750,"y":-7625,"z":0} },
+  { "cell": "Skyrim.esm:0x01605E",
+    "navmesh": "Skyrim.esm:0x0C9064" }                        // 只挑一張（cell 內可能有很多張）
+]
+```
+
+- **同 FormKey ＝ override**（不是新記錄）→ vanilla 的 NVMI 條目、鄰居的 EdgeLink、door portal 全部照樣指得到。
+- **NAVI 不碰**（U4）。**離線＝零產出零警告**。**in-spec cell 直接 validate 擋掉**（自己的 cell 沒有 vanilla 網格可 override，那是 P3）。
+- **實作刻意不用 Mutagen 的 `GetOrAddAsOverride` parent chain**——那會讓 Mutagen 自己造 CELL/WRLD override；我們的 `WorldspaceOverride`/`CopyWorldspaceEnv` 帶著兩顆炸過的地雷的疤（LandDefaults / EDID+RNAM / TopCell 的 record flags / **不帶 OFST**）。走 `ExteriorCell()` 就全部繼承，而且保證每個 cell/worldspace 在輸出裡**只有一個** override 物件。
+- **P2/P3 就長在這個契約上**：同一筆 entry 之後加 `cut`/`patch` 欄位即可，鐵律（永不重新編號）已經由「逐元素照抄」的實作與測試釘死。
 
 ### 3. 內裝先行？（未拍板）
 

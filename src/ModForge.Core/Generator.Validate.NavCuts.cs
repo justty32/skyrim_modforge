@@ -61,5 +61,42 @@ public static partial class Generator
                     Problems.Add($"{who} is an NPC (ACHR) — a navcut cuts the ground an actor WALKS on, it is never put on an actor");
             }
         }
+
+        // navmeshOverrides[] — re-emit a VANILLA navmesh unchanged (Spec.NavmeshOverrides.cs). It only
+        // ever targets something that already exists in a master, so every target must be an external
+        // ref, and an exterior target must say WHICH grid cell.
+        public void ValidateNavmeshOverrides()
+        {
+            for (int i = 0; i < spec.NavmeshOverrides.Count; i++)
+            {
+                var no = spec.NavmeshOverrides[i];
+                string who = $"navmeshOverride[{i}]";
+                bool ext = !string.IsNullOrWhiteSpace(no.Worldspace);
+                bool inr = !string.IsNullOrWhiteSpace(no.Cell);
+
+                if (ext && inr)
+                    Problems.Add($"{who}: has BOTH cell and worldspace (a navmesh lives in one or the other)");
+                else if (!ext && !inr)
+                    Problems.Add($"{who}: needs a vanilla `cell` (<master>:0xFORMID, interior) or a `worldspace` + grid (exterior)");
+
+                if (ext)
+                {
+                    if (!LooksExternalRef(no.Worldspace))
+                        Problems.Add($"{who}: worldspace must be a vanilla <master>:0xFORMID ref — an in-spec worldspace's navmesh is authored by ModForge already, there is nothing to override");
+                    if ((no.X is null || no.Y is null) && no.Position is null)
+                        Problems.Add($"{who}: an exterior target needs `x`+`y` (cell grid coords) or a `position` inside the cell");
+                    if (no.X is not null ^ no.Y is not null)
+                        Problems.Add($"{who}: `x` and `y` are a pair — give both (they are CELL GRID coords, not world units)");
+                }
+                if (inr && !LooksExternalRef(no.Cell))
+                    Problems.Add($"{who}: cell must be a vanilla <master>:0xFORMID ref — an in-spec cell has no vanilla navmesh to override");
+                if (!string.IsNullOrWhiteSpace(no.Navmesh) && !LooksExternalRef(no.Navmesh))
+                    Problems.Add($"{who}: navmesh must be a vanilla <master>:0xFORMID ref");
+
+                CheckRef(no.Cell, $"{who} cell");
+                CheckRef(no.Worldspace, $"{who} worldspace");
+                CheckRef(no.Navmesh, $"{who} navmesh");
+            }
+        }
     }
 }

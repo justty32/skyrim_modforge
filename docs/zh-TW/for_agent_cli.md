@@ -33,7 +33,10 @@ $R apply    <plugin.esp> <strings.json> <out.esp>     # write targets back (Lati
 $R applyloc <plugin.esp> <strings.json> <outModDir>   # CJK: Localized UTF-8 <plugin>_chinese.STRINGS
 $R gen      <out.esp>                         # demo plugin (sanity check the toolchain)
 $R smtree   <Skyrim.esm>                      # list Story Manager event roots (find an event root FormID)
+$R navdiag  <plugin.esp>                      # 列出 plugin 內每張 NAVM，並把每張 override 的 NVNM 與 master 逐位元組比對（IDENTICAL / DIFF）。用了 navmeshOverrides[] 就跑這個
 ```
+
+不帶參數執行 `$R` 會列出完整指令表——大多數記錄族都有對應的 `*diag` 探針（`questdiag`／`packagediag`／`landdiag`／`navdiag`…），把單一記錄的欄位印出來，方便拿你生的跟同類 vanilla 記錄比對。
 
 `--no-build` 需要先做過一次 `dotnet build`；不確定時就拿掉它（較慢）。
 

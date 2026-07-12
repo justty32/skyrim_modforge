@@ -87,10 +87,14 @@ public static partial class Generator
                 top.MajorRecordFlagsRaw = srcTop.MajorRecordFlagsRaw;   // <-- the persistent-cell flag (THE fix)
                 ws.TopCell = top;
             }
-            // Headless can't resolve the master's LOCALIZED worldspace Name; an omitted Name makes the
-            // override blank it -> saves/HUD show "unknown location". Restate a plain Name for known
-            // worldspaces. (TODO: a spec field for arbitrary worldspaces.)
-            if (wsFk.ModKey.Name.Equals("Skyrim", StringComparison.OrdinalIgnoreCase) && wsFk.ID == 0x00003C)
+            // The worldspace Name (FULL) is a LOCALIZED string, and an override that omits it BLANKS it
+            // (the engine takes the whole record from the winning plugin) -> the local map / save-game
+            // location loses "Whiterun". MasterCache now provisions the vanilla English .STRINGS
+            // (ProvisionStrings), so the master's real name resolves headless and we simply carry it.
+            // The hardcoded "Skyrim" stays as the fallback for a master whose strings we could not
+            // provision — Tamriel is the one worldspace where a blank name is unmissable.
+            if (src?.Name is { } srcName) ws.Name = srcName.DeepCopy();
+            else if (wsFk.ModKey.Name.Equals("Skyrim", StringComparison.OrdinalIgnoreCase) && wsFk.ID == 0x00003C)
                 ws.Name = "Skyrim";
             mod.Worldspaces.Add(ws);
             worldspaceOverrides[wsFk] = ws;

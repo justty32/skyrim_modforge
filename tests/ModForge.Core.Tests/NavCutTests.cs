@@ -231,7 +231,12 @@ public class NavCutTests
         // A 520 x 51 x 350 Whiterun stockade wall dropped across the Whiterun main street: footprint
         // 26520 units² (> minFootprint 10000) and 350 tall (> minHeight 100), and it sits on live
         // vanilla navmesh. That is the whole "NPCs walk through my new house" case.
+        //
+        // autoNavCuts must be turned ON explicitly: the user ruled "auto + opt-out", but the DEFAULT
+        // stays false until the T2.0 spike proves L_NAVCUT actually diverts an NPC in-game (see
+        // NavmeshSpec.AutoNavCuts). Flip that default and this line becomes redundant, not wrong.
         var s = new ModSpec { PluginName = "MFNav.esp" };
+        s.Navmesh.AutoNavCuts = true;
         s.Placements.Add(new PlacementSpec
         {
             EditorId = "Wall", Base = "Skyrim.esm:0x0DCD68", Worldspace = WhiterunWorld,

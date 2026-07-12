@@ -121,6 +121,9 @@ public static partial class Generator
         ctx.BuildRemovals();                       // disable+bury EXISTING vanilla placed refs (Idea #24 §E eraser) — after overrides so a removal wins on overlap
         ctx.BuildNavCuts();                        // L_NAVCUT collision volumes so NPCs path AROUND what we placed
                                                    // (explicit navCuts[] + the auto box for blocking placements)
+        ctx.BuildNavmeshOverrides();               // re-emit a vanilla cell's NAVM(s) from our plugin, unchanged
+                                                   // (P0 no-op override) — after the placement/navcut passes so it
+                                                   // reuses the SAME cell/worldspace override objects they made
         ctx.WireDeferredForcedAliases();           // forced alias fills whose target (placement/xmarker/mapMarker) built just now
         ctx.WireLinkedRefs();                      // XLKR between placements (patrol routes)
         ctx.WireTeleportDoors();                   // load-door XTEL teleport pairs (player walk-through links)

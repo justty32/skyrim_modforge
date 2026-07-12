@@ -211,6 +211,7 @@ public static partial class Generator
                     NewExteriorCells = exteriorNewCells + terrainCellsBuilt,
                     NavmeshCells = navmeshCellsBuilt,
                     NavCuts = navCutsBuilt,
+                    NavmeshOverrides = navmeshOverridesBuilt,
                     Regions = regionsBuilt,
                     EncounterZones = spec.EncounterZones.Count,
                     WordWalls = wordWallsBuilt,

@@ -77,6 +77,7 @@ public sealed class BuildStats
     public int NewExteriorCells { get; init; }
     public int NavmeshCells { get; init; }
     public int NavCuts { get; init; }              // L_NAVCUT volumes emitted (explicit navCuts[] + auto)
+    public int NavmeshOverrides { get; init; }     // vanilla NAVMs re-emitted unchanged (navmeshOverrides[] — P0 no-op)
     public int Regions { get; init; }
     public int EncounterZones { get; init; }
     public int WordWalls { get; init; }

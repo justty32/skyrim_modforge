@@ -52,6 +52,7 @@ public sealed class ModSpec
     public List<ReferenceSpec> References { get; set; } = new(); // NAME an EXISTING placed ref (in-file placements[] editorId, or a vanilla <master>:0xFORMID) so any other ref field can point at it by `label`. The in-game referrer (`sc ref`) feeds this. See Spec.References.cs / Generator.Build.References.cs
     public List<AnnotationSpec> Annotations { get; set; } = new(); // in-game editor marker anchors (Idea #24 P1; Spec.Annotations.cs) — ADVISORY ONLY, build never turns these into records; a human/agent reads them to author the next round
     public List<NavCutSpec> NavCuts { get; set; } = new(); // L_NAVCUT collision volumes: cut vanilla navmesh at runtime so NPCs path AROUND what you placed (Spec.NavCuts.cs / Generator.Build.NavCuts.cs)
+    public List<NavmeshOverrideSpec> NavmeshOverrides { get; set; } = new(); // re-emit a VANILLA cell's NAVM(s) from our plugin, unchanged (no-op override). P0 of the navmesh plan: proves the engine accepts a navmesh that arrives from a patch. See Spec.NavmeshOverrides.cs / Generator.Build.NavmeshOverrides.cs
     public NavmeshSpec Navmesh { get; set; } = new();      // knobs for the navmesh diagnostics + the auto navcut (Spec.NavCuts.cs)
     public List<MapMarkerSpec> MapMarkers { get; set; } = new();   // world-map markers (XMRK on MapMarker static)
     public List<LeveledItemSpec> LeveledItems { get; set; } = new();

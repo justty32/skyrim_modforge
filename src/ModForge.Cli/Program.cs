@@ -55,6 +55,9 @@ internal static partial class Program
                 case "climatediag" when args.Length == 3: return ClimateDiag(args[1], args[2]);
                 case "worlddiag" when args.Length == 3: return WorldDiag(args[1], args[2]);
                 case "landdiag" when args.Length is 2 or 3 or 4: return LandDiag(args[1], args.Length >= 3 ? args[2] : null, args.Length == 4 ? int.Parse(args[3]) : 1);
+                case "navdiag" when args.Length == 2:  return NavDiag(args[1], null, null, null);
+                case "navdiag" when args.Length == 3:  return NavDiag(args[1], args[2], null, null);
+                case "navdiag" when args.Length == 5:  return NavDiag(args[1], args[2], int.Parse(args[3]), int.Parse(args[4]));
                 case "regndiag" when args.Length == 3: return RegnDiag(args[1], args[2]);
                 case "eczndiag" when args.Length == 3: return EcznDiag(args[1], args[2]);
                 case "refpos" when args.Length == 3: return RefPos(args[1], args[2]);
@@ -113,6 +116,7 @@ internal static partial class Program
         "  cobjdiag <in.esp> <0xFORMID>                 print a recipe's (COBJ) createdObject/count/workbench/components/conditions\n" +
         "  txstdiag <in.esp> [0xFORMID]                 a TextureSet's 8 texture-map slots+flags (no id: list all TXST)\n" +
         "  landdiag <in.esp> [wsEditorId] [maxCells]    dump LAND texture layers (BTXT/ATXT quad+layer+tex, VTXT pts) — byte-verify vs vanilla\n" +
+        "  navdiag <in.esp> [0xCELL | 0xWRLD <x> <y>]   dump NAVM geometry (verts/tris/cross-mesh edges/door tris/grid); with no id, byte-diffs every overridden NAVM's NVNM against its master (the navmesh GO/NO-GO gate)\n" +
         "  texexport <dataDir> <outDir> <master:0xLTEX>[,…]  LTEX→diffuse .dds from texture BSAs → PNG (Godot WYSIWYG terrain)\n" +
         "  nifexport <dataDir> <outDir> <master:0xFORMID>[,…]  placeable base→model .nif from mesh BSAs (Godot WYSIWYG objects; convert via nif2gltf)\n" +
         "  texpath <dataDir> <outDir> <texPath>[,…]     extract arbitrary texture path(s) from BSAs → <basename>.png (textures a model's glTF)\n" +

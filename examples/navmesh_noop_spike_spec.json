@@ -1,0 +1,25 @@
+{
+  "pluginName": "ModForgeNavmeshNoop.esp",
+  "esl": false,
+
+  "_": "P0 NO-OP NAVMESH OVERRIDE (workflows/plans/navmesh.md) — a FALSIFICATION experiment, not a feature. This plugin contains NOTHING but ten vanilla navmeshes re-emitted from our .esp with not one byte changed (verify: `navdiag ModForgeNavmeshNoop.esp` prints IDENTICAL for all ten). No NPC, no placement, no script — nothing that could independently break anything. THE QUESTION: does the engine accept a NAVM that arrives from a plugin instead of from Skyrim.esm, with the NAVI info-map still describing it from the master and the CELL/WRLD dragged in as overrides? PASS = Whiterun's NPCs walk exactly as they always did (the plugin is invisible). FAIL = the NPCs in these three cells stop moving — that is what a rejected navmesh looks like: silent, no error, no CTD, just people rooted to the spot. If it fails, the whole B route of the plan (P2 cut / P3 add) is dead and we fall back to L_NAVCUT + the CK. esl:false on purpose — ESL safety for navmesh overrides is a SEPARATE unknown (U7); a plain .esp removes that variable from this experiment.",
+
+  "navmeshOverrides": [
+    {
+      "_": "INTERIOR — the Bannered Mare. One NAVM (0x0C9064: 298 verts / 318 triangles / 2 door triangles / 0 cross-mesh edge links). The safe beachhead: an interior mesh has no links into neighbouring meshes, so if ANYTHING here is fragile it is fragile in the simplest possible case. Also the densest, most legible NPC traffic in the game — Hulda walks her circuit behind the bar, Saadia serves tables, Mikael crosses to the fire to play. If the mesh is rejected they all freeze where they stand.",
+      "cell": "Skyrim.esm:0x01605E"
+    },
+    {
+      "_": "EXTERIOR — WhiterunWorld grid (5,-2), 'WhiterunPLainsDistrict03' (yes, Bethesda capitalised the L). SIX navmeshes, including 0x105319: 849 verts / 1106 triangles / 41 CROSS-MESH EDGE LINKS / 10 DOOR TRIANGLES. This is the hard case on purpose: 41 of its triangle indices are held by neighbouring cells' meshes (renumber one and the neighbours point at the wrong triangle — the iron rule), and 10 door triangles are what let an NPC decide to use Breezehome's / the Bannered Mare's door at all. The main street from Breezehome up to the market: guards patrol it around the clock, and it is where the T2.0 navcut spike's NPCs stand.",
+      "worldspace": "Skyrim.esm:0x01A26F",
+      "x": 5,
+      "y": -2
+    },
+    {
+      "_": "EXTERIOR — WhiterunWorld grid (5,-3), 'WhiterunPlainsDistrict01' (3 navmeshes; 0x051575 = 378 verts / 519 triangles / 15 edge links / 2 door triangles). The stretch inside the main gate past Warmaiden's. Chosen BECAUSE it is adjacent to (5,-2): an NPC walking from the gate to the market crosses from one of OUR meshes into another of OUR meshes, and one walking on east to (6,-2) crosses from OURS into a VANILLA one. That exercises U5 (a mesh we re-emit still stitches to its neighbours) in both directions.",
+      "worldspace": "Skyrim.esm:0x01A26F",
+      "x": 5,
+      "y": -3
+    }
+  ]
+}

@@ -82,16 +82,18 @@
 | Build P2 | `Generator.Build.Placements.cs` | 室內/室外/vanilla-override 放置，position/rotation，persistent flag，cell 錨定；**`kind:xmarker/xmarkerHeading` → 空 base 自動填 `Skyrim.esm:0x3B`/`0x34` STAT + 強制 persistent**（quest-target 錨點）；**base 是 in-spec HAZD（或 `kind:"hazard"`）→ 建 `PlacedHazard`（`.Hazard` 而非 `.Base`）**；**Scale(XSCL) / InitiallyDisabled(0x800) / NoHavokSettle(0x20000000＝DontHavokSettle，跳過 cell 載入時的 havok settle pass，手擺的雜物才不會被彈飛；vanilla Skyrim.esm 有 3791 個 REFR 帶它；**REFR only**，ACHR 不寫) / EnableParent(XESP) / Lock(XLOC) / Ownership(XOWN) / Count(ItemCount XCNT)**；`ParseLockLevel` helper 在 `Generator.Helpers.cs` |
 | Build P2 | `Generator.Build.MapMarkers.cs` | **`BuildMapMarkers`**：每筆 → MapMarker static（`0x10`）上的 `PlacedObject` + XMRK `MapMarker`(Name/Type/Flags)，放進 worldspace **持久 TopCell**（`WorldspacePersistentCell`），registered 進 formKeyByEd 故可被 `forced:` alias 抓 |
 | Build P2 | `Generator.Build.PlacementRefs.cs` | linked-ref 對 + teleport-door XTEL 接線（deferred）|
-| Build P2 | `Generator.Build.ExteriorCells.cs` | 室外 worldspace cell group tree（block/sub-block 按 grid 坐標）；**`WorldspaceOverride` 加性帶上 master 持久 TopCell（`CopyCellEnv`、不重述 vanilla ref）否則 vanilla 地圖標記全消失+大地圖空白**；**`WorldspacePersistentCell`** 回 worldspace 持久 cell 給地圖標記 |
+| Build P2 | `Generator.Build.ExteriorCells.cs` | 室外 worldspace cell group tree（block/sub-block 按 grid 坐標）；**`WorldspaceOverride` 加性帶上 master 持久 TopCell（`CopyCellEnv`、不重述 vanilla ref）否則 vanilla 地圖標記全消失+大地圖空白**；**帶 master 的 `Name`(FULL)**——override 少了它就把該 worldspace 的名字**清空**（本地地圖/存檔顯示不出「Whiterun」；`MasterCache` 已 provision 英文 STRINGS 所以現在讀得到，Tamriel 的硬編碼只留作 fallback）；**`WorldspacePersistentCell`** 回 worldspace 持久 cell 給地圖標記 |
 | Validate | `Generator.Validate.World.cs` | linked-ref target、teleport pairs、worldspace boundary |
 | Diag | `Diagnostics.Dump.World.cs` | placements / cells / linked-refs / navmesh dump |
 
 ---
 
-## Navmesh — navCuts（讓 NPC 繞開你擺的東西）＋ P1 診斷
+## Navmesh — navCuts（讓 NPC 繞開你擺的東西）＋ P1 診斷 ＋ navmeshOverrides（P0 no-op）
 → **說明文件**：[SPEC-world.md § navmesh](../../../docs/spec/SPEC-world.md#navmesh--why-npcs-walk-into-your-house-and-how-to-stop-them) · 計畫 [plans/navmesh.md](../../plans/navmesh.md)
 
-Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任何錯誤訊息**）；vanilla navmesh 不知道你新蓋的房子＝NPC 直接穿牆。兩件事：**runtime 裁切**（`navCuts[]`，路線 A）＋ **build 時警告**（P1）。**不動 NAVM 記錄**（那是 plan 的 P3）。
+Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任何錯誤訊息**）；vanilla navmesh 不知道你新蓋的房子＝NPC 直接穿牆。三件事：**runtime 裁切**（`navCuts[]`，路線 A）＋ **build 時警告**（P1）＋ **no-op NAVM override**（`navmeshOverrides[]`，P0——把 vanilla 網格原樣搬進我們的 esp，證明引擎收得下「來自 patch 的 navmesh」，這是 P2 cut / P3 add 的地基）。
+
+**🔴 鐵律：永不重新編號 triangle。** 鄰居 cell 的 NAVM 的 EdgeLink 存的是**你這張網格的 triangle 陣列下標**——重排一次，整條 cell 邊界就錯位（CK Finalize 會重編號，所以它被迫連鄰居一起存；社群「navmesh 不能在 CK 外改」的真正成因）。no-op override 逐元素照抄，未來 P2/P3 只能**尾端 append ＋ Deleted flag**。
 
 **🔴 兩段閘門（別搞錯）**：`Obstacle` record flag(bit 25) **單獨無效**——引擎是看**碰撞層**，vanilla 55 個 COLL 只有 6 層帶 `NavmeshObstacle`（L_ANIMSTATIC/CLUTTER/PROPS/DEBRIS_LARGE/TRANSPARENT_SMALL_ANIM/**L_NAVCUT(49)**），**L_STATIC(1) 不在內**（一般房子/牆/石頭正是 L_STATIC）→ 「複製 STAT ＋ 加 flag」完全無效。
 
@@ -99,14 +101,19 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 |-----|-----|-----|
 | Spec | `Spec.NavCuts.cs` | `NavCutSpec`（editorId/cell/worldspace/**placement**/position＝**box 中心**/size＝**全尺寸非半徑**/rotationZ°/padding）＋ `PlacementNavCutSpec`（enabled/size/offset/padding，帶 `PlacementNavCutConverter` → JSON 收 `false`/`true`/物件三形）＋ `NavmeshSpec`（warnings/autoNavCuts/minFootprint/minHeight/padding/warnEmptyCells）|
 | Spec | `Spec.World.cs` | `PlacementSpec.NavCut`（**省略＝依體積自動**、`false`＝不裁、`true`＝硬裁、物件＝手調）＋ `PlacementSpec.NavmeshCheck`（false＝這筆 ACHR 是**刻意**擺在網格外，關掉診斷；`livingNpcs` 的 off-stage 停車位用）|
-| Spec | `Spec.cs` | `ModSpec.NavCuts` + `ModSpec.Navmesh` |
+| Spec | `Spec.NavmeshOverrides.cs` | `NavmeshOverrideSpec`（cell＝vanilla 內裝／worldspace＋**x,y＝cell 格座標**（或 position 選格）／navmesh＝只挑一張）＋ 為什麼要 no-op、鐵律、NAVI 為何不碰 |
+| Spec | `Spec.cs` | `ModSpec.NavCuts` + `ModSpec.NavmeshOverrides` + `ModSpec.Navmesh` |
 | Build P2 | `Generator.Build.NavCuts.cs` | **`BuildNavCuts`**（`Build.cs` 在 `BuildRemovals` 後呼叫）：每個 box → `PlacedObject`{Base=**CollisionMarker `Skyrim.esm:0x000021`**、**`CollisionLayer=49`**、`Primitive`{Box, Bounds=size+2×padding, Color=255,255,0, Unknown=0.15}}，進 cell 的 **Temporary**（**不 persistent**——Skyrim.esm 自己的 441 個靜態 navcut 都是 temporary；exterior 走 persistent 會拖出 worldspace TopCell 的地圖地雷）。**auto**：placement 是 PlacedObject ＋ 在 **vanilla** cell/worldspace ＋ OBND 過門檻 ＋ **真的蓋到 ≥1 個 live 三角形** 才生（三個 guard 缺一不可；最後一條也讓**離線＝零產出＝位元不變**）。欄位已 byte-verify vs HearthFires 1003 筆 ＋ Skyrim.esm 441 筆 |
 | Build P2 | `Generator.Build.NavmeshIndex.cs` | **navmesh 幾何讀取**（RequiresSkyrim 領域）：`NavTrisAt(cell, ws, pos, builtCell)` → vanilla 內裝（`ICellGetter.NavigationMeshes`，**cell-local**）/ vanilla 外景（`FindMasterExteriorCell` **3×3 鄰域**，**world**——邊界點常被鄰居網格蓋住）/ 自建 worldspace（我們自己的 flat quad）/ 自建內裝（`NoTris`＝**已知空**）。座標系天生對得上 `PlacementSpec.Position`，零轉換。跳過帶 `Deleted` flag 的三角形。**`null` ＝「不知道」（無 link cache）→ 呼叫端一律沉默**（鐵律①）。幾何：`InTri2D`/`TriZAt`/`DistToTri2D`/`NearestTri` |
 | Build P2 | `Generator.Build.NavmeshCheck.cs` | **`CheckNavmesh`**（`Build.cs` **最後**呼叫，**只出警告、零記錄**）：**②** ACHR 不在任何三角形上／離地太高 → 「這個 NPC 不會動」；**①** blocking placement 蓋住 vanilla 三角形但沒被任何 navcut box 蓋掉 → 「NPC 會走進去」；**③** `removals[]`/`overrides[]` 動到的大物件**頂面有 navmesh** → 「NPC 會走在空氣上」。`navmesh.warnings:false` 全關；`placements[].navmeshCheck:false` 單筆關 |
-| Validate | `Generator.Validate.NavCuts.cs` | `ValidateNavCuts`：box 需 position+size+cell/worldspace（或 `placement`）、size 三軸 >0、padding ≥0、cell/worldspace 互斥、`placement` 不可再帶 cell/worldspace/position、navCut 不可掛在 ACHR 上、`enabled:false` 卻帶 size/offset/padding ＝矛盾 |
+| Build P2 | `Generator.Build.NavmeshOverrides.cs` | **`BuildNavmeshOverrides`**（`Build.cs` 在 `BuildNavCuts` 後呼叫）：解出 vanilla cell → `nm.DeepCopy()` 進**我們自己的 cell override**（`VanillaCellOverride` / `ExteriorCell`），**同 FormKey ＝ override**。**刻意不用 Mutagen 的 `GetOrAddAsOverride` parent chain**——那會讓 Mutagen 自己造 CELL/WRLD override，而我們的 `WorldspaceOverride`/`CopyWorldspaceEnv` 帶著兩顆地雷的疤（LandDefaults 不帶＝淹世界、EDID/RNAM 不帶＝地圖白/壞、TopCell 的 record flags 不帶＝CTD、OFST 帶了＝檔案錯位）。**NAVI 完全不碰**（FormID 沒變，vanilla NVMI 仍指得到＝U4）。**無 Skyrim.esm ＝零產出零警告** |
+| Validate | `Generator.Validate.NavCuts.cs` | `ValidateNavCuts`：box 需 position+size+cell/worldspace（或 `placement`）、size 三軸 >0、padding ≥0、cell/worldspace 互斥、`placement` 不可再帶 cell/worldspace/position、navCut 不可掛在 ACHR 上、`enabled:false` 卻帶 size/offset/padding ＝矛盾。**`ValidateNavmeshOverrides`**：cell/worldspace 二選一、必須是 vanilla 外部 ref（in-spec cell 沒有 vanilla 網格可 override）、外景要 x+y（成對）或 position |
+| Diag | `Diagnostics.Navmesh.cs`（CLI） | **`navdiag`** ＝ P0 的 GO/NO-GO 閘。`navdiag <esp>` 列出每張 NAVM（頂點/三角/**跨 mesh EdgeLinks**/door tri/cover/grid divisor/min-max/record flags）**並把每張 override 的 NVNM 與 master 的原始位元組逐 byte 比對**（`IDENTICAL`/`DIFF`，DIFF ＝ exit 1）。vanilla 那一側**不經 Mutagen**——直接掃 Skyrim.esm 的 NAVM record header、zlib 解壓（vanilla NAVM 帶 Compressed 0x40000）、走子記錄找 NVNM（含 XXXX 超長度）——否則就是拿 Mutagen 的輸出比 Mutagen 的輸出，什麼都證不了。`navdiag <esm> <0xCELL>` / `navdiag <esm> <0xWRLD> <x> <y>` ＝ 偵察某個 vanilla cell 有哪些網格 |
 | Example | `examples/navcut_spike_spec.json` | **T2.0 證偽實驗**（白漫大街 A/B 對照：同樣的 NPC/package/marker/告示牌，只差一顆 navcut box）。14 個座標全部**讀 Skyrim.esm 的 navmesh 挑出來**（marker 不會貼地，猜 z ＝ patrol 靜默失效）|
-| Tests | `NavCutTests.cs` | 記錄形狀（base/layer 49/Box/黃色/0.15/temporary）、size＝全尺寸、padding 三軸外脹、`navCut` 的 bool/物件 JSON 三形、validate 5 條、**離線＝零 navcut**；RequiresSkyrim：auto 裁大牆、跳過雜物、尊重 `false`、`autoNavCuts:false` 改成警告、`navCuts[].placement` 包 OBND |
+| Example | `examples/navmesh_noop_spike_spec.json` | **P0 證偽實驗**：整份 esp **只有** 10 張 vanilla NAVM 原樣搬過來（Bannered Mare 內裝 ＋ 白漫外景 (5,-2)/(5,-3)）。沒 NPC 沒擺放沒腳本＝失敗只有一個可能成因。`esl:false`（ESL 安全性是另一顆未知數 U7，不混進來）|
+| Tests | `NavCutTests.cs` | 記錄形狀（base/layer 49/Box/黃色/0.15/temporary）、size＝全尺寸、padding 三軸外脹、`navCut` 的 bool/物件 JSON 三形、validate 5 條、**離線＝零 navcut**；RequiresSkyrim：auto 裁大牆（**要先 `navmesh.autoNavCuts=true`**——預設是 false）、跳過雜物、尊重 `false`、`autoNavCuts:false` 改成警告、`navCuts[].placement` 包 OBND |
 | Tests | `NavmeshCheckTests.cs` | 自建內裝預設沉默＋`warnEmptyCells` 開了才講、每 cell 只警告一次、總開關、**無 master ＝ 完全沉默**；RequiresSkyrim：白漫街上站好＝沉默／離網格＝警告／浮空＝警告／刻意 off-stage 可 `navmeshCheck:false` 豁免／大牆未裁＝警告／有 navcut ＝閉嘴／雜物永不吵；**spike spec 本身必須零警告＋剛好 1 顆 navcut** |
+| Tests | `NavmeshOverrideTests.cs` | **無 master ＝零記錄零警告**、validate 3 條；RequiresSkyrim：同 FormKey ＋ record flags(0x40000) ＋ 掛在 vanilla cell override 下、**逐 triangle/vertex 比對 vanilla（含 EdgeLink 三欄、grid blob、divisor、door tri、min/max）＝一個索引都沒動**、**零 NAVI 記錄**、外景 6 張全搬且 WRLD override 帶 EDID/RNAM/**FULL**/TopCell(0x40400)、**無 OFST**、`navmesh` 只挑一張＋同 cell 列兩次只搬一次、空 cell 要警告 |
 
 ---
 

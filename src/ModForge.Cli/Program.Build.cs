@@ -31,6 +31,11 @@ internal static partial class Program
             // L_NAVCUT volumes (Spec.NavCuts.cs) — vanilla navmesh is switched OFF inside each box at
             // runtime, so NPCs path around what we placed instead of walking into it.
             Console.WriteLine($"{result.Stats.NavCuts} navCut volume(s) — vanilla navmesh cut at runtime (L_NAVCUT / CollisionMarker)");
+        if (result.Stats.NavmeshOverrides > 0)
+            // Vanilla NAVMs re-emitted UNCHANGED (Spec.NavmeshOverrides.cs). Verify with
+            // `navdiag <plugin>`: every mesh's NVNM must byte-match the master's, or we changed
+            // something we did not mean to change.
+            Console.WriteLine($"{result.Stats.NavmeshOverrides} navmesh override(s) — vanilla NAVM(s) re-emitted unchanged (verify: navdiag {outPath})");
         ReportDependencies(result, outPath);
         WriteSeq(outPath, Path.GetDirectoryName(Path.GetFullPath(outPath)) ?? ".");
         if (spec.Weathers.Count > 0)

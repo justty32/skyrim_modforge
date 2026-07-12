@@ -144,9 +144,14 @@ free, sized from its own footprint. Override it per placement:
 "navCut": { "size": {…}, "offset": {…}, "padding": 48 }   // hand-tuned box
 ```
 
-Tune the whole thing with the top-level `navmesh` object: `autoNavCuts` (default `true`),
-`minFootprint` (10000 units² — a chair is 3600, so clutter is never cut), `minHeight` (100),
-`padding` (32), `warnings` (see below), `warnEmptyCells`.
+Tune the whole thing with the top-level `navmesh` object: `autoNavCuts`, `minFootprint` (10000 units²
+— a chair is 3600, so clutter is never cut), `minHeight` (100), `padding` (32), `warnings` (see
+below), `warnEmptyCells`.
+
+> `autoNavCuts` currently defaults to **`false`**, and you must opt in. The design is "automatic, with
+> an opt-out", but the default stays off until the in-game spike confirms an L_NAVCUT volume really
+> does divert an NPC — turning it on before that would inject unproven records into every existing
+> spec's output. Set `"navmesh": {"autoNavCuts": true}` to use it today.
 
 **3. The build warnings.** `build` now reads the vanilla navmesh and tells you what the game never
 will:
@@ -162,6 +167,40 @@ These need `Skyrim.esm` (they read its navmesh geometry). **Offline they simply 
 unknown answer is never reported as a problem. Set `"navmesh": {"warnings": false}` to silence them,
 and `navmeshCheck: false` on a single placement for the one legitimate exception: an actor you
 *deliberately* park off-mesh for a script to `MoveTo` into the world later.
+
+**4. `navmeshOverrides[]` — re-emit a vanilla navmesh from your plugin, unchanged.**
+
+This one authors a **no-op**: every NAVM of the cell you name is copied into your plugin under its own
+FormID, with not one vertex, triangle or index touched. It exists to answer a single question — *does
+the engine accept a navmesh that arrives from a patch rather than from `Skyrim.esm`?* — because the
+answer gates every future navmesh edit (cutting triangles, adding a walkable platform). Ship it,
+confirm the NPCs in those cells still walk, and the ground under the rest of the roadmap is solid.
+
+```jsonc
+"navmeshOverrides": [
+  { "cell": "Skyrim.esm:0x01605E" },                         // an interior cell: all of its navmeshes
+  { "worldspace": "Skyrim.esm:0x01A26F", "x": 5, "y": -2 },  // one exterior CELL GRID square
+  { "worldspace": "Skyrim.esm:0x01A26F",                     // …or name that square by a point inside it
+    "position": { "x": 21750, "y": -7625, "z": 0 } },
+  { "cell": "Skyrim.esm:0x01605E",                           // narrow it to a single mesh
+    "navmesh": "Skyrim.esm:0x0C9064" }
+]
+```
+
+- **Verify with `navdiag <plugin>`**: it byte-compares each overridden mesh's NVNM against the raw
+  bytes in the master and prints `IDENTICAL` or `DIFF`. If it ever says DIFF, the copy is not a
+  copy — stop.
+- **`x`/`y` are CELL GRID coordinates**, not world units (world unit / 4096, rounded down).
+- **NAVI is not touched.** The mesh keeps its FormID, so the master's own navmesh-info-map entry still
+  describes it.
+- 🔴 **Triangles are never renumbered.** A neighbouring cell's mesh stores indices *into your triangle
+  array*; renumbering silently breaks the seam between cells. That constraint is why this primitive
+  copies the array verbatim, and it binds every future navmesh feature too.
+- **Last plugin wins** — navmesh has no additive merge. If another mod (USSEP overrides 807 vanilla
+  navmeshes) already patched the mesh you name, whichever of you loads later replaces the other
+  outright. Check before you override a busy cell.
+- Needs `Skyrim.esm`. **Offline it emits nothing and says nothing** — the build is byte-identical to
+  one without the section.
 
 > ⚠️ ModForge cannot author **interior** navmesh yet, so an NPC in a brand-new interior cell has
 > nothing to path on. Put NPCs that need to walk in a vanilla cell (or a custom worldspace cell with

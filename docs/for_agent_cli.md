@@ -33,7 +33,12 @@ $R apply    <plugin.esp> <strings.json> <out.esp>     # write targets back (Lati
 $R applyloc <plugin.esp> <strings.json> <outModDir>   # CJK: Localized UTF-8 <plugin>_chinese.STRINGS
 $R gen      <out.esp>                         # demo plugin (sanity check the toolchain)
 $R smtree   <Skyrim.esm>                      # list Story Manager event roots (find an event root FormID)
+$R navdiag  <plugin.esp>                      # every NAVM in the plugin + a BYTE-DIFF of each overridden mesh's NVNM against its master (IDENTICAL / DIFF). Run it on any plugin using navmeshOverrides[]
 ```
+
+Run `$R` with no arguments for the full command list — there is a `*diag` probe for most record
+families (`questdiag`, `packagediag`, `landdiag`, `navdiag`, …) that prints one record's fields so
+you can compare what you generated against a vanilla record of the same kind.
 
 `--no-build` requires a prior `dotnet build`; drop it (slower) if unsure.
 
