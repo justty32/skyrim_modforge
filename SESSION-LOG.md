@@ -12,6 +12,8 @@
 
 ## 最新進度
 
+- **navmesh 獨立 plan 出爐（2026-07-12，[plans/navmesh.md](workflows/plans/navmesh.md)）**——使用者標「超重要」的 backlog 項。**調研結論：編輯 vanilla cell 的 NAVM 可行**，格式層已離線證明（Mutagen `GetOrAddAsOverride` 一張內裝＋一張外景 vanilla NAVM，寫出的 NVNM 與 vanilla **byte-identical**；USSEP 有 807 筆同樣的 override；NAVI 是加法式 merge——PROTEUS.esp 以 12/15462 筆當贏家而遊戲正常，不是相容性地雷）。**鐵律＝永不重新編號 triangle**（鄰居 NAVM 的 EdgeLink 存的是你的 triangle index；社群「navmesh 不能在 CK 外面改」的真正成因就是 CK 會重編號——我們不重編號就繞開了）。分期：P1 診斷警告（零風險、先做）／P0 spike（no-op override 上機）／P2 cut（打 `Deleted` flag）／P3 add+link／P4 DLL 讀 live navmesh＋射線取樣。**另一半結論更便宜**：症狀「NPC 走進你蓋的牆」**根本不必改 navmesh**——用 vanilla 的 **L_NAVCUT 碰撞體積**（`CollisionMarker` 0x000021 ＋ `CollisionLayer=49` ＋ Primitive box，**HearthFires 蓋房子用了 1220 筆**，Mutagen 全表達得出）就能 runtime 裁掉；⚠️ **光加 Obstacle flag(bit25) 無效**——還要碰撞層帶 `NavmeshObstacle`，而一般靜態物的 L_STATIC **不帶**（55 個 COLL 只有 6 層帶）。**open：等使用者拍板順序**（四個問題列在 plan §7）。
+
 - **referrer 原語全鏈完工（2026-07-12，DLL crc `112be269` 已部署）**——`sc ref` / `sc ref <Label>` / `sc refc [Label]` ＋ References 面板頁 ＋ exporter 吐 `references[]`（消費端 `adc419b` 已在）。**(乙) 檔內相依**＝指到自家 `sc pl` 擺的 dynamic ref 時，該 placement 蓋穩定 editorId `MFRef_<label>_<seq>`、`references[].ref` 指它（dynamic FormID 不可攜）。離線閉環驗過（build 出的 REFR 帶 0x400＋落 Persistent group；928 測綠）。**open：實機驗收**（[wait_todo](wait_todo/ingame-tests.md) referrer 節）——指得到嗎、撞名擋不擋、重開讀檔撿不撿得回檔內目標。細節：[backlog](workflows/plans/scene-capture-bridge/backlog.md) 已做首條。
 
 - **採集橋「擷取器」＋兩端消費：端到端 IN-GAME 確認（2026-07-11）**——`sc cap` 模式吸 Mirabelle → Export → `capturedNpcs[]` 消費 → build → 分身在學院庭院原地出現 ✅。落地記錄：[landed/npcs](workflows/feature-dev/landed/npcs.md)（capturedNpcs Phase 1＋NpcSpec 外貌配方欄）＋[landed/items-magic](workflows/feature-dev/landed/items-magic.md)（capturedItems）。剩餘 open：

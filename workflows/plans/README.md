@@ -19,6 +19,7 @@
 | [scene-capture-bridge/](scene-capture-bridge/README.md)（遊戲內編輯器：P1 統一 marker MVP → P2 靜態富路徑 → P3 動態＋檢視 → P4 範圍吸取；2026-07-11 膨脹拆成 README/phases/backlog/appendix 四檔） | 2026-07-10（同日細摳收斂後重寫） | [specs/ingame-scene-export-design.md](../specs/ingame-scene-export-design.md)（共用） | **P1–P6 主線 2026-07-11 實機全過**（[landed/world](../feature-dev/landed/world.md)）；未做項與新想法見 [backlog](scene-capture-bridge/backlog.md)；PROTEUS 相關凍結待使用者重規劃 |
 | [captured-npcs-consumption.md](captured-npcs-consumption.md)（擷取器 ② NPC 外貌：capturedNpcs[] → NPC_ 記錄＋placement） | 2026-07-11（同日細化至動工級 T1–T6） | [specs/ingame-scene-export-design.md](../specs/ingame-scene-export-design.md)（共用） | **Phase 1 IN-GAME 確認（2026-07-11，Mirabelle 分身原地出現；[landed/npcs](../feature-dev/landed/npcs.md)）**——Phase 2＝烘焙臉（未排，要動工開新 plan；界線與 faceMorph 映射表留本檔）|
 | [player-capture-capp.md](player-capture-capp.md)（`sc capp <label>` 直接吸玩家＋顯式數值/技能，去 PROTEUS 化；SCCP v8） | 2026-07-11 | [specs/ingame-scene-export-design.md](../specs/ingame-scene-export-design.md)（共用） | **規劃完成待實作**（使用者指示離峰再動工）|
+| [navmesh.md](navmesh.md)（編輯 vanilla cell 的導航網格：P0 spike → P1 診斷 → P2 cut → P3 add+link → P4 遊戲內採集） | 2026-07-12 | —（源自 [scene-capture-bridge/backlog](scene-capture-bridge/backlog.md)「📌 導航網格」，使用者標「超重要」） | **規劃完成待動工**——格式層可行性已離線證明（Mutagen NAVM no-op override ＝ byte-identical）；待使用者拍板順序 |
 
 action-system asset/config 生成（OAR/BDI/PIE）7 個 task 全落地（2026-06-14，547 測試綠燈），計畫已移 [archive/](archive/README.md)；落地記錄見 [feature-dev/landed/infra.md](../feature-dev/landed/infra.md)。
 
