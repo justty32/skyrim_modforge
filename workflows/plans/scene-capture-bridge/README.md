@@ -11,8 +11,8 @@
 | 檔 | 內容 |
 |---|---|
 | **本檔 README** | 現況導航：Goal、已定調的裁決、已落地地基、路線圖 |
-| [phases.md](phases.md) | P1–P6 的 Task 層級與已落地實作記錄（歷史實作細節，大而少動） |
-| [backlog.md](backlog.md) | 「之後再做」——已做 P7 + 仍未做（**活躍成長區**：新想法都記這） |
+| [phases.md](phases.md) | P1–P6 的 Task 層級 + backlog 加碼一輪的已落地實作記錄（歷史實作細節，大而少動） |
+| [backlog.md](backlog.md) | 「之後再做」——仍未做（**活躍成長區**：新想法都記這；做完的搬進 phases.md） |
 | [appendix.md](appendix.md) | 附錄・細摳記錄（需求原文，凍結參考）＋ 驗證清單 |
 
 ---

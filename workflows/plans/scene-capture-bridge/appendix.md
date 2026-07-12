@@ -1,6 +1,6 @@
 # scene-capture-bridge — 附錄：細摳記錄＋驗證清單
 
-← [README](README.md)（現況導航）｜[phases](phases.md)（P1–P6 落地）｜[backlog](backlog.md)（未做項）
+← [README](README.md)（現況導航）｜[phases](phases.md)（已落地實作記錄）｜[backlog](backlog.md)（未做項）
 
 凍結參考：需求原文（2026-07-10 細摳）與未驗事項彙總。
 

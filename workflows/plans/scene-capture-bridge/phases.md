@@ -137,3 +137,94 @@ MarkerEntry {
 - **#8 rebind 隱藏**：捕捉流程 in-game 抓到錯鍵（W），Settings 頁隱藏 rebind、顯示固定 F11；co-save 讀鍵位的 byte 照讀但**不套用**（清掉存進去的壞綁定）。`Modes::BeginRebind` 保留待日後重作。
 - **編輯步長可調**：`Editor` 三個步長常數改 runtime 變數＋Settings 頁 `InputFloat`＋co-save **SETT v2** 持久化。
 - **co-save 版本**：改 per-record 版本號（`kVerSett=2`/`kVerErsr=2`，其餘 1），OnLoad 傳 version 給各 loader → 舊存檔各記錄按自身 layout 讀（不再全表跳過）。
+
+---
+
+# 加碼一輪：backlog 已落地記錄（2026-07-11–2026-07-12）
+
+P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記在 backlog.md「已做」區，2026-07-12 backlog 拆分時搬移至此（內容不變，只搬家；日期/DLL crc 見各段標題）。
+
+## ✅ 已做（F1 面板清掉冗餘動作鈕，2026-07-12，DLL crc `6498c57b`，**已部署**，待實機）
+- **逐頁盤點後砍掉 7 顆「按一下就在世界裡執行一個動作」的按鈕**（P5 `sc` console 指令＋每模式鍵位落地後，這些面板觸發鈕與 mode+action key 完全重複）：
+  - Markers 頁 `place marker here`（`Markers::PlaceAtPlayer`，只放腳下）→ 已被 `sc mk` 模式的動作鍵取代（`Markers::PlaceAimed`，準星瞄準＋無命中自動落腳下，一鍵蓋兩種情境）。
+  - Eraser 頁 `erase by ray` → `sc del er1`（切射線）＋動作鍵，同一個 `Eraser::MarkByRay()`。
+  - Captures 頁 `capture crosshair` / `capture by ray` → `sc cap` 模式（預設 er0=準星）／`sc cap er1`＋動作鍵，同一組 `Captures::CaptureCrosshair/CaptureByRay()`。
+  - Palette 頁 `pick by ray` → `sc pk er1`＋動作鍵，同一個 `Palette::PickByRay()`。
+  - Editor 頁 `select by ray` → `sc ed er1`＋動作鍵，或永遠可用的 numpad `*`（`Editor.h` 原文即標「numpad * is the key equivalent」），同一個 `Editor::SelectByRay()`。
+  - Editor 頁 `cancel (restore)`（編輯中）→ numpad `.`／Del（`Editor::Cancel()`，面板文字本來就寫著「. cancel」）。
+  - 每顆都核對過 `Console.cpp` 指令表＋`Modes.cpp` 的 `RunAction`／`Editor::HandleKey` 派送，確認底層函式仍被 mode+key 路徑呼叫（**只拔 UI 觸發，不動邏輯**）；`Markers::PlaceAtPlayer()` 拔完按鈕後在 DLL 內已無其他呼叫者，**保留原函式**（宣告在 `Markers.h`，非 static，無 unused-function 警告，之後若要救援回來成本為零）。
+- **留下的**：Export 三鈕（Export player cell / Export all / Export captures，產出檔案不是改世界，且面板是**唯一**入口，`sc` 沒有 export 指令）；各頁的逐列 undo/revert/del（Eraser 的 `undo`/`clear (re-enable all)`、Captures 的 `undo`/`clear`、Editor 的 `revert`/`revert all`——這些是**復原**既有動作，不是「觸發新世界動作」，且都**沒有 `sc` 替代路徑**）；Markers 頁 `adopt this cell`（跨 cell 孤兒救援，無 `sc` 對應指令，co-save 只在同 cell 自動跑）；marker 編輯視窗 `delete marker`（`sc del` 明文拒收 marker gem，唯一刪除入口）；Palette 的 `[use]`／rename／`del`／三顆檔案 I/O 鈕（`load from file`/`replace from file`/`save to file`，無 `sc` 對應）；References/Markers 的改名/kind/note/apply/del；Settings 頁模式切換鈕與各項顯示。
+- **邊界檢查**：backlog 原文提醒的「palette『place slot N』」類按鈕在目前面板**不存在**（每列只有 `[use]` 選取＋`del`，沒有逐列「place」鈕），故無需請示。
+- 純 C++（`sub_projs/scene-capture-bridge/src/UI.cpp`、`UI.Markers.cpp`），未碰 C#；`build-release-clang-cl-linux` 編過（撞到 stale cache，`rm -rf build/release-clang-cl-linux` 後重編成功）。
+
+## ✅ 已做（模式開關套件：`py`／`ed`／`pkc` 五項，2026-07-12，DLL crc `5434abd4`，**已部署**，待實機）
+- **`sc pl py0/py1`（擺放物理，`py1` 預設）＋ `sc ed py0/py1`（編輯期物理，`py0` 預設）**。DLL 端凍結複用 P3 機制（抽成新的 `src/Physics.{h,cpp}`：`HavokMovable` 判定 ＋ `FreezeDeferred` 延後到 3D 載入才凍；Markers/Editor 原本各抄一份，現三處共用，**行為不變**）。`sc ed py0` ＝把現行凍結行為做成可切；`py1` ＝控制期間 havok 照跑。
+- **🔑 持久到 esp ＝「Don't Havok Settle」記錄旗標（查證後拍板，不走 script `SetMotionType`）**：`PlacementSpec.NoHavokSettle` → REFR header flag **`0x20000000`**。**決定性證據**（Mutagen 直接掃 Skyrim.esm，非推論）：693,333 個 PlacedObject 裡 **3,791 個帶此旗標**，base 型別分佈正是雜物類——MoveableStatic 995／MiscItem 724／Activator 564／Weapon 321／**Static 247**／Ingestible 245／Armor 159／Ammo 141／Flora 102／Ingredient 96／Book 87／Container 56…（樣本 `GlazedPot02Nordic`、`RuinsFloorCandleStandSmall`、`CrateOpen`）⇒ **Bethesda 自己擺完雜物就是靠它定住的**。它跳過的正是 **cell 載入時的 havok settle pass**（把手擺物件彈飛的元兇，物件與桌面稍有交疊時尤烈）。成本：純 record header 旗標、與 `Persistent 0x400`／`InitiallyDisabled 0x800` 同一條 code path，**零 script／零 VMAD／零 pex／不多 master**；script 路要給每顆 ref 掛 Papyrus（VMAD＋pex＋OnCellAttach），工程量爆炸只換來「連玩家撞都推不動」的邊際差異，且那是 runtime 狀態、沒 script 跑就不存在。
+- **靜態物件要不要吃 `py0`？→ 匯出旗標不按型別過濾**（vanilla 連 247 個 STAT 都帶它；clutter 類本來就都是 havok 物件）。**只有 runtime 凍結過濾**（`HavokMovable`：keyframe 一個 STAT 沒有意義，而且把 STAT/FURN 放回 `kDynamic` 會把牆震鬆——這是 P3 當初就寫死的邊界）。ACHR 不寫（actor 無此語意）。
+- **`sc pk ed0/ed1` ＋ `sc pl ed0/ed1`（extra data）**：現況只取 `GetBaseObject()` ⇒ 玩家自己附魔的劍吸進來是**白鐵劍**（附魔活在 ref 的 `ExtraEnchantment`，不在 base）。`pk ed1` ＝插槽連實例附魔一起記（durable ENCH → 引用；runtime ENCH → 記 MGEF effects 待鑄造）。`pl ed1` ＝匯出走**鑄造＋引用**：同一份 scene 檔吐 `capturedItems[]`（`editorId: MFPal_<插槽名>_<seq>`，`base`＝實體模板）＋ placement 的 **`base` 指那個 editorId** ＝ **檔內相依**（同 referrer 那招；**必須同檔**，capturedItems 落到另一份 json 的話 build 解不到 base 會丟掉 placement）。**C# 零改動**（`ExpandCapturedItems` pass 0 → `WeaponSpec/ArmorSpec.EditorId` → `formKeyByEd` → `BuildPlacements` 的 `TryResolveRef` 解得到）。⚠️ **runtime ENCH 的指標絕不快取在插槽上**——插槽是**落盤跨存檔**的，而 runtime ENCH 是存檔綁定的 form（快取＝懸空指標）；世界裡的物件只在 **durable ENCH** 時真的帶上附魔，匯出則照樣鑄造（ship 出去的不受影響）。
+- **`sc pkc [XXX]`**：滴管的 console 選取版（同 `delc`/`capc`/`refc` 的 aim-free 路），`XXX` ＝吸取當下直接改插槽名。標號走**未 `Lower()` 的 raw 參數**（大小寫保留，照 `sc capp` 的坑）。
+- **co-save**：SETT **v6**（+place/edit 物理 +pick/place extra data；v≤5 舊存檔降級讀 ⇒ 落回預設 place py1／edit py0／extra 全關＝與以前完全一致）＋新 record **`'PLEX'` v1**（我們擺出去、匯出要多講一句話的 ref：`noHavokSettle`／鑄造附魔。**一般擺放不建列**——vanilla diff 本來就吐得完美。handle 跨重啟死掉 → 匯出掃 cell 時按 **base+座標**就地撿回，不必 kPostLoadGame hook）。Settings 頁顯示四個開關現況。
+- **端到端自驗（離線閉環）**：手寫 DLL 形狀 json（一筆 `noHavokSettle` placement ＋ 一筆 `base` 指 `MFPal_…` 的 placement ＋ 對應 `capturedItems[]`）→ `build` → esp 裡兩個 REFR 都 **flags=0x20000000（DontHavokSettle=True）**、鑄出 `MFPal_Ebony_Sword_of_Fire_2` WEAP（enchantmentAmount 1500）＋ `…_Ench` ENCH，第二個 REFR 的 base **解到那把鑄造的劍**。C# **932 測綠**（928 + 4 新，含「舊 json 不帶欄位 → 旗標不設」的向後相容釘子 ＋「ACHR 不寫」）。
+
+## ✅ 已做（pointer/referrer 原語**全鏈完工**，2026-07-12，DLL crc `112be269`，**已部署**，待實機）
+- **DLL 端補齊**（C# 消費端 `adc419b` 已先落地）：新模組 `src/Referrer.{h,cpp}`（登記簿，**不新建/不改/不 disable** 目標——與 Eraser 的唯一差別）＋ `src/UI.References.cpp`（面板頁）＋ exporter 吐 `references[]`。
+- **指令**：`sc ref`＝進 referrer 模式（動作鍵標準星/射線指的既有 ref，`sc ref er0/er1` 切 aim source，SETT **v5**）；`sc ref <Label>`＝一次到位（標下當前指的 ref ＋打標籤）；`sc refc [Label]`＝console 選取版（aim-free）。**標籤走未 `Lower()` 的 raw 參數**（大小寫保留，同 `sc capp` 的坑）。
+- **🔑 (乙) 檔內相依關聯（最關鍵，一次做對）**：referrer 指到**我們自己 `sc pl` 擺的物件**（dynamic ref、無耐久 FormID）時——`AppendPlacements` 掃到那筆 ref 就在它的 placement 上**蓋一個穩定 editorId**（`Referrer::EditorIdOf` ＝ `MFRef_<sanitize(label)>_<seq>`，seq 隨 co-save 故跨匯出穩定），`references[].ref` 指那個 editorId。**identity ＝ handle**（沒有耐久 id 可用）。`AppendReferences` **必須跑在 `AppendPlacements` 之後**，且**只吐「這次匯出真的有出 placement」的那些**（cell 沒掃到／物件被擦掉／跨重啟 handle 死掉 ⇒ 跳過＋log warn＋面板顯示 skipped 數，不吐一個 build 對不上的 editorId）。
+- **(甲) 外部既有 ref**：照記耐久 `<plugin>:0xLOCALID` ＋ base ＋座標/rotation/scale ＋ cell/worldspace。**`anchor` 欄位 DLL 一律不填**（留白＝`none`，persistent 逃生門的選擇權在 ModForge/agent）。
+- **拒收三類**：① **marker proxy**（editor chrome，`ExportCell` 本來就排除它 → 檔內 reference 永遠解不到；而且 marker 本來就有 label/note 走 `annotations[]`）；② **我們自己生的 actor**（cell 匯出不含 actor ⇒ 沒有 placement 可指；要複製走 `sc cap`）；③ **重複 label**（label 在 ModForge 是**全域名字空間**＝可解析的 id，撞名 validate 會炸整份 spec）。**authored actor（vanilla NPC 的 ACHR）可以指**——它有耐久 id，走 (甲)。
+- **面板 References 頁**：最新在前、label／note 就地改名（**擋重複 label**，撞名當場橘字說「not renamed」）、顯示 ref id（檔內顯示**將寫進 json 的 editorId**，綠字）／base／cell／座標、逐列刪除（**只刪登記列，世界不動**）。Export 頁多兩行統計（`N named (references[])` ＋ skipped 數）。
+- **co-save 新 record `'RFRR'` v1**；in-file 列的 handle 跨完整重啟會死 → `Referrer::ReacquireOrphans()`（`kPostLoadGame` 自動跑，按 base+座標在玩家 cell 重新綁回，同 marker 的 adopt 救援）；撿不回的列**保留**（面板標 `TARGET LOST`、匯出跳過），不靜默丟。
+- **端到端自驗（離線閉環）**：手寫一份 DLL 形狀的 json（placement 帶 `MFRef_sofia_s_chair_1` ＋ `references[]` 指它 ＋ Sofia 的 sandbox package 指 label）→ `build` → esp 裡該 REFR **record flag ＝ 0x400**、落在 cell 的 **Persistent group**（`dump`：`persistent=1 temporary=0`），build 摘要印 `1 reference(s) — labels bound to existing refs: 'sofia's chair'`。C# **928 測綠**（消費端零改動）。
+
+## ✅ 已做（旋轉 per-axis 還原 ＋ palette replace，2026-07-12，DLL `9cae7ff1`，**未部署**·待實機）
+- **旋轉子模式的歸零鍵改 per-axis（使用者實機後提）**：`sc ed ax` 下**每組的中間鍵只管自己那一組軸**——**2＝還原 pitch（1/3）、5＝還原 yaw（4/6）、8＝還原 roll（7/9）**。語意＝**revert 回進編輯前的該軸原值**（`g.origAngle.<axis>`），**不是設成 0**（物件本來就可能有角度）。原本三鍵都是「整個角度還原」（全軸 `origAngle`）。移動模式的 numpad 5（＝復原整個編輯）**不動**（P7 的 per-mode 行為）。`Editor.cpp` 的 `kBack`/`kSelect`/`kFwd` 三個 case；每鍵各自的 DebugNotification。
+- **palette 檔案 I/O 兩改**：① **檔內順序＝面板順序**（最上面那筆排 json 第一筆）——`SlotsJson()` 反向寫、`ParseSlots()`＋`Adopt()` 反向插；`load from file (append)` 的新項因此**落在列表最上面**且保留檔內順序（面板最新排頂的既有慣例）。② 新鈕 **`replace from file`**（`Palette::ReplaceFromFile`）＝**清空現有插槽再載入**；檔案不存在／不可讀／無可用插槽 ⇒ **不清**（不會誤把磁碟持久的 palette 清光）。三鈕並列：`load from file (append)` / `replace from file` / `save to file` ＋一行說明。
+- ⚠️ 舊 `scene-capture-palette.json`（舊格式＝反序）讀進來順序會**上下顛倒一次**，之後穩定；欄位完全相容。
+
+## ✅ 已做（`capturedNpcs[].isPlayer` 標示，2026-07-12，DLL crc `e37ad0e1`，**已部署**，待實機）
+- 實機發現玩家 base TESNPC **沒有 `voiceType`**（分身啞巴）；使用者拍板**照實輸出，不加 fallback**——但補一個「這筆是玩家」的標示。`NpcData.isPlayer`（`actor->As<PlayerCharacter>()`，跟既有 perk 路線同一個 cast，`sc capp`／點到玩家的 `sc capc` 都標得到）；`SceneExporter` 只在 true 時吐 `"isPlayer": true`。co-save **SCCP v9**（v≤8 缺省 `false`）。
+- C# 消費：`CapturedNpcSpec.IsPlayer` → `NpcSpec.IsPlayer`（純可見性，不寫任何 Mutagen 記錄欄，行為不變）→ `BuildNpcs` 只在「`IsPlayer` 且無 `VoiceType`」時 `Warn`（措辭「this is expected, not a bug」，不是錯誤）。舊 json 缺欄位＝`false`＝完全相容。詳見 [plans/player-capture-capp.md](../player-capture-capp.md)。C# 928 測綠（5 個新測試）。
+
+## ✅ 已做（`sc capp` 直接吸玩家，2026-07-12，DLL `f8afc170`，待實機）
+- **`sc capp [Label]` ＝直接吸玩家**（去 PROTEUS 化）：玩家 chargen 就在 base TESNPC（`Skyrim.esm:0x000007`），DLL 直讀 → `capturedNpcs[]`。**PROTEUS 中介整條移除**（clone 自報 L1／50-50-50、不寫 tintLayers、outfit 空殼＝裸體，三個缺陷一次解掉）。玩家 perk 讀 `PlayerCharacter::addedPerks`（玩家 base 的 perk array 是空的）。
+- **顯式數值（所有 actor，不只玩家）**：`GetBaseActorValue` 取 H/M/S ＋ AV 6..23 的 18 技能（＝Mutagen `Skill` enum 序）→ 匯出 `health/magicka/stamina/skills[18]`。ModForge 消費**優先序＝顯式 ＞ class autocalc**（有顯式值就寫 DNAM、`autoCalcStats` 關；沒有才走舊路 → **舊 capture json 原樣相容**）。
+- **`sc capc [Label]` ／ `sc capp [Label]` 標號**：→ `editorId: "MFCap_<label>"`，「顯式 editorId 優先」即身份機制（同 label 再吸＝同一筆）。⚠️ label 走**未 `Lower()` 的 raw 參數**（大小寫保留）——`pkc`/referrer 動工時照抄這條。
+- co-save **SCCP v8**（+label +H/M/S +skills；v≤7 照讀）。C# 端 923 測綠。詳見 [plans/player-capture-capp.md](../player-capture-capp.md)。
+- **🔴 部署鐵律（血的教訓）**：遊戲跑著時 `cp` 就地覆寫 DLL ＝ **無聲暴斃、無 crash log**（`cp` 寫穿同一個 inode，而 DLL 程式碼頁是 demand-paged from that file）。一律走 `scripts/deploy.sh`（`pgrep SkyrimSE.exe` 在跑就拒絕 ＋ tmp+rename 換 inode）。
+
+## ✅ 已做（匯出三改，2026-07-12，DLL `65f53a93`，待實機）
+- **Export 檔名帶場景＋時間**：`scene-export_<cell EditorID 或 worldspace_x<X>y<Y>>_<YYYYMMDD-HHMM>.json`（`Export all` ＝ `scene-export_all-<玩家所在>_…`）。名稱 sanitize 成 `[A-Za-z0-9._-]`、截 48 字；同分鐘同場景再匯出加 `-2`/`-3`，**永不覆蓋**。⚠️ 下游 agent 別再寫死 `scene-export.json`，取資料夾裡最新一份。
+- **Captures 獨立 Export 鈕**：Export 頁／Captures 頁各一顆 `Export captures` → `captures_<YYYYMMDD-HHMM>.json`，只含 `capturedItems[]`＋`capturedNpcs[]`；**場景匯出檔不再帶這兩段**。兩者都是 `ModSpec` 成員故單獨 `build` 吃得下（**ModForge C# 端零改動**）。
+- **📌 Scope 反轉（NPC 移出 cell 匯出）**：`ExportCell`/`ExportAll` 掃到 actor ref 直接跳過（計 `actorsExcluded`，只進 log/面板），`placements[]` 不再有 `kind:"npc"`。NPC 交給 ModForge 按 `annotations[]`（marker）擺；真要複製某 NPC 走 `sc cap` → `capturedNpcs[]`。[spec](../../specs/ingame-scene-export-design.md) 契約節已同步（新增「2026-07-12 拍板」節，並標註推翻 2026-07-10 那條）。
+
+## ✅ 已做（P7 backlog，2026-07-11，DLL `79e611e8`→`a46ed0b2`，待實機）
+- `sc del/pk/ed er0/er1`：該模式動作鍵準星↔物理射線切換（`Modes::UseRay` per-mode，co-save SETT v3）。取代「numpad * 專用鍵才能射線」的需求。
+- **`sc ed ax`（純旋轉子模式，使用者第二輪定案取代 ax0/1/2）**：ON 時 numpad 4/6＝yaw、1/3＝pitch、7/9＝roll、8/2＝角度歸零（**歸零鍵已被 2026-07-12 的 per-axis 還原取代**，見上）；OFF 時照舊位移。`Editor::g_rotateMode`，co-save。
+- `sc delc`：擦除 `RE::Console::GetSelectedRef()` 選中的 ref，走 `Eraser::MarkConsoleRef`；actor 拒絕（先只做物件）。
+- 編輯指向靈魂石 marker → numpad 0 commit 更新該 marker 登記簿座標（`Markers::SetTransform`），不進 overrides；orphan proxy 就地 adopt。
+- palette「load from file」鈕（append）＋**「save to file」鈕**（`Palette::LoadFromFile`/`SaveToFile`，讀寫 SKSE 夾下具名檔）。（**2026-07-12 續改**：append 排最上＋新增 `replace from file`，見上。）
+- **Export「Export all (loaded cells)」鈕**：`SceneExporter::ExportAll` 走訪全部已載入 cell 收 placements＋registries 一次（registries 本就全域；未載入 cell 的 placements 撈不到，log 說明）。重構出 `AppendPlacements`/`AppendRegistries`/`RecordStats`。
+- Settings 頁顯示 aim source／旋轉子模式現況（console 設定的可視化）。
+- **numpad 5 改 per-mode**（使用者第三輪）：純旋轉模式下 5＝角度歸零（同 8/2），移動模式下 5＝復原編輯前——不再兩模式共用。（**2026-07-12**：旋轉模式下的 5 進一步收斂成**只還原 yaw**，見上；移動模式的 5 不變。）
+- **marker 記錄完整朝向＋大小**（使用者第三輪）：Entry `angleZDeg`→`angleDeg{x,y,z}`＋`scale`；匯出 `annotations[]` 帶 `rotation`＋`scale`（ModForge `AnnotationSpec.Rotation/Scale`，869 測綠）；co-save MKRS v2（舊 v1 只有 angleZ→補 0）。**marker 模型改鐵匕首**（`Weapons\Iron\IronDagger.nif`，劍尖視覺化朝向；tools-spec.json 改 model 重建 esp，houseCARL 驗 WEAP 01397E）。
+
+## ✅ 已做（外部 mod 依賴的**可見性**＝候選 (a)，2026-07-12，**純 C#、零 DLL 改動**，離線閉環驗完）
+- **問題**：`sc capp`/`sc cap` 吸到的 spell/perk/item/effect 只要來自 mod，生成的 esp 就把那些 mod 變成 **master**；缺 master → Skyrim **靜默不載**（不說為什麼），而 `build` 過去**零可見性**。**範圍不只 capture**：任何手寫 spec 寫 `PROTEUS.esp:0x123` 都一樣 ⇒ 處置做在 **ModForge 通用層**（`src/ModForge.Core/Generator.Dependencies.cs`）。
+- **🔑 使用者已拍板：不過濾——「完全複製」優先**（分身的價值在「就是你」；要可攜就手寫 spec）。所以這條**純粹是可見性**：`build` 產物**一個 byte 都不變**（`MFCapHatak.esp` md5 改前改後同為 `638aae3c…`；另有測試釘死「跑不跑分析，寫出來的 bytes 相同」）。
+- **`build` 摘要印非 vanilla masters ＋ 逐筆歸因**。歸因粒度＝**作者親手寫的那個 spec 欄位**（不是只到 record）。拿使用者 2026-07-12 那份**真的** capture 跑，7 個 master 一個不差，逐行講是誰拉進來的：
+  - `PROTEUS.esp (1 link) ← capturedNpcs[0].spells[17] = PROTEUS.esp:0x08073D`
+  - `Conditional Expressions.esp ← capturedNpcs[0].activeEffects[3].magicEffect = …:0x00081A`（活性效果也照抓）
+- **兩個來源，各司其職**：**master 清單以「建好的 mod」為準**（掃 record FormKey ＋ `EnumerateFormLinks`——抓得到 spec 字串沒寫、被 deep-copy／template clone 帶進來的 master）；**歸因以 spec 為準**（reflection walk 出 JSON 路徑）。⚠️ 歸因快照必須在 `ExpandMacros` **展開前**取（`ModSpec.AuthoredRefSources`，internal）——否則 captured NPC 會報成巨集生出來的 `npcs[0].spells[…]`，那是**使用者檔案裡根本不存在的欄位**。
+- **旁檔 `<plugin>.requires.txt`**（寫在 esp 旁；沒有非原版依賴時刪掉舊檔）＝解掉後果②「沒有任何地方記著這個 esp 依賴誰」。**`package` 只印摘要、不寫旁檔**（它的輸出夾就是要出貨的 mod，不該多塞檔案）。
+- **CC 不算 vanilla**（`ccXXXSSE###` / `_ResourcePack`）：按帳號購買，沒買的玩家一樣靜默不載——照列，只是標註原因。vanilla ＝ Skyrim/Update/Dawnguard/HearthFires/Dragonborn 五個。
+- **語氣＝資訊、不是錯誤**（使用者拍板要完全複製）；純 vanilla spec **一個字都不印**（negative-case 測試釘住，免得變背景噪音）。C# **971 測綠**（951 + 20 新）。docs：[for_agent_cli](../../../docs/for_agent_cli.md)（＋zh-TW 鏡像）。
+- **另三個候選這輪沒做**：(b) spec 宣告式 `requires:` 段（build 對不上就報錯——**這才是後果②的完整解**，旁檔只是半套）；(c) modlist / load order 快照（MO2 `plugins.txt`）；(d)「依賴檢查」指令（給 esp ＋ load order，回報缺什麼）。
+
+## ✅ 已做（依賴可見性的**遊戲內版**：Export 頁 `Export requires` 鈕，2026-07-12，DLL `6498c57b`→`008aba47`，待實機）
+- **價值＝時機**。上面那條 C# 版是 **build 後**才知道——那時你已經退出遊戲了；這顆鈕把同一個問題**提前到匯出當下**：人還站在那間房，覺得那顆 PROTEUS 法術不值得讓整個 mod 變成硬相依，**重吸一次就好**。兩者互補、格式對齊（路徑前綴 `scene.` / `captures.` 指出該去改哪個檔），輸出可互相比對。
+- **`Requires.{h,cpp}`**（新）：走訪**匯出後的 json**（`SceneExporter::ScanAll`/`ScanCaptures` ＝匯出減掉寫檔與統計副作用），收每個 `<plugin>:0xLOCALID` ＋其 JSON 路徑 → `requires_<YYYYMMDD-HHMM>.txt`（沿用既有 `UniquePath` 的**永不覆蓋** `-2` 機制，`ext` 參數化）。掃描範圍＝`placements[]`(base/cell/ws)＋`removals[]`＋`overrides[]`＋`references[]`＋`annotations[]`＋整本 Captures。vanilla 五個＋CC 不算 vanilla，與 C# 同一套。
+- **⚠️ 關鍵：只列真的會變成依賴的東西——而「假依賴」不只 `activeEffects` 一個。** 逐一讀 C# 消費端（`Generator.CapturedNpcs.cs`/`CapturedItems.cs`/`Build.*.cs`）確認出**六類**寫著 mod FormID 但 build 根本不 link 的欄位，全部排除（列進去＝說謊，刪掉它並不會拿掉那個依賴），並在 SKSE log 逐欄位交代排除筆數：① `capturedNpcs[].activeEffects[].magicEffect` **＋ `.source`**（同一個物件上的**第二個** ref 欄位，C# 註解只點名了前者）；② `capturedNpcs[].base`（一律鑄新、從不 override）；③ `capturedNpcs[].defaultOutfit`**當有 `worn` 裝備時**（穿的甲會鑄 OTFT 蓋掉它）；④ `capturedItems[].base` **當 `kind: ingredient`**（`IngredientSpec` 沒有 Template 欄位＝死資料）；⑤ `annotations[].cell`/`.worldspace`（inert，不生記錄）；⑥ `references[].base`/`.cell`/`.worldspace`（DLL 刻意不寫 `anchor` ⇒ 預設 `none` ⇒ build 連讀都不讀）。
+- **兩種限定條件的相依加註記**：`[template clone]`（`capturedItems[].base`、附魔的 `inventory[].item`——ModForge **deep-copy** 那筆記錄，form 本身不是 master link，但複本拖著來源的 sub-link＋要用它的 mesh，實務上仍需要那個 mod）；`[named only]`（`references[].ref`——只有 spec 真的有東西指向那個 label 才成為 master）。
+- **跟 C# 版的差異（各有得失）**：C# 以「建好的 mod」為 master 權威 ⇒ 連 deep-copy 拖進來的 master 都抓得到，但**歸因會掉**（`Causal()` 過濾掉 FormKey 沒被 link 的 spec 來源 ⇒ template clone 只剩 `record Weapon:MFCap_…`，講不出要刪哪一行）；DLL 沒有建好的 mod 可掃，改用**規則表** ⇒ 遇到全新欄位可能誤判（預設當作「會 link」＝寧可多報不漏報），但 **template clone 也講得出是哪一行**。
+- **驗證**：`Analyze(scene, captures)` 刻意拆成**純函式**（不碰遊戲狀態），離線用 stub header 編**真的 `Requires.cpp`** 跑一份含 9 個 mod 的擬真測資 → 六類排除全部命中（`Conditional Expressions.esp`／`Immersive Armors.esp`／`Wyrmstooth.esp` 只出現在假依賴欄位 ⇒ **報告裡一個字都沒有**），而 `PROTEUS.esp`／`Ordinator.esp` 照樣列出、**歸因到真正拉它進來的那一行**（`spells[1]`／`perks[0].perk`，不是 activeEffects）。
+- **C# 端零改動**（這是純 DLL 側的新輸出）。
