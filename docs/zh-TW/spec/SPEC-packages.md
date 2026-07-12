@@ -7,15 +7,22 @@
 原版的「程序模板」form，而該模板定義了資料輸入的 schema
 （slot 索引 + 型別）。我們的套件則為模板定義的那些 slot 填入輸入值。
 
-ModForge 目前實作了八個模板——**Sandbox**（`Skyrim.esm:0x01C254`）、**Sleep**
+ModForge 目前實作了十個模板——**Sandbox**（`Skyrim.esm:0x01C254`）、**Sleep**
 （`Skyrim.esm:0x019717`）、**Travel**（`Skyrim.esm:0x016FAA`）、**UseMagic**（`Skyrim.esm:0x0504F5`）、
 **Patrol**（`Skyrim.esm:0x017723`）、**Follow**（`Skyrim.esm:0x019B2C`）、**Escort**
-（`Skyrim.esm:0x023B73`）以及 **SitTarget**（`Skyrim.esm:0x0A9277`）。撰寫對應的子物件
-（`sandbox` / `sleep` / `travel` / `useMagic` / `patrol` / `follow` / `escort` / `sitTarget`），build
-就會填入該模板的 Data slot。若要指向一個 ModForge 尚未處理的
+（`Skyrim.esm:0x023B73`）、**SitTarget**（`Skyrim.esm:0x0A9277`）、**Activate**（`Skyrim.esm:0x019B2D`）
+以及 **Eat**（`Skyrim.esm:0x019714`）。撰寫對應的子物件
+（`sandbox` / `sleep` / `travel` / `useMagic` / `patrol` / `follow` / `escort` / `sitTarget` /
+`activate` / `eat`），build 就會填入該模板的 Data slot。若要指向一個 ModForge 尚未處理的
 模板（UseWeapon / …），仍要設定 `template`；套件會產出
 結構上有效但沒有任何 Data 覆寫（套用模板預設值）的結果並附上警告。在加入支援之前，可用
 `packagediag <Skyrim.esm> <0xFORMID>` 探查任一模板的具名 slot schema。
+
+**一個 ref slot 可以填什麼。** 每個 target／location slot（下方表格的 12 列）都是在 placements 與
+`references[]` **都存在之後**才填的，所以以下四種在任何一個 slot 都通：原版
+`<master>:0xFORMID` 已放置 ref · **spec 內 `placements[]` 的 editorId** · **`references[]` 的 label** ·
+`alias:` / `aliasLoc:` 任務別名（見下段）。若一個 ref 四種都解不到，會警告並退回預設
+（location → `NearSelf`；`useMagic.target` → `PackageTargetSelf`；其他 SingleRef slot → 套件 no-op）。
 
 **Radiant 別名目標（`alias:` / `aliasLoc:`）。** 任何目標／地點 slot ref（`sandbox`/`sleep`/
 `eat` 的 `location`、`travel` 的 `place`、`escort` 的 `destination`/`target`、`follow` 的 `target`、
@@ -93,9 +100,9 @@ Travel 只有 3 個 slot：`Place to Travel` / `Ride Horse if possible?` / `Pref
   "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 1440, "dayOfWeek": "Any" },
   "useMagic": {
     "spell":           "Skyrim.esm:0x043324",   // REQUIRED — FormLink to a SPEL record (Candlelight)
-    "location":        "",                       // optional placed-ref (where to stand); empty -> NearSelf
+    "location":        "",                       // optional ref (where to stand); empty -> NearSelf
     "radius":          256,                      // location radius (template default 500)
-    "target":          "",                       // optional placed-ref (who to cast on); empty -> PackageTargetSelf
+    "target":          "",                       // optional ref (who to cast on); empty -> PackageTargetSelf
     "holdWhenBlocked": true,
     "castTimeMin":     1.5, "castTimeMax":     2.5,
     "cooldownTimeMin": 8.0, "cooldownTimeMax": 12.0,
@@ -169,7 +176,7 @@ navmesh 可抵達性規則。
   "template": "Skyrim.esm:0x019714",       // Eat
   "schedule": { "hour": 19, "durationInMinutes": 60 },
   "eat": {
-    "location":          "",               // optional placed-ref (where to eat); empty -> NearSelf
+    "location":          "",               // optional ref (where to eat); empty -> NearSelf
     "radius":            500,
     "allowSitting":      true,
     "allowWandering":    true,

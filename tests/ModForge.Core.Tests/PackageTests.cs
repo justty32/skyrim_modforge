@@ -1,4 +1,6 @@
+using System;
 using System.Linq;
+using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
 using ModForge;
 
@@ -236,6 +238,159 @@ public class PackageTests
         Assert.False(Assert.IsAssignableFrom<IPackageDataBoolGetter>(Slot(over, 29)).Data);  // AllowSitting:false
         Assert.Equal(99f, Assert.IsAssignableFrom<IPackageDataFloatGetter>(Slot(over, 35)).Data);  // MinWanderDistance
         Assert.Equal(2f, Assert.IsAssignableFrom<IPackageDataIntGetter>(Slot(over, 10)).Data);     // NumFoodItems
+    }
+
+    // --- eat.location / useMagic.location / useMagic.target: the three slots that were resolved EAGERLY ---
+    //
+    // BuildPackageData runs BEFORE BuildPlacements and BuildReferences, so at that moment the ref table
+    // holds base records only. These three slots used to resolve there — which meant an in-file placement
+    // editorId or a references[] label could never be seen: they missed and fell back to NearSelf/Self
+    // ("! package 'X' eat location 'sofia's chair' unresolved"), while the other nine ref slots had been on
+    // the deferred wires all along. They are deferred now; these tests pin all three ways in.
+
+    private const string UseMagicTemplate = "Skyrim.esm:0x0504F5";
+    private const string Candlelight      = "Skyrim.esm:0x043324";   // SPEL (a base form — still resolved eagerly)
+    private const string ChairBase        = "Skyrim.esm:0x0B9C04";   // CommonChair02 (FURN)
+    private const string VanillaRef       = "Skyrim.esm:0x0D1991";   // an existing placed ref
+    private const string Player           = "Skyrim.esm:0x000014";
+
+    // A room + a chair placement, optionally labelled by references[]. `slot` fills the package(s) under test.
+    private static ModSpec DeferredSlotSpec(Action<ModSpec> packages, bool label = true)
+    {
+        var s = new ModSpec
+        {
+            PluginName = "Test.esp",
+            Cells = { new CellSpec { EditorId = "Room", Name = "Room" } },
+            Placements =
+            {
+                new PlacementSpec { EditorId = "MF_Chair", Base = ChairBase, Cell = "Room",
+                                    Position = new Vec3 { X = 10, Y = 20, Z = 30 } },
+            },
+            Npcs = { new NpcSpec { EditorId = "Npc", Name = "Npc", Race = "Skyrim.esm:0x013746" } },
+        };
+        if (label) s.References.Add(new ReferenceSpec { Ref = "MF_Chair", Label = "sofia's chair" });
+        packages(s);
+        foreach (var p in s.Packages) s.Npcs[0].Packages.Add(p.EditorId);
+        return s;
+    }
+
+    private static FormKey Chair(BuildResult r)
+        => r.Mod.EnumerateMajorRecords<IPlacedObjectGetter>().Single(o => o.EditorID == "MF_Chair").FormKey;
+
+    private static FormKey LocLink(IPackageGetter p, sbyte slot)
+        => Assert.IsAssignableFrom<ILocationTargetGetter>(
+               Assert.IsAssignableFrom<IPackageDataLocationGetter>(Slot(p, slot)).Location!.Target).Link.FormKey;
+
+    private static FormKey SingleRefLink(IPackageGetter p, sbyte slot)
+        => Assert.IsAssignableFrom<IPackageTargetSpecificReferenceGetter>(
+               Assert.IsAssignableFrom<IPackageDataTargetGetter>(Slot(p, slot)).Target).Reference.FormKey;
+
+    // (1) a references[] LABEL now resolves in all three slots — this is what silently fell back before.
+    [Theory]
+    [InlineData("sofia's chair")]   // a references[] label   (BuildReferences runs after BuildPackageData)
+    [InlineData("MF_Chair")]        // an in-file placement editorId (BuildPlacements likewise)
+    public void EatLocation_And_UseMagicLocationAndTarget_ResolveALabelOrInFilePlacement(string reff)
+    {
+        var r = TestBuild.Ok(DeferredSlotSpec(s =>
+        {
+            s.Packages.Add(new PackageSpec { EditorId = "GoEat", Template = EatTemplate,
+                Eat = new EatSpec { Location = reff, Radius = 700 } });
+            s.Packages.Add(new PackageSpec { EditorId = "Cast", Template = UseMagicTemplate,
+                UseMagic = new UseMagicSpec { Location = reff, Radius = 256, Spell = Candlelight, Target = reff } });
+        }));
+        var chair = Chair(r);
+
+        Assert.Equal(chair, LocLink(Pkg(r, "GoEat"), 0));        // eat.location      → LocationTarget(chair)
+        Assert.Equal(chair, LocLink(Pkg(r, "Cast"), 2));         // useMagic.location → LocationTarget(chair)
+        Assert.Equal(chair, SingleRefLink(Pkg(r, "Cast"), 4));   // useMagic.target   → SpecificReference(chair)
+
+        // …and, being a package anchor now, the chair is forced persistent (else the engine may drop it).
+        var room = r.Mod.Cells.SelectMany(b => b.SubBlocks).SelectMany(b => b.Cells).Single(c => c.EditorID == "Room");
+        Assert.Contains(room.Persistent, p => p.EditorID == "MF_Chair");
+    }
+
+    // A LABEL in eat.location / useMagic.location is an AREA anchor, not a lock-on — the guardrail note
+    // (ReferenceSlotKindTests) must fire for these two exactly as it does for sandbox/sleep/travel/escort.
+    // It could not be trusted before: the slot didn't resolve at all.
+    [Fact]
+    public void LabelInEatOrUseMagicLocation_StillNotesTheAreaAnchorTrap()
+    {
+        var r = TestBuild.Ok(DeferredSlotSpec(s =>
+        {
+            s.Packages.Add(new PackageSpec { EditorId = "GoEat", Template = EatTemplate,
+                Eat = new EatSpec { Location = "sofia's chair", Radius = 700 } });
+            s.Packages.Add(new PackageSpec { EditorId = "Cast", Template = UseMagicTemplate,
+                UseMagic = new UseMagicSpec { Location = "sofia's chair", Spell = Candlelight, Target = "sofia's chair" } });
+        }));
+        Assert.Equal(2, r.Notes.Count);                                        // the two LOCATION slots…
+        Assert.Contains(r.Notes, n => n.Contains("eat.location") && n.Contains("radius 700"));
+        Assert.Contains(r.Notes, n => n.Contains("useMagic.location"));
+        Assert.DoesNotContain(r.Notes, n => n.Contains("'Cast' useMagic.target"));   // …never the SingleRef one
+    }
+
+    // (2) REGRESSION: a vanilla FormID in these slots worked before the deferral and must be untouched by
+    // it — same slot, same payload, same FormKey, no warning. (The three example/scratch specs that fill
+    // them with vanilla refs also byte-compare md5-identical across the change.)
+    [Fact]
+    public void VanillaFormIdInAllThreeSlots_IsBitForBitTheOldBehaviour()
+    {
+        var r = TestBuild.Ok(DeferredSlotSpec(s =>
+        {
+            s.Packages.Add(new PackageSpec { EditorId = "GoEat", Template = EatTemplate,
+                Eat = new EatSpec { Location = VanillaRef, Radius = 700 } });
+            s.Packages.Add(new PackageSpec { EditorId = "Cast", Template = UseMagicTemplate,
+                UseMagic = new UseMagicSpec { Location = VanillaRef, Radius = 256, Spell = Candlelight, Target = Player } });
+        }, label: false));
+
+        var vanilla = FormKey.Factory("0D1991:Skyrim.esm");
+        var eat = Pkg(r, "GoEat");
+        Assert.Equal(vanilla, LocLink(eat, 0));
+        Assert.Equal(700u, Assert.IsAssignableFrom<IPackageDataLocationGetter>(Slot(eat, 0)).Location!.Radius);
+
+        var cast = Pkg(r, "Cast");
+        Assert.Equal(vanilla, LocLink(cast, 2));
+        Assert.Equal(256u, Assert.IsAssignableFrom<IPackageDataLocationGetter>(Slot(cast, 2)).Location!.Radius);
+        Assert.Equal(FormKey.Factory("000014:Skyrim.esm"), SingleRefLink(cast, 4));
+        Assert.Empty(r.Notes);
+    }
+
+    // …and an empty useMagic.target still emits PackageTargetSelf in slot 4 (the self-cast default: an
+    // EMPTY slot 4 means the engine casts at nothing). Deferring the ref must not lose the default.
+    [Fact]
+    public void EmptyUseMagicTarget_IsStillPackageTargetSelf()
+    {
+        var r = TestBuild.Ok(DeferredSlotSpec(s =>
+            s.Packages.Add(new PackageSpec { EditorId = "Cast", Template = UseMagicTemplate,
+                UseMagic = new UseMagicSpec { Spell = Candlelight } }), label: false));
+        var tgt = Assert.IsAssignableFrom<IPackageDataTargetGetter>(Slot(Pkg(r, "Cast"), 4));
+        Assert.IsAssignableFrom<IPackageTargetSelfGetter>(tgt.Target);
+    }
+
+    // (3) A ref that really IS wrong must still WARN — the fix must not silence the diagnostic by making
+    // everything "resolve later". Unresolved location → NearSelf; unresolved useMagic target → Self.
+    [Fact]
+    public void RefThatResolvesToNothing_StillWarns_AndFallsBack()
+    {
+        var r = TestBuild.Raw(DeferredSlotSpec(s =>
+        {
+            s.Packages.Add(new PackageSpec { EditorId = "GoEat", Template = EatTemplate,
+                Eat = new EatSpec { Location = "NoSuchChair" } });
+            s.Packages.Add(new PackageSpec { EditorId = "Cast", Template = UseMagicTemplate,
+                UseMagic = new UseMagicSpec { Location = "NoSuchChair", Spell = Candlelight, Target = "NoSuchChair" } });
+        }, label: false));
+
+        Assert.Contains(r.Warnings, w => w.Contains("package 'GoEat' eat location 'NoSuchChair' unresolved")
+                                      && w.Contains("NearSelf"));
+        Assert.Contains(r.Warnings, w => w.Contains("package 'Cast' location 'NoSuchChair' unresolved")
+                                      && w.Contains("NearSelf"));
+        Assert.Contains(r.Warnings, w => w.Contains("package 'Cast' Target 'NoSuchChair' unresolved")
+                                      && w.Contains("PackageTargetSelf"));
+
+        var eatLoc = Assert.IsAssignableFrom<IPackageDataLocationGetter>(Slot(Pkg(r, "GoEat"), 0));
+        Assert.Equal(LocationTargetRadius.LocationType.NearSelf,
+            Assert.IsAssignableFrom<ILocationFallbackGetter>(eatLoc.Location!.Target).Type);
+        Assert.IsAssignableFrom<IPackageTargetSelfGetter>(
+            Assert.IsAssignableFrom<IPackageDataTargetGetter>(Slot(Pkg(r, "Cast"), 4)).Target);
     }
 
     // An unsupported procedure template emits a warning (and no Data overrides), not a hard failure.

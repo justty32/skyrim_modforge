@@ -116,7 +116,9 @@ public static partial class Generator
         // ref, else LocationFallback(NearSelf) — anchors at the actor's current position with no
         // external dependency. NEVER use NearEditorLocation: it needs a CK-set Editor Location on
         // the NPC; Mutagen-generated NPCs don't have one, so sandbox/travel silently no-ops in-game.
-        private PackageDataLocation MakeLocationSlot(string slotName, string ownerLabel, string refStr, uint radius, string packageEd = "")
+        // Called ONLY from WireDeferredLocations — every location slot is deferred, because the ref may
+        // be a placement editorId or a references[] label that doesn't exist during BuildPackageData.
+        private PackageDataLocation MakeLocationSlot(string slotName, string packageEd, string refStr, uint radius)
         {
             // An "alias:<name>" / "aliasLoc:<name>" location → LocationFallback bound to the ownerQuest's
             // alias index (AliasForReference = the alias holds a ref; AliasForLocation = a location alias).
@@ -153,7 +155,7 @@ public static partial class Generator
                 };
             }
             if (!string.IsNullOrWhiteSpace(refStr))
-                Warn($"  ! {ownerLabel} location '{refStr}' unresolved — falling back to NearSelf");
+                Warn($"  ! package '{packageEd}' {slotName.ToLowerInvariant()} '{refStr}' unresolved — falling back to NearSelf");
             return new PackageDataLocation
             {
                 Name = slotName,

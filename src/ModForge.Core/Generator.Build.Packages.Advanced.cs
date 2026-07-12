@@ -32,7 +32,11 @@ public static partial class Generator
             // no-ops). Slot 4 (Target) MUST be set: PackageTargetSelf for self-cast spells
             // (Candlelight/Healing/Ward), PackageTargetSpecificReference for cast-at-X.
             var um = pk.UseMagic;
-            pack.Data[2] = MakeLocationSlot("Location", $"package '{pk.EditorId}' usemagic", um.Location, um.Radius);
+            // DEFERRED (like Travel's Place): `location` may be an in-spec placement editorId or a
+            // references[] label — neither exists yet (BuildPlacements/BuildReferences run after us), so
+            // resolving it HERE could only ever see base records, and a placement/label fell back to NearSelf.
+            // Deferring moves no bytes: Package.Data is written key-sorted, not in insertion order.
+            deferredLocationWires.Add((pack, 2, "Location", pk.EditorId, um.Location, um.Radius));
 
             if (string.IsNullOrWhiteSpace(um.Spell))
             {
@@ -54,29 +58,19 @@ public static partial class Generator
                 Warn($"  ! package '{pk.EditorId}' usemagic spell '{um.Spell}' unresolved — package will no-op");
             }
 
-            if (!string.IsNullOrWhiteSpace(um.Target)
-                && TryResolveRef(um.Target, formKeyByEd, out var tgtFk))
+            // Slot 4 gets PackageTargetSelf NOW — the self-cast default, and the value that must stand if the
+            // `target` ref turns out to be unresolvable (an empty slot 4 = the engine casts nothing). The ref
+            // itself is DEFERRED (like SitTarget's Target): it may be an in-spec placement editorId or a
+            // references[] label. WireDeferredTargets overwrites Self with PackageTargetSpecificReference once
+            // it resolves; selfOnUnresolved makes it leave Self standing — and warn — when it doesn't.
+            pack.Data[4] = new PackageDataTarget
             {
-                linksWired++;
-                if (LooksExternalRef(um.Target)) extLinks++;
-                pack.Data[4] = new PackageDataTarget
-                {
-                    Name = "Target",
-                    Type = PackageDataTarget.Types.SingleRef,
-                    Target = new PackageTargetSpecificReference { Reference = new FormLink<IPlacedGetter>(tgtFk) },
-                };
-            }
-            else
-            {
-                if (!string.IsNullOrWhiteSpace(um.Target))
-                    Warn($"  ! package '{pk.EditorId}' usemagic target '{um.Target}' unresolved — defaulting to PackageTargetSelf");
-                pack.Data[4] = new PackageDataTarget
-                {
-                    Name = "Target",
-                    Type = PackageDataTarget.Types.SingleRef,
-                    Target = new PackageTargetSelf(),
-                };
-            }
+                Name = "Target",
+                Type = PackageDataTarget.Types.SingleRef,
+                Target = new PackageTargetSelf(),
+            };
+            if (!string.IsNullOrWhiteSpace(um.Target))
+                DeferTarget(pack, 4, "Target", pk.EditorId, um.Target, selfOnUnresolved: true);
 
             void UBool(sbyte slot, string name, bool? user, bool def)
                 => pack.Data[slot] = new PackageDataBool { Name = name, Data = user ?? def };
@@ -104,7 +98,7 @@ public static partial class Generator
             if (string.IsNullOrWhiteSpace(pt.Start))
                 Warn($"  ! package '{pk.EditorId}' patrol: no `start` ref — NPC has no route and won't patrol");
             else
-                deferredTargetWires.Add((pack, 0, "Patrol Start", pk.EditorId, pt.Start));
+                DeferTarget(pack, 0, "Patrol Start", pk.EditorId, pt.Start);
             pack.Data[1] = new PackageDataFloat { Name = "Patrol Radius",            Data = pt.Radius ?? 150f };
             pack.Data[2] = new PackageDataBool  { Name = "Repeatable?",              Data = pt.Repeatable ?? true };
             pack.Data[4] = new PackageDataBool  { Name = "Start At Nearest?",        Data = pt.StartAtNearest ?? true };
@@ -120,7 +114,7 @@ public static partial class Generator
             // 2 Max Radius (float), 4 Accompany?, 6 Ride Horse?, 8 Need LOS?.
             var fo = pk.Follow;
             var tgt = string.IsNullOrWhiteSpace(fo.Target) ? "Skyrim.esm:0x000014" : fo.Target;
-            deferredTargetWires.Add((pack, 0, "Target to Follow", pk.EditorId, tgt));
+            DeferTarget(pack, 0, "Target to Follow", pk.EditorId, tgt);
             pack.Data[1] = new PackageDataFloat { Name = "Min Radius:", Data = fo.MinRadius ?? 128f };
             pack.Data[2] = new PackageDataFloat { Name = "Max Radius:", Data = fo.MaxRadius ?? 256f };
             pack.Data[4] = new PackageDataBool  { Name = "Accompany?", Data = fo.Accompany ?? true };
@@ -139,7 +133,7 @@ public static partial class Generator
             // "Distance to Wait". The dual of Follow: here the NPC walks ahead, the target tags along.
             var es = pk.Escort;
             var tgt = string.IsNullOrWhiteSpace(es.Target) ? "Skyrim.esm:0x000014" : es.Target;
-            deferredTargetWires.Add((pack, 11, "Target to Escort", pk.EditorId, tgt));
+            DeferTarget(pack, 11, "Target to Escort", pk.EditorId, tgt);
             if (string.IsNullOrWhiteSpace(es.Destination))
                 Warn($"  ! package '{pk.EditorId}' escort: no `destination` ref — Escort will fall back to NearSelf (NPC won't lead anywhere)");
             deferredLocationWires.Add((pack, 3, "Destination", pk.EditorId, es.Destination, es.Radius));
@@ -163,7 +157,7 @@ public static partial class Generator
             if (string.IsNullOrWhiteSpace(st.Target))
                 Warn($"  ! package '{pk.EditorId}' sitTarget: no `target` ref — NPC has no furniture to use and won't sit");
             else
-                deferredTargetWires.Add((pack, 16, "Target", pk.EditorId, st.Target));
+                DeferTarget(pack, 16, "Target", pk.EditorId, st.Target);
             pack.Data[3] = new PackageDataFloat { Name = "Wait Time",          Data = st.WaitTime ?? 0f };
             pack.Data[4] = new PackageDataBool  { Name = "Stop Movement Flag", Data = st.StopMovement ?? false };
         }
@@ -178,7 +172,7 @@ public static partial class Generator
             if (string.IsNullOrWhiteSpace(ac.Target))
                 Warn($"  ! package '{pk.EditorId}' activate: no `target` ref — Activate has nothing to activate (package will no-op)");
             else
-                deferredTargetWires.Add((pack, 0, "Target", pk.EditorId, ac.Target));
+                DeferTarget(pack, 0, "Target", pk.EditorId, ac.Target);
             pack.Data[2] = new PackageDataInt { Name = "Number to Activate", Data = ac.NumberToActivate ?? 1u };
         }
 
@@ -189,7 +183,10 @@ public static partial class Generator
             // 5 Chair Target = SelfActorEffects, 6 Found Chair objectlist — NOT author-facing; emitted exactly
             // as vanilla so the engine's food/chair seeking works), then the named bool/float/int block.
             var et = pk.Eat;
-            pack.Data[0] = MakeLocationSlot("Eat Location", $"package '{pk.EditorId}' eat", et.Location, et.Radius == 0 ? 500u : et.Radius, pk.EditorId);
+            // DEFERRED (see ApplySleepData, whose Location this mirrors): the meal anchor may be an in-spec
+            // placement editorId or a references[] label, registered only in the placement/reference passes —
+            // resolving it HERE saw neither and fell back to NearSelf.
+            deferredLocationWires.Add((pack, 0, "Eat Location", pk.EditorId, et.Location, et.Radius == 0 ? 500u : et.Radius));
             pack.Data[1] = new PackageDataTarget
             {
                 Name = "Food Criteria",

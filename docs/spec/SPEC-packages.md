@@ -7,15 +7,23 @@ A `packages` entry is an AI package. Skyrim's PACK record is **template-driven**
 vanilla "procedure template" form via `template`, and that template defines the data input schema
 (slot indices + types). Our package fills in the inputs for the slots the template defines.
 
-ModForge currently implements eight templates — **Sandbox** (`Skyrim.esm:0x01C254`), **Sleep**
+ModForge currently implements ten templates — **Sandbox** (`Skyrim.esm:0x01C254`), **Sleep**
 (`Skyrim.esm:0x019717`), **Travel** (`Skyrim.esm:0x016FAA`), **UseMagic** (`Skyrim.esm:0x0504F5`),
 **Patrol** (`Skyrim.esm:0x017723`), **Follow** (`Skyrim.esm:0x019B2C`), **Escort**
-(`Skyrim.esm:0x023B73`), and **SitTarget** (`Skyrim.esm:0x0A9277`). Author the matching subobject
-(`sandbox` / `sleep` / `travel` / `useMagic` / `patrol` / `follow` / `escort` / `sitTarget`) and the
-build will fill that template's Data slots. To target a
+(`Skyrim.esm:0x023B73`), **SitTarget** (`Skyrim.esm:0x0A9277`), **Activate** (`Skyrim.esm:0x019B2D`)
+and **Eat** (`Skyrim.esm:0x019714`). Author the matching subobject
+(`sandbox` / `sleep` / `travel` / `useMagic` / `patrol` / `follow` / `escort` / `sitTarget` /
+`activate` / `eat`) and the build will fill that template's Data slots. To target a
 template ModForge doesn't yet handle (UseWeapon / …), still set `template`; the package emits
 structurally valid but with no Data overrides (template defaults apply) and a warning. Use
 `packagediag <Skyrim.esm> <0xFORMID>` to discover any template's named slot schema before adding support.
+
+**What a ref slot may name.** Every target/location slot (the 12 rows of the table below) is filled
+*after* placements and `references[]` exist, so any of these works in any of them:
+a vanilla `<master>:0xFORMID` placed ref · an **in-spec `placements[]` editorId** · a
+**`references[]` label** · an `alias:` / `aliasLoc:` quest alias (next paragraph). A ref that resolves
+to none of those warns and falls back (location → `NearSelf`; `useMagic.target` → `PackageTargetSelf`;
+other SingleRef slots → the package no-ops).
 
 **Radiant alias targets (`alias:` / `aliasLoc:`).** Any target/location slot ref (`sandbox`/`sleep`/
 `eat` `location`, `travel` `place`, `escort` `destination`/`target`, `follow` `target`,
@@ -113,9 +121,9 @@ it (lower priority in the NPC's `packages` list) so the NPC has something to do 
   "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 1440, "dayOfWeek": "Any" },
   "useMagic": {
     "spell":           "Skyrim.esm:0x043324",   // REQUIRED — FormLink to a SPEL record (Candlelight)
-    "location":        "",                       // optional placed-ref (where to stand); empty -> NearSelf
+    "location":        "",                       // optional ref (where to stand); empty -> NearSelf
     "radius":          256,                      // location radius (template default 500)
-    "target":          "",                       // optional placed-ref (who to cast on); empty -> PackageTargetSelf
+    "target":          "",                       // optional ref (who to cast on); empty -> PackageTargetSelf
     "holdWhenBlocked": true,
     "castTimeMin":     1.5, "castTimeMax":     2.5,
     "cooldownTimeMin": 8.0, "cooldownTimeMax": 12.0,
@@ -189,7 +197,7 @@ as Travel/SitTarget.
   "template": "Skyrim.esm:0x019714",       // Eat
   "schedule": { "hour": 19, "durationInMinutes": 60 },
   "eat": {
-    "location":          "",               // optional placed-ref (where to eat); empty -> NearSelf
+    "location":          "",               // optional ref (where to eat); empty -> NearSelf
     "radius":            500,
     "allowSitting":      true,
     "allowWandering":    true,

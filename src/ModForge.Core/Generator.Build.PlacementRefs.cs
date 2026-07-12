@@ -78,12 +78,13 @@ public static partial class Generator
             }
         }
 
-        // --- pass 2: deferred SingleRef slot-0 targets (Patrol "Patrol Start", Follow "Target to Follow") ---
-        // Emitted now that placements exist, as PackageTargetSpecificReference. The ref is an in-spec
-        // placement (e.g. a patrol marker, or an NPC to follow) or a vanilla ref (e.g. the player).
+        // --- pass 2: deferred SingleRef target slots (every PackageRefSlots SingleRef: Patrol Start, ---
+        // Follow/Escort Target, SitTarget/Activate/UseMagic Target). Emitted now that placements AND
+        // references[] labels exist, as PackageTargetSpecificReference. The ref is an in-spec placement
+        // (a patrol marker, a chair, an NPC to follow), a references[] label for one, or a vanilla ref.
         public void WireDeferredTargets()
         {
-            foreach (var (pack, slot, slotName, ed, refStr) in deferredTargetWires)
+            foreach (var (pack, slot, slotName, ed, refStr, selfOnUnresolved) in deferredTargetWires)
             {
                 // An "alias:<name>" target → PackageTargetAlias (radiant performance package whose target
                 // is filled by the ownerQuest's alias). aliasLoc: is a location form — invalid as a target.
@@ -102,7 +103,14 @@ public static partial class Generator
                     continue;
                 }
                 if (!TryResolveRef(refStr, formKeyByEd, out var tgtFk))
-                { Warn($"  ! package '{ed}' {slotName} '{refStr}' unresolved — package will no-op"); continue; }
+                {
+                    // selfOnUnresolved slots already hold the PackageTargetSelf their builder wrote — the
+                    // package still does something (casts on itself), so say that instead of "no-op".
+                    Warn(selfOnUnresolved
+                        ? $"  ! package '{ed}' {slotName} '{refStr}' unresolved — defaulting to PackageTargetSelf"
+                        : $"  ! package '{ed}' {slotName} '{refStr}' unresolved — package will no-op");
+                    continue;
+                }
                 pack.Data[slot] = new PackageDataTarget
                 {
                     Name = slotName,
@@ -114,13 +122,16 @@ public static partial class Generator
             }
         }
 
-        // --- pass 2: deferred PackageDataLocation slots (Escort "Destination", Travel "Place to Travel") ---
-        // Resolved now that placements exist, so an in-spec marker/placement editorId resolves.
-        // MakeLocationSlot handles vanilla refs, in-spec placements, and the NearSelf fallback.
+        // --- pass 2: deferred PackageDataLocation slots (every PackageRefSlots Location: Sandbox/Sleep/ ---
+        // Eat Location, Travel Place, Escort Destination, UseMagic Location). Resolved now that placements
+        // AND references[] labels exist, so a marker/placement editorId or a label resolves.
+        // MakeLocationSlot handles vanilla refs, aliases, in-spec placements, and the NearSelf fallback.
+        // Slots the builder RESERVED (Eat, UseMagic) are overwritten in place — Data's insertion order,
+        // and so the emitted bytes, are whatever eager filling produced.
         public void WireDeferredLocations()
         {
             foreach (var (pack, slot, slotName, ed, refStr, radius) in deferredLocationWires)
-                pack.Data[slot] = MakeLocationSlot(slotName, $"package '{ed}' {slotName.ToLowerInvariant()}", refStr, radius, ed);
+                pack.Data[slot] = MakeLocationSlot(slotName, ed, refStr, radius);
         }
     }
 }

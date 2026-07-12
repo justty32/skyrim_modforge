@@ -8,9 +8,15 @@ public static partial class Generator
         // Data slot filling by the vanilla procedure template referenced. Each template has its own
         // sbyte-indexed named slot schema (discover via `packagediag <Skyrim.esm> <templateFormId>`);
         // we mirror what vanilla concrete packages emit so the engine gets explicit values.
-        // Some slots point at a placement created later (the placement loop runs after this) or a
-        // vanilla ref; those are collected in deferredTargetWires/deferredLocationWires and emitted
-        // by WireDeferredTargets/WireDeferredLocations once placements register their editorIds.
+        //
+        // INVARIANT: a slot that takes a PLACED ref (every SingleRef/Location row of PackageRefSlots) is
+        // NEVER resolved here — we run before BuildPlacements and BuildReferences, so at this point the ref
+        // table holds base records only. An eager resolve therefore CANNOT see an in-file placement editorId
+        // or a references[] label; it just misses and falls back to NearSelf/Self (this was a live bug in
+        // eat.location / useMagic.location / useMagic.target). Instead, queue it in deferredTargetWires /
+        // deferredLocationWires; WireDeferredTargets / WireDeferredLocations fill the slot after those passes,
+        // when vanilla refs, aliases, placements and labels can all resolve. Base-form slots (template,
+        // combatStyle, ownerQuest, useMagic.spell) DO resolve here — they are records, not placed refs.
         public void BuildPackageData()
         {
             // Known templates live in PackageTemplates (shared with Validate so the FormIDs can't drift).
@@ -56,6 +62,13 @@ public static partial class Generator
                 }
             }
         }
+
+        // Queue a SingleRef slot for WireDeferredTargets. selfOnUnresolved: this slot already holds a
+        // PackageTargetSelf the builder wrote, so a ref that doesn't resolve leaves the actor casting on
+        // itself (and the warning says so) instead of the "package no-ops" of an anchor-less Patrol/Activate.
+        private void DeferTarget(IPackage pack, sbyte slot, string slotName, string packageEd, string refStr,
+                                 bool selfOnUnresolved = false)
+            => deferredTargetWires.Add((pack, slot, slotName, packageEd, refStr, selfOnUnresolved));
 
         private void ApplySandboxData(PackageSpec pk, IPackage pack)
         {

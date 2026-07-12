@@ -17,6 +17,12 @@ namespace ModForge;
 // "I care about THIS object", the slot says "any object around here", and only the author can say
 // which was meant. Nothing here changes what is built.
 //
+// EVERY SingleRef/Location row below is filled by a DEFERRED wire (deferredTargetWires /
+// deferredLocationWires → WireDeferredTargets / WireDeferredLocations), never inside BuildPackageData:
+// that step runs before BuildPlacements/BuildReferences, so an eager resolve can only see base records and
+// silently misses in-file placement editorIds and references[] labels. A new template's ref slot MUST be
+// deferred too. (NotAPlacedRef rows are base forms/enums and do resolve eagerly.)
+//
 // ANTI-ROT: PackageRefSlotsTests reflects over every sub-spec of PackageSpec and fails if any string
 // field is missing from this table — so a NEW package template cannot quietly add an unclassified
 // ref slot. Add the template's slots here in the same commit that adds its Apply*Data builder.

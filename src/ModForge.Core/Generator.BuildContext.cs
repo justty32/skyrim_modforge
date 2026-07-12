@@ -66,8 +66,13 @@ public static partial class Generator
         private readonly Dictionary<(FormKey Ws, int X, int Y), Cell> exteriorCells = new();
 
         // Package slot wiring deferred until placements register their editorIds (the target/
-        // destination of a Patrol/Follow/Escort can be an authored marker created later).
-        private readonly List<(IPackage Pack, sbyte Slot, string SlotName, string Ed, string Ref)> deferredTargetWires = new();
+        // destination of a Patrol/Follow/Escort can be an authored marker created later) — and, since
+        // BuildReferences runs in the same window, until references[] labels exist. EVERY ref slot in
+        // PackageRefSlots goes through here; resolving one eagerly in BuildPackageData means it can only
+        // ever see base records, never a placement editorId or a label.
+        // SelfOnUnresolved: the slot's builder already wrote PackageTargetSelf (UseMagic's "cast on
+        // whom" — a self-cast package is meaningful), so an unresolved ref keeps Self, not a no-op.
+        private readonly List<(IPackage Pack, sbyte Slot, string SlotName, string Ed, string Ref, bool SelfOnUnresolved)> deferredTargetWires = new();
         private readonly List<(IPackage Pack, sbyte Slot, string SlotName, string Ed, string Ref, uint Radius)> deferredLocationWires = new();
         // Forced alias fills whose ref builds AFTER the alias passes (a placement/xmarker anchor or a map
         // marker). Resolved by WireDeferredForcedAliases once those records exist.

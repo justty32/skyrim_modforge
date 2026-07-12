@@ -103,7 +103,9 @@ public class ReferenceSlotKindTests
         s.Packages.Add(new PackageSpec { EditorId = "P_EscortT",  Template = "Skyrim.esm:0x023B73", Escort    = new EscortSpec    { Target = Label, Destination = "MFSlot_Chair" } });
         s.Packages.Add(new PackageSpec { EditorId = "P_UseMagicT",Template = "Skyrim.esm:0x0504F5", UseMagic  = new UseMagicSpec  { Target = Label, Spell = "Skyrim.esm:0x043323" } });
 
-        var notes = TestBuild.Raw(s).Notes;             // Raw: eat/useMagic location slots warn for other reasons
+        // Ok: a label resolves in ALL twelve slots (eat/useMagic used to be resolved before placements
+        // and references[] existed, so those three warned "unresolved" here — see PackageTests).
+        var notes = TestBuild.Ok(s).Notes;
         Assert.Equal(6, notes.Count);                    // exactly the six location slots
         foreach (var slot in new[] { "sandbox.location", "sleep.location", "travel.place",
                                      "escort.destination", "eat.location", "useMagic.location" })
