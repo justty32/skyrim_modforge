@@ -76,6 +76,10 @@ public static partial class Generator
         // placement/xmarker editorId is queued here and resolved by WireDeferredScriptObjectProps.
         private readonly List<(Mutagen.Bethesda.Skyrim.ScriptObjectProperty Prop, string Ref, string Warn)> deferredScriptObjectProps = new();
         private readonly Dictionary<string, IPlaced> placementsByEd = new();
+        // Every placement we actually built, paired with the CELL it landed in. The navmesh steps
+        // (auto navCut + the P1 coverage diagnostics) need the resolved cell — a placement's spec only
+        // carries a ref STRING, and re-resolving it would double the master-cache work.
+        private readonly List<(PlacementSpec Spec, IPlaced Rec, ICell Cell)> builtPlacements = new();
         // refs an anchor:"replace" reference stood in for — BuildRemovals disables+buries them alongside
         // the spec's own removals[] (our persistent copy took the vanilla original's place).
         private readonly List<string> referenceRemovals = new();
@@ -204,6 +208,7 @@ public static partial class Generator
                     Worldspaces = worldspaceCount + worldspacesBuilt,
                     NewExteriorCells = exteriorNewCells + terrainCellsBuilt,
                     NavmeshCells = navmeshCellsBuilt,
+                    NavCuts = navCutsBuilt,
                     Regions = regionsBuilt,
                     EncounterZones = spec.EncounterZones.Count,
                     WordWalls = wordWallsBuilt,

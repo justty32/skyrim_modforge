@@ -119,6 +119,8 @@ public static partial class Generator
                                                    // and before every wire step below (so a label resolves there)
         ctx.BuildOverrides();                      // re-stamp transform on EXISTING placed refs (Idea #24 numpad editor)
         ctx.BuildRemovals();                       // disable+bury EXISTING vanilla placed refs (Idea #24 §E eraser) — after overrides so a removal wins on overlap
+        ctx.BuildNavCuts();                        // L_NAVCUT collision volumes so NPCs path AROUND what we placed
+                                                   // (explicit navCuts[] + the auto box for blocking placements)
         ctx.WireDeferredForcedAliases();           // forced alias fills whose target (placement/xmarker/mapMarker) built just now
         ctx.WireLinkedRefs();                      // XLKR between placements (patrol routes)
         ctx.WireTeleportDoors();                   // load-door XTEL teleport pairs (player walk-through links)
@@ -150,6 +152,8 @@ public static partial class Generator
         ctx.WirePackageConditions();               // CTDA gates on AI packages (runtime behaviour switch)
         ctx.WireDeferredScriptObjectProps();       // alias-script object props whose target (placement/xmarker) built after the alias pass
 
+        ctx.CheckNavmesh();                        // P1 diagnostics: off-navmesh NPCs / uncut obstacles / hollowed-out
+                                                   // structures. Warnings ONLY — authors nothing, so it runs last.
         return ctx.Finish();
     }
 }

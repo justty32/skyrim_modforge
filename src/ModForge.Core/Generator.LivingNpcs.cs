@@ -125,6 +125,10 @@ public static partial class Generator
                 {
                     EditorId = refEd, Base = ln.Ref, Kind = "npc",
                     Worldspace = "Skyrim.esm:0x00003C", Position = new Vec3 { X = 0, Y = -9000, Z = -5000 },
+                    // Parked off-stage ON PURPOSE (buried under Tamriel, ~530 units below the terrain's
+                    // navmesh): the alias script MoveTo's this actor into the world when the player shows
+                    // up, so it never paths from here. Opt out of the "this NPC will not move" check.
+                    NavmeshCheck = false,
                 });
                 fill = $"forced:{refEd}";
                 if (npcByEd.TryGetValue(ln.Ref, out var npc))

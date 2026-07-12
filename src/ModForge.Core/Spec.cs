@@ -46,6 +46,8 @@ public sealed class ModSpec
     public List<OverrideSpec> Overrides { get; set; } = new(); // transform overrides of EXISTING placed refs (move/rotate/rescale in place). The in-game numpad editor feeds this. See Spec.Overrides.cs / Generator.Build.Overrides.cs
     public List<ReferenceSpec> References { get; set; } = new(); // NAME an EXISTING placed ref (in-file placements[] editorId, or a vanilla <master>:0xFORMID) so any other ref field can point at it by `label`. The in-game referrer (`sc ref`) feeds this. See Spec.References.cs / Generator.Build.References.cs
     public List<AnnotationSpec> Annotations { get; set; } = new(); // in-game editor marker anchors (Idea #24 P1; Spec.Annotations.cs) — ADVISORY ONLY, build never turns these into records; a human/agent reads them to author the next round
+    public List<NavCutSpec> NavCuts { get; set; } = new(); // L_NAVCUT collision volumes: cut vanilla navmesh at runtime so NPCs path AROUND what you placed (Spec.NavCuts.cs / Generator.Build.NavCuts.cs)
+    public NavmeshSpec Navmesh { get; set; } = new();      // knobs for the navmesh diagnostics + the auto navcut (Spec.NavCuts.cs)
     public List<MapMarkerSpec> MapMarkers { get; set; } = new();   // world-map markers (XMRK on MapMarker static)
     public List<LeveledItemSpec> LeveledItems { get; set; } = new();
     public List<LeveledNpcSpec> LeveledNpcs { get; set; } = new();

@@ -149,6 +149,8 @@
     "removals": {"type": "array", "items": {"type": "string"}, "description": "Refs \"<master>:0xFORMID\" of EXISTING placed refs to remove (disable + bury) — the in-game eraser feeds this (Generator.Build.Removals.cs)"},
     "overrides": {"type": "array", "items": {"$ref": "#/$defs/override"}, "description": "Transform overrides of EXISTING placed refs (move/rotate/rescale in place) — the in-game numpad editor feeds this (Generator.Build.Overrides.cs). scale omitted = keep the original record's scale"},
     "references": {"type": "array", "items": {"$ref": "#/$defs/reference"}, "description": "NAME EXISTING placed refs so the rest of the spec can point at them by `label` — the in-game referrer (`sc ref`) feeds this (Generator.Build.References.cs). Third sibling of removals[] (erase existing) / overrides[] (move existing): never creates the ref it points at"},
+    "navCuts": {"type": "array", "items": {"$ref": "#/$defs/navCut"}, "description": "L_NAVCUT collision volumes: switch vanilla navmesh OFF inside a box at RUNTIME so NPCs path AROUND what you placed instead of walking into it (Generator.Build.NavCuts.cs). One REFR each — base CollisionMarker Skyrim.esm:0x000021 + collisionLayer 49 + an XPRM box — the same recipe HearthFires.esm uses 1003 times. NOTE: the `Obstacle` record flag ALONE does nothing; the collision LAYER is the gate, and L_STATIC (what houses/walls/rocks collide on) is NOT one of the six layers that cut navmesh"},
+    "navmesh": {"$ref": "#/$defs/navmeshSettings"},
     "npcRoles": {"type": "array", "items": {"$ref": "#/$defs/npcRole"}, "description": "Tag an external NPC with a job role — macro-expands to host quest + conditioned greeting + package (Spec.SceneExport.cs)"},
     "annotations": {"type": "array", "items": {"$ref": "#/$defs/annotation"}, "description": "In-game editor marker anchors (Idea #24 P1) — ADVISORY ONLY: build never creates records from these; a human/AI agent reads label+kind+position to author the next round"},
     "hazards": {
@@ -611,6 +613,24 @@
     "npcRole": {"type": "object", "properties": {"npc": {"type": "string"}, "role": {"type": "string"}, "backstory": {"type": "string"}}},
     "annotation": {"type": "object", "properties": {"seq": {"type": "integer"}, "label": {"type": "string"}, "kind": {"type": "string"}, "note": {"type": "string", "description": "free-form brief for the agent (\"face the door\", \"a vendor here\")"}, "position": {"$ref": "#/$defs/vec3"}, "angleZ": {"type": "number"}, "cell": {"type": "string"}, "worldspace": {"type": "string"}}},
     "override": {"type": "object", "required": ["ref", "position", "rotation"], "properties": {"ref": {"type": "string", "description": "\"<master>:0xFORMID\" of the existing placed ref (REFR/ACHR)"}, "position": {"$ref": "#/$defs/vec3"}, "rotation": {"$ref": "#/$defs/vec3", "description": "degrees"}, "scale": {"type": "number", "description": "omitted = keep original scale; 1.0 = reset to engine default (XSCL dropped)"}}},
+    "navCut": {"type": "object", "description": "One L_NAVCUT box. EITHER `placement` (wrap that placement's own OBND footprint) OR `position` + `size` + a cell/worldspace.", "properties": {
+      "editorId": {"type": "string", "description": "optional: names the navcut REFR"},
+      "cell": {"type": "string", "description": "INTERIOR: an in-spec cell editorId OR a vanilla '<master>:0xFORMID'"},
+      "worldspace": {"type": "string", "description": "EXTERIOR: a worldspace ref; `position` is then WORLD coords"},
+      "placement": {"type": "string", "description": "convenience: take the box's centre + size from this placements[] editorId (its base's OBND, scaled and rotated with it). Mutually exclusive with cell/worldspace/position"},
+      "position": {"$ref": "#/$defs/vec3", "description": "the CENTRE of the box in ALL THREE axes. The vanilla idiom centres it on the floor so the box straddles the navmesh plane"},
+      "size": {"$ref": "#/$defs/vec3", "description": "the FULL box size (width x depth x height) — NOT half-extents (verified against vanilla: HearthFires 00410D's 116x52.8x46.9 box hugs a 96x49x48 chest). Written into XPRM Bounds after padding"},
+      "rotationZ": {"type": "number", "description": "yaw of the box, in DEGREES"},
+      "padding": {"type": "number", "minimum": 0, "description": "outward inflation per side (default navmesh.padding = 32). The engine tests actors as ZERO-VOLUME POINTS, so an unpadded box leaks NPCs through the seam; Z is padded too so the box straddles the navmesh instead of resting on it"}
+    }},
+    "navmeshSettings": {"type": "object", "description": "Knobs for the navmesh diagnostics + the automatic navcut.", "properties": {
+      "warnings": {"type": "boolean", "default": true, "description": "warn when an NPC stands off the navmesh (it will not move — sandbox/travel/follow/combat ALL path through the navmesh) and when a placement covers uncut vanilla navmesh (NPCs walk into it)"},
+      "autoNavCuts": {"type": "boolean", "default": true, "description": "automatically cut the navmesh under any BLOCKING placement sitting on vanilla navmesh. Needs the base's OBND from the master link cache, so it is a silent no-op offline"},
+      "minFootprint": {"type": "number", "default": 10000, "description": "units^2 — OBND XY area a placement needs to count as BLOCKING. 10000 = 100x100; a chair (60x60 = 3600) or a barrel (54x54) is nowhere near it, which is what keeps clutter from being cut"},
+      "minHeight": {"type": "number", "default": 100, "description": "units — OBND height a placement needs to count as BLOCKING"},
+      "padding": {"type": "number", "default": 32, "description": "default outward inflation of every navcut box, per side (~half an actor's width)"},
+      "warnEmptyCells": {"type": "boolean", "default": false, "description": "warn when an NPC is placed in an in-spec cell with NO navmesh. True of EVERY custom interior (ModForge cannot author interior navmesh yet), so it is opt-in — a warning that always fires is noise, not a diagnostic"}
+    }},
     "reference": {"type": "object", "required": ["ref", "label"], "description": "NAME an EXISTING placed ref (Idea #24 referrer `sc ref`). TWO TARGET CLASSES: (B) IN-FILE — `ref` is a placements[] editorId in THIS spec (the object the player placed with `sc pl`); build FORCES IT PERSISTENT (0x400 + the cell's Persistent group), which is exactly what an alias/package specific-reference target needs — THE CLEAN PATH. (A) EXTERNAL — `ref` is a vanilla '<master>:0xFORMID'; build warns when that ref is TEMPORARY (most vanilla scenery is → a poor alias/package target) and `anchor` authors a persistent stand-in of our own.", "properties": {
       "ref": {"type": "string", "description": "REQUIRED. An in-spec placements[] editorId (in-file path) OR a vanilla '<master>:0xFORMID' (external path). references[] NEVER creates the ref — it must already exist."},
       "label": {"type": "string", "description": "REQUIRED, unique across the spec. The free-form name typed in-game (\"sofia's chair\"). Registered as a resolvable id → usable in ANY ref field: a package's sandbox `location` / travel `place`, a quest alias `forced:`, `linkedRefs.target`, `enableParent.ref`, an objective target, a script Form property."},
@@ -2777,6 +2797,26 @@
         "noHavokSettle": {
           "type": "boolean",
           "description": "Record flag 0x20000000 (DontHavokSettle): the engine SKIPS the havok settle pass it runs on this ref when the cell loads, so the object stays exactly at the authored transform instead of being flung/dropped. Use on hand-placed clutter (cups, books, weapons on a table). Vanilla Skyrim.esm sets it on 3791 refs. Objects only (ignored on NPC placements)"
+        },
+        "navCut": {
+          "description": "does this placement CUT the navmesh under it, so NPCs path around it instead of walking into it? OMIT = automatic (cut it iff its base OBND clears navmesh.minFootprint + minHeight AND it actually covers vanilla navmesh). false = never (scenery NPCs are MEANT to walk through). true = always. An object = hand-tuned box. See navCuts[] for the mechanism",
+          "oneOf": [
+            { "type": "boolean" },
+            {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean", "default": true, "description": "false = never cut this placement" },
+                "size": { "$ref": "#/$defs/vec3", "description": "FULL box size (w x d x h), replacing the OBND-derived one" },
+                "offset": { "$ref": "#/$defs/vec3", "description": "shift the box centre relative to the placement" },
+                "padding": { "type": "number", "minimum": 0, "description": "outward inflation per side; default = navmesh.padding (32)" }
+              }
+            }
+          ]
+        },
+        "navmeshCheck": {
+          "type": "boolean",
+          "default": true,
+          "description": "set false ONLY for an ACHR you DELIBERATELY park off the navmesh (staged off-stage and MoveTo'd in by a script — livingNpcs does this). It silences the 'this NPC will not move' diagnostic. Never use it to hide a real off-mesh mistake: the in-game symptom is a mute, motionless NPC and no error anywhere"
         },
         "enableParent": {
           "type": "object",

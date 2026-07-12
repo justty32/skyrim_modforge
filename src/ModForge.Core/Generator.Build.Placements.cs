@@ -219,6 +219,7 @@ public static partial class Generator
                 }
                 else cell.Temporary.Add(placedRec);
 
+                builtPlacements.Add((pl, placedRec, cell));
                 placed++;
             }
 

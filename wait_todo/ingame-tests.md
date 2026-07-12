@@ -15,6 +15,40 @@
 
 ## 待測（active）
 
+- **🧪 navmesh T2.0 — navcut 證偽實驗（2026-07-12 交付 `~/skyrim_mods/mine/ModForgeNavcutSpike.zip`，FLAT，ESL，只吃 Skyrim.esm）**
+  計畫：[plans/navmesh.md](../workflows/plans/navmesh.md)。spec：`examples/navcut_spike_spec.json`。
+
+  **這是要「證偽」的實驗，不是展示。** 問題：ModForge 生的 **L_NAVCUT 碰撞體積**（vanilla 蓋房子用的那套：base `CollisionMarker` + `CollisionLayer=49` + XPRM box）到底能不能在 runtime 把 vanilla navmesh 關掉，讓 NPC 繞開？**繞得開 → 整個症狀①（NPC 穿過你蓋的房子）就此結案，NAVM 都不用碰。走不動搖 → 這條路死，我改走 NAVM cut。**
+
+  **裝**：MO2 裝 zip → 啟用（不需要排在誰後面，它只碰白漫大街）。**不需要新遊戲**，既有存檔直接進即可（沒有對話、沒有 `.seq`）。
+
+  **走到現場**（白漫大街，Breezehome 到市集那一段）：
+  ```
+  coc WhiterunPLainsDistrict03        ← 現場那格外景 cell（是的，Bethesda 自己把 L 打成大寫）
+  player.setpos x 21750               ← 站到 A 道（TEST）正北邊；不放心可先 getpos 對一下
+  player.setpos y -7300
+  player.setpos z -3550
+  ```
+  （或者：直接從白漫大門走進去，沿主街往上坡走到 Breezehome 前面那段。）
+
+  你要找的是**大街上多出來的 8 根白漫告示牌木柱**（`SignWRPost01`，比人稍高），排成**兩組、各 4 根、各圍出一條橫跨街道的「屏障線」**，相距約 800 單位（走個 10 秒）。兩組告示牌圍出的東西**完全一樣**。**西邊那組是 TEST（有 box），東邊那組是 CONTROL（沒有）。**
+
+  **看什麼**：每組告示牌旁邊各站一個 NPC，會**來回穿越自己那條告示牌線**（南北向走 310 單位，走路速度）。準星指著可以看到名字：
+  - **`NAVCUT TEST (should go AROUND)`** ← 這條線的正中央有一顆**看不見的 navcut box**
+  - **`NAVCUT CONTROL (walks STRAIGHT)`** ← 一模一樣，但**沒有 box**
+
+  > ⏳ patrol package 冷啟動要 **30–90 秒**，剛進場他們可能還站著不動。等一下，或 `coc` 出去再回來。
+
+  **成功長什麼樣**：兩隻的**走法明顯不同**。CONTROL 直直穿過自己的告示牌線（一直來回踩同一條直線）；TEST **不會直穿**——它會往東（或往西）繞過告示牌線的**端點**再折回來（一個很大的弧），或者乾脆在線前停住／來回徘徊不肯過。**只要 TEST 跟 CONTROL 走得不一樣，就是成功。**
+
+  **失敗長什麼樣**：**兩隻走得一模一樣**，都直直穿過自己的告示牌線，來回踩同一條直線。→ L_NAVCUT 對我們無效，路線 A 被證偽。
+
+  > 為什麼不放一面真的牆？因為 NPC 撞牆會沿牆滑走，「它繞過去了」就分不清是 navcut 生效還是撞牆滑開。告示牌只有 18×18 單位，NPC 直接從中間走過去——**唯一能造成差異的就是那顆看不見的盒子**。
+
+  **順手多測一件（可選，之後每一階段都會受益）**：console 打 `tnm`（toggle navmesh info）。SSE 還畫不畫得出 navmesh 網格？畫得出的話，你直接就能**看見**那塊被裁掉的區域，往後的 navmesh 驗收會快十倍。
+
+  **回報**：① TEST 跟 CONTROL 走法一不一樣（拍個 gif/影片最好，或描述 TEST 的路徑）；② 有沒有 CTD；③ 白漫的大地圖/地圖標記正不正常（這份 esp 會 override `WhiterunWorld`，理論上安全——TopCell 帶了、OFST 沒帶——但這是踩過兩次的雷，順手看一眼）；④ `tnm` 有沒有反應。
+
 - **darksouls-port P1「空殼院」全量擺放（2026-07-06 已交付 `~/skyrim_mods/mine/DSPortP1.zip`，94MB FLAT）**：38 塊 map piece 渲染 NIF + **全 47 碰撞件**（4893 hulls 切成 116 個 ≤57-hull 載體 NIF，P0 實機確認的規模）+ 210 貼圖 + 自有 `DSPortWorld`（SmallWorld、平 LAND 保底 z=4000 沉在院子下方 16k units）。**ESL=false**（LAND 鐵律）、除 Skyrim.esm 無其他 master。
   - **進場**：`cow DSPortWorld 0 0`（會落在保底 LAND 上，抬頭應可見懸空的不死院）→ `player.setpos z 19935`（升到起始牢房地板；MSB 玩家出生點正對 cell (0,0) 中心）。
   - **驗收三段**：① 42 塊拼起來的院子**整體成形**（P0 那面牆 m0046 周圍應接上鄰塊、出現房間/中庭/迴廊）；② 貼圖大致對（個別多層混合材質仍只取第一層，屬 P2 已知）；③ **地板站得住**——起始牢房、中庭、樓梯試走；碰撞這次是全量（不是只有地板大件）。

@@ -27,6 +27,7 @@
 | `examples/settlement_spec.json` | **聚落人口 generator**（`settlements:` 高階 macro）：2 住民（鐵匠+vendor / 廚子+作息覆寫）+ 錨點作息 + 自動 faction |
 | `examples/inworld_skill_tree_spec.json` | Campfire-radial-menu 路線設計範本（**不交付、需裝 Campfire**；留作未來 radial 版參考）|
 | `examples/assets/skilltree/` | 技能樹美術 kit：Campfire 星/線 nif（loose）+ 9 個 vanilla 貼圖；spec `assets` 帶上 |
+| `examples/navcut_spike_spec.json` | **navcut 證偽實驗**（plan T2.0）：白漫大街 A/B 對照，只差一顆 L_NAVCUT box；亦為 `navCuts[]` 的用法範例 |
 
 ---
 
@@ -84,6 +85,28 @@
 | Build P2 | `Generator.Build.ExteriorCells.cs` | 室外 worldspace cell group tree（block/sub-block 按 grid 坐標）；**`WorldspaceOverride` 加性帶上 master 持久 TopCell（`CopyCellEnv`、不重述 vanilla ref）否則 vanilla 地圖標記全消失+大地圖空白**；**`WorldspacePersistentCell`** 回 worldspace 持久 cell 給地圖標記 |
 | Validate | `Generator.Validate.World.cs` | linked-ref target、teleport pairs、worldspace boundary |
 | Diag | `Diagnostics.Dump.World.cs` | placements / cells / linked-refs / navmesh dump |
+
+---
+
+## Navmesh — navCuts（讓 NPC 繞開你擺的東西）＋ P1 診斷
+→ **說明文件**：[SPEC-world.md § navmesh](../../../docs/spec/SPEC-world.md#navmesh--why-npcs-walk-into-your-house-and-how-to-stop-them) · 計畫 [plans/navmesh.md](../../plans/navmesh.md)
+
+Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任何錯誤訊息**）；vanilla navmesh 不知道你新蓋的房子＝NPC 直接穿牆。兩件事：**runtime 裁切**（`navCuts[]`，路線 A）＋ **build 時警告**（P1）。**不動 NAVM 記錄**（那是 plan 的 P3）。
+
+**🔴 兩段閘門（別搞錯）**：`Obstacle` record flag(bit 25) **單獨無效**——引擎是看**碰撞層**，vanilla 55 個 COLL 只有 6 層帶 `NavmeshObstacle`（L_ANIMSTATIC/CLUTTER/PROPS/DEBRIS_LARGE/TRANSPARENT_SMALL_ANIM/**L_NAVCUT(49)**），**L_STATIC(1) 不在內**（一般房子/牆/石頭正是 L_STATIC）→ 「複製 STAT ＋ 加 flag」完全無效。
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.NavCuts.cs` | `NavCutSpec`（editorId/cell/worldspace/**placement**/position＝**box 中心**/size＝**全尺寸非半徑**/rotationZ°/padding）＋ `PlacementNavCutSpec`（enabled/size/offset/padding，帶 `PlacementNavCutConverter` → JSON 收 `false`/`true`/物件三形）＋ `NavmeshSpec`（warnings/autoNavCuts/minFootprint/minHeight/padding/warnEmptyCells）|
+| Spec | `Spec.World.cs` | `PlacementSpec.NavCut`（**省略＝依體積自動**、`false`＝不裁、`true`＝硬裁、物件＝手調）＋ `PlacementSpec.NavmeshCheck`（false＝這筆 ACHR 是**刻意**擺在網格外，關掉診斷；`livingNpcs` 的 off-stage 停車位用）|
+| Spec | `Spec.cs` | `ModSpec.NavCuts` + `ModSpec.Navmesh` |
+| Build P2 | `Generator.Build.NavCuts.cs` | **`BuildNavCuts`**（`Build.cs` 在 `BuildRemovals` 後呼叫）：每個 box → `PlacedObject`{Base=**CollisionMarker `Skyrim.esm:0x000021`**、**`CollisionLayer=49`**、`Primitive`{Box, Bounds=size+2×padding, Color=255,255,0, Unknown=0.15}}，進 cell 的 **Temporary**（**不 persistent**——Skyrim.esm 自己的 441 個靜態 navcut 都是 temporary；exterior 走 persistent 會拖出 worldspace TopCell 的地圖地雷）。**auto**：placement 是 PlacedObject ＋ 在 **vanilla** cell/worldspace ＋ OBND 過門檻 ＋ **真的蓋到 ≥1 個 live 三角形** 才生（三個 guard 缺一不可；最後一條也讓**離線＝零產出＝位元不變**）。欄位已 byte-verify vs HearthFires 1003 筆 ＋ Skyrim.esm 441 筆 |
+| Build P2 | `Generator.Build.NavmeshIndex.cs` | **navmesh 幾何讀取**（RequiresSkyrim 領域）：`NavTrisAt(cell, ws, pos, builtCell)` → vanilla 內裝（`ICellGetter.NavigationMeshes`，**cell-local**）/ vanilla 外景（`FindMasterExteriorCell` **3×3 鄰域**，**world**——邊界點常被鄰居網格蓋住）/ 自建 worldspace（我們自己的 flat quad）/ 自建內裝（`NoTris`＝**已知空**）。座標系天生對得上 `PlacementSpec.Position`，零轉換。跳過帶 `Deleted` flag 的三角形。**`null` ＝「不知道」（無 link cache）→ 呼叫端一律沉默**（鐵律①）。幾何：`InTri2D`/`TriZAt`/`DistToTri2D`/`NearestTri` |
+| Build P2 | `Generator.Build.NavmeshCheck.cs` | **`CheckNavmesh`**（`Build.cs` **最後**呼叫，**只出警告、零記錄**）：**②** ACHR 不在任何三角形上／離地太高 → 「這個 NPC 不會動」；**①** blocking placement 蓋住 vanilla 三角形但沒被任何 navcut box 蓋掉 → 「NPC 會走進去」；**③** `removals[]`/`overrides[]` 動到的大物件**頂面有 navmesh** → 「NPC 會走在空氣上」。`navmesh.warnings:false` 全關；`placements[].navmeshCheck:false` 單筆關 |
+| Validate | `Generator.Validate.NavCuts.cs` | `ValidateNavCuts`：box 需 position+size+cell/worldspace（或 `placement`）、size 三軸 >0、padding ≥0、cell/worldspace 互斥、`placement` 不可再帶 cell/worldspace/position、navCut 不可掛在 ACHR 上、`enabled:false` 卻帶 size/offset/padding ＝矛盾 |
+| Example | `examples/navcut_spike_spec.json` | **T2.0 證偽實驗**（白漫大街 A/B 對照：同樣的 NPC/package/marker/告示牌，只差一顆 navcut box）。14 個座標全部**讀 Skyrim.esm 的 navmesh 挑出來**（marker 不會貼地，猜 z ＝ patrol 靜默失效）|
+| Tests | `NavCutTests.cs` | 記錄形狀（base/layer 49/Box/黃色/0.15/temporary）、size＝全尺寸、padding 三軸外脹、`navCut` 的 bool/物件 JSON 三形、validate 5 條、**離線＝零 navcut**；RequiresSkyrim：auto 裁大牆、跳過雜物、尊重 `false`、`autoNavCuts:false` 改成警告、`navCuts[].placement` 包 OBND |
+| Tests | `NavmeshCheckTests.cs` | 自建內裝預設沉默＋`warnEmptyCells` 開了才講、每 cell 只警告一次、總開關、**無 master ＝ 完全沉默**；RequiresSkyrim：白漫街上站好＝沉默／離網格＝警告／浮空＝警告／刻意 off-stage 可 `navmeshCheck:false` 豁免／大牆未裁＝警告／有 navcut ＝閉嘴／雜物永不吵；**spike spec 本身必須零警告＋剛好 1 顆 navcut** |
 
 ---
 

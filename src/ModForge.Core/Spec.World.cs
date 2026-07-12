@@ -100,6 +100,18 @@ public sealed class PlacementSpec
     public LockSpec? Lock { get; set; }                 // XLOC; doors and containers
     public OwnershipSpec? Ownership { get; set; }       // XOWN; theft/crime system
     public int Count { get; set; }                      // XCNT; omitted if 0
+    // NAVCUT: whether this placement gets an L_NAVCUT volume so NPCs path AROUND it instead of
+    // walking into it. Omit = automatic (cut it iff its OBND says it's big enough to block AND it
+    // actually covers vanilla navmesh); `false` = never; `true` = always; an object = hand-tuned box.
+    // See Spec.NavCuts.cs (PlacementNavCutSpec) for the full contract and the engine's limits.
+    public PlacementNavCutSpec? NavCut { get; set; }
+    // Opt this placement out of the P1 navmesh diagnostics. The one legitimate reason: an ACHR you
+    // DELIBERATELY park off the navmesh — an actor staged off-stage in a hole somewhere, waiting for a
+    // script to MoveTo it into the world (livingNpcs does exactly this). Such an actor never paths from
+    // where it is authored, so "this NPC will not move" is a false alarm. Do NOT use it to silence a
+    // real off-mesh mistake — that warning exists because the in-game symptom is a mute, motionless NPC
+    // and no error anywhere.
+    public bool NavmeshCheck { get; set; } = true;
 }
 // One Linked Reference: `target` is the linked placed ref (a placement editorId or external ref);
 // `keyword` (optional ref → KYWD) tags the link. Empty keyword = the null/default link.

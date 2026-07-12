@@ -4,6 +4,20 @@
 
 **2026-07-12 出計畫。本檔的調研結論已用離線 spike 驗過（見 §2），未經實機的部分一律標記。**
 
+> ## 📍 落地狀態（2026-07-12，第一批）
+>
+> | 階段 | 狀態 |
+> |---|---|
+> | **P1 診斷警告** | ✅ **已落地**（`Generator.Build.NavmeshIndex.cs` ＋ `Generator.Build.NavmeshCheck.cs`；症狀①②③全覆蓋；離線優雅降級＝完全沉默）|
+> | **T2.0 navcut spike** | ✅ 已出貨 → **🎮 等實機**（`~/skyrim_mods/mine/ModForgeNavcutSpike.zip`；驗收步驟見 [wait_todo/ingame-tests](../../wait_todo/ingame-tests.md)）|
+> | **`navCuts[]` 契約 ＋ 自動裁切** | ✅ **已落地**（`Spec.NavCuts.cs` / `Generator.Build.NavCuts.cs`；使用者拍板的欄位形狀見 §7-2）|
+> | P0 / P2.1 / P3 / P4 | 未動（照原順序） |
+>
+> **三個實作時發現、與原文不同的事實**（原文照舊留著，這裡是修正）：
+> 1. **XPRM `Bounds` ＝ 全尺寸，不是半徑**。原文 §3 的 `Bounds = (187, 170, 60)` 抄自 HearthFires `004104`，但沒說那是半徑還是全寬。**已用 vanilla 判定**：`00410D` 的盒是 116×52.8×46.9，而它包的那口箱子（`TreasBanditChestEMPTY`）OBND 是 96×49×48 —— 三軸比值 0.98–1.2，是**貼著箱子的全尺寸盒**；若為半徑則盒會是箱子的 2.4 倍。→ ModForge 的 `size` **1:1 寫進 Bounds**。
+> 2. **navcut 不設 persistent**。原文配方寫 `MajorRecordFlagsRaw |= 0x400`。實際掃過 vanilla：**Skyrim.esm 自己的 441 個靜態 navcut 全是 temporary**（HearthFires 那批帶 0x400 是因為蓋房腳本要 enable-parent 它們）。而且**外景 navcut 若 persistent 就得動 worldspace 的持久 TopCell** —— 正是 [worldspace-override-must-carry-topcell] 那顆炸過兩次的地雷。→ **一律 temporary**（已 byte 比對：產出的 WRLD override 帶 EDID/TopCell(flags 0x40400)、無 OFST，正確）。
+> 3. **「自建內裝 cell 完全沒有 navmesh」不當預設警告**。它是**真的**，但它對**每一個** ModForge 內裝都成立（P3 才會修）——每次 build 都吼的警告就是雜訊。→ 收進 `navmesh.warnEmptyCells`（**預設 off**），幾何類警告（vanilla cell 裡站錯地方、擋住沒裁）維持**預設 on**。**採集橋/編輯器的產物都在 vanilla cell，所以使用者真正在意的路徑 100% 覆蓋。**
+
 ---
 
 ## 1. 問題：三個症狀，痛的程度不同
@@ -139,33 +153,28 @@ new PlacedObject {
 - **T0.2 🎮** 出一份**只含 no-op NAVM override**（內裝一張＋外景一張，什麼都不改）的 esp → 進遊戲：**不 CTD、NPC 在該 cell 照常走動、開/關門正常**。
   - **這一步證明的事**：我們重新序列化的 NVNM 被引擎接受、parent chain（CELL/WRLD override）沒有副作用。**沒過就整條 B 路線作廢**，直接退回 C ＋ D。
 
-### P1 — 診斷與警告（**零風險、立刻有感**，不寫任何 navmesh 記錄）
+### ✅ P1 — 診斷與警告（**已落地 2026-07-12**）
 
-- **T1.1〔離線〕** build/validate 時的 navmesh 覆蓋檢查：
-  - 每個會生 NPC 的 marker/placement（ACHR）→ 找它所在 cell 的 NAVM → **點是否落在某個 triangle 的 2D 投影內**、垂直距離多少。沒有 → `! NPC 'X' 落在無 navmesh 處（最近的 triangle 在 420 單位外）——它不會移動`。
-  - 每個 placement → 用 base 的 `BOUND`（OBND 子記錄）算 2D footprint → 數它蓋住幾個 vanilla triangle → `! placement 'Y' 蓋住 vanilla navmesh 的 12 個 triangle——NPC 會直接走進去（考慮 navCuts）`。
-  - `removals[]`/`overrides[]` 動到的 ref：若它下面有 triangle，提示症狀③。
-- **T1.2〔離線〕** 這些警告要能**關掉/調閾值**（否則擺一堆雜物會洗版）——只對 base 的 OBND 體積超過閾值的物件警告。
-- 驗收〔離線〕：拿一份「在 Bannered Mare 桌上放杯子」的 spec ＝ 零警告；「在白漫城外空地放山羊 marker」＝ 若無網格則出警告。單元測試覆蓋兩側。
+- **✅ T1.1** `Generator.Build.NavmeshIndex.cs`（讀幾何）＋ `Generator.Build.NavmeshCheck.cs`（出警告，`Build()` 最後跑、**零記錄**）：
+  - **②** ACHR 不在任何三角形的 2D 投影內 → `! navmesh: NPC 'X' is off the navmesh — the nearest walkable triangle is 420 units away. It will NOT move …`；在三角形上但高度差過大（>200 上 / >400 下）→ `… is 560 units ABOVE the navmesh under it (floor z=…, placed z=…)`。
+  - **①** placement 的 OBND footprint 蓋住 N 個 vanilla triangle 且**沒有任何 navcut box 蓋掉它們** → `! navmesh: placement 'Y' covers 12 vanilla navmesh triangle(s) but nothing cuts them — NPCs will walk into it`（有 navcut → 閉嘴；`navCut:false` → 換一句「你說不裁的，NPC 會穿過去」）。
+  - **③** `removals[]`/`overrides[]` 動到的大物件，**頂面**有 vanilla navmesh（＝它本來是被走在上面的）→ 提示 NPC 會走在空氣上。
+  - 座標系天生對得上（內裝 cell-local、外景 world ＝ `PlacementSpec.Position` 的兩個 frame），**零轉換**。外景查 **3×3 鄰域**（點在 cell 邊界時常被鄰居的網格蓋住，不查會誤報）。跳過帶 `Deleted` flag 的三角形。
+- **✅ T1.2** 門檻與開關：`navmesh.minFootprint`(10000 units²)＋`minHeight`(100) → 只有「真的擋得住路」的東西才進①（椅子 60×60=3600、木桶 54×54 → 永遠不吵）；`navmesh.warnings:false` 全關；`placements[].navmeshCheck:false` 單筆豁免（**唯一正當用途＝刻意 park 在網格外、等腳本 MoveTo 進場的 ACHR**，`livingNpcs` 的 off-stage 停車位就是——這個 false positive 是本次實作抓出來的）。
+- **✅ 驗收〔離線〕**：`NavmeshCheckTests.cs`（雜物零警告／站好零警告／離網格警告／浮空警告／有 navcut 閉嘴／**spike spec 本身必須零警告**）。**無 Skyrim.esm ＝ 全部沉默**（「不知道」永遠不當成「有問題」）。
 - 🎮 無需實機。**P1 做完，症狀②從「NPC 為什麼不動？」變成 build 時的一行字。**
 
 ### P2 — cut：讓擺出來的建築真的擋住 NPC
 
-- **T2.0 🎮（半天，先做，很可能就是 P2 的最終答案）— 路線 A：L_NAVCUT 體積**：spec 新增 `navCuts[]` → 生一筆 `CollisionMarker` REFR（base `0x000021` ＋ `CollisionLayer=49` ＋ `Primitive{Box, Bounds}` ＋ 0x400），擺在白漫大街正中央 → 看**衛兵繞不繞開那塊空氣**。
-  - **繞開** ⇒ 症狀①結案。**T2.1–T2.2（NAVM cut）整個不必做**，NAVM override 只留給 P3（症狀②）。
-  - **不繞** ⇒ 檢查 bounds 是否為半徑而非全寬、有沒有貼齊地面、是否 persistent；再不行才退到下面的 NAVM cut。
+- **✅ T2.0（已出貨，🎮 等實機）— 路線 A：L_NAVCUT 體積**。契約與生成端全部落地（`Spec.NavCuts.cs` / `Generator.Build.NavCuts.cs`，欄位形狀見 §7-2）；產物 `~/skyrim_mods/mine/ModForgeNavcutSpike.zip`（`examples/navcut_spike_spec.json`），**驗收步驟在 [wait_todo/ingame-tests](../../wait_todo/ingame-tests.md)**。
+  - **實驗設計（重點是「一眼看得出成敗」＋去除混淆變因）**：白漫大街（`WhiterunWorld` = `Skyrim.esm:0x01A26F`）上擺**兩條完全相同的車道**，相距 800 單位——同樣的 NPC、同樣的 patrol package、同樣相距 310 單位的兩顆 marker、同樣 4 根告示牌標出屏障線。**唯一的差別：A 道中間有一顆 navcut box，B 道沒有。**
+    - **不放實體牆**（本來想放，但 NPC 撞牆會 slide、會沿牆滑走 → 「它繞過去了」變成可疑的偽陽性）。告示牌只有 18×18，NPC 直接從中間走過去，**只有那顆看不見的盒子能造成差異**。
+    - box：中心 (21750, −7625, −3510.6)、size 520×140×220、padding 32 → 實際 XPRM Bounds **584×204×284**；蓋住 7 個三角形重心、與 12 個三角形相交。204 單位厚的禁區遠寬過 NPC 的一步，任何路徑都跨不過去。
+    - **14 個座標全部是讀 Skyrim.esm 的 navmesh 挑的**（三角形內插高度）——marker 不會貼地，猜 z ＝ patrol 靜默失效（這正是 `patrol_spec` 當年 round-1 掛掉的原因），而 P1 的檢查現在就是防這個的工具（spike spec 跑出來零警告，有測試盯著）。
+  - **判讀（設計成對兩種可能的引擎實作都成立）**：**TEST 的走法只要和 CONTROL 有任何不同**（繞開、拒絕穿越、貼著盒子邊緣走）⇒ navcut 有效，**症狀①結案，T2.1–T2.2（NAVM cut）整個不必做**。**兩隻都直直走過去** ⇒ L_NAVCUT 對我們無效，**路線 A 被證偽**，回頭走下面的 NAVM cut。
   - 附帶測：console `tnm`（toggle navmesh info）在 SSE 還能不能畫出網格——能的話往後每階段的實機驗收都快十倍。
-  - **`navCuts[]` 的體積要往外脹半個 actor 寬（約 +30~40 單位）**——引擎拿 actor 當零體積比對，留縫就穿過去。
 
-- **契約（新 spec 段，明示模型；T2.0 與 T2.1 共用同一段，只是後端不同）**：頂層 `navCuts[]`，與 `removals[]`/`overrides[]`/`references[]` 並列（同一個家族：**碰既有記錄的操作住頂層**）。
-  ```json
-  "navCuts": [
-    { "cell": "Skyrim.esm:0x01605E",      // 或 worldspace + 世界座標
-      "shape": "box",                      // box | placement
-      "center": {"x":0,"y":0,"z":0}, "size": {"x":300,"y":200,"z":400}, "rotationZ": 45 },
-    { "placement": "MFRef_myhouse_1" }     // 便利式：直接用某個 placement 的 OBND footprint
-  ]
-  ```
+- **契約（已落地）**：頂層 `navCuts[]`，與 `removals[]`/`overrides[]`/`references[]` 並列（同一個家族：**碰既有記錄的操作住頂層**）。**最終形狀見 §7-2**（原草案的 `shape`/`center` 欄位換成 `position`（＝中心）/`size`（＝全尺寸）/`padding`，並多了 `placements[].navCut` 的自動三態）。
 - **後備實作：NAVM cut（`Generator.Build.NavCuts.cs`，T2.1–T2.2——⚠️ 只有 T2.0 失敗才做）**：
   1. 解出目標 cell 的 NAVM（`ICellGetter.NavigationMeshes`）→ `GetOrAddAsOverride`。
   2. 對每個 triangle：重心（或三頂點）落在 cut 體積內 → `Flags |= NavmeshTriangle.Flag.Deleted`。**不刪陣列元素、不重編號、不碰 EdgeLinks/DoorTriangles/Grid**（索引全部不變 → 鄰居的 EdgeLink 依然正確 → **不必碰鄰居 cell**）。
@@ -228,12 +237,58 @@ new PlacedObject {
 
 ---
 
-## 7. 要使用者拍板的
+## 7. 拍板紀錄 ＋ 還沒拍的
 
-1. **順序**：建議 **P1（診斷，零風險、零 navmesh 寫入）→ P2 的 T2.0（L_NAVCUT，半天，症狀①結案）→ P0（NAVM spike）→ P3（add+link，症狀②）**。也就是：**兩個便宜又有感的先做，動刀 NAVM 留到真的非動不可（＝要 NPC 走「上」新東西）的時候。**
-2. **明示 vs 自動**：`navCuts` 要玩家/agent **明示標記**，還是 build 時**自動**對所有大體積 placement 生成？我建議**明示 ＋ build 警告提醒**（沿用 removals/overrides 的明示模型；自動裁切會把裝飾用的假牆也裁掉，而且沉默地改變 vanilla 尋路）。**但**因為 L_NAVCUT 便宜又無副作用，「大體積 placement 自動配一顆 navcut box」也不是不能考慮——你決定。
-3. **內裝先行**：P3（NAVM add）**先只支援內裝**（EdgeLinks=0，安全灘頭堡），外景等內裝實機過了再開？外景是編輯器的主場，但也是地雷區（跨 cell EdgeLink）。
-4. **P3 的三角化要不要引 DotRecast**（C# 的 Recast port，NuGet 2026.1.3 活躍；CK 自己的 auto-generate 就是 Recast）？我的傾向：**先不要**——用 DLL 的射線取樣（P4）拿真實地板高度，配手寫的凸多邊形三角化就夠；DotRecast 需要餵三角湯（＝要先解 NIF havok 幾何），是另一條產業鏈。
+### ✅ 1. 順序（2026-07-12 使用者拍板）
+
+**P1（診斷）→ T2.0（L_NAVCUT spike）→ P0（NAVM no-op 上機）→ P3（add+link）→ P4（DLL 讀 live navmesh）。** 前兩項已做完（見頂部落地狀態）。
+
+### ✅ 2. 明示 vs 自動 ＝ **「兩者都要」**（2026-07-12 使用者拍板）——**預設自動 ＋ 可關 ＋ 可手調**
+
+原文兩案並陳（明示 vs 自動）；使用者裁決：**大體積 placement 預設自動配一顆 navcut box，但要能明示關掉、也要能手調 box 尺寸。** 落地的欄位形狀：
+
+```jsonc
+// ① 頂層 navCuts[]：明示一顆盒（與 removals/overrides/references 同一家族——碰「既有世界」的操作住頂層）
+"navCuts": [
+  { "editorId": "MF_CutUnderHouse",
+    "worldspace": "Skyrim.esm:0x00003C",          // 或 cell（內裝）
+    "position": {"x":100,"y":200,"z":-3510},      // box 的「中心」（三軸都是中心！）
+    "size":     {"x":520,"y":140,"z":220},        // 「全尺寸」w×d×h（不是半徑）
+    "rotationZ": 45,                              // 度
+    "padding": 32 },                              // 每一側往外脹（預設 32）
+  { "placement": "MF_MyHouse" }                   // 便利式：直接包某個 placement 的 OBND footprint
+],
+
+// ② placements[].navCut：**拍板的三態**（省略 / false / true / 物件）
+{ "editorId":"MF_MyHouse", "base":"...", "worldspace":"...",
+  // (省略)              → 自動：OBND 過門檻 && 真的蓋到 vanilla navmesh 才裁
+  // "navCut": false     → 明確不裁（裝飾用假牆、本來就該讓 NPC 穿過去的東西）
+  // "navCut": true      → 明確要裁（就算沒過門檻）
+  // "navCut": { "size": {...}, "offset": {...}, "padding": 48 }   → 手調盒
+},
+
+// ③ 頂層 navmesh：門檻與總開關
+"navmesh": {
+  "autoNavCuts": true,      // 預設 true ＝拍板的「預設自動」
+  "minFootprint": 10000,    // units²（100×100）：OBND 的 XY 面積門檻。椅子 60×60=3600、木桶 54×54 → 遠低於門檻，雜物不會被裁
+  "minHeight": 100,         // units：OBND 高度門檻
+  "padding": 32,            // 每顆盒的預設外脹（≈半個 actor 寬）
+  "warnings": true,         // P1 診斷總開關
+  "warnEmptyCells": false   // 「自建內裝沒 navmesh」提醒（預設 off，理由見頂部第 3 點）
+}
+```
+
+**「自動」的三道 guard（缺一不可，這是它敢預設開的原因）**：① 物件（非 ACHR/hazard）；② 落在 **vanilla** cell/worldspace（自建 cell 沒有 vanilla 網格可裁）；③ **真的蓋到 ≥1 個 live 三角形**（沒東西可裁就不生記錄）。→ 只在**真的會出事**的地方生記錄，而且第③條讓**離線機（無 Skyrim.esm）＝零產出＝位元不變**。
+
+**還有一條需要你點頭**：`autoNavCuts` **預設 true** 表示既有 spec 只要在 vanilla 世界擺了大體積物件，下次 build 就會多出 navcut REFR。這正是拍板要的行為（也正是那些 mod 一直有的 bug），但它會**改動既有已出貨 mod 的產物**。若你想「先觀望到 T2.0 實機過了再開」，把 `Spec.NavCuts.cs` 的 `AutoNavCuts` 預設改成 `false` 即可（一行）。
+
+### 3. 內裝先行？（未拍板）
+
+P3（NAVM add）**先只支援內裝**（EdgeLinks=0，安全灘頭堡），外景等內裝實機過了再開？外景是編輯器的主場，但也是地雷區（跨 cell EdgeLink）。
+
+### 4. P3 的三角化要不要引 DotRecast？（未拍板）
+
+C# 的 Recast port，NuGet 2026.1.3 活躍；CK 自己的 auto-generate 就是 Recast。我的傾向：**先不要**——用 DLL 的射線取樣（P4）拿真實地板高度，配手寫的凸多邊形三角化就夠；DotRecast 需要餵三角湯（＝要先解 NIF havok 幾何），是另一條產業鏈。
 
 ---
 

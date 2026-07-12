@@ -1,0 +1,135 @@
+{
+  "pluginName": "ModForgeNavcutSpike.esp",
+  "esl": true,
+  "_": "T2.0 NAVCUT SPIKE (workflows/plans/navmesh.md) — a FALSIFICATION experiment, not a feature demo. Question: does an L_NAVCUT collision volume authored by ModForge (base CollisionMarker 0x000021 + CollisionLayer 49 + XPRM box) actually switch vanilla navmesh off at runtime, so an NPC paths AROUND it? Design = a matched A/B pair 800 units apart on the Whiterun main street (WhiterunWorld = Skyrim.esm:0x01A26F). BOTH lanes are byte-for-byte identical — same NPC, same package, same two markers 310 units apart, same 4 sign posts marking the barrier line — EXCEPT lane A has a navCut box across the middle and lane B does not. READ-OUT: if the TEST NPC's path differs from the CONTROL's in ANY way (arcs around the post line, refuses to cross, hugs the posts' ends) the navcut works; if both walk the same straight line through their posts, L_NAVCUT is dead for us and route A of the plan is falsified. Every coordinate below was picked by reading Skyrim.esm's own navmesh — all 14 are verified to sit on a live triangle, and the floor z is the interpolated triangle height at that point (an XMarkerHeading does NOT snap to the floor, so a guessed z silently kills the patrol).",
+
+  "navmesh": {
+    "_": "autoNavCuts OFF on purpose: the spike must have exactly ONE navcut in it — the one authored below. Anything auto-generated would muddy a falsification test.",
+    "autoNavCuts": false
+  },
+
+  "npcs": [
+    {
+      "editorId": "MF_NavcutTester",
+      "name": "NAVCUT TEST (should go AROUND)",
+      "race": "Skyrim.esm:0x013746",
+      "class": "Skyrim.esm:0x01326B",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "level": 5,
+      "autoCalcStats": true,
+      "unique": true,
+      "aggression": "Unaggressive",
+      "confidence": "Cowardly",
+      "energyLevel": 50,
+      "packages": [ "MF_NavcutPatrolA" ]
+    },
+    {
+      "editorId": "MF_NavcutControl",
+      "name": "NAVCUT CONTROL (walks STRAIGHT)",
+      "race": "Skyrim.esm:0x013746",
+      "class": "Skyrim.esm:0x01326B",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "level": 5,
+      "autoCalcStats": true,
+      "unique": true,
+      "aggression": "Unaggressive",
+      "confidence": "Cowardly",
+      "energyLevel": 50,
+      "packages": [ "MF_NavcutPatrolB" ]
+    }
+  ],
+
+  "packages": [
+    {
+      "editorId": "MF_NavcutPatrolA",
+      "_": "Patrol template (Skyrim.esm:0x017723). Route = the linkedRefs loop A1 -> A2 -> A1. The straight line between the two markers runs dead through the navCut box.",
+      "template": "Skyrim.esm:0x017723",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [ "AllowIdleChatter", "ObserveCombatBehavior" ],
+      "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 0, "dayOfWeek": "Any" },
+      "patrol": { "start": "MF_NavcutMarkerA1", "radius": 40, "repeatable": true, "startAtNearest": true }
+    },
+    {
+      "editorId": "MF_NavcutPatrolB",
+      "_": "Identical package for the CONTROL lane — same template, same radius, same loop shape. The ONLY difference between the lanes is the navCut box.",
+      "template": "Skyrim.esm:0x017723",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [ "AllowIdleChatter", "ObserveCombatBehavior" ],
+      "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 0, "dayOfWeek": "Any" },
+      "patrol": { "start": "MF_NavcutMarkerB1", "radius": 40, "repeatable": true, "startAtNearest": true }
+    }
+  ],
+
+  "navCuts": [
+    {
+      "_": "THE EXPERIMENT. A 520 x 140 x 220 box lying ACROSS lane A's patrol line, padded outward by 32 (half an actor's width — the engine tests actors as ZERO-VOLUME points, so an unpadded box leaks). Emitted XPRM Bounds = 584 x 204 x 284, centred at (21750, -7625, -3510.6): X 21458..22042, Y -7727..-7523, Z -3652..-3368. The floor under it runs -3583..-3548, so the box straddles the navmesh plane by a wide margin. It covers 7 vanilla triangle centroids and intersects 12 triangles. The 204-unit-thick forbidden band is far wider than an NPC's step, so no path can hop it — the NPC must round one of the X ends (21458 / 22042), both of which have open navmesh.",
+      "editorId": "MF_NavcutBoxA",
+      "worldspace": "Skyrim.esm:0x01A26F",
+      "position": { "x": 21750, "y": -7625, "z": -3510.6 },
+      "size": { "x": 520, "y": 140, "z": 220 },
+      "rotationZ": 0,
+      "padding": 32
+    }
+  ],
+
+  "placements": [
+    {
+      "_": "TEST NPC, spawned on marker A1 (floor z read off the vanilla navmesh triangle under it).",
+      "base": "MF_NavcutTester",
+      "worldspace": "Skyrim.esm:0x01A26F",
+      "position": { "x": 21750, "y": -7470, "z": -3561.8 }
+    },
+    {
+      "editorId": "MF_NavcutMarkerA1",
+      "_": "Lane A north marker. 53 units clear of the padded box's north edge — enough ground to stand on and start a path from.",
+      "kind": "xmarkerHeading",
+      "worldspace": "Skyrim.esm:0x01A26F",
+      "position": { "x": 21750, "y": -7470, "z": -3561.8 },
+      "linkedRefs": [ { "target": "MF_NavcutMarkerA2" } ]
+    },
+    {
+      "editorId": "MF_NavcutMarkerA2",
+      "_": "Lane A south marker, 310 units due south of A1. The direct line crosses the box.",
+      "kind": "xmarkerHeading",
+      "worldspace": "Skyrim.esm:0x01A26F",
+      "position": { "x": 21750, "y": -7780, "z": -3565.8 },
+      "linkedRefs": [ { "target": "MF_NavcutMarkerA1" } ]
+    },
+
+    {
+      "_": "CONTROL NPC, spawned on marker B1. Identical build to the tester.",
+      "base": "MF_NavcutControl",
+      "worldspace": "Skyrim.esm:0x01A26F",
+      "position": { "x": 22550, "y": -7470, "z": -3510.5 }
+    },
+    {
+      "editorId": "MF_NavcutMarkerB1",
+      "kind": "xmarkerHeading",
+      "worldspace": "Skyrim.esm:0x01A26F",
+      "position": { "x": 22550, "y": -7470, "z": -3510.5 },
+      "linkedRefs": [ { "target": "MF_NavcutMarkerB2" } ]
+    },
+    {
+      "editorId": "MF_NavcutMarkerB2",
+      "kind": "xmarkerHeading",
+      "worldspace": "Skyrim.esm:0x01A26F",
+      "position": { "x": 22550, "y": -7780, "z": -3518.5 },
+      "linkedRefs": [ { "target": "MF_NavcutMarkerB1" } ]
+    },
+
+    {
+      "_": "The 8 sign posts (SignWRPost01, 18x18x192) are the only thing you can SEE — a navcut volume is invisible. Four of them bracket lane A's box; four sit at the SAME offsets in lane B, where there is no box. They are 18x18, far under navmesh.minFootprint, so they neither cut navmesh nor meaningfully block anyone — an NPC walks straight between them. If the TEST NPC refuses to cross ITS post line while the CONTROL strolls through its identical one, the only possible cause is the box.",
+      "base": "Skyrim.esm:0x09625E",
+      "worldspace": "Skyrim.esm:0x01A26F",
+      "position": { "x": 21490, "y": -7565, "z": -3580.1 }
+    },
+    { "base": "Skyrim.esm:0x09625E", "worldspace": "Skyrim.esm:0x01A26F", "position": { "x": 21490, "y": -7685, "z": -3583.2 } },
+    { "base": "Skyrim.esm:0x09625E", "worldspace": "Skyrim.esm:0x01A26F", "position": { "x": 22010, "y": -7565, "z": -3551.1 } },
+    { "base": "Skyrim.esm:0x09625E", "worldspace": "Skyrim.esm:0x01A26F", "position": { "x": 22010, "y": -7685, "z": -3548.5 } },
+
+    { "base": "Skyrim.esm:0x09625E", "worldspace": "Skyrim.esm:0x01A26F", "position": { "x": 22290, "y": -7565, "z": -3537.6 } },
+    { "base": "Skyrim.esm:0x09625E", "worldspace": "Skyrim.esm:0x01A26F", "position": { "x": 22290, "y": -7685, "z": -3536.5 } },
+    { "base": "Skyrim.esm:0x09625E", "worldspace": "Skyrim.esm:0x01A26F", "position": { "x": 22810, "y": -7565, "z": -3507.7 } },
+    { "base": "Skyrim.esm:0x09625E", "worldspace": "Skyrim.esm:0x01A26F", "position": { "x": 22810, "y": -7685, "z": -3511.4 } }
+  ]
+}

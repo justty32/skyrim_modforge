@@ -27,6 +27,10 @@ internal static partial class Program
             // name any ref field can resolve (Spec.References.cs).
             Console.WriteLine($"{spec.References.Count} reference(s) — labels bound to existing refs: "
                 + string.Join(", ", spec.References.Select(r => $"'{r.Label}'")));
+        if (result.Stats.NavCuts > 0)
+            // L_NAVCUT volumes (Spec.NavCuts.cs) — vanilla navmesh is switched OFF inside each box at
+            // runtime, so NPCs path around what we placed instead of walking into it.
+            Console.WriteLine($"{result.Stats.NavCuts} navCut volume(s) — vanilla navmesh cut at runtime (L_NAVCUT / CollisionMarker)");
         WriteSeq(outPath, Path.GetDirectoryName(Path.GetFullPath(outPath)) ?? ".");
         if (spec.Weathers.Count > 0)
         {

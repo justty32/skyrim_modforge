@@ -49,6 +49,7 @@ public static partial class Generator
         ctx.ValidateRemovals();
         ctx.ValidateOverrides();
         ctx.ValidateReferences();
+        ctx.ValidateNavCuts();
         ValidateWeather(spec, ctx.Problems, ctx.Ids, ctx.CheckRef);
         ValidateLights(spec, ctx.Problems);
         ValidateLighting(spec, ctx.Problems);

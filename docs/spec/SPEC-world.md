@@ -90,6 +90,83 @@
 - **`count`** (XCNT): item stack count for a placed item (e.g. 50 gold coins). `0` = single
   instance (subrecord omitted). Not meaningful for actors or statics.
 
+### navmesh — why NPCs walk into your house (and how to stop them)
+
+Skyrim NPCs move **only** on the navmesh. Sandbox, travel, follow, patrol and combat all path through
+it; an actor with no triangle under its feet does literally nothing, forever, with **no error message
+anywhere**. And a vanilla navmesh doesn't know about the house you just placed on top of it — so NPCs
+walk straight through your walls. Two knobs address this.
+
+**1. `navCuts[]` — switch vanilla navmesh OFF inside a box, at runtime.**
+
+This is Bethesda's own mechanism (`HearthFires.esm` uses it **1003 times** — it's how building a house
+carves the navmesh): one placed ref on the engine's hardcoded `CollisionMarker` base, on collision
+layer **49 (L_NAVCUT)**, carrying a box primitive. No NAVM edit, no NAVI edit, no NIF, no navmesh
+conflict with other mods.
+
+```jsonc
+"navCuts": [
+  { "editorId": "MF_CutUnderHouse",
+    "worldspace": "Skyrim.esm:0x00003C",
+    "position": { "x": 100, "y": 200, "z": -3510 },   // the CENTRE of the box, in all three axes
+    "size":     { "x": 520, "y": 140, "z": 220 },     // the FULL size (w × d × h), NOT half-extents
+    "rotationZ": 45,                                   // degrees
+    "padding": 32 },                                   // grows the box outward on every side
+
+  { "placement": "MF_MyHouse" }    // or: just wrap that placement's own OBND footprint
+]
+```
+
+- **`size` is the full box size**, written straight into XPRM `Bounds`. Verified against vanilla:
+  HearthFires' `00410D` box is 116×52.8×46.9 around a chest whose OBND is 96×49×48.
+- **Always keep some `padding`.** The engine compares **actors as zero-volume points** against the
+  volume, so a box that stops exactly at the wall leaves a seam NPCs squeeze through. The default 32
+  ≈ half an actor's width. (Z is padded too, so the box straddles the navmesh plane rather than
+  resting on it.)
+- Three more engine limits worth knowing: a navcut only applies **in the cell the player is in**; it
+  only affects paths **started after** it switched on (an NPC already walking through finishes the
+  walk); and the `CollisionMarker` base is invisible and non-blocking, so the volume itself never
+  gets in anyone's way.
+- 🔴 **The trap:** the `Obstacle` record flag on its own does **nothing**. The engine gates navmesh
+  cutting on the **collision layer**, and only six of the 55 vanilla layers cut navmesh — L_NAVCUT
+  among them, **L_STATIC (what houses, walls and rocks collide on) not**. So "clone a vanilla static
+  and set the Obstacle flag" cannot work, no matter how right it looks.
+
+**2. `placements[].navCut` — per-placement control of the automatic cut.**
+
+By default a placement that is **big enough to block a path** (its base OBND clears
+`navmesh.minFootprint` and `minHeight`) **and actually covers vanilla navmesh** gets a navcut box for
+free, sized from its own footprint. Override it per placement:
+
+```jsonc
+"navCut": false                                      // never cut this one — scenery NPCs may walk through
+"navCut": true                                       // cut it even though it's under the size thresholds
+"navCut": { "size": {…}, "offset": {…}, "padding": 48 }   // hand-tuned box
+```
+
+Tune the whole thing with the top-level `navmesh` object: `autoNavCuts` (default `true`),
+`minFootprint` (10000 units² — a chair is 3600, so clutter is never cut), `minHeight` (100),
+`padding` (32), `warnings` (see below), `warnEmptyCells`.
+
+**3. The build warnings.** `build` now reads the vanilla navmesh and tells you what the game never
+will:
+
+```
+! navmesh: NPC 'MyMerchant' is off the navmesh — the nearest walkable triangle is 420 units away.
+  It will NOT move …
+! navmesh: NPC 'MyGuard' is 560 units ABOVE the navmesh under it (floor z=-3562, placed z=-3000) …
+! navmesh: placement 'MyHouse' covers 12 vanilla navmesh triangle(s) but nothing cuts them …
+```
+
+These need `Skyrim.esm` (they read its navmesh geometry). **Offline they simply stay silent** — an
+unknown answer is never reported as a problem. Set `"navmesh": {"warnings": false}` to silence them,
+and `navmeshCheck: false` on a single placement for the one legitimate exception: an actor you
+*deliberately* park off-mesh for a script to `MoveTo` into the world later.
+
+> ⚠️ ModForge cannot author **interior** navmesh yet, so an NPC in a brand-new interior cell has
+> nothing to path on. Put NPCs that need to walk in a vanilla cell (or a custom worldspace cell with
+> `navmesh: true`). Opt into `"navmesh": {"warnEmptyCells": true}` for a reminder.
+
 ### map markers (XMRK) — permanent world-map icons
 
 `mapMarkers[]` adds discoverable/fast-travel **location markers** to the world map — independent of any
