@@ -81,7 +81,7 @@
       "_": "THE NAMED ONE. Same base / rotation / scale as the decoy; the only difference is that references[] gives it a label. Against the north wall, 380 units from Sofia and 230 past the decoy.",
       "base": "Skyrim.esm:0x06E7A8",
       "cell": "Skyrim.esm:0x0165A8",
-      "position": { "x": -400, "y": 400, "z": 64 },
+      "position": { "x": -400, "y": 330, "z": 64 },
       "rotation": { "x": 0, "y": 0, "z": 180 }
     }
   ],
