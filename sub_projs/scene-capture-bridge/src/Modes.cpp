@@ -5,6 +5,7 @@
 #include "Eraser.h"
 #include "Markers.h"
 #include "Palette.h"
+#include "Referrer.h"
 #include "log.h"
 
 #include <chrono>
@@ -18,7 +19,8 @@ namespace {
     Modes::Mode g_mode = Modes::Mode::kOff;
     // Index by Mode; slot 0 (kOff) exists but is never read.
     std::uint32_t g_binds[static_cast<std::size_t>(Modes::Mode::kTotal)] = {
-        0, kDefaultBind, kDefaultBind, kDefaultBind, kDefaultBind, kDefaultBind, kDefaultBind};
+        0, kDefaultBind, kDefaultBind, kDefaultBind, kDefaultBind, kDefaultBind, kDefaultBind,
+        kDefaultBind};
     // Per-mode aim source (false = crosshair). Same indexing as g_binds.
     bool g_useRay[static_cast<std::size_t>(Modes::Mode::kTotal)] = {false};
 
@@ -36,6 +38,9 @@ namespace {
         case Modes::Mode::kPlace:  Palette::PlaceSelected(); break;
         case Modes::Mode::kEdit:   ray ? Editor::SelectByRay() : Editor::EnterSelect(); break;
         case Modes::Mode::kCapture: ray ? Captures::CaptureByRay() : Captures::CaptureCrosshair(); break;
+        // No label on the action key — the row gets "ref-<seq>" and is renamed in
+        // the panel. `sc ref <Label>` is the one-shot labelled path.
+        case Modes::Mode::kReferrer: ray ? Referrer::MarkByRay("") : Referrer::MarkCrosshair(""); break;
         default: break;
         }
     }
@@ -61,6 +66,7 @@ namespace Modes {
         case Mode::kPlace:  return "place";
         case Mode::kEdit:   return "edit";
         case Mode::kCapture: return "capture";
+        case Mode::kReferrer: return "referrer";
         default:            return "off";
         }
     }
@@ -73,6 +79,7 @@ namespace Modes {
         case Mode::kPlace:  return "pl";
         case Mode::kEdit:   return "ed";
         case Mode::kCapture: return "cap";
+        case Mode::kReferrer: return "ref";
         default:            return "off";
         }
     }

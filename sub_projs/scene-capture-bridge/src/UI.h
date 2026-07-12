@@ -59,4 +59,8 @@ namespace UI {
         void __stdcall Render();
     }
 
+    namespace ReferencesPage {  // referrer registry (`sc ref`) -> references[]
+        void __stdcall Render();
+    }
+
 }  // namespace UI

@@ -91,6 +91,38 @@
 
 **回報**：① `sc capp` 有沒有吸到、label 大小寫對不對；② 分身的數值/perk/裝備對不對；③ voiceType/物品欄的落差要不要修。
 
+## scene-capture-bridge — referrer 原語 `sc ref` / `sc refc`（2026-07-12，DLL crc `112be269`，**已部署**）
+
+⚠️ **完全關遊戲重開**吃新 DLL（esp 不動）。co-save 新增 record `'RFRR'` v1、`SETT` 升 **v5**——**舊存檔照讀**（沒有 referrer 記錄＝空登記簿）。
+
+**這是什麼**：第三個原語。marker 標的是**空座標**（「這裡放東西」）；**referrer 標的是「一個已經存在的東西」的身份 ＋ 一個自由 label**，而且**什麼都不動**（不新建、不移動、不 disable）。label 進 ModForge 後就是一個**可以被任何 ref 欄位引用的名字**——例：指一張椅子標 `sofia's chair`，Sofia 的 sandbox package 就能錨在**那張**椅子。三兄弟：`removals[]` 擦掉既有、`overrides[]` 移動既有、**`references[]` 命名既有**。
+
+**離線已閉環**（不用你驗）：手寫 DLL 形狀的 json → build → 椅子 REFR 帶 **0x400 persistent**、落在 cell 的 Persistent group、package 錨到它；C# 928 測綠。**要你驗的是遊戲內那一半**：指得到嗎、標籤留得住嗎、匯出的 json 對得上嗎。
+
+1. **(乙) 檔內相依——最重要的一條，先驗這個**（referrer 指**我們自己擺的**物件）：
+   - 找個空地／室內 → `sc pk` 吸一張椅子（或任何家具）→ `sc pl` **擺一張出來**（這是 dynamic ref，沒有耐久 FormID）。
+   - `sc ref`（進 referrer 模式）→ 對著**剛擺的那張椅子**按動作鍵（**F11**）→ 螢幕/console 應說 `SCB: reference recorded`。（指不到？`sc ref er1` 改用射線再按。）
+   - **F1 → References 頁**：應有一列，**綠字** `ours -> MFRef_ref_1_1`（＝將寫進 json 的 editorId）＋ base ＋座標。把 label 改成 `sofia's chair`（欄位打字後按 Enter 或按 `apply`）。
+   - **一次到位版**：再擺一張，直接 console `sc ref my chair 2`（**大小寫/空格保留**）——不必先進面板。
+   - **擋撞名**：把第二列的 label 也改成 `sofia's chair` → **應該改不動**，橘字說 label already used。（ModForge 那邊 label 是全域名字，撞名會炸整份 spec，所以在這裡就擋。）
+   - **F1 → Export 頁 → `Export player cell`** → 開那份 `scene-export_*.json`：
+     - `placements[]` 裡那張椅子那筆**多了 `"editorId": "MFRef_sofia_s_chair_1"`**；
+     - 頂層多一段 **`references[]`**，其 `"ref"` **正是同一個 editorId**（不是 `0xFF......` 的 FormID——**看到 FormID 就是錯的，回報**），`"label": "sofia's chair"`，帶 base/position/rotation/cell 或 worldspace，**沒有 `anchor` 欄位**（正確，那是 ModForge 的選擇權）。
+2. **(甲) 外部既有 ref**（vanilla 的東西）：
+   - 對一張 **vanilla 椅子/桌子** → `sc ref skulvar's hoe`（或任何 label），或 console 點選它再 `sc refc <label>`（aim-free，跟 `delc`/`capc` 同路）。
+   - References 頁該列是**白字**、ref id 長 `Skyrim.esm:0x0XXXXX`。匯出的 `references[].ref` 就是這個耐久 id。**該 vanilla 椅子不該有任何變化**（沒消失、沒移動——referrer 不碰世界）。
+3. **拒收三類（每個試一下，看有沒有照講的話拒絕）**：
+   - 對 **marker 光球**按動作鍵 → `SCB: that's a marker gem`（marker 本來就有 label，走 `annotations[]`）。
+   - 對**你自己用 marker 生出來的 NPC／你 spawn 的 actor** → `SCB: that's an actor you spawned`（cell 匯出不含 actor，沒有 placement 可指）。**vanilla NPC（如 Lydia）則應該可以指**（走外部路，白字 `Skyrim.esm:0x...`）。
+   - 同一個 ref 再標一次 → `SCB: that ref is already referred to`。
+4. **跨存檔/重開（co-save `'RFRR'`）**：標好幾筆 → **存檔 → 完全關遊戲 → 重開 → 讀檔** →
+   - References 頁**該列全部還在**、label/note 沒掉。
+   - **(乙) 檔內那幾列**：走回那個 cell（讀檔會自動掃玩家所在 cell）→ 該列**不該**顯示 `TARGET LOST`（DLL 會按 base＋座標把 dynamic ref 撿回來）。若顯示 TARGET LOST → 該列匯出時會被跳過（Export 頁會說 `N reference(s) skipped`），**回報這個現象**（我要知道 reacquire 撿不回的頻率）。
+   - **⚠️ 已知限制**：檔內目標的 placement 若不在這次匯出掃到的 cell 裡，那筆 reference **不會**寫進 json（寫了 build 也對不上）——Export 頁會列出 skipped 數，log 有每筆的原因。
+5. **（選配，端到端）**：把步驟 1 的 `scene-export_*.json` 給我 → 我 build 一份帶 Sofia 的 esp → 裝進去看她**真的會回去坐那張椅子**（sandbox 錨在 label 上）。這一步才是 referrer 的最終價值證明。
+
+**回報**：① `references[]` 的 `ref` 是不是 editorId（不是 FormID）、跟 placements 那筆對不對得上；② 撞名有沒有擋住、label 大小寫有沒有留住；③ 三類拒收對不對；④ 重開讀檔後檔內目標撿不撿得回。
+
 ## scene-capture-bridge — 旋轉 per-axis 還原 ＋ palette replace（2026-07-12，**已部署**，含在 DLL `c5049c78` 裡)
 
 ⚠️ **完全關遊戲重開**吃新 DLL（esp 不動、co-save 不升版、palette json 相容——只是**檔內順序改成「最上面那筆排第一」**，舊檔讀進來順序會上下顛倒一次，之後就穩定了）。

@@ -6,6 +6,7 @@
 #include "Markers.h"
 #include "Modes.h"
 #include "Overrides.h"
+#include "Referrer.h"
 #include "log.h"
 
 #include <algorithm>
@@ -17,13 +18,15 @@ namespace {
     constexpr std::uint32_t kErsr = 'ERSR';
     constexpr std::uint32_t kOvrd = 'OVRD';
     constexpr std::uint32_t kCaps = 'SCCP';
+    constexpr std::uint32_t kRfrr = 'RFRR';  // referrer registry (references[])
 
     // Per-record versions (an older save's record is read with its own layout).
-    constexpr std::uint32_t kVerSett = 4;  // v2 adds editor step sizes; v3 adds aim/axis; v4 adds capture aim
+    constexpr std::uint32_t kVerSett = 5;  // v2 adds editor step sizes; v3 adds aim/axis; v4 adds capture aim; v5 adds referrer aim
     constexpr std::uint32_t kVerMkrs = 2;  // v2: full angle (3f) + scale, was angleZ only
     constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
     constexpr std::uint32_t kVerOvrd = 1;
     constexpr std::uint32_t kVerCaps = 9;  // v2 kNpc; v3 flags/perks/buffs; v4 class/level/equipped; v5 armor/weapons; v6 inventory; v7 rows+instance-ench; v8 label + explicit H/M/S + 18 skills; v9 isPlayer flag
+    constexpr std::uint32_t kVerRfrr = 1;
 
     // ---- primitives -------------------------------------------------------
 
@@ -76,6 +79,7 @@ namespace {
             si->WriteRecordData(static_cast<std::uint8_t>(Modes::UseRay(m) ? 1 : 0));  // v3
         si->WriteRecordData(static_cast<std::uint8_t>(Editor::RotateMode() ? 1 : 0));  // v3
         si->WriteRecordData(static_cast<std::uint8_t>(Modes::UseRay(Modes::Mode::kCapture) ? 1 : 0));  // v4
+        si->WriteRecordData(static_cast<std::uint8_t>(Modes::UseRay(Modes::Mode::kReferrer) ? 1 : 0));  // v5
     }
 
     void LoadSettings(const SKSE::SerializationInterface* si, std::uint32_t version) {
@@ -113,6 +117,11 @@ namespace {
             std::uint8_t ray = 0;
             si->ReadRecordData(ray);
             Modes::SetUseRay(Modes::Mode::kCapture, ray != 0);
+        }
+        if (version >= 5) {
+            std::uint8_t ray = 0;
+            si->ReadRecordData(ray);
+            Modes::SetUseRay(Modes::Mode::kReferrer, ray != 0);
         }
         if (mode < static_cast<std::uint8_t>(Modes::Mode::kTotal))
             Modes::Set(static_cast<Modes::Mode>(mode));
@@ -257,6 +266,61 @@ namespace {
             e.addsMaster = adds != 0;
             e.isActor = actor != 0;
             e.handle = ResolveHandle(si, formId);  // dead handle kept — id is the payload
+            all.push_back(std::move(e));
+        }
+    }
+
+    // Referrer registry: identity + label of refs the player NAMED. Two flavours in
+    // one list — an EXTERNAL row's payload is its durable `id` (the handle is a
+    // convenience), an IN-FILE row's payload is the HANDLE (our own dynamic ref has
+    // no durable id at all). A dynamic FormID isn't reliably remapped across a full
+    // restart, so an in-file row can come back with a dead handle: it is KEPT (the
+    // base + position let Referrer::ReacquireOrphans re-find the object in the
+    // savegame, exactly like the marker gems' adopt scan) rather than dropped.
+    void SaveReferrer(const SKSE::SerializationInterface* si) {
+        const auto& all = Referrer::All();
+        si->WriteRecordData(static_cast<std::uint32_t>(all.size()));
+        for (const auto& e : all) {
+            si->WriteRecordData(e.seq);
+            WriteStr(si, e.label);
+            WriteStr(si, e.note);
+            WriteStr(si, e.id);     // empty => in-file target (our own placement)
+            WriteStr(si, e.base);
+            WriteStr(si, e.name);
+            WriteVec3(si, e.position);
+            WriteVec3(si, e.angleDeg);
+            si->WriteRecordData(e.scale);
+            WriteStr(si, e.cellOrWs);
+            si->WriteRecordData(static_cast<std::uint8_t>(e.isInterior ? 1 : 0));
+            si->WriteRecordData(static_cast<std::uint8_t>(e.isActor ? 1 : 0));
+            si->WriteRecordData(FormIdOf(e.handle));
+        }
+    }
+
+    void LoadReferrer(const SKSE::SerializationInterface* si, std::uint32_t) {
+        std::uint32_t count = 0;
+        si->ReadRecordData(count);
+        auto& all = Referrer::All();
+        for (std::uint32_t i = 0; i < count; ++i) {
+            Referrer::Entry e;
+            std::uint8_t interior = 0, actor = 0;
+            std::uint32_t formId = 0;
+            si->ReadRecordData(e.seq);
+            e.label = ReadStr(si);
+            e.note = ReadStr(si);
+            e.id = ReadStr(si);
+            e.base = ReadStr(si);
+            e.name = ReadStr(si);
+            ReadVec3(si, e.position);
+            ReadVec3(si, e.angleDeg);
+            si->ReadRecordData(e.scale);
+            e.cellOrWs = ReadStr(si);
+            si->ReadRecordData(interior);
+            si->ReadRecordData(actor);
+            si->ReadRecordData(formId);
+            e.isInterior = interior != 0;
+            e.isActor = actor != 0;
+            e.handle = ResolveHandle(si, formId);  // dead handle kept — see the note above
             all.push_back(std::move(e));
         }
     }
@@ -540,9 +604,11 @@ namespace {
         if (si->OpenRecord(kErsr, kVerErsr)) SaveEraser(si);
         if (si->OpenRecord(kOvrd, kVerOvrd)) SaveOverrides(si);
         if (si->OpenRecord(kCaps, kVerCaps)) SaveCaptures(si);
-        SKSE::log::info("CoSave: saved {} marker(s), {} erasure(s), {} override(s), {} capture(s)",
+        if (si->OpenRecord(kRfrr, kVerRfrr)) SaveReferrer(si);
+        SKSE::log::info("CoSave: saved {} marker(s), {} erasure(s), {} override(s), "
+            "{} capture(s), {} reference(s)",
             Markers::All().size(), Eraser::All().size(), Overrides::All().size(),
-            Captures::All().size());
+            Captures::All().size(), Referrer::All().size());
     }
 
     void OnLoad(SKSE::SerializationInterface* si) {
@@ -554,6 +620,7 @@ namespace {
             case kErsr: LoadEraser(si, version); break;
             case kOvrd: LoadOverrides(si); break;
             case kCaps: LoadCaptures(si, version); break;
+            case kRfrr: LoadReferrer(si, version); break;
             default:
                 SKSE::log::warn("CoSave: unknown record 0x{:X} — skipped", type);
                 break;
@@ -562,9 +629,11 @@ namespace {
         Markers::OnRegistryRestored();   // seq counter + freeze + display state
         Eraser::OnRegistryRestored();    // rebuild the marked-id set
         Captures::OnRegistryRestored();  // reseed the capture seq counter
-        SKSE::log::info("CoSave: loaded {} marker(s), {} erasure(s), {} override(s), {} capture(s)",
+        Referrer::OnRegistryRestored();  // reseed the seq counter; report dead in-file handles
+        SKSE::log::info("CoSave: loaded {} marker(s), {} erasure(s), {} override(s), "
+            "{} capture(s), {} reference(s)",
             Markers::All().size(), Eraser::All().size(), Overrides::All().size(),
-            Captures::All().size());
+            Captures::All().size(), Referrer::All().size());
     }
 
     // Runs before every load AND on new game: wipe registries (no world
@@ -576,6 +645,7 @@ namespace {
         Eraser::DropAll();
         Overrides::DropAll();
         Captures::DropAll();
+        Referrer::DropAll();
         Modes::ResetDefaults();
         Markers::SetProxiesVisible(true);  // registry is empty: flag only
     }

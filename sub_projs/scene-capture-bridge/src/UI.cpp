@@ -50,6 +50,7 @@ void UI::Register() {
     SKSEMenuFramework::AddSectionItem("Eraser", EraserPage::Render);
     SKSEMenuFramework::AddSectionItem("Palette", PalettePage::Render);
     SKSEMenuFramework::AddSectionItem("Captures", CapturesPage::Render);
+    SKSEMenuFramework::AddSectionItem("References", ReferencesPage::Render);
     SKSEMenuFramework::AddSectionItem("Editor", EditorPage::Render);
     SKSEMenuFramework::AddSectionItem("Settings", SettingsPage::Render);
     MarkerEditor::Init();  // the standalone E-interaction window
@@ -124,6 +125,14 @@ void __stdcall UI::Export::Render() {
     ImGuiMCP::BulletText("%zu added (placements[])", s.placements);
     ImGuiMCP::BulletText("%zu modified (overrides[])", s.overrides);
     ImGuiMCP::BulletText("%zu removed (removals[])", s.removals);
+    // Named existing refs. A referrer whose in-file target wasn't in this export
+    // (its cell wasn't swept / the object is gone) is NOT written — say so here,
+    // otherwise the count silently disagrees with the References page.
+    ImGuiMCP::BulletText("%zu named (references[])", s.references);
+    if (s.referencesSkipped) {
+        ImGuiMCP::BulletText("%zu reference(s) skipped — their own-placement target "
+            "wasn't in this export (see the log)", s.referencesSkipped);
+    }
     // The number that proves the vanilla diff: authored refs are recognised and
     // skipped, so `build` does not re-place the whole room on top of itself.
     ImGuiMCP::BulletText("%zu pre-existing (skipped)", s.preexisting);

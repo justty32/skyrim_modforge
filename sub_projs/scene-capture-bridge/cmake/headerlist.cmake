@@ -7,6 +7,7 @@ set(headers ${headers}
     src/Markers.h
     src/Overrides.h
     src/Palette.h
+    src/Referrer.h
     src/SceneExporter.h
     src/UI.h
     src/Modes.h

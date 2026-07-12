@@ -13,6 +13,7 @@ namespace {
     constexpr Modes::Mode kActionModes[] = {
         Modes::Mode::kMarker, Modes::Mode::kDelete, Modes::Mode::kPick,
         Modes::Mode::kPlace, Modes::Mode::kEdit, Modes::Mode::kCapture,
+        Modes::Mode::kReferrer,
     };
 }
 
@@ -30,7 +31,7 @@ void __stdcall UI::SettingsPage::Render() {
         if (ImGuiMCP::Button(Modes::Name(m))) Modes::Set(m);
     }
     ImGuiMCP::TextWrapped(
-        "Console: sc mk | del | pk | pl | ed | cap | off — one mode at a time; "
+        "Console: sc mk | del | pk | pl | ed | cap | ref | off — one mode at a time; "
         "the mode's action key does the work. sc mk dp0 / dp1 hides / shows the "
         "marker gems.");
     ImGuiMCP::Separator();
@@ -57,10 +58,10 @@ void __stdcall UI::SettingsPage::Render() {
     ImGuiMCP::Separator();
 
     // --- aim source + rotate axis (set via console; shown here for reference) ---
-    ImGuiMCP::Text("Aim source (sc del|pk|ed|cap er0/er1):");
+    ImGuiMCP::Text("Aim source (sc del|pk|ed|cap|ref er0/er1):");
     for (auto m : {Modes::Mode::kDelete, Modes::Mode::kPick, Modes::Mode::kEdit,
-             Modes::Mode::kCapture}) {
-        ImGuiMCP::BulletText("%-6s %s", Modes::Name(m),
+             Modes::Mode::kCapture, Modes::Mode::kReferrer}) {
+        ImGuiMCP::BulletText("%-8s %s", Modes::Name(m),
             Modes::UseRay(m) ? "ray" : "crosshair");
     }
     ImGuiMCP::Text("Edit numpad mode (sc ed ax): %s",

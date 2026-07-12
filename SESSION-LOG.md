@@ -12,6 +12,8 @@
 
 ## 最新進度
 
+- **referrer 原語全鏈完工（2026-07-12，DLL crc `112be269` 已部署）**——`sc ref` / `sc ref <Label>` / `sc refc [Label]` ＋ References 面板頁 ＋ exporter 吐 `references[]`（消費端 `adc419b` 已在）。**(乙) 檔內相依**＝指到自家 `sc pl` 擺的 dynamic ref 時，該 placement 蓋穩定 editorId `MFRef_<label>_<seq>`、`references[].ref` 指它（dynamic FormID 不可攜）。離線閉環驗過（build 出的 REFR 帶 0x400＋落 Persistent group；928 測綠）。**open：實機驗收**（[wait_todo](wait_todo/ingame-tests.md) referrer 節）——指得到嗎、撞名擋不擋、重開讀檔撿不撿得回檔內目標。細節：[backlog](workflows/plans/scene-capture-bridge/backlog.md) 已做首條。
+
 - **採集橋「擷取器」＋兩端消費：端到端 IN-GAME 確認（2026-07-11）**——`sc cap` 模式吸 Mirabelle → Export → `capturedNpcs[]` 消費 → build → 分身在學院庭院原地出現 ✅。落地記錄：[landed/npcs](workflows/feature-dev/landed/npcs.md)（capturedNpcs Phase 1＋NpcSpec 外貌配方欄）＋[landed/items-magic](workflows/feature-dev/landed/items-magic.md)（capturedItems）。剩餘 open：
   - **OPEN-A 殘餘（最後一小項）**：完全重開後 capture aim-source（er0/er1）還原（co-save v4）；er1 射線吸取已實證 OK（[wait_todo](wait_todo/ingame-tests.md)）。
   - **OPEN-B ✅ 結案（2026-07-11）：PROTEUS 寫 TESNPC**——吸 PROTEUS 玩家 clone，faceMorphs/headParts/hairColor/faceTexture/weight 全是玩家真值；caveat：tintLayers 空（戰紋等留在 SKEE 側）、base/outfit 指 PROTEUS.esp runtime 模板（esp 上空殼，引用不可靠——MINT 路線不受影響）。玩家分身實機驗收過：臉型/身形＝本人。follow-up 四輪全落地（2026-07-11 晚，DLL crc `145a456e`／SCCP v7）：class/level/combatStyle/voiceType/spells＋完整 inventory 列（{item,count,worn,name?,enchantment?}——**實例附魔也吸**，durable 引用／runtime 鑄 ENCH）＋`sc capc`；消費端 worn→鑄 OTFT（引擎只穿 outfit 護甲——「靴子放口袋」實機教訓）、附魔列→鑄 WEAP/ARMO、其餘直通（914 測綠）。**待實機：使用者重開遊戲重吸 clone → 我重 build → 完全體分身**（[wait_todo P10](wait_todo/ingame-tests.md)）。

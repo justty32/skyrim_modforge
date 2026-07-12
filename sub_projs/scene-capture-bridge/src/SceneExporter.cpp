@@ -4,12 +4,14 @@
 #include "Eraser.h"
 #include "Markers.h"
 #include "Overrides.h"
+#include "Referrer.h"
 
 #include "log.h"
 
 #include <cctype>
 #include <ctime>
 #include <fstream>
+#include <unordered_set>
 
 namespace {
     constexpr float kRadToDeg = 57.2957795f;
@@ -81,6 +83,10 @@ namespace SceneExporter {
             std::size_t markerProxies = 0;
             std::size_t removalsPending = 0;   // in swept cells (log only)
             std::size_t overridesPending = 0;  // in swept cells (log only)
+            // Referrer rows whose IN-FILE target actually made it into placements[]
+            // this export — the only ones AppendReferences may emit (a `ref` pointing
+            // at an editorId that is not in the file would be dropped by build).
+            std::unordered_set<std::uint32_t> inFileRefsEmitted;
         };
     }
 
@@ -196,6 +202,18 @@ namespace SceneExporter {
             const RE::NiPoint3& ang = ref.data.angle;
             nlohmann::json entry;
             entry["base"] = *baseId;
+            // (B) IN-FILE DEPENDENCY — the referrer's core trick. This dynamic ref
+            // has NO durable FormID, so a `references[]` row cannot name it by id
+            // (the id is not portable and means nothing after the build). Give the
+            // placement a STABLE editorId instead and let references[].ref point at
+            // THAT — a dependency INSIDE the file. ModForge then owns the object and
+            // forces it persistent, which is exactly what an alias/package anchor
+            // needs. The reference row itself is emitted by AppendReferences, only
+            // for the targets recorded here.
+            if (const auto* rr = Referrer::InFileEntryFor(refPtr)) {
+                entry["editorId"] = Referrer::EditorIdOf(*rr);
+                counters.inFileRefsEmitted.insert(rr->seq);
+            }
             if (!cellId.empty()) {
                 entry["cell"] = cellId;
             } else {
@@ -270,6 +288,70 @@ namespace SceneExporter {
             }
             scene["annotations"] = std::move(arr);
         }
+    }
+
+    // references[] — the referrer registry (`sc ref` / `sc refc`): an EXISTING ref
+    // NAMED by a free-form label, so the rest of the spec can point at it. Nothing
+    // is created and nothing is changed; the three siblings are removals[] (erase
+    // existing), overrides[] (move existing), references[] (NAME existing).
+    //
+    // Must run AFTER AppendPlacements: an in-file (B) target is only nameable once
+    // its placement has actually been emitted (with the matching editorId).
+    //
+    // ⚠️ `anchor` is deliberately NEVER written (user-decided): the persistent-ref
+    // escape hatch is ModForge's / the authoring agent's call, not the DLL's. An
+    // absent anchor reads as "none" on the consumer side.
+    static void AppendReferences(nlohmann::json& scene, const PlacementCounters& counters) {
+        const auto& refs = Referrer::All();
+        if (refs.empty()) return;
+
+        auto arr = nlohmann::json::array();
+        std::size_t unreachable = 0;
+        for (const auto& e : refs) {
+            nlohmann::json r;
+            if (e.id.empty()) {
+                // (B) IN-FILE: `ref` = the editorId AppendPlacements stamped on our
+                // own placement. If that placement did not make it into THIS export
+                // (its cell wasn't swept, the object was erased, or the co-save
+                // couldn't re-acquire the dynamic ref), emitting the row would point
+                // at an editorId that isn't in the file — build would just warn and
+                // drop it. Skip it here instead, loudly.
+                if (!counters.inFileRefsEmitted.contains(e.seq)) {
+                    ++unreachable;
+                    SKSE::log::warn(
+                        "AppendReferences: '{}' targets one of OUR refs that is not in this "
+                        "export (cell not swept, object erased, or target lost across a "
+                        "restart) — reference skipped", e.label);
+                    continue;
+                }
+                r["ref"] = Referrer::EditorIdOf(e);
+            } else {
+                r["ref"] = e.id;  // (A) EXTERNAL: durable <plugin>:0xLOCALID
+            }
+            r["label"] = e.label;
+            if (!e.base.empty()) r["base"] = e.base;  // anchor:"replace" needs it
+
+            // Prefer the live pose when the ref is loaded (havok may have settled it),
+            // exactly like overrides[] does.
+            RE::NiPoint3 pos = e.position, angDeg = e.angleDeg;
+            float scale = e.scale;
+            if (auto live = e.handle.get()) {
+                pos = live->GetPosition();
+                angDeg = live->data.angle * kRadToDeg;
+                scale = live->GetScale();
+            }
+            r["position"] = Vec3(pos);
+            r["rotation"] = Vec3(angDeg);   // already degrees
+            if (!e.isActor) r["scale"] = scale;  // XSCL is dead on ACHR
+            if (!e.cellOrWs.empty()) r[e.isInterior ? "cell" : "worldspace"] = e.cellOrWs;
+            if (!e.note.empty()) r["note"] = e.note;
+            arr.push_back(std::move(r));
+        }
+        if (unreachable) {
+            SKSE::log::warn("AppendReferences: {} reference(s) skipped — their in-file target "
+                "was not exported (see the lines above)", unreachable);
+        }
+        if (!arr.empty()) scene["references"] = std::move(arr);
     }
 
     // Captured DEFINITIONS — content with no durable base to reference, so
@@ -425,13 +507,16 @@ namespace SceneExporter {
         g_last.markers = c.markerProxies;
         g_last.removals = Eraser::All().size();
         g_last.overrides = Overrides::All().size();
+        g_last.references = scene.contains("references") ? scene["references"].size() : 0;
+        g_last.referencesSkipped = Referrer::All().size() - g_last.references;
         SKSE::log::info(
             "Export[{}]: {} placements, {} actors excluded (NPCs are ModForge's "
             "job), {} pre-existing, {} skipped (dynamic bases), {} marker "
-            "proxies excluded, {} annotations, {} removals, {} overrides",
+            "proxies excluded, {} annotations, {} removals, {} overrides, "
+            "{} references",
             cellLabel, scene["placements"].size(), c.actorsExcluded,
             c.preexisting, c.skipped, c.markerProxies, Markers::All().size(),
-            Eraser::All().size(), Overrides::All().size());
+            Eraser::All().size(), Overrides::All().size(), g_last.references);
     }
 
     nlohmann::json ExportCell(RE::TESObjectCELL* cell) {
@@ -446,8 +531,9 @@ namespace SceneExporter {
             return scene;
         }
         PlacementCounters c;
-        AppendPlacements(cell, scene, c);
+        AppendPlacements(cell, scene, c);   // must precede AppendReferences (in-file targets)
         AppendRegistries(scene);
+        AppendReferences(scene, c);
         std::string label;
         if (cell->IsInteriorCell()) {
             if (auto id = ResolveDurableId(cell)) label = *id;
@@ -473,6 +559,7 @@ namespace SceneExporter {
             });
         }
         AppendRegistries(scene);
+        AppendReferences(scene, c);
         RecordStats(scene, c, std::format("ALL/{} loaded cells", cells));
         SKSE::log::info("ExportAll: swept {} loaded cell(s) — placements in "
             "unloaded cells are not captured (visit them, or export per-cell)", cells);

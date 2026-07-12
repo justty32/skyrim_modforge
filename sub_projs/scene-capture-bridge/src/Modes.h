@@ -28,6 +28,7 @@ namespace Modes {
         kPlace,    // action: place the selected palette slot at the aimed point
         kEdit,     // action: select the crosshair target into numpad edit mode
         kCapture,  // action: eyedrop the aimed item enchant/effects (or NPC) into capturedItems[]
+        kReferrer, // action: NAME the aimed existing ref (no world change) -> references[]
         kTotal
     };
 
@@ -43,9 +44,9 @@ namespace Modes {
 
     // Per-mode aim source: false = the interaction crosshair (classic feel),
     // true = a physics ray (trees / non-activatable statics). Toggled by
-    // `sc del er0/er1`, `sc pk ...`, `sc ed ...`, `sc cap ...`. Only
-    // delete/pick/edit/capture read it (marker/place are inherently aimed).
-    // Persists in the co-save.
+    // `sc del er0/er1`, `sc pk ...`, `sc ed ...`, `sc cap ...`, `sc ref ...`.
+    // Only delete/pick/edit/capture/referrer read it (marker/place are
+    // inherently aimed). Persists in the co-save.
     [[nodiscard]] bool UseRay(Mode m);
     void SetUseRay(Mode m, bool useRay);
 

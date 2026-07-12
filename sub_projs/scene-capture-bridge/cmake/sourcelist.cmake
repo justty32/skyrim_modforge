@@ -7,9 +7,11 @@ set(sources ${sources}
     src/Markers.cpp
     src/Overrides.cpp
     src/Palette.cpp
+    src/Referrer.cpp
     src/SceneExporter.cpp
     src/UI.cpp
     src/UI.Markers.cpp
+    src/UI.References.cpp
     src/UI.Settings.cpp
     src/Modes.cpp
     src/Console.cpp

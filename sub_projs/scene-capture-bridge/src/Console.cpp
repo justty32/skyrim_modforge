@@ -5,6 +5,7 @@
 #include "Eraser.h"
 #include "Markers.h"
 #include "Modes.h"
+#include "Referrer.h"
 #include "log.h"
 
 #include <algorithm>
@@ -36,14 +37,32 @@ namespace {
 
     void PrintUsage() {
         Print("SCB mode: %s", Modes::Name(Modes::Current()));
-        Print("  sc mk | del | pk | pl | ed | cap | off  switch mode");
+        Print("  sc mk | del | pk | pl | ed | cap | ref | off  switch mode");
         Print("  sc mk dp0 / dp1                    hide / show marker gems");
-        Print("  sc del|pk|ed|cap er0 / er1         aim by crosshair / ray");
+        Print("  sc del|pk|ed|cap|ref er0 / er1     aim by crosshair / ray");
         Print("  sc ed ax / sc ed                  enter rotate sub-mode / back to move");
         Print("  sc delc                           erase the console-selected ref");
         Print("  sc capc [Label]                   capture the console-selected ref (item or NPC)");
         Print("  sc capp [Label]                   capture the PLAYER (face/stats/perks/gear)");
         Print("  sc cap  -> capture mode: aim at item/NPC, press the action key");
+        Print("  sc ref <Label>                    NAME the aimed existing ref -> references[]");
+        Print("  sc refc [Label]                   NAME the console-selected ref (aim-free)");
+    }
+
+    // The referrer never changes the world — it records identity + a LABEL the
+    // rest of the spec can point at. Report exactly what happened.
+    void PrintRefResult(Referrer::Result r, const std::string& label) {
+        switch (r) {
+        case Referrer::Result::kMarked:
+            Print("SCB: reference recorded%s", label.empty() ? " (rename it in the References page)"
+                                                             : (" as '" + label + "'").c_str());
+            break;
+        case Referrer::Result::kDuplicate:   Print("SCB: that ref is already referred to"); break;
+        case Referrer::Result::kLabelTaken:  Print("SCB: label already used — labels must be unique"); break;
+        case Referrer::Result::kMarkerProxy: Print("SCB: that's a marker gem — markers already export as annotations[]"); break;
+        case Referrer::Result::kOwnActor:    Print("SCB: that's an actor you spawned — cell exports carry no actors"); break;
+        default: Print("SCB: nothing to refer to (aim at a ref, or select one in the console for `sc refc`)"); break;
+        }
     }
 
     // The `sc` parser lower-cases its args (mode words are case-insensitive), but an identity
@@ -61,7 +80,7 @@ namespace {
     Modes::Mode ModeOf(const std::string& word) {
         for (auto m : {Modes::Mode::kOff, Modes::Mode::kMarker, Modes::Mode::kDelete,
                  Modes::Mode::kPick, Modes::Mode::kPlace, Modes::Mode::kEdit,
-                 Modes::Mode::kCapture})
+                 Modes::Mode::kCapture, Modes::Mode::kReferrer})
             if (word == Modes::Cmd(m)) return m;
         return Modes::Mode::kTotal;
     }
@@ -113,6 +132,14 @@ namespace {
             return true;
         }
 
+        // NAME the console-selected ref (aim-free, like delc/capc): click the chair
+        // in the console, then `sc refc sofia's chair`. Nothing in the world changes
+        // — the ref's identity + label ride out in references[].
+        if (a1 == "refc") {
+            PrintRefResult(Referrer::MarkConsoleRef(label), label);
+            return true;
+        }
+
         // Capture THE PLAYER. The engine keeps the player's chargen on its base TESNPC
         // (0x7), so the DLL reads the same record it reads for any NPC — no PROTEUS clone
         // in the middle (which reported level 1 / 50-50-50 and wrote no tints). Perks come
@@ -143,7 +170,8 @@ namespace {
             }
             const Modes::Mode m = ModeOf(a1);
             if (m == Modes::Mode::kDelete || m == Modes::Mode::kPick ||
-                m == Modes::Mode::kEdit || m == Modes::Mode::kCapture) {
+                m == Modes::Mode::kEdit || m == Modes::Mode::kCapture ||
+                m == Modes::Mode::kReferrer) {
                 if (a2 == "er0" || a2 == "er1") {  // aim source
                     Modes::SetUseRay(m, a2 == "er1");
                     Print("SCB: %s aim -> %s", Modes::Name(m), a2 == "er1" ? "ray" : "crosshair");
@@ -153,6 +181,15 @@ namespace {
                     Editor::SetRotateMode(true);
                     Print("SCB: edit ROTATE mode (4/6 yaw, 1/3 pitch, 7/9 roll; "
                         "5/2/8 revert that axis) — `sc ed` to go back to move mode");
+                    return true;
+                }
+                // `sc ref <Label>` — one-shot: NAME what you are aiming at, right now,
+                // with that label. Anything that isn't er0/er1 IS the label (raw param:
+                // case preserved, spaces kept), because a label is free-form text.
+                if (m == Modes::Mode::kReferrer) {
+                    const bool ray = Modes::UseRay(m);
+                    PrintRefResult(ray ? Referrer::MarkByRay(label) : Referrer::MarkCrosshair(label),
+                        label);
                     return true;
                 }
             }
@@ -190,7 +227,7 @@ namespace Console {
             };
             cmd->functionName = "sc";
             cmd->shortName = "sc";
-            cmd->helpString = "SceneCaptureBridge: sc mk|del|pk|pl|ed|cap|off, sc delc|capc [Label]|capp [Label], sc mk dp0|dp1";
+            cmd->helpString = "SceneCaptureBridge: sc mk|del|pk|pl|ed|cap|ref|off, sc delc|capc [Label]|capp [Label]|ref <Label>|refc [Label], sc mk dp0|dp1";
             cmd->referenceFunction = false;
             cmd->SetParameters(params);
             cmd->executeFunction = &Execute;

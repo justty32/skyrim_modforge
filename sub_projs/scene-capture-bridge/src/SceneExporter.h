@@ -50,6 +50,8 @@ namespace SceneExporter {
         std::size_t markers = 0;      // marker proxies excluded (editor chrome, not content)
         std::size_t removals = 0;     // erased authored refs exported via removals[]
         std::size_t overrides = 0;    // moved authored refs exported via overrides[]
+        std::size_t references = 0;   // named existing refs exported via references[]
+        std::size_t referencesSkipped = 0;  // referrers whose in-file target wasn't in this export
         std::string cell;             // durable id of the exported cell/worldspace
         std::string path;             // where the last WriteSceneFile went
     };

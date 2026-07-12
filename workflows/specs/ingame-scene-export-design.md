@@ -217,7 +217,7 @@ position/rotation（度）必填＝新的完整 transform（不是 delta）；`s
 
 **Build 順序**（`Build.cs`）：`BuildPlacements` → `BuildMapMarkers` → **`BuildReferences`** → `BuildOverrides` → `BuildRemovals` → 全部 wire 步驟。必須在 placements 之後（檔內目標要先存在）、在 wire 之前（label 才解析得到）。`references[]` 為空時**不生任何記錄**（行為不變）。
 
-**DLL 端（scene-capture-bridge）還缺的**：`sc ref` / `sc refc` 指令＋ References 面板頁；exporter 要偵測 referrer 目標 handle **∈ 本次匯出的 placements** → 給該 placement 發一個穩定 editorId、`references[].ref` 指那個 editorId（**否則 dynamic FormID 不可攜、build 後對不上**）；目標是外部既有 ref 時照記耐久 `<plugin>:0xLOCALID` ＋ `base` ＋座標＋（可得的話）rotation/scale，`anchor` 的選擇權留給 ModForge/agent。
+**✅ DLL 端已補齊（2026-07-12，DLL crc `112be269`）**：`sc ref` / `sc ref <Label>` / `sc refc [Label]` ＋ referrer 模式（`src/Referrer.{h,cpp}`）＋ References 面板頁（`src/UI.References.cpp`）＋ exporter 吐 `references[]`。**(乙) 檔內相依的實作**：`AppendPlacements` 掃到的 ref 若是某個 referrer 的目標（identity ＝ ObjectRefHandle——dynamic ref 沒有耐久 id 可比），就在該 placement 上蓋一個穩定 editorId `MFRef_<sanitize(label)>_<seq>`（seq 隨 co-save 故跨匯出穩定），`references[].ref` 指它；`AppendReferences` **跑在 AppendPlacements 之後**，且**只吐這次匯出真的有出 placement 的那些**（cell 沒掃到／物件被擦掉／跨重啟 handle 撿不回 ⇒ 跳過＋warn，絕不吐一個檔內找不到的 editorId）。外部目標照記耐久 id ＋ base ＋座標/rotation/scale；**`anchor` DLL 一律不填**（留白＝`none`，選擇權在 ModForge/agent）。拒收 marker proxy（editor chrome，本就被 `ExportCell` 排除）、自家 dynamic actor（cell 匯出不含 actor）、重複 label（label 是全域名字空間）。
 
 **範例**：`examples/scene-references.json`（乙路徑端到端：椅子 placement → reference label → Sofia 的 sandbox package 以 label 當 location；build 出的 esp 裡 package slot 0 ＝ `LocationTarget(該椅子 REFR)`，椅子落在 cell 的 Persistent group 且帶 0x400）。測試：`tests/ModForge.Core.Tests/ReferencesTests.cs`。
 

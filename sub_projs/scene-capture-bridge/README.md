@@ -26,20 +26,40 @@ sc del   刪除模式（動作鍵＝擦準星目標）
 sc pk    滴管吸取模式（動作鍵＝吸準星目標進 palette）
 sc pl    擺放模式（動作鍵＝把選中插槽擺在準星處）
 sc ed    編輯模式（動作鍵＝選中準星目標進 numpad 微調）
+sc ref   referrer 模式（動作鍵＝「命名」準星指的既有 ref，世界不動）
 sc off   啥都不做
 sc       印當前模式＋用法
-sc mk dp0 / dp1        隱藏／顯示所有 marker 光球（純視覺，登記簿與匯出不受影響）
-sc del|pk|ed er0 / er1  該模式動作鍵用準星／物理射線（樹、純裝飾 static）
-sc ed ax                進編輯「純旋轉子模式」（見下）；回普通模式打 sc ed
-sc delc                 擦除 console 滑鼠點選的 ref（先只做物件，非 actor）
-sc cap / sc cap r       擷取準星／射線目標的附魔＋效果（附魔武防、藥水、材料）進 capturedItems[]
-sc capc [Label]         擷取 console 滑鼠點選的 ref（物品或 NPC 皆可）
-sc capp [Label]         擷取「玩家自己」（臉/數值/perk/裝備全帶）→ capturedNpcs[]
+sc mk dp0 / dp1            隱藏／顯示所有 marker 光球（純視覺，登記簿與匯出不受影響）
+sc del|pk|ed|cap|ref er0/er1  該模式動作鍵用準星／物理射線（樹、純裝飾 static）
+sc ed ax                   進編輯「純旋轉子模式」（見下）；回普通模式打 sc ed
+sc delc                    擦除 console 滑鼠點選的 ref（先只做物件，非 actor）
+sc cap / sc cap r          擷取準星／射線目標的附魔＋效果（附魔武防、藥水、材料）進 capturedItems[]
+sc capc [Label]            擷取 console 滑鼠點選的 ref（物品或 NPC 皆可）
+sc capp [Label]            擷取「玩家自己」（臉/數值/perk/裝備全帶）→ capturedNpcs[]
+sc ref <Label>             命名當前指的既有 ref（一次到位：標下＋打標籤）→ references[]
+sc refc [Label]            命名 console 滑鼠點選的 ref（aim-free）
 ```
 
 **`sc capp` ＝直接吸玩家（2026-07-12，去 PROTEUS 化）**：引擎把玩家的 chargen 寫在 base TESNPC（`Skyrim.esm:0x000007`）上，DLL 直讀同一處即可，**不必經 PROTEUS clone**（clone 自報 level 1／50-50-50、不寫 tintLayers、outfit 是空殼）。順帶所有 actor 的擷取都改帶**顯式數值**：H/M/S ＋ 18 技能（引擎 AV 6..23，＝Mutagen `Skill` 序）→ ModForge 直接寫 DNAM、**不開 autoCalcStats**（autocalc 只是拿 class+level 估算，載入時還會覆蓋掉）。玩家 perk 讀 `PlayerCharacter::addedPerks`（玩家 base 的 perk array 是空的）。
 
 **`[Label]` ＝身份標籤，大小寫保留**（`sc` 的參數解析會全轉小寫——label 走未 `Lower()` 的 raw 參數）。匯出成 `editorId: "MFCap_<label>"`，ModForge 的「顯式 editorId 優先」規則讓同一個 label 永遠對應同一筆記錄（再吸一次＝更新同一個人，不會多生一個）。計畫全文：[plans/player-capture-capp.md](../../workflows/plans/player-capture-capp.md)。
+
+**`sc ref` ＝ referrer：命名一個既有 ref（2026-07-12，DLL 端補齊；ModForge 消費端 `adc419b` 已在）**。三兄弟並列——`removals[]` **擦掉**既有、`overrides[]` **移動**既有、`references[]` **命名**既有。referrer **什麼都不動**（不新建、不改 transform、不 disable），只記「這個 ref 的身份 ＋ 一個自由 label」，匯出成頂層 `references[]`；ModForge 把 **label 註冊成可解析的名字**，於是 spec 裡**任何 ref 欄位**都能寫它（package 的 `sandbox.location`／`travel.place`、quest alias `forced:`、`linkedRefs`、`enableParent`、objective target、script Form prop）。典型用法：指一張椅子標「sofia's chair」→ Sofia 的 sandbox package 就錨在那張椅子。
+
+目標分兩類，**語意完全不同**：
+
+| | **(乙) 檔內相依**（我們自己 `sc pl` 擺的） | **(甲) 外部既有 ref**（vanilla／他 mod） |
+|---|---|---|
+| 那是什麼 | dynamic ref，**沒有耐久 FormID** | authored ref，解得出 `<plugin>:0xLOCALID` |
+| `references[].ref` 寫什麼 | 匯出時**發給該 placement 的穩定 editorId**（`MFRef_<label>_<seq>`）——**檔內**指向 `placements[]` 的那一筆 | 耐久 id 本身 |
+| 為何不能寫 FormID | dynamic FormID **不可攜**，build 後對不上（這是整條路最容易做錯的地方） | — |
+| persistent | build **強制** persistent（0x400 ＋ cell 的 Persistent group）——「引用需 persistent」天然滿足 | 看它自己；vanilla 場景物件多為 temporary → **build 會警告**，並提供 `anchor` 逃生門（`marker`／`replace`） |
+
+**DLL 一律不填 `anchor`**（留白＝`none`）：persistent 逃生門要不要開、開哪種，是 ModForge／authoring agent 的判斷，不是採集端的。
+
+**拒收**：① **marker 光球**（editor chrome，本來就被 `ExportCell` 排除 → 檔內 reference 永遠解不到；而且 marker 自己就有 label/note，走 `annotations[]`）；② **我們自己生的 actor**（cell 匯出不含 actor ⇒ 沒有 placement 可指；要複製那個 NPC 走 `sc cap`）；③ **重複 label**（label 在 ModForge 是**全域名字空間**——它就是可解析的 id，撞名會讓 validate 炸整份 spec，所以面板改名/打標當場擋掉）。**vanilla NPC 的 ACHR 可以指**（它有耐久 id，走 (甲)）。
+
+面板 **References 頁**：最新在前、label／note 就地改名、顯示 ref id（檔內目標顯示**將寫進 json 的 editorId**）／base／cell／座標、逐列刪除（**只刪登記列，世界不動**）。登記簿隨 co-save（record `'RFRR'` v1）；檔內目標的身份是 **handle**，完整重啟後 dynamic FormID 未必重解析 → 讀檔自動 `ReacquireOrphans`（按 base＋座標在當前 cell 重新綁回，同 marker 的 adopt 救援），撿不回的列**保留**但標 `TARGET LOST`、匯出時跳過（不吐一個 build 對不上的 editorId）。
 
 **編輯純旋轉子模式**：`sc ed ax` 進入，**`sc ed` 退回**普通移動模式。ON 時 numpad 方向鍵改成旋轉——**4/6＝yaw、1/3＝pitch、7/9＝roll**（位置/縮放不動），**每組的中間鍵＝只還原自己那一軸**（2026-07-12 使用者拍板）：**2＝還原 pitch、5＝還原 yaw、8＝還原 roll**——**還原＝回到進編輯前的該軸原值，不是設成 0**（物件本來就可能有角度）。OFF（預設）時 8/2 前後、4/6 左右、1/3 升降、7/9 yaw，numpad 5＝復原到編輯前姿態（整個編輯）。
 
@@ -51,7 +71,7 @@ Export 頁有 **Export player cell**、**Export all (loaded cells)** 與 **Expor
 
 | 鈕 | 檔名 | 內容 |
 |---|---|---|
-| Export player cell | `scene-export_<cell EditorID 或 <ws>_x<X>y<Y>>_<YYYYMMDD-HHMM>.json` | placements（**物件，不含 NPC**）＋ removals ＋ overrides ＋ annotations |
+| Export player cell | `scene-export_<cell EditorID 或 <ws>_x<X>y<Y>>_<YYYYMMDD-HHMM>.json` | placements（**物件，不含 NPC**）＋ removals ＋ overrides ＋ annotations ＋ **references** |
 | Export all (loaded cells) | `scene-export_all-<玩家所在>_<YYYYMMDD-HHMM>.json` | 同上，掃全部已載入 cell |
 | Export captures（Captures 頁也有一顆） | `captures_<YYYYMMDD-HHMM>.json` | **只有** capturedItems[] ＋ capturedNpcs[] |
 
@@ -79,6 +99,8 @@ Export 頁有 **Export player cell**、**Export all (loaded cells)** 與 **Expor
 | `Palette.{h,cpp}` | 滴管（`sc pk` 吸、`sc pl` 擺；runtime-only base 拒收）；`pick by ray` 明示入口；**插槽落盤 `scene-capture-palette.json`（跨存檔跨 session）**，base 解析不回（plugin 移除）標 unavailable 不炸 |
 | `Captures.{h,cpp}` | 定義擷取器（Palette 的姊妹：吸「沒有耐久 base 可引用」的內容）。`sc cap`／面板讀 live form 的語意內容 → ModForge **鑄新記錄**。**①物品**：附魔武防（實例 ExtraEnchantment 優先，否則 base formEnchanting）＋藥水/材料效果 → `capturedItems[]`（效果 shape = EffectSpec）。**②NPC**：`TESNPC` 外貌（race/sex/weight/height＋headParts/tintLayers/faceMorphs+parts/hair/skin/FTST/outfit）＋**base perks（id+rank）**＋**當前 buff（active-effect 快照：source spell＋MGEF＋mag/dur/elapsed）**＋**旗標（unique/dead/essential/protected）**＋**顯式數值（H/M/S＋18 技能，讀 base actor values；所有 actor 都收）**＋擺位 → `capturedNpcs[]`。**③玩家**：`sc capp` 直讀玩家 base TESNPC（chargen 就在那），perk 走 `PlayerCharacter::addedPerks`。**唯一 NPC 也收**（2026-07-11 使用者反轉，帶 `unique` 旗標給 ModForge 判斷）。登記簿隨 co-save（record `'SCCP'` **v8**：+label +H/M/S +skills，只存耐久 id）。**⚠️ NPC 待驗/未涵蓋**：(a) PROTEUS 若用 NiNode live override 不寫 TESNPC，擷到的臉是 base 的非套用後的；(b) **身形/臉部「mesh」本身不收**——只收「定義」（headParts+morphs+race+weight，臉/身是由這些＋facegen 烘焙生成的），baked FaceGeom nif 與 RaceMenu/NiOverride 雕塑不在 TESNPC，需 facegen 烘焙＝ModForge 下游活 |
 | `Editor.{h,cpp}` | 編輯模式（`sc ed` 動作鍵選中準星目標；**numpad \* ＝射線選取**）→ numpad 微調（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、. cancel、**5＝復原續編**）；步長 runtime 可調（Settings/co-save）；havok-movable 類型編輯期物理凍結；自己的 ref＝live pose 直接匯出（不進 overrides 列，正常），**authored ref＝commit 時登記進 Overrides**（2026-07-11 契約拍板）|
+| `Referrer.{h,cpp}` | referrer（`sc ref` / `sc refc`）：**命名**一個既有 ref——只記身份＋label，**世界完全不動**（與 Eraser 的唯一差別）→ 匯出頂層 `references[]`。(乙) 檔內目標（我們 `sc pl` 擺的 dynamic ref）identity ＝ **handle**，匯出時給該 placement 蓋 `EditorIdOf()` ＝ `MFRef_<label>_<seq>`；(甲) 外部 authored ref 記耐久 id。拒收 marker proxy／自家 actor／重複 label。co-save `'RFRR'`；`ReacquireOrphans()` 讀檔按 base+座標撿回檔內目標 |
+| `UI.References.cpp` | References 頁（最新在前、label/note 改名＋擋撞名、顯示檔內 editorId／耐久 id／base／cell／座標、逐列刪除） |
 | `Overrides.{h,cpp}` | authored ref 被編輯 commit 後的登記簿（比照 Eraser：明示、不 diff——havok 噪音）→ 匯出頂層 `overrides[]`（ref/position/rotation°/scale；actor 不帶 scale）；Editor 面板頁逐筆/全部 revert 回 baseline |
 | `PCH.h` / `log.h` | CommonLibSSE PCH（含 nlohmann）＋ spdlog file logger |
 
@@ -120,6 +142,7 @@ DLL 有兩層狀態，**P5 起兩層都隨存檔走**：
 | 移動 authored ref（overrides） | **co-save 登記簿**（baseline＋commit pose）＋存檔 live pose | **自動**進 `overrides[]`，revert 也還能回 baseline |
 | Palette 插槽 | **磁碟**（`scene-capture-palette.json`） | 天生跨存檔；plugin 移出 load order 的槽標 unavailable |
 | Captures 擷取定義（物品附魔/效果、NPC 外貌/數值、玩家） | **co-save 登記簿**（record `'SCCP'` v8，純耐久 id） | **自動**進 `capturedItems[]`／`capturedNpcs[]`；無 handle，讀檔即回 |
+| referrer（命名既有 ref） | **co-save 登記簿**（record `'RFRR'` v1） | **外部目標**＝耐久 id，自動進 `references[]`；**檔內目標**（我們自己擺的）身份是 dynamic handle → 讀檔 `ReacquireOrphans` 按 base+座標撿回；撿不回就標 `TARGET LOST` 並**跳過該筆**（不吐 build 對不上的 editorId） |
 | 模式/鍵位/dp 狀態 | **co-save** | 隨存檔還原 |
 
 **adopt 降級為救援機制**：marker 的 `adopt this cell` 現在讀檔會**自動跑一次**（掃當前 cell），只有跨到別的 cell 才需手動按。擦除的 `scan disabled refs` 已整個移除——co-save 存的是耐久 id，重解析穩定，跨存檔救援冗餘。真要**換一個存檔**撿另一條時間線的 marker，走 Markers 頁 `adopt this cell`。

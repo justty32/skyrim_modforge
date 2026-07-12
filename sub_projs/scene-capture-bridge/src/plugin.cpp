@@ -5,6 +5,7 @@
 #include "Markers.h"
 #include "Modes.h"
 #include "Palette.h"
+#include "Referrer.h"
 #include "SceneExporter.h"
 #include "UI.h"
 
@@ -112,6 +113,13 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg) {
             task->AddTask([]() {
                 if (auto n = Markers::AdoptOrphans())
                     SKSE::log::info("Markers: auto-adopted {} orphan(s) on load", n);
+                // Same story for a referrer that names one of OUR placements: its
+                // identity IS the dynamic ref's handle, and a dynamic FormID is not
+                // reliably remapped across a full restart. The object survives in the
+                // savegame — re-find it by base + position so the reference stays
+                // exportable instead of silently dropping out of references[].
+                if (auto n = Referrer::ReacquireOrphans())
+                    SKSE::log::info("Referrer: re-acquired {} in-file target(s) on load", n);
             });
         }
         break;
