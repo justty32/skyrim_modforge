@@ -89,6 +89,7 @@ public static partial class Generator
                 // identity
                 Race = cn.Race, Female = cn.Female,
                 Unique = cn.Unique, Essential = cn.Essential, Protected = cn.Protected,
+                IsPlayer = cn.IsPlayer,
                 Outfit = outfitItems.Count > 0 ? outfitEd : cn.DefaultOutfit,
                 // stats
                 Class = cn.Class, Level = cn.Level,

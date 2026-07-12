@@ -124,7 +124,12 @@ namespace {
         // Perks. An ordinary NPC carries them on its base's BGSPerkRankArray; the PLAYER's
         // base array is EMPTY — every perk the player ever took lives in PlayerCharacter's
         // runtime `addedPerks`. Same durable id + rank either way.
-        if (auto* pc = actor->As<RE::PlayerCharacter>()) {
+        auto* pc = actor->As<RE::PlayerCharacter>();
+        // Player identity flag — same cast the perk route above needs, so it also catches a
+        // `sc capc` that happens to land on the player, not just `sc capp`. Consumed by ModForge
+        // only as a warning trigger (no voiceType fallback — 2026-07-12 user-decided).
+        n.isPlayer = pc != nullptr;
+        if (pc) {
             for (auto* pr : pc->GetPlayerRuntimeData().addedPerks) {
                 if (!pr || !pr->perk) continue;
                 if (auto id = SceneExporter::ResolveDurableId(pr->perk))
@@ -285,13 +290,13 @@ namespace {
                 return Captures::Result::kNothing;
             }
             e.seq = g_nextSeq++;
-            SKSE::log::info("Captures: captured NPC '{}'{} ({}) race={} {}{} — lvl {} "
+            SKSE::log::info("Captures: captured NPC '{}'{} ({}) race={} {}{}{} — lvl {} "
                 "H/M/S {:.0f}/{:.0f}/{:.0f}, {} skill(s), {} headpart(s), {} tint(s), "
                 "{} perk(s), {} buff(s), {} item(s), face morphs {}", e.name,
                 e.label.empty() ? "" : std::format(" [label '{}']", e.label),
                 e.base.empty() ? "runtime base" : e.base,
                 e.npc.race.empty() ? "?" : e.npc.race, e.npc.female ? "female" : "male",
-                e.npc.unique ? " UNIQUE" : "", e.npc.level,
+                e.npc.unique ? " UNIQUE" : "", e.npc.isPlayer ? " PLAYER" : "", e.npc.level,
                 e.npc.health, e.npc.magicka, e.npc.stamina, e.npc.skills.size(),
                 e.npc.headParts.size(), e.npc.tints.size(),
                 e.npc.perks.size(), e.npc.activeEffects.size(), e.npc.inventory.size(),

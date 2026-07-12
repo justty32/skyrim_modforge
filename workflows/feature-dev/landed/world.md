@@ -67,3 +67,24 @@
 意外收穫：被抬的法杖根本不是 DLL 擺的（玩家丟在地上的裝備）照樣進 placements——vanilla diff 的無狀態判別（動態 ref＝玩家所為）涵蓋所有玩家操作，不限本工具。
 
 殘項（open-only 慣例，列在 [wait_todo/ingame-tests.md](../../../wait_todo/ingame-tests.md)）：跨行程 adopt（關遊戲重開）＋三個零星未實證小項。
+
+## P7/P8 編輯器 backlog 一輪 + 匯出三改 · IN-GAME 2026-07-12
+
+一輪實測**全過**（使用者：「測了，都沒問題」）。DLL 這輪最終 `c5049c78`。
+
+**P7**（模式制之後的操作性補完）：`sc delc`（console 選取擦除，actor 正確拒絕）、`sc del/pk/ed er0/er1`（該模式動作鍵準星↔射線切換，取代「numpad * 專用鍵」）、`sc ed ax`（純旋轉子模式：4/6 yaw、1/3 pitch、7/9 roll）、編輯匕首 marker 位置（numpad 0 commit 更新登記簿、**不**進 overrides）、palette `save/load to file`、`Export all (loaded cells)`、co-save SETT v3 設定還原。
+
+**P8**：marker 模型換**鐵匕首**（劍尖視覺化朝向）；marker 記錄**完整朝向＋大小** → `annotations[]` 帶 `rotation{x,y,z}`＋`scale`（實機 export 驗到 `rotation.z=56.9`、`scale=1.1`、`note`）；numpad 5 per-mode。
+
+**匯出三改**（同日做、同日過）：
+1. **檔名帶場景＋時間**：`scene-export_<cell EditorID 或 worldspace_x<X>y<Y>>_<YYYYMMDD-HHMM>.json`，同分鐘再匯出加 `-2`，**永不覆蓋**（實機驗到 `scene-export_Tamriel_x26y25_20260712-0957.json` / `-0957-2.json` / `all-Tamriel_...`）。⚠️ 下游別再寫死 `scene-export.json`。
+2. **captures 拆獨立檔**：`Export captures` 鈕 → `captures_<時間>.json`，只含 `capturedItems[]`＋`capturedNpcs[]`；**場景匯出檔不再帶這兩段**。兩者都是 `ModSpec` 成員，故單獨 `build` 吃得下（C# 端零改動）。
+3. **Scope 反轉**：`ExportCell`/`ExportAll` 掃到 actor 直接跳過（計 `actorsExcluded`），`placements[]` 不再有 `kind:"npc"`。NPC 改走 marker（`annotations[]`）或 `sc cap`。
+
+**後續修正**（同日，使用者第二輪反饋）：旋轉子模式的歸零鍵改 **per-axis 還原**（2=pitch / 5=yaw / 8=roll，各自還原成**進編輯前的該軸原值**，不是設 0、不是全軸）；palette 的 `load from file` 明確「載入的排最上面」＋新增 **`replace from file`**（清空再載入，含「檔案不存在就完全不動」的防呆）。順帶統一了 palette json 檔內順序＝面板順序。
+
+## 🔴 部署事故：絕不 `cp` 覆寫執行中的 DLL（2026-07-12，實際炸掉一次遊戲）
+
+background agent 編完新 DLL 後用 `cp` 就地覆寫 `mods/SceneCaptureBridge/SKSE/Plugins/`，**當場把使用者正在玩的遊戲弄死**——而且**沒有產生任何 crash log**（CrashLoggerSSE 有裝且正常）。成因：Windows 會鎖住載入中的 DLL，**Linux/Proton 不會**；`cp` ＝ `open(O_TRUNC)` 寫回**同一個 inode**，而已載入 DLL 的程式碼頁是從該檔 **demand-page** 進來的 → 檔案在腳下被換掉 → 下次 page-in 從新檔同一 offset 讀到的是別的東西 → 指令流變垃圾（crash handler 自己可能也還沒 fault-in，所以連 log 都寫不出來）。
+
+修法（已落地 `scripts/deploy.sh`）：`cp new target.tmp && mv target.tmp target`（`rename(2)` 原子換 inode，執行中的遊戲繼續指向舊的已 unlink inode）＋ 部署前 `pgrep -f SkyrimSE.exe`，**遊戲在跑就直接拒絕**。細節寫進 [dev-env](../../dev-env.md)「部署 SKSE DLL 到 MO2」節。

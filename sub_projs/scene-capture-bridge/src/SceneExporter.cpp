@@ -315,6 +315,11 @@ namespace SceneExporter {
                     if (!n.race.empty()) c["race"] = n.race;
                     c["female"] = n.female;
                     if (n.unique) c["unique"] = true;
+                    // This entry IS the player (sc capp, or a sc capc that landed on the player).
+                    // Advisory identity flag only — ModForge does NOT fall back a voiceType for it
+                    // (2026-07-12 user-decided "as-captured, no fallback"); it just lets the consumer
+                    // warn instead of silently shipping a mute clone when the player's base has none.
+                    if (n.isPlayer) c["isPlayer"] = true;
                     if (n.essential) c["essential"] = true;
                     if (n.protectedActor) c["protected"] = true;
                     if (n.dead) c["dead"] = true;

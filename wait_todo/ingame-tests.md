@@ -52,39 +52,15 @@
   - **⚠ 白天測**:vendor 8-20 營業(GetOffersServicesNow 含時間),夜間交易會空——快旅後若是夜晚,`set timescale`/等到白天再試。庫存已放 vanilla 鐵匠 leveled lists(武防+雜貨+金),VendorLocation 錨在店周圍 4096。
   - **回報**:傳送安全否、房子貼地否、Brynja 在否、問候+**交易(有貨有金)**通否。(Brynja 從零建、無 facegen,臉可能陽春/暗臉——能站能講能交易就算過。)
 
-## scene-capture-bridge P7 backlog 一輪（2026-07-11 晚，DLL `a46ed0b2` 已部署，esp 不動）
-
-⚠️ 完全關遊戲重開吃新 DLL；co-save 又升版（SETT v3）——舊存檔的設定記錄跳過一次（登記簿的 marker/eraser/overrides 不受影響，marker 仍自動 adopt）。
-
-1. **`sc delc`**：console 點一個物件（滑鼠點畫面中的桶/椅，console 顯示其 ref）→ 打 `sc delc` → 物件消失、Eraser 頁多一列。點 NPC 打 `sc delc` → 應拒絕（印「actor」）。
-2. **準星↔射線切換**：`sc del er1` → 刪除模式動作鍵改用射線（可擦樹）；`sc del er0` 切回準星。`sc pk er1`/`sc ed er1` 同理（吸樹/編輯樹不必再按 numpad *）。Settings 頁應顯示各模式現況。
-3. **純旋轉子模式**：`sc ed` 選中物件 → **`sc ed ax`** → Editor 頁提示行變 ROTATE → numpad **4/6＝yaw、1/3＝pitch、7/9＝roll**（位置不變）；打 **`sc ed`** 退回移動模式（4/6/1/3 回到位移）。（**歸零鍵語意 2026-07-12 已改 per-axis**，見本檔最後一節。）
-4. **編輯 marker 位置**：`sc ed` 準星對一個匕首 marker → 動作鍵選中（log `editing MARKER`）→ numpad 推移＋**0 commit** → 匕首移到新位置、跳「marker moved」；F1 Markers 頁該筆座標更新、**不**進 Editor overrides 列。numpad 5 可復原、`.` 取消。
-5. **palette load / save from file**：`sc pk` 吸幾個 → Palette 頁文字框輸入檔名（如 `my-palette.json`）→ **save to file** → SKSE 夾生出該檔。清空插槽（或換存檔）→ 同檔名 **load from file (append)** → 插槽**追加**回來、排最上。（**append 排序＋新增 replace 鈕 2026-07-12**，見本檔最後一節。）
-6. **Export all**：室外站著放幾個物件、走幾格再放 → Export 頁 **Export all (loaded cells)** → json 的 `placements` 應含**多個已載入 cell** 的（單 cell 匯出只會有當前 cell）；統計行 cell 顯示「ALL/N loaded cells」。（未載入 cell 的撈不到＝正常，log 有講。）
-7. **co-save v3**：改 er／`sc ed ax`／步長 → 存檔重開 → 設定還原。
-
-## scene-capture-bridge P8（2026-07-11 深夜，DLL `4ba5b9ae`＋新 esp 已部署）
-
-⚠️ 完全關遊戲重開吃新 DLL＋**新 SceneCaptureTools.esp**（marker 模型換鐵匕首）。co-save MKRS 升 v2——舊存檔的 marker angle/scale 讀成 angleZ-only 補 0（不致命）。
-
-1. **marker＝鐵匕首**：`sc mk` 放 → 應出現懸浮**鐵匕首**（劍尖朝玩家面向）、不掉不被踢；準星/E 照樣選得到、開編輯視窗。
-2. **記錄朝向＋大小**：`sc ed` 選中匕首 marker → `sc ed ax` 進旋轉模式轉個角度、`+/−` 改大小 → **numpad 0** → Markers 頁該筆更新 → **Export** → `annotations[]` 該筆帶 `rotation{x,y,z}`（非 0）＋`scale`。
-3. **numpad 5 per-mode**：編輯**移動模式**下 5＝整個復原到編輯前；`sc ed ax` 進**旋轉模式**下 5＝只還原角度（**2026-07-12 起只還原 yaw 那一軸**，見本檔最後一節；位置/大小仍不動）。
-
 ## scene-capture-bridge P9 擷取器（DLL `d3e1b5d0`，co-save `'SCCP'` v3）
 
 **2026-07-11 端到端全通**：`sc cap` 模式（F11）吸 Mirabelle → Export → 消費 → build → 進遊戲**分身在學院庭院原地出現** ✅（OPEN-A 核心流程、OPEN-C 18-morph 修復、消費端 Phase 1 一次實證；落地記錄 [landed/npcs](../workflows/feature-dev/landed/npcs.md)）。殘餘：
 
 **OPEN-A 殘餘（最後一小項）**：存檔完全重開 → capture 的 aim source（er0/er1）還原（co-save SETT v4）。（`sc cap er1` 射線吸取 2026-07-11 已實證 OK。）另留意：模式制下重複按 F11 會吸出重複列（正常行為，消費端 editorId 已防撞）。
 
-**P10 擷取器補完（DLL crc `923e348b` 已部署雙夾，co-save SCCP 升 v4——舊存檔照讀）**：NPC 擷取新收 **class＋level＋equipped**（worn 護甲＋手持武器/火把）；新指令 **`sc capc`**＝console 點選誰就吸誰（物品與 NPC 都行，不用準星）。消費端同步：class/level 直通＋有 class 開 autoCalcStats；**equipped→inventory（自動穿最好的）且非空時 skip outfit**（治 PROTEUS 裸體）。⚠️ 完全關遊戲重開吃新 DLL。
-   - 第一輪實機（2026-07-11 晚）：數值 50/50/50＝autoCalc 於 level 1 的正確輸出（clone 自報 L1）；**靴子在口袋沒穿**→已修：equipped 護甲改**鑄 in-spec OTFT**（引擎只穿 outfit 護甲）、武器留 inventory；DLL 匯出改 **`inventory[]` 全攜帶列**（{item,count,worn,name?,enchantment?}——法杖/青蘋果/金幣都收、**實例附魔（extra data）也吸**：durable ENCH 引用、runtime ENCH 吸 effects 下游新鑄）＋ **class/level/combatStyle/voiceType/spells**（crc `145a456e` 已部署，SCCP v7；legacy 各代 shape 消費端都吃）。消費端：worn→鑄 OTFT、附魔列→鑄 WEAP/ARMO＋ENCH（帶實例顯示名）、spells/cs/voice 直通。**MFCapHatak.zip 已重出貨**（舊 MFCapPrisoner 記得停用）。
-   - **驗**：① ⚠️ 完全關遊戲重開吃新 DLL → console 點 clone → `sc capc` **重吸** → Export → 交給我重 build；② 分身應：穿靴子、法杖（含附魔）/蘋果在物品欄、會的法術在列、有 combatStyle/voice、數值照 class/level；③ 活 clone 若明顯穿整套但吸到的 worn 只有靴子 → 回報（PROTEUS runtime outfit 路徑，另補）；④ 想讓分身有等級：json `"level"` 手改再重 build（clone 自報 L1 是 PROTEUS 行為）；⑤ 順手：console 點武器 `sc capc` 應吸進 capturedItems。
+## scene-capture-bridge — `sc capp` 直接吸玩家（2026-07-12，DLL crc `c5049c78`，**已部署**）
 
-**PROTEUS clone 玩家分身驗收（`~/skyrim_mods/mine/MFCapPrisoner.zip` 待裝）**：OPEN-B 已結案（PROTEUS 寫 TESNPC ✅，見 [landed/npcs](../workflows/feature-dev/landed/npcs.md)）；分身 zip 已出貨——裝了進遊戲看：**你自己的分身**應站在擷取點（Tamriel (109098, 103520, -9017)，冬堡往學院方向），臉形/髮型/鬍子/髮色/體重＝你的角色。**預期落差（非 bug）**：①戰紋/膚色細節層可能沒有（PROTEUS 沒把 tintLayers 寫回 TESNPC）；②服裝可能不對（defaultOutfit 指向 PROTEUS.esp runtime 模板，esp 檔上是空殼）；③RaceMenu 雕塑/overlay 本來就不在配方層。masters：Skyrim.esm＋PROTEUS.esp＋nwsFollowerFramework.esp。
-
-## scene-capture-bridge — `sc capp` 直接吸玩家（2026-07-12，DLL crc `c5049c78`，**尚未部署**）
+> **第一輪實機已過（2026-07-12）**：`sc capp` 抓對玩家 base（`Skyrim.esm:0x000007`），分身臉**確認是本人**——faceMorphs/headParts/hairColor/faceTexture ＋ **`tintLayers` 戰紋**全中（戰紋正是 PROTEUS 路線拿不到的那層）。交付 `~/skyrim_mods/mine/MFCapHatak.zip`。**剩下面的「數值」那條要用練過的角色重驗**。
 
 ⚠️ **完全關遊戲重開**吃新 DLL（esp 不動）。co-save **SCCP 維持 v8**（+label +顯式 H/M/S +18 技能）——舊存檔的 captures 照讀（缺的欄位＝0，行為同以前）。
 
@@ -114,7 +90,7 @@
 
 **回報**：① `sc capp` 有沒有吸到、label 大小寫對不對；② 分身的數值/perk/裝備對不對；③ voiceType/物品欄的落差要不要修。
 
-## scene-capture-bridge — 旋轉 per-axis 還原 ＋ palette replace（2026-07-12，DLL crc `9cae7ff1`，**尚未部署**）
+## scene-capture-bridge — 旋轉 per-axis 還原 ＋ palette replace（2026-07-12，**已部署**，含在 DLL `c5049c78` 裡)
 
 ⚠️ **完全關遊戲重開**吃新 DLL（esp 不動、co-save 不升版、palette json 相容——只是**檔內順序改成「最上面那筆排第一」**，舊檔讀進來順序會上下顛倒一次，之後就穩定了）。
 

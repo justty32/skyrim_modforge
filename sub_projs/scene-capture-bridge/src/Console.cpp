@@ -116,8 +116,9 @@ namespace {
         // Capture THE PLAYER. The engine keeps the player's chargen on its base TESNPC
         // (0x7), so the DLL reads the same record it reads for any NPC — no PROTEUS clone
         // in the middle (which reported level 1 / 50-50-50 and wrote no tints). Perks come
-        // from PlayerCharacter's runtime addedPerks; H/M/S + the 18 skills from the base
-        // actor values, exported explicitly so ModForge writes DNAM instead of autocalc.
+        // from PlayerCharacter's runtime addedPerks; H/M/S + the 18 skills from the PERMANENT
+        // actor values (GetPermanentActorValue — base+permanent, excludes buffs; see Captures.cpp),
+        // exported explicitly so ModForge writes DNAM instead of autocalc.
         if (a1 == "capp") {
             switch (Captures::CapturePlayer(label)) {
             case Captures::Result::kCaptured:

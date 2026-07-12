@@ -22,6 +22,13 @@ public sealed class CapturedNpcSpec
     public string Race { get; set; } = "";        // ref → RACE (required — an NPC_ without a race is broken in-game)
     public bool Female { get; set; }
     public bool Unique { get; set; }
+    // This entry IS the player character (`sc capp`, or a `sc capc` that landed on the player;
+    // DLL judges it off the actor's PlayerCharacter cast — co-save SCCP v9). Advisory identity
+    // flag ONLY: the user decided 2026-07-12 "as-captured, no fallback" — ModForge does NOT
+    // invent a voiceType for a player capture. It exists purely so the build can WARN (not fail)
+    // when a player capture has no voiceType, instead of silently shipping a mute clone. See
+    // Generator.ExpandCapturedNpcs (carries to NpcSpec.IsPlayer) and BuildNpcs (the warning).
+    public bool IsPlayer { get; set; }
     public bool Essential { get; set; }
     public bool Protected { get; set; }
     public bool Dead { get; set; }                 // advisory (not consumed; see header)

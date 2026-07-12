@@ -12,6 +12,12 @@ public sealed class NpcSpec
     public string Outfit { get; set; } = "";      // ref -> DefaultOutfit
     public int Level { get; set; }                 // fixed level (0 = leave default); needed for class stat auto-calc
     public bool AutoCalcStats { get; set; }        // derive H/M/S + skills from level + class (else flat defaults)
+    // Advisory: this record originated as a capture of THE PLAYER (`sc capp`/`sc capc`, DLL co-save
+    // SCCP v9+). NOT consumed into any record field — it only makes BuildNpcs warn (not fail) when
+    // there's no voiceType, since the player's base TESNPC commonly has none and the clone would
+    // otherwise ship silently mute with no explanation. false = ordinary NPC / pre-v9 capture (no
+    // behaviour change — legacy json defaults to false).
+    public bool IsPlayer { get; set; }
     // --- Explicit stats (DNAM) — the other route, and the one the engine actually reads for a
     // NON-autocalc actor. AutoCalcStats makes the ENGINE compute H/M/S + skills from class+level;
     // these author them outright (what an in-game capture of a real actor produces — `sc capp`).

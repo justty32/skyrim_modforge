@@ -1773,6 +1773,10 @@
           "type": "boolean",
           "description": "one-off actor (vs leveled); helps engine AI tracking + cross-cell travel"
         },
+        "isPlayer": {
+          "type": "boolean",
+          "description": "advisory: this record originated as a capture of THE PLAYER (`sc capp`/`sc capc`); not written to any record field — only makes Build warn (not fail) when there's no voiceType, instead of silently shipping a mute clone"
+        },
         "combatStyle": {
           "$ref": "#/$defs/ref",
           "description": "CSTY ref; HOW the AI fights (magic/melee/ranged preference)"

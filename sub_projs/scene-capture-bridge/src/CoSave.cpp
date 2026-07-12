@@ -23,7 +23,7 @@ namespace {
     constexpr std::uint32_t kVerMkrs = 2;  // v2: full angle (3f) + scale, was angleZ only
     constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
     constexpr std::uint32_t kVerOvrd = 1;
-    constexpr std::uint32_t kVerCaps = 8;  // v2 kNpc; v3 flags/perks/buffs; v4 class/level/equipped; v5 armor/weapons; v6 inventory; v7 rows+instance-ench; v8 label + explicit H/M/S + 18 skills
+    constexpr std::uint32_t kVerCaps = 9;  // v2 kNpc; v3 flags/perks/buffs; v4 class/level/equipped; v5 armor/weapons; v6 inventory; v7 rows+instance-ench; v8 label + explicit H/M/S + 18 skills; v9 isPlayer flag
 
     // ---- primitives -------------------------------------------------------
 
@@ -331,6 +331,8 @@ namespace {
         si->WriteRecordData(n.stamina);
         si->WriteRecordData(static_cast<std::uint32_t>(n.skills.size()));
         for (std::int32_t s : n.skills) si->WriteRecordData(s);
+        // v9 appendix: player identity flag (advisory — ModForge's "no voiceType fallback" warning).
+        si->WriteRecordData(static_cast<std::uint8_t>(n.isPlayer ? 1 : 0));
     }
 
     void LoadNpcPayload(const SKSE::SerializationInterface* si, Captures::NpcData& n, std::uint32_t version) {
@@ -461,6 +463,11 @@ namespace {
                 si->ReadRecordData(v);
                 n.skills.push_back(v);
             }
+        }
+        if (version >= 9) {  // player identity flag
+            std::uint8_t pl = 0;
+            si->ReadRecordData(pl);
+            n.isPlayer = pl != 0;
         }
     }
 

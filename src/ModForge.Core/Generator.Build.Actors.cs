@@ -21,6 +21,11 @@ public static partial class Generator
                 // have to `resurrect` it in console). Warn loudly; the fix is to give the NPC a `class`.
                 if (n.AutoCalcStats && string.IsNullOrWhiteSpace(n.Class))
                     Warn($"  ! npc '{n.EditorId}': autoCalcStats set but NO class — stats calc to ~0 HP; an essential NPC will spawn in permanent bleedout (appears dead). Give it a `class`.");
+                // Player capture with no voiceType: expected (the player's base TESNPC commonly has
+                // none), not a bug — user-decided 2026-07-12 "as-captured, no fallback" (no vanilla
+                // voice gets guessed in). Warn purely for visibility so a silent clone isn't a surprise.
+                if (n.IsPlayer && string.IsNullOrWhiteSpace(n.VoiceType))
+                    Warn($"  ! npc '{n.EditorId}' is a player capture — no voiceType (the player has none); the clone will be silent (no hello/idle/combat vocals). This is expected, not a bug.");
                 // --- Explicit stats (DNAM) — the non-autocalc route. For an actor WITHOUT the
                 // AutoCalcStats flag the engine reads these values verbatim, so this is how a
                 // captured real actor (`sc capp`) keeps its true health pool and skill spread

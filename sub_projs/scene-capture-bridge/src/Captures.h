@@ -88,6 +88,12 @@ namespace Captures {
         std::vector<std::int32_t> skills;
         bool female = false;
         bool unique = false;       // ACBS Unique flag — ModForge decides how to treat a one-of-a-kind
+        // This entry IS the player character (base FormID Skyrim.esm:0x000007), set via
+        // actor->As<PlayerCharacter>() (same test ReadNpc already uses for the addedPerks route —
+        // works for `sc capp` AND a `sc capc` that happens to land on the player). Pure identity flag:
+        // ModForge does not fall back a voiceType for it (2026-07-12 user-decided "as-captured, no
+        // fallback") — it only lets the consumer WARN instead of silently shipping a mute clone.
+        bool isPlayer = false;
         bool dead = false;         // live death state at capture time
         bool essential = false;    // ACBS Essential
         bool protectedActor = false;  // ACBS Protected
