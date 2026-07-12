@@ -6,6 +6,7 @@
 #include "Markers.h"
 #include "Overrides.h"
 #include "Palette.h"
+#include "Requires.h"
 #include "SceneExporter.h"
 #include "log.h"
 
@@ -110,6 +111,34 @@ void __stdcall UI::Export::Render() {
     if (const auto& cs = SceneExporter::LastCapturesExport(); cs.valid) {
         ImGuiMCP::BulletText("last: %zu item(s), %zu npc(s)", cs.items, cs.npcs);
         if (!cs.path.empty()) ImGuiMCP::TextWrapped("Wrote %s", cs.path.c_str());
+    }
+
+    ImGuiMCP::Separator();
+
+    // WHICH MODS WILL THE BUILT ESP NEED? Answered here, NOW — not after a build,
+    // when you have already quit. A mod-sourced spell/perk/item makes that mod a
+    // MASTER, and Skyrim silently refuses to load a plugin whose masters are
+    // missing. Scanning is read-only: it writes a .txt and changes nothing.
+    constexpr ImGuiMCP::ImVec4 kWarnCol{1.f, 0.55f, 0.25f, 1.f};
+    if (ImGuiMCP::Button("Export requires")) {
+        ::Requires::ExportToFile();
+    }
+    ImGuiMCP::SameLine();
+    ImGuiMCP::Text("(what mods the built esp will REQUIRE)");
+    if (const auto& r = ::Requires::Last(); r.valid) {
+        if (r.external == 0) {
+            ImGuiMCP::BulletText("vanilla only — the plugin will load for anybody");
+        } else {
+            ImGuiMCP::TextColored(kWarnCol,
+                "  %zu non-vanilla master(s), %zu link(s)%s — anyone missing them gets NO "
+                "plugin (Skyrim drops it silently)", r.external, r.links,
+                r.creationClub ? " (incl. Creation Club)" : "");
+        }
+        if (!r.path.empty()) ImGuiMCP::TextWrapped("Wrote %s", r.path.c_str());
+    } else {
+        ImGuiMCP::TextWrapped("Scans placements, removals, overrides, references, markers and "
+            "the whole capture registry; writes requires_<stamp>.txt. Same rules as `modforge "
+            "build`'s <plugin>.requires.txt, so the two can be compared.");
     }
 
     ImGuiMCP::Separator();

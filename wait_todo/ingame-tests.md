@@ -236,6 +236,29 @@
 
 **回報**：① `references[]` 的 `ref` 是不是 editorId（不是 FormID）、跟 placements 那筆對不對得上；② 撞名有沒有擋住、label 大小寫有沒有留住；③ 三類拒收對不對；④ 重開讀檔後檔內目標撿不撿得回。
 
+## scene-capture-bridge — Export 頁 `Export requires` 鈕（2026-07-12，DLL crc `008aba47`，**已部署**）
+
+⚠️ **完全關遊戲重開**吃新 DLL（esp 不動、**co-save 不升版**——純新增一顆唯讀按鈕，舊存檔直接用）。
+
+**這是什麼**：`sc capp` 吸一個玩家分身，就會把「給過你法術/perk/裝備的每一個 mod」變成生成 esp 的 **master**；缺 master 時 Skyrim **靜默不載**這個 esp（不報錯、log 也沒有）。`modforge build` 已經會印這份分析——但**那時你已經退出遊戲了**。這顆鈕把它**提前到匯出當下**：你人還站在那間房，覺得那顆 PROTEUS 法術不值得讓整個 mod 變成硬相依，**重吸一次就好**。
+
+**它不改任何東西**（唯讀掃描 → 寫一份 .txt），也**不過濾**你的匯出——只是讓代價可見。
+
+1. **先製造依賴**（重點是「非 vanilla 的來源」）：
+   - `sc capp` 吸一次玩家（你身上的 PROTEUS/Ordinator/Apocalypse 法術、mod 的裝備都會進來）；
+   - 順手 `sc pk` 吸一個 **mod 來的**物件（JK's Skyrim 之類的家具）→ `sc pl` 擺出來；
+   - 對一個 **mod 的** ref 用 `sc del` 擦掉、或 `sc ed` 移動一下（→ `removals[]`／`overrides[]` 也算依賴）。
+2. **F1 → Export 頁 → `Export requires`**（在 Export captures 下面那一區）：
+   - 面板應**橘字**顯示 `N non-vanilla master(s), M link(s)`（純 vanilla 的話顯示 `vanilla only — the plugin will load for anybody`），下面一行 `Wrote <路徑>`。
+   - 檔案在 **SKSE log 夾**（跟 `scene-export_*.json` 同一個夾），名字 `requires_<YYYYMMDD-HHMM>.txt`。同一分鐘再按一次＝ `-2.txt`，**永不覆蓋**。
+3. **打開那份 .txt 看三件事**：
+   - **開頭講清楚後果**（缺這些 mod → Skyrim 靜默不載）＋ vanilla 五個列在 `# vanilla (...)` 那行；
+   - 每個 mod 底下**逐行講是誰把它拉進來的**，例如 `captures.capturedNpcs[0].spells[17] = PROTEUS.esp:0x08073D`——**那就是你要刪的那一行**（`scene.` ＝去改 `scene-export_*.json`，`captures.` ＝去改 `captures_*.json`）；
+   - **⚠️ 最該檢查的一條**：你的 `capturedNpcs[].activeEffects[]`（當下 buff 快照）通常會提到一堆 mod 的 MGEF——**這些 mod 不該出現在報告裡**（除非同一個 mod 另有法術/perk 之類的**真**依賴把它拉進來）。activeEffects 不會產生任何 esp link，列它＝說謊（刪掉它並不會拿掉依賴）。同理 `capturedNpcs[].base`（來源 NPC）也不該讓那個 mod 上榜。**若看到一個 mod 只因 activeEffects/base 就被列出來 → 那是 bug，回報。**
+4. **跟 C# 端對照**（真正的驗收）：把 `scene-export_*.json` ＋ `captures_*.json` 給我 → 我 `build` 一份 esp → C# 會印它自己的 master 清單＋寫 `<plugin>.requires.txt`。**兩份的 mod 名單應該一致**（歸因粒度可能不同：C# 對 deep-copy 的 template clone 只講得出 `record Weapon:MFCap_…`，DLL 這邊講得出是哪一行——那不算不一致）。**名單本身若對不上，回報**，那代表其中一邊的規則錯了。
+
+**回報**：① 面板數字與 .txt 內容對不對得上；② activeEffects/base 有沒有污染名單（**最關鍵**）；③ 跟 C# `<plugin>.requires.txt` 的 mod 名單一不一致；④ 有沒有哪個 mod 你確定需要、但兩邊都沒列出來（漏報比誤報嚴重）。
+
 ## scene-capture-bridge — 旋轉 per-axis 還原 ＋ palette replace（2026-07-12，**已部署**，含在 DLL `c5049c78` 裡)
 
 ⚠️ **完全關遊戲重開**吃新 DLL（esp 不動、co-save 不升版、palette json 相容——只是**檔內順序改成「最上面那筆排第一」**，舊檔讀進來順序會上下顛倒一次，之後就穩定了）。

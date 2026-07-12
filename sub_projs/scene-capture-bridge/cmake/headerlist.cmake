@@ -10,6 +10,7 @@ set(headers ${headers}
     src/Palette.h
     src/Physics.h
     src/Referrer.h
+    src/Requires.h
     src/SceneExporter.h
     src/UI.h
     src/Modes.h

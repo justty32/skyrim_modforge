@@ -88,7 +88,7 @@ sc refc [Label]            命名 console 滑鼠點選的 ref（aim-free）
 
 編輯模式的目標若是 **marker 光球**：numpad 微調＋0 commit＝**移動該 marker**（更新登記簿座標，不進 overrides）。`er` 切換、旋轉子模式、編輯步長全部**存進存檔**（co-save SETT v3）。
 
-Export 頁有 **Export player cell**、**Export all (loaded cells)** 與 **Export captures** 三鈕：registries（marker/擦除/override）本就全 cell 全域，`all` 只多掃**已載入的其他 cell** 的 placements（未載入 cell 的 placements 撈不到，log 會講）。Palette 頁的具名檔有三鈕：**load from file (append)**（載入的插槽**疊在列表最上面**，保留檔內順序）／**replace from file**（**清掉現有插槽**再載入；檔案不存在或無可用插槽＝什麼都不動，不會誤清）／**save to file**。**檔內順序＝面板順序**（最上面那筆排第一），所以 json 讀起來就是你在面板看到的樣子。
+Export 頁有 **Export player cell**、**Export all (loaded cells)**、**Export captures** 與 **Export requires** 四鈕：registries（marker/擦除/override）本就全 cell 全域，`all` 只多掃**已載入的其他 cell** 的 placements（未載入 cell 的 placements 撈不到，log 會講）。Palette 頁的具名檔有三鈕：**load from file (append)**（載入的插槽**疊在列表最上面**，保留檔內順序）／**replace from file**（**清掉現有插槽**再載入；檔案不存在或無可用插槽＝什麼都不動，不會誤清）／**save to file**。**檔內順序＝面板順序**（最上面那筆排第一），所以 json 讀起來就是你在面板看到的樣子。
 
 **匯出檔名（2026-07-12 起，每次一個新檔、永不覆蓋）**：
 
@@ -97,8 +97,30 @@ Export 頁有 **Export player cell**、**Export all (loaded cells)** 與 **Expor
 | Export player cell | `scene-export_<cell EditorID 或 <ws>_x<X>y<Y>>_<YYYYMMDD-HHMM>.json` | placements（**物件，不含 NPC**）＋ removals ＋ overrides ＋ annotations ＋ **references** |
 | Export all (loaded cells) | `scene-export_all-<玩家所在>_<YYYYMMDD-HHMM>.json` | 同上，掃全部已載入 cell |
 | Export captures（Captures 頁也有一顆） | `captures_<YYYYMMDD-HHMM>.json` | **只有** capturedItems[] ＋ capturedNpcs[] |
+| **Export requires** | `requires_<YYYYMMDD-HHMM>.txt` | **純文字報告**：這份匯出會讓生出來的 esp **依賴哪些非 vanilla mod**，逐筆講「是哪個欄位把它拉進來的」 |
 
-同分鐘同場景再匯出＝加 `-2`/`-3` 後綴。**⚠️ 下游 agent 別再寫死 `scene-export.json`**——去 SKSE 資料夾取最新一份（或使用者指名的那份）。
+同分鐘同場景再匯出＝加 `-2`/`-3` 後綴（`requires` 也一樣，`-2.txt`）。**⚠️ 下游 agent 別再寫死 `scene-export.json`**——去 SKSE 資料夾取最新一份（或使用者指名的那份）。
+
+### Export requires — 「這個 esp 會需要哪些 mod？」在**遊戲內**就問得到
+
+`sc capp` 吸一個玩家分身，就會把「給過你法術/perk/裝備的每一個 mod」變成 esp 的 **master**；缺 master 時 Skyrim **靜默不載**這個 esp（不報錯、log 也沒有，記錄就是不在）。ModForge C# 端 build 完會印同一份分析（＋`<plugin>.requires.txt` 旁檔，[Generator.Dependencies.cs](../../src/ModForge.Core/Generator.Dependencies.cs)）——但**那時你已經退出遊戲了**。這顆鈕把同一個問題**提前到匯出當下**：你人還站在那間房，覺得那顆 PROTEUS 法術不值得讓整個 mod 變成硬相依，重吸一次就好。
+
+**不過濾任何東西**（完全複製優先＝使用者拍板），只是讓代價**可見**。掃描範圍＝DLL 手上會進匯出的全部：`placements[]`（base／cell／worldspace）、`removals[]`、`overrides[]`、`references[]`、`annotations[]`、整本 Captures 登記簿。判定規則與 C# 端**同一套**：vanilla ＝ Skyrim/Update/Dawnguard/HearthFires/Dragonborn **五個**；**CC（`ccXxxSSE###` / `_ResourcePack`）不算 vanilla**（按帳號綁定，沒買的人一樣靜默不載，只是報告會標原因）。
+
+**⚠️ 只列「真的會變成依賴」的東西。** 有些欄位**寫著某個 mod 的 FormID，但 build 根本不會 link 它**——列進去是**說謊**（刪掉它並不會拿掉那個依賴）。這批一律排除，並在 SKSE log 逐欄位交代排除了幾筆：
+
+| 排除的欄位 | 為什麼不是依賴 |
+|---|---|
+| `capturedNpcs[].activeEffects[].magicEffect` / `.source` | 當下 buff 快照，ModForge 從不消費（**兩個** ref 欄位，不只 magicEffect 那個）|
+| `capturedNpcs[].base` | 一律**鑄新** NPC_，從不 override 來源 |
+| `capturedNpcs[].defaultOutfit`（**當有 `worn` 裝備時**）| 穿在身上的甲會**鑄一件 OTFT 蓋掉它**，被捨棄的那件不會被 link |
+| `capturedItems[].base`（**當 `kind: ingredient`**）| `IngredientSpec` 根本沒有 Template 欄位，這筆是死資料 |
+| `annotations[].cell` / `.worldspace` | marker 是 inert 的，「不生任何記錄」|
+| `references[].base` / `.cell` / `.worldspace` | DLL **刻意不寫 `anchor`** ⇒ 預設 `anchor:"none"` ⇒ build 連讀都不讀這三個 |
+
+兩種**限定條件**的相依會加註記：`[template clone]`（`capturedItems[].base`、附魔的 `inventory[].item`——ModForge **deep-copy** 那筆記錄，form 本身不是 master link，但複本會拖著來源的 sub-link＋要用它的 mesh/材質，實務上仍需要那個 mod）與 `[named only]`（`references[].ref`——只有當 spec 真的有東西指向那個 label 時才成為 master）。
+
+**跟 C# 版的差異**：C# 用「建好的 mod」當 master 清單的權威（掃 record FormKey＋`EnumerateFormLinks`），所以連 deep-copy 拖進來的 master 都抓得到，但**歸因會掉**（只剩 `record Weapon:MFCap_…`，講不出要刪哪一行）；DLL 這邊沒有建好的 mod 可掃，改用**規則表**（上面那兩張表，是逐一讀 C# 消費端讀出來的，不是猜的），代價是遇到全新欄位可能誤判，好處是 **template clone 也講得出是哪一行**。路徑前綴 `scene.` / `captures.` 指出該去改**哪一個檔**。兩邊格式對齊，可以互相比對。
 
 **Scope（使用者 2026-07-12 拍板）**：cell 匯出＝**純場景/物件**，掃描時 **actor 一律排除**（面板/log 顯示 `N actor(s) excluded`）——NPC 交給 ModForge **按 marker（`annotations[]`）去擺**；真要複製某個 NPC 走 `sc cap` → 獨立的 `capturedNpcs[]` 檔。captures 是**跨 cell 的定義資料庫**，所以拆檔：一把附魔劍不屬於你剛好站的那間房。兩種檔都是合法 ModSpec，`build` 各吃各的（ModForge C# 端零改動）。
 
@@ -127,6 +149,7 @@ Export 頁有 **Export player cell**、**Export all (loaded cells)** 與 **Expor
 | `Referrer.{h,cpp}` | referrer（`sc ref` / `sc refc`）：**命名**一個既有 ref——只記身份＋label，**世界完全不動**（與 Eraser 的唯一差別）→ 匯出頂層 `references[]`。(乙) 檔內目標（我們 `sc pl` 擺的 dynamic ref）identity ＝ **handle**，匯出時給該 placement 蓋 `EditorIdOf()` ＝ `MFRef_<label>_<seq>`；(甲) 外部 authored ref 記耐久 id。拒收 marker proxy／自家 actor／重複 label。co-save `'RFRR'`；`ReacquireOrphans()` 讀檔按 base+座標撿回檔內目標 |
 | `UI.References.cpp` | References 頁（最新在前、label/note 改名＋擋撞名、顯示檔內 editorId／耐久 id／base／cell／座標、逐列刪除） |
 | `Overrides.{h,cpp}` | authored ref 被編輯 commit 後的登記簿（比照 Eraser：明示、不 diff——havok 噪音）→ 匯出頂層 `overrides[]`（ref/position/rotation°/scale；actor 不帶 scale）；Editor 面板頁逐筆/全部 revert 回 baseline |
+| `Requires.{h,cpp}` | **「這個 esp 會需要哪些 mod？」＝ Export 頁 `Export requires` 鈕**（→ `requires_<stamp>.txt`）。走訪**匯出後的 json**（`SceneExporter::ScanAll`/`ScanCaptures`＝匯出減掉寫檔與統計副作用），收集每個 `<plugin>:0xLOCALID` 及其 JSON 路徑 → 依規則表分成「真的會 link」／`[template clone]`／`[named only]`／**排除**（`activeEffects`、`capturedNpcs[].base`、被蓋掉的 `defaultOutfit`、ingredient 的 `base`、`annotations[]` 的 cell、`references[]` 的 base/cell/ws）。vanilla/CC 判定與 [Generator.Dependencies.cs](../../src/ModForge.Core/Generator.Dependencies.cs) **同一套，改一邊要改兩邊**。`Analyze(scene, captures)` 是**純函式**（不碰遊戲狀態）——刻意拆出來，這樣才驗得到 |
 | `PCH.h` / `log.h` | CommonLibSSE PCH（含 nlohmann）＋ spdlog file logger |
 
 ## 尚未做（依 spec 里程碑）

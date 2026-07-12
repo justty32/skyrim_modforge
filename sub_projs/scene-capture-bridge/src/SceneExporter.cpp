@@ -671,6 +671,24 @@ namespace SceneExporter {
         return scene;
     }
 
+    // A SCAN is a read of what an export would write — the requires report needs
+    // exactly the same json (that is the whole point: it reports on the file you
+    // are about to hand to `build`), but it writes no file, so the panel's
+    // "Wrote <path>" line must keep describing the last REAL export.
+    nlohmann::json ScanAll() {
+        const Stats saved = g_last;
+        auto scene = ExportAll();
+        g_last = saved;
+        return scene;
+    }
+
+    nlohmann::json ScanCaptures() {
+        const CaptureStats saved = g_lastCaptures;
+        auto scene = ExportCaptures();
+        g_lastCaptures = saved;
+        return scene;
+    }
+
     bool WriteSceneFile(const nlohmann::json& scene, const std::filesystem::path& path) {
         try {
             std::error_code ec;
@@ -709,16 +727,6 @@ namespace SceneExporter {
             return out;
         }
 
-        // YYYYMMDD-HHMM, local time (the player's clock is what they'll match
-        // the file against).
-        std::string TimeStamp() {
-            const std::time_t t = std::time(nullptr);
-            std::tm tm{};
-            localtime_s(&tm, &t);
-            return std::format("{:04}{:02}{:02}-{:02}{:02}", tm.tm_year + 1900, tm.tm_mon + 1,
-                tm.tm_mday, tm.tm_hour, tm.tm_min);
-        }
-
         // Where an export came from, for the file name: interior -> the cell's
         // EditorID; exterior -> worldspace EditorID + the cell grid (an exterior
         // "cell" is one 4096-unit tile, so the grid is the only thing that
@@ -744,18 +752,29 @@ namespace SceneExporter {
             }
             return ws;
         }
+    }
 
-        // Same minute, same cell, two exports — still two files, never a silent
-        // overwrite (the whole point of the rename).
-        std::filesystem::path UniquePath(const std::filesystem::path& dir,
-            const std::string& stem) {
-            std::error_code ec;
-            auto path = dir / (stem + ".json");
-            for (int n = 2; std::filesystem::exists(path, ec) && n < 100; ++n) {
-                path = dir / std::format("{}-{}.json", stem, n);
-            }
-            return path;
+    // YYYYMMDD-HHMM, local time (the player's clock is what they'll match the
+    // file against).
+    std::string TimeStamp() {
+        const std::time_t t = std::time(nullptr);
+        std::tm tm{};
+        localtime_s(&tm, &t);
+        return std::format("{:04}{:02}{:02}-{:02}{:02}", tm.tm_year + 1900, tm.tm_mon + 1,
+            tm.tm_mday, tm.tm_hour, tm.tm_min);
+    }
+
+    // Same minute, same cell, two exports — still two files, never a silent
+    // overwrite (the whole point of the rename). `ext` so the requires report
+    // (a .txt) gets the identical never-clobber guarantee.
+    std::filesystem::path UniquePath(const std::filesystem::path& dir,
+        const std::string& stem, std::string_view ext) {
+        std::error_code ec;
+        auto path = dir / (stem + std::string(ext));
+        for (int n = 2; std::filesystem::exists(path, ec) && n < 100; ++n) {
+            path = dir / std::format("{}-{}{}", stem, n, ext);
         }
+        return path;
     }
 
     void ExportPlayerCellToFile() {

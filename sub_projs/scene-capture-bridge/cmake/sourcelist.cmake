@@ -10,6 +10,7 @@ set(sources ${sources}
     src/Palette.Placed.cpp
     src/Physics.cpp
     src/Referrer.cpp
+    src/Requires.cpp
     src/SceneExporter.cpp
     src/UI.cpp
     src/UI.Markers.cpp

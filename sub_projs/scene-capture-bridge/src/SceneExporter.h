@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace SceneExporter {
 
@@ -98,6 +99,13 @@ namespace SceneExporter {
     // ModSpec members), so `build captures_*.json out.esp` works on its own.
     [[nodiscard]] nlohmann::json ExportCaptures();
 
+    // Same json as ExportAll()/ExportCaptures(), but the panel's "last export"
+    // stats are left EXACTLY as they were. A requires scan (Requires::Scan) reads
+    // what an export WOULD write; it is not an export, and it must not make the
+    // Export page claim a file it never wrote.
+    [[nodiscard]] nlohmann::json ScanAll();
+    [[nodiscard]] nlohmann::json ScanCaptures();
+
     // Serialise a scene.json object to disk (pretty-printed, 2-space indent).
     // Returns true on success. Default target: SKSE/Plugins/SceneCaptureBridge/.
     bool WriteSceneFile(const nlohmann::json& scene, const std::filesystem::path& path);
@@ -114,5 +122,17 @@ namespace SceneExporter {
     // scene export (user-decided 2026-07-12): the eyedropped definitions are a
     // library of their own, not scene content of the cell you happen to be in.
     void ExportCapturesToFile();
+
+    // ---- file-naming primitives, shared by every writer (also Requires) ----
+
+    // YYYYMMDD-HHMM, local time — the player's clock is what they match the file
+    // against. Every export file name carries it.
+    [[nodiscard]] std::string TimeStamp();
+
+    // `dir/<stem><ext>`, or `<stem>-2<ext>`, `-3`… when that exists. Exports
+    // NEVER overwrite an earlier one — a fixed name meant two exports in a row
+    // silently ate each other, and that is the bug this exists to prevent.
+    [[nodiscard]] std::filesystem::path UniquePath(const std::filesystem::path& dir,
+        const std::string& stem, std::string_view ext = ".json");
 
 }  // namespace SceneExporter

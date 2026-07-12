@@ -82,6 +82,15 @@
 - **語氣＝資訊、不是錯誤**（使用者拍板要完全複製）；純 vanilla spec **一個字都不印**（negative-case 測試釘住，免得變背景噪音）。C# **971 測綠**（951 + 20 新）。docs：[for_agent_cli](../../../docs/for_agent_cli.md)（＋zh-TW 鏡像）。
 - **另三個候選這輪沒做**：(b) spec 宣告式 `requires:` 段（build 對不上就報錯——**這才是後果②的完整解**，旁檔只是半套）；(c) modlist / load order 快照（MO2 `plugins.txt`）；(d)「依賴檢查」指令（給 esp ＋ load order，回報缺什麼）。
 
+## ✅ 已做（依賴可見性的**遊戲內版**：Export 頁 `Export requires` 鈕，2026-07-12，DLL `6498c57b`→`008aba47`，待實機）
+- **價值＝時機**。上面那條 C# 版是 **build 後**才知道——那時你已經退出遊戲了；這顆鈕把同一個問題**提前到匯出當下**：人還站在那間房，覺得那顆 PROTEUS 法術不值得讓整個 mod 變成硬相依，**重吸一次就好**。兩者互補、格式對齊（路徑前綴 `scene.` / `captures.` 指出該去改哪個檔），輸出可互相比對。
+- **`Requires.{h,cpp}`**（新）：走訪**匯出後的 json**（`SceneExporter::ScanAll`/`ScanCaptures` ＝匯出減掉寫檔與統計副作用），收每個 `<plugin>:0xLOCALID` ＋其 JSON 路徑 → `requires_<YYYYMMDD-HHMM>.txt`（沿用既有 `UniquePath` 的**永不覆蓋** `-2` 機制，`ext` 參數化）。掃描範圍＝`placements[]`(base/cell/ws)＋`removals[]`＋`overrides[]`＋`references[]`＋`annotations[]`＋整本 Captures。vanilla 五個＋CC 不算 vanilla，與 C# 同一套。
+- **⚠️ 關鍵：只列真的會變成依賴的東西——而「假依賴」不只 `activeEffects` 一個。** 逐一讀 C# 消費端（`Generator.CapturedNpcs.cs`/`CapturedItems.cs`/`Build.*.cs`）確認出**六類**寫著 mod FormID 但 build 根本不 link 的欄位，全部排除（列進去＝說謊，刪掉它並不會拿掉那個依賴），並在 SKSE log 逐欄位交代排除筆數：① `capturedNpcs[].activeEffects[].magicEffect` **＋ `.source`**（同一個物件上的**第二個** ref 欄位，C# 註解只點名了前者）；② `capturedNpcs[].base`（一律鑄新、從不 override）；③ `capturedNpcs[].defaultOutfit`**當有 `worn` 裝備時**（穿的甲會鑄 OTFT 蓋掉它）；④ `capturedItems[].base` **當 `kind: ingredient`**（`IngredientSpec` 沒有 Template 欄位＝死資料）；⑤ `annotations[].cell`/`.worldspace`（inert，不生記錄）；⑥ `references[].base`/`.cell`/`.worldspace`（DLL 刻意不寫 `anchor` ⇒ 預設 `none` ⇒ build 連讀都不讀）。
+- **兩種限定條件的相依加註記**：`[template clone]`（`capturedItems[].base`、附魔的 `inventory[].item`——ModForge **deep-copy** 那筆記錄，form 本身不是 master link，但複本拖著來源的 sub-link＋要用它的 mesh，實務上仍需要那個 mod）；`[named only]`（`references[].ref`——只有 spec 真的有東西指向那個 label 才成為 master）。
+- **跟 C# 版的差異（各有得失）**：C# 以「建好的 mod」為 master 權威 ⇒ 連 deep-copy 拖進來的 master 都抓得到，但**歸因會掉**（`Causal()` 過濾掉 FormKey 沒被 link 的 spec 來源 ⇒ template clone 只剩 `record Weapon:MFCap_…`，講不出要刪哪一行）；DLL 沒有建好的 mod 可掃，改用**規則表** ⇒ 遇到全新欄位可能誤判（預設當作「會 link」＝寧可多報不漏報），但 **template clone 也講得出是哪一行**。
+- **驗證**：`Analyze(scene, captures)` 刻意拆成**純函式**（不碰遊戲狀態），離線用 stub header 編**真的 `Requires.cpp`** 跑一份含 9 個 mod 的擬真測資 → 六類排除全部命中（`Conditional Expressions.esp`／`Immersive Armors.esp`／`Wyrmstooth.esp` 只出現在假依賴欄位 ⇒ **報告裡一個字都沒有**），而 `PROTEUS.esp`／`Ordinator.esp` 照樣列出、**歸因到真正拉它進來的那一行**（`spells[1]`／`perks[0].perk`，不是 activeEffects）。
+- **C# 端零改動**（這是純 DLL 側的新輸出）。
+
 ## 仍未做
 
 - **`sc cap` 物件類 vs `sc pk` 分工（使用者再想，先照舊）**：`sc cap` 記 NPC/player 含全身物品＋extra data（v7 已落地）；物件類 capture 與 `sc pk` 滴管感覺功能重複，使用者還要想想——**傾向仍記錄**，暫不動。
