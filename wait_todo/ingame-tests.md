@@ -161,49 +161,9 @@
    - References 頁**該列全部還在**、label/note 沒掉。
    - **(乙) 檔內那幾列**：走回那個 cell（讀檔會自動掃玩家所在 cell）→ 該列**不該**顯示 `TARGET LOST`（DLL 會按 base＋座標把 dynamic ref 撿回來）。若顯示 TARGET LOST → 該列匯出時會被跳過（Export 頁會說 `N reference(s) skipped`），**回報這個現象**（我要知道 reacquire 撿不回的頻率）。
    - **⚠️ 已知限制**：檔內目標的 placement 若不在這次匯出掃到的 cell 裡，那筆 reference **不會**寫進 json（寫了 build 也對不上）——Export 頁會列出 skipped 數，log 有每筆的原因。
-5. **（端到端）**：referrer 的**最終價值證明**已經先做成一份可直接裝的 demo 了 → 見下一節 **`ModForgeReferrerChair.zip`**（不必等你匯出 json）。你這邊只要驗 DLL 那一半（①～④）。
+5. **（端到端）**：referrer 的**最終價值證明已 PASS**（2026-07-12，`examples/referrer-chair-anchor.json` → `ModForgeReferrerChair.zip`，落地句見 [landed/world](../workflows/feature-dev/landed/world.md)「referrer 原語」節）——她真的走過誘餌椅坐上被命名的那張。你這邊剩要驗的只有 DLL 那一半（①～④，見上）。
 
 **回報**：① `references[]` 的 `ref` 是不是 editorId（不是 FormID）、跟 placements 那筆對不對得上；② 撞名有沒有擋住、label 大小寫有沒有留住；③ 三類拒收對不對；④ 重開讀檔後檔內目標撿不撿得回。
-
-## 🔑 referrer 價值證明 — 她真的會去坐**被命名的那一張**椅子（2026-07-12 交付 `~/skyrim_mods/mine/ModForgeReferrerChair.zip`，FLAT，ESL，只吃 Skyrim.esm）
-
-spec＝`examples/referrer-chair-anchor.json`。**這是 referrer 原語的價值主張本身**：擺一張椅子 → 用 label 命名它 → 一個 NPC 的 AI package 拿那個 label 當**特定 reference 錨點** → 她走過去坐**那一張**。上一節驗的是 DLL 能不能「指＋標」；**這一節驗的是標了以後到底有沒有用**。
-
-**不需要新遊戲**（沒有對話註冊需求；她的招呼語走 `.seq`，既有存檔 save+reload 一次就好，不看招呼語也行）。裝 zip → 啟用 → load order 隨意（只 override Breezehome 這個 cell）。
-
-**🧪 對照組設計（整份 demo 的成敗關鍵，看懂這段再進遊戲）**
-房間裡有**兩張一模一樣的椅子**——同一個 base（`CommonChair01F`）、同角度、同尺寸、同一張 navmesh、排成一直線在 Sofia 的正北方：
-
-```
-   (北牆)
-     ▣  ← 【被命名的】"sofia's chair"   y=400   離 Sofia 380 單位   REFR 0x808
-     
-     ▣  ← 【對照組】沒被命名的椅子       y=170   離 Sofia 150 單位   REFR 0x807
-     
-     🧍 Chairwarden Sofia               y=20
-   ✧ 你 coc 落點（在她西邊幾步）
-```
-
-兩張椅子**唯一的差別是其中一張出現在 `references[]` 裡**。近的那張是空的、可以坐、就擋在她路上。所以：
-
-- **成功長什麼樣**：她**繞過／走過那張近的空椅子**，一路走到北牆邊，坐上**遠的那一張**。（她可能在你 loading 結束前就已經坐好了——**沒關係，重點不是看她走，是看她坐在哪一張**。）
-- **失敗長什麼樣**：① 她**站著不動**（＝ package 的 target 沒解到 → label 沒接上）；② 她坐**近的那張**（＝根本不是特定 reference targeting，只是「找張椅子坐」）；③ 她**不在那**（cell override / 擺放出問題）。
-- 「她坐了某張椅子」**不可能**被誤讀成「她坐了我們命名的那張」——這就是對照組存在的理由。
-
-**步驟**
-1. console `coc WhiterunBreezehome`。（Breezehome 是**vanilla 內裝**，所以有 navmesh；自建內裝沒有 navmesh，NPC 根本不會動——這是刻意的選擇。）
-2. 站在原地等 **10–20 秒**（剛 `coc` 進去 AI 要幾秒才「醒」）。看她往北走、坐上**靠北牆**那張。
-3. **鐵證（不靠肉眼）**：console 點一下**她正坐著的那張椅子** → console 標題列會顯示它的 RefID。應該是 **`FE xxx 808`**（`xxx` ＝ MO2 右欄顯示的 ESL 槽位）。對照組那張是 `FE xxx 807`。**`...808` ＝ 通過；`...807` ＝ 她坐錯張。**
-4. **「常回去坐」複驗**：把她從椅子上趕起來（跟她講話／推她／`coc` 出去再回來），再等 10–20 秒 → 她應該**自己走回同一張（808）**坐下。
-5. （可選）她的招呼語是 `That chair by the north wall is mine. Find your own.` — 聽到＝她本人沒錯。
-
-**離線已驗（你不用再驗這幾條，列出來是讓你知道失敗時該懷疑哪裡）**
-- 被命名的椅子 `MFRef_SofiaChair` = REFR **0x808**，record flag **0x400**，落在 cell 的 **Persistent group**。
-- 對照組 `MFRef_DecoyChair` = REFR **0x807**，flag **0x0**，落在 **Temporary group**。兩者 spec 只差一個 label ⇒ **是 `references[]` 讓它 persistent 的**。
-- package `MFRefSofiaSit`（SitTarget 模板 `0x0A9277`）slot **16 = `PackageTargetSpecificReference(0x808)`** ⇒ 錨點確實指到**被命名的那張**，**不需要 quest alias**。DataInputVersion/XNAM 與 vanilla `CaravanACamp1Sit` 同形。
-- Sofia 的 NPC 記錄 `packages = [MFRefSofiaSit]`。
-
-**回報**：她坐哪一張（RefID 尾碼 807 / 808）？還是站著不動？趕起來會不會自己走回去？
 
 ## scene-capture-bridge — Export 頁 `Export requires` 鈕（2026-07-12，DLL crc `008aba47`，**已部署**）
 

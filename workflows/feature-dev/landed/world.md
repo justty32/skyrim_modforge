@@ -83,6 +83,24 @@
 
 **後續修正**（同日，使用者第二輪反饋）：旋轉子模式的歸零鍵改 **per-axis 還原**（2=pitch / 5=yaw / 8=roll，各自還原成**進編輯前的該軸原值**，不是設 0、不是全軸）；palette 的 `load from file` 明確「載入的排最上面」＋新增 **`replace from file`**（清空再載入，含「檔案不存在就完全不動」的防呆）。順帶統一了 palette json 檔內順序＝面板順序。
 
+## scene-capture-bridge — referrer 原語 `references[]`：價值主張 IN-GAME PASS · 2026-07-12
+
+`sc ref`／`sc refc`（遊戲內指一個既有物件＋自由 label）＋ `references[]`（消費端）閉環後測的不是「指得到、標得住」（那部分 DLL 端仍待驗，見 [wait_todo](../../../wait_todo/ingame-tests.md)），而是**這個原語本身值不值錢**：`examples/referrer-chair-anchor.json` → `ModForgeReferrerChair.zip`（vanilla `WhiterunBreezehome` override）。
+
+**端到端結論（那條鏈）**：遊戲內指一個既有物件 → 給它 label → spec 的 `sitTarget.target` 用那個 label → build 成 `PackageTargetSpecificReference` → **NPC 真的跟那個特定物件互動**（不是引擎隨便挑一張家具）。使用者實機回報「坐在 808」：Chairwarden Sofia 走過了誘餌椅 `MFRef_DecoyChair`（REFR 尾碼 `807`——更近、一模一樣的 base/角度、就擋在她北上的路上，但**沒有**被 `references[]` 命名），一路走到北牆邊坐上 `MFRef_SofiaChair`（`808`，380 單位外，**被命名的那張**）。
+
+**過程插曲本身就是證據**：第一版把命名的椅子擺在 `y=400`（太貼北牆），她**走過去了但卡在牆與椅子之間坐不下**——這個「卡住」恰恰證明她**非那張不可**：若 label 沒接上，她會坐旁邊那張誘餌，或乾脆站著不動；她選擇卡在死角也要坐那張特定的椅子，正是 specific-reference targeting 生效的訊號。往南挪到 `y=330` 後就順利坐上（commit `287f755`）。
+
+**🔴 slot-kind 的教訓（整輪最值錢的部分）**：label 給你一個名字，但能不能鎖定「就是那一個」，取決於你把它放進**哪個槽**——不是所有 ref 欄位都一樣：
+- **SingleRef target 槽**（`sitTarget.target`／`follow.target`／`escort.target`／`activate.target`／`useMagic.target`／`patrol.start`）→ build 成 `PackageTargetSpecificReference`＝**就是那一個 ref**，沒有第二種解讀。
+- **location 槽**（`sandbox.location`／`sleep.location`／`travel.place`／`escort.destination`／`eat.location`／`useMagic.location`）→ build 成 `LocationTarget`＋radius＝**一塊區域**，引擎在半徑內隨便挑家具/床/食物——`sandbox.location: "sofia's chair"` 不是「坐那張椅子」，是「在那張椅子附近閒晃」，她完全可能坐到**別張**椅子。
+- 最壞的地方在於：走 location 槽**build 綠、dump 乾淨、零警告**——不是 build 失敗，是**靜默地做了作者沒要的事**，只有進遊戲才看得出來。
+- **已加護欄**：`src/ModForge.Core/PackageRefSlots.cs`（12 個 SingleRef/Location 槽的分類表，唯一真相來源；反射 anti-rot 測試確保新 template 新增 ref 槽時**必須**分類，漏分類就編不過）＋ `BuildReferences`（`Generator.Build.References.cs`）在 `references[]` 的 label 落進 Location 槽時印一行 INFO 提示。同一輪也結案了一整個「eager 解析、跑在 `BuildPlacements`/`BuildReferences` 之前」的 bug 家族（五處欄位，含共用 `BuildCondition` 的 `param`/`reference`），全部改走 deferred wire（`DeferCondition`/`DeferTarget`/`DeferLocation`），並在 `BuildCondition` 內加 `refsIndexed` 旗標防第六隻靜默重演；`ConditionPlacedRefTests`/`PackageRefSlotsTests` 等回歸測試釘住（C# 1021 測綠）。細節見 [phases](../../plans/scene-capture-bridge/phases.md)「pointer/referrer 原語」與後續五節。
+
+**🧪 對照組實驗設計（可複用的方法論）**：兩個一模一樣的物件（同 base/角度/尺寸/navmesh）、唯一差別是其中一個出現在 `references[]` 裡；沒被命名的那個**擋在必經路上、更近**，故意讓「隨便找張椅子坐」也會得到一個看似合理的結果。判讀不靠肉眼「她坐了張椅子」（那對兩種假說都成立，等於沒驗），而是 console 點選她坐著的那張椅子讀 **RefID 尾碼**（`807`＝坐錯／對照組，`808`＝通過／被命名的那張）當硬證據。這正是「她坐了某張椅子」不能被誤讀成「通過」的原因——變因只有一個（label 有沒有命名），結果用一個無法唬弄的 ID 讀出來。
+
+離線已驗過的底子（build 出的 REFR 帶 0x400＋落 cell 的 Persistent group；package slot 16 = `PackageTargetSpecificReference(0x808)`；928 測綠）——這次是這條鏈第一次在遊戲裡跑完整。**剩 open**：DLL 端 `sc ref`/`sc refc`/References 面板頁/跨重開讀檔撿回檔內目標——這次測的是手寫 spec，不是遊戲內標記流程，見 [wait_todo](../../../wait_todo/ingame-tests.md)。
+
 ## navmesh P0/T2.0 兩個地基實驗 · IN-GAME 2026-07-12（[plan](../../plans/navmesh.md)）
 
 兩個 🎮 實機閘同日皆 **PASS**，定了整份 navmesh plan 的重心：
