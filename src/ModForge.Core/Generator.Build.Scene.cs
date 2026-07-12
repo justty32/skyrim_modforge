@@ -254,8 +254,11 @@ public static partial class Generator
                 Resolve($"scene controller on quest '{hostEd}' gateGlobal", globalRef, fk => prop.Object.SetTo(fk));
 
             // Scene-level gate (the whole scene only starts if all pass) + per-phase start/completion
-            // gates. Refs are by editorId, so they wire here via the SHARED BuildCondition (mirrors
-            // WireQuestStages). A scene with no conditions leaves every list empty (byte-identical).
+            // gates. DEFERRED, not built here: WireScenes runs long before BuildPlacements/BuildReferences,
+            // and a scene gate legitimately names a placed ref ("start only when the player is within N of
+            // THAT chair") — see the build-order rule on BuildCondition. The alias-index map and the
+            // owning-scene FormKey are captured now (they are final) and replayed by WireDeferredConditions.
+            // A scene with no conditions queues nothing and leaves every list empty (byte-identical).
             foreach (var (s, scene, phaseMap) in sceneConditionWires)
             {
                 // The scene's owning quest supplies the alias-name→index map for GetIsAliasRef.
@@ -267,18 +270,17 @@ public static partial class Generator
                 var self = scene.FormKey;
 
                 foreach (var cs in s.Conditions)
-                    if (BuildCondition(cs, $"scene '{s.EditorId}' condition", aliasIdx, self) is { } cond)
-                        scene.Conditions.Add(cond);
+                    DeferCondition(scene.Conditions, cs, $"scene '{s.EditorId}' condition", aliasIdx, self);
 
                 foreach (var (specIndex, phase) in phaseMap)
                 {
                     var ph = s.Phases[specIndex];
                     foreach (var cs in ph.StartConditions)
-                        if (BuildCondition(cs, $"scene '{s.EditorId}' phase {specIndex} startCondition", aliasIdx, self) is { } cond)
-                            phase.StartConditions.Add(cond);
+                        DeferCondition(phase.StartConditions, cs,
+                            $"scene '{s.EditorId}' phase {specIndex} startCondition", aliasIdx, self);
                     foreach (var cs in ph.CompletionConditions)
-                        if (BuildCondition(cs, $"scene '{s.EditorId}' phase {specIndex} completionCondition", aliasIdx, self) is { } cond)
-                            phase.CompletionConditions.Add(cond);
+                        DeferCondition(phase.CompletionConditions, cs,
+                            $"scene '{s.EditorId}' phase {specIndex} completionCondition", aliasIdx, self);
                 }
             }
         }

@@ -51,12 +51,17 @@ public static partial class Generator
         }
 
         // Wire an alias's match-filter CTDA (shared by findMatching / findMatchingLocation / findInLocationAlias):
-        // these conditions decide WHICH ref/location in scope the engine picks.
+        // these conditions decide WHICH ref/location in scope the engine picks. Both callers
+        // (BuildStoryManager / BuildStandaloneQuestAliases) run BEFORE placements and references[], so the
+        // conditions are DEFERRED — a match filter naming a placement or a label ("the ref nearest THAT
+        // marker") could not otherwise resolve. See the build-order rule on BuildCondition.
+        // Queued AFTER whatever fill-shape conditions the caller already appended (findMatchingLocation's
+        // LocationHasKeyword / GetInCurrentLocAlias), and nothing else touches alias.Conditions in between,
+        // so the emitted order is unchanged.
         private void WireAliasMatchConditions(QuestAlias alias, QuestSpec qs, QuestAliasSpec aSpec, string kindLabel)
         {
             foreach (var cs in aSpec.Conditions)
-                if (BuildCondition(cs, $"quest '{qs.EditorId}' alias '{aSpec.Name}' {kindLabel} condition") is { } cond)
-                    alias.Conditions.Add(cond);
+                DeferCondition(alias.Conditions, cs, $"quest '{qs.EditorId}' alias '{aSpec.Name}' {kindLabel} condition");
         }
     }
 }

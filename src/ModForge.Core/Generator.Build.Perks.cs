@@ -36,10 +36,11 @@ public static partial class Generator
                 if (!recordsByEd.TryGetValue(pk.EditorId, out var rec) || rec is not IPerk perk) continue;
                 Resolve($"perk '{pk.EditorId}' nextPerk", pk.NextPerk, fk => perk.NextPerk.SetTo(fk));
 
-                // Perk-level conditions (plain Condition list on the perk trunk).
+                // Perk-level conditions (plain Condition list on the perk trunk). DEFERRED: a condition's
+                // param/reference may name a placement or a references[] label, and WirePerks runs long
+                // before those exist (see the build-order rule on BuildCondition).
                 foreach (var cs in pk.Conditions)
-                    if (BuildCondition(cs, $"perk '{pk.EditorId}' condition") is { } c)
-                        perk.Conditions.Add(c);
+                    DeferCondition(perk.Conditions, cs, $"perk '{pk.EditorId}' condition");
 
                 // addActivateChoice effects carrying a fragmentBody, in declaration order (= FragmentIndex).
                 var fragChoices = new List<PerkEntryPointAddActivateChoice>();
@@ -138,14 +139,19 @@ public static partial class Generator
 
                     // Effect-level conditions: each ConditionSpec becomes a Condition, all grouped under a
                     // single PerkCondition (RunOnTabIndex 0) — vanilla perks tab-group these, but one tab
-                    // covers the common case ("only when …").
+                    // covers the common case ("only when …"). DEFERRED like the trunk conditions; the tab
+                    // is attached by a finalizer so an effect whose conditions ALL fail to build still gets
+                    // no empty PerkCondition (byte-identical to the old eager `Count > 0` check).
                     if (es.Conditions.Count > 0)
                     {
                         var pcond = new PerkCondition { RunOnTabIndex = 0 };
+                        var eff = effect;
                         foreach (var cs in es.Conditions)
-                            if (BuildCondition(cs, $"perk '{pk.EditorId}' effect condition") is { } c)
-                                pcond.Conditions.Add(c);
-                        if (pcond.Conditions.Count > 0) effect.Conditions.Add(pcond);
+                            DeferCondition(pcond.Conditions, cs, $"perk '{pk.EditorId}' effect condition");
+                        DeferConditionFinalizer(() =>
+                        {
+                            if (pcond.Conditions.Count > 0) eff.Conditions.Add(pcond);
+                        });
                     }
                     perk.Effects.Add(effect);
                 }

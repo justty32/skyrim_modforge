@@ -4,6 +4,33 @@ public static partial class Generator
 {
     private sealed partial class BuildContext
     {
+        // --- the deferred-condition queue (the build-order rule on BuildCondition) ---------------------
+        // A step that runs BEFORE BuildPlacements/BuildReferences cannot build a condition: a CTDA
+        // `param`/`reference` may name a placement editorId or a references[] label, and neither is in the
+        // ref table yet. Such a step queues here instead; WireDeferredConditions drains the queue once
+        // every placement and label is registered. Enqueue order == append order per target list, so the
+        // emitted CTDA sequence is exactly what the old eager code produced.
+
+        // Queue one condition to be built into `target` after placements + references[] exist.
+        private void DeferCondition(IList<Condition> target, ConditionSpec c, string label,
+            IReadOnlyDictionary<string, int>? aliasIndexByName = null, FormKey? owningScene = null)
+            => deferredConditionWires.Add((target, c, label, aliasIndexByName, owningScene));
+
+        // Queue an action to run once the whole queue is drained — for a container that must only be
+        // attached if at least one of its conditions actually built (a perk effect's PerkCondition tab:
+        // vanilla omits the tab entirely rather than emitting an empty one).
+        private void DeferConditionFinalizer(Action a) => deferredConditionFinalizers.Add(a);
+
+        // Drain both queues. Runs after BuildPlacements / BuildMapMarkers / BuildReferences, so a
+        // condition's param/reference can name a placed ref; malformed entries still warn exactly as
+        // they did when they were built eagerly.
+        public void WireDeferredConditions()
+        {
+            foreach (var (target, c, label, aliasIdx, owningScene) in deferredConditionWires)
+                if (BuildCondition(c, label, aliasIdx, owningScene) is { } cond) target.Add(cond);
+            foreach (var f in deferredConditionFinalizers) f();
+        }
+
         // Append spec conditions to each dialogue INFO (after the auto GetIsID speaker gate).
         public void WireDialogueConditions()
         {

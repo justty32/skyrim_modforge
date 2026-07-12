@@ -20,10 +20,30 @@ public static partial class Generator
 
     private sealed partial class BuildContext
     {
-        // --- pass 2: CTDA conditions on dialogue INFOs and AI packages (shared builder) ---
+        // --- pass 2: CTDA conditions (the SHARED builder — dialogue, banter, packages, perks, ---
+        // Story Manager, quest-alias match filters, scenes, quest stages, objectives, recipes).
         // A condition is static gate data, so it belongs in the spec (not in Papyrus). The form
         // argument and run-on reference are resolved against the formKey table, so this runs in pass 2.
-
+        //
+        // 🔑 INVARIANT (BUILD ORDER — the reason this comment is here): a condition's `param` and
+        // `reference` are ARBITRARY refs. They may legitimately name a PLACED ref — an in-spec
+        // placements[] editorId or a references[] label ("GetDistance <that chair>", "GetInSameCell
+        // <that marker>", a GetMapMarkerVisible run-on). Those editorIds only enter the ref table in
+        // BuildPlacements / BuildMapMarkers / BuildReferences (Generator.Build.cs pass-2 lines ~115-117).
+        // Therefore:
+        //
+        //     ANY step that runs BEFORE BuildReferences MUST NOT call BuildCondition directly —
+        //     it must queue the ConditionSpec with DeferCondition(), which WireDeferredConditions
+        //     drains after placements and labels exist.
+        //
+        // Resolving eagerly in an early step means the ref table holds BASE RECORDS ONLY, so a
+        // placement/label param silently drops the whole condition (and a placement/label `reference`
+        // silently drops the run-on) — the gate then passes/fails on nothing. This was a live bug in
+        // WirePerks / BuildStoryManager / BuildStandaloneQuestAliases / WireScenes; dialogue, banter and
+        // package conditions were already deferred past the placement passes on purpose, which is exactly
+        // the same rule stated by ordering instead of by comment. The `refsIndexed` guard below fails
+        // LOUDLY (a build warning) if a new early call site ever appears — do not silence it, defer it.
+        //
         // Build one ConditionFloat from a spec entry, or null (with a warning) if it's malformed.
         // aliasIndexByName (optional) lets GetIsAliasRef resolve an alias NAME → the owning quest's
         // alias index. Only the quest-scoped call sites (dialogue/scene/stage/objective) pass it;
@@ -31,6 +51,11 @@ public static partial class Generator
         private ConditionFloat? BuildCondition(ConditionSpec c, string label,
             IReadOnlyDictionary<string, int>? aliasIndexByName = null, FormKey? owningScene = null)
         {
+            if (!refsIndexed)
+                Warn($"  ! {label}: BUILD-ORDER BUG — condition built before placements/references[] are in "
+                    + "the ref table, so a param/reference naming a placement or label cannot resolve. "
+                    + "Queue it with DeferCondition() instead (see the rule on BuildCondition).");
+
             CompareOperator op;
             switch (c.Comparison)
             {

@@ -89,6 +89,20 @@ public static partial class Generator
         // properties fill in BuildStandaloneQuestAliases (before placements), so a prop pointing at a
         // placement/xmarker editorId is queued here and resolved by WireDeferredScriptObjectProps.
         private readonly List<(Mutagen.Bethesda.Skyrim.ScriptObjectProperty Prop, string Ref, string Warn)> deferredScriptObjectProps = new();
+        // CTDA conditions authored by a step that runs BEFORE BuildPlacements/BuildReferences (perk, Story
+        // Manager, quest-alias match filters, scene/phase). A condition's `param`/`reference` may name a
+        // PLACEMENT editorId or a references[] label, so it can only be built once those exist —
+        // see the build-order rule on BuildCondition (Generator.Build.Conditions.cs). Queued via
+        // DeferCondition, drained in enqueue order by WireDeferredConditions (so each target list keeps the
+        // exact order the eager code produced). Finalizers run after the drain, for a container that is only
+        // attached when at least one of its conditions actually built (the perk effect's PerkCondition tab).
+        private readonly List<(IList<Condition> Target, ConditionSpec Spec, string Label,
+                               IReadOnlyDictionary<string, int>? AliasIdx, FormKey? OwningScene)> deferredConditionWires = new();
+        private readonly List<Action> deferredConditionFinalizers = new();
+        // Set once BuildReferences runs: every placement + references[] label is (about to be) in the ref
+        // table, so a CTDA param/reference can finally resolve a placed ref. BuildCondition warns loudly if
+        // it is called before this — that is the guard against a sixth eager-resolve bug.
+        private bool refsIndexed;
         private readonly Dictionary<string, IPlaced> placementsByEd = new();
         // Every placement we actually built, paired with the CELL it landed in. The navmesh steps
         // (auto navCut + the P1 coverage diagnostics) need the resolved cell — a placement's spec only

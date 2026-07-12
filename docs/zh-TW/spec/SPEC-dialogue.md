@@ -315,6 +315,19 @@ UseItemAt PACK 模板——`MQ306EsbernSit` 形狀已解碼；以 `sittarget` PA
 `GetInFaction CurrentFollowerFaction == 0`，否則隱藏付費招募台詞；以 `GetInFaction
 CurrentFollowerFaction == 1` 閘控一個 Follow 套件，使它只在招募後才運行。見 `examples/follower_paid_spec.json`。
 
+**`param` / `reference` 可以填什麼。**兩者都是**任意 ref**，而且都在 placements 與 `references[]`
+**建好之後**才解析——所以除了 base record（faction/item/global/quest/NPC base）與原版
+`<master>:0xFORMID` 之外，兩者都可以指一個**已擺放的 ref（placed ref）**：一個**檔內 `placements[]`
+的 editorId**，或一個 **`references[]` label**。這正是「不寫 Papyrus 也能表達世界錨定的條件」的關鍵——
+`{ "function": "GetDistance", "param": "the chair", "comparison": "<=", "value": 512 }`（玩家靠近**那個**
+物件），或 `{ "function": "GetMapMarkerVisible", "runOn": "Reference", "reference": "my marker" }`。
+這條規則在**所有用到這個共用 condition 形狀的地方**都成立：`dialogue`（inline ＋ `conditionTemplates`
+＋ variants）、`banter`、`packages`、`perks`（perk 層與 effect 層）、`quests[].storyEvent.conditions`、
+quest `aliases[].conditions`（`findMatching*` 的 match 過濾）、`scenes[].conditions` 與
+`phases[].startConditions` / `completionConditions`、`stages[].conditions`、
+`objectives[].targets[].conditions`，以及 recipe 的 conditions。解不到上述任一者會**警告並丟棄該
+condition**（閘門於是什麼都沒測——把這個警告當成錯誤看待）。
+
 **`GetIsAliasRef`** 以**run-on actor 填充了哪個任務別名**作閘（VIGILANT 最常用的
 對話技巧——以角色閘控一條台詞，例如「Victim 別名」，而非硬寫的 NPC FormID）。以
 **`alias`**（其在**所屬任務**上的名稱）給出別名，而非 `param`；build 把它解析為

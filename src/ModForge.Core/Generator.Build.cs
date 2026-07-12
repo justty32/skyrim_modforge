@@ -154,6 +154,11 @@ public static partial class Generator
         ctx.WireObjectiveTargets();                // QOBJ QSTA targets (alias index + flag + CTDA) — after aliases exist
         ctx.WireBanterConditions();                // situational CTDA gates on banter INFOs
         ctx.WirePackageConditions();               // CTDA gates on AI packages (runtime behaviour switch)
+        ctx.WireDeferredConditions();              // CTDA gates queued by the steps that run BEFORE placements
+                                                   // (perk, Story Manager, quest-alias match filters, scenes) —
+                                                   // a condition's param/reference may name a placement editorId
+                                                   // or a references[] label, so it can only build now. See the
+                                                   // build-order rule on BuildCondition (Build.Conditions.cs).
         ctx.WireDeferredScriptObjectProps();       // alias-script object props whose target (placement/xmarker) built after the alias pass
 
         ctx.CheckNavmesh();                        // P1 diagnostics: off-navmesh NPCs / uncut obstacles / hollowed-out

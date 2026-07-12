@@ -21,6 +21,10 @@ public static partial class Generator
         // "point at it from anywhere" work with zero changes to the consuming sites.
         public void BuildReferences()
         {
+            // From here on every placement is built and every label below joins the ref table, so a ref
+            // (a package target, an XESP parent, a CTDA param/reference…) can finally name a PLACED ref.
+            // BuildCondition's build-order guard keys off this flag — see Generator.Build.Conditions.cs.
+            refsIndexed = true;
             if (spec.References.Count == 0) return;
             var bound = new List<string>();   // labels that actually got registered (fuel for the area-anchor hint)
             int i = 0;

@@ -38,9 +38,12 @@ public static partial class Generator
 
                 quest.Event = def.Code;
                 quest.Flags &= ~Quest.Flag.StartGameEnabled;
+                // DEFERRED (BuildStoryManager runs in pass 2 but BEFORE placements/references[]): an event
+                // condition's param/reference may name a placement or a label — see the build-order rule on
+                // BuildCondition. Queue order == emit order, so EventConditions comes out as authored:
+                // the storyEvent conditions first, then the locationFilter OR-group below.
                 foreach (var cs in se.Conditions)
-                    if (BuildCondition(cs, $"quest '{qs.EditorId}' storyEvent condition") is { } cond)
-                        quest.EventConditions.Add(cond);
+                    DeferCondition(quest.EventConditions, cs, $"quest '{qs.EditorId}' storyEvent condition");
 
                 // #5 locationFilter: OR'd GetKeywordDataForCurrentLocation conditions (fires only when the
                 // new location has ANY listed LocType keyword; the OR group ANDs after the event conditions).
@@ -54,8 +57,7 @@ public static partial class Generator
                         Value = 1,
                         Or = li < se.LocationFilter.Count - 1,   // OR within the group; last one closes it
                     };
-                    if (BuildCondition(cs, $"quest '{qs.EditorId}' locationFilter[{li}]") is { } cond)
-                        quest.EventConditions.Add(cond);
+                    DeferCondition(quest.EventConditions, cs, $"quest '{qs.EditorId}' locationFilter[{li}]");
                 }
 
                 BuildQuestAliases(quest, qs, def);

@@ -322,6 +322,19 @@ uses: hide a paid recruit line unless `GetItemCount Gold >= 500` (on the player)
 `GetInFaction CurrentFollowerFaction == 0`; gate a Follow package on `GetInFaction
 CurrentFollowerFaction == 1` so it only runs after recruitment. See `examples/follower_paid_spec.json`.
 
+**What `param` / `reference` may name.** Both are **arbitrary refs**, and both are resolved *after*
+placements and `references[]` exist — so besides a base record (faction/item/global/quest/NPC base) and
+a vanilla `<master>:0xFORMID`, either may name a **placed ref**: an **in-spec `placements[]` editorId**
+or a **`references[]` label**. That is what makes a world-anchored gate expressible without Papyrus —
+`{ "function": "GetDistance", "param": "the chair", "comparison": "<=", "value": 512 }` (the player is
+near *that* object), or `{ "function": "GetMapMarkerVisible", "runOn": "Reference", "reference":
+"my marker" }`. This holds **everywhere the shared condition shape appears**: `dialogue` (inline +
+`conditionTemplates` + variants), `banter`, `packages`, `perks` (perk-level and effect-level),
+`quests[].storyEvent.conditions`, quest `aliases[].conditions` (the `findMatching*` match filter),
+`scenes[].conditions` and `phases[].startConditions` / `completionConditions`, `stages[].conditions`,
+`objectives[].targets[].conditions`, and recipe conditions. A ref that resolves to none of the above
+warns and the condition is **dropped** (the gate then tests nothing — treat the warning as an error).
+
 **Shared condition templates (`conditionTemplates` + `dialogue[].useConditionTemplates`)** — when many
 INFOs share the same gate set (ambient commentary: a location/state/time block repeated across hundreds
 of lines), define it once and reference it by name. A top-level `conditionTemplates: [{ "name": "X",
