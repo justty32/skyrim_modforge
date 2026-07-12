@@ -12,21 +12,11 @@
 
 ## 最新進度
 
-- **navmesh 第一批落地：P1 診斷 ＋ T2.0 navcut spike（2026-07-12，[plans/navmesh.md](workflows/plans/navmesh.md)）**——使用者拍板順序（P1 → T2.0 → P0 → P3 → P4）與「navcut **預設自動 ＋ 可關 ＋ 可手調**」。
-  - **✅ P1 診斷**（`Generator.Build.NavmeshIndex.cs` 讀 vanilla navmesh 幾何 ＋ `Generator.Build.NavmeshCheck.cs` 出警告、零記錄）：症狀② NPC 不在任何三角形上／浮空 → 「這個 NPC 不會動」；症狀① 大體積 placement 蓋住 vanilla 三角形卻沒被裁 → 「NPC 會走進去」；症狀③ removals/overrides 動到頂面有網格的結構 → 「NPC 會走在空氣上」。**離線＝完全沉默**（「不知道」永不當成「有問題」）。
-  - **✅ `navCuts[]` ＋ `placements[].navCut` 契約落地**（`Spec.NavCuts.cs` / `Generator.Build.NavCuts.cs`）：base `CollisionMarker 0x000021` ＋ `CollisionLayer=49` ＋ XPRM box，欄位已對 HearthFires 1003 筆 ＋ Skyrim.esm 441 筆 byte-verify。**三個實作時修正的事實**：① XPRM `Bounds` ＝**全尺寸不是半徑**（用 vanilla `00410D` 的盒 116×52.8×46.9 vs 它包的箱子 OBND 96×49×48 判定）；② navcut **不設 persistent**（Skyrim.esm 自己的 441 個都是 temporary；外景 persistent 會拖出 worldspace TopCell 的地圖地雷）；③「自建內裝沒 navmesh」不當預設警告（對每個 ModForge 內裝都成立＝雜訊 → 收進 `navmesh.warnEmptyCells`，預設 off）。
-  - **順手抓到一個真的 false positive**：`livingNpcs` 把 NPC **刻意** park 在 Tamriel 地底（等腳本 MoveTo 進場）→ 新增 `placements[].navmeshCheck:false` 豁免。
-  - **🎮 open：T2.0 實機證偽**（`~/skyrim_mods/mine/ModForgeNavcutSpike.zip`，白漫大街 A/B 對照）——**繞得開 ⇒ 症狀①結案、NAVM cut 整段不必做；兩隻走一樣 ⇒ 路線 A 被證偽**。步驟見 [wait_todo/ingame-tests](wait_todo/ingame-tests.md)。**2026-07-12 重新出貨過**（內容不變，只補上 WRLD override 漏掉的 `FULL` 名字）→ 請用最新 zip。
-  - **⚠️ 要你點頭的一件事**：`autoNavCuts` **目前預設 `false`**（要用得自己開）。拍板要的是「預設自動」，但在 T2.0 實機證明 L_NAVCUT 真的有效之前先不開——不然既有 spec 一 build 就會多出**尚未驗證**的 REFR。T2.0 過了就把 `Spec.NavCuts.cs` 的 `AutoNavCuts` 改回 `true`（一行）。
-
-- **✅ navmesh P0 落地：`navdiag` ＋ `navmeshOverrides[]` no-op override（2026-07-12，[plans/navmesh.md](workflows/plans/navmesh.md)）**——整條 navmesh 路線的**地基實驗**。
-  - **✅ T0.1 `navdiag`**（`src/ModForge.Cli/Diagnostics.Navmesh.cs`）：列 NAVM 幾何 ＋ **把每張 override 的 NVNM 與 master 的原始位元組逐 byte 比對**。vanilla 那側**不經 Mutagen**（自己掃 record header → zlib 解壓 → 走子記錄找 NVNM），否則就是拿 Mutagen 的輸出比 Mutagen 的輸出、什麼都證不了。
-  - **✅ `navmeshOverrides[]` 契約**（`Spec.NavmeshOverrides.cs` / `Generator.Build.NavmeshOverrides.cs`）：`cell`（vanilla 內裝）或 `worldspace`+`x`/`y`（外景格座標，或 `position` 選格），`navmesh` 可只挑一張。同 FormKey ＝ override；**NAVI 不碰**；**離線＝零產出零警告**。**刻意不用 Mutagen 的 `GetOrAddAsOverride` parent chain**——走我們自己的 `ExteriorCell()`，才吃得到 WRLD override 那堆疤（LandDefaults/EDID/RNAM/TopCell flags/不帶 OFST）。
-  - **離線證據**：`ModForgeNavmeshNoop.esp` 的 **10/10 NAVM byte-identical**（含白漫大街 0x105319：1106 triangle / 41 跨 mesh EdgeLink / 10 door triangle / 33428B）。
-  - **順手修的既有 bug**：`WorldspaceOverride` 沒帶 master 的 `Name`(FULL) → 我們的 WhiterunWorld override 會把「Whiterun」清空（那段程式寫在 `MasterCache` 還沒 provision 英文 STRINGS 的年代）。**T2.0 的 zip 已用同一份修正重出**。
-  - **🎮 open：P0 實機**（`~/skyrim_mods/mine/ModForgeNavmeshNoop.zip`；**load order 排最後**）——**NPC 照常走 ⇒ B 路線（P2 cut / P3 add）地基成立；那幾個 cell 的 NPC 全部站著不動 ⇒ 整條 B 作廢，退回 C+D**。步驟見 [wait_todo/ingame-tests](wait_todo/ingame-tests.md)。
-
-- **navmesh 調研（2026-07-12，[plans/navmesh.md](workflows/plans/navmesh.md)）**——使用者標「超重要」的 backlog 項。**調研結論：編輯 vanilla cell 的 NAVM 可行**，格式層已離線證明（Mutagen `GetOrAddAsOverride` 一張內裝＋一張外景 vanilla NAVM，寫出的 NVNM 與 vanilla **byte-identical**；USSEP 有 807 筆同樣的 override；NAVI 是加法式 merge——PROTEUS.esp 以 12/15462 筆當贏家而遊戲正常，不是相容性地雷）。**鐵律＝永不重新編號 triangle**（鄰居 NAVM 的 EdgeLink 存的是你的 triangle index；社群「navmesh 不能在 CK 外面改」的真正成因就是 CK 會重編號——我們不重編號就繞開了）。分期：P1 診斷警告（零風險、先做）／P0 spike（no-op override 上機）／P2 cut（打 `Deleted` flag）／P3 add+link／P4 DLL 讀 live navmesh＋射線取樣。**另一半結論更便宜**：症狀「NPC 走進你蓋的牆」**根本不必改 navmesh**——用 vanilla 的 **L_NAVCUT 碰撞體積**（`CollisionMarker` 0x000021 ＋ `CollisionLayer=49` ＋ Primitive box，**HearthFires 蓋房子用了 1220 筆**，Mutagen 全表達得出）就能 runtime 裁掉；⚠️ **光加 Obstacle flag(bit25) 無效**——還要碰撞層帶 `NavmeshObstacle`，而一般靜態物的 L_STATIC **不帶**（55 個 COLL 只有 6 層帶）。**open：等使用者拍板順序**（四個問題列在 plan §7）。
+- **navmesh — P0/T2.0 兩個地基實驗 IN-GAME PASS（2026-07-12，[plans/navmesh.md](workflows/plans/navmesh.md)，落地句 [landed/world](workflows/feature-dev/landed/world.md)）**——整份 plan 的重心已定。
+  - **✅ P0（vanilla NAVM no-op override）PASS**：`ModForgeNavmeshNoop.zip` 裝上（排 USSEP 之後）→ 白漫（Bannered Mare＋外景大門～市集）NPC 一切正常。⇒ 引擎真的會採用「來自 plugin 的重新序列化 NVNM」，**override vanilla NAVM 的地基成立**。
+  - **✅ T2.0（L_NAVCUT 證偽）PASS**：白漫大街 TEST/CONTROL 對照車道，TEST 繞過告示牌線（另有線前徘徊樣態）、CONTROL 直穿。⇒ **症狀①（NPC 走進新蓋的房子）結案，用 L_NAVCUT 就好，不必動 NAVM**。`Spec.NavCuts.cs` 的 `AutoNavCuts` 已翻回預設 `true`（commit `80a2873`，1056 測綠）。
+  - **⇒ 剩下要做的**：**P3 add+link**（症狀②「NPC 要走上新平台/marker 生的 NPC 不動」，唯一還需要寫 NAVM 的工作，地基已驗證）＋ **P4**（DLL 讀 live navmesh／射線取樣，把輸入從猜變成量）。原訂 P2 NAVM-cut 備案（打 `Deleted` flag）因 T2.0 PASS 而**整段作廢**，不再排進任何階段。
+  - **仍待處理／未拍板**：**U10**（我們的 NAVM override 和其他 mod override 同一張 NAVM＝後蓋前，無加法式合併；處置方向＝build 警告「這張 navmesh 已被 X.esp override」，houseCARL 可查，尚未實作）；plan **§7-3**（P3 要不要先只支援內裝、外景等內裝實機過了再開，未拍板）；**§7-4**（P3 三角化要不要引 DotRecast，傾向不要但未拍板）。
 
 - **referrer 原語全鏈完工（2026-07-12，DLL crc `112be269` 已部署）**——`sc ref` / `sc ref <Label>` / `sc refc [Label]` ＋ References 面板頁 ＋ exporter 吐 `references[]`（消費端 `adc419b` 已在）。**(乙) 檔內相依**＝指到自家 `sc pl` 擺的 dynamic ref 時，該 placement 蓋穩定 editorId `MFRef_<label>_<seq>`、`references[].ref` 指它（dynamic FormID 不可攜）。離線閉環驗過（build 出的 REFR 帶 0x400＋落 Persistent group；928 測綠）。**open：實機驗收**（[wait_todo](wait_todo/ingame-tests.md) referrer 節）——指得到嗎、撞名擋不擋、重開讀檔撿不撿得回檔內目標。細節：[phases](workflows/plans/scene-capture-bridge/phases.md) 加碼一輪首條。
 

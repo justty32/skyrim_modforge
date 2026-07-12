@@ -83,6 +83,17 @@
 
 **後續修正**（同日，使用者第二輪反饋）：旋轉子模式的歸零鍵改 **per-axis 還原**（2=pitch / 5=yaw / 8=roll，各自還原成**進編輯前的該軸原值**，不是設 0、不是全軸）；palette 的 `load from file` 明確「載入的排最上面」＋新增 **`replace from file`**（清空再載入，含「檔案不存在就完全不動」的防呆）。順帶統一了 palette json 檔內順序＝面板順序。
 
+## navmesh P0/T2.0 兩個地基實驗 · IN-GAME 2026-07-12（[plan](../../plans/navmesh.md)）
+
+兩個 🎮 實機閘同日皆 **PASS**，定了整份 navmesh plan 的重心：
+
+1. **P0（vanilla NAVM no-op override）**：`ModForgeNavmeshNoop.zip`（僅 10 張逐位元組原封不動的 vanilla NAVM，零 NPC/擺放/腳本）裝上排在 USSEP 之後，白漫（Bannered Mare 內裝＋外景大門～市集）NPC **一切正常**——衛兵巡邏、店內走動皆照舊。⇒ **引擎接受「來自 plugin 的重新序列化 NVNM」**，不只是格式層 byte-identical（U1），是**引擎真的會用**。這是 P2/P3（override vanilla navmesh 改幾何）的地基。
+2. **T2.0（L_NAVCUT 證偽）**：白漫大街兩條完全相同的車道（同 NPC/package/告示牌線），**唯一差別是 TEST 車道埋了一顆看不見的 L_NAVCUT box**——結果 **TEST 繞過去了**（繞過告示牌線端點走一個大弧，另觀察到線前徘徊不肯過），**CONTROL 一路直穿**。⇒ **L_NAVCUT 碰撞體積確實在 runtime 裁掉 vanilla navmesh**。**症狀①（NPC 走進新蓋的房子/牆）就此結案，不必碰 NAVM 一個 byte**——已把 `Spec.NavCuts.cs` 的 `AutoNavCuts` 翻回預設 `true`（commit `80a2873`）：擋路的大體積 placement 現在自動配一顆 navcut box。
+
+**T2.0 的對照組實驗設計**（可複用的方法論，不只是「功能過了」）：兩條車道**唯一變因是那顆看不見的盒子**。**刻意不放真牆**——NPC 撞牆會沿牆滑走，「它繞過去了」會分不清是 navcut 生效還是單純撞牆滑開，變成偽陽性；改用只有 18×18 單位、NPC 直接可以穿過的告示牌當視覺標線，這樣**唯一能造成 TEST/CONTROL 走法差異的就只剩那顆盒子**——排除了「撞到東西才繞」這個混淆變因，讓「走法不同」這個觀察結果可以乾淨地歸因到 navcut 本身。
+
+**⇒ 剩下的 NAVM 工作（P3 add+link、P4）只為症狀②「NPC 站在新平台上不動」服務**；症狀③維持低優先僅診斷。原訂的 P2 NAVM-cut 備案（打 Deleted flag）整段作廢，不再排進任何階段。
+
 ## 🔴 部署事故：絕不 `cp` 覆寫執行中的 DLL（2026-07-12，實際炸掉一次遊戲）
 
 background agent 編完新 DLL 後用 `cp` 就地覆寫 `mods/SceneCaptureBridge/SKSE/Plugins/`，**當場把使用者正在玩的遊戲弄死**——而且**沒有產生任何 crash log**（CrashLoggerSSE 有裝且正常）。成因：Windows 會鎖住載入中的 DLL，**Linux/Proton 不會**；`cp` ＝ `open(O_TRUNC)` 寫回**同一個 inode**，而已載入 DLL 的程式碼頁是從該檔 **demand-page** 進來的 → 檔案在腳下被換掉 → 下次 page-in 從新檔同一 offset 讀到的是別的東西 → 指令流變垃圾（crash handler 自己可能也還沒 fault-in，所以連 log 都寫不出來）。
