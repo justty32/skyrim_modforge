@@ -23,7 +23,9 @@
   <a class="nav-item" href="spec-dialogue.html">對話 · 場景</a>
   <a class="nav-item" href="spec-quests.html">任務 · Story Manager</a>
   <a class="nav-item" href="spec-identities.html">身分系統</a>
-  <a class="nav-item" href="spec-world.html">Cell · 放置 · 光照</a>
+  <a class="nav-item" href="spec-world.html">Cell · 放置 · navmesh</a>
+  <a class="nav-item" href="spec-lighting.html">光源 · 光照</a>
+  <a class="nav-item" href="spec-world-macros.html">技能樹 · 聚落 · 活世界 NPC</a>
   <a class="nav-item active" href="spec-worldspaces.html">世界空間 · 清單 · 商販</a>
   <a class="nav-item" href="spec-items.html">配方 · 天賦 · 資源</a>
   <a class="nav-item" href="spec-packages.html">AI 套件 · 天氣</a>
@@ -49,11 +51,12 @@
 <textarea id="src" hidden>
 # ModForge spec — 世界空間、清單與生成物
 
-← [index](spec-index.html) · cell、放置與光照 → [SPEC-world](spec-world.html)
+← [index](spec-index.html) · cell、放置與地圖標記 → [SPEC-world](spec-world.html)
 
 室外世界空間與區域、區域音樂、等級清單／formLists／容器、遭遇區
-生成物，以及供應商／商人設定。室內 cell、物件放置與光照請見
-[SPEC-world](spec-world.html)。
+生成物，以及供應商／商人設定。室內 cell、物件放置請見
+[SPEC-world](spec-world.html)；自訂光源與照明請見
+[SPEC-lighting](spec-lighting.html)。
 
 ### worldspaces (WRLD) & regions (REGN) — 室外世界與天氣
 建立一個**全新**的室外世界空間並掛上氣候，並定義**區域**（世界空間內的範圍），

@@ -1,10 +1,11 @@
 # ModForge spec — worldspaces, lists & spawns
 
-← [index](SPEC-index.md) · cells, placements & lighting → [SPEC-world](SPEC-world.md)
+← [index](SPEC-index.md) · cells, placements & navmesh → [SPEC-world](SPEC-world.md)
 
 Exterior worldspaces & regions, area music, leveled lists / formLists / containers, encounter-zone
-spawns, and vendor/merchant setup. For interior cells, object placement and lighting see
-[SPEC-world](SPEC-world.md).
+spawns, and vendor/merchant setup. For interior cells and object placement see
+[SPEC-world](SPEC-world.md); for custom lights and lighting see
+[SPEC-lighting](SPEC-lighting.md).
 
 ### worldspaces (WRLD) & regions (REGN) — exterior worlds & weather
 Create a **new** exterior worldspace and attach a climate, and define **regions** (areas inside a

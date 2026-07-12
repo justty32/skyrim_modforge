@@ -8,7 +8,7 @@ bundle can never drift from the source docs. Re-run after editing any zh-TW mark
 
     python docs/zh-TW/html/generate.py
 
-The page set mirrors the semantic Markdown split 1:1 (SPEC = index + 11 parts under
+The page set mirrors the semantic Markdown split 1:1 (SPEC = index + 13 parts under
 docs/zh-TW/spec/, cookbook = index + 6 parts), tracking the EN docs/ structure.
 """
 import re
@@ -35,7 +35,9 @@ SECTIONS = [
         ("spec/SPEC-dialogue.md",    "spec-dialogue.html",    "對話 · 場景"),
         ("spec/SPEC-quests.md",      "spec-quests.html",      "任務 · Story Manager"),
         ("spec/SPEC-identities.md",  "spec-identities.html",  "身分系統"),
-        ("spec/SPEC-world.md",       "spec-world.html",       "Cell · 放置 · 光照"),
+        ("spec/SPEC-world.md",       "spec-world.html",       "Cell · 放置 · navmesh"),
+        ("spec/SPEC-lighting.md",    "spec-lighting.html",    "光源 · 光照"),
+        ("spec/SPEC-world-macros.md","spec-world-macros.html","技能樹 · 聚落 · 活世界 NPC"),
         ("spec/SPEC-worldspaces.md", "spec-worldspaces.html", "世界空間 · 清單 · 商販"),
         ("spec/SPEC-items.md",       "spec-items.html",       "配方 · 天賦 · 資源"),
         ("spec/SPEC-packages.md",    "spec-packages.html",    "AI 套件 · 天氣"),

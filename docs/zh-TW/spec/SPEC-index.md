@@ -11,7 +11,9 @@ spec 是一個 JSON 檔 → `.esp` plugin。選擇一個主題：
 | [SPEC-dialogue](SPEC-dialogue.md) | 職業、對話、閒聊、場景（SCEN）、CTDA 條件 |
 | [SPEC-quests](SPEC-quests.md) | 任務階段與目標、Story Manager 事件任務、Papyrus 腳本 |
 | [SPEC-identities](SPEC-identities.md) | 輕量化職業/身分系統（書→陣營+能力+問候+商人切換） |
-| [SPEC-world](SPEC-world.md) | cell 與放置、地圖標記、自訂光源與照明（LGTM/IMGS/DALC）、in-world 技能樹 |
+| [SPEC-world](SPEC-world.md) | cell 與放置、navmesh（navCuts/navmeshOverrides）、地圖標記 |
+| [SPEC-lighting](SPEC-lighting.md) | 自訂光源（LIGT）與室內／室外照明（LGTM/IMGS/DALC） |
+| [SPEC-world-macros](SPEC-world-macros.md) | 高階人口 macro：in-world 技能樹、聚落人口、活世界 NPC |
 | [SPEC-worldspaces](SPEC-worldspaces.md) | 世界空間與區域、區域音樂、等級清單與容器、formLists、遭遇區、商販 |
 | [SPEC-items](SPEC-items.md) | 配方（COBJ）、天賦、外部資產（網格/音效）、貼圖組（TXST） |
 | [SPEC-packages](SPEC-packages.md) | AI 套件（Sandbox/Travel/UseMagic/Follow/Sleep/Patrol/Escort）、天氣與氣候 |

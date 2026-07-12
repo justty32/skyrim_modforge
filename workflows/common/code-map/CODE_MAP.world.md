@@ -118,7 +118,7 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 ---
 
 ## In-world Skill Trees 技能樹（Idea #20）
-→ **說明文件**：[SPEC-world.md § in-world skill trees](../../../docs/spec/SPEC-world.md#in-world-skill-trees-skilltrees) · memory `inworld-skill-tree-standalone-confirmed`
+→ **說明文件**：[SPEC-world-macros.md § in-world skill trees](../../../docs/spec/SPEC-world-macros.md#in-world-skill-trees-skilltrees) · memory `inworld-skill-tree-standalone-confirmed`
 
 零外部依賴的可點 in-world 養成樹。**macro-expansion** 架構：在 `Build()` pass-0 把高階 `skillTrees:` 展開成既有低階記錄（globals / node+line ACTI / placements / `scripts:` 的 MFSkillNode 掛載），重用所有既有 pass。IN-GAME CONFIRMED 2026-06-21（手刻版）。MVP = 垂直線性鏈。
 
@@ -135,7 +135,7 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 ---
 
 ## Populated Settlements 聚落人口（Idea #22）
-→ **說明文件**：[SPEC-world.md § populated settlements](../../../docs/spec/SPEC-world.md#populated-settlements-settlements) · 設計 [settlement-population-design](../../specs/archive/README.md)
+→ **說明文件**：[SPEC-world-macros.md § populated settlements](../../../docs/spec/SPEC-world-macros.md#populated-settlements-settlements) · 設計 [settlement-population-design](../../specs/archive/README.md)
 
 把「住滿活人的聚落」一鍵展開成既有低階記錄的 **macro**（同 skillTrees 架構，`Build()` pass-0）。MVP = 具名住民 + 靜態 ACHR + 綁錨點作息 + 可選 vendor + faction 三件套；**零新 record 型別、零 runtime 腳本**，純資料展開、離線完全可驗。
 
@@ -151,7 +151,7 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 ---
 
 ## Living-world NPCs 活世界 NPC（Idea #23）
-→ **說明文件**：[SPEC-world.md § living-world NPCs](../../../docs/spec/SPEC-world.md#living-world-npcs-livingnpcs) · 設計 [sub_projs/living-adventurers/](../../../sub_projs/living-adventurers/README.md)（idea #23 + design.md）
+→ **說明文件**：[SPEC-world-macros.md § living-world NPCs](../../../docs/spec/SPEC-world-macros.md#living-world-npcs-livingnpcs) · 設計 [sub_projs/living-adventurers/](../../../sub_projs/living-adventurers/README.md)（idea #23 + design.md）
 
 一小撮**具名持久 NPC 過自己的離場人生**（抽象幽靈模擬 + 就地實體化）的 **macro**（同 settlements pass-0），但**會掛 runtime 腳本**（兩個可重用 .pex）。每多一個既有 archetype 的 NPC = 一個 entry（純資料）。
 
@@ -197,7 +197,7 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 ---
 
 ## Lights 自訂光源（LIGT）
-→ **說明文件**：[SPEC-world.md § lights](../../../docs/spec/SPEC-world.md#lights--custom-light-sources-ligt)
+→ **說明文件**：[SPEC-lighting.md § lights](../../../docs/spec/SPEC-lighting.md#lights--custom-light-sources-ligt)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
@@ -211,7 +211,7 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 ---
 
 ## Lighting Templates + ImageSpaces 室內光照（LGTM / IMGS / CELL XCLL）
-→ **說明文件**：[SPEC-world.md § lighting](../../../docs/spec/SPEC-world.md#lighting)
+→ **說明文件**：[SPEC-lighting.md § lighting](../../../docs/spec/SPEC-lighting.md#lighting)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
@@ -254,7 +254,7 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 ---
 
 ## Leveled Lists 等級列表 + FormList（FLST）
-→ **說明文件**：[SPEC-world.md § leveled lists & containers](../../../docs/spec/SPEC-world.md#leveled-lists--containers) · [SPEC-world.md § formLists](../../../docs/spec/SPEC-world.md#formlists--flst)
+→ **說明文件**：[SPEC-worldspaces.md § leveled lists & containers](../../../docs/spec/SPEC-worldspaces.md#leveled-lists--containers) · [SPEC-worldspaces.md § formLists](../../../docs/spec/SPEC-worldspaces.md#formlists--flst)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
@@ -269,7 +269,7 @@ FLST 用途：當吃 list 的 condition 的 param（`GetItemCount`/`GetEquipped`
 ---
 
 ## Containers 容器
-→ **說明文件**：[SPEC-world.md § leveled lists & containers](../../../docs/spec/SPEC-world.md#leveled-lists--containers)
+→ **說明文件**：[SPEC-worldspaces.md § leveled lists & containers](../../../docs/spec/SPEC-worldspaces.md#leveled-lists--containers)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
@@ -292,7 +292,7 @@ FLST 用途：當吃 list 的 condition 的 param（`GetItemCount`/`GetEquipped`
 ---
 
 ## Encounter Zones 遭遇區域
-→ **說明文件**：[SPEC-world.md § encounter zones](../../../docs/spec/SPEC-world.md#encounter-zones--leveled-actor-spawns--populating-an-area-with-scaled-enemies)
+→ **說明文件**：[SPEC-worldspaces.md § encounter zones](../../../docs/spec/SPEC-worldspaces.md#encounter-zones--leveled-actor-spawns--populating-an-area-with-scaled-enemies)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
@@ -305,7 +305,7 @@ FLST 用途：當吃 list 的 condition 的 param（`GetItemCount`/`GetEquipped`
 ---
 
 ## Vendors 商人
-→ **說明文件**：[SPEC-world.md § vendors](../../../docs/spec/SPEC-world.md#vendors--merchants--a-working-shopkeeper)
+→ **說明文件**：[SPEC-worldspaces.md § vendors](../../../docs/spec/SPEC-worldspaces.md#vendors--merchants--a-working-shopkeeper)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|

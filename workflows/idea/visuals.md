@@ -10,7 +10,7 @@ Skyrim 光照太陰暗，偏好原神/薩爾達那種明亮——vanilla 只白�
 - 室內：CELL Lighting（+ DALC 六方向環境光）+ **LGTM（地城多用 DefaultDungeon 暗模板）** + 稀疏 LIGH——全是「選擇」（Zelda 神廟也封閉但它亮）。
 - 引擎真限制：無 GI（正解：環境光打底 + 少量光源做層次）；每 mesh 4 燈——**Community Shaders + Light Limit Fix 已入基線（§11-C），視為解除**；卡通渲染要 shader 級（CS feature 是可能出路）。
 
-**ModForge 光照管線 — ✅ 室內+室外皆落地（in-game 確認 2026-06-09，見 CLAUDE.md「已落地」/ `SPEC-world.md § lighting`）**：① CELL 逐欄光照進 spec ✅；② 自製明亮 LGTM 模板（模板抄+覆寫，含 DALC）✅；③ 自訂 IMGS 掛 **cell ✅** 與 **weather per-ToD ✅**（`weathers[].imageSpaces`）；④ `lgtmdiag`/`imgsdiag`/`weatherdiag` ✅；⑤ **`WeatherSpec.template`** 抄 vanilla 天氣繼承雲/天空 ✅（from-scratch 天氣無雲，室外務必抄 template）。**剩下**：明亮 LGTM/IMGS 抽成具名 preset 庫；weather/IMGS 掛 region。
+**ModForge 光照管線 — ✅ 室內+室外皆落地（in-game 確認 2026-06-09，見 CLAUDE.md「已落地」/ `SPEC-lighting.md § lighting`）**：① CELL 逐欄光照進 spec ✅；② 自製明亮 LGTM 模板（模板抄+覆寫，含 DALC）✅；③ 自訂 IMGS 掛 **cell ✅** 與 **weather per-ToD ✅**（`weathers[].imageSpaces`）；④ `lgtmdiag`/`imgsdiag`/`weatherdiag` ✅；⑤ **`WeatherSpec.template`** 抄 vanilla 天氣繼承雲/天空 ✅（from-scratch 天氣無雲，室外務必抄 template）。**剩下**：明亮 LGTM/IMGS 抽成具名 preset 庫；weather/IMGS 掛 region。
 
 ---
 

@@ -1,10 +1,11 @@
 # ModForge spec — 世界空間、清單與生成物
 
-← [index](SPEC-index.md) · cell、放置與光照 → [SPEC-world](SPEC-world.md)
+← [index](SPEC-index.md) · cell、放置與地圖標記 → [SPEC-world](SPEC-world.md)
 
 室外世界空間與區域、區域音樂、等級清單／formLists／容器、遭遇區
-生成物，以及供應商／商人設定。室內 cell、物件放置與光照請見
-[SPEC-world](SPEC-world.md)。
+生成物，以及供應商／商人設定。室內 cell、物件放置請見
+[SPEC-world](SPEC-world.md)；自訂光源與照明請見
+[SPEC-lighting](SPEC-lighting.md)。
 
 ### worldspaces (WRLD) & regions (REGN) — 室外世界與天氣
 建立一個**全新**的室外世界空間並掛上氣候，並定義**區域**（世界空間內的範圍），
