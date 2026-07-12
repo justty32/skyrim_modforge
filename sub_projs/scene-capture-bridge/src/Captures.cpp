@@ -124,10 +124,28 @@ namespace {
         // Perks. An ordinary NPC carries them on its base's BGSPerkRankArray; the PLAYER's
         // base array is EMPTY — every perk the player ever took lives in PlayerCharacter's
         // runtime `addedPerks`. Same durable id + rank either way.
-        auto* pc = actor->As<RE::PlayerCharacter>();
-        // Player identity flag — same cast the perk route above needs, so it also catches a
-        // `sc capc` that happens to land on the player, not just `sc capp`. Consumed by ModForge
-        // only as a warning trigger (no voiceType fallback — 2026-07-12 user-decided).
+        //
+        // ⚠ DO NOT "tidy" THIS BACK INTO `actor->As<RE::PlayerCharacter>()`. That cast is
+        // HARDWIRED to return nullptr for EVERY actor — the player included — on every compiler.
+        // `TESForm::As<T>()` is not a dynamic_cast: it is a `switch (GetFormType())` (CommonLibSSE
+        // FormTraits.h) whose every case does
+        //     if constexpr (std::is_convertible_v<const Concrete*, const T*>)
+        // i.e. it recovers the concrete class of the form's FORM_TYPE and will only convert
+        // UPWARD to a base of it. The player's ref has form type kCharacter, same as any NPC, and
+        // that case maps to `Character` — there IS no PlayerCharacter case, because PlayerCharacter
+        // has no form type of its own. So As<PlayerCharacter> asks for Character* -> PlayerCharacter*,
+        // a DOWNcast, `is_convertible` is false, the case breaks and you silently get nullptr.
+        // (As<RE::Actor> on line 64 works precisely because Actor IS a base of Character.)
+        //
+        // Cost of the bug, IN-GAME 2026-07-12: capture landed on the Player TESNPC
+        // (Skyrim.esm:0x000007), yet `isPlayer` stayed false and the perk read fell into the `else`
+        // branch (base BGSPerkRankArray), so every perk the player actually took was invisible.
+        // Identity for the player is a SINGLETON POINTER COMPARE — what Aim/Editor/UI already use.
+        auto* player = RE::PlayerCharacter::GetSingleton();
+        auto* pc = (actor == player) ? player : nullptr;
+        // Player identity flag — also catches a `sc capc` that happens to land on the player,
+        // not just `sc capp`. Consumed by ModForge only as a warning trigger (no voiceType
+        // fallback — 2026-07-12 user-decided).
         n.isPlayer = pc != nullptr;
         if (pc) {
             for (auto* pr : pc->GetPlayerRuntimeData().addedPerks) {
