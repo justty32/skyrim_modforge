@@ -17,6 +17,60 @@ dotnet run --project src/ModForge.Cli -- package  myspec.json OutModDir # esp + 
 NL→spec 層——並沒有工具內建的 LLM API（曾經規劃的 `describe` 命令已捨棄），
 所以沒有 API key／供應商需要設定。
 
+## `requires[]`——宣告這個 plugin 需要哪些 mod（build 會強制檢查）
+
+只要 spec 裡任何地方寫了 `"PROTEUS.esp:0x08073D"`，就會讓 **PROTEUS.esp 成為輸出的 master**，而
+**Skyrim 對「缺 master」的 plugin 會靜默拒絕載入**——沒有錯誤、沒有 log，記錄在遊戲裡就是不存在。
+`build` 一定會*回報*它連結到的 masters（並寫出 `<plugin>.requires.txt`）。`requires[]` 更進一步：
+它是作者**宣告**的內容，兩者不一致時 build 會**失敗**。
+
+```json
+{
+  "pluginName": "MyMod.esp",
+  "requires": [
+    "XPMSE.esp",
+    { "plugin": "PROTEUS.esp", "version": "3.4+", "reason": "the captured player's spells",
+      "url": "https://www.nexusmods.com/skyrimspecialedition/mods/62934" },
+    { "name": "PapyrusUtil SE", "reason": "storageWrites (SKSE plugin — has no .esp)" }
+  ]
+}
+```
+
+| Field | Meaning |
+|-------|---------|
+| `plugin` | build 預期會連結到的 master（`.esp`／`.esm`／`.esl`）。**雙向都會檢查。** 清單裡的純字串就是它的簡寫形式。 |
+| `name` | **沒有自己 plugin** 的需求（SKSE DLL、loose-file 框架）。它永遠不會是 master，所以**純文件、永不檢查**——但仍會寫進旁檔，也就是玩家讀到的需求清單。 |
+| `version` | **純文件——ModForge 無法驗證。** Skyrim plugin 不帶 mod 版本（見下）。只印給人看，不強制檢查。 |
+| `reason` | 為什麼需要這個 mod。`--sync-requires` 會自動用拉進這個 master 的 spec 欄位填入。 |
+| `url` | 去哪裡取得——會寫進旁檔。 |
+
+**兩個檢查：**
+
+- **有 link 但沒宣告 → 報錯，什麼都不寫出。** 這正是這個功能要抓的漂移：plugin 剛剛多了一個
+  沒人簽收的安裝必要條件。訊息會指名確切的 spec 欄位（`capturedNpcs[0].spells[2] = PROTEUS.esp:0x08073D`），
+  你可以刪掉那行，也可以把這個 master 補進宣告。
+- **宣告了但從沒 link → 警告。** 過期／複製貼上留下的行。（如果 mod 是*執行期*需要、但沒有任何
+  記錄引用它，它就不是 master：改用 `name` 宣告。）
+
+**天生向後相容：** 一份**沒有 `requires` 段落**的 spec 完全不檢查——寫這個段落才算選擇加入。
+`"requires": []` 也是一種選擇加入：它宣告「這個 mod 只用 vanilla」，所以之後任何 mod ref 都會讓 build 失敗。
+
+**`build --sync-requires`** 會把 build 實際連結到的 masters 寫回 spec 的 `requires[]`（若原本沒有這個
+段落就建立它，刪掉過期的項目，保留你寫的 `reason`／`version`／`url`，永不動到 `name` 項目）：
+
+```bash
+dotnet run --project src/ModForge.Cli -- build myspec.json out.esp --sync-requires
+```
+一次 capture（`sc cap`／`sc capp`）會為每個 mod 給的 spell/perk/item 拉進一個相依，靠手動維護
+這份清單會讓這個約定不值得存在。同步而非靜默處理的重點在於：相依集合會變成**spec diff 裡的一行**——
+你的 mod 需要什麼有了變動，就會像其他變更一樣出現在 `git diff` 裡。
+
+**為什麼沒有版本*檢查*：** `.esp` 沒有 mod 版本。它的 `TES4`／`HEDR`「version」是檔案**格式**版本
+（1.70/1.71——PROTEUS 3.4 跟一份兩筆記錄的測試 plugin 完全一樣）；`CNAM`／`SNAM`（作者／描述）是
+自由文字，通常是 `DEFAULT` 或空白。真正的版本資訊只存在於 **mod manager** 的中繼資料裡
+（MO2 `meta.ini` 的 `version=`，來自 Nexus），不在 plugin 裡，build 也看不到。所以 `version` 是
+給人看的標籤，並在 `<plugin>.requires.txt` 裡被標成如此；ModForge 不會假裝驗證它。
+
 ## Voice（TTS 聲音克隆 → .fuz）
 
 選用的後置 build 流程，會為已 build plugin 內的每一句對話合成配音音訊（外加唇形同步）。

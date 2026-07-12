@@ -56,6 +56,14 @@ public sealed class BuildResult
     /// so the caller should surface these. Nothing here affects what was built.
     /// </summary>
     public IReadOnlyList<MasterDependency> Dependencies { get; init; } = Array.Empty<MasterDependency>();
+
+    /// <summary>
+    /// The spec's declared <c>requires[]</c> checked against <see cref="Dependencies"/> (Generator.Requires.cs).
+    /// <see cref="RequiresCheck.Declared"/> is false for a spec with no <c>requires:</c> section — then this
+    /// says nothing at all. A caller that writes the plugin should refuse when <see cref="RequiresCheck.Ok"/>
+    /// is false: the build links a master the author never declared.
+    /// </summary>
+    public RequiresCheck Requires { get; init; } = new();
 }
 
 /// <summary>Record/link/placement counts from a build.</summary>

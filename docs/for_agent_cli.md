@@ -92,6 +92,37 @@ wrote MFCapHatak.requires.txt (the install requirements, with the spec field beh
 Nothing about the .esp changes — this is pure visibility. If the plugin must be portable, don't
 reference mod content: hand-write the spec against vanilla forms.
 
+### `requires[]` — declare them, and build enforces it
+
+Reporting doesn't stop **drift**: a mod is uninstalled, a capture is retaken, a line is deleted — and
+the plugin's master list quietly changes, which is exactly the silent-no-load failure above. So a spec
+can **declare** what it needs, and `build` refuses to write a plugin that disagrees:
+
+```json
+"requires": [
+  "XPMSE.esp",
+  { "plugin": "PROTEUS.esp", "version": "3.4+", "reason": "the captured player's spells" },
+  { "name": "PapyrusUtil SE", "reason": "storageWrites (SKSE plugin — has no .esp)" }
+]
+```
+
+- **linked but not declared → ERROR, the .esp is not written** (the message names the spec field, so
+  you can delete that line or declare the master);
+- **declared but never linked → warning** (stale line; a runtime-only mod with no master goes under
+  `name`, which is documentation-only and never checked);
+- **no `requires` section at all → nothing is checked** (every older spec is unaffected — writing the
+  section is how you opt in). `"requires": []` opts in too: it means *vanilla-only*, so any mod ref fails.
+
+**`build spec.json out.esp --sync-requires`** writes the real master set back into the spec's
+`requires[]` (keeps your `reason`/`version`/`url`, drops stale entries, creates the section if absent).
+Use it after a capture — it turns a dependency change into a reviewable line in the spec diff.
+
+⚠️ **There is no version check and there cannot be one.** An `.esp` carries no mod version: `TES4`/`HEDR`
+"version" is the file *format* version (1.71 for PROTEUS 3.4 and for a 2-record test plugin alike), and
+`CNAM`/`SNAM` are free text (usually `DEFAULT`/empty). Only the mod *manager* knows the version (MO2
+`meta.ini`, from Nexus). `version` in `requires[]` is a **label for humans**, printed and marked
+unverified in `<plugin>.requires.txt`.
+
 ## Generate-content workflow
 
 1. Read `SPEC-index.md` for the exact fields. Write `spec.json` (camelCase; property names are

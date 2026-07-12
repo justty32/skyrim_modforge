@@ -187,12 +187,16 @@ public static partial class Generator
                         + worldspacesBuilt + regionsBuilt
                         + scenesBuilt;
                         // (Placements are reported separately in stats, so not folded into `total`.)
+            // Read-only over the finished mod + the spec — authors nothing (see Generator.Dependencies.cs).
+            var deps = AnalyzeDependencies(mod, spec);
             return new BuildResult
             {
                 Mod = mod,
                 Warnings = warnings,
-                // Read-only over the finished mod + the spec — authors nothing (see Generator.Dependencies.cs).
-                Dependencies = AnalyzeDependencies(mod, spec),
+                Dependencies = deps,
+                // …and the spec's own declaration checked against them (Generator.Requires.cs). Says nothing
+                // when the spec has no requires[] section — the caller decides what to do with an error.
+                Requires = CheckRequires(spec, deps),
                 Stats = new BuildStats
                 {
                     Esl = spec.Esl,

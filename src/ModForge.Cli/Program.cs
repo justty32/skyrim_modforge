@@ -17,7 +17,10 @@ internal static partial class Program
             switch (args[0])
             {
                 case "gen" when args.Length == 2:      GenCmd(args[1]); return 0;
-                case "build" when args.Length == 3:    BuildCmd(args[1], args[2]); return 0;
+                case "build" when args.Length == 3:    return BuildCmd(args[1], args[2]);
+                // --sync-requires: write the masters the build actually links back into the spec's
+                // requires[] (capture pulls them in by the dozen; the spec diff is the review surface).
+                case "build" when args.Length == 4 && args[3] == "--sync-requires": return BuildCmd(args[1], args[2], true);
                 case "voicelines" when args.Length is 3 or 4: return VoicelinesCmd(args[1], args[2], args.Length == 4 ? args[3] : null);
                 case "voicediag" when args.Length == 3: return VoiceDiagCmd(args[1], args[2]);
                 case "extract-voices" when args.Length is 4 or 5: return ExtractVoicesCmd(args[1], args[2], args[3], args.Length == 5 ? args[4] : "Skyrim.esm");
@@ -89,7 +92,7 @@ internal static partial class Program
     private static void Usage() => Console.WriteLine(
         "ModForge.Cli\n" +
         "  gen     <out.esp>\n" +
-        "  build   <spec.json> <out.esp>\n" +
+        "  build   <spec.json> <out.esp> [--sync-requires]   (--sync-requires: write the masters the build links back into the spec's requires[])\n" +
         "  voicelines <spec.json> <built.esp> [--dry-run|--plan] generate .fuz/.wav from dialogue records, or print expected voice paths\n" +
         "  voicediag <spec.json> <built.esp>            offline speaker/template/path check for every dialogue INFO line\n" +
         "  extract-voices <bsaPath> <voiceType> <outDir> [plugin]  extract + convert a voiceType's clips to WAV (plugin default Skyrim.esm; e.g. SofiaFollower.esp for a follower's BSA)\n" +

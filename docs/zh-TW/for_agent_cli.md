@@ -90,6 +90,36 @@ wrote MFCapHatak.requires.txt (the install requirements, with the spec field beh
 .esp 本身一個 byte 都不變——這純粹是可見性。若 plugin 必須可攜，就別引用 mod 的內容：
 手寫 spec、只用原版 forms。
 
+### `requires[]`——宣告它們，build 會強制檢查
+
+只回報還擋不住**漂移**：mod 被移除、capture 重新做一次、某行被刪掉——plugin 的 master 清單
+就悄悄變了，這正是上面那種靜默不載的失敗。所以 spec 可以**宣告**自己需要什麼，兩者不一致時
+`build` 會拒絕寫出 plugin：
+
+```json
+"requires": [
+  "XPMSE.esp",
+  { "plugin": "PROTEUS.esp", "version": "3.4+", "reason": "the captured player's spells" },
+  { "name": "PapyrusUtil SE", "reason": "storageWrites (SKSE plugin — has no .esp)" }
+]
+```
+
+- **有 link 但沒宣告 → 報錯，.esp 完全不寫出**（訊息會指名是哪個 spec 欄位，你可以刪掉那行，
+  或把該 master 補進宣告）；
+- **宣告了但從沒 link → 警告**（過期的行；只在執行期需要、沒有自己 plugin 的 mod 該歸到 `name`，
+  那是純文件、永不檢查）；
+- **完全沒有 `requires` 段落 → 不檢查任何東西**（每一份舊 spec 都不受影響——寫這個段落才算選擇
+  加入）。`"requires": []` 也是一種選擇加入：代表*只用 vanilla*，所以任何 mod ref 都會讓 build 失敗。
+
+**`build spec.json out.esp --sync-requires`** 把實際的 master 集合寫回 spec 的 `requires[]`（保留
+你寫的 `reason`／`version`／`url`，刪掉過期的項目，若原本沒有這個段落就建立它）。在 capture 之後
+用它——它把相依關係的變動變成 spec diff 裡一行可審閱的紀錄。
+
+⚠️ **沒有版本檢查，也不可能有。** `.esp` 本身不帶 mod 版本：`TES4`／`HEDR` 的「version」是檔案
+*格式*版本（PROTEUS 3.4 跟一份兩筆記錄的測試 plugin 都是 1.70/1.71），`CNAM`／`SNAM` 是自由文字
+（通常是 `DEFAULT`／空白）。只有 mod *manager* 才知道版本（MO2 的 `meta.ini`，來自 Nexus）。
+`requires[]` 裡的 `version` 只是**給人看的標籤**，會印在 `<plugin>.requires.txt` 裡並標記為未驗證。
+
 ## 產生內容工作流程
 
 1. 閱讀 `SPEC-index.md` 取得確切欄位。撰寫 `spec.json`（camelCase；屬性名稱以

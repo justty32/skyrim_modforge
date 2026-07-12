@@ -15,6 +15,11 @@
       "default": true,
       "description": "Light-master flag; keep new records <= 4096"
     },
+    "requires": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/requirement"},
+      "description": "DECLARED install requirements, checked BOTH WAYS against the masters the build actually links (Generator.Requires.cs). A master the build links but requires[] does not declare = ERROR, and no .esp is written (Skyrim silently refuses to load a plugin whose masters are missing, so an undeclared master is an install requirement nobody was told about); a declared `plugin` the build never links = warning (stale line). OMITTING this property entirely means NOTHING is checked (every spec written before this feature is unaffected) — writing it is how you opt in. An EMPTY array is an opt-in too: it declares 'this mod stays vanilla-only', so any mod ref then fails the build. `build <spec> <out.esp> --sync-requires` writes the real master set back here (capture pulls dependencies in by the dozen). See docs/spec/SPEC-workflow.md"
+    },
     "miscItems": {
       "type": "array",
       "items": {
@@ -611,6 +616,19 @@
   },
   "additionalProperties": false,
   "$defs": {
+    "requirement": {
+      "description": "One declared install requirement. A bare STRING is shorthand for {\"plugin\": \"<that>\"}.",
+      "oneOf": [
+        {"type": "string", "description": "plugin filename, e.g. \"PROTEUS.esp\" — checked against the masters the build links"},
+        {"type": "object", "properties": {
+          "plugin": {"type": "string", "description": "master filename (.esp/.esm/.esl) the build is expected to link. CHECKED both ways"},
+          "name": {"type": "string", "description": "a requirement with NO plugin of its own (an SKSE DLL like PapyrusUtil/JContainers, a loose-file framework). It can never be a master, so it is DOCUMENTATION ONLY and is never checked — but it does go into <plugin>.requires.txt, the requirements list a player reads"},
+          "version": {"type": "string", "description": "DOCUMENTATION ONLY — ModForge cannot verify this and will not pretend to. A Skyrim plugin carries no mod version: TES4/HEDR's \"version\" is the FILE FORMAT version (1.70/1.71 for every SSE plugin alike), CNAM/SNAM (author/description) are free text. Only the mod MANAGER knows the real version (MO2 meta.ini, from Nexus). Printed in the sidecar, marked unverified"},
+          "reason": {"type": "string", "description": "why this mod is needed; --sync-requires auto-fills it with the spec field that pulled the master in"},
+          "url": {"type": "string", "description": "where to get it (a Nexus link) — goes into <plugin>.requires.txt"}
+        }}
+      ]
+    },
     "npcRole": {"type": "object", "properties": {"npc": {"type": "string"}, "role": {"type": "string"}, "backstory": {"type": "string"}}},
     "annotation": {"type": "object", "properties": {"seq": {"type": "integer"}, "label": {"type": "string"}, "kind": {"type": "string"}, "note": {"type": "string", "description": "free-form brief for the agent (\"face the door\", \"a vendor here\")"}, "position": {"$ref": "#/$defs/vec3"}, "angleZ": {"type": "number"}, "cell": {"type": "string"}, "worldspace": {"type": "string"}}},
     "override": {"type": "object", "required": ["ref", "position", "rotation"], "properties": {"ref": {"type": "string", "description": "\"<master>:0xFORMID\" of the existing placed ref (REFR/ACHR)"}, "position": {"$ref": "#/$defs/vec3"}, "rotation": {"$ref": "#/$defs/vec3", "description": "degrees"}, "scale": {"type": "number", "description": "omitted = keep original scale; 1.0 = reset to engine default (XSCL dropped)"}}},

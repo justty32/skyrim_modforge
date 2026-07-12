@@ -89,6 +89,10 @@ internal static partial class Program
         var espPath = Path.Combine(outModDir, pluginName);
         var key = ModKey.FromNameAndExtension(pluginName);
         var result = Generator.Build(spec, key, new BuildOptions { CompiledScriptsDir = compiledFragmentsDir, SpecDir = specDir });
+        // The requires[] contract (Generator.Requires.cs) gates the SHIPPED mod too — an undeclared
+        // master is exactly the thing that must not reach a player. No --sync-requires here: syncing is
+        // an edit to the spec, and that belongs to `build`.
+        if (!RequiresOk(result, specPath, espPath)) return 1;
         PluginIo.Write(result.Mod, espPath);
         foreach (var w in result.Warnings) Console.WriteLine(w);
         Console.WriteLine(BuildSummary(result.Stats, specPath, espPath));

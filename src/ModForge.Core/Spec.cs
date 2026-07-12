@@ -17,6 +17,11 @@ public sealed class ModSpec
 
     public string PluginName { get; set; } = "Generated.esp";
     public bool Esl { get; set; } = true;
+    // DECLARED install requirements (Spec.Requires.cs / Generator.Requires.cs). Compared both ways
+    // against the masters the build actually links: an undeclared master FAILS the build, a declared
+    // plugin nothing links warns. NULL (absent) = the section was never written = nothing is checked
+    // (every spec predating this feature). An EMPTY list is an opt-in too: "this mod stays vanilla-only".
+    public List<RequirementSpec>? Requires { get; set; }
     public List<MiscSpec> MiscItems { get; set; } = new();
     public List<BookSpec> Books { get; set; } = new();
     public List<WeaponSpec> Weapons { get; set; } = new();

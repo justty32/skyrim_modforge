@@ -26,6 +26,7 @@
 | `VoiceAnnotateTests.cs` | `voice-annotate`：clip 檔名→INFO FormKey 解析 + 從 INFO 讀 emotion/intensity/text 建 manifest entry |
 | `SpecRefsTests.cs` | `$ref` 三形態（string / array 鏈式 / long-form `{from,pointer}`）、`$env`（value / default / 缺報錯）、`$ref`+`$env` 衝突、cycle、sibling deep-merge、`ResolveFile` disk round-trip |
 | `DependencyTests.cs` | 外部 master 可見性：純 vanilla spec **什麼都不印**（negative case）／capture 與手寫 spec 都列出 mod master ＋歸因到**作者寫的**欄位（含「巨集展開後仍報 `capturedNpcs[]` 不報 `npcs[]`」）／CC 分類／摘要＋`requires.txt` 內容／**釘死「分析不改 esp 一個 byte」**|
+| `RequiresTests.cs` | 宣告式 `requires[]` 雙向檢查：**沒有 requires 段＝完全不檢查**（negative case，向後相容）／用到沒宣告→錯誤且訊息指出**是哪一行 spec 欄位**／宣告沒用到→警告／空 `[]`＝只准 vanilla／`name` 條目（無 plugin 的 SKSE 相依）永不檢查但進旁檔／`version` 只是標籤（旁檔標 NOT verified）／`SyncRequires` 加新丟舊保留 metadata＋同步後檢查通過／`validate` 形狀檢查／JSON 字串簡寫與缺段＝null／**釘死「requires[] 不改 esp 一個 byte」**|
 | `Helpers.cs` | 共用測試 helper（非 test class，供其他 *Tests.cs 使用）|
 
 ---
@@ -38,6 +39,7 @@
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
 | Spec | `Spec.cs` | `ModSpec`（頂層 DTO，所有 record family 的清單欄位）|
+| Spec | `Spec.Requires.cs` | `RequirementSpec`（`ModSpec.Requires`，**nullable**：null＝spec 沒寫這段＝完全不檢查）＋ `RequirementConverter`（`"PROTEUS.esp"` 字串簡寫 ↔ 物件形態）。`plugin`＝會被雙向檢查的 master；`name`＝**沒有 plugin 的相依**（SKSE DLL / loose files，純文件永不檢查）；`version`＝**只是標籤，無法驗證**（esp 沒有 mod 版本欄位）。檢查邏輯在 `Generator.Requires.cs` |
 | Spec | `SpecRefs.cs` | `$ref`/`$env` 反序列化前預處理器（純 `JsonNode` resolver + `ResolveFile` disk 入口；注入 file/env lookup 以可測）；CLI 在 deserialize 前跑。見 [SPEC-refs.md](../../../docs/spec/SPEC-refs.md) |
 
 ---
@@ -48,7 +50,7 @@
 | 層次 | 檔案 | 命令 |
 |-----|-----|-----|
 | CLI | `Program.cs` | `gen` / `find` / diagnostic dispatcher；`ResolveSpecJson`（單一 chokepoint，跑 `SpecRefs.ResolveFile`）→ `ReadSpec` JSON 反序列化 |
-| CLI | `Program.Build.cs` | `build` / `validate` / `package` / `compile` / `voicelines` / `extract-voices`；`validate` 的 `CheckUnknownFields` + deserialize 都跑在 `$ref`/`$env` **解析後**的 JSON；`build` 後另印 `annotations`（advisory，不生記錄）與 `references`（label→既有 ref 綁定清單）兩行摘要；`ReportDependencies` 印非 vanilla master ＋寫 `<plugin>.requires.txt` 旁檔（`package` 只印不寫——它的輸出夾就是出貨 mod）|
+| CLI | `Program.Build.cs` | `build` / `validate` / `package` / `compile` / `voicelines` / `extract-voices`；`validate` 的 `CheckUnknownFields` + deserialize 都跑在 `$ref`/`$env` **解析後**的 JSON；`build` 後另印 `annotations`（advisory，不生記錄）與 `references`（label→既有 ref 綁定清單）兩行摘要；`ReportDependencies` 印非 vanilla master ＋寫 `<plugin>.requires.txt` 旁檔（`package` 只印不寫——它的輸出夾就是出貨 mod）；**`RequiresOk` ＝ `requires[]` 的閘門**（用到沒宣告 → 印錯誤、**在 `PluginIo.Write` 之前 return 1，esp 完全不寫**；`package` 走同一個閘門），**`SyncRequiresFile` ＝ `build --sync-requires`**（用 `JsonNode` 就地改寫 spec 檔的 `requires[]`；requires 來自 `$ref` include 時拒絕改寫，免得宣告分叉）|
 | CLI | `Program.Translate.cs` | `extract` / `apply` / `applyloc` |
 | CLI | `Package.cs` | `package` 完整流程：Papyrus 編譯 + Assets 複製 + MO2 資料夾組裝 |
 | CLI | `Package.Compile.cs` | `Package.cs` 的 static helper：生成片段編譯（`CompileGeneratedFragment`）、embedded `.pex` 出貨（`ShipEmbeddedPex`）、action-system loose file 寫出（`WriteLooseFile`）|
@@ -66,6 +68,8 @@
 | Helpers | `Generator.BuildContext.Utilities.cs` | master link-cache 管理；`PackageDataLocation` slot 建構 |
 | Helpers | `Generator.Helpers.cs` | 靜態 helpers：armor/enchantment/grid-coord 解析；ref resolver（in-spec vs external）|
 | Deps | `Generator.Dependencies.cs` | **外部 master 可見性**（純資訊，不動產物）：`AnalyzeDependencies(mod, spec)` → `BuildResult.Dependencies`。**master 清單以「建好的 mod」為準**（掃每筆 record 的 FormKey ＋ `EnumerateFormLinks`——抓得到 spec 字串沒寫、由 deep-copy 帶進來的 master）；**歸因以 spec 為準**（reflection walk → `capturedNpcs[0].spells[17] = PROTEUS.esp:0x08073D`）。歸因快照在 `ExpandMacros` **展開前**取（`ModSpec.AuthoredRefSources`，internal），否則 captured NPC 會報成巨集生出來的 `npcs[0]`。vanilla ＝ Skyrim/Update/Dawnguard/HearthFires/Dragonborn；**CC（`ccXXXSSE###` / `_ResourcePack`）不算 vanilla**（按帳號購買，缺了照樣靜默不載）|
+| Deps | `Generator.Dependencies.Report.cs` | 上面那份分析的**輸出文字**：`DependencySummary`（build 摘要行，純 vanilla spec 一個字都不印）＋ `RequiresFileText`（`<plugin>.requires.txt` 旁檔）。旁檔會把 spec 的 `requires[]` 中繼資料折進來（`reason`/`version`/`url`＋**沒有 plugin 的相依**如 PapyrusUtil）——它就是玩家看的需求清單；`version` 印出來但標明 **NOT verified**|
+| Deps | `Generator.Requires.cs` | **宣告式 `requires[]` 的雙向檢查**（候選 (b)；DTO 在 `Spec.Requires.cs`）：`CheckRequires(spec, deps)` → `BuildResult.Requires`。**build 有 link 但沒宣告＝錯誤**（CLI 直接不寫 esp——缺 master ＝ Skyrim 靜默不載，那正是要擋的漂移）；**宣告了但從沒 link＝警告**（陳舊行；runtime-only 相依請用 `name` 條目）。**spec 沒有 `requires` 段（null）＝完全不檢查**（向後相容硬要求）；**空陣列 `[]` 也是宣告**＝「只用 vanilla」。`SyncRequires(declared, deps)`（純函式）＝ `build --sync-requires` 的合併邏輯（保留作者寫的 metadata、丟掉陳舊項、`name` 條目不動）。`ValidateRequires` 只做**形狀**檢查（`validate` 沒有建好的 mod，做不了實質比對）。**`requires[]` 不進 esp**（測試釘死）|
 
 ---
 

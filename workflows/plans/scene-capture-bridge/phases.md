@@ -218,7 +218,25 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
 - **旁檔 `<plugin>.requires.txt`**（寫在 esp 旁；沒有非原版依賴時刪掉舊檔）＝解掉後果②「沒有任何地方記著這個 esp 依賴誰」。**`package` 只印摘要、不寫旁檔**（它的輸出夾就是要出貨的 mod，不該多塞檔案）。
 - **CC 不算 vanilla**（`ccXXXSSE###` / `_ResourcePack`）：按帳號購買，沒買的玩家一樣靜默不載——照列，只是標註原因。vanilla ＝ Skyrim/Update/Dawnguard/HearthFires/Dragonborn 五個。
 - **語氣＝資訊、不是錯誤**（使用者拍板要完全複製）；純 vanilla spec **一個字都不印**（negative-case 測試釘住，免得變背景噪音）。C# **971 測綠**（951 + 20 新）。docs：[for_agent_cli](../../../docs/for_agent_cli.md)（＋zh-TW 鏡像）。
-- **另三個候選這輪沒做**：(b) spec 宣告式 `requires:` 段（build 對不上就報錯——**這才是後果②的完整解**，旁檔只是半套）；(c) modlist / load order 快照（MO2 `plugins.txt`）；(d)「依賴檢查」指令（給 esp ＋ load order，回報缺什麼）。
+- **另三個候選**：(b) spec 宣告式 `requires:` 段 → **✅ 同日補上，見下節**；(c) modlist / load order 快照（MO2 `plugins.txt`）、(d)「依賴檢查」指令（給 esp ＋ load order，回報缺什麼）**仍未做**（收進 backlog）。
+
+## ✅ 已做（外部 mod 依賴的**宣告式契約**＝候選 (b)，2026-07-12，**純 C#、零 DLL 改動**，離線 **987 測綠**）
+- **(a) 只解決一半**：它**記錄**依賴，卻不**驗證**。真後果是**漂移**——哪天移除 PROTEUS／重吸一次 capture／刪掉一行，esp 的 master 清單就悄悄變了，而缺 master ＝ Skyrim **靜默不載**。(b) ＝ spec 宣告「這個 mod 需要這些 plugin」，**build 對不上就報錯**。
+- **形狀**（`Spec.Requires.cs`；`ModSpec.Requires` 是 **nullable**）：
+  ```json
+  "requires": [
+    "XPMSE.esp",
+    { "plugin": "PROTEUS.esp", "version": "3.4+", "reason": "被吸的玩家法術", "url": "https://nexus…" },
+    { "name": "PapyrusUtil SE", "reason": "storageWrites（SKSE，沒有自己的 esp）" }
+  ]
+  ```
+  `plugin` ＝會被雙向檢查的 master（裸字串是它的簡寫）；**`name` ＝沒有 plugin 的相依**（SKSE DLL／loose-file framework——永遠不可能是 master ⇒ **純文件、永不檢查**，但照樣進旁檔＝玩家看的需求清單）；`reason`/`url` 給人看。
+- **雙向檢查，不對稱是刻意的**：**用到但沒宣告 → 錯誤，且 esp 一個 byte 都不寫**（`RequiresOk` 擋在 `PluginIo.Write` 前面，`package` 走同一個閘門——沒宣告的 master 就是「玩家不知道要裝什麼」那個失敗，不能讓它出貨；訊息直接點出**是哪一行 spec 欄位**拉它進來）；**宣告了但沒 link → 只警告**（陳舊行不致命；訊息順便教你：runtime 才需要、沒 master 的東西改用 `name`）。
+- **🔑 向後相容（硬要求）**：**spec 沒寫 `requires` 段（null）＝完全不檢查**——repo 幾十個 example spec ＋已出貨 spec 零行為改變（negative-case 測試釘死）。寫這段＝**opt-in**。**空陣列 `[]` 也是一種宣告**：「這個 mod 只用 vanilla」，之後任何 mod ref 都會擋下。
+- **自動補宣告：`build <spec> <out.esp> --sync-requires`**（`SyncRequiresFile`；純函式 `Generator.SyncRequires`）——capture **大量**自動引入依賴，手動補宣告會煩到讓契約不值得存在。sync 會：補上實際 link 的 master（`reason` 自動填**拉它進來的那個 spec 欄位**）、丟掉陳舊項、**保留作者手寫的 `reason`/`version`/`url`**、`name` 條目不動。真正的回報：**依賴變動變成 spec diff 的一行**，在 git 裡可審。（`requires` 來自 `$ref` include 時拒絕改寫，免得宣告分叉成兩份。）
+- **版本檢查＝查證後確認做不到，所以不做假的**。掃了本機 40+ 個真 mod 的 TES4 header：`HEDR` 的 version 是**檔案格式版本**（清一色 1.70/1.71——PROTEUS 3.4 跟兩筆記錄的測試 esp 完全一樣）；`CNAM`/`SNAM`（作者／描述）是自由文字（多半 `DEFAULT`／空／行銷文案；少數人塞版本如 `SkyUI SE 6.0`、`Vigilant SNAM=181`，不可依賴）。**真版本只活在 mod manager 的 metadata**（MO2 `meta.ini` `version=`，來自 Nexus），不在 plugin 裡、build 也看不到 ⇒ `version` 欄位**只是給人看的標籤**，旁檔明寫 `NOT verified`。
+- **複用 (a)、不重算**：`CheckRequires(spec, deps)` 直接吃 `AnalyzeDependencies` 的結果 → `BuildResult.Requires`。旁檔 `RequiresFileText` 升級成折進 `requires[]` 的中繼資料（含沒有 plugin 的相依）。**`requires[]` 不進 esp**（測試釘死 byte 相同）。
+- 檔案：`Spec.Requires.cs`／`Generator.Requires.cs`／`Generator.Dependencies.Report.cs`（把 (a) 的輸出文字拆出來，守 300 行門檻）＋ `Program.Build.cs`（`RequiresOk`／`SyncRequiresFile`）。docs：[SPEC-workflow](../../../docs/spec/SPEC-workflow.md)、[for_agent_cli](../../../docs/for_agent_cli.md)（＋zh-TW 鏡像）、`examples/spec.schema.json`。
 
 ## ✅ 已做（依賴可見性的**遊戲內版**：Export 頁 `Export requires` 鈕，2026-07-12，DLL `6498c57b`→`008aba47`，待實機）
 - **價值＝時機**。上面那條 C# 版是 **build 後**才知道——那時你已經退出遊戲了；這顆鈕把同一個問題**提前到匯出當下**：人還站在那間房，覺得那顆 PROTEUS 法術不值得讓整個 mod 變成硬相依，**重吸一次就好**。兩者互補、格式對齊（路徑前綴 `scene.` / `captures.` 指出該去改哪個檔），輸出可互相比對。

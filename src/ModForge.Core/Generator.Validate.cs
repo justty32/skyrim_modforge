@@ -51,6 +51,7 @@ public static partial class Generator
         ctx.ValidateReferences();
         ctx.ValidateNavCuts();
         ctx.ValidateNavmeshOverrides();
+        ValidateRequires(spec, ctx.Problems);   // shape only — the declared-vs-actual check needs a BUILD
         ValidateWeather(spec, ctx.Problems, ctx.Ids, ctx.CheckRef);
         ValidateLights(spec, ctx.Problems);
         ValidateLighting(spec, ctx.Problems);

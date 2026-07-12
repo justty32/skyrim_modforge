@@ -17,6 +17,66 @@ conforming to this doc / `../examples/spec.schema.json` (per `for_agent.md`), ru
 NL→spec layer — there is no in-tool LLM API (the once-planned `describe` command is dropped),
 so there's no API key/provider to configure.
 
+## `requires[]` — declare the mods this plugin needs (build enforces it)
+
+Naming `"PROTEUS.esp:0x08073D"` anywhere in a spec makes **PROTEUS.esp a master** of the output, and
+**Skyrim silently refuses to load a plugin whose masters are missing** — no error, no log line, the
+records just aren't there. `build` always *reports* the masters it linked (and writes
+`<plugin>.requires.txt`). `requires[]` goes further: it is what the author **declares**, and build
+**fails** when the two disagree.
+
+```json
+{
+  "pluginName": "MyMod.esp",
+  "requires": [
+    "XPMSE.esp",
+    { "plugin": "PROTEUS.esp", "version": "3.4+", "reason": "the captured player's spells",
+      "url": "https://www.nexusmods.com/skyrimspecialedition/mods/62934" },
+    { "name": "PapyrusUtil SE", "reason": "storageWrites (SKSE plugin — has no .esp)" }
+  ]
+}
+```
+
+| Field | Meaning |
+|-------|---------|
+| `plugin` | A master the build is expected to link (`.esp`/`.esm`/`.esl`). **Checked, both ways.** A bare string in the list is shorthand for this. |
+| `name` | A requirement with **no plugin of its own** (an SKSE DLL, a loose-file framework). It can never be a master, so it is **documentation only** and is never checked — but it does go into the sidecar, which is the requirements list a player reads. |
+| `version` | **Documentation only — ModForge cannot verify it.** A Skyrim plugin carries no mod version (see below). Printed for humans, never enforced. |
+| `reason` | Why the mod is needed. `--sync-requires` auto-fills it with the spec field that pulled the master in. |
+| `url` | Where to get it — goes into the sidecar. |
+
+**The two checks:**
+
+- **linked but not declared → ERROR, and nothing is written.** This is the drift the feature exists to
+  catch: the plugin just acquired an install requirement nobody signed up for. The message names the
+  exact spec field (`capturedNpcs[0].spells[2] = PROTEUS.esp:0x08073D`), so you can either delete that
+  line or declare the master.
+- **declared but never linked → warning.** A stale/copy-pasted line. (If the mod is needed at *runtime*
+  but no record references it, it is not a master: declare it with `name` instead.)
+
+**Backward compatible by construction:** a spec with **no `requires` section** is not checked at all —
+writing one is how you opt in. `"requires": []` is an opt-in too: it declares *"this mod stays
+vanilla-only"*, so any mod ref then fails the build.
+
+**`build --sync-requires`** writes the masters the build actually links back into the spec's
+`requires[]` (creating the section if absent, dropping stale entries, keeping the `reason`/`version`/
+`url` you authored, never touching `name` entries):
+
+```bash
+dotnet run --project src/ModForge.Cli -- build myspec.json out.esp --sync-requires
+```
+A capture (`sc cap` / `sc capp`) drags in a dependency for every mod-given spell/perk/item, so
+hand-maintaining the list would make the contract not worth having. The point of syncing rather than
+staying silent: the dependency set becomes a **line in the spec diff** — a change to what your mod
+needs shows up in `git diff` like any other change.
+
+**Why there is no version *check*:** an `.esp` has no mod version. Its `TES4`/`HEDR` "version" is the
+file **format** version (1.70/1.71 — identical for PROTEUS 3.4 and for a two-record test plugin);
+`CNAM`/`SNAM` (author/description) are free text, usually `DEFAULT` or empty. The only place a real
+version lives is the **mod manager's** metadata (MO2 `meta.ini` `version=`, from Nexus), which is not
+in the plugin and not visible to a build. So `version` is a label for humans and is marked as such in
+`<plugin>.requires.txt`; ModForge will not pretend to verify it.
+
 ## Voice (TTS voice cloning → .fuz)
 
 Optional post-build pipeline that synthesizes voiced audio (+ lipsync) for every dialogue
