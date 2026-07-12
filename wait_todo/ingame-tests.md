@@ -85,6 +85,7 @@
    - **perk ＝你點過的 perk**（玩家 perk 存在 `addedPerks`，這次才收得到）。
    - **裝備**：穿在身上的護甲應該有穿（走鑄 OTFT 路），武器/雜物在物品欄。
    - **可能落差（先照實回報，不算 bug）**：① 玩家 base 的 **voiceType 可能是空的** → 分身啞巴（不會 hello/閒聊）——0958 那份 export 玩家那筆確實**沒有** `voiceType` 欄，已實證；② 物品欄**全吸**（含任務物品/金幣/鑰匙）→ 分身身上東西很多。這兩項要不要處理等你看了再說。
+   - **驗 `isPlayer` 標示（2026-07-12 新增，co-save SCCP v9）**：這次匯出的 json 裡玩家那筆應多一個 `"isPlayer": true`（一般 NPC 的 `sc capc` 不該有這欄）。若玩家 voiceType 仍是空的，`build` 的輸出裡應該印一句 warning，類似「is a player capture — no voiceType … the clone will be silent … This is expected, not a bug」（**不是紅色錯誤，是提示**）；有 voiceType 的話則不該印。
    - **`weight: 0.0` 不是 bug**：那是你 chargen 的體重滑桿真值（Skyrim.esm 裡 Player base 是 100，我們吸到 0 → 正好證明讀的是**存檔改寫過的** TESNPC 而不是磁碟原始記錄；Ancano 的 0 也跟 Skyrim.esm 一字不差）。想對照就 console `player.getnpcweight`。
 4. **順手複驗（不破舊路）**：對一個**普通 vanilla NPC** `sc capc` → 匯出的那筆現在也該多出 `health/magicka/stamina/skills`，且 build 出來的分身**不再開 autoCalcStats**（數值照抄本尊）。舊 capture json（沒這些欄位的）照舊走 class-autocalc——**不該壞**。
 

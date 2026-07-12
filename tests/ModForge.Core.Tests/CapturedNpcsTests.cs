@@ -553,6 +553,92 @@ public class CapturedNpcsTests
 
     // --- build (resolving the recipe refs against the real master) ---------------------------
 
+    // --- isPlayer flag (DLL co-save SCCP v9): warn, don't fail, on a voiceless player capture ----
+
+    [Fact]
+    public void Build_PlayerCaptureNoVoiceType_Warns()
+    {
+        var s = new ModSpec { PluginName = "M.esp" };
+        var cn = FullSample();
+        cn.IsPlayer = true;
+        cn.VoiceType = "";   // the player's base TESNPC commonly has none
+        s.CapturedNpcs.Add(cn);
+        var r = TestBuild.Raw(s);
+
+        Assert.Contains(r.Warnings, w => w.Contains("player capture") && w.Contains("voiceType"));
+    }
+
+    [Fact]
+    public void Build_PlayerCaptureWithVoiceType_NoWarning()
+    {
+        var s = new ModSpec { PluginName = "M.esp" };
+        var cn = FullSample();
+        cn.IsPlayer = true;   // FullSample already carries a voiceType
+        s.CapturedNpcs.Add(cn);
+        var r = TestBuild.Ok(s);   // TestBuild.Ok asserts zero warnings
+
+        Assert.NotEmpty(r.Mod.Npcs);
+    }
+
+    [Fact]
+    public void Build_NonPlayerCaptureNoVoiceType_NoWarning()
+    {
+        var s = new ModSpec { PluginName = "M.esp" };
+        var cn = FullSample();
+        cn.VoiceType = "";   // IsPlayer stays false (default) — an ordinary NPC with no voice is not our business
+        s.CapturedNpcs.Add(cn);
+        var r = TestBuild.Ok(s);
+
+        Assert.NotEmpty(r.Mod.Npcs);
+    }
+
+    [Fact]
+    public void Json_LegacyNoIsPlayerField_DefaultsFalse_NoWarning()
+    {
+        // A pre-v9 capture json has no `isPlayer` key at all — must deserialize to false and
+        // behave exactly as before (no new warning appears for old captures/hand-authored specs).
+        const string json = """
+        {
+          "pluginName": "Cap.esp",
+          "capturedNpcs": [
+            { "name": "Hulda", "race": "Skyrim.esm:0x013746", "weight": 60.0, "height": 1.0 }
+          ]
+        }
+        """;
+        var s = JsonSerializer.Deserialize<ModSpec>(json,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+
+        var cn = Assert.Single(s.CapturedNpcs);
+        Assert.False(cn.IsPlayer);
+
+        var r = TestBuild.Ok(s);   // no voiceType, IsPlayer false → no warning, build succeeds clean
+        Assert.NotEmpty(r.Mod.Npcs);
+    }
+
+    [Fact]
+    public void Json_IsPlayerField_DeserializesAndCarriesToWarning()
+    {
+        const string json = """
+        {
+          "pluginName": "Cap.esp",
+          "capturedNpcs": [
+            { "name": "Dovahkiin", "editorId": "MFCap_Hero", "isPlayer": true,
+              "race": "Skyrim.esm:0x013746", "weight": 50.0, "height": 1.0 }
+          ]
+        }
+        """;
+        var s = JsonSerializer.Deserialize<ModSpec>(json,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+
+        var cn = Assert.Single(s.CapturedNpcs);
+        Assert.True(cn.IsPlayer);
+
+        var r = TestBuild.Raw(s);
+        var n = Assert.Single(r.Mod.Npcs);
+        Assert.Equal("MFCap_Hero", n.EditorID);
+        Assert.Contains(r.Warnings, w => w.Contains("MFCap_Hero") && w.Contains("player capture"));
+    }
+
     [Fact]
     [Trait("Category", "RequiresSkyrim")]
     public void Build_CapturedNpc_VanillaRefsResolve()

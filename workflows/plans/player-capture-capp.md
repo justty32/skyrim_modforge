@@ -1,6 +1,14 @@
 # Player capture — `sc capp <label>`（去 PROTEUS 化）
 
-**狀態：✅ 已落地，待實機**（2026-07-12；DLL crc `c5049c78`，co-save SCCP v8，C# 923 測綠）。實機步驟見 [wait_todo/ingame-tests.md](../../wait_todo/ingame-tests.md)「`sc capp` 直接吸玩家」。
+**狀態：✅ 已落地，待實機**（2026-07-12；DLL crc `e37ad0e1`，**已部署**，co-save SCCP v9，C# 928 測綠）。實機步驟見 [wait_todo/ingame-tests.md](../../wait_todo/ingame-tests.md)「`sc capp` 直接吸玩家」。
+
+## isPlayer 標示（2026-07-12 使用者拍板：照實輸出，不加 voice fallback）
+
+實機發現玩家 base TESNPC **沒有 `voiceType`**（分身啞巴）。使用者定調：**不 fallback、不猜一個 vanilla voice**——但補一個「這筆是 player character」的標示，讓「啞巴」是可見的預期結果，不是靜默 bug。
+
+- **DLL（SCCP v9）**：`Captures::NpcData.isPlayer`，`ReadNpc` 用 `actor->As<PlayerCharacter>()`（跟既有 perk 路線同一個 cast——`sc capp` 和點到玩家的 `sc capc` 都會標到）。`SceneExporter` 只在 `true` 時輸出 `"isPlayer": true`（同 `unique`/`essential` 的省略慣例）。`v≤8` 舊存檔缺省 `false`。
+- **C#**：`CapturedNpcSpec.IsPlayer` → `Generator.ExpandCapturedNpcs` 帶到 `NpcSpec.IsPlayer`（純可見性欄位，不寫入任何 Mutagen 記錄欄）→ `BuildNpcs` 只在 `IsPlayer && VoiceType 空` 時 `Warn`（措辭「this is expected, not a bug」）。舊 json 缺欄位＝`false`＝行為不變。
+- 契約文件：[specs/ingame-scene-export-design.md](../specs/ingame-scene-export-design.md) §④。測試：`CapturedNpcsTests.cs`（`Build_PlayerCaptureNoVoiceType_Warns` 等 5 個）。
 
 ## ⚠️ 前提修正：玩家的哪些東西在 base、哪些是 runtime（2026-07-12 實吸學到）
 
@@ -33,8 +41,9 @@
 | label → editorId | `SceneExporter::AppendCaptures`：`editorId = "MFCap_" + sanitize(label)`（非 alnum → `_`），item/npc 兩段都吐 |
 | co-save | `kVerCaps = 8`：entry 追加 `label`；NpcPayload 追加 H/M/S ＋ skills。v≤7 舊存檔照舊讀（欄位缺省 0） |
 | C# 消費 | `CapturedNpcSpec`／`NpcSpec` 加 `Health/Magicka/Stamina/Skills`；`BuildNpcs` 寫 `PlayerSkills`（DNAM）；`ExpandCapturedNpcs` **優先序＝顯式數值 ＞ class autocalc**（有顯式值 → `AutoCalcStats=false`，class 仍帶）；兩處 validator 收邊界（skills 0\|18・0–255、H/M/S 0–65535）；`BuildNpcs` 對「顯式值 ＋ autoCalc 同開」`Warn` |
+| `isPlayer` 標示（2026-07-12） | co-save `kVerCaps = 9`：`NpcData.isPlayer`（`actor->As<PlayerCharacter>()`）；`SceneExporter` 只在 true 時吐；C# `CapturedNpcSpec.IsPlayer` → `NpcSpec.IsPlayer`（純可見性，不寫記錄欄）→ `BuildNpcs` 對「`IsPlayer` 且無 `VoiceType`」`Warn`（非 fallback，見下節） |
 
-**未做（等實機結果再決定）**：玩家 base voiceType 若為空 → 分身啞巴（先照實輸出，不 fallback）；玩家物品欄全吸不過濾。
+**未做**：玩家物品欄全吸不過濾（等實機結果再決定要不要濾任務物品/金幣/鑰匙）。
 
 ---
 

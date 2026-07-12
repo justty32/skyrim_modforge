@@ -258,6 +258,12 @@ skills 的順序 ＝ `OneHanded, TwoHanded, Archery, Block, Smithing, HeavyArmor
 
 **③ `capturedItems[]` / `capturedNpcs[]` 可帶 `editorId`（label 機制）**：`sc capp <Label>` / `sc capc <Label>` 的標籤 → `editorId: "MFCap_<sanitised label>"`（非 alnum → `_`）。ModForge 既有的「顯式 editorId 優先」規則即為身份機制——**同一個 label 再吸一次＝同一筆記錄**（不會多生一個）。⚠️ label 走**未 `Lower()` 的 raw 參數**（`sc` 的參數解析會全轉小寫；`pkc`/referrer 的標號同此坑）。
 
+**④ `capturedNpcs[]` 加 `isPlayer` 標示（2026-07-12 使用者拍板：照實輸出，沒有就沒有）**：實機發現玩家的 base TESNPC **沒有 `voiceType`**（分身會啞巴）。使用者定調**不加 fallback、不猜一個 vanilla voice 塞進去**——但要標「這筆是玩家」。DLL 判定用 `actor->As<PlayerCharacter>()`（`ReadNpc` 既有的 perk 路線同一個 cast，`sc capp` 和點到玩家的 `sc capc` 都會標到；co-save `SCCP v9`，`v≤8` 舊存檔缺省 `false`）：
+```jsonc
+"isPlayer": true   // 只在 true 時輸出（同 unique/essential 的省略慣例）
+```
+ModForge 消費：`isPlayer` 是**純可見性欄位**，不寫入任何記錄欄（不生成、不 fallback voiceType）。`Generator.ExpandCapturedNpcs` 把它帶到 `NpcSpec.IsPlayer`；`BuildNpcs` **只在 `IsPlayer && VoiceType 空`時 `Warn`**（語氣是「這是預期的、不是 bug」）——有 voiceType、或不是玩家、或舊 json 缺欄位（＝`false`）都不印，行為完全不變。
+
 ---
 
 ### NPC 來源：PROTEUS 是**可選**，預設走「大眾臉」（2026-07-10 使用者定調）
