@@ -74,6 +74,14 @@ public static partial class Generator
         // whom" — a self-cast package is meaningful), so an unresolved ref keeps Self, not a no-op.
         private readonly List<(IPackage Pack, sbyte Slot, string SlotName, string Ed, string Ref, bool SelfOnUnresolved)> deferredTargetWires = new();
         private readonly List<(IPackage Pack, sbyte Slot, string SlotName, string Ed, string Ref, uint Radius)> deferredLocationWires = new();
+        // Enable Parent (XESP) target refs: deferred like a package SingleRef target — the parent may be
+        // an in-spec placement editorId defined LATER in placements[] (BuildPlacements resolves top-to-
+        // bottom, so a forward pointer misses) or a references[] label (BuildReferences runs entirely
+        // after BuildPlacements). WireDeferredEnableParents fills the XESP (Reference + Flags together)
+        // once both passes are done; an unresolved ref still leaves NO EnableParent at all (there is no
+        // "self" fallback for XESP, unlike a package's selfOnUnresolved target) — matching the pre-fix
+        // eager-resolve behaviour exactly.
+        private readonly List<(IPlaced Placed, string Ed, string Ref, string Flag)> deferredEnableParentWires = new();
         // Forced alias fills whose ref builds AFTER the alias passes (a placement/xmarker anchor or a map
         // marker). Resolved by WireDeferredForcedAliases once those records exist.
         private readonly List<(Mutagen.Bethesda.Skyrim.QuestAlias Alias, string Ref)> deferredForcedAliases = new();

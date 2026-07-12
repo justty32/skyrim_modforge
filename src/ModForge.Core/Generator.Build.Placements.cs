@@ -121,26 +121,15 @@ public static partial class Generator
                 // flung. REFR only (an ACHR has no settle semantics). See PlacementSpec.NoHavokSettle.
                 if (pl.NoHavokSettle && placedRec is PlacedObject) placedRec.MajorRecordFlagsRaw |= 0x20000000;
 
-                // Enable Parent (XESP): this ref's enabled state follows another ref.
+                // Enable Parent (XESP): this ref's enabled state follows another ref. DEFERRED (like a
+                // package SingleRef target): `ref` may be an in-spec placement editorId defined LATER in
+                // placements[] (this loop resolves top-to-bottom, so a forward pointer misses) or a
+                // references[] label (BuildReferences runs entirely after this loop). A perfectly
+                // reasonable spec — "this crate shows once that door opens", crate authored before the
+                // door — would silently miss on an eager resolve. WireDeferredEnableParents (Generator.
+                // Build.PlacementRefs.cs) fills the XESP once placements AND references[] both exist.
                 if (pl.EnableParent is { } ep)
-                {
-                    if (TryResolveRef(ep.Ref, formKeyByEd, out var epFk))
-                    {
-                        var xesp = new EnableParent();
-                        xesp.Reference.SetTo(new FormLink<IPlacedGetter>(epFk));
-                        xesp.Flags = ep.Flag switch
-                        {
-                            "SetDisable" => EnableParent.Flag.SetEnableStateToOppositeOfParent,
-                            "PopIn"      => EnableParent.Flag.PopIn,
-                            _            => 0,  // "SetEnable" = default (no flag)
-                        };
-                        if (placedRec is PlacedObject epObj) epObj.EnableParent = xesp;
-                        else if (placedRec is PlacedNpc epNpc) epNpc.EnableParent = xesp;
-                        linksWired++;
-                        if (LooksExternalRef(ep.Ref)) extLinks++;
-                    }
-                    else Warn($"  ! placement '{pl.EditorId}' enableParent ref '{ep.Ref}' unresolved — skipped");
-                }
+                    deferredEnableParentWires.Add((placedRec, pl.EditorId ?? "", ep.Ref, ep.Flag));
 
                 // Lock (XLOC): only PlacedObject (doors, containers); silently ignored on actors.
                 if (pl.Lock is { } lk && placedRec is PlacedObject lockObj)

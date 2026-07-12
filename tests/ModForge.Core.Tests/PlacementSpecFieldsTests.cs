@@ -195,6 +195,77 @@ public class PlacementSpecFieldsTests
         Assert.Null(Object(r, "Child").EnableParent);
     }
 
+    // --- EnableParent: deferred wire (same family as the eat.location/useMagic.* package-slot fix) ---
+    //
+    // BuildPlacements resolves `enableParent.ref` in the SAME loop that creates every placement, so it
+    // used to only ever see a placement created EARLIER in placements[] or a vanilla ref — a forward
+    // pointer ("this crate enables once THAT door — authored later — opens") or a references[] label
+    // (BuildReferences runs entirely after BuildPlacements) silently missed with just a warning. Now
+    // deferred to WireDeferredEnableParents, wired after both BuildPlacements and BuildReferences.
+
+    [Fact]
+    public void EnableParent_ForwardReference_ResolvesToLaterPlacement()
+    {
+        // Child is declared BEFORE Marker — the ref this loop used to be unable to see.
+        var spec = BaseSpec();
+        spec.Placements.Add(new PlacementSpec
+        {
+            EditorId = "Child", Base = "Obj", Cell = "Room", InitiallyDisabled = true,
+            EnableParent = new EnableParentSpec { Ref = "Marker", Flag = "SetEnable" },
+        });
+        spec.Placements.Add(new PlacementSpec
+        {
+            EditorId = "Marker", Base = "Obj", Cell = "Room",
+            Position = new Vec3 { X = 0, Y = 100, Z = 0 },
+        });
+        var r = TestBuild.Ok(spec);
+        var child = Object(r, "Child");
+        var marker = Object(r, "Marker");
+        Assert.NotNull(child.EnableParent);
+        Assert.Equal(marker.FormKey, child.EnableParent!.Reference.FormKey);
+        Assert.True((child.EnableParent.Flags & EnableParent.Flag.SetEnableStateToOppositeOfParent) == 0);
+        Assert.Empty(r.Warnings);
+    }
+
+    [Fact]
+    public void EnableParent_ReferencesLabel_Resolves()
+    {
+        // The parent is named via a references[] label (Idea #24 referrer), not the raw placement editorId —
+        // BuildReferences only registers labels after BuildPlacements finishes.
+        var spec = BaseSpec();
+        spec.Placements.Add(new PlacementSpec { EditorId = "Marker", Base = "Obj", Cell = "Room" });
+        spec.Placements.Add(new PlacementSpec
+        {
+            EditorId = "Child", Base = "Obj", Cell = "Room", InitiallyDisabled = true,
+            EnableParent = new EnableParentSpec { Ref = "trigger box", Flag = "PopIn" },
+        });
+        spec.References.Add(new ReferenceSpec { Ref = "Marker", Label = "trigger box" });
+        var r = TestBuild.Ok(spec);
+        var child = Object(r, "Child");
+        var marker = Object(r, "Marker");
+        Assert.NotNull(child.EnableParent);
+        Assert.Equal(marker.FormKey, child.EnableParent!.Reference.FormKey);
+        Assert.True((child.EnableParent.Flags & EnableParent.Flag.PopIn) != 0);
+        Assert.Empty(r.Warnings);
+    }
+
+    [Fact]
+    public void EnableParent_UnresolvedRef_StillWarnsAfterDeferral()
+    {
+        // The deferral must not silence the diagnostic for a genuinely-wrong ref (mirrors
+        // EnableParent_UnresolvedRef_Warns_NoXesp, just pinning it survives the deferred rewrite).
+        var spec = BaseSpec();
+        spec.Placements.Add(new PlacementSpec
+        {
+            EditorId = "Child", Base = "Obj", Cell = "Room",
+            EnableParent = new EnableParentSpec { Ref = "NoSuchThing", Flag = "SetEnable" },
+        });
+        var r = TestBuild.Raw(spec);
+        Assert.Contains(r.Warnings, w => w.Contains("Child") && w.Contains("enableParent")
+            && w.Contains("NoSuchThing") && w.Contains("unresolved"));
+        Assert.Null(Object(r, "Child").EnableParent);
+    }
+
     // --- Lock --------------------------------------------------------------------------
 
     [Theory]

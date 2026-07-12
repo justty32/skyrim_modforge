@@ -85,7 +85,9 @@ leveled lists, encounter zones and vendors see [SPEC-worldspaces](SPEC-worldspac
   non-collidable until explicitly enabled (via script, quest stage, or `enableParent`). Common
   pattern: hidden object + `enableParent` pointing at a quest-trigger XMarker.
 - **`enableParent`** (XESP): this ref's enabled state follows another placed ref (`ref` =
-  placement editorId or external ref).
+  placement editorId, a `references[]` label, or external ref). Resolved after every
+  `placements[]` entry and `references[]` label exists, so `ref` may point at a placement
+  declared earlier OR later in the list — order doesn't matter.
   - `flag`: `SetEnable` (I enable when my parent enables — default), `SetDisable` (inverted),
     `PopIn` (appear without the fade-in flash).
 - **`lock`** (XLOC): lock a door or container (`PlacedObject` only).

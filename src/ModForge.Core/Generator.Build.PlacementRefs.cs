@@ -78,6 +78,31 @@ public static partial class Generator
             }
         }
 
+        // --- pass 2: deferred Enable Parent (XESP) target refs — done after ALL placements AND ---
+        // references[] labels exist, since `enableParent.ref` may name either (see BuildPlacements).
+        // A resolve failure leaves NO EnableParent set at all — mirrors the old eager-resolve behaviour
+        // (there is no "self" fallback for XESP, unlike a package's selfOnUnresolved target).
+        public void WireDeferredEnableParents()
+        {
+            foreach (var (placed, ed, refStr, flag) in deferredEnableParentWires)
+            {
+                if (!TryResolveRef(refStr, formKeyByEd, out var epFk))
+                { Warn($"  ! placement '{ed}' enableParent ref '{refStr}' unresolved — skipped"); continue; }
+                var xesp = new EnableParent();
+                xesp.Reference.SetTo(new FormLink<IPlacedGetter>(epFk));
+                xesp.Flags = flag switch
+                {
+                    "SetDisable" => EnableParent.Flag.SetEnableStateToOppositeOfParent,
+                    "PopIn"      => EnableParent.Flag.PopIn,
+                    _            => 0,  // "SetEnable" = default (no flag)
+                };
+                if (placed is PlacedObject epObj) epObj.EnableParent = xesp;
+                else if (placed is PlacedNpc epNpc) epNpc.EnableParent = xesp;
+                linksWired++;
+                if (LooksExternalRef(refStr)) extLinks++;
+            }
+        }
+
         // --- pass 2: deferred SingleRef target slots (every PackageRefSlots SingleRef: Patrol Start, ---
         // Follow/Escort Target, SitTarget/Activate/UseMagic Target). Emitted now that placements AND
         // references[] labels exist, as PackageTargetSpecificReference. The ref is an in-spec placement

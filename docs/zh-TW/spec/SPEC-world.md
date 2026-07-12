@@ -83,7 +83,9 @@
   直到被明確啟用（透過 script、任務階段、或 `enableParent`）。常見模式：隱藏物件 +
   `enableParent` 指向任務觸發 XMarker。
 - **`enableParent`**（XESP）：此 ref 的啟用狀態跟隨另一個放置 ref（`ref` =
-  placement editorId 或外部 ref）。
+  placement editorId、`references[]` label、或外部 ref）。在**每個** `placements[]` 項目與
+  `references[]` label 都存在之後才解析，所以 `ref` 可以指向列表中**更早或更後面**的
+  placement——順序無所謂。
   - `flag`：`SetEnable`（父啟用時我也啟用 — 預設）、`SetDisable`（反轉）、
     `PopIn`（出現時不淡入，避免閃爍）。
 - **`lock`**（XLOC）：鎖住門或容器（僅 `PlacedObject`）。
