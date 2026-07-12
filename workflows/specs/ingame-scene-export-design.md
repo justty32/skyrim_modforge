@@ -107,7 +107,7 @@ cell 走訪看得到**cell 裡的每一個 ref**。若全部吐出來，ModForge
 **判別式是免費的**：任何在某個 plugin 裡被 authored 的 ref 都解得出耐久 id；玩家在遊戲內 `PlaceAtMe` 生出來的 ref 活在 **dynamic `0xFF......` 範圍、`GetFile(0) == nullptr`**。
 
 - `ResolveDurableId(&ref)` **成功** → 既有 ref → **跳過**（計入 `preexisting`）。
-- `ResolveDurableId(&ref)` **失敗** → 玩家擺的 → emit 進 `placements[]` / `npcRefs[]`（其 `base` 仍解得出耐久 id）。
+- `ResolveDurableId(&ref)` **失敗** → 玩家擺的 → emit 進 `placements[]`（其 `base` 仍解得出耐久 id）。**⚠️ 2026-07-12 起 actor 除外**：玩家擺的 actor 也不出（見下「場景匯出不含 NPC」拍板）。
 
 **⚠️ MVP 取捨（刻意，非疏漏）**：玩家**移動/縮放過的 vanilla ref** 會被跳過。要採到它，得 emit 一份既有 ref 的 **override**，而不是一筆新 placement —— 那是 scene.json 目前沒建模的形狀（只有 `removals[]` 碰既有 ref）。要做的話得先擴契約。
 
@@ -131,7 +131,7 @@ position 三分量完全一致。`dump` 確認 vanilla cell 是**加法式 overr
 
 `scene.json` **就是一份 ModSpec**，而 `ReadOpts`（`Program.cs:145`）**沒設 `UnmappedMemberHandling`** → System.Text.Json 預設**靜默忽略未知鍵**。所以採集橋吐的每一個鍵都必須是真的 ModSpec 成員，否則無聲消失。首編後發現三處不合：
 
-- ❌ `npcRefs[]` 不是 ModSpec 成員（ModSpec 只有一個 `Placements` list）→ 整段被丟掉。**修正：actor 與物件一律進 `placements[]`**（actor base 會讓 ModForge 生 ACHR；XSCL 對 actor 無效故不帶 scale）。本節開頭契約表的 `npcRefs[]` 那列**是概念分段，不是 JSON 鍵名**。
+- ❌ `npcRefs[]` 不是 ModSpec 成員（ModSpec 只有一個 `Placements` list）→ 整段被丟掉。**當時的修正：actor 與物件一律進 `placements[]`**（actor base 會讓 ModForge 生 ACHR；XSCL 對 actor 無效故不帶 scale）。本節開頭契約表的 `npcRefs[]` 那列**是概念分段，不是 JSON 鍵名**。**🔴 已被 2026-07-12 拍板推翻**——cell 掃描根本不出 actor（見下「場景匯出不含 NPC」），NPC 走 marker/captures。
 - ❌ 頂層 `cell` / `worldspace` 不是 ModSpec 成員 → 被丟掉。**歸屬欄位在每一筆 `PlacementSpec` 上**（`Spec.World.cs:6-7`）。
 - ❌ 兩者皆空的 placement 會被 `Generator.Build.Placements.cs:48` 以 `cell '' not found in spec — skipped` 丟棄。採集橋現在在解不出 cell/worldspace 時直接中止並 warn。
 
@@ -164,6 +164,26 @@ position/rotation（度）必填＝新的完整 transform（不是 delta）；`s
 #### 「怎麼知道 ref 被移動過」——不能用 diff，維持明示模型（已照此實作）
 
 `TESObjectREFR::GetPosition()` 的定義**就是** `return data.location;`（`TESObjectREFR.h:405`）——引擎回報的是**當前**位置，不是 authored 值，且 havok 會自己移動東西（杯子從桌上滾下來），純 diff 會吐出一堆假的 override。所以與 removals 決策同構走**明示**：只有**經過 numpad 編輯器 commit** 的 authored ref 才進 `Overrides` 登記簿（`src/Overrides.{h,cpp}`，比照 Eraser），匯出時 emit live pose（commit 後物理沉降照實）。登記簿在 RAM：**關遊戲重開後，移動過的 pose 活在存檔裡但不會自動重新登記**——重新編輯一次（numpad 5 → 微調 → 0）即可，MVP 接受此限制（README「持久化與 adopt」表有列）。revert 按鈕回到 first-select baseline（havok 已滾動過的物件，baseline 是滾動後的 pose——不影響匯出，只影響 revert 落點）。
+
+### ✅ 拍板（2026-07-12，使用者）：**場景匯出不含 NPC** ＋ **captures 拆成獨立檔**
+
+推翻 2026-07-10「actor 與物件一律進 `placements[]`」那條（上面 §「⚠️ 採集橋輸出必須是合法 ModSpec」第一點）。**DLL 端已落地**（`SceneExporter.cpp`，DLL crc `65f53a93`）。三條契約變更：
+
+**① cell 匯出＝純場景/物件，actor 一律不出。** `ExportCell`/`ExportAll` 掃描時遇到 actor ref 直接跳過（計入 `actorsExcluded`，只進 log/面板統計），**`placements[]` 不再出現 `kind:"npc"` 的條目**。NPC 交給 ModForge 按 **`annotations[]`（marker）** 去擺——marker 帶 position/rotation/scale/label/kind/note，足以指定「這裡放一隻山羊，面向這邊」。理由：把 NPC 塞進 cell 掃描要處理 dynamic actor base、PROTEUS 外貌、role 標記…太麻煩，而 marker＋ModForge `NpcSpec` 這條路本來就已實機驗過。
+- ⚠️ 這**不影響** `capturedNpcs[]`：真的要「複製這個 NPC」時走 `sc cap`（擷取器，帶完整外貌/perk/inventory/身份），那是**明示**採集，不是掃描產物。
+- ⚠️ ModForge 端**零改動**：少一種輸入條目而已（`PlacementSpec.Kind = "npc"` 路徑照舊存在，手寫 spec 仍可用）。
+
+**② `capturedItems[]` / `capturedNpcs[]` 從場景檔移出，走自己的檔。** 面板 Export 頁／Captures 頁各有一顆 **`Export captures`** 鈕 → 寫 `captures_<YYYYMMDD-HHMM>.json`（只含這兩段）。場景匯出檔**不再帶**這兩段。
+- **仍是合法 ModSpec**：`CapturedItems`/`CapturedNpcs` 都是 `ModSpec` 成員（`Spec.cs:107`、`Spec.CapturedNpcs.cs`），所以 `build captures_20260712-1830.json out.esp` 單獨吃得下，**ModForge 端零改動**。要一次生成場景＋擷取物，就 build 兩份、或人工把兩個 json 併起來。
+- 理由：擷取到的定義是**跨 cell 的資料庫**（一把附魔劍不屬於你站的那間房），混在場景檔裡會讓「這份檔＝這個地方」的語意變髒；而且每次 export 場景都重覆吐一整包 NPC 外貌資料。
+
+**③ 匯出檔名帶場景＋時間戳**（連續 export 不再互相覆蓋）：
+```
+scene-export_<cell EditorID 或 worldspace+grid>_<YYYYMMDD-HHMM>.json   # Export player cell
+scene-export_all-<玩家所在>_<YYYYMMDD-HHMM>.json                        # Export all (loaded cells)
+captures_<YYYYMMDD-HHMM>.json                                          # Export captures
+```
+interior 用 cell 的 EditorID（如 `WhiterunBanneredMare`）；exterior 用 worldspace EditorID ＋ cell grid（如 `Tamriel_x5y-3`）。名稱 sanitize 成 `[A-Za-z0-9._-]`（其餘字元→`_`，截 48 字）；同分鐘同場景再匯出＝加 `-2`/`-3` 後綴，**永不覆蓋**。⚠️ 下游 agent 別再寫死 `scene-export.json`——**取該資料夾最新一份**（或使用者指定的那份）。
 
 ---
 

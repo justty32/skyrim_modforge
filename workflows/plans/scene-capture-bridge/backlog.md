@@ -6,6 +6,11 @@
 
 ---
 
+## ✅ 已做（匯出三改，2026-07-12，DLL `65f53a93`，待實機）
+- **Export 檔名帶場景＋時間**：`scene-export_<cell EditorID 或 worldspace_x<X>y<Y>>_<YYYYMMDD-HHMM>.json`（`Export all` ＝ `scene-export_all-<玩家所在>_…`）。名稱 sanitize 成 `[A-Za-z0-9._-]`、截 48 字；同分鐘同場景再匯出加 `-2`/`-3`，**永不覆蓋**。⚠️ 下游 agent 別再寫死 `scene-export.json`，取資料夾裡最新一份。
+- **Captures 獨立 Export 鈕**：Export 頁／Captures 頁各一顆 `Export captures` → `captures_<YYYYMMDD-HHMM>.json`，只含 `capturedItems[]`＋`capturedNpcs[]`；**場景匯出檔不再帶這兩段**。兩者都是 `ModSpec` 成員故單獨 `build` 吃得下（**ModForge C# 端零改動**）。
+- **📌 Scope 反轉（NPC 移出 cell 匯出）**：`ExportCell`/`ExportAll` 掃到 actor ref 直接跳過（計 `actorsExcluded`，只進 log/面板），`placements[]` 不再有 `kind:"npc"`。NPC 交給 ModForge 按 `annotations[]`（marker）擺；真要複製某 NPC 走 `sc cap` → `capturedNpcs[]`。[spec](../../specs/ingame-scene-export-design.md) 契約節已同步（新增「2026-07-12 拍板」節，並標註推翻 2026-07-10 那條）。
+
 ## ✅ 已做（P7 backlog，2026-07-11，DLL `79e611e8`→`a46ed0b2`，待實機）
 - `sc del/pk/ed er0/er1`：該模式動作鍵準星↔物理射線切換（`Modes::UseRay` per-mode，co-save SETT v3）。取代「numpad * 專用鍵才能射線」的需求。
 - **`sc ed ax`（純旋轉子模式，使用者第二輪定案取代 ax0/1/2）**：ON 時 numpad 4/6＝yaw、1/3＝pitch、7/9＝roll、8/2＝角度歸零；OFF 時照舊位移。`Editor::g_rotateMode`，co-save。
@@ -25,9 +30,6 @@
   - **指令（使用者 2026-07-11 晚定名 referrer）**：`sc ref`＝進 referrer 模式（動作鍵記準星/射線指的既有 ref）；`sc ref XXX`＝記下當前指的 ref 並直接打標籤 XXX；`sc refc [XXX]`＝console 選取版（aim-free，同 delc/capc/pkc）＋選用標號。⚠️ 標號 XXX 用未 `Lower()` 的 raw 參數（保留大小寫，同 pkc/label 坑）。
   - **面板頁（使用者 2026-07-11 晚）**：新增 `References` 頁——列出已記的 referrer（label 就地改名、顯示 ref id/base/所在 cell、逐列刪除；比照 Markers/Palette 頁最新在前）。
   - **🔑 檔內相依關聯（使用者 2026-07-11 晚洞察）**：export cell 會連 references 一起出，所以 referrer 的目標分兩類——(甲) 外部既有 ref（vanilla 椅子）→ 記耐久 FormID，踩上面 persistent 坑；(乙) **referrer 指的是我們自己 `sc pl` 新增的物件**（marker proxy 被 ExportCell 排除，不會誤指）→ 那物件是 dynamic ref、無耐久 FormID，要走**檔內 editorId 關聯**：同一份 scene.json 裡 references[].ref 指向 placements[] 裡對應那筆的 editorId。**乙路徑反而乾淨**——物件是我們建的，ModForge 完全掌控，可設 persistent、給穩定 editorId，Sofia 坐椅子這種「引用需 persistent」的需求天然滿足。**ModForge 消費端基礎現成**：`PlacementSpec.EditorId`（註解即「names this REFR so other refs can target it」）＋ CheckRef 已能解析「檔內 editorId 或外部 ref」（`LinkedRefSpec.Ref` 同型先例）。DLL 端要補的是：exporter 偵測 referrer 目標 handle ∈ 本次匯出的 placements → 給該 placement 發一個 editorId、references[].ref 指它（否則 dynamic FormID 不可攜、build 後對不上）。
-- **Export 檔名帶場景＋日期（使用者 2026-07-11 晚）**：目前 ExportCell / ExportAll 都固定寫 `scene-export.json`（SceneExporter.cpp L478/L491）→ 連續 export 互相覆蓋。改成 `scene-export_<cell名或所在>_<YYYYMMDD-HHMM>.json`（interior 用 cell EditorID；exterior 用 worldspace＋grid；名稱要 sanitize 成檔名安全字元）。
-- **Captures 獨立 Export 鈕（使用者 2026-07-11 晚）**：`sc cap` 記下的東西（capturedItems/capturedNpcs）要有**自己的 export 按鈕、輸出獨立檔案**（如 `captures_<日期時間>.json`），和 cell 場景 export 分開——現在混在同一份 scene-export.json 裡。
-- **📌 Scope 反轉拍板（使用者 2026-07-11 晚，推翻先前指示）**：cell export **不再涵蓋我們新增的 NPC 等**——太麻煩；cell export ＝純場景/物件 placements ＋ marker（annotations），**NPC 這類交給 ModForge 按 marker 去擺**。實作＝ExportCell 掃描時排除 actor refs（現在 actor 會以 `kind:"npc"` 進 placements[]，SceneExporter.cpp L201-208）。⚠️ 動工時同步更新 [spec](../../specs/ingame-scene-export-design.md) 契約節。
 - **`sc cap` 物件類 vs `sc pk` 分工（使用者再想，先照舊）**：`sc cap` 記 NPC/player 含全身物品＋extra data（v7 已落地）；物件類 capture 與 `sc pk` 滴管感覺功能重複，使用者還要想想——**傾向仍記錄**，暫不動。
 - **`sc pk ed0/ed1`＋`sc pl ed0/ed1`（使用者 2026-07-11 晚）**：滴管/擺放的 extra-data 開關。現況＝`sc pk` 只吸 durable base、不吸實例附魔（Palette.cpp 只取 GetBaseObject）。`ed1` ＝吸取時連 ExtraEnchantment 等 extra data 一起記（palette 條目要能帶實例資料，擺放/匯出時走 capturedItems 式鑄造＋引用）；`sc pl ed1` ＝擺放時帶上 extra data。per-mode 設定、進 co-save SETT（同 er0/er1 模式）。
 - **`sc pl py0/py1`（使用者 2026-07-11 晚）**：擺放模式的物理開關。`py1`（**預設**）＝擺出的物件保留完整物理；`py0` ＝擺出的物件關閉物理性質——主要目的＝避免擺好的東西被 Skyrim 神奇物理引擎弄到亂飛。動態物件為主，靜態物件是否也要（clutter 類其實都是 havok 物件）實作時一併看。per-mode 設定、進 co-save SETT（同 er0/er1）。⚠️ 實作要分兩層：(a) DLL 擺放當下的即時凍結（已有 P3 物理凍結機制可複用），(b) **持久到 esp**——placement 要把這個狀態帶進 export，ModForge 端 REFR 用哪個機制（Don't Havok Settle 記錄旗標 vs script SetMotionType keyframed）動工時查證拍板，`PlacementSpec` 可能加欄位。先只考慮物理性質，不擴及其他屬性。

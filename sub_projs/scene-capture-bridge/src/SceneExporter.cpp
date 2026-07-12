@@ -7,6 +7,8 @@
 
 #include "log.h"
 
+#include <cctype>
+#include <ctime>
 #include <fstream>
 
 namespace {
@@ -26,9 +28,11 @@ namespace SceneExporter {
 
     namespace {
         Stats g_last;
+        CaptureStats g_lastCaptures;
     }
 
     const Stats& LastExport() { return g_last; }
+    const CaptureStats& LastCapturesExport() { return g_lastCaptures; }
 
     std::optional<std::string> ResolveDurableId(const RE::TESForm* form) {
         if (!form) {
@@ -71,7 +75,7 @@ namespace SceneExporter {
     namespace {
         // Running tallies while sweeping one or more cells for placements.
         struct PlacementCounters {
-            std::size_t actors = 0;
+            std::size_t actorsExcluded = 0;  // player-placed actors, deliberately not emitted
             std::size_t preexisting = 0;
             std::size_t skipped = 0;
             std::size_t markerProxies = 0;
@@ -169,6 +173,17 @@ namespace SceneExporter {
                 return RE::BSContainer::ForEachResult::kContinue;
             }
 
+            // SCOPE REVERSAL (user-decided 2026-07-12): a cell export is pure
+            // scene/object content. Actors used to land in `placements[]` with
+            // kind:"npc"; they no longer do — ModForge places NPCs itself,
+            // against the markers (annotations[]). An actor you actually want
+            // rebuilt goes through `sc cap` -> the separate captures export,
+            // which carries its identity, not just a base + transform.
+            if (ref.GetFormType() == RE::FormType::ActorCharacter) {
+                ++counters.actorsExcluded;
+                return RE::BSContainer::ForEachResult::kContinue;
+            }
+
             auto baseId = ResolveDurableId(base);
             if (!baseId) {
                 ++counters.skipped;  // dynamic / runtime-only base — not esp-referenceable
@@ -193,28 +208,13 @@ namespace SceneExporter {
                 {"z", ang.z * kRadToDeg},
             };
 
-            // Actors and objects both land in `placements[]` — ModSpec has one
-            // PlacementSpec list and no `npcRefs` member (an `npcRefs` key would
-            // be silently dropped). An actor base makes ModForge emit an ACHR.
-            // The §D role/backstory tagging is a separate `npcRoles[]` authored
-            // by the editor UI, not by a raw sweep.
-            const bool isActor = ref.GetFormType() == RE::FormType::ActorCharacter;
-            if (isActor) {
-                ++counters.actors;  // XSCL is ignored on actors, so emit no scale field.
-                // ModForge's isNpc auto-detect only covers in-spec bases; an
-                // external NPC base without explicit kind builds a REFR that
-                // silently spawns nothing. Stamp it at the source.
-                entry["kind"] = "npc";
-                scene["placements"].push_back(std::move(entry));
-            } else {
-                // Carry scale + the InitiallyDisabled state so ModForge
-                // reproduces both.
-                entry["scale"] = ref.GetScale();
-                if ((ref.GetFormFlags() & kInitiallyDisabled) != 0) {
-                    entry["initiallyDisabled"] = true;
-                }
-                scene["placements"].push_back(std::move(entry));
+            // Carry scale + the InitiallyDisabled state so ModForge reproduces
+            // both. (Actors never get here — see the scope check above.)
+            entry["scale"] = ref.GetScale();
+            if ((ref.GetFormFlags() & kInitiallyDisabled) != 0) {
+                entry["initiallyDisabled"] = true;
             }
+            scene["placements"].push_back(std::move(entry));
             return RE::BSContainer::ForEachResult::kContinue;
         });
     }
@@ -252,9 +252,36 @@ namespace SceneExporter {
             scene["overrides"] = std::move(arr);
         }
 
-        // Captured DEFINITIONS — content with no durable base to reference, so
-        // ModForge mints fresh authored records. Items (enchant/effects) go to
-        // capturedItems[]; actors (appearance/identity) to capturedNpcs[].
+        if (const auto& marks = Markers::All(); !marks.empty()) {
+            auto arr = nlohmann::json::array();
+            for (const auto& m : marks) {
+                nlohmann::json a;
+                a["seq"] = m.seq;
+                a["label"] = m.label;
+                a["kind"] = m.kind;
+                a["position"] = Vec3(m.position);
+                a["angleZ"] = m.angleDeg.z;  // back-compat (== rotation.z)
+                a["rotation"] = nlohmann::json{
+                    {"x", m.angleDeg.x}, {"y", m.angleDeg.y}, {"z", m.angleDeg.z}};
+                a["scale"] = m.scale;
+                if (!m.note.empty()) a["note"] = m.note;  // free-form agent brief
+                if (!m.cellOrWs.empty()) a[m.isInterior ? "cell" : "worldspace"] = m.cellOrWs;
+                arr.push_back(std::move(a));
+            }
+            scene["annotations"] = std::move(arr);
+        }
+    }
+
+    // Captured DEFINITIONS — content with no durable base to reference, so
+    // ModForge mints fresh authored records. Items (enchant/effects) go to
+    // capturedItems[]; actors (appearance/identity) to capturedNpcs[].
+    //
+    // These are NOT part of a scene export any more (user-decided 2026-07-12):
+    // the eyedropped definitions are a library, global and cell-independent,
+    // and they get their own button + their own file so a cell export stays a
+    // description of one place. Both keys are ModSpec members either way, so
+    // whichever file carries them, `build` consumes them the same.
+    static void AppendCaptures(nlohmann::json& scene) {
         if (const auto& caps = Captures::All(); !caps.empty()) {
             auto effJson = [](const std::vector<Captures::Effect>& effs) {
                 auto a = nlohmann::json::array();
@@ -358,45 +385,26 @@ namespace SceneExporter {
             if (!items.empty()) scene["capturedItems"] = std::move(items);
             if (!npcs.empty()) scene["capturedNpcs"] = std::move(npcs);
         }
-
-        if (const auto& marks = Markers::All(); !marks.empty()) {
-            auto arr = nlohmann::json::array();
-            for (const auto& m : marks) {
-                nlohmann::json a;
-                a["seq"] = m.seq;
-                a["label"] = m.label;
-                a["kind"] = m.kind;
-                a["position"] = Vec3(m.position);
-                a["angleZ"] = m.angleDeg.z;  // back-compat (== rotation.z)
-                a["rotation"] = nlohmann::json{
-                    {"x", m.angleDeg.x}, {"y", m.angleDeg.y}, {"z", m.angleDeg.z}};
-                a["scale"] = m.scale;
-                if (!m.note.empty()) a["note"] = m.note;  // free-form agent brief
-                if (!m.cellOrWs.empty()) a[m.isInterior ? "cell" : "worldspace"] = m.cellOrWs;
-                arr.push_back(std::move(a));
-            }
-            scene["annotations"] = std::move(arr);
-        }
     }
 
     static void RecordStats(const nlohmann::json& scene, const PlacementCounters& c,
         const std::string& cellLabel) {
         g_last.valid = true;
         g_last.placements = scene["placements"].size();
-        g_last.actors = c.actors;
+        g_last.actorsExcluded = c.actorsExcluded;
         g_last.preexisting = c.preexisting;
         g_last.skipped = c.skipped;
         g_last.cell = cellLabel;
         g_last.markers = c.markerProxies;
         g_last.removals = Eraser::All().size();
         g_last.overrides = Overrides::All().size();
-        g_last.captures = Captures::All().size();
         SKSE::log::info(
-            "Export[{}]: {} placements ({} actors), {} pre-existing, {} skipped "
-            "(dynamic bases), {} marker proxies excluded, {} annotations, {} "
-            "removals, {} overrides", cellLabel, scene["placements"].size(),
-            c.actors, c.preexisting, c.skipped, c.markerProxies,
-            Markers::All().size(), Eraser::All().size(), Overrides::All().size());
+            "Export[{}]: {} placements, {} actors excluded (NPCs are ModForge's "
+            "job), {} pre-existing, {} skipped (dynamic bases), {} marker "
+            "proxies excluded, {} annotations, {} removals, {} overrides",
+            cellLabel, scene["placements"].size(), c.actorsExcluded,
+            c.preexisting, c.skipped, c.markerProxies, Markers::All().size(),
+            Eraser::All().size(), Overrides::All().size());
     }
 
     nlohmann::json ExportCell(RE::TESObjectCELL* cell) {
@@ -450,6 +458,19 @@ namespace SceneExporter {
         return ExportCell(cell);
     }
 
+    nlohmann::json ExportCaptures() {
+        nlohmann::json scene;
+        AppendCaptures(scene);
+        std::size_t items = 0, npcs = 0;
+        if (scene.contains("capturedItems")) items = scene["capturedItems"].size();
+        if (scene.contains("capturedNpcs")) npcs = scene["capturedNpcs"].size();
+        g_lastCaptures.valid = true;
+        g_lastCaptures.items = items;
+        g_lastCaptures.npcs = npcs;
+        SKSE::log::info("ExportCaptures: {} captured item(s), {} captured npc(s)", items, npcs);
+        return scene;
+    }
+
     bool WriteSceneFile(const nlohmann::json& scene, const std::filesystem::path& path) {
         try {
             std::error_code ec;
@@ -468,14 +489,86 @@ namespace SceneExporter {
         }
     }
 
+    namespace {
+        // Every export used to land on a fixed `scene-export.json`, so two
+        // exports in a row ate each other. A file name now says WHERE and WHEN
+        // it came from — a cell EditorID (or worldspace + grid) plus a stamp.
+
+        // Filename-safe: letters, digits, '-', '_' and '.' survive; anything
+        // else (spaces, ':' from a durable id, path separators) becomes '_'.
+        std::string SanitizeName(std::string_view in) {
+            std::string out;
+            out.reserve(in.size());
+            for (const char ch : in) {
+                const auto uc = static_cast<unsigned char>(ch);
+                if (std::isalnum(uc) || ch == '-' || ch == '_' || ch == '.') out.push_back(ch);
+                else if (!out.empty() && out.back() != '_') out.push_back('_');
+            }
+            while (!out.empty() && out.back() == '_') out.pop_back();
+            if (out.size() > 48) out.resize(48);  // keep the whole name shell-friendly
+            return out;
+        }
+
+        // YYYYMMDD-HHMM, local time (the player's clock is what they'll match
+        // the file against).
+        std::string TimeStamp() {
+            const std::time_t t = std::time(nullptr);
+            std::tm tm{};
+            localtime_s(&tm, &t);
+            return std::format("{:04}{:02}{:02}-{:02}{:02}", tm.tm_year + 1900, tm.tm_mon + 1,
+                tm.tm_mday, tm.tm_hour, tm.tm_min);
+        }
+
+        // Where an export came from, for the file name: interior -> the cell's
+        // EditorID; exterior -> worldspace EditorID + the cell grid (an exterior
+        // "cell" is one 4096-unit tile, so the grid is the only thing that
+        // distinguishes two exports in the same worldspace).
+        std::string SceneTag(RE::TESObjectCELL* cell) {
+            if (!cell) return "unknown";
+            if (cell->IsInteriorCell()) {
+                const char* ed = cell->GetFormEditorID();
+                if (ed && *ed) return SanitizeName(ed);
+                const char* fn = cell->GetFullName();
+                if (fn && *fn) return SanitizeName(fn);
+                if (auto id = ResolveDurableId(cell)) return SanitizeName(*id);
+                return "interior";
+            }
+            std::string ws = "exterior";
+            if (auto* w = cell->GetRuntimeData().worldSpace) {
+                const char* ed = w->GetFormEditorID();
+                if (!ed || !*ed) ed = w->GetFullName();
+                if (ed && *ed) ws = SanitizeName(ed);
+            }
+            if (auto* xy = cell->GetCoordinates()) {
+                return std::format("{}_x{}y{}", ws, xy->cellX, xy->cellY);
+            }
+            return ws;
+        }
+
+        // Same minute, same cell, two exports — still two files, never a silent
+        // overwrite (the whole point of the rename).
+        std::filesystem::path UniquePath(const std::filesystem::path& dir,
+            const std::string& stem) {
+            std::error_code ec;
+            auto path = dir / (stem + ".json");
+            for (int n = 2; std::filesystem::exists(path, ec) && n < 100; ++n) {
+                path = dir / std::format("{}-{}.json", stem, n);
+            }
+            return path;
+        }
+    }
+
     void ExportPlayerCellToFile() {
-        auto scene = ExportPlayerCell();
+        auto* player = RE::PlayerCharacter::GetSingleton();
+        RE::TESObjectCELL* cell = player ? player->GetParentCell() : nullptr;
+        auto scene = ExportCell(cell);
         auto dir = SKSE::log::log_directory();
         if (!dir) {
             SKSE::log::error("ExportPlayerCellToFile: no log_directory");
             return;
         }
-        const auto out = *dir / "scene-export.json";
+        const auto out = UniquePath(*dir,
+            std::format("scene-export_{}_{}", SceneTag(cell), TimeStamp()));
         if (WriteSceneFile(scene, out)) {
             g_last.path = out.string();
         }
@@ -488,9 +581,27 @@ namespace SceneExporter {
             SKSE::log::error("ExportAllToFile: no log_directory");
             return;
         }
-        const auto out = *dir / "scene-export.json";
+        // "all" is a sweep of every loaded cell, so no single cell names it —
+        // anchor the name on where the player was standing when they pressed it.
+        auto* player = RE::PlayerCharacter::GetSingleton();
+        RE::TESObjectCELL* here = player ? player->GetParentCell() : nullptr;
+        const auto out = UniquePath(*dir,
+            std::format("scene-export_all-{}_{}", SceneTag(here), TimeStamp()));
         if (WriteSceneFile(scene, out)) {
             g_last.path = out.string();
+        }
+    }
+
+    void ExportCapturesToFile() {
+        auto scene = ExportCaptures();
+        auto dir = SKSE::log::log_directory();
+        if (!dir) {
+            SKSE::log::error("ExportCapturesToFile: no log_directory");
+            return;
+        }
+        const auto out = UniquePath(*dir, std::format("captures_{}", TimeStamp()));
+        if (WriteSceneFile(scene, out)) {
+            g_lastCaptures.path = out.string();
         }
     }
 

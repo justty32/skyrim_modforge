@@ -39,7 +39,19 @@ sc cap / sc cap r       擷取準星／射線目標的附魔＋效果（附魔�
 
 編輯模式的目標若是 **marker 光球**：numpad 微調＋0 commit＝**移動該 marker**（更新登記簿座標，不進 overrides）。`er` 切換、旋轉子模式、編輯步長全部**存進存檔**（co-save SETT v3）。
 
-Export 頁有 **Export player cell** 與 **Export all (loaded cells)** 兩鈕：registries（marker/擦除/override）本就全 cell 全域，`all` 只多掃**已載入的其他 cell** 的 placements（未載入 cell 的 placements 撈不到，log 會講）。Palette 頁的具名檔可 **load from file（追加）／ save to file**。
+Export 頁有 **Export player cell**、**Export all (loaded cells)** 與 **Export captures** 三鈕：registries（marker/擦除/override）本就全 cell 全域，`all` 只多掃**已載入的其他 cell** 的 placements（未載入 cell 的 placements 撈不到，log 會講）。Palette 頁的具名檔可 **load from file（追加）／ save to file**。
+
+**匯出檔名（2026-07-12 起，每次一個新檔、永不覆蓋）**：
+
+| 鈕 | 檔名 | 內容 |
+|---|---|---|
+| Export player cell | `scene-export_<cell EditorID 或 <ws>_x<X>y<Y>>_<YYYYMMDD-HHMM>.json` | placements（**物件，不含 NPC**）＋ removals ＋ overrides ＋ annotations |
+| Export all (loaded cells) | `scene-export_all-<玩家所在>_<YYYYMMDD-HHMM>.json` | 同上，掃全部已載入 cell |
+| Export captures（Captures 頁也有一顆） | `captures_<YYYYMMDD-HHMM>.json` | **只有** capturedItems[] ＋ capturedNpcs[] |
+
+同分鐘同場景再匯出＝加 `-2`/`-3` 後綴。**⚠️ 下游 agent 別再寫死 `scene-export.json`**——去 SKSE 資料夾取最新一份（或使用者指名的那份）。
+
+**Scope（使用者 2026-07-12 拍板）**：cell 匯出＝**純場景/物件**，掃描時 **actor 一律排除**（面板/log 顯示 `N actor(s) excluded`）——NPC 交給 ModForge **按 marker（`annotations[]`）去擺**；真要複製某個 NPC 走 `sc cap` → 獨立的 `capturedNpcs[]` 檔。captures 是**跨 cell 的定義資料庫**，所以拆檔：一把附魔劍不屬於你剛好站的那間房。兩種檔都是合法 ModSpec，`build` 各吃各的（ModForge C# 端零改動）。
 
 模式內操作不算佔鍵：numpad 編輯（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、`.` cancel、**5＝復原到編輯前姿態並續留編輯**）與 **numpad \*＝射線選取**照舊；位移/yaw/縮放**步長在 Settings 頁可調**（存 co-save）。當前模式/dp 狀態＋三個步長＋三本登記簿全部**存進存檔**（SKSE co-save，使用者的無 ini 原則）。動作鍵目前固定 F11（rebind 暫時隱藏，捕捉流程待重作）。`sc` 指令的實作＝劫持一個 retail 無作用的 vanilla console 指令（候選鏈首個命中者，2026-07-11 實機 donor＝`ClearAchievement`；全滅時面板 Settings 頁照樣能切模式）。
 
@@ -52,7 +64,7 @@ Export 頁有 **Export player cell** 與 **Export all (loaded cells)** 兩鈕：
 | `Console.{h,cpp}` | `sc` console 指令（ObScript 劫持：`LocateConsoleCommand` 改寫 inert donor 的 name/params/executeFunction）|
 | `CoSave.{h,cpp}` | SKSE SerializationInterface（UID `'SCBR'`）：設定＋Markers/Eraser/Overrides/Captures 四本登記簿隨存檔走；revert 只清登記不碰世界；FormID 經 `ResolveFormID` 重解析（Captures 只存耐久 id，無 handle）|
 | `UI.Settings.cpp` | Settings 頁：模式切換鈕、每模式鍵位表＋rebind、marker 光球開關；`UI::ModeLine()` 各頁頂部常駐當前模式 |
-| `SceneExporter.{h,cpp}` | **核心**：`ExportCell` 走訪 cell → **vanilla diff**（ref 解得出耐久 id ⇒ 既有 ⇒ 跳過；解不出 ⇒ 玩家 `PlaceAtMe` 擺的 ⇒ emit）→ `placements[]`（actor 與物件同一個 list，因 ModSpec 沒有 `npcRefs` 成員）；`ResolveDurableId` FormID→`<plugin>:0xLOCALID`；`WriteSceneFile` 吐 json |
+| `SceneExporter.{h,cpp}` | **核心**：`ExportCell` 走訪 cell → **vanilla diff**（ref 解得出耐久 id ⇒ 既有 ⇒ 跳過；解不出 ⇒ 玩家 `PlaceAtMe` 擺的 ⇒ emit）→ `placements[]`（**只有物件**：actor 掃描時排除，2026-07-12 拍板）；`ExportCaptures` 另出 captures 檔；`ResolveDurableId` FormID→`<plugin>:0xLOCALID`；`WriteSceneFile` 吐 json（檔名帶場景＋時間戳） |
 | `UI.{h,cpp}` | 遊戲內面板（[SKSE Menu Framework 3](../mod-survey/findings/skse-menu-framework-3.md) / Dear ImGui）：顯示所在 cell、Export 按鈕、上次匯出統計；Eraser/Palette/Editor 各頁帶 **`… by ray` 明示射線鈕**與 **this cell only 過濾**。**軟相依**——`IsInstalled()` 是 `GetModuleHandleW` 探測，沒裝框架就只有 hotkey |
 | `UI.Markers.cpp` | Markers 頁（this-cell 過濾、每列 `edit` 鈕）＋ **marker 編輯視窗**（E 按 marker 開啟：label／kind／**note 多行**／delete；`AddWindow` 獨立視窗，開著會暫停遊戲收輸入）|
 | `extern/SKSEMenuFramework/` | vendored 消費者 header（LGPL-2.1，`GetProcAddress` shim，不連結 DLL）|
@@ -76,7 +88,7 @@ marker 的樣子＝**鐵匕首**（`Weapons\Iron\IronDagger.nif`，houseCARL 對
 
 **agent 對接配方**（拿到需求如「在 goat 放一隻山羊」時照做）：
 
-1. 讀 `.../compatdata/489830/pfx/drive_c/users/steamuser/Documents/My Games/Skyrim Special Edition/SKSE/scene-export.json` 的 `annotations[]`——每筆有 seq/label/kind/position/angleZ/cell 或 worldspace。
+1. 讀 `.../compatdata/489830/pfx/drive_c/users/steamuser/Documents/My Games/Skyrim Special Edition/SKSE/` 裡**最新一份** `scene-export_*.json`（檔名帶場景＋時間戳，2026-07-12 起不再是固定 `scene-export.json`）的 `annotations[]`——每筆有 seq/label/kind/position/rotation/scale/note/cell 或 worldspace。**NPC 一定走這條**（cell 匯出不含 actor）。
 2. 查 base：houseCARL `cross_plugin_query`（如 `editorid_contains=EncGoat`）。
 3. author spec：`placements[]` 帶 marker 的 position/angleZ（rotation.z）＋歸屬欄位。**⚠️ 外部 NPC base 必須 `"kind": "npc"`**——isNpc 自動判定只認 in-spec base，漏了會生成 REFR（不生怪、無報錯，dump 看到 `PlacedObject` 而非 `PlacedNpc` 即中招）。
 4. `build` → `dump` 驗座標與記錄型別 → 產物放 `<MO2>/mods/<新資料夾>/`。

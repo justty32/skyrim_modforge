@@ -44,23 +44,37 @@ namespace SceneExporter {
     struct Stats {
         bool valid = false;           // false until the first export
         std::size_t placements = 0;   // player-placed refs emitted
-        std::size_t actors = 0;       // subset of `placements` that are ACHR
+        std::size_t actorsExcluded = 0;  // player-placed actors NOT emitted (scope reversal)
         std::size_t preexisting = 0;  // authored refs skipped (the vanilla diff)
         std::size_t skipped = 0;      // dynamic bases, not esp-referenceable
         std::size_t markers = 0;      // marker proxies excluded (editor chrome, not content)
         std::size_t removals = 0;     // erased authored refs exported via removals[]
         std::size_t overrides = 0;    // moved authored refs exported via overrides[]
-        std::size_t captures = 0;     // captured item definitions exported via capturedItems[]
         std::string cell;             // durable id of the exported cell/worldspace
         std::string path;             // where the last WriteSceneFile went
     };
     [[nodiscard]] const Stats& LastExport();
+
+    // What the last CAPTURES export wrote. Captures live in their own file now
+    // (own button, own timestamped name) — a scene export never carries them.
+    struct CaptureStats {
+        bool valid = false;
+        std::size_t items = 0;  // capturedItems[]
+        std::size_t npcs = 0;   // capturedNpcs[]
+        std::string path;
+    };
+    [[nodiscard]] const CaptureStats& LastCapturesExport();
 
     // Build a scene.json object for one cell: iterates placed refs, emits the
     // `placements[]` segment plus each placement's `cell`/`worldspace`
     // attribution. Semantic-marker / role / removal segments (§B/§D/§E) are
     // layered in by the in-game editor UI, not by a raw cell sweep — this is
     // the M4 "spike" surface (walk cell → placements → scene.json → ModForge).
+    //
+    // SCOPE (user-decided 2026-07-12): objects only — ACTORS ARE NOT EXPORTED.
+    // A cell export is pure scene/object content plus the marker annotations;
+    // NPCs are ModForge's job, placed against those markers. Captured actors
+    // ride the separate captures export instead.
     [[nodiscard]] nlohmann::json ExportCell(RE::TESObjectCELL* cell);
 
     // Convenience: export the cell the player is currently in.
@@ -71,16 +85,26 @@ namespace SceneExporter {
     // have unloaded can't be recovered — logged, never silently dropped.
     [[nodiscard]] nlohmann::json ExportAll();
 
+    // Build a captures-only object: `capturedItems[]` + `capturedNpcs[]` from
+    // the Captures registry, nothing else. Still a legal ModSpec (both are
+    // ModSpec members), so `build captures_*.json out.esp` works on its own.
+    [[nodiscard]] nlohmann::json ExportCaptures();
+
     // Serialise a scene.json object to disk (pretty-printed, 2-space indent).
     // Returns true on success. Default target: SKSE/Plugins/SceneCaptureBridge/.
     bool WriteSceneFile(const nlohmann::json& scene, const std::filesystem::path& path);
 
-    // Full one-shot: export the player's cell and write it next to the log
-    // dir as scene-export.json. Wired to a hotkey / console once UI lands.
+    // Full one-shot: export the player's cell and write it next to the log dir
+    // as `scene-export_<where>_<YYYYMMDD-HHMM>.json`. Every export gets its own
+    // file — a fixed name meant successive exports silently ate each other.
     void ExportPlayerCellToFile();
 
-    // Same, but ExportAll() — every loaded cell. Writes the same
-    // scene-export.json (it's "the current export"); the log/stats say which.
+    // Same, but ExportAll() — every loaded cell (`<where>` = "all").
     void ExportAllToFile();
+
+    // Captures only → `captures_<YYYYMMDD-HHMM>.json`, kept apart from the
+    // scene export (user-decided 2026-07-12): the eyedropped definitions are a
+    // library of their own, not scene content of the cell you happen to be in.
+    void ExportCapturesToFile();
 
 }  // namespace SceneExporter

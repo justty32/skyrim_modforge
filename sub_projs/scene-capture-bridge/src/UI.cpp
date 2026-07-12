@@ -81,6 +81,8 @@ void __stdcall UI::Export::Render() {
     ImGuiMCP::Separator();
 
     // Export deliberately has no hotkey (user-decided): this button is it.
+    // Each press writes its OWN file — scene-export_<where>_<YYYYMMDD-HHMM>.json
+    // — so two exports in a row no longer overwrite one another.
     if (ImGuiMCP::Button("Export player cell")) {
         SceneExporter::ExportPlayerCellToFile();
     }
@@ -90,24 +92,45 @@ void __stdcall UI::Export::Render() {
     if (ImGuiMCP::Button("Export all (loaded cells)")) {
         SceneExporter::ExportAllToFile();
     }
+    ImGuiMCP::TextWrapped("Scene exports carry objects + markers only — NPCs are "
+        "not swept (place them from the markers in ModForge). Captured "
+        "definitions have their own button below.");
+
+    ImGuiMCP::Separator();
+
+    // Captures are a cell-independent library, not scene content of whatever
+    // cell you happen to stand in — own button, own captures_<stamp>.json.
+    if (ImGuiMCP::Button("Export captures")) {
+        SceneExporter::ExportCapturesToFile();
+    }
+    ImGuiMCP::SameLine();
+    ImGuiMCP::Text("(%zu in registry -> capturedItems[]/capturedNpcs[])",
+        ::Captures::All().size());
+    if (const auto& cs = SceneExporter::LastCapturesExport(); cs.valid) {
+        ImGuiMCP::BulletText("last: %zu item(s), %zu npc(s)", cs.items, cs.npcs);
+        if (!cs.path.empty()) ImGuiMCP::TextWrapped("Wrote %s", cs.path.c_str());
+    }
 
     ImGuiMCP::Separator();
 
     const auto& s = SceneExporter::LastExport();
     if (!s.valid) {
-        ImGuiMCP::TextWrapped("No export yet this session.");
+        ImGuiMCP::TextWrapped("No scene export yet this session.");
         return;
     }
 
-    ImGuiMCP::Text("Last export — %s", s.cell.c_str());
+    ImGuiMCP::Text("Last scene export — %s", s.cell.c_str());
     // Added / modified / removed each count independently (user-requested).
-    ImGuiMCP::BulletText("%zu added (placements, %zu actors)", s.placements, s.actors);
+    ImGuiMCP::BulletText("%zu added (placements[])", s.placements);
     ImGuiMCP::BulletText("%zu modified (overrides[])", s.overrides);
     ImGuiMCP::BulletText("%zu removed (removals[])", s.removals);
-    if (s.captures) ImGuiMCP::BulletText("%zu captured items (capturedItems[])", s.captures);
     // The number that proves the vanilla diff: authored refs are recognised and
     // skipped, so `build` does not re-place the whole room on top of itself.
     ImGuiMCP::BulletText("%zu pre-existing (skipped)", s.preexisting);
+    if (s.actorsExcluded) {
+        ImGuiMCP::BulletText("%zu actor(s) excluded (NPCs go via markers/captures)",
+            s.actorsExcluded);
+    }
     if (s.skipped) {
         // A dynamic base cannot be named in an esp, so its ref cannot be
         // exported at all — worth surfacing rather than silently dropping.
@@ -176,6 +199,13 @@ void __stdcall UI::CapturesPage::Render() {
     if (ImGuiMCP::Button("capture by ray")) { ::Captures::CaptureByRay(); }
     ImGuiMCP::SameLine();
     if (ImGuiMCP::Button("clear")) { ::Captures::Clear(); }
+    ImGuiMCP::SameLine();
+    // Own file (captures_<stamp>.json), separate from any scene export — same
+    // button as the Export page's, put here because this is where you are.
+    if (ImGuiMCP::Button("export captures")) { SceneExporter::ExportCapturesToFile(); }
+    if (const auto& cs = SceneExporter::LastCapturesExport(); cs.valid && !cs.path.empty()) {
+        ImGuiMCP::TextWrapped("Wrote %s", cs.path.c_str());
+    }
     ImGuiMCP::Separator();
 
     // Each row: [undo] name [kind] N effect(s). Newest first, matching undo order.
