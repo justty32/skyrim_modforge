@@ -232,9 +232,49 @@
    - References 頁**該列全部還在**、label/note 沒掉。
    - **(乙) 檔內那幾列**：走回那個 cell（讀檔會自動掃玩家所在 cell）→ 該列**不該**顯示 `TARGET LOST`（DLL 會按 base＋座標把 dynamic ref 撿回來）。若顯示 TARGET LOST → 該列匯出時會被跳過（Export 頁會說 `N reference(s) skipped`），**回報這個現象**（我要知道 reacquire 撿不回的頻率）。
    - **⚠️ 已知限制**：檔內目標的 placement 若不在這次匯出掃到的 cell 裡，那筆 reference **不會**寫進 json（寫了 build 也對不上）——Export 頁會列出 skipped 數，log 有每筆的原因。
-5. **（選配，端到端）**：把步驟 1 的 `scene-export_*.json` 給我 → 我 build 一份帶 Sofia 的 esp → 裝進去看她**真的會回去坐那張椅子**（sandbox 錨在 label 上）。這一步才是 referrer 的最終價值證明。
+5. **（端到端）**：referrer 的**最終價值證明**已經先做成一份可直接裝的 demo 了 → 見下一節 **`ModForgeReferrerChair.zip`**（不必等你匯出 json）。你這邊只要驗 DLL 那一半（①～④）。
 
 **回報**：① `references[]` 的 `ref` 是不是 editorId（不是 FormID）、跟 placements 那筆對不對得上；② 撞名有沒有擋住、label 大小寫有沒有留住；③ 三類拒收對不對；④ 重開讀檔後檔內目標撿不撿得回。
+
+## 🔑 referrer 價值證明 — 她真的會去坐**被命名的那一張**椅子（2026-07-12 交付 `~/skyrim_mods/mine/ModForgeReferrerChair.zip`，FLAT，ESL，只吃 Skyrim.esm）
+
+spec＝`examples/referrer-chair-anchor.json`。**這是 referrer 原語的價值主張本身**：擺一張椅子 → 用 label 命名它 → 一個 NPC 的 AI package 拿那個 label 當**特定 reference 錨點** → 她走過去坐**那一張**。上一節驗的是 DLL 能不能「指＋標」；**這一節驗的是標了以後到底有沒有用**。
+
+**不需要新遊戲**（沒有對話註冊需求；她的招呼語走 `.seq`，既有存檔 save+reload 一次就好，不看招呼語也行）。裝 zip → 啟用 → load order 隨意（只 override Breezehome 這個 cell）。
+
+**🧪 對照組設計（整份 demo 的成敗關鍵，看懂這段再進遊戲）**
+房間裡有**兩張一模一樣的椅子**——同一個 base（`CommonChair01F`）、同角度、同尺寸、同一張 navmesh、排成一直線在 Sofia 的正北方：
+
+```
+   (北牆)
+     ▣  ← 【被命名的】"sofia's chair"   y=400   離 Sofia 380 單位   REFR 0x808
+     
+     ▣  ← 【對照組】沒被命名的椅子       y=170   離 Sofia 150 單位   REFR 0x807
+     
+     🧍 Chairwarden Sofia               y=20
+   ✧ 你 coc 落點（在她西邊幾步）
+```
+
+兩張椅子**唯一的差別是其中一張出現在 `references[]` 裡**。近的那張是空的、可以坐、就擋在她路上。所以：
+
+- **成功長什麼樣**：她**繞過／走過那張近的空椅子**，一路走到北牆邊，坐上**遠的那一張**。（她可能在你 loading 結束前就已經坐好了——**沒關係，重點不是看她走，是看她坐在哪一張**。）
+- **失敗長什麼樣**：① 她**站著不動**（＝ package 的 target 沒解到 → label 沒接上）；② 她坐**近的那張**（＝根本不是特定 reference targeting，只是「找張椅子坐」）；③ 她**不在那**（cell override / 擺放出問題）。
+- 「她坐了某張椅子」**不可能**被誤讀成「她坐了我們命名的那張」——這就是對照組存在的理由。
+
+**步驟**
+1. console `coc WhiterunBreezehome`。（Breezehome 是**vanilla 內裝**，所以有 navmesh；自建內裝沒有 navmesh，NPC 根本不會動——這是刻意的選擇。）
+2. 站在原地等 **10–20 秒**（剛 `coc` 進去 AI 要幾秒才「醒」）。看她往北走、坐上**靠北牆**那張。
+3. **鐵證（不靠肉眼）**：console 點一下**她正坐著的那張椅子** → console 標題列會顯示它的 RefID。應該是 **`FE xxx 808`**（`xxx` ＝ MO2 右欄顯示的 ESL 槽位）。對照組那張是 `FE xxx 807`。**`...808` ＝ 通過；`...807` ＝ 她坐錯張。**
+4. **「常回去坐」複驗**：把她從椅子上趕起來（跟她講話／推她／`coc` 出去再回來），再等 10–20 秒 → 她應該**自己走回同一張（808）**坐下。
+5. （可選）她的招呼語是 `That chair by the north wall is mine. Find your own.` — 聽到＝她本人沒錯。
+
+**離線已驗（你不用再驗這幾條，列出來是讓你知道失敗時該懷疑哪裡）**
+- 被命名的椅子 `MFRef_SofiaChair` = REFR **0x808**，record flag **0x400**，落在 cell 的 **Persistent group**。
+- 對照組 `MFRef_DecoyChair` = REFR **0x807**，flag **0x0**，落在 **Temporary group**。兩者 spec 只差一個 label ⇒ **是 `references[]` 讓它 persistent 的**。
+- package `MFRefSofiaSit`（SitTarget 模板 `0x0A9277`）slot **16 = `PackageTargetSpecificReference(0x808)`** ⇒ 錨點確實指到**被命名的那張**，**不需要 quest alias**。DataInputVersion/XNAM 與 vanilla `CaravanACamp1Sit` 同形。
+- Sofia 的 NPC 記錄 `packages = [MFRefSofiaSit]`。
+
+**回報**：她坐哪一張（RefID 尾碼 807 / 808）？還是站著不動？趕起來會不會自己走回去？
 
 ## scene-capture-bridge — Export 頁 `Export requires` 鈕（2026-07-12，DLL crc `008aba47`，**已部署**）
 
@@ -277,3 +317,26 @@
 4. **落盤**：關遊戲重開（palette 是磁碟持久、不隨存檔）→ 插槽＝你最後一次操作的結果。
 
 **回報**：① 三個歸零鍵是不是各管各軸、且還原成「原本的角度」而非 0；② append 有沒有排最上、replace 有沒有清乾淨、打錯檔名會不會誤清。
+
+## scene-capture-bridge — rebind 重作（2026-07-12，DLL crc `378d3c6c`，**已部署**）
+
+⚠️ **完全關遊戲重開**吃新 DLL（esp 不動）。co-save `SETT` 升 **v6→v7**——舊存檔照讀（過去被丟棄不用的鍵位資料現在會**真的套用**，並過一次保留鍵過濾；`kCapture`/`kReferrer` 這兩個模式過去從沒存過鍵位，這次補上）。
+
+**背景**：P5 實機（2026-07-11）撞到 rebind 捕捉抓錯鍵（誤綁成 W），當時暫時隱藏、固定 F11。這輪重作：armed 狀態下 WASD/Space/Shift/Ctrl/Esc/Tab/Enter/console 反引號**一律不接受**（面板/畫面會提示「that key is reserved, press another」），且必須**按下＋放開同一顆鍵**才真的 commit（面板顯示「release X to confirm」）。Esc 隨時取消。
+
+1. **基本 rebind（先驗這個）**：F1 → Settings 頁 → 找 `del`（刪除模式）那一列 → 按它旁邊的 `Rebind##del` 鈕 →
+   - 面板應立刻變黃字：`Rebinding delete -- press a key (Esc cancels; ...)`，且**其他模式的 Rebind 鈕應變灰不能按**（一次只能改一個）。
+   - 按一個沒用過的鍵，例如 **F2** → 面板文字應變成 `Rebinding delete -- release F2 to confirm`（還沒放開就先按住看這句）。
+   - 放開 F2 → 面板應跳回正常列表，`del` 那一列的鍵位文字應顯示 **F2**、黃字狀態列消失、其他模式的 Rebind 鈕恢復可按。
+   - 進 `sc del` 模式（console 或按鈕），瞄準一個東西按 **F2** → 應該真的觸發擦除（原本的 F11 對 `del` 這個模式應該**不再有反應**）。
+2. **保留鍵防呆（這是這次修的重點）**：對另一個模式（例如 `pick`）按 `Rebind` → armed 狀態下依序按著移動：
+   - 按 **W**（或 A/S/D/Space/LShift/LCtrl）→ 畫面應跳一個小提示（例如「that key is reserved, press another」），**面板應維持在 armed 狀態**（還是「press a key」，不會變成「release ... to confirm」，更不會直接把 pick 綁到 W）。
+   - 按 **Tab**、**Enter**、**`**（console 鍵）也應該一樣被拒絕、不解除 armed。
+   - 最後按一個正常鍵（例如 F3）並放開 → 才真的綁上。
+   - **這一步就是驗收核心**：只要**全程沒有任何一次把某模式意外綁成 W/A/S/D 之類的移動鍵**，這輪修復就算過。
+3. **Esc 取消**：按 `Rebind` armed 後、按 **Esc** → 面板應跳回正常（沒有黃字），該模式的鍵位**維持原樣沒被改動**。
+4. **同時移動 + rebind（最貼近原本撞坑的情境）**：走位時**手不離開 WASD**、順手用滑鼠點某模式的 `Rebind` 鈕、然後保持按著或反覆點按 W/S 幾下模擬「還沒騰出手」的狀態，最後才按你真正想要的鍵（例如 F4）並放開 → 綁定結果**必須是 F4**，不能是 W 或 S。這是最初 bug 的實際重現路徑，務必測。
+5. **持久化（co-save v7）**：把 2–3 個模式改綁成不同的鍵（例如 F2/F3/F4）→ 存檔 → **完全關遊戲重開** → 讀檔 → F1 → Settings 頁確認**改過的鍵位全部還原**（不是退回 F11）→ 用其中一個改過的鍵實際觸發一次動作確認真的生效。
+6. **`sc capp` 直接吸的組合場景要沒事**（回歸檢查，不是新功能）：任意切換模式、按 F11（其餘沒改綁的模式應該還是預設 F11）確認**沒改綁的模式完全不受影響**。
+
+**回報**：① 第 2 步（保留鍵防呆）有沒有守住——這是本輪修復要不要算過的關鍵；② rebind 完的鍵位實際觸發動作有沒有生效、舊鍵（如原本的 F11）對該模式是否確實失效；③ 重開遊戲後鍵位有沒有正確還原；④ 面板的黃字狀態列/其他鈕變灰有沒有出現。

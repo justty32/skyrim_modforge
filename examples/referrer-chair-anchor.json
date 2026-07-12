@@ -1,0 +1,97 @@
+{
+  "pluginName": "ModForgeReferrerChair.esp",
+  "esl": true,
+
+  "_comment": "REFERRER (Idea #24, `references[]`) — THE IN-GAME PROOF. The whole value proposition in one plugin: an object is PLACED, then NAMED with a label, and an NPC's AI package uses that label as a SPECIFIC-REFERENCE anchor — so she walks to THAT object and uses it. Everything here is the (B) IN-FILE path (plan backlog 🔑 '檔內相依'): the chair is one of OUR placements, `references[].ref` points at its editorId, and build FORCES IT PERSISTENT (record flag 0x400 + the cell's Persistent group) — which is exactly what 'a package SingleRef can target this ref' requires. In the real workflow the placement + the reference entry are both EMITTED BY THE IN-GAME EDITOR (`sc pl` places the chair, `sc ref sofia's chair` names it); this file is what that exporter writes.",
+
+  "_control": "THE CONTROL GROUP is the point of the layout. TWO chairs, SAME base (CommonChair01F), SAME rotation, SAME scale, on the SAME navmesh, in a straight line north of where Sofia spawns: MFRef_DecoyChair at y=170 (NEAR — 150 units from her) and MFRef_SofiaChair at y=400 (FAR — 380 units). Only ONE of them is named in references[]. Nothing but ref identity distinguishes them. If she walks PAST the near empty chair to sit in the far one, the label resolved to a specific FormID and referrer works. If she sat in the near one, or stood still, it did not. A 'she sat in a chair' result cannot be mistaken for a pass.",
+
+  "_location": "Vanilla interior WhiterunBreezehome (Skyrim.esm:0x0165A8) — a VANILLA cell, so it has a navmesh (a from-scratch interior does NOT, and the NPC would never move: that trap is why this demo overrides a vanilla cell instead). Empty of NPCs, `coc WhiterunBreezehome` lands the player at the persistent XMarker at (-536, 0, 63), a few steps from Sofia. Every coordinate below was checked against Breezehome's NAVM 0x0CB4F3 with a point-in-triangle test (ground floor z≈64-66) and against the cell's clutter (nothing vanilla within 100 units of either chair).",
+
+  "classes": [
+    {
+      "editorId": "MFRefClass",
+      "name": "ModForge Townsfolk",
+      "healthWeight": 50, "magickaWeight": 25, "staminaWeight": 25,
+      "skillWeights": { "Speech": 75 }
+    }
+  ],
+
+  "npcs": [
+    {
+      "editorId": "MFRefSofia",
+      "name": "Chairwarden Sofia",
+      "_name": "Deliberately NOT plain 'Sofia' — the Sofia follower mod may be installed; this name must be unmistakably ours over the crosshair.",
+      "race": "Skyrim.esm:0x013746",
+      "voiceType": "Skyrim.esm:0x013ADD",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "class": "MFRefClass",
+      "level": 4,
+      "autoCalcStats": true,
+      "unique": true,
+      "essential": true,
+      "aggression": "Unaggressive",
+      "confidence": "Average",
+      "assistance": "HelpsNobody",
+      "energyLevel": 50,
+      "greeting": "That chair by the north wall is mine. Find your own.",
+      "packages": ["MFRefSofiaSit"]
+    }
+  ],
+
+  "packages": [
+    {
+      "editorId": "MFRefSofiaSit",
+      "_comment": "SitTarget (Skyrim.esm:0x0A9277) = 'walk to and use THAT furniture'. Its slot-16 Target is a SingleRef → build emits PackageTargetSpecificReference(FormKey) — a specific-reference anchor, no quest alias needed. `target` is the LABEL from references[], and that is the whole primitive: a label is usable in every ref field. This is the ONLY package on the NPC and it has no conditions and no schedule, so the read is binary — label resolves ⇒ she sits in THAT chair; label fails ⇒ the slot is never written, the package no-ops, and she just stands there. (Vanilla ships dozens of NPC-assigned SitTarget packages of exactly this shape — CaravanACamp1Sit, TG01HaelgaStaysAtTheBunkhouse — so this is a canonical use, not a stunt.)",
+      "_why_not_sandbox": "A Sandbox package's `location` also accepts the label, but sandbox anchors an AREA and then lets the engine pick ANY furniture inside `radius` — it cannot prove 'that chair, not the other one'. For 'sit in THIS reference' the correct primitive is SitTarget's SingleRef.",
+      "template": "Skyrim.esm:0x0A9277",
+      "preferredSpeed": "Walk",
+      "interruptFlags": [
+        "HellosToPlayer", "ObserveCombatBehavior", "ReactionToPlayerActions",
+        "AllowIdleChatter", "WorldInteractions"
+      ],
+      "sitTarget": {
+        "target": "sofia's chair",
+        "waitTime": 0,
+        "stopMovement": false
+      }
+    }
+  ],
+
+  "placements": [
+    {
+      "editorId": "MFRef_Sofia",
+      "base": "MFRefSofia",
+      "kind": "npc",
+      "cell": "Skyrim.esm:0x0165A8",
+      "position": { "x": -400, "y": 20, "z": 65 },
+      "rotation": { "x": 0, "y": 0, "z": 0 },
+      "_": "Facing +Y (north) — she looks straight down the lane at both chairs. Player cocs in ~140 units west of her."
+    },
+    {
+      "editorId": "MFRef_DecoyChair",
+      "_": "THE CONTROL. Identical to the named chair in every way except that references[] does NOT name it — so it stays TEMPORARY (no 0x400, Temporary group). It is NEARER to Sofia and sits directly on her path. If specific-reference targeting were not really happening, this is the chair she would end up in.",
+      "base": "Skyrim.esm:0x06E7A8",
+      "cell": "Skyrim.esm:0x0165A8",
+      "position": { "x": -400, "y": 170, "z": 64 },
+      "rotation": { "x": 0, "y": 0, "z": 180 }
+    },
+    {
+      "editorId": "MFRef_SofiaChair",
+      "_": "THE NAMED ONE. Same base / rotation / scale as the decoy; the only difference is that references[] gives it a label. Against the north wall, 380 units from Sofia and 230 past the decoy.",
+      "base": "Skyrim.esm:0x06E7A8",
+      "cell": "Skyrim.esm:0x0165A8",
+      "position": { "x": -400, "y": 400, "z": 64 },
+      "rotation": { "x": 0, "y": 0, "z": 180 }
+    }
+  ],
+
+  "references": [
+    {
+      "ref": "MFRef_SofiaChair",
+      "label": "sofia's chair",
+      "note": "she should always come back to this one",
+      "_": "The whole primitive, in four lines. `ref` = the in-spec placement's editorId (the (B) in-file path — no `anchor` needed and none allowed: the object is ours, so build makes it persistent by construction). `label` = the name every other ref field can now use — here the SitTarget package's `target`."
+    }
+  ]
+}
