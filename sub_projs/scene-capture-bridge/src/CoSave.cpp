@@ -23,7 +23,7 @@ namespace {
     constexpr std::uint32_t kPlex = 'PLEX';  // palette placed-ref riders (noHavokSettle / extra data)
 
     // Per-record versions (an older save's record is read with its own layout).
-    constexpr std::uint32_t kVerSett = 6;  // v2 adds editor step sizes; v3 adds aim/axis; v4 adds capture aim; v5 adds referrer aim; v6 adds per-mode physics (place/edit) + extra data (pick/place)
+    constexpr std::uint32_t kVerSett = 7;  // v2 adds editor step sizes; v3 adds aim/axis; v4 adds capture aim; v5 adds referrer aim; v6 adds per-mode physics (place/edit) + extra data (pick/place); v7 rebind rework — binds now round-trip (were write-only before), + capture/referrer binds (missing since P5)
     constexpr std::uint32_t kVerMkrs = 2;  // v2: full angle (3f) + scale, was angleZ only
     constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
     constexpr std::uint32_t kVerOvrd = 1;
@@ -104,6 +104,10 @@ namespace {
         si->WriteRecordData(static_cast<std::uint8_t>(Modes::Physics(Modes::Mode::kEdit) ? 1 : 0));
         si->WriteRecordData(static_cast<std::uint8_t>(Modes::ExtraData(Modes::Mode::kPick) ? 1 : 0));
         si->WriteRecordData(static_cast<std::uint8_t>(Modes::ExtraData(Modes::Mode::kPlace) ? 1 : 0));
+        // v7 (rebind rework): the two action-key binds P5 never wired into the
+        // co-save (kCapture/kReferrer stayed un-persisted since they were added).
+        si->WriteRecordData(Modes::Bind(Modes::Mode::kCapture));
+        si->WriteRecordData(Modes::Bind(Modes::Mode::kReferrer));
     }
 
     void LoadSettings(const SKSE::SerializationInterface* si, std::uint32_t version) {
@@ -114,9 +118,17 @@ namespace {
                  Modes::Mode::kPlace, Modes::Mode::kEdit}) {
             std::uint32_t bind = 0;
             si->ReadRecordData(bind);
-            // Keybind rebinding is hidden pending a fix — read the byte to keep
-            // the stream aligned, but ignore it so binds stay at the F11
-            // default (a stored bad bind from the buggy UI can't stick).
+            // Rebind rework (v7): apply the stored bind now that the capture
+            // flow can't grab a bad key anymore (Modes::IsBindable). Still
+            // re-validate on load — a record written by the old buggy UI (or
+            // hand-edited) could carry a reserved scancode (e.g. W); rather
+            // than trust it blindly, fall back to F11 for that one mode.
+            if (bind != 0 && Modes::IsBindable(bind)) {
+                Modes::SetBind(m, bind);
+            } else if (bind != 0) {
+                SKSE::log::warn("CoSave: dropped reserved bind 0x{:X} for {} "
+                    "(stale/bad save data) — kept F11", bind, Modes::Name(m));
+            }
         }
         if (version >= 2) {
             float mv = 0.f, yaw = 0.f, sc = 0.f;
@@ -156,6 +168,19 @@ namespace {
             si->ReadRecordData(b); Modes::SetPhysics(Modes::Mode::kEdit, b != 0);
             si->ReadRecordData(b); Modes::SetExtraData(Modes::Mode::kPick, b != 0);
             si->ReadRecordData(b); Modes::SetExtraData(Modes::Mode::kPlace, b != 0);
+        }
+        if (version >= 7) {
+            // kCapture/kReferrer binds — first persisted at v7 (see SaveSettings).
+            for (auto m : {Modes::Mode::kCapture, Modes::Mode::kReferrer}) {
+                std::uint32_t bind = 0;
+                si->ReadRecordData(bind);
+                if (bind != 0 && Modes::IsBindable(bind)) {
+                    Modes::SetBind(m, bind);
+                } else if (bind != 0) {
+                    SKSE::log::warn("CoSave: dropped reserved bind 0x{:X} for {} "
+                        "(stale/bad save data) — kept F11", bind, Modes::Name(m));
+                }
+            }
         }
         if (mode < static_cast<std::uint8_t>(Modes::Mode::kTotal))
             Modes::Set(static_cast<Modes::Mode>(mode));

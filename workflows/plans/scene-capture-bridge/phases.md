@@ -228,3 +228,14 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
 - **跟 C# 版的差異（各有得失）**：C# 以「建好的 mod」為 master 權威 ⇒ 連 deep-copy 拖進來的 master 都抓得到，但**歸因會掉**（`Causal()` 過濾掉 FormKey 沒被 link 的 spec 來源 ⇒ template clone 只剩 `record Weapon:MFCap_…`，講不出要刪哪一行）；DLL 沒有建好的 mod 可掃，改用**規則表** ⇒ 遇到全新欄位可能誤判（預設當作「會 link」＝寧可多報不漏報），但 **template clone 也講得出是哪一行**。
 - **驗證**：`Analyze(scene, captures)` 刻意拆成**純函式**（不碰遊戲狀態），離線用 stub header 編**真的 `Requires.cpp`** 跑一份含 9 個 mod 的擬真測資 → 六類排除全部命中（`Conditional Expressions.esp`／`Immersive Armors.esp`／`Wyrmstooth.esp` 只出現在假依賴欄位 ⇒ **報告裡一個字都沒有**），而 `PROTEUS.esp`／`Ordinator.esp` 照樣列出、**歸因到真正拉它進來的那一行**（`spells[1]`／`perks[0].perk`，不是 activeEffects）。
 - **C# 端零改動**（這是純 DLL 側的新輸出）。
+
+## ✅ 已做（rebind 重作，2026-07-12，DLL crc `378d3c6c`，**已部署**，待實機）
+
+- **真正的根因（不是「同一幀」）**：P5 實機（2026-07-11，見上「唯 rebind 捕捉到錯鍵（W）」）撞到的不是 backlog 猜的「armed 那一幀」同批次事件——`BeginRebind()` 由面板滑鼠點擊觸發（ImGui render pass），跟鍵盤 input-poll 批次不是同一次呼叫，物理上不可能同幀撞在一起。真正原因是**舊實作對 armed 後收到的第一個鍵盤 down-event 完全不設防**：不篩鍵、不等放開，來什麼綁什麼。而面板本身**不暫停遊戲**（`Editor.cpp` 的獨立證據：編輯模式當下 WASD/Alt 的 down-event 照樣灌進同一支 sink，見該檔 `0x11/0x1F/0x20/0x38` 那段 log 註記）——玩家點「Rebind」的手多半還在 WASD 上，下一個鍵盤事件十之八九是移動鍵的殘餘按壓，不是玩家真正要按的目標鍵。`UI.Settings.cpp` 原本的隱藏註解（"grabbed the wrong keys in-game (e.g. movement W)"）與此診斷一致——backlog 的直覺方向對，但機制描述（同幀）不準確。
+- **修法**（`Modes.{h,cpp}`）：
+  - **黑名單**（`Modes::IsBindable`）：armed 狀態下永遠不接受 WASD／Space／LShift／RShift／LCtrl／Tab／Enter／console 反引號──這批鍵碰到直接吞掉、不消耗 armed 狀態，並丟一個 `DebugNotification`「that key is reserved, press another」。這是主因的直接解藥：不管手有沒有還在 WASD 上，這些鍵永遠進不了候選。
+  - **等放開才 commit**：符合條件的第一個 down 只記成候選（`g_rebindCandidate`），**必須同一顆鍵的 up-event** 才真正 `SetBind`——順手也堵死「armed 當下已經按住的鍵」這個理論路徑（`ButtonEvent::IsDown()` 只在 up→down 那一幀為真，早就按住的鍵本來就不會產生新的 down-event，這點驗證後 backlog 猜測在字面上不成立，但等放開仍是額外一層防呆，也讓面板能顯示「放開 X 確認」）。
+  - Esc 取消（**沿用既有**——舊碼已經有，只是被隱藏而已，不是新做的）；`plugin.cpp` 的 `HotkeySink` 補收 key-UP 並轉給新的 `Modes::HandleKeyUp`。
+  - `UI.Settings.cpp`：restore 每模式一顆 `Rebind##<mode>` 鈕＋目前鍵位文字；armed 時顯示「Rebinding <mode> -- press a key」／「-- release <key> to confirm」的黃字狀態列＋ `Cancel rebind` 鈕；rebind 中其餘模式的 Rebind 鈕 disable（`igBeginDisabled`），避免同時兩個 rebind 打架。
+  - `CoSave.cpp`：SETT **v6→v7**。① 過去 5 個模式的鍵位欄位是**寫進去但讀出來直接丟掉**（防呆舊 bug——現在改成真的套用，並用 `Modes::IsBindable` 二次驗證，遇到保留鍵字節就當壞資料丟掉、退回 F11，不盲信存檔內容）；② `kCapture`／`kReferrer` 兩個模式的鍵位 P5 之後**從來沒進過 co-save**（漏寫，不是這次才有的 bug），v7 補上。
+- **收尾**：F1 → Settings 頁 rebind 鈕全部復原可見；README 鍵位表那句「動作鍵目前固定 F11（rebind 暫時隱藏）」需同步（見 README 本節更新）。**待實機**：見 `wait_todo/ingame-tests.md`。

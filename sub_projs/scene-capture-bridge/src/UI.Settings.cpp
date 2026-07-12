@@ -9,6 +9,8 @@
 
 #include "SKSEMenuFramework.h"
 
+#include <string>
+
 namespace {
     constexpr Modes::Mode kActionModes[] = {
         Modes::Mode::kMarker, Modes::Mode::kDelete, Modes::Mode::kPick,
@@ -36,12 +38,44 @@ void __stdcall UI::SettingsPage::Render() {
         "marker gems.");
     ImGuiMCP::Separator();
 
-    // --- per-mode action key: fixed at F11 for now ---
-    // Rebinding is temporarily hidden — the capture flow grabbed the wrong keys
-    // in-game (e.g. movement W). The action key stays F11 for every mode until
-    // it's reworked. (Modes::BeginRebind still exists, just not surfaced here.)
-    ImGuiMCP::TextWrapped("Action key: F11 for every mode (rebinding disabled "
-                          "pending a fix).");
+    // --- per-mode action key: rebindable (reworked 2026-07-12) ---
+    // The old flow bound whatever keyboard key arrived first once armed —
+    // since the panel doesn't pause the game, that was often a leftover WASD
+    // tap, not the key the player meant to press. The fix (Modes.cpp):
+    // reserved keys (movement/console/Tab/Enter/Esc) are never accepted, and
+    // the accepted key must be pressed AND released while armed before it
+    // commits — so a stray tap can't half-finish a bind either.
+    if (Modes::RebindArmed()) {
+        const auto cand = Modes::RebindCandidate();
+        if (cand) {
+            ImGuiMCP::TextColored({1.f, 0.85f, 0.2f, 1.f},
+                "Rebinding %s -- release %s to confirm (Esc cancels)",
+                Modes::Name(Modes::RebindTarget()), Modes::KeyName(cand));
+        } else {
+            ImGuiMCP::TextColored({1.f, 0.85f, 0.2f, 1.f},
+                "Rebinding %s -- press a key (Esc cancels; WASD/Space/Shift/"
+                "Ctrl/console/Tab/Enter don't count)",
+                Modes::Name(Modes::RebindTarget()));
+        }
+        ImGuiMCP::SameLine();
+        if (ImGuiMCP::Button("Cancel rebind")) Modes::CancelRebind();
+        ImGuiMCP::Separator();
+    }
+    ImGuiMCP::Text("Action keys (per mode):");
+    for (auto m : kActionModes) {
+        const bool armingThis = Modes::RebindArmed() && Modes::RebindTarget() == m;
+        ImGuiMCP::Text("%-8s %s", Modes::Name(m), Modes::KeyName(Modes::Bind(m)));
+        ImGuiMCP::SameLine();
+        if (armingThis) {
+            ImGuiMCP::TextDisabled("(waiting for key...)");
+        } else {
+            const std::string btnId = std::string("Rebind##") + Modes::Cmd(m);
+            const bool disable = Modes::RebindArmed();  // one rebind at a time
+            if (disable) ImGuiMCP::BeginDisabled(true);
+            if (ImGuiMCP::Button(btnId.c_str())) Modes::BeginRebind(m);
+            if (disable) ImGuiMCP::EndDisabled();
+        }
+    }
     ImGuiMCP::Separator();
 
     // --- edit-mode step sizes (persist in the co-save SETT v2) ---

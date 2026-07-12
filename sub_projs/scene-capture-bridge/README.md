@@ -124,7 +124,7 @@ Export 頁有 **Export player cell**、**Export all (loaded cells)**、**Export 
 
 **Scope（使用者 2026-07-12 拍板）**：cell 匯出＝**純場景/物件**，掃描時 **actor 一律排除**（面板/log 顯示 `N actor(s) excluded`）——NPC 交給 ModForge **按 marker（`annotations[]`）去擺**；真要複製某個 NPC 走 `sc cap` → 獨立的 `capturedNpcs[]` 檔。captures 是**跨 cell 的定義資料庫**，所以拆檔：一把附魔劍不屬於你剛好站的那間房。兩種檔都是合法 ModSpec，`build` 各吃各的（ModForge C# 端零改動）。
 
-模式內操作不算佔鍵：numpad 編輯（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、`.` cancel、**5＝復原到編輯前姿態並續留編輯**）與 **numpad \*＝射線選取**照舊；位移/yaw/縮放**步長在 Settings 頁可調**（存 co-save）。當前模式/dp 狀態＋三個步長＋三本登記簿全部**存進存檔**（SKSE co-save，使用者的無 ini 原則）。動作鍵目前固定 F11（rebind 暫時隱藏，捕捉流程待重作）。`sc` 指令的實作＝劫持一個 retail 無作用的 vanilla console 指令（候選鏈首個命中者，2026-07-11 實機 donor＝`ClearAchievement`；全滅時面板 Settings 頁照樣能切模式）。
+模式內操作不算佔鍵：numpad 編輯（8/2/4/6/1/3 位移、7/9 yaw、+/− 縮放、0 commit、`.` cancel、**5＝復原到編輯前姿態並續留編輯**）與 **numpad \*＝射線選取**照舊；位移/yaw/縮放**步長在 Settings 頁可調**（存 co-save）。當前模式/dp 狀態＋三個步長＋三本登記簿全部**存進存檔**（SKSE co-save，使用者的無 ini 原則）。**動作鍵可在 F1 → Settings 頁逐模式改綁**（2026-07-12 rebind 重作，DLL crc `378d3c6c`）：按該模式的 `Rebind` 鈕，面板顯示「Rebinding <mode> -- press a key」，按住並放開想要的鍵才會 commit（移動鍵 WASD/Space/Shift/Ctrl、Esc、Tab、Enter、console 反引號一律不接受、armed 狀態不解除，面板會提示「that key is reserved, press another」）；Esc 隨時取消。鍵位每模式獨立、允許重複（預設全 F11），存進 co-save（SETT v7），重開遊戲跟著存檔還原。舊版曾把「armed 之後收到的第一個鍵」不篩不等放開就直接綁定，導致玩家還按著 WASD 走位時被誤綁成移動鍵（P5 實機 2026-07-11 撞到，故一度隱藏成固定 F11）——新流程加了保留鍵黑名單＋等放開才 commit 兩道防線。`sc` 指令的實作＝劫持一個 retail 無作用的 vanilla console 指令（候選鏈首個命中者，2026-07-11 實機 donor＝`ClearAchievement`；全滅時面板 Settings 頁照樣能切模式）。
 
 ## 現在有什麼（`src/`）
 

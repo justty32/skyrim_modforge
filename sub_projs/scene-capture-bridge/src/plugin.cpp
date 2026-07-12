@@ -43,12 +43,16 @@ namespace {
 
     // The P5 input surface — three layers, nothing else (the classic F6/F7/
     // F8/F10/F11 direct hotkeys are GONE, user-decided, not toggled off):
-    //   1. an armed panel rebind captures the next key,
+    //   1. an armed panel rebind captures a press-then-release of one key,
     //   2. edit-mode numpad internals (+ numpad * ray-select entry),
     //   3. the current mode's action key (per-mode binding, default F11).
     // Sink shape lifted from my_skyrim_plugin_1's FollowLight::HotkeySink
     // (in-game proven). One poll can carry several events chained through
     // `next`, so walk the list rather than reading only the head.
+    //
+    // Key-UP events are forwarded too (2026-07-12, rebind rework): Modes
+    // needs them to confirm a rebind candidate on release. HandleKeyUp is a
+    // no-op when no rebind is armed, so this changes nothing outside that flow.
     class HotkeySink : public RE::BSTEventSink<RE::InputEvent*>
     {
     public:
@@ -62,9 +66,14 @@ namespace {
             }
             for (auto* e = *a_events; e; e = e->next) {
                 auto* btn = e->AsButtonEvent();
-                if (!btn || !btn->IsDown()) continue;
+                if (!btn) continue;
                 if (btn->GetDevice() != RE::INPUT_DEVICE::kKeyboard) continue;
                 const auto code = btn->GetIDCode();
+                if (btn->IsUp()) {
+                    Modes::HandleKeyUp(code);
+                    continue;
+                }
+                if (!btn->IsDown()) continue;
                 if (Modes::RebindArmed()) {  // capture beats everything
                     Modes::HandleKey(code);
                     continue;

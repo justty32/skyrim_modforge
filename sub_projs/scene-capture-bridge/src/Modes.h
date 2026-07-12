@@ -83,17 +83,40 @@ namespace Modes {
     [[nodiscard]] bool ExtraData(Mode m);
     void SetExtraData(Mode m, bool on);
 
-    // Feed a key-down. Returns true when consumed: either it completed a
-    // pending rebind, or it matched the current mode's binding and ran the
-    // mode's action (debounced).
+    // Feed a key-down. Returns true when consumed: either it captured (or
+    // ignored) a rebind key, or it matched the current mode's binding and
+    // ran the mode's action (debounced).
     bool HandleKey(std::uint32_t scancode);
 
-    // Panel rebind flow: arm, then the next key pressed becomes the binding
-    // (Esc cancels). While armed HandleKey consumes everything.
+    // Feed a key-UP. Only meaningful while a rebind is armed: confirms the
+    // pending candidate (see BeginRebind). Returns true when consumed.
+    bool HandleKeyUp(std::uint32_t scancode);
+
+    // Panel rebind flow (reworked 2026-07-12 — see backlog postmortem):
+    //   1. BeginRebind(m) arms; Esc cancels at any time.
+    //   2. The first BINDABLE key-DOWN becomes the candidate (does not bind
+    //      yet) — see IsBindable. A held-over key (e.g. WASD the player was
+    //      already walking with) can never surface here: ButtonEvent::IsDown()
+    //      only fires on the up->down transition, never for a key already down.
+    //   3. That SAME key's key-UP confirms the bind. A different key going
+    //      down while a candidate is pending replaces it (last one wins);
+    //      nothing commits until a matching release.
+    // While armed, HandleKey/HandleKeyUp consume every keyboard event so
+    // nothing leaks to the mode action key or the editor.
     void BeginRebind(Mode m);
     void CancelRebind();
     [[nodiscard]] bool RebindArmed();
     [[nodiscard]] Mode RebindTarget();
+    // The key currently held as the pending rebind candidate (0 = none yet).
+    // Exposed for the panel's "release to confirm" status line.
+    [[nodiscard]] std::uint32_t RebindCandidate();
+
+    // False for keys that must never become an action-key binding: Esc
+    // (cancel), the console key, Tab/Enter (ImGui/console chrome), and the
+    // movement keys (WASD/Space/Shift/Ctrl) a player's hand is naturally
+    // still on when they click "Rebind" — the historic bug (backlog:
+    // "rebind armed 當幀把移動鍵也吃進去") was this list being empty.
+    [[nodiscard]] bool IsBindable(std::uint32_t scancode);
 
     void ResetDefaults();  // off + every binding back to F11 (new game / no co-save)
 
