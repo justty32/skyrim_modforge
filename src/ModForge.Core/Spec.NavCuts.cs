@@ -139,7 +139,10 @@ public sealed class PlacementNavCutConverter : JsonConverter<PlacementNavCutSpec
 public sealed class NavmeshSpec
 {
     public bool Warnings { get; set; } = true;        // P1: warn about off-navmesh NPCs / uncut obstacles
-    public bool AutoNavCuts { get; set; } = true;     // auto-cut blocking placements (user ruling 2026-07-12)
+    // User ruled "auto + opt-out" (2026-07-12), but auto stays OFF until the T2.0 spike proves
+    // L_NAVCUT actually diverts NPCs in-game. Defaulting true before that would inject unverified
+    // REFRs into every existing spec's output, shipped mods included. Flip to true once T2.0 passes.
+    public bool AutoNavCuts { get; set; } = false;
     public float MinFootprint { get; set; } = 10000f; // units² (100 × 100) — OBND XY area to count as blocking
     public float MinHeight { get; set; } = 100f;      // units — OBND height to count as blocking
     public float Padding { get; set; } = 32f;         // outward X/Y inflation of every box (≈ half an actor)
