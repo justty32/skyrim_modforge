@@ -22,6 +22,7 @@ public static partial class Generator
         public void BuildReferences()
         {
             if (spec.References.Count == 0) return;
+            var bound = new List<string>();   // labels that actually got registered (fuel for the area-anchor hint)
             int i = 0;
             foreach (var r in spec.References)
             {
@@ -79,9 +80,45 @@ public static partial class Generator
                 formKeyByEd[label] = fk;
                 if (rec is not null) recordsByEd[label] = rec;
                 if (rec is IPlaced ipl) placementsByEd[label] = ipl;
+                bound.Add(label);
                 linksWired++;
                 if (LooksExternalRef(refStr)) extLinks++;
             }
+
+            NoteLabelsUsedAsAreaAnchors(bound);
+        }
+
+        // --- the guardrail for the defect that looks perfect: a LABEL in a LOCATION slot -------------
+        //
+        // `references[]` exists to say "I care about THIS ONE OBJECT" (that is the whole primitive —
+        // Spec.References.cs). A package LOCATION slot says the opposite: LocationTarget + radius = "an
+        // AREA around this ref", and the engine then uses WHATEVER furniture/bed/food it finds inside
+        // the radius. Put a label in one and you get a plugin that builds green, dumps clean, warns
+        // about nothing — and in-game the NPC sits in a DIFFERENT chair.
+        //
+        // It is NOT an error: "wander near that chair" is a legitimate (and useful) intent, and only the
+        // author knows which they meant. So this is an INFO note (never a warning), and it fires ONLY
+        // when the ref in the slot is a references[] LABEL — a slot holding a plain vanilla cell/marker
+        // FormID or an in-spec placement editorId is the ordinary area case and says nothing suspicious.
+        // The SingleRef/Location split itself lives in PackageRefSlots (one table, anti-rot test).
+        private void NoteLabelsUsedAsAreaAnchors(List<string> labels)
+        {
+            if (labels.Count == 0) return;
+            var labelSet = new HashSet<string>(labels, StringComparer.Ordinal);   // formKeyByEd resolves ordinally
+            foreach (var pk in spec.Packages)
+                foreach (var slot in PackageRefSlots.OfKind(PackageSlotKind.Location))
+                {
+                    var refStr = (slot.Get(pk) ?? "").Trim();
+                    if (!labelSet.Contains(refStr)) continue;
+                    uint radius = slot.Radius?.Invoke(pk) ?? 0;
+                    Note($"  i reference label '{refStr}' → package '{pk.EditorId}' {slot.Path} (radius {radius}): a LOCATION slot "
+                       + $"anchors an AREA at that ref, it does not lock onto it."
+                       + $"\n      The engine walks the actor to that spot and then uses ANY furniture/bed/food it likes inside the radius"
+                       + $" — it may well be a DIFFERENT object than '{refStr}'."
+                       + $"\n      If you meant \"be near that thing\", this is right and you can ignore this line. If you meant \"use THAT"
+                       + $" object\", put the label in a SingleRef target slot instead ({PackageRefSlots.SingleRefPaths})"
+                       + $" — those emit PackageTargetSpecificReference(that ref) and the engine acts on it and no other.");
+                }
         }
 
         // Is an existing external placed ref persistent? null = couldn't tell (no link cache / not a

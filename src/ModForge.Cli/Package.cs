@@ -95,6 +95,7 @@ internal static partial class Program
         if (!RequiresOk(result, specPath, espPath)) return 1;
         PluginIo.Write(result.Mod, espPath);
         foreach (var w in result.Warnings) Console.WriteLine(w);
+        foreach (var n in result.Notes) Console.WriteLine(n);   // advisory INFO — nothing is wrong (BuildResult.Notes)
         Console.WriteLine(BuildSummary(result.Stats, specPath, espPath));
         // Install requirements (Generator.Dependencies.cs). Summary only — no .requires.txt here:
         // outModDir IS the shipped mod folder, and `build` is where the author records dependencies.

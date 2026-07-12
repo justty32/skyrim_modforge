@@ -47,6 +47,14 @@ public sealed class BuildResult
     /// <summary>Non-fatal authoring problems surfaced during build (unresolved refs, missing models, …).</summary>
     public required IReadOnlyList<string> Warnings { get; init; }
 
+    /// <summary>
+    /// Advisory INFO lines: nothing is wrong, but the spec says something whose in-game meaning is easy
+    /// to misread and impossible to see in the output (e.g. a <c>references[]</c> label fed into a
+    /// package LOCATION slot — an AREA anchor, not "use THAT object"; see Generator.Build.References.cs).
+    /// Deliberately NOT warnings: a note must not turn a clean build yellow. A caller should print them.
+    /// </summary>
+    public IReadOnlyList<string> Notes { get; init; } = Array.Empty<string>();
+
     /// <summary>Counts describing what was built.</summary>
     public required BuildStats Stats { get; init; }
 

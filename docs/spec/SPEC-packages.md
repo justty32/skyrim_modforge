@@ -41,16 +41,25 @@ Mutagen field *shape* is reflection-verified, but the `AliasForReference`/`Alias
 package on the same NPC's `packages` list (Travel first) — Travel runs until the NPC arrives,
 then Sandbox takes over.
 
-> 🔴 **A location slot anchors an AREA, not an OBJECT.** Every *location* slot (`sandbox`/`sleep`/
-> `eat` `location`, `travel` `place`) builds a `LocationTarget` + radius: the engine goes to that
-> **spot** and then picks whatever furniture/bed/food it likes **inside the radius**. So
-> `sandbox.location: "<a chair>"` does **not** mean "sit in that chair" — the NPC may sit in a
+> 🔴 **A location slot anchors an AREA, not an OBJECT.** Which slot you put a ref in decides whether
+> the engine locks onto **that one object**. The complete split (source of truth in code:
+> `src/ModForge.Core/PackageRefSlots.cs`, kept honest by an anti-rot test):
+>
+> | slot kind | slots | builds | meaning |
+> |---|---|---|---|
+> | **SingleRef target** | `patrol.start`, `follow.target`, `escort.target`, `sitTarget.target`, `activate.target`, `useMagic.target` | `PackageTargetSpecificReference(FormKey)` | **that ref and no other** |
+> | **location** | `sandbox.location`, `sleep.location`, `travel.place`, `escort.destination`, `eat.location`, `useMagic.location` | `LocationTarget(FormKey)` + radius | an **AREA** at that ref's position; the engine then picks whatever furniture/bed/food it likes **inside the radius** |
+>
+> So `sandbox.location: "<a chair>"` does **not** mean "sit in that chair" — the NPC may sit in a
 > *different* chair nearby, **with no warning and no error** (the plugin builds clean and dumps
-> clean; only the in-game behaviour is wrong). To pin an NPC to **one specific reference**, put the
-> ref in a **SingleRef target** slot — `sitTarget.target`, `activate.target`, `follow.target`,
-> `patrol.start`, `escort.target` — which builds a `PackageTargetSpecificReference(FormKey)`; the
-> engine then acts on **that ref and no other** (no quest alias needed). Worked example:
-> `examples/referrer-chair-anchor.json`.
+> clean; only the in-game behaviour is wrong). To pin an NPC to **one specific reference**, use a
+> SingleRef target slot (no quest alias needed). Worked example: `examples/referrer-chair-anchor.json`.
+>
+> **Guardrail:** when a `references[]` **label** (which declares "I care about *this object*") lands in
+> a *location* slot, `build` prints an **info** line (`  i …`, never a warning — "wander near that
+> chair" is a legal intent) naming the slot, the radius and the SingleRef slots that would lock on.
+> A plain vanilla FormID or an in-spec placement editorId in a location slot is the ordinary area
+> case and says nothing.
 
 ```jsonc
 { "editorId": "MF_HangAtSpotPackage",

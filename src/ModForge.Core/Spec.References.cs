@@ -11,15 +11,19 @@ namespace ModForge;
 // objective target, a script Form property …).
 //
 // 🔴 WHICH SLOT YOU PUT THE LABEL IN DECIDES WHETHER IT LOCKS ONTO THAT ONE OBJECT.
-//   SingleRef TARGET slots (sitTarget.target, activate.target, follow.target, patrol.start,
-//     escort.target) → PackageTargetSpecificReference(FormKey): the engine acts on THAT REF, period.
-//   LOCATION slots (sandbox.location, travel.place, sleep.location, eat.location) → LocationTarget +
-//     radius: an AREA anchored at that ref's position; the engine then picks whatever furniture/bed/
-//     food it likes INSIDE the radius.
+//   SingleRef TARGET slots (patrol.start, follow.target, escort.target, sitTarget.target,
+//     activate.target, useMagic.target) → PackageTargetSpecificReference(FormKey): THAT REF, period.
+//   LOCATION slots (sandbox.location, sleep.location, travel.place, escort.destination, eat.location,
+//     useMagic.location) → LocationTarget + radius: an AREA anchored at that ref's position; the
+//     engine then picks whatever furniture/bed/food it likes INSIDE the radius.
+// (The full table lives in PackageRefSlots.cs — ONE source of truth, with an anti-rot test; the two
+// lists above are a reading aid and may be out of date, the table cannot be.)
 // So `sandbox.location: "sofia's chair"` does NOT mean "sit in that chair" — it means "hang around
 // where that chair is", and she may sit in a DIFFERENT chair, with NO warning and NO error (builds
 // clean, dumps clean, wrong in-game). For "she must use THAT object" always use a SingleRef slot.
 // Worked example with a control group: examples/referrer-chair-anchor.json.
+// GUARDRAIL: a label landing in a LOCATION slot makes build print an INFO note (BuildResult.Notes —
+// never a warning: an area anchor is a legal intent). See Generator.Build.References.cs.
 //
 // SIBLINGS: `removals[]` (erase existing), `overrides[]` (move existing), `references[]` (NAME
 // existing). All three carry an EXISTING ref; none of them creates the thing they point at (the one

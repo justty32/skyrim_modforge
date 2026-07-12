@@ -20,6 +20,7 @@ public static partial class Generator
         private readonly ModSpec spec;
         private readonly SkyrimMod mod;
         private readonly List<string> warnings = new();
+        private readonly List<string> notes = new();      // advisory INFO lines (never warnings — see Note())
         private readonly string skyrimData;
 
         // Master link-caches (read-only overlays of Skyrim.esm etc.), lazily opened by name.
@@ -118,6 +119,11 @@ public static partial class Generator
 
         private void Warn(string message) => warnings.Add(message);
 
+        // An INFO line: nothing is wrong, but the spec says something whose in-game meaning is easy to
+        // misread (see BuildReferences' area-anchor hint). Kept OUT of `warnings` on purpose — a note
+        // must not turn a clean build yellow, and "zero warnings" must stay a meaningful assertion.
+        private void Note(string message) => notes.Add(message);
+
         // --- pass 2 setup: index every record by editorId so refs (possibly forward) resolve. ---
         // All records exist now, so build one editorId -> FormKey table and wire links
         // that may point forward (e.g. an NPC listed before the faction it belongs to).
@@ -193,6 +199,7 @@ public static partial class Generator
             {
                 Mod = mod,
                 Warnings = warnings,
+                Notes = notes,
                 Dependencies = deps,
                 // …and the spec's own declaration checked against them (Generator.Requires.cs). Says nothing
                 // when the spec has no requires[] section — the caller decides what to do with an error.

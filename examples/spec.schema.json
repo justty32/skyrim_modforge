@@ -660,7 +660,7 @@
     }},
     "reference": {"type": "object", "required": ["ref", "label"], "description": "NAME an EXISTING placed ref (Idea #24 referrer `sc ref`). TWO TARGET CLASSES: (B) IN-FILE — `ref` is a placements[] editorId in THIS spec (the object the player placed with `sc pl`); build FORCES IT PERSISTENT (0x400 + the cell's Persistent group), which is exactly what an alias/package specific-reference target needs — THE CLEAN PATH. (A) EXTERNAL — `ref` is a vanilla '<master>:0xFORMID'; build warns when that ref is TEMPORARY (most vanilla scenery is → a poor alias/package target) and `anchor` authors a persistent stand-in of our own.", "properties": {
       "ref": {"type": "string", "description": "REQUIRED. An in-spec placements[] editorId (in-file path) OR a vanilla '<master>:0xFORMID' (external path). references[] NEVER creates the ref — it must already exist."},
-      "label": {"type": "string", "description": "REQUIRED, unique across the spec. The free-form name typed in-game (\"sofia's chair\"). Registered as a resolvable id → usable in ANY ref field: a package's sandbox `location` / travel `place`, a quest alias `forced:`, `linkedRefs.target`, `enableParent.ref`, an objective target, a script Form property."},
+      "label": {"type": "string", "description": "REQUIRED, unique across the spec. The free-form name typed in-game (\"sofia's chair\"). Registered as a resolvable id → usable in ANY ref field: a quest alias `forced:`, `linkedRefs.target`, `enableParent.ref`, an objective target, a script Form property, a package slot. 🔴 WHICH PACKAGE SLOT DECIDES WHETHER IT LOCKS ONTO THAT ONE OBJECT: a SingleRef TARGET slot (patrol.start, follow.target, escort.target, sitTarget.target, activate.target, useMagic.target) → PackageTargetSpecificReference = THAT ref and no other. A LOCATION slot (sandbox.location, sleep.location, travel.place, escort.destination, eat.location, useMagic.location) → LocationTarget + radius = an AREA around that ref, and the engine then uses ANY furniture/bed/food inside the radius (she may sit in a DIFFERENT chair — builds clean, dumps clean, wrong in-game; build prints an info line when you do this)."},
       "base": {"type": "string", "description": "The target's base form (what the referrer recorded). Advisory, EXCEPT anchor:\"replace\", which re-places it."},
       "position": {"$ref": "#/$defs/vec3", "description": "Where the target stands — cell-local (interior) or world (exterior), same contract as placements[]. Needed by the anchor modes (falls back to the master record's value)."},
       "rotation": {"$ref": "#/$defs/vec3", "description": "degrees"},
@@ -2092,7 +2092,7 @@
         },
         "sandbox": {
           "type": "object",
-          "description": "Sandbox template inputs (radius, allowEating, ...); see SPEC.md"
+          "description": "Sandbox template inputs (location, radius, allowEating, ...); see SPEC-packages.md. 🔴 `location` is an AREA anchor (LocationTarget + radius) — the NPC wanders there and uses whatever furniture it likes inside the radius. It does NOT mean 'use that object': for that use a SingleRef slot (sitTarget.target / activate.target / …)."
         },
         "travel": {
           "type": "object",

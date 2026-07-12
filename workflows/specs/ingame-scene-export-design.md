@@ -198,12 +198,16 @@ position/rotation（度）必填＝新的完整 transform（不是 delta）；`s
 
 > 🔴 **契約層必須講明白：label 給你一個名字，但「能不能鎖定就是那一個 ref」取決於你把 label 放進哪個槽。**（2026-07-12，做實機 demo 時發現）
 >
-> | 槽的種類 | 例 | build 出來是 | 語意 |
+> **完整槽位表**（程式碼真相＝`src/ModForge.Core/PackageRefSlots.cs`，附反腐化測試；下表是它的鏡像）：
+>
+> | 槽的種類 | 全部的槽 | build 出來是 | 語意 |
 > |---|---|---|---|
-> | **SingleRef target** | `sitTarget.target`、`activate.target`、`follow.target`、`patrol.start`、`escort.target` | `PackageTargetSpecificReference(FormKey)` | **就是那一個 ref**，引擎不會挑別的 |
-> | **location** | `sandbox.location`、`travel.place`、`sleep.location`、`eat.location` | `LocationTarget(FormKey)` ＋ radius | 錨定**那個 ref 所在的區域**；引擎在 radius 內**自己挑**家具/床/食物 |
+> | **SingleRef target** | `patrol.start`、`follow.target`、`escort.target`、`sitTarget.target`、`activate.target`、`useMagic.target` | `PackageTargetSpecificReference(FormKey)` | **就是那一個 ref**，引擎不會挑別的 |
+> | **location** | `sandbox.location`、`sleep.location`、`travel.place`、`escort.destination`、`eat.location`、`useMagic.location` | `LocationTarget(FormKey)` ＋ radius | 錨定**那個 ref 所在的區域**；引擎在 radius 內**自己挑**家具/床/食物 |
 >
 > 所以 `sandbox.location: "sofia's chair"` **不等於**「坐那張椅子」，而是「在那張椅子附近晃」——她很可能坐**旁邊另一張**椅子，而且**不會有任何警告或錯誤**（build 綠、dump 漂亮、實機是隨機的）。這是最壞的一種缺陷：看起來對。**「她必須用那個物件」一律走 SingleRef 槽。** referrer 的**價值證明**（`examples/referrer-chair-anchor.json`，含對照組誘餌椅）就是靠 `sitTarget` 才立得住。
+>
+> **✅ 護欄（2026-07-12）**：`references[]` 的 label 掉進 location 槽時，build 印一行 **info**（`  i …`，走 `BuildResult.Notes`，**不是 warning**——「在那附近晃」是合法意圖，只有作者知道要哪個），內容含槽名、radius、以及「要鎖定就改用這些 SingleRef 槽」。**只在 label 來自 `references[]` 時印**：location 槽裡放 vanilla FormID 或檔內 placement editorId＝一般的區域用法，不吵。零 esp 位元變動（`examples/referrer-chair-anchor.json` / `scene-references.json` 產出 md5 不變）。程式：`Generator.Build.References.cs` `NoteLabelsUsedAsAreaAnchors`；測試：`ReferenceSlotKindTests.cs`。
 
 **兩類目標（backlog 🔑 洞察，語意不同）：**
 

@@ -25,6 +25,10 @@ internal static partial class Program
 
         PluginIo.Write(result.Mod, outPath);
         foreach (var w in result.Warnings) Console.WriteLine(w);
+        // Advisory INFO lines — the build is fine, but the spec says something whose in-game meaning is
+        // easy to misread and invisible in the output (a references[] label in a package LOCATION slot
+        // = an AREA anchor, not "use THAT object"). Not warnings: they must not make a clean build look dirty.
+        foreach (var n in result.Notes) Console.WriteLine(n);
         Console.WriteLine(BuildSummary(result.Stats, specPath, outPath));
         if (spec.Annotations.Count > 0)
             // Advisory marker anchors from the in-game editor — deliberately NOT built (Spec.Annotations.cs).

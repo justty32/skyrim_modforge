@@ -62,7 +62,7 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Entry | `Generator.cs` | 外部入口 `Generator.Build(spec, opts)`；`BuildResult` / `BuildStats` |
+| Entry | `Generator.cs` | 外部入口 `Generator.Build(spec, opts)`；`BuildResult` / `BuildStats`。`BuildResult.Notes` ＝**advisory INFO 頻道**（`BuildContext.Note()`，與 `Warnings` 分離：note 不該讓乾淨的 build 變黃、也不該弄髒「零警告」這個斷言）——目前唯一來源＝`references[]` label 掉進 package location 槽的 area-anchor 護欄。CLI `build`/`package` 在 warnings 之後照印 |
 | Pipeline | `Generator.Build.cs` | pass 1（建所有 record）→ pass 2（接 FormLink）完整呼叫序列 |
 | State | `Generator.BuildContext.cs` | 狀態容器：mod handle / warnings / editorId-formKey 對照表 / placement-package-vendor tracking |
 | Helpers | `Generator.BuildContext.Utilities.cs` | master link-cache 管理；`PackageDataLocation` slot 建構 |
