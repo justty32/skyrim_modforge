@@ -70,13 +70,19 @@
 - **numpad 5 改 per-mode**（使用者第三輪）：純旋轉模式下 5＝角度歸零（同 8/2），移動模式下 5＝復原編輯前——不再兩模式共用。（**2026-07-12**：旋轉模式下的 5 進一步收斂成**只還原 yaw**，見上；移動模式的 5 不變。）
 - **marker 記錄完整朝向＋大小**（使用者第三輪）：Entry `angleZDeg`→`angleDeg{x,y,z}`＋`scale`；匯出 `annotations[]` 帶 `rotation`＋`scale`（ModForge `AnnotationSpec.Rotation/Scale`，869 測綠）；co-save MKRS v2（舊 v1 只有 angleZ→補 0）。**marker 模型改鐵匕首**（`Weapons\Iron\IronDagger.nif`，劍尖視覺化朝向；tools-spec.json 改 model 重建 esp，houseCARL 驗 WEAP 01397E）。
 
-## 仍未做
+## ✅ 已做（外部 mod 依賴的**可見性**＝候選 (a)，2026-07-12，**純 C#、零 DLL 改動**，離線閉環驗完）
+- **問題**：`sc capp`/`sc cap` 吸到的 spell/perk/item/effect 只要來自 mod，生成的 esp 就把那些 mod 變成 **master**；缺 master → Skyrim **靜默不載**（不說為什麼），而 `build` 過去**零可見性**。**範圍不只 capture**：任何手寫 spec 寫 `PROTEUS.esp:0x123` 都一樣 ⇒ 處置做在 **ModForge 通用層**（`src/ModForge.Core/Generator.Dependencies.cs`）。
+- **🔑 使用者已拍板：不過濾——「完全複製」優先**（分身的價值在「就是你」；要可攜就手寫 spec）。所以這條**純粹是可見性**：`build` 產物**一個 byte 都不變**（`MFCapHatak.esp` md5 改前改後同為 `638aae3c…`；另有測試釘死「跑不跑分析，寫出來的 bytes 相同」）。
+- **`build` 摘要印非 vanilla masters ＋ 逐筆歸因**。歸因粒度＝**作者親手寫的那個 spec 欄位**（不是只到 record）。拿使用者 2026-07-12 那份**真的** capture 跑，7 個 master 一個不差，逐行講是誰拉進來的：
+  - `PROTEUS.esp (1 link) ← capturedNpcs[0].spells[17] = PROTEUS.esp:0x08073D`
+  - `Conditional Expressions.esp ← capturedNpcs[0].activeEffects[3].magicEffect = …:0x00081A`（活性效果也照抓）
+- **兩個來源，各司其職**：**master 清單以「建好的 mod」為準**（掃 record FormKey ＋ `EnumerateFormLinks`——抓得到 spec 字串沒寫、被 deep-copy／template clone 帶進來的 master）；**歸因以 spec 為準**（reflection walk 出 JSON 路徑）。⚠️ 歸因快照必須在 `ExpandMacros` **展開前**取（`ModSpec.AuthoredRefSources`，internal）——否則 captured NPC 會報成巨集生出來的 `npcs[0].spells[…]`，那是**使用者檔案裡根本不存在的欄位**。
+- **旁檔 `<plugin>.requires.txt`**（寫在 esp 旁；沒有非原版依賴時刪掉舊檔）＝解掉後果②「沒有任何地方記著這個 esp 依賴誰」。**`package` 只印摘要、不寫旁檔**（它的輸出夾就是要出貨的 mod，不該多塞檔案）。
+- **CC 不算 vanilla**（`ccXXXSSE###` / `_ResourcePack`）：按帳號購買，沒買的玩家一樣靜默不載——照列，只是標註原因。vanilla ＝ Skyrim/Update/Dawnguard/HearthFires/Dragonborn 五個。
+- **語氣＝資訊、不是錯誤**（使用者拍板要完全複製）；純 vanilla spec **一個字都不印**（negative-case 測試釘住，免得變背景噪音）。C# **971 測綠**（951 + 20 新）。docs：[for_agent_cli](../../../docs/for_agent_cli.md)（＋zh-TW 鏡像）。
+- **另三個候選這輪沒做**：(b) spec 宣告式 `requires:` 段（build 對不上就報錯——**這才是後果②的完整解**，旁檔只是半套）；(c) modlist / load order 快照（MO2 `plugins.txt`）；(d)「依賴檢查」指令（給 esp ＋ load order，回報缺什麼）。
 
-- **📌 外部 mod 依賴的可見性與處置（使用者 2026-07-12 實機後提出，「之後要做的事」）**：`sc capp`/`sc cap` 吸到的 spell/perk/item/effect 只要來自 mod（PROTEUS、XPMSE、nwsFollowerFramework…），生成的 esp 就把那些 mod 變成 **master**。實例：2026-07-12 玩家分身 `MFCapHatak.esp` 的 masters ＝ Skyrim/Dawnguard/Dragonborn ＋ **PROTEUS.esp、nwsFollowerFramework.esp、XPMSE.esp、Better Face Lighting.esp、Conditional Expressions.esp、ImGladYoureHere.esp、SCSI-ACTbfco-Main.esp**（來源＝玩家身上的 20 spells／31 activeEffects／inventory）。
-  - **🔑 使用者已拍板：不過濾——「完全複製」優先**（分身的價值在「就是你」，可攜性不是這條路的目標；要可攜就走手寫 spec）。所以**不要**加「只收 vanilla」的過濾當預設。
-  - **但要處置的真實後果**：① 裝的人**必須有那些 mod**，否則缺 master → Skyrim **靜默不載**（不會說為什麼，見 memory `masterless-plugin-silent-load-failure` 的鄰居坑）；② repo/spec **沒有任何地方記著這個 esp 依賴誰、什麼版本** → 哪天移除 PROTEUS，esp 靜默壞掉；③ `build` 目前**零可見性**（只有 `dump` 印 masters），不會提醒「你引用了 7 個非 vanilla master」。
-  - **範圍不只 capture**：任何手寫 spec 只要寫 `PROTEUS.esp:0x123` 都一樣——capture 只是讓它**大量自動發生**。所以處置該做在 **ModForge 通用層**，不是 capture 專屬。
-  - **候選處置（動工時選）**：(a) `build` 摘要印出**非 vanilla masters ＋ 每個 master 是被哪些 record／哪個 spec 欄位拉進來的**（最低成本、最高價值）；(b) spec 加宣告式 `requires:` 段（明示依賴，build 時對不上就報錯）；(c) 把 **modlist / load order 快照**存進 repo 或 spec 旁邊（MO2 profile 的 `plugins.txt`/`modlist.txt`）；(d) 新指令做「依賴檢查」（給一份 esp + 一個 load order，回報缺什麼）。
+## 仍未做
 
 - **`sc cap` 物件類 vs `sc pk` 分工（使用者再想，先照舊）**：`sc cap` 記 NPC/player 含全身物品＋extra data（v7 已落地）；物件類 capture 與 `sc pk` 滴管感覺功能重複，使用者還要想想——**傾向仍記錄**，暫不動。
 - **📌 導航網格（navmesh）——「超重要，之後得開始考慮」（使用者 2026-07-11 晚）**：編輯器流程目前完全沒碰 navmesh——擺出的建築/障礙物會擋住 vanilla navmesh 但 NPC 照原網格走（穿模/卡住），marker 生的 NPC 若落在無網格處也不會動。ModForge 已有程式化 navmesh 能力可接（custom worldspace NAVM＋NAVI additive override Skyrim.esm:0x12FB4 in-game 驗過，見 idea/asset-pipelines/map-scene/geometry.md 一帶＋Vigilant.esm 解碼參考）；難點在**編輯 vanilla cell**：要 override 既有 NAVM（cut/finalize 語意）而不只是新建。方向未定（DLL 端記錄擺放物 footprint → ModForge 端裁切？或先只處理「新增小平台補網格」？），需要時開獨立 plan。

@@ -8,6 +8,13 @@ public static partial class Generator
     // then Build() calls it again as a no-op. Keeping the ordered list in one place avoids drift.
     public static void ExpandMacros(ModSpec spec)
     {
+        // Attribution for the dependency report (Generator.Dependencies.cs) is taken HERE, before the
+        // first expansion, because that is the last moment the spec still looks like what the author
+        // wrote: after this, a captured NPC's PROTEUS spell also lives on a generated npcs[0] and would
+        // be reported through a field that exists in no file. Once only — ExpandMacros is re-run
+        // (idempotently) by Build even when `package` already ran it.
+        spec.AuthoredRefSources ??= SpecRefSources(spec);
+
         ExpandSkillTrees(spec);   // → globals/activators/placements/scripts
         ExpandSettlements(spec);  // → npcs' packages/factions + ACHR placements + vendor FACT/container + RELA
         ExpandLivingNpcs(spec);   // → controller quest + per-NPC alias/markers/global/rumor + world-controller script

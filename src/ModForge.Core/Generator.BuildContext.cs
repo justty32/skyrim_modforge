@@ -191,6 +191,8 @@ public static partial class Generator
             {
                 Mod = mod,
                 Warnings = warnings,
+                // Read-only over the finished mod + the spec — authors nothing (see Generator.Dependencies.cs).
+                Dependencies = AnalyzeDependencies(mod, spec),
                 Stats = new BuildStats
                 {
                     Esl = spec.Esl,

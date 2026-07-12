@@ -57,6 +57,36 @@ $R find "$SKYRIM_ESM" 0x000D4B52           # 反查：0xFORMID -> 記錄型別�
 （具描述性，例如 `NordRace`）；本地化顯示名稱無法在 headless 下解析。一個站立的
 NPC 至少需要 `race` ＋ `class` 才能像真正的 actor 一樣行動；`outfit` 替它穿上衣物。
 
+## 引用某個 MOD——它就變成 master（安裝必要條件）
+
+同一套語法吃任何 plugin：`"PROTEUS.esp:0x08073D"`。這會讓 **PROTEUS.esp 成為你 plugin 的
+master**——而 **Skyrim 對「缺 master」的 plugin 是靜默不載**：沒有錯誤、沒有 log，記錄在遊戲裡
+就是不存在。這不是 bug，ModForge 也不會過濾（`sc capp` 的玩家分身若把 mod 給的法術全丟掉，
+那就不再是「你」了），但你必須知道它發生了。所以 `build` **會告訴你**，而且會講是哪個 spec 欄位
+把它拉進來的：
+
+```
+7 non-vanilla master(s) — the plugin will NOT load for anyone missing them (Skyrim drops it silently):
+  ImGladYoureHere.esp  (3 link(s))
+      ← capturedNpcs[0].spells[10] = ImGladYoureHere.esp:0x18D2A1
+      … +6 more
+  PROTEUS.esp  (1 link(s))
+      ← capturedNpcs[0].spells[17] = PROTEUS.esp:0x08073D
+wrote MFCapHatak.requires.txt (the install requirements, with the spec field behind each one)
+```
+
+- **原版 masters**（`Skyrim.esm`、`Update.esm`、`Dawnguard.esm`、`HearthFires.esm`、
+  `Dragonborn.esm`）永遠不列——每個安裝都有。
+- **Creation Club**（`ccBGSSSE001-Fish.esm`、`_ResourcePack.esl`…）**要列**：它是按帳號購買的，
+  沒買的玩家一樣卡死。
+- **`<plugin>.requires.txt`** 寫在 .esp 旁邊（沒有非原版依賴時會刪掉舊檔）。請把它跟 plugin 放一起：
+  這是「這份 build 依賴誰」唯一的記錄。每個 master 底下列出所有「指到它的 form」的 spec 欄位——
+  想拔掉某個依賴，就把那個 master 底下的欄位**全部**刪掉再 build。
+- `package` 印同一份摘要但**不寫**旁檔（它的輸出資料夾就是要出貨的 mod）。
+
+.esp 本身一個 byte 都不變——這純粹是可見性。若 plugin 必須可攜，就別引用 mod 的內容：
+手寫 spec、只用原版 forms。
+
 ## 產生內容工作流程
 
 1. 閱讀 `SPEC-index.md` 取得確切欄位。撰寫 `spec.json`（camelCase；屬性名稱以

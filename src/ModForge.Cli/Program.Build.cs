@@ -31,6 +31,7 @@ internal static partial class Program
             // L_NAVCUT volumes (Spec.NavCuts.cs) — vanilla navmesh is switched OFF inside each box at
             // runtime, so NPCs path around what we placed instead of walking into it.
             Console.WriteLine($"{result.Stats.NavCuts} navCut volume(s) — vanilla navmesh cut at runtime (L_NAVCUT / CollisionMarker)");
+        ReportDependencies(result, outPath);
         WriteSeq(outPath, Path.GetDirectoryName(Path.GetFullPath(outPath)) ?? ".");
         if (spec.Weathers.Count > 0)
         {
@@ -41,6 +42,31 @@ internal static partial class Program
             for (int i = 0; i < spec.Weathers.Count; i++)
                 Console.WriteLine($"  Weather test: sw {prefix}{0x800 + i:X06}  → {spec.Weathers[i].EditorId}  {(i == 0 ? detail : "")}");
         }
+    }
+
+    // Non-vanilla masters are an INSTALL REQUIREMENT: Skyrim silently refuses to load a plugin whose
+    // masters are missing (no error, no log — the records just are not there). A capture (`sc cap`/
+    // `sc capp`) drags one in for every mod-sourced spell/perk/effect/item on the actor, and a
+    // hand-written `PROTEUS.esp:0x123` does the same. We deliberately do NOT filter that content
+    // (full fidelity beats portability), so the least we can do is SAY it — and say which spec field
+    // is responsible, so dropping a dependency is a decision the author can actually act on.
+    //
+    // The .requires.txt sidecar makes the dependency set durable (a build summary scrolls away, and
+    // nothing else in the repo records what an .esp needs). Written next to the plugin like Seq/;
+    // `package` prints the same summary but writes NO sidecar — its output folder is the shipped mod.
+    private static void ReportDependencies(BuildResult result, string outPath)
+    {
+        foreach (var line in Generator.DependencySummary(result.Dependencies)) Console.WriteLine(line);
+
+        var sidecar = Path.ChangeExtension(Path.GetFullPath(outPath), ".requires.txt");
+        var text = Generator.RequiresFileText(Path.GetFileName(outPath), result.Dependencies);
+        if (text is null)
+        {
+            if (File.Exists(sidecar)) File.Delete(sidecar);   // a stale requirement list is worse than none
+            return;
+        }
+        File.WriteAllText(sidecar, text);
+        Console.WriteLine($"wrote {Path.GetFileName(sidecar)} (the install requirements, with the spec field behind each one)");
     }
 
     // A Start-Game-Enabled quest hosting dialogue needs a Data/Seq/<plugin>.seq entry, or its

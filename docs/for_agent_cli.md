@@ -57,6 +57,36 @@ Always run `find` to get the real FormID — **never guess one**. Search is by E
 (descriptive, e.g. `NordRace`); localized display names aren't resolved headless. A standing
 NPC needs at least `race` + `class` to act like a real actor; `outfit` clothes it.
 
+## Referencing a MOD — it becomes a master (install requirement)
+
+The same syntax takes any plugin: `"PROTEUS.esp:0x08073D"`. That makes **PROTEUS.esp a master of
+your plugin** — and **Skyrim silently refuses to load a plugin whose masters are missing**: no error,
+no log line, the records just aren't there in-game. This is not a bug and ModForge does not filter it
+(a `sc capp` player clone that dropped every mod-given spell would not be *you* any more), but you
+have to know it happened. So `build` **tells you**, and says which spec field is responsible:
+
+```
+7 non-vanilla master(s) — the plugin will NOT load for anyone missing them (Skyrim drops it silently):
+  ImGladYoureHere.esp  (3 link(s))
+      ← capturedNpcs[0].spells[10] = ImGladYoureHere.esp:0x18D2A1
+      … +6 more
+  PROTEUS.esp  (1 link(s))
+      ← capturedNpcs[0].spells[17] = PROTEUS.esp:0x08073D
+wrote MFCapHatak.requires.txt (the install requirements, with the spec field behind each one)
+```
+
+- **Vanilla masters** (`Skyrim.esm`, `Update.esm`, `Dawnguard.esm`, `HearthFires.esm`,
+  `Dragonborn.esm`) are never listed — every install has them.
+- **Creation Club** (`ccBGSSSE001-Fish.esm`, `_ResourcePack.esl`, …) **is** listed: it is owned per
+  account, so a player who lacks it is just as stuck.
+- **`<plugin>.requires.txt`** is written next to the .esp (deleted when nothing non-vanilla is left).
+  Keep it with the plugin: it is the only record of what the build depends on. Under each master are
+  the spec fields naming a form it links — remove **all** of them to drop that dependency.
+- `package` prints the same summary but writes no sidecar (its output folder is the shipped mod).
+
+Nothing about the .esp changes — this is pure visibility. If the plugin must be portable, don't
+reference mod content: hand-write the spec against vanilla forms.
+
 ## Generate-content workflow
 
 1. Read `SPEC-index.md` for the exact fields. Write `spec.json` (camelCase; property names are

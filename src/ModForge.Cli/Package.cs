@@ -92,6 +92,9 @@ internal static partial class Program
         PluginIo.Write(result.Mod, espPath);
         foreach (var w in result.Warnings) Console.WriteLine(w);
         Console.WriteLine(BuildSummary(result.Stats, specPath, espPath));
+        // Install requirements (Generator.Dependencies.cs). Summary only — no .requires.txt here:
+        // outModDir IS the shipped mod folder, and `build` is where the author records dependencies.
+        foreach (var line in Generator.DependencySummary(result.Dependencies)) Console.WriteLine(line);
         WriteSeq(espPath, outModDir);
 
         // 3) Copy compiled .pex files (fragments + user scripts) into Scripts/.

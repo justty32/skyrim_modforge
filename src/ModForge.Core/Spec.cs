@@ -10,6 +10,11 @@ namespace ModForge;
 // the master on write (Mutagen MastersListContent=Iterate).
 public sealed class ModSpec
 {
+    // Master -> the spec fields that named it, snapshotted by ExpandMacros BEFORE it expands anything
+    // (Generator.Dependencies.cs). INTERNAL on purpose: not a spec field — it must not deserialize, must
+    // not show up in the unknown-field check, and must not be re-walked as spec content.
+    internal IReadOnlyDictionary<string, IReadOnlyList<string>>? AuthoredRefSources { get; set; }
+
     public string PluginName { get; set; } = "Generated.esp";
     public bool Esl { get; set; } = true;
     public List<MiscSpec> MiscItems { get; set; } = new();

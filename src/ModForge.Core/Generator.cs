@@ -49,6 +49,13 @@ public sealed class BuildResult
 
     /// <summary>Counts describing what was built.</summary>
     public required BuildStats Stats { get; init; }
+
+    /// <summary>
+    /// Every master the plugin needs at load time, with attribution (Generator.Dependencies.cs).
+    /// Purely informational — a missing NON-vanilla master makes Skyrim drop the plugin silently,
+    /// so the caller should surface these. Nothing here affects what was built.
+    /// </summary>
+    public IReadOnlyList<MasterDependency> Dependencies { get; init; } = Array.Empty<MasterDependency>();
 }
 
 /// <summary>Record/link/placement counts from a build.</summary>
