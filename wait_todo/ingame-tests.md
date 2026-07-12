@@ -52,17 +52,36 @@
   - **⚠ 白天測**:vendor 8-20 營業(GetOffersServicesNow 含時間),夜間交易會空——快旅後若是夜晚,`set timescale`/等到白天再試。庫存已放 vanilla 鐵匠 leveled lists(武防+雜貨+金),VendorLocation 錨在店周圍 4096。
   - **回報**:傳送安全否、房子貼地否、Brynja 在否、問候+**交易(有貨有金)**通否。(Brynja 從零建、無 facegen,臉可能陽春/暗臉——能站能講能交易就算過。)
 
-## scene-capture-bridge P9 擷取器（DLL `d3e1b5d0`，co-save `'SCCP'` v3）
+## scene-capture-bridge P9 擷取器（現行部署＝ DLL `dd7afd82`，co-save `'SCCP'` v9）
 
 **2026-07-11 端到端全通**：`sc cap` 模式（F11）吸 Mirabelle → Export → 消費 → build → 進遊戲**分身在學院庭院原地出現** ✅（OPEN-A 核心流程、OPEN-C 18-morph 修復、消費端 Phase 1 一次實證；落地記錄 [landed/npcs](../workflows/feature-dev/landed/npcs.md)）。殘餘：
 
 **OPEN-A 殘餘（最後一小項）**：存檔完全重開 → capture 的 aim source（er0/er1）還原（co-save SETT v4）。（`sc cap er1` 射線吸取 2026-07-11 已實證 OK。）另留意：模式制下重複按 F11 會吸出重複列（正常行為，消費端 editorId 已防撞）。
 
-## scene-capture-bridge — `sc capp` 直接吸玩家（2026-07-12，DLL crc `c5049c78`，**已部署**）
+## 🐞 scene-capture-bridge — `isPlayer` ＋ 玩家 perk 修正（**最優先**，2026-07-12，DLL `dd7afd82` 已部署）
 
-> **第一輪實機已過（2026-07-12）**：`sc capp` 抓對玩家 base（`Skyrim.esm:0x000007`），分身臉**確認是本人**——faceMorphs/headParts/hairColor/faceTexture ＋ **`tintLayers` 戰紋**全中（戰紋正是 PROTEUS 路線拿不到的那層）。交付 `~/skyrim_mods/mine/MFCapHatak.zip`。**剩下面的「數值」那條要用練過的角色重驗**。
+**這是今天實機抓到、已修、已部署、但還沒驗的 bug**（commit `eb6ae75`）。真因：`TESForm::As<T>()` 不是 `dynamic_cast` 而是 `switch (GetFormType())` 且只肯往 base 轉；玩家 ref 的 form type 是 `kCharacter`，switch 裡沒有 `PlayerCharacter` 的 case ⇒ `As<RE::PlayerCharacter>()` **對任何 actor 都必定回傳 nullptr**（編譯期就決定，換 MSVC 也一樣）。⇒ `isPlayer` 永遠 false、玩家點的 perk **一顆都吸不到**（走進 else 分支讀 base 的空 perk array）。已改成單例指標比對。
 
-⚠️ **完全關遊戲重開**吃新 DLL（esp 不動）。co-save **SCCP 維持 v8**（+label +顯式 H/M/S +18 技能）——舊存檔的 captures 照讀（缺的欄位＝0，行為同以前）。
+> ⚠️ **完全關遊戲重開**才吃得到新 DLL（esp 不動）。
+
+**🎯 對帳錨點（二元判斷，不用數數量）**：你已經點了 **Restoration 的第一個 perk ＝ `Skyrim.esm:0x0F2CAA`**（`RestorationNovice00` / Novice Restoration）。修正**前**的那份 export（`captures_20260712-2250.json`）裡那 12 個 perk **不含它**（已核對）。
+
+1. `sc capp <label>` 重吸一次自己 → console／SKSE log 應印出 **`PLAYER`** 標記。
+2. **F1 → Export 頁 → `Export captures`** → 新的 `captures_<時間>.json` 裡玩家那筆：
+   - **必須出現 `"perks": [... "Skyrim.esm:0x0F2CAA" ...]`** ← **這就是驗收條件**。沒有它＝沒修好，回報。
+   - 應多一個 **`"isPlayer": true`**（一般 NPC 的 `sc capc` 不該有這欄）。
+3. **把那份 json 給我**（或說檔名，我去讀）→ 我 build → 分身的 perk 就是你點過的那些。
+   - 順帶：`build` 若看到「is a player capture 但沒有 voiceType」會印一句 warning（措辭「this is expected, not a bug」，**不是紅色錯誤**）。
+
+**修正前的對照組已取得**（level 3 / magicka 110 ⇒ 證明 `GetPermanentActorValue` 那條路是好的，perk 卻仍是那 12 個 base perk ⇒ bug 已被實機釘死）。
+
+## scene-capture-bridge — `sc capp` 直接吸玩家：**數值那條**（2026-07-12，DLL `dd7afd82` 已部署）
+
+> **✅ 外貌路徑已 🎮 PASS（2026-07-12）**：`sc capp` 抓對玩家 base（`Skyrim.esm:0x000007`），分身臉**確認是本人**——faceMorphs/headParts/hairColor/faceTexture ＋ **`tintLayers` 戰紋**全中（戰紋正是 PROTEUS 路線拿不到的那層）。交付 `~/skyrim_mods/mine/MFCapHatak.zip`。落地句進 [landed/npcs](../workflows/feature-dev/landed/npcs.md)。
+>
+> **↓ 下面只剩「數值」這條**（必須用**練過的角色**驗——白紙角色兩種讀法吐一樣的數字，等於沒驗）。可以跟上面那節的 perk 驗收**同一次吸取一起做**。
+
+co-save **SCCP v9**——舊存檔的 captures 照讀（缺的欄位＝0，行為同以前）。
 
 **這是什麼**：`sc capp` 直接讀玩家（外貌走 base TESNPC，進度走 runtime actor）→ **不再需要 PROTEUS clone 當中介**。順帶所有 actor 的擷取都改帶**真實數值**（H/M/S＋18 技能）→ ModForge 寫 DNAM、不再靠 class autocalc 估算（那正是「clone 自報 L1、50/50/50」的來源）。計畫＋落地：[plans/player-capture-capp.md](../workflows/plans/player-capture-capp.md)。
 
@@ -85,15 +104,17 @@
    - **perk ＝你點過的 perk**（玩家 perk 存在 `addedPerks`，這次才收得到）。
    - **裝備**：穿在身上的護甲應該有穿（走鑄 OTFT 路），武器/雜物在物品欄。
    - **可能落差（先照實回報，不算 bug）**：① 玩家 base 的 **voiceType 可能是空的** → 分身啞巴（不會 hello/閒聊）——0958 那份 export 玩家那筆確實**沒有** `voiceType` 欄，已實證；② 物品欄**全吸**（含任務物品/金幣/鑰匙）→ 分身身上東西很多。這兩項要不要處理等你看了再說。
-   - **驗 `isPlayer` 標示（2026-07-12 新增，co-save SCCP v9）**：這次匯出的 json 裡玩家那筆應多一個 `"isPlayer": true`（一般 NPC 的 `sc capc` 不該有這欄）。若玩家 voiceType 仍是空的，`build` 的輸出裡應該印一句 warning，類似「is a player capture — no voiceType … the clone will be silent … This is expected, not a bug」（**不是紅色錯誤，是提示**）；有 voiceType 的話則不該印。
+   - （`isPlayer` ＋ perk 的驗收已獨立成上面那節，別重複做。）
    - **`weight: 0.0` 不是 bug**：那是你 chargen 的體重滑桿真值（Skyrim.esm 裡 Player base 是 100，我們吸到 0 → 正好證明讀的是**存檔改寫過的** TESNPC 而不是磁碟原始記錄；Ancano 的 0 也跟 Skyrim.esm 一字不差）。想對照就 console `player.getnpcweight`。
 4. **順手複驗（不破舊路）**：對一個**普通 vanilla NPC** `sc capc` → 匯出的那筆現在也該多出 `health/magicka/stamina/skills`，且 build 出來的分身**不再開 autoCalcStats**（數值照抄本尊）。舊 capture json（沒這些欄位的）照舊走 class-autocalc——**不該壞**。
 
 **回報**：① `sc capp` 有沒有吸到、label 大小寫對不對；② 分身的數值/perk/裝備對不對；③ voiceType/物品欄的落差要不要修。
 
-## scene-capture-bridge — 模式開關套件 `py` / `ed` / `pkc`（2026-07-12，DLL crc `5434abd4`，**已部署**）
+## scene-capture-bridge — 模式開關套件 `py` / `ed` / `pkc`（2026-07-12，**已部署**）
 
-⚠️ **完全關遊戲重開**吃新 DLL（esp 不動）。co-save：`SETT` 升 **v6**、新 record **`'PLEX'` v1**——**舊存檔照讀**（讀不到就落回預設：place `py1`、edit `py0`、extra data 全關＝跟以前一模一樣）。
+> **部分已過（2026-07-12）**：`sc pl py0` 的 **`"noHavokSettle": true` 已實機出現在 7 筆 placement 上**（`scene-export_Tamriel_x28y27_20260712-2243.json`）⇒ 遊戲內開關 → json 這一段通了。**但真正的驗收（下面 1. 的 🔑 那條）還沒做**：那份 json 我還沒 build，所以「裝進遊戲後杯子還在不在桌上」＝**未驗**。`ed1`（實例附魔）／`pkc`（console 滴管大小寫）／`ed py0/py1` 回歸／跨存檔 reacquire 也都還沒走。
+
+⚠️ co-save：`SETT` v6、record `'PLEX'` v1——**舊存檔照讀**（讀不到就落回預設：place `py1`、edit `py0`、extra data 全關＝跟以前一模一樣）。
 
 **這是什麼**：四個 per-mode 開關 ＋ 一個 aim-free 滴管。核心是 **`sc pl py0`＝「擺好的東西不要被物理彈飛」**，而且**這次真的會 ship 進 esp**（不只是遊戲內凍住）。
 
@@ -133,41 +154,34 @@
 
 **回報**：① `sc pl py0` 擺的東西在**遊戲內**定不定得住；② **build 出來裝進遊戲後**，杯子還在不在桌上（這條才是真的驗收）；③ `ed1` 吸的附魔武器擺出來/匯出/build 後撿起來有沒有附魔；④ `sc pkc XXX` 的大小寫有沒有留住；⑤ `sc ed` 的凍結有沒有被我改壞（回歸）。
 
-## scene-capture-bridge — referrer 原語 `sc ref` / `sc refc`（2026-07-12，DLL crc `112be269`，**已部署**）
+## scene-capture-bridge — referrer 原語 `sc ref` / `sc refc`（2026-07-12，**已部署**）
 
-⚠️ **完全關遊戲重開**吃新 DLL（esp 不動）。co-save 新增 record `'RFRR'` v1、`SETT` 升 **v5**——**舊存檔照讀**（沒有 referrer 記錄＝空登記簿）。
+> **✅ 匯出這一半 2026-07-12 已 🎮 PASS**（你遊戲內標了 5 筆）：**3 筆甲路徑**（外部 vanilla ref → 記耐久 FormID）＋ **2 筆乙路徑**（檔內目標 → `references[].ref` ＝ editorId `MFRef_ref_4_4`／`MFRef_ref_5_5`，對應的 placement 真的被蓋章）——`scene-export_Tamriel_x28y27_20260712-2243.json`，5 references。**價值證明（NPC 真的去坐被命名的那張椅子）也早已 PASS**。⇒ **下面 1./2./5. 已結案**，只剩 **3.（拒收三類）** 與 **4.（跨存檔重開撿回）**，外加**改 label 的路徑沒走過**（你這次用的是預設 label `ref_4`/`ref_5`，所以「大小寫保留」「撞名擋下」都還沒驗）。
+
+⚠️ co-save record `'RFRR'` v1、`SETT` v5——**舊存檔照讀**（沒有 referrer 記錄＝空登記簿）。
 
 **這是什麼**：第三個原語。marker 標的是**空座標**（「這裡放東西」）；**referrer 標的是「一個已經存在的東西」的身份 ＋ 一個自由 label**，而且**什麼都不動**（不新建、不移動、不 disable）。label 進 ModForge 後就是一個**可以被任何 ref 欄位引用的名字**——例：指一張椅子標 `sofia's chair`，Sofia 的 sandbox package 就能錨在**那張**椅子。三兄弟：`removals[]` 擦掉既有、`overrides[]` 移動既有、**`references[]` 命名既有**。
 
 **離線已閉環**（不用你驗）：手寫 DLL 形狀的 json → build → 椅子 REFR 帶 **0x400 persistent**、落在 cell 的 Persistent group、package 錨到它；C# 928 測綠。**要你驗的是遊戲內那一半**：指得到嗎、標籤留得住嗎、匯出的 json 對得上嗎。
 
-1. **(乙) 檔內相依——最重要的一條，先驗這個**（referrer 指**我們自己擺的**物件）：
-   - 找個空地／室內 → `sc pk` 吸一張椅子（或任何家具）→ `sc pl` **擺一張出來**（這是 dynamic ref，沒有耐久 FormID）。
-   - `sc ref`（進 referrer 模式）→ 對著**剛擺的那張椅子**按動作鍵（**F11**）→ 螢幕/console 應說 `SCB: reference recorded`。（指不到？`sc ref er1` 改用射線再按。）
-   - **F1 → References 頁**：應有一列，**綠字** `ours -> MFRef_ref_1_1`（＝將寫進 json 的 editorId）＋ base ＋座標。把 label 改成 `sofia's chair`（欄位打字後按 Enter 或按 `apply`）。
-   - **一次到位版**：再擺一張，直接 console `sc ref SofiaChair2`（**大小寫保留**）——不必先進面板。⚠️ console 參數以空白分隔：**有空格的 label 要加引號**（`sc ref "sofia's chair"`），或乾脆在 References 頁改名（面板打什麼都行）。
-   - **擋撞名**：把第二列的 label 也改成 `sofia's chair` → **應該改不動**，橘字說 label already used。（ModForge 那邊 label 是全域名字，撞名會炸整份 spec，所以在這裡就擋。）
-   - **F1 → Export 頁 → `Export player cell`** → 開那份 `scene-export_*.json`：
-     - `placements[]` 裡那張椅子那筆**多了 `"editorId": "MFRef_sofia_s_chair_1"`**；
-     - 頂層多一段 **`references[]`**，其 `"ref"` **正是同一個 editorId**（不是 `0xFF......` 的 FormID——**看到 FormID 就是錯的，回報**），`"label": "sofia's chair"`，帶 base/position/rotation/cell 或 worldspace，**沒有 `anchor` 欄位**（正確，那是 ModForge 的選擇權）。
-2. **(甲) 外部既有 ref**（vanilla 的東西）：
-   - 對一張 **vanilla 椅子/桌子** → `sc ref InnChair`（或任何 label），或 console 點選它再 `sc refc InnChair`（aim-free，跟 `delc`/`capc` 同路）。
-   - References 頁該列是**白字**、ref id 長 `Skyrim.esm:0x0XXXXX`。匯出的 `references[].ref` 就是這個耐久 id。**該 vanilla 椅子不該有任何變化**（沒消失、沒移動——referrer 不碰世界）。
-3. **拒收三類（每個試一下，看有沒有照講的話拒絕）**：
+1. **改 label 的路徑**（這次沒走到——你用的是預設 label `ref_4`/`ref_5`）：
+   - **F1 → References 頁**把某一列的 label 改成 `sofia's chair`（打字後按 Enter 或 `apply`）→ 匯出的 json 裡該 placement 的 editorId 應變成 **`MFRef_sofia_s_chair_<seq>`**、`references[].ref` 指同一個。
+   - **console 一次到位版**：`sc ref SofiaChair2` → **大小寫應保留**（不是 `sofiachair2`）。⚠️ console 參數以空白分隔：**有空格的 label 要加引號**（`sc ref "sofia's chair"`），或乾脆在面板改名。
+   - **擋撞名**：把第二列的 label 也改成同一個 `sofia's chair` → **應該改不動**，橘字說 label already used。（ModForge 那邊 label 是全域名字，撞名會炸整份 spec，所以在這裡就擋。）
+2. **拒收三類（每個試一下，看有沒有照講的話拒絕）**：
    - 對 **marker 光球**按動作鍵 → `SCB: that's a marker gem`（marker 本來就有 label，走 `annotations[]`）。
    - 對**你自己用 marker 生出來的 NPC／你 spawn 的 actor** → `SCB: that's an actor you spawned`（cell 匯出不含 actor，沒有 placement 可指）。**vanilla NPC（如 Lydia）則應該可以指**（走外部路，白字 `Skyrim.esm:0x...`）。
    - 同一個 ref 再標一次 → `SCB: that ref is already referred to`。
-4. **跨存檔/重開（co-save `'RFRR'`）**：標好幾筆 → **存檔 → 完全關遊戲 → 重開 → 讀檔** →
+3. **跨存檔/重開（co-save `'RFRR'`）**：標好幾筆 → **存檔 → 完全關遊戲 → 重開 → 讀檔** →
    - References 頁**該列全部還在**、label/note 沒掉。
    - **(乙) 檔內那幾列**：走回那個 cell（讀檔會自動掃玩家所在 cell）→ 該列**不該**顯示 `TARGET LOST`（DLL 會按 base＋座標把 dynamic ref 撿回來）。若顯示 TARGET LOST → 該列匯出時會被跳過（Export 頁會說 `N reference(s) skipped`），**回報這個現象**（我要知道 reacquire 撿不回的頻率）。
    - **⚠️ 已知限制**：檔內目標的 placement 若不在這次匯出掃到的 cell 裡，那筆 reference **不會**寫進 json（寫了 build 也對不上）——Export 頁會列出 skipped 數，log 有每筆的原因。
-5. **（端到端）**：referrer 的**最終價值證明已 PASS**（2026-07-12，`examples/referrer-chair-anchor.json` → `ModForgeReferrerChair.zip`，落地句見 [landed/world](../workflows/feature-dev/landed/world.md)「referrer 原語」節）——她真的走過誘餌椅坐上被命名的那張。你這邊剩要驗的只有 DLL 那一半（①～④，見上）。
 
-**回報**：① `references[]` 的 `ref` 是不是 editorId（不是 FormID）、跟 placements 那筆對不對得上；② 撞名有沒有擋住、label 大小寫有沒有留住；③ 三類拒收對不對；④ 重開讀檔後檔內目標撿不撿得回。
+**回報**：① 撞名有沒有擋住、label 大小寫有沒有留住；② 三類拒收對不對；③ 重開讀檔後檔內目標撿不撿得回。
 
-## scene-capture-bridge — Export 頁 `Export requires` 鈕（2026-07-12，DLL crc `008aba47`，**已部署**）
+## scene-capture-bridge — Export 頁 `Export requires` 鈕（2026-07-12，**已部署**）
 
-⚠️ **完全關遊戲重開**吃新 DLL（esp 不動、**co-save 不升版**——純新增一顆唯讀按鈕，舊存檔直接用）。
+> **鈕本身已實機出過東西（2026-07-12）**：`requires_20260712-2244.txt` 生出來了 ⇒ 下面第 2 步（鈕會跑、檔案落地、命名/永不覆蓋）算過。**剩內容的三個檢查**：第 3 步（**activeEffects/base 有沒有污染名單——最關鍵**）與第 4 步（跟 C# `<plugin>.requires.txt` 對名單，**要等我 build 才做得了**）。
 
 **這是什麼**：`sc capp` 吸一個玩家分身，就會把「給過你法術/perk/裝備的每一個 mod」變成生成 esp 的 **master**；缺 master 時 Skyrim **靜默不載**這個 esp（不報錯、log 也沒有）。`modforge build` 已經會印這份分析——但**那時你已經退出遊戲了**。這顆鈕把它**提前到匯出當下**：你人還站在那間房，覺得那顆 PROTEUS 法術不值得讓整個 mod 變成硬相依，**重吸一次就好**。
 
@@ -188,28 +202,9 @@
 
 **回報**：① 面板數字與 .txt 內容對不對得上；② activeEffects/base 有沒有污染名單（**最關鍵**）；③ 跟 C# `<plugin>.requires.txt` 的 mod 名單一不一致；④ 有沒有哪個 mod 你確定需要、但兩邊都沒列出來（漏報比誤報嚴重）。
 
-## scene-capture-bridge — 旋轉 per-axis 還原 ＋ palette replace（2026-07-12，**已部署**，含在 DLL `c5049c78` 裡)
+## scene-capture-bridge — 動作鍵改走 `.ini` ＋ palette `clear` 鈕（2026-07-12，commit `1fffb15`，**已部署**）
 
-⚠️ **完全關遊戲重開**吃新 DLL（esp 不動、co-save 不升版、palette json 相容——只是**檔內順序改成「最上面那筆排第一」**，舊檔讀進來順序會上下顛倒一次，之後就穩定了）。
-
-**改了什麼**：① 旋轉子模式的歸零鍵改成 **per-axis 還原**（不是全軸、也不是設成 0，是**還原成進編輯前的該軸原值**）；② palette 的 `load from file` 明確「載入的排最上面」＋新增 **`replace from file`**（清空再載入）。
-
-1. **per-axis 還原**：找一個**本來就有角度**的物件（斜靠的木板、歪的椅子都行）→ `sc ed` 動作鍵選中 → **`sc ed ax`**（Editor 頁提示行應顯示「per-axis revert: 5 yaw, 2 pitch, 8 roll」）→
-   - **1/3 轉 pitch** 幾下 → 按 **numpad 2** → **只有 pitch 彈回原本的角度**（yaw/roll 保持你剛剛轉的、位置/大小不動）；螢幕跳「SCB: pitch reverted」。
-   - **4/6 轉 yaw** → 按 **numpad 5** → 只有 yaw 回原值（跳「SCB: yaw reverted」）。
-   - **7/9 轉 roll** → 按 **numpad 8** → 只有 roll 回原值（跳「SCB: roll reverted」）。
-   - **關鍵驗**：物件**原本就有的角度不該被吃掉**——三軸都按一遍還原後，物件應回到你選中它時的樣子（**不是**變成軸對齊的 0 度）。
-   - 移動模式（`sc ed` 退回）**不受影響**：numpad 5 仍＝整個編輯復原（位置＋角度＋大小）。
-2. **palette append 排最上**：`sc pk` 吸 2 個（A、B）→ 檔名框打 `pal-x.json` → **save to file** → 再吸 1 個 C（面板最上面是 C）→ **load from file (append)** → 面板應變成 **A、B 在最上面**（檔內順序，A 在最頂）、C 及原有的在下面；總數 = 原本 3 + 載入 2 = 5。
-3. **palette replace**：**replace from file** 同一個 `pal-x.json` → 插槽**只剩檔案裡那 2 筆**（原有的全清掉）、順序照檔案。
-   - **防呆**：檔名框打一個**不存在**的檔名再按 replace → **什麼都不該發生**（插槽不該被清空）；SKSE log 有 warn。
-4. **落盤**：關遊戲重開（palette 是磁碟持久、不隨存檔）→ 插槽＝你最後一次操作的結果。
-
-**回報**：① 三個歸零鍵是不是各管各軸、且還原成「原本的角度」而非 0；② append 有沒有排最上、replace 有沒有清乾淨、打錯檔名會不會誤清。
-
-## scene-capture-bridge — 動作鍵改走 `.ini` ＋ palette `clear` 鈕（2026-07-12，DLL crc `2507aa3c`，**未部署**）
-
-⚠️ **部署前置**：你當時正在玩，`deploy.sh` 擋下（這是對的）。**先關遊戲**（順手確認沒有殘留的 `ModOrganizer.exe` 吊住 wineserver）→ 跑 `bash sub_projs/scene-capture-bridge/scripts/deploy.sh` → 再開遊戲。esp 不動，只換 DLL。
+⚠️ **已部署**（DLL `dd7afd82`，同時含 `isPlayer` 修正）——你**下次啟動遊戲**就會吃到，不必再做任何部署動作。esp 不動、co-save 不升版（SETT v7）。
 
 **背景**：遊戲內 rebind **兩次實機都失敗**（P5 綁成 W；`ddf6324` 的黑名單＋按放開版你回報仍失敗）→ 依你的拍板，**遊戲內 rebind 整個移除**，鍵位改由 **`SceneCaptureBridge.ini`** 設定。co-save 仍照存鍵位（SETT v7 不變），但**ini 有寫的模式以 ini 為準**。
 

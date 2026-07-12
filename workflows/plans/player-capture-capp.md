@@ -1,6 +1,6 @@
 # Player capture — `sc capp <label>`（去 PROTEUS 化）
 
-**狀態：✅ 已落地，待實機**（2026-07-12；DLL crc `e37ad0e1`，**已部署**，co-save SCCP v9，C# 928 測綠）。實機步驟見 [wait_todo/ingame-tests.md](../../wait_todo/ingame-tests.md)「`sc capp` 直接吸玩家」。
+**狀態（2026-07-12 收工）**：**外貌路徑 ✅ 🎮 實機 PASS**（分身臉＝本人，含 `tintLayers` 戰紋——PROTEUS 拿不到的那層；落地句進 [landed/npcs](../feature-dev/landed/npcs.md)）。**仍待實機的兩條**：① **數值**（必須用**練過的角色**驗，白紙角色驗不出差別）；② **`isPlayer` ＋ 玩家 perk**（下面那顆 `As<PlayerCharacter>()` bug 已修，commit `eb6ae75`）。現行部署＝ DLL `dd7afd82`（含該修正），co-save SCCP v9。實機步驟與**對帳錨點**見 [wait_todo/ingame-tests.md](../../wait_todo/ingame-tests.md)「`sc capp` 直接吸玩家」。
 
 ## isPlayer 標示（2026-07-12 使用者拍板：照實輸出，不加 voice fallback）
 

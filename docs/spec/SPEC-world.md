@@ -158,10 +158,12 @@ Tune the whole thing with the top-level `navmesh` object: `autoNavCuts`, `minFoo
 — a chair is 3600, so clutter is never cut), `minHeight` (100), `padding` (32), `warnings` (see
 below), `warnEmptyCells`.
 
-> `autoNavCuts` currently defaults to **`false`**, and you must opt in. The design is "automatic, with
-> an opt-out", but the default stays off until the in-game spike confirms an L_NAVCUT volume really
-> does divert an NPC — turning it on before that would inject unproven records into every existing
-> spec's output. Set `"navmesh": {"autoNavCuts": true}` to use it today.
+> `autoNavCuts` defaults to **`true`** (since 2026-07-12). The in-game spike confirmed it: on a
+> Whiterun street, a walker with an L_NAVCUT box on its lane went **around** the barrier while an
+> identical CONTROL walker walked straight through — so an L_NAVCUT volume really does divert an NPC
+> at runtime. A blocking placement that is big enough (`minFootprint` / `minHeight`) and actually
+> covers live vanilla triangles now gets a navcut box automatically. Opt out per placement with
+> `"navCut": false`, or globally with `"navmesh": {"autoNavCuts": false}`.
 
 **3. The build warnings.** `build` now reads the vanilla navmesh and tells you what the game never
 will:

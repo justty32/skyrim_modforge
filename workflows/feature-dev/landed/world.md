@@ -99,7 +99,9 @@
 
 **🧪 對照組實驗設計（可複用的方法論）**：兩個一模一樣的物件（同 base/角度/尺寸/navmesh）、唯一差別是其中一個出現在 `references[]` 裡；沒被命名的那個**擋在必經路上、更近**，故意讓「隨便找張椅子坐」也會得到一個看似合理的結果。判讀不靠肉眼「她坐了張椅子」（那對兩種假說都成立，等於沒驗），而是 console 點選她坐著的那張椅子讀 **RefID 尾碼**（`807`＝坐錯／對照組，`808`＝通過／被命名的那張）當硬證據。這正是「她坐了某張椅子」不能被誤讀成「通過」的原因——變因只有一個（label 有沒有命名），結果用一個無法唬弄的 ID 讀出來。
 
-離線已驗過的底子（build 出的 REFR 帶 0x400＋落 cell 的 Persistent group；package slot 16 = `PackageTargetSpecificReference(0x808)`；928 測綠）——這次是這條鏈第一次在遊戲裡跑完整。**剩 open**：DLL 端 `sc ref`/`sc refc`/References 面板頁/跨重開讀檔撿回檔內目標——這次測的是手寫 spec，不是遊戲內標記流程，見 [wait_todo](../../../wait_todo/ingame-tests.md)。
+離線已驗過的底子（build 出的 REFR 帶 0x400＋落 cell 的 Persistent group；package slot 16 = `PackageTargetSpecificReference(0x808)`；928 測綠）——這次是這條鏈第一次在遊戲裡跑完整。
+
+**DLL 端的標記→匯出也同日 IN-GAME 確認**（使用者遊戲內 `sc ref` 標了 5 筆 → `scene-export_Tamriel_x28y27_20260712-2243.json`）：**甲路徑 3 筆**（外部 vanilla ref → `references[].ref` ＝耐久 FormID）、**乙路徑 2 筆**（檔內目標 → `ref` ＝ editorId `MFRef_ref_4_4`／`MFRef_ref_5_5`，且**對應的 placement 真的被蓋上同一個 editorId**——「檔內相依」這個最難的一半成立：dynamic ref 沒有耐久 id，靠 `ObjectRefHandle` identity 在 `AppendPlacements` 當下蓋章，`AppendReferences` 只吐真的有出 placement 的那些）。同一份匯出也驗到 `sc pl py0` 的 `"noHavokSettle": true` 落在 7 筆 placement 上。**剩 open**：改 label 的路徑（大小寫保留／撞名擋下——這次用預設 label）、拒收三類、跨重開讀檔撿回檔內目標，見 [wait_todo](../../../wait_todo/ingame-tests.md)。
 
 ## navmesh P0/T2.0 兩個地基實驗 · IN-GAME 2026-07-12（[plan](../../plans/navmesh.md)）
 

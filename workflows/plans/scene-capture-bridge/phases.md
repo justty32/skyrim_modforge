@@ -216,13 +216,16 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
 - **驗證**：CLI `build` 手測——指列表**後面**的 placement 從「印 `unresolved` 警告＋0 cross-ref link」變成「0 警告＋1 cross-ref link」；指 `references[]` label 同樣乾淨過（2 links＝label 綁定本身 1 ＋ XESP 解析 1）。C# **1005 測綠**（1002 ＋ 3 新：forward-reference 正面測試／references[] label 正面測試／解不到仍警告的回歸釘子）。
 - **順手掃過的「這個家族還有幾隻」**：`linkedRefs`（`WireLinkedRefs`）、objective target（`WireObjectiveTargets`）、script Form property（`AttachScripts`＋`deferredScriptObjectProps`/`WireDeferredScriptObjectProps`）、`forced:` alias（`deferredForcedAliases`/`WireDeferredForcedAliases`）——**這四個都已經正確 deferred 到 placements/references 都建好之後**，不是這隻。但掃描過程中發現**共用的 `BuildCondition()`（CTDA 的 `reference`/`param` 可以指向任何 ref，包括 placement/label）在好幾個呼叫點跑得比 `BuildPlacements`(pass2 line 115)／`BuildReferences`(117) 早**：`WirePerks`（perk/perk-effect 條件，@103）、`BuildStoryManager`（storyEvent 條件／`locationFilter`／alias `findMatching*` 系列的 match 條件，@87）、`BuildStandaloneQuestAliases`（同款 alias match 條件，@88）、`WireScenes`（scene/phase 條件，@93，`sceneConditionWires` 只 defer 到這一步，不是到 placements 之後）——**dialogue／banter／package 的條件已經被刻意 defer 到 150/154/155（placements 之後）**，證明開發者知道條件能指placed-ref；上面這幾個呼叫點看起來是**同一顆漏網的種子，但範圍是「BuildCondition 的 reference/param」而不是單一欄位**，牽動面比前三隻大很多（perk 距離/場景觸發指定物件等authoring情境是合理的）。**當時未動手修**——只把範圍記下來；`WireQuestStages`(152)／`WireObjectiveTargets`(153)／`WireRecipes`(140) 的條件已經在 placements 之後，沒事。→ **已於同日修完＝第五隻，見本檔最上方「家族結案」節**（含完整呼叫點地圖 ＋ 寫死的鐵律 ＋ 「沒有第六隻」的掃描結論）。
 
-## ✅ 已做（旋轉 per-axis 還原 ＋ palette replace，2026-07-12，DLL `9cae7ff1`，**未部署**·待實機）
+## ✅ 已做（旋轉 per-axis 還原 ＋ palette replace，2026-07-12，DLL `9cae7ff1`→部署為 `c5049c78`，**🎮 實機 PASS 2026-07-12**）
 - **旋轉子模式的歸零鍵改 per-axis（使用者實機後提）**：`sc ed ax` 下**每組的中間鍵只管自己那一組軸**——**2＝還原 pitch（1/3）、5＝還原 yaw（4/6）、8＝還原 roll（7/9）**。語意＝**revert 回進編輯前的該軸原值**（`g.origAngle.<axis>`），**不是設成 0**（物件本來就可能有角度）。原本三鍵都是「整個角度還原」（全軸 `origAngle`）。移動模式的 numpad 5（＝復原整個編輯）**不動**（P7 的 per-mode 行為）。`Editor.cpp` 的 `kBack`/`kSelect`/`kFwd` 三個 case；每鍵各自的 DebugNotification。
 - **palette 檔案 I/O 兩改**：① **檔內順序＝面板順序**（最上面那筆排 json 第一筆）——`SlotsJson()` 反向寫、`ParseSlots()`＋`Adopt()` 反向插；`load from file (append)` 的新項因此**落在列表最上面**且保留檔內順序（面板最新排頂的既有慣例）。② 新鈕 **`replace from file`**（`Palette::ReplaceFromFile`）＝**清空現有插槽再載入**；檔案不存在／不可讀／無可用插槽 ⇒ **不清**（不會誤把磁碟持久的 palette 清光）。三鈕並列：`load from file (append)` / `replace from file` / `save to file` ＋一行說明。
 - ⚠️ 舊 `scene-capture-palette.json`（舊格式＝反序）讀進來順序會**上下顛倒一次**，之後穩定；欄位完全相容。
 
 ## ✅ 已做（`capturedNpcs[].isPlayer` 標示，2026-07-12，DLL crc `e37ad0e1`，**已部署**，待實機）
-- 實機發現玩家 base TESNPC **沒有 `voiceType`**（分身啞巴）；使用者拍板**照實輸出，不加 fallback**——但補一個「這筆是玩家」的標示。`NpcData.isPlayer`（`actor->As<PlayerCharacter>()`，跟既有 perk 路線同一個 cast，`sc capp`／點到玩家的 `sc capc` 都標得到）；`SceneExporter` 只在 true 時吐 `"isPlayer": true`。co-save **SCCP v9**（v≤8 缺省 `false`）。
+
+> 🐞 **這一版的 `isPlayer` 是壞的**——下面寫的 `actor->As<PlayerCharacter>()` **對任何 actor 都必定回傳 nullptr**，所以 `isPlayer` 永遠 false、玩家 perk 一顆都吸不到（實機釘死：`captures_20260712-2250.json` 只有 12 個 base perk）。**已修**（commit `eb6ae75` 改單例指標比對，DLL `dd7afd82` 已部署）；驗屍與可推廣判準見 [plans/player-capture-capp.md](../player-capture-capp.md) 末節，驗收錨點見 [wait_todo](../../../wait_todo/ingame-tests.md)。
+
+- 實機發現玩家 base TESNPC **沒有 `voiceType`**（分身啞巴）；使用者拍板**照實輸出，不加 fallback**——但補一個「這筆是玩家」的標示。`NpcData.isPlayer`（當時寫成 `actor->As<PlayerCharacter>()`，**＝上面那顆 bug**，已改單例比對）；`SceneExporter` 只在 true 時吐 `"isPlayer": true`。co-save **SCCP v9**（v≤8 缺省 `false`）。
 - C# 消費：`CapturedNpcSpec.IsPlayer` → `NpcSpec.IsPlayer`（純可見性，不寫任何 Mutagen 記錄欄，行為不變）→ `BuildNpcs` 只在「`IsPlayer` 且無 `VoiceType`」時 `Warn`（措辭「this is expected, not a bug」，不是錯誤）。舊 json 缺欄位＝`false`＝完全相容。詳見 [plans/player-capture-capp.md](../player-capture-capp.md)。C# 928 測綠（5 個新測試）。
 
 ## ✅ 已做（`sc capp` 直接吸玩家，2026-07-12，DLL `f8afc170`，待實機）
@@ -302,7 +305,9 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
   - `CoSave.cpp`：SETT **v6→v7**。① 過去 5 個模式的鍵位欄位是**寫進去但讀出來直接丟掉**（防呆舊 bug——現在改成真的套用，並用 `Modes::IsBindable` 二次驗證，遇到保留鍵字節就當壞資料丟掉、退回 F11，不盲信存檔內容）；② `kCapture`／`kReferrer` 兩個模式的鍵位 P5 之後**從來沒進過 co-save**（漏寫，不是這次才有的 bug），v7 補上。
 - **實機結果（同日）：仍失敗**。使用者回報「rebind 仍失敗」，並拍板「這太麻煩了，先隱藏掉這個功能吧，我們之後把他擺進 .ini 設定」。**兩次嘗試、兩種設計（來者不拒／黑名單＋按放開）都輸給同一件事**：面板不暫停遊戲，抓鍵永遠在跟玩家手上的鍵搶。**結論：遊戲內抓鍵這條路封掉，不再嘗試第三次。**
 
-## ✅ 已做（動作鍵改走 `.ini` ＋ palette clear 鈕，2026-07-12，DLL crc `2507aa3c`，**未部署**——使用者正在遊戲中，deploy.sh 擋下）
+## ✅ 已做（動作鍵改走 `.ini` ＋ palette clear 鈕，2026-07-12，commit `1fffb15`，**已部署**〔DLL `dd7afd82`，含 `eb6ae75` 的 isPlayer 修正〕，待實機）
+
+> 部署時序：編完當下使用者正在遊戲中 → `deploy.sh` 依設計拒絕（`pgrep SkyrimSE.exe`）；使用者關遊戲後已部署完成，**下次啟動遊戲就會吃到**。`SceneCaptureBridge.ini` 要**跑過一次遊戲**才會自動生成（收工時尚未生成，屬預期）。
 
 **① 動作鍵＝ `SceneCaptureBridge.ini`（新檔 `src/KeyIni.{h,cpp}`）**
 

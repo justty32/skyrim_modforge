@@ -10,9 +10,17 @@
 
 - **遊戲內 rebind（面板抓鍵改動作鍵）——放棄，改走 `.ini`**（使用者 2026-07-12 實機後拍板：「這太麻煩了，先隱藏掉這個功能吧，我們之後把他擺進 .ini 設定」）。**為什麼不再試**：面板（SKSE Menu Framework）**不暫停遊戲**，所以「抓玩家想綁的那顆鍵」永遠在跟**玩家手上還按著的鍵**搶同一條輸入串流——人剛用滑鼠點完 `Rebind`，手多半還在 WASD 上。**兩次嘗試、兩種設計都在實機失敗**：① P5（2026-07-11）armed 後來者不拒 → 綁成 W；② 重作（`ddf6324`，2026-07-12）加了保留鍵黑名單＋按下再放開才 commit → **使用者實機回報仍失敗**。現況＝**`SceneCaptureBridge.ini`**（SKSE 資料夾、缺檔自動生成、寫鍵名不寫 scancode、面板一顆 `reload keys from ini`）——檔案沒有那條賽道可輸：沒有 armed 狀態、沒有 input sink、沒有時序。實作與完整驗屍見 [phases.md](phases.md) 該兩節；抓鍵狀態機已從 `Modes`／`plugin.cpp` 移除（要看舊碼去 git `ddf6324`）。
 
-## 仍未做
+## 🐞 已修、已部署、待實機驗
 
-- **🐞 已修待實機驗（2026-07-12，未部署）：`isPlayer` 永遠 false ＋ 玩家 perk 吸不到**。`Captures.cpp` 用 `actor->As<RE::PlayerCharacter>()` 判玩家身份——**該 cast 對任何 actor（含玩家）都必定回傳 nullptr**：`TESForm::As<T>()` 是 `switch (GetFormType())`（CommonLibSSE `FormTraits.h`），只肯從 FORM_TYPE 的具體類別**往 base 轉**；玩家 ref 的 form type 是 `kCharacter` → 具體類別 `Character`，而 switch 裡沒有 `PlayerCharacter` case（它沒有自己的 FORM_TYPE）⇒ 向下轉型、`is_convertible` false ⇒ 靜默 null。已改為**單例指標比對** `actor == RE::PlayerCharacter::GetSingleton()`，`isPlayer` 與 perk 路徑一併修好。全 DLL 其餘 4 處 `As<>` 皆為 upcast／formtype 精確命中，安全。**待驗**：`sc capp` 的 log 要印出 `PLAYER`、匯出 json 要有 `"isPlayer": true`，且**點過 perk 後**要吸得到玩家真正的 perk。細節見 [plans/player-capture-capp.md](../player-capture-capp.md) 末節。
+- **`isPlayer` 永遠 false ＋ 玩家 perk 吸不到**（2026-07-12，commit `eb6ae75`，DLL `dd7afd82` 已部署）。**對帳錨點**：使用者已點 Restoration 第一個 perk ＝ `Skyrim.esm:0x0F2CAA`（`RestorationNovice00`），修正前的 `captures_20260712-2250.json` 那 12 個 perk **不含它** ⇒ 驗收＝重吸後 `perks` 要出現 `0x0F2CAA`（二元判斷，不數數量）。`Captures.cpp` 用 `actor->As<RE::PlayerCharacter>()` 判玩家身份——**該 cast 對任何 actor（含玩家）都必定回傳 nullptr**：`TESForm::As<T>()` 是 `switch (GetFormType())`（CommonLibSSE `FormTraits.h`），只肯從 FORM_TYPE 的具體類別**往 base 轉**；玩家 ref 的 form type 是 `kCharacter` → 具體類別 `Character`，而 switch 裡沒有 `PlayerCharacter` case（它沒有自己的 FORM_TYPE）⇒ 向下轉型、`is_convertible` false ⇒ 靜默 null。已改為**單例指標比對** `actor == RE::PlayerCharacter::GetSingleton()`，`isPlayer` 與 perk 路徑一併修好。全 DLL 其餘 4 處 `As<>` 皆為 upcast／formtype 精確命中，安全。**待驗**：`sc capp` 的 log 要印出 `PLAYER`、匯出 json 要有 `"isPlayer": true`，且**點過 perk 後**要吸得到玩家真正的 perk。細節見 [plans/player-capture-capp.md](../player-capture-capp.md) 末節。
+
+## ⏳ 待使用者拍板（2026-07-12 收工時開著）
+
+- **`area:<label>` 前綴（非破壞的中間路）**：referrer 的 slot-kind 教訓（label 進 **SingleRef target 槽**＝鎖定那一個 ref；進 **location 槽**＝只是「那附近一塊區域」，引擎自己挑家具 —— 而且 build 綠、dump 乾淨、零警告，只有進遊戲才看得出來，見 [landed/world](../../feature-dev/landed/world.md)「referrer 原語」）目前只用一行 build INFO 提示。**中間路提案**：讓作者可以寫 `"sandbox.location": "area:sofia's chair"` **明示**「我就是要一塊區域」 → 沒寫 `area:` 而把 label 丟進 location 槽時，提示可以更強硬（甚至報錯）。非破壞（舊 spec 不受影響）。**未拍板**。
+- **`package` 要不要把 `requires.txt` 也寫進出貨的 mod 資料夾**：現況＝`build` 寫 `<plugin>.requires.txt` 旁檔、**`package` 只印摘要不寫檔**（理由：輸出夾就是要出貨的 mod，不該多塞檔案，見 [phases](phases.md)）。但玩家最需要那份「我要裝哪些前置」的清單——寫進去（或改寫成 `README.txt`）也許才對。**未拍板**。
+- （第三件 **U10**〔NAVM override 後蓋前、要不要做成 build 警告〕住 [plans/navmesh.md](../navmesh.md) §6 U10。）
+
+## 仍未做
 
 - **`sc cap` 物件類 vs `sc pk` 分工（使用者再想，先照舊）**：`sc cap` 記 NPC/player 含全身物品＋extra data（v7 已落地）；物件類 capture 與 `sc pk` 滴管感覺功能重複，使用者還要想想——**傾向仍記錄**，暫不動。
 - **📌 導航網格（navmesh）——「超重要，之後得開始考慮」（使用者 2026-07-11 晚）**：編輯器流程目前完全沒碰 navmesh——擺出的建築/障礙物會擋住 vanilla navmesh 但 NPC 照原網格走（穿模/卡住），marker 生的 NPC 若落在無網格處也不會動。ModForge 已有程式化 navmesh 能力可接（custom worldspace NAVM＋NAVI additive override Skyrim.esm:0x12FB4 in-game 驗過，見 idea/asset-pipelines/map-scene/geometry.md 一帶＋Vigilant.esm 解碼參考）；難點在**編輯 vanilla cell**：要 override 既有 NAVM（cut/finalize 語意）而不只是新建。方向未定（DLL 端記錄擺放物 footprint → ModForge 端裁切？或先只處理「新增小平台補網格」？），需要時開獨立 plan。

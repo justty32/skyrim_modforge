@@ -12,5 +12,5 @@
 
 - **[roadmap-features.md](wait_todo/roadmap-features.md)** — 離線實作完、待主力機 byte/runtime 驗收的後端功能：動態生怪 SM、radiant 演出 package、互動式 perk、radiant quest alias、instanceGlobals、Idea #20 技能樹（JContainers + Campfire U1–U3）。
 - **[worldspace-editor.md](wait_todo/worldspace-editor.md)** — Godot worldspace editor（Idea #19）整鏈：VTXT「刷哪長哪」最終目視、model-converter nif→glTF 對真實檔驗。
-- **[ingame-tests.md](wait_todo/ingame-tests.md)** — 純遊戲實機測試（含**怎麼測通用流程** + MO2 鐵律）：VNML、Sofia × VIGILANT Act 1 / Act 2-4。
+- **[ingame-tests.md](wait_todo/ingame-tests.md)** — 純遊戲實機測試（含**怎麼測通用流程** + MO2 鐵律）。**目前最優先**：scene-capture-bridge 的 🐞 **`isPlayer` ＋ 玩家 perk 修正**（DLL `dd7afd82` 已部署，對帳錨點 `Skyrim.esm:0x0F2CAA`）。其餘：`sc capp` 數值（要**練過的角色**）、模式開關 `py`/`ed`/`pkc`、referrer 剩下的三項、`Export requires` 內容、動作鍵 `.ini` ＋ palette clear、darksouls-port P1、living-adventurers、blacksmith 場景、VNML、Sofia × VIGILANT Act 1 / Act 2-4。
 - **[nexus-and-env.md](wait_todo/nexus-and-env.md)** — 不屬任何功能的雜項：Nexus 下載清單、env、bash。
