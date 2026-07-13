@@ -18,6 +18,46 @@
 
 ## 仍未做
 
+### ⌨️ `sc ed`（含 `sc ed ax`）的 numpad 要能「長按持續作用」（使用者 2026-07-13 提，**明天做**）
+
+**訴求**：微調位置/角度時，numpad 方向鍵**按著不放就一直動**，不用狂點。
+
+**為什麼現在不會**（已查）：`plugin.cpp:73` 是 `if (!btn->IsDown()) continue;`——CommonLibSSE 的 **`IsDown()` 只有「按下的那一幀」為真**（`IsPressed() && heldDownSecs == 0`），所以一次按壓＝一步。引擎其實**每一幀都會派送**該按鍵的 ButtonEvent（`heldDownSecs` 持續累加），料都在，只是被這行擋掉了。
+
+**做法**：`Editor::HandleKey` 那條路改吃 `IsHeld()`/`HeldDuration()`：
+- **只有「移動/旋轉」鍵**（numpad 8/2/4/6 ＋ 上下 ＋ `ax` 模式的旋轉鍵）走長按重複；
+- **`commit`（numpad 0）／`cancel`（numpad .）／`select`（numpad 5 / *）必須維持單發**——長按重複會變成災難（連續 commit）。
+- 兩種手感二選一（傾向後者）：(a) **鍵盤式重複**（延遲 ~0.35s 後每 ~0.05s 一步）；(b) **連續位移**（`step × frameDelta × rate`，長按越久越快／或加速段），(b) 對「推到定位」比較順。
+- 動作鍵（`Modes::HandleKey`，F11 那組）**不受影響**，維持單發。
+
+### 📝 面板的「命名/筆記」欄一致化（使用者 2026-07-13 提，**明天做**）
+
+**訴求**：每個面板的每一列都能**取名 + 寫筆記**，且**跨存檔留得住**、`save to file` 也跟著走。
+
+**先盤點現況（已查過原始碼，工作量比想像小）**：
+
+| 面板 | label | note | 提交方式 | 缺什麼 |
+|---|---|---|---|---|
+| Palette | ✅ `UI.cpp:346-353`（`Palette::Rename` → 立刻 `Save()` 寫 `scene-capture-palette.json`；`save to file` 帶著走）| ❌ | **只有 Enter，沒有 `apply` 鈕** | note ＋ apply 鈕 |
+| Markers | ✅ `UI.Markers.cpp:123` | ✅（在 `edit` 彈窗）| Enter / `apply` | — |
+| References | ✅ `UI.References.cpp:78` | ✅ `:84` | Enter / `apply` | — |
+| **Captures** | 資料結構有（`Captures.h:158`），**面板不能編** | ❌ | 只能靠 console `sc capp <label>` | 列上的 label 編輯 ＋ note |
+| **Editor（overrides）** | ❌（`Overrides.h` 只有 display `name`）| ❌ | — | label ＋ note |
+| **Eraser** | ❌（`Eraser.h` 只有 display `name`）| ❌ | — | label ＋ note |
+
+⇒ **palette 那條使用者以為「不能編輯」，八成是踩到「打完字點走就丟失」**（`EnterReturnsTrue` 只在 Enter 回傳，而 palette 列**沒有 apply 鈕**兜底）。
+
+**要做的**：
+1. **UX 統一（最該先做，可能就解掉一半訴求）**：每個可編輯欄都給**兩條提交路**——Enter **或** `apply`；更好的是改成 **`IsItemDeactivatedAfterEdit()`**（點走也提交）。目前六個面板行為不一致，是誤解的來源。
+2. **Captures**：列上開放編 `label`（欄位/持久化/匯出都已存在，只差 UI）＋ 加 `note`。
+3. **Editor（overrides）／Eraser**：`Entry` 加 `label`/`note` → co-save 升版（舊存檔讀不到＝空字串，照舊）→ 面板欄位。
+4. **持久化**：palette 走磁碟 json（已有）；其餘走 co-save（marker/reference 已有前例可抄）。
+
+**⚠️ 要拍板的設計題（明天開工前先決定）**：**筆記要不要跟著匯出進 spec？**
+- `references[].note`／`annotations[].note` ＝ ModForge **已有**欄位（有地方落地）。
+- **`removals[]` 在 ModForge 是 `List<string>`**（`Spec.cs:55`）——**筆記無處可放**；`overrides[]`（`OverrideSpec`）也要確認有沒有 note 欄。
+- ⇒ 三選一：(a) 筆記**只活在 DLL 端**（面板/co-save，不匯出）；(b) 給 `OverrideSpec` 加 `note`、把 `removals[]` 升級成物件形式（**破壞性**，要相容舊 spec）；(c) 一律走 `annotations[]` 掛旁邊。**未拍板**。
+
 - **ModForge 端要不要過濾玩家的「管線 perk」（2026-07-13，接在拍板 (b) 之後）**：橋端已改成**全收**（base 12 顆 ＋ addedPerks，去重取高 rank，DLL `e19ad4ca`）——依使用者拍板「完全複製優先，到時候讓 modforge 處理」。所以**取捨在消費端**：`AllowShoutingPerk`／`VampireFeed`／`AlchemySkillBoosts`／`DBWellFitted` 這些是 vanilla **Player 記錄專用**的管線 perk，鑄到一個 NPC 分身身上多半是死資料（但 `AllowShoutingPerk` 之類若要讓分身用吼聲就需要）。**候選**：(i) 照抄不動（現況）；(ii) build 時印一行 INFO 點名這幾顆；(iii) spec 給個 opt-out。**還沒做，等有實際困擾再動。**
 
 - **`sc cap` 物件類 vs `sc pk` 分工（使用者再想，先照舊）**：`sc cap` 記 NPC/player 含全身物品＋extra data（v7 已落地）；物件類 capture 與 `sc pk` 滴管感覺功能重複，使用者還要想想——**傾向仍記錄**，暫不動。
