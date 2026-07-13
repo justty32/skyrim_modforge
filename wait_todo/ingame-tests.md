@@ -58,19 +58,6 @@
 
 **OPEN-A 殘餘（最後一小項）**：存檔完全重開 → capture 的 aim source（er0/er1）還原（co-save SETT v4）。（`sc cap er1` 射線吸取 2026-07-11 已實證 OK。）另留意：模式制下重複按 F11 會吸出重複列（正常行為，消費端 editorId 已防撞）。
 
-## scene-capture-bridge — 玩家 perk 改「全收」（2026-07-13，DLL **`e19ad4ca` 已部署**，小驗）
-
-> ⚠️ **完全關遊戲重開**才吃得到新 DLL（esp 不動）。
-
-使用者拍板 (b)：橋端**不再二選一**——base TESNPC 的 perk **＋** 玩家 runtime `addedPerks`，**兩個都收**（依 durable id 去重、同 perk 取高 rank）。取捨留給 ModForge 端（[backlog](../workflows/plans/scene-capture-bridge/backlog.md)）。
-
-**驗**：`sc capp <label>` 重吸一次 → Export captures →
-- perk 數應從 **26 變成約 38**（＝12 base ＋ 26 added，去重後）；
-- 名單裡應**多出 `Skyrim.esm:0x0F11A9`（`AllowShoutingPerk`）**這類 Player 記錄的管線 perk（上一版沒有）；
-- **原本那 26 顆真 perk 一顆都不能少**（`Armsman00` 等單手樹的還在＝沒退化）。
-
-把新的 `captures_*.json` 檔名給我，我對帳。
-
 ## scene-capture-bridge — `sc capp` 直接吸玩家：**數值那條**（2026-07-12，DLL `dd7afd82` 已部署）
 
 > **✅ 外貌路徑已 🎮 PASS（2026-07-12）**：`sc capp` 抓對玩家 base（`Skyrim.esm:0x000007`），分身臉**確認是本人**——faceMorphs/headParts/hairColor/faceTexture ＋ **`tintLayers` 戰紋**全中（戰紋正是 PROTEUS 路線拿不到的那層）。交付 `~/skyrim_mods/mine/MFCapHatak.zip`。落地句進 [landed/npcs](../workflows/feature-dev/landed/npcs.md)。

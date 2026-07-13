@@ -18,7 +18,7 @@
 >
 > **2026-07-13 做完（離線）**：① 那份沒被消費的 scene json **已 build＋出貨 → `~/skyrim_mods/mine/ModForgeGoblets.zip`**（`noHavokSettle` 的最終驗收；v1 測法失效，當晚改用懸空判別法重出 v2，見下）；② **`Export requires` 整條結案**——跨端對帳一致、假依賴（activeEffects/base）兩端都不污染名單（一變數實驗釘死），驗收記錄進 [phases](workflows/plans/scene-capture-bridge/phases.md)＋[landed/world](workflows/feature-dev/landed/world.md)。
 >
-> **2026-07-13 晚實機——兩條都 PASS、都結案**：① 🐞 **`isPlayer` ＋玩家 perk ＝ PASS**（`isPlayer: true`、perk 12→26 且是真的單手樹 perk）；隨即依使用者拍板 **(b) 全收**（base ＋ addedPerks 去重，DLL `e19ad4ca` **已部署**，小驗見 [wait_todo](wait_todo/ingame-tests.md)），消費端要不要過濾留 [backlog](workflows/plans/scene-capture-bridge/backlog.md)。② **`noHavokSettle` ＝ PASS**——但**第一版測法是無效的**（8 顆銀杯 z 全在同一平面＝地板，settle 對貼地靜止物本來就不做事 ⇒ 有無旗標都不動）；改用**懸空判別法** v2（地板上方 128 units、3 顆帶旗標 vs 3 顆不帶）→ 實機 **3 顆浮空 / 3 顆落地** ⇒ 旗標確實 ship 進 esp 並生效。兩條的濃縮句都進 [landed](workflows/feature-dev/landed/README.md)。
+> **2026-07-13 晚實機——兩條都 PASS、都結案**：① 🐞 **`isPlayer` ＋玩家 perk ＝ PASS**（`isPlayer: true`、perk 12→26 且是真的單手樹 perk）；隨即依使用者拍板 **(b) 全收**（base ＋ addedPerks 去重，DLL `e19ad4ca`）——**同日也 PASS**（32 ＝ 12＋20 零重疊），消費端要不要過濾留 [backlog](workflows/plans/scene-capture-bridge/backlog.md)。② **`noHavokSettle` ＝ PASS**——但**第一版測法是無效的**（8 顆銀杯 z 全在同一平面＝地板，settle 對貼地靜止物本來就不做事 ⇒ 有無旗標都不動）；改用**懸空判別法** v2（地板上方 128 units、3 顆帶旗標 vs 3 顆不帶）→ 實機 **3 顆浮空 / 3 顆落地** ⇒ 旗標確實 ship 進 esp 並生效。兩條的濃縮句都進 [landed](workflows/feature-dev/landed/README.md)。
 >
 > **下一步（開工第一件事）**：**navmesh P3 add+link**（唯一還需要寫 NAVM 的工作，地基已驗證）——但它有兩個未拍板的問題（§7-3 先只支援內裝？§7-4 要不要引 DotRecast），**動工前先問使用者**。
 
