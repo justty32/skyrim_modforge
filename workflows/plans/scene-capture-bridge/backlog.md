@@ -48,7 +48,8 @@
 ⇒ **palette 那條使用者以為「不能編輯」，八成是踩到「打完字點走就丟失」**（`EnterReturnsTrue` 只在 Enter 回傳，而 palette 列**沒有 apply 鈕**兜底）。
 
 **要做的**：
-1. **UX 統一（最該先做，可能就解掉一半訴求）**：每個可編輯欄都給**兩條提交路**——Enter **或** `apply`；更好的是改成 **`IsItemDeactivatedAfterEdit()`**（點走也提交）。目前六個面板行為不一致，是誤解的來源。
+1. **🐞 先修這個 bug：面板 buffer 與 registry 靜默分叉（2026-07-13 使用者實機發現，已讀碼確認）**。`UI.Markers.cpp:113-117`（`UI.References.cpp:68`、`UI.cpp:347` 同一個寫法）：每列的文字 buffer 以 `try_emplace` **只在插入那一次**從 entry 種入，**之後永不回同步**。⇒ 打完字**不按 Enter／apply** 就點走：`Rename()` 沒被呼叫（registry 保留舊值），但面板往後每一幀都**從 buffer 畫** ⇒ **一直顯示你打的新字**。**使用者看到的是新名字，匯出／co-save／palette json 存的是舊名字，且沒有任何跡象**——重開遊戲才現形。這比「點走就還原」嚴重：後者至少看得出來沒生效。
+   - **修法**：`ImGuiMCP::IsItemDeactivatedAfterEdit()`（**存在**，`extern/SKSEMenuFramework/SKSEMenuFramework.h:5505`）→ 點走也提交；保險起見**同時**在 item 非 active 時把 buffer 從 entry 回同步（治本：任何漏掉的提交路徑都不會再讓面板說謊）。六個面板一起改，行為統一（Enter／apply／點走都提交）。
 2. **Captures**：列上開放編 `label`（欄位/持久化/匯出都已存在，只差 UI）＋ 加 `note`。
 3. **Editor（overrides）／Eraser**：`Entry` 加 `label`/`note` → co-save 升版（舊存檔讀不到＝空字串，照舊）→ 面板欄位。
 4. **持久化**：palette 走磁碟 json（已有）；其餘走 co-save（marker/reference 已有前例可抄）。
