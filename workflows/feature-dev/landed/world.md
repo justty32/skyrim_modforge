@@ -103,6 +103,12 @@
 
 **DLL 端的標記→匯出也同日 IN-GAME 確認**（使用者遊戲內 `sc ref` 標了 5 筆 → `scene-export_Tamriel_x28y27_20260712-2243.json`）：**甲路徑 3 筆**（外部 vanilla ref → `references[].ref` ＝耐久 FormID）、**乙路徑 2 筆**（檔內目標 → `ref` ＝ editorId `MFRef_ref_4_4`／`MFRef_ref_5_5`，且**對應的 placement 真的被蓋上同一個 editorId**——「檔內相依」這個最難的一半成立：dynamic ref 沒有耐久 id，靠 `ObjectRefHandle` identity 在 `AppendPlacements` 當下蓋章，`AppendReferences` 只吐真的有出 placement 的那些）。同一份匯出也驗到 `sc pl py0` 的 `"noHavokSettle": true` 落在 7 筆 placement 上。**剩 open**：改 label 的路徑（大小寫保留／撞名擋下——這次用預設 label）、拒收三類、跨重開讀檔撿回檔內目標，見 [wait_todo](../../../wait_todo/ingame-tests.md)。
 
+**那份匯出 2026-07-13 已被消費成 esp**（`ModForgeGoblets.zip`，待實機）：8 筆 SilverGoblet02 落在 vanilla `WinterholdCollegeExterior`（Tamriel 28,27），逐 byte 驗到 **6 筆 `0x20000000`（DontHavokSettle）＋ `MFRef_ref_5_5` 帶 `0x20000400`（凍結＋persistent）＋ `MFRef_ref_4_4` 只帶 `0x400`**——最後那顆是使用者開 `py0` **之前**擺的，等於匯出自帶**天然對照組**（它該掉、其餘該定住）。乙路徑的兩個檔內 label 確實被蓋章成 persistent（cell persistent=2/temporary=6）。WRLD override 形狀也複驗合規：EDID＋RNAM＋TNAM/UNAM、**無 OFST**（1.4MB 全是 vanilla Tamriel 的 RNAM large-ref 網格，非 bug）。
+
+## scene-capture-bridge — 依賴可見性（`Export requires` 鈕）驗收完成 · 2026-07-13
+
+DLL 遊戲內報告 vs C# `build` 的 master 名單**跨端一致**（同 7 個 mod、link 數對得上），且**兩端都不把假依賴當依賴**——一變數實驗：刪掉某 mod 的 spell、只留它 14 筆 `activeEffects` → 該 mod 從 `requires.txt` **和 esp master list 同時消失**。細節與四項驗收見 [phases](../../plans/scene-capture-bridge/phases.md)「依賴可見性的遊戲內版」。
+
 ## navmesh P0/T2.0 兩個地基實驗 · IN-GAME 2026-07-12（[plan](../../plans/navmesh.md)）
 
 兩個 🎮 實機閘同日皆 **PASS**，定了整份 navmesh plan 的重心：

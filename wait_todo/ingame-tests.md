@@ -112,7 +112,15 @@ co-save **SCCP v9**——舊存檔的 captures 照讀（缺的欄位＝0，行�
 
 ## scene-capture-bridge — 模式開關套件 `py` / `ed` / `pkc`（2026-07-12，**已部署**）
 
-> **部分已過（2026-07-12）**：`sc pl py0` 的 **`"noHavokSettle": true` 已實機出現在 7 筆 placement 上**（`scene-export_Tamriel_x28y27_20260712-2243.json`）⇒ 遊戲內開關 → json 這一段通了。**但真正的驗收（下面 1. 的 🔑 那條）還沒做**：那份 json 我還沒 build，所以「裝進遊戲後杯子還在不在桌上」＝**未驗**。`ed1`（實例附魔）／`pkc`（console 滴管大小寫）／`ed py0/py1` 回歸／跨存檔 reacquire 也都還沒走。
+> **部分已過（2026-07-12）**：`sc pl py0` 的 **`"noHavokSettle": true` 已實機出現在 7 筆 placement 上**（`scene-export_Tamriel_x28y27_20260712-2243.json`）⇒ 遊戲內開關 → json 這一段通了。
+>
+> **🎯 真正的驗收（下面 1. 的 🔑）現在可以做了——zip 已交付 `~/skyrim_mods/mine/ModForgeGoblets.zip`（2026-07-13，FLAT，ESL，僅 Skyrim.esm master）**：那份 json 我 build 完了，逐 byte 驗過旗標。裝上去、走回**學院庭院**（`WinterholdCollegeExterior`＝Tamriel cell 28,27；`cow Tamriel 28 27` 或直接走過去）看那 8 個銀杯：
+> - **6 顆該定在原地**（帶 `0x20000000` DontHavokSettle）；
+> - **`MFRef_ref_5_5` 那顆也該定住**（`0x20000400`＝凍結＋persistent）；
+> - **`MFRef_ref_4_4` 那顆該掉/滾**——它是你開 `py0` **之前**擺的，esp 裡**只有 `0x400`、沒有凍結旗標** ⇒ **這是天然的對照組**，它要是也不動，反而代表旗標沒在作用（是別的原因把杯子定住了）。
+> - ⚠️ **load order 排在 AI Overhaul 之後**（那個 cell 目前的 winner 是它）。若庭院有哪裡看起來怪怪的（光線/物件），回報——那會是 cell override 的副作用。
+>
+> `ed1`（實例附魔）／`pkc`（console 滴管大小寫）／`ed py0/py1` 回歸／跨存檔 reacquire 仍未走。
 
 ⚠️ co-save：`SETT` v6、record `'PLEX'` v1——**舊存檔照讀**（讀不到就落回預設：place `py1`、edit `py0`、extra data 全關＝跟以前一模一樣）。
 
@@ -125,7 +133,7 @@ co-save **SCCP v9**——舊存檔的 captures 照讀（缺的欄位＝0，行�
    - **先看壞的樣子**：`sc pl py1`（預設）→ 動作鍵（**F11**）在**桌面上**擺一個 → 它會**掉下來/滾走/被你走過去撞飛**。這是現況，正常。
    - **再看好的樣子**：`sc pl py0` → console 應印 `placed objects have physics OFF (py0)` ＋ 一行說明 → 再擺一個 → **它應該定在原地**（不掉、撞不動）。
    - **console `sc` 印出來的 usage** 應該看得到 `sc pl py1 / py0`、`sc ed py0 / py1`、`sc pk ed0 / ed1`、`sc pl ed0 / ed1`、`sc pkc [Label]` 這幾行。**F1 → Settings** 也應該有 `Physics (…)` 與 `Extra data (…)` 兩節，顯示 place/edit/pick/place 的現況。
-   - **🔑 真正的驗收在 esp（這是這條的重點）**：把 `Export player cell` 出來的 json 給我 → 我 build → **裝進去看那些杯子還在不在桌上**。（json 裡那幾筆 placement 應帶 `"noHavokSettle": true`。）**遊戲內凍結是活不過存檔的**——會 ship 的是這個記錄旗標。
+   - **🔑 真正的驗收在 esp（這是這條的重點）——✅ zip 已備好，見本節開頭**：`ModForgeGoblets.zip`（8 顆銀杯，6+1 凍結、1 顆對照）。**遊戲內凍結是活不過存檔的**——會 ship 的是這個記錄旗標，所以「裝進去看杯子還在不在桌上」才是驗收。
    - ⚠️ 預期邊界：`py0` **只擋「載入時被 havok settle 彈飛」**，不是把物件變成不可推的石頭——玩家還是可以撿/撞。這是 vanilla 杯子的行為（Bethesda 自己 3791 個 REFR 就是這樣做的）。若你要的是「連撞都不動」，回報，那要另一條路（script keyframed）。
 
 2. **`sc ed py0/py1` — 編輯期物理**
@@ -178,29 +186,6 @@ co-save **SCCP v9**——舊存檔的 captures 照讀（缺的欄位＝0，行�
    - **⚠️ 已知限制**：檔內目標的 placement 若不在這次匯出掃到的 cell 裡，那筆 reference **不會**寫進 json（寫了 build 也對不上）——Export 頁會列出 skipped 數，log 有每筆的原因。
 
 **回報**：① 撞名有沒有擋住、label 大小寫有沒有留住；② 三類拒收對不對；③ 重開讀檔後檔內目標撿不撿得回。
-
-## scene-capture-bridge — Export 頁 `Export requires` 鈕（2026-07-12，**已部署**）
-
-> **鈕本身已實機出過東西（2026-07-12）**：`requires_20260712-2244.txt` 生出來了 ⇒ 下面第 2 步（鈕會跑、檔案落地、命名/永不覆蓋）算過。**剩內容的三個檢查**：第 3 步（**activeEffects/base 有沒有污染名單——最關鍵**）與第 4 步（跟 C# `<plugin>.requires.txt` 對名單，**要等我 build 才做得了**）。
-
-**這是什麼**：`sc capp` 吸一個玩家分身，就會把「給過你法術/perk/裝備的每一個 mod」變成生成 esp 的 **master**；缺 master 時 Skyrim **靜默不載**這個 esp（不報錯、log 也沒有）。`modforge build` 已經會印這份分析——但**那時你已經退出遊戲了**。這顆鈕把它**提前到匯出當下**：你人還站在那間房，覺得那顆 PROTEUS 法術不值得讓整個 mod 變成硬相依，**重吸一次就好**。
-
-**它不改任何東西**（唯讀掃描 → 寫一份 .txt），也**不過濾**你的匯出——只是讓代價可見。
-
-1. **先製造依賴**（重點是「非 vanilla 的來源」）：
-   - `sc capp` 吸一次玩家（你身上的 PROTEUS/Ordinator/Apocalypse 法術、mod 的裝備都會進來）；
-   - 順手 `sc pk` 吸一個 **mod 來的**物件（JK's Skyrim 之類的家具）→ `sc pl` 擺出來；
-   - 對一個 **mod 的** ref 用 `sc del` 擦掉、或 `sc ed` 移動一下（→ `removals[]`／`overrides[]` 也算依賴）。
-2. **F1 → Export 頁 → `Export requires`**（在 Export captures 下面那一區）：
-   - 面板應**橘字**顯示 `N non-vanilla master(s), M link(s)`（純 vanilla 的話顯示 `vanilla only — the plugin will load for anybody`），下面一行 `Wrote <路徑>`。
-   - 檔案在 **SKSE log 夾**（跟 `scene-export_*.json` 同一個夾），名字 `requires_<YYYYMMDD-HHMM>.txt`。同一分鐘再按一次＝ `-2.txt`，**永不覆蓋**。
-3. **打開那份 .txt 看三件事**：
-   - **開頭講清楚後果**（缺這些 mod → Skyrim 靜默不載）＋ vanilla 五個列在 `# vanilla (...)` 那行；
-   - 每個 mod 底下**逐行講是誰把它拉進來的**，例如 `captures.capturedNpcs[0].spells[17] = PROTEUS.esp:0x08073D`——**那就是你要刪的那一行**（`scene.` ＝去改 `scene-export_*.json`，`captures.` ＝去改 `captures_*.json`）；
-   - **⚠️ 最該檢查的一條**：你的 `capturedNpcs[].activeEffects[]`（當下 buff 快照）通常會提到一堆 mod 的 MGEF——**這些 mod 不該出現在報告裡**（除非同一個 mod 另有法術/perk 之類的**真**依賴把它拉進來）。activeEffects 不會產生任何 esp link，列它＝說謊（刪掉它並不會拿掉依賴）。同理 `capturedNpcs[].base`（來源 NPC）也不該讓那個 mod 上榜。**若看到一個 mod 只因 activeEffects/base 就被列出來 → 那是 bug，回報。**
-4. **跟 C# 端對照**（真正的驗收）：把 `scene-export_*.json` ＋ `captures_*.json` 給我 → 我 `build` 一份 esp → C# 會印它自己的 master 清單＋寫 `<plugin>.requires.txt`。**兩份的 mod 名單應該一致**（歸因粒度可能不同：C# 對 deep-copy 的 template clone 只講得出 `record Weapon:MFCap_…`，DLL 這邊講得出是哪一行——那不算不一致）。**名單本身若對不上，回報**，那代表其中一邊的規則錯了。
-
-**回報**：① 面板數字與 .txt 內容對不對得上；② activeEffects/base 有沒有污染名單（**最關鍵**）；③ 跟 C# `<plugin>.requires.txt` 的 mod 名單一不一致；④ 有沒有哪個 mod 你確定需要、但兩邊都沒列出來（漏報比誤報嚴重）。
 
 ## scene-capture-bridge — 動作鍵改走 `.ini` ＋ palette `clear` 鈕（2026-07-12，commit `1fffb15`，**已部署**）
 
