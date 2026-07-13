@@ -108,7 +108,7 @@ namespace Captures {
         std::vector<TintLayer> tints;
         std::vector<float> morphs;         // faceData NAM9 (19 sliders)
         std::vector<std::int32_t> parts;   // faceData NAMA (4 part presets)
-        std::vector<PerkEntry> perks;      // base perks (durable id + rank)
+        std::vector<PerkEntry> perks;      // base perks ＋ (player) runtime addedPerks, deduped
         std::vector<ActiveEffect> activeEffects;  // current buffs — runtime snapshot
         std::string npcClass;              // durable CLAS id (drives ModForge autoCalcStats)
         std::int16_t level = 0;            // actor's effective level at capture time
@@ -174,8 +174,9 @@ namespace Captures {
     Result CaptureConsoleRef(const std::string& label = "");
     // `sc capp [label]` — THE PLAYER, read straight off its base TESNPC (0x7). The engine
     // writes chargen (race/tints/morphs/head parts) onto that record, so no PROTEUS clone is
-    // needed as an intermediary; perks come from PlayerCharacter's runtime addedPerks (the
-    // player's base perk array is empty) and stats from the base actor values.
+    // needed as an intermediary; perks are the base array PLUS PlayerCharacter's runtime
+    // addedPerks (the spent skill-tree perks live only there), and stats come from the
+    // permanent actor values.
     Result CapturePlayer(const std::string& label = "");
 
     [[nodiscard]] std::vector<Entry>& All();

@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <unordered_map>
 
 namespace {
     constexpr float kRadToDeg = 57.2957795f;
@@ -147,19 +148,33 @@ namespace {
         // not just `sc capp`. Consumed by ModForge only as a warning trigger (no voiceType
         // fallback — 2026-07-12 user-decided).
         n.isPlayer = pc != nullptr;
+
+        // PERKS — capture BOTH arrays, never one-or-the-other (2026-07-13 user-decided: full
+        // fidelity at the bridge, ModForge decides downstream what a clone should keep).
+        //   base BGSPerkRankArray — every actor has it. On the PLAYER it holds the vanilla Player
+        //     record's plumbing perks (AllowShoutingPerk / VampireFeed / AlchemySkillBoosts / …).
+        //   PlayerCharacter::addedPerks — the player ONLY, and the perks actually spent in the
+        //     skill trees live nowhere else (an if/else here silently dropped one set or the other).
+        // Same perk in both arrays -> keep the higher rank.
+        std::unordered_map<std::string, std::size_t> perkAt;  // durable id -> index into n.perks
+        auto addPerk = [&](RE::BGSPerk* perk, std::int32_t rank) {
+            if (!perk) return;
+            auto id = SceneExporter::ResolveDurableId(perk);
+            if (!id) return;
+            auto [it, fresh] = perkAt.emplace(*id, n.perks.size());
+            if (fresh) {
+                n.perks.push_back({*id, rank});
+            } else if (rank > n.perks[it->second].rank) {
+                n.perks[it->second].rank = rank;
+            }
+        };
+        if (npc->perks && npc->perkCount > 0) {
+            for (std::uint32_t i = 0; i < npc->perkCount; ++i)
+                addPerk(npc->perks[i].perk, npc->perks[i].currentRank);
+        }
         if (pc) {
-            for (auto* pr : pc->GetPlayerRuntimeData().addedPerks) {
-                if (!pr || !pr->perk) continue;
-                if (auto id = SceneExporter::ResolveDurableId(pr->perk))
-                    n.perks.push_back({*id, pr->currentRank});
-            }
-        } else if (npc->perks && npc->perkCount > 0) {
-            for (std::uint32_t i = 0; i < npc->perkCount; ++i) {
-                auto& pr = npc->perks[i];
-                if (!pr.perk) continue;
-                if (auto id = SceneExporter::ResolveDurableId(pr.perk))
-                    n.perks.push_back({*id, pr.currentRank});
-            }
+            for (auto* pr : pc->GetPlayerRuntimeData().addedPerks)
+                if (pr) addPerk(pr->perk, pr->currentRank);
         }
 
         // EXPLICIT stats (all actors, not just the player). Capturing them lets ModForge write

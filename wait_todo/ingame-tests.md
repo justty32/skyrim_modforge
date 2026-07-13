@@ -58,6 +58,19 @@
 
 **OPEN-A 殘餘（最後一小項）**：存檔完全重開 → capture 的 aim source（er0/er1）還原（co-save SETT v4）。（`sc cap er1` 射線吸取 2026-07-11 已實證 OK。）另留意：模式制下重複按 F11 會吸出重複列（正常行為，消費端 editorId 已防撞）。
 
+## scene-capture-bridge — 玩家 perk 改「全收」（2026-07-13，DLL **`e19ad4ca` 已部署**，小驗）
+
+> ⚠️ **完全關遊戲重開**才吃得到新 DLL（esp 不動）。
+
+使用者拍板 (b)：橋端**不再二選一**——base TESNPC 的 perk **＋** 玩家 runtime `addedPerks`，**兩個都收**（依 durable id 去重、同 perk 取高 rank）。取捨留給 ModForge 端（[backlog](../workflows/plans/scene-capture-bridge/backlog.md)）。
+
+**驗**：`sc capp <label>` 重吸一次 → Export captures →
+- perk 數應從 **26 變成約 38**（＝12 base ＋ 26 added，去重後）；
+- 名單裡應**多出 `Skyrim.esm:0x0F11A9`（`AllowShoutingPerk`）**這類 Player 記錄的管線 perk（上一版沒有）；
+- **原本那 26 顆真 perk 一顆都不能少**（`Armsman00` 等單手樹的還在＝沒退化）。
+
+把新的 `captures_*.json` 檔名給我，我對帳。
+
 ## scene-capture-bridge — `sc capp` 直接吸玩家：**數值那條**（2026-07-12，DLL `dd7afd82` 已部署）
 
 > **✅ 外貌路徑已 🎮 PASS（2026-07-12）**：`sc capp` 抓對玩家 base（`Skyrim.esm:0x000007`），分身臉**確認是本人**——faceMorphs/headParts/hairColor/faceTexture ＋ **`tintLayers` 戰紋**全中（戰紋正是 PROTEUS 路線拿不到的那層）。交付 `~/skyrim_mods/mine/MFCapHatak.zip`。落地句進 [landed/npcs](../workflows/feature-dev/landed/npcs.md)。
@@ -95,21 +108,7 @@ co-save **SCCP v9**——舊存檔的 captures 照讀（缺的欄位＝0，行�
 
 ## scene-capture-bridge — 模式開關套件 `py` / `ed` / `pkc`（2026-07-12，**已部署**）
 
-> **部分已過（2026-07-12）**：`sc pl py0` 的 **`"noHavokSettle": true` 已實機出現在 7 筆 placement 上**（`scene-export_Tamriel_x28y27_20260712-2243.json`）⇒ 遊戲內開關 → json 這一段通了。
->
-> **🎯 真正的驗收（下面 1. 的 🔑）——zip 已交付 `~/skyrim_mods/mine/ModForgeGoblets.zip`（v2，2026-07-13，FLAT，ESL，僅 Skyrim.esm master）。**
->
-> **⚠️ v1 的測法失敗（設計錯誤，不是功能失敗）**：v1 只含使用者原本那 8 顆銀杯，但**它們的 z 全在 −7744±7 ＝ 同一個平面（庭院地板）**——havok settle 對「已經貼地靜止」的物件本來就不做事 ⇒ **有沒有旗標都不會動**，實驗分不出勝負。實機結果正是「8 顆全在原位（含沒有旗標的對照組）」＝**無效判讀**，不能當 PASS 也不能當 FAIL。（另：使用者回報「8 顆都能撞飛」——那是**預期行為**，`noHavokSettle` 只擋載入時的 settle，不會讓物件變成推不動的石頭。）
->
-> **v2 的判別法：懸空。** 加了 6 顆浮在地板上方 128 units（≈1.8m）的銀杯，唯一變因就是旗標：
-> - **`MFAir_freeze_0/1/2`**（`0x20000000`）→ 應該**直接浮在半空中**；
-> - **`MFAir_fall_0/1/2`**（旗標 `0x00000000`）→ 載入瞬間**掉到地上**。
-> - **自我標示、不需分辨誰是誰**：看到 **3 顆浮空 + 3 顆躺在地上** ＝ PASS；**6 顆全浮空** ＝ 引擎在這裡根本沒跑 settle（旗標無關，另查）；**0 顆浮空** ＝ 旗標沒作用（FAIL）。
-> - 原本那 8 顆地板杯照舊留著（不影響判讀）。
->
-> 走回**學院庭院**（`WinterholdCollegeExterior`＝Tamriel cell 28,27；`cow Tamriel 28 27`）。⚠️ **load order 排在 AI Overhaul 之後**（那個 cell 目前的 winner 是它）；MO2 重裝時注意別留舊 zip（已用 `--clean-prefix` 出貨）。
->
-> `ed1`（實例附魔）／`pkc`（console 滴管大小寫）／`ed py0/py1` 回歸／跨存檔 reacquire 仍未走。
+> **✅ `noHavokSettle` 整條 🎮 PASS（2026-07-13）——這節的核心已結案**，濃縮句進 [landed/world](../workflows/feature-dev/landed/world.md)。**剩下**：`ed1`（實例附魔）／`pkc`（console 滴管大小寫）／`ed py0/py1` 回歸／跨存檔 reacquire。
 
 ⚠️ co-save：`SETT` v6、record `'PLEX'` v1——**舊存檔照讀**（讀不到就落回預設：place `py1`、edit `py0`、extra data 全關＝跟以前一模一樣）。
 
@@ -122,7 +121,7 @@ co-save **SCCP v9**——舊存檔的 captures 照讀（缺的欄位＝0，行�
    - **先看壞的樣子**：`sc pl py1`（預設）→ 動作鍵（**F11**）在**桌面上**擺一個 → 它會**掉下來/滾走/被你走過去撞飛**。這是現況，正常。
    - **再看好的樣子**：`sc pl py0` → console 應印 `placed objects have physics OFF (py0)` ＋ 一行說明 → 再擺一個 → **它應該定在原地**（不掉、撞不動）。
    - **console `sc` 印出來的 usage** 應該看得到 `sc pl py1 / py0`、`sc ed py0 / py1`、`sc pk ed0 / ed1`、`sc pl ed0 / ed1`、`sc pkc [Label]` 這幾行。**F1 → Settings** 也應該有 `Physics (…)` 與 `Extra data (…)` 兩節，顯示 place/edit/pick/place 的現況。
-   - **🔑 真正的驗收在 esp（這是這條的重點）——✅ zip 已備好，見本節開頭**：`ModForgeGoblets.zip`（8 顆銀杯，6+1 凍結、1 顆對照）。**遊戲內凍結是活不過存檔的**——會 ship 的是這個記錄旗標，所以「裝進去看杯子還在不在桌上」才是驗收。
+   - **🔑 真正的驗收在 esp——✅ 已 PASS（2026-07-13）**：`ModForgeGoblets.zip` v2 的懸空判別法，實機**3 顆浮在半空 / 3 顆掉到地上** ⇒ `0x20000000` 確實會 ship 進 esp 並生效。（⚠️ 判讀教訓：**貼地靜止的物件驗不出這個旗標**——settle 對它們本來就不做事；要判別必須讓物件**懸空**。v1 的 8 顆銀杯 z 全在同一平面 ⇒ 無效實驗。）
    - ⚠️ 預期邊界：`py0` **只擋「載入時被 havok settle 彈飛」**，不是把物件變成不可推的石頭——玩家還是可以撿/撞。這是 vanilla 杯子的行為（Bethesda 自己 3791 個 REFR 就是這樣做的）。若你要的是「連撞都不動」，回報，那要另一條路（script keyframed）。
 
 2. **`sc ed py0/py1` — 編輯期物理**

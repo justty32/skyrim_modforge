@@ -291,6 +291,13 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
 - **C# 端零改動**（這是純 DLL 側的新輸出）。
 - **🎮/🔬 驗收完成（2026-07-13）**——四項全過，這條結案：① 鈕在遊戲內跑出 `requires_20260712-2244.txt`（使用者 2026-07-12）；② **假依賴沒有污染名單**：那份 .txt 裡 7 個 mod **每一個都只由 `captures.capturedNpcs[].spells[]` 拉進來**，沒有一行是 `activeEffects`／`base`（尾註明講另有 138 筆「記錄但不 link」被刻意排除）；③ **跨端對帳一致**：把同一支角色的 `captures_20260712-2250.json` 餵 C# `build` → `<plugin>.requires.txt` 吐**同樣 7 個 mod**，link 數也對得上（DLL 24 links ＝ 兩個 capture × 12；C# 單 capture 12）；④ **C# 端也不說謊（一變數實驗）**：把 `Conditional Expressions.esp` 的那顆 spell 從 spells[] 刪掉、**保留它的 14 筆 activeEffects** → 該 mod 同時從 `requires.txt`（7→6）**和 esp 的 master list** 上消失 ⇒ activeEffects 確實零 link，兩端規則一致。（差異僅在**呈現**：C# 會把 activeEffects 行印在該 mod 底下當佐證，但不計 link、也不會讓只出現在那裡的 mod 上榜；DLL 則整個不印。無需修正。）
 
+## ✅ 已做＋🎮 PASS（`isPlayer` ＋玩家 perk：從 bug 到「全收」，2026-07-12→13，DLL `dd7afd82`→`e19ad4ca`）
+
+- **bug**（commit `eb6ae75`）：`Captures.cpp` 用 `actor->As<RE::PlayerCharacter>()` 判玩家身份——**該 cast 對任何 actor（含玩家）都必定回傳 nullptr**。`TESForm::As<T>()` 不是 `dynamic_cast`，是 `switch (GetFormType())`（CommonLibSSE `FormTraits.h`），每個 case 只肯從 FORM_TYPE 的具體類別**往 base 轉**；玩家 ref 的 form type 是 `kCharacter` → 具體類別 `Character`，而 switch 裡**沒有 `PlayerCharacter` case**（它沒有自己的 FORM_TYPE）⇒ 這是**向下轉型**、`is_convertible` false ⇒ 靜默 null，**編譯期就決定**（換 MSVC 也一樣）。⇒ `isPlayer` 永遠 false、玩家點的 perk 一顆都吸不到。改為**單例指標比對** `actor == RE::PlayerCharacter::GetSingleton()`。全 DLL 其餘 4 處 `As<>` 皆為 upcast／formtype 精確命中，安全。**可推廣的判準**：`As<T>()` 只在 T 是該 form type 具體類別的 **base** 時才有效——凡是想「往下」轉（`PlayerCharacter`、以及任何沒有專屬 FORM_TYPE 的類別）都會靜默失敗，必須改用單例／旗標／`Is*()` 判斷。
+- **🎮 PASS（2026-07-13）**：`captures_20260713-2138.json` → `"isPlayer": true`、perk **12 → 26**，內容是**真的玩家點下去的單手樹 perk**（`Armsman00`/`Armsman20`/`FightingStance`/`Bladesman30`/`HackAndSlash30`/`BoneBreaker30` ＋ CC/DLC/mod 的 20 顆）——base 記錄不可能有這些。（原訂的 `0x0F2CAA` 錨點失效：使用者換了存檔，這隻角色是純單手戰士，restoration 沒點；單手樹那組是更硬的證據。）
+- **隨即拍板 (b)「全收」（2026-07-13，DLL `e19ad4ca`）**：修好後那段是 **if/else**——玩家走 `addedPerks` 就**不再讀 base 的 12 顆管線 perk**（`AllowShoutingPerk`／`VampireFeed`／`AlchemySkillBoosts`／`DBWellFitted`＝ vanilla **Player 記錄專用**）。使用者拍板「玩家走 (b)，到時候讓 modforge 處理」⇒ 改成**兩個陣列都收、依 durable id 去重、同 perk 取高 rank**，與 masters 那條同一個原則（**橋端完全複製、不過濾；取捨留給消費端**）。消費端要不要過濾＝ [backlog](backlog.md)「仍未做」。**待驗**（新 DLL 需完全重開遊戲）：重吸玩家 → perk 數 26 → 約 38（12+26 去重）、且含 `AllowShoutingPerk`。
+
+
 ## ❌ 已撤回（rebind 重作，2026-07-12，DLL crc `378d3c6c`）——**實機仍失敗，遊戲內 rebind 整個放棄，改走 .ini**（見下一節）
 
 > **這一節保留當歷史**：它記的是**第二次**（也是最後一次）想在遊戲內抓鍵的嘗試。診斷（面板不暫停遊戲 ⇒ 抓鍵在跟玩家還按著的移動鍵搶輸入）是對的，**但兩道防線加完，使用者實機回報「rebind 仍失敗」** ⇒ 使用者拍板：**這功能先拿掉，改用 .ini 設定檔**。UI 與 `Modes` 的抓鍵狀態機（`BeginRebind`/`HandleKeyUp`/`RebindArmed`…）與 `plugin.cpp` 的 key-up 轉發**全部移除**（不留死碼；要回頭看實作去 git `ddf6324`）。
