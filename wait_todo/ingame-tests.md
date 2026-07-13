@@ -58,23 +58,6 @@
 
 **OPEN-A 殘餘（最後一小項）**：存檔完全重開 → capture 的 aim source（er0/er1）還原（co-save SETT v4）。（`sc cap er1` 射線吸取 2026-07-11 已實證 OK。）另留意：模式制下重複按 F11 會吸出重複列（正常行為，消費端 editorId 已防撞）。
 
-## 🐞 scene-capture-bridge — `isPlayer` ＋ 玩家 perk 修正（**最優先**，2026-07-12，DLL `dd7afd82` 已部署）
-
-**這是今天實機抓到、已修、已部署、但還沒驗的 bug**（commit `eb6ae75`）。真因：`TESForm::As<T>()` 不是 `dynamic_cast` 而是 `switch (GetFormType())` 且只肯往 base 轉；玩家 ref 的 form type 是 `kCharacter`，switch 裡沒有 `PlayerCharacter` 的 case ⇒ `As<RE::PlayerCharacter>()` **對任何 actor 都必定回傳 nullptr**（編譯期就決定，換 MSVC 也一樣）。⇒ `isPlayer` 永遠 false、玩家點的 perk **一顆都吸不到**（走進 else 分支讀 base 的空 perk array）。已改成單例指標比對。
-
-> ⚠️ **完全關遊戲重開**才吃得到新 DLL（esp 不動）。
-
-**🎯 對帳錨點（二元判斷，不用數數量）**：你已經點了 **Restoration 的第一個 perk ＝ `Skyrim.esm:0x0F2CAA`**（`RestorationNovice00` / Novice Restoration）。修正**前**的那份 export（`captures_20260712-2250.json`）裡那 12 個 perk **不含它**（已核對）。
-
-1. `sc capp <label>` 重吸一次自己 → console／SKSE log 應印出 **`PLAYER`** 標記。
-2. **F1 → Export 頁 → `Export captures`** → 新的 `captures_<時間>.json` 裡玩家那筆：
-   - **必須出現 `"perks": [... "Skyrim.esm:0x0F2CAA" ...]`** ← **這就是驗收條件**。沒有它＝沒修好，回報。
-   - 應多一個 **`"isPlayer": true`**（一般 NPC 的 `sc capc` 不該有這欄）。
-3. **把那份 json 給我**（或說檔名，我去讀）→ 我 build → 分身的 perk 就是你點過的那些。
-   - 順帶：`build` 若看到「is a player capture 但沒有 voiceType」會印一句 warning（措辭「this is expected, not a bug」，**不是紅色錯誤**）。
-
-**修正前的對照組已取得**（level 3 / magicka 110 ⇒ 證明 `GetPermanentActorValue` 那條路是好的，perk 卻仍是那 12 個 base perk ⇒ bug 已被實機釘死）。
-
 ## scene-capture-bridge — `sc capp` 直接吸玩家：**數值那條**（2026-07-12，DLL `dd7afd82` 已部署）
 
 > **✅ 外貌路徑已 🎮 PASS（2026-07-12）**：`sc capp` 抓對玩家 base（`Skyrim.esm:0x000007`），分身臉**確認是本人**——faceMorphs/headParts/hairColor/faceTexture ＋ **`tintLayers` 戰紋**全中（戰紋正是 PROTEUS 路線拿不到的那層）。交付 `~/skyrim_mods/mine/MFCapHatak.zip`。落地句進 [landed/npcs](../workflows/feature-dev/landed/npcs.md)。
@@ -114,11 +97,17 @@ co-save **SCCP v9**——舊存檔的 captures 照讀（缺的欄位＝0，行�
 
 > **部分已過（2026-07-12）**：`sc pl py0` 的 **`"noHavokSettle": true` 已實機出現在 7 筆 placement 上**（`scene-export_Tamriel_x28y27_20260712-2243.json`）⇒ 遊戲內開關 → json 這一段通了。
 >
-> **🎯 真正的驗收（下面 1. 的 🔑）現在可以做了——zip 已交付 `~/skyrim_mods/mine/ModForgeGoblets.zip`（2026-07-13，FLAT，ESL，僅 Skyrim.esm master）**：那份 json 我 build 完了，逐 byte 驗過旗標。裝上去、走回**學院庭院**（`WinterholdCollegeExterior`＝Tamriel cell 28,27；`cow Tamriel 28 27` 或直接走過去）看那 8 個銀杯：
-> - **6 顆該定在原地**（帶 `0x20000000` DontHavokSettle）；
-> - **`MFRef_ref_5_5` 那顆也該定住**（`0x20000400`＝凍結＋persistent）；
-> - **`MFRef_ref_4_4` 那顆該掉/滾**——它是你開 `py0` **之前**擺的，esp 裡**只有 `0x400`、沒有凍結旗標** ⇒ **這是天然的對照組**，它要是也不動，反而代表旗標沒在作用（是別的原因把杯子定住了）。
-> - ⚠️ **load order 排在 AI Overhaul 之後**（那個 cell 目前的 winner 是它）。若庭院有哪裡看起來怪怪的（光線/物件），回報——那會是 cell override 的副作用。
+> **🎯 真正的驗收（下面 1. 的 🔑）——zip 已交付 `~/skyrim_mods/mine/ModForgeGoblets.zip`（v2，2026-07-13，FLAT，ESL，僅 Skyrim.esm master）。**
+>
+> **⚠️ v1 的測法失敗（設計錯誤，不是功能失敗）**：v1 只含使用者原本那 8 顆銀杯，但**它們的 z 全在 −7744±7 ＝ 同一個平面（庭院地板）**——havok settle 對「已經貼地靜止」的物件本來就不做事 ⇒ **有沒有旗標都不會動**，實驗分不出勝負。實機結果正是「8 顆全在原位（含沒有旗標的對照組）」＝**無效判讀**，不能當 PASS 也不能當 FAIL。（另：使用者回報「8 顆都能撞飛」——那是**預期行為**，`noHavokSettle` 只擋載入時的 settle，不會讓物件變成推不動的石頭。）
+>
+> **v2 的判別法：懸空。** 加了 6 顆浮在地板上方 128 units（≈1.8m）的銀杯，唯一變因就是旗標：
+> - **`MFAir_freeze_0/1/2`**（`0x20000000`）→ 應該**直接浮在半空中**；
+> - **`MFAir_fall_0/1/2`**（旗標 `0x00000000`）→ 載入瞬間**掉到地上**。
+> - **自我標示、不需分辨誰是誰**：看到 **3 顆浮空 + 3 顆躺在地上** ＝ PASS；**6 顆全浮空** ＝ 引擎在這裡根本沒跑 settle（旗標無關，另查）；**0 顆浮空** ＝ 旗標沒作用（FAIL）。
+> - 原本那 8 顆地板杯照舊留著（不影響判讀）。
+>
+> 走回**學院庭院**（`WinterholdCollegeExterior`＝Tamriel cell 28,27；`cow Tamriel 28 27`）。⚠️ **load order 排在 AI Overhaul 之後**（那個 cell 目前的 winner 是它）；MO2 重裝時注意別留舊 zip（已用 `--clean-prefix` 出貨）。
 >
 > `ed1`（實例附魔）／`pkc`（console 滴管大小寫）／`ed py0/py1` 回歸／跨存檔 reacquire 仍未走。
 

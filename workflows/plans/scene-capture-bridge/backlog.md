@@ -16,6 +16,8 @@
 
 ## ⏳ 待使用者拍板（2026-07-12 收工時開著）
 
+- **玩家分身要不要保留 base 的 12 顆管線 perk（2026-07-13 新增）**：`isPlayer` 修好後，`Captures.cpp:150-163` 的 if/else 讓玩家**只走 `addedPerks`**（26 顆真 perk），**不再讀** base TESNPC 的 12 顆（`AllowShoutingPerk`／`VampireFeed`／`AlchemySkillBoosts`／`DBWellFitted`…）。那些是 vanilla **Player 記錄專用的管線 perk**（讓玩家能吼、能吸血、技能加成），對一個 NPC 分身多半是死資料——但 `AllowShoutingPerk` 之類若哪天要讓分身用吼聲就會需要。**選項**：(a) 維持現狀（只 added，乾淨）；(b) 合併 base＋added（完全複製優先，與 masters 那條的拍板一致）。**未拍板**。
+
 - **`area:<label>` 前綴（非破壞的中間路）**：referrer 的 slot-kind 教訓（label 進 **SingleRef target 槽**＝鎖定那一個 ref；進 **location 槽**＝只是「那附近一塊區域」，引擎自己挑家具 —— 而且 build 綠、dump 乾淨、零警告，只有進遊戲才看得出來，見 [landed/world](../../feature-dev/landed/world.md)「referrer 原語」）目前只用一行 build INFO 提示。**中間路提案**：讓作者可以寫 `"sandbox.location": "area:sofia's chair"` **明示**「我就是要一塊區域」 → 沒寫 `area:` 而把 label 丟進 location 槽時，提示可以更強硬（甚至報錯）。非破壞（舊 spec 不受影響）。**未拍板**。
 - **`package` 要不要把 `requires.txt` 也寫進出貨的 mod 資料夾**：現況＝`build` 寫 `<plugin>.requires.txt` 旁檔、**`package` 只印摘要不寫檔**（理由：輸出夾就是要出貨的 mod，不該多塞檔案，見 [phases](phases.md)）。但玩家最需要那份「我要裝哪些前置」的清單——寫進去（或改寫成 `README.txt`）也許才對。**未拍板**。
 - （第三件 **U10**〔NAVM override 後蓋前、要不要做成 build 警告〕住 [plans/navmesh.md](../navmesh.md) §6 U10。）
