@@ -411,3 +411,22 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
 1. **spawn 當下就 `ref->SetCollision(false)`**——這顆 record flag **只翻旗標、不碰 havok**（`TESObjectREFR.cpp:900`），但**引擎在「幫 ref 掛碰撞」時會讀它**。而 `PlaceObjectAtMe` 回來時 3D 還沒載入（凍結才要延後，同一件事）⇒ 先把旗標立起來，最乾淨的結局是**碰撞根本不會被建出來**。
 2. **traversal 改成重試到「真的碰到剛體」為止**（`bodies > 0` 才算數，不是「節點存在」就算），碰到之後**再多剝 4 幀**（撈晚到/分批的 hull）。
 3. **把剝到的剛體數寫進 log**（`collision stripped — N rigid body(ies)`）⇒ 下一輪不管過不過，**一行 log 就能判定是時機問題還是 broadphase 問題**：N=0 ⇒ 還是沒剝到；N>0 卻仍撞得到 ⇒ 光改 `collisionFilterInfo` 不足以更新 havok 的 broadphase filter，改走「強制重建 3D、讓引擎自己不掛碰撞」那條。
+
+## ✅ 已做（🐞 **匯出器把「引擎自己生的」當成「玩家放的」——改成登記簿制**，2026-07-14，**待部署/實機**）
+
+**怎麼發現的**：Browser 第三輪實機，使用者在**野外**（Tamriel）擺了**一株 Ivy01** 然後匯出。log 說 `10 placements`。檔案打開一看——**只有 1 筆是他放的**：
+
+| 匯出的 base | 反查（`find`） | 幾筆 |
+|---|---|---|
+| `Skyrim.esm:0x107A1D` | Ivy01（**使用者真的放的**） | 1 |
+| `Skyrim.esm:0x0C2D47` | **`DoNotPlaceSmallCritterLandingMarkerHelper`**（蝴蝶降落用的 marker，名字直接寫「不要放」） | **6** |
+| `ccBGSSSE001-Fish.esm:0x000D77` | `ccBGSSSE001_Austrolebias01`（釣魚 CC 的**魚**） | **3** |
+
+**根因**：匯出器的 vanilla diff 判準是「**dynamic ref（無 durable id）＝ 玩家放的**」。這句話**對玩家生的東西為真，對引擎生的東西也一樣為真**——魚、蝴蝶、critter marker、灰燼堆…… 引擎自己也在 runtime `PlaceAtMe`，生出來的 ref **和你放的椅子在位元層級沒有任何差別**。這個啟發式**分辨不了，也永遠分辨不了**。
+
+**它一直都在**，不是 Browser 帶進來的——只是以前都在**室內**測（Bannered Mare 沒有魚也沒有蝴蝶），第一次在野外匯出就炸出來。
+
+**修法（使用者拍板：登記簿制）——把「所有權」從推導改成記錄**：
+- `Palette::PlaceSlot` **每一筆**都進 `Placed()` 登記簿（以前只有帶 rider〔`py0`／`ed1`〕的才進，因為「反正 dynamic 就是玩家的」——正是這個假設錯了）。co-save 照舊，跨存檔用既有的 base+position 救回機制。
+- 匯出器加一道 **ownership gate**：dynamic ref **沒有登記簿列就不匯出**（計數 `notOurs`，log 印出來）。**魚拿不到登記簿列，所以魚上不了船。**
+- 明示的回頭路：面板 Palette 頁一顆 **`adopt dynamic refs in this cell`**——console `placeatme` 生的、或登記簿制之前擺的東西，**明講**要收編才收編（跟 Eraser 的 adopt 同一個哲學：**明示優於推導**，plan 裁決表原本就這麼寫）。按鈕**不挑食**：魚站在那它就收魚——所以面板會警告。

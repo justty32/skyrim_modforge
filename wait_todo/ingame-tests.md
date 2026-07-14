@@ -73,7 +73,19 @@
 6. **add to palette**：Browser 選一筆 → `add to palette` → Palette 頁應多一個 slot（名字＝模型檔名，例如 `MountainCliff01`），且 `…/SKSE/scene-capture-palette.json` 會多一筆——**跨存檔留著**。
 7. **回歸**：滴管（`sc pk`）／橡皮擦（`sc del`）／編輯（`sc ed`）**對著 ghost 用應該被拒絕**（log 說「那是預覽，它不在那裡」），而對**真的**物件照常運作。
 
-**回報**：① 目錄筆數與搜尋好不好用（`mountain`／`chair`／`barrel`）；② ghost 出現/切換/跟隨順不順；③ **第 4、5 條有沒有任何一顆 ghost 混進 scene.json**（這條最關鍵）；④ 500 筆截斷會不會不夠用（要的話我換成可捲完的 clipper）。
+**🎮 2026-07-14 三輪實機結果**：目錄（26949 筆／31 plugin）、ghost 顯示/切換/跟隨、**穿得過去**、離開 cell 自動清、跨存檔清孤兒、**ghost 零外洩（`1 preview ghosts excluded`，真的那株 Ivy01 逐位元對上）**——**全 PASS，Browser 本體結案**。
+
+**但那次匯出抓到一隻真 bug（見下一節）**：10 筆 placements 裡只有 1 筆是你放的，其餘是**引擎自己生的**魚（釣魚 CC）和 6 顆 `DoNotPlaceSmallCritterLandingMarkerHelper`（蝴蝶降落 marker）。已改成**登記簿制**，**待重測**。
+
+## scene-capture-bridge — 🐞 匯出改「登記簿制」：只匯出我們真的放過的（2026-07-14，**待部署**）
+
+**為什麼**：匯出器以前的判準是「dynamic ref ＝ 玩家放的」——但**引擎自己也 PlaceAtMe**（魚、蝴蝶、critter marker），生出來的 ref 跟你放的椅子**沒有任何差別**。所以野外匯出會夾帶一堆你沒放的東西。現在：**只有登記簿裡有的才匯出**（`sc pl`／Browser commit 都會自動登記）。
+
+1. **野外重測**（就在你上次那個地方）：擺 1～2 個東西 → 匯出 → **`scene.json` 應該剛好只有你放的那幾筆**，沒有魚、沒有 `0x0C2D47`。log 那行會多印 **`N dynamic refs not ours (engine-spawned…)`**，N 應該就是被擋掉的魚/蝴蝶數。
+2. **回歸——舊的東西還在不在**：`sc pk` 滴管 → `sc pl` 擺 → 匯出，照樣要出現；`sc pl py0`（noHavokSettle）與 `ed1`（附魔鑄造）也要照舊。
+3. **⚠️ 已知的行為改變（不是 bug）**：**這個改動之前擺下去的東西、以及 console `placeatme` 生的東西，不會再自動匯出**（它們沒有登記簿列）。要救回來 → Palette 頁按 **`adopt dynamic refs in this cell`**。⚠️ 這顆按鈕**不挑食**：魚站在旁邊它就把魚也收編（面板有警告）——所以按完看一下匯出結果。
+
+**回報**：① 匯出檔裡還有沒有你沒放的東西；② adopt 按鈕有沒有把該收的收回來。
 
 ## scene-capture-bridge — 動作鍵改走 `.ini` ＋ palette `clear` 鈕（2026-07-12，commit `1fffb15`，**已部署**）
 

@@ -356,9 +356,11 @@ namespace Palette {
                 placed->extraList.Add(new RE::ExtraEnchantment(s.extra.ench, s.extra.enchAmount, false));
             }
         }
-        // A plain placement (py1 + no carried extra) needs NO registry row: the
-        // vanilla diff already exports it perfectly from the ref itself.
-        if (physicsOff || carryExtra) RegisterPlaced(placed.get(), s, physicsOff);
+        // EVERY placement gets a row (2026-07-14). It used to be only the ones with
+        // a rider (py0 / ed1), because the exporter could "tell" a placement by its
+        // dynamic FormID — it could not: the engine PlaceAtMe's fish and critters
+        // with the same kind of FormID, and they shipped. The row IS the ownership.
+        RegisterPlaced(placed.get(), s, physicsOff);
 
         SKSE::log::info("Palette: placed '{}' ({}) at ({:.1f}, {:.1f}, {:.1f}){}{}",
             s.name, posOverride ? "ghost" : aimed ? "aimed" : "feet", pos.x, pos.y, pos.z,

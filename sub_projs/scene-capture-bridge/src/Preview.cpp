@@ -30,103 +30,6 @@ namespace {
         return x && x->displayName == kSentinel;
     }
 
-    // Strip a ghost of ALL collision.
-    //
-    // 🔴 IN-GAME 2026-07-14: `Get3D()->SetCollisionLayer()` IS NOT ENOUGH — the
-    // player reported "the ghost follows my aim but a collision box stays behind
-    // at the spawn point". Two facts, and you need both to see why:
-    //
-    //   1. The rigid bodies hang off CHILD nodes of the 3D, not the root. The
-    //      NiAVObject call only touches the node's own collision object, so the
-    //      nif's actual bhkRigidBodies were never reached — the ghost stayed
-    //      solid.
-    //   2. A havok body DOES NOT FOLLOW SetPosition/Update3DPosition. A STAT's
-    //      body is fixed in the havok world where the ref was first placed, so
-    //      the visual walks off with your aim and the collision stays behind.
-    //      That is the box he walked into.
-    //
-    // So we do what po3's Papyrus Extender / Base Object Swapper do: walk the
-    // whole collision scenegraph and rewrite the LAYER BITS of every body's
-    // collisionFilterInfo. Once every body is kNonCollidable, (2) stops mattering
-    // — a body that collides with nothing can be left wherever it likes.
-    // Returns how many rigid bodies it actually reached — the number that tells
-    // us whether this worked, which the log prints (see MakeGhostlyDeferred).
-    std::size_t StripCollision(RE::NiAVObject* obj) {
-        if (!obj) return 0;
-        std::size_t bodies = 0;
-        RE::BSVisit::TraverseScenegraphCollision(obj,
-            [&bodies](RE::bhkNiCollisionObject* col) {
-                auto* body = col ? col->body.get() : nullptr;
-                auto* hkBody = body
-                    ? static_cast<RE::hkpWorldObject*>(body->referencedObject.get())
-                    : nullptr;
-                if (hkBody) {
-                    auto& info = hkBody->collidable.broadPhaseHandle.collisionFilterInfo;
-                    info &= ~0x7Fu;  // the low 7 bits ARE the COL_LAYER
-                    info |= static_cast<std::uint32_t>(RE::COL_LAYER::kNonCollidable);
-                    ++bodies;
-                }
-                return RE::BSVisit::BSVisitControl::kContinue;
-            });
-        return bodies;
-    }
-
-    // Make the ghost intangible. Intangibility is not cosmetic: the aim ray is a
-    // physics ray, so a solid ghost at the aim point is what the ray hits and the
-    // aim point creeps toward the player every frame — and a preview you can walk
-    // into is not a preview, it is an object you never agreed to place.
-    //
-    // 🔴 TWO IN-GAME FAILURES TAUGHT THIS FUNCTION ITS SHAPE (2026-07-14):
-    //
-    //   v1 `Get3D()->SetCollisionLayer()` — reached only the root node's own
-    //      collision object. The nif's real bhkRigidBodies hang off CHILD nodes,
-    //      so nothing was touched. Solid.
-    //   v2 the scenegraph traversal below, run ONCE on the first frame Get3D()
-    //      came back non-null. Still solid. The likeliest reason is TIMING: the
-    //      3D node exists a frame or more before its collision is added to the
-    //      havok world, so the traversal walked a tree with no bodies in it yet
-    //      and cheerfully reported success. So now:
-    //
-    //        * we keep retrying until we have actually TOUCHED a body (bodies>0),
-    //          not merely until a node exists, and
-    //        * we strip a few MORE times after that, in case bodies arrive late
-    //          or in batches (a mountain is many hulls), and
-    //        * the count goes in the log, so a failure is diagnosable from one
-    //          in-game round instead of a guess.
-    //
-    // And a third belt: SetCollision(false) is called on the ref the instant it
-    // is spawned (Show), BEFORE any 3D exists — that flag is what the engine
-    // itself consults when it attaches a ref's collision, so the cleanest outcome
-    // is that the collision is never built at all and the strip finds nothing to do.
-    void MakeGhostlyDeferred(RE::ObjectRefHandle handle, int retries = 60,
-        int extraPasses = 4, bool touched = false) {
-        auto* task = SKSE::GetTaskInterface();
-        if (!task) return;
-        task->AddTask([handle, retries, extraPasses, touched]() {
-            auto ref = handle.get();
-            if (!ref) return;
-            auto* obj = ref->Get3D();
-            if (!obj) {
-                if (retries > 0) MakeGhostlyDeferred(handle, retries - 1, extraPasses, touched);
-                return;
-            }
-            const auto bodies = StripCollision(obj);
-            if (bodies > 0 && !touched) {
-                SKSE::log::info("Preview: collision stripped — {} rigid body(ies) set "
-                    "kNonCollidable", bodies);
-            }
-            const bool nowTouched = touched || bodies > 0;
-            if (!nowTouched) {  // 3D is up but its bodies are not in the world yet
-                if (retries > 0) MakeGhostlyDeferred(handle, retries - 1, extraPasses, false);
-                else SKSE::log::warn("Preview: no rigid body ever appeared on the ghost — "
-                    "it may still be solid");
-                return;
-            }
-            if (extraPasses > 0)  // late/batched bodies (a mountain is many hulls)
-                MakeGhostlyDeferred(handle, retries, extraPasses - 1, true);
-        });
-    }
-
     void Destroy(RE::TESObjectREFR* ref) {
         if (!ref) return;
         ref->Disable();
@@ -185,11 +88,32 @@ namespace Preview {
         // as a ghost by anything that looks at it, including a future session.
         ghost->extraList.Add(new RE::ExtraTextDisplayData(kSentinel));
 
-        // And the collision flag SECOND — before the engine has attached any 3D
-        // (PlaceObjectAtMe returns with none, which is the whole reason the freeze
-        // and the strip below are deferred). SetCollision only flips the record
-        // flag; the engine reads that flag when it BUILDS the ref's collision. Set
-        // it now and the cleanest outcome is that the collision is never built.
+        // And intangibility SECOND — this ONE LINE is the whole mechanism, and it
+        // only works because of WHERE it is (🎮 confirmed 2026-07-14 after two
+        // failed rounds).
+        //
+        // `SetCollision(false)` does not touch havok at all: it only sets the
+        // ref's kCollisionsDisabled record flag (TESObjectREFR.cpp:900). But that
+        // flag is what the ENGINE reads when it BUILDS a ref's collision — and
+        // `PlaceObjectAtMe` returns before any 3D exists (the same fact that makes
+        // the physics freeze deferred). Set the flag here, in the gap, and the
+        // collision is NEVER BUILT. There is nothing to strip, disable or chase.
+        //
+        // Two rounds were lost trying to take collision AWAY after the fact:
+        //   v1 `Get3D()->SetCollisionLayer()` — reaches only the root node's own
+        //      collision object; a nif's real bhkRigidBodies hang off CHILD nodes.
+        //      Ghost stayed solid.
+        //   v2 walk the collision scenegraph and rewrite every body's
+        //      collisionFilterInfo (po3 / Base Object Swapper's move). Also solid —
+        //      and the log proved WHY it could never have worked: the strip pass
+        //      never once reported touching a body. Whatever the reason (the 3D's
+        //      bodies are not in the havok world when Get3D() first returns), the
+        //      lesson generalises: DON'T UNDO WHAT YOU CAN DECLINE TO CREATE.
+        //
+        // (Aside on why "just move it away" was never an option either: a havok
+        // body does not follow SetPosition/Update3DPosition. A STAT's body stays
+        // fixed where the ref first landed — which is exactly why the user saw the
+        // visual walk off with his aim while the collision box stayed behind.)
         ghost->SetCollision(false);
 
         RE::NiPoint3 pos;
@@ -204,7 +128,6 @@ namespace Preview {
         // not an object in the world. (Type-gated like every other runtime freeze
         // — keyframing a STAT is meaningless, and it has no rigid body to fall.)
         if (Physics::HavokMovable(base)) Physics::FreezeDeferred(ghost->GetHandle());
-        MakeGhostlyDeferred(ghost->GetHandle());
 
         g_handle = ghost->GetHandle();
         g_base = base;

@@ -1,10 +1,22 @@
-// Palette.Placed.cpp — the registry of refs WE placed (`sc pl`) that the export
-// has to say something EXTRA about. Split from Palette.cpp (300-line convention).
+// Palette.Placed.cpp — the registry of refs WE PLACED. It is the export's
+// definition of "yours". Split from Palette.cpp (300-line convention).
 //
-// Most placements need no row here at all: a plain `sc pl` object is a dynamic
-// ref, and the exporter's vanilla diff already turns it into a perfect
-// `placements[]` entry straight off the ref (base + live transform). A row is
-// only created when the placement carries one of the two 2026-07-12 riders:
+// 🔴 IT DID NOT USED TO BE THAT (2026-07-14, in-game). The exporter used to say
+// "a dynamic ref (no durable id) IS a player placement" and emit it — a rule that
+// is true of everything the player spawns and ALSO true of everything THE ENGINE
+// spawns at runtime. A single exterior export proved it: 10 placements, of which
+// the user had placed exactly ONE. The other nine were six copies of
+// `DoNotPlaceSmallCritterLandingMarkerHelper` (the marker butterflies land on —
+// the name is not subtle) and three fish from the Fishing CC. Fish and critters
+// are PlaceAtMe'd by the engine and are byte-for-byte the same KIND of ref as
+// yours. The heuristic could not tell, and never could have.
+//
+// So ownership is now RECORDED, not inferred (user-decided 2026-07-14 — the same
+// "明示優於推導" the eraser's adopt button already stands on): every `sc pl` /
+// ghost-commit registers a row here, and the exporter emits a dynamic ref ONLY if
+// it has one. A fish cannot get a row, so a fish cannot ship.
+//
+// A row ALSO carries whatever extra the export must say about that placement:
 //
 //   noHavokSettle  (`sc pl py0`) -> the exported REFR gets the DontHavokSettle
 //                  record flag (0x20000000). This is the ONLY half that ships:
@@ -21,6 +33,8 @@
 
 #include "Palette.h"
 
+#include "Markers.h"
+#include "Preview.h"
 #include "SceneExporter.h"
 #include "log.h"
 
@@ -94,6 +108,38 @@ namespace Palette {
             out.push_back(std::isalnum(uc) ? ch : '_');
         }
         return out + "_" + std::to_string(p.seq);
+    }
+
+    std::size_t AdoptDynamicInCell() {
+        auto* player = RE::PlayerCharacter::GetSingleton();
+        RE::TESObjectCELL* cell = player ? player->GetParentCell() : nullptr;
+        if (!cell) return 0;
+
+        std::size_t adopted = 0;
+        cell->ForEachReference([&](RE::TESObjectREFR* ref) -> RE::BSContainer::ForEachResult {
+            if (!ref || ref->IsDeleted() || ref->IsDisabled() || ref->IsPlayerRef())
+                return RE::BSContainer::ForEachResult::kContinue;
+            // Only dynamic refs are candidates (an authored one exports as itself),
+            // and only ones with a nameable base (a runtime-only base could never
+            // build). Editor chrome and actors are never content.
+            if (SceneExporter::ResolveDurableId(ref)) return RE::BSContainer::ForEachResult::kContinue;
+            if (ref->GetFormType() == RE::FormType::ActorCharacter) return RE::BSContainer::ForEachResult::kContinue;
+            if (Markers::IsProxy(ref) || Preview::IsGhost(ref)) return RE::BSContainer::ForEachResult::kContinue;
+            auto base = SceneExporter::ResolveDurableId(ref->GetBaseObject());
+            if (!base) return RE::BSContainer::ForEachResult::kContinue;
+            if (PlacedInfoFor(ref)) return RE::BSContainer::ForEachResult::kContinue;  // already ours
+
+            Slot s;
+            s.baseId = *base;
+            const char* dn = ref->GetDisplayFullName();
+            s.name = (dn && *dn) ? dn : *base;
+            RegisterPlaced(ref, s, false);
+            ++adopted;
+            return RE::BSContainer::ForEachResult::kContinue;
+        });
+        SKSE::log::info("Palette: adopted {} dynamic ref(s) in this cell — they now export "
+            "as placements (check the list: a fish adopted is a fish shipped)", adopted);
+        return adopted;
     }
 
     void DropAllPlaced() { g_placed.clear(); }

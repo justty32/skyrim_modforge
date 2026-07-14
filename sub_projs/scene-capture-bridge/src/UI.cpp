@@ -328,6 +328,23 @@ void __stdcall UI::PalettePage::Render() {
                    "target; place mode (sc pl) spawns the selected slot where "
                    "you aim. Slots persist across saves.", slots.size());
 
+    // OWNERSHIP (2026-07-14). The export emits a dynamic ref only if this registry
+    // says we placed it — "dynamic" alone was never proof (the engine PlaceAtMe's
+    // fish and critters, and nine of them once shipped in a ten-placement export).
+    // This button is the explicit way back in for things we did NOT place but you
+    // DO want: a console `placeatme`, or anything placed before ownership existed.
+    static std::size_t adopted = 0;
+    ImGuiMCP::Text("%zu placement(s) recorded as ours (only these export)",
+        ::Palette::Placed().size());
+    ImGuiMCP::SameLine();
+    if (ImGuiMCP::Button("adopt dynamic refs in this cell")) adopted = ::Palette::AdoptDynamicInCell();
+    if (adopted) {
+        ImGuiMCP::TextColored(kWarn, "  adopted %zu ref(s) — they WILL export now. Adopt is "
+            "indiscriminate: if the engine's fish were standing here, you just adopted the fish.",
+            adopted);
+    }
+    ImGuiMCP::Separator();
+
     // Named palette file (in the SKSE folder). Two load flavours, one save:
     //   load from file (append)  — the file's slots land ON TOP, keeping yours
     //   replace from file        — the file BECOMES the palette (yours are dropped)

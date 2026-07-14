@@ -155,10 +155,19 @@ namespace Palette {
 
     [[nodiscard]] std::vector<PlacedInfo>& Placed();
 
-    // Register a ref we just placed. Only called when there is something to say
-    // (py0 and/or carried extra data) — a plain `sc pl py1 ed0` placement needs
-    // no row at all (the vanilla diff already exports it perfectly).
+    // Register a ref we just placed. Called for EVERY placement (2026-07-14): a
+    // row is no longer an optional rider, it is the export's PROOF OF OWNERSHIP.
+    // Without one, a dynamic ref is not emitted — because "dynamic" alone never
+    // meant "the player put it there" (the engine PlaceAtMe's fish and critters
+    // too, and an exterior export shipped nine of them; see Palette.Placed.cpp).
     void RegisterPlaced(RE::TESObjectREFR* ref, const Slot& slot, bool noHavokSettle);
+
+    // Panel: adopt every unregistered dynamic ref in the player's cell — the
+    // explicit way back in for things WE did not place but you do want exported
+    // (a console `placeatme`, or placements made before ownership was recorded).
+    // Deliberately a button and not a heuristic: it will happily adopt a fish if
+    // a fish is standing there, and that is the point — you said so.
+    std::size_t AdoptDynamicInCell();
 
     // The row for this ref, or null. Matches on the handle; falling back to
     // (base + position) so a row whose dynamic FormID did not survive a full

@@ -84,6 +84,7 @@ namespace SceneExporter {
             std::size_t skipped = 0;
             std::size_t markerProxies = 0;
             std::size_t previewGhosts = 0;     // browser preview refs — never content
+            std::size_t notOurs = 0;           // dynamic refs the ENGINE spawned (fish, critters…)
             std::size_t removalsPending = 0;   // in swept cells (log only)
             std::size_t overridesPending = 0;  // in swept cells (log only)
             // Referrer rows whose IN-FILE target actually made it into placements[]
@@ -213,6 +214,26 @@ namespace SceneExporter {
                 return RE::BSContainer::ForEachResult::kContinue;
             }
 
+            // 🔴 OWNERSHIP GATE (2026-07-14, in-game). Everything above this line
+            // establishes "this ref is dynamic" — and the exporter used to treat
+            // that AS "the player placed it". It is not. THE ENGINE PlaceAtMe's
+            // things too: an exterior export emitted ten placements of which the
+            // user had placed exactly one — the rest were six copies of
+            // `DoNotPlaceSmallCritterLandingMarkerHelper` (what butterflies land
+            // on) and three Fishing-CC fish. No property of the ref distinguishes
+            // them; the fish is as dynamic as your chair.
+            //
+            // So ownership is RECORDED, not inferred: we emit a dynamic ref only
+            // if OUR registry says we placed it (`sc pl`, the browser's commit, or
+            // an explicit panel adopt). A fish cannot get a row, so a fish cannot
+            // ship. Anything else in the cell is somebody else's — count it and
+            // walk on.
+            const auto* pi = Palette::PlacedInfoFor(refPtr);
+            if (!pi) {
+                ++counters.notOurs;
+                return RE::BSContainer::ForEachResult::kContinue;
+            }
+
             // Authored transform (data.location/angle), not live physics pose.
             // Angle is radians in-engine; contract wants degrees.
             const RE::NiPoint3& pos = ref.data.location;
@@ -220,8 +241,7 @@ namespace SceneExporter {
             nlohmann::json entry;
             entry["base"] = *baseId;
 
-            // Did we place this one with a rider (`sc pl py0` / `sc pl ed1`)?
-            if (const auto* pi = Palette::PlacedInfoFor(refPtr)) {
+            {
                 // py0 — physics off. The in-session SetMotionType freeze dies with the
                 // savegame; THIS is the half that ships. `noHavokSettle` becomes the
                 // REFR's DontHavokSettle record flag (0x20000000), which tells the
@@ -624,10 +644,12 @@ namespace SceneExporter {
         SKSE::log::info(
             "Export[{}]: {} placements, {} actors excluded (NPCs are ModForge's "
             "job), {} pre-existing, {} skipped (dynamic bases), {} marker "
-            "proxies excluded, {} preview ghosts excluded, {} annotations, {} removals, "
+            "proxies excluded, {} preview ghosts excluded, {} dynamic refs not ours "
+            "(engine-spawned: fish/critters — adopt them in the panel if you want them), "
+            "{} annotations, {} removals, "
             "{} overrides, {} references, {} noHavokSettle (sc pl py0), {} minted items (sc pl ed1)",
             cellLabel, scene["placements"].size(), c.actorsExcluded,
-            c.preexisting, c.skipped, c.markerProxies, c.previewGhosts, Markers::All().size(),
+            c.preexisting, c.skipped, c.markerProxies, c.previewGhosts, c.notOurs, Markers::All().size(),
             Eraser::All().size(), Overrides::All().size(), g_last.references,
             c.noHavokSettle, c.mintedEmitted.size());
     }
