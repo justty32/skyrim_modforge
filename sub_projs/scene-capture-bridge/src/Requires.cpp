@@ -97,7 +97,8 @@ namespace {
         if (shape == "scene.references[].ref") return Kind::kConditional;
 
         // Everything else that looks like an external ref really does link:
-        // placements[].base/cell/worldspace, removals[], overrides[].ref, and the whole
+        // placements[].base/cell/worldspace, removals[] (bare-string form) and
+        // removals[].ref (the annotated object form), overrides[].ref, and the whole
         // consumed half of a capture (race/class/combatStyle/voiceType/spells/perks/
         // headParts/faceTexture/hairColor.id/inventory/enchantments/cell/worldspace).
         // Defaulting to "it links" is the safe direction: a field we have not classified

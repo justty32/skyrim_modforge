@@ -151,7 +151,7 @@
       },
       "description": "Explosion (EXPL): the impact AoE a projectile/spell triggers; a magicEffect.explosion or projectile.explosion ref points here"
     },
-    "removals": {"type": "array", "items": {"type": "string"}, "description": "Refs \"<master>:0xFORMID\" of EXISTING placed refs to remove (disable + bury) — the in-game eraser feeds this (Generator.Build.Removals.cs)"},
+    "removals": {"type": "array", "items": {"$ref": "#/$defs/removal"}, "description": "Refs \"<master>:0xFORMID\" of EXISTING placed refs to remove (disable + bury) — the in-game eraser feeds this (Generator.Build.Removals.cs). A bare string is shorthand for {\"ref\": \"<that>\"}"},
     "overrides": {"type": "array", "items": {"$ref": "#/$defs/override"}, "description": "Transform overrides of EXISTING placed refs (move/rotate/rescale in place) — the in-game numpad editor feeds this (Generator.Build.Overrides.cs). scale omitted = keep the original record's scale"},
     "references": {"type": "array", "items": {"$ref": "#/$defs/reference"}, "description": "NAME EXISTING placed refs so the rest of the spec can point at them by `label` — the in-game referrer (`sc ref`) feeds this (Generator.Build.References.cs). Third sibling of removals[] (erase existing) / overrides[] (move existing): never creates the ref it points at"},
     "navCuts": {"type": "array", "items": {"$ref": "#/$defs/navCut"}, "description": "L_NAVCUT collision volumes: switch vanilla navmesh OFF inside a box at RUNTIME so NPCs path AROUND what you placed instead of walking into it (Generator.Build.NavCuts.cs). One REFR each — base CollisionMarker Skyrim.esm:0x000021 + collisionLayer 49 + an XPRM box — the same recipe HearthFires.esm uses 1003 times. NOTE: the `Obstacle` record flag ALONE does nothing; the collision LAYER is the gate, and L_STATIC (what houses/walls/rocks collide on) is NOT one of the six layers that cut navmesh"},
@@ -629,9 +629,20 @@
         }}
       ]
     },
+    "removal": {
+      "description": "One removed EXISTING placed ref. A bare STRING is shorthand for {\"ref\": \"<that>\"}.",
+      "oneOf": [
+        {"type": "string", "description": "\"<master>:0xFORMID\" of the existing placed ref (REFR/ACHR) to disable + bury"},
+        {"type": "object", "properties": {
+          "ref": {"type": "string", "description": "\"<master>:0xFORMID\" of the existing placed ref (REFR/ACHR) to disable + bury"},
+          "label": {"type": "string", "description": "short human label for the removed thing (\"the barrel\"). Inert documentation only — the build never reads this"},
+          "note": {"type": "string", "description": "free-form note (why it was removed). Inert documentation only — the build never reads this"}
+        }}
+      ]
+    },
     "npcRole": {"type": "object", "properties": {"npc": {"type": "string"}, "role": {"type": "string"}, "backstory": {"type": "string"}}},
     "annotation": {"type": "object", "properties": {"seq": {"type": "integer"}, "label": {"type": "string"}, "kind": {"type": "string"}, "note": {"type": "string", "description": "free-form brief for the agent (\"face the door\", \"a vendor here\")"}, "position": {"$ref": "#/$defs/vec3"}, "angleZ": {"type": "number"}, "cell": {"type": "string"}, "worldspace": {"type": "string"}}},
-    "override": {"type": "object", "required": ["ref", "position", "rotation"], "properties": {"ref": {"type": "string", "description": "\"<master>:0xFORMID\" of the existing placed ref (REFR/ACHR)"}, "position": {"$ref": "#/$defs/vec3"}, "rotation": {"$ref": "#/$defs/vec3", "description": "degrees"}, "scale": {"type": "number", "description": "omitted = keep original scale; 1.0 = reset to engine default (XSCL dropped)"}}},
+    "override": {"type": "object", "required": ["ref", "position", "rotation"], "properties": {"ref": {"type": "string", "description": "\"<master>:0xFORMID\" of the existing placed ref (REFR/ACHR)"}, "position": {"$ref": "#/$defs/vec3"}, "rotation": {"$ref": "#/$defs/vec3", "description": "degrees"}, "scale": {"type": "number", "description": "omitted = keep original scale; 1.0 = reset to engine default (XSCL dropped)"}, "label": {"type": "string", "description": "short human label for the moved thing. Inert documentation only — the build never reads this"}, "note": {"type": "string", "description": "free-form note (why it was moved). Inert documentation only — the build never reads this"}}},
     "navCut": {"type": "object", "description": "One L_NAVCUT box. EITHER `placement` (wrap that placement's own OBND footprint) OR `position` + `size` + a cell/worldspace.", "properties": {
       "editorId": {"type": "string", "description": "optional: names the navcut REFR"},
       "cell": {"type": "string", "description": "INTERIOR: an in-spec cell editorId OR a vanilla '<master>:0xFORMID'"},

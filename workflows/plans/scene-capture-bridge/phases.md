@@ -332,3 +332,19 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
 
 - 防呆**兩道**：① 按一下先變 `really clear all N slot(s)?` ＋ `yes, clear`／`cancel`，**要再按一次**；② 清完出現 **`undo clear`**（session 內有效，整批回來並重寫回磁碟）。
 - **為什麼比 `replace from file` 更需要防呆**：插槽是**落盤跨存檔**的（不像 eraser/override 是可 revert 的存檔狀態），清掉＝丟掉別的 playthrough 攢的東西；而且 clear **沒有**「載入的新檔」當補償——`replace` 至少換來一份新插槽，clear 是純損失。（`replace` 既有的防呆＝檔案不存在/無可用插槽就完全不動，照舊。）
+
+## ✅ 已做（面板欄位一致化：bound field 重構 ＋ 四頁補齊 label／note ＋ 匯出，2026-07-14，commits `2c8705b`／`3898fe9`／…，**待實機**）
+
+**起點是那個 🐞**：面板 buffer 與 registry 靜默分叉（2026-07-13 使用者實機發現）。修法沒有停在「補一個提交路徑」，而是把契約收成單一擁有者——因為六個面板各抄一份同樣的錯，是**結構**在漏，不是六個獨立疏忽。
+
+**① `UI.Fields.{h,cpp}`（重構，commit `2c8705b`）**——一個 bound text field，兩條規則：
+- **RULE 1**：buffer 只有在「那一格正被打字」時才准跟 registry 不同，其餘每一幀都從 entry 回種。靠的是 **ImGui 的不變式：同一時間只有一個 active item**——所以「正在編輯的那格」是**單一 id，不是集合**，一個 `g_active` 就夠。⇒ 面板在結構上**不可能**顯示 registry 沒有的值。
+- **RULE 2**：Enter **與** deactivate-after-edit（點走／tab 出去）都提交（`ImGuiMCP::IsItemDeactivatedAfterEdit()`；已查證那不是空殼，是直呼 cimgui 的 `igIsItemDeactivatedAfterEdit`，同步進真 ImGui context）。
+- **連帶**：buffer 失效（invalidation）這個**概念整個退場**——刪列／改名被拒／索引位移都自癒，`g_rows.erase()`／`g_slotBufs.clear()` 是**被刪掉不是搬家**。順帶治好同源的另一個謊：References 撞名被拒時，欄位現在會**彈回**已存的 label。
+- **唯一例外**：Palette 的 slot **沒有身份**（無 seq，只能用索引定位），列表重排時進行中的編輯會落到別的 slot 上 ⇒ 保留一個明確的 `UI::ForgetEdits()`。Eraser／Overrides 則改用**耐久 id 的 hash** 當列 key，所以 undo/revert 上面一列不會讓下面全部錯位。
+- marker 編輯視窗**不動**：它有明確 save／cancel，本來就不會靜默分叉。
+
+**② 四本 registry ＋ 面板補齊 label／note（commit `3898fe9`）**——Eraser／Overrides 的 `Entry` 加 label/note（setter 鍵入耐久 id）；Captures 加 note（label 早有，但以前只能從 console `sc capp <label>` 設，現在面板開欄，打錯字不必重擷一次 NPC）；Palette::Slot 加 note——**它跟其他三本不同，是落盤到 palette json 的磁碟狀態**，所以 `save to file` 會把筆記一起帶走、活得比存檔久。co-save 升版：`'ERSR'` v2→v3、`'OVRD'` v1→v2、`'SCCP'` v9→v10（舊存檔讀不到＝空字串，照舊）。
+
+**③ 匯出＋消費端（使用者拍板 (b)「加欄位、非破壞」）**——`removals[]` 的關鍵設計：**沒有 label/note 的移除仍是一個裸字串**，只有真的寫了東西才變成 `{ref, label?, note?}` 物件。⇒ 一般匯出**與以前逐位元相同**、所有舊 spec 照讀（跟 `requires[]` 同一條「沒話說就塌回簡寫」規則）。`overrides[]`／`capturedItems[]`／`capturedNpcs[]` 各加選配 note。ModForge 端 `RemovalSpec` ＋ converter（字串｜物件聯集，抄 `RequirementConverter`）。
+- **`Requires` 掃描器不用改**：它的分類表 default 是「看起來像 ref 就算硬相依」，所以 `removals[].ref` 天然落在對的一格；筆記文字不像 ref，會被自然忽略。

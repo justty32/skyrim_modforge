@@ -32,10 +32,10 @@ public static partial class Generator
         {
             foreach (var r in spec.Removals)
             {
-                if (string.IsNullOrWhiteSpace(r))
+                if (string.IsNullOrWhiteSpace(r.Ref))
                     Problems.Add("removal: empty ref");
-                else if (!LooksExternalRef(r) || !TryExternalRef(r, out _))
-                    Problems.Add($"removal '{r}': must be a well-formed external \"<master>:0xFORMID\" ref of an existing placed ref");
+                else if (!LooksExternalRef(r.Ref) || !TryExternalRef(r.Ref, out _))
+                    Problems.Add($"removal '{r.Ref}': must be a well-formed external \"<master>:0xFORMID\" ref of an existing placed ref");
             }
         }
 
@@ -193,7 +193,7 @@ public static partial class Generator
         // remove it, not both — build lets the removal win, but say so here instead of silently).
         public void ValidateOverrides()
         {
-            var removed = new HashSet<string>(spec.Removals, System.StringComparer.OrdinalIgnoreCase);
+            var removed = new HashSet<string>(spec.Removals.Select(r => r.Ref), System.StringComparer.OrdinalIgnoreCase);
             for (int i = 0; i < spec.Overrides.Count; i++)
             {
                 var o = spec.Overrides[i];

@@ -17,6 +17,7 @@ public sealed class CapturedItemSpec
     public string Base { get; set; } = "";        // physical template ref "<master>:0xFORMID" to clone; "" if runtime-only
     public CapturedEnchantSpec? Enchantment { get; set; }  // weapon/armor only — the enchant to reference or mint
     public List<EffectSpec> Effects { get; set; } = new(); // potion/ingredient only — the alchemy effect list
+    public string Note { get; set; } = "";  // free-form capture-time note. Inert documentation only — Generator.ExpandCapturedItems never reads this
 }
 
 // The enchantment carried by a captured weapon/armor. If `base` is a durable ENCH ref (a vanilla or

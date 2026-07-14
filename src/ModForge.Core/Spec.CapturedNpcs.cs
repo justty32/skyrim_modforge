@@ -78,6 +78,7 @@ public sealed class CapturedNpcSpec
     public Vec3 Rotation { get; set; } = new();    // degrees (DLL converts)
     public string Cell { get; set; } = "";        // interior anchor ref — exactly one of cell/worldspace is set
     public string Worldspace { get; set; } = "";  // exterior anchor ref
+    public string Note { get; set; } = "";        // free-form capture-time note. Inert documentation only — Generator.ExpandCapturedNpcs never reads this
 }
 
 // One carried-inventory row: a durable item ref + stack count (green apples ×3, gold ×250…),

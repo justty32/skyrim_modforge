@@ -24,7 +24,7 @@ public static partial class Generator
         // has to go or the player sees two chairs).
         public void BuildRemovals()
         {
-            foreach (var refStr in spec.Removals.Concat(referenceRemovals))
+            foreach (var refStr in spec.Removals.Select(r => r.Ref).Concat(referenceRemovals))
             {
                 if (string.IsNullOrWhiteSpace(refStr)) continue;
                 if (!TryExternalRef(refStr, out var fk))

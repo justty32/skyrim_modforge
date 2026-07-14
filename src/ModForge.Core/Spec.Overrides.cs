@@ -20,4 +20,6 @@ public sealed class OverrideSpec
     public Vec3 Position { get; set; } = new();
     public Vec3 Rotation { get; set; } = new();  // degrees, same contract as PlacementSpec
     public float? Scale { get; set; }            // null = keep original; 1.0 = explicit default
+    public string Label { get; set; } = "";      // short human label for the moved thing. Inert documentation only — the build never reads this
+    public string Note { get; set; } = "";       // free-form note (why it was moved). Inert documentation only — the build never reads this
 }

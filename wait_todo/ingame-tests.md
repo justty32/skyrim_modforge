@@ -72,3 +72,28 @@
    - 按 **`undo clear`** → 插槽**全部回來**。再 clear 一次、**關遊戲重開** → 插槽應該是空的（clear 有寫回磁碟；undo 只在本次 session 有效，這是預期行為）。
 
 **回報**：① ini 有沒有自動生成、看不看得懂；② 改鍵 + `reload keys from ini` 有沒有真的生效（含舊鍵失效）；③ 保留鍵（W 之類）有沒有被拒；④ 舊存檔會不會蓋掉 ini；⑤ palette clear 的二次確認 / undo 有沒有照走。
+
+## scene-capture-bridge — 面板欄位一致化（bound field 重構 ＋ 六頁 label／note，2026-07-14，**已部署** DLL `fd852620`）
+
+⚠️ **已部署**——**完全關閉遊戲再開**才吃得到新 DLL。co-save 升版（`'ERSR'` v3／`'OVRD'` v2／`'SCCP'` v10）：**舊存檔讀得進來**（新欄位＝空字串），但**新存檔存的東西舊 DLL 讀不到**——這是單向的，正常。
+
+**這批在修什麼**：你 07-13 回報的 🐞「打完字沒按 Enter 就點走，面板一直顯示新名字、存的卻是舊的」。修法是把六個面板的欄位收成一個共用 bound field（RULE 1：非編輯中的每一幀都從 registry 回種 ⇒ 面板不可能顯示 registry 沒有的值；RULE 2：Enter／apply／點走都提交）。順帶把 label＋note 補齊到 Eraser／Captures／Editor(overrides)／Palette。
+
+1. **🐞 主證（就是這條要驗）**：Markers 頁隨便一列，label 改個字 → **不要按 Enter**，直接用滑鼠點面板別的地方 → ① 名字**應該真的改掉**（不是彈回舊的、也不是「看起來改了其實沒改」）；② 立刻 `Export player cell` → 開匯出的 json，`annotations[].label` **應該是新名字**。**以前這裡：面板顯示新的、json 是舊的、且毫無跡象。**
+2. **撞名要看得見**：References 頁把某列的 label 改成**跟另一列一樣** → 應出現橘字「label already used…」，且該欄位**視覺上彈回**原本的 label（以前會繼續顯示你打的、實際沒生效）。
+3. **六頁都能取名＋寫筆記**（新欄位）：Eraser／Captures／Editor(overrides)／Palette 每一列現在都有 `label`＋`note`＋`apply`。各挑一列寫點字 →
+   - **存檔 → 完全重開遊戲 → 讀檔** → label/note **應該還在**（Eraser／Overrides／Captures 走 co-save）。
+   - **Palette 的筆記走磁碟**：寫完直接去看 `…/SKSE/scene-capture-palette.json`，該 slot 應多一個 `"note"`；按 `save to file` 存成另一個檔，筆記也應該跟著走。
+4. **匯出**（拍板 (b)「加欄位、非破壞」）：
+   - `sc del` 擦兩個東西，**只給其中一個寫 note** → `Export player cell` → json 的 `removals[]` 應該是**混合的**：沒寫 note 的仍是**裸字串** `"Skyrim.esm:0x…"`，寫了的變成 `{"ref": "...", "note": "..."}`。（沒寫筆記的匯出跟以前逐位元相同，舊 spec 照讀。）
+   - 編輯器移動一個 vanilla 物件 + 寫 note → `overrides[]` 該筆應帶 `note`。
+5. **⚠️ 回歸（這次重構最可能踩的地方，請特別試）**：
+   - **列錯位**：Eraser 頁擦 3–4 個東西、每列給不同 label → 對**中間那列**按 `undo` → 剩下的列，label **應該還跟著各自那筆**（不會整批往上錯一格）。Editor(overrides) 頁的 `revert` 同理。
+   - **Palette 索引位移**：Palette 有 3 個以上 slot，**正在某列打字打到一半**（沒提交）→ 直接按**另一列**的 `del`（或 `load from file`／`clear all slots`）→ 你打到一半的字應該**乾脆丟掉**，**絕不能**跑去蓋到別的 slot 名字上。
+6. **⚠️ 「打到一半切走」（code review 抓到的漏洞，已修，請驗）**：這是 RULE 2 原本漏掉的第三種離開法——**整列根本沒被畫**。ImGui 在該列缺席的那一幀直接清掉 ActiveId、widget 的 flush 也沒跑，所以「失活」沒有任何人看見 ⇒ 修之前這樣會**無聲丟字**。三個入口各試一次，打完字**都不要按 Enter**：
+   - Markers 頁某列 label 打到一半 → **切到別的分頁**（Export/Settings）→ 切回來 → 字**應該已經提交**（不是變回舊的）。
+   - 打到一半 → **直接關掉面板**（F1）→ 再開 → 同樣應該已提交。
+   - 打到一半 → 勾 **`this cell only`** 把那列濾掉 → 取消勾選 → 同樣應該已提交。
+7. **舊存檔**：讀一個 07-13 之前的存檔 → 面板列照常出現，label/note 欄是空的（不是亂碼、不是消失）。
+
+**回報**：① 第 1 條主證（點走到底有沒有真的提交、json 對不對）；② 六頁欄位跨存檔留不留得住；③ 第 5 條兩個回歸有沒有中；④ 第 6 條三個入口有沒有丟字；⑤ 匯出的 `removals[]` 混合形狀對不對。

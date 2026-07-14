@@ -124,7 +124,7 @@ public static partial class Generator
         // (b) actually has navmesh sitting ON TOP of it, which decorative clutter never does.
         private void CheckRemovedStructures()
         {
-            foreach (var refStr in spec.Removals.Concat(spec.Overrides.Select(o => o.Ref)).Distinct())
+            foreach (var refStr in spec.Removals.Select(r => r.Ref).Concat(spec.Overrides.Select(o => o.Ref)).Distinct())
             {
                 if (string.IsNullOrWhiteSpace(refStr) || !TryExternalRef(refStr, out var fk)) continue;
                 var cache = MasterCache(refStr[..refStr.IndexOf(':')].Trim());

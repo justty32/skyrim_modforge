@@ -277,7 +277,22 @@ namespace SceneExporter {
     static void AppendRegistries(nlohmann::json& scene) {
         if (const auto& marked = Eraser::All(); !marked.empty()) {
             auto arr = nlohmann::json::array();
-            for (const auto& e : marked) arr.push_back(e.id);
+            for (const auto& e : marked) {
+                // A removal stays a BARE STRING unless it has something to say.
+                // The object form {ref, label?, note?} only appears when the
+                // author named or annotated the row, so an ordinary export is
+                // byte-identical to what it always was and every old spec keeps
+                // reading. (Same shorthand-collapse rule as `requires[]`.)
+                if (e.label.empty() && e.note.empty()) {
+                    arr.push_back(e.id);
+                    continue;
+                }
+                nlohmann::json o;
+                o["ref"] = e.id;
+                if (!e.label.empty()) o["label"] = e.label;
+                if (!e.note.empty()) o["note"] = e.note;  // WHY it goes — for the agent
+                arr.push_back(std::move(o));
+            }
             scene["removals"] = std::move(arr);
         }
 
@@ -298,6 +313,8 @@ namespace SceneExporter {
                     {"x", ang.x * kRadToDeg}, {"y", ang.y * kRadToDeg}, {"z", ang.z * kRadToDeg},
                 };
                 if (!e.isActor) o["scale"] = scale;
+                if (!e.label.empty()) o["label"] = e.label;
+                if (!e.note.empty()) o["note"] = e.note;  // WHY it moved — for the agent
                 arr.push_back(std::move(o));
             }
             scene["overrides"] = std::move(arr);
@@ -474,6 +491,7 @@ namespace SceneExporter {
                     nlohmann::json c;
                     c["name"] = e.name;
                     if (!e.label.empty()) c["editorId"] = editorIdOf(e.label);
+                    if (!e.note.empty()) c["note"] = e.note;   // panel-written brief for the agent
                     if (!e.base.empty()) c["base"] = e.base;   // origin NPC_ if durable
                     if (!n.race.empty()) c["race"] = n.race;
                     c["female"] = n.female;
@@ -559,6 +577,7 @@ namespace SceneExporter {
                 c["name"] = e.name;
                 c["kind"] = Captures::KindName(e.kind);
                 if (!e.label.empty()) c["editorId"] = editorIdOf(e.label);
+                if (!e.note.empty()) c["note"] = e.note;  // panel-written brief for the agent
                 if (!e.base.empty()) c["base"] = e.base;  // physical template source
                 if (e.kind == Captures::Kind::kWeapon || e.kind == Captures::Kind::kArmor) {
                     nlohmann::json ench;
