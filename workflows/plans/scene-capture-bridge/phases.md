@@ -400,3 +400,14 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
 2. **havok body 不會跟著 `SetPosition`/`Update3DPosition` 走**。STAT 的剛體在 ref 第一次落位時就固定在 havok world 裡了，所以**畫面跟著準心走、碰撞留在原地**——那就是使用者撞到的箱子。
 
 **修法**：照 po3 Papyrus Extender／Base Object Swapper 那套——`BSVisit::TraverseScenegraphCollision` 走遍整棵碰撞 scenegraph，逐一改寫**每顆剛體**的 `collidable.broadPhaseHandle.collisionFilterInfo` **低 7 bits（＝COL_LAYER）** 為 `kNonCollidable`。**每顆 body 都不與任何東西碰撞之後，第 2 點就不再重要**——一顆誰都碰不到的剛體，愛留在哪都行。
+
+### 🎮 第二輪實機（2026-07-14）：碰撞**仍然**穿不過（v3 已部署 `e69978fe`，待第三輪）
+
+跨存檔清孤兒 ghost **PASS**。碰撞**還是 FAIL**。
+
+**v2 為什麼也沒用（推斷，已寫進碼裡當註解）**：traversal 本身沒錯，錯的是**時機**——`MakeGhostlyDeferred` 一看到 `Get3D()` 非空就收工，但**3D 節點存在 ≠ 碰撞剛體已經掛進 havok world**（往往晚一到數幀，且大件如山脈是多顆 hull 分批上）。我走了一棵還沒有剛體的樹，然後開心地回報成功。
+
+**v3 三管齊下**：
+1. **spawn 當下就 `ref->SetCollision(false)`**——這顆 record flag **只翻旗標、不碰 havok**（`TESObjectREFR.cpp:900`），但**引擎在「幫 ref 掛碰撞」時會讀它**。而 `PlaceObjectAtMe` 回來時 3D 還沒載入（凍結才要延後，同一件事）⇒ 先把旗標立起來，最乾淨的結局是**碰撞根本不會被建出來**。
+2. **traversal 改成重試到「真的碰到剛體」為止**（`bodies > 0` 才算數，不是「節點存在」就算），碰到之後**再多剝 4 幀**（撈晚到/分批的 hull）。
+3. **把剝到的剛體數寫進 log**（`collision stripped — N rigid body(ies)`）⇒ 下一輪不管過不過，**一行 log 就能判定是時機問題還是 broadphase 問題**：N=0 ⇒ 還是沒剝到；N>0 卻仍撞得到 ⇒ 光改 `collisionFilterInfo` 不足以更新 havok 的 broadphase filter，改走「強制重建 3D、讓引擎自己不掛碰撞」那條。

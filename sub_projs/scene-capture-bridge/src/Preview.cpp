@@ -49,10 +49,13 @@ namespace {
     // whole collision scenegraph and rewrite the LAYER BITS of every body's
     // collisionFilterInfo. Once every body is kNonCollidable, (2) stops mattering
     // — a body that collides with nothing can be left wherever it likes.
-    void StripCollision(RE::NiAVObject* obj) {
-        if (!obj) return;
+    // Returns how many rigid bodies it actually reached — the number that tells
+    // us whether this worked, which the log prints (see MakeGhostlyDeferred).
+    std::size_t StripCollision(RE::NiAVObject* obj) {
+        if (!obj) return 0;
+        std::size_t bodies = 0;
         RE::BSVisit::TraverseScenegraphCollision(obj,
-            [](RE::bhkNiCollisionObject* col) {
+            [&bodies](RE::bhkNiCollisionObject* col) {
                 auto* body = col ? col->body.get() : nullptr;
                 auto* hkBody = body
                     ? static_cast<RE::hkpWorldObject*>(body->referencedObject.get())
@@ -61,30 +64,66 @@ namespace {
                     auto& info = hkBody->collidable.broadPhaseHandle.collisionFilterInfo;
                     info &= ~0x7Fu;  // the low 7 bits ARE the COL_LAYER
                     info |= static_cast<std::uint32_t>(RE::COL_LAYER::kNonCollidable);
+                    ++bodies;
                 }
                 return RE::BSVisit::BSVisitControl::kContinue;
             });
+        return bodies;
     }
 
-    // Right after PlaceObjectAtMe the 3D is not loaded, so there is nothing to
-    // strip yet (the same one-frame problem Physics::FreezeDeferred solves —
-    // this is that pattern, for the other property).
+    // Make the ghost intangible. Intangibility is not cosmetic: the aim ray is a
+    // physics ray, so a solid ghost at the aim point is what the ray hits and the
+    // aim point creeps toward the player every frame — and a preview you can walk
+    // into is not a preview, it is an object you never agreed to place.
     //
-    // Intangibility is not cosmetic. The aim ray is a physics ray: a solid ghost
-    // at the aim point is the thing the ray hits, and the aim point would creep
-    // toward the player every frame. And a preview you can walk into, shoot, or
-    // trip over is not a preview — it is an object you did not agree to place.
-    void MakeGhostlyDeferred(RE::ObjectRefHandle handle, int retries = 60) {
+    // 🔴 TWO IN-GAME FAILURES TAUGHT THIS FUNCTION ITS SHAPE (2026-07-14):
+    //
+    //   v1 `Get3D()->SetCollisionLayer()` — reached only the root node's own
+    //      collision object. The nif's real bhkRigidBodies hang off CHILD nodes,
+    //      so nothing was touched. Solid.
+    //   v2 the scenegraph traversal below, run ONCE on the first frame Get3D()
+    //      came back non-null. Still solid. The likeliest reason is TIMING: the
+    //      3D node exists a frame or more before its collision is added to the
+    //      havok world, so the traversal walked a tree with no bodies in it yet
+    //      and cheerfully reported success. So now:
+    //
+    //        * we keep retrying until we have actually TOUCHED a body (bodies>0),
+    //          not merely until a node exists, and
+    //        * we strip a few MORE times after that, in case bodies arrive late
+    //          or in batches (a mountain is many hulls), and
+    //        * the count goes in the log, so a failure is diagnosable from one
+    //          in-game round instead of a guess.
+    //
+    // And a third belt: SetCollision(false) is called on the ref the instant it
+    // is spawned (Show), BEFORE any 3D exists — that flag is what the engine
+    // itself consults when it attaches a ref's collision, so the cleanest outcome
+    // is that the collision is never built at all and the strip finds nothing to do.
+    void MakeGhostlyDeferred(RE::ObjectRefHandle handle, int retries = 60,
+        int extraPasses = 4, bool touched = false) {
         auto* task = SKSE::GetTaskInterface();
         if (!task) return;
-        task->AddTask([handle, retries]() {
+        task->AddTask([handle, retries, extraPasses, touched]() {
             auto ref = handle.get();
             if (!ref) return;
-            if (auto* obj = ref->Get3D()) {
-                StripCollision(obj);
+            auto* obj = ref->Get3D();
+            if (!obj) {
+                if (retries > 0) MakeGhostlyDeferred(handle, retries - 1, extraPasses, touched);
                 return;
             }
-            if (retries > 0) MakeGhostlyDeferred(handle, retries - 1);
+            const auto bodies = StripCollision(obj);
+            if (bodies > 0 && !touched) {
+                SKSE::log::info("Preview: collision stripped — {} rigid body(ies) set "
+                    "kNonCollidable", bodies);
+            }
+            const bool nowTouched = touched || bodies > 0;
+            if (!nowTouched) {  // 3D is up but its bodies are not in the world yet
+                if (retries > 0) MakeGhostlyDeferred(handle, retries - 1, extraPasses, false);
+                else SKSE::log::warn("Preview: no rigid body ever appeared on the ghost — "
+                    "it may still be solid");
+                return;
+            }
+            if (extraPasses > 0)  // late/batched bodies (a mountain is many hulls)
+                MakeGhostlyDeferred(handle, retries, extraPasses - 1, true);
         });
     }
 
@@ -145,6 +184,13 @@ namespace Preview {
         // The sentinel goes on FIRST: from this line on, the ref is recognisable
         // as a ghost by anything that looks at it, including a future session.
         ghost->extraList.Add(new RE::ExtraTextDisplayData(kSentinel));
+
+        // And the collision flag SECOND — before the engine has attached any 3D
+        // (PlaceObjectAtMe returns with none, which is the whole reason the freeze
+        // and the strip below are deferred). SetCollision only flips the record
+        // flag; the engine reads that flag when it BUILDS the ref's collision. Set
+        // it now and the cleanest outcome is that the collision is never built.
+        ghost->SetCollision(false);
 
         RE::NiPoint3 pos;
         if (!Aim::LookHit(pos)) pos = player->GetPosition();

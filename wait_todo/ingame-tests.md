@@ -52,7 +52,7 @@
   - **⚠ 白天測**:vendor 8-20 營業(GetOffersServicesNow 含時間),夜間交易會空——快旅後若是夜晚,`set timescale`/等到白天再試。庫存已放 vanilla 鐵匠 leveled lists(武防+雜貨+金),VendorLocation 錨在店周圍 4096。
   - **回報**:傳送安全否、房子貼地否、Brynja 在否、問候+**交易(有貨有金)**通否。(Brynja 從零建、無 facegen,臉可能陽春/暗臉——能站能講能交易就算過。)
 
-## scene-capture-bridge — 🆕 Browser 目錄 ＋ 世界內 ghost 預覽（2026-07-14，**已部署** DLL `98c24307`）
+## scene-capture-bridge — 🆕 Browser 目錄 ＋ 世界內 ghost 預覽（2026-07-14，**已部署** DLL `e69978fe`）
 
 ⚠️ **已部署**——完全關遊戲再開。（此 DLL 同時含上面兩節，三節可以一起測。）
 
@@ -63,7 +63,8 @@
    - ⚠️ **多數 static 的名字欄是空的（顯示 `—`）＝正常**，不是 bug：STAT 記錄根本沒有名字，**模型路徑就是它的名字**（SSE runtime 也拿不到 EditorID，所以搜尋是搜路徑）。
 2. **ghost 預覽**：點清單任一筆 → 該物件應**立刻出現在你的準心指的地方**。再點下一筆 → **換成新的**（不會兩個都在）。
    - 關掉面板（F1）→ **ghost 會跟著你的視線走**。`follow my aim` 取消勾 → ghost **停在原地**，你可以走過去繞著看。
-   - 🔴 **這次的重測點——碰撞要完全消失**（第一輪 PASS 但這條 FAIL：ghost 跟著走了，**碰撞箱卻留在生成點**）。現在**每一顆剛體**都被設成 non-collidable（不只最上層節點）。**測法**：ghost 生出來 → 走過去，**應該直接穿過去**；再讓 ghost 跟著視線移開，**回頭走過剛才生成的那個位置**，**也不該有一個看不見的箱子擋住你**。
+   - 🔴 **重測點（已 FAIL 兩輪）——碰撞要完全消失**。**測法**：ghost 生出來 → 走過去，**應該直接穿過去**；再讓 ghost 跟著視線移開，**回頭走過剛才生成的那個位置**，**也不該有看不見的箱子**擋你。
+   - **不管過沒過，都幫我看一行 log**（`SKSE/SceneCaptureBridge.log`，搜 `Preview:`）：應該出現 **`collision stripped — N rigid body(ies) set kNonCollidable`**。**N 是多少？**（N=0 或出現 `no rigid body ever appeared` ⇒ 我剝的時機還是不對；N>0 卻還是撞得到 ⇒ 改欄位不足以更新 havok broadphase，我就改走「重建 3D 讓引擎自己不掛碰撞」那條）。
 3. **擺下去（真的）**：`sc pl` 進 place 模式 → 按**動作鍵**（F11）→ 應在 **ghost 站的位置**生出一個**真的**物件（ghost **留著**，所以可以連按幾下種一排樹）。面板的 `place here (real)` 鈕同義。
    - 面板的 **yaw／scale** 拉桿會即時轉/縮 ghost，**擺下去的真物件要帶著同樣的角度與大小**。
 4. **🔴 最重要：ghost 絕不能被匯出**。開著 ghost → 面板 Export 頁匯出 → 看 `SKSE/SceneCaptureBridge.log`，那行 `Export[...]` 應該印 **`N preview ghosts excluded`**（N≥1），而且 **`scene.json` 裡不該有那顆 ghost 的 placement**（只該有你真的擺下去的）。
@@ -95,7 +96,7 @@
 
 **回報**：① ini 有沒有自動生成、看不看得懂；② 改鍵 + `reload keys from ini` 有沒有真的生效（含舊鍵失效）；③ 保留鍵（W 之類）有沒有被拒；④ 舊存檔會不會蓋掉 ini；⑤ palette clear 的二次確認 / undo 有沒有照走。
 
-## scene-capture-bridge — 面板欄位一致化（bound field 重構 ＋ 六頁 label／note，2026-07-14，**已部署** DLL `98c24307`（原 `c4460315`，已被新 build 取代））
+## scene-capture-bridge — 面板欄位一致化（bound field 重構 ＋ 六頁 label／note，2026-07-14，**已部署** DLL `e69978fe`（原 `c4460315`，已被新 build 取代））
 
 ⚠️ **已部署**——**完全關閉遊戲再開**才吃得到新 DLL。co-save 升版（`'ERSR'` v3／`'OVRD'` v2／`'SCCP'` v10）：**舊存檔讀得進來**（新欄位＝空字串），但**新存檔存的東西舊 DLL 讀不到**——這是單向的，正常。
 
@@ -120,7 +121,7 @@
 
 **回報**：① 第 1 條主證（點走到底有沒有真的提交、json 對不對）；② 六頁欄位跨存檔留不留得住；③ 第 5 條兩個回歸有沒有中；④ 第 6 條三個入口有沒有丟字；⑤ 匯出的 `removals[]` 混合形狀對不對。
 
-## scene-capture-bridge — `sc ed` numpad 長按持續作用（2026-07-14，**已部署** DLL `98c24307`（原 `c4460315`，已被新 build 取代））
+## scene-capture-bridge — `sc ed` numpad 長按持續作用（2026-07-14，**已部署** DLL `e69978fe`（原 `c4460315`，已被新 build 取代））
 
 ⚠️ **已部署**——完全關遊戲再開。（此 DLL 同時含上一節「面板欄位一致化」，兩節可以一起測。）
 
