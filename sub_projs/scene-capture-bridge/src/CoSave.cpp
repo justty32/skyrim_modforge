@@ -7,6 +7,7 @@
 #include "Modes.h"
 #include "Overrides.h"
 #include "Palette.h"
+#include "Preview.h"
 #include "Referrer.h"
 #include "log.h"
 
@@ -789,6 +790,9 @@ namespace {
         Captures::DropAll();
         Referrer::DropAll();
         Palette::DropAllPlaced();  // registry only — the palette SLOTS live on disk, untouched
+        // The ghost belonged to the world we are leaving. Forget the handle; the
+        // incoming save's own ghost (if it has one) is swept on kPostLoadGame.
+        Preview::DropState();
         Modes::ResetDefaults();    // incl. place = py1, edit = py0, extra data off
         Markers::SetProxiesVisible(true);  // registry is empty: flag only
     }

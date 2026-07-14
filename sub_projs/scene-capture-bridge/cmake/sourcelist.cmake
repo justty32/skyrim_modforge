@@ -8,11 +8,14 @@ set(sources ${sources}
     src/Overrides.cpp
     src/Palette.cpp
     src/Palette.Placed.cpp
+    src/Catalog.cpp
+    src/Preview.cpp
     src/Physics.cpp
     src/Referrer.cpp
     src/Requires.cpp
     src/SceneExporter.cpp
     src/UI.cpp
+    src/UI.Browser.cpp
     src/UI.Fields.cpp
     src/UI.Markers.cpp
     src/UI.References.cpp

@@ -2,6 +2,7 @@
 
 #include "Aim.h"
 #include "Markers.h"
+#include "Preview.h"
 #include "SceneExporter.h"
 #include "log.h"
 
@@ -305,6 +306,10 @@ namespace {
         if (Markers::IsProxy(ref.get())) {
             SKSE::log::info("Captures: {} target is a marker gem — nothing to capture", how);
             return Captures::Result::kMarkerProxy;
+        }
+        if (Preview::IsGhost(ref.get())) {
+            SKSE::log::info("Captures: {} target is the preview ghost — it carries no identity", how);
+            return Captures::Result::kNothing;
         }
         // NPC capture (increment ②): harvest the actor's appearance/identity.
         // Unique NPCs are captured too (user-decided) — the `unique` flag rides

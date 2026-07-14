@@ -6,6 +6,7 @@
 #include "Markers.h"
 #include "Modes.h"
 #include "Palette.h"
+#include "Preview.h"
 #include "Referrer.h"
 #include "SceneExporter.h"
 #include "UI.h"
@@ -133,6 +134,12 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg) {
             task->AddTask([]() {
                 if (auto n = Markers::AdoptOrphans())
                     SKSE::log::info("Markers: auto-adopted {} orphan(s) on load", n);
+                // A preview ghost that was standing when the player saved is IN
+                // that savegame. It is not content and never was — delete it. (The
+                // export gate does not depend on this sweep: a ghost carries its own
+                // sentinel, so it is refused even if we never get here — see
+                // Preview.h. This is the cleanup, not the safety net.)
+                Preview::SweepOrphans();
                 // Same story for a referrer that names one of OUR placements: its
                 // identity IS the dynamic ref's handle, and a dynamic FormID is not
                 // reliably remapped across a full restart. The object survives in the

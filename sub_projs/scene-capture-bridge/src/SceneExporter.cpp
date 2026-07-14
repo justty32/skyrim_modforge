@@ -5,6 +5,7 @@
 #include "Markers.h"
 #include "Overrides.h"
 #include "Palette.h"
+#include "Preview.h"
 #include "Referrer.h"
 
 #include "log.h"
@@ -82,6 +83,7 @@ namespace SceneExporter {
             std::size_t preexisting = 0;
             std::size_t skipped = 0;
             std::size_t markerProxies = 0;
+            std::size_t previewGhosts = 0;     // browser preview refs — never content
             std::size_t removalsPending = 0;   // in swept cells (log only)
             std::size_t overridesPending = 0;  // in swept cells (log only)
             // Referrer rows whose IN-FILE target actually made it into placements[]
@@ -153,6 +155,14 @@ namespace SceneExporter {
             // player-placed objects.
             if (Markers::IsProxy(refPtr)) {
                 ++counters.markerProxies;
+                return RE::BSContainer::ForEachResult::kContinue;
+            }
+            // The browser's preview ghost is the same story: a dynamic ref that
+            // is NOT content. IsGhost recognises it by the sentinel on the ref
+            // itself, so even a ghost orphaned in some old savegame — one this
+            // session never spawned and knows nothing about — cannot ship.
+            if (Preview::IsGhost(refPtr)) {
+                ++counters.previewGhosts;
                 return RE::BSContainer::ForEachResult::kContinue;
             }
 
@@ -614,10 +624,10 @@ namespace SceneExporter {
         SKSE::log::info(
             "Export[{}]: {} placements, {} actors excluded (NPCs are ModForge's "
             "job), {} pre-existing, {} skipped (dynamic bases), {} marker "
-            "proxies excluded, {} annotations, {} removals, {} overrides, "
-            "{} references, {} noHavokSettle (sc pl py0), {} minted items (sc pl ed1)",
+            "proxies excluded, {} preview ghosts excluded, {} annotations, {} removals, "
+            "{} overrides, {} references, {} noHavokSettle (sc pl py0), {} minted items (sc pl ed1)",
             cellLabel, scene["placements"].size(), c.actorsExcluded,
-            c.preexisting, c.skipped, c.markerProxies, Markers::All().size(),
+            c.preexisting, c.skipped, c.markerProxies, c.previewGhosts, Markers::All().size(),
             Eraser::All().size(), Overrides::All().size(), g_last.references,
             c.noHavokSettle, c.mintedEmitted.size());
     }

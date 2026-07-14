@@ -8,6 +8,8 @@ set(headers ${headers}
     src/Overrides.h
     src/Captures.h
     src/Palette.h
+    src/Catalog.h
+    src/Preview.h
     src/Physics.h
     src/Referrer.h
     src/Requires.h

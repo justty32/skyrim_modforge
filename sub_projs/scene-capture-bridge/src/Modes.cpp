@@ -5,6 +5,7 @@
 #include "Eraser.h"
 #include "Markers.h"
 #include "Palette.h"
+#include "Preview.h"
 #include "Referrer.h"
 #include "log.h"
 
@@ -103,7 +104,13 @@ namespace {
         case Modes::Mode::kMarker: Markers::PlaceAimed(); break;
         case Modes::Mode::kDelete: ray ? Eraser::MarkByRay() : Eraser::MarkCrosshair(); break;
         case Modes::Mode::kPick:   ray ? Palette::PickByRay() : Palette::PickCrosshair(); break;
-        case Modes::Mode::kPlace:  Palette::PlaceSelected(); break;
+        // A ghost is up => THAT is what you are placing: it is the thing you can
+        // see standing at your aim point, and placing anything else would be a
+        // lie about what the key does. With no ghost, the selected palette slot —
+        // the historic behaviour, unchanged.
+        case Modes::Mode::kPlace:
+            Preview::Active() ? Preview::Commit() : Palette::PlaceSelected();
+            break;
         case Modes::Mode::kEdit:   ray ? Editor::SelectByRay() : Editor::EnterSelect(); break;
         case Modes::Mode::kCapture: ray ? Captures::CaptureByRay() : Captures::CaptureCrosshair(); break;
         // No label on the action key — the row gets "ref-<seq>" and is renamed in

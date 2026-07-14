@@ -4,6 +4,7 @@
 #include "Markers.h"
 #include "Modes.h"
 #include "Physics.h"
+#include "Preview.h"
 #include "SceneExporter.h"
 #include "log.h"
 
@@ -236,6 +237,10 @@ namespace {
             SKSE::log::info("Palette: {} target is a marker proxy — nothing to pick", how);
             return false;
         }
+        if (Preview::IsGhost(ref.get())) {
+            SKSE::log::info("Palette: {} target is the preview ghost — it isn't there", how);
+            return false;
+        }
         RE::TESBoundObject* base = ref->GetBaseObject();
         if (!base) return false;
         auto baseId = SceneExporter::ResolveDurableId(base);
@@ -297,8 +302,11 @@ namespace Palette {
             SKSE::log::info("Palette: no slot selected — pick something first (`sc pk`)");
             return false;
         }
+        return PlaceSlot(g_slots[g_selected]);
+    }
+
+    bool PlaceSlot(const Slot& s, const RE::NiPoint3* posOverride) {
         auto* player = RE::PlayerCharacter::GetSingleton();
-        const auto& s = g_slots[g_selected];
         if (!player) return false;
         if (!s.base) {
             SKSE::log::warn("Palette: '{}' ({}) is unavailable — its plugin is "
@@ -307,8 +315,12 @@ namespace Palette {
         }
 
         RE::NiPoint3 pos;
-        const bool aimed = Aim::LookHit(pos);
-        if (!aimed) pos = player->GetPosition();
+        bool aimed = true;
+        if (posOverride) {
+            pos = *posOverride;
+        } else if (!(aimed = Aim::LookHit(pos))) {
+            pos = player->GetPosition();
+        }
 
         RE::NiPointer<RE::TESObjectREFR> placed = player->PlaceObjectAtMe(s.base, false);
         if (!placed) {
@@ -349,10 +361,22 @@ namespace Palette {
         if (physicsOff || carryExtra) RegisterPlaced(placed.get(), s, physicsOff);
 
         SKSE::log::info("Palette: placed '{}' ({}) at ({:.1f}, {:.1f}, {:.1f}){}{}",
-            s.name, aimed ? "aimed" : "feet", pos.x, pos.y, pos.z,
+            s.name, posOverride ? "ghost" : aimed ? "aimed" : "feet", pos.x, pos.y, pos.z,
             physicsOff ? " [physics OFF -> noHavokSettle]" : "",
             carryExtra ? " [extra data -> minted item]" : "");
         return true;   // a plain dynamic ref — the vanilla diff exports it
+    }
+
+    void AddSlot(const Slot& s) {
+        if (s.baseId.empty()) return;
+        Slot copy = s;
+        copy.addsMaster = AddsMaster(copy.baseId);   // never trust the caller for this
+        if (copy.name.empty()) copy.name = copy.baseId;
+        SKSE::log::info("Palette: added '{}' ({}) from the catalogue{}", copy.name, copy.baseId,
+            copy.addsMaster ? " (adds a master!)" : "");
+        g_slots.push_back(std::move(copy));
+        g_selected = g_slots.size() - 1;
+        Save();
     }
 
     void Load() {

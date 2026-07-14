@@ -51,6 +51,12 @@ namespace UI {
         void __stdcall Render();
     }
 
+    // The catalogue: every placeable base in the load order, searchable, with the
+    // world itself as the preview (UI.Browser.cpp + Catalog.h + Preview.h).
+    namespace BrowserPage {
+        void __stdcall Render();
+    }
+
     namespace EditorPage {
         void __stdcall Render();
     }

@@ -52,6 +52,28 @@
   - **⚠ 白天測**:vendor 8-20 營業(GetOffersServicesNow 含時間),夜間交易會空——快旅後若是夜晚,`set timescale`/等到白天再試。庫存已放 vanilla 鐵匠 leveled lists(武防+雜貨+金),VendorLocation 錨在店周圍 4096。
   - **回報**:傳送安全否、房子貼地否、Brynja 在否、問候+**交易(有貨有金)**通否。(Brynja 從零建、無 facegen,臉可能陽春/暗臉——能站能講能交易就算過。)
 
+## scene-capture-bridge — 🆕 Browser 目錄 ＋ 世界內 ghost 預覽（2026-07-14，**已部署** DLL `ba3e2089`）
+
+⚠️ **已部署**——完全關遊戲再開。（此 DLL 同時含上面兩節，三節可以一起測。）
+
+**這是什麼**：面板新增 **Browser** 頁＝CK 的 Object Window。以前要擺山脈只能先在世界上找一座來滴管吸；現在直接從 load order 的**全部可擺放物件**裡挑，**預覽就是世界本身**——選中誰，牠就站在你的瞄準點上，真尺寸、真光照。
+（🔴「用物品欄 UI」已查證**不可行**：物品欄只吃可攜帶物品，山脈/樹/家具根本進不了 inventory。）
+
+1. **目錄建起來**：F1 開面板 → **Browser** 頁 → 頂端應顯示「**N placeable base(s)**」（N 應該是**幾萬**）。搜尋框打 `mountain` → 清單應出現一堆 `Landscape\Mountains\*.nif`。
+   - ⚠️ **多數 static 的名字欄是空的（顯示 `—`）＝正常**，不是 bug：STAT 記錄根本沒有名字，**模型路徑就是它的名字**（SSE runtime 也拿不到 EditorID，所以搜尋是搜路徑）。
+2. **ghost 預覽**：點清單任一筆 → 該物件應**立刻出現在你的準心指的地方**。再點下一筆 → **換成新的**（不會兩個都在）。
+   - 關掉面板（F1）→ **ghost 會跟著你的視線走**。`follow my aim` 取消勾 → ghost **停在原地**，你可以走過去繞著看。
+   - **穿得過去**：ghost 是非碰撞的，走過去應該**穿過它**、撞不到、也打不到。
+3. **擺下去（真的）**：`sc pl` 進 place 模式 → 按**動作鍵**（F11）→ 應在 **ghost 站的位置**生出一個**真的**物件（ghost **留著**，所以可以連按幾下種一排樹）。面板的 `place here (real)` 鈕同義。
+   - 面板的 **yaw／scale** 拉桿會即時轉/縮 ghost，**擺下去的真物件要帶著同樣的角度與大小**。
+4. **🔴 最重要：ghost 絕不能被匯出**。開著 ghost → 面板 Export 頁匯出 → 看 `SKSE/SceneCaptureBridge.log`，那行 `Export[...]` 應該印 **`N preview ghosts excluded`**（N≥1），而且 **`scene.json` 裡不該有那顆 ghost 的 placement**（只該有你真的擺下去的）。
+5. **🔴 存檔／讀檔不留孤兒**：**開著 ghost 直接存檔** → 讀回那個存檔 → 那顆 ghost 應該**已經被清掉**（不該有一座山杵在那）。log 應印 `Preview: removed N orphan ghost(s) from the loaded save`。
+   - 同理：開著 ghost **走出這個 cell**（進門/出門）→ ghost 應立刻消失（log `Preview: left the cell — ghost cleared`），不該留在舊 cell。
+6. **add to palette**：Browser 選一筆 → `add to palette` → Palette 頁應多一個 slot（名字＝模型檔名，例如 `MountainCliff01`），且 `…/SKSE/scene-capture-palette.json` 會多一筆——**跨存檔留著**。
+7. **回歸**：滴管（`sc pk`）／橡皮擦（`sc del`）／編輯（`sc ed`）**對著 ghost 用應該被拒絕**（log 說「那是預覽，它不在那裡」），而對**真的**物件照常運作。
+
+**回報**：① 目錄筆數與搜尋好不好用（`mountain`／`chair`／`barrel`）；② ghost 出現/切換/跟隨順不順；③ **第 4、5 條有沒有任何一顆 ghost 混進 scene.json**（這條最關鍵）；④ 500 筆截斷會不會不夠用（要的話我換成可捲完的 clipper）。
+
 ## scene-capture-bridge — 動作鍵改走 `.ini` ＋ palette `clear` 鈕（2026-07-12，commit `1fffb15`，**已部署**）
 
 ⚠️ **已部署**（DLL `dd7afd82`，同時含 `isPlayer` 修正）——你**下次啟動遊戲**就會吃到，不必再做任何部署動作。esp 不動、co-save 不升版（SETT v7）。
@@ -73,7 +95,7 @@
 
 **回報**：① ini 有沒有自動生成、看不看得懂；② 改鍵 + `reload keys from ini` 有沒有真的生效（含舊鍵失效）；③ 保留鍵（W 之類）有沒有被拒；④ 舊存檔會不會蓋掉 ini；⑤ palette clear 的二次確認 / undo 有沒有照走。
 
-## scene-capture-bridge — 面板欄位一致化（bound field 重構 ＋ 六頁 label／note，2026-07-14，**已部署** DLL `c4460315`）
+## scene-capture-bridge — 面板欄位一致化（bound field 重構 ＋ 六頁 label／note，2026-07-14，**已部署** DLL `ba3e2089`（原 `c4460315`，已被新 build 取代））
 
 ⚠️ **已部署**——**完全關閉遊戲再開**才吃得到新 DLL。co-save 升版（`'ERSR'` v3／`'OVRD'` v2／`'SCCP'` v10）：**舊存檔讀得進來**（新欄位＝空字串），但**新存檔存的東西舊 DLL 讀不到**——這是單向的，正常。
 
@@ -98,7 +120,7 @@
 
 **回報**：① 第 1 條主證（點走到底有沒有真的提交、json 對不對）；② 六頁欄位跨存檔留不留得住；③ 第 5 條兩個回歸有沒有中；④ 第 6 條三個入口有沒有丟字；⑤ 匯出的 `removals[]` 混合形狀對不對。
 
-## scene-capture-bridge — `sc ed` numpad 長按持續作用（2026-07-14，**已部署** DLL `c4460315`）
+## scene-capture-bridge — `sc ed` numpad 長按持續作用（2026-07-14，**已部署** DLL `ba3e2089`（原 `c4460315`，已被新 build 取代））
 
 ⚠️ **已部署**——完全關遊戲再開。（此 DLL 同時含上一節「面板欄位一致化」，兩節可以一起測。）
 

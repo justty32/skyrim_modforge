@@ -88,6 +88,21 @@ namespace Palette {
     bool PickConsoleRef(const std::string& label = "");
     bool PlaceSelected();   // spawn selected slot at the aimed point (feet fallback)
 
+    // THE place path — `sc pl` and the Browser's ghost-commit both end here, so
+    // physics (`py0`/`py1`), extra data (`ed0`/`ed1`), the placed-ref registry
+    // and therefore the whole export contract can only ever behave one way.
+    // posOverride: place exactly THERE (the browser's ghost is already standing
+    // where the player wants it — re-aiming would move it out from under them);
+    // null = the aim point, feet fallback, the historic behaviour.
+    bool PlaceSlot(const Slot& s, const RE::NiPoint3* posOverride = nullptr);
+
+    // Adopt a slot built elsewhere — the Browser's "add to palette" (a catalogue
+    // entry, no world instance involved). Same contract as a pick: it lands on
+    // top, becomes the selection, and is persisted on the spot. This is how a
+    // browse becomes a kit you keep: the catalogue is EVERYTHING the load order
+    // has, the palette is the handful you actually work with.
+    void AddSlot(const Slot& s);
+
     void Load();  // kDataLoaded: read scene-capture-palette.json, re-resolve bases
                   // (writes happen automatically on pick/rename/remove)
 

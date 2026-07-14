@@ -5,6 +5,7 @@
 #include "Modes.h"
 #include "Overrides.h"
 #include "Physics.h"
+#include "Preview.h"
 #include "SceneExporter.h"
 #include "log.h"
 
@@ -183,6 +184,14 @@ namespace {
         // A marker gem IS editable now (2026-07-11): moving it and committing
         // updates the marker's registry pose (not an override entry). Adopt an
         // orphan proxy on the spot so it never falls through to the authored
+        // The preview ghost is not editable: it is a picture, and driving it
+        // around would only move the picture. Place it, then edit the real one
+        // (the browser's own yaw/scale is how you pose it BEFORE committing).
+        if (Preview::IsGhost(ref.get())) {
+            SKSE::log::info("Editor: target is the preview ghost — place it first, "
+                "then edit the real object");
+            return false;
+        }
         // path (its base resolves to the tooling esp, which would be wrong).
         std::uint32_t markerSeq = 0;
         if (Markers::IsProxy(ref.get())) {

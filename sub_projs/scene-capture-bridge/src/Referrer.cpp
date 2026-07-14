@@ -2,6 +2,7 @@
 
 #include "Aim.h"
 #include "Markers.h"
+#include "Preview.h"
 #include "SceneExporter.h"
 #include "log.h"
 
@@ -64,6 +65,11 @@ namespace Referrer {
         // Editor chrome. A marker proxy is excluded from placements[] by design,
         // so an in-file reference to one could never resolve — and a marker
         // already IS a labelled thing (it exports as annotations[]). Refuse.
+        if (Preview::IsGhost(ref.get())) {
+            SKSE::log::info("Referrer: target is the preview ghost — place it first, "
+                            "then name the real thing");
+            return Result::kNone;
+        }
         if (Markers::IsProxy(ref.get())) {
             SKSE::log::info("Referrer: target is a marker gem — refused (markers export "
                             "as annotations[]; label the marker itself)");

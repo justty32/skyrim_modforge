@@ -2,6 +2,7 @@
 
 #include "Aim.h"
 #include "Markers.h"
+#include "Preview.h"
 #include "SceneExporter.h"
 #include "log.h"
 
@@ -31,6 +32,12 @@ namespace Eraser {
     static MarkResult MarkRef(RE::NiPointer<RE::TESObjectREFR> ref, const char* how) {
         if (!ref) {
             SKSE::log::info("Eraser: {} has no target", how);
+            return MarkResult::kNone;
+        }
+        // The preview ghost is not in the world in any sense that matters —
+        // erasing a picture of a decision is not an erasure. Clear it instead.
+        if (Preview::IsGhost(ref.get())) {
+            SKSE::log::info("Eraser: target is the preview ghost — nothing to erase");
             return MarkResult::kNone;
         }
         // A marker proxy is editor chrome — route to the marker system so it

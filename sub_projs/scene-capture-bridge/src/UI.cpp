@@ -6,6 +6,7 @@
 #include "Markers.h"
 #include "Overrides.h"
 #include "Palette.h"
+#include "Preview.h"
 #include "Requires.h"
 #include "SceneExporter.h"
 #include "UI.Fields.h"
@@ -62,12 +63,21 @@ void UI::Register() {
     SKSEMenuFramework::AddSectionItem("Export", Export::Render);
     SKSEMenuFramework::AddSectionItem("Markers", MarkersPage::Render);
     SKSEMenuFramework::AddSectionItem("Eraser", EraserPage::Render);
+    SKSEMenuFramework::AddSectionItem("Browser", BrowserPage::Render);
     SKSEMenuFramework::AddSectionItem("Palette", PalettePage::Render);
     SKSEMenuFramework::AddSectionItem("Captures", CapturesPage::Render);
     SKSEMenuFramework::AddSectionItem("References", ReferencesPage::Render);
     SKSEMenuFramework::AddSectionItem("Editor", EditorPage::Render);
     SKSEMenuFramework::AddSectionItem("Settings", SettingsPage::Render);
     MarkerEditor::Init();  // the standalone E-interaction window
+
+    // The per-frame hook the browser's ghost needs. A HUD element renders even
+    // with the PANEL CLOSED — which is the whole point: you pick an object, close
+    // the panel, and the ghost follows your aim while you walk to the spot. (The
+    // Browser page calls Update() too, for the frames the panel IS open; the call
+    // is idempotent, so having both costs nothing and neither can be the only one.)
+    SKSEMenuFramework::AddHudElement([]() { Preview::Update(); });
+
     SKSE::log::info("SKSE Menu Framework panel registered");
 }
 

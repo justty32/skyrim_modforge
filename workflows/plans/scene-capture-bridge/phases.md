@@ -361,3 +361,30 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
 - 手感：**0.35s 死區**（所以單點仍是精準的一步，不會飄）→ 之後 `step × frameDelta × rate`，rate 從 8 steps/s 在 1.5s 內滾升到 40 steps/s。
 - **frameDelta 不用跟引擎要**：兩幀之間 `heldDownSecs` 的差值就是它。`> 0.25s` 的跳躍（暫停/讀取/卡頓）直接丟棄，否則會把整段空窗一次補成位移＝物件瞬移。
 - 重構副產品：一個 `Nudge(ref, code, steps)` 吃 **float 步數**，單點傳 `1.0`、長按每幀傳分數步——**tap 與 hold 走同一條路，不可能各自漂移**。scale 順手 clamp 到 [0.05, 10]（單點永遠碰不到 0，長按一秒就穿過去了，負 scale ＝ 壞掉的隱形物件）。
+
+## ✅ 已做（**Browser 目錄 ＋ 世界內 ghost 預覽**＝CK 的 Object Window，2026-07-14，DLL `ba3e2089`，**已部署、待實機**）
+
+**訴求**（使用者 2026-07-14）：「要編輯場景，那些山脈之類我都得先去用滴管吸取，不像 CK 直接給你一個列表、還能預覽你要擺的是啥。我想用 skyrim 的物品欄 ui，那也可以預覽物品。」
+
+**🔴 可行性調查：「借用物品欄 UI」否決**（結論在 [backlog](backlog.md) 有完整版）。物品欄只吃**可攜帶**的 form type；**STAT/TREE/FURN/ACTI/MSTT（山脈、岩石、樹、建築、家具）進不了 inventory**——連 FULL name 都沒有（STAT 記錄＝EDID/OBND/MODL），沒 icon、沒重量價值，ItemCard/SkyUI 的資料源整套對不上。**最需要的那一類正好不支援 ⇒ 死路**。改用面板（本來就是完整 Dear ImGui）＋**世界本身當預覽窗**。
+
+**使用者拍板**：目錄**先 runtime**（之後再考慮補離線 catalog）、預覽**先做 ghost**（面板內 3D 之後再 spike）。
+
+**🔴 架構級的坑：runtime 沒有 EditorID**。`TESForm::GetFormEditorID()` 預設 `{ return ""; }`——SSE 不把 EDID 留在記憶體。CELL/WRLD 有留（所以 `SceneExporter.cpp` 那幾處能用），**STAT/ACTI/FURN 全是空字串**。⇒ 索引改建在**永遠拿得到**的 `TESModel::GetModel()` 上，而模型路徑其實是**更好的鍵**：搜 "mountain" 直接命中 `Landscape\Mountains\*.nif`，不必知道任何 EditorID。
+
+**做了什麼**
+
+- **`Catalog`（新）**：`TESDataHandler::GetFormArray(FormType)` 掃 21 種可擺放的 form type（**不含 actor**——cell 匯出本來就不帶 actor，NPC 走 marker／`sc cap`），建成 {base, type, durable id, plugin, name, model} 索引，**懶建**（第一次開頁才掃）。兩種**主動剔除**：① 無 durable id（runtime-only base，擺了也匯不出去，跟滴管同樣的拒收）；② **無模型路徑**（會擺出一個**隱形物件**——那個經典的 wrong-nif 陷阱）。搜尋＝空白分隔 AND 詞組，比對 name＋model＋id。
+- **`Preview`（新）＝ghost**：選中的 base 直接**生在你的瞄準點**（真尺寸、真光照、真位置——比 CK 那個小預覽窗更接近成品）。非碰撞（`SetCollisionLayer(kNonCollidable)`，延後到 3D 載入後，同 `Physics::FreezeDeferred` 那招）——**這不是美觀問題**：瞄準是物理射線，實心 ghost 會擋住自己的射線，瞄準點每幀往玩家爬。凍 havok、跟著準心走（可關）、面板可調 yaw/scale。
+- **`UI.Browser`（新頁）**：搜尋框＋type／plugin 兩個下拉＋清單（**上限 500 筆並明講截斷**，不用 ImGui clipper——不想賭 wrapper 的 struct layout）。按鈕：`preview here`／`clear preview`／`add to palette`／`place here (real)`。
+- **擺放路徑收成單一入口**：`Palette::PlaceSelected` 抽出 `Palette::PlaceSlot(slot, posOverride)`，`sc pl` 與 ghost commit **走同一條**——physics（`py0/py1`）、extra data（`ed0/ed1`）、placed 登記簿、匯出契約**結構上不可能分叉**。commit 用 ghost 的**當下姿態**（不重新瞄準：你看到的就是你放的），且 **ghost 留著** ⇒ 種一排樹＝同一顆鍵按五下。
+- **`sc pl` 動作鍵**：有 ghost 就 commit ghost，沒有才擺 palette 選中的 slot（面板顯示什麼，鍵就做什麼）。
+- **`add to palette`**：目錄是**全部**，palette 是**你留下來的那幾個**（磁碟持久、跨存檔）——新增 `Palette::AddSlot`。
+
+**🔴 唯一不能出錯的地方：ghost 絕不能被匯出**。匯出器的判準是「dynamic ref ＝ 玩家放的 ⇒ 匯出」（`SceneExporter.cpp:174`），而 ghost 正是 dynamic ref。**兩層防護，第二層才是關鍵**：
+1. **live handle**——便宜、精準，但一離開 session 就沒了。
+2. **ref 自帶的哨兵**（`ExtraTextDisplayData`，savegame 會連著 created ref 一起序列化）。玩家開著 ghost 快存、明天讀回來 ⇒ 我們的 registry 是空的、handle 是死的，**但 `IsGhost()` 還是認得出來**，因為證據長在 ref 上、不在我們的記憶裡。**能從世界重建的狀態，勝過必須記住的狀態。**
+
+同一道閘接進**所有**會抓 ref 的地方（Palette 滴管／Eraser／Editor／Captures／Referrer／SceneExporter），語氣一致：「那是預覽，它不在那裡」。另外兩道清理：**離開 cell 就即刻銷毀 ghost**（Update 每幀比對 parent cell——否則舊 cell 會留一座孤兒山）、**kPostLoadGame 掃掉存檔裡的孤兒 ghost**（`SweepOrphans`，靠哨兵認）。co-save **零改動、零版本 bump**（哨兵在 ref 上，不需要我們存任何東西）。
+
+**ModForge C# 端零改動**——沒有新 spec 欄位，ghost commit 走既有 `placements[]`。
