@@ -40,6 +40,12 @@ namespace UI {
     bool BoundText(const char* slot, std::uint64_t row, const std::string& value,
                    std::size_t cap, float width, std::string& out);
 
+    // A stable row key for the pages whose entries are identified by a durable
+    // id string instead of a seq (the eraser and the override list). Hashing the
+    // id keeps the key attached to the ROW, so it survives the list being
+    // reordered or shortened — which an index would not.
+    [[nodiscard]] std::uint64_t RowKey(const std::string& id);
+
     // What a bound field is currently SHOWING (its in-progress text). This is
     // what an `apply` button commits — it must not wait for the field to lose
     // focus, since clicking the button is itself how you leave the field.

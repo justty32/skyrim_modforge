@@ -37,6 +37,11 @@ namespace Overrides {
         RE::NiPoint3 pos;        // committed transform (radians); export prefers the
         RE::NiPoint3 angle;      // live pose when the handle still resolves
         float scale = 1.f;
+        // Author's own naming of the row (panel-editable, rides the co-save).
+        // `note` rides into the exported overrides[] entry — the reason a thing
+        // was moved is exactly what the agent reading the scene json needs.
+        std::string label;
+        std::string note;
     };
 
     // Register (or refresh) a committed edit. The new transform is read off the
@@ -48,6 +53,12 @@ namespace Overrides {
 
     [[nodiscard]] std::vector<Entry>& All();
     [[nodiscard]] bool Contains(const std::string& id);
+
+    // Panel row naming. Keyed by the durable id (the row's identity — the list
+    // has no seq); a no-op when nothing owns that id. A re-edit of the same ref
+    // keeps them, exactly as it keeps the baseline.
+    void SetLabel(const std::string& id, const std::string& label);
+    void SetNote(const std::string& id, const std::string& note);
 
     bool Revert(std::size_t index);  // restore the baseline transform + unregister
     void Clear();                    // revert everything

@@ -29,6 +29,12 @@ namespace Eraser {
         std::string name;    // display name at mark time — panel row info
         RE::NiPoint3 position;  // world coords at mark time — panel row info
         RE::ObjectRefHandle handle;
+        // Author's own naming of the row (panel-editable, rides the co-save).
+        // `label` renames the row; `note` says WHY it goes ("cleared for the
+        // shelf") and rides into the exported removals[] entry, which is what
+        // gets the reason in front of the agent reading the scene json.
+        std::string label;
+        std::string note;
     };
 
     // What the marking did — the panel and log word things by this.
@@ -43,6 +49,11 @@ namespace Eraser {
 
     [[nodiscard]] std::vector<Entry>& All();
     [[nodiscard]] const std::unordered_set<std::string>& MarkedIds();
+
+    // Panel row naming. Keyed by the durable id (the row's identity — the list
+    // has no seq); a no-op when nothing owns that id.
+    void SetLabel(const std::string& id, const std::string& label);
+    void SetNote(const std::string& id, const std::string& note);
 
     bool Undo();   // re-enable the most recent mark
     void Clear();  // re-enable everything

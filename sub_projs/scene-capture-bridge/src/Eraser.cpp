@@ -91,6 +91,16 @@ namespace Eraser {
     std::vector<Entry>& All() { return g_entries; }
     const std::unordered_set<std::string>& MarkedIds() { return g_ids; }
 
+    void SetLabel(const std::string& id, const std::string& label) {
+        for (auto& e : g_entries)
+            if (e.id == id) { e.label = label; return; }
+    }
+
+    void SetNote(const std::string& id, const std::string& note) {
+        for (auto& e : g_entries)
+            if (e.id == id) { e.note = note; return; }
+    }
+
     // Shared tail of every undo path: re-enable the ref (if loaded) and drop
     // the entry + its id. `it` must be valid; invalidated on return.
     static bool ReenableErase(std::vector<Entry>::iterator it) {

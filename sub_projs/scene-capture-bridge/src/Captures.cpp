@@ -421,6 +421,16 @@ namespace Captures {
 
     std::vector<Entry>& All() { return g_entries; }
 
+    void SetLabel(std::uint32_t seq, const std::string& label) {
+        for (auto& e : g_entries)
+            if (e.seq == seq) { e.label = label; return; }
+    }
+
+    void SetNote(std::uint32_t seq, const std::string& note) {
+        for (auto& e : g_entries)
+            if (e.seq == seq) { e.note = note; return; }
+    }
+
     const char* KindName(Kind k) {
         switch (k) {
         case Kind::kWeapon: return "weapon";

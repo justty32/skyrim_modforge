@@ -156,6 +156,9 @@ namespace Captures {
         // that path). Exported as `editorId: "MFCap_<sanitised label>"`, which ModForge's
         // "explicit editorId wins" rule turns into the record's stable identity.
         std::string label;
+        // Free-form brief for the agent, panel-editable ("the innkeeper's own
+        // sword — give it to the clone"). Rides the co-save and the export.
+        std::string note;
         std::string base;         // origin base durable id (physical template); "" if runtime-only
         // Item payload (weapon/armour/potion/ingredient).
         std::string enchantBase;  // durable ENCH id when the enchant itself is authored; else ""
@@ -181,6 +184,11 @@ namespace Captures {
 
     [[nodiscard]] std::vector<Entry>& All();
     [[nodiscard]] const char* KindName(Kind k);  // "weapon"/"armor"/"potion"/"ingredient"
+
+    // Panel row naming (the label was console-only — `sc capp <label>` — until
+    // the panel got a field for it). Keyed by seq; a no-op on an unknown one.
+    void SetLabel(std::uint32_t seq, const std::string& label);
+    void SetNote(std::uint32_t seq, const std::string& note);
 
     bool Undo();                        // drop the most recent capture
     bool UndoEntry(std::uint32_t seq);  // per-row undo (panel button)

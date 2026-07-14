@@ -29,9 +29,9 @@ namespace {
     // no version bump.
     constexpr std::uint32_t kVerSett = 7;  // v2 adds editor step sizes; v3 adds aim/axis; v4 adds capture aim; v5 adds referrer aim; v6 adds per-mode physics (place/edit) + extra data (pick/place); v7 binds actually applied on load (were write-only before), + capture/referrer binds (missing since P5)
     constexpr std::uint32_t kVerMkrs = 2;  // v2: full angle (3f) + scale, was angleZ only
-    constexpr std::uint32_t kVerErsr = 2;  // v2 adds name + position for panel rows
-    constexpr std::uint32_t kVerOvrd = 1;
-    constexpr std::uint32_t kVerCaps = 9;  // v2 kNpc; v3 flags/perks/buffs; v4 class/level/equipped; v5 armor/weapons; v6 inventory; v7 rows+instance-ench; v8 label + explicit H/M/S + 18 skills; v9 isPlayer flag
+    constexpr std::uint32_t kVerErsr = 3;  // v2 adds name + position for panel rows; v3 adds label + note
+    constexpr std::uint32_t kVerOvrd = 2;  // v2 adds label + note
+    constexpr std::uint32_t kVerCaps = 10;  // v2 kNpc; v3 flags/perks/buffs; v4 class/level/equipped; v5 armor/weapons; v6 inventory; v7 rows+instance-ench; v8 label + explicit H/M/S + 18 skills; v9 isPlayer flag; v10 note
     constexpr std::uint32_t kVerRfrr = 1;
     constexpr std::uint32_t kVerPlex = 1;
 
@@ -252,6 +252,8 @@ namespace {
             WriteStr(si, e.name);       // v2
             WriteVec3(si, e.position);  // v2
             si->WriteRecordData(FormIdOf(e.handle));
+            WriteStr(si, e.label);      // v3
+            WriteStr(si, e.note);       // v3
         }
     }
 
@@ -272,6 +274,10 @@ namespace {
                 ReadVec3(si, e.position);
             }
             si->ReadRecordData(formId);
+            if (version >= 3) {  // a pre-v3 save simply has no naming — empty, as before
+                e.label = ReadStr(si);
+                e.note = ReadStr(si);
+            }
             e.addsMaster = adds != 0;
             // A dead handle is fine: the durable id is what exports; undo on a
             // not-loaded ref just unmarks (Eraser already words it that way).
@@ -294,10 +300,12 @@ namespace {
             si->WriteRecordData(e.origScale);
             WriteVec3(si, e.pos); WriteVec3(si, e.angle);
             si->WriteRecordData(e.scale);
+            WriteStr(si, e.label);  // v2
+            WriteStr(si, e.note);   // v2
         }
     }
 
-    void LoadOverrides(const SKSE::SerializationInterface* si) {
+    void LoadOverrides(const SKSE::SerializationInterface* si, std::uint32_t version) {
         std::uint32_t count = 0;
         si->ReadRecordData(count);
         auto& all = Overrides::All();
@@ -315,6 +323,10 @@ namespace {
             si->ReadRecordData(e.origScale);
             ReadVec3(si, e.pos); ReadVec3(si, e.angle);
             si->ReadRecordData(e.scale);
+            if (version >= 2) {  // a pre-v2 save simply has no naming — empty, as before
+                e.label = ReadStr(si);
+                e.note = ReadStr(si);
+            }
             e.addsMaster = adds != 0;
             e.isActor = actor != 0;
             e.handle = ResolveHandle(si, formId);  // dead handle kept — id is the payload
@@ -696,6 +708,7 @@ namespace {
             WriteStr(si, e.name);
             WriteStr(si, e.base);
             WriteStr(si, e.label);  // v8 — the player-typed identity label (case preserved)
+            WriteStr(si, e.note);   // v10 — panel-written brief for the agent
             if (e.kind == Captures::Kind::kNpc) SaveNpcPayload(si, e.npc);
             else SaveItemPayload(si, e);
         }
@@ -714,6 +727,7 @@ namespace {
             e.name = ReadStr(si);
             e.base = ReadStr(si);
             if (version >= 8) e.label = ReadStr(si);
+            if (version >= 10) e.note = ReadStr(si);
             // v1 only ever held item kinds (kNpc didn't exist), so always item payload.
             if (version >= 2 && e.kind == Captures::Kind::kNpc) LoadNpcPayload(si, e.npc, version);
             else LoadItemPayload(si, e);
@@ -744,7 +758,7 @@ namespace {
             case kSett: LoadSettings(si, version); break;
             case kMkrs: LoadMarkers(si, version); break;
             case kErsr: LoadEraser(si, version); break;
-            case kOvrd: LoadOverrides(si); break;
+            case kOvrd: LoadOverrides(si, version); break;
             case kCaps: LoadCaptures(si, version); break;
             case kRfrr: LoadReferrer(si, version); break;
             case kPlex: LoadPlaced(si, version); break;

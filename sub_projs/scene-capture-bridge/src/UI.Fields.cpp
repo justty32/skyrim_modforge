@@ -17,12 +17,17 @@ namespace {
     // this is an id and not a set — everything else mirrors the registry.
     std::uint64_t g_active = 0;
 
-    std::uint64_t KeyOf(const char* slot, std::uint64_t row) {
-        std::uint64_t h = 1469598103934665603ull;  // FNV-1a over the slot id
-        for (const char* p = slot; *p; ++p) {
-            h ^= static_cast<std::uint8_t>(*p);
+    std::uint64_t Fnv1a(const char* p, std::size_t n) {
+        std::uint64_t h = 1469598103934665603ull;
+        for (std::size_t i = 0; i < n; ++i) {
+            h ^= static_cast<std::uint8_t>(p[i]);
             h *= 1099511628211ull;
         }
+        return h;
+    }
+
+    std::uint64_t KeyOf(const char* slot, std::uint64_t row) {
+        std::uint64_t h = Fnv1a(slot, std::char_traits<char>::length(slot));
         h ^= row + 0x9E3779B97F4A7C15ull + (h << 6) + (h >> 2);
         return h ? h : 1;  // 0 is the "nothing is active" sentinel
     }
@@ -57,6 +62,10 @@ namespace UI {
         if (!Committed(key, enter)) return false;
         out = buf;
         return true;
+    }
+
+    std::uint64_t RowKey(const std::string& id) {
+        return Fnv1a(id.data(), id.size());
     }
 
     std::string Shown(const char* slot, std::uint64_t row) {

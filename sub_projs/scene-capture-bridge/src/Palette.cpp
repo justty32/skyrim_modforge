@@ -162,6 +162,7 @@ namespace {
                 {"angle", {{"x", s.angle.x}, {"y", s.angle.y}, {"z", s.angle.z}}},
                 {"scale", s.scale}, {"isActor", s.isActor},
             };
+            if (!s.note.empty()) o["note"] = s.note;  // omitted when unused — palettes stay terse
             if (s.extra.present) o["extra"] = ExtraJson(s.extra);  // `sc pk ed1` slots only
             j.push_back(std::move(o));
         }
@@ -186,6 +187,7 @@ namespace {
         for (const auto& item : j) {
             Palette::Slot s;
             s.name = item.value("name", "");
+            s.note = item.value("note", "");  // absent in every pre-note palette — fine
             s.baseId = item.value("base", "");
             if (s.baseId.empty()) continue;
             if (auto a = item.find("angle"); a != item.end())
@@ -456,6 +458,12 @@ namespace Palette {
             g_slots[index].name = name;
             Save();
         }
+    }
+
+    void SetNote(std::size_t index, const std::string& note) {
+        if (index >= g_slots.size() || g_slots[index].note == note) return;
+        g_slots[index].note = note;
+        Save();  // the note is disk state — it is only real once it is written
     }
 
     void Remove(std::size_t index) {

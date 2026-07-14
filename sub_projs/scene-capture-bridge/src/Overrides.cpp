@@ -66,6 +66,14 @@ namespace Overrides {
 
     bool Contains(const std::string& id) { return Find(id) != g_entries.end(); }
 
+    void SetLabel(const std::string& id, const std::string& label) {
+        if (auto it = Find(id); it != g_entries.end()) it->label = label;
+    }
+
+    void SetNote(const std::string& id, const std::string& note) {
+        if (auto it = Find(id); it != g_entries.end()) it->note = note;
+    }
+
     bool Revert(std::size_t index) {
         if (index >= g_entries.size()) return false;
         Entry e = std::move(g_entries[index]);

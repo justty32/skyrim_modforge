@@ -16,6 +16,20 @@
 #include <string>
 
 namespace {
+    // Bound-field slot ids (UI.Fields): unique per field per page, and they
+    // double as the ImGui label. Rows keyed by seq (captures) or by a hash of
+    // the durable id (eraser/overrides) — NOT by list position, which shifts
+    // under an undo/revert. The palette is the exception: its slots carry no
+    // identity at all, so it keys by index and calls ForgetEdits() on a reshape.
+    constexpr const char* kErLabel = "##er.label";
+    constexpr const char* kErNote = "##er.note";
+    constexpr const char* kCapLabel = "##cap.label";
+    constexpr const char* kCapNote = "##cap.note";
+    constexpr const char* kOvLabel = "##ov.label";
+    constexpr const char* kOvNote = "##ov.note";
+    constexpr const char* kSlotName = "##pal.name";
+    constexpr const char* kSlotNote = "##pal.note";
+
     // Resolve the cell the player is standing in, for display. Cheap enough to
     // do per frame: it is a couple of pointer hops plus a formatted string.
     std::string CurrentCellLabel() {
@@ -200,16 +214,32 @@ void __stdcall UI::EraserPage::Render() {
     ImGuiMCP::Checkbox("this cell only", &thisCellOnly);
     ImGuiMCP::Separator();
 
-    // Each row: [undo] id  name  (x, y, z). Newest first, matching undo order.
+    // Each row: [undo] [label] [note] [apply], then what was marked. Newest
+    // first, matching undo order. The note says WHY it goes ("cleared for the
+    // shelf") and rides into the exported removals[] entry.
     std::string undoId;
     for (auto it = marked.rbegin(); it != marked.rend(); ++it) {
         const auto& e = *it;
         if (thisCellOnly && e.cellOrWs != here) continue;
         ImGuiMCP::PushID(e.id.c_str());
+        // Rows are identified by their durable id, not by position in the list:
+        // an undo two rows up must not drag every field down with it.
+        const auto row = UI::RowKey(e.id);
+        std::string edit;
+
         if (ImGuiMCP::Button("undo")) undoId = e.id;
         ImGuiMCP::SameLine();
+        if (UI::BoundText(kErLabel, row, e.label, 64, 150.f, edit)) ::Eraser::SetLabel(e.id, edit);
+        ImGuiMCP::SameLine();
+        if (UI::BoundText(kErNote, row, e.note, 256, 220.f, edit)) ::Eraser::SetNote(e.id, edit);
+        ImGuiMCP::SameLine();
+        if (ImGuiMCP::Button("apply")) {
+            ::Eraser::SetLabel(e.id, UI::Shown(kErLabel, row));
+            ::Eraser::SetNote(e.id, UI::Shown(kErNote, row));
+        }
+
         const auto& col = e.addsMaster ? kWarn : ImGuiMCP::ImVec4{1.f, 1.f, 1.f, 1.f};
-        ImGuiMCP::TextColored(col, "%s  %s  (%.0f, %.0f, %.0f)%s",
+        ImGuiMCP::TextColored(col, "  %s  %s  (%.0f, %.0f, %.0f)%s",
             e.id.c_str(), e.name.empty() ? "" : e.name.c_str(),
             e.position.x, e.position.y, e.position.z,
             e.addsMaster ? "  -- adds a master" : "");
@@ -237,37 +267,46 @@ void __stdcall UI::CapturesPage::Render() {
     }
     ImGuiMCP::Separator();
 
-    // Each row: [undo] name [kind] N effect(s). Newest first, matching undo order.
+    // Each row: [undo] [label] [note] [apply], then what was captured. Newest
+    // first, matching undo order. The label was console-only (`sc capp <label>`)
+    // until now — it becomes the captured record's editorId, so being able to
+    // fix a typo without re-capturing the NPC is the point.
     std::uint32_t undoSeq = 0;
     bool doUndo = false;
     for (auto it = caps.rbegin(); it != caps.rend(); ++it) {
         const auto& e = *it;
         ImGuiMCP::PushID(std::to_string(e.seq).c_str());
+        std::string edit;
+
         if (ImGuiMCP::Button("undo")) { undoSeq = e.seq; doUndo = true; }
         ImGuiMCP::SameLine();
+        if (UI::BoundText(kCapLabel, e.seq, e.label, 64, 150.f, edit))
+            ::Captures::SetLabel(e.seq, edit);
+        ImGuiMCP::SameLine();
+        if (UI::BoundText(kCapNote, e.seq, e.note, 256, 220.f, edit))
+            ::Captures::SetNote(e.seq, edit);
+        ImGuiMCP::SameLine();
+        if (ImGuiMCP::Button("apply")) {
+            ::Captures::SetLabel(e.seq, UI::Shown(kCapLabel, e.seq));
+            ::Captures::SetNote(e.seq, UI::Shown(kCapNote, e.seq));
+        }
+
         if (e.kind == ::Captures::Kind::kNpc) {
             const auto& n = e.npc;
-            ImGuiMCP::Text("%s  [npc%s%s]  %s %s, %zu headpart(s), %zu tint(s), "
+            ImGuiMCP::Text("  %s  [npc%s%s]  %s %s, %zu headpart(s), %zu tint(s), "
                 "%zu perk(s), %zu buff(s)%s", e.name.c_str(),
                 n.unique ? " UNIQUE" : "", n.dead ? " DEAD" : "",
                 n.female ? "female" : "male", n.race.empty() ? "?" : n.race.c_str(),
                 n.headParts.size(), n.tints.size(), n.perks.size(), n.activeEffects.size(),
                 e.base.empty() ? "  (runtime base)" : "");
         } else {
-            ImGuiMCP::Text("%s  [%s]  %zu effect(s)%s", e.name.c_str(),
+            ImGuiMCP::Text("  %s  [%s]  %zu effect(s)%s", e.name.c_str(),
                 ::Captures::KindName(e.kind), e.effects.size(),
                 e.base.empty() ? "  (runtime base)" : "");
         }
         ImGuiMCP::PopID();
     }
     if (doUndo) ::Captures::UndoEntry(undoSeq);
-}
-
-namespace {
-    // Slots carry no seq, so palette rows are keyed by INDEX — which is why this
-    // page (alone) has to call UI::ForgetEdits() whenever the list is
-    // restructured under it. See UI.Fields.h.
-    constexpr const char* kSlotName = "##pal.name";
 }
 
 void __stdcall UI::PalettePage::Render() {
@@ -345,11 +384,19 @@ void __stdcall UI::PalettePage::Render() {
         if (ImGuiMCP::Button(selected ? "[use]" : " use ")) ::Palette::Select(i);
         ImGuiMCP::SameLine();
 
-        // The name is freely editable (Bed -> GoodBed). Enter OR clicking away
-        // commits, and Rename persists scene-capture-palette.json on the spot —
-        // so the name you can see is the name on disk.
+        // Name + note are freely editable (Bed -> GoodBed). Enter, `apply` OR
+        // clicking away commits, and each write persists the palette json on the
+        // spot — so what you can see is what is on disk, and `save to file`
+        // carries the notes with it.
         std::string edit;
-        if (UI::BoundText(kSlotName, i, s.name, 64, 260.f, edit)) ::Palette::Rename(i, edit);
+        if (UI::BoundText(kSlotName, i, s.name, 64, 200.f, edit)) ::Palette::Rename(i, edit);
+        ImGuiMCP::SameLine();
+        if (UI::BoundText(kSlotNote, i, s.note, 256, 200.f, edit)) ::Palette::SetNote(i, edit);
+        ImGuiMCP::SameLine();
+        if (ImGuiMCP::Button("apply")) {
+            ::Palette::Rename(i, UI::Shown(kSlotName, i));
+            ::Palette::SetNote(i, UI::Shown(kSlotNote, i));
+        }
         ImGuiMCP::SameLine();
         if (!s.base) {
             // The slot's plugin left the load order — kept, but F7 refuses it.
@@ -411,10 +458,24 @@ void __stdcall UI::EditorPage::Render() {
     for (std::size_t i = 0; i < moved.size(); ++i) {
         const auto& e = moved[i];
         ImGuiMCP::PushID(reinterpret_cast<const void*>(static_cast<std::uintptr_t>(i + 1)));
+        // Keyed by the durable id, not by i: reverting a row above must not
+        // shift every field below it onto the wrong override.
+        const auto row = UI::RowKey(e.id);
+        std::string edit;
+
         if (ImGuiMCP::Button("revert")) revert = i;
         ImGuiMCP::SameLine();
+        if (UI::BoundText(kOvLabel, row, e.label, 64, 150.f, edit)) ::Overrides::SetLabel(e.id, edit);
+        ImGuiMCP::SameLine();
+        if (UI::BoundText(kOvNote, row, e.note, 256, 220.f, edit)) ::Overrides::SetNote(e.id, edit);
+        ImGuiMCP::SameLine();
+        if (ImGuiMCP::Button("apply")) {
+            ::Overrides::SetLabel(e.id, UI::Shown(kOvLabel, row));
+            ::Overrides::SetNote(e.id, UI::Shown(kOvNote, row));
+        }
+
         const auto& col = e.addsMaster ? kWarn : ImGuiMCP::ImVec4{1.f, 1.f, 1.f, 1.f};
-        ImGuiMCP::TextColored(col, "%s  %s  (%.0f, %.0f, %.0f)%s",
+        ImGuiMCP::TextColored(col, "  %s  %s  (%.0f, %.0f, %.0f)%s",
             e.id.c_str(), e.name.empty() ? "" : e.name.c_str(),
             e.pos.x, e.pos.y, e.pos.z,
             e.addsMaster ? "  -- adds a master" : "");

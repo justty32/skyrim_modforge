@@ -41,6 +41,11 @@ namespace Palette {
 
     struct Slot {
         std::string name;
+        // Free-form brief, panel-editable. Unlike every other registry's note
+        // this one is DISK state, not co-save state: it goes into the palette
+        // json beside the slot, so it follows `save to file` and outlives the
+        // playthrough, exactly like the slot it describes.
+        std::string note;
         std::string baseId;               // durable "<plugin>:0x…" (display + master warning)
         RE::TESBoundObject* base = nullptr;  // session pointer; null = unavailable
         RE::NiPoint3 angle;               // captured pose, radians
@@ -123,6 +128,9 @@ namespace Palette {
     [[nodiscard]] std::size_t SelectedIndex();
     void Select(std::size_t index);
     void Rename(std::size_t index, const std::string& name);
+    // Persisted on the spot, like Rename — an empty note is a legitimate value
+    // (it clears one), so unlike a name it is not guarded against being blank.
+    void SetNote(std::size_t index, const std::string& note);
     void Remove(std::size_t index);
 
     // ---- placed-ref registry (Palette.Placed.cpp) --------------------------
