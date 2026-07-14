@@ -28,7 +28,7 @@ namespace {
     // WINS: SceneCaptureBridge.ini beats a stored bind for any mode it names, and
     // the co-save value only fills the gaps (Modes::ApplyCoSaveBind). Same bytes,
     // no version bump.
-    constexpr std::uint32_t kVerSett = 7;  // v2 adds editor step sizes; v3 adds aim/axis; v4 adds capture aim; v5 adds referrer aim; v6 adds per-mode physics (place/edit) + extra data (pick/place); v7 binds actually applied on load (were write-only before), + capture/referrer binds (missing since P5)
+    constexpr std::uint32_t kVerSett = 8;  // v2 adds editor step sizes; v3 adds aim/axis; v4 adds capture aim; v5 adds referrer aim; v6 adds per-mode physics (place/edit) + extra data (pick/place); v7 binds actually applied on load (were write-only before), + capture/referrer binds (missing since P5); v8 place-mode ghost preview (sc pl gh0/gh1)
     constexpr std::uint32_t kVerMkrs = 2;  // v2: full angle (3f) + scale, was angleZ only
     constexpr std::uint32_t kVerErsr = 3;  // v2 adds name + position for panel rows; v3 adds label + note
     constexpr std::uint32_t kVerOvrd = 2;  // v2 adds label + note
@@ -113,6 +113,8 @@ namespace {
         // co-save (kCapture/kReferrer stayed un-persisted since they were added).
         si->WriteRecordData(Modes::Bind(Modes::Mode::kCapture));
         si->WriteRecordData(Modes::Bind(Modes::Mode::kReferrer));
+        // v8: place mode's ghost preview (`sc pl gh0/gh1`).
+        si->WriteRecordData(static_cast<std::uint8_t>(Modes::Ghost(Modes::Mode::kPlace) ? 1 : 0));
     }
 
     void LoadSettings(const SKSE::SerializationInterface* si, std::uint32_t version) {
@@ -175,6 +177,11 @@ namespace {
                 si->ReadRecordData(bind);
                 Modes::ApplyCoSaveBind(m, bind);
             }
+        }
+        if (version >= 8) {  // place-mode ghost preview (`sc pl gh0/gh1`)
+            std::uint8_t gh = 1;
+            si->ReadRecordData(gh);
+            Modes::SetGhost(Modes::Mode::kPlace, gh != 0);
         }
         if (mode < static_cast<std::uint8_t>(Modes::Mode::kTotal))
             Modes::Set(static_cast<Modes::Mode>(mode));

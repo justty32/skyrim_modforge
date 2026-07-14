@@ -78,6 +78,11 @@ namespace {
                 // action key, a commit) and it stays that way.
                 if (btn->IsDown()) {
                     if (Editor::HandleKey(code)) continue;
+                    // Place mode's ghost takes the numpad too (rotate + scale it
+                    // before you drop it). It only ever consumes numpad keys and
+                    // only while a ghost is up, so the action key still gets through
+                    // to Modes below — which is what actually places the thing.
+                    if (Preview::HandleKey(code)) continue;
                     Modes::HandleKey(code);
                     continue;
                 }
@@ -86,7 +91,10 @@ namespace {
                 // want exactly that: hold numpad 8 and the thing keeps moving.
                 // Only edit mode sees held keys — an action key must never fire
                 // 60 times because a finger lingered.
-                if (btn->IsHeld()) Editor::HandleHold(code, btn->HeldDuration());
+                if (btn->IsHeld()) {
+                    Editor::HandleHold(code, btn->HeldDuration());
+                    Preview::HandleHold(code, btn->HeldDuration());
+                }
             }
             return RE::BSEventNotifyControl::kContinue;
         }

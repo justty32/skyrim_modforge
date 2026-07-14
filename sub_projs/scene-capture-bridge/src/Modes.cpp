@@ -41,6 +41,11 @@ namespace {
     // Per-mode extra data (pick/place). Off = durable base only (historic).
     bool g_extraData[static_cast<std::size_t>(Modes::Mode::kTotal)] = {false};
 
+    // Place mode's ghost preview (`sc pl gh0/gh1`). DEFAULT ON: place mode showing
+    // you what it is about to place is the better default, and it is what the
+    // Browser's whole flow rests on (Preview.h's invariant).
+    bool g_ghost = true;
+
     // The bind SceneCaptureBridge.ini gave each mode (0 = the ini said nothing
     // about it). Kept SEPARATELY from g_binds because it is configuration, not
     // save state: it must survive OnRevert (which wipes everything a savegame
@@ -225,6 +230,14 @@ namespace Modes {
             keepPhysics ? "kept (py1)" : "OFF (py0)");
     }
 
+    bool Ghost(Mode m) { return m == Mode::kPlace ? g_ghost : false; }
+
+    void SetGhost(Mode m, bool on) {
+        if (m != Mode::kPlace || g_ghost == on) return;
+        g_ghost = on;
+        SKSE::log::info("Modes: place ghost preview -> {}", on ? "on (gh1)" : "off (gh0)");
+    }
+
     bool ExtraData(Mode m) {
         return m < Mode::kTotal ? g_extraData[static_cast<std::size_t>(m)] : false;
     }
@@ -273,6 +286,7 @@ namespace Modes {
             g_extraData[i] = false;
         }
         ApplyPhysicsDefaults(g_physics);  // place = py1, edit = py0
+        g_ghost = true;                   // gh1 — place mode shows what it will place
         // The ini is CONFIGURATION, not save state — a revert (new game / a save
         // without our records) must not throw the player's keys away. Everything
         // else above legitimately goes back to defaults.

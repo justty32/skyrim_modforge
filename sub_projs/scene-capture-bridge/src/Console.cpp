@@ -45,6 +45,7 @@ namespace {
         Print("  sc ed py0 / py1                   freeze / keep physics while editing (py0 default)");
         Print("  sc pk ed0 / ed1                   eyedrop base only / base + instance extra data");
         Print("  sc pl ed0 / ed1                   place base only / base + the slot's extra data");
+        Print("  sc pl gh1 / gh0                   ghost preview of what you're placing (gh1 default)");
         Print("  sc ed ax / sc ed                  enter rotate sub-mode / back to move");
         Print("  sc delc                           erase the console-selected ref");
         Print("  sc pkc [Label]                    eyedrop the console-selected ref into the palette");
@@ -234,6 +235,20 @@ namespace {
                     Print("SCB: placements carry %s",
                         on ? "the slot's extra data (exported as a minted item)"
                            : "the plain base only");
+                }
+                return true;
+            }
+
+            // GHOST PREVIEW (`sc pl gh0/gh1`) — place mode shows what it will place.
+            if (m == Modes::Mode::kPlace && (a2 == "gh0" || a2 == "gh1")) {
+                const bool on = (a2 == "gh1");
+                Modes::SetGhost(Modes::Mode::kPlace, on);
+                if (on) {
+                    Print("SCB: place mode shows a GHOST of the selected slot at your aim "
+                          "(numpad 4/6 yaw, 1/3 pitch, 7/9 roll, 2/5/8 revert that axis, "
+                          "+/- scale, 0 = real size, . = clear)");
+                } else {
+                    Print("SCB: no ghost — the action key places the selected slot unseen (gh0)");
                 }
                 return true;
             }

@@ -64,8 +64,14 @@ namespace {
         return file.empty() ? e.id : file;
     }
 
-    void ShowGhost(const Catalog::Entry& e) {
-        Preview::Show(e.base, LabelOf(e));
+    // Clicking an entry does NOT open a preview of its own — it makes place mode
+    // point at this thing. The user's framing (2026-07-14): "browser 本質上是
+    // sc pl 的一個附屬品". So: switch to place mode, turn the ghost on (temporarily,
+    // if they had it off), and pin this entry as what the action key will place.
+    void PickForPlacing(const Catalog::Entry& e) {
+        Modes::Set(Modes::Mode::kPlace);
+        Preview::ForceGhostOn();
+        Preview::ShowBase(e.base, LabelOf(e));
     }
 }
 
@@ -134,12 +140,13 @@ void __stdcall UI::BrowserPage::Render() {
             e.model + "   [" + Catalog::TypeName(e.type) + "]   " + e.id;
         if (ImGuiMCP::Selectable(line.c_str(), idx == g_selected)) {
             g_selected = idx;
-            if (g_livePreview) ShowGhost(e);
+            if (g_livePreview) PickForPlacing(e);
         }
         ImGuiMCP::PopID();
     }
     ImGuiMCP::EndChild();
-    ImGuiMCP::Checkbox("live preview (spawn the ghost on click)", &g_livePreview);
+    ImGuiMCP::Checkbox("live preview (clicking an entry switches to place mode and previews it)",
+        &g_livePreview);
 
     // ---- the selected entry + its ghost -------------------------------------
     ImGuiMCP::Separator();
@@ -152,7 +159,7 @@ void __stdcall UI::BrowserPage::Render() {
     ImGuiMCP::Text("  %s", e.model.c_str());
     ImGuiMCP::Text("  %s   [%s]", e.id.c_str(), Catalog::TypeName(e.type));
 
-    if (ImGuiMCP::Button("preview here")) ShowGhost(e);
+    if (ImGuiMCP::Button("preview here (-> place mode)")) PickForPlacing(e);
     ImGuiMCP::SameLine();
     if (ImGuiMCP::Button("clear preview")) Preview::Clear();
     ImGuiMCP::SameLine();
@@ -191,6 +198,10 @@ void __stdcall UI::BrowserPage::Render() {
     // what gets placed. Same path as `sc pl` (physics/extra-data switches and all).
     if (ImGuiMCP::Button("place here (real)")) Preview::Commit();
     ImGuiMCP::SameLine();
-    ImGuiMCP::TextColored(kDim, "or press the PLACE mode's action key (%s) — `sc pl` first",
+    ImGuiMCP::TextColored(kDim, "or just press %s (place mode's action key) — the ghost stays up, "
+        "so a row of trees is that key five times",
         Modes::KeyName(Modes::Bind(Modes::Mode::kPlace)));
+    ImGuiMCP::TextColored(kDim,
+        "numpad: 4/6 yaw, 1/3 pitch, 7/9 roll, 2/5/8 revert that axis, +/- scale, "
+        "0 = real size (undo the auto-scale), . = clear the ghost. Position follows your aim.");
 }

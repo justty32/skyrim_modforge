@@ -3,6 +3,7 @@
 #include "Aim.h"
 #include "Markers.h"
 #include "Modes.h"
+#include "Numpad.h"
 #include "Overrides.h"
 #include "Physics.h"
 #include "Preview.h"
@@ -11,29 +12,15 @@
 
 #include <algorithm>
 #include <cmath>
-#include <unordered_map>
 
 namespace {
     constexpr float kRadToDeg = 57.2957795f;
     constexpr float kDegToRad = 1.f / kRadToDeg;
 
-    // Numpad DIK scancodes. NOT from the verified F-key block — if a key does
-    // nothing in-game, edit mode logs the actual code of every unmapped press,
-    // so one session of tapping reveals any wrong constant.
-    constexpr std::uint32_t kSelect = 0x4C;     // numpad 5 — crosshair select
-    constexpr std::uint32_t kSelectRay = 0x37;  // numpad * — EXPLICIT ray select (trees/statics)
-    constexpr std::uint32_t kCommit = 0x52;   // numpad 0
-    constexpr std::uint32_t kCancel = 0x53;   // numpad . (Del)
-    constexpr std::uint32_t kFwd = 0x48;      // numpad 8
-    constexpr std::uint32_t kBack = 0x50;     // numpad 2
-    constexpr std::uint32_t kLeft = 0x4B;     // numpad 4
-    constexpr std::uint32_t kRight = 0x4D;    // numpad 6
-    constexpr std::uint32_t kYawNeg = 0x47;   // numpad 7
-    constexpr std::uint32_t kYawPos = 0x49;   // numpad 9
-    constexpr std::uint32_t kDown = 0x4F;     // numpad 1  (deviation: height, not rotation)
-    constexpr std::uint32_t kUp = 0x51;       // numpad 3
-    constexpr std::uint32_t kScaleUp = 0x4E;  // numpad +
-    constexpr std::uint32_t kScaleDn = 0x4A;  // numpad -
+    // The numpad's scancodes and its hold-to-repeat clock live in Numpad.h — the
+    // browser's preview ghost drives the same keys with the same feel, and two
+    // copies of that would drift (2026-07-14 extraction, behaviour unchanged).
+    using namespace Numpad;
 
     // Editing step sizes — player-adjustable in the Settings page, persisted
     // in the co-save (SETT v2). Defaults match the original constants.
@@ -148,26 +135,6 @@ namespace {
     }
 
     // ---- long-press repeat -------------------------------------------------
-
-    // Held for less than this = still just a tap (one step, from the key going
-    // down). Without the dead zone every normal press would drift a little.
-    constexpr float kRepeatDelay = 0.35f;
-    // A frame this long means the game was paused / loading / hitching: the
-    // engine's held counter kept running but no one was watching. Applying that
-    // gap as one lump would teleport the object across the room.
-    constexpr float kMaxFrame = 0.25f;
-
-    // Steps per second while held, ramping up: slow enough at first to place a
-    // thing precisely, fast enough after a moment to shove it across the room.
-    float RateOf(float heldPastDelay) {
-        constexpr float kSlow = 8.f, kFast = 40.f, kRampSecs = 1.5f;
-        const float t = std::min(heldPastDelay / kRampSecs, 1.f);
-        return kSlow + (kFast - kSlow) * t;
-    }
-
-    // Where each held key's counter was last frame — the difference IS the frame
-    // delta, so we never have to ask the engine for one.
-    std::unordered_map<std::uint32_t, float> g_heldAt;
 
     // byRay = the explicit physics-ray entry (panel button / numpad *) for
     // trees and non-activatable statics. NEVER an automatic fallback of the
@@ -330,8 +297,7 @@ namespace Editor {
             // Self-diagnosis for numpad DIK constants only. Movement keys
             // (WASD/Alt) land here too while editing and flooded the log
             // (in-game 2026-07-11: 0x11/0x1F/0x20/0x38 noise).
-            // 0x47..0x53 = numpad block; 0x37/0xB5/0x9C = num * / Enter.
-            if ((code >= 0x47 && code <= 0x53) || code == 0x37 || code == 0xB5 || code == 0x9C) {
+            if (Numpad::IsNumpad(code)) {
                 SKSE::log::info("Editor: unmapped scancode 0x{:X} in edit mode", code);
             }
             return true;  // swallow everything while editing
@@ -340,7 +306,7 @@ namespace Editor {
         // A tap is ONE step — the same body the hold path drives, just with a
         // step count of exactly 1. The repeat clock restarts here so the dead
         // zone is measured from this press, not from whatever came before.
-        g_heldAt[code] = 0.f;
+        Numpad::OnTap(code);
         Nudge(ref.get(), code, 1.f);
         return true;
     }
@@ -349,21 +315,8 @@ namespace Editor {
         if (!g.active || !IsNudgeKey(code)) return;
         auto ref = Target();
         if (!ref) return;
-
-        float& last = g_heldAt[code];
-        if (heldSecs < last) last = 0.f;  // a new press — the engine's clock restarted
-        if (heldSecs < kRepeatDelay) {    // still a tap; HandleKey already moved it once
-            last = heldSecs;
-            return;
-        }
-        // Measure the frame from the END of the dead zone the first time we
-        // cross it, or the delay would be applied as displacement in one lump.
-        const float from = std::max(last, kRepeatDelay);
-        const float dt = heldSecs - from;
-        last = heldSecs;
-        if (dt <= 0.f || dt > kMaxFrame) return;  // no time passed, or the game hitched
-
-        Nudge(ref.get(), code, dt * RateOf(heldSecs - kRepeatDelay));
+        if (const float steps = Numpad::StepsFor(code, heldSecs); steps > 0.f)
+            Nudge(ref.get(), code, steps);
     }
 
     bool SelectByRay() {

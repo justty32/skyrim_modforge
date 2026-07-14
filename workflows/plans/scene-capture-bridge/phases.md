@@ -430,3 +430,21 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
 - `Palette::PlaceSlot` **每一筆**都進 `Placed()` 登記簿（以前只有帶 rider〔`py0`／`ed1`〕的才進，因為「反正 dynamic 就是玩家的」——正是這個假設錯了）。co-save 照舊，跨存檔用既有的 base+position 救回機制。
 - 匯出器加一道 **ownership gate**：dynamic ref **沒有登記簿列就不匯出**（計數 `notOurs`，log 印出來）。**魚拿不到登記簿列，所以魚上不了船。**
 - 明示的回頭路：面板 Palette 頁一顆 **`adopt dynamic refs in this cell`**——console `placeatme` 生的、或登記簿制之前擺的東西，**明講**要收編才收編（跟 Eraser 的 adopt 同一個哲學：**明示優於推導**，plan 裁決表原本就這麼寫）。按鈕**不挑食**：魚站在那它就收魚——所以面板會警告。
+
+## ✅ 已做（**ghost ＝ place 模式的擺放游標**——使用者重設計，2026-07-14，DLL `1f21dc68`，**已部署待實機**）
+
+**使用者的話**（這句把整個東西講清楚了）：「我發現 **browser 本質上是 `sc pl` 的一個附屬品**。當你在 browser 頁面點選 preview，你就會自動切換到 `sc pl` 模式，並且 `sc pl gh1` 會暫時打開。`sc pl` 模式下可以 preview ghost，還可以用 numpad 調整角度和大小（不能位移）。」
+
+**收成一條不變式**（`Preview.h` 開頭）：
+
+> **ghost 存在 ⟺ `mode == place` ∧ `gh1` ∧ 有東西被選中**
+
+於是 Browser **不再擁有自己的預覽**——點一筆＝「把 place 模式指向這個東西」（切模式 ＋ 暫時開 `gh1` ＋ 釘住這一筆）。離開 place 模式 ghost 就消失。**只有一顆 ghost、永遠只代表一件事（「按鍵會放下去的就是它」）、沒有東西能互相衝突。**
+
+- **`sc pl gh0/gh1`**（預設 **on**，co-save SETT **v8**）。`gh1`＝place 模式顯示 ghost；`gh0`＝退回歷史行為（按鍵才生東西、事前看不到）。
+- **來源**：預設跟著 **palette 選中的 slot**（換選擇 → ghost 跟著換）；Browser 釘住的目錄項優先，直到你動了 palette 選擇。
+- **numpad（跟 `sc ed ax` 同一套手感）**：4/6 yaw、1/3 pitch、7/9 roll、**2/5/8 還原該軸**、**+/- 縮放**、**0 ＝ 回真實大小**、**. ＝ 收掉 ghost**。**位移沒有鍵——瞄準就是定位。**
+- **自動縮放**：新 ghost 依 **OBND** ＋ 預覽距離算出縮放，讓它約佔**螢幕九分之一**（每邊 1/3）。**只縮不放**（小東西維持原尺寸；偷偷放大等於謊報你要擺的東西）。numpad 0 一鍵回 1.0。
+- **共用而非複製**：numpad 的 scancode ＋ 長按加速時鐘抽成 **`Numpad.h/.cpp`**（Editor 與 Preview 共用；步長仍由 Editor 的 Settings 擁有）。**兩份重複的重複時鐘會長得一模一樣一星期，然後偷偷漂開**——而「tap 與 hold 不可能各自漂移」正是編輯器 numpad 當初的設計核心。
+
+**兩個自己抓到的順序陷阱（都在寫的時候修掉，沒進實機）**：① `Spawn()` 換掉舊 ghost 時若呼叫 `Clear()`，會把 Browser 剛借走的 `gh1` **還回去**⇒ 不變式下一幀判定「不該有 ghost」⇒ 剛生的馬上被殺。拆成 `Vanish()`（只把 ghost 拿出世界）與 `Clear()`（使用者收工，才歸還 `gh`）。② 釘住目錄項後，`Update()` 會發現「palette 選擇 ≠ ghost 顯示的東西」而**熱心地換掉你剛選的**⇒ 釘住時一併記下當下的 palette 選擇，**只有「改變」才觸發換手**。

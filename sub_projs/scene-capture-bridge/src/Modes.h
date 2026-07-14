@@ -108,6 +108,16 @@ namespace Modes {
     [[nodiscard]] bool ExtraData(Mode m);
     void SetExtraData(Mode m, bool on);
 
+    // GHOST PREVIEW — `sc pl gh0/gh1`, kPlace only, DEFAULT ON (SETT v8).
+    //
+    // On, place mode shows you what it is about to place: the selected palette slot
+    // (or the entry the Browser pinned) stands at your aim point, and the action key
+    // drops a real copy of exactly that. Off, place mode is what it always was —
+    // the selected slot appears at the aim point when you press the key, unseen
+    // until then. See Preview.h for the invariant this flag is half of.
+    [[nodiscard]] bool Ghost(Mode m);
+    void SetGhost(Mode m, bool on);
+
     // Feed a key-down. Returns true when it matched the current mode's binding
     // and ran the mode's action (debounced).
     bool HandleKey(std::uint32_t scancode);

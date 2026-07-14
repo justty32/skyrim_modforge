@@ -77,9 +77,23 @@
 
 **但那次匯出抓到一隻真 bug（見下一節）**：10 筆 placements 裡只有 1 筆是你放的，其餘是**引擎自己生的**魚（釣魚 CC）和 6 顆 `DoNotPlaceSmallCritterLandingMarkerHelper`（蝴蝶降落 marker）。已改成**登記簿制**，**待重測**。
 
-## scene-capture-bridge — 🐞 匯出改「登記簿制」：只匯出我們真的放過的（2026-07-14，**待部署**）
+## scene-capture-bridge — 🆕 ghost ＝ place 模式的擺放游標（重設計，2026-07-14，**已部署** DLL `1f21dc68`）
 
-**為什麼**：匯出器以前的判準是「dynamic ref ＝ 玩家放的」——但**引擎自己也 PlaceAtMe**（魚、蝴蝶、critter marker），生出來的 ref 跟你放的椅子**沒有任何差別**。所以野外匯出會夾帶一堆你沒放的東西。現在：**只有登記簿裡有的才匯出**（`sc pl`／Browser commit 都會自動登記）。
+⚠️ **已部署**——完全關遊戲再開。**不變式**：**ghost 存在 ⟺ 你在 `sc pl` ＋ `gh1`（預設開）＋ 有東西被選中**。
+
+1. **palette 來源**：`sc pl` → 你 palette 選中的那個 slot **應該直接以 ghost 出現在準心上**。在 Palette 頁換選另一個 slot → **ghost 跟著換**。`sc off`／`sc ed` 等離開 place 模式 → **ghost 消失**。
+2. **`sc pl gh0`** → ghost 消失、行為退回舊的（按鍵才生東西）。**`sc pl gh1`** → 又回來。
+3. **Browser 是附屬品**：Browser 頁點任一筆 → **自動切到 `sc pl`**（面板頂端 Mode 那行要變 place）＋ ghost 出現。此時去 Palette 頁**換一個 slot** → ghost 應**換成那個 slot**（palette 一動就搶回主導權）。
+4. **自動縮放**：預覽一棟房子（`farmhouse`）→ 它**不該塞滿整個螢幕**，應該只佔約**九分之一**（log 會說 `auto-scaled to ~1/9 screen`）。按 **numpad 0** → **回到真實大小**。預覽一個小東西（杯子）→ **不該被放大**，維持原尺寸。
+5. **numpad 調姿態（不能位移）**：4/6 yaw、1/3 pitch、7/9 roll、**+/- 縮放**、**2/5/8 還原該軸**、**. 收掉 ghost**。長按應**連續轉/縮並加速**；**2/5/8/0/. 必須單發不連發**。移動鍵（8/2 位移）在 place 模式**不該移動 ghost**——位置只跟著你的準心。
+6. **擺下去帶著姿態**：轉好角度、縮好大小 → 按動作鍵（F11）→ 生出來的**真物件要跟 ghost 一模一樣**（角度＋大小），且 ghost **留著**可以連放。
+7. **回歸**：`sc ed` 的 numpad（含長按、`sc ed ax`）**必須完全照舊**——這輪把長按時鐘抽成共用模組了，這是主要回歸風險。
+
+**回報**：① 上面哪一條不對；② 自動縮放的「九分之一」體感會不會太小/太大（我調 `kScreenFraction`）；③ numpad 轉/縮的步長順不順手（Settings 頁可調）。
+
+## scene-capture-bridge — 🐞 匯出改「登記簿制」：只匯出我們真的放過的（2026-07-14，**已部署** DLL `1f21dc68`）
+
+⚠️ **已部署**（同一顆 DLL）。**為什麼**：匯出器以前的判準是「dynamic ref ＝ 玩家放的」——但**引擎自己也 PlaceAtMe**（魚、蝴蝶、critter marker），生出來的 ref 跟你放的椅子**沒有任何差別**。所以野外匯出會夾帶一堆你沒放的東西。現在：**只有登記簿裡有的才匯出**（`sc pl`／Browser commit 都會自動登記）。
 
 1. **野外重測**（就在你上次那個地方）：擺 1～2 個東西 → 匯出 → **`scene.json` 應該剛好只有你放的那幾筆**，沒有魚、沒有 `0x0C2D47`。log 那行會多印 **`N dynamic refs not ours (engine-spawned…)`**，N 應該就是被擋掉的魚/蝴蝶數。
 2. **回歸——舊的東西還在不在**：`sc pk` 滴管 → `sc pl` 擺 → 匯出，照樣要出現；`sc pl py0`（noHavokSettle）與 `ed1`（附魔鑄造）也要照舊。
