@@ -8,7 +8,9 @@
 #include "SceneExporter.h"
 #include "log.h"
 
+#include <algorithm>
 #include <cmath>
+#include <unordered_map>
 
 namespace {
     constexpr float kRadToDeg = 57.2957795f;
@@ -83,6 +85,88 @@ namespace {
         ref->SetAngle(angle);
         ref->Update3DPosition(true);  // SetPosition alone can leave the visual behind
     }
+
+    // ---- the nudge keys (the only ones long-press repeats) -----------------
+
+    // A NUDGE is a continuous change — position, rotation or scale. Everything
+    // else edit mode does (commit, cancel, select, the per-axis reverts) is a
+    // discrete act and must fire once per press, never per frame.
+    bool IsNudgeKey(std::uint32_t code) {
+        switch (code) {
+        case kLeft: case kRight: case kDown: case kUp:
+        case kYawNeg: case kYawPos: case kScaleUp: case kScaleDn:
+            return true;
+        case kFwd: case kBack:
+            // 8/2 MOVE in move mode — but in rotate mode they REVERT an axis,
+            // which is a discrete act. Same scancode, different nature.
+            return !g_rotateMode;
+        default:
+            return false;
+        }
+    }
+
+    // Apply `steps` of whatever `code` means right now. steps is a FLOAT: a tap
+    // passes 1.0 (the Settings step, unchanged), a held key passes a fraction
+    // per frame. One body serves both, so tap and hold can never drift apart.
+    void Nudge(RE::TESObjectREFR* ref, std::uint32_t code, float steps) {
+        RE::NiPoint3 pos = ref->GetPosition();
+        RE::NiPoint3 angle = ref->data.angle;
+        // Player-relative horizontal axes: 8 pushes away from the player.
+        const float yaw = RE::PlayerCharacter::GetSingleton()->data.angle.z;
+        const RE::NiPoint3 fwd{std::sin(yaw), std::cos(yaw), 0.f};
+        const RE::NiPoint3 right{std::cos(yaw), -std::sin(yaw), 0.f};
+        const float move = g_moveStep * steps;
+        const float rot = g_yawStep * steps * kDegToRad;
+
+        switch (code) {
+        // 7/9 rotate roll(Y) in rotate mode, yaw(Z) in move mode.
+        case kYawPos: (g_rotateMode ? angle.y : angle.z) += rot; break;
+        case kYawNeg: (g_rotateMode ? angle.y : angle.z) -= rot; break;
+        // 4/6 and 1/3: rotate (yaw / pitch) in rotate mode, move in move mode.
+        case kLeft:  if (g_rotateMode) angle.z -= rot; else pos = pos - right * move; break;
+        case kRight: if (g_rotateMode) angle.z += rot; else pos = pos + right * move; break;
+        case kDown:  if (g_rotateMode) angle.x -= rot; else pos.z -= move; break;
+        case kUp:    if (g_rotateMode) angle.x += rot; else pos.z += move; break;
+        // Rotate mode never reaches these two (IsNudgeKey excludes them, and
+        // HandleKey handles the revert before it gets here).
+        case kFwd:  pos = pos + fwd * move; break;
+        case kBack: pos = pos - fwd * move; break;
+        case kScaleUp:
+        case kScaleDn: {
+            if (g.isActor) return;  // XSCL is dead on ACHR
+            const float d = g_scaleStep * steps * (code == kScaleUp ? 1.f : -1.f);
+            // Clamped: a tap could never reach zero, but a long press crosses it
+            // in a second — and a zero/negative scale is a broken, invisible object.
+            ref->SetScale(std::clamp(ref->GetScale() + d, 0.05f, 10.f));
+            ref->Update3DPosition(true);
+            return;
+        }
+        default: return;
+        }
+        Apply(ref, pos, angle);
+    }
+
+    // ---- long-press repeat -------------------------------------------------
+
+    // Held for less than this = still just a tap (one step, from the key going
+    // down). Without the dead zone every normal press would drift a little.
+    constexpr float kRepeatDelay = 0.35f;
+    // A frame this long means the game was paused / loading / hitching: the
+    // engine's held counter kept running but no one was watching. Applying that
+    // gap as one lump would teleport the object across the room.
+    constexpr float kMaxFrame = 0.25f;
+
+    // Steps per second while held, ramping up: slow enough at first to place a
+    // thing precisely, fast enough after a moment to shove it across the room.
+    float RateOf(float heldPastDelay) {
+        constexpr float kSlow = 8.f, kFast = 40.f, kRampSecs = 1.5f;
+        const float t = std::min(heldPastDelay / kRampSecs, 1.f);
+        return kSlow + (kFast - kSlow) * t;
+    }
+
+    // Where each held key's counter was last frame — the difference IS the frame
+    // delta, so we never have to ask the engine for one.
+    std::unordered_map<std::uint32_t, float> g_heldAt;
 
     // byRay = the explicit physics-ray entry (panel button / numpad *) for
     // trees and non-activatable statics. NEVER an automatic fallback of the
@@ -166,10 +250,6 @@ namespace Editor {
 
         RE::NiPoint3 pos = ref->GetPosition();
         RE::NiPoint3 angle = ref->data.angle;
-        // Player-relative horizontal axes: 8 pushes away from the player.
-        const float yaw = RE::PlayerCharacter::GetSingleton()->data.angle.z;
-        const RE::NiPoint3 fwd{std::sin(yaw), std::cos(yaw), 0.f};
-        const RE::NiPoint3 right{std::cos(yaw), -std::sin(yaw), 0.f};
 
         switch (code) {
         case kSelect:  // numpad 5 — mode-scoped revert, KEEP editing
@@ -211,34 +291,11 @@ namespace Editor {
             RE::DebugNotification("SCB: edit cancelled");
             Cancel();
             return true;
-        // 7/9 rotate roll(Y) in rotate mode, yaw(Z) in move mode.
-        case kYawPos:
-        case kYawNeg: {
-            const float d = (code == kYawPos ? 1.f : -1.f) * g_yawStep * kDegToRad;
-            (g_rotateMode ? angle.y : angle.z) += d;
-            Apply(ref.get(), pos, angle);
-            return true;
-        }
-        // 4/6 and 1/3: rotate (yaw / pitch) in rotate mode, move in move mode.
-        case kLeft:
-            if (g_rotateMode) angle.z -= g_yawStep * kDegToRad;
-            else pos = pos - right * g_moveStep;
-            Apply(ref.get(), pos, angle); return true;
-        case kRight:
-            if (g_rotateMode) angle.z += g_yawStep * kDegToRad;
-            else pos = pos + right * g_moveStep;
-            Apply(ref.get(), pos, angle); return true;
-        case kDown:  // numpad 1
-            if (g_rotateMode) angle.x -= g_yawStep * kDegToRad;
-            else pos.z -= g_moveStep;
-            Apply(ref.get(), pos, angle); return true;
-        case kUp:    // numpad 3
-            if (g_rotateMode) angle.x += g_yawStep * kDegToRad;
-            else pos.z += g_moveStep;
-            Apply(ref.get(), pos, angle); return true;
         // 8/2: move fwd/back in move mode; PER-AXIS revert in rotate mode —
         // 8 sits between 7/9 (roll), 2 sits between 1/3 (pitch), so each key
-        // undoes only its own pair's rotation, back to the pre-edit value.
+        // undoes only its own pair's rotation, back to the pre-edit value. The
+        // revert is discrete, which is exactly why IsNudgeKey refuses to repeat
+        // 8/2 in rotate mode.
         case kFwd:
             if (g_rotateMode) {
                 angle.y = g.origAngle.y;
@@ -246,7 +303,7 @@ namespace Editor {
                 RE::DebugNotification("SCB: roll reverted");
                 return true;
             }
-            Apply(ref.get(), pos + fwd * g_moveStep, angle); return true;
+            break;
         case kBack:
             if (g_rotateMode) {
                 angle.x = g.origAngle.x;
@@ -254,13 +311,12 @@ namespace Editor {
                 RE::DebugNotification("SCB: pitch reverted");
                 return true;
             }
-            Apply(ref.get(), pos - fwd * g_moveStep, angle); return true;
-        case kScaleUp:
-            if (!g.isActor) { ref->SetScale(ref->GetScale() + g_scaleStep); ref->Update3DPosition(true); }
-            return true;
-        case kScaleDn:
-            if (!g.isActor) { ref->SetScale(ref->GetScale() - g_scaleStep); ref->Update3DPosition(true); }
-            return true;
+            break;
+        // The rest of the nudge keys mean the same thing tapped or held.
+        case kYawPos: case kYawNeg:
+        case kLeft: case kRight: case kDown: case kUp:
+        case kScaleUp: case kScaleDn:
+            break;
         default:
             // Self-diagnosis for numpad DIK constants only. Movement keys
             // (WASD/Alt) land here too while editing and flooded the log
@@ -271,6 +327,34 @@ namespace Editor {
             }
             return true;  // swallow everything while editing
         }
+
+        // A tap is ONE step — the same body the hold path drives, just with a
+        // step count of exactly 1. The repeat clock restarts here so the dead
+        // zone is measured from this press, not from whatever came before.
+        g_heldAt[code] = 0.f;
+        Nudge(ref.get(), code, 1.f);
+        return true;
+    }
+
+    void HandleHold(std::uint32_t code, float heldSecs) {
+        if (!g.active || !IsNudgeKey(code)) return;
+        auto ref = Target();
+        if (!ref) return;
+
+        float& last = g_heldAt[code];
+        if (heldSecs < last) last = 0.f;  // a new press — the engine's clock restarted
+        if (heldSecs < kRepeatDelay) {    // still a tap; HandleKey already moved it once
+            last = heldSecs;
+            return;
+        }
+        // Measure the frame from the END of the dead zone the first time we
+        // cross it, or the delay would be applied as displacement in one lump.
+        const float from = std::max(last, kRepeatDelay);
+        const float dt = heldSecs - from;
+        last = heldSecs;
+        if (dt <= 0.f || dt > kMaxFrame) return;  // no time passed, or the game hitched
+
+        Nudge(ref.get(), code, dt * RateOf(heldSecs - kRepeatDelay));
     }
 
     bool SelectByRay() {

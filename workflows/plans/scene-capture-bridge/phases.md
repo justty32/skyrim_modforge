@@ -348,3 +348,16 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
 
 **③ 匯出＋消費端（使用者拍板 (b)「加欄位、非破壞」）**——`removals[]` 的關鍵設計：**沒有 label/note 的移除仍是一個裸字串**，只有真的寫了東西才變成 `{ref, label?, note?}` 物件。⇒ 一般匯出**與以前逐位元相同**、所有舊 spec 照讀（跟 `requires[]` 同一條「沒話說就塌回簡寫」規則）。`overrides[]`／`capturedItems[]`／`capturedNpcs[]` 各加選配 note。ModForge 端 `RemovalSpec` ＋ converter（字串｜物件聯集，抄 `RequirementConverter`）。
 - **`Requires` 掃描器不用改**：它的分類表 default 是「看起來像 ref 就算硬相依」，所以 `removals[].ref` 天然落在對的一格；筆記文字不像 ref，會被自然忽略。
+
+## ✅ 已做（`sc ed` numpad **長按持續作用**，2026-07-14，DLL `c4460315`，**待實機**）
+
+**訴求**（使用者 2026-07-13）：微調位置/角度時 numpad 按著不放就一直動，不用狂點。
+
+**根因確認**：`plugin.cpp` 的 `if (!btn->IsDown()) continue;`——CommonLibSSE 的 `IsDown()` 定義就是 `IsPressed() && heldDownSecs == 0`，**只有按下的那一幀為真**。引擎其實每一幀都在派送該鍵的 ButtonEvent、`heldDownSecs` 一直累加（`ButtonEvent.h:25-29` 確認 `IsHeld()`／`HeldDuration()` 都在）——**料一直都在，是被那一行丟掉的**。
+
+**做法（採 (b) 連續位移）**：
+- sink 分流：`IsDown` → `Editor::HandleKey` / `Modes::HandleKey`（照舊，單按一步）；`IsHeld` → `Editor::HandleHold`。**只有編輯模式看得到 held 事件**——動作鍵絕不能因為手指多按了一秒就連發 60 次。
+- **只有 nudge 鍵重複**（位移/旋轉/縮放）。`commit`(0)／`cancel`(.)／`select`(5/*)／per-axis revert **維持單發**。⚠️ **8/2 在移動模式是 nudge、在 rotate 模式是 per-axis revert**——同一個 scancode 兩種性質，所以 `IsNudgeKey()` 在 rotate 模式**拒絕**重複 8/2。
+- 手感：**0.35s 死區**（所以單點仍是精準的一步，不會飄）→ 之後 `step × frameDelta × rate`，rate 從 8 steps/s 在 1.5s 內滾升到 40 steps/s。
+- **frameDelta 不用跟引擎要**：兩幀之間 `heldDownSecs` 的差值就是它。`> 0.25s` 的跳躍（暫停/讀取/卡頓）直接丟棄，否則會把整段空窗一次補成位移＝物件瞬移。
+- 重構副產品：一個 `Nudge(ref, code, steps)` 吃 **float 步數**，單點傳 `1.0`、長按每幀傳分數步——**tap 與 hold 走同一條路，不可能各自漂移**。scale 順手 clamp 到 [0.05, 10]（單點永遠碰不到 0，長按一秒就穿過去了，負 scale ＝ 壞掉的隱形物件）。

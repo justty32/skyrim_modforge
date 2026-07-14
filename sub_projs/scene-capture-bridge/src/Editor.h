@@ -27,9 +27,21 @@ namespace Editor {
 
     [[nodiscard]] bool Active();
 
-    // Feed a keyboard scancode (IsDown only). Returns true when consumed —
-    // the caller's own hotkeys must not fire while edit mode is live.
+    // Feed a keyboard scancode (the key going DOWN). Returns true when consumed
+    // — the caller's own hotkeys must not fire while edit mode is live. One
+    // press = exactly one step, as it always did.
     bool HandleKey(std::uint32_t scancode);
+
+    // Feed a key that is being HELD (heldSecs = the engine's running count).
+    // After a short dead zone the nudge keys start moving the target
+    // continuously, so "push it into place" stops being a drumming exercise.
+    //
+    // ONLY the nudge keys (move / rotate / scale) repeat. commit, cancel,
+    // select and the per-axis reverts stay strictly single-shot — a commit
+    // firing every frame while your finger rests on numpad 0 would be a
+    // catastrophe, and that asymmetry is the whole reason this is a separate
+    // entry point rather than "call HandleKey again".
+    void HandleHold(std::uint32_t scancode, float heldSecs);
 
     // Explicit physics-ray selection (panel button; numpad * is the key
     // equivalent) — for trees and non-activatable statics the crosshair never

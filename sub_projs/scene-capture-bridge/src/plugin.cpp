@@ -70,10 +70,22 @@ namespace {
                 auto* btn = e->AsButtonEvent();
                 if (!btn) continue;
                 if (btn->GetDevice() != RE::INPUT_DEVICE::kKeyboard) continue;
-                if (!btn->IsDown()) continue;
                 const auto code = btn->GetIDCode();
-                if (Editor::HandleKey(code)) continue;
-                Modes::HandleKey(code);
+
+                // IsDown() is true only on the frame the key goes down, so one
+                // press = one step. That is right for every DISCRETE act (an
+                // action key, a commit) and it stays that way.
+                if (btn->IsDown()) {
+                    if (Editor::HandleKey(code)) continue;
+                    Modes::HandleKey(code);
+                    continue;
+                }
+                // ...but the engine re-dispatches the event every frame the key
+                // stays down (heldDownSecs climbing), and edit mode's nudge keys
+                // want exactly that: hold numpad 8 and the thing keeps moving.
+                // Only edit mode sees held keys — an action key must never fire
+                // 60 times because a finger lingered.
+                if (btn->IsHeld()) Editor::HandleHold(code, btn->HeldDuration());
             }
             return RE::BSEventNotifyControl::kContinue;
         }

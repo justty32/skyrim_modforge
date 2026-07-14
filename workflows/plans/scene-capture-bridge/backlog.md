@@ -18,18 +18,6 @@
 
 ## 仍未做
 
-### ⌨️ `sc ed`（含 `sc ed ax`）的 numpad 要能「長按持續作用」（使用者 2026-07-13 提，**明天做**）
-
-**訴求**：微調位置/角度時，numpad 方向鍵**按著不放就一直動**，不用狂點。
-
-**為什麼現在不會**（已查）：`plugin.cpp:73` 是 `if (!btn->IsDown()) continue;`——CommonLibSSE 的 **`IsDown()` 只有「按下的那一幀」為真**（`IsPressed() && heldDownSecs == 0`），所以一次按壓＝一步。引擎其實**每一幀都會派送**該按鍵的 ButtonEvent（`heldDownSecs` 持續累加），料都在，只是被這行擋掉了。
-
-**做法**：`Editor::HandleKey` 那條路改吃 `IsHeld()`/`HeldDuration()`：
-- **只有「移動/旋轉」鍵**（numpad 8/2/4/6 ＋ 上下 ＋ `ax` 模式的旋轉鍵）走長按重複；
-- **`commit`（numpad 0）／`cancel`（numpad .）／`select`（numpad 5 / *）必須維持單發**——長按重複會變成災難（連續 commit）。
-- 兩種手感二選一（傾向後者）：(a) **鍵盤式重複**（延遲 ~0.35s 後每 ~0.05s 一步）；(b) **連續位移**（`step × frameDelta × rate`，長按越久越快／或加速段），(b) 對「推到定位」比較順。
-- 動作鍵（`Modes::HandleKey`，F11 那組）**不受影響**，維持單發。
-
 - **ModForge 端要不要過濾玩家的「管線 perk」（2026-07-13，接在拍板 (b) 之後）**：橋端已改成**全收**（base 12 顆 ＋ addedPerks，去重取高 rank，DLL `e19ad4ca`）——依使用者拍板「完全複製優先，到時候讓 modforge 處理」。所以**取捨在消費端**：`AllowShoutingPerk`／`VampireFeed`／`AlchemySkillBoosts`／`DBWellFitted` 這些是 vanilla **Player 記錄專用**的管線 perk，鑄到一個 NPC 分身身上多半是死資料（但 `AllowShoutingPerk` 之類若要讓分身用吼聲就需要）。**候選**：(i) 照抄不動（現況）；(ii) build 時印一行 INFO 點名這幾顆；(iii) spec 給個 opt-out。**還沒做，等有實際困擾再動。**
 
 - **`sc cap` 物件類 vs `sc pk` 分工（使用者再想，先照舊）**：`sc cap` 記 NPC/player 含全身物品＋extra data（v7 已落地）；物件類 capture 與 `sc pk` 滴管感覺功能重複，使用者還要想想——**傾向仍記錄**，暫不動。

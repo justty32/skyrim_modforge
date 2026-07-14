@@ -443,6 +443,11 @@ void __stdcall UI::EditorPage::Render() {
                 "numpad: 8/2 fwd/back - 4/6 left/right - 1/3 down/up - 7/9 yaw - "
                 "+/- scale - 5 reset - 0 commit - . cancel  (sc ed ax = rotate mode)");
         }
+        // The rotate/move/scale keys REPEAT while held (and speed up); the
+        // reverts and commit/cancel deliberately do not.
+        ImGuiMCP::TextDisabled(
+            "hold a move/rotate/scale key to keep going (it accelerates); "
+            "revert, commit and cancel are one-per-press");
     }
 
     // Committed edits of AUTHORED refs — these export as overrides[]. Revert
