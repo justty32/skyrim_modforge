@@ -448,3 +448,24 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
 - **共用而非複製**：numpad 的 scancode ＋ 長按加速時鐘抽成 **`Numpad.h/.cpp`**（Editor 與 Preview 共用；步長仍由 Editor 的 Settings 擁有）。**兩份重複的重複時鐘會長得一模一樣一星期，然後偷偷漂開**——而「tap 與 hold 不可能各自漂移」正是編輯器 numpad 當初的設計核心。
 
 **兩個自己抓到的順序陷阱（都在寫的時候修掉，沒進實機）**：① `Spawn()` 換掉舊 ghost 時若呼叫 `Clear()`，會把 Browser 剛借走的 `gh1` **還回去**⇒ 不變式下一幀判定「不該有 ghost」⇒ 剛生的馬上被殺。拆成 `Vanish()`（只把 ghost 拿出世界）與 `Clear()`（使用者收工，才歸還 `gh`）。② 釘住目錄項後，`Update()` 會發現「palette 選擇 ≠ ghost 顯示的東西」而**熱心地換掉你剛選的**⇒ 釘住時一併記下當下的 palette 選擇，**只有「改變」才觸發換手**。
+
+### 🎮 實機（2026-07-14）：「按 F11 沒帶到 ghost 的縮放」——**不是 bug，是 `gh0` 沒人看得見**（面板已修，待部署）
+
+**回報**：「`sc pl` 按 F11，擺出來是原來的大小，不是 ghost 的大小」，隨後補充「browser 選出來的有帶到，palette 拿到的沒帶到」。
+
+**log 直接判了案**：
+```
+22:04:47  ghost 'Skyrim.esm:0x0201F6'  scale=0.05          ← palette 來源的 ghost，小小的
+22:07:16  Modes: place ghost preview -> off (gh0)          ← ghost 被關掉
+22:07:20  Palette: placed ... (aimed)                      ← 沒 ghost ⇒ 走舊路徑 ⇒ slot 自己的大小
+22:09:29  ghost 'Iron Ore Vein' scale=1.00                 ← 也是 palette 來源（Update 偵測到換 slot）
+22:09:36  committed 'Iron Ore Vein' scale=0.55             ← numpad 縮到 0.55，放出來就是 0.55 ✅
+```
+**palette 來源的 ghost（Iron Ore Vein）縮放完全有帶到。** 差別不在來源，在於**那一刻 `gh1` 開著沒有**——使用者先下了 `sc pl gh0`（測試用），後來去 Browser 點一筆時 `PickForPlacing` 又把 `gh1` 打開了，於是「browser 有、palette 沒有」的錯覺就成立了。
+
+**所以 code 沒改**（那個「補 `Update3DPosition`」的修法寫到一半就收回了——`SetScale` 一直是好的）。**改的是可見性**，因為讓使用者誤讀的是設計：`gh0` 之後，面板上完全看不出「place 模式現在不會給你 ghost」。
+- **ModeLine**：place 模式直接印 `[ghost preview: ON/OFF]`，`gh0` 時橘字警告「動作鍵會用 slot 自己的大小、而且你看不到」。
+- **Settings 頁**：ghost 開關做成 checkbox（不必背 console 指令）。
+- **place 的 log**：印出 `scale` 與「為什麼沒有 ghost」（`ghosts OFF (gh0) — slot's own size`）。
+
+**教訓**：一個模式**安靜地做了不同的事**，那是面板的錯，不是玩家的錯。

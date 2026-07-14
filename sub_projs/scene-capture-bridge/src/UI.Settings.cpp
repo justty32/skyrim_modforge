@@ -22,7 +22,23 @@ namespace {
 }
 
 void UI::ModeLine() {
-    ImGuiMCP::Text("Mode: %s", Modes::Name(Modes::Current()));
+    // Place mode wears its ghost state on its face (in-game 2026-07-14). The user
+    // turned ghosts off with `sc pl gh0`, placed something, got it at the slot's own
+    // size instead of the size he had dialled in on a ghost — and reported it as
+    // "the palette doesn't carry scale". It does; there just wasn't a ghost, and
+    // nothing on screen said so. A mode that quietly does a different thing is the
+    // panel's problem, not the player's.
+    if (Modes::Current() == Modes::Mode::kPlace) {
+        const bool gh = Modes::Ghost(Modes::Mode::kPlace);
+        ImGuiMCP::Text("Mode: place   [ghost preview: %s]", gh ? "ON (gh1)" : "OFF (gh0)");
+        if (!gh) {
+            ImGuiMCP::TextColored(ImGuiMCP::ImVec4{1.f, 0.55f, 0.25f, 1.f},
+                "  no ghost: the action key places the selected slot AT ITS OWN SIZE, unseen. "
+                "`sc pl gh1` to see (and pose) what you are placing.");
+        }
+    } else {
+        ImGuiMCP::Text("Mode: %s", Modes::Name(Modes::Current()));
+    }
     ImGuiMCP::Separator();
 }
 
@@ -33,6 +49,14 @@ void __stdcall UI::SettingsPage::Render() {
     for (auto m : kActionModes) {
         ImGuiMCP::SameLine();
         if (ImGuiMCP::Button(Modes::Name(m))) Modes::Set(m);
+    }
+
+    // Ghost preview (`sc pl gh0/gh1`) — a switch you can reach without the console,
+    // and one that is VISIBLE, so "why did it place the wrong size" answers itself.
+    bool ghost = Modes::Ghost(Modes::Mode::kPlace);
+    if (ImGuiMCP::Checkbox("place mode: ghost preview (gh1) — see, rotate and scale "
+            "what you are about to place", &ghost)) {
+        Modes::SetGhost(Modes::Mode::kPlace, ghost);
     }
     ImGuiMCP::TextWrapped(
         "Console: sc mk | del | pk | pl | ed | cap | ref | off — one mode at a time; "

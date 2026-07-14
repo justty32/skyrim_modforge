@@ -362,8 +362,13 @@ namespace Palette {
         // with the same kind of FormID, and they shipped. The row IS the ownership.
         RegisterPlaced(placed.get(), s, physicsOff);
 
-        SKSE::log::info("Palette: placed '{}' ({}) at ({:.1f}, {:.1f}, {:.1f}){}{}",
-            s.name, posOverride ? "ghost" : aimed ? "aimed" : "feet", pos.x, pos.y, pos.z,
+        SKSE::log::info("Palette: placed '{}' ({}, scale {:.2f}) at ({:.1f}, {:.1f}, {:.1f}){}{}",
+            s.name,
+            posOverride ? "ghost"
+                        : Modes::Ghost(Modes::Mode::kPlace)
+                            ? (aimed ? "aimed, no ghost up" : "feet, no ghost up")
+                            : (aimed ? "aimed, ghosts OFF (gh0) — slot's own size" : "feet, gh0"),
+            s.scale, pos.x, pos.y, pos.z,
             physicsOff ? " [physics OFF -> noHavokSettle]" : "",
             carryExtra ? " [extra data -> minted item]" : "");
         return true;   // a plain dynamic ref — the vanilla diff exports it
