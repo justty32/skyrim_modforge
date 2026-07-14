@@ -30,14 +30,50 @@ namespace {
         return x && x->displayName == kSentinel;
     }
 
-    // Right after PlaceObjectAtMe the 3D is not loaded, so the collision layer
-    // cannot be set yet (same one-frame problem Physics::FreezeDeferred solves —
+    // Strip a ghost of ALL collision.
+    //
+    // 🔴 IN-GAME 2026-07-14: `Get3D()->SetCollisionLayer()` IS NOT ENOUGH — the
+    // player reported "the ghost follows my aim but a collision box stays behind
+    // at the spawn point". Two facts, and you need both to see why:
+    //
+    //   1. The rigid bodies hang off CHILD nodes of the 3D, not the root. The
+    //      NiAVObject call only touches the node's own collision object, so the
+    //      nif's actual bhkRigidBodies were never reached — the ghost stayed
+    //      solid.
+    //   2. A havok body DOES NOT FOLLOW SetPosition/Update3DPosition. A STAT's
+    //      body is fixed in the havok world where the ref was first placed, so
+    //      the visual walks off with your aim and the collision stays behind.
+    //      That is the box he walked into.
+    //
+    // So we do what po3's Papyrus Extender / Base Object Swapper do: walk the
+    // whole collision scenegraph and rewrite the LAYER BITS of every body's
+    // collisionFilterInfo. Once every body is kNonCollidable, (2) stops mattering
+    // — a body that collides with nothing can be left wherever it likes.
+    void StripCollision(RE::NiAVObject* obj) {
+        if (!obj) return;
+        RE::BSVisit::TraverseScenegraphCollision(obj,
+            [](RE::bhkNiCollisionObject* col) {
+                auto* body = col ? col->body.get() : nullptr;
+                auto* hkBody = body
+                    ? static_cast<RE::hkpWorldObject*>(body->referencedObject.get())
+                    : nullptr;
+                if (hkBody) {
+                    auto& info = hkBody->collidable.broadPhaseHandle.collisionFilterInfo;
+                    info &= ~0x7Fu;  // the low 7 bits ARE the COL_LAYER
+                    info |= static_cast<std::uint32_t>(RE::COL_LAYER::kNonCollidable);
+                }
+                return RE::BSVisit::BSVisitControl::kContinue;
+            });
+    }
+
+    // Right after PlaceObjectAtMe the 3D is not loaded, so there is nothing to
+    // strip yet (the same one-frame problem Physics::FreezeDeferred solves —
     // this is that pattern, for the other property).
     //
-    // NON-COLLIDABLE is not cosmetic: the aim ray is a physics ray, so a solid
-    // ghost sitting at the aim point would be the thing the ray hits, and the
-    // aim point would walk toward the player a little more every frame. It also
-    // means you can never bump into, shoot, or pick up what is only a preview.
+    // Intangibility is not cosmetic. The aim ray is a physics ray: a solid ghost
+    // at the aim point is the thing the ray hits, and the aim point would creep
+    // toward the player every frame. And a preview you can walk into, shoot, or
+    // trip over is not a preview — it is an object you did not agree to place.
     void MakeGhostlyDeferred(RE::ObjectRefHandle handle, int retries = 60) {
         auto* task = SKSE::GetTaskInterface();
         if (!task) return;
@@ -45,7 +81,7 @@ namespace {
             auto ref = handle.get();
             if (!ref) return;
             if (auto* obj = ref->Get3D()) {
-                obj->SetCollisionLayer(RE::COL_LAYER::kNonCollidable);
+                StripCollision(obj);
                 return;
             }
             if (retries > 0) MakeGhostlyDeferred(handle, retries - 1);

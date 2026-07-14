@@ -388,3 +388,15 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
 同一道閘接進**所有**會抓 ref 的地方（Palette 滴管／Eraser／Editor／Captures／Referrer／SceneExporter），語氣一致：「那是預覽，它不在那裡」。另外兩道清理：**離開 cell 就即刻銷毀 ghost**（Update 每幀比對 parent cell——否則舊 cell 會留一座孤兒山）、**kPostLoadGame 掃掉存檔裡的孤兒 ghost**（`SweepOrphans`，靠哨兵認）。co-save **零改動、零版本 bump**（哨兵在 ref 上，不需要我們存任何東西）。
 
 **ModForge C# 端零改動**——沒有新 spec 欄位，ghost commit 走既有 `placements[]`。
+
+### 🎮 第一輪實機（2026-07-14）：一條 FAIL —— ghost 的碰撞箱留在生成點（已修，DLL `98c24307`，待重測）
+
+**PASS**：目錄建起來、ghost 顯示、跟著準心走、**匯出零外洩（0 筆 ghost 進 scene.json）**、numpad 回歸正常。
+
+**FAIL**：「ghost 跟著我指的地方移動，**但那個碰撞箱留在原地**」。
+
+**根因（兩件事疊起來才看得懂）**：
+1. `Get3D()->SetCollisionLayer()` **只碰得到最上層節點自己的 collision object**——nif 真正的 `bhkRigidBody` 掛在**子節點**上，從來沒被改到。ghost 一直是實心的。
+2. **havok body 不會跟著 `SetPosition`/`Update3DPosition` 走**。STAT 的剛體在 ref 第一次落位時就固定在 havok world 裡了，所以**畫面跟著準心走、碰撞留在原地**——那就是使用者撞到的箱子。
+
+**修法**：照 po3 Papyrus Extender／Base Object Swapper 那套——`BSVisit::TraverseScenegraphCollision` 走遍整棵碰撞 scenegraph，逐一改寫**每顆剛體**的 `collidable.broadPhaseHandle.collisionFilterInfo` **低 7 bits（＝COL_LAYER）** 為 `kNonCollidable`。**每顆 body 都不與任何東西碰撞之後，第 2 點就不再重要**——一顆誰都碰不到的剛體，愛留在哪都行。
