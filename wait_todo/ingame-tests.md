@@ -73,7 +73,7 @@
 
 **回報**：① ini 有沒有自動生成、看不看得懂；② 改鍵 + `reload keys from ini` 有沒有真的生效（含舊鍵失效）；③ 保留鍵（W 之類）有沒有被拒；④ 舊存檔會不會蓋掉 ini；⑤ palette clear 的二次確認 / undo 有沒有照走。
 
-## scene-capture-bridge — 面板欄位一致化（bound field 重構 ＋ 六頁 label／note，2026-07-14，**已部署** DLL `fd852620`）
+## scene-capture-bridge — 面板欄位一致化（bound field 重構 ＋ 六頁 label／note，2026-07-14，**已部署** DLL `c4460315`）
 
 ⚠️ **已部署**——**完全關閉遊戲再開**才吃得到新 DLL。co-save 升版（`'ERSR'` v3／`'OVRD'` v2／`'SCCP'` v10）：**舊存檔讀得進來**（新欄位＝空字串），但**新存檔存的東西舊 DLL 讀不到**——這是單向的，正常。
 
