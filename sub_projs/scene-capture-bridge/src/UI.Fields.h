@@ -16,8 +16,14 @@
 //           that very field. On every other frame it is re-seeded from the entry
 //           — so a page is structurally incapable of showing a value the
 //           registry does not hold.
-//   RULE 2  it commits on Enter AND on deactivate-after-edit (clicking away,
-//           tabbing out) — i.e. every way of leaving a field you changed.
+//   RULE 2  it commits on EVERY way of leaving a field you changed: Enter, a
+//           deactivate-after-edit that ImGui reports (clicking away, tabbing
+//           out), AND the one nobody reports — the row simply stopping being
+//           DRAWN mid-edit (you switched page, closed the panel, or a filter hid
+//           the row). ImGui drops its ActiveId in NewFrame when an active item
+//           is not submitted, and never runs the widget's flush, so that edge
+//           reaches no one; a naive implementation re-seeds the buffer next time
+//           the row appears and the typing is gone without trace. See BoundText.
 //
 // Rule 1 rests on an ImGui invariant: there is exactly ONE active item at a
 // time, so "the field being typed in" is a single id, never a set. It also

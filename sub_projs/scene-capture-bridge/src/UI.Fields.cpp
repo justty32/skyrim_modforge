@@ -40,14 +40,6 @@ namespace {
         return buf.data();
     }
 
-    // RULE 2 — Enter, or leaving a field you changed. Called straight after the
-    // widget, so the IsItem* queries still refer to it. Also refreshes which
-    // field is active, which is what licenses the re-seed above.
-    bool Committed(std::uint64_t key, bool enterPressed) {
-        if (ImGuiMCP::IsItemActive()) g_active = key;
-        else if (g_active == key) g_active = 0;
-        return enterPressed || ImGuiMCP::IsItemDeactivatedAfterEdit();
-    }
 }
 
 namespace UI {
@@ -55,11 +47,33 @@ namespace UI {
     bool BoundText(const char* slot, std::uint64_t row, const std::string& value,
                    std::size_t cap, float width, std::string& out) {
         const auto key = KeyOf(slot, row);
-        char* buf = Buffer(key, value, cap);
+        const bool wasActive = (key == g_active);
+        char* buf = Buffer(key, value, cap);  // reseeds unless this is the active field
+
         ImGuiMCP::SetNextItemWidth(width);
         const bool enter = ImGuiMCP::InputText(slot, buf, cap,
             ImGuiMCP::ImGuiInputTextFlags_EnterReturnsTrue);
-        if (!Committed(key, enter)) return false;
+        const bool active = ImGuiMCP::IsItemActive();
+
+        // RULE 2 — every way of leaving a field you changed.
+        //   (1) Enter.
+        //   (2) ImGui saw the deactivation: you clicked another widget, tabbed out.
+        //   (3) NOBODY saw the deactivation — because the row was not DRAWN for a
+        //       frame (you switched panel page, closed the panel, or the `this cell
+        //       only` filter hid the row). ImGui clears its ActiveId in NewFrame when
+        //       an active item is not submitted, without running the widget's flush,
+        //       so that edge is reported to no one and IsItemDeactivatedAfterEdit()
+        //       never fires. We would then re-seed the buffer and the typing would
+        //       vanish without trace. So: if we were the active field, are not any
+        //       more, and the buffer still disagrees with the entry — that IS the
+        //       user leaving a field they changed. Honour it.
+        const bool lostTheEdge = wasActive && !active && value != buf;
+        const bool commit = enter || ImGuiMCP::IsItemDeactivatedAfterEdit() || lostTheEdge;
+
+        if (active) g_active = key;
+        else if (g_active == key) g_active = 0;
+
+        if (!commit) return false;
         out = buf;
         return true;
     }
