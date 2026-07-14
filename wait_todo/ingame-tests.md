@@ -77,7 +77,7 @@
 
 **但那次匯出抓到一隻真 bug（見下一節）**：10 筆 placements 裡只有 1 筆是你放的，其餘是**引擎自己生的**魚（釣魚 CC）和 6 顆 `DoNotPlaceSmallCritterLandingMarkerHelper`（蝴蝶降落 marker）。已改成**登記簿制**，**待重測**。
 
-## scene-capture-bridge — 🆕 ghost ＝ place 模式的擺放游標（重設計，2026-07-14，**已部署** DLL `1f21dc68`）
+## scene-capture-bridge — 🆕 ghost ＝ place 模式的擺放游標（重設計，2026-07-14，**已部署** DLL `c07dd174`）
 
 ⚠️ **已部署**——完全關遊戲再開。**不變式**：**ghost 存在 ⟺ 你在 `sc pl` ＋ `gh1`（預設開）＋ 有東西被選中**。
 
@@ -89,9 +89,14 @@
 6. **擺下去帶著姿態**：轉好角度、縮好大小 → 按動作鍵（F11）→ 生出來的**真物件要跟 ghost 一模一樣**（角度＋大小），且 ghost **留著**可以連放。
 7. **回歸**：`sc ed` 的 numpad（含長按、`sc ed ax`）**必須完全照舊**——這輪把長按時鐘抽成共用模組了，這是主要回歸風險。
 
-**回報**：① 上面哪一條不對；② 自動縮放的「九分之一」體感會不會太小/太大（我調 `kScreenFraction`）；③ numpad 轉/縮的步長順不順手（Settings 頁可調）。
+**🎮 2026-07-14 實機：1–6 使用者回報「除此之外都很 ok」**（自動縮放、numpad 轉/縮、browser→place、擺放帶姿態皆過）。**剩下要看的**：
+- **7（回歸）**：`sc ed` 的 numpad（含長按、`sc ed ax`）**照舊沒壞**——長按時鐘抽成共用模組了，這是主要回歸風險。
+- **🆕 `gh0` 現在看得見**（上一輪的誤讀源頭）：`sc pl gh0` → 面板 Mode 那行應變成 **`Mode: place [ghost preview: OFF (gh0)]`** ＋ 一行橘字警告「動作鍵會用 slot 自己的大小、而且你看不到」。Settings 頁也多一個 ghost checkbox（勾/取消應與 `sc pl gh1/gh0` 等效）。
+- **登記簿制**（同顆 DLL，還沒驗）：野外擺一兩個 → 匯出 → `scene.json` **剛好只有你放的**，log 多一行 `N dynamic refs not ours (engine-spawned…)`。
 
-## scene-capture-bridge — 🐞 匯出改「登記簿制」：只匯出我們真的放過的（2026-07-14，**已部署** DLL `1f21dc68`）
+**回報**：① 上面三條；② 自動縮放的「九分之一」體感會不會太小/太大（我調 `kScreenFraction`）；③ numpad 轉/縮的步長順不順手（Settings 頁可調）。
+
+## scene-capture-bridge — 🐞 匯出改「登記簿制」：只匯出我們真的放過的（2026-07-14，**已部署** DLL `c07dd174`）
 
 ⚠️ **已部署**（同一顆 DLL）。**為什麼**：匯出器以前的判準是「dynamic ref ＝ 玩家放的」——但**引擎自己也 PlaceAtMe**（魚、蝴蝶、critter marker），生出來的 ref 跟你放的椅子**沒有任何差別**。所以野外匯出會夾帶一堆你沒放的東西。現在：**只有登記簿裡有的才匯出**（`sc pl`／Browser commit 都會自動登記）。
 
