@@ -7,21 +7,20 @@
 
 #include "Markers.h"
 #include "SceneExporter.h"
+#include "UI.Fields.h"
 #include "log.h"
 
 #include "SKSEMenuFramework.h"
 
 #include <cstdio>
-#include <unordered_map>
+#include <string>
 
 namespace {
-    // Per-row edit buffers, keyed by marker seq. Initialised from the entry
-    // once; afterwards the buffer is the user's in-progress edit.
-    struct RowBufs {
-        char label[64];
-        char kind[24];
-    };
-    std::unordered_map<std::uint32_t, RowBufs> g_rows;
+    // Row fields are bound to the registry (UI.Fields) — no per-row buffers and
+    // no invalidation: a row that is renamed, refused or deleted re-seeds itself.
+    constexpr const char* kLabel = "##mk.label";
+    constexpr const char* kKind = "##mk.kind";
+
     bool g_thisCellOnly = false;
 
     // ---- marker-edit window state ----
@@ -66,17 +65,18 @@ void __stdcall UI::MarkerEditor::Render() {
         // after a full game restart recovers the label, not the note.
         ImGuiMCP::InputTextMultiline("note", g_note, sizeof(g_note), {380.f, 80.f});
 
+        // The page's rows mirror the registry every frame (UI.Fields RULE 1), so
+        // a save here needs no cache-busting: the row shows the new label next
+        // frame on its own. Same for a delete.
         if (ImGuiMCP::Button("save")) {
             ::Markers::Rename(e->seq, g_label);
             ::Markers::SetKind(e->seq, g_kind);
             ::Markers::SetNote(e->seq, g_note);
-            g_rows.erase(e->seq);  // page row re-reads the entry next frame
             open = false;
         }
         ImGuiMCP::SameLine();
         if (ImGuiMCP::Button("delete marker")) {
             ::Markers::Remove(e->seq);  // true deletion — gem + registry entry
-            g_rows.erase(g_editSeq);
             open = false;
         }
         ImGuiMCP::SameLine();
@@ -110,30 +110,23 @@ void __stdcall UI::MarkersPage::Render() {
         if (g_thisCellOnly && e.cellOrWs != here) continue;
         ImGuiMCP::PushID(reinterpret_cast<const void*>(static_cast<std::uintptr_t>(e.seq)));
 
-        auto [row, inserted] = g_rows.try_emplace(e.seq);
-        if (inserted) {
-            std::snprintf(row->second.label, sizeof(row->second.label), "%s", e.label.c_str());
-            std::snprintf(row->second.kind, sizeof(row->second.kind), "%s", e.kind.c_str());
-        }
-        auto& b = row->second;
+        std::string edit;
 
         ImGuiMCP::Text("#%u", e.seq);
         ImGuiMCP::SameLine();
-        ImGuiMCP::SetNextItemWidth(180.f);
-        if (ImGuiMCP::InputText("##label", b.label, sizeof(b.label),
-                ImGuiMCP::ImGuiInputTextFlags_EnterReturnsTrue)) {
-            ::Markers::Rename(e.seq, b.label);
+        if (UI::BoundText(kLabel, e.seq, e.label, 64, 180.f, edit)) {
+            ::Markers::Rename(e.seq, edit);
         }
         ImGuiMCP::SameLine();
-        ImGuiMCP::SetNextItemWidth(90.f);
-        if (ImGuiMCP::InputText("##kind", b.kind, sizeof(b.kind),
-                ImGuiMCP::ImGuiInputTextFlags_EnterReturnsTrue)) {
-            ::Markers::SetKind(e.seq, b.kind);
+        if (UI::BoundText(kKind, e.seq, e.kind, 24, 90.f, edit)) {
+            ::Markers::SetKind(e.seq, edit);
         }
         ImGuiMCP::SameLine();
+        // Redundant now that clicking away commits, but kept as the affordance
+        // people reach for — it commits what the fields are SHOWING.
         if (ImGuiMCP::Button("apply")) {
-            ::Markers::Rename(e.seq, b.label);
-            ::Markers::SetKind(e.seq, b.kind);
+            ::Markers::Rename(e.seq, UI::Shown(kLabel, e.seq));
+            ::Markers::SetKind(e.seq, UI::Shown(kKind, e.seq));
         }
         ImGuiMCP::SameLine();
         if (ImGuiMCP::Button("edit")) {
@@ -152,8 +145,5 @@ void __stdcall UI::MarkersPage::Render() {
 
         ImGuiMCP::PopID();
     }
-    if (removeSeq != 0) {
-        ::Markers::Remove(removeSeq);
-        g_rows.erase(removeSeq);
-    }
+    if (removeSeq != 0) ::Markers::Remove(removeSeq);
 }

@@ -12,25 +12,26 @@
 
 #include "Referrer.h"
 #include "SceneExporter.h"
+#include "UI.Fields.h"
 
 #include "SKSEMenuFramework.h"
 
-#include <cstdio>
 #include <string>
 #include <unordered_map>
 
 namespace {
-    struct RowBufs {
-        char label[64];
-        char note[256];
-        bool clash = false;  // last rename attempt hit a duplicate label
-    };
-    std::unordered_map<std::uint32_t, RowBufs> g_rows;
+    constexpr const char* kLabel = "##ref.label";
+    constexpr const char* kNote = "##ref.note";
+
+    // Whether this row's last rename was REFUSED (duplicate label). Page state,
+    // not field state: the field re-seeds from the registry (UI.Fields RULE 1),
+    // so a refused label visibly snaps back to the stored one on its own — this
+    // flag is only here to say WHY it did.
+    std::unordered_map<std::uint32_t, bool> g_clash;
     bool g_thisCellOnly = false;
 
-    void Apply(const Referrer::Entry& e, RowBufs& b) {
-        b.clash = !::Referrer::Rename(e.seq, b.label);
-        ::Referrer::SetNote(e.seq, b.note);
+    void Rename(const Referrer::Entry& e, const std::string& label) {
+        g_clash[e.seq] = !::Referrer::Rename(e.seq, label);
     }
 }
 
@@ -65,34 +66,27 @@ void __stdcall UI::ReferencesPage::Render() {
         if (g_thisCellOnly && e.cellOrWs != here) continue;
         ImGuiMCP::PushID(reinterpret_cast<const void*>(static_cast<std::uintptr_t>(e.seq)));
 
-        auto [row, inserted] = g_rows.try_emplace(e.seq);
-        if (inserted) {
-            std::snprintf(row->second.label, sizeof(row->second.label), "%s", e.label.c_str());
-            std::snprintf(row->second.note, sizeof(row->second.note), "%s", e.note.c_str());
-        }
-        auto& b = row->second;
+        std::string edit;
 
         ImGuiMCP::Text("#%u", e.seq);
         ImGuiMCP::SameLine();
-        ImGuiMCP::SetNextItemWidth(180.f);
-        if (ImGuiMCP::InputText("##label", b.label, sizeof(b.label),
-                ImGuiMCP::ImGuiInputTextFlags_EnterReturnsTrue)) {
-            Apply(e, b);
-        }
+        if (UI::BoundText(kLabel, e.seq, e.label, 64, 180.f, edit)) Rename(e, edit);
         ImGuiMCP::SameLine();
-        ImGuiMCP::SetNextItemWidth(220.f);
-        if (ImGuiMCP::InputText("##note", b.note, sizeof(b.note),
-                ImGuiMCP::ImGuiInputTextFlags_EnterReturnsTrue)) {
-            Apply(e, b);
-        }
+        if (UI::BoundText(kNote, e.seq, e.note, 256, 220.f, edit)) ::Referrer::SetNote(e.seq, edit);
         ImGuiMCP::SameLine();
-        if (ImGuiMCP::Button("apply")) Apply(e, b);
+        // Redundant now that clicking away commits, but kept as the affordance
+        // people reach for — it commits what the fields are SHOWING.
+        if (ImGuiMCP::Button("apply")) {
+            Rename(e, UI::Shown(kLabel, e.seq));
+            ::Referrer::SetNote(e.seq, UI::Shown(kNote, e.seq));
+        }
         ImGuiMCP::SameLine();
         if (ImGuiMCP::Button("del")) removeSeq = e.seq;  // registry row only; the world is untouched
 
-        if (b.clash) {
+        if (const auto c = g_clash.find(e.seq); c != g_clash.end() && c->second) {
             ImGuiMCP::TextColored(kWarn,
-                "  label already used by another reference — labels are unique names; not renamed");
+                "  label already used by another reference — labels are unique names; "
+                "not renamed (the field is back to the stored one)");
         }
 
         // What the row actually points at. In-file = one of our own placements (no
@@ -118,6 +112,6 @@ void __stdcall UI::ReferencesPage::Render() {
     }
     if (removeSeq != 0) {
         ::Referrer::Remove(removeSeq);
-        g_rows.erase(removeSeq);
+        g_clash.erase(removeSeq);
     }
 }

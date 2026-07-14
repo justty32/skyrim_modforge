@@ -13,6 +13,7 @@ set(headers ${headers}
     src/Requires.h
     src/SceneExporter.h
     src/UI.h
+    src/UI.Fields.h
     src/Modes.h
     src/KeyIni.h
     src/Console.h

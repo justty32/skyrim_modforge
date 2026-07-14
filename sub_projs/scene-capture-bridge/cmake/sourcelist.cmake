@@ -13,6 +13,7 @@ set(sources ${sources}
     src/Requires.cpp
     src/SceneExporter.cpp
     src/UI.cpp
+    src/UI.Fields.cpp
     src/UI.Markers.cpp
     src/UI.References.cpp
     src/UI.Settings.cpp

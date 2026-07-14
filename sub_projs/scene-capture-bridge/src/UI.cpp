@@ -8,13 +8,12 @@
 #include "Palette.h"
 #include "Requires.h"
 #include "SceneExporter.h"
+#include "UI.Fields.h"
 #include "log.h"
 
 #include "SKSEMenuFramework.h"
 
-#include <array>
-#include <cstdio>
-#include <unordered_map>
+#include <string>
 
 namespace {
     // Resolve the cell the player is standing in, for display. Cheap enough to
@@ -265,7 +264,10 @@ void __stdcall UI::CapturesPage::Render() {
 }
 
 namespace {
-    std::unordered_map<std::size_t, std::array<char, 64>> g_slotBufs;
+    // Slots carry no seq, so palette rows are keyed by INDEX — which is why this
+    // page (alone) has to call UI::ForgetEdits() whenever the list is
+    // restructured under it. See UI.Fields.h.
+    constexpr const char* kSlotName = "##pal.name";
 }
 
 void __stdcall UI::PalettePage::Render() {
@@ -287,11 +289,11 @@ void __stdcall UI::PalettePage::Render() {
     ImGuiMCP::InputText("##palfile", fileName, sizeof(fileName));
     ImGuiMCP::SameLine();
     if (ImGuiMCP::Button("load from file (append)")) {
-        if (fileName[0]) { ::Palette::LoadFromFile(fileName); g_slotBufs.clear(); }
+        if (fileName[0]) { ::Palette::LoadFromFile(fileName); UI::ForgetEdits(); }
     }
     ImGuiMCP::SameLine();
     if (ImGuiMCP::Button("replace from file")) {
-        if (fileName[0]) { ::Palette::ReplaceFromFile(fileName); g_slotBufs.clear(); }
+        if (fileName[0]) { ::Palette::ReplaceFromFile(fileName); UI::ForgetEdits(); }
     }
     ImGuiMCP::SameLine();
     if (ImGuiMCP::Button("save to file")) {
@@ -315,7 +317,7 @@ void __stdcall UI::PalettePage::Render() {
         ImGuiMCP::SameLine();
         if (ImGuiMCP::Button("yes, clear")) {
             ::Palette::Clear();
-            g_slotBufs.clear();
+            UI::ForgetEdits();
             confirmClear = false;
         }
         ImGuiMCP::SameLine();
@@ -325,7 +327,7 @@ void __stdcall UI::PalettePage::Render() {
         ImGuiMCP::SameLine();
         if (ImGuiMCP::Button("undo clear")) {
             ::Palette::UndoClear();
-            g_slotBufs.clear();
+            UI::ForgetEdits();
         }
         ImGuiMCP::SameLine();
         ImGuiMCP::TextDisabled("(%zu slot(s) recoverable until you quit)", undoable);
@@ -343,14 +345,11 @@ void __stdcall UI::PalettePage::Render() {
         if (ImGuiMCP::Button(selected ? "[use]" : " use ")) ::Palette::Select(i);
         ImGuiMCP::SameLine();
 
-        // The name is freely editable (Bed -> GoodBed); Enter commits + saves.
-        auto [it, inserted] = g_slotBufs.try_emplace(i);
-        if (inserted) std::snprintf(it->second.data(), it->second.size(), "%s", s.name.c_str());
-        ImGuiMCP::SetNextItemWidth(260.f);
-        if (ImGuiMCP::InputText("##slotname", it->second.data(), it->second.size(),
-                ImGuiMCP::ImGuiInputTextFlags_EnterReturnsTrue)) {
-            ::Palette::Rename(i, it->second.data());
-        }
+        // The name is freely editable (Bed -> GoodBed). Enter OR clicking away
+        // commits, and Rename persists scene-capture-palette.json on the spot —
+        // so the name you can see is the name on disk.
+        std::string edit;
+        if (UI::BoundText(kSlotName, i, s.name, 64, 260.f, edit)) ::Palette::Rename(i, edit);
         ImGuiMCP::SameLine();
         if (!s.base) {
             // The slot's plugin left the load order — kept, but F7 refuses it.
@@ -367,7 +366,7 @@ void __stdcall UI::PalettePage::Render() {
     }
     if (removeIdx != SIZE_MAX) {
         ::Palette::Remove(removeIdx);
-        g_slotBufs.clear();  // indices shifted — rebuild lazily next frame
+        UI::ForgetEdits();  // indices shifted — an in-flight edit would land on another slot
     }
 }
 
