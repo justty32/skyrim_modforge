@@ -52,49 +52,18 @@
   - **⚠ 白天測**:vendor 8-20 營業(GetOffersServicesNow 含時間),夜間交易會空——快旅後若是夜晚,`set timescale`/等到白天再試。庫存已放 vanilla 鐵匠 leveled lists(武防+雜貨+金),VendorLocation 錨在店周圍 4096。
   - **回報**:傳送安全否、房子貼地否、Brynja 在否、問候+**交易(有貨有金)**通否。(Brynja 從零建、無 facegen,臉可能陽春/暗臉——能站能講能交易就算過。)
 
-## scene-capture-bridge — 🆕 Browser 目錄 ＋ 世界內 ghost 預覽（2026-07-14，**已部署** DLL `e69978fe`）
+## scene-capture-bridge — ghost ＝ place 模式的擺放游標：**剩兩條**（2026-07-14，**已部署** DLL `c07dd174`）
 
-⚠️ **已部署**——完全關遊戲再開。（此 DLL 同時含上面兩節，三節可以一起測。）
+⚠️ **已部署**——完全關遊戲再開。**不變式**：**ghost 存在 ⟺ `sc pl` ＋ `gh1`（預設開）＋ 有東西被選中**。
 
-**這是什麼**：面板新增 **Browser** 頁＝CK 的 Object Window。以前要擺山脈只能先在世界上找一座來滴管吸；現在直接從 load order 的**全部可擺放物件**裡挑，**預覽就是世界本身**——選中誰，牠就站在你的瞄準點上，真尺寸、真光照。
-（🔴「用物品欄 UI」已查證**不可行**：物品欄只吃可攜帶物品，山脈/樹/家具根本進不了 inventory。）
+**🎮 已 PASS（2026-07-14，使用者「除此之外都很 ok」）**：palette 來源自動出 ghost／換 slot 會跟著換／Browser 點一筆自動切 place 模式並釘住／自動縮到約螢幕 1/9（`numpad 0` 回真實大小）／numpad 轉縮／擺下去帶著角度與大小且 ghost 留著連放。
 
-1. **目錄建起來**：F1 開面板 → **Browser** 頁 → 頂端應顯示「**N placeable base(s)**」（N 應該是**幾萬**）。搜尋框打 `mountain` → 清單應出現一堆 `Landscape\Mountains\*.nif`。
-   - ⚠️ **多數 static 的名字欄是空的（顯示 `—`）＝正常**，不是 bug：STAT 記錄根本沒有名字，**模型路徑就是它的名字**（SSE runtime 也拿不到 EditorID，所以搜尋是搜路徑）。
-2. **ghost 預覽**：點清單任一筆 → 該物件應**立刻出現在你的準心指的地方**。再點下一筆 → **換成新的**（不會兩個都在）。
-   - 關掉面板（F1）→ **ghost 會跟著你的視線走**。`follow my aim` 取消勾 → ghost **停在原地**，你可以走過去繞著看。
-   - 🔴 **重測點（已 FAIL 兩輪）——碰撞要完全消失**。**測法**：ghost 生出來 → 走過去，**應該直接穿過去**；再讓 ghost 跟著視線移開，**回頭走過剛才生成的那個位置**，**也不該有看不見的箱子**擋你。
-   - **不管過沒過，都幫我看一行 log**（`SKSE/SceneCaptureBridge.log`，搜 `Preview:`）：應該出現 **`collision stripped — N rigid body(ies) set kNonCollidable`**。**N 是多少？**（N=0 或出現 `no rigid body ever appeared` ⇒ 我剝的時機還是不對；N>0 卻還是撞得到 ⇒ 改欄位不足以更新 havok broadphase，我就改走「重建 3D 讓引擎自己不掛碰撞」那條）。
-3. **擺下去（真的）**：`sc pl` 進 place 模式 → 按**動作鍵**（F11）→ 應在 **ghost 站的位置**生出一個**真的**物件（ghost **留著**，所以可以連按幾下種一排樹）。面板的 `place here (real)` 鈕同義。
-   - 面板的 **yaw／scale** 拉桿會即時轉/縮 ghost，**擺下去的真物件要帶著同樣的角度與大小**。
-4. **🔴 最重要：ghost 絕不能被匯出**。開著 ghost → 面板 Export 頁匯出 → 看 `SKSE/SceneCaptureBridge.log`，那行 `Export[...]` 應該印 **`N preview ghosts excluded`**（N≥1），而且 **`scene.json` 裡不該有那顆 ghost 的 placement**（只該有你真的擺下去的）。
-5. **🔴 存檔／讀檔不留孤兒**：**開著 ghost 直接存檔** → 讀回那個存檔 → 那顆 ghost 應該**已經被清掉**（不該有一座山杵在那）。log 應印 `Preview: removed N orphan ghost(s) from the loaded save`。
-   - 同理：開著 ghost **走出這個 cell**（進門/出門）→ ghost 應立刻消失（log `Preview: left the cell — ghost cleared`），不該留在舊 cell。
-6. **add to palette**：Browser 選一筆 → `add to palette` → Palette 頁應多一個 slot（名字＝模型檔名，例如 `MountainCliff01`），且 `…/SKSE/scene-capture-palette.json` 會多一筆——**跨存檔留著**。
-7. **回歸**：滴管（`sc pk`）／橡皮擦（`sc del`）／編輯（`sc ed`）**對著 ghost 用應該被拒絕**（log 說「那是預覽，它不在那裡」），而對**真的**物件照常運作。
+**還沒驗的兩條：**
 
-**🎮 2026-07-14 三輪實機結果**：目錄（26949 筆／31 plugin）、ghost 顯示/切換/跟隨、**穿得過去**、離開 cell 自動清、跨存檔清孤兒、**ghost 零外洩（`1 preview ghosts excluded`，真的那株 Ivy01 逐位元對上）**——**全 PASS，Browser 本體結案**。
+1. 🔴 **回歸——`sc ed` 的 numpad 必須完全照舊**：長按連續 ＋ 加速、`sc ed ax` 的 per-axis 還原、**單發鍵不連發**（commit `0`／cancel `.`／select `5`／`*`／動作鍵）。**這輪把長按時鐘抽成共用 `Numpad.h` 給 ghost 一起用，是唯一可能傷到既有功能的地方。**
+2. **`gh0` 現在看得見**（上一輪誤報「F11 沒帶到縮放」的根因——其實是 `gh0`）：`sc pl gh0` → 面板 Mode 那行應變成 **`Mode: place [ghost preview: OFF (gh0)]`** ＋ 一行橘字警告「動作鍵會用 slot 自己的大小、而且你看不到」。Settings 頁多了一個 ghost checkbox，勾/取消要與 `sc pl gh1/gh0` 等效。
 
-**但那次匯出抓到一隻真 bug（見下一節）**：10 筆 placements 裡只有 1 筆是你放的，其餘是**引擎自己生的**魚（釣魚 CC）和 6 顆 `DoNotPlaceSmallCritterLandingMarkerHelper`（蝴蝶降落 marker）。已改成**登記簿制**，**待重測**。
-
-## scene-capture-bridge — 🆕 ghost ＝ place 模式的擺放游標（重設計，2026-07-14，**已部署** DLL `c07dd174`）
-
-⚠️ **已部署**——完全關遊戲再開。**不變式**：**ghost 存在 ⟺ 你在 `sc pl` ＋ `gh1`（預設開）＋ 有東西被選中**。
-
-1. **palette 來源**：`sc pl` → 你 palette 選中的那個 slot **應該直接以 ghost 出現在準心上**。在 Palette 頁換選另一個 slot → **ghost 跟著換**。`sc off`／`sc ed` 等離開 place 模式 → **ghost 消失**。
-2. **`sc pl gh0`** → ghost 消失、行為退回舊的（按鍵才生東西）。**`sc pl gh1`** → 又回來。
-3. **Browser 是附屬品**：Browser 頁點任一筆 → **自動切到 `sc pl`**（面板頂端 Mode 那行要變 place）＋ ghost 出現。此時去 Palette 頁**換一個 slot** → ghost 應**換成那個 slot**（palette 一動就搶回主導權）。
-4. **自動縮放**：預覽一棟房子（`farmhouse`）→ 它**不該塞滿整個螢幕**，應該只佔約**九分之一**（log 會說 `auto-scaled to ~1/9 screen`）。按 **numpad 0** → **回到真實大小**。預覽一個小東西（杯子）→ **不該被放大**，維持原尺寸。
-5. **numpad 調姿態（不能位移）**：4/6 yaw、1/3 pitch、7/9 roll、**+/- 縮放**、**2/5/8 還原該軸**、**. 收掉 ghost**。長按應**連續轉/縮並加速**；**2/5/8/0/. 必須單發不連發**。移動鍵（8/2 位移）在 place 模式**不該移動 ghost**——位置只跟著你的準心。
-6. **擺下去帶著姿態**：轉好角度、縮好大小 → 按動作鍵（F11）→ 生出來的**真物件要跟 ghost 一模一樣**（角度＋大小），且 ghost **留著**可以連放。
-7. **回歸**：`sc ed` 的 numpad（含長按、`sc ed ax`）**必須完全照舊**——這輪把長按時鐘抽成共用模組了，這是主要回歸風險。
-
-**🎮 2026-07-14 實機：1–6 使用者回報「除此之外都很 ok」**（自動縮放、numpad 轉/縮、browser→place、擺放帶姿態皆過）。**剩下要看的**：
-- **7（回歸）**：`sc ed` 的 numpad（含長按、`sc ed ax`）**照舊沒壞**——長按時鐘抽成共用模組了，這是主要回歸風險。
-- **🆕 `gh0` 現在看得見**（上一輪的誤讀源頭）：`sc pl gh0` → 面板 Mode 那行應變成 **`Mode: place [ghost preview: OFF (gh0)]`** ＋ 一行橘字警告「動作鍵會用 slot 自己的大小、而且你看不到」。Settings 頁也多一個 ghost checkbox（勾/取消應與 `sc pl gh1/gh0` 等效）。
-- **登記簿制**（同顆 DLL，還沒驗）：野外擺一兩個 → 匯出 → `scene.json` **剛好只有你放的**，log 多一行 `N dynamic refs not ours (engine-spawned…)`。
-
-**回報**：① 上面三條；② 自動縮放的「九分之一」體感會不會太小/太大（我調 `kScreenFraction`）；③ numpad 轉/縮的步長順不順手（Settings 頁可調）。
+**順便回報體感**（我照著調）：① 自動縮放的「九分之一」會不會太小（大件如山脈會撞到 0.05 下限）；② numpad 轉/縮的步長順不順手（Settings 頁可調）。
 
 ## scene-capture-bridge — 🐞 匯出改「登記簿制」：只匯出我們真的放過的（2026-07-14，**已部署** DLL `c07dd174`）
 
@@ -106,64 +75,3 @@
 
 **回報**：① 匯出檔裡還有沒有你沒放的東西；② adopt 按鈕有沒有把該收的收回來。
 
-## scene-capture-bridge — 動作鍵改走 `.ini` ＋ palette `clear` 鈕（2026-07-12，commit `1fffb15`，**已部署**）
-
-⚠️ **已部署**（DLL `dd7afd82`，同時含 `isPlayer` 修正）——你**下次啟動遊戲**就會吃到，不必再做任何部署動作。esp 不動、co-save 不升版（SETT v7）。
-
-**背景**：遊戲內 rebind **兩次實機都失敗**（P5 綁成 W；`ddf6324` 的黑名單＋按放開版你回報仍失敗）→ 依你的拍板，**遊戲內 rebind 整個移除**，鍵位改由 **`SceneCaptureBridge.ini`** 設定。co-save 仍照存鍵位（SETT v7 不變），但**ini 有寫的模式以 ini 為準**。
-
-1. **ini 自動生成**：新 DLL 進遊戲一次 → 去 `…/Documents/My Games/Skyrim Special Edition/SKSE/`（＝ palette／匯出檔那個資料夾）→ 應該出現 **`SceneCaptureBridge.ini`**，內含 `[Keys]` 七行（全 F11）＋一大段註解（可用鍵名清單、保留鍵說明）。**先確認這個檔存在且看得懂**。
-2. **改鍵生效**：用文字編輯器把 `delete = F11` 改成 **`delete = F4`**、`edit = G`（存檔）→ 回遊戲 F1 → Settings 頁按 **`reload keys from ini`** →
-   - 鍵位表應顯示 `delete  F4  (ini)`、`edit  G  (ini)`，其餘仍 F11。
-   - `sc del` → 瞄準東西按 **F4** 應真的擦除；按 **F11** 對 delete 模式應**沒反應**（其他沒改的模式 F11 照常）。
-   - **不重開遊戲就生效**（這顆鈕的重點）；重開遊戲後也應維持。
-3. **保留鍵拒收**：ini 寫 `pick = W`（或 Space/Shift/Ctrl/Tab/Enter/`）→ `reload keys from ini` → 面板應出現橘字（`ini: pick: 'W' is reserved`），`pick` **維持原鍵不變**，SKSE log 有 warn。**這是防呆核心**：ini 不能把你綁死在移動鍵上。
-4. **鍵名容錯**：試 `capture = numpad 5`、`marker = NumPad5`、`place = 0x3E`（＝F4）都應該吃得下（面板顯示 `numpad 5` / `F4`）；亂打 `pick = Banana` → 橘字報 unknown key、該模式維持原鍵。
-5. **ini vs 存檔優先序**：讀一個**舊存檔**（裡面可能存著舊鍵位）→ Settings 頁的鍵位應該**還是 ini 那組**（標 `(ini)`），不是被存檔蓋回去。把 ini 裡某一行**整行刪掉**再 reload → 該模式改吃存檔/預設（標 `(save / default)`）。
-6. **palette `clear all slots`（新鈕）**：Palette 頁 →
-   - 先 `sc pk` 吸 2–3 個東西 → 按 **`clear all slots`** → 應**先變成** `really clear all N slot(s)?` ＋ `yes, clear` / `cancel` → 按 **cancel** → **什麼都不該發生**。
-   - 再按一次 → `yes, clear` → 插槽全空，且出現 **`undo clear (N slot(s) recoverable...)`**。
-   - 按 **`undo clear`** → 插槽**全部回來**。再 clear 一次、**關遊戲重開** → 插槽應該是空的（clear 有寫回磁碟；undo 只在本次 session 有效，這是預期行為）。
-
-**回報**：① ini 有沒有自動生成、看不看得懂；② 改鍵 + `reload keys from ini` 有沒有真的生效（含舊鍵失效）；③ 保留鍵（W 之類）有沒有被拒；④ 舊存檔會不會蓋掉 ini；⑤ palette clear 的二次確認 / undo 有沒有照走。
-
-## scene-capture-bridge — 面板欄位一致化（bound field 重構 ＋ 六頁 label／note，2026-07-14，**已部署** DLL `e69978fe`（原 `c4460315`，已被新 build 取代））
-
-⚠️ **已部署**——**完全關閉遊戲再開**才吃得到新 DLL。co-save 升版（`'ERSR'` v3／`'OVRD'` v2／`'SCCP'` v10）：**舊存檔讀得進來**（新欄位＝空字串），但**新存檔存的東西舊 DLL 讀不到**——這是單向的，正常。
-
-**這批在修什麼**：你 07-13 回報的 🐞「打完字沒按 Enter 就點走，面板一直顯示新名字、存的卻是舊的」。修法是把六個面板的欄位收成一個共用 bound field（RULE 1：非編輯中的每一幀都從 registry 回種 ⇒ 面板不可能顯示 registry 沒有的值；RULE 2：Enter／apply／點走都提交）。順帶把 label＋note 補齊到 Eraser／Captures／Editor(overrides)／Palette。
-
-1. **🐞 主證（就是這條要驗）**：Markers 頁隨便一列，label 改個字 → **不要按 Enter**，直接用滑鼠點面板別的地方 → ① 名字**應該真的改掉**（不是彈回舊的、也不是「看起來改了其實沒改」）；② 立刻 `Export player cell` → 開匯出的 json，`annotations[].label` **應該是新名字**。**以前這裡：面板顯示新的、json 是舊的、且毫無跡象。**
-2. **撞名要看得見**：References 頁把某列的 label 改成**跟另一列一樣** → 應出現橘字「label already used…」，且該欄位**視覺上彈回**原本的 label（以前會繼續顯示你打的、實際沒生效）。
-3. **六頁都能取名＋寫筆記**（新欄位）：Eraser／Captures／Editor(overrides)／Palette 每一列現在都有 `label`＋`note`＋`apply`。各挑一列寫點字 →
-   - **存檔 → 完全重開遊戲 → 讀檔** → label/note **應該還在**（Eraser／Overrides／Captures 走 co-save）。
-   - **Palette 的筆記走磁碟**：寫完直接去看 `…/SKSE/scene-capture-palette.json`，該 slot 應多一個 `"note"`；按 `save to file` 存成另一個檔，筆記也應該跟著走。
-4. **匯出**（拍板 (b)「加欄位、非破壞」）：
-   - `sc del` 擦兩個東西，**只給其中一個寫 note** → `Export player cell` → json 的 `removals[]` 應該是**混合的**：沒寫 note 的仍是**裸字串** `"Skyrim.esm:0x…"`，寫了的變成 `{"ref": "...", "note": "..."}`。（沒寫筆記的匯出跟以前逐位元相同，舊 spec 照讀。）
-   - 編輯器移動一個 vanilla 物件 + 寫 note → `overrides[]` 該筆應帶 `note`。
-5. **⚠️ 回歸（這次重構最可能踩的地方，請特別試）**：
-   - **列錯位**：Eraser 頁擦 3–4 個東西、每列給不同 label → 對**中間那列**按 `undo` → 剩下的列，label **應該還跟著各自那筆**（不會整批往上錯一格）。Editor(overrides) 頁的 `revert` 同理。
-   - **Palette 索引位移**：Palette 有 3 個以上 slot，**正在某列打字打到一半**（沒提交）→ 直接按**另一列**的 `del`（或 `load from file`／`clear all slots`）→ 你打到一半的字應該**乾脆丟掉**，**絕不能**跑去蓋到別的 slot 名字上。
-6. **⚠️ 「打到一半切走」（code review 抓到的漏洞，已修，請驗）**：這是 RULE 2 原本漏掉的第三種離開法——**整列根本沒被畫**。ImGui 在該列缺席的那一幀直接清掉 ActiveId、widget 的 flush 也沒跑，所以「失活」沒有任何人看見 ⇒ 修之前這樣會**無聲丟字**。三個入口各試一次，打完字**都不要按 Enter**：
-   - Markers 頁某列 label 打到一半 → **切到別的分頁**（Export/Settings）→ 切回來 → 字**應該已經提交**（不是變回舊的）。
-   - 打到一半 → **直接關掉面板**（F1）→ 再開 → 同樣應該已提交。
-   - 打到一半 → 勾 **`this cell only`** 把那列濾掉 → 取消勾選 → 同樣應該已提交。
-7. **舊存檔**：讀一個 07-13 之前的存檔 → 面板列照常出現，label/note 欄是空的（不是亂碼、不是消失）。
-
-**回報**：① 第 1 條主證（點走到底有沒有真的提交、json 對不對）；② 六頁欄位跨存檔留不留得住；③ 第 5 條兩個回歸有沒有中；④ 第 6 條三個入口有沒有丟字；⑤ 匯出的 `removals[]` 混合形狀對不對。
-
-## scene-capture-bridge — `sc ed` numpad 長按持續作用（2026-07-14，**已部署** DLL `e69978fe`（原 `c4460315`，已被新 build 取代））
-
-⚠️ **已部署**——完全關遊戲再開。（此 DLL 同時含上一節「面板欄位一致化」，兩節可以一起測。）
-
-1. **長按會動**：`sc ed` 選中一個物件 → **按住 numpad 8 不放** → 物件應**持續前進**，而且**越按越快**（前 0.35 秒不動＝死區，之後由慢加速到快）。4/6/1/3、7/9（旋轉）、+/-（縮放）同理。
-2. **單點仍是精準一步**：輕點 numpad 8 一下 → 只移動**一個 step**（Settings 裡的步長），不會多飄——死區就是為了這個。
-3. **🔴 單發鍵絕不能連發（最重要的防呆）**：
-   - 按住 **numpad 0**（commit）不放 → 應該**只 commit 一次**就離開編輯模式，不會連續 commit／狂跳通知。
-   - 按住 **numpad .**（cancel）、**numpad 5**（reset）、**numpad \***（ray select）同理，**都只作用一次**。
-   - 按住**動作鍵**（F11 那組，例如 `sc del` 的擦除鍵）→ 應**只擦一個**，不會把整條街連續擦掉。
-4. **rotate 模式的 8/2 是還原、不是位移**：`sc ed ax` → 按住 **numpad 8**（roll 還原）→ 應**只還原一次**，不會連續重複；但同模式下按住 **4/6**（yaw）、**1/3**（pitch）、**7/9**（roll）**應該要連續轉**。
-5. **縮放不會壞掉**：按住 **numpad -** 很久 → 物件應該縮到很小就**停住**（clamp 0.05），**不會**變成負值/隱形/翻面。
-6. **卡頓不瞬移**：長按時開個選單／讓遊戲卡一下再回來 → 物件**不應該**因為那段空窗一次暴衝出去。
-
-**回報**：① 長按有沒有連續動＋加速手感如何（太快/太慢我調 rate）；② 單點還準不準；③ **第 3 條有沒有任何一顆單發鍵變成連發**；④ rotate 模式 8/2 有沒有亂重複。
