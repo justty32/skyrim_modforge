@@ -9,7 +9,7 @@
 
 ## 任務記錄
 
-[`005CE2 zzzAoMMq00 "斯坦達爾警戒者"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:L1)
+[`005CE2 zzzAoMMq00 "斯坦達爾警戒者"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:L1)
 
 CLI：
 - `questdiag Vigilant.esm 0x005CE2`
@@ -45,11 +45,11 @@ ESM：
 
 | 索引 | 來源 | 翻譯 |
 |---:|---|---|
-| 5 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L2) | 加入斯坦達爾警戒者 |
-| 10 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L3) | 跟隨阿爾塔諾或在斯坦達爾神廟與阿爾塔諾會合 |
-| 15 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L4) | 與阿爾塔諾對話 |
-| 20 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L5) | 與索隆迪爾對話 |
-| 30 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L6) | 與阿爾塔諾對話 |
+| 5 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L2) | 加入斯坦達爾警戒者 |
+| 10 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L3) | 跟隨阿爾塔諾或在斯坦達爾神廟與阿爾塔諾會合 |
+| 15 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L4) | 與阿爾塔諾對話 |
+| 20 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L5) | 與索隆迪爾對話 |
+| 30 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L6) | 與阿爾塔諾對話 |
 
 目標標靶：
 - 目標 5 指向 1 個標靶 (0 條件)
@@ -67,12 +67,12 @@ ESM：
 
 #### 主題 1：招募宣傳 (005CE6)
 
-[`005CE6 zzAoMMq0B1Tvigilant` 提示：「讓我加入斯坦達爾警戒者。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L1)
+[`005CE6 zzAoMMq0B1Tvigilant` 提示：「讓我加入斯坦達爾警戒者。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L1)
 
 | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|
-| [`005CE7`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L2) | `SayOnce`, `WalkAway` | `GetStage < 10`; `GetIsAliasRef 別名 #0` | [「你有一雙好眼力。為什麼不加入斯坦達爾警戒者呢？一起讓斯坦達爾的仁慈充滿天際省？」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L2) |
-| [`005CEC`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L3) | `WalkAway` | `GetStage < 10`; `GetIsAliasRef 別名 #0` | [「改變主意了？我們歡迎你。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L3) |
+| [`005CE7`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L2) | `SayOnce`, `WalkAway` | `GetStage < 10`; `GetIsAliasRef 別名 #0` | [「你有一雙好眼力。為什麼不加入斯坦達爾警戒者呢？一起讓斯坦達爾的仁慈充滿天際省？」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L2) |
+| [`005CEC`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L3) | `WalkAway` | `GetStage < 10`; `GetIsAliasRef 別名 #0` | [「改變主意了？我們歡迎你。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L3) |
 
 推論：
 - 別名 #0 是阿爾塔諾 (招募者)。
@@ -80,11 +80,11 @@ ESM：
 
 #### 主題 2：是的，接受招募 (005CE8)
 
-[`005CE8 zzAoMMq0B1Yes` 提示：「是的，讓我加入。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L4)
+[`005CE8 zzAoMMq0B1Yes` 提示：「是的，讓我加入。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L4)
 
 | INFO | 標記 | 條件 | 回應 | VMAD |
 |---|---|---|---|---|
-| [`005CE9`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L5) | 無 | `GetIsAliasRef 別名 #0` | (1) [「我很高興收到肯定的答覆。斯坦達爾祝福你。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L5) / (2) [「我會引導你前往斯坦達爾神廟。跟我來。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L6) | 結束時執行 `AoM00_TIF__01005CE9.Fragment_0` |
+| [`005CE9`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L5) | 無 | `GetIsAliasRef 別名 #0` | (1) [「我很高興收到肯定的答覆。斯坦達爾祝福你。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L5) / (2) [「我會引導你前往斯坦達爾神廟。跟我來。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L6) | 結束時執行 `AoM00_TIF__01005CE9.Fragment_0` |
 
 推論：
 - 多行回應暗示了傳送前的對話氛圍。
@@ -92,11 +92,11 @@ ESM：
 
 #### 主題 3：拒絕招募 (005CEA)
 
-[`005CEA zzAoMMq0B1No` 提示：「不，沒興趣。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L7)
+[`005CEA zzAoMMq0B1No` 提示：「不，沒興趣。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L7)
 
 | INFO | 標記 | 條件 | 翻譯 | VMAD |
 |---|---|---|---|---|
-| [`005CEB`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L8) | `Goodbye` | `GetIsAliasRef 別名 #0` | [「噢……我就在這裡。如果你改變主意的話……再來這裡吧。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L8) | 結束時執行 `AoM00_TIF__01005CEB.Fragment_0` |
+| [`005CEB`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L8) | `Goodbye` | `GetIsAliasRef 別名 #0` | [「噢……我就在這裡。如果你改變主意的話……再來這裡吧。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L8) | 結束時執行 `AoM00_TIF__01005CEB.Fragment_0` |
 
 推論：
 - `Goodbye` 標記表示這將結束對話分支。
@@ -108,11 +108,11 @@ ESM：
 
 #### 主題 4：到達神廟 (027A3C)
 
-[`027A3C zzzAoMMq00B2ArriveTemple`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L9)
+[`027A3C zzzAoMMq00B2ArriveTemple`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L9)
 
 | INFO | 標記 | 條件 | 回應 | VMAD |
 |---|---|---|---|---|
-| [`027A3F`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L10-11) | `Goodbye` | `GetInCell == 025091:Vigilant.esm`; `GetStage == 15`; `GetIsAliasRef 別名 #0` | (1) [「這是斯坦達爾神廟，警戒者的基地之一。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L10) / (2) [「你应该去和索隆迪爾打個招呼。他是斯坦達爾的守護者。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L11) | 結束時執行 `AoM00_TIF__01027A3F.Fragment_0` |
+| [`027A3F`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L10-11) | `Goodbye` | `GetInCell == 025091:Vigilant.esm`; `GetStage == 15`; `GetIsAliasRef 別名 #0` | (1) [「這是斯坦達爾神廟，警戒者的基地之一。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L10) / (2) [「你应该去和索隆迪爾打個招呼。他是斯坦達爾的守護者。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L11) | 結束時執行 `AoM00_TIF__01027A3F.Fragment_0` |
 
 推論：
 - `GetInCell` 確認位置在斯坦達爾神廟內部 (025091)。
@@ -121,11 +121,11 @@ ESM：
 
 #### 主題 5：索隆迪爾問候 (027A41)
 
-[`027A41 zzzAoMMq00B3NiceToMeet` 提示：「很高興見到你，我是 <Alias=Player>」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L12)
+[`027A41 zzzAoMMq00B3NiceToMeet` 提示：「很高興見到你，我是 <Alias=Player>」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L12)
 
 | INFO | 標記 | 條件 | 回應 | VMAD |
 |---|---|---|---|---|
-| [`027A42`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L13-15) | `Goodbye` | `GetStage == 20`; `GetIsAliasRef 別名 #4` | (1) [「你就是阿爾塔諾提到的那個新人嗎。你有一雙好眼力。我感受到了非常強大的意志。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L13) / (2) [「閒聊就到此為止吧。因為那會是無聊的老故事。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L14) / (3) [「阿爾塔諾會暫時照顧你。如果你有什麼事，儘管跟阿爾塔諾說。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L15) | 結束時執行 `AoM00_TIF__01027A42.Fragment_0` |
+| [`027A42`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L13-15) | `Goodbye` | `GetStage == 20`; `GetIsAliasRef 別名 #4` | (1) [「你就是阿爾塔諾提到的那個新人嗎。你有一雙好眼力。我感受到了非常強大的意志。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L13) / (2) [「閒聊就到此為止吧。因為那會是無聊的老故事。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L14) / (3) [「阿爾塔諾會暫時照顧你。如果你有什麼事，儘管跟阿爾塔諾說。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L15) | 結束時執行 `AoM00_TIF__01027A42.Fragment_0` |
 
 推論：
 - 別名 #4 是索隆迪爾 (守護者)。
@@ -134,11 +134,11 @@ ESM：
 
 #### 主題 6：神廟說明 (027A44)
 
-[`027A44 zzzAoMMq00B04Explanation` 提示：「告訴我關於這座神廟的事」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L16)
+[`027A44 zzzAoMMq00B04Explanation` 提示：「告訴我關於這座神廟的事」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L16)
 
 | INFO | 標記 | 條件 | 回應 | VMAD |
 |---|---|---|---|---|
-| [`027A45`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L17-22) | `Goodbye` | `GetStage == 30`; `GetIsAliasRef 別名 #0` | (1) [「我會簡短介紹一下可用的設施。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L17) / (2) [「你現在站的地方是斯坦達爾之間。這是向斯坦達爾祈禱的地方。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L18) / (3) [「地下室有一個圖書館，存放著我們先輩收集的書籍。希望你有空去看看。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L19) / (4) [「一樓右側靠近熔煉裝置，二樓是從入口處看到的休息室。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L20) / (5) [「二樓左側是食堂。如果你感到餓了，可以在那裡吃點。雖然不是什麼豐盛的大餐。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L21) / (6) [「說明就到此為止。你可能累了。希望你能休息一下。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L22) | 結束時執行 `AoM00_TIF__01027A45.Fragment_0` |
+| [`027A45`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L17-22) | `Goodbye` | `GetStage == 30`; `GetIsAliasRef 別名 #0` | (1) [「我會簡短介紹一下可用的設施。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L17) / (2) [「你現在站的地方是斯坦達爾之間。這是向斯坦達爾祈禱的地方。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L18) / (3) [「地下室有一個圖書館，存放著我們先輩收集的書籍。希望你有空去看看。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L19) / (4) [「一樓右側靠近熔煉裝置，二樓是從入口處看到的休息室。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L20) / (5) [「二樓左側是食堂。如果你感到餓了，可以在那裡吃點。雖然不是什麼豐盛的大餐。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L21) / (6) [「說明就到此為止。你可能累了。希望你能休息一下。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L22) | 結束時執行 `AoM00_TIF__01027A45.Fragment_0` |
 
 推論：
 - 別名 #0 在這裡切換了背景 (可能切換回阿爾塔諾進行環境描述)。
@@ -148,12 +148,12 @@ ESM：
 ## 相關記錄
 
 NPCs (任務附屬)：
-- [`0274A6 zzzAoMVigilantKeeper` - 索隆迪爾 (斯坦達爾的守護者)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv#L1)
-- [`000D62 zzzAoMVigilantTraitor` - 阿爾塔諾 (招募者)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv#L1)
-- [`02748B zzzAoMVigilantKeeper` - 索隆迪爾 (備用記錄)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv#L1)
+- [`0274A6 zzzAoMVigilantKeeper` - 索隆迪爾 (斯坦達爾的守護者)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv#L1)
+- [`000D62 zzzAoMVigilantTraitor` - 阿爾塔諾 (招募者)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv#L1)
+- [`02748B zzzAoMVigilantKeeper` - 索隆迪爾 (備用記錄)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv#L1)
 
 地點：
-- [`025091 zzzAoMTempleInteriorStendarr` - 斯坦達爾神廟 (內部單元)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant)
+- [`025091 zzzAoMTempleInteriorStendarr` - 斯坦達爾神廟 (內部單元)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant)
 
 ## 重建筆記
 

@@ -9,7 +9,7 @@ Source policy:
 
 ## Quest Record
 
-[`4CDF8D zzzAoMMq06BadEnd "Mar'so Suicide"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:539)
+[`4CDF8D zzzAoMMq06BadEnd "Mar'so Suicide"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:539)
 
 CLI:
 - `questdiag Vigilant.esm 0x4CDF8D`
@@ -42,19 +42,19 @@ Objectives:
 No aliases printed by `questdiag` for this quest. The quest is purely dialogue-driven via the Hello topic.
 
 Host quest:
-- [`4CDF8D zzzAoMMq06BadEnd`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:539)
+- [`4CDF8D zzzAoMMq06BadEnd`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:539)
 
 ## Dialogue Branch: Mar'so (Bad Ending Hello)
 
 Topic:
-- [`4CDF8E zzzAoMMq06BadEndHello`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1191)
+- [`4CDF8E zzzAoMMq06BadEndHello`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1191)
 
 Speaker condition pattern:
 - All INFOs require `GetIsAliasRef == 1` on alias `#0` (Speaker implied: Mar'so in the bad ending variant).
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`4CDF8E zzzAoMMq06BadEndHello`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1191) | `4CDF8F` | Goodbye | `GetIsAliasRef alias #0` | "No more interruptions. It's just you and me now, Campaner'Ra." |
+| [`4CDF8E zzzAoMMq06BadEndHello`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1191) | `4CDF8F` | Goodbye | `GetIsAliasRef alias #0` | "No more interruptions. It's just you and me now, Campaner'Ra." |
 | | `4CDF90` | Goodbye | `GetIsAliasRef alias #0` | "I'll be here forever, Campanella. Always and forever." |
 | | `4CDF91` | Goodbye | `GetIsAliasRef alias #0` | "Here in the deep end of the pond, no one can disturb us anymore. Even Jo'vanni wouldn't be able to come here." |
 | | `4CDF92` | Goodbye | `GetIsAliasRef alias #2` | "Hail Meridia in hard times and sad times, oh, hail Meridia!" |
@@ -77,12 +77,12 @@ Source-grounded context (inferred from dialogue + related quest structure):
   - Meridia invocation (suggests tie to Daedric corruption or moral choice point).
 
 **Related records (context only, not owned by this quest per `infodiag`):**
-- NPC [`001842 zzzAoMCatMale02` / `0B15B3 zzzCHMarso` – Mar'so](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:61)
-- NPC [`001844 zzzAoMCatFemale01` / `2D35C3 zzzCHEpiCat01` – Campaner'Ra](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:65)
-- Dialogue context from main branch [`009E68 zzzAoMMq06 "Also sprach Kahjiit"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:949) — dialogue topics [`00A3E3`–`00A3F9`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:960) show Campaner'Ra + Mar'so domestic scenes and Jo'vanni conflict.
+- NPC [`001842 zzzAoMCatMale02` / `0B15B3 zzzCHMarso` – Mar'so](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:61)
+- NPC [`001844 zzzAoMCatFemale01` / `2D35C3 zzzCHEpiCat01` – Campaner'Ra](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:65)
+- Dialogue context from main branch [`009E68 zzzAoMMq06 "Also sprach Kahjiit"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:949) — dialogue topics [`00A3E3`–`00A3F9`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:960) show Campaner'Ra + Mar'so domestic scenes and Jo'vanni conflict.
 
 **Relationship to Good End:**
-- Paired quest [`4D0376 zzzAoMMqGoodEnd "Art of Mercy"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:541) has opposite condition flow and outcome (protagonist stops tragedy, saves Campaner'Ra).
+- Paired quest [`4D0376 zzzAoMMqGoodEnd "Art of Mercy"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:541) has opposite condition flow and outcome (protagonist stops tragedy, saves Campaner'Ra).
 
 ## Open Verification
 

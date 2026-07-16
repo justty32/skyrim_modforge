@@ -9,7 +9,7 @@ Source policy:
 
 ## Quest Record
 
-[`2B9BAB zzzCHMemoryQuest11 "After the Storm"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
+[`2B9BAB zzzCHMemoryQuest11 "After the Storm"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
 
 CLI:
 - `questdiag Vigilant.esm 0x2B9BAB`
@@ -81,7 +81,7 @@ Additional QF fragments (within Bad branch, stage inferred from behavior):
 - `Fragment_29`: `Alias_Bull.SetDontMove()` + `debug.SendAnimationEvent("pa_KillMove2HWB")` + `PriestBloodMarker.Enable()` + `Alias_Priest.TryToKill()` — fires during the kill animation stage (~320–330)
 - `Fragment_33`: `if qGuide.IsRunning() → qGuide.SetStage(110)`; `kmyQuest.ModRadiance(3.0)` — **hub progression** (Dream11 Finished); fires at one of the CompleteQuest stages (exact stage-to-fragment mapping requires VMAD binary read; inference: fires at stage 50 or 340)
 
-`PelinalQuest` property = [`2A532E zzzCHMemoryQuest10 "Pelinal the Bloody"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401). `PelinalQuest.GetStageDone(300)` checks whether MeQ10 reached its **Bad CompleteQuest** stage (stage 300, verified via `questdiag 0x2A532E`). MeQ10 good CompleteQuest = stage 180; bad CompleteQuest = stage 300.
+`PelinalQuest` property = [`2A532E zzzCHMemoryQuest10 "Pelinal the Bloody"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401). `PelinalQuest.GetStageDone(300)` checks whether MeQ10 reached its **Bad CompleteQuest** stage (stage 300, verified via `questdiag 0x2A532E`). MeQ10 good CompleteQuest = stage 180; bad CompleteQuest = stage 300.
 
 `AkatoshQuest` fires on both outcomes (stage 60 post-good; stage 350 post-bad). Identity of `AkatoshQuest` is not resolvable from PSC alone (property name only); likely a post-memory follow-on quest (inference: possibly `zzzCHMemoryQuest12 "Last Night"` which features Akatosh, or a dedicated bridge quest; unverified).
 
@@ -90,18 +90,18 @@ Additional QF fragments (within Bad branch, stage inferred from behavior):
 The three `SCEN` records below share the same host quest and aliases.
 
 Host quest:
-- [`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
+- [`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
 
 Host-quest aliases from `scenediag Vigilant.esm 0x2B9BB4` (confirmed identical across all three scenes):
 
 | Alias | Name | Fill | Resolves to |
 |---:|---|---|---|
-| 0 | `Bull` | uniqueActor `2B8827:Vigilant.esm` | [`2B8827 zzzCHMemoryMorihaus01 "Morihaus"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:782) |
-| 1 | `Priest` | uniqueActor `2B882A:Vigilant.esm` | [`2B882A zzzCHMemorySthunPriest "Stuhn Priest"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:781) |
-| 2 | `Akatosh` | uniqueActor `2DE6E3:Vigilant.esm` | [`2DE6E3 zzzCHMemoryAkatoshMorihaus` (no Name)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:809) |
+| 0 | `Bull` | uniqueActor `2B8827:Vigilant.esm` | [`2B8827 zzzCHMemoryMorihaus01 "Morihaus"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:782) |
+| 1 | `Priest` | uniqueActor `2B882A:Vigilant.esm` | [`2B882A zzzCHMemorySthunPriest "Stuhn Priest"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:781) |
+| 2 | `Akatosh` | uniqueActor `2DE6E3:Vigilant.esm` | [`2DE6E3 zzzCHMemoryAkatoshMorihaus` (no Name)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:809) |
 | 3 | `PelinalMarker` | forcedRef `2E47DF:Vigilant.esm` | placed marker ref |
 | 4 | `GateMarker` | forcedRef `2E47E0:Vigilant.esm` | placed marker ref |
-| 5 | `Gardener` | uniqueActor `2E47F0:Vigilant.esm` | [`2E47F0 zzzCHMemoryGardener "King of Nenalata"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:805) |
+| 5 | `Gardener` | uniqueActor `2E47F0:Vigilant.esm` | [`2E47F0 zzzCHMemoryGardener "King of Nenalata"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:805) |
 
 Alias fills are all `uniqueActor` or `forcedRef` — no conditional or find-condition fills. The alias table is fully source-grounded from `scenediag` output.
 
@@ -110,7 +110,7 @@ RESOLVED: all 6 aliases confirmed present by `scenediag 0x2B9BB4`/`0x2B9BB5`/`0x
 Subject / speaker:
 - The memory's subject and the through-line speaker is **Morihaus** (alias `#0` `Bull`). All Scene monologue lines are voiced by alias `#0` except where noted, and the custom branch openers are gated on the player standing before either alias `#2` `Akatosh` or alias `#5` `Gardener`.
 - `Stuhn Priest` (alias `#1`) is the second on-stage actor (the priest who refuses the order in the bad branch).
-- `Bull` = Morihaus, who in TES lore is the winged man-bull consort of Alessia; "Paravania" (named in topic [`2B9BBF`](#2b9bb4-zzzchmeq11goodscene)) is Alessia's man-bull aspect. (inference, cross-checked against [`51AE2D zzzCHAlessiaMntr "Paravania the Man-bull"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:428))
+- `Bull` = Morihaus, who in TES lore is the winged man-bull consort of Alessia; "Paravania" (named in topic [`2B9BBF`](#2b9bb4-zzzchmeq11goodscene)) is Alessia's man-bull aspect. (inference, cross-checked against [`51AE2D zzzCHAlessiaMntr "Paravania the Man-bull"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:428))
 
 Trigger (source-grounded shape):
 - `questdiag` does not print target refs and the QUST start condition is not dumped by the current CLI, so the exact in-world trigger ref is not decoded here.
@@ -126,7 +126,7 @@ CLI:
 - `scenediag Vigilant.esm 0x2B9BB5` — RESOLVED
 
 Staging (verified from `scenediag` + `sf_zzzchmeq11sc01_022b9bb5.psc`):
-- Host quest: [`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
+- Host quest: [`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
 - Flags: none
 - Actors: alias `#0` (`Bull`, `behaviorFlags=DeathEnd,DialoguePause`, `flags=NoPlayerActivation,Optional`), alias `#1` (`Priest`, `behaviorFlags=DeathEnd,DialoguePause`, `flags=NoPlayerActivation,Optional`)
 - Phases: 2; phase[0] `startConds=0 completeConds=1`; phase[1] `startConds=0 completeConds=1`
@@ -140,7 +140,7 @@ CLI:
 - `scenediag Vigilant.esm 0x2B9BB4` — RESOLVED
 
 Staging (verified from `scenediag` + `sf_zzzchmeq11goodscene_022b9bb4.psc`):
-- Host quest: [`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
+- Host quest: [`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
 - Flags: none
 - Actors: alias `#0` (`Bull`, `behaviorFlags=DialoguePause`, `flags=NoPlayerActivation,Optional`), alias `#1` (`Priest`, `behaviorFlags=DeathEnd,DialoguePause`, `flags=NoPlayerActivation,Optional`), alias `#2` (`Akatosh`, behaviorFlags=0, flags=0)
 - Phases: 5; phase[0] `completeConds=3` (3 conditions to exit, likely scene skip + NPC positions + timer); phases[1-4] `completeConds=1` each
@@ -153,10 +153,10 @@ Morihaus monologue (alias `#0`), played in phase order:
 
 | Phase | Topic / INFO | Source | Translation |
 |---:|---|---|---|
-| 1 | `2B9BB9` / `2B9BBA` | [line](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2589) | 「你走了……這樣的結局，真像你的作風……」 |
-| 2 | `2B9BBB` / `2B9BBC` | [line](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2592) | 「Pelinal，是你教我的。Ada 必須以愛來改變一切……」 |
-| 3 | `2B9BBD` / `2B9BBE` | [line](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2595) | 「正因如此，我的心才這麼痛。陷入嗜血、向狂怒交出自己，反而還比較容易。」 |
-| 4 | `2B9BBF` / `2B9BC0` | [line](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2598) | 「但即便如此，我仍守望著你所造的這個世界……為了她，為了 Paravania……」 |
+| 1 | `2B9BB9` / `2B9BBA` | [line](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2589) | 「你走了……這樣的結局，真像你的作風……」 |
+| 2 | `2B9BBB` / `2B9BBC` | [line](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2592) | 「Pelinal，是你教我的。Ada 必須以愛來改變一切……」 |
+| 3 | `2B9BBD` / `2B9BBE` | [line](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2595) | 「正因如此，我的心才這麼痛。陷入嗜血、向狂怒交出自己，反而還比較容易。」 |
+| 4 | `2B9BBF` / `2B9BC0` | [line](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2598) | 「但即便如此，我仍守望著你所造的這個世界……為了她，為了 Paravania……」 |
 
 - Note: `Ada` is the Ehlnofex term for a divine/original spirit; left untranslated. Reading is "the divine ones / the world must be changed through love"; kept literal pending verification - 待驗證.
 
@@ -166,7 +166,7 @@ CLI:
 - `scenediag Vigilant.esm 0x2BAEFB` — RESOLVED
 
 Staging (verified from `scenediag` + `sf_zzzchmeq11badscene_022baefb.psc`):
-- Host quest: [`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
+- Host quest: [`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
 - Flags: none
 - Actors: alias `#0` (`Bull`, `behaviorFlags=DeathEnd,DialoguePause`, `flags=NoPlayerActivation,Optional`), alias `#1` (`Priest`, `behaviorFlags=DialoguePause`, `flags=NoPlayerActivation,Optional`)
 - Phases: 16; phase[0] `completeConds=2`; phases[1-15] `completeConds=1` each
@@ -196,17 +196,17 @@ Branch dialogue (in scene-action phase order):
 
 | Phase | Actor | Topic / INFO | Emotion | Source | Translation |
 |---:|---|---|---|---|---|
-| 1 | `#0` Morihaus | `2BAEFC` / `2BAEFD` | Neutral | [line](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2601) | 「Pelinal……究竟發生了什麼……」 |
-| 2 | `#0` Morihaus | `2BAEFE` / `2BAEFF` | Neutral | [line](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2604) | 「Pelinal……說句話吧，拜託你。再像從前那樣鼓舞我們……」 |
-| 3 | `#1` Priest | `2BAF00` / `2BAF01` | Sad(100) | [line](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2607) | 「Morihaus 大人，請振作起來……」 |
-| 4 | `#0` Morihaus | `2BAF37` / `2BAF38` | Neutral | [line](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2622) | （沉默：「……………………」） |
-| 5-6 | `#0` Morihaus | `2BAF03` / `2BAF04` | Neutral | [line](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2610) | 「……殺光俘虜。還有，殺光所有精靈居民，連同他們的牲口。」 |
-| 7 | `#1` Priest | `2BAF05` / `2BAF06` | Puzzled | [line](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2613) | 「您……您說什麼？這是瘋了。」 |
-| 8 | `#1` Priest | `2BAF07` / `2BAF08` | Anger | [line](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2616) | 「這違背了 Sthun 的教誨……」 |
-| 13 | `#0` Morihaus | `2BAF0B` / `2BAF0C` | Neutral | [line](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2619) | 「Pelinal，我從你身上學會了。我陷入嗜血，向狂怒交出自己。」 |
-| 14 | `#0` Morihaus | `2BAF0E` / `2BAF0F` | Neutral | [line](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2622) | 「Cyrod 已是我們的了。一切都被允許。」 |
+| 1 | `#0` Morihaus | `2BAEFC` / `2BAEFD` | Neutral | [line](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2601) | 「Pelinal……究竟發生了什麼……」 |
+| 2 | `#0` Morihaus | `2BAEFE` / `2BAEFF` | Neutral | [line](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2604) | 「Pelinal……說句話吧，拜託你。再像從前那樣鼓舞我們……」 |
+| 3 | `#1` Priest | `2BAF00` / `2BAF01` | Sad(100) | [line](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2607) | 「Morihaus 大人，請振作起來……」 |
+| 4 | `#0` Morihaus | `2BAF37` / `2BAF38` | Neutral | [line](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2622) | （沉默：「……………………」） |
+| 5-6 | `#0` Morihaus | `2BAF03` / `2BAF04` | Neutral | [line](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2610) | 「……殺光俘虜。還有，殺光所有精靈居民，連同他們的牲口。」 |
+| 7 | `#1` Priest | `2BAF05` / `2BAF06` | Puzzled | [line](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2613) | 「您……您說什麼？這是瘋了。」 |
+| 8 | `#1` Priest | `2BAF07` / `2BAF08` | Anger | [line](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2616) | 「這違背了 Sthun 的教誨……」 |
+| 13 | `#0` Morihaus | `2BAF0B` / `2BAF0C` | Neutral | [line](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2619) | 「Pelinal，我從你身上學會了。我陷入嗜血，向狂怒交出自己。」 |
+| 14 | `#0` Morihaus | `2BAF0E` / `2BAF0F` | Neutral | [line](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2622) | 「Cyrod 已是我們的了。一切都被允許。」 |
 
-- Note: `teaching of Sthun` ([`2BAF07`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2616)) vs the NPC EditorID `zzzCHMemorySthunPriest` / Name `Stuhn Priest` ([npcs.tsv:781](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:781)): the dialogue spells it `Sthun`, the NPC record `Stuhn`/`Sthun`. Stuhn is the Nordic/Aedric god of ransom; both spellings refer to the same deity. Garbled source spelling - kept as-is, 待驗證.
+- Note: `teaching of Sthun` ([`2BAF07`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2616)) vs the NPC EditorID `zzzCHMemorySthunPriest` / Name `Stuhn Priest` ([npcs.tsv:781](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:781)): the dialogue spells it `Sthun`, the NPC record `Stuhn`/`Sthun`. Stuhn is the Nordic/Aedric god of ransom; both spellings refer to the same deity. Garbled source spelling - kept as-is, 待驗證.
 - Note: `It is easier to go mad into blood and surrender myself to rage` (Good, `2B9BBD`) and `I go mad into blood, surrender myself to rage` (Bad, `2BAF0B`) are the deliberate mirror: in the good scene Morihaus *resists* the urge, in the bad scene he *yields* to it. Source-grounded polarity anchor.
 - Note: `Cyrod` = Cyrodiil (period spelling); left as source.
 - Note: phase 4's `2BAF37` is a line of pure ellipsis `........................` (silence beat); rendered as a silent pause.
@@ -221,7 +221,7 @@ Speaker condition pattern:
 
 | Topic | INFO | Flags | Conditions | Emotion | Translation |
 |---|---|---|---|---|---|
-| [`2DE6E8 zzzCHMeQ11AkatoshB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2768) | `2DE6E9` | `Goodbye` | `GetIsAliasRef alias #2` | Sad | 「暴風雨過後，便是寧靜。那是何等的哀傷啊……」 |
+| [`2DE6E8 zzzCHMeQ11AkatoshB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2768) | `2DE6E9` | `Goodbye` | `GetIsAliasRef alias #2` | Sad | 「暴風雨過後，便是寧靜。那是何等的哀傷啊……」 |
 
 - This is the player-facing closing line of the **GoodScene** path (Morihaus ascended / watched over by Akatosh). Title "After the Storm" comes directly from this line `After a storm comes a calm`.
 
@@ -235,9 +235,9 @@ Speaker condition pattern:
 
 | Topic | INFO | Flags | Conditions | Emotion | Translation |
 |---|---|---|---|---|---|
-| [`2E5B3F zzzCHMeQ11GardenerB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2794) | `2E5B40` | `Goodbye` | `GetIsAliasRef alias #5` | Sad | 「精靈的時代逝去了，人類的時代來臨了……奈納拉塔之王是對的……」 |
+| [`2E5B3F zzzCHMeQ11GardenerB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2794) | `2E5B40` | `Goodbye` | `GetIsAliasRef alias #5` | Sad | 「精靈的時代逝去了，人類的時代來臨了……奈納拉塔之王是對的……」 |
 
-- This is the player-facing closing line of the **BadScene** path (Morihaus slays the priest, "all is permitted"). The `Gardener` is `King of Nenalata` ([npcs.tsv:805](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:805)); cf. `Thannor the Gardener` elsewhere ([npcs.tsv:704](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:704)).
+- This is the player-facing closing line of the **BadScene** path (Morihaus slays the priest, "all is permitted"). The `Gardener` is `King of Nenalata` ([npcs.tsv:805](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:805)); cf. `Thannor the Gardener` elsewhere ([npcs.tsv:704](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:704)).
 - Note: `Man Era is come` / `Mer Era is gone` is source phrasing (Mer = elves); kept literal.
 
 ## Packages (from `find`)
@@ -281,7 +281,7 @@ else
 endif
 ```
 
-**The branch is NOT a player choice within MeQ11.** It is determined entirely by the outcome of [`2A532E zzzCHMemoryQuest10 "Pelinal the Bloody"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401):
+**The branch is NOT a player choice within MeQ11.** It is determined entirely by the outcome of [`2A532E zzzCHMemoryQuest10 "Pelinal the Bloody"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401):
 - MeQ10 `GetStageDone(300)` = **false** (MeQ10 completed at stage 180 = Good outcome) → MeQ11 GoodScene
 - MeQ10 `GetStageDone(300)` = **true** (MeQ10 completed at stage 300 = Bad outcome) → MeQ11 BadScene + immediate `SetStage(300)`
 
@@ -290,8 +290,8 @@ MeQ10 stage 180 = Good `CompleteQuest`; stage 300 = Bad `CompleteQuest` (verifie
 ## Reconstruction Notes
 
 Source-grounded:
-- This memory is represented by [`2B9BAB zzzCHMemoryQuest11 "After the Storm"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256), header-only (no objective text in ESM or `quests.md`).
-- Subject/speaker: **Morihaus** (alias `#0` `Bull`, [`2B8827`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:782)), mourning the dead **Pelinal Whitestrake**.
+- This memory is represented by [`2B9BAB zzzCHMemoryQuest11 "After the Storm"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256), header-only (no objective text in ESM or `quests.md`).
+- Subject/speaker: **Morihaus** (alias `#0` `Bull`, [`2B8827`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:782)), mourning the dead **Pelinal Whitestrake**.
 - It contains **3 `SCEN` records**: `2B9BB5 Sc01` (silent establishing), `2B9BB4 GoodScene` (4 Morihaus lines), `2BAEFB BadScene` (16-phase massacre branch).
 - It contains **2 custom dialogue branches** (the player-facing closers): Akatosh alias `#2` (Good) and Gardener alias `#5` (Bad), each a single `Goodbye` topic gated on `GetIsAliasRef`.
 - **0 books** owned by / linked from this quest (`find` returns no BOOK; no booktext call needed).
@@ -307,7 +307,7 @@ endif
 kmyQuest.ModRadiance(3.0)
 ```
 
-- `qGuide` = [`42E0B1 zzzCHMemoryGuide "Memory Guide"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:309) (hub quest property, verified via `qf_zzzchmemoryguide_0242e0b1.psc`)
+- `qGuide` = [`42E0B1 zzzCHMemoryGuide "Memory Guide"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:309) (hub quest property, verified via `qf_zzzchmemoryguide_0242e0b1.psc`)
 - `qGuide.SetStage(110)` triggers hub `Fragment_22` (`qf_zzzchmemoryguide_0242e0b1.psc:29`): `;Dream11 Finished` → `SetObjectiveCompleted(110)`, `SetObjectiveDisplayed(120)` — marks the "Against the dying of the light" objective done and advances to objective 120.
 - `ModRadiance(3.0)` is the AoM achievement point system (not the vanilla `zzzCHKarma` global `0x0B19F4`). **`zzzCHKarma` is NOT touched by MeQ11.**
 - Exact stage at which `Fragment_33` fires: **cannot be determined from PSC alone** (requires VMAD binary stage→fragment mapping from ESM; CLI does not expose this). (inference: fires at one of the CompleteQuest stages 50 or 340, most likely fires for BOTH outcomes since hub progression must register regardless of polarity — consistent with MeQ07 pattern where `Fragment_22` fires at stage 150 (Bad path `CompleteQuest`) and presumably a parallel fragment fires at stage 70 (Good path))

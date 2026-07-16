@@ -10,7 +10,7 @@
 
 ## 任務紀錄 (Quest Record)
 
-[`2BC395 zzzCHMemoryQuest12 "Last Night"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
+[`2BC395 zzzCHMemoryQuest12 "Last Night"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
 
 CLI：
 - `questdiag Vigilant.esm 0x2BC395`
@@ -53,16 +53,16 @@ ESM：
 以下兩個 `SCEN` 紀錄共用相同的主機任務以及相同的四個別名。
 
 主機任務：
-- [`2BC395 zzzCHMemoryQuest12`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
+- [`2BC395 zzzCHMemoryQuest12`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
 
 來自 `scenediag` 的主機任務別名：
 
 | 別名 | 名稱 | 填充 | NPC 紀錄 |
 |---:|---|---|---|
-| 0 | `Alessia` | 唯一演員 `2BC383:Vigilant.esm` | [`2BC383 zzzCHMemoryStAlessiaOld "Alessia"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:814) |
-| 1 | `Pelinal` | 唯一演員 `2BC37F:Vigilant.esm` | [`2BC37F zzzCHMemoryPelinal02 "Pelinal"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:785) |
-| 2 | `Akatosh` | 唯一演員 `2BC376:Vigilant.esm` | [`2BC376 zzzCHMemoryAkatosh "???????"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:776) |
-| 3 | `Bull` | 唯一演員 `2BC389:Vigilant.esm` | [`2BC389 zzzCHMemoryMorihaus02 "Morihaus"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:815) |
+| 0 | `Alessia` | 唯一演員 `2BC383:Vigilant.esm` | [`2BC383 zzzCHMemoryStAlessiaOld "Alessia"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:814) |
+| 1 | `Pelinal` | 唯一演員 `2BC37F:Vigilant.esm` | [`2BC37F zzzCHMemoryPelinal02 "Pelinal"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:785) |
+| 2 | `Akatosh` | 唯一演員 `2BC376:Vigilant.esm` | [`2BC376 zzzCHMemoryAkatosh "???????"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:776) |
+| 3 | `Bull` | 唯一演員 `2BC389:Vigilant.esm` | [`2BC389 zzzCHMemoryMorihaus02 "Morihaus"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:815) |
 
 基於來源的映射：
 - 根據 NPC 紀錄名稱，別名 `Bull` 是 **莫里豪斯 (Morihaus)** (有翼牛頭人，艾萊西亞的配偶)；別名名稱 `Bull` 與之一致。
@@ -82,7 +82,7 @@ CLI：
 - `scenediag Vigilant.esm 0x2BD6CB`
 
 編排：
-- 主機任務：[`2BC395 zzzCHMemoryQuest12`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
+- 主機任務：[`2BC395 zzzCHMemoryQuest12`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
 - 標誌：無
 - 場景演員：別名 `#0` (`Alessia`, `DeathEnd, DialoguePause`) 與別名 `#1` (`Pelinal`, `DialoguePause`)。
 - 階段：14 個（每個 0 開始條件, 1 完成條件；階段 9 與 11 有 2 個完成條件）。
@@ -92,37 +92,37 @@ CLI：
 
 | 階段 | 說話者 | 話題 | 情緒 | 來源 |
 |---:|---|---|---|---|
-| 1 | 佩林納爾 `#1` | `2BD6CD` | Sad | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2627) |
-| 2 | 艾萊西亞 `#0` | `2BD6CF` | Happy | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2630) |
-| 3 | 艾萊西亞 `#0` | `2BD6D1` | Neutral | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2633) |
-| 4 | 佩林納爾 `#1` | `2BD6D3` | Neutral | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2636) |
-| 5 | 艾萊西亞 `#0` | `2BD6D5` | Happy | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2639) |
-| 6 | 佩林納爾 `#1` | `2BD6D7` | Fear | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2642) |
-| 7 | 艾萊西亞 `#0` | `2BD6D9` | Happy | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2645) |
-| 8 | 佩林納爾 `#1` | `2BD6DB` | Happy | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2648) |
-| 9 | 艾萊西亞 `#0` | `2BD6DD` | Sad | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2651) |
+| 1 | 佩林納爾 `#1` | `2BD6CD` | Sad | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2627) |
+| 2 | 艾萊西亞 `#0` | `2BD6CF` | Happy | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2630) |
+| 3 | 艾萊西亞 `#0` | `2BD6D1` | Neutral | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2633) |
+| 4 | 佩林納爾 `#1` | `2BD6D3` | Neutral | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2636) |
+| 5 | 艾萊西亞 `#0` | `2BD6D5` | Happy | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2639) |
+| 6 | 佩林納爾 `#1` | `2BD6D7` | Fear | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2642) |
+| 7 | 艾萊西亞 `#0` | `2BD6D9` | Happy | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2645) |
+| 8 | 佩林納爾 `#1` | `2BD6DB` | Happy | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2648) |
+| 9 | 艾萊西亞 `#0` | `2BD6DD` | Sad | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2651) |
 | 9 | (Timer 5s, 演員 `#0`) | — | — | — |
-| 10 | 佩林納爾 `#1` | `2BD6DF` | Neutral | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2654) |
-| 11 | 艾萊西亞 `#0` | `2BD6E2` | Happy | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2657) |
-| 12 | 佩林納爾 `#1` | `2BD6E5` | Sad | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2660) |
+| 10 | 佩林納爾 `#1` | `2BD6DF` | Neutral | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2654) |
+| 11 | 艾萊西亞 `#0` | `2BD6E2` | Happy | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2657) |
+| 12 | 佩林納爾 `#1` | `2BD6E5` | Sad | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2660) |
 
 翻譯（好場景，按階段順序）：
-- [`2BD6CD` / INFO `2BD6CE`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2627): 「Perrif……」
+- [`2BD6CD` / INFO `2BD6CE`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2627): 「Perrif……」
   - 筆記：`Perrif` 是艾萊西亞 (Paravania / Al-Esh) 的早期稱號；保留原樣。
-- [`2BD6CF` / INFO `2BD6D0`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2630): 「歡迎回來。我從沒想過，最後還能再見到你。」
+- [`2BD6CF` / INFO `2BD6D0`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2630): 「歡迎回來。我從沒想過，最後還能再見到你。」
   - 筆記：來源 `Wellcome` 是 `Welcome` 的拼寫錯誤；保留原樣。
-- [`2BD6D1` / INFO `2BD6D2`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2633): 「所以……怎麼樣了？你找到她了嗎？」
-- [`2BD6D3` / INFO `2BD6D4`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2636): 「終於，我找到她了。我這就去把她接來。」
-- [`2BD6D5` / INFO `2BD6D6`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2639): 「我盼著你能見到她。」
-- [`2BD6D7` / INFO `2BD6D8`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2642): 「還是不明白。」
+- [`2BD6D1` / INFO `2BD6D2`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2633): 「所以……怎麼樣了？你找到她了嗎？」
+- [`2BD6D3` / INFO `2BD6D4`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2636): 「終於，我找到她了。我這就去把她接來。」
+- [`2BD6D5` / INFO `2BD6D6`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2639): 「我盼著你能見到她。」
+- [`2BD6D7` / INFO `2BD6D8`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2642): 「還是不明白。」
   - 筆記：來源 `Still don't get it` 語意不明（指誰或什麼事不明）；採直譯。待驗證。
-- [`2BD6D9` / INFO `2BD6DA`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2645): 「我想是吧。」
-- [`2BD6DB` / INFO `2BD6DC`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2648): 「你或許……」
-- [`2BD6DD` / INFO `2BD6DE`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2651): 「…………」
-- [`2BD6DF` / INFO `2BD6E0`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2654): 「……該道別了，Perrif。」
-- [`2BD6E2` / INFO `2BD6E3`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2657): 「再見了。」
+- [`2BD6D9` / INFO `2BD6DA`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2645): 「我想是吧。」
+- [`2BD6DB` / INFO `2BD6DC`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2648): 「你或許……」
+- [`2BD6DD` / INFO `2BD6DE`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2651): 「…………」
+- [`2BD6DF` / INFO `2BD6E0`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2654): 「……該道別了，Perrif。」
+- [`2BD6E2` / INFO `2BD6E3`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2657): 「再見了。」
   - 筆記：來源 `See you again`；亦可譯為「後會有期」。
-- [`2BD6E5` / INFO `2BD6E6`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2660): 「……再見。」
+- [`2BD6E5` / INFO `2BD6E6`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2660): 「……再見。」
 
 ### 2BD6F2 zzzCHMeQ12BadScene (壞場景：阿卡托什遣走玩家)
 
@@ -130,7 +130,7 @@ CLI：
 - `scenediag Vigilant.esm 0x2BD6F2`
 
 編排：
-- 主機任務：[`2BC395 zzzCHMemoryQuest12`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
+- 主機任務：[`2BC395 zzzCHMemoryQuest12`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
 - 標誌：無
 - 場景演員：僅有別名 `#2` (`Akatosh`, `DeathEnd, DialoguePause`)。
 - 階段：6 個（階段 0 有 2 個完成條件；其餘各 1 個）。
@@ -140,20 +140,20 @@ CLI：
 
 | 階段 | 說話者 | 話題 | 來源 |
 |---:|---|---|---|
-| 1 | 阿卡托什 `#2` | `2BD6F3` | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2669) |
-| 2 | 阿卡托什 `#2` | `2BD6F5` | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2672) |
-| 3 | 阿卡托什 `#2` | `2BD6F7` | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2675) |
-| 4 | 阿卡托什 `#2` | `2BD6F9` | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2678) |
-| 5 | 阿卡托什 `#2` | `2BD6FB` | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2681) |
+| 1 | 阿卡托什 `#2` | `2BD6F3` | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2669) |
+| 2 | 阿卡托什 `#2` | `2BD6F5` | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2672) |
+| 3 | 阿卡托什 `#2` | `2BD6F7` | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2675) |
+| 4 | 阿卡托什 `#2` | `2BD6F9` | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2678) |
+| 5 | 阿卡托什 `#2` | `2BD6FB` | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2681) |
 
 翻譯（壞場景）：
-- [`2BD6F3` / INFO `2BD6F4`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2669): 「哦，你是從蜥蜴的腹中而來。真有意思。」
+- [`2BD6F3` / INFO `2BD6F4`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2669): 「哦，你是從蜥蜴的腹中而來。真有意思。」
   - 筆記：`lizard's stomach` (推論) 指的是玩家透過 VIGILANT 框架故事中的魔神/冷港通道到達此地；採直譯。待驗證。
-- [`2BD6F5` / INFO `2BD6F6`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2672): 「你不屬於這一側。我能感覺到你身上的傷。」
-- [`2BD6F7` / INFO `2BD6F8`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2675): 「你對我們無害，但你不該見到她。她終於能安息了。」
-- [`2BD6F9` / INFO `2BD6FA`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2678): 「而且，我不知道是誰把你帶到這裡來的，但你不該這樣看著。」
+- [`2BD6F5` / INFO `2BD6F6`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2672): 「你不屬於這一側。我能感覺到你身上的傷。」
+- [`2BD6F7` / INFO `2BD6F8`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2675): 「你對我們無害，但你不該見到她。她終於能安息了。」
+- [`2BD6F9` / INFO `2BD6FA`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2678): 「而且，我不知道是誰把你帶到這裡來的，但你不該這樣看著。」
   - 筆記：來源 `you should not see like this` 語法錯誤；採直譯。待驗證。
-- [`2BD6FB` / INFO `2BD6FC`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2681): 「若你與此地相融，就再也回不去了。現在，回到你那一側去吧。」
+- [`2BD6FB` / INFO `2BD6FC`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2681): 「若你與此地相融，就再也回不去了。現在，回到你那一側去吧。」
 
 ## 自定義對話分支：牛 (莫里豪斯)
 
@@ -165,7 +165,7 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`2BD6EB zzzCHMeQ12BullB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2663) | `2BD6EC` | `Goodbye` | 別名 `#3` 的 `GetIsAliasRef` | 「我明白……她化作了星辰……但是，這很令人難過……太難過了……」 |
+| [`2BD6EB zzzCHMeQ12BullB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2663) | `2BD6EC` | `Goodbye` | 別名 `#3` 的 `GetIsAliasRef` | 「我明白……她化作了星辰……但是，這很令人難過……太難過了……」 |
 
 ## 自定義對話分支：阿卡托什 (Akatosh)
 
@@ -177,16 +177,16 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`2BD6EF zzzCHMeQ12AkatoshB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2666) | `2BD6F0` | `Goodbye` | `GetStage <= 60`; 別名 `#2` 的 `GetIsAliasRef` | 「Paravant，循著群星而行……我記得，你的雙眼曾如流星般燃燒。」 |
+| [`2BD6EF zzzCHMeQ12AkatoshB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2666) | `2BD6F0` | `Goodbye` | `GetStage <= 60`; 別名 `#2` 的 `GetIsAliasRef` | 「Paravant，循著群星而行……我記得，你的雙眼曾如流星般燃燒。」 |
 
 翻譯筆記：
-- `Paravant` 是佩林納爾 (Pelin-Al / Paravant) 的早期稱號；來源拼寫為 `Paravant`。保留原樣。該台詞呼應了樞紐任務 `zzzCHMemoryGuide` 的目標 120 [`失明的雙眼能如流星般閃耀`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:312) (狄蘭·湯馬斯)，確認了跨任務的連結。
+- `Paravant` 是佩林納爾 (Pelin-Al / Paravant) 的早期稱號；來源拼寫為 `Paravant`。保留原樣。該台詞呼應了樞紐任務 `zzzCHMemoryGuide` 的目標 120 [`失明的雙眼能如流星般閃耀`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:312) (狄蘭·湯馬斯)，確認了跨任務的連結。
 - `GetStage <= 60` 門檻將此阿卡托什台詞限制在 **310 之前（好路徑）的時間窗**：僅在任務未推進到 300 區段時可用。（推論）
 
 ## 重構筆記 (Reconstruction Notes)
 
 基於來源：
-- 本記憶為 [`2BC395 zzzCHMemoryQuest12 "Last Night"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)，共 12 個階段，**0 個任務日誌目標**（在 `quests.md` 中僅有標題）。
+- 本記憶為 [`2BC395 zzzCHMemoryQuest12 "Last Night"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)，共 12 個階段，**0 個任務日誌目標**（在 `quests.md` 中僅有標題）。
 - 包含**兩個** `SCEN` 紀錄：
   - `2BD6CB zzzCHMeQ12Sc01` —— **好 / 重逢場景**：佩林納爾（呼喚 "Perrif" 者）遇見艾萊西亞，14 個階段，結束於 `"It is time to say goodbye, Perrif"` → `"See you again"` → `"........bye"`。
   - `2BD6F2 zzzCHMeQ12BadScene` —— **壞 / 遣走場景**：阿卡托什獨自告訴玩家他們不屬於這裡，「你不該見到她」，「回到你那一側去」。

@@ -23,7 +23,7 @@ Dragonborn.esm
 執行：
 
 ```bash
-cd /home/lorkhan/repo/ModForge
+cd /home/lorkhan/repo/moddings/skyrim/projects/ModForge
 scripts/extract-skyrim-masters.sh
 ```
 
@@ -64,7 +64,7 @@ reference/INDEX-skyrim-masters-local.md
 
 ```bash
 MODFORGE_SKYRIM_MASTERS="Skyrim.esm" \
-MODFORGE_REFERENCE_OUT="/home/lorkhan/repo/ModForge/reference/skyrim-esm-local" \
+MODFORGE_REFERENCE_OUT="/home/lorkhan/repo/moddings/skyrim/projects/ModForge/reference/skyrim-esm-local" \
 scripts/extract-skyrim-masters.sh
 ```
 

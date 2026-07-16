@@ -17,7 +17,7 @@ ESM: `/home/lorkhan/skyrim_mods/unzip/Vigilant SE v181/10 English/Vigilant.esm`
 
 ## Framing quest (hub)
 
-[`42E0B1 zzzCHMemoryGuide "Memory Guide"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:309)
+[`42E0B1 zzzCHMemoryGuide "Memory Guide"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:309)
 - flags `AllowRepeatedStages`, priority `99`, type `Misc`, filter `CH\`, 14 stages, single `CompleteQuest` at stage 999.
 - 3 objectives (Dylan Thomas, *Do not go gentle into that good night*):
   - obj 100 "Like when the dream no longer needs its dreamer"
@@ -29,19 +29,19 @@ ESM: `/home/lorkhan/skyrim_mods/unzip/Vigilant SE v181/10 English/Vigilant.esm`
 
 | # | FormID | EditorID | Name | Obj | Pri | Stages | `CompleteQuest` @ | Slice |
 |---:|---|---|---|---|---:|---:|---|---|
-| 01 | `12C4F4` | zzzCHMemoryQuest01 | The Grand Inquisitor | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:141) | 90 | 10 | 20 / 100 | [done](act-4-memory-01-grand-inquisitor.md) |
-| 02 | `13712B` | zzzCHMemoryQuest02 | The Mad King | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:38) | 90 | 12 | 30 / 130 | [done](act-4-memory-02-mad-king.md) |
-| 03 | `13965A` | zzzCHMemoryQuest03 | Knight of Hound | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:154) | 90 | 12 | 30 / 130 | [done](act-4-memory-03-knight-of-hound.md) |
-| 04 | `140225` | zzzCHMemoryQuest04 | Johan the fool | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:297) | 90 | 16 | 60 / 100 | [done](act-4-memory-04-johan.md) |
-| 05 | `05AE03` | zzzCHMemoryQuest05 | Ada Bal | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:358) | 90 | 12 | 50 / 120 | [done](act-4-memory-05-ada-bal.md) |
-| 06 | `06A23B` | zzzCHMemoryQuest06 | Remain of Miracle | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:372) | 90 | 6 | 30 (single) | [done](act-4-memory-06-remain-of-miracle.md) |
-| 07 | `06F53C` | zzzCHMemoryQuest07 | Temptation of Marukh | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:102) | 90 | 13 | 70 / 150 | [done](act-4-memory-07-marukh.md) |
-| 08 | `080E91` | zzzCHMemoryQuest08 | The Nameless Bard | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:195) | 90 | 26 | 90 / 230 / 350 / 370 / 999 | [done](act-4-memory-08-nameless-bard.md) |
-| 09 | `2CAE30` | zzzCHMemoryQuest09 | From Beyond | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:265) | 95 | 14 | 150 / 200 / 999 | [done](act-4-memory-09-from-beyond.md) |
-| 10 | `2A532E` | zzzCHMemoryQuest10 | Pelinal the Bloody | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401) | 90 | 40 | 180 / 300 | [done](act-4-memory-10-pelinal.md) |
-| 11 | `2B9BAB` | zzzCHMemoryQuest11 | After the Storm | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256) | 90 | 16 | 50 / 340 | [done](act-4-memory-11-after-the-storm.md) |
-| 12 | `2BC395` | zzzCHMemoryQuest12 | Last Night | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307) | 90 | 12 | 50 / 310 | [done](act-4-memory-12-last-night.md) |
-| 13 | `51C038`† | zzzCHMemoryQuest13 | Man-Bull Paravanila | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:214) | 99 | 7 | 30 / 40 / 999 | [done](act-4-memory-13-man-bull-paravanila.md) |
+| 01 | `12C4F4` | zzzCHMemoryQuest01 | The Grand Inquisitor | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:141) | 90 | 10 | 20 / 100 | [done](act-4-memory-01-grand-inquisitor.md) |
+| 02 | `13712B` | zzzCHMemoryQuest02 | The Mad King | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:38) | 90 | 12 | 30 / 130 | [done](act-4-memory-02-mad-king.md) |
+| 03 | `13965A` | zzzCHMemoryQuest03 | Knight of Hound | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:154) | 90 | 12 | 30 / 130 | [done](act-4-memory-03-knight-of-hound.md) |
+| 04 | `140225` | zzzCHMemoryQuest04 | Johan the fool | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:297) | 90 | 16 | 60 / 100 | [done](act-4-memory-04-johan.md) |
+| 05 | `05AE03` | zzzCHMemoryQuest05 | Ada Bal | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:358) | 90 | 12 | 50 / 120 | [done](act-4-memory-05-ada-bal.md) |
+| 06 | `06A23B` | zzzCHMemoryQuest06 | Remain of Miracle | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:372) | 90 | 6 | 30 (single) | [done](act-4-memory-06-remain-of-miracle.md) |
+| 07 | `06F53C` | zzzCHMemoryQuest07 | Temptation of Marukh | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:102) | 90 | 13 | 70 / 150 | [done](act-4-memory-07-marukh.md) |
+| 08 | `080E91` | zzzCHMemoryQuest08 | The Nameless Bard | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:195) | 90 | 26 | 90 / 230 / 350 / 370 / 999 | [done](act-4-memory-08-nameless-bard.md) |
+| 09 | `2CAE30` | zzzCHMemoryQuest09 | From Beyond | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:265) | 95 | 14 | 150 / 200 / 999 | [done](act-4-memory-09-from-beyond.md) |
+| 10 | `2A532E` | zzzCHMemoryQuest10 | Pelinal the Bloody | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401) | 90 | 40 | 180 / 300 | [done](act-4-memory-10-pelinal.md) |
+| 11 | `2B9BAB` | zzzCHMemoryQuest11 | After the Storm | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256) | 90 | 16 | 50 / 340 | [done](act-4-memory-11-after-the-storm.md) |
+| 12 | `2BC395` | zzzCHMemoryQuest12 | Last Night | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307) | 90 | 12 | 50 / 310 | [done](act-4-memory-12-last-night.md) |
+| 13 | `51C038`† | zzzCHMemoryQuest13 | Man-Bull Paravanila | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:214) | 99 | 7 | 30 / 40 / 999 | [done](act-4-memory-13-man-bull-paravanila.md) |
 
 † **MeQ13 is a header-only shell**: `51C038` owns no topics/scenes (`find zzzCHMeQ13` = 0). The actual content lives in the content-quest **`51ADBF zzzCHSubQuest13 "Broken Horn"`** (obj "Broken horns, sky incarnate.", quests.md:171). See the slice.
 

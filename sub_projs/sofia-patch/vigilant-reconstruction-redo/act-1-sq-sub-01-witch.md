@@ -9,7 +9,7 @@ Source policy:
 
 ## Quest Record
 
-[`17576E zzzAoMSubQ01 "Witch of Ivarstead"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:169)
+[`17576E zzzAoMSubQ01 "Witch of Ivarstead"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:169)
 
 CLI:
 - `questdiag Vigilant.esm 0x17576E`
@@ -63,7 +63,7 @@ Host quest:
 - `17576E zzzAoMSubQ01` "Witch of Ivarstead"
 
 Dialogue alias from `infodiag` conditions:
-- Alias `#3`: expected to be [`16685A zzzAoMBossReyda "Reyda"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1164).
+- Alias `#3`: expected to be [`16685A zzzAoMBossReyda "Reyda"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1164).
 
 (inference: alias roles inferred from dialogue conditions `GetIsAliasRef` index 3; no explicit alias dump available from CLI)
 
@@ -80,8 +80,8 @@ Condition pattern:
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x177DED` | `0x177DEE` | `Goodbye`, `SayOnce` | `GetStage == 10`; `GetQuestCompleted == 0` (quest `011B75`); `GetIsAliasRef alias #3` | [`"Stendarr become old ......His eyes is weaked, his mental is in insane now. That's because you are cursed...."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2037) |
-| `0x177DED` | `0x177DEF` | `Goodbye`, `SayOnce` | `GetStage == 10`; `GetQuestCompleted == 1` (quest `011B75`); `GetIsAliasRef alias #3` | [`"Well well well, you have solved the curse? Old Fool become quite kind as he once was"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2038) |
+| `0x177DED` | `0x177DEE` | `Goodbye`, `SayOnce` | `GetStage == 10`; `GetQuestCompleted == 0` (quest `011B75`); `GetIsAliasRef alias #3` | [`"Stendarr become old ......His eyes is weaked, his mental is in insane now. That's because you are cursed...."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2037) |
+| `0x177DED` | `0x177DEF` | `Goodbye`, `SayOnce` | `GetStage == 10`; `GetQuestCompleted == 1` (quest `011B75`); `GetIsAliasRef alias #3` | [`"Well well well, you have solved the curse? Old Fool become quite kind as he once was"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2038) |
 
 Inference:
 - The witch greets the player with diagnosis based on a related quest state. If player has completed quest 0x011B75 (not yet identified), the witch acknowledges the resolution and calls Stendarr "Old Fool".
@@ -93,7 +93,7 @@ TOPIC `0x177DF1 zzzAoMsq01WitchB02T01` prompt="Who are you?"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x177DF1` | `0x177DF2` | none | `GetStage == 10`; `GetIsAliasRef alias #3` | Responses: [`"Me? I am  Reyda. Witch of Glenmoril"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2041) / [`"Ivalstead is my territory. All of people and beasts around here is mine"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2042) |
+| `0x177DF1` | `0x177DF2` | none | `GetStage == 10`; `GetIsAliasRef alias #3` | Responses: [`"Me? I am  Reyda. Witch of Glenmoril"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2041) / [`"Ivalstead is my territory. All of people and beasts around here is mine"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2042) |
 
 ### Branch 3: Curse Analysis — "Why is my body so heavy?"
 
@@ -101,7 +101,7 @@ TOPIC `0x177DF4 zzzAoMsq01WitchB03T01` prompt="Why is my body so heavy ...... yo
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x177DF4` | `0x177DF5` | none | `GetStage == 10`; `GetQuestCompleted == 0` (quest `011B75`); `GetIsAliasRef alias #3` | Responses: [`"I do not anything. I just look, just lookin from the beginning"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2045) / [`"You was a really terrible. You killed child's life not only innocent person."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2046) / [`"needless to say,you are cursed. so much worse If you serve the God of Justice. You are alredy over"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2047) |
+| `0x177DF4` | `0x177DF5` | none | `GetStage == 10`; `GetQuestCompleted == 0` (quest `011B75`); `GetIsAliasRef alias #3` | Responses: [`"I do not anything. I just look, just lookin from the beginning"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2045) / [`"You was a really terrible. You killed child's life not only innocent person."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2046) / [`"needless to say,you are cursed. so much worse If you serve the God of Justice. You are alredy over"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2047) |
 
 Translation notes:
 - Source phrase "You was a really terrible" is agrammatical; implies the player's past actions (killing innocents/children) are the source of the curse.
@@ -112,7 +112,7 @@ TOPIC `0x177DF6 zzzAoMSqQ01WitchB03T02` prompt="How can I solve this curse?"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x177DF6` | `0x177DF7` | none | `GetStage == 10`; `GetQuestCompleted == 0` (quest `011B75`); `GetIsAliasRef alias #3` | [`"You listen to me? you are useless. I said you are over, You are over."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2050) |
+| `0x177DF6` | `0x177DF7` | none | `GetStage == 10`; `GetQuestCompleted == 0` (quest `011B75`); `GetIsAliasRef alias #3` | [`"You listen to me? you are useless. I said you are over, You are over."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2050) |
 
 ### Branch 5: Family Backstory — "Why was family staying here?"
 
@@ -120,7 +120,7 @@ TOPIC `0x177DF9 zzzAoMSQ01WitchB04T01` prompt="Why was family staying here?"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x177DF9` | `0x177DFA` | none | `GetStage == 10`; `GetQuestCompleted == 0` (quest `011B75`); `GetIsAliasRef alias #3` | Responses: [`"They are in troubled by cursed sword. How poor thing? So, Kind Witch decided to help them they solve the curse"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2053) / [`"Now The curse is gone, So they heve to went out here. But You did clean up here luckily. It was save time thanks to you."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2054) |
+| `0x177DF9` | `0x177DFA` | none | `GetStage == 10`; `GetQuestCompleted == 0` (quest `011B75`); `GetIsAliasRef alias #3` | Responses: [`"They are in troubled by cursed sword. How poor thing? So, Kind Witch decided to help them they solve the curse"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2053) / [`"Now The curse is gone, So they heve to went out here. But You did clean up here luckily. It was save time thanks to you."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2054) |
 
 Inference:
 - Reyda indicates a family was cursed by a sword and she helped them. This establishes Reyda as a complex figure: outwardly helpful but morally ambiguous.
@@ -131,7 +131,7 @@ TOPIC `0x177DFC zzzAoMSQ01WitchB05T01` prompt="Who is your master?"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x177DFC` | `0x177DFD` | none | `GetStage == 10`; `GetQuestCompleted == 0` (quest `011B75`); `GetIsAliasRef alias #3` | [`"Come on, somebody? Witch open the crotch anyone if they have power. Nfufufu"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2057) |
+| `0x177DFC` | `0x177DFD` | none | `GetStage == 10`; `GetQuestCompleted == 0` (quest `011B75`); `GetIsAliasRef alias #3` | [`"Come on, somebody? Witch open the crotch anyone if they have power. Nfufufu"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2057) |
 
 Translation notes:
 - Phrase is crude and agrammatical; likely implies Reyda is amoral and will serve any master with power.
@@ -142,7 +142,7 @@ TOPIC `0x177DFF zzzAoMSQ01WitchB06T01` prompt="You know everthing. About me, Abo
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x177DFF` | `0x177E00` | none | `GetStage == 10`; `GetQuestCompleted == 1` (quest `011B75`); `GetIsAliasRef alias #3` | Responses: [`"Oh, yes. So shat? So you say I am evil? Murderer is you. Not me, You are Murderer"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2060) / [`"I am just looking you as promised, and make fog thicken. Well, but it looks like there was no need for Old Fool"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2061) |
+| `0x177DFF` | `0x177E00` | none | `GetStage == 10`; `GetQuestCompleted == 1` (quest `011B75`); `GetIsAliasRef alias #3` | Responses: [`"Oh, yes. So shat? So you say I am evil? Murderer is you. Not me, You are Murderer"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2060) / [`"I am just looking you as promised, and make fog thicken. Well, but it looks like there was no need for Old Fool"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2061) |
 
 Translation notes:
 - "So shat" is a typo; intended "So what".
@@ -154,7 +154,7 @@ TOPIC `0x177E02 zzzAoMSQ01WitchB07T01` prompt="Your master is Molag Bal?"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x177E02` | `0x177E03` | none | `GetStage == 10`; `GetQuestCompleted == 1` (quest `011B75`); `GetIsAliasRef alias #3` | [`"Now, what was that? I do dance with anybody. Sexy woman like me is so hard, Nfufufufu"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2064) |
+| `0x177E02` | `0x177E03` | none | `GetStage == 10`; `GetQuestCompleted == 1` (quest `011B75`); `GetIsAliasRef alias #3` | [`"Now, what was that? I do dance with anybody. Sexy woman like me is so hard, Nfufufufu"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2064) |
 
 ### Branch 9: Combat Confrontation — "Witch must die"
 
@@ -162,7 +162,7 @@ TOPIC `0x177E05 zzzAoMSQ01WitchB08T01` prompt="Witch must die"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x177E05` | `0x177E06` | none | `GetStage == 10`; `GetQuestCompleted == 1` (quest `011B75`); `GetIsAliasRef alias #3` | Responses: [`"You want to kill more? After Killing women and child, your fellows. You want to kill to shabby old woman the next?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2067) / [`"Well, good. Try baby. You will be die while lamented your own powerlessness"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2068) |
+| `0x177E05` | `0x177E06` | none | `GetStage == 10`; `GetQuestCompleted == 1` (quest `011B75`); `GetIsAliasRef alias #3` | Responses: [`"You want to kill more? After Killing women and child, your fellows. You want to kill to shabby old woman the next?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2067) / [`"Well, good. Try baby. You will be die while lamented your own powerlessness"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2068) |
 
 VMAD Fragment:
 - `AoMSq01_TIF__02177E06` (triggers `OnEnd` fragment)
@@ -174,7 +174,7 @@ TOPIC `0x177E09 zzzAoMSQ01Witch2B01T01`
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x177E09` | `0x177E0A` | none | `GetStage == 30`; `GetIsAliasRef alias #3` | Responses: [`"Oh, My God. Come on. Please, help me, I will do anything"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2071) / [`"I was deceived in Molag Bal. I did not think to become a thing. So,please"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2072) |
+| `0x177E09` | `0x177E0A` | none | `GetStage == 30`; `GetIsAliasRef alias #3` | Responses: [`"Oh, My God. Come on. Please, help me, I will do anything"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2071) / [`"I was deceived in Molag Bal. I did not think to become a thing. So,please"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2072) |
 
 Inference:
 - Reyda's tone shifts to desperation at stage 30, suggesting either: (a) combat damage/loss, or (b) a scripted state change mid-encounter.
@@ -186,7 +186,7 @@ TOPIC `0x177E0C zzzAoMSQ01Witch2B02T01` prompt="What is Corrupted Soul?"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x177E0C` | `0x177E0D` | `SayOnce` | `GetStage == 30`; `GetIsAliasRef alias #3` | Responses: [`"Black soul found the gates of Oblivion. Gates will swallow you from the inner sooner or later"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2075) / [`"You are aleady trapped in Oblivion. No one can not get away, You are over"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2076) |
+| `0x177E0C` | `0x177E0D` | `SayOnce` | `GetStage == 30`; `GetIsAliasRef alias #3` | Responses: [`"Black soul found the gates of Oblivion. Gates will swallow you from the inner sooner or later"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2075) / [`"You are aleady trapped in Oblivion. No one can not get away, You are over"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2076) |
 
 ### Branch 12: The Stone Lore — "What is the Stone?"
 
@@ -194,7 +194,7 @@ TOPIC `0x177E0F zzzAoMSQ01Witch2B03T01` prompt="What is the Stone?"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x177E0F` | `0x177E10` | `SayOnce` | `GetStage == 30`; `GetIsAliasRef alias #3` | Responses: [`"Your fellow teach you nothing. How poor you are, I can not stop laughing you"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2079) / [`"Molag Bal. Don't you know the demon committed the bitch of Nede? To beast from people, the oldest of the stragglers"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2080) |
+| `0x177E0F` | `0x177E10` | `SayOnce` | `GetStage == 30`; `GetIsAliasRef alias #3` | Responses: [`"Your fellow teach you nothing. How poor you are, I can not stop laughing you"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2079) / [`"Molag Bal. Don't you know the demon committed the bitch of Nede? To beast from people, the oldest of the stragglers"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2080) |
 
 Translation notes:
 - "committed the bitch of Nede" is unclear; likely refers to a historical atrocity involving Molag Bal and Alessia (Nede ancestry). May be a mistranslation of a proper noun reference.
@@ -205,7 +205,7 @@ TOPIC `0x177E12 zzzAoMSQ01Witch2B04T01` prompt="No,Witch must die"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x177E12` | `0x177E13` | `Goodbye`, `SayOnce` | `GetStage == 30`; `GetIsAliasRef alias #3` | [`"Don't you have any mercy? You fucking bastard!! I wrench your head."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2083) |
+| `0x177E12` | `0x177E13` | `Goodbye`, `SayOnce` | `GetStage == 30`; `GetIsAliasRef alias #3` | [`"Don't you have any mercy? You fucking bastard!! I wrench your head."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2083) |
 
 VMAD Fragment:
 - `AoMSq01_TIF__02177E13` (triggers `OnEnd` fragment)
@@ -217,7 +217,7 @@ TOPIC `0x177E15 zzzAoMSQ01Witch2B05T01` prompt="Get lost. never come back here"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x177E15` | `0x177E16` | `Goodbye` | `GetStage == 30`; `GetIsAliasRef alias #3` | [`"Oh, thank you. you are so friendly. I promise to live humbly in deep forest"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2086) |
+| `0x177E15` | `0x177E16` | `Goodbye` | `GetStage == 30`; `GetIsAliasRef alias #3` | [`"Oh, thank you. you are so friendly. I promise to live humbly in deep forest"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2086) |
 
 VMAD Fragment:
 - `AoMSq01_TIF__02177E16` (triggers `OnEnd` fragment)
@@ -229,7 +229,7 @@ TOPIC `0x177E17 zzzAoMSQ01WitchDeath` [Combat/Death]
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x177E17` | `0x177E18` | none | `GetIsID == 1` (NPC `16685A:Vigilant.esm` = Reyda) | [`"You are monster...Laza will eat you..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2089) |
+| `0x177E17` | `0x177E18` | none | `GetIsID == 1` (NPC `16685A:Vigilant.esm` = Reyda) | [`"You are monster...Laza will eat you..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2089) |
 
 (speaker: 16685A Reyda)
 
@@ -246,7 +246,7 @@ TOPIC `0x179185` [Scene/Scene]
 
 | FormID | INFO | Conditions | Responses |
 |---|---|---|---|
-| `0x179185` | `0x179186` | (none) | [`"Your Eyes are so Cold, But hatred is burning under the thick ice"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2092) / [`"It is the same with the Old Fool. Oh, it let me hot. I want to put your eyes to decorate the shelves."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2093) |
+| `0x179185` | `0x179186` | (none) | [`"Your Eyes are so Cold, But hatred is burning under the thick ice"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2092) / [`"It is the same with the Old Fool. Oh, it let me hot. I want to put your eyes to decorate the shelves."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2093) |
 
 ### Scene 2: Counterfactual Curse Lifting
 
@@ -254,7 +254,7 @@ TOPIC `0x179188` [Scene/Scene]
 
 | FormID | INFO | Conditions | Responses |
 |---|---|---|---|
-| `0x179188` | `0x179189` | (none) | [`"If you did not come here, that family never die. Their curse will be solved. They have been living happily in his hometown of High Rock ......"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2096) / [`"So Poor, because of all you. If you did nothing, nothing happens."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2097) |
+| `0x179188` | `0x179189` | (none) | [`"If you did not come here, that family never die. Their curse will be solved. They have been living happily in his hometown of High Rock ......"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2096) / [`"So Poor, because of all you. If you did nothing, nothing happens."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2097) |
 
 Inference:
 - Reyda blames the player's arrival for the family's doom, implying her role was initially benign or neutral.
@@ -265,7 +265,7 @@ TOPIC `0x17918B` [Scene/Scene]
 
 | FormID | INFO | Conditions | Responses |
 |---|---|---|---|
-| `0x17918B` | `0x17918C` | (none) | [`"You believe the old fool yet? Although There have not exit true justice in  in this world?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2100) / [`"If it existed. Why is innocent people suffered, sinful people batten?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2101) |
+| `0x17918B` | `0x17918C` | (none) | [`"You believe the old fool yet? Although There have not exit true justice in  in this world?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2100) / [`"If it existed. Why is innocent people suffered, sinful people batten?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2101) |
 
 Inference:
 - Reyda philosophically challenges Stendarr's notion of justice, suggesting moral relativism or nihilism.
@@ -276,7 +276,7 @@ TOPIC `0x17918E` [Scene/Scene]
 
 | FormID | INFO | Conditions | Responses |
 |---|---|---|---|
-| `0x17918E` | `0x17918F` | (none) | [`"The identity of the flame burning in your eyes. You've touched the stone. That's why your are stubborn"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2104) / [`"Smell of Corrupted Soul...... You are not already human, You are monster"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2105) |
+| `0x17918E` | `0x17918F` | (none) | [`"The identity of the flame burning in your eyes. You've touched the stone. That's why your are stubborn"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2104) / [`"Smell of Corrupted Soul...... You are not already human, You are monster"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2105) |
 
 Inference:
 - This explicitly references the "stone" (daemonic artifact from Marukh path) and suggests the player has been contaminated by it.
@@ -291,7 +291,7 @@ TOPIC `0x17B7F6 zzzAoMSQ01Witch3B01T01`
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x17B7F6` | `0x17B7F7` | `WalkAway` | `GetStage == 210`; `GetIsAliasRef alias #3` | Responses: [`"You are so stupid. You are like Old fool. It's just like you to that decrepit until the tail club"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2108) / [`"You're not a record of death way. Looks fell to die dripping field in the wilderness, Ahahahahaha"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2109) |
+| `0x17B7F6` | `0x17B7F7` | `WalkAway` | `GetStage == 210`; `GetIsAliasRef alias #3` | Responses: [`"You are so stupid. You are like Old fool. It's just like you to that decrepit until the tail club"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2108) / [`"You're not a record of death way. Looks fell to die dripping field in the wilderness, Ahahahahaha"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2109) |
 
 Translation notes:
 - "decrepit until the tail club" is unclear; possibly a mangled reference to decay or degradation.
@@ -302,7 +302,7 @@ TOPIC `0x17B7F8 zzzAoMSQ01Witch3B01T02` prompt="What are you trying to do?"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x17B7F8` | `0x17B7F9` | `Goodbye`, `SayOnce` | `GetStage == 210`; `GetIsAliasRef alias #3` | Responses: [`"I can not kill you. So I wreak my anger by killin ivasterd's people"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2112) / [`"his is Humble life of the witch. It is to get all I see into honey bucket "`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2113) |
+| `0x17B7F8` | `0x17B7F9` | `Goodbye`, `SayOnce` | `GetStage == 210`; `GetIsAliasRef alias #3` | Responses: [`"I can not kill you. So I wreak my anger by killin ivasterd's people"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2112) / [`"his is Humble life of the witch. It is to get all I see into honey bucket "`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2113) |
 
 VMAD Fragment:
 - `AoMSq01_TIF__0217B7F9` (triggers `OnEnd` fragment)
@@ -315,8 +315,8 @@ Translation notes:
 ## Related Records
 
 NPCs:
-- [`16685A zzzAoMBossReyda "Reyda"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1164) (witch; quest-tied via alias #3)
-- [`0DC68D zzzCHEnchanter "Hilda the witch"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:829) (related NPC; dialogues in Act 4 memory chain reference her knowledge of Reyda)
+- [`16685A zzzAoMBossReyda "Reyda"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1164) (witch; quest-tied via alias #3)
+- [`0DC68D zzzCHEnchanter "Hilda the witch"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:829) (related NPC; dialogues in Act 4 memory chain reference her knowledge of Reyda)
 
 Related Quests:
 - `011B75:Vigilant.esm` (referenced quest; completion state gates several Reyda opening lines; identity TBD)

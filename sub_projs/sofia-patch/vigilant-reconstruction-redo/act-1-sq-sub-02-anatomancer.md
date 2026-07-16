@@ -9,7 +9,7 @@ Source policy:
 
 ## Quest Record
 
-[`4D4C3D zzzAoMSubQ02 "Sacred Anatomancer"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:46)
+[`4D4C3D zzzAoMSubQ02 "Sacred Anatomancer"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:46)
 
 CLI:
 - `questdiag Vigilant.esm 0x4D4C3D`
@@ -58,7 +58,7 @@ Objectives:
 
 | Index | Source | Translation |
 |---:|---|---|
-| 0 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:47) | Find Anatomancer |
+| 0 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:47) | Find Anatomancer |
 | 1 | objective | Prove yourself to Anatomancer |
 | 10 | objective | Talk to Anatomancer |
 | 20 | objective | Help Anatomancer(Evil) |
@@ -103,9 +103,9 @@ Condition pattern:
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D4C42` | `0x531D03` | InvisibleContinue | `GetGlobalValue(530B06) > 2`; `GetIsAliasRef alias #1` | [`"You have already known love three times. You no longer need to ask questions. All that is left is to seek the radiance. Come on through."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3151) |
-| `0x4D4C42` | `0x531D02` | InvisibleContinue | `GetGlobalValue(530B11) > 0` (separate global); `GetIsAliasRef alias #1` | [`"It's wonderful. You've already got the radiance. Then you're us. Come on through."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3152) |
-| `0x4D4C42` | `0x4D4C43` | none | `GetIsAliasRef alias #1` | [`"Have you been tested? Have you learned to love one another?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3153) |
+| `0x4D4C42` | `0x531D03` | InvisibleContinue | `GetGlobalValue(530B06) > 2`; `GetIsAliasRef alias #1` | [`"You have already known love three times. You no longer need to ask questions. All that is left is to seek the radiance. Come on through."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3151) |
+| `0x4D4C42` | `0x531D02` | InvisibleContinue | `GetGlobalValue(530B11) > 0` (separate global); `GetIsAliasRef alias #1` | [`"It's wonderful. You've already got the radiance. Then you're us. Come on through."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3152) |
+| `0x4D4C42` | `0x4D4C43` | none | `GetIsAliasRef alias #1` | [`"Have you been tested? Have you learned to love one another?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3153) |
 
 Inference:
 - Globals `530B06` and `530B11` track "radiance" gained from prior trials (likely from Act 1 earlier quests).
@@ -117,7 +117,7 @@ TOPIC `0x4D4C44 zzzAoMSubQ02TA01B01T02` prompt="What are you talking about?"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D4C44` | `0x4D4C45` | none | `GetIsAliasRef alias #1` | [`"If you have not been tested, leave. This is not the place for you to come."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3156) |
+| `0x4D4C44` | `0x4D4C45` | none | `GetIsAliasRef alias #1` | [`"If you have not been tested, leave. This is not the place for you to come."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3156) |
 
 ### Branch 3: Navigation — "Where do I go to get this ordeal?"
 
@@ -125,7 +125,7 @@ TOPIC `0x4D4C46 zzzAoMSubQ02TA01B01T03` prompt="Where do I go to get this ordeal
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D4C46` | `0x4D4C47` | Goodbye | `GetIsAliasRef alias #1` | Responses: [`"Dawnstar, I suggest you head to the town where nightmares abound. Your ordeal will begin there."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3159) / [`"If you want to take a detour, follow the puppet named Altano, if you want to take a shortcut, follow the container named Orlando."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3160) |
+| `0x4D4C46` | `0x4D4C47` | Goodbye | `GetIsAliasRef alias #1` | Responses: [`"Dawnstar, I suggest you head to the town where nightmares abound. Your ordeal will begin there."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3159) / [`"If you want to take a detour, follow the puppet named Altano, if you want to take a shortcut, follow the container named Orlando."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3160) |
 
 Inference:
 - Dawnstar is referenced as a trial location ("town where nightmares abound" — likely Act 1 quest 1 or the Witch quest).
@@ -137,7 +137,7 @@ TOPIC `0x4D4C48 zzzAoMSubQ02TA01B01T04` prompt="I've already been through the tr
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D4C48` | `0x4D4C49` | none | `GetIsAliasRef alias #1` | Responses: [`"Then let me ask you a few questions. If you've really been through the trials, you know what I'm talking about."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3163) / [`"What color was the stone? And was it real?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3164) |
+| `0x4D4C48` | `0x4D4C49` | none | `GetIsAliasRef alias #1` | Responses: [`"Then let me ask you a few questions. If you've really been through the trials, you know what I'm talking about."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3163) / [`"What color was the stone? And was it real?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3164) |
 
 Inference:
 - The gatekeeper begins a set of philosophical tests about the "stone" (a daemonic artifact central to Marukh/Act 4 lore).
@@ -148,7 +148,7 @@ TOPIC `0x4D4C4A zzzAoMSubQ02TA01B01T05F` prompt="The stone was blue, and it was 
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D4C4A` | `0x4D4C4B` | Goodbye | `GetIsAliasRef alias #1` | [`"Don't lie to me. If you were blue, your story would already be over. I wouldn't even be able to talk to you right now."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3167) |
+| `0x4D4C4A` | `0x4D4C4B` | Goodbye | `GetIsAliasRef alias #1` | [`"Don't lie to me. If you were blue, your story would already be over. I wouldn't even be able to talk to you right now."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3167) |
 
 Inference:
 - If the player claims the stone was "blue" (real, immaculate), they are rejected. This suggests the blue stone = the true/uncorrupted Eye of Marukh, which annihilates the holder.
@@ -159,7 +159,7 @@ TOPIC `0x4D4C4C zzzAoMSubQ02TA01B01T05T` prompt="The stone was red. It was fake.
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D4C4C` | `0x4D4C4D` | none | `GetIsAliasRef alias #1` | Responses: [`"Oh, great. You're certainly here. Let's get to the next question."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3170) / [`"Did the one who sings, get sung to? Did the puppet have a home?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3171) |
+| `0x4D4C4C` | `0x4D4C4D` | none | `GetIsAliasRef alias #1` | Responses: [`"Oh, great. You're certainly here. Let's get to the next question."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3170) / [`"Did the one who sings, get sung to? Did the puppet have a home?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3171) |
 
 Inference:
 - The correct answer is that the stone was red (corrupted/impure) and fake (not the true stone). This implies the player has been exposed to a fake/corrupted version.
@@ -171,7 +171,7 @@ TOPIC `0x4D4C4E zzzAoMSubQ02TA01B01T06F` prompt="Morag Bal sang its name and mar
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D4C4E` | `0x4D4C4F` | Goodbye | `GetIsAliasRef alias #1` | [`"That's a lie. Morag Bal doesn't know its name. That is why he conceived the nameless puppet, and that is why Jygarag came to corrupt it."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3174) |
+| `0x4D4C4E` | `0x4D4C4F` | Goodbye | `GetIsAliasRef alias #1` | [`"That's a lie. Morag Bal doesn't know its name. That is why he conceived the nameless puppet, and that is why Jygarag came to corrupt it."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3174) |
 
 Inference:
 - Morag Bal does not "know" the puppet's name; he created it deliberately nameless. Jygarag (god of chaos/madness) then corrupted it further.
@@ -183,7 +183,7 @@ TOPIC `0x4D4C50 zzzAoMSubQ02TA01B01T06T` prompt="No one with no name should be s
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D4C50` | `0x4D4C51` | none | `GetIsAliasRef alias #1` | Responses: [`"Yeah, that's it. You're as good as I expected. Let's get to the next question."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3177) / [`"Was anyone late to the feast of the Lady of the Blood? Do you know their names?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3178) |
+| `0x4D4C50` | `0x4D4C51` | none | `GetIsAliasRef alias #1` | Responses: [`"Yeah, that's it. You're as good as I expected. Let's get to the next question."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3177) / [`"Was anyone late to the feast of the Lady of the Blood? Do you know their names?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3178) |
 
 Inference:
 - The correct answer is: the puppet has no name, and cannot be returned to its origin (a liminal metaphysical trap).
@@ -195,7 +195,7 @@ TOPIC `0x4D4C52 zzzAoMSubQ02TA01B01T07F` prompt="No one was late for her banquet
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D4C52` | `0x4D4C53` | Goodbye | `GetIsAliasRef alias #1` | [`"Yeah, you're definitely right. No one was supposed to be late. But that's exactly what has turned out to be wrong."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3181) |
+| `0x4D4C52` | `0x4D4C53` | Goodbye | `GetIsAliasRef alias #1` | [`"Yeah, you're definitely right. No one was supposed to be late. But that's exactly what has turned out to be wrong."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3181) |
 
 Inference:
 - The gatekeeper acknowledges the paradox: all were supposed to come, but "something has gone wrong" (an anomaly, absence, or uninvited guest).
@@ -206,7 +206,7 @@ TOPIC `0x4D4C54 zzzAoMSubQ02TA01B01T07T` prompt="Laza. A nomadic survivor."
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D4C54` | `0x4D4C55` | Goodbye | `GetIsAliasRef alias #1` | Responses: [`"Yeah, you're wrong rightly. And you know there was something there that shouldn't have been."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3184) / [`"It means you deserve to see the blue stars. Now, come on by."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3185) |
+| `0x4D4C54` | `0x4D4C55` | Goodbye | `GetIsAliasRef alias #1` | Responses: [`"Yeah, you're wrong rightly. And you know there was something there that shouldn't have been."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3184) / [`"It means you deserve to see the blue stars. Now, come on by."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3185) |
 | | | | VMAD: `AoMSq02_TIF__024D4C55.Fragment_0` on OnEnd | |
 
 Inference:
@@ -224,14 +224,14 @@ TOPIC `0x4D4C56 zzzAoMSubQ02Hello` [Misc/Hello]
 
 | FormID | INFO | Stage Gate | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D4C56` | `0x4D4C57` | 10 | `GetStage == 10`; `GetIsAliasRef alias #0` | [`"You have been chosen. How I envy that man."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3188) (Happy emotion) |
-| | `0x4D4C5C` | 20 | `GetStage == 20`; `GetIsAliasRef alias #0` | [`"Will you help me? We can look forward to a wonderful future together."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3189) (Happy) |
-| | `0x4D4C5D` | 30 | `GetStage == 30`; `GetIsAliasRef alias #0` | [`"Please don't kill it. If you kill, its future will spill out."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3190) (Happy) |
-| | `0x4D4C5E` | 40 | `GetStage == 40`; `GetIsAliasRef alias #0` | [`"Excellent. Excellent. Come on, come here."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3191) (Happy) |
+| `0x4D4C56` | `0x4D4C57` | 10 | `GetStage == 10`; `GetIsAliasRef alias #0` | [`"You have been chosen. How I envy that man."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3188) (Happy emotion) |
+| | `0x4D4C5C` | 20 | `GetStage == 20`; `GetIsAliasRef alias #0` | [`"Will you help me? We can look forward to a wonderful future together."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3189) (Happy) |
+| | `0x4D4C5D` | 30 | `GetStage == 30`; `GetIsAliasRef alias #0` | [`"Please don't kill it. If you kill, its future will spill out."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3190) (Happy) |
+| | `0x4D4C5E` | 40 | `GetStage == 40`; `GetIsAliasRef alias #0` | [`"Excellent. Excellent. Come on, come here."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3191) (Happy) |
 | | | | VMAD: `AoMSq02_TIF__024D4C5E.Fragment_0` on OnEnd | |
-| | `0x4D4C5F` | 50–60 | `GetStage >= 50` AND `< 60`; `GetIsAliasRef alias #0` | [`"Come on, let's squeeze the future. Let see life shining. ......!"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3192) (Happy) |
-| | `0x4D4C60` | 60 | `GetStage == 60`; `GetIsAliasRef alias #0` | [`"Oh, that's nice. How mellow."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3193) (Happy) |
-| | `0x4D4C61` | 70 | `GetStage == 70`; `GetIsAliasRef alias #0` | [`"Well, put it on. The guts will show you. A new world. ......"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3194) (Happy) |
+| | `0x4D4C5F` | 50–60 | `GetStage >= 50` AND `< 60`; `GetIsAliasRef alias #0` | [`"Come on, let's squeeze the future. Let see life shining. ......!"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3192) (Happy) |
+| | `0x4D4C60` | 60 | `GetStage == 60`; `GetIsAliasRef alias #0` | [`"Oh, that's nice. How mellow."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3193) (Happy) |
+| | `0x4D4C61` | 70 | `GetStage == 70`; `GetIsAliasRef alias #0` | [`"Well, put it on. The guts will show you. A new world. ......"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3194) (Happy) |
 
 Inference:
 - Stage 10: anatomancer greets the player as "chosen"; appears envious (of what?).
@@ -248,12 +248,12 @@ Several Hello responses are tagged with speaker `4D7106` (likely an entity/choir
 
 | FormID | INFO | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D4C56` | `0x4D710F` | `GetIsID == 1` (speaker `4D7106`) | [`"Love, peace, love, peace, love......!!! Its repetition, of beautiful sounds, endless repetition, of the here and now!"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3195) |
-| | `0x4D7110` | `GetIsID == 1` (speaker `4D7106`) | [`"Love, and peace. Beautiful repetition, equilibrating present, merging into an experienced future!"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3196) |
-| | `0x4D7111` | `GetIsID == 1` (speaker `4D7106`) | [`"Love, love, love, love, true God's love, dreaming God's love, and our love!"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3197) |
-| | `0x4D7112` | `GetIsID == 1` (speaker `4D7106`) | [`"To love, me, and us! To love, me, and us! To the fourth philosophy of disbelief."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3198) |
-| | `0x4D7113` | `GetIsID == 1` (speaker `4D7106`) | [`"Three in total, three times three, repetitive three, it's love, God's love! Even the light bends!"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3199) |
-| | `0x4D7114` | `GetIsID == 1` (speaker `4D7106`); RandomEnd | [`"A string of people peeking, a wall of jealousy, erased bread. The bottomlessness because of the basis, the third person who returns!"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3200) |
+| `0x4D4C56` | `0x4D710F` | `GetIsID == 1` (speaker `4D7106`) | [`"Love, peace, love, peace, love......!!! Its repetition, of beautiful sounds, endless repetition, of the here and now!"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3195) |
+| | `0x4D7110` | `GetIsID == 1` (speaker `4D7106`) | [`"Love, and peace. Beautiful repetition, equilibrating present, merging into an experienced future!"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3196) |
+| | `0x4D7111` | `GetIsID == 1` (speaker `4D7106`) | [`"Love, love, love, love, true God's love, dreaming God's love, and our love!"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3197) |
+| | `0x4D7112` | `GetIsID == 1` (speaker `4D7106`) | [`"To love, me, and us! To love, me, and us! To the fourth philosophy of disbelief."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3198) |
+| | `0x4D7113` | `GetIsID == 1` (speaker `4D7106`) | [`"Three in total, three times three, repetitive three, it's love, God's love! Even the light bends!"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3199) |
+| | `0x4D7114` | `GetIsID == 1` (speaker `4D7106`); RandomEnd | [`"A string of people peeking, a wall of jealousy, erased bread. The bottomlessness because of the basis, the third person who returns!"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3200) |
 
 Inference:
 - Speaker `4D7106` (likely "Piper" entity or the corrupted collective) interjects philosophical monologues emphasizing "love," repetition, and "the fourth philosophy of disbelief."
@@ -265,7 +265,7 @@ TOPIC `0x4D4C58 zzzAoMSubQ02GoodBye` [Misc/Goodbye]
 
 | FormID | INFO | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D4C58` | `0x4D4C59` | `GetIsAliasRef alias #0` | [`"Can you hear song of the life?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3203) |
+| `0x4D4C58` | `0x4D4C59` | `GetIsAliasRef alias #0` | [`"Can you hear song of the life?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3203) |
 
 ### Anatomancer Death Dialogue
 
@@ -273,7 +273,7 @@ TOPIC `0x4D4C5A zzzAoMSubQ02Death` [Combat/Death]
 
 | FormID | INFO | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D4C5A` | `0x4D4C5B` | `GetIsAliasRef alias #0` | [`"The shining of the life ...."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3206) (Happy emotion) |
+| `0x4D4C5A` | `0x4D4C5B` | `GetIsAliasRef alias #0` | [`"The shining of the life ...."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3206) (Happy emotion) |
 
 ## Pale Feet / Anatomancer Interrogation (Stage 10+)
 
@@ -285,7 +285,7 @@ TOPIC `0x4D5E54 zzzAoMSubQ02PaleB01T01` prompt="Who is that man?"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D5E54` | `0x4D5E55` | SayOnce | `GetStage == 10`; `GetIsAliasRef alias #0` | [`"It is better not to call them. If you call it carelessly, it will come to you. When the time comes, you will know its name and call it."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3209) (Fear emotion) |
+| `0x4D5E54` | `0x4D5E55` | SayOnce | `GetStage == 10`; `GetIsAliasRef alias #0` | [`"It is better not to call them. If you call it carelessly, it will come to you. When the time comes, you will know its name and call it."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3209) (Fear emotion) |
 
 Inference:
 - An NPC warns against naming the anatomancer; summoning by name has daemonic consequences.
@@ -296,7 +296,7 @@ TOPIC `0x4D5E57 zzzAoMSubQ02PaleB02T01` prompt="What are you doing here?"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D5E57` | `0x4D5E58` | none | `GetStage == 10`; `GetIsAliasRef alias #0` | Responses: [`"It's anatomancy. It's my mission to read the future hidden in the guts."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3212) (Neutral) / [`"I need your help. I want to know more. The secrets hidden in the flesh."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3213) (Happy) |
+| `0x4D5E57` | `0x4D5E58` | none | `GetStage == 10`; `GetIsAliasRef alias #0` | Responses: [`"It's anatomancy. It's my mission to read the future hidden in the guts."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3212) (Neutral) / [`"I need your help. I want to know more. The secrets hidden in the flesh."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3213) (Happy) |
 
 Inference:
 - Anatomancy is divination via organ/flesh inspection (visceral prophecy). The anatomancer seeks to expand knowledge via ritual dissection.
@@ -307,7 +307,7 @@ TOPIC `0x4D5E59 zzzAoMSubQ02PaleB02T02` prompt="What do you want me to do?"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D5E59` | `0x4D5E5A` | none | `GetStage == 10`; `GetIsAliasRef alias #0` | [`"I want a two-legged sheep. The younger they are, the ...... better. It's so full of future."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3216) (Happy) |
+| `0x4D5E59` | `0x4D5E5A` | none | `GetStage == 10`; `GetIsAliasRef alias #0` | [`"I want a two-legged sheep. The younger they are, the ...... better. It's so full of future."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3216) (Happy) |
 | | | | VMAD: `AoMSq02_TIF__024D5E5A.Fragment_0` on OnEnd | |
 
 Inference:
@@ -320,7 +320,7 @@ TOPIC `0x4D5E5C zzzAoMSubQ02PaleB03T01` prompt="I don't trust anyone whose breat
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D5E5C` | `0x4D5E5D` | none | `GetStage == 20`; `GetIsAliasRef alias #0` | [`"When I look forward to the future, my appetite gets the better of me. I'm allowed a few nibbles, right?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3219) (Happy) |
+| `0x4D5E5C` | `0x4D5E5D` | none | `GetStage == 20`; `GetIsAliasRef alias #0` | [`"When I look forward to the future, my appetite gets the better of me. I'm allowed a few nibbles, right?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3219) (Happy) |
 
 Inference:
 - Anatomancer admits to partial consumption of the victim ("a few nibbles"); appetite = daemonic hunger or pure malice.
@@ -331,7 +331,7 @@ TOPIC `0x4D5E5F zzzAoMSubQ02PaleB04T01` prompt="You are destined to die here and
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D5E5F` | `0x4D5E60` | Goodbye | `GetStage == 20`; `GetIsAliasRef alias #0` | [`"Oh, that's nice. That's great. Please do. And I want you to anatomance me."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3222) (Happy) |
+| `0x4D5E5F` | `0x4D5E60` | Goodbye | `GetStage == 20`; `GetIsAliasRef alias #0` | [`"Oh, that's nice. That's great. Please do. And I want you to anatomance me."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3222) (Happy) |
 | | | | VMAD: `AoMSq02_TIF__024D5E60.Fragment_0` on OnEnd | |
 
 Inference:
@@ -344,7 +344,7 @@ TOPIC `0x4D5E62 zzzAoMSubQ02PaleB05T01` prompt="I'll help you to find a two-legg
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D5E62` | `0x4D5E63` | Goodbye | `GetStage == 20`; `GetIsAliasRef alias #0` | [`"Oh, great. Here are the tools you'll need."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3225) (Happy) |
+| `0x4D5E62` | `0x4D5E63` | Goodbye | `GetStage == 20`; `GetIsAliasRef alias #0` | [`"Oh, great. Here are the tools you'll need."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3225) (Happy) |
 | | | | VMAD: `AoMSq02_TIF__024D5E63.Fragment_0` on OnEnd | |
 
 Inference:
@@ -356,7 +356,7 @@ TOPIC `0x4D5E77 zzzAoMSubQ02PaleB06T01` prompt="What the heck is this ......?"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D5E77` | `0x4D5E78` | none | `GetStage == 60`; `GetIsAliasRef alias #0` | [`"You see. It's so beautiful to me. I can smell the future like a jewel."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3228) (Happy) |
+| `0x4D5E77` | `0x4D5E78` | none | `GetStage == 60`; `GetIsAliasRef alias #0` | [`"You see. It's so beautiful to me. I can smell the future like a jewel."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3228) (Happy) |
 
 Inference:
 - After the ritual "crush" (stage 50–60), player questions the artifact/organs. Anatomancer is ecstatic about the "future" revealed via sensory inspection.
@@ -367,7 +367,7 @@ TOPIC `0x4D5E7A zzzAoMSubQ02PaleB07T01` prompt="What does this tell us?"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D5E7A` | `0x4D5E7B` | Goodbye | `GetStage == 60`; `GetIsAliasRef alias #0` | [`"This is the future that lies ahead. Come on, put it on. You will hear the song of life."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3231) (Happy) |
+| `0x4D5E7A` | `0x4D5E7B` | Goodbye | `GetStage == 60`; `GetIsAliasRef alias #0` | [`"This is the future that lies ahead. Come on, put it on. You will hear the song of life."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3231) (Happy) |
 | | | | VMAD: `AomSq02_TIF__024D5E7B.Fragment_0` on OnEnd | |
 
 Inference:
@@ -383,7 +383,7 @@ TOPIC `0x4D8320` [Scene/Scene category]
 
 | FormID | INFO | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D8320` | `0x4D8321` | (none) | [`"Messy and Muddle, the life sings. Sound of the dreadlord's flute, drown out the song of the gods."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3234) |
+| `0x4D8320` | `0x4D8321` | (none) | [`"Messy and Muddle, the life sings. Sound of the dreadlord's flute, drown out the song of the gods."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3234) |
 
 Inference:
 - "Messy and Muddle" = a refrain or entity name; "dreadlord's flute" = Jygarag / musical corruption.
@@ -394,7 +394,7 @@ TOPIC `0x4D8322` [Scene/Scene category]
 
 | FormID | INFO | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D8322` | `0x4D8323` | (none) | [`"Let us discard our names and share our sleeping hearts. Messy and Muddle, Disperse our flesh to the four corners of the world."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3237) |
+| `0x4D8322` | `0x4D8323` | (none) | [`"Let us discard our names and share our sleeping hearts. Messy and Muddle, Disperse our flesh to the four corners of the world."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3237) |
 
 Inference:
 - Echoes Branch 6b ("nameless puppet"); advocates bodily dissolution and collective merger.
@@ -405,7 +405,7 @@ TOPIC `0x4D8324` [Scene/Scene category]
 
 | FormID | INFO | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D8324` | `0x4D8325` | (none) | [`"Dreaming god forgets the name we found, the insomnia heart. Let's crawl like a maggot through the depths of darkness, Messy and Muddle."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3240) |
+| `0x4D8324` | `0x4D8325` | (none) | [`"Dreaming god forgets the name we found, the insomnia heart. Let's crawl like a maggot through the depths of darkness, Messy and Muddle."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3240) |
 
 Inference:
 - "Dreaming god" = Lorkhan / AKA (the dreaming aspect of divine consciousness); "insomnia heart" = wakefulness / suffering.
@@ -420,7 +420,7 @@ TOPIC `0x4D8329 zzzAoMSubQ02PiperB01T01` prompt="Let us sing together, the song 
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D8329` | `0x4D832A` | none | `GetIsID == 1` (speaker `4D7106`) | Responses (3×): (1) [`"Love, I, and we! Three of the three, make life clear from the wandering world."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3243) (Happy) / (2) [`"A string of peepers, a wall of jealousy, an erased pan. Three of the three, make falsehood more clear than love."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3244) / (3) [`"Three in total, three in multiples, three in repetition. Three of the three, how can you divide the red from the blue"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3245) |
+| `0x4D8329` | `0x4D832A` | none | `GetIsID == 1` (speaker `4D7106`) | Responses (3×): (1) [`"Love, I, and we! Three of the three, make life clear from the wandering world."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3243) (Happy) / (2) [`"A string of peepers, a wall of jealousy, an erased pan. Three of the three, make falsehood more clear than love."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3244) / (3) [`"Three in total, three in multiples, three in repetition. Three of the three, how can you divide the red from the blue"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3245) |
 
 Inference:
 - Three responses emphasizing "three of the three" — trinitarian theology or triple aspect of a daemonic concept.
@@ -432,7 +432,7 @@ TOPIC `0x4D832C zzzAoMSubQ02PiperB02T01` prompt="What is our mission!?"
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x4D832C` | `0x4D832D` | none | `GetIsID == 1` (speaker `4D7106`) | Responses (3×): (1) [`"One, the extermination of the life-threatening Hamah bloodline! The last shred of the whore's carrion must be destroyed!"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3248) (Anger) / (2) [`"One, the extinction of Laza, the shining blocker! Eat up every last shred of carrion from these sacks of shit!"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3249) / (3) [`"One, the extermination of the bard who block the song! Burn every last shred of carrion from the lice!"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3250) |
+| `0x4D832C` | `0x4D832D` | none | `GetIsID == 1` (speaker `4D7106`) | Responses (3×): (1) [`"One, the extermination of the life-threatening Hamah bloodline! The last shred of the whore's carrion must be destroyed!"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3248) (Anger) / (2) [`"One, the extinction of Laza, the shining blocker! Eat up every last shred of carrion from these sacks of shit!"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3249) / (3) [`"One, the extermination of the bard who block the song! Burn every last shred of carrion from the lice!"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3250) |
 
 Inference:
 - Three extermination targets: (1) Hamah bloodline (unknown; possibly a Daedric or Alessian faction), (2) Laza (the "nomadic survivor" from gatekeeper test), (3) "the bard" (possibly Altano or a musician entity).
@@ -444,7 +444,7 @@ TOPIC `0x56F0BF zzzAoMSubQ02B01End` [Topic/Custom]
 
 | FormID | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x56F0BF` | `0x56F0C0` | Goodbye | `GetIsAliasRef alias #1` | [`"..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3723) |
+| `0x56F0BF` | `0x56F0C0` | Goodbye | `GetIsAliasRef alias #1` | [`"..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3723) |
 | | | | VMAD: `AoMSq02_TIF__0256F0C0.Fragment_0` on OnEnd | |
 
 Inference:

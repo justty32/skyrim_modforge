@@ -10,7 +10,7 @@
 
 ## 任務記錄
 
-[`038525 zzzBMMq02 "殘骸"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:108)
+[`038525 zzzBMMq02 "殘骸"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:108)
 
 CLI：
 - `questdiag Vigilant.esm 0x038525`
@@ -50,12 +50,12 @@ ESM：
 
 | 索引 | 來源 | 任務文本 |
 |---:|---|---|
-| 10 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:109) | 擊敗 `<Alias=Vamp01>` |
-| 30 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:110) | 擊敗 `<Alias=Vamp02>` |
-| 50 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:111) | 擊敗 `<Alias=Vamp03>` |
-| 60 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:112) | 與 `<Alias=Vamp04Ess>` 對話 |
-| 70 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:113) | 給予 `<Alias=Vamp04>` 斯坦達爾的仁慈 |
-| 90 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:114) | 擊敗 `<Alias=Vamp05>` |
+| 10 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:109) | 擊敗 `<Alias=Vamp01>` |
+| 30 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:110) | 擊敗 `<Alias=Vamp02>` |
+| 50 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:111) | 擊敗 `<Alias=Vamp03>` |
+| 60 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:112) | 與 `<Alias=Vamp04Ess>` 對話 |
+| 70 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:113) | 給予 `<Alias=Vamp04>` 斯坦達爾的仁慈 |
+| 90 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:114) | 擊敗 `<Alias=Vamp05>` |
 
 目標目標：
 - 目標 10, 30, 50, 70 在 ESM 中各有 1 個目標。
@@ -90,8 +90,8 @@ ESM：
 
 | 主題 | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`039B3A zzzBMMq02B01v2FearGreet`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:527) | `039B3B` | WalkAway | `GetStage EqualTo 20`; `GetIsAliasRef 別名 #1` | [我不再生氣了嗎？雅瑞德爾，我終於恢復了理智……我們去瓜吉吧。好吧，讓我們回去……](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:528) |
-| [`039B3C zzzBMMq02B01v2AreUOK`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:530) | `039B3D` | Goodbye, CanMoveWhileGreeting | `GetIsAliasRef 別名 #1` | 提示：「你還好嗎？」回應：[如果你先走，怪物！別靠近！走開！！快走！快走！啊啊走開！](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:531) VMAD：結束時執行 `BM02_TIF__01039B3D.Fragment_0`。 |
+| [`039B3A zzzBMMq02B01v2FearGreet`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:527) | `039B3B` | WalkAway | `GetStage EqualTo 20`; `GetIsAliasRef 別名 #1` | [我不再生氣了嗎？雅瑞德爾，我終於恢復了理智……我們去瓜吉吧。好吧，讓我們回去……](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:528) |
+| [`039B3C zzzBMMq02B01v2AreUOK`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:530) | `039B3D` | Goodbye, CanMoveWhileGreeting | `GetIsAliasRef 別名 #1` | 提示：「你還好嗎？」回應：[如果你先走，怪物！別靠近！走開！！快走！快走！啊啊走開！](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:531) VMAD：結束時執行 `BM02_TIF__01039B3D.Fragment_0`。 |
 
 翻譯筆記：
 - "Aredhel" 和 "Gwaji" 可能是提取文本中未翻譯的名稱或術語；可能需要 NPC/地點驗證。
@@ -108,16 +108,16 @@ ESM：
 
 | 主題 | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`039B42 zzzBMMq02B01v4Greet`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:533) | `039B43` | Goodbye | `GetStage LessThanOrEqualTo 40`; `GetIsAliasRef 別名 #5` | [現在很糟，我不知道耶利哥什麼時候會來](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:534) VMAD：結束時執行 `BM02_TIF__01039B43.Fragment_0`。 |
-| [`039B45 zzzBMMq02B02v4Happen`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:537) | `039B46` | SayOnce | `GetStage EqualTo 60`; `GetIsAliasRef 別名 #5` | 提示：「這裡發生了什麼事？」回應 (1)：[她。她很痛苦。那裡有一位鮮血夫人……](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:538) 回應 (2)：[我們必須打敗她。我什麼都做不了。所有人，吸血鬼……諾瑪莎那些倖存下來的人，還有……她的血](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:539) VMAD：結束時執行 `BM02_TIF__01039B46.Fragment_0`。 |
-| [`039B48 zzzBMMq02B03v4Vampirism`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:541) | `039B49` | 無 | `GetStage EqualTo 65`; `GetIsAliasRef 別名 #5` | 提示：「難道你不 Naose 嗜血症嗎？」回應 (1)：[太遲了。對鮮血的渴求很強烈。最重要的是，她正因變得強大而喜悅……](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:542) 回應 (2)：[每天晚上，我都夢見她流下血淚。自從那天她哭泣以來，她就被污染得太深了……莫拉格·巴爾](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:543) 回應 (3)：[我知道她的悲傷仍然在沉睡中。對我來說，她已經變得無可替代……](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:544) |
-| [`039B4B zzzBMMq02B04v4Imprison`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:546) | `039B4C` | 無 | `GetStage EqualTo 65`; `GetIsAliasRef 別名 #5` | 提示：「你為什麼被囚禁？」回應：[拒絕她的血的人都被囚禁在這裡。一直到接受鮮血為止……](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:547) |
-| [`039B4E zzzBMMq02B05v4OtherVigilant`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:549) | `039B4F` | 無 | `GetStage EqualTo 65`; `GetIsAliasRef 別名 #5` | 提示：「其他守護者怎麼了？」回應：[每個活下來的人都變成了吸血鬼。每個人都在她的血中 Kuruwasu](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:550) |
-| [`039B51 zzzBMMq02B06v4AboutMatron`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:552) | `039B52` | 無 | `GetStage EqualTo 65`; `GetIsAliasRef 別名 #5` | 提示：「鮮血主母？」回應：[被莫拉格·巴爾玷污的內德少女。她是吸血鬼的始祖。](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:553) |
-| [`039B54 zzzBMMq02B07v4Help`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:555) | `039B55` | WalkAway | `GetStage EqualTo 65`; `GetIsAliasRef 別名 #5` | 提示：「有什麼我可以做的嗎？」回應：[我希望你殺了我。我不想在變成精疲力竭的嗜血野獸之前死掉……](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:556) |
-| [`039B56 zzzBMMq02B07v4Kill`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:558) | `039B57` | Goodbye | `GetStage EqualTo 65`; `GetIsAliasRef 別名 #5` | 提示：「好的。我會殺了你」回應：[好……謝謝，快殺了我。我可能無法再忍受對鮮血的渴求了……](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:559) VMAD：開始時執行 `BM02_TIF__01039B57.Fragment_1`，結束時執行 `BM02_TIF__01039B57.Fragment_0`。 |
-| [`039B58 zzzBMMq02B07v4NotKill`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:561) | `039B59` | 無 | `GetStage EqualTo 65`; `GetIsAliasRef 別名 #5` | 提示：「我辦不到」回應：[我求你……我求你。我想從這種痛苦中解脫出來](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:562) |
-| [`03A0C2 zzzBMMq02B01v4GreetEnd`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) | `03A0C2` | Goodbye | `GetStage EqualTo 70`; `GetIsAliasRef 別名 #5` | 回應：[殺了我……拜託，殺了我……](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) VMAD：結束時執行 `BM02_TIF__0203A0C2.Fragment_0`。 |
+| [`039B42 zzzBMMq02B01v4Greet`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:533) | `039B43` | Goodbye | `GetStage LessThanOrEqualTo 40`; `GetIsAliasRef 別名 #5` | [現在很糟，我不知道耶利哥什麼時候會來](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:534) VMAD：結束時執行 `BM02_TIF__01039B43.Fragment_0`。 |
+| [`039B45 zzzBMMq02B02v4Happen`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:537) | `039B46` | SayOnce | `GetStage EqualTo 60`; `GetIsAliasRef 別名 #5` | 提示：「這裡發生了什麼事？」回應 (1)：[她。她很痛苦。那裡有一位鮮血夫人……](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:538) 回應 (2)：[我們必須打敗她。我什麼都做不了。所有人，吸血鬼……諾瑪莎那些倖存下來的人，還有……她的血](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:539) VMAD：結束時執行 `BM02_TIF__01039B46.Fragment_0`。 |
+| [`039B48 zzzBMMq02B03v4Vampirism`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:541) | `039B49` | 無 | `GetStage EqualTo 65`; `GetIsAliasRef 別名 #5` | 提示：「難道你不 Naose 嗜血症嗎？」回應 (1)：[太遲了。對鮮血的渴求很強烈。最重要的是，她正因變得強大而喜悅……](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:542) 回應 (2)：[每天晚上，我都夢見她流下血淚。自從那天她哭泣以來，她就被污染得太深了……莫拉格·巴爾](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:543) 回應 (3)：[我知道她的悲傷仍然在沉睡中。對我來說，她已經變得無可替代……](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:544) |
+| [`039B4B zzzBMMq02B04v4Imprison`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:546) | `039B4C` | 無 | `GetStage EqualTo 65`; `GetIsAliasRef 別名 #5` | 提示：「你為什麼被囚禁？」回應：[拒絕她的血的人都被囚禁在這裡。一直到接受鮮血為止……](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:547) |
+| [`039B4E zzzBMMq02B05v4OtherVigilant`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:549) | `039B4F` | 無 | `GetStage EqualTo 65`; `GetIsAliasRef 別名 #5` | 提示：「其他守護者怎麼了？」回應：[每個活下來的人都變成了吸血鬼。每個人都在她的血中 Kuruwasu](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:550) |
+| [`039B51 zzzBMMq02B06v4AboutMatron`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:552) | `039B52` | 無 | `GetStage EqualTo 65`; `GetIsAliasRef 別名 #5` | 提示：「鮮血主母？」回應：[被莫拉格·巴爾玷污的內德少女。她是吸血鬼的始祖。](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:553) |
+| [`039B54 zzzBMMq02B07v4Help`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:555) | `039B55` | WalkAway | `GetStage EqualTo 65`; `GetIsAliasRef 別名 #5` | 提示：「有什麼我可以做的嗎？」回應：[我希望你殺了我。我不想在變成精疲力竭的嗜血野獸之前死掉……](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:556) |
+| [`039B56 zzzBMMq02B07v4Kill`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:558) | `039B57` | Goodbye | `GetStage EqualTo 65`; `GetIsAliasRef 別名 #5` | 提示：「好的。我會殺了你」回應：[好……謝謝，快殺了我。我可能無法再忍受對鮮血的渴求了……](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:559) VMAD：開始時執行 `BM02_TIF__01039B57.Fragment_1`，結束時執行 `BM02_TIF__01039B57.Fragment_0`。 |
+| [`039B58 zzzBMMq02B07v4NotKill`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:561) | `039B59` | 無 | `GetStage EqualTo 65`; `GetIsAliasRef 別名 #5` | 提示：「我辦不到」回應：[我求你……我求你。我想從這種痛苦中解脫出來](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:562) |
+| [`03A0C2 zzzBMMq02B01v4GreetEnd`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) | `03A0C2` | Goodbye | `GetStage EqualTo 70`; `GetIsAliasRef 別名 #5` | 回應：[殺了我……拜託，殺了我……](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) VMAD：結束時執行 `BM02_TIF__0203A0C2.Fragment_0`。 |
 
 翻譯筆記：
 - "Naose" 在「嗜血症」提示中不明確；可能是誤譯或生物名稱的音譯。
@@ -136,9 +136,9 @@ ESM：
 
 | 主題 | INFO | 情感 | 翻譯 |
 |---|---|---|---|
-| `0x03A0C4` (場景) | `0x03A0C5` | 悲傷 | [我懷念每個人……每個人……都死了，一直被吃掉……](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) |
-| `0x03A0C6` (場景) | `0x03A0C7` | 恐懼 | [而她和我……你現在就在這裡 Ganzen 怪物……](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) |
-| `0x03A0C8` (場景) | `0x03A0C9` | 憤怒 | [你這怪物莫拉格·巴爾，為了靈魂的和平，你只能死，不可饒恕！晚到的朋友！](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) |
+| `0x03A0C4` (場景) | `0x03A0C5` | 悲傷 | [我懷念每個人……每個人……都死了，一直被吃掉……](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) |
+| `0x03A0C6` (場景) | `0x03A0C7` | 恐懼 | [而她和我……你現在就在這裡 Ganzen 怪物……](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) |
+| `0x03A0C8` (場景) | `0x03A0C9` | 憤怒 | [你這怪物莫拉格·巴爾，為了靈魂的和平，你只能死，不可饒恕！晚到的朋友！](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) |
 
 （推論：這些可能是場景獨白動作，每個相位或演員一個，代表倖存者在遇到吸血鬼和殘骸現場時的痛苦回憶或現狀。）
 
@@ -150,7 +150,7 @@ NPCs:
 - `Vamp04Ess` (別名 #1) — 必要的倖存者；FormID 未知。
 
 物品：
-- [`斯坦達爾的仁慈`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:?) — 將在目標 70 中給予的任務物品。
+- [`斯坦達爾的仁慈`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:?) — 將在目標 70 中給予的任務物品。
 
 地點（推論）：
 - 「殘骸」（未命名地點；任務名稱暗示毀壞的船隻或建築工地）。
@@ -159,7 +159,7 @@ NPCs:
 ## 重建筆記
 
 基於源代碼：
-- 該支線任務由 [`038525 zzzBMMq02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:108) 代表，名稱為 `"殘骸"`。
+- 該支線任務由 [`038525 zzzBMMq02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:108) 代表，名稱為 `"殘骸"`。
 - 它包含 6 個涵蓋階段 10–90 的目標，在階段 100 和 9999 處有兩個 CompleteQuest 門限。
 - 它有三個場景動作主題 (`0x03A0C4`, `0x03A0C6`, `0x03A0C8`)；精確的 SCEN 分期尚未從提取的文本中獲得。
 - 它包含兩個截然不同的對話分支：

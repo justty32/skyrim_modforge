@@ -10,7 +10,7 @@
 
 ## 任務記錄
 
-[`00EA8A zzzAoMMq08 "絕不仁慈"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:132)
+[`00EA8A zzzAoMMq08 "絕不仁慈"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:132)
 
 CLI：
 - `questdiag Vigilant.esm 0x00EA8A`
@@ -52,10 +52,10 @@ ESM：
 
 | 索引 | 來源 | 文本 |
 |---:|---|---|
-| 0 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:133) | 獵殺巫女 |
-| 200 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:134) | 與阿爾塔諾協商 (選項) |
-| 210 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:135) | 擊敗阿爾塔諾 (選項) |
-| 300 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:136) | 擊敗醜陋者 |
+| 0 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:133) | 獵殺巫女 |
+| 200 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:134) | 與阿爾塔諾協商 (選項) |
+| 210 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:135) | 擊敗阿爾塔諾 (選項) |
+| 300 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:136) | 擊敗醜陋者 |
 
 目標標靶：
 - 目標 0 (獵殺巫女)：2 個標靶，每個標靶有 2 個條件。
@@ -85,7 +85,7 @@ ESM：
 - **階段 0-15**：到達與問候。玩家在巫女營地遇到阿爾塔諾和莉莉安。初始任務：評估局勢（階段 10-15）。
 - **階段 18-20**：對話調查階段。玩家從莉莉安那裡收集關於巫女及其丈夫身上詛咒的信息（階段 20）。
 - **階段 30**：完成「獵殺巫女」目標（標記：`CompleteQuest`）。正常的獵巫完成路徑。
-- **階段 200-220**：開啟替代路徑（受階段門控 `200 ≤ 階段 < 230`）。主題如 [`0x0423C3 zzzAoMMq08B1NoWitch`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:653) 在此處分支，指示玩家質疑巫女存在的分歧。
+- **階段 200-220**：開啟替代路徑（受階段門控 `200 ≤ 階段 < 230`）。主題如 [`0x0423C3 zzzAoMMq08B1NoWitch`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:653) 在此處分支，指示玩家質疑巫女存在的分歧。
 - **階段 210**：代表拒絕路徑或持續抵抗（此階段的目標為「擊敗阿爾塔諾 (選項)」）。
 - **階段 230**：`CompleteQuest` — 替代完成路徑（透過對話拒絕或對抗阿爾塔諾來擊敗巫女）。
 - **階段 300**：後期目標（「擊敗醜陋者」） — 暗示在莉莉安之外還有最終敵人遭遇。
@@ -100,14 +100,14 @@ ESM：
 ### 0x042937 zzzAoMMq08SceneKill (場景標記)
 
 提取的文本 (1 行)：
-- [「你將殺死巫女。靠你自己……」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:674)
+- [「你將殺死巫女。靠你自己……」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:674)
 
 背景：阿爾塔諾命令玩家獨自執行獵巫。標誌著接受/分配階段。
 
 ## 自定義對話分支：莉莉安 (巫女 NPC 別名 #0)
 
 分支：
-- [`00EFF0:Vigilant.esm`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:642) (任務分支根；過濾器=AoM\; SNAM=CUST)
+- [`00EFF0:Vigilant.esm`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:642) (任務分支根；過濾器=AoM\; SNAM=CUST)
 
 條件模式：
 - 對於大多數主題，階段門限於 `GetStage < 200`（初始遭遇）。
@@ -117,7 +117,7 @@ ESM：
 
 | 主題 | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`0x00EFF4 zzAoMMq08B1RunAway`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:642) | `0x00EFF5` | Goodbye | `GetStage < 200`; `GetIsAliasRef 別名 #0` | 提示：[「我是斯坦達爾警戒者。我聽說這裡有巫女……」] 回應 (Fear)：[「……！莉莉安！！跑！快跑！！」] |
+| [`0x00EFF4 zzAoMMq08B1RunAway`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:642) | `0x00EFF5` | Goodbye | `GetStage < 200`; `GetIsAliasRef 別名 #0` | 提示：[「我是斯坦達爾警戒者。我聽說這裡有巫女……」] 回應 (Fear)：[「……！莉莉安！！跑！快跑！！」] |
 
 VMAD 片段：
 - `AoM08_TIF__0100EFF5` (觸發 `OnEnd` 片段；可能推進階段或觸發戰鬥)
@@ -128,7 +128,7 @@ VMAD 片段：
 
 | 主題 | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`0x0423BD zzzAoMMq08B1WhatHere`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:642) | `0x0423BE` | 無 | `GetStage < 200`; `GetIsAliasRef 別名 #0` | 提示：「你在這裡做什麼？」回應 (Fear)：[「我有一種藥劑配方。因為我靠煉金術謀生……」] |
+| [`0x0423BD zzzAoMMq08B1WhatHere`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:642) | `0x0423BE` | 無 | `GetStage < 200`; `GetIsAliasRef 別名 #0` | 提示：「你在這裡做什麼？」回應 (Fear)：[「我有一種藥劑配方。因為我靠煉金術謀生……」] |
 
 背景：莉莉安解釋她是煉金術士，不一定是巫女。詞組 「formulation of the drug」 (藥劑配方) 不明確 (OCR 偽影)；可能意指 「potion」 (藥水)。
 
@@ -136,7 +136,7 @@ VMAD 片段：
 
 | 主題 | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`0x0423BF zzzAoMMq08B1Alchemy`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:645) | `0x0423C0` | 無 | `GetIsAliasRef 別名 #0` | 提示：「你在哪裡學的煉金術？」回應 1 (Fear)：[「向巫女學的……但那是……格倫莫瑞爾，但我不是那些女孩的朋友。」] 回應 2 (Sad)：[「在絕望的希望中……所以……想解開她丈夫身上的詛咒」] |
+| [`0x0423BF zzzAoMMq08B1Alchemy`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:645) | `0x0423C0` | 無 | `GetIsAliasRef 別名 #0` | 提示：「你在哪裡學的煉金術？」回應 1 (Fear)：[「向巫女學的……但那是……格倫莫瑞爾，但我不是那些女孩的朋友。」] 回應 2 (Sad)：[「在絕望的希望中……所以……想解開她丈夫身上的詛咒」] |
 
 翻譯筆記：
 - 「Gurenmoriru」 可能是轉錄錯誤的名稱 (OCR 偽影)；似乎是巫女老師的名字，可能是 Garenmormire 或類似名稱。
@@ -146,7 +146,7 @@ VMAD 片段：
 
 | 主題 | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`0x0423C1 zzzAoMMq08B1GoMove`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:649) | `0x0423C2` | Goodbye | `GetIsAliasRef 別名 #0` | 提示：「我不介意，現在這裡很危險。你最好離開這個地方」回應 1 (Neutral)：[「讓你看看你來了……好吧。你找到了……」] 回應 2 (Happy)：[「我決定儘快離開這裡。斯坦達爾與你同在」] |
+| [`0x0423C1 zzzAoMMq08B1GoMove`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:649) | `0x0423C2` | Goodbye | `GetIsAliasRef 別名 #0` | 提示：「我不介意，現在這裡很危險。你最好離開這個地方」回應 1 (Neutral)：[「讓你看看你來了……好吧。你找到了……」] 回應 2 (Happy)：[「我決定儘快離開這裡。斯坦達爾與你同在」] |
 
 VMAD 片段：
 - `AoM08_TIF__010423C2` (觸發 `OnEnd` 片段；可能向階段 30 或任務完成推進)
@@ -158,7 +158,7 @@ VMAD 片段：
 ## 自定義對話分支：阿爾塔諾 (任務給予者別名 #4)
 
 分支：
-- [`00EFF0:Vigilant.esm`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:638) (任務分支根)
+- [`00EFF0:Vigilant.esm`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:638) (任務分支根)
 
 條件模式：
 - 大多數主題階段門限於 `GetStage < 200` 或 `200 ≤ GetStage < 210` 用於升級。
@@ -168,7 +168,7 @@ VMAD 片段：
 
 | 主題 | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`0x00EFF1 zzAoMMq08B1WitchHunt`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:638) | `0x00EFF6` | 無 | `GetIsAliasRef 別名 #4` | 回應 (Anger)：[「巫女對天際省的和平構成了嚴重威脅。殺光她們。」] |
+| [`0x00EFF1 zzAoMMq08B1WitchHunt`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:638) | `0x00EFF6` | 無 | `GetIsAliasRef 別名 #4` | 回應 (Anger)：[「巫女對天際省的和平構成了嚴重威脅。殺光她們。」] |
 
 背景：阿爾塔諾的主要指令；此處無階段條件，因此始終作為開場對話可用。
 
@@ -176,7 +176,7 @@ VMAD 片段：
 
 | 主題 | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`0x00EFF1 (續)`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:638) | `0x00EFF3` | SayOnce | `GetIsAliasRef 別名 #0` | 回應 (Puzzled)：[「誰……你是誰？請……離我們遠點……？」] |
+| [`0x00EFF1 (續)`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:638) | `0x00EFF3` | SayOnce | `GetIsAliasRef 別名 #0` | 回應 (Puzzled)：[「誰……你是誰？請……離我們遠點……？」] |
 
 （推論：此處的別名 #0 表明此回應來自莉莉安，而非阿爾塔諾；可能是同一個主題下的第二個 INFO，說話者交替。）
 
@@ -184,7 +184,7 @@ VMAD 片段：
 
 | 主題 | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`0x0423BA zzzAoMMq08B1AboutWitch`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:638) | `0x0423BB` | Goodbye | `GetStage < 200`; `GetIsAliasRef 別名 #4` | 提示：「告訴我關於紫杉鎮巫女的事」回應 1 (Disgust)：[「Val Lee 是巫女母女的家園。不要因為她們假裝煉金術士就被騙了」] 回應 2 (Disgust)：[「除了婦女和兒童，不要寬恕任何對手。如果你偷懶，我就會淪為巫女的獵物」] |
+| [`0x0423BA zzzAoMMq08B1AboutWitch`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:638) | `0x0423BB` | Goodbye | `GetStage < 200`; `GetIsAliasRef 別名 #4` | 提示：「告訴我關於紫杉鎮巫女的事」回應 1 (Disgust)：[「Val Lee 是巫女母女的家園。不要因為她們假裝煉金術士就被騙了」] 回應 2 (Disgust)：[「除了婦女和兒童，不要寬恕任何對手。如果你偷懶，我就會淪為巫女的獵物」] |
 
 VMAD 片段：(從 INFO 中隱含)
 
@@ -197,7 +197,7 @@ VMAD 片段：(從 INFO 中隱含)
 
 | 主題 | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`0x0423C3 zzzAoMMq08B1NoWitch`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:653) | `0x0423C4` | 無 | `200 ≤ GetStage < 210`; `GetIsAliasRef 別名 #4` | 提示：「紫杉鎮沒有巫女」回應 1 (Anger)：[「……所以？似乎已經被妥善洗腦了？你盲目地回來了？」] 回應 2 (Anger)：[「殺了她們！不管是不是！你必須殺了她們！！」] |
+| [`0x0423C3 zzzAoMMq08B1NoWitch`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:653) | `0x0423C4` | 無 | `200 ≤ GetStage < 210`; `GetIsAliasRef 別名 #4` | 提示：「紫杉鎮沒有巫女」回應 1 (Anger)：[「……所以？似乎已經被妥善洗腦了？你盲目地回來了？」] 回應 2 (Anger)：[「殺了她們！不管是不是！你必須殺了她們！！」] |
 
 翻譯筆記：
 - 「Marumekoma」 是轉錄錯誤；指代不明。可能是句髒話或是個模糊的名字。
@@ -210,7 +210,7 @@ VMAD 片段：(從 INFO 中隱含)
 
 | 主題 | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`0x0423C5 zzzAoMMq08B1OkOk`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:657) | `0x0423C6` | 無 | `GetIsAliasRef 別名 #4` | 提示：「好吧……」回應 1 (Sad)：[「對不起，我剛才有點……但你明白了」] 回應 2 (Happy)：[「無論如何都必須剷除她們」] |
+| [`0x0423C5 zzzAoMMq08B1OkOk`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:657) | `0x0423C6` | 無 | `GetIsAliasRef 別名 #4` | 提示：「好吧……」回應 1 (Sad)：[「對不起，我剛才有點……但你明白了」] 回應 2 (Happy)：[「無論如何都必須剷除她們」] |
 
 翻譯筆記：
 - 第一個回應：「我剛才有點……」語焉不詳；可能意指 「我剛才有點過分了」。
@@ -220,7 +220,7 @@ VMAD 片段：(從 INFO 中隱含)
 
 | 主題 | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`0x0423C7 zzzAoMMq08B1Crazy`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:661) | `0x0423C8` | 無 | `GetIsAliasRef 別名 #4` | 提示：「你有點瘋了，阿爾塔諾……」回應 1 (Anger)：[「你難道就不能做點什麼嗎，比如別開玩笑……！是你！無法理解你！」] 回應 2 (Anger)：[「列在我們受害者名單上的巫女！快去！你現在就該去！」] |
+| [`0x0423C7 zzzAoMMq08B1Crazy`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:661) | `0x0423C8` | 無 | `GetIsAliasRef 別名 #4` | 提示：「你有點瘋了，阿爾塔諾……」回應 1 (Anger)：[「你難道就不能做點什麼嗎，比如別開玩笑……！是你！無法理解你！」] 回應 2 (Anger)：[「列在我們受害者名單上的巫女！快去！你現在就該去！」] |
 
 翻譯筆記：
 - 「比如別開玩笑」可能意指 「別再胡鬧了」 或 「別開玩笑了」。
@@ -230,7 +230,7 @@ VMAD 片段：(從 INFO 中隱含)
 
 | 主題 | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`0x0423C9 zzzAoMMq08B1Wrong`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:665) | `0x0423CA` | 無 | `GetIsAliasRef 別名 #4` | 提示：「這是錯的……」回應 1 (Anger)：[「冷靜點，這哪裡錯了？到現在才被殺已經太遲了！現在，就按我說的做！」] 回應 2 (Anger)：[「這次也一樣。我希望你能像剛才說的那些傢伙一樣，以斯坦達爾之名殺了它！」] |
+| [`0x0423C9 zzzAoMMq08B1Wrong`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:665) | `0x0423CA` | 無 | `GetIsAliasRef 別名 #4` | 提示：「這是錯的……」回應 1 (Anger)：[「冷靜點，這哪裡錯了？到現在才被殺已經太遲了！現在，就按我說的做！」] 回應 2 (Anger)：[「這次也一樣。我希望你能像剛才說的那些傢伙一樣，以斯坦達爾之名殺了它！」] |
 
 翻譯筆記：
 - 第一個回應嚴重失真；「The cold just as wrong」(冷靜點，這哪裡錯了) 難以理解。可能想表達 「你的猶豫是錯誤的」 或類似意思。
@@ -240,7 +240,7 @@ VMAD 片段：(從 INFO 中隱含)
 
 | 主題 | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`0x0423CB zzzAoMMq08B1Never`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:669) | `0x0423CC` | Goodbye | `GetIsAliasRef 別名 #4` | 提示：「我絕不那樣做！！」回應 1 (Neutral)：[「我明白了那個意圖……這看起來很難。我很抱歉。非常抱歉……」] 回應 2 (Happy)：[「那樣就必須改變一下方式，雖然有點粗暴……」] |
+| [`0x0423CB zzzAoMMq08B1Never`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:669) | `0x0423CC` | Goodbye | `GetIsAliasRef 別名 #4` | 提示：「我絕不那樣做！！」回應 1 (Neutral)：[「我明白了那個意圖……這看起來很難。我很抱歉。非常抱歉……」] 回應 2 (Happy)：[「那樣就必須改變一下方式，雖然有點粗暴……」] |
 
 VMAD 片段：
 - `AoM08_TIF__010423CC` (觸發 `OnEnd` 片段；可能向階段 210 或 「擊敗阿爾塔諾」路徑推進)
@@ -254,10 +254,10 @@ VMAD 片段：
 ## 相關記錄
 
 NPCs:
-- [`0012D2 (來自提取的 dialogue.md:696 的莉莉安)` - 莉莉安 (「我是煉金術士。我會變得像我媽媽一樣……」)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:696)
+- [`0012D2 (來自提取的 dialogue.md:696 的莉莉安)` - 莉莉安 (「我是煉金術士。我會變得像我媽媽一樣……」)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:696)
   - 莉莉安是巫女營地的一位煉金術士 NPC，似乎是首席巫女的女兒。
   - 尚未在 game-data 中進行專門的 NPC 記錄查詢；僅有提取的文本。
-- [`000D66 zzzAoMVigilantElder` - 阿爾塔諾](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1) (從 sq07 延續)
+- [`000D66 zzzAoMVigilantElder` - 阿爾塔諾](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1) (從 sq07 延續)
 
 物品：
 - (此任務中沒有明確標記為受任務限制的物品；目標「擊敗醜陋者」暗示有最終 Boss 掉落物，但當前 CLI 輸出中未標識。)

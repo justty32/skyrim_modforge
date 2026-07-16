@@ -9,17 +9,17 @@
 
 ## 結構筆記：外殼任務 vs 內容任務 (Structural note: shell quest vs content quest)
 
-此記憶任務較為特殊。記憶包裝器 [`51C038 zzzCHMemoryQuest13 "Man-Bull Paravanila"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:214) 是一個**僅有標頭的外殼 (header-only shell)**：`infodiag 0x51C038` 返回**無擁有話題**，`scenediag 0x51C038` 報告其不是場景，而 `questdiag` 顯示它**無目標**且僅有 7 個階段。尋找通常的 `zzzCHMeQ13` 話題前綴會返回 **0 個匹配項**——此記憶任務完全沒有使用 `MeQ13` 對話命名空間。
+此記憶任務較為特殊。記憶包裝器 [`51C038 zzzCHMemoryQuest13 "Man-Bull Paravanila"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:214) 是一個**僅有標頭的外殼 (header-only shell)**：`infodiag 0x51C038` 返回**無擁有話題**，`scenediag 0x51C038` 報告其不是場景，而 `questdiag` 顯示它**無目標**且僅有 7 個階段。尋找通常的 `zzzCHMeQ13` 話題前綴會返回 **0 個匹配項**——此記憶任務完全沒有使用 `MeQ13` 對話命名空間。
 
 所有實際內容 (目標、對話、場景、分支) 都存在於一個獨立的內容任務中：
-- [`51ADBF zzzCHSubQuest13 "Broken Horn"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171) — EditorID 前綴為 `zzzCHSq13` / `zzzCHSubQuest13`。
+- [`51ADBF zzzCHSubQuest13 "Broken Horn"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171) — EditorID 前綴為 `zzzCHSq13` / `zzzCHSubQuest13`。
 - 所有權確認：`scenediag 0x51D636` 報告 `quest = 51ADBF`，且 `infodiag 0x51ADBF` 列出了所有 6 個話題。提示中建議的以 `zzzCHMeQ13` 為前綴的記錄並不存在。
 
 推論：`51C038` (記憶外殼，優先級 99) 框架化/啟動世界內的重現；`51ADBF` (`zzzCHSubQuest13`，優先級 90) 驅動可遊玩的場景。透過轉儲外殼的別名/啟動條件來確認啟動連結 (TODO — `questdiag` 未列印它們)。
 
 ## 外殼任務記錄 (Shell Quest Record)
 
-[`51C038 zzzCHMemoryQuest13 "Man-Bull Paravanila"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:214)
+[`51C038 zzzCHMemoryQuest13 "Man-Bull Paravanila"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:214)
 
 CLI 指令：
 - `questdiag Vigilant.esm 0x51C038`
@@ -57,11 +57,11 @@ ESM 路徑：
 - `999` 位於 `255 ShutDownStage` 旁邊，是記憶任務中常見的**記憶結束關閉**完成階段 (例如 MeQ08/09 也在 999 處執行 `CompleteQuest`)。將 `999` 視為**記憶關閉**完成路徑，而非劇情分支。
 - `30` 和 `40` 是早期波段的完成階段，也是**兩個實際結果**的候選。在**內容**任務 `51ADBF` 中，兩個可遊玩的贈送分支皆受限於 `GetStage == 40` (見下文)，因此外殼上的階段 40 與「已贈送/接受禮物」相符——即解決/仁慈路徑。階段 30 是另一個早期完成階段 (玩家離開/未贈送禮物)。外殼上每個階段的確切極性為 **TODO** ——外殼本身的階段片段尚未解碼；業障判讀取自下方內容任務的分支條件。
 
-名稱筆記：外殼任務名稱中的 "Paravanila" 是 **"Paravania" 的拼寫錯誤**，即牛頭人 NPC [`51AE2D zzzCHAlessiaMntr "Paravania the Man-bull"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:428)。標題中保留來源拼寫；主體為帕拉瓦尼亞。註：待驗證 — 標題寫著 "Paravania"，但螢幕上的說話者別名是 `BelharzaBull` (見演出表)。
+名稱筆記：外殼任務名稱中的 "Paravanila" 是 **"Paravania" 的拼寫錯誤**，即牛頭人 NPC [`51AE2D zzzCHAlessiaMntr "Paravania the Man-bull"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:428)。標題中保留來源拼寫；主體為帕拉瓦尼亞。註：待驗證 — 標題寫著 "Paravania"，但螢幕上的說話者別名是 `BelharzaBull` (見演出表)。
 
 ## 內容任務記錄 (Content Quest Record)
 
-[`51ADBF zzzCHSubQuest13 "Broken Horn"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171)
+[`51ADBF zzzCHSubQuest13 "Broken Horn"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171)
 
 CLI 指令：
 - `questdiag Vigilant.esm 0x51ADBF`
@@ -83,7 +83,7 @@ CLI 指令：
 
 | 索引 | 來源 | 翻譯 |
 |---:|---|---|
-| 0 | [`Broken horns, sky incarnate.`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:172) | 斷裂之角，蒼穹化身。 |
+| 0 | [`Broken horns, sky incarnate.`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:172) | 斷裂之角，蒼穹化身。 |
 
 目標對象 (Objective targets)：
 - 1 個目標，ESM 中有 **6 個對象**。
@@ -100,15 +100,15 @@ CLI 指令：
 | 2 | `QIHorn` (任務物品：角) | CLI 未列印填寫內容 |
 | 3 | `QIRing` (任務物品：環) | CLI 未列印填寫內容 |
 | 4 | `QIScroll` (任務物品：卷軸) | CLI 未列印填寫內容 |
-| 5 | `BelharzaMan` (人類貝爾哈扎) | 唯一演員 [`0E5E2E zzzCHBelharza "Belharza the Man"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:252) |
-| 7 | `Boss` (首領) | 唯一演員 [`51D68A zzzCHBossAmicusTharn "Amicus Tharn"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:477) |
-| 8 | `BelharzaBull` (公牛貝爾哈扎) | 唯一演員 [`51D61C zzzCHBelharzaBull "Belharza the Bull"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:466) |
-| 9 | `BelharzaMntr` (牛頭人貝爾哈扎) | 唯一演員 [`510B22 zzzCHMntrBelharza "Belharza the Man-Bull"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:344) |
-| 10 | `Morihaus` (莫里豪斯) | 唯一演員 [`0B253B zzzCHBossMorihaus "Morihaus"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1106) |
+| 5 | `BelharzaMan` (人類貝爾哈扎) | 唯一演員 [`0E5E2E zzzCHBelharza "Belharza the Man"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:252) |
+| 7 | `Boss` (首領) | 唯一演員 [`51D68A zzzCHBossAmicusTharn "Amicus Tharn"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:477) |
+| 8 | `BelharzaBull` (公牛貝爾哈扎) | 唯一演員 [`51D61C zzzCHBelharzaBull "Belharza the Bull"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:466) |
+| 9 | `BelharzaMntr` (牛頭人貝爾哈扎) | 唯一演員 [`510B22 zzzCHMntrBelharza "Belharza the Man-Bull"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:344) |
+| 10 | `Morihaus` (莫里豪斯) | 唯一演員 [`0B253B zzzCHBossMorihaus "Morihaus"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1106) |
 | 11 | `MarkerMem` (記憶標記) | 強制引用 `51D63C:Vigilant.esm` |
 | 12 | `MarkerQuiz` (測驗標記) | 強制引用 `51D63D:Vigilant.esm` |
 | 13 | `MarkerES` (星讀標記) | 強制引用 `51D63E:Vigilant.esm` |
-| 14 | `Dragon` (巨龍) | 唯一演員 [`51D69A zzzCHMemKahKaanKrein`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:479) |
+| 14 | `Dragon` (巨龍) | 唯一演員 [`51D69A zzzCHMemKahKaanKrein`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:479) |
 
 推論：
 - 三種不同形態的貝爾哈扎同時被設為別名：人類貝爾哈扎 (`BelharzaMan`, #5)、公牛貝爾哈扎 (`BelharzaBull`, #8)、牛頭人貝爾哈扎 (`BelharzaMntr`, #9)。這編排了一個轉化/生命週期 (人 → 牛 → 牛頭人)，契合「斷裂之角」的主題。
@@ -125,25 +125,25 @@ CLI 指令：
 - `scenediag Vigilant.esm 0x51D636`
 
 編排：
-- 主機任務：[`51ADBF zzzCHSubQuest13`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171)
+- 主機任務：[`51ADBF zzzCHSubQuest13`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171)
 - 演員：別名 `#9` (`BelharzaMntr`), 行為標誌 `NoPlayerActivation, Optional`
 - 階段：3 個，每個階段有 0 個開始條件和 1 個完成條件。
 - 動作：
   - 索引 1：`Timer` (計時器), 演員 `#9`, 階段 0, `0.5` 秒。
-  - 索引 2：`Dialog` (對話), 演員 `#9`, 階段 1, 話題 [`51D637`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3349), 情感 `Neutral` (中性)。
-  - 索引 3：`Dialog` (對話), 演員 `#9`, 階段 2, 標誌 `FaceTarget, HeadtrackPlayer`, 話題 [`51D639`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3352), 情感 `Neutral` (中性)。
+  - 索引 2：`Dialog` (對話), 演員 `#9`, 階段 1, 話題 [`51D637`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3349), 情感 `Neutral` (中性)。
+  - 索引 3：`Dialog` (對話), 演員 `#9`, 階段 2, 標誌 `FaceTarget, HeadtrackPlayer`, 話題 [`51D639`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3352), 情感 `Neutral` (中性)。
   - 索引 4：`Package` (AI 程序包), 演員 `#9`, 階段 0-2。
 
 翻譯：
-- [`51D637` / INFO `51D638`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3349)：「我沒想到阿卡托什會派來祂的使者……看來眾神還沒有放棄我。」
-- [`51D639` / INFO `51D63A`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3352)：「我早已認命，以為自己再也無法活著、無法變回原本的樣子。謝謝你。」
+- [`51D637` / INFO `51D638`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3349)：「我沒想到阿卡托什會派來祂的使者……看來眾神還沒有放棄我。」
+- [`51D639` / INFO `51D63A`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3352)：「我早已認命，以為自己再也無法活著、無法變回原本的樣子。謝謝你。」
   - 註：原文結尾帶有零散的雙句點 `again. Thank you..`；保留原樣，非遺漏。
 
 推論：此場景在玩家解決公牛問題 (贈送禮物) 後觸發，恢復了牛頭人貝爾哈扎的聲音——即「變回原本的樣子」那句。這被解讀為**仁慈/解決**的回報。極性確認為 TODO (未檢查業障全局變數)。
 
 ## 自定義對話分支：公牛貝爾哈扎 (無聲) (Custom Dialogue Branch: Belharza the Bull (silent))
 
-主機任務：[`51ADBF zzzCHSubQuest13`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171)
+主機任務：[`51ADBF zzzCHSubQuest13`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171)
 
 說話者條件模式：
 - 每個 INFO 需要別名 `#8` (`BelharzaBull`) 的 `GetIsAliasRef == 1`。
@@ -151,10 +151,10 @@ CLI 指令：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`51D62A zzzCHSubQuest13Hello`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3337) | `51D62B` | 無 | `GetIsAliasRef alias #8` | 「............（牠望著我，彷彿在懇求著什麼。）」 |
-| [`51D62E zzzCHSq13BullB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3340) | `51D62F` | 無 | `GetIsAliasRef alias #8` | 提示：「好可愛的小牛，來摸摸牠吧。」 回覆：「............（牠不喜歡被摸。）」 |
-| [`51D631 zzzCHSq13BullB02T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3343) | `51D632` | `Goodbye` | 玩家持有 [`51AD83 zzzCHHornBelhaza "Horn of Belharza"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:990); `GetIsAliasRef alias #8`; `GetStage == 40`; 結束時執行 VMAD `CHSq13_TIF__0251D632.Fragment_0` | 提示：「陛下，這個給您（獻上貝爾哈扎之角）。」 回覆：「............（牠看起來很滿意。）」 |
-| [`51D634 zzzCHSq13BullB03T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3346) | `51D635` | `Goodbye` | 玩家持有 [`51AD84 zzzCHRingMorihaus "Nosering of Morihaus"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:991); `GetIsAliasRef alias #8`; `GetStage == 40`; 結束時執行 VMAD `CHSq13_TIF__0251D635.Fragment_0` | 提示：「陛下，這個給您（獻上莫里豪斯的鼻環）。」 回覆：「............（牠看起來很滿意。）」 |
+| [`51D62A zzzCHSubQuest13Hello`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3337) | `51D62B` | 無 | `GetIsAliasRef alias #8` | 「............（牠望著我，彷彿在懇求著什麼。）」 |
+| [`51D62E zzzCHSq13BullB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3340) | `51D62F` | 無 | `GetIsAliasRef alias #8` | 提示：「好可愛的小牛，來摸摸牠吧。」 回覆：「............（牠不喜歡被摸。）」 |
+| [`51D631 zzzCHSq13BullB02T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3343) | `51D632` | `Goodbye` | 玩家持有 [`51AD83 zzzCHHornBelhaza "Horn of Belharza"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:990); `GetIsAliasRef alias #8`; `GetStage == 40`; 結束時執行 VMAD `CHSq13_TIF__0251D632.Fragment_0` | 提示：「陛下，這個給您（獻上貝爾哈扎之角）。」 回覆：「............（牠看起來很滿意。）」 |
+| [`51D634 zzzCHSq13BullB03T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3346) | `51D635` | `Goodbye` | 玩家持有 [`51AD84 zzzCHRingMorihaus "Nosering of Morihaus"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:991); `GetIsAliasRef alias #8`; `GetStage == 40`; 結束時執行 VMAD `CHSq13_TIF__0251D635.Fragment_0` | 提示：「陛下，這個給您（獻上莫里豪斯的鼻環）。」 回覆：「............（牠看起來很滿意。）」 |
 
 翻譯筆記：
 - 所有回覆皆為無聲默劇般的場景指示 (公牛無法說話)；含義在括號內，保持直譯。
@@ -174,19 +174,19 @@ CLI 指令：
 根據 `infodiag`，這些並不完全屬於 `51ADBF`，但它們是完整的貝爾哈扎/米諾陶/艾萊西亞背景資訊。
 
 NPC：
-- [`51AE2D zzzCHAlessiaMntr "Paravania the Man-bull"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:428) — 標題主體「帕拉瓦尼亞」。
-- [`51D61C zzzCHBelharzaBull "Belharza the Bull"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:466) — 對話說話者 (別名 #8)。
-- [`510B22 zzzCHMntrBelharza "Belharza the Man-Bull"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:344) — 場景說話者 (別名 #9)。
-- [`0E5E2E zzzCHBelharza "Belharza the Man"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:252) — 別名 #5。
-- [`0B253B zzzCHBossMorihaus "Morihaus"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1106) — 別名 #10，父親。
-- [`511D2D zzzCHMemoryAncientMinotaur "Man-Bull of Morihaus"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:349)
-- [`51D68A zzzCHBossAmicusTharn "Amicus Tharn"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:477) — 別名 #7 `Boss`。
-- [`51EAA8 zzzCHMntrFollower "Mordog the Man-Bull"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:487)
-- [`51D895 zzzCHMntrLeader "Horbahha the Chief"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:482)
+- [`51AE2D zzzCHAlessiaMntr "Paravania the Man-bull"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:428) — 標題主體「帕拉瓦尼亞」。
+- [`51D61C zzzCHBelharzaBull "Belharza the Bull"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:466) — 對話說話者 (別名 #8)。
+- [`510B22 zzzCHMntrBelharza "Belharza the Man-Bull"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:344) — 場景說話者 (別名 #9)。
+- [`0E5E2E zzzCHBelharza "Belharza the Man"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:252) — 別名 #5。
+- [`0B253B zzzCHBossMorihaus "Morihaus"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1106) — 別名 #10，父親。
+- [`511D2D zzzCHMemoryAncientMinotaur "Man-Bull of Morihaus"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:349)
+- [`51D68A zzzCHBossAmicusTharn "Amicus Tharn"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:477) — 別名 #7 `Boss`。
+- [`51EAA8 zzzCHMntrFollower "Mordog the Man-Bull"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:487)
+- [`51D895 zzzCHMntrLeader "Horbahha the Chief"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:482)
 
 贈品 (任務物品)：
-- [`51AD83 zzzCHHornBelhaza "Horn of Belharza"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:990) (EditorID 拼寫錯誤: `Belhaza`)。
-- [`51AD84 zzzCHRingMorihaus "Nosering of Morihaus"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:991)。
+- [`51AD83 zzzCHHornBelhaza "Horn of Belharza"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:990) (EditorID 拼寫錯誤: `Belhaza`)。
+- [`51AD84 zzzCHRingMorihaus "Nosering of Morihaus"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:991)。
 
 啟動器 / 觸發器 (啟動 + 場景掛鉤，來自 `find`)：
 - `51C036 zzzCHManbullMemoryActTrigger` — 記憶入口啟動器 (推論：啟動外殼 `51C038`)。
@@ -195,15 +195,15 @@ NPC：
 - `51ADBE zzzCHBelharzaQuizActTrigger "Belharza's Monument"` + `51C040 zzzCHMsgBelharzaQuiz` (測驗訊息), `51C03F zzzCHBelharzaMonument`。
 
 地點：
-- [`51ADC4 zzzCHMemoryMntrCave "Cradle Cave"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:2) / [`51ADC5 zzzCHMemMntrCave "Cave"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:549)。
-- [`51C043 zzzCHCharnelBelharza01 "Concealed Charnel of Belharza"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:78) / [`51C044 zzzCHLocCharnelBelharza`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:612)。
-- [`51D6B2 zzzAoMManbullCave "Hidden Village of Minotaur"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:125) (AoM 前綴，相關的「貝爾哈扎的遺產」子任務世界)。
+- [`51ADC4 zzzCHMemoryMntrCave "Cradle Cave"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:2) / [`51ADC5 zzzCHMemMntrCave "Cave"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:549)。
+- [`51C043 zzzCHCharnelBelharza01 "Concealed Charnel of Belharza"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:78) / [`51C044 zzzCHLocCharnelBelharza`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:612)。
+- [`51D6B2 zzzAoMManbullCave "Hidden Village of Minotaur"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:125) (AoM 前綴，相關的「貝爾哈扎的遺產」子任務世界)。
 
 ## 重建筆記 (Reconstruction Notes)
 
 基於來源 (Source-grounded)：
-- 記憶外殼 [`51C038 zzzCHMemoryQuest13`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:214) 不擁有話題/場景；它是一個優先級為 99 的包裝器。其 `30 / 40 / 999` 完成路徑中：`999` = 記憶關閉 (位於 `255 ShutDownStage` 旁邊)；`30` 和 `40` 是早期波段的兩個結果。
-- 所有可遊玩的內容皆在 [`51ADBF zzzCHSubQuest13 "Broken Horn"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171) 中，目標為「斷裂之角，蒼穹化身。」，包含一個 `SCEN` (`51D636 zzzCHSq13Sc01`) 和一組 4-INFO 的公牛對話 (1 個問候 + 3 個自定義)。
+- 記憶外殼 [`51C038 zzzCHMemoryQuest13`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:214) 不擁有話題/場景；它是一個優先級為 99 的包裝器。其 `30 / 40 / 999` 完成路徑中：`999` = 記憶關閉 (位於 `255 ShutDownStage` 旁邊)；`30` 和 `40` 是早期波段的兩個結果。
+- 所有可遊玩的內容皆在 [`51ADBF zzzCHSubQuest13 "Broken Horn"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171) 中，目標為「斷裂之角，蒼穹化身。」，包含一個 `SCEN` (`51D636 zzzCHSq13Sc01`) 和一組 4-INFO 的公牛對話 (1 個問候 + 3 個自定義)。
 - 兩個互動式贈送分支皆受限於 `GetStage == 40` (別名 #8 `BelharzaBull`)：贈送貝爾哈扎之角 (`51AD83`) 或莫里豪斯的鼻環 (`51AD84`)；每個皆帶有 `CHSq13_TIF__…` 結束片段。
 - 對話主體 (別名 #8) 是不說話的公牛；場景主體 (別名 #9) 是牛頭人，他說出了那兩行恢復聲音的對話。
 

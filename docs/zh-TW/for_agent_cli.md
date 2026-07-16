@@ -18,7 +18,7 @@ request (NL) ──▶ write spec.json (per SPEC-index.md) ──▶ validate �
 ## 指令
 
 ```bash
-cd /home/lorkhan/repo/ModForge
+cd /home/lorkhan/repo/moddings/skyrim/projects/ModForge
 dotnet build src/ModForge.Cli/ModForge.Cli.csproj -v q        # build once (and after any code change)
 R="dotnet run --project src/ModForge.Cli --no-build --"       # then drive it fast
 

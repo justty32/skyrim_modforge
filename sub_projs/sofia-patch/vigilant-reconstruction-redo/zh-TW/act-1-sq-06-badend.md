@@ -9,7 +9,7 @@
 
 ## 任務紀錄 (Quest Record)
 
-[`4CDF8D zzzAoMMq06BadEnd "Mar'so Suicide"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:539)
+[`4CDF8D zzzAoMMq06BadEnd "Mar'so Suicide"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:539)
 
 CLI：
 - `questdiag Vigilant.esm 0x4CDF8D`
@@ -42,19 +42,19 @@ ESM：
 `questdiag` 未印出此任務的別名。此任務純粹透過 Hello 主題觸發對話。
 
 主任務：
-- [`4CDF8D zzzAoMMq06BadEnd`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:539)
+- [`4CDF8D zzzAoMMq06BadEnd`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:539)
 
 ## 對話分支：瑪索 (壞結局 Hello)
 
 主題 (Topic)：
-- [`4CDF8E zzzAoMMq06BadEndHello`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1191)
+- [`4CDF8E zzzAoMMq06BadEndHello`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1191)
 
 說話者條件模式：
 - 所有 INFO 皆要求別名 `#0` 滿足 `GetIsAliasRef == 1`（隱含說話者：壞結局變體中的瑪索）。
 
 | 主題 | INFO | 旗標 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`4CDF8E zzzAoMMq06BadEndHello`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1191) | `4CDF8F` | Goodbye | `GetIsAliasRef alias #0` | 「再也沒有干擾了。現在只有妳跟我了，坎帕內拉。」 |
+| [`4CDF8E zzzAoMMq06BadEndHello`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1191) | `4CDF8F` | Goodbye | `GetIsAliasRef alias #0` | 「再也沒有干擾了。現在只有妳跟我了，坎帕內拉。」 |
 | | `4CDF90` | Goodbye | `GetIsAliasRef alias #0` | 「我會永遠待在這裡，坎帕內拉。直到永遠。」 |
 | | `4CDF91` | Goodbye | `GetIsAliasRef alias #0` | 「在水池深處這裡，再也沒有人能打擾我們了。就連喬凡尼也沒辦法來到這。」 |
 | | `4CDF92` | Goodbye | `GetIsAliasRef alias #2` | 「在艱難與悲傷的時刻讚美美瑞蒂亞，喔，讚美美瑞蒂亞！」 |
@@ -77,12 +77,12 @@ ESM：
   - 祈求美瑞蒂亞（暗示與魔侯腐化或道德抉擇點有關）。
 
 **相關紀錄（僅供背景參考，依 `infodiag` 顯示不屬於此任務）：**
-- NPC [`001842 zzzAoMCatMale02` / `0B15B3 zzzCHMarso` – 瑪索](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:61)
-- NPC [`001844 zzzAoMCatFemale01` / `2D35C3 zzzCHEpiCat01` – 坎帕內拉](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:65)
-- 來自主要分支的對話背景 [`009E68 zzzAoMMq06 "Also sprach Kahjiit"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:949) — 對話主題 [`00A3E3`–`00A3F9`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:960) 顯示了坎帕內拉與瑪索的日常場景以及與喬凡尼的衝突。
+- NPC [`001842 zzzAoMCatMale02` / `0B15B3 zzzCHMarso` – 瑪索](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:61)
+- NPC [`001844 zzzAoMCatFemale01` / `2D35C3 zzzCHEpiCat01` – 坎帕內拉](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:65)
+- 來自主要分支的對話背景 [`009E68 zzzAoMMq06 "Also sprach Kahjiit"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:949) — 對話主題 [`00A3E3`–`00A3F9`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:960) 顯示了坎帕內拉與瑪索的日常場景以及與喬凡尼的衝突。
 
 **與好結局的關係：**
-- 成對的任務 [`4D0376 zzzAoMMqGoodEnd "Art of Mercy"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:541) 具有相反的條件流程與結果（主角阻止了悲劇，拯救了坎帕內拉）。
+- 成對的任務 [`4D0376 zzzAoMMqGoodEnd "Art of Mercy"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:541) 具有相反的條件流程與結果（主角阻止了悲劇，拯救了坎帕內拉）。
 
 ## 開放驗證
 

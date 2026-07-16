@@ -9,7 +9,7 @@ Source policy:
 
 ## Quest Record
 
-[`43B81F zzzBMGuide "Stendarr Guide"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:83)
+[`43B81F zzzBMGuide "Stendarr Guide"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:83)
 
 CLI:
 - `questdiag Vigilant.esm 0x43B81F`
@@ -40,8 +40,8 @@ Objectives:
 
 | Index | Source | Quest Text |
 |---:|---|---|
-| 0 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:84) | Trace the blood |
-| 10 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:85) | Trace the elder blood |
+| 0 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:84) | Trace the blood |
+| 10 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:85) | Trace the elder blood |
 
 Objective targets:
 - Each objective has 1 target in ESM.
@@ -60,7 +60,7 @@ This is a **navigation and tracking quest** — purely for objective markers and
 ## Reconstruction Notes
 
 Source-grounded:
-- This Misc quest is represented by [`43B81F zzzBMGuide`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:83) with name `"Stendarr Guide"`.
+- This Misc quest is represented by [`43B81F zzzBMGuide`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:83) with name `"Stendarr Guide"`.
 - It contains 2 objectives (stage 0 and stage 10) that map to the two main investigation branches:
   - Objective 0: "Trace the blood" (initial investigation phase)
   - Objective 10: "Trace the elder blood" (escalated investigation phase, possibly linked to vampire discovery in `zzzBMMq02`)

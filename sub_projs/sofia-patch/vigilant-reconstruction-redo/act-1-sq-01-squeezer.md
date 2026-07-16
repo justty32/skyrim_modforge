@@ -9,7 +9,7 @@ Source policy:
 
 ## Quest Record
 
-[`005CE3 zzzAoMMq01 "Squeezer"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:288)
+[`005CE3 zzzAoMMq01 "Squeezer"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:288)
 
 CLI:
 - `questdiag Vigilant.esm 0x005CE3`
@@ -46,12 +46,12 @@ Objectives:
 
 | Index | Source | Text |
 |---:|---|---|
-| 0 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:289) | Talk to Altano |
-| 10 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:290) | Follow Altano or Join Altano at Hall of Dead |
-| 15 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:291) | Talk to Altano |
-| 20 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:292) | Search Vampire |
-| 30 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:293) | Defeat Vampire |
-| 40 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:294) | Report to Altano |
+| 0 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:289) | Talk to Altano |
+| 10 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:290) | Follow Altano or Join Altano at Hall of Dead |
+| 15 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:291) | Talk to Altano |
+| 20 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:292) | Search Vampire |
+| 30 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:293) | Defeat Vampire |
+| 40 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:294) | Report to Altano |
 
 Objective targets:
 - Objective 0: 1 target with 0 conditions.
@@ -87,7 +87,7 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x006258 zzAoMMq01B1Mission1` | `0x006259` | none | `GetStage < 10`; `GetIsAliasRef alias #0` | Prompt: [`"Can I help you?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:14) Response (Neutral): [`"There is the request of Arkay priest in Whiterun. Vampire appears."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:15) Response (Neutral): [`"Can you assist me? Get ready for a journey immediately, vampire do not wait for us."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:16) |
+| `0x006258 zzAoMMq01B1Mission1` | `0x006259` | none | `GetStage < 10`; `GetIsAliasRef alias #0` | Prompt: [`"Can I help you?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:14) Response (Neutral): [`"There is the request of Arkay priest in Whiterun. Vampire appears."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:15) Response (Neutral): [`"Can you assist me? Get ready for a journey immediately, vampire do not wait for us."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:16) |
 
 VMAD Fragment:
 - `AoM01_TIF__01006259` (triggers `OnEnd` fragment)
@@ -104,7 +104,7 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x00625B zzAoMMq01B2AboutCrime` | `0x00625C` | none | `GetStage == 15`; `GetInCell 0x0165AA`; `GetIsAliasRef alias #0` | Prompt: [`"Tell me about the incident."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:18) Response (Happy): [`"Every victims are squeeze all blood. This is act of vampire, Novice Vampire"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:19) Response (Neutral): [`"I'll try to examine the documents in here a little longer. You are looking for suspicious person in the town."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:20) |
+| `0x00625B zzAoMMq01B2AboutCrime` | `0x00625C` | none | `GetStage == 15`; `GetInCell 0x0165AA`; `GetIsAliasRef alias #0` | Prompt: [`"Tell me about the incident."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:18) Response (Happy): [`"Every victims are squeeze all blood. This is act of vampire, Novice Vampire"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:19) Response (Neutral): [`"I'll try to examine the documents in here a little longer. You are looking for suspicious person in the town."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:20) |
 
 VMAD Fragment:
 - `AoM01_TIF__0100625C` (triggers `OnEnd` fragment)
@@ -123,7 +123,7 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x00625E zzAoMMq01B3AboutVictims` | `0x00625F` | none | `GetStage == 20`; `GetIsAliasRef alias #0` | Prompt: [`"Tell me about victims"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:22) Response (Sad): [`"There is nothing in common among victims magically....hmm...something in common is male."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:23) |
+| `0x00625E zzAoMMq01B3AboutVictims` | `0x00625F` | none | `GetStage == 20`; `GetIsAliasRef alias #0` | Prompt: [`"Tell me about victims"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:22) Response (Sad): [`"There is nothing in common among victims magically....hmm...something in common is male."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:23) |
 
 ### Branch 4: Authority Question — "We do not need Jarl's permission?"
 
@@ -135,7 +135,7 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x006261 zzAoMMq01B4AboutAuthority` | `0x006262` | none | `GetStage == 20`; `GetIsAliasRef alias #0` | Prompt: [`"We do not need Jarl's permission?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:25) Response (Happy): [`"Our Activities are accepted in Skyrim. one of reason is a shorthanded by Cuvil War. Anyway, we are welcomed now."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:26) |
+| `0x006261 zzAoMMq01B4AboutAuthority` | `0x006262` | none | `GetStage == 20`; `GetIsAliasRef alias #0` | Prompt: [`"We do not need Jarl's permission?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:25) Response (Happy): [`"Our Activities are accepted in Skyrim. one of reason is a shorthanded by Cuvil War. Anyway, we are welcomed now."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:26) |
 
 Translation notes:
 - `Cuvil War` is presumed to be a mistranscription or localized name; likely refers to the "Civil War" in Skyrim.
@@ -150,7 +150,7 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x006264 zzAoMMq01B5WhyNovice` | `0x006265` | none | `GetStage == 20`; `GetIsAliasRef alias #0` | Prompt: [`"You said Novice vampire...Why?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:28) Response (Happy): [`"Victims are found everyday. the most of vampire behave flamboyantly is novice."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:29) |
+| `0x006264 zzAoMMq01B5WhyNovice` | `0x006265` | none | `GetStage == 20`; `GetIsAliasRef alias #0` | Prompt: [`"You said Novice vampire...Why?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:28) Response (Happy): [`"Victims are found everyday. the most of vampire behave flamboyantly is novice."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:29) |
 
 ### Branch 6: Suspect Branch — Prostitute Encounter
 
@@ -163,8 +163,8 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x006267 zzAoMMq01B6Whore` | `0x006268` | Goodbye | `GetStage == 20`; `GetGlobalValue 0x000038` [6–21]; `GetIsAliasRef alias #1` | Prompt: (none) Response (Neutral): [`"Come again in the night. I will give you a delicious sweetroll."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:32) |
-| `0x006267 zzAoMMq01B6Whore` | `0x006269` | WalkAway | `GetStage == 20`; `GetIsAliasRef alias #1` | Prompt: (none) Response (Neutral): [`"Do you like sweetroll? My sweetroll is delicious?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:33) |
+| `0x006267 zzAoMMq01B6Whore` | `0x006268` | Goodbye | `GetStage == 20`; `GetGlobalValue 0x000038` [6–21]; `GetIsAliasRef alias #1` | Prompt: (none) Response (Neutral): [`"Come again in the night. I will give you a delicious sweetroll."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:32) |
+| `0x006267 zzAoMMq01B6Whore` | `0x006269` | WalkAway | `GetStage == 20`; `GetIsAliasRef alias #1` | Prompt: (none) Response (Neutral): [`"Do you like sweetroll? My sweetroll is delicious?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:33) |
 
 ### Branch 7: Sweetroll Accept — "Take one"
 
@@ -172,7 +172,7 @@ TOPIC `0x00626A zzAoMMq01B6Yes`
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x00626A zzAoMMq01B6Yes` | `0x00626B` | Goodbye | `GetIsAliasRef alias #1` | Prompt: [`"Take one"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:35) Response (Neutral): [`"Thank you. Could you close youe eye for a while? I am very shy...."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:36) |
+| `0x00626A zzAoMMq01B6Yes` | `0x00626B` | Goodbye | `GetIsAliasRef alias #1` | Prompt: [`"Take one"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:35) Response (Neutral): [`"Thank you. Could you close youe eye for a while? I am very shy...."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:36) |
 
 VMAD Fragment:
 - `AoM01_TIF__0100626B` (triggers `OnEnd` fragment)
@@ -187,7 +187,7 @@ TOPIC `0x00626C zzAoMMq01B6No`
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x00626C zzAoMMq01B6No` | `0x00626D` | Goodbye | `GetIsAliasRef alias #1` | Prompt: [`"unnecessary"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:38) Response (Neutral): [`"That's too bad...Don't you want to see my face in Hood?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:39) |
+| `0x00626C zzAoMMq01B6No` | `0x00626D` | Goodbye | `GetIsAliasRef alias #1` | Prompt: [`"unnecessary"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:38) Response (Neutral): [`"That's too bad...Don't you want to see my face in Hood?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:39) |
 
 Translation notes:
 - `in Hood` is likely a mistranslation or flavor text for the suspect's disguise (hood/cloak).
@@ -202,7 +202,7 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x00626F zzAoMMq01B7MissionComplete` | `0x006270` | none | `GetStage == 40`; `GetIsAliasRef alias #0` | Prompt: [`"Defeated vampire, she disguised as a prostitute."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:41) Response (Happy): [`"Well...that's why you are refreshed. You will make a name for yourself in future."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:42) Response (Happy): [`"Anyway...prostitute...Our work is done. I will also play in the night."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:43) |
+| `0x00626F zzAoMMq01B7MissionComplete` | `0x006270` | none | `GetStage == 40`; `GetIsAliasRef alias #0` | Prompt: [`"Defeated vampire, she disguised as a prostitute."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:41) Response (Happy): [`"Well...that's why you are refreshed. You will make a name for yourself in future."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:42) Response (Happy): [`"Anyway...prostitute...Our work is done. I will also play in the night."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:43) |
 
 VMAD Fragment:
 - `AoM01_TIF__01006270` (triggers `OnEnd` fragment)
@@ -213,7 +213,7 @@ VMAD Fragment:
 These are not all part of quest `005CE3` according to `infodiag`, but they are essential context:
 
 NPCs:
-- [`000D62 zzzAoMVigilantTraitor` - Altano](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:835) (quest-giver)
+- [`000D62 zzzAoMVigilantTraitor` - Altano](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:835) (quest-giver)
 - Vampire prostitute: (alias #1; NPC identity TBD via deeper QUST alias dump)
 
 Globals:

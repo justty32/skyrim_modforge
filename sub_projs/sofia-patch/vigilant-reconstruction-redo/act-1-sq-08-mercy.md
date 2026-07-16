@@ -10,7 +10,7 @@ Source policy:
 
 ## Quest Record
 
-[`00EA8A zzzAoMMq08 "No Mercy"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:132)
+[`00EA8A zzzAoMMq08 "No Mercy"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:132)
 
 CLI:
 - `questdiag Vigilant.esm 0x00EA8A`
@@ -52,10 +52,10 @@ Objectives:
 
 | Index | Source | Text |
 |---:|---|---|
-| 0 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:133) | Hunt Witches |
-| 200 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:134) | Negotiate with Altano (Option) |
-| 210 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:135) | Defeat Altano (Option) |
-| 300 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:136) | Defeat Ugly One |
+| 0 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:133) | Hunt Witches |
+| 200 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:134) | Negotiate with Altano (Option) |
+| 210 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:135) | Defeat Altano (Option) |
+| 300 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:136) | Defeat Ugly One |
 
 Objective targets:
 - Objective 0 (Hunt Witches): 2 targets with 2 conditions each.
@@ -85,7 +85,7 @@ Dialogue aliases from `infodiag`:
 - **Stages 0–15**: Arrival and greeting. Player encounters Altano and Lilian at the witch encampment. Initial task: assess the situation (stages 10–15).
 - **Stages 18–20**: Dialogue investigation phase. Player gathers intel from Lilian about the witches and the curse on her husband (stage 20).
 - **Stage 30**: Completion of "Hunt Witches" objective (flag: `CompleteQuest`). Normal witch-hunt completion path.
-- **Stages 200–220**: Alternative path opens (stage-gated by `200 ≤ stage < 230`). Topics like [`0x0423C3 zzzAoMMq08B1NoWitch`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:653) branch here, indicating a divergence where player questions the witches' presence.
+- **Stages 200–220**: Alternative path opens (stage-gated by `200 ≤ stage < 230`). Topics like [`0x0423C3 zzzAoMMq08B1NoWitch`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:653) branch here, indicating a divergence where player questions the witches' presence.
 - **Stage 210**: Represents a refusal path or continued resistance (objective "Defeat Altano (Option)" at this stage).
 - **Stage 230**: `CompleteQuest` — alternative completion path (defeat witches via dialogue refusal or confront Altano).
 - **Stage 300**: Late objective ("Defeat Ugly One") — suggests a final enemy encounter beyond Lilian.
@@ -100,14 +100,14 @@ Scene topics from `infodiag` are topic records (not formal SCEN records) with ca
 ### 0x042937 zzzAoMMq08SceneKill (Scene marker)
 
 Extracted text (1 line):
-- [`"you will kill the withes. By yourself..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:674)
+- [`"you will kill the withes. By yourself..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:674)
 
 Context: Altano's command for the player to execute the witch hunt solo. Marks the acceptance/assignment stage.
 
 ## Custom Dialogue Branch: Lilian (Witch NPC alias #0)
 
 Branch:
-- [`00EFF0:Vigilant.esm`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:642) (quest branch root; filter=AoM\; SNAM=CUST)
+- [`00EFF0:Vigilant.esm`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:642) (quest branch root; filter=AoM\; SNAM=CUST)
 
 Condition pattern:
 - Stage-gated at `GetStage < 200` for most topics (initial encounter).
@@ -117,7 +117,7 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x00EFF4 zzAoMMq08B1RunAway`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:642) | `0x00EFF5` | Goodbye | `GetStage < 200`; `GetIsAliasRef alias #0` | Prompt: `"I am a Vigilant of Stendarr. I heard there are witches...."` Response (Fear): `"......!Lilian!!Run! Run away!!"` |
+| [`0x00EFF4 zzAoMMq08B1RunAway`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:642) | `0x00EFF5` | Goodbye | `GetStage < 200`; `GetIsAliasRef alias #0` | Prompt: `"I am a Vigilant of Stendarr. I heard there are witches...."` Response (Fear): `"......!Lilian!!Run! Run away!!"` |
 
 VMAD Fragment:
 - `AoM08_TIF__0100EFF5` (triggers `OnEnd` fragment; likely advances stage or triggers combat)
@@ -128,7 +128,7 @@ VMAD Fragment:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x0423BD zzzAoMMq08B1WhatHere`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:642) | `0x0423BE` | none | `GetStage < 200`; `GetIsAliasRef alias #0` | Prompt: `"What are you doing here?"` Response (Fear): `"I have a formulation of the drug. Because I make a living by Alchemy .."` |
+| [`0x0423BD zzzAoMMq08B1WhatHere`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:642) | `0x0423BE` | none | `GetStage < 200`; `GetIsAliasRef alias #0` | Prompt: `"What are you doing here?"` Response (Fear): `"I have a formulation of the drug. Because I make a living by Alchemy .."` |
 
 Context: Lilian explains she is an alchemist, not necessarily a witch herself. Phrase "formulation of the drug" is unclear (OCR artifact); likely meant "drug" as in "potion".
 
@@ -136,7 +136,7 @@ Context: Lilian explains she is an alchemist, not necessarily a witch herself. P
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x0423BF zzzAoMMq08B1Alchemy`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:645) | `0x0423C0` | none | `GetIsAliasRef alias #0` | Prompt: `"Where did you learn Alchemy?"` Response 1 (Fear): `"from the witch ... but that's ... Gurenmoriru, but I am not a friend of the girls."` Response 2 (Sad): `"In desperate hope ... so .. and want to solve a curse of her husband"` |
+| [`0x0423BF zzzAoMMq08B1Alchemy`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:645) | `0x0423C0` | none | `GetIsAliasRef alias #0` | Prompt: `"Where did you learn Alchemy?"` Response 1 (Fear): `"from the witch ... but that's ... Gurenmoriru, but I am not a friend of the girls."` Response 2 (Sad): `"In desperate hope ... so .. and want to solve a curse of her husband"` |
 
 Translation notes:
 - "Gurenmoriru" is likely a mistranscribed name (OCR artifact); appears to be the witch teacher's name, possibly Garenmormire or similar.
@@ -146,7 +146,7 @@ Translation notes:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x0423C1 zzzAoMMq08B1GoMove`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:649) | `0x0423C2` | Goodbye | `GetIsAliasRef alias #0` | Prompt: `"I do not mind, here is dangerous now. You had better move the location"` Response 1 (Neutral): `"Goes to show you that you came ... Well. you found ..."` Response 2 (Happy): `"I decided to leave here as soon as possible. Stendhal with you"` |
+| [`0x0423C1 zzzAoMMq08B1GoMove`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:649) | `0x0423C2` | Goodbye | `GetIsAliasRef alias #0` | Prompt: `"I do not mind, here is dangerous now. You had better move the location"` Response 1 (Neutral): `"Goes to show you that you came ... Well. you found ..."` Response 2 (Happy): `"I decided to leave here as soon as possible. Stendhal with you"` |
 
 VMAD Fragment:
 - `AoM08_TIF__010423C2` (triggers `OnEnd` fragment; likely advances toward stage 30 or quest completion)
@@ -158,7 +158,7 @@ Translation notes:
 ## Custom Dialogue Branch: Altano (Quest giver alias #4)
 
 Branch:
-- [`00EFF0:Vigilant.esm`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:638) (quest branch root)
+- [`00EFF0:Vigilant.esm`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:638) (quest branch root)
 
 Condition pattern:
 - Most topics stage-gated at `GetStage < 200` or `200 ≤ stage < 210` for escalation.
@@ -168,7 +168,7 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x00EFF1 zzAoMMq08B1WitchHunt`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:638) | `0x00EFF6` | none | `GetIsAliasRef alias #4` | Response (Anger): `"Witch is a serious threat to peace of Skyrim. Kill them all."` |
+| [`0x00EFF1 zzAoMMq08B1WitchHunt`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:638) | `0x00EFF6` | none | `GetIsAliasRef alias #4` | Response (Anger): `"Witch is a serious threat to peace of Skyrim. Kill them all."` |
 
 Context: Altano's primary directive; no stage condition here, so always available as opening dialogue.
 
@@ -176,7 +176,7 @@ Context: Altano's primary directive; no stage condition here, so always availabl
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x00EFF1 (continued)`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:638) | `0x00EFF3` | SayOnce | `GetIsAliasRef alias #0` | Response (Puzzled): `"Who...who are you?Please....leave us alone...?"` |
+| [`0x00EFF1 (continued)`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:638) | `0x00EFF3` | SayOnce | `GetIsAliasRef alias #0` | Response (Puzzled): `"Who...who are you?Please....leave us alone...?"` |
 
 (inference: alias #0 here suggests this response is from Lilian, not Altano; likely a second INFO under the same topic, alternating speakers.)
 
@@ -184,7 +184,7 @@ Context: Altano's primary directive; no stage condition here, so always availabl
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x0423BA zzzAoMMq08B1AboutWitch`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:638) | `0x0423BB` | Goodbye | `GetStage < 200`; `GetIsAliasRef alias #4` | Prompt: `"Tell me about witches of Ivasted"` Response 1 (Disgust): `"Val Lee is a parent-child witch Homestead. Do not be fooled just because they pretend Alchemist"` Response 2 (Disgust): `"Do not pardon opponent but women and children. If you cut corners, I fall prey to witch"` |
+| [`0x0423BA zzzAoMMq08B1AboutWitch`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:638) | `0x0423BB` | Goodbye | `GetStage < 200`; `GetIsAliasRef alias #4` | Prompt: `"Tell me about witches of Ivasted"` Response 1 (Disgust): `"Val Lee is a parent-child witch Homestead. Do not be fooled just because they pretend Alchemist"` Response 2 (Disgust): `"Do not pardon opponent but women and children. If you cut corners, I fall prey to witch"` |
 
 VMAD Fragment: (implicit from INFO)
 
@@ -197,7 +197,7 @@ Translation notes:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x0423C3 zzzAoMMq08B1NoWitch`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:653) | `0x0423C4` | none | `200 ≤ GetStage < 210`; `GetIsAliasRef alias #4` | Prompt: `"There are no witch in Ivasted"` Response 1 (Anger): `"...So? Seems to have been well Marumekoma? you came back blindly?"` Response 2 (Anger): `"Kill! Whether or not! You must kill them!!"` |
+| [`0x0423C3 zzzAoMMq08B1NoWitch`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:653) | `0x0423C4` | none | `200 ≤ GetStage < 210`; `GetIsAliasRef alias #4` | Prompt: `"There are no witch in Ivasted"` Response 1 (Anger): `"...So? Seems to have been well Marumekoma? you came back blindly?"` Response 2 (Anger): `"Kill! Whether or not! You must kill them!!"` |
 
 Translation notes:
 - "Marumekoma" is a mistranscription; unclear referent. Possibly a curse word or a garbled name.
@@ -210,7 +210,7 @@ Translation notes:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x0423C5 zzzAoMMq08B1OkOk`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:657) | `0x0423C6` | none | `GetIsAliasRef alias #4` | Prompt: `"Ok..."` Response 1 (Sad): `"I'm sorry, I was standing a little ... but you understands"` Response 2 (Happy): `"Whatever possible you MUST be eliminated them"` |
+| [`0x0423C5 zzzAoMMq08B1OkOk`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:657) | `0x0423C6` | none | `GetIsAliasRef alias #4` | Prompt: `"Ok..."` Response 1 (Sad): `"I'm sorry, I was standing a little ... but you understands"` Response 2 (Happy): `"Whatever possible you MUST be eliminated them"` |
 
 Translation notes:
 - First response: "I was standing a little" is garbled; likely "I was overstepping" or "I was out of line".
@@ -220,7 +220,7 @@ Translation notes:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x0423C7 zzzAoMMq08B1Crazy`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:661) | `0x0423C8` | none | `GetIsAliasRef alias #4` | Prompt: `"you A little crazy, Altano ..."` Response 1 (Anger): `"Will ya just do something, such as funny ...! Are you! Can not understand you!"` Response 2 (Anger): `"Listed in our victimization witch! Soon go! But you should now that it is!"` |
+| [`0x0423C7 zzzAoMMq08B1Crazy`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:661) | `0x0423C8` | none | `GetIsAliasRef alias #4` | Prompt: `"you A little crazy, Altano ..."` Response 1 (Anger): `"Will ya just do something, such as funny ...! Are you! Can not understand you!"` Response 2 (Anger): `"Listed in our victimization witch! Soon go! But you should now that it is!"` |
 
 Translation notes:
 - "such as funny" likely means "don't act funny" or "stop joking around".
@@ -230,7 +230,7 @@ Translation notes:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x0423C9 zzzAoMMq08B1Wrong`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:665) | `0x0423CA` | none | `GetIsAliasRef alias #4` | Prompt: `"This is wrong..."` Response 1 (Anger): `"The cold just as wrong? What not have been killed so far too late! Now, in this I was told!"` Response 2 (Anger): `"It's the same this time. I hope it'll kill it in the name of Stendhal as the guys that were just said!"` |
+| [`0x0423C9 zzzAoMMq08B1Wrong`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:665) | `0x0423CA` | none | `GetIsAliasRef alias #4` | Prompt: `"This is wrong..."` Response 1 (Anger): `"The cold just as wrong? What not have been killed so far too late! Now, in this I was told!"` Response 2 (Anger): `"It's the same this time. I hope it'll kill it in the name of Stendhal as the guys that were just said!"` |
 
 Translation notes:
 - First response is severely garbled; "The cold just as wrong" is unintelligible. Likely tries to say "Your hesitation is wrong" or similar.
@@ -240,7 +240,7 @@ Translation notes:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x0423CB zzzAoMMq08B1Never`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:669) | `0x0423CC` | Goodbye | `GetIsAliasRef alias #4` | Prompt: `"I never do that!!"` Response 1 (Neutral): `"I see that intention ... It looks like hard. I'm sorry. I'm so sorry ..."` Response 2 (Happy): `"Such must change the way a little rough but ..."` |
+| [`0x0423CB zzzAoMMq08B1Never`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:669) | `0x0423CC` | Goodbye | `GetIsAliasRef alias #4` | Prompt: `"I never do that!!"` Response 1 (Neutral): `"I see that intention ... It looks like hard. I'm sorry. I'm so sorry ..."` Response 2 (Happy): `"Such must change the way a little rough but ..."` |
 
 VMAD Fragment:
 - `AoM08_TIF__010423CC` (triggers `OnEnd` fragment; likely advances toward stage 210 or the "Defeat Altano" path)
@@ -254,10 +254,10 @@ Translation notes:
 ## Related Records
 
 NPCs:
-- [`0012D2 (Lilian from extracted dialogue.md:696)` - Lilian ("I am Alchemist. I will become like my mom...")](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:696)
+- [`0012D2 (Lilian from extracted dialogue.md:696)` - Lilian ("I am Alchemist. I will become like my mom...")](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:696)
   - Lilian is an alchemist NPC at the witch encampment, seemingly a daughter figure to the primary witch.
   - No dedicated NPC record lookup in game-data yet; extracted text only.
-- [`000D66 zzzAoMVigilantElder` - Altano](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1) (carried forward from sq07)
+- [`000D66 zzzAoMVigilantElder` - Altano](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1) (carried forward from sq07)
 
 Items:
 - (None explicitly flagged as quest-gated in this quest; objective "Defeat Ugly One" suggests an end-boss item drop, but unidentified in current CLI output.)

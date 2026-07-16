@@ -10,7 +10,7 @@ Source policy:
 
 ## Quest Record
 
-[`140225 zzzCHMemoryQuest04 "Johan the fool"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:296)
+[`140225 zzzCHMemoryQuest04 "Johan the fool"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:296)
 
 CLI:
 - `questdiag Vigilant.esm 0x140225`
@@ -53,7 +53,7 @@ Objective:
 
 | Index | Source | Translation |
 |---:|---|---|
-| 0 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:297) | 「死者在地下做夢。」 |
+| 0 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:297) | 「死者在地下做夢。」 |
 | | | Note: source `Deads dream under the ground.` — `Deads` is broken English (死者複數誤拼)；譯為「死者」。待驗證。 |
 
 Objective targets:
@@ -64,7 +64,7 @@ Objective targets:
 All three `SCEN` records below share the same host quest and the same 19-entry alias table (printed identically by `scenediag` for each scene). The scene action `ActorID=N` indexes into this table.
 
 Host quest:
-- [`140225 zzzCHMemoryQuest04`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:296)
+- [`140225 zzzCHMemoryQuest04`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:296)
 
 Host-quest aliases from `scenediag` (19):
 
@@ -72,17 +72,17 @@ RESOLVED: `scenediag` output confirms `uniqueActor` fills for aliases 0-8 and 13
 
 | Alias | Name | Fill |
 |---:|---|---|
-| 0 | `Simon` | uniqueActor [`140211 zzzCHBigBrother01Memory` - Simon](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:593) |
-| 1 | `Tlass` | uniqueActor [`140212 zzzCHBigBrother02Memory` - Tlass](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:594) |
-| 2 | `Priest` | uniqueActor [`140220 zzzCHArkayPriestMemory` - Arkay Priest](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:599) |
-| 3 | `Attendant01` | uniqueActor [`140215 zzzCHAttendantMMemory`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:595) |
-| 4 | `Attendant02` | uniqueActor [`140216 zzzCHAttendantFMemory`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:596) |
-| 5 | `Attendant03` | uniqueActor [`14021D zzzCHAttendantFElfMemory`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:597) |
-| 6 | `Attendant04` | uniqueActor [`140223 zzzCHAttendantFCatMemory`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:602) |
-| 7 | `Attendant05` | uniqueActor [`140222 zzzCHAttendantMMemory02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:600) |
-| 8 | `Attendant06` | uniqueActor [`14021E zzzCHAttendantMAlikrMemory`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:598) |
+| 0 | `Simon` | uniqueActor [`140211 zzzCHBigBrother01Memory` - Simon](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:593) |
+| 1 | `Tlass` | uniqueActor [`140212 zzzCHBigBrother02Memory` - Tlass](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:594) |
+| 2 | `Priest` | uniqueActor [`140220 zzzCHArkayPriestMemory` - Arkay Priest](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:599) |
+| 3 | `Attendant01` | uniqueActor [`140215 zzzCHAttendantMMemory`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:595) |
+| 4 | `Attendant02` | uniqueActor [`140216 zzzCHAttendantFMemory`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:596) |
+| 5 | `Attendant03` | uniqueActor [`14021D zzzCHAttendantFElfMemory`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:597) |
+| 6 | `Attendant04` | uniqueActor [`140223 zzzCHAttendantFCatMemory`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:602) |
+| 7 | `Attendant05` | uniqueActor [`140222 zzzCHAttendantMMemory02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:600) |
+| 8 | `Attendant06` | uniqueActor [`14021E zzzCHAttendantMAlikrMemory`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:598) |
 | 9 | `Bard` | fill not exposed by `scenediag` (no uniqueActor/forcedRef in alias record) — NPC `13909B zzzCHBardMemory` exists; likely the cell-placed bard ref enabled by QF `Fragment_8` `Alias_Bard.TryToEnable()`. (inference; `find zzzCHBardMemory` → `Vigilant.esm:0x13909B Npc`) |
-| 13 | `Martha` | uniqueActor [`140DF8 zzzCHMarthaGhoul` - Martha](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:574) |
+| 13 | `Martha` | uniqueActor [`140DF8 zzzCHMarthaGhoul` - Martha](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:574) |
 | 16 | `Molag` | fill not exposed by `scenediag` — enabled by QF `Fragment_20` `Alias_Molag.TryToEnable()` before `MolagScene.ForceStart()`. NPC `12339D zzzCHMolagBal "Molag Bal"` is the main Vigilant Molag Bal NPC; alias fill via in-cell ref or ForceRefTo not visible in alias record. (inference; `find zzzCHMolagBal` → `Vigilant.esm:0x12339D Npc`) |
 | 10 | `MemoryMarker01` | forcedRef `13FC5D:Vigilant.esm` |
 | 11 | `ReturnMarker` | forcedRef `140226:Vigilant.esm` |
@@ -111,7 +111,7 @@ psc:
 - `sf_zzzchmeq4funeralscene_02140235.psc` — `Fragment_0`: `GetOwningQuest().SetStage(30)` (scene end → stage 30)
 
 Staging:
-- Host quest: [`140225 zzzCHMemoryQuest04`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:296)
+- Host quest: [`140225 zzzCHMemoryQuest04`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:296)
 - ForceStart: QF `Fragment_2` (stage 10): `FuneralScene.ForceStart()` + `RegisterSceneSkip(self, FuneralScene, 30, True)` — scene completes at stage 30 or is skip-registered to jump to 30 if player skips.
 - Scene end → `SetStage(30)` (from `sf_zzzchmeq4funeralscene_02140235.psc:8`).
 - Actors (9): aliases `#0 Simon`, `#1 Tlass`, `#2 Priest`, `#3`-`#8` Attendant01-06; all `behaviorFlags=DeathEnd, DialoguePause`. Priest (`#2`) has `NoPlayerActivation`.
@@ -119,17 +119,17 @@ Staging:
 - Actions (26): the Priest (`#2`) speaks the eulogy line per phase 0-3 (`140238`, `14023A`, `14023C`, `14023E`); Simon (`#0`) responds at phases 4/6/7 (`140240`, `140243`, `140245`); the rest are `FaceTarget` headtrack actions onto the Priest then Simon (mourners). Martha's funeral.
 
 Translations (Priest, then Simon):
-- [`140238`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1886) (Neutral): 「Arkay，生與死之神，我們將 Martha 交付於你手中，她已走完這段以希望為定數的生命之旅。」
+- [`140238`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1886) (Neutral): 「Arkay，生與死之神，我們將 Martha 交付於你手中，她已走完這段以希望為定數的生命之旅。」
   - Note: source `the journey of life of the hope of life that is determined` 文法破碎；意譯。待驗證。
-- [`14023A`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1889) (Neutral): 「願這女孩卸下一切重擔、離我們而去，並在 Aetherius 與聖者相會。」
+- [`14023A`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1889) (Neutral): 「願這女孩卸下一切重擔、離我們而去，並在 Aetherius 與聖者相會。」
   - Note: source `whether` 為贅字；`in addition to meeting the saint` 意譯為「與聖者相會」。待驗證。
-- [`14023C`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1892) (Neutral): 「願我們在離別之悲中，仍能與這女兒一同被引入 Akei 的環中，共享永恆之喜。」
+- [`14023C`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1892) (Neutral): 「願我們在離別之悲中，仍能與這女兒一同被引入 Akei 的環中，共享永恆之喜。」
   - Note: `Akei` = Arkay 的另一拼法（本檔多處 Arkay/Arkei/Akei/Akei 混用）。待驗證。
-- [`14023E`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1895) (Neutral): 「以那規定生命的 Arkei 之名……」
+- [`14023E`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1895) (Neutral): 「以那規定生命的 Arkei 之名……」
   - Note: source `Arkei of life that is prescribed. The under the name of...` 破碎且未完。待驗證。
-- [`140240`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1898) (Sad, Simon): 「以那規定生命的 Arkei 之名……」（與 `14023E` 同文，由 Simon 哀傷複誦）
-- [`140243`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1901) (Sad, Simon): 「各位，感謝你們今日為 Martha 而來。Martha 想必也會對 Aetherius 心懷感激。」
-- [`140245`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1904) (Sad, Simon): 「我由衷感謝各位的慰問。非常、非常感謝。」
+- [`140240`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1898) (Sad, Simon): 「以那規定生命的 Arkei 之名……」（與 `14023E` 同文，由 Simon 哀傷複誦）
+- [`140243`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1901) (Sad, Simon): 「各位，感謝你們今日為 Martha 而來。Martha 想必也會對 Aetherius 心懷感激。」
+- [`140245`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1904) (Sad, Simon): 「我由衷感謝各位的慰問。非常、非常感謝。」
 
 ### 1413AB zzzCHMeQ4BadScene
 
@@ -140,7 +140,7 @@ psc:
 - `sf_zzzchmeq4badscene_021413ab.psc` — `Fragment_0`: `GetOwningQuest().SetStage(120)` (scene end → stage 120)
 
 Staging:
-- Host quest: [`140225 zzzCHMemoryQuest04`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:296)
+- Host quest: [`140225 zzzCHMemoryQuest04`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:296)
 - ForceStart: QF `Fragment_18` (stage 110): `BadScene.ForceStart()` + `RegisterSceneSkip(self, BadScene, 120, True)`.
 - Scene end → `SetStage(120)` (from `sf_zzzchmeq4badscene_021413ab.psc:8`).
 - Actors (2): aliases `#0 Simon`, `#1 Tlass`, both `flags=NoPlayerActivation`.
@@ -148,12 +148,12 @@ Staging:
 - Actions (13): Simon (`#0`) and Tlass (`#1`) trade lines over the Mace at phases 1-5 (`1413B0`, `1413B2`, `1413B4`, `1413B6`, `1413B8`); a `Timer` of 8s at phase 6 closes the scene. The brothers gloat over the acquired Mace — this is the **bad-path** brother scene. (EditorID `BadScene`; confirmed by QF `Fragment_18` which also calls `Alias_Martha.TryToDisable()` and `Alias_Simon.TryToMoveTo(Alias_BrotherMarker)` before starting this scene.)
 
 Translations:
-- [`1413B0`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1940) (Happy, Simon): 「我做到了，我做到了。」
-- [`1413B2`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1943) (Happy, Simon): 「Mace、Mace……找到了。就是這個，這把錘。」
-- [`1413B4`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1946) (Happy, Tlass): 「我們辦到了，兄弟。只要有這個，我們什麼都做得到。」
-- [`1413B6`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1949) (Happy, Simon): 「沒錯。只要還記得那件事，剩下的就是這個。來，走吧。」
+- [`1413B0`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1940) (Happy, Simon): 「我做到了，我做到了。」
+- [`1413B2`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1943) (Happy, Simon): 「Mace、Mace……找到了。就是這個，這把錘。」
+- [`1413B4`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1946) (Happy, Tlass): 「我們辦到了，兄弟。只要有這個，我們什麼都做得到。」
+- [`1413B6`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1949) (Happy, Simon): 「沒錯。只要還記得那件事，剩下的就是這個。來，走吧。」
   - Note: source `This is what remains even think of that` 破碎；意譯。待驗證。
-- [`1413B8`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1952) (Happy, Tlass): 「等等，兄弟。」
+- [`1413B8`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1952) (Happy, Tlass): 「等等，兄弟。」
 
 ### 1413D0 zzzCHMeQ04MolagScene
 
@@ -166,7 +166,7 @@ psc:
   - `Fragment_1`: `GetOwningQuest().SetStage(121)` (earlier phase → stage 121 → player moves back to ReturnMarker and `SetStage(140)`)
 
 Staging:
-- Host quest: [`140225 zzzCHMemoryQuest04`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:296)
+- Host quest: [`140225 zzzCHMemoryQuest04`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:296)
 - ForceStart: QF `Fragment_20` (stage 120): `Alias_Simon.TryToDisable()`, `Alias_Tlass.TryToDisable()`, `Alias_FireMarker.TryToEnable()`, `Alias_Molag.TryToEnable()`, `MolagScene.ForceStart()` + `RegisterSceneSkip(self, MolagScene, 130, True)` (QF `Fragment_29`).
 - Scene phase outcomes:
   - Phase that triggers `Fragment_1` → `SetStage(121)`: QF `Fragment_22` (stage 121) moves player to `ReturnMarker`, plays `GetUp` idle, `EnablePlayerControls`, then `SetStage(140)`. (inference: `Fragment_22` at stage 121 = escape hatch letting player leave after Molag speaks, good-end-bad-path hybrid.)
@@ -176,10 +176,10 @@ Staging:
 - Actions (5): two `Package` actions on Molag (phase 0; phases 1-3), then three `Dialog` lines at phases 1-3 (`141F22`, `141F24`, `141F26`), `HeadtrackPlayer` / `FaceTarget`. Molag Bal's final command to Johann — the **bad-end** payoff. (`MolagScene` EditorID `zzzCHMeQ04MolagScene`; content confirmed by `scenediag` scene-category topics.)
 
 Translations (Molag Bal, all Neutral):
-- [`141F22`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1955): 「Johann，你為我們效力甚善。我要提出最後一個願望。」
+- [`141F22`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1955): 「Johann，你為我們效力甚善。我要提出最後一個願望。」
   - Note: source `I'll ask one last hope` — `hope` 疑為「請求/願望」。待驗證。
-- [`141F24`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1958): 「燒光一切……？好。如你所願——你建造的一切、你的家人，盡化灰燼。」
-- [`141F26`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1961): 「現在，安睡吧。Oblivion 應許永恆的安寧。」
+- [`141F24`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1958): 「燒光一切……？好。如你所願——你建造的一切、你的家人，盡化灰燼。」
+- [`141F26`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1961): 「現在，安睡吧。Oblivion 應許永恆的安寧。」
 
 ## Custom Dialogue Branches
 
@@ -187,7 +187,7 @@ Translations (Molag Bal, all Neutral):
 
 ### Greeting branch: zzzCHMeQ4GreetB01 (`140228`)
 
-Topic [`140229 zzzCHMeQ4GreetB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1874), 6 INFOs, each `Goodbye`, one per Attendant alias `#3`-`#8` (`GetIsAliasRef`). Funeral-mourner ambient barks. Linked, not fully re-translated here — sample: INFO `14022A` (Sad, alias #3): 「都已經十六歲了……唉。那 …… 不是嗎？前路還很長。」 (Note: source `the ...... is not it?` 破碎留白。待驗證。) INFO `14022E` (Anger, alias #7) names `Martha`: 「就因一個人 Martha 失明，你到底都跑哪去了？」 (Note: source `Nantes to one person Martha blind` 嚴重破碎；意譯。待驗證。)
+Topic [`140229 zzzCHMeQ4GreetB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1874), 6 INFOs, each `Goodbye`, one per Attendant alias `#3`-`#8` (`GetIsAliasRef`). Funeral-mourner ambient barks. Linked, not fully re-translated here — sample: INFO `14022A` (Sad, alias #3): 「都已經十六歲了……唉。那 …… 不是嗎？前路還很長。」 (Note: source `the ...... is not it?` 破碎留白。待驗證。) INFO `14022E` (Anger, alias #7) names `Martha`: 「就因一個人 Martha 失明，你到底都跑哪去了？」 (Note: source `Nantes to one person Martha blind` 嚴重破碎；意譯。待驗證。)
 
 ### Brother branch B01: zzzCHMeQ04BrotherB01 (`140231`)
 
@@ -195,7 +195,7 @@ Speaker: brothers Simon (`#0`) / Tlass (`#1`). **Stage-gated** by `GetStage <=` 
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`140232 …BrotherB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1882) | `140233` | `Goodbye` | `GetStage <= 20`; `GetIsAliasRef alias #0` (Simon) | (Sad) 「Johan，別太過自責。」 |
+| [`140232 …BrotherB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1882) | `140233` | `Goodbye` | `GetStage <= 20`; `GetIsAliasRef alias #0` (Simon) | (Sad) 「Johan，別太過自責。」 |
 | `140232` (T01) | `140234` | `Goodbye` | `GetStage <= 30`; `GetIsAliasRef alias #1` (Tlass) | (Sad) 「Johann。那天，酒館不算吵鬧，錯不只在你。我這做兄弟的也有責任。所以……」 |
 
 ### Brother branch B02: zzzCHMeQ04BrotherB02 (`140249`)
@@ -204,9 +204,9 @@ Speaker: Simon (`#0`), no stage gate. Later "let's go home" beat.
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`14024A …BrotherB02T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1907) | `14024B` | none | `GetIsAliasRef alias #0` | (Fear) 「Johann，你還好嗎？」 |
-| [`14024C …BrotherB02T02` prompt "Brother..."](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1910) | `14024E` | none | `GetIsAliasRef alias #0` | (Sad) 「我們回家吧。要下雨了。」 |
-| [`14024D …BrotherB02T03` prompt "Leave me alone a bit"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1913) | `14024F` | `Goodbye` | `GetIsAliasRef alias #0`; VMAD `CHMeq4_TIF__0214024F.Fragment_0` on end | (Sad) 「儘快回來。Martha 縱使病著，你的悲傷想必也傳得到她那裡。」 Note: source `Martha Kanashimuzo you surely reaches even sick` 含未翻譯的日文羅馬字 `Kanashimuzo`(悲しむぞ)；意譯。待驗證。 |
+| [`14024A …BrotherB02T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1907) | `14024B` | none | `GetIsAliasRef alias #0` | (Fear) 「Johann，你還好嗎？」 |
+| [`14024C …BrotherB02T02` prompt "Brother..."](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1910) | `14024E` | none | `GetIsAliasRef alias #0` | (Sad) 「我們回家吧。要下雨了。」 |
+| [`14024D …BrotherB02T03` prompt "Leave me alone a bit"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1913) | `14024F` | `Goodbye` | `GetIsAliasRef alias #0`; VMAD `CHMeq4_TIF__0214024F.Fragment_0` on end | (Sad) 「儘快回來。Martha 縱使病著，你的悲傷想必也傳得到她那裡。」 Note: source `Martha Kanashimuzo you surely reaches even sick` 含未翻譯的日文羅馬字 `Kanashimuzo`(悲しむぞ)；意譯。待驗證。 |
 
 ### Bard branch B01: zzzCHMeQ04BardB01 (`140803`) — the choice branch
 
@@ -214,35 +214,35 @@ Speaker: alias `#9 Bard` (the Molag-Bal envoy "Bal"). Opener **stage-gated `GetS
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`140804 …BardB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1916) | `140805` | none | `GetStage == 50`; `GetIsAliasRef alias #9` | (Happy) 「失去摯愛這種事，是非常令人哀傷的。Akei 真是殘酷。」 |
-| [`140806 …BardB01T02` prompt "who are you?"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1919) | `140807` | none | `GetIsAliasRef alias #9` | (Happy) 「我只是個吟遊詩人。我名叫 Bal。要不要聽我唱一曲？你喜歡 Eroisa 與 Polydor 的故事嗎？」 Note: `Eroisa`/`Polydor` 為音譯人名，待驗證。 |
-| [`140808 …BardB01T03` prompt "It is not in such a mood"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1922) | `140809` | none | `GetIsAliasRef alias #9` | (Neutral) 「真可惜。沒這個心情的話，那也沒辦法。」 |
-| [`14080A …BardB01T04` prompt "What I do use a hell ?"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1925) | `14080B` | none | `GetIsAliasRef alias #9` | (Happy) 「錘。一把錘……我受我主之命，要把這把 Mace 交給你。」 Note: prompt `What I do use a hell ?` 破碎，疑為「我要這東西做什麼用？」。待驗證。 |
-| [`14080C …BardB01T05` prompt "what do you want to let?"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1928) | `14080D` | none | `GetIsAliasRef alias #9` | (Happy) 「我希望你收集有罪之人的靈魂。我們需要數千個。你願意嗎？」 |
-| [`14080E …BardB01T06` prompt "That way , sister will come back ?"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1931) | `14080F` | none | `GetIsAliasRef alias #9` | (Happy) 「是的，當然。我主能讓她復生，因為他在 Arkay 之環之外。」 Note: prompt 中 `sister` 與正文常稱 Martha；此處關係詞（妹/姊）待驗證。 |
-| [`140810 …BardB01T07` prompt "Give me a Mace"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1934) | `140811` | `Goodbye` | `GetIsAliasRef alias #9`; VMAD `CHMeq4_TIF__02140811` (`Fragment_1` OnBegin, `Fragment_0` OnEnd) | (Happy) 「好的，好的。這把 Mace 從一開始就是你的了。親愛的 Johann。」 |
-| [`140812 …BardB01T08` prompt "go away"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1937) | `140813` | `Goodbye` | `GetIsAliasRef alias #9`; VMAD `CHMeq4_TIF__02140813.Fragment_0` on end | (Happy) 「我明白了。那麼，若你改變心意，請到 Bravil 來。我會帶著錘等你。」 |
+| [`140804 …BardB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1916) | `140805` | none | `GetStage == 50`; `GetIsAliasRef alias #9` | (Happy) 「失去摯愛這種事，是非常令人哀傷的。Akei 真是殘酷。」 |
+| [`140806 …BardB01T02` prompt "who are you?"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1919) | `140807` | none | `GetIsAliasRef alias #9` | (Happy) 「我只是個吟遊詩人。我名叫 Bal。要不要聽我唱一曲？你喜歡 Eroisa 與 Polydor 的故事嗎？」 Note: `Eroisa`/`Polydor` 為音譯人名，待驗證。 |
+| [`140808 …BardB01T03` prompt "It is not in such a mood"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1922) | `140809` | none | `GetIsAliasRef alias #9` | (Neutral) 「真可惜。沒這個心情的話，那也沒辦法。」 |
+| [`14080A …BardB01T04` prompt "What I do use a hell ?"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1925) | `14080B` | none | `GetIsAliasRef alias #9` | (Happy) 「錘。一把錘……我受我主之命，要把這把 Mace 交給你。」 Note: prompt `What I do use a hell ?` 破碎，疑為「我要這東西做什麼用？」。待驗證。 |
+| [`14080C …BardB01T05` prompt "what do you want to let?"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1928) | `14080D` | none | `GetIsAliasRef alias #9` | (Happy) 「我希望你收集有罪之人的靈魂。我們需要數千個。你願意嗎？」 |
+| [`14080E …BardB01T06` prompt "That way , sister will come back ?"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1931) | `14080F` | none | `GetIsAliasRef alias #9` | (Happy) 「是的，當然。我主能讓她復生，因為他在 Arkay 之環之外。」 Note: prompt 中 `sister` 與正文常稱 Martha；此處關係詞（妹/姊）待驗證。 |
+| [`140810 …BardB01T07` prompt "Give me a Mace"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1934) | `140811` | `Goodbye` | `GetIsAliasRef alias #9`; VMAD `CHMeq4_TIF__02140811` (`Fragment_1` OnBegin, `Fragment_0` OnEnd) | (Happy) 「好的，好的。這把 Mace 從一開始就是你的了。親愛的 Johann。」 |
+| [`140812 …BardB01T08` prompt "go away"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1937) | `140813` | `Goodbye` | `GetIsAliasRef alias #9`; VMAD `CHMeq4_TIF__02140813.Fragment_0` on end | (Happy) 「我明白了。那麼，若你改變心意，請到 Bravil 來。我會帶著錘等你。」 |
 
 ## Related Records
 
 These are the actors/items this quest's aliases and dialogue reference (verified via `scenediag` alias fills and `infodiag` / item text). Johan himself has **no NPC record** — he is the player role.
 
 NPCs (alias actors):
-- [`140211 zzzCHBigBrother01Memory` - Simon](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:593)
-- [`140212 zzzCHBigBrother02Memory` - Tlass](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:594)
-- [`140220 zzzCHArkayPriestMemory` - Arkay Priest](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:599)
-- [`140DF8 zzzCHMarthaGhoul` - Martha](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:574)
+- [`140211 zzzCHBigBrother01Memory` - Simon](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:593)
+- [`140212 zzzCHBigBrother02Memory` - Tlass](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:594)
+- [`140220 zzzCHArkayPriestMemory` - Arkay Priest](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:599)
+- [`140DF8 zzzCHMarthaGhoul` - Martha](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:574)
   - Note: EditorID `MarthaGhoul` (inference): Martha is later a ghoul / undead, consistent with the bad-end resurrection bargain. 待驗證 against the NPC record.
-- Attendant01-06: [`140215`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:595), [`140216`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:596), [`14021D`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:597), [`140223`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:602), [`140222`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:600), [`14021E`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:598)
+- Attendant01-06: [`140215`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:595), [`140216`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:596), [`14021D`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:597), [`140223`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:602), [`140222`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:600), [`14021E`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:598)
 - `Bard` (alias #9) and `Molag` (alias #16): no `scenediag`-printed fill; runtime-filled disguise/Daedra. The Bard self-names "Bal" in INFO `140807`. (inference.)
 
 Items:
-- [`00D9FC zzzAoMMq07MaceofMolagBal` - Mace of Molag Bal](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:1013)
+- [`00D9FC zzzAoMMq07MaceofMolagBal` - Mace of Molag Bal](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:1013)
   - The Mace delivered by the Bard (INFO `14080B`/`140811`) and gloated over in `BadScene` (`1413B2` "this mace"). EditorID prefix `Mq07` (not `MeQ04`) — it is the shared Mace-of-Molag-Bal artifact, reused here, not a quest-04-private item. (inference, from the EditorID.)
 
 ## Related Book Translation
 
-None owned by this quest. `find zzzCHMeQ04` / `zzzCHMeQ4` returns no `BOOK` record, and `infodiag` lists no book topic. (The "Bravil was burnt" line in [`0B0825 zzzCHSlaverNote04`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:1319) is thematically adjacent to the Bravil arson ending but is a slaver-note record, **not** owned by MeQ04 — excluded per source policy.) `booktext` not run.
+None owned by this quest. `find zzzCHMeQ04` / `zzzCHMeQ4` returns no `BOOK` record, and `infodiag` lists no book topic. (The "Bravil was burnt" line in [`0B0825 zzzCHSlaverNote04`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:1319) is thematically adjacent to the Bravil arson ending but is a slaver-note record, **not** owned by MeQ04 — excluded per source policy.) `booktext` not run.
 
 ## Branch Routing and Karma (RESOLVED)
 
@@ -320,7 +320,7 @@ INFO `14024F` "Leave me alone a bit" (TIF `0214024F`): `Fragment_0` OnEnd → `S
 ## Reconstruction Notes
 
 Source-grounded:
-- This memory is [`140225 zzzCHMemoryQuest04 "Johan the fool"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:296), objective [`Deads dream under the ground.`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:297).
+- This memory is [`140225 zzzCHMemoryQuest04 "Johan the fool"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:296), objective [`Deads dream under the ground.`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:297).
 - It owns 3 `SCEN`: `140235` Funeral (Martha's funeral, Priest + Simon eulogy), `1413AB` Bad (Simon + Tlass gloat over the Mace), `1413D0` Molag (Molag Bal's "burn your family / sleep" command).
 - It owns 4 dialog branches: a quest greeting (`140228`, 6 mourner barks) and three custom branches — Brother B01 (`140231`, stage-gated `<=20`/`<=30` console lines), Brother B02 (`140249`, "let's go home"), and Bard B01 (`140803`, the Mace-offer choice, opener gated `GetStage==50`).
 - The player plays "Johann"; every speaker addresses Johann. No NPC record for Johan exists.

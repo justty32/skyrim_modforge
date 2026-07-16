@@ -9,7 +9,7 @@
 
 ## 任務紀錄 (Quest Record)
 
-[`2B9BAB zzzCHMemoryQuest11 "After the Storm"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
+[`2B9BAB zzzCHMemoryQuest11 "After the Storm"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
 
 CLI：
 - `questdiag Vigilant.esm 0x2B9BAB`
@@ -60,23 +60,23 @@ ESM：
 以下三個 `SCEN` 紀錄共用相同的主機任務與別名。
 
 主機任務：
-- [`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
+- [`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
 
 來自 `scenediag` 的主機任務別名：
 
 | 別名 | 名稱 | 填充 | 解析為 |
 |---:|---|---|---|
-| 0 | `Bull` | 唯一演員 `2B8827:Vigilant.esm` | [`2B8827 zzzCHMemoryMorihaus01 "Morihaus"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:782) |
-| 1 | `Priest` | 唯一演員 `2B882A:Vigilant.esm` | [`2B882A zzzCHMemorySthunPriest "Stuhn Priest"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:781) |
-| 2 | `Akatosh` | 唯一演員 `2DE6E3:Vigilant.esm` | [`2DE6E3 zzzCHMemoryAkatoshMorihaus` (無名稱)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:809) |
+| 0 | `Bull` | 唯一演員 `2B8827:Vigilant.esm` | [`2B8827 zzzCHMemoryMorihaus01 "Morihaus"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:782) |
+| 1 | `Priest` | 唯一演員 `2B882A:Vigilant.esm` | [`2B882A zzzCHMemorySthunPriest "Stuhn Priest"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:781) |
+| 2 | `Akatosh` | 唯一演員 `2DE6E3:Vigilant.esm` | [`2DE6E3 zzzCHMemoryAkatoshMorihaus` (無名稱)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:809) |
 | 3 | `PelinalMarker` | 強制引用 `2E47DF:Vigilant.esm` | 標記 |
 | 4 | `GateMarker` | 強制引用 `2E47E0:Vigilant.esm` | 標記 |
-| 5 | `Gardener` | 唯一演員 `2E47F0:Vigilant.esm` | [`2E47F0 zzzCHMemoryGardener "King of Nenalata"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:805) |
+| 5 | `Gardener` | 唯一演員 `2E47F0:Vigilant.esm` | [`2E47F0 zzzCHMemoryGardener "King of Nenalata"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:805) |
 
 主體 / 說話者：
 - 記憶的主體以及貫穿始終的說話者是 **莫里豪斯 (Morihaus)**（別名 `#0` `Bull`）。除了特別註明之處外，所有場景獨白皆由別名 `#0` 配音，且自定義分支開端受限於玩家站在別名 `#2` `Akatosh` 或別名 `#5` `Gardener` 面前。
 - `Stuhn Priest` (別名 `#1`) 是場景中的第二位演員（在壞分支中拒絕執行命令的祭司）。
-- `Bull` = 莫里豪斯，在 TES 傳說中他是艾萊西亞的有翼牛頭人配偶；話題 [`2B9BBF`](#2b9bb4-zzzchmeq11goodscene) 中提到的 "Paravania" 是艾萊西亞的牛頭人化身。（推論，與 [`51AE2D zzzCHAlessiaMntr "Paravania the Man-bull"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:428) 進行交叉檢查）
+- `Bull` = 莫里豪斯，在 TES 傳說中他是艾萊西亞的有翼牛頭人配偶；話題 [`2B9BBF`](#2b9bb4-zzzchmeq11goodscene) 中提到的 "Paravania" 是艾萊西亞的牛頭人化身。（推論，與 [`51AE2D zzzCHAlessiaMntr "Paravania the Man-bull"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:428) 進行交叉檢查）
 
 觸發器（基於來源的型態）：
 - `questdiag` 不會列印目標引用，且 QUST 啟動條件未包含在目前的 CLI 轉儲中，因此確切的世界內觸發引用未在此解碼。
@@ -92,7 +92,7 @@ CLI：
 - `scenediag Vigilant.esm 0x2B9BB5`
 
 編排：
-- 主機任務：[`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
+- 主機任務：[`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
 - 標誌：無
 - 演員：別名 `#0` (`Bull`, `DeathEnd, DialoguePause`), 別名 `#1` (`Priest`, `DeathEnd, DialoguePause`)
 - 階段：2 個，每個皆為 `0` 開始條件與 `1` 完成條件。
@@ -105,7 +105,7 @@ CLI：
 - `scenediag Vigilant.esm 0x2B9BB4`
 
 編排：
-- 主機任務：[`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
+- 主機任務：[`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
 - 標誌：無
 - 演員：別名 `#0` (`Bull`, `DialoguePause`, `NoPlayerActivation, Optional`), 別名 `#1` (`Priest`, `DeathEnd, DialoguePause`, `NoPlayerActivation, Optional`), 別名 `#2` (`Akatosh`)。
 - 階段：5 個。
@@ -115,10 +115,10 @@ CLI：
 
 | 階段 | 話題 / INFO | 來源 | 翻譯 |
 |---:|---|---|---|
-| 1 | `2B9BB9` / `2B9BBA` | [台詞](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2589) | 「你走了……這樣的結局，真像你的作風……」 |
-| 2 | `2B9BBB` / `2B9BBC` | [台詞](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2592) | 「佩林納爾，是你教我的。Ada 必須以愛來改變一切……」 |
-| 3 | `2B9BBD` / `2B9BBE` | [台詞](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2595) | 「正因如此，我的心才這麼痛。陷入嗜血、向狂怒交出自己，反而還比較容易。」 |
-| 4 | `2B9BBF` / `2B9BC0` | [台詞](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2598) | 「但即便如此，我仍守望著你所造的這個世界……為了她，為了 Paravania……」 |
+| 1 | `2B9BB9` / `2B9BBA` | [台詞](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2589) | 「你走了……這樣的結局，真像你的作風……」 |
+| 2 | `2B9BBB` / `2B9BBC` | [台詞](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2592) | 「佩林納爾，是你教我的。Ada 必須以愛來改變一切……」 |
+| 3 | `2B9BBD` / `2B9BBE` | [台詞](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2595) | 「正因如此，我的心才這麼痛。陷入嗜血、向狂怒交出自己，反而還比較容易。」 |
+| 4 | `2B9BBF` / `2B9BC0` | [台詞](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2598) | 「但即便如此，我仍守望著你所造的這個世界……為了她，為了 Paravania……」 |
 
 - 筆記：`Ada` 是 Ehlnofex 語中對神聖/原始靈魂的稱呼；不予翻譯。解讀為「神聖者 / 世界必須透過愛來改變」；保留直譯待驗證 - 待驗證。
 
@@ -128,7 +128,7 @@ CLI：
 - `scenediag Vigilant.esm 0x2BAEFB`
 
 編排：
-- 主機任務：[`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
+- 主機任務：[`2B9BAB zzzCHMemoryQuest11`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256)
 - 標誌：無
 - 演員：別名 `#0` (`Bull`, `DeathEnd, DialoguePause`), 別名 `#1` (`Priest`, `DialoguePause`)。
 - 階段：16 個。
@@ -138,17 +138,17 @@ CLI：
 
 | 階段 | 演員 | 話題 / INFO | 情緒 | 來源 | 翻譯 |
 |---:|---|---|---|---|---|
-| 1 | `#0` 莫里豪斯 | `2BAEFC` / `2BAEFD` | Neutral | [台詞](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2601) | 「佩林納爾……究竟發生了什麼……」 |
-| 2 | `#0` 莫里豪斯 | `2BAEFE` / `2BAEFF` | Neutral | [台詞](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2604) | 「佩林納爾……說句話吧，拜託你。再像從前那樣鼓舞我們……」 |
-| 3 | `#1` 祭司 | `2BAF00` / `2BAF01` | Sad(100) | [台詞](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2607) | 「莫里豪斯大人，請振作起來……」 |
-| 4 | `#0` 莫里豪斯 | `2BAF37` / `2BAF38` | Neutral | [台詞](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2622) | （沉默：「……………………」） |
-| 5-6 | `#0` 莫里豪斯 | `2BAF03` / `2BAF04` | Neutral | [台詞](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2610) | 「……殺光俘虜。還有，殺光所有精靈居民，連同他們的牲口。」 |
-| 7 | `#1` 祭司 | `2BAF05` / `2BAF06` | Puzzled | [台詞](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2613) | 「您……您說什麼？這是瘋了。」 |
-| 8 | `#1` 祭司 | `2BAF07` / `2BAF08` | Anger | [台詞](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2616) | 「這違背了 Sthun 的教誨……」 |
-| 13 | `#0` 莫里豪斯 | `2BAF0B` / `2BAF0C` | Neutral | [台詞](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2619) | 「佩林納爾，我從你身上學會了。我陷入嗜血，向狂怒交出自己。」 |
-| 14 | `#0` 莫里豪斯 | `2BAF0E` / `2BAF0F` | Neutral | [台詞](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2622) | 「Cyrod 已是我們的了。一切都被允許。」 |
+| 1 | `#0` 莫里豪斯 | `2BAEFC` / `2BAEFD` | Neutral | [台詞](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2601) | 「佩林納爾……究竟發生了什麼……」 |
+| 2 | `#0` 莫里豪斯 | `2BAEFE` / `2BAEFF` | Neutral | [台詞](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2604) | 「佩林納爾……說句話吧，拜託你。再像從前那樣鼓舞我們……」 |
+| 3 | `#1` 祭司 | `2BAF00` / `2BAF01` | Sad(100) | [台詞](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2607) | 「莫里豪斯大人，請振作起來……」 |
+| 4 | `#0` 莫里豪斯 | `2BAF37` / `2BAF38` | Neutral | [台詞](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2622) | （沉默：「……………………」） |
+| 5-6 | `#0` 莫里豪斯 | `2BAF03` / `2BAF04` | Neutral | [台詞](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2610) | 「……殺光俘虜。還有，殺光所有精靈居民，連同他們的牲口。」 |
+| 7 | `#1` 祭司 | `2BAF05` / `2BAF06` | Puzzled | [台詞](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2613) | 「您……您說什麼？這是瘋了。」 |
+| 8 | `#1` 祭司 | `2BAF07` / `2BAF08` | Anger | [台詞](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2616) | 「這違背了 Sthun 的教誨……」 |
+| 13 | `#0` 莫里豪斯 | `2BAF0B` / `2BAF0C` | Neutral | [台詞](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2619) | 「佩林納爾，我從你身上學會了。我陷入嗜血，向狂怒交出自己。」 |
+| 14 | `#0` 莫里豪斯 | `2BAF0E` / `2BAF0F` | Neutral | [台詞](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2622) | 「Cyrod 已是我們的了。一切都被允許。」 |
 
-- 筆記：`teaching of Sthun` ([`2BAF07`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2616)) 對比 NPC EditorID `zzzCHMemorySthunPriest` / 名稱 `Stuhn Priest` ([npcs.tsv:781](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:781))：對話拼寫為 `Sthun`, 祭司紀錄為 `Stuhn`/`Sthun`。Stuhn 是諾德/艾德拉的贖金之神；兩者拼寫皆指同一位神祇。來源拼寫錯亂 - 保留原樣，待驗證。
+- 筆記：`teaching of Sthun` ([`2BAF07`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2616)) 對比 NPC EditorID `zzzCHMemorySthunPriest` / 名稱 `Stuhn Priest` ([npcs.tsv:781](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:781))：對話拼寫為 `Sthun`, 祭司紀錄為 `Stuhn`/`Sthun`。Stuhn 是諾德/艾德拉的贖金之神；兩者拼寫皆指同一位神祇。來源拼寫錯亂 - 保留原樣，待驗證。
 - 筆記：`It is easier to go mad into blood and surrender myself to rage` (Good, `2B9BBD`) 與 `I go mad into blood, surrender myself to rage` (Bad, `2BAF0B`) 是刻意的鏡像：在好場景中莫里豪斯*抵制*了這種衝動，在壞場景中他則*屈服*於它。這是基於來源的極性基準。
 - 筆記：`Cyrod` = Cyrodiil (古期拼寫)；保留來源。
 - 筆記：階段 4 的 `2BAF37` 是純粹的省略號台詞 `........................` (沉默節拍)；譯為沉默停頓。
@@ -163,7 +163,7 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 情緒 | 翻譯 |
 |---|---|---|---|---|---|
-| [`2DE6E8 zzzCHMeQ11AkatoshB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2768) | `2DE6E9` | `Goodbye` | 別名 `#2` 的 `GetIsAliasRef` | Sad | 「暴風雨過後，便是寧靜。那是何等的哀傷啊……」 |
+| [`2DE6E8 zzzCHMeQ11AkatoshB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2768) | `2DE6E9` | `Goodbye` | 別名 `#2` 的 `GetIsAliasRef` | Sad | 「暴風雨過後，便是寧靜。那是何等的哀傷啊……」 |
 
 - 這是 **GoodScene** 路徑（莫里豪斯升天 / 由阿卡托什守望）面對玩家的結束台詞。標題 "After the Storm" 直接來自台詞 `After a storm comes a calm`。
 
@@ -177,9 +177,9 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 情緒 | 翻譯 |
 |---|---|---|---|---|---|
-| [`2E5B3F zzzCHMeQ11GardenerB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2794) | `2E5B40` | `Goodbye` | 別名 `#5` 的 `GetIsAliasRef` | Sad | 「精靈的時代逝去了，人類的時代來臨了……奈納拉塔之王是對的……」 |
+| [`2E5B3F zzzCHMeQ11GardenerB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2794) | `2E5B40` | `Goodbye` | 別名 `#5` 的 `GetIsAliasRef` | Sad | 「精靈的時代逝去了，人類的時代來臨了……奈納拉塔之王是對的……」 |
 
-- 這是 **BadScene** 路徑（莫里豪斯殺死祭司，「一切都被允許」）面對玩家的結束台詞。`Gardener` 即 `King of Nenalata` ([npcs.tsv:805](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:805))；參見他處的 `Thannor the Gardener` ([npcs.tsv:704](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:704))。
+- 這是 **BadScene** 路徑（莫里豪斯殺死祭司，「一切都被允許」）面對玩家的結束台詞。`Gardener` 即 `King of Nenalata` ([npcs.tsv:805](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:805))；參見他處的 `Thannor the Gardener` ([npcs.tsv:704](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:704))。
 - 筆記：`Man Era is come` / `Mer Era is gone` 為來源詞語 (Mer = 精靈)；保留直譯。
 
 ## Packages (來自 `find`)
@@ -214,8 +214,8 @@ Package 集合確認了兩種結果：祈禱 (好) 與拔劍 / 殺死祭司 / �
 ## 重構筆記 (Reconstruction Notes)
 
 基於來源：
-- 本記憶由 [`2B9BAB zzzCHMemoryQuest11 "After the Storm"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256) 代表，僅有標題（ESM 或 `quests.md` 中無目標文本）。
-- 主體/說話者：**莫里豪斯 (Morihaus)** (別名 `#0` `Bull`, [`2B8827`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:782))，哀悼死去的**佩林納爾·白斯特拉克 (Pelinal Whitestrake)**。
+- 本記憶由 [`2B9BAB zzzCHMemoryQuest11 "After the Storm"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256) 代表，僅有標題（ESM 或 `quests.md` 中無目標文本）。
+- 主體/說話者：**莫里豪斯 (Morihaus)** (別名 `#0` `Bull`, [`2B8827`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:782))，哀悼死去的**佩林納爾·白斯特拉克 (Pelinal Whitestrake)**。
 - 包含 **3 個 `SCEN` 紀錄**：`2B9BB5 Sc01` (沉默建立背景)、`2B9BB4 GoodScene` (4 句莫里豪斯台詞)、`2BAEFB BadScene` (16 階段屠殺分支)。
 - 包含 **2 個自定義對話分支**（玩家面對的結束對話）：阿卡托什別名 `#2` (好) 與園丁別名 `#5` (壞)，皆為單個受 `GetIsAliasRef` 限制的 `Goodbye` 話題。
 - **0 本書籍**由本任務擁有 / 連結（`find` 未返回 BOOK；場景中未呼叫書本內容）。

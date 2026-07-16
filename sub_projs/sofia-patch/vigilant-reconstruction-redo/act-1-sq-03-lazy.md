@@ -9,7 +9,7 @@ Source policy:
 
 ## Quest Record
 
-[`00627F zzzAoMMq03 "Lazy Afternoon"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:199)
+[`00627F zzzAoMMq03 "Lazy Afternoon"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:199)
 
 CLI:
 - `questdiag Vigilant.esm 0x00627F`
@@ -49,11 +49,11 @@ Objectives from `questdiag`:
 
 | Index | Source | Translation |
 |---:|---|---|
-| 0 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:200) | Talk to Altano in The Bannered Mare |
-| 10 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:201) | Follow Altano or Join Altano at Candlehearth Hall |
-| 15 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:202) | Follow Altano |
-| 20 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:203) | Defeat Daedra |
-| 30 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:204) | Report to Altano |
+| 0 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:200) | Talk to Altano in The Bannered Mare |
+| 10 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:201) | Follow Altano or Join Altano at Candlehearth Hall |
+| 15 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:202) | Follow Altano |
+| 20 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:203) | Defeat Daedra |
+| 30 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:204) | Report to Altano |
 
 Objective targets:
 - 5 objectives, each with location targets.
@@ -64,11 +64,11 @@ Objective targets:
 ### Branch 1: Mission Briefing (Stage 0→10)
 
 Custom topic:
-- [`00884F zzAoMMq03B1Mission3`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:56)
+- [`00884F zzAoMMq03B1Mission3`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:56)
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`00884F zzAoMMq03B1Mission3`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:56) | `008850` | none | GetInCell `01605E:Skyrim.esm` (The Bannered Mare); GetStage < 10 on quest `00627F`; GetIsAliasRef alias #0 | [「Daedra trouble in Windhelm Inn. This affair maybe related to the previous affair. Here we go.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:57) |
+| [`00884F zzAoMMq03B1Mission3`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:56) | `008850` | none | GetInCell `01605E:Skyrim.esm` (The Bannered Mare); GetStage < 10 on quest `00627F`; GetIsAliasRef alias #0 | [「Daedra trouble in Windhelm Inn. This affair maybe related to the previous affair. Here we go.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:57) |
 | | | | VMAD: `AoM03_TIF__01008850` Fragment_0 on end | |
 
 ### Branch 2: Scene Topics (Stage 10→20)
@@ -79,59 +79,59 @@ Scene exchange 1 (Windhelm Inn arrival):
 
 | Topic | INFO | Speaker | Response | Translation |
 |---|---|---|---|---|
-| [`008853` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:59) | `008854` | Altano | [「We are vigilants of Stendarr. We heard that there is Daedra in this Inn.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:60) |
-| [`008855` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:62) | `008856` | Innkeeper | [「Yes, Daedra appears few days ago and stay here...can you help us?」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:63) |
-| [`008857` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:65) | `008858` | Altano | [「Leave that up to me. we defeat Daedra immediately...by the way, how did Daedra apperas? Summoned?」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:66) |
-| [`008859` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:68) | `00885A` | Innkeeper | [「Yes...a woman who is picked a quarrel by drunkard had summoned Daedra. drunkard was teared up by Daedra...I don't want to remember anymore.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:69) |
-| [`00885B` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:71) | `00885C` | Altano | [「Do you know where the woman go?」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:72) |
-| [`00885D` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:74) | `00885E` | Innkeeper | [「No, I don't know. That was the last I saw of her.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:75) |
-| [`00885F` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:77) | `008860` | Altano | [「Understand. We appreciate your cooperation.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:78) (ForceSubtitle) |
-| [`008861` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:80) | `008862` | — | (empty) |
-| [`008863` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:82) | `008864` | Altano | [「Daedra hunt is begun. Come on.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:83) |
+| [`008853` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:59) | `008854` | Altano | [「We are vigilants of Stendarr. We heard that there is Daedra in this Inn.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:60) |
+| [`008855` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:62) | `008856` | Innkeeper | [「Yes, Daedra appears few days ago and stay here...can you help us?」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:63) |
+| [`008857` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:65) | `008858` | Altano | [「Leave that up to me. we defeat Daedra immediately...by the way, how did Daedra apperas? Summoned?」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:66) |
+| [`008859` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:68) | `00885A` | Innkeeper | [「Yes...a woman who is picked a quarrel by drunkard had summoned Daedra. drunkard was teared up by Daedra...I don't want to remember anymore.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:69) |
+| [`00885B` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:71) | `00885C` | Altano | [「Do you know where the woman go?」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:72) |
+| [`00885D` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:74) | `00885E` | Innkeeper | [「No, I don't know. That was the last I saw of her.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:75) |
+| [`00885F` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:77) | `008860` | Altano | [「Understand. We appreciate your cooperation.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:78) (ForceSubtitle) |
+| [`008861` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:80) | `008862` | — | (empty) |
+| [`008863` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:82) | `008864` | Altano | [「Daedra hunt is begun. Come on.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:83) |
 
 Scene exchange 2 (Daedra encounter, Daedra sleeping):
 
 | Topic | INFO | Speaker | Response | Translation |
 |---|---|---|---|---|
-| [`008866` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:85) | `008867` | Altano | [「Hey, wake up!!」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:86) |
-| [`008868` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:88) | `008869` | Daedra | [「How comfatoble rug is it...good feeling...」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:89) |
-| [`00886A` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:91) | `00886B` | Altano | [「I wonder....? He maybe not dangeraous....I enturst to defeat daedra. I seek the summoner.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:92) |
+| [`008866` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:85) | `008867` | Altano | [「Hey, wake up!!」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:86) |
+| [`008868` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:88) | `008869` | Daedra | [「How comfatoble rug is it...good feeling...」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:89) |
+| [`00886A` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:91) | `00886B` | Altano | [「I wonder....? He maybe not dangeraous....I enturst to defeat daedra. I seek the summoner.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:92) |
 
 Translation notes:
-- [Line 69](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:69): "teared up" → likely "torn apart" or "killed" (past tense, scripting artifact).
-- [Line 66](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:66): "apperas" → typo for "appears".
-- [Line 89](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:89): "comfatoble" → typo for "comfortable".
-- [Line 92](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:92): "enturst" → typo for "entrust".
+- [Line 69](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:69): "teared up" → likely "torn apart" or "killed" (past tense, scripting artifact).
+- [Line 66](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:66): "apperas" → typo for "appears".
+- [Line 89](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:89): "comfatoble" → typo for "comfortable".
+- [Line 92](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:92): "enturst" → typo for "entrust".
 
 ### Branch 3: Mission Complete (Stage 30→40)
 
 Custom topic:
-- [`00886D zzAoMMq03B2Mission3Comp`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:94)
+- [`00886D zzAoMMq03B2Mission3Comp`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:94)
 
 | Topic | INFO | Flags | Conditions | Translations |
 |---|---|---|---|---|
-| [`00886D zzAoMMq03B2Mission3Comp`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:94) | `00886E` | Goodbye | GetStage == 30 on quest `00627F`; GetIsAliasRef alias #0 | Prompt: (none) Response 1 (Puzzled): [「A queer Daedra....it was. Anyway, most inmportant thing is cathcnig the summoner. Traces of magicka shows she was near...」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:95) Response 2 (Neutral): [「I seek the summoner in Windhelm for a while. If you are ready, come to me.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:96) |
+| [`00886D zzAoMMq03B2Mission3Comp`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:94) | `00886E` | Goodbye | GetStage == 30 on quest `00627F`; GetIsAliasRef alias #0 | Prompt: (none) Response 1 (Puzzled): [「A queer Daedra....it was. Anyway, most inmportant thing is cathcnig the summoner. Traces of magicka shows she was near...」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:95) Response 2 (Neutral): [「I seek the summoner in Windhelm for a while. If you are ready, come to me.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:96) |
 | | | | VMAD: `AoM03_TIF__0100886E` Fragment_0 on end | |
 
 Translation notes:
-- [Line 95](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:95): "inmportant" → typo for "important"; "cathcnig" → typo for "catching".
+- [Line 95](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:95): "inmportant" → typo for "important"; "cathcnig" → typo for "catching".
 
 ### Branch 4: Daedra Dialogue (Stage 20-30)
 
 Custom topic:
-- [`008870 zzAoMMq03B3Greet`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:98)
+- [`008870 zzAoMMq03B3Greet`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:98)
 
 Greeting (spoken by Daedra, alias #5):
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`008870 zzAoMMq03B3Greet`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:98) | `008871` | WalkAway | GetIsAliasRef alias #5 | [「Hoaaaaaaaaa!!Incredibles!!」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:99) |
+| [`008870 zzAoMMq03B3Greet`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:98) | `008871` | WalkAway | GetIsAliasRef alias #5 | [「Hoaaaaaaaaa!!Incredibles!!」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:99) |
 
 Wake-up topic (player option to taunt Daedra):
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`008DD7 zzAoMMq03B3GetUp`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:104) prompt="Wake up, Daedra! You are troublesome." | `008DD8` | Goodbye | GetIsAliasRef alias #5 | Response (Sad): [「I know, I know. so....what?」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:105) |
+| [`008DD7 zzAoMMq03B3GetUp`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:104) prompt="Wake up, Daedra! You are troublesome." | `008DD8` | Goodbye | GetIsAliasRef alias #5 | Response (Sad): [「I know, I know. so....what?」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:105) |
 
 Inference on Daedra alias:
 - Alias #5 is the active Daedra during stage 20–30 (greeting and wake-up interactions).
@@ -151,7 +151,7 @@ Locations:
 ## Reconstruction Notes
 
 Source-grounded:
-- This quest is represented by [`00627F zzzAoMMq03`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:199) with five objectives spanning a daedra encounter in an inn.
+- This quest is represented by [`00627F zzzAoMMq03`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:199) with five objectives spanning a daedra encounter in an inn.
 - It contains one stage-gated custom dialogue branch (mission briefing, stage 0→10).
 - It contains eight scene-exchange topics (unrestricted, stage-contextual flow, 008853–00886A).
 - It contains one stage-gated completion branch (stage 30→40).

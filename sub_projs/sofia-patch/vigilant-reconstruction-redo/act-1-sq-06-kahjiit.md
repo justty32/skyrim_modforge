@@ -9,7 +9,7 @@ Source policy:
 
 ## Quest Record
 
-[`009E68 zzzAoMMq06 "Also sprach Kahjiit"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:69)
+[`009E68 zzzAoMMq06 "Also sprach Kahjiit"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:69)
 
 CLI:
 - `questdiag Vigilant.esm 0x009E68`
@@ -56,15 +56,15 @@ Objectives:
 
 | Index | Source | Translation |
 |---:|---|---|
-| 0 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:71) | Talk to Altano |
-| 10 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:72) | Meet Altano in the Ragged Flagon |
-| 20 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:73) | Find Jo'vanni |
-| 21 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:74) | Take advice from Meridia believer (Option) |
-| 25 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:75) | You kill me, Jo'vanni? Why? Jo'vanni just want to meet Campaner'Ra!! Why!? |
-| 50 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:76) | It is in me, Jo'vanni!! Get out it from Jo'vanni, Please!! |
-| 60 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:77) | Retrieve Campaner'Ra from Mar'so instead of Jo'vanni!! Please, grant Jo'vanni's last request!! |
-| 70 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:78) | Jo'vanni can not wait!! Hurry Up!! Jo'vanni want to meet Campaner'Ra ASAP |
-| 80 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:79) | Report to Altano |
+| 0 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:71) | Talk to Altano |
+| 10 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:72) | Meet Altano in the Ragged Flagon |
+| 20 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:73) | Find Jo'vanni |
+| 21 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:74) | Take advice from Meridia believer (Option) |
+| 25 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:75) | You kill me, Jo'vanni? Why? Jo'vanni just want to meet Campaner'Ra!! Why!? |
+| 50 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:76) | It is in me, Jo'vanni!! Get out it from Jo'vanni, Please!! |
+| 60 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:77) | Retrieve Campaner'Ra from Mar'so instead of Jo'vanni!! Please, grant Jo'vanni's last request!! |
+| 70 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:78) | Jo'vanni can not wait!! Hurry Up!! Jo'vanni want to meet Campaner'Ra ASAP |
+| 80 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:79) | Report to Altano |
 
 Objective targets:
 - 9 objectives in ESM, each with 1 target, no explicit conditions listed by questdiag.
@@ -75,7 +75,7 @@ Objective targets:
 The quest defines at least 17 aliases (indices 0–16, inferred from infodiag condition references `GetIsAliasRef`).
 
 Host quest:
-- [`009E68 zzzAoMMq06`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:69)
+- [`009E68 zzzAoMMq06`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:69)
 
 Alias mapping (inferred from `infodiag` alias conditions):
 
@@ -102,12 +102,12 @@ Opening topic sequence, stages 0–25, partner dialogue with Altano.
 
 Opened by: `GetStage LessThan 10` + `GetIsAliasRef == 1` (alias #0, Altano)
 
-Prompt: [About Ratway](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:221)
+Prompt: [About Ratway](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:221)
 
 | Response | Emotion | Response text |
 |---|---|---|
-| 1 | Happy | [Ratway...I have Friends in Ragged Flagon. I will get information from them.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:222) |
-| 2 | Happy | [I will go forward. If you are ready, come on.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:223) |
+| 1 | Happy | [Ratway...I have Friends in Ragged Flagon. I will get information from them.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:222) |
+| 2 | Happy | [I will go forward. If you are ready, come on.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:223) |
 
 VMAD: `AoM06_TIF__0100A3D7.Fragment_0` (OnEnd)
 
@@ -117,13 +117,13 @@ Inference: INFO 0x00A3D7 likely advances stage to 10 at fragment end.
 
 Opened by: `GetStage >= 10` and `GetStage < 20` + `GetInCell == 1` (Skyrim.esm 0x016BCF, Ratway) + `GetIsAliasRef == 1` (alias #0, Altano)
 
-Prompt: [What did you discover about Daedra conjuring in Ratway?](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:225)
+Prompt: [What did you discover about Daedra conjuring in Ratway?](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:225)
 
 | Response | Emotion |
 |---|---|
 | 1 | Disgust |
 
-Response text: [I heard that Kajiit called Jo'vanni summon Daedra. You examine that Khajiit, I will search Daedra.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:226)
+Response text: [I heard that Kajiit called Jo'vanni summon Daedra. You examine that Khajiit, I will search Daedra.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:226)
 
 VMAD: `AoM06_TIF__0100A3DA.Fragment_0` (OnEnd)
 
@@ -143,7 +143,7 @@ Prompt: (none listed; greeting)
 |---|---|
 | 1 | Puzzled |
 
-Response text: [Jo'vanni is looking for Campaner'Ra. My Prescious Campaner'Ra!! Where are you!?](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:229)
+Response text: [Jo'vanni is looking for Campaner'Ra. My Prescious Campaner'Ra!! Where are you!?](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:229)
 
 Inference: Opening monologue of Jo'vanni, no stage advance.
 
@@ -151,7 +151,7 @@ Inference: Opening monologue of Jo'vanni, no stage advance.
 
 Opened by: `GetIsAliasRef == 1` (alias #3)
 
-Prompt: [Who is golden woman?](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:231)
+Prompt: [Who is golden woman?](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:231)
 
 | Response | Emotion |
 |---|---|
@@ -159,8 +159,8 @@ Prompt: [Who is golden woman?](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch
 | 2 | Happy |
 
 Response texts:
-- [Jo'vanni noticed....Jo'vanni is very smart. The liver of triangular rat is not good...Jo'vanni noticed!](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:232)
-- [Your liver....Septim by your liver !! Jo'vanni say like Jo'vanni said!! Campaner'Ra will also say!!](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:233)
+- [Jo'vanni noticed....Jo'vanni is very smart. The liver of triangular rat is not good...Jo'vanni noticed!](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:232)
+- [Your liver....Septim by your liver !! Jo'vanni say like Jo'vanni said!! Campaner'Ra will also say!!](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:233)
 
 VMAD: `AoM06_TIF__0100A3DF.Fragment_0` (OnEnd)
 
@@ -170,7 +170,7 @@ Inference: Player choice determines branch (likely separate outcomes later).
 
 Opened by: `GetIsAliasRef == 1` (alias #3)
 
-Prompt: [You summoned Daedra, is that true?](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:235)
+Prompt: [You summoned Daedra, is that true?](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:235)
 
 | Response | Emotion |
 |---|---|
@@ -178,8 +178,8 @@ Prompt: [You summoned Daedra, is that true?](/home/lorkhan/repo/ModForge/sub_pro
 | 2 | Sad |
 
 Response texts:
-- [Of course!!Jo'vaannin knows becouse Jo'vanni septimed! Septimed By Round Skooma and a liver of triangular rat!!](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:236)
-- [But..but..Nothing is come!! Jo'vanni septimed as golden woman tell me, Jo'vanni!! Why?Jo'vanni?](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:237)
+- [Of course!!Jo'vaannin knows becouse Jo'vanni septimed! Septimed By Round Skooma and a liver of triangular rat!!](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:236)
+- [But..but..Nothing is come!! Jo'vanni septimed as golden woman tell me, Jo'vanni!! Why?Jo'vanni?](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:237)
 
 Inference: Exposition of Jo'vanni's obsession with Daedra summoning and Campaner'Ra. No stage advance; dialogue-only.
 
@@ -199,11 +199,11 @@ Prompt: (none listed; greeting/ambient dialogue)
 
 | INFO | Stage | Conditions | Response | Emotion |
 |---|---|---|---|---|
-| 0x00A3E4 | 30 | `GetIsAliasRef == 1` alias #5 | [Jo'vanni! Wake up, Jo'vanni! It is morning!](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:240) | Anger |
-| 0x00A3E9 | — | `GetSitting NotEqualTo 3` + alias #5 | [Sit down, Jo'vanni. A stand-up meal is bad manner.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:241) | Anger |
-| 0x00A3EA | 35 | `GetIsAliasRef == 1` alias #5 | [This is self confident soup today. you will be encahnted.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:242) | Happy |
-| 0x00A3F1 | 40 | `GetIsAliasRef == 1` alias #4 | [Beautiful pelt. Very beautiful pelt. very...very....very...](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:243) | Happy |
-| 0x00A3F8 | 60 | `GetIsAliasRef == 1` alias #4 | [Campaner'Ra is warm. Mar'so is happy. Very happy.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:244) | Happy |
+| 0x00A3E4 | 30 | `GetIsAliasRef == 1` alias #5 | [Jo'vanni! Wake up, Jo'vanni! It is morning!](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:240) | Anger |
+| 0x00A3E9 | — | `GetSitting NotEqualTo 3` + alias #5 | [Sit down, Jo'vanni. A stand-up meal is bad manner.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:241) | Anger |
+| 0x00A3EA | 35 | `GetIsAliasRef == 1` alias #5 | [This is self confident soup today. you will be encahnted.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:242) | Happy |
+| 0x00A3F1 | 40 | `GetIsAliasRef == 1` alias #4 | [Beautiful pelt. Very beautiful pelt. very...very....very...](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:243) | Happy |
+| 0x00A3F8 | 60 | `GetIsAliasRef == 1` alias #4 | [Campaner'Ra is warm. Mar'so is happy. Very happy.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:244) | Happy |
 
 Inference:
 - Stages 30–35: Campaner'Ra wakes Jo'vanni, offers breakfast.
@@ -215,19 +215,19 @@ Inference:
 
 Opened by: `GetIsAliasRef == 1` (alias #5)
 
-Prompt: [What...? Campaner'Ra?](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:246)
+Prompt: [What...? Campaner'Ra?](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:246)
 
 | Response | Emotion |
 |---|---|
 | 1 | Happy |
 
-Response text: [Wake up! Jo'vanni! Breakfast is ready.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:247)
+Response text: [Wake up! Jo'vanni! Breakfast is ready.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:247)
 
 ### `00A3E7 zzAoMMq06B4GotIt` (Topic/Custom)
 
 Opened by: `GetIsAliasRef == 1` (alias #5)
 
-Prompt: [Jo'vanni got it.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:249)
+Prompt: [Jo'vanni got it.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:249)
 
 Flags: `Goodbye`
 
@@ -235,7 +235,7 @@ Flags: `Goodbye`
 |---|---|
 | 1 | Happy |
 
-Response text: [Today, I made tomato soup you like. Do go ahead with your soup before it gets cold.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:250)
+Response text: [Today, I made tomato soup you like. Do go ahead with your soup before it gets cold.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:250)
 
 VMAD: `AoM06_TIF__0100A3E8.Fragment_0` (OnEnd)
 
@@ -245,7 +245,7 @@ Inference: Exits dialogue loop at this point; likely advances stage.
 
 Opened by: `GetIsAliasRef == 1` (alias #5)
 
-Prompt: [Where is my skooma? Campaner'Ra?](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:252)
+Prompt: [Where is my skooma? Campaner'Ra?](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:252)
 
 Priority: 55 (higher than default)
 
@@ -253,13 +253,13 @@ Priority: 55 (higher than default)
 |---|---|
 | 1 | Disgust |
 
-Response text: [Are you half asleep? You promised me to stop skooma?](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:253)
+Response text: [Are you half asleep? You promised me to stop skooma?](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:253)
 
 ### `00A3ED zzAoMMq06B4kidding` (Topic/Custom)
 
 Opened by: `GetIsAliasRef == 1` (alias #5)
 
-Prompt: [Just kidding, Campaner'Ra.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:255)
+Prompt: [Just kidding, Campaner'Ra.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:255)
 
 Flags: `Goodbye`
 
@@ -267,7 +267,7 @@ Flags: `Goodbye`
 |---|---|
 | 1 | Happy |
 
-Response text: [Anymore!Soup is getting cold.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:256)
+Response text: [Anymore!Soup is getting cold.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:256)
 
 VMAD: `AoM06_TIF__0100A3EE.Fragment_0` (OnEnd)
 
@@ -275,7 +275,7 @@ VMAD: `AoM06_TIF__0100A3EE.Fragment_0` (OnEnd)
 
 Opened by: `GetIsAliasRef == 1` (alias #4, Mar'so)
 
-Prompt: [Mar'so...the pelt of what...?](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:258)
+Prompt: [Mar'so...the pelt of what...?](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:258)
 
 Flags: `WalkAway`
 
@@ -285,7 +285,7 @@ Priority: 55
 |---|---|
 | 1 | Happy |
 
-Response text: [This is Campaner'Ra...My precious Campaner'Ra. Mar'so and Campaner'Ra become one soon.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:259)
+Response text: [This is Campaner'Ra...My precious Campaner'Ra. Mar'so and Campaner'Ra become one soon.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:259)
 
 Inference: Mar'so possessively refers to Campaner'Ra's pelt/skin. "Become one" suggests an intimate or transformative act (possibly skinning, or metaphorical union).
 
@@ -293,7 +293,7 @@ Inference: Mar'so possessively refers to Campaner'Ra's pelt/skin. "Become one" s
 
 Opened by: `GetIsAliasRef == 1` (alias #4)
 
-Prompt: [Why....Mar'so...Why!?](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:261)
+Prompt: [Why....Mar'so...Why!?](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:261)
 
 Flags: `WalkAway`
 
@@ -303,7 +303,7 @@ Priority: 54
 |---|---|
 | 1 | Sad |
 
-Response text: [Campaner'Ra won't look Mar'so. but, Mar'so wants to be with Campaner'Ra.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:262)
+Response text: [Campaner'Ra won't look Mar'so. but, Mar'so wants to be with Campaner'Ra.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:262)
 
 Inference: Campaner'Ra (the character) rejects Mar'so's advances.
 
@@ -311,7 +311,7 @@ Inference: Campaner'Ra (the character) rejects Mar'so's advances.
 
 Opened by: `GetIsAliasRef == 1` (alias #4)
 
-Prompt: [Jo'vanni never excuse you, Mar'so.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:264)
+Prompt: [Jo'vanni never excuse you, Mar'so.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:264)
 
 Flags: `Goodbye`
 
@@ -321,8 +321,8 @@ Flags: `Goodbye`
 | 2 | Happy |
 
 Response texts:
-- [Jelaousy? Jo'vanni? Envy is ugly....Mar'so was also ugly...But now, Mar'so is not because Campaner'Ra with Mar'so.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:265)
-- [Goodbye, Jo'vanni. Mar'so and Campaner'Ra set off on our journey. With Campaner'Ra, Mar'so is not cold in winter Skyrim.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:266)
+- [Jelaousy? Jo'vanni? Envy is ugly....Mar'so was also ugly...But now, Mar'so is not because Campaner'Ra with Mar'so.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:265)
+- [Goodbye, Jo'vanni. Mar'so and Campaner'Ra set off on our journey. With Campaner'Ra, Mar'so is not cold in winter Skyrim.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:266)
 
 VMAD: `AoM06_TIF__0100A3F7.Fragment_0` (OnEnd)
 
@@ -332,7 +332,7 @@ Inference: Ends the memory sequence; Mar'so leaves with Campaner'Ra. Player choi
 
 Opened by: `GetIsAliasRef == 1` (alias #4)
 
-Prompt: [Return Campaner'Ra, Mar'so.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:268)
+Prompt: [Return Campaner'Ra, Mar'so.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:268)
 
 Flags: `Goodbye`
 
@@ -342,8 +342,8 @@ Flags: `Goodbye`
 | 2 | Anger |
 
 Response texts:
-- [No!No No No!! With difficulty! Campaner'Ra and Mar'so become one!! Why do you disturb us!! Mar'so hate you!!](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:269)
-- [...smell bad....like envy...from you!!  you smell like Jo'vanni!! I hate Jo'vanni! ](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:270)
+- [No!No No No!! With difficulty! Campaner'Ra and Mar'so become one!! Why do you disturb us!! Mar'so hate you!!](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:269)
+- [...smell bad....like envy...from you!!  you smell like Jo'vanni!! I hate Jo'vanni! ](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:270)
 
 VMAD: `AoM06_TIF__0100A3FA.Fragment_0` (OnEnd)
 
@@ -357,7 +357,7 @@ Stage 80–90, final dialogue with Altano to report back.
 
 Opened by: `GetStage == 80` + `GetIsAliasRef == 1` (alias #0, Altano)
 
-Prompt: [The matter about Khajiit is done. Also defeated Daedra.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:272)
+Prompt: [The matter about Khajiit is done. Also defeated Daedra.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:272)
 
 Flags: `Goodbye`
 
@@ -365,7 +365,7 @@ Flags: `Goodbye`
 |---|---|
 | 1 | Happy |
 
-Response text: [Really? I am very glad to have a excellent partner like you. Return to our base. Summoner may be caught.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:273)
+Response text: [Really? I am very glad to have a excellent partner like you. Return to our base. Summoner may be caught.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:273)
 
 VMAD: `AoM06_TIF__0100A3FD.Fragment_0` (OnEnd)
 
@@ -381,8 +381,8 @@ Prompt: (none; Hello/greeting)
 
 | INFO | Stage cond | Response | Emotion |
 |---|---|---|---|
-| 0x4CCD82 | `GetStage < 80` | [It's dark here. We need more light. Yes, the light of Meridia!](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3041) | Happy |
-| 0x4CCD83 | (none) | [What lights up the darkness is the light of Meridia!](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3041) | Happy |
+| 0x4CCD82 | `GetStage < 80` | [It's dark here. We need more light. Yes, the light of Meridia!](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3041) | Happy |
+| 0x4CCD83 | (none) | [What lights up the darkness is the light of Meridia!](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3041) | Happy |
 
 Inference: Meridia-cult member's greeting. Repeats obsession with Meridia's light.
 
@@ -396,7 +396,7 @@ Prompt: (none; Goodbye)
 |---|---|
 | 1 | Neutral |
 
-Response text: [Believe Meridia. It is the only salvation.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3043)
+Response text: [Believe Meridia. It is the only salvation.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3043)
 
 ## Optional Cult-Member Dialogue Branch
 
@@ -406,7 +406,7 @@ Stages 20–25, conditional dialogue with a Meridia-cult member (alias #16). Sta
 
 Opened by: `GetStage < 25` + `GetIsAliasRef == 1` (alias #16)
 
-Prompt: [This place is a cesspool. It suits the Meridian faithful.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3044)
+Prompt: [This place is a cesspool. It suits the Meridian faithful.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3044)
 
 | Response | Emotion |
 |---|---|
@@ -414,26 +414,26 @@ Prompt: [This place is a cesspool. It suits the Meridian faithful.](/home/lorkha
 | 2 | Happy |
 
 Response texts:
-- [I don't like the sound of that, but that's exactly what it is! This place is full of people who don't appreciate the light of Meridia.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3045)
-- [I must have been guided by Meridia. Give light to these men. ...... Oh, how merciful Meridia is!](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3046)
+- [I don't like the sound of that, but that's exactly what it is! This place is full of people who don't appreciate the light of Meridia.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3045)
+- [I must have been guided by Meridia. Give light to these men. ...... Oh, how merciful Meridia is!](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3046)
 
 ### `4CDF7A zzzAoMMq06CultB01T02` (Topic/Custom)
 
 Opened by: `GetIsAliasRef == 1` (alias #16)
 
-Prompt: [You're a tough opponent if you can't handle sarcasm.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3048)
+Prompt: [You're a tough opponent if you can't handle sarcasm.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3048)
 
 | Response | Emotion |
 |---|---|
 | 1 | Happy |
 
-Response text: [There are no enemies to those who believe in Meridia. In other words, we are invincible.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3049)
+Response text: [There are no enemies to those who believe in Meridia. In other words, we are invincible.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3049)
 
 ### `4CDF7D zzzAoMMq06CultB02T01` (Topic/Custom)
 
 Opened by: `GetStageDone NotEqualTo 1` (stage 21 not done) + `GetStage >= 20` + `GetStage < 25` + `GetIsAliasRef == 1` (alias #16)
 
-Prompt: [Can you think of anything that could have summoned Daedra here?](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3051)
+Prompt: [Can you think of anything that could have summoned Daedra here?](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3051)
 
 | Response | Emotion |
 |---|---|
@@ -441,8 +441,8 @@ Prompt: [Can you think of anything that could have summoned Daedra here?](/home/
 | 2 | Happy |
 
 Response texts:
-- [None. Not even close. I'm sorry I can't help you. I'm sorry.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3052)
-- [But I will help you, my friend, if you will say a few words of Hail Meridia.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3053)
+- [None. Not even close. I'm sorry I can't help you. I'm sorry.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3052)
+- [But I will help you, my friend, if you will say a few words of Hail Meridia.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3053)
 
 VMAD: `AoMMq06_TIF__024CDF7E.Fragment_0` (OnBegin)
 
@@ -452,7 +452,7 @@ Inference: Player choice between refusing cult help or accepting cult blessing (
 
 Opened by: `GetIsAliasRef == 1` (alias #16)
 
-Prompt: [I don't remember being friends with you.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3055)
+Prompt: [I don't remember being friends with you.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3055)
 
 Flags: `Goodbye`
 
@@ -460,13 +460,13 @@ Flags: `Goodbye`
 |---|---|
 | 1 | Neutral |
 
-Response text: [Don't be lonely. For me, everything is my friend. And you, of course.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3056)
+Response text: [Don't be lonely. For me, everything is my friend. And you, of course.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3056)
 
 ### `4CDF81 zzzAoMMq06CultB02T03` (Topic/Custom)
 
 Opened by: `GetStage < 25` + `GetIsAliasRef == 1` (alias #16)
 
-Prompt: [Long live Meridia.(bullshit)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3058)
+Prompt: [Long live Meridia.(bullshit)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3058)
 
 Flags: `Goodbye`
 
@@ -474,7 +474,7 @@ Flags: `Goodbye`
 |---|---|
 | 1 | Happy |
 
-Response text: [Now, take it. In front of Meridia's light, everything is dazzling. Even dreams.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3059)
+Response text: [Now, take it. In front of Meridia's light, everything is dazzling. Even dreams.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3059)
 
 VMAD: `AoMMq06_TIF__024CDF82.Fragment_0` (OnEnd)
 
@@ -482,13 +482,13 @@ VMAD: `AoMMq06_TIF__024CDF82.Fragment_0` (OnEnd)
 
 Opened by: `GetStageDone == 1` (stage 21 done) + `GetStage >= 20` + `GetStage < 25` + `GetIsAliasRef == 1` (alias #16)
 
-Prompt: [Is this light really safe to shine on people?](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3061)
+Prompt: [Is this light really safe to shine on people?](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3061)
 
 | Response | Emotion |
 |---|---|
 | 1 | Happy |
 
-Response text: [Only Meridia knows that. The important thing is to believe, and more importantly, to forgive.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3062)
+Response text: [Only Meridia knows that. The important thing is to believe, and more importantly, to forgive.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3062)
 
 Inference: Opened only if stage 21 (cult blessing) has been completed.
 
@@ -500,7 +500,7 @@ Topics that open after Jo'vanni's death (stage 79, likely inferred from title or
 
 Opened by: `GetStageDone == 1` (stage 79 done) + `GetIsAliasRef == 1` (alias #16)
 
-Prompt: [Jo'vanni is dead. What's happened?](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3064)
+Prompt: [Jo'vanni is dead. What's happened?](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3064)
 
 | Response | Emotion |
 |---|---|
@@ -508,8 +508,8 @@ Prompt: [Jo'vanni is dead. What's happened?](/home/lorkhan/repo/ModForge/sub_pro
 | 2 | Happy |
 
 Response texts:
-- [A dream is an inner light, and ephemeral. The light is too strong for those who live in dreams. His existence is dazzled along with dreams.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3065)
-- [It's sad. But do not be sad. His death will be followed by the next salvation. Now, chant. For the Meridia.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3066)
+- [A dream is an inner light, and ephemeral. The light is too strong for those who live in dreams. His existence is dazzled along with dreams.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3065)
+- [It's sad. But do not be sad. His death will be followed by the next salvation. Now, chant. For the Meridia.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3066)
 
 Inference: Cult's twisted interpretation of Jo'vanni's death—framing it as enlightenment ("dazzled") rather than tragedy.
 
@@ -517,25 +517,25 @@ Inference: Cult's twisted interpretation of Jo'vanni's death—framing it as enl
 
 Opened by: `GetIsAliasRef == 1` (alias #16)
 
-Prompt: [You, come on, man.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3068)
+Prompt: [You, come on, man.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3068)
 
 | Response | Emotion |
 |---|---|
 | 1 | (unspecified) |
 
-Response text: [The thought of saving someone with mortal is unthinkable. It is this conceit that leads to tragedy. You should know that.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3069)
+Response text: [The thought of saving someone with mortal is unthinkable. It is this conceit that leads to tragedy. You should know that.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3069)
 
 ### `4CDF8B zzzAoMMq06CultB04T03` (Topic/Custom)
 
 Opened by: `GetIsAliasRef == 1` (alias #16)
 
-Prompt: [Long live Meridia (frustrated).](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3071)
+Prompt: [Long live Meridia (frustrated).](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3071)
 
 | Response | Emotion |
 |---|---|
 | 1 | (unspecified) |
 
-Response text: [M, E, R, I, D, I, A!! Glory to the great Meridia, For the Meridia, For the Meridia!](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3072)
+Response text: [M, E, R, I, D, I, A!! Glory to the great Meridia, For the Meridia, For the Meridia!](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3072)
 
 Inference: Cult member's chant after Jo'vanni's death.
 
@@ -545,25 +545,25 @@ Inference: Cult member's chant after Jo'vanni's death.
 
 Greeting line from bad-end Hello topic (preview):
 
-[`4CDF8E zzzAoMMq06BadEndHello`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3074):
-- [No more interruptions. It's just you and me now, Campaner'Ra.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3075)
-- [I'll be here forever, Campanella. Always and forever.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3076)
-- [Here in the deep end of the pond, no one can disturb us anymore. Even Jo'vanni wouldn't be able to come here.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3077)
-- [Hail Meridia in hard times and sad times, oh, hail Meridia!](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3078)
+[`4CDF8E zzzAoMMq06BadEndHello`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3074):
+- [No more interruptions. It's just you and me now, Campaner'Ra.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3075)
+- [I'll be here forever, Campanella. Always and forever.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3076)
+- [Here in the deep end of the pond, no one can disturb us anymore. Even Jo'vanni wouldn't be able to come here.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3077)
+- [Hail Meridia in hard times and sad times, oh, hail Meridia!](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3078)
 
 ## Related Records
 
 These are associated NPCs / items referenced in quest dialogue but not explicitly listed in `infodiag` output.
 
 NPCs:
-- [`0EFC32 zzzCHSummonAltano` - Altano](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:270) (summon variant)
-- [`001841 zzzAoMCatMale01` - Jo'vanni](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:859) (crazy Khajiit)
-- [`001844 zzzAoMCatFemale01` - Campaner'Ra](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:884) (Khajiit female, Jo'vanni's obsession)
+- [`0EFC32 zzzCHSummonAltano` - Altano](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:270) (summon variant)
+- [`001841 zzzAoMCatMale01` - Jo'vanni](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:859) (crazy Khajiit)
+- [`001844 zzzAoMCatFemale01` - Campaner'Ra](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:884) (Khajiit female, Jo'vanni's obsession)
 
 ## Reconstruction Notes
 
 Source-grounded:
-- This quest is represented by [`009E68 zzzAoMMq06`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:69) with name "Also sprach Kahjiit."
+- This quest is represented by [`009E68 zzzAoMMq06`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:69) with name "Also sprach Kahjiit."
 - It contains **no SCEN records**; all staging is dialogue-based, with stage gates controlling topic availability.
 - The quest is structured around **three main sub-narratives**:
   1. Ratway investigation (stages 0–25): Player + Altano uncover Daedra summoning; optional Meridia-cult subplot.

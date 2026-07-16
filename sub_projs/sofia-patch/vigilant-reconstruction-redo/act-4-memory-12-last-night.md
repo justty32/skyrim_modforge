@@ -10,7 +10,7 @@ Source policy:
 
 ## Quest Record
 
-[`2BC395 zzzCHMemoryQuest12 "Last Night"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
+[`2BC395 zzzCHMemoryQuest12 "Last Night"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
 
 CLI:
 - `questdiag Vigilant.esm 0x2BC395`
@@ -53,16 +53,16 @@ Objectives:
 Both `SCEN` records below share the same host quest and the same four aliases. Alias fill confirmed via `scenediag 0x2BD6CB` host-quest alias dump (CLI).
 
 Host quest:
-- [`2BC395 zzzCHMemoryQuest12`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
+- [`2BC395 zzzCHMemoryQuest12`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
 
 Host-quest aliases:
 
 | Alias | Name | Fill | NPC record |
 |---:|---|---|---|
-| 0 | `Alessia` | uniqueActor `2BC383:Vigilant.esm` | [`2BC383 zzzCHMemoryStAlessiaOld "Alessia"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:814) |
-| 1 | `Pelinal` | uniqueActor `2BC37F:Vigilant.esm` | [`2BC37F zzzCHMemoryPelinal02 "Pelinal"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:785) |
-| 2 | `Akatosh` | uniqueActor `2BC376:Vigilant.esm` | [`2BC376 zzzCHMemoryAkatosh "???????"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:776) — display name deliberately blank in source; alias name `Akatosh` is the only naming evidence |
-| 3 | `Bull` | uniqueActor `2BC389:Vigilant.esm` | [`2BC389 zzzCHMemoryMorihaus02 "Morihaus"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:815) |
+| 0 | `Alessia` | uniqueActor `2BC383:Vigilant.esm` | [`2BC383 zzzCHMemoryStAlessiaOld "Alessia"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:814) |
+| 1 | `Pelinal` | uniqueActor `2BC37F:Vigilant.esm` | [`2BC37F zzzCHMemoryPelinal02 "Pelinal"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:785) |
+| 2 | `Akatosh` | uniqueActor `2BC376:Vigilant.esm` | [`2BC376 zzzCHMemoryAkatosh "???????"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:776) — display name deliberately blank in source; alias name `Akatosh` is the only naming evidence |
+| 3 | `Bull` | uniqueActor `2BC389:Vigilant.esm` | [`2BC389 zzzCHMemoryMorihaus02 "Morihaus"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:815) |
 
 All aliases use `uniqueActor` (hardcoded references); no condition-based fill.
 
@@ -83,7 +83,7 @@ CLI:
 - `scenediag Vigilant.esm 0x2BD6CB`
 
 Staging:
-- Host quest: [`2BC395 zzzCHMemoryQuest12`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
+- Host quest: [`2BC395 zzzCHMemoryQuest12`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
 - Flags: none
 - Scene actors: alias `#0` (`Alessia`, `DeathEnd, DialoguePause`) and alias `#1` (`Pelinal`, `DialoguePause`).
 - Phases: 14 (each 0 start conds, 1 complete cond; phases 9 and 11 have 2 complete conds).
@@ -93,37 +93,37 @@ Dialog actions (phase → speaker → topic → emotion):
 
 | Phase | Speaker | Topic | Emotion | Source |
 |---:|---|---|---|---|
-| 1 | Pelinal `#1` | `2BD6CD` | Sad | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2627) |
-| 2 | Alessia `#0` | `2BD6CF` | Happy | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2630) |
-| 3 | Alessia `#0` | `2BD6D1` | Neutral | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2633) |
-| 4 | Pelinal `#1` | `2BD6D3` | Neutral | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2636) |
-| 5 | Alessia `#0` | `2BD6D5` | Happy | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2639) |
-| 6 | Pelinal `#1` | `2BD6D7` | Fear | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2642) |
-| 7 | Alessia `#0` | `2BD6D9` | Happy | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2645) |
-| 8 | Pelinal `#1` | `2BD6DB` | Happy | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2648) |
-| 9 | Alessia `#0` | `2BD6DD` | Sad | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2651) |
+| 1 | Pelinal `#1` | `2BD6CD` | Sad | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2627) |
+| 2 | Alessia `#0` | `2BD6CF` | Happy | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2630) |
+| 3 | Alessia `#0` | `2BD6D1` | Neutral | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2633) |
+| 4 | Pelinal `#1` | `2BD6D3` | Neutral | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2636) |
+| 5 | Alessia `#0` | `2BD6D5` | Happy | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2639) |
+| 6 | Pelinal `#1` | `2BD6D7` | Fear | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2642) |
+| 7 | Alessia `#0` | `2BD6D9` | Happy | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2645) |
+| 8 | Pelinal `#1` | `2BD6DB` | Happy | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2648) |
+| 9 | Alessia `#0` | `2BD6DD` | Sad | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2651) |
 | 9 | (Timer 5s, actor `#0`) | — | — | — |
-| 10 | Pelinal `#1` | `2BD6DF` | Neutral | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2654) |
-| 11 | Alessia `#0` | `2BD6E2` | Happy | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2657) |
-| 12 | Pelinal `#1` | `2BD6E5` | Sad | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2660) |
+| 10 | Pelinal `#1` | `2BD6DF` | Neutral | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2654) |
+| 11 | Alessia `#0` | `2BD6E2` | Happy | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2657) |
+| 12 | Pelinal `#1` | `2BD6E5` | Sad | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2660) |
 
 Translations (good scene, in phase order):
-- [`2BD6CD` / INFO `2BD6CE`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2627): 「Perrif……」
+- [`2BD6CD` / INFO `2BD6CE`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2627): 「Perrif……」
   - Note: `Perrif` is the early-form name of Alessia (Paravania / Al-Esh); kept verbatim.
-- [`2BD6CF` / INFO `2BD6D0`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2630): 「歡迎回來。我從沒想過，最後還能再見到你。」
+- [`2BD6CF` / INFO `2BD6D0`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2630): 「歡迎回來。我從沒想過，最後還能再見到你。」
   - Note: source `Wellcome` is a misspelling of `Welcome`; kept verbatim.
-- [`2BD6D1` / INFO `2BD6D2`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2633): 「所以……怎麼樣了？你找到她了嗎？」
-- [`2BD6D3` / INFO `2BD6D4`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2636): 「終於，我找到她了。我這就去把她接來。」
-- [`2BD6D5` / INFO `2BD6D6`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2639): 「我盼著你能見到她。」
-- [`2BD6D7` / INFO `2BD6D8`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2642): 「還是不明白。」
+- [`2BD6D1` / INFO `2BD6D2`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2633): 「所以……怎麼樣了？你找到她了嗎？」
+- [`2BD6D3` / INFO `2BD6D4`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2636): 「終於，我找到她了。我這就去把她接來。」
+- [`2BD6D5` / INFO `2BD6D6`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2639): 「我盼著你能見到她。」
+- [`2BD6D7` / INFO `2BD6D8`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2642): 「還是不明白。」
   - Note: source `Still don't get it` is ambiguous (who/what is not understood); literal rendering. 待驗證。
-- [`2BD6D9` / INFO `2BD6DA`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2645): 「我想是吧。」
-- [`2BD6DB` / INFO `2BD6DC`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2648): 「你或許……」
-- [`2BD6DD` / INFO `2BD6DE`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2651): 「…………」
-- [`2BD6DF` / INFO `2BD6E0`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2654): 「……該道別了，Perrif。」
-- [`2BD6E2` / INFO `2BD6E3`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2657): 「再見了。」
+- [`2BD6D9` / INFO `2BD6DA`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2645): 「我想是吧。」
+- [`2BD6DB` / INFO `2BD6DC`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2648): 「你或許……」
+- [`2BD6DD` / INFO `2BD6DE`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2651): 「…………」
+- [`2BD6DF` / INFO `2BD6E0`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2654): 「……該道別了，Perrif。」
+- [`2BD6E2` / INFO `2BD6E3`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2657): 「再見了。」
   - Note: source `See you again`; literal「後會有期」also plausible.
-- [`2BD6E5` / INFO `2BD6E6`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2660): 「……再見。」
+- [`2BD6E5` / INFO `2BD6E6`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2660): 「……再見。」
 
 ### 2BD6F2 zzzCHMeQ12BadScene  (bad scene: Akatosh turns the player away)
 
@@ -131,7 +131,7 @@ CLI:
 - `scenediag Vigilant.esm 0x2BD6F2`
 
 Staging:
-- Host quest: [`2BC395 zzzCHMemoryQuest12`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
+- Host quest: [`2BC395 zzzCHMemoryQuest12`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307)
 - Flags: none
 - Scene actors: alias `#2` only (`Akatosh`, `DeathEnd, DialoguePause`).
 - Phases: 6 (phase 0 has 2 complete conds; rest 1 each).
@@ -141,20 +141,20 @@ Dialog actions:
 
 | Phase | Speaker | Topic | Source |
 |---:|---|---|---|
-| 1 | Akatosh `#2` | `2BD6F3` | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2669) |
-| 2 | Akatosh `#2` | `2BD6F5` | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2672) |
-| 3 | Akatosh `#2` | `2BD6F7` | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2675) |
-| 4 | Akatosh `#2` | `2BD6F9` | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2678) |
-| 5 | Akatosh `#2` | `2BD6FB` | [link](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2681) |
+| 1 | Akatosh `#2` | `2BD6F3` | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2669) |
+| 2 | Akatosh `#2` | `2BD6F5` | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2672) |
+| 3 | Akatosh `#2` | `2BD6F7` | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2675) |
+| 4 | Akatosh `#2` | `2BD6F9` | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2678) |
+| 5 | Akatosh `#2` | `2BD6FB` | [link](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2681) |
 
 Translations (bad scene):
-- [`2BD6F3` / INFO `2BD6F4`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2669): 「哦，你是從蜥蜴的腹中而來。真有意思。」
+- [`2BD6F3` / INFO `2BD6F4`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2669): 「哦，你是從蜥蜴的腹中而來。真有意思。」
   - Note: `lizard's stomach` (inference) refers to the player's arrival via the Daedric/Coldharbour passage of VIGILANT's frame story; literal rendering. 待驗證。
-- [`2BD6F5` / INFO `2BD6F6`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2672): 「你不屬於這一側。我能感覺到你身上的傷。」
-- [`2BD6F7` / INFO `2BD6F8`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2675): 「你對我們無害，但你不該見到她。她終於能安息了。」
-- [`2BD6F9` / INFO `2BD6FA`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2678): 「而且，我不知道是誰把你帶到這裡來的，但你不該這樣看著。」
+- [`2BD6F5` / INFO `2BD6F6`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2672): 「你不屬於這一側。我能感覺到你身上的傷。」
+- [`2BD6F7` / INFO `2BD6F8`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2675): 「你對我們無害，但你不該見到她。她終於能安息了。」
+- [`2BD6F9` / INFO `2BD6FA`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2678): 「而且，我不知道是誰把你帶到這裡來的，但你不該這樣看著。」
   - Note: source `you should not see like this` is grammatically broken; literal rendering. 待驗證。
-- [`2BD6FB` / INFO `2BD6FC`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2681): 「若你與此地相融，就再也回不去了。現在，回到你那一側去吧。」
+- [`2BD6FB` / INFO `2BD6FC`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2681): 「若你與此地相融，就再也回不去了。現在，回到你那一側去吧。」
 
 ## Custom Dialogue Branch: Bull (Morihaus)
 
@@ -166,7 +166,7 @@ Speaker condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`2BD6EB zzzCHMeQ12BullB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2663) | `2BD6EC` | `Goodbye` | `GetIsAliasRef alias #3` | 「我明白……她化作了星辰……但是，這很令人難過……太難過了……」 |
+| [`2BD6EB zzzCHMeQ12BullB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2663) | `2BD6EC` | `Goodbye` | `GetIsAliasRef alias #3` | 「我明白……她化作了星辰……但是，這很令人難過……太難過了……」 |
 
 ## Custom Dialogue Branch: Akatosh
 
@@ -178,16 +178,16 @@ Speaker condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`2BD6EF zzzCHMeQ12AkatoshB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2666) | `2BD6F0` | `Goodbye` | `GetStage <= 60`; `GetIsAliasRef alias #2` | 「Paravant，循著群星而行……我記得，你的雙眼曾如流星般燃燒。」 |
+| [`2BD6EF zzzCHMeQ12AkatoshB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2666) | `2BD6F0` | `Goodbye` | `GetStage <= 60`; `GetIsAliasRef alias #2` | 「Paravant，循著群星而行……我記得，你的雙眼曾如流星般燃燒。」 |
 
 Translation notes:
-- `Paravant` is the early-form name of Pelinal (Pelin-Al / Paravant); the source spells it `Paravant`. Kept verbatim. The line echoes the hub quest `zzzCHMemoryGuide` objective 120 [`Blind eyes could blaze like meteors and be`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:312) (Dylan Thomas), confirming the cross-quest linkage.
+- `Paravant` is the early-form name of Pelinal (Pelin-Al / Paravant); the source spells it `Paravant`. Kept verbatim. The line echoes the hub quest `zzzCHMemoryGuide` objective 120 [`Blind eyes could blaze like meteors and be`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:312) (Dylan Thomas), confirming the cross-quest linkage.
 - The `GetStage <= 60` gate ties this Akatosh line to the **pre-310 (good-path) window**: it is only available while the quest has not advanced into the 300-band. (inference)
 
 ## Reconstruction Notes
 
 Source-grounded:
-- This memory is [`2BC395 zzzCHMemoryQuest12 "Last Night"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307), 12 stages, **0 quest-log objectives** (header only in `quests.md`).
+- This memory is [`2BC395 zzzCHMemoryQuest12 "Last Night"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307), 12 stages, **0 quest-log objectives** (header only in `quests.md`).
 - It contains **two** `SCEN` records:
   - `2BD6CB zzzCHMeQ12Sc01` — the **good / reunion scene**: Pelinal ("Perrif"-caller) meets Alessia, 14 phases, ending on `"It is time to say goodbye, Perrif"` → `"See you again"` → `"........bye"`.
   - `2BD6F2 zzzCHMeQ12BadScene` — the **bad / turned-away scene**: Akatosh alone tells the player they do not belong, "you should not meet her", "back to your side".

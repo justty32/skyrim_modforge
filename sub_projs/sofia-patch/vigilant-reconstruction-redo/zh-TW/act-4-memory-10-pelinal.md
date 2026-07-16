@@ -10,7 +10,7 @@
 
 ## 任務紀錄 (Quest Record)
 
-[`2A532E zzzCHMemoryQuest10 "Pelinal the Bloody"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401)
+[`2A532E zzzCHMemoryQuest10 "Pelinal the Bloody"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401)
 
 CLI：
 - `questdiag Vigilant.esm 0x2A532E`
@@ -46,7 +46,7 @@ ESM：
 | 999 | `ShutDownStage` |
 
 任務目標：
-- `questdiag` 報告 `Objectives (0)`。本任務**不帶任務目標文本**（在 [quests.md:401](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401) 的條目僅為標題行）。這是一個完全透過場景與階段門檻對話驅動的非追蹤型「記憶」任務。
+- `questdiag` 報告 `Objectives (0)`。本任務**不帶任務目標文本**（在 [quests.md:401](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401) 的條目僅為標題行）。這是一個完全透過場景與階段門檻對話驅動的非追蹤型「記憶」任務。
 
 ## 主體 (Subject)
 
@@ -62,32 +62,32 @@ ESM：
 以下兩個 `SCEN` 紀錄共用相同的主機任務與 11 個別名名冊（來自 `scenediag`）。
 
 主機任務：
-- [`2A532E zzzCHMemoryQuest10`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401)
+- [`2A532E zzzCHMemoryQuest10`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401)
 
 來自 `scenediag` 的主機任務別名：
 
 | 別名 | 名稱 | 填充 | NPC 來源 |
 |---:|---|---|---|
-| 0 | `Umaril` | 唯一演員 `2955ED` | [`2955ED zzzCHBossUmaril "Umaril the Feathered"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:761) |
-| 1 | `Mary` | 唯一演員 `2A0679` | [`2A0679 zzzCHSlaveMary "Mary"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:793) |
-| 2 | `Bal` | 唯一演員 `2A4000` | [`2A4000 zzzCHBardMemoryPelinal`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:795) |
-| 3 | `Prey01` | 唯一演員 `29F2F7` | [`29F2F7 zzzCHPreySlave01 "Slave"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:767) |
-| 4 | `Prey02` | 唯一演員 `29F2F9` | [`29F2F9 zzzCHPreySlave02 "Slave"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:786) |
-| 5 | `Korn` | 唯一演員 `2A3FFC` | [`2A3FFC zzzCHMemoryKorn "Korn"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:794) |
-| 6 | `Pelinal` | 唯一演員 `0B0EB3` | [`0B0EB3 zzzCHBossPelinal "Pelinal Whitestrake"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1075) |
+| 0 | `Umaril` | 唯一演員 `2955ED` | [`2955ED zzzCHBossUmaril "Umaril the Feathered"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:761) |
+| 1 | `Mary` | 唯一演員 `2A0679` | [`2A0679 zzzCHSlaveMary "Mary"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:793) |
+| 2 | `Bal` | 唯一演員 `2A4000` | [`2A4000 zzzCHBardMemoryPelinal`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:795) |
+| 3 | `Prey01` | 唯一演員 `29F2F7` | [`29F2F7 zzzCHPreySlave01 "Slave"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:767) |
+| 4 | `Prey02` | 唯一演員 `29F2F9` | [`29F2F9 zzzCHPreySlave02 "Slave"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:786) |
+| 5 | `Korn` | 唯一演員 `2A3FFC` | [`2A3FFC zzzCHMemoryKorn "Korn"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:794) |
+| 6 | `Pelinal` | 唯一演員 `0B0EB3` | [`0B0EB3 zzzCHBossPelinal "Pelinal Whitestrake"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1075) |
 | 8 | `UmarilTA` | 強制引用 `2A5347` | CLI 未列印（場景演員引用） |
-| 9 | `PelinalMemory` | 唯一演員 `2A66C3` | [`2A66C3 zzzCHMemoryPelinal01 "Pelinal"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:796) |
-| 10 | `MolagBal` | 唯一演員 `2A7A0A` | [`2A7A0A zzzCHMolagBalInMemoryPelinal`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:797) |
+| 9 | `PelinalMemory` | 唯一演員 `2A66C3` | [`2A66C3 zzzCHMemoryPelinal01 "Pelinal"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:796) |
+| 10 | `MolagBal` | 唯一演員 `2A7A0A` | [`2A7A0A zzzCHMolagBalInMemoryPelinal`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:797) |
 | 11 | `PelinalTA` | 強制引用 `2AA091` | CLI 未列印（場景演員引用） |
 
 筆記：
 - 別名 `#7` 未出現在名冊中（在 `#6` 與 `#8` 之間存在空缺）；這並非本轉儲錯誤，QUST 單純沒有別名 `#7`。
-- `Bal`（別名 `#2`，運行自定義分支的談話莫拉格·巴爾）由 NPC `zzzCHBardMemoryPelinal` 填充 —— 關於引擎的一個推論：同一個演員紀錄 (`2A4000`) 兼作記憶內的莫拉格·巴爾化身；坐在王座上的莫拉格·巴爾是一個獨立的紀錄 [`2A7A0A`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:797) 用作別名 `#10` `MolagBal` (BasScene 的配音)。（推論）
+- `Bal`（別名 `#2`，運行自定義分支的談話莫拉格·巴爾）由 NPC `zzzCHBardMemoryPelinal` 填充 —— 關於引擎的一個推論：同一個演員紀錄 (`2A4000`) 兼作記憶內的莫拉格·巴爾化身；坐在王座上的莫拉格·巴爾是一個獨立的紀錄 [`2A7A0A`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:797) 用作別名 `#10` `MolagBal` (BasScene 的配音)。（推論）
 - `GetIsID` 對象 `2A5346` 是 **Umaril** 對話分支（無別名；`GetIsID == 2A5346`）的調節紀錄。它無法對應到 `npcs.tsv` 中的行；視為記憶內的 Umaril 說話者紀錄。（推論 —— 需要直接對 `2A5346` 進行 ESM NPC 轉儲。）
 - `Korn` (別名 `#5`) 是佩林納爾的狗：每個 Korn INFO 皆為 `(Bark)` / `(Whine)`。
 
 觸發器：
-- 激活器 [`4DEF09 zzzCHMeq10GateTrigger "Gate"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv) (`find` 結果) 是位於記憶前的世界內「傳送門」；確切的啟動掛鉤（階段 0 `StartUpStage` 推進）未在此解碼。（推論 —— 驗證激活器腳本 / XLOC。）
+- 激活器 [`4DEF09 zzzCHMeq10GateTrigger "Gate"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv) (`find` 結果) 是位於記憶前的世界內「傳送門」；確切的啟動掛鉤（階段 0 `StartUpStage` 推進）未在此解碼。（推論 —— 驗證激活器腳本 / XLOC。）
 
 ## 場景紀錄 (Scene Records)
 
@@ -99,7 +99,7 @@ CLI：
 - `scenediag Vigilant.esm 0x2A66C6`
 
 編排：
-- 主機任務：[`2A532E zzzCHMemoryQuest10`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401)
+- 主機任務：[`2A532E zzzCHMemoryQuest10`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401)
 - 標誌：無
 - 演員：別名 `#9` (`PelinalMemory`), `behaviorFlags=DeathEnd`, `flags=NoPlayerActivation, Optional`
 - 階段：9 個（階段 0 與階段 4 有 2 個完成條件；其餘 1 個；無開始條件）
@@ -109,27 +109,27 @@ CLI：
 |---:|---|---:|---|---|
 | 1 | Package | 0 | — | — |
 | 2 | Package | 1 | — | — |
-| 3 | Dialog | 1 | [`2A66C8`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2549) | 風暴 / 狂怒獨白 |
-| 4 | Dialog | 2 | [`2A66CA`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2552) | 戰鬥後的雨 |
-| 5 | Dialog | 3 | [`2A66CC`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2555) | Kyne 總在哭泣 |
-| 6 | Dialog | 4 | [`2A66CE`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2558) | 我的戰爭結束了 |
+| 3 | Dialog | 1 | [`2A66C8`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2549) | 風暴 / 狂怒獨白 |
+| 4 | Dialog | 2 | [`2A66CA`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2552) | 戰鬥後的雨 |
+| 5 | Dialog | 3 | [`2A66CC`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2555) | Kyne 總在哭泣 |
+| 6 | Dialog | 4 | [`2A66CE`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2558) | 我的戰爭結束了 |
 | 7 | Package | 2-4 | — | — |
 | 8 | Package | 5 | — | — |
 | 9 | Package | 6-8 | — | — |
-| 10 | Dialog | 6 | [`2A66D7`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2561) | 奔跑，太陽快要沉沒 |
-| 11 | Dialog | 7 | [`2A66D9`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2564) | 金色麥田 |
-| 12 | Dialog | 8 | [`2A66DB`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2567) | Kyne 之風，終於找到了 |
+| 10 | Dialog | 6 | [`2A66D7`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2561) | 奔跑，太陽快要沉沒 |
+| 11 | Dialog | 7 | [`2A66D9`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2564) | 金色麥田 |
+| 12 | Dialog | 8 | [`2A66DB`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2567) | Kyne 之風，終於找到了 |
 
 翻譯（佩林納爾的結束獨白 —— 「好/和平」弧線）：
-- [`2A66C8` / INFO `2A66C9`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2549): 「我曾是一場風暴，是憤怒本身。所以我衝過戰場，斬下婦孺的首級，焚毀村莊。」
-- [`2A66CA` / INFO `2A66CB`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2552): 「戰鬥之後總是下雨。溫柔的雨沖刷、治癒我的身體，把血流向大海的盡頭。」
+- [`2A66C8` / INFO `2A66C9`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2549): 「我曾是一場風暴，是憤怒本身。所以我衝過戰場，斬下婦孺的首級，焚毀村莊。」
+- [`2A66CA` / INFO `2A66CB`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2552): 「戰鬥之後總是下雨。溫柔的雨沖刷、治癒我的身體，把血流向大海的盡頭。」
   - 筆記：來源 `It carrued the end of the sea` 拼字錯亂（carried），語意待驗證。
-- [`2A66CC` / INFO `2A66CD`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2555): 「我曾這麼想，也想要這麼相信。儘管 Kyne 一直在哭 —— 不是為我，而是為那些倒下的無辜之人。」
-- [`2A66CE` / INFO `2A66CF`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2558): 「再沒有弱者流血了。Kyne 不再落淚。我的……我的戰爭結束了……」
-- [`2A66D7` / INFO `2A66D8`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2561): 「我一直奔跑著……懺悔之雨若停了，太陽也快沉落遠方。我所渴望的，是那不斷延伸的陰影。」
+- [`2A66CC` / INFO `2A66CD`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2555): 「我曾這麼想，也想要這麼相信。儘管 Kyne 一直在哭 —— 不是為我，而是為那些倒下的無辜之人。」
+- [`2A66CE` / INFO `2A66CF`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2558): 「再沒有弱者流血了。Kyne 不再落淚。我的……我的戰爭結束了……」
+- [`2A66D7` / INFO `2A66D8`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2561): 「我一直奔跑著……懺悔之雨若停了，太陽也快沉落遠方。我所渴望的，是那不斷延伸的陰影。」
   - 筆記：來源 `Rain of contritionif has stop` 拼字錯亂，語意待驗證。
-- [`2A66D9` / INFO `2A66DA`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2564): 「金色的麥田，微風拂過麥穗。女人拍打羽絨被，散落的羽毛化作雪，孩子與狼群在上頭嬉戲。」
-- [`2A66DB` / INFO `2A66DC`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2567): 「這是……這就是 Kyne 之風。終於找到了……終於……」
+- [`2A66D9` / INFO `2A66DA`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2564): 「金色的麥田，微風拂過麥穗。女人拍打羽絨被，散落的羽毛化作雪，孩子與狼群在上頭嬉戲。」
+- [`2A66DB` / INFO `2A66DC`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2567): 「這是……這就是 Kyne 之風。終於找到了……終於……」
 
 ### 2AA092 zzzCHMeQ10BasScene
 
@@ -137,7 +137,7 @@ CLI：
 - `scenediag Vigilant.esm 0x2AA092`
 
 編排：
-- 主機任務：[`2A532E zzzCHMemoryQuest10`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401)
+- 主機任務：[`2A532E zzzCHMemoryQuest10`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401)
 - 標誌：無
 - 演員 (2)：別名 `#10` (`MolagBal`) 與別名 `#11` (`PelinalTA`)，皆為 `behaviorFlags=DeathEnd`, `flags=NoPlayerActivation, Optional`
 - 階段：6 個，每個皆為 0 開始條件 / 1 完成條件。
@@ -145,21 +145,21 @@ CLI：
 
 | 動作 | 演員 | 階段 | 頭部追蹤 | 話題 | 台詞 |
 |---:|---|---:|---|---|---|
-| 1 | #10 MolagBal | 0 | 玩家 | [`2AA093`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2570) | 辱罵其血統 / 舊 Ehlnofey |
-| 2 | #10 MolagBal | 1 | — | [`2AA095`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2573) | 驅使精靈諸王將佩林納爾砍成八塊 |
-| 3 | #10 MolagBal | 2 | 玩家 | [`2AA097`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2576) | 「好歌……你不覺得嗎，佩林納爾？」 |
-| 4 | #11 PelinalTA | 3 | — | [`2AA099`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2579) | （風暴獨白的迴聲） |
-| 5 | #11 PelinalTA | 4 | — | [`2AA09B`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2582) | （雨之獨白的迴聲） |
-| 6 | #11 PelinalTA | 5 | — | [`2AA09D`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2585) | 「雨何時才會停……以血洗血」 |
+| 1 | #10 MolagBal | 0 | 玩家 | [`2AA093`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2570) | 辱罵其血統 / 舊 Ehlnofey |
+| 2 | #10 MolagBal | 1 | — | [`2AA095`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2573) | 驅使精靈諸王將佩林納爾砍成八塊 |
+| 3 | #10 MolagBal | 2 | 玩家 | [`2AA097`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2576) | 「好歌……你不覺得嗎，佩林納爾？」 |
+| 4 | #11 PelinalTA | 3 | — | [`2AA099`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2579) | （風暴獨白的迴聲） |
+| 5 | #11 PelinalTA | 4 | — | [`2AA09B`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2582) | （雨之獨白的迴聲） |
+| 6 | #11 PelinalTA | 5 | — | [`2AA09D`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2585) | 「雨何時才會停……以血洗血」 |
 
 翻譯（莫拉格·巴爾敘述歷史上對佩林納爾的屠殺與肢解；佩林納爾的台詞是 GoodScene 獨白的括號迴聲）：
-- [`2AA093` / INFO `2AA094`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2570): 「……在他之上，辱罵他的血統，以及所有從舊 Ehlnofey 渡海而來的人。」
+- [`2AA093` / INFO `2AA094`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2570): 「……在他之上，辱罵他的血統，以及所有從舊 Ehlnofey 渡海而來的人。」
   - 筆記：此句為片段（承接前句），原文無前文，語意待驗證。
-- [`2AA095` / INFO `2AA096`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2573): 「激怒了其餘的精靈諸王，將他們逼向瘋狂，把佩林納爾砍成八塊。」
-- [`2AA097` / INFO `2AA098`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2576): 「這會是首好歌。你不覺得嗎，佩林納爾？」
-- [`2AA099` / INFO `2AA09A`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2579): 「（我曾是一場風暴，是憤怒本身。所以我衝過戰場，斬下婦孺的首級，焚毀村莊。）」
-- [`2AA09B` / INFO `2AA09C`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2582): 「（戰鬥之後總是下雨。溫柔的雨沖刷、治癒我的身體，把血流向大海的盡頭。）」
-- [`2AA09D` / INFO `2AA09E`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2585): 「（雨何時才會停……我何時才要以血洗血……）」
+- [`2AA095` / INFO `2AA096`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2573): 「激怒了其餘的精靈諸王，將他們逼向瘋狂，把佩林納爾砍成八塊。」
+- [`2AA097` / INFO `2AA098`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2576): 「這會是首好歌。你不覺得嗎，佩林納爾？」
+- [`2AA099` / INFO `2AA09A`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2579): 「（我曾是一場風暴，是憤怒本身。所以我衝過戰場，斬下婦孺的首級，焚毀村莊。）」
+- [`2AA09B` / INFO `2AA09C`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2582): 「（戰鬥之後總是下雨。溫柔的雨沖刷、治癒我的身體，把血流向大海的盡頭。）」
+- [`2AA09D` / INFO `2AA09E`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2585): 「（雨何時才會停……我何時才要以血洗血……）」
 
 ## 自定義對話分支 (Custom Dialogue Branches)
 
@@ -169,8 +169,8 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 來源 / 翻譯 |
 |---|---|---|---|---|
-| [`2A5336 zzzCHMeQ10KornB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2474) | `2A5337` | 無 | `GetStage==30`; 別名 `#5` | (Bark) |
-| [`2A5338 zzzCHMeQ10KornB01T02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2477) | `2A5339` | `Goodbye` | `GetStage==30`; 別名 `#5`; VMAD `CHMeq10_TIF__022A5339` | 提示語：「滾開，別煩我」 → (Whine) |
+| [`2A5336 zzzCHMeQ10KornB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2474) | `2A5337` | 無 | `GetStage==30`; 別名 `#5` | (Bark) |
+| [`2A5338 zzzCHMeQ10KornB01T02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2477) | `2A5339` | `Goodbye` | `GetStage==30`; 別名 `#5`; VMAD `CHMeq10_TIF__022A5339` | 提示語：「滾開，別煩我」 → (Whine) |
 
 ### 分支：Umaril 01 — `2A534C zzzCHMeQ10UmarilB01` (階段 70, GetIsID 2A5346)
 
@@ -178,9 +178,9 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 來源 / 翻譯 |
 |---|---|---|---|---|
-| [`2A534D zzzCHMeQ10UmarilB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2480) | `2A534E` | 無 | `GetStage==70`; `GetIsID 2A5346` | 「你真是樂在殺戮。你像個逗弄昆蟲的嬰孩。」 |
-| [`2A534F zzzCHMeQ10B01T02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2483) | `2A5350` | 無 | `GetIsID 2A5346`; `GetStage==70` | 提示語：「……（沉默）」 回應：「只要 Ada 的污血還沾在大地上，我們的神話紀元就尚未消逝。你和我……」 |
-| [`2A5351 zzzCHMeQ10UmarilB01T03`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2486) | `2A5352` | `Goodbye` | `GetIsID 2A5346`; `GetStage==70`; VMAD `CHMeq10_TIF__022A5352` | 提示語：「來吧。我是來殺你的。」 回應：「當然。等你被斬首之後，我們再談。那時你就願意聽了。」 |
+| [`2A534D zzzCHMeQ10UmarilB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2480) | `2A534E` | 無 | `GetStage==70`; `GetIsID 2A5346` | 「你真是樂在殺戮。你像個逗弄昆蟲的嬰孩。」 |
+| [`2A534F zzzCHMeQ10B01T02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2483) | `2A5350` | 無 | `GetIsID 2A5346`; `GetStage==70` | 提示語：「……（沉默）」 回應：「只要 Ada 的污血還沾在大地上，我們的神話紀元就尚未消逝。你和我……」 |
+| [`2A5351 zzzCHMeQ10UmarilB01T03`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2486) | `2A5352` | `Goodbye` | `GetIsID 2A5346`; `GetStage==70`; VMAD `CHMeq10_TIF__022A5352` | 提示語：「來吧。我是來殺你的。」 回應：「當然。等你被斬首之後，我們再談。那時你就願意聽了。」 |
 
 筆記：`Ada` = 艾德拉 / 眾神 (Ayleid 用法)；依 ES 傳說慣例不予翻譯。
 
@@ -190,7 +190,7 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 來源 / 翻譯 |
 |---|---|---|---|---|
-| [`2A535B zzzCHMeQ10BalB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2489) | `2A535C` | `SayOnce` | `GetStage==90`; 別名 `#2` | 提示語：「你和 Meridia 勾結？」 回應：「勾結？才不。那位傲慢的老巫婆跟誰都不勾結。不過托她的福，我的買賣才能順利進行。」 |
+| [`2A535B zzzCHMeQ10BalB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2489) | `2A535C` | `SayOnce` | `GetStage==90`; 別名 `#2` | 提示語：「你和 Meridia 勾結？」 回應：「勾結？才不。那位傲慢的老巫婆跟誰都不勾結。不過托她的福，我的買賣才能順利進行。」 |
 
 筆記：`Haughty Hag` = Meridia (莫拉格·巴爾嘲諷的稱號)。
 
@@ -198,7 +198,7 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 來源 / 翻譯 |
 |---|---|---|---|---|
-| [`2A5360 zzzCHMeQ10BalB02T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2499) | `2A5361` | `Goodbye, SayOnce` | `GetStage==90`; 別名 `#2`; VMAD `CHMeq10_TIF__022A5361` | 提示語：「你到底想幹嘛？我受夠你的把戲了。」 回應：「別這麼說嘛。跟我來，我帶你去尤瑪里爾的工坊看點有趣的。」 |
+| [`2A5360 zzzCHMeQ10BalB02T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2499) | `2A5361` | `Goodbye, SayOnce` | `GetStage==90`; 別名 `#2`; VMAD `CHMeq10_TIF__022A5361` | 提示語：「你到底想幹嘛？我受夠你的把戲了。」 回應：「別這麼說嘛。跟我來，我帶你去尤瑪里爾的工坊看點有趣的。」 |
 
 筆記：`Atelier of Umaril` 「尤瑪里爾的工坊／畫室」；與下方的地點傳說 "Art of Lost Abagarlas" 相關。
 
@@ -208,8 +208,8 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 來源 / 翻譯 |
 |---|---|---|---|---|
-| [`2A6690 zzzCHMeQ10BalB03T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2502) | `2A6691` | 無 | `GetStage==105`; 別名 `#2` | 「如何？這是失落的 Abagarlas 之藝。他費了好大功夫才做出複製品。」 / 「血雨與堆積的內臟，就像你經歷過的景象。若相遇的方式不同，他會不會成了你的好友呢？」 |
-| [`2A6692 zzzCHMeQ10BalB03T02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2506) | `2A6693` | `Goodbye` | 別名 `#2`; VMAD `CHMeQ10_TIF__022A6693` | 提示語：「噁心。這就是你要給我看的？」 回應：「看來你不喜歡。那就忘了它吧。」 / 「我真正想給你看的在後面。跟我來。」 |
+| [`2A6690 zzzCHMeQ10BalB03T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2502) | `2A6691` | 無 | `GetStage==105`; 別名 `#2` | 「如何？這是失落的 Abagarlas 之藝。他費了好大功夫才做出複製品。」 / 「血雨與堆積的內臟，就像你經歷過的景象。若相遇的方式不同，他會不會成了你的好友呢？」 |
+| [`2A6692 zzzCHMeQ10BalB03T02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2506) | `2A6693` | `Goodbye` | 別名 `#2`; VMAD `CHMeQ10_TIF__022A6693` | 提示語：「噁心。這就是你要給我看的？」 回應：「看來你不喜歡。那就忘了它吧。」 / 「我真正想給你看的在後面。跟我來。」 |
 
 筆記：`Abagarlas` = Ayleid 遺址城市 (實存傳說)。`He` 指誰待驗證（疑為尤瑪里爾或某工匠）。
 
@@ -219,11 +219,11 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 來源 / 翻譯 |
 |---|---|---|---|---|
-| [`2A6695 zzzCHMeQ10BalB04T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2510) | `2A6696` | 無 | `GetStage==115`; 別名 `#2` | 「就是這個，這個。」 |
-| [`2A6697 zzzCHMeQ10BalB04T02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2513) | `2A6698` | 無 | 別名 `#2` | 提示語：「她是？」 回應：「尤瑪里爾的拋棄式性奴。再過一天她就會被溶進那件『藝術品』裡。」 / 「不過尤瑪里爾現在死了。真好，你成了她的救命恩人。」 |
-| [`2A6699 zzzCHMeQ10BalB04T03`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2517) | `2A669A` | 無 | 別名 `#2` | 提示語：「你要我做什麼？」 回應：「她懷著尤瑪里爾的孩子。你想怎麼做？」 |
-| [`2A669B zzzCHMeQ10BalB04T04`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2520) | `2A669C` | 無 | 別名 `#2` | 提示語：「你是說殺了她？」 回應：「我不在乎你殺不殺。但你若不殺它，它將來會威脅世人。」 / 「Ada 之血賦予力量，但心智卻脆弱易碎。那血脈的命運，你最清楚不過。」 |
-| [`2A669D zzzCHMeQ10BalB04T05`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2524) | `2A669E` | `Goodbye` | 別名 `#2`; VMAD `CHMeQ10_TIF__022A669E` | 提示語：「滾。」 回應：「好吧，你需要點時間決定。好好享受。」 |
+| [`2A6695 zzzCHMeQ10BalB04T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2510) | `2A6696` | 無 | `GetStage==115`; 別名 `#2` | 「就是這個，這個。」 |
+| [`2A6697 zzzCHMeQ10BalB04T02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2513) | `2A6698` | 無 | 別名 `#2` | 提示語：「她是？」 回應：「尤瑪里爾的拋棄式性奴。再過一天她就會被溶進那件『藝術品』裡。」 / 「不過尤瑪里爾現在死了。真好，你成了她的救命恩人。」 |
+| [`2A6699 zzzCHMeQ10BalB04T03`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2517) | `2A669A` | 無 | 別名 `#2` | 提示語：「你要我做什麼？」 回應：「她懷著尤瑪里爾的孩子。你想怎麼做？」 |
+| [`2A669B zzzCHMeQ10BalB04T04`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2520) | `2A669C` | 無 | 別名 `#2` | 提示語：「你是說殺了她？」 回應：「我不在乎你殺不殺。但你若不殺它，它將來會威脅世人。」 / 「Ada 之血賦予力量，但心智卻脆弱易碎。那血脈的命運，你最清楚不過。」 |
+| [`2A669D zzzCHMeQ10BalB04T05`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2524) | `2A669E` | `Goodbye` | 別名 `#2`; VMAD `CHMeQ10_TIF__022A669E` | 提示語：「滾。」 回應：「好吧，你需要點時間決定。好好享受。」 |
 
 ### 分支：Mary 01 — `2A66A6 zzzCHMeQ10MaryB01` (階段 130, 別名 #1)
 
@@ -231,9 +231,9 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 來源 / 翻譯 |
 |---|---|---|---|---|
-| [`2A66A7 zzzCHMeQ10MaryB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2527) | `2A66A8` | 無 | `GetStage==130`; 別名 `#1` | 「謝……謝謝你……」 |
-| [`2A66A9 zzzCHMeQ10MaryB01T02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2530) | `2A66AA` | 無 | `GetStage==130`; 別名 `#1` | 提示語：「你能走嗎？」 回應：「能……可是……」 |
-| [`2A66AB zzzCHMeQ10B01T03`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2533) | `2A66AC` | 無 | `GetStage==130`; 別名 `#1`; VMAD `CHMeq10_TIF__022A66AC` | 提示語：「走吧，我們走。」 回應：「好、好的……」 |
+| [`2A66A7 zzzCHMeQ10MaryB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2527) | `2A66A8` | 無 | `GetStage==130`; 別名 `#1` | 「謝……謝謝你……」 |
+| [`2A66A9 zzzCHMeQ10MaryB01T02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2530) | `2A66AA` | 無 | `GetStage==130`; 別名 `#1` | 提示語：「你能走嗎？」 回應：「能……可是……」 |
+| [`2A66AB zzzCHMeQ10B01T03`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2533) | `2A66AC` | 無 | `GetStage==130`; 別名 `#1`; VMAD `CHMeq10_TIF__022A66AC` | 提示語：「走吧，我們走。」 回應：「好、好的……」 |
 
 ### 分支：Korn 02 — `2A66B3 zzzCHMeQ10KornB02` (階段 140, 別名 #5)
 
@@ -241,8 +241,8 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 來源 / 翻譯 |
 |---|---|---|---|---|
-| [`2A66B4 zzzCHMeQ10KornB02T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2536) | `2A66B5` | 無 | `GetStage==140`; 別名 `#5` | (Bark) |
-| [`2A66B6 zzzCHMeQ10B02T02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2539) | `2A66B7` | `Goodbye` | `GetStage==140`; 別名 `#5`; VMAD `CHMeq10_TIF__022A66B7` | 提示語：「看好她。」 → (Bark) |
+| [`2A66B4 zzzCHMeQ10KornB02T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2536) | `2A66B5` | 無 | `GetStage==140`; 別名 `#5` | (Bark) |
+| [`2A66B6 zzzCHMeQ10B02T02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2539) | `2A66B7` | `Goodbye` | `GetStage==140`; 別名 `#5`; VMAD `CHMeq10_TIF__022A66B7` | 提示語：「看好她。」 → (Bark) |
 
 ### 分支：Bal 05 — `2A66BE zzzCHMeQ10B05` (階段 160, 別名 #2)
 
@@ -250,8 +250,8 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`2A66BF zzzCHMeQ10B05T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2542) | `2A66C0` | 無 | `GetStage==160`; 別名 `#2` | 「哎呀哎呀，你沒殺她？這可不像你。」 / 「這樣好嗎？她的孩子會犯下錯誤 —— 比你更大的錯誤。」 |
-| [`2A66C1 zzzCHMeQ10BalB05T02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2546) | `2A66C2` | `Goodbye` | `GetStage==160`; 別名 `#2`; VMAD `CHMeq10_TIF__022A66C2` | 提示語：「未來的人生由她自己決定。我管不著。」 回應：「……是嗎。有緣再會吧 —— 如果你還能的話。」 |
+| [`2A66BF zzzCHMeQ10B05T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2542) | `2A66C0` | 無 | `GetStage==160`; 別名 `#2` | 「哎呀哎呀，你沒殺她？這可不像你。」 / 「這樣好嗎？她的孩子會犯下錯誤 —— 比你更大的錯誤。」 |
+| [`2A66C1 zzzCHMeQ10BalB05T02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2546) | `2A66C2` | `Goodbye` | `GetStage==160`; 別名 `#2`; VMAD `CHMeq10_TIF__022A66C2` | 提示語：「未來的人生由她自己決定。我管不著。」 回應：「……是嗎。有緣再會吧 —— 如果你還能的話。」 |
 
 ### Hello — `2A535D zzzCHMeQ10Hello` (無分支, 別名 #2 / #1)
 
@@ -281,29 +281,29 @@ CLI：
 並非皆由任務 `2A532E` 擁有，但為相同的佩林納爾/尤瑪里爾/瑪麗角色 —— 在完整重構中進行交叉連結。
 
 NPCs（記憶角色，別名填充）：
-- [`0B0EB3 zzzCHBossPelinal "Pelinal Whitestrake"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1075) — 別名 `#6` Pelinal
-- [`2A66C3 zzzCHMemoryPelinal01 "Pelinal"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:796) — 別名 `#9` PelinalMemory (GoodScene 演員)
-- [`2BC37F zzzCHMemoryPelinal02 "Pelinal"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:785) — 第二位佩林納爾記憶紀錄 (BasScene `PelinalTA` 候選者，推論)
-- [`2955ED zzzCHBossUmaril "Umaril the Feathered"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:761) — 別名 `#0` Umaril
-- [`2A0679 zzzCHSlaveMary "Mary"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:793) — 別名 `#1` Mary
-- [`2A4000 zzzCHBardMemoryPelinal`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:795) — 別名 `#2` Bal (談話的莫拉格·巴爾)
-- [`2A7A0A zzzCHMolagBalInMemoryPelinal`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:797) — 別名 `#10` MolagBal (BasScene 配音)
-- [`2A3FFC zzzCHMemoryKorn "Korn"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:794) — 別名 `#5` Korn (狗)
-- [`29F2F7 zzzCHPreySlave01 "Slave"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:767) / [`29F2F9 zzzCHPreySlave02 "Slave"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:786) — 別名 `#3`/`#4` Prey
+- [`0B0EB3 zzzCHBossPelinal "Pelinal Whitestrake"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1075) — 別名 `#6` Pelinal
+- [`2A66C3 zzzCHMemoryPelinal01 "Pelinal"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:796) — 別名 `#9` PelinalMemory (GoodScene 演員)
+- [`2BC37F zzzCHMemoryPelinal02 "Pelinal"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:785) — 第二位佩林納爾記憶紀錄 (BasScene `PelinalTA` 候選者，推論)
+- [`2955ED zzzCHBossUmaril "Umaril the Feathered"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:761) — 別名 `#0` Umaril
+- [`2A0679 zzzCHSlaveMary "Mary"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:793) — 別名 `#1` Mary
+- [`2A4000 zzzCHBardMemoryPelinal`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:795) — 別名 `#2` Bal (談話的莫拉格·巴爾)
+- [`2A7A0A zzzCHMolagBalInMemoryPelinal`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:797) — 別名 `#10` MolagBal (BasScene 配音)
+- [`2A3FFC zzzCHMemoryKorn "Korn"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:794) — 別名 `#5` Korn (狗)
+- [`29F2F7 zzzCHPreySlave01 "Slave"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:767) / [`29F2F9 zzzCHPreySlave02 "Slave"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:786) — 別名 `#3`/`#4` Prey
 
 地點：
-- [`295516 zzzCHMemPelinal "White-Gold Tower"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:619) — 記憶的背景 (LCTN)
-- [`0243F1 zAoMMythicPlace`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:162) — "Mythic" 細胞（推論：記憶內部）
+- [`295516 zzzCHMemPelinal "White-Gold Tower"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:619) — 記憶的背景 (LCTN)
+- [`0243F1 zAoMMythicPlace`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:162) — "Mythic" 細胞（推論：記憶內部）
 
 書籍（傳說背景，非任務擁有；敘事使用前請先驗證）：
-- [`12905C zzzCHBookESOChantTwilight "The Song-Never-Sung-at-Twilight"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:70) — 佩林納爾/尤瑪里爾之歌傳說
-- [`140504 zzzCHBalConjurePelinal "Piece of Bal: Pelinal"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:253) — 莫拉格·巴爾召喚佩林納爾物品
-- [`2C241B zzzCHMeridiaConjureUmaril "Meridia's Beaconl: Umaril"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:506) — Meridia 召喚尤瑪里爾物品（與 Bal-01 中的「Meridia」台詞相關）
+- [`12905C zzzCHBookESOChantTwilight "The Song-Never-Sung-at-Twilight"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:70) — 佩林納爾/尤瑪里爾之歌傳說
+- [`140504 zzzCHBalConjurePelinal "Piece of Bal: Pelinal"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:253) — 莫拉格·巴爾召喚佩林納爾物品
+- [`2C241B zzzCHMeridiaConjureUmaril "Meridia's Beaconl: Umaril"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:506) — Meridia 召喚尤瑪里爾物品（與 Bal-01 中的「Meridia」台詞相關）
 
 ## 重構筆記 (Reconstruction Notes)
 
 基於來源：
-- 本記憶為 [`2A532E zzzCHMemoryQuest10 "Pelinal the Bloody"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401)：40 個階段，0 處為 `StartUpStage`, 180 與 300 處為 `CompleteQuest`, 999 處為 `ShutDownStage`, **無任務目標文本**。
+- 本記憶為 [`2A532E zzzCHMemoryQuest10 "Pelinal the Bloody"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401)：40 個階段，0 處為 `StartUpStage`, 180 與 300 處為 `CompleteQuest`, 999 處為 `ShutDownStage`, **無任務目標文本**。
 - 包含**2 個 `SCEN` 紀錄**：`2A66C6 GoodScene` (9 個階段，12 個動作，佩林納爾的和平獨白) 與 `2AA092 BasScene` (6 個階段，莫拉格·巴爾敘述佩林納爾的屠殺，而佩林納爾迴響其獨白)。
 - 包含**9 個自定義 `DialogBranch` 紀錄 + 1 個 Hello 話題**，受別名限制：Korn (狗) ×2, Umaril ×1, Bal (莫拉格·巴爾) ×5, Mary ×1。**Bal-04 分支 (階段 115)** 是關於尤瑪里爾懷孕奴隸**瑪麗**的殺戮或放過分歧點。
 - 仁慈路徑 (放過瑪麗) 運行階段 130-180，帶有 Mary/Korn-02/Bal-05 分支，並在 **180** 處完成 (`GoodScene`)。殺戮路徑運行對話為空的 190-330 波段，並在 **300** 處完成 (`BasScene`)。

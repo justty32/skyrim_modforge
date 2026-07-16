@@ -9,7 +9,7 @@
 
 ## 任務記錄
 
-[`4D4C3D zzzAoMSubQ02 "神聖解剖師"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:46)
+[`4D4C3D zzzAoMSubQ02 "神聖解剖師"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:46)
 
 CLI：
 - `questdiag Vigilant.esm 0x4D4C3D`
@@ -58,7 +58,7 @@ ESM：
 
 | 索引 | 來源 | 翻譯 |
 |---:|---|---|
-| 0 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:47) | 尋找解剖師 |
+| 0 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:47) | 尋找解剖師 |
 | 1 | 目標 | 向解剖師證明你自己 |
 | 10 | 目標 | 與解剖師對話 |
 | 20 | 目標 | 幫助解剖師 (邪惡) |
@@ -103,9 +103,9 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D4C42` | `0x531D03` | InvisibleContinue | `GetGlobalValue(530B06) > 2`; `GetIsAliasRef 別名 #1` | [「你已經三次體會到愛了。你不再需要問問題。剩下的就是尋求光輝。進去吧。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3151) |
-| `0x4D4C42` | `0x531D02` | InvisibleContinue | `GetGlobalValue(530B11) > 0` (另一個全域變數); `GetIsAliasRef 別名 #1` | [「太棒了。你已經獲得了光輝。那你就和我們一樣。進去吧。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3152) |
-| `0x4D4C42` | `0x4D4C43` | 無 | `GetIsAliasRef 別名 #1` | [「你接受過考驗嗎？你們學會彼此相愛了嗎？」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3153) |
+| `0x4D4C42` | `0x531D03` | InvisibleContinue | `GetGlobalValue(530B06) > 2`; `GetIsAliasRef 別名 #1` | [「你已經三次體會到愛了。你不再需要問問題。剩下的就是尋求光輝。進去吧。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3151) |
+| `0x4D4C42` | `0x531D02` | InvisibleContinue | `GetGlobalValue(530B11) > 0` (另一個全域變數); `GetIsAliasRef 別名 #1` | [「太棒了。你已經獲得了光輝。那你就和我們一樣。進去吧。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3152) |
+| `0x4D4C42` | `0x4D4C43` | 無 | `GetIsAliasRef 別名 #1` | [「你接受過考驗嗎？你們學會彼此相愛了嗎？」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3153) |
 
 推論：
 - 全域變數 `530B06` 和 `530B11` 追蹤從之前的考驗中獲得的「光輝」（可能來自第 1 幕之前的任務）。
@@ -117,7 +117,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D4C44` | `0x4D4C45` | 無 | `GetIsAliasRef 別名 #1` | [「如果你還沒接受過考驗，請離開。這裡不是你該來的地方。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3156) |
+| `0x4D4C44` | `0x4D4C45` | 無 | `GetIsAliasRef 別名 #1` | [「如果你還沒接受過考驗，請離開。這裡不是你該來的地方。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3156) |
 
 ### 分支 3：導航 — 「我要去哪裡接受這場苦難？」
 
@@ -125,7 +125,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D4C46` | `0x4D4C47` | Goodbye | `GetIsAliasRef 別名 #1` | 回應：[「晨星，我建議你前往那個充滿噩夢的城鎮。你的苦難將從那裡開始。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3159) / [「如果你想繞道，就跟隨那個叫阿爾塔諾的傀儡；如果你想走捷徑，就跟隨那個叫奧蘭多的容器。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3160) |
+| `0x4D4C46` | `0x4D4C47` | Goodbye | `GetIsAliasRef 別名 #1` | 回應：[「晨星，我建議你前往那個充滿噩夢的城鎮。你的苦難將從那裡開始。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3159) / [「如果你想繞道，就跟隨那個叫阿爾塔諾的傀儡；如果你想走捷徑，就跟隨那個叫奧蘭多的容器。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3160) |
 
 推論：
 - 晨星被引用為考驗地點（「充滿噩夢的城鎮」 — 可能是第 1 幕任務 1 或巫女任務）。
@@ -137,7 +137,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D4C48` | `0x4D4C49` | 無 | `GetIsAliasRef 別名 #1` | 回應：[「那就讓我問你幾個問題。如果你真的經歷過考驗，你就會知道我在說什麼。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3163) / [「那塊石頭是什麼顏色的？它是真的嗎？」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3164) |
+| `0x4D4C48` | `0x4D4C49` | 無 | `GetIsAliasRef 別名 #1` | 回應：[「那就讓我問你幾個問題。如果你真的經歷過考驗，你就會知道我在說什麼。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3163) / [「那塊石頭是什麼顏色的？它是真的嗎？」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3164) |
 
 推論：
 - 守門人開始進行一套關於「石頭」（馬魯克/第 4 幕背景中的核心魔族神器）的哲學測試。
@@ -148,7 +148,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D4C4A` | `0x4D4C4B` | Goodbye | `GetIsAliasRef 別名 #1` | [「別對我撒謊。如果你是藍色的，你的故事就已經結束了。我現在甚至無法和你交談。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3167) |
+| `0x4D4C4A` | `0x4D4C4B` | Goodbye | `GetIsAliasRef 別名 #1` | [「別對我撒謊。如果你是藍色的，你的故事就已經結束了。我現在甚至無法和你交談。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3167) |
 
 推論：
 - 如果玩家聲稱石頭是「藍色」的（真實、純淨），他們會被拒絕。這意味著藍色石頭 = 真實的/未受損的馬魯克之眼，它會毀滅持有者。
@@ -159,7 +159,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D4C4C` | `0x4D4C4D` | 無 | `GetIsAliasRef 別名 #1` | 回應：[「噢，太好了。你確實來了。讓我們進入下一個問題。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3170) / [「那個唱歌的人，被歌唱了嗎？那個傀儡有家嗎？」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3171) |
+| `0x4D4C4C` | `0x4D4C4D` | 無 | `GetIsAliasRef 別名 #1` | 回應：[「噢，太好了。你確實來了。讓我們進入下一個問題。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3170) / [「那個唱歌的人，被歌唱了嗎？那個傀儡有家嗎？」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3171) |
 
 推論：
 - 正確答案是石頭是紅色的（受損/不純）且是假的（不是真正的石頭）。這意味著玩家曾接觸過一個虛假/腐化的版本。
@@ -171,7 +171,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D4C4E` | `0x4D4C4F` | Goodbye | `GetIsAliasRef 別名 #1` | [「那是謊言。莫拉格·巴爾不知道它的名字。這就是為什麼他構思了那個無名傀儡，也是為什麼希格拉格前來腐化它。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3174) |
+| `0x4D4C4E` | `0x4D4C4F` | Goodbye | `GetIsAliasRef 別名 #1` | [「那是謊言。莫拉格·巴爾不知道它的名字。這就是為什麼他構思了那個無名傀儡，也是為什麼希格拉格前來腐化它。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3174) |
 
 推論：
 - 莫拉格·巴爾並不「知道」那個傀儡的名字；他是故意創造出一個無名之物的。隨後希格拉格（混沌/瘋狂之神）進一步腐化了它。
@@ -183,7 +183,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D4C50` | `0x4D4C51` | 無 | `GetIsAliasRef 別名 #1` | 回應：[「是的，就是那樣。你和我想像的一樣出色。讓我們進入下一個問題。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3177) / [「有人在血之夫人的盛宴上遲到嗎？你知道他們的名字嗎？」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3178) |
+| `0x4D4C50` | `0x4D4C51` | 無 | `GetIsAliasRef 別名 #1` | 回應：[「是的，就是那樣。你和我想像的一樣出色。讓我們進入下一個問題。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3177) / [「有人在血之夫人的盛宴上遲到嗎？你知道他們的名字嗎？」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3178) |
 
 推論：
 - 正確答案是：傀儡沒有名字，也無法回到其起源（一個處於中間地帶的形而上學陷阱）。
@@ -195,7 +195,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D4C52` | `0x4D4C53` | Goodbye | `GetIsAliasRef 別名 #1` | [「是的，你絕對是對的。不應該有人遲到。但那正是被證明是錯誤的地方。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3181) |
+| `0x4D4C52` | `0x4D4C53` | Goodbye | `GetIsAliasRef 別名 #1` | [「是的，你絕對是對的。不應該有人遲到。但那正是被證明是錯誤的地方。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3181) |
 
 推論：
 - 守門人承認了這個悖論：所有人本應都到場，但「有些事情出了錯」（一個異常、缺失或不請自來的客人）。
@@ -206,7 +206,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D4C54` | `0x4D4C55` | Goodbye | `GetIsAliasRef 別名 #1` | 回應：[「是的，你是正確的錯誤。而且你知道那裡曾有一些本不該存在的東西。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3184) / [「這意味著你值得見到藍色的星星。現在，進去吧。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3185) |
+| `0x4D4C54` | `0x4D4C55` | Goodbye | `GetIsAliasRef 別名 #1` | 回應：[「是的，你是正確的錯誤。而且你知道那裡曾有一些本不該存在的東西。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3184) / [「這意味著你值得見到藍色的星星。現在，進去吧。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3185) |
 | | | | OnEnd 執行 `AoMSq02_TIF__024D4C55.Fragment_0` | |
 
 推論：
@@ -224,14 +224,14 @@ ESM：
 
 | FormID | INFO | 階段門限 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D4C56` | `0x4D4C57` | 10 | `GetStage == 10`; `GetIsAliasRef 別名 #0` | [「你被選中了。我多麼嫉妒那個人。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3188) (Happy 情感) |
-| | `0x4D4C5C` | 20 | `GetStage == 20`; `GetIsAliasRef 別名 #0` | [「你願意幫我嗎？我們可以期待共同的美好未來。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3189) (Happy) |
-| | `0x4D4C5D` | 30 | `GetStage == 30`; `GetIsAliasRef 別名 #0` | [「請不要殺死它。如果你殺了它，它的未來就會流出。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3190) (Happy) |
-| | `0x4D4C5E` | 40 | `GetStage == 40`; `GetIsAliasRef 別名 #0` | [「太棒了。太棒了。來吧，到這裡來。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3191) (Happy) |
+| `0x4D4C56` | `0x4D4C57` | 10 | `GetStage == 10`; `GetIsAliasRef 別名 #0` | [「你被選中了。我多麼嫉妒那個人。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3188) (Happy 情感) |
+| | `0x4D4C5C` | 20 | `GetStage == 20`; `GetIsAliasRef 別名 #0` | [「你願意幫我嗎？我們可以期待共同的美好未來。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3189) (Happy) |
+| | `0x4D4C5D` | 30 | `GetStage == 30`; `GetIsAliasRef 別名 #0` | [「請不要殺死它。如果你殺了它，它的未來就會流出。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3190) (Happy) |
+| | `0x4D4C5E` | 40 | `GetStage == 40`; `GetIsAliasRef 別名 #0` | [「太棒了。太棒了。來吧，到這裡來。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3191) (Happy) |
 | | | | OnEnd 執行 `AoMSq02_TIF__024D4C5E.Fragment_0` | |
-| | `0x4D4C5F` | 50–60 | `GetStage >= 50` 且 `< 60`; `GetIsAliasRef 別名 #0` | [「來吧，讓我們擠壓未來。讓我們看看生命在閃耀。……！」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3192) (Happy) |
-| | `0x4D4C60` | 60 | `GetStage == 60`; `GetIsAliasRef 別名 #0` | [「噢，真不錯。多麼醇厚。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3193) (Happy) |
-| | `0x4D4C61` | 70 | `GetStage == 70`; `GetIsAliasRef 別名 #0` | [「好吧，把它穿上。內臟會展現給你看。一個新世界。……」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3194) (Happy) |
+| | `0x4D4C5F` | 50–60 | `GetStage >= 50` 且 `< 60`; `GetIsAliasRef 別名 #0` | [「來吧，讓我們擠壓未來。讓我們看看生命在閃耀。……！」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3192) (Happy) |
+| | `0x4D4C60` | 60 | `GetStage == 60`; `GetIsAliasRef 別名 #0` | [「噢，真不錯。多麼醇厚。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3193) (Happy) |
+| | `0x4D4C61` | 70 | `GetStage == 70`; `GetIsAliasRef 別名 #0` | [「好吧，把它穿上。內臟會展現給你看。一個新世界。……」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3194) (Happy) |
 
 推論：
 - 階段 10：解剖師稱呼玩家為「被選中者」；顯得有些嫉妒（嫉妒什麼？）。
@@ -248,12 +248,12 @@ ESM：
 
 | FormID | INFO | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D4C56` | `0x4D710F` | `GetIsID == 1` (說話者 `4D7106`) | [「愛、和平、愛、和平、愛……！！！它的重複，美麗的聲音，無盡的重複，此時此刻！」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3195) |
-| | `0x4D7110` | `GetIsID == 1` (說話者 `4D7106`) | [「愛與和平。美麗的重複，平衡的當下，融入經歷過的未來！」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3196) |
-| | `0x4D7111` | `GetIsID == 1` (說話者 `4D7106`) | [「愛，愛，愛，愛，真神的愛，夢中之神的愛，還有我們的愛！」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3197) |
-| | `0x4D7112` | `GetIsID == 1` (說話者 `4D7106`) | [「去愛我，和我們！去愛我，和我們！去向第四種不信之哲學。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3198) |
-| | `0x4D7113` | `GetIsID == 1` (說話者 `4D7106`) | [「總共三個，三乘以三，重複的三，那是愛，神的愛！連光線都彎曲了！」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3199) |
-| | `0x4D7114` | `GetIsID == 1` (說話者 `4D7106`); RandomEnd | [「一連串偷窺的人，一堵嫉妒之牆，被抹去的麵包。基於基礎的無底，返回的第三個人！」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3200) |
+| `0x4D4C56` | `0x4D710F` | `GetIsID == 1` (說話者 `4D7106`) | [「愛、和平、愛、和平、愛……！！！它的重複，美麗的聲音，無盡的重複，此時此刻！」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3195) |
+| | `0x4D7110` | `GetIsID == 1` (說話者 `4D7106`) | [「愛與和平。美麗的重複，平衡的當下，融入經歷過的未來！」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3196) |
+| | `0x4D7111` | `GetIsID == 1` (說話者 `4D7106`) | [「愛，愛，愛，愛，真神的愛，夢中之神的愛，還有我們的愛！」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3197) |
+| | `0x4D7112` | `GetIsID == 1` (說話者 `4D7106`) | [「去愛我，和我們！去愛我，和我們！去向第四種不信之哲學。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3198) |
+| | `0x4D7113` | `GetIsID == 1` (說話者 `4D7106`) | [「總共三個，三乘以三，重複的三，那是愛，神的愛！連光線都彎曲了！」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3199) |
+| | `0x4D7114` | `GetIsID == 1` (說話者 `4D7106`); RandomEnd | [「一連串偷窺的人，一堵嫉妒之牆，被抹去的麵包。基於基礎的無底，返回的第三個人！」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3200) |
 
 推論：
 - 說話者 `4D7106` (可能是「吹笛者」實體或受腐化的集體) 插話進行哲學獨白，強調「愛」、重複和「第四種不信之哲學」。
@@ -265,7 +265,7 @@ ESM：
 
 | FormID | INFO | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D4C58` | `0x4D4C59` | `GetIsAliasRef 別名 #0` | [「你能聽到生命之歌嗎？」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3203) |
+| `0x4D4C58` | `0x4D4C59` | `GetIsAliasRef 別名 #0` | [「你能聽到生命之歌嗎？」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3203) |
 
 ### 解剖師死亡對話
 
@@ -273,7 +273,7 @@ ESM：
 
 | FormID | INFO | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D4C5A` | `0x4D4C5B` | `GetIsAliasRef 別名 #0` | [「生命的閃耀……」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3206) (Happy 情感) |
+| `0x4D4C5A` | `0x4D4C5B` | `GetIsAliasRef 別名 #0` | [「生命的閃耀……」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3206) (Happy 情感) |
 
 ## 蒼白之足 / 解剖師審訊 (階段 10+)
 
@@ -285,7 +285,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D5E54` | `0x4D5E55` | SayOnce | `GetStage == 10`; `GetIsAliasRef 別名 #0` | [「最好不要稱呼他們。如果你不小心呼喚它，它就會來到你身邊。當時候到了，你會知道它的名字並呼喚它。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3209) (Fear 情感) |
+| `0x4D5E54` | `0x4D5E55` | SayOnce | `GetStage == 10`; `GetIsAliasRef 別名 #0` | [「最好不要稱呼他們。如果你不小心呼喚它，它就會來到你身邊。當時候到了，你會知道它的名字並呼喚它。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3209) (Fear 情感) |
 
 推論：
 - 一位 NPC 警告不要提及解剖師的名字；直呼其名會產生魔族後果。
@@ -296,7 +296,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D5E57` | `0x4D5E58` | 無 | `GetStage == 10`; `GetIsAliasRef 別名 #0` | 回應：[「這是解剖學。我的使命是讀取隱藏在內臟中的未來。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3212) (Neutral) / [「我需要你的幫助。我想知道更多。隱藏在肉體中的秘密。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3213) (Happy) |
+| `0x4D5E57` | `0x4D5E58` | 無 | `GetStage == 10`; `GetIsAliasRef 別名 #0` | 回應：[「這是解剖學。我的使命是讀取隱藏在內臟中的未來。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3212) (Neutral) / [「我需要你的幫助。我想知道更多。隱藏在肉體中的秘密。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3213) (Happy) |
 
 推論：
 - 解剖學是透過器官/肉體檢查進行的占卜（內臟預言）。解剖師尋求透過儀式解剖來擴展知識。
@@ -307,7 +307,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D5E59` | `0x4D5E5A` | 無 | `GetStage == 10`; `GetIsAliasRef 別名 #0` | [「我想要一隻雙足羊。他們越年輕，……就越好。它充滿了未來。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3216) (Happy) |
+| `0x4D5E59` | `0x4D5E5A` | 無 | `GetStage == 10`; `GetIsAliasRef 別名 #0` | [「我想要一隻雙足羊。他們越年輕，……就越好。它充滿了未來。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3216) (Happy) |
 | | | | OnEnd 執行 `AoMSq02_TIF__024D5E5A.Fragment_0` | |
 
 推論：
@@ -320,7 +320,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D5E5C` | `0x4D5E5D` | 無 | `GetStage == 20`; `GetIsAliasRef 別名 #0` | [「當我期待未來時，我的胃口就會佔上風。我被允許啃幾口，對吧？」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3219) (Happy) |
+| `0x4D5E5C` | `0x4D5E5D` | 無 | `GetStage == 20`; `GetIsAliasRef 別名 #0` | [「當我期待未來時，我的胃口就會佔上風。我被允許啃幾口，對吧？」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3219) (Happy) |
 
 推論：
 - 解剖師承認對受害者進行了部分吞噬（「啃幾口」）；食慾 = 魔族的飢渴或純粹的惡意。
@@ -331,7 +331,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D5E5F` | `0x4D5E60` | Goodbye | `GetStage == 20`; `GetIsAliasRef 別名 #0` | [「噢，真不錯。太棒了。請便。而且我想要你解剖我。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3222) (Happy) |
+| `0x4D5E5F` | `0x4D5E60` | Goodbye | `GetStage == 20`; `GetIsAliasRef 別名 #0` | [「噢，真不錯。太棒了。請便。而且我想要你解剖我。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3222) (Happy) |
 | | | | OnEnd 執行 `AoMSq02_TIF__024D5E60.Fragment_0` | |
 
 推論：
@@ -344,7 +344,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D5E62` | `0x4D5E63` | Goodbye | `GetStage == 20`; `GetIsAliasRef 別名 #0` | [「噢，太棒了。這是你需要的工具。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3225) (Happy) |
+| `0x4D5E62` | `0x4D5E63` | Goodbye | `GetStage == 20`; `GetIsAliasRef 別名 #0` | [「噢，太棒了。這是你需要的工具。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3225) (Happy) |
 | | | | OnEnd 執行 `AoMSq02_TIF__024D5E63.Fragment_0` | |
 
 推論：
@@ -356,7 +356,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D5E77` | `0x4D5E78` | 無 | `GetStage == 60`; `GetIsAliasRef 別名 #0` | [「你看。這對我來說是如此美麗。我可以聞到未來的味道，就像寶石一樣。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3228) (Happy) |
+| `0x4D5E77` | `0x4D5E78` | 無 | `GetStage == 60`; `GetIsAliasRef 別名 #0` | [「你看。這對我來說是如此美麗。我可以聞到未來的味道，就像寶石一樣。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3228) (Happy) |
 
 推論：
 - 在儀式「粉碎」（階段 50-60）之後，玩家對神器/器官提出質疑。解剖師對透過感官檢查揭示出的「未來」欣喜若狂。
@@ -367,7 +367,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D5E7A` | `0x4D5E7B` | Goodbye | `GetStage == 60`; `GetIsAliasRef 別名 #0` | [「這就是未來的發展。來吧，穿上它。你會聽到生命之歌。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3231) (Happy) |
+| `0x4D5E7A` | `0x4D5E7B` | Goodbye | `GetStage == 60`; `GetIsAliasRef 別名 #0` | [「這就是未來的發展。來吧，穿上它。你會聽到生命之歌。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3231) (Happy) |
 | | | | OnEnd 執行 `AomSq02_TIF__024D5E7B.Fragment_0` | |
 
 推論：
@@ -383,7 +383,7 @@ ESM：
 
 | FormID | INFO | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D8320` | `0x4D8321` | (無) | [「混亂與混亂，生命歌唱。恐懼領主的長笛聲，淹沒了諸神的歌聲。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3234) |
+| `0x4D8320` | `0x4D8321` | (無) | [「混亂與混亂，生命歌唱。恐懼領主的長笛聲，淹沒了諸神的歌聲。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3234) |
 
 推論：
 - 「混亂與混亂」 = 一段副歌或實體名稱；「恐懼領主的長笛」 = 希格拉格 / 音樂腐化。
@@ -394,7 +394,7 @@ ESM：
 
 | FormID | INFO | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D8322` | `0x4D8323` | (無) | [「讓我們拋棄我們的名字，共享我們沉睡的心。混亂與混亂，將我們的肉體散布到世界的四個角落。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3237) |
+| `0x4D8322` | `0x4D8323` | (無) | [「讓我們拋棄我們的名字，共享我們沉睡的心。混亂與混亂，將我們的肉體散布到世界的四個角落。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3237) |
 
 推論：
 - 呼應分支 6b（「無名傀儡」）；提倡身體溶解和集體合併。
@@ -405,7 +405,7 @@ ESM：
 
 | FormID | INFO | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D8324` | `0x4D8325` | (無) | [「夢中之神遺忘了我們發現的名字，失眠之心。讓我們像蛆蟲一樣穿過黑暗深處爬行，混亂與混亂。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3240) |
+| `0x4D8324` | `0x4D8325` | (無) | [「夢中之神遺忘了我們發現的名字，失眠之心。讓我們像蛆蟲一樣穿過黑暗深處爬行，混亂與混亂。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3240) |
 
 推論：
 - 「夢中之神」 = 洛克汗 / 阿卡 (神聖意識的夢境方面)；「失眠之心」 = 覺醒 / 痛苦。
@@ -420,7 +420,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D8329` | `0x4D832A` | 無 | `GetIsID == 1` (說話者 `4D7106`) | 回應 (3×)：(1) [「愛，我，和我們！三中之三，從流浪世界中淨化生命。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3243) (Happy) / (2) [「一連串偷窺的人，一堵嫉妒之牆，一個被抹去的平底鍋。三中之三，讓謊言比愛更清晰。」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3244) / (3) [「總共三個，三的倍數，三的重複。三中之三，你如何區分紅色和藍色」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3245) |
+| `0x4D8329` | `0x4D832A` | 無 | `GetIsID == 1` (說話者 `4D7106`) | 回應 (3×)：(1) [「愛，我，和我們！三中之三，從流浪世界中淨化生命。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3243) (Happy) / (2) [「一連串偷窺的人，一堵嫉妒之牆，一個被抹去的平底鍋。三中之三，讓謊言比愛更清晰。」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3244) / (3) [「總共三個，三的倍數，三的重複。三中之三，你如何區分紅色和藍色」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3245) |
 
 推論：
 - 三個強調「三中之三」的回應 — 三位一體神學或魔族概念的三位一體。
@@ -432,7 +432,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x4D832C` | `0x4D832D` | 無 | `GetIsID == 1` (說話者 `4D7106`) | 回應 (3×)：(1) [「其一，消滅威脅生命的 Hamah 血脈！必須剷除那妓女腐屍的最後一絲殘餘！」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3248) (Anger) / (2) [「其一，滅絕拉扎，閃耀的阻礙者！吃掉這袋糞便中最後一絲腐屍！」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3249) / (3) [「其一，消滅阻礙歌聲的吟遊詩人！燒掉蝨子身上最後一絲腐屍！」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3250) |
+| `0x4D832C` | `0x4D832D` | 無 | `GetIsID == 1` (說話者 `4D7106`) | 回應 (3×)：(1) [「其一，消滅威脅生命的 Hamah 血脈！必須剷除那妓女腐屍的最後一絲殘餘！」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3248) (Anger) / (2) [「其一，滅絕拉扎，閃耀的阻礙者！吃掉這袋糞便中最後一絲腐屍！」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3249) / (3) [「其一，消滅阻礙歌聲的吟遊詩人！燒掉蝨子身上最後一絲腐屍！」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3250) |
 
 推論：
 - 三個殲滅目標：(1) Hamah 血脈（未知；可能是魔族或艾萊西亞派系），(2) 拉扎（守門人測試答案中的「遊牧倖存者」），(3) 「吟遊詩人」（可能是阿爾塔諾或某個音樂實體）。
@@ -444,7 +444,7 @@ ESM：
 
 | FormID | INFO | 標記 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x56F0BF` | `0x56F0C0` | Goodbye | `GetIsAliasRef 別名 #1` | [「……」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3723) |
+| `0x56F0BF` | `0x56F0C0` | Goodbye | `GetIsAliasRef 別名 #1` | [「……」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3723) |
 | | | | OnEnd 執行 `AoMSq02_TIF__0256F0C0.Fragment_0` | |
 
 推論：

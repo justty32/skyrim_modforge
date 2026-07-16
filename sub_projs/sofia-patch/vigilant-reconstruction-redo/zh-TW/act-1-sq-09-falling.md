@@ -9,7 +9,7 @@
 
 ## 任務紀錄 (Quest Record)
 
-[`00EFF7 zzzAoMMq09 "Infinite Falling"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:346)
+[`00EFF7 zzzAoMMq09 "Infinite Falling"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:346)
 
 CLI（將在 Manjaro 執行）：
 - `questdiag Vigilant.esm 0x00EFF7`
@@ -30,11 +30,11 @@ ESM：
 
 | 索引 | 目標 |
 |---:|---|
-| 0 | [與阿爾塔諾對話 (Talk to Altano)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:347) |
-| 10 | [擊敗魔族 (Defeat Daedra)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:348) |
-| 15 | [尋找倖存者 (Find Survivor)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:349) |
-| 20 | [追擊阿爾塔諾 (Chase Altano)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:350) |
-| 40 | [擊敗莫拉格·巴爾 (Defeat Molag Bal)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:351) |
+| 0 | [與阿爾塔諾對話 (Talk to Altano)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:347) |
+| 10 | [擊敗魔族 (Defeat Daedra)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:348) |
+| 15 | [尋找倖存者 (Find Survivor)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:349) |
+| 20 | [追擊阿爾塔諾 (Chase Altano)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:350) |
+| 40 | [擊敗莫拉格·巴爾 (Defeat Molag Bal)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:351) |
 
 推論：
 - 目標進度顯示了線性的任務流程：對話 (目標 0) → 戰鬥 (目標 10) → 搜索 (目標 15) → 追擊 (目標 20) → 最終 Boss (目標 40)。
@@ -50,10 +50,10 @@ ESM：
 ## 自訂對話分支：與阿爾塔諾的遭遇
 
 分支開場：
-- [`012642 zzAoMMq09B3AltanoTopic`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:399)
+- [`012642 zzAoMMq09B3AltanoTopic`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:399)
 
 主題文本：
-- [Well well well. Where have you been wasting your time all this while? You seem to be forsakend by Stendarr?](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:400)
+- [Well well well. Where have you been wasting your time all this while? You seem to be forsakend by Stendarr?](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:400)
 （翻譯：「喔呀喔呀，這段時間你都去哪裡混了？你似乎被斯丹達爾拋棄了？」）
 
 說話者條件模式：
@@ -63,12 +63,12 @@ ESM：
 ### 阿爾塔諾的背叛與莫拉格·巴爾
 
 分支：
-- [`012643 zzAoMMq09B3WhyBetray`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:402)
+- [`012643 zzAoMMq09B3WhyBetray`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:402)
 
 | 主題 | 回應內容 | 翻譯 |
 |---|---|---|
-| [`012643 zzAoMMq09B3WhyBetray`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:402) | [「There is no need to explain the reason because you are dying.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:403) | 阿爾塔諾拒絕解釋原因；玩家死期將至。 |
-| | [「Genghis, Sent that soul to Molag bal. I must back to the altar and continue rituals.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:404) | 阿爾塔諾命令 [`成吉思 (Genghis)`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:860) (魔人) 吞噬玩家的靈魂；阿爾塔諾回到祭壇繼續儀式。 |
+| [`012643 zzAoMMq09B3WhyBetray`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:402) | [「There is no need to explain the reason because you are dying.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:403) | 阿爾塔諾拒絕解釋原因；玩家死期將至。 |
+| | [「Genghis, Sent that soul to Molag bal. I must back to the altar and continue rituals.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:404) | 阿爾塔諾命令 [`成吉思 (Genghis)`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:860) (魔人) 吞噬玩家的靈魂；阿爾塔諾回到祭壇繼續儀式。 |
 
 推論：
 - 阿爾塔諾是任務給予者的背叛者，正在進行一項儀式（根據第一章地理背景，疑似在莫拉格·巴爾祭壇進行）。
@@ -82,38 +82,38 @@ ESM：
 
 | FormID | EditorID | 名稱 | 角色 |
 |---|---|---|---|
-| [`000D62`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:835) | `zzzAoMVigilantTraitor` | 阿爾塔諾 (Altano) | 轉為叛徒的警戒者負責人；發起魔族儀式。 |
-| [`00183F`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:861) | `zzzAoMBossDremora05` | 燃雨 (Ranyu) | 魔人（對話背景不明；可能是共謀者）。 |
-| [`001840`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:860) | `zzzAoMBossDremora06` | 成吉思 (Genghis) | 阿爾塔諾召喚的魔人；靈魂吞噬者。 |
-| [`0EFC32`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:270) | `zzzCHSummonAltano` | 阿爾塔諾 (召喚) | 另一種形式或引用（背景待定）。 |
-| [`42E0B1`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv) | (memory guide?) | (guide?) | 潛在的任務樞紐（根據記憶任務模式）；詳情見 questdiag。 |
+| [`000D62`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:835) | `zzzAoMVigilantTraitor` | 阿爾塔諾 (Altano) | 轉為叛徒的警戒者負責人；發起魔族儀式。 |
+| [`00183F`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:861) | `zzzAoMBossDremora05` | 燃雨 (Ranyu) | 魔人（對話背景不明；可能是共謀者）。 |
+| [`001840`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:860) | `zzzAoMBossDremora06` | 成吉思 (Genghis) | 阿爾塔諾召喚的魔人；靈魂吞噬者。 |
+| [`0EFC32`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:270) | `zzzCHSummonAltano` | 阿爾塔諾 (召喚) | 另一種形式或引用（背景待定）。 |
+| [`42E0B1`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv) | (memory guide?) | (guide?) | 潛在的任務樞紐（根據記憶任務模式）；詳情見 questdiag。 |
 
 相關任務 10：
-- [`013678 zzAoMMq10B1BetrayReason`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:409)：阿爾塔諾透露他在先前的一場戰鬥後受到莫拉格·巴爾的低語而腐化。暗示了一個跨章節的腐化歷程。
-- [`013676 zzAoMMq10B1LastWord`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:406)：阿爾塔諾臨終前發出語無倫次的話語 (`aa.....uaa...`)，暗示精神/魔法受損嚴重。
+- [`013678 zzAoMMq10B1BetrayReason`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:409)：阿爾塔諾透露他在先前的一場戰鬥後受到莫拉格·巴爾的低語而腐化。暗示了一個跨章節的腐化歷程。
+- [`013676 zzAoMMq10B1LastWord`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:406)：阿爾塔諾臨終前發出語無倫次的話語 (`aa.....uaa...`)，暗示精神/魔法受損嚴重。
 
 ## 倖存者對話 (目標 15)
 
 戰鬥後發現的圖書館員：
-- [`027FB3 zzzAoMMq09B4LirarianWound`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:439)
+- [`027FB3 zzzAoMMq09B4LirarianWound`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:439)
 
 | 主題 | 回應內容 |
 |---|---|
-| 問候 (Greeting) | [「Please...Help me...」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:440) |
-| | [「Let me rest...」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:441) |
+| 問候 (Greeting) | [「Please...Help me...」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:440) |
+| | [「Let me rest...」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:441) |
 
 （翻譯：「請……救救我……」「讓我休息吧……」）
 
 ### 發生了什麼事？
 
 分支：
-- [`027FB5 zzzAoMMq09B4WhatHappen`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:443)
+- [`027FB5 zzzAoMMq09B4WhatHappen`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:443)
 
 | 主題 | 提示與回應 |
 |---|---|
-| [`027FB5`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:443) | 提示：[`"It's okay. What was happening?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:443) 回應：[`"Altano...Altano summoned Daedra...all of a sudden...we did not understand what happened"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:444) 以及 [`"I could not do anything ... Daedra killed Thorondir and others..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:445) |
-| [`027FB7 zzzAoMMq09B4Isee`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:447) | 提示：[`"I see..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:447) 回應：[`"Please stop Altano...he is trying to be outrageous ..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:448) |
-| [`027FB9 zzzAoMMq09B4understand`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:450) | 提示：[`"I understand, you should get some rest"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:450) 回應：[`"Yeah, I mind was relieved gone missing ... I've been allowed to do so ..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:451) |
+| [`027FB5`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:443) | 提示：[`"It's okay. What was happening?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:443) 回應：[`"Altano...Altano summoned Daedra...all of a sudden...we did not understand what happened"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:444) 以及 [`"I could not do anything ... Daedra killed Thorondir and others..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:445) |
+| [`027FB7 zzzAoMMq09B4Isee`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:447) | 提示：[`"I see..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:447) 回應：[`"Please stop Altano...he is trying to be outrageous ..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:448) |
+| [`027FB9 zzzAoMMq09B4understand`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:450) | 提示：[`"I understand, you should get some rest"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:450) 回應：[`"Yeah, I mind was relieved gone missing ... I've been allowed to do so ..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:451) |
 
 翻譯筆記：
 - 提示 027FB5 翻譯：「沒事了。發生了什麼事？」回應：「阿爾塔諾……阿爾塔諾召喚了魔族……突然間……我們完全不知道發生了什麼事。」以及「我無能為力……魔族殺了索隆迪爾和其他人……」
@@ -124,14 +124,14 @@ ESM：
 ## 與莫拉格·巴爾的遭遇 (目標 40)
 
 直接與莫拉格·巴爾對話：
-- FormID: [`10C89A zzzAoMSummonDragonMolagBal`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:437)（莫拉格·巴爾第一章的召喚/Boss 形式）
+- FormID: [`10C89A zzzAoMSummonDragonMolagBal`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:437)（莫拉格·巴爾第一章的召喚/Boss 形式）
 
 莫拉格·巴爾的登場：
-- [`013BE5` [Scene/Scene]](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:417)
+- [`013BE5` [Scene/Scene]](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:417)
 
 | 場景行 (Scene Line) | 翻譯 |
 |---|---|
-| [「Son of Stendarr..I see you. When your soul is corrupt, you open the gate of my realm...」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:417) | 莫拉格·巴爾認出玩家是名警戒者；靈魂的腐化開啟了通往湮滅的大門。 |
+| [「Son of Stendarr..I see you. When your soul is corrupt, you open the gate of my realm...」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:417) | 莫拉格·巴爾認出玩家是名警戒者；靈魂的腐化開啟了通往湮滅的大門。 |
 
 推論：
 - 這是任務 09 的高潮場景：玩家直接面對莫拉格·巴爾。
@@ -144,8 +144,8 @@ ESM：
 
 | FormID | EditorID | 類型 | 名稱 |
 |---|---|---|---|
-| [`004102`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:38) | `zzzAoMHallofMolagBal` | CELL | 莫拉格·巴爾大廳 |
-| [`26D3A8`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:497) | `zzzAoMLocAltarMolag` | LCTN | 莫拉格·巴爾祭壇 |
+| [`004102`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:38) | `zzzAoMHallofMolagBal` | CELL | 莫拉格·巴爾大廳 |
+| [`26D3A8`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:497) | `zzzAoMLocAltarMolag` | LCTN | 莫拉格·巴爾祭壇 |
 
 推論：
 - 任務 09 發生在莫拉格·巴爾祭壇或其附近，即阿爾塔諾進行儀的地點。
@@ -154,7 +154,7 @@ ESM：
 ## 重建筆記
 
 基於原始碼：
-- [`00EFF7 zzzAoMMq09 "Infinite Falling"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:346) 是一個 20 階段的任務，追蹤玩家發現阿爾塔諾的背叛、與魔族戰鬥、審問倖存者（圖書館員），以及與莫拉格·巴爾的最終對峙。
+- [`00EFF7 zzzAoMMq09 "Infinite Falling"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:346) 是一個 20 階段的任務，追蹤玩家發現阿爾塔諾的背叛、與魔族戰鬥、審問倖存者（圖書館員），以及與莫拉格·巴爾的最終對峙。
 - 該任務是第一章的高潮，發生在神殿被褻瀆以及揭露警戒者領導層已被腐化之後。
 - 它包含至少一個自訂對話分支（阿爾塔諾 + 莫拉格·巴爾），且可能有一個或多個關於墜落序列與最終 Boss 編排的 `SCEN` 紀錄。
 - 「無盡墜落」這個隱喻可能指玩家在遭遇過程中靈魂被莫拉格·巴爾拖入湮滅。

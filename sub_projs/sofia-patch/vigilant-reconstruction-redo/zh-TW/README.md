@@ -24,7 +24,7 @@
 - ESM：
   - `/home/lorkhan/skyrim_mods/unzip/Vigilant SE v181/10 English/Vigilant.esm`
 - CLI：
-  - `/home/lorkhan/repo/ModForge/src/ModForge.Cli/bin/Release/net10.0/ModForge.Cli.dll`
+  - `/home/lorkhan/repo/moddings/skyrim/projects/ModForge/src/ModForge.Cli/bin/Release/net10.0/ModForge.Cli.dll`
 - 次要參考資料：
   - `references/zhihu-vigilant-review-notes.md` - 使用者提供的中文玩家分析/評論筆記；僅作為驗證路線圖使用，非權威來源。
   - `references/video-transcript-notes.md` - 整合自使用者提供之三段影片逐字稿的筆記；僅作為驗證路線圖使用，非權威來源。

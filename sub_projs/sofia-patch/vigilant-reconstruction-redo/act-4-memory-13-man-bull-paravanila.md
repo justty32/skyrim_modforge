@@ -9,17 +9,17 @@ Source policy:
 
 ## Structural note: shell quest vs content quest
 
-This memory is unusual. The memory wrapper [`51C038 zzzCHMemoryQuest13 "Man-Bull Paravanila"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:214) is a **header-only shell**: `infodiag 0x51C038` returns **no owned topics**, `scenediag 0x51C038` reports it is not a Scene, and `questdiag` shows it has **no objective** and only 7 stages. `find` for the usual `zzzCHMeQ13` topic prefix returns **0 matches** — this memory does not use a `MeQ13` dialogue namespace at all.
+This memory is unusual. The memory wrapper [`51C038 zzzCHMemoryQuest13 "Man-Bull Paravanila"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:214) is a **header-only shell**: `infodiag 0x51C038` returns **no owned topics**, `scenediag 0x51C038` reports it is not a Scene, and `questdiag` shows it has **no objective** and only 7 stages. `find` for the usual `zzzCHMeQ13` topic prefix returns **0 matches** — this memory does not use a `MeQ13` dialogue namespace at all.
 
 All actual content (objective, dialogue, scene, branches) lives in a separate content quest:
-- [`51ADBF zzzCHSubQuest13 "Broken Horn"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171) — EditorID prefix `zzzCHSq13` / `zzzCHSubQuest13`.
+- [`51ADBF zzzCHSubQuest13 "Broken Horn"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171) — EditorID prefix `zzzCHSq13` / `zzzCHSubQuest13`.
 - Ownership confirmed: `scenediag 0x51D636` reports `quest = 51ADBF`, and `infodiag 0x51ADBF` lists all 6 topics. The `zzzCHMeQ13`-prefixed records the prompt suggested do not exist.
 
 RESOLVED: `51C038` (the memory shell, priority 99) frames/launches the in-world replay; `51ADBF` (`zzzCHSubQuest13`, priority 90) drives the playable scene. The shell launches SubQuest13's scene `51D636` by calling `Sc01.ForceStart()` at shell stage 20, where the `Sc01` Property is wired to the scene and the `Sq13` Property is wired to `51ADBF`. Source: `qf_zzzchmemoryquest13_0251c038.psc` Fragment_4.
 
 ## Shell Quest Record
 
-[`51C038 zzzCHMemoryQuest13 "Man-Bull Paravanila"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:214)
+[`51C038 zzzCHMemoryQuest13 "Man-Bull Paravanila"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:214)
 
 CLI:
 - `questdiag Vigilant.esm 0x51C038`
@@ -66,11 +66,11 @@ Stage outcome mapping (disambiguation of 30 / 40 / 999) — RESOLVED via PSC `qf
 - Shell stage `999` = **fallback stop**: Fragment_10 calls `Stop()` directly. Matches MeQ08/09 pattern.
 - The shell has **one positive outcome** (stage 30), not two competing branches. Any "no gift / leave" path would surface as a different route inside SubQuest13 reaching stage 60 or 999 directly without triggering shell stage 30.
 
-Name note: "Paravanila" in the shell quest Name is a **misspelling of "Paravania"**, the Man-bull NPC [`51AE2D zzzCHAlessiaMntr "Paravania the Man-bull"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:428). Keep the source spelling in titles; the subject is Paravania. Note: 待驗證 — the title says "Paravania" but the on-screen speaker alias is `BelharzaBull` (see Cast).
+Name note: "Paravanila" in the shell quest Name is a **misspelling of "Paravania"**, the Man-bull NPC [`51AE2D zzzCHAlessiaMntr "Paravania the Man-bull"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:428). Keep the source spelling in titles; the subject is Paravania. Note: 待驗證 — the title says "Paravania" but the on-screen speaker alias is `BelharzaBull` (see Cast).
 
 ## Content Quest Record
 
-[`51ADBF zzzCHSubQuest13 "Broken Horn"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171)
+[`51ADBF zzzCHSubQuest13 "Broken Horn"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171)
 
 CLI:
 - `questdiag Vigilant.esm 0x51ADBF`
@@ -92,7 +92,7 @@ Objective:
 
 | Index | Source | Translation |
 |---:|---|---|
-| 0 | [`Broken horns, sky incarnate.`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:172) | 斷裂之角，蒼穹化身。 |
+| 0 | [`Broken horns, sky incarnate.`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:172) | 斷裂之角，蒼穹化身。 |
 
 Objective targets:
 - 1 objective, **6 targets** in ESM.
@@ -109,15 +109,15 @@ Host-quest aliases from `scenediag 0x51D636` (host = `51ADBF`):
 | 2 | `QIHorn` | not filled by CLI print |
 | 3 | `QIRing` | not filled by CLI print |
 | 4 | `QIScroll` | not filled by CLI print |
-| 5 | `BelharzaMan` | uniqueActor [`0E5E2E zzzCHBelharza "Belharza the Man"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:252) |
-| 7 | `Boss` | uniqueActor [`51D68A zzzCHBossAmicusTharn "Amicus Tharn"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:477) |
-| 8 | `BelharzaBull` | uniqueActor [`51D61C zzzCHBelharzaBull "Belharza the Bull"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:466) |
-| 9 | `BelharzaMntr` | uniqueActor [`510B22 zzzCHMntrBelharza "Belharza the Man-Bull"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:344) |
-| 10 | `Morihaus` | uniqueActor [`0B253B zzzCHBossMorihaus "Morihaus"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1106) |
+| 5 | `BelharzaMan` | uniqueActor [`0E5E2E zzzCHBelharza "Belharza the Man"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:252) |
+| 7 | `Boss` | uniqueActor [`51D68A zzzCHBossAmicusTharn "Amicus Tharn"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:477) |
+| 8 | `BelharzaBull` | uniqueActor [`51D61C zzzCHBelharzaBull "Belharza the Bull"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:466) |
+| 9 | `BelharzaMntr` | uniqueActor [`510B22 zzzCHMntrBelharza "Belharza the Man-Bull"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:344) |
+| 10 | `Morihaus` | uniqueActor [`0B253B zzzCHBossMorihaus "Morihaus"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1106) |
 | 11 | `MarkerMem` | forcedRef `51D63C:Vigilant.esm` |
 | 12 | `MarkerQuiz` | forcedRef `51D63D:Vigilant.esm` |
 | 13 | `MarkerES` | forcedRef `51D63E:Vigilant.esm` |
-| 14 | `Dragon` | uniqueActor [`51D69A zzzCHMemKahKaanKrein`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:479) |
+| 14 | `Dragon` | uniqueActor [`51D69A zzzCHMemKahKaanKrein`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:479) |
 
 Notes (source-grounded from `scenediag` + `infodiag`):
 - Three different forms of Belharza are aliased simultaneously: `BelharzaMan` (#5), `BelharzaBull` (#8), `BelharzaMntr` (the Man-Bull, #9). This stages a transformation/lifecycle (man → bull → man-bull), matching the "Broken Horn" theme.
@@ -136,25 +136,25 @@ CLI:
 - `scenediag Vigilant.esm 0x51D636`
 
 Staging:
-- Host quest: [`51ADBF zzzCHSubQuest13`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171)
+- Host quest: [`51ADBF zzzCHSubQuest13`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171)
 - Actor: alias `#9` (`BelharzaMntr`), behaviorFlags `NoPlayerActivation, Optional`
 - Phases: 3, each with 0 start conditions and 1 complete condition.
 - Actions:
   - index 1: `Timer`, actor `#9`, phase 0, `0.5` seconds.
-  - index 2: `Dialog`, actor `#9`, phase 1, topic [`51D637`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3349), emotion `Neutral`.
-  - index 3: `Dialog`, actor `#9`, phase 2, flags `FaceTarget, HeadtrackPlayer`, topic [`51D639`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3352), emotion `Neutral`.
+  - index 2: `Dialog`, actor `#9`, phase 1, topic [`51D637`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3349), emotion `Neutral`.
+  - index 3: `Dialog`, actor `#9`, phase 2, flags `FaceTarget, HeadtrackPlayer`, topic [`51D639`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3352), emotion `Neutral`.
   - index 4: `Package`, actor `#9`, phases 0-2.
 
 Translations:
-- [`51D637` / INFO `51D638`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3349): 「我沒想到阿卡托什會派來祂的使者……看來眾神還沒有放棄我。」
-- [`51D639` / INFO `51D63A`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3352): 「我早已認命，以為自己再也無法活著、無法變回原本的樣子。謝謝你。」
+- [`51D637` / INFO `51D638`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3349): 「我沒想到阿卡托什會派來祂的使者……看來眾神還沒有放棄我。」
+- [`51D639` / INFO `51D63A`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3352): 「我早已認命，以為自己再也無法活著、無法變回原本的樣子。謝謝你。」
   - Note: source ends with a stray double period `again. Thank you..`; kept as-is, not a dropped line.
 
 RESOLVED: This scene (`51D636`, host quest SubQuest13 `51ADBF`) is `ForceStart`ed by **SubQuest13's own stage 50** (`_bsa-psc-cache/qf_zzzchsubquest13_0251adbf.psc` Fragment_17), reached after the player gives a gift: gift TIF → SubQuest13 stage 45/46 → remove gift item → `SetStage(50)`. At stage 50 SubQuest13 awards `ModKarma(+3.0) + ModRadiance(2.0)` and restores Belharza the Man-Bull's voice — the "return to my former self" line is the **mercy/resolution** payoff. (The shell `51C038` separately awards *another* `+3.0` karma at its own stage 30 for the Paravania dream — a distinct beat, not the gift payoff; see Shell↔SubQuest13 Linkage.)
 
 ## Custom Dialogue Branch: Belharza the Bull (silent)
 
-Host quest: [`51ADBF zzzCHSubQuest13`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171)
+Host quest: [`51ADBF zzzCHSubQuest13`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171)
 
 Speaker condition pattern:
 - Every INFO requires `GetIsAliasRef == 1` on alias `#8` (`BelharzaBull`).
@@ -162,10 +162,10 @@ Speaker condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`51D62A zzzCHSubQuest13Hello`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3337) | `51D62B` | none | `GetIsAliasRef alias #8` | 「............（牠望著我，彷彿在懇求著什麼。）」 |
-| [`51D62E zzzCHSq13BullB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3340) | `51D62F` | none | `GetIsAliasRef alias #8` | Prompt: 「好可愛的小牛，來摸摸牠吧。」 Response: 「............（牠不喜歡被摸。）」 |
-| [`51D631 zzzCHSq13BullB02T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3343) | `51D632` | `Goodbye` | `GetItemCount > 0` on Player for [`51AD83 zzzCHHornBelhaza "Horn of Belharza"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:990); `GetIsAliasRef alias #8`; `GetStage == 40`; VMAD `CHSq13_TIF__0251D632.Fragment_0` on end | Prompt: 「陛下，這個給您（獻上貝爾哈扎之角）。」 Response: 「............（牠看起來很滿意。）」 |
-| [`51D634 zzzCHSq13BullB03T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3346) | `51D635` | `Goodbye` | `GetItemCount > 0` on Player for [`51AD84 zzzCHRingMorihaus "Nosering of Morihaus"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:991); `GetIsAliasRef alias #8`; `GetStage == 40`; VMAD `CHSq13_TIF__0251D635.Fragment_0` on end | Prompt: 「陛下，這個給您（獻上莫里豪斯的鼻環）。」 Response: 「............（牠看起來很滿意。）」 |
+| [`51D62A zzzCHSubQuest13Hello`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3337) | `51D62B` | none | `GetIsAliasRef alias #8` | 「............（牠望著我，彷彿在懇求著什麼。）」 |
+| [`51D62E zzzCHSq13BullB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3340) | `51D62F` | none | `GetIsAliasRef alias #8` | Prompt: 「好可愛的小牛，來摸摸牠吧。」 Response: 「............（牠不喜歡被摸。）」 |
+| [`51D631 zzzCHSq13BullB02T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3343) | `51D632` | `Goodbye` | `GetItemCount > 0` on Player for [`51AD83 zzzCHHornBelhaza "Horn of Belharza"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:990); `GetIsAliasRef alias #8`; `GetStage == 40`; VMAD `CHSq13_TIF__0251D632.Fragment_0` on end | Prompt: 「陛下，這個給您（獻上貝爾哈扎之角）。」 Response: 「............（牠看起來很滿意。）」 |
+| [`51D634 zzzCHSq13BullB03T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:3346) | `51D635` | `Goodbye` | `GetItemCount > 0` on Player for [`51AD84 zzzCHRingMorihaus "Nosering of Morihaus"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:991); `GetIsAliasRef alias #8`; `GetStage == 40`; VMAD `CHSq13_TIF__0251D635.Fragment_0` on end | Prompt: 「陛下，這個給您（獻上莫里豪斯的鼻環）。」 Response: 「............（牠看起來很滿意。）」 |
 
 Translation notes:
 - All responses are silent pantomime stage directions (the bull has no speech); the meaning is in the parenthetical, kept literal.
@@ -190,19 +190,19 @@ Polarity — RESOLVED (`_bsa-psc-cache/qf_zzzchsubquest13_0251adbf.psc` + the tw
 These are not all owned by `51ADBF` per `infodiag`, but they are Belharza/Minotaur/Alessian context for a full reconstruction.
 
 NPCs:
-- [`51AE2D zzzCHAlessiaMntr "Paravania the Man-bull"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:428) — the title subject "Paravania".
-- [`51D61C zzzCHBelharzaBull "Belharza the Bull"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:466) — dialogue speaker (alias #8).
-- [`510B22 zzzCHMntrBelharza "Belharza the Man-Bull"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:344) — scene speaker (alias #9).
-- [`0E5E2E zzzCHBelharza "Belharza the Man"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:252) — alias #5.
-- [`0B253B zzzCHBossMorihaus "Morihaus"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1106) — alias #10, the father.
-- [`511D2D zzzCHMemoryAncientMinotaur "Man-Bull of Morihaus"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:349)
-- [`51D68A zzzCHBossAmicusTharn "Amicus Tharn"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:477) — alias #7 `Boss`.
-- [`51EAA8 zzzCHMntrFollower "Mordog the Man-Bull"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:487)
-- [`51D895 zzzCHMntrLeader "Horbahha the Chief"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:482)
+- [`51AE2D zzzCHAlessiaMntr "Paravania the Man-bull"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:428) — the title subject "Paravania".
+- [`51D61C zzzCHBelharzaBull "Belharza the Bull"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:466) — dialogue speaker (alias #8).
+- [`510B22 zzzCHMntrBelharza "Belharza the Man-Bull"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:344) — scene speaker (alias #9).
+- [`0E5E2E zzzCHBelharza "Belharza the Man"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:252) — alias #5.
+- [`0B253B zzzCHBossMorihaus "Morihaus"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1106) — alias #10, the father.
+- [`511D2D zzzCHMemoryAncientMinotaur "Man-Bull of Morihaus"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:349)
+- [`51D68A zzzCHBossAmicusTharn "Amicus Tharn"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:477) — alias #7 `Boss`.
+- [`51EAA8 zzzCHMntrFollower "Mordog the Man-Bull"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:487)
+- [`51D895 zzzCHMntrLeader "Horbahha the Chief"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:482)
 
 Gift items (quest items):
-- [`51AD83 zzzCHHornBelhaza "Horn of Belharza"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:990) (EditorID typo: `Belhaza`).
-- [`51AD84 zzzCHRingMorihaus "Nosering of Morihaus"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:991).
+- [`51AD83 zzzCHHornBelhaza "Horn of Belharza"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:990) (EditorID typo: `Belhaza`).
+- [`51AD84 zzzCHRingMorihaus "Nosering of Morihaus"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:991).
 
 Activators / triggers (start + scene hooks, from `find`):
 - `51C036 zzzCHManbullMemoryActTrigger` — the memory entry activator (inference: launches the shell `51C038`).
@@ -211,9 +211,9 @@ Activators / triggers (start + scene hooks, from `find`):
 - `51ADBE zzzCHBelharzaQuizActTrigger "Belharza's Monument"` + `51C040 zzzCHMsgBelharzaQuiz` (a quiz message), `51C03F zzzCHBelharzaMonument`.
 
 Locations:
-- [`51ADC4 zzzCHMemoryMntrCave "Cradle Cave"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:2) / [`51ADC5 zzzCHMemMntrCave "Cave"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:549).
-- [`51C043 zzzCHCharnelBelharza01 "Concealed Charnel of Belharza"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:78) / [`51C044 zzzCHLocCharnelBelharza`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:612).
-- [`51D6B2 zzzAoMManbullCave "Hidden Village of Minotaur"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:125) (AoM-prefixed, the related "Legacy of Belharza" sub-quest world).
+- [`51ADC4 zzzCHMemoryMntrCave "Cradle Cave"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:2) / [`51ADC5 zzzCHMemMntrCave "Cave"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:549).
+- [`51C043 zzzCHCharnelBelharza01 "Concealed Charnel of Belharza"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:78) / [`51C044 zzzCHLocCharnelBelharza`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:612).
+- [`51D6B2 zzzAoMManbullCave "Hidden Village of Minotaur"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/locations.tsv:125) (AoM-prefixed, the related "Legacy of Belharza" sub-quest world).
 
 ## Shell↔SubQuest13 Linkage (RESOLVED)
 
@@ -310,10 +310,10 @@ Whether the monument quiz is **part of this memory's progression** (a gate befor
 ## Reconstruction Notes
 
 Source-grounded:
-- The memory shell [`51C038 zzzCHMemoryQuest13`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:214) owns no topics/scenes; it is a priority-99 wrapper. Shell stage routing fully decoded via `qf_zzzchmemoryquest13_0251c038.psc`.
+- The memory shell [`51C038 zzzCHMemoryQuest13`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:214) owns no topics/scenes; it is a priority-99 wrapper. Shell stage routing fully decoded via `qf_zzzchmemoryquest13_0251c038.psc`.
 - Shell → SubQuest13 linkage: shell stage 20 calls `Sc01.ForceStart()` where `Sc01` Property is `51D636 zzzCHSq13Sc01` (host quest `51ADBF`). `Sq13` Property bridges the two quests at stage 30 via `Sq13.SetStage(10)`.
 - Shell stage 30 is the single positive karma resolution (`+3.0` karma + radiance), not one of two branches. Stage 40 is its procedural follow-up (stop). Stage 999 is fallback stop.
-- All playable content is in [`51ADBF zzzCHSubQuest13 "Broken Horn"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171), objective `Broken horns, sky incarnate.`, with one `SCEN` (`51D636 zzzCHSq13Sc01`) and a 4-INFO bull dialogue set (1 Hello + 3 custom).
+- All playable content is in [`51ADBF zzzCHSubQuest13 "Broken Horn"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:171), objective `Broken horns, sky incarnate.`, with one `SCEN` (`51D636 zzzCHSq13Sc01`) and a 4-INFO bull dialogue set (1 Hello + 3 custom).
 - Two interactive gift branches both gated `GetStage(51ADBF) == 40` (alias #8 `BelharzaBull`): give Horn of Belharza (`51AD83`) or Nosering of Morihaus (`51AD84`); each carries a `CHSq13_TIF__…` end fragment. Both are mercy/positive choices (same karma outcome at shell level).
 - The dialogue subject (alias #8) is a non-speaking bull; the scene subject (alias #9) is the Man-Bull who speaks the two restored-voice lines.
 

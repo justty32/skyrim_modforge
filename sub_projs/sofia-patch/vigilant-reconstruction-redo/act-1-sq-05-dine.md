@@ -9,7 +9,7 @@ Source policy:
 
 ## Quest Record
 
-[`0098C9 zzzAoMMq05 "Dine and Dash"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:218)
+[`0098C9 zzzAoMMq05 "Dine and Dash"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:218)
 
 CLI:
 - `questdiag Vigilant.esm 0x0098C9`
@@ -53,14 +53,14 @@ Objectives from `questdiag`:
 
 | Index | Source | Log |
 |---:|---|---|
-| 0 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:219) | Talk to Altano in the Candle Hearth Hall |
-| 10 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:220) | Follow Altano or Join Altano at Stendarr's Beacon |
-| 20 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:221) | Follow Alatano or Join Altano at The Bee and Barb |
-| 25 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:222) | Defeat Daedra |
-| 30 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:223) | Talk to Keerave |
-| 40 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:224) | Pay 1000G Keerave |
-| 41 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:225) | Barrow Money from Altano (Option) |
-| 50 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:226) | Report to Jacob |
+| 0 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:219) | Talk to Altano in the Candle Hearth Hall |
+| 10 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:220) | Follow Altano or Join Altano at Stendarr's Beacon |
+| 20 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:221) | Follow Alatano or Join Altano at The Bee and Barb |
+| 25 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:222) | Defeat Daedra |
+| 30 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:223) | Talk to Keerave |
+| 40 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:224) | Pay 1000G Keerave |
+| 41 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:225) | Barrow Money from Altano (Option) |
+| 50 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:226) | Report to Jacob |
 
 Objective targets:
 - 8 objectives with location targets (Riften establishments: Candlehearth Hall, Stendarr's Beacon, The Bee and Barb).
@@ -75,11 +75,11 @@ All custom topics require `GetIsAliasRef` checks on aliases (`alias #0` = Altano
 ### Branch 1: Mission Briefing (Stage 0→10)
 
 Custom topic:
-- [`009E30 zzAoMMq05B1Mission5`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:156)
+- [`009E30 zzAoMMq05B1Mission5`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:156)
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`009E30 zzAoMMq05B1Mission5`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:156) | `009E31` | none | GetInCell `016789:Skyrim.esm` (Candlehearth Hall); GetStage < 10 on quest `0098C9`; GetIsAliasRef alias #0 | [「I got a letter from Stendarr's Beacon. The summoner were witnessed in Riften. Let's go to Stendarr's Beacon to listen the detail.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:157) |
+| [`009E30 zzAoMMq05B1Mission5`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:156) | `009E31` | none | GetInCell `016789:Skyrim.esm` (Candlehearth Hall); GetStage < 10 on quest `0098C9`; GetIsAliasRef alias #0 | [「I got a letter from Stendarr's Beacon. The summoner were witnessed in Riften. Let's go to Stendarr's Beacon to listen the detail.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:157) |
 | | | | VMAD: `AoM05_TIF__01009E31` Fragment_0 on end | |
 
 ### Branch 2: Scene Topics at Stendarr's Beacon (Stage 10→20)
@@ -88,14 +88,14 @@ Scene exchange: briefing with Jacob at Stendarr's Beacon. These are dialogue top
 
 | Topic | INFO | Speaker | Response | Translation |
 |---|---|---|---|---|
-| [`009E3D` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:159) | `009E3E` | — | [「Master Jacob, Long time no see. How are you?」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:160) |
-| [`009E3F` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:162) | `009E40` | — | [「Hahaha, don't stand on ceremony so much. You and I are agents of Stenndarr.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:163) |
-| [`009E41` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:165) | `009E42` | — | [「So...we heard you find the summoner...」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:166) |
-| [`009E43` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:168) | `009E44` | — | [「Viglants find her in the Bee and Barb. They will catch her....」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:169); [「She summoned Powerful Daedra..so vigilants are at a loss what to do.To make matters worse, theat Daedra stay at Inn.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:170); [「But we are fully occupied to chase summoner. I entrust defeating Deadra to you.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:171) |
-| [`009E45` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:173) | `009E46` | — | [「Let us handle this. The Daedra will regret to be summoned.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:174) |
-| [`009E47` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:176) | `009E48` | — | [「Hahaha! You are reliable! By the way..about your partner...」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:177) |
-| [`009E49` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:179) | `009E4A` | — | [「You have good eyes as letter from Altano. Your look is like Stendarr....」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:180); [「Be carefull, Daedra is astute.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:181) |
-| [`009E4B` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:183) | `009E4C` | — | [「Here, we go.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:184) |
+| [`009E3D` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:159) | `009E3E` | — | [「Master Jacob, Long time no see. How are you?」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:160) |
+| [`009E3F` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:162) | `009E40` | — | [「Hahaha, don't stand on ceremony so much. You and I are agents of Stenndarr.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:163) |
+| [`009E41` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:165) | `009E42` | — | [「So...we heard you find the summoner...」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:166) |
+| [`009E43` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:168) | `009E44` | — | [「Viglants find her in the Bee and Barb. They will catch her....」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:169); [「She summoned Powerful Daedra..so vigilants are at a loss what to do.To make matters worse, theat Daedra stay at Inn.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:170); [「But we are fully occupied to chase summoner. I entrust defeating Deadra to you.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:171) |
+| [`009E45` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:173) | `009E46` | — | [「Let us handle this. The Daedra will regret to be summoned.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:174) |
+| [`009E47` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:176) | `009E48` | — | [「Hahaha! You are reliable! By the way..about your partner...」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:177) |
+| [`009E49` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:179) | `009E4A` | — | [「You have good eyes as letter from Altano. Your look is like Stendarr....」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:180); [「Be carefull, Daedra is astute.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:181) |
+| [`009E4B` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:183) | `009E4C` | — | [「Here, we go.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:184) |
 
 Notes:
 - No explicit speaker names in scene topics; inferred from context (Jacob at beacon, player/Altano as responders).
@@ -109,9 +109,9 @@ Scene exchange: inn arrival and Daedra interaction.
 
 | Topic | INFO | Speaker | Response | Translation |
 |---|---|---|---|---|
-| [`009E4F` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:186) | `009E50` | Daedra | [「Hey, Waiter!! Bring more foods and drinks, or I will eat your head!!」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:187) |
-| [`009E51` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:189) | `009E52` | — | [「Where is your summoner? if you admit, I kill you peacefully.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:190) |
-| [`009E53` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:192) | `009E54` | Daedra | [「Kill? Mortal say kill immmortal Daedra? Hahahahaha! Mortal is very funny.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:193); [「You want infomation about summoner? I admit you enter my stomack.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:194) |
+| [`009E4F` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:186) | `009E50` | Daedra | [「Hey, Waiter!! Bring more foods and drinks, or I will eat your head!!」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:187) |
+| [`009E51` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:189) | `009E52` | — | [「Where is your summoner? if you admit, I kill you peacefully.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:190) |
+| [`009E53` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:192) | `009E54` | Daedra | [「Kill? Mortal say kill immmortal Daedra? Hahahahaha! Mortal is very funny.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:193); [「You want infomation about summoner? I admit you enter my stomack.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:194) |
 
 Notes:
 - Daedra's humor and appetite combine confrontation with comedic tone.
@@ -125,13 +125,13 @@ Three payment-related topics representing the player's options after defeating t
 #### Sub-Branch 4a: Payment Demand (Stage 30)
 
 Custom topic:
-- [`009E56 zzAoMMq05B2Payment`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:196)
+- [`009E56 zzAoMMq05B2Payment`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:196)
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`009E56 zzAoMMq05B2Payment`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:196) | `009E57` | SayOnce, WalkAway | GetStage == 30 on quest `0098C9`; GetIsAliasRef alias #7 (Keerave) | [「Hey! Wait!! You should pay for food and drink Daedra had. Payment is 1000G.I never reduce the price!!」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:197) |
+| [`009E56 zzAoMMq05B2Payment`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:196) | `009E57` | SayOnce, WalkAway | GetStage == 30 on quest `0098C9`; GetIsAliasRef alias #7 (Keerave) | [「Hey! Wait!! You should pay for food and drink Daedra had. Payment is 1000G.I never reduce the price!!」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:197) |
 | | | | VMAD: `AoM05_TIF__01009E57` Fragment_0 on end | |
-| [`009E56 zzAoMMq05B2Payment`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:196) | `009E58` | WalkAway | GetStage >= 40 on quest `0098C9`; GetStage < 50; GetIsAliasRef alias #7 | [「Can you pay 1000G?」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:198) |
+| [`009E56 zzAoMMq05B2Payment`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:196) | `009E58` | WalkAway | GetStage >= 40 on quest `0098C9`; GetStage < 50; GetIsAliasRef alias #7 | [「Can you pay 1000G?」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:198) |
 
 Notes:
 - `SayOnce` on first INFO → triggers stage 30 dialogue once.
@@ -141,11 +141,11 @@ Notes:
 #### Sub-Branch 4b: Full Payment Path (Pay 1000G)
 
 Custom topic:
-- [`009E59 zzAoMMq05B2Pay1000`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:200)
+- [`009E59 zzAoMMq05B2Pay1000`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:200)
 
 | Topic | INFO | Flags | Conditions | Response | VMAD |
 |---|---|---|---|---|---|
-| [`009E59 zzAoMMq05B2Pay1000`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:200) | `009E5A` | Goodbye | GetGold >= 1000 (on Player ref `000014:Skyrim.esm`); GetIsAliasRef alias #7 | [「Thank you. You should choose your friends very carefully.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:201) | `AoM05_TIF__01009E5A` Fragment_1 (OnBegin) + Fragment_0 (OnEnd) |
+| [`009E59 zzAoMMq05B2Pay1000`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:200) | `009E5A` | Goodbye | GetGold >= 1000 (on Player ref `000014:Skyrim.esm`); GetIsAliasRef alias #7 | [「Thank you. You should choose your friends very carefully.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:201) | `AoM05_TIF__01009E5A` Fragment_1 (OnBegin) + Fragment_0 (OnEnd) |
 
 Notes:
 - Goodbye flag → ends conversation.
@@ -155,11 +155,11 @@ Notes:
 #### Sub-Branch 4c: No Money Path (Delay)
 
 Custom topic:
-- [`009E5B zzAoMMq05B2NoMoney`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:203)
+- [`009E5B zzAoMMq05B2NoMoney`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:203)
 
 | Topic | INFO | Flags | Conditions | Response |
 |---|---|---|---|---|
-| [`009E5B zzAoMMq05B2NoMoney`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:203) | `009E5C` | Goodbye | GetIsAliasRef alias #7 | [「OK.I wait a minute for you. if you dine and dash... I will call gurads.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:204) |
+| [`009E5B zzAoMMq05B2NoMoney`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:203) | `009E5C` | Goodbye | GetIsAliasRef alias #7 | [「OK.I wait a minute for you. if you dine and dash... I will call gurads.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:204) |
 
 Notes:
 - Callback for players without 1000G.
@@ -169,11 +169,11 @@ Notes:
 #### Sub-Branch 4d: Borrow Path (From Altano)
 
 Custom topic:
-- [`009E5E zzAoMMq05B3Debt`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:206)
+- [`009E5E zzAoMMq05B3Debt`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:206)
 
 | Topic | INFO | Flags | Conditions | Response | VMAD |
 |---|---|---|---|---|---|
-| [`009E5E zzAoMMq05B3Debt`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:206) | `009E5F` | SayOnce | GetStage == 40 on quest `0098C9`; GetIsAliasRef alias #0 (Altano) | [「Huh...OK. I will pay 800G.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:207) | `AoM05_TIF__01009E5F` Fragment_0 on end |
+| [`009E5E zzAoMMq05B3Debt`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:206) | `009E5F` | SayOnce | GetStage == 40 on quest `0098C9`; GetIsAliasRef alias #0 (Altano) | [「Huh...OK. I will pay 800G.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:207) | `AoM05_TIF__01009E5F` Fragment_0 on end |
 
 Notes:
 - Altano (alias #0) covers 800G of the 1000G debt (player pays 200G).
@@ -187,20 +187,20 @@ Two completion topics reporting back to Jacob at quest location.
 #### Sub-Branch 5a: Mission Success Report
 
 Custom topic:
-- [`009E61 zzAoMMq05B4Mission5Comp`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:209)
+- [`009E61 zzAoMMq05B4Mission5Comp`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:209)
 
 | Topic | INFO | Flags | Conditions | Response |
 |---|---|---|---|---|
-| [`009E61 zzAoMMq05B4Mission5Comp`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:209) | `009E62` | none | GetStage == 50 on quest `0098C9`; GetIsAliasRef alias #1 (Jacob) | [「Many thanks for your trouble」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:210) |
+| [`009E61 zzAoMMq05B4Mission5Comp`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:209) | `009E62` | none | GetStage == 50 on quest `0098C9`; GetIsAliasRef alias #1 (Jacob) | [「Many thanks for your trouble」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:210) |
 
 #### Sub-Branch 5b: Post-Combat Investigation (Stage 50→60)
 
 Custom topic:
-- [`009E63 zzAoMMq05B4Summoner`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:212)
+- [`009E63 zzAoMMq05B4Summoner`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:212)
 
 | Topic | INFO | Flags | Conditions | Responses |
 |---|---|---|---|---|
-| [`009E63 zzAoMMq05B4Summoner`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:212) | `009E64` | none | GetIsAliasRef alias #1 (Jacob) | [「Yes, viglants run the summoner down in Ratway...but we fail to catch. There is a swordman who equips Ebony mail with the summoner.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:213); [「Swordman maybe hired by the summoner. He is very strong. He broke through the besieging vigilants...head-on...」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:214); [「Special Chasers started just now. How many people survive.....」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:215) |
+| [`009E63 zzAoMMq05B4Summoner`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:212) | `009E64` | none | GetIsAliasRef alias #1 (Jacob) | [「Yes, viglants run the summoner down in Ratway...but we fail to catch. There is a swordman who equips Ebony mail with the summoner.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:213); [「Swordman maybe hired by the summoner. He is very strong. He broke through the besieging vigilants...head-on...」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:214); [「Special Chasers started just now. How many people survive.....」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:215) |
 
 Notes:
 - Reports summoner's escape to Ratway with unknown mercenary (Ebony Mail equipper).
@@ -210,11 +210,11 @@ Notes:
 #### Sub-Branch 5c: Next Mission Brief
 
 Custom topic:
-- [`009E65 zzAoMMq05B4NextMission`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:217)
+- [`009E65 zzAoMMq05B4NextMission`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:217)
 
 | Topic | INFO | Flags | Conditions | Responses | VMAD |
 |---|---|---|---|---|---|
-| [`009E65 zzAoMMq05B4NextMission`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:217) | `009E66` | Goodbye | GetIsAliasRef alias #1 (Jacob) | [「Invetstigate Ratway. There is the marks of Cojurring Daedra.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:218); [「At the moment, no damage was reported in Ratway. But there is dangerous. Search Daedra and destroy.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:219) | `AoM05_TIF__01009E66` Fragment_0 on end |
+| [`009E65 zzAoMMq05B4NextMission`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:217) | `009E66` | Goodbye | GetIsAliasRef alias #1 (Jacob) | [「Invetstigate Ratway. There is the marks of Cojurring Daedra.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:218); [「At the moment, no damage was reported in Ratway. But there is dangerous. Search Daedra and destroy.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:219) | `AoM05_TIF__01009E66` Fragment_0 on end |
 
 Notes:
 - Final objective: report to Jacob → quest completion (stage 60).
@@ -238,7 +238,7 @@ Items referenced:
 ## Reconstruction Notes
 
 Source-grounded:
-- This quest is represented by [`0098C9 zzzAoMMq05`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:218) with 8 objectives spanning Riften establishments and a payment mechanic.
+- This quest is represented by [`0098C9 zzzAoMMq05`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:218) with 8 objectives spanning Riften establishments and a payment mechanic.
 - Stage progression: briefing (0–10) → travel (10–25) → inn combat (25–30) → payment negotiation (30–45) → completion report (45–60).
 - It contains 5 dialogue branches:
   - Briefing with Altano (custom topic, GetInCell check).

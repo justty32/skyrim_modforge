@@ -10,7 +10,7 @@ Source policy:
 
 ## Quest Record
 
-[`038525 zzzBMMq02 "The Wreck"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:108)
+[`038525 zzzBMMq02 "The Wreck"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:108)
 
 CLI:
 - `questdiag Vigilant.esm 0x038525`
@@ -50,12 +50,12 @@ Objectives:
 
 | Index | Source | Quest Text |
 |---:|---|---|
-| 10 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:109) | Defeat `<Alias=Vamp01>` |
-| 30 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:110) | Defeat `<Alias=Vamp02>` |
-| 50 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:111) | Defeat `<Alias=Vamp03>` |
-| 60 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:112) | Talk to `<Alias=Vamp04Ess>` |
-| 70 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:113) | Give `<Alias=Vamp04>` Mercy of Stendarr |
-| 90 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:114) | Defeat `<Alias=Vamp05>` |
+| 10 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:109) | Defeat `<Alias=Vamp01>` |
+| 30 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:110) | Defeat `<Alias=Vamp02>` |
+| 50 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:111) | Defeat `<Alias=Vamp03>` |
+| 60 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:112) | Talk to `<Alias=Vamp04Ess>` |
+| 70 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:113) | Give `<Alias=Vamp04>` Mercy of Stendarr |
+| 90 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:114) | Defeat `<Alias=Vamp05>` |
 
 Objective targets:
 - Objectives 10, 30, 50, 70 each have 1 target in ESM.
@@ -90,8 +90,8 @@ Speaker condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`039B3A zzzBMMq02B01v2FearGreet`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:527) | `039B3B` | WalkAway | `GetStage EqualTo 20`; `GetIsAliasRef alias #1` | [I'm not angry anymore? Aredhel I finally went back to sanity ... do we Gwaji. Well, let's go back ...](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:528) |
-| [`039B3C zzzBMMq02B01v2AreUOK`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:530) | `039B3D` | Goodbye, CanMoveWhileGreeting | `GetIsAliasRef alias #1` | Prompt: "Are you OK?" Response: [If you go first monster! Come near! Away!! Come! Come! Ah Ah Come!](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:531) VMAD: `BM02_TIF__01039B3D.Fragment_0` on end. |
+| [`039B3A zzzBMMq02B01v2FearGreet`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:527) | `039B3B` | WalkAway | `GetStage EqualTo 20`; `GetIsAliasRef alias #1` | [I'm not angry anymore? Aredhel I finally went back to sanity ... do we Gwaji. Well, let's go back ...](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:528) |
+| [`039B3C zzzBMMq02B01v2AreUOK`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:530) | `039B3D` | Goodbye, CanMoveWhileGreeting | `GetIsAliasRef alias #1` | Prompt: "Are you OK?" Response: [If you go first monster! Come near! Away!! Come! Come! Ah Ah Come!](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:531) VMAD: `BM02_TIF__01039B3D.Fragment_0` on end. |
 
 Translation notes:
 - "Aredhel" and "Gwaji" are possibly names or terms untranslated in the extracted text; may require NPC/place verification.
@@ -108,16 +108,16 @@ Speaker condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`039B42 zzzBMMq02B01v4Greet`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:533) | `039B43` | Goodbye | `GetStage LessThanOrEqualTo 40`; `GetIsAliasRef alias #5` | [Bad now, I do not know when Jericho is coming](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:534) VMAD: `BM02_TIF__01039B43.Fragment_0` on end. |
-| [`039B45 zzzBMMq02B02v4Happen`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:537) | `039B46` | SayOnce | `GetStage EqualTo 60`; `GetIsAliasRef alias #5` | Prompt: "What happened here?" Response (1): [Her. She ached. There was a lady of the blood ...](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:538) Response (2): [We have to defeat her. I can not do anything. All, a vampire ... been Nomasa those who survived, and ... the blood of her](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:539) VMAD: `BM02_TIF__01039B46.Fragment_0` on end. |
-| [`039B48 zzzBMMq02B03v4Vampirism`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:541) | `039B49` | none | `GetStage EqualTo 65`; `GetIsAliasRef alias #5` | Prompt: "Do not you Naose are blood-sucking disease?" Response (1): [It is too late. While it's thirst for blood is strong. And above all she is with joy that has become strong ...](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:542) Response (2): [Every night, a dream that she shed tears of blood. From that day she was crying she was polluted much to ... Molag Bal](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:543) Response (3): [I know her grief is still sleeping to take in hand. In me has become irreplaceable she ...](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:544) |
-| [`039B4B zzzBMMq02B04v4Imprison`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:546) | `039B4C` | none | `GetStage EqualTo 65`; `GetIsAliasRef alias #5` | Prompt: "Why are you being imprisoned?" Response: [Which refused her blood is imprisoned here. It's all the way to accept the blood ...](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:547) |
-| [`039B4E zzzBMMq02B05v4OtherVigilant`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:549) | `039B4F` | none | `GetStage EqualTo 65`; `GetIsAliasRef alias #5` | Prompt: "What was the other keeper?" Response: [Everyone survive had been a vampire. Everyone has been in her blood Kuruwasu](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:550) |
-| [`039B51 zzzBMMq02B06v4AboutMatron`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:552) | `039B52` | none | `GetStage EqualTo 65`; `GetIsAliasRef alias #5` | Prompt: "Blood Matron?" Response: [Nede maiden soiled to Molag Bal. It is the founder of the vampire universally.](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:553) |
-| [`039B54 zzzBMMq02B07v4Help`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:555) | `039B55` | WalkAway | `GetStage EqualTo 65`; `GetIsAliasRef alias #5` | Prompt: "Is there anything I can do?" Response: [I want you to kill me. I want to die before you become exhausted bloodthirsty beast ...](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:556) |
-| [`039B56 zzzBMMq02B07v4Kill`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:558) | `039B57` | Goodbye | `GetStage EqualTo 65`; `GetIsAliasRef alias #5` | Prompt: "OK.I kill you" Response: [Well ... thank you, kill me soon. I'm not likely to endure the thirst of blood anymore ...](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:559) VMAD: `BM02_TIF__01039B57.Fragment_1` on begin, `BM02_TIF__01039B57.Fragment_0` on end. |
-| [`039B58 zzzBMMq02B07v4NotKill`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:561) | `039B59` | none | `GetStage EqualTo 65`; `GetIsAliasRef alias #5` | Prompt: "I can not" Response: [I beg you ... I beg. I want to be free from this suffering](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:562) |
-| [`03A0C2 zzzBMMq02B01v4GreetEnd`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) | `03A0C2` | Goodbye | `GetStage EqualTo 70`; `GetIsAliasRef alias #5` | Response: [Kill me...plaese, kill me...](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) VMAD: `BM02_TIF__0203A0C2.Fragment_0` on end. |
+| [`039B42 zzzBMMq02B01v4Greet`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:533) | `039B43` | Goodbye | `GetStage LessThanOrEqualTo 40`; `GetIsAliasRef alias #5` | [Bad now, I do not know when Jericho is coming](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:534) VMAD: `BM02_TIF__01039B43.Fragment_0` on end. |
+| [`039B45 zzzBMMq02B02v4Happen`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:537) | `039B46` | SayOnce | `GetStage EqualTo 60`; `GetIsAliasRef alias #5` | Prompt: "What happened here?" Response (1): [Her. She ached. There was a lady of the blood ...](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:538) Response (2): [We have to defeat her. I can not do anything. All, a vampire ... been Nomasa those who survived, and ... the blood of her](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:539) VMAD: `BM02_TIF__01039B46.Fragment_0` on end. |
+| [`039B48 zzzBMMq02B03v4Vampirism`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:541) | `039B49` | none | `GetStage EqualTo 65`; `GetIsAliasRef alias #5` | Prompt: "Do not you Naose are blood-sucking disease?" Response (1): [It is too late. While it's thirst for blood is strong. And above all she is with joy that has become strong ...](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:542) Response (2): [Every night, a dream that she shed tears of blood. From that day she was crying she was polluted much to ... Molag Bal](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:543) Response (3): [I know her grief is still sleeping to take in hand. In me has become irreplaceable she ...](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:544) |
+| [`039B4B zzzBMMq02B04v4Imprison`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:546) | `039B4C` | none | `GetStage EqualTo 65`; `GetIsAliasRef alias #5` | Prompt: "Why are you being imprisoned?" Response: [Which refused her blood is imprisoned here. It's all the way to accept the blood ...](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:547) |
+| [`039B4E zzzBMMq02B05v4OtherVigilant`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:549) | `039B4F` | none | `GetStage EqualTo 65`; `GetIsAliasRef alias #5` | Prompt: "What was the other keeper?" Response: [Everyone survive had been a vampire. Everyone has been in her blood Kuruwasu](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:550) |
+| [`039B51 zzzBMMq02B06v4AboutMatron`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:552) | `039B52` | none | `GetStage EqualTo 65`; `GetIsAliasRef alias #5` | Prompt: "Blood Matron?" Response: [Nede maiden soiled to Molag Bal. It is the founder of the vampire universally.](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:553) |
+| [`039B54 zzzBMMq02B07v4Help`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:555) | `039B55` | WalkAway | `GetStage EqualTo 65`; `GetIsAliasRef alias #5` | Prompt: "Is there anything I can do?" Response: [I want you to kill me. I want to die before you become exhausted bloodthirsty beast ...](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:556) |
+| [`039B56 zzzBMMq02B07v4Kill`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:558) | `039B57` | Goodbye | `GetStage EqualTo 65`; `GetIsAliasRef alias #5` | Prompt: "OK.I kill you" Response: [Well ... thank you, kill me soon. I'm not likely to endure the thirst of blood anymore ...](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:559) VMAD: `BM02_TIF__01039B57.Fragment_1` on begin, `BM02_TIF__01039B57.Fragment_0` on end. |
+| [`039B58 zzzBMMq02B07v4NotKill`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:561) | `039B59` | none | `GetStage EqualTo 65`; `GetIsAliasRef alias #5` | Prompt: "I can not" Response: [I beg you ... I beg. I want to be free from this suffering](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:562) |
+| [`03A0C2 zzzBMMq02B01v4GreetEnd`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) | `03A0C2` | Goodbye | `GetStage EqualTo 70`; `GetIsAliasRef alias #5` | Response: [Kill me...plaese, kill me...](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) VMAD: `BM02_TIF__0203A0C2.Fragment_0` on end. |
 
 Translation notes:
 - "Naose" in the "blood-sucking disease" prompt is unclear; may be a mistranslation or transliteration of a creature name.
@@ -136,9 +136,9 @@ Scene topics:
 
 | Topic | INFO | Emotion | Translation |
 |---|---|---|---|
-| `0x03A0C4` (scene) | `0x03A0C5` | Sad | [I missed everyone ... everyone ... died, had been eating ...](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) |
-| `0x03A0C6` (scene) | `0x03A0C7` | Fear | [And she and I ... are you here now just Ganzen monster ...](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) |
-| `0x03A0C8` (scene) | `0x03A0C9` | Anger | [you monster Molag Bal, you'll only have to die for the peace of soul not forgive! Friend of late!](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) |
+| `0x03A0C4` (scene) | `0x03A0C5` | Sad | [I missed everyone ... everyone ... died, had been eating ...](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) |
+| `0x03A0C6` (scene) | `0x03A0C7` | Fear | [And she and I ... are you here now just Ganzen monster ...](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) |
+| `0x03A0C8` (scene) | `0x03A0C9` | Anger | [you monster Molag Bal, you'll only have to die for the peace of soul not forgive! Friend of late!](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:?) |
 
 (inference: These are likely scene monologue actions, one per phase or actor, representing the survivor's anguished memories or present state during the encounter with the vampire and the wreck site.)
 
@@ -150,7 +150,7 @@ NPCs:
 - `Vamp04Ess` (alias #1) — essential survivor; FormID unknown.
 
 Items:
-- [`Mercy of Stendarr`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:?) — quest item to be given at objective 70.
+- [`Mercy of Stendarr`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:?) — quest item to be given at objective 70.
 
 Locations (inferred):
 - "The Wreck" (unnamed location; quest name suggests a destroyed ship or building site).
@@ -159,7 +159,7 @@ Locations (inferred):
 ## Reconstruction Notes
 
 Source-grounded:
-- This SideQuest is represented by [`038525 zzzBMMq02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:108) with name `"The Wreck"`.
+- This SideQuest is represented by [`038525 zzzBMMq02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:108) with name `"The Wreck"`.
 - It contains 6 objectives spanning stages 10–90 with two CompleteQuest gates at stages 100 and 9999.
 - It has three scene action topics (`0x03A0C4`, `0x03A0C6`, `0x03A0C8`); exact SCEN staging is not yet available from extracted text.
 - It contains two distinct dialogue branches:

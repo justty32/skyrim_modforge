@@ -9,7 +9,7 @@
 
 ## 任務紀錄 (Quest Record)
 
-[`0098C9 zzzAoMMq05 "Dine and Dash"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:218)
+[`0098C9 zzzAoMMq05 "Dine and Dash"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:218)
 
 CLI：
 - `questdiag Vigilant.esm 0x0098C9`
@@ -53,14 +53,14 @@ ESM：
 
 | 索引 | 來源 | 日誌 |
 |---:|---|---|
-| 0 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:219) | 在燭爐堂與阿爾塔諾對話 (Talk to Altano in the Candle Hearth Hall) |
-| 10 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:220) | 跟隨阿爾塔諾，或是在斯丹達爾燈塔與他會合 (Follow Altano or Join Altano at Stendarr's Beacon) |
-| 20 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:221) | 跟隨阿爾塔諾，或是在蜂與勾刺與他會合 (Follow Alatano or Join Altano at The Bee and Barb) |
-| 25 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:222) | 擊敗魔族 (Defeat Daedra) |
-| 30 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:223) | 與基拉瓦對話 (Talk to Keerave) |
-| 40 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:224) | 支付 1000 金幣給基拉瓦 (Pay 1000G Keerave) |
-| 41 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:225) | 向阿爾塔諾借錢（選項） (Barrow Money from Altano (Option)) |
-| 50 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:226) | 向雅各回報 (Report to Jacob) |
+| 0 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:219) | 在燭爐堂與阿爾塔諾對話 (Talk to Altano in the Candle Hearth Hall) |
+| 10 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:220) | 跟隨阿爾塔諾，或是在斯丹達爾燈塔與他會合 (Follow Altano or Join Altano at Stendarr's Beacon) |
+| 20 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:221) | 跟隨阿爾塔諾，或是在蜂與勾刺與他會合 (Follow Alatano or Join Altano at The Bee and Barb) |
+| 25 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:222) | 擊敗魔族 (Defeat Daedra) |
+| 30 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:223) | 與基拉瓦對話 (Talk to Keerave) |
+| 40 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:224) | 支付 1000 金幣給基拉瓦 (Pay 1000G Keerave) |
+| 41 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:225) | 向阿爾塔諾借錢（選項） (Barrow Money from Altano (Option)) |
+| 50 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:226) | 向雅各回報 (Report to Jacob) |
 
 目標對象 (Objective targets)：
 - 具有位置目標的 8 個任務目標（裂谷城的設施：燭爐堂、斯丹達爾燈塔、蜂與勾刺）。
@@ -75,11 +75,11 @@ ESM：
 ### 分支 1：任務簡報 (階段 0→10)
 
 自訂主題：
-- [`009E30 zzAoMMq05B1Mission5`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:156)
+- [`009E30 zzAoMMq05B1Mission5`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:156)
 
 | 主題 | INFO | 旗標 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`009E30 zzAoMMq05B1Mission5`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:156) | `009E31` | 無 | GetInCell `016789:Skyrim.esm` (燭爐堂); 任務 `0098C9` 的階段 < 10; GetIsAliasRef 別名 #0 | 「我收到了一封來自斯丹達爾燈塔的信。有人在裂谷城目擊到了召喚師。我們去斯丹達爾燈塔聽取詳情吧。」 |
+| [`009E30 zzAoMMq05B1Mission5`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:156) | `009E31` | 無 | GetInCell `016789:Skyrim.esm` (燭爐堂); 任務 `0098C9` 的階段 < 10; GetIsAliasRef 別名 #0 | 「我收到了一封來自斯丹達爾燈塔的信。有人在裂谷城目擊到了召喚師。我們去斯丹達爾燈塔聽取詳情吧。」 |
 | | | | VMAD: `AoM05_TIF__01009E31` 結束時觸發 Fragment_0 | |
 
 ### 分支 2：斯丹達爾燈塔的場景主題 (階段 10→20)
@@ -88,14 +88,14 @@ ESM：
 
 | 主題 | INFO | 說話者 | 回應 | 翻譯 |
 |---|---|---|---|---|
-| [`009E3D` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:159) | `009E3E` | — | [「Master Jacob, Long time no see. How are you?」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:160) |
-| [`009E3F` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:162) | `009E40` | — | [「Hahaha, don't stand on ceremony so much. You and I are agents of Stenndarr.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:163) |
-| [`009E41` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:165) | `009E42` | — | [「So...we heard you find the summoner...」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:166) |
-| [`009E43` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:168) | `009E44` | — | [「Viglants find her in the Bee and Barb. They will catch her....」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:169); [「She summoned Powerful Daedra..so vigilants are at a loss what to do.To make matters worse, theat Daedra stay at Inn.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:170); [「But we are fully occupied to chase summoner. I entrust defeating Deadra to you.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:171) |
-| [`009E45` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:173) | `009E46` | — | [「Let us handle this. The Daedra will regret to be summoned.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:174) |
-| [`009E47` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:176) | `009E48` | — | [「Hahaha! You are reliable! By the way..about your partner...」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:177) |
-| [`009E49` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:179) | `009E4A` | — | [「You have good eyes as letter from Altano. Your look is like Stendarr....」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:180); [「Be carefull, Daedra is astute.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:181) |
-| [`009E4B` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:183) | `009E4C` | — | [「Here, we go.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:184) |
+| [`009E3D` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:159) | `009E3E` | — | [「Master Jacob, Long time no see. How are you?」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:160) |
+| [`009E3F` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:162) | `009E40` | — | [「Hahaha, don't stand on ceremony so much. You and I are agents of Stenndarr.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:163) |
+| [`009E41` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:165) | `009E42` | — | [「So...we heard you find the summoner...」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:166) |
+| [`009E43` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:168) | `009E44` | — | [「Viglants find her in the Bee and Barb. They will catch her....」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:169); [「She summoned Powerful Daedra..so vigilants are at a loss what to do.To make matters worse, theat Daedra stay at Inn.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:170); [「But we are fully occupied to chase summoner. I entrust defeating Deadra to you.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:171) |
+| [`009E45` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:173) | `009E46` | — | [「Let us handle this. The Daedra will regret to be summoned.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:174) |
+| [`009E47` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:176) | `009E48` | — | [「Hahaha! You are reliable! By the way..about your partner...」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:177) |
+| [`009E49` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:179) | `009E4A` | — | [「You have good eyes as letter from Altano. Your look is like Stendarr....」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:180); [「Be carefull, Daedra is astute.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:181) |
+| [`009E4B` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:183) | `009E4C` | — | [「Here, we go.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:184) |
 
 （翻譯：009E3E「雅各長老，好久不見。您身體可好？」009E40「哈哈哈，別這麼客氣。你我都是斯丹達爾的代理人。」009E42「所以……我們聽說您找到了召喚師……」009E44「警戒者在蜂與勾刺發現了她。他們會抓住她的……」「她召喚了強大的魔族……警戒者現在束手無策。更糟的是，那名魔族留在酒館裡不走。」「但我們正忙於追捕召喚師。擊敗魔族的事就託付給你們了。」009E46「交給我們處理吧。那名魔族會後悔被召喚出來的。」009E48「哈哈哈！你們真可靠！順帶一提……關於你的夥伴……」009E4A「你的眼神正如阿爾塔諾信中所說的一樣。你的神情就像斯丹達爾……」「小心點，魔族是很狡詐的。」009E4C「我們出發吧。」）
 
@@ -111,9 +111,9 @@ ESM：
 
 | 主題 | INFO | 說話者 | 回應 | 翻譯 |
 |---|---|---|---|---|
-| [`009E4F` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:186) | `009E50` | 魔族 | [「Hey, Waiter!! Bring more foods and drinks, or I will eat your head!!」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:187) |
-| [`009E51` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:189) | `009E52` | — | [「Where is your summoner? if you admit, I kill you peacefully.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:190) |
-| [`009E53` - Scene/Scene](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:192) | `009E54` | 魔族 | [「Kill? Mortal say kill immmortal Daedra? Hahahahaha! Mortal is very funny.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:193); [「You want infomation about summoner? I admit you enter my stomack.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:194) |
+| [`009E4F` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:186) | `009E50` | 魔族 | [「Hey, Waiter!! Bring more foods and drinks, or I will eat your head!!」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:187) |
+| [`009E51` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:189) | `009E52` | — | [「Where is your summoner? if you admit, I kill you peacefully.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:190) |
+| [`009E53` - Scene/Scene](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:192) | `009E54` | 魔族 | [「Kill? Mortal say kill immmortal Daedra? Hahahahaha! Mortal is very funny.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:193); [「You want infomation about summoner? I admit you enter my stomack.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:194) |
 
 （翻譯：009E50「嘿，服務生！！再拿更多吃的喝的來，不然我就把你的腦袋吞了！！」009E52「妳的召喚師在哪裡？如果你招供，我會讓你死得痛快點。」009E54「殺？凡人竟然說要殺死不朽的魔族？哈哈哈哈！凡人真是有趣。」「你想要關於召喚師的資訊？我准許你進入我的肚子。」）
 
@@ -129,13 +129,13 @@ ESM：
 #### 子分支 4a：要求支付 (階段 30)
 
 自訂主題：
-- [`009E56 zzAoMMq05B2Payment`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:196)
+- [`009E56 zzAoMMq05B2Payment`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:196)
 
 | 主題 | INFO | 旗標 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`009E56 zzAoMMq05B2Payment`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:196) | `009E57` | SayOnce, WalkAway | 任務 `0098C9` 的階段 == 30; GetIsAliasRef 別名 #7 (基拉瓦) | 「嘿！等等！！你該為那魔族吃的喝的付帳。總共是 1000 金幣。我絕不降價！！」 |
+| [`009E56 zzAoMMq05B2Payment`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:196) | `009E57` | SayOnce, WalkAway | 任務 `0098C9` 的階段 == 30; GetIsAliasRef 別名 #7 (基拉瓦) | 「嘿！等等！！你該為那魔族吃的喝的付帳。總共是 1000 金幣。我絕不降價！！」 |
 | | | | VMAD: `AoM05_TIF__01009E57` 結束時觸發 Fragment_0 | |
-| [`009E56 zzAoMMq05B2Payment`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:196) | `009E58` | WalkAway | 任務 `0098C9` 的階段 >= 40; 階段 < 50; GetIsAliasRef 別名 #7 | 「你能付那 1000 金幣嗎？」 |
+| [`009E56 zzAoMMq05B2Payment`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:196) | `009E58` | WalkAway | 任務 `0098C9` 的階段 >= 40; 階段 < 50; GetIsAliasRef 別名 #7 | 「你能付那 1000 金幣嗎？」 |
 
 備註：
 - 第一個 INFO 上的 `SayOnce` → 僅觸發一次階段 30 對話。
@@ -145,11 +145,11 @@ ESM：
 #### 子分支 4b：全額支付路徑 (支付 1000 金幣)
 
 自訂主題：
-- [`009E59 zzAoMMq05B2Pay1000`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:200)
+- [`009E59 zzAoMMq05B2Pay1000`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:200)
 
 | 主題 | INFO | 旗標 | 條件 | 回應 | VMAD |
 |---|---|---|---|---|---|
-| [`009E59 zzAoMMq05B2Pay1000`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:200) | `009E5A` | Goodbye | 持有金幣 >= 1000 (玩家引用 `000014:Skyrim.esm`); GetIsAliasRef 別名 #7 | [「Thank you. You should choose your friends very carefully.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:201) | `AoM05_TIF__01009E5A` Fragment_1 (OnBegin) + Fragment_0 (OnEnd) |
+| [`009E59 zzAoMMq05B2Pay1000`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:200) | `009E5A` | Goodbye | 持有金幣 >= 1000 (玩家引用 `000014:Skyrim.esm`); GetIsAliasRef 別名 #7 | [「Thank you. You should choose your friends very carefully.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:201) | `AoM05_TIF__01009E5A` Fragment_1 (OnBegin) + Fragment_0 (OnEnd) |
 
 （翻譯：009E5A「謝謝。你該慎重選擇你的朋友。」）
 
@@ -161,11 +161,11 @@ ESM：
 #### 子分支 4c：沒錢路徑 (延期)
 
 自訂主題：
-- [`009E5B zzAoMMq05B2NoMoney`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:203)
+- [`009E5B zzAoMMq05B2NoMoney`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:203)
 
 | 主題 | INFO | 旗標 | 條件 | 回應 |
 |---|---|---|---|---|
-| [`009E5B zzAoMMq05B2NoMoney`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:203) | `009E5C` | Goodbye | GetIsAliasRef 別名 #7 | [「OK.I wait a minute for you. if you dine and dash... I will call gurads.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:204) |
+| [`009E5B zzAoMMq05B2NoMoney`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:203) | `009E5C` | Goodbye | GetIsAliasRef 別名 #7 | [「OK.I wait a minute for you. if you dine and dash... I will call gurads.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:204) |
 
 （翻譯：009E5C「好吧。我再等你一下。如果你想吃霸王餐……我會叫衛兵。」）
 
@@ -177,11 +177,11 @@ ESM：
 #### 子分支 4d：借錢路徑 (向阿爾塔諾借)
 
 自訂主題：
-- [`009E5E zzAoMMq05B3Debt`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:206)
+- [`009E5E zzAoMMq05B3Debt`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:206)
 
 | 主題 | INFO | 旗標 | 條件 | 回應 | VMAD |
 |---|---|---|---|---|---|
-| [`009E5E zzAoMMq05B3Debt`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:206) | `009E5F` | SayOnce | 任務 `0098C9` 的階段 == 40; GetIsAliasRef 別名 #0 (阿爾塔諾) | [「Huh...OK. I will pay 800G.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:207) | `AoM05_TIF__01009E5F` 結束時觸發 Fragment_0 |
+| [`009E5E zzAoMMq05B3Debt`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:206) | `009E5F` | SayOnce | 任務 `0098C9` 的階段 == 40; GetIsAliasRef 別名 #0 (阿爾塔諾) | [「Huh...OK. I will pay 800G.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:207) | `AoM05_TIF__01009E5F` 結束時觸發 Fragment_0 |
 
 （翻譯：009E5F「哼……好吧。我會幫你付 800 金幣。」）
 
@@ -197,22 +197,22 @@ ESM：
 #### 子分支 5a：任務成功回報
 
 自訂主題：
-- [`009E61 zzAoMMq05B4Mission5Comp`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:209)
+- [`009E61 zzAoMMq05B4Mission5Comp`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:209)
 
 | 主題 | INFO | 旗標 | 條件 | 回應 |
 |---|---|---|---|---|
-| [`009E61 zzAoMMq05B4Mission5Comp`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:209) | `009E62` | 無 | 任務 `0098C9` 的階段 == 50; GetIsAliasRef 別名 #1 (雅各) | [「Many thanks for your trouble」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:210) |
+| [`009E61 zzAoMMq05B4Mission5Comp`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:209) | `009E62` | 無 | 任務 `0098C9` 的階段 == 50; GetIsAliasRef 別名 #1 (雅各) | [「Many thanks for your trouble」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:210) |
 
 （翻譯：009E62「非常感謝你辛勞奔波」）
 
 #### 子分支 5b：戰後調查 (階段 50→60)
 
 自訂主題：
-- [`009E63 zzAoMMq05B4Summoner`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:212)
+- [`009E63 zzAoMMq05B4Summoner`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:212)
 
 | 主題 | INFO | 旗標 | 條件 | 回應內容 |
 |---|---|---|---|---|
-| [`009E63 zzAoMMq05B4Summoner`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:212) | `009E64` | 無 | GetIsAliasRef 別名 #1 (雅各) | [「Yes, viglants run the summoner down in Ratway...but we fail to catch. There is a swordman who equips Ebony mail with the summoner.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:213); [「Swordman maybe hired by the summoner. He is very strong. He broke through the besieging vigilants...head-on...」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:214); [「Special Chasers started just now. How many people survive.....」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:215) |
+| [`009E63 zzAoMMq05B4Summoner`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:212) | `009E64` | 無 | GetIsAliasRef 別名 #1 (雅各) | [「Yes, viglants run the summoner down in Ratway...but we fail to catch. There is a swordman who equips Ebony mail with the summoner.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:213); [「Swordman maybe hired by the summoner. He is very strong. He broke through the besieging vigilants...head-on...」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:214); [「Special Chasers started just now. How many people survive.....」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:215) |
 
 （翻譯：009E64「是的，警戒者在鼠道圍堵了召喚師……但我們沒能抓到她。召喚師身邊有一名裝備黑檀鎖子甲的劍士。」「那名劍士可能是召喚師雇來的。他非常強大。他正面突破了警戒者的包圍網……」「特別追擊小隊剛出發。不知道有多少人能活下來……」）
 
@@ -224,11 +224,11 @@ ESM：
 #### 子分支 5c：下一個任務簡報
 
 自訂主題：
-- [`009E65 zzAoMMq05B4NextMission`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:217)
+- [`009E65 zzAoMMq05B4NextMission`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:217)
 
 | 主題 | INFO | 旗標 | 條件 | 回應內容 | VMAD |
 |---|---|---|---|---|---|
-| [`009E65 zzAoMMq05B4NextMission`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:217) | `009E66` | Goodbye | GetIsAliasRef 別名 #1 (雅各) | [「Invetstigate Ratway. There is the marks of Cojurring Daedra.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:218); [「At the moment, no damage was reported in Ratway. But there is dangerous. Search Daedra and destroy.」](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:219) | `AoM05_TIF__01009E66` 結束時觸發 Fragment_0 |
+| [`009E65 zzAoMMq05B4NextMission`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:217) | `009E66` | Goodbye | GetIsAliasRef 別名 #1 (雅各) | [「Invetstigate Ratway. There is the marks of Cojurring Daedra.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:218); [「At the moment, no damage was reported in Ratway. But there is dangerous. Search Daedra and destroy.」](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:219) | `AoM05_TIF__01009E66` 結束時觸發 Fragment_0 |
 
 （翻譯：009E66「去調查鼠道。那裡有召喚魔族的痕跡。」「目前鼠道還沒有傳出傷亡報告。但那裡很危險。搜尋魔族並摧毀它們。」）
 
@@ -254,7 +254,7 @@ NPCs (任務別名)：
 ## 重建筆記
 
 基於原始碼：
-- 此任務由 [`0098C9 zzzAoMMq05`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:218) 代表，包含橫跨裂谷城設施的 8 個目標以及支付機制。
+- 此任務由 [`0098C9 zzzAoMMq05`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:218) 代表，包含橫跨裂谷城設施的 8 個目標以及支付機制。
 - 階段進度：簡報 (0–10) → 旅程 (10–25) → 酒館戰鬥 (25–30) → 支付協商 (30–45) → 完成回報 (45–60)。
 - 包含 5 個對話分支：
   - 與阿爾塔諾簡報（自訂主題，`GetInCell` 檢查）。

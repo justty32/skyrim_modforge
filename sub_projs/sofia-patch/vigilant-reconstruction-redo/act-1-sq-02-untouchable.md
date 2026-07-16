@@ -9,7 +9,7 @@ Source policy:
 
 ## Quest Record
 
-[`006271 zzzAoMMq02 "The Untouchable One"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD)
+[`006271 zzzAoMMq02 "The Untouchable One"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD)
 
 CLI:
 - `questdiag Vigilant.esm 0x006271`
@@ -45,9 +45,9 @@ Objectives:
 
 | Index | Source | Text |
 |---:|---|---|
-| 0 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD) | Talk to Altano in The Bannered Mare |
-| 10 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD) | Defeat Daedra |
-| 20 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD) | Report to Altano |
+| 0 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD) | Talk to Altano in The Bannered Mare |
+| 10 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD) | Defeat Daedra |
+| 20 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD) | Report to Altano |
 
 Objective targets:
 - Objective 0: 1 target with 0 conditions.
@@ -81,7 +81,7 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x006274 zzAoMMq02B1Mission2` | `0x006275` | none | `GetStage < 10`; `GetInCell 0x01605E`; `GetIsAliasRef alias #0` | Prompt: [`"Is there something unusual?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:45) Response (Fear): [`"Few hours ago, one house out of castle wall was broken by Daedra. Daedra was loud laughter. He has staeyed at broken house even now."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:46) Response (Puzzled): [`"A woman who maybe summoner of Daedra was witnessd. Our missions are defeating Daedra and catch the summoner."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:47) |
+| `0x006274 zzAoMMq02B1Mission2` | `0x006275` | none | `GetStage < 10`; `GetInCell 0x01605E`; `GetIsAliasRef alias #0` | Prompt: [`"Is there something unusual?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:45) Response (Fear): [`"Few hours ago, one house out of castle wall was broken by Daedra. Daedra was loud laughter. He has staeyed at broken house even now."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:46) Response (Puzzled): [`"A woman who maybe summoner of Daedra was witnessd. Our missions are defeating Daedra and catch the summoner."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:47) |
 
 VMAD Fragment:
 - `AoM02_TIF__01006275` (triggers `OnEnd` fragment)
@@ -100,7 +100,7 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x006277 zzAoMMq02B2Vernaccus` | `0x006278` | WalkAway | `GetStage < 15`; `GetIsAliasRef alias #1` | [`"I am Vernaccus! I am reputed the untouchable one!! Pittful mortal, bend to my force!!"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:50) |
+| `0x006277 zzAoMMq02B2Vernaccus` | `0x006278` | WalkAway | `GetStage < 15`; `GetIsAliasRef alias #1` | [`"I am Vernaccus! I am reputed the untouchable one!! Pittful mortal, bend to my force!!"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:50) |
 
 (inference: WalkAway flag indicates NPC dismisses player after line; combat likely triggers after)
 
@@ -113,7 +113,7 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x008DD5 zzAoMMq02B2Fight` | `0x008DD6` | Goodbye | `GetIsAliasRef alias #1` | Prompt: [`"We are vigilants of Stendarr. Are you ready to return to Oblivion?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:TBD) Response: [`"Geee!! but,I am Untouchable One!! I never fall behind you no matter how you are conscious of your powers!!"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:TBD) |
+| `0x008DD5 zzAoMMq02B2Fight` | `0x008DD6` | Goodbye | `GetIsAliasRef alias #1` | Prompt: [`"We are vigilants of Stendarr. Are you ready to return to Oblivion?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:TBD) Response: [`"Geee!! but,I am Untouchable One!! I never fall behind you no matter how you are conscious of your powers!!"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:TBD) |
 
 VMAD Fragment:
 - `AoM02_TIF__01008DD6` (triggers `OnEnd` fragment)
@@ -128,7 +128,7 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x2D5C61 zzzAoMMq02B203` | `0x2D5C62` | Goodbye | `GetIsAliasRef alias #1` | Response (Happy): [`"Ha,Ha,Haaaa!!You are scared!! I get your fear clearly!"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:TBD) Response (Happy): [`"I never suffer you. True strong do with all might anytime. Make a shriek of pain!!"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:TBD) |
+| `0x2D5C61 zzzAoMMq02B203` | `0x2D5C62` | Goodbye | `GetIsAliasRef alias #1` | Response (Happy): [`"Ha,Ha,Haaaa!!You are scared!! I get your fear clearly!"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:TBD) Response (Happy): [`"I never suffer you. True strong do with all might anytime. Make a shriek of pain!!"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:TBD) |
 
 VMAD Fragment:
 - `AoM02_TIF__022D5C62` (triggers `OnEnd` fragment)
@@ -143,7 +143,7 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| `0x00627C zzAoMMq02B3MissionComplete` | `0x00627D` | none | `GetStage == 20`; `GetIsAliasRef alias #0` | Prompt: [`"Where is the summoner?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:52) Response (Anger): [`"The Summoner has already escaped from here. She summoned Vernaccus, Higher Daedra. Her ability of Conjuring is master class."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:53) Response (Happy): [`"I will be back to Inn and gather informaiton about the summoner. If you are ready, come to me."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:54) |
+| `0x00627C zzAoMMq02B3MissionComplete` | `0x00627D` | none | `GetStage == 20`; `GetIsAliasRef alias #0` | Prompt: [`"Where is the summoner?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:52) Response (Anger): [`"The Summoner has already escaped from here. She summoned Vernaccus, Higher Daedra. Her ability of Conjuring is master class."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:53) Response (Happy): [`"I will be back to Inn and gather informaiton about the summoner. If you are ready, come to me."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:54) |
 
 VMAD Fragment:
 - `AoM02_TIF__0100627D` (triggers `OnEnd` fragment)
@@ -225,6 +225,6 @@ Key staging elements:
 - Objectives are synchronized with dialogue: each branch corresponds to an objective phase.
 
 Source-grounded links:
-- [`006271 zzzAoMMq02` quest record](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD)
-- [`006274`, `006277`, `008DD5`, `0x2D5C61`, `00627C` dialogue topics](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:45–54)
+- [`006271 zzzAoMMq02` quest record](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD)
+- [`006274`, `006277`, `008DD5`, `0x2D5C61`, `00627C` dialogue topics](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:45–54)
 - Aliases assumed to exist but not explicitly named in CLI output; await QUST alias dump for confirmation.

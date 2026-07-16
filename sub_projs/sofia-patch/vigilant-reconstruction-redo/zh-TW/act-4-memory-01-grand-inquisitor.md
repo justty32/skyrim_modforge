@@ -10,7 +10,7 @@
 
 ## 任務紀錄 (Quest Record)
 
-[`12C4F4 zzzCHMemoryQuest01 "The Grand Inquisitor"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:140)
+[`12C4F4 zzzCHMemoryQuest01 "The Grand Inquisitor"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:140)
 
 CLI：
 - `questdiag Vigilant.esm 0x12C4F4`
@@ -47,7 +47,7 @@ ESM：
 
 | 索引 | 來源 | 翻譯 |
 |---:|---|---|
-| 0 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:141) | 未獲回應的夢，在沉默中沉沒。 |
+| 0 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:141) | 未獲回應的夢，在沉默中沉沒。 |
 
 - 筆記：來源目標 `Unanswered Dream sink in silence.` 本身不合語法（主詞/動詞不匹配）；採直譯。待驗證。
 
@@ -61,14 +61,14 @@ ESM：
 以下兩個 `SCEN` 紀錄共用相同的主機任務與別名。
 
 主機任務：
-- [`12C4F4 zzzCHMemoryQuest01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:140)
+- [`12C4F4 zzzCHMemoryQuest01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:140)
 
 來自 `scenediag` 的主機任務別名：
 
 | 別名 | 名稱 | 填充 |
 |---:|---|---|
-| 0 | `Mara` | 唯一演員 [`0F9649 zzzCHBossShoggothMother "Mary the Dark Virgin"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:262) |
-| 2 | `Inquisitor` | 唯一演員 [`12BF48 zzzCHInquisitorPepeMemory "Inquisitor Pepe"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:558) |
+| 0 | `Mara` | 唯一演員 [`0F9649 zzzCHBossShoggothMother "Mary the Dark Virgin"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:262) |
+| 2 | `Inquisitor` | 唯一演員 [`12BF48 zzzCHInquisitorPepeMemory "Inquisitor Pepe"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:558) |
 | 3 | `Molag` | CLI 未列印（無靜態填充） |
 | 4 | `Door` | 強制引用 `12BED7:Vigilant.esm` |
 | 5 | `TravelMarker` | 強制引用 `12BF4C:Vigilant.esm` |
@@ -90,7 +90,7 @@ CLI：
 - `scenediag Vigilant.esm 0x12DBA7`
 
 編排：
-- 主機任務：[`12C4F4 zzzCHMemoryQuest01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:140)
+- 主機任務：[`12C4F4 zzzCHMemoryQuest01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:140)
 - 標誌：無
 - 演員：別名 `#2` (`Inquisitor`), behaviorFlags 0
 - 階段：3 個，每個都有 0 個開始條件與 1 個完成條件。
@@ -106,7 +106,7 @@ CLI：
 - `scenediag Vigilant.esm 0x12DBAD`
 
 編排：
-- 主機任務：[`12C4F4 zzzCHMemoryQuest01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:140)
+- 主機任務：[`12C4F4 zzzCHMemoryQuest01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:140)
 - 標誌：無
 - 演員：別名 `#2` (`Inquisitor`) 與別名 `#3` (`Molag`)，皆為 `NoPlayerActivation`。
 - 階段：3 個，每個都有 0 個開始條件與 1 個完成條件。
@@ -115,10 +115,10 @@ CLI：
   - 索引 2: `Package`, 演員 `#2`, 階段 1-2。
   - 索引 3: `Package`, 演員 `#3`, 階段 1。
   - 索引 4: `Package`, 演員 `#3`, 階段 2。
-  - 索引 5: `Dialog`, 演員 `#3` (`Molag`), 階段 2, 標誌 `HeadtrackPlayer`, 話題 [`12DBB0`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1467), 情緒 `Neutral`, 循環 1-10。
+  - 索引 5: `Dialog`, 演員 `#3` (`Molag`), 階段 2, 標誌 `HeadtrackPlayer`, 話題 [`12DBB0`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1467), 情緒 `Neutral`, 循環 1-10。
 
 場景專屬話題（`SCEN` 類別，由任務擁有，在 Scene02 動作 5 中播放）：
-- [`12DBB0` / INFO `12DBB1`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1467) (Happy): 「Mara，是不同的，我為這樣的結局致意。實在很可惜。」
+- [`12DBB0` / INFO `12DBB1`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1467) (Happy): 「Mara，是不同的，我為這樣的結局致意。實在很可惜。」
   - 筆記：來源 `Mara, is differents and I greet the consequences of such. It is a pity that very` 語意嚴重錯亂；翻譯僅為盡力而為。待驗證。
   - 推論：由別名 `#3` `Molag` 說出（`Dialog` 動作指定 ActorID=3）。這是唯一的場景口說對白；審判官的完整獨白則存在於自定義分支中。
 
@@ -135,17 +135,17 @@ CLI：
 
 | 話題 | INFO | 優先級 | 標誌 | 條件 | 翻譯 |
 |---|---|---:|---|---|---|
-| [`12CAA0 zzzCHMeQPepeB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1407) | `12CAA1` | 90 | `SayOnce`, `WalkAway` | `GetIsAliasRef alias #2` | (Fear)「你究竟是不是 Mara……Mara？」 (Puzzled)「你來到這裡的諷刺……我們竟想以 Alessia 的樣貌、甚至以更多的樣貌現身？」 筆記：兩句皆語意不明，待驗證。 |
-| [`12CAA2 zzzCHMeQPepeB01T02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1411) | `12CAA3` | 45 | `Goodbye`, `SayOnce` | `GetIsAliasRef alias #2`; 結束時 VMAD `CHMeq1_TIF__0212CAA3.Fragment_0` | 提示語：「It...」(Anger)「女巫，閉嘴……閉嘴，就算群眾是愚人，愚人也不會把老鷹當成老鷹……」(Anger)「明天早上，你會被綁在火刑柱上燒死。你冒充聖 Alessia，要以女巫之名付之一炬。」(Anger)「你，但這種事我當然知道！」 筆記：語意不明，待驗證。 |
-| [`12D04A zzzCHMeQPepeB01T03`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1416) | `12D04B` | 55 | `WalkAway` | `GetIsAliasRef alias #2` | 提示語：「......(Silence)」(Neutral)「很好，我也保持沉默。因為反正你也沒有那樣的權利。」(Neutral)「為什麼，你要在我們此刻於世上成就大業之時來礙事？你不知道明天會是身、還是別的嗎？」(Neutral)「我們知道你是什麼。但那種事無關緊要。無論如何，明天我們把你當女巫燒掉。」(Neutral)「明天，今天親吻你雙足的那些人，會往火裡丟柴薪——這是我的一點暗示。」 筆記：多句語意不明，待驗證。 |
-| [`12D04C zzzCHMeQPepeB01T04`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1422) | `12D04D` (INFO[0]) | 55 | `SayOnce`, `WalkAway` | `GetIsAliasRef alias #2` | 提示語：「......(Silence)」(Neutral)「看這塊石頭。你能把這石頭……？這種事當然不會太遠……」(Neutral)「『人活著不是單靠食物』——這就是我給你的回答。」(Neutral)「如同 Shezarr 從前的造物，Deidre 曾以麵包之名反叛它，對你而言也是。」(Happy)「結果，你們大概不知緣由——那 Deidre 之後成群湧出、走向公開的身影。」 筆記：語意不明，待驗證。 |
+| [`12CAA0 zzzCHMeQPepeB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1407) | `12CAA1` | 90 | `SayOnce`, `WalkAway` | `GetIsAliasRef alias #2` | (Fear)「你究竟是不是 Mara……Mara？」 (Puzzled)「你來到這裡的諷刺……我們竟想以 Alessia 的樣貌、甚至以更多的樣貌現身？」 筆記：兩句皆語意不明，待驗證。 |
+| [`12CAA2 zzzCHMeQPepeB01T02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1411) | `12CAA3` | 45 | `Goodbye`, `SayOnce` | `GetIsAliasRef alias #2`; 結束時 VMAD `CHMeq1_TIF__0212CAA3.Fragment_0` | 提示語：「It...」(Anger)「女巫，閉嘴……閉嘴，就算群眾是愚人，愚人也不會把老鷹當成老鷹……」(Anger)「明天早上，你會被綁在火刑柱上燒死。你冒充聖 Alessia，要以女巫之名付之一炬。」(Anger)「你，但這種事我當然知道！」 筆記：語意不明，待驗證。 |
+| [`12D04A zzzCHMeQPepeB01T03`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1416) | `12D04B` | 55 | `WalkAway` | `GetIsAliasRef alias #2` | 提示語：「......(Silence)」(Neutral)「很好，我也保持沉默。因為反正你也沒有那樣的權利。」(Neutral)「為什麼，你要在我們此刻於世上成就大業之時來礙事？你不知道明天會是身、還是別的嗎？」(Neutral)「我們知道你是什麼。但那種事無關緊要。無論如何，明天我們把你當女巫燒掉。」(Neutral)「明天，今天親吻你雙足的那些人，會往火裡丟柴薪——這是我的一點暗示。」 筆記：多句語意不明，待驗證。 |
+| [`12D04C zzzCHMeQPepeB01T04`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1422) | `12D04D` (INFO[0]) | 55 | `SayOnce`, `WalkAway` | `GetIsAliasRef alias #2` | 提示語：「......(Silence)」(Neutral)「看這塊石頭。你能把這石頭……？這種事當然不會太遠……」(Neutral)「『人活著不是單靠食物』——這就是我給你的回答。」(Neutral)「如同 Shezarr 從前的造物，Deidre 曾以麵包之名反叛它，對你而言也是。」(Happy)「結果，你們大概不知緣由——那 Deidre 之後成群湧出、走向公開的身影。」 筆記：語意不明，待驗證。 |
 | (續) | `12DBA6` (INFO[1]) | 55 | `WalkAway` | `GetIsAliasRef alias #2` | (Neutral)「總之，人不過是即將到來的飢餓。而那些在麵包之後高喊善行的人，毀掉了你的塔。」(Neutral)「你們必定要建一座新塔。但那是徒勞。連命運之塔的地基都建不成。」(Neutral)「若你不打算建塔，或許能稍稍緩解人們的痛苦。但你沒有。」(Anger)「人們怎麼做？他們來到我們、Alessia 教團這裡。那些曾允諾要偷走 Shezarr 之心的人在說謊！！」 筆記：語意不明，待驗證。同一 topic 的第二則 INFO。 |
-| [`12D04E zzzCHMeQPepeB01T05`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1432) | `12D04F` | 55 | `WalkAway` | `GetIsAliasRef alias #2` | 提示語：「......(Silence)」(Neutral)「如果你是 Mara，就敢吞下這塊石頭。火焰平息，一切可憎的喜劇都將慶祝終結。」(Neutral)「但你不會吞。我把它收起，因為他一否認奇蹟，也就否認了 Edora。」(Neutral)「人寧可相信奇蹟、勝於相信 Edora。在自己身上造出奇蹟，就會去相信像我這樣的審判官。」(Neutral)「重要的是不要把人變成奇蹟的奴隸——那才是自由的信仰，你，我本以為你也會這樣想。」(Sad)「並非真的深愛人們。你們太深地愛了什麼樣的人們啊。那樣人就不會挨餓了。」 筆記：語意不明，待驗證。 |
-| [`12D050 zzzCHMeQPepeB01T06`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1439) | `12D051` | 55 | `WalkAway` | `GetIsAliasRef alias #2` | 提示語：「......(Silence)」(Neutral)「重要的既不是你的愛，也不是自由。而是奧秘——這塊石頭。所有人都必須違背良心向它屈服。」(Neutral)「我們在街上有 Alessia 教團。那……卻終究改寫了你大大的一切。」(Neutral)「然後在教會、權柄、奧秘與奇蹟之上，我建起這座塔。把無盡的人從『自由』的痛苦中解放。」(Neutral)「如此一來，若我們得到 Alessia 教團的寬恕——他們顧念弱者，甚至容忍惡行。」(Happy)「這不正是你愛人類的證據嗎？」 筆記：語意不明，待驗證。 |
-| [`12D052 zzzCHMeQPepeB01T07`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1446) | `12D053` | 55 | `WalkAway` | `GetIsAliasRef alias #2` | 提示語：「......(Silence)」(Neutral)「再說一次，但你究竟為何……此刻來礙我們成就大業？」(Neutral)「該屬於 Edora 的歸 Edora。對皇帝，皇帝該說的話——你們把這石頭從我們這裡奪走了嗎？」(Neutral)「這石頭在大地上的力量。我們緊貼著、持續握有這石頭。捨棄你們，我得去崇拜那低賤奴隸的女王。」(Neutral)「那是從那時起，我也早在兩千年前，Imuga 的先知在 Colovia 的叢林裡找到了這石頭。」(Happy)「塔我們還未臻完美。但它遲早會完成。黎明時所有人都會幸福至極。」 筆記：語意不明，待驗證；`Imuga`/`Colovia` 為專名待驗證。 |
-| [`12D054 zzzCHMeQPepeB01T08`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1453) | `12D055` | 55 | `WalkAway` | `GetIsAliasRef alias #2` | 提示語：「......(Silence)」(Neutral)「你為何拒絕這塊石頭？若你懷著這石頭的一點希望……若不在 Mundus 的至福之境？」(Neutral)「本該由那一個人 —— 該背負良心與統治者之責、所有人之責的人 —— 來承擔。」(Neutral)「你做不到，但我們 Alessia 教團能。我們要靠這石頭在大陸上建起一個大帝國。」(Neutral)「只要有這石頭，我們這帝國，甚至不必等待 Shezarr 的歸來。」 筆記：語意不明，待驗證；`Mundasu` 推為 `Mundus`，待驗證。 |
-| [`12D056 zzzCHMeQPepeB01T09`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1459) | `12D057` | 55 | `WalkAway` | `GetIsAliasRef alias #2` | 提示語：「......(Silence)」(Neutral)「既然我所說的都已實行，大帝國就會被建起。一而再，你明天會看見那可悲而馴服的羊群。」(Neutral)「只要打個手勢，他們就會心甘情願為你搬柴。你知道為什麼嗎？因為你來礙了我們的事。」(Sad)「若說有誰配在 Mundus 被焚，那肯定就是你。明天我們把你燒掉。到此為止！！」 筆記：語意不明，待驗證。 |
-| [`12D058 zzzCHMeQPepeB01T10`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1464) | `12D059` | 55 | `Goodbye`, `SayOnce` | `GetIsAliasRef alias #2`; 結束時 VMAD `CHMeq1_TIF__0212D059.Fragment_0` | 提示語：「......(Stare)」(Fear)「……即便如此又如何……別再出現了，快走，滾出去。」 筆記：語意不明，待驗證。 |
+| [`12D04E zzzCHMeQPepeB01T05`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1432) | `12D04F` | 55 | `WalkAway` | `GetIsAliasRef alias #2` | 提示語：「......(Silence)」(Neutral)「如果你是 Mara，就敢吞下這塊石頭。火焰平息，一切可憎的喜劇都將慶祝終結。」(Neutral)「但你不會吞。我把它收起，因為他一否認奇蹟，也就否認了 Edora。」(Neutral)「人寧可相信奇蹟、勝於相信 Edora。在自己身上造出奇蹟，就會去相信像我這樣的審判官。」(Neutral)「重要的是不要把人變成奇蹟的奴隸——那才是自由的信仰，你，我本以為你也會這樣想。」(Sad)「並非真的深愛人們。你們太深地愛了什麼樣的人們啊。那樣人就不會挨餓了。」 筆記：語意不明，待驗證。 |
+| [`12D050 zzzCHMeQPepeB01T06`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1439) | `12D051` | 55 | `WalkAway` | `GetIsAliasRef alias #2` | 提示語：「......(Silence)」(Neutral)「重要的既不是你的愛，也不是自由。而是奧秘——這塊石頭。所有人都必須違背良心向它屈服。」(Neutral)「我們在街上有 Alessia 教團。那……卻終究改寫了你大大的一切。」(Neutral)「然後在教會、權柄、奧秘與奇蹟之上，我建起這座塔。把無盡的人從『自由』的痛苦中解放。」(Neutral)「如此一來，若我們得到 Alessia 教團的寬恕——他們顧念弱者，甚至容忍惡行。」(Happy)「這不正是你愛人類的證據嗎？」 筆記：語意不明，待驗證。 |
+| [`12D052 zzzCHMeQPepeB01T07`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1446) | `12D053` | 55 | `WalkAway` | `GetIsAliasRef alias #2` | 提示語：「......(Silence)」(Neutral)「再說一次，但你究竟為何……此刻來礙我們成就大業？」(Neutral)「該屬於 Edora 的歸 Edora。對皇帝，皇帝該說的話——你們把這石頭從我們這裡奪走了嗎？」(Neutral)「這石頭在大地上的力量。我們緊貼著、持續握有這石頭。捨棄你們，我得去崇拜那低賤奴隸的女王。」(Neutral)「那是從那時起，我也早在兩千年前，Imuga 的先知在 Colovia 的叢林裡找到了這石頭。」(Happy)「塔我們還未臻完美。但它遲早會完成。黎明時所有人都會幸福至極。」 筆記：語意不明，待驗證；`Imuga`/`Colovia` 為專名待驗證。 |
+| [`12D054 zzzCHMeQPepeB01T08`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1453) | `12D055` | 55 | `WalkAway` | `GetIsAliasRef alias #2` | 提示語：「......(Silence)」(Neutral)「你為何拒絕這塊石頭？若你懷著這石頭的一點希望……若不在 Mundus 的至福之境？」(Neutral)「本該由那一個人 —— 該背負良心與統治者之責、所有人之責的人 —— 來承擔。」(Neutral)「你做不到，但我們 Alessia 教團能。我們要靠這石頭在大陸上建起一個大帝國。」(Neutral)「只要有這石頭，我們這帝國，甚至不必等待 Shezarr 的歸來。」 筆記：語意不明，待驗證；`Mundasu` 推為 `Mundus`，待驗證。 |
+| [`12D056 zzzCHMeQPepeB01T09`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1459) | `12D057` | 55 | `WalkAway` | `GetIsAliasRef alias #2` | 提示語：「......(Silence)」(Neutral)「既然我所說的都已實行，大帝國就會被建起。一而再，你明天會看見那可悲而馴服的羊群。」(Neutral)「只要打個手勢，他們就會心甘情願為你搬柴。你知道為什麼嗎？因為你來礙了我們的事。」(Sad)「若說有誰配在 Mundus 被焚，那肯定就是你。明天我們把你燒掉。到此為止！！」 筆記：語意不明，待驗證。 |
+| [`12D058 zzzCHMeQPepeB01T10`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1464) | `12D059` | 55 | `Goodbye`, `SayOnce` | `GetIsAliasRef alias #2`; 結束時 VMAD `CHMeq1_TIF__0212D059.Fragment_0` | 提示語：「......(Stare)」(Fear)「……即便如此又如何……別再出現了，快走，滾出去。」 筆記：語意不明，待驗證。 |
 
 翻譯筆記：
 - 整個分支都是從日文機器翻譯而來；句子邊界、代詞（「你/你們」）和專有名詞皆不可靠。上方每個儲存格都標註了「待驗證」。
@@ -157,9 +157,9 @@ CLI：
 這些由本任務的別名引用，或出現在審判官的獨白中，應在完整的重構中進行交叉連結。別名已透過 `scenediag` 確認；NPC 名稱來自 `npcs.tsv`。
 
 NPCs：
-- [`12BF48 zzzCHInquisitorPepeMemory "Inquisitor Pepe"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:558) — 審判官 / 說話者，別名 `#2`。
-- [`0F9649 zzzCHBossShoggothMother "Mary the Dark Virgin"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:262) — 填充別名 `#0 Mara`，即受審訊的 "Mara"。
-- 審判官佩佩也出現在其他地方：[`081E46 zzzCHInquisitorPepe "Inquisitor Pepe"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1065), [`1363DC zzzCHInquisitorPepeGhost`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:546), [`05ADFD zzzCHInquisitorPepeMemory2`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1044), [`06A230 zzzCHInquisitorPepeMemory3`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1069)。（跨任務 —— 非 `12C4F4` 擁有；根據索引，佩佩是佩佩/阿達·巴爾記憶集群 MeQ05/MeQ06 的核心人物。）
+- [`12BF48 zzzCHInquisitorPepeMemory "Inquisitor Pepe"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:558) — 審判官 / 說話者，別名 `#2`。
+- [`0F9649 zzzCHBossShoggothMother "Mary the Dark Virgin"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:262) — 填充別名 `#0 Mara`，即受審訊的 "Mara"。
+- 審判官佩佩也出現在其他地方：[`081E46 zzzCHInquisitorPepe "Inquisitor Pepe"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1065), [`1363DC zzzCHInquisitorPepeGhost`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:546), [`05ADFD zzzCHInquisitorPepeMemory2`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1044), [`06A230 zzzCHInquisitorPepeMemory3`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1069)。（跨任務 —— 非 `12C4F4` 擁有；根據索引，佩佩是佩佩/阿達·巴爾記憶集群 MeQ05/MeQ06 的核心人物。）
 
 引用 (強制引用別名，不在 `npcs.tsv` 中)：
 - `12BED7:Vigilant.esm` — 別名 `#4 Door`。
@@ -173,12 +173,12 @@ Packages (來自 `find zzzCHMeQ01`) — 驅動場景演員：
 - 推論：package 名稱 (`Travel`, `Greet`, `GetOut`, `StandbyPrison`) 符合監獄審訊的編排 —— 審判官在監獄旁待命、致意、進行獨白，然後命令「滾出去」（對應 `T10` "get out"）。
 
 書籍：
-- 本任務未擁有任何書籍。佩佩/瑪拉/亞歷西亞教團主題在數個 Vigilant 遊戲內筆記中重複出現（例如 [books.md 中提及佩佩祭司 + 瑪拉雕像](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:9), [瑪拉受火刑敘事](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:1274)），但那些並非 `12C4F4` 紀錄；僅供交叉連結，不予歸屬。（推論）
+- 本任務未擁有任何書籍。佩佩/瑪拉/亞歷西亞教團主題在數個 Vigilant 遊戲內筆記中重複出現（例如 [books.md 中提及佩佩祭司 + 瑪拉雕像](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:9), [瑪拉受火刑敘事](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:1274)），但那些並非 `12C4F4` 紀錄；僅供交叉連結，不予歸屬。（推論）
 
 ## 重構筆記 (Reconstruction Notes)
 
 基於來源：
-- 本記憶由 [`12C4F4 zzzCHMemoryQuest01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:140) 代表，任務目標為 [`未獲回應的夢，在沉默中沉沒。`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:141)。
+- 本記憶由 [`12C4F4 zzzCHMemoryQuest01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:140) 代表，任務目標為 [`未獲回應的夢，在沉默中沉沒。`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:141)。
 - 包含**兩個 `SCEN` 紀錄** (`12DBA7 Scene01`, `12DBAD Scene02`)，皆透過 `Package` 動作編排；僅 Scene02 具有單個 `Dialog` 動作（別名 `#3 Molag`, 話題 `12DBB0`）。
 - 包含**一個自定義對話分支** (`12CA9F`)，為審判官（別名 `#2` = 審判官佩佩）的 10 個話題 / 11 個 INFO 的單一說話者獨白，皆受限於 `GetIsAliasRef alias #2` 且**無 `GetStage` 門檻**。
 - 主體/說話者為**審判官佩佩**；受話者為 **"Mara"** (別名 `#0`)。任務目標「在沉默中沉沒」符合玩家提示語僅為沉默/凝視。

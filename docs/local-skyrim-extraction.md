@@ -24,7 +24,7 @@ Dragonborn.esm
 Run:
 
 ```bash
-cd /home/lorkhan/repo/ModForge
+cd /home/lorkhan/repo/moddings/skyrim/projects/ModForge
 scripts/extract-skyrim-masters.sh
 ```
 
@@ -67,7 +67,7 @@ To run only selected masters, set `MODFORGE_SKYRIM_MASTERS` to a space-separated
 
 ```bash
 MODFORGE_SKYRIM_MASTERS="Skyrim.esm" \
-MODFORGE_REFERENCE_OUT="/home/lorkhan/repo/ModForge/reference/skyrim-esm-local" \
+MODFORGE_REFERENCE_OUT="/home/lorkhan/repo/moddings/skyrim/projects/ModForge/reference/skyrim-esm-local" \
 scripts/extract-skyrim-masters.sh
 ```
 

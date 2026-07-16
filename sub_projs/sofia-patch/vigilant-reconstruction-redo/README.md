@@ -24,7 +24,7 @@
 - ESM:
   - `/home/lorkhan/skyrim_mods/unzip/Vigilant SE v181/10 English/Vigilant.esm`
 - CLI:
-  - `/home/lorkhan/repo/ModForge/src/ModForge.Cli/bin/Release/net10.0/ModForge.Cli.dll`
+  - `/home/lorkhan/repo/moddings/skyrim/projects/ModForge/src/ModForge.Cli/bin/Release/net10.0/ModForge.Cli.dll`
 - Secondary references:
   - `references/zhihu-vigilant-review-notes.md` - Chinese player analysis/review notes supplied by user; use only as a verification roadmap, not as canonical source.
   - `references/video-transcript-notes.md` - consolidated notes from three user-supplied video transcripts; use only as a verification roadmap, not as canonical source.

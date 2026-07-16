@@ -9,7 +9,7 @@
 
 ## 任務紀錄 (Quest Record)
 
-[`011B75 zzzAoMMq10 "Landing Spot"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:1)
+[`011B75 zzzAoMMq10 "Landing Spot"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:1)
 
 CLI：
 - `questdiag Vigilant.esm 0x011B75`
@@ -47,9 +47,9 @@ ESM：
 
 | 索引 | 來源 | 翻譯 |
 |---:|---|---|
-| 0 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:1) | 與阿爾塔諾對話 (Talk to Altano) |
-| 10 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:1) | 摧毀莫拉格·巴爾的釘頭錘 (Destroy Mace of Molag Bal) |
-| 30 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:1) | 回到斯丹達爾神殿 (Back To Temple of Stendarr) |
+| 0 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:1) | 與阿爾塔諾對話 (Talk to Altano) |
+| 10 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:1) | 摧毀莫拉格·巴爾的釘頭錘 (Destroy Mace of Molag Bal) |
+| 30 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:1) | 回到斯丹達爾神殿 (Back To Temple of Stendarr) |
 
 目標對象 (Objective targets)：
 - 總共 3 個目標（每個目標 1 個對象）。
@@ -81,7 +81,7 @@ INFO：
 - FormID: `0x013BE6`
 - 旗標：無
 - 提示 (Prompt)：空白
-- 回應 (Response): [`"Son of Stendarr..I see you. When your soul is corrupt, you open the gate of my realm..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:914)
+- 回應 (Response): [`"Son of Stendarr..I see you. When your soul is corrupt, you open the gate of my realm..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:914)
 - 情感：中立
 - VMAD: 腳本檔案 `AoM10_TIF__01013BE6` 包含 OnEnd 片段
 
@@ -106,9 +106,9 @@ INFO：
 
 | 主題 | INFO | 旗標 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`013676 zzAoMMq10B1LastWord`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:913) | `013677` | 無 | `GetIsAliasRef alias #1` | [`"aa.....uaa..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:913) |
-| [`013678 zzAoMMq10B1BetrayReason`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:915) | `013679` | 無 | `GetIsAliasRef alias #1` | 提示：[`"Why did you do Such things?Altano?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:915) 回應 1：[`"After the battle with Bal.....I heard sweet whispering....I can't help but follow the voice."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:916) 回應 2：[`".....I yield to temptation....Excuse me....."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:917) |
-| [`01367A zzAoMMq10B1BlessAltano`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:918) | `01367B` | `Goodbye` | `GetIsAliasRef alias #1` | 提示：[`"Rest in peace,Altano...Stenndarr always with us."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:918) 回應：[`"Thank you......I..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:919) VMAD: `AoM10_TIF__0101367B` 包含 OnEnd 片段 |
+| [`013676 zzAoMMq10B1LastWord`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:913) | `013677` | 無 | `GetIsAliasRef alias #1` | [`"aa.....uaa..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:913) |
+| [`013678 zzAoMMq10B1BetrayReason`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:915) | `013679` | 無 | `GetIsAliasRef alias #1` | 提示：[`"Why did you do Such things?Altano?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:915) 回應 1：[`"After the battle with Bal.....I heard sweet whispering....I can't help but follow the voice."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:916) 回應 2：[`".....I yield to temptation....Excuse me....."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:917) |
+| [`01367A zzAoMMq10B1BlessAltano`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:918) | `01367B` | `Goodbye` | `GetIsAliasRef alias #1` | 提示：[`"Rest in peace,Altano...Stenndarr always with us."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:918) 回應：[`"Thank you......I..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:919) VMAD: `AoM10_TIF__0101367B` 包含 OnEnd 片段 |
 
 翻譯筆記：
 - `"aa.....uaa..."` 似乎是臨終前的喘息或受腐化的言語。
@@ -129,12 +129,12 @@ INFO：
 
 | 主題 | INFO | 旗標 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`028539 zzzAoMMq10B2LastWord`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:920) | `02853A` | 無 | `GetStage == 30`; `GetIsAliasRef alias #6` | [`"Welcome back ... How was Altano...?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:920) |
-| [`02853B zzzAoMMq10B2AltanoDead`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:921) | `02853C` | 無 | `GetIsAliasRef alias #6` | 提示：[`"Altano died"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:921) 回應：[`"You killed him....?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:921) |
-| [`02853D zzzAoMMq10B2MolagKillHim`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:922) | `02853E` | 無 | `GetIsAliasRef alias #6` | 提示：[`"No, Molag Bal killed him"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:922) 回應：[`"I'm sorry ... that so ... Molag Bal appeared ... what soul we do..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:922) |
-| [`02853F zzzAoMMq10B2DefeatMolag`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:923) | `028540` | 無 | `GetIsAliasRef alias #6` | 提示：[`"I defeated Molag Bal. There is no danger for a while"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:923) 回應 1：[`"I can not believe you did defeated Molag Bal ... Molag Bal is Daedra Lord..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:924) 回應 2：[`"It is incredible... but the eyes are saying that it is true. All right, I believe you"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:924) |
-| [`028541 zzzAoMMq10B2DoNext`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:925) | `028542` | 無 | `GetIsAliasRef alias #6` | 提示：[`"What should we do now?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:925) 回應 1：[`"Well, you and I are suvivor in temple... Keeper died ..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:925) 回應 2：[`"I got it!! You should become new keeper of Stendarr  because you have power defeated Molag Bal"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:926) |
-| [`028543 zzzAoMMq10B2DecideKeeper`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:927) | `028544` | `Goodbye` | `GetIsAliasRef alias #6` | 提示：[`"Can we decide it?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:927) 回應 1：[`"It's OK!! Stendharr will admit you. I'm belive you"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:927) 回應 2：[`"I'm sure it's okay if you. Okay ..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:928) VMAD: `AoM10_TIF__01028544` 包含 OnBegin 片段 (Fragment_1) 與 OnEnd 片段 (Fragment_0) |
+| [`028539 zzzAoMMq10B2LastWord`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:920) | `02853A` | 無 | `GetStage == 30`; `GetIsAliasRef alias #6` | [`"Welcome back ... How was Altano...?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:920) |
+| [`02853B zzzAoMMq10B2AltanoDead`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:921) | `02853C` | 無 | `GetIsAliasRef alias #6` | 提示：[`"Altano died"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:921) 回應：[`"You killed him....?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:921) |
+| [`02853D zzzAoMMq10B2MolagKillHim`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:922) | `02853E` | 無 | `GetIsAliasRef alias #6` | 提示：[`"No, Molag Bal killed him"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:922) 回應：[`"I'm sorry ... that so ... Molag Bal appeared ... what soul we do..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:922) |
+| [`02853F zzzAoMMq10B2DefeatMolag`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:923) | `028540` | 無 | `GetIsAliasRef alias #6` | 提示：[`"I defeated Molag Bal. There is no danger for a while"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:923) 回應 1：[`"I can not believe you did defeated Molag Bal ... Molag Bal is Daedra Lord..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:924) 回應 2：[`"It is incredible... but the eyes are saying that it is true. All right, I believe you"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:924) |
+| [`028541 zzzAoMMq10B2DoNext`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:925) | `028542` | 無 | `GetIsAliasRef alias #6` | 提示：[`"What should we do now?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:925) 回應 1：[`"Well, you and I are suvivor in temple... Keeper died ..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:925) 回應 2：[`"I got it!! You should become new keeper of Stendarr  because you have power defeated Molag Bal"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:926) |
+| [`028543 zzzAoMMq10B2DecideKeeper`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:927) | `028544` | `Goodbye` | `GetIsAliasRef alias #6` | 提示：[`"Can we decide it?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:927) 回應 1：[`"It's OK!! Stendharr will admit you. I'm belive you"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:927) 回應 2：[`"I'm sure it's okay if you. Okay ..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:928) VMAD: `AoM10_TIF__01028544` 包含 OnBegin 片段 (Fragment_1) 與 OnEnd 片段 (Fragment_0) |
 
 分支極性：
 - 玩家在 `02853B` → `02853D` 的選擇代表了**責任歸屬**（是玩家殺了阿爾塔諾，還是莫拉格·巴爾？）。

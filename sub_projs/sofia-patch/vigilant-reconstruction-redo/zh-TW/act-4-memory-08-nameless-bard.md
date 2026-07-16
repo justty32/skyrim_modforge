@@ -10,7 +10,7 @@
 
 ## 任務紀錄 (Quest Record)
 
-[`080E91 zzzCHMemoryQuest08 "The Nameless Bard"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)
+[`080E91 zzzCHMemoryQuest08 "The Nameless Bard"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)
 
 CLI：
 - `questdiag Vigilant.esm 0x080E91`
@@ -63,9 +63,9 @@ ESM：
 
 | 索引 | 來源 | 翻譯 |
 |---:|---|---|
-| 0 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:195) | 「滾石躺在火裡，無人拾起。」 |
+| 0 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:195) | 「滾石躺在火裡，無人拾起。」 |
 
-筆記：目標文本 `The rolling stones are in the fire and are not picked up` 是破碎的機器翻譯英文；同樣的「滾石 / 卵石」意象在場景話題 [`0821F3`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:985) (`Let it kicked a pebble rolling`) 中重複出現。待驗證。
+筆記：目標文本 `The rolling stones are in the fire and are not picked up` 是破碎的機器翻譯英文；同樣的「滾石 / 卵石」意象在場景話題 [`0821F3`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:985) (`Let it kicked a pebble rolling`) 中重複出現。待驗證。
 
 目標對象：
 - ESM 中有 3 個目標。
@@ -79,7 +79,7 @@ ESM：
 以下六個 `SCEN` 紀錄共用相同的主機任務與 19 個別名列表。
 
 主機任務：
-- [`080E91 zzzCHMemoryQuest08`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)
+- [`080E91 zzzCHMemoryQuest08`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)
 
 來自 `scenediag` 的主機任務別名 (19 個)：
 
@@ -87,27 +87,27 @@ ESM：
 |---:|---|---|
 | 0 | `StartMarker` | 強制引用 `07FA2D:Vigilant.esm` |
 | 1 | `EndMarker` | 強制引用 `080E92:Vigilant.esm` |
-| 2 | `Lamae` | 唯一演員 [`080E93 zzzCHLamaeMemory "Lamae Beolfag"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1073) |
-| 3 | `Facis` | 唯一演員 [`080E98 zzzCHLamaeFollowerMemory "Facis"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1066) |
-| 4 | `MolagTE` | 唯一演員 [`080E96 zzzCHMolagBalInMemoryTE`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1067) |
+| 2 | `Lamae` | 唯一演員 [`080E93 zzzCHLamaeMemory "Lamae Beolfag"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1073) |
+| 3 | `Facis` | 唯一演員 [`080E98 zzzCHLamaeFollowerMemory "Facis"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1066) |
+| 4 | `MolagTE` | 唯一演員 [`080E96 zzzCHMolagBalInMemoryTE`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1067) |
 | 5 | `TA01` | 強制引用 `0821E9:Vigilant.esm` |
 | 6 | `TEMarker` | 強制引用 `080E95:Vigilant.esm` |
 | 7 | `TA02` | 強制引用 `08220E:Vigilant.esm` |
-| 8 | `MolagBE` | 唯一演員 [`0875EF zzzCHMolagBalInMemoryBE`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1062) |
+| 8 | `MolagBE` | 唯一演員 [`0875EF zzzCHMolagBalInMemoryBE`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1062) |
 | 9 | `BEMarker` | 強制引用 `0875EB:Vigilant.esm` |
 | 10 | `TA03` | 強制引用 `0875F2:Vigilant.esm` |
 | 11 | `TA04` | 強制引用 `08B5A8:Vigilant.esm` |
 | 12 | `TA05` | 強制引用 `08B5AA:Vigilant.esm` |
 | 13 | `WEMarker` | 強制引用 `088BBC:Vigilant.esm` |
-| 14 | `Volar` | 唯一演員 [`088BC8 zzzCHDeathBringerMemory`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1059) |
-| 15 | `Laza` | 唯一演員 [`2E47E5 zzzCHMemoryLaza "Laza"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:806) |
+| 14 | `Volar` | 唯一演員 [`088BC8 zzzCHDeathBringerMemory`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1059) |
+| 15 | `Laza` | 唯一演員 [`2E47E5 zzzCHMemoryLaza "Laza"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:806) |
 | 16 | `GuideBard` | 強制引用 `42E0B7:Vigilant.esm` |
 | 17 | `GuideStatue` | 強制引用 `42F43E:Vigilant.esm` |
 | 18 | `GuideTower` | 強制引用 `4307C5:Vigilant.esm` |
 
 本記憶的主體：
 - **無名詩人** = 玩家控制的記憶演員，玩家透過莫拉格對話分支選擇其名字（見下方的自定義對話分支）。別名 `MolagTE`/`MolagBE` 是詩人交談的兩個莫拉格·巴爾幻影；玩家向每位幻影報上自己的名字（或拒絕報名）。
-- **拉邁 (Lamae)** (別名 `#2`, [`080E93`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1073)) 是詩人對其歌唱的少女。拉邁也出現在 MeQ09 `From Beyond` 中；此處僅包含 MeQ08 擁有的 `080E93 zzzCHLamaeMemory` 紀錄（需另外交叉連結 MeQ09 的拉邁）。
+- **拉邁 (Lamae)** (別名 `#2`, [`080E93`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1073)) 是詩人對其歌唱的少女。拉邁也出現在 MeQ09 `From Beyond` 中；此處僅包含 MeQ08 擁有的 `080E93 zzzCHLamaeMemory` 紀錄（需另外交叉連結 MeQ09 的拉邁）。
 
 推論：
 - `TA01`–`TA05` (別名 `#5`,`#7`,`#10`,`#11`,`#12`) 是在五個 `*ESc` 場景中傳遞詩人敘事語句的強制引用 TA 演員（每個場景各使用一位 TA 演員）。
@@ -124,20 +124,20 @@ CLI：
 - `scenediag Vigilant.esm 0x080EA5`
 
 編排：
-- 主機任務：[`080E91 zzzCHMemoryQuest08`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)
+- 主機任務：[`080E91 zzzCHMemoryQuest08`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)
 - 標誌：無
 - 演員：別名 `#3` (`Facis`, `DeathEnd NoPlayerActivation`) 與別名 `#2` (`Lamae`, `DeathEnd NoPlayerActivation`)
 - 階段：6 個，每個皆為 0 開始 / 1 完成條件。
 - 動作：共 10 個 —— Package 移動動作在 `#3` 與 `#2` 之間交錯，並穿插三個對話 (Dialog) 動作：
-  - 索引 3: `Dialog` 演員 `#3` (Facis), 階段 1, 話題 [`080EA7`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:964), 對望演員 `#2`, 情緒 `Neutral`。
-  - 索引 4: `Dialog` 演員 `#2` (Lamae), 階段 2, 話題 [`080EA9`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:967), 對望演員 `#3`, 情緒 `Neutral`。
-  - 索引 8: `Dialog` 演員 `#2` (Lamae), 階段 4, 話題 [`080EAE`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:970), `FaceTarget HeadtrackPlayer`, 情緒 `Neutral`。
+  - 索引 3: `Dialog` 演員 `#3` (Facis), 階段 1, 話題 [`080EA7`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:964), 對望演員 `#2`, 情緒 `Neutral`。
+  - 索引 4: `Dialog` 演員 `#2` (Lamae), 階段 2, 話題 [`080EA9`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:967), 對望演員 `#3`, 情緒 `Neutral`。
+  - 索引 8: `Dialog` 演員 `#2` (Lamae), 階段 4, 話題 [`080EAE`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:970), `FaceTarget HeadtrackPlayer`, 情緒 `Neutral`。
 
 翻譯：
-- [`080EA7` / INFO `080EA8`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:964) (Facis, Surprise): 「夫人，原來您躲在這裡。Shorl 大人在等您。」
+- [`080EA7` / INFO `080EA8`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:964) (Facis, Surprise): 「夫人，原來您躲在這裡。Shorl 大人在等您。」
   - 筆記：`Lord Shorl` 為專有名詞，拼寫待驗證。`Did you fold here` 機翻不清，依語境譯為「躲在這裡」。待驗證。
-- [`080EA9` / INFO `080EAA`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:967) (Lamae, Happy): 「好，我現在就過去。」
-- [`080EAE` / INFO `080EAF`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:970) (Lamae, Happy): 「再會。」
+- [`080EA9` / INFO `080EAA`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:967) (Lamae, Happy): 「好，我現在就過去。」
+- [`080EAE` / INFO `080EAF`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:970) (Lamae, Happy): 「再會。」
 
 ### 0821E7 zzzCHMeQ08Sc02 — 綁架敘事 (TA01)
 
@@ -145,17 +145,17 @@ CLI：
 - `scenediag Vigilant.esm 0x0821E7`
 
 編排：
-- 主機任務：[`080E91`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)
+- 主機任務：[`080E91`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)
 - 標誌：無
 - 演員：別名 `#5` (`TA01`), 行為 `DeathEnd, CombatEnd, DialoguePause`
 - 階段：2 個，每個皆為 0 開始 / 1 完成條件。
 - 動作：
-  - 索引 1: `Dialog` 演員 `#5`, 階段 0, 話題 [`0821EA`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:973), 情緒 `Neutral`。
-  - 索引 2: `Dialog` 演員 `#5`, 階段 1, 話題 [`0821EC`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:976), 情緒 `Neutral`。
+  - 索引 1: `Dialog` 演員 `#5`, 階段 0, 話題 [`0821EA`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:973), 情緒 `Neutral`。
+  - 索引 2: `Dialog` 演員 `#5`, 階段 1, 話題 [`0821EC`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:976), 情緒 `Neutral`。
 
 翻譯：
-- [`0821EA` / INFO `0821EB`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:973): 「不久之後，她的尖叫聲在天霜的峽灣裡迴盪。我記得我抱著昏迷的她，朝村子走去。」
-- [`0821EC` / INFO `0821ED`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:976): 「然而她再也沒有醒來；一道光輝就此自 Nirn 消失。」
+- [`0821EA` / INFO `0821EB`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:973): 「不久之後，她的尖叫聲在天霜的峽灣裡迴盪。我記得我抱著昏迷的她，朝村子走去。」
+- [`0821EC` / INFO `0821ED`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:976): 「然而她再也沒有醒來；一道光輝就此自 Nirn 消失。」
   - 筆記：`shine one was was lost from Nirn`（重複 `was`）機翻破碎，依語境譯為「一道光輝自 Nirn 消失」。待驗證。
 
 ### 0821EE zzzCHMeQ08TESc — 真結局(?) 敘事 (TA02)
@@ -164,22 +164,22 @@ CLI：
 - `scenediag Vigilant.esm 0x0821EE`
 
 編排：
-- 主機任務：[`080E91`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)
+- 主機任務：[`080E91`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)
 - 標誌：無
 - 演員：別名 `#5` (`TA01`) 與別名 `#7` (`TA02`), 皆為 `DeathEnd, CombatEnd, DialoguePause`
 - 階段：4 個，每個皆為 0 開始 / 1 完成條件。
 - 動作：
   - 索引 4: `Timer` 演員 `#7`, 階段 0, `0.1` 秒。
-  - 索引 1: `Dialog` 演員 `#7`, 階段 1, 話題 [`0821EF`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:979), 情緒 `Neutral`。
-  - 索引 2: `Dialog` 演員 `#7`, 階段 2, 話題 [`0821F1`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:982), 情緒 `Neutral`。
-  - 索引 3: `Dialog` 演員 `#7`, 階段 3, 話題 [`0821F3`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:985), 情緒 `Neutral`。
+  - 索引 1: `Dialog` 演員 `#7`, 階段 1, 話題 [`0821EF`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:979), 情緒 `Neutral`。
+  - 索引 2: `Dialog` 演員 `#7`, 階段 2, 話題 [`0821F1`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:982), 情緒 `Neutral`。
+  - 索引 3: `Dialog` 演員 `#7`, 階段 3, 話題 [`0821F3`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:985), 情緒 `Neutral`。
 
 翻譯：
-- [`0821EF` / INFO `0821F0`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:979): 「很久以前，Eldergleam 還年輕，尚未被深埋於黑暗大地之底。那時的世界滿是魔法、奇異與危險。」
-- [`0821F1` / INFO `0821F2`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:982): 「即便如此，我仍不向殘酷的命運屈服。因為我知道，這份苦難終有一天也會像可憐的幻影般消散。」
+- [`0821EF` / INFO `0821F0`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:979): 「很久以前，Eldergleam 還年輕，尚未被深埋於黑暗大地之底。那時的世界滿是魔法、奇異與危險。」
+- [`0821F1` / INFO `0821F2`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:982): 「即便如此，我仍不向殘酷的命運屈服。因為我知道，這份苦難終有一天也會像可憐的幻影般消散。」
   - 筆記：`cruel fate I` 的 `I` 為機翻贅字。待驗證。
-- [`0821F3` / INFO `0821F4`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:985): 「即使流了血、犯下種種過錯，人也能得到救贖。就讓它像被踢動的石子一樣滾落，伴著餘下的歌聲。」
-  - 筆記：此句的「滾石／踢動的石子」對應任務目標 [`The rolling stones … not picked up`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:195)。
+- [`0821F3` / INFO `0821F4`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:985): 「即使流了血、犯下種種過錯，人也能得到救贖。就讓它像被踢動的石子一樣滾落，伴著餘下的歌聲。」
+  - 筆記：此句的「滾石／踢動的石子」對應任務目標 [`The rolling stones … not picked up`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:195)。
 
 ### 0875F1 zzzCHMeQ08BESc — 壞結局(?) 敘事 (TA03)
 
@@ -187,21 +187,21 @@ CLI：
 - `scenediag Vigilant.esm 0x0875F1`
 
 編排：
-- 主機任務：[`080E91`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)
+- 主機任務：[`080E91`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)
 - 標誌：無
 - 演員：別名 `#10` (`TA03`), `DeathEnd`
 - 階段：4 個，每個皆為 0 開始 / 1 完成條件。
 - 動作：
   - 索引 4: `Timer` 演員 `#10`, 階段 0, `0.1` 秒。
-  - 索引 1: `Dialog` 演員 `#10`, 階段 1, 話題 [`0875F3`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1006), 情緒 `Neutral`。
-  - 索引 2: `Dialog` 演員 `#10`, 階段 2, 話題 [`0875F5`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1009), 情情緒 `Neutral`。
-  - 索引 3: `Dialog` 演員 `#10`, 階段 3, 話題 [`0875F7`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1012), 情緒 `Neutral`。
+  - 索引 1: `Dialog` 演員 `#10`, 階段 1, 話題 [`0875F3`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1006), 情緒 `Neutral`。
+  - 索引 2: `Dialog` 演員 `#10`, 階段 2, 話題 [`0875F5`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1009), 情情緒 `Neutral`。
+  - 索引 3: `Dialog` 演員 `#10`, 階段 3, 話題 [`0875F7`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1012), 情緒 `Neutral`。
 
 翻譯：
-- [`0875F3` / INFO `0875F4`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1006): 「很久以前，Eldergleam 還年輕，尚未被深埋於黑暗大地之底。那時的世界滿是魔法、奇異與危險。」（與 `0821EF` 同一段開場，重複使用。）
-- [`0875F5` / INFO `0875F6`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1009): 「那一天，我在她已徹底改變的額頭上滴下一滴血。我只盼她能永遠安息，卻反而引來了不死的詛咒。」
+- [`0875F3` / INFO `0875F4`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1006): 「很久以前，Eldergleam 還年輕，尚未被深埋於黑暗大地之底。那時的世界滿是魔法、奇異與危險。」（與 `0821EF` 同一段開場，重複使用。）
+- [`0875F5` / INFO `0875F6`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1009): 「那一天，我在她已徹底改變的額頭上滴下一滴血。我只盼她能永遠安息，卻反而引來了不死的詛咒。」
   - 筆記：`just baiting the curse of immortality` 機翻不清，依語境譯為「反而引來不死的詛咒」。待驗證。
-- [`0875F7` / INFO `0875F8`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1012): 「無法被救贖的血與淚……罪永不得赦免。石頭染上熱意，緩緩烤炙著我的身體。」
+- [`0875F7` / INFO `0875F8`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1012): 「無法被救贖的血與淚……罪永不得赦免。石頭染上熱意，緩緩烤炙著我的身體。」
   - 筆記：`and Charles` 為機翻雜訊（疑似日文助詞誤譯），已略去。待驗證。
 
 ### 08B5AD zzzCHMeQ08WESc01 — 西結局(?) 敘事 (TA04)
@@ -210,15 +210,15 @@ CLI：
 - `scenediag Vigilant.esm 0x08B5AD`
 
 編排：
-- 主機任務：[`080E91`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)
+- 主機任務：[`080E91`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)
 - 標誌：無
 - 演員：別名 `#11` (`TA04`), `DeathEnd, CombatEnd, DialoguePause`
 - 階段：1 個，0 開始 / 1 完成條件。
 - 動作：
-  - 索引 1: `Dialog` 演員 `#11`, 階段 0, 話題 [`08B5AE`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1030), 情緒 `Neutral`。
+  - 索引 1: `Dialog` 演員 `#11`, 階段 0, 話題 [`08B5AE`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1030), 情緒 `Neutral`。
 
 翻譯：
-- [`08B5AE` / INFO `08B5AF`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1030): 「我是懦夫，只活在不斷重複的夢裡。從一開始，我就注定被自己親手養大的黑暗吞噬……」
+- [`08B5AE` / INFO `08B5AF`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1030): 「我是懦夫，只活在不斷重複的夢裡。從一開始，我就注定被自己親手養大的黑暗吞噬……」
 
 ### 08B5B6 zzzCHMeQ08WESc02 — 莫拉格·巴爾自我報名 (TA05)
 
@@ -226,17 +226,17 @@ CLI：
 - `scenediag Vigilant.esm 0x08B5B6`
 
 編排：
-- 主機任務：[`080E91`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)
+- 主機任務：[`080E91`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)
 - 標誌：無
 - 演員：別名 `#12` (`TA05`), `DeathEnd, CombatEnd, DialoguePause`
 - 階段：2 個，每個皆為 0 開始 / 1 完成條件。
 - 動作：
-  - 索引 1: `Dialog` 演員 `#12`, 階段 0, 話題 [`08B5B7`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1039), 情緒 `Neutral`。
-  - 索引 2: `Dialog` 演員 `#12`, 階段 1, 話題 [`08B5B9`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1042), 情緒 `Neutral`。
+  - 索引 1: `Dialog` 演員 `#12`, 階段 0, 話題 [`08B5B7`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1039), 情緒 `Neutral`。
+  - 索引 2: `Dialog` 演員 `#12`, 階段 1, 話題 [`08B5B9`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1042), 情緒 `Neutral`。
 
 翻譯：
-- [`08B5B7` / INFO `08B5B8`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1039): 「我的名字是……Molag Bal。奴役與屈辱之王，靈魂吞噬者，詛咒諸神之世界的存在。」
-- [`08B5B9` / INFO `08B5BA`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1042): 「一切都會重演。認識黑暗，打破黑暗，超越死亡。」
+- [`08B5B7` / INFO `08B5B8`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1039): 「我的名字是……Molag Bal。奴役與屈辱之王，靈魂吞噬者，詛咒諸神之世界的存在。」
+- [`08B5B9` / INFO `08B5BA`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1042): 「一切都會重演。認識黑暗，打破黑暗，超越死亡。」
 
 ## 自定義對話分支：拉邁 (zzzCHMeQ08LamaeB01)
 
@@ -249,10 +249,10 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`080E9D zzzCHMeQ08LamaeB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:952) | `080E9E` | 無 | `GetStage == 10`; 別名 `#2` 的 `GetIsAliasRef` | (Happy) 「能不能……再讓我聽聽那首歌剩下的部分？」 筆記：`It is not you please let the rest of that song?` 機翻破碎。待驗證。 |
-| [`080E9F zzzCHMeQ08LamaeB01T02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:955) | `080EA0` | 無 | 別名 `#2` 的 `GetIsAliasRef` | 提示語：「故事的後續？」 回應：(Happy) 「對，後續。你想想 —— 一個殘酷又悲傷的故事，會變成怎樣一個了不起、滿溢幸福的結局呢？」 筆記：原文 `What you I'm a story cruel sad story…` 文法破碎。待驗證。 |
-| [`080EA1 zzzCHMeQ08LamaeB01T03`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:958) | `080EA2` | `Goodbye` | 別名 `#2` 的 `GetIsAliasRef`; 結束時 VMAD `CHMeq08_TIF__02080EA2.Fragment_0` | 提示語：「沒有什麼後續了。他們就那樣荒謬地被殺死。」 回應：(Sad) 「這樣啊……我有點失望。」 |
-| [`080EA3 zzzCHMeQ08LamaeB01T04`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:961) | `080EA4` | `Goodbye` | 別名 `#2` 的 `GetIsAliasRef`; 結束時 VMAD `CHMeq08_TIF__02080EA4.Fragment_0` | 提示語：「下次見面前，我會把剩下的編好。」 回應：(Happy) 「我會好好想著的。說好了。」 |
+| [`080E9D zzzCHMeQ08LamaeB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:952) | `080E9E` | 無 | `GetStage == 10`; 別名 `#2` 的 `GetIsAliasRef` | (Happy) 「能不能……再讓我聽聽那首歌剩下的部分？」 筆記：`It is not you please let the rest of that song?` 機翻破碎。待驗證。 |
+| [`080E9F zzzCHMeQ08LamaeB01T02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:955) | `080EA0` | 無 | 別名 `#2` 的 `GetIsAliasRef` | 提示語：「故事的後續？」 回應：(Happy) 「對，後續。你想想 —— 一個殘酷又悲傷的故事，會變成怎樣一個了不起、滿溢幸福的結局呢？」 筆記：原文 `What you I'm a story cruel sad story…` 文法破碎。待驗證。 |
+| [`080EA1 zzzCHMeQ08LamaeB01T03`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:958) | `080EA2` | `Goodbye` | 別名 `#2` 的 `GetIsAliasRef`; 結束時 VMAD `CHMeq08_TIF__02080EA2.Fragment_0` | 提示語：「沒有什麼後續了。他們就那樣荒謬地被殺死。」 回應：(Sad) 「這樣啊……我有點失望。」 |
+| [`080EA3 zzzCHMeQ08LamaeB01T04`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:961) | `080EA4` | `Goodbye` | 別名 `#2` 的 `GetIsAliasRef`; 結束時 VMAD `CHMeq08_TIF__02080EA4.Fragment_0` | 提示語：「下次見面前，我會把剩下的編好。」 回應：(Happy) 「我會好好想著的。說好了。」 |
 
 分支筆記（推論）：兩個玩家選擇 `080EA1`（無續集 / 讓她在故事中死去）與 `080EA3`（我會編好這首歌）是第一個業障分歧點；兩者皆帶有 `CHMeq08_TIF__*` 結束片段，可能用於設定階段。待驗證：透過 Papyrus 片段確認。
 
@@ -267,8 +267,8 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`0821FB zzzCHMeQ08MolagTB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:988) | `0821FC` | `WalkAway` | `GetStage == 60`; 別名 `#4` 的 `GetIsAliasRef` | (Neutral) 「我無法理解。你為何拒絕……只要你願望，就能讓那女孩復活，不是嗎？」 |
-| [`0821FD zzzCHMeQ08MolagTB01T02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:991) | `0821FE` | `Goodbye` | 別名 `#4` 的 `GetIsAliasRef`; 結束時 VMAD `CHMeq08_TIF__020821FE.Fragment_0` | 提示語：「你永遠不會懂。」 回應：(Neutral) 「…………」 |
+| [`0821FB zzzCHMeQ08MolagTB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:988) | `0821FC` | `WalkAway` | `GetStage == 60`; 別名 `#4` 的 `GetIsAliasRef` | (Neutral) 「我無法理解。你為何拒絕……只要你願望，就能讓那女孩復活，不是嗎？」 |
+| [`0821FD zzzCHMeQ08MolagTB01T02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:991) | `0821FE` | `Goodbye` | 別名 `#4` 的 `GetIsAliasRef`; 結束時 VMAD `CHMeq08_TIF__020821FE.Fragment_0` | 提示語：「你永遠不會懂。」 回應：(Neutral) 「…………」 |
 
 ## 自定義對話分支：莫拉格 (TE) — 報名 (zzzCHMeQ08MolagTB02)
 
@@ -281,10 +281,10 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`082200 zzzCHMeQ08MolagTB02T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:994) | `082201` | 無 | `GetStage == 70`; 別名 `#4` 的 `GetIsAliasRef` | (Neutral) 「等等……我還沒聽到你的名字……」 |
-| [`082202 zzzCHMeQ08MolagTB02T02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:997) | `082203` | `Goodbye, SayOnce` | 別名 `#4` 的 `GetIsAliasRef`; VMAD `…02082203.Fragment_0` | 提示語：「<Alias=Player>。是她給了我這名字。」 回應：(Neutral) 「好名字……我會記在靈魂裡。」 |
-| [`082204 zzzCHMeQ08MolagTB02T03`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1000) | `082205` | `Goodbye, SayOnce` | 別名 `#4` 的 `GetIsAliasRef`; VMAD `…02082205.Fragment_0` | 提示語：「Stendll。我是哈芬納的 Stendll。」 回應：(Neutral) 「奇怪的名字……我會記在靈魂裡。」 筆記：`Stendll` / `Strange neme` 拼寫待驗證。 |
-| [`082206 zzzCHMeQ08MolagTB02T04`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1003) | `082207` | `Goodbye, SayOnce` | 別名 `#4` 的 `GetIsAliasRef`; VMAD `…02082207.Fragment_0` | 提示語：「我已捨棄了我的名字。」 回應：(Neutral) 「……真是可悲。」 |
+| [`082200 zzzCHMeQ08MolagTB02T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:994) | `082201` | 無 | `GetStage == 70`; 別名 `#4` 的 `GetIsAliasRef` | (Neutral) 「等等……我還沒聽到你的名字……」 |
+| [`082202 zzzCHMeQ08MolagTB02T02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:997) | `082203` | `Goodbye, SayOnce` | 別名 `#4` 的 `GetIsAliasRef`; VMAD `…02082203.Fragment_0` | 提示語：「<Alias=Player>。是她給了我這名字。」 回應：(Neutral) 「好名字……我會記在靈魂裡。」 |
+| [`082204 zzzCHMeQ08MolagTB02T03`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1000) | `082205` | `Goodbye, SayOnce` | 別名 `#4` 的 `GetIsAliasRef`; VMAD `…02082205.Fragment_0` | 提示語：「Stendll。我是哈芬納的 Stendll。」 回應：(Neutral) 「奇怪的名字……我會記在靈魂裡。」 筆記：`Stendll` / `Strange neme` 拼寫待驗證。 |
+| [`082206 zzzCHMeQ08MolagTB02T04`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1003) | `082207` | `Goodbye, SayOnce` | 別名 `#4` 的 `GetIsAliasRef`; VMAD `…02082207.Fragment_0` | 提示語：「我已捨棄了我的名字。」 回應：(Neutral) 「……真是可悲。」 |
 
 推論：此處三個互斥的 `SayOnce` 選擇是**報名分歧點** —— 接受拉邁給予的名字 / 給予自己的名字 (`Stendll`) / 捨棄名字 —— 每個選擇皆透過不同片段結束 TE 分支。這是賦予任務標題「無名詩人」意義的玩家身分選擇。待驗證：透過片段確認極性。
 
@@ -299,11 +299,11 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`0875FB zzzCHMeQ08MolagBB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1015) | `0875FC` | `InvisibleContinue` | `GetStage == 210`; 別名 `#8` 的 `GetIsAliasRef`; VMAD `…020875FC.Fragment_0` | (Neutral) 「幹得好。這是給你的獎賞。」 |
-| [`0875FD zzzCHMeQ08BB01T02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1018) | `0875FE` | `WalkAway` | 別名 `#8` 的 `GetIsAliasRef` | (Neutral) 「那麼，接下來你打算怎麼做？」 筆記：EditorID 為 `zzzCHMeQ08BB01T02`（缺 `Molag`），原文如此。 |
-| [`0875FF zzzCHMeQ08MolagBB01T03`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1021) | `087600` | `Goodbye, SayOnce` | 別名 `#8` 的 `GetIsAliasRef`; VMAD `…02087600.Fragment_0` | 提示語：「捨棄名字，往西方去。這裡只剩悲傷。」 回應：(Neutral) 「是嗎。我想無論你去哪都一樣。沒人會阻止你想做的事。」 |
-| [`087601 zzzCHMeQ08MolagBB01T04`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1024) | `087602` | `Goodbye, SayOnce` | 別名 `#8` 的 `GetIsAliasRef`; VMAD `…02087602.Fragment_0` | 提示語：「<Alias=Player>。記住，這是擊敗你的人之名。」 回應：(Neutral) 「真有趣。你可得好好期待那一刻。」 |
-| [`087603 zzzCHMeQ08MolagBB01T05`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1027) | `087604` | `Goodbye, SayOnce` | 別名 `#8` 的 `GetIsAliasRef`; VMAD `…02087604.Fragment_0` | 提示語：「Stendll。記住，這是獵殺魔族者之名。」 回應：(Neutral) 「非常有趣。雖是場拚死的掙扎，但很好。」 |
+| [`0875FB zzzCHMeQ08MolagBB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1015) | `0875FC` | `InvisibleContinue` | `GetStage == 210`; 別名 `#8` 的 `GetIsAliasRef`; VMAD `…020875FC.Fragment_0` | (Neutral) 「幹得好。這是給你的獎賞。」 |
+| [`0875FD zzzCHMeQ08BB01T02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1018) | `0875FE` | `WalkAway` | 別名 `#8` 的 `GetIsAliasRef` | (Neutral) 「那麼，接下來你打算怎麼做？」 筆記：EditorID 為 `zzzCHMeQ08BB01T02`（缺 `Molag`），原文如此。 |
+| [`0875FF zzzCHMeQ08MolagBB01T03`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1021) | `087600` | `Goodbye, SayOnce` | 別名 `#8` 的 `GetIsAliasRef`; VMAD `…02087600.Fragment_0` | 提示語：「捨棄名字，往西方去。這裡只剩悲傷。」 回應：(Neutral) 「是嗎。我想無論你去哪都一樣。沒人會阻止你想做的事。」 |
+| [`087601 zzzCHMeQ08MolagBB01T04`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1024) | `087602` | `Goodbye, SayOnce` | 別名 `#8` 的 `GetIsAliasRef`; VMAD `…02087602.Fragment_0` | 提示語：「<Alias=Player>。記住，這是擊敗你的人之名。」 回應：(Neutral) 「真有趣。你可得好好期待那一刻。」 |
+| [`087603 zzzCHMeQ08MolagBB01T05`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1027) | `087604` | `Goodbye, SayOnce` | 別名 `#8` 的 `GetIsAliasRef`; VMAD `…02087604.Fragment_0` | 提示語：「Stendll。記住，這是獵殺魔族者之名。」 回應：(Neutral) 「非常有趣。雖是場拚死的掙扎，但很好。」 |
 
 推論：BE 分支在較晚的階段區段 (210+) 重複了報名分歧 —— 捨棄名字 / 宣稱自己是「擊敗你的人」 / 命名為獵殺魔族的 `Stendll`。待驗證：哪一項導向 230 或 350/370 的完成路徑。
 
@@ -318,11 +318,11 @@ CLI：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`08B5B2 zzzCHMeQ08VolarB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1033) | `08B5B3` | `WalkAway` | `GetStage == 310`; 別名 `#14` 的 `GetIsAliasRef` | (Puzzled) 原文 `The One is so come here soon, but if the squid you like?` —— 機翻嚴重破碎，無法可靠還原。待驗證。 |
-| [`08B5B4 zzzCHMeQ08VolarB01T02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1036) | `08B5B5` | `Goodbye, SayOnce` | 別名 `#14` 的 `GetIsAliasRef`; VMAD `…0208B5B5.Fragment_0` | 提示語：「玩得開心點，Volar。」 回應：(Happy) 原文 `Let's show to meet the expectations definitely stuck!` —— 機翻破碎。待驗證。 |
+| [`08B5B2 zzzCHMeQ08VolarB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1033) | `08B5B3` | `WalkAway` | `GetStage == 310`; 別名 `#14` 的 `GetIsAliasRef` | (Puzzled) 原文 `The One is so come here soon, but if the squid you like?` —— 機翻嚴重破碎，無法可靠還原。待驗證。 |
+| [`08B5B4 zzzCHMeQ08VolarB01T02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1036) | `08B5B5` | `Goodbye, SayOnce` | 別名 `#14` 的 `GetIsAliasRef`; VMAD `…0208B5B5.Fragment_0` | 提示語：「玩得開心點，Volar。」 回應：(Happy) 原文 `Let's show to meet the expectations definitely stuck!` —— 機翻破碎。待驗證。 |
 
 Volar 話題名稱列表處理：
-- 任務提示曾警告 `zzzCHMeQ08VolarB01T02` 列舉了其他記憶主體 (Drozel, Hasaama, Johan, Martha)。**但 `infodiag` 並未證實此點**：實際擁有的 `VolarB01T02` 回應僅為一行破碎的語句（見上方），無名稱列表。Drozel/Hasaama/Martha/Johan 的名稱存在於**非擁有的**獨立支線話題中 (`zzzCHsqMartha*` [dialogue.md:1356+], `zzzCHsqDrozel*` [dialogue.md:1380+]), 確認不屬於 `080E91`。因此將其**排除**在此切片外。此處的 Volar 分支是與**索魂者 Volar** ([`088BC8 zzzCHDeathBringerMemory`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1059)) 的對質，而非背景設定列舉。
+- 任務提示曾警告 `zzzCHMeQ08VolarB01T02` 列舉了其他記憶主體 (Drozel, Hasaama, Johan, Martha)。**但 `infodiag` 並未證實此點**：實際擁有的 `VolarB01T02` 回應僅為一行破碎的語句（見上方），無名稱列表。Drozel/Hasaama/Martha/Johan 的名稱存在於**非擁有的**獨立支線話題中 (`zzzCHsqMartha*` [dialogue.md:1356+], `zzzCHsqDrozel*` [dialogue.md:1380+]), 確認不屬於 `080E91`。因此將其**排除**在此切片外。此處的 Volar 分支是與**索魂者 Volar** ([`088BC8 zzzCHDeathBringerMemory`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1059)) 的對質，而非背景設定列舉。
 
 ## 自定義對話分支：Laza (zzzCHMeQ08LazaB01)
 
@@ -334,10 +334,10 @@ Volar 話題名稱列表處理：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| [`2E47EB zzzCHMeQ08LazaB01T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2786) | `2E47EC` (SayOnce, WalkAway) / `2E47EF` (Goodbye) | — | 別名 `#15` 的 `GetIsAliasRef` | INFO0 (Sad) 「你怎能這麼做……把他們還來……把我的家人……我的姐妹還來……」; INFO1 (Disgust) 「啊啊，Kyne……為什麼……為什麼你不救我們……」 |
-| [`2E47ED zzzCHMeQ08LazaB01T02`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2790) | `2E47EE` | `Goodbye` | 別名 `#15` 的 `GetIsAliasRef` | 提示語：「死者不會復生。」 回應：(Anger) 「該死的，Sithis 之怪物……該死……該死……該死……」 |
+| [`2E47EB zzzCHMeQ08LazaB01T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2786) | `2E47EC` (SayOnce, WalkAway) / `2E47EF` (Goodbye) | — | 別名 `#15` 的 `GetIsAliasRef` | INFO0 (Sad) 「你怎能這麼做……把他們還來……把我的家人……我的姐妹還來……」; INFO1 (Disgust) 「啊啊，Kyne……為什麼……為什麼你不救我們……」 |
+| [`2E47ED zzzCHMeQ08LazaB01T02`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:2790) | `2E47EE` | `Goodbye` | 別名 `#15` 的 `GetIsAliasRef` | 提示語：「死者不會復生。」 回應：(Anger) 「該死的，Sithis 之怪物……該死……該死……該死……」 |
 
-筆記：`Laza` ([`2E47E5 zzzCHMemoryLaza`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:806)) —— 提及 Sithis/Kyne 表示村民正因死去的家人向詩人質難；該分支在轉儲中無 `GetStage` 開場門檻，其階段關聯尚未釘定。待驗證。
+筆記：`Laza` ([`2E47E5 zzzCHMemoryLaza`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:806)) —— 提及 Sithis/Kyne 表示村民正因死去的家人向詩人質難；該分支在轉儲中無 `GetStage` 開場門檻，其階段關聯尚未釘定。待驗證。
 
 ## CompleteQuest 階段 → 結果映射
 
@@ -360,19 +360,19 @@ Volar 話題名稱列表處理：
 根據 `infodiag` 並非一定由 `080E91` 擁有，但為拉邁/詩人重構背景：
 
 NPCs：
-- [`080E93 zzzCHLamaeMemory "Lamae Beolfag"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1073) — 記憶中的拉邁 (別名 `#2`, 擁有)
-- [`085FCA zzzCHLamaeMemoryDead`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1063) — 死亡狀態的拉邁 (不在別名轉儲中；需交叉連結)
-- [`2C8784 zzzCHLamaeMemoryMad`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:821), [`2C8785 zzzCHLamaeFollowerMemoryDead "Facis"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:822) — 備選拉邁/Facis 狀態
-- [`037468 zzzBMLamaeBal "Lamae Bal"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:891) — Bloodmoon/遊戲本體的拉邁·巴爾 (跨 mod 連結；非 MeQ08)
-- [`03D78A zzzCHBossDeathBringer "Deathbringer Volar"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:968) — 戰鬥狀態 Volar (記憶別名 `#14` 為 `088BC8 zzzCHDeathBringerMemory`)
+- [`080E93 zzzCHLamaeMemory "Lamae Beolfag"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1073) — 記憶中的拉邁 (別名 `#2`, 擁有)
+- [`085FCA zzzCHLamaeMemoryDead`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1063) — 死亡狀態的拉邁 (不在別名轉儲中；需交叉連結)
+- [`2C8784 zzzCHLamaeMemoryMad`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:821), [`2C8785 zzzCHLamaeFollowerMemoryDead "Facis"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:822) — 備選拉邁/Facis 狀態
+- [`037468 zzzBMLamaeBal "Lamae Bal"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:891) — Bloodmoon/遊戲本體的拉邁·巴爾 (跨 mod 連結；非 MeQ08)
+- [`03D78A zzzCHBossDeathBringer "Deathbringer Volar"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:968) — 戰鬥狀態 Volar (記憶別名 `#14` 為 `088BC8 zzzCHDeathBringerMemory`)
 
 書籍（相關，但根據 `infodiag` 不由 `080E91` 擁有）：
-- [`0DB22D zzzCHBookBloodOfLamae "Blood of Lamae"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:2183) — 拉邁血系吸血鬼背景書（提及 `Ramae` = 拼錯的 Lamae）；作為場景 `0875F5` 中不死詛咒情節的交叉連結。
+- [`0DB22D zzzCHBookBloodOfLamae "Blood of Lamae"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/books.md:2183) — 拉邁血系吸血鬼背景書（提及 `Ramae` = 拼錯的 Lamae）；作為場景 `0875F5` 中不死詛咒情節的交叉連結。
 
 ## 重構筆記 (Reconstruction Notes)
 
 基於來源：
-- 本記憶為 [`080E91 zzzCHMemoryQuest08`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)，任務目標為 [`The rolling stones are in the fire and are not picked up`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:195)。
+- 本記憶為 [`080E91 zzzCHMemoryQuest08`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:194)，任務目標為 [`The rolling stones are in the fire and are not picked up`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:195)。
 - 包含**六個 `SCEN` 紀錄** (`080EA5`, `0821E7`, `0821EE`, `0875F1`, `08B5AD`, `08B5B6`)，編排了拉邁開場以及三個結局塊敘事 (TE/BE/WE) 透過別名 `TA01`–`TA05` 與 `Lamae`/`Facis`。
 - 包含**六個自定義對話分支**：拉邁 (`080E9C`)、莫拉格-TE 拒絕 (`0821FA`)、莫拉格-TE 報名 (`0821FF`)、莫拉格-BE (`0875FA`)、Volar (`08B5B1`)、Laza (`2E47EA`)。
 - **擁有的書籍為 0**；`Blood of Lamae` 僅為相關背景。

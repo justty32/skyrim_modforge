@@ -18,7 +18,7 @@ A complete spec example is `../examples/sample_spec.json`.
 ## Commands
 
 ```bash
-cd /home/lorkhan/repo/ModForge
+cd /home/lorkhan/repo/moddings/skyrim/projects/ModForge
 dotnet build src/ModForge.Cli/ModForge.Cli.csproj -v q        # build once (and after any code change)
 R="dotnet run --project src/ModForge.Cli --no-build --"       # then drive it fast
 

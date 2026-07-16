@@ -9,7 +9,7 @@ Source policy:
 
 ## Quest Record
 
-[`005CE2 zzzAoMMq00 "Vigilant of Stendarr"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:L1)
+[`005CE2 zzzAoMMq00 "Vigilant of Stendarr"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:L1)
 
 CLI:
 - `questdiag Vigilant.esm 0x005CE2`
@@ -45,11 +45,11 @@ Objectives:
 
 | Index | Source | Translation |
 |---:|---|---|
-| 5 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L2) | Join the Vigilant of Stendarr |
-| 10 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L3) | Follow Altano or Join Altano at Temple of Stendarr |
-| 15 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L4) | Talk to Altano |
-| 20 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L5) | Talk to Thorondir |
-| 30 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L6) | Talk to Altano |
+| 5 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L2) | Join the Vigilant of Stendarr |
+| 10 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L3) | Follow Altano or Join Altano at Temple of Stendarr |
+| 15 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L4) | Talk to Altano |
+| 20 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L5) | Talk to Thorondir |
+| 30 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md#L6) | Talk to Altano |
 
 Objective targets:
 - 1 target at objective 5 (0 conditions)
@@ -67,12 +67,12 @@ Objective targets:
 
 #### Topic 1: Recruitment pitch (005CE6)
 
-[`005CE6 zzAoMMq0B1Tvigilant` prompt: "Let me join the vigilant of Stendarr."](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L1)
+[`005CE6 zzAoMMq0B1Tvigilant` prompt: "Let me join the vigilant of Stendarr."](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L1)
 
 | INFO | Flags | Conditions | Translation |
 |---|---|---|---|
-| [`005CE7`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L2) | `SayOnce`, `WalkAway` | `GetStage < 10`; `GetIsAliasRef alias #0` | ["You have good eyes.Why do't you join the vigilant of Stendarr?Fill Skyrim with the Mercy of Stendarr together?"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L2) |
-| [`005CEC`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L3) | `WalkAway` | `GetStage < 10`; `GetIsAliasRef alias #0` | ["Chage your mind?We welcome you."](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L3) |
+| [`005CE7`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L2) | `SayOnce`, `WalkAway` | `GetStage < 10`; `GetIsAliasRef alias #0` | ["You have good eyes.Why do't you join the vigilant of Stendarr?Fill Skyrim with the Mercy of Stendarr together?"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L2) |
+| [`005CEC`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L3) | `WalkAway` | `GetStage < 10`; `GetIsAliasRef alias #0` | ["Chage your mind?We welcome you."](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L3) |
 
 Inference:
 - Alias #0 is Altano (recruiter).
@@ -80,11 +80,11 @@ Inference:
 
 #### Topic 2: Yes, accept recruitment (005CE8)
 
-[`005CE8 zzAoMMq0B1Yes` prompt: "Yes, let me join."](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L4)
+[`005CE8 zzAoMMq0B1Yes` prompt: "Yes, let me join."](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L4)
 
 | INFO | Flags | Conditions | Responses | VMAD |
 |---|---|---|---|---|
-| [`005CE9`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L5) | none | `GetIsAliasRef alias #0` | (1) ["I am glad to receive a favorable reply. Stendarr belss you."](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L5) / (2) ["I will guide you to Temple of Stendarr. Come with me"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L6) | `AoM00_TIF__01005CE9.Fragment_0` on end |
+| [`005CE9`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L5) | none | `GetIsAliasRef alias #0` | (1) ["I am glad to receive a favorable reply. Stendarr belss you."](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L5) / (2) ["I will guide you to Temple of Stendarr. Come with me"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L6) | `AoM00_TIF__01005CE9.Fragment_0` on end |
 
 Inference:
 - Multi-line response suggests dialogue flavor before the teleport.
@@ -92,11 +92,11 @@ Inference:
 
 #### Topic 3: Decline recruitment (005CEA)
 
-[`005CEA zzAoMMq0B1No` prompt: "No,Not interested."](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L7)
+[`005CEA zzAoMMq0B1No` prompt: "No,Not interested."](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L7)
 
 | INFO | Flags | Conditions | Translation | VMAD |
 |---|---|---|---|---|
-| [`005CEB`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L8) | `Goodbye` | `GetIsAliasRef alias #0` | ["Oh...I am here. If you change your mind...Come here again."](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L8) | `AoM00_TIF__01005CEB.Fragment_0` on end |
+| [`005CEB`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L8) | `Goodbye` | `GetIsAliasRef alias #0` | ["Oh...I am here. If you change your mind...Come here again."](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L8) | `AoM00_TIF__01005CEB.Fragment_0` on end |
 
 Inference:
 - `Goodbye` flag indicates this ends the conversation branch.
@@ -108,11 +108,11 @@ Inference:
 
 #### Topic 4: Arrival at Temple (027A3C)
 
-[`027A3C zzzAoMMq00B2ArriveTemple`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L9)
+[`027A3C zzzAoMMq00B2ArriveTemple`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L9)
 
 | INFO | Flags | Conditions | Responses | VMAD |
 |---|---|---|---|---|
-| [`027A3F`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L10-11) | `Goodbye` | `GetInCell == 025091:Vigilant.esm`; `GetStage == 15`; `GetIsAliasRef alias #0` | (1) ["This is Temple of Stendarr, one of the bases of the Vigilants."](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L10) / (2) ["You should greet with  Thorondir. He is Keeper of Stendarr."](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L11) | `AoM00_TIF__01027A3F.Fragment_0` on end |
+| [`027A3F`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L10-11) | `Goodbye` | `GetInCell == 025091:Vigilant.esm`; `GetStage == 15`; `GetIsAliasRef alias #0` | (1) ["This is Temple of Stendarr, one of the bases of the Vigilants."](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L10) / (2) ["You should greet with  Thorondir. He is Keeper of Stendarr."](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L11) | `AoM00_TIF__01027A3F.Fragment_0` on end |
 
 Inference:
 - `GetInCell` confirms location at Temple of Stendarr interior (025091).
@@ -121,11 +121,11 @@ Inference:
 
 #### Topic 5: Thorondir greeting (027A41)
 
-[`027A41 zzzAoMMq00B3NiceToMeet` prompt: "Nice to meet you, I am <Alias=Player>"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L12)
+[`027A41 zzzAoMMq00B3NiceToMeet` prompt: "Nice to meet you, I am <Alias=Player>"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L12)
 
 | INFO | Flags | Conditions | Responses | VMAD |
 |---|---|---|---|---|
-| [`027A42`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L13-15) | `Goodbye` | `GetStage == 20`; `GetIsAliasRef alias #4` | (1) ["Are you the rookie who Altano talk about. You have a good eye. I feel very strong will."](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L13) / (2) ["Small talk is So much. Because such would be boring old story"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L14) / (3) ["Altano will Take care of you for a while. If you have something, say to Altano."](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L15) | `AoM00_TIF__01027A42.Fragment_0` on end |
+| [`027A42`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L13-15) | `Goodbye` | `GetStage == 20`; `GetIsAliasRef alias #4` | (1) ["Are you the rookie who Altano talk about. You have a good eye. I feel very strong will."](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L13) / (2) ["Small talk is So much. Because such would be boring old story"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L14) / (3) ["Altano will Take care of you for a while. If you have something, say to Altano."](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L15) | `AoM00_TIF__01027A42.Fragment_0` on end |
 
 Inference:
 - Alias #4 is Thorondir (keeper).
@@ -134,11 +134,11 @@ Inference:
 
 #### Topic 6: Temple explanation (027A44)
 
-[`027A44 zzzAoMMq00B04Explanation` prompt: "Tell me about this temple"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L16)
+[`027A44 zzzAoMMq00B04Explanation` prompt: "Tell me about this temple"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L16)
 
 | INFO | Flags | Conditions | Responses | VMAD |
 |---|---|---|---|---|
-| [`027A45`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L17-22) | `Goodbye` | `GetStage == 30`; `GetIsAliasRef alias #0` | (1) ["I'll keep a brief description of facilities available."](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L17) / (2) ["Where you are standing now between Stendhal's. It's a place to pray to Stendhal."](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L18) / (3) ["There is a library that stores the books that our ancestors have gathered in the basement. I hope you go to see when you have time"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L19) / (4) ["On the first floor right near smelting units, the second floor is in the break room seen from the entrance"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L20) / (5) ["The second floor is a dining room on the left. You are there to eat me feel hungry. Such is not a feast"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L21) / (6) ["Description So much. You may be tired. I hope you get some rest"](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L22) | `AoM00_TIF__01027A45.Fragment_0` on end |
+| [`027A45`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L17-22) | `Goodbye` | `GetStage == 30`; `GetIsAliasRef alias #0` | (1) ["I'll keep a brief description of facilities available."](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L17) / (2) ["Where you are standing now between Stendhal's. It's a place to pray to Stendhal."](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L18) / (3) ["There is a library that stores the books that our ancestors have gathered in the basement. I hope you go to see when you have time"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L19) / (4) ["On the first floor right near smelting units, the second floor is in the break room seen from the entrance"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L20) / (5) ["The second floor is a dining room on the left. You are there to eat me feel hungry. Such is not a feast"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L21) / (6) ["Description So much. You may be tired. I hope you get some rest"](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md#L22) | `AoM00_TIF__01027A45.Fragment_0` on end |
 
 Inference:
 - Alias #0 switches context here (likely back to Altano for flavor description).
@@ -148,12 +148,12 @@ Inference:
 ## Related Records
 
 NPCs (quest-affiliated):
-- [`0274A6 zzzAoMVigilantKeeper` - Thorondir (Keeper of Stendarr)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv#L1)
-- [`000D62 zzzAoMVigilantTraitor` - Altano (Recruiter)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv#L1)
-- [`02748B zzzAoMVigilantKeeper` - Thorondir (alternate record)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv#L1)
+- [`0274A6 zzzAoMVigilantKeeper` - Thorondir (Keeper of Stendarr)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv#L1)
+- [`000D62 zzzAoMVigilantTraitor` - Altano (Recruiter)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv#L1)
+- [`02748B zzzAoMVigilantKeeper` - Thorondir (alternate record)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv#L1)
 
 Locations:
-- [`025091 zzzAoMTempleInteriorStendarr` - Temple of Stendarr (interior cell)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant)
+- [`025091 zzzAoMTempleInteriorStendarr` - Temple of Stendarr (interior cell)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant)
 
 ## Reconstruction Notes
 

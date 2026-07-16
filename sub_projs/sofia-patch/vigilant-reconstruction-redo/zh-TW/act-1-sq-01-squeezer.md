@@ -9,7 +9,7 @@
 
 ## 任務記錄 (Quest Record)
 
-[`005CE3 zzzAoMMq01 "Squeezer"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:288)
+[`005CE3 zzzAoMMq01 "Squeezer"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:288)
 
 CLI 指令：
 - `questdiag Vigilant.esm 0x005CE3`
@@ -46,12 +46,12 @@ ESM 路徑：
 
 | 索引 | 來源 | 文本 |
 |---:|---|---|
-| 0 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:289) | 與阿爾塔諾交談 |
-| 10 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:290) | 跟隨阿爾塔諾或在死亡聖所與阿爾塔諾會合 |
-| 15 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:291) | 與阿爾塔諾交談 |
-| 20 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:292) | 搜尋吸血鬼 |
-| 30 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:293) | 擊敗吸血鬼 |
-| 40 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:294) | 向阿爾塔諾報告 |
+| 0 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:289) | 與阿爾塔諾交談 |
+| 10 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:290) | 跟隨阿爾塔諾或在死亡聖所與阿爾塔諾會合 |
+| 15 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:291) | 與阿爾塔諾交談 |
+| 20 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:292) | 搜尋吸血鬼 |
+| 30 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:293) | 擊敗吸血鬼 |
+| 40 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:294) | 向阿爾塔諾報告 |
 
 目標對象 (Objective targets)：
 - 目標 0: 1 個對象，0 條件。
@@ -87,7 +87,7 @@ ESM 路徑：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x006258 zzAoMMq01B1Mission1` | `0x006259` | 無 | `GetStage < 10`; `GetIsAliasRef alias #0` | 提示：[`「我能幫你嗎？」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:14) 回覆 (中性)：[`「雪漫城的阿凱祭司有個請求。有吸血鬼出現了。」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:15) 回覆 (中性)：[`「你能協助我嗎？立刻準備好出發，吸血鬼不會等我們。」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:16) |
+| `0x006258 zzAoMMq01B1Mission1` | `0x006259` | 無 | `GetStage < 10`; `GetIsAliasRef alias #0` | 提示：[`「我能幫你嗎？」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:14) 回覆 (中性)：[`「雪漫城的阿凱祭司有個請求。有吸血鬼出現了。」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:15) 回覆 (中性)：[`「你能協助我嗎？立刻準備好出發，吸血鬼不會等我們。」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:16) |
 
 VMAD 片段：
 - `AoM01_TIF__01006259` (觸發 `OnEnd` 片段)
@@ -104,7 +104,7 @@ VMAD 片段：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x00625B zzAoMMq01B2AboutCrime` | `0x00625C` | 無 | `GetStage == 15`; `GetInCell 0x0165AA`; `GetIsAliasRef alias #0` | 提示：[`「告訴我關於這次事件的事。」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:18) 回覆 (開心)：[`「每個受害者的血都被抽乾了。這是吸血鬼幹的，新手吸血鬼。」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:19) 回覆 (中性)：[`「我會試著在這裡多研究一下文件。你在鎮上尋找可疑的人。」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:20) |
+| `0x00625B zzAoMMq01B2AboutCrime` | `0x00625C` | 無 | `GetStage == 15`; `GetInCell 0x0165AA`; `GetIsAliasRef alias #0` | 提示：[`「告訴我關於這次事件的事。」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:18) 回覆 (開心)：[`「每個受害者的血都被抽乾了。這是吸血鬼幹的，新手吸血鬼。」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:19) 回覆 (中性)：[`「我會試著在這裡多研究一下文件。你在鎮上尋找可疑的人。」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:20) |
 
 VMAD 片段：
 - `AoM01_TIF__0100625C` (觸發 `OnEnd` 片段)
@@ -123,7 +123,7 @@ VMAD 片段：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x00625E zzAoMMq01B3AboutVictims` | `0x00625F` | 無 | `GetStage == 20`; `GetIsAliasRef alias #0` | 提示：[`「告訴我關於受害者的事」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:22) 回覆 (悲傷)：[`「受害者之間在魔法上沒有共同點……嗯……共同點是男性。」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:23) |
+| `0x00625E zzAoMMq01B3AboutVictims` | `0x00625F` | 無 | `GetStage == 20`; `GetIsAliasRef alias #0` | 提示：[`「告訴我關於受害者的事」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:22) 回覆 (悲傷)：[`「受害者之間在魔法上沒有共同點……嗯……共同點是男性。」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:23) |
 
 ### 分支 4：權威問題 — 「我們不需要領主的許可嗎？」
 
@@ -135,7 +135,7 @@ VMAD 片段：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x006261 zzAoMMq01B4AboutAuthority` | `0x006262` | 無 | `GetStage == 20`; `GetIsAliasRef alias #0` | 提示：[`「我們不需要領主的許可嗎？」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:25) 回覆 (開心)：[`「我們的活動在天際省是被接受的。其中一個原因是內戰導致人手不足。總之，我們現在很受歡迎。」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:26) |
+| `0x006261 zzAoMMq01B4AboutAuthority` | `0x006262` | 無 | `GetStage == 20`; `GetIsAliasRef alias #0` | 提示：[`「我們不需要領主的許可嗎？」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:25) 回覆 (開心)：[`「我們的活動在天際省是被接受的。其中一個原因是內戰導致人手不足。總之，我們現在很受歡迎。」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:26) |
 
 翻譯筆記：
 - "Cuvil War" 被推測為誤寫或在地化的名稱；可能指天際省的「內戰」(Civil War)。
@@ -150,7 +150,7 @@ VMAD 片段：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x006264 zzAoMMq01B5WhyNovice` | `0x006265` | 無 | `GetStage == 20`; `GetIsAliasRef alias #0` | 提示：[`「你說新手吸血鬼……為什麼？」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:28) 回覆 (開心)：[`「每天都有受害者被發現。大多數行為招搖的吸血鬼都是新手。」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:29) |
+| `0x006264 zzAoMMq01B5WhyNovice` | `0x006265` | 無 | `GetStage == 20`; `GetIsAliasRef alias #0` | 提示：[`「你說新手吸血鬼……為什麼？」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:28) 回覆 (開心)：[`「每天都有受害者被發現。大多數行為招搖的吸血鬼都是新手。」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:29) |
 
 ### 分支 6：嫌疑人分支 — 妓女遭遇
 
@@ -163,8 +163,8 @@ VMAD 片段：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x006267 zzAoMMq01B6Whore` | `0x006268` | Goodbye | `GetStage == 20`; `GetGlobalValue 0x000038` [6–21]; `GetIsAliasRef alias #1` | 提示：(無) 回覆 (中性)：[`「晚上再來吧。我會給你一個美味的甜圈。」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:32) |
-| `0x006267 zzAoMMq01B6Whore` | `0x006269` | WalkAway | `GetStage == 20`; `GetIsAliasRef alias #1` | 提示：(無) 回覆 (中性)：[`「你喜歡甜圈嗎？我的甜圈很美味喔？」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:33) |
+| `0x006267 zzAoMMq01B6Whore` | `0x006268` | Goodbye | `GetStage == 20`; `GetGlobalValue 0x000038` [6–21]; `GetIsAliasRef alias #1` | 提示：(無) 回覆 (中性)：[`「晚上再來吧。我會給你一個美味的甜圈。」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:32) |
+| `0x006267 zzAoMMq01B6Whore` | `0x006269` | WalkAway | `GetStage == 20`; `GetIsAliasRef alias #1` | 提示：(無) 回覆 (中性)：[`「你喜歡甜圈嗎？我的甜圈很美味喔？」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:33) |
 
 ### 分支 7：接受甜圈 — 「拿一個」
 
@@ -172,7 +172,7 @@ VMAD 片段：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x00626A zzAoMMq01B6Yes` | `0x00626B` | Goodbye | `GetIsAliasRef alias #1` | 提示：[`「拿一個」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:35) 回覆 (中性)：[`「謝謝。你能閉上眼一會兒嗎？我很害羞……」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:36) |
+| `0x00626A zzAoMMq01B6Yes` | `0x00626B` | Goodbye | `GetIsAliasRef alias #1` | 提示：[`「拿一個」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:35) 回覆 (中性)：[`「謝謝。你能閉上眼一會兒嗎？我很害羞……」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:36) |
 
 VMAD 片段：
 - `AoM01_TIF__0100626B` (觸發 `OnEnd` 片段)
@@ -187,7 +187,7 @@ VMAD 片段：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x00626C zzAoMMq01B6No` | `0x00626D` | Goodbye | `GetIsAliasRef alias #1` | 提示：[`「不需要」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:38) 回覆 (中性)：[`「那太遺憾了……難道你不想看看我在兜帽下的臉嗎？」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:39) |
+| `0x00626C zzAoMMq01B6No` | `0x00626D` | Goodbye | `GetIsAliasRef alias #1` | 提示：[`「不需要」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:38) 回覆 (中性)：[`「那太遺憾了……難道你不想看看我在兜帽下的臉嗎？」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:39) |
 
 翻譯筆記：
 - "in Hood" 可能是對嫌疑人喬裝 (兜帽/斗篷) 的誤譯或風格化文本。
@@ -202,7 +202,7 @@ VMAD 片段：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x00626F zzAoMMq01B7MissionComplete` | `0x006270` | 無 | `GetStage == 40`; `GetIsAliasRef alias #0` | 提示：[`「擊敗了吸血鬼，她喬裝成了一名妓女。」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:41) 回覆 (開心)：[`「嗯……這就是為什麼你看起來煥然一新。你將來會出人頭地的。」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:42) 回覆 (開心)：[`「總之……妓女……我們的工作完成了。我也要在晚上去玩玩。」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:43) |
+| `0x00626F zzAoMMq01B7MissionComplete` | `0x006270` | 無 | `GetStage == 40`; `GetIsAliasRef alias #0` | 提示：[`「擊敗了吸血鬼，她喬裝成了一名妓女。」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:41) 回覆 (開心)：[`「嗯……這就是為什麼你看起來煥然一新。你將來會出人頭地的。」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:42) 回覆 (開心)：[`「總之……妓女……我們的工作完成了。我也要在晚上去玩玩。」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:43) |
 
 VMAD 片段：
 - `AoM01_TIF__01006270` (觸發 `OnEnd` 片段)
@@ -213,7 +213,7 @@ VMAD 片段：
 根據 `infodiag`，這些並不完全屬於任務 `005CE3`，但它們是必要的背景資訊：
 
 NPC：
-- [`000D62 zzzAoMVigilantTraitor` - 阿爾塔諾](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:835) (任務提供者)
+- [`000D62 zzzAoMVigilantTraitor` - 阿爾塔諾](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:835) (任務提供者)
 - 吸血鬼妓女：(別名 #1；NPC 身份待透過更深層的 QUST 別名轉儲確定)
 
 全局變數 (Globals)：

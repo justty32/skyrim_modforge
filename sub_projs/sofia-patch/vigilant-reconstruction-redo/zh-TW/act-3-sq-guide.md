@@ -10,7 +10,7 @@
 
 ## 任務記錄
 
-[`43CBAE zzzCOGuide "斯坦達爾指南"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:360)
+[`43CBAE zzzCOGuide "斯坦達爾指南"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:360)
 
 CLI：
 - `questdiag Vigilant.esm 0x43CBAE`
@@ -51,15 +51,15 @@ ESM：
 
 | 索引 | 來源 | 文本 |
 |---:|---|---|
-| 10 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:361) | 打破顫慄詛咒 |
-| 20 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:362) | 打破墮落詛咒 |
-| 22 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:363) | 前往朱利亞斯的房間 |
-| 24 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:364) | 前往地下室 |
-| 30 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:365) | 打破泡沫詛咒 |
-| 35 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:366) | 獲得巴托洛房間的鑰匙 |
-| 40 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:367) | 打破鎖鏈詛咒 |
-| 50 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:368) | 打破嫉妒詛咒 |
-| 60 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:369) | 釋放朱利亞斯 |
+| 10 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:361) | 打破顫慄詛咒 |
+| 20 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:362) | 打破墮落詛咒 |
+| 22 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:363) | 前往朱利亞斯的房間 |
+| 24 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:364) | 前往地下室 |
+| 30 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:365) | 打破泡沫詛咒 |
+| 35 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:366) | 獲得巴托洛房間的鑰匙 |
+| 40 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:367) | 打破鎖鏈詛咒 |
+| 50 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:368) | 打破嫉妒詛咒 |
+| 60 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:369) | 釋放朱利亞斯 |
 
 目標目標：
 - 9 個目標，每個目標指向 1 個標靶。
@@ -82,7 +82,7 @@ ESM：
 
 ## 第 3 幕背景
 
-zzzCOGuide 是 **第 3 幕（宅邸篇章）中的支線任務**。第 3 幕的主線任務是 [`065932 zzzCOMq01 "湮滅之子"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:276)，涉及：
+zzzCOGuide 是 **第 3 幕（宅邸篇章）中的支線任務**。第 3 幕的主線任務是 [`065932 zzzCOMq01 "湮滅之子"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:276)，涉及：
 - 調查貴族宅邸（目標 30）
 - 解決案件（與宅邸的詛咒有關）
 - 擊敗朱利亞斯（目標 60）
@@ -105,14 +105,14 @@ zzzCOGuide 是 **第 3 幕（宅邸篇章）中的支線任務**。第 3 幕的�
 ## 相關記錄
 
 第 3 幕主線任務：
-- [`065932 zzzCOMq01 "湮滅之子"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:276)
+- [`065932 zzzCOMq01 "湮滅之子"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:276)
 
 第 3 幕其他支線任務：
-- [`324E7E zzzCOSubQ01 "繼任者"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:32)
-- [`444115 zzzCOqOwl "織者之針 2"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:321)
+- [`324E7E zzzCOSubQ01 "繼任者"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:32)
+- [`444115 zzzCOqOwl "織者之針 2"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:321)
 
 通用對話：
-- [`065EF0 zzzCOGenericDialogue "CO 通用對話"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:355)
+- [`065EF0 zzzCOGenericDialogue "CO 通用對話"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:355)
 
 ## 重建筆記
 

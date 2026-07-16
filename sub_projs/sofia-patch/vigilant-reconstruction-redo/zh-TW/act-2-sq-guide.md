@@ -9,7 +9,7 @@
 
 ## 任務記錄
 
-[`43B81F zzzBMGuide "斯坦達爾指南"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:83)
+[`43B81F zzzBMGuide "斯坦達爾指南"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:83)
 
 CLI：
 - `questdiag Vigilant.esm 0x43B81F`
@@ -40,8 +40,8 @@ ESM：
 
 | 索引 | 來源 | 任務文本 |
 |---:|---|---|
-| 0 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:84) | 追蹤血跡 |
-| 10 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:85) | 追蹤古老之血 |
+| 0 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:84) | 追蹤血跡 |
+| 10 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:85) | 追蹤古老之血 |
 
 目標標靶：
 - 每個目標在 ESM 中各有 1 個標靶。
@@ -60,7 +60,7 @@ ESM：
 ## 重建筆記
 
 基於源代碼：
-- 該雜項任務由 [`43B81F zzzBMGuide`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:83) 代表，名稱為 `"斯坦達爾指南"`。
+- 該雜項任務由 [`43B81F zzzBMGuide`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:83) 代表，名稱為 `"斯坦達爾指南"`。
 - 它包含 2 個目標（階段 0 和階段 10），對應兩個主要的調查分支：
   - 目標 0：「追蹤血跡」（初始調查階段）
   - 目標 10：「追蹤古老之血」（升級調查階段，可能與 `zzzBMMq02` 中的吸血鬼發現有關）

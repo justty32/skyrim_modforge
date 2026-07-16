@@ -23,7 +23,7 @@ ModForge  ──(text+emotion+ref, --out path)──►  voicegen.py  ──► 
 ## 使用
 
 ```bash
-export MODFORGE_TTS_BIN=/home/lorkhan/repo/ModForge/sub_projs/skyrim-voicegen/voicegen-f5.sh
+export MODFORGE_TTS_BIN=/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/skyrim-voicegen/voicegen-f5.sh
 # venv 在 repo root .venvs/f5(gitignore);放別處用 MODFORGE_VOICEGEN_VENV 覆寫
 ```
 之後 ModForge 的 `voicelines` / `scripts/ship-voice.sh` 會自動透過 `MODFORGE_TTS_BIN` 呼到這裡。

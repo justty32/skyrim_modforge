@@ -9,7 +9,7 @@
 
 ## 任務記錄 (Quest Record)
 
-[`006271 zzzAoMMq02 "The Untouchable One"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD)
+[`006271 zzzAoMMq02 "The Untouchable One"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD)
 
 CLI 指令：
 - `questdiag Vigilant.esm 0x006271`
@@ -45,9 +45,9 @@ ESM 路徑：
 
 | 索引 | 來源 | 文本 |
 |---:|---|---|
-| 0 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD) | 在敕旗母馬客棧與阿爾塔諾交談 |
-| 10 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD) | 擊敗魔族 |
-| 20 | [任務目標](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD) | 向阿爾塔諾報告 |
+| 0 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD) | 在敕旗母馬客棧與阿爾塔諾交談 |
+| 10 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD) | 擊敗魔族 |
+| 20 | [任務目標](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD) | 向阿爾塔諾報告 |
 
 目標對象 (Objective targets)：
 - 目標 0: 1 個對象，0 條件。
@@ -81,7 +81,7 @@ ESM 路徑：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x006274 zzAoMMq02B1Mission2` | `0x006275` | 無 | `GetStage < 10`; `GetInCell 0x01605E`; `GetIsAliasRef alias #0` | 提示：[`「有什麼反常的情況嗎？」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:45) 回覆 (恐懼)：[`「幾個小時前，城牆外的一棟房子被魔族破壞了。魔族在放聲大笑。他直到現在還待在那棟破房子裡。」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:46) 回覆 (疑惑)：[`「有人目擊到一名可能是魔族召喚師的女性。我們的任務是擊敗魔族並抓住召喚師。」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:47) |
+| `0x006274 zzAoMMq02B1Mission2` | `0x006275` | 無 | `GetStage < 10`; `GetInCell 0x01605E`; `GetIsAliasRef alias #0` | 提示：[`「有什麼反常的情況嗎？」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:45) 回覆 (恐懼)：[`「幾個小時前，城牆外的一棟房子被魔族破壞了。魔族在放聲大笑。他直到現在還待在那棟破房子裡。」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:46) 回覆 (疑惑)：[`「有人目擊到一名可能是魔族召喚師的女性。我們的任務是擊敗魔族並抓住召喚師。」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:47) |
 
 VMAD 片段：
 - `AoM02_TIF__01006275` (觸發 `OnEnd` 片段)
@@ -100,7 +100,7 @@ VMAD 片段：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x006277 zzAoMMq02B2Vernaccus` | `0x006278` | WalkAway | `GetStage < 15`; `GetIsAliasRef alias #1` | [`「我是維納庫斯！人稱不可觸及者！！可憐的凡人，屈服於我的力量之下吧！！」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:50) |
+| `0x006277 zzAoMMq02B2Vernaccus` | `0x006278` | WalkAway | `GetStage < 15`; `GetIsAliasRef alias #1` | [`「我是維納庫斯！人稱不可觸及者！！可憐的凡人，屈服於我的力量之下吧！！」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:50) |
 
 (推論：WalkAway 標誌表明 NPC 在說完話後會撇開玩家；隨後可能觸發戰鬥)
 
@@ -113,7 +113,7 @@ VMAD 片段：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x008DD5 zzAoMMq02B2Fight` | `0x008DD6` | Goodbye | `GetIsAliasRef alias #1` | 提示：[`「我們是斯丹達爾警戒者。你準備好回到湮滅之境了嗎？」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:TBD) 回覆：[`「嘰嘰！！但是，我是不可觸及者！！無論你如何意識到自己的力量，我絕不會輸給你！！」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:TBD) |
+| `0x008DD5 zzAoMMq02B2Fight` | `0x008DD6` | Goodbye | `GetIsAliasRef alias #1` | 提示：[`「我們是斯丹達爾警戒者。你準備好回到湮滅之境了嗎？」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:TBD) 回覆：[`「嘰嘰！！但是，我是不可觸及者！！無論你如何意識到自己的力量，我絕不會輸給你！！」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:TBD) |
 
 VMAD 片段：
 - `AoM02_TIF__01008DD6` (觸發 `OnEnd` 片段)
@@ -128,7 +128,7 @@ VMAD 片段：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x2D5C61 zzzAoMMq02B203` | `0x2D5C62` | Goodbye | `GetIsAliasRef alias #1` | 回覆 (開心)：[`「哈，哈，哈阿阿！！你害怕了！！我清楚地感受到了你的恐懼！」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:TBD) 回覆 (開心)：[`「實力的差距你是無法彌補的。隨時隨地全力以赴。發出痛苦的尖叫吧！！」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:TBD) |
+| `0x2D5C61 zzzAoMMq02B203` | `0x2D5C62` | Goodbye | `GetIsAliasRef alias #1` | 回覆 (開心)：[`「哈，哈，哈阿阿！！你害怕了！！我清楚地感受到了你的恐懼！」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:TBD) 回覆 (開心)：[`「實力的差距你是無法彌補的。隨時隨地全力以赴。發出痛苦的尖叫吧！！」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:TBD) |
 
 VMAD 片段：
 - `AoM02_TIF__022D5C62` (觸發 `OnEnd` 片段)
@@ -143,7 +143,7 @@ VMAD 片段：
 
 | 話題 | INFO | 標誌 | 條件 | 翻譯 |
 |---|---|---|---|---|
-| `0x00627C zzAoMMq02B3MissionComplete` | `0x00627D` | 無 | `GetStage == 20`; `GetIsAliasRef alias #0` | 提示：[`「召喚師在哪裡？」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:52) 回覆 (憤怒)：[`「召喚師已經從這裡逃走了。她召喚了維納庫斯，這可是高階魔族。她的召喚能力是專家級的。」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:53) 回覆 (開心)：[`「我會回到旅店收集關於召喚師的信息。如果你準備好了，就來找我。」`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:54) |
+| `0x00627C zzAoMMq02B3MissionComplete` | `0x00627D` | 無 | `GetStage == 20`; `GetIsAliasRef alias #0` | 提示：[`「召喚師在哪裡？」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:52) 回覆 (憤怒)：[`「召喚師已經從這裡逃走了。她召喚了維納庫斯，這可是高階魔族。她的召喚能力是專家級的。」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:53) 回覆 (開心)：[`「我會回到旅店收集關於召喚師的信息。如果你準備好了，就來找我。」`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:54) |
 
 VMAD 片段：
 - `AoM02_TIF__0100627D` (觸發 `OnEnd` 片段)
@@ -225,6 +225,6 @@ NPC：
 - 目標與對話同步：每個分支對應一個目標階段。
 
 基於來源的連結：
-- [`006271 zzzAoMMq02` 任務記錄](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD)
-- [`006274`, `006277`, `008DD5`, `0x2D5C61`, `00627C` 對話話題](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:45–54)
+- [`006271 zzzAoMMq02` 任務記錄](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:TBD)
+- [`006274`, `006277`, `008DD5`, `0x2D5C61`, `00627C` 對話話題](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:45–54)
 - 假設別名存在，但 CLI 輸出中未明確命名；等待 QUST 別名轉儲以進行確認。

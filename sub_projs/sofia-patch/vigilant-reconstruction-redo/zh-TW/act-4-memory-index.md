@@ -17,7 +17,7 @@ ESM 路徑：`/home/lorkhan/skyrim_mods/unzip/Vigilant SE v181/10 English/Vigila
 
 ## 框架任務 (樞紐) (Framing quest (hub))
 
-[`42E0B1 zzzCHMemoryGuide "Memory Guide"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:309)
+[`42E0B1 zzzCHMemoryGuide "Memory Guide"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:309)
 - 標誌: `AllowRepeatedStages`, 優先級: `99`, 類型: `Misc`, 過濾器: `CH\`, 14 個階段，在階段 999 處有單個 `CompleteQuest`。
 - 3 個目標 (引用 Dylan Thomas 的 *Do not go gentle into that good night*):
   - obj 100 "Like when the dream no longer needs its dreamer" (就像當夢不再需要夢者)
@@ -29,19 +29,19 @@ ESM 路徑：`/home/lorkhan/skyrim_mods/unzip/Vigilant SE v181/10 English/Vigila
 
 | # | FormID | EditorID | 名稱 | 目標 | 優先級 | 階段 | `CompleteQuest` 於 | 切片 |
 |---:|---|---|---|---|---:|---:|---|---|
-| 01 | `12C4F4` | zzzCHMemoryQuest01 | 審判官 (The Grand Inquisitor) | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:141) | 90 | 10 | 20 / 100 | [完成](act-4-memory-01-grand-inquisitor.md) |
-| 02 | `13712B` | zzzCHMemoryQuest02 | 瘋王 (The Mad King) | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:38) | 90 | 12 | 30 / 130 | [完成](act-4-memory-02-mad-king.md) |
-| 03 | `13965A` | zzzCHMemoryQuest03 | 獵犬騎士 (Knight of Hound) | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:154) | 90 | 12 | 30 / 130 | [完成](act-4-memory-03-knight-of-hound.md) |
-| 04 | `140225` | zzzCHMemoryQuest04 | 愚者約翰 (Johan the fool) | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:297) | 90 | 16 | 60 / 100 | [完成](act-4-memory-04-johan.md) |
-| 05 | `05AE03` | zzzCHMemoryQuest05 | 阿達·巴爾 (Ada Bal) | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:358) | 90 | 12 | 50 / 120 | [完成](act-4-memory-05-ada-bal.md) |
-| 06 | `06A23B` | zzzCHMemoryQuest06 | 奇蹟的殘留 (Remain of Miracle) | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:372) | 90 | 6 | 30 (單個) | [完成](act-4-memory-06-remain-of-miracle.md) |
-| 07 | `06F53C` | zzzCHMemoryQuest07 | 馬魯克的誘惑 (Temptation of Marukh) | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:102) | 90 | 13 | 70 / 150 | [完成](act-4-memory-07-marukh.md) |
-| 08 | `080E91` | zzzCHMemoryQuest08 | 無名詩人 (The Nameless Bard) | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:195) | 90 | 26 | 90 / 230 / 350 / 370 / 999 | [完成](act-4-memory-08-nameless-bard.md) |
-| 09 | `2CAE30` | zzzCHMemoryQuest09 | 來自彼方 (From Beyond) | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:265) | 95 | 14 | 150 / 200 / 999 | [完成](act-4-memory-09-from-beyond.md) |
-| 10 | `2A532E` | zzzCHMemoryQuest10 | 血腥的佩林納爾 (Pelinal the Bloody) | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401) | 90 | 40 | 180 / 300 | [完成](act-4-memory-10-pelinal.md) |
-| 11 | `2B9BAB` | zzzCHMemoryQuest11 | 風暴過後 (After the Storm) | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256) | 90 | 16 | 50 / 340 | [完成](act-4-memory-11-after-the-storm.md) |
-| 12 | `2BC395` | zzzCHMemoryQuest12 | 昨夜 (Last Night) | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307) | 90 | 12 | 50 / 310 | [完成](act-4-memory-12-last-night.md) |
-| 13 | `51C038`† | zzzCHMemoryQuest13 | 牛頭人帕拉瓦尼亞 (Man-Bull Paravanila) | [連結](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:214) | 99 | 7 | 30 / 40 / 999 | [完成](act-4-memory-13-man-bull-paravanila.md) |
+| 01 | `12C4F4` | zzzCHMemoryQuest01 | 審判官 (The Grand Inquisitor) | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:141) | 90 | 10 | 20 / 100 | [完成](act-4-memory-01-grand-inquisitor.md) |
+| 02 | `13712B` | zzzCHMemoryQuest02 | 瘋王 (The Mad King) | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:38) | 90 | 12 | 30 / 130 | [完成](act-4-memory-02-mad-king.md) |
+| 03 | `13965A` | zzzCHMemoryQuest03 | 獵犬騎士 (Knight of Hound) | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:154) | 90 | 12 | 30 / 130 | [完成](act-4-memory-03-knight-of-hound.md) |
+| 04 | `140225` | zzzCHMemoryQuest04 | 愚者約翰 (Johan the fool) | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:297) | 90 | 16 | 60 / 100 | [完成](act-4-memory-04-johan.md) |
+| 05 | `05AE03` | zzzCHMemoryQuest05 | 阿達·巴爾 (Ada Bal) | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:358) | 90 | 12 | 50 / 120 | [完成](act-4-memory-05-ada-bal.md) |
+| 06 | `06A23B` | zzzCHMemoryQuest06 | 奇蹟的殘留 (Remain of Miracle) | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:372) | 90 | 6 | 30 (單個) | [完成](act-4-memory-06-remain-of-miracle.md) |
+| 07 | `06F53C` | zzzCHMemoryQuest07 | 馬魯克的誘惑 (Temptation of Marukh) | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:102) | 90 | 13 | 70 / 150 | [完成](act-4-memory-07-marukh.md) |
+| 08 | `080E91` | zzzCHMemoryQuest08 | 無名詩人 (The Nameless Bard) | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:195) | 90 | 26 | 90 / 230 / 350 / 370 / 999 | [完成](act-4-memory-08-nameless-bard.md) |
+| 09 | `2CAE30` | zzzCHMemoryQuest09 | 來自彼方 (From Beyond) | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:265) | 95 | 14 | 150 / 200 / 999 | [完成](act-4-memory-09-from-beyond.md) |
+| 10 | `2A532E` | zzzCHMemoryQuest10 | 血腥的佩林納爾 (Pelinal the Bloody) | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:401) | 90 | 40 | 180 / 300 | [完成](act-4-memory-10-pelinal.md) |
+| 11 | `2B9BAB` | zzzCHMemoryQuest11 | 風暴過後 (After the Storm) | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:256) | 90 | 16 | 50 / 340 | [完成](act-4-memory-11-after-the-storm.md) |
+| 12 | `2BC395` | zzzCHMemoryQuest12 | 昨夜 (Last Night) | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:307) | 90 | 12 | 50 / 310 | [完成](act-4-memory-12-last-night.md) |
+| 13 | `51C038`† | zzzCHMemoryQuest13 | 牛頭人帕拉瓦尼亞 (Man-Bull Paravanila) | [連結](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:214) | 99 | 7 | 30 / 40 / 999 | [完成](act-4-memory-13-man-bull-paravanila.md) |
 
 † **MeQ13 是一個僅有標頭的外殼**：`51C038` 不擁有任何話題/場景 (`find zzzCHMeQ13` = 0)。實際內容存在於內容任務 **`51ADBF zzzCHSubQuest13 "Broken Horn"`** (目標 "Broken horns, sky incarnate.", quests.md:171) 中。詳見該切片。
 

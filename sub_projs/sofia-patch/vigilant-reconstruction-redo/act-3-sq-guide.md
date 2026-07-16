@@ -10,7 +10,7 @@ Source policy:
 
 ## Quest Record
 
-[`43CBAE zzzCOGuide "Stendarr Guide"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:360)
+[`43CBAE zzzCOGuide "Stendarr Guide"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:360)
 
 CLI:
 - `questdiag Vigilant.esm 0x43CBAE`
@@ -51,15 +51,15 @@ Objectives:
 
 | Index | Source | Text |
 |---:|---|---|
-| 10 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:361) | Breack the curse of Shivering |
-| 20 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:362) | Breack the curse of Depravity |
-| 22 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:363) | Go to Julius's Room |
-| 24 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:364) | Go To Basement |
-| 30 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:365) | Breack the curse of Foamy |
-| 35 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:366) | Gain the Key of Bartolo's Room |
-| 40 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:367) | Breack the curse of Chain |
-| 50 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:368) | Breack the curse of Envy |
-| 60 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:369) | Release Julius |
+| 10 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:361) | Breack the curse of Shivering |
+| 20 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:362) | Breack the curse of Depravity |
+| 22 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:363) | Go to Julius's Room |
+| 24 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:364) | Go To Basement |
+| 30 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:365) | Breack the curse of Foamy |
+| 35 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:366) | Gain the Key of Bartolo's Room |
+| 40 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:367) | Breack the curse of Chain |
+| 50 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:368) | Breack the curse of Envy |
+| 60 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:369) | Release Julius |
 
 Objective targets:
 - 9 objectives, each with 1 target.
@@ -82,7 +82,7 @@ No scene records found with `0x43CBAE` as host quest. This quest contains no sce
 
 ## Act 3 Context
 
-zzzCOGuide is a **side quest within Act 3 (Mansion arc)**. Act 3 main quest is [`065932 zzzCOMq01 "Child of Oblivion"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:276), which involves:
+zzzCOGuide is a **side quest within Act 3 (Mansion arc)**. Act 3 main quest is [`065932 zzzCOMq01 "Child of Oblivion"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:276), which involves:
 - Investigating the Noble Mansion (obj 30)
 - Solving a case (related to the mansion's curse)
 - Defeating Julius (obj 60)
@@ -105,14 +105,14 @@ This suggests Stendarr Guide is an **optional puzzle/challenge quest** that the 
 ## Related Records
 
 Main quest of Act 3:
-- [`065932 zzzCOMq01 "Child of Oblivion"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:276)
+- [`065932 zzzCOMq01 "Child of Oblivion"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:276)
 
 Other Act 3 side quests:
-- [`324E7E zzzCOSubQ01 "Successor"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:32)
-- [`444115 zzzCOqOwl "Weaver's Needle 2"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:321)
+- [`324E7E zzzCOSubQ01 "Successor"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:32)
+- [`444115 zzzCOqOwl "Weaver's Needle 2"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:321)
 
 Generic dialogue:
-- [`065EF0 zzzCOGenericDialogue "CO Generic Dialogue"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:355)
+- [`065EF0 zzzCOGenericDialogue "CO Generic Dialogue"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:355)
 
 ## Reconstruction Notes
 

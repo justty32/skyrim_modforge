@@ -9,7 +9,7 @@ Source policy:
 
 ## Quest Record
 
-[`00A3FE zzzAoMMq07 "Old Paladin"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:243)
+[`00A3FE zzzAoMMq07 "Old Paladin"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:243)
 
 CLI:
 - `questdiag Vigilant.esm 0x00A3FE`
@@ -53,12 +53,12 @@ Objectives:
 
 | Index | Source | Text |
 |---:|---|---|
-| 0 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:244) | Talk to Jacob |
-| 10 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:245) | Defeat Ebony knight |
-| 33 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:246) | Support Jacob |
-| 40 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:247) | Defeat Bal |
-| 60 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:248) | Talk to Altano |
-| 70 | [quest objective](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:249) | Take Mace of Molag Bal to Altano |
+| 0 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:244) | Talk to Jacob |
+| 10 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:245) | Defeat Ebony knight |
+| 33 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:246) | Support Jacob |
+| 40 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:247) | Defeat Bal |
+| 60 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:248) | Talk to Altano |
+| 70 | [quest objective](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/quests.md:249) | Take Mace of Molag Bal to Altano |
 
 Objective targets:
 - Objective 0: 1 target with 0 conditions.
@@ -92,85 +92,85 @@ Scene topics are dialogue anchors, not formal SCEN records. Listed by topic Form
 ### 0x00E4E5 (Molag Bal / Jacob confrontation monologue)
 
 Extracted text (6 lines):
-- [`Go away!! Molag Bal!! I am not discouraged!!`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:276)
-- [`You right!! 20 years ago,I lost to you. But this time, I overcome you!!`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:277)
-- [`Exactly! I killed you!! Exactly!! I killed innocent under the name of Stendarr!!`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:278)
-- [`Don't Look at me. Please.....`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:279)
-- [`Shut up! Muderer!! I am diffrent from you! I am not Beast like you!`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:280)
-- [`Not me! I have no responsibility to your death!! Please, go away....`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:281)
-- [`Joshua!Is that you? How are you!? Where were you going to?`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:282)
-- [`Thank you, Joshua...Your word is merciful...but, I can not stop my steps.`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:283)
-- [`My master...Never did I think of you are here....Yes...I uderstand it.`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:284)
+- [`Go away!! Molag Bal!! I am not discouraged!!`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:276)
+- [`You right!! 20 years ago,I lost to you. But this time, I overcome you!!`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:277)
+- [`Exactly! I killed you!! Exactly!! I killed innocent under the name of Stendarr!!`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:278)
+- [`Don't Look at me. Please.....`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:279)
+- [`Shut up! Muderer!! I am diffrent from you! I am not Beast like you!`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:280)
+- [`Not me! I have no responsibility to your death!! Please, go away....`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:281)
+- [`Joshua!Is that you? How are you!? Where were you going to?`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:282)
+- [`Thank you, Joshua...Your word is merciful...but, I can not stop my steps.`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:283)
+- [`My master...Never did I think of you are here....Yes...I uderstand it.`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:284)
 
 Inferred context: Jacob internal monologue addressing Molag Bal's manifestation; references loss and redemption narrative.
 
 ### 0x00E4F4 (Rahel greeting)
 
 Extracted text (1 line):
-- [`Well...I gave you my precious mercy.But, Why come here? Jacob?`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:287)
+- [`Well...I gave you my precious mercy.But, Why come here? Jacob?`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:287)
 
-Context: [`Rahel` (alias from `00E4FE zzzAoMM07GhostBal`)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1) greeting Jacob. Suggests spirit/ghost mechanic or memory staging.
+Context: [`Rahel` (alias from `00E4FE zzzAoMM07GhostBal`)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1) greeting Jacob. Suggests spirit/ghost mechanic or memory staging.
 
 ### 0x00E4F6 (Jacob's resolve)
 
 Extracted text (1 line):
-- [`I ... come here to purege my contempt...No!...Rahel, to help you!!`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:290)
+- [`I ... come here to purege my contempt...No!...Rahel, to help you!!`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:290)
 
 Context: Jacob's motivation clarified as help for Rahel (presumed Molag Bal's victim/manifestation).
 
 ### 0x00E4F8 (Apocalyptic warning)
 
 Extracted text (1 line):
-- [`so...but too late. Molag Bal is Coming...the all end....Red fog envelope everything....`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:293)
+- [`so...but too late. Molag Bal is Coming...the all end....Red fog envelope everything....`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:293)
 
 Context: High-stakes scene marker; Molag Bal imminent threat.
 
 ### 0x00E4FA (Rahel's call)
 
 Extracted text (1 line):
-- [`Rahel?`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:296)
+- [`Rahel?`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:296)
 
 Context: Jacob searching for Rahel; brief query line.
 
 ### 0x00E4FC (Bal's command)
 
 Extracted text (1 line):
-- [`Stop talking anymore. Do not Disturb me. Orthe! Ranyu! Kill them All!!`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:299)
+- [`Stop talking anymore. Do not Disturb me. Orthe! Ranyu! Kill them All!!`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:299)
 
-Context: Molag Bal's manifestation commanding dremora allies [`Orthe`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1) and [`Ranyu`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1) to attack.
+Context: Molag Bal's manifestation commanding dremora allies [`Orthe`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1) and [`Ranyu`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1) to attack.
 
 ### 0x00EA65 (Dream sequence: Rahel echo)
 
 Extracted text (1 line):
-- [`Rahel!? Rahel? Is that you?`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:302)
+- [`Rahel!? Rahel? Is that you?`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:302)
 
 Context: Likely post-combat or dream-state encounter. Names match stage progression (stage 50 approx).
 
 ### 0x00EA67 (Dream sequence: Jacob's question)
 
 Extracted text (1 line):
-- [`What happended? Jacob? Why do you raise your voice? You had a nightmare?`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:305)
+- [`What happended? Jacob? Why do you raise your voice? You had a nightmare?`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:305)
 
 Context: Rahel asking Jacob about distress; dream/memory separation suggested.
 
 ### 0x00EA69 (Dream sequence: Jacob's reconciliation)
 
 Extracted text (1 line):
-- [`Yes...But I have waked from the nightmare I lost you. I will never send away you...`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:308)
+- [`Yes...But I have waked from the nightmare I lost you. I will never send away you...`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:308)
 
 Context: Jacob awakens from nightmare; reconciliation with Rahel's spirit.
 
 ### 0x00EA6B (Dream sequence: Rahel's comfort)
 
 Extracted text (1 line):
-- [`Jacob...I am always with you. Do not worry anymore....`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:311)
+- [`Jacob...I am always with you. Do not worry anymore....`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:311)
 
 Context: Rahel's reassurance; emotional resolution.
 
 ### 0x00EA6D (Dream sequence: Rahel's farewell)
 
 Extracted text (1 line):
-- [`Rahel ...`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:314)
+- [`Rahel ...`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:314)
 
 Context: Jacob's closing call to Rahel; likely stage transition or quest end cue.
 
@@ -187,7 +187,7 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x00EA71 zzAoMMq07B1UmbraGreet`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:316) | `0x00EA72` | none | `GetStage < 10`; `GetIsAliasRef alias #3` | [`Stop....close enough...`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:317) |
+| [`0x00EA71 zzAoMMq07B1UmbraGreet`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:316) | `0x00EA72` | none | `GetStage < 10`; `GetIsAliasRef alias #3` | [`Stop....close enough...`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:317) |
 
 VMAD Fragment:
 - `AoM07_TIF__0100EA72` (triggers `OnEnd` fragment; likely advances stage to 10)
@@ -196,7 +196,7 @@ VMAD Fragment:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x00EA73 zzAoMMq07B1NonStop`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:319) | `0x00EA74` | `SayOnce` | `GetIsAliasRef alias #3` | Prompt: [`"if we don't stop our steps....what wilt you do?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:319) Response: [`"I must cut you down....like your colleague...if you don't want to die, go back..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:320) / [`"Be gone....! you also have...who hope your return...."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:321) |
+| [`0x00EA73 zzAoMMq07B1NonStop`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:319) | `0x00EA74` | `SayOnce` | `GetIsAliasRef alias #3` | Prompt: [`"if we don't stop our steps....what wilt you do?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:319) Response: [`"I must cut you down....like your colleague...if you don't want to die, go back..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:320) / [`"Be gone....! you also have...who hope your return...."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:321) |
 
 Translation notes:
 - `colleague` refers to previous Beacon attackers killed by Umbra.
@@ -205,13 +205,13 @@ Translation notes:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x00EA75 zzAoMMq07B1AssaultReason`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:323) | `0x00EA76` | `SayOnce` | `GetIsAliasRef alias #3` | Prompt: [`"Why did you attacked Beacon?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:323) Response: [`"It is My business. You can not accetpt it?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:324) |
+| [`0x00EA75 zzAoMMq07B1AssaultReason`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:323) | `0x00EA76` | `SayOnce` | `GetIsAliasRef alias #3` | Prompt: [`"Why did you attacked Beacon?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:323) Response: [`"It is My business. You can not accetpt it?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:324) |
 
 ### 0x00EA77 zzAoMMq07B1AboutPursuits
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x00EA77 zzAoMMq07B1AboutPursuits`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:326) | `0x00EA78` | `SayOnce` | `GetIsAliasRef alias #3` | Prompt: [`"How did you get clear away from chasers?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:326) Response: [`"Chaser....? I killed them all. Probably, they are now in stomach of Trolls."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:327) |
+| [`0x00EA77 zzAoMMq07B1AboutPursuits`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:326) | `0x00EA78` | `SayOnce` | `GetIsAliasRef alias #3` | Prompt: [`"How did you get clear away from chasers?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:326) Response: [`"Chaser....? I killed them all. Probably, they are now in stomach of Trolls."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:327) |
 
 Translation notes:
 - Umbra's brutal boast; implies significant NPC casualties in the assault.
@@ -229,7 +229,7 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x00EA7A zzAoMMq07B2JacobTalk`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:329) | `0x00EA7B` | none | `GetStage == 20`; `GetIsAliasRef alias #1` | [`Uuu...`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:330) |
+| [`0x00EA7A zzAoMMq07B2JacobTalk`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:329) | `0x00EA7B` | none | `GetStage == 20`; `GetIsAliasRef alias #1` | [`Uuu...`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:330) |
 
 Context: Inarticulate response; Jacob traumatized or weakened.
 
@@ -237,7 +237,7 @@ Context: Inarticulate response; Jacob traumatized or weakened.
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x00EA7C zzAoMMq07B2Whathappen`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:332) | `0x00EA7D` | none | `GetIsAliasRef alias #1` | Prompt: [`"What was happening?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:332) Response (Sad): [`"Attacked by the summoner....All is dead except me. Again...again I only survived...."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:333) / Response (Anger): [`"She is called Bal by Daedra...abominable name. She is a agent of Molag Bal...Her purpose is a altar under the ground.."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:334) |
+| [`0x00EA7C zzAoMMq07B2Whathappen`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:332) | `0x00EA7D` | none | `GetIsAliasRef alias #1` | Prompt: [`"What was happening?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:332) Response (Sad): [`"Attacked by the summoner....All is dead except me. Again...again I only survived...."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:333) / Response (Anger): [`"She is called Bal by Daedra...abominable name. She is a agent of Molag Bal...Her purpose is a altar under the ground.."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:334) |
 
 Context: Jacob reveals the Beacon attack was orchestrated by "Bal" (a Molag Bal servant) pursuing an underground altar goal.
 
@@ -245,7 +245,7 @@ Context: Jacob reveals the Beacon attack was orchestrated by "Bal" (a Molag Bal 
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x00EA7E zzAoMMq07B2Meaning`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:336) | `0x00EA7F` | `Goodbye` | `GetIsAliasRef alias #1` | Prompt: [`"What do you mean?Jacob?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:336) Response: [`"There is a Altar of Molag Bal under the beacon. She is attepmting to something tremendous....we must stop her!!"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:337) |
+| [`0x00EA7E zzAoMMq07B2Meaning`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:336) | `0x00EA7F` | `Goodbye` | `GetIsAliasRef alias #1` | Prompt: [`"What do you mean?Jacob?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:336) Response: [`"There is a Altar of Molag Bal under the beacon. She is attepmting to something tremendous....we must stop her!!"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:337) |
 
 VMAD Fragment:
 - `AoM07_TIF__0100EA7F` (triggers `OnEnd` fragment; advances quest to stage 30+)
@@ -257,7 +257,7 @@ Translation notes:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x00EA81 zzAoMMq07B3MolagBal`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:339) | `0x00EA82` | none | `GetStage >= 30 && < 35`; `GetIsAliasRef alias #1` | Prompt: [`"What is Molag Bal?"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:339) Response (Sad): [`"Daedra price of domination. Many vigilants are corrupted by Molagb Bal."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:340) / Response (Sad): [`"I also one of them. I lost to Molag bal. When I was wounded and dying, Molag bal apeerared and offer to reanimate me in exchange for my wife."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:341) / Response (Fear): [`"I have accepted it...I regret that my did. I can not forget her mournful eyes...."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:342) |
+| [`0x00EA81 zzAoMMq07B3MolagBal`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:339) | `0x00EA82` | none | `GetStage >= 30 && < 35`; `GetIsAliasRef alias #1` | Prompt: [`"What is Molag Bal?"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:339) Response (Sad): [`"Daedra price of domination. Many vigilants are corrupted by Molagb Bal."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:340) / Response (Sad): [`"I also one of them. I lost to Molag bal. When I was wounded and dying, Molag bal apeerared and offer to reanimate me in exchange for my wife."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:341) / Response (Fear): [`"I have accepted it...I regret that my did. I can not forget her mournful eyes...."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:342) |
 
 Exposition: Jacob's tragic past—he sold his wife (Rahel) to Molag Bal for resurrection 20 years prior. Guilt drives current quest narrative.
 
@@ -265,7 +265,7 @@ Exposition: Jacob's tragic past—he sold his wife (Rahel) to Molag Bal for resu
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x00EA84 zzAoMMq07B4AboutBal`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:344) | `0x00EA85` | none | `GetStage >= 30 && < 35`; `GetIsAliasRef alias #1` | Prompt: [`"Tell me about Bal"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:344) Response (Fear): [`"Bal is powered by Molag bal....Her magicka is powerful and infinite..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:345) / Response (Sad): [`"She is a looks-alike for my wife. Probably, She is trap of Molag Bal..."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:346) |
+| [`0x00EA84 zzAoMMq07B4AboutBal`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:344) | `0x00EA85` | none | `GetStage >= 30 && < 35`; `GetIsAliasRef alias #1` | Prompt: [`"Tell me about Bal"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:344) Response (Fear): [`"Bal is powered by Molag bal....Her magicka is powerful and infinite..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:345) / Response (Sad): [`"She is a looks-alike for my wife. Probably, She is trap of Molag Bal..."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:346) |
 
 Context: Bal is a shapeshifted or imposter simulacrum of Rahel, designed to torment Jacob.
 
@@ -282,7 +282,7 @@ Condition pattern:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x00EA87 zzAoMMq07B5TakeMace`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:348) | `0x00EA88` | `Goodbye` | `GetStage == 60`; `GetIsAliasRef alias #0` | Response: [`"All is gone... you ... you take the mace of Bal to me? I need it...."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:349) |
+| [`0x00EA87 zzAoMMq07B5TakeMace`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:348) | `0x00EA88` | `Goodbye` | `GetStage == 60`; `GetIsAliasRef alias #0` | Response: [`"All is gone... you ... you take the mace of Bal to me? I need it...."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:349) |
 
 VMAD Fragment:
 - `AoM07_TIF__0100EA88` (triggers `OnEnd` fragment)
@@ -293,7 +293,7 @@ Context: Jacob requests the player retrieve Molag Bal's mace (presumably dropped
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x00EA89 (continuation)`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:348) | `0x00EA89` | `SayOnce, WalkAway` | `GetItemCount > 0` on Player for [`00D9FC zzzCHMolagMace`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:1); `GetStage >= 70 && < 80`; `GetIsAliasRef alias #0` | Response: [`"....I will back to tha temple of Stendarr and ask keepers for advice about this mace."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:350) / [`"Before return to the hall...I ask you for a small mission. I heard there are witches at shack in the south of Ivarstead."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:351) / [`"Witch is a serious threat to peace of skyrim. Give them the Mercy of Stendarr...."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:352) |
+| [`0x00EA89 (continuation)`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:348) | `0x00EA89` | `SayOnce, WalkAway` | `GetItemCount > 0` on Player for [`00D9FC zzzCHMolagMace`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:1); `GetStage >= 70 && < 80`; `GetIsAliasRef alias #0` | Response: [`"....I will back to tha temple of Stendarr and ask keepers for advice about this mace."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:350) / [`"Before return to the hall...I ask you for a small mission. I heard there are witches at shack in the south of Ivarstead."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:351) / [`"Witch is a serious threat to peace of skyrim. Give them the Mercy of Stendarr...."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:352) |
 
 VMAD Fragment:
 - `AoM07_TIF__0200EA89` (triggers `OnBegin` fragment; likely chains to Act 1 sq08 witch hunt)
@@ -307,7 +307,7 @@ Translation notes:
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x027A46 zzzAoMMq07B5JacobDead`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:436) | `0x027A47` | `Goodbye` | `GetIsAliasRef alias #0` | Prompt: [`"We should  hold a funeral for Jacob"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:436) Response: [`"I will do. You put away the witch while I mourn for him. See you again in Temple of Stendarr."`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:437) |
+| [`0x027A46 zzzAoMMq07B5JacobDead`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:436) | `0x027A47` | `Goodbye` | `GetIsAliasRef alias #0` | Prompt: [`"We should  hold a funeral for Jacob"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:436) Response: [`"I will do. You put away the witch while I mourn for him. See you again in Temple of Stendarr."`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:437) |
 
 VMAD Fragment:
 - `AoM07_TIF__01027A47` (triggers `OnEnd` fragment)
@@ -320,7 +320,7 @@ Context: **Failure branch.** If Jacob dies during the quest (e.g., defeated by B
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x11E0AB zzzAoMMq07B6T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1082) | `0x11E0AC` | `Goodbye, SayOnce` | `GetStage == 30`; `GetIsAliasRef alias #0` | Response: [`"Support Jacob. I come see how to go ahead"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1083) |
+| [`0x11E0AB zzzAoMMq07B6T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1082) | `0x11E0AC` | `Goodbye, SayOnce` | `GetStage == 30`; `GetIsAliasRef alias #0` | Response: [`"Support Jacob. I come see how to go ahead"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1083) |
 
 VMAD Fragment:
 - `AoM07_TIF__0211E0AC` (triggers `OnEnd` fragment)
@@ -331,21 +331,21 @@ Context: Altano offers to help Jacob during the investigation phase.
 
 | Topic | INFO | Flags | Conditions | Translation |
 |---|---|---|---|---|
-| [`0x11E0AE zzzAoMMq07B7T01`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1085) | `0x11E0AF` | `Goodbye` | `GetIsAliasRef alias #0`; `GetStage == 33` | Response: [`"Support Jacob,please"`](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1086) (Fear emotion) |
+| [`0x11E0AE zzzAoMMq07B7T01`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1085) | `0x11E0AF` | `Goodbye` | `GetIsAliasRef alias #0`; `GetStage == 33` | Response: [`"Support Jacob,please"`](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/dialogue.md:1086) (Fear emotion) |
 
 Context: Altano's desperate plea for support as Jacob is threatened (stage 33 critical point).
 
 ## Related Records
 
 NPCs:
-- [`000D66 zzzAoMVigilantElder` - Jacob](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1)
-- [`00E4FE zzzAoMM07GhostBal` - Rahel (Bal's form / ghost)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1)
-- [`031117 zzzBMVgilantsCorpse01` - Joshua](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1)
-- [`00183E zzzAoMBossDremora04` - Orthe (dremora ally of Bal)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1)
-- [`00183F zzzAoMBossDremora05` - Ranyu (dremora ally of Bal)](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1)
+- [`000D66 zzzAoMVigilantElder` - Jacob](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1)
+- [`00E4FE zzzAoMM07GhostBal` - Rahel (Bal's form / ghost)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1)
+- [`031117 zzzBMVgilantsCorpse01` - Joshua](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1)
+- [`00183E zzzAoMBossDremora04` - Orthe (dremora ally of Bal)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1)
+- [`00183F zzzAoMBossDremora05` - Ranyu (dremora ally of Bal)](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/npcs.tsv:1)
 
 Items:
-- [`00D9FC zzzCHMolagMace` - Mace of Molag Bal](/home/lorkhan/repo/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:1) (quest completion item)
+- [`00D9FC zzzCHMolagMace` - Mace of Molag Bal](/home/lorkhan/repo/moddings/skyrim/projects/ModForge/sub_projs/sofia-patch/game-data/mods/Vigilant/items.tsv:1) (quest completion item)
 
 ## Reconstruction Notes
 
