@@ -156,4 +156,13 @@ public sealed class NavmeshSpec
     // uncut vanilla navmesh) stay on — those ARE per-spec mistakes, and they are the ones the in-game
     // editor's output can actually hit.
     public bool WarnEmptyCells { get; set; }
+
+    // U10 (navmesh plan §6): a navmeshOverrides[] entry re-emits a vanilla NAVM under its own FormKey —
+    // a WHOLE-RECORD override, and NAVM has no additive merge, so if another installed plugin also
+    // overrides that mesh, whichever loads last wins and the other's version is silently dropped. The
+    // classic casualty is USSEP's navmesh fixes. On by default: when this spec overrides navmesh AND the
+    // Data folder holds another (non-vanilla) plugin that overrides the same mesh, `build` prints one
+    // advisory line per clobbering plugin. Needs the real load order to say WHO wins, so it names the
+    // conflict, not the winner. Silent with no Data folder / no navmeshOverrides. Turn off to hush it.
+    public bool WarnNavmeshClobber { get; set; } = true;
 }

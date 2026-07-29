@@ -257,7 +257,7 @@ new PlacedObject {
 | **U7** | **ESL**：override vanilla NAVM（FormID 不變）在 ESL 裡安全；但**新建** NAVM 記錄從 ESL 載入可能壞 | 編輯器 patch 預設 `esl: true` | 保守規則：`navCuts` 只 override → 維持 esl；一旦要新建 NAVM（自建 worldspace）→ 比照既有 LAND 守則強制 `esl:false`（`Generator.Validate.World.cs:131`）。🎮 待驗 |
 | **U8** | 沒和 vanilla 網格相連的「孤島」navmesh，NPC 能否在上面 sandbox（travel 出不去可接受） | P3 的降級路徑 | 🎮 P3 驗收。**已知：完全沒有網格 ＝ NPC 什麼都不做**（sandbox/travel/follow/combat 全掛；SE 還要求 actor 本身站在 triangle 上尋路才會啟動）。`PathToReference` **不繞過** navmesh（走同一套尋路，一樣失敗）；只有 `TranslateTo`/`MoveTo` 能無視，但那是腳本用的位移、不是 AI |
 | **U9** | 外景 NAVM override 會拉出 **WRLD override**——會不會踩到既有的地圖渲染坑（[worldspace-override-map-render-fields](../../docs/engine-internals.md)：缺 EDID/RNAM 會白地圖、帶 OFST 會壞） | 外景全部 | 已初步觀察：Mutagen deep-copy 的 WRLD 帶 EDID/TNAM/UNAM、**不帶 OFST**（正確）。且 `removals[]` 的外景路徑早已實機驗過同一條 chain。P0 這輪回報聚焦在 NPC 行為（「一切正常」），**沒有特別點名地圖/名字**——U9 嚴格說仍待一次專門確認，不算已 close |
-| **U10** | 我們的 NAVM override 與**其他 mod 的同一張 NAVM override** ＝ 整筆記錄後蓋前（last wins） | 相容性 | 無法避免（NAVM 沒有加法式合併）。處置＝ build 警告「這張 navmesh 已被 X.esp override，你會覆蓋它」（houseCARL 可查）；文件說明 |
+| **U10** | 我們的 NAVM override 與**其他 mod 的同一張 NAVM override** ＝ 整筆記錄後蓋前（last wins） | 相容性 | 無法避免（NAVM 沒有加法式合併）。**✅ build 警告已實作（2026-07-29）**：`CheckNavmeshOverrideClobbers`（`Generator.Build.NavmeshOverrides.cs`，跟 P1 一樣 build 末跑、零記錄）掃 Data 夾裡「master 到我們 override 的 NAVM 所屬 master」的非-vanilla plugin，若它也 override 同張 → 一行警告點名該 plugin＋mesh（無法知 load order 誰贏，只點名衝突）。只在 `navmeshOverrides[]` 有用時掃、無 Data 夾＝沉默、開關 `navmesh.warnNavmeshClobber`。**離線用合成 plugin 已測掃描邏輯**（`NavmeshOverrideTests` 三條）；**🎮 對真 USSEP 的驗收留主力機**（離線無 USSEP） |
 
 ---
 

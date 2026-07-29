@@ -163,6 +163,9 @@ public static partial class Generator
 
         ctx.CheckNavmesh();                        // P1 diagnostics: off-navmesh NPCs / uncut obstacles / hollowed-out
                                                    // structures. Warnings ONLY — authors nothing, so it runs last.
+        ctx.CheckNavmeshOverrideClobbers();        // U10: another installed plugin overrides a NAVM we also override
+                                                   // (NAVM = whole-record, last wins) — warn about the clobber. Also
+                                                   // warnings-only; scans the Data folder only when navmeshOverrides used.
         return ctx.Finish();
     }
 }

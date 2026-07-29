@@ -1,5 +1,8 @@
+using System.IO;
 using System.Linq;
 using Mutagen.Bethesda.Plugins;
+using Mutagen.Bethesda.Plugins.Binary.Parameters;
+using Mutagen.Bethesda.Plugins.Records;
 using Mutagen.Bethesda.Skyrim;
 using ModForge;
 using Xunit;
@@ -200,6 +203,103 @@ public class NavmeshOverrideTests
         var r = Generator.Build(s, Key);
         Assert.Equal(0, r.Stats.NavmeshOverrides);
         Assert.Contains(r.Warnings, w => w.Contains("no navmesh at all"));
+    }
+
+    // --- U10: another installed plugin overrides a mesh we override = a clobber warning -----------
+    // These run OFFLINE with SYNTHETIC plugins (no Skyrim.esm): a fake "vanilla" master carrying one
+    // interior cell + NAVM, and a stand-in patch that overrides that same NAVM (the USSEP role). The
+    // real acceptance against USSEP is a main-machine job; this pins the scan LOGIC on the CI box.
+
+    private static readonly ModKey FakeMaster = ModKey.FromNameAndExtension("MFFakeNav.esm");
+    private static readonly FormKey FakeCell = FormKey.Factory("000801:MFFakeNav.esm");
+    private static readonly FormKey FakeNavm = FormKey.Factory("000802:MFFakeNav.esm");
+
+    // One interior cell (with a NAVM) written into `dir` under `key`. The cell/navm carry `cellFk`/
+    // `navmFk` verbatim, so writing under a DIFFERENT key makes them OVERRIDES of that FormKey's owner.
+    private static void WriteNavmPlugin(string dir, ModKey key, FormKey cellFk, FormKey navmFk)
+    {
+        var m = new SkyrimMod(key, SkyrimRelease.SkyrimSE);
+        var cell = new Cell(cellFk, SkyrimRelease.SkyrimSE) { Flags = Cell.Flag.IsInteriorCell };
+        cell.NavigationMeshes.Add(new NavigationMesh(navmFk, SkyrimRelease.SkyrimSE));
+        var sub = new CellSubBlock { BlockNumber = 0, GroupType = GroupTypeEnum.InteriorCellSubBlock };
+        sub.Cells.Add(cell);
+        var block = new CellBlock { BlockNumber = 0, GroupType = GroupTypeEnum.InteriorCellBlock };
+        block.SubBlocks.Add(sub);
+        m.Cells.Records.Add(block);
+        m.WriteToBinary(Path.Combine(dir, key.FileName), new BinaryWriteParameters
+        {
+            ModKey = ModKeyOption.NoCheck,
+            MastersListContent = MastersListContentOption.Iterate,   // an override auto-masters MFFakeNav.esm
+        });
+    }
+
+    private static string NewTempDir()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "mfnavclobber_" + Path.GetRandomFileName());
+        Directory.CreateDirectory(dir);
+        return dir;
+    }
+
+    private static ModSpec OverrideFakeCell()
+    {
+        var s = new ModSpec { PluginName = "MFNavOv.esp" };
+        s.NavmeshOverrides.Add(new NavmeshOverrideSpec { Cell = FakeMaster.FileName + ":0x000801" });
+        return s;
+    }
+
+    [Fact]
+    public void Clobber_WarnsWhenAnotherPluginOverridesTheSameMesh()
+    {
+        var dir = NewTempDir();
+        try
+        {
+            WriteNavmPlugin(dir, FakeMaster, FakeCell, FakeNavm);                                  // the "vanilla" owner
+            WriteNavmPlugin(dir, ModKey.FromNameAndExtension("MFNavPatch.esp"), FakeCell, FakeNavm); // the USSEP stand-in
+
+            var r = Generator.Build(OverrideFakeCell(), Key, new BuildOptions { SkyrimDataPath = dir });
+
+            Assert.Equal(1, r.Stats.NavmeshOverrides);                        // we really did override the mesh
+            var w = Assert.Single(r.Warnings, x => x.Contains("ALSO overridden"));
+            Assert.Contains("MFNavPatch.esp", w);                             // names the conflicting plugin
+            Assert.Contains("0x000802", w);                                   // …and the mesh
+            Assert.Contains("clobber", w);
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    [Fact]
+    public void Clobber_SilentWhenNoOtherPluginTouchesTheMesh()
+    {
+        var dir = NewTempDir();
+        try
+        {
+            WriteNavmPlugin(dir, FakeMaster, FakeCell, FakeNavm);   // only the owner is present — nothing clobbers
+
+            var r = Generator.Build(OverrideFakeCell(), Key, new BuildOptions { SkyrimDataPath = dir });
+
+            Assert.Equal(1, r.Stats.NavmeshOverrides);
+            Assert.DoesNotContain(r.Warnings, x => x.Contains("ALSO overridden"));
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    [Fact]
+    public void Clobber_CanBeSilencedWithWarnNavmeshClobberFalse()
+    {
+        var dir = NewTempDir();
+        try
+        {
+            WriteNavmPlugin(dir, FakeMaster, FakeCell, FakeNavm);
+            WriteNavmPlugin(dir, ModKey.FromNameAndExtension("MFNavPatch.esp"), FakeCell, FakeNavm);
+
+            var s = OverrideFakeCell();
+            s.Navmesh.WarnNavmeshClobber = false;
+            var r = Generator.Build(s, Key, new BuildOptions { SkyrimDataPath = dir });
+
+            Assert.Equal(1, r.Stats.NavmeshOverrides);                        // still built — only the WARNING is off
+            Assert.DoesNotContain(r.Warnings, x => x.Contains("ALSO overridden"));
+        }
+        finally { Directory.Delete(dir, recursive: true); }
     }
 
     // The mesh as Skyrim.esm itself holds it (read through the same link cache the generator uses).

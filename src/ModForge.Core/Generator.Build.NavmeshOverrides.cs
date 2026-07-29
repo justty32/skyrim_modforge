@@ -109,5 +109,62 @@ public static partial class Generator
             if (no.Position is { } p) { cx = PosToGrid(p.X); cy = PosToGrid(p.Y); return true; }
             cx = cy = 0; return false;
         }
+
+        // --- U10: warn when another installed plugin also overrides a mesh we override ----------------
+        // A navmeshOverrides[] entry re-emits a vanilla NAVM under its own FormKey — a WHOLE-RECORD
+        // override, and NAVM has no additive merge. So if another plugin overrides the same mesh, the two
+        // clobber each other: whichever loads LAST replaces the other outright and its edits vanish with
+        // no error. USSEP's navmesh fixes are the usual casualty. We cannot see the player's load ORDER
+        // here (MasterCache reads one plugin at a time — there is no order), so we cannot name the winner;
+        // but we CAN see who else touches the mesh, and that is the compatibility fact worth a build line.
+        //
+        // Warnings only, zero records — runs last with CheckNavmesh. OFFLINE-SAFE: reads plugins straight
+        // from the Data folder, silent when none are there. Runs only when this spec actually overrides
+        // navmesh (navmeshOverridden non-empty), so an ordinary build never pays the directory scan.
+        public void CheckNavmeshOverrideClobbers()
+        {
+            if (!spec.Navmesh.Warnings || !spec.Navmesh.WarnNavmeshClobber) return;
+            if (navmeshOverridden.Count == 0 || !Directory.Exists(skyrimData)) return;
+
+            // The masters that OWN the meshes we override (usually just Skyrim.esm). A plugin can only
+            // override one of these meshes if it masters that owner — a cheap header reject before we read
+            // any records. An owner is the SOURCE of the mesh, never a clobber, so it is never flagged.
+            var owners = navmeshOverridden.Select(fk => fk.ModKey.FileName.String)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var path in Directory.EnumerateFiles(skyrimData))
+            {
+                var ext = Path.GetExtension(path);
+                if (!(ext.Equals(".esp", StringComparison.OrdinalIgnoreCase)
+                   || ext.Equals(".esm", StringComparison.OrdinalIgnoreCase)
+                   || ext.Equals(".esl", StringComparison.OrdinalIgnoreCase))) continue;
+
+                var file = Path.GetFileName(path);
+                if (string.Equals(file, mod.ModKey.FileName.String, StringComparison.OrdinalIgnoreCase)) continue; // us
+                if (owners.Contains(file)) continue;                                 // the source master, not a clobber
+                if (IsVanillaMaster(file) || IsCreationClubMaster(file)) continue;   // baseline, not the author's surprise
+
+                List<FormKey>? hits = null;
+                try
+                {
+                    using var other = SkyrimMod.CreateFromBinaryOverlay(new ModPath(path), SkyrimRelease.SkyrimSE);
+                    // Header reject: a plugin that masters none of our owners cannot override our meshes.
+                    if (!other.MasterReferences.Any(m => owners.Contains(m.Master.FileName.String))) continue;
+                    foreach (var nm in other.EnumerateMajorRecords<INavigationMeshGetter>())
+                        if (navmeshOverridden.Contains(nm.FormKey))
+                            (hits ??= new()).Add(nm.FormKey);
+                }
+                catch { continue; }   // an unreadable/foreign plugin is not our problem — advisory pass, stay quiet
+
+                if (hits is null) continue;
+                var ids = string.Join(", ", hits.Take(6).Select(fk => $"0x{fk.ID:X6}"));
+                if (hits.Count > 6) ids += $", … (+{hits.Count - 6})";
+                Warn($"  ! navmesh: {hits.Count} navmeshOverrides[] mesh(es) are ALSO overridden by '{file}' ({ids}). "
+                   + "NAVM records do not merge — whichever plugin loads LAST replaces the other outright, so your "
+                   + "override and its edits clobber each other (if that plugin carries a navmesh FIX, e.g. USSEP, you "
+                   + "may silently revert it). Override only a vanilla mesh you truly need; if you keep it, order this "
+                   + "plugin deliberately against that one.");
+            }
+        }
     }
 }
