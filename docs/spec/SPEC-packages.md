@@ -68,6 +68,12 @@ then Sandbox takes over.
 > chair" is a legal intent) naming the slot, the radius and the SingleRef slots that would lock on.
 > A plain vanilla FormID or an in-spec placement editorId in a location slot is the ordinary area
 > case and says nothing.
+>
+> **`area:` opt-out.** If the area behaviour *is* what you want, prefix the location ref with `area:`
+> — `"sandbox.location": "area:sofia's chair"` — to declare the intent explicitly and silence the
+> guardrail note. The prefix is stripped before the ref resolves, so it binds the exact same
+> `LocationTarget` + radius as the bare ref would. It is only meaningful on the six **location** slots;
+> on a SingleRef target slot `area:` is not understood and the ref fails to resolve.
 
 ```jsonc
 { "editorId": "MF_HangAtSpotPackage",

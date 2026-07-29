@@ -22,6 +22,27 @@ public static partial class Generator
         return false;
     }
 
+    // A LOCATION-slot ref (sandbox.location, travel.place, …) may carry an explicit "area:" prefix —
+    // the author saying "I MEAN a region here, use whatever's inside the radius", not "lock onto that one
+    // object". It exists so the "label in a location slot" INFO note (NoteLabelsUsedAsAreaAnchors →
+    // ReferenceSlotKindTests) can stay quiet when the area behaviour was intended. The prefix is legal
+    // ONLY on Location slots (PackageRefSlots) — on a SingleRef target it is meaningless and left to fail
+    // as an unresolved ref. Stripping is a no-op on any string without the prefix, so old specs are
+    // byte-identical.
+    private const string AreaPrefix = "area:";
+
+    internal static bool HasAreaPrefix(string? refStr) =>
+        !string.IsNullOrWhiteSpace(refStr)
+        && refStr.TrimStart().StartsWith(AreaPrefix, StringComparison.OrdinalIgnoreCase);
+
+    // Returns the bare ref (prefix and surrounding whitespace removed) when "area:" is present; otherwise
+    // the original string unchanged — so a non-area value resolves exactly as it did before this existed.
+    internal static string StripAreaPrefix(string? refStr)
+    {
+        if (!HasAreaPrefix(refStr)) return refStr ?? "";
+        return refStr!.TrimStart()[AreaPrefix.Length..].Trim();
+    }
+
     private sealed partial class BuildContext
     {
         // Resolve a package's "alias:<name>" / "aliasLoc:<name>" ref to the alias index on the package's

@@ -120,6 +120,11 @@ public static partial class Generator
         // be a placement editorId or a references[] label that doesn't exist during BuildPackageData.
         private PackageDataLocation MakeLocationSlot(string slotName, string packageEd, string refStr, uint radius)
         {
+            // An explicit "area:<ref>" prefix (author declaring "a region, not that one object") strips to
+            // the bare ref here — every location slot funnels through this one method, so this is the single
+            // point that has to understand it. No-op on an unprefixed ref (byte-identical old behaviour).
+            refStr = StripAreaPrefix(refStr);
+
             // An "alias:<name>" / "aliasLoc:<name>" location → LocationFallback bound to the ownerQuest's
             // alias index (AliasForReference = the alias holds a ref; AliasForLocation = a location alias).
             if (TryResolveAliasIndex(refStr, packageEd, out var isLocAlias, out var aliasIdx) && aliasIdx >= 0)

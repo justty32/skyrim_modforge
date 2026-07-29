@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
 using ModForge;
 using Xunit;
@@ -114,6 +115,50 @@ public class ReferenceSlotKindTests
                                      "patrol.start", "escort.target", "useMagic.target" })
             // the SingleRef names appear only in the "use this instead" advice, never as the offending slot
             Assert.DoesNotContain(notes, n => n.Contains($"'P_{slot.Split('.')[0]}'"));
+    }
+
+    // --- the "area:" opt-out: author declares the region intent, the note goes away ---------------
+
+    [Fact]
+    public void AreaPrefix_OnALabelInALocationSlot_SilencesTheNote()
+    {
+        // "area:sofia's chair" = "I MEAN a region here" — the exact question the note asks is answered,
+        // so it must not fire (StripAreaPrefix in the builder still resolves the label — see below).
+        var r = TestBuild.Ok(ChairSpec(p => p.Sandbox = new SandboxSpec { Location = "area:" + Label, Radius = 128 }));
+        Assert.Empty(r.Notes);
+    }
+
+    [Fact]
+    public void AreaPrefix_StillResolvesTheLabel_ToTheSameFormKeyAsTheBareLabel()
+    {
+        // The prefix only changes intent/notes, never the built payload: "area:sofia's chair" binds the
+        // SAME LocationTarget(chair) + radius as the bare "sofia's chair" did in TheNoteChangesNothing.
+        var r = TestBuild.Ok(ChairSpec(p => p.Sandbox = new SandboxSpec { Location = "area:" + Label, Radius = 128 }));
+        var chair = Assert.Single(r.Mod.EnumerateMajorRecords<IPlacedObjectGetter>());
+        var pkg = r.Mod.Packages.Single(p => p.EditorID == "MFSlotPkg");
+        var loc = Assert.IsAssignableFrom<IPackageDataLocationGetter>(pkg.Data[0]);
+        var target = Assert.IsAssignableFrom<ILocationTargetGetter>(loc.Location!.Target);
+        Assert.Equal(chair.FormKey, target.Link.FormKey);   // prefix stripped, label resolved as normal
+        Assert.Equal(128u, loc.Location!.Radius);
+    }
+
+    [Fact]
+    public void AreaPrefix_OnAPlainVanillaRef_ResolvesToThatRef()
+    {
+        // "area:" is a location-slot modifier, not label-only: an author can prefix any ref to make the
+        // region intent explicit. Here a vanilla FormID keeps resolving after the prefix is stripped.
+        var s = ChairSpec(p => p.SitTarget = new SitTargetSpec { Target = Label }, SitTarget);
+        s.Packages.Add(new PackageSpec
+        {
+            EditorId = "MFSlotWander", Template = Sandbox,
+            Sandbox = new SandboxSpec { Location = "area:Skyrim.esm:0x0D1991", Radius = 512 },
+        });
+        var r = TestBuild.Ok(s);
+        Assert.Empty(r.Notes);   // a vanilla ref never noted anyway; still clean with the prefix
+        var pkg = r.Mod.Packages.Single(p => p.EditorID == "MFSlotWander");
+        var loc = Assert.IsAssignableFrom<IPackageDataLocationGetter>(pkg.Data[0]);
+        var target = Assert.IsAssignableFrom<ILocationTargetGetter>(loc.Location!.Target);
+        Assert.Equal(FormKey.Factory("0D1991:Skyrim.esm"), target.Link.FormKey);
     }
 
     // --- it stays quiet: the negative cases (this is what stops it being noise) --------------------

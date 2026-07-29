@@ -12,7 +12,6 @@
 
 ## ⏳ 待使用者拍板（2026-07-12 收工時開著）
 
-- **`area:<label>` 前綴（非破壞的中間路）**：referrer 的 slot-kind 教訓（label 進 **SingleRef target 槽**＝鎖定那一個 ref；進 **location 槽**＝只是「那附近一塊區域」，引擎自己挑家具 —— 而且 build 綠、dump 乾淨、零警告，只有進遊戲才看得出來，見 [landed/world](../../feature-dev/landed/world.md)「referrer 原語」）目前只用一行 build INFO 提示。**中間路提案**：讓作者可以寫 `"sandbox.location": "area:sofia's chair"` **明示**「我就是要一塊區域」 → 沒寫 `area:` 而把 label 丟進 location 槽時，提示可以更強硬（甚至報錯）。非破壞（舊 spec 不受影響）。**未拍板**。
 - **`package` 要不要把 `requires.txt` 也寫進出貨的 mod 資料夾**：現況＝`build` 寫 `<plugin>.requires.txt` 旁檔、**`package` 只印摘要不寫檔**（理由：輸出夾就是要出貨的 mod，不該多塞檔案，見 [phases](phases.md)）。但玩家最需要那份「我要裝哪些前置」的清單——寫進去（或改寫成 `README.txt`）也許才對。**未拍板**。
 - （第三件 **U10**〔NAVM override 後蓋前、要不要做成 build 警告〕住 [plans/navmesh.md](../navmesh.md) §6 U10。）
 

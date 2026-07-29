@@ -92,10 +92,14 @@ public static partial class Generator
                     else if (!oq.Aliases.Any(a => string.Equals(a.Name, aliasName, StringComparison.OrdinalIgnoreCase)))
                         Problems.Add($"{label}: no alias '{aliasName}' on ownerQuest '{pk.OwnerQuest}'");
                 }
-                PkgSlotRef(pk.Sandbox.Location, $"package '{pk.EditorId}' sandbox.location");
-                PkgSlotRef(pk.Sleep.Location,   $"package '{pk.EditorId}' sleep.location");
-                PkgSlotRef(pk.Travel.Place, $"package '{pk.EditorId}' travel.place");
-                PkgSlotRef(pk.UseMagic.Location, $"package '{pk.EditorId}' useMagic.location");
+                // Location slots accept an explicit "area:<ref>" prefix (declare "a region, not that one
+                // object"); PkgLoc strips it so the bare ref is validated. SingleRef slots do not — a bare
+                // PkgSlotRef leaves any stray "area:" to fail as an unresolved ref, which is correct there.
+                void PkgLoc(string refStr, string label) => PkgSlotRef(Generator.StripAreaPrefix(refStr), label);
+                PkgLoc(pk.Sandbox.Location, $"package '{pk.EditorId}' sandbox.location");
+                PkgLoc(pk.Sleep.Location,   $"package '{pk.EditorId}' sleep.location");
+                PkgLoc(pk.Travel.Place, $"package '{pk.EditorId}' travel.place");
+                PkgLoc(pk.UseMagic.Location, $"package '{pk.EditorId}' useMagic.location");
                 PkgSlotRef(pk.UseMagic.Target,   $"package '{pk.EditorId}' useMagic.target");
                 CheckRef(pk.UseMagic.Spell,    $"package '{pk.EditorId}' useMagic.spell");
                 PkgSlotRef(pk.Patrol.Start,      $"package '{pk.EditorId}' patrol.start");
@@ -104,7 +108,7 @@ public static partial class Generator
                     Problems.Add($"package '{pk.EditorId}' uses Patrol template but patrol.start is empty — NPC has no route and won't patrol");
                 PkgSlotRef(pk.Follow.Target,     $"package '{pk.EditorId}' follow.target");
                 PkgSlotRef(pk.Escort.Target,      $"package '{pk.EditorId}' escort.target");
-                PkgSlotRef(pk.Escort.Destination, $"package '{pk.EditorId}' escort.destination");
+                PkgLoc(pk.Escort.Destination, $"package '{pk.EditorId}' escort.destination");
                 if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var etfk) && etfk == PackageTemplates.Escort
                     && string.IsNullOrWhiteSpace(pk.Escort.Destination))
                     Problems.Add($"package '{pk.EditorId}' uses Escort template but escort.destination is empty — NPC won't lead anywhere (falls back to NearSelf)");
@@ -119,7 +123,7 @@ public static partial class Generator
                 if (LooksExternalRef(pk.Template) && TryExternalRef(pk.Template, out var atfk) && atfk == PackageTemplates.Activate
                     && string.IsNullOrWhiteSpace(pk.Activate.Target))
                     Problems.Add($"package '{pk.EditorId}' uses Activate template but activate.target is empty — Activate has nothing to activate");
-                PkgSlotRef(pk.Eat.Location, $"package '{pk.EditorId}' eat.location");
+                PkgLoc(pk.Eat.Location, $"package '{pk.EditorId}' eat.location");
                 foreach (var f in pk.Flags)
                     if (!Enum.TryParse<Mutagen.Bethesda.Skyrim.Package.Flag>(f, true, out _))
                         Problems.Add($"package '{pk.EditorId}' invalid flag '{f}'");

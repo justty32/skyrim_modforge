@@ -113,14 +113,18 @@ public static partial class Generator
                 foreach (var slot in PackageRefSlots.OfKind(PackageSlotKind.Location))
                 {
                     var refStr = (slot.Get(pk) ?? "").Trim();
+                    // "area:<label>" = the author already declared the area intent explicitly — the whole
+                    // reason the note exists is answered, so stay silent (StripAreaPrefix in the builder
+                    // still resolves the label). Only an UNMARKED label in a location slot is ambiguous.
+                    if (HasAreaPrefix(refStr)) continue;
                     if (!labelSet.Contains(refStr)) continue;
                     uint radius = slot.Radius?.Invoke(pk) ?? 0;
                     Note($"  i reference label '{refStr}' → package '{pk.EditorId}' {slot.Path} (radius {radius}): a LOCATION slot "
                        + $"anchors an AREA at that ref, it does not lock onto it."
                        + $"\n      The engine walks the actor to that spot and then uses ANY furniture/bed/food it likes inside the radius"
                        + $" — it may well be a DIFFERENT object than '{refStr}'."
-                       + $"\n      If you meant \"be near that thing\", this is right and you can ignore this line. If you meant \"use THAT"
-                       + $" object\", put the label in a SingleRef target slot instead ({PackageRefSlots.SingleRefPaths})"
+                       + $"\n      If you meant \"be near that thing\", this is right — write \"area:{refStr}\" to say so and silence this line."
+                       + $" If you meant \"use THAT object\", put the label in a SingleRef target slot instead ({PackageRefSlots.SingleRefPaths})"
                        + $" — those emit PackageTargetSpecificReference(that ref) and the engine acts on it and no other.");
                 }
         }
