@@ -7,7 +7,9 @@ namespace ModForge.Tests;
 
 // livingNpcs: macro (Idea #23). Asserts the pass-0 expansion: a controller host quest + per-NPC alias
 // (MFLivingNpcAlias with Archetype/HoldMarker/Anchors/DeedCount) + anchor xmarkers + deed global +
-// rumor dialogue + the world-controller script. Pure in-memory (no Skyrim.esm).
+// rumor dialogue + the world-controller script.
+// RequiresSkyrim: the build tests place anchors into vanilla cells (Skyrim.esm:0x0133C6 / 0x01605E), so
+// TestBuild.Ok's zero-warning assertion needs the master resolvable. The Validate_* tests run headless.
 public class LivingNpcTests
 {
     private static ModSpec Spec(bool withRumor = true)
@@ -45,6 +47,7 @@ public class LivingNpcTests
     private static Quest Ctrl(ISkyrimMod mod) => mod.Quests.First(q => q.EditorID == "MFLiving_Ctrl");
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void Expands_ControllerQuest_StartGameEnabled_WithOneAliasPerNpc()
     {
         var r = TestBuild.Ok(Spec());
@@ -54,6 +57,7 @@ public class LivingNpcTests
     }
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void WorldControllerScript_OnQuest_WithAliasCount()
     {
         var r = TestBuild.Ok(Spec());
@@ -64,6 +68,7 @@ public class LivingNpcTests
     }
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void AliasScript_CarriesArchetype_AndResolvedObjectProps()
     {
         var r = TestBuild.Ok(Spec());
@@ -78,6 +83,7 @@ public class LivingNpcTests
     }
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void Emits_DeedGlobal_AnchorMarkers_And_AnchorsFormList_PerNpc()
     {
         var r = TestBuild.Ok(Spec());
@@ -91,6 +97,7 @@ public class LivingNpcTests
     }
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void InSpecNpc_Ref_IsPlacedAndPersistent()
     {
         var r = TestBuild.Ok(Spec());
@@ -100,6 +107,7 @@ public class LivingNpcTests
     }
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void Rumor_Topic_GatedOnDeedGlobal_WhenSpeakerGiven()
     {
         var r = TestBuild.Ok(Spec());
@@ -109,6 +117,7 @@ public class LivingNpcTests
     }
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void NoRumorSpeaker_DropsRumorTopic()
     {
         // rumors present but no speaker → the macro emits NO rumor INFO (greetings still exist).
@@ -118,6 +127,7 @@ public class LivingNpcTests
     }
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void ExternalRef_UsesUniqueActorFill_NoPlacement()
     {
         var spec = new ModSpec { PluginName = "Test.esp" };
@@ -141,6 +151,7 @@ public class LivingNpcTests
     // --- P3: interactions (favor global + topics) + alignment ---
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void Interactions_EmitFavorGlobal_AndTopicsWithResponses()
     {
         var spec = Spec();
@@ -153,6 +164,7 @@ public class LivingNpcTests
     }
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void HostileInSpecNpc_SetsAggressionAggressive()
     {
         var spec = Spec(withRumor: false);

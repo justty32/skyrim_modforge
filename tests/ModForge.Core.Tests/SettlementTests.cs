@@ -213,6 +213,7 @@ public class SettlementTests
     }
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void Build_SleepLocationResolvesToInSpecBedAnchor()
     {
         // Regression: sandbox/sleep location slots are deferred so an IN-SPEC placement anchor

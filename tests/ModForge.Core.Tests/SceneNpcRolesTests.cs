@@ -139,6 +139,7 @@ public class SceneNpcRolesTests
     }
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void Build_Blacksmith_OverrideNpcJoinsVendorAndJobMerchantFactions()
     {
         var s = RoleSpec();

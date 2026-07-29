@@ -287,6 +287,7 @@ public class CapturedNpcsTests
     }
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void Build_RecipeFields_ReadBack()
     {
         var s = new ModSpec { PluginName = "M.esp" };
@@ -428,6 +429,7 @@ public class CapturedNpcsTests
     }
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void Build_ExplicitStats_LandOnDnam_AndAutoCalcFlagIsOff()
     {
         var s = new ModSpec { PluginName = "M.esp" };
@@ -449,6 +451,7 @@ public class CapturedNpcsTests
     }
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void Build_ClassButNoExplicitStats_KeepsAutoCalcFlag()
     {
         // The already-in-game-confirmed route must not regress.
@@ -569,6 +572,7 @@ public class CapturedNpcsTests
     }
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void Build_PlayerCaptureWithVoiceType_NoWarning()
     {
         var s = new ModSpec { PluginName = "M.esp" };
@@ -581,6 +585,7 @@ public class CapturedNpcsTests
     }
 
     [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void Build_NonPlayerCaptureNoVoiceType_NoWarning()
     {
         var s = new ModSpec { PluginName = "M.esp" };
