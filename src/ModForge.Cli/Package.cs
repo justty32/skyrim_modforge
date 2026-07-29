@@ -97,9 +97,19 @@ internal static partial class Program
         foreach (var w in result.Warnings) Console.WriteLine(w);
         foreach (var n in result.Notes) Console.WriteLine(n);   // advisory INFO — nothing is wrong (BuildResult.Notes)
         Console.WriteLine(BuildSummary(result.Stats, specPath, espPath));
-        // Install requirements (Generator.Dependencies.cs). Summary only — no .requires.txt here:
-        // outModDir IS the shipped mod folder, and `build` is where the author records dependencies.
+        // Install requirements (Generator.Dependencies.cs). Print the same summary `build` does, AND drop
+        // a PLAYER-facing REQUIREMENTS.txt into the shipped folder: this is the mod a player installs, and
+        // "which other mods must I install first" is the one thing they most need and cannot get anywhere
+        // else. It is the shipped form (no spec-field attribution / rebuild advice — see RequiresFileText);
+        // `build`'s author-facing <plugin>.requires.txt sidecar stays in the author's working dir.
         foreach (var line in Generator.DependencySummary(result.Dependencies)) Console.WriteLine(line);
+        var reqText = Generator.RequiresFileText(pluginName, result.Dependencies, spec.Requires, forShippedMod: true);
+        if (reqText is not null)
+        {
+            var reqPath = Path.Combine(outModDir, "REQUIREMENTS.txt");
+            File.WriteAllText(reqPath, reqText);
+            Console.WriteLine("wrote REQUIREMENTS.txt (the mods a player must install first, with each one's reason/version/link)");
+        }
         WriteSeq(espPath, outModDir);
 
         // 3) Copy compiled .pex files (fragments + user scripts) into Scripts/.

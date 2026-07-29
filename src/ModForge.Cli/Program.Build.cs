@@ -141,8 +141,10 @@ internal static partial class Program
     // is responsible, so dropping a dependency is a decision the author can actually act on.
     //
     // The .requires.txt sidecar makes the dependency set durable (a build summary scrolls away, and
-    // nothing else in the repo records what an .esp needs). Written next to the plugin like Seq/;
-    // `package` prints the same summary but writes NO sidecar — its output folder is the shipped mod.
+    // nothing else in the repo records what an .esp needs). Written next to the plugin like Seq/; this is
+    // the AUTHOR-facing form (spec-field attribution + "remove the line and rebuild"). `package` prints
+    // the same summary and writes a PLAYER-facing REQUIREMENTS.txt into the shipped folder instead
+    // (RequiresFileText forShippedMod:true — see Package.cs).
     private static void ReportDependencies(BuildResult result, string outPath, ModSpec spec)
     {
         foreach (var line in Generator.DependencySummary(result.Dependencies)) Console.WriteLine(line);

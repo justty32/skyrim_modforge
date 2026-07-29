@@ -12,8 +12,7 @@
 
 ## ⏳ 待使用者拍板（2026-07-12 收工時開著）
 
-- **`package` 要不要把 `requires.txt` 也寫進出貨的 mod 資料夾**：現況＝`build` 寫 `<plugin>.requires.txt` 旁檔、**`package` 只印摘要不寫檔**（理由：輸出夾就是要出貨的 mod，不該多塞檔案，見 [phases](phases.md)）。但玩家最需要那份「我要裝哪些前置」的清單——寫進去（或改寫成 `README.txt`）也許才對。**未拍板**。
-- （第三件 **U10**〔NAVM override 後蓋前、要不要做成 build 警告〕住 [plans/navmesh.md](../navmesh.md) §6 U10。）
+- （**U10**〔NAVM override 後蓋前、要不要做成 build 警告〕住 [plans/navmesh.md](../navmesh.md) §6 U10。）
 
 ## 仍未做
 

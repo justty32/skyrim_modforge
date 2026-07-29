@@ -258,7 +258,7 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
   - `PROTEUS.esp (1 link) ← capturedNpcs[0].spells[17] = PROTEUS.esp:0x08073D`
   - `Conditional Expressions.esp ← capturedNpcs[0].activeEffects[3].magicEffect = …:0x00081A`（活性效果也照抓）
 - **兩個來源，各司其職**：**master 清單以「建好的 mod」為準**（掃 record FormKey ＋ `EnumerateFormLinks`——抓得到 spec 字串沒寫、被 deep-copy／template clone 帶進來的 master）；**歸因以 spec 為準**（reflection walk 出 JSON 路徑）。⚠️ 歸因快照必須在 `ExpandMacros` **展開前**取（`ModSpec.AuthoredRefSources`，internal）——否則 captured NPC 會報成巨集生出來的 `npcs[0].spells[…]`，那是**使用者檔案裡根本不存在的欄位**。
-- **旁檔 `<plugin>.requires.txt`**（寫在 esp 旁；沒有非原版依賴時刪掉舊檔）＝解掉後果②「沒有任何地方記著這個 esp 依賴誰」。**`package` 只印摘要、不寫旁檔**（它的輸出夾就是要出貨的 mod，不該多塞檔案）。
+- **旁檔 `<plugin>.requires.txt`**（寫在 esp 旁；沒有非原版依賴時刪掉舊檔）＝解掉後果②「沒有任何地方記著這個 esp 依賴誰」。此旁檔＝**作者面向**（含 spec 欄位歸因＋rebuild 指示）。**更新（2026-07-29）**：`package` 從「只印不寫」改為**寫玩家面向 `REQUIREMENTS.txt` 進出貨夾**——玩家最需要「先裝哪些前置」，且拿到 mod 的人既沒 spec 也沒 ModForge，故用 shipped 形式（`RequiresFileText forShippedMod:true`）拿掉 spec 內部、只留安裝清單＋各自 reason/version/連結。
 - **CC 不算 vanilla**（`ccXXXSSE###` / `_ResourcePack`）：按帳號購買，沒買的玩家一樣靜默不載——照列，只是標註原因。vanilla ＝ Skyrim/Update/Dawnguard/HearthFires/Dragonborn 五個。
 - **語氣＝資訊、不是錯誤**（使用者拍板要完全複製）；純 vanilla spec **一個字都不印**（negative-case 測試釘住，免得變背景噪音）。C# **971 測綠**（951 + 20 新）。docs：[for_agent_cli](../../../docs/for_agent_cli.md)（＋zh-TW 鏡像）。
 - **另三個候選**：(b) spec 宣告式 `requires:` 段 → **✅ 同日補上，見下節**；(c) modlist / load order 快照（MO2 `plugins.txt`）、(d)「依賴檢查」指令（給 esp ＋ load order，回報缺什麼）**仍未做**（收進 backlog）。
