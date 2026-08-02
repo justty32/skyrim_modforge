@@ -2,6 +2,8 @@
 
 ModForge = **JSON spec → Skyrim `.esp` 生成工具**（AI-agent 友善）。本檔是**最頂層路由器**：只指向下一層，**durable 細節一律不寫這裡**。
 
+> [AGENTS.md](AGENTS.md) 是同一份路由的非 Claude 版（Codex 等工具讀那個檔名）。**它只轉指本檔，不重複內容**——2026-08-02 之前它是一份 153 行的分身，路徑與測試數全爛掉了，別再把細節寫回去。
+
 ## 開發環境
 
 跨機開發：**Manjaro 主力機**（完整，含實機測試 / Wine / CK / 語音）與**離線機 fresh clone**（無 Skyrim / Wine / 遊戲，只做離線開發與測試）。build / 測試 / 前置 / 出貨指令與**各機能做什麼**全在 **[workflows/dev-env.md](workflows/dev-env.md)**。

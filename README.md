@@ -86,7 +86,7 @@ structure) — most take `<in.esp> <0xFORMID>`; run the CLI with no args for exa
 ```
 
 The **spec** format (the JSON the generator consumes) is documented in
-[`docs/SPEC-index.md`](docs/spec/SPEC-index.md) with a JSON Schema at [`examples/spec.schema.json`](examples/spec.schema.json);
+[`docs/spec/SPEC-index.md`](docs/spec/SPEC-index.md) with a JSON Schema at [`examples/spec.schema.json`](examples/spec.schema.json);
 [`examples/sample_spec.json`](examples/sample_spec.json) is a complete working example.
 The agent workflow is in [`docs/for_agent.md`](docs/for_agent.md) (CLI path + library path).
 For local Manjaro/Steam Proton master reference generation, see
@@ -108,7 +108,7 @@ dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj --filter "Categ
 
 Tests that clone vanilla templates or copy vanilla cell/worldspace context are marked
 `Category=RequiresSkyrim`; run them with `MODFORGE_SKYRIM_DATA` pointing at the Skyrim
-Special Edition `Data` folder. See [`docs/testing.md`](workflows/testing.md).
+Special Edition `Data` folder. See [`workflows/testing.md`](workflows/testing.md).
 
 **Building lifelike NPCs?** See [`docs/lifelike/`](docs/lifelike/README.md) — distilled recipe + the
 two-systems insight (CombatStyle vs AIData) + vanilla FormID reference + diagnostic commands +
@@ -132,10 +132,11 @@ native dialogue (`DialogTopic` prompt + spoken `DialogResponse` lines). Easy to 
 ## Status
 All three pillars are operational. Generation covers NPCs/items/magic/enchantments/perks,
 dialogue/quests/scenes/word walls, AI packages/combat styles, weather/climate/regions,
-interior cells and custom worldspaces (flat terrain cells + loadable navmesh), with script
+interior cells and custom worldspaces (heightmap-driven terrain — VHGT/VNML with seam stitching,
+BTXT/VTXT texture layers from splatmaps, object placement, plus loadable navmesh), with script
 attachment (VMAD), SEQ files and MO2-ready packaging. The voice pipeline can plan and generate
 dialogue voice assets from built INFOs when external TTS/xWMA/lip tools are configured; fake-TTS +
 xWMA FUZ packaging is structurally verified, while real model quality and in-game playback still
 need local Skyrim/Proton confirmation. Translation supports inline and
 localized (`.STRINGS`) output. The full spec surface is documented in
-[`docs/SPEC-index.md`](docs/spec/SPEC-index.md).
+[`docs/spec/SPEC-index.md`](docs/spec/SPEC-index.md).
