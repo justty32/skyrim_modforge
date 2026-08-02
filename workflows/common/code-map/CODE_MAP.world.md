@@ -251,7 +251,7 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 | Diag | `Diagnostics.Worldspace.cs` | worldspace climate/water/map / cell grid / region overlay |
 | Diag | `Diagnostics.Landscape.cs` | `landdiag <plugin> [ws] [n]` — dump LAND 紋理層（BTXT/ATXT quad+LayerNumber+tex、VTXT pts、Flags）對 vanilla byte-verify（Mutagen `AlphaLayer:BaseLayer` 故判型先 IAlphaLayerGetter）；`find <plugin> 0xFORMID` 反查 FormID 型別（`Diagnostics.cs`）|
 | Tool | `TexExport.cs` (CLI) | `texexport <dataDir> <outDir> <master:0xLTEX>[,…]` — LTEX→TextureSet→diffuse .dds 從遊戲 BSA（`Archives`）抽出 → `magick` 轉 PNG；餵 Godot worldspace-editor 的 WYSIWYG 地形 shader |
-| Tool | `NifExport.cs` (CLI) | `nifexport <dataDir> <outDir> <master:0xFORMID>[,…]` — 可放置 base（STAT/TREE/MSTT…）的 `IModeledGetter.Model.File`→model .nif 從 mesh BSA 抽出；Godot 端再走 `nif2gltf`（[sub_projs/model-converter](../../../sub_projs/model-converter/README.md)）轉 glTF 當 WYSIWYG 物件代理 |
+| Tool | `NifExport.cs` (CLI) | `nifexport <dataDir> <outDir> <master:0xFORMID>[,…]` — 可放置 base（STAT/TREE/MSTT…）的 `IModeledGetter.Model.File`→model .nif 從 mesh BSA 抽出；Godot 端再走 `nif2gltf`（[../model-converter](../../../sub_projs/model-converter/README.md)）轉 glTF 當 WYSIWYG 物件代理 |
 | Tool | `TexExport.cs` `TexPath` (CLI) | `texpath <dataDir> <outDir> <texPath>[,…]` — 抽任意貼圖路徑（NIF shader 引用的 .dds）→ `<basename>.png`；給物件 glTF 上 diffuse 貼圖（nif2gltf 寫 `<stem>.textures.json` sidecar 列要抽的 dds，model_fetch 據此呼叫）|
 
 ---

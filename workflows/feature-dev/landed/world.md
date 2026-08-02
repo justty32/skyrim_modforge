@@ -10,7 +10,7 @@
 
 **Worldspace baseTexture（單層 BTXT，offline 落地 2026-06-17）**：`worldspace.baseTexture`（LTEX ref）→ 每格 LAND 四象限 BASE 層（BTXT），全世界單一地表貼圖、無 per-vertex 混合（`cells`/`heightmap` 皆可）。`Generator.Build.Worldspace.cs` EmitCell 接線。`WorldspaceBaseTextureTests`。doc `SPEC-worldspaces.md § baseTexture`、schema、`CODE_MAP.world.md`。⚠ byte-level vs vanilla LAND BTXT 待主力機 xEdit（WAIT_USER）；真實 LTEX FormID 待 `gamedata find` 查（測試/example 用 placeholder）。
 
-**Worldspace textureLayers（多層 splatmap → VTXT/ATXT，offline 落地 2026-06-17）**：`worldspace.textureLayers[]`（LTEX ref + grayscale splatmap PNG，grid 規則同 heightmap）→ 每格四象限稀疏 ATXT+VTXT alpha 層（零 alpha 頂點省略，同 vanilla；splatmap 未覆蓋的象限不出層）。`Splatmap.cs`（PNG→per-vertex alpha）+ `Vtxt.cs`（BuildLayers）+ `Generator.Build.Worldspace.cs` EmitCell。`WorldspaceSplatmapTests`（604 全綠）。Mutagen `AlphaLayer{Header, AlphaLayerData{Position,Opacity,Unused}}` 反射查證。doc `SPEC-worldspaces.md § textureLayers`、schema、`CODE_MAP.world.md`；前端 splat-paint 筆在 `sub_projs/godot-worldspace-editor`。⚠ VTXT 每點 position/per-quadrant layer-number 打包 byte 待主力機 xEdit（WAIT_USER）。
+**Worldspace textureLayers（多層 splatmap → VTXT/ATXT，offline 落地 2026-06-17）**：`worldspace.textureLayers[]`（LTEX ref + grayscale splatmap PNG，grid 規則同 heightmap）→ 每格四象限稀疏 ATXT+VTXT alpha 層（零 alpha 頂點省略，同 vanilla；splatmap 未覆蓋的象限不出層）。`Splatmap.cs`（PNG→per-vertex alpha）+ `Vtxt.cs`（BuildLayers）+ `Generator.Build.Worldspace.cs` EmitCell。`WorldspaceSplatmapTests`（604 全綠）。Mutagen `AlphaLayer{Header, AlphaLayerData{Position,Opacity,Unused}}` 反射查證。doc `SPEC-worldspaces.md § textureLayers`、schema、`CODE_MAP.world.md`；前端 splat-paint 筆在 `../godot-worldspace-editor`。⚠ VTXT 每點 position/per-quadrant layer-number 打包 byte 待主力機 xEdit（WAIT_USER）。
 
 **godotPlacements（Godot 編輯器物件擺放 → REFR，offline 落地 2026-06-17）**：`worldspace.godotPlacements`（`godot-worldspace-editor` 匯出的 `placements.json`；path/originX/originY）→ Y-up→Skyrim 世界座標轉換 + 併入既有 placement 管線生 REFR。`GodotPlacements.cs`。前端 Place Mode 筆 + `placements.json` I/O 在 sub_proj。doc `SPEC-worldspaces.md § godotPlacements`、schema、`CODE_MAP.world.md`。Godot GUI 整鏈（擺物件→匯出→build→進遊戲）in-game 確認 2026-06-18（編輯器側見 [godot-editor.md](godot-editor.md)）。
 
@@ -30,7 +30,7 @@
 
 ## scene-capture-bridge M4 spike — 遊戲內採集橋（Idea #24 元件③）· IN-GAME 2026-07-10
 
-一支 SKSE C++ DLL（`sub_projs/scene-capture-bridge/`）走訪玩家所在 cell，把玩家擺放的 ref 序列化成 `scene.json`（＝一份合法 `ModSpec`）→ ModForge `build` 出 patch esp。實機驗收：
+一支 SKSE C++ DLL（`../scene-capture-bridge/`）走訪玩家所在 cell，把玩家擺放的 ref 序列化成 `scene.json`（＝一份合法 `ModSpec`）→ ModForge `build` 出 patch esp。實機驗收：
 
 - **clang-cl 跨編譯的 SKSE DLL 可直接實機**：`skse64.log` → `plugin SceneCaptureBridge.dll (...) loaded correctly (handle 53)`。import 表只有系統 DLL、靜態 CRT。`BUILD.md` 原本假設此路徑僅供編譯驗證——有反例了（出貨仍走 Windows CI，因未驗 address-library 跨版本行為）。
 - **vanilla diff**：`ResolveDurableId(&ref)` 解得出 ⇒ 既有 ref ⇒ 跳過；解不出（dynamic `0xFF......`，`GetFile(0)==nullptr`）⇒ 玩家 `PlaceAtMe` 擺的 ⇒ emit。The Bannered Mare (`01605E`) 按 F10：`0 placements, 717 pre-existing`。`placeatme` 兩個之後：`2 placements, 717 pre-existing`。
@@ -62,7 +62,7 @@
 4. **numpad 編輯**：5 選中、3 升高（+55 units）、0 commit、`.` 取消還原全部實證；**無任何未映射 numpad 鍵**——log 裡 unmapped `0x11/0x1F/0x20/0x38` 是編輯中按的 WASD/Alt（無害噪音，之後可限縮 log 範圍）。
 5. **物理凍結**（P3）：選中掉落的 `StaffMagelight`（HavokMovable）→ `physics frozen` → 抬升 → commit → `physics restored` → 沉降；**匯出的是沉降後姿態**（rotation x=146.6° 躺平），符合「live pose 匯出」語意。
 6. **閉環**：`scene-export.json`（2 placements + 2 annotations + 1 removal）→ `build` → 7-record esp（removal override 深埋 Z−30000、Tamriel override 自動帶 TopCell 0xD74、ESL、master 僅 Skyrim.esm）→ 使用者實機：**擦的長凳永久消失、擺的長凳＋躺平法杖出現**。
-7. **持久化**：遊戲內 save→load 後擦除維持、markers 原地——disable 狀態與動態 ref 都住在存檔（語意詳見 [sub_projs/scene-capture-bridge/README](../../../sub_projs/scene-capture-bridge/README.md)「持久化與 adopt 語意」）。
+7. **持久化**：遊戲內 save→load 後擦除維持、markers 原地——disable 狀態與動態 ref 都住在存檔（語意詳見 [../scene-capture-bridge/README](../../../sub_projs/scene-capture-bridge/README.md)「持久化與 adopt 語意」）。
 
 意外收穫：被抬的法杖根本不是 DLL 擺的（玩家丟在地上的裝備）照樣進 placements——vanilla diff 的無狀態判別（動態 ref＝玩家所為）涵蓋所有玩家操作，不限本工具。
 

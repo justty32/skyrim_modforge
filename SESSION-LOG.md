@@ -25,7 +25,7 @@
 - **⏳ 原三件待拍板已全部拍板＋落地（2026-07-29，公司離線機一輪）**：① **U10** build 警告（`CheckNavmeshOverrideClobbers`，合成 plugin 離線測、🎮 對真 USSEP 驗收留主力機，見 [navmesh §6 U10](workflows/plans/navmesh.md)）；② **`area:<ref>` 前綴**（location 槽明示區域意圖、靜音護欄）；③ **`package` 寫玩家面向 `REQUIREMENTS.txt`**。三件都已離線測、commit 未 push。另 navmesh plan 內兩項仍未拍板：§7-3（P3 先只支援內裝？）、§7-4（三角化要不要引 DotRecast，傾向不要）。
 - **masters 汙染（設計 open，非 bug）**：玩家身上的 spells/effects/inventory 一半來自 mod → esp 把 PROTEUS/XPMSE/nwsFollower… 全變 master。**使用者拍板：完全複製優先、不過濾**；可見性四候選中 (a) build 印來源 ＋ (b) spec `requires:` 契約**已做**，(c) modlist 快照／(d) 依賴檢查指令**未做**（[backlog](workflows/plans/scene-capture-bridge/backlog.md)）。
 - **Phase 2 烘焙臉（未排，優先級⬇）**：實測分身臉正常——頭形引擎 runtime 生、臉色 Face Discoloration Fix SE 補；只剩「發佈給無 FDF 環境」或「完全自足產物」才需要烘。三路評估與界線在 [plans/captured-npcs-consumption.md](workflows/plans/captured-npcs-consumption.md)。
-- **🔴 鐵律（血的教訓，2026-07-12）**：遊戲跑著時用 `cp` 就地覆寫 `mods/.../SKSE/Plugins/*.dll` → **遊戲無聲暴斃、無 crash log**（Linux 不鎖載入中的 DLL；`cp` 寫穿同一個 inode，而 DLL 程式碼頁是 demand-paged from that file）。**往後部署一律走 `sub_projs/scene-capture-bridge/scripts/deploy.sh`**（`pgrep SkyrimSE.exe` 在跑就拒絕 ＋ tmp+rename 換 inode），不要手打 `cp`。成因記入 [dev-env § 部署 SKSE DLL](workflows/dev-env.md)。
+- **🔴 鐵律（血的教訓，2026-07-12）**：遊戲跑著時用 `cp` 就地覆寫 `mods/.../SKSE/Plugins/*.dll` → **遊戲無聲暴斃、無 crash log**（Linux 不鎖載入中的 DLL；`cp` 寫穿同一個 inode，而 DLL 程式碼頁是 demand-paged from that file）。**往後部署一律走 `../scene-capture-bridge/scripts/deploy.sh`**（`pgrep SkyrimSE.exe` 在跑就拒絕 ＋ tmp+rename 換 inode），不要手打 `cp`。成因記入 [dev-env § 部署 SKSE DLL](workflows/dev-env.md)。
 
 ## 各工作流 session-log
 

@@ -78,7 +78,7 @@ MarkerEntry {
 
 ## Task 5：工具 esp（ModForge dogfood）
 
-**Files:** `examples/` 或 `sub_projs/scene-capture-bridge/tools-spec.json`。
+**Files:** `examples/` 或 `../scene-capture-bridge/tools-spec.json`。
 
 - [x] ModForge 生：MarkerACTI（驗過的可見模型）+ 放置法術（+ 之後的檢視法術、選取法術殼）。**編輯器工具 esp ≠ 出貨產物**。
 - [ ] 部署：跟 DLL 一起進 `mods/SceneCaptureBridge/`。
@@ -155,7 +155,7 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
   - 每顆都核對過 `Console.cpp` 指令表＋`Modes.cpp` 的 `RunAction`／`Editor::HandleKey` 派送，確認底層函式仍被 mode+key 路徑呼叫（**只拔 UI 觸發，不動邏輯**）；`Markers::PlaceAtPlayer()` 拔完按鈕後在 DLL 內已無其他呼叫者，**保留原函式**（宣告在 `Markers.h`，非 static，無 unused-function 警告，之後若要救援回來成本為零）。
 - **留下的**：Export 三鈕（Export player cell / Export all / Export captures，產出檔案不是改世界，且面板是**唯一**入口，`sc` 沒有 export 指令）；各頁的逐列 undo/revert/del（Eraser 的 `undo`/`clear (re-enable all)`、Captures 的 `undo`/`clear`、Editor 的 `revert`/`revert all`——這些是**復原**既有動作，不是「觸發新世界動作」，且都**沒有 `sc` 替代路徑**）；Markers 頁 `adopt this cell`（跨 cell 孤兒救援，無 `sc` 對應指令，co-save 只在同 cell 自動跑）；marker 編輯視窗 `delete marker`（`sc del` 明文拒收 marker gem，唯一刪除入口）；Palette 的 `[use]`／rename／`del`／三顆檔案 I/O 鈕（`load from file`/`replace from file`/`save to file`，無 `sc` 對應）；References/Markers 的改名/kind/note/apply/del；Settings 頁模式切換鈕與各項顯示。
 - **邊界檢查**：backlog 原文提醒的「palette『place slot N』」類按鈕在目前面板**不存在**（每列只有 `[use]` 選取＋`del`，沒有逐列「place」鈕），故無需請示。
-- 純 C++（`sub_projs/scene-capture-bridge/src/UI.cpp`、`UI.Markers.cpp`），未碰 C#；`build-release-clang-cl-linux` 編過（撞到 stale cache，`rm -rf build/release-clang-cl-linux` 後重編成功）。
+- 純 C++（`../scene-capture-bridge/src/UI.cpp`、`UI.Markers.cpp`），未碰 C#；`build-release-clang-cl-linux` 編過（撞到 stale cache，`rm -rf build/release-clang-cl-linux` 後重編成功）。
 
 ## ✅ 已做（模式開關套件：`py`／`ed`／`pkc` 五項，2026-07-12，DLL crc `5434abd4`，**已部署**，待實機）
 - **`sc pl py0/py1`（擺放物理，`py1` 預設）＋ `sc ed py0/py1`（編輯期物理，`py0` 預設）**。DLL 端凍結複用 P3 機制（抽成新的 `src/Physics.{h,cpp}`：`HavokMovable` 判定 ＋ `FreezeDeferred` 延後到 3D 載入才凍；Markers/Editor 原本各抄一份，現三處共用，**行為不變**）。`sc ed py0` ＝把現行凍結行為做成可切；`py1` ＝控制期間 havok 照跑。

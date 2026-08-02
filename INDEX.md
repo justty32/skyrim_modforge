@@ -14,7 +14,7 @@
 | `examples/` | spec `.json` 範例 + `spec.schema.json` + `scripts/*.psc` + `assets/`——視為**源碼** |
 | `assets/papyrus/` | embed 進 CLI 的 `.psc`（dispatcher / controller / 身份系統）|
 | `scripts/` | 工作流 bash（bootstrap-pex / ship / ship-voice / test-offline / extract-skyrim-masters）|
-| `sub_projs/` | 用 ModForge 當工具的**獨立專案**（消費者 / 基石工具）——全部列在 [sub_projs/README](sub_projs/README.md)（sofia-patch、skyrim-voicegen、godot-worldspace-editor、model-converter、inworld-skill-tree…）|
+| `sub_projs/` | 用 ModForge 當工具的**獨立專案**（消費者 / 基石工具）——全部列在 [sub_projs/README](sub_projs/README.md)（sofia-patch、skyrim-voicegen、agent-bridge、inworld-skill-tree、darksouls-port…）。**三個已移出成同層 repo**（`../godot-worldspace-editor`、`../scene-capture-bridge`、`../model-converter`，2026-08-02），原位置留 stub 導引 |
 | `tests/` | xUnit（`Category=RequiresSkyrim` 為需本機 Skyrim.esm 者）|
 | `docs/` | ModForge 使用手冊（cookbook/cheatsheet/spec；見下）|
 

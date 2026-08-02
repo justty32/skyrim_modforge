@@ -2,7 +2,7 @@
 
 ← [WAIT_USER](../WAIT_USER.md)（總入口）
 
-離線地形/紋理/物件編輯前端（[`sub_projs/godot-worldspace-editor/`](../sub_projs/godot-worldspace-editor/README.md)）整鏈相關的待主力機項。
+離線地形/紋理/物件編輯前端（[`../godot-worldspace-editor/`](../sub_projs/godot-worldspace-editor/README.md)）整鏈相關的待主力機項。
 
 - **【Idea #19 紋理 + 物件 — Godot 整鏈剩「刷哪長哪」最終目視（2026-06-18）】**：✅ **整鏈 in-game 確認**（`GodotEditorDemo.zip`）：Godot GUI 刷高度+紋理+擺物件 → 匯出 → ModForge build → 地形/紋理/物件實機全顯示（[landed/world.md](../workflows/feature-dev/landed/world.md) + memory [[land-texture-render-requirements]]，紋理 3 真因已修、695 測綠）。⚠️ **唯一還沒目視確認的尾巴**：VTXT 每點 position 的 **row/col 編碼順序**（layer 號/flags/texture FormID 已對 vanilla byte-verify，但 position 序是照文件慣例推的，離線無法對 vanilla 比）。**待你做**：在 Godot 只刷地圖**某一角/一條**草（不要刷滿）→ build 進遊戲，確認草長在**你刷的同一位置**（不是鏡像/旋轉/錯格）。若位置對＝position 序確認；若鏡像或偏移，回報「刷在哪、實機長在哪」我修 `Vtxt.cs` 的 row/col 對應。
 - **【物件 rotation 軸對應 — 已套用換軸、待實機校準】**：~~原本 rotation 是原樣 X→X/Y→Y/Z→Z 傳遞、沒換軸（疑點）~~ → **已改成與 position 同一個基底變換 M=Rx(90°) 的 per-axis 對應**（`GodotPlacements.cs`，commit 待補）：`skyrim_rotX = godot_rotX`、`skyrim_rotY = −godot_rotZ`、`skyrim_rotZ = godot_rotY`（Godot 繞 +Y 上軸 yaw → Skyrim 繞 +Z 上軸 yaw＝heading）。**單軸旋轉（編輯器主要情境，多為 yaw）完全正確**（+2 單元測 `GodotPlacementsTests`：yaw→RotZ、Godot-Z→−RotY）；複合 Euler 因兩邊 Euler 套用順序不同會有殘差。⚠️ **待你做（實機校準）**：擺一個朝向明顯的物件（門/雕像/箭頭狀 STAT），① 先轉 yaw（編輯器繞「上」）90° → build 進遊戲，確認遊戲內朝向轉了 90° 且繞的是垂直軸（這驗最常見情境）；② 再試 pitch/roll（繞 X、繞 Godot-Z）看複合情況。若 yaw 就不對，回報「編輯器轉哪軸幾度、遊戲內變成怎樣」，我據此修符號/順序（多半是 RotZ 的正負號或 Skyrim Euler 套用順序）。

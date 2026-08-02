@@ -98,7 +98,7 @@ Render 函式裡能直接呼 CommonLib `RE::` 遊戲 API（範例：查 FormID �
 
 ## 落地（2026-07-10）：`scene-capture-bridge` 就是它的消費者 plugin
 
-本 finding 原本的結論是「#24 的 GUI 層＝一個獨立 native 子專案」。**不必獨立**——[`sub_projs/scene-capture-bridge`](../../scene-capture-bridge/README.md) 已經是一支編得過、實機驗過的 CommonLibSSE-NG SKSE plugin，面板直接長在它上面（`src/UI.cpp`）。
+本 finding 原本的結論是「#24 的 GUI 層＝一個獨立 native 子專案」。**不必獨立**——[`../scene-capture-bridge`](../../scene-capture-bridge/README.md) 已經是一支編得過、實機驗過的 CommonLibSSE-NG SKSE plugin，面板直接長在它上面（`src/UI.cpp`）。
 
 - 消費者 header `resources/SKSEMenuFramework.h` vendored 到 `extern/SKSEMenuFramework/`（LGPL-2.1；**離線機必須能 build**，故不用 `file(DOWNLOAD)`）。header 自足，只要 `windows.h` + std。
 - **軟相依**：`IsInstalled()` 是 `GetModuleHandleW(L"SKSEMenuFramework")` 探測。編出來的 DLL import 表仍只有 5 個系統 DLL、無此框架的 import name → 沒裝框架的玩家照樣拿到 F10 hotkey，且動態連結符合 LGPL。

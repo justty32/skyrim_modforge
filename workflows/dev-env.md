@@ -35,7 +35,7 @@ scripts/bootstrap-pex.sh
 
 ## 部署 SKSE DLL 到 MO2（**僅 Manjaro**）——🔴 絕不 `cp` 覆寫執行中的 DLL
 
-**用 `sub_projs/scene-capture-bridge/scripts/deploy.sh`，不要手打 `cp`。**
+**用 `../scene-capture-bridge/scripts/deploy.sh`，不要手打 `cp`。**
 
 **症狀（2026-07-12 真的把使用者的遊戲弄死過）**：遊戲跑著的時候把新 DLL `cp` 蓋進 `mods/<mod>/SKSE/Plugins/` → 遊戲**無聲暴斃、連 crash log 都沒有**。看起來像「新 DLL 是壞的」，其實 DLL 沒問題。
 

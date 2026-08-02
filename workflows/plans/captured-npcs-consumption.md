@@ -173,5 +173,5 @@ DLL 匯出的 json 形狀（`SceneExporter.cpp:269-316` verbatim，schema 必須
 
 ## 相依 / 前情
 - 姊妹 `capturedItems[]` 已落地（`Generator.CapturedItems.cs`、`Spec.CapturedItems.cs`、`CapturedItemsTests.cs`，commit `1bed5dd`）——**這是最佳抄襲模板**。
-- DLL 端 capturedNpcs 匯出已成形（`sub_projs/scene-capture-bridge/src/SceneExporter.cpp:269-316`、`Captures.cpp ReadNpc`）；faceMorphs 尾槽 FLT_MAX 已修（commit `82b368f`，18 值）。
+- DLL 端 capturedNpcs 匯出已成形（`../scene-capture-bridge/src/SceneExporter.cpp:269-316`、`Captures.cpp ReadNpc`）；faceMorphs 尾槽 FLT_MAX 已修（commit `82b368f`，18 值）。
 - OPEN-B（PROTEUS 是否寫 TESNPC）未驗——若 PROTEUS 走 live NiNode override 不寫 TESNPC，capturedNpcs 對 PROTEUS clone 會吸到 base 臉（本計畫無影響，但影響 PROTEUS 用例的價值）。
