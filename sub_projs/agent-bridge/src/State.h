@@ -17,6 +17,10 @@ namespace State {
         bool nearby = false;
         bool inventory = false;
         bool quests = false;
+        bool plugins = false;     // the load order as the engine actually resolved it —
+                                  // this is what proves `mo2ctl install` took effect,
+                                  // and it ignores `limit` because a truncated load
+                                  // order would answer "is my plugin loaded" wrongly
         float radius = 4096.0f;   // ~2 Skyrim "units" per foot; this is a short walk
         std::size_t limit = 32;   // cap per collection, so one bad request can't
                                   // stall the game thread building a 900-entry array

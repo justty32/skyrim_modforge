@@ -189,6 +189,37 @@ namespace {
         }
         return out;
     }
+
+    // The load order the engine ended up with, which is not necessarily the one
+    // written in plugins.txt — MO2's VFS, missing masters and .esl slotting can
+    // all change it. `index` is the byte a FormID actually carries: 0x00-0xFD for
+    // full plugins, 0xFE000-0xFEFFF for light ones.
+    json PluginsBlock()
+    {
+        json out = json::array();
+        auto* handler = RE::TESDataHandler::GetSingleton();
+        if (!handler) return out;
+
+        const auto append = [&out](const RE::TESFile* file) {
+            if (!file) return;
+            out.push_back(json{
+                { "name", std::string{ file->GetFilename() } },
+                { "index", file->GetPartialIndex() },
+                { "light", file->IsLight() },
+            });
+        };
+
+        // Not `compiledFileCollection` directly: on the multi-runtime (NG) build
+        // that member only exists behind a runtime-specific layout, and naming it
+        // doesn't compile. The accessors relocate for you.
+        if (const auto* mods = handler->GetLoadedMods()) {
+            for (std::size_t i = 0; i < handler->GetLoadedModCount(); ++i) append(mods[i]);
+        }
+        if (const auto* light = handler->GetLoadedLightMods()) {
+            for (std::size_t i = 0; i < handler->GetLoadedLightModCount(); ++i) append(light[i]);
+        }
+        return out;
+    }
 }
 
 json State::Snapshot(const Options& a_options)
@@ -212,6 +243,9 @@ json State::Snapshot(const Options& a_options)
     }
     if (a_options.quests) {
         out["quests"] = QuestsBlock(a_options.limit);
+    }
+    if (a_options.plugins) {
+        out["plugins"] = PluginsBlock();
     }
 
     return out;

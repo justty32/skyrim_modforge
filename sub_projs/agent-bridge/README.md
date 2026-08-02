@@ -30,13 +30,21 @@ Phase 0.1 skeleton. Working today:
 | Route | Runs on | Notes |
 |---|---|---|
 | `GET /ping` | socket thread | Liveness. Answers during load screens on purpose — lets the runner tell "process alive, game busy" from "process dead". |
-| `GET /state` | game thread | `?include=nearby,inventory,quests&radius=&limit=`. Player + game blocks always; the rest opt-in. Two gotchas: `equipped` is **hands only** (armour shows as `worn: true` in `inventory`), and at the main menu this can 503 while the task queue isn't draining — that's expected, use `/ping` for liveness. |
+| `GET /state` | game thread | `?include=nearby,inventory,quests,plugins&radius=&limit=`. Player + game blocks always; the rest opt-in. Two gotchas: `equipped` is **hands only** (armour shows as `worn: true` in `inventory`), and at the main menu this can 503 while the task queue isn't draining — that's expected, use `/ping` for liveness. |
 | `POST /console` | game thread | `{"cmd": "...", "ref": "0x14"}`. `ref` is optional — it's the console's selected reference, for dotted commands. Output capture is one line and best-effort; see the pitfall below. |
 
 Loading a save is just `{"cmd": "load <save filename without extension>"}` — verified working
 from the main menu, so there's no separate autoload mechanism to build.
 
-Not built yet: `POST /screenshot`, `POST /input`.
+`include=plugins` returns the load order **as the engine resolved it**, which is the
+thing to assert against after installing a mod — `plugins.txt` says what was asked for,
+this says what happened. `index` is the byte a FormID actually carries (`0x00`–`0xFD`
+for full plugins, `0xFE000`+ for light ones), so it doubles as the FormID prefix.
+
+Not built yet: `POST /screenshot`, `POST /input` — both deferred, see plan decision D6.
+
+The Linux side of all this lives in [`client/`](client/README.md): `mo2ctl.py` installs
+and removes mods and starts the game, with no MO2 GUI anywhere in the loop.
 
 ## Design notes
 

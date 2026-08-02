@@ -29,11 +29,11 @@ namespace {
         return Http::Response::Ok({
             { "ok", true },
             { "plugin", "AgentBridge" },
-            { "version", "0.3.0" },
+            { "version", "0.4.0" },
         });
     }
 
-    // GET /state[?include=nearby,inventory,quests][&radius=4096][&limit=32]
+    // GET /state[?include=nearby,inventory,quests,plugins][&radius=4096][&limit=32]
     //
     // Player and game blocks always come back. The rest is opt-in — see
     // State::Options for why.
@@ -45,6 +45,7 @@ namespace {
         options.nearby = include.find("nearby") != std::string::npos;
         options.inventory = include.find("inventory") != std::string::npos;
         options.quests = include.find("quests") != std::string::npos;
+        options.plugins = include.find("plugins") != std::string::npos;
 
         if (const auto radius = req.Get("radius"); !radius.empty()) {
             try { options.radius = std::stof(radius); } catch (...) {}
