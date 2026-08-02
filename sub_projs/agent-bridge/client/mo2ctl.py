@@ -30,16 +30,15 @@ import signal
 import subprocess
 import sys
 import time
-import urllib.error
-import urllib.request
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+import bridge
+
 DEFAULT_MO2_ROOT = Path.home() / "games/mod-organizer-2-skyrimspecialedition/modorganizer2"
 DEFAULT_PROFILE = "Default"
 STEAM_APPID = "489830"
-BRIDGE_URL = "http://127.0.0.1:5099"
 
 PLUGIN_SUFFIXES = (".esp", ".esm", ".esl")
 
@@ -234,11 +233,8 @@ def mo2_pids() -> list[int]:
 
 
 def bridge_status(timeout: float = 1.0) -> dict:
-    try:
-        with urllib.request.urlopen(f"{BRIDGE_URL}/ping", timeout=timeout) as resp:
-            return {"reachable": True, **json.loads(resp.read().decode("utf-8"))}
-    except (urllib.error.URLError, OSError, json.JSONDecodeError, TimeoutError) as exc:
-        return {"reachable": False, "error": str(exc)}
+    result = bridge.ping(timeout)
+    return {"reachable": bool(result.get("ok")), **result}
 
 
 def profile_lock_reason() -> str | None:

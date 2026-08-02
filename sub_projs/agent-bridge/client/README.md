@@ -8,8 +8,9 @@ contract, and a two-sided edit should be one commit.
 | Tool | Status | What it does |
 |---|---|---|
 | `mo2ctl.py` | ✅ verified end-to-end 2026-08-02 | Drive MO2 without its GUI: install / uninstall / enable / disable / launch / kill / status |
+| `bridge.py` | ✅ | Talking to the in-game HTTP bridge. Owns the port; everything else imports it |
+| `qa_runner.py` | ✅ verified 2026-08-02 | Execute a `qa.json`, report pass/fail per step. Schema: [QA-SCHEMA.md](QA-SCHEMA.md) |
 | MCP server | not built (plan 2.2) | Wrap `/state` + `/console` as `qa_state` / `qa_console` so Claude stops shelling out to curl |
-| runner | not built (plan 3.2) | Execute a `qa.json` and produce a pass/fail report |
 
 stdlib only, no venv. This has to keep working while the rest of the toolchain is
 mid-rebuild, and a QA harness that needs its own install step before it can test
@@ -50,6 +51,15 @@ on 2026-08-02, no GUI at any point:
 
 Step 6 is the one worth keeping. A QA loop that leaves residue in the profile is a
 loop you can only run once.
+
+`qa_runner.py` then wraps that whole sequence in one file:
+
+```bash
+./qa_runner.py examples/smoke.qa.json --dry-run   # validate, touch nothing
+./qa_runner.py examples/smoke.qa.json             # 31s end to end
+```
+
+It found a real bug on its first full run — see "the cell name that wasn't" below.
 
 ## Three things that are not obvious
 
@@ -93,4 +103,38 @@ wine session, which is also why there is no separate MO2 wine prefix to point at
 if that entry is renamed.
 
 `launch` then polls `/ping` rather than guessing at a sleep, and gives up with
-`bridge.reachable: false` instead of hanging. Observed cold start on this load order: 30s.
+`bridge.reachable: false` instead of hanging. Observed cold start on this load order:
+16–30s.
+
+**`/ping` answering does not mean the game is ready.** `/ping` is served on the socket
+thread and keeps answering right through load screens — deliberately, so a runner can
+tell "process alive, game busy" from "process dead". The first `/state` after launch
+reliably 503s with `game thread did not respond in time`. That cost the smoke test a
+red run before `qa_runner`'s launch step learned to wait for `/state` as well. `mo2ctl
+launch` still stops at `/ping`, which is the right level for a process-control tool;
+anything that then asserts on state should do what the runner does.
+
+## The cell name that wasn't
+
+The smoke test's first two runs failed on `player.cell == "WhiterunBanneredMare"`, which
+came back as `""` for thirty seconds while `interior: true` and a Hulda-is-nearby check
+both passed. Probing by hand couldn't reproduce it — the cell name resolved in two
+seconds every time.
+
+The variable was the test mod. `ModForgeNavmeshNoop.esp` overrides `CELL 0x0001605E`,
+which is the Bannered Mare (90206 decimal — an arithmetic slip on that conversion is what
+made an early check say the plugin didn't touch this cell at all), and it writes no `EDID`
+subrecord. The runtime cell object takes the winning record's EditorID, so with the plugin
+installed the name is blank while the FormID, the interior flag and the actor list are all
+correct.
+
+Two conclusions, both now in [QA-SCHEMA.md](QA-SCHEMA.md):
+
+- **Assert on `cell_form_id`, not `cell`.** Any plugin in the load order can blank an
+  EditorID by overriding a record without carrying `EDID` forward. FormIDs are engine
+  identity.
+- **ModForge writes CELL overrides without preserving EDID**, which is a defect in the
+  generator, not in this harness. A navmesh-only edit should not cost the cell its name.
+
+Worth saying plainly: this is the QA loop doing its job on the first real run. The mod
+under test changed observable state in a way nobody intended, and the harness caught it.
