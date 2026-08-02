@@ -28,7 +28,7 @@ SkyUI / SkyHUD / TrueHUD / moreHUD / RaceMenu / MCM Helper+Unlocked / Bethini、
 
 ## 本 session 產出的解碼/計畫/可行性參考檔（完整清單）
 
-- 隨從:`sub_projs/sofia-patch/`（獨立消費者專案，`README.md` 索引）→ `reference/follower-decode-2026-06-13.md`、`plans/expansion-plan-2026-06-13.md`、`reference/sofia-personality.md`
+- 隨從:`../sofia-patch/`（獨立消費者專案，`README.md` 索引）→ `reference/follower-decode-2026-06-13.md`、`plans/expansion-plan-2026-06-13.md`、`reference/sofia-personality.md`
 - NPC 日程:`ai-overhaul-decode-2026-06-13.md`、`ai-overhaul-expansion-plan-2026-06-13.md`
 - VIGILANT:`vigilant-worldspace-decode`、`vigilant-story-decode`、`vigilant-magic-decode`、`vigilant-scene-dialogue-audit`（皆 `-2026-06-13.md`）
 - 工作流:`blender-layout-feasibility-2026-06-13.md`、本檔

@@ -1,6 +1,6 @@
 # 遊戲內場景匯出 — 設計方案（in-game 蓋城鎮 → scene JSON → ModForge patch）
 
-← [specs 入口](README.md)｜idea：[#24 遊戲內編輯器](../idea/tools/24-ingame-editor.md)｜藍本：[Tundra Defense](../../sub_projs/mod-survey/findings/tundra-defense.md)・[PROTEUS](../../sub_projs/mod-survey/findings/proteus.md)
+← [specs 入口](README.md)｜idea：[#24 遊戲內編輯器](../idea/tools/24-ingame-editor.md)｜藍本：[Tundra Defense](../../../../analysis/mod-survey/findings/tundra-defense.md)・[PROTEUS](../../../../analysis/mod-survey/findings/proteus.md)
 
 本 spec 涵蓋 **[Idea #24](../idea/tools/24-ingame-editor.md) 北極星「遊戲內蓋城鎮並匯出」的 ModForge 側契約 + 最小垂直切片**。核心發現（grep `src/ModForge.Core/` 驗證 2026-07-08）：**ModForge 的生成端幾乎全部已具備**（`PlacementSpec` 已含 position/rotation/scale/enableParent/ownership…、map marker/hazard/keyword/身份系統都已實機）。真正 net-new 的是**兩個 runtime 元件**（採集橋 SKSE DLL + placement-controller `.pex`）＋一座**「採集 → spec」的橋**。本 spec 定義那座橋的**契約**與最小切片；runtime 元件的內部實作各自成子專案（同 Tundra controller 之於 ModForge 的關係），不在本 spec 逐行設計。
 
@@ -55,7 +55,7 @@
 
 - **① placement-controller `.pex`**：irreducibly bespoke Papyrus（Tundra §3.3 的 `aaaFortMainQuestScript` 等價）。ModForge 有「隨附 reusable `.pex` + `scriptAttach`」先例（MCM-Helper/dispatcher/PapyrusUtil）。**與 settlements P2 的 `buildables:` controller 是同一支，兩線合流**——本 spec 不重複設計，指向 settlements P2 design。**定位軸**：Tundra 已有三軸**旋轉**（`MODE_ROTATE_X/Y/Z`+`ChangeRotationAxis`）+**距離**（`MODE_DISTANCE`，沿視線推拉），**但無縮放、也無自由三軸位移**——本控制器要**多加兩個 mode**：`MODE_SCALE`（`SetScale`）、`MODE_TRANSLATE`（`GetPositionX/Y/Z`+delta→`SetPosition`，沿軸精確 nudge，如貼齊牆面），皆 vanilla Papyrus、共用 `AXIS`+Plus/Minus 輸入。ModForge 側 `PlacementSpec.Position`+`Rotation`+`Scale`(XSCL) **均已支援**，scene.json 契約已帶（見下 `placements[]`），故**匯出/生成零改動**，只差 controller 補這兩個 mode。⚠️ **XSCL 不作用於 actor**（`Spec.World.cs:43`）→ 縮放只對靜物/家具/光，拓印 NPC 不可縮放（位移/旋轉對 actor 正常）。
 - **② PROTEUS**：消費、不改（native 閉源）。**crux 已拍板：clone 穩定、可被 esp 引用**（2026-07-08 使用者確認）→ 路徑 A 成立，facegen GAP 繞過。
-- **③ 採集橋 SKSE DLL**：**唯一 net-new 的重工程**。走訪目標 cell 的 placed refs、讀每個 base+transform+enable、記 §B 語意標記與 §D 身份、收 PROTEUS clone 的 ActorRef，序列化成 scene.json。**本 spec 定義它的 output 契約**（下節）；內部實作（SKSE API、UI 走 [SKSE Menu Framework 3](../../sub_projs/mod-survey/findings/skse-menu-framework-3.md) ImGui）另立子專案。**含「滴管取樣」子能力**（見下）——採集橋負責的一個關鍵 runtime 責任是 **FormID → 耐久 `<plugin>:0xLOCALID` 反解**（`TESDataHandler`），因為 runtime FormID 高位元組是 load-order index、跨載入順序不穩，匯出前必須反解成插件相對 ID。
+- **③ 採集橋 SKSE DLL**：**唯一 net-new 的重工程**。走訪目標 cell 的 placed refs、讀每個 base+transform+enable、記 §B 語意標記與 §D 身份、收 PROTEUS clone 的 ActorRef，序列化成 scene.json。**本 spec 定義它的 output 契約**（下節）；內部實作（SKSE API、UI 走 [SKSE Menu Framework 3](../../../../analysis/mod-survey/findings/skse-menu-framework-3.md) ImGui）另立子專案。**含「滴管取樣」子能力**（見下）——採集橋負責的一個關鍵 runtime 責任是 **FormID → 耐久 `<plugin>:0xLOCALID` 反解**（`TESDataHandler`），因為 runtime FormID 高位元組是 load-order index、跨載入順序不穩，匯出前必須反解成插件相對 ID。
 - **④ ModForge**：讀 scene.json → 既有生成鏈。**幾乎零 net-new 生成碼**（見「落點」）。
 
 ### ③附：滴管取樣 + 具名插槽（開放式調色盤，idea #24 §E）

@@ -6,7 +6,7 @@
 
 **最初目標：不依靠 Creation Kit** 去編輯場景、NPC、劇情等各種東西，且最好**在 Skyrim 遊戲內**做——所見即所得。動機：使用者是 Linux 玩家，CK 實際不可用，只能出此下策——但這也是機會。**終極目標＝把 Skyrim 自身變成 Creation Kit**。下文的「蓋城鎮」北極星只是這個更大目標的一個用例。
 
-**不重造輪子**：in-game 編輯器已有先行者——[SkyrimIngameEditor](https://github.com/Jonahex/SkyrimIngameEditor)（**開源** SKSE；天氣/光照/渲染）、[PROTEUS](../../../sub_projs/mod-survey/findings/proteus.md)（NPC/武器裝甲/法術）。**唯獨缺「場景編輯」**（**2026-07-10 agent 搜尋證實：不存在**——定位類 mod 全部只持久化到存檔/JSON/ini，無人在 runtime 寫 esp；最接近的 In-Game Patcher 出 BOS/KID ini。原始報告與對我們的三點意義見 [gemini-research/2026-07-10-ingame-scene-editor-prior-art.md](../../../sub_projs/gemini-research/2026-07-10-ingame-scene-editor-prior-art.md)：niche 真空、Jaxonz/Cobb 是 M7a 抓取 UX 藍本、Debug Menu 證明 navmesh 可在遊戲內視覺化）。方向是**擴充這些工具＋補上缺的場景編輯**，不是全部重寫。SkyrimIngameEditor 開源，可讀 source 學它的 in-game 即時預覽。
+**不重造輪子**：in-game 編輯器已有先行者——[SkyrimIngameEditor](https://github.com/Jonahex/SkyrimIngameEditor)（**開源** SKSE；天氣/光照/渲染）、[PROTEUS](../../../../../analysis/mod-survey/findings/proteus.md)（NPC/武器裝甲/法術）。**唯獨缺「場景編輯」**（**2026-07-10 agent 搜尋證實：不存在**——定位類 mod 全部只持久化到存檔/JSON/ini，無人在 runtime 寫 esp；最接近的 In-Game Patcher 出 BOS/KID ini。原始報告與對我們的三點意義見 [gemini-research/2026-07-10-ingame-scene-editor-prior-art.md](../../../sub_projs/gemini-research/2026-07-10-ingame-scene-editor-prior-art.md)：niche 真空、Jaxonz/Cobb 是 M7a 抓取 UX 藍本、Debug Menu 證明 navmesh 可在遊戲內視覺化）。方向是**擴充這些工具＋補上缺的場景編輯**，不是全部重寫。SkyrimIngameEditor 開源，可讀 source 學它的 in-game 即時預覽。
 
 **分工哲學（本 idea 的憲法）**：遊戲內 plugin＝**薄記錄器**——玩家施法或按快捷鍵，plugin 把資訊（座標/狀態/意圖）記下來、吐 json；**實際的麻煩工作交給 ModForge**（或其他工具）在 build-time 做。沒必要把所有東西塞進單一 plugin/mod/程式。範例（navmesh）：施法→記玩家腳下座標→跑到別處再施→點列輸出 .json→ModForge 生成 NAVM——比在 CK 手拉有趣得多。開放細節：能否在遊戲內把 navmesh 顯示出來直觀編輯；點與點怎麼連（哪個座標連到哪個座標）。
 
@@ -45,7 +45,7 @@
   - **移除物件（橡皮擦）**：準星指一個 ref → 移除（自擺的直接刪；既有 vanilla ref → `removals[]` 生 disable/delete override）。
   - 三支細節 + ModForge 落點見 **§E**（滴管/範圍吸取生成端零改動；移除既有 vanilla ref＝`removals[]`，**已落地** 2026-07-08）。
 - **③ 施法錄製 NPC 行為**（原 #24 小野心）：走一條路徑，沿途取樣座標放 PatrolMarker/IdleMarker + 停留動作 → 輸出 sandbox/travel/patrol package（見記憶 [[radiant-alias-package-byte-truths]]：package 掛在 alias 的 ALPS 上）。
-- **④ 施法擺放 NPC / 拓印玩家角色 → 靠 PROTEUS**：用 [PROTEUS](../../../sub_projs/mod-survey/findings/proteus.md) 遊戲內生成 / 定位 / 控制 NPC 的既有能力當「放 NPC」前端；**進一步（本次新增）把 PROTEUS「序列化整個角色 build」的能力拿來把玩家自己拓印成獨立 NPC**——見下 §A。⚠️ PROTEUS 核心是**閉源 native DLL**，只能**消費**它、不能改它；若要自建放置也可走既有 `quest.spawn`（見記憶 [[dynamic-spawn-debugging]]）。
+- **④ 施法擺放 NPC / 拓印玩家角色 → 靠 PROTEUS**：用 [PROTEUS](../../../../../analysis/mod-survey/findings/proteus.md) 遊戲內生成 / 定位 / 控制 NPC 的既有能力當「放 NPC」前端；**進一步（本次新增）把 PROTEUS「序列化整個角色 build」的能力拿來把玩家自己拓印成獨立 NPC**——見下 §A。⚠️ PROTEUS 核心是**閉源 native DLL**，只能**消費**它、不能改它；若要自建放置也可走既有 `quest.spawn`（見記憶 [[dynamic-spawn-debugging]]）。
 - **⑤ 施法修改地形（LAND）**：~~野心項，技術牆，先擱置~~ **（2026-07-10 使用者定調：遊戲內不做）**——「地形高度不太需要在遊戲中修改」，走既有離線路（Godot worldspace editor / PNG heightmap → ModForge，heightmap→非平坦 LAND 已落地）。遊戲內只做**輔助標註**：指向性法術在命中點放 marker、可改名、匯出 json → 給 AI agent 下指令的座標錨點（「這個 marker 所在座標的地形要抬升/下降…」）。詳見 [plan](../../plans/scene-capture-bridge/README.md)。
 - **⑥ 語意標註（本次新增）**：不只擺實體物件，也**下「意圖標記」**——這裡放一個地圖 marker、那裡放一個特效錨點、門口貼一個身份/功能標籤 → ModForge build 時**展開成真記錄**（XMRK map marker / HAZD 或 placed VFX / KYWD tag）。見下 §B。**這是把編輯器從「擺模型」升級成「標作者意圖」的關鍵一步**，且幾乎全 generable-today。
 - **⑦（最大野心，暫緩）**：變身 NPC + 錄軌跡途中施法插事件節點（對話/idle/換場景）→ 生成任務/scene。狀態機複雜，最後再碰。
@@ -123,7 +123,7 @@
 
 1. **吸取**：滴管法術 OnEffectStart → 讀**準星 ref**（`Game.GetCurrentCrosshairRef()`，SKSE；比「投射物命中」穩，因 STAT 靜物不吃魔法效果）→ 取其 **base**（`ObjectReference.GetBaseObject()` → Form）+ **當前旋轉/縮放**（`GetAngleX/Y/Z()` + `GetScale()`，2026-07-08 使用者要一起吸）→ 拿 FormID + rot + scale。**吸 base + transform**：滴管取的不只「顏料＝物件種類」，還帶被吸物件的姿態（轉了 45°、放大 2× 的那個樣子），之後 `PlaceAtMe(base)` 落地時**預設回填吸到的 rot/scale**，再用 controller 微調。
    - **✨ 吸取成功特效（2026-07-08 使用者要）**：吸中瞬間在**被吸 ref 上播一個夠明顯的視覺回饋**——`EffectShader.Play(crosshairRef, ~1.5s)`（vanilla 有現成發光 shader，如 soul-trap/transmute 那類）或 `crosshairRef.PlaceAtMe(ArtObject)` + 一聲 UI 音效。**純 runtime 回饋，不進 scene.json、與 ModForge 無關**；只需選/附一個 EffectShader 資產。
-2. **具名插槽**：把吸到的 `{Form, rot, scale}` 存進 **StorageUtil KV**（string-key：`slot 名 → Form` + 平行存 rot/scale，memory [[storage-writes-ingame-confirmed]] J-group 已實機）。多插槽＝多 key；命名走文字輸入 UI（PROTEUS 用的 UILib `TextInputMenu`，或 [SKSE Menu Framework 3](../../../sub_projs/mod-survey/findings/skse-menu-framework-3.md) ImGui 輸入框——與編輯器面板同一套 UI 元件）。
+2. **具名插槽**：把吸到的 `{Form, rot, scale}` 存進 **StorageUtil KV**（string-key：`slot 名 → Form` + 平行存 rot/scale，memory [[storage-writes-ingame-confirmed]] J-group 已實機）。多插槽＝多 key；命名走文字輸入 UI（PROTEUS 用的 UILib `TextInputMenu`，或 [SKSE Menu Framework 3](../../../../../analysis/mod-survey/findings/skse-menu-framework-3.md) ImGui 輸入框——與編輯器面板同一套 UI 元件）。
 3. **擺放**：選插槽 → `PlaceAtMe(slot.Form)` → **回填 slot 的 rot/scale**（`SetAngle`/`SetScale`）→ 進 §②/Tundra 的 placement-controller 定位模式微調落地。**滴管只是把「喝哪瓶」從固定目錄換成動態插槽**，落地那半段完全共用 controller。
 4. **⚠️ 耐久 FormID 的關鍵坑（runtime 側，非 ModForge 側）**：runtime FormID 的高位元組 = load-order index，**跨載入順序不穩**。當次 session 內擺放無妨（StorageUtil 存 runtime Form 直接可 `PlaceAtMe`）；但**匯出進 scene.json 時必須反解成耐久的 `<plugin>:0xLOCALID`**——這要 SKSE `TESDataHandler`（`LookupModByIndex`/把 formID 高位→mod 名 + 取本地 ID），純 Papyrus 做不到。→ **這是採集橋 SKSE DLL 的活**（見 §C / spec 的採集橋元件），不是 controller 或 ModForge 的。
 
@@ -149,7 +149,7 @@
 
 ## Tundra Defense 的角色定位（本 idea 的擺放-UX 藍本）
 
-[Tundra Defense](../../../sub_projs/mod-survey/findings/tundra-defense.md) 是**能力②「施法擺設」的現成完整成品**：喝一瓶 `Plans: X` Ingestible → script-MGEF 觸發 spawner `PlaceAtMe` → `aaaFortMainQuestScript` 即時 follow/rotate/confirm 定位狀態機 → 確認落地為 Enabled REFR。**北極星情境的「喝瓶蓋房子」互動就是照抄這套**。
+[Tundra Defense](../../../../../analysis/mod-survey/findings/tundra-defense.md) 是**能力②「施法擺設」的現成完整成品**：喝一瓶 `Plans: X` Ingestible → script-MGEF 觸發 spawner `PlaceAtMe` → `aaaFortMainQuestScript` 即時 follow/rotate/confirm 定位狀態機 → 確認落地為 Enabled REFR。**北極星情境的「喝瓶蓋房子」互動就是照抄這套**。
 
 **定位軸：Tundra 有旋轉+距離、沒縮放也沒自由位移（2026-07-08 使用者要縮放+位移，逆讀 .pex 查證）**——`aaaFortMainQuestScript` 的 state 機有 `MODE_ROTATE_X/Y/Z`+`AXIS_X/Y/Z`+`ChangeRotationAxis`+`RotationSpeed`（三軸旋轉）、`MODE_DISTANCE`+`placeDistance`+`DistanceSpeed`（沿視線推遠拉近）+`MODE_RESET`，**但無 `MODE_SCALE`、也無 `MODE_TRANSLATE`（自由三軸位移微調）**——Tundra 定位是「看哪擺哪 + 距離」，沒有把物件沿 X/Y/Z 精確 nudge（例如把牆貼齊另一面牆）的能力。→ **旋轉照抄 Tundra；縮放 + 位移要在 placement-controller 各補一個 mode**：`MODE_SCALE`（`SetScale`）、`MODE_TRANSLATE`（讀 `GetPositionX/Y/Z`+delta→`SetPosition`，或 `TranslateTo` offset；沿軸 nudge）——都是 vanilla Papyrus、共用 `AXIS_X/Y/Z`+Plus/Minus 輸入、很便宜。**ModForge 生成端三者全已支援**（`PlacementSpec.Position`/`Rotation`/`Scale`(XSCL)），匯出/生成**零改動**，只差 runtime controller 加這兩個 mode。⚠️ **XSCL 對 actor 無效（ACHR 忽略縮放，`Spec.World.cs:43`）**——縮放只對靜物/家具/光，**拓印的 NPC 不能縮放**（位移/旋轉對 actor 都正常）。ModForge 對 Tundra 的裁決（見 [settlements-phase2](../../roadmap/mod-survey-gaps/settlements-phase2.md)）：**所有靜態零件可生成**，唯一不可生成的是那支**常駐 placement-controller `.pex`**（irreducibly bespoke Papyrus）——但 ModForge 有「隨附 reusable `.pex` + `scriptAttach` 掛接」的成熟先例（MCM-Helper/dispatcher/PapyrusUtil）。→ **建議 ModForge 內建一支泛用 placement-controller `.pex`**，本 idea 的「施法擺設」與 settlements Phase-2 的 `buildables:` **共用同一支 controller**，兩條線合流。
 
@@ -167,7 +167,7 @@
 | §B marker / 特效 / 標籤 | **可**（XMRK/HAZD/Light/KYWD 全有）| 缺採集橋輸出 `{kind,at,params}` |
 | §C export 整場景 | 生成型別 **全可** | 採集橋（同①放大）；**navmesh 即時採集是硬項** |
 | §D 身份 → 對話/行為 | **可**（identity 系統 + 對話 INFO + package + vendor 全實機）| 遊戲內只貼 tag；文本可接 #17 AI 生成 |
-| 編輯器 UI（遊戲內面板）| **非可生成，但已落地** | [SKSE Menu Framework 3](../../../sub_projs/mod-survey/findings/skse-menu-framework-3.md)（ImGui）＝前端；消費者 plugin **就是** [`scene-capture-bridge`](../../../sub_projs/scene-capture-bridge/README.md)（`src/UI.cpp`，2026-07-10 接上，軟相依：沒裝框架仍有 F10）。不必另開子專案。⚠️ `sse-imgui` 在 AE 上不能用，見 finding |
+| 編輯器 UI（遊戲內面板）| **非可生成，但已落地** | [SKSE Menu Framework 3](../../../../../analysis/mod-survey/findings/skse-menu-framework-3.md)（ImGui）＝前端；消費者 plugin **就是** [`scene-capture-bridge`](../../../sub_projs/scene-capture-bridge/README.md)（`src/UI.cpp`，2026-07-10 接上，軟相依：沒裝框架仍有 F10）。不必另開子專案。⚠️ `sse-imgui` 在 AE 上不能用，見 finding |
 
 **收斂成一句**：整條管線的**生成端 ModForge 幾乎都有**（唯一真 GAP＝外貌 facegen 生成，且可用 PROTEUS 消費繞過）；**真正要蓋的是中間那支 bespoke 消費 SKSE DLL**——採集橋（讀狀態/貼標籤 → JSON）+ 一支泛用 placement-controller `.pex`。同 Tundra/Honed Metal「須附 native/Papyrus controller」判定。
 
@@ -183,4 +183,4 @@
 - **[#23 living-adventurers](../living-adventurers.md)**：§A 路徑 A 的「指向既有 ActorRef」哲學同源；拓印出的 NPC 可直接 enroll 進活世界模擬。
 - **[#1c 多重身份系統](../followers.md#1c-多重身份--輕量職業系統)**（記憶 [[identity-system-confirmed]]）：§D 身份→對話的既有落地基礎。
 - #15（CK 替代視覺編輯器，本 idea 是遊戲內路線）；#19 Godot Worldspace Editor（外部編輯器另一路）；#17（任務節點圖，§D 對話 AI 生成管線）。
-- [PROTEUS finding](../../../sub_projs/mod-survey/findings/proteus.md)（§A 核心依據）；[Tundra Defense finding](../../../sub_projs/mod-survey/findings/tundra-defense.md)（②擺放-UX 藍本）；[SKSE Menu Framework 3](../../../sub_projs/mod-survey/findings/skse-menu-framework-3.md)（編輯器 UI 前端）。
+- [PROTEUS finding](../../../../../analysis/mod-survey/findings/proteus.md)（§A 核心依據）；[Tundra Defense finding](../../../../../analysis/mod-survey/findings/tundra-defense.md)（②擺放-UX 藍本）；[SKSE Menu Framework 3](../../../../../analysis/mod-survey/findings/skse-menu-framework-3.md)（編輯器 UI 前端）。

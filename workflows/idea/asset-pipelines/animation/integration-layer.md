@@ -16,7 +16,7 @@ To **add** animations without hand-editing Havok behavior, use a framework that 
 - **FNIS / Nemesis** (legacy) — the older Windows-exe behavior patchers; **deprecated as of 2026**, superseded by Pandora (which is compatible with their mod formats). Nemesis is also broken under Wine/Proton (thread races). Keep only as historical context, not a target.
 - **DAR (deprecated) → OAR (Open Animation Replacer)** — SKSE-plugin frameworks doing **condition-based replacement at runtime**: register a folder of replacement clips + a condition set, OAR swaps them in-engine *on top of* whatever behavior baseline Pandora produces.
 
-**OAR is the pragmatic modern answer for a record-layer tool — its registration is pure folder + JSON, fully generatable, no `.esp` required.** OAR 是 SKSE plugin、開源、涵蓋 SE/AE/VR + 1.5.97，做**執行時條件式動畫替換**，內建遊戲內編輯器（Shift+O），隨時可裝可移除、不寫存檔。逐步動手做見 [mod-survey/action-system/oar-replacer-guide.md](../../../../sub_projs/mod-survey/action-system/oar-replacer-guide.md)；這裡只講「它是什麼、為何是最高槓桿整合點」。
+**OAR is the pragmatic modern answer for a record-layer tool — its registration is pure folder + JSON, fully generatable, no `.esp` required.** OAR 是 SKSE plugin、開源、涵蓋 SE/AE/VR + 1.5.97，做**執行時條件式動畫替換**，內建遊戲內編輯器（Shift+O），隨時可裝可移除、不寫存檔。逐步動手做見 [mod-survey/action-system/oar-replacer-guide.md](../../../../../../analysis/mod-survey/action-system/oar-replacer-guide.md)；這裡只講「它是什麼、為何是最高槓桿整合點」。
 
 **結構（2.0.0 起的關鍵更正）**：OAR 區塊**可放在 `Data\Meshes` 底下任何位置**，不再強制在 `animations\` 下（舊筆記的「must be under animations\」已過時）。心智模型是「在原始動畫路徑中插入一個 OAR 區塊以攔截它」。要替換 `Data\Meshes\actors\character\animations\male\mt_idle.hkx`，就放到：
 ```

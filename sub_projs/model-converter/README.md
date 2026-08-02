@@ -17,6 +17,6 @@
 兩個消費者：
 
 - [godot-worldspace-editor](../godot-worldspace-editor/README.md)（同層 repo）——`nif→glTF` 當 Godot 裡的視覺代理。
-- [darksouls-port](../darksouls-port/plan.md)（仍在 ModForge）——`gltf2nif` 反向，FLVER→glTF→NIF 資產管線。
+- [darksouls-port](../../../darksouls-port/plan.md)（同層 repo）——`gltf2nif` 反向，FLVER→glTF→NIF 資產管線。
 
 正向（外部 FBX/OBJ/glTF → `.nif`）的 deep-dive 真相**留在 ModForge**：[workflows/idea/asset-pipelines/model-porting/](../../workflows/idea/asset-pipelines/model-porting/README.md)。

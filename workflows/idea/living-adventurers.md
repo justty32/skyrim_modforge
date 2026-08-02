@@ -93,12 +93,12 @@ storyLog 條目 → 條件化的 Rumors topic INFO（bard / innkeeper / 酒客�
 ### 4. 玩家互動（選了可互動）
 全部讀寫同一份 per-adventurer KV：
 - **搶 / 競爭**：玩家接同一張 missive,先完成 → 該冒險者任務失敗 → 反應（rivalry++）。
-- **雇用**：把具名冒險者招為（臨時）隨從 → 接 `sub_projs/followers-patch` / vanilla SetFollower（memory `hirefollower-paid-gold-bug`）。
+- **雇用**：把具名冒險者招為（臨時）隨從 → 接 `../../analysis/followers-patch` / vanilla SetFollower（memory `hirefollower-paid-gold-bug`）。
 - **資助 / 破壞**：給金/裝（成敗骰 +）或通風報信給強盜（成敗骰 −）。
 
 ## ModForge 已有的基礎 vs 缺口
 
-**已有（memory 全有確認配方）**：dynamic spawn / MoveTo、radiant alias+package fill、StorageUtil KV、SM 觸發、對話 INFO+condition、faction、語音生成。任務層的 quest stage/objective/fragment、FLST、GLOB 量產、AI package、board container/activator —— 見 `sub_projs/mod-survey/findings/missives-modforge.md`,**ModForge 都能生**。
+**已有（memory 全有確認配方）**：dynamic spawn / MoveTo、radiant alias+package fill、StorageUtil KV、SM 觸發、對話 INFO+condition、faction、語音生成。任務層的 quest stage/objective/fragment、FLST、GLOB 量產、AI package、board container/activator —— 見 `../../analysis/mod-survey/findings/missives-modforge.md`,**ModForge 都能生**。
 
 **缺口（前置工程,gating）**：
 - **roadmap #7 LocationAlias fill / #8 nested ReferenceAlias fill / #9 `UpdateCurrentInstanceGlobal`** —— 隨機選任務目標地點的命脈,做任務層前必補。見 [mod-survey-gaps.md](../roadmap/mod-survey-gaps.md)。

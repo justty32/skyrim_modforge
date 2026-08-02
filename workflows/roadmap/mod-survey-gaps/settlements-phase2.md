@@ -4,7 +4,7 @@
 
 （Tundra Defense 深挖 2026-06-25，使用者標 ⭐ 最重要；逆向自 56 .pex string-table，每宣稱 pex-strings 標注）
 
-[findings/tundra-defense.md](../../../sub_projs/mod-survey/findings/tundra-defense.md)＝idea #22「自建據點＋募兵＋守城」**唯一完整藍圖**。機制：建材＝Ingestible(potion)→script-MGEF"Construct X"→spawner `PlaceAtMe`→`aaaFortMainQuestScript` OnUpdate 定位狀態機；募兵＝程序化 `RemoveItem(Gold)`→`PlaceActorAtMe`→`AddToFaction`+`SetPlayerTeammate`+cap；守城＝`aaaFortPlayerQuestScript` 的 MESG 選單挑 raid type→`PlaceActorAtMe` `Raider*` base at 玩家擺的 boundary marker→OnUpdate 數 `CurrentRaiders` 到 EndRaid；持久化＝Enabled REFR 留在 cell + quest-script counter（**0 GLOB、0 JContainers、無 SM**）。
+[findings/tundra-defense.md](../../../../../analysis/mod-survey/findings/tundra-defense.md)＝idea #22「自建據點＋募兵＋守城」**唯一完整藍圖**。機制：建材＝Ingestible(potion)→script-MGEF"Construct X"→spawner `PlaceAtMe`→`aaaFortMainQuestScript` OnUpdate 定位狀態機；募兵＝程序化 `RemoveItem(Gold)`→`PlaceActorAtMe`→`AddToFaction`+`SetPlayerTeammate`+cap；守城＝`aaaFortPlayerQuestScript` 的 MESG 選單挑 raid type→`PlaceActorAtMe` `Raider*` base at 玩家擺的 boundary marker→OnUpdate 數 `CurrentRaiders` 到 EndRaid；持久化＝Enabled REFR 留在 cell + quest-script counter（**0 GLOB、0 JContainers、無 SM**）。
 
 **ModForge 對 #22 裁決（每個「做不到」已 grep `src/` 驗證）**：全部**靜態零件可生成**（ALCH/MGEF-script/ACTI/FACT/LVLN/NPC/PACK/KYWD/BOOK/CONT/SHOU/WOOP/SPEL/MESG-shell），且 `scriptAttach`（`Generator.Build.Scripts.cs` `AttachScripts`→`AttachOneScript`，反射式掛任何 VMAD record，已驗）能把 Tundra 56 個 controller `.pex` 掛回去。**兩硬缺口**：① **MESG 無多按鈕選單**（同 §6）；② **執行期玩法（定位狀態機/raid OnUpdate spawner/程序化募兵/跨存檔 counter）irreducibly bespoke Papyrus**——ModForge 只能隨附+掛載手寫 controller `.pex`，無法生成該行為。
 

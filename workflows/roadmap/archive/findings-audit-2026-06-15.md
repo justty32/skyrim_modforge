@@ -4,7 +4,7 @@
 
 > **已凍結（archived）**：本檔是 2026-06-15 一次性 findings 審閱的完整快照。所列缺口除 G/H/A-partial/J-尾巴外幾乎全已落地（見 git log / feature-dev/landed）。活檔的 open 殘餘見 [../all-findings-gaps.md](../all-findings-gaps.md)。內部連結容忍 stale。
 
-> **本檔由人工逐檔閱讀 `sub_projs/mod-survey/findings/` 全部 32 個檔案後整合（2026-06-15）。**  
+> **本檔由人工逐檔閱讀 `../../analysis/mod-survey/findings/` 全部 32 個檔案後整合（2026-06-15）。**  
 > 每條缺口附來源 findings、scope 與優先級。已在其他 roadmap 檔記錄的缺口打 `→ 見 X.md`；新缺口標 `🆕`。  
 > 優先序：🔴 高（alts 沒有就做不了某類 mod）→ 🟡 中（有替代路但繁瑣）→ 🟢 低（nice-to-have）。
 

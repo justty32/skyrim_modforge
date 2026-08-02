@@ -107,7 +107,7 @@
 ---
 
 ## 動作系統 asset/config 生成（OAR / BDI / PIE，loose files、非-esp）
-→ **說明文件**：[SPEC-animation.md](../../../docs/spec/SPEC-animation.md) · 設計 [specs/archive/2026-06-14-action-system-asset-generation-design.md](../../specs/archive/2026-06-14-action-system-asset-generation-design.md) · 調查 [mod-survey/action-system/](../../../sub_projs/mod-survey/action-system/)
+→ **說明文件**：[SPEC-animation.md](../../../docs/spec/SPEC-animation.md) · 設計 [specs/archive/2026-06-14-action-system-asset-generation-design.md](../../specs/archive/2026-06-14-action-system-asset-generation-design.md) · 調查 [mod-survey/action-system/](../../../../../analysis/mod-survey/action-system/)
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
@@ -122,7 +122,7 @@
 ---
 
 ## SKSE 分發器 config 生成（SPID / MCM / FLM / KID / BOS / AOS / SkyPatcher，loose、非-esp）
-→ **說明文件**：[SPEC-distribution.md](../../../docs/spec/SPEC-distribution.md) · 格式調查 findings：[spid](../../../sub_projs/mod-survey/findings/spid.md)、[mcm-helper-config-json](../../../sub_projs/mod-survey/findings/mcm-helper-config-json.md)、[formlist-manipulator-config-core](../../../sub_projs/mod-survey/findings/formlist-manipulator-config-core.md)、[keyword-item-distributor-config-1](../../../sub_projs/mod-survey/findings/keyword-item-distributor-config-1.md)、[base-object-swapper-config](../../../sub_projs/mod-survey/findings/base-object-swapper-config.md)、[animobject-swapper-overview-config](../../../sub_projs/mod-survey/findings/animobject-swapper-overview-config.md)、[skypatcher-records-and-config](../../../sub_projs/mod-survey/findings/skypatcher-records-and-config.md)（D 組 ini pipeline，見 [roadmap/all-findings-gaps.md](../../roadmap/all-findings-gaps.md)）
+→ **說明文件**：[SPEC-distribution.md](../../../docs/spec/SPEC-distribution.md) · 格式調查 findings：[spid](../../../../../analysis/mod-survey/findings/spid.md)、[mcm-helper-config-json](../../../../../analysis/mod-survey/findings/mcm-helper-config-json.md)、[formlist-manipulator-config-core](../../../../../analysis/mod-survey/findings/formlist-manipulator-config-core.md)、[keyword-item-distributor-config-1](../../../../../analysis/mod-survey/findings/keyword-item-distributor-config-1.md)、[base-object-swapper-config](../../../../../analysis/mod-survey/findings/base-object-swapper-config.md)、[animobject-swapper-overview-config](../../../../../analysis/mod-survey/findings/animobject-swapper-overview-config.md)、[skypatcher-records-and-config](../../../../../analysis/mod-survey/findings/skypatcher-records-and-config.md)（D 組 ini pipeline，見 [roadmap/all-findings-gaps.md](../../roadmap/all-findings-gaps.md)）
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
@@ -177,12 +177,12 @@
 
 ## 語音克隆（TTS → .fuz）
 → **說明文件**：[SPEC-workflow.md § Voice](../../../docs/spec/SPEC-workflow.md#voice-tts-voice-cloning--fuz)
-→ **TTS 合成已解耦**：`text+emotion+ref→.wav` 在獨立基石專案 `sub_projs/skyrim-voicegen/`（`voicegen.py` + wrappers），靠 `MODFORGE_TTS_BIN` 協議連，合約見該夾 `PROTOCOL.md`。**下表全是 ModForge 端的「包裝」職責**（plan/解析/.wav→fuz/lip/擺位），不含合成。
+→ **TTS 合成已解耦**：`text+emotion+ref→.wav` 在獨立基石專案 `../skyrim-voicegen/`（`voicegen.py` + wrappers），靠 `MODFORGE_TTS_BIN` 協議連，合約見該夾 `PROTOCOL.md`。**下表全是 ModForge 端的「包裝」職責**（plan/解析/.wav→fuz/lip/擺位），不含合成。
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
 | Spec | `Spec.Voice.cs` | `VoiceTemplateSpec`（`engine` f5\|fish-s2\|chatterbox\|gptsovits\|xtts；`fish`/`fishspeech`/`fish-speech` 為 Fish S2 alias；`referenceWav`/`referenceText` zero-shot reference、`modelPath` 微調模型、`rvcModel`、`seed`、`speed`、`exaggeration`、`language`）+ `VoiceLineSpec` 全域輸出設定（`format` fuz\|wav\|xwm、`skipLip`）；`NpcSpec.voiceTemplate`（→ template id）在 `Spec.Actors.cs` |
-| Core | `Voice.cs` | 呼外部 TTS（`MODFORGE_TTS_BIN`；`BuildTtsArgs` pure 組 engine/ref/model/seed/speed/exaggeration/language + **emotion/intensity**（從 INFO 記錄取，非 spec 欄位）全數傳給 TTS process，協議規格見 `sub_projs/skyrim-voicegen/PROTOCOL.md`）；`EncodeXwma`（`MODFORGE_XWMAENCODE`）走 Wine；`WinePath`（Unix→`Z:\` 轉換，xwma/lip 共用）|
+| Core | `Voice.cs` | 呼外部 TTS（`MODFORGE_TTS_BIN`；`BuildTtsArgs` pure 組 engine/ref/model/seed/speed/exaggeration/language + **emotion/intensity**（從 INFO 記錄取，非 spec 欄位）全數傳給 TTS process，協議規格見 `../skyrim-voicegen/PROTOCOL.md`）；`EncodeXwma`（`MODFORGE_XWMAENCODE`）走 Wine；`WinePath`（Unix→`Z:\` 轉換，xwma/lip 共用）|
 | Core | `Voice.Lip.cs` | `.lip` lip-sync 生成（`GenerateLip` 一個入口、兩後端）：**優先**官方 CK `LipGenerator.exe`（`MODFORGE_LIPGEN`，簽名 `<wav> <text> -Language:<lang> -OutputFileName:<lip>`，FonixData.cdf 自 exe 同夾找、免給 cdf 路徑、**已在本機 Wine 實跑產出合法 .lip 2026-06-13**）；**退化**社群 FaceFXWrapper（`MODFORGE_FACEFX` + `MODFORGE_FONIXDATA`）。`BuildLipGenArgs` pure 可單測 |
 | Core | `Fuz.cs` | `.fuz` 容器拆解（FUZE header → lip + audio；audio ext 自動偵測 xwm/wav）|
 | Core | `Generator.Build.Voice.cs` | `WriteFuz`（lip + audio 打包成 .fuz）+ `VoiceFileName` CK 命名（`quest10_topic15_formid8_n.fuz`：quest EditorID 前 10 字 + topic EditorID 前 15 字 + INFO FormID hex8 + response 序號）|

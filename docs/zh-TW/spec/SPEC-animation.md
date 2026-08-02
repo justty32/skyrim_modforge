@@ -5,7 +5,7 @@
 三個頂層區塊生成**散裝檔（loose files）**（非 `.esp` 記錄），供現代動畫/戰鬥堆疊使用。`package`
 會把它們寫在 plugin 旁、組成 MO2-ready 資料夾。`.hkx` 動畫本體**由使用者自備**——ModForge 寫出
 config 樹並擺放你提供的 clip，**從不**生成 Havok。（調查與實檔分析：
-`sub_projs/mod-survey/action-system/`。）
+`../../analysis/mod-survey/action-system/`。）
 
 > **不在範圍**：建立/重定向 `.hkx`（Blender→hkx 那道牆）、behavior graph patch（Pandora）、
 > SCAR AI 註釋。那些屬 record/config 層以外的管線。

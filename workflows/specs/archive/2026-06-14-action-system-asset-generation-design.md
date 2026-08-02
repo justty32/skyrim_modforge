@@ -1,7 +1,7 @@
 # 動作系統 asset/config 生成設計（OAR / BDI / PIE）
 
 > 日期:2026-06-14 · 狀態:**已自審，plan 落地中**（[plan](../../plans/archive/2026-06-14-action-system-asset-generation.md)）。下方「待解」三項已收斂（見段末决定）。
-> 調查依據:[mod-survey/action-system/](../../../sub_projs/mod-survey/action-system/)（五層堆疊 + 實檔驗證的 schema）。OAR 實作指南 §10 有更細的欄位雛形:[oar-replacer-guide.md](../../../sub_projs/mod-survey/action-system/oar-replacer-guide.md)。
+> 調查依據:[mod-survey/action-system/](../../../../../analysis/mod-survey/action-system/)（五層堆疊 + 實檔驗證的 schema）。OAR 實作指南 §10 有更細的欄位雛形:[oar-replacer-guide.md](../../../../../analysis/mod-survey/action-system/oar-replacer-guide.md)。
 > roadmap 對應項:OAR 生成、BDI config 生成（皆在 [roadmap](../../roadmap/README.md)）。
 > 本文件只是設計成果,**不含實作**。
 
@@ -73,7 +73,7 @@ spec 片段（建構在 guide §10 之上,擴充 moveset 語法糖）:
 
 ### B. BDI config 生成器（companion）
 
-flat JSON array,放 `SKSE/Plugins/BehaviorDataInjector/<x>_BDI.json`（schema 實檔驗證,見 [BDI finding](../../../sub_projs/mod-survey/action-system/findings/behavior-data-injector.md)）:
+flat JSON array,放 `SKSE/Plugins/BehaviorDataInjector/<x>_BDI.json`（schema 實檔驗證,見 [BDI finding](../../../../../analysis/mod-survey/action-system/findings/behavior-data-injector.md)）:
 ```jsonc
 { "behaviorData": {
     "file": "MyMod_BDI",
@@ -111,7 +111,7 @@ spec → ini 序列化:`{section, macros:[{name, command}]}`。命名巨集映�
   - A 的 `variants`/`presets`/`functions`/進階 submod flag（interruptible 等）;`Random`/`IsRace` 糖;DAR `_conditions.txt` 後路輸出。
   - C 的 PIE 巨集表（招式效果線開始做時才需要）。
   - 接 hkanno 工具鏈後:生成 hkx 內 annotation（`PIE.@SGVI|…`、`animmotion`）——屆時與動畫管線交界。
-  - 與 Pandora shell-out（[pandora.md](../../../sub_projs/mod-survey/action-system/pandora.md)）串成「生 config → 跑 behavior 基底」完整出貨。
+  - 與 Pandora shell-out（[pandora.md](../../../../../analysis/mod-survey/action-system/pandora.md)）串成「生 config → 跑 behavior 基底」完整出貨。
 
 ## 待解（自審時收斂）
 

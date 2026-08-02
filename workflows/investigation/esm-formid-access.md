@@ -24,8 +24,8 @@ dotnet "$DLL" <command> <plugin> [args...]
 ```bash
 dotnet "$DLL" gamedata <plugin> <outDir>
 ```
-把一個 plugin 的 書/對白/任務/NPC・物品・地點・魔法清單 串流進 `<outDir>`（檔案版圖見 [`sub_projs/game-data/README.md`](../../sub_projs/game-data/README.md)）。
-**已預抽好**的 vanilla+DLC+主要內容 mod 在 `sub_projs/game-data/{vanilla,mods}/` ——多數情況直接讀那裡即可，不必重跑。要補抽未涵蓋的 mod：解壓到 `~/skyrim_mods/unzip/` 後跑 `sub_projs/game-data/extract.sh`，或 `extract.sh <esp>` 單抽。
+把一個 plugin 的 書/對白/任務/NPC・物品・地點・魔法清單 串流進 `<outDir>`（檔案版圖見 [`../game-data/README.md`](../../sub_projs/game-data/README.md)）。
+**已預抽好**的 vanilla+DLC+主要內容 mod 在 `../game-data/{vanilla,mods}/` ——多數情況直接讀那裡即可，不必重跑。要補抽未涵蓋的 mod：解壓到 `~/skyrim_mods/unzip/` 後跑 `../game-data/extract.sh`，或 `extract.sh <esp>` 單抽。
 
 ## 單筆診斷（要先有 FormID）
 

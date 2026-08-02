@@ -8,7 +8,7 @@
 | `winepath` | Unix → `Z:\…` path conversion for Wine tools | PATH | — | best-effort: on failure **silently returns the un-converted Unix path** (try/catch), which then makes the Wine exe fail with "Must specify input and output filenames" — see note below | `Voice.cs:188` |
 | `PapyrusCompiler.exe` (CK) | `.psc → .pex` (Wine) | env → Steam path | yes | ExitCode 2 (prereq missing) |
 | `papyrus-compiler` (native) | `.psc → .pex` (no Wine) | env → `~/tools/papyrus-compiler` | no | preferred when file exists; absent → ExitCode 2 |
-| TTS bin (`voicegen-f5.sh` → `voicegen.py`, in `sub_projs/skyrim-voicegen/`) | text+emotion+ref → WAV (decoupled bedrock project; contract = `sub_projs/skyrim-voicegen/PROTOCOL.md`) | `MODFORGE_TTS_BIN`, exec'd directly | native | `voicelines` exit 1 / `GenerateWav` null |
+| TTS bin (`voicegen-f5.sh` → `voicegen.py`, in `../skyrim-voicegen/`) | text+emotion+ref → WAV (decoupled bedrock project; contract = `../skyrim-voicegen/PROTOCOL.md`) | `MODFORGE_TTS_BIN`, exec'd directly | native | `voicelines` exit 1 / `GenerateWav` null |
 | `xWMAEncode.exe` (CK) | WAV → xWMA for `.fuz`/`.xwm` | `MODFORGE_XWMAENCODE` | yes (needs winepath) | loose `.wav` downgrade + warning |
 | `LipGenerator.exe` (CK, official) | WAV+text → `.lip` (preferred) | `MODFORGE_LIPGEN` | yes | FaceFX fallback, else no-lip |
 | `FaceFXWrapper.exe` (community) | WAV+text → `.lip` (legacy) | `MODFORGE_FACEFX` (+`MODFORGE_FONIXDATA`) | yes | no-lip |

@@ -2,9 +2,9 @@
 
 ← [roadmap](README.md)
 
-> 「Skyrim 通用底座」這一層的調查缺口盤點（2026-06-15；觸發：盤 mod-survey 的框架/庫掌握度）。產出格式同既有 survey：`findings/<mod>.md` + 更新 [mod-survey/index.md](../../sub_projs/mod-survey/index.md)（框架型分類）。**survey 對「ModForge 缺什麼」一律標推斷、待 code 驗證**（同 index 第 33 行鐵律）。
+> 「Skyrim 通用底座」這一層的調查缺口盤點（2026-06-15；觸發：盤 mod-survey 的框架/庫掌握度）。產出格式同既有 survey：`findings/<mod>.md` + 更新 [mod-survey/index.md](../../../../analysis/mod-survey/index.md)（框架型分類）。**survey 對「ModForge 缺什麼」一律標推斷、待 code 驗證**（同 index 第 33 行鐵律）。
 
-> ✅ **2026-06-15 大批完成**：A 組（SkyPatcher / KID / FLM / SPID 深挖 / po3's Tweaks / MCM Helper / SRD）、B 組全部（PapyrusUtil / JContainers / BOS / AOS / CE / IWH+ITH）、C 組全部（SM 子系統 / PERK entry-point / MGEF VMAD / FLST 工廠 / Global-as-selector + linkedRef）已 survey；findings 已寫入 [mod-survey/index.md](../../sub_projs/mod-survey/index.md)。下方只列仍 open 的項目。
+> ✅ **2026-06-15 大批完成**：A 組（SkyPatcher / KID / FLM / SPID 深挖 / po3's Tweaks / MCM Helper / SRD）、B 組全部（PapyrusUtil / JContainers / BOS / AOS / CE / IWH+ITH）、C 組全部（SM 子系統 / PERK entry-point / MGEF VMAD / FLST 工廠 / Global-as-selector + linkedRef）已 survey；findings 已寫入 [mod-survey/index.md](../../../../analysis/mod-survey/index.md)。下方只列仍 open 的項目。
 
 ## 待調查
 

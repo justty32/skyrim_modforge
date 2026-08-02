@@ -13,7 +13,7 @@
 - **繞開方案 B 的 GLOB 海（381 records）**：用 JContainers `JFormDB` 以 NPC Form 為 key 存巢狀狀態，取代「每 NPC × 每節點一個 GLOB」。
 - **繞開方案 D 的 SKSE native 層**：不需 Proteus 那種 Actor 控制轉移。
 
-> **信心標註**：Campfire 機制來自 mod-survey 對 `Campfire.bsa` 的原始碼逆向（[campfire.md](../mod-survey/findings/campfire.md)，高信心）；JContainers API 來自原始碼（[jcontainers.md](../mod-survey/findings/jcontainers.md)）；Frostfall 是活範例（[frostfall.md](../mod-survey/findings/frostfall.md)）。**但「對 NPC 而非營火開樹」「per-NPC 狀態橋接」是本檔的新設計推論——標 ⚠️ 者為待驗 unknown，未經主力機 / 原始碼確認前不可當事實。**
+> **信心標註**：Campfire 機制來自 mod-survey 對 `Campfire.bsa` 的原始碼逆向（[campfire.md](../../../../analysis/mod-survey/findings/campfire.md)，高信心）；JContainers API 來自原始碼（[jcontainers.md](../../../../analysis/mod-survey/findings/jcontainers.md)）；Frostfall 是活範例（[frostfall.md](../../../../analysis/mod-survey/findings/frostfall.md)）。**但「對 NPC 而非營火開樹」「per-NPC 狀態橋接」是本檔的新設計推論——標 ⚠️ 者為待驗 unknown，未經主力機 / 原始碼確認前不可當事實。**
 
 ---
 

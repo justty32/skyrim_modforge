@@ -19,7 +19,7 @@ records to its actorbase by filter. Equivalent to editing the NPC in the CK, but
 patch** and **no conflict** with other mods touching the same NPC.
 
 Format + field semantics are verified against the SPID 7.3 reference and real ini files
-(`sub_projs/mod-survey/findings/spid.md`).
+(`../../analysis/mod-survey/findings/spid.md`).
 
 ```json
 {
@@ -192,7 +192,7 @@ FLST pool (a Spellforge spell list, a SPID target list, an adoption-gift list…
 
 > **When NOT to use it:** for a FLST you *own*, build it ESP-side with `formLists[]` — that's
 > deterministic and inspectable. FLM's leverage is purely "append to *someone else's* FLST without a
-> patch." Format verified against FLM v1.8.1 (`sub_projs/mod-survey/findings/formlist-manipulator-*.md`).
+> patch." Format verified against FLM v1.8.1 (`../../analysis/mod-survey/findings/formlist-manipulator-*.md`).
 
 Each config emits `<file>_FLM.ini` at the **mod folder root** (= `Data/`). Definitions
 (`filters`/`aliases`/`groups`/`collections`) are emitted before the `entries` (the `FormList =` lines)

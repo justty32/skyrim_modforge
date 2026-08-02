@@ -6,7 +6,7 @@ Three top-level blocks generate **loose files** (no `.esp` record) for the moder
 combat stack. `package` writes them next to the plugin in the MO2-ready folder. The `.hkx`
 animations themselves are **user-supplied** — ModForge writes the config tree and places the
 clips you provide; it never authors Havok. (Survey + real-file analysis:
-`sub_projs/mod-survey/action-system/`.)
+`../../analysis/mod-survey/action-system/`.)
 
 > **Out of scope:** building/retargeting `.hkx` (Blender→hkx wall), behavior-graph patching
 > (Pandora), SCAR AI annotations. Those are pipelines outside the record/config layer.

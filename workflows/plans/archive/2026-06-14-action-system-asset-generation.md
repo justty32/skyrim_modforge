@@ -14,7 +14,7 @@
 **Tech Stack:** C# net10.0、Mutagen.Bethesda.Skyrim 0.53.1（本功能幾乎不碰）、`System.Text.Json`、xUnit。**無** Wine/CK/Skyrim 依賴 → 離線機完整可開發測試。
 
 **設計來源:** `workflows/specs/action-system-asset-generation-design.md`
-**調查依據:** `sub_projs/mod-survey/action-system/`（五層堆疊 + 實檔驗證 schema；moveset 結構見 `findings/movesets-examples.md`、BDI/PIE 格式見對應 finding）。
+**調查依據:** `../../analysis/mod-survey/action-system/`（五層堆疊 + 實檔驗證 schema；moveset 結構見 `findings/movesets-examples.md`、BDI/PIE 格式見對應 finding）。
 **idea 脈絡:** `workflows/idea/asset-pipelines/animation/`（§8 `animations[]`/`importanim` 構想、§9 MVP；本計畫 MVP 對齊「OAR-set 生成器」，**`importanim` shell-out 與 Blender→hkx 牆出範圍**）。
 
 **前置閱讀（CODE_MAP）:**

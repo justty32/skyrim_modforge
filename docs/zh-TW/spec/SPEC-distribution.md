@@ -18,7 +18,7 @@ SPID 在啟動時掃描 `Data/` 中每一個 `*_DISTR.ini`，並在每個 NPC �
 patch**，也**不會**與其他更動同一 NPC 的 mod **衝突**。
 
 格式與欄位語意已對照 SPID 7.3 參考文件與真實的 ini 檔驗證
-（`sub_projs/mod-survey/findings/spid.md`）。
+（`../../analysis/mod-survey/findings/spid.md`）。
 
 ```json
 {
@@ -188,7 +188,7 @@ iDetail=1
 
 > **何時*不該*用：** 對於你*自己擁有*的 FLST，用 esp-side 的 `formLists[]` 建——那是確定且可檢視的。
 > FLM 的價值純粹在於「在不用 patch 的情況下追加到*別人的* FLST」。格式已對照 FLM v1.8.1 驗證
-> （`sub_projs/mod-survey/findings/formlist-manipulator-*.md`）。
+> （`../../analysis/mod-survey/findings/formlist-manipulator-*.md`）。
 
 每個 config 在 **mod 資料夾根目錄**（＝ `Data/`）發出 `<file>_FLM.ini`。定義
 （`filters`/`aliases`/`groups`/`collections`）會在引用它們的 `entries`（`FormList =` 行）之前發出。
