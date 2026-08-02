@@ -6,7 +6,7 @@
 
 ## 方案 A：純效果，不開 UI（最簡單，現在就能做）
 
-直接用 `Actor.AddPerk()` 讓 NPC 擁有 CSF 技能樹的某些節點 perk。等級/進度用一套獨立的 GLOB 記錄（Sofia F6 好感度 GLOB 系統是現成藍圖：每個 NPC 一個 GLOB，`setGlobal` + `GetGlobalValue` 管理狀態 —— 見 [sofia-patch](../sofia-patch/README.md)）。
+直接用 `Actor.AddPerk()` 讓 NPC 擁有 CSF 技能樹的某些節點 perk。等級/進度用一套獨立的 GLOB 記錄（Sofia F6 好感度 GLOB 系統是現成藍圖：每個 NPC 一個 GLOB，`setGlobal` + `GetGlobalValue` 管理狀態 —— 見 [sofia-patch](../../../sofia-patch/README.md)）。
 
 - **玩家無法對 NPC 配點**——perk 配置由 mod 作者預先決定或腳本觸發（依任務進度 / 好感度 GLOB 自動升等）。
 - **無星座 UI 外觀**，但 perk 效果完整。

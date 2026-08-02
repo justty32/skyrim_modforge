@@ -1,6 +1,6 @@
 # capturedNpcs[] 消費 — Implementation Plan（Idea #24 擷取器 · ② NPC 外貌）
 
-← [plans](README.md)｜spec：[ingame-scene-export-design.md](../specs/ingame-scene-export-design.md)（共用）｜idea：[#24](../idea/tools/24-ingame-editor.md)｜子專案：[scene-capture-bridge](../../sub_projs/scene-capture-bridge/README.md)｜姊妹（已落地）：`capturedItems[]`（commit `1bed5dd`）
+← [plans](README.md)｜spec：[ingame-scene-export-design.md](../specs/ingame-scene-export-design.md)（共用）｜idea：[#24](../idea/tools/24-ingame-editor.md)｜子專案：[scene-capture-bridge](../../../scene-capture-bridge/README.md)｜姊妹（已落地）：`capturedItems[]`（commit `1bed5dd`）
 
 **Goal:** 讓 scene-capture-bridge DLL `sc cap` 吸到的 `capturedNpcs[]`（活體 actor 的 TESNPC 外貌/身份）能被 ModForge `build` 成一個真的 NPC_ 記錄 + 一個 ACHR placement，讓那個 NPC 出現在世界裡。這是擷取器消費的 ②（① items 已完成）。
 

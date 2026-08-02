@@ -16,7 +16,7 @@
 |------|------|
 | [decode/](decode/README.md) | **解碼參考檔**（VIGILANT / AI Overhaul / Sofia / blender 等；index 在該夾 README）|
 | [esm-formid-access.md](esm-formid-access.md) | **agent 工具參考**：怎麼從 esm/esp 抽內容、查 FormID（`gamedata`/`find`/各 `*diag`）|
-| [mod-survey-guide.md](mod-survey-guide.md) | **agent 操作手冊**：調查 `~/skyrim_mods/` 那批 mod；工作區在 [`../../analysis/mod-survey/`](../../sub_projs/mod-survey/README.md) |
+| [mod-survey-guide.md](mod-survey-guide.md) | **agent 操作手冊**：調查 `~/skyrim_mods/` 那批 mod；工作區在 [`../../analysis/mod-survey/`](../../../../analysis/mod-survey/README.md) |
 | [gotchas.md](gotchas.md) | 解碼踩坑（vanilla nif 驗證 / WRLD 覆寫等）|
 | [session-log.md](session-log.md) | 本工作流 open / in-flight 調查（hub 在 repo 根 [SESSION-LOG](../../SESSION-LOG.md)）|
 

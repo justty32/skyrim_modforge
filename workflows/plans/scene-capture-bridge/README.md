@@ -1,6 +1,6 @@
 # 遊戲內編輯器（scene-capture-bridge）— Implementation Plan
 
-← [plans](../README.md)｜spec：[ingame-scene-export-design.md](../../specs/ingame-scene-export-design.md)（共用）｜idea：[#24](../../idea/tools/24-ingame-editor.md)（核心宗旨見其頂部 2026-07-10 重述）｜子專案：[scene-capture-bridge](../../../sub_projs/scene-capture-bridge/README.md)
+← [plans](../README.md)｜spec：[ingame-scene-export-design.md](../../specs/ingame-scene-export-design.md)（共用）｜idea：[#24](../../idea/tools/24-ingame-editor.md)（核心宗旨見其頂部 2026-07-10 重述）｜子專案：[scene-capture-bridge](../../../../scene-capture-bridge/README.md)
 
 **（2026-07-10 細摳收斂後從頭重寫；取代同日早先的 M6–M10 版本，舊 M 編號在「路線圖」表保留對照）**
 

@@ -1,6 +1,6 @@
 # NIF ↔ glTF/Godot 轉換調查（Gemini，2026-06-16）
 
-> 📦 **此調查已收斂進 sub_proj** → [../model-converter/](../../model-converter/README.md)（模型格式雙向互轉工具）。下方為原始調查素材，正式結論看該 sub_proj 的工具盤點表。
+> 📦 **此調查已收斂進 sub_proj** → [../model-converter/](../../../../model-converter/README.md)（模型格式雙向互轉工具）。下方為原始調查素材，正式結論看該 sub_proj 的工具盤點表。
 
 > ⚠️ **查證修正 banner（2026-06-16，背景 agent 對真實 GitHub/release 核對）**——下文 Gemini 原稿多處有誤，採信前看這裡：
 > - ❌ **`nif2gltf` Rust CLI 不存在**（`amPerl/nif` 只是 NIF parser、非 Skyrim 版、無 glTF 輸出；`cargo install nif` 用法是捏的）。**勿規劃此工具。**
@@ -10,7 +10,7 @@
 > - ⚠️ 原文 SkyMeshGLTF 連結錯，正解 `github.com/nlaha/SkyMeshGLTF`。
 > - 結論已併入 [worldspace-editor-design.md](../../../workflows/specs/worldspace-editor-design.md) 與 idea README。
 
-關聯：[workflows/idea/worldspace-editor/README.md](../../godot-worldspace-editor/README.md)
+關聯：[workflows/idea/worldspace-editor/README.md](../../../../godot-worldspace-editor/README.md)
 先讀：[workflows/idea/asset-pipelines/model-porting/README.md](../../../workflows/idea/asset-pipelines/model-porting/README.md)（2026-06-09 靜態 mesh pipeline 研究，tool 確認度較高）
 
 ---

@@ -32,7 +32,7 @@ scripts/skylink/skylink-bridge.sh down
 
 ### `key` — agent 唯一能按鍵的方式（2026-07-10 加）
 
-SkyLink 的 tool 都在**遊戲行程內**執行，繞過輸入層，所以查狀態、跑 console 都沒問題。但**按鍵不行**，而有些 SKSE plugin（例如 [scene-capture-bridge](../../sub_projs/scene-capture-bridge/README.md)）的觸發器只有 hotkey。
+SkyLink 的 tool 都在**遊戲行程內**執行，繞過輸入層，所以查狀態、跑 console 都沒問題。但**按鍵不行**，而有些 SKSE plugin（例如 [scene-capture-bridge](../../../scene-capture-bridge/README.md)）的觸發器只有 hotkey。
 
 Linux 這側完全按不動：Wayland 合成器擋掉 XTest（`xdotool mousemove` 連指標都不會動，`getmouselocation` 可自證），而 Skyrim 讀 raw input，`xdotool key --window` 的合成 X 事件也被忽略。**連主選單的 CONTINUE 都按不了。**
 

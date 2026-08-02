@@ -22,7 +22,7 @@
 
 **核心 Idea**：把**遊戲內本身**當成編輯器。玩家施放一組「編輯法術」直接在遊戲裡擺物件 / 放 NPC / 錄行為 /（野心）改地形，然後施法**快照當前房間（cell）狀態**，diff vs vanilla → ModForge 生成一份 **patch mod（override 記錄）**。等於用真實遊戲鏡頭 + 物理當所見即所得的編輯台，取代 CK。
 
-**為何吸引 / 為何優於外部編輯器（決策依據，2026-07-07）**：CK 崩、Windows-only；外部編輯器（#15 Blender/CK 替代、#19 Godot Worldspace Editor）擺完**看不到真實渲染態**。使用者經驗回饋：**現有 [Godot worldspace editor](../../../sub_projs/godot-worldspace-editor/README.md) 實際用起來不好用**——它重建的是近似場景，不是玩家實際會看到的畫面。遊戲內編輯的決定性優勢是**吻合指定渲染狀態**：ENB、光照、特效、天氣、後處理全部就位，「你看到什麼就是成品」（真 WYSIWYG）。外部工具永遠追不上 ENB/community shaders 那層。→ **本 idea（遊戲內路線）相對 #15/#19（外部路線）是更受青睞的方向**；外部路線退為輔助/離線批次用途。
+**為何吸引 / 為何優於外部編輯器（決策依據，2026-07-07）**：CK 崩、Windows-only；外部編輯器（#15 Blender/CK 替代、#19 Godot Worldspace Editor）擺完**看不到真實渲染態**。使用者經驗回饋：**現有 [Godot worldspace editor](../../../../godot-worldspace-editor/README.md) 實際用起來不好用**——它重建的是近似場景，不是玩家實際會看到的畫面。遊戲內編輯的決定性優勢是**吻合指定渲染狀態**：ENB、光照、特效、天氣、後處理全部就位，「你看到什麼就是成品」（真 WYSIWYG）。外部工具永遠追不上 ENB/community shaders 那層。→ **本 idea（遊戲內路線）相對 #15/#19（外部路線）是更受青睞的方向**；外部路線退為輔助/離線批次用途。
 
 ---
 
@@ -167,7 +167,7 @@
 | §B marker / 特效 / 標籤 | **可**（XMRK/HAZD/Light/KYWD 全有）| 缺採集橋輸出 `{kind,at,params}` |
 | §C export 整場景 | 生成型別 **全可** | 採集橋（同①放大）；**navmesh 即時採集是硬項** |
 | §D 身份 → 對話/行為 | **可**（identity 系統 + 對話 INFO + package + vendor 全實機）| 遊戲內只貼 tag；文本可接 #17 AI 生成 |
-| 編輯器 UI（遊戲內面板）| **非可生成，但已落地** | [SKSE Menu Framework 3](../../../../../analysis/mod-survey/findings/skse-menu-framework-3.md)（ImGui）＝前端；消費者 plugin **就是** [`scene-capture-bridge`](../../../sub_projs/scene-capture-bridge/README.md)（`src/UI.cpp`，2026-07-10 接上，軟相依：沒裝框架仍有 F10）。不必另開子專案。⚠️ `sse-imgui` 在 AE 上不能用，見 finding |
+| 編輯器 UI（遊戲內面板）| **非可生成，但已落地** | [SKSE Menu Framework 3](../../../../../analysis/mod-survey/findings/skse-menu-framework-3.md)（ImGui）＝前端；消費者 plugin **就是** [`scene-capture-bridge`](../../../../scene-capture-bridge/README.md)（`src/UI.cpp`，2026-07-10 接上，軟相依：沒裝框架仍有 F10）。不必另開子專案。⚠️ `sse-imgui` 在 AE 上不能用，見 finding |
 
 **收斂成一句**：整條管線的**生成端 ModForge 幾乎都有**（唯一真 GAP＝外貌 facegen 生成，且可用 PROTEUS 消費繞過）；**真正要蓋的是中間那支 bespoke 消費 SKSE DLL**——採集橋（讀狀態/貼標籤 → JSON）+ 一支泛用 placement-controller `.pex`。同 Tundra/Honed Metal「須附 native/Papyrus controller」判定。
 

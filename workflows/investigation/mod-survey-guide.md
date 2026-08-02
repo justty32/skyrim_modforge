@@ -1,6 +1,6 @@
 # Mod 調查 guide — agent 操作手冊
 
-← [investigation README](README.md)｜工作區 [`../../analysis/mod-survey/`](../../sub_projs/mod-survey/README.md)
+← [investigation README](README.md)｜工作區 [`../../analysis/mod-survey/`](../../../../analysis/mod-survey/README.md)
 
 給負責「調查 `~/skyrim_mods/` 那批已下載 mod」的 AI agent。**產出寫進 `../../analysis/mod-survey/`**，不要寫進 `workflows/`（主 session 正在重構它）。
 
