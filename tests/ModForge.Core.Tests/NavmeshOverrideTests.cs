@@ -105,6 +105,7 @@ public class NavmeshOverrideTests
         // and it lives under a CELL override of the vanilla cell (CELL -> GRUP6 -> GRUP9 -> NAVM)
         var cell = r.Mod.EnumerateMajorRecords<ICellGetter>().Single(c => c.NavigationMeshes.Count > 0);
         Assert.Equal(FormKey.Factory("01605E:Skyrim.esm"), cell.FormKey);
+        Assert.Equal("WhiterunBanneredMare", cell.EditorID);   // the real cell the QA runner caught us blanking
     }
 
     [Fact]
@@ -166,6 +167,11 @@ public class NavmeshOverrideTests
         Assert.Equal(41, street.Data!.EdgeLinks.Count);     // the cross-mesh links survive the copy
         Assert.Equal(10, street.Data.DoorTriangles.Count);  // …and so do the door portals
 
+        // The grid cell is an override too, so it has the same name-blanking exposure as the interior
+        // case — vanilla Whiterun street cells are named and a navmesh copy must not strip that.
+        var gridCell = r.Mod.EnumerateMajorRecords<ICellGetter>().Single(c => c.NavigationMeshes.Count > 0);
+        Assert.False(string.IsNullOrEmpty(gridCell.EditorID));
+
         // The WRLD override this drags in is the one with scar tissue (memory: worldspace-override-*).
         var ws = r.Mod.Worldspaces.Single();
         Assert.Equal("WhiterunWorld", ws.EditorID);        // else the terrain-LOD texture atlas breaks
@@ -213,13 +219,17 @@ public class NavmeshOverrideTests
     private static readonly ModKey FakeMaster = ModKey.FromNameAndExtension("MFFakeNav.esm");
     private static readonly FormKey FakeCell = FormKey.Factory("000801:MFFakeNav.esm");
     private static readonly FormKey FakeNavm = FormKey.Factory("000802:MFFakeNav.esm");
+    private const string FakeCellEd = "MFFakeNavCell";
 
     // One interior cell (with a NAVM) written into `dir` under `key`. The cell/navm carry `cellFk`/
     // `navmFk` verbatim, so writing under a DIFFERENT key makes them OVERRIDES of that FormKey's owner.
     private static void WriteNavmPlugin(string dir, ModKey key, FormKey cellFk, FormKey navmFk)
     {
         var m = new SkyrimMod(key, SkyrimRelease.SkyrimSE);
-        var cell = new Cell(cellFk, SkyrimRelease.SkyrimSE) { Flags = Cell.Flag.IsInteriorCell };
+        // The cell is NAMED, like every vanilla cell — that is what lets the EditorID regression below
+        // run offline (see Override_KeepsTheCellsEditorId).
+        var cell = new Cell(cellFk, SkyrimRelease.SkyrimSE)
+        { EditorID = FakeCellEd, Flags = Cell.Flag.IsInteriorCell };
         cell.NavigationMeshes.Add(new NavigationMesh(navmFk, SkyrimRelease.SkyrimSE));
         var sub = new CellSubBlock { BlockNumber = 0, GroupType = GroupTypeEnum.InteriorCellSubBlock };
         sub.Cells.Add(cell);
@@ -298,6 +308,33 @@ public class NavmeshOverrideTests
 
             Assert.Equal(1, r.Stats.NavmeshOverrides);                        // still built — only the WARNING is off
             Assert.DoesNotContain(r.Warnings, x => x.Contains("ALSO overridden"));
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    // --- the cell override must not cost the cell its NAME -----------------------------------------
+
+    [Fact]
+    public void Override_KeepsTheCellsEditorId()
+    {
+        // 🔴 Found in the wild 2026-08-02, by the in-game QA runner's very first real run. A CELL
+        // override is a WHOLE-RECORD replacement: the runtime cell takes its EditorID from the winning
+        // record, so an override that omits EDID leaves the live cell NAMELESS. Everything else looks
+        // right — same FormID, still interior, vanilla contents intact — and no warning fires, which is
+        // exactly why it survived: only a live query caught it (`player.cell` came back "" for
+        // WhiterunBanneredMare while `cell_form_id` was correct).
+        //
+        // A navmeshOverrides[] entry is the purest case: the author asked to re-emit ONE mesh
+        // unchanged and got a silently renamed cell as a side effect.
+        var dir = NewTempDir();
+        try
+        {
+            WriteNavmPlugin(dir, FakeMaster, FakeCell, FakeNavm);
+
+            var r = Generator.Build(OverrideFakeCell(), Key, new BuildOptions { SkyrimDataPath = dir });
+
+            var cell = r.Mod.EnumerateMajorRecords<ICellGetter>().Single(c => c.FormKey == FakeCell);
+            Assert.Equal(FakeCellEd, cell.EditorID);
         }
         finally { Directory.Delete(dir, recursive: true); }
     }

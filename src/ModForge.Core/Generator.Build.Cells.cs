@@ -16,6 +16,14 @@ public static partial class Generator
         // FormLink — no string resolution, so no plugins.txt dependency.
         private void CopyCellEnv(ICellGetter src, Cell dst)
         {
+            // EditorID (EDID): plain ASCII, not localized — the same "carry it or the override blanks
+            // it" rule as CopyWorldspaceEnv. A CELL override is a WHOLE-RECORD replacement: at runtime
+            // the cell object takes its EditorID from the WINNING record, so an override that omits
+            // EDID leaves the cell nameless — FormID, interior flag and contents all still correct, so
+            // nothing crashes and nothing warns. Found 2026-08-02 by the in-game QA runner: a
+            // navmesh-only override of WhiterunBanneredMare (0x01605E) made the live cell's EditorID
+            // come back "". A pure navmesh edit must not cost the cell its name.
+            dst.EditorID = src.EditorID;
             dst.Flags = src.Flags;
             if (src.Grid is { } g)
                 dst.Grid = new CellGrid { Point = new Noggog.P2Int(g.Point.X, g.Point.Y), Flags = g.Flags };
@@ -83,7 +91,11 @@ public static partial class Generator
                     }
                     else Warn($"  ! cell '{c.EditorId}' template '{c.Template}' unresolved — created without lighting (may render black)");
                 }
-                cell.Flags |= Cell.Flag.IsInteriorCell;   // CopyCellEnv overwrote Flags — keep it interior
+                // This is the one caller that BORROWS env from an unrelated cell instead of overriding
+                // it, so it must keep its own identity: CopyCellEnv overwrote both Flags and EditorID
+                // with the template's.
+                cell.Flags |= Cell.Flag.IsInteriorCell;   // keep it interior
+                cell.EditorID = c.EditorId;               // keep OUR name, not the template's
                 // Custom/vanilla LightingTemplate (LGTM) + ImageSpace (IMGS) links + inline XCLL.
                 if (!string.IsNullOrWhiteSpace(c.LightingTemplate))
                 {

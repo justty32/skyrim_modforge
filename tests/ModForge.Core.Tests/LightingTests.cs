@@ -217,6 +217,27 @@ public class LightingTests
         Assert.Contains(problems, p => p.Contains("MF_BadCell") && p.Contains("NotARealFlag"));
     }
 
+    // A cell `template` BORROWS a vanilla interior's environment (so the room isn't pitch black) — it is
+    // not an override of that cell, and the borrowing must not drag the lender's IDENTITY across. Same
+    // guard as the Flags line right beside it in BuildCells: CopyCellEnv now carries EditorID (a CELL
+    // override that drops EDID leaves the live cell nameless — see NavmeshOverrideTests), and this is
+    // the one caller that has to put its own name back.
+    [Fact, Trait("Category", "RequiresSkyrim")]
+    public void Cell_Template_BorrowsTheLightingButKeepsItsOwnEditorId()
+    {
+        var spec = new ModSpec
+        {
+            Cells = { new CellSpec { EditorId = "MF_TmplRoom", Name = "Room", Template = "Skyrim.esm:0x01605E" } },
+        };
+
+        var r = Build(spec);
+        var cell = Single<ICellGetter>(r);
+        Assert.Equal("MF_TmplRoom", cell.EditorID);                       // NOT WhiterunBanneredMare
+        Assert.True(cell.Flags.HasFlag(Cell.Flag.IsInteriorCell));
+        Assert.True(cell.Lighting is not null || !cell.LightingTemplate.IsNull,
+            "the template's lighting env should have come across — that is what `template` is for");
+    }
+
     // Weather template DeepCopies a vanilla weather → inherits its clouds; spec overrides only what it sets.
     // Needs Skyrim.esm (resolves the vanilla template), like WordWallTests — passes where the game is installed.
     [Fact, Trait("Category", "RequiresSkyrim")]
