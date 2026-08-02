@@ -44,7 +44,9 @@ for full plugins, `0xFE000`+ for light ones), so it doubles as the FormID prefix
 Not built yet: `POST /screenshot`, `POST /input` — both deferred, see plan decision D6.
 
 The Linux side of all this lives in [`client/`](client/README.md): `mo2ctl.py` installs
-and removes mods and starts the game, with no MO2 GUI anywhere in the loop.
+and removes mods and starts the game with no MO2 GUI anywhere in the loop, `qa_runner.py`
+executes a whole test from one [`qa.json`](client/QA-SCHEMA.md), and `qa_mcp.py` exposes
+the frequently-called half of that to Claude as MCP tools.
 
 ## Design notes
 

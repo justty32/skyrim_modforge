@@ -10,7 +10,7 @@ contract, and a two-sided edit should be one commit.
 | `mo2ctl.py` | ✅ verified end-to-end 2026-08-02 | Drive MO2 without its GUI: install / uninstall / enable / disable / launch / kill / status |
 | `bridge.py` | ✅ | Talking to the in-game HTTP bridge. Owns the port; everything else imports it |
 | `qa_runner.py` | ✅ verified 2026-08-02 | Execute a `qa.json`, report pass/fail per step. Schema: [QA-SCHEMA.md](QA-SCHEMA.md) |
-| MCP server | not built (plan 2.2) | Wrap `/state` + `/console` as `qa_state` / `qa_console` so Claude stops shelling out to curl |
+| `qa_mcp.py` | ✅ registered 2026-08-02 | MCP server: `qa_status` / `qa_state` / `qa_console` / `qa_run`, so Claude stops shelling out to curl |
 
 stdlib only, no venv. This has to keep working while the rest of the toolchain is
 mid-rebuild, and a QA harness that needs its own install step before it can test
@@ -138,3 +138,40 @@ Two conclusions, both now in [QA-SCHEMA.md](QA-SCHEMA.md):
 
 Worth saying plainly: this is the QA loop doing its job on the first real run. The mod
 under test changed observable state in a way nobody intended, and the harness caught it.
+
+## qa_mcp — the loop as MCP tools
+
+Registered in `~/.claude.json` next to `housecarl`, so it loads for every session:
+
+```jsonc
+"skyrim-qa": {
+  "type": "stdio",
+  "command": ".../agent-bridge/client/qa_mcp.py",
+  "env": { "MO2_ROOT": "...", "MO2_PROFILE": "Default" }
+}
+```
+
+**A new session has to start before the tools appear** — MCP servers are connected at
+startup, so registering it mid-session does nothing for that session.
+
+| Tool | |
+|---|---|
+| `qa_status` | is the game up, is the profile safe to edit |
+| `qa_state` | the `/state` snapshot — what assertions are written against |
+| `qa_console` | run a console command |
+| `qa_run` | execute a qa.json, return the report |
+
+**What is deliberately not exposed: `install`, `uninstall`, `launch`, `kill`.** Each is one
+Bash call, they happen a handful of times per session, and the chatty calls — the ones
+that justify MCP at all — are `state` and `console`. A model that can end the user's game
+session with a single tool call is worse ergonomics than one that has to type the command.
+`qa_run` still performs all of them, but from a qa.json the user can read first.
+
+Hand-rolled JSON-RPC rather than the `mcp` package, for the same reason the rest of this
+directory is stdlib-only. The one rule that matters: **stdout carries protocol traffic and
+nothing else.** A stray `print()` corrupts the stream and the client drops the connection
+with no useful error, so diagnostics go to stderr. Two consequences in the code: `qa_run`
+forces `interactive=False` (a runner blocking on `input()` here would hang the server with
+no way to answer it), and notifications — messages with no `id`, like
+`notifications/initialized` — get no response at all, because replying to one is a
+protocol violation some clients disconnect over.
