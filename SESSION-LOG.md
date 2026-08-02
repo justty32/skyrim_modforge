@@ -12,17 +12,21 @@
 
 ## 最新進度
 
-> ### 🎯 現在在哪（2026-07-14）
+> ### 🎯 現在在哪（2026-08-02）
 >
-> **今天做完（scene-capture-bridge 一整輪，DLL `c07dd174` 已部署）**：① **Browser 目錄 ＋ 世界內 ghost 預覽**（＝CK 的 Object Window）——**本體三輪實機全過、已結案**，濃縮句進 [landed/world](workflows/feature-dev/landed/world.md)（含三個引擎真相：物品欄 UI 是死路／runtime 沒有 EditorID／**不要事後拿掉你一開始就可以不產生的東西**）；② 依使用者重設計，**ghost ＝ place 模式的擺放游標**（不變式：**ghost 存在 ⟺ `sc pl` ＋ `gh1` ＋ 有東西被選中**，Browser 降級成附屬品）；③ 🐞 **匯出改登記簿制**（見下）；④ `gh0` 可見性（一次誤報的根因：模式安靜地做了不同的事）。實作記錄全在 [phases](workflows/plans/scene-capture-bridge/phases.md)。
-
-> **下一步（開工第一件事）**：**先跑完那三條實機**（[wait_todo](wait_todo/ingame-tests.md)：`gh0` 標示、🔴 **`sc ed` numpad 回歸**〔長按時鐘抽成共用 `Numpad.h`，唯一可能傷到既有功能之處〕、登記簿制野外匯出）。之後兩條主線任選：**navmesh P3 add+link**（有兩個未拍板問題，動工前先問）或使用者 2026-07-14 提的 **`sc ed <xx>` 改物件狀態**（火把亮/滅、門開/關——設計形狀已在 [backlog](workflows/plans/scene-capture-bridge/backlog.md)，難點是每個屬性的引擎真相要逐個解碼）。
+> **repo 結構剛做過一次大搬遷**：`sub_projs/` 的十一個子專案全部移出——有程式碼／建置／產物的成了 `projects/` 下的**同層 git repo**（godot-worldspace-editor、scene-capture-bridge、model-converter、agent-bridge、darksouls-port、sofia-patch、skyrim-voicegen、game-data），純文檔的進工作區 `analysis/`（mod-survey、tool-survey、followers-patch）。**stub 也不留**，對照表在 [sub_projs/README](sub_projs/README.md)。C# 側零改動、1013 測綠。跨 repo 連結一律假設各 repo 同層 clone 在 `projects/` 下。
+>
+> **AI 全自動 mod QA 迴圈已結案**（2026-08-02，計畫在工作區 `workflows/plans/ai-ingame-qa-loop.md`）：`agent-bridge` 的 DLL + mo2ctl + qa.json runner + MCP server 四件實機驗完。**首跑就抓到本 repo 一個真 bug 並修掉**——CELL override 沒保留 EDID 導致 runtime 那個 cell 變無名（`eb0bb6c`），而且是用這條迴圈自己驗證修好的。
+>
+> **下一步（開工第一件事）**：**先跑完那三條實機**（[wait_todo](wait_todo/ingame-tests.md)：`gh0` 標示、🔴 **`sc ed` numpad 回歸**〔長按時鐘抽成共用 `Numpad.h`，唯一可能傷到既有功能之處〕、登記簿制野外匯出）。之後兩條主線任選：**navmesh P3 add+link**（有兩個未拍板問題，動工前先問）或使用者 2026-07-14 提的 **`sc ed <xx>` 改物件狀態**（火把亮/滅、門開/關——設計形狀已在 [backlog](../scene-capture-bridge/README.md) 對應的 plans/backlog，難點是每個屬性的引擎真相要逐個解碼）。
+>
+> ⚠️ 採集橋的**程式碼現在在 [`../scene-capture-bridge`](../scene-capture-bridge/README.md)**（同層 repo），但它的**計畫／驗收／契約文檔仍在本 repo**（`workflows/plans/scene-capture-bridge/`、`workflows/specs/ingame-scene-export-design.md`、`wait_todo/ingame-tests.md`）。
 
 - **🐞 匯出器把「引擎自己生的」當成「玩家放的」——已改登記簿制（2026-07-14，已部署 DLL `c07dd174`，待實機）**：野外匯出 10 筆 placements 裡**只有 1 筆是使用者放的**，其餘是釣魚 CC 的魚 ×3 ＋ `DoNotPlaceSmallCritterLandingMarkerHelper` ×6（蝴蝶降落 marker）。根因＝vanilla diff 的判準「dynamic ref ＝ 玩家放的」**對引擎生的 ref 同樣為真**（引擎自己也 PlaceAtMe），這個啟發式分辨不了、也永遠分辨不了。**一直都在**，只是以前都在室內測（旅館裡沒有魚）。修法（使用者拍板）＝**所有權從推導改成記錄**：每筆 `sc pl`／ghost commit 都進 placed 登記簿，匯出器**沒登記簿列就不匯出**，另給面板一顆 `adopt dynamic refs in this cell`（明示優於推導）。⚠️ **行為改變**：登記簿制之前擺的、以及 console `placeatme` 生的，**不再自動匯出**（要按 adopt）。細節見 [phases](workflows/plans/scene-capture-bridge/phases.md)。
 - **採集橋——待實機只剩三條**（[wait_todo](wait_todo/ingame-tests.md)，同一顆 DLL `c07dd174`）：① 🔴 **`sc ed` numpad 回歸**（長按/加速/`sc ed ax`/單發鍵不連發——本輪把長按時鐘抽成共用 `Numpad.h` 給 ghost 一起用，**唯一可能傷到既有功能之處**）；② **`gh0` 可見性**（Mode 那行 ＋ Settings checkbox）；③ **登記簿制野外匯出**（`scene.json` 應剛好只有你放的，log 多印 `N dynamic refs not ours`）。另有兩個體感待回報：自動縮放的「九分之一」會不會太小（大件會撞到 0.05 下限）、numpad 轉/縮步長順不順手。
 - **其餘採集橋功能**（模式開關 py/ed/pkc、實例附魔 ed1、referrer、跨存檔 reacquire、面板欄位一致化、numpad 長按、動作鍵 `.ini` ＋ palette clear）**使用者已回報通過**，濃縮句在 [landed](workflows/feature-dev/landed/README.md)。
 - **navmesh — 下一步是 P3**（[plans/navmesh.md](workflows/plans/navmesh.md)）：P1 診斷 / T2.0 L_NAVCUT / P0 no-op override **全部做完且實機 PASS**，症狀①結案、`autoNavCuts` 已預設開。**剩**：**P3 add+link**（症狀②「NPC 走不上新平台」，唯一還需要寫 NAVM 的工作，地基已驗證）＋ **P4**（DLL 讀 live navmesh／射線取樣）。原訂 P2 NAVM-cut 備案**整段作廢**。
-- **⏳ 原三件待拍板已全部拍板＋落地（2026-07-29，公司離線機一輪）**：① **U10** build 警告（`CheckNavmeshOverrideClobbers`，合成 plugin 離線測、🎮 對真 USSEP 驗收留主力機，見 [navmesh §6 U10](workflows/plans/navmesh.md)）；② **`area:<ref>` 前綴**（location 槽明示區域意圖、靜音護欄）；③ **`package` 寫玩家面向 `REQUIREMENTS.txt`**。三件都已離線測、commit 未 push。另 navmesh plan 內兩項仍未拍板：§7-3（P3 先只支援內裝？）、§7-4（三角化要不要引 DotRecast，傾向不要）。
+- **⏳ 原三件待拍板已全部拍板＋落地（2026-07-29，公司離線機一輪）**：① **U10** build 警告（`CheckNavmeshOverrideClobbers`，合成 plugin 離線測、🎮 對真 USSEP 驗收留主力機，見 [navmesh §6 U10](workflows/plans/navmesh.md)）；② **`area:<ref>` 前綴**（location 槽明示區域意圖、靜音護欄）；③ **`package` 寫玩家面向 `REQUIREMENTS.txt`**。三件都已離線測並 commit（2026-08-02 已 push）。**這條唯一還 open 的**是 U10 對真 USSEP 的主力機驗收；另 navmesh plan 內兩項仍未拍板：§7-3（P3 先只支援內裝？）、§7-4（三角化要不要引 DotRecast，傾向不要）。
 - **masters 汙染（設計 open，非 bug）**：玩家身上的 spells/effects/inventory 一半來自 mod → esp 把 PROTEUS/XPMSE/nwsFollower… 全變 master。**使用者拍板：完全複製優先、不過濾**；可見性四候選中 (a) build 印來源 ＋ (b) spec `requires:` 契約**已做**，(c) modlist 快照／(d) 依賴檢查指令**未做**（[backlog](workflows/plans/scene-capture-bridge/backlog.md)）。
 - **Phase 2 烘焙臉（未排，優先級⬇）**：實測分身臉正常——頭形引擎 runtime 生、臉色 Face Discoloration Fix SE 補；只剩「發佈給無 FDF 環境」或「完全自足產物」才需要烘。三路評估與界線在 [plans/captured-npcs-consumption.md](workflows/plans/captured-npcs-consumption.md)。
 - **🔴 鐵律（血的教訓，2026-07-12）**：遊戲跑著時用 `cp` 就地覆寫 `mods/.../SKSE/Plugins/*.dll` → **遊戲無聲暴斃、無 crash log**（Linux 不鎖載入中的 DLL；`cp` 寫穿同一個 inode，而 DLL 程式碼頁是 demand-paged from that file）。**往後部署一律走 `../scene-capture-bridge/scripts/deploy.sh`**（`pgrep SkyrimSE.exe` 在跑就拒絕 ＋ tmp+rename 換 inode），不要手打 `cp`。成因記入 [dev-env § 部署 SKSE DLL](workflows/dev-env.md)。

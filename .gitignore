@@ -18,7 +18,14 @@ scripts/skylink/sendkey.exe
 # IDE
 .vs/
 .idea/
-reference/
+
+# Bulky mirrored external material under docs/reference/ (33M Synthesis clone + 16M HTML mirror,
+# re-downloadable). Only the SUBDIRECTORIES are ignored — the hand-written INDEX*.md maps sitting
+# directly in that folder ARE tracked, because docs/for_agent.md links to them and a fresh clone
+# needs the map even when the raw material isn't there.
+# (This used to be a bare `reference/`, which silently swallowed every dir of that name anywhere
+#  in the tree — it had already eaten sofia-patch/reference/. Keep it anchored.)
+/docs/reference/*/
 
 # git worktrees created by background agents
 .claude/worktrees/
