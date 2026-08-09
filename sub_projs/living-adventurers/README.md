@@ -1,6 +1,6 @@
 # living-adventurers — 給 standalone follower 一條命
 
-ModForge 消費者專案。設計源 idea [#23](../../workflows/idea/living-adventurers.md)（架構、拍板決策、archetype 框架、風險）。**怎麼做** → [design.md](design.md)（踩在 ModForge 既有機制上的工程設計 + 六階段建造順序）。本檔只記**這個子專案在幹嘛 + 目前進度**。
+ModForge 消費者專案。設計源 idea [#23](../../workflows/idea/living-adventurers.md)（架構、拍板決策、archetype 框架、風險）。**怎麼做** → [design.md](design.md)（踩在 ModForge 既有機制上的工程設計 + 六階段建造順序）。第一個真 follower enrollment 候選 → [yua-mvp.md](yua-mvp.md)。本檔只記**這個子專案在幹嘛 + 目前進度**。
 
 ## 一句話
 
@@ -22,7 +22,7 @@ Skyrim 只跑玩家附近的 AI，所以離場冒險者＝**純資料**（Storag
 | **P2：`livingNpcs:` macro 落地**（core，純離線，845 測綠） | 🟢 落地（「加 NPC = 幾行 JSON」成立）｜example `examples/living_npcs_spec.json`｜待主力機編 .pex + 實機 |
 | **P3：玩家互動 + alignment**（core，純離線，848 測綠） | 🟢 落地：per-NPC favor GLOB + 互動 dialogue（fund/praise/parley，`setGlobal`）+ alignment（hostile in-spec→Aggressive）｜剩 Phase-3.5（雇用為隨從、敵對-交戰中浮現 parley、controller 讀 favor/alignment）+ 實機 |
 | 任務層（真 missive 隨機地點） | ⏸ 卡 roadmap #7–9（LocationAlias / nested ReferenceAlias / UpdateCurrentInstanceGlobal） |
-| cast 來源接真 standalone follower mod | ⏸ 未開 |
+| cast 來源接真 standalone follower mod | 🔵 YUA MVP 已 build/ship：[yua-mvp.md](yua-mvp.md)；`~/skyrim_mods/mine/MFLivingYUA.zip` 待實機 |
 | 玩家互動（搶任務 / 雇用 / 資助破壞） | ⏸ 未開 |
 
 ## spike（`spike/`）

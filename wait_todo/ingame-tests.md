@@ -15,6 +15,18 @@
 
 ## 待測（active）
 
+- **YUA 活 NPC enrollment MVP — ✅ 已打包交付 `~/skyrim_mods/mine/MFLivingYUA.zip`（2026-08-08，FLAT）**（idea #23 / `sub_projs/living-adventurers/yua/`）。這是第一個「真外部 standalone follower 接進 livingNpcs」測試：YUA 本體來自 `YUA Follower ESL.7z`，patch 只依賴 `YUA_Follower.esp`，用 `uniqueActor 000800:YUA_Follower.esp` 填 alias，並在 Bannered Mare 放一個自訂傳聞酒客 Mira Snow-Voice。
+  - zip 內容已結構驗證：`MFLivingYUA.esp`（19 records，masters=`Skyrim.esm,YUA_Follower.esp`）＋ `.seq` ＋ 2 pex（`MFLivingWorldController` / `MFLivingNpcAlias`）。無 interaction TIF：fund/praise 故意留到 P1，避免把 TIF auto-compile 問題混進第一顆 runtime gate。
+  - YUA 來源事實：NPC base `YUA_Follower.esp:0x000800`，原 mod placed ref `YUA_Follower.esp:0x000817` 在 Jorrvaskr；她是 Female/Essential/Unique，voice `007A32:Dawnguard.esm`。
+
+  **實機驗（先安裝/啟用 YUA Follower ESL，再裝 `MFLivingYUA.zip`，新遊戲或 save+reload）**：
+  - **① plugin 載入**：確認 MO2 兩個 mod 都啟用，`MFLivingYUA.esp` 排在 `YUA_Follower.esp` 後；若缺 YUA master，Skyrim 會靜默不載入 patch。
+  - **② 離場推進**：console `getglobalvalue MFLiving_N0_Deeds` → 等幾個遊戲時 → 值應上升；有可能跳通知「YUA completed another contract.」。
+  - **③ 就地實體化**：`coc WhiterunBanneredMare` → YUA 應被 living controller MoveTo 到 Bannered Mare 的 anchor，且只出現一個；離開再回不應複製。
+  - **④ 傳唱**：找 Mira Snow-Voice → YUA deeds≥1 後應出現 `Any word of YUA?` → 三條傳聞隨機/輪播。可用 `set MFLiving_N0_Deeds to 3` 強逼 gate。
+  - **⑤ 共存風險**：去 Jorrvaskr 看 YUA 原本位置是否被移走是預期；招募 YUA 後 living controller 是否還會搶 MoveTo 需要回報，這是 P1 安全閥（IsPlayerTeammate）設計依據。
+  - **回報**：YUA 是否出現、是否重複、deed 是否動、Mira 對話是否出現、招募後是否被 controller 拉走。
+
 - **living-adventurers 整鏈 P0–P3 — ✅ 已打包交付 `~/skyrim_mods/mine/MFLivingNpcs.zip`（2026-07-11，FLAT）**（idea #23 / `sub_projs/living-adventurers/`）。這是「抽象幽靈模擬 + 就地實體化 + 傳唱 + 互動/favor + alignment」的 **runtime 第一次驗證**，是 P0–P3 共同的 acceptance gate。測 `examples/living_npcs_spec.json`（macro 版，涵蓋全部；spike/p1 是過程原型，不必另測）。
   - zip 內容已結構驗證：esp（13 records、quest StartGameEnabled、4 globals、6 topics）＋ `.seq` ＋ 6 pex（`MFLivingWorldController`/`MFLivingNpcAlias`＋**4 個 TIF 全數內聯編譯成功**，這次沒踩 spurious-fail）＋ TIF 源碼。7 scripts attached（quest 1 + alias 2 + TIF 4；dump 不渲染 alias 層 VMAD，數字對帳自 build summary）。
   - 打包途中踩了一雷已修＋記進 dev-env：`MFLivingNpcAlias` 用 SKSE 的 `GetDisplayName` → 純 vanilla header cache 編不過（undefined function）→ SKSE 版 headers（Steam Data/Scripts/Source 64 檔）疊進 cache 後過。
@@ -68,4 +80,3 @@
 3. **⚠️ 已知的行為改變（不是 bug）**：**這個改動之前擺下去的東西、以及 console `placeatme` 生的東西，不會再自動匯出**（它們沒有登記簿列）。要救回來 → Palette 頁按 **`adopt dynamic refs in this cell`**。⚠️ 這顆按鈕**不挑食**：魚站在旁邊它就把魚也收編（面板有警告）——所以按完看一下匯出結果。
 
 **回報**：① 匯出檔裡還有沒有你沒放的東西；② adopt 按鈕有沒有把該收的收回來。
-
