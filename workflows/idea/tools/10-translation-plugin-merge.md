@@ -2,5 +2,7 @@
 
 ← index: [README.md](README.md) · [ideas 索引](../ideas.md)
 
+> **已拆分處理**：翻譯已落地；尚未做的插件合併統一由 [#16 ESL 合併工具](16-esl-merge-tool.md) 承接。本頁只保留原始脈絡。
+
 - **翻譯**：`extract`/`apply`/`applyloc`（含 UTF-8 `_chinese.STRINGS`）已可用，英文模組中文化直接用。
 - **ESP/ESL 合併（未做）**：合併小插件釋放載入順序空位，對 §9 量產尤重要；要處理 FormID 重映射 + 所有引用（含腳本屬性、SEQ）同步改寫——工程不小，Mutagen 有基礎能力。

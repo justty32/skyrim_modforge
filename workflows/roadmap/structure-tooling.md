@@ -6,7 +6,6 @@
 
 ## 緩做（已評估、暫不動）
 
-- **`workflows/idea/ideas.md`（18K）** — 入口主檔，按主題拆**風險高、價值低**，暫不動。日後若它再膨脹或主題自然分群再拆。
 - **`investigation/decode/` 是否按 mod 開子夾** — 解碼筆記目前全 KEEP（單篇連貫、不超標）；真議題是 decode/ 要不要按 mod 分子夾，**等下個 mod 解碼進來再決定**。
 - **`feature-dev/gotchas.md`（5K）** — 只需檔內分節、不拆資料夾，暫緩。
 

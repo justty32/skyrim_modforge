@@ -2,6 +2,8 @@
 
 ← index: [README.md](README.md) · [ideas 索引](../ideas.md)
 
+> **已升級，不再由 idea 追進度**：現況以 [spec](../../specs/ingame-scene-export-design.md)、[plan](../../plans/scene-capture-bridge/README.md) 與獨立 `scene-capture-bridge` repo 為準。本頁只保存北極星、設計憲法與原始能力光譜。
+
 ## 核心宗旨（2026-07-10 使用者重述——本節優先於下文早先框架）
 
 **最初目標：不依靠 Creation Kit** 去編輯場景、NPC、劇情等各種東西，且最好**在 Skyrim 遊戲內**做——所見即所得。動機：使用者是 Linux 玩家，CK 實際不可用，只能出此下策——但這也是機會。**終極目標＝把 Skyrim 自身變成 Creation Kit**。下文的「蓋城鎮」北極星只是這個更大目標的一個用例。
