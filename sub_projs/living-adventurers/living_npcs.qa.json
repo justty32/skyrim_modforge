@@ -1,0 +1,244 @@
+{
+  "name": "living-npcs-generic",
+  "description": "Install the generic livingNpcs package, prove its two actors and two-anchor rotation at runtime, then leave Falas ready for the parley interaction check.",
+  "baseline": "Save3_474D5830_0_507269736F6E6572_Tamriel_000008_20260802003106_1_1",
+  "defaults": {
+    "settle_seconds": 8,
+    "assert_retry_seconds": 30
+  },
+  "steps": [
+    {
+      "type": "kill",
+      "mo2": true,
+      "label": "start from a clean Skyrim and MO2 session"
+    },
+    {
+      "type": "install",
+      "source": "/home/lorkhan/skyrim_mods/mine/MFLivingNpcs.zip",
+      "mod_name": "QA MFLivingNpcs"
+    },
+    {
+      "type": "launch",
+      "wait": 240
+    },
+    {
+      "type": "assert_state",
+      "label": "the engine loaded the generic living-world plugin",
+      "include": [
+        "plugins"
+      ],
+      "expect": {
+        "plugins[*].name": {
+          "eq": "MFLivingNpcs.esp"
+        }
+      }
+    },
+    {
+      "type": "load_baseline"
+    },
+    {
+      "type": "console",
+      "cmd": "set timescale to 20",
+      "settle": 1
+    },
+    {
+      "type": "console",
+      "cmd": "coc RiverwoodSleepingGiantInn",
+      "settle": 8
+    },
+    {
+      "type": "assert_state",
+      "label": "Kjeld starts at the Riverwood anchor with rumor speaker Bjorn",
+      "include": [
+        "cell_actors"
+      ],
+      "radius": 4096,
+      "expect": {
+        "player.cell_form_id": {
+          "eq": 78790
+        },
+        "cell_actors[*].name": {
+          "eq": "Kjeld the Wanderer"
+        }
+      }
+    },
+    {
+      "type": "assert_state",
+      "label": "Bjorn is present as Kjeld's rumor speaker",
+      "include": [
+        "cell_actors"
+      ],
+      "radius": 4096,
+      "expect": {
+        "cell_actors[*].name": {
+          "eq": "Bjorn Song-Thread"
+        }
+      }
+    },
+    {
+      "type": "console",
+      "cmd": "set timescale to 1200",
+      "settle": 1
+    },
+    {
+      "type": "wait",
+      "seconds": 7,
+      "label": "advance just over one two-hour abstract-sim tick"
+    },
+    {
+      "type": "console",
+      "cmd": "set timescale to 20",
+      "settle": 2
+    },
+    {
+      "type": "console",
+      "cmd": "coc WhiterunBanneredMare",
+      "settle": 8
+    },
+    {
+      "type": "assert_state",
+      "label": "Kjeld rotates to Whiterun while Falas remains at his own anchor",
+      "include": [
+        "cell_actors"
+      ],
+      "radius": 4096,
+      "expect": {
+        "player.cell_form_id": {
+          "eq": 90206
+        },
+        "cell_actors[*].name": {
+          "eq": "Kjeld the Wanderer"
+        }
+      }
+    },
+    {
+      "type": "assert_state",
+      "label": "Falas remains at his own Whiterun anchor",
+      "include": [
+        "cell_actors"
+      ],
+      "radius": 4096,
+      "expect": {
+        "cell_actors[*].name": {
+          "eq": "Falas Indaryn"
+        }
+      }
+    },
+    {
+      "type": "console",
+      "cmd": "set MFLiving_MFLN_Falas_Favor to 0",
+      "settle": 1
+    },
+    {
+      "type": "assert_global",
+      "editor_id": "MFLiving_MFLN_Falas_Favor",
+      "expect": {
+        "eq": 0
+      },
+      "label": "Falas favor starts at zero"
+    },
+    {
+      "type": "move_to_actor",
+      "name": "Falas Indaryn",
+      "distance": 128,
+      "settle": 1,
+      "label": "move the player beside Falas by actor identity"
+    },
+    {
+      "type": "activate_actor",
+      "name": "Falas Indaryn",
+      "settle": 3,
+      "label": "activate Falas without desktop input"
+    },
+    {
+      "type": "assert_state",
+      "label": "Falas dialogue exposes the parley option as structured state",
+      "expect": {
+        "game.dialogue.menu_open": true,
+        "game.dialogue.speaker": {
+          "eq": "Falas Indaryn"
+        },
+        "game.dialogue.options[*].text": {
+          "eq": "Lower your weapon. Let's talk."
+        }
+      }
+    },
+    {
+      "type": "select_dialogue",
+      "text": "Lower your weapon. Let's talk.",
+      "settle": 3,
+      "label": "select Falas parley by displayed text"
+    },
+    {
+      "type": "assert_global",
+      "editor_id": "MFLiving_MFLN_Falas_Favor",
+      "expect": {
+        "eq": 5
+      },
+      "label": "parley TIF changes Falas favor from zero to five"
+    },
+    {
+      "type": "close_dialogue",
+      "settle": 2
+    },
+    {
+      "type": "console",
+      "cmd": "set timescale to 1200",
+      "settle": 1
+    },
+    {
+      "type": "wait",
+      "seconds": 7,
+      "label": "advance one more abstract-sim tick"
+    },
+    {
+      "type": "console",
+      "cmd": "set timescale to 20",
+      "settle": 2
+    },
+    {
+      "type": "console",
+      "cmd": "coc RiverwoodSleepingGiantInn",
+      "settle": 8
+    },
+    {
+      "type": "assert_state",
+      "label": "Kjeld rotates back to the Riverwood anchor",
+      "include": [
+        "cell_actors"
+      ],
+      "radius": 4096,
+      "expect": {
+        "player.cell_form_id": {
+          "eq": 78790
+        },
+        "cell_actors[*].name": {
+          "eq": "Kjeld the Wanderer"
+        }
+      }
+    },
+    {
+      "type": "assert_state",
+      "label": "Falas does not follow Kjeld to the Riverwood anchor",
+      "include": [
+        "cell_actors"
+      ],
+      "radius": 4096,
+      "expect": {
+        "cell_actors[*].name": {
+          "not_contains": "Falas Indaryn"
+        }
+      }
+    }
+  ],
+  "teardown": [
+    {
+      "type": "kill",
+      "mo2": true
+    },
+    {
+      "type": "uninstall",
+      "mod_name": "QA MFLivingNpcs"
+    }
+  ]
+}

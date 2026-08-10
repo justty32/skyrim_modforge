@@ -205,4 +205,7 @@ Build result (2026-08-10):
 
 ## Next decision
 
-YUA has completed its role as the **first named external-follower proof**. The next coverage target is the generic `MFLivingNpcs.zip` P0–P3 acceptance (two actors/archetypes plus parley/alignment); after that, choose between controller behavior driven by favor/alignment and the hostile-in-combat parley presentation gap.
+YUA has completed its role as the **first named external-follower proof**, and the generic
+`MFLivingNpcs.zip` P0–P3 acceptance subsequently passed 31/31 through agent-bridge. The
+next decision is between controller behavior driven by favor/alignment and the
+hostile-in-combat parley presentation gap.

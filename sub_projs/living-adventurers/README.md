@@ -17,10 +17,10 @@ Skyrim 只跑玩家附近的 AI，所以離場冒險者＝**純資料**（Storag
 | 階段 | 狀態 |
 |---|---|
 | idea #23 設計定稿（卡司=具名 / 玩家=可互動 / 模擬=抽象幽靈）+ design.md 工程設計 | ✅ |
-| **spike：證明模擬迴圈**（`spike/`，1 NPC，build 綠） | 🔵 待主力機 package + 實機 |
-| **P1：泛化控制器**（`p1/`，2 NPC / 2 archetype，build 綠零警告） | 🔵 待主力機 package（編 .pex）+ 實機；2 個 core 缺口已修（design.md §6）|
-| **P2：`livingNpcs:` macro 落地**（core，純離線，845 測綠） | 🟢 落地（「加 NPC = 幾行 JSON」成立）｜example `examples/living_npcs_spec.json`｜待主力機編 .pex + 實機 |
-| **P3：玩家互動 + alignment**（core） | 🟢 落地：per-NPC favor GLOB + 互動 dialogue（fund/praise/parley，`setGlobal`）+ alignment（hostile in-spec→Aggressive）｜Phase-3.5 follower handoff 已由 YUA 實機通過：teammate 時停 sim/MoveTo；dismiss 後保持原 follower package 的可見步行，玩家失去她 30 秒且不在 8192 units 載入距離內才由 controller 納管。剩敵對-交戰中浮現 parley、controller 讀 favor/alignment + generic P0–P3 整包實機 |
+| **spike：證明模擬迴圈**（`spike/`，1 NPC，build 綠） | ⚪ 過程原型；驗收已由 macro 版 generic 整鏈取代 |
+| **P1：泛化控制器**（`p1/`，2 NPC / 2 archetype，build 綠零警告） | ⚪ 過程原型；兩 actor／兩 anchor 已由 macro 版實機驗證 |
+| **P2：`livingNpcs:` macro 落地**（core） | ✅ 落地＋實機：`examples/living_npcs_spec.json` 的 generic 包由 agent-bridge 完整跑過；「加 NPC = 幾行 JSON」、兩 actor、兩 archetype、anchor 往返輪替成立 |
+| **P3：玩家互動 + alignment**（core） | ✅ generic neutral parley 實機通過（結構化讀選項、選取 TopicInfo、favor 0→5）；YUA Phase-3.5 follower handoff 亦通過。剩新功能方向：敵對-交戰中浮現 parley，或 controller 讀 favor/alignment 改行為 |
 | 任務層（真 missive 隨機地點） | ⏸ 卡 roadmap #7–9（LocationAlias / nested ReferenceAlias / UpdateCurrentInstanceGlobal） |
 | cast 來源接真 standalone follower mod | 🟢 YUA MVP 於 2026-08-10 實機 15/15 PASS：uniqueActor、離場 deeds、materialize、rumor、fund/praise/favor、招募 ownership 與 dismiss 後 off-screen handoff 全過；詳見 [yua-mvp.md](yua-mvp.md) |
 | 玩家互動（搶任務 / 雇用 / 資助破壞） | ⏸ 未開 |
@@ -40,3 +40,11 @@ Skyrim 只跑玩家附近的 AI，所以離場冒險者＝**純資料**（Storag
 **測試**（主力機，新檔或存檔 reload）：`coc RiverwoodSleepingGiantInn` 看 Kjeld 是否現身；`coc Riverwood` 再回看是否重現；等幾遊戲時或 `set MFLA_DeedCount to 3` → 跟 Bjorn 對話看 rumor；`getglobalvalue MFLA_DeedCount` 看離場進度。
 
 跑通 spike → 進 roadmap / spec 展開任務層與真 follower cast。
+
+## Generic runtime acceptance
+
+[`living_npcs.qa.json`](living_npcs.qa.json) 是可重跑的無人值守 acceptance：安裝
+`MFLivingNpcs.zip`、確認 Riverwood/Whiterun cell actors、加速兩次 abstract tick、驗
+Kjeld 的 anchor 往返輪替、依名字移到 Falas 身旁、開啟並讀取對話、依顯示文字
+選 parley，最後確認 TIF 把 `MFLiving_MFLN_Falas_Favor` 從 0 改成 5。2026-08-10
+實機結果 **31/31 PASS**，runner teardown 後沒有留下 QA mod。
