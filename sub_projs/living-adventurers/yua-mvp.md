@@ -6,7 +6,7 @@
 
 YUA is documented as the first external-follower enrollment target, with a role brief, a minimal `livingNpcs` spec shape, the extracted facts from `YUA_Follower.esp`, and an implementation checklist that reuses the existing `livingNpcs` macro instead of inventing a new system.
 
-Status: MVP spec has been built and shipped as `/home/lorkhan/skyrim_mods/mine/MFLivingYUA.zip`. It does not install the archive or change MO2.
+Status: MVP + P1 interactions have been built and shipped as `/home/lorkhan/skyrim_mods/mine/MFLivingYUA.zip`. The patch now also yields to the follower system while YUA is the player's teammate. It does not install the archive or change MO2.
 
 ## Source candidate
 
@@ -98,13 +98,13 @@ Response policy:
 
 ## Interactions
 
-Defer interactions out of the first runtime gate.
+P1 enables the two low-risk relationship interactions:
 
 ```jsonc
-"interactions": []
+"interactions": ["fund", "praise"]
 ```
 
-Reason: package currently bundles the reusable living-world controller scripts cleanly, but the generated fund/praise TIF fragments hit an auto-compile failure in the package flow even though manual compilation of the same `.psc` succeeds. Keep the MVP runtime gate focused on materialization + rumor. Add `fund` / `praise` back as P1 after the compile path is fixed or manually confirmed.
+`fund` and `praise` each increment `MFLiving_N0_Favor`; praise remains gated on deeds ≥ 1. The former packaging blocker is fixed: `CompileBest` now falls back from the native compiler's incomplete header set to the CK/Wine compiler, and both generated TIF fragments are present in the shipped zip.
 
 Future interaction meanings:
 
@@ -124,8 +124,8 @@ Build result (2026-08-08):
 - Shipped zip: `/home/lorkhan/skyrim_mods/mine/MFLivingYUA.zip`
 - Plugin: `MFLivingYUA.esp`
 - Masters: `Skyrim.esm`, `YUA_Follower.esp`
-- Package contents: `MFLivingYUA.esp`, `REQUIREMENTS.txt`, `Seq/MFLivingYUA.seq`, `Scripts/MFLivingWorldController.pex`, `Scripts/MFLivingNpcAlias.pex`
-- Static dump: 19 records; controller quest StartGameEnabled; alias `Living0_N0` fills `uniqueActor 000800:YUA_Follower.esp`; rumor topic `Any word of YUA?` is gated on `MFLiving_N0_Deeds`.
+- Package contents: `MFLivingYUA.esp`, `REQUIREMENTS.txt`, `Seq/MFLivingYUA.seq`, the two reusable living scripts, and two generated interaction TIF `.pex` + `.psc` files.
+- Static dump: 28 records; controller quest StartGameEnabled; alias `Living0_N0` fills `uniqueActor 000800:YUA_Follower.esp`; rumor topic `Any word of YUA?` is gated on `MFLiving_N0_Deeds`; fund/praise INFOs target YUA and carry their TIF VMAD.
 
 ```jsonc
 {
@@ -157,7 +157,7 @@ Build result (2026-08-08):
           "YUA called it a few bandits. The caravan folk called it a rescue.",
           "Some say she's too young to take those contracts alone. Funny thing is, she keeps coming back."
         ],
-        "interactions": []
+        "interactions": ["fund", "praise"]
       }
     ]
   }
@@ -186,14 +186,15 @@ Build result (2026-08-08):
    - Controller quest is StartGameEnabled.
    - Alias fill points to YUA correctly.
    - Rumor topic is gated on YUA deed global.
-   - No generated interaction TIF is expected in the MVP package.
+   - Both generated interaction TIF `.pex` files are present and attached to their INFO records.
 4. In-game QA:
+   - Automated setup/engine assertions: run [living_yua.qa.json](yua/living_yua.qa.json) through `agent-bridge/client/qa_runner.py` with `MO2_PROFILE=QA`; it installs both archives, proves both plugins + YUA + Mira, then pauses for the human interaction gate and always uninstalls on teardown.
    - Install YUA follower archive.
    - Install `MFLivingYUA.zip` after it.
    - `coc WhiterunBanneredMare`.
    - Wait enough game hours or set deed global.
    - Confirm YUA appears only once, can leave/re-enter, and rumor appears.
-   - Recruit YUA if possible and confirm living controller does not fight the follower state, or record the bug if it does.
+   - Recruit YUA and confirm the living controller stops deed simulation and never `MoveTo`s her while she is the player's teammate; dismiss her and confirm the controller resumes ownership.
 
 ## Risks
 
@@ -201,7 +202,7 @@ Build result (2026-08-08):
 - Moving a follower mod's actor can break its recruitment scene if done before the mod initializes.
 - If she has DAR/OAR or combat animation assets, the MVP should not touch them.
 - The current controller's `adventurer` branch may be too generic; accept that for the first test.
-- Fund/praise interactions are deliberately deferred until generated TIF auto-compilation is clean in `package`.
+- Follower frameworks that do not implement `IsPlayerTeammate()` still need a future adapter; YUA uses the vanilla follower factions and is the first runtime proof of the guard.
 - If YUA uses an ESL-flagged plugin, confirm FormID serialization in spec uses the same durable `<plugin>:0xLOCALID` convention as ModForge external refs.
 
 ## Next decision

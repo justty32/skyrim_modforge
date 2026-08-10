@@ -90,7 +90,7 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Core | `Papyrus.cs` | Wine/CK PapyrusCompiler.exe 包裝 + native Linux 整合 + error capture（exit code 0 bug 處理）|
+| Core | `Papyrus.cs` | Wine/CK PapyrusCompiler.exe 包裝 + native Linux 整合 + error capture（exit code 0 bug 處理）；`CompileBest` 優先 native，編譯失敗（含 headers 不全）時自動 fallback Wine/CK |
 | CLI | `Package.cs` | `package` 時自動編譯 script + 夾帶 MFStoryEventDispatch.pex（§5b，ScriptEvent quest）+ MFSceneBanterController.pex（§5c，autoStart scene）；編 user script 時把 embed 的 dispatcher `.psc` 解到 temp 當 sibling header（`Fire()` 才解析得到）|
 | Asset | `assets/papyrus/MFSceneBanterController.psc` | 在場偵測 Scene controller（extends Quest）；`.pex` embed 進 CLI，前置編譯同 dispatcher |
 

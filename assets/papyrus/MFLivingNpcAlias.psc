@@ -24,16 +24,24 @@ GlobalVariable Property DeedCount Auto
 
 int anchorIdx = 0
 bool atAnchor = false
+bool releasedToPlayer = false
 
 Event OnInit()
     Actor a = GetReference() as Actor
-    if a && HoldMarker
+    if a && a.IsPlayerTeammate()
+        releasedToPlayer = true          ; an existing save may enable this mod while the NPC is recruited
+    elseif a && HoldMarker
         a.MoveTo(HoldMarker)             ; start off-stage
     endif
 EndEvent
 
 ; --- Layer 1: abstract ghost-sim (no actor processed) ---
 Function AdvanceSim()
+    Actor a = GetReference() as Actor
+    if a && a.IsPlayerTeammate()
+        releasedToPlayer = true          ; recruited followers live with the player, not in the abstract sim
+        return
+    endif
     if DeedCount
         DeedCount.Mod(1.0)               ; "completed a contract" / "studied" / "ran a trade route" — pure data
     endif
@@ -41,7 +49,6 @@ Function AdvanceSim()
     if n > 0
         anchorIdx = (anchorIdx + 1) % n  ; he moves on to his next haunt
     endif
-    Actor a = GetReference() as Actor
     string nm = ""
     if a
         nm = a.GetDisplayName()
@@ -54,6 +61,20 @@ Function Presence()
     Actor a = GetReference() as Actor
     if a == None
         return
+    endif
+    if a.IsPlayerTeammate()
+        releasedToPlayer = true          ; the follower system owns movement/packages while recruited
+        atAnchor = false
+        return
+    endif
+    if releasedToPlayer
+        ; Dismissal hands the actor back to the living-world controller. Re-stage first so an actor
+        ; dismissed away from its current anchor does not remain stranded at the player's location.
+        if HoldMarker
+            a.MoveTo(HoldMarker)
+        endif
+        releasedToPlayer = false
+        atAnchor = false
     endif
     ObjectReference target = CurrentAnchor()
     bool playerHere = (target != None && Game.GetPlayer().GetParentCell() == target.GetParentCell())

@@ -7,7 +7,7 @@
       "reason": "YUA's unique NPC base is enrolled as the living-world actor."
     }
   ],
-  "_": "YUA external-follower enrollment MVP. Requires installing YUA Follower ESL first. The livingNpcs macro fills YUA through uniqueActor:YUA_Follower.esp:0x000800, rotates her abstract off-stage deeds, materializes her in the Bannered Mare, and exposes a tavern rumor. Favor interactions are deliberately deferred out of this first runtime gate.",
+  "_": "YUA external-follower enrollment MVP + P1 interactions. Requires installing YUA Follower ESL first. The livingNpcs macro fills YUA through uniqueActor:YUA_Follower.esp:0x000800, rotates her abstract off-stage deeds, materializes her in the Bannered Mare, exposes tavern rumors, and gives fund/praise interactions. The alias controller yields completely while YUA is the player's teammate and resumes after dismissal.",
 
   "classes": [
     {
@@ -78,7 +78,7 @@
           "YUA called it a few bandits. The caravan folk called it a rescue.",
           "Some say she's too young to take those contracts alone. Funny thing is, she keeps coming back."
         ],
-        "interactions": []
+        "interactions": ["fund", "praise"]
       }
     ]
   }

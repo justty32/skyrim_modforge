@@ -1,0 +1,116 @@
+{
+  "name": "living-yua",
+  "description": "Install YUA plus the living-world patch on the QA profile, prove both plugins load and both YUA/Mira materialize in the Bannered Mare, then pause for dialogue and follower-ownership checks.",
+  "baseline": "Save3_474D5830_0_507269736F6E6572_Tamriel_000008_20260802003106_1_1",
+  "defaults": {
+    "settle_seconds": 8,
+    "assert_retry_seconds": 30
+  },
+  "steps": [
+    {
+      "type": "kill",
+      "mo2": true,
+      "label": "start from a clean Skyrim and MO2 session"
+    },
+    {
+      "type": "install",
+      "source": "/home/lorkhan/skyrim_mods/hdd/YUA Follower ESL.7z",
+      "mod_name": "QA YUA Follower ESL"
+    },
+    {
+      "type": "install",
+      "source": "/home/lorkhan/skyrim_mods/mine/MFLivingYUA.zip",
+      "mod_name": "QA MFLivingYUA"
+    },
+    {
+      "type": "launch",
+      "wait": 240
+    },
+    {
+      "type": "assert_state",
+      "label": "the engine loaded YUA",
+      "include": [
+        "plugins"
+      ],
+      "expect": {
+        "plugins[*].name": {
+          "eq": "YUA_Follower.esp"
+        }
+      }
+    },
+    {
+      "type": "assert_state",
+      "label": "the engine loaded the living-world patch",
+      "include": [
+        "plugins"
+      ],
+      "expect": {
+        "plugins[*].name": {
+          "eq": "MFLivingYUA.esp"
+        }
+      }
+    },
+    {
+      "type": "load_baseline"
+    },
+    {
+      "type": "console",
+      "cmd": "coc WhiterunBanneredMare",
+      "settle": 8
+    },
+    {
+      "type": "assert_state",
+      "label": "YUA materialized in the Bannered Mare",
+      "include": [
+        "nearby_actors"
+      ],
+      "radius": 4096,
+      "expect": {
+        "player.cell_form_id": {
+          "eq": 90206
+        },
+        "player.interior": true,
+        "nearby_actors[*].name": {
+          "eq": "YUA"
+        }
+      }
+    },
+    {
+      "type": "assert_state",
+      "label": "Mira is present as the rumor speaker",
+      "include": [
+        "nearby_actors"
+      ],
+      "radius": 4096,
+      "expect": {
+        "nearby_actors[*].name": {
+          "eq": "Mira Snow-Voice"
+        }
+      }
+    },
+    {
+      "type": "console",
+      "cmd": "set MFLiving_N0_Deeds to 3",
+      "settle": 1
+    },
+    {
+      "type": "handoff_user",
+      "message": "請在遊戲內驗收 YUA：1) 確認只有一個 YUA，Mira 也在酒館；2) 問 Mira『Any word of YUA?』；3) 對 YUA 各做一次 fund/praise，console `getglobalvalue MFLiving_N0_Favor` 應為 2；4) 記下 deeds，招募 YUA，等 10 秒並切一次 cell/過至少 2 遊戲時，她不能被拉走且 deeds 不增加；5) dismiss 後回 Bannered Mare 等 6 秒，她應重新被 living controller 納管。完成直接按 Enter；任何異常請輸入一句現象再按 Enter。",
+      "expect": "one YUA; rumor and fund/praise work; teammate ownership is respected; dismissal resumes living-world control"
+    }
+  ],
+  "teardown": [
+    {
+      "type": "kill",
+      "mo2": true
+    },
+    {
+      "type": "uninstall",
+      "mod_name": "QA MFLivingYUA"
+    },
+    {
+      "type": "uninstall",
+      "mod_name": "QA YUA Follower ESL"
+    }
+  ]
+}

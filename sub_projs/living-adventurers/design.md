@@ -90,7 +90,7 @@ MFLivingWorldController extends Quest          ; 一個 host quest
 
 1. **現身可信度**：NPC 只在一個旅館出現 ≠「到處都是」。錨點必須落在玩家真會去的 vanilla cell；少量錨點 + 野外用 spawn 補（road encounter）。P4 任務層才給真隨機地點。
 2. **存檔膨脹 / tick 經濟**：named 層 N 要小；poll/tick 收斂到 quest 層單一迴圈（見 §1），不要 per-alias 各自 register。
-3. **外部 follower ref 填充 + 共存**：`uniqueActor:<followerEsp>:0xNPCID`（強制 base form 會靜默失敗，memory）；**只在玩家未雇用時驅動他**（檢 `IsPlayerTeammate()` / 該 follower faction），ALPS package override 只在 enrolled 期間掛，不破壞原 mod 招募 quest。
+3. **外部 follower ref 填充 + 共存**：`uniqueActor:<followerEsp>:0xNPCID`（強制 base form 會靜默失敗，memory）；**只在玩家未雇用時驅動他**。Phase-3.5 已補 `IsPlayerTeammate()` 安全閥：已招募時停止抽象 sim 與全部 `MoveTo`/`EvaluatePackage`，dismiss 後先回 hold marker 再重新納管。YUA 是 vanilla follower faction 路線，仍須實機驗證它的 teammate flag 時序。
 4. **MoveTo 後行為**：MoveTo 完 `EvaluatePackage()` 讓錨點 package 立即生效（否則呆站）。
 5. **rumor condition 的 per-NPC 維度**：named 層每 NPC 一個 deed GLOB（可控）；環境群像層不做個別 rumor。
 

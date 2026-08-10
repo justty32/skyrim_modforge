@@ -184,8 +184,11 @@ camp, not an inn). External-follower refs keep their own AI (the macro only adju
 interaction `setGlobal` TIF fragments) needs a Papyrus machine (`package` ships them; the build embeds
 conditionally). Worked example: `examples/living_npcs_spec.json`.
 
-**MVP scope.** Named cast + abstract sim + materialize + rumor + interaction/favor + alignment.
-**Phase 3.5+** (not yet): hire-as-follower, surfacing parley on a hostile-in-combat NPC (needs a
-non-combat approach mechanic), real missive task targets (needs roadmap #7–9 LocationAlias fill), the
-controller reading favor/alignment to change behaviour, LAL origin-seeded relationships, an anonymous
-"crowd" tier. Design: `sub_projs/living-adventurers/` (idea #23 + design.md).
+**MVP scope.** Named cast + abstract sim + materialize + rumor + interaction/favor + alignment. The
+Phase-3.5 follower safety gate is also active: while an actor reports `IsPlayerTeammate()`, its alias
+stops deed simulation and all movement/package control; dismissal hands it back to the living-world
+controller. **Still later:** surfacing parley on a hostile-in-combat NPC (needs a non-combat approach
+mechanic), real missive task targets (needs roadmap #7–9 LocationAlias fill), controller behavior driven
+by favor/alignment, adapters for follower frameworks that do not use the vanilla teammate flag, LAL
+origin-seeded relationships, and an anonymous "crowd" tier. Design: `sub_projs/living-adventurers/`
+(idea #23 + design.md).

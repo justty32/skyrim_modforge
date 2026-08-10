@@ -165,6 +165,32 @@ public class LivingNpcTests
 
     [Fact]
     [Trait("Category", "RequiresSkyrim")]
+    public void ExternalFollower_Interactions_EmitFavorGlobal_AndTopics()
+    {
+        var spec = new ModSpec { PluginName = "Test.esp" };
+        spec.LivingNpcs = new LivingNpcsSpec
+        {
+            Npcs =
+            {
+                new LivingNpcSpec
+                {
+                    Ref = "Skyrim.esm:0x00013BB9", Name = "External follower", Archetype = "adventurer",
+                    Anchors = { new LivingAnchorSpec { Cell = "Skyrim.esm:0x01605E", Position = new Vec3() } },
+                    Interactions = { "fund", "praise" },
+                },
+            },
+        };
+
+        var r = TestBuild.Ok(spec);
+        Assert.Contains(r.Mod.Globals, g => g.EditorID == "MFLiving_N0_Favor");
+        var lines = r.Mod.DialogTopics.SelectMany(t => t.Responses).SelectMany(i => i.Responses)
+            .Select(rr => rr.Text.String ?? "").ToList();
+        Assert.Contains(lines, s => s.Contains("Appreciated"));
+        Assert.Contains(lines, s => s.Contains("Music to my ears"));
+    }
+
+    [Fact]
+    [Trait("Category", "RequiresSkyrim")]
     public void HostileInSpecNpc_SetsAggressionAggressive()
     {
         var spec = Spec(withRumor: false);

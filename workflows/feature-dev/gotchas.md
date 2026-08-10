@@ -30,7 +30,7 @@
 
 ## Voice / ship-voice
 
-- **TIF 內聯編譯 spurious fail** [[sofia-vigilant-pipeline-confirmed]]：含對話 `setGlobal`/`sayOnce` 的 spec，`package` 與 `ship-voice.sh` 的 TIF 內聯自動編譯會 spurious fail（zip 出 0 個 `.pex`）→ 對話照播但 sayOnce 失效（選項重複）。修法：對 package 產出的 `Scripts/Source/TIF_*.psc` 逐一 `dotnet run --project src/ModForge.Cli -- compile <psc> <stage>/Scripts`（單獨 compile 必成），再 `cd <stage> && zip <既有zip> Scripts/*.pex` 補進去（語音不用重做）。
+- **TIF 內聯編譯的「spurious fail」其實是 native headers 不全** [[sofia-vigilant-pipeline-confirmed]]：Linux native compiler 預設看的 Steam `Data/Scripts/Source` 可能缺 `GlobalVariable.psc` 等 header，故含 `setGlobal`/`sayOnce` 的 fragment 在 `package` 失敗，手動 `compile`（Wine＋完整 cache）卻成功。2026-08-10 已修 `Papyrus.CompileBest`：native 失敗會自動 fallback CK/Wine，並保留兩邊錯誤；正常 `package` 應直接帶齊 TIF `.pex`。離線機沒有 Wine 時仍須把 `MODFORGE_PAPYRUS_HEADERS` 指向完整 header 目錄。
 - **LipGenerator wine crash** [[voice-gen-interface-future]]：lip 嘴型設 `MODFORGE_LIPGEN`＝CK `LipGenerator.exe`；但它在 wine 下會 crash/重試把配音拖到極慢，量大時可先**不設＝跳過**（嘴不動），之後再統一補 lip。
 
 ## adapter / quest stages

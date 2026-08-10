@@ -12,8 +12,8 @@ namespace ModForge;
 // is a fixed branch in MFLivingNpcAlias.psc, so adding an NPC of an EXISTING archetype is pure data.
 //
 // Materialization is MoveTo-in/out of ONE persistent ref per NPC (named cast) — no LVLN spawn churn.
-// Phase 2+ (NOT this MVP): player interaction (poach/hire/parley), real missive task targets (needs
-// roadmap #7-9 LocationAlias fill), alignment/hostile parley branches, an anonymous "crowd" tier.
+// Later phases beyond the current favor/alignment layer: hostile-in-combat parley, real missive task
+// targets (needs roadmap #7-9 LocationAlias fill), behavior driven by favor, an anonymous "crowd" tier.
 public sealed class LivingNpcsSpec
 {
     // In-game hours between abstract "deeds" for every living NPC (the off-stage sim tick cadence).
@@ -37,7 +37,8 @@ public sealed class LivingNpcSpec
     public string Name { get; set; } = "";
     // Archetype name → MFLivingNpcAlias int branch. adventurer|mageApprentice|merchant|herbalist|priest|bandit.
     public string Archetype { get; set; } = "adventurer";
-    // friendly|neutral|hostile — reserved for Phase-2 parley/interaction wiring (recorded now; MVP ignores).
+    // friendly|neutral|hostile — hostile in-spec NPCs become Aggressive; future controller branches
+    // will also read this together with favor to change behavior.
     public string Alignment { get; set; } = "friendly";
     // Author's note / backstory — drives rumor & future dialogue authoring. Not emitted as a record.
     public string Backstory { get; set; } = "";

@@ -15,20 +15,22 @@
 
 ## 待測（active）
 
-- **YUA 活 NPC enrollment MVP — ✅ 已打包交付 `~/skyrim_mods/mine/MFLivingYUA.zip`（2026-08-08，FLAT）**（idea #23 / `sub_projs/living-adventurers/yua/`）。這是第一個「真外部 standalone follower 接進 livingNpcs」測試：YUA 本體來自 `YUA Follower ESL.7z`，patch 只依賴 `YUA_Follower.esp`，用 `uniqueActor 000800:YUA_Follower.esp` 填 alias，並在 Bannered Mare 放一個自訂傳聞酒客 Mira Snow-Voice。
-  - zip 內容已結構驗證：`MFLivingYUA.esp`（19 records，masters=`Skyrim.esm,YUA_Follower.esp`）＋ `.seq` ＋ 2 pex（`MFLivingWorldController` / `MFLivingNpcAlias`）。無 interaction TIF：fund/praise 故意留到 P1，避免把 TIF auto-compile 問題混進第一顆 runtime gate。
+- **YUA 活 NPC enrollment MVP + P1 — ✅ 已打包交付 `~/skyrim_mods/mine/MFLivingYUA.zip`（2026-08-10，FLAT）**（idea #23 / `sub_projs/living-adventurers/yua/`）。這是第一個「真外部 standalone follower 接進 livingNpcs」測試：YUA 本體來自 `YUA Follower ESL.7z`，patch 只依賴 `YUA_Follower.esp`，用 `uniqueActor 000800:YUA_Follower.esp` 填 alias，並在 Bannered Mare 放一個自訂傳聞酒客 Mira Snow-Voice。
+  - zip 內容已結構驗證：`MFLivingYUA.esp`（28 records，masters=`Skyrim.esm,YUA_Follower.esp`）＋ `.seq` ＋ 4 pex（兩個 reusable controller/alias + fund/praise TIF）＋ 2 TIF source。native headers 不全時的 auto-compile 已有 Wine fallback，兩個 INFO 都確認掛上 TIF VMAD。
   - YUA 來源事實：NPC base `YUA_Follower.esp:0x000800`，原 mod placed ref `YUA_Follower.esp:0x000817` 在 Jorrvaskr；她是 Female/Essential/Unique，voice `007A32:Dawnguard.esm`。
+  - 自動化 setup 已備好：`sub_projs/living-adventurers/yua/living_yua.qa.json`（`MO2_PROFILE=QA` dry-run 通過）；會裝兩包、啟動、驗 plugin/YUA/Mira，停在互動 handoff，最後一定 kill + uninstall。
 
   **實機驗（先安裝/啟用 YUA Follower ESL，再裝 `MFLivingYUA.zip`，新遊戲或 save+reload）**：
   - **① plugin 載入**：確認 MO2 兩個 mod 都啟用，`MFLivingYUA.esp` 排在 `YUA_Follower.esp` 後；若缺 YUA master，Skyrim 會靜默不載入 patch。
   - **② 離場推進**：console `getglobalvalue MFLiving_N0_Deeds` → 等幾個遊戲時 → 值應上升；有可能跳通知「YUA completed another contract.」。
   - **③ 就地實體化**：`coc WhiterunBanneredMare` → YUA 應被 living controller MoveTo 到 Bannered Mare 的 anchor，且只出現一個；離開再回不應複製。
   - **④ 傳唱**：找 Mira Snow-Voice → YUA deeds≥1 後應出現 `Any word of YUA?` → 三條傳聞隨機/輪播。可用 `set MFLiving_N0_Deeds to 3` 強逼 gate。
-  - **⑤ 共存風險**：去 Jorrvaskr 看 YUA 原本位置是否被移走是預期；招募 YUA 後 living controller 是否還會搶 MoveTo 需要回報，這是 P1 安全閥（IsPlayerTeammate）設計依據。
-  - **回報**：YUA 是否出現、是否重複、deed 是否動、Mira 對話是否出現、招募後是否被 controller 拉走。
+  - **⑤ fund/praise**：直接對 YUA 說 `Here's some coin...`；deeds≥1 後再說 `Your deeds are the talk...`。每次後用 `getglobalvalue MFLiving_N0_Favor`，應各 +1。
+  - **⑥ follower 共存安全閥**：招募 YUA → 等超過 5 秒、換 cell、再過至少 2 遊戲時；她應跟著玩家、不被拉走，deed 也不應增加。dismiss 後再等一次 poll，controller 應恢復納管（在 Bannered Mare 時會重新 materialize）。若 follower framework 沒把 `IsPlayerTeammate()` 設成 true，這條仍可能失敗，須回報。
+  - **回報**：YUA 是否出現/重複、deed、Mira 傳唱、favor、招募時是否停止 sim/MoveTo、dismiss 後是否恢復。
 
-- **living-adventurers 整鏈 P0–P3 — ✅ 已打包交付 `~/skyrim_mods/mine/MFLivingNpcs.zip`（2026-07-11，FLAT）**（idea #23 / `sub_projs/living-adventurers/`）。這是「抽象幽靈模擬 + 就地實體化 + 傳唱 + 互動/favor + alignment」的 **runtime 第一次驗證**，是 P0–P3 共同的 acceptance gate。測 `examples/living_npcs_spec.json`（macro 版，涵蓋全部；spike/p1 是過程原型，不必另測）。
-  - zip 內容已結構驗證：esp（13 records、quest StartGameEnabled、4 globals、6 topics）＋ `.seq` ＋ 6 pex（`MFLivingWorldController`/`MFLivingNpcAlias`＋**4 個 TIF 全數內聯編譯成功**，這次沒踩 spurious-fail）＋ TIF 源碼。7 scripts attached（quest 1 + alias 2 + TIF 4；dump 不渲染 alias 層 VMAD，數字對帳自 build summary）。
+- **living-adventurers 整鏈 P0–P3 — ✅ 已重新打包交付 `~/skyrim_mods/mine/MFLivingNpcs.zip`（2026-08-10，FLAT）**（idea #23 / `sub_projs/living-adventurers/`）。這是「抽象幽靈模擬 + 就地實體化 + 傳唱 + 互動/favor + alignment」的 **runtime 第一次驗證**，是 P0–P3 共同的 acceptance gate。測 `examples/living_npcs_spec.json`（macro 版，涵蓋全部；spike/p1 是過程原型，不必另測）。
+  - zip 內容已結構驗證：esp（13 top-level records、quest StartGameEnabled、4 globals、6 topics）＋ `.seq` ＋ 6 pex（`MFLivingWorldController`/`MFLivingNpcAlias`＋**4 個 TIF 全數內聯編譯成功**）＋ TIF 源碼。7 scripts attached（quest 1 + alias 2 + TIF 4；dump 不渲染 alias 層 VMAD，數字對帳自 build summary）。
   - 打包途中踩了一雷已修＋記進 dev-env：`MFLivingNpcAlias` 用 SKSE 的 `GetDisplayName` → 純 vanilla header cache 編不過（undefined function）→ SKSE 版 headers（Steam Data/Scripts/Source 64 檔）疊進 cache 後過。
 
   **實機驗（新遊戲或 save+reload — StartGameEnabled quest + 對話 + `.seq`）**：

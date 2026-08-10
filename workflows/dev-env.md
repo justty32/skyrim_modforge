@@ -31,7 +31,7 @@ scripts/bootstrap-pex.sh
 
 - 一般 mod：`scripts/ship.sh <spec> [zipName] [--clean-prefix]`
 - 語音 mod：`scripts/ship-voice.sh <spec> ...`（package→voicelines→voicediag→zip，需 `MODFORGE_TTS_BIN`；要有聲還需 `MODFORGE_XWMAENCODE`＝SSE `Tools/Audio/xwmaencode.exe`，否則吐無聲 loose wav）
-  - **已知陷阱**（TIF 內聯編譯 spurious fail 完整修法、LipGenerator wine crash）→ 見 [feature-dev/gotchas](feature-dev/gotchas.md)「Voice / ship-voice」。
+  - **已知陷阱**（native headers 不全時的 TIF fallback、LipGenerator wine crash）→ 見 [feature-dev/gotchas](feature-dev/gotchas.md)「Voice / ship-voice」。
 
 ## 部署 SKSE DLL 到 MO2（**僅 Manjaro**）——🔴 絕不 `cp` 覆寫執行中的 DLL
 

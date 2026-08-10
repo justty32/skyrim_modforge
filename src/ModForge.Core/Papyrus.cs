@@ -63,15 +63,41 @@ public static class Papyrus
 {
     /// <summary>
     /// Compile using whichever backend is available: prefers the native russo-2025
-    /// <c>papyrus-compiler</c> binary (no Wine required) when it exists on disk; falls back to
-    /// the CK's <c>PapyrusCompiler.exe</c> via Wine.
+    /// <c>papyrus-compiler</c> binary (no Wine required) when it exists on disk; if native compilation
+    /// fails (including incomplete headers), retries with the CK's <c>PapyrusCompiler.exe</c> via Wine.
     /// </summary>
     public static CompileResult CompileBest(string scriptPath, string outDir,
         PapyrusNativeOptions? nativeOpts = null, PapyrusOptions? wineOpts = null)
     {
         var native = nativeOpts ?? new PapyrusNativeOptions();
         if (File.Exists(native.ResolvedCompilerBin))
-            return CompileNative(scriptPath, outDir, nativeOpts);
+        {
+            var nativeResult = CompileNative(scriptPath, outDir, nativeOpts);
+            if (nativeResult.Success) return nativeResult;
+
+            // A native compiler can be installed while its header set is incomplete (the stock
+            // Steam Data/Scripts/Source directory commonly omits types such as GlobalVariable).
+            // The CK/Wine backend uses ModForge's complete extracted header cache, so let it recover
+            // instead of silently dropping a generated fragment from the packaged mod.
+            var wineResult = Compile(scriptPath, outDir, wineOpts);
+            if (wineResult.Success)
+            {
+                return new CompileResult
+                {
+                    Success = true,
+                    ExitCode = 0,
+                    PexPath = wineResult.PexPath,
+                    Message = wineResult.Message + $"\n(native compiler failed first: {nativeResult.Message.Split('\n')[0]})",
+                };
+            }
+
+            return new CompileResult
+            {
+                Success = false,
+                ExitCode = wineResult.ExitCode,
+                Message = nativeResult.Message + "\nWine fallback also failed:\n" + wineResult.Message,
+            };
+        }
         return Compile(scriptPath, outDir, wineOpts);
     }
 

@@ -22,7 +22,11 @@ internal static partial class Program
         if (success)
             Console.WriteLine($"  compiled {label} -> {scriptName}.pex");
         else
+        {
             Console.WriteLine($"  (auto-compile skipped for {label}: {cr.Message.Split('\n')[0]})");
+            foreach (var line in cr.Message.Split('\n').Skip(1))
+                Console.WriteLine($"    {line.TrimEnd('\r')}");
+        }
         // Always write the .psc to Scripts/Source for the author's reference.
         File.Copy(pscPath, Path.Combine(sourceDir, scriptName + ".psc"), overwrite: true);
         return success;
