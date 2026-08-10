@@ -20,9 +20,9 @@ Skyrim 只跑玩家附近的 AI，所以離場冒險者＝**純資料**（Storag
 | **spike：證明模擬迴圈**（`spike/`，1 NPC，build 綠） | 🔵 待主力機 package + 實機 |
 | **P1：泛化控制器**（`p1/`，2 NPC / 2 archetype，build 綠零警告） | 🔵 待主力機 package（編 .pex）+ 實機；2 個 core 缺口已修（design.md §6）|
 | **P2：`livingNpcs:` macro 落地**（core，純離線，845 測綠） | 🟢 落地（「加 NPC = 幾行 JSON」成立）｜example `examples/living_npcs_spec.json`｜待主力機編 .pex + 實機 |
-| **P3：玩家互動 + alignment**（core，純離線） | 🟢 落地：per-NPC favor GLOB + 互動 dialogue（fund/praise/parley，`setGlobal`）+ alignment（hostile in-spec→Aggressive）｜Phase-3.5 的 follower 安全閥已落地（`IsPlayerTeammate()` 時停止 sim/MoveTo，dismiss 後重新納管）；剩敵對-交戰中浮現 parley、controller 讀 favor/alignment + 實機 |
+| **P3：玩家互動 + alignment**（core） | 🟢 落地：per-NPC favor GLOB + 互動 dialogue（fund/praise/parley，`setGlobal`）+ alignment（hostile in-spec→Aggressive）｜Phase-3.5 follower handoff 已由 YUA 實機通過：teammate 時停 sim/MoveTo；dismiss 後保持原 follower package 的可見步行，玩家失去她 30 秒且不在 8192 units 載入距離內才由 controller 納管。剩敵對-交戰中浮現 parley、controller 讀 favor/alignment + generic P0–P3 整包實機 |
 | 任務層（真 missive 隨機地點） | ⏸ 卡 roadmap #7–9（LocationAlias / nested ReferenceAlias / UpdateCurrentInstanceGlobal） |
-| cast 來源接真 standalone follower mod | 🔵 YUA MVP + P1 fund/praise 已 build/ship：[yua-mvp.md](yua-mvp.md)；`~/skyrim_mods/mine/MFLivingYUA.zip` 待實機 |
+| cast 來源接真 standalone follower mod | 🟢 YUA MVP 於 2026-08-10 實機 15/15 PASS：uniqueActor、離場 deeds、materialize、rumor、fund/praise/favor、招募 ownership 與 dismiss 後 off-screen handoff 全過；詳見 [yua-mvp.md](yua-mvp.md) |
 | 玩家互動（搶任務 / 雇用 / 資助破壞） | ⏸ 未開 |
 
 ## spike（`spike/`）

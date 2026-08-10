@@ -4,9 +4,9 @@
 
 ## Done when
 
-YUA is documented as the first external-follower enrollment target, with a role brief, a minimal `livingNpcs` spec shape, the extracted facts from `YUA_Follower.esp`, and an implementation checklist that reuses the existing `livingNpcs` macro instead of inventing a new system.
+YUA is the first runtime-proven external-follower enrollment target: one existing unique actor participates in abstract deeds, materializes at a living-world anchor, exposes rumor/favor interactions, yields completely to the vanilla follower system while recruited, and returns to living-world control without disappearing in front of the player after dismissal.
 
-Status: MVP + P1 interactions have been built and shipped as `/home/lorkhan/skyrim_mods/mine/MFLivingYUA.zip`. The patch now also yields to the follower system while YUA is the player's teammate. It does not install the archive or change MO2.
+Status: **complete / in-game PASS 2026-08-10**. The final agent-bridge run passed 15/15 checks. `/home/lorkhan/skyrim_mods/mine/MFLivingYUA.zip` is the shipped patch; QA teardown removed its temporary MO2 installs and restored the Default profile.
 
 ## Source candidate
 
@@ -24,6 +24,7 @@ Status: MVP + P1 interactions have been built and shipped as `/home/lorkhan/skyr
   - Flags: female, essential, autocalc, unique.
   - AI: unaggressive, brave, helps friends/allies.
   - Class: `YUA_Follower.esp:0x000818`; combat style: `YUA_Follower.esp:0x00087D`.
+  - Recruitment uses the vanilla follower state: PotentialFollowerFaction rank 0 and CurrentFollowerFaction rank -1 before recruitment; the runtime `IsPlayerTeammate()` guard therefore applies.
 
 Conclusion: good MVP candidate because she appears to be a visual/equipment-focused standalone follower rather than a heavy custom-quest follower.
 
@@ -119,13 +120,14 @@ Concrete draft: [yua/living_yua_spec.json](yua/living_yua_spec.json).
 
 This uses YUA's NPC base as the external `uniqueActor` ref. It also places a tiny custom rumor speaker in the Bannered Mare so the first build does not have to inject topics into a vanilla innkeeper.
 
-Build result (2026-08-08):
+Build result (2026-08-10):
 
 - Shipped zip: `/home/lorkhan/skyrim_mods/mine/MFLivingYUA.zip`
 - Plugin: `MFLivingYUA.esp`
 - Masters: `Skyrim.esm`, `YUA_Follower.esp`
 - Package contents: `MFLivingYUA.esp`, `REQUIREMENTS.txt`, `Seq/MFLivingYUA.seq`, the two reusable living scripts, and two generated interaction TIF `.pex` + `.psc` files.
 - Static dump: 28 records; controller quest StartGameEnabled; alias `Living0_N0` fills `uniqueActor 000800:YUA_Follower.esp`; rumor topic `Any word of YUA?` is gated on `MFLiving_N0_Deeds`; fund/praise INFOs target YUA and carry their TIF VMAD.
+- Runtime QA: 15/15 PASS. Exactly one YUA was enrolled; deed simulation, materialization, Mira's rumor, both favor interactions, recruitment ownership, and dismissal handoff all worked.
 
 ```jsonc
 {
@@ -164,47 +166,43 @@ Build result (2026-08-08):
 }
 ```
 
-## Facts to extract before building
+## Confirmed integration findings
 
-1. Follower-framework ownership.
-   - Confirm whether YUA uses vanilla follower dialogue/factions or custom scripts.
-   - MVP rule: if `IsPlayerTeammate()` is true or she is in a follower state, controller should leave her alone. If current controller cannot check this yet, record as P3.5 safety work before using on a real recruited follower.
-2. Rumor speaker.
-   - Existing example places a custom Bjorn. For YUA, prefer a vanilla Bannered Mare NPC only if dialogue injection to external speaker is already proven for this macro; otherwise keep the custom bard/speaker pattern.
-3. Runtime behavior of `uniqueActor` fill for an external NPC that also has a placed ref.
-   - The spec uses YUA's NPC_ base `YUA_Follower.esp:0x000800`.
-   - The original mod also places `YUA_Follower.esp:0x000817` in Jorrvaskr.
-   - In-game QA must confirm whether the alias resolves and MoveTo's the intended unique actor, not a duplicate.
+1. **Follower ownership:** YUA uses the vanilla follower state and raises `IsPlayerTeammate()` when recruited. During that state the living alias neither advances deeds nor calls `MoveTo`/`EvaluatePackage`.
+2. **Dismissal handoff:** the first QA run exposed a visible pop—after YUA crossed the inn door, the controller reclaimed her immediately. The final controller leaves her on the follower mod's dismissed package while the player can still follow. Once player and actor are separated, a 30-real-second grace applies; loaded actor 3D within 8192 units keeps extending it. Only then may the controller move her off-stage.
+3. **Rumor speaker:** the custom Bannered Mare patron Mira Snow-Voice avoids injecting dialogue into a vanilla speaker and worked in-game.
+4. **External `uniqueActor`:** the alias filled from NPC base `YUA_Follower.esp:0x000800` and controlled the mod's existing placed actor `0x000817`; runtime QA saw one YUA, not a generated duplicate.
 
 ## Implementation checklist
 
-1. Build [yua/living_yua_spec.json](yua/living_yua_spec.json).
-2. Package as `MFLivingYUA.zip`.
-3. Run static gates:
+1. ✅ Build [yua/living_yua_spec.json](yua/living_yua_spec.json).
+2. ✅ Package as `MFLivingYUA.zip`.
+3. ✅ Run static gates:
    - Build succeeds.
    - `.pex` scripts are included.
    - Controller quest is StartGameEnabled.
    - Alias fill points to YUA correctly.
    - Rumor topic is gated on YUA deed global.
    - Both generated interaction TIF `.pex` files are present and attached to their INFO records.
-4. In-game QA:
+4. ✅ In-game QA (15/15 PASS, 2026-08-10):
    - Automated setup/engine assertions: run [living_yua.qa.json](yua/living_yua.qa.json) through `agent-bridge/client/qa_runner.py` with `MO2_PROFILE=QA`; it installs both archives, proves both plugins + YUA + Mira, then pauses for the human interaction gate and always uninstalls on teardown.
    - Install YUA follower archive.
    - Install `MFLivingYUA.zip` after it.
    - `coc WhiterunBanneredMare`.
    - Wait enough game hours or set deed global.
-   - Confirm YUA appears only once, can leave/re-enter, and rumor appears.
-   - Recruit YUA and confirm the living controller stops deed simulation and never `MoveTo`s her while she is the player's teammate; dismiss her and confirm the controller resumes ownership.
+   - Confirm YUA appears only once, can leave/re-enter, and rumor appears. **Passed.**
+   - Recruit YUA and confirm the living controller stops deed simulation and never `MoveTo`s her while she is the player's teammate. **Passed.**
+   - Dismiss and follow her across a door for at least 10 seconds; she must keep walking without a visible pop. Separate long enough for the off-screen grace to expire, then confirm living-world materialization resumes. **Passed after the first-run pop was fixed.**
 
 ## Risks
 
-- External follower may not have a suitable persistent placed ref; the macro may need a "base NPC plus generated placement" mode.
-- Moving a follower mod's actor can break its recruitment scene if done before the mod initializes.
+- Other external followers may not have a suitable persistent placed ref; they may still need a "base NPC plus generated placement" mode. YUA did not.
+- Moving a heavier follower mod's actor can break its recruitment scene if done before the mod initializes; YUA's lightweight vanilla-follower path passed.
 - If she has DAR/OAR or combat animation assets, the MVP should not touch them.
 - The current controller's `adventurer` branch may be too generic; accept that for the first test.
-- Follower frameworks that do not implement `IsPlayerTeammate()` still need a future adapter; YUA uses the vanilla follower factions and is the first runtime proof of the guard.
-- If YUA uses an ESL-flagged plugin, confirm FormID serialization in spec uses the same durable `<plugin>:0xLOCALID` convention as ModForge external refs.
+- Follower frameworks that do not implement `IsPlayerTeammate()` still need a future adapter; YUA proves only the vanilla teammate contract.
+- YUA's ESL-flagged plugin worked with ModForge's durable `<plugin>:0xLOCALID` external-ref serialization.
 
 ## Next decision
 
-Treat YUA as **the first named enrollment target**, not the first proof of the runtime architecture. The runtime architecture already has `MFLivingNpcs.zip` waiting for acceptance; YUA is the next layer: prove that a real visual follower from the user's archive can be enrolled with a few lines of data.
+YUA has completed its role as the **first named external-follower proof**. The next coverage target is the generic `MFLivingNpcs.zip` P0–P3 acceptance (two actors/archetypes plus parley/alignment); after that, choose between controller behavior driven by favor/alignment and the hostile-in-combat parley presentation gap.

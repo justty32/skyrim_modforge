@@ -186,8 +186,11 @@ conditionally). Worked example: `examples/living_npcs_spec.json`.
 
 **MVP scope.** Named cast + abstract sim + materialize + rumor + interaction/favor + alignment. The
 Phase-3.5 follower safety gate is also active: while an actor reports `IsPlayerTeammate()`, its alias
-stops deed simulation and all movement/package control; dismissal hands it back to the living-world
-controller. **Still later:** surfacing parley on a hostile-in-combat NPC (needs a non-combat approach
+stops deed simulation and all movement/package control. After dismissal, the follower's own package
+keeps walking it naturally while the player can still follow; only after 30 seconds unseen/unfollowed
+and outside the loaded 8192-unit guard does the alias move it off-stage and resume living-world control.
+YUA's vanilla-follower path passed this ownership handoff in-game on 2026-08-10. **Still later:**
+surfacing parley on a hostile-in-combat NPC (needs a non-combat approach
 mechanic), real missive task targets (needs roadmap #7–9 LocationAlias fill), controller behavior driven
 by favor/alignment, adapters for follower frameworks that do not use the vanilla teammate flag, LAL
 origin-seeded relationships, and an anonymous "crowd" tier. Design: `sub_projs/living-adventurers/`

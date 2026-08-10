@@ -90,7 +90,7 @@ MFLivingWorldController extends Quest          ; 一個 host quest
 
 1. **現身可信度**：NPC 只在一個旅館出現 ≠「到處都是」。錨點必須落在玩家真會去的 vanilla cell；少量錨點 + 野外用 spawn 補（road encounter）。P4 任務層才給真隨機地點。
 2. **存檔膨脹 / tick 經濟**：named 層 N 要小；poll/tick 收斂到 quest 層單一迴圈（見 §1），不要 per-alias 各自 register。
-3. **外部 follower ref 填充 + 共存**：`uniqueActor:<followerEsp>:0xNPCID`（強制 base form 會靜默失敗，memory）；**只在玩家未雇用時驅動他**。Phase-3.5 已補 `IsPlayerTeammate()` 安全閥：已招募時停止抽象 sim 與全部 `MoveTo`/`EvaluatePackage`，dismiss 後先回 hold marker 再重新納管。YUA 是 vanilla follower faction 路線，仍須實機驗證它的 teammate flag 時序。
+3. **外部 follower ref 填充 + 共存**：`uniqueActor:<followerEsp>:0xNPCID`（強制 base form 會靜默失敗，memory）；**只在玩家未雇用時驅動他**。Phase-3.5 已由 YUA 實機驗證：`IsPlayerTeammate()` 期間停止抽象 sim 與全部 `MoveTo`/`EvaluatePackage`；dismiss 後先沿用原 follower package 自然走路，不在玩家眼前瞬移。只有玩家已無法跟上（不同 cell，且 actor 3D 未在 8192 units 內）連續 30 秒，controller 才把 actor 移回 hold marker 並恢復抽象納管。第一輪 QA 正是抓到「一出門瞬間消失」，修正後第二輪通過。
 4. **MoveTo 後行為**：MoveTo 完 `EvaluatePackage()` 讓錨點 package 立即生效（否則呆站）。
 5. **rumor condition 的 per-NPC 維度**：named 層每 NPC 一個 deed GLOB（可控）；環境群像層不做個別 rumor。
 
@@ -116,4 +116,4 @@ MFLivingWorldController extends Quest          ; 一個 host quest
 1. ~~alias `scriptProperties` object prop 不能解析 placement REFR~~ **已修**：`FillProperties` 對未解析的 object prop 改 queue 到新的 `deferredScriptObjectProps`，由 `WireDeferredScriptObjectProps()`（placements 後跑）解析，比照 `deferredForcedAliases`。移除舊 `MakeObjectProp`。→ macro 可**直接傳 ObjectReference props**，不必 FLST workaround（P1 spec 仍用 FLST，無妨）。
 2. ~~forced-alias 的 ACHR 不被自動 persistent~~ **已修**：`deferredForcedAliases.Select(w => w.Ref)` 併入 `Generator.Build.Placements.cs` 的 `deferredAnchorEds` → forced-alias 目標自動 persistent。→ macro **不必對 living-NPC ref 顯式標 persistent**（P1 spec 仍標，無妨）。
 
-**狀態**：離線 build 綠；**.psc 未編譯驗證**（新 .pex 非預編，`package` 時才從 `source` 編，需主力機 Papyrus compiler）+ **未實機**。P1 驗收 = 主力機 `package` → 實機看兩 NPC 各過各生活、跨旅館現身、per-NPC rumor。
+**狀態**：P1 prototype 的 2-NPC 情境仍未單獨實機；production reusable `.psc` 已成功編譯並由 YUA enrollment 實機驗證 controller/alias 核心、external uniqueActor、deed、materialize、rumor、favor 與 follower handoff。Generic `examples/living_npcs_spec.json` 的 2-NPC P0–P3 acceptance 仍是下一個完整覆蓋。

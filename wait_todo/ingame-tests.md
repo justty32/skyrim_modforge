@@ -2,7 +2,7 @@
 
 ← [WAIT_USER](../WAIT_USER.md)（總入口）
 
-我**不能跑遊戲**，只能 diag / 逐位元對齊 + 打包；實機驗收靠你（memory `ingame-test-workflow`）。
+機械式 setup／console assertion 可由 `agent-bridge` QA runner 自動跑；需要辨認畫面、體感或對話是否自然的 handoff 仍由你判定。
 
 **怎麼測（通用流程）**
 1. **拿 zip**：我把打包好的 zip 放 `~/skyrim_mods/mine/`（**FLAT**：plugin 在 zip 根，別有多層；曾因 zip 根殘留舊 esp 蓋掉新的而誤判「還在崩」）。`~/skyrim_mods` 根是你的 Nexus 下載，別混。
@@ -15,21 +15,7 @@
 
 ## 待測（active）
 
-- **YUA 活 NPC enrollment MVP + P1 — ✅ 已打包交付 `~/skyrim_mods/mine/MFLivingYUA.zip`（2026-08-10，FLAT）**（idea #23 / `sub_projs/living-adventurers/yua/`）。這是第一個「真外部 standalone follower 接進 livingNpcs」測試：YUA 本體來自 `YUA Follower ESL.7z`，patch 只依賴 `YUA_Follower.esp`，用 `uniqueActor 000800:YUA_Follower.esp` 填 alias，並在 Bannered Mare 放一個自訂傳聞酒客 Mira Snow-Voice。
-  - zip 內容已結構驗證：`MFLivingYUA.esp`（28 records，masters=`Skyrim.esm,YUA_Follower.esp`）＋ `.seq` ＋ 4 pex（兩個 reusable controller/alias + fund/praise TIF）＋ 2 TIF source。native headers 不全時的 auto-compile 已有 Wine fallback，兩個 INFO 都確認掛上 TIF VMAD。
-  - YUA 來源事實：NPC base `YUA_Follower.esp:0x000800`，原 mod placed ref `YUA_Follower.esp:0x000817` 在 Jorrvaskr；她是 Female/Essential/Unique，voice `007A32:Dawnguard.esm`。
-  - 自動化 setup 已備好：`sub_projs/living-adventurers/yua/living_yua.qa.json`（`MO2_PROFILE=QA` dry-run 通過）；會裝兩包、啟動、驗 plugin/YUA/Mira，停在互動 handoff，最後一定 kill + uninstall。
-
-  **實機驗（先安裝/啟用 YUA Follower ESL，再裝 `MFLivingYUA.zip`，新遊戲或 save+reload）**：
-  - **① plugin 載入**：確認 MO2 兩個 mod 都啟用，`MFLivingYUA.esp` 排在 `YUA_Follower.esp` 後；若缺 YUA master，Skyrim 會靜默不載入 patch。
-  - **② 離場推進**：console `getglobalvalue MFLiving_N0_Deeds` → 等幾個遊戲時 → 值應上升；有可能跳通知「YUA completed another contract.」。
-  - **③ 就地實體化**：`coc WhiterunBanneredMare` → YUA 應被 living controller MoveTo 到 Bannered Mare 的 anchor，且只出現一個；離開再回不應複製。
-  - **④ 傳唱**：找 Mira Snow-Voice → YUA deeds≥1 後應出現 `Any word of YUA?` → 三條傳聞隨機/輪播。可用 `set MFLiving_N0_Deeds to 3` 強逼 gate。
-  - **⑤ fund/praise**：直接對 YUA 說 `Here's some coin...`；deeds≥1 後再說 `Your deeds are the talk...`。每次後用 `getglobalvalue MFLiving_N0_Favor`，應各 +1。
-  - **⑥ follower 共存安全閥**：招募 YUA → 等超過 5 秒、換 cell、再過至少 2 遊戲時；她應跟著玩家、不被拉走，deed 也不應增加。dismiss 後再等一次 poll，controller 應恢復納管（在 Bannered Mare 時會重新 materialize）。若 follower framework 沒把 `IsPlayerTeammate()` 設成 true，這條仍可能失敗，須回報。
-  - **回報**：YUA 是否出現/重複、deed、Mira 傳唱、favor、招募時是否停止 sim/MoveTo、dismiss 後是否恢復。
-
-- **living-adventurers 整鏈 P0–P3 — ✅ 已重新打包交付 `~/skyrim_mods/mine/MFLivingNpcs.zip`（2026-08-10，FLAT）**（idea #23 / `sub_projs/living-adventurers/`）。這是「抽象幽靈模擬 + 就地實體化 + 傳唱 + 互動/favor + alignment」的 **runtime 第一次驗證**，是 P0–P3 共同的 acceptance gate。測 `examples/living_npcs_spec.json`（macro 版，涵蓋全部；spike/p1 是過程原型，不必另測）。
+- **living-adventurers 整鏈 P0–P3 — ✅ 已重新打包交付 `~/skyrim_mods/mine/MFLivingNpcs.zip`（2026-08-10，FLAT）**（idea #23 / `sub_projs/living-adventurers/`）。YUA 已證明單一外部 follower 的核心迴圈；這包是 generic **兩 actor／兩 archetype + parley/alignment** 的剩餘 P0–P3 acceptance。測 `examples/living_npcs_spec.json`（macro 版，涵蓋全部；spike/p1 是過程原型，不必另測）。
   - zip 內容已結構驗證：esp（13 top-level records、quest StartGameEnabled、4 globals、6 topics）＋ `.seq` ＋ 6 pex（`MFLivingWorldController`/`MFLivingNpcAlias`＋**4 個 TIF 全數內聯編譯成功**）＋ TIF 源碼。7 scripts attached（quest 1 + alias 2 + TIF 4；dump 不渲染 alias 層 VMAD，數字對帳自 build summary）。
   - 打包途中踩了一雷已修＋記進 dev-env：`MFLivingNpcAlias` 用 SKSE 的 `GetDisplayName` → 純 vanilla header cache 編不過（undefined function）→ SKSE 版 headers（Steam Data/Scripts/Source 64 檔）疊進 cache 後過。
 
@@ -38,7 +24,7 @@
   - **② 就地實體化**：`coc RiverwoodSleepingGiantInn` ↔ `coc WhiterunBanneredMare`（中間等 tick 讓 anchor 輪替）→ Kjeld 出現在「他當前 anchor」那間旅館；離開再回 → 重新現身且**不重複**。Falas 只在 Bannered Mare。
   - **③ 傳唱**：Sleeping Giant Inn 找 Bjorn 對話 → Kjeld deeds≥1 後出現「Any word of Kjeld the Wanderer?」→ 傳唱台詞（`set MFLiving_MFLN_Kjeld_Deeds to 3` 可強逼）。
   - **④ 互動 + favor（P3）**：Kjeld 現身時對話 → 「Here's some coin…」(fund) / deeds≥1 後「Your deeds are the talk…」(praise) → 點完 `getglobalvalue MFLiving_MFLN_Kjeld_Favor` 應 +1。Falas（neutral）給 parley「Lower your weapon. Let's talk.」。
-  - **回報**：四層各 OK／怪／空白／CTD；通知有沒有跳；favor/deed 有沒有動。**這是架構成不成立的第一個經驗證據**——哪層不動回報現象我來定位（最可能的雷：alias 沒填到 ref、MoveTo 後沒 EvaluatePackage、TIF 沒編進 zip）。
+  - **回報**：四層各 OK／怪／空白／CTD；通知有沒有跳；favor/deed 有沒有動。這輪重點是補齊 generic 多 NPC、anchor 輪替與 neutral parley 的覆蓋；external uniqueActor 與 follower ownership 已由 YUA 通過。
 
 - **VNML 法線效果（2026-06-16）— 已自驗修正，下面只剩「想看再看」的選配確認**：axis/編碼/尺度已對 vanilla Tamriel LAND 逐 byte 驗過（修了三個 bug，見 SESSION-LOG），不必硬測。新 zip 已交付 `~/skyrim_mods/mine/HeightmapDemo.zip`（FLAT）。**若你某次順手進遊戲**：進 HeightmapDemo worldspace 走坡面，背光側偏暗、向光偏亮、平順漸層即正常——若看到整片黑塊／詭異反光／上下顛倒陰影再回報（理論上不會）。
 

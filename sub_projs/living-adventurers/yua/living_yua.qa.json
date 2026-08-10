@@ -95,8 +95,8 @@
     },
     {
       "type": "handoff_user",
-      "message": "請在遊戲內驗收 YUA：1) 確認只有一個 YUA，Mira 也在酒館；2) 問 Mira『Any word of YUA?』；3) 對 YUA 各做一次 fund/praise，console `getglobalvalue MFLiving_N0_Favor` 應為 2；4) 記下 deeds，招募 YUA，等 10 秒並切一次 cell/過至少 2 遊戲時，她不能被拉走且 deeds 不增加；5) dismiss 後回 Bannered Mare 等 6 秒，她應重新被 living controller 納管。完成直接按 Enter；任何異常請輸入一句現象再按 Enter。",
-      "expect": "one YUA; rumor and fund/praise work; teammate ownership is respected; dismissal resumes living-world control"
+      "message": "請驗收 YUA 的 off-screen handoff：1) 招募 YUA，`coc RiverwoodSleepingGiantInn`，等 3 遊戲時，確認她仍跟著且 `getglobalvalue MFLiving_N0_Deeds` 仍為 3；2) 在 Sleeping Giant Inn dismiss，留在她附近或跟著她走至少 10 秒——她應沿用原 follower 回家行為自然走開，不能在眼前瞬間消失；3) 等你與她不再同一 cell 後，`coc WhiterunBanneredMare` 並等 6 秒，她應在 Bannered Mare 重新出現。完成按 Enter；任何異常請輸入現象再按 Enter。",
+      "expect": "teammate ownership is respected; dismissal stays visible while co-located; off-screen transition resumes living-world control"
     }
   ],
   "teardown": [

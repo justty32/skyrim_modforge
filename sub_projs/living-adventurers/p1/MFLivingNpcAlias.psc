@@ -18,16 +18,24 @@ FormList Property Markers Auto
 { index 0 = off-stage hold marker; indices 1..N = anchors (places he appears). }
 GlobalVariable Property DeedCount Auto
 { Per-NPC abstract-sim progress; tavern rumor dialogue gates on GetGlobalValue >= N. }
+Float Property ReclaimDelaySeconds = 30.0 Auto
+{ Minimum real-time grace after the player loses sight of a dismissed follower. }
+Float Property ReclaimDistance = 8192.0 Auto
+{ While the dismissed actor's 3D is loaded within this distance, keep letting the follower package walk. }
 
 int anchorIdx = 0
 bool atAnchor = false
 bool releasedToPlayer = false
+Cell releasedInCell = None
+float reclaimEligibleAt = 0.0
 
 Event OnInit()
     Actor a = GetReference() as Actor
     ObjectReference hold = HoldMarker()
     if a && a.IsPlayerTeammate()
         releasedToPlayer = true          ; an existing save may enable this mod while the NPC is recruited
+        releasedInCell = Game.GetPlayer().GetParentCell()
+        reclaimEligibleAt = Utility.GetCurrentRealTime() + ReclaimDelaySeconds
     elseif a && hold
         a.MoveTo(hold)                   ; start off-stage
     endif
@@ -38,6 +46,12 @@ Function AdvanceSim()
     Actor a = GetReference() as Actor
     if a && a.IsPlayerTeammate()
         releasedToPlayer = true          ; recruited followers live with the player, not in the abstract sim
+        releasedInCell = Game.GetPlayer().GetParentCell()
+        reclaimEligibleAt = Utility.GetCurrentRealTime() + ReclaimDelaySeconds
+        return
+    elseif releasedToPlayer
+        ; Dismissed but still visible to the player: keep the abstract clock paused until Presence()
+        ; can reclaim the actor off-screen.
         return
     endif
     if DeedCount
@@ -62,17 +76,40 @@ Function Presence()
     endif
     if a.IsPlayerTeammate()
         releasedToPlayer = true          ; the follower system owns movement/packages while recruited
+        releasedInCell = Game.GetPlayer().GetParentCell()
+        reclaimEligibleAt = Utility.GetCurrentRealTime() + ReclaimDelaySeconds
         atAnchor = false
         return
     endif
     if releasedToPlayer
-        ; Dismissal hands the actor back to the living-world controller. Re-stage first so an actor
-        ; dismissed away from its current anchor does not remain stranded at the player's location.
+        ; Let the follower mod's dismissed package visibly walk the actor across doors/cells. Losing
+        ; the actor for one poll is not enough: the player may immediately follow through the door.
+        Actor player = Game.GetPlayer()
+        Cell playerCell = player.GetParentCell()
+        float now = Utility.GetCurrentRealTime()
+        bool playerCanStillFollow = (playerCell == releasedInCell || playerCell == a.GetParentCell())
+        if !playerCanStillFollow && a.Is3DLoaded() && a.GetDistance(player) <= ReclaimDistance
+            playerCanStillFollow = true
+        endif
+        if playerCanStillFollow
+            reclaimEligibleAt = now + ReclaimDelaySeconds
+            return
+        endif
+        ; GetCurrentRealTime restarts with the process. A saved deadline from a previous run must not
+        ; strand the actor forever; reset implausibly far-future values to one fresh grace period.
+        if reclaimEligibleAt <= 0.0 || reclaimEligibleAt > now + (ReclaimDelaySeconds * 2.0)
+            reclaimEligibleAt = now + ReclaimDelaySeconds
+        endif
+        if now < reclaimEligibleAt
+            return
+        endif
         ObjectReference releasedHold = HoldMarker()
         if releasedHold
             a.MoveTo(releasedHold)
         endif
         releasedToPlayer = false
+        releasedInCell = None
+        reclaimEligibleAt = 0.0
         atAnchor = false
     endif
     ObjectReference target = CurrentAnchor()
