@@ -64,6 +64,12 @@ public static partial class Generator
 
             if (LooksExternalRef(cellRef))
             {
+                // A P3 navPatches[] edit publishes the target NAVM into the vanilla CELL override.
+                // Diagnostics run after that build step, so prefer the authored geometry when present;
+                // an ordinary vanilla-cell placement override has no NavigationMeshes and still falls
+                // through to the master exactly as before.
+                if (builtCell is not null && builtCell.NavigationMeshes.Count > 0)
+                    return TrisOfCell(builtCell);
                 if (!TryExternalRef(cellRef, out var cellFk)) return null;
                 var key = $"C:{cellFk}";
                 if (navTriCache.TryGetValue(key, out var hit)) return hit;

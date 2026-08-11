@@ -214,6 +214,43 @@ confirm the NPCs in those cells still walk, and the ground under the rest of the
 - Needs `Skyrim.esm`. **Offline it emits nothing and says nothing** — the build is byte-identical to
   one without the section.
 
+**5. `navPatches[]` — append and stitch a walkable interior polygon (P3 MVP).**
+
+This is the narrow geometry-edit lane for a new platform or floor extension. It deep-copies one
+vanilla interior NAVM, appends a strictly convex 3–32 point polygon as a triangle fan, and joins one
+complete polygon edge to one unlinked old boundary edge. Existing vertices and triangles stay in
+their original order; only that old seam EdgeLink changes. Bounds and a conservative one-bucket
+spatial grid are rebuilt, while NAVI, door triangles, cover data and all existing triangle indices
+remain intact.
+
+```jsonc
+"navPatches": [{
+  "cell": "Skyrim.esm:0x01605E",
+  "navmesh": "Skyrim.esm:0x0C9064",
+  "polygon": [
+    { "x": -302.61426, "y": 461.76675, "z": 70.85016 },
+    { "x": -184.69250, "y": 389.23820, "z": 70.85016 },
+    { "x": -218.22177, "y": 334.72410, "z": 70.85016 },
+    { "x": -336.14352, "y": 407.25266, "z": 70.85016 }
+  ],
+  "linkTo": "auto", // the only MVP mode
+  "epsilon": 0.01   // endpoint match tolerance, game units; default 8
+}]
+```
+
+- Polygon winding may be clockwise or counter-clockwise; the builder normalizes it. XY must be
+  strictly convex with no repeated, collinear or crossing points. Z may vary.
+- Auto linking requires **exactly one full-edge match** (both endpoints in 3D within `epsilon`) to an
+  old edge whose EdgeLink is `-1`. Zero or multiple matches skip the patch with a warning.
+- The edit is transactional: validation/seam failure publishes no partial NAVM change. Multiple
+  patches to the same mesh apply in spec order, each against the prior successful result.
+- MVP supports vanilla **interiors only**. Exterior/cross-cell stitching, partial-edge splitting,
+  disconnected islands and DotRecast are deliberately out of scope.
+- NAVM is a whole-record override, so last plugin wins against USSEP or any other mod touching the
+  same mesh. The existing clobber warning also covers `navPatches[]`.
+- See `examples/navmesh_patch.json`: its seam coordinates are derived from the real Bannered Mare
+  boundary, and its test NPC patrols from the appended polygon to the vanilla side and back.
+
 > ⚠️ ModForge cannot author **interior** navmesh yet, so an NPC in a brand-new interior cell has
 > nothing to path on. Put NPCs that need to walk in a vanilla cell (or a custom worldspace cell with
 > `navmesh: true`). Opt into `"navmesh": {"warnEmptyCells": true}` for a reminder.
@@ -240,4 +277,3 @@ quest:
 - Because it's a persistent named ref, a map marker can **also** be an `objectives[].targets[]` source
   (bind it with a `forced:<editorId>` alias) — a quest arrow that points at a map location. Worked
   example combining objective markers + an xmarker anchor + a map marker: `examples/quest-markers.json`.
-

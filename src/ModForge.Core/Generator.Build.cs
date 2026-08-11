@@ -125,6 +125,8 @@ public static partial class Generator
         ctx.BuildNavmeshOverrides();               // re-emit a vanilla cell's NAVM(s) from our plugin, unchanged
                                                    // (P0 no-op override) — after the placement/navcut passes so it
                                                    // reuses the SAME cell/worldspace override objects they made
+        ctx.BuildNavPatches();                     // P3: append + stitch convex geometry to a vanilla interior NAVM
+                                                   // transactionally, preserving every pre-existing triangle index
         ctx.WireDeferredForcedAliases();           // forced alias fills whose target (placement/xmarker/mapMarker) built just now
         ctx.WireLinkedRefs();                      // XLKR between placements (patrol routes)
         ctx.WireTeleportDoors();                   // load-door XTEL teleport pairs (player walk-through links)

@@ -12,7 +12,7 @@ The spec is a JSON file → `.esp` plugin. Choose a topic:
 | [SPEC-quests](SPEC-quests.md) | Quest stages & objectives, Story Manager event quests, Papyrus scripts |
 | [SPEC-quest-nodes](SPEC-quest-nodes.md) | Semantic `questId + stage` graph-node JSON contract for extraction and follower-reaction generation |
 | [SPEC-identities](SPEC-identities.md) | Lightweight class/identity system (book→faction+ability+greeting+merchant toggle) |
-| [SPEC-world](SPEC-world.md) | Cells & placements, navmesh (navCuts/navmeshOverrides), map markers |
+| [SPEC-world](SPEC-world.md) | Cells & placements, navmesh (navCuts/navmeshOverrides/navPatches), map markers |
 | [SPEC-lighting](SPEC-lighting.md) | Custom lights (LIGT) and interior/exterior lighting (LGTM/IMGS/DALC) |
 | [SPEC-world-macros](SPEC-world-macros.md) | High-level population macros: in-world skill trees, populated settlements, living-world NPCs |
 | [SPEC-worldspaces](SPEC-worldspaces.md) | Worldspaces & regions, area music, leveled lists & containers, formLists, encounter zones, vendors |

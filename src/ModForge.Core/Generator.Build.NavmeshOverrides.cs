@@ -159,7 +159,7 @@ public static partial class Generator
                 if (hits is null) continue;
                 var ids = string.Join(", ", hits.Take(6).Select(fk => $"0x{fk.ID:X6}"));
                 if (hits.Count > 6) ids += $", … (+{hits.Count - 6})";
-                Warn($"  ! navmesh: {hits.Count} navmeshOverrides[] mesh(es) are ALSO overridden by '{file}' ({ids}). "
+                Warn($"  ! navmesh: {hits.Count} NAVM record(s) this build overrides are ALSO overridden by '{file}' ({ids}). "
                    + "NAVM records do not merge — whichever plugin loads LAST replaces the other outright, so your "
                    + "override and its edits clobber each other (if that plugin carries a navmesh FIX, e.g. USSEP, you "
                    + "may silently revert it). Override only a vanilla mesh you truly need; if you keep it, order this "

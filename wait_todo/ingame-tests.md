@@ -15,6 +15,8 @@
 
 ## 待測（active）
 
+- **navmesh P3 `navPatches[]` add+link（2026-08-11，offline + 真 Skyrim.esm 結構已驗）**：安裝 `~/skyrim_mods/mine/ModForgeNavmeshPatch.zip`（來源 `examples/navmesh_patch.json`，FLAT，排在任何會改 Bannered Mare NAVM `0x0C9064` 的 mod 後）→ `coc WhiterunBanneredMare`。找名為 **`NAVM PATCH TEST`** 的 NPC：它應在兩顆隱形 XMarkerHeading 間持續來回，路線從新增的 64-unit polygon 跨唯一 seam 回 vanilla 網格。**PASS**＝雙向跨 seam 都走得動，既有 Hulda/Saadia/Mikael 行為照常；**FAIL**＝測試 NPC 原地不動／只到 seam 就折返／所有旅館 NPC freeze／CTD。這條同時驗 append triangle、雙向 EdgeLink、重建 grid 與「原 NAVI 仍描述同 FormID」；回報症狀與 CrashLogger log。
+
 - **MESG 多按鈕順序（2026-08-11，offline record 已驗）**：用 `examples/message_menu.json` build 後從任一 Papyrus 測試片段呼叫 `MFSettlementManageMenu.Show()`，確認四顆 label 依 spec 順序顯示、按下分別回傳 0/1/2/3。公司機已驗 `Message.MenuButtons` record shape，這條只驗引擎 UI/Papyrus 行為。
 
 - **EFSH effectShaders（2026-08-11，offline 結構已驗）**：拿 `examples/effect_shader.json` 配三張真 `.dds`（fill / particle / palette）build+package，對 actor 套 `MFEff_FireGlow`，目視確認 membrane additive glow、sprite particle 與 fade/key 時序。特別驗「有 palette 可見；拿掉 palette 可能完全不 render」及 inanimate STAT 不發 actor particles。公司機只證 record/wiring，無法代做外觀驗收。

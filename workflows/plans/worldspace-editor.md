@@ -8,7 +8,7 @@
 
 **Tech Stack:** C# net10.0、Mutagen.Bethesda.Skyrim 0.53.1、SixLabors.ImageSharp（PNG L16 解碼，跨平台）、xUnit。
 
-設計依據：[workflows/specs/worldspace-editor-design.md](../specs/worldspace-editor-design.md)。VHGT 格式（signed int8、row-wise 累積、delta ×8 game units）已查證；唯一未在離線機驗的是「對真實 Tamriel LAND 反解比對」（Task 7，主力機）。
+設計依據：[workflows/specs/worldspace-editor-design.md](../specs/worldspace-editor-design.md)。VHGT 格式（signed int8、row-wise 累積、delta ×8 game units）已查證；Task 7 也已在主力機用真實 Tamriel LAND 完成反解比對（Tamriel 20 格 delta bytes 精確 round-trip）。
 
 ---
 
@@ -781,11 +781,11 @@ git commit -m "docs(worldspace): heightmap example spec + spec doc"
 
 **Files:** 無（驗證 + 記錄）
 
-- [ ] **Step 1: 對真實 Tamriel 斜坡格反解比對**
+- [x] **Step 1: 對真實 Tamriel 斜坡格反解比對**（2026-06-16 落地；2026-08-11 重跑 PASS）
 
 在主力機（有 Skyrim.esm）寫一次性測試：用 Mutagen 讀 Tamriel 某已知斜坡 cell 的 LAND，取 `VertexHeightMap.Offset` + `HeightMap`，餵 `Vhgt.Decode`，比對重建高度與該地形已知高度（或 xEdit 顯示值）是否吻合。
 
-- [ ] **Step 2: 結論回填**
+- [x] **Step 2: 結論回填**（design / landed / CODE_MAP 已記錄 Tamriel 20 格精確 round-trip）
 
 吻合 → 在 `coord-system.md` 與 design 把「待主力機收尾」標✅移除；不吻合 → 依差異修 `Vhgt`（多半是 Array2d 索引方向或 row/col 對調），離線單測仍綠後重打包。
 
@@ -809,4 +809,4 @@ git commit -m "docs(worldspace): heightmap example spec + spec doc"
 
 **Type consistency：** `Vhgt.Encode(float[,], Action<string>?, string) → (float, Array2d<byte>)`、`Vhgt.Decode(float, Array2d<byte>) → float[,]`、`Heightmap.Load(HeightmapSpec, string) → Heightmap`、`Heightmap.SampleCell(int,int) → float[,]`、`HeightmapSpec.{Path,OriginX,OriginY,MinHeight,MaxHeight}`——跨 Task 一致。`EmitCell(int,int,float,Array2d<byte>,bool)` 在 Task 4 內定義並使用。
 
-**已知未決（已標明，不擋離線實作）：** ① Array2d 索引方向（Task 0 探測 + Decode 自檢）；② 真實引擎 round-trip（Task 7 主力機）。
+**已知未決：** 無。Array2d 索引方向與真實引擎 round-trip 皆已由 `VhgtTests` / `VnmlCompute_OrientationMatchesVanilla` 對 Tamriel LAND 驗證。

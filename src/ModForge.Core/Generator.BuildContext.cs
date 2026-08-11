@@ -250,6 +250,7 @@ public static partial class Generator
                     NavmeshCells = navmeshCellsBuilt,
                     NavCuts = navCutsBuilt,
                     NavmeshOverrides = navmeshOverridesBuilt,
+                    NavPatches = navPatchesBuilt,
                     Regions = regionsBuilt,
                     EncounterZones = spec.EncounterZones.Count,
                     WordWalls = wordWallsBuilt,

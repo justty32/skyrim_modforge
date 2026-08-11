@@ -47,6 +47,8 @@ internal static partial class Program
             // `navdiag <plugin>`: every mesh's NVNM must byte-match the master's, or we changed
             // something we did not mean to change.
             Console.WriteLine($"{result.Stats.NavmeshOverrides} navmesh override(s) — vanilla NAVM(s) re-emitted unchanged (verify: navdiag {outPath})");
+        if (result.Stats.NavPatches > 0)
+            Console.WriteLine($"{result.Stats.NavPatches} navmesh patch polygon(s) appended + stitched (existing triangle indices preserved)");
         ReportDependencies(result, outPath, spec);
         WriteSeq(outPath, Path.GetDirectoryName(Path.GetFullPath(outPath)) ?? ".");
         if (spec.Weathers.Count > 0)

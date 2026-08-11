@@ -16,7 +16,8 @@
 > | **P0 — T0.2 上機** | ✅ 已出貨 → **✅ 實機 PASS（2026-07-12，使用者親測）**（`~/skyrim_mods/mine/ModForgeNavmeshNoop.zip`；證據見下框） |
 > | **症狀①（NPC 走進新蓋的房子）** | ✅ **結案** — 用 L_NAVCUT 解掉，**不必動 NAVM**（見下框） |
 > | P2.1（NAVM cut／Deleted flag 後備方案） | **不必做**——只是 T2.0 沒過時的備案，T2.0 過了就整段作廢，見 §5 P2 |
-> | P3 / P4 | 未動（照原順序，**現在是剩下唯一有價值的 NAVM 工作**——解症狀②「NPC 要走上新平台」） |
+> | P3 | ✅ **內裝 edge-to-edge MVP 離線完成（2026-08-11）**：`navPatches[]` append-only fan＋唯一完整邊雙向縫合；待 `examples/navmesh_patch.json` runtime patrol 驗收 |
+> | P4 | 未動（DLL 讀 live navmesh／射線取樣；等 P3 runtime PASS） |
 >
 > ### ✅✅ 兩個 🎮 實機閘 2026-07-12 皆 PASS——整條 navmesh plan 的地基與重心都定了
 >
@@ -209,6 +210,8 @@ new PlacedObject {
 
 ### P3 — add + link：讓 NPC 走上新蓋的東西（解症狀②的正解，**現在是整份 plan 剩下唯一要做的 NAVM 工作**，地基〔P0〕已 2026-07-12 實機 PASS）
 
+> **2026-08-11 收旂**：第一版採「vanilla 內裝＋凸多邊形＋完整邊 edge-to-edge 縫合＋不引 DotRecast」，設計見 [navmesh-patch-design](../specs/navmesh-patch-design.md)，可執行任務拆到 [navmesh-p3](navmesh-p3.md)。下方原始草圖保留作為設計來源；欄位與失敗語意以 design 為準。
+
 - **契約**：`navPatches[]`
   ```json
   "navPatches": [
@@ -326,13 +329,13 @@ new PlacedObject {
 - **實作刻意不用 Mutagen 的 `GetOrAddAsOverride` parent chain**——那會讓 Mutagen 自己造 CELL/WRLD override；我們的 `WorldspaceOverride`/`CopyWorldspaceEnv` 帶著兩顆炸過的地雷的疤（LandDefaults / EDID+RNAM / TopCell 的 record flags / **不帶 OFST**）。走 `ExteriorCell()` 就全部繼承，而且保證每個 cell/worldspace 在輸出裡**只有一個** override 物件。
 - **P2/P3 就長在這個契約上**：同一筆 entry 之後加 `cut`/`patch` 欄位即可，鐵律（永不重新編號）已經由「逐元素照抄」的實作與測試釘死。
 
-### 3. 內裝先行？（未拍板）
+### ✅ 3. 內裝先行（2026-08-11 保守收旂）
 
-P3（NAVM add）**先只支援內裝**（EdgeLinks=0，安全灘頭堡），外景等內裝實機過了再開？外景是編輯器的主場，但也是地雷區（跨 cell EdgeLink）。
+P3（NAVM add）**先只支援 vanilla 內裝**（無跨 cell EdgeLink），內裝實機過了才開外景。理由與契約見 [navmesh-patch-design](../specs/navmesh-patch-design.md)。
 
-### 4. P3 的三角化要不要引 DotRecast？（未拍板）
+### ✅ 4. P3 MVP 不引 DotRecast（2026-08-11 保守收旂）
 
-C# 的 Recast port，NuGet 2026.1.3 活躍；CK 自己的 auto-generate 就是 Recast。我的傾向：**先不要**——用 DLL 的射線取樣（P4）拿真實地板高度，配手寫的凸多邊形三角化就夠；DotRecast 需要餵三角湯（＝要先解 NIF havok 幾何），是另一條產業鏈。
+C# 的 Recast port 雖可用，但它要吃三角湯，會把 P3 擴成 NIF/havok 解析產業鏈。MVP 改用作者／P4 採集器提供的凸多邊形做 fan triangulation；自動貼地留在 P4。
 
 ---
 
