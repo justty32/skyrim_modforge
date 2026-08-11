@@ -20,6 +20,7 @@
 | `examples/assets/customasset/` | 配套示範資產（.nif / .dds / .wav）|
 | `examples/textures/` | 貼圖集示範資產（.dds）|
 | `examples/projectile-explosion.json` | 自訂法術飛行彈 + 爆炸（PROJ/EXPL，完整可施法 firebolt 鏈）|
+| `examples/effect_shader.json` | EFSH membrane + sprite particles，並接 MGEF hit/enchant shader |
 | `examples/showcase-multi2.json` | 多功能 showcase #2（firebolt PROJ/EXPL + NPC 庫存武器 + scene 條件閘）|
 
 ---
@@ -30,6 +31,7 @@
 |---------|-----|
 | `WeaponTests.cs` | templated weapon 傷害：未給傷害保留 template 值 / 顯式傷害覆寫 |
 | `MagicFxTests.cs` | Projectile + Explosion build（scalar + ref 解析 + enum/flag + validate）|
+| `EffectShaderTests.cs` | EFSH texture/scalar/key build、palette warning、MGEF shader wiring、validate |
 | `EnchantmentTests.cs` | ENCH scalar fields + effect ref 接線 |
 | `ExternalAssetTests.cs` | external asset 打包（Meshes/Textures/Sounds 複製）|
 | `PerkTests.cs` | Perk trunk + entry-point modifier + ability-spell grant |
@@ -94,6 +96,21 @@
 **Hazard（HAZD）兩種用法**：①法術噴出——`magicEffects[].archetype:"SpawnHazard"` + `association:<hazard>`（沿用既有 MGEF archetype/association wiring，無需改 MGEF builder）；②放置——`placements[].base` 是 in-spec HAZD（或 `kind:"hazard"`）→ `Generator.Build.Placements.cs` 建 `PlacedHazard`（見 `CODE_MAP.world.md`）。`Tests/HazardTests.cs`（record/flags/spell wiring、SpawnHazard association、PlacedHazard、validate）。
 
 IMAD（ImageSpace Modifier）：螢幕後處理 record，由 Explosion `imageSpaceModifier` 或 Papyrus `ImageSpaceModifier` property（腳本 `ApplyCrossFade`/`Remove`）套用。頂層 `imageSpaceModifiers[]`。範例 `examples/daylight_spell_spec.json`（開關型「白晝」法術：雙 SPEL Toggle/Active + Light-archetype 跟隨光 + Script-archetype imagespace；註：runtime 端後改走 SKSE plugin 的真實光/cell ambient，imagespace 版為 ESP-only 參考）。`examples/daylight_lights_spec.json` 為配套 SKSE plugin 用的 4 階 LIGH 燈泡。
+
+---
+
+## Effect Shader（EFSH）— 純貼圖特效
+→ **說明文件**：[SPEC-magic.md § effectShaders](../../../docs/spec/SPEC-magic.md#effectshaders-efsh--texture-only-membrane-and-particle-vfx)
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.EffectShaders.cs` | `EffectShaderSpec` + membrane/particle/key DTO；貼圖皆相對 `Data/Textures` |
+| Build P1 | `Generator.Build.EffectShaders.cs` | EFSH textures/blend/fade/particle scalar + 2 scale keys/3 color keys；缺 particle palette loud warning |
+| Build P2 | `Generator.Build.Magic.cs` | `magicEffects[].hitShader` / `enchantShader` → EFSH FormLink |
+| Validate | `Generator.Validate.EffectShaders.cs` + `Generator.Validate.Items.cs` | texture path、enum/flag、ratio/key-count、MGEF shader refs |
+| Tests | `EffectShaderTests.cs` | record shape、palette fallback/warning、MGEF wiring、invalid shape |
+
+EFSH 不生成 particle NIF；sprite particle 由 Actor 發射。offline record 結構已驗，真 `.dds` 外觀待實機。
 
 ---
 

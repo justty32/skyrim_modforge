@@ -6,13 +6,45 @@
       "mod": "Sofia Katana Moveset",
       "author": "ModForge",
       "description": "NPC-only one-handed sword moveset showcase (OAR). .hkx clips are user-supplied.",
+      "conditionPresets": [
+        {
+          "name": "NpcSwordShield",
+          "description": "Reuse this OAR 2.2+ condition block in several submods.",
+          "conditions": [
+            { "condition": "IsEquippedType", "type": 1, "leftHand": false },
+            { "condition": "IsEquippedType", "type": 11, "leftHand": true },
+            { "condition": "IsActorBase", "negated": true, "form": "Skyrim.esm|0x000007" }
+          ]
+        }
+      ],
       "submods": [
         {
           "name": "Attack - Sword & Shield",
           "priority": 100008,
           "replaces": "actors/character/animations/MyMoveset/mco_attack1.hkx",
           "hkx": ["anims/ss_attack1.hkx"],
-          "npcMoveset": { "rightWeapon": "sword", "leftWeapon": "shield", "playerOnly": false }
+          "variants": ["anims/ss_attack1_alt_a.hkx", "anims/ss_attack1_alt_b.hkx"],
+          "replacementAnimations": [
+            {
+              "projectName": "DefaultMale",
+              "path": "Data\\Meshes\\actors\\character\\animations\\MyMoveset\\mco_attack1.hkx",
+              "variantMode": "random",
+              "variantStateScope": "submod",
+              "variants": [
+                { "filename": "1.hkx", "weight": 2 },
+                { "filename": "2.hkx", "weight": 1 }
+              ]
+            }
+          ],
+          "conditions": [{ "condition": "PRESET", "preset": "NpcSwordShield" }],
+          "functionsOnTrigger": [
+            {
+              "function": "CONDITION",
+              "triggers": [{ "event": "OAR", "payload": "SofiaHit" }],
+              "conditions": [{ "condition": "PRESET", "preset": "NpcSwordShield" }],
+              "functions": [{ "function": "PlaySound", "soundForm": "Skyrim.esm|0x0003C8" }]
+            }
+          ]
         },
         {
           "name": "Attack - Sword & Shield (combo variant)",

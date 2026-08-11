@@ -2,6 +2,8 @@
 
 ← [landed index](README.md)｜對應 [CODE_MAP.world](../../common/code-map/CODE_MAP.world.md)
 
+- **SceneCoordinates pure library（offline，2026-08-11）**：`SceneCoordinates.cs` 統一位置、Euler 旋轉、尺度與 basis change，內建 Unity（左手 Y-up、m）/ Unreal（左手 Z-up、cm）profiles，另允許 custom profile；row-vector `System.Numerics` 實作已用 identity 軸旋轉、非對稱 basis、round-trip 與 non-uniform-scale 診斷測試鎖定。FromSoft 軸向刻意不猜，待真 scene importer 樣本校正。
+
 **Worldspace heightmap → 非平坦 LAND（in-game 確認 2026-06-16）**：`heightmap` spec 欄位（PNG path/originX/originY/minHeight/maxHeight）→ 自動衍生 N×M cell grid + 生起伏 LAND（VHGT）。`Heightmap.cs`（L16 PNG 載入、Y-flip、SampleCell）+ `Vhgt.cs`（signed-int8 row-wise cumulative encode/decode，`IReadOnlyArray2d<byte>`）+ `BuildWorldspaces` heightmap 分支 + **seam stitching**（encode 後 decode east/north edge → 注入鄰格 west/south，消除 ±8 units rounding seam）。踩坑三條：① PNG 生成 spike bug（一點 65535 其餘 0）→ 高斯重生；② 高度範圍 0~8000 → 4000~4500；③ `defaultLandHeight` 預設 −27000 → 須設成等於 PNG minHeight 避免世界邊緣懸崖。Task 7 主力機驗算法：Tamriel 20 格 decode→encode delta bytes 完全一致。`examples/worldspace_heightmap.json` + PNG；597 tests。
 
 **VNML 法線：從 heightmap 中心差分計算（對 vanilla 自驗 2026-06-16）**：`Vnml.cs`（35×35 邊框取樣 → 33×33 法線，`Heightmap.SampleCellExtended`）。**Skyrim VNML 約定（驗證自 vanilla Tamriel LAND）**：① 分量是 **signed byte** `(sbyte)round(n×127)`，**向上 = (0,0,127)**（非 (128,128,255)）；② Array2d 存 `[col=East, row=North]`，與 VHGT 同；③ 水平頂點間距 = **128 game units**（cell 4096/32，別跟 VHGT 高度尺度 ×8 混）。座標 X=東 Y=北 Z=上，法線 = East-tangent × North-tangent。曾一次踩三坑（轉置 / StepUnits=8 / +128 偏移）皆已修。驗證測試 `VhgtTests.VnmlCompute_OrientationMatchesVanilla`（RequiresSkyrim）：對 20 最陡 Tamriel cell，中心差分法線 vs vanilla 平均 signed-byte 誤差 <20、direct 明顯優於 transposed。605 tests。

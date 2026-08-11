@@ -30,7 +30,8 @@ public class ValidateAnimationReplacerTests
             },
             BehaviorData = { new BehaviorDataSpec { File = "x", Entries = { new BdiEntrySpec { Type = "kInt", Name = "v" } } } },
         };
-        Assert.Empty(Validate(s).Where(p => p.Contains("animationReplacer") || p.Contains("behaviorData")));
+        Assert.DoesNotContain(Validate(s),
+            p => p.Contains("animationReplacer") || p.Contains("behaviorData"));
     }
 
     [Fact]
@@ -103,5 +104,42 @@ public class ValidateAnimationReplacerTests
                     Conditions = { new OarConditionSpec { Condition = "AND" } } } } } },
         };
         Assert.Contains(Validate(s), p => p.Contains("container has no child conditions"));
+    }
+
+    [Fact]
+    public void Oar22DuplicateNamesBadWeightsAndReferences_AreReported()
+    {
+        var s = new ModSpec
+        {
+            AnimationReplacers =
+            {
+                new AnimationReplacerSpec
+                {
+                    Mod = "M",
+                    ConditionPresets = { new OarConditionPresetSpec { Name = "P", Conditions = { new OarConditionSpec { Condition = "IsFemale" } } }, new OarConditionPresetSpec { Name = "P", Conditions = { new OarConditionSpec { Condition = "IsFemale" } } } },
+                    Submods =
+                    {
+                        new OarSubmodSpec
+                        {
+                            Name = "a", Priority = 1, Hkx = { "a.hkx" }, Variants = { "v.hkx" },
+                            Conditions = { new OarConditionSpec { Condition = "PRESET", Preset = "Missing" } },
+                            ReplacementAnimations = { new OarReplacementAnimationSpec { ProjectName = "P", Path = "x", Variants = { new OarVariantMetadataSpec { Filename = "missing.hkx", Weight = 0 } } } },
+                            FunctionsOnTrigger = { new OarFunctionSpec { Function = "RANDOM", Weights = { 0 } } },
+                        },
+                        new OarSubmodSpec { Name = "a", Priority = 2, Hkx = { "b.hkx" } },
+                    },
+                },
+                new AnimationReplacerSpec { Mod = "M" },
+            },
+        };
+
+        var problems = Validate(s);
+        Assert.Contains(problems, p => p.Contains("duplicate mod name"));
+        Assert.Contains(problems, p => p.Contains("duplicate conditionPreset"));
+        Assert.Contains(problems, p => p.Contains("duplicate submod"));
+        Assert.Contains(problems, p => p.Contains("unknown conditionPreset 'Missing'"));
+        Assert.Contains(problems, p => p.Contains("weight must be finite and > 0"));
+        Assert.Contains(problems, p => p.Contains("does not reference a generated variants[] file"));
+        Assert.Contains(problems, p => p.Contains("needs at least one trigger"));
     }
 }

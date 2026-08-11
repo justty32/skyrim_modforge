@@ -25,6 +25,7 @@ public static partial class Generator
         ctx.ValidateWorld();
         ctx.ValidateStoryManager();
         ctx.ValidateGlobals();
+        ctx.ValidateEffectShaders();
         ctx.ValidateProjectiles();
         ctx.ValidateExplosions();
         ctx.ValidateHazards();
@@ -109,6 +110,7 @@ public static partial class Generator
             foreach (var st in spec.Statics) Reg(st.EditorId, "static");
             foreach (var ac in spec.Activators) Reg(ac.EditorId, "activator");
             foreach (var me in spec.MagicEffects) Reg(me.EditorId, "magicEffect");
+            foreach (var es in spec.EffectShaders) Reg(es.EditorId, "effectShader");
             foreach (var co in spec.Recipes) Reg(co.EditorId, "recipe");
             foreach (var cl in spec.Classes) Reg(cl.EditorId, "class");
             foreach (var pk in spec.Packages) Reg(pk.EditorId, "package");

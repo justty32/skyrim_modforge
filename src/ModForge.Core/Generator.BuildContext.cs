@@ -209,7 +209,7 @@ public static partial class Generator
                         + spec.Ingredients.Count + spec.Ammunitions.Count + spec.Scrolls.Count
                         + spec.SoulGems.Count + spec.Keys.Count + spec.Keywords.Count
                         + spec.Outfits.Count + spec.Statics.Count + spec.Activators.Count
-                        + spec.MagicEffects.Count + spec.Classes.Count + spec.Packages.Count
+                        + spec.MagicEffects.Count + spec.EffectShaders.Count + spec.Classes.Count + spec.Packages.Count
                         + spec.CombatStyles.Count + spec.Relationships.Count + spec.Recipes.Count
                         + spec.WordsOfPower.Count + spec.Shouts.Count + spec.WordWalls.Count
                         + spec.Enchantments.Count + spec.TextureSets.Count

@@ -129,6 +129,8 @@ public static partial class Generator
                 Resolve($"magicEffect '{me.EditorId}' projectile",   me.Projectile,   fk => mgef.Projectile.SetTo(fk));
                 Resolve($"magicEffect '{me.EditorId}' castingArt",   me.CastingArt,   fk => mgef.CastingArt.SetTo(fk));
                 Resolve($"magicEffect '{me.EditorId}' hitEffectArt", me.HitEffectArt, fk => mgef.HitEffectArt.SetTo(fk));
+                Resolve($"magicEffect '{me.EditorId}' hitShader",    me.HitShader,    fk => mgef.HitShader.SetTo(fk));
+                Resolve($"magicEffect '{me.EditorId}' enchantShader", me.EnchantShader, fk => mgef.EnchantShader.SetTo(fk));
                 Resolve($"magicEffect '{me.EditorId}' explosion",    me.Explosion,    fk => mgef.Explosion.SetTo(fk));
                 // Sounds (esp. Release = the Thu'um voice for a shout). Each resolves its SNDR ref and
                 // appends a MagicEffectSound of the named phase (default Release). Sounds is null on a

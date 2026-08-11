@@ -134,6 +134,13 @@ public class OarConditionsTests
     }
 
     [Fact]
+    public void Emit_Preset_UsesOar22PresetKey()
+    {
+        var o = OarConditions.Emit(new OarConditionSpec { Condition = "PRESET", Preset = "PlayerOnly" });
+        AssertJsonEqual(o, """{"condition":"PRESET","requiredVersion":"2.2.0","Preset":"PlayerOnly"}""");
+    }
+
+    [Fact]
     public void Expand_SwordShieldNpcOnly_ProducesAndOfThree()
     {
         var conds = OarConditions.Expand(new NpcMovesetSpec { RightWeapon = "sword", LeftWeapon = "shield", PlayerOnly = false });

@@ -125,4 +125,58 @@ public class OarGenTests
         var copy = OarGen.HkxPlacements(r).Single();
         Assert.Equal("Meshes/actors/character/animations/male/mt_idle.hkx", copy.DestRelPath);
     }
+
+    [Fact]
+    public void Generate_Oar22PresetsVariantsAndFunctions_UsesAuthorConfigContract()
+    {
+        var r = new AnimationReplacerSpec
+        {
+            Mod = "M",
+            ConditionPresets =
+            {
+                new OarConditionPresetSpec { Name = "PlayerOnly", Conditions = { new OarConditionSpec { Condition = "IsFemale" } } },
+            },
+            Submods =
+            {
+                new OarSubmodSpec
+                {
+                    Name = "idle", Priority = 1, Hkx = { "main.hkx" }, Variants = { "v1.hkx", "v2.hkx" },
+                    Conditions = { new OarConditionSpec { Condition = "PRESET", Preset = "PlayerOnly" } },
+                    ReplacementAnimations =
+                    {
+                        new OarReplacementAnimationSpec
+                        {
+                            ProjectName = "DefaultMale", Path = "Data\\Meshes\\actors\\character\\animations\\idle.hkx",
+                            VariantMode = "random", VariantStateScope = "submod",
+                            Variants = { new OarVariantMetadataSpec { Filename = "1.hkx", PlayOnce = true }, new OarVariantMetadataSpec { Filename = "2.hkx", Weight = 2 } },
+                        },
+                    },
+                    FunctionsOnTrigger =
+                    {
+                        new OarFunctionSpec
+                        {
+                            Function = "CONDITION", Triggers = { new OarFunctionTriggerSpec { Event = "OAR", Payload = "sound1" } },
+                            Conditions = { new OarConditionSpec { Condition = "PRESET", Preset = "PlayerOnly" } },
+                            Functions = { new OarFunctionSpec { Function = "PlaySound", SoundForm = "Skyrim.esm|0x0003C8" } },
+                        },
+                    },
+                },
+            },
+        };
+
+        var files = OarGen.Generate(r);
+        var root = (JsonObject)JsonNode.Parse(files.Single(f => f.RelPath.EndsWith("M/config.json")).Content)!;
+        Assert.Equal("PlayerOnly", (string?)root["conditionPresets"]![0]!["name"]);
+
+        var sub = (JsonObject)JsonNode.Parse(files.Single(f => f.RelPath.EndsWith("M/idle/config.json")).Content)!;
+        var data = (JsonObject)sub["replacementAnimDatas"]![0]!;
+        Assert.Equal(0, (int)data["variantMode"]!);
+        Assert.Equal(2, (int)data["variantStateScope"]!);
+        Assert.True((bool)data["variants"]![0]!["playOnce"]!);
+        Assert.Equal(2, (int)data["variants"]![1]!["weight"]!);
+        var function = (JsonObject)sub["functionsOnTrigger"]![0]!;
+        Assert.Equal("CONDITION", (string?)function["function"]);
+        Assert.Equal("OAR", (string?)function["triggers"]![0]!["event"]);
+        Assert.Equal("PlaySound", (string?)function["Conditions"]!["functions"]![0]!["function"]);
+    }
 }

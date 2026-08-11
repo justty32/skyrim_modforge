@@ -35,6 +35,7 @@ public static partial class Generator
         ctx.BuildDialogue();                        // Quest->Branch->Topic->INFO, DialogView, Hellos
         ctx.BuildBanter();                          // proactive Idle banter topics (unprompted NPC lines)
         ctx.BuildScenes();                          // SCEN multi-actor conversations (quest aliases + phases + Scene topics)
+        ctx.BuildEffectShaders();                  // EffectShader (EFSH) — texture-only VFX
         ctx.BuildMagicEffects();                   // MagicEffect (MGEF)
         ctx.BuildExplosions();                      // Explosion (EXPL) — built before Projectiles so a PROJ resolves an in-spec explosion
         ctx.BuildHazards();                         // Hazard (HAZD) — before BuildFormKeyTable so MGEF association / placement base resolve it
@@ -96,7 +97,7 @@ public static partial class Generator
         ctx.WireAlternateTextures();               // TXST alt-textures on static/activator meshes
         ctx.WireEffects();                         // magic effects on spell/potion/ingredient/scroll (+ spell equipType)
         ctx.WireEnchantments();                    // ENCH effects + weapon/armor enchantment FormLinks
-        ctx.WireMagicEffectRefs();                 // MGEF association/projectile/art/explosion
+        ctx.WireMagicEffectRefs();                 // MGEF association/projectile/art/shader/explosion
         ctx.WireMagicFxRefs();                     // PROJ + EXPL FormLinks (light/sound/explosion/objectEffect/…)
         ctx.WireHazards();                         // HAZD spell/light/sound/imad/impactDataSet FormLinks
         ctx.WireMusic();                            // MUSC -> MUST + Palette MUST -> sub-MUST track FormLinks

@@ -44,6 +44,8 @@
 
 ## 17. Skyrim 原版任務節點圖 + 批量隨從反應生成（2026-06-15）
 
+**2026-08-11 進度：schema MVP 已落地。** `schemas/quest-node.schema.json`（Draft 2020-12）定義 `questId/plugin/stage/summary/location/npcs/previous/next/major/reactionTags/source`；`fixtures/quest-nodes/` 有 MQ101 線性、分支與匯合四節點，`tests/quest_node_schema_test.py` 同時驗 schema、壞輸入與跨檔 link。欄位手冊見 `docs/spec/SPEC-quest-nodes.md`。下一刀不再是 schema 討論，而是把 `gamedata` QUST/DIAL 輸出接成第一批 nodes，再跑 AI semantic pass。
+
 **Idea**：把原版 Skyrim 的任務文本 / 對話全部抽出、由 AI 標記節點（「龍裔主線 MQ：殺了第一條龍」），再以已知隨從模組在這些節點的反應為例，批量 AI 生成新隨從在各節點的評論。
 
 **兩步驟**：
@@ -55,7 +57,7 @@
 - Sofia patch 已驗證「隨從對外部任務的節點反應」pipeline（stage-gate + INFO + voice + .seq）
 - LLM → spec JSON → ESP 鏈已走通
 
-**核心缺口**：① 節點語義標記（AI pass + 人工校正）；② 節點圖 JSON schema 設計；③ 從第三方隨從 mod 萃取「既有節點反應樣本」作 few-shot。
+**核心缺口**：① `gamedata` → node fixture 的 extractor；② 節點語義標記（AI pass + 人工校正）；③ 從第三方隨從 mod 萃取「既有節點反應樣本」作 few-shot。JSON schema 已完成。
 
 **關聯**：§18（記憶系統）是這個節點圖的消費端；§9（大量劇情生成）共用 LLM→spec pipeline。
 

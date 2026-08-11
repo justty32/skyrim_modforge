@@ -2,6 +2,8 @@
 
 ← [particle-vfx index](README.md)
 
+> **狀態更新 2026-08-11：MVP 已 offline 落地。** `effectShaders[]` → EFSH membrane/particle record，`magicEffects[].hitShader` / `enchantShader` 接線，palette fallback/缺失 loud warning，schema/example/docs/CODE_MAP + 5 tests 齊。真 `.dds` 外觀仍待主力機實測（`wait_todo/ingame-tests.md`）。下文保留原設計與後續 ARTO/NIF 路線。
+
 ## 4. EFSH effect shaders — the cheap win, in detail
 
 EFSH is 100% record-layer: texture paths + numbers, no mesh. CK splits into **Membrane Shader** (projected onto target's existing mesh) and **Particle Shader** (flat sprites).

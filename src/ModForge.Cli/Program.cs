@@ -36,6 +36,7 @@ internal static partial class Program
                 case "apply" when args.Length == 4:    ApplyCmd(args[1], args[2], args[3]); return 0;
                 case "applyloc" when args.Length == 4: return ApplyLocalizedCmd(args[1], args[2], args[3]);
                 case "dump" when args.Length == 2:     return Dump(args[1]);
+                case "catalog" when args.Length >= 2:  return CatalogCmd(args[1..]);
                 case "gamedata" when args.Length == 3: return GameData(args[1], args[2]);
                 case "gamedata" when args.Length == 5 && args[3] == "--strings": return GameData(args[1], args[2], args[4]);
                 case "find" when args.Length is 3 or 4: return Find(args[1], args[2], args.Length == 4 ? args[3] : null);
@@ -101,6 +102,8 @@ internal static partial class Program
         "  package <spec.json> <outModDir> [--assets <dir>]   esp + scripts + bundled Meshes/Textures/Sounds\n" +
         "  validate <spec.json>\n" +
         "  dump    <in.esp>\n" +
+        "  catalog build <out.db> <plugin> [plugin...]  index generic records into an offline SQLite/FTS catalog\n" +
+        "  catalog query <db> <query> [--type <type>] [--plugin <plugin>] [--limit <1-1000>]  search catalog name/editorId\n" +
         "  gamedata <plugin> <outDir>                   bulk-extract books/dialogue/quests/npcs/items/locations/magic to a folder (for agent reference)\n" +
 
         "  find    <in.esp> <query> [type]              search editorId/name -> Skyrim.esm:0xFORMID\n" +

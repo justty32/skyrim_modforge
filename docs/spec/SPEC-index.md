@@ -10,11 +10,13 @@ The spec is a JSON file → `.esp` plugin. Choose a topic:
 | [SPEC-magic](SPEC-magic.md) | Gameplay stats, spell/potion effects, custom MGEFs, enchantments (ENCH) |
 | [SPEC-dialogue](SPEC-dialogue.md) | Classes, dialogue, banter, scenes (SCEN), CTDA conditions |
 | [SPEC-quests](SPEC-quests.md) | Quest stages & objectives, Story Manager event quests, Papyrus scripts |
+| [SPEC-quest-nodes](SPEC-quest-nodes.md) | Semantic `questId + stage` graph-node JSON contract for extraction and follower-reaction generation |
 | [SPEC-identities](SPEC-identities.md) | Lightweight class/identity system (book→faction+ability+greeting+merchant toggle) |
 | [SPEC-world](SPEC-world.md) | Cells & placements, navmesh (navCuts/navmeshOverrides), map markers |
 | [SPEC-lighting](SPEC-lighting.md) | Custom lights (LIGT) and interior/exterior lighting (LGTM/IMGS/DALC) |
 | [SPEC-world-macros](SPEC-world-macros.md) | High-level population macros: in-world skill trees, populated settlements, living-world NPCs |
 | [SPEC-worldspaces](SPEC-worldspaces.md) | Worldspaces & regions, area music, leveled lists & containers, formLists, encounter zones, vendors |
+| [SPEC-scene-coordinates](SPEC-scene-coordinates.md) | Pure source-scene position/quaternion/scale → Skyrim transform conversion contract |
 | [SPEC-items](SPEC-items.md) | Recipes (COBJ), perks, external assets (meshes/sounds), texture sets (TXST) |
 | [SPEC-packages](SPEC-packages.md) | AI packages (Sandbox/Travel/UseMagic/Follow/Sleep/Patrol/Escort), weathers & climates |
 | [SPEC-animation](SPEC-animation.md) | Action-system loose files: OAR replacers/movesets, BDI graph-var injection, PIE macro tables (`.hkx` user-supplied) |

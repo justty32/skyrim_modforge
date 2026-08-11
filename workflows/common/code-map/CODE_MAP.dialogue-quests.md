@@ -12,10 +12,19 @@
 > ⑤ `Generator.Build.StoryManager.cs` → **`Generator.Build.QuestAliases.cs`**（`BuildQuestAliases`/`BuildStandaloneQuestAliases`/`AttachAliasScript`；`BuildStoryManager` 仍在原檔）。
 > 都是同一 partial class 跨檔，成員位置不影響行為。下方各 row 已指向方法所在的新檔。
 
+## Quest-node extraction schema
+
+| Artifact | Responsibility |
+|---|---|
+| `schemas/quest-node.schema.json` | Draft 2020-12 semantic node contract for quest/stage, location, NPCs, graph links, major moments, and reaction tags |
+| `tests/quest_node_schema_test.py` | Offline fixture validation, cross-file link checks, and invalid-shape cases |
+| `docs/spec/SPEC-quest-nodes.md` | Agent-facing usage and design notes |
+
 ## Examples
 
 | 檔案 | 對應功能 |
 |-----|---------|
+| `fixtures/quest-nodes/*.json` | Quest-node schema fixtures: linear, branched, and converging MQ101 stages |
 | `examples/dialogue_spec.json` | 單一 NPC 對話樹 |
 | `examples/dialogue_conversation_spec.json` | 多輪對話（conversation 模式）|
 | `examples/scene_spec.json` | 雙 NPC 場景（SCEN）|

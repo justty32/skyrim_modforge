@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.10" />
+    <!-- Microsoft.Data.Sqlite 10.0.10 still permits vulnerable native SQLitePCLRaw 2.1.11;
+         pin the patched compatible 2.x native bundle payload (GHSA-2m69-gcr7-jv3q). -->
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
     <PackageReference Include="Mutagen.Bethesda" Version="0.53.1" />
     <PackageReference Include="Mutagen.Bethesda.Skyrim" Version="0.53.1" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />

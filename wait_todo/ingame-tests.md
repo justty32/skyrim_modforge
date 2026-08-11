@@ -15,6 +15,10 @@
 
 ## 待測（active）
 
+- **EFSH effectShaders（2026-08-11，offline 結構已驗）**：拿 `examples/effect_shader.json` 配三張真 `.dds`（fill / particle / palette）build+package，對 actor 套 `MFEff_FireGlow`，目視確認 membrane additive glow、sprite particle 與 fade/key 時序。特別驗「有 palette 可見；拿掉 palette 可能完全不 render」及 inanimate STAT 不發 actor particles。公司機只證 record/wiring，無法代做外觀驗收。
+
+- **Map-scene 座標 profile cube calibration（2026-08-11，pure math 已驗）**：`SceneCoordinates` 已用 `B * R * B^-1` 單測 Unity/Unreal profile；等 `importscene` 第一個 consumer 接好後，用一顆已知朝向、尺寸與座標的 cube 做端到端目視，確認 Skyrim exact handedness/sign、Euler order 與 art-scale fudge。FromSoft profile 在這個實測前刻意不內建猜測。
+
 - **VNML 法線效果（2026-06-16）— 已自驗修正，下面只剩「想看再看」的選配確認**：axis/編碼/尺度已對 vanilla Tamriel LAND 逐 byte 驗過（修了三個 bug，見 SESSION-LOG），不必硬測。新 zip 已交付 `~/skyrim_mods/mine/HeightmapDemo.zip`（FLAT）。**若你某次順手進遊戲**：進 HeightmapDemo worldspace 走坡面，背光側偏暗、向光偏亮、平順漸層即正常——若看到整片黑塊／詭異反光／上下顛倒陰影再回報（理論上不會）。
 
 - **Sofia × VIGILANT 第一幕（2026-06-14）** — 兩版交付 `~/skyrim_mods/mine/`：`SofiaVigilantAct1.zip`（v1 對話+語音）、`SofiaVigilantAct1v2.zip`（v2 +PlayIdle 動作）。spec＝`examples/sofia_vigilant_act1{,_v2}.json`，臺詞＝`../sofia-patch/vigilant-screenplay/act1-警戒者.md`。

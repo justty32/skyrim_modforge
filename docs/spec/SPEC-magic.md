@@ -71,6 +71,47 @@ Keep `baseCost` low (vanilla restore/damage effects use ~0.5–3); the spell's m
 auto-calculated from `baseCost` × `magnitude`, so a large `baseCost` makes the spell absurdly
 expensive. Compare any effect to a vanilla one with `mgefdiag <Skyrim.esm> <0xFORMID>`.
 
+### effectShaders (EFSH) — texture-only membrane and particle VFX
+
+`effectShaders[]` emits normal EFSH records without generating a particle `.nif`. An EFSH can tint
+the target's existing mesh (the membrane layer) and emit flat particle sprites from actors. Point a
+`magicEffects[]` entry's `hitShader` or `enchantShader` at its editorId:
+
+```jsonc
+"effectShaders": [{
+  "editorId": "MFEffShFireGlow",
+  // Paths are relative to Data/Textures — do not include a leading Textures/.
+  "fillTexture": "MFVfx/firefill.dds",
+  "particleTexture": "MFVfx/spark.dds",
+  "paletteTexture": "MFVfx/gradient.dds", // fallback for both membrane + particle palettes
+  "flags": ["ParticleGrayscaleColor"],
+  "membrane": {
+    "sourceBlend": "SourceAlpha", "destBlend": "One", "blendOperation": "Add",
+    "fillColor": {"r":255,"g":140,"b":40}, "edgeColor": {"r":255,"g":80,"b":0},
+    "fillFadeInTime": 0.25, "fillFullTime": 1.0, "fillFadeOutTime": 0.5
+  },
+  "particle": {
+    "persistentCount": 80, "lifetime": 1.2, "initialSpeed": 30, "acceleration": -10,
+    "scaleKeys": [{"time":0,"scale":0.4},{"time":1,"scale":1.2}],
+    "colorKeys": [
+      {"time":0,"color":{"r":255,"g":200,"b":50},"alpha":1},
+      {"time":1,"color":{"r":120,"g":20,"b":0},"alpha":0}
+    ]
+  }
+}],
+"magicEffects": [{
+  "editorId": "MFEff_FireGlow", "archetype": "ValueModifier", "actorValue": "Health",
+  "hitShader": "MFEffShFireGlow", "enchantShader": "MFEffShFireGlow"
+}]
+```
+
+Particle key times are normalized `0..1` over particle lifetime; membrane fade times are seconds.
+The engine may silently render no particles when the particle palette is missing, so build emits a
+loud warning. `paletteTexture` fills both palette slots; use `membranePaletteTexture` and
+`particlePaletteTexture` when they differ. EFSH sprites emit from actors; inanimate placed statics do
+not become general-purpose particle emitters. The offline builder and record wiring are verified;
+appearance still needs an in-game check with real `.dds` assets. Full example: `effect_shader.json`.
+
 ### projectiles (PROJ) & explosions (EXPL) — custom spell bolts & booms
 Give a custom destruction spell its OWN flying bolt and impact explosion (instead of reusing a vanilla
 one). The chain, built bottom-up: **EXPL** ← **PROJ** (references the EXPL) ← **MGEF** (`projectile` =

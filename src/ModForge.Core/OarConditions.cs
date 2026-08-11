@@ -45,7 +45,8 @@ public static class OarConditions
 
     public static JsonObject Emit(OarConditionSpec c)
     {
-        var o = new JsonObject { ["condition"] = c.Condition, ["requiredVersion"] = RequiredVersion };
+        var requiredVersion = string.Equals(c.Condition, "PRESET", StringComparison.OrdinalIgnoreCase) ? "2.2.0" : RequiredVersion;
+        var o = new JsonObject { ["condition"] = c.Condition, ["requiredVersion"] = requiredVersion };
         if (c.Negated) o["negated"] = true;
 
         switch ((c.Condition ?? "").Trim())
@@ -89,6 +90,9 @@ public static class OarConditions
                 };
                 o["Comparison"] = c.Comparison;
                 o["Value B"] = new JsonObject { ["value"] = c.Value };
+                break;
+            case "PRESET":
+                o["Preset"] = c.Preset;
                 break;
             default:
                 throw new ArgumentException($"unsupported OAR condition '{c.Condition}'");

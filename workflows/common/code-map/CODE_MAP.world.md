@@ -246,6 +246,8 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 | Util | `Vtxt.cs` | ATXT+VTXT 純建構：33×33 alpha 格 + Quadrant → `AlphaLayer`{`LayerHeader`+稀疏`AlphaLayerData`(position/opacity)}；quadrant 切分（Bottom=南/低row、Left=西/低col）、position=localRow×17+localCol、0-indexed、空象限不生層。✅ LayerNumber/flags/texFormID 已對 vanilla byte-verify（2026-06-18 in-game OK）；⚠️ 僅 VTXT position 的 row/col 序待最終目視 |
 | Seam | `Generator.Build.Worldspace.cs` | heightmap 迴圈內 **seam stitching**（VHGT）+ **VNML 重算**：每格 encode 後 decode 取 east/north edge 注入下格，`Vnml.Compute(SampleCellExtended)` 填法線（邊緣頂點帶 1px overlap 無需特判）|
 | Util | `GodotPlacements.cs` | Godot `godot4_y_up` placements JSON → `List<PlacementSpec>`；座標換算（Z 翻轉、m→units）+ rotation rad→deg |
+| Util | `SceneCoordinates.cs` | Pure transform API：source position/quaternion/scale3 → Skyrim position/Euler XYZ/scale；明確 Unity LH Y-up、Unreal LH Z-up 與 custom basis，完整 `B*R*B⁻¹`；非均勻 scale diagnostic |
+| Tests | `SceneCoordinatesTests.cs` | identity、axis/handedness、basis rotation、unit/fudge scale、non-uniform diagnostic |
 | Validate | `Generator.Validate.World.cs` | worldspace ref、boundary、climate ref |
 | Validate | `Generator.Validate.World2.cs` | region / encounter zone / outfit content ref |
 | Diag | `Diagnostics.Worldspace.cs` | worldspace climate/water/map / cell grid / region overlay |

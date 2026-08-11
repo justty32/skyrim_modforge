@@ -1,0 +1,47 @@
+{
+  "pluginName": "ModForgeEffectShader.esp",
+  "esl": true,
+  "effectShaders": [
+    {
+      "editorId": "MFEffShFireGlow",
+      "fillTexture": "MFVfx/firefill.dds",
+      "particleTexture": "MFVfx/spark.dds",
+      "paletteTexture": "MFVfx/gradient.dds",
+      "flags": [ "ParticleGrayscaleColor" ],
+      "membrane": {
+        "sourceBlend": "SourceAlpha",
+        "destBlend": "One",
+        "blendOperation": "Add",
+        "fillColor": { "r": 255, "g": 140, "b": 40 },
+        "edgeColor": { "r": 255, "g": 80, "b": 0 },
+        "fillFadeInTime": 0.25,
+        "fillFullTime": 1.0,
+        "fillFadeOutTime": 0.5,
+        "edgeFallOff": 0.8
+      },
+      "particle": {
+        "persistentCount": 80,
+        "lifetime": 1.2,
+        "initialSpeed": 30,
+        "acceleration": -10,
+        "scaleKeys": [ { "time": 0.0, "scale": 0.4 }, { "time": 1.0, "scale": 1.2 } ],
+        "colorKeys": [
+          { "time": 0.0, "color": { "r": 255, "g": 200, "b": 50 }, "alpha": 1.0 },
+          { "time": 1.0, "color": { "r": 120, "g": 20, "b": 0 }, "alpha": 0.0 }
+        ]
+      }
+    }
+  ],
+  "magicEffects": [
+    {
+      "editorId": "MFEff_FireGlow",
+      "name": "Fire Glow",
+      "archetype": "ValueModifier",
+      "actorValue": "Health",
+      "castType": "FireAndForget",
+      "targetType": "Touch",
+      "hitShader": "MFEffShFireGlow",
+      "enchantShader": "MFEffShFireGlow"
+    }
+  ]
+}

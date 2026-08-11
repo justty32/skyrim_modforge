@@ -1,0 +1,9 @@
+{
+  "questId": "MQ101", "plugin": "Skyrim.esm", "stage": 20,
+  "summary": "The player chooses an escape route through the burning keep.",
+  "location": { "name": "Helgen Keep", "worldspace": "Tamriel", "kind": "interior" },
+  "npcs": [{ "name": "Ralof", "role": "ally" }, { "name": "Hadvar", "role": "ally" }],
+  "previous": [{ "node": "MQ101@10" }],
+  "next": [{ "node": "MQ101@30", "label": "emerge from Helgen" }, { "node": "MQ101@25", "label": "alternate tunnel" }],
+  "major": false, "reactionTags": ["choice", "escape", "urgency"]
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://modforge.dev/schemas/quest-node.schema.json",
+  "title": "ModForge quest node",
+  "description": "A semantic node extracted from a Skyrim quest stage for follower-reaction generation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["questId", "plugin", "stage", "summary", "major", "reactionTags"],
+  "properties": {
+    "questId": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9_:-]+$" },
+    "plugin": { "type": "string", "minLength": 1, "pattern": "^[^\\/]+\\.(?:esp|esm|esl)$" },
+    "stage": { "type": "integer", "minimum": 0, "maximum": 65535 },
+    "summary": { "type": "string", "minLength": 1 },
+    "location": { "$ref": "#/$defs/location" },
+    "npcs": { "type": "array", "items": { "$ref": "#/$defs/npc" }, "uniqueItems": true },
+    "previous": { "type": "array", "items": { "$ref": "#/$defs/nodeLink" }, "uniqueItems": true },
+    "next": { "type": "array", "items": { "$ref": "#/$defs/nodeLink" }, "uniqueItems": true },
+    "major": { "type": "boolean" },
+    "reactionTags": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1, "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$" } },
+    "source": { "$ref": "#/$defs/source" }
+  },
+  "$defs": {
+    "nodeKey": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9_:-]+@[0-9]+$" },
+    "nodeLink": { "type": "object", "additionalProperties": false, "required": ["node"], "properties": { "node": { "$ref": "#/$defs/nodeKey" }, "label": { "type": "string", "minLength": 1 } } },
+    "location": { "type": "object", "additionalProperties": false, "required": ["name"], "properties": { "name": { "type": "string", "minLength": 1 }, "worldspace": { "type": "string", "minLength": 1 }, "kind": { "type": "string", "enum": ["interior", "exterior", "worldspace", "unknown"] } } },
+    "npc": { "type": "object", "additionalProperties": false, "required": ["name"], "properties": { "name": { "type": "string", "minLength": 1 }, "role": { "type": "string", "minLength": 1 }, "ref": { "type": "string", "minLength": 1 } } },
+    "source": { "type": "object", "additionalProperties": false, "required": ["kind"], "properties": { "kind": { "type": "string", "enum": ["gamedata", "manual", "inferred"] }, "record": { "type": "string", "minLength": 1 } } }
+  }
+}

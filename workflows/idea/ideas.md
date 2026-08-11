@@ -27,7 +27,7 @@
 | 14 | [資產格式轉換管線（glTF/FBX → NIF）](tools/14-gltf-to-nif-pipeline.md) | 工具/資產 | 靜態物件端到端轉換 |
 | 15 | [Blender/Unity 視覺場景編輯器](tools/15-blender-unity-visual-editor.md) | 工具 | 重新判斷是否只保留離線批次用途 |
 | 16 | [ESL 合併工具](tools/16-esl-merge-tool.md) | 工具 | 先證明 record/FormID 重映射，不碰 `.pex` |
-| 17 | [任務節點圖 + 批量隨從反應](followers.md#17-skyrim-原版任務節點圖--批量隨從反應生成2026-06-15) | 隨從/NPC | 定義 quest-node JSON schema |
+| 17 | [任務節點圖 + 批量隨從反應](followers.md#17-skyrim-原版任務節點圖--批量隨從反應生成2026-06-15) | 隨從/NPC | schema 已落地；把 `gamedata` QUST 輸出接成第一批 nodes |
 | 18 | [隨從記憶系統](followers.md#18-隨從記憶系統任務經歷追蹤與對話更新2026-06-15) | 隨從/NPC | 一個任務節點 × 一個隨從的追蹤 spike |
 | 21 | [養成與戰鬥體系擴充](progression-combat-overhaul.md) | 養成/戰鬥 | 先選少量 Skyrim 化 Keystone |
 | 22 | [漂泊開拓慢活](world-building/22-wandering-frontier.md) | 世界/玩法 | 據點建設垂直切片 |

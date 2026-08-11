@@ -51,6 +51,8 @@ public sealed class MagicEffectSpec
     public string Projectile { get; set; } = "";        // PROJ — the thing that travels (Aimed)
     public string CastingArt { get; set; } = "";        // ARTO — FX at the caster's hands
     public string HitEffectArt { get; set; } = "";      // ARTO — FX at the impact point
+    public string HitShader { get; set; } = "";         // EFSH — shader applied to the hit target
+    public string EnchantShader { get; set; } = "";     // EFSH — shader while the effect/enchantment persists
     public string Explosion { get; set; } = "";          // EXPL — AoE explosion on impact
     // Sounds (SNDD) — per-phase sound descriptors. The big one for a SHOUT is `Release`: the Thu'um
     // VOICE the player yells (e.g. VOCShoutFX… for "FUS RO DAH"). Without it a shout fires silently

@@ -8,9 +8,9 @@
 
 | 檔 | 涵蓋 | 對應 CODE_MAP |
 |----|------|---------------|
-| [dialogue-quests.md](dialogue-quests.md) | 對話 / 任務 / Story Manager / trigger 庫 / 身份系統 / Scene 演出 | [CODE_MAP.dialogue-quests](../../common/code-map/CODE_MAP.dialogue-quests.md) |
-| [world.md](world.md) | Light(LIGT) / Map marker(WRLD override) / 光照管線（室內 LGTM+IMGS、室外 weather IMGS） | [CODE_MAP.world](../../common/code-map/CODE_MAP.world.md) |
-| [items-magic.md](items-magic.md) | GLOB / PROJ+EXPL / MGEF 擴充 / FormList / Hazard / Music | [CODE_MAP.items-magic](../../common/code-map/CODE_MAP.items-magic.md) |
+| [dialogue-quests.md](dialogue-quests.md) | 對話 / 任務 / quest-node contract / Story Manager / trigger 庫 / 身份系統 / Scene 演出 | [CODE_MAP.dialogue-quests](../../common/code-map/CODE_MAP.dialogue-quests.md) |
+| [world.md](world.md) | Light(LIGT) / Map marker(WRLD override) / 光照管線 / scene 座標轉換 | [CODE_MAP.world](../../common/code-map/CODE_MAP.world.md) |
+| [items-magic.md](items-magic.md) | GLOB / PROJ+EXPL / EFSH / MGEF 擴充 / FormList / Hazard / Music | [CODE_MAP.items-magic](../../common/code-map/CODE_MAP.items-magic.md) |
 | [npcs.md](npcs.md) | PACK templates / NPC inventory / NPC patch（override vanilla） | [CODE_MAP.npcs-packages](../../common/code-map/CODE_MAP.npcs-packages.md) |
-| [infra.md](infra.md) | Voice pipeline / Spec `$ref`·`$env` 解析層 / showcase + diag | [CODE_MAP.infra](../../common/code-map/CODE_MAP.infra.md) |
+| [infra.md](infra.md) | Voice pipeline / SQLite catalog / OAR assets / Spec `$ref`·`$env` / showcase + diag | [CODE_MAP.infra](../../common/code-map/CODE_MAP.infra.md) |
 | [godot-editor.md](godot-editor.md) | Idea #19 Godot worldspace 編輯器 + model-converter nif→glTF；子專案工具 | —（sub_projs 子專案） |

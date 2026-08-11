@@ -1,0 +1,8 @@
+{
+  "questId": "MQ101", "plugin": "Skyrim.esm", "stage": 30,
+  "summary": "The survivor exits Helgen and the party regroups outside.",
+  "location": { "name": "Helgen", "worldspace": "Tamriel", "kind": "exterior" },
+  "npcs": [{ "name": "Ralof", "role": "ally" }],
+  "previous": [{ "node": "MQ101@20" }, { "node": "MQ101@25" }],
+  "major": true, "reactionTags": ["aftermath", "relief", "dragon"]
+}

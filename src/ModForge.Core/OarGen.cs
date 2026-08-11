@@ -41,6 +41,18 @@ public static class OarGen
         var root = new JsonObject { ["name"] = r.Mod };
         if (!string.IsNullOrEmpty(r.Author)) root["author"] = r.Author;
         root["description"] = r.Description ?? "";
+        if (r.ConditionPresets.Count > 0)
+        {
+            var presets = new JsonArray();
+            foreach (var preset in r.ConditionPresets)
+            {
+                var item = new JsonObject { ["name"] = preset.Name };
+                if (!string.IsNullOrEmpty(preset.Description)) item["description"] = preset.Description;
+                item["conditions"] = OarConditions.EmitAll(preset.Conditions);
+                presets.Add(item);
+            }
+            root["conditionPresets"] = presets;
+        }
         files.Add(new OarFile($"{modDir}/config.json", root.ToJsonString(Pretty)));
 
         foreach (var s in r.Submods)
@@ -58,10 +70,59 @@ public static class OarGen
                 ["priority"] = s.Priority,
                 ["conditions"] = OarConditions.EmitAll(conditions),
             };
+            if (s.ReplacementAnimations.Count > 0)
+            {
+                var animationData = new JsonArray();
+                foreach (var replacement in s.ReplacementAnimations)
+                {
+                    var item = new JsonObject
+                    {
+                        ["projectName"] = replacement.ProjectName,
+                        ["path"] = replacement.Path,
+                        ["variantMode"] = VariantMode(replacement.VariantMode),
+                        ["variantStateScope"] = VariantStateScope(replacement.VariantStateScope),
+                        ["blendBetweenVariants"] = replacement.BlendBetweenVariants,
+                        ["resetRandomOnLoopOrEcho"] = replacement.ResetRandomOnLoopOrEcho,
+                        ["sharePlayedHistory"] = replacement.SharePlayedHistory,
+                    };
+                    var variants = new JsonArray();
+                    foreach (var variant in replacement.Variants)
+                    {
+                        var setting = new JsonObject { ["filename"] = variant.Filename };
+                        if (variant.Disabled) setting["disabled"] = true;
+                        if (replacement.VariantMode.Equals("random", StringComparison.OrdinalIgnoreCase) && variant.Weight != 1f)
+                            setting["weight"] = variant.Weight;
+                        if (variant.PlayOnce) setting["playOnce"] = true;
+                        variants.Add(setting);
+                    }
+                    if (variants.Count > 0) item["variants"] = variants;
+                    animationData.Add(item);
+                }
+                sub["replacementAnimDatas"] = animationData;
+            }
+            AddFunctions(sub, "functionsOnActivate", s.FunctionsOnActivate);
+            AddFunctions(sub, "functionsOnDeactivate", s.FunctionsOnDeactivate);
+            AddFunctions(sub, "functionsOnTrigger", s.FunctionsOnTrigger);
             files.Add(new OarFile($"{modDir}/{SanitizeFolder(s.Name)}/config.json", sub.ToJsonString(Pretty)));
         }
         return files;
     }
+
+    private static void AddFunctions(JsonObject sub, string name, List<OarFunctionSpec> functions)
+    {
+        if (functions.Count > 0) sub[name] = OarFunctions.EmitAll(functions);
+    }
+
+    private static int VariantMode(string value) => value.Equals("sequential", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+
+    private static int VariantStateScope(string value) => value.ToLowerInvariant() switch
+    {
+        "local" => 1,
+        "submod" => 2,
+        "replacermod" => 4,
+        "reference" => 8,
+        _ => 0,
+    };
 
     public static List<HkxCopy> HkxPlacements(AnimationReplacerSpec r)
     {

@@ -65,6 +65,8 @@ dotnet run --project src/ModForge.Cli -- <command> ...
   gen      <out.esp>                         write a demo plugin (for testing)
   dump     <in.esp>                          read a plugin back (records, refs, stats, effects, keywords, masters)
   find     <in.esp> <query> [type]           search a master -> "Skyrim.esm:0xFORMID  Type  EditorID"
+  catalog build <out.db> <plugin> [plugin...] build a replace-only offline SQLite/FTS generic-record index
+  catalog query <db> <query> [--type Npc] [--plugin MyMod.esp]
   extract  <in.esp> <strings.json>           pull translatable strings -> JSON
   apply    <in.esp> <strings.json> <out.esp> write translated strings back (Latin/inline)
   applyloc <in.esp> <strings.json> <outDir>  write a LOCALIZED plugin + UTF-8

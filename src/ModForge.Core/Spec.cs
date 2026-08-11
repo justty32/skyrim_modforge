@@ -33,6 +33,7 @@ public sealed class ModSpec
     public List<SceneSpec> Scenes { get; set; } = new();
     public List<SpellSpec> Spells { get; set; } = new();
     public List<MagicEffectSpec> MagicEffects { get; set; } = new();
+    public List<EffectShaderSpec> EffectShaders { get; set; } = new();   // EffectShader (EFSH), texture-only VFX
     // Magic combat FX (Spec.MagicFx.cs): a Projectile (PROJ) is the flying bolt; an Explosion
     // (EXPL) is the boom on impact. A MagicEffect's projectile/explosion refs point at these.
     public List<ProjectileSpec> Projectiles { get; set; } = new();

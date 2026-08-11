@@ -28,6 +28,7 @@
 | `DependencyTests.cs` | 外部 master 可見性：純 vanilla spec **什麼都不印**（negative case）／capture 與手寫 spec 都列出 mod master ＋歸因到**作者寫的**欄位（含「巨集展開後仍報 `capturedNpcs[]` 不報 `npcs[]`」）／CC 分類／摘要＋`requires.txt` 內容／**釘死「分析不改 esp 一個 byte」**|
 | `RequiresTests.cs` | 宣告式 `requires[]` 雙向檢查：**沒有 requires 段＝完全不檢查**（negative case，向後相容）／用到沒宣告→錯誤且訊息指出**是哪一行 spec 欄位**／宣告沒用到→警告／空 `[]`＝只准 vanilla／`name` 條目（無 plugin 的 SKSE 相依）永不檢查但進旁檔／`version` 只是標籤（旁檔標 NOT verified）／**玩家面向 shipped 形式**（`forShippedMod`）保留安裝清單＋reason/version/連結、拿掉 spec 欄位歸因與 rebuild 指示／`SyncRequires` 加新丟舊保留 metadata＋同步後檢查通過／`validate` 形狀檢查／JSON 字串簡寫與缺段＝null／**釘死「requires[] 不改 esp 一個 byte」**|
 | `Helpers.cs` | 共用測試 helper（非 test class，供其他 *Tests.cs 使用）|
+| `CatalogTests.cs` | 不需 Skyrim.esm 的 synthetic plugin round-trip：multiple source、FTS name/EditorID + type/plugin filter、source hash/path provenance、rerun replace 不重複。|
 
 ---
 
@@ -50,6 +51,8 @@
 | 層次 | 檔案 | 命令 |
 |-----|-----|-----|
 | CLI | `Program.cs` | `gen` / `find` / diagnostic dispatcher；`ResolveSpecJson`（單一 chokepoint，跑 `SpecRefs.ResolveFile`）→ `ReadSpec` JSON 反序列化 |
+| Catalog | `Catalog.cs` | 離線 SQLite/FTS5 catalog：任意 plugin 的 generic major record（FormKey/plugin/type/EditorID/name）+ `sources` SHA-256/path provenance；`Build` 先寫 temporary DB 再 replace，`Query` 走 name/editorId FTS 並支援 type/source-plugin filter。未做 record-specific schema，未來擴充以 `records.id` 為外鍵。|
+| CLI | `CatalogCmd.cs` | `catalog build <out.db> <plugin>...` / `catalog query <db> <query> [--type] [--plugin] [--limit]` 的 argv/TSV facade；資料庫邏輯全在 Core。|
 | CLI | `Program.Build.cs` | `build` / `validate` / `package` / `compile` / `voicelines` / `extract-voices`；`validate` 的 `CheckUnknownFields` + deserialize 都跑在 `$ref`/`$env` **解析後**的 JSON；`build` 後另印 `annotations`（advisory，不生記錄）與 `references`（label→既有 ref 綁定清單）兩行摘要；`ReportDependencies` 印非 vanilla master ＋寫 `<plugin>.requires.txt` 旁檔（作者面向）；`package` 也印，並另把**玩家面向** `REQUIREMENTS.txt`（`RequiresFileText forShippedMod:true`）寫進出貨夾——玩家最需要「先裝哪些前置」；**`RequiresOk` ＝ `requires[]` 的閘門**（用到沒宣告 → 印錯誤、**在 `PluginIo.Write` 之前 return 1，esp 完全不寫**；`package` 走同一個閘門），**`SyncRequiresFile` ＝ `build --sync-requires`**（用 `JsonNode` 就地改寫 spec 檔的 `requires[]`；requires 來自 `$ref` include 時拒絕改寫，免得宣告分叉）|
 | CLI | `Program.Translate.cs` | `extract` / `apply` / `applyloc` |
 | CLI | `Package.cs` | `package` 完整流程：Papyrus 編譯 + Assets 複製 + MO2 資料夾組裝 |
@@ -111,11 +114,13 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.AnimationReplacer.cs` | DTO：`AnimationReplacerSpec`/`OarSubmodSpec`/`OarConditionSpec`/`NpcMovesetSpec`/`BehaviorDataSpec`/`BdiEntrySpec`/`PayloadMacroSpec`/`PieMacroSpec`（ModSpec 三個 list 在 `Spec.cs`）|
-| Core | `OarConditions.cs` | `OarConditionSpec`→OAR JSON（`Emit`）、`NpcMovesetSpec`→條件束（`Expand`）、武器型 enum（`WeaponType`）、form-ref 解析（`ParseForm`）|
-| Core | `OarGen.cs` | OAR 資料夾樹 + root/submod `config.json`（`Generate`）+ `.hkx` 擺放清單（`HkxPlacements`）|
+| Spec | `Spec.AnimationReplacer.cs` | DTO：OAR replacer/submod/condition + OAR 2.2+ `conditionPresets`/`replacementAnimations` variant metadata + OAR 3.0 typed function/multifunction、`NpcMovesetSpec`/BDI/PIE（ModSpec 三個 list 在 `Spec.cs`）|
+| Core | `OarConditions.cs` | `OarConditionSpec`→OAR JSON（`Emit`，含 PRESET 2.2.0）、`NpcMovesetSpec`→條件束（`Expand`）、武器型 enum（`WeaponType`）、form-ref 解析（`ParseForm`）|
+| Core | `OarFunctions.cs` | OAR 3.0 typed built-ins：`CONDITION`/`RANDOM`/`ONE` multifunction + `PlaySound`、trigger JSON（`Emit`）|
+| Core | `OarGen.cs` | OAR 資料夾樹 + root/submod `config.json`（含 `conditionPresets`/`replacementAnimDatas`/function sets；`Generate`）+ `.hkx` 擺放清單（`HkxPlacements`）|
 | Core | `BdiGen.cs` | BDI flat-array JSON（`BdiGen.Generate`）+ PIE `.ini` 巨集表（`PieGen.Generate`）|
-| Validate | `Generator.Validate.AnimationReplacer.cs` | priority/條件名/武器名/form/BDI type 校驗（`.hkx` 存在性在 `Package.cs` 查）|
+| Validate | `Generator.Validate.AnimationReplacer.cs` | priority/條件名/武器名/form/BDI type + OAR 2.2+/3.0 重名、PRESET/variant filename 引用、weight、typed functions 校驗（`.hkx` 存在性在 `Package.cs` 查）|
+| Tests | `OarConditionsTests.cs` / `OarGenTests.cs` / `ValidateAnimationReplacerTests.cs` | OAR condition JSON、folder/config tree（含 OAR 2.2+/3.0 metadata/preset/function contract）、語義 validation |
 
 `.hkx` 動畫本體**不生成**（使用者自備，經 `assets`/spec 目錄）；Blender→hkx、Pandora、SCAR AI 不在範圍。
 

@@ -99,6 +99,8 @@ public static partial class Generator
                 CheckRef(me.Projectile, $"magicEffect '{me.EditorId}' projectile");
                 CheckRef(me.CastingArt, $"magicEffect '{me.EditorId}' castingArt");
                 CheckRef(me.HitEffectArt, $"magicEffect '{me.EditorId}' hitEffectArt");
+                CheckRef(me.HitShader, $"magicEffect '{me.EditorId}' hitShader");
+                CheckRef(me.EnchantShader, $"magicEffect '{me.EditorId}' enchantShader");
                 CheckRef(me.Explosion, $"magicEffect '{me.EditorId}' explosion");
             }
             foreach (var cl in spec.Classes)

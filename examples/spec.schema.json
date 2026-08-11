@@ -137,6 +137,11 @@
       },
       "description": "custom MGEF records an effect can point at by editorId"
     },
+    "effectShaders": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/effectShader" },
+      "description": "EffectShader (EFSH): texture-only membrane tint and actor-emitted sprite particles; referenced by magicEffect.hitShader/enchantShader"
+    },
     "projectiles": {
       "type": "array",
       "items": {
@@ -1333,6 +1338,14 @@
         "hitEffectArt": {
           "$ref": "#/$defs/ref",
           "description": "ARTO ref — FX at the impact point"
+        },
+        "hitShader": {
+          "$ref": "#/$defs/ref",
+          "description": "EFSH ref — shader applied to the hit target"
+        },
+        "enchantShader": {
+          "$ref": "#/$defs/ref",
+          "description": "EFSH ref — shader while the effect/enchantment persists"
         },
         "explosion": {
           "$ref": "#/$defs/ref",
@@ -3535,6 +3548,90 @@
         }
       }
     },
+    "effectShader": {
+      "type": "object",
+      "required": ["editorId"],
+      "additionalProperties": false,
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "fillTexture": { "type": "string", "description": ".dds relative to Data/Textures" },
+        "particleTexture": { "type": "string", "description": ".dds relative to Data/Textures" },
+        "holesTexture": { "type": "string", "description": ".dds relative to Data/Textures" },
+        "paletteTexture": { "type": "string", "description": "fallback .dds for both membrane and particle palettes" },
+        "membranePaletteTexture": { "type": "string" },
+        "particlePaletteTexture": { "type": "string" },
+        "flags": {
+          "type": "array", "uniqueItems": true,
+          "items": { "enum": ["NoMembraneShader","MembraneGrayscaleColor","MembraneGrayscaleAlpha","NoParticleShader","EdgeEffectInverse","AffectSkinOnly","TextureEffectIgnoreAlpha","TextureEffectProjectUVs","IgnoreBaseGeometryAlpha","TextureEffectLighting","TextureEffectNoWeapons","ParticleAnimated","ParticleGrayscaleColor","ParticleGrayscaleAlpha","UseBloodGeometry"] }
+        },
+        "membrane": { "$ref": "#/$defs/effectShaderMembrane" },
+        "particle": { "$ref": "#/$defs/effectShaderParticle" }
+      }
+    },
+    "effectShaderMembrane": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "sourceBlend": { "$ref": "#/$defs/effectShaderBlendMode" },
+        "destBlend": { "$ref": "#/$defs/effectShaderBlendMode" },
+        "blendOperation": { "$ref": "#/$defs/effectShaderBlendOperation" },
+        "zTest": { "$ref": "#/$defs/effectShaderZTest" },
+        "fillColor": { "$ref": "#/$defs/color" },
+        "edgeColor": { "$ref": "#/$defs/color" },
+        "fillFadeInTime": { "type": "number", "minimum": 0 },
+        "fillFullTime": { "type": "number", "minimum": 0 },
+        "fillFadeOutTime": { "type": "number", "minimum": 0 },
+        "fillPersistentAlphaRatio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "fillFullAlphaRatio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "fillAlphaPulseAmplitude": { "type": "number", "minimum": 0 },
+        "fillAlphaPulseFrequency": { "type": "number", "minimum": 0 },
+        "fillTextureAnimationSpeedU": { "type": "number" },
+        "fillTextureAnimationSpeedV": { "type": "number" },
+        "edgeFallOff": { "type": "number", "minimum": 0 },
+        "edgeFadeInTime": { "type": "number", "minimum": 0 },
+        "edgeFullTime": { "type": "number", "minimum": 0 },
+        "edgeFadeOutTime": { "type": "number", "minimum": 0 },
+        "edgePersistentAlphaRatio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "edgeFullAlphaRatio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "edgeAlphaPulseAmplitude": { "type": "number", "minimum": 0 },
+        "edgeAlphaPulseFrequency": { "type": "number", "minimum": 0 }
+      }
+    },
+    "effectShaderParticle": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "sourceBlend": { "$ref": "#/$defs/effectShaderBlendMode" },
+        "destBlend": { "$ref": "#/$defs/effectShaderBlendMode" },
+        "blendOperation": { "$ref": "#/$defs/effectShaderBlendOperation" },
+        "zTest": { "$ref": "#/$defs/effectShaderZTest" },
+        "birthRampUpTime": { "type": "number", "minimum": 0 },
+        "fullBirthTime": { "type": "number", "minimum": 0 },
+        "birthRampDownTime": { "type": "number", "minimum": 0 },
+        "fullBirthRatio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "persistentCount": { "type": "number", "minimum": 0 },
+        "lifetime": { "type": "number", "minimum": 0 },
+        "lifetimePlusMinus": { "type": "number", "minimum": 0 },
+        "initialSpeed": { "type": "number" },
+        "initialSpeedPlusMinus": { "type": "number" },
+        "acceleration": { "type": "number" },
+        "initialRotationDegrees": { "type": "number" },
+        "initialRotationDegreesPlusMinus": { "type": "number" },
+        "rotationSpeedDegreesPerSecond": { "type": "number" },
+        "rotationSpeedDegreesPerSecondPlusMinus": { "type": "number" },
+        "scaleKeys": { "type": "array", "maxItems": 2, "items": { "$ref": "#/$defs/effectShaderScaleKey" } },
+        "colorKeys": { "type": "array", "maxItems": 3, "items": { "$ref": "#/$defs/effectShaderColorKey" } }
+      }
+    },
+    "effectShaderScaleKey": {
+      "type": "object", "required": ["time","scale"], "additionalProperties": false,
+      "properties": { "time": { "type": "number", "minimum": 0, "maximum": 1 }, "scale": { "type": "number", "minimum": 0 } }
+    },
+    "effectShaderColorKey": {
+      "type": "object", "required": ["time","color"], "additionalProperties": false,
+      "properties": { "time": { "type": "number", "minimum": 0, "maximum": 1 }, "color": { "$ref": "#/$defs/color" }, "alpha": { "type": "number", "minimum": 0, "maximum": 1 } }
+    },
+    "effectShaderBlendMode": { "enum": ["Zero","One","SourceColor","SourceInverseColor","SourceAlpha","SourceInvertedAlpha","DestAlpha","DestInvertedAlpha","DestColor","DestInverseColor","SourceAlphaSat"] },
+    "effectShaderBlendOperation": { "enum": ["Add","Subtract","ReverseSubtract","Minimum","Maximum"] },
+    "effectShaderZTest": { "enum": ["EqualTo","Normal","GreaterThan","GreaterThanOrEqualTo","AlwaysShow"] },
     "color": {
       "type": "object",
       "description": "An 8-bit RGB(A) colour; components 0–255 (alpha usually 0 for weather colours).",
@@ -5669,6 +5766,11 @@
         "description": {
           "type": "string"
         },
+        "conditionPresets": {
+          "type": "array",
+          "description": "OAR 2.2+ reusable root condition blocks; submods use condition PRESET to reference one by name.",
+          "items": { "$ref": "#/$defs/oarConditionPreset" }
+        },
         "submods": {
           "type": "array",
           "items": {
@@ -5714,6 +5816,11 @@
           },
           "description": "optional; emitted under _variants_<anim>/"
         },
+        "replacementAnimations": {
+          "type": "array",
+          "description": "OAR 2.2+ replacementAnimDatas metadata for variants (weight, sequential, playOnce). Existing variants[] is unchanged.",
+          "items": { "$ref": "#/$defs/oarReplacementAnimation" }
+        },
         "conditions": {
           "type": "array",
           "items": {
@@ -5724,6 +5831,9 @@
         "npcMoveset": {
           "$ref": "#/$defs/npcMoveset"
         },
+        "functionsOnActivate": { "type": "array", "items": { "$ref": "#/$defs/oarFunction" } },
+        "functionsOnDeactivate": { "type": "array", "items": { "$ref": "#/$defs/oarFunction" } },
+        "functionsOnTrigger": { "type": "array", "items": { "$ref": "#/$defs/oarFunction" }, "description": "each root function needs triggers[]" },
         "replaceVanillaPath": {
           "type": "boolean",
           "description": "true: plain vanilla-path replacer (no config.json/conditions)"
@@ -5747,6 +5857,7 @@
             "IsRace",
             "Random",
             "CompareValues",
+            "PRESET",
             "AND",
             "OR"
           ]
@@ -5796,12 +5907,77 @@
         "randomMax": {
           "type": "number"
         },
+        "preset": {
+          "type": "string",
+          "description": "PRESET: name from the parent animationReplacer's conditionPresets[]"
+        },
         "conditions": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/oarCondition"
           }
         }
+      },
+      "additionalProperties": false
+    },
+    "oarConditionPreset": {
+      "type": "object",
+      "required": ["name", "conditions"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "conditions": { "type": "array", "items": { "$ref": "#/$defs/oarCondition" } }
+      },
+      "additionalProperties": false
+    },
+    "oarReplacementAnimation": {
+      "type": "object",
+      "required": ["projectName", "path"],
+      "description": "Direct OAR replacementAnimDatas metadata. path must match OAR's runtime-discovered replacement path; copy it from OAR Author mode.",
+      "properties": {
+        "projectName": { "type": "string" },
+        "path": { "type": "string" },
+        "variantMode": { "enum": ["random", "sequential"] },
+        "variantStateScope": { "enum": ["local", "submod", "replacerMod", "reference"] },
+        "blendBetweenVariants": { "type": "boolean" },
+        "resetRandomOnLoopOrEcho": { "type": "boolean" },
+        "sharePlayedHistory": { "type": "boolean" },
+        "variants": { "type": "array", "items": { "$ref": "#/$defs/oarVariantMetadata" } }
+      },
+      "additionalProperties": false
+    },
+    "oarVariantMetadata": {
+      "type": "object",
+      "required": ["filename"],
+      "properties": {
+        "filename": { "type": "string", "description": "generated 1.hkx, 2.hkx, ... name from variants[]" },
+        "weight": { "type": "number", "exclusiveMinimum": 0 },
+        "disabled": { "type": "boolean" },
+        "playOnce": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "oarFunction": {
+      "type": "object",
+      "required": ["function"],
+      "description": "Typed OAR 3.0+ built-ins: CONDITION/RANDOM/ONE multifunctions and PlaySound.",
+      "properties": {
+        "function": { "enum": ["CONDITION", "RANDOM", "ONE", "PlaySound"] },
+        "requiredVersion": { "type": "string" },
+        "functions": { "type": "array", "items": { "$ref": "#/$defs/oarFunction" } },
+        "conditions": { "type": "array", "items": { "$ref": "#/$defs/oarCondition" } },
+        "weights": { "type": "array", "items": { "type": "number", "exclusiveMinimum": 0 } },
+        "soundForm": { "type": "string", "description": "PlaySound: Plugin.esp|0xFormID" },
+        "triggers": { "type": "array", "items": { "$ref": "#/$defs/oarFunctionTrigger" } }
+      },
+      "additionalProperties": false
+    },
+    "oarFunctionTrigger": {
+      "type": "object",
+      "required": ["event"],
+      "properties": {
+        "event": { "type": "string" },
+        "payload": { "type": "string" }
       },
       "additionalProperties": false
     },

@@ -1,0 +1,9 @@
+{
+  "questId": "MQ101", "plugin": "Skyrim.esm", "stage": 10,
+  "summary": "The prisoner reaches Helgen and the dragon attack begins.",
+  "location": { "name": "Helgen", "worldspace": "Tamriel", "kind": "exterior" },
+  "npcs": [{ "name": "Ralof", "role": "ally" }, { "name": "Alduin", "role": "antagonist" }],
+  "next": [{ "node": "MQ101@20", "label": "escape route" }],
+  "major": true, "reactionTags": ["danger", "dragon", "first-impression"],
+  "source": { "kind": "gamedata", "record": "QUST:MQ101 stage 10" }
+}

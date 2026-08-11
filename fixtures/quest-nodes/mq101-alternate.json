@@ -1,0 +1,9 @@
+{
+  "questId": "MQ101", "plugin": "Skyrim.esm", "stage": 25,
+  "summary": "A side route reveals the keep's hidden torture chamber.",
+  "location": { "name": "Helgen Keep", "kind": "interior" },
+  "npcs": [{ "name": "Ralof", "role": "ally" }],
+  "previous": [{ "node": "MQ101@20", "label": "alternate tunnel" }],
+  "next": [{ "node": "MQ101@30" }],
+  "major": false, "reactionTags": ["choice", "discovery", "moral-tension"]
+}

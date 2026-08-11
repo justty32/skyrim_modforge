@@ -27,6 +27,8 @@ $R build    <spec.json> <out.esp>            # spec -> plugin (records, dialogue
 $R package  <spec.json> <outModDir>          # build + compile each script `source` -> MO2-ready folder
 $R dump     <plugin.esp>                     # read back: records, names, npc race/class/outfit/factions, weapon/armor stats, effects, cells/placements, keywords, scripts, dialogue, objectives, masters
 $R find     <plugin.esp> <query> [type]      # search a master (e.g. Skyrim.esm) -> "Skyrim.esm:0xFORMID  Type  EditorID"  (query may be a 0xFORMID to reverse-resolve: "what record IS this?")
+$R catalog build <out.db> <plugin> [plugin...] # replace/create an offline SQLite/FTS index of generic records
+$R catalog query <db> <query> [--type Npc] [--plugin MyMod.esp] [--limit 50] # FTS name/EditorID search
 $R compile  <script.psc> <outDir>            # .psc -> .pex via the CK PapyrusCompiler under Wine
 $R extract  <plugin.esp> <strings.json>      # pull translatable strings -> JSON (source/target)
 $R apply    <plugin.esp> <strings.json> <out.esp>     # write targets back (Latin scripts / inline)
@@ -41,6 +43,27 @@ families (`questdiag`, `packagediag`, `landdiag`, `navdiag`, …) that prints on
 you can compare what you generated against a vanilla record of the same kind.
 
 `--no-build` requires a prior `dotnet build`; drop it (slower) if unsure.
+
+## Offline catalog for agent lookups
+
+`catalog` is a compact, generic record index for a story system or agent that needs to answer
+"which FormKey is this wolf/bread/NPC?" without loading Skyrim. It accepts arbitrary `.esm`,
+`.esp`, or `.esl` inputs; `Skyrim.esm` is optional, not a prerequisite.
+
+```bash
+$R catalog build ./catalog.db ./MyStoryMod.esp ./AnotherMod.esl
+$R catalog query ./catalog.db forged --type Npc --plugin MyStoryMod.esp
+```
+
+The `records` table stores the resolver-ready `form_key` (`Plugin.esp:0x000800`), FormKey
+plugin, Mutagen record type, EditorID, and display name. Its FTS5 index covers `name` and
+`editor_id`; `--type` and `--plugin` are exact case-insensitive filters (the plugin is the input
+source plugin). `sources` records the absolute source path, SHA-256, localization flag, and record
+count, so a result has clear provenance. Re-running `catalog build` replaces the destination only
+after the new database is complete, so it never appends duplicate records.
+
+This is the stable generic layer, not a dump of every record's schema. Future record-specific
+catalog tables can key off `records.id` without changing agent-facing identity/search fields.
 
 ## Referencing vanilla forms (race/class/outfit/keywords/factions)
 
