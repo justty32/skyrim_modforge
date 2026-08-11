@@ -133,6 +133,24 @@ DLL 遊戲內報告 vs C# `build` 的 master 名單**跨端一致**（同 7 個 
 
 **⇒ 剩下的 NAVM 工作（P3 add+link、P4）只為症狀②「NPC 站在新平台上不動」服務**；症狀③維持低優先僅診斷。原訂的 P2 NAVM-cut 備案（打 Deleted flag）整段作廢，不再排進任何階段。
 
+## navmesh P3 `navPatches[]` interior edge-to-edge · IN-GAME PASS 2026-08-11
+
+`navPatches[]` 對 vanilla interior NAVM append 凸 polygon triangle fan，只在新 polygon
+完整邊唯一命中舊 triangle 完整邊時雙向縫合；舊 vertex/triangle index 不重排，NAVI
+不寫，bounds 與 divisor=1 單桶 grid 重建。Bannered Mare `NAVM 0x0C9064` fixture
+由 298→302 vertices、318→320 triangles，新平台深 64 units。
+
+Runtime 由 AgentBridge 結構化取樣：ESP 在 QA profile 最後載入，兩名一次性 Travel
+actor 從 seam 兩側出發。`NAVM PATCH NEW TO VANILLA` 到 vanilla marker 最短距離
+3.3 units；`NAVM PATCH VANILLA TO NEW` 於 6 秒抵達新增平台 marker，距離 0.0。
+⇒ **雙向 seam、重建 grid（U3）與「改幾何仍沿用原 NAVI」（U4）皆 runtime PASS**。
+
+首輪單一 repeatable Patrol fixture 只證明新→舊後走離測區，無法把「沒回來」區分成
+seam 失敗或 patrol loop 語意，因此改成兩個方向各自獨立的 Travel actor。另有一個環境
+假象：`ini Editor MCM` 的 `CustomIniEditorMCM.psc:45` 會顯示 `Done Writing`
+MessageBox，modal 暫停全場，曾讓所有 actor 看似 freeze；QA profile 隔離該 mod 後重測。
+這個缺口已回饋 `agent-bridge` backlog，規劃結構化 MessageBox 讀取/選擇 API。
+
 ## 採集橋輸入/面板三件（動作鍵 `.ini`、面板欄位一致化、numpad 長按）· 使用者實機確認 2026-07-14
 
 - **動作鍵改走 `SceneCaptureBridge.ini`**：遊戲內 rebind 抓鍵**兩次實機失敗後整條移除**——面板不暫停遊戲，抓鍵永遠在跟玩家手上還按著的 WASD 搶同一條輸入串流。檔案沒有那條賽道可輸（沒有 armed 狀態、沒有 input sink、沒有時序）。ini 贏過 co-save、保留鍵拒收、缺檔自動生成（log 實證 `KeyIni: applied 7 bind(s)`）。

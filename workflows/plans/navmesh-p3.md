@@ -4,7 +4,7 @@
 
 ## Done when
 
-`navPatches[]` 可對 vanilla interior NAVM append 凸多邊形 triangle fan，在完整邊重合時與舊網格雙向縫合；既有 triangle index 不變、grid/bounds 重建、所有失敗路徑不留部分修改，全離線測試通過。本輪不含外景、DotRecast、P4 採集與實機驗收。
+`navPatches[]` 可對 vanilla interior NAVM append 凸多邊形 triangle fan，在完整邊重合時與舊網格雙向縫合；既有 triangle index 不變、grid/bounds 重建、所有失敗路徑不留部分修改，全離線測試通過。本輪不含外景、DotRecast 與 P4 採集；runtime 驗收在實作後另行完成。
 
 ## Task 1 — contract + validation
 
@@ -30,11 +30,11 @@
 
 ## Task 4 — docs/example/verification
 
-- [x] Add `examples/navmesh_patch.json`：Bannered Mare 真 boundary edge 衍生平台＋跨 seam patrol NPC。
+- [x] Add `examples/navmesh_patch.json`：Bannered Mare 真 boundary edge 衍生平台＋兩名相反方向的一次性 Travel NPC（原單一 repeatable Patrol fixture 於首輪 runtime 只證明新→舊後走離測區，故改成每方向獨立判定）。
 - [x] Update `docs/spec/SPEC-world.md`、schema 與 `CODE_MAP.world.md`。
 - [x] Focused P3 8/8、offline 1038/1038、全部 RequiresSkyrim 56/56、example validate/build/navdiag 完成。
-- [x] 實機驗收步驟記到 `wait_todo/ingame-tests.md`。
+- [x] Runtime：QA profile 將 ESP 排最後，兩名相反方向 Travel actor 分別到達對側 marker（新→舊最短 3.3 units；舊→新 0.0 units）；無 CTD。`ini Editor MCM` 的 `Done Writing` modal 曾暫停全場造成假 freeze，隔離該 mod 後重測 PASS。
 
 ## 狀態（2026-08-11）
 
-離線實作完成；剩 Skyrim runtime 驗收。實機 PASS 後才開 exterior / P4，不先擴範圍。
+P3 完成且 Skyrim runtime PASS。這次同時關閉 U3（divisor=1 單桶 grid 可用）與 U4（改幾何仍不需 authored NAVI）。Exterior / P4 仍是獨立後續，不在本輪自動擴範圍。

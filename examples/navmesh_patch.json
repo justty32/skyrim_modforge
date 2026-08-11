@@ -1,11 +1,11 @@
 {
   "pluginName": "ModForgeNavmeshPatch.esp",
   "esl": false,
-  "_": "P3 interior append+link spike. The four coordinates are derived from an actual unlinked boundary edge in Bannered Mare NAVM 0x0C9064 (not hand-guessed). It adds a 64-unit-deep two-triangle platform and stitches that one complete edge both ways. Existing 318 triangle indices remain fixed; NAVI is untouched. NAVM PATCH TEST patrols from the new polygon to a vanilla-side marker and back; continuous walking across the seam is the runtime PASS.",
+  "_": "P3 interior append+link spike. The four coordinates are derived from an actual unlinked boundary edge in Bannered Mare NAVM 0x0C9064 (not hand-guessed). It adds a 64-unit-deep two-triangle platform and stitches that one complete edge both ways. Existing 318 triangle indices remain fixed; NAVI is untouched. Two one-shot Travel actors cross the same seam in opposite directions; each reaching the other side is the runtime PASS. Separate actors make both directions independently observable without relying on Patrol linked-ref loop semantics.",
   "npcs": [
     {
-      "editorId": "MF_NavPatchTester",
-      "name": "NAVM PATCH TEST",
+      "editorId": "MF_NavPatchNewToVanilla",
+      "name": "NAVM PATCH NEW TO VANILLA",
       "race": "Skyrim.esm:0x013746",
       "class": "Skyrim.esm:0x01326B",
       "outfit": "Skyrim.esm:0x09D5DF",
@@ -14,37 +14,58 @@
       "unique": true,
       "aggression": "Unaggressive",
       "confidence": "Cowardly",
-      "packages": ["MF_NavPatchPatrol"]
+      "packages": ["MF_NavPatchToVanilla"]
+    },
+    {
+      "editorId": "MF_NavPatchVanillaToNew",
+      "name": "NAVM PATCH VANILLA TO NEW",
+      "race": "Skyrim.esm:0x013746",
+      "class": "Skyrim.esm:0x01326B",
+      "outfit": "Skyrim.esm:0x09D5DF",
+      "level": 5,
+      "autoCalcStats": true,
+      "unique": true,
+      "aggression": "Unaggressive",
+      "confidence": "Cowardly",
+      "packages": ["MF_NavPatchToNew"]
     }
   ],
   "packages": [
     {
-      "editorId": "MF_NavPatchPatrol",
-      "template": "Skyrim.esm:0x017723",
+      "editorId": "MF_NavPatchToVanilla",
+      "template": "Skyrim.esm:0x016FAA",
       "preferredSpeed": "Walk",
-      "schedule": { "hour": -1, "minute": -1, "durationInMinutes": 0, "dayOfWeek": "Any" },
-      "patrol": { "start": "MF_NavPatchNewSide", "radius": 8, "repeatable": true, "startAtNearest": true }
+      "travel": { "place": "MF_NavPatchVanillaSide", "radius": 8, "rideHorse": false, "preferPath": false }
+    },
+    {
+      "editorId": "MF_NavPatchToNew",
+      "template": "Skyrim.esm:0x016FAA",
+      "preferredSpeed": "Walk",
+      "travel": { "place": "MF_NavPatchNewSide", "radius": 8, "rideHorse": false, "preferPath": false }
     }
   ],
   "placements": [
     {
-      "base": "MF_NavPatchTester",
+      "base": "MF_NavPatchNewToVanilla",
       "cell": "Skyrim.esm:0x01605E",
       "position": { "x": -260.418, "y": 398.245, "z": 70.85016 }
+    },
+    {
+      "base": "MF_NavPatchVanillaToNew",
+      "cell": "Skyrim.esm:0x01605E",
+      "position": { "x": -235.271, "y": 439.131, "z": 70.85016 }
     },
     {
       "editorId": "MF_NavPatchNewSide",
       "kind": "xmarkerHeading",
       "cell": "Skyrim.esm:0x01605E",
-      "position": { "x": -260.418, "y": 398.245, "z": 70.85016 },
-      "linkedRefs": [{ "target": "MF_NavPatchVanillaSide" }]
+      "position": { "x": -260.418, "y": 398.245, "z": 70.85016 }
     },
     {
       "editorId": "MF_NavPatchVanillaSide",
       "kind": "xmarkerHeading",
       "cell": "Skyrim.esm:0x01605E",
-      "position": { "x": -235.271, "y": 439.131, "z": 70.85016 },
-      "linkedRefs": [{ "target": "MF_NavPatchNewSide" }]
+      "position": { "x": -235.271, "y": 439.131, "z": 70.85016 }
     }
   ],
   "navPatches": [

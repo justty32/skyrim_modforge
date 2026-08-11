@@ -16,8 +16,8 @@
 > | **P0 — T0.2 上機** | ✅ 已出貨 → **✅ 實機 PASS（2026-07-12，使用者親測）**（`~/skyrim_mods/mine/ModForgeNavmeshNoop.zip`；證據見下框） |
 > | **症狀①（NPC 走進新蓋的房子）** | ✅ **結案** — 用 L_NAVCUT 解掉，**不必動 NAVM**（見下框） |
 > | P2.1（NAVM cut／Deleted flag 後備方案） | **不必做**——只是 T2.0 沒過時的備案，T2.0 過了就整段作廢，見 §5 P2 |
-> | P3 | ✅ **內裝 edge-to-edge MVP 離線完成（2026-08-11）**：`navPatches[]` append-only fan＋唯一完整邊雙向縫合；待 `examples/navmesh_patch.json` runtime patrol 驗收 |
-> | P4 | 未動（DLL 讀 live navmesh／射線取樣；等 P3 runtime PASS） |
+> | P3 | ✅ **內裝 edge-to-edge MVP 實機 PASS（2026-08-11）**：`navPatches[]` append-only fan＋唯一完整邊雙向縫合；Bannered Mare 兩名相反方向 Travel actor 都跨過新增↔vanilla seam |
+> | P4 | 未動（DLL 讀 live navmesh／射線取樣；P3 runtime gate 已通，之後若要做需另開工作） |
 >
 > ### ✅✅ 兩個 🎮 實機閘 2026-07-12 皆 PASS——整條 navmesh plan 的地基與重心都定了
 >
@@ -252,13 +252,13 @@ new PlacedObject {
 |---|---|---|---|
 | **U1** | Mutagen NVNM 讀寫無損 | 全部 | ✅ **已驗**（正式化為 `navdiag`：**10/10 IDENTICAL**，vanilla 側直接讀 Skyrim.esm 原始 bytes、不經 Mutagen） |
 | **U2** | 引擎的尋路**尊重 triangle 的 Deleted flag**（不走它） | 原訂 P2 的全部；**P2（NAVM-cut 備案）已因 T2.0 PASS 而不必做** → U2 目前**不再是任何已排階段的阻塞項**，留著給未來若真要動 Deleted flag（如症狀③）才驗 | 🎮 未驗（不需要了）。不成立時的退路：內裝改真刪＋修 DoorTriangle index；外景退回路線 A/D |
-| **U3** | 改幾何後把 NavmeshGrid 換成 divisor=1 單桶（或自建 divisor² 桶）引擎能接受 | P3 | 🎮 P3 驗收；先用 `navdiag` 確認自建 grid 的 byte layout 與 vanilla 同構 |
-| **U4** | override 既有 NAVM 時**不必**碰 NAVI（vanilla NVMI 條目仍有效） | P3 的複雜度 | ✅ **P0 觀察支持**（no-op override 沒碰 NAVI，NPC 正常）；P3 真的 add 頂點時才是決定性驗收 🎮 |
+| **U3** | 改幾何後把 NavmeshGrid 換成 divisor=1 單桶（或自建 divisor² 桶）引擎能接受 | P3 | ✅ **P3 實機 PASS（2026-08-11）**：改成單桶後兩名 Travel actor 均跨 seam，引擎接受重建 grid |
+| **U4** | override 既有 NAVM 時**不必**碰 NAVI（vanilla NVMI 條目仍有效） | P3 的複雜度 | ✅ **P3 實機 PASS（2026-08-11）**：NAVM append 4 vertex / 2 triangle、NAVI 零 authored，雙向尋路仍成立 |
 | **U5** | 只改自己這張 mesh、不重編號 → **鄰居 cell 的 NAVM 不必動** | 外景可行性 | ✅ **P0 觀察支持**（白漫外景 (5,-2)/(5,-3) 兩張 override，跨 cell 邊界走動正常）；P3 外景驗收再確認一次 🎮 |
 | **U6** | **路線 A**：L_NAVCUT 體積在**我們自己的 patch esp** 裡也照樣被引擎裁（HearthFires 是 esm，且是 vanilla 自家系統） | 症狀①的成敗 | ✅ **已驗（T2.0，2026-07-12 實機 PASS）**——TEST 繞開/徘徊不過、CONTROL 直穿，唯一差異是那顆 box |
 | **U6b** | ~~複製 STAT base ＋ 加 Obstacle flag 就會裁~~ **❌ 已否證** | — | **flag 是兩段閘門的一半**：還要碰撞體所在的 collision layer 帶 `NavmeshObstacle`。vanilla 55 個 COLL 只有 6 層帶（L_ANIMSTATIC/CLUTTER/PROPS/DEBRIS_LARGE/TRANSPARENT_SMALL_ANIM/**L_NAVCUT**），**L_STATIC 不帶** → 對一般靜態物加 flag ＝ 無效。**這條若沒查出來會白燒好幾天** |
 | **U7** | **ESL**：override vanilla NAVM（FormID 不變）在 ESL 裡安全；但**新建** NAVM 記錄從 ESL 載入可能壞 | 編輯器 patch 預設 `esl: true` | 保守規則：`navCuts` 只 override → 維持 esl；一旦要新建 NAVM（自建 worldspace）→ 比照既有 LAND 守則強制 `esl:false`（`Generator.Validate.World.cs:131`）。🎮 待驗 |
-| **U8** | 沒和 vanilla 網格相連的「孤島」navmesh，NPC 能否在上面 sandbox（travel 出不去可接受） | P3 的降級路徑 | 🎮 P3 驗收。**已知：完全沒有網格 ＝ NPC 什麼都不做**（sandbox/travel/follow/combat 全掛；SE 還要求 actor 本身站在 triangle 上尋路才會啟動）。`PathToReference` **不繞過** navmesh（走同一套尋路，一樣失敗）；只有 `TranslateTo`/`MoveTo` 能無視，但那是腳本用的位移、不是 AI |
+| **U8** | 沒和 vanilla 網格相連的「孤島」navmesh，NPC 能否在上面 sandbox（travel 出不去可接受） | 未排的明示 `linkTo:none` 降級路徑 | 🎮 未驗，且不屬 P3 edge-to-edge MVP。**已知：完全沒有網格 ＝ NPC 什麼都不做**（sandbox/travel/follow/combat 全掛；SE 還要求 actor 本身站在 triangle 上尋路才會啟動）。`PathToReference` **不繞過** navmesh（走同一套尋路，一樣失敗）；只有 `TranslateTo`/`MoveTo` 能無視，但那是腳本用的位移、不是 AI |
 | **U9** | 外景 NAVM override 會拉出 **WRLD override**——會不會踩到既有的地圖渲染坑（[worldspace-override-map-render-fields](../../docs/engine-internals.md)：缺 EDID/RNAM 會白地圖、帶 OFST 會壞） | 外景全部 | 已初步觀察：Mutagen deep-copy 的 WRLD 帶 EDID/TNAM/UNAM、**不帶 OFST**（正確）。且 `removals[]` 的外景路徑早已實機驗過同一條 chain。P0 這輪回報聚焦在 NPC 行為（「一切正常」），**沒有特別點名地圖/名字**——U9 嚴格說仍待一次專門確認，不算已 close |
 | **U10** | 我們的 NAVM override 與**其他 mod 的同一張 NAVM override** ＝ 整筆記錄後蓋前（last wins） | 相容性 | 無法避免（NAVM 沒有加法式合併）。**✅ build 警告已實作（2026-07-29），真實 USSEP 驗收 PASS（2026-08-11）**：`CheckNavmeshOverrideClobbers`（`Generator.Build.NavmeshOverrides.cs`，跟 P1 一樣 build 末跑、零記錄）掃 Data 夾裡「master 到我們 override 的 NAVM 所屬 master」的非-vanilla plugin，若它也 override 同張 → 一行警告點名該 plugin＋mesh（無法知 load order 誰贏，只點名衝突）。只在 `navmeshOverrides[]` / `navPatches[]` 實際產出 NAVM 時掃、無 Data 夾＝沉默、開關 `navmesh.warnNavmeshClobber`。離線用合成 plugin 已測掃描邏輯（`NavmeshOverrideTests` 三條）；主力機以暫時 Data overlay 放入真實 `Unofficial Skyrim Special Edition Patch.esp` 後 build `navmesh_noop_spike_spec.json`，警告正確點名 USSEP ＋ **7 張** NAVM（與既有 7/10 調查完全一致） |
 
