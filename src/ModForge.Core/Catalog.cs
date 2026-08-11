@@ -116,14 +116,27 @@ public static class Catalog
         command.Parameters.AddWithValue("$plugin", (object?)sourcePlugin ?? DBNull.Value);
         command.Parameters.AddWithValue("$limit", limit);
 
-        var records = new List<CatalogRecord>();
-        using var reader = command.ExecuteReader();
-        while (reader.Read())
-            records.Add(new CatalogRecord(
-                reader.GetString(0), reader.GetString(1), reader.GetString(2),
-                reader.IsDBNull(3) ? null : reader.GetString(3), reader.IsDBNull(4) ? null : reader.GetString(4),
-                reader.GetString(5), reader.GetString(6)));
-        return records;
+        return ReadRecords(command);
+    }
+
+    /// <summary>Looks up every indexed occurrence of an exact resolver-ready FormKey.</summary>
+    public static IReadOnlyList<CatalogRecord> Get(
+        string databasePath, string formKey, string? sourcePlugin = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(formKey);
+        using var connection = Open(Path.GetFullPath(databasePath), SqliteOpenMode.ReadOnly);
+        using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT r.form_key, r.plugin, r.record_type, r.editor_id, r.name, s.plugin, s.source_path
+            FROM records AS r
+            JOIN sources AS s ON s.plugin = r.source_plugin
+            WHERE r.form_key = $formKey COLLATE NOCASE
+              AND ($plugin IS NULL OR s.plugin = $plugin COLLATE NOCASE)
+            ORDER BY s.plugin COLLATE NOCASE;
+            """;
+        command.Parameters.AddWithValue("$formKey", formKey);
+        command.Parameters.AddWithValue("$plugin", (object?)sourcePlugin ?? DBNull.Value);
+        return ReadRecords(command);
     }
 
     /// <summary>Lists source files and hashes recorded for provenance.</summary>
@@ -151,6 +164,18 @@ public static class Catalog
         }.ToString());
         connection.Open();
         return connection;
+    }
+
+    private static IReadOnlyList<CatalogRecord> ReadRecords(SqliteCommand command)
+    {
+        var records = new List<CatalogRecord>();
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+            records.Add(new CatalogRecord(
+                reader.GetString(0), reader.GetString(1), reader.GetString(2),
+                reader.IsDBNull(3) ? null : reader.GetString(3), reader.IsDBNull(4) ? null : reader.GetString(4),
+                reader.GetString(5), reader.GetString(6)));
+        return records;
     }
 
     private static void CreateSchema(SqliteConnection connection)

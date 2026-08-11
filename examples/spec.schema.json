@@ -1681,6 +1681,15 @@
         },
         "description": {
           "type": "string"
+        },
+        "buttons": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "MESG menu choices in return-index order; omit/empty for a notification"
         }
       }
     },

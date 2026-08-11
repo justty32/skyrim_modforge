@@ -103,7 +103,9 @@ internal static partial class Program
         "  validate <spec.json>\n" +
         "  dump    <in.esp>\n" +
         "  catalog build <out.db> <plugin> [plugin...]  index generic records into an offline SQLite/FTS catalog\n" +
-        "  catalog query <db> <query> [--type <type>] [--plugin <plugin>] [--limit <1-1000>]  search catalog name/editorId\n" +
+        "  catalog query <db> <query> [--type <type>] [--plugin <plugin>] [--limit <1-1000>] [--json]  search name/editorId\n" +
+        "  catalog get <db> <Plugin.esp:0xFORMID> [--plugin <source>] [--json]  exact FormKey lookup\n" +
+        "  catalog sources <db> [--json]                list indexed plugin provenance\n" +
         "  gamedata <plugin> <outDir>                   bulk-extract books/dialogue/quests/npcs/items/locations/magic to a folder (for agent reference)\n" +
 
         "  find    <in.esp> <query> [type]              search editorId/name -> Skyrim.esm:0xFORMID\n" +

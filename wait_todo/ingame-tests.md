@@ -15,6 +15,8 @@
 
 ## 待測（active）
 
+- **MESG 多按鈕順序（2026-08-11，offline record 已驗）**：用 `examples/message_menu.json` build 後從任一 Papyrus 測試片段呼叫 `MFSettlementManageMenu.Show()`，確認四顆 label 依 spec 順序顯示、按下分別回傳 0/1/2/3。公司機已驗 `Message.MenuButtons` record shape，這條只驗引擎 UI/Papyrus 行為。
+
 - **EFSH effectShaders（2026-08-11，offline 結構已驗）**：拿 `examples/effect_shader.json` 配三張真 `.dds`（fill / particle / palette）build+package，對 actor 套 `MFEff_FireGlow`，目視確認 membrane additive glow、sprite particle 與 fade/key 時序。特別驗「有 palette 可見；拿掉 palette 可能完全不 render」及 inanimate STAT 不發 actor particles。公司機只證 record/wiring，無法代做外觀驗收。
 
 - **Map-scene 座標 profile cube calibration（2026-08-11，pure math 已驗）**：`SceneCoordinates` 已用 `B * R * B^-1` 單測 Unity/Unreal profile；等 `importscene` 第一個 consumer 接好後，用一顆已知朝向、尺寸與座標的 cube 做端到端目視，確認 Skyrim exact handedness/sign、Euler order 與 art-scale fudge。FromSoft profile 在這個實測前刻意不內建猜測。

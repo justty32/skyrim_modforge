@@ -39,7 +39,15 @@ public sealed class PotionSpec { public string EditorId { get; set; } = ""; publ
 // effect one) or a vanilla ObjectEffect. Apparel enchants are passive/always-on while worn, so
 // there's no charge pool (no enchantmentAmount).
 public sealed class ArmorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public uint Value { get; set; } public float Weight { get; set; } public float ArmorRating { get; set; } public string ArmorType { get; set; } = ""; public List<string> Slots { get; set; } = new(); public List<string> Keywords { get; set; } = new(); public string Enchantment { get; set; } = ""; public string Template { get; set; } = ""; public string Model { get; set; } = ""; }
-public sealed class MessageSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Description { get; set; } = ""; }
+// Message (MESG): zero buttons = notification; 1..10 buttons = Message.Show() menu whose return
+// value is the zero-based button index. Button actions belong in the calling Papyrus fragment.
+public sealed class MessageSpec
+{
+    public string EditorId { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Description { get; set; } = "";
+    public List<string> Buttons { get; set; } = new();
+}
 // One entry in a leveled list: a ref (item or npc) that appears at >= Level, Count copies.
 public sealed class LeveledEntrySpec { public string Reference { get; set; } = ""; public short Level { get; set; } = 1; public short Count { get; set; } = 1; }
 // LeveledItem (LVLI) / LeveledNpc (LVLN): chanceNone (0-100), flag names, weighted entries.

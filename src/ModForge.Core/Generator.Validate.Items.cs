@@ -7,6 +7,13 @@ public static partial class Generator
         // --- items (physical gear, magic, recipes, textures) ---
         public void ValidateItems()
         {
+            foreach (var msg in spec.Messages)
+            {
+                if (msg.Buttons.Count > 10)
+                    Problems.Add($"message '{msg.EditorId}' has {msg.Buttons.Count} buttons; Skyrim menus support at most 10");
+                foreach (var (button, index) in msg.Buttons.Select((value, index) => (value, index)))
+                    if (string.IsNullOrWhiteSpace(button)) Problems.Add($"message '{msg.EditorId}' button {index} is empty");
+            }
             foreach (var a in spec.Armors) foreach (var k in a.Keywords) CheckRef(k, $"armor '{a.EditorId}' keyword");
             foreach (var w in spec.Weapons) foreach (var k in w.Keywords) CheckRef(k, $"weapon '{w.EditorId}' keyword");
             foreach (var w in spec.Weapons) CheckRef(w.Enchantment, $"weapon '{w.EditorId}' enchantment");

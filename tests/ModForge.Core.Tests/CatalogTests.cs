@@ -30,6 +30,12 @@ public sealed class CatalogTests
             Assert.Equal("CatalogOne.esp", npc.SourcePlugin);
             Assert.Equal(Path.GetFullPath(first), npc.SourcePath);
             Assert.Single(Catalog.Query(database, "demonpc", recordType: "Npc", sourcePlugin: "CatalogOne.esp"));
+            var exact = Assert.Single(Catalog.Get(database, "catalogone.esp:0x000802"));
+            Assert.Equal("MF_DemoNpc", exact.EditorId);
+            Assert.Equal("CatalogOne.esp", exact.SourcePlugin);
+            Assert.Single(Catalog.Get(database, exact.FormKey, sourcePlugin: "catalogone.esp"));
+            Assert.Empty(Catalog.Get(database, exact.FormKey, sourcePlugin: "CatalogTwo.esp"));
+            Assert.Empty(Catalog.Get(database, "CatalogOne.esp:0xFFFFFF"));
 
             // Rebuilding the same destination replaces its contents rather than accumulating rows.
             Catalog.Build(database, new[] { first });

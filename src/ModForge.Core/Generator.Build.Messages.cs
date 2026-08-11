@@ -13,6 +13,8 @@ public static partial class Generator
             {
                 var r = mod.Messages.AddNew();
                 r.EditorID = msg.EditorId; r.Name = msg.Name; r.Description = msg.Description;
+                foreach (var text in msg.Buttons)
+                    r.MenuButtons.Add(new MessageButton { Text = text });
             }
         }
     }

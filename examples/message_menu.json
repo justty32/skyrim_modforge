@@ -1,0 +1,12 @@
+{
+  "pluginName": "ModForgeMessageMenu.esp",
+  "esl": true,
+  "messages": [
+    {
+      "editorId": "MFSettlementManageMenu",
+      "name": "Settlement Management",
+      "description": "What would you like to do?",
+      "buttons": [ "Build", "Assign resident", "Collect income", "Cancel" ]
+    }
+  ]
+}

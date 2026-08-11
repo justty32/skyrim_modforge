@@ -2,6 +2,24 @@
 
 ← [index](SPEC-index.md)
 
+### messages (MESG notifications and button menus)
+
+`messages[]` emits player-facing Message records. With no `buttons`, the record is a notification.
+With 1–10 buttons it is a menu: Papyrus `Message.Show()` returns the selected button's zero-based
+index, in the exact order authored here. ModForge authors the record; the calling quest/activator
+fragment owns the `Show()` call and branches on its result.
+
+```jsonc
+{ "editorId": "MFSettlementManageMenu",
+  "name": "Settlement Management",
+  "description": "What would you like to do?",
+  "buttons": ["Build", "Assign resident", "Collect income", "Cancel"] }
+```
+
+An empty label or more than ten buttons is rejected by `validate`. Button-specific CTDA conditions
+are not part of this first contract; split contextual menus or gate the caller when choices differ.
+Worked example: `examples/message_menu.json`.
+
 ### recipes (crafting / COBJ)
 Make an item craftable, temperable, or smeltable at a workbench. A recipe's `kind` picks the
 flavour (default `craft`) and the **default bench**; `workbench` is a **named selector** (`forge` /

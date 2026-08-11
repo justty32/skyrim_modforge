@@ -28,7 +28,7 @@
 | `DependencyTests.cs` | 外部 master 可見性：純 vanilla spec **什麼都不印**（negative case）／capture 與手寫 spec 都列出 mod master ＋歸因到**作者寫的**欄位（含「巨集展開後仍報 `capturedNpcs[]` 不報 `npcs[]`」）／CC 分類／摘要＋`requires.txt` 內容／**釘死「分析不改 esp 一個 byte」**|
 | `RequiresTests.cs` | 宣告式 `requires[]` 雙向檢查：**沒有 requires 段＝完全不檢查**（negative case，向後相容）／用到沒宣告→錯誤且訊息指出**是哪一行 spec 欄位**／宣告沒用到→警告／空 `[]`＝只准 vanilla／`name` 條目（無 plugin 的 SKSE 相依）永不檢查但進旁檔／`version` 只是標籤（旁檔標 NOT verified）／**玩家面向 shipped 形式**（`forShippedMod`）保留安裝清單＋reason/version/連結、拿掉 spec 欄位歸因與 rebuild 指示／`SyncRequires` 加新丟舊保留 metadata＋同步後檢查通過／`validate` 形狀檢查／JSON 字串簡寫與缺段＝null／**釘死「requires[] 不改 esp 一個 byte」**|
 | `Helpers.cs` | 共用測試 helper（非 test class，供其他 *Tests.cs 使用）|
-| `CatalogTests.cs` | 不需 Skyrim.esm 的 synthetic plugin round-trip：multiple source、FTS name/EditorID + type/plugin filter、source hash/path provenance、rerun replace 不重複。|
+| `CatalogTests.cs` | 不需 Skyrim.esm 的 synthetic plugin round-trip：multiple source、FTS name/EditorID + type/plugin filter、exact FormKey/source lookup、source hash/path provenance、rerun replace 不重複。|
 
 ---
 
@@ -51,8 +51,8 @@
 | 層次 | 檔案 | 命令 |
 |-----|-----|-----|
 | CLI | `Program.cs` | `gen` / `find` / diagnostic dispatcher；`ResolveSpecJson`（單一 chokepoint，跑 `SpecRefs.ResolveFile`）→ `ReadSpec` JSON 反序列化 |
-| Catalog | `Catalog.cs` | 離線 SQLite/FTS5 catalog：任意 plugin 的 generic major record（FormKey/plugin/type/EditorID/name）+ `sources` SHA-256/path provenance；`Build` 先寫 temporary DB 再 replace，`Query` 走 name/editorId FTS 並支援 type/source-plugin filter。未做 record-specific schema，未來擴充以 `records.id` 為外鍵。|
-| CLI | `CatalogCmd.cs` | `catalog build <out.db> <plugin>...` / `catalog query <db> <query> [--type] [--plugin] [--limit]` 的 argv/TSV facade；資料庫邏輯全在 Core。|
+| Catalog | `Catalog.cs` | 離線 SQLite/FTS5 catalog：任意 plugin 的 generic major record（FormKey/plugin/type/EditorID/name）+ `sources` SHA-256/path provenance；`Build` temporary→replace、`Query` FTS、`Get` exact FormKey（可保留多 source override occurrences）、`Sources` provenance。未做 record-specific schema。|
+| CLI | `CatalogCmd.cs` | `catalog build/query/get/sources` facade；query/get/sources 可輸出人讀 TSV 或穩定 camelCase JSON，filter/DB 邏輯全在 Core。|
 | CLI | `Program.Build.cs` | `build` / `validate` / `package` / `compile` / `voicelines` / `extract-voices`；`validate` 的 `CheckUnknownFields` + deserialize 都跑在 `$ref`/`$env` **解析後**的 JSON；`build` 後另印 `annotations`（advisory，不生記錄）與 `references`（label→既有 ref 綁定清單）兩行摘要；`ReportDependencies` 印非 vanilla master ＋寫 `<plugin>.requires.txt` 旁檔（作者面向）；`package` 也印，並另把**玩家面向** `REQUIREMENTS.txt`（`RequiresFileText forShippedMod:true`）寫進出貨夾——玩家最需要「先裝哪些前置」；**`RequiresOk` ＝ `requires[]` 的閘門**（用到沒宣告 → 印錯誤、**在 `PluginIo.Write` 之前 return 1，esp 完全不寫**；`package` 走同一個閘門），**`SyncRequiresFile` ＝ `build --sync-requires`**（用 `JsonNode` 就地改寫 spec 檔的 `requires[]`；requires 來自 `$ref` include 時拒絕改寫，免得宣告分叉）|
 | CLI | `Program.Translate.cs` | `extract` / `apply` / `applyloc` |
 | CLI | `Package.cs` | `package` 完整流程：Papyrus 編譯 + Assets 複製 + MO2 資料夾組裝 |

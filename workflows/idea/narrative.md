@@ -36,4 +36,4 @@
 
 現有診斷（`npcdiag`/`dump`/`find`）已能拉這些欄位，批次化即可產出。
 
-**2026-08-11 進度：generic catalog MVP 已落地。** `catalog build <db> <plugin>...` 建 SQLite `records` + FTS5（FormKey/plugin/type/EditorID/name）與 `sources` provenance（path/SHA-256/localized/count），`catalog query` 支援 name/EditorID 搜尋及 type/source-plugin filter，重建採 temp DB 成功後 replace。synthetic ESP 離線測與 CLI smoke 已通。上面「資料層」的通用 identity/search 已完成；record-specific 關鍵屬性與美術層仍是後續擴充表，不把 MVP 誤稱完整 catalog。
+**2026-08-11 進度：generic catalog MVP 已落地。** `catalog build <db> <plugin>...` 建 SQLite `records` + FTS5（FormKey/plugin/type/EditorID/name）與 `sources` provenance（path/SHA-256/localized/count）；`catalog query/get/sources` 支援 FTS、exact FormKey/override occurrence、type/source filter 與 machine-readable JSON，重建採 temp DB 成功後 replace。synthetic ESP 離線測與 CLI smoke 已通。上面「資料層」的通用 identity/search 已完成；record-specific 關鍵屬性與美術層仍是後續擴充表，不把 MVP 誤稱完整 catalog。
