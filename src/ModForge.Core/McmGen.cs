@@ -45,12 +45,13 @@ public static class McmGen
             : !string.IsNullOrEmpty(m.ModName) ? m.ModName : identity;
 
         var pages = new JsonArray();
+        int globalIndex = 0;
         foreach (var p in m.Pages)
         {
             var page = new JsonObject { ["pageDisplayName"] = p.Name };
             if (!string.IsNullOrWhiteSpace(p.CursorFillMode)) page["cursorFillMode"] = p.CursorFillMode;
             var content = new JsonArray();
-            foreach (var c in p.Content) content.Add(BuildControl(c));
+            foreach (var c in p.Content) content.Add(BuildControl(c, ref globalIndex));
             page["content"] = content;
             pages.Add(page);
         }
@@ -58,7 +59,7 @@ public static class McmGen
         return root.ToJsonString(Pretty);
     }
 
-    private static JsonObject BuildControl(McmControlSpec c)
+    private static JsonObject BuildControl(McmControlSpec c, ref int globalIndex)
     {
         var o = new JsonObject();
         if (!string.IsNullOrEmpty(c.Text)) o["text"] = c.Text;
@@ -74,6 +75,16 @@ public static class McmGen
             o["groupCondition"] = c.GroupConditionNot ? new JsonObject { ["NOT"] = gd } : JsonValue.Create(gd);
         if (!string.IsNullOrWhiteSpace(c.GroupBehavior)) o["groupBehavior"] = c.GroupBehavior;
         if (c.Position is int pos) o["position"] = pos;
+        if (!string.IsNullOrWhiteSpace(c.Global))
+        {
+            var parameters = new JsonArray { "{value}" };
+            o["action"] = new JsonObject
+            {
+                ["type"] = "CallFunction",
+                ["function"] = Generator.McmGlobalSetterName(globalIndex++),
+                ["params"] = parameters,
+            };
+        }
         return o;
     }
 

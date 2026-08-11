@@ -6259,6 +6259,10 @@
           "type": "string",
           "description": "default for sourceType ModSettingString"
         },
+        "global": {
+          "type": "string",
+          "description": "optional GLOB ref mirrored by a toggle + ModSettingBool through a generated MCM setter"
+        },
         "groupControl": {
           "type": "integer",
           "description": "marks this control as a group toggle (an int id)"

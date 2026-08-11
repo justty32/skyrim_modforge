@@ -10,7 +10,7 @@
 
 ## 待你項分類（`wait_todo/`）
 
-- **[roadmap-features.md](wait_todo/roadmap-features.md)** — 離線實作完、待主力機 byte/runtime 驗收的後端功能：動態生怪 SM、radiant 演出 package、互動式 perk、radiant quest alias、instanceGlobals、Idea #20 技能樹（JContainers + Campfire U1–U3）。
+- **[roadmap-features.md](wait_todo/roadmap-features.md)** — 離線實作完、待主力機 byte/runtime 驗收的後端功能：MCM→GLOB setter、動態生怪 SM、互動式 perk、instanceGlobals、Idea #20 技能樹（JContainers + Campfire U1–U3）。
 - **[worldspace-editor.md](wait_todo/worldspace-editor.md)** — Godot worldspace editor（Idea #19）整鏈：VTXT「刷哪長哪」最終目視、model-converter nif→glTF 對真實檔驗。
 - **[ingame-tests.md](wait_todo/ingame-tests.md)** — 純遊戲實機測試（含**怎麼測通用流程** + MO2 鐵律）。**scene-capture-bridge 剩三條**（2026-07-14 那輪，同一顆 DLL `c07dd174`）：**`gh0` 可見性**、🔴 **`sc ed` numpad 回歸**、**匯出登記簿制的野外驗證**。其餘是舊帳：darksouls-port P1、living-adventurers、blacksmith 場景、VNML、Sofia × VIGILANT Act 1 / Act 2-4。
 - **[nexus-and-env.md](wait_todo/nexus-and-env.md)** — 不屬任何功能的雜項：Nexus 下載清單、env、bash。

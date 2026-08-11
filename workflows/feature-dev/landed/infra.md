@@ -2,6 +2,7 @@
 
 ← [landed index](README.md)｜對應 [CODE_MAP.infra](../../common/code-map/CODE_MAP.infra.md)
 
+- **MCM → GLOB bridge + configurable perk worked example（offline，2026-08-11）**：`mcmConfigs[].pages[].content[].global` 支援 bool toggle 對 GLOB 的高階綁定；config 產 `CallFunction`，`package` 產/編 per-menu `MCM_ConfigBase` setter，QUST VMAD property 綁同顆 GLOB，perk/任意 CTDA 再用 `GetGlobalValue` gate。`examples/mcm_global_perk.json` 以 `ModBuyPrices` 示範完整鏈；runtime setter 待主力機確認。
 - **SQLite/FTS5 plugin catalog MVP（offline，2026-08-11）**：CLI `catalog build <db> <plugin...>` 將 plugin generic records寫入 SQLite（FormKey/plugin/type/EditorID/name）並保存來源 absolute path、SHA-256、localized flag 與 record count；`catalog query` FTS5 搜尋，`catalog get` exact FormKey/override occurrence，`catalog sources` 查 provenance；三個 read command 都可 `--json`。採 temporary DB → replace；record-specific semantic indexing後續擴充。
 - **OAR advanced contract（2.2+/3.0，offline，2026-08-11）**：既有 `animationReplacers` 補 condition presets/PRESET、weighted + sequential variants 與 scope、typed functions（CONDITION/RANDOM/ONE/PlaySound）及 activate/deactivate/trigger hooks；保留舊 `variants: string[]` 相容。schema/example/spec/validate/package tests 已同步。
 

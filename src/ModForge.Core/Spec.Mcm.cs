@@ -1,13 +1,12 @@
 namespace ModForge;
 
 // MCM Helper (Parapets, Nexus 53000) settings-menu config spec DTOs.
-// Produces TWO LOOSE FILES (no esp record) under the mod folder:
-//   MCM/Config/<modName>/config.json    (required — the menu layout)
-//   MCM/Config/<modName>/settings.ini   (the mod's default values)
-// MVP is the ini-backed path: controls whose sourceType is ModSettingBool/Int/Float/String are
-// fully handled by the MCMHelper.dll with NO Papyrus and NO Quest record — the player's edits land
-// in MCM/Settings/<modName>.ini at runtime. The advanced PropertyValue*/action.CallFunction path
-// (which DOES need a Quest script extending MCM_ConfigBase) is intentionally out of scope here.
+// Drives two loose files under MCM/Config/<plugin-stem>/ plus an ESP registration quest:
+//   config.json    (required — the menu layout)
+//   settings.ini   (the mod's default values)
+// Controls whose sourceType is ModSettingBool/Int/Float/String persist through MCM Helper's ini.
+// A bool toggle may additionally name an in-spec/external GLOB in `global`; package then generates a
+// tiny per-menu MCM_ConfigBase subclass whose CallFunction action mirrors edits into that GLOB.
 // Format verified against sub_projs/mod-survey/findings/mcm-helper-config-json.md (MCM Helper 1.6.1).
 public sealed class McmSpec
 {
@@ -45,6 +44,9 @@ public sealed class McmControlSpec
     public bool DefaultBool { get; set; }
     public double DefaultNumber { get; set; }
     public string DefaultString { get; set; } = "";
+    // Optional high-level wiring: toggle + ModSettingBool only. MCM persists the setting in its ini
+    // and calls a generated Papyrus setter which writes 0/1 into this GlobalVariable.
+    public string Global { get; set; } = "";
     // --- grouping / layout (all optional) ---
     public int? GroupControl { get; set; }           // marks this control as a group toggle (an int id)
     public int? GroupCondition { get; set; }          // show/hide driven by the group toggle with this id

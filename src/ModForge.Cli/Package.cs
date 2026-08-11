@@ -83,6 +83,9 @@ internal static partial class Program
             if (!string.IsNullOrEmpty(src))
                 CompileGenerated(src, Generator.PerkFragmentScriptName(pk), $"perk fragment for '{pk.EditorId}'");
         }
+        foreach (var m in spec.McmConfigs.Where(Generator.HasMcmGlobalBindings))
+            CompileGenerated(Generator.GenerateMcmGlobalScriptSource(m), Generator.McmGlobalScriptName(m),
+                $"MCM global bridge for '{m.ModName}'");
 
         // 2) Build the plugin, passing CompiledScriptsDir so WireQuestStages and
         //    AttachDialogueResultScripts wire the VMAD for any fragment whose .pex exists.

@@ -145,4 +145,24 @@ public class McmGenTests
         Assert.Equal(1, second.GetProperty("groupCondition").GetProperty("NOT").GetInt32());  // {"NOT": 1}
         Assert.Equal("disable", second.GetProperty("groupBehavior").GetString());
     }
+
+    [Fact]
+    public void GlobalToggle_EmitsCallFunctionAction_AndGeneratedSetter()
+    {
+        var m = new McmSpec { ModName = "Barter Menu", Pages = { new McmPageSpec { Name = "General",
+            Content = { new McmControlSpec { Type = "toggle", Id = "bEnabled:General",
+                SourceType = "ModSettingBool", DefaultBool = true, Global = "MF_BarterEnabled" } } } } };
+        using var doc = JsonDocument.Parse(McmGen.BuildConfigJson(m, "BarterPlugin"));
+        var control = doc.RootElement.GetProperty("pages")[0].GetProperty("content")[0];
+        var action = control.GetProperty("action");
+        Assert.Equal("CallFunction", action.GetProperty("type").GetString());
+        Assert.Equal("MF_SetGlobal_0", action.GetProperty("function").GetString());
+        Assert.Equal("{value}", action.GetProperty("params")[0].GetString());
+
+        var source = Generator.GenerateMcmGlobalScriptSource(m);
+        Assert.Contains("Scriptname MF_MCM_Barter_Menu_Globals extends MCM_ConfigBase", source);
+        Assert.Contains("GlobalVariable Property MF_Global_0 Auto", source);
+        Assert.Contains("Function MF_SetGlobal_0(bool value)", source);
+        Assert.Contains("MF_Global_0.SetValue(1.0)", source);
+    }
 }

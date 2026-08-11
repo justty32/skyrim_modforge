@@ -49,6 +49,28 @@ public class ValidateMcmTests
     }
 
     [Fact]
+    public void GlobalBinding_RequiresBoolToggle_AndResolvableRef()
+    {
+        var badShape = With(new McmControlSpec { Type = "slider", Id = "a:S",
+            SourceType = "ModSettingFloat", Min = 0, Max = 1, Global = "Missing" });
+        var problems = Validate(badShape);
+        Assert.Contains(problems, p => p.Contains("global binding requires"));
+        Assert.Contains(problems, p => p.Contains("unresolved ref 'Missing'"));
+
+        var good = With(new McmControlSpec { Type = "toggle", Id = "a:S",
+            SourceType = "ModSettingBool", Global = "MF_Gate" });
+        good.Globals.Add(new GlobalSpec { EditorId = "MF_Gate", Type = "short" });
+        Assert.DoesNotContain(Validate(good), p => p.Contains("global binding") || p.Contains("MF_Gate"));
+
+        good.Globals[0].Constant = true;
+        Assert.Contains(Validate(good), p => p.Contains("constant") && p.Contains("MF_Gate"));
+
+        good.Globals[0].Constant = false;
+        good.McmConfigs[0].Pages[0].Content[0].DefaultBool = true;
+        Assert.Contains(Validate(good), p => p.Contains("defaultBool") && p.Contains("initial value"));
+    }
+
+    [Fact]
     public void ValueControl_MalformedId_Reported()
     {
         // sourceType but id missing the ":Section" → can't map to an ini key.

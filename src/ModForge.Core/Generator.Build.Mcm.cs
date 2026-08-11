@@ -4,8 +4,8 @@ public static partial class Generator
 {
     private sealed partial class BuildContext
     {
-        // The reusable empty subclass ModForge ships (Scriptname ModForgeMCM extends MCM_ConfigBase). One
-        // .pex serves every generated MCM menu; the per-mod difference is only the ModName property.
+        // The reusable empty subclass serves ini-only menus. A menu with `global` bindings gets a
+        // generated subclass with setter functions and VMAD GlobalVariable properties instead.
         internal const string McmConfigScript = "ModForgeMCM";
         // SkyUI SDK alias script (shipped by SkyUI, not by us). Its OnPlayerLoadGame drives re-registration.
         internal const string McmPlayerAliasScript = "SKI_PlayerLoadGameAlias";
@@ -36,9 +36,25 @@ public static partial class Generator
                 var qad = new QuestAdapter { Version = 5, ObjectFormat = 2 };
 
                 // Config host script — ModName links the quest to MCM/Config/<modName>/config.json.
-                var cfg = new ScriptEntry { Name = McmConfigScript, Flags = ScriptEntry.Flag.Local };
+                var cfg = new ScriptEntry
+                {
+                    Name = Generator.HasMcmGlobalBindings(m) ? Generator.McmGlobalScriptName(m) : McmConfigScript,
+                    Flags = ScriptEntry.Flag.Local,
+                };
                 cfg.Properties.Add(new ScriptStringProperty
                     { Name = "ModName", Data = m.ModName, Flags = ScriptProperty.Flag.Edited });
+                int globalIndex = 0;
+                foreach (var control in Generator.McmGlobalControls(m))
+                {
+                    var p = new ScriptObjectProperty
+                    {
+                        Name = Generator.McmGlobalPropertyName(globalIndex++),
+                        Flags = ScriptProperty.Flag.Edited,
+                    };
+                    if (TryResolveRef(control.Global, formKeyByEd, out var gfk)) p.Object.SetTo(gfk);
+                    else Warn($"  ! MCM '{m.ModName}': global '{control.Global}' unresolved");
+                    cfg.Properties.Add(p);
+                }
                 qad.Scripts.Add(cfg);
 
                 // PlayerAlias (index 0): forced to the player, carries SKI_PlayerLoadGameAlias.

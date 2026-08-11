@@ -1,0 +1,53 @@
+{
+  "pluginName": "McmGlobalBarter.esp",
+  "esl": true,
+  "globals": [
+    { "editorId": "MF_BarterEnabled", "type": "short", "value": 1 }
+  ],
+  "mcmConfigs": [
+    {
+      "modName": "Configurable Barter",
+      "displayName": "Configurable Barter",
+      "pages": [
+        {
+          "name": "General",
+          "content": [
+            {
+              "type": "toggle",
+              "id": "bEnabled:General",
+              "text": "Enable better barter prices",
+              "help": "Mirrors this setting into MF_BarterEnabled.",
+              "sourceType": "ModSettingBool",
+              "defaultBool": true,
+              "global": "MF_BarterEnabled"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "perks": [
+    {
+      "editorId": "MF_ConfigurableBarterPerk",
+      "name": "Configurable Barter",
+      "description": "Buy prices are reduced while the MCM switch is enabled.",
+      "hidden": true,
+      "effects": [
+        {
+          "kind": "entryPoint",
+          "entryPoint": "ModBuyPrices",
+          "function": "Multiply",
+          "value": 0.9,
+          "conditions": [
+            {
+              "function": "GetGlobalValue",
+              "param": "MF_BarterEnabled",
+              "comparison": "==",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

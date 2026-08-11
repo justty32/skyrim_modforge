@@ -13,8 +13,8 @@ public static partial class Generator
         private static readonly HashSet<string> McmSourceTypes = new(StringComparer.OrdinalIgnoreCase)
         { "ModSettingBool", "ModSettingInt", "ModSettingFloat", "ModSettingString" };
 
-        // MCM Helper config.json/settings.ini loose-file specs. Structural-only (no esp record).
-        // MVP rejects PropertyValue* sourceTypes / action.CallFunction (need a Quest+Papyrus host).
+        // MCM Helper config.json/settings.ini specs. `global` is the supported high-level
+        // CallFunction path; raw PropertyValue*/action authoring remains out of scope.
         public void ValidateMcmConfigs()
         {
             foreach (var m in spec.McmConfigs)
@@ -43,6 +43,21 @@ public static partial class Generator
                         if (!string.IsNullOrEmpty(c.SourceType) && !McmSourceTypes.Contains(c.SourceType))
                             Problems.Add($"{cw} '{c.Type}' sourceType '{c.SourceType}' unsupported "
                                 + $"(MVP is ini-backed: {string.Join(" | ", McmSourceTypes)}; PropertyValue*/action need a Quest script — out of scope)");
+
+                        if (!string.IsNullOrWhiteSpace(c.Global))
+                        {
+                            if (!string.Equals(c.Type, "toggle", StringComparison.OrdinalIgnoreCase)
+                                || !string.Equals(c.SourceType, "ModSettingBool", StringComparison.OrdinalIgnoreCase))
+                                Problems.Add($"{cw} global binding requires type 'toggle' and sourceType 'ModSettingBool'");
+                            CheckRef(c.Global, $"{cw} global");
+                            var declaredGlobal = spec.Globals.FirstOrDefault(g =>
+                                string.Equals(g.EditorId, c.Global, StringComparison.OrdinalIgnoreCase));
+                            if (declaredGlobal?.Constant == true)
+                                Problems.Add($"{cw} global '{c.Global}' is constant and cannot be changed by MCM");
+                            if (declaredGlobal is not null && declaredGlobal.Value != (c.DefaultBool ? 1f : 0f))
+                                Problems.Add($"{cw} defaultBool does not match global '{c.Global}' initial value "
+                                    + $"(expected {(c.DefaultBool ? 1 : 0)})");
+                        }
 
                         // A value control with a sourceType is ini-backed → needs a "key:Section" id.
                         if (valueType && !string.IsNullOrEmpty(c.SourceType))

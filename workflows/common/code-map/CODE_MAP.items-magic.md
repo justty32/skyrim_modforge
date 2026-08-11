@@ -13,6 +13,7 @@
 | `examples/spell_tome_spec.json` | spell tome 教學 |
 | `examples/enchantment_spec.json` | weapon / apparel enchantment |
 | `examples/perk_spec.json` | perk entry-point + ability spell |
+| `examples/mcm_global_perk.json` | MCM bool toggle → GLOB → `ModBuyPrices` perk CTDA 完整接線 |
 | `examples/interactive_perk_spec.json` | **#1 互動式 perk：addActivateChoice（[E] 選項 + spell/fragmentBody）+ setText（改活化提示）；PerkAdapter fragment（package 路徑）** |
 | `examples/shout_spec.json` | 三段 shout + word of power |
 | `examples/texture_set_spec.json` | TXST 8 槽路徑 |
@@ -37,6 +38,7 @@
 | `EnchantmentTests.cs` | ENCH scalar fields + effect ref 接線 |
 | `ExternalAssetTests.cs` | external asset 打包（Meshes/Textures/Sounds 複製）|
 | `PerkTests.cs` | Perk trunk + entry-point modifier + ability-spell grant |
+| `McmGlobalWiringTests.cs` | MCM QUST VMAD property 與 perk `GetGlobalValue` 指向同一顆 GLOB FormKey |
 | `PerkActivateChoiceTests.cs` | **#1 addActivateChoice（EntryType.Activate/ButtonLabel/Spell/conditions/tab-count）+ setText（Text）+ fragment source（Fragment_N body）+ PerkAdapter VMAD 綁定[fake .pex]（IndexedScriptFragment + Flags.RunImmediately/FragmentIndex）+ 無 .pex 不掛 + validate（空 label / do-nothing / 空 text）** |
 | `ShoutTests.cs` | Shout word-of-power + spell tier + cooldown build |
 | `SpellTomeTests.cs` | spell tome teaching mechanics |

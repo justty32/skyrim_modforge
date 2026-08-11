@@ -104,12 +104,13 @@ emits two loose files **plus an ESP-side registration quest** (auto-generated �
 the config.json *format* but not the *registration* step). MCM Helper requires, at minimum: a
 Start-Game-Enabled `QUST` whose attached script extends `MCM_ConfigBase`, plus a player-forced
 `PlayerAlias` carrying `SKI_PlayerLoadGameAlias`. **ModForge generates this automatically** for every
-`mcmConfigs` entry: the quest carries the reusable `ModForgeMCM` script (one embedded `.pex` serves all
-menus) and `package` ships it into `Scripts/`. The MVP covers the **ini-backed path** (`sourceType` =
+`mcmConfigs` entry. Ini-only menus carry the reusable `ModForgeMCM` script; a menu with a `global`
+binding gets a generated per-menu subclass, and `package` compiles/ships it. The base path is ini-backed (`sourceType` =
 `ModSettingBool`/`Int`/`Float`/`String`) — the player's edits persist to `MCM/Settings/<plugin-stem>.ini`
-at runtime. (The advanced `PropertyValue*` / `action.CallFunction` path needs a per-mod subclass with the
-handler functions and is intentionally **out of scope** — `validate` rejects those sourceTypes.) Verified
-in-game 2026-06-20.
+at runtime. A bool toggle may additionally set `global` to a GLOB ref: ModForge emits an
+`action.CallFunction`, a Papyrus setter, and a VMAD GlobalVariable property so each edit mirrors 0/1 into
+that GLOB. Raw `PropertyValue*` and hand-authored actions remain out of scope. The ini-only path was
+verified in-game 2026-06-20; the new GLOB bridge is offline-verified and awaits one runtime check.
 
 ```json
 {
@@ -171,6 +172,7 @@ iDetail=1
 | `options` | `stepper`/`enum` option labels (the int value is an index into this). Required for those types. |
 | `shortNames` | `enum` short display names. |
 | `defaultBool` / `defaultNumber` / `defaultString` | The default; which is read is decided by `sourceType` (Bool→`defaultBool`, Int/Float→`defaultNumber`, String→`defaultString`). Drives both `config.json` `defaultValue` and the `settings.ini` line. |
+| `global` | Optional GLOB ref for a `toggle` + `ModSettingBool`. The setting remains ini-persisted; a generated `CallFunction` setter mirrors each edit into the GLOB. `package` needs the normal MCM Helper + SkyUI Papyrus headers to compile the per-menu script. |
 | `groupControl` | Int id — marks this control as a group toggle. |
 | `groupCondition` | Int id (or `groupConditionNot:true` → `{"NOT": id}`) — show/hide driven by that group toggle. |
 | `groupBehavior` | `disable` (grey out) or `skip` (hide) the dependent control. |
@@ -180,6 +182,14 @@ iDetail=1
 `validate` checks structure only: control `type` and `sourceType` are in the allowed sets, value
 controls have a `"key:Section"` id, sliders have `min`+`max`, `stepper`/`enum` have `options`. The
 **live menu can only be confirmed in-game** — ModForge writes the files; MCM Helper + SkyUI render them.
+
+### Worked example: MCM switch → GLOB → perk condition
+
+[`examples/mcm_global_perk.json`](../../examples/mcm_global_perk.json) declares `MF_BarterEnabled` once,
+binds a bool toggle to it with `global`, then gates a `ModBuyPrices` perk effect on
+`GetGlobalValue(MF_BarterEnabled) == 1`. `package` produces the persisted MCM setting, generated bridge
+script, VMAD GLOB property, and perk CTDA as one coherent mod. Keep the GLOB non-constant: the setter must
+be allowed to change it.
 
 ---
 
