@@ -214,4 +214,36 @@ public class GodotPlacementsBuildValidationTests
         }
         finally { File.Delete(path); }
     }
+
+    [Fact]
+    public void Build_InstanceIdCollidesWithLateGeneratedExteriorCell_Throws()
+    {
+        var path = WritePlacements("Skyrim.esm:0x00003B", "GodotWorld_Cell_0_0");
+        try
+        {
+            var error = BuildInvalid(SpecWithGodot(path));
+            Assert.Contains(path, error.Message);
+            Assert.Contains("placements[0].instanceId 'GodotWorld_Cell_0_0'", error.Message);
+            Assert.Contains("found 2", error.Message);
+            Assert.Contains("generated later", error.Message);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void Build_InstanceIdCollidesWithLateGeneratedMcmQuest_Throws()
+    {
+        var path = WritePlacements("Skyrim.esm:0x00003B", "MF_MCM_Menu");
+        try
+        {
+            var spec = SpecWithGodot(path);
+            spec.McmConfigs.Add(new McmSpec { ModName = "Menu" });
+
+            var error = BuildInvalid(spec);
+            Assert.Contains(path, error.Message);
+            Assert.Contains("placements[0].instanceId 'MF_MCM_Menu'", error.Message);
+            Assert.Contains("found 2", error.Message);
+        }
+        finally { File.Delete(path); }
+    }
 }

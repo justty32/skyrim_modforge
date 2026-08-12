@@ -49,7 +49,7 @@
 | `VnmlTests.cs` | Vnml.Compute：平地全朝上、均勻東坡 X<128、均勻北坡 Y<128、Z=255 flat、對角等比坡 X=Y |
 | `GodotPlacementsTests.cs` | Godot placements JSON 座標換算（origin offset、Z 翻轉、m→units）、rotation rad→deg、scale passthrough、instanceId→editorId、format version/coordinate system error cases、重複 Build 不修改 spec/不重複匯入 |
 | `GodotPlacementsValidationTests.cs` | Godot placements v1 malformed payload fail-closed：required 欄位/null/Vec3 axes、非有限或非正數值、轉換 overflow、重複 instanceId 都回報檔案路徑與 entry index |
-| `GodotPlacementsBuildValidationTests.cs` | Godot imports 整合 fail-closed：instanceId 與手寫/其他 Godot 檔撞名、base malformed/unresolved、in-spec LVLN base CTD 防線；diagnostic 含 source/worldspace/index |
+| `GodotPlacementsBuildValidationTests.cs` | Godot imports 整合 fail-closed：instanceId 與手寫/其他 Godot 檔/後段生成的 CELL、MCM quest 撞名、base malformed/unresolved、in-spec LVLN base CTD 防線；diagnostic 含 source/worldspace/index |
 | `XMarkerTests.cs` | XMarker 放置（特殊 placement base）|
 | `XMarkerKindTests.cs` | `kind:xmarker/xmarkerHeading` helper（空 base→0x3B/0x34 + persistent）+ `forced:` alias 解析到 xmarker 錨點 |
 | `MapMarkerTests.cs` | mapMarker → MapMarker static + XMRK（type/flags）；持久 TopCell 加性帶上（⚠️ 需本機 Skyrim.esm）+ validate（type/flag）|

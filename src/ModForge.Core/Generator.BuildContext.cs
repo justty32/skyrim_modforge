@@ -21,6 +21,12 @@ public static partial class Generator
         // Per-build placement view. Godot imports are expanded into this copy so Build() never
         // mutates the caller's Placements list (and repeated builds of the same spec stay stable).
         private readonly List<PlacementSpec> placements;
+        // Godot instanceId -> source diagnostic. Unlike authored spec records, these IDs enter after
+        // pass 1, so a record generated later in pass 2 (for example a bare exterior CELL or an MCM
+        // registration quest) can still collide with them. Finish() checks the final plugin, when every
+        // late-generated record exists.
+        private readonly Dictionary<string, string> godotImportedIdSources =
+            new(StringComparer.OrdinalIgnoreCase);
         private readonly SkyrimMod mod;
         private readonly List<string> warnings = new();
         private readonly List<string> notes = new();      // advisory INFO lines (never warnings — see Note())
@@ -197,9 +203,16 @@ public static partial class Generator
         // caches still being open. The caller writes the returned mod.
         public BuildResult Finish()
         {
-            if (spec.Esl) mod.IsSmallMaster = true;
-            foreach (var d in masterDisposables) d.Dispose();
-            return ToResult();
+            try
+            {
+                EnsureUniqueGodotImportedEditorIds(mod, godotImportedIdSources);
+                if (spec.Esl) mod.IsSmallMaster = true;
+                return ToResult();
+            }
+            finally
+            {
+                foreach (var d in masterDisposables) d.Dispose();
+            }
         }
 
         // Assemble the final BuildResult (the in-memory mod + warnings + stats).

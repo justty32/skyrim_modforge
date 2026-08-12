@@ -116,7 +116,8 @@ worldspace) whose **weather table** drives which weathers play there:
   `scale`; malformed entries and duplicate non-empty `instanceId` values fail closed with their
   entry index. A base must be an in-spec editorId or canonical external ref (1–6 hex digits, or an
   8-digit value whose high byte is `00`); imported instance IDs share the global editorId namespace
-  with authored records and placements, including entries imported from other Godot files.
+  with authored records and placements, including entries imported from other Godot files and
+  records generated later in the build (such as an automatically created exterior cell or MCM quest).
   ```jsonc
   "godotPlacements": { "path": "placements.json", "originX": 0, "originY": 0 }
   ```

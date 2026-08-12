@@ -30,7 +30,8 @@ public static partial class Generator
 
     private static List<PlacementSpec> LoadValidatedGodotPlacements(
         GodotPlacementsSpec gpSpec, string specDir, string worldspaceId, ModSpec spec,
-        Dictionary<string, FormKey> formKeyByEd, HashSet<string> reservedIds)
+        Dictionary<string, FormKey> formKeyByEd, HashSet<string> reservedIds,
+        Dictionary<string, string> importedIdSources)
     {
         var imported = GodotPlacements.Load(gpSpec, specDir, worldspaceId);
         var sourcePath = GodotPlacements.ResolvePath(gpSpec, specDir);
@@ -40,6 +41,9 @@ public static partial class Generator
             if (!string.IsNullOrWhiteSpace(pl.EditorId) && !reservedIds.Add(pl.EditorId))
                 throw InvalidGodot(sourcePath, worldspaceId,
                     $"placements[{i}].instanceId '{pl.EditorId}' collides with an existing or planned editorId");
+            if (!string.IsNullOrWhiteSpace(pl.EditorId))
+                importedIdSources.Add(pl.EditorId,
+                    $"godotPlacements '{sourcePath}' for worldspace '{worldspaceId}': placements[{i}]");
             bool external = LooksExternalRef(pl.Base);
             if ((external && !ValidGodotExternalRef(pl.Base))
                 || (!external && !formKeyByEd.ContainsKey(pl.Base)))
@@ -52,6 +56,27 @@ public static partial class Generator
                     "LVLN placement bases cause CTD — use an NPC_ actor");
         }
         return imported;
+    }
+
+    private static void EnsureUniqueGodotImportedEditorIds(
+        SkyrimMod mod, IReadOnlyDictionary<string, string> importedIdSources)
+    {
+        if (importedIdSources.Count == 0) return;
+
+        var counts = mod.EnumerateMajorRecords()
+            .Where(r => !string.IsNullOrWhiteSpace(r.EditorID)
+                     && importedIdSources.ContainsKey(r.EditorID!))
+            .GroupBy(r => r.EditorID!, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
+
+        foreach (var (editorId, source) in importedIdSources)
+        {
+            counts.TryGetValue(editorId, out var count);
+            if (count != 1)
+                throw new InvalidDataException(
+                    $"{source}.instanceId '{editorId}' must identify exactly one final plugin record; " +
+                    $"found {count} (it collides with a record generated later in the build)");
+        }
     }
 
     private static InvalidDataException InvalidGodot(string path, string worldspaceId, string detail) =>
