@@ -52,6 +52,23 @@ internal static partial class Program
         return success;
     }
 
+    internal static bool CompileRequiredSceneFragments(ModSpec spec,
+        Func<string, string, string, bool> compile)
+    {
+        bool requiredSuccess = true;
+        foreach (var scene in spec.Scenes)
+        {
+            var source = Generator.GenerateSceneFragmentSource(scene);
+            if (string.IsNullOrEmpty(source)) continue;
+            bool compiled = compile(source, Generator.SceneFragmentScriptName(scene),
+                $"scene fragment for '{scene.EditorId}'");
+            if (scene.Actions.Any(action => action.SetStage is not null)) requiredSuccess &= compiled;
+        }
+        if (!requiredSuccess)
+            Console.Error.WriteLine("package: required scene SetStage fragment failed to compile; no ESP was written");
+        return requiredSuccess;
+    }
+
     // Ships one of this CLI's embedded prebuilt .pex resources into scriptsDir. Every
     // generated mod that needs the feature gets the same shared .pex.
     private static void ShipEmbeddedPex(string scriptsDir, string name, string label, string onError)

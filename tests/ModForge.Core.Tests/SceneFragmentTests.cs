@@ -27,6 +27,21 @@ public class SceneFragmentTests
         },
     };
 
+    private static SceneSpec OneSetStageScene() => new()
+    {
+        EditorId = "MF_AdvanceScene", QuestEditorId = "MF_HostQuest",
+        Actors = { new SceneActorSpec { AliasId = 0, Npc = "MF_Actor" } },
+        Phases = { new ScenePhaseSpec { Speaker = 0, Lines = { "Advance." } } },
+        Actions =
+        {
+            new SceneActionSpec
+            {
+                StartPhase = 0,
+                SetStage = new SceneSetStageSpec { Quest = "MF_TargetQuest", Stage = 40 },
+            },
+        },
+    };
+
     [Fact]
     public void Scene_with_idle_actions_needs_fragment_script()
     {
@@ -44,6 +59,29 @@ public class SceneFragmentTests
         Assert.Contains("Function Fragment_1()", src);   // phase 1 idle
         Assert.Contains("GetActorRef()", src);           // vanilla method (NOT GetActorReference)
         Assert.Contains("PlayIdle", src);
+    }
+
+    [Fact]
+    public void SetStage_action_generates_restricted_phase_fragment()
+    {
+        var src = Generator.GenerateSceneFragmentSource(OneSetStageScene());
+        Assert.Contains("Quest Property SetStageQuest_0 Auto", src);
+        Assert.Contains("Function Fragment_0()", src);
+        Assert.Contains("SetStageQuest_0.SetStage(40)", src);
+    }
+
+    [Fact]
+    public void Idle_and_SetStage_on_same_phase_share_one_fragment_function()
+    {
+        var s = OneSetStageScene();
+        s.Actions.Add(new SceneActionSpec
+        {
+            Actor = 0, StartPhase = 0, Idle = "Skyrim.esm:0x000A0000",
+        });
+        var src = Generator.GenerateSceneFragmentSource(s);
+        Assert.Equal(1, src.Split("Function Fragment_0()", System.StringSplitOptions.None).Length - 1);
+        Assert.Contains("PlayIdle", src);
+        Assert.Contains("SetStage(40)", src);
     }
 
     [Fact]
@@ -86,6 +124,26 @@ public class SceneFragmentTests
             },
         },
     };
+
+    private static ModSpec MinimalSetStageSpec()
+    {
+        var scene = OneSetStageScene();
+        return new ModSpec
+        {
+            PluginName = "Test.esp",
+            Quests =
+            {
+                new QuestSpec { EditorId = "MF_HostQuest", Name = "Host" },
+                new QuestSpec
+                {
+                    EditorId = "MF_TargetQuest", Name = "Target",
+                    Stages = { new StageSpec { Index = 40 } },
+                },
+            },
+            Npcs = { new NpcSpec { EditorId = "MF_Actor", Name = "Actor" } },
+            Scenes = { scene },
+        };
+    }
 
     [Fact]
     public void Scene_fragments_attached_when_pex_present()
@@ -132,6 +190,35 @@ public class SceneFragmentTests
     }
 
     [Fact]
+    public void SetStage_fragment_binds_explicit_target_quest()
+    {
+        var dir = Directory.CreateTempSubdirectory().FullName;
+        File.WriteAllBytes(Path.Combine(dir, "SF_MF_AdvanceScene.pex"), System.Array.Empty<byte>());
+        var r = TestBuild.OkWithCompiledScripts(MinimalSetStageSpec(), dir);
+        var sc = r.Mod.EnumerateMajorRecords<ISceneGetter>().Single(x => x.EditorID == "MF_AdvanceScene");
+        var target = r.Mod.EnumerateMajorRecords<IQuestGetter>().Single(q => q.EditorID == "MF_TargetQuest");
+        var prop = (IScriptObjectPropertyGetter)sc.VirtualMachineAdapter!.Scripts.Single()
+            .Properties.Single(p => p.Name == "SetStageQuest_0");
+        Assert.Equal(target.FormKey, prop.Object.FormKey);
+        Assert.Single(sc.VirtualMachineAdapter.ScriptFragments!.PhaseFragments);
+    }
+
+    [Fact]
+    public void SetStage_with_empty_quest_binds_scene_host_quest()
+    {
+        var spec = MinimalSetStageSpec();
+        spec.Scenes[0].Actions[0].SetStage!.Quest = "";
+        var dir = Directory.CreateTempSubdirectory().FullName;
+        File.WriteAllBytes(Path.Combine(dir, "SF_MF_AdvanceScene.pex"), System.Array.Empty<byte>());
+        var r = TestBuild.OkWithCompiledScripts(spec, dir);
+        var sc = r.Mod.EnumerateMajorRecords<ISceneGetter>().Single(x => x.EditorID == "MF_AdvanceScene");
+        var host = r.Mod.EnumerateMajorRecords<IQuestGetter>().Single(q => q.EditorID == "MF_HostQuest");
+        var prop = (IScriptObjectPropertyGetter)sc.VirtualMachineAdapter!.Scripts.Single()
+            .Properties.Single(p => p.Name == "SetStageQuest_0");
+        Assert.Equal(host.FormKey, prop.Object.FormKey);
+    }
+
+    [Fact]
     public void Validate_accepts_an_idle_only_action()
     {
         Assert.Empty(Generator.Validate(MinimalOathSpec()));
@@ -152,5 +239,66 @@ public class SceneFragmentTests
         spec.Scenes[0].Actions[0].Package = "Skyrim.esm:0x016FAA";   // idle AND package — mutually exclusive
         Assert.Contains(Generator.Validate(spec),
             p => p.Contains("sets both idle and package"));
+    }
+
+    [Fact]
+    public void Validate_rejects_SetStage_combined_with_idle()
+    {
+        var spec = MinimalSetStageSpec();
+        spec.Scenes[0].Actions[0].Idle = "Skyrim.esm:0x000A0000";
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("combines setStage with idle or package"));
+    }
+
+    [Fact]
+    public void Validate_rejects_omitted_SetStage_stage()
+    {
+        var spec = MinimalSetStageSpec();
+        spec.Scenes[0].Actions[0].SetStage = new SceneSetStageSpec();
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("setStage.stage must be present"));
+    }
+
+    [Fact]
+    public void Validate_rejects_non_quest_target_and_undeclared_local_stage()
+    {
+        var spec = MinimalSetStageSpec();
+        spec.Scenes[0].Actions[0].SetStage!.Quest = "MF_Actor";
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("is not an in-spec quest"));
+        spec.Scenes[0].Actions[0].SetStage!.Quest = "MF_TargetQuest";
+        spec.Scenes[0].Actions[0].SetStage!.Stage = 99;
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("has no matching stage"));
+    }
+
+    [Fact]
+    public void Validate_accepts_external_quest_stage_as_offline_contract()
+    {
+        var spec = MinimalSetStageSpec();
+        spec.Scenes[0].Actions[0].SetStage!.Quest = "Skyrim.esm:0x0001EA5C";
+        Assert.Empty(Generator.ValidateSceneSetStages(spec));
+    }
+
+    [Fact]
+    public void Validate_rejects_malformed_external_quest_ref()
+    {
+        var spec = MinimalSetStageSpec();
+        spec.Scenes[0].Actions[0].SetStage!.Quest = "Skyrim.esm:notHex";
+        Assert.Contains(Generator.ValidateSceneSetStages(spec), p => p.Contains("malformed external ref"));
+    }
+
+    [Fact]
+    public void ValidateSceneSetStages_does_not_throw_on_duplicate_quest_ids()
+    {
+        var spec = MinimalSetStageSpec();
+        spec.Quests.Add(new QuestSpec { EditorId = "mf_targetquest" });
+        var exception = Record.Exception(() => Generator.ValidateSceneSetStages(spec));
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void SetStage_action_emits_timer_so_phase_fragment_can_run()
+    {
+        var r = TestBuild.Ok(MinimalSetStageSpec());
+        var action = r.Mod.EnumerateMajorRecords<ISceneGetter>().Single().Actions
+            .Single(a => a.Type == SceneAction.TypeEnum.Timer);
+        Assert.Equal(Generator.DefaultIdleHoldSeconds, action.TimerSeconds);
     }
 }

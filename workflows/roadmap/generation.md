@@ -6,7 +6,7 @@ ModForge 該長出的**生成能力** backlog（解碼浮現 + 已有設計待�
 
 ## 待補清單（解碼浮現，按優先序）
 
-1. **泛化 scene phase fragment**：Dialog `Emotion`/`EmotionValue`、headtrack/facing 與 PlayIdle phase fragment 都已落地；真缺只剩受限、可驗證的其他 phase 動作（例如 SetStage），以及低優先 CAMS camera shot。不要再把 emotion/PlayIdle 當缺口。
+1. **泛化 scene phase fragment**：Dialog `Emotion`/`EmotionValue`、headtrack/facing、PlayIdle 與受限的 `SetStage` phase action 都已落地；真缺只剩其他可驗證的宣告式 phase 動作，以及低優先 CAMS camera shot。不要再把 emotion/PlayIdle/SetStage 當缺口；任意 Papyrus body 不開放。
 
 2. **擴展 SkyrimIngameEditor — 場景/地景遊戲內編輯器**（取代 CK 場景/landscape 流程）
    - **目標**：在 SkyrimIngameEditor（[Jonahex/SkyrimIngameEditor](https://github.com/Jonahex/SkyrimIngameEditor)，SKSE + ImGui + C# EspGenerator）基礎上新增：

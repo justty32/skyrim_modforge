@@ -1,0 +1,67 @@
+{
+  "pluginName": "ModForgeSceneSetStage.esp",
+  "esl": true,
+  "_": "A scene phase advances a quest through a restricted generated OnStart fragment. package compiles SF_MF_StageScene.psc, attaches it to the SCEN, and binds SetStageQuest_0 to MF_TargetQuest. No arbitrary Papyrus body is accepted.",
+
+  "classes": [
+    {
+      "editorId": "MF_StageActorClass",
+      "name": "Scene Herald",
+      "healthWeight": 50,
+      "magickaWeight": 25,
+      "staminaWeight": 25
+    }
+  ],
+  "npcs": [
+    {
+      "editorId": "MF_StageActor",
+      "name": "Scene Herald",
+      "race": "Skyrim.esm:0x013746",
+      "class": "MF_StageActorClass",
+      "voiceType": "Skyrim.esm:0x013AE6",
+      "unique": true,
+      "essential": true,
+      "level": 4,
+      "autoCalcStats": true
+    }
+  ],
+  "quests": [
+    {
+      "editorId": "MF_SceneHostQuest",
+      "name": "Scene SetStage Host",
+      "startGameEnabled": true
+    },
+    {
+      "editorId": "MF_TargetQuest",
+      "name": "Scene SetStage Target",
+      "stages": [
+        { "index": 40, "logEntry": "The herald delivered the signal." }
+      ]
+    }
+  ],
+  "scenes": [
+    {
+      "editorId": "MF_StageScene",
+      "questEditorId": "MF_SceneHostQuest",
+      "actors": [
+        { "aliasId": 0, "npc": "MF_StageActor", "name": "Herald" }
+      ],
+      "phases": [
+        { "speaker": 0, "lines": [ "The signal is given." ] }
+      ],
+      "actions": [
+        {
+          "startPhase": 0,
+          "setStage": { "quest": "MF_TargetQuest", "stage": 40 }
+        }
+      ]
+    }
+  ],
+  "placements": [
+    {
+      "base": "MF_StageActor",
+      "cell": "Skyrim.esm:0x0133C6",
+      "position": { "x": -600, "y": 120, "z": 0 }
+    }
+  ]
+}

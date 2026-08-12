@@ -251,7 +251,7 @@ phase indices**. A phase referenced only by an action may have **empty `lines`**
     {"actor":0, "timerSeconds":2.0,         "startPhase":0, "endPhase":0} ] // TIMER: pace the beat 2s
 }
 ```
-Each action sets **exactly one** of:
+Each action sets one primary kind (fragment-backed actions may also set `timerSeconds`):
 - **`idle`** — a ref to an `IDLE` (IdleAnimation) record (`<master>:0xFORMID`; discover with
   `find <master> <keyword> idle`). The actor **plays that idle animation** when `startPhase` begins
   (kneel / pray / gesture…), then returns to AI naturally. The animation runs via a `SceneAdapter`
@@ -265,6 +265,15 @@ Each action sets **exactly one** of:
   package that keeps him in place (a Sandbox with `allowSitting:false`), like vanilla's
   package-controlled scene actors. The idle's `<master>` must be a real IDLE — a wrong FormID plays
   nothing (no error), so verify it.
+- **`setStage`** — a restricted phase-begin fragment that calls `Quest.SetStage(stage)`. Shape:
+  `{"quest":"MF_TargetQuest","stage":40}`; omit `quest` to target the scene's host quest. ModForge
+  binds the target as a `Quest` property rather than embedding a FormID in Papyrus. Like `idle`, it
+  auto-emits a Timer so the phase actually runs; set `timerSeconds` only when the phase should remain
+  open longer. Multiple fragment-backed actions on the same phase share one `Fragment_<phase>()`.
+  In-spec targets must be quests and must declare that stage. For an external `<plugin>:0xFORMID`
+  quest, record type and stage existence are an author contract because the master may be unavailable
+  offline. A failed fragment compile makes `package` fail before writing the ESP, so it cannot silently
+  ship a Timer-only scene. This is intentionally limited to `SetStage`; arbitrary Papyrus bodies remain out of scope.
 - **`package`** — a ref to an AI package (a `packages[]` entry in this spec, or an external
   `<master>:0xFORMID`). The actor runs that PACK across the phase window. **Movement** = a **Travel**
   package whose destination is a placed marker; **ambient activity** = a **Sandbox** package; etc.
@@ -288,7 +297,8 @@ Each action sets **exactly one** of:
 must be a scene actor, the phase window must be in range, a beat (lineless) phase must be covered by an
 action. See `examples/scene-action-performance.json` (Borin walks across the Sleeping Giant Inn to the
 vanilla `RiverwoodInnCenterMarker`, waits 8s, then the two argue) and `examples/scene-playidle.json`
-(a supplicant kneels → murmurs a prayer → rises). **Out of scope (later):** sit / use-furniture (needs a
+(a supplicant kneels → murmurs a prayer → rises), plus `examples/scene-setstage.json` (a phase advances
+another quest). **Out of scope (later):** arbitrary scene fragments and CAMS camera shots; sit / use-furniture (needs a
 UseItemAt PACK template — `MQ306EsbernSit` shape decoded; available as the `sittarget` PACK template)
 and idle **event-name** (string) variants rather than IDLE-record refs.
 

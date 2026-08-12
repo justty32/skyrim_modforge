@@ -4827,7 +4827,7 @@
     },
     "sceneAction": {
       "type": "object",
-      "description": "A non-dialog scene beat over a phase window. Set `idle` (PlayIdle via a phase fragment — may add `timerSeconds` as the pose-hold), `package` (a Package action), or `timerSeconds` > 0 (a Timer action). idle/package are mutually exclusive; package/timerSeconds are mutually exclusive.",
+      "description": "A non-dialog scene beat over a phase window. Set `idle` (PlayIdle via a phase fragment — may add `timerSeconds` as the pose-hold), `setStage` (restricted phase-begin Quest.SetStage), `package` (a Package action), or `timerSeconds` > 0 (a Timer action). Fragment-backed actions may add timerSeconds; otherwise choose one action kind.",
       "properties": {
         "actor": {
           "type": "integer",
@@ -4836,6 +4836,10 @@
         "idle": {
           "$ref": "#/$defs/ref",
           "description": "ref → an IDLE record; non-empty makes this a PlayIdle action: `actor` plays the idle when `startPhase` begins (via a SceneAdapter phase fragment + an auto-emitted Timer to run/hold the phase), then returns to AI. Only idles vanilla scripts actually PlayIdle work (bow/gesture/offset); furniture-gated kneel/pray idles do nothing"
+        },
+        "setStage": {
+          "$ref": "#/$defs/sceneSetStage",
+          "description": "on startPhase, call Quest.SetStage(stage); quest defaults to this scene's host quest"
         },
         "package": {
           "$ref": "#/$defs/ref",
@@ -4853,6 +4857,24 @@
           "type": "integer",
           "default": -1,
           "description": "last phase index; -1 = same as startPhase"
+        }
+      }
+    },
+    "sceneSetStage": {
+      "type": "object",
+      "required": [
+        "stage"
+      ],
+      "properties": {
+        "quest": {
+          "$ref": "#/$defs/ref",
+          "description": "quest ref; omit or leave empty to target the scene's host quest"
+        },
+        "stage": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535,
+          "description": "quest stage passed to SetStage"
         }
       }
     },

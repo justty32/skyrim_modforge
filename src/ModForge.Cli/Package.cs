@@ -10,6 +10,12 @@ internal static partial class Program
         var spec = ReadSpec(specPath);
         var pluginName = string.IsNullOrEmpty(spec.PluginName) ? "Generated.esp" : spec.PluginName;
         if (!ValidMcmPackageCount(spec)) return 1;
+        var sceneSetStageProblems = Generator.ValidateSceneSetStages(spec);
+        if (sceneSetStageProblems.Count > 0)
+        {
+            foreach (var problem in sceneSetStageProblems) Console.Error.WriteLine($"package: {problem}");
+            return 1;
+        }
         Directory.CreateDirectory(outModDir);
 
         var scriptsDir = Path.Combine(outModDir, "Scripts");
@@ -72,19 +78,14 @@ internal static partial class Program
             if (!string.IsNullOrEmpty(src))
                 CompileGenerated(src, Generator.DialogueFragmentScriptName(d), $"dialogue fragment for '{d.EditorId}'");
         }
-        foreach (var s in spec.Scenes)
-        {
-            var src = Generator.GenerateSceneFragmentSource(s);
-            if (!string.IsNullOrEmpty(src))
-                CompileGenerated(src, Generator.SceneFragmentScriptName(s), $"scene fragment for '{s.EditorId}'");
-        }
+        bool requiredSceneFragmentsReady = CompileRequiredSceneFragments(spec, CompileGenerated);
         foreach (var pk in spec.Perks)
         {
             var src = Generator.GeneratePerkFragmentSource(pk);
             if (!string.IsNullOrEmpty(src))
                 CompileGenerated(src, Generator.PerkFragmentScriptName(pk), $"perk fragment for '{pk.EditorId}'");
         }
-        if (!CompileRequiredMcmBridges(spec, CompileGenerated))
+        if (!requiredSceneFragmentsReady || !CompileRequiredMcmBridges(spec, CompileGenerated))
         {
             try { Directory.Delete(compiledFragmentsDir, recursive: true); } catch { /* best effort */ }
             return 1;

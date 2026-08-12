@@ -158,15 +158,15 @@ public static partial class Generator
                         StartPhase = (uint)ac.StartPhase,
                         EndPhase = (uint)endPhase,
                     };
-                    if (!string.IsNullOrWhiteSpace(ac.Idle))
+                    if (!string.IsNullOrWhiteSpace(ac.Idle) || ac.SetStage is not null)
                     {
-                        // PlayIdle action: the animation itself runs via the SceneAdapter phase fragment
+                        // Fragment-backed action: the effect itself runs via the SceneAdapter phase fragment
                         // (AttachSceneFragments, driven by `package`). But the engine only RUNS a phase
                         // that has at least one SceneAction (every vanilla fragment phase carries a Timer
                         // — decoded from BardSongs* scenes), and an action-less phase never fires its
                         // OnStart fragment. So emit a Timer here: it both makes the phase run (so the
-                        // PlayIdle fragment fires) and HOLDS the pose for the duration. Hold = TimerSeconds
-                        // if the author set one, else the default.
+                        // fragment fires). Emit a Timer to make the phase runnable; for PlayIdle it also
+                        // holds the pose. Duration = TimerSeconds if set, else the safe default.
                         act.Type = SceneAction.TypeEnum.Timer;
                         act.TimerSeconds = ac.TimerSeconds > 0f ? ac.TimerSeconds : Generator.DefaultIdleHoldSeconds;
                     }

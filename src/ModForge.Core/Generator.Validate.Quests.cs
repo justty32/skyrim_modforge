@@ -174,6 +174,7 @@ public static partial class Generator
 
             // SCENE (SCEN): host quest must exist; actors need a unique aliasId + an NPC; every phase
             // must name a speaker that is one of the scene's actors and carry at least one line.
+            Problems.AddRange(Generator.ValidateSceneSetStages(spec));
             foreach (var sc in spec.Scenes)
             {
                 if (!questIds.Contains(sc.QuestEditorId))
@@ -231,6 +232,7 @@ public static partial class Generator
                     if (!sceneAliasIds.Contains(ac.Actor))
                         Problems.Add($"scene '{sc.EditorId}' action {i} actor aliasId {ac.Actor} is not one of the scene's actors");
                     bool hasIdle = !string.IsNullOrWhiteSpace(ac.Idle);
+                    bool hasSetStage = ac.SetStage is not null;
                     bool hasPackage = !string.IsNullOrWhiteSpace(ac.Package);
                     bool hasTimer = ac.TimerSeconds > 0f;
                     // An idle action MAY also carry timerSeconds (the pose-hold duration) — they're not
@@ -239,8 +241,10 @@ public static partial class Generator
                         Problems.Add($"scene '{sc.EditorId}' action {i} sets both idle and package (idle plays an animation, package runs a PACK — pick one)");
                     if (hasPackage && hasTimer)
                         Problems.Add($"scene '{sc.EditorId}' action {i} sets both package and timerSeconds — pick one");
-                    if (!hasIdle && !hasPackage && !hasTimer)
-                        Problems.Add($"scene '{sc.EditorId}' action {i} must set one of idle, package, or timerSeconds");
+                    if (hasSetStage && (hasIdle || hasPackage))
+                        Problems.Add($"scene '{sc.EditorId}' action {i} combines setStage with idle or package — use separate actions");
+                    if (!hasIdle && !hasSetStage && !hasPackage && !hasTimer)
+                        Problems.Add($"scene '{sc.EditorId}' action {i} must set one of idle, setStage, package, or timerSeconds");
                     if (hasIdle) CheckRef(ac.Idle, $"scene '{sc.EditorId}' action {i} idle");
                     if (hasPackage) CheckRef(ac.Package, $"scene '{sc.EditorId}' action {i} package");
                     int end = ac.EndPhase < 0 ? ac.StartPhase : ac.EndPhase;

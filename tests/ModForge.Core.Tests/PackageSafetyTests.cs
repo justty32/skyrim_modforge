@@ -6,6 +6,40 @@ namespace ModForge.Tests;
 public class PackageSafetyTests
 {
     [Fact]
+    public void FailedRequiredSceneSetStageCompilation_BlocksPackageBuild()
+    {
+        var spec = new ModSpec
+        {
+            Scenes =
+            {
+                new SceneSpec
+                {
+                    EditorId = "S", QuestEditorId = "Q",
+                    Actions = { new SceneActionSpec { SetStage = new SceneSetStageSpec { Stage = 10 } } },
+                },
+            },
+        };
+        Assert.False(Program.CompileRequiredSceneFragments(spec, (_, _, _) => false));
+    }
+
+    [Fact]
+    public void FailedIdleOnlySceneCompilation_RemainsBestEffort()
+    {
+        var spec = new ModSpec
+        {
+            Scenes =
+            {
+                new SceneSpec
+                {
+                    EditorId = "S", QuestEditorId = "Q",
+                    Actions = { new SceneActionSpec { Idle = "Skyrim.esm:0x1" } },
+                },
+            },
+        };
+        Assert.True(Program.CompileRequiredSceneFragments(spec, (_, _, _) => false));
+    }
+
+    [Fact]
     public void MultipleMcmConfigs_BlockPackageBeforeOutput()
     {
         var spec = new ModSpec

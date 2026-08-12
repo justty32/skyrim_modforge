@@ -173,61 +173,6 @@ public static partial class Generator
         // scene begin). `package` pre-compiles GenerateSceneFragmentSource then Build()s with
         // CompiledScriptsDir set. Convention (Index = 0-based phase byte, GetActorRef(), object-property
         // alias binding) decoded from vanilla SF_BardSongsBallad01Scene (Task 0 spike, 2026-06-07).
-        public void AttachSceneFragments()
-        {
-            if (options?.CompiledScriptsDir is not { } compiledDir) return;
-            foreach (var s in spec.Scenes)
-            {
-                if (!Generator.SceneNeedsFragmentScript(s)) continue;
-                var scriptName = Generator.SceneFragmentScriptName(s);
-                if (!File.Exists(Path.Combine(compiledDir, scriptName + ".pex"))) continue;
-                if (!recordsByEd.TryGetValue(s.EditorId, out var rec) || rec is not Scene scene)
-                { Warn($"  ! scene fragment: scene '{s.EditorId}' not built"); continue; }
-                if (!questsByEd.TryGetValue(s.QuestEditorId, out var hostQuest))
-                { Warn($"  ! scene fragment: host quest '{s.QuestEditorId}' for scene '{s.EditorId}' not built"); continue; }
-
-                // MERGE into any existing SceneAdapter (none today, but stay merge-safe like WireQuestStages).
-                // Version=5/ObjectFormat=2/ExtraBindDataVersion=2 = vanilla canonical (unanimous across all
-                // 265 vanilla phase-fragment scenes); ScriptEntry must be Flag.Local or the engine ignores
-                // the script — same as alias scripts.
-                var adapter = scene.VirtualMachineAdapter as SceneAdapter
-                              ?? new SceneAdapter { Version = 5, ObjectFormat = 2 };
-                adapter.ScriptFragments ??= new SceneScriptFragments();
-                adapter.ScriptFragments.FileName = scriptName;
-                adapter.ScriptFragments.ExtraBindDataVersion = 2;
-                var entry = adapter.Scripts.FirstOrDefault(e => string.Equals(e.Name, scriptName, StringComparison.OrdinalIgnoreCase));
-                if (entry is null) { entry = new ScriptEntry { Name = scriptName, Flags = ScriptEntry.Flag.Local }; adapter.Scripts.Add(entry); }
-
-                foreach (var a in Generator.SceneIdleActions(s))
-                {
-                    adapter.ScriptFragments.PhaseFragments.Add(new ScenePhaseFragment
-                    {
-                        Index = (byte)a.StartPhase,                 // 0-based phase index (Task 0 spike)
-                        Flags = ScenePhaseFragment.Flag.OnStart,    // fires when the phase begins
-                        // Unknown MUST be 0x01000000 (16777216) — unanimous across all 686 vanilla phase
-                        // fragments. Leaving it 0 makes the engine SKIP the fragment (the scene analog of
-                        // the QuestScriptFragment.Unknown2=1 gotcha; proven cause of the kneel never firing).
-                        Unknown = 16777216,
-                        ScriptName = scriptName,
-                        FragmentName = $"Fragment_{a.StartPhase}",  // ↔ GenerateSceneFragmentSource function name
-                    });
-                    // Idle_<phase> property → the IDLE form.
-                    var ip = new ScriptObjectProperty { Name = $"Idle_{a.StartPhase}", Flags = ScriptProperty.Flag.Edited };
-                    if (TryResolveRef(a.Idle, formKeyByEd, out var idleFk)) ip.Object.SetTo(idleFk);
-                    else Warn($"  ! scene '{s.EditorId}' idle ref '{a.Idle}' unresolved");
-                    entry.Properties.Add(ip);
-                    // Actor_<phase> property → the host-quest ReferenceAlias (alias index a.Actor). Same
-                    // shape as StoryManager AttachAliasScript: Object = quest, Alias = alias index.
-                    var ap = new ScriptObjectProperty { Name = $"Actor_{a.StartPhase}", Flags = ScriptProperty.Flag.Edited };
-                    ap.Object.SetTo(hostQuest.FormKey);
-                    ap.Alias = (short)a.Actor;
-                    entry.Properties.Add(ap);
-                }
-                scene.VirtualMachineAdapter = adapter;
-                scriptsAttached++;
-            }
-        }
-
         // Build typed ScriptProperty entries from a spec property list onto a ScriptEntry (shared by the
         // record-VMAD attach and the dialogue-fragment attach). int/float/bool/string/object; object
         // resolves ObjectEditorId via the formKey table.

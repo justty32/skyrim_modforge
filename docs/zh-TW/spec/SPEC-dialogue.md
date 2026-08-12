@@ -248,7 +248,7 @@ AI 套件（一個 `Sandbox` 套件，或原版的跟隨套件）。用 `conditi
     {"actor":0, "timerSeconds":2.0,         "startPhase":0, "endPhase":0} ] // TIMER: pace the beat 2s
 }
 ```
-每個 action 設定**恰好一個**：
+每個 action 設定一種主要動作（fragment 型動作也可加 `timerSeconds`）：
 - **`idle`**——一個指向 `IDLE`（IdleAnimation）記錄的 ref（`<master>:0xFORMID`；用
   `find <master> <keyword> idle` 探索）。當 `startPhase` 開始時，actor **播放那個閒置動畫**
   （跪下／祈禱／手勢…），然後自然地回到 AI。動畫透過 SCEN 上每階段的
@@ -262,6 +262,14 @@ AI 套件（一個 `Sandbox` 套件，或原版的跟隨套件）。用 `conditi
   讓他留在原地的套件（一個 `allowSitting:false` 的 Sandbox），就像原版
   套件控制的場景 actor。idle 的 `<master>` 必須是真實的 IDLE——錯誤的 FormID 什麼都不播
   （無錯誤），所以要驗證它。
+- **`setStage`**——受限的 phase-begin fragment，呼叫 `Quest.SetStage(stage)`。格式為
+  `{"quest":"MF_TargetQuest","stage":40}`；省略 `quest` 就使用此 scene 的 host quest。
+  ModForge 把目標綁成 `Quest` property，不把 FormID 寫死在 Papyrus。它也會自動產生 Timer
+  讓 phase 確實運行；只有需要延長 phase 時才另設 `timerSeconds`。同 phase 的多個 fragment
+  動作共用一個 `Fragment_<phase>()`。spec 內目標必須是 quest 且必須宣告該 stage；外部
+  `<plugin>:0xFORMID` quest 因離線時可能沒有 master，其 record type 與 stage 存在性由作者保證。
+  fragment 編譯失敗時 `package` 會在寫 ESP 前失敗，不會靜默出貨只剩 Timer 的 scene。此介面
+  刻意只開放 SetStage，不接受任意 Papyrus body。
 - **`package`**——一個指向 AI 套件的 ref（本 spec 中的一個 `packages[]` 條目，或一個外部
   `<master>:0xFORMID`）。actor 在階段視窗內運行那個 PACK。**移動** = 一個目的地為已放置標記的
   **Travel** 套件；**環境活動** = 一個 **Sandbox** 套件；等等
@@ -283,8 +291,9 @@ AI 套件（一個 `Sandbox` 套件，或原版的跟隨套件）。用 `conditi
 `startPhase`/`endPhase` 是 `phases[]` 的索引；`endPhase` -1 = `startPhase`。驗證：actor
 必須是場景 actor，階段視窗必須在範圍內，一個節拍（無台詞）階段必須被某個
 action 覆蓋。見 `examples/scene-action-performance.json`（Borin 走過 Sleeping Giant Inn 到
-原版的 `RiverwoodInnCenterMarker`，等 8s，然後兩人爭吵）以及 `examples/scene-playidle.json`
-（一位懇求者跪下 → 喃喃祈禱 → 起身）。**範圍外（之後）：** sit / use-furniture（需要一個
+原版的 `RiverwoodInnCenterMarker`，等 8s，然後兩人爭吵）、`examples/scene-playidle.json`
+（一位懇求者跪下 → 喃喃祈禱 → 起身），以及 `examples/scene-setstage.json`（phase 推進另一個
+quest）。**範圍外（之後）：** 任意 scene fragment 與 CAMS camera shot；sit / use-furniture（需要一個
 UseItemAt PACK 模板——`MQ306EsbernSit` 形狀已解碼；以 `sittarget` PACK 模板提供）
 以及 idle **event-name**（字串）變體而非 IDLE 記錄 ref。
 
