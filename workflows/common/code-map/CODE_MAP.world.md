@@ -47,7 +47,7 @@
 | `WorldspaceHeightmapTests.cs` | PNG→cell grid 尺寸推導、VHGT delta 非零、flat PNG = flat cell path、**相鄰 cell 邊界重建高度完全一致（seam stitching）**、validate（min<max / empty path / ESL 不相容） |
 | `VhgtTests.cs` | encode（全零 flat、round-trip ±4 units、過陡 clamp+warn）、**RequiresSkyrim：Tamriel 20 格 decode→encode delta bytes 完全一致（主力機驗演算法）** |
 | `VnmlTests.cs` | Vnml.Compute：平地全朝上、均勻東坡 X<128、均勻北坡 Y<128、Z=255 flat、對角等比坡 X=Y |
-| `GodotPlacementsTests.cs` | Godot placements JSON 座標換算（origin offset、Z 翻轉、m→units）、rotation rad→deg、scale passthrough、instanceId→editorId、error cases |
+| `GodotPlacementsTests.cs` | Godot placements JSON 座標換算（origin offset、Z 翻轉、m→units）、rotation rad→deg、scale passthrough、instanceId→editorId、format version/coordinate system error cases |
 | `XMarkerTests.cs` | XMarker 放置（特殊 placement base）|
 | `XMarkerKindTests.cs` | `kind:xmarker/xmarkerHeading` helper（空 base→0x3B/0x34 + persistent）+ `forced:` alias 解析到 xmarker 錨點 |
 | `MapMarkerTests.cs` | mapMarker → MapMarker static + XMRK（type/flags）；持久 TopCell 加性帶上（⚠️ 需本機 Skyrim.esm）+ validate（type/flag）|
@@ -249,7 +249,7 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 | Util | `Splatmap.cs` | 8-bit grayscale PNG → per-vertex alpha 網格（同 heightmap 網格約定，Y-flip）；`TrySampleCell(globalCellX,Y)` 切 33×33 alpha 0..1，cell 落在圖涵蓋範圍外回 false |
 | Util | `Vtxt.cs` | ATXT+VTXT 純建構：33×33 alpha 格 + Quadrant → `AlphaLayer`{`LayerHeader`+稀疏`AlphaLayerData`(position/opacity)}；quadrant 切分（Bottom=南/低row、Left=西/低col）、position=localRow×17+localCol、0-indexed、空象限不生層。✅ LayerNumber/flags/texFormID 已對 vanilla byte-verify（2026-06-18 in-game OK）；⚠️ 僅 VTXT position 的 row/col 序待最終目視 |
 | Seam | `Generator.Build.Worldspace.cs` | heightmap 迴圈內 **seam stitching**（VHGT）+ **VNML 重算**：每格 encode 後 decode 取 east/north edge 注入下格，`Vnml.Compute(SampleCellExtended)` 填法線（邊緣頂點帶 1px overlap 無需特判）|
-| Util | `GodotPlacements.cs` | Godot `godot4_y_up` placements JSON → `List<PlacementSpec>`；座標換算（Z 翻轉、m→units）+ rotation rad→deg |
+| Util | `GodotPlacements.cs` | Godot placements format v1 / `godot4_y_up` JSON → `List<PlacementSpec>`；拒絕缺漏或不支援的 format version；座標換算（Z 翻轉、m→units）+ rotation rad→deg |
 | Util | `SceneCoordinates.cs` | Pure transform API：source position/quaternion/scale3 → Skyrim position/Euler XYZ/scale；明確 Unity LH Y-up、Unreal LH Z-up 與 custom basis，完整 `B*R*B⁻¹`；非均勻 scale diagnostic |
 | Tests | `SceneCoordinatesTests.cs` | identity、axis/handedness、basis rotation、unit/fudge scale、non-uniform diagnostic |
 | Validate | `Generator.Validate.World.cs` | worldspace ref、boundary、climate ref |

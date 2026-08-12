@@ -19,6 +19,7 @@ namespace ModForge;
 //   待主力機實機對朝向校準（見 wait_todo/worldspace-editor.md「rotation 軸對應」）。
 public static class GodotPlacements
 {
+    private const int SupportedFormatVersion = 1;
     private const float MetersPerUnit = 0.014286f;
     private const float RadToDeg = 180f / MathF.PI;
 
@@ -46,6 +47,14 @@ public static class GodotPlacements
         var file = JsonSerializer.Deserialize<GodotPlacementsFile>(
             System.IO.File.ReadAllText(path), JsonOpts)
             ?? throw new System.InvalidOperationException($"Failed to parse godotPlacements: {path}");
+
+        if (file.Version != SupportedFormatVersion)
+        {
+            var actualVersion = file.Version?.ToString() ?? "<missing>";
+            throw new System.NotSupportedException(
+                $"godotPlacements '{path}': unsupported format version '{actualVersion}'" +
+                $" (only version {SupportedFormatVersion} is supported)");
+        }
 
         if (file.CoordinateSystem != "godot4_y_up")
             throw new System.NotSupportedException(
@@ -85,7 +94,7 @@ public static class GodotPlacements
 
     private sealed class GodotPlacementsFile
     {
-        public int Version { get; set; }
+        public int? Version { get; set; }
 
         [JsonPropertyName("coordinate_system")]
         public string CoordinateSystem { get; set; } = "";

@@ -110,6 +110,8 @@ worldspace) whose **weather table** drives which weathers play there:
   set `originX/Y` to match the heightmap grid. Fields: `path` (json relative to the spec file),
   `originX/Y` (cell-grid origin of the Godot scene's south-west corner). Coordinates are converted
   from the editor's Y-up space into Skyrim world coords and merged into the placement pipeline.
+  The placements file must declare `"version": 1`; missing or unsupported format versions are
+  rejected before any placements are imported.
   ```jsonc
   "godotPlacements": { "path": "placements.json", "originX": 0, "originY": 0 }
   ```

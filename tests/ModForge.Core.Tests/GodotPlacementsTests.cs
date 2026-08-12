@@ -154,6 +154,44 @@ public class GodotPlacementsTests
         finally { File.Delete(path); }
     }
 
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(0)]
+    [InlineData(2)]
+    [InlineData(int.MaxValue)]
+    public void Load_UnsupportedFormatVersion_Throws(int version)
+    {
+        var path = WriteTempJson($$"""
+            { "version": {{version}}, "coordinate_system": "godot4_y_up", "placements": [] }
+            """);
+        try
+        {
+            var spec = new GodotPlacementsSpec { Path = path };
+            var error = Assert.Throws<NotSupportedException>(
+                () => GodotPlacements.Load(spec, "", "TestWorld"));
+            Assert.Contains($"format version '{version}'", error.Message);
+            Assert.Contains("only version 1 is supported", error.Message);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void Load_MissingFormatVersion_Throws()
+    {
+        var path = WriteTempJson("""
+            { "coordinate_system": "godot4_y_up", "placements": [] }
+            """);
+        try
+        {
+            var spec = new GodotPlacementsSpec { Path = path };
+            var error = Assert.Throws<NotSupportedException>(
+                () => GodotPlacements.Load(spec, "", "TestWorld"));
+            Assert.Contains("format version '<missing>'", error.Message);
+            Assert.Contains("only version 1 is supported", error.Message);
+        }
+        finally { File.Delete(path); }
+    }
+
     [Fact]
     public void Load_FileNotFound_Throws()
     {
