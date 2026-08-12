@@ -10,12 +10,7 @@ internal static partial class Program
         var spec = ReadSpec(specPath);
         var pluginName = string.IsNullOrEmpty(spec.PluginName) ? "Generated.esp" : spec.PluginName;
         if (!ValidMcmPackageCount(spec)) return 1;
-        var sceneSetStageProblems = Generator.ValidateSceneSetStages(spec);
-        if (sceneSetStageProblems.Count > 0)
-        {
-            foreach (var problem in sceneSetStageProblems) Console.Error.WriteLine($"package: {problem}");
-            return 1;
-        }
+        if (!ValidSceneSetStages(spec, "package")) return 1;
         Directory.CreateDirectory(outModDir);
 
         var scriptsDir = Path.Combine(outModDir, "Scripts");

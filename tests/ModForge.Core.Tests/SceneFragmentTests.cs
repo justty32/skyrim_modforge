@@ -281,16 +281,18 @@ public class SceneFragmentTests
     {
         var spec = MinimalSetStageSpec();
         spec.Scenes[0].Actions[0].SetStage!.Quest = "Skyrim.esm:notHex";
-        Assert.Contains(Generator.ValidateSceneSetStages(spec), p => p.Contains("malformed external ref"));
+        Assert.Contains(Generator.Validate(spec), p => p.Contains("malformed external ref"));
     }
 
     [Fact]
-    public void ValidateSceneSetStages_does_not_throw_on_duplicate_quest_ids()
+    public void Validate_reports_case_colliding_quest_ids_without_throwing()
     {
         var spec = MinimalSetStageSpec();
         spec.Quests.Add(new QuestSpec { EditorId = "mf_targetquest" });
-        var exception = Record.Exception(() => Generator.ValidateSceneSetStages(spec));
+        IReadOnlyList<string>? problems = null;
+        var exception = Record.Exception(() => problems = Generator.Validate(spec));
         Assert.Null(exception);
+        Assert.Contains(problems!, p => p.Contains("duplicate editorId 'mf_targetquest'"));
     }
 
     [Fact]

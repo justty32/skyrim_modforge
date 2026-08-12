@@ -1,10 +1,41 @@
 using ModForge;
+using System.Text.Json;
 using Xunit;
 
 namespace ModForge.Tests;
 
 public class PackageSafetyTests
 {
+    [Fact]
+    public void MalformedExternalSceneSetStageRef_BlocksBuildBeforeOutput()
+    {
+        var spec = new ModSpec
+        {
+            Scenes =
+            {
+                new SceneSpec
+                {
+                    EditorId = "S", QuestEditorId = "Q",
+                    Actions = { new SceneActionSpec { SetStage = new SceneSetStageSpec
+                        { Quest = "Skyrim.esm:notHex", Stage = 10 } } },
+                },
+            },
+        };
+
+        var dir = Directory.CreateTempSubdirectory().FullName;
+        try
+        {
+            var specPath = Path.Combine(dir, "bad.json");
+            var outPath = Path.Combine(dir, "bad.esp");
+            File.WriteAllText(specPath, JsonSerializer.Serialize(spec));
+
+            Assert.Equal(1, Program.BuildCmd(specPath, outPath));
+            Assert.False(File.Exists(outPath));
+            Assert.False(Program.ValidSceneSetStages(spec, "package"));
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
     [Fact]
     public void FailedRequiredSceneSetStageCompilation_BlocksPackageBuild()
     {

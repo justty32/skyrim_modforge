@@ -11,9 +11,10 @@ internal static partial class Program
     // -------------------------------------------------------------------------------
     //  build
     // -------------------------------------------------------------------------------
-    private static int BuildCmd(string specPath, string outPath, bool syncRequires = false)
+    internal static int BuildCmd(string specPath, string outPath, bool syncRequires = false)
     {
         var spec = ReadSpec(specPath);
+        if (!ValidSceneSetStages(spec, "build")) return 1;
         var key = ModKey.FromNameAndExtension(Path.GetFileName(outPath));
         var specDir = Path.GetDirectoryName(Path.GetFullPath(specPath)) ?? ".";
         var result = Generator.Build(spec, key, new BuildOptions { SpecDir = specDir });
@@ -61,6 +62,13 @@ internal static partial class Program
                 Console.WriteLine($"  Weather test: sw {prefix}{0x800 + i:X06}  → {spec.Weathers[i].EditorId}  {(i == 0 ? detail : "")}");
         }
         return 0;
+    }
+
+    internal static bool ValidSceneSetStages(ModSpec spec, string command)
+    {
+        var problems = Generator.ValidateSceneSetStages(spec);
+        foreach (var problem in problems) Console.Error.WriteLine($"{command}: {problem}");
+        return problems.Count == 0;
     }
 
     // -------------------------------------------------------------------------------
