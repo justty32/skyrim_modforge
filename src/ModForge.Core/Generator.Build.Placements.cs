@@ -29,10 +29,10 @@ public static partial class Generator
             // EditorIds named as some door's teleport PARTNER — a teleport anchor must persist (the engine
             // drops a temporary door, breaking the link). Both ends of a pair end up here.
             var teleportAnchorEds = new HashSet<string>(
-                spec.Placements.Select(p => p.Teleport)
+                placements.Select(p => p.Teleport)
                     .Where(t => !string.IsNullOrWhiteSpace(t) && !LooksExternalRef(t)),
                 StringComparer.OrdinalIgnoreCase);
-            foreach (var pl in spec.Placements)
+            foreach (var pl in placements)
             {
                 ICell? cell;
                 if (!string.IsNullOrWhiteSpace(pl.Worldspace))

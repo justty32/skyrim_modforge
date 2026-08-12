@@ -18,6 +18,9 @@ public static partial class Generator
     private sealed partial class BuildContext
     {
         private readonly ModSpec spec;
+        // Per-build placement view. Godot imports are expanded into this copy so Build() never
+        // mutates the caller's Placements list (and repeated builds of the same spec stay stable).
+        private readonly List<PlacementSpec> placements;
         private readonly SkyrimMod mod;
         private readonly List<string> warnings = new();
         private readonly List<string> notes = new();      // advisory INFO lines (never warnings — see Note())
@@ -136,6 +139,7 @@ public static partial class Generator
         public BuildContext(ModSpec spec, ModKey outputKey, BuildOptions? options)
         {
             this.spec = spec;
+            placements = spec.Placements.ToList();
             this.options = options;
             mod = new SkyrimMod(outputKey, SkyrimRelease.SkyrimSE);
             skyrimData = options?.SkyrimDataPath

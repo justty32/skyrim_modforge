@@ -9,7 +9,7 @@ public static partial class Generator
         // (and the last back to the first to loop). null keyword = the default link the patrol follows.
         public void WireLinkedRefs()
         {
-            foreach (var pl in spec.Placements)
+            foreach (var pl in placements)
             {
                 if (pl.LinkedRefs.Count == 0 || string.IsNullOrWhiteSpace(pl.EditorId)) continue;
                 if (!placementsByEd.TryGetValue(pl.EditorId, out var src)) continue;
@@ -62,7 +62,7 @@ public static partial class Generator
                 else Warn($"  ! teleport partner '{partnerRef}' position not resolvable from master — arrival point defaults to (0,0,0)");
                 return true;
             }
-            foreach (var pl in spec.Placements)
+            foreach (var pl in placements)
             {
                 if (string.IsNullOrWhiteSpace(pl.Teleport) || string.IsNullOrWhiteSpace(pl.EditorId)) continue;
                 if (!placementsByEd.TryGetValue(pl.EditorId, out var src)) continue;

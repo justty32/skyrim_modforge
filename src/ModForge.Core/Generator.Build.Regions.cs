@@ -79,7 +79,8 @@ public static partial class Generator
     {
         public void BuildWorldspacesAndRegions()
         {
-            var (w, tc, nc, l, e) = Generator.BuildWorldspaces(mod, spec, formKeyByEd, Warn, options?.SpecDir ?? "");
+            var (w, tc, nc, l, e) = Generator.BuildWorldspaces(
+                mod, spec, placements, formKeyByEd, Warn, options?.SpecDir ?? "");
             var (r, rl, re) = Generator.BuildRegions(mod, spec, formKeyByEd, Warn);
             worldspacesBuilt = w;
             regionsBuilt = r;

@@ -23,7 +23,8 @@ public static partial class Generator
     //  Returns counts folded into BuildStats + the link tallies.
     // -------------------------------------------------------------------------------
     private static (int Worldspaces, int TerrainCells, int NavmeshCells, int Links, int ExtLinks) BuildWorldspaces(
-        SkyrimMod mod, ModSpec spec, Dictionary<string, FormKey> formKeyByEd, Action<string> warn, string specDir = "")
+        SkyrimMod mod, ModSpec spec, List<PlacementSpec> placements,
+        Dictionary<string, FormKey> formKeyByEd, Action<string> warn, string specDir = "")
     {
         int worldspaces = 0, terrainCells = 0, navmeshCells = 0, links = 0, extLinks = 0;
         // Per-cell navmeshes collected here → single NAVI override written after all worldspaces
@@ -251,9 +252,10 @@ public static partial class Generator
                     EmitCell(cs.X, cs.Y, cs.Height / 8f, new Noggog.Array2d<byte>(33, 33, 0), cs.Navmesh);
             }
 
-            // Expand Godot placements into spec.Placements for BuildPlacements() (runs after worldspaces).
+            // Expand Godot placements into this run's placement view for BuildPlacements(), which runs
+            // after worldspaces. Keep the caller's spec untouched so repeated Build() calls are stable.
             if (ws.GodotPlacements is { } gpSpec)
-                spec.Placements.AddRange(GodotPlacements.Load(gpSpec, specDir, ws.EditorId));
+                placements.AddRange(GodotPlacements.Load(gpSpec, specDir, ws.EditorId));
         }
 
         // One additive NAVI override (master 0x00012FB4) carrying every cell's navmesh info.

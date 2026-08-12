@@ -43,7 +43,7 @@ public static partial class Generator
                 // Resolve the cell from the merchant-container placement's `cell` (in-spec editorId
                 // or vanilla <master>:0xFORMID).
                 FormKey cellFk = default;
-                var chestPlacement = spec.Placements.FirstOrDefault(
+                var chestPlacement = placements.FirstOrDefault(
                     p => string.Equals(p.EditorId, refStr, StringComparison.OrdinalIgnoreCase));
                 if (chestPlacement is { } cp && !string.IsNullOrWhiteSpace(cp.Cell))
                 {

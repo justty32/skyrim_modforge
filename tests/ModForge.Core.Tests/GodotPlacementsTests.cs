@@ -1,4 +1,5 @@
 using System.IO;
+using Mutagen.Bethesda.Plugins;
 using ModForge;
 using Xunit;
 
@@ -217,6 +218,42 @@ public class GodotPlacementsTests
             var results = GodotPlacements.Load(spec, "", "TestWorld");
             Assert.Equal(3 * 4096f, results[0].Position.X, precision: 1);
             Assert.Equal(-2 * 4096f, results[0].Position.Y, precision: 1);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void Build_Twice_DoesNotMutateOrDuplicateGodotPlacements()
+    {
+        var path = WriteTempJson("""
+            {
+              "version": 1,
+              "coordinate_system": "godot4_y_up",
+              "placements": [
+                { "base": "Skyrim.esm:0x00003B", "instanceId": "GodotMarker",
+                  "position": {"x":0,"y":0,"z":0}, "rotation": {"x":0,"y":0,"z":0}, "scale":1.0 }
+              ]
+            }
+            """);
+        try
+        {
+            var spec = new ModSpec { Esl = false };
+            spec.Worldspaces.Add(new WorldspaceSpec
+            {
+                EditorId = "GodotWorld",
+                Name = "Godot World",
+                Climate = "Skyrim.esm:0x000812",
+                Cells = { new WorldspaceCellSpec { X = 0, Y = 0 } },
+                GodotPlacements = new GodotPlacementsSpec { Path = path },
+            });
+            var outputKey = ModKey.FromNameAndExtension("Test.esp");
+
+            var first = Generator.Build(spec, outputKey);
+            var second = Generator.Build(spec, outputKey);
+
+            Assert.Empty(spec.Placements);
+            Assert.Equal(1, first.Stats.Placements);
+            Assert.Equal(first.Stats.Placements, second.Stats.Placements);
         }
         finally { File.Delete(path); }
     }
