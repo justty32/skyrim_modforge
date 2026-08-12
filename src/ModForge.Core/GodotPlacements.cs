@@ -64,31 +64,72 @@ public static class GodotPlacements
         float baseX = spec.OriginX * 4096f;
         float baseY = spec.OriginY * 4096f;
 
+        if (file.Placements is null)
+            throw Invalid(path, "placements must be an array, not null");
+
         var result = new List<PlacementSpec>(file.Placements.Count);
-        foreach (var e in file.Placements)
+        var instanceIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        for (int i = 0; i < file.Placements.Count; i++)
         {
+            var e = file.Placements[i]
+                ?? throw Invalid(path, $"placements[{i}] must be an object, not null");
+            if (string.IsNullOrWhiteSpace(e.Base))
+                throw Invalid(path, $"placements[{i}].base must be a non-empty form ref or editorId");
+            if (e.Position is null)
+                throw Invalid(path, $"placements[{i}].position must be an object, not null");
+            if (e.Rotation is null)
+                throw Invalid(path, $"placements[{i}].rotation must be an object, not null");
+            ValidateVec3(path, i, "position", e.Position);
+            ValidateVec3(path, i, "rotation", e.Rotation);
+            if (e.Scale is not { } scale || !float.IsFinite(scale) || scale <= 0f)
+                throw Invalid(path, $"placements[{i}].scale must be present, finite, and > 0" +
+                    (e.Scale is { } actual ? $" (got {actual})" : ""));
+            if (!string.IsNullOrWhiteSpace(e.InstanceId) && !instanceIds.Add(e.InstanceId))
+                throw Invalid(path, $"placements[{i}].instanceId '{e.InstanceId}' is duplicated");
+
+            var position = new Vec3
+            {
+                X = baseX + e.Position.X!.Value / MetersPerUnit,
+                Y = baseY - e.Position.Z!.Value / MetersPerUnit,
+                Z =         e.Position.Y!.Value / MetersPerUnit,
+            };
+            var rotation = new Vec3
+            {
+                X =  e.Rotation.X!.Value * RadToDeg,
+                Y = -e.Rotation.Z!.Value * RadToDeg,
+                Z =  e.Rotation.Y!.Value * RadToDeg,
+            };
+            if (!Finite(position))
+                throw Invalid(path, $"placements[{i}].position overflows during Skyrim coordinate conversion");
+            if (!Finite(rotation))
+                throw Invalid(path, $"placements[{i}].rotation overflows during degree conversion");
+
             result.Add(new PlacementSpec
             {
                 Base       = e.Base,
                 EditorId   = e.InstanceId ?? "",
                 Worldspace = worldspaceEditorId,
-                Position   = new Vec3
-                {
-                    X = baseX + e.Position.X / MetersPerUnit,
-                    Y = baseY - e.Position.Z / MetersPerUnit,   // Godot +Z = south → flip
-                    Z =         e.Position.Y / MetersPerUnit,
-                },
-                Rotation = new Vec3
-                {
-                    X =  e.Rotation.X * RadToDeg,   // east axis unchanged
-                    Y = -e.Rotation.Z * RadToDeg,   // Godot +Z(south) → Skyrim −Y(north)
-                    Z =  e.Rotation.Y * RadToDeg,   // Godot +Y(up) yaw → Skyrim +Z(up) yaw
-                },
-                Scale = e.Scale,
+                Position   = position,
+                Rotation   = rotation,
+                Scale = scale,
             });
         }
         return result;
     }
+
+    private static InvalidDataException Invalid(string path, string detail) =>
+        new($"godotPlacements '{path}': {detail}");
+
+    private static void ValidateVec3(string path, int index, string field, GodotVec3 value)
+    {
+        if (value.X is not { } x || value.Y is not { } y || value.Z is not { } z)
+            throw Invalid(path, $"placements[{index}].{field} must contain numeric x, y, and z");
+        if (!float.IsFinite(x) || !float.IsFinite(y) || !float.IsFinite(z))
+            throw Invalid(path, $"placements[{index}].{field} x, y, and z must be finite");
+    }
+
+    private static bool Finite(Vec3 value) =>
+        float.IsFinite(value.X) && float.IsFinite(value.Y) && float.IsFinite(value.Z);
 
     // ── internal deserialization types ──────────────────────────────────────
 
@@ -99,22 +140,22 @@ public static class GodotPlacements
         [JsonPropertyName("coordinate_system")]
         public string CoordinateSystem { get; set; } = "";
 
-        public List<GodotEntry> Placements { get; set; } = new();
+        public List<GodotEntry?>? Placements { get; set; }
     }
 
     private sealed class GodotEntry
     {
-        public string Base { get; set; } = "";
+        public string? Base { get; set; } = "";
         public string? InstanceId { get; set; }
-        public GodotVec3 Position { get; set; } = new();
-        public GodotVec3 Rotation { get; set; } = new();
-        public float Scale { get; set; } = 1f;
+        public GodotVec3? Position { get; set; }
+        public GodotVec3? Rotation { get; set; }
+        public float? Scale { get; set; }
     }
 
     private sealed class GodotVec3
     {
-        public float X { get; set; }
-        public float Y { get; set; }
-        public float Z { get; set; }
+        public float? X { get; set; }
+        public float? Y { get; set; }
+        public float? Z { get; set; }
     }
 }

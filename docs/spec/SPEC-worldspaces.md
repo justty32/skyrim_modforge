@@ -111,7 +111,10 @@ worldspace) whose **weather table** drives which weathers play there:
   `originX/Y` (cell-grid origin of the Godot scene's south-west corner). Coordinates are converted
   from the editor's Y-up space into Skyrim world coords and merged into the placement pipeline.
   The placements file must declare `"version": 1`; missing or unsupported format versions are
-  rejected before any placements are imported.
+  rejected before any placements are imported. Version 1 requires a `placements` array and, for
+  each entry, non-empty `base`, complete finite `position`/`rotation` vectors, and finite positive
+  `scale`; malformed entries and duplicate non-empty `instanceId` values fail closed with their
+  entry index.
   ```jsonc
   "godotPlacements": { "path": "placements.json", "originX": 0, "originY": 0 }
   ```
