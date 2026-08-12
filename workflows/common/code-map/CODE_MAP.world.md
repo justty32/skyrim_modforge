@@ -49,6 +49,7 @@
 | `VnmlTests.cs` | Vnml.Compute：平地全朝上、均勻東坡 X<128、均勻北坡 Y<128、Z=255 flat、對角等比坡 X=Y |
 | `GodotPlacementsTests.cs` | Godot placements JSON 座標換算（origin offset、Z 翻轉、m→units）、rotation rad→deg、scale passthrough、instanceId→editorId、format version/coordinate system error cases、重複 Build 不修改 spec/不重複匯入 |
 | `GodotPlacementsValidationTests.cs` | Godot placements v1 malformed payload fail-closed：required 欄位/null/Vec3 axes、非有限或非正數值、轉換 overflow、重複 instanceId 都回報檔案路徑與 entry index |
+| `GodotPlacementsBuildValidationTests.cs` | Godot imports 整合 fail-closed：instanceId 與手寫/其他 Godot 檔撞名、base malformed/unresolved、in-spec LVLN base CTD 防線；diagnostic 含 source/worldspace/index |
 | `XMarkerTests.cs` | XMarker 放置（特殊 placement base）|
 | `XMarkerKindTests.cs` | `kind:xmarker/xmarkerHeading` helper（空 base→0x3B/0x34 + persistent）+ `forced:` alias 解析到 xmarker 錨點 |
 | `MapMarkerTests.cs` | mapMarker → MapMarker static + XMRK（type/flags）；持久 TopCell 加性帶上（⚠️ 需本機 Skyrim.esm）+ validate（type/flag）|
@@ -240,7 +241,7 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
 | Spec | `Spec.Worldspace.cs` | `WorldspaceSpec`（含 `Heightmap`/`GodotPlacements`/**`BaseTexture`**(LTEX ref)/**`TextureLayers`**(多紋理混合)）, `HeightmapSpec`, **`TerrainTextureLayerSpec`**(texture+splatmap), **`SplatmapSpec`**(path/originX/Y), `GodotPlacementsSpec`, `WorldspaceCellSpec`, `WorldMapDataSpec`, `RegionSpec`, `RegionWeatherEntrySpec`, `PointSpec` |
-| Build P1 | `Generator.Build.Worldspace.cs` | 建 worldspace record（climate/water/map bounds）+ cell grid 骨架；**PNG heightmap 路徑**（`Heightmap.Load` → `Vhgt.Encode` per cell）；**單層地形貼圖 `baseTexture`**（resolve LTEX 一次 → `EmitCell` 每格四象限加 `BaseLayer`{`LayerHeader.Texture`/`Quadrant`}，**`LayerNumber=BaseLayerNumber`=0xFFFF**）；**多紋理 `textureLayers`**（每層 resolve LTEX + `Splatmap.Load`；`EmitCell` 每格 `TrySampleCell` → `Vtxt.BuildLayers` → 加 `AlphaLayer`，**LayerNumber=層序 0-indexed**）；**有紋理時 `LAND.Flags |= Layers`(0x04)**（否則引擎跳過紋理層＝無紋理，byte-verified vs vanilla）；**Godot placements 展開**（`GodotPlacements.Load` → `spec.Placements.AddRange`，在 `BuildPlacements` 前注入）|
+| Build P1 | `Generator.Build.Worldspace.cs` / `Generator.Build.GodotPlacements.cs` | 建 worldspace record（climate/water/map bounds）+ cell grid 骨架；**PNG heightmap 路徑**（`Heightmap.Load` → `Vhgt.Encode` per cell）；**單層地形貼圖 `baseTexture`**（resolve LTEX 一次 → `EmitCell` 每格四象限加 `BaseLayer`{`LayerHeader.Texture`/`Quadrant`}，**`LayerNumber=BaseLayerNumber`=0xFFFF**）；**多紋理 `textureLayers`**（每層 resolve LTEX + `Splatmap.Load`；`EmitCell` 每格 `TrySampleCell` → `Vtxt.BuildLayers` → 加 `AlphaLayer`，**LayerNumber=層序 0-indexed**）；**有紋理時 `LAND.Flags |= Layers`(0x04)**；**Godot placements per-build 展開 + base/global editorId fail-closed gate**（在 `BuildPlacements` 前注入、不修改 caller spec）|
 | Build P1 | `Generator.Build.Regions.cs` | 建 region record（polygon / weather table / priority / map color）|
 | Build P2 | `Generator.Build.ExteriorCells.cs` | cell group tree 生成（外層結構）|
 | Build P2 | `Generator.Build.Navmesh.cs` | NAVM 4 頂點平面 quad + NAVI 索引（[engine-internals § navmesh](../../../docs/engine-internals.md#programmatic-navmesh-navm--navi--in-game-confirmed-2026-06-03)）|

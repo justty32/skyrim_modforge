@@ -30,6 +30,7 @@ public static partial class Generator
         // Per-cell navmeshes collected here → single NAVI override written after all worldspaces
         // (the flat-navmesh build + NAVI write live in Generator.Build.Navmesh.cs).
         var navmInfos = new List<NavmCellInfo>();
+        var reservedIds = GodotReservedIds(mod, spec, placements);
 
         // Resolve a ref (in-spec editorId OR external <master>:0xFORMID) and run `set`; tally links.
         void Wire(string what, string refStr, Action<FormKey> set)
@@ -255,7 +256,8 @@ public static partial class Generator
             // Expand Godot placements into this run's placement view for BuildPlacements(), which runs
             // after worldspaces. Keep the caller's spec untouched so repeated Build() calls are stable.
             if (ws.GodotPlacements is { } gpSpec)
-                placements.AddRange(GodotPlacements.Load(gpSpec, specDir, ws.EditorId));
+                placements.AddRange(LoadValidatedGodotPlacements(
+                    gpSpec, specDir, ws.EditorId, spec, formKeyByEd, reservedIds));
         }
 
         // One additive NAVI override (master 0x00012FB4) carrying every cell's navmesh info.

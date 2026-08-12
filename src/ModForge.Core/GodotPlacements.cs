@@ -37,9 +37,7 @@ public static class GodotPlacements
     public static List<PlacementSpec> Load(
         GodotPlacementsSpec spec, string specDir, string worldspaceEditorId)
     {
-        var path = System.IO.Path.IsPathRooted(spec.Path)
-            ? spec.Path
-            : System.IO.Path.Combine(specDir, spec.Path);
+        var path = ResolvePath(spec, specDir);
 
         if (!System.IO.File.Exists(path))
             throw new System.IO.FileNotFoundException($"godotPlacements JSON not found: {path}");
@@ -119,6 +117,11 @@ public static class GodotPlacements
 
     private static InvalidDataException Invalid(string path, string detail) =>
         new($"godotPlacements '{path}': {detail}");
+
+    internal static string ResolvePath(GodotPlacementsSpec spec, string specDir) =>
+        System.IO.Path.IsPathRooted(spec.Path)
+            ? spec.Path
+            : System.IO.Path.Combine(specDir, spec.Path);
 
     private static void ValidateVec3(string path, int index, string field, GodotVec3 value)
     {

@@ -114,7 +114,9 @@ worldspace) whose **weather table** drives which weathers play there:
   rejected before any placements are imported. Version 1 requires a `placements` array and, for
   each entry, non-empty `base`, complete finite `position`/`rotation` vectors, and finite positive
   `scale`; malformed entries and duplicate non-empty `instanceId` values fail closed with their
-  entry index.
+  entry index. A base must be an in-spec editorId or canonical external ref (1–6 hex digits, or an
+  8-digit value whose high byte is `00`); imported instance IDs share the global editorId namespace
+  with authored records and placements, including entries imported from other Godot files.
   ```jsonc
   "godotPlacements": { "path": "placements.json", "originX": 0, "originY": 0 }
   ```
