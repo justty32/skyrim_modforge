@@ -32,7 +32,7 @@ internal static partial class Program
         return success;
     }
 
-    private static bool ValidMcmPackageCount(ModSpec spec)
+    internal static bool ValidMcmPackageCount(ModSpec spec)
     {
         if (spec.McmConfigs.Count <= 1) return true;
         Console.Error.WriteLine($"package: mcmConfigs has {spec.McmConfigs.Count} entries; "
@@ -40,7 +40,7 @@ internal static partial class Program
         return false;
     }
 
-    private static bool CompileRequiredMcmBridges(ModSpec spec,
+    internal static bool CompileRequiredMcmBridges(ModSpec spec,
         Func<string, string, string, bool> compile)
     {
         bool success = true;

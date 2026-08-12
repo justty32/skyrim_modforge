@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ModForge.Core\ModForge.Core.csproj" />
+    <InternalsVisibleTo Include="ModForge.Core.Tests" />
   </ItemGroup>
 
   <!-- The generic Story-Event dispatcher .pex (compiled once from assets/papyrus/*.psc). Embedded so

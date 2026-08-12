@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/ModForge.Core/ModForge.Core.csproj" />
+    <ProjectReference Include="../../src/ModForge.Cli/ModForge.Cli.csproj" />
   </ItemGroup>
 
 </Project>
