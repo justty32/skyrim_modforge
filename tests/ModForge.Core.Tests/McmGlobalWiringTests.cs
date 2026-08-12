@@ -28,6 +28,11 @@ public class McmGlobalWiringTests
 
         var mcmScript = mod.Quests.Single(q => q.EditorID!.StartsWith("MF_MCM_"))
             .VirtualMachineAdapter!.Scripts.Single(s => s.Name == Generator.McmGlobalScriptName(spec.McmConfigs[0]));
+        var fallbackName = Assert.IsAssignableFrom<IScriptStringPropertyGetter>(
+            mcmScript.Properties.Single(p => p.Name == "ModName"));
+        // Config lookup uses the owning plugin stem (McmGenTests covers that). This VMAD value is
+        // intentionally the human-facing spec label used only as MCM Helper's display fallback.
+        Assert.Equal("Barter Menu", fallbackName.Data);
         var property = Assert.IsAssignableFrom<IScriptObjectPropertyGetter>(
             mcmScript.Properties.Single(p => p.Name == Generator.McmGlobalPropertyName(0)));
         Assert.Equal(global.FormKey, property.Object.FormKey);

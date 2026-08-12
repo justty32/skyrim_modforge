@@ -28,6 +28,20 @@ public class ValidateMcmTests
     }
 
     [Fact]
+    public void MultipleMenus_PerPlugin_AreRejectedBeforeTheyOverwrite()
+    {
+        var s = new ModSpec
+        {
+            McmConfigs =
+            {
+                new McmSpec { ModName = "A", Pages = { new McmPageSpec { Name = "P" } } },
+                new McmSpec { ModName = "B", Pages = { new McmPageSpec { Name = "P" } } },
+            },
+        };
+        Assert.Contains(Validate(s), p => p.Contains("only one menu is allowed per plugin"));
+    }
+
+    [Fact]
     public void NoPages_Reported()
     {
         var s = new ModSpec { McmConfigs = { new McmSpec { ModName = "M" } } };

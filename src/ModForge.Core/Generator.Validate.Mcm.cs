@@ -17,11 +17,16 @@ public static partial class Generator
         // CallFunction path; raw PropertyValue*/action authoring remains out of scope.
         public void ValidateMcmConfigs()
         {
+            // MCM Helper derives one config directory from the host plugin stem, so one plugin can
+            // expose exactly one config.json/settings.ini pair. Multiple entries would overwrite.
+            if (spec.McmConfigs.Count > 1)
+                Problems.Add($"mcmConfigs has {spec.McmConfigs.Count} entries; only one menu is allowed per plugin");
+
             foreach (var m in spec.McmConfigs)
             {
                 var who = $"mcm '{m.ModName}'";
                 if (string.IsNullOrWhiteSpace(m.ModName))
-                    Problems.Add("mcm config has empty 'modName' (it names the MCM/Config/<modName>/ folder)");
+                    Problems.Add("mcm config has empty 'modName' (it is the stable menu/script label)");
                 if (m.Pages.Count == 0)
                     Problems.Add($"{who} has no pages");
 

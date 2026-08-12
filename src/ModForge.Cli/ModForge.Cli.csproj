@@ -151,7 +151,7 @@
   </ItemGroup>
 
   <!-- The reusable MCM Helper config host .pex (extends MCM_ConfigBase; attached to a Start-Game-Enabled
-       QUST whose ModName property points at Data/MCM/Config/<ModName>/). Embedded so `package` can drop it
+       QUST; MCM Helper finds Data/MCM/Config/<plugin-stem>/ from that quest's owning plugin). Embedded so `package` can drop it
        into Scripts/ for any mod with mcmConfigs. Needs MCM Helper + SkyUI SDK headers to compile (not the
        vanilla set) — provision MCM_ConfigBase.psc / SKI_*.psc into the header cache first, then:
          dotnet run - - compile assets/papyrus/ModForgeMCM.psc assets/papyrus/ -->

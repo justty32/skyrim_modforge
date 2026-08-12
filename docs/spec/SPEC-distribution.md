@@ -112,6 +112,11 @@ at runtime. A bool toggle may additionally set `global` to a GLOB ref: ModForge 
 that GLOB. Raw `PropertyValue*` and hand-authored actions remain out of scope. The ini-only path was
 verified in-game 2026-06-20; the new GLOB bridge is offline-verified and awaits one runtime check.
 
+Because the directory is derived from the host plugin, one plugin can contain exactly one
+`mcmConfigs` entry. `validate` and `package` reject additional entries instead of silently overwriting
+the same `config.json` and `settings.ini`. A `global` bridge is required runtime code: if its generated
+Papyrus subclass cannot compile, `package` fails before writing the ESP.
+
 ```json
 {
   "mcmConfigs": [

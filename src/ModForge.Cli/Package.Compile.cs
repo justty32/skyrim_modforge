@@ -32,6 +32,26 @@ internal static partial class Program
         return success;
     }
 
+    private static bool ValidMcmPackageCount(ModSpec spec)
+    {
+        if (spec.McmConfigs.Count <= 1) return true;
+        Console.Error.WriteLine($"package: mcmConfigs has {spec.McmConfigs.Count} entries; "
+            + "MCM Helper supports one config.json/settings.ini pair per host plugin");
+        return false;
+    }
+
+    private static bool CompileRequiredMcmBridges(ModSpec spec,
+        Func<string, string, string, bool> compile)
+    {
+        bool success = true;
+        foreach (var m in spec.McmConfigs.Where(Generator.HasMcmGlobalBindings))
+            success &= compile(Generator.GenerateMcmGlobalScriptSource(m), Generator.McmGlobalScriptName(m),
+                $"MCM global bridge for '{m.ModName}'");
+        if (!success)
+            Console.Error.WriteLine("package: required MCM global bridge failed to compile; no ESP was written");
+        return success;
+    }
+
     // Ships one of this CLI's embedded prebuilt .pex resources into scriptsDir. Every
     // generated mod that needs the feature gets the same shared .pex.
     private static void ShipEmbeddedPex(string scriptsDir, string name, string label, string onError)
@@ -47,7 +67,7 @@ internal static partial class Program
     // SkyPatcher) relative to the mod's output root.
     private static void WriteLooseFile(OarGen.OarFile f, string outModDir)
     {
-        var dest = Path.Combine(outModDir, f.RelPath.Replace('/', Path.DirectorySeparatorChar));
+        var dest = SafeOutputPath.ResolveUnder(outModDir, f.RelPath);
         Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
         File.WriteAllText(dest, f.Content);
     }

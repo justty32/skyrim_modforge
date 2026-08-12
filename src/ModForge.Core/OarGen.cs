@@ -21,11 +21,12 @@ public static class OarGen
         new() { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     // Windows-illegal filename chars (OAR folder names may contain spaces/&; only these are stripped).
-    private static string SanitizeFolder(string name)
+    internal static string SanitizeFolder(string name)
     {
         var chars = (name ?? "").Trim();
         foreach (var bad in new[] { '<', '>', ':', '"', '/', '\\', '|', '?', '*' })
             chars = chars.Replace(bad, '_');
+        chars = chars.TrimEnd(' ', '.');
         return chars.Length == 0 ? "Submod" : chars;
     }
 

@@ -568,10 +568,11 @@
     },
     "mcmConfigs": {
       "type": "array",
+      "maxItems": 1,
       "items": {
         "$ref": "#/$defs/mcmConfig"
       },
-      "description": "MCM Helper settings menus: emitted as loose MCM/Config/<modName>/config.json + settings.ini (no ESP record, no Papyrus for the ModSetting* ini-backed path). Requires MCM Helper + SkyUI at runtime. See docs/spec/SPEC-distribution.md."
+      "description": "MCM Helper settings menus: emitted as MCM/Config/<plugin-stem>/config.json + settings.ini plus an ESP registration quest. Ini-only menus reuse ModForgeMCM; global-bound controls use a generated subclass. Requires MCM Helper + SkyUI at runtime. See docs/spec/SPEC-distribution.md."
     },
     "formListInjects": {
       "type": "array",
@@ -6140,11 +6141,11 @@
         "modName",
         "pages"
       ],
-      "description": "MCM Helper config -> MCM/Config/<modName>/config.json + settings.ini.",
+      "description": "MCM Helper menu -> MCM/Config/<plugin-stem>/config.json + settings.ini plus an ESP registration quest.",
       "properties": {
         "modName": {
           "type": "string",
-          "description": "names the MCM/Config/<modName>/ folder + the MCM identity key"
+          "description": "stable menu/script label and display-name fallback; the host plugin stem controls config lookup"
         },
         "displayName": {
           "type": "string",

@@ -85,6 +85,29 @@ public class ValidateAnimationReplacerTests
     }
 
     [Fact]
+    public void UnsafeOrCollidingOutputPaths_AreReported()
+    {
+        var s = new ModSpec
+        {
+            AnimationReplacers =
+            {
+                new AnimationReplacerSpec { Mod = "..", Submods = { new OarSubmodSpec
+                    { Name = "safe", ReplaceVanillaPath = true, Replaces = "../../outside.hkx", Hkx = { "a.hkx" } } } },
+                new AnimationReplacerSpec { Mod = "A:B", Submods = { new OarSubmodSpec
+                    { Name = "same?name", Priority = 1, Hkx = { "b.hkx" } },
+                    new OarSubmodSpec { Name = "same:name", Priority = 2, Hkx = { "c.hkx" } } } },
+                new AnimationReplacerSpec { Mod = "A?B" },
+            },
+        };
+
+        var problems = Validate(s);
+        Assert.Contains(problems, p => p.Contains("not a safe output folder"));
+        Assert.Contains(problems, p => p.Contains("must be a safe relative path"));
+        Assert.Contains(problems, p => p.Contains("duplicate submod/output folder"));
+        Assert.Contains(problems, p => p.Contains("duplicate mod name/output folder"));
+    }
+
+    [Fact]
     public void BadBdiType_Reported()
     {
         var s = new ModSpec

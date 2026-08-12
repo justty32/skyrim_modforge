@@ -29,6 +29,7 @@
 | `RequiresTests.cs` | 宣告式 `requires[]` 雙向檢查：**沒有 requires 段＝完全不檢查**（negative case，向後相容）／用到沒宣告→錯誤且訊息指出**是哪一行 spec 欄位**／宣告沒用到→警告／空 `[]`＝只准 vanilla／`name` 條目（無 plugin 的 SKSE 相依）永不檢查但進旁檔／`version` 只是標籤（旁檔標 NOT verified）／**玩家面向 shipped 形式**（`forShippedMod`）保留安裝清單＋reason/version/連結、拿掉 spec 欄位歸因與 rebuild 指示／`SyncRequires` 加新丟舊保留 metadata＋同步後檢查通過／`validate` 形狀檢查／JSON 字串簡寫與缺段＝null／**釘死「requires[] 不改 esp 一個 byte」**|
 | `Helpers.cs` | 共用測試 helper（非 test class，供其他 *Tests.cs 使用）|
 | `CatalogTests.cs` | 不需 Skyrim.esm 的 synthetic plugin round-trip：multiple source、FTS name/EditorID + type/plugin filter、exact FormKey/source lookup、source hash/path provenance、rerun replace 不重複。|
+| `SafeOutputPathTests.cs` | package 輸出路徑 containment：合法嵌套路徑通過，`..` traversal 拒絕 |
 
 ---
 
@@ -136,9 +137,10 @@
 | Validate | `Generator.Validate.Spid.cs` | type 白名單 / record 必填 / chance 0–100（`ValidateSpidDistributions`）|
 | Spec | `Spec.Mcm.cs` | DTO：`McmSpec`/`McmPageSpec`/`McmControlSpec`（含 bool toggle 的 `global` GLOB bridge；ModSpec list `mcmConfigs` 在 `Spec.cs`）|
 | Core | `McmGen.cs` | `McmSpec`+`identity`→`MCM/Config/<identity>/config.json` + `settings.ini`；`global` control 加 `action.CallFunction`。**`identity`＝宿主插件檔名 stem**；config.json `modName`＝identity，`displayName`＝spec modName/displayName |
+| Core | `SafeOutputPath.cs` | package 所有生成路徑的 containment guard：正規化後必須仍在輸出根目錄內，擋住 OAR/loose-file `..` traversal |
 | Core | `Generator.McmScripts.cs` | `global` controls → per-menu `MCM_ConfigBase` Papyrus source（bool setter 把 0/1 寫 GLOB）、穩定 script/property/function 命名 |
 | Core | `Generator.Build.Mcm.cs` | `BuildMcmQuests`：每個 config 生 Start-Game-Enabled `MF_MCM_*` QUST；ini-only 掛 `ModForgeMCM`，有 `global` 時掛 generated subclass + VMAD GLOB properties；另有 player-forced alias + `SKI_PlayerLoadGameAlias` |
-| Asset | `assets/papyrus/ModForgeMCM.psc` | 可重用空子類 `extends MCM_ConfigBase`；一顆 `.pex` 服務所有 MCM 選單（差別只在 VMAD `ModName`）。**編譯需 MCM Helper+SkyUI SDK headers**（非香草）：供 `MCM_ConfigBase.psc`/`SKI_*.psc` 進 header cache 再編；`.pex` embed 進 CLI、gitignore |
+| Asset | `assets/papyrus/ModForgeMCM.psc` | ini-only 選單共用的空子類 `extends MCM_ConfigBase`；VMAD `ModName` 只是註冊／錯誤頁顯示 fallback，config 查找依宿主 plugin stem。有 `global` 的選單改用生成子類。**編譯需 MCM Helper+SkyUI SDK headers**（非香草）：供 `MCM_ConfigBase.psc`/`SKI_*.psc` 進 header cache 再編；`.pex` embed 進 CLI、gitignore |
 | Validate | `Generator.Validate.Mcm.cs` | control/sourceType/id/range/options；`global` 只准 toggle+ModSettingBool 且 ref 必須可解；raw PropertyValue\*/action 仍擋掉 |
 | Spec | `Spec.FormListInject.cs` | DTO：`FormListInjectSpec`/`FlmFilterSpec`/`FlmNamedListSpec`/`FlmCollectionSpec`/`FlmEntrySpec`（ModSpec list `formListInjects` 在 `Spec.cs`）|
 | Core | `FlmGen.cs` | `FormListInjectSpec`→`<file>_FLM.ini`（`Generate`）；**無區段頭**（檔首 `[General]` 會讓 FLM v1.8.1 判 `Config file is empty` 跳過整檔，IN-GAME 2026-06-20）；先 emit Filter/Alias/Group/Collection 定義、再 FormList 操作行；filter ref 自動補 `#`|

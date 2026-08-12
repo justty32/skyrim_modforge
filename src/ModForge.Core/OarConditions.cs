@@ -45,11 +45,12 @@ public static class OarConditions
 
     public static JsonObject Emit(OarConditionSpec c)
     {
-        var requiredVersion = string.Equals(c.Condition, "PRESET", StringComparison.OrdinalIgnoreCase) ? "2.2.0" : RequiredVersion;
-        var o = new JsonObject { ["condition"] = c.Condition, ["requiredVersion"] = requiredVersion };
+        var condition = CanonicalConditionName(c.Condition);
+        var requiredVersion = condition == "PRESET" ? "2.2.0" : RequiredVersion;
+        var o = new JsonObject { ["condition"] = condition, ["requiredVersion"] = requiredVersion };
         if (c.Negated) o["negated"] = true;
 
-        switch ((c.Condition ?? "").Trim())
+        switch (condition)
         {
             case "AND":
             case "OR":
@@ -99,6 +100,20 @@ public static class OarConditions
         }
         return o;
     }
+
+    private static string CanonicalConditionName(string? value) => (value ?? "").Trim().ToUpperInvariant() switch
+    {
+        "AND" => "AND",
+        "OR" => "OR",
+        "ISACTORBASE" => "IsActorBase",
+        "ISRACE" => "IsRace",
+        "ISEQUIPPEDTYPE" => "IsEquippedType",
+        "ISFEMALE" => "IsFemale",
+        "RANDOM" => "Random",
+        "COMPAREVALUES" => "CompareValues",
+        "PRESET" => "PRESET",
+        _ => throw new ArgumentException($"unsupported OAR condition '{value}'"),
+    };
 
     public static JsonArray EmitAll(IEnumerable<OarConditionSpec> conditions)
     {

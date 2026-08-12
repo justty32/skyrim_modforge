@@ -127,6 +127,15 @@ public class OarGenTests
     }
 
     [Fact]
+    public void LowercaseCondition_IsCanonicalizedBeforeEmission()
+    {
+        var condition = OarConditions.Emit(new OarConditionSpec
+            { Condition = "israce", Form = "Skyrim.esm|0x000019" });
+        Assert.Equal("IsRace", (string?)condition["condition"]);
+        Assert.NotNull(condition["Race"]);
+    }
+
+    [Fact]
     public void Generate_Oar22PresetsVariantsAndFunctions_UsesAuthorConfigContract()
     {
         var r = new AnimationReplacerSpec

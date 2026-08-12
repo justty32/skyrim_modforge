@@ -10,7 +10,9 @@ namespace ModForge;
 // Format verified against sub_projs/mod-survey/findings/mcm-helper-config-json.md (MCM Helper 1.6.1).
 public sealed class McmSpec
 {
-    public string ModName { get; set; } = "";       // → MCM/Config/<ModName>/ dir + the MCM identity key
+    // Stable menu/script label and display-name fallback. The config folder/runtime identity is the
+    // host plugin stem, supplied separately by package; MCM Helper does not use this value for lookup.
+    public string ModName { get; set; } = "";
     public string DisplayName { get; set; } = "";    // left-list label (supports a $TranslationKey)
     public List<McmPageSpec> Pages { get; set; } = new();
 }

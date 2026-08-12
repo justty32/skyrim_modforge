@@ -9,6 +9,7 @@ internal static partial class Program
     {
         var spec = ReadSpec(specPath);
         var pluginName = string.IsNullOrEmpty(spec.PluginName) ? "Generated.esp" : spec.PluginName;
+        if (!ValidMcmPackageCount(spec)) return 1;
         Directory.CreateDirectory(outModDir);
 
         var scriptsDir = Path.Combine(outModDir, "Scripts");
@@ -83,9 +84,11 @@ internal static partial class Program
             if (!string.IsNullOrEmpty(src))
                 CompileGenerated(src, Generator.PerkFragmentScriptName(pk), $"perk fragment for '{pk.EditorId}'");
         }
-        foreach (var m in spec.McmConfigs.Where(Generator.HasMcmGlobalBindings))
-            CompileGenerated(Generator.GenerateMcmGlobalScriptSource(m), Generator.McmGlobalScriptName(m),
-                $"MCM global bridge for '{m.ModName}'");
+        if (!CompileRequiredMcmBridges(spec, CompileGenerated))
+        {
+            try { Directory.Delete(compiledFragmentsDir, recursive: true); } catch { /* best effort */ }
+            return 1;
+        }
 
         // 2) Build the plugin, passing CompiledScriptsDir so WireQuestStages and
         //    AttachDialogueResultScripts wire the VMAD for any fragment whose .pex exists.
@@ -275,7 +278,7 @@ internal static partial class Program
                 {
                     var src = ResolveHkx(copy.Source);
                     if (src is null) { hkxMissing.Add(copy.Source); continue; }
-                    var dest = Path.Combine(outModDir, copy.DestRelPath.Replace('/', Path.DirectorySeparatorChar));
+                    var dest = SafeOutputPath.ResolveUnder(outModDir, copy.DestRelPath);
                     Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
                     File.Copy(src, dest, overwrite: true);
                     hkxPlaced++;

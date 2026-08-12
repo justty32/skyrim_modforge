@@ -22,13 +22,15 @@ public static partial class Generator
         // has the spec/assets dir — Validate only sees the ModSpec.)
         public void ValidateAnimationReplacers()
         {
-            var replacerModNames = new HashSet<string>(StringComparer.Ordinal);
+            var replacerModNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var r in spec.AnimationReplacers)
             {
                 if (string.IsNullOrWhiteSpace(r.Mod))
                     Problems.Add("animationReplacer has empty 'mod' name");
-                else if (!replacerModNames.Add(r.Mod))
-                    Problems.Add($"animationReplacer has duplicate mod name '{r.Mod}'");
+                else if (UnsafeOutputComponent(r.Mod))
+                    Problems.Add($"animationReplacer mod name '{r.Mod}' is not a safe output folder");
+                else if (!replacerModNames.Add(OarGen.SanitizeFolder(r.Mod)))
+                    Problems.Add($"animationReplacer has duplicate mod name/output folder '{OarGen.SanitizeFolder(r.Mod)}'");
                 var presetNames = new HashSet<string>(StringComparer.Ordinal);
                 foreach (var preset in r.ConditionPresets)
                 {
@@ -42,14 +44,18 @@ public static partial class Generator
                     foreach (var c in preset.Conditions) CheckOarCondition(c, who, presetNames, checkPresetReference: true);
                 }
 
-                var submodNames = new HashSet<string>(StringComparer.Ordinal);
+                var submodNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach (var s in r.Submods)
                 {
                     var who = $"animationReplacer '{r.Mod}' submod '{s.Name}'";
                     if (string.IsNullOrWhiteSpace(s.Name))
                         Problems.Add($"animationReplacer '{r.Mod}' has a submod with empty name");
-                    else if (!submodNames.Add(s.Name))
-                        Problems.Add($"animationReplacer '{r.Mod}' has duplicate submod '{s.Name}'");
+                    else if (UnsafeOutputComponent(s.Name))
+                        Problems.Add($"{who} name is not a safe output folder");
+                    else if (!submodNames.Add(OarGen.SanitizeFolder(s.Name)))
+                        Problems.Add($"animationReplacer '{r.Mod}' has duplicate submod/output folder '{OarGen.SanitizeFolder(s.Name)}'");
+                    if (s.ReplaceVanillaPath && !string.IsNullOrWhiteSpace(s.Replaces) && UnsafeRelativeOutputPath(s.Replaces))
+                        Problems.Add($"{who} replaces path '{s.Replaces}' must be a safe relative path under Meshes/");
                     if (!s.ReplaceVanillaPath && s.Priority <= 0)
                         Problems.Add($"{who} priority must be > 0 (got {s.Priority})");
                     if (s.Hkx.Count == 0 && s.Variants.Count == 0)
@@ -117,6 +123,20 @@ public static partial class Generator
                     else if (checkPresetReference && !presetNames.Contains(c.Preset)) Problems.Add($"{who} PRESET references unknown conditionPreset '{c.Preset}'");
                     break;
             }
+        }
+
+        private static bool UnsafeOutputComponent(string value)
+        {
+            var raw = value ?? "";
+            var trimmed = raw.Trim();
+            return trimmed is "." or ".." || raw.EndsWith(' ') || raw.EndsWith('.');
+        }
+
+        private static bool UnsafeRelativeOutputPath(string value)
+        {
+            if (Path.IsPathRooted(value)) return true;
+            return value.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries)
+                .Any(part => part is "." or "..");
         }
 
         void ValidateReplacementAnimations(OarSubmodSpec s, string who)

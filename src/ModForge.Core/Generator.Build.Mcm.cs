@@ -14,13 +14,13 @@ public static partial class Generator
         // --- pass 2: MCM Helper registration quest (D-2) ---
         // MCM Helper does NOT register a menu from a loose config.json alone (confirmed in-game 2026-06-20;
         // the menu never appeared). Its wiki requires, at minimum: a Start-Game-Enabled QUST whose attached
-        // script extends MCM_ConfigBase (with the inherited string `ModName` property = the
-        // Data/MCM/Config/<modName>/ folder, which is what RegisterMod(self, ModName) keys on), plus a
+        // script extends MCM_ConfigBase (with inherited string `ModName` retained as MCM Helper's
+        // registration/error-page display fallback; config lookup itself uses the owning plugin stem), plus a
         // PlayerAlias — a ReferenceAlias forced to the player carrying SKI_PlayerLoadGameAlias, whose
         // OnPlayerLoadGame calls (GetOwningQuest() as SKI_QuestBase).OnGameReload() to re-register on every
         // load. The config.json/settings.ini loose files are still emitted by McmGen at package time; this
         // builds the ESP side that makes them appear. Mirrors BuildDefaultIdentityQuest (quest + Local
-        // script) + AttachAliasScript (QuestFragmentAlias). Per-mod difference is the ModName string only.
+        // script) + AttachAliasScript (QuestFragmentAlias). Per-menu difference is the fallback label only.
         // Runs in pass 2 (the player ref is external so resolves any time, but kept with the quest builders).
         public void BuildMcmQuests()
         {
@@ -35,7 +35,8 @@ public static partial class Generator
 
                 var qad = new QuestAdapter { Version = 5, ObjectFormat = 2 };
 
-                // Config host script — ModName links the quest to MCM/Config/<modName>/config.json.
+                // Config host script. MCM Helper locates MCM/Config/<plugin-stem>/ from the owning quest;
+                // this inherited property is only its registration/error-page display fallback.
                 var cfg = new ScriptEntry
                 {
                     Name = Generator.HasMcmGlobalBindings(m) ? Generator.McmGlobalScriptName(m) : McmConfigScript,
@@ -76,7 +77,7 @@ public static partial class Generator
             }
         }
 
-        // EditorID-safe form of a modName (MCM folder names allow chars an EDID can't).
+        // EditorID-safe form of the stable menu label.
         private static string Sanitize(string s)
         {
             var chars = s.Select(c => char.IsLetterOrDigit(c) || c == '_' ? c : '_').ToArray();
