@@ -20,6 +20,24 @@ python -m pip install jsonschema  # once, if the dev environment does not alread
 python -m unittest tests/quest_node_schema_test.py
 ```
 
+## Mechanical import from a plugin
+
+```text
+dotnet run --project src/ModForge.Cli -- questnodes Skyrim.esm ./quest-nodes
+dotnet run --project src/ModForge.Cli -- questnodes Skyrim.esm ./quest-nodes --strings ./Strings
+```
+
+The importer emits one file per QUST stage that has at least one resolvable, non-empty journal log.
+Multiple conditional log entries at the same stage are preserved in one summary, separated by a
+blank line. Missing/unsafe EditorIDs fall back to `QUST_<FORMID>`. Complete/fail log flags are the
+only mechanical `major` signal and yield `quest-complete`/`quest-failed`; when conditional entries
+at one stage contain both outcomes, the tag is `conditional-outcome` and each summary paragraph is
+prefixed with its outcome. All other nodes start with `unclassified`.
+
+QUST records do not reliably encode narrative branch edges, scene location, or participating NPC
+roles. The importer therefore omits `previous`, `next`, `location`, and `npcs` instead of inventing
+them. Add those fields—and replace `unclassified`—during the AI semantic pass or human review.
+
 Fixtures cover a linear opening, a two-way escape branch, and branch convergence.
 The test also rejects missing identity, invalid stage/plugin/tag/link shapes, and
 unknown properties. Cross-file link targets are checked by the test because JSON

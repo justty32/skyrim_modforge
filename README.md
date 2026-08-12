@@ -69,6 +69,10 @@ dotnet run --project src/ModForge.Cli -- <command> ...
   catalog query <db> <query> [--type Npc] [--plugin MyMod.esp] [--json]
   catalog get <db> <Plugin.esp:0xFORMID> [--plugin <source>] [--json]
   catalog sources <db> [--json]
+  gamedata <plugin> <outDir> [--strings <dir>]
+                                             extract agent-readable game text and record lists
+  questnodes <plugin> <outDir> [--strings <dir>]
+                                             non-empty QUST stage logs -> schema-valid quest-node JSON
   extract  <in.esp> <strings.json>           pull translatable strings -> JSON
   apply    <in.esp> <strings.json> <out.esp> write translated strings back (Latin/inline)
   applyloc <in.esp> <strings.json> <outDir>  write a LOCALIZED plugin + UTF-8

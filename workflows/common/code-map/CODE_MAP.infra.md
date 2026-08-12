@@ -242,7 +242,8 @@
 | CLI | `Diagnostics.Voice.cs` | `voicediag <esp>`：走訪所有 dialogue INFO，印出每個 response 期望的 `.fuz` 路徑（`Sound/Voice/<plugin>/<voiceType>/<quest>_<topic>_<formId>_<n>.fuz`）與 speaker/voiceType；reuse Core 的 `ResolveVoiceSpeakers`；無需 spec/Skyrim.esm/TTS|
 | CLI | `Diagnostics.Records.cs` | targeted 單記錄 diag（lazy overlay，不 materialize 250MB master）：`cellblk`/`mgefdiag`/`lightdiag`/`refpos`/`packagediag` 等 |
 | CLI | `Diagnostics.CellRefs.cs` | **`cellrefs <esp> <0xFORMID>`**：dump 單一 interior cell 的所有 placed REFR/ACHR（base FormKey + cell-local pos + rotation **RADIANS** + scale）成 CSV——逆向 vanilla cell 成 `placements[]`。記憶體安全：lazily 走 CELL block tree，命中 target FormID 後只處理那顆 cell 的 child group（Temporary+Persistent，數百 ref）就 return，絕不列舉所有 cell 的 children。rotation 是 esm 原生 radian，轉成 ModForge spec 的 degree 需 `*180/pi`。範例見 `docs/investigation/decode/sleeping-giant-inn-reverse-2026-06-13.md` + `examples/sleeping_giant_inn.json`。|
-| CLI | `Diagnostics.GameData.cs` | **`gamedata <plugin> <outDir> [--strings <dir>]`**：streamed overlay 一趟 major-record pass，把 books/dialogue/quests/npcs/items/locations/magic 批次匯出成資料夾（給 agent 當參考；不 full-materialize、不 `.ToList` record group，跑得動 250MB master）。`ProvisionEnglishStringsAnyBsa` 從任一 BSA 抽 English STRINGS 解 localized Name |
+| CLI | `Diagnostics.GameData.cs` | **`gamedata <plugin> <outDir> [--strings <dir>]`**：streamed overlay 一趟 major-record pass，把 books/dialogue/quests/npcs/items/locations/magic 批次匯出成資料夾（給 agent 當參考；不 full-materialize、不 `.ToList` record group，跑得動 250MB master）。|
+| CLI | `Diagnostics.GameData.Input.cs` | `gamedata` / `questnodes` 共用 localized plugin reader；`ProvisionEnglishStringsAnyBsa` 從任一 BSA 抽 English STRINGS。|
 | CLI | `Diagnostics.BookText.cs` | **`booktext <esm> <0xFORMID>`**：印一本 BOOK 的 localized Name + 全文 BookText（lore prose）；`ProvisionEnglishStrings` 從 master BSA 抽 English STRINGS |
 
 各領域 Diagnostics 見對應子 index。

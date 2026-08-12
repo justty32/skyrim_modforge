@@ -17,6 +17,9 @@
 | Artifact | Responsibility |
 |---|---|
 | `schemas/quest-node.schema.json` | Draft 2020-12 semantic node contract for quest/stage, location, NPCs, graph links, major moments, and reaction tags |
+| `src/ModForge.Core/QuestNodes.cs` | QUST stage-log → deterministic schema DTO extraction; terminal flag tags, safe quest identity, no invented graph/location/NPC semantics |
+| `src/ModForge.Cli/QuestNodeCmd.cs` | `questnodes` command + camelCase JSON directory writer and generated-file manifest cleanup |
+| `tests/ModForge.Core.Tests/QuestNodeExtractionTests.cs` | Mechanical mapping, schema-facing JSON shape, fallback identity, duplicate/stale-file safety |
 | `tests/quest_node_schema_test.py` | Offline fixture validation, cross-file link checks, and invalid-shape cases |
 | `docs/spec/SPEC-quest-nodes.md` | Agent-facing usage and design notes |
 

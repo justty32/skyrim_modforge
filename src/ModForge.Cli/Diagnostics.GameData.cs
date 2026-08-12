@@ -1,9 +1,6 @@
 using Mutagen.Bethesda;
-using Mutagen.Bethesda.Archives;
 using Mutagen.Bethesda.Plugins;
-using Mutagen.Bethesda.Plugins.Binary.Parameters;
 using Mutagen.Bethesda.Skyrim;
-using Mutagen.Bethesda.Strings;
 
 internal static partial class Program
 {
@@ -21,33 +18,8 @@ internal static partial class Program
         pluginPath = Path.GetFullPath(pluginPath);
         if (!File.Exists(pluginPath)) { Console.Error.WriteLine($"  ! not found: {pluginPath}"); return 1; }
         Directory.CreateDirectory(outDir);
-        var dataDir = Path.GetDirectoryName(pluginPath) ?? ".";
         var baseName = Path.GetFileNameWithoutExtension(pluginPath);
-
-        // Decide string strategy from a cheap first overlay.
-        BinaryReadParameters prm = BinaryReadParameters.Default;
-        bool localized;
-        using (var probe = SkyrimMod.CreateFromBinaryOverlay(new ModPath(pluginPath), SkyrimRelease.SkyrimSE))
-            localized = probe.UsingLocalization;
-        if (localized)
-        {
-            // --strings <dir>: use a caller-supplied STRINGS folder (e.g. a Chinese 漢化 dir with
-            // <base>_English.* symlinked to the localized strings) instead of auto-provisioning English
-            // from a BSA. Lets us extract vanilla content in any language; default path unchanged.
-            var stringsDir = stringsOverride ?? ProvisionEnglishStringsAnyBsa(dataDir, baseName);
-            if (stringsDir is not null)
-                prm = BinaryReadParameters.Default with
-                {
-                    StringsParam = new StringsReadParameters
-                    {
-                        TargetLanguage = Language.English,
-                        StringsFolderOverride = stringsDir,
-                        BsaFolderOverride = stringsDir,   // BSA-free dir → no load-order archive scan
-                    },
-                };
-            else
-                Console.Error.WriteLine($"  ! {baseName} is localized but no <base>_english.* found in any .bsa beside it — names/text may be blank");
-        }
+        var prm = GameDataReadParameters(pluginPath, stringsOverride, out var localized);
 
         using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(pluginPath), SkyrimRelease.SkyrimSE, prm);
         string Str(Mutagen.Bethesda.Strings.ITranslatedStringGetter? s) { try { return s?.String ?? ""; } catch { return "<unresolved>"; } }
@@ -168,31 +140,4 @@ internal static partial class Program
         return 0;
     }
 
-    // Generalized strings provisioner: scan EVERY .bsa in dataDir for "strings/<base>_english.*" and
-    // extract them to a per-base BSA-free temp folder, named in ModKey case (Linux is case-sensitive).
-    // Returns the folder, or null if no matching strings were found in any archive.
-    private static string? ProvisionEnglishStringsAnyBsa(string dataDir, string baseName)
-    {
-        var dir = Path.Combine(Path.GetTempPath(), "modforge-gamedata-strings", baseName, "Strings");
-        Directory.CreateDirectory(dir);
-        if (File.Exists(Path.Combine(dir, $"{baseName}_English.STRINGS"))) return dir;
-        var want = $"strings/{baseName.ToLowerInvariant()}_english.";
-        bool any = false;
-        foreach (var bsa in Directory.EnumerateFiles(dataDir, "*.bsa"))
-        {
-            try
-            {
-                foreach (var f in Archive.CreateReader(GameRelease.SkyrimSE, bsa).Files)
-                {
-                    var p = f.Path.Replace('\\', '/');
-                    if (!p.StartsWith(want, StringComparison.OrdinalIgnoreCase)) continue;
-                    var ext = Path.GetExtension(p).ToUpperInvariant();
-                    File.WriteAllBytes(Path.Combine(dir, $"{baseName}_English{ext}"), f.GetSpan().ToArray());
-                    any = true;
-                }
-            }
-            catch { /* unreadable archive — skip */ }
-        }
-        return any ? dir : null;
-    }
 }

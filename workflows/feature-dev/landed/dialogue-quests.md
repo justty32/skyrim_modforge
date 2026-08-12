@@ -2,7 +2,7 @@
 
 ← [landed index](README.md)｜對應 [CODE_MAP.dialogue-quests](../../common/code-map/CODE_MAP.dialogue-quests.md)
 
-- **Quest-node semantic schema（offline contract，2026-08-11）**：`schemas/quest-node.schema.json` 定義可供 agent / 編輯器交換的任務節點（quest/plugin/stage identity、major/reaction tags、location/NPC context、links）；`fixtures/quest-nodes/` 提供 linear、branch、convergence 四節點，`tests/quest_node_schema_test.py` 驗 schema 與跨檔 link。這是敘事規劃 IR，不直接生成 QUST；下一步是由 game-data/catalog 匯入真實節點。
+- **Quest-node semantic schema + mechanical import（offline，2026-08-12）**：`schemas/quest-node.schema.json` 定義可供 agent / 編輯器交換的任務節點；CLI `questnodes <plugin> <outDir> [--strings <dir>]` 由真 QUST 的非空 stage log 產 camelCase schema JSON，complete/fail flags → `major` + terminal tag，其餘先 `unclassified`。不從 QUST 猜 location/NPC/graph；留給 AI semantic pass。generated manifest 只清自己的 stale JSON。`game-data/extract.sh` 已接到 `catalog/quest-nodes/<plugin>/`；本離線機以自製 plugin 端到端驗證，Skyrim.esm 真資料需主力機重生。
 
 **對話 / 任務 / Story Manager**
 - **SM spec 管線**：`QuestSpec.storyEvent`(event+conditions) + `aliases`；build 自動生 SMBN→SMQN 掛原版根、清 StartGameEnabled。事件表 `StoryManagerEvents`（十個 engine-native 事件）。

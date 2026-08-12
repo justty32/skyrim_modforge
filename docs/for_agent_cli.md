@@ -31,6 +31,7 @@ $R catalog build <out.db> <plugin> [plugin...] # replace/create an offline SQLit
 $R catalog query <db> <query> [--type Npc] [--plugin MyMod.esp] [--limit 50] [--json] # FTS name/EditorID search
 $R catalog get <db> <Plugin.esp:0xFORMID> [--plugin MyPatch.esp] [--json] # exact identity lookup
 $R catalog sources <db> [--json] # indexed files, hashes, localization and counts
+$R questnodes <plugin> <outDir> [--strings <dir>] # QUST stage logs -> quest-node JSON files
 $R compile  <script.psc> <outDir>            # .psc -> .pex via the CK PapyrusCompiler under Wine
 $R extract  <plugin.esp> <strings.json>      # pull translatable strings -> JSON (source/target)
 $R apply    <plugin.esp> <strings.json> <out.esp>     # write targets back (Latin scripts / inline)
@@ -74,6 +75,20 @@ program to consume.
 
 This is the stable generic layer, not a dump of every record's schema. Future record-specific
 catalog tables can key off `records.id` without changing agent-facing identity/search fields.
+
+## Quest-node extraction
+
+`questnodes` is the machine-readable companion to the prose-oriented `gamedata` command. It opens
+the same plugin overlay and uses the same localized-string resolution, then emits one JSON file for
+each QUST stage with a non-empty journal log. The files validate against
+`schemas/quest-node.schema.json`; an unsafe or absent EditorID falls back to `QUST_<FORMID>`.
+
+Mechanical extraction deliberately does not invent story facts that QUST does not encode. Ordinary
+stages receive `reactionTags: ["unclassified"]`; complete/fail log flags produce `major: true` and
+`quest-complete`/`quest-failed` (or `conditional-outcome` when both occur at one stage, with labeled
+summary paragraphs). `location`, `npcs`, and graph links are omitted for an AI semantic
+pass or human review to add later. Re-running the command removes only files named in its generated
+manifest, so unrelated files in the output directory survive.
 
 ## Referencing vanilla forms (race/class/outfit/keywords/factions)
 
