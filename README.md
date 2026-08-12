@@ -144,7 +144,9 @@ interior cells and custom worldspaces (heightmap-driven terrain — VHGT/VNML wi
 BTXT/VTXT texture layers from splatmaps, object placement, plus loadable navmesh), with script
 attachment (VMAD), SEQ files and MO2-ready packaging. The voice pipeline can plan and generate
 dialogue voice assets from built INFOs when external TTS/xWMA/lip tools are configured; fake-TTS +
-xWMA FUZ packaging is structurally verified, while real model quality and in-game playback still
+xWMA FUZ packaging is structurally verified, and an offline live contract executes sibling
+`skyrim-voicegen/voicegen.py` through the production `GenerateWav()` process boundary (using only a
+deterministic fake final engine). Real model quality and in-game playback still
 need local Skyrim/Proton confirmation. Translation supports inline and
 localized (`.STRINGS`) output. The full spec surface is documented in
 [`docs/spec/SPEC-index.md`](docs/spec/SPEC-index.md).

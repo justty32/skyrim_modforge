@@ -21,7 +21,7 @@
 |---------|-----|
 | `ValidateTests.cs` | 跨領域 validate（editorId 唯一性、ref 合法性等通用規則）|
 | `SeqFileTests.cs` | `.seq` manifest 生成（StartGameEnabled quest 列表）|
-| `VoiceTests.cs` | `BuildTtsArgs`/`BuildLipGenArgs` 命令列、`VoiceFileName` CK 命名格式、`WriteFuz` header（含無 lip 情形）、`GenerateLip` 官方 LipGenerator 端到端（`RequiresSkyrim`，env-gated 自跳過）|
+| `VoiceTests.cs` / `VoiceLiveContractTests.cs` | `BuildTtsArgs`/`BuildLipGenArgs` 命令列、`VoiceFileName` CK 命名格式、`WriteFuz` header（含無 lip 情形）、`GenerateLip` 官方 LipGenerator 端到端（`RequiresSkyrim`，env-gated 自跳過）；live contract 由 production `GenerateWav` 經跨平台 test wrapper 真 exec sibling production `voicegen.py`，以 deterministic fake Fish engine 驗全參數、空白路徑、合法 WAV 與非零/缺檔/header-only/截斷 fail-closed（缺 sibling/Python 明示 skip）|
 | `VoiceSpeakerTests.cs` | `voicelines` speaker 偵測（GetIsID / alias / faction 條件解析）|
 | `VoiceAnnotateTests.cs` | `voice-annotate`：clip 檔名→INFO FormKey 解析 + 從 INFO 讀 emotion/intensity/text 建 manifest entry |
 | `SpecRefsTests.cs` | `$ref` 三形態（string / array 鏈式 / long-form `{from,pointer}`）、`$env`（value / default / 缺報錯）、`$ref`+`$env` 衝突、cycle、sibling deep-merge、`ResolveFile` disk round-trip |
@@ -193,7 +193,7 @@
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
 | Spec | `Spec.Voice.cs` | `VoiceTemplateSpec`（`engine` f5\|fish-s2\|chatterbox\|gptsovits\|xtts；`fish`/`fishspeech`/`fish-speech` 為 Fish S2 alias；`referenceWav`/`referenceText` zero-shot reference、`modelPath` 微調模型、`rvcModel`、`seed`、`speed`、`exaggeration`、`language`）+ `VoiceLineSpec` 全域輸出設定（`format` fuz\|wav\|xwm、`skipLip`）；`NpcSpec.voiceTemplate`（→ template id）在 `Spec.Actors.cs` |
-| Core | `Voice.cs` | 呼外部 TTS（`MODFORGE_TTS_BIN`；`BuildTtsArgs` pure 組 engine/ref/model/seed/speed/exaggeration/language + **emotion/intensity**（從 INFO 記錄取，非 spec 欄位）全數傳給 TTS process，協議規格見 `../skyrim-voicegen/PROTOCOL.md`）；`EncodeXwma`（`MODFORGE_XWMAENCODE`）走 Wine；`WinePath`（Unix→`Z:\` 轉換，xwma/lip 共用）|
+| Core | `Voice.cs` | 呼外部 TTS（`MODFORGE_TTS_BIN`；`BuildTtsArgs` pure 組 engine/ref/model/seed/speed/exaggeration/language + **emotion/intensity**（從 INFO 記錄取，非 spec 欄位）全數傳給 TTS process，協議規格見 `../skyrim-voicegen/PROTOCOL.md`）；production process boundary 由 `VoiceLiveContractTests.cs` 對 sibling `voicegen.py` 離線驗證；`EncodeXwma`（`MODFORGE_XWMAENCODE`）走 Wine；`WinePath`（Unix→`Z:\` 轉換，xwma/lip 共用）|
 | Core | `Voice.Lip.cs` | `.lip` lip-sync 生成（`GenerateLip` 一個入口、兩後端）：**優先**官方 CK `LipGenerator.exe`（`MODFORGE_LIPGEN`，簽名 `<wav> <text> -Language:<lang> -OutputFileName:<lip>`，FonixData.cdf 自 exe 同夾找、免給 cdf 路徑、**已在本機 Wine 實跑產出合法 .lip 2026-06-13**）；**退化**社群 FaceFXWrapper（`MODFORGE_FACEFX` + `MODFORGE_FONIXDATA`）。`BuildLipGenArgs` pure 可單測 |
 | Core | `Fuz.cs` | `.fuz` 容器拆解（FUZE header → lip + audio；audio ext 自動偵測 xwm/wav）|
 | Core | `Generator.Build.Voice.cs` | `WriteFuz`（lip + audio 打包成 .fuz）+ `VoiceFileName` CK 命名（`quest10_topic15_formid8_n.fuz`：quest EditorID 前 10 字 + topic EditorID 前 15 字 + INFO FormID hex8 + response 序號）|
