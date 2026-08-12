@@ -3,6 +3,7 @@ using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Records;
 using Mutagen.Bethesda.Skyrim;
 using ModForge;
+using Json.Schema;
 using System.Text.Json;
 
 namespace ModForge.Tests;
@@ -59,6 +60,12 @@ public sealed class CatalogTests
             {
                 Assert.Equal(1, json.RootElement.GetProperty("schemaVersion").GetInt32());
                 Assert.Equal(2, json.RootElement.GetProperty("sources").GetArrayLength());
+                var schemaPath = Path.Combine(RepoRoot(), "schemas", "scene-catalog.schema.json");
+                using var schemaJson = JsonDocument.Parse(File.ReadAllText(schemaPath));
+                var schema = JsonSchema.Build(schemaJson.RootElement);
+                var validation = schema.Evaluate(json.RootElement,
+                    new EvaluationOptions { OutputFormat = OutputFormat.List });
+                Assert.True(validation.IsValid, JsonSerializer.Serialize(validation));
             }
             var firstExport = File.ReadAllText(jsonPath);
             Catalog.ExportJsonFile(database, jsonPath);
@@ -172,5 +179,14 @@ public sealed class CatalogTests
         }
         PluginIo.Write(mod, path);
         return path;
+    }
+
+    private static string RepoRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null &&
+               !File.Exists(Path.Combine(directory.FullName, "schemas", "scene-catalog.schema.json")))
+            directory = directory.Parent;
+        return directory?.FullName ?? throw new DirectoryNotFoundException("ModForge repo root not found");
     }
 }

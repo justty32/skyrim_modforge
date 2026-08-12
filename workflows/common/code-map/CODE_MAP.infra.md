@@ -28,7 +28,7 @@
 | `DependencyTests.cs` | 外部 master 可見性：純 vanilla spec **什麼都不印**（negative case）／capture 與手寫 spec 都列出 mod master ＋歸因到**作者寫的**欄位（含「巨集展開後仍報 `capturedNpcs[]` 不報 `npcs[]`」）／CC 分類／摘要＋`requires.txt` 內容／**釘死「分析不改 esp 一個 byte」**|
 | `RequiresTests.cs` | 宣告式 `requires[]` 雙向檢查：**沒有 requires 段＝完全不檢查**（negative case，向後相容）／用到沒宣告→錯誤且訊息指出**是哪一行 spec 欄位**／宣告沒用到→警告／空 `[]`＝只准 vanilla／`name` 條目（無 plugin 的 SKSE 相依）永不檢查但進旁檔／`version` 只是標籤（旁檔標 NOT verified）／**玩家面向 shipped 形式**（`forShippedMod`）保留安裝清單＋reason/version/連結、拿掉 spec 欄位歸因與 rebuild 指示／`SyncRequires` 加新丟舊保留 metadata＋同步後檢查通過／`validate` 形狀檢查／JSON 字串簡寫與缺段＝null／**釘死「requires[] 不改 esp 一個 byte」**|
 | `Helpers.cs` | 共用測試 helper（非 test class，供其他 *Tests.cs 使用）|
-| `CatalogTests.cs` | 不需 Skyrim.esm 的 synthetic plugin round-trip：multiple source、FTS name/EditorID + type/plugin filter、exact FormKey/source lookup、load-order winner JSON、model path、source hash/path provenance、atomic failure、rerun replace 不重複。|
+| `CatalogTests.cs` | 不需 Skyrim.esm 的 synthetic plugin round-trip：multiple source、FTS name/EditorID + type/plugin filter、exact FormKey/source lookup、load-order winner JSON（實際 exporter bytes 通過正式 Draft 2020-12 schema）、model path、source hash/path provenance、atomic failure、rerun replace 不重複。|
 | `scene_catalog_schema_test.py` | scene-capture catalog v1 JSON Schema 正反例。|
 | `SafeOutputPathTests.cs` | package 輸出路徑 containment：合法嵌套路徑通過，`..` traversal 拒絕 |
 | `PackageSafetyTests.cs` | CLI package safety gates：多 `mcmConfigs` 拒絕；required global bridge 編譯失敗時不進入 build/write |
