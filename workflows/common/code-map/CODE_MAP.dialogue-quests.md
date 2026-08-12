@@ -23,6 +23,14 @@
 | `tests/quest_node_schema_test.py` | Offline fixture validation, cross-file link checks, and invalid-shape cases |
 | `docs/spec/SPEC-quest-nodes.md` | Agent-facing usage and design notes |
 
+## Story Manager offline diagnostics
+
+| Artifact | Responsibility |
+|---|---|
+| `src/ModForge.Core/StoryManagerDiagnostics.cs` | Deterministic local SMBN/SMQN parent + sibling graph checks, routed-quest/alias duplicate checks, and local LVLN alias-shape checks; external links stay unresolved |
+| `src/ModForge.Cli/Diagnostics.StoryManager.cs` | `smtree`/`smsub` probes plus `smcheck <plugin>` output and exit-code facade |
+| `tests/ModForge.Core.Tests/StoryManagerDiagnosticsTests.cs` | Clean generated/binary-roundtrip trees and synthetic orphan/cycle/duplicate/LVLN failures |
+
 ## Examples
 
 | 檔案 | 對應功能 |
@@ -89,6 +97,7 @@
 | `SceneFragmentTests.cs` | PlayIdle + restricted SetStage 純產生器（同 phase 合成一個 `Fragment_<phase>`）+ `AttachSceneFragments`（.pex 在才掛 SceneAdapter、OnStart fragment、Actor_/Idle_ 與 SetStageQuest_ object props）+ explicit/host quest binding + validate guards |
 | `IdentityTests.cs` | 身份系統：`IdentitySpec` 預設、每身份建 FACT（外部/已宣告不重建）、validate（dup id / bad grant）、acquireBook → `MFIdentityBook` VMAD + 屬性綁定；**default → `MF_IdentityDefaultQuest`（StartGameEnabled）+ `MFIdentityDefault` VMAD，Factions[]/Grants[] list property（只收 default、grant 去重）、無 default 不建、無 grant 省 list**；**activeWhen 窄化正向閘且跑玩家、不污染高優先序排除**；**controller：primaryIdentity 建 MF_PrimaryIdentity/MF_IdentityOverride GLOB + `MF_IdentityControllerQuest`（Codes[]、無 default 不建 granter）、global-based primary CTDA、setPrimaryIdentity TIF**；**grantPerks → 書綁 GrantPerk[0] + default quest 綁 Perks[]**；**autoGrantWhen → `MF_IdentityAutoGrantQuest` + Factions[]/AvNames[]/Thresholds[] 平行、無 autoGrant 不建** |
 | `StoryManagerBuildTests.cs` | SM build pass 2（SMBN/SMQN 掛接、alias fill 接線、alias 腳本 VMAD 掛接、`startUpStage` QSDT flag、stage fragment + alias 腳本共存於單一 adapter、非 storyEvent quest 也建 forced/createObject alias + 腳本）|
+| `StoryManagerDiagnosticsTests.cs` | `smcheck` 純離線檢查：正常 generated/binary roundtrip、parent/sibling orphan/cycle/duplicate、quest route/alias ID 與 local LVLN alias shape |
 | `RadiantAliasTests.cs` | **#7 findMatchingLocation（Type=Location、StoresText、`LocationHasKeyword` CTDA [+父時 `GetInCurrentLocAlias`]、無 Location 子記錄）+ #8 findInLocationAlias（Type=Reference、Location.AliasID/RefType、conditions）build + validate（未知 keyword/parent/location alias、自指、缺 refType+conditions）** |
 | `StoryManagerEventsTests.cs` | 事件登錄表欄位（FormKey / slot 對應）|
 | `StoryManagerEventsMoreTests.cs` | 擴充事件（ChangeLocation/CastMagic/AddItem/Assault/ScriptEvent）|
@@ -236,7 +245,7 @@
 | Asset | `assets/papyrus/MFEncounterCooldown.psc` | **#6 reusable 冷卻（extends Quest，`bool TryFire()` 比 `GetCurrentGameTime - LastFired < CooldownHours/24` → false 中止；由 `<quest>_Stages` 的 OnStory<Event> handler 呼叫，不靠 OnInit）；embed CLI；EE_WITimeout pattern** |
 | Asset | `assets/papyrus/MFDynamicSpawn.psc` | **#3 reusable dynamic spawn（extends Quest，`SpawnNow()` `PlaceAtMe`+`MoveTo(+128 Z 落體)` 玩家附近隨機偏移；由 `<quest>_Stages` 的 OnStory<Event> handler〔SM〕或 startUpStage fragment〔StartGameEnabled〕呼叫，不靠 OnInit — OnInit 一生只跑一次，SM relaunch 不重觸發）；embed CLI；spawn pipeline IN-GAME 確認 2026-06-19** |
 | Validate | `Generator.Validate.StoryManager.cs` | 事件名合法；**locationFilter keyword CheckRef、cooldownHours>=0**；**`ValidateQuestAlias(q,a,def?,…)`** 共用（storyEvent 與非 storyEvent quest 都驗 alias fill/ref/script；def=null 時 fromEvent 報錯；**findMatchingLocation 驗 LocType keyword + 父 alias 同 quest；findInLocationAlias 驗 location alias 同 quest + refType + 需 refType 或 conditions**）；slot 名稱、ScriptEvent 需宣告 keyword |
-| Diag | `Diagnostics.StoryManager.cs` | `smtree`（事件根 SMEN 列舉）/ **`smsub <plugin> <rootHex>`（dump 某事件根下的 SMBN/SMQN 子樹，反射印全欄位 + SMQN 指向的 quest/flags；用來 byte-compare vanilla vs 生成的節點，例 `smsub Skyrim.esm 0x01320E`）** |
+| Diag | `Diagnostics.StoryManager.cs` | `smtree`（事件根 SMEN 列舉）/ `smsub <plugin> <rootHex>`（dump 事件根下 SMBN/SMQN）/ **`smcheck <plugin>`（離線檢查 local parent/PreviousSibling graph、routed quest/alias duplicates、LVLN alias shape；有問題 exit 1）** |
 
 ### 支援事件與槽
 

@@ -39,6 +39,7 @@ $R apply    <plugin.esp> <strings.json> <out.esp>     # write targets back (Lati
 $R applyloc <plugin.esp> <strings.json> <outModDir>   # CJK: Localized UTF-8 <plugin>_chinese.STRINGS
 $R gen      <out.esp>                         # demo plugin (sanity check the toolchain)
 $R smtree   <Skyrim.esm>                      # list Story Manager event roots (find an event root FormID)
+$R smcheck  <plugin.esp>                      # offline SMBN/SMQN graph + routed quest alias safety check
 $R navdiag  <plugin.esp>                      # every NAVM in the plugin + a BYTE-DIFF of each overridden mesh's NVNM against its master (IDENTICAL / DIFF). Run it on any plugin using navmeshOverrides[]
 ```
 
@@ -86,6 +87,13 @@ read commands detect their schema version and report that action explicitly.
 
 This is the stable generic layer, not a dump of every record's schema. Future record-specific
 catalog tables can key off `records.id` without changing agent-facing identity/search fields.
+
+## Story Manager structural check
+
+`smcheck` inspects one plugin without Skyrim or a load order. It reports malformed local SMBN/SMQN
+parent and `PreviousSibling` graphs, orphaned local links, duplicate node/quest/alias identities,
+and provably invalid local LVLN alias shapes. External graph and quest links are left unresolved
+rather than guessed. A clean plugin exits 0; any reported issue exits 1.
 
 ## Quest-node extraction
 

@@ -79,6 +79,7 @@ internal static partial class Program
                 case "scnscan" when args.Length is 2 or 3: return ScnScan(args[1], args.Length == 3 ? args[2] : null);
                 case "smtree" when args.Length == 2: return SmTree(args[1]);
                 case "smsub" when args.Length == 3: return SmSub(args[1], args[2]);
+                case "smcheck" when args.Length == 2: return SmCheck(args[1]);
                 case "identitydiag" when args.Length == 2: return IdentityDiag(args[1]);
                 default: Usage(); return 1;
             }
@@ -111,6 +112,7 @@ internal static partial class Program
         "  catalog export-json <db> <out.json>          atomically export load-order winners for scene-capture\n" +
         "  gamedata <plugin> <outDir> [--strings <dir>] bulk-extract books/dialogue/quests/npcs/items/locations/magic to a folder (for agent reference)\n" +
         "  questnodes <plugin> <outDir> [--strings <dir>]  extract non-empty QUST stage logs as schema-valid quest-node JSON files\n" +
+        "  smcheck <plugin>                              check local Story Manager graph and quest aliases\n" +
 
         "  find    <in.esp> <query> [type]              search editorId/name -> Skyrim.esm:0xFORMID\n" +
         "  cellblk <in.esp> [0xFORMID]                  show interior cell block/sub-block (FormID grouping)\n" +

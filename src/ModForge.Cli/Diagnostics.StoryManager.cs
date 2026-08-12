@@ -59,6 +59,17 @@ internal static partial class Program
         return 0;
     }
 
+    // smcheck — verify local SMBN/SMQN graph and quest-alias shapes without a load order.
+    private static int SmCheck(string inPath)
+    {
+        using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(inPath), SkyrimRelease.SkyrimSE);
+        var issues = StoryManagerDiagnostics.Analyze(mod);
+        foreach (var issue in issues)
+            Console.WriteLine($"{issue.Code}\t{issue.Message}");
+        Console.WriteLine($"({issues.Count} Story Manager issue(s))");
+        return issues.Count == 0 ? 0 : 1;
+    }
+
     // Reflect every public instance property; print scalars, enums, FormLinks, and list counts.
     private static void DumpProps(object rec, string indent)
     {
