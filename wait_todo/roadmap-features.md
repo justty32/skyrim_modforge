@@ -6,6 +6,8 @@
 
 - ✅ **D 組七個分發器全部 IN-GAME CONFIRMED（2026-06-20）**：SPID / MCM / FLM / KID / BOS / AOS / SkyPatcher 皆實機收掉，移出本清單（細節進 git log + landed）。
 
+- **【scene-capture EditorID catalog】DLL 消費端與 runtime 驗收 — 待主力機（2026-08-12 producer offline 落地）**：ModForge 已可依 low→high plugin 順序建 SQLite，並用 `catalog export-json` 原子輸出 v1 winner catalog（EDID/FULL/model path/FormKey + source/hash/load-order provenance）；synthetic master/override、schema、壞輸入與 replace 測試已過。剩 `scene-capture-bridge` 讀取 `scene-catalog.json`、按 durable FormKey 合併 EDID 到 runtime Browser search/display，並用真 MO2 load order 驗 winner 與 EditorID 搜尋。不要在 DLL 接線前把 JSON 放進 mod 就宣稱可用。
+
 - **【Scene phase `SetStage`】generated fragment runtime 驗收 — 待主力機（2026-08-12 offline 落地）**：`examples/scene-setstage.json` 已通 schema/validate/build；pure source、同 phase PlayIdle 合併、fake-PEX SceneAdapter/OnStart fragment、explicit/host quest property binding、target/stage safety 與 compile-failure gate 都有單元測試。公司機缺 Papyrus compiler，故 `package` 會留下 `Scripts/Source/SF_MF_StageScene.psc` 供檢查、明確失敗且不寫 ESP（避免出貨只有 Timer、沒有 SetStage 的殘包）。待主力機跑 `package examples/scene-setstage.json <outDir>`，確認編出並掛上 `SF_MF_StageScene.pex`，進遊戲讓 scene 播放後 `getstage MF_TargetQuest` 為 40。這只驗新掛載組合；`Quest.SetStage` 與 SceneAdapter phase fragment 各自已有既有管線證據。
 
 - **【MCM → GLOB bridge】generated setter runtime 驗收 — 待主力機（2026-08-11 offline 落地）**：`examples/mcm_global_perk.json` 已通 schema/validate/build 與 FormKey 接線測試；`package` 會用 MCM Helper + SkyUI Papyrus headers 編 `MF_MCM_Configurable_Barter_Globals.psc`。待裝包後確認：① MCM toggle 出現；② 關閉後 `show MF_BarterEnabled` 為 0、開啟為 1；③ 持有 `MF_ConfigurableBarterPerk` 時 `ModBuyPrices` 效果隨 toggle 開關。這是新 `action.CallFunction` setter 的唯一離線跨不過 runtime 點。

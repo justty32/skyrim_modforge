@@ -104,10 +104,11 @@ internal static partial class Program
         "  package <spec.json> <outModDir> [--assets <dir>]   esp + scripts + bundled Meshes/Textures/Sounds\n" +
         "  validate <spec.json>\n" +
         "  dump    <in.esp>\n" +
-        "  catalog build <out.db> <plugin> [plugin...]  index generic records into an offline SQLite/FTS catalog\n" +
+        "  catalog build <out.db> <plugin> [plugin...]  index generic records; plugin order is low-to-high load order\n" +
         "  catalog query <db> <query> [--type <type>] [--plugin <plugin>] [--limit <1-1000>] [--json]  search name/editorId\n" +
         "  catalog get <db> <Plugin.esp:0xFORMID> [--plugin <source>] [--json]  exact FormKey lookup\n" +
         "  catalog sources <db> [--json]                list indexed plugin provenance\n" +
+        "  catalog export-json <db> <out.json>          atomically export load-order winners for scene-capture\n" +
         "  gamedata <plugin> <outDir> [--strings <dir>] bulk-extract books/dialogue/quests/npcs/items/locations/magic to a folder (for agent reference)\n" +
         "  questnodes <plugin> <outDir> [--strings <dir>]  extract non-empty QUST stage logs as schema-valid quest-node JSON files\n" +
 

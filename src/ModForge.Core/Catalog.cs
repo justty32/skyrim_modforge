@@ -7,7 +7,13 @@ using Mutagen.Bethesda.Skyrim;
 namespace ModForge;
 
 /// <summary>One source plugin recorded in a catalog, including reproducible file provenance.</summary>
-public sealed record CatalogSource(string Plugin, string SourcePath, string Sha256, bool Localized, int RecordCount);
+public sealed record CatalogSource(
+    string Plugin,
+    string SourcePath,
+    string Sha256,
+    bool Localized,
+    int RecordCount,
+    int LoadOrderIndex = -1);
 
 /// <summary>One generic major record returned from the offline catalog.</summary>
 public sealed record CatalogRecord(
@@ -17,7 +23,8 @@ public sealed record CatalogRecord(
     string? EditorId,
     string? Name,
     string SourcePlugin,
-    string SourcePath);
+    string SourcePath,
+    string? ModelPath = null);
 
 /// <summary>Summary emitted after replacing a catalog database.</summary>
 public sealed record CatalogBuildResult(int SourceCount, int RecordCount);
@@ -26,7 +33,7 @@ public sealed record CatalogBuildResult(int SourceCount, int RecordCount);
 /// Offline SQLite/FTS catalog for generic Skyrim plugin records. The deliberately small schema is
 /// the stable boundary: record-specific extractors can later add separate tables keyed by records.id.
 /// </summary>
-public static class Catalog
+public static partial class Catalog
 {
     /// <summary>Build a new catalog and atomically replace <paramref name="databasePath"/> on success.</summary>
     public static CatalogBuildResult Build(string databasePath, IEnumerable<string> pluginPaths)
@@ -37,7 +44,6 @@ public static class Catalog
         var sources = pluginPaths
             .Select(Path.GetFullPath)
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         if (sources.Length == 0) throw new ArgumentException("catalog build needs at least one plugin", nameof(pluginPaths));
         foreach (var path in sources)
@@ -55,15 +61,16 @@ public static class Catalog
                 using var transaction = connection.BeginTransaction();
                 var seenPlugins = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 recordCount = 0;
-                foreach (var sourcePath in sources)
+                for (var loadOrderIndex = 0; loadOrderIndex < sources.Length; loadOrderIndex++)
                 {
+                    var sourcePath = sources[loadOrderIndex];
                     using var mod = SkyrimMod.CreateFromBinaryOverlay(new ModPath(sourcePath), SkyrimRelease.SkyrimSE);
                     var sourcePlugin = mod.ModKey.FileName;
                     if (!seenPlugins.Add(sourcePlugin))
                         throw new InvalidOperationException($"catalog sources have the same plugin name: {sourcePlugin}");
 
                     var sourceRecords = InsertSource(connection, transaction, sourcePlugin, sourcePath,
-                        HashFile(sourcePath), mod.UsingLocalization);
+                        HashFile(sourcePath), mod.UsingLocalization, loadOrderIndex);
                     foreach (var record in mod.EnumerateMajorRecords())
                     {
                         InsertRecord(connection, transaction, record, sourcePlugin);
@@ -99,9 +106,10 @@ public static class Catalog
         if (limit is < 1 or > 1000) throw new ArgumentOutOfRangeException(nameof(limit), "limit must be 1 through 1000");
 
         using var connection = Open(Path.GetFullPath(databasePath), SqliteOpenMode.ReadOnly);
+        RequireCurrentSchema(connection);
         using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT r.form_key, r.plugin, r.record_type, r.editor_id, r.name, s.plugin, s.source_path
+            SELECT r.form_key, r.plugin, r.record_type, r.editor_id, r.name, r.model_path, s.plugin, s.source_path
             FROM records_fts AS f
             JOIN records AS r ON r.id = f.rowid
             JOIN sources AS s ON s.plugin = r.source_plugin
@@ -125,9 +133,10 @@ public static class Catalog
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(formKey);
         using var connection = Open(Path.GetFullPath(databasePath), SqliteOpenMode.ReadOnly);
+        RequireCurrentSchema(connection);
         using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT r.form_key, r.plugin, r.record_type, r.editor_id, r.name, s.plugin, s.source_path
+            SELECT r.form_key, r.plugin, r.record_type, r.editor_id, r.name, r.model_path, s.plugin, s.source_path
             FROM records AS r
             JOIN sources AS s ON s.plugin = r.source_plugin
             WHERE r.form_key = $formKey COLLATE NOCASE
@@ -143,12 +152,14 @@ public static class Catalog
     public static IReadOnlyList<CatalogSource> Sources(string databasePath)
     {
         using var connection = Open(Path.GetFullPath(databasePath), SqliteOpenMode.ReadOnly);
+        RequireCurrentSchema(connection);
         using var command = connection.CreateCommand();
-        command.CommandText = "SELECT plugin, source_path, sha256, localized, record_count FROM sources ORDER BY plugin COLLATE NOCASE;";
+        command.CommandText = "SELECT plugin, source_path, sha256, localized, record_count, load_order_index FROM sources ORDER BY load_order_index;";
         using var reader = command.ExecuteReader();
         var sources = new List<CatalogSource>();
         while (reader.Read())
-            sources.Add(new CatalogSource(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetBoolean(3), reader.GetInt32(4)));
+            sources.Add(new CatalogSource(reader.GetString(0), reader.GetString(1), reader.GetString(2),
+                reader.GetBoolean(3), reader.GetInt32(4), reader.GetInt32(5)));
         return sources;
     }
 
@@ -174,48 +185,21 @@ public static class Catalog
             records.Add(new CatalogRecord(
                 reader.GetString(0), reader.GetString(1), reader.GetString(2),
                 reader.IsDBNull(3) ? null : reader.GetString(3), reader.IsDBNull(4) ? null : reader.GetString(4),
-                reader.GetString(5), reader.GetString(6)));
+                reader.GetString(6), reader.GetString(7), reader.IsDBNull(5) ? null : reader.GetString(5)));
         return records;
     }
 
-    private static void CreateSchema(SqliteConnection connection)
-    {
-        using var command = connection.CreateCommand();
-        command.CommandText = """
-            PRAGMA foreign_keys = ON;
-            CREATE TABLE sources (
-                plugin TEXT PRIMARY KEY,
-                source_path TEXT NOT NULL,
-                sha256 TEXT NOT NULL,
-                localized INTEGER NOT NULL,
-                record_count INTEGER NOT NULL
-            );
-            CREATE TABLE records (
-                id INTEGER PRIMARY KEY,
-                form_key TEXT NOT NULL,
-                plugin TEXT NOT NULL,
-                record_type TEXT NOT NULL,
-                editor_id TEXT NULL,
-                name TEXT NULL,
-                source_plugin TEXT NOT NULL REFERENCES sources(plugin),
-                UNIQUE(form_key, source_plugin)
-            );
-            CREATE INDEX records_type_plugin ON records(record_type, plugin);
-            CREATE VIRTUAL TABLE records_fts USING fts5(name, editor_id);
-            """;
-        command.ExecuteNonQuery();
-    }
-
     private static int InsertSource(SqliteConnection connection, SqliteTransaction transaction, string plugin,
-        string sourcePath, string sha256, bool localized)
+        string sourcePath, string sha256, bool localized, int loadOrderIndex)
     {
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = "INSERT INTO sources(plugin, source_path, sha256, localized, record_count) VALUES($plugin, $path, $sha, $localized, 0);";
+        command.CommandText = "INSERT INTO sources(plugin, source_path, sha256, localized, record_count, load_order_index) VALUES($plugin, $path, $sha, $localized, 0, $index);";
         command.Parameters.AddWithValue("$plugin", plugin);
         command.Parameters.AddWithValue("$path", sourcePath);
         command.Parameters.AddWithValue("$sha", sha256);
         command.Parameters.AddWithValue("$localized", localized);
+        command.Parameters.AddWithValue("$index", loadOrderIndex);
         command.ExecuteNonQuery();
         return 0;
     }
@@ -236,13 +220,14 @@ public static class Catalog
         var key = record.FormKey;
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = "INSERT INTO records(form_key, plugin, record_type, editor_id, name, source_plugin) " +
-            "VALUES($formKey, $plugin, $type, $editorId, $name, $sourcePlugin);";
+        command.CommandText = "INSERT INTO records(form_key, plugin, record_type, editor_id, name, model_path, source_plugin) " +
+            "VALUES($formKey, $plugin, $type, $editorId, $name, $modelPath, $sourcePlugin);";
         command.Parameters.AddWithValue("$formKey", $"{key.ModKey.FileName}:0x{key.ID:X6}");
         command.Parameters.AddWithValue("$plugin", key.ModKey.FileName.ToString());
         command.Parameters.AddWithValue("$type", RecordType(record));
         command.Parameters.AddWithValue("$editorId", (object?)record.EditorID ?? DBNull.Value);
         command.Parameters.AddWithValue("$name", (object?)NameOf(record) ?? DBNull.Value);
+        command.Parameters.AddWithValue("$modelPath", (object?)ModelPathOf(record) ?? DBNull.Value);
         command.Parameters.AddWithValue("$sourcePlugin", sourcePlugin);
         command.ExecuteNonQuery();
     }
@@ -251,6 +236,12 @@ public static class Catalog
     {
         try { return (record as INamedGetter)?.Name; }
         catch { return null; } // Localized text may need archives unavailable in an offline catalog build.
+    }
+
+    private static string? ModelPathOf(IMajorRecordGetter record)
+    {
+        try { return (record as IModeledGetter)?.Model?.File.GivenPath; }
+        catch { return null; }
     }
 
     private static string RecordType(IMajorRecordGetter record)

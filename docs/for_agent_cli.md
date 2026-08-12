@@ -27,10 +27,11 @@ $R build    <spec.json> <out.esp>            # spec -> plugin (records, dialogue
 $R package  <spec.json> <outModDir>          # build + compile each script `source` -> MO2-ready folder
 $R dump     <plugin.esp>                     # read back: records, names, npc race/class/outfit/factions, weapon/armor stats, effects, cells/placements, keywords, scripts, dialogue, objectives, masters
 $R find     <plugin.esp> <query> [type]      # search a master (e.g. Skyrim.esm) -> "Skyrim.esm:0xFORMID  Type  EditorID"  (query may be a 0xFORMID to reverse-resolve: "what record IS this?")
-$R catalog build <out.db> <plugin> [plugin...] # replace/create an offline SQLite/FTS index of generic records
+$R catalog build <out.db> <plugin> [plugin...] # replace/create index; inputs are low-to-high load order
 $R catalog query <db> <query> [--type Npc] [--plugin MyMod.esp] [--limit 50] [--json] # FTS name/EditorID search
 $R catalog get <db> <Plugin.esp:0xFORMID> [--plugin MyPatch.esp] [--json] # exact identity lookup
 $R catalog sources <db> [--json] # indexed files, hashes, localization and counts
+$R catalog export-json <db> <out.json> # atomic, versioned winner catalog for scene-capture browser
 $R questnodes <plugin> <outDir> [--strings <dir>] # QUST stage logs -> quest-node JSON files
 $R compile  <script.psc> <outDir>            # .psc -> .pex via the CK PapyrusCompiler under Wine
 $R extract  <plugin.esp> <strings.json>      # pull translatable strings -> JSON (source/target)
@@ -58,10 +59,12 @@ $R catalog build ./catalog.db ./MyStoryMod.esp ./AnotherMod.esl
 $R catalog query ./catalog.db forged --type Npc --plugin MyStoryMod.esp
 $R catalog get ./catalog.db MyStoryMod.esp:0x000802 --json
 $R catalog sources ./catalog.db --json
+$R catalog export-json ./catalog.db ./scene-catalog.json
 ```
 
-The `records` table stores the resolver-ready `form_key` (`Plugin.esp:0x000800`), FormKey
-plugin, Mutagen record type, EditorID, and display name. Its FTS5 index covers `name` and
+The plugin arguments to `catalog build` are ordered from lowest to highest load order. The
+`records` table stores the resolver-ready `form_key` (`Plugin.esp:0x000800`), FormKey
+plugin, Mutagen record type, EditorID, display name, and model path. Its FTS5 index covers `name` and
 `editor_id`; `--type` and `--plugin` are exact case-insensitive filters (the plugin is the input
 source plugin). `sources` records the absolute source path, SHA-256, localization flag, and record
 count, so a result has clear provenance. Re-running `catalog build` replaces the destination only
@@ -72,6 +75,14 @@ returns every indexed occurrence, so when several source plugins contain an over
 each provenance row or narrow it with `--plugin`. `catalog query`, `get`, and `sources` accept
 `--json`; JSON output contains no TSV header/summary and is the stable choice for another agent or
 program to consume.
+
+`catalog export-json` writes the versioned `schemas/scene-catalog.schema.json` contract. Unlike
+`get`, it resolves overrides: for each FormKey it emits only the occurrence from the highest indexed
+load-order source, while retaining `sourcePlugin` and `sourcePath` provenance. Sources stay in load
+order and records have deterministic FormKey order. The file is written through a flushed sibling
+temporary file and atomically replaced; directories and reparse-point paths are rejected.
+Catalog databases from before this load-order/model-path schema must be rebuilt with `catalog build`;
+read commands detect their schema version and report that action explicitly.
 
 This is the stable generic layer, not a dump of every record's schema. Future record-specific
 catalog tables can key off `records.id` without changing agent-facing identity/search fields.

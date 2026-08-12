@@ -21,7 +21,7 @@
 
 - **② 物件目錄瀏覽器 ＋ 預覽 —— ✅ 主體已做（2026-07-14，DLL `ba3e2089`，已部署待實機，見 [phases](phases.md)）**。「借用物品欄 UI」**已否決**（只吃可攜帶 form type，山脈/樹/家具進不了 inventory ⇒ 最需要的那類正好不支援）；改成 **Browser 面板頁 ＋ 世界內 ghost 預覽**。剩下的**加分項**：
   - **面板內真 3D 預覽（spike）**：`RE::Inventory3DManager`（物品欄那顆會轉的 3D 模型）介面是 `LoadInventoryItem(TESBoundObject*, ExtraDataList*)`——**STAT 也是 TESBoundObject**，所以預覽技術也許能脫離物品欄單獨用。不確定（綁 item-3D render layer），**ghost 已經夠用，這是錦上添花**。
-  - **離線 catalog json（使用者拍板的「之後再補」）**：runtime **拿不到 EditorID**（SSE 不留），所以目錄只能靠 model path／name／FormID 搜。ModForge 用 Mutagen 掃 load order 產一份 catalog json（EDID＋FULL name 全齊）給 DLL 讀，就能**照 CK 的 EditorID 搜**。等真的被「沒 EDID」卡到再做。
+  - **離線 catalog json：✅ ModForge 產生端已完成（2026-08-12），DLL 消費端待主力機**：runtime **拿不到 EditorID**（SSE 不留）；ModForge `catalog build` 現保存明示 load order、EDID/FULL/model path/來源，`catalog export-json` 依 FormKey 只吐 winner，v1 schema + atomic write 已離線測完。剩 bridge DLL 讀檔、以 durable id 合併到 runtime catalog search，需另題實作並實機驗收。
   - **清單改用 ImGui ListClipper**：現在是「上限 500 筆＋明講截斷」（不想賭 wrapper 的 `ImGuiListClipper` struct layout）。clipper 能一路捲完三萬筆——實機證明頁面沒問題後再換。
   - **離線批次縮圖**：`nifexport`（Godot 編輯器那套）→ PNG → 面板 `LoadTexture` ⇒ CK 對等的 2D 縮圖牆。**幾萬張太重**，只有在 ghost 不夠用時、且只對特定類別批次生。
 

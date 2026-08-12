@@ -389,6 +389,18 @@ P6 之後在 [backlog.md](backlog.md) 累積、現已完工的功能——原記
 
 **ModForge C# 端零改動**——沒有新 spec 欄位，ghost commit 走既有 `placements[]`。
 
+### ✅ 離線 EditorID catalog 產生端（2026-08-12，offline）
+
+ModForge 的既有 SQLite catalog 現把 `catalog build` 的 plugin 參數正式定義為
+low→high load order，保存每個 source index 與每筆 override occurrence，並多抽 model path。
+`catalog export-json <db> <out.json>` 再依 FormKey 選最高 source winner，輸出 EDID、FULL、
+model path、FormKey 與 source/hash provenance；v1 契約在
+`schemas/scene-catalog.schema.json`。輸出使用 flushed sibling temp 後 atomic replace，失敗不破壞
+舊檔。Synthetic master/override、winner、schema、壞輸入與 replace 均已離線測過。
+
+這一段只完成 producer；bridge DLL 依 durable FormKey 合併 EDID、Browser 實際搜尋與真 MO2
+load-order 驗收仍在 backlog／WAIT_USER，沒有把 runtime 部分冒充完成。
+
 ### 🎮 第一輪實機（2026-07-14）：一條 FAIL —— ghost 的碰撞箱留在生成點（已修，DLL `98c24307`，待重測）
 
 **PASS**：目錄建起來、ghost 顯示、跟著準心走、**匯出零外洩（0 筆 ghost 進 scene.json）**、numpad 回歸正常。

@@ -68,7 +68,14 @@ internal static partial class Program
             }
             return 0;
         }
-        throw new ArgumentException("catalog usage: catalog build <out.db> <plugin> [plugin...] | catalog query <db> <query> [--type <type>] [--plugin <plugin>] [--limit <1-1000>] [--json] | catalog get <db> <formKey> [--plugin <sourcePlugin>] [--json] | catalog sources <db> [--json]");
+        if (args.Length == 3 && args[0] == "export-json")
+        {
+            var result = Catalog.ExportJsonFile(args[1], args[2]);
+            Console.WriteLine($"catalog JSON v{result.SchemaVersion}: {result.Sources.Count} source(s), " +
+                $"{result.Records.Count} winner record(s) -> {Path.GetFullPath(args[2])}");
+            return 0;
+        }
+        throw new ArgumentException("catalog usage: catalog build <out.db> <plugin> [plugin...] | catalog query <db> <query> [--type <type>] [--plugin <plugin>] [--limit <1-1000>] [--json] | catalog get <db> <formKey> [--plugin <sourcePlugin>] [--json] | catalog sources <db> [--json] | catalog export-json <db> <out.json>");
     }
 
     private static void WriteRecords(IReadOnlyList<CatalogRecord> records, bool json)
