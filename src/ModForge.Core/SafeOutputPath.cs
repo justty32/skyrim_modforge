@@ -18,4 +18,27 @@ public static class SafeOutputPath
             throw new InvalidDataException($"generated output path escapes package directory: '{relativePath}'");
         return dest;
     }
+
+    /// <summary>Rejects an output path whose file or any parent is a symbolic link or reparse point.</summary>
+    public static void RejectReparsePoints(string path, string description = "generated output path")
+    {
+        var fullPath = Path.GetFullPath(path);
+        FileSystemInfo? current = Directory.Exists(fullPath)
+            ? new DirectoryInfo(fullPath)
+            : new FileInfo(fullPath);
+
+        while (current is not null)
+        {
+            if (current.LinkTarget is not null
+                || (current.Exists && current.Attributes.HasFlag(FileAttributes.ReparsePoint)))
+                throw new IOException($"{description} may not traverse a reparse point: {current.FullName}");
+
+            current = current switch
+            {
+                FileInfo file => file.Directory,
+                DirectoryInfo directory => directory.Parent,
+                _ => null,
+            };
+        }
+    }
 }

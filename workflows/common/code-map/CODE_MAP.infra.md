@@ -139,7 +139,7 @@
 | Validate | `Generator.Validate.Spid.cs` | type 白名單 / record 必填 / chance 0–100（`ValidateSpidDistributions`）|
 | Spec | `Spec.Mcm.cs` | DTO：`McmSpec`/`McmPageSpec`/`McmControlSpec`（含 bool toggle 的 `global` GLOB bridge；ModSpec list `mcmConfigs` 在 `Spec.cs`）|
 | Core | `McmGen.cs` | `McmSpec`+`identity`→`MCM/Config/<identity>/config.json` + `settings.ini`；`global` control 加 `action.CallFunction`。**`identity`＝宿主插件檔名 stem**；config.json `modName`＝identity，`displayName`＝spec modName/displayName |
-| Core | `SafeOutputPath.cs` | package 所有生成路徑的 containment guard：正規化後必須仍在輸出根目錄內，擋住 OAR/loose-file `..` traversal |
+| Core | `SafeOutputPath.cs` | 生成路徑的 containment/reparse guard：正規化後必須仍在輸出根目錄內，並可拒絕 output file 或 parent symlink/junction；擋住 OAR/loose-file `..` traversal 與跨根目錄寫入 |
 | Core | `Generator.McmScripts.cs` | `global` controls → per-menu `MCM_ConfigBase` Papyrus source（bool setter 把 0/1 寫 GLOB）、穩定 script/property/function 命名 |
 | Core | `Generator.Build.Mcm.cs` | `BuildMcmQuests`：每個 config 生 Start-Game-Enabled `MF_MCM_*` QUST；ini-only 掛 `ModForgeMCM`，有 `global` 時掛 generated subclass + VMAD GLOB properties；另有 player-forced alias + `SKI_PlayerLoadGameAlias` |
 | Asset | `assets/papyrus/ModForgeMCM.psc` | ini-only 選單共用的空子類 `extends MCM_ConfigBase`；VMAD `ModName` 只是註冊／錯誤頁顯示 fallback，config 查找依宿主 plugin stem。有 `global` 的選單改用生成子類。**編譯需 MCM Helper+SkyUI SDK headers**（非香草）：供 `MCM_ConfigBase.psc`/`SKI_*.psc` 進 header cache 再編；`.pex` embed 進 CLI、gitignore |

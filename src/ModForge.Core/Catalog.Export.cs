@@ -80,21 +80,7 @@ public static partial class Catalog
         var fullPath = Path.GetFullPath(path);
         if (Directory.Exists(fullPath))
             throw new IOException($"catalog JSON output is a directory: {fullPath}");
-
-        for (var current = File.Exists(fullPath)
-                 ? new FileInfo(fullPath) as FileSystemInfo
-                 : new DirectoryInfo(Path.GetDirectoryName(fullPath)!);
-             current is not null;
-             current = current switch
-             {
-                 FileInfo file => file.Directory,
-                 DirectoryInfo directory => directory.Parent,
-                 _ => null,
-             })
-        {
-            if (current.Exists && current.Attributes.HasFlag(FileAttributes.ReparsePoint))
-                throw new IOException($"catalog JSON output may not traverse a reparse point: {current.FullName}");
-        }
+        SafeOutputPath.RejectReparsePoints(fullPath, "catalog JSON output");
         return fullPath;
     }
 }

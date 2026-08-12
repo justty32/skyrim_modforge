@@ -42,6 +42,7 @@ internal static partial class Program
         ArgumentException.ThrowIfNullOrWhiteSpace(outDir);
         ArgumentNullException.ThrowIfNull(nodes);
         outDir = Path.GetFullPath(outDir);
+        SafeOutputPath.RejectReparsePoints(outDir, "quest-node output directory");
         Directory.CreateDirectory(outDir);
 
         var duplicate = nodes.GroupBy(node => $"{node.QuestId}@{node.Stage}", StringComparer.OrdinalIgnoreCase)
@@ -59,22 +60,23 @@ internal static partial class Program
         var written = desired.Select(item => item.FileName).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var stalePaths = previous.Except(written, StringComparer.OrdinalIgnoreCase)
             .Select(stale => SafeOutputPath.ResolveUnder(outDir, stale)).ToArray();
+        var desiredPaths = desired.Select(item => (item.Node,
+            Path: SafeOutputPath.ResolveUnder(outDir, item.FileName))).ToArray();
+        var manifestPath = SafeOutputPath.ResolveUnder(outDir, QuestNodeManifest);
 
-        foreach (var (node, fileName) in desired)
+        foreach (var path in desiredPaths.Select(item => item.Path).Concat(stalePaths).Append(manifestPath))
+            SafeOutputPath.RejectReparsePoints(path, "quest-node output");
+
+        foreach (var (node, outputPath) in desiredPaths)
         {
-            var outputPath = SafeOutputPath.ResolveUnder(outDir, fileName);
-            RefuseFileLink(outputPath);
             File.WriteAllText(outputPath,
                 JsonSerializer.Serialize(node, QuestNodeJson) + Environment.NewLine);
         }
 
         foreach (var stalePath in stalePaths)
         {
-            RefuseFileLink(stalePath);
             if (File.Exists(stalePath)) File.Delete(stalePath);
         }
-        var manifestPath = SafeOutputPath.ResolveUnder(outDir, QuestNodeManifest);
-        RefuseFileLink(manifestPath);
         File.WriteAllText(manifestPath,
             JsonSerializer.Serialize(written.Order(StringComparer.OrdinalIgnoreCase), QuestNodeJson) + Environment.NewLine);
     }
@@ -82,7 +84,7 @@ internal static partial class Program
     private static IReadOnlyList<string> ReadQuestNodeManifest(string outDir)
     {
         var path = SafeOutputPath.ResolveUnder(outDir, QuestNodeManifest);
-        RefuseFileLink(path);
+        SafeOutputPath.RejectReparsePoints(path, "quest-node manifest");
         if (!File.Exists(path)) return Array.Empty<string>();
         try
         {
@@ -105,9 +107,4 @@ internal static partial class Program
         return marker >= 0 && record.Length >= marker + 8 ? record.Substring(marker + 2, 6) : "unknown";
     }
 
-    private static void RefuseFileLink(string path)
-    {
-        if (File.Exists(path) && File.GetAttributes(path).HasFlag(FileAttributes.ReparsePoint))
-            throw new IOException($"refusing to overwrite or delete a quest-node symlink: {path}");
-    }
 }

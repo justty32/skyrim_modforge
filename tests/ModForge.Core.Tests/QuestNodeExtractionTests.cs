@@ -138,10 +138,122 @@ public sealed class QuestNodeExtractionTests
         finally { if (Directory.Exists(output)) Directory.Delete(output, recursive: true); }
     }
 
+    [UnixSymlinkFact]
+    public void Writer_RejectsDesiredFileSymlink_WithoutChangingExternalTarget()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "mf-questnodes-" + Guid.NewGuid().ToString("N"));
+        var output = Path.Combine(dir, "nodes");
+        Directory.CreateDirectory(output);
+        var external = Path.Combine(dir, "external.json");
+        File.WriteAllText(external, "keep me");
+        var link = Path.Combine(output, "Q-10-000800.json");
+        var source = new QuestNodeSource("gamedata", "QUST:Story.esp:0x000800 stage 10 (source Story.esp)");
+        var node = new QuestNode("Q", "Story.esp", 10, "Changed", false,
+            new[] { "unclassified" }, source);
+        try
+        {
+            File.CreateSymbolicLink(link, external);
+            Assert.Throws<IOException>(() => Program.WriteQuestNodeDirectory(output, new[] { node }));
+            Assert.Equal("keep me", File.ReadAllText(external));
+        }
+        finally
+        {
+            DeleteDirectoryLink(output);
+            if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Writer_RejectsSymlinkOutputDirectory_WithoutWritingThroughIt()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "mf-questnodes-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        var external = Path.Combine(dir, "external");
+        Directory.CreateDirectory(external);
+        var output = Path.Combine(dir, "nodes");
+
+        try
+        {
+            CreateDirectoryLink(output, external);
+            Assert.Throws<IOException>(() =>
+                Program.WriteQuestNodeDirectory(output, Array.Empty<QuestNode>()));
+            Assert.Empty(Directory.EnumerateFileSystemEntries(external));
+        }
+        finally
+        {
+            DeleteDirectoryLink(output);
+            if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Writer_RejectsSymlinkParent_BeforeCreatingOutputDirectory()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "mf-questnodes-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        var external = Path.Combine(dir, "external");
+        Directory.CreateDirectory(external);
+        var linkedParent = Path.Combine(dir, "linked-parent");
+        var output = Path.Combine(linkedParent, "nodes");
+
+        try
+        {
+            CreateDirectoryLink(linkedParent, external);
+            Assert.Throws<IOException>(() =>
+                Program.WriteQuestNodeDirectory(output, Array.Empty<QuestNode>()));
+            Assert.False(Directory.Exists(Path.Combine(external, "nodes")));
+        }
+        finally
+        {
+            DeleteDirectoryLink(linkedParent);
+            if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true);
+        }
+    }
+
     private static QuestStage Stage(ushort index, string? text = null, QuestLogEntry.Flag flags = 0)
     {
         var stage = new QuestStage { Index = index };
         if (text is not null) stage.LogEntries.Add(new QuestLogEntry { Entry = text, Flags = flags });
         return stage;
+    }
+
+    private static void CreateDirectoryLink(string link, string target)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            Directory.CreateSymbolicLink(link, target);
+            return;
+        }
+
+        var start = new System.Diagnostics.ProcessStartInfo("cmd.exe")
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true,
+        };
+        foreach (var argument in new[] { "/d", "/c", "mklink", "/J", link, target })
+            start.ArgumentList.Add(argument);
+        using var process = System.Diagnostics.Process.Start(start)
+            ?? throw new InvalidOperationException("failed to start cmd.exe for junction test");
+        process.WaitForExit();
+        Assert.True(process.ExitCode == 0,
+            $"mklink /J failed: {process.StandardError.ReadToEnd()} {process.StandardOutput.ReadToEnd()}");
+    }
+
+    private static void DeleteDirectoryLink(string path)
+    {
+        if (Directory.Exists(path)
+            && new DirectoryInfo(path).Attributes.HasFlag(FileAttributes.ReparsePoint))
+            Directory.Delete(path);
+    }
+
+    private sealed class UnixSymlinkFactAttribute : FactAttribute
+    {
+        public UnixSymlinkFactAttribute()
+        {
+            if (OperatingSystem.IsWindows())
+                Skip = "file symlink creation requires Windows developer-mode/admin privilege";
+        }
     }
 }
