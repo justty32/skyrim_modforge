@@ -42,15 +42,7 @@ internal static partial class Program
             .Where(path => Path.GetExtension(path).Equals(".bsa", StringComparison.OrdinalIgnoreCase))
             .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var fingerprint = new StringBuilder(Path.GetFullPath(dataDir));
-        foreach (var archive in archives)
-        {
-            var info = new FileInfo(archive);
-            fingerprint.Append('\n').Append(info.FullName).Append('|').Append(info.Length)
-                .Append('|').Append(info.LastWriteTimeUtc.Ticks);
-        }
-        var sourceKey = Convert.ToHexString(SHA256.HashData(
-            Encoding.UTF8.GetBytes(fingerprint.ToString()))).Substring(0, 16);
+        var sourceKey = EnglishStringsSourceKey(dataDir, archives);
         var dir = Path.Combine(Path.GetTempPath(), "modforge-gamedata-strings", baseName, sourceKey, "Strings");
         Directory.CreateDirectory(dir);
         var completed = Path.Combine(dir, ".complete");
@@ -82,5 +74,18 @@ internal static partial class Program
         if (!any) return null;
         File.WriteAllText(completed, sourceKey);
         return dir;
+    }
+
+    internal static string EnglishStringsSourceKey(string dataDir, IEnumerable<string> archives)
+    {
+        var fingerprint = new StringBuilder(Path.GetFullPath(dataDir));
+        foreach (var archive in archives.OrderBy(path => path, StringComparer.OrdinalIgnoreCase))
+        {
+            var info = new FileInfo(archive);
+            fingerprint.Append('\n').Append(info.FullName).Append('|').Append(info.Length)
+                .Append('|').Append(info.LastWriteTimeUtc.Ticks);
+        }
+        return Convert.ToHexString(SHA256.HashData(
+            Encoding.UTF8.GetBytes(fingerprint.ToString()))).Substring(0, 16);
     }
 }

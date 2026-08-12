@@ -20,6 +20,7 @@
 | `src/ModForge.Core/QuestNodes.cs` | QUST stage-log → deterministic schema DTO extraction; terminal flag tags, safe quest identity, no invented graph/location/NPC semantics |
 | `src/ModForge.Cli/QuestNodeCmd.cs` | `questnodes` command + camelCase JSON directory writer, generated-file manifest cleanup, and pre-write symlink/reparse rejection |
 | `tests/ModForge.Core.Tests/QuestNodeExtractionTests.cs` | Mechanical mapping, schema-facing JSON shape, fallback identity, duplicate/stale-file safety, and file/output-directory/parent junction guards |
+| `tests/ModForge.Core.Tests/GameDataInputTests.cs` | Localized quest-node `--strings` and plugin→BSA→JSON roundtrips, metadata-driven BSA refresh, plus per-source cache-key behavior |
 | `tests/quest_node_schema_test.py` | Offline fixture validation, cross-file link checks, and invalid-shape cases |
 | `docs/spec/SPEC-quest-nodes.md` | Agent-facing usage and design notes |
 
