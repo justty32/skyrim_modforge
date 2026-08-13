@@ -78,6 +78,8 @@ EndEvent
 
     private sealed partial class BuildContext
     {
+        private int wordWallsBuilt;
+
         // --- pass 2: word-wall teaching fragment (VMAD). Attach the generated <ScriptName> to each ---
         // word wall's quest with two object properties — WordWallShout (→ SHOU) and WordWallWord
         // (→ WOOP) — that the generated .psc reads to AddShout + TeachWord. The quest's VMAD is a

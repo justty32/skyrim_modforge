@@ -4,6 +4,8 @@ public static partial class Generator
 {
     private sealed partial class BuildContext
     {
+        private readonly Dictionary<(int Block, int Sub), CellSubBlock> interiorSubs = new();
+
         // Copy a master cell's ENVIRONMENT data (water height/type/textures, lighting + template,
         // region list, imagespace, music, acoustic space, encounter zone, location, ownership,
         // sky/weather-from-region) onto an override cell. CRITICAL: an override CELL that omits

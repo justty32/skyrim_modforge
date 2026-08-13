@@ -4,6 +4,10 @@ public static partial class Generator
 {
     private sealed partial class BuildContext
     {
+        private readonly Dictionary<FormKey, Worldspace> worldspaceOverrides = new();
+        private readonly Dictionary<(FormKey Ws, int X, int Y), Cell> exteriorCells = new();
+        private int worldspaceCount, exteriorNewCells;
+
         // Copy a master WORLDSPACE's inline data onto a minimal override that hosts our new cell.
         // CRITICAL: a worldspace override that omits LandDefaults resets DefaultWaterHeight to 0 —
         // and Tamriel's real default is -14000, so any terrain between -14000 and 0 gets flooded

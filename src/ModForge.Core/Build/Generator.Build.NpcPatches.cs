@@ -9,6 +9,8 @@ public static partial class Generator
 {
     private sealed partial class BuildContext
     {
+        private readonly Dictionary<string, Mutagen.Bethesda.Skyrim.Npc> npcPatchesByRef = new();   // npcPatches[] overrides, keyed by overrideOf ref
+
         // --- pass 1: NPC AI patches. Override an EXISTING NPC and swap its AI packages (the new list is
         // wired in pass 2). A faithful override deep-copies the whole record (a Skyrim override REPLACES
         // the master record, so we must carry everything forward — name/stats/inventory/factions — then

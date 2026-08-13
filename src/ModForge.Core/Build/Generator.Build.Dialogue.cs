@@ -22,6 +22,12 @@ public static partial class Generator
 
     private sealed partial class BuildContext
     {
+        // Player DialogTopics by editorId (topic & INFO share an editorId, so formKeyByEd collides —
+        // this is the reliable way to resolve a dialogue's TOPIC, e.g. for an ENAM LinkTo target).
+        private readonly Dictionary<string, DialogTopic> dialogTopicsByEd = new();
+        // Stats counters (accumulated across the steps, read by ToResult).
+        private int dialogueBuilt;
+
         // --- pass 1: native dialogue — Quest -> DialogBranch -> DialogTopic -> DialogResponses(INFO),
         // a DialogView (DLVW) per quest, and a Hello per speaking NPC (incl. greeting-only NPCs).
         // (Writes valid records; making the line actually surface in-game still needs quest-flag

@@ -11,6 +11,14 @@ public static partial class Generator
     //  hold it here and let the per-record-type build steps (defined across the
     //  Generator.Build.*.cs partial files) run as instance methods that mutate it.
     //
+    //  WHICH FIELDS BELONG IN THIS FILE: only state that more than one domain reads — the mod
+    //  itself, the editorId lookup tables, the deferred-wire queues the placement pass drains,
+    //  and the cross-cutting counters. State only one build step touches is declared in THAT
+    //  step's own Generator.Build.*.cs partial (a partial class sees its fields from every
+    //  part, so this is purely about where the declaration lives). Put a new single-owner
+    //  field next to the code that owns it, not here — this file used to be the one every
+    //  feature had to edit.
+    //
     //  ORDERING IS LOAD-BEARING: record `AddNew()` order assigns FormIDs, so the orchestrator
     //  (Generator.Build.cs) must call the steps in the exact original sequence — the output
     //  is byte-identical to the old single-method Build only because that order is preserved.
@@ -30,49 +38,24 @@ public static partial class Generator
         private readonly SkyrimMod mod;
         private readonly List<string> warnings = new();
         private readonly List<string> notes = new();      // advisory INFO lines (never warnings — see Note())
-        private readonly string skyrimData;
 
         // Master link-caches (read-only overlays of Skyrim.esm etc.), lazily opened by name.
         private readonly Dictionary<string, ILinkCache<ISkyrimMod, ISkyrimModGetter>?> masterCaches
             = new(StringComparer.OrdinalIgnoreCase);
-        private readonly List<IDisposable> masterDisposables = new();
 
         // editorId -> record maps. npcs/quests are needed by the dialogue + pass-2 steps;
         // cells by placement; the formKey/records maps are the pass-2 ref table.
         private readonly Dictionary<string, Npc> npcsByEd = new();
         private readonly Dictionary<string, Quest> questsByEd = new();
         private readonly Dictionary<string, Cell> cellsByEd = new();
-        private readonly Dictionary<string, Mutagen.Bethesda.Skyrim.Npc> npcPatchesByRef = new();   // npcPatches[] overrides, keyed by overrideOf ref
-        // Custom LGTM/IMGS built in pass 1 (before cells), so a CELL can resolve them by editorId.
-        private readonly Dictionary<string, LightingTemplate> lgtmByEd = new(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, ImageSpace> imgsByEd = new(StringComparer.OrdinalIgnoreCase);
         // Built INFOs by dialogue editorId, so a pass-2 step can attach result-script fragments
         // (which need ref resolution from the formKey table that only exists in pass 2).
         private readonly Dictionary<string, DialogResponses> dialogResponsesByEd = new();
-        // Player DialogTopics by editorId (topic & INFO share an editorId, so formKeyByEd collides —
-        // this is the reliable way to resolve a dialogue's TOPIC, e.g. for an ENAM LinkTo target).
-        private readonly Dictionary<string, DialogTopic> dialogTopicsByEd = new();
-        // Proactive banter INFOs, kept so pass 2 can append their situational conditions (mirrors dialogResponsesByEd).
-        private readonly List<(BanterSpec Spec, DialogResponses Info, string Label)> banterInfos = new();
-        // Scene actor aliases, kept so pass 2 can bind each to the NPC that fills it (UniqueActor link —
-        // the NPC ref may be forward or external, so it resolves only after the formKey table exists).
-        private readonly List<(string SceneEd, int AliasId, string NpcRef, QuestAlias Alias)> sceneAliasWires = new();
-        // Non-dialog scene Package actions: the PACK ref is a forward link resolved in pass 2 (WireScenes).
-        private readonly List<(string SceneEd, SceneAction Action, string PackageRef)> sceneActionWires = new();
-        // Scene controller GateGlobal: the GLOB ref is resolved in pass 2 (WireScenes).
-        private readonly List<(string HostEd, ScriptObjectProperty Prop, string GlobalRef)> sceneGateWires = new();
-        // Built scenes kept so pass 2 can attach scene-level + per-phase CTDA conditions (refs by
-        // editorId, resolved only after the formKey table exists). `Phases` maps each spec-phase index
-        // to the ScenePhase actually emitted (a phase with an invalid speaker is skipped in pass 1).
-        private readonly List<(SceneSpec Spec, Scene Built, List<(int SpecIndex, ScenePhase Phase)> Phases)> sceneConditionWires = new();
-        private readonly Dictionary<(int Block, int Sub), CellSubBlock> interiorSubs = new();
         private readonly Dictionary<string, FormKey> formKeyByEd = new();
         private readonly Dictionary<string, IMajorRecord> recordsByEd = new();
         // Placement-pass caches: vanilla interior cells we override (by FormKey), worldspace overrides
         // that host our exterior block tree (by FormKey), and exterior cells resolved per (worldspace, grid).
         private readonly Dictionary<FormKey, ICell> vanillaCellOverrides = new();
-        private readonly Dictionary<FormKey, Worldspace> worldspaceOverrides = new();
-        private readonly Dictionary<(FormKey Ws, int X, int Y), Cell> exteriorCells = new();
 
         // Package slot wiring deferred until placements register their editorIds (the target/
         // destination of a Patrol/Follow/Escort can be an authored marker created later) — and, since
@@ -94,10 +77,6 @@ public static partial class Generator
         // Forced alias fills whose ref builds AFTER the alias passes (a placement/xmarker anchor or a map
         // marker). Resolved by WireDeferredForcedAliases once those records exist.
         private readonly List<(Mutagen.Bethesda.Skyrim.QuestAlias Alias, string Ref)> deferredForcedAliases = new();
-        // Object (Form) script properties whose target builds AFTER the script is attached. An alias-script's
-        // properties fill in BuildStandaloneQuestAliases (before placements), so a prop pointing at a
-        // placement/xmarker editorId is queued here and resolved by WireDeferredScriptObjectProps.
-        private readonly List<(Mutagen.Bethesda.Skyrim.ScriptObjectProperty Prop, string Ref, string Warn)> deferredScriptObjectProps = new();
         // CTDA conditions authored by a step that runs BEFORE BuildPlacements/BuildReferences (perk, Story
         // Manager, quest-alias match filters, scene/phase). A condition's `param`/`reference` may name a
         // PLACEMENT editorId or a references[] label, so it can only be built once those exist —
@@ -107,38 +86,18 @@ public static partial class Generator
         // attached when at least one of its conditions actually built (the perk effect's PerkCondition tab).
         private readonly List<(IList<Condition> Target, ConditionSpec Spec, string Label,
                                IReadOnlyDictionary<string, int>? AliasIdx, FormKey? OwningScene)> deferredConditionWires = new();
-        private readonly List<Action> deferredConditionFinalizers = new();
-        // Set once BuildReferences runs: every placement + references[] label is (about to be) in the ref
-        // table, so a CTDA param/reference can finally resolve a placed ref. BuildCondition warns loudly if
-        // it is called before this — that is the guard against a sixth eager-resolve bug.
-        private bool refsIndexed;
         private readonly Dictionary<string, IPlaced> placementsByEd = new();
         // Every placement we actually built, paired with the CELL it landed in. The navmesh steps
         // (auto navCut + the P1 coverage diagnostics) need the resolved cell — a placement's spec only
         // carries a ref STRING, and re-resolving it would double the master-cache work.
         private readonly List<(PlacementSpec Spec, IPlaced Rec, ICell Cell)> builtPlacements = new();
-        // refs an anchor:"replace" reference stood in for — BuildRemovals disables+buries them alongside
-        // the spec's own removals[] (our persistent copy took the vanilla original's place).
-        private readonly List<string> referenceRemovals = new();
         // editorId → its source PlacementSpec, so a teleport partner's arrival position/rotation can be
         // read once all placements exist (XTEL stores where the player materialises = the partner's pos/rot).
         private readonly Dictionary<string, PlacementSpec> placementSpecByEd = new(StringComparer.OrdinalIgnoreCase);
 
-        // Vendor (merchant) factions: editorIds of in-spec factions carrying vendor data (so an NPC
-        // who joins one also gets JobMerchantFaction). The merchant chest is a PLACEMENT that doesn't
-        // exist until the placement loop runs, so its FormLink is deferred like a package target.
-        private readonly HashSet<string> vendorFactionEds = new(StringComparer.OrdinalIgnoreCase);
-        private readonly List<(IFaction Fact, string FactEd, string Ref)> deferredMerchantContainers = new();
-
-        // Stats counters (accumulated across the steps, read by ToResult).
-        private int dialogueBuilt, banterBuilt;
-        private int scenesBuilt, scenePhasesBuilt;
         private int linksWired, extLinks;
         private int placed, vanillaCells;
-        private int worldspaceCount, exteriorNewCells;
         private int scriptsAttached;
-        private int worldspacesBuilt, regionsBuilt, terrainCellsBuilt, navmeshCellsBuilt;
-        private int wordWallsBuilt;
 
         private readonly BuildOptions? options;
 

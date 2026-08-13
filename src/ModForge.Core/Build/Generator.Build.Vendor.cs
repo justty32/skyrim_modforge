@@ -4,6 +4,12 @@ public static partial class Generator
 {
     private sealed partial class BuildContext
     {
+        // Vendor (merchant) factions: editorIds of in-spec factions carrying vendor data (so an NPC
+        // who joins one also gets JobMerchantFaction). The merchant chest is a PLACEMENT that doesn't
+        // exist until the placement loop runs, so its FormLink is deferred like a package target.
+        private readonly HashSet<string> vendorFactionEds = new(StringComparer.OrdinalIgnoreCase);
+        private readonly List<(IFaction Fact, string FactEd, string Ref)> deferredMerchantContainers = new();
+
         // --- pass 2: vendor (merchant) faction FormLinks ---
         // SellBuyList (a FormList of VendorItem keywords) resolves now. The MerchantContainer points at
         // a PLACEMENT (the placed merchant chest), which doesn't exist until the placement loop runs —

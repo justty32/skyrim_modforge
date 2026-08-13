@@ -4,6 +4,19 @@ public static partial class Generator
 {
     private sealed partial class BuildContext
     {
+        // Scene actor aliases, kept so pass 2 can bind each to the NPC that fills it (UniqueActor link —
+        // the NPC ref may be forward or external, so it resolves only after the formKey table exists).
+        private readonly List<(string SceneEd, int AliasId, string NpcRef, QuestAlias Alias)> sceneAliasWires = new();
+        // Non-dialog scene Package actions: the PACK ref is a forward link resolved in pass 2 (WireScenes).
+        private readonly List<(string SceneEd, SceneAction Action, string PackageRef)> sceneActionWires = new();
+        // Scene controller GateGlobal: the GLOB ref is resolved in pass 2 (WireScenes).
+        private readonly List<(string HostEd, ScriptObjectProperty Prop, string GlobalRef)> sceneGateWires = new();
+        // Built scenes kept so pass 2 can attach scene-level + per-phase CTDA conditions (refs by
+        // editorId, resolved only after the formKey table exists). `Phases` maps each spec-phase index
+        // to the ScenePhase actually emitted (a phase with an invalid speaker is skipped in pass 1).
+        private readonly List<(SceneSpec Spec, Scene Built, List<(int SpecIndex, ScenePhase Phase)> Phases)> sceneConditionWires = new();
+        private int scenesBuilt, scenePhasesBuilt;
+
         // --- pass 1: SCENE (SCEN) — two NPCs talking to EACH OTHER, hosted by a quest ---------------
         // A vanilla Scene's participants are the host QUEST's ALIASES (not direct NPC refs). So from one
         // SceneSpec we emit, end to end (confirmed structurally against vanilla dunIronbindBeemJaMourning

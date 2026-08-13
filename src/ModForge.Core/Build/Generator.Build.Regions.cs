@@ -77,6 +77,8 @@ public static partial class Generator
     // (so regions can resolve in-spec worldspace editorIds), folding counts/links into the context.
     private sealed partial class BuildContext
     {
+        private int worldspacesBuilt, regionsBuilt, terrainCellsBuilt, navmeshCellsBuilt;
+
         public void BuildWorldspacesAndRegions()
         {
             var (w, tc, nc, l, e) = Generator.BuildWorldspaces(

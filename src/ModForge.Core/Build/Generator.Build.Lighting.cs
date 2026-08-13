@@ -17,6 +17,10 @@ public static partial class Generator
     // -------------------------------------------------------------------------------
     private sealed partial class BuildContext
     {
+        // Custom LGTM/IMGS built in pass 1 (before cells), so a CELL can resolve them by editorId.
+        private readonly Dictionary<string, LightingTemplate> lgtmByEd = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, ImageSpace> imgsByEd = new(StringComparer.OrdinalIgnoreCase);
+
         public void BuildLightingTemplates()
         {
             foreach (var s in spec.LightingTemplates)

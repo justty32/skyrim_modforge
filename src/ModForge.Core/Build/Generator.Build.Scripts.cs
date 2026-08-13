@@ -4,6 +4,11 @@ public static partial class Generator
 {
     private sealed partial class BuildContext
     {
+        // Object (Form) script properties whose target builds AFTER the script is attached. An alias-script's
+        // properties fill in BuildStandaloneQuestAliases (before placements), so a prop pointing at a
+        // placement/xmarker editorId is queued here and resolved by WireDeferredScriptObjectProps.
+        private readonly List<(Mutagen.Bethesda.Skyrim.ScriptObjectProperty Prop, string Ref, string Warn)> deferredScriptObjectProps = new();
+
         // --- pass 2: attach Papyrus scripts (VMAD) to any record by editorId ---
         // The VMAD setter is not on the IHaveVirtualMachineAdapter interface (get-only) and its type
         // varies (Quest -> QuestAdapter, most others -> VirtualMachineAdapter), so we reflect the

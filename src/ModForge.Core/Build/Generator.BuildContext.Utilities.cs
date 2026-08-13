@@ -6,6 +6,9 @@ public static partial class Generator
 {
     private sealed partial class BuildContext
     {
+        private readonly string skyrimData;
+        private readonly List<IDisposable> masterDisposables = new();
+
         // Shared temp Strings/ folder holding the vanilla English .STRINGS we extract so a LOCALIZED
         // master's Name/Description resolve headless (see ProvisionStrings). Null once we know extraction
         // is impossible (then we open without strings — fine for the clone path, which masks Name out).

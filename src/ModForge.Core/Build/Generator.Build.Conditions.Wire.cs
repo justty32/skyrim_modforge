@@ -4,6 +4,8 @@ public static partial class Generator
 {
     private sealed partial class BuildContext
     {
+        private readonly List<Action> deferredConditionFinalizers = new();
+
         // --- the deferred-condition queue (the build-order rule on BuildCondition) ---------------------
         // A step that runs BEFORE BuildPlacements/BuildReferences cannot build a condition: a CTDA
         // `param`/`reference` may name a placement editorId or a references[] label, and neither is in the

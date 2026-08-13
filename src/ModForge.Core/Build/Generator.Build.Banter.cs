@@ -4,6 +4,10 @@ public static partial class Generator
 {
     private sealed partial class BuildContext
     {
+        // Proactive banter INFOs, kept so pass 2 can append their situational conditions (mirrors dialogResponsesByEd).
+        private readonly List<(BanterSpec Spec, DialogResponses Info, string Label)> banterInfos = new();
+        private int banterBuilt;
+
         // --- pass 1: proactive banter — unprompted NPC lines (the vanilla HirelingIdles pattern) ---
         // All banter entries sharing a (speaker, quest) collapse into ONE ambient topic: Category=Misc,
         // SNAM='IDLE', no branch, one Random-flagged INFO per entry. The engine plays a matching one

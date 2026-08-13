@@ -7,6 +7,14 @@ public static partial class Generator
 {
     private sealed partial class BuildContext
     {
+        // Set once BuildReferences runs: every placement + references[] label is (about to be) in the ref
+        // table, so a CTDA param/reference can finally resolve a placed ref. BuildCondition warns loudly if
+        // it is called before this — that is the guard against a sixth eager-resolve bug.
+        private bool refsIndexed;
+        // refs an anchor:"replace" reference stood in for — BuildRemovals disables+buries them alongside
+        // the spec's own removals[] (our persistent copy took the vanilla original's place).
+        private readonly List<string> referenceRemovals = new();
+
         private const int PersistentFlag = 0x400;   // SkyrimMajorRecordFlag.Persistent
         private static readonly FormKey XMarkerHeadingBase =
             new(ModKey.FromNameAndExtension("Skyrim.esm"), 0x34);
