@@ -8,8 +8,8 @@ namespace ModForge.Tests;
 // Translator is in the documented library API (docs/for_agent_lib.md) and had zero tests before
 // 2026-08-13. Extract and Apply must iterate the SAME slots in the same way — if they drift, a
 // translation silently lands on the wrong record, which no build-time check can catch.
-// ApplyLocalized is not covered here: it writes a .STRINGS set to disk and is exercised by the
-// `applyloc` CLI path.
+// ApplyLocalized is not covered here — it writes a .STRINGS set to disk and mutates process-global
+// state, so it lives in TranslatorLocalizedTests.cs.
 public class TranslatorTests
 {
     private static SkyrimMod NewMod() =>
