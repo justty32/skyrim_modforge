@@ -107,12 +107,14 @@
 
 > **新增的第二層護欄**：`scripts/cli-dispatch-snapshot.sh`。golden hash 只走 `build` 一條路徑、測試幾乎不碰 CLI，所以動 argv 分派時沒有網。它對 55 個命令 × 6 種參數長度＝**330 種 argv 形狀**記錄 exit code 與「有沒有掉回 Usage()」，改前改後 diff。用法見 [testing.md](../testing.md)。
 
-### Batch 3 — 讓 `BuildContext` 可被測
+### Batch 3 — 讓 `BuildContext` 可被測 — ✅ 已完成 2026-08-13（`e5061b9`）
 
-`ModForge.Core.csproj` 已經有 `<InternalsVisibleTo Include="ModForge.Core.Tests" />`，但 `BuildContext` 是 `Generator` 裡的 **`private sealed partial class`**，測試碰不到——這就是 87% 測試被迫走 E2E 的**唯一結構原因**。
+`ModForge.Core.csproj` 本來就有 `<InternalsVisibleTo Include="ModForge.Core.Tests" />`，但 `BuildContext` 是 `Generator` 裡的 **`private sealed partial class`**，測試碰不到——這就是 87% 測試被迫走 E2E 的**唯一結構原因**（是「沒得選」，不是「懶得寫」）。
 
-- 把 `BuildContext` 從 nested private 提升為 top-level `internal sealed partial class`（Batch 1 之後它已經在 `Build/` 資料夾裡了）。
-- 這是**單純的可見度 + 去巢狀**改動，零行為風險，但立刻讓 Cluster 4/6/7（見下）可以寫真正的單元測試。
+- 60 個 partial 的 `private sealed partial class BuildContext` 一律改成 `internal`。
+- 新增 `tests/.../Build/BuildContextUnitTests.cs`：**本 repo 第一批只跑「一個 build step」的測試**——直接 `new BuildContext(...)`、只呼叫 `BuildItems()` / `BuildLightingTemplates()`、只對那一步的產物斷言。它們**不可能被 pipeline 的步驟順序影響**，這是刻意的：順序歸 golden hash 管。
+
+**只做到 `internal` 巢狀，沒有真的「提升為 top-level」**（原稿是這樣寫的）。理由：目標是「測試能直接建構它」，`internal` 巢狀已經完全達成——`Generator` 是 public，所以 `Generator.BuildContext` 對 `InternalsVisibleTo` 的測試組件就是可見的，而且**一個檔改一個字、存取模型完全不動**。真的拆出去要多做兩件事：8 個 partial 同時放著 `BuildContext` 與 `Generator` 層級的成員，得先拆開；而且巢狀類別本來看得到外層的 `private static` 助手，拆出去以後全部要放寬成 `internal`。多花這些工，換不到任何 `internal` 巢狀給不了的東西。
 
 ### Batch 4 — 從 god object 剝出獨立單元（**選做，投報率遞減**）
 

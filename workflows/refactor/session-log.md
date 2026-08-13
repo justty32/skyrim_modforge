@@ -16,7 +16,8 @@
 - ✅ **Batch 1**（`1e638d1`）：345 個純 rename，`src/`＋`tests/` 進領域資料夾。
 - ✅ **Batch 2**（`c9c8207` `807b0a6` `f4035c9` `3104459`）：四個 hub 檔拆完——`Spec.cs` 102→5 個成員、`BuildContext` 57→27 個欄位、`Program.cs` 204→76 行、`Validate.cs` 收尾。**`Generator.Build.cs` 評估後刻意不動**，理由寫在該檔檔頭。
   - 另加第二層護欄 `scripts/cli-dispatch-snapshot.sh`（330 種 argv 形狀），因為 golden hash 只走 `build`、測試幾乎不碰 CLI。兩支護欄用法都在 [testing.md](../testing.md)。
-- ⏸ **Batch 3 未開始**：把 `BuildContext` 從 `private nested` 提升成 top-level `internal`，解鎖單元測試（csproj 已經有 `InternalsVisibleTo`）。Batch 4/5 是選做。
+- ✅ **Batch 3**（`e5061b9`）：`BuildContext` 60 個 partial 從 `private` 改 `internal`，測試終於碰得到；附上第一批「只跑一個 build step」的單元測試（`Build/BuildContextUnitTests.cs`）。測試數 1122 → **1126**。停在 `internal` 巢狀、沒有真的 un-nest，理由在計畫 Batch 3。
+- ⏸ **Batch 4/5 未開始，且都是選做**：Batch 4 從 god object 剝獨立單元（8 群，投報率遞減，隨時可停；**Placement/Reference 那 7 個檔明確不碰**）；Batch 5 是 public surface 清理。
 
 **⚠ 三件跨機／後續要注意的：**
 

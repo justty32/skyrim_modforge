@@ -8,6 +8,7 @@
 
 - `partial class` 按領域拆檔：CLI 是 `Program.cs` + `Diagnostics.*.cs` + `Package.cs`；Core 是 `Generator.Build.*.cs`
 - **新檔放哪個資料夾**（2026-08-13 起 `src/` 分層，佈局表在 [CODE_MAP](code-map/CODE_MAP.md)）：規則是機械式的——`Generator.Build.*` → `Core/Build/`，`Generator.Validate.*` → `Core/Validate/`，`Spec.*` → `Core/Spec/`，`Diagnostics.*` → `Cli/Diagnostics/`，其餘命令 → `Cli/Commands/`；測試放進 `tests/ModForge.Core.Tests/` 的同名資料夾。**namespace 不跟著資料夾走，永遠是 `ModForge`**（csproj 用預設 glob，搬檔不必改任何 csproj）。
+- **新測試優先寫成單元測試**：`BuildContext` 自 2026-08-13 起是 `internal`（csproj 有 `InternalsVisibleTo`），測試可以 `new Generator.BuildContext(spec, key, null)`、只跑需要的那幾個 build step、只對那一步的產物斷言——範例見 `tests/.../Build/BuildContextUnitTests.cs`。**不要**只因為習慣就再寫一個走完整 `Generator.Build()` 的 E2E（現有測試 87% 是 E2E，那是舊結構逼出來的，不是慣例）。整條 pipeline 的步驟順序由 `scripts/golden-hash.sh` 把關，不需要每個測試都重跑一遍。
 - 所有 src 檔案維持在 **300 行**以下（`partial class` 按領域拆）；`examples/` 同樣 300 行。（文檔拆檔門檻見 [DEV-GUIDE 結構整理原則](../../DEV-GUIDE.md)：**`workflows/` 文檔 8192 bytes、`docs/` 使用手冊 300 行**。）
 - **Spec 欄位 breaking change**：新增欄位安全（optional，舊 example 不受影響）；**刪除或改名欄位**前必須先 `grep -r "舊欄位名" examples/`，找出所有受影響的 JSON 並在同一個 commit 裡一起更新。
 - **新增 Spec 欄位後**：手動更新 `examples/spec.schema.json`（IDE autocomplete 用；無自動同步機制，允許偶爾落後，但 commit 前盡量補上）。
