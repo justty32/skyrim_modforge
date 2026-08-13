@@ -34,7 +34,7 @@
 | 工作流 | session-log | open 摘要 |
 |--------|-------------|----------|
 | 功能開發 | [workflows/feature-dev/session-log](workflows/feature-dev/session-log.md) | 🧊 身份系統 ③ 聲望/行為追蹤（2026-06-22 冷凍，等很有空再做）|
-| 重構整理 | [workflows/refactor/session-log](workflows/refactor/session-log.md) | `src/` 拆檔分層 **Batch 0–5 + 文檔收尾全部完成、已 push**。只剩兩件待你拍板（public 降 internal、`Archives`/`Papyrus` 零測試）。[計畫](workflows/refactor/src-layout-plan.md) |
+| 重構整理 | [workflows/refactor/session-log](workflows/refactor/session-log.md) | `src/` 拆檔分層 **Batch 0–5 + 文檔收尾全部完成、已 push**；覆蓋率收尾也做完（新增 `scripts/coverage.sh`，離線 **73.0%**，`Archives` 挖出三個真 bug 已修）。只剩一件待你拍板（public 降 internal）。[計畫](workflows/refactor/src-layout-plan.md) |
 | 調查／解碼 | [workflows/investigation/session-log](workflows/investigation/session-log.md) | 無 |
 
 ## 不屬任何工作流的進度（堆太多 → 拆進 `session_logs/`）
