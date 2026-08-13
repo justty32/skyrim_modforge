@@ -143,14 +143,27 @@
 
 > 要推翻這個「停」的決定，先問：剝完之後，**有哪個測試是現在寫不出來、剝完才寫得出來的？** 想不出來就別剝。
 
-### Batch 5 — public surface 清理（收尾）
+### Batch 5 — public surface 清理 — ✅ 已完成 2026-08-13（`9c24ab4` `6281659`）
 
-- `Generator` 上 ~46 個沒進文件的 public static 方法：確認哪些是 CLI 真的在用的 API、哪些該降 `internal`。
-- `OarGen.HkxCopy`：自己的檔案外沒有任何引用。
-- `SceneCoordinates` / `SceneCoordinateProfile`：只有測試碰，沒接進任何 build/import 路徑——確認是預留還是死碼。
-- `Generator.Validate.Items2.cs` / `World2.cs`：確認過是純粹的 300 行溢出（`ValidateItems2` 就是 `ValidateItems` 那張表的後半段），Batch 1 搬進 `Validate/` 後改成有意義的檔名。
-- `PlayerRef`（`Build.Identity.cs`）與 `McmPlayerRef`（`Build.Mcm.cs`）是同一個字面值 `"Skyrim.esm:0x000014"` 的兩份宣告，合成一個。
-- 零測試覆蓋的檔：`Fuz.cs` / `Translator.cs` / `Archives.cs` / `Papyrus.cs`——不在本次範圍，但記一筆。
+**⚠️ 這批有兩項的前提是錯的**，動手前查證才發現——原本的清單是靠一次 survey 生出來的，沒有逐條驗：
+
+| 原本寫的 | 查證結果 |
+|---|---|
+| ~~`OarGen.HkxCopy` 是死碼~~ | **不是。** 它是 `HkxPlacements()` 的回傳型別，而 `Cli/Commands/Package.cs:273` 正在用。原話「自己的檔案外沒有引用」為真，但那不等於死碼。 |
+| ~~`SceneCoordinates` 只有測試碰，可能是死碼~~ | **不是。** 它有自己的說明文件 `docs/spec/SPEC-scene-coordinates.md`、有 CODE_MAP 條目，來自 `ecda817 feat: add offline authoring and catalog primitives`——是刻意留的 library primitive（Unity/Unreal → Skyrim 座標轉換），給外部消費者用的。刪掉會是錯的。 |
+
+**做掉的：**
+
+- **`Validate.Items2.cs` / `World2.cs` → `.Items.More.cs` / `.World.More.cs`**（`.More` 是本 repo 既有慣例，見 `Diagnostics.Dump.More.cs`），四個檔都加上**「本檔驗哪些 record family」的檔頭清單**——切點是 300 行預算不是概念邊界，所以真正能回答「scrolls 在哪驗」的是這份清單。
+- **`PlayerRef` / `McmPlayerRef` 合併成 `PlayerNpcBase`**。這不只是重複——**名字本來就是錯的**：`0x000014` 是玩家的 NPC **base record**，`PlayerRef` 是 `0x000007`，`Spec.Actors.cs` 自己就在警告別搞混這兩個。
+- **補測試**：`Fuz.Split`（6 條）與 `Translator`（5 條）。`Translator` 在**文件寫明的 library API 裡卻零測試**。測試數 1130 → **1141**。
+- **`docs/for_agent_lib.md` 講實話了**：那張表就是全部支援的介面，其餘 ~100 個構得到的 public 成員是「因為 Cli 在另一個組件所以只好公開」的實作細節。
+
+**沒做、留給你決定的：把 ~100 個 public 降 `internal`。** 量測結果：type 層級 112 個 public static，Cli 用 54 個、測試用 83 個。要降的話得先 ① 給 `ModForge.Cli` 加 `InternalsVisibleTo`；② 決定 `SceneCoordinates`／`Catalog` 這些**有自己 SPEC 文件**的型別算不算對外契約。第二點是產品決定，不是重構決定——所以先把規則寫進文件，執行留給你。
+
+> **不重新切 `World.More.cs`**（它同時裝了 regions/cells 與 factions/npcs/shouts，看起來很該拆）：`Validate` 回傳的 problems **是有順序的**，那個順序會印給使用者，而且有一個測試在 index `problems[0]`。為了純美觀的分類去改可觀察的輸出不划算。理由寫進該檔檔頭了。
+
+**還沒動**：`Archives.cs` / `Papyrus.cs` 仍然零測試覆蓋。`Papyrus` 需要 Wine/CK，離線機測不了；`Archives` 需要合成 BSA（`GameDataInputTests` 有先例），可做但不在這批。
 
 ## 4. 每個 batch 的驗證儀式（固定不變）
 
