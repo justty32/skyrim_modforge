@@ -26,7 +26,7 @@
 
 ## Schema 變更
 
-`WorldspaceSpec` 加一個**可選** `Heightmap` 欄位（[Spec.Worldspace.cs](../../src/ModForge.Core/Spec.Worldspace.cs)）：
+`WorldspaceSpec` 加一個**可選** `Heightmap` 欄位（[Spec.Worldspace.cs](../../src/ModForge.Core/Spec/Spec.Worldspace.cs)）：
 
 ```csharp
 public sealed class HeightmapSpec
@@ -79,7 +79,7 @@ height_game_units = MinHeight + (png_value / 65535) × (MaxHeight − MinHeight)
 1. **Mutagen 寫 byte 原值、不做轉換**；Skyrim 引擎讀成 **signed int8**。→ **ModForge 自己做二補數**：存 delta −10 = `(byte)(sbyte)(-10)` = byte 246。
 2. **累積方式（row-wise）**：`Offset`(float) = 頂點 [0,0] 高度基準；逐列（由底而上）、列內逐欄（由左而右）累加 signed delta。第 0 欄沿列方向往北累積成各列基準，第 1–32 欄沿列內往東累積。
 3. **尺度**：**offset 與每個 delta 單位都 = 8 game units**。⚠️ 舊 coord-system.md 寫「1/8」是**錯的**（1/8 單步最大僅 ±16 units，做不出山；正解 ×8，單步最大 ±127×8 = ±1016 units）。
-4. **API**：`Landscape.VertexHeightMap.Offset`(float) + `.HeightMap`(`Noggog.Array2d<byte>` 33×33) + `.Unknown`(P3UInt8)，與現有 [Generator.Build.Worldspace.cs](../../src/ModForge.Core/Generator.Build.Worldspace.cs) 一致。
+4. **API**：`Landscape.VertexHeightMap.Offset`(float) + `.HeightMap`(`Noggog.Array2d<byte>` 33×33) + `.Unknown`(P3UInt8)，與現有 [Generator.Build.Worldspace.cs](../../src/ModForge.Core/Build/Generator.Build.Worldspace.cs) 一致。
 
 ### 逆推（已知目標高度網格 → offset + deltas）
 

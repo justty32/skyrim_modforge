@@ -236,7 +236,7 @@ position/rotation（度）必填＝新的完整 transform（不是 delta）；`s
 - **`examples/referrer-chair-anchor.json` ＝ 權威範例／實機價值證明**（2026-07-12 交付 `~/skyrim_mods/mine/ModForgeReferrerChair.zip`）。乙路徑端到端＋**對照組**：vanilla WhiterunBreezehome（**必須是 vanilla cell——自建內裝沒 navmesh，NPC 不會動**）裡擺**兩張一模一樣的 `CommonChair01F`**，`references[]` **只命名其中一張**，Sofia 的 **SitTarget** package 拿 label 當 slot-16 SingleRef 錨點。誘餌椅**更近、擋在必經路上**，所以「她坐了某張椅子」不可能被誤讀成「她坐了被命名的那張」。離線證據：命名的 REFR `0x808` flag=`0x400` ＋ Persistent group；誘餌 `0x807` flag=`0x0` ＋ Temporary group（**兩者只差一個 label**）；package slot 16 ＝ `PackageTargetSpecificReference(0x808)`，**不需要 quest alias**，與 vanilla `CaravanACamp1Sit` 同形。
 - `examples/scene-references.json`＝**(甲) 外部路徑 ＋ `anchor` 逃生門**的示範（Skulvar 的鋤頭：temporary → 警告）。它的乙路徑那半也已改用 `sitTarget`（原本用 `sandbox.location`，見上面 🔴 —— 那份寫法 build 全綠卻證明不了任何事，是誤導後續 agent 的樣板）。
 
-測試：`tests/ModForge.Core.Tests/ReferencesTests.cs`。
+測試：`tests/ModForge.Core.Tests/Build/ReferencesTests.cs`。
 
 ### ✅ 拍板（2026-07-12，使用者）：**場景匯出不含 NPC** ＋ **captures 拆成獨立檔**
 

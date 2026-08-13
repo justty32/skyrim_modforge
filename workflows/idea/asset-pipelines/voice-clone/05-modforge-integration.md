@@ -123,4 +123,4 @@ Per CLAUDE.md Workflow 1, these were the landing points; most are now present:
 ---
 
 ### Sources
-Internal conventions read from `workflows/common/code-map/CODE_MAP.infra.md`, `src/ModForge.Core/Papyrus.cs`, `src/ModForge.Core/Spec.Actors.cs`, `src/ModForge.Cli/ModForge.Cli.csproj`. Engine/format facts: see [01]–[04].
+Internal conventions read from `workflows/common/code-map/CODE_MAP.infra.md`, `src/ModForge.Core/Papyrus/Papyrus.cs`, `src/ModForge.Core/Spec/Spec.Actors.cs`, `src/ModForge.Cli/ModForge.Cli.csproj`. Engine/format facts: see [01]–[04].

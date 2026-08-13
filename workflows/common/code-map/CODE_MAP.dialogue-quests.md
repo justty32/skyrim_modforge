@@ -18,9 +18,9 @@
 |---|---|
 | `schemas/quest-node.schema.json` | Draft 2020-12 semantic node contract for quest/stage, location, NPCs, graph links, major moments, and reaction tags |
 | `src/ModForge.Core/QuestNodes.cs` | QUST stage-log → deterministic schema DTO extraction; terminal flag tags, safe quest identity, no invented graph/location/NPC semantics |
-| `src/ModForge.Cli/QuestNodeCmd.cs` | `questnodes` command + camelCase JSON directory writer, generated-file manifest cleanup, and pre-write symlink/reparse rejection |
-| `tests/ModForge.Core.Tests/QuestNodeExtractionTests.cs` | Mechanical mapping, schema-facing JSON shape, fallback identity, duplicate/stale-file safety, and file/output-directory/parent junction guards |
-| `tests/ModForge.Core.Tests/GameDataInputTests.cs` | Localized quest-node `--strings` and plugin→BSA→JSON roundtrips, metadata-driven BSA refresh, plus per-source cache-key behavior |
+| `src/ModForge.Cli/Commands/QuestNodeCmd.cs` | `questnodes` command + camelCase JSON directory writer, generated-file manifest cleanup, and pre-write symlink/reparse rejection |
+| `tests/ModForge.Core.Tests/Catalog/QuestNodeExtractionTests.cs` | Mechanical mapping, schema-facing JSON shape, fallback identity, duplicate/stale-file safety, and file/output-directory/parent junction guards |
+| `tests/ModForge.Core.Tests/Catalog/GameDataInputTests.cs` | Localized quest-node `--strings` and plugin→BSA→JSON roundtrips, metadata-driven BSA refresh, plus per-source cache-key behavior |
 | `tests/quest_node_schema_test.py` | Offline fixture validation, cross-file link checks, and invalid-shape cases |
 | `docs/spec/SPEC-quest-nodes.md` | Agent-facing usage and design notes |
 
@@ -29,8 +29,8 @@
 | Artifact | Responsibility |
 |---|---|
 | `src/ModForge.Core/StoryManagerDiagnostics.cs` | Deterministic local SMBN/SMQN parent + sibling graph checks, routed-quest/alias duplicate checks, and local LVLN alias-shape checks; external links stay unresolved |
-| `src/ModForge.Cli/Diagnostics.StoryManager.cs` | `smtree`/`smsub` probes plus `smcheck <plugin>` output and exit-code facade |
-| `tests/ModForge.Core.Tests/StoryManagerDiagnosticsTests.cs` | Clean generated/binary-roundtrip trees and synthetic orphan/cycle/duplicate/LVLN failures |
+| `src/ModForge.Cli/Diagnostics/Diagnostics.StoryManager.cs` | `smtree`/`smsub` probes plus `smcheck <plugin>` output and exit-code facade |
+| `tests/ModForge.Core.Tests/Build/StoryManagerDiagnosticsTests.cs` | Clean generated/binary-roundtrip trees and synthetic orphan/cycle/duplicate/LVLN failures |
 
 ## Examples
 
@@ -181,7 +181,7 @@
 | Const | `Generator.DialogueFragments.cs` | `SceneBanterController`/`EncounterCooldownScript`/`DynamicSpawnScript`/`IdentityController` + identity-global scriptname 常數 + `IdentityCode` |
 | Asset | `assets/papyrus/MFSceneBanterController.psc` | 可複用在場偵測 controller（extends Quest，鏈式 RegisterForSingleUpdate → Scene.Start()）；`brawlOnEnd` 偵測 scene 結束 → `StartBrawl()` 雙向 StartCombat；**重播閘門 `playOnce`（播完停 poll）/ `playHour`+tol（CurrentHour/HourDistance 時辰窗）/ `Gate` GLOB（GetValue 擋、播完 SetValue(1)）**；改 .psc 要重編 .pex（native `~/tools/papyrus-compiler` + `MODFORGE_PAPYRUS_HEADERS` 指向 cache）；embed 進 CLI |
 | Validate | `Generator.Validate.Quests.cs` | actor alias ref、scene↔quest 連結；**beat phase 需有 action 覆蓋；每 action：idle⊕package/package⊕timer 互斥、idle+timer(hold) 合法、至少一個 + actor 是 scene actor + phase 窗在範圍內（idle ref CheckRef）**；**autoStart 需 StartGameEnabled host quest + ≥2 actor + 正數調參；playHour 0..24、tol>0、gateGlobal CheckRef** |
-| Package | `src/ModForge.Cli/Package.cs` | 任一 scene 有 autoStart → 出貨 `MFSceneBanterController.pex`；**每 scene 有 idle/SetStage action → 編 `SF_<scene>.psc`（`GenerateSceneFragmentSource`）並 build 時掛 SceneAdapter VMAD** |
+| Package | `src/ModForge.Cli/Commands/Package.cs` | 任一 scene 有 autoStart → 出貨 `MFSceneBanterController.pex`；**每 scene 有 idle/SetStage action → 編 `SF_<scene>.psc`（`GenerateSceneFragmentSource`）並 build 時掛 SceneAdapter VMAD** |
 | Diag | `Diagnostics.Scene.cs` | `scenediag` actors / phases / actions dump；**`scnscan` 列舉含非對話 action 的 scene（解 §1b 演出來源）** |
 
 ---
@@ -215,7 +215,7 @@
 | Asset | `assets/papyrus/MFIdentityAutoGrant.psc` | 自動授予 trigger（**extends Quest**，OnInit + 5s poll → `Check`：`p.GetActorValue(AvNames[i]) >= Thresholds[i] && !IsInFaction → AddToFaction`，純 Papyrus 讀 AV、免 SKSE/事件 hook）；Factions[]/AvNames[]/Thresholds[] 平行；只授 faction；改 .psc 要重編 .pex；embed 進 CLI（條件式）|
 | Validate | `Generator.Validate.cs` | `RegisterIdentityFactions`（早登錄自建 FACT editorId 供 condition 解析）+ `ValidateIdentities`（unique id、非空 faction、grants/**grantPerks**/acquireBook/**activeWhen param** CheckRef、**autoGrantWhen actorValue 非空**）|
 | Validate | `Generator.Validate.Quests.cs` | dialogue 規則；**`hello:true` 招呼免 prompt**（招呼非玩家選項；其餘 dialogue 仍須 prompt）；**`setPrimaryIdentity` 須是已知 id 或 `auto`**；**`rewardItem` CheckRef**；**`persist`/`syncPerks`（dialogue + stage 共用 `ValidatePersistBlock`/`ValidateSyncPerksBlock`）：storage 非空、key 三態(`ValidatePersistKey`：speaker〔dialogue only〕/player/ref→CheckRef；stage allowSpeaker=false)、persist entry 恰一值型(int/float/str/form)、delta 限 int/float、form/perk CheckRef**；**`storageWrites`（`ValidateStorageWrites`，dialogue + stage 共用）：key 非空、恰一值型(int/float/str)、delta 限 int/float、target 三態(speaker〔dialogue only，stage allowSpeaker=false 拒，含空缺省〕/player/none/**ref→CheckRef**)、**`fromJson` 須 file+key 非空****；**M組 `variants`：parent 無 responses 時免「無回應行」、每 variant 須有 responses + emotion 合法 + 自有 conditions `CheckCondition`、`hello` 不可帶 variants**|
-| Package | `src/ModForge.Cli/Package.cs` §5d–§5g | §5d acquireBook → `MFIdentityBook.pex`；§5e `default:true` → `MFIdentityDefault.pex`；§5f primaryIdentity/setPrimaryIdentity → `MFIdentityController.pex`；§5g `autoGrantWhen` → `MFIdentityAutoGrant.pex`（皆進 Scripts/）；dialogue fragment 編譯傳 `IdentityCode` 給 `GenerateDialogueFragmentSource`|
+| Package | `src/ModForge.Cli/Commands/Package.cs` §5d–§5g | §5d acquireBook → `MFIdentityBook.pex`；§5e `default:true` → `MFIdentityDefault.pex`；§5f primaryIdentity/setPrimaryIdentity → `MFIdentityController.pex`；§5g `autoGrantWhen` → `MFIdentityAutoGrant.pex`（皆進 Scripts/）；dialogue fragment 編譯傳 `IdentityCode` 給 `GenerateDialogueFragmentSource`|
 
 **Phase-2/C 進度**：✅ #1 Adventurer 預設自動授予、✅ #2 `activeWhen` 情境條件、✅ #4 controller 主身份+手動覆寫、✅ #5 身份對應互動 **#5a 商人交易 UI（`openBarter`）+ #5b 護衛/跟隨任務（`identity`-gated escort quest，follow PACK gated on GetStage、`rewardItem`/`evaluateSpeakerPackages` TIF）+ #5c 聖騎士 smite 細調（`grantPerks` → `MF_SmiteEvilPerk` ModAttackDamage ×1.25 vs undead/daedra）+ 龍裔首吼（`autoGrantWhen` → MFIdentityAutoGrant，DragonSouls≥1）**（皆 in-game 確認 2026-06-07）。**未做**：#3 聲望/行為追蹤。
 

@@ -15,8 +15,8 @@
 ### Task 1: Manifest model + entry builder + filename FormKey parse (the testable core)
 
 **Files:**
-- Create: `src/ModForge.Core/Voice.Annotate.cs`
-- Test: `tests/ModForge.Core.Tests/VoiceAnnotateTests.cs`
+- Create: `src/ModForge.Core/Voice/Voice.Annotate.cs`
+- Test: `tests/ModForge.Core.Tests/Voice/VoiceAnnotateTests.cs`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -68,7 +68,7 @@ public class VoiceAnnotateTests
 
 Run: `dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj --filter "FullyQualifiedName~VoiceAnnotateTests"`
 
-- [ ] **Step 3: Implement** — create `src/ModForge.Core/Voice.Annotate.cs`:
+- [ ] **Step 3: Implement** — create `src/ModForge.Core/Voice/Voice.Annotate.cs`:
 
 ```csharp
 using System;
@@ -139,7 +139,7 @@ public static class VoiceAnnotate
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/Voice.Annotate.cs tests/ModForge.Core.Tests/VoiceAnnotateTests.cs
+git add src/ModForge.Core/Voice/Voice.Annotate.cs tests/ModForge.Core.Tests/Voice/VoiceAnnotateTests.cs
 git commit -m "feat(voice): annotation manifest model + INFO-emotion entry builder + filename FormKey parse" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -149,7 +149,7 @@ git commit -m "feat(voice): annotation manifest model + INFO-emotion entry build
 
 **Files:**
 - Modify: `src/ModForge.Cli/Program.cs` (register the command + help)
-- Modify: `src/ModForge.Cli/Program.Build.Voice.cs` (the command body, beside `ExtractVoicesCmd`)
+- Modify: `src/ModForge.Cli/Commands/Program.Build.Voice.cs` (the command body, beside `ExtractVoicesCmd`)
 
 - [ ] **Step 1: Register the command** in `Program.cs`. Beside the `extract-voices` case (search `case "extract-voices"`), add:
 ```csharp
@@ -227,7 +227,7 @@ Then (integration, needs the user's machine): `dotnet run --project src/ModForge
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/ModForge.Cli/Program.cs src/ModForge.Cli/Program.Build.Voice.cs
+git add src/ModForge.Cli/Program.cs src/ModForge.Cli/Commands/Program.Build.Voice.cs
 git commit -m "feat(voice): voice-annotate CLI — extract clips + write emotion manifest" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 

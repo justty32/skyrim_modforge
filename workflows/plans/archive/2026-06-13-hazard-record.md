@@ -15,11 +15,11 @@
 ### Task 1: HazardSpec + BuildHazards + WireHazards
 
 **Files:**
-- Create: `src/ModForge.Core/Spec.Hazards.cs`
-- Modify: `src/ModForge.Core/Spec.cs` (add `Hazards` list to `ModSpec`)
-- Create: `src/ModForge.Core/Generator.Build.Hazards.cs`
-- Modify: `src/ModForge.Core/Generator.Build.cs` (call both passes)
-- Test: `tests/ModForge.Core.Tests/HazardTests.cs`
+- Create: `src/ModForge.Core/Spec/Spec.Hazards.cs`
+- Modify: `src/ModForge.Core/Spec/Spec.cs` (add `Hazards` list to `ModSpec`)
+- Create: `src/ModForge.Core/Build/Generator.Build.Hazards.cs`
+- Modify: `src/ModForge.Core/Build/Generator.Build.cs` (call both passes)
+- Test: `tests/ModForge.Core.Tests/Build/HazardTests.cs`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -66,7 +66,7 @@ public class HazardTests
 Run: `dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj --filter "FullyQualifiedName~HazardTests"`
 Expected: compile error — `HazardSpec` / `ModSpec.Hazards` don't exist.
 
-- [ ] **Step 3: Add the spec type** — create `src/ModForge.Core/Spec.Hazards.cs`:
+- [ ] **Step 3: Add the spec type** — create `src/ModForge.Core/Spec/Spec.Hazards.cs`:
 
 ```csharp
 using System.Collections.Generic;
@@ -101,7 +101,7 @@ Add to `ModSpec` in `Spec.cs` (next to the other record lists, e.g. after `Explo
     public List<HazardSpec> Hazards { get; set; } = new();
 ```
 
-- [ ] **Step 4: Add the builder** — create `src/ModForge.Core/Generator.Build.Hazards.cs`:
+- [ ] **Step 4: Add the builder** — create `src/ModForge.Core/Build/Generator.Build.Hazards.cs`:
 
 ```csharp
 namespace ModForge;
@@ -168,7 +168,7 @@ Expected: PASS.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/ModForge.Core/Spec.Hazards.cs src/ModForge.Core/Spec.cs src/ModForge.Core/Generator.Build.Hazards.cs src/ModForge.Core/Generator.Build.cs tests/ModForge.Core.Tests/HazardTests.cs
+git add src/ModForge.Core/Spec/Spec.Hazards.cs src/ModForge.Core/Spec/Spec.cs src/ModForge.Core/Build/Generator.Build.Hazards.cs src/ModForge.Core/Build/Generator.Build.cs tests/ModForge.Core.Tests/Build/HazardTests.cs
 git commit -m "feat(magic): Hazard (HAZD) record — scalar/model/flags + pass-2 spell/light/sound/imad wiring" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -179,7 +179,7 @@ git commit -m "feat(magic): Hazard (HAZD) record — scalar/model/flags + pass-2
 This reuses the existing MGEF archetype/association wiring — the only "new" thing is proving a HAZD is a valid `association` target. No production code beyond Task 1.
 
 **Files:**
-- Test: `tests/ModForge.Core.Tests/HazardTests.cs` (add a case)
+- Test: `tests/ModForge.Core.Tests/Build/HazardTests.cs` (add a case)
 
 - [ ] **Step 1: Write the failing test** (append to the class)
 
@@ -210,7 +210,7 @@ Expected: PASS already (Task 1 makes the HAZD resolvable; `Generator.Build.Magic
 - [ ] **Step 3: Commit**
 
 ```bash
-git add tests/ModForge.Core.Tests/HazardTests.cs
+git add tests/ModForge.Core.Tests/Build/HazardTests.cs
 git commit -m "test(magic): SpawnHazard magic-effect associates a HAZD (spell-spawn path)" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -219,8 +219,8 @@ git commit -m "test(magic): SpawnHazard magic-effect associates a HAZD (spell-sp
 ### Task 3: PlacedHazard placement
 
 **Files:**
-- Modify: `src/ModForge.Core/Generator.Build.Placements.cs`
-- Test: `tests/ModForge.Core.Tests/HazardTests.cs` (add a case)
+- Modify: `src/ModForge.Core/Build/Generator.Build.Placements.cs`
+- Test: `tests/ModForge.Core.Tests/Build/HazardTests.cs` (add a case)
 
 - [ ] **Step 1: Write the failing test** (append)
 
@@ -269,7 +269,7 @@ Run: `dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj --filter 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/Generator.Build.Placements.cs tests/ModForge.Core.Tests/HazardTests.cs
+git add src/ModForge.Core/Build/Generator.Build.Placements.cs tests/ModForge.Core.Tests/Build/HazardTests.cs
 git commit -m "feat(world): place a hazard base as a PlacedHazard (static trap)" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -278,9 +278,9 @@ git commit -m "feat(world): place a hazard base as a PlacedHazard (static trap)"
 ### Task 4: Validation
 
 **Files:**
-- Modify: `src/ModForge.Core/Generator.Validate.cs` (register hazard editorIds + call ValidateHazards)
-- Modify: `src/ModForge.Core/Generator.Validate.MagicFx.cs` (ValidateHazards)
-- Test: `tests/ModForge.Core.Tests/HazardTests.cs` (add a case)
+- Modify: `src/ModForge.Core/Validate/Generator.Validate.cs` (register hazard editorIds + call ValidateHazards)
+- Modify: `src/ModForge.Core/Validate/Generator.Validate.MagicFx.cs` (ValidateHazards)
+- Test: `tests/ModForge.Core.Tests/Build/HazardTests.cs` (add a case)
 
 - [ ] **Step 1: Write the failing test** (append)
 
@@ -339,7 +339,7 @@ And in the orchestration list (after `ctx.ValidateExplosions();`, ~line 28) add:
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/ModForge.Core/Generator.Validate.cs src/ModForge.Core/Generator.Validate.MagicFx.cs tests/ModForge.Core.Tests/HazardTests.cs
+git add src/ModForge.Core/Validate/Generator.Validate.cs src/ModForge.Core/Validate/Generator.Validate.MagicFx.cs tests/ModForge.Core.Tests/Build/HazardTests.cs
 git commit -m "feat(magic): validate hazards (model/spell warnings, ref + flag checks)" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 

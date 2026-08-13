@@ -20,10 +20,10 @@
 ### Task 1: A — objective targets spec + QSTA wiring
 
 **Files:**
-- Modify: `src/ModForge.Core/Spec.Dialogue.cs` (ObjectiveSpec + new ObjectiveTargetSpec)
-- Create: `src/ModForge.Core/Generator.Build.ObjectiveTargets.cs`
-- Modify: `src/ModForge.Core/Generator.Build.cs` (call the new pass)
-- Test: `tests/ModForge.Core.Tests/ObjectiveTargetTests.cs`
+- Modify: `src/ModForge.Core/Spec/Spec.Dialogue.cs` (ObjectiveSpec + new ObjectiveTargetSpec)
+- Create: `src/ModForge.Core/Build/Generator.Build.ObjectiveTargets.cs`
+- Modify: `src/ModForge.Core/Build/Generator.Build.cs` (call the new pass)
+- Test: `tests/ModForge.Core.Tests/Build/ObjectiveTargetTests.cs`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -86,7 +86,7 @@ public class ObjectiveTargetTests
 Run: `dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj --filter "FullyQualifiedName~ObjectiveTargetTests"`
 Expected: compile error / FAIL — `ObjectiveSpec.Targets` and `ObjectiveTargetSpec` don't exist.
 
-- [ ] **Step 3: Add the spec types** in `src/ModForge.Core/Spec.Dialogue.cs`
+- [ ] **Step 3: Add the spec types** in `src/ModForge.Core/Spec/Spec.Dialogue.cs`
 
 Add to `ObjectiveSpec` (after `CompleteStage`):
 ```csharp
@@ -111,7 +111,7 @@ public sealed class ObjectiveTargetSpec
 }
 ```
 
-- [ ] **Step 4: Add the build pass** — create `src/ModForge.Core/Generator.Build.ObjectiveTargets.cs`
+- [ ] **Step 4: Add the build pass** — create `src/ModForge.Core/Build/Generator.Build.ObjectiveTargets.cs`
 
 ```csharp
 using System;
@@ -162,7 +162,7 @@ public static partial class Generator
 }
 ```
 
-- [ ] **Step 5: Call the pass** in `src/ModForge.Core/Generator.Build.cs` — add right after the `WireQuestStages();` line (~121):
+- [ ] **Step 5: Call the pass** in `src/ModForge.Core/Build/Generator.Build.cs` — add right after the `WireQuestStages();` line (~121):
 ```csharp
         ctx.WireObjectiveTargets();                // QOBJ QSTA targets (alias index + flag + CTDA) — after aliases exist
 ```
@@ -175,7 +175,7 @@ Expected: PASS.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/ModForge.Core/Spec.Dialogue.cs src/ModForge.Core/Generator.Build.ObjectiveTargets.cs src/ModForge.Core/Generator.Build.cs tests/ModForge.Core.Tests/ObjectiveTargetTests.cs
+git add src/ModForge.Core/Spec/Spec.Dialogue.cs src/ModForge.Core/Build/Generator.Build.ObjectiveTargets.cs src/ModForge.Core/Build/Generator.Build.cs tests/ModForge.Core.Tests/Build/ObjectiveTargetTests.cs
 git commit -m "feat(quest): objective QSTA targets (alias marker + compass flag + CTDA)" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -184,8 +184,8 @@ git commit -m "feat(quest): objective QSTA targets (alias marker + compass flag 
 ### Task 2: A — objective target validation
 
 **Files:**
-- Modify: `src/ModForge.Core/Generator.Validate.Quests.cs`
-- Test: `tests/ModForge.Core.Tests/ObjectiveTargetTests.cs` (add a case)
+- Modify: `src/ModForge.Core/Validate/Generator.Validate.Quests.cs`
+- Test: `tests/ModForge.Core.Tests/Build/ObjectiveTargetTests.cs` (add a case)
 
 - [ ] **Step 1: Write the failing test** (append to the class)
 
@@ -235,7 +235,7 @@ Expected: FAIL on the new case.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/Generator.Validate.Quests.cs tests/ModForge.Core.Tests/ObjectiveTargetTests.cs
+git add src/ModForge.Core/Validate/Generator.Validate.Quests.cs tests/ModForge.Core.Tests/Build/ObjectiveTargetTests.cs
 git commit -m "feat(quest): validate objective target alias exists on the quest" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -244,9 +244,9 @@ git commit -m "feat(quest): validate objective target alias exists on the quest"
 ### Task 3: B — xmarker / xmarkerHeading placement kind
 
 **Files:**
-- Modify: `src/ModForge.Core/Generator.Build.Placements.cs`
-- Modify: `src/ModForge.Core/Spec.World.cs` (doc the new `kind` values on `PlacementSpec.Kind`)
-- Test: `tests/ModForge.Core.Tests/XMarkerKindTests.cs`
+- Modify: `src/ModForge.Core/Build/Generator.Build.Placements.cs`
+- Modify: `src/ModForge.Core/Spec/Spec.World.cs` (doc the new `kind` values on `PlacementSpec.Kind`)
+- Test: `tests/ModForge.Core.Tests/Build/XMarkerKindTests.cs`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -318,7 +318,7 @@ Then change the resolve call to use `baseRef`:
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/ModForge.Core/Generator.Build.Placements.cs src/ModForge.Core/Spec.World.cs tests/ModForge.Core.Tests/XMarkerKindTests.cs
+git add src/ModForge.Core/Build/Generator.Build.Placements.cs src/ModForge.Core/Spec/Spec.World.cs tests/ModForge.Core.Tests/Build/XMarkerKindTests.cs
 git commit -m "feat(world): xmarker/xmarkerHeading placement kind (auto base + persistent anchor)" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -327,11 +327,11 @@ git commit -m "feat(world): xmarker/xmarkerHeading placement kind (auto base + p
 ### Task 4: C — mapMarkers spec + build
 
 **Files:**
-- Create: `src/ModForge.Core/Spec.MapMarkers.cs` (MapMarkerSpec) — or add to `Spec.World.cs` if it stays under 300 lines
-- Modify: `src/ModForge.Core/Spec.cs` (ModSpec.MapMarkers list)
-- Create: `src/ModForge.Core/Generator.Build.MapMarkers.cs`
-- Modify: `src/ModForge.Core/Generator.Build.cs` (call the pass)
-- Test: `tests/ModForge.Core.Tests/MapMarkerTests.cs`
+- Create: `src/ModForge.Core/Spec/Spec.MapMarkers.cs` (MapMarkerSpec) — or add to `Spec.World.cs` if it stays under 300 lines
+- Modify: `src/ModForge.Core/Spec/Spec.cs` (ModSpec.MapMarkers list)
+- Create: `src/ModForge.Core/Build/Generator.Build.MapMarkers.cs`
+- Modify: `src/ModForge.Core/Build/Generator.Build.cs` (call the pass)
+- Test: `tests/ModForge.Core.Tests/Build/MapMarkerTests.cs`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -375,7 +375,7 @@ public class MapMarkerTests
 
 Run: `dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj --filter "FullyQualifiedName~MapMarkerTests"`
 
-- [ ] **Step 3: Add the spec type** — create `src/ModForge.Core/Spec.MapMarkers.cs`:
+- [ ] **Step 3: Add the spec type** — create `src/ModForge.Core/Spec/Spec.MapMarkers.cs`:
 
 ```csharp
 using System.Collections.Generic;
@@ -403,7 +403,7 @@ Add to `ModSpec` in `Spec.cs`:
     public List<MapMarkerSpec> MapMarkers { get; set; } = new();
 ```
 
-- [ ] **Step 4: Add the build pass** — create `src/ModForge.Core/Generator.Build.MapMarkers.cs`:
+- [ ] **Step 4: Add the build pass** — create `src/ModForge.Core/Build/Generator.Build.MapMarkers.cs`:
 
 ```csharp
 using System;
@@ -473,7 +473,7 @@ public static partial class Generator
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/ModForge.Core/Spec.MapMarkers.cs src/ModForge.Core/Spec.cs src/ModForge.Core/Generator.Build.MapMarkers.cs src/ModForge.Core/Generator.Build.cs tests/ModForge.Core.Tests/MapMarkerTests.cs
+git add src/ModForge.Core/Spec/Spec.MapMarkers.cs src/ModForge.Core/Spec/Spec.cs src/ModForge.Core/Build/Generator.Build.MapMarkers.cs src/ModForge.Core/Build/Generator.Build.cs tests/ModForge.Core.Tests/Build/MapMarkerTests.cs
 git commit -m "feat(world): mapMarkers[] — world-map markers (XMRK) on the MapMarker static" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -482,8 +482,8 @@ git commit -m "feat(world): mapMarkers[] — world-map markers (XMRK) on the Map
 ### Task 5: C — mapMarker validation
 
 **Files:**
-- Modify: `src/ModForge.Core/Generator.Validate.World.cs` (or `Generator.Validate.World2.cs` — whichever holds placement/worldspace checks)
-- Test: `tests/ModForge.Core.Tests/MapMarkerTests.cs` (add a case)
+- Modify: `src/ModForge.Core/Validate/Generator.Validate.World.cs` (or `Generator.Validate.World2.cs` — whichever holds placement/worldspace checks)
+- Test: `tests/ModForge.Core.Tests/Build/MapMarkerTests.cs` (add a case)
 
 - [ ] **Step 1: Write the failing test**
 
@@ -529,7 +529,7 @@ Run: `dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj --filter 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/Generator.Validate.World.cs tests/ModForge.Core.Tests/MapMarkerTests.cs
+git add src/ModForge.Core/Validate/Generator.Validate.World.cs tests/ModForge.Core.Tests/Build/MapMarkerTests.cs
 git commit -m "feat(world): validate mapMarker type + flags" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 

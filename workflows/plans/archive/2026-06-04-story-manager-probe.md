@@ -16,7 +16,7 @@
 
 - `src/ModForge.Core/StoryManagerProbe.cs` — **新檔**。純 builder：`public static SkyrimMod BuildProbe(FormKey killActorEventRoot, ...)`。無 I/O，回傳記憶體中的 `SkyrimMod`，方便測試。
 - `tests/ModForge.Core.Tests/StoryManagerProbeTests.cs` — **新檔**。結構斷言（不需 Skyrim.esm）。
-- `src/ModForge.Cli/Diagnostics.StoryManager.cs` — **新檔**。`smtree`（decode）+ `smprobe`（寫 esp）兩個 partial method。
+- `src/ModForge.Cli/Diagnostics/Diagnostics.StoryManager.cs` — **新檔**。`smtree`（decode）+ `smprobe`（寫 esp）兩個 partial method。
 - `src/ModForge.Cli/Program.cs` — **改**。dispatch switch 加兩個 case + Usage 兩行。
 
 ---
@@ -219,7 +219,7 @@ git commit -m "test(core): pin SM probe PNAM linkage (branch→vanilla root, qno
 ## Task 3: CLI `smtree` — decode Skyrim.esm 找 Kill Actor SMEN
 
 **Files:**
-- Create: `src/ModForge.Cli/Diagnostics.StoryManager.cs`
+- Create: `src/ModForge.Cli/Diagnostics/Diagnostics.StoryManager.cs`
 - Modify: `src/ModForge.Cli/Program.cs`（dispatch + Usage）
 
 無單元測試（需真 Skyrim.esm，屬環境相依，比照現有 `*diag` 指令——由使用者手動跑）。
@@ -279,7 +279,7 @@ Expected: 印出一串 SMEN。記下 Kill Actor 那個的 **FormKey** 與 **Type
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Cli/Diagnostics.StoryManager.cs src/ModForge.Cli/Program.cs
+git add src/ModForge.Cli/Diagnostics/Diagnostics.StoryManager.cs src/ModForge.Cli/Program.cs
 git commit -m "feat(cli): smtree — decode Skyrim.esm Story Manager event roots"
 ```
 
@@ -288,7 +288,7 @@ git commit -m "feat(cli): smtree — decode Skyrim.esm Story Manager event roots
 ## Task 4: CLI `smprobe` — 寫出探針 esp
 
 **Files:**
-- Modify: `src/ModForge.Cli/Diagnostics.StoryManager.cs`
+- Modify: `src/ModForge.Cli/Diagnostics/Diagnostics.StoryManager.cs`
 - Modify: `src/ModForge.Cli/Program.cs`（dispatch + Usage）
 
 - [ ] **Step 1: 寫 `smprobe` 指令**
@@ -331,7 +331,7 @@ Expected: 印 `wrote ...`。用 `dotnet run --project src/ModForge.Cli -- dump /
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Cli/Diagnostics.StoryManager.cs src/ModForge.Cli/Program.cs
+git add src/ModForge.Cli/Diagnostics/Diagnostics.StoryManager.cs src/ModForge.Cli/Program.cs
 git commit -m "feat(cli): smprobe — emit Story Manager probe plugin"
 ```
 

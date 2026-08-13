@@ -19,7 +19,7 @@
 
 **前置閱讀（CODE_MAP）:**
 - `workflows/common/code-map/CODE_MAP.infra.md`：`Spec.cs`（ModSpec 頂層）、`Program.Build.cs`/`Package.cs`（package 流程、loose-file 階段、`WriteSeq`）、`Assets.cs`（`Bundle`/`BundledFolders`/`CopyTree`）、`Generator.Validate.cs`。
-- `src/ModForge.Core/Spec.Dialogue.cs:205`（`ConditionSpec` 形狀參考）、`src/ModForge.Core/Generator.Build.Conditions.cs`（CTDA function 詞彙 + comparison-operator 解析，供借鏡）。
+- `src/ModForge.Core/Spec/Spec.Dialogue.cs:205`（`ConditionSpec` 形狀參考）、`src/ModForge.Core/Build/Generator.Build.Conditions.cs`（CTDA function 詞彙 + comparison-operator 解析，供借鏡）。
 
 **測試指令（全程）:** `dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj`
 已知環境性失敗（非 regression）：缺本機 Skyrim.esm 的 `RequiresSkyrim` 案例自跳過 / 個別 word-wall 測試。
@@ -43,7 +43,7 @@
 
 ## Task 1: Spec DTO（`Spec.AnimationReplacer.cs` 新檔）
 
-**Files:** 新增 `src/ModForge.Core/Spec.AnimationReplacer.cs`；改 `src/ModForge.Core/Spec.cs`（ModSpec 加三個 list 欄位）。
+**Files:** 新增 `src/ModForge.Core/Spec/Spec.AnimationReplacer.cs`；改 `src/ModForge.Core/Spec/Spec.cs`（ModSpec 加三個 list 欄位）。
 
 - [ ] **Step 1:** ModSpec 加 `List<AnimationReplacerSpec> AnimationReplacers`、`List<BehaviorDataSpec> BehaviorData`、`List<PayloadMacroSpec> PayloadMacros`（皆 `= new()`）。
 - [ ] **Step 2:** 定義 DTO：
@@ -61,7 +61,7 @@
 
 ## Task 2: OAR 條件序列化器 + npcMoveset 展開（`OarConditions.cs` 新檔，純函式核心）
 
-**Files:** 新增 `src/ModForge.Core/OarConditions.cs`。
+**Files:** 新增 `src/ModForge.Core/Papyrus/OarConditions.cs`。
 
 - [ ] **Step 1: 武器型 enum** — `static int WeaponType(string name)`：`fist`=0 `sword`=1 `dagger`=2 `waraxe`=3 `mace`=4 `greatsword`=5 `battleaxe`/`warhammer`=6 `bow`=7 `staff`=8 `crossbow`=9 `shield`=11 `torch`=12（來源 findings 的 enum 表）。未知名 → throw（validate 會先擋）。
 - [ ] **Step 2: `OarConditionSpec` → `JsonNode`** — `static JsonObject Emit(OarConditionSpec c)`：
@@ -74,7 +74,7 @@
   - `CompareValues` → `"Value A":{graphVariable,graphVariableType}`,`"Comparison"`,`"Value B":{value}`。
   - 容器 `AND`/`OR` → `"Conditions":[ Emit(子)… ]`。
 - [ ] **Step 3: `NpcMovesetSpec` → `List<OarConditionSpec>`** — `static List<OarConditionSpec> Expand(NpcMovesetSpec m)`：右/左武器各一條 `IsEquippedType`；`PlayerOnly==false` → 一條 `IsActorBase negated Skyrim.esm|0x7`；`Race` 非空 → `IsRace`；`RandomPick` 有值 → `Random{0..1} < RandomPick`。全部包進一個 `AND` 容器（鏡像 Holmgang 實檔）。
-- [ ] **Step 4: 單元測試** `tests/ModForge.Core.Tests/OarConditionsTests.cs`：每種條件 emit 出的 JSON 形狀逐欄比對（拿 findings 的真實片段當 golden，如 Holmgang「Sword & Shield」與 BFCO 變體 CompareValues）；`Expand` 對「sword+shield, NPC-only」產出三條的 AND 束。
+- [ ] **Step 4: 單元測試** `tests/ModForge.Core.Tests/Papyrus/OarConditionsTests.cs`：每種條件 emit 出的 JSON 形狀逐欄比對（拿 findings 的真實片段當 golden，如 Holmgang「Sword & Shield」與 BFCO 變體 CompareValues）；`Expand` 對「sword+shield, NPC-only」產出三條的 AND 束。
 
 **驗證:** 測試綠燈；golden JSON 與實檔片段逐欄相符。
 
@@ -82,7 +82,7 @@
 
 ## Task 3: OAR 資料夾/config 產生器（`OarGen.cs` 新檔，純函式核心）
 
-**Files:** 新增 `src/ModForge.Core/OarGen.cs`。
+**Files:** 新增 `src/ModForge.Core/Papyrus/OarGen.cs`。
 
 - [ ] **Step 1: `record OarFile(string RelPath, string Content)`** + `static List<OarFile> Generate(AnimationReplacerSpec r)`：
   - root config：`Meshes/actors/character/animations/OpenAnimationReplacer/<Mod>/config.json` = `{name,author,description}`（**無 priority/conditions**）。
@@ -97,7 +97,7 @@
 
 ## Task 4: BDI config 產生器（`BdiGen.cs` 新檔）
 
-**Files:** 新增 `src/ModForge.Core/BdiGen.cs`。
+**Files:** 新增 `src/ModForge.Core/Papyrus/BdiGen.cs`。
 
 - [ ] **Step 1: `static OarFile Generate(BehaviorDataSpec b)`** → `SKSE/Plugins/BehaviorDataInjector/<File>.json`，內容為 flat JSON array：每 entry `{projectPath,type,name,value}`，`type∈kInt|kBool|kFloat|kEvent`，**`kEvent` 省 `value`**。
 - [ ] **Step 2: 測試** `BdiGenTests.cs`：拿 findings 驗證過的 DMK `DirecionalMovement_BDI.json` / BFCO `BFCO_BDI.json` 當 golden，逐欄比對（含 kEvent 無 value）。
@@ -108,7 +108,7 @@
 
 ## Task 5: 驗證（`Generator.Validate.AnimationReplacer.cs` 新檔）
 
-**Files:** 新增 `src/ModForge.Core/Generator.Validate.AnimationReplacer.cs`；在 `Generator.Validate.cs` 的 `RegisterAll` 掛入。
+**Files:** 新增 `src/ModForge.Core/Validate/Generator.Validate.AnimationReplacer.cs`；在 `Generator.Validate.cs` 的 `RegisterAll` 掛入。
 
 - [ ] **Step 1:** 校驗：submod `Priority` 必填且 >0；`Condition` 名在 MVP 白名單內；`IsEquippedType`/`npcMoveset` 的武器名是 `WeaponType` 認得的；`Form`/`Race` 是合法 `Plugin.esp|0xID`；BDI `Type` 在四值內、event 不帶 value。
 - [ ] **Step 2:** `.hkx`/variants 檔案存在性檢查（相對 `spec.Assets`/spec dir）；缺檔 → warning（不擋 build，因離線機可能無資產，鏡像既有 asset 寬鬆度）。
@@ -120,7 +120,7 @@
 
 ## Task 6: 接進 package + CLI（loose-file 階段）
 
-**Files:** 改 `src/ModForge.Cli/Package.cs`；可能 `src/ModForge.Cli/Program.Build.cs`。
+**Files:** 改 `src/ModForge.Cli/Commands/Package.cs`；可能 `src/ModForge.Cli/Commands/Program.Build.cs`。
 
 - [ ] **Step 1:** 在 Package.cs 的 asset/loose-file 階段（§6 `Assets.Bundle` 之後）呼叫 `OarGen.Generate`/`BdiGen.Generate`，把 `OarFile.Content` 寫進 `outModDir/<RelPath>`，並把 `.hkx` 依 `HkxPlacements` 從來源複製到 `outModDir`。鏡像 `WriteSeq` 的寫法。
 - [ ] **Step 2:** package summary 末尾報告：「N OAR submod(s) / M BDI config(s) / K hkx placed」。

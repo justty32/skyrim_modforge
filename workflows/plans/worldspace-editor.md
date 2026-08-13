@@ -34,7 +34,7 @@ Expected: 確認 `using SixLabors.ImageSharp;` + `Image.Load<L16>(path)`、像�
 
 **Files:**
 - Modify: `src/ModForge.Core/ModForge.Core.csproj`
-- Modify: `src/ModForge.Core/Spec.Worldspace.cs`（在 `WorldspaceSpec` 後新增類別 + 一個欄位）
+- Modify: `src/ModForge.Core/Spec/Spec.Worldspace.cs`（在 `WorldspaceSpec` 後新增類別 + 一個欄位）
 
 - [ ] **Step 1: 加 ImageSharp PackageReference**
 
@@ -85,7 +85,7 @@ Expected: build succeeded。
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/ModForge.Core.csproj src/ModForge.Core/Spec.Worldspace.cs
+git add src/ModForge.Core/ModForge.Core.csproj src/ModForge.Core/Spec/Spec.Worldspace.cs
 git commit -m "feat(worldspace): add HeightmapSpec schema + ImageSharp dep"
 ```
 
@@ -94,12 +94,12 @@ git commit -m "feat(worldspace): add HeightmapSpec schema + ImageSharp dep"
 ### Task 2: 純函式 VHGT 編解碼器
 
 **Files:**
-- Create: `src/ModForge.Core/Vhgt.cs`
-- Test: `tests/ModForge.Core.Tests/VhgtTests.cs`
+- Create: `src/ModForge.Core/Formats/Vhgt.cs`
+- Test: `tests/ModForge.Core.Tests/Formats/VhgtTests.cs`
 
 - [ ] **Step 1: 寫失敗測試**
 
-`tests/ModForge.Core.Tests/VhgtTests.cs`：
+`tests/ModForge.Core.Tests/Formats/VhgtTests.cs`：
 
 ```csharp
 using ModForge;
@@ -162,7 +162,7 @@ Expected: FAIL（`Vhgt` 不存在 / 編譯不過）。
 
 - [ ] **Step 3: 寫實作**
 
-`src/ModForge.Core/Vhgt.cs`：
+`src/ModForge.Core/Formats/Vhgt.cs`：
 
 ```csharp
 using Noggog;
@@ -253,7 +253,7 @@ Expected: PASS（3 個）。若 round-trip 方向錯（誤差爆大），把 `de
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/Vhgt.cs tests/ModForge.Core.Tests/VhgtTests.cs
+git add src/ModForge.Core/Formats/Vhgt.cs tests/ModForge.Core.Tests/Formats/VhgtTests.cs
 git commit -m "feat(worldspace): VHGT signed-delta encode/decode (pure, row-wise)"
 ```
 
@@ -262,12 +262,12 @@ git commit -m "feat(worldspace): VHGT signed-delta encode/decode (pure, row-wise
 ### Task 3: PNG 載入 + cell grid 衍生 + 採樣
 
 **Files:**
-- Create: `src/ModForge.Core/Heightmap.cs`
-- Test: `tests/ModForge.Core.Tests/HeightmapTests.cs`
+- Create: `src/ModForge.Core/Formats/Heightmap.cs`
+- Test: `tests/ModForge.Core.Tests/Formats/HeightmapTests.cs`
 
 - [ ] **Step 1: 寫失敗測試**
 
-`tests/ModForge.Core.Tests/HeightmapTests.cs`：
+`tests/ModForge.Core.Tests/Formats/HeightmapTests.cs`：
 
 ```csharp
 using SixLabors.ImageSharp;
@@ -347,7 +347,7 @@ Expected: FAIL（`Heightmap` 不存在）。
 
 - [ ] **Step 3: 寫實作**
 
-`src/ModForge.Core/Heightmap.cs`：
+`src/ModForge.Core/Formats/Heightmap.cs`：
 
 ```csharp
 using SixLabors.ImageSharp;
@@ -427,7 +427,7 @@ Expected: PASS（3 個）。
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/Heightmap.cs tests/ModForge.Core.Tests/HeightmapTests.cs
+git add src/ModForge.Core/Formats/Heightmap.cs tests/ModForge.Core.Tests/Formats/HeightmapTests.cs
 git commit -m "feat(worldspace): PNG heightmap load + cell-grid sampling (seam-aligned)"
 ```
 
@@ -436,12 +436,12 @@ git commit -m "feat(worldspace): PNG heightmap load + cell-grid sampling (seam-a
 ### Task 4: 接進 BuildWorldspaces（heightmap 分支）
 
 **Files:**
-- Modify: `src/ModForge.Core/Generator.Build.Worldspace.cs`（`BuildWorldspaces` 內的 cell 迴圈）
-- Test: `tests/ModForge.Core.Tests/WorldspaceHeightmapTests.cs`
+- Modify: `src/ModForge.Core/Build/Generator.Build.Worldspace.cs`（`BuildWorldspaces` 內的 cell 迴圈）
+- Test: `tests/ModForge.Core.Tests/Build/WorldspaceHeightmapTests.cs`
 
 - [ ] **Step 1: 寫失敗測試**
 
-`tests/ModForge.Core.Tests/WorldspaceHeightmapTests.cs`：
+`tests/ModForge.Core.Tests/Build/WorldspaceHeightmapTests.cs`：
 
 ```csharp
 using System.Linq;
@@ -616,7 +616,7 @@ Expected: FAIL（heightmap 分支未實作 → 衍生 0 格 cell）。
 
 **注意 `SpecDir`**：`Heightmap.Load` 需 spec 檔所在目錄解析相對 PNG 路徑。確認 `BuildWorldspaces` 能拿到——若 `Generator.Build` 已有 spec 路徑欄位（grep `SpecDir`/`specPath`），用之；若無，最小改動：給 `Generator.Build` 加一個可選 `string specDir = ""` 參數並透傳到 `BuildWorldspaces`，測試用絕對 PNG 路徑（已是絕對）故 `specDir` 傳 `""` 也能過。**先 grep 確認**：
 
-Run: `grep -rn "SpecDir\|specDir\|specPath" src/ModForge.Core/Generator.cs src/ModForge.Core/Generator.Build.cs 2>/dev/null`
+Run: `grep -rn "SpecDir\|specDir\|specPath" src/ModForge.Core/Generator.cs src/ModForge.Core/Build/Generator.Build.cs 2>/dev/null`
 若無 → 在 `BuildWorldspaces` 簽章與 `Generator.Build` 加 `string specDir`，`Heightmap.Load(hmSpec, specDir)`。
 
 - [ ] **Step 4: 跑測試確認通過**
@@ -632,7 +632,7 @@ Expected: 全 PASS（含原 WorldspaceRegionTests 不受影響）。
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/ModForge.Core/Generator.Build.Worldspace.cs tests/ModForge.Core.Tests/WorldspaceHeightmapTests.cs
+git add src/ModForge.Core/Build/Generator.Build.Worldspace.cs tests/ModForge.Core.Tests/Build/WorldspaceHeightmapTests.cs
 git commit -m "feat(worldspace): build non-flat LAND from heightmap (cell-grid derive + VHGT)"
 ```
 
@@ -641,8 +641,8 @@ git commit -m "feat(worldspace): build non-flat LAND from heightmap (cell-grid d
 ### Task 5: 驗證（Generator.Validate）
 
 **Files:**
-- Modify: `src/ModForge.Core/Generator.Validate.World.cs`（worldspace 迴圈內）
-- Test: 追加到 `tests/ModForge.Core.Tests/WorldspaceHeightmapTests.cs`
+- Modify: `src/ModForge.Core/Validate/Generator.Validate.World.cs`（worldspace 迴圈內）
+- Test: 追加到 `tests/ModForge.Core.Tests/Build/WorldspaceHeightmapTests.cs`
 
 - [ ] **Step 1: 寫失敗測試（追加）**
 
@@ -710,7 +710,7 @@ Expected: 全 PASS（6 個）。
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/Generator.Validate.World.cs tests/ModForge.Core.Tests/WorldspaceHeightmapTests.cs
+git add src/ModForge.Core/Validate/Generator.Validate.World.cs tests/ModForge.Core.Tests/Build/WorldspaceHeightmapTests.cs
 git commit -m "feat(worldspace): validate heightmap spec (path, min<max, esl)"
 ```
 

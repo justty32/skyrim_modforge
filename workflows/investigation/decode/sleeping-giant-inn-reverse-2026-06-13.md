@@ -40,7 +40,7 @@ counter, tables, benches, chairs, beds, barrels, food, bottles, etc.
 ## The `cellrefs` diagnostic (new)
 
 There was no command to dump a cell's placed objects (`cellblk` only prints the block location). Added
-`cellrefs <in.esp> <0xFORMID>` in `src/ModForge.Cli/Diagnostics.Records.cs` (+ dispatch + help in
+`cellrefs <in.esp> <0xFORMID>` in `src/ModForge.Cli/Diagnostics/Diagnostics.Records.cs` (+ dispatch + help in
 `Program.cs`). It follows the sanctioned **lazy-overlay** memory pattern:
 
 - `SkyrimMod.CreateFromBinaryOverlay(...)` — the 250 MB master is NOT fully materialized.
@@ -61,7 +61,7 @@ dotnet run --project src/ModForge.Cli -- cellrefs "<…>/Skyrim.esm" 0x0133C6 > 
 
 ## Rotation unit conversion — esm RADIANS → ModForge DEGREES
 
-This was flagged as the #1 risk. Verified in `src/ModForge.Core/Generator.Build.Placements.cs`:
+This was flagged as the #1 risk. Verified in `src/ModForge.Core/Build/Generator.Build.Placements.cs`:
 the build does `Rotation = new P3Float(Deg2Rad(pl.Rotation.X), …)`, and
 `Generator.Helpers.cs` defines `Deg2Rad(deg) => deg * pi / 180`.
 

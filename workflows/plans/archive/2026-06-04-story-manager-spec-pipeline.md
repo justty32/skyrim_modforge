@@ -22,28 +22,28 @@
 
 ## File Structure
 
-- `src/ModForge.Core/Spec.StoryManager.cs` — **新**。`QuestStoryEventSpec` / `QuestAliasSpec`。
-- `src/ModForge.Core/Spec.Dialogue.cs` — **改**。`QuestSpec` 加 `StoryEvent` + `Aliases`。
+- `src/ModForge.Core/Spec/Spec.StoryManager.cs` — **新**。`QuestStoryEventSpec` / `QuestAliasSpec`。
+- `src/ModForge.Core/Spec/Spec.Dialogue.cs` — **改**。`QuestSpec` 加 `StoryEvent` + `Aliases`。
 - `src/ModForge.Core/StoryManagerEvents.cs` — **新**。事件表 + `TryGet` + `TryParseFill`。
-- `src/ModForge.Core/Generator.Build.StoryManager.cs` — **新**。`ctx.BuildStoryManager()`。
-- `src/ModForge.Core/Generator.Build.cs` — **改**。orchestrator 插一行。
-- `src/ModForge.Core/Generator.Validate.StoryManager.cs` — **新**。`ctx.ValidateStoryManager()`。
-- `src/ModForge.Core/Generator.Validate.cs` — **改**。`Validate()` 插一行。
+- `src/ModForge.Core/Build/Generator.Build.StoryManager.cs` — **新**。`ctx.BuildStoryManager()`。
+- `src/ModForge.Core/Build/Generator.Build.cs` — **改**。orchestrator 插一行。
+- `src/ModForge.Core/Validate/Generator.Validate.StoryManager.cs` — **新**。`ctx.ValidateStoryManager()`。
+- `src/ModForge.Core/Validate/Generator.Validate.cs` — **改**。`Validate()` 插一行。
 - `examples/story-manager-kill.json` — **新**。實機樣本。
 - 刪：`src/ModForge.Core/StoryManagerProbe.cs`、`tests/ModForge.Core.Tests/StoryManagerProbeTests.cs`、CLI `smprobe`（method+dispatch+Usage）。保留 `smtree`。
-- 測試：`tests/ModForge.Core.Tests/StoryManagerEventsTests.cs`、`StoryManagerBuildTests.cs`、`StoryManagerValidateTests.cs`。
+- 測試：`tests/ModForge.Core.Tests/Build/StoryManagerEventsTests.cs`、`StoryManagerBuildTests.cs`、`StoryManagerValidateTests.cs`。
 
 ---
 
 ## Task 1: Spec 型別
 
 **Files:**
-- Create: `src/ModForge.Core/Spec.StoryManager.cs`
-- Modify: `src/ModForge.Core/Spec.Dialogue.cs`（QuestSpec）
+- Create: `src/ModForge.Core/Spec/Spec.StoryManager.cs`
+- Modify: `src/ModForge.Core/Spec/Spec.Dialogue.cs`（QuestSpec）
 
 - [ ] **Step 1: 建新 spec 型別**
 
-`src/ModForge.Core/Spec.StoryManager.cs`：
+`src/ModForge.Core/Spec/Spec.StoryManager.cs`：
 ```csharp
 namespace ModForge;
 
@@ -66,7 +66,7 @@ public sealed class QuestAliasSpec
 
 - [ ] **Step 2: QuestSpec 加兩欄位**
 
-在 `src/ModForge.Core/Spec.Dialogue.cs` 的 `QuestSpec`（class，約 line 5-31），於 `Type` 欄位後加：
+在 `src/ModForge.Core/Spec/Spec.Dialogue.cs` 的 `QuestSpec`（class，約 line 5-31），於 `Type` 欄位後加：
 ```csharp
     // Story Manager：宣告此 quest 可被某遊戲事件動態啟動（radiant 量產的底座）。有此塊時 build 會
     // 自動產生 SMBN→SMQN 把它掛到原版事件根下，並強制清除 StartGameEnabled（SM 啟動，不開局自跑）。
@@ -83,7 +83,7 @@ Expected: 成功（純資料型別，無邏輯）。
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/ModForge.Core/Spec.StoryManager.cs src/ModForge.Core/Spec.Dialogue.cs
+git add src/ModForge.Core/Spec/Spec.StoryManager.cs src/ModForge.Core/Spec/Spec.Dialogue.cs
 git commit -m "feat(spec): QuestSpec storyEvent + aliases for Story Manager"
 ```
 
@@ -93,11 +93,11 @@ git commit -m "feat(spec): QuestSpec storyEvent + aliases for Story Manager"
 
 **Files:**
 - Create: `src/ModForge.Core/StoryManagerEvents.cs`
-- Test: `tests/ModForge.Core.Tests/StoryManagerEventsTests.cs`
+- Test: `tests/ModForge.Core.Tests/Build/StoryManagerEventsTests.cs`
 
 - [ ] **Step 1: 寫失敗測試**
 
-`tests/ModForge.Core.Tests/StoryManagerEventsTests.cs`：
+`tests/ModForge.Core.Tests/Build/StoryManagerEventsTests.cs`：
 ```csharp
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
@@ -198,7 +198,7 @@ Expected: PASS（5 cases）。
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/StoryManagerEvents.cs tests/ModForge.Core.Tests/StoryManagerEventsTests.cs
+git add src/ModForge.Core/StoryManagerEvents.cs tests/ModForge.Core.Tests/Build/StoryManagerEventsTests.cs
 git commit -m "feat(core): Story Manager event table (KillActor) + fill parser"
 ```
 
@@ -207,13 +207,13 @@ git commit -m "feat(core): Story Manager event table (KillActor) + fill parser"
 ## Task 3: Build step
 
 **Files:**
-- Create: `src/ModForge.Core/Generator.Build.StoryManager.cs`
-- Modify: `src/ModForge.Core/Generator.Build.cs`（orchestrator）
-- Test: `tests/ModForge.Core.Tests/StoryManagerBuildTests.cs`
+- Create: `src/ModForge.Core/Build/Generator.Build.StoryManager.cs`
+- Modify: `src/ModForge.Core/Build/Generator.Build.cs`（orchestrator）
+- Test: `tests/ModForge.Core.Tests/Build/StoryManagerBuildTests.cs`
 
 - [ ] **Step 1: 寫失敗測試**
 
-`tests/ModForge.Core.Tests/StoryManagerBuildTests.cs`：
+`tests/ModForge.Core.Tests/Build/StoryManagerBuildTests.cs`：
 ```csharp
 using System.Linq;
 using Mutagen.Bethesda.Plugins;
@@ -310,7 +310,7 @@ Expected: FAIL（BuildStoryManager 還沒接；storyEvent quest 沒 event、沒�
 
 - [ ] **Step 3: 實作 build step**
 
-`src/ModForge.Core/Generator.Build.StoryManager.cs`：
+`src/ModForge.Core/Build/Generator.Build.StoryManager.cs`：
 ```csharp
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
@@ -384,7 +384,7 @@ public static partial class Generator
 
 - [ ] **Step 4: 接 orchestrator**
 
-在 `src/ModForge.Core/Generator.Build.cs` 的 `ctx.BuildQuests();` 那行（約 line 27）**之後**、`ctx.BuildWordWallQuests();` 之前插入：
+在 `src/ModForge.Core/Build/Generator.Build.cs` 的 `ctx.BuildQuests();` 那行（約 line 27）**之後**、`ctx.BuildWordWallQuests();` 之前插入：
 ```csharp
         ctx.BuildStoryManager();                   // Story Manager: storyEvent quests → Event/aliases + SMBN/SMQN
 ```
@@ -402,7 +402,7 @@ Expected: 全綠（含舊的 StoryManagerProbeTests，Task 5 才刪）。
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/ModForge.Core/Generator.Build.StoryManager.cs src/ModForge.Core/Generator.Build.cs tests/ModForge.Core.Tests/StoryManagerBuildTests.cs
+git add src/ModForge.Core/Build/Generator.Build.StoryManager.cs src/ModForge.Core/Build/Generator.Build.cs tests/ModForge.Core.Tests/Build/StoryManagerBuildTests.cs
 git commit -m "feat(core): BuildStoryManager — storyEvent quests to Event/aliases + SMBN/SMQN"
 ```
 
@@ -411,18 +411,18 @@ git commit -m "feat(core): BuildStoryManager — storyEvent quests to Event/alia
 ## Task 4: Validator
 
 **Files:**
-- Create: `src/ModForge.Core/Generator.Validate.StoryManager.cs`
-- Modify: `src/ModForge.Core/Generator.Validate.cs`（Validate() 派發）
-- Test: `tests/ModForge.Core.Tests/StoryManagerValidateTests.cs`
+- Create: `src/ModForge.Core/Validate/Generator.Validate.StoryManager.cs`
+- Modify: `src/ModForge.Core/Validate/Generator.Validate.cs`（Validate() 派發）
+- Test: `tests/ModForge.Core.Tests/Validate/StoryManagerValidateTests.cs`
 
 - [ ] **Step 0: 確認 ValidateContext 的問題清單成員名**
 
-Run: `grep -nE "Problems|problems|public List<string>|errors" src/ModForge.Core/Generator.Validate.cs`
+Run: `grep -nE "Problems|problems|public List<string>|errors" src/ModForge.Core/Validate/Generator.Validate.cs`
 用實際的清單欄位名（下方 code 用 `Problems`；若實為小寫 `problems` 或別名，照實改）。同時確認 `CheckRef` / `CheckCondition` 的確切簽名。
 
 - [ ] **Step 1: 寫失敗測試**
 
-`tests/ModForge.Core.Tests/StoryManagerValidateTests.cs`：
+`tests/ModForge.Core.Tests/Validate/StoryManagerValidateTests.cs`：
 ```csharp
 using System.Linq;
 using ModForge;
@@ -482,7 +482,7 @@ Expected: FAIL（未知事件/壞 fill 目前不報問題）。
 
 - [ ] **Step 3: 實作 validator**
 
-`src/ModForge.Core/Generator.Validate.StoryManager.cs`（`Problems`/`CheckRef` 名以 Step 0 為準）：
+`src/ModForge.Core/Validate/Generator.Validate.StoryManager.cs`（`Problems`/`CheckRef` 名以 Step 0 為準）：
 ```csharp
 namespace ModForge;
 
@@ -545,7 +545,7 @@ public static partial class Generator
 
 - [ ] **Step 4: 接 Validate() 派發**
 
-在 `src/ModForge.Core/Generator.Validate.cs` 的 `Validate()` 內，於 `ctx.ValidateWorld();` 後加：
+在 `src/ModForge.Core/Validate/Generator.Validate.cs` 的 `Validate()` 內，於 `ctx.ValidateWorld();` 後加：
 ```csharp
         ctx.ValidateStoryManager();
 ```
@@ -558,7 +558,7 @@ Expected: PASS（4 tests）。
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/ModForge.Core/Generator.Validate.StoryManager.cs src/ModForge.Core/Generator.Validate.cs tests/ModForge.Core.Tests/StoryManagerValidateTests.cs
+git add src/ModForge.Core/Validate/Generator.Validate.StoryManager.cs src/ModForge.Core/Validate/Generator.Validate.cs tests/ModForge.Core.Tests/Validate/StoryManagerValidateTests.cs
 git commit -m "feat(core): validate storyEvent — unknown event/slot/fill + startGameEnabled warning"
 ```
 
@@ -568,7 +568,7 @@ git commit -m "feat(core): validate storyEvent — unknown event/slot/fill + sta
 
 **Files:**
 - Delete: `src/ModForge.Core/StoryManagerProbe.cs`、`tests/ModForge.Core.Tests/StoryManagerProbeTests.cs`
-- Modify: `src/ModForge.Cli/Diagnostics.StoryManager.cs`（刪 `SmProbe`，留 `SmTree`）、`src/ModForge.Cli/Program.cs`（刪 smprobe dispatch + Usage 行）
+- Modify: `src/ModForge.Cli/Diagnostics/Diagnostics.StoryManager.cs`（刪 `SmProbe`，留 `SmTree`）、`src/ModForge.Cli/Program.cs`（刪 smprobe dispatch + Usage 行）
 
 - [ ] **Step 1: 刪除探針 builder + 其測試**
 
@@ -578,7 +578,7 @@ git rm src/ModForge.Core/StoryManagerProbe.cs tests/ModForge.Core.Tests/StoryMan
 
 - [ ] **Step 2: 移除 smprobe CLI（保留 smtree）**
 
-在 `src/ModForge.Cli/Diagnostics.StoryManager.cs` 刪掉整個 `SmProbe` 方法（含其上方註解區塊），保留 `SmTree`。
+在 `src/ModForge.Cli/Diagnostics/Diagnostics.StoryManager.cs` 刪掉整個 `SmProbe` 方法（含其上方註解區塊），保留 `SmTree`。
 在 `src/ModForge.Cli/Program.cs` 刪掉這兩行：
 ```csharp
                 case "smprobe" when args.Length == 3: return SmProbe(args[1], args[2]);

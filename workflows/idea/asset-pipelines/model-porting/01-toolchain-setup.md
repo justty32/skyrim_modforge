@@ -107,4 +107,4 @@ So: no VRAM bottleneck, no model downloads, no CUDA venvs. The only "heavy" depe
 ---
 
 ### Sources
-[Blender NifTools addon releases](https://github.com/niftools/blender_niftools_addon/releases) · [PyNifly (GH, Windows-only)](https://github.com/BadDogSkyrim/PyNifly) · [Compressonator (GH GPUOpen-Tools, Win/Linux/Mac CLI)](https://github.com/GPUOpen-Tools/compressonator) · [ck-cmd (GH aerisarn)](https://github.com/aerisarn/ck-cmd) · [Outfit Studio (GH ousnius)](https://github.com/ousnius/BodySlide-and-Outfit-Studio). Internal: `src/ModForge.Core/Papyrus.cs` (backend env-var pattern).
+[Blender NifTools addon releases](https://github.com/niftools/blender_niftools_addon/releases) · [PyNifly (GH, Windows-only)](https://github.com/BadDogSkyrim/PyNifly) · [Compressonator (GH GPUOpen-Tools, Win/Linux/Mac CLI)](https://github.com/GPUOpen-Tools/compressonator) · [ck-cmd (GH aerisarn)](https://github.com/aerisarn/ck-cmd) · [Outfit Studio (GH ousnius)](https://github.com/ousnius/BodySlide-and-Outfit-Studio). Internal: `src/ModForge.Core/Papyrus/Papyrus.cs` (backend env-var pattern).

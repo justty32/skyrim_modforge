@@ -18,10 +18,10 @@ Design doc: `workflows/specs/2026-06-13-spec-refs-env-design.md`.
 
 | File | Responsibility | New/Mod |
 |------|----------------|---------|
-| `src/ModForge.Core/SpecRefs.cs` | The resolver: `$ref` + `$env` over a `JsonNode` tree; pure engine + `ResolveFile` disk convenience | **New** |
-| `tests/ModForge.Core.Tests/SpecRefsTests.cs` | Unit tests for every directive form | **New** |
+| `src/ModForge.Core/Spec/SpecRefs.cs` | The resolver: `$ref` + `$env` over a `JsonNode` tree; pure engine + `ResolveFile` disk convenience | **New** |
+| `tests/ModForge.Core.Tests/Spec/SpecRefsTests.cs` | Unit tests for every directive form | **New** |
 | `src/ModForge.Cli/Program.cs` | `ResolveSpecJson` chokepoint; `ReadSpec` routes through it; `ReadOpts` gains `NumberHandling` | Mod |
-| `src/ModForge.Cli/Program.Build.cs` | `ValidateCmd` resolves before `CheckUnknownFields` + `Deserialize` | Mod |
+| `src/ModForge.Cli/Commands/Program.Build.cs` | `ValidateCmd` resolves before `CheckUnknownFields` + `Deserialize` | Mod |
 | `examples/presets/bright-interior.json` | Real preset (LGTM + IMGS) — the "library" file | **New** |
 | `examples/spec-refs-demo.json` | Demo spec that `$ref`s the preset and uses `$env` | **New** |
 | `docs/SPEC-refs.md` + `docs/SPEC-index.md` | `$ref`/`$env` reference + index link | New/Mod |
@@ -35,12 +35,12 @@ Design doc: `workflows/specs/2026-06-13-spec-refs-env-design.md`.
 ## Task 1: SpecRefs foundation — string `$ref`, pointers, sibling merge, recursion
 
 **Files:**
-- Create: `src/ModForge.Core/SpecRefs.cs`
-- Test: `tests/ModForge.Core.Tests/SpecRefsTests.cs`
+- Create: `src/ModForge.Core/Spec/SpecRefs.cs`
+- Test: `tests/ModForge.Core.Tests/Spec/SpecRefsTests.cs`
 
 - [ ] **Step 1: Write the failing tests**
 
-Create `tests/ModForge.Core.Tests/SpecRefsTests.cs`:
+Create `tests/ModForge.Core.Tests/Spec/SpecRefsTests.cs`:
 
 ```csharp
 using System.Collections.Generic;
@@ -127,7 +127,7 @@ Expected: FAIL to **compile** — `SpecRefs` does not exist yet.
 
 - [ ] **Step 3: Write the implementation**
 
-Create `src/ModForge.Core/SpecRefs.cs`:
+Create `src/ModForge.Core/Spec/SpecRefs.cs`:
 
 ```csharp
 using System.Text.Json;
@@ -299,7 +299,7 @@ Expected: PASS (5 tests).
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/SpecRefs.cs tests/ModForge.Core.Tests/SpecRefsTests.cs
+git add src/ModForge.Core/Spec/SpecRefs.cs tests/ModForge.Core.Tests/Spec/SpecRefsTests.cs
 git commit -m "feat(spec): SpecRefs resolver — string \$ref, pointers, sibling deep-merge, recursion" \
   -m "Pure JsonNode preprocessor with injected file/env lookups. Handles same-doc #/pointer, external file, file#pointer; sibling keys deep-merge over the ref result (sibling wins); nested refs resolve recursively." \
   -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
@@ -310,8 +310,8 @@ git commit -m "feat(spec): SpecRefs resolver — string \$ref, pointers, sibling
 ## Task 2: Array-form `$ref` (chained deep-merge, later wins)
 
 **Files:**
-- Modify: `src/ModForge.Core/SpecRefs.cs` (replace `ParseSources`)
-- Test: `tests/ModForge.Core.Tests/SpecRefsTests.cs` (add)
+- Modify: `src/ModForge.Core/Spec/SpecRefs.cs` (replace `ParseSources`)
+- Test: `tests/ModForge.Core.Tests/Spec/SpecRefsTests.cs` (add)
 
 - [ ] **Step 1: Write the failing test**
 
@@ -342,7 +342,7 @@ Expected: FAIL — `SpecRefException: $ref value must be a string, array, or { f
 
 - [ ] **Step 3: Replace `ParseSources` to handle arrays**
 
-In `src/ModForge.Core/SpecRefs.cs`, replace the whole `ParseSources` method with:
+In `src/ModForge.Core/Spec/SpecRefs.cs`, replace the whole `ParseSources` method with:
 
 ```csharp
     private static List<Source> ParseSources(JsonNode? refVal, Ctx ctx, FileReader readFile, EnvLookup getEnv, List<string> cycle)
@@ -372,7 +372,7 @@ Expected: PASS (6 tests).
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/SpecRefs.cs tests/ModForge.Core.Tests/SpecRefsTests.cs
+git add src/ModForge.Core/Spec/SpecRefs.cs tests/ModForge.Core.Tests/Spec/SpecRefsTests.cs
 git commit -m "feat(spec): array-form \$ref — chained deep-merge, later overrides earlier" \
   -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
@@ -382,8 +382,8 @@ git commit -m "feat(spec): array-form \$ref — chained deep-merge, later overri
 ## Task 3: Long-form object `$ref` (`{ from, pointer }`)
 
 **Files:**
-- Modify: `src/ModForge.Core/SpecRefs.cs` (replace `ParseSources`)
-- Test: `tests/ModForge.Core.Tests/SpecRefsTests.cs` (add)
+- Modify: `src/ModForge.Core/Spec/SpecRefs.cs` (replace `ParseSources`)
+- Test: `tests/ModForge.Core.Tests/Spec/SpecRefsTests.cs` (add)
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -414,7 +414,7 @@ Expected: FAIL — `LongFormRef_FromPlusPointer_Resolves` throws "$ref value mus
 
 - [ ] **Step 3: Replace `ParseSources` to handle the long-form object**
 
-In `src/ModForge.Core/SpecRefs.cs`, replace the whole `ParseSources` method with:
+In `src/ModForge.Core/Spec/SpecRefs.cs`, replace the whole `ParseSources` method with:
 
 ```csharp
     private static List<Source> ParseSources(JsonNode? refVal, Ctx ctx, FileReader readFile, EnvLookup getEnv, List<string> cycle)
@@ -457,7 +457,7 @@ Expected: PASS (8 tests).
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/SpecRefs.cs tests/ModForge.Core.Tests/SpecRefsTests.cs
+git add src/ModForge.Core/Spec/SpecRefs.cs tests/ModForge.Core.Tests/Spec/SpecRefsTests.cs
 git commit -m "feat(spec): long-form object \$ref — { from, pointer }, from is resolvable, unknown keys rejected" \
   -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
@@ -467,8 +467,8 @@ git commit -m "feat(spec): long-form object \$ref — { from, pointer }, from is
 ## Task 4: `$env` directive (value / default / error) + `$ref`+`$env` conflict
 
 **Files:**
-- Modify: `src/ModForge.Core/SpecRefs.cs` (add switch cases + `ResolveEnv`)
-- Test: `tests/ModForge.Core.Tests/SpecRefsTests.cs` (add)
+- Modify: `src/ModForge.Core/Spec/SpecRefs.cs` (add switch cases + `ResolveEnv`)
+- Test: `tests/ModForge.Core.Tests/Spec/SpecRefsTests.cs` (add)
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -524,7 +524,7 @@ Expected: FAIL — `Env_Present_SubstitutesValue` returns the object `{ "$env": 
 
 - [ ] **Step 3: Add the `$env` and conflict cases**
 
-In `src/ModForge.Core/SpecRefs.cs`, in `ResolveNode`, replace the `$ref` case with these three cases (order matters — conflict first):
+In `src/ModForge.Core/Spec/SpecRefs.cs`, in `ResolveNode`, replace the `$ref` case with these three cases (order matters — conflict first):
 
 ```csharp
             case JsonObject obj when obj.ContainsKey("$ref") && obj.ContainsKey("$env"):
@@ -558,7 +558,7 @@ Expected: PASS (13 tests).
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/SpecRefs.cs tests/ModForge.Core.Tests/SpecRefsTests.cs
+git add src/ModForge.Core/Spec/SpecRefs.cs tests/ModForge.Core.Tests/Spec/SpecRefsTests.cs
 git commit -m "feat(spec): \$env directive — value / default / error; reject \$ref+\$env on one node" \
   -m "Env value inserted as a JSON string; default may carry further directives; \$env can drive a long-form \$ref's 'from'." \
   -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
@@ -569,8 +569,8 @@ git commit -m "feat(spec): \$env directive — value / default / error; reject \
 ## Task 5: Cycle detection
 
 **Files:**
-- Modify: `src/ModForge.Core/SpecRefs.cs` (`LoadSource` cycle guard)
-- Test: `tests/ModForge.Core.Tests/SpecRefsTests.cs` (add)
+- Modify: `src/ModForge.Core/Spec/SpecRefs.cs` (`LoadSource` cycle guard)
+- Test: `tests/ModForge.Core.Tests/Spec/SpecRefsTests.cs` (add)
 
 - [ ] **Step 1: Write the failing test**
 
@@ -593,7 +593,7 @@ Expected: FAIL — `StackOverflowException` / test host crash or hang (infinite 
 
 - [ ] **Step 3: Add the cycle guard**
 
-In `src/ModForge.Core/SpecRefs.cs`, replace the whole `LoadSource` method with:
+In `src/ModForge.Core/Spec/SpecRefs.cs`, replace the whole `LoadSource` method with:
 
 ```csharp
     private static JsonNode? LoadSource(Source src, Ctx ctx, FileReader readFile, EnvLookup getEnv, List<string> cycle)
@@ -631,7 +631,7 @@ Expected: PASS (14 tests).
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/SpecRefs.cs tests/ModForge.Core.Tests/SpecRefsTests.cs
+git add src/ModForge.Core/Spec/SpecRefs.cs tests/ModForge.Core.Tests/Spec/SpecRefsTests.cs
 git commit -m "feat(spec): \$ref cycle detection — (doc#pointer) stack throws on re-entry" \
   -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
@@ -641,9 +641,9 @@ git commit -m "feat(spec): \$ref cycle detection — (doc#pointer) stack throws 
 ## Task 6: Disk round-trip test + CLI wiring
 
 **Files:**
-- Test: `tests/ModForge.Core.Tests/SpecRefsTests.cs` (add a `ResolveFile` temp-dir test)
+- Test: `tests/ModForge.Core.Tests/Spec/SpecRefsTests.cs` (add a `ResolveFile` temp-dir test)
 - Modify: `src/ModForge.Cli/Program.cs` (`ReadOpts`, `ResolveSpecJson`, `ReadSpec`)
-- Modify: `src/ModForge.Cli/Program.Build.cs` (`ValidateCmd`)
+- Modify: `src/ModForge.Cli/Commands/Program.Build.cs` (`ValidateCmd`)
 
 - [ ] **Step 1: Write the failing disk round-trip test**
 
@@ -698,7 +698,7 @@ In `src/ModForge.Cli/Program.cs`, replace the `ReadOpts` field and `ReadSpec` me
 
 - [ ] **Step 4: Route `ValidateCmd` through the chokepoint**
 
-In `src/ModForge.Cli/Program.Build.cs`, replace the first two lines of `ValidateCmd` (the `File.ReadAllText` + `CheckUnknownFields`, around lines 61-62) so both the unknown-field check and the deserialize run on the **resolved** JSON:
+In `src/ModForge.Cli/Commands/Program.Build.cs`, replace the first two lines of `ValidateCmd` (the `File.ReadAllText` + `CheckUnknownFields`, around lines 61-62) so both the unknown-field check and the deserialize run on the **resolved** JSON:
 
 ```csharp
         var json = ResolveSpecJson(specPath);
@@ -721,7 +721,7 @@ Expected: `valid: sample_spec.json — no problems` (a spec with no `$ref`/`$env
 - [ ] **Step 7: Commit**
 
 ```bash
-git add tests/ModForge.Core.Tests/SpecRefsTests.cs src/ModForge.Cli/Program.cs src/ModForge.Cli/Program.Build.cs
+git add tests/ModForge.Core.Tests/Spec/SpecRefsTests.cs src/ModForge.Cli/Program.cs src/ModForge.Cli/Commands/Program.Build.cs
 git commit -m "feat(cli): resolve \$ref/\$env before deserialize via ResolveSpecJson chokepoint" \
   -m "ReadSpec + ValidateCmd route through SpecRefs.ResolveFile; unknown-field check runs on resolved JSON; ReadOpts allows reading numbers from strings (for \$env)." \
   -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
@@ -775,7 +775,7 @@ The proven bright-interior values come from `examples/lighting.json` and the des
 }
 ```
 
-> NOTE: verify the field names against the current `LightingTemplateSpec` / `ImageSpaceSpec` in `src/ModForge.Core/Spec.Lighting.cs` and the values against `examples/lighting.json` before trusting them — copy the exact field names/values that file uses (the design lists representative values; the example must match the live spec schema). Adjust this JSON to match.
+> NOTE: verify the field names against the current `LightingTemplateSpec` / `ImageSpaceSpec` in `src/ModForge.Core/Spec/Spec.Lighting.cs` and the values against `examples/lighting.json` before trusting them — copy the exact field names/values that file uses (the design lists representative values; the example must match the live spec schema). Adjust this JSON to match.
 
 - [ ] **Step 2: Create the demo spec that consumes it**
 
@@ -810,7 +810,7 @@ Create `examples/spec-refs-demo.json`. It pulls the two records in via `$ref` lo
 > The right construction is a plain string ref so the file + pointer split is unambiguous: replace each `$ref` with
 > `{ "$ref": "presets/bright-interior.json#/lgtm" }` (and `#/imgs`). If `$env`-driven dir is wanted, use long form with `from` = the **full file path** and `pointer` = the sub-node:
 > `{ "$ref": { "from": "presets/bright-interior.json", "pointer": "/lgtm" } }`.
-> Pick the plain-string form for the committed example (simplest, clearly correct); demonstrate `$env` separately on a scalar field (e.g. a comment or a path) so the example does not mislead. Verify `cells[].vanilla` is the correct field name for "attach to an existing vanilla cell" against `src/ModForge.Core/Spec.World.cs` — if the field is named differently (e.g. `vanillaCell`/`base`), use the real name.
+> Pick the plain-string form for the committed example (simplest, clearly correct); demonstrate `$env` separately on a scalar field (e.g. a comment or a path) so the example does not mislead. Verify `cells[].vanilla` is the correct field name for "attach to an existing vanilla cell" against `src/ModForge.Core/Spec/Spec.World.cs` — if the field is named differently (e.g. `vanillaCell`/`base`), use the real name.
 
 - [ ] **Step 3: Validate and build the demo**
 
@@ -858,7 +858,7 @@ Add a link to it from `docs/SPEC-index.md` (follow the existing list format ther
 - [ ] **Step 2: Update `docs/CODE_MAP.infra.md`**
 
 Read `docs/CODE_MAP.infra.md`, find the CLI / plugin-I/O section, and add rows:
-- `src/ModForge.Core/SpecRefs.cs` — "$ref/$env spec preprocessor (JsonNode resolver; ResolveFile disk entry); run by the CLI before deserialize".
+- `src/ModForge.Core/Spec/SpecRefs.cs` — "$ref/$env spec preprocessor (JsonNode resolver; ResolveFile disk entry); run by the CLI before deserialize".
 - In the Tests subsection: `SpecRefsTests.cs` — "$ref forms (string/array/long-form), $env (value/default/error), cycle, sibling merge, ResolveFile disk round-trip".
 - Note on `Program.cs` `ResolveSpecJson` / `ReadSpec` + `Program.Build.cs` `ValidateCmd` running on resolved JSON.
 

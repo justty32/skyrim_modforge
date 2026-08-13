@@ -24,18 +24,18 @@
 
 | 檔案 | 動作 | 職責 |
 |------|------|------|
-| `src/ModForge.Core/Spec.Lighting.cs` | 新建 | `LightingTemplateSpec` / `AmbientColorsSpec` / `ImageSpaceSpec` / `CellLightingSpec` |
-| `src/ModForge.Core/Spec.cs` | 改 | 加 `LightingTemplates` / `ImageSpaces` 兩個 List |
-| `src/ModForge.Core/Spec.World.cs` | 改 | `CellSpec` 加 `LightingTemplate` / `ImageSpace` / `Lighting` 三欄 |
-| `src/ModForge.Core/Generator.Build.Lighting.cs` | 新建 | `BuildLightingTemplates` / `BuildImageSpaces` + `FillAmbientColors` helper |
-| `src/ModForge.Core/Generator.BuildContext.cs` | 改 | `lgtmByEd` / `imgsByEd` map + `ResolveLightingRef` helper |
-| `src/ModForge.Core/Generator.Build.Cells.cs` | 改 | CELL 掛 LGTM/IMGS link + 組 inline `Lighting`（inherit 邏輯）|
-| `src/ModForge.Core/Generator.Build.cs` | 改 | orchestrator 在 `BuildCells` 前呼叫兩個新 builder |
-| `src/ModForge.Core/Generator.Validate.Lighting.cs` | 新建 | LGTM/IMGS/CELL-lighting 的 guardrail |
-| `src/ModForge.Core/Generator.Validate.cs` | 改 | dispatch + RegisterAll 登錄新 editorId |
-| `src/ModForge.Cli/Diagnostics.Records.cs` | 改 | `LgtmDiag` / `ImgsDiag` |
+| `src/ModForge.Core/Spec/Spec.Lighting.cs` | 新建 | `LightingTemplateSpec` / `AmbientColorsSpec` / `ImageSpaceSpec` / `CellLightingSpec` |
+| `src/ModForge.Core/Spec/Spec.cs` | 改 | 加 `LightingTemplates` / `ImageSpaces` 兩個 List |
+| `src/ModForge.Core/Spec/Spec.World.cs` | 改 | `CellSpec` 加 `LightingTemplate` / `ImageSpace` / `Lighting` 三欄 |
+| `src/ModForge.Core/Build/Generator.Build.Lighting.cs` | 新建 | `BuildLightingTemplates` / `BuildImageSpaces` + `FillAmbientColors` helper |
+| `src/ModForge.Core/Build/Generator.BuildContext.cs` | 改 | `lgtmByEd` / `imgsByEd` map + `ResolveLightingRef` helper |
+| `src/ModForge.Core/Build/Generator.Build.Cells.cs` | 改 | CELL 掛 LGTM/IMGS link + 組 inline `Lighting`（inherit 邏輯）|
+| `src/ModForge.Core/Build/Generator.Build.cs` | 改 | orchestrator 在 `BuildCells` 前呼叫兩個新 builder |
+| `src/ModForge.Core/Validate/Generator.Validate.Lighting.cs` | 新建 | LGTM/IMGS/CELL-lighting 的 guardrail |
+| `src/ModForge.Core/Validate/Generator.Validate.cs` | 改 | dispatch + RegisterAll 登錄新 editorId |
+| `src/ModForge.Cli/Diagnostics/Diagnostics.Records.cs` | 改 | `LgtmDiag` / `ImgsDiag` |
 | `src/ModForge.Cli/Program.cs` | 改 | `lgtmdiag` / `imgsdiag` 命令派發 + usage |
-| `tests/ModForge.Core.Tests/LightingTests.cs` | 新建 | LGTM/IMGS/CELL build + validate 回歸 |
+| `tests/ModForge.Core.Tests/Build/LightingTests.cs` | 新建 | LGTM/IMGS/CELL build + validate 回歸 |
 | `examples/lighting.json` | 新建 | 明亮室內示範 |
 | `examples/spec.schema.json` | 改 | 新欄位 autocomplete |
 | `docs/CODE_MAP.world.md` | 改 | 新增 Lighting 段 |
@@ -49,9 +49,9 @@
 ## Task 1: Spec types + lists + CellSpec 欄位
 
 **Files:**
-- Create: `src/ModForge.Core/Spec.Lighting.cs`
-- Modify: `src/ModForge.Core/Spec.cs`
-- Modify: `src/ModForge.Core/Spec.World.cs:9`（`CellSpec`）
+- Create: `src/ModForge.Core/Spec/Spec.Lighting.cs`
+- Modify: `src/ModForge.Core/Spec/Spec.cs`
+- Modify: `src/ModForge.Core/Spec/Spec.World.cs:9`（`CellSpec`）
 
 - [ ] **Step 1: 建立 `Spec.Lighting.cs`**
 
@@ -197,7 +197,7 @@ Expected: Build succeeded（純新增型別 + optional 欄位，無行為改變�
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/Spec.Lighting.cs src/ModForge.Core/Spec.cs src/ModForge.Core/Spec.World.cs
+git add src/ModForge.Core/Spec/Spec.Lighting.cs src/ModForge.Core/Spec/Spec.cs src/ModForge.Core/Spec/Spec.World.cs
 git commit -m "feat(lighting): spec types — LightingTemplateSpec/ImageSpaceSpec/CellLightingSpec + CellSpec fields" \
   -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
@@ -207,14 +207,14 @@ git commit -m "feat(lighting): spec types — LightingTemplateSpec/ImageSpaceSpe
 ## Task 2: LGTM builder + orchestrator hookup
 
 **Files:**
-- Create: `src/ModForge.Core/Generator.Build.Lighting.cs`
-- Modify: `src/ModForge.Core/Generator.BuildContext.cs`（加 `lgtmByEd`）
-- Modify: `src/ModForge.Core/Generator.Build.cs`（orchestrator call）
-- Test: `tests/ModForge.Core.Tests/LightingTests.cs`
+- Create: `src/ModForge.Core/Build/Generator.Build.Lighting.cs`
+- Modify: `src/ModForge.Core/Build/Generator.BuildContext.cs`（加 `lgtmByEd`）
+- Modify: `src/ModForge.Core/Build/Generator.Build.cs`（orchestrator call）
+- Test: `tests/ModForge.Core.Tests/Build/LightingTests.cs`
 
 - [ ] **Step 1: 寫失敗測試**
 
-建 `tests/ModForge.Core.Tests/LightingTests.cs`：
+建 `tests/ModForge.Core.Tests/Build/LightingTests.cs`：
 
 ```csharp
 using ModForge;
@@ -374,7 +374,7 @@ Expected: PASS。
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/ModForge.Core/Generator.Build.Lighting.cs src/ModForge.Core/Generator.BuildContext.cs src/ModForge.Core/Generator.Build.cs tests/ModForge.Core.Tests/LightingTests.cs
+git add src/ModForge.Core/Build/Generator.Build.Lighting.cs src/ModForge.Core/Build/Generator.BuildContext.cs src/ModForge.Core/Build/Generator.Build.cs tests/ModForge.Core.Tests/Build/LightingTests.cs
 git commit -m "feat(lighting): LGTM builder (template-copy + override, DALC via DirectionalAmbientColors)" \
   -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
@@ -384,9 +384,9 @@ git commit -m "feat(lighting): LGTM builder (template-copy + override, DALC via 
 ## Task 3: IMGS builder
 
 **Files:**
-- Modify: `src/ModForge.Core/Generator.Build.Lighting.cs`
-- Modify: `src/ModForge.Core/Generator.Build.cs`
-- Test: `tests/ModForge.Core.Tests/LightingTests.cs`
+- Modify: `src/ModForge.Core/Build/Generator.Build.Lighting.cs`
+- Modify: `src/ModForge.Core/Build/Generator.Build.cs`
+- Test: `tests/ModForge.Core.Tests/Build/LightingTests.cs`
 
 - [ ] **Step 1: 寫失敗測試**（append 到 `LightingTests`）
 
@@ -481,7 +481,7 @@ Expected: PASS。
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/ModForge.Core/Generator.Build.Lighting.cs src/ModForge.Core/Generator.Build.cs tests/ModForge.Core.Tests/LightingTests.cs
+git add src/ModForge.Core/Build/Generator.Build.Lighting.cs src/ModForge.Core/Build/Generator.Build.cs tests/ModForge.Core.Tests/Build/LightingTests.cs
 git commit -m "feat(lighting): IMGS builder — HDR/cinematic/tint, template-copy + override" \
   -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
@@ -491,9 +491,9 @@ git commit -m "feat(lighting): IMGS builder — HDR/cinematic/tint, template-cop
 ## Task 4: CELL 接線（lightingTemplate / imageSpace / inline XCLL）
 
 **Files:**
-- Modify: `src/ModForge.Core/Generator.BuildContext.cs`（`ResolveLightingRef` helper）
-- Modify: `src/ModForge.Core/Generator.Build.Cells.cs`
-- Test: `tests/ModForge.Core.Tests/LightingTests.cs`
+- Modify: `src/ModForge.Core/Build/Generator.BuildContext.cs`（`ResolveLightingRef` helper）
+- Modify: `src/ModForge.Core/Build/Generator.Build.Cells.cs`
+- Test: `tests/ModForge.Core.Tests/Build/LightingTests.cs`
 
 - [ ] **Step 1: 寫失敗測試（兩個）**（append 到 `LightingTests`）
 
@@ -670,7 +670,7 @@ Expected: PASS（兩個）。
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/ModForge.Core/Generator.BuildContext.cs src/ModForge.Core/Generator.Build.Cells.cs tests/ModForge.Core.Tests/LightingTests.cs
+git add src/ModForge.Core/Build/Generator.BuildContext.cs src/ModForge.Core/Build/Generator.Build.Cells.cs tests/ModForge.Core.Tests/Build/LightingTests.cs
 git commit -m "feat(lighting): CELL wiring — lightingTemplate/imageSpace links + inline XCLL with inherit flags" \
   -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
@@ -680,9 +680,9 @@ git commit -m "feat(lighting): CELL wiring — lightingTemplate/imageSpace links
 ## Task 5: Validate guardrails
 
 **Files:**
-- Create: `src/ModForge.Core/Generator.Validate.Lighting.cs`
-- Modify: `src/ModForge.Core/Generator.Validate.cs`（dispatch + RegisterAll）
-- Test: `tests/ModForge.Core.Tests/LightingTests.cs`
+- Create: `src/ModForge.Core/Validate/Generator.Validate.Lighting.cs`
+- Modify: `src/ModForge.Core/Validate/Generator.Validate.cs`（dispatch + RegisterAll）
+- Test: `tests/ModForge.Core.Tests/Build/LightingTests.cs`
 
 - [ ] **Step 1: 寫失敗測試**（append 到 `LightingTests`）
 
@@ -830,7 +830,7 @@ Expected: 全綠（WordWallTests 的環境性失敗除外——若無 Skyrim.esm
 - [ ] **Step 8: Commit**
 
 ```bash
-git add src/ModForge.Core/Generator.Validate.Lighting.cs src/ModForge.Core/Generator.Validate.cs tests/ModForge.Core.Tests/LightingTests.cs
+git add src/ModForge.Core/Validate/Generator.Validate.Lighting.cs src/ModForge.Core/Validate/Generator.Validate.cs tests/ModForge.Core.Tests/Build/LightingTests.cs
 git commit -m "feat(lighting): validate — color range / template ref / cell ref / inherit flag guardrails" \
   -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
@@ -840,7 +840,7 @@ git commit -m "feat(lighting): validate — color range / template ref / cell re
 ## Task 6: lgtmdiag + imgsdiag 診斷
 
 **Files:**
-- Modify: `src/ModForge.Cli/Diagnostics.Records.cs`
+- Modify: `src/ModForge.Cli/Diagnostics/Diagnostics.Records.cs`
 - Modify: `src/ModForge.Cli/Program.cs`（派發 + usage）
 
 - [ ] **Step 1: 在 `Diagnostics.Records.cs` 加兩個 diag 方法**
@@ -928,7 +928,7 @@ Expected: 印出 `DefaultLightingTemplate` 的 ambient/directional/fog + DALC sc
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Cli/Diagnostics.Records.cs src/ModForge.Cli/Program.cs
+git add src/ModForge.Cli/Diagnostics/Diagnostics.Records.cs src/ModForge.Cli/Program.cs
 git commit -m "feat(cli): lgtmdiag + imgsdiag — dump LGTM/IMGS lighting fields from an esp" \
   -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```

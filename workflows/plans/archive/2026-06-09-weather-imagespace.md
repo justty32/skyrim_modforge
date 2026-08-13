@@ -16,11 +16,11 @@
 
 | 檔案 | 動作 | 職責 |
 |------|------|------|
-| `src/ModForge.Core/Spec.Weather.cs` | 改 | `WeatherImageSpacesSpec` + `WeatherSpec.ImageSpaces` |
-| `src/ModForge.Core/Generator.Build.Climate.cs` | 改 | `WireWeatherLinks` 重構（precip + imgs 獨立）+ imgs 接線 |
-| `src/ModForge.Core/Generator.Validate.Lighting.cs` | 改 | weather imagespace ref 是 IMGS 的檢查 |
-| `src/ModForge.Cli/Diagnostics.Weather.cs` | 改 | WeatherDiag 印四時段 imagespace |
-| `tests/ModForge.Core.Tests/LightingTests.cs` | 改 | weather-imgs build + validate 測試 |
+| `src/ModForge.Core/Spec/Spec.Weather.cs` | 改 | `WeatherImageSpacesSpec` + `WeatherSpec.ImageSpaces` |
+| `src/ModForge.Core/Build/Generator.Build.Climate.cs` | 改 | `WireWeatherLinks` 重構（precip + imgs 獨立）+ imgs 接線 |
+| `src/ModForge.Core/Validate/Generator.Validate.Lighting.cs` | 改 | weather imagespace ref 是 IMGS 的檢查 |
+| `src/ModForge.Cli/Diagnostics/Diagnostics.Weather.cs` | 改 | WeatherDiag 印四時段 imagespace |
+| `tests/ModForge.Core.Tests/Build/LightingTests.cs` | 改 | weather-imgs build + validate 測試 |
 | `examples/weather_bright.json` | 新建 | bright IMGS + weather（fw 測） |
 | `examples/spec.schema.json` | 改 | `weathers[].imageSpaces` |
 | `docs/CODE_MAP.world.md` / `docs/SPEC-world.md` | 改 | 室外段 |
@@ -31,7 +31,7 @@
 
 ## Task 1: Spec — WeatherImageSpacesSpec + WeatherSpec.ImageSpaces
 
-**Files:** Modify `src/ModForge.Core/Spec.Weather.cs`
+**Files:** Modify `src/ModForge.Core/Spec/Spec.Weather.cs`
 
 - [ ] **Step 1:** Add the new spec class near `WeatherColorSpec` (after it). Then add the field to `WeatherSpec`.
 
@@ -62,7 +62,7 @@ Add to `WeatherSpec` (alongside its other optional members, e.g. after the colou
 - [ ] **Step 2:** `dotnet build src/ModForge.Core/ModForge.Core.csproj` → succeeds.
 - [ ] **Step 3:** Commit.
 ```bash
-git add src/ModForge.Core/Spec.Weather.cs
+git add src/ModForge.Core/Spec/Spec.Weather.cs
 git commit -m "feat(weather): WeatherImageSpacesSpec + WeatherSpec.ImageSpaces (outdoor IMGS grading)" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -70,7 +70,7 @@ git commit -m "feat(weather): WeatherImageSpacesSpec + WeatherSpec.ImageSpaces (
 
 ## Task 2: Build wiring — WireWeatherLinks
 
-**Files:** Modify `src/ModForge.Core/Generator.Build.Climate.cs`; Test `tests/ModForge.Core.Tests/LightingTests.cs`
+**Files:** Modify `src/ModForge.Core/Build/Generator.Build.Climate.cs`; Test `tests/ModForge.Core.Tests/Build/LightingTests.cs`
 
 - [ ] **Step 1: Write failing test** (append to `LightingTests`):
 
@@ -149,7 +149,7 @@ NOTE: `WeatherImageSpaces` is in `Mutagen.Bethesda.Skyrim`; `w.ImageSpaces ??= n
 - [ ] **Step 4:** Run → PASS (the new test). Then the whole `LightingTests` class → all PASS.
 - [ ] **Step 5:** Commit.
 ```bash
-git add src/ModForge.Core/Generator.Build.Climate.cs tests/ModForge.Core.Tests/LightingTests.cs
+git add src/ModForge.Core/Build/Generator.Build.Climate.cs tests/ModForge.Core.Tests/Build/LightingTests.cs
 git commit -m "feat(weather): wire per-ToD ImageSpace on WTHR (Default fills unset; precip+imgs independent)" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -157,7 +157,7 @@ git commit -m "feat(weather): wire per-ToD ImageSpace on WTHR (Default fills uns
 
 ## Task 3: Validate — weather imageSpace must be an IMGS
 
-**Files:** Modify `src/ModForge.Core/Generator.Validate.Lighting.cs`; Test `tests/ModForge.Core.Tests/LightingTests.cs`
+**Files:** Modify `src/ModForge.Core/Validate/Generator.Validate.Lighting.cs`; Test `tests/ModForge.Core.Tests/Build/LightingTests.cs`
 
 - [ ] **Step 1: Write failing test** (append to `LightingTests`):
 
@@ -207,7 +207,7 @@ git commit -m "feat(weather): wire per-ToD ImageSpace on WTHR (Default fills uns
 - [ ] **Step 4:** Run → PASS. Then full suite `dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj` → all pass (report count; WordWall env test passes here as Skyrim.esm present).
 - [ ] **Step 5:** Commit.
 ```bash
-git add src/ModForge.Core/Generator.Validate.Lighting.cs tests/ModForge.Core.Tests/LightingTests.cs
+git add src/ModForge.Core/Validate/Generator.Validate.Lighting.cs tests/ModForge.Core.Tests/Build/LightingTests.cs
 git commit -m "feat(weather): validate — weather imageSpace ToD refs must resolve to an IMGS" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -215,7 +215,7 @@ git commit -m "feat(weather): validate — weather imageSpace ToD refs must reso
 
 ## Task 4: WeatherDiag — print the four ImageSpaces
 
-**Files:** Modify `src/ModForge.Cli/Diagnostics.Weather.cs`
+**Files:** Modify `src/ModForge.Cli/Diagnostics/Diagnostics.Weather.cs`
 
 - [ ] **Step 1:** In `WeatherDiag`, after the `Precipitation` print line (`Console.WriteLine($"  Precipitation = ...")`), add:
 
@@ -252,7 +252,7 @@ Expected: prints SkyrimClear_A with an `ImageSpaces sunrise=... day=012F88:Skyri
 
 - [ ] **Step 4:** Commit.
 ```bash
-git add src/ModForge.Cli/Diagnostics.Weather.cs
+git add src/ModForge.Cli/Diagnostics/Diagnostics.Weather.cs
 git commit -m "feat(cli): weatherdiag prints the four per-ToD ImageSpace links" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 

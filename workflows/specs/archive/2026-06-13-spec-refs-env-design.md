@@ -25,7 +25,7 @@ Non-goals: no builder changes, no new record types, no LLM/templating beyond `$r
 A pre-deserialization JSON preprocessor operating purely on a `JsonNode` tree. It does not
 touch the builder, validator semantics, or any record code.
 
-Lives in `src/ModForge.Core/SpecRefs.cs` as `public static class SpecRefs`. The core engine
+Lives in `src/ModForge.Core/Spec/SpecRefs.cs` as `public static class SpecRefs`. The core engine
 takes injected delegates — `Func<string,string?> readFile` (path → text, null if missing) and
 `Func<string,string?> getEnv` (var → value, null if unset) — so it is unit-testable without
 touching the filesystem or process environment (same pattern as `Voice.BuildLipGenArgs`).
@@ -124,8 +124,8 @@ the raw spec text), so voice `.fuz` filename stability still holds.
 ## Files
 
 **New**
-- `src/ModForge.Core/SpecRefs.cs` — resolver engine (delegate-injected) + `ResolveFile`. <300 lines.
-- `tests/ModForge.Core.Tests/SpecRefsTests.cs` — string ref, file+pointer, same-doc pointer,
+- `src/ModForge.Core/Spec/SpecRefs.cs` — resolver engine (delegate-injected) + `ResolveFile`. <300 lines.
+- `tests/ModForge.Core.Tests/Spec/SpecRefsTests.cs` — string ref, file+pointer, same-doc pointer,
   array chain-merge (later wins), long-form object, `$env` present, `$env` default, `$env`
   missing→throw, `$ref`+`$env` conflict→throw, cycle→throw, nested recursion, sibling override.
 - `examples/presets/bright-interior.json` — a real preset (full LGTM + IMGS records) extracted
@@ -135,7 +135,7 @@ the raw spec text), so voice `.fuz` filename stability still holds.
 **Modified**
 - `src/ModForge.Cli/Program.cs` — `ResolveSpecJson(path)` chokepoint; `ReadSpec` routes through
   it; `ReadOpts` gains `NumberHandling = AllowReadingFromString`.
-- `src/ModForge.Cli/Program.Build.cs` — `ValidateCmd` resolves first, then runs
+- `src/ModForge.Cli/Commands/Program.Build.cs` — `ValidateCmd` resolves first, then runs
   `CheckUnknownFields` + `Deserialize` on the resolved JSON.
 
 **Docs**

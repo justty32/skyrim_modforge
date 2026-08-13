@@ -26,8 +26,8 @@ Grant = add the ability on join. Pure-data primary resolution (priority + GetInF
 
 ## Task 1: `IdentitySpec` model + `ModSpec.Identities` + schema
 
-**Files:** Create `src/ModForge.Core/Spec.Identity.cs`; Modify `src/ModForge.Core/Spec.cs` (add `Identities`);
-`examples/spec.schema.json`; Test `tests/ModForge.Core.Tests/IdentityTests.cs`.
+**Files:** Create `src/ModForge.Core/Spec/Spec.Identity.cs`; Modify `src/ModForge.Core/Spec/Spec.cs` (add `Identities`);
+`examples/spec.schema.json`; Test `tests/ModForge.Core.Tests/Build/IdentityTests.cs`.
 
 - [ ] Test: `new IdentitySpec()` defaults — `Priority==0`, `Grants` empty, `Toggle==false`, `Default==false`, `Faction==""`.
 - [ ] Implement `IdentitySpec { string Id; string Faction; int Priority; List<string> Grants; bool Toggle; bool Default; IdentityAcquireSpec? OnAcquire; }` and `IdentityAcquireSpec { string Scene; }`. Add `List<IdentitySpec> Identities` to `ModSpec`.
@@ -36,7 +36,7 @@ Grant = add the ability on join. Pure-data primary resolution (priority + GetInF
 
 ## Task 2: Build a FACT per identity + validate
 
-**Files:** Create `src/ModForge.Core/Generator.Build.Identity.cs`; Modify `Generator.Build.cs` (call `BuildIdentities` in pass 1); `Generator.Validate.cs` (+`ValidateIdentities`); Test `IdentityTests.cs`.
+**Files:** Create `src/ModForge.Core/Build/Generator.Build.Identity.cs`; Modify `Generator.Build.cs` (call `BuildIdentities` in pass 1); `Generator.Validate.cs` (+`ValidateIdentities`); Test `IdentityTests.cs`.
 
 - [ ] Test: a spec with `identities:[{id:Paladin, faction:MF_FactPaladin, priority:30}]` builds a FACT editorId `MF_FactPaladin`. (If `faction` is an in-spec editorId not already a `factions[]` entry, BuildIdentities creates the FACT; if it's an external ref `<master>:0x..`, it's used as-is — no build.)
 - [ ] Test: validate flags duplicate identity `id`, empty `faction`, and a `grants` ref that doesn't resolve.
@@ -46,7 +46,7 @@ Grant = add the ability on join. Pure-data primary resolution (priority + GetInF
 
 ## Task 3: `identity` / `primaryIdentity` tags → CTDA expansion on dialogue
 
-**Files:** Modify `src/ModForge.Core/Spec.Dialogue.cs` (add `Identity`/`PrimaryIdentity` string fields to `DialogueSpec`); `src/ModForge.Core/Generator.Build.Conditions.cs` (expand tags into CTDA on the INFO, alongside existing `Conditions`); Test `IdentityTests.cs`.
+**Files:** Modify `src/ModForge.Core/Spec/Spec.Dialogue.cs` (add `Identity`/`PrimaryIdentity` string fields to `DialogueSpec`); `src/ModForge.Core/Build/Generator.Build.Conditions.cs` (expand tags into CTDA on the INFO, alongside existing `Conditions`); Test `IdentityTests.cs`.
 
 - [ ] Test: a dialogue line with `identity:"Paladin"` builds an INFO whose conditions include a `GetInFaction` (param = Paladin's faction, `>= 1`) run on the player. A line with `primaryIdentity:"Paladin"` ALSO adds, for every identity with higher priority, a `GetInFaction(thatFaction) == 0` exclusion.
 - [ ] Implement: a helper `ExpandIdentityConditions(string identity, string primaryIdentity, identityTable)` → `List<Condition>`. `GetInFaction` runs on the player (RunOnTarget or a player Reference). Merge the produced conditions into the INFO's CTDA list (AND).

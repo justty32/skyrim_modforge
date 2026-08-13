@@ -153,7 +153,7 @@ scene-capture-bridge DLL `sc cap` 匯出的 `capturedItems[]` → macro 展開�
 | Build P2 | `Generator.PerkFragments.cs` | perk fragment 純產生器：`<perk>_Frags extends Perk`、`Fragment_<i>(ObjectReference akTargetRef, Actor akActor)` 含 fragmentBody；`PerkNeedsFragmentScript`/`PerkFragmentScriptName`/`PerkFragmentChoices` |
 | EntryPoints | `Generator.Build.Perks.EntryPoints.cs` | `EntryPointTabCount` vanilla 表（含 `Activate`=2）：每 EntryType 的隱藏 tab-count byte（防 CTD）|
 | Validate | `Generator.Validate.Npcs.cs` | perk entry-point enum、ability spell ref、**addActivateChoice（buttonLabel 非空、spell/fragmentBody 至少一）/setText（text 非空）** |
-| Package | `src/ModForge.Cli/Package.cs` | 任一 perk 有 fragmentBody → 編 `<perk>_Frags.psc`（與 quest/dialogue/scene fragment 同段），Build 時掛 PerkAdapter |
+| Package | `src/ModForge.Cli/Commands/Package.cs` | 任一 perk 有 fragmentBody → 編 `<perk>_Frags.psc`（與 quest/dialogue/scene fragment 同段），Build 時掛 PerkAdapter |
 | Diag | `Diagnostics.Perks.cs` | entry-point effects / ability spell / ranks / conditions dump |
 
 ---

@@ -160,9 +160,9 @@ Code/docs for voice pipeline:
 | Voice pipeline CODE_MAP | `docs/CODE_MAP.infra.md` section "語音克隆（TTS → .fuz）" |
 | User workflow | `docs/SPEC-workflow.md` section "Voice (TTS voice cloning → .fuz)" |
 | VoiceType examples | `docs/lifelike/formid-reference.md` section "Voice types" |
-| CLI implementation | `src/ModForge.Cli/Program.Build.Voice.cs` |
-| BSA extraction helper | `src/ModForge.Core/Archives.cs` |
-| FUZ container helper | `src/ModForge.Core/Fuz.cs` |
+| CLI implementation | `src/ModForge.Cli/Commands/Program.Build.Voice.cs` |
+| BSA extraction helper | `src/ModForge.Core/Formats/Archives.cs` |
+| FUZ container helper | `src/ModForge.Core/Formats/Fuz.cs` |
 
 ## Record Family Map
 

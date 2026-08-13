@@ -1,6 +1,6 @@
 # VIGILANT scene/對話 vs ModForge 對照稽核（2026-06-13）
 
-對 `Vigilant.esm`（v181，~21MB；離線 `SkyrimMod.CreateFromBinaryOverlay`，不載 master、不碰 BSA）只讀其自身的 **SCEN / DIAL / INFO / DLBR** 記錄，與 ModForge 的 `SceneSpec`／`DialogueSpec`（`src/ModForge.Core/Spec.Scene.cs`、`Spec.Dialogue.cs`）、build 路徑（`Generator.Build.Scene.cs`、`Generator.Build.Dialogue.cs`）、與 CTDA 白名單（`Generator.Build.Conditions.cs`）逐欄對照。所有數字皆來自實際記錄普查（探針已清，見文末）。
+對 `Vigilant.esm`（v181，~21MB；離線 `SkyrimMod.CreateFromBinaryOverlay`，不載 master、不碰 BSA）只讀其自身的 **SCEN / DIAL / INFO / DLBR** 記錄，與 ModForge 的 `SceneSpec`／`DialogueSpec`（`src/ModForge.Core/Spec/Spec.Scene.cs`、`Spec.Dialogue.cs`）、build 路徑（`Generator.Build.Scene.cs`、`Generator.Build.Dialogue.cs`）、與 CTDA 白名單（`Generator.Build.Conditions.cs`）逐欄對照。所有數字皆來自實際記錄普查（探針已清，見文末）。
 
 > 範圍：本稽核**只看「能不能表達（authoring 模型）」**，不看 runtime 行為。VIGILANT 的演出邏輯大量在 Papyrus fragment body 內（在未讀的 BSA），本稽核只能看 record 層的掛載點與條件資料。
 

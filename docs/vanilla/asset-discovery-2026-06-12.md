@@ -68,15 +68,15 @@ Core/resource archives of interest:
 
 Existing code can read ESM/ESP via Mutagen:
 
-- `src/ModForge.Core/PluginIo.cs` loads plugins with `SkyrimMod.CreateFromBinary(..., SkyrimRelease.SkyrimSE)`.
-- `src/ModForge.Cli/Diagnostics.cs` provides lazy overlay `find <in.esp> <query> [type]`.
-- `src/ModForge.Cli/Diagnostics.Dump.cs` provides lazy overlay `dump <in.esp>`.
-- `src/ModForge.Cli/Diagnostics.StoryManager.cs` provides `smtree <Skyrim.esm>`.
+- `src/ModForge.Core/Formats/PluginIo.cs` loads plugins with `SkyrimMod.CreateFromBinary(..., SkyrimRelease.SkyrimSE)`.
+- `src/ModForge.Cli/Diagnostics/Diagnostics.cs` provides lazy overlay `find <in.esp> <query> [type]`.
+- `src/ModForge.Cli/Diagnostics/Diagnostics.Dump.cs` provides lazy overlay `dump <in.esp>`.
+- `src/ModForge.Cli/Diagnostics/Diagnostics.StoryManager.cs` provides `smtree <Skyrim.esm>`.
 
 Existing code can read/extract BSA/BA2 via Mutagen archives:
 
-- `src/ModForge.Core/Archives.cs` has `Archives.List` and `Archives.Extract`.
-- `src/ModForge.Cli/Program.Build.Voice.cs` exposes `extract-voices <bsaPath> <voiceType> <outDir>`.
+- `src/ModForge.Core/Formats/Archives.cs` has `Archives.List` and `Archives.Extract`.
+- `src/ModForge.Cli/Commands/Program.Build.Voice.cs` exposes `extract-voices <bsaPath> <voiceType> <outDir>`.
 
 The public CLI currently has targeted voice extraction, not a general archive-list
 or general archive-extract command.

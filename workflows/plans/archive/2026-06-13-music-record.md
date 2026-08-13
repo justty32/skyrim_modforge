@@ -15,11 +15,11 @@
 ### Task 1: MUST + MUSC records + WireMusic
 
 **Files:**
-- Create: `src/ModForge.Core/Spec.Music.cs`
-- Modify: `src/ModForge.Core/Spec.cs` (add `MusicTracks` + `Music` lists)
-- Create: `src/ModForge.Core/Generator.Build.Music.cs`
-- Modify: `src/ModForge.Core/Generator.Build.cs`
-- Test: `tests/ModForge.Core.Tests/MusicTests.cs`
+- Create: `src/ModForge.Core/Spec/Spec.Music.cs`
+- Modify: `src/ModForge.Core/Spec/Spec.cs` (add `MusicTracks` + `Music` lists)
+- Create: `src/ModForge.Core/Build/Generator.Build.Music.cs`
+- Modify: `src/ModForge.Core/Build/Generator.Build.cs`
+- Test: `tests/ModForge.Core.Tests/Build/MusicTests.cs`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -70,7 +70,7 @@ public class MusicTests
 
 Run: `dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj --filter "FullyQualifiedName~MusicTests"`
 
-- [ ] **Step 3: Add spec types** — create `src/ModForge.Core/Spec.Music.cs`:
+- [ ] **Step 3: Add spec types** — create `src/ModForge.Core/Spec/Spec.Music.cs`:
 
 ```csharp
 using System.Collections.Generic;
@@ -114,7 +114,7 @@ Add to `ModSpec` in `Spec.cs` (after `Hazards`):
     public List<MusicTypeSpec> Music { get; set; } = new();   // Music Type (MUSC)
 ```
 
-- [ ] **Step 4: Add the builder** — create `src/ModForge.Core/Generator.Build.Music.cs`:
+- [ ] **Step 4: Add the builder** — create `src/ModForge.Core/Build/Generator.Build.Music.cs`:
 
 ```csharp
 using System;
@@ -189,7 +189,7 @@ After `ctx.WireHazards();` (~line 91) add:
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/ModForge.Core/Spec.Music.cs src/ModForge.Core/Spec.cs src/ModForge.Core/Generator.Build.Music.cs src/ModForge.Core/Generator.Build.cs tests/ModForge.Core.Tests/MusicTests.cs
+git add src/ModForge.Core/Spec/Spec.Music.cs src/ModForge.Core/Spec/Spec.cs src/ModForge.Core/Build/Generator.Build.Music.cs src/ModForge.Core/Build/Generator.Build.cs tests/ModForge.Core.Tests/Build/MusicTests.cs
 git commit -m "feat(sound): Music Track (MUST) + Music Type (MUSC) records + pass-2 track wiring" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -198,10 +198,10 @@ git commit -m "feat(sound): Music Track (MUST) + Music Type (MUSC) records + pas
 ### Task 2: Palette sub-tracks + cell/worldspace assignment
 
 **Files:**
-- Modify: `src/ModForge.Core/Spec.World.cs` (add `Music` to `CellSpec`)
-- Create: pass-2 `WireCellMusic` in `src/ModForge.Core/Generator.Build.Music.cs`
-- Modify: `src/ModForge.Core/Generator.Build.cs` (call `WireCellMusic`)
-- Test: `tests/ModForge.Core.Tests/MusicTests.cs` (add cases)
+- Modify: `src/ModForge.Core/Spec/Spec.World.cs` (add `Music` to `CellSpec`)
+- Create: pass-2 `WireCellMusic` in `src/ModForge.Core/Build/Generator.Build.Music.cs`
+- Modify: `src/ModForge.Core/Build/Generator.Build.cs` (call `WireCellMusic`)
+- Test: `tests/ModForge.Core.Tests/Build/MusicTests.cs` (add cases)
 
 - [ ] **Step 1: Write the failing tests** (append)
 
@@ -263,7 +263,7 @@ Wire it in `Generator.Build.cs` after `ctx.WireCellZones();` (~line 113):
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/ModForge.Core/Spec.World.cs src/ModForge.Core/Generator.Build.Music.cs src/ModForge.Core/Generator.Build.cs tests/ModForge.Core.Tests/MusicTests.cs
+git add src/ModForge.Core/Spec/Spec.World.cs src/ModForge.Core/Build/Generator.Build.Music.cs src/ModForge.Core/Build/Generator.Build.cs tests/ModForge.Core.Tests/Build/MusicTests.cs
 git commit -m "feat(sound): cells[].music assignment + Palette sub-tracks (worldspace music already wired)" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -272,9 +272,9 @@ git commit -m "feat(sound): cells[].music assignment + Palette sub-tracks (world
 ### Task 3: Validation
 
 **Files:**
-- Create: `src/ModForge.Core/Generator.Validate.Music.cs`
-- Modify: `src/ModForge.Core/Generator.Validate.cs` (register editorIds + call `ValidateMusic`)
-- Test: `tests/ModForge.Core.Tests/MusicTests.cs` (add a case)
+- Create: `src/ModForge.Core/Validate/Generator.Validate.Music.cs`
+- Modify: `src/ModForge.Core/Validate/Generator.Validate.cs` (register editorIds + call `ValidateMusic`)
+- Test: `tests/ModForge.Core.Tests/Build/MusicTests.cs` (add a case)
 
 - [ ] **Step 1: Write the failing test** (append)
 
@@ -348,7 +348,7 @@ public static partial class Generator
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/ModForge.Core/Generator.Validate.Music.cs src/ModForge.Core/Generator.Validate.cs tests/ModForge.Core.Tests/MusicTests.cs
+git add src/ModForge.Core/Validate/Generator.Validate.Music.cs src/ModForge.Core/Validate/Generator.Validate.cs tests/ModForge.Core.Tests/Build/MusicTests.cs
 git commit -m "feat(sound): validate music (track type/file/palette, MUSC tracks, flags, cell ref)" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 

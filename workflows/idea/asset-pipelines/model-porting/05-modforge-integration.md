@@ -119,4 +119,4 @@ Per CLAUDE.md Workflow 1, on landing (this is research):
 ---
 
 ### Sources
-Internal conventions from `workflows/common/code-map/CODE_MAP.infra.md`, `src/ModForge.Core/Papyrus.cs`, `src/ModForge.Core/Assets.cs`, `src/ModForge.Core/Spec.Items.cs`, `src/ModForge.Cli/ModForge.Cli.csproj`. Engine/format facts: [01]–[04].
+Internal conventions from `workflows/common/code-map/CODE_MAP.infra.md`, `src/ModForge.Core/Papyrus/Papyrus.cs`, `src/ModForge.Core/Assets.cs`, `src/ModForge.Core/Spec/Spec.Items.cs`, `src/ModForge.Cli/ModForge.Cli.csproj`. Engine/format facts: [01]–[04].

@@ -165,7 +165,7 @@ new PlacedObject {
 
 ### ✅ P0 — 最小可證偽 spike：`navdiag` ＋ no-op override 上機（**已落地 2026-07-12，🎮 等實機**）
 
-- **✅ T0.1〔離線〕`navdiag`**（`src/ModForge.Cli/Diagnostics.Navmesh.cs`，比照既有 `landdiag`/`questdiag`）：
+- **✅ T0.1〔離線〕`navdiag`**（`src/ModForge.Cli/Diagnostics/Diagnostics.Navmesh.cs`，比照既有 `landdiag`/`questdiag`）：
   - `navdiag <plugin>` → 列出 plugin 內每張 NAVM（FormID / 頂點 / triangle〔含 Deleted 數〕/ **跨 mesh EdgeLinks** / doorTriangles / cover / grid bytes＋divisor / Min-Max / parent 種類 / record flags），**並把每張「override 了 master」的 NVNM 與 master 的原始位元組逐 byte 比對** → `IDENTICAL` / `DIFF (first difference at byte N)`；有 DIFF 就 **exit 1**。**這就是 GO/NO-GO 閘。**
   - `navdiag <esm> <0xCELL>` / `navdiag <esm> <0xWRLD> <x> <y>` → 偵察某個 vanilla cell 有哪些網格（挑實驗地點就是用它挑的）。
   - **關鍵設計**：vanilla 那一側**不經 Mutagen**——自己掃 record header、zlib 解壓、走子記錄找 NVNM（含 XXXX 超長度）。若兩側都用 Mutagen 序列化，那只證明 `DeepCopy` 穩定，**證不了 Mutagen 的 parse 沒丟東西**。

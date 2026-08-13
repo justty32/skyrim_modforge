@@ -21,10 +21,10 @@ Skyrim 的臉有兩層：
 ## 地形（2026-07-11 探勘固化，Mutagen 0.53.1）
 
 ### 現況：ModForge 今天寫的 facegen ＝ 零
-`NpcSpec`（`src/ModForge.Core/Spec.Actors.cs:5`）**已有**：`Race`、`Unique`/`Essential`/`Protected`、`Outfit`、`Perks`、`Class`、`Level`、`AutoCalcStats`、`Packages`、`Spells`、`Items`、AI 態度欄、`Greeting`。
+`NpcSpec`（`src/ModForge.Core/Spec/Spec.Actors.cs:5`）**已有**：`Race`、`Unique`/`Essential`/`Protected`、`Outfit`、`Perks`、`Class`、`Level`、`AutoCalcStats`、`Packages`、`Spells`、`Items`、AI 態度欄、`Greeting`。
 **完全沒有**：`Female`/性別、`Weight`、`Height`、`BodyTint`、`HairColor`、`FaceTexture`(FTST)、`HeadParts`、`TintLayers`、`FaceMorphs`、`FaceParts`、`Dead`、`ActiveEffects`。
 
-`BuildNpcs`/`WireNpcs`（`src/ModForge.Core/Generator.Build.Actors.cs`，pass1 `:9-45`、pass2 `:120-191`）設 EditorID/Name/Level/flags(AutoCalc/Unique/Essential/Protected)/AIData/Race/Class/DefaultOutfit/Voice/CrimeFaction/CombatStyle/ActorEffect/Items/Factions；perk 在 `Generator.Build.Perks.cs:169-177`。**臉部一律不碰**（連 `Female` flag 都沒設）。
+`BuildNpcs`/`WireNpcs`（`src/ModForge.Core/Build/Generator.Build.Actors.cs`，pass1 `:9-45`、pass2 `:120-191`）設 EditorID/Name/Level/flags(AutoCalc/Unique/Essential/Protected)/AIData/Race/Class/DefaultOutfit/Voice/CrimeFaction/CombatStyle/ActorEffect/Items/Factions；perk 在 `Generator.Build.Perks.cs:169-177`。**臉部一律不碰**（連 `Female` flag 都沒設）。
 
 ### Mutagen 0.53.1 `Npc` 臉部 API（已對安裝的 DLL 確認 property 名）
 | 擷取概念 | 子記錄 | Mutagen `Npc` property | 型別 |
@@ -141,7 +141,7 @@ DLL 匯出的 json 形狀（`SceneExporter.cpp:269-316` verbatim，schema 必須
 - NpcSpec 層（手寫 NPC 也受惠）：同樣的 FaceMorphs/FaceParts 數量、Weight 範圍、HairColor/FaceTexture/HeadParts ref 檢查。
 - 驗證：T5 validation 測試。
 
-**T5 — 測試**（新檔 `tests/ModForge.Core.Tests/CapturedNpcsTests.cs`，模板＝`CapturedItemsTests.cs`）
+**T5 — 測試**（新檔 `tests/ModForge.Core.Tests/Build/CapturedNpcsTests.cs`，模板＝`CapturedItemsTests.cs`）
 - validation（offline `[Fact]`）：missing race / bad ref / faceMorphs 數量錯 / weight 超界 / 完整合法樣本無 problem。
 - expand（offline）：全欄樣本 → NpcSpec 各欄逐一斷言＋placement 生成（interior→Cell、exterior→Worldspace）；無 cell/ws → 不生 placement；同名兩筆 → editorId 唯一；idempotent；perks 只取 ref。
 - build（offline——mint 帶外部 race ref 不需 master，`NpcTests.cs:105` 為證）：**morph 映射鎖定測試**＝`FaceMorphs=[0.01,0.02,…,0.18]` 18 個相異值 → 讀回 `Npc.FaceMorph` 逐一斷言具名欄＝對應值；FaceParts/TintLayers/Weight/Height/Female/TextureLighting/HeadParts/HairColor/HeadTexture 讀回斷言。

@@ -14,7 +14,7 @@ Mutagen IMAD 事實（反射確認）：`ImageSpaceAdapter` / `IImageSpaceAdapte
 
 ## Task 1：Spec — ImageSpaceModifierSpec + 頂層 list
 
-**Files:** Modify `src/ModForge.Core/Spec.MagicFx.cs`、`src/ModForge.Core/Spec.cs`、`src/ModForge.Core/Generator.BuildContext.cs:149`
+**Files:** Modify `src/ModForge.Core/Spec/Spec.MagicFx.cs`、`src/ModForge.Core/Spec/Spec.cs`、`src/ModForge.Core/Build/Generator.BuildContext.cs:149`
 
 - ImageSpaceModifierSpec 欄位：`EditorId` / `BrightnessMultiplier`(float=1.6) / `Contrast`(float=1) / `Saturation`(float=1) / `TintColor`(ColorSpec?) / `TintAmount`(float 0..1=0) / `Duration`(float=1) / `Animatable`(bool=false)。
 - Spec.cs 加 `public List<ImageSpaceModifierSpec> ImageSpaceModifiers { get; set; } = new();`（放 Explosions 後）。
@@ -22,7 +22,7 @@ Mutagen IMAD 事實（反射確認）：`ImageSpaceAdapter` / `IImageSpaceAdapte
 
 ## Task 2：Builder — BuildImageSpaceModifiers
 
-**Files:** Create `src/ModForge.Core/Generator.Build.ImageSpace.cs`；Modify `src/ModForge.Core/Generator.Build.cs:34`（orchestrator）
+**Files:** Create `src/ModForge.Core/Build/Generator.Build.ImageSpace.cs`；Modify `src/ModForge.Core/Build/Generator.Build.cs:34`（orchestrator）
 
 - 仿 `Generator.Build.Projectiles.cs` 的 BuildContext instance 方法。建 `mod.ImageSpaceAdapters.AddNew()`，設 EditorID/Duration/Animatable，brightness/contrast/saturation 各 add 一個 `KeyFrame{Time=0,Value=…}`，tint 有色時 add `ColorFrame{Time=0,Color=FromArgb(alpha, r,g,b)}`。
 - orchestrator 在 `ctx.BuildProjectiles();` 後加 `ctx.BuildImageSpaceModifiers();`。
@@ -30,14 +30,14 @@ Mutagen IMAD 事實（反射確認）：`ImageSpaceAdapter` / `IImageSpaceAdapte
 
 ## Task 3：Validate
 
-**Files:** Modify `src/ModForge.Core/Generator.Validate.MagicFx.cs`、`Generator.Validate.cs:101`
+**Files:** Modify `src/ModForge.Core/Validate/Generator.Validate.MagicFx.cs`、`Generator.Validate.cs:101`
 
 - `ValidateImageSpaceModifiers()`：brightness/contrast/saturation/duration >= 0；tintAmount 0..1（warn 不擋）。
 - Validate.cs 加 `foreach (var im in spec.ImageSpaceModifiers) Reg(im.EditorId, "imageSpaceModifier");` 與 `ctx.ValidateImageSpaceModifiers();`。
 
 ## Task 4：單元測試
 
-**Files:** Create `tests/ModForge.Core.Tests/DaylightSpellTests.cs`
+**Files:** Create `tests/ModForge.Core.Tests/Build/DaylightSpellTests.cs`
 
 - IMAD builder：brightness/contrast/saturation 的 keyframe value、tint color+alpha、Duration 正確。
 - 法術組裝：Active spell 有 2 effect、Toggle 為 FireAndForget/Self、Active 為 Ability/ConstantEffect、Light-archetype MGEF 的 Association 解到 LIGT。

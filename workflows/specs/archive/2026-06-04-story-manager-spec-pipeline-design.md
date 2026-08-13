@@ -41,7 +41,7 @@ SMBN→SMQN 節點樹（additive 掛在原版事件根下）+ 帶條件式 alias
 }]
 ```
 
-新型別（新檔 `src/ModForge.Core/Spec.StoryManager.cs`）：
+新型別（新檔 `src/ModForge.Core/Spec/Spec.StoryManager.cs`）：
 
 ```csharp
 public sealed class QuestStoryEventSpec
@@ -82,7 +82,7 @@ KillActor → {
 API：`bool TryGet(string eventName, out StoryEventDef def)`；def 提供 Root/Code/Slots。
 fill 解析助手：給 `(QuestAliasSpec, StoryEventDef)` 回傳「要在 QuestAlias 上設什麼」（FromEvent 資料或 forced ref）。
 
-## Build step（新檔 `src/ModForge.Core/Generator.Build.StoryManager.cs`）
+## Build step（新檔 `src/ModForge.Core/Build/Generator.Build.StoryManager.cs`）
 
 Orchestrator（`Generator.Build.cs`）在 `ctx.BuildQuests()` 之後插一行 `ctx.BuildStoryManager()`。
 （quests 已建好並存在 `questsByEd`；SM 節點在 quest 之後建，FormID 順序安全。）
@@ -99,7 +99,7 @@ Orchestrator（`Generator.Build.cs`）在 `ctx.BuildQuests()` 之後插一行 `c
    + **一條 SMQN**（`Parent.SetTo(branch)`，`Quests=[StoryManagerQuest{Quest→本 quest}]`）。
    一 quest 一組節點，PNAM-additive，多 quest 互不干擾。
 
-## Validator（新檔 `src/ModForge.Core/Generator.Validate.StoryManager.cs`，掛進既有 validate 派發）
+## Validator（新檔 `src/ModForge.Core/Validate/Generator.Validate.StoryManager.cs`，掛進既有 validate 派發）
 
 - `storyEvent.event` 必須是已知事件名 → 否則 **錯誤**（列出支援清單，目前 `KillActor`）。
 - 每個 alias `fill` 語法合法：`fromEvent:` 的 slot 對該事件存在；`forced:` 的 ref 可解析 → 否則 **錯誤**。
@@ -134,13 +134,13 @@ MO2 → 殺一頭牛（非 SimpleActor）→ `sqv` 看 Victim 填上。PASS = sp
 
 ## 檔案
 
-- 新：`src/ModForge.Core/Spec.StoryManager.cs`（QuestStoryEventSpec / QuestAliasSpec），`QuestSpec` 加兩欄位
+- 新：`src/ModForge.Core/Spec/Spec.StoryManager.cs`（QuestStoryEventSpec / QuestAliasSpec），`QuestSpec` 加兩欄位
 - 新：`src/ModForge.Core/StoryManagerEvents.cs`（事件表 + fill 解析）
-- 新：`src/ModForge.Core/Generator.Build.StoryManager.cs`（build step）+ orchestrator 插一行
-- 新：`src/ModForge.Core/Generator.Validate.StoryManager.cs`（validation）+ validate 派發掛接
+- 新：`src/ModForge.Core/Build/Generator.Build.StoryManager.cs`（build step）+ orchestrator 插一行
+- 新：`src/ModForge.Core/Validate/Generator.Validate.StoryManager.cs`（validation）+ validate 派發掛接
 - 新：`examples/story-manager-kill.json`（實機樣本 spec）
 - 改/刪：spec 路徑通後刪 `StoryManagerProbe.cs` + CLI `smprobe` dispatch/Usage；保留 `smtree`
-- 測試：`tests/ModForge.Core.Tests/StoryManagerBuildTests.cs` + `StoryManagerValidateTests.cs`；
+- 測試：`tests/ModForge.Core.Tests/Build/StoryManagerBuildTests.cs` + `StoryManagerValidateTests.cs`；
   探針的 `StoryManagerProbeTests.cs` 隨 builder 一起刪
 
 ## 範圍外（YAGNI）

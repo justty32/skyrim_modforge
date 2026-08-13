@@ -36,60 +36,56 @@
 | 檔案 | 被改次數 | 它是什麼 |
 |---|---|---|
 | `src/ModForge.Cli/Program.cs` | **95** | argv switch（每加一個命令就要改）|
-| `src/ModForge.Core/Generator.Build.cs` | **69** | build 步驟呼叫清單 |
-| `src/ModForge.Core/Generator.Validate.cs` | **56** | validate 步驟呼叫清單 |
-| `src/ModForge.Core/Spec.cs` | **55** | `ModSpec` 根 DTO（100+ 個 `List<XSpec>` 欄位）|
-| `src/ModForge.Core/Generator.BuildContext.cs` | **44** | 82 個欄位的狀態袋 |
+| `src/ModForge.Core/Build/Generator.Build.cs` | **69** | build 步驟呼叫清單 |
+| `src/ModForge.Core/Validate/Generator.Validate.cs` | **56** | validate 步驟呼叫清單 |
+| `src/ModForge.Core/Spec/Spec.cs` | **55** | `ModSpec` 根 DTO（100+ 個 `List<XSpec>` 欄位）|
+| `src/ModForge.Core/Build/Generator.BuildContext.cs` | **44** | 82 個欄位的狀態袋 |
 
 **加一個 record family = 改這 5 個共用檔 + 新增 4~6 個檔。** 這才是摩擦來源，而且在**兩台機器交替開發**的情況下，這 5 個檔正好是最容易撞到 merge conflict 的位置。把檔案搬進資料夾**不會**改善這件事——第 3 節的 Batch 2 才會。
 
 ## 3. 批次計畫（一次一個面向，照 refactor README 的規矩）
 
-### Batch 0 — 先蓋護欄（**其他批次的前置**）
+### Batch 0 — 先蓋護欄（**其他批次的前置**）— ✅ 已完成 2026-08-13
 
-今天已把 143 支 example spec 全部連建兩次比對過，**143/143 byte-deterministic、零例外**，所以可以蓋一層比斷言測試強得多的網：
+- `scripts/golden-hash.sh <out> [jobs]`：build `examples/` 全部，逐一輸出 `.esp`／`.seq` 的 SHA-256。用法與警告寫進 [testing.md](../testing.md)。
+- 重構前後各跑一次 `diff`，**任何一行變動 = 行為變了**，立刻停。
+- 理由：**1107 個 test method 裡 965 個（87%）是 E2E**——只驗「spec 進去、plugin/warnings 出來」，對 `BuildContext` 內部怎麼重組**完全無感**。既是好消息（重構不會假性紅燈）也是壞消息（**內部搬錯位置它們抓不到**）。golden hash 補的就是這個洞。
+- 實測：143 支 spec → **197 個產物**（143 esp + 54 seq），0 build failure，離線機 4 並行約 3 分鐘；**兩次獨立執行完全逐行相同**，且與另一支循序寫的探針腳本 143/143 吻合（證明並行不影響輸出）。
 
-- 加一支 `scripts/golden-hash.{sh,ps1}`：對 `examples/*.json` 全部 build 一次，存 `SHA256` 清單到 `tests/golden/plugin-hashes.txt`。
-- 重構前後各跑一次，**任何一個 hash 變動 = 行為變了**，立刻停。
-- 理由：目前 **1107 個 test method 裡有 965 個（87%）是 E2E**——只驗「spec 進去、plugin/warnings 出來」。它們對 `BuildContext` 內部怎麼重組**完全無感**，所以既是好消息（重構不會假性紅燈）也是壞消息（**內部搬錯位置它們抓不到**）。golden hash 補的就是這個洞。
-- ⚠️ **hash 清單跟機器綁定，不能跨機共用**：離線機沒有 `Skyrim.esm`，凡是引用 vanilla master 的 placement 都會被 skip（143 支加起來只有 422KB esp），所以離線 hash 鎖住的是**縮水版輸出**。做法＝**在哪台機器重構，就在那台機器產生 before/after 兩份 hash 自比**；清單本身可以進版控當紀錄，但不要拿 Manjaro 的清單去驗離線機（或反過來）。
+**兩個與原構想不同的決定：**
 
-**Done when:** 腳本存在、before hash 已產生、重構後 after hash 逐行相同。
+1. **只寫 `.sh`，不寫 `.ps1`。** 離線機有 Git Bash（`bash 5.3` + `sha256sum`），維護兩份同邏輯腳本是自找不一致。
+2. **hash 清單不進版控**（原本想放 `tests/golden/plugin-hashes.txt`）。因為它**跟機器綁定**：離線機沒有 `Skyrim.esm`，凡是指向 vanilla cell 的 placement 都會被 skip（143 支加起來只有 422KB esp），與 Manjaro 上同一支 spec 的 bytes 不同。一份會過期、又會誘人跨機比對的檔案，價值低於風險——改成**在同一台機器產 before/after 自比**，腳本進版控、輸出不進。
 
-### Batch 1 — 資料夾分層（**零行為風險**）
+### Batch 1 — 資料夾分層 — ✅ 已完成 2026-08-13
 
-SDK-style csproj 用 `**/*.cs` glob，純 `git mv` 不需要改任何 csproj，namespace 一律不動。建議佈局：
+**344 個 `git mv`，零內容修改。** 落地佈局（權威表在 [CODE_MAP](../common/code-map/CODE_MAP.md)）：
 
-```
-src/ModForge.Core/            (212 檔 → 8 個資料夾 + 少數留在根)
-  Spec/          51 檔   Spec.cs + Spec.*.cs（純 DTO）
-  Build/         69 檔   Generator.Build.*.cs + Generator.BuildContext*.cs
-  Validate/      32 檔   Generator.Validate.*.cs
-  Macros/        10 檔   ExpandMacros 那一票：Settlements / LivingNpcs / SkillTrees /
-                         CapturedNpcs / CapturedItems / WordWall / SceneNpcRoles /
-                         StorageWrites / JContainers / Recipes
-  Papyrus/       17 檔   *Fragments.cs + McmScripts + Papyrus / McmGen / Oar{Gen,
-                         Conditions,Functions} / SpidGen / KidGen / FlmGen / BosGen /
-                         BdiGen / AosGen / SkyPatcherGen
-  Formats/       10 檔   Heightmap / Vtxt / Vhgt / Vnml / Splatmap / Fuz / SeqFile /
-                         Archives / PluginIo / NavmeshPatch
-  Catalog/        3 檔
-  Voice/          3 檔
-  (root)          ~19    Generator.cs / Generator.Helpers / Generator.Dependencies* /
-                         Generator.Requires / SpecRefs / Support / SafeOutputPath /
-                         Translator / Demo / Assets / GlobalUsings / StoryManager* /
-                         Package{RefSlots,Templates} / QuestNodes / GodotPlacements /
-                         SceneCoordinates
-src/ModForge.Cli/             (42 檔)
-  Commands/              Program.Build* / Program.Translate / Program.Schema / Package*
-  Diagnostics/   30 檔    Diagnostics.*.cs
-  Export/                TexExport / NifExport / CatalogCmd / QuestNodeCmd
-  (root)                 Program.cs / GlobalUsings.cs
-tests/ModForge.Core.Tests/    (113 檔) 鏡像上面的分法
-```
+| | Core | Cli | tests |
+|---|---|---|---|
+| `Spec/` | 52 | — | 6 |
+| `Build/` | 69 | — | 67 |
+| `Validate/` | 32 | — | 12 |
+| `Macros/` | 6 | — | — |
+| `Papyrus/` | 19 | — | 13 |
+| `Formats/` | 10 | — | 6 |
+| `Catalog/` | 3 | — | 3 |
+| `Voice/` | 3 | — | 4 |
+| `Commands/` | — | 11 | — |
+| `Diagnostics/` | — | 29 | — |
+| 根 | 18 | 2 | 2 |
 
-**Done when:** `git mv` 完成、`dotnet build` 過、1122 測試綠、golden hash 全部不變、CODE_MAP 五份子 index 的路徑同步更新。
-**注意**：這批會產生一個巨大的 rename diff，**單獨一個 commit，不夾帶任何內容修改**，否則 review 不能看。
+**三項驗證全過**：`dotnet build` 乾淨、測試 **1122 passed / 1 skipped / 0 failed**（與 batch 前逐項相同）、golden hash **197/197 產物 byte-identical**。csproj 一個字都沒改（預設 glob）。
+
+**做的時候調整的幾點：**
+
+- `Generator.Build.cs` 也進 `Build/`（原稿讓它留在根）——`Generator.Validate.cs` 進了 `Validate/`，兩者不一致沒道理。根只留 `Generator.cs` 當函式庫入口。
+- Cli 不開 `Export/`：`TexExport`/`NifExport`/`CatalogCmd`/`QuestNodeCmd` 本來就都是 CLI 命令，一起放 `Commands/` 比硬切一個 2 檔資料夾誠實。
+- **`Generator.WordWall.cs` 進 `Build/` 而不是 `Macros/`**：它是 `BuildContext` 的 partial，不是 `Expand*` 那一段。`Generator.JContainers.cs` / `Generator.StorageWrites.cs` 同理進 `Papyrus/`（檔頭自述是「script-template snippets 生成」），所以 `Macros/` 只有 6 檔而非原估的 10。
+- **文檔路徑一起改了，含 `*/archive/`**：299 行、33 個檔（其中 20 個在 archive）。archive 雖然凍結，但路徑改名不動任何論述，留 200 多條死連結比動它更糟。
+- src 根還剩 18 個各不相干的型別（`Assets` `Demo` `QuestNodes` `SceneCoordinates` `StoryManager*` …）。**沒有硬塞一個 `Support/`**——那只是換個名字的雜物抽屜，依 DEV-GUIDE「不預先過度設計」，等它真的礙事再分。
+
+> **順手發現的既有腐爛（不是本次造成，未修）**：文檔裡有 5 條指向從來不存在／早就改名的檔案——`src/ModForge.Cli/Build.cs`、`src/ModForge.Core/Generator.Build.SceneNpcRoles.cs`、`SceneImport.cs`、`StoryManagerProbe.cs`、`tests/.../StoryManagerProbeTests.cs`。屬於文檔面向，另開一次處理。
 
 ### Batch 2 — 拆 hub 檔（**真正解決第 2 節的痛**）
 
@@ -139,10 +135,13 @@ tests/ModForge.Core.Tests/    (113 檔) 鏡像上面的分法
 
 ## 4. 每個 batch 的驗證儀式（固定不變）
 
-```
+```bash
+dotnet build src/ModForge.Cli/ModForge.Cli.csproj
 dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj --filter "Category!=RequiresSkyrim"
-scripts/golden-hash.ps1  (或 .sh)   → diff tests/golden/plugin-hashes.txt
-git diff --stat                      → 確認這個 commit 只動了一個面向
+scripts/golden-hash.sh /tmp/before.txt   # 動工前
+scripts/golden-hash.sh /tmp/after.txt    # 動工後
+diff /tmp/before.txt /tmp/after.txt
+git diff --stat                          # 確認這個 commit 只動了一個面向
 ```
 
 三項全過才 commit，然後才開始下一個 batch。跨 batch 不合併 commit。

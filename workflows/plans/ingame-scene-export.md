@@ -38,12 +38,12 @@
 
 - [ ] **Step 1: 確認 build 入口與 `ModSpec` 併入點**
 
-Run: `grep -n "Deserialize<ModSpec>\|specDir\|Generate\|Build(" src/ModForge.Cli/Program.Build.cs | head`
+Run: `grep -n "Deserialize<ModSpec>\|specDir\|Generate\|Build(" src/ModForge.Cli/Commands/Program.Build.cs | head`
 Expected: 確認 `ModSpec` 在 `Program.Build.cs:65` 反序列化、拿得到 `specDir`（scene.json 相對路徑基準）、以及生成呼叫入口（`SceneImport.Merge(spec, specDir)` 要插在 deserialize 之後、generate 之前）。對照 `GodotPlacements` 是在 `Generator.Build.Worldspace.cs:255` 於 build 內展開——決定 `SceneImport` 走「CLI 併入 spec」或「Generator 內展開」；**選 CLI/spec 併入**（scene.json 是整份 spec 的替代來源，非某 worldspace 的子項）。
 
 - [ ] **Step 2: 確認 conditioned-Hello 對話的 spec 形狀**
 
-Run: `grep -nE "class DialogueSpec|Hello|GetIsID|Category|Topic|Info|Response" src/ModForge.Core/Spec.Dialogue.cs | head -20`
+Run: `grep -nE "class DialogueSpec|Hello|GetIsID|Category|Topic|Info|Response" src/ModForge.Core/Spec/Spec.Dialogue.cs | head -20`
 Expected: 找到一個「Hello topic + 多 INFO + 每 INFO 帶 condition（GetIsID <npc>）」的可表達路徑（memory 已確認此形狀在遊戲內可行）。記下要填的欄位名，供 Task 3 的 blacksmith 對話模板用。
 
 - [ ] **Step 3: 確認 vendor 與 sandbox package 的既有生成入口**
@@ -53,7 +53,7 @@ Expected: 確認 (a) vendor 可用 `SettlementVendorSpec`（vendor FACT + mercha
 
 - [ ] **Step 4: 確認外部 ActorRef 能當 dialogue condition / vendor faction 對象**
 
-Run: `grep -rn "GetIsID\|<master>:0x\|external ref\|0xFORMID" src/ModForge.Core/Generator.Build.Dialogue*.cs src/ModForge.Core/Generator.Build.Vendor.cs 2>/dev/null | head`
+Run: `grep -rn "GetIsID\|<master>:0x\|external ref\|0xFORMID" src/ModForge.Core/Generator.Build.Dialogue*.cs src/ModForge.Core/Build/Generator.Build.Vendor.cs 2>/dev/null | head`
 Expected: 確認生成器接受 `<plugin>.esp:0xFORMID` 形式的外部 ActorRef 當 GetIsID 對象 + 加入 vendor faction（跨 master 引用是熟路；memory `esm-formid-access`）。若某處只吃 in-spec editorId → 記為 Task 3 要補的最小點。
 
 ---
@@ -61,8 +61,8 @@ Expected: 確認生成器接受 `<plugin>.esp:0xFORMID` 形式的外部 ActorRef
 ### Task 1: `SceneNpcRoleSpec` schema + 頂層 list
 
 **Files:**
-- Create: `src/ModForge.Core/Spec.SceneExport.cs`
-- Modify: `src/ModForge.Core/Spec.cs`（加一個頂層 list）
+- Create: `src/ModForge.Core/Spec/Spec.SceneExport.cs`
+- Modify: `src/ModForge.Core/Spec/Spec.cs`（加一個頂層 list）
 
 - [ ] **Step 1: 新增 `SceneNpcRoleSpec`**
 
@@ -98,7 +98,7 @@ Expected: build succeeded。
 
 **Files:**
 - Create: `src/ModForge.Core/SceneImport.cs`
-- Modify: `src/ModForge.Cli/Program.Build.cs`（deserialize 後、generate 前呼叫）
+- Modify: `src/ModForge.Cli/Commands/Program.Build.cs`（deserialize 後、generate 前呼叫）
 
 - [ ] **Step 1: 寫 `SceneImport.Merge`（推廣 `GodotPlacements.Load`）**
 

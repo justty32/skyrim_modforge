@@ -23,7 +23,7 @@
 **目的:** `ScenePhaseFragment` 的 `Index` 是 0-based phase 還是 1-based?`FragmentName` 與 Papyrus 函式名的確切慣例?scene fragment 怎麼取 scene actor 的 `ObjectReference`?這些決定 Task 4 的 code,不能猜。
 
 **Files:**
-- 暫時性:可在 `src/ModForge.Cli/Diagnostics.cs` 加一個 throwaway `scnvmad <plugin> <FormID>` 指令 dump 一個含 phase fragment 的 vanilla SCEN 的 `SceneAdapter`(或用既有 xEdit 知識)。**不 commit 此 throwaway。**
+- 暫時性:可在 `src/ModForge.Cli/Diagnostics/Diagnostics.cs` 加一個 throwaway `scnvmad <plugin> <FormID>` 指令 dump 一個含 phase fragment 的 vanilla SCEN 的 `SceneAdapter`(或用既有 xEdit 知識)。**不 commit 此 throwaway。**
 
 - [ ] **Step 1: 找一個有 phase fragment 的 vanilla scene**
 
@@ -46,13 +46,13 @@
 ## Task 1: 新增 `SceneActionSpec.Idle` 欄位 + schema
 
 **Files:**
-- Modify: `src/ModForge.Core/Spec.Dialogue.cs:168-175`(SceneActionSpec)
+- Modify: `src/ModForge.Core/Spec/Spec.Dialogue.cs:168-175`(SceneActionSpec)
 - Modify: `examples/spec.schema.json`(scene action 物件加 `idle`)
-- Test: `tests/ModForge.Core.Tests/SceneTests.cs`
+- Test: `tests/ModForge.Core.Tests/Build/SceneTests.cs`
 
 - [ ] **Step 1: 寫失敗測試 — idle 欄位存在且預設為空**
 
-加到 `tests/ModForge.Core.Tests/SceneTests.cs`:
+加到 `tests/ModForge.Core.Tests/Build/SceneTests.cs`:
 
 ```csharp
 [Fact]
@@ -70,7 +70,7 @@ Expected: 編譯失敗(`SceneActionSpec` 無 `Idle`)。
 
 - [ ] **Step 3: 加欄位**
 
-在 `src/ModForge.Core/Spec.Dialogue.cs` 的 `SceneActionSpec`(行 168-175)末尾加:
+在 `src/ModForge.Core/Spec/Spec.Dialogue.cs` 的 `SceneActionSpec`(行 168-175)末尾加:
 
 ```csharp
     public string Idle { get; set; } = "";   // ref → 一個 IDLE 記錄;非空 = 此 action 在 StartPhase 播該 idle
@@ -93,7 +93,7 @@ Expected: PASS。
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/ModForge.Core/Spec.Dialogue.cs examples/spec.schema.json tests/ModForge.Core.Tests/SceneTests.cs
+git add src/ModForge.Core/Spec/Spec.Dialogue.cs examples/spec.schema.json tests/ModForge.Core.Tests/Build/SceneTests.cs
 git commit -m "feat(scene): add SceneActionSpec.Idle field (PlayIdle action)" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -102,14 +102,14 @@ git commit -m "feat(scene): add SceneActionSpec.Idle field (PlayIdle action)" -m
 ## Task 2: `GenerateSceneFragmentSource` 純產生器 + 測試
 
 **Files:**
-- Create: `src/ModForge.Core/Generator.SceneFragments.cs`
-- Test: `tests/ModForge.Core.Tests/SceneFragmentTests.cs`(新檔)
+- Create: `src/ModForge.Core/Papyrus/Generator.SceneFragments.cs`
+- Test: `tests/ModForge.Core.Tests/Papyrus/SceneFragmentTests.cs`(新檔)
 
 > 函式名慣例以 Task 0 spike 的結論為準;以下用 `Fragment_<phase>`(0-based phase index)作為**待 spike 確認的暫定慣例**——若 spike 顯示不同,Step 3 的字串與測試一起改。
 
 - [ ] **Step 1: 寫失敗測試 — 有 idle action 的 scene 產生 SF_ 腳本**
 
-新檔 `tests/ModForge.Core.Tests/SceneFragmentTests.cs`:
+新檔 `tests/ModForge.Core.Tests/Papyrus/SceneFragmentTests.cs`:
 
 ```csharp
 using ModForge;
@@ -175,7 +175,7 @@ Expected: 編譯失敗(`Generator.SceneNeedsFragmentScript` 等不存在)。
 
 - [ ] **Step 3: 寫產生器**
 
-新檔 `src/ModForge.Core/Generator.SceneFragments.cs`:
+新檔 `src/ModForge.Core/Papyrus/Generator.SceneFragments.cs`:
 
 ```csharp
 namespace ModForge;
@@ -241,7 +241,7 @@ Expected: PASS(3 個)。
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/Generator.SceneFragments.cs tests/ModForge.Core.Tests/SceneFragmentTests.cs
+git add src/ModForge.Core/Papyrus/Generator.SceneFragments.cs tests/ModForge.Core.Tests/Papyrus/SceneFragmentTests.cs
 git commit -m "feat(scene): GenerateSceneFragmentSource — pure PlayIdle fragment generator" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -250,8 +250,8 @@ git commit -m "feat(scene): GenerateSceneFragmentSource — pure PlayIdle fragme
 ## Task 3: build 端 — idle-action 不產生 SceneAction(純 build 不掛 VMAD)
 
 **Files:**
-- Modify: `src/ModForge.Core/Generator.Build.Scene.cs:145-170`(action 分派迴圈)
-- Test: `tests/ModForge.Core.Tests/SceneTests.cs`
+- Modify: `src/ModForge.Core/Build/Generator.Build.Scene.cs:145-170`(action 分派迴圈)
+- Test: `tests/ModForge.Core.Tests/Build/SceneTests.cs`
 
 - [ ] **Step 1: 寫失敗測試 — idle action 不產生 Package SceneAction**
 
@@ -283,7 +283,7 @@ Expected: FAIL(目前 idle action 會落入 `else` 分支變成 Package action �
 
 - [ ] **Step 3: 在 action 分派加 idle 短路分支**
 
-在 `src/ModForge.Core/Generator.Build.Scene.cs` 的 action 迴圈,於建立 `act`/設 Type 之前(約行 149 `var act = new SceneAction...` 之前)加:
+在 `src/ModForge.Core/Build/Generator.Build.Scene.cs` 的 action 迴圈,於建立 `act`/設 Type 之前(約行 149 `var act = new SceneAction...` 之前)加:
 
 ```csharp
 // PlayIdle action: handled via the SceneAdapter phase fragment (Task 4 / package), NOT as a
@@ -302,7 +302,7 @@ Expected: 新測試 PASS;其餘綠(除已知 WordWall 環境性失敗)。
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModForge.Core/Generator.Build.Scene.cs tests/ModForge.Core.Tests/SceneTests.cs
+git add src/ModForge.Core/Build/Generator.Build.Scene.cs tests/ModForge.Core.Tests/Build/SceneTests.cs
 git commit -m "feat(scene): idle actions skip SceneAction emission (handled via phase fragment)" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -311,9 +311,9 @@ git commit -m "feat(scene): idle actions skip SceneAction emission (handled via 
 ## Task 4: package 端 — 編譯 SF_ + 掛 SceneAdapter VMAD(.pex 在才掛)
 
 **Files:**
-- Modify: `src/ModForge.Cli/Package.cs:47-58`(fragment 編譯迴圈)
-- Modify: `src/ModForge.Core/Generator.Build.Scripts.cs`(新增 `AttachSceneFragments`,鏡像 `AttachDialogueResultScripts` 行 44-95)
-- Test: `tests/ModForge.Core.Tests/SceneFragmentTests.cs`(VMAD attach 的純斷言,給定一個 fake 已編譯目錄)
+- Modify: `src/ModForge.Cli/Commands/Package.cs:47-58`(fragment 編譯迴圈)
+- Modify: `src/ModForge.Core/Build/Generator.Build.Scripts.cs`(新增 `AttachSceneFragments`,鏡像 `AttachDialogueResultScripts` 行 44-95)
+- Test: `tests/ModForge.Core.Tests/Papyrus/SceneFragmentTests.cs`(VMAD attach 的純斷言,給定一個 fake 已編譯目錄)
 
 > `ScenePhaseFragment` 欄位(Explore 報告):`Flags`(OnStart=0x01/OnCompletion=0x02)、`Index`、`Unknown`、`ScriptName`、`FragmentName`。`Index` 基數與 `FragmentName`↔函式名規則以 Task 0 spike 為準。
 
@@ -353,7 +353,7 @@ Expected: 編譯失敗(`AttachSceneFragments`/helper 不存在)。
 
 - [ ] **Step 4: 實作 `AttachSceneFragments`**
 
-在 `src/ModForge.Core/Generator.Build.Scripts.cs` 加(鏡像 `AttachDialogueResultScripts` 的 gating 與 property 綁定):
+在 `src/ModForge.Core/Build/Generator.Build.Scripts.cs` 加(鏡像 `AttachDialogueResultScripts` 的 gating 與 property 綁定):
 
 ```csharp
 // Attach the SceneAdapter VMAD + per-phase fragments for scenes with idle actions. Mirrors
@@ -403,7 +403,7 @@ public void AttachSceneFragments()
 
 - [ ] **Step 5: 在 package 接上編譯迴圈**
 
-在 `src/ModForge.Cli/Package.cs` 既有 quest/dialogue fragment 迴圈(行 47-58)後加:
+在 `src/ModForge.Cli/Commands/Package.cs` 既有 quest/dialogue fragment 迴圈(行 47-58)後加:
 
 ```csharp
 foreach (var s in spec.Scenes)
@@ -424,7 +424,7 @@ Expected: 新測試 PASS;其餘綠(除已知 WordWall)。
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/ModForge.Cli/Package.cs src/ModForge.Core/Generator.Build.Scripts.cs tests/ModForge.Core.Tests/
+git add src/ModForge.Cli/Commands/Package.cs src/ModForge.Core/Build/Generator.Build.Scripts.cs tests/ModForge.Core.Tests/
 git commit -m "feat(scene): compile SF_ + attach SceneAdapter phase fragments at package time" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
@@ -433,12 +433,12 @@ git commit -m "feat(scene): compile SF_ + attach SceneAdapter phase fragments at
 ## Task 5: 擴 CLI `find` 支援 IdleAnimation(查 idle FormID)
 
 **Files:**
-- Modify: `src/ModForge.Cli/Diagnostics.cs:15-85`(Find)
+- Modify: `src/ModForge.Cli/Diagnostics/Diagnostics.cs:15-85`(Find)
 - Test:(若 find 有單元測試則加;否則手動驗證 + CODE_MAP 記錄)
 
 - [ ] **Step 1: 確認 find 的型別解析機制**
 
-讀 `src/ModForge.Cli/Diagnostics.cs` 的 `Find()`:型別經 `Mutagen.Bethesda.Skyrim.I{typeName}Getter` 反射取得(Explore 報告)。`IdleAnimation` 應已是合法 Mutagen 型別 → 多半只需把 `IdleAnimation`/`Idle` 加進「允許型別」白名單或別名表。
+讀 `src/ModForge.Cli/Diagnostics/Diagnostics.cs` 的 `Find()`:型別經 `Mutagen.Bethesda.Skyrim.I{typeName}Getter` 反射取得(Explore 報告)。`IdleAnimation` 應已是合法 Mutagen 型別 → 多半只需把 `IdleAnimation`/`Idle` 加進「允許型別」白名單或別名表。
 
 - [ ] **Step 2: 加 Idle 別名 + 白名單**
 
@@ -452,7 +452,7 @@ Expected: 列出含 "Pray" 的 IDLE 記錄 EditorID + FormID,供 showcase 用。
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/ModForge.Cli/Diagnostics.cs
+git add src/ModForge.Cli/Diagnostics/Diagnostics.cs
 git commit -m "feat(cli): find supports IdleAnimation (idle alias) for PlayIdle discovery" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
