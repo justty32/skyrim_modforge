@@ -116,22 +116,32 @@
 
 **只做到 `internal` 巢狀，沒有真的「提升為 top-level」**（原稿是這樣寫的）。理由：目標是「測試能直接建構它」，`internal` 巢狀已經完全達成——`Generator` 是 public，所以 `Generator.BuildContext` 對 `InternalsVisibleTo` 的測試組件就是可見的，而且**一個檔改一個字、存取模型完全不動**。真的拆出去要多做兩件事：8 個 partial 同時放著 `BuildContext` 與 `Generator` 層級的成員，得先拆開；而且巢狀類別本來看得到外層的 `private static` 助手，拆出去以後全部要放寬成 `internal`。多花這些工，換不到任何 `internal` 巢狀給不了的東西。
 
-### Batch 4 — 從 god object 剝出獨立單元（**選做，投報率遞減**）
+### Batch 4 — 從 god object 剝出獨立單元 — ⏹ 做了 3 項就**主動停住**（2026-08-13，`5266a1c`）
 
-耦合分析把 60 個 `BuildContext` 檔分成 8 群。**照這個順序做，隨時可以停**：
+**做掉的（投報率為正）：**
 
-| 順位 | 群 | 檔數 | 縫的成本 |
-|---|---|---|---|
-| 1 | `Build.Items.cs` 的 5 個 `TranslationMask` | 1 | 零——是 `static readonly` 常數，根本不是狀態，今天就能搬成 `static class` |
-| 2 | Lighting（`lgtmByEd`/`imgsByEd`）| 1 | 零，100% 自有 |
-| 3 | ExteriorCells + Regions | 2 | 零，8 個欄位全部自有 |
-| 4 | `BuildContext.Utilities`（master cache / strings）| 1 | 幾乎零——**它已經長得像一個 service 了，當作其他群的樣板** |
-| 5 | NpcPatches | 1 | 只有 `npcPatchesByRef` |
-| 6 | Scene（`scenesBuilt` 等 6 個欄位全自有）| 1 | 只需要注入 `questsByEd` |
-| 7 | Scene/Dialogue/Quest 其餘 | 10 | 只共用 `questsByEd` + `dialogResponsesByEd` |
-| 8 | Navmesh | 5 | 要向 Placement 群借 `vanillaCellOverrides`/`builtPlacements` → 改成注入唯讀 view |
+1. **`VanillaMasters`**（`Build/VanillaMasters.cs`）——原本排第 4，實際做起來是唯一真正划算的一項。它是整個 build **唯一的檔案系統邊界**：Skyrim Data 夾、lazily 開的 master overlay、從 BSA 抽 `.STRINGS` 到 temp 夾、以及維持 overlay 存活的 disposables。注入的是一個 warning sink 而不是 `BuildContext` 參照，所以它完全不知道「build」是什麼。附 4 個單元測試（17ms）。
+2. **`MakeLocationSlot` 歸位**——它待在 utilities 檔裡，但**只有一個呼叫端**，搬到 `Generator.Build.PlacementRefs.cs`。
+3. **5 個 `TranslationMask` → `file static class CopyMasks`**——它們根本不是 build 狀態，是不可變的 DeepCopyIn 指令。`file` scope 讓其他 60 個 partial 看不到它們。
 
-**明確不做**：Placement / PlacementRefs / References / Packages / Packages.Advanced / Removals / Conditions 這 7 個檔。`Placements.cs` 一個檔就碰 82 個欄位裡的 19 個，是所有 deferred-wire queue 的匯流點，而且程式碼自己的註解就寫著這段的 two-pass 順序是 **LOAD-BEARING**。**把它當成一個不可分的單元，不要試著一片片剝。**
+`BuildContext` 的欄位數：Batch 2 前 57 → 現在 **25**。
+
+**停住的理由（原本的排序估錯了）：** 第 2/3/5/6 群當初標「零 seam 成本」，是**只數了欄位歸屬**，沒數方法相依。實際量出來：
+
+| 群 | 還需要 `BuildContext` 的什麼 |
+|---|---|
+| Lighting（原估「零」）| `spec` `mod` `Warn` **`TryResolveTemplate`** |
+| ExteriorCells（原估「零」）| `spec` `mod` `Warn` `formKeyByEd` **`MasterCache`** **`Resolve`** |
+| NpcPatches | `spec` `mod` `Warn` `MasterCache` `TryResolveTemplate` `Resolve` |
+| Scene | `spec` `mod` `Warn` `questsByEd` `placed` `scriptsAttached` `options` `Resolve` **`BuildCondition`** **`DeferCondition`** |
+
+每一群都要注入 4～10 個成員，其中 `TryResolveTemplate<T>` 是泛型方法（傳不了 delegate，得先開一個 interface）、`Resolve` 會回寫 `linksWired`/`extLinks` 計數器、`DeferCondition` 會往**別人擁有**的 queue 塞東西。剝出來的型別，建構子等於「請給我大半個 BuildContext」——**那是包了一層儀式的 back-pointer，不是解耦。**
+
+而且剝離原本要換的兩件事，Batch 2.2／3 已經拿到了：欄位宣告已經跟擁有者同住，每個 step 已經能被單獨建構、單獨測（`BuildContextUnitTests`）。**再剝下去付的是實質成本，換的是名目上的封裝。**
+
+**明確不做（維持原判斷）**：Placement / PlacementRefs / References / Packages / Packages.Advanced / Removals / Conditions 這 7 個檔。`Placements.cs` 一個檔就碰 82 個欄位裡的 19 個，是所有 deferred-wire queue 的匯流點，程式碼自己的註解就寫著這段的 two-pass 順序是 **LOAD-BEARING**。
+
+> 要推翻這個「停」的決定，先問：剝完之後，**有哪個測試是現在寫不出來、剝完才寫得出來的？** 想不出來就別剝。
 
 ### Batch 5 — public surface 清理（收尾）
 

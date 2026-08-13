@@ -17,7 +17,8 @@
 - ✅ **Batch 2**（`c9c8207` `807b0a6` `f4035c9` `3104459`）：四個 hub 檔拆完——`Spec.cs` 102→5 個成員、`BuildContext` 57→27 個欄位、`Program.cs` 204→76 行、`Validate.cs` 收尾。**`Generator.Build.cs` 評估後刻意不動**，理由寫在該檔檔頭。
   - 另加第二層護欄 `scripts/cli-dispatch-snapshot.sh`（330 種 argv 形狀），因為 golden hash 只走 `build`、測試幾乎不碰 CLI。兩支護欄用法都在 [testing.md](../testing.md)。
 - ✅ **Batch 3**（`e5061b9`）：`BuildContext` 60 個 partial 從 `private` 改 `internal`，測試終於碰得到；附上第一批「只跑一個 build step」的單元測試（`Build/BuildContextUnitTests.cs`）。測試數 1122 → **1126**。停在 `internal` 巢狀、沒有真的 un-nest，理由在計畫 Batch 3。
-- ⏸ **Batch 4/5 未開始，且都是選做**：Batch 4 從 god object 剝獨立單元（8 群，投報率遞減，隨時可停；**Placement/Reference 那 7 個檔明確不碰**）；Batch 5 是 public surface 清理。
+- ⏹ **Batch 4**（`5266a1c`）：**做 3 項後主動停住**。抽出 `VanillaMasters`（build 唯一的檔案系統邊界，附 4 個單元測試）、`MakeLocationSlot` 歸位到唯一呼叫端、5 個 `TranslationMask` 變 `file static class`。`BuildContext` 欄位 57 → **25**。剩下的 Lighting／ExteriorCells／NpcPatches／Scene 幾群**量過之後決定不剝**——原排序只數欄位、沒數方法相依，實際每群要注入 4～10 個成員（含泛型方法、回寫的計數器、別人擁有的 queue），剝出來是包了儀式的 back-pointer。理由與量測表在計畫 Batch 4。
+- ⏸ **Batch 5 未開始（選做）**：public surface 清理（`Generator` 上 ~46 個沒進文件的 public static、`OarGen.HkxCopy` 死碼、`SceneCoordinates` 沒接線、`Validate.Items2/World2` 改檔名、`PlayerRef`/`McmPlayerRef` 重複常數、4 個零測試覆蓋的檔）。
 
 **⚠ 三件跨機／後續要注意的：**
 
