@@ -53,10 +53,14 @@ public static partial class Generator
         ctx.ValidateNavCuts();
         ctx.ValidateNavmeshOverrides();
         ctx.ValidateNavPatches();
-        ValidateRequires(spec, ctx.Problems);   // shape only — the declared-vs-actual check needs a BUILD
-        ValidateWeather(spec, ctx.Problems, ctx.Ids, ctx.CheckRef);
-        ValidateLights(spec, ctx.Problems);
-        ValidateLighting(spec, ctx.Problems);
+        ctx.ValidateWeather();
+        ctx.ValidateLights();
+        ctx.ValidateLighting();
+        // The one deliberate non-ctx call: the requires[] SHAPE check is one half of the
+        // requires module (Generator.Requires.cs), whose other half — declared-vs-actual —
+        // can only run after a BUILD. Keeping both halves in that file beats moving one of
+        // them here just to make this list uniform.
+        ValidateRequires(spec, ctx.Problems);
         return ctx.Problems;
     }
 
