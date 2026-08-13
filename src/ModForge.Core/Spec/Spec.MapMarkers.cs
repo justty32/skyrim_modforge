@@ -16,3 +16,9 @@ public sealed class MapMarkerSpec
     public string Type { get; set; } = "";
     public List<string> Flags { get; set; } = new();
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<MapMarkerSpec> MapMarkers { get; set; } = new();   // world-map markers (XMRK on MapMarker static)
+}

@@ -23,3 +23,9 @@ public sealed class HazardSpec
     public string ImageSpaceModifier { get; set; } = "";
     public string ImpactDataSet { get; set; } = "";
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<HazardSpec> Hazards { get; set; } = new();   // Hazard (HAZD) — radius effect / placed trap
+}

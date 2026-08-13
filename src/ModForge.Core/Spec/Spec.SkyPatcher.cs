@@ -29,3 +29,9 @@ public sealed class SkyPatcherFieldSpec
     public string Key { get; set; } = "";
     public string Value { get; set; } = "";
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<SkyPatcherSpec> SkyPatchers { get; set; } = new();       // SkyPatcher <recordType>/<file>.ini (loose; Spec.SkyPatcher.cs)
+}

@@ -21,3 +21,9 @@ public sealed class NpcPatchSpec
     // editorId or "<master>:0xFORMID"; duplicates (already-present factions) are skipped.
     public List<string> Factions { get; set; } = new();
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<NpcPatchSpec> NpcPatches { get; set; } = new();   // override existing NPCs' AI packages
+}

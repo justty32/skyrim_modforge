@@ -107,3 +107,15 @@ public sealed class CombatStyleSpec
     public float AvoidThreatChance { get; set; }
     public List<string> Flags { get; set; } = new();   // CombatStyle.Flag names (Dueling/Flanking/AllowDualWielding)
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<SpellSpec> Spells { get; set; } = new();
+
+    public List<MagicEffectSpec> MagicEffects { get; set; } = new();
+
+    public List<ClassSpec> Classes { get; set; } = new();
+
+    public List<CombatStyleSpec> CombatStyles { get; set; } = new();
+}

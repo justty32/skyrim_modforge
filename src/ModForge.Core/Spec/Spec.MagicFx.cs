@@ -72,3 +72,17 @@ public sealed class ImageSpaceModifierSpec
     public float Duration { get; set; } = 1.0f;               // IMAD fade/animate duration (s)
     public bool Animatable { get; set; } = false;             // animate curves over Duration
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    // Magic combat FX (Spec.MagicFx.cs): a Projectile (PROJ) is the flying bolt; an Explosion
+    // (EXPL) is the boom on impact. A MagicEffect's projectile/explosion refs point at these.
+    public List<ProjectileSpec> Projectiles { get; set; } = new();
+
+    public List<ExplosionSpec> Explosions { get; set; } = new();
+
+    // ImageSpace Modifiers (IMAD): screen-space post-process (brightness/tint) a magic-effect script
+    // applies at runtime. Referenced by Explosions[].imageSpaceModifier or a Papyrus property.
+    public List<ImageSpaceModifierSpec> ImageSpaceModifiers { get; set; } = new();
+}

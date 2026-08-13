@@ -57,3 +57,9 @@ public sealed class FlmEntrySpec
     // Optional "#FilterName" — only apply this line if the filter passes (plugin presence check).
     public string Filter { get; set; } = "";
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<FormListInjectSpec> FormListInjects { get; set; } = new(); // FLM <file>_FLM.ini (loose; Spec.FormListInject.cs)
+}

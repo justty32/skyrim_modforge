@@ -241,3 +241,15 @@ public sealed class PropertySpec
     public string Str { get; set; } = "";
     public string ObjectEditorId { get; set; } = "";
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<DialogueSpec> Dialogue { get; set; } = new();
+
+    public List<BanterSpec> Banter { get; set; } = new();
+
+    public List<ScriptAttachSpec> Scripts { get; set; } = new();
+
+    public List<ConditionTemplateSpec> ConditionTemplates { get; set; } = new(); // named reusable CTDA blocks (M組; Spec.Dialogue.cs)
+}

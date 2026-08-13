@@ -160,3 +160,13 @@ public sealed class EncounterZoneSpec
     public int Rank { get; set; }                  // owner rank (0 if no owner)
     public List<string> Flags { get; set; } = new(); // EncounterZone.Flag names (see above)
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<CellSpec> Cells { get; set; } = new();
+
+    public List<PlacementSpec> Placements { get; set; } = new();
+
+    public List<EncounterZoneSpec> EncounterZones { get; set; } = new();
+}

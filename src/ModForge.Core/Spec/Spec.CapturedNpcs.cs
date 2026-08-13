@@ -124,3 +124,12 @@ public sealed class CapturedActiveEffectSpec
     public float Duration { get; set; }
     public float Elapsed { get; set; }
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<CapturedNpcSpec> CapturedNpcs { get; set; } = new(); // eyedropped live actors (Idea #24; Spec.CapturedNpcs.cs) — macro-expands to an NpcSpec (identity + face/body recipe) + an ACHR placement at the capture spot
+
+    // Guard so the captured-NPC macro-expansion (Generator.ExpandCapturedNpcs) runs at most once. Not serialized.
+    [System.Text.Json.Serialization.JsonIgnore] internal bool CapturedNpcsExpanded { get; set; }
+}

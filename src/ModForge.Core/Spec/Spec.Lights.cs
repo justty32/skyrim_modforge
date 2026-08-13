@@ -54,3 +54,10 @@ public sealed class LightSpec
     /// <summary>Optional inventory weight (carriable lights).</summary>
     public float? Weight { get; set; }
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    // Custom light sources (LIGT): colour/radius/flicker. Placed via placements[] by editorId.
+    public List<LightSpec> Lights { get; set; } = new();
+}

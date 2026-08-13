@@ -38,3 +38,9 @@ public sealed class SpidEntrySpec
     // Chance (field 7): 0–100 distribution chance (non-unique NPCs only). Null → omitted (SPID defaults to 100).
     public int? Chance { get; set; }
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<SpidDistributionSpec> SpidDistributions { get; set; } = new(); // SPID _DISTR.ini (loose)
+}

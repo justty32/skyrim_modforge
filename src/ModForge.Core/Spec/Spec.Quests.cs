@@ -136,3 +136,9 @@ public sealed class ObjectiveTargetSpec
     public bool CompassIgnoresLocks { get; set; }
     public List<ConditionSpec> Conditions { get; set; } = new();
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<QuestSpec> Quests { get; set; } = new();
+}

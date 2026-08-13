@@ -112,3 +112,11 @@ public sealed class CellLightingSpec
     /// inline AND listed here is inherited (template wins) + warned.</summary>
     public List<string> Inherit { get; set; } = new();
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<LightingTemplateSpec> LightingTemplates { get; set; } = new();   // LightingTemplate (LGTM)
+
+    public List<ImageSpaceSpec> ImageSpaces { get; set; } = new();               // ImageSpace (IMGS) base record (≠ IMAD)
+}

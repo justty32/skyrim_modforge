@@ -62,3 +62,12 @@ public sealed class LivingAnchorSpec
     public Vec3 Position { get; set; } = new();
     public string Kind { get; set; } = "";          // free-text label (inn/jarlHall/college/camp…); doc only
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public LivingNpcsSpec? LivingNpcs { get; set; } // living-world NPCs (Idea #23; Spec.LivingNpc.cs) — macro-expands to a controller quest + per-NPC alias/markers/global/rumor + ships MFLivingNpc* .pex
+
+    // Guard so the living-NPC macro-expansion (Generator.ExpandLivingNpcs) runs at most once. Not serialized.
+    [System.Text.Json.Serialization.JsonIgnore] internal bool LivingNpcsExpanded { get; set; }
+}

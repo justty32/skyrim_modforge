@@ -147,3 +147,13 @@ public sealed class RelationshipSpec
     public string Child { get; set; } = "Skyrim.esm:0x000014"; // ref → NPC; defaults to the Player NPC base (0x000014, NOT PlayerRef 0x000007)
     public string Rank { get; set; } = "Ally";                // RankType enum name
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<NpcSpec> Npcs { get; set; } = new();
+
+    public List<FactionSpec> Factions { get; set; } = new();
+
+    public List<RelationshipSpec> Relationships { get; set; } = new();
+}

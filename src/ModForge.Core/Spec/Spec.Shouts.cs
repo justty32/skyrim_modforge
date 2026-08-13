@@ -37,3 +37,11 @@ public sealed class ShoutSpec
     public string MenuDisplayObject { get; set; } = "";   // ref → STAT/MSTT shown in the shouts menu (optional)
     public List<ShoutWordSpec> Words { get; set; } = new();
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<WordOfPowerSpec> WordsOfPower { get; set; } = new();
+
+    public List<ShoutSpec> Shouts { get; set; } = new();
+}

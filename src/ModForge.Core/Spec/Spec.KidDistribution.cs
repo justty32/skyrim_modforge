@@ -31,3 +31,9 @@ public sealed class KidEntrySpec
     // Field 5 (chance): 0.0–100.0 distribution chance. Null → omitted (KID defaults to 100).
     public double? Chance { get; set; }
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<KidDistributionSpec> KidDistributions { get; set; } = new(); // KID <file>_KID.ini (loose; Spec.KidDistribution.cs)
+}

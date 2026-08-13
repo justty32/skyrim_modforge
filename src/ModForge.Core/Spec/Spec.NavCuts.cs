@@ -166,3 +166,11 @@ public sealed class NavmeshSpec
     // conflict, not the winner. Silent with no Data folder / no navmeshOverrides. Turn off to hush it.
     public bool WarnNavmeshClobber { get; set; } = true;
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<NavCutSpec> NavCuts { get; set; } = new(); // L_NAVCUT collision volumes: cut vanilla navmesh at runtime so NPCs path AROUND what you placed (Spec.NavCuts.cs / Generator.Build.NavCuts.cs)
+
+    public NavmeshSpec Navmesh { get; set; } = new();      // knobs for the navmesh diagnostics + the auto navcut (Spec.NavCuts.cs)
+}

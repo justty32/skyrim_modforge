@@ -135,3 +135,9 @@ public sealed class SleepSpec
     public float? MinWanderDistance { get; set; } // default 300
     public float? Energy { get; set; }            // default 50
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<PackageSpec> Packages { get; set; } = new();
+}

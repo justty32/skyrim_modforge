@@ -25,3 +25,9 @@ public sealed class EnchantmentSpec
     public float ChargeTime { get; set; }                   // staff cast charge-up (vanilla ~0.5)
     public List<EffectSpec> Effects { get; set; } = new(); // ≥1 MGEF-based effect (same shape as spell/potion effects)
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<EnchantmentSpec> Enchantments { get; set; } = new();
+}

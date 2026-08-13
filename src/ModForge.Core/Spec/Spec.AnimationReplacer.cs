@@ -156,3 +156,16 @@ public sealed class PieMacroSpec
     public string Name { get; set; } = "";          // macro name (the $ is added on emit)
     public string Command { get; set; } = "";       // payload command (e.g. @SETGHOST|1)
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    // Action-system loose-file generation (Spec.AnimationReplacer.cs) — NON-esp config/asset
+    // products: OAR replacer/moveset folders, BDI graph-variable injection, PIE macro tables.
+    // `package` emits these next to the .esp; the .hkx animations themselves are user-supplied.
+    public List<AnimationReplacerSpec> AnimationReplacers { get; set; } = new();
+
+    public List<BehaviorDataSpec> BehaviorData { get; set; } = new();   // BDI graph var/event config
+
+    public List<PayloadMacroSpec> PayloadMacros { get; set; } = new();  // PIE .ini macro table
+}

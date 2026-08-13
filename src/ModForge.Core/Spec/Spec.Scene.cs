@@ -140,3 +140,9 @@ public sealed class ScenePhaseSpec
     public List<ConditionSpec> StartConditions { get; set; } = new();
     public List<ConditionSpec> CompletionConditions { get; set; } = new();
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<SceneSpec> Scenes { get; set; } = new();
+}

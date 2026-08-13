@@ -23,3 +23,9 @@ public sealed class WordWallSpec
     public Vec3 Position { get; set; } = new();
     public Vec3 Rotation { get; set; } = new();
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<WordWallSpec> WordWalls { get; set; } = new();
+}

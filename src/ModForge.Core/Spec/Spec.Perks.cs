@@ -61,3 +61,9 @@ public sealed class PerkEffectSpec
     // the compiled <perk>_Frags.pex. Leave empty for a spell-only / record-only choice.
     public string FragmentBody { get; set; } = "";
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<PerkSpec> Perks { get; set; } = new();
+}

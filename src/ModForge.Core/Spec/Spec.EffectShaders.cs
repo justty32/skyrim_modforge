@@ -80,3 +80,9 @@ public sealed class EffectShaderColorKeySpec
     public ColorSpec Color { get; set; } = new();
     public float Alpha { get; set; } = 1f;
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<EffectShaderSpec> EffectShaders { get; set; } = new();   // EffectShader (EFSH), texture-only VFX
+}

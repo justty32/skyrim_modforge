@@ -94,3 +94,13 @@ public sealed class RequirementConverter : JsonConverter<RequirementSpec>
         public string Url { get; set; } = "";
     }
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    // DECLARED install requirements (Spec.Requires.cs / Generator.Requires.cs). Compared both ways
+    // against the masters the build actually links: an undeclared master FAILS the build, a declared
+    // plugin nothing links warns. NULL (absent) = the section was never written = nothing is checked
+    // (every spec predating this feature). An EMPTY list is an opt-in too: "this mod stays vanilla-only".
+    public List<RequirementSpec>? Requires { get; set; }
+}

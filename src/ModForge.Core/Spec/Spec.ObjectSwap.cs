@@ -35,3 +35,9 @@ public sealed class ObjectSwapEntrySpec
     // Optional 0.0–100.0 swap chance. Null → omitted (BOS defaults to 100 = always).
     public double? Chance { get; set; }
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<ObjectSwapSpec> ObjectSwaps { get; set; } = new();       // BOS <file>_SWAP.ini (loose; Spec.ObjectSwap.cs)
+}

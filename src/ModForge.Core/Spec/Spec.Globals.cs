@@ -18,3 +18,9 @@ public sealed class GlobalSpec
     public float Value { get; set; }       // initial value
     public bool Constant { get; set; }     // Constant major flag — a read-only tuning value (can't be SetValue'd)
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<GlobalSpec> Globals { get; set; } = new();   // GlobalVariable (GLOB) — shared flags/counters/constants
+}

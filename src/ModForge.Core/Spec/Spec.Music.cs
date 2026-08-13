@@ -31,3 +31,11 @@ public sealed class MusicTypeSpec
     public float FadeDuration { get; set; }
     public List<string> Tracks { get; set; } = new();   // refs -> MUST editorIds
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<MusicTrackSpec> MusicTracks { get; set; } = new();   // Music Track (MUST)
+
+    public List<MusicTypeSpec> Music { get; set; } = new();          // Music Type (MUSC)
+}

@@ -23,3 +23,9 @@ public sealed class OverrideSpec
     public string Label { get; set; } = "";      // short human label for the moved thing. Inert documentation only — the build never reads this
     public string Note { get; set; } = "";       // free-form note (why it was moved). Inert documentation only — the build never reads this
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<OverrideSpec> Overrides { get; set; } = new(); // transform overrides of EXISTING placed refs (move/rotate/rescale in place). The in-game numpad editor feeds this. See Spec.Overrides.cs / Generator.Build.Overrides.cs
+}

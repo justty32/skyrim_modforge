@@ -191,3 +191,11 @@ public sealed class PointSpec
     public float X { get; set; }
     public float Y { get; set; }
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<WorldspaceSpec> Worldspaces { get; set; } = new();
+
+    public List<RegionSpec> Regions { get; set; } = new();
+}

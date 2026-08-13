@@ -66,3 +66,9 @@ public sealed class ReferenceSpec
     public string Anchor { get; set; } = "";     // "" | "none" | "marker" | "replace" — persistent fallback (external refs only)
     public string Note { get; set; } = "";       // free-form brief for the agent authoring the next round (advisory)
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<ReferenceSpec> References { get; set; } = new(); // NAME an EXISTING placed ref (in-file placements[] editorId, or a vanilla <master>:0xFORMID) so any other ref field can point at it by `label`. The in-game referrer (`sc ref`) feeds this. See Spec.References.cs / Generator.Build.References.cs
+}

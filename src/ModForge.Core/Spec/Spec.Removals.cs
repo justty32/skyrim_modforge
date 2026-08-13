@@ -68,3 +68,9 @@ public sealed class RemovalConverter : JsonConverter<RemovalSpec>
         public string Note { get; set; } = "";
     }
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<RemovalSpec> Removals { get; set; } = new(); // refs "<master>:0xFORMID" of EXISTING vanilla placed refs to remove (disable + bury); a bare string, or an object carrying an optional `label`/`note` (inert documentation — see Spec.Removals.cs). The in-game eraser spell (Idea #24 §E) feeds this. See Generator.Build.Removals.cs
+}

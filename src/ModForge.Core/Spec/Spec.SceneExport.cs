@@ -24,3 +24,12 @@ public sealed class SceneNpcRoleSpec
     public string Role { get; set; } = "";        // role template key (slice: "blacksmith")
     public string Backstory { get; set; } = "";   // context seeding the greeting (hand-authored in slice)
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<SceneNpcRoleSpec> NpcRoles { get; set; } = new(); // in-game scene export: tag an external NPC with a job role (Idea #24 §D; Spec.SceneExport.cs) — macro-expands to a host quest + conditioned greeting + sandbox package. NOT the player-facing Identities.
+
+    // Guard so the npc-role macro-expansion (Generator.ExpandNpcRoles) runs at most once. Not serialized.
+    [System.Text.Json.Serialization.JsonIgnore] internal bool NpcRolesExpanded { get; set; }
+}

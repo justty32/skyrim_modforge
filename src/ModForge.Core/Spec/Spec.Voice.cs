@@ -34,3 +34,13 @@ public sealed class VoiceSpeakerSpec
     public string VoiceType { get; set; } = "";
     public string Template { get; set; } = "";
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<VoiceTemplateSpec> VoiceTemplates { get; set; } = new(); // named voice recipes (Spec.Voice.cs)
+
+    public List<VoiceSpeakerSpec> VoiceSpeakers { get; set; } = new(); // bind an external speaker → voiceType + template
+
+    public VoiceLineSpec? VoiceLine { get; set; } // global voice output settings
+}

@@ -48,3 +48,13 @@ public sealed class SkillNodeSpec
     public string Name { get; set; } = "";        // shown on the activate prompt + learn notification
     public string Ability { get; set; } = "";     // ref → a SPEL (in-spec spells[] ability or vanilla) granted on learn
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<SkillTreeSpec> SkillTrees { get; set; } = new(); // in-world clickable perk tree (Idea #20; Spec.SkillTree.cs) — macro-expands to globals/activators/placements/scripts
+
+    // Guard so the skillTree macro-expansion (Generator.ExpandSkillTrees) runs at most once per spec
+    // object even if Build is invoked twice in one process. Not serialized.
+    [System.Text.Json.Serialization.JsonIgnore] internal bool SkillTreesExpanded { get; set; }
+}

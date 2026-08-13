@@ -31,3 +31,12 @@ public sealed class CapturedEnchantSpec
     public ushort Amount { get; set; }              // charge pool (weapon.enchantmentAmount); 0 = engine auto-calc
     public List<EffectSpec> Effects { get; set; } = new(); // MGEF-based effects, same shape as spell/potion effects
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<CapturedItemSpec> CapturedItems { get; set; } = new(); // in-game "definition eyedropper" (Idea #24; Spec.CapturedItems.cs) — macro-expands to WEAP/ARMO(+minted ENCH)/ALCH/INGR
+
+    // Guard so the captured-item macro-expansion (Generator.ExpandCapturedItems) runs at most once. Not serialized.
+    [System.Text.Json.Serialization.JsonIgnore] internal bool CapturedItemsExpanded { get; set; }
+}

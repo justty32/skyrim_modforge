@@ -53,3 +53,9 @@ public sealed class NavmeshOverrideSpec
     public Vec3? Position { get; set; }           // exterior: a world point — names the grid cell containing it
     public string Navmesh { get; set; } = "";     // optional: just this one NAVM ("<master>:0xFORMID")
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<NavmeshOverrideSpec> NavmeshOverrides { get; set; } = new(); // re-emit a VANILLA cell's NAVM(s) from our plugin, unchanged (no-op override). P0 of the navmesh plan: proves the engine accepts a navmesh that arrives from a patch. See Spec.NavmeshOverrides.cs / Generator.Build.NavmeshOverrides.cs
+}

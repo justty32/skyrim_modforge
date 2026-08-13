@@ -165,3 +165,53 @@ public sealed class AlternateTextureSpec
     public int Index { get; set; }                   // 3D sub-mesh index (default 0)
     public string TextureSet { get; set; } = "";     // REQUIRED ref → TXST
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<MiscSpec> MiscItems { get; set; } = new();
+
+    public List<BookSpec> Books { get; set; } = new();
+
+    public List<WeaponSpec> Weapons { get; set; } = new();
+
+    public List<PotionSpec> Potions { get; set; } = new();
+
+    public List<ArmorSpec> Armors { get; set; } = new();
+
+    public List<MessageSpec> Messages { get; set; } = new();
+
+    public List<LeveledItemSpec> LeveledItems { get; set; } = new();
+
+    public List<LeveledNpcSpec> LeveledNpcs { get; set; } = new();
+
+    public List<FormListSpec> FormLists { get; set; } = new();
+
+    public List<ContainerSpec> Containers { get; set; } = new();
+
+    public List<IngredientSpec> Ingredients { get; set; } = new();
+
+    public List<AmmunitionSpec> Ammunitions { get; set; } = new();
+
+    public List<ScrollSpec> Scrolls { get; set; } = new();
+
+    public List<SoulGemSpec> SoulGems { get; set; } = new();
+
+    public List<KeySpec> Keys { get; set; } = new();
+
+    public List<KeywordSpec> Keywords { get; set; } = new();
+
+    public List<OutfitSpec> Outfits { get; set; } = new();
+
+    public List<StaticSpec> Statics { get; set; } = new();
+
+    public List<ActivatorSpec> Activators { get; set; } = new();
+
+    public List<RecipeSpec> Recipes { get; set; } = new();
+
+    public List<TextureSetSpec> TextureSets { get; set; } = new();
+
+    public List<FurnitureSpec> Furniture { get; set; } = new();
+
+    public List<SoundSpec> Sounds { get; set; } = new();
+}

@@ -162,3 +162,13 @@ public sealed class ClimateSpec
     public int PhaseLength { get; set; } = 3;    // days per moon phase
     public int Volatility { get; set; } = 50;     // 0..255: how fast weather changes
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    // Atmospheric records. A Weather (WTHR) is a sky; a Climate (CLMT) is a weather
+    // cycle + sun/moon timing. See WeatherSpec / ClimateSpec in Spec.Weather.cs.
+    public List<WeatherSpec> Weathers { get; set; } = new();
+
+    public List<ClimateSpec> Climates { get; set; } = new();
+}

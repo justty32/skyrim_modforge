@@ -56,3 +56,9 @@ public sealed class McmControlSpec
     public string GroupBehavior { get; set; } = "";    // "disable" (grey out) | "skip" (hide)
     public int? Position { get; set; }                 // two-column forced column: 0 left | 1 right
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<McmSpec> McmConfigs { get; set; } = new(); // MCM Helper config.json + settings.ini (loose; Spec.Mcm.cs)
+}

@@ -83,3 +83,12 @@ public sealed class SettlementVendorSpec
     public int Gold { get; set; } = 500;           // gold placed in the merchant chest (the trade float)
     public bool NotSellBuyList { get; set; }       // sellBuyList is a NOT-sell list (sell everything except)
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<SettlementSpec> Settlements { get; set; } = new(); // populated settlement (Idea #22; Spec.Settlement.cs) — macro-expands to npcs/packages/placements/factions/containers
+
+    // Guard so the settlement macro-expansion (Generator.ExpandSettlements) runs at most once. Not serialized.
+    [System.Text.Json.Serialization.JsonIgnore] internal bool SettlementsExpanded { get; set; }
+}

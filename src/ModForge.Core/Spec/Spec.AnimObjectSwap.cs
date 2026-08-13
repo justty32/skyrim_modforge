@@ -27,3 +27,9 @@ public sealed class AnimObjectSwapEntrySpec
     // Optional TRAITS (header segment 3): "M"/"F" sex, "C"/"-C" child. Empty → any.
     public string Traits { get; set; } = "";
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<AnimObjectSwapSpec> AnimObjectSwaps { get; set; } = new(); // AOS <file>_ANIO.ini (loose; Spec.AnimObjectSwap.cs)
+}

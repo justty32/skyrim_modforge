@@ -54,3 +54,9 @@ public sealed class IdentityAutoGrantSpec
     public string ActorValue { get; set; } = "";   // the ActorValue name (e.g. "DragonSouls")
     public float Threshold { get; set; } = 1f;       // grant once GetActorValue(name) >= this
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<IdentitySpec> Identities { get; set; } = new(); // lightweight identity/class system (Spec.Identity.cs)
+}

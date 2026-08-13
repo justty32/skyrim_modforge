@@ -19,3 +19,9 @@ public sealed class AnnotationSpec
     public string Cell { get; set; } = "";          // interior: "<master>:0xFORMID"
     public string Worldspace { get; set; } = "";    // exterior: "<master>:0xFORMID"
 }
+
+// The ModSpec fields that carry the DTOs above.
+public sealed partial class ModSpec
+{
+    public List<AnnotationSpec> Annotations { get; set; } = new(); // in-game editor marker anchors (Idea #24 P1; Spec.Annotations.cs) — ADVISORY ONLY, build never turns these into records; a human/agent reads them to author the next round
+}
