@@ -13,7 +13,7 @@
 | `src/` | C# 原始碼（`ModForge.Core` 生成器 + `ModForge.Cli` 命令列）。導航見 [CODE_MAP](workflows/common/code-map/CODE_MAP.md) |
 | `examples/` | spec `.json` 範例 + `spec.schema.json` + `scripts/*.psc` + `assets/`——視為**源碼** |
 | `assets/papyrus/` | embed 進 CLI 的 `.psc`（dispatcher / controller / 身份系統）|
-| `scripts/` | 工作流 bash（bootstrap-pex / ship / ship-voice / test-offline / extract-skyrim-masters）|
+| `scripts/` | 工作流 bash：出貨與環境（bootstrap-pex / ship / ship-voice / extract-skyrim-masters）＋**測試四支**（test-offline 跑測試；golden-hash / cli-dispatch-snapshot 兩支重構護欄；coverage 找沒測到的洞）——後者用法見 [testing.md](workflows/testing.md) |
 | `sub_projs/` | 用 ModForge 當工具的**獨立專案**（消費者 / 基石工具）——見 [sub_projs/README](sub_projs/README.md)。**2026-08-02 大幅瘦身**：只剩 `gemini-research`、`inworld-skill-tree`、`living-adventurers` 三個實體；其餘 **8 個已移出**——有程式碼的成了 `projects/` 下的同層 repo（godot-worldspace-editor、scene-capture-bridge、model-converter、agent-bridge、darksouls-port、sofia-patch、skyrim-voicegen、game-data），純文檔的進工作區 `analysis/`（mod-survey、tool-survey、followers-patch）。**stub 也不留**——原名 → 現在在哪的對照表在 [sub_projs/README](sub_projs/README.md) |
 | `tests/` | xUnit（`Category=RequiresSkyrim` 為需本機 Skyrim.esm 者）|
 | `docs/` | ModForge 使用手冊（cookbook/cheatsheet/spec；見下）|
