@@ -29,6 +29,17 @@ Everything public lives in `namespace ModForge`.
 
 ## The API surface
 
+**This table is the whole supported surface.** `ModForge.Core` also exposes about a hundred other
+`public` members — `Generator` alone carries ~110 public statics, plus `Catalog`, `Voice`, `McmGen`,
+`OarGen`, `SpidGen`, `Heightmap`, `SceneCoordinates` and friends. Those are **implementation detail
+that happens to be reachable**, not API: they exist because `ModForge.Cli` lives in a separate
+assembly and had to be able to call them. They can change or disappear in any commit. A few of them
+(`SceneCoordinates`, `Catalog`) have their own `docs/spec/SPEC-*.md` page — where such a page exists,
+that page is the contract for that type; where it does not, assume nothing.
+
+If you need something that is reachable but not listed here or in a `SPEC-*.md`, say so rather than
+just calling it — the honest fix is to promote it into this table deliberately.
+
 | Member | Shape |
 |---|---|
 | `Generator.Validate(ModSpec)` | → `IReadOnlyList<string>` problems (empty = valid). **Run this first** — `Build` does not auto-validate. |
