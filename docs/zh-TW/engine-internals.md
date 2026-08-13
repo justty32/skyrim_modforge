@@ -1,6 +1,6 @@
 # Engine internals — the "why" behind ModForge's generation code
 
-生成器（`src/ModForge.Cli/Build.cs`）必須遵守的那些不直觀的 Skyrim/Mutagen 機制。這是從（現已封存的）迭代日誌中提煉出來的常青設計知識；症狀→修正的查找請看 [lifelike/gotchas](lifelike/gotchas.md)，逐欄位的 spec 文件請看 [SPEC-index.md](spec/SPEC-index.md)。
+生成器（`src/ModForge.Core/Build/`）必須遵守的那些不直觀的 Skyrim/Mutagen 機制。這是從（現已封存的）迭代日誌中提煉出來的常青設計知識；症狀→修正的查找請看 [lifelike/gotchas](lifelike/gotchas.md)，逐欄位的 spec 文件請看 [SPEC-index.md](spec/SPEC-index.md)。
 
 ## The core principle: an override does NOT inherit omitted subrecords
 

@@ -96,7 +96,12 @@ Expected: build succeeded。
 
 ### Task 2: `SceneImport`（scene.json → 併入 ModSpec）
 
-**Files:**
+> ⚠️ **這個 task 沒有執行，是被上面「實作進度」那段取消的**（見該段：scene.json 本身就是一份合法
+> `ModSpec`，`build scene.json out.esp` 直接可跑，不需要獨立的 `--scene` 合併路徑）。所以
+> **`src/ModForge.Core/SceneImport.cs` 從來沒有被建出來**——下面的 Files/Steps 是當時的計畫原文，
+> 保留脈絡用，不是現況。真要做「骨架 spec + 採集場景」合併時再回來取用。
+
+**Files（計畫原文，未執行）:**
 - Create: `src/ModForge.Core/SceneImport.cs`
 - Modify: `src/ModForge.Cli/Commands/Program.Build.cs`（deserialize 後、generate 前呼叫）
 
@@ -128,6 +133,9 @@ Expected: 與改動前輸出一致（下 Task 5 有位元不變測）。
 
 **Files:**
 - Create: `src/ModForge.Core/Generator.Build.SceneNpcRoles.cs`
+  → **實際落地為 [`src/ModForge.Core/Macros/Generator.SceneNpcRoles.cs`](../../src/ModForge.Core/Macros/Generator.SceneNpcRoles.cs)**（DTO 在
+  [`Spec/Spec.SceneExport.cs`](../../src/ModForge.Core/Spec/Spec.SceneExport.cs)）：它是 `ExpandMacros` 那一段的
+  巨集展開，不是 `BuildContext` 的 build step，所以沒有用 `Generator.Build.*` 前綴。
 - Modify: build 流程串接處（依 Task 0 Step 1 結論）
 
 - [ ] **Step 1: role→零件對照表 + 展開**

@@ -1,6 +1,6 @@
 # Engine internals — the "why" behind ModForge's generation code
 
-The non-obvious Skyrim/Mutagen mechanics that the generator (`src/ModForge.Cli/Build.cs`) has to
+The non-obvious Skyrim/Mutagen mechanics that the generator (`src/ModForge.Core/Build/`) has to
 respect. This is the evergreen design knowledge distilled from the (now archived) iteration log;
 for symptom→fix lookups see [lifelike/gotchas](lifelike/gotchas.md), for field-by-field spec docs
 see [SPEC-index.md](spec/SPEC-index.md).

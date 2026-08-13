@@ -25,9 +25,9 @@
 | build 決定性 | **143/143 支 `examples/*.json` 全部 byte-deterministic**（每支連建兩次比 SHA256，零例外）|
 
 **結論：300 行規則已經解決「單檔過大」，但把問題換成了「367 個平鋪檔 + 3 個跨檔 god class」。**
-這正是 DEV-GUIDE 觸發 B（資料夾雜亂）與 refactor README 提到的「平鋪太多即包夾」。
+這正是 DEV-GUIDE 的**觸發 C「平鋪太多即包夾」**。
 
-> 附帶發現：`DEV-GUIDE.md` 只寫了觸發 A（單體過大）與觸發 B（資料夾雜亂），但 [refactor/README](README.md) 已經在引用第三條「**平鋪太多即包夾**」。本次重構正是它的第一個實例——做完把這條補回 DEV-GUIDE。
+> 附帶發現（**已補**，`19fcadc`）：開工時 `DEV-GUIDE.md` 只寫了觸發 A（單體過大）與觸發 B（資料夾雜亂），但 [refactor/README](README.md) 早就在引用第三條「**平鋪太多即包夾**」——那條規則被引用了卻從來沒被定義。現在補進 DEV-GUIDE，並寫明**它存在正是為了收拾觸發 A 的代價**：300 行規則照做久了必然生出一大群同前綴的小檔。本次重構就是它的第一個實例。
 
 ## 2. 真正的痛點不是檔案大小，是 hub 檔
 
@@ -85,7 +85,7 @@
 - **文檔路徑一起改了，含 `*/archive/`**：299 行、33 個檔（其中 20 個在 archive）。archive 雖然凍結，但路徑改名不動任何論述，留 200 多條死連結比動它更糟。
 - src 根還剩 18 個各不相干的型別（`Assets` `Demo` `QuestNodes` `SceneCoordinates` `StoryManager*` …）。**沒有硬塞一個 `Support/`**——那只是換個名字的雜物抽屜，依 DEV-GUIDE「不預先過度設計」，等它真的礙事再分。
 
-> **順手發現的既有腐爛（不是本次造成，未修）**：文檔裡有 5 條指向從來不存在／早就改名的檔案——`src/ModForge.Cli/Build.cs`、`src/ModForge.Core/Generator.Build.SceneNpcRoles.cs`、`SceneImport.cs`、`StoryManagerProbe.cs`、`tests/.../StoryManagerProbeTests.cs`。屬於文檔面向，另開一次處理。
+> **順手發現的既有腐爛（2026-08-13 已處理）**：文檔裡有 5 條指向不存在檔案的路徑。查證後發現**是三種不同的東西，不能一律當死連結修**：① `docs/engine-internals.md`（含 zh-TW 鏡像）說生成器在 `src/ModForge.Cli/Build.cs`——**純粹寫錯**，生成器一直在 Core，已改指 `src/ModForge.Core/Build/`；② `workflows/plans/ingame-scene-export.md` 的 `SceneImport.cs` 與 `Generator.Build.SceneNpcRoles.cs`——**是計畫原文**：前者被同一份文件上方的「實作進度」段取消（scene.json 本身就是合法 ModSpec，不需要 `--scene` 合併），後者實際落地成 `Macros/Generator.SceneNpcRoles.cs`（它是巨集展開、不是 build step，所以沒有 `Generator.Build.*` 前綴）。兩處都就地註記，不刪計畫原文；③ `plans/archive/2026-06-04-story-manager-probe.md` 的 `StoryManagerProbe.cs` / `StoryManagerProbeTests.cs`——**那兩個檔真的存在過**（`c0a4885` 加入、`8758d76` 退場，被 spec pipeline 取代），archive 是凍結的歷史紀錄，**改它等於竄改歷史，不動**。
 
 ### Batch 2 — 拆 hub 檔 — ✅ 已完成 2026-08-13
 
