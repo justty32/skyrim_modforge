@@ -86,8 +86,11 @@ if zero:
 PY
 )"
 
-echo "$report"
+# Save BEFORE printing: piping this script into `head` closes stdout early, and under `set -e` the
+# resulting SIGPIPE would otherwise kill it before the copy was ever written.
 if [ -n "$out" ]; then
   printf '%s\n' "$report" > "$out"
   echo "(saved to $out)" >&2
 fi
+
+echo "$report"
