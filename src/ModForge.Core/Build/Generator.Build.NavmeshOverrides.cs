@@ -5,7 +5,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- navmeshOverrides[]: re-emit a vanilla NAVM from our plugin, unchanged ----------------
         // The contract, the reasoning and the iron rule ("never renumber a triangle") are in

@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 2: LeveledItem (LVLI) entries — each entry references an item by ref ---
         public void WireLeveledItems()

@@ -4,7 +4,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 1: ImageSpace Modifier (IMAD) — a screen-space post-process record. -----------
         // Mutagen models every IMAD field as an animatable curve (ExtendedList<KeyFrame>{Time,Value} /

@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // #6: create the per-quest LastFired float GLOB + attach the reusable MFEncounterCooldown quest
         // script (merged into any existing QuestAdapter so alias/stage fragments coexist). Unconditional

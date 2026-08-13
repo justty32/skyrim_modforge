@@ -76,7 +76,7 @@ EndEvent
 ";
     }
 
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         private int wordWallsBuilt;
 

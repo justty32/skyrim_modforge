@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // Proactive banter INFOs, kept so pass 2 can append their situational conditions (mirrors dialogResponsesByEd).
         private readonly List<(BanterSpec Spec, DialogResponses Info, string Label)> banterInfos = new();

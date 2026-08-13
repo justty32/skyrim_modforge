@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // The reusable empty subclass serves ini-only menus. A menu with `global` bindings gets a
         // generated subclass with setter functions and VMAD GlobalVariable properties instead.

@@ -96,7 +96,7 @@ public static partial class Generator
     // BuildContext entry points — thin instance wrappers so the orchestrator (Generator.Build.cs)
     // can call these like the other passes. The static implementations above take mod/recordsByEd/
     // Resolve as parameters (no BuildContext coupling); here we hand them the context's privates.
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         public void BuildClimateRecords() => Generator.BuildClimates(spec, mod, Warn);
 

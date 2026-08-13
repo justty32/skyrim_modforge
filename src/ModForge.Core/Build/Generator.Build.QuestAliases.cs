@@ -5,7 +5,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // Build a quest's aliases (fills + alias scripts). Shared by the Story-Manager path (def = the
         // event, enabling fromEvent fills) and ordinary StartGameEnabled quests (def = null, so fromEvent

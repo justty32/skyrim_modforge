@@ -5,7 +5,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- Removals (Idea #24 §E eraser): DISABLE existing vanilla placed refs -------------------
         // Each `removals[]` entry is a "<master>:0xFORMID" of an existing placed ref (REFR/ACHR). We

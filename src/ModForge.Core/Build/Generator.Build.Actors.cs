@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 1: Npc (ACTOR) — kept in npcsByEd so dialogue/packages/wiring can reference them.
         // Quests + word-wall quests follow in their own steps (orchestrator order: NPC then QUST). ---

@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 1: GlobalVariable (GLOB) — a named shared number (flag/counter/constant) ----------
         // Skyrim has three concrete global subtypes (Short/Long=int/Float); `value` is the INITIAL

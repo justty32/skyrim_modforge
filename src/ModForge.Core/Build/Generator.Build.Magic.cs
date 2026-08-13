@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 1: MagicEffect (MGEF) scalar/archetype fields. Association/projectile/art/sound
         // refs are wired in pass 2 (WireMagicEffectRefs). Built before Spells (orchestrator order). ---

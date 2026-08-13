@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 2: Linked References between placements (the Patrol route, etc.) ---
         // Done after ALL placements exist so a marker can link forward to one defined later in the list

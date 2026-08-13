@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 1: Hazard (HAZD) scalar/model/flag fields. A radius effect applying `spell` every
         // `targetInterval`s to actors inside. FormLink refs (spell/light/sound/imad/impactDataSet) are

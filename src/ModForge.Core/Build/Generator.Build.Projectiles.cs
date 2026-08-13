@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 1: Projectile (PROJ) scalar fields. The bolt that flies on an Aimed cast: carries
         // its own visible `model` + flight physics. `type`/`flags` parse from strings (bad names warned

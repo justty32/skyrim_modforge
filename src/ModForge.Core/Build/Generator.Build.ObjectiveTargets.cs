@@ -7,7 +7,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 2: resolve forced alias fills whose target builds after the alias passes (an in-spec
         // placement / xmarker anchor or a map marker). Vanilla and already-built refs were set inline. ---

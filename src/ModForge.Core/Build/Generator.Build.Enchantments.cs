@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 1: Enchantment / Object Effect (ENCH) scalar records ---
         // The MGEF-based `effects` (FormLinks) are wired in pass 2 (WireEnchantments — ObjectEffect

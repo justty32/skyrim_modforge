@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 1: Perk (PERK) trunk — scalar flags/level/ranks. ---
         // Effects, perk-level + effect-level conditions, ability-spell links and NextPerk are refs,

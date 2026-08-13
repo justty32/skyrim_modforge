@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // Vendor (merchant) factions: editorIds of in-spec factions carrying vendor data (so an NPC
         // who joins one also gets JobMerchantFaction). The merchant chest is a PLACEMENT that doesn't

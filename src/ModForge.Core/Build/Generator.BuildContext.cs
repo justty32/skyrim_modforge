@@ -23,7 +23,7 @@ public static partial class Generator
     //  (Generator.Build.cs) must call the steps in the exact original sequence — the output
     //  is byte-identical to the old single-method Build only because that order is preserved.
     // -------------------------------------------------------------------------------
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         private readonly ModSpec spec;
         // Per-build placement view. Godot imports are expanded into this copy so Build() never

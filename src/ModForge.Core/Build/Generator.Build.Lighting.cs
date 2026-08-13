@@ -15,7 +15,7 @@ public static partial class Generator
     //  DirectionalAmbientColors (its other AmbientColors field is legacy/zero); CELL XCLL's
     //  is AmbientColors. FillAmbientColors writes whichever Mutagen AmbientColors we hand it.
     // -------------------------------------------------------------------------------
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // Custom LGTM/IMGS built in pass 1 (before cells), so a CELL can resolve them by editorId.
         private readonly Dictionary<string, LightingTemplate> lgtmByEd = new(StringComparer.OrdinalIgnoreCase);

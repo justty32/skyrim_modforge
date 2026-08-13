@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 1: leveled lists, containers, recipes, combat styles, packages (scalar fields). Split
         // per-record-type below; the orchestrator calls them in this same order (FormID order is

@@ -151,7 +151,7 @@ public static partial class Generator
     // BuildContext entry point — thin instance wrapper so the orchestrator (Generator.Build.cs)
     // can call this like the other passes. Qualified with Generator. because the same-named
     // instance step would otherwise hide the outer static.
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         public void BuildWeatherRecords() => Generator.BuildWeathers(spec, mod, Warn,
             r => TryResolveTemplate<IWeatherGetter>(r, out var t) ? t : null);

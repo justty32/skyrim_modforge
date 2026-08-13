@@ -5,7 +5,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- Overrides (Idea #24 numpad editor): MOVE existing placed refs ------------------------
         // The sibling of BuildRemovals — same resolve machinery (master link cache →

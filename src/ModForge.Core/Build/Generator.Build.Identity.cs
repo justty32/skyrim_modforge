@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 1: the holding FACTION for each identity ---
         // An identity's persistent "has it" signal is a faction the player is added to. If `faction` is

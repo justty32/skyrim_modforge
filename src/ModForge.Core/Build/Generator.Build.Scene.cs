@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // Scene actor aliases, kept so pass 2 can bind each to the NPC that fills it (UniqueActor link —
         // the NPC ref may be forward or external, so it resolves only after the formKey table exists).

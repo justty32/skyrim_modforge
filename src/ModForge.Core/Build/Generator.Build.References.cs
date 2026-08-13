@@ -5,7 +5,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // Set once BuildReferences runs: every placement + references[] label is (about to be) in the ref
         // table, so a CTDA param/reference can finally resolve a placed ref. BuildCondition warns loudly if

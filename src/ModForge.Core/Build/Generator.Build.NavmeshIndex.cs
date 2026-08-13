@@ -5,7 +5,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // -------------------------------------------------------------------------------
         //  Navmesh index — read the navmesh triangles that already cover a spot, so build can

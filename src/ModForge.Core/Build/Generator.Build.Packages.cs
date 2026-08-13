@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 2: AI Package (PACK) — resolve template/combatStyle/ownerQuest refs and dispatch
         // Data slot filling by the vanilla procedure template referenced. Each template has its own

@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         private readonly Dictionary<FormKey, Worldspace> worldspaceOverrides = new();
         private readonly Dictionary<(FormKey Ws, int X, int Y), Cell> exteriorCells = new();

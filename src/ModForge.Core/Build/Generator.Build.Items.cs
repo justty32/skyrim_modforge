@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // Reusable DeepCopyIn masks — a TranslationMask is just instructions, so build it ONCE instead of
         // per loop iteration. All skip the localized Name (we set it from the spec; copying it would resolve

@@ -75,7 +75,7 @@ public static partial class Generator
 
     // BuildContext entry point — runs the worldspace/region build after the formKey table exists
     // (so regions can resolve in-spec worldspace editorIds), folding counts/links into the context.
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         private int worldspacesBuilt, regionsBuilt, terrainCellsBuilt, navmeshCellsBuilt;
 

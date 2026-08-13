@@ -5,7 +5,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- navCuts: L_NAVCUT volumes that switch vanilla navmesh OFF at runtime -----------------
         // The full contract, the vanilla evidence and the four engine limits are in Spec.NavCuts.cs.

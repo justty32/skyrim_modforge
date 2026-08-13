@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 1: Words of Power (WOOP) + Shouts (SHOU) — scalar records + empty word rows ---
         // A shout's word rows reference WOOP + SPEL by editorId, resolved in WireShouts (pass 2),

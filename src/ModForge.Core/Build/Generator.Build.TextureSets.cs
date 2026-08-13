@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 1: TextureSet (TXST) — a set of texture-map paths that retexture a base mesh ---
         // without a new .nif. No FormLinks, so fully built here (an `alternateTextures` consumer

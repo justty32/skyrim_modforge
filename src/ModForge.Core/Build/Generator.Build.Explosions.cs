@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 1: Explosion (EXPL) scalar fields. The boom on a projectile/spell impact: deals
         // `damage` in `radius`, shows model FX + light, plays sound, can apply an objectEffect (MGEF)

@@ -4,7 +4,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // -------------------------------------------------------------------------------
         //  P1 navmesh diagnostics — turn the two SILENT, in-game-only failures into a build warning.

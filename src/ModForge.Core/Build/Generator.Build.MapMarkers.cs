@@ -5,7 +5,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- world-map markers (XMRK). Each → a persistent PlacedObject on the MapMarker static,
         // carrying a MapMarker subrecord (name + type + flags). Registered in formKeyByEd so a

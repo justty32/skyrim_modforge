@@ -6,7 +6,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 1: Music Tracks (MUST) + Music Types (MUSC). Track/type refs wired in pass 2
         // (WireMusic). Built before BuildFormKeyTable so cell/worldspace `music` resolve them. ---

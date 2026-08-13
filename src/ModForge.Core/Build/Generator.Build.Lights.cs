@@ -46,7 +46,7 @@ public static partial class Generator
 
     // BuildContext entry point — thin instance wrapper so the orchestrator (Generator.Build.cs)
     // can call this like the other passes.
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         public void BuildLights() => Generator.BuildLights(spec, mod, Warn);
     }

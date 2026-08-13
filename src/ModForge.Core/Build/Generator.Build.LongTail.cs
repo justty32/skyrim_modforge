@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 1: long-tail record types (scalar fields; keywords/effects wired in pass 2). Split
         // per-record-type below; the orchestrator calls them in this same order (FormID order is

@@ -20,7 +20,7 @@ public static partial class Generator
     // pass 1 (build) and pass 2 (condition wiring) so each variant's gates land on the right INFO.
     internal static string DialogueVariantId(string parentEditorId, int i) => $"{parentEditorId}_v{i}";
 
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // Player DialogTopics by editorId (topic & INFO share an editorId, so formKeyByEd collides —
         // this is the reliable way to resolve a dialogue's TOPIC, e.g. for an ENAM LinkTo target).

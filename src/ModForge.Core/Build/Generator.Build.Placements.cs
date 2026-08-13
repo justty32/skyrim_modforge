@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 2: world placement — put a base form (npc/object) into a cell at position/rotation ---
         // The target cell is either an in-spec interior cell, a VANILLA interior cell we override, or

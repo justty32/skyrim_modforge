@@ -18,7 +18,7 @@ public static partial class Generator
         "GetVMQuestVariable", "GetVMScriptVariable",
     };
 
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 2: CTDA conditions (the SHARED builder — dialogue, banter, packages, perks, ---
         // Story Manager, quest-alias match filters, scenes, quest stages, objectives, recipes).

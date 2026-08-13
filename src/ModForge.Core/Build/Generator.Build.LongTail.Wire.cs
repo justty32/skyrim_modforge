@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 2: keywords on armor/weapon/misc/... (all implement the IKeyworded aspect) ---
         public void WireKeywords()

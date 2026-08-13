@@ -4,7 +4,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         private readonly string skyrimData;
         private readonly List<IDisposable> masterDisposables = new();

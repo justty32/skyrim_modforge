@@ -43,7 +43,7 @@ public static partial class Generator
         return refStr!.TrimStart()[AreaPrefix.Length..].Trim();
     }
 
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // Resolve a package's "alias:<name>" / "aliasLoc:<name>" ref to the alias index on the package's
         // ownerQuest. Returns true (with idx) if refStr is an alias ref AND it resolves; logs a warning

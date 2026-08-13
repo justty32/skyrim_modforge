@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // --- pass 1: Word-wall teaching quests: one start-enabled QUEST per word wall, hosting the
         // generated teaching fragment (the shout/word are bound on it in the script pass). StartGameEnabled

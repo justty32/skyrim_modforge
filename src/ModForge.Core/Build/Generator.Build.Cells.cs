@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         private readonly Dictionary<(int Block, int Sub), CellSubBlock> interiorSubs = new();
 

@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // Object (Form) script properties whose target builds AFTER the script is attached. An alias-script's
         // properties fill in BuildStandaloneQuestAliases (before placements), so a prop pointing at a

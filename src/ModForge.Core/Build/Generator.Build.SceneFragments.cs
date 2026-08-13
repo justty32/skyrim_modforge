@@ -2,7 +2,7 @@ namespace ModForge;
 
 public static partial class Generator
 {
-    private sealed partial class BuildContext
+    internal sealed partial class BuildContext
     {
         // Attach the generated scene-phase script only when package produced its .pex. The VMAD byte
         // shape and Local flag match vanilla scene fragments; missing compiled output leaves no adapter.
