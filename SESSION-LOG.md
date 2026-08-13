@@ -34,7 +34,7 @@
 | 工作流 | session-log | open 摘要 |
 |--------|-------------|----------|
 | 功能開發 | [workflows/feature-dev/session-log](workflows/feature-dev/session-log.md) | 🧊 身份系統 ③ 聲望/行為追蹤（2026-06-22 冷凍，等很有空再做）|
-| 重構整理 | [workflows/refactor/session-log](workflows/refactor/session-log.md) | `src/` 拆檔分層 + hub 解耦——[計畫](workflows/refactor/src-layout-plan.md)已定、尚未動工（跨機注意：要一台機器連續做完）|
+| 重構整理 | [workflows/refactor/session-log](workflows/refactor/session-log.md) | `src/` 拆檔分層——Batch 0/1 已完成（345 renames，測試/golden hash 全綠）**但未 push**；Batch 2 拆 hub 檔未開始。[計畫](workflows/refactor/src-layout-plan.md) |
 | 調查／解碼 | [workflows/investigation/session-log](workflows/investigation/session-log.md) | 無 |
 
 ## 不屬任何工作流的進度（堆太多 → 拆進 `session_logs/`）
