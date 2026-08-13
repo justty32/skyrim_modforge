@@ -18,13 +18,19 @@ public static class Archives
         
         foreach (var file in reader.Files)
         {
-            if (pathFilter != null && !file.Path.Contains(pathFilter, StringComparison.OrdinalIgnoreCase))
+            if (pathFilter != null && !Match(file.Path, pathFilter))
                 continue;
-                
-            var target = Path.Combine(outputDir, file.Path);
+
+            // An archive path is stored with backslashes. Windows treats those as separators, but on
+            // Linux a backslash is an ordinary filename character — combining raw would produce ONE
+            // file literally named "sound\voice\...\x.fuz" instead of a tree, which then breaks every
+            // caller that reads the name back (voice-annotate parses the FormID out of it).
+            // ResolveUnder also keeps a hostile archive from writing outside outputDir: a .bsa is an
+            // untrusted input, it is whatever mod the user pointed us at.
+            var target = SafeOutputPath.ResolveUnder(outputDir, Normalize(file.Path));
             var dir = Path.GetDirectoryName(target);
             if (dir != null) Directory.CreateDirectory(dir);
-            
+
             using var sourceStream = file.AsStream();
             using var targetStream = File.Create(target);
             sourceStream.CopyTo(targetStream);
@@ -43,4 +49,14 @@ public static class Archives
         var reader = Archive.CreateReader(GameRelease.SkyrimSE, archivePath, IFileSystemExt.DefaultFilesystem);
         return reader.Files.Select(f => f.Path).ToList();
     }
+
+    // Archive paths are stored with backslashes, but callers build filters with forward slashes
+    // (Program.Build.Voice.Extract composes "sound/voice/<plugin>/<voiceType>/"). Compare both sides
+    // in one separator style so the filter matches whichever style the reader hands back.
+    private static bool Match(string archivePath, string filter) =>
+        archivePath.Replace('\\', '/').Contains(filter.Replace('\\', '/'), StringComparison.OrdinalIgnoreCase);
+
+    // ...and translate to THIS platform's separator before touching the filesystem.
+    private static string Normalize(string archivePath) =>
+        archivePath.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
 }
