@@ -4,18 +4,6 @@ public static partial class Generator
 {
     internal sealed partial class BuildContext
     {
-        // Reusable DeepCopyIn masks — a TranslationMask is just instructions, so build it ONCE instead of
-        // per loop iteration. All skip the localized Name (we set it from the spec; copying it would resolve
-        // .STRINGS via the headless-absent load-order listing); Book/Weapon also skip their long text field.
-        private static readonly MiscItem.TranslationMask   MiscCopyMask   = new(defaultOn: true) { Name = false };
-        private static readonly Book.TranslationMask       BookCopyMask   = new(defaultOn: true) { Name = false, BookText = false };
-        private static readonly Weapon.TranslationMask     WeaponCopyMask = new(defaultOn: true) { Name = false, Description = false };
-        private static readonly Ingestible.TranslationMask PotionCopyMask = new(defaultOn: true) { Name = false };
-        // Armor: bring the template's Armature (ARMA addons = the actual worn mesh) + WorldModel (ground
-        // model) + BodyTemplate. Skip the localized Name (set from spec). Description on ARMO is a nested
-        // sub-mask, not a bool — vanilla armor templates have no DESC so there's no .STRINGS to resolve.
-        private static readonly Armor.TranslationMask ArmorCopyMask = new(defaultOn: true) { Name = false };
-
         // --- pass 1: Misc / Book / Weapon (model templating to avoid equip/read CRASHes) ---
         public void BuildItems()
         {
@@ -27,7 +15,7 @@ public static partial class Generator
                 // GemRuby) for its model + keywords. Mask out the localized Name (we set it below).
                 if (!string.IsNullOrWhiteSpace(m.Template)
                     && TryResolveTemplate<IMiscItemGetter>(m.Template, out var tmpl) && tmpl is not null)
-                    r.DeepCopyIn(tmpl, out _, MiscCopyMask);
+                    r.DeepCopyIn(tmpl, out _, CopyMasks.Misc);
                 r.EditorID = m.EditorId; r.Name = m.Name; r.Value = m.Value; r.Weight = m.Weight;
                 // External-resource pipeline: a `model` path string IS the .nif (overrides any cloned
                 // template mesh). `model` + `template` together is ambiguous — warn, model wins.
@@ -49,7 +37,7 @@ public static partial class Generator
                     if (TryResolveTemplate<IBookGetter>(b.Template, out var tmpl) && tmpl is not null)
                         // Skip the localized strings (Name/BookText) — we set them below, and copying
                         // them would resolve .STRINGS via the (headless-absent) load-order listing.
-                        r.DeepCopyIn(tmpl, out _, BookCopyMask);
+                        r.DeepCopyIn(tmpl, out _, CopyMasks.Book);
                     else
                         Warn($"  ! book '{b.EditorId}': template '{b.Template}' not resolved — book will lack a model and may CRASH on read");
                 }
@@ -87,7 +75,7 @@ public static partial class Generator
                     if (TryResolveTemplate<IWeaponGetter>(w.Template, out var tmpl) && tmpl is not null)
                         // Skip the localized strings (Name/Description) — we set Name below, and copying
                         // them would resolve .STRINGS via the (headless-absent) load-order listing.
-                        r.DeepCopyIn(tmpl, out _, WeaponCopyMask);
+                        r.DeepCopyIn(tmpl, out _, CopyMasks.Weapon);
                     else
                         Warn($"  ! weapon '{w.EditorId}': template '{w.Template}' not resolved — weapon will lack a model and may CRASH on equip");
                 }
@@ -131,7 +119,7 @@ public static partial class Generator
                 if (!string.IsNullOrWhiteSpace(p.Template)
                     && TryResolveTemplate<IIngestibleGetter>(p.Template, out var tmpl) && tmpl is not null)
                 {
-                    r.DeepCopyIn(tmpl, out _, PotionCopyMask);
+                    r.DeepCopyIn(tmpl, out _, CopyMasks.Potion);
                     r.Effects.Clear();
                 }
                 r.EditorID = p.EditorId; r.Name = p.Name; r.Value = p.Value; r.Weight = p.Weight;
@@ -153,7 +141,7 @@ public static partial class Generator
                 if (!string.IsNullOrWhiteSpace(a.Template))
                 {
                     if (TryResolveTemplate<IArmorGetter>(a.Template, out var tmpl) && tmpl is not null)
-                        r.DeepCopyIn(tmpl, out _, ArmorCopyMask);
+                        r.DeepCopyIn(tmpl, out _, CopyMasks.Armor);
                     else
                         Warn($"  ! armor '{a.EditorId}': template '{a.Template}' not resolved — armor will have NO Armature and equip INVISIBLE; set template to a vanilla armor of the same slot (e.g. Skyrim.esm:0x00012E49 ArmorIronCuirass)");
                 }
@@ -190,4 +178,20 @@ public static partial class Generator
             }
         }
     }
+}
+
+// DeepCopyIn instructions, not build state — a TranslationMask is immutable and shared, so it is
+// built ONCE here instead of per loop iteration. Lives outside BuildContext because it holds nothing
+// about the build in progress; `file` scope keeps it invisible to the other 60 partials.
+// All skip the localized Name (we set it from the spec; copying it would resolve .STRINGS via the
+// headless-absent load-order listing); Book/Weapon also skip their long text field. Armor brings the
+// template's Armature (ARMA addons = the actual worn mesh) + WorldModel + BodyTemplate; Description on
+// ARMO is a nested sub-mask, not a bool, and vanilla armor templates have no DESC to resolve anyway.
+file static class CopyMasks
+{
+    public static readonly MiscItem.TranslationMask   Misc   = new(defaultOn: true) { Name = false };
+    public static readonly Book.TranslationMask       Book   = new(defaultOn: true) { Name = false, BookText = false };
+    public static readonly Weapon.TranslationMask     Weapon = new(defaultOn: true) { Name = false, Description = false };
+    public static readonly Ingestible.TranslationMask Potion = new(defaultOn: true) { Name = false };
+    public static readonly Armor.TranslationMask      Armor  = new(defaultOn: true) { Name = false };
 }

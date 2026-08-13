@@ -158,5 +158,66 @@ public static partial class Generator
             foreach (var (pack, slot, slotName, ed, refStr, radius) in deferredLocationWires)
                 pack.Data[slot] = MakeLocationSlot(slotName, ed, refStr, radius);
         }
+    
+
+        // Build a PackageDataLocation: an authored placed-ref → LocationTarget anchored at that
+        // ref, else LocationFallback(NearSelf) — anchors at the actor's current position with no
+        // external dependency. NEVER use NearEditorLocation: it needs a CK-set Editor Location on
+        // the NPC; Mutagen-generated NPCs don't have one, so sandbox/travel silently no-ops in-game.
+        // Called ONLY from WireDeferredLocations — every location slot is deferred, because the ref may
+        // be a placement editorId or a references[] label that doesn't exist during BuildPackageData.
+        private PackageDataLocation MakeLocationSlot(string slotName, string packageEd, string refStr, uint radius)
+        {
+            // An explicit "area:<ref>" prefix (author declaring "a region, not that one object") strips to
+            // the bare ref here — every location slot funnels through this one method, so this is the single
+            // point that has to understand it. No-op on an unprefixed ref (byte-identical old behaviour).
+            refStr = StripAreaPrefix(refStr);
+
+            // An "alias:<name>" / "aliasLoc:<name>" location → LocationFallback bound to the ownerQuest's
+            // alias index (AliasForReference = the alias holds a ref; AliasForLocation = a location alias).
+            if (TryResolveAliasIndex(refStr, packageEd, out var isLocAlias, out var aliasIdx) && aliasIdx >= 0)
+                return new PackageDataLocation
+                {
+                    Name = slotName,
+                    Location = new LocationTargetRadius
+                    {
+                        Target = new LocationFallback
+                        {
+                            Type = isLocAlias
+                                ? LocationTargetRadius.LocationType.AliasForLocation
+                                : LocationTargetRadius.LocationType.AliasForReference,
+                            Data = aliasIdx,
+                        },
+                        Radius = radius,
+                    }
+                };
+
+            if (!string.IsNullOrWhiteSpace(refStr)
+                && TryResolveRef(refStr, formKeyByEd, out var fk))
+            {
+                linksWired++;
+                if (LooksExternalRef(refStr)) extLinks++;
+                return new PackageDataLocation
+                {
+                    Name = slotName,
+                    Location = new LocationTargetRadius
+                    {
+                        Target = new LocationTarget { Link = new FormLink<IPlacedGetter>(fk) },
+                        Radius = radius,
+                    }
+                };
+            }
+            if (!string.IsNullOrWhiteSpace(refStr))
+                Warn($"  ! package '{packageEd}' {slotName.ToLowerInvariant()} '{refStr}' unresolved — falling back to NearSelf");
+            return new PackageDataLocation
+            {
+                Name = slotName,
+                Location = new LocationTargetRadius
+                {
+                    Target = new LocationFallback { Type = LocationTargetRadius.LocationType.NearSelf },
+                    Radius = radius,
+                }
+            };
+        }
     }
 }

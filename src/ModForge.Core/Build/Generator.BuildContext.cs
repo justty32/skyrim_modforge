@@ -39,10 +39,6 @@ public static partial class Generator
         private readonly List<string> warnings = new();
         private readonly List<string> notes = new();      // advisory INFO lines (never warnings — see Note())
 
-        // Master link-caches (read-only overlays of Skyrim.esm etc.), lazily opened by name.
-        private readonly Dictionary<string, ILinkCache<ISkyrimMod, ISkyrimModGetter>?> masterCaches
-            = new(StringComparer.OrdinalIgnoreCase);
-
         // editorId -> record maps. npcs/quests are needed by the dialogue + pass-2 steps;
         // cells by placement; the formKey/records maps are the pass-2 ref table.
         private readonly Dictionary<string, Npc> npcsByEd = new();
@@ -111,6 +107,7 @@ public static partial class Generator
                 ?? Environment.GetEnvironmentVariable("MODFORGE_SKYRIM_DATA")
                 ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                                 ".local", "share", "Steam", "steamapps", "common", "Skyrim Special Edition", "Data");
+            masters = new VanillaMasters(skyrimData, Warn);
         }
 
         private void Warn(string message) => warnings.Add(message);
@@ -170,7 +167,7 @@ public static partial class Generator
             }
             finally
             {
-                foreach (var d in masterDisposables) d.Dispose();
+                masters.Dispose();
             }
         }
 
