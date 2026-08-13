@@ -87,18 +87,25 @@
 
 > **順手發現的既有腐爛（不是本次造成，未修）**：文檔裡有 5 條指向從來不存在／早就改名的檔案——`src/ModForge.Cli/Build.cs`、`src/ModForge.Core/Generator.Build.SceneNpcRoles.cs`、`SceneImport.cs`、`StoryManagerProbe.cs`、`tests/.../StoryManagerProbeTests.cs`。屬於文檔面向，另開一次處理。
 
-### Batch 2 — 拆 hub 檔（**真正解決第 2 節的痛**）
+### Batch 2 — 拆 hub 檔 — ✅ 已完成 2026-08-13
 
-按投報率排序，每項獨立 commit：
+五個 hub 檔的結果（每項獨立 commit，每項都跑完整驗證儀式）：
 
-1. **`Spec.cs`（55 touches）→ 加 `partial`，把各領域的 `List<XSpec>` 屬性搬到它自己的 `Spec.<Domain>.cs`。**
-   已驗證安全：全 repo 沒有任何地方 `Serialize` 過 `ModSpec`（只有反序列化 + `CheckUnknownFields` 用 name→Type 字典查表），**屬性宣告順序不影響任何輸出**。這是投報率最高的一項。
-2. **`Generator.BuildContext.cs`（44 touches）→ 把 54 個 TIER-C 欄位下放給真正用它的檔。**
-   現況已經有 20 個欄位散在別的 `Build.*.cs` 裡（等於這個做法已經有先例，只是做一半），把剩下的做完。做完後這個檔只剩 4 個 TIER-A（`spec`/`mod`/`recordsByEd`/`formKeyByEd`）+ 24 個 TIER-B 索引。
-3. **`Program.cs`（95 touches）→ 依領域拆成數張命令表**，`Main` 只留 dispatch。
-4. **`Generator.Validate.cs`（56 touches）→ 收尾未完成的遷移**：`ValidateRequires` / `ValidateWeather` / `ValidateLights` / `ValidateLighting` 這 4 個還是 `(spec, problems, ids, checkRef)` 形式的自由函式，其餘 35 個都已經是 `ctx.` 方法。統一掉。
-5. **`Generator.Build.cs`（69 touches）→ 刻意不動。**
-   它那 ~150 行的呼叫順序**就是 pipeline 的可執行規格**，而且 record `AddNew()` 順序決定 FormID。改成註冊表會把「順序」藏起來，是負面收益。這是**明確的設計決定，不是漏做**——寫進檔頭註解讓下一個 agent 別手癢。
+| # | 檔案 | 之前 | 之後 | commit |
+|---|------|------|------|--------|
+| 1 | `Spec/Spec.cs` | 159 行 / **102 個成員** | 43 行 / **5 個成員** | `c9c8207` |
+| 2 | `Build/Generator.BuildContext.cs` | 278 行 / **57 個欄位** | 237 行 / **27 個欄位** | `807b0a6` |
+| 3 | `Cli/Program.cs` | 204 行（switch＋help 全在裡面）| **77 行**（兩者都不在了）| `3104459` |
+| 4 | `Validate/Generator.Validate.cs` | 4 個自由函式 + 35 個 ctx 方法 | 38 個 ctx 方法 + 1 個有理由的例外 | `f4035c9` |
+| 5 | `Build/Generator.Build.cs` | — | **刻意不動**（理由寫進檔頭）| — |
+
+1. **`Spec.cs`**：每個 `List<XSpec>` 屬性搬到**宣告 `XSpec` 的那個檔**（`weapons[]` 就在 `WeaponSpec` 旁邊），6 個 macro 展開 guard 跟著它守護的家族走。安全性已驗證：全 repo 沒有任何地方 `Serialize` 過 `ModSpec`，`CheckUnknownFields` 也是用 name→Type 字典查表，**宣告順序碰不到任何輸出**。
+2. **`BuildContext`**：只有一個 build step 用得到的欄位（scene 的 wire queue、exterior cell 快取、region 計數器、lighting map、banter/dialogue 狀態、master cache 的 disposables）搬進那個 step 自己的 partial，註解一起走。partial class 的欄位在每個 part 都看得到，所以搬宣告不可能改行為，`ToResult()` 照舊讀得到計數器。**留下的判準寫進檔頭了**：只有「不只一個領域讀」的狀態才留在這裡。
+3. **`Program.cs`**：命令的 **argv 形狀與 help 文字現在同住一個檔**——`Commands/Program.Dispatch.cs`（生成/打包/翻譯）與 `Diagnostics/Diagnostics.Dispatch.cs`（dump/find/*diag）。dispatcher 對不認得的形狀回 `null`，精確重現舊 switch 的 `default:`。57 行 help 一行沒少、字沒改，只是 3 個 translate 命令從 40 個 diag 後面移到核心區。
+4. **`Generator.Validate.cs`**：`ValidateLights`/`ValidateLighting`/`ValidateWeather` 轉成 ctx 方法。**`ValidateRequires` 刻意留成自由函式**——它是 requires 模組的一半（另一半「宣告 vs 實際」必須 build 完才能跑），為了讓清單好看而拆散那一對不划算；理由寫在呼叫處。
+5. **`Generator.Build.cs` 刻意不動。** 那 ~150 行的呼叫順序**就是 pipeline 的規格**，而且是這裡唯一「弄丟就再也回不來」的東西：FormID、進而整個 esp 的每個 byte 都由它決定。改成註冊表會把順序移到隱性的地方（宣告順序／反射順序／檔案順序），沒人 review、改動無聲落地。**這是評估後否決，不是漏做**，檔頭註解已經寫明，別再手癢。
+
+> **新增的第二層護欄**：`scripts/cli-dispatch-snapshot.sh`。golden hash 只走 `build` 一條路徑、測試幾乎不碰 CLI，所以動 argv 分派時沒有網。它對 55 個命令 × 6 種參數長度＝**330 種 argv 形狀**記錄 exit code 與「有沒有掉回 Usage()」，改前改後 diff。用法見 [testing.md](../testing.md)。
 
 ### Batch 3 — 讓 `BuildContext` 可被測
 

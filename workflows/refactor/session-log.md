@@ -8,15 +8,18 @@
 
 ## 進行中 / open
 
-### `src/` 拆檔分層 + hub 解耦 — Batch 0/1 完成，Batch 2 未開始
+### `src/` 拆檔分層 + hub 解耦 — Batch 0–2 完成，Batch 3 未開始
 
-計畫全文：[src-layout-plan.md](src-layout-plan.md)。2026-08-13 於離線機 Windows：
+計畫全文：[src-layout-plan.md](src-layout-plan.md)。2026-08-13 於離線機 Windows 一次做完 Batch 0、1、2：
 
-- ✅ **Batch 0**（`793615b`）：`scripts/golden-hash.sh` 護欄，用法見 [testing.md](../testing.md)。
-- ✅ **Batch 1**（`1e638d1`）：345 個純 rename，`src/`＋`tests/` 全部進領域資料夾。build 乾淨、1122 測試綠、golden hash 197/197 不變。
-- ⏸ **Batch 2 起未動**：拆 hub 檔（`Spec.cs` 加 partial → 各領域；`BuildContext` 的 54 個 TIER-C 欄位下放；`Program.cs` 命令表；`Generator.Validate.cs` 收尾 4 個自由函式）。**`Generator.Build.cs` 刻意不動**，理由在計畫 Batch 2 第 5 點。
+- ✅ **Batch 0**（`793615b`）：`scripts/golden-hash.sh` 護欄。
+- ✅ **Batch 1**（`1e638d1`）：345 個純 rename，`src/`＋`tests/` 進領域資料夾。
+- ✅ **Batch 2**（`c9c8207` `807b0a6` `f4035c9` `3104459`）：四個 hub 檔拆完——`Spec.cs` 102→5 個成員、`BuildContext` 57→27 個欄位、`Program.cs` 204→76 行、`Validate.cs` 收尾。**`Generator.Build.cs` 評估後刻意不動**，理由寫在該檔檔頭。
+  - 另加第二層護欄 `scripts/cli-dispatch-snapshot.sh`（330 種 argv 形狀），因為 golden hash 只走 `build`、測試幾乎不碰 CLI。兩支護欄用法都在 [testing.md](../testing.md)。
+- ⏸ **Batch 3 未開始**：把 `BuildContext` 從 `private nested` 提升成 top-level `internal`，解鎖單元測試（csproj 已經有 `InternalsVisibleTo`）。Batch 4/5 是選做。
 
-**⚠ 兩件跨機／後續要注意的：**
+**⚠ 三件跨機／後續要注意的：**
 
-- **這兩個 commit 還沒 push。** 母 repo 的 submodule 指標也還沒 bump。另一台若有未推的 `src/` 改動，會撞上這次的巨型 rename——先合再繼續。
-- **文檔裡有 5 條既有死連結**（`src/ModForge.Cli/Build.cs`、`Generator.Build.SceneNpcRoles.cs`、`SceneImport.cs`、`StoryManagerProbe.cs`、`StoryManagerProbeTests.cs`），指向從來不存在或早已改名的檔。不是本次造成，屬文檔面向，另開一次處理。
+- **這些 commit 全都還沒 push**，母 repo 的 submodule 指標也還沒 bump。另一台若有未推的 `src/` 改動，會撞上 Batch 1 的巨型 rename——先合再繼續。
+- **文檔裡有 5 條既有死連結**（`src/ModForge.Cli/Build.cs`、`Generator.Build.SceneNpcRoles.cs`、`SceneImport.cs`、`StoryManagerProbe.cs`、`StoryManagerProbeTests.cs`），指向從來不存在或早已改名的檔。不是這次造成，屬文檔面向，另開一次。
+- **`DEV-GUIDE.md` 還缺「平鋪太多即包夾」那條**（[refactor/README](README.md) 已經在引用它，本次重構就是它的第一個實例）。屬文檔面向，同上。

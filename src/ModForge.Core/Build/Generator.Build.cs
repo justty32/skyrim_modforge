@@ -12,6 +12,15 @@ public static partial class Generator
     //  (Generator.BuildContext.cs) and the Generator.Build.*.cs partials. The call order below
     //  is load-bearing: record AddNew() order assigns FormIDs, and several pass-2 steps depend
     //  on earlier ones (placements register editorIds the deferred package wires resolve, etc.).
+    //
+    //  DO NOT turn this list into a registry / attribute scan / DI container. Yes, every new
+    //  record family edits this file — that cost is deliberate. The ORDER is the specification
+    //  of the pipeline, and it is the one thing here that is not recoverable from the code if
+    //  it is lost: FormIDs, and therefore every byte of the output plugin, follow from it. A
+    //  registration mechanism would move the order somewhere implicit (declaration order,
+    //  reflection order, file order) where nobody reviews it and a reordering lands silently.
+    //  Reviewed and rejected as part of the 2026-08 src layout refactor — see
+    //  workflows/refactor/src-layout-plan.md, Batch 2.
     // -------------------------------------------------------------------------------
     /// <summary>
     /// Build a mod from a spec. The result holds the in-memory <see cref="ISkyrimMod"/> (caller
