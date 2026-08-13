@@ -41,6 +41,19 @@ diff /tmp/before.txt /tmp/after.txt && echo "byte-identical"
 
 ⚠️ **輸出跟機器綁定，不要 commit、不要跨機比對**：離線機沒有 `Skyrim.esm`，凡是指向 vanilla cell 的 placement 都會被 skip，產出的是縮水版 plugin，bytes 與 Manjaro 上同一支 spec 不同。永遠**在同一台機器上比 before/after**。
 
+## 重構護欄：CLI dispatch（`scripts/cli-dispatch-snapshot.sh`）
+
+golden hash 只經過 `build` 一條路徑，測試也幾乎不碰 `ModForge.Cli`——**改 CLI 的 argv 分派時用這支**。它對每個命令名餵 0～5 個佔位參數，記錄 `exit code` 與「有沒有掉回 Usage()」：
+
+```bash
+scripts/cli-dispatch-snapshot.sh /tmp/before.txt
+# ...改 dispatch...
+scripts/cli-dispatch-snapshot.sh /tmp/after.txt
+diff /tmp/before.txt /tmp/after.txt && echo "dispatch unchanged"
+```
+
+55 個命令 × 6 種長度 ＝ 330 種 argv 形狀。**`usage=yes` 代表那個形狀沒被接受**，所以 diff 一乾淨就等於「接受的參數形狀完全沒變」。佔位參數指向不存在的檔案是刻意的——命令真的被分派到才會因為找不到檔案而失敗，這正是它跟 fall-through 的區別。
+
 ## RequiresSkyrim 跑法（需本機 Skyrim.esm）
 
 標記 `Category=RequiresSkyrim` 的測試需要本機的 Skyrim Special Edition `Data` 資料夾（內含 `Skyrim.esm`）。生成器優先讀 `MODFORGE_SKYRIM_DATA`，未設時回退到本機 Steam 路徑：
