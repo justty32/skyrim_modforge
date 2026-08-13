@@ -54,6 +54,25 @@ diff /tmp/before.txt /tmp/after.txt && echo "dispatch unchanged"
 
 55 個命令 × 6 種長度 ＝ 330 種 argv 形狀。**`usage=yes` 代表那個形狀沒被接受**，所以 diff 一乾淨就等於「接受的參數形狀完全沒變」。佔位參數指向不存在的檔案是刻意的——命令真的被分派到才會因為找不到檔案而失敗，這正是它跟 fall-through 的區別。
 
+## 找洞用：coverage（`scripts/coverage.sh`）
+
+上面兩支護欄回答「行為變了沒」，**都不回答「哪裡根本沒被跑到」**——那是你動手寫測試前想知道的事。這支包住 Microsoft.NET.Test.Sdk 內建的 collector（不需額外套件，離線可跑），按**未覆蓋行數**排序 ModForge 自己的檔案：
+
+```bash
+scripts/coverage.sh                 # 離線跑，報告印到 stdout
+scripts/coverage.sh /tmp/cov.txt    # 順便存一份
+```
+
+第三方 source-linked 相依（DynamicData／Humanizer／Mutagen）與 `obj/` 生成碼會被濾掉，否則真正的結果會被埋掉。2026-08-13 基準：**73.0%**（27500/37669）。
+
+⚠️ **看數字前先看 filter**。預設排除 `Category=RequiresSkyrim`，所以**只有那些測試才走得到的程式碼會顯示成沒覆蓋**——這是「離線機能回歸測到什麼」的實話，但**不等於那段程式碼沒測試**。下結論前先確認該檔的 `*Tests.cs` 是不是整份都標了 `RequiresSkyrim`：`Generator.LivingNpcs.cs` 之前讀起來是 4%，就是因為 `LivingNpcTests` 每一條都要 `Skyrim.esm`，而不是因為它沒測試。要含 RequiresSkyrim 一起算：
+
+```bash
+MODFORGE_COVERAGE_FILTER= scripts/coverage.sh
+```
+
+零覆蓋的大宗是 `ModForge.Cli/Diagnostics/*`（要真的 `Skyrim.esm` 才 dump 得出東西）與 `Papyrus.cs`（要 Wine/CK），兩者離線都測不了。
+
 ## RequiresSkyrim 跑法（需本機 Skyrim.esm）
 
 標記 `Category=RequiresSkyrim` 的測試需要本機的 Skyrim Special Edition `Data` 資料夾（內含 `Skyrim.esm`）。生成器優先讀 `MODFORGE_SKYRIM_DATA`，未設時回退到本機 Steam 路徑：
