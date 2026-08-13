@@ -482,7 +482,7 @@ git commit -m "feat(world): mapMarkers[] — world-map markers (XMRK) on the Map
 ### Task 5: C — mapMarker validation
 
 **Files:**
-- Modify: `src/ModForge.Core/Validate/Generator.Validate.World.cs` (or `Generator.Validate.World2.cs` — whichever holds placement/worldspace checks)
+- Modify: `src/ModForge.Core/Validate/Generator.Validate.World.cs` (or `Generator.Validate.World.More.cs` — whichever holds placement/worldspace checks)
 - Test: `tests/ModForge.Core.Tests/Build/MapMarkerTests.cs` (add a case)
 
 - [ ] **Step 1: Write the failing test**

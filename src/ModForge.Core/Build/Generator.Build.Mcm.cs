@@ -9,7 +9,6 @@ public static partial class Generator
         internal const string McmConfigScript = "ModForgeMCM";
         // SkyUI SDK alias script (shipped by SkyUI, not by us). Its OnPlayerLoadGame drives re-registration.
         internal const string McmPlayerAliasScript = "SKI_PlayerLoadGameAlias";
-        private const string McmPlayerRef = "Skyrim.esm:0x000014";
 
         // --- pass 2: MCM Helper registration quest (D-2) ---
         // MCM Helper does NOT register a menu from a loose config.json alone (confirmed in-game 2026-06-20;
@@ -61,7 +60,7 @@ public static partial class Generator
                 // PlayerAlias (index 0): forced to the player, carries SKI_PlayerLoadGameAlias.
                 const uint aliasId = 0;
                 var alias = new QuestAlias { ID = aliasId, Name = "PlayerAlias" };
-                if (TryResolveRef(McmPlayerRef, formKeyByEd, out var pfk)) alias.ForcedReference.SetTo(pfk);
+                if (TryResolveRef(PlayerNpcBase, formKeyByEd, out var pfk)) alias.ForcedReference.SetTo(pfk);
                 else Warn($"  ! MCM '{m.ModName}': player ref unresolved (PlayerAlias forced ref unset)");
                 quest.Aliases.Add(alias);
 

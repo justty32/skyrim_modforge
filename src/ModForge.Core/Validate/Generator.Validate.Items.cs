@@ -5,6 +5,11 @@ public static partial class Generator
     private sealed partial class ValidateContext
     {
         // --- items (physical gear, magic, recipes, textures) ---
+        // Validates: messages, armors, weapons, books, miscItems, potions, statics, activators,
+        // furniture, sounds, magicEffects, classes, spells.
+        // The remaining item families are in Generator.Validate.Items.More.cs, which this method
+        // tail-calls. The split point is arbitrary — it is a 300-line budget, not a concern
+        // boundary — so grep BOTH headers when hunting for where a family is checked.
         public void ValidateItems()
         {
             foreach (var msg in spec.Messages)
@@ -119,7 +124,7 @@ public static partial class Generator
             foreach (var s in spec.Spells) CheckRef(s.EquipType, $"spell '{s.EditorId}' equipType");
             foreach (var p in spec.Potions) CheckEffects(p.EditorId, p.Effects, "potion");
 
-            ValidateItems2();
+            ValidateItemsMore();
         }
     }
 }

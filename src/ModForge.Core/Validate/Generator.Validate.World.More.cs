@@ -4,7 +4,16 @@ public static partial class Generator
 {
     private sealed partial class ValidateContext
     {
-        public void ValidateWorld2()
+        // Continues ValidateWorld (Generator.Validate.World.cs) past its 300-line budget.
+        // Validates: regions, encounterZones, cells, placements (cell/zone refs), factions, npcs,
+        // wordsOfPower, shouts, wordWalls.
+        //
+        // Those last five are not "world" at all; they landed here because this is simply where the
+        // sweep continued. Moving them to their own domain files was considered and rejected during
+        // the 2026-08 refactor: Validate returns problems IN ORDER, that order is printed to the
+        // user and one test indexes problems[0], so re-homing checks changes observable output for
+        // a purely cosmetic gain. See workflows/refactor/src-layout-plan.md, Batch 5.
+        public void ValidateWorldMore()
         {
             // Regions (REGN): worldspace required, ≥3 area points, ≥1 weather entry with chance > 0.
             foreach (var rg in spec.Regions)

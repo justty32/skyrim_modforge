@@ -178,7 +178,7 @@ scene-capture-bridge DLL `sc cap` 匯出的 `capturedItems[]` → macro 展開�
 | Spec | `Spec.cs` | `keywords`, `outfits`, `statics`, `activators`（頂層欄位）|
 | Build P1 | `Generator.Build.LongTail.cs` | 建上述所有小 record |
 | Build P2 | `Generator.Build.LongTail.Wire.cs` | keyword 陣列 + sound ref + alternate-texture ref 接線 |
-| Validate | `Generator.Validate.Items2.cs` | texture-path / model-path / sound-file sanity |
+| Validate | `Generator.Validate.Items.More.cs` | texture-path / model-path / sound-file sanity |
 
 ---
 

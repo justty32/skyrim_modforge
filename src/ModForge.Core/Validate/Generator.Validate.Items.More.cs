@@ -4,7 +4,11 @@ public static partial class Generator
 {
     private sealed partial class ValidateContext
     {
-        public void ValidateItems2()
+        // Continues ValidateItems (Generator.Validate.Items.cs) over the item families that did not
+        // fit its 300-line budget. Validates: recipes, spells' effects, enchantments, ingredients,
+        // ammunitions, scrolls, soulGems, keys, activators, outfits, textureSets, and the
+        // alternate-texture check for statics/activators.
+        public void ValidateItemsMore()
         {
             // In-spec weapon/armor editorIds — a temper recipe's target must be one of these (or an
             // external <master>:0xID weapon/armor, which we can't type-check headlessly).

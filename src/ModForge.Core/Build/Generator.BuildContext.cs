@@ -25,6 +25,13 @@ public static partial class Generator
     // -------------------------------------------------------------------------------
     internal sealed partial class BuildContext
     {
+        // The PLAYER's NPC *base* record. Named for what it is: 0x000014 is the Npc, NOT the
+        // PlayerRef (0x000007, the placed reference) — the two are routinely confused, and
+        // Spec.Actors.cs warns about the same pair. Identity conditions and the MCM PlayerAlias
+        // both force-reference it, and each used to carry its own copy of the literal under a
+        // name that claimed it was the PlayerRef.
+        private const string PlayerNpcBase = "Skyrim.esm:0x000014";
+
         private readonly ModSpec spec;
         // Per-build placement view. Godot imports are expanded into this copy so Build() never
         // mutates the caller's Placements list (and repeated builds of the same spec stay stable).

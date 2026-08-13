@@ -255,7 +255,7 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 | Util | `SceneCoordinates.cs` | Pure transform API：source position/quaternion/scale3 → Skyrim position/Euler XYZ/scale；明確 Unity LH Y-up、Unreal LH Z-up 與 custom basis，完整 `B*R*B⁻¹`；非均勻 scale diagnostic |
 | Tests | `SceneCoordinatesTests.cs` | identity、axis/handedness、basis rotation、unit/fudge scale、non-uniform diagnostic |
 | Validate | `Generator.Validate.World.cs` | worldspace ref、boundary、climate ref |
-| Validate | `Generator.Validate.World2.cs` | region / encounter zone / outfit content ref |
+| Validate | `Generator.Validate.World.More.cs` | region / encounter zone / outfit content ref |
 | Diag | `Diagnostics.Worldspace.cs` | worldspace climate/water/map / cell grid / region overlay |
 | Diag | `Diagnostics.Landscape.cs` | `landdiag <plugin> [ws] [n]` — dump LAND 紋理層（BTXT/ATXT quad+LayerNumber+tex、VTXT pts、Flags）對 vanilla byte-verify（Mutagen `AlphaLayer:BaseLayer` 故判型先 IAlphaLayerGetter）；`find <plugin> 0xFORMID` 反查 FormID 型別（`Diagnostics.cs`）|
 | Tool | `TexExport.cs` (CLI) | `texexport <dataDir> <outDir> <master:0xLTEX>[,…]` — LTEX→TextureSet→diffuse .dds 從遊戲 BSA（`Archives`）抽出 → `magick` 轉 PNG；餵 Godot worldspace-editor 的 WYSIWYG 地形 shader |
@@ -286,7 +286,7 @@ FLST 用途：當吃 list 的 condition 的 param（`GetItemCount`/`GetEquipped`
 |-----|-----|-----|
 | Spec | `Spec.Items.cs` | `ContainerSpec`（items + counts）|
 | Build P2 | `Generator.Build.Lists.Wire.cs` | container item FormLink 接線 |
-| Validate | `Generator.Validate.Items2.cs` | container contents ref |
+| Validate | `Generator.Validate.Items.More.cs` | container contents ref |
 
 ---
 
@@ -297,7 +297,7 @@ FLST 用途：當吃 list 的 condition 的 param（`GetItemCount`/`GetEquipped`
 |-----|-----|-----|
 | Spec | `Spec.Items.cs` | `RecipeSpec`（workbench / components / result）|
 | Build | `Generator.Recipes.cs` | COBJ 建立（workbench dispatch + component 接線）|
-| Validate | `Generator.Validate.Items2.cs` | workbench keyword、component ref、output ref |
+| Validate | `Generator.Validate.Items.More.cs` | workbench keyword、component ref、output ref |
 | Diag | `Diagnostics.Recipes.cs` | workbench / components / output dump |
 
 ---
@@ -310,7 +310,7 @@ FLST 用途：當吃 list 的 condition 的 param（`GetItemCount`/`GetEquipped`
 | Spec | `Spec.World.cs` | `EncounterZoneSpec`（level range / respawn / owner）|
 | Build P1 | `Generator.Build.Lists.cs` | `BuildEncounterZones` 入口 |
 | Build P2 | `Generator.Build.Lists.Wire.cs` | `WireEncounterZones` / `WireCellZones` |
-| Validate | `Generator.Validate.World2.cs` | encounter zone / owner ref |
+| Validate | `Generator.Validate.World.More.cs` | encounter zone / owner ref |
 | Diag | `Diagnostics.Encounters.cs` | level range / respawn / owner / location dump |
 
 ---

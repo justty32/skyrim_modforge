@@ -28,7 +28,6 @@ public static partial class Generator
         // PLAYER is in that identity's faction (GetInFaction ≥ 1). `primaryIdentity` → that PLUS the
         // player is NOT in any HIGHER-priority identity's faction (GetInFaction == 0), so only the top
         // held identity's greeting fires. Unknown ids warn and contribute nothing.
-        private const string PlayerRef = "Skyrim.esm:0x000014";
 
         public List<ConditionSpec> ExpandIdentityConditions(string identity, string primaryIdentity, string label)
         {
@@ -36,7 +35,7 @@ public static partial class Generator
             static ConditionSpec InFaction(string fac, string cmp, float val) => new()
             {
                 Function = "GetInFaction", Param = fac, Comparison = cmp, Value = val,
-                RunOn = "Reference", Reference = PlayerRef,
+                RunOn = "Reference", Reference = PlayerNpcBase,
             };
             void One(string id, bool primary)
             {
@@ -77,7 +76,7 @@ public static partial class Generator
             {
                 Function = c.Function, Param = c.Param, Comparison = c.Comparison, Value = c.Value,
                 ActorValue = c.ActorValue, ItemType = c.ItemType, Or = c.Or,
-                RunOn = "Reference", Reference = PlayerRef,
+                RunOn = "Reference", Reference = PlayerNpcBase,
             };
         }
 

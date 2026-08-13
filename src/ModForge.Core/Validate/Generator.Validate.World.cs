@@ -5,6 +5,10 @@ public static partial class Generator
     private sealed partial class ValidateContext
     {
         // --- placements, leveled lists, encounter zones, vendors, worldspaces, regions, shouts, word walls ---
+        // Validates: placements, mapMarkers, leveledItems, leveledNpcs, formLists, containers,
+        // worldspaces. Continues in Generator.Validate.World.More.cs, which this method tail-calls.
+        // Note that "World.More" also carries factions/npcs/shouts/wordWalls — it is where the
+        // per-collection sweep spilled over, not a second world-shaped concern.
         public void ValidateWorld()
         {
             foreach (var pl in spec.Placements)
@@ -166,7 +170,7 @@ public static partial class Generator
                 }
             }
 
-            ValidateWorld2();
+            ValidateWorldMore();
         }
 
         private static bool IsValidLockLevel(string level)
