@@ -26,6 +26,21 @@ dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj --filter "Categ
 或 Python runtime 不在場，該 case 會帶理由明示 skip；可用
 `MODFORGE_VOICE_CONTRACT_PYTHON` 指定 Python executable。
 
+## 重構護欄：golden hash（`scripts/golden-hash.sh`）
+
+行為不變的重構（[refactor 工作流](refactor/README.md)）光靠上面的測試**不夠**：1107 個 test method 裡 965 個（87%）只走 `Generator.Build`/`Validate` 對記錄下斷言，內部怎麼重組它們一律看不見。`golden-hash.sh` 補這個洞——把 `examples/` 全部 build 一次，逐一輸出 `.esp`／`.seq` 的 SHA-256：
+
+```bash
+scripts/golden-hash.sh /tmp/before.txt        # 重構前（第二參數＝並行度，預設 4）
+# ...重構...
+scripts/golden-hash.sh /tmp/after.txt
+diff /tmp/before.txt /tmp/after.txt && echo "byte-identical"
+```
+
+**任何一行變動＝輸出變了＝這次重構不是 behavior-preserving。** 143 支 spec ／ 197 個產物，離線機約 3 分鐘。
+
+⚠️ **輸出跟機器綁定，不要 commit、不要跨機比對**：離線機沒有 `Skyrim.esm`，凡是指向 vanilla cell 的 placement 都會被 skip，產出的是縮水版 plugin，bytes 與 Manjaro 上同一支 spec 不同。永遠**在同一台機器上比 before/after**。
+
 ## RequiresSkyrim 跑法（需本機 Skyrim.esm）
 
 標記 `Category=RequiresSkyrim` 的測試需要本機的 Skyrim Special Edition `Data` 資料夾（內含 `Skyrim.esm`）。生成器優先讀 `MODFORGE_SKYRIM_DATA`，未設時回退到本機 Steam 路徑：
