@@ -68,14 +68,18 @@ internal static partial class Program
             }
             return 0;
         }
-        if (args.Length == 3 && args[0] == "export-json")
+        if (args.Length is 3 or 4 && args[0] == "export-json")
         {
-            var result = Catalog.ExportJsonFile(args[1], args[2]);
+            var placeableOnly = args.Length == 4 && args[3] == "--placeable";
+            if (args.Length == 4 && !placeableOnly)
+                throw new ArgumentException($"invalid catalog export-json option: {args[3]}");
+            var result = Catalog.ExportJsonFile(args[1], args[2], placeableOnly);
             Console.WriteLine($"catalog JSON v{result.SchemaVersion}: {result.Sources.Count} source(s), " +
-                $"{result.Records.Count} winner record(s) -> {Path.GetFullPath(args[2])}");
+                $"{result.Records.Count} {(placeableOnly ? "placeable " : string.Empty)}winner record(s) " +
+                $"-> {Path.GetFullPath(args[2])}");
             return 0;
         }
-        throw new ArgumentException("catalog usage: catalog build <out.db> <plugin> [plugin...] | catalog query <db> <query> [--type <type>] [--plugin <plugin>] [--limit <1-1000>] [--json] | catalog get <db> <formKey> [--plugin <sourcePlugin>] [--json] | catalog sources <db> [--json] | catalog export-json <db> <out.json>");
+        throw new ArgumentException("catalog usage: catalog build <out.db> <plugin> [plugin...] | catalog query <db> <query> [--type <type>] [--plugin <plugin>] [--limit <1-1000>] [--json] | catalog get <db> <formKey> [--plugin <sourcePlugin>] [--json] | catalog sources <db> [--json] | catalog export-json <db> <out.json> [--placeable]");
     }
 
     private static void WriteRecords(IReadOnlyList<CatalogRecord> records, bool json)

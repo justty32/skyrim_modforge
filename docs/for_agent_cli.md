@@ -31,7 +31,7 @@ $R catalog build <out.db> <plugin> [plugin...] # replace/create index; inputs ar
 $R catalog query <db> <query> [--type Npc] [--plugin MyMod.esp] [--limit 50] [--json] # FTS name/EditorID search
 $R catalog get <db> <Plugin.esp:0xFORMID> [--plugin MyPatch.esp] [--json] # exact identity lookup
 $R catalog sources <db> [--json] # indexed files, hashes, localization and counts
-$R catalog export-json <db> <out.json> # atomic, versioned winner catalog for scene-capture browser
+$R catalog export-json <db> <out.json> [--placeable] # atomic winner catalog; optional Browser-only types
 $R questnodes <plugin> <outDir> [--strings <dir>] # QUST stage logs -> quest-node JSON files
 $R compile  <script.psc> <outDir>            # .psc -> .pex via the CK PapyrusCompiler under Wine
 $R extract  <plugin.esp> <strings.json>      # pull translatable strings -> JSON (source/target)
@@ -60,7 +60,7 @@ $R catalog build ./catalog.db ./MyStoryMod.esp ./AnotherMod.esl
 $R catalog query ./catalog.db forged --type Npc --plugin MyStoryMod.esp
 $R catalog get ./catalog.db MyStoryMod.esp:0x000802 --json
 $R catalog sources ./catalog.db --json
-$R catalog export-json ./catalog.db ./scene-catalog.json
+$R catalog export-json ./catalog.db ./scene-catalog.json --placeable
 ```
 
 The plugin arguments to `catalog build` are ordered from lowest to highest load order. The
@@ -82,6 +82,11 @@ program to consume.
 load-order source, while retaining `sourcePlugin` and `sourcePath` provenance. Sources stay in load
 order and records have deterministic FormKey order. The file is written through a flushed sibling
 temporary file and atomically replaced; directories and reparse-point paths are rejected.
+`--placeable` keeps the 21 base-record types scanned by the scene-capture Browser and excludes
+world instances such as `PlacedObject`; it filters by `recordType`, not `modelPath`, because armor
+models live through ARMA and some valid placeable records legitimately have no direct model path.
+Without the flag, the existing all-winner export remains unchanged. Source `recordCount` values
+continue to describe the full indexed input plugin, not the filtered output subset.
 Catalog databases from before this load-order/model-path schema must be rebuilt with `catalog build`;
 read commands detect their schema version and report that action explicitly.
 

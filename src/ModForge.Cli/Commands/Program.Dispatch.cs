@@ -55,7 +55,7 @@ internal static partial class Program
         "  catalog query <db> <query> [--type <type>] [--plugin <plugin>] [--limit <1-1000>] [--json]  search name/editorId\n" +
         "  catalog get <db> <Plugin.esp:0xFORMID> [--plugin <source>] [--json]  exact FormKey lookup\n" +
         "  catalog sources <db> [--json]                list indexed plugin provenance\n" +
-        "  catalog export-json <db> <out.json>          atomically export load-order winners for scene-capture\n" +
+        "  catalog export-json <db> <out.json> [--placeable]  export winners; --placeable keeps Browser base types only\n" +
         "  gamedata <plugin> <outDir> [--strings <dir>] bulk-extract books/dialogue/quests/npcs/items/locations/magic to a folder (for agent reference)\n" +
         "  questnodes <plugin> <outDir> [--strings <dir>]  extract non-empty QUST stage logs as schema-valid quest-node JSON files\n" +
         "  texexport <dataDir> <outDir> <master:0xLTEX>[,…]  LTEX→diffuse .dds from texture BSAs → PNG (Godot WYSIWYG terrain)\n" +

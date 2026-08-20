@@ -396,7 +396,10 @@ low→high load order，保存每個 source index 與每筆 override occurrence�
 `catalog export-json <db> <out.json>` 再依 FormKey 選最高 source winner，輸出 EDID、FULL、
 model path、FormKey 與 source/hash provenance；v1 契約在
 `schemas/scene-catalog.schema.json`。輸出使用 flushed sibling temp 後 atomic replace，失敗不破壞
-舊檔。Synthetic master/override、winner、schema、壞輸入與 replace 均已離線測過。
+舊檔。2026-08-20 已加入 `--placeable`，用 record type 只保留 Browser 的 21 種 base（不以
+model path 誤刪 ARMO）。現役 97-source load order 實測從 1,618,895 winners／595,738,360 bytes
+降到 48,038／22,923,853 bytes（縮小 96.15%，其中 11,616 筆合法 base 無 direct model）；
+Synthetic master/override、winner、schema、無 direct model base、壞輸入與 replace 均已離線測過。
 
 這一段只完成 producer；bridge DLL 依 durable FormKey 合併 EDID、Browser 實際搜尋與真 MO2
 load-order 驗收仍在 backlog／WAIT_USER，沒有把 runtime 部分冒充完成。

@@ -12,6 +12,14 @@ public sealed record SceneCatalogDocument(
 
 public static partial class Catalog
 {
+    private static readonly string[] ScenePlaceableRecordTypes =
+    [
+        "Static", "MoveableStatic", "StaticCollection", "Tree", "Flora", "Furniture",
+        "Activator", "TalkingActivator", "Door", "Container", "Light", "MiscItem",
+        "Weapon", "Armor", "Ammunition", "Book", "Ingestible", "Ingredient",
+        "SoulGem", "Key", "Scroll",
+    ];
+
     private static readonly JsonSerializerOptions ExportJson = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -20,7 +28,8 @@ public static partial class Catalog
     };
 
     /// <summary>Writes only the winning occurrence of each FormKey as deterministic JSON.</summary>
-    public static SceneCatalogDocument ExportJsonFile(string databasePath, string outputPath)
+    public static SceneCatalogDocument ExportJsonFile(
+        string databasePath, string outputPath, bool placeableOnly = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(databasePath);
         ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
@@ -32,7 +41,8 @@ public static partial class Catalog
         if (string.Equals(databasePath, outputPath, pathComparison))
             throw new ArgumentException("catalog JSON output must not overwrite its input database", nameof(outputPath));
 
-        var document = new SceneCatalogDocument(1, Sources(databasePath), WinnerRecords(databasePath));
+        var document = new SceneCatalogDocument(
+            1, Sources(databasePath), WinnerRecords(databasePath, placeableOnly));
         var tempPath = outputPath + ".tmp-" + Guid.NewGuid().ToString("N");
         try
         {
@@ -51,12 +61,17 @@ public static partial class Catalog
         }
     }
 
-    private static IReadOnlyList<CatalogRecord> WinnerRecords(string databasePath)
+    private static IReadOnlyList<CatalogRecord> WinnerRecords(
+        string databasePath, bool placeableOnly)
     {
         using var connection = Open(databasePath, SqliteOpenMode.ReadOnly);
         RequireCurrentSchema(connection);
         using var command = connection.CreateCommand();
-        command.CommandText = """
+        var typeFilter = placeableOnly
+            ? "AND record_type IN (" + string.Join(", ",
+                ScenePlaceableRecordTypes.Select((_, index) => $"$type{index}")) + ")"
+            : string.Empty;
+        command.CommandText = $"""
             WITH ranked AS (
                 SELECT r.form_key, r.plugin, r.record_type, r.editor_id, r.name, r.model_path,
                        s.plugin AS source_plugin, s.source_path,
@@ -70,8 +85,12 @@ public static partial class Catalog
             SELECT form_key, plugin, record_type, editor_id, name, model_path, source_plugin, source_path
             FROM ranked
             WHERE winner_rank = 1
+              {typeFilter}
             ORDER BY form_key COLLATE NOCASE;
             """;
+        if (placeableOnly)
+            for (var index = 0; index < ScenePlaceableRecordTypes.Length; index++)
+                command.Parameters.AddWithValue($"$type{index}", ScenePlaceableRecordTypes[index]);
         return ReadRecords(command);
     }
 

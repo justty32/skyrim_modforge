@@ -70,6 +70,18 @@ public sealed class CatalogTests
             var firstExport = File.ReadAllText(jsonPath);
             Catalog.ExportJsonFile(database, jsonPath);
             Assert.Equal(firstExport, File.ReadAllText(jsonPath));
+
+            var placeablePath = Path.Combine(dir, "scene-catalog-placeable.json");
+            var placeable = Catalog.ExportJsonFile(database, placeablePath, placeableOnly: true);
+            Assert.DoesNotContain(placeable.Records, r => r.RecordType == "Npc");
+            Assert.Contains(placeable.Records, r => r.EditorId == "MF_CatalogStatic");
+            var modelLessKeys = placeable.Records.Where(r => r.EditorId == "MF_CatalogKey").ToArray();
+            Assert.Equal(2, modelLessKeys.Length);
+            Assert.All(modelLessKeys, key =>
+            {
+                Assert.Equal("Key", key.RecordType);
+                Assert.Null(key.ModelPath);
+            });
             Assert.Throws<ArgumentException>(() => Catalog.ExportJsonFile(database, database));
             Assert.Equal(2, Catalog.Sources(database).Count);
 
@@ -167,6 +179,9 @@ public sealed class CatalogTests
         stat.EditorID = "MF_CatalogStatic";
         stat.Model = new Model();
         stat.Model.File.GivenPath = "Architecture\\Farmhouse\\Farmhouse01.nif";
+        var catalogKey = mod.Keys.AddNew();
+        catalogKey.EditorID = "MF_CatalogKey";
+        catalogKey.Name = "Catalog Key";
         if (overrideKey is { } key)
         {
             mod.ModHeader.MasterReferences.Add(new MasterReference { Master = key.ModKey });
