@@ -17,7 +17,7 @@
 > | **症狀①（NPC 走進新蓋的房子）** | ✅ **結案** — 用 L_NAVCUT 解掉，**不必動 NAVM**（見下框） |
 > | P2.1（NAVM cut／Deleted flag 後備方案） | **不必做**——只是 T2.0 沒過時的備案，T2.0 過了就整段作廢，見 §5 P2 |
 > | P3 | ✅ **內裝 edge-to-edge MVP 實機 PASS（2026-08-11）**：`navPatches[]` append-only fan＋唯一完整邊雙向縫合；Bannered Mare 兩名相反方向 Travel actor 都跨過新增↔vanilla seam |
-> | P4 | 未動（DLL 讀 live navmesh／射線取樣；P3 runtime gate 已通，之後若要做需另開工作） |
+> | P4 | 未動。**2026-08-20 使用者要求開工**（「站在某個地方施法就創造一個點」）→ 任務拆解已寫進 [scene-capture-bridge/backlog「🗺️ 2026-08-20」B 線](scene-capture-bridge/backlog.md)；重點是 **T4.1 讀 live `RE::NavMesh` 做頂點吸附**（`linkTo:"auto"` 要**完整邊重合**才縫得上，不是靠近就縫），不是記座標 |
 >
 > ### ✅✅ 兩個 🎮 實機閘 2026-07-12 皆 PASS——整條 navmesh plan 的地基與重心都定了
 >
@@ -232,6 +232,8 @@ new PlacedObject {
 - 驗收 🎮：① 在既有網格旁邊補一塊平台 → NPC **走得上去、也走得下來**；② marker 生的 NPC 站在新平台上 → **會 sandbox / 會跟隨玩家離開平台**（這一條同時驗掉 U8＝孤島網格能不能用）。
 
 ### P4 — 遊戲內採集（把輸入從「猜」變成「量」）
+
+> **2026-08-20 開工**（使用者主動要求）。可執行任務拆到 [scene-capture-bridge/backlog「🗺️ 2026-08-20」B 線](scene-capture-bridge/backlog.md)（B1 T4.1 spike／B2 `sc nav` 模式／B3 匯出 `navPatches[]`／B4 遊戲內 guard）。兩個當時沒寫進下面草圖、但實作前必須吃進去的事實：① **navmesh 不是 waypoint graph**——兩點連線不產生可走面，最少三點成一個三角形，所以手勢是「走一圈標角點再收口」＝ 一個 `polygon`，不是「連接兩點」；② **P4 的技術重點是頂點吸附**——`linkTo:"auto"` 要新邊與舊邊**兩端點都在 eps 內且唯一匹配**才雙向縫合，縫不上整筆 failure，所以 T4.1 不只是「附加摘要」，它是 `sc nav` 能不能用的前置。**第一版只支援 vanilla 內裝**（外景跨 cell EdgeLink 見 §7-3 仍未開）。
 
 - **T4.1 DLL：讀 live navmesh**。`RE::NavMesh`（TESForm，FormType::NavMesh）→ `vertices` / `triangles` / `extraEdgeInfo` / `doorPortals` 全在 `BSNavmesh` 裡。用途：(a) 匯出時附上「我這個 cell 的 navmesh 摘要」給 ModForge 交叉檢查；(b) 面板顯示「你的 marker 腳下有沒有網格」——**把 P1 的離線警告提前到遊戲內即時顯示**（使用者站在那裡就知道 NPC 會不會動）。
 - **T4.2 DLL：footprint 匯出**。每筆 placement 帶 `bounds`（world AABB，從 `ref->Get3D()->worldBound` 或 base 的 OBND ＋ transform）→ ModForge 的 `navCuts` 不必再從 OBND 猜。

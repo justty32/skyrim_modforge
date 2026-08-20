@@ -47,6 +47,16 @@
 | P2 | 靜態物件富路徑：刪除／新增／修改編輯模式 | 原 M6／M7a／M7c | UX 定稿（[appendix・細摳②](appendix.md)），等 P1 |
 | P3 | 動態物件富路徑（物理凍結）＋檢視法術 | 原 M7d | UX 定稿（[appendix・細摳③](appendix.md)），等 P2 |
 | P4 | 範圍吸取 | 原 M8 | 概要 |
-| 後排 | role tag（原 M10；其 PROTEUS 路徑凍結）、navmesh 記點、area/trigger/event、滴管移動既有 ref（原 M7b，等 override 契約） | — | — |
+| 後排 | role tag（原 M10；其 PROTEUS 路徑凍結）、area/trigger/event、滴管移動既有 ref（原 M7b，等 override 契約） | — | — |
 
 **進度速覽**：P1–P6 主線 2026-07-11 實機全過（使用者「測試起來都ok」）——生成端＋採集橋整鏈閉環。細節見 [phases.md](phases.md)；未做項與新想法見 [backlog.md](backlog.md)。
+
+### 下一輪：三條線（2026-08-20 使用者拍板全開）
+
+全文與任務拆解在 **[backlog.md「🗺️ 2026-08-20」](backlog.md)**；本表只作導航。**建議順序 A（兩顆 spike，半天）→ B（一輪，值最高）→ C（最長）**。
+
+| 線 | 內容 | 一句話狀態 |
+|---|---|---|
+| **A** | 施法叫出選單 ＋ 物品欄式預覽 ＋ 最愛 | 四個成分**三個已有答案**：技能觸發＝`TESSpellCastEvent`（小工）、「物品欄 UI」**維持否決**（proxy MISC 繞道 2026-08-20 評估完＝不做，會丟掉 model-path 搜尋）、最愛**已經是 Palette**。**只剩 A1：`Inventory3DManager` 面板內 3D 預覽 spike** |
+| **B** | `sc nav`：遊戲內畫 navmesh（＝[navmesh plan](../navmesh.md) 的 P4） | **生成端已就緒且 🎮 實機 PASS**（P0 2026-07-12／P3 內裝 2026-08-11），DLL 端**一個字都沒寫**。🔴 navmesh 不是 waypoint graph——手勢是「走一圈標角點再收口」＝ `navPatches[].polygon`；🔴 真正的重點是**頂點吸附**（T4.1 讀 live `RE::NavMesh`），不是記點。第一版**只支援 vanilla 內裝** |
+| **C** | `sc ed <xx>`：狀態屬性編輯（火把燃燒、門開關…） | 2026-07-14 的 ① 解凍。**架構已定**（新 registry → `overrides[]` 新欄位 → REFR），**長桿子是逐個屬性的引擎真相**（火把多半不是一個 flag）。動工前先挑第一批屬性、**先解碼再寫碼** |
