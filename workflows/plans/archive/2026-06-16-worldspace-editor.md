@@ -8,7 +8,7 @@
 
 **Tech Stack:** C# net10.0、Mutagen.Bethesda.Skyrim 0.53.1、SixLabors.ImageSharp（PNG L16 解碼，跨平台）、xUnit。
 
-設計依據：[workflows/specs/worldspace-editor-design.md](../specs/worldspace-editor-design.md)。VHGT 格式（signed int8、row-wise 累積、delta ×8 game units）已查證；Task 7 也已在主力機用真實 Tamriel LAND 完成反解比對（Tamriel 20 格 delta bytes 精確 round-trip）。
+設計依據：[workflows/specs/worldspace-editor-design.md](../../specs/worldspace-editor-design.md)。VHGT 格式（signed int8、row-wise 累積、delta ×8 game units）已查證；Task 7 也已在主力機用真實 Tamriel LAND 完成反解比對（Tamriel 20 格 delta bytes 精確 round-trip）。
 
 ---
 

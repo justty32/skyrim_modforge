@@ -22,3 +22,5 @@
 | [2026-06-13-spec-refs-env](2026-06-13-spec-refs-env.md) | spec 的 `$ref`/`$env` 解析層（通用 JSON include + 參數化，預設庫機制）。 |
 | [2026-06-13-voice-annotation-index](2026-06-13-voice-annotation-index.md) | `voice-annotate` CLI — 抽取語音 clip 並產 emotion 標註 manifest。 |
 | [2026-06-14-action-system-asset-generation](2026-06-14-action-system-asset-generation.md) | 動作系統散裝檔生成 7-task（OAR/BDI/PIE，非-esp、`.hkx` 自備）。 |
+| [2026-06-16-worldspace-editor](2026-06-16-worldspace-editor.md) | 16-bit heightmap → 多 cell 無縫非平坦 LAND；Task 1–7 落地，Tamriel LAND round-trip PASS。 |
+| [2026-07-08-ingame-scene-export](2026-07-08-ingame-scene-export.md) | scene.json → patch 的 ModForge M0–M2：npcRoles、外部 speaker Hello、blacksmith macro 與 vendor 零件。 |

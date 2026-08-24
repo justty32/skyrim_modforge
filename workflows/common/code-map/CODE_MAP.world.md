@@ -178,7 +178,7 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 ---
 
 ## 遊戲內場景匯出 · NPC 角色 macro（Idea #24 §D）
-→ **設計**：[specs/ingame-scene-export-design.md](../../specs/ingame-scene-export-design.md) · plan [plans/ingame-scene-export.md](../../plans/ingame-scene-export.md) · idea [tools/24-ingame-editor.md](../../idea/tools/24-ingame-editor.md)
+→ **設計**：[specs/ingame-scene-export-design.md](../../specs/ingame-scene-export-design.md) · archived plan [2026-07-08-ingame-scene-export.md](../../plans/archive/2026-07-08-ingame-scene-export.md) · idea [tools/24-ingame-editor.md](../../idea/tools/24-ingame-editor.md)
 
 給一個**外部 captured NPC**（PROTEUS clone / follower base）一個職業 `role`，pass-0 macro 展開成該 NPC 的 conditioned 問候 + 行為。**非玩家向 `IdentitySpec`**（那是玩家加入 FACT gate 玩家對話）；與 `ResidentSpec` 差別＝keyed on **外部 base NPC ref** 且自帶對話。切片只做 `blacksmith`。scene.json ＝一份 `ModSpec` 片段（`placements`/`mapMarkers`/`hazards`/`npcRoles`），生成端 placements/marker/hazard **全已具備**。
 

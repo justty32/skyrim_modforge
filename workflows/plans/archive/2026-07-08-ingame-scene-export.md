@@ -1,6 +1,6 @@
 # 遊戲內場景匯出 — ModForge 側 M0–M2 Implementation Plan
 
-> **For agentic workers:** 逐 task 實作，每 task 附驗證步驟。Steps 用 checkbox（`- [ ]`）追蹤。碰原始碼遵守 [common/conventions](../common/conventions.md)（含 CODE_MAP 維護鏈）。
+> **For agentic workers:** 逐 task 實作，每 task 附驗證步驟。Steps 用 checkbox（`- [ ]`）追蹤。碰原始碼遵守 [common/conventions](../../common/conventions.md)（含 CODE_MAP 維護鏈）。
 
 **Goal:** 讓 ModForge 能吃一份 **scene.json**（遊戲內採集橋未來會吐的格式）→ `build` 出 patch esp：既有 record（placements/mapMarkers/hazards/tags/cell override）直接生，外加一個 **`npcRoles[]` 角色 macro**（切片只做 blacksmith：conditioned-Hello 對話 + sandbox package + vendor）掛在**外部 captured ActorRef** 上。**不帶 scene.json 的既有 spec 生成位元不變。**
 
@@ -10,13 +10,13 @@
 
 **Tech Stack:** C# net10.0、Mutagen.Bethesda.Skyrim 0.53.1、System.Text.Json、xUnit。
 
-設計依據：[workflows/specs/ingame-scene-export-design.md](../specs/ingame-scene-export-design.md)。既有先例：`GodotPlacements.cs`（外部 JSON → `spec.Placements.AddRange`，`Generator.Build.Worldspace.cs:255`）；`SettlementVendorSpec`/Build.Vendor（vendor 零件）；conditioned-Hello（memory [[conditioned-hello-one-topic-many-infos]]）。
+設計依據：[workflows/specs/ingame-scene-export-design.md](../../specs/ingame-scene-export-design.md)。既有先例：`GodotPlacements.cs`（外部 JSON → `spec.Placements.AddRange`，`Generator.Build.Worldspace.cs:255`）；`SettlementVendorSpec`/Build.Vendor（vendor 零件）；conditioned-Hello（memory [[conditioned-hello-one-topic-many-infos]]）。
 
 ---
 
 ## 實作進度（2026-07-08，M0–M2 落地 · IN-GAME 確認）
 
-**✅ M2 實機確認（2026-07-08）**：白漫 Carlotta（當 clone 替身）對話講出鐵匠問候「Need something forged?」——§D 核心（貼 role → ModForge 生該 NPC 專屬 conditioned 問候）實機成立。落地記錄 [landed/dialogue-quests](../feature-dev/landed/dialogue-quests.md)。
+**✅ M2 實機確認（2026-07-08）**：白漫 Carlotta（當 clone 替身）對話講出鐵匠問候「Need something forged?」——§D 核心（貼 role → ModForge 生該 NPC 專屬 conditioned 問候）實機成立。落地記錄 [landed/dialogue-quests](../../feature-dev/landed/dialogue-quests.md)。
 
 **已完成、離線全綠（856 tests）、端到端 build 已驗**（commit `feat(scene-export)`）：
 - `SceneNpcRoleSpec` + `ModSpec.NpcRoles` + `ExpandNpcRoles`（blacksmith → host quest + Hello + sandbox package + NpcPatch）+ `ValidateNpcRoles`。
@@ -28,7 +28,7 @@
 - **`SceneNpcRoleSpec.ActorRef` 改名 `Npc`**：keyed on **base NPC ref**（GetIsID/NpcPatch/placement base 三者都吃 base ref），與全 repo 一致。
 - **vendor 段（後補完成 2026-07-08）**：原 `NpcPatch` 只換 package、不能加 faction；已擴 `NpcPatchSpec.Factions`（`WireNpcPatchFactions`）→ blacksmith 有 companion placement 時自動生 Vendor FACT + merchant chest + 加 vendor/JobMerchant faction，vanilla 交易對話浮現。IN-GAME 待驗。
 
-**下一步**：M2 實機（含 vendor 交易，[wait_todo/ingame-tests](../../wait_todo/ingame-tests.md)）；之後 `removals[]`（橡皮擦）、M3–M5 runtime 元件。下面原始 task 清單保留作歷史脈絡。
+**下一步**：M2 實機（含 vendor 交易，[wait_todo/ingame-tests](../../../wait_todo/ingame-tests.md)）；之後 `removals[]`（橡皮擦）、M3–M5 runtime 元件。下面原始 task 清單保留作歷史脈絡。
 
 ---
 
@@ -133,8 +133,8 @@ Expected: 與改動前輸出一致（下 Task 5 有位元不變測）。
 
 **Files:**
 - Create: `src/ModForge.Core/Generator.Build.SceneNpcRoles.cs`
-  → **實際落地為 [`src/ModForge.Core/Macros/Generator.SceneNpcRoles.cs`](../../src/ModForge.Core/Macros/Generator.SceneNpcRoles.cs)**（DTO 在
-  [`Spec/Spec.SceneExport.cs`](../../src/ModForge.Core/Spec/Spec.SceneExport.cs)）：它是 `ExpandMacros` 那一段的
+  → **實際落地為 [`src/ModForge.Core/Macros/Generator.SceneNpcRoles.cs`](../../../src/ModForge.Core/Macros/Generator.SceneNpcRoles.cs)**（DTO 在
+  [`Spec/Spec.SceneExport.cs`](../../../src/ModForge.Core/Spec/Spec.SceneExport.cs)）：它是 `ExpandMacros` 那一段的
   巨集展開，不是 `BuildContext` 的 build step，所以沒有用 `Generator.Build.*` 前綴。
 - Modify: build 流程串接處（依 Task 0 Step 1 結論）
 
@@ -200,7 +200,7 @@ Expected: 生出 esp，`dump` 見房子 REFR + NPC-role 的 dialogue/package/ven
 **Files:** 無（打包 + 實機）
 
 - [ ] **Step 1: package + 交付**：照 dev-env ship 流程打包 M0 patch 到 `~/skyrim_mods/mine/`。
-- [ ] **Step 2: 實機驗（使用者）**：載入 → 房子在該 cell、鐵匠站著且有問候/服務對話、marker 地圖可快旅、篝火特效可見。→ 記入 [WAIT_USER.md](../../WAIT_USER.md)。
+- [ ] **Step 2: 實機驗（使用者）**：載入 → 房子在該 cell、鐵匠站著且有問候/服務對話、marker 地圖可快旅、篝火特效可見。→ 記入 [WAIT_USER.md](../../../WAIT_USER.md)。
 
 > M2 通過 = ModForge 側管線（scene.json → 可造訪城鎮）閉環證成。之後才接 runtime 元件（M3 controller / M4 採集橋 / M5 PROTEUS 拓印）——各自另立 plan。
 
@@ -208,8 +208,8 @@ Expected: 生出 esp，`dump` 見房子 REFR + NPC-role 的 dialogue/package/ven
 
 ## 依賴 / 後續（非本 plan）
 
-- **M3 placement-controller**：合流 [settlements P2](../roadmap/mod-survey-gaps/settlements-phase2.md)。
-- **M4 採集橋 SKSE DLL**：獨立子專案 [scene-capture-bridge](../../../scene-capture-bridge/README.md)（本 plan 的 scene.json 契約 = 它的 output 目標）。**M4 spike 已 IN-GAME 2026-07-10**。後續的 §B/§D/§E 編輯器工具（橡皮擦／滴管／範圍吸取／語意標記／role tag）另立 plan：[scene-capture-bridge](scene-capture-bridge/README.md)。純 runtime，對本 plan 的 ModForge 側零衝擊（吸來的 base 一樣進 `placements[].base`，ModForge 自動加 master）。
+- **M3 placement-controller**：合流 [settlements P2](../../roadmap/mod-survey-gaps/settlements-phase2.md)。
+- **M4 採集橋 SKSE DLL**：獨立子專案 [scene-capture-bridge](../../../../scene-capture-bridge/README.md)（本 plan 的 scene.json 契約 = 它的 output 目標）。**M4 spike 已 IN-GAME 2026-07-10**。後續的 §B/§D/§E 編輯器工具（橡皮擦／滴管／範圍吸取／語意標記／role tag）另立 plan：[scene-capture-bridge](../scene-capture-bridge/README.md)。純 runtime，對本 plan 的 ModForge 側零衝擊（吸來的 base 一樣進 `placements[].base`，ModForge 自動加 master）。
   - 滴管的插槽**不必走 StorageUtil**（原 idea 的假設）——採集橋現在有 C++ 面板，直接 DLL 記憶體 + sidecar json，省掉 PapyrusUtil 相依。
 - **M5 PROTEUS 拓印**：需先驗 clone ActorRef 取得方式（idea #24 §A 已拍板穩定可引用）。
 - **role 全集 + AI 對話文本**：blacksmith 之外接 #23 archetype 框架 / #17 生成管線。
