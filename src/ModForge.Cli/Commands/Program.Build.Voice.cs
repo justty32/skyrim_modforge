@@ -36,6 +36,7 @@ internal static partial class Program
         }
 
         var options = new VoiceOptions();
+        var contentIdentities = new VoiceContentIdentityCache();
         if (string.IsNullOrEmpty(options.ResolvedTtsBin))
         {
             Console.Error.WriteLine("ERROR: MODFORGE_TTS_BIN not set. Voice generation skipped.");
@@ -107,7 +108,7 @@ internal static partial class Program
                     var intensity = (int)resp.EmotionValue;
                     foreach (var t in targets)
                         switch (GenerateVoiceLine(espPath, pluginName, t, questEd, topicEd, info.FormKey.ID, i + 1,
-                                                  text, format, skipLip, specDir, options, emotion, intensity))
+                                                  text, format, skipLip, specDir, options, contentIdentities, emotion, intensity))
                         {
                             case 1: generated++; break;
                             case 0: existing++; break;
@@ -224,18 +225,31 @@ internal static partial class Program
 
     // One (text, voiceType) line: TTS → optional xWMA → fuz/wav/xwm via Generator.PackVoiceAudio
     // (which downgrades fuz/xwm to a LOOSE .wav when xWMAEncode is unavailable — never a raw-PCM fuz).
-    // Returns 1 = generated, 0 = already on disk, -1 = TTS failed.
+    // Returns 1 = generated, 0 = cache hit, -1 = TTS failed.
     private static int GenerateVoiceLine(string espPath, string pluginName, VoiceTarget target,
         string questEd, string topicEd, uint infoId, int responseIndex,
         string text, string format, bool skipLip, string specDir, VoiceOptions options,
+        VoiceContentIdentityCache contentIdentities,
         string? emotion = null, int? intensity = null)
     {
         var stem = Path.GetFileNameWithoutExtension(Generator.VoiceFileName(questEd, topicEd, infoId, responseIndex));
         var targetDir = Path.Combine(Path.GetDirectoryName(espPath) ?? ".", "Sound", "Voice", pluginName, target.VoiceType);
         var stemPath = Path.Combine(targetDir, stem);
-        // Any prior output (incl. a loose-wav downgrade from an earlier run) counts as done.
-        if (File.Exists(stemPath + ".fuz") || File.Exists(stemPath + ".wav") || File.Exists(stemPath + ".xwm"))
-            return 0;   // TODO: hash check for cache
+        var fingerprint = VoiceCache.CreateFingerprint(text, target.Template, specDir, format, skipLip, options, emotion, intensity, contentIdentities);
+        var sidecarPath = VoiceCache.SidecarPath(stemPath);
+        string? sidecar = null;
+        try { if (File.Exists(sidecarPath)) sidecar = File.ReadAllText(sidecarPath); }
+        catch (IOException) { }
+        var cache = VoiceCache.Check(fingerprint, sidecar, extension =>
+        {
+            try
+            {
+                var path = stemPath + "." + extension;
+                return File.Exists(path) ? VoiceCache.DescribeArtifact(extension, File.ReadAllBytes(path)) : null;
+            }
+            catch (IOException) { return null; }
+        });
+        if (cache.IsHit) return 0;
 
         Console.WriteLine($"  Generating: {target.VoiceType}/{stem} (\"{text}\") emotion={emotion ?? "-"}/{intensity?.ToString() ?? "-"}");
         var wav = Voice.GenerateWav(text, target.Template, specDir, options, emotion, intensity);
@@ -247,8 +261,19 @@ internal static partial class Program
         var pack = Generator.PackVoiceAudio(format, wav, xwm, lip, stem);
         if (pack.Warning != null) Console.Error.WriteLine(pack.Warning);
         Directory.CreateDirectory(targetDir);
+        // Remove only our exact sibling artifacts. Sidecar is written last, so a partial replacement
+        // is conservatively stale on the next run rather than a false cache hit.
+        foreach (var extension in new[] { "fuz", "wav", "xwm", "lip" })
+        {
+            var path = stemPath + "." + extension;
+            if (File.Exists(path)) File.Delete(path);
+        }
+        if (File.Exists(sidecarPath)) File.Delete(sidecarPath);
         File.WriteAllBytes(stemPath + "." + pack.Ext, pack.Data);
         if (pack.LooseLip != null) File.WriteAllBytes(stemPath + ".lip", pack.LooseLip);
+        File.WriteAllText(sidecarPath, VoiceCache.SerializeMetadata(
+            VoiceCache.CreateMetadata(fingerprint, VoiceCache.DescribeArtifact(pack.Ext, pack.Data),
+                pack.LooseLip is null ? null : VoiceCache.DescribeArtifact("lip", pack.LooseLip))));
         return 1;
     }
 }

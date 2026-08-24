@@ -181,8 +181,15 @@ Fish S2 template example:
 (the CK naming scheme: first 10 chars of the quest EditorID, first 15 of the topic
 EditorID, 8-digit hex INFO FormID, 1-based response index). The engine looks the file up
 by the **speaker's voiceType**, so one generated file per voiceType serves every NPC of
-that voiceType saying that line. Files that already exist are skipped on re-runs (no hash
-cache yet — delete to regenerate).
+that voiceType saying that line. Each generated line also has a sibling
+`<stem>.voice-cache.json` sidecar. ModForge skips only when that versioned metadata has a
+matching deterministic fingerprint and every artifact it names has the recorded byte length and
+SHA-256. The fingerprint covers the line text, template, INFO emotion/intensity, requested format,
+`skipLip`, and effective TTS/encoding/lip options, including content identities for reference WAVs,
+model/RVC files or model-directory trees, and configured tools. Older outputs, corrupt metadata,
+missing or modified artifacts, or a changed input are safely regenerated. When `fuz`/`xwm` falls
+back to loose WAV, the sidecar records that actual WAV (and any loose `.lip`), so fallback output is
+never mistaken for a requested container.
 
 Voice files are loose Skyrim assets, not records embedded inside the plugin. Packaging options:
 
