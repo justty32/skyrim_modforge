@@ -36,9 +36,9 @@ public static partial class Generator
     //   * an NpcPatch (overrideOf npc, append) adding a sandbox package — the NPC's behaviour
     // (editor-location sandbox = the actor sandboxes wherever a companion placements[] entry puts it).
     //
-    // Vendor service is intentionally NOT expanded yet: NpcPatch swaps packages only, so joining a
-    // vendor FACT needs a separate faction-add capability (design doc §D). Roles beyond "blacksmith"
-    // are warned and skipped (no silent drop, per CLAUDE.md).
+    // Blacksmith vendor service is expanded when a companion placement supplies the shop location:
+    // merchant chest + vendor FACT + explicit open-barter topic + faction membership. Roles beyond
+    // "blacksmith" are warned and skipped (no silent drop, per CLAUDE.md).
     private const string RoleHostQuestEd = "MF_SceneNpcRolesQ"; // one shared StartGameEnabled host for all role greetings
 
     public static void ExpandNpcRoles(ModSpec spec)

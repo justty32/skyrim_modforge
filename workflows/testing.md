@@ -28,7 +28,7 @@ dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj --filter "Categ
 
 ## 重構護欄：golden hash（`scripts/golden-hash.sh`）
 
-行為不變的重構（[refactor 工作流](refactor/README.md)）光靠上面的測試**不夠**：1107 個 test method 裡 965 個（87%）只走 `Generator.Build`/`Validate` 對記錄下斷言，內部怎麼重組它們一律看不見。`golden-hash.sh` 補這個洞——把 `examples/` 全部 build 一次，逐一輸出 `.esp`／`.seq` 的 SHA-256：
+行為不變的重構（[refactor 工作流](refactor/README.md)）光靠上面的測試**不夠**：1190 個 test method 裡 965 個（81%）只走 `Generator.Build`/`Validate` 對記錄下斷言，內部怎麼重組它們一律看不見。`golden-hash.sh` 補這個洞——把 `examples/` 全部 build 一次，逐一輸出 `.esp`／`.seq` 的 SHA-256：
 
 ```bash
 scripts/golden-hash.sh /tmp/before.txt        # 重構前（第二參數＝並行度，預設 4）

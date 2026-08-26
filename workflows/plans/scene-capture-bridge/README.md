@@ -49,7 +49,7 @@
 | P4 | 範圍吸取 | 原 M8 | 概要 |
 | 後排 | role tag（原 M10；其 PROTEUS 路徑凍結）、area/trigger/event、滴管移動既有 ref（原 M7b，等 override 契約） | — | — |
 
-**進度速覽**：P1–P6 主線 2026-07-11 實機全過（使用者「測試起來都ok」）——生成端＋採集橋整鏈閉環。細節見 [phases.md](phases.md)；未做項與新想法見 [backlog.md](backlog.md)。
+**進度速覽**：P1–P6 核心功能已存在，生成端＋採集橋主線閉環；部分 post-P6／ghost 回歸仍 open。實作細節見 [phases.md](phases.md)，待做與回歸見 [backlog.md](backlog.md)／[wait_todo/ingame-tests.md](../../../wait_todo/ingame-tests.md)。
 
 ### 下一輪：三條線（2026-08-20 使用者拍板全開）
 

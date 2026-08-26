@@ -15,9 +15,9 @@ namespace ModForge;
 // in the slice; a later pass can hand it to the #17 AI dialogue pipeline).
 //
 // Expansion (Generator.ExpandNpcRoles, a pass-0 macro like ExpandSettlements) adds — for blacksmith —
-// a shared StartGameEnabled host QUST, a Hello DialogueSpec (GetIsID npc), and an NpcPatch appending a
-// sandbox package (editor-location fallback = sandbox where the actor stands). Vendor service is not
-// yet expanded (NpcPatch cannot add faction membership — see design doc §D).
+// a shared StartGameEnabled host QUST, a Hello DialogueSpec (GetIsID npc), and a sandbox package.
+// When a companion placement supplies a shop location, blacksmith also expands a merchant chest,
+// vendor FACT, explicit open-barter topic, and faction membership for in-spec or external NPCs.
 public sealed class SceneNpcRoleSpec
 {
     public string Npc { get; set; } = "";        // base NPC ref: in-spec editorId OR <plugin>.esp:0xFORMID

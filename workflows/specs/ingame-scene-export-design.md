@@ -2,13 +2,15 @@
 
 ← [specs 入口](README.md)｜idea：[#24 遊戲內編輯器](../idea/tools/24-ingame-editor.md)｜藍本：[Tundra Defense](../../../../analysis/mod-survey/findings/tundra-defense.md)・[PROTEUS](../../../../analysis/mod-survey/findings/proteus.md)
 
-本 spec 涵蓋 **[Idea #24](../idea/tools/24-ingame-editor.md) 北極星「遊戲內蓋城鎮並匯出」的 ModForge 側契約 + 最小垂直切片**。核心發現（grep `src/ModForge.Core/` 驗證 2026-07-08）：**ModForge 的生成端幾乎全部已具備**（`PlacementSpec` 已含 position/rotation/scale/enableParent/ownership…、map marker/hazard/keyword/身份系統都已實機）。真正 net-new 的是**兩個 runtime 元件**（採集橋 SKSE DLL + placement-controller `.pex`）＋一座**「採集 → spec」的橋**。本 spec 定義那座橋的**契約**與最小切片；runtime 元件的內部實作各自成子專案（同 Tundra controller 之於 ModForge 的關係），不在本 spec 逐行設計。
+本 spec 涵蓋 **[Idea #24](../idea/tools/24-ingame-editor.md) 北極星「遊戲內蓋城鎮並匯出」的 ModForge 側契約 + 最小垂直切片**。2026-07-08 的原始判定是：**ModForge 的生成端幾乎全部已具備**（`PlacementSpec` 已含 position/rotation/scale/enableParent/ownership…、map marker/hazard/keyword/身份系統都已實機），當時把採集橋 SKSE DLL、placement-controller `.pex` 與「採集 → spec」橋列為 net-new。這是歷史起點：現行採集橋核心已存在、`.pex` 已由 C++ Palette/Preview 取代、scene.json 直接由 CLI deserialize；後文保留原設計並在各節標示現況。
 
 ---
 
 ## 目標 / 成功判準
 
-北極星最小切片（**在遊戲內**做，**ModForge build 出**）：
+> ⚠️ **歷史切片（已被 2026-07-12 的場景／captures 分流與 `sc capp` 取代）**：以下 PROTEUS clone + role 路線保留作決策脈絡，不是現行待做項；現況見「場景匯出不含 NPC」與「`sc capp` 直接吸玩家」。
+
+北極星最小切片（**歷史方案**；在遊戲內做、ModForge build 出）：
 
 1. **擺**：喝一瓶「Plans: 木屋」→ 定位模式 → 房子落地（placement-controller `.pex`，照 Tundra）。
 2. **拓印**：用 PROTEUS 把當前玩家 clone 成一個站在原地的獨立 NPC（外貌/裝備/perk 由 PROTEUS 現成搞定），採集橋記下他的**穩定 ActorRef** + 玩家標的 **role=blacksmith**。
@@ -16,7 +18,7 @@
 4. **匯出**：施法**快照整片區域** → 採集橋吐一份 **scene JSON**。
 5. **生成**：`dotnet run -- build scene.json` → patch esp：房子在該 cell、鐵匠站著且**講 ModForge 生成的鐵匠對話**、marker 上地圖可快旅、特效在廣場。
 
-**成功判準**：進遊戲載入該 patch → 城鎮就位、鐵匠有問候/服務對話、marker 可快旅、特效可見。**行為不變保證**：不帶 scene-import 的既有 spec 生成結果**位元不變**（scene JSON 只是既有 `placements[]`/`npcs[]`/`mapMarkers[]`/`hazards[]` 的一種來源，不改既有路徑）。
+**成功判準**：進遊戲載入該 patch → 城鎮就位、鐵匠有問候/服務對話、marker 可快旅、特效可見。**行為不變保證**：不帶場景採集內容的既有 spec 生成結果**位元不變**（scene JSON 只是既有 `placements[]`/`npcs[]`/`mapMarkers[]`/`hazards[]` 的一種來源，不改既有路徑）。
 
 ## 範圍邊界（YAGNI）
 
@@ -31,7 +33,9 @@
 
 ---
 
-## 架構：四個元件 + 一座橋
+## 歷史架構：四個元件 + 一座橋
+
+> ⚠️ 本節是 2026-07-08 的舊架構。PROTEUS 路線已被 `sc capp` 直接擷取取代；placement-controller `.pex` 也已被 scene-capture-bridge 的 C++ `Palette`／`Preview` 路徑取代。圖與逐項說明只保留演進脈絡，不代表 current blocker。
 
 ```
   [遊戲內 runtime]                          [build-time]
@@ -99,10 +103,12 @@ Tundra 的可擺清單是設計期寫死的 FormID；本系統改用**遊戲內�
 - **✅ 已用 houseCARL 離線核對 vanilla 基準真相（2026-07-10，不需開遊戲）**：
   - **旋轉單位**：`01605E:Skyrim.esm`（WhiterunBanneredMare）的 `Temporary[15]`（YsoldasChairREF）`Placement.Rotation = 0,-0,2.2730167` → **plugin 記錄存弧度**。ModForge 已在生成端轉換（`Generator.Helpers.cs:15` `Deg2Rad`，套用於 `Generator.Build.Placements.cs:68/275`、`Generator.Build.PlacementRefs.cs:53`）。→ **scene.json 一律吐度數**。⚠️ 兩條路線的來源單位不同，別搞混：**Papyrus** `GetAngleX/Y/Z()` 回**度數**（直接吐）；**C++ native** `TESObjectREFR::GetAngle()` 回**弧度**（必須轉，`SceneExporter.cpp:8,93-96` 的 `kRadToDeg` 已處理）。
   - **Scale 省略**：同一 ref `Scale = (absent)`；`Spec.World.cs:74` 註解 `// XSCL; omitted in record if 1.0`。→ 採集橋**不要無條件寫 `scale: 1.0`**（會與 vanilla 位元組不同）；ModForge 側已處理。
-  - **尚未驗**：interior 的 runtime 座標是否即 cell-local（需實機比對 `getpos` vs 此處 `Placement.Position = -453.7385,-965.83203,67.837296`）。
+  - **歷史待驗（已結案）**：當時尚未確認 interior runtime 座標是否即 cell-local；2026-07-10 的 runtime 結果已在下方「座標契約 round-trip」確認為 cell-local。
   - **規模參考**：該 cell 有 **662 個 `Temporary` ref**。逐個 `execute_console_command` 取 transform 只適合驗證，真正採集需要 batch tool（見「採集橋 vs SkyLink」）。
 
-### vanilla diff：採集橋只吐「玩家加的東西」（2026-07-10 定調）
+### vanilla diff：採集橋只吐「玩家加的東西」（2026-07-10 歷史判定）
+
+> ⚠️ 以下是 `overrides[]` 落地前的舊判定。2026-07-11 已定案並實作 `OverrideSpec`／`BuildOverrides`；現況見下一節。
 
 cell 走訪看得到**cell 裡的每一個 ref**。若全部吐出來，ModForge 會把整個 vanilla 房間在原地再擺一份（Bannered Mare 662 個 ref，每張椅子疊兩張）。所以採集橋必須自己做 diff。
 
@@ -111,7 +117,7 @@ cell 走訪看得到**cell 裡的每一個 ref**。若全部吐出來，ModForge
 - `ResolveDurableId(&ref)` **成功** → 既有 ref → **跳過**（計入 `preexisting`）。
 - `ResolveDurableId(&ref)` **失敗** → 玩家擺的 → emit 進 `placements[]`（其 `base` 仍解得出耐久 id）。**⚠️ 2026-07-12 起 actor 除外**：玩家擺的 actor 也不出（見下「場景匯出不含 NPC」拍板）。
 
-**⚠️ MVP 取捨（刻意，非疏漏）**：玩家**移動/縮放過的 vanilla ref** 會被跳過。要採到它，得 emit 一份既有 ref 的 **override**，而不是一筆新 placement —— 那是 scene.json 目前沒建模的形狀（只有 `removals[]` 碰既有 ref）。要做的話得先擴契約。
+**歷史限制（現已解除）**：當時玩家**移動/縮放過的 vanilla ref** 會被跳過；2026-07-11 起已由頂層 `overrides[]` 建模，採集橋會輸出、ModForge 會 build（見下一節）。
 
 ### ✅ 座標契約 round-trip（2026-07-10 離線閉環，不開遊戲）
 
@@ -304,7 +310,7 @@ ModForge 消費：`isPlayer` 是**純可見性欄位**，不寫入任何記錄�
 
 ---
 
-## §D NPC 角色 macro（唯一 net-new ModForge schema）
+## §D NPC 角色 macro（已落地；以下保留設計脈絡）
 
 scene.json 的 `npcRoles[]` 每筆 = `{ actorRef, role, backstory }`。ModForge build 時吃 role → **macro-expand 成既有生成型別**（對話 INFO + package + faction/service），底層零件全已實機——**macro 只是把它們串起來**：
 
@@ -322,7 +328,7 @@ npcRole: { actorRef: "SkyrimTown.esp:0x001234", role: "blacksmith",
 - 既有 **`IdentitySpec`（[[identity-system-confirmed]]）是玩家向**：一個玩家加入的 FACT，`identity`/`primaryIdentity` tag 展開成**玩家**對話的 GetInFaction gate。**與 §D 無關**（§D 是給某個 NPC 一個職業角色，不是給玩家一個身份）。
 - 既有 **`SettlementSpec.ResidentSpec` 最接近**，但它的 `Npc` 欄指向**in-spec** NpcSpec editorId、且以「住滿聚落」為框；§D 要的是**掛在外部 captured ActorRef 上**、且要**帶 conditioned-Hello 對話**。
 
-→ **net-new = 一個小 sibling 型別 `SceneNpcRoleSpec { ActorRef, Role, Backstory }` + 一張 role→(package/vendor/對話模板) 對照表**（先只填 blacksmith）。生成器把對照表展開，**vendor 段重用 `SettlementVendorSpec`/Build.Vendor、package 段重用既有 package attach、對話段重用 conditioned-Hello（GetIsID 外部 ActorRef）**——零件全現成，只差這層 role→零件的薄 macro + 「keyed on 外部 ActorRef」這一點與 ResidentSpec 的差異。
+→ **已落地**：`SceneNpcRoleSpec { Npc, Role, Backstory }` 在 `Spec.SceneExport.cs`，`ExpandNpcRoles` 在 `Generator.SceneNpcRoles.cs`；blacksmith 會展開 greeting、sandbox package，且有 companion placement 時再生成 merchant chest、vendor FACT、trade topic 與 faction membership。既有 `SceneNpcRolesTests` 涵蓋此 macro。
 
 - **對話仍 build-time 由 ModForge 生**（使用者定調）——遊戲內只**貼 role tag**，不在遊戲內生對話。
 - **切片只做 1 個 role（blacksmith）**證明管線；role 全集（守衛/商人/冒險者…）沿用 [#23 living-adventurers 的 archetype 框架](../idea/living-adventurers.md)，一個 role = 一包資料（對話池/package/service），引擎不變。
@@ -336,44 +342,44 @@ npcRole: { actorRef: "SkyrimTown.esp:0x001234", role: "blacksmith",
 | `placements[]`（含 transform/enable/scale/ownership）| ✅ **已具備** | `PlacementSpec` 欄位全齊，零改動 |
 | `npcRefs[]`（引用 PROTEUS clone ActorRef）| ✅ **已具備** | PlacementSpec base = 外部 `.esp:0xFORMID`（跨 master 引用熟路）|
 | `mapMarkers[]` / `hazards[]` / `tags[]` / `cell` override | ✅ **已具備** | MapMarkerSpec/HazardSpec/LightSpec/keyword/CellSpec override |
-| **`npcRoles[]` 角色 macro** | 🔨 **net-new（小）** | `SceneNpcRoleSpec` + role→型別對照表（切片只填 blacksmith）；展開重用既有 vendor/package/conditioned-Hello 零件 |
+| **`npcRoles[]` 角色 macro** | ✅ **已落地** | `SceneNpcRoleSpec` + `ExpandNpcRoles`；blacksmith 展開 greeting/package，並在有 companion placement 時生成 vendor chest/FACT/trade topic/factions；已有測試 |
 | **`removals[]` 移除既有 vanilla ref**（橡皮擦法術）| ✅ **已落地 2026-07-08** | `BuildRemovals`：master link cache `TryResolveContext<IPlaced>` → `GetOrAddAsOverride` → InitiallyDisabled + 深埋 Z−30000。RequiresSkyrim |
 | §E 滴管/範圍吸取（base+rot+scale→placements）| ✅ **已具備** | 進既有 `placements[]`（Position/Rotation/Scale 全有）；外部 ref 自動加 master |
-| scene.json 讀取 / 併入 spec | 🔨 **net-new（小，有先例）** | `SceneImport` = **推廣既有 `GodotPlacements.Load()`**（已在做「外部 JSON → `spec.Placements.AddRange()`」，見 `Generator.Build.Worldspace.cs:255`）：讀 scene.json → AddRange 進 `Placements`/`MapMarkers`/`Hazards`/`npcRoles`，再走原 build。不改既有生成路徑（行為不變）|
-| ① placement-controller `.pex` | 🔨 **net-new（runtime，合流 settlements P2）** | 隨附 reusable `.pex` + `scriptAttach`；與 `buildables:` 同一支 |
-| ③ 採集橋 SKSE DLL | 🔨 **net-new（runtime，獨立子專案）** | 唯一重工程；本 spec 只定 output 契約 |
-| ② PROTEUS facegen | ✅ **外部補位** | 消費，路徑 A |
+| scene.json 讀取 / 併入 spec | ❌ **已取消（不需要）** | scene.json 本身就是合法 ModSpec；CLI `ReadSpec` 直接 deserialize。`SceneImport.cs` 從未建立；若要把 scene 與 captures 合併，目前人工合併 JSON |
+| ① placement-controller `.pex` | ♻️ **已被取代** | 現行 runtime 路徑是 scene-capture-bridge 的 C++ `Palette`／`Preview`（place action → `Preview::Commit` 或 `Palette::PlaceSelected`），repo 沒有 Papyrus controller |
+| ③ 採集橋 SKSE DLL | ✅ **核心已落地（獨立子專案）** | 現行 scene-capture-bridge 以 C++ 實作採集、Palette／Preview 與輸出契約 |
+| ② PROTEUS facegen | ♻️ **歷史路線** | 已被 `sc capp` 直接讀玩家 base TESNPC 取代 |
 
-**一句話**：ModForge 側 net-new 只有**兩小塊**（`npcRoles[]` 角色 macro + `SceneImport` 讀檔併入），其餘生成全已具備；**重工程在兩個 runtime 元件**（採集橋 DLL 獨立、controller 與 settlements P2 合流）。
+**現況一句話**：`npcRoles[]` 角色 macro 已落地；`SceneImport` 已取消，CLI 直接 deserialize scene.json；Papyrus controller 與 PROTEUS 路線都已被 C++ Palette/Preview 與 `sc capp` 取代。
 
 ---
 
-## 最小垂直切片（驗證管線）
+## 歷史最小垂直切片（驗證管線；非現行待辦）
 
 **里程碑序（每步可獨立驗）**：
 
-1. **M0 契約凍結**：手寫一份 scene.json（不經採集橋）含 1 house placement + 1 npcRef（指向任一既有 standalone follower ActorRef 當 clone 替身）+ 1 mapMarker + 1 hazard + 1 npcRole=blacksmith → 定案 schema。
-2. **M1 ModForge 側**：實作 `SceneImport` + `SceneNpcRoleSpec`(blacksmith) → `build` M0 的 scene.json → patch esp。**離線可驗**（`Category!=RequiresSkyrim`：斷言生成的 records = 房子 REFR + NPC ref + XMRK + HAZD + 鐵匠 dialogue INFO + package + vendor）。**行為不變測**：不帶 scene.json 的既有 spec 生成位元不變。
+1. **M0 契約凍結（已完成）**：手寫一份 scene.json（不經採集橋）含 1 house placement + 1 npcRef（指向任一既有 standalone follower ActorRef 當 clone 替身）+ 1 mapMarker + 1 hazard + 1 npcRole=blacksmith → 定案 schema。
+2. **M1 ModForge 側（已完成，但 `SceneImport` 取消）**：`SceneNpcRoleSpec`(blacksmith) 已落地；scene.json 本身就是 ModSpec，由 CLI 直接 deserialize 後 build，不存在 `SceneImport.cs`。
 3. **M2 實機（主力機）**：載入 M1 的 patch → 房子在、marker 可快旅、特效可見、鐵匠有問候/服務對話。**此步不需採集橋/controller/PROTEUS**——用手寫 scene.json + 既有 follower ActorRef 替身，先證 ModForge 側管線通。
-4. **M3 controller**：接 settlements P2 的 placement-controller → 遊戲內喝瓶擺 1 棟房子。
-5. **M4 採集橋 spike**：最小 DLL 走訪 cell 吐 placements → 餵回 M1 → 閉環。
-6. **M5 PROTEUS 拓印**：遊戲內 clone 玩家 → 採集橋記 ActorRef+身份 → build → 鐵匠是玩家本人的臉。
+4. **M3 controller（架構已更換）**：不做 placement-controller `.pex`；現行由 C++ `Palette`／`Preview` 負責擺放。
+5. **M4 採集橋 spike（已完成）**：DLL 走訪 cell 吐 placements → CLI 直接讀 scene.json → 閉環。
+6. **M5 PROTEUS 拓印（路線已取消）**：現行 `sc capp` 直接擷取玩家，不經 PROTEUS clone。
 
-→ **M0–M2 純 ModForge，可立刻動工且離線可測**；M3–M6 依賴 runtime 元件，逐步接。**先做 M0–M2**（本 spec 的可立即落地部分）。
+→ 此里程碑序只保留歷史脈絡：M0–M2 與採集橋核心已落地，`SceneImport`／Papyrus controller／PROTEUS clone 三項則分別取消或被取代，不應再依本節重派。
 
 ## 測試策略
 
 - **離線單元（`Category!=RequiresSkyrim`）**：
-  - scene.json round-trip：手造 scene.json → `SceneImport` → 斷言填進 `Spec` 的 list 內容正確。
+  - scene.json 直接讀取：scene.json 作為 ModSpec 由 CLI `ReadSpec` deserialize；沒有 `SceneImport` round-trip。
   - role macro：blacksmith role → 斷言展開出 dialogue INFO（GetIsID condition）+ sandbox package + vendor faction。
-  - **行為不變**：既有無 scene-import 的 spec → 生成位元不變（scene 只是另一資料來源）。
+  - **行為不變**：既有 spec 的生成輸出不因 scene.json 直接讀取路徑而改變。
   - 座標映射：interior local vs exterior world 兩路各一 placement，斷言落在對的 cell。
 - **實機（主力機，`RequiresSkyrim` / WAIT_USER）**：M2 起的城鎮就位 + 對話 + marker + 特效；M5 的玩家臉拓印。
 
 ## 開放 / 後續（非本 MVP）
 
 - **採集橋 DLL 內部設計**：SKSE cell 走訪 API、ImGui 面板（SKSE Menu Framework 3）、語意標記的遊戲內下標 UX → 獨立子專案 spec。
-- **placement-controller**：與 [settlements P2](../roadmap/mod-survey-gaps/settlements-phase2.md) 合流設計（喝瓶→定位狀態機）。
+- **placement-controller（歷史項，已被取代）**：原擬與 settlements P2 合流；現行擺放由 scene-capture-bridge 的 C++ Palette／Preview 負責。
 - **archetype 全集**：blacksmith 之外的守衛/商人/冒險者…（接 #23 框架）；對話文本 AI 生成（接 #17）。
 - **路徑 B（ModForge 自建 facegen）**：讓產物不依賴玩家端 PROTEUS（可散布獨立 NPC）——接 asset-pipelines headless facegen 研究。
 - **即時 navmesh 採集**：能完美尋路的城鎮（硬項）；MVP 先出可造訪版。
