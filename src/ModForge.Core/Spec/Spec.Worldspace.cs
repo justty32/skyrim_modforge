@@ -62,14 +62,14 @@ public sealed class WorldspaceSpec
     // 與 Cells 互斥；兩者都填時 heightmap 優先且 build 發 warn。null = 走平坦 Cells 路徑（行為不變）。
     public HeightmapSpec? Heightmap { get; set; }
 
-    // Godot 4 物件擺放（可選）。指向 Godot HTerrain plugin 匯出的 placements.json；
+    // Godot 4 物件擺放（可選）。指向 Godot 自製 terrain editor 匯出的 placements.json；
     // ModForge 將 godot4_y_up 座標系轉換後合流進 placements[] pipeline，效果等同手寫 placements。
     // OriginX/Y 必須與 heightmap 的一致（決定 Godot 原點對應的 cell 網格座標）。
     public GodotPlacementsSpec? GodotPlacements { get; set; }
 }
 
 /// <summary>
-/// Godot 4 HTerrain plugin 匯出的物件擺放 JSON。格式：
+/// Godot 4 自製 terrain editor 匯出的物件擺放 JSON。格式：
 /// { "version":1, "coordinate_system":"godot4_y_up", "placements":[...] }
 /// position 單位公尺、rotation 單位 radians；ModForge 換算成 Skyrim game units + degrees。
 /// OriginX/Y = Godot 場景左下角（西南角）對應的 Skyrim cell 網格座標（與 heightmap 一致）。
