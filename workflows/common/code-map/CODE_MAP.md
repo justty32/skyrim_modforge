@@ -67,7 +67,7 @@ CLI（Program.cs）
 |-----|-------|
 | 新增 SM 事件種類 | `src/ModForge.Core/StoryManagerEvents.cs` |
 | 修改 SM build 邏輯 | `src/ModForge.Core/Build/Generator.Build.StoryManager.cs` |
-| 修改對話 build | `src/ModForge.Core/Build/Generator.Build.Dialogue.cs` |
+| 修改對話 build | `src/ModForge.Core/Build/Generator.Build.Dialogue.cs`（玩家 topic）／`Generator.Build.Dialogue.Hello.cs`（招呼）|
 | 修改條件邏輯 | `src/ModForge.Core/Build/Generator.Build.Conditions.cs` |
 | 修改驗證規則 | `src/ModForge.Core/Validate/Generator.Validate.Quests.cs` / `Generator.Validate.StoryManager.cs` |
 | 修改 CLI 命令 | `src/ModForge.Cli/Program.cs` / `Program.Build.cs` |
