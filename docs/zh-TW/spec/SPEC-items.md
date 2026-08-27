@@ -180,6 +180,8 @@ headless 工具鏈無法驗證一次換貼在遊戲內看起來對不對。把�
 放在打包好的 mod 資料夾裡的 `Data/Textures/<your path>/` 之下。見 `examples/texture_set_spec.json`
 （附一個佔位的 `examples/textures/ModForge/rubble/` 樹）與 cookbook recipe。
 
+<a id="globals-glob--shared-flags--counters--constants"></a>
+
 ### globals（GLOB）— 共享的旗標 / 計數器 / 常數
 一個 **GlobalVariable** 是一個橫跨**整個遊戲**共享、且持久存於存檔的具名數字。它是
 最簡單的跨切面狀態原語：可被**零 Papyrus 的 conditions** 讀取

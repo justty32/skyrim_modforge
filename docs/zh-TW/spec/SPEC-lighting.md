@@ -30,6 +30,8 @@
 （0..255）與 radius > 0。（一個獨立光源沒有 model — 想要可見的*燈具*，也放一個原版
 火把/燈籠 static，或把光源掛在一個火把 object 上。）
 
+<a id="lighting"></a>
+
 ### lighting（光照）
 Skyrim 室內之所以黑暗是出於*編寫的選擇*，不是引擎限制 — 光照幾乎完全是
 record 層的事。三種 record 類型協同運作：

@@ -2,7 +2,7 @@
 
 ← [sub_proj README](README.md)
 
-**這是什麼**：把 idea #20 的[方案 A（純效果成長）](options-history.md#方案-a純效果不開-ui最簡單現在就能做)、**Campfire/Frostfall 的 in-world 3D 技能樹**（[替代路線](options-history.md#替代路線待主力機查證見-wait_user-in-world-3d-互動天賦樹)）、與 **JContainers per-NPC 狀態**三者綜合成一條可實作路線。使用者選定方向（2026-06-17），**玩家與 NPC 通用**。
+**這是什麼**：把 idea #20 的[方案 A（純效果成長）](options-history.md#方案-a純效果不開-ui最簡單現在就能做)、**Campfire/Frostfall 的 in-world 3D 技能樹**（[替代路線](options-history.md#alt-route-inworld-3d-perk-tree)）、與 **JContainers per-NPC 狀態**三者綜合成一條可實作路線。使用者選定方向（2026-06-17），**玩家與 NPC 通用**。
 
 **玩家版 vs NPC 版（兩種複雜度）**：
 - **玩家版 = Campfire 原生模式，零橋接**：玩家對營火開樹、點星、全域 GLOB 記 rank——這正是 Frostfall Endurance 樹的現成做法。只有一個玩家、全域 GLOB 不衝突，**不需 JContainers**。是 baseline，現成可生成。

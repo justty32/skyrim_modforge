@@ -8,31 +8,60 @@
 
 ## 進行中 / open
 
-### 2026-08-27 這一輪（`opus-modforge`）——已做完的部分不列，以下是**還開著的**
+### 2026-08-27 上午那一輪（`opus-modforge` 第一段）——已做完的部分不列
 
 前一輪（Batch 0–5）收在「最大單檔 301 行」。本輪重新量：`src/` 已長到 28,891 行，
 違反 300 行規則的只剩 2 個檔，都已拆掉（`Generator.Build.Dialogue.cs` 325→240、
 `Package.cs` 311→94）。**檔案大小這個面向基本上到頂了**，剩下的是**方法長度**——
 那是 300 行規則量不到的東西（一個 280 行的檔可以只有一個 250 行的方法）。
 
-**open ①：三個過長方法還沒拆**（本輪只處理了最單純的 `BuildCondition` dispatch）
+### 2026-08-27 下午這一輪（`opus-modforge` 第二段）——open ① 與 ② 都收掉了
 
-| 行數 | 位置 | 備註 |
-|---|---|---|
-| 271 | `Validate/Generator.Validate.Quests.cs` `ValidateQuestsAndDialogue` | 檔 280 行沒違規，但方法佔了 97% |
-| 246 | `Build/Generator.Build.Worldspace.cs` `BuildWorldspaces` | 同上，檔 271 行 |
-| 207 | `Build/Generator.Build.Placements.cs` `BuildPlacements` | |
+**open ① 三個過長方法：全部拆完。** 判準沿用上一段那句「有作者編號過的階段就沿著切，沒有就別硬切」：
 
-拆這些**不是**為了行數，是因為它們是單一方法內的多階段流程。動手前先問：
-這個方法內部有沒有像 `PackageCmd` 那樣**作者自己編號過的階段**？有就沿著切，沒有就別硬切。
+| 方法 | 前 | 後 | 怎麼切的 |
+|---|---|---|---|
+| `ValidateQuestsAndDialogue` | 271 | **8** | 它其實是**四段各自獨立的驗證**（quest／conditionTemplate／dialogue／scene），段與段之間只有一個共享資料 `stageIndexByQuest`。所以本體只留分派，四段成為 partial 方法，共享資料用**回傳值明著傳**，不留隱藏狀態。拆進 `Generator.Validate.Quests.Dialogue.cs`／`.Scenes.cs` |
+| `BuildPlacements` | 207 | **52** | 單一大迴圈，但迴圈體是「找 cell → 建記錄 → 套屬性 → 登記 → 決定要不要 persistent」五關。因為 `BuildContext` 是**實例**，五個 helper 直接拿得到全部欄位，**不用包 context 物件**——這是它跟 `BuildWorldspaces` 的關鍵差別。拆進 `Generator.Build.Placements.Record.cs` |
+| `BuildWorldspaces` | 246 | **127** | **只拆得動一半，而且是刻意的。** 它是 `static`，中間那個 `EmitCell` local function 捕獲了 6 個外層變數並回寫 2 個計數器——把它整個剝出去就是 Batch 4 判定過「包了儀式的 back-pointer」那種東西。所以只搬走**五段真的不捕獲可變狀態**的：`ApplyWorldDefaultsAndMap`／`ResolveTextureLayers`／`GetOrAddSubBlock`／`BuildCellLandscape`／`EmitHeightmapCells`（進 `Generator.Build.Worldspace.Terrain.cs`），`EmitCell` 本身留在原地並在註解裡寫明為什麼留 |
 
-**open ②：ModForge 內部有 73 個壞掉的 markdown anchor**
+搬移期間踩到的兩個機械性坑，兩個都是**「把迴圈體抽成方法」才會出現、編譯器會擋下來**的那種：
+`continue` 抽出去之後不在迴圈裡（改成 `return null`，呼叫端補 `if (x is null) continue;`）、
+以及具名引數 `navmesh: false` 傳給 `Action<>` 委派時不成立（委派參數名是 `arg1..argN`，改成位置引數）。
 
-在 repo 內跑母 repo 的 `tools/check_markdown_links.py` 會報
-`73 broken local link(s) (0 missing file(s), 73 missing anchor(s))`，
-**在母 repo 根跑則是 OK**——母 repo 那次不會下潛檢查 submodule 內部的 anchor。
-本輪確認這 73 個在 `ec45ed4` 就已存在，與本輪改動無關，故未動。
-要修的話是獨立一批（文檔面向，照 refactor 流程 Step 3 單獨處理）。
+驗收：測試 **1203/0**（與基線相同）；三支護欄全部 **byte-identical**——golden-hash 197 artifact、
+cli-dispatch 330 shape、package-snapshot 1433 行。before 基線是**先 `git stash` 掉本輪改動再取的**，
+因為第一次取基線時背景腳本與我的編輯重疊，不能保證它量到的是乾淨樹。
+
+**open ② 73 個壞掉的 markdown anchor：查清楚了，73 = 60 + 13，而且 60 那組不是文件的錯。**
+
+- **13 條是真的斷**（本輪已修）。全部是同一個模式：`docs/zh-TW/` 把標題譯成中文之後，
+  指過去的交叉引用（含**同檔案內的自我參照**）還留著英文版的 anchor。修法**不是**去反推中文標題的新 slug
+  （下次再改標題就再斷一次），而是在被指的標題上方補一個**穩定英文 `<a id="…">`**，id 直接沿用英文鏡像的 slug——
+  這樣 EN 版與 zh-TW 版的連結文字變成同一串，鏡像維護少一個漂移點。另有 1 條
+  （`sub_projs/inworld-skill-tree/`）是手寫 anchor 多算一個 `-` 的筆誤，同樣給它穩定 id 並改連結。
+- **60 條是母 repo 那支 `tools/check_markdown_links.py` 自己算錯 slug**，文件與連結都沒問題。
+  兩個 bug 都在 `github_heading_slug()`：① 最後一步 `re.sub(r"\s+", "-")` 把**連續空白壓成單一 `-``**，
+  但真實 github-slugger 是**每一個空白各換一個 `-`**——所以 `## A — B` 砍掉 em dash 後留下兩個空白，
+  真實 anchor 是 `a--b`，腳本卻算成 `a-b`；② 字元過濾只砍標點與 **ASCII** 符號，非 ASCII 的符號
+  （`→`、`✅`）會原樣留在 slug 裡，真實 slugger 會砍掉。
+  **這支腳本不在本線領地**（母 repo 根的 `tools/`），所以只交出已驗證的 patch，沒有動它：
+  `agentctl/handoffs/opus-modforge-2026-08-27/check_markdown_links-slug-fix.patch`。
+  驗證方式是複製一份到 scratchpad 改，然後跑三次：修正版對本 repo 從 60 → **0**；
+  修正版對**未修 anchor 的樹**仍精準抓出那 13 條（證明它沒有變寬鬆）；
+  修正版對**整個母 repo** 的結果與現行腳本完全相同（同樣只剩 1 條既有的 missing file，
+  在 `cx-convert` 的 handoff 裡，與 slug 無關）——也就是不會誤傷別的 repo。
+
+> 這是 `agentctl/docs/driving-codex.md` 第五節那條「**會回報都沒事的檢查比沒做更危險**」的鏡像版本：
+> 這支檢查沒有說謊成「都沒事」，它說謊成「有 73 個問題」。後果比較輕，但代價一樣——
+> 沒人會去看一份 82% 是雜訊的報告，於是那 13 條真的斷了的連結就跟著被埋了半年。
+
+**下一輪的 open（本輪量的）**：方法長度這條線還沒到底，只是不再有 200 行以上的了。
+現在 `src/` 最長的十個方法是 `ValidateNpcs` 195、`BuildScenes` 179、`BuildQuestAliases` 175、
+`BuildConditionData` 171、`GenerateQuestFragmentSource` 166、`ValidateWorld` 163、
+`ExpandLivingNpcs` 162、`WirePerks` 154、`Build` 154、`DumpRecordMagicAiAndText` 141。
+**要不要往下拆是個判斷，不是規則**——本輪三個標的之所以值得動，是因為它們都在 200 行以上
+且內部是**多個彼此不相干的階段**；上面這十個要先各自問過那個問題再動，不要照名次往下刷。
 
 **不打算做的**：`Generator.Build.Scene.cs` 停在 301 行（超標 1 行）。
 前一輪就是收在這個數字並判定達標，為了 1 行去動它正好是「為拆而拆」。

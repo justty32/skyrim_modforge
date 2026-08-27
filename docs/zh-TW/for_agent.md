@@ -25,6 +25,8 @@
   和 [CODE_MAP.infra.md § 語音克隆](../../workflows/common/code-map/CODE_MAP.infra.md#語音克隆tts--fuz) 開始。在花時間於 TTS 之前，永遠先跑
   `voicediag` 或 `voicelines --plan`。
 
+<a id="limits--be-honest-do-not-over-claim"></a>
+
 ## 限制——誠實以對，不要過度宣稱
 
 ModForge 寫出 **結構上有效** 的記錄。這跟 **遊戲內可運作** 不是同一回事：

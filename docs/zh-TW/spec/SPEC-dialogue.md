@@ -297,6 +297,8 @@ quest）。**範圍外（之後）：** 任意 scene fragment 與 CAMS camera sh
 UseItemAt PACK 模板——`MQ306EsbernSit` 形狀已解碼；以 `sittarget` PACK 模板提供）
 以及 idle **event-name**（字串）變體而非 IDLE 記錄 ref。
 
+<a id="conditions--ctda-gates-on-a-dialogue-info-a-banter-info-or-a-package"></a>
+
 ### 條件 (conditions) — CTDA 閘（在 `dialogue` INFO、`banter` INFO 或 `package` 上）
 一個條件是**靜態閘資料**，所以它存在於 spec 中（邏輯仍歸 Papyrus 所有）。
 `dialogue[].conditions` 與 `packages[].conditions` 都採用相同形狀：

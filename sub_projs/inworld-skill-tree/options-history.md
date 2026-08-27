@@ -45,6 +45,8 @@
 - **比方案 B 更乾淨**（不必逐一複製 GLOB），但需要完整的 Actor 控制轉移機制。
 - **Proteus（Nexus 62985）自帶 native SKSE plugin 支撐**——純 ModForge spec 無法生成 SKSE 層，須依賴或復刻。
 
+<a id="alt-route-inworld-3d-perk-tree"></a>
+
 ## 替代路線（待主力機查證，見 wait_user）：in-world 3D 互動天賦樹
 
 Campfire / Frostfall 的天賦樹是**世界內互動物件**：玩家與營火互動後幾顆「星星」3D 物件懸浮在營火上方，準星對準可看浮動說明 + 「是否啟用此 perk」選項——不靠 CSF UI 或 MCM，把 perk 選擇做成世界內互動物件。**對 NPC 版 perk 管理很有參考價值**（可掛在 NPC 身上而非營火）。此即升級為主線的 **方案 A+**；機制細節見主線設計檔。

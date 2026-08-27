@@ -10,6 +10,8 @@
 - **[../engine-internals.md](../engine-internals.md)** — 那個*為什麼*：override 語意、GRUP 公式、PACK templates、localized-string 地雷
 - **[../SPEC-index.md](../spec/SPEC-index.md)** — 完整的逐欄位 spec 參考 · **[../for_agent.md](../for_agent.md)** — agent 工作流（CLI + library）
 
+<a id="tldr--the-complete-npc-recipe"></a>
+
 ## TL;DR — 完整的 NPC 食譜
 
 ```jsonc

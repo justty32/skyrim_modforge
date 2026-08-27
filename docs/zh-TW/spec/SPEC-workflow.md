@@ -71,6 +71,8 @@ dotnet run --project src/ModForge.Cli -- build myspec.json out.esp --sync-requir
 （MO2 `meta.ini` 的 `version=`，來自 Nexus），不在 plugin 裡，build 也看不到。所以 `version` 是
 給人看的標籤，並在 `<plugin>.requires.txt` 裡被標成如此；ModForge 不會假裝驗證它。
 
+<a id="voice-tts-voice-cloning--fuz"></a>
+
 ## Voice（TTS 聲音克隆 → .fuz）
 
 選用的後置 build 流程，會為已 build plugin 內的每一句對話合成配音音訊（外加唇形同步）。

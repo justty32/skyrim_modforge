@@ -103,6 +103,8 @@ IN-GAME CONFIRMED It.36 2026-06-02**）：
 「我們到了」行（`conditions: GetStage==10`、`setStage: 20`、`rewardItem`）。見
 `examples/identity-paladin.json`（由 Adventurer 把關的 Wary Traveler 護送）。
 
+<a id="persist--syncperks--jcontainers-jformdb-per-form-state-idea-20-skill-tree-phase-0"></a>
+
 #### `persist` / `syncPerks`——JContainers JFormDB 每個 Form 的狀態（Idea #20 技能樹，Phase 0）
 
 一個 `persist` 區塊會把**巢狀的每個 Form 狀態**寫入 [JContainers](https://www.nexusmods.com/skyrimspecialedition/mods/16495)
@@ -169,6 +171,8 @@ root 並隨存檔一起持久化它們，所以**沒有** `JValue.object()`/`ret
 `<quest>_Stages.psc` 需要 JContainers 自身的 `.psc` 在 Papyrus header 路徑上（`MODFORGE_PAPYRUS_BASE`）——
 這是一個主力機步驟（見 WAIT_USER）。完整範例：`examples/npc_skill_persist_spec.json`（一名訓練師 NPC）。
 
+<a id="storagewrites--papyrusutil-storageutil-per-form-kv-j-group"></a>
+
 #### `storageWrites`——PapyrusUtil StorageUtil 每個 Form 的 KV（J 組）
 
 `persist` 的輕量替代，用於**扁平、隨存檔自動管理的純量狀態**：`storageWrites` 把
@@ -205,6 +209,8 @@ handler，與 `persist` 完全相同）。`persist`（JContainers JFormDB）是�
 `speaker`/`player`/`none` 是純 Papyrus 表達式（不綁屬性）；**arbitrary-ref target** 每條綁一個 `Form` 屬性。
 編譯產生的片段需要 PapyrusUtil 的 `.psc` 在 header 路徑上（主力機步驟；遊戲內須安裝 PapyrusUtil）——任何條目用
 `fromJson` 時還需 **`JsonUtil.psc`**。
+
+<a id="story-manager-quests--event-driven-start"></a>
 
 ### Story Manager 任務——事件驅動的啟動
 
