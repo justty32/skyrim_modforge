@@ -39,7 +39,7 @@ diff /tmp/before.txt /tmp/after.txt && echo "byte-identical"
 
 **任何一行變動＝輸出變了＝這次重構不是 behavior-preserving。** 143 支 spec ／ 197 個產物，離線機約 3 分鐘。
 
-⚠️ **跑的時候不能有別的東西在 build 這個 repo**（2026-08-27 修）。兩支護欄都是直接執行
+⚠️ **跑的時候不能有別的東西在 build 這個 repo**（2026-08-27 修）。三支護欄都是直接執行
 `src/ModForge.Cli/bin/Debug/net10.0/ModForge.Cli`；別條 agent 線、IDE 或 watcher 只要跑一次
 `dotnet build`，這顆執行檔就會被刪掉重寫，**當下還沒跑到的 spec 全部 exec 失敗**。
 實測：run 開始 3 秒後插一次 `-t:Rebuild`，143 支全綠的 spec 變成 135 支 `BUILD-FAIL`。
@@ -50,6 +50,24 @@ diff /tmp/before.txt /tmp/after.txt && echo "byte-identical"
 spec 自己 build 失敗混為一談）。看到 `ABORTED` 就是這件事，把別的 build 停掉重跑即可。
 
 ⚠️ **輸出跟機器綁定，不要 commit、不要跨機比對**：離線機沒有 `Skyrim.esm`，凡是指向 vanilla cell 的 placement 都會被 skip，產出的是縮水版 plugin，bytes 與 Manjaro 上同一支 spec 不同。永遠**在同一台機器上比 before/after**。
+
+## 重構護欄：package（`scripts/package-snapshot.sh`）
+
+`golden-hash.sh` 只走 `build`，碰不到真正出貨用的 `package`。修改 package 編排、Papyrus
+編譯或 loose-file 出貨時，用這支把 143 個 example 的正規化 stdout/stderr、產物路徑與內容
+SHA-256 做成快照：
+
+```bash
+scripts/package-snapshot.sh /tmp/before.txt   # 第二參數＝並行度，預設 4
+# ...重構...
+scripts/package-snapshot.sh /tmp/after.txt
+diff /tmp/before.txt /tmp/after.txt && echo "package unchanged"
+```
+
+`.pex` 只比路徑、不比內容：Papyrus compiler 會寫入時間戳，同一顆 CLI 對同一支 spec 連跑兩次
+bytes 也不同；其他產物照常雜湊。每個 parallel worker 先寫自己的 report，最後才依檔名排序
+串接，避免 `xargs -P` 交錯輸出。這支也有 CLI SHA-256 前後指紋；中途遇到 concurrent build
+會印 `ABORTED` 並 `exit 2`，不可拿該次結果做 diff。
 
 ## 重構護欄：CLI dispatch（`scripts/cli-dispatch-snapshot.sh`）
 
@@ -66,7 +84,7 @@ diff /tmp/before.txt /tmp/after.txt && echo "dispatch unchanged"
 
 ## 找洞用：coverage（`scripts/coverage.sh`）
 
-上面兩支護欄回答「行為變了沒」，**都不回答「哪裡根本沒被跑到」**——那是你動手寫測試前想知道的事。這支包住 Microsoft.NET.Test.Sdk 內建的 collector（不需額外套件，離線可跑），按**未覆蓋行數**排序 ModForge 自己的檔案：
+上面三支護欄回答「行為變了沒」，**都不回答「哪裡根本沒被跑到」**——那是你動手寫測試前想知道的事。這支包住 Microsoft.NET.Test.Sdk 內建的 collector（不需額外套件，離線可跑），按**未覆蓋行數**排序 ModForge 自己的檔案：
 
 ```bash
 scripts/coverage.sh                 # 離線跑，報告印到 stdout

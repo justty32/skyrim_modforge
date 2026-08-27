@@ -15,31 +15,18 @@
 `Package.cs` 311→94）。**檔案大小這個面向基本上到頂了**，剩下的是**方法長度**——
 那是 300 行規則量不到的東西（一個 280 行的檔可以只有一個 250 行的方法）。
 
-**open ①：四個過長方法還沒拆**（本輪只處理了最長的兩個）
+**open ①：三個過長方法還沒拆**（本輪只處理了最單純的 `BuildCondition` dispatch）
 
 | 行數 | 位置 | 備註 |
 |---|---|---|
 | 271 | `Validate/Generator.Validate.Quests.cs` `ValidateQuestsAndDialogue` | 檔 280 行沒違規，但方法佔了 97% |
 | 246 | `Build/Generator.Build.Worldspace.cs` `BuildWorldspaces` | 同上，檔 271 行 |
-| 214 | `Build/Generator.Build.Conditions.cs` `BuildCondition` | 內含**163 行的 switch**，是全 repo 最單純的抽取標的（condition 函式名的分派表）|
 | 207 | `Build/Generator.Build.Placements.cs` `BuildPlacements` | |
 
 拆這些**不是**為了行數，是因為它們是單一方法內的多階段流程。動手前先問：
 這個方法內部有沒有像 `PackageCmd` 那樣**作者自己編號過的階段**？有就沿著切，沒有就別硬切。
 
-**open ②：`package` 還沒有常駐護欄**
-
-`golden-hash.sh` 只走 `build`，`cli-dispatch-snapshot.sh` 只驗 argv 形狀，
-**`package` 這條路徑兩支都碰不到**，而它是出貨路徑。本輪拆 `Package.cs` 時是臨時
-搭了一支快照對照（143 spec × 正規化 stdout ＋ 產物樹雜湊）用完即丟。
-下次要再動 `package`，建議把它收成 `scripts/package-snapshot.sh`。**寫的時候記住兩個坑**：
-
-1. **`.pex` 不能比對內容**——同一顆執行檔、同一支 spec 連編兩次 bytes 就不一樣
-   （Papyrus 編譯器蓋時間戳，已實測）。只比路徑；`.esp`／`.seq`／`.psc` 才是確定性的。
-2. **`xargs -P` 會交錯輸出**——每個 worker 要寫自己的檔，最後排序串接，否則行會插隊。
-   收好之後務必**連跑兩次確認 byte-identical**，再拿它當基準。
-
-**open ③：ModForge 內部有 73 個壞掉的 markdown anchor**
+**open ②：ModForge 內部有 73 個壞掉的 markdown anchor**
 
 在 repo 內跑母 repo 的 `tools/check_markdown_links.py` 會報
 `73 broken local link(s) (0 missing file(s), 73 missing anchor(s))`，
