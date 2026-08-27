@@ -19,7 +19,7 @@
 | 資料夾 | 檔數 | 內容 |
 |--------|-----|------|
 | `src/ModForge.Core/Spec/` | 52 | `Spec.cs` 根 DTO + 各領域 `Spec.*.cs` + `SpecRefs.cs`（`$ref`/`$env` 前處理）|
-| `src/ModForge.Core/Build/` | 71 | `Generator.Build.cs`（兩段 pipeline 的呼叫順序）+ `Generator.Build.*.cs` + `BuildContext` |
+| `src/ModForge.Core/Build/` | 72 | `Generator.Build.cs`（兩段 pipeline 的呼叫順序）+ `Generator.Build.*.cs` + `BuildContext` |
 | `src/ModForge.Core/Validate/` | 32 | `Generator.Validate.cs` + `Generator.Validate.*.cs`（`ValidateContext`）|
 | `src/ModForge.Core/Macros/` | 6 | `ExpandMacros` 那一段：高階語法糖（settlements / livingNpcs / skillTrees / capturedNpcs / capturedItems / npcRoles）在讀 spec 前先展開成低階記錄 |
 | `src/ModForge.Core/Papyrus/` | 19 | Papyrus 原始碼與腳本片段生成 + 外部框架設定檔 emitter（SPID / KID / FLM / BOS / OAR / SkyPatcher / MCM）|
@@ -69,7 +69,7 @@ CLI（Program.cs）
 | 新增 SM 事件種類 | `src/ModForge.Core/StoryManagerEvents.cs` |
 | 修改 SM build 邏輯 | `src/ModForge.Core/Build/Generator.Build.StoryManager.cs` |
 | 修改對話 build | `src/ModForge.Core/Build/Generator.Build.Dialogue.cs`（玩家 topic）／`Generator.Build.Dialogue.Hello.cs`（招呼）|
-| 修改條件邏輯 | `src/ModForge.Core/Build/Generator.Build.Conditions.cs` |
+| 修改條件邏輯 | `src/ModForge.Core/Build/Generator.Build.Conditions.cs`（組裝）／`Generator.Build.Conditions.Functions.cs`（function dispatch）|
 | 修改驗證規則 | `src/ModForge.Core/Validate/Generator.Validate.Quests.cs` / `Generator.Validate.StoryManager.cs` |
 | 修改 CLI 命令 | `src/ModForge.Cli/Program.cs` / `Program.Build.cs` |
 | 修改 dump 輸出 | `src/ModForge.Cli/Diagnostics.*.cs`（對應領域） |
