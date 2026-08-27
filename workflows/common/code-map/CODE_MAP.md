@@ -19,16 +19,16 @@
 | 資料夾 | 檔數 | 內容 |
 |--------|-----|------|
 | `src/ModForge.Core/Spec/` | 52 | `Spec.cs` 根 DTO + 各領域 `Spec.*.cs` + `SpecRefs.cs`（`$ref`/`$env` 前處理）|
-| `src/ModForge.Core/Build/` | 69 | `Generator.Build.cs`（兩段 pipeline 的呼叫順序）+ `Generator.Build.*.cs` + `BuildContext` |
+| `src/ModForge.Core/Build/` | 71 | `Generator.Build.cs`（兩段 pipeline 的呼叫順序）+ `Generator.Build.*.cs` + `BuildContext` |
 | `src/ModForge.Core/Validate/` | 32 | `Generator.Validate.cs` + `Generator.Validate.*.cs`（`ValidateContext`）|
 | `src/ModForge.Core/Macros/` | 6 | `ExpandMacros` 那一段：高階語法糖（settlements / livingNpcs / skillTrees / capturedNpcs / capturedItems / npcRoles）在讀 spec 前先展開成低階記錄 |
 | `src/ModForge.Core/Papyrus/` | 19 | Papyrus 原始碼與腳本片段生成 + 外部框架設定檔 emitter（SPID / KID / FLM / BOS / OAR / SkyPatcher / MCM）|
 | `src/ModForge.Core/Formats/` | 10 | 二進位／磁碟格式與 plugin I/O：`PluginIo` `SeqFile` `Archives` `Fuz` `Heightmap` `Splatmap` `Vtxt` `Vhgt` `Vnml` `NavmeshPatch` |
 | `src/ModForge.Core/Catalog/` | 3 | 離線 SQLite/FTS5 記錄目錄 |
-| `src/ModForge.Core/Voice/` | 3 | TTS / lip / fuz 工具鏈（build 期的語音**規劃**在 `Build/Generator.Build.Voice*.cs`）|
+| `src/ModForge.Core/Voice/` | 4 | TTS / lip / fuz 工具鏈（build 期的語音**規劃**在 `Build/Generator.Build.Voice*.cs`）|
 | `src/ModForge.Core/`（根）| 18 | `Generator.cs` 入口、`Generator.Helpers/Dependencies/Requires`、以及還沒歸類的獨立型別 |
-| `src/ModForge.Cli/Commands/` | 11 | 各命令實作（`build` / `package` / `translate` / `catalog` / `texexport` …）|
-| `src/ModForge.Cli/Diagnostics/` | 29 | `Diagnostics.*.cs`（dump / find / *diag）|
+| `src/ModForge.Cli/Commands/` | 15 | 各命令實作（`build` / `package` / `translate` / `catalog` / `texexport` …）|
+| `src/ModForge.Cli/Diagnostics/` | 30 | `Diagnostics.*.cs`（dump / find / *diag）|
 | `src/ModForge.Cli/`（根）| 2 | `Program.cs`（argv dispatch）+ `GlobalUsings.cs` |
 
 `tests/ModForge.Core.Tests/` 用同一組資料夾名（`Build/` `Validate/` `Spec/` `Papyrus/` `Formats/` `Voice/` `Catalog/`）。
@@ -50,6 +50,7 @@ CLI（Program.cs）
   ├─ Commands/Program.Build.cs → Generator → Formats/PluginIo
   ├─ Commands/Program.Translate.cs → Translator
   ├─ Commands/Package.cs → Papyrus + Assets + PluginIo
+  │    （拆檔：Package.Fragments / Package.Scripts / Package.LooseFiles）
   └─ Diagnostics/*.cs（dump / find / smtree）
 ```
 
@@ -59,7 +60,7 @@ CLI（Program.cs）
 2. `Validate/Generator.Validate.*` → 語義/ref 合法性檢查
 3. `Build/Generator.Build.cs` → pass 1 建所有 record，pass 2 接所有 FormLink
 4. `Formats/PluginIo` → 寫 `.esp`；`Formats/SeqFile` → 寫 `.seq`
-5. `Commands/Package.cs` → 編 Papyrus + 複製 Assets → MO2 資料夾
+5. `Commands/Package.cs`（＋ `Package.Fragments/Scripts/LooseFiles.cs`）→ 編 Papyrus + 複製 Assets → MO2 資料夾
 
 ## 常用起點（讀此檔後直接跳）
 

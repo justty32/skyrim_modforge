@@ -59,7 +59,10 @@
 | CLI | `CatalogCmd.cs` | `catalog build/query/get/sources/export-json` facade；query/get/sources 可輸出人讀 TSV 或 camelCase JSON，`export-json --placeable` 產 scene-capture Browser 精簡檔。|
 | CLI | `Program.Build.cs` | `build` / `validate` / `package` / `compile` / `voicelines` / `extract-voices`；`validate` 的 `CheckUnknownFields` + deserialize 都跑在 `$ref`/`$env` **解析後**的 JSON；`build` 後另印 `annotations`（advisory，不生記錄）與 `references`（label→既有 ref 綁定清單）兩行摘要；`ReportDependencies` 印非 vanilla master ＋寫 `<plugin>.requires.txt` 旁檔（作者面向）；`package` 也印，並另把**玩家面向** `REQUIREMENTS.txt`（`RequiresFileText forShippedMod:true`）寫進出貨夾——玩家最需要「先裝哪些前置」；**`RequiresOk` ＝ `requires[]` 的閘門**（用到沒宣告 → 印錯誤、**在 `PluginIo.Write` 之前 return 1，esp 完全不寫**；`package` 走同一個閘門），**`SyncRequiresFile` ＝ `build --sync-requires`**（用 `JsonNode` 就地改寫 spec 檔的 `requires[]`；requires 來自 `$ref` include 時拒絕改寫，免得宣告分叉）|
 | CLI | `Program.Translate.cs` | `extract` / `apply` / `applyloc` |
-| CLI | `Package.cs` | `package` 完整流程：Papyrus 編譯 + Assets 複製 + MO2 資料夾組裝 |
+| CLI | `Package.cs` | `package` **編排器**（2026-08-27 拆檔後只剩 94 行）：讀 spec → 前置編譯生成片段 → `Generator.Build` + 寫 esp/seq → 編使用者腳本 → 出貨 `.pex` → 複製 assets → 寫 loose files |
+| CLI | `Package.Fragments.cs` | 步驟 1：**ModForge 自己生成**的片段前置編譯（quest stage / dialogue set-stage / scene / perk / MCM bridge）。必須早於 `Generator.Build`，VMAD 只在 `.pex` 確認存在時才掛 |
+| CLI | `Package.Scripts.cs` | 步驟 4–5：使用者 `.psc` 編譯（含 dispatcher sibling-header 機制）＋ word-wall 片段；步驟 5b–5g：依 spec 用到什麼就出貨哪顆內嵌 `.pex` |
+| CLI | `Package.LooseFiles.cs` | 步驟 7：action-system loose files（OAR / BDI / PIE / SPID / MCM / FLM / KID / BOS / AOS / SkyPatcher）＋ `.hkx` 解析與複製 |
 | CLI | `Package.Compile.cs` | `Package.cs` 的 static helper：生成片段編譯（`CompileGeneratedFragment`）、MCM count/required-bridge safety gates、embedded `.pex` 出貨（`ShipEmbeddedPex`）、action-system loose file 寫出（`WriteLooseFile`）|
 
 ---
