@@ -28,7 +28,7 @@ dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj --filter "Categ
 
 ## 重構護欄：golden hash（`scripts/golden-hash.sh`）
 
-行為不變的重構（[refactor 工作流](refactor/README.md)）光靠上面的測試**不夠**：1190 個 test method 裡 965 個（81%）只走 `Generator.Build`/`Validate` 對記錄下斷言，內部怎麼重組它們一律看不見。`golden-hash.sh` 補這個洞——把 `examples/` 全部 build 一次，逐一輸出 `.esp`／`.seq` 的 SHA-256：
+行為不變的重構（[refactor 工作流](refactor/README.md)）光靠上面的測試**不夠**：1203 個 test method 裡約八成只走 `Generator.Build`/`Validate` 對記錄下斷言，內部怎麼重組它們一律看不見。`golden-hash.sh` 補這個洞——把 `examples/` 全部 build 一次，逐一輸出 `.esp`／`.seq` 的 SHA-256：
 
 ```bash
 scripts/golden-hash.sh /tmp/before.txt        # 重構前（第二參數＝並行度，預設 4）
@@ -38,6 +38,16 @@ diff /tmp/before.txt /tmp/after.txt && echo "byte-identical"
 ```
 
 **任何一行變動＝輸出變了＝這次重構不是 behavior-preserving。** 143 支 spec ／ 197 個產物，離線機約 3 分鐘。
+
+⚠️ **跑的時候不能有別的東西在 build 這個 repo**（2026-08-27 修）。兩支護欄都是直接執行
+`src/ModForge.Cli/bin/Debug/net10.0/ModForge.Cli`；別條 agent 線、IDE 或 watcher 只要跑一次
+`dotnet build`，這顆執行檔就會被刪掉重寫，**當下還沒跑到的 spec 全部 exec 失敗**。
+實測：run 開始 3 秒後插一次 `-t:Rebuild`，143 支全綠的 spec 變成 135 支 `BUILD-FAIL`。
+
+舊版會把這種 exec 失敗**記成 `BUILD-FAIL`**——也就是記成「你的重構把輸出改掉了」，正好是這支
+腳本唯一該講準的結論。現在兩支都會在 run 前後對執行檔取 SHA-256 指紋，一旦中途變了就
+**印錯誤並 `exit 2`，不交出可以拿去 diff 的檔案**（exec 失敗另記成 `HARNESS-FAIL`，不再跟
+spec 自己 build 失敗混為一談）。看到 `ABORTED` 就是這件事，把別的 build 停掉重跑即可。
 
 ⚠️ **輸出跟機器綁定，不要 commit、不要跨機比對**：離線機沒有 `Skyrim.esm`，凡是指向 vanilla cell 的 placement 都會被 skip，產出的是縮水版 plugin，bytes 與 Manjaro 上同一支 spec 不同。永遠**在同一台機器上比 before/after**。
 

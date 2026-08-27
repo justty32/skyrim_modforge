@@ -36,6 +36,18 @@ cli="$repo_root/src/ModForge.Cli/bin/Debug/net10.0/ModForge.Cli"
 [ -x "$cli" ] || cli="$cli.exe"
 [ -x "$cli" ] || { echo "golden-hash: CLI binary not found next to $cli" >&2; exit 1; }
 
+# Fingerprint the CLI so a CONCURRENT rebuild can be told apart from a broken spec.
+# Another process running `dotnet build` on this repo deletes and rewrites this exact
+# binary mid-run; every spec still queued then fails to exec it. Without this check the
+# run reports them as BUILD-FAIL, i.e. as "your refactor changed the output" — the one
+# conclusion this script exists to make trustworthy. Measured: a rebuild started 3s into
+# a run turned 143 passing specs into 135 BUILD-FAIL.
+# Must never fail: under `set -e` + `pipefail` a plain sha256sum of a file that has just
+# been deleted would abort the script silently, right where it is supposed to EXPLAIN
+# itself. An empty fingerprint is a valid answer here and means "binary is gone".
+cli_fingerprint() { sha256sum "$cli" 2>/dev/null | cut -d' ' -f1 || true; }
+cli_fp_before="$(cli_fingerprint)" || true
+
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 export WORK="$work" CLI="$cli"
@@ -48,7 +60,17 @@ one_spec='
   spec="$1"
   name="$(basename "$spec" .json)"
   esp="$WORK/$name.esp"
-  if ! "$CLI" build "$spec" "$esp" >"$WORK/$name.log" 2>&1; then
+  set +e
+  "$CLI" build "$spec" "$esp" >"$WORK/$name.log" 2>&1
+  rc=$?
+  set -e
+  # 126/127 = the binary could not be executed at all (deleted or replaced under us).
+  # That is a HARNESS failure, not this spec failing to build — never conflate the two.
+  if [ "$rc" -eq 126 ] || [ "$rc" -eq 127 ]; then
+    printf "HARNESS-FAIL%54s  %s\n" "" "$name"
+    exit 0
+  fi
+  if [ "$rc" -ne 0 ]; then
     printf "BUILD-FAIL%56s  %s\n" "" "$name"
     exit 0
   fi
@@ -65,4 +87,17 @@ find examples -maxdepth 1 -name '*.json' ! -name 'spec.schema.json' -print0 \
 
 specs=$(find examples -maxdepth 1 -name '*.json' ! -name 'spec.schema.json' | wc -l)
 fails=$(grep -c '^BUILD-FAIL' "$out" || true)
+harness=$(grep -c '^HARNESS-FAIL' "$out" || true)
+cli_fp_after="$(cli_fingerprint)" || true
+
+# A disturbed run must NOT be diffed: its BUILD-FAIL/HARNESS-FAIL lines would read as
+# output changes and condemn a refactor that is actually fine. Fail loudly instead.
+if [ "$harness" -gt 0 ] || [ "$cli_fp_before" != "$cli_fp_after" ]; then
+  echo "golden-hash: ABORTED — the CLI binary changed while the run was in flight" >&2
+  echo "  ($harness spec(s) could not exec it; fingerprint before=${cli_fp_before:0:12} after=${cli_fp_after:0:12})" >&2
+  echo "  Something else built this repo concurrently (another agent line, an IDE, a watcher)." >&2
+  echo "  DO NOT diff $out — rerun with nothing else building." >&2
+  exit 2
+fi
+
 echo "golden-hash: $specs spec(s) -> $(wc -l < "$out") artifact hash(es), $fails build failure(s) -> $out"
