@@ -1,5 +1,11 @@
 # 遊戲內編輯器現況盤點（2026-08-25）
 
+> ⚠️ **2026-08-27 起，這份是「待複驗清單」，不是事實。** 本檔記載的 16 處文件與實體不符，
+> 有一部分在寫完之後已經被修掉（`839a787` 就處理了好幾條），另有至少一條**當初的判定本身就錯**
+> （§3 卡點 8 的 Godot binary，見該處批註）。**引用本檔任何一條之前先自己驗一次**；
+> 驗過的請就地加上 `【2026-08-27 複驗】` 批註，不要只在別處寫結論。
+> 已複驗：§3 卡點 8、§4 第 15 條。
+
 ## 結論先行
 
 這條線已有一條可用但不是全自動的閉環：`scene-capture-bridge` 能在遊戲內以 console／模式快捷鍵記錄玩家擺放、刪除、移動、標記、引用與 capture，輸出合法 ModSpec JSON；ModForge 能直接把其中的具體 record 段生成 ESP。真正尚未接通的是兩處：
@@ -173,7 +179,21 @@
 
 7. **物件狀態屬性編輯仍卡在逐欄 engine truth。** 架構雖定為 registry → `overrides[]` 新欄位，但門 open/locked、火把亮滅、ownership、enable-parent 等每個都要先解碼，尤其火把可能不是 REFR flag（`backlog.md:97-114`）。這不是「再接一個 UI field」即可完成。
 
-8. **本機附屬驗證環境有三個可重現缺口。** Godot binary 缺失，故兩個 live contract skip；PowerShell 缺失，故 my_skyrim_plugin_1 的兩支正式測試不能跑；該 repo build cache 又釘舊 vcpkg path。這些不擋 ModForge/bridge 主線 build，但擋本機把所有旁路重跑到 runtime 層。
+8. **本機附屬驗證環境的缺口——三項裡有一項是誤判。** ~~Godot binary 缺失，故兩個 live contract skip~~；PowerShell 缺失，故 my_skyrim_plugin_1 的兩支正式測試不能跑；該 repo build cache 又釘舊 vcpkg path。這些不擋 ModForge/bridge 主線 build，但擋本機把所有旁路重跑到 runtime 層。
+
+    **【2026-08-27 複驗】**
+
+    - ❌ **「Godot binary 缺失」不成立——是探測名單漏了，不是機器沒裝。** 本機有
+      `/usr/bin/godot-mono`（`4.7.2.stable.mono.arch_linux.ed1daf0bf`，headless 可用）。
+      當初兩支 contract 測試的探測名單只寫了 `("godot4", "godot")`，所以 runtime 層一直被 skip，
+      而 skip 訊息（`Godot not found; set GODOT_BIN...`）讀起來像是機器沒有 Godot。
+      補上名單後 `godot-worldspace-editor` 的 `python3 -m unittest discover -s tests` 是
+      **Ran 7 tests, OK**（補之前只有 2 條真的執行）。依據：`godot-worldspace-editor` commit `26d3cab`，
+      由 `opus-godot` 修、`dispatcher` 獨立複驗。
+      ⚠️ 教訓：**「工具不在 PATH」與「本機沒有這個工具」是兩件事**，skip 訊息不該被當成後者的證據。
+    - ✅ **PowerShell 確實仍缺**（`command -v pwsh` → MISSING，2026-08-27 複驗）。
+    - ➡️ **vcpkg 舊路徑的 build cache 歸 `projects/my_skyrim_plugin_1`**，不在 ModForge 領地；
+      本檔只記錄，修不修由該 repo 的負責線決定。
 
 ---
 
@@ -245,9 +265,13 @@
     - 舊摘要：`projects/godot-worldspace-editor/README.md:23-25` 把 box proxy 換真實 glTF 列為剩項。
     - 現況：同檔 `:106` 明列 2026-06-18 GUI 確認真實 vanilla geometry；`godot/model_fetch.gd` 與 `tests/test_model_fetch_contract.py` 存在，本次 source gate PASS。
 
-15. **Godot placement 的 producer 註解仍稱 HTerrain plugin，repo 實際是自製 terrain。**
+15. ~~**Godot placement 的 producer 註解仍稱 HTerrain plugin，repo 實際是自製 terrain。**~~ **已修，本條作廢。**
     - 舊註解：`src/ModForge.Core/Spec/Spec.Worldspace.cs:65-74`。
     - 現況：Godot README `:5-9` 明說自製 terrain、不靠 HTerrain；實際 `godot/terrain.gd:1-17` 是自有 height grid。JSON contract 沒因此壞，但註解會誤導依賴判斷。
+    - **【2026-08-27 複驗】已不成立**：`grep -rn HTerrain` 掃過整個 ModForge repo，
+      命中的只剩本檔這兩行；`Spec.Worldspace.cs` 現在的註解寫的是「Godot 自製 terrain editor」。
+      是本檔寫完之後的 `839a787`（docs: align in-game editor docs with implementation）修掉的，
+      也就是**這一條在被讀到之前就已經過期**。
 
 16. **ModForge testing 文件的 suite 規模已落後。**
     - 文件：`workflows/testing.md:27-29` 仍以 1107 test methods 為敘述基準。
