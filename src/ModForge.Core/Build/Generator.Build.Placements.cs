@@ -7,51 +7,18 @@ public static partial class Generator
         // --- pass 2: world placement — put a base form (npc/object) into a cell at position/rotation ---
         // The target cell is either an in-spec interior cell, a VANILLA interior cell we override, or
         // an exterior worldspace cell. NPC base -> PlacedNpc (ACHR), other -> PlacedObject (REFR).
+        //
+        // 這個方法原本是一個 204 行的單一迴圈。拆檔後這裡只留「每個 placement 依序經過哪幾關」，
+        // 每一關的實作在 Generator.Build.Placements.Record.cs（建立記錄／套屬性／登記）與下方的
+        // ResolvePlacementCell（找 cell）。四關都是 BuildContext 的實例方法，不需要傳 context。
         public void BuildPlacements()
         {
-            // editorIds that a deferred wire (SingleRef target or Destination location) points at — these
-            // placements must be persistent so the engine doesn't drop the anchor the package depends on.
-            var deferredAnchorEds = new HashSet<string>(
-                deferredTargetWires.Select(w => w.Ref)
-                    .Concat(deferredLocationWires.Select(w => w.Ref))
-                    .Concat(deferredForcedAliases.Select(w => w.Ref))  // a forced-alias ACHR/marker (e.g. a
-                                                                       // living NPC's ref MoveTo'd around) must
-                                                                       // persist or the engine drops it
-                    .Concat(MerchantContainerRefs())   // the merchant chest holds gold/stock — must persist
-                    // a references[] target (the in-game referrer's IN-FILE path: "sofia's chair" IS this
-                    // placement) — the whole point of naming it is that something else can target it, so it
-                    // must survive save/load. This is what makes the clean path clean: the object is ours,
-                    // so "an alias/package can point at it" is satisfied by construction.
-                    .Concat(spec.References.Select(r => r.Ref))
-                    // "alias:"/"aliasLoc:" refs name a quest alias, not a placement — exclude them.
-                    .Where(r => !string.IsNullOrWhiteSpace(r) && !LooksExternalRef(r) && !TryParseAliasRef(r, out _, out _)),
-                StringComparer.OrdinalIgnoreCase);
-            // EditorIds named as some door's teleport PARTNER — a teleport anchor must persist (the engine
-            // drops a temporary door, breaking the link). Both ends of a pair end up here.
-            var teleportAnchorEds = new HashSet<string>(
-                placements.Select(p => p.Teleport)
-                    .Where(t => !string.IsNullOrWhiteSpace(t) && !LooksExternalRef(t)),
-                StringComparer.OrdinalIgnoreCase);
+            var deferredAnchorEds = DeferredAnchorEditorIds();
+            var teleportAnchorEds = TeleportAnchorEditorIds();
             foreach (var pl in placements)
             {
-                ICell? cell;
-                if (!string.IsNullOrWhiteSpace(pl.Worldspace))
-                {
-                    // Exterior: the world position picks the grid cell in the worldspace.
-                    int cx = PosToGrid(pl.Position.X), cy = PosToGrid(pl.Position.Y);
-                    cell = ExteriorCell(pl.Worldspace, cx, cy);
-                    if (cell is null) { Warn($"  ! placement: worldspace '{pl.Worldspace}' unresolved — skipped"); continue; }
-                }
-                else if (LooksExternalRef(pl.Cell))
-                {
-                    int before = vanillaCellOverrides.Count;
-                    cell = VanillaCellOverride(pl.Cell);
-                    if (cell is null) { Warn($"  ! placement: vanilla cell '{pl.Cell}' unresolved — skipped"); continue; }
-                    if (vanillaCellOverrides.Count > before) vanillaCells++;
-                }
-                else if (!cellsByEd.TryGetValue(pl.Cell, out var inSpec))
-                { Warn($"  ! placement: cell '{pl.Cell}' not found in spec — skipped"); continue; }
-                else cell = inSpec;
+                var cell = ResolvePlacementCell(pl);
+                if (cell is null) continue;
 
                 // kind:"xmarker"/"xmarkerHeading" is a thin helper: an empty base defaults to the vanilla
                 // XMarker (0x3B) / XMarkerHeading (0x34) static, and the ref is forced persistent below
@@ -60,130 +27,12 @@ public static partial class Generator
                 // target.
                 bool isXMarker = pl.Kind.Equals("xmarker", StringComparison.OrdinalIgnoreCase);
                 bool isXMarkerHeading = pl.Kind.Equals("xmarkerHeading", StringComparison.OrdinalIgnoreCase);
-                var baseRef = pl.Base;
-                if (string.IsNullOrWhiteSpace(baseRef) && isXMarker) baseRef = "Skyrim.esm:0x0000003B";
-                else if (string.IsNullOrWhiteSpace(baseRef) && isXMarkerHeading) baseRef = "Skyrim.esm:0x00000034";
 
-                if (!TryResolveRef(baseRef, formKeyByEd, out var baseFk))
-                { Warn($"  ! placement: base '{baseRef}' unresolved — skipped"); continue; }
+                var placedRec = CreatePlacedRecord(pl, isXMarker, isXMarkerHeading);
+                if (placedRec is null) continue;
 
-                var placement = new Placement
-                {
-                    Position = new Noggog.P3Float(pl.Position.X, pl.Position.Y, pl.Position.Z),
-                    Rotation = new Noggog.P3Float(Deg2Rad(pl.Rotation.X), Deg2Rad(pl.Rotation.Y), Deg2Rad(pl.Rotation.Z)),
-                };
-
-                // Explicit kind wins; otherwise an in-spec NPC_ base -> npc (ACHR), anything else ->
-                // object (REFR). IMPORTANT: a raw LVLN (LeveledNpc list) is placeable as NEITHER: as an
-                // ACHR base it CTDs at load, and as a REFR base it's an invalid (un-placeable) form. So
-                // warn whenever the base is an in-spec LVLN, regardless of kind (the no-kind case would
-                // otherwise fall through to a silent, equally-broken PlacedObject). The correct pattern is
-                // an NPC_ whose TEMPLATE chain references the LVLN (e.g. Skyrim.esm LvlBanditMeleeAny =
-                // 0x01E79C, not LCharBanditMeleeAny = 0x03DECD).
-                if (recordsByEd.TryGetValue(pl.Base, out var bk) && bk is ILeveledNpc)
-                    Warn($"  ! placement '{pl.EditorId ?? pl.Base}' base is a LeveledNpc list (LVLN) — LVLN bases CTD at load; use an NPC_ actor whose template references the list (e.g. LvlBandit* not LChar*)");
-                bool isNpc = pl.Kind.Equals("npc", StringComparison.OrdinalIgnoreCase)
-                    || (string.IsNullOrEmpty(pl.Kind) && recordsByEd.TryGetValue(pl.Base, out var br) && br is INpc);
-                bool isHazard = pl.Kind.Equals("hazard", StringComparison.OrdinalIgnoreCase)
-                    || (string.IsNullOrEmpty(pl.Kind) && recordsByEd.TryGetValue(pl.Base, out var hr) && hr is IHazard);
-
-                IPlaced placedRec;
-                if (isHazard)   { var hz = new PlacedHazard(mod); hz.Hazard.SetTo(baseFk); hz.Placement = placement; placedRec = hz; }
-                else if (isNpc) { var a = new PlacedNpc(mod); a.Base.SetTo(baseFk); a.Placement = placement; placedRec = a; }
-                else            { var o = new PlacedObject(mod); o.Base.SetTo(baseFk); o.Placement = placement; placedRec = o; }
-
-                // Per-ref encounter zone (XEZN) — scopes THIS spawn to its own zone (else it inherits the
-                // cell's). EncounterZone lives on both ACHR and REFR (no shared settable interface), so set
-                // the concrete one. Usually only meaningful on a leveled-actor spawn.
-                if (!string.IsNullOrWhiteSpace(pl.EncounterZone) && TryResolveRef(pl.EncounterZone, formKeyByEd, out var ezFk))
-                {
-                    if (placedRec is PlacedNpc pnRec) pnRec.EncounterZone.SetTo(ezFk);
-                    else if (placedRec is PlacedObject poRec) poRec.EncounterZone.SetTo(ezFk);
-                    linksWired++;
-                    if (LooksExternalRef(pl.EncounterZone)) extLinks++;
-                }
-                else if (!string.IsNullOrWhiteSpace(pl.EncounterZone))
-                    Warn($"  ! placement encounterZone '{pl.EncounterZone}' unresolved — skipped");
-
-                // Scale (XSCL): omit when 1.0 (default). Actors ignore XSCL in-game but we still write it.
-                if (pl.Scale != 1f)
-                {
-                    if (placedRec is PlacedObject scObj) scObj.Scale = pl.Scale;
-                    else if (placedRec is PlacedNpc scNpc) scNpc.Scale = pl.Scale;
-                }
-
-                // InitiallyDisabled: record header flag 0x800 — ref exists but is invisible/non-collidable.
-                if (pl.InitiallyDisabled) placedRec.MajorRecordFlagsRaw |= 0x800;
-
-                // NoHavokSettle: record header flag 0x20000000 (DontHavokSettle) — the engine skips
-                // the havok settle pass it would otherwise run on this ref at cell load, so a
-                // deliberately-placed object stays exactly where it was authored instead of being
-                // flung. REFR only (an ACHR has no settle semantics). See PlacementSpec.NoHavokSettle.
-                if (pl.NoHavokSettle && placedRec is PlacedObject) placedRec.MajorRecordFlagsRaw |= 0x20000000;
-
-                // Enable Parent (XESP): this ref's enabled state follows another ref. DEFERRED (like a
-                // package SingleRef target): `ref` may be an in-spec placement editorId defined LATER in
-                // placements[] (this loop resolves top-to-bottom, so a forward pointer misses) or a
-                // references[] label (BuildReferences runs entirely after this loop). A perfectly
-                // reasonable spec — "this crate shows once that door opens", crate authored before the
-                // door — would silently miss on an eager resolve. WireDeferredEnableParents (Generator.
-                // Build.PlacementRefs.cs) fills the XESP once placements AND references[] both exist.
-                if (pl.EnableParent is { } ep)
-                    deferredEnableParentWires.Add((placedRec, pl.EditorId ?? "", ep.Ref, ep.Flag));
-
-                // Lock (XLOC): only PlacedObject (doors, containers); silently ignored on actors.
-                if (pl.Lock is { } lk && placedRec is PlacedObject lockObj)
-                {
-                    var xloc = new LockData { Level = ParseLockLevel(lk.Level) };
-                    if (!string.IsNullOrWhiteSpace(lk.Key))
-                    {
-                        if (TryResolveRef(lk.Key, formKeyByEd, out var keyFk)) xloc.Key.SetTo(keyFk);
-                        else Warn($"  ! placement '{pl.EditorId}' lock key '{lk.Key}' unresolved — skipped");
-                    }
-                    lockObj.Lock = xloc;
-                }
-
-                // Ownership (XOWN): who owns this placed object (theft/crime).
-                if (pl.Ownership is { } own)
-                {
-                    if (TryResolveRef(own.Owner, formKeyByEd, out var ownFk))
-                    {
-                        if (placedRec is PlacedObject ownObj)
-                        {
-                            ownObj.Owner.SetTo(ownFk);
-                            if (own.Rank != 0) ownObj.FactionRank = own.Rank;
-                        }
-                        else if (placedRec is PlacedNpc ownNpc)
-                        {
-                            ownNpc.Owner.SetTo(ownFk);
-                            if (own.Rank != 0) ownNpc.FactionRank = own.Rank;
-                        }
-                        linksWired++;
-                        if (LooksExternalRef(own.Owner)) extLinks++;
-                    }
-                    else Warn($"  ! placement '{pl.EditorId}' ownership owner '{own.Owner}' unresolved — skipped");
-                }
-
-                // Count (XCNT): item stack count on placed object; not meaningful for actors.
-                if (pl.Count > 0 && placedRec is PlacedObject cntObj) cntObj.ItemCount = pl.Count;
-
-                // Named placements register so other refs (patrol start, linkedRefs target) can find
-                // them. A placement that's a linkedRefs *target* must persist across save/load to be a
-                // stable anchor, so we force it Persistent (markers are cheap; this avoids the engine
-                // dropping a temporary ref another ref points at).
-                if (!string.IsNullOrWhiteSpace(pl.EditorId))
-                {
-                    // A placement editorId that collides with an already-registered record would
-                    // silently clobber that record's FormKey here, breaking any ref to the original.
-                    // validate enforces uniqueness, but Build can run without it — so warn.
-                    if (formKeyByEd.ContainsKey(pl.EditorId))
-                        Warn($"  ! placement editorId '{pl.EditorId}' collides with an existing record — its FormKey is now overwritten (run validate to catch this)");
-                    placedRec.EditorID = pl.EditorId;
-                    formKeyByEd[pl.EditorId] = placedRec.FormKey;
-                    recordsByEd[pl.EditorId] = (IMajorRecord)placedRec;
-                    placementsByEd[pl.EditorId] = placedRec;
-                    placementSpecByEd[pl.EditorId] = pl;
-                }
+                ApplyPlacementAttributes(pl, placedRec);
+                RegisterPlacement(pl, placedRec);
 
                 // A placement is a stable anchor that must persist across save/load if: it's an explicit
                 // persistent, it's a linkedRefs source, a teleport door (or named as one's partner), or
@@ -213,6 +62,58 @@ public static partial class Generator
             }
 
             BuildWordWallTriggers();
+        }
+
+        // editorIds that a deferred wire (SingleRef target or Destination location) points at — these
+        // placements must be persistent so the engine doesn't drop the anchor the package depends on.
+        private HashSet<string> DeferredAnchorEditorIds() =>
+            new HashSet<string>(
+                deferredTargetWires.Select(w => w.Ref)
+                    .Concat(deferredLocationWires.Select(w => w.Ref))
+                    .Concat(deferredForcedAliases.Select(w => w.Ref))  // a forced-alias ACHR/marker (e.g. a
+                                                                       // living NPC's ref MoveTo'd around) must
+                                                                       // persist or the engine drops it
+                    .Concat(MerchantContainerRefs())   // the merchant chest holds gold/stock — must persist
+                    // a references[] target (the in-game referrer's IN-FILE path: "sofia's chair" IS this
+                    // placement) — the whole point of naming it is that something else can target it, so it
+                    // must survive save/load. This is what makes the clean path clean: the object is ours,
+                    // so "an alias/package can point at it" is satisfied by construction.
+                    .Concat(spec.References.Select(r => r.Ref))
+                    // "alias:"/"aliasLoc:" refs name a quest alias, not a placement — exclude them.
+                    .Where(r => !string.IsNullOrWhiteSpace(r) && !LooksExternalRef(r) && !TryParseAliasRef(r, out _, out _)),
+                StringComparer.OrdinalIgnoreCase);
+
+        // EditorIds named as some door's teleport PARTNER — a teleport anchor must persist (the engine
+        // drops a temporary door, breaking the link). Both ends of a pair end up here.
+        private HashSet<string> TeleportAnchorEditorIds() =>
+            new HashSet<string>(
+                placements.Select(p => p.Teleport)
+                    .Where(t => !string.IsNullOrWhiteSpace(t) && !LooksExternalRef(t)),
+                StringComparer.OrdinalIgnoreCase);
+
+        // The target cell of one placement: exterior grid cell, vanilla interior override, or in-spec
+        // interior cell. Returns null (after warning) when the placement must be skipped.
+        private ICell? ResolvePlacementCell(PlacementSpec pl)
+        {
+            ICell? cell;
+            if (!string.IsNullOrWhiteSpace(pl.Worldspace))
+            {
+                // Exterior: the world position picks the grid cell in the worldspace.
+                int cx = PosToGrid(pl.Position.X), cy = PosToGrid(pl.Position.Y);
+                cell = ExteriorCell(pl.Worldspace, cx, cy);
+                if (cell is null) { Warn($"  ! placement: worldspace '{pl.Worldspace}' unresolved — skipped"); return null; }
+            }
+            else if (LooksExternalRef(pl.Cell))
+            {
+                int before = vanillaCellOverrides.Count;
+                cell = VanillaCellOverride(pl.Cell);
+                if (cell is null) { Warn($"  ! placement: vanilla cell '{pl.Cell}' unresolved — skipped"); return null; }
+                if (vanillaCellOverrides.Count > before) vanillaCells++;
+            }
+            else if (!cellsByEd.TryGetValue(pl.Cell, out var inSpec))
+            { Warn($"  ! placement: cell '{pl.Cell}' not found in spec — skipped"); return null; }
+            else cell = inSpec;
+            return cell;
         }
 
         // --- placement cell resolution (shared by BuildPlacements + BuildWordWallTriggers) -------
