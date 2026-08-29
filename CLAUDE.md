@@ -30,6 +30,8 @@ CLAUDE.md（本檔，最頂）→ WORKFLOWS.md / INDEX.md → 各工作流入口
 
 ## 外部工具（主力機專屬）
 
+> 2026-08-29 查：主力機 PATH 目前**沒有** `gemini`，下面這段是裝了才適用。查 Nexus mod 資訊優先用工作區的 houseCARL MCP（`housecarl_nexus_search` / `housecarl_nexus_mod`，免金鑰），瀏覽器調查走母 repo `wf/workflows/mod-discovery/`。
+
 **Gemini CLI**（`gemini -p "..."`，headless 模式）可做：
 - ✅ 聯網搜尋（知識截止後的最新資訊、GitHub 狀態、社群工具）
 - ✅ 長文本關鍵字搜尋 / 定向摘取
