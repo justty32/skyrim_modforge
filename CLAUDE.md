@@ -25,7 +25,7 @@ CLAUDE.md（本檔，最頂）→ WORKFLOWS.md / INDEX.md → 各工作流入口
 
 - **README**＝初入一個資料夾**先讀的入口／導引**；**INDEX**＝**描述該資料夾頂層結構**的索引。小資料夾兩者合一，大了才分出獨立 INDEX。
 - **durable 知識歸到它所屬的那一層／那個工作流**，絕不往上堆——所以 CLAUDE.md 才這麼薄。要某主題的細節，順著上面的樹往下走，不在本檔找。
-- **鐵律（always-on，任何工作流任何時候都遵守）**：① 重構/整理必須**行為不變**（改完跑測試，離線至少 `Category!=RequiresSkyrim`）；② **未經確認不 push、不開新工作**（commit 到 master 是慣例，push 先確認）；③ 各工作流的具體流程在它自己的 README，不在頂層。
+- **鐵律（always-on，任何工作流任何時候都遵守）**：① 重構/整理必須**行為不變**（改完跑測試，離線至少 `Category!=RequiresSkyrim`）；② **未經確認不 push、不開新工作**（commit 到 main 是慣例，push 先確認）；③ 各工作流的具體流程在它自己的 README，不在頂層。
 - **[DEV-GUIDE.md](DEV-GUIDE.md) 是被動參考**（結構整理原則 + 四級成長軌跡）——**只在你要重構/整理結構時才取用**，不貫穿日常每個動作（性質類似 zh-tw / html：需要時才拿出來，不是 always-on 憲法）。只在**碰原始碼**時適用的**程式碼慣例 + CODE_MAP 維護鏈**在 [common/conventions](workflows/common/conventions.md)。
 
 ## 外部工具（主力機專屬）

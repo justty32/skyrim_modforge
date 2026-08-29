@@ -15,7 +15,7 @@
 ## 鐵律（always-on，任何工作流任何時候）
 
 1. **重構/整理必須行為不變**——改完跑測試，離線至少 `Category!=RequiresSkyrim`（`./scripts/test-offline.sh`）。
-2. **未經確認不 push、不開新工作**——commit 到 master 是慣例，push 先確認。
+2. **未經確認不 push、不開新工作**——commit 到 main 是慣例，push 先確認。
 3. **durable 知識歸它所屬的那一層**，絕不往上堆到頂層檔案。本檔爛掉就是違反這條的下場。
 
 ## 分層思想
