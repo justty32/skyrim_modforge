@@ -46,7 +46,7 @@ cli-dispatch 330 shape、package-snapshot 1433 行。before 基線是**先 `git 
   真實 anchor 是 `a--b`，腳本卻算成 `a-b`；② 字元過濾只砍標點與 **ASCII** 符號，非 ASCII 的符號
   （`→`、`✅`）會原樣留在 slug 裡，真實 slugger 會砍掉。
   **這支腳本不在本線領地**（母 repo 根的 `tools/`），所以只交出已驗證的 patch，沒有動它：
-  `agentctl/handoffs/opus-modforge-2026-08-27/check_markdown_links-slug-fix.patch`。
+  `agentctl/handoffs/done/2026-08-27/opus-modforge/check_markdown_links-slug-fix.patch`。
   驗證方式是複製一份到 scratchpad 改，然後跑三次：修正版對本 repo 從 60 → **0**；
   修正版對**未修 anchor 的樹**仍精準抓出那 13 條（證明它沒有變寬鬆）；
   修正版對**整個母 repo** 的結果與現行腳本完全相同（同樣只剩 1 條既有的 missing file，
