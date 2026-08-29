@@ -4,14 +4,6 @@
 
 涵蓋：quest + stages + objectives、dialogue topics + INFO、banter、multi-actor scenes、CTDA conditions、Story Manager event quests、ScriptEvent、word walls、Papyrus 附加。
 
-> **拆檔（2026-06-21，行為不變、partial class / DTO relocation，796 測綠）**：五個超 300 行的檔各拆出一個 sibling——
-> ① `Spec.Dialogue.cs` → **`Spec.Quests.cs`**（QuestSpec/SpawnSpec/StageSpec/InstanceGlobalSpec/GlobalWriteSpec/ObjectiveSpec/ObjectiveTargetSpec；StorageWriteSpec/DialogueVariantSpec 留 Dialogue）。
-> ② `Generator.QuestFragments.cs` → **`Generator.DialogueFragments.cs`**（`GenerateDialogueFragmentSource`/`DialogueFragmentScriptName`/`IdentityCode` + 可重用 controller scriptname 常數 SceneBanterController/EncounterCooldownScript/DynamicSpawnScript/IdentityController + identity globals）。
-> ③ `Generator.Build.Conditions.cs` → **`Generator.Build.Conditions.Wire.cs`**（`WireDialogueConditions`/`WirePackageConditions`）＋ **`Generator.Build.Conditions.Functions.cs`**（`BuildConditionData` function dispatch）。
-> ④ `Generator.Validate.Quests.cs` → **`Generator.Validate.Quests.Helpers.cs`**（共用驗證 helper：`ValidateSceneCondition`/`ValidatePersistBlock`/`ValidateSyncPerksBlock`/`ValidateGate`/`ValidatePersistKey`/`ValidateStorageWrites`/`ValidateScriptAttachments`/`CheckScriptProps`；主方法 `ValidateQuestsAndDialogue` 仍在原檔）。
-> ⑤ `Generator.Build.StoryManager.cs` → **`Generator.Build.QuestAliases.cs`**（`BuildQuestAliases`/`BuildStandaloneQuestAliases`/`AttachAliasScript`；`BuildStoryManager` 仍在原檔）。
-> 都是同一 partial class 跨檔，成員位置不影響行為。下方各 row 已指向方法所在的新檔。
-
 ## Quest-node extraction schema
 
 | Artifact | Responsibility |
@@ -106,8 +98,6 @@
 | `DynamicSpawnTests.cs` | **#3 quest.spawn → MFDynamicSpawn script（SpawnForm/Count/Min/MaxDistance/SnapToNavmesh props）+ 與 cooldown/locationFilter 共存單一 adapter + validate（空 form、count<1、min>max）** |
 | `StoryManagerValidateTests.cs` | SM validate（事件名、alias 語法、keyword 要求）|
 | `WordWallTests.cs` | word wall 教字 quest fragment（⚠️ 需本機 Skyrim.esm）|
-
----
 
 ---
 
@@ -217,8 +207,6 @@
 | Validate | `Generator.Validate.cs` | `RegisterIdentityFactions`（早登錄自建 FACT editorId 供 condition 解析）+ `ValidateIdentities`（unique id、非空 faction、grants/**grantPerks**/acquireBook/**activeWhen param** CheckRef、**autoGrantWhen actorValue 非空**）|
 | Validate | `Generator.Validate.Quests.cs` | dialogue 規則；**`hello:true` 招呼免 prompt**（招呼非玩家選項；其餘 dialogue 仍須 prompt）；**`setPrimaryIdentity` 須是已知 id 或 `auto`**；**`rewardItem` CheckRef**；**`persist`/`syncPerks`（dialogue + stage 共用 `ValidatePersistBlock`/`ValidateSyncPerksBlock`）：storage 非空、key 三態(`ValidatePersistKey`：speaker〔dialogue only〕/player/ref→CheckRef；stage allowSpeaker=false)、persist entry 恰一值型(int/float/str/form)、delta 限 int/float、form/perk CheckRef**；**`storageWrites`（`ValidateStorageWrites`，dialogue + stage 共用）：key 非空、恰一值型(int/float/str)、delta 限 int/float、target 三態(speaker〔dialogue only，stage allowSpeaker=false 拒，含空缺省〕/player/none/**ref→CheckRef**)、**`fromJson` 須 file+key 非空****；**M組 `variants`：parent 無 responses 時免「無回應行」、每 variant 須有 responses + emotion 合法 + 自有 conditions `CheckCondition`、`hello` 不可帶 variants**|
 | Package | `src/ModForge.Cli/Commands/Package.cs` §5d–§5g | §5d acquireBook → `MFIdentityBook.pex`；§5e `default:true` → `MFIdentityDefault.pex`；§5f primaryIdentity/setPrimaryIdentity → `MFIdentityController.pex`；§5g `autoGrantWhen` → `MFIdentityAutoGrant.pex`（皆進 Scripts/）；dialogue fragment 編譯傳 `IdentityCode` 給 `GenerateDialogueFragmentSource`|
-
-**Phase-2/C 進度**：✅ #1 Adventurer 預設自動授予、✅ #2 `activeWhen` 情境條件、✅ #4 controller 主身份+手動覆寫、✅ #5 身份對應互動 **#5a 商人交易 UI（`openBarter`）+ #5b 護衛/跟隨任務（`identity`-gated escort quest，follow PACK gated on GetStage、`rewardItem`/`evaluateSpeakerPackages` TIF）+ #5c 聖騎士 smite 細調（`grantPerks` → `MF_SmiteEvilPerk` ModAttackDamage ×1.25 vs undead/daedra）+ 龍裔首吼（`autoGrantWhen` → MFIdentityAutoGrant，DragonSouls≥1）**（皆 in-game 確認 2026-06-07）。**未做**：#3 聲望/行為追蹤。
 
 ---
 

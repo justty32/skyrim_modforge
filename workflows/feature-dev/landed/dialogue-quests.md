@@ -1,43 +1,41 @@
 # 已落地 — 對話 / 任務 / Story Manager / Scene
 
-← [landed index](README.md)｜對應 [CODE_MAP.dialogue-quests](../../common/code-map/CODE_MAP.dialogue-quests.md)
+← [landed index](README.md)｜程式碼導航 [CODE_MAP.dialogue-quests](../../common/code-map/CODE_MAP.dialogue-quests.md)
 
-- **Quest-node semantic schema + mechanical import（offline，2026-08-12）**：`schemas/quest-node.schema.json` 定義可供 agent / 編輯器交換的任務節點；CLI `questnodes <plugin> <outDir> [--strings <dir>]` 由真 QUST 的非空 stage log 產 camelCase schema JSON，complete/fail flags → `major` + terminal tag，其餘先 `unclassified`。不從 QUST 猜 location/NPC/graph；留給 AI semantic pass。generated manifest 只清自己的 stale JSON。`game-data/extract.sh` 已接到 `catalog/quest-nodes/<plugin>/`；本離線機以自製 plugin 端到端驗證，Skyrim.esm 真資料需主力機重生。
+本頁只列現行能力；欄位語意見 docs/spec，型別、方法與測試路徑見 CODE_MAP。
 
-**對話 / 任務 / Story Manager**
-- **SM spec 管線**：`QuestSpec.storyEvent`(event+conditions) + `aliases`；build 自動生 SMBN→SMQN 掛原版根、清 StartGameEnabled。事件表 `StoryManagerEvents`（十個 engine-native 事件）。
-- **動態生怪（F組 #3，2026-06-17）**：`quest.spawn`（`SpawnSpec{form,count,minDistance,maxDistance,snapToNavmesh}`）→ build 掛 reusable `MFDynamicSpawn.psc`（extends Quest，OnInit `PlaceAtMe`+`MoveTo` 玩家附近隨機偏移 + `EnableAI` toggle 吸 navmesh，EE NavmeshTester trick 的自吸附版，免預擺 marker）。`Generator.Build.StoryManager.Encounter.cs:BuildQuestSpawns`（merge QuestAdapter，Build.cs 在 standalone alias 後/WireQuestStages 前）、`MFDynamicSpawn.psc` embed CLI、Package ShipEmbeddedPex。與 #5/#6 共存單一 adapter → **完整動態遭遇**（locationFilter 地點分桶 + cooldownHours 防 spam + spawn 動態生怪）。**8 測綠**，example `location_encounter_spec.json`（一個 quest 同時掛 cooldown+spawn 兩腳本）。⚠ spawn 腳本 runtime（PlaceAtMe/EnableAI navmesh 吸附）+ .pex 編譯待主力機驗（WAIT_USER）。
-- **地點感知遭遇（A組 #5+#6，2026-06-17）**：`storyEvent.locationFilter[]`（LocType keyword refs）→ build 在 `quest.EventConditions` 追加 OR'd `GetKeywordDataForCurrentLocation`（玩家新地點有任一 LocType 才觸發 SM quest，**純 CTDA、離線完全可驗**）。新增三 condition function：`GetKeywordDataForCurrentLocation`/`LocationHasKeyword`/`LocAliasHasKeyword`（後者 hold 偵測，對 location alias 測 keyword）。`storyEvent.cooldownHours`（#6 EE_WITimeout）→ 建 `<quest>_LastFired` float GLOB + 掛 reusable `MFEncounterCooldown.psc`（extends Quest，OnInit 比時間差 → `Stop()` 中止重觸發），無條件掛載+prebuilt .pex（同 scene/identity controller）。`Generator.Build.StoryManager.cs`（locationFilter 展開 + `AttachEncounterCooldown`）、`Generator.Build.Conditions.cs`（三 fn）、`Generator.Validate.StoryManager.cs`（keyword/cooldown 驗）。**8 測綠**，example `location_encounter_spec.json`。⚠ 冷卻**腳本 runtime 待主力機驗**（.pex 主力機編 + 實機跑時間差，WAIT_USER）。
-- **alias fill 七種**：`fromEvent:<slot>` / `forced:<ref>` / `uniqueActor:<ref>` / `createObject:<ref>@<alias>` / `findMatching:closest|any` / **`findMatchingLocation:<locType>[@<parentAlias>]`（#7 radiant LocationAlias）** / **`findInLocationAlias:<locAlias>[#<LCRT>]`（#8 在地點內找 ref）**。後兩種＝radiant quest 生成根基（**離線實作 + build/validate 通、10 測綠，2026-06-17**；CK 語義 + 真 FormID 待主力機 xEdit 驗，見 WAIT_USER）。Mutagen shape 反射驗證＝`QuestAlias.Location=LocationAliasReference{AliasID,Keyword,RefType}`；**scope 校正**：#8 原議用 ALNA(`FindMatchingRefNearAlias`)，反射發現其 `TypeEnum` 只 `LinkedRefChild`（非地點內搜尋）→ 改走 `Location` 欄（其 `RefType`/LCRT 對 Location 型 alias 無意義 → 證明 Location 雙用於 Reference alias 的「在地點內找 ref」）。Missives 的 Hold→Dungeon→BossChest 鏈。example `examples/radiant_alias_spec.json`、測 `RadiantAliasTests.cs`。
-- **radiant 演出 package（C組 #2，IN-GAME CONFIRMED 2026-06-22）**：quest 填 alias → 其 performance package 對 alias 行動（travel 到 alias 的地點、escort alias 的 actor）。`PackageSpec.travel.place="aliasLoc:<name>"` / `escort.{target:"alias:<name>",destination:"aliasLoc:<name>"}` → `LocationFallback{AliasForLocation/AliasForReference, data=aliasIdx}` + `PackageTargetAlias{alias}`。driver = `QuestAliasSpec.packages:[editorId]` → `QuestAlias.PackageData`(ALPS，alias-override，沿 vanilla MS13 Camilla)，**沒掛 package record 在但不跑**。實機收掉前破三層真因（Thoring 離開 Windpeak Inn 走向 runtime 挑的 Safehouse）：① **VIP 用 uniqueActor 不能用 forced**——`forced`=ALFR 要 placed ACHR，拿 NPC base 必填不上，且 required alias 失敗**連帶清空整個 quest 所有 alias**（uniqueActor=ALUA+AllowReserved 才是塞唯一 NPC base 的正解）；② **findMatchingLocation 的 Dungeon 要 `@Hold` 錨點**——'Find Matching Location' 相對玩家當前 location 階層解析，無錨的 Dungeon 在 StartGameEnabled 時（玩家不在 dungeon）填不上 → 同樣 cascade 清空；③ **templated package 必帶模板的 `DataInputVersion`+1-byte `XNAM`**（見 [infra](infra.md)），否則引擎忽略 Data input、alias-location 槽不解析 → 演員填了 alias 卻不動。example `examples/radiant_package_spec.json`、測 `PackageAliasTargetTests.cs`。
-- **可複用 trigger 庫（五入口，同一 `Fire()`）**：magic-effect / potion / activator / dialogue / alias-OnActivate。zip `~/skyrim_mods/ModForge{Magic,Potion,Activator,Dialogue,Alias}Trigger.zip`。通用派發器 `assets/papyrus/MFStoryEventDispatch`（embed 進 CLI）。
-- **Quest 階段**：`StageSpec.startUpStage`（啟動自顯 objective）+ stage 推進（`MFSE_AdvanceStage.psc`）；alias 也適用一般（非 storyEvent）quest。
-- **instanceGlobals（#9 gather 計數 objective，2026-06-17 離線）**：`StageSpec.instanceGlobals[]`（`{global, randomMin/Max? | value?}`）→ `<quest>_Stages` fragment 在該 stage 生 `<g>.SetValue(Utility.RandomInt(min,max)|值)` + `UpdateCurrentInstanceGlobal(<g>)`，把 GLOB 綁到 quest **instance** 讓 `<Global=X>` objective 顯示 per-instance 計數（同模板多開不同數量，Missives 核心招）。`Generator.QuestFragments.cs`（source + `GlobalVariable Property` 宣告 + `InstanceGlobalProperty`）、`Generator.Build.QuestStages.cs`（綁 GLOB `ScriptObjectProperty` + 該 stage `QuestScriptFragment`，即使無 objective），`Generator.Validate.Quests.cs`（global ref + random 一致性）。**11 測綠**（pure source + VMAD GLOB property 綁定[fake .pex] + validate）。example `gather_quest_spec.json`。**A 組 #7/#8/#9 全收 → radiant gather/bounty quest 生成鏈完整**（fragment VMAD 需 .pex，故 `package` 路徑才掛；計數遞增腳本作者自備）。
-- **storageWrites 兩擴充（J組，IN-GAME CONFIRMED 2026-06-22，`ModForgeStorageJsonRefDiag.zip`）**：在已確認的 `storageWrites`（PapyrusUtil StorageUtil per-Form KV）上補兩件。① **arbitrary-ref target**：`target` 除 speaker/player/none 外接**任意 ref**（placed-ref EDID / `Master:0xFORMID`）→ 綁 `SWRef_<i>` Form property（仿 persist key，dialogue TIF + quest stage 皆通、stage 用 `S<idx>_` prefix），per-NPC/per-container 記憶；實機 `ref(npc)=1 / ref(player)=-999` 證值掛在 NPC form、未串到 player。② **`fromJson:{file,key}`**：值改由 runtime 讀外部 JsonUtil 檔。**真因坑（實機破）**：`JsonUtil.GetIntValue(file,key)` 只讀 JsonUtil 自寫的扁平 ns、對**手寫外部 config 是空的**→靜默回 fallback；必須用 **Path API `GetPath{Int,Float,String}Value(file, ".key")`**（裸 key 自動補前導 `.`）才讀得到任意外部 JSON（診斷一行 A/C=GetIntValue→fallback、B/D=GetPathIntValue→42 定死）。實機 `jsonDiff=42 / jsonName=from-json-ok`。檔：`Generator.StorageWrites.cs`（`Ref` kind/`StorageRefProperty`/`StorageRefEntries`/`StorageWritesPropertyDecls`/`StorageJsonOrLiteral`+`JsonPath`）、`Spec.Dialogue.cs`（`FromJson`/`JsonReadSpec`）、Build.Scripts/Build.QuestStages 綁 `SWRef`、Validate（ref CheckRef + fromJson file/key）。**824 測綠**，example `storage_json_ref_diag_spec.json`。編 fromJson fragment 需 **`JsonUtil.psc`** 上 header cache。memory [[storage-writes-ingame-confirmed]] 旁附 Path-API 坑。
-- **conditionTemplates + dialogue variants（M組，離線落地 2026-06-20）**：`conditionTemplates` + `dialogue[].useConditionTemplates` 共用條件模板；`dialogue[].variants:[{responses,conditions?,emotion?,sayOnce?}]` → 同 topic 掛多條 sibling INFO（各帶 Random flag、共用 parent 的 speaker gate + conditions + templates + identity、再各接自有 conditions），parent `responses` 空＝純批次 header。正解 FCO 265 條 ambient commentary 痛點（條件模板 + INFO 陣列批次兩半）。
-- **globalWrites（K組，離線落地 2026-06-20）**：quest stage `globalWrites:[{global,value}]` 一等 `SetValue` 語法（SM quest 路由 `OnStory<Event>`）。
-- **GetVMQuestVariable / GetVMScriptVariable condition（L組，離線落地 2026-06-20）**：`ConditionSpec.variableName` 讓 condition 讀 Papyrus property（quest/script 變數；code-pass 結論舊名 GetScriptVariable 不對）。ModForge verbatim 寫進 CTDA。⚠ `variableName` 字串格式（bare property vs backing `::x_var`）待主力機 xEdit 驗（WAIT_USER）。
-- **身份系統（輕量職業）Phase-2/C 完成**（in-game 確認 2026-06-07，`ModForgeIdentity.zip`）。**完整欄位/語意見 `SPEC-dialogue-quests.md`「Identities」、build wiring 見 `CODE_MAP.dialogue-quests.md`、建好的 esp 用 `identitydiag` 探。** 一句話地圖：
-  - **取得**：讀書（`MFIdentityBook`）/ `default:true` 開局自動授（`MFIdentityDefault`）/ `autoGrantWhen{actorValue,threshold}` 玩家 AV 過門檻自動授（`MFIdentityAutoGrant`，如 Dragonborn `DragonSouls≥1`；純 Papyrus 讀 AV、免 SKSE）。
-  - **閘**：`identity`（持有）/ `primaryIdentity`（主身份，由 `MFIdentityController` poll 算 `MF_PrimaryIdentity` GLOB、`setPrimaryIdentity` 對話可覆寫）；`activeWhen` 情境窄化正向閘。
-  - **授予**：`grants`(SPEL) + `grantPerks`(PERK，如 smite-vs-undead 條件 perk)。
-  - **互動**（多動作 TIF result fragment，皆純 record+生成、無 user script）：`hello` 招呼 / `openBarter` 交易 / `rewardItem` 獎勵 / `evaluateSpeakerPackages` 重評估 → 組出 Adventurer 護衛 quest（follow PACK gated on `GetStage`）。
-  - **四個 reusable .psc**（Book/Default/Controller/AutoGrant）embed 進 CLI、Package 條件式出貨。
-  - **踩坑**：`MFIdentityBook` 必 **extends ObjectReference**（OnRead 非 Book event）[[book-onread-needs-objectreference]]；state-varying 招呼=**一個 Hello topic 多條 INFO**（順序定優先，非多 topic 競 priority）[[conditioned-hello-one-topic-many-infos]]；NPC `autoCalcStats` 必配 `class` 否則 0 血倒地 [[autocalc-without-class-dead-npc]]；acquire scene 用 `beginOnQuestStart:false`（書 Start() 唯一觸發）。
-  - **未做**：#3 聲望/行為追蹤（需先定設計）。
+## 任務與 Story Manager
 
-**Scene 劇情演出**
-- **在場偵測 autoStart**：`SceneSpec.AutoStart`（triggerDistance/LOS/cooldown/poll/**brawlOnEnd**）+ 可複用 `MFSceneBanterController`。`ModForgeSceneBanter.zip`。
-- **非對話 action**：beat phase + Package（走位，引用 `packages[]` 的 PACK）+ Timer（停頓）。`ModForgeSceneAction.zip`。
-- **重播策略**：`playOnce` / `playHour(+tolerance)` / `gateGlobal`。`ModForgeReplayPolicy.zip`。
-- **per-phase headtrack/facing**：`ScenePhaseSpec.HeadtrackActor/HeadtrackPlayer/FaceTarget`。
-- **scene 條件**：`SceneSpec.Conditions`（scene-level，僅 `beginOnQuestStart`）+ `ScenePhaseSpec.StartConditions/CompletionConditions`（per-phase）。
-- **PlayIdle 演出**（in-game 確認 2026-06-07）：`SceneActionSpec.Idle`（IDLE ref）→ SCEN `SceneAdapter` per-phase OnStart fragment（`SF_<scene>.Fragment_<phase>` 跑 `<alias>.GetActorRef().PlayIdle()`，第三種 fragment 家族）。純產生器 `Generator.SceneFragments.cs`、掛載 `AttachSceneFragments`；idle action 同時發一個 Timer（hold）讓 phase 能 run。`find <esm> <kw> idle` 探 IDLE。`ModForgePlayIdle.zip`（宣誓鞠躬+獻手）。
-- **Scene phase `SetStage`（offline，2026-08-12）**：`SceneActionSpec.SetStage { quest?, stage }` → 同一套 SCEN OnStart fragment 呼叫綁定 quest 的 `SetStage(stage)`；省略 quest 時用 scene host。與同 phase PlayIdle 合併成單一 `Fragment_<phase>()`，自動 Timer 確保 phase 會跑；不接受任意 Papyrus body。in-spec target/type/stage 驗證 + required compile gate 防止 Timer-only 殘包。example `scene-setstage.json`。
+- quest-node：schemas/quest-node.schema.json 定義交換格式；questnodes <plugin> <outDir> [--strings <dir>] 只從非空 QUST stage log 做 mechanical import，不猜 location／NPC／graph。game-data/extract.sh 輸出到 catalog/quest-nodes/<plugin>/。
+- Story Manager：QuestSpec.storyEvent＋aliases 生成 SMBN→SMQN，支援 StoryManagerEvents 登錄的十種 engine-native 事件；事件根下只啟動第一個符合的 quest。
+- alias fill：fromEvent、forced、uniqueActor、createObject、findMatching、findMatchingLocation、findInLocationAlias；radiant LocationAlias／ReferenceAlias 與 ALPS package wiring 已接通。
+- 動態遭遇：quest.spawn 掛 MFDynamicSpawn.psc；locationFilter 生成 GetKeywordDataForCurrentLocation CTDA；cooldownHours 掛 MFEncounterCooldown.psc。SM quest 的觸發放 OnStory<Event>，不能依賴 startUpStage fragment。
+- stages／objectives：startUpStage、instanceGlobals、globalWrites、objective targets、受限 SetStage；instanceGlobals 以 SetValue＋UpdateCurrentInstanceGlobal 綁 quest instance。
+- ScriptEvent：MFStoryEventDispatch.psc 的 Fire() 共用 magic effect、potion、activator、dialogue、alias-OnActivate 五入口；介面變更時必須同步重編 .pex。
 
-**遊戲內場景匯出 · NPC 角色 macro（Idea #24 §D，IN-GAME 確認 2026-07-08）**
-- **`npcRoles:`**（`SceneNpcRoleSpec` npc/role/backstory）—— 給一個**外部 captured NPC**（PROTEUS clone / follower base）貼職業 role，pass-0 macro `ExpandNpcRoles` 展開成該 NPC 的 conditioned 問候 + 行為。切片 role=`blacksmith` → 共享 StartGameEnabled host quest + Hello `DialogueSpec`(GetIsID npc) + sandbox `PackageSpec`(editor-location fallback) + `NpcPatch`(overrideOf npc, append)。**非玩家向 `Identities`**；與 `ResidentSpec` 差＝keyed on 外部 base NPC ref 且自帶對話。scene.json ＝一份 `ModSpec` 片段（`build scene.json out.esp` 直接跑），placements/mapMarker/hazard 生成端全已具備。`ModForgeSceneBlacksmith.zip`（純 record、無 .pex）。
-- **core enabler**：ModForge 原本**外部 `<plugin>:0xID` speaker 不能生 conditioned Hello**（speaker gate + Hello topic 材質化都只認 in-spec NPC）→ `Generator.Build.Dialogue.cs` 兩處 speaker-gate 加 `TryResolveRef` fallback + `MakeHello` 改吃 `FormKey` 並在材質化迴圈解外部 speaker。實機確認：白漫 Carlotta（當 clone 替身）講出鐵匠問候。
-- **vendor 服務（IN-GAME 待驗 2026-07-08）**：blacksmith role 有 companion placement 時，macro 生 Vendor FACT（`VendorItemsBlacksmith` 0x066333, merchant chest+gold 共置）+ **openBarter「Let me see your wares.」trade topic**（`ShowBarterMenu()`，會生 TIF pex——**因為沒有通用 vanilla 自動交易對話**，faction-only 不會浮現）。faction membership：in-spec NPC 直接掛（BuildNpcs 自動補 JobMerchant）/ external 走**新 `NpcPatchSpec.Factions`**（`WireNpcPatchFactions`）。in-spec vs external 兩路（vanilla **unique** NPC 不能被 placement 複製，故場景 NPC 用新 in-spec NpcSpec，= PROTEUS clone 形態）。**片段編譯**靠 `Generator.ExpandMacros` 在 PackageCmd 編譯迴圈前跑（見 gotchas）。
-  **vendor 空店修**(2026-07-08):exterior 商店 VendorLocation 改 ref-anchored `LocationTarget`(錨 chest+radius 4096,原只支援 interior `LocationCell`)+ chest 放 vanilla 鐵匠 leveled lists(非裸金)才有貨有金;白天(8-20)才開(見 gotchas)。
-- **仍未做（切片外，已記 spec §D）**：`removals[]` 橡皮擦（override 既有 vanilla ref 設 disable/delete，小 GAP，隨 M4 採集橋補）；滴管/範圍吸取/縮放位移 controller mode（runtime，合流 settlements P2）。設計 [specs/ingame-scene-export-design](../../specs/ingame-scene-export-design.md)、已封存的 [原實作計畫](../../plans/archive/2026-07-08-ingame-scene-export.md)、CODE_MAP.world「Idea #24 §D」段。
+## 對話、條件與身份
+
+- dialogue 支援 conversation、Hello、conditionTemplates、variants、result fragment 與 voice-line EditorID；Hello 是單一 topic 下按順序排列 INFO，不是多 topic 競 priority。
+- CTDA 的 param／reference 可指 placed ref；BuildReferences 前的呼叫點必須 DeferCondition，由 refsIndexed guard 捕捉 build-order 違規。
+- package ref 槽分 SingleRef 與 Location；sitTarget.target 等 SingleRef 鎖定特定 ref，sandbox.location 等 Location 只錨一個區域。唯一分類表是 src/ModForge.Core/PackageRefSlots.cs。
+- storageWrites 支援 speaker／player／none／任意 ref，以及 fromJson；外部手寫 JSON 必須用 JsonUtil.GetPath*Value(".key")，不能用只讀 JsonUtil namespace 的 Get*Value。
+- identity：IdentitySpec 生成 FACT 狀態、書本／預設／autoGrant 取得、activeWhen／primaryIdentity gate、ability／perk 授予與交易／獎勵／重評 package。MFIdentityBook 必須 extends ObjectReference。
+- npcRoles：SceneNpcRoleSpec 的 blacksmith macro 生成 conditioned Hello、sandbox package，並可接 vendor FACT、merchant chest、trade topic 與 external NpcPatch faction。
+
+## Scene
+
+- SceneSpec 支援多人 phase、dialogue、Package／Timer、PlayIdle、SetStage、headtrack/facing、scene／phase CTDA、autoStart 與 playOnce／playHour／gateGlobal 重播策略。
+- PlayIdle／SetStage 合併到每 phase 單一 SF_<scene>.Fragment_<phase>()；fragment phase 必須有 Timer action，否則引擎不跑空 phase。
+- MFSceneBanterController.psc 負責在場偵測、輪詢啟動、重播 gate 與可選 brawlOnEnd。
+
+## Papyrus 持久資料
+
+- persist／syncPerks 走 Generator.JContainers.cs 的 JFormDB root-path API；對話 TIF 與 quest stage 共用，同一 host 以 prefix 隔離 property。
+- storageWrites 走 Generator.StorageWrites.cs 的 PapyrusUtil StorageUtil；arbitrary-ref target 綁 SWRef_<i> Form property。
+- reusable .psc 由 CLI 條件式夾帶；需 fragment 的路徑只有 .pex 存在才掛 VMAD，package 流程負責編譯與出貨。
+
+## 驗證邊界
+
+- 純 record 與生成器路徑由離線測試覆蓋；需要 Skyrim.esm、Papyrus runtime、alias fill、動態 spawn、cooldown、voice／scene 行為者列在 [WAIT_USER](../../../WAIT_USER.md)。
+- GetVMQuestVariable／GetVMScriptVariable 的 variableName 字串格式仍需主力機 xEdit／實機確認。
+- 身份系統尚未做聲望／行為追蹤；npcRoles 尚未擴成完整 archetype 集。

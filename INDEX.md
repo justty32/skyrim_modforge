@@ -40,7 +40,7 @@
 
 ## docs/ — ModForge 使用手冊
 
-使用文檔（如何**使用** ModForge）在 [docs/](docs/)：spec 欄位參考 [SPEC-index](docs/spec/SPEC-index.md) · NPC cookbook/cheatsheet [lifelike](docs/lifelike/README.md) · agent CLI 指南 [for_agent](docs/for_agent.md) · 外部資產打包 [external_assets](docs/external_assets.md) · 引擎背景 [engine-internals](docs/engine-internals.md) · vanilla 抽取 [local-skyrim-extraction](docs/local-skyrim-extraction.md) · 繁中鏡像 `zh-TW/` · 本機 Mutagen/Synthesis 鏡像 + Skyrim.esm 解碼 dump [reference/](docs/reference/INDEX.md)（**素材本體 gitignore、`INDEX*.md` 地圖有進版控**——2026-08-02 修正，之前整包被吞，fresh clone 讀不到地圖）。
+使用文檔（如何**使用** ModForge）在 [docs/](docs/)：spec 欄位參考 [SPEC-index](docs/spec/SPEC-index.md) · NPC cookbook/cheatsheet [lifelike](docs/lifelike/README.md) · agent CLI 指南 [for_agent](docs/for_agent.md) · 外部資產打包 [external_assets](docs/external_assets.md) · 引擎背景 [engine-internals](docs/engine-internals.md) · vanilla 抽取 [local-skyrim-extraction](docs/local-skyrim-extraction.md) · [繁中鏡像 zh-TW](docs/zh-TW/spec/SPEC-index.md) · 本機 Mutagen/Synthesis 鏡像 + Skyrim.esm 解碼 dump [reference/](docs/reference/INDEX.md)（**素材本體 gitignore、`INDEX*.md` 地圖有進版控**——2026-08-02 修正，之前整包被吞，fresh clone 讀不到地圖）。
 
 > 注：外部工具的**已建好整合**走 spec（[SPEC-workflow](docs/spec/SPEC-workflow.md) Voice 段、external_assets）；**未建的管線可行性研究**屬 idea-research，在 [workflows/idea/asset-pipelines](workflows/idea/asset-pipelines/README.md)。
 
