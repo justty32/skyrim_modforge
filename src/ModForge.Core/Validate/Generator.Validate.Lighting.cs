@@ -76,6 +76,18 @@ public static partial class Generator
                 }
             }
 
+            foreach (var ws in spec.Worldspaces)
+            foreach (var c in ws.Cells)
+            {
+                var o = $"worldspace '{ws.EditorId}' cell ({c.X},{c.Y})";
+                if (!string.IsNullOrWhiteSpace(c.LightingTemplate)
+                    && !lgtmIds.Contains(c.LightingTemplate) && !TryExternalRef(c.LightingTemplate, out _))
+                    Problems.Add($"{o} lightingTemplate '{c.LightingTemplate}' unresolved (need an in-spec LightingTemplate editorId or <master>:0xFORMID)");
+                if (!string.IsNullOrWhiteSpace(c.ImageSpace)
+                    && !imgsIds.Contains(c.ImageSpace) && !TryExternalRef(c.ImageSpace, out _))
+                    Problems.Add($"{o} imageSpace '{c.ImageSpace}' unresolved (need an in-spec ImageSpace editorId or <master>:0xFORMID)");
+            }
+
             foreach (var ws in spec.Weathers)
             {
                 var o = $"weather '{ws.EditorId}'";

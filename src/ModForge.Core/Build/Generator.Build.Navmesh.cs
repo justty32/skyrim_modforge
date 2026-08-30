@@ -14,7 +14,8 @@ public static partial class Generator
 
     // One emitted navmesh + the geometry the NAVI map needs to index it.
     private readonly record struct NavmCellInfo(
-        NavigationMesh Navm, Noggog.P3Float Center, Noggog.P3Float Min, Noggog.P3Float Max, FormKey WorldspaceFk);
+        NavigationMesh Navm, int X, int Y, Noggog.P3Float Center,
+        Noggog.P3Float Min, Noggog.P3Float Max, FormKey WorldspaceFk);
 
     // Build a flat quad navmesh for one terrain cell, attach it to `cell`, and record its NAVI info.
     // Vertices are world-space (not cell-local); GridDivisor=1 → trivial 1×1 grid.
@@ -64,8 +65,54 @@ public static partial class Generator
 
         navm.Data = data;
         cell.NavigationMeshes.Add(navm);
-        navmInfos.Add(new NavmCellInfo(navm, new Noggog.P3Float((wx0 + wx1) / 2f, (wy0 + wy1) / 2f, h),
+        navmInfos.Add(new NavmCellInfo(navm, cs.X, cs.Y,
+            new Noggog.P3Float((wx0 + wx1) / 2f, (wy0 + wy1) / 2f, h),
             new Noggog.P3Float(wx0, wy0, h), new Noggog.P3Float(wx1, wy1, h), worldspaceFk));
+    }
+
+    // Connect every shared east/west and north/south cell boundary in both directions. Skyrim's
+    // triangle edge stores an index into this NAVM's EdgeLinks[] and sets the matching edge-link
+    // flag; that table entry then names the neighbouring NAVM and triangle. (It is not a magic -2
+    // value in the Mutagen 0.53 Skyrim model.) Heights deliberately do not participate in matching.
+    private static void ConnectAdjacentCellNavmeshes(IReadOnlyList<NavmCellInfo> navmInfos)
+    {
+        var byCell = new Dictionary<(FormKey Ws, int X, int Y), NavmCellInfo>();
+        foreach (var info in navmInfos)
+            byCell.TryAdd((info.WorldspaceFk, info.X, info.Y), info);
+
+        static short AddLink(NavigationMeshData from, NavigationMesh to, short targetTriangle)
+        {
+            var index = checked((short)from.EdgeLinks.Count);
+            var link = new EdgeLink { Unknown = 0, TriangleIndex = targetTriangle };
+            link.Mesh.SetTo(to.FormKey);
+            from.EdgeLinks.Add(link);
+            return index;
+        }
+
+        foreach (var info in navmInfos)
+        {
+            var data = info.Navm.Data!;
+
+            // East seam: this T0 edge V1-V2 <-> east T1 edge V3-V0.
+            if (byCell.TryGetValue((info.WorldspaceFk, info.X + 1, info.Y), out var east))
+            {
+                var eastData = east.Navm.Data!;
+                data.Triangles[0].EdgeLink_1_2 = AddLink(data, east.Navm, 1);
+                data.Triangles[0].Flags |= NavmeshTriangle.Flag.EdgeLink_1_2;
+                eastData.Triangles[1].EdgeLink_2_0 = AddLink(eastData, info.Navm, 0);
+                eastData.Triangles[1].Flags |= NavmeshTriangle.Flag.EdgeLink_2_0;
+            }
+
+            // North seam: this T1 edge V2-V3 <-> north T0 edge V0-V1.
+            if (byCell.TryGetValue((info.WorldspaceFk, info.X, info.Y + 1), out var north))
+            {
+                var northData = north.Navm.Data!;
+                data.Triangles[1].EdgeLink_1_2 = AddLink(data, north.Navm, 0);
+                data.Triangles[1].Flags |= NavmeshTriangle.Flag.EdgeLink_1_2;
+                northData.Triangles[0].EdgeLink_0_1 = AddLink(northData, info.Navm, 1);
+                northData.Triangles[0].Flags |= NavmeshTriangle.Flag.EdgeLink_0_1;
+            }
+        }
     }
 
     // NAVI (NavigationMeshInfoMap): the engine keeps exactly ONE navmesh-info map for the whole

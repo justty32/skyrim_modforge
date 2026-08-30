@@ -22,7 +22,9 @@ worldspace) whose **weather table** drives which weathers play there:
     "map": { "northwestX": -4, "northwestY": 4, "southeastX": 4, "southeastY": -4,
              "cameraInitialPitch": 50, "cameraMinHeight": 50000, "cameraMaxHeight": 80000 },
     "cells": [
-      { "x": 0, "y": 0, "navmesh": true } // flat terrain cell + navmesh; height defaults to 4000
+      { "x": 0, "y": 0, "navmesh": true,  // flat terrain cell + navmesh; height defaults to 4000
+        "lightingTemplate": "MF_GloomLGTM", // spec 內 LGTM editorId 或 <master>:0xFORMID
+        "imageSpace": "Skyrim.esm:0x10FEF7" } // spec 內 IMGS editorId 或 <master>:0xFORMID
     ] }
 ],
 "regions": [
@@ -51,8 +53,11 @@ worldspace) whose **weather table** drives which weathers play there:
   2 triangles) covering the full 4096×4096 cell so NPCs can path on it, plus a NAVI index entry.
   **In-game confirmed** (2026-06-04): a guard placed in a navmeshed cell of MFTestWorld walks an
   m1→m2→m3→m1 patrol on the generated mesh — NPCs path on a program-generated custom-worldspace
-  navmesh. No edge-links to neighbour cells — cross-cell pathfinding requires matching NAVMs in
-  adjacent cells. For varied terrain/LOD/detailed navmesh use the Creation Kit.
+  navmesh。若正交相鄰的兩格都設為 `"navmesh": true`，ModForge 會在共享邊界建立雙向
+  external edge link，NPC 因而能跨 cell 尋路；缺少 navmesh 的格子不會被連接。
+  每格另可選填 `lightingTemplate`（LGTM ref）與 `imageSpace`（IMGS ref）；兩者都接受 spec 內
+  editorId 或 `<master>:0xFORMID`。省略兩欄時 CELL 不寫這兩條 link，維持既有輸出。
+  For varied terrain/LOD/detailed navmesh use the Creation Kit.
   **ESL LIMIT:** Skyrim's engine ignores LAND records in ESL (light) plugins — specs with `cells`
   must use `"esl": false` (the validator enforces this).
 - **`heightmap`** — **non-flat** terrain from a 16-bit grayscale PNG (mutually exclusive with

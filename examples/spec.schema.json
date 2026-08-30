@@ -4200,7 +4200,15 @@
         },
         "navmesh": {
           "type": "boolean",
-          "description": "generate a flat 4-vertex quad NAVM covering the full cell so NPCs can path on it (no cross-cell links)"
+          "description": "產生覆蓋整格的 4 頂點平面 NAVM；相鄰且同樣啟用 navmesh 的 cell 會建立雙向跨 NAVM 邊界連接"
+        },
+        "lightingTemplate": {
+          "type": "string",
+          "description": "選用的 CELL LightingTemplate（LGTM）ref：spec 內 editorId 或 <master>:0xFORMID"
+        },
+        "imageSpace": {
+          "type": "string",
+          "description": "選用的 CELL ImageSpace（IMGS）ref：spec 內 editorId 或 <master>:0xFORMID"
         }
       }
     },

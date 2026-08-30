@@ -102,7 +102,8 @@ public static partial class Generator
             // GetOrAddSubBlock / BuildCellLandscape in Generator.Build.Worldspace.Terrain.cs, which
             // is also where the VertexNormalsHeightMap-flag and floor-division notes now live.
             void EmitCell(int cx, int cy, float offset, Noggog.Array2d<byte> heightDeltas, bool navmesh,
-                          Noggog.Array2d<Noggog.P3UInt8>? normals = null)
+                          Noggog.Array2d<Noggog.P3UInt8>? normals = null,
+                          WorldspaceCellSpec? cellSpec = null)
             {
                 var sub = GetOrAddSubBlock(w, cx, cy);
                 var edBase = string.IsNullOrWhiteSpace(ws.EditorId) ? "MF" : ws.EditorId;
@@ -110,11 +111,18 @@ public static partial class Generator
                 var yTag = cy < 0 ? $"m{-cy}" : cy.ToString();
                 var cell = new Cell(mod, $"{edBase}_Cell_{xTag}_{yTag}");
                 cell.Grid = new CellGrid { Point = new Noggog.P2Int(cx, cy) };
+                if (cellSpec is not null)
+                {
+                    Wire($"worldspace '{ws.EditorId}' cell ({cx},{cy}) lightingTemplate",
+                        cellSpec.LightingTemplate, fk => cell.LightingTemplate.SetTo(fk));
+                    Wire($"worldspace '{ws.EditorId}' cell ({cx},{cy}) imageSpace",
+                        cellSpec.ImageSpace, fk => cell.ImageSpace.SetTo(fk));
+                }
 
                 cell.Landscape = BuildCellLandscape(mod, baseTexFk, texLayers, cx, cy, offset, heightDeltas, normals);
                 if (navmesh)
                 {
-                    var cs = new WorldspaceCellSpec { X = cx, Y = cy, Navmesh = true };
+                    var cs = new WorldspaceCellSpec { X = cx, Y = cy, Height = offset * 8f, Navmesh = true };
                     AddFlatCellNavmesh(mod, cell, cs, w.FormKey, navmInfos);
                     navmeshCells++;
                 }
@@ -127,13 +135,16 @@ public static partial class Generator
             {
                 if (ws.Cells.Count > 0)
                     warn($"  ! worldspace '{ws.EditorId}' has both heightmap and cells — using heightmap, ignoring {ws.Cells.Count} flat cell(s)");
-                EmitHeightmapCells(hmSpec, specDir, warn, EmitCell);
+                EmitHeightmapCells(hmSpec, specDir, warn,
+                    (cx, cy, offset, deltas, navmesh, normals) =>
+                        EmitCell(cx, cy, offset, deltas, navmesh, normals));
             }
             else
             {
                 // Flat terrain: each cell a uniform-height LAND (all-zero deltas).
                 foreach (var cs in ws.Cells)
-                    EmitCell(cs.X, cs.Y, cs.Height / 8f, new Noggog.Array2d<byte>(33, 33, 0), cs.Navmesh);
+                    EmitCell(cs.X, cs.Y, cs.Height / 8f, new Noggog.Array2d<byte>(33, 33, 0),
+                        cs.Navmesh, cellSpec: cs);
             }
 
             // Expand Godot placements into this run's placement view for BuildPlacements(), which runs
@@ -143,6 +154,9 @@ public static partial class Generator
                     gpSpec, specDir, ws.EditorId, spec, formKeyByEd, reservedIds,
                     godotImportedIdSources));
         }
+
+        // All quads now have stable FormKeys, so reciprocal cross-cell edge links can name them.
+        ConnectAdjacentCellNavmeshes(navmInfos);
 
         // One additive NAVI override (master 0x00012FB4) carrying every cell's navmesh info.
         WriteNaviInfoMap(mod, navmInfos);

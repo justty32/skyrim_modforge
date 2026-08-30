@@ -43,6 +43,7 @@ internal static partial class Program
                 + (cg.Grid?.Point is { } gp ? $" grid=({gp.X},{gp.Y})" : "")
                 + (cg.WaterHeight is { } wh ? $" water={wh}" : " water=<none>")
                 + (cg.LightingTemplate.IsNull ? "" : $" lightTmpl={cg.LightingTemplate.FormKey}")
+                + (cg.ImageSpace.IsNull ? "" : $" imageSpace={cg.ImageSpace.FormKey}")
                 + (cg.EncounterZone.IsNull ? "" : $" encZone -> {Ref(cg.EncounterZone.FormKey)}")
                 + $" persistent={cg.Persistent.Count} temporary={cg.Temporary.Count}");
 

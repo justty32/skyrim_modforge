@@ -132,9 +132,12 @@ public sealed class WorldspaceCellSpec
     public float Height { get; set; } = 4000f;
     // Generate a flat navmesh (NAVM) for this cell so NPCs can path on it.
     // A 4-vertex quad (2 triangles) covering the full 4096×4096 cell is emitted; a NAVI index
-    // entry is created for cross-cell path queries. No edge-links to neighbors — pathfinding
-    // works within the cell but NPCs cannot cross to adjacent cells without matching neighbor NAVMs.
+    // entry is created for cross-cell path queries. Orthogonally adjacent cells whose Navmesh is
+    // also true receive reciprocal external edge links, allowing NPCs to cross their shared border.
     public bool Navmesh { get; set; }
+    // Optional CELL environment refs: an in-spec editorId or <master>:0xFORMID.
+    public string LightingTemplate { get; set; } = ""; // ref → LGTM
+    public string ImageSpace { get; set; } = "";       // ref → IMGS
 }
 
 /// <summary>Worldspace map-menu bounds + local-map camera (the WNAM/MNAM data).</summary>
