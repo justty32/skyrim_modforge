@@ -107,8 +107,13 @@ public static partial class Generator
                 if (string.IsNullOrWhiteSpace(mm.EditorId)) Problems.Add("mapMarker: empty editorId");
                 if (string.IsNullOrWhiteSpace(mm.Worldspace))
                     Problems.Add($"mapMarker '{mm.EditorId}' has no worldspace (set an exterior worldspace, e.g. Skyrim.esm:0x00003C)");
-                else if (!LooksExternalRef(mm.Worldspace) || !TryExternalRef(mm.Worldspace, out _))
-                    Problems.Add($"mapMarker '{mm.EditorId}' worldspace '{mm.Worldspace}' must be a well-formed external <master>:0xFORMID ref");
+                else
+                {
+                    bool inSpecWs = spec.Worldspaces.Any(w =>
+                        string.Equals(w.EditorId, mm.Worldspace, StringComparison.OrdinalIgnoreCase));
+                    if (!inSpecWs && (!LooksExternalRef(mm.Worldspace) || !TryExternalRef(mm.Worldspace, out _)))
+                        Problems.Add($"mapMarker '{mm.EditorId}' worldspace '{mm.Worldspace}' must be an in-spec worldspace editorId or a well-formed external <master>:0xFORMID ref");
+                }
                 if (!string.IsNullOrWhiteSpace(mm.Type) && !Enum.TryParse<MapMarker.MarkerType>(mm.Type, true, out _))
                     Problems.Add($"mapMarker '{mm.EditorId}' has unknown type '{mm.Type}' (e.g. City/Town/Settlement/Cave/Camp/Fort/Landmark)");
                 foreach (var f in mm.Flags)

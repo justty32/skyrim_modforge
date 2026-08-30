@@ -69,4 +69,35 @@ public class MapMarkerTests
         Assert.Contains(problems, p => p.Contains("MF_Bad") && p.Contains("Nonsense"));
         Assert.Contains(problems, p => p.Contains("MF_Bad") && p.Contains("Glowing"));
     }
+
+    [Fact]
+    public void Validate_MapMarkerAcceptsInSpecWorldspaceEditorId()
+    {
+        var spec = CampSpec();
+        spec.MapMarkers[0].Worldspace = "MF_CustomWorld";
+        spec.Worldspaces.Add(new WorldspaceSpec
+        {
+            EditorId = "MF_CustomWorld",
+            Name = "Custom World",
+            Climate = "Skyrim.esm:0x000812",
+        });
+
+        Assert.Empty(Generator.Validate(spec));
+    }
+
+    [Fact]
+    public void Validate_MapMarkerRejectsUnknownWorldspaceEditorId()
+    {
+        var spec = CampSpec();
+        spec.MapMarkers[0].Worldspace = "MF_MissingWorld";
+
+        Assert.Contains(Generator.Validate(spec), p =>
+            p.Contains("MF_MissingWorld") && p.Contains("in-spec worldspace editorId"));
+    }
+
+    [Fact]
+    public void Validate_MapMarkerStillAcceptsExternalWorldspaceRef()
+    {
+        Assert.Empty(Generator.Validate(CampSpec()));
+    }
 }
