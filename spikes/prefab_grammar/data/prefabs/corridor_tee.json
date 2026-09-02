@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "corridor_tee",
+  "kind": "hall",
+  "boundingBox": {
+    "center": [0, 0, 128],
+    "size": [512, 512, 256]
+  },
+  "connectors": [
+    {
+      "id": "in",
+      "role": "entrance",
+      "type": "hall2",
+      "position": [-256, 0, 0],
+      "facing": 180
+    },
+    {
+      "id": "out_n",
+      "role": "exit",
+      "type": "hall2",
+      "position": [0, 256, 0],
+      "facing": 90
+    },
+    {
+      "id": "out_s",
+      "role": "exit",
+      "type": "hall2",
+      "position": [0, -256, 0],
+      "facing": 270
+    }
+  ],
+  "placements": [
+    {
+      "base": "Skyrim.esm:0x0551C0",
+      "editorId": "",
+      "position": [0, 0, 0],
+      "rotation": [0, 0, 0],
+      "scale": 1.0
+    }
+  ]
+}

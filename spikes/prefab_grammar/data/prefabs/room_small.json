@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "room_small",
+  "kind": "room",
+  "boundingBox": {
+    "center": [0, 0, 128],
+    "size": [1024, 1024, 256]
+  },
+  "connectors": [
+    {
+      "id": "in",
+      "role": "entrance",
+      "type": "hall2",
+      "position": [-512, 0, 0],
+      "facing": 180
+    },
+    {
+      "id": "out_e",
+      "role": "exit",
+      "type": "hall2",
+      "position": [512, 0, 0],
+      "facing": 0
+    },
+    {
+      "id": "out_n",
+      "role": "exit",
+      "type": "hall2",
+      "position": [0, 512, 0],
+      "facing": 90
+    }
+  ],
+  "placements": [
+    {
+      "base": "Skyrim.esm:0x0551C0",
+      "editorId": "",
+      "position": [0, 0, 0],
+      "rotation": [0, 0, 0],
+      "scale": 1.0
+    }
+  ]
+}

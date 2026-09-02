@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "deadend_plug",
+  "kind": "cap",
+  "boundingBox": {
+    "center": [0, 0, 128],
+    "size": [256, 256, 256]
+  },
+  "connectors": [
+    {
+      "id": "in",
+      "role": "entrance",
+      "type": "hall2",
+      "position": [-128, 0, 0],
+      "facing": 180
+    }
+  ],
+  "placements": [
+    {
+      "base": "Skyrim.esm:0x0551C0",
+      "editorId": "",
+      "position": [0, 0, 0],
+      "rotation": [0, 0, 0],
+      "scale": 1.0
+    }
+  ]
+}
