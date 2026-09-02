@@ -33,6 +33,10 @@ ModForge 該長出的**生成能力** backlog（解碼浮現 + 已有設計待�
   - **邊界**：動畫端的 `PIE.@SGVI/SGVF` 與 AMR `animmotion` annotation 屬 hkanno 動畫管線（非 esp record），僅在 ModForge 接 hkanno 工具鏈後才談生成。
   - **狀態**：✅ **已落地（2026-06-14）** — `behaviorData` spec block → `BdiGen`（flat JSON array，格式實檔驗證）。PIE `.ini` 巨集表（`payloadMacros`→`PieGen`）一併落地。見 [SPEC-animation](../../docs/spec/SPEC-animation.md)。
 - **ModForge ↔ Pandora 整合（behavior 生成步驟）** — OAR/自訂動畫的 behavior 基底由 Pandora 產生（2026 取代 Nemesis/FNIS）。調查見 [mod-survey/action-system/pandora.md](../../../../analysis/mod-survey/action-system/pandora.md)。模型＝**shell-out**（同 ModForge 驅動 Papyrus/xLODGen）：產出 records+OAR config+.hkx → `Pandora --auto_run --auto_close -o … --tesv:…`。**不能 library 嵌入**（plugin API 不穩）。**spike（需實機）**：① Manjaro 上 native dotnet vs Proton-wrap；② 自動化跑能否 displayless（headless 是 Pandora 未解 feature request，可能需 xvfb）。
+- **移植 Mundusform 走位 navmesh 取樣（quad 鋪設／格點去重／polygon 預覽）進 scene-capture-bridge** — 以最小 `sc nav` registry 輸出 `navPatches[]`，接 ModForge 既有 NAVM 生成鏈。分析見 [tool-survey/findings/mundusform-borrow-assessment.md](../../../../analysis/tool-survey/findings/mundusform-borrow-assessment.md)（片段一判定 `PORT`）。
+  - **來源授權**：Mundusform 原始碼 MIT License，可搬碼（需保留 copyright notice）。
+  - **裁示**：使用者 2026-09-02 裁示排入 planning。
+  - **狀態**：idea → roadmap（尚未進 spec）。
 
 ## 已有設計、待續
 
