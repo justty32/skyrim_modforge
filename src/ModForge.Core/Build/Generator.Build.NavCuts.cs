@@ -185,13 +185,12 @@ public static partial class Generator
             var obj = new PlacedObject(mod);
             obj.Base.SetTo(CollisionMarkerBase);
             obj.CollisionLayer = NavCutCollisionLayer;
-            obj.Primitive = new PlacedPrimitive
-            {
-                Type = PlacedPrimitive.TypeEnum.Box,
-                Bounds = size,
-                Color = System.Drawing.Color.FromArgb(0, 255, 255, 0),   // the yellow every vanilla navcut uses
-                Unknown = NavCutPrimitiveUnknown,
-            };
+            // Same builder placements[].primitive uses (Generator.Build.Primitives.cs) — a navcut is
+            // just an XPRM with the CollisionMarker recipe's four values pinned.
+            obj.Primitive = MakePrimitive(
+                PlacedPrimitive.TypeEnum.Box, size,
+                System.Drawing.Color.FromArgb(0, 255, 255, 0),   // the yellow every vanilla navcut uses
+                NavCutPrimitiveUnknown);
             obj.Placement = new Placement
             {
                 Position = centre,

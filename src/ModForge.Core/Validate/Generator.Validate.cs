@@ -53,6 +53,7 @@ public static partial class Generator
         ctx.ValidateNavCuts();
         ctx.ValidateNavmeshOverrides();
         ctx.ValidateNavPatches();
+        ctx.ValidatePrimitives();
         ctx.ValidateWeather();
         ctx.ValidateLights();
         ctx.ValidateLighting();

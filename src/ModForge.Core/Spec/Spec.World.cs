@@ -105,6 +105,16 @@ public sealed class PlacementSpec
     // actually covers vanilla navmesh); `false` = never; `true` = always; an object = hand-tuned box.
     // See Spec.NavCuts.cs (PlacementNavCutSpec) for the full contract and the engine's limits.
     public PlacementNavCutSpec? NavCut { get; set; }
+    // PRIMITIVE (XPRM): give this placed ref an invisible VOLUME (box/sphere) instead of only a
+    // model — the mechanism behind Skyrim's trigger boxes. Pair it with an activator base that
+    // carries an OnTriggerEnter script and you have "the player walked in here → do something".
+    // REFR only (an ACHR has no primitive). Full contract + the vanilla recipe: Spec.Primitives.cs.
+    public PrimitiveSpec? Primitive { get; set; }
+    // COLLISION LAYER (XCLP): the Havok collision layer index this ref collides on. Almost always
+    // left unset — the base record's own NIF decides, and every vanilla trigger box leaves it
+    // alone. Set it only when the layer IS the mechanism: 49 (L_NAVCUT) is what makes a volume cut
+    // navmesh, and navCuts[] sets it for you. REFR only.
+    public uint? CollisionLayer { get; set; }
     // Opt this placement out of the P1 navmesh diagnostics. The one legitimate reason: an ACHR you
     // DELIBERATELY park off the navmesh — an actor staged off-stage in a hole somewhere, waiting for a
     // script to MoveTo it into the world (livingNpcs does exactly this). Such an actor never paths from

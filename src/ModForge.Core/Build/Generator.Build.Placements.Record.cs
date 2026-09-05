@@ -123,6 +123,25 @@ public static partial class Generator
 
             // Count (XCNT): item stack count on placed object; not meaningful for actors.
             if (pl.Count > 0 && placedRec is PlacedObject cntObj) cntObj.ItemCount = pl.Count;
+
+            // Primitive (XPRM) + collision layer (XCLP): give this ref an invisible VOLUME — the
+            // trigger-box mechanism (Spec.Primitives.cs). REFR only: an ACHR carries neither, and
+            // silently dropping the field would leave a trigger that never fires with nothing to
+            // explain why, so say it out loud.
+            string primWho = $"placement '{(string.IsNullOrWhiteSpace(pl.EditorId) ? pl.Base : pl.EditorId)}'";
+            if (pl.Primitive is { } primSpec)
+            {
+                if (placedRec is PlacedObject primObj)
+                {
+                    if (BuildPrimitive(primSpec, primWho) is { } prim) primObj.Primitive = prim;
+                }
+                else Warn($"  ! {primWho}: `primitive` is REFR-only — an actor (ACHR) has no primitive volume; ignored");
+            }
+            if (pl.CollisionLayer is { } layer)
+            {
+                if (placedRec is PlacedObject layerObj) layerObj.CollisionLayer = layer;
+                else Warn($"  ! {primWho}: `collisionLayer` is REFR-only — an actor (ACHR) has no collision layer; ignored");
+            }
         }
 
         // Named placements register so other refs (patrol start, linkedRefs target) can find them.

@@ -2937,6 +2937,36 @@
           "type": "integer",
           "minimum": 0,
           "description": "XCNT: item stack count for a placed item (e.g. 50 gold coins on a table). 0 = omitted (single instance). Not meaningful for actors or statics"
+        },
+        "primitive": {
+          "type": "object",
+          "description": "XPRM: an invisible VOLUME on this ref — the trigger-box mechanism. Pair it with an ACTIVATOR base carrying an OnTriggerEnter Papyrus script and you get 'the player walked in here -> do something'. REFR only (an ACHR has no primitive). Verified on Skyrim.esm 1.6.1170: 13668 refs carry an XPRM, and every *TRIG family (defaultActivateSelfTRIG = Skyrim.esm:0x048AC0, defaultSetStageTRIG = 0x033F50, WordWallTrigger = 0x05095E) is a plain shape on an ACTIVATOR base with colour (204,76,51) and opacity 0.15 and NO collision layer",
+          "required": ["bounds"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "box (default) | sphere | portalBox | none. A raw number is accepted too — Skyrim.esm uses type 4 on 122 refs and Mutagen has no name for it"
+            },
+            "bounds": {
+              "$ref": "#/$defs/vec3",
+              "description": "the FULL size (w x d x h) of the volume in game units — NOT half-extents, same convention as navCuts[].size. The volume is CENTRED on the placement's `position`, so put the position at the MIDDLE of the box, not on its floor. For `sphere` all three axes are one number: give x alone and y/z are filled from it"
+            },
+            "color": {
+              "$ref": "#/$defs/color",
+              "description": "CK render-window wireframe colour; default (204,76,51), the vanilla trigger red. EDITOR COSMETICS ONLY — changes nothing in-game"
+            },
+            "opacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "CK render-window fill opacity 0..1; default 0.15 (what every vanilla trigger and navcut carries). Editor cosmetics only"
+            }
+          }
+        },
+        "collisionLayer": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "XCLP: the Havok collision layer index this ref collides on. Almost always omitted — the base's own NIF decides, and every vanilla trigger box leaves it alone. Set it only when the layer IS the mechanism: 49 (L_NAVCUT) is what makes a volume cut navmesh, and navCuts[] sets that for you. REFR only"
         }
       }
     },
