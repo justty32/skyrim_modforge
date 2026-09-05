@@ -139,6 +139,10 @@ public sealed class WorldspaceCellSpec
     // the cell has an inside, an upper storey or stairs — a plane cannot describe those. Ignored
     // unless Navmesh is also true. See Spec.NavmeshGeometry.cs.
     public NavmeshGeometrySpec? NavmeshGeometry { get; set; }
+    // Optional CELL water environment. Names/types match the interior CellSpec fields.
+    public float? WaterHeight { get; set; }          // XCLW
+    public string? Water { get; set; }               // ref → WATR (XCWT)
+    public string? AcousticSpace { get; set; }       // ref → ASPC (XCAS)
     // Optional CELL environment refs: an in-spec editorId or <master>:0xFORMID.
     public string LightingTemplate { get; set; } = ""; // ref → LGTM
     public string ImageSpace { get; set; } = "";       // ref → IMGS

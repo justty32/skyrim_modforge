@@ -4244,6 +4244,18 @@
           "default": 4000,
           "description": "terrain height in game units (default 4000 ≈ 280 m above sea level; 0 = sea level)"
         },
+        "waterHeight": {
+          "type": "number",
+          "description": "optional exterior CELL water-surface height (XCLW)"
+        },
+        "water": {
+          "$ref": "#/$defs/ref",
+          "description": "optional WATR ref written as exterior CELL XCWT"
+        },
+        "acousticSpace": {
+          "$ref": "#/$defs/ref",
+          "description": "optional ASPC ref written as exterior CELL XCAS"
+        },
         "navmesh": {
           "type": "boolean",
           "description": "產生覆蓋整格的 4 頂點平面 NAVM；相鄰且同樣啟用 navmesh 的 cell 會建立雙向跨 NAVM 邊界連接"

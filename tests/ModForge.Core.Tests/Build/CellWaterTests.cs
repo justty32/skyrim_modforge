@@ -61,6 +61,35 @@ public class CellWaterTests
     }
 
     [Fact]
+    public void OwnWorldspaceExteriorCell_WritesWaterFields()
+    {
+        var spec = new ModSpec { PluginName = Key.FileName, Esl = false };
+        spec.Worldspaces.Add(new WorldspaceSpec
+        {
+            EditorId = "WetWorld",
+            Climate = "Skyrim.esm:0x000812",
+            Cells =
+            {
+                new WorldspaceCellSpec
+                {
+                    X = 2,
+                    Y = -3,
+                    WaterHeight = 123.5f,
+                    Water = "Skyrim.esm:0x000018",
+                    AcousticSpace = "Skyrim.esm:0x0C5ABC",
+                },
+            },
+        });
+
+        var cell = Assert.Single(TestBuild.Ok(spec).Mod.Worldspaces.Single().SubCells
+            .SelectMany(b => b.Items).SelectMany(s => s.Items));
+        Assert.Equal(new Noggog.P2Int(2, -3), cell.Grid!.Point);
+        Assert.Equal(123.5f, cell.WaterHeight);
+        Assert.Equal(FormKey.Factory("000018:Skyrim.esm"), cell.Water.FormKey);
+        Assert.Equal(FormKey.Factory("0C5ABC:Skyrim.esm"), cell.AcousticSpace.FormKey);
+    }
+
+    [Fact]
     public void Validate_ChecksWaterAndAcousticSpaceRefs()
     {
         var spec = new ModSpec { PluginName = Key.FileName };
@@ -70,10 +99,24 @@ public class CellWaterTests
             Water = "MissingWater",
             AcousticSpace = "MissingAcousticSpace",
         });
+        spec.Worldspaces.Add(new WorldspaceSpec
+        {
+            EditorId = "WetWorld",
+            Cells =
+            {
+                new WorldspaceCellSpec
+                {
+                    Water = "MissingExteriorWater",
+                    AcousticSpace = "MissingExteriorAcousticSpace",
+                },
+            },
+        });
 
         var problems = Generator.Validate(spec).ToArray();
         Assert.Contains(problems, p => p.Contains("cell 'WetRoom' water") && p.Contains("unresolved ref"));
         Assert.Contains(problems, p => p.Contains("cell 'WetRoom' acousticSpace") && p.Contains("unresolved ref"));
+        Assert.Contains(problems, p => p.Contains("worldspace 'WetWorld' cell (0,0) water") && p.Contains("unresolved ref"));
+        Assert.Contains(problems, p => p.Contains("worldspace 'WetWorld' cell (0,0) acousticSpace") && p.Contains("unresolved ref"));
     }
 
     private static void WriteTemplateMaster(string dir, float waterHeight)

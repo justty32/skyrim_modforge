@@ -58,7 +58,7 @@
 | `PlacementSpecFieldsTests.cs` | Scale(XSCL) / InitiallyDisabled(flag) / **NoHavokSettle(flag 0x20000000)** / EnableParent(XESP) / Lock(XLOC) / Ownership(XOWN) / Count(XCNT) build + validate |
 | `LightTests.cs` | 自訂 Light（LIGT）color/radius/fade/flags build + validate |
 | `LightingTests.cs` | LGTM/IMGS build + CELL XCLL inherit + validate guardrails |
-| `CellWaterTests.cs` | CELL `waterHeight` (XCLW) / `water` (XCWT) / `acousticSpace` (XCAS) build + ref validate；template 與 spec 都有水位時由 spec 覆寫 |
+| `CellWaterTests.cs` | interior 與 own-worldspace exterior CELL 的 `waterHeight` (XCLW) / `water` (XCWT) / `acousticSpace` (XCAS) build + ref validate；template 與 spec 都有水位時由 spec 覆寫 |
 | `SkillTreeTests.cs` | `skillTrees:` macro-expansion（points/rank GLOB、node+line ACTI、垂直堆疊 placement、line 中點+rot+scale、gating 鏈 prereq/downLine、root 無 prereq、idempotent guard）+ build（temp refs、node 掛 MFSkillNode）+ validate（id 唯一/cell/name/ability 必填）|
 | `SettlementTests.cs` | `settlements:` macro-expansion（ACHR spawn 座標/fallback、Sleep/Work/Wander package + wrap-midnight 時長 + 錨點、npc.Packages 排序、routine 覆寫、auto/explicit faction、crimeFaction、vendor FACT/chest/gold、friendlyResidents RELA、idempotent）+ build（**Sleep location 解析到 in-spec 床錨**的 deferred 修回歸測）+ validate（npc 非 in-spec、缺 spawn、sleep 無 home、未知錨、重複住民、vendor 時數、缺 cell/residents）|
 
@@ -233,10 +233,10 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 |-----|-----|-----|
 | Spec | `Spec.Lighting.cs` | `LightingTemplateSpec`(LGTM) / `ImageSpaceSpec`(IMGS) / `CellLightingSpec`(inline XCLL) / `AmbientColorsSpec`(DALC) |
 | Spec | `Spec.World.cs` | `CellSpec.LightingTemplate/ImageSpace/Lighting` |
-| Spec | `Spec.Worldspace.cs` | `WorldspaceCellSpec.LightingTemplate/ImageSpace`（exterior CELL，可接 spec 內或 external LGTM／IMGS）|
+| Spec | `Spec.Worldspace.cs` | `WorldspaceCellSpec` 的 `WaterHeight`(XCLW) / `Water`(XCWT) / `AcousticSpace`(XCAS) / `LightingTemplate` / `ImageSpace`（own-worldspace exterior CELL；ref 可接 spec 內或 external）|
 | Build P1 | `Generator.Build.Lighting.cs` | `BuildLightingTemplates` + `BuildImageSpaces`（模板抄+覆寫；DALC LGTM→DirectionalAmbientColors、XCLL→AmbientColors；BuildCells 前建，lgtmByEd/imgsByEd 供 cell 解析）|
 | Build P1 | `Generator.Build.Cells.cs` | cell 掛 LGTM/IMGS link（`ResolveLightingRef`）+ `ApplyCellLighting`（inline XCLL + inherit flags；無 inline 且有 template → 全繼承）|
-| Build P2 | `Generator.Build.Worldspace.cs` | flat exterior CELL 建構時用既有 `Wire` 掛 LGTM／IMGS；兩欄空白不寫任何 link |
+| Build P2 | `Generator.Build.Worldspace.cs` | flat exterior CELL 建構時寫 `waterHeight`→XCLW，並用既有 `Wire` 掛 `water`→XCWT、`acousticSpace`→XCAS、LGTM／IMGS；空白欄位不寫 link |
 | Validate | `Generator.Validate.Lighting.cs` | color 0..255、template/cell-ref 可解（cross-type）、inherit flag 名合法 |
 | Diag | `Diagnostics.Records.cs` | `lgtmdiag` / `imgsdiag` |
 
@@ -249,8 +249,8 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Worldspace.cs` | `WorldspaceSpec`（含 `Heightmap`/`GodotPlacements`/**`BaseTexture`**(LTEX ref)/**`TextureLayers`**(多紋理混合)）, `HeightmapSpec`, **`TerrainTextureLayerSpec`**(texture+splatmap), **`SplatmapSpec`**(path/originX/Y), `GodotPlacementsSpec`, `WorldspaceCellSpec`（含選用 `LightingTemplate`→LGTM / `ImageSpace`→IMGS）, `WorldMapDataSpec`, `RegionSpec`, `RegionWeatherEntrySpec`, `PointSpec` |
-| Build P1 | `Generator.Build.Worldspace.cs` / `Generator.Build.GodotPlacements.cs` | 建 worldspace record（climate/water/map bounds）+ cell grid骨架；flat cell 的選用 LGTM／IMGS 走既有 `Wire`（spec 內 editorId 或 external ref；空值不寫）；**PNG heightmap 路徑**（`Heightmap.Load` → `Vhgt.Encode` per cell）；**單層地形貼圖 `baseTexture`**（resolve LTEX 一次 → `EmitCell` 每格四象限加 `BaseLayer`{`LayerHeader.Texture`/`Quadrant`}，**`LayerNumber=BaseLayerNumber`=0xFFFF**）；**多紋理 `textureLayers`**（每層 resolve LTEX + `Splatmap.Load`；`EmitCell` 每格 `TrySampleCell` → `Vtxt.BuildLayers` → 加 `AlphaLayer`，**LayerNumber=層序 0-indexed**）；**有紋理時 `LAND.Flags |= Layers`(0x04)**；**Godot placements per-build 展開 + base/global editorId fail-closed gate**（在 `BuildPlacements` 前注入、不修改 caller spec）|
+| Spec | `Spec.Worldspace.cs` | `WorldspaceSpec`（含 `Heightmap`/`GodotPlacements`/**`BaseTexture`**(LTEX ref)/**`TextureLayers`**(多紋理混合)）, `HeightmapSpec`, **`TerrainTextureLayerSpec`**(texture+splatmap), **`SplatmapSpec`**(path/originX/Y), `GodotPlacementsSpec`, `WorldspaceCellSpec`（含 XCLW/XCWT/XCAS 與選用 LGTM/IMGS）, `WorldMapDataSpec`, `RegionSpec`, `RegionWeatherEntrySpec`, `PointSpec` |
+| Build P1 | `Generator.Build.Worldspace.cs` / `Generator.Build.GodotPlacements.cs` | 建 worldspace record（climate/water/map bounds）+ cell grid骨架；flat cell 的選用 XCLW／XCWT／XCAS／LGTM／IMGS 在 `EmitCell` 寫入（ref 走既有 `Wire`；空值不寫）；**PNG heightmap 路徑**（`Heightmap.Load` → `Vhgt.Encode` per cell）；**單層地形貼圖 `baseTexture`**（resolve LTEX 一次 → `EmitCell` 每格四象限加 `BaseLayer`{`LayerHeader.Texture`/`Quadrant`}，**`LayerNumber=BaseLayerNumber`=0xFFFF**）；**多紋理 `textureLayers`**（每層 resolve LTEX + `Splatmap.Load`；`EmitCell` 每格 `TrySampleCell` → `Vtxt.BuildLayers` → 加 `AlphaLayer`，**LayerNumber=層序 0-indexed**）；**有紋理時 `LAND.Flags |= Layers`(0x04)**；**Godot placements per-build 展開 + base/global editorId fail-closed gate**（在 `BuildPlacements` 前注入、不修改 caller spec）|
 | Build P1 | `Generator.Build.Regions.cs` | 建 region record（polygon / weather table / priority / map color）|
 | Build P2 | `Generator.Build.ExteriorCells.cs` | cell group tree 生成（外層結構）|
 | Build P2 | `Generator.Build.Navmesh.cs` | NAVM 4 頂點平面 quad + NAVI 索引；全部 quad 建完後，同 worldspace 正交相鄰且兩側皆啟用 navmesh 的 cell 互建 external `EdgeLinks[]`，triangle edge 欄存本表 index 並設對應 flag（[engine-internals § navmesh](../../../docs/engine-internals.md#programmatic-navmesh-navm--navi--in-game-confirmed-2026-06-03)）|

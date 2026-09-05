@@ -113,6 +113,11 @@ public static partial class Generator
                 cell.Grid = new CellGrid { Point = new Noggog.P2Int(cx, cy) };
                 if (cellSpec is not null)
                 {
+                    if (cellSpec.WaterHeight is { } waterHeight) cell.WaterHeight = waterHeight;
+                    Wire($"worldspace '{ws.EditorId}' cell ({cx},{cy}) water",
+                        cellSpec.Water ?? "", fk => cell.Water.SetTo(fk));
+                    Wire($"worldspace '{ws.EditorId}' cell ({cx},{cy}) acousticSpace",
+                        cellSpec.AcousticSpace ?? "", fk => cell.AcousticSpace.SetTo(fk));
                     Wire($"worldspace '{ws.EditorId}' cell ({cx},{cy}) lightingTemplate",
                         cellSpec.LightingTemplate, fk => cell.LightingTemplate.SetTo(fk));
                     Wire($"worldspace '{ws.EditorId}' cell ({cx},{cy}) imageSpace",

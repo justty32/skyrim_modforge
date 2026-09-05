@@ -65,6 +65,12 @@ public static partial class Generator
                 CheckRef(c.Water ?? "", $"cell '{c.EditorId}' water");
                 CheckRef(c.AcousticSpace ?? "", $"cell '{c.EditorId}' acousticSpace");
             }
+            foreach (var ws in spec.Worldspaces)
+            foreach (var c in ws.Cells)
+            {
+                CheckRef(c.Water ?? "", $"worldspace '{ws.EditorId}' cell ({c.X},{c.Y}) water");
+                CheckRef(c.AcousticSpace ?? "", $"worldspace '{ws.EditorId}' cell ({c.X},{c.Y}) acousticSpace");
+            }
             foreach (var pl in spec.Placements)
                 CheckRef(pl.EncounterZone, $"placement '{(string.IsNullOrWhiteSpace(pl.EditorId) ? pl.Base : pl.EditorId)}' encounterZone");
 
