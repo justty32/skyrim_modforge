@@ -1,0 +1,170 @@
+[
+  {
+    "FormKey": "000803:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "So we're the moral brigade now. Running around smashing things in the name of Stendarr.",
+    "Target": "所以我們現在是道德糾察隊了。拿著鎚子到處打人，順便扯上史坦達爾的名頭。"
+  },
+  {
+    "FormKey": "000803:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "Me? Join? And wear that... grey... thing? I'm not putting that on. I glow, it clashes.",
+    "Target": "我？入會？穿那件……灰色的……玩意兒？我才不穿那個。我本來就在發光，那東西會跟我犯衝。"
+  },
+  {
+    "FormKey": "000803:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "...Fine. But if they make me swear an oath I'm going to need a drink first. A big one.",
+    "Target": "……好啦。但如果他們要我發誓什麼，我得先喝一大杯。非常大的那種。"
+  },
+  {
+    "FormKey": "000806:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Have you noticed these Daedra-worshipping types always live somewhere absolutely dreadful? Wet. Dark. No windows. If you're going to dedicate your life to evil, at least spend a little gold on the décor.",
+    "Target": "你有沒有發現那些崇拜魔神的傢伙，全都住在最糟糕的地方？潮濕、昏暗、連個窗都沒有。你都把一生獻給邪惡了，好歹花點錢裝潢一下吧。"
+  },
+  {
+    "FormKey": "000809:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "So you just... stood there. Eyes glazed over. Then you snapped out of it. I was counting your breaths out here. Got to sixty-three. So. What was in there? Don't tell me it was some Khajiit's childhood trauma, my arm's gone numb from standing around.",
+    "Target": "你就……站在那兒，眼神渙散。然後突然清醒了。我在這邊數你的呼吸。數到六十三了。所以？裡面有什麼？別跟我說又是哪個貓人的童年陰影，我站到手都麻了。"
+  },
+  {
+    "FormKey": "00080C:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Worried? I was calculating how much of your gear I could carry if you died. ...Sixty-three breaths. I'm just saying. Nobody counts sixty-three breaths about someone they don't care about. Shut up. Keep moving.",
+    "Target": "擔心？我在算你死了的話我能帶走多少裝備。……六十三次呼吸。我只是說。沒有人會幫一個自己不在乎的人數六十三次呼吸。閉嘴，繼續走。"
+  },
+  {
+    "FormKey": "00080F:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "I knew a couple of them. That one by the door — he kept trying to talk to me. I was going to make fun of him for the rest of the year.",
+    "Target": "我認識其中幾個。那個守門的——他老是找我說話。我本來打算嘲笑他嘲笑整整一年的。"
+  },
+  {
+    "FormKey": "000812:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "I'm fine. I've seen worse. ...I haven't, actually, but that's the thing you're supposed to say. Give me a minute. Just a minute. Then we find whatever did this and we take it apart. That part I'm good at.",
+    "Target": "我沒事。我見過更糟的……沒有，其實沒有，但這種時候就是得這樣說。給我一分鐘。就一分鐘。然後我們去把幹這件事的東西碎屍萬段。那個我在行。"
+  },
+  {
+    "FormKey": "000815:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Done. ...I don't really have anything funny to say about this one. The more of them we kill, the bigger this thing gets. I thought it was just bounty work. Kill things, get paid, go drink about it. I'm not sure that's what this is anymore.",
+    "Target": "解決了。……這次我沒什麼想說的笑話。我們殺得越多，這件事就越大條。我本來以為這只是賞金工作。殺東西、拿錢、去喝一杯。我不太確定還是不是這樣了。"
+  },
+  {
+    "FormKey": "000815:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "Don't tell anyone I said that. Any of that.",
+    "Target": "別告訴別人我說過這些話。全部都不行。"
+  },
+  {
+    "FormKey": "000818:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Hold on. Look at them. No cauldron. No creepy whispering. Not even a black cat. They look like two very frightened ordinary people. What exactly is Altano in such a hurry about?",
+    "Target": "等一下。你看看她們。沒有大鍋、沒有詭異的低語、連隻黑貓都沒有。她們看起來就是兩個嚇壞了的普通人。Altano 到底在急什麼？"
+  },
+  {
+    "FormKey": "00081B:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "I'm not defending witches. I hate being used as a blunt instrument. When someone points at a person and says 'monster, go kill' and the person looks nothing like a monster... usually the real monster is the one giving the order. I've been on the other side of that enough times to know.",
+    "Target": "我不是替她們說話。我討厭被當成笨蛋工具使喚。有人指著一個人說「那是怪物，去殺了」，而那人看起來一點都不像怪物——通常真正的怪物是下令的那個。這種事我被使喚過很多次，我知道的。"
+  },
+  {
+    "FormKey": "00081E:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Done. I'm not saying you were wrong. Orders are orders, and we don't know the full picture. But did you see the way she looked at you at the end. I'm going to remember that look. You should too. Next time Altano sends us somewhere, let's ask a few more questions first.",
+    "Target": "動手了。我不會說你錯，命令就是命令，何況我們又不知道全部真相。但你看到她最後看你的眼神了嗎。那種眼神我會記得。你最好也記得——下次 Altano 再指哪打哪之前，我們多問幾個問題。"
+  },
+  {
+    "FormKey": "000821:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "You let them go. Ha. I knew you would. ...You know what, I'm not even going to make fun of you for that one. If Altano had a real reason to want them dead, he would have explained it himself instead of sending us in blind. We'll see what he says.",
+    "Target": "你放她們走了。哈。我就知道。……你知道嗎，這次我不嫌你心軟。Altano 要是真有正當理由，他自己會解釋，而不是叫我們悶著頭去動手。我們等著看他怎麼說。"
+  },
+  {
+    "FormKey": "000824:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "That Altano. I can't put my finger on it. His smile is too well-timed. His answers are too clean. I've met a lot of people who smile like that. Usually they're wearing a very nice holy symbol while doing something very not holy. Watch him.",
+    "Target": "那個 Altano。我說不上來哪裡不對。他笑得太剛好、答得太乾淨。我見過很多這樣笑的人——通常他們胸前掛著某個很漂亮的聖徽，幹的卻是最不聖潔的事。盯著他。"
+  },
+  {
+    "FormKey": "000827:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Clean. I'm not asking if she was innocent. In a fight like this, hesitation gets you killed. You did what you had to.",
+    "Target": "乾淨俐落。我不問她是不是無辜的——在這種場面，猶豫的人先死。你做了你該做的。"
+  },
+  {
+    "FormKey": "00082A:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "You let another one walk. ...You know, one day that habit is going to bite you. But it might also be exactly why I'm still following you around, so. Don't get smug about it.",
+    "Target": "你又放人了。……你知道嗎，總有一天這習慣會反咬你一口。但可能也正是因為這習慣，我才還願意跟著你。別得意。"
+  },
+  {
+    "FormKey": "00082D:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Restoration. You want me to learn Restoration. Healing, I can do — someone's always bleeding and it's usually you. But Turn Undead? My relationship with dead things is mostly that I make more of them.",
+    "Target": "回復術。你要我學回復術。治療倒好說——反正老是受傷的都是你。但「驅散不死」？我跟死人的關係主要就是讓更多活人變成那樣。"
+  },
+  {
+    "FormKey": "00082D:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "Okay fine. But if I ever start lecturing anyone about Stendarr's light you have my full permission to hit me. Hard.",
+    "Target": "好啦好啦我學。但要是我哪天開始跟人講史坦達爾聖光的道理，你有我的全權許可揍醒我。用力點。"
+  },
+  {
+    "FormKey": "000830:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Right. That's done. Can we please stop somewhere? My feet are killing me, and before you say anything — yes I know yours are too but mine are considerably more important. I want something hot to drink, a bed that doesn't leak, and nobody waking me up unless something is actually on fire. Specifically not me. I'm going to need to recover from... whatever that was.",
+    "Target": "好，結束了。我們可以停下來休息一會嗎？我的腳快廢了，別想說你的也是——你的沒有我的重要。給我一杯熱的、一張不會滲水的床，叫醒我之前最好確定真的有大事。不是我本人著火的那種大事。我需要從……剛才那些……恢復一下。"
+  },
+  {
+    "FormKey": "000833:ModForgeSofiaVigilantAct1v2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Witches. Old, ugly, living in a pond. I mean I get it, it's hard out there for a woman, but you'd think they could at least find a pond that doesn't smell like this. Also what is that. Is that a foot. That's a foot.",
+    "Target": "女巫。又老又醜，住在沼澤裡。我是說，我懂，世道對女人就是這樣——但好歹找個不這麼臭的沼澤嘛。還有那個是什麼。那是腳嗎。那是一隻腳。"
+  }
+]
