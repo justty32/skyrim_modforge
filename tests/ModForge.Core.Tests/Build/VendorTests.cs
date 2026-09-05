@@ -36,7 +36,7 @@ public class VendorTests
         {
             new ContainerSpec
             {
-                EditorId = "MF_ShopChest", Name = "Merchant Chest",
+                EditorId = "MF_ShopChest", Name = "Merchant Chest", Model = @"Clutter\Containers\Chest01.nif",
                 Items = { new ContainerEntrySpec { Item = "Skyrim.esm:0x072AE7", Count = 1 } }, // VendorGoldMisc
             },
         },
@@ -120,6 +120,15 @@ public class VendorTests
         var gold = Assert.Single(chest.Items!);   // the VendorGoldMisc leveled-gold entry
         Assert.Equal(0x072AE7u, gold.Item.Item.FormKey.ID);
         Assert.True(gold.Item.Count >= 1);         // gold count >= 0 guardrail (here 1 copy of the gold list)
+    }
+
+    [Fact]
+    public void MerchantChest_Container_HasModel()
+    {
+        var chest = Assert.Single(
+            Generator.Build(VendorSpecFixture(), Key).Mod.Containers,
+            c => c.EditorID == "MF_ShopChest");
+        Assert.Equal(@"Clutter\Containers\Chest01.nif", chest.Model?.File.GivenPath);
     }
 
     [Fact]

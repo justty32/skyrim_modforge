@@ -60,7 +60,11 @@ public static partial class Generator
                         Problems.Add($"encounterZone '{ez.EditorId}' invalid flag '{f}' (NeverResets|MatchPcBelowMinimumLevel|DisableCombatBoundary)");
             }
             foreach (var c in spec.Cells)
+            {
                 CheckRef(c.EncounterZone, $"cell '{c.EditorId}' encounterZone");
+                CheckRef(c.Water ?? "", $"cell '{c.EditorId}' water");
+                CheckRef(c.AcousticSpace ?? "", $"cell '{c.EditorId}' acousticSpace");
+            }
             foreach (var pl in spec.Placements)
                 CheckRef(pl.EncounterZone, $"placement '{(string.IsNullOrWhiteSpace(pl.EditorId) ? pl.Base : pl.EditorId)}' encounterZone");
 

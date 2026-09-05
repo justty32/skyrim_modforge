@@ -98,6 +98,10 @@ public static partial class Generator
                 // with the template's.
                 cell.Flags |= Cell.Flag.IsInteriorCell;   // keep it interior
                 cell.EditorID = c.EditorId;               // keep OUR name, not the template's
+                // Explicit spec values must come after CopyCellEnv so they override the template.
+                if (c.WaterHeight is { } waterHeight) cell.WaterHeight = waterHeight;
+                Resolve($"cell '{c.EditorId}' water", c.Water ?? "", fk => cell.Water.SetTo(fk));
+                Resolve($"cell '{c.EditorId}' acousticSpace", c.AcousticSpace ?? "", fk => cell.AcousticSpace.SetTo(fk));
                 // Custom/vanilla LightingTemplate (LGTM) + ImageSpace (IMGS) links + inline XCLL.
                 if (!string.IsNullOrWhiteSpace(c.LightingTemplate))
                 {

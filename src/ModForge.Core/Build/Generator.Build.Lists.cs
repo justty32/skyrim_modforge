@@ -51,6 +51,7 @@ public static partial class Generator
             {
                 var r = mod.Containers.AddNew();
                 r.EditorID = ct.EditorId; r.Name = ct.Name; r.Weight = ct.Weight;
+                if (!string.IsNullOrEmpty(ct.Model)) { r.Model = new Model(); r.Model.File.GivenPath = ct.Model; }
                 r.Items = new();
             }
         }

@@ -58,6 +58,7 @@
 | `PlacementSpecFieldsTests.cs` | Scale(XSCL) / InitiallyDisabled(flag) / **NoHavokSettle(flag 0x20000000)** / EnableParent(XESP) / Lock(XLOC) / Ownership(XOWN) / Count(XCNT) build + validate |
 | `LightTests.cs` | 自訂 Light（LIGT）color/radius/fade/flags build + validate |
 | `LightingTests.cs` | LGTM/IMGS build + CELL XCLL inherit + validate guardrails |
+| `CellWaterTests.cs` | CELL `waterHeight` (XCLW) / `water` (XCWT) / `acousticSpace` (XCAS) build + ref validate；template 與 spec 都有水位時由 spec 覆寫 |
 | `SkillTreeTests.cs` | `skillTrees:` macro-expansion（points/rank GLOB、node+line ACTI、垂直堆疊 placement、line 中點+rot+scale、gating 鏈 prereq/downLine、root 無 prereq、idempotent guard）+ build（temp refs、node 掛 MFSkillNode）+ validate（id 唯一/cell/name/ability 必填）|
 | `SettlementTests.cs` | `settlements:` macro-expansion（ACHR spawn 座標/fallback、Sleep/Work/Wander package + wrap-midnight 時長 + 錨點、npc.Packages 排序、routine 覆寫、auto/explicit faction、crimeFaction、vendor FACT/chest/gold、friendlyResidents RELA、idempotent）+ build（**Sleep location 解析到 in-spec 床錨**的 deferred 修回歸測）+ validate（npc 非 in-spec、缺 spawn、sleep 無 home、未知錨、重複住民、vendor 時數、缺 cell/residents）|
 
@@ -70,9 +71,9 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.World.cs` | `CellSpec`（name / template / encounterZone / **`music`→MUSC**）|
-| Build P1 | `Generator.Build.Cells.cs` | 建 interior cell record + encounter zone 連結（`cells[].music` 由 pass-2 `WireCellMusic` 接到 cell.Music，見 `CODE_MAP.items-magic.md` Music）|
-| Validate | `Generator.Validate.World.cs` | cell ref、encounter zone ref |
+| Spec | `Spec.World.cs` | `CellSpec`（name / template / **`waterHeight`→XCLW / `water`→XCWT / `acousticSpace`→XCAS** / encounterZone / **`music`→MUSC**）|
+| Build P1 | `Generator.Build.Cells.cs` | 建 interior cell record；template 環境複製後套用明示水位/水種/聲學空間，確保 spec 覆寫 template（`encounterZone` / `music` 由 pass 2 接線）|
+| Validate | `Generator.Validate.World.More.cs` | cell encounterZone / water / acousticSpace ref |
 
 ---
 
@@ -292,7 +293,8 @@ FLST 用途：當吃 list 的 condition 的 param（`GetItemCount`/`GetEquipped`
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Items.cs` | `ContainerSpec`（items + counts）|
+| Spec | `Spec.Items.cs` | `ContainerSpec`（model + items + counts）|
+| Build P1 | `Generator.Build.Lists.cs` | container 基本欄位 + model (MODL) |
 | Build P2 | `Generator.Build.Lists.Wire.cs` | container item FormLink 接線 |
 | Validate | `Generator.Validate.Items.More.cs` | container contents ref |
 

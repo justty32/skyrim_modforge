@@ -60,7 +60,7 @@ public sealed class LeveledNpcSpec { public string EditorId { get; set; } = ""; 
 public sealed class FormListSpec { public string EditorId { get; set; } = ""; public List<string> Items { get; set; } = new(); }
 // Container (CONT): named, with a list of item refs + counts.
 public sealed class ContainerEntrySpec { public string Item { get; set; } = ""; public int Count { get; set; } = 1; }
-public sealed class ContainerSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public float Weight { get; set; } public List<ContainerEntrySpec> Items { get; set; } = new(); }
+public sealed class ContainerSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Model { get; set; } = ""; public float Weight { get; set; } public List<ContainerEntrySpec> Items { get; set; } = new(); }
 // One required ingredient in a recipe: a *ref* (in-spec or vanilla) + how many are consumed.
 public sealed class RecipeComponentSpec { public string Item { get; set; } = ""; public int Count { get; set; } = 1; }
 // ConstructibleObject (COBJ): a crafting recipe. `createdObject` (a *ref*, usually an in-spec item)
