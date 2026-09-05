@@ -172,6 +172,10 @@ public static partial class Generator
         // Authored meshes declare their own cross-cell seams; resolve them to FormKeys now.
         ConnectSpecExternalEdges(navmInfos, warn);
 
+        // Fill still-open boundary edges involving authored geometry. Flat<->flat stays exclusively
+        // on the established pass above, whose behaviour and bytes are a regression contract.
+        ConnectAuthoredCellNavmeshSeams(navmInfos, warn);
+
         // One additive NAVI override (master 0x00012FB4) carrying every cell's navmesh info.
         WriteNaviInfoMap(mod, navmInfos);
 

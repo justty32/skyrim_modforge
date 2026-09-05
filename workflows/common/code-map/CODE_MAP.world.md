@@ -254,6 +254,8 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 | Build P1 | `Generator.Build.Regions.cs` | 建 region record（polygon / weather table / priority / map color）|
 | Build P2 | `Generator.Build.ExteriorCells.cs` | cell group tree 生成（外層結構）|
 | Build P2 | `Generator.Build.Navmesh.cs` | NAVM 4 頂點平面 quad + NAVI 索引；全部 quad 建完後，同 worldspace 正交相鄰且兩側皆啟用 navmesh 的 cell 互建 external `EdgeLinks[]`，triangle edge 欄存本表 index 並設對應 flag（[engine-internals § navmesh](../../../docs/engine-internals.md#programmatic-navmesh-navm--navi--in-game-confirmed-2026-06-03)）|
+| Build P2 | `Generator.Build.Navmesh.Custom.cs` | `navmeshGeometry` 頂點/三角形原樣寫入；處理 spec 明示的跨格 links（不重排 triangle）|
+| Build P2 | `Generator.Build.Navmesh.Seams.cs` | 只補至少一側是自訂幾何的未連接邊界；投影區間重疊 + `CustomNavmeshSeamMaxZDelta=128` 才雙向配對，配不上出警告；flat↔flat 明確略過，不碰既有路徑 |
 | Util | `Heightmap.cs` | 16-bit grayscale PNG → 全域高度網格；`SampleCell` 切 33×33（相鄰格共用邊緣欄）；`SampleCellExtended` 切 35×35（+1px 邊框，供 VNML 中心差分）；Y-flip（影像頂=北）|
 | Util | `Vhgt.cs` | VHGT 編解碼：絕對高度 → float offset + 33×33 signed-int8 delta（row-wise 累積，×8 game units）；`Decode` 接受 `IReadOnlyArray2d<byte>`（相容 Mutagen getter）|
 | Util | `Vnml.cs` | VNML 法線計算：從 35×35 高度格（SampleCellExtended 輸出）以中心差分算切線，E×N cross product 得 Skyrim(X=東,Y=北,Z=上) 法線，encode `P3UInt8` **signed byte=round(n×127)**（無 +128 偏移；up=(0,0,127)）|
@@ -263,6 +265,7 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 | Util | `GodotPlacements.cs` | Godot placements format v1 / `godot4_y_up` JSON → `List<PlacementSpec>`；拒絕缺漏或不支援的 format version；座標換算（Z 翻轉、m→units）+ rotation rad→deg |
 | Util | `SceneCoordinates.cs` | Pure transform API：source position/quaternion/scale3 → Skyrim position/Euler XYZ/scale；明確 Unity LH Y-up、Unreal LH Z-up 與 custom basis，完整 `B*R*B⁻¹`；非均勻 scale diagnostic |
 | Tests | `SceneCoordinatesTests.cs` | identity、axis/handedness、basis rotation、unit/fudge scale、non-uniform diagnostic |
+| Tests | `WorldspaceNavmeshGeometryTests.cs` / `WorldspaceNavmeshSeamTests.cs` | 自訂 NAVM 原樣寫入/明示 links；自訂幾何↔平面在 Z 容差 128 內雙向連接，超過時不連且警告 |
 | Validate | `Generator.Validate.World.cs` | worldspace ref、boundary、climate ref |
 | Validate | `Generator.Validate.World.More.cs` | region / encounter zone / outfit content ref |
 | Diag | `Diagnostics.Worldspace.cs` | worldspace climate/water/map / cell grid / region overlay |
