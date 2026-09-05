@@ -122,8 +122,14 @@ public static partial class Generator
                 cell.Landscape = BuildCellLandscape(mod, baseTexFk, texLayers, cx, cy, offset, heightDeltas, normals);
                 if (navmesh)
                 {
-                    var cs = new WorldspaceCellSpec { X = cx, Y = cy, Height = offset * 8f, Navmesh = true };
-                    AddFlatCellNavmesh(mod, cell, cs, w.FormKey, navmInfos);
+                    var cs = new WorldspaceCellSpec
+                    {
+                        X = cx, Y = cy, Height = offset * 8f, Navmesh = true,
+                        // Carried through so an authored mesh survives the heightmap/flat split;
+                        // null (the heightmap path) keeps the flat-quad behaviour unchanged.
+                        NavmeshGeometry = cellSpec?.NavmeshGeometry,
+                    };
+                    AddCellNavmesh(mod, cell, cs, w.FormKey, navmInfos, warn);
                     navmeshCells++;
                 }
 
@@ -157,6 +163,9 @@ public static partial class Generator
 
         // All quads now have stable FormKeys, so reciprocal cross-cell edge links can name them.
         ConnectAdjacentCellNavmeshes(navmInfos);
+
+        // Authored meshes declare their own cross-cell seams; resolve them to FormKeys now.
+        ConnectSpecExternalEdges(navmInfos, warn);
 
         // One additive NAVI override (master 0x00012FB4) carrying every cell's navmesh info.
         WriteNaviInfoMap(mod, navmInfos);

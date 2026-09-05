@@ -135,6 +135,10 @@ public sealed class WorldspaceCellSpec
     // entry is created for cross-cell path queries. Orthogonally adjacent cells whose Navmesh is
     // also true receive reciprocal external edge links, allowing NPCs to cross their shared border.
     public bool Navmesh { get; set; }
+    // Optional: an AUTHORED navmesh mesh for this cell, replacing the flat quad above. Use it when
+    // the cell has an inside, an upper storey or stairs — a plane cannot describe those. Ignored
+    // unless Navmesh is also true. See Spec.NavmeshGeometry.cs.
+    public NavmeshGeometrySpec? NavmeshGeometry { get; set; }
     // Optional CELL environment refs: an in-spec editorId or <master>:0xFORMID.
     public string LightingTemplate { get; set; } = ""; // ref → LGTM
     public string ImageSpace { get; set; } = "";       // ref → IMGS

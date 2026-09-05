@@ -13,9 +13,12 @@ public static partial class Generator
     // -------------------------------------------------------------------------------
 
     // One emitted navmesh + the geometry the NAVI map needs to index it.
+    // Geometry is null for the flat quad and the authored mesh otherwise; the two paths differ in
+    // how their cross-cell seams are made, so ConnectAdjacentCellNavmeshes must be able to tell.
     private readonly record struct NavmCellInfo(
         NavigationMesh Navm, int X, int Y, Noggog.P3Float Center,
-        Noggog.P3Float Min, Noggog.P3Float Max, FormKey WorldspaceFk);
+        Noggog.P3Float Min, Noggog.P3Float Max, FormKey WorldspaceFk,
+        NavmeshGeometrySpec? Geometry = null);
 
     // Build a flat quad navmesh for one terrain cell, attach it to `cell`, and record its NAVI info.
     // Vertices are world-space (not cell-local); GridDivisor=1 → trivial 1×1 grid.
@@ -91,10 +94,15 @@ public static partial class Generator
 
         foreach (var info in navmInfos)
         {
+            // The quad seams below name triangle 0/1 and edge V1-V2 etc., which only exist on a
+            // flat quad. An authored mesh has no guessable border triangle, so its cross-cell
+            // seams come from the spec instead (ConnectSpecExternalEdges) — skip either side.
+            if (info.Geometry is not null) continue;
             var data = info.Navm.Data!;
 
             // East seam: this T0 edge V1-V2 <-> east T1 edge V3-V0.
-            if (byCell.TryGetValue((info.WorldspaceFk, info.X + 1, info.Y), out var east))
+            if (byCell.TryGetValue((info.WorldspaceFk, info.X + 1, info.Y), out var east)
+                && east.Geometry is null)
             {
                 var eastData = east.Navm.Data!;
                 data.Triangles[0].EdgeLink_1_2 = AddLink(data, east.Navm, 1);
@@ -104,7 +112,8 @@ public static partial class Generator
             }
 
             // North seam: this T1 edge V2-V3 <-> north T0 edge V0-V1.
-            if (byCell.TryGetValue((info.WorldspaceFk, info.X, info.Y + 1), out var north))
+            if (byCell.TryGetValue((info.WorldspaceFk, info.X, info.Y + 1), out var north)
+                && north.Geometry is null)
             {
                 var northData = north.Navm.Data!;
                 data.Triangles[1].EdgeLink_1_2 = AddLink(data, north.Navm, 0);
