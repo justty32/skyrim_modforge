@@ -2,6 +2,12 @@
 
 ← index: [README.md](README.md) · [ideas 索引](../ideas.md)
 
+> **現況更新（2026-09-10）：**靜態模型的可執行主路已落在獨立
+> [`model-converter`](../../../../model-converter/README.md)：`any2nif` 把 glTF/GLB、OBJ 等常見格式
+> 轉成 SSE `BSTriShape` NIF，`tex2dds` 產生 BC1/BC3 DDS。下文保留最初研究判斷；
+> Blender/NifTools/ck-cmd 已不是靜態主路。`any2nif --package` 已補一般模型、貼圖與自動 box/convex 碰撞的一鍵輸出；
+> True PBR、蒙皮／骨架與 ModForge 內的 spec 一鍵整合仍未完成。
+
 主流 3D 格式 → Skyrim 全自動轉換：**「網格」可以，「全套」不行**，卡點集中：
 
 | 內容 | Skyrim 格式 | 自動化可行性 |

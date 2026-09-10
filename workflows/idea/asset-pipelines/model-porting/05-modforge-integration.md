@@ -2,6 +2,12 @@
 
 ← [README](README.md) · prev: [04-nif-and-collision.md](04-nif-and-collision.md) · next: [06-standalone-runbook.md](06-standalone-runbook.md)
 
+> **現況更新（2026-09-10）：**這份是尚未實作的 ModForge 整合設計。靜態轉換器已改成
+> 獨立 [`model-converter`](../../../../../model-converter/README.md) 的黑盒 CLI，並且已由它自行
+> 產生 NIF/DDS；下文的 `modelSource`、`importmesh`、`Mesh.cs` 與 ModForge package 接線
+> 都還沒有落地。真正動工時應保留這些產品意圖，但實作改為呼叫現有 CLI；
+> 舊的 Blender/NifTools/Compressonator backend 細節只留作歷史參考。
+
 How the verified manual pipeline ([06]) folds into the generator. Design, not code — but it names concrete files, spec fields, and the existing conventions to copy. Grounded in the current `src` layout (`workflows/common/code-map/CODE_MAP.infra.md`) and the real `Spec.Items.cs` / `Assets.cs`.
 
 **Copy these existing conventions exactly** (don't invent new ones):

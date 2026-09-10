@@ -2,6 +2,13 @@
 
 Deep-dive companion to the landscape survey [`../03-3d-model-import.md`](../03-3d-model-import.md). That file is the *what exists*; this folder is the *how I build it at home* — exhaustive enough that on a Manjaro session you copy-paste a runbook instead of re-deciding.
 
+> **現況更新（2026-09-10）：**本目錄保留 2026-06-09 的研究與人工操作路線，不再代表
+> 靜態轉換器的現行架構。可執行實作已在獨立
+> [`model-converter`](../../../../../model-converter/README.md)：以純 Python `any2nif` / `gltf2nif` /
+> `tex2dds` 直接產生 SSE `BSTriShape` NIF 與 BC1/BC3 DDS，FBX 前端使用 FBX2glTF。
+> 本目錄中的 Blender/NifTools/Compressonator 主路是歷史方案；`any2nif --package` 已可一次產出一般模型、貼圖與自動 box/convex 碰撞。
+> True PBR profile、蒙皮／骨架與 ModForge 的 spec 接線仍是未完成規劃。
+
 **Research/plan date:** 2026-06-09. **Home rig:** dual-boot — **Manjaro (primary)** + **Windows (reboot on demand)**, NVIDIA 16 GB VRAM. **Status:** plan only, no code touched. This folder is **research** — it does not move the maintenance chain (code → CODE_MAP → docs); landing any of it later follows CLAUDE.md Workflow 1.
 
 > **Legal / scope (standing constraint, unchanged from the survey):** personal, single-player, **non-redistributed** use only. Ported commercial-game assets (Genshin/WuWa/FromSoft, Unity-Store/Nexus packs) are converted and used **locally**; never publish converted meshes or textures. They remain the original rights-holders' property.
