@@ -15,6 +15,7 @@ public static partial class Generator
         {
             var deferredAnchorEds = DeferredAnchorEditorIds();
             var teleportAnchorEds = TeleportAnchorEditorIds();
+            var placementLinkTargetEds = PlacementLinkTargetEditorIds();
             foreach (var pl in placements)
             {
                 var cell = ResolvePlacementCell(pl);
@@ -44,15 +45,15 @@ public static partial class Generator
                     || pl.LinkedRefs.Count > 0
                     || !string.IsNullOrWhiteSpace(pl.Teleport)
                     || (!string.IsNullOrWhiteSpace(pl.EditorId)
-                        && (deferredAnchorEds.Contains(pl.EditorId) || teleportAnchorEds.Contains(pl.EditorId)));
+                        && (deferredAnchorEds.Contains(pl.EditorId)
+                            || teleportAnchorEds.Contains(pl.EditorId)
+                            || placementLinkTargetEds.Contains(pl.EditorId)));
 
                 if (persistent)
                 {
-                    // A persistent xmarker/xmarkerHeading quest anchor must carry the 0x400 persistent
-                    // record flag — EVERY vanilla XMarker has it (10890/10890 in Skyrim.esm), and without
-                    // it a forced: alias can lose its target across save/reload. (Other persistent
-                    // placement kinds are left as-is here — tolerated in grid/interior cells.)
-                    if (isXMarker || isXMarkerHeading) placedRec.MajorRecordFlagsRaw |= 0x400;
+                    // GRUP type 8 and the record flag describe the same lifetime. Skyrim.esm has the
+                    // 0x400 flag on 41,430/41,430 placements in persistent groups, so stamp every kind.
+                    placedRec.MajorRecordFlagsRaw |= 0x400;
                     cell.Persistent.Add(placedRec);
                 }
                 else cell.Temporary.Add(placedRec);
@@ -90,6 +91,23 @@ public static partial class Generator
                 placements.Select(p => p.Teleport)
                     .Where(t => !string.IsNullOrWhiteSpace(t) && !LooksExternalRef(t)),
                 StringComparer.OrdinalIgnoreCase);
+
+        // XESP and XLKR targets must exist before their source is resolved. Skyrim.esm has the
+        // persistent flag on 40,547/40,547 resolvable targets; collect local targets before the
+        // placement loop so forward references receive both a type-8 group and flag 0x400.
+        private HashSet<string> PlacementLinkTargetEditorIds()
+        {
+            var targets = placements
+                .SelectMany(p => p.LinkedRefs.Select(link => link.Target)
+                    .Concat(p.EnableParent is null ? [] : [p.EnableParent.Ref]))
+                .Where(target => !string.IsNullOrWhiteSpace(target) && !LooksExternalRef(target))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var reference in spec.References)
+                if (targets.Contains(reference.Label) && !LooksExternalRef(reference.Ref))
+                    targets.Add(reference.Ref);
+            return targets;
+        }
 
         // The target cell of one placement: exterior grid cell, vanilla interior override, or in-spec
         // interior cell. Returns null (after warning) when the placement must be skipped.

@@ -80,16 +80,16 @@ public class ReferencesTests
     }
 
     [Fact]
-    public void NoReferences_NothingChanges()
+    public void NoReferences_PackageTargetStillForcesPlacementPersistent()
     {
-        // Behaviour-unchanged guard: the same spec minus references[] must build clean, and the chair
-        // must then be TEMPORARY (nothing forced it persistent).
+        // Removing references[] does not remove the package's direct dependency on the chair.
+        // Package targets are persistent anchors and every type-8 record must carry flag 0x400.
         var s = SofiaSpec();
         s.References.Clear();
         s.Packages[0].Sandbox.Location = "MFRef_Chair";
         var mod = TestBuild.Ok(s).Mod;
         var chair = mod.EnumerateMajorRecords<IPlacedObjectGetter>().Single(p => p.EditorID == "MFRef_Chair");
-        Assert.True((chair.MajorRecordFlagsRaw & 0x400) == 0);
+        Assert.True((chair.MajorRecordFlagsRaw & 0x400) != 0);
     }
 
     // --- validate --------------------------------------------------------------------------------

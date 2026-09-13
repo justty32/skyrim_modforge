@@ -125,6 +125,48 @@ public class PlacementSpecFieldsTests
     // --- EnableParent ------------------------------------------------------------------
 
     [Fact]
+    public void ExplicitPersistent_PlacementIsInPersistentGroupAndHasHeaderFlag()
+    {
+        var spec = BaseSpec();
+        spec.Placements.Add(new PlacementSpec
+        {
+            EditorId = "Anchor", Base = "Obj", Cell = "Room", Persistent = true,
+        });
+
+        var r = TestBuild.Ok(spec);
+        var anchor = Object(r, "Anchor");
+        var cell = r.Mod.Cells.SelectMany(b => b.SubBlocks).SelectMany(sb => sb.Cells).Single();
+
+        Assert.Contains(cell.Persistent, p => p.FormKey == anchor.FormKey);
+        Assert.True((anchor.MajorRecordFlagsRaw & 0x400) != 0,
+            "every record in a type-8 persistent GRUP must carry flag 0x400");
+    }
+
+    [Fact]
+    public void EnableParentAndLinkedRef_TargetsArePersistentAndFlagged()
+    {
+        var spec = BaseSpec();
+        spec.Placements.Add(new PlacementSpec { EditorId = "EnableTarget", Base = "Obj", Cell = "Room" });
+        spec.Placements.Add(new PlacementSpec { EditorId = "LinkTarget", Base = "Obj", Cell = "Room" });
+        spec.Placements.Add(new PlacementSpec
+        {
+            EditorId = "Source", Base = "Obj", Cell = "Room",
+            EnableParent = new EnableParentSpec { Ref = "EnableTarget", Flag = "SetEnable" },
+            LinkedRefs = { new LinkedRefSpec { Target = "LinkTarget" } },
+        });
+
+        var r = TestBuild.Ok(spec);
+        var cell = r.Mod.Cells.SelectMany(b => b.SubBlocks).SelectMany(sb => sb.Cells).Single();
+        foreach (var editorId in new[] { "EnableTarget", "LinkTarget" })
+        {
+            var target = Object(r, editorId);
+            Assert.Contains(cell.Persistent, p => p.FormKey == target.FormKey);
+            Assert.True((target.MajorRecordFlagsRaw & 0x400) != 0,
+                $"{editorId} is targeted by XESP/XLKR and must be persistent");
+        }
+    }
+
+    [Fact]
     public void EnableParent_SetEnable_WiresReference()
     {
         var spec = BaseSpec();
