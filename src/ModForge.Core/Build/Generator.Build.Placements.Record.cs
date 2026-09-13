@@ -72,6 +72,11 @@ public static partial class Generator
             // InitiallyDisabled: record header flag 0x800 — ref exists but is invisible/non-collidable.
             if (pl.InitiallyDisabled) placedRec.MajorRecordFlagsRaw |= 0x800;
 
+            // FullLod: record header flag 0x10000 (VisibleWhenDistant) — keep a REFR's full model
+            // eligible beyond the normal loaded-object distance. REFR only: on ACHR the same bit
+            // is a different record-type flag and must never be inferred from this field.
+            if (pl.FullLod && placedRec is PlacedObject) placedRec.MajorRecordFlagsRaw |= 0x10000;
+
             // NoHavokSettle: record header flag 0x20000000 (DontHavokSettle) — the engine skips
             // the havok settle pass it would otherwise run on this ref at cell load, so a
             // deliberately-placed object stays exactly where it was authored instead of being

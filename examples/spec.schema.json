@@ -2838,6 +2838,10 @@
           "type": "boolean",
           "description": "place in the cell's persistent (vs temporary) list (teleport doors / linkedRefs sources / package anchors are forced persistent automatically)"
         },
+        "fullLod": {
+          "type": "boolean",
+          "description": "REFR-only record flag 0x10000 (Visible When Distant / Full LOD): keep the full model eligible beyond normal loaded-object distance; ignored for NPC placements"
+        },
         "encounterZone": {
           "$ref": "#/$defs/ref",
           "description": "optional ECZN ref — a per-ref override of the cell's zone (this spawn's XEZN); usually only meaningful on a leveled-actor spawn"

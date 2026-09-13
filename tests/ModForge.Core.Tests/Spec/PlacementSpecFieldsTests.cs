@@ -4,8 +4,8 @@ using ModForge;
 
 namespace ModForge.Tests;
 
-// Build + validate for PlacementSpec fields: Scale, InitiallyDisabled, EnableParent, Lock,
-// Ownership, Count. All master-free (no Skyrim.esm).
+// Build + validate for PlacementSpec fields: Scale, InitiallyDisabled, FullLod, EnableParent,
+// Lock, Ownership, Count. All master-free (no Skyrim.esm).
 public class PlacementSpecFieldsTests
 {
     // --- helpers -----------------------------------------------------------------------
@@ -63,6 +63,42 @@ public class PlacementSpecFieldsTests
         spec.Placements.Add(new PlacementSpec { EditorId = "P", Base = "Obj", Cell = "Room", InitiallyDisabled = false });
         var r = TestBuild.Ok(spec);
         Assert.True((Object(r, "P").MajorRecordFlagsRaw & 0x800) == 0, "InitiallyDisabled flag 0x800 unexpectedly set");
+    }
+
+    // --- FullLod (record flag 0x10000) -------------------------------------------------
+
+    [Fact]
+    public void FullLod_SetsVisibleWhenDistantHeaderFlagOnObject()
+    {
+        var spec = BaseSpec();
+        spec.Placements.Add(new PlacementSpec { EditorId = "P", Base = "Obj", Cell = "Room", FullLod = true });
+        var r = TestBuild.Ok(spec);
+        Assert.True(((uint)Object(r, "P").MajorRecordFlagsRaw & 0x10000) != 0,
+            "FullLod flag 0x10000 not set");
+    }
+
+    [Fact]
+    public void FullLod_False_DoesNotSetHeaderFlag()
+    {
+        var spec = BaseSpec();
+        spec.Placements.Add(new PlacementSpec { EditorId = "P", Base = "Obj", Cell = "Room" });
+        var r = TestBuild.Ok(spec);
+        Assert.True(((uint)Object(r, "P").MajorRecordFlagsRaw & 0x10000) == 0,
+            "FullLod flag 0x10000 unexpectedly set");
+    }
+
+    [Fact]
+    public void FullLod_OnNpcPlacement_IsIgnored()
+    {
+        var spec = BaseSpec();
+        spec.Npcs.Add(new NpcSpec { EditorId = "Bob", Name = "Bob", Race = "Skyrim.esm:0x013746" });
+        spec.Placements.Add(new PlacementSpec
+        {
+            EditorId = "BobRef", Base = "Bob", Cell = "Room", Kind = "npc", FullLod = true,
+        });
+        var r = TestBuild.Ok(spec);
+        Assert.True(((uint)Npc(r, "BobRef").MajorRecordFlagsRaw & 0x10000) == 0,
+            "FullLod must not write the REFR-only bit onto an ACHR");
     }
 
     // --- NoHavokSettle (record flag 0x20000000) ----------------------------------------

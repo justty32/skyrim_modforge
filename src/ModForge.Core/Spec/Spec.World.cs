@@ -74,6 +74,10 @@ public sealed class PlacementSpec
     public float Scale { get; set; } = 1f;          // XSCL; omitted in record if 1.0
     public bool Persistent { get; set; }
     public bool InitiallyDisabled { get; set; }     // record header flag 0x800
+    // Record header flag 0x10000 (VisibleWhenDistant / Full LOD): keep a REFR's full model
+    // eligible for rendering beyond the normal loaded-object distance. REFR only; the same bit
+    // has unrelated semantics on ACHR records.
+    public bool FullLod { get; set; }
     // Record header flag 0x20000000 (DontHavokSettle): tell the engine to SKIP the havok "settle"
     // pass it runs on this ref when the cell loads. That pass is what launches a hand-placed cup
     // across the room (worse the moment the object slightly intersects the table it sits on) — with

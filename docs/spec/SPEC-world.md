@@ -71,6 +71,10 @@ leveled lists, encounter zones and vendors see [SPEC-worldspaces](SPEC-worldspac
     "position": { "x": -100, "y": 0, "z": 100 },
     "scale": 1.5 },                                     // XSCL: 1.5× size
 
+  { "base": "MF_DistantMountain", "worldspace": "MF_World",
+    "position": { "x": 0, "y": 0, "z": 0 },
+    "fullLod": true },                                  // REFR flag 0x10000
+
   { "base": "MF_SecretDoor", "cell": "MF_Room",        // hidden until quest stage fires
     "editorId": "MF_SecretDoorRef",
     "initiallyDisabled": true,                          // invisible + non-collidable
@@ -84,6 +88,10 @@ leveled lists, encounter zones and vendors see [SPEC-worldspaces](SPEC-worldspac
 - **`initiallyDisabled`** (record flag `0x800`): the ref exists in the cell but is invisible and
   non-collidable until explicitly enabled (via script, quest stage, or `enableParent`). Common
   pattern: hidden object + `enableParent` pointing at a quest-trigger XMarker.
+- **`fullLod`** (REFR record flag `0x10000`, Visible When Distant / Full LOD): keeps the full model
+  eligible for rendering beyond normal loaded-object distance. Use sparingly for distant skyline
+  geometry; it does not generate object LOD. Ignored on NPC placements because ACHR gives this bit
+  different semantics.
 - **`enableParent`** (XESP): this ref's enabled state follows another placed ref (`ref` =
   placement editorId, a `references[]` label, or external ref). Resolved after every
   `placements[]` entry and `references[]` label exists, so `ref` may point at a placement
