@@ -47,6 +47,49 @@ public class ExternalAssetTests
     }
 
     [Fact]
+    public void Activator_explicit_object_bounds_are_written()
+    {
+        var spec = new ModSpec
+        {
+            Activators =
+            {
+                new ActivatorSpec
+                {
+                    EditorId = "Emitter",
+                    Model = "MarkerX.nif",
+                    ObjectBoundsMin = new Vec3 { X = -18, Y = -20, Z = 0 },
+                    ObjectBoundsMax = new Vec3 { X = 18, Y = 18, Z = 16 },
+                },
+            },
+        };
+        var (_, mod) = Build(spec);
+        var acti = Assert.Single(mod.Activators);
+        Assert.Equal(new Noggog.P3Int16(-18, -20, 0), acti.ObjectBounds.First);
+        Assert.Equal(new Noggog.P3Int16(18, 18, 16), acti.ObjectBounds.Second);
+    }
+
+    [Fact]
+    public void Validate_rejects_incomplete_or_inverted_activator_bounds()
+    {
+        var spec = new ModSpec
+        {
+            Activators =
+            {
+                new ActivatorSpec { EditorId = "Half", ObjectBoundsMin = new Vec3() },
+                new ActivatorSpec
+                {
+                    EditorId = "Backwards",
+                    ObjectBoundsMin = new Vec3 { X = 1, Y = 1, Z = 1 },
+                    ObjectBoundsMax = new Vec3(),
+                },
+            },
+        };
+        var problems = Generator.Validate(spec);
+        Assert.Contains(problems, p => p.Contains("Half") && p.Contains("must be set together"));
+        Assert.Contains(problems, p => p.Contains("Backwards") && p.Contains("min must be below max"));
+    }
+
+    [Fact]
     public void MiscItem_model_overrides_and_warns_when_template_also_set()
     {
         var spec = new ModSpec

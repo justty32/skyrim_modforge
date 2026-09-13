@@ -129,8 +129,20 @@ public sealed class SoundSpec
 }
 // Activator (ACTI): an interactable world object — name + `model` + keywords (+ a script via
 // `scripts`). A placement base you can walk up to / attach behaviour to. `alternateTextures` works
-// exactly like STAT's — see TextureSetSpec. `activationSound`/`loopingSound` ref a SNDR.
-public sealed class ActivatorSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Model { get; set; } = ""; public List<string> Keywords { get; set; } = new(); public List<AlternateTextureSpec> AlternateTextures { get; set; } = new(); public string ActivationSound { get; set; } = ""; public string LoopingSound { get; set; } = ""; }
+// exactly like STAT's — see TextureSetSpec. `activationSound`/`loopingSound` ref a SNDR. Optional
+// objectBoundsMin/Max write OBND for marker/emitter ACTIs whose new records otherwise have zero bounds.
+public sealed class ActivatorSpec
+{
+    public string EditorId { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Model { get; set; } = "";
+    public Vec3? ObjectBoundsMin { get; set; }
+    public Vec3? ObjectBoundsMax { get; set; }
+    public List<string> Keywords { get; set; } = new();
+    public List<AlternateTextureSpec> AlternateTextures { get; set; } = new();
+    public string ActivationSound { get; set; } = "";
+    public string LoopingSound { get; set; } = "";
+}
 // TextureSet (TXST): a set of texture-map paths that REPLACE a base mesh's textures without
 // authoring a new .nif — the heart of "retexture" mods (a recolored sword, reskinned armor, etc.).
 // Every field is an OPTIONAL Data-relative `Textures\...\*.dds` path; an omitted slot leaves the

@@ -66,6 +66,14 @@ public static partial class Generator
             // External-resource pipeline — model paths, sound file shapes, sound refs.
             foreach (var st in spec.Statics) CheckModelPath(st.Model, $"static '{st.EditorId}'");
             foreach (var ac in spec.Activators) CheckModelPath(ac.Model, $"activator '{ac.EditorId}'");
+            foreach (var ac in spec.Activators)
+            {
+                if ((ac.ObjectBoundsMin is null) != (ac.ObjectBoundsMax is null))
+                    Problems.Add($"activator '{ac.EditorId}' objectBoundsMin/objectBoundsMax must be set together");
+                else if (ac.ObjectBoundsMin is { } min && ac.ObjectBoundsMax is { } max
+                    && (min.X >= max.X || min.Y >= max.Y || min.Z >= max.Z))
+                    Problems.Add($"activator '{ac.EditorId}' object bounds min must be below max on every axis");
+            }
             foreach (var fn in spec.Furniture) CheckModelPath(fn.Model, $"furniture '{fn.EditorId}'");
             foreach (var m in spec.MiscItems) CheckModelPath(m.Model, $"miscItem '{m.EditorId}'");
             foreach (var w in spec.Weapons) CheckModelPath(w.Model, $"weapon '{w.EditorId}'");

@@ -139,6 +139,8 @@ path rules in **[external_assets.md](../external_assets.md)**.
 "statics":    [ { "editorId": "MFStone",  "model": "MyMod\\stone.nif" } ],
 "furniture":  [ { "editorId": "MFThrone", "name": "Throne", "model": "MyMod\\throne.nif" } ],
 "activators": [ { "editorId": "MFBell", "name": "Bell", "model": "MyMod\\bell.nif",
+                  "objectBoundsMin": { "x": -18, "y": -20, "z": 0 },
+                  "objectBoundsMax": { "x": 18, "y": 18, "z": 16 },
                   "activationSound": "MFChimeSD" } ]
 ```
 - **`model`** (on statics/activators/furniture/miscItems/weapons) is a Data-relative `.nif` path
@@ -146,6 +148,9 @@ path rules in **[external_assets.md](../external_assets.md)**.
   `Meshes\MyMod\bell.nif`). `validate` enforces this. On a `miscItem`, `model` overrides `template`
   (warns); on a `weapon`, pair `model` WITH a `template` (a model-less/template-less weapon CRASHES
   on equip).
+- **`objectBoundsMin` / `objectBoundsMax`** optionally write an activator's OBND and must be set
+  together, with min below max on every axis. Use this for invisible markers and 3D emitters whose
+  newly-authored ACTI would otherwise have zero bounds.
 - **`sounds`** emit Sound Descriptors (SNDR). A record points at one by *ref* (in-spec `editorId` or
   vanilla `<master>:0xFORMID`): activator `activationSound`/`loopingSound`, misc/weapon
   `pickUpSound`/`putDownSound`. `category`/`outputModel` default to the vanilla SFX category/output.

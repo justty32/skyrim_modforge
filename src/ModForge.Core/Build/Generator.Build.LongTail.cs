@@ -102,6 +102,12 @@ public static partial class Generator
                 var r = mod.Activators.AddNew();
                 r.EditorID = ac.EditorId; r.Name = ac.Name;
                 if (!string.IsNullOrEmpty(ac.Model)) { r.Model = new Model(); r.Model.File.GivenPath = ac.Model; }
+                if (ac.ObjectBoundsMin is { } min && ac.ObjectBoundsMax is { } max)
+                    r.ObjectBounds = new ObjectBounds
+                    {
+                        First = new Noggog.P3Int16((short)min.X, (short)min.Y, (short)min.Z),
+                        Second = new Noggog.P3Int16((short)max.X, (short)max.Y, (short)max.Z),
+                    };
             }
         }
 

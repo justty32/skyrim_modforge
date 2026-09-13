@@ -3450,6 +3450,14 @@
           "type": "string",
           "description": "a .nif path (rooted at Meshes\\, omit the prefix)"
         },
+        "objectBoundsMin": {
+          "$ref": "#/$defs/vec3",
+          "description": "optional ACTI OBND minimum; set together with objectBoundsMax"
+        },
+        "objectBoundsMax": {
+          "$ref": "#/$defs/vec3",
+          "description": "optional ACTI OBND maximum; set together with objectBoundsMin"
+        },
         "keywords": {
           "type": "array",
           "items": {
