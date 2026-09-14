@@ -157,7 +157,7 @@ public static partial class Generator
             var miParent = new NavigationMapInfoWorldParent();
             miParent.ParentWorldspace.SetTo(info.WorldspaceFk);
             miParent.ParentWorldspaceCoord = new Noggog.P2Int16(
-                (short)Math.Round(info.Min.X / 4096f), (short)Math.Round(info.Min.Y / 4096f));
+                checked((short)info.X), checked((short)info.Y));
             mi.Parent = miParent;
             navi.MapInfos.Add(mi);
         }

@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Text;
 using System.Linq;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
@@ -242,5 +243,65 @@ public class WorldspaceNavmeshGeometryTests
         // Centre of the authored bounds, not the cell centre.
         Assert.Equal(1550f, info.Point.X);
         Assert.Equal(1200f, info.Point.Z);
+    }
+
+    // 11. A mesh is owned by the CELL selected by the author. Its vertices may cross that cell's
+    //     boundary (the DS port assigns triangles by centroid), so deriving NVMI coordinates from
+    //     Min mis-indexed negative cells as X=0 and left runtime PathingCell lookup with no owner.
+    [Theory]
+    [InlineData(-1, 0, -1300f, 600f)]
+    [InlineData(1, 0, 100f, 600f)]
+    public void AuthoredMesh_NvmiParentUsesOwningCell_NotGeometryBounds(
+        int cellX, int cellY, float minX, float minY)
+    {
+        var geometry = new NavmeshGeometrySpec
+        {
+            Vertices = { V(minX, minY, 1000), V(minX + 100, minY, 1000), V(minX, minY + 100, 1000) },
+            Triangles = { new NavmeshGeometryTriangleSpec { V0 = 0, V1 = 1, V2 = 2 } },
+        };
+        var world = World();
+        world.Cells.Add(new WorldspaceCellSpec
+        { X = cellX, Y = cellY, Height = 1000, Navmesh = true, NavmeshGeometry = geometry });
+
+        var mod = Build(world);
+        var parent = Assert.IsType<NavigationMapInfoWorldParent>(
+            Assert.Single(mod.NavigationMeshInfoMaps.Single().MapInfos).Parent);
+        Assert.Equal(new Noggog.P2Int16((short)cellX, (short)cellY), parent.ParentWorldspaceCoord);
+        AssertSerializedNvmiCoordinates(mod, (short)cellX, (short)cellY);
+    }
+
+    [Fact]
+    public void FlatMesh_NvmiParentStillUsesOwningNegativeCell()
+    {
+        var world = World();
+        world.Cells.Add(new WorldspaceCellSpec { X = -1, Y = -2, Height = 1000, Navmesh = true });
+        var mod = Build(world);
+        var parent = Assert.IsType<NavigationMapInfoWorldParent>(
+            Assert.Single(mod.NavigationMeshInfoMaps.Single().MapInfos).Parent);
+        Assert.Equal(new Noggog.P2Int16(-1, -2), parent.ParentWorldspaceCoord);
+        AssertSerializedNvmiCoordinates(mod, -1, -2);
+    }
+
+    private static void AssertSerializedNvmiCoordinates(SkyrimMod mod, short x, short y)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"mf-navmi-{Guid.NewGuid():N}.esp");
+        try
+        {
+            PluginIo.Write(mod, path);
+            var bytes = File.ReadAllBytes(path);
+            var tag = Encoding.ASCII.GetBytes("NVMI");
+            int at = bytes.AsSpan().IndexOf(tag);
+            Assert.True(at >= 0, "serialized plugin has no NVMI subrecord");
+            int length = BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(at + 4, 2));
+            var payload = bytes.AsSpan(at + 6, length);
+
+            // Mutagen 0.53.1 NavigationMapInfo binary layout: the exterior parent coordinate is
+            // the final P2Int16 after the non-null worldspace FormID.
+            Assert.True(payload.Length >= 8);
+            Assert.NotEqual(0u, BinaryPrimitives.ReadUInt32LittleEndian(payload[^8..^4]));
+            Assert.Equal(x, BinaryPrimitives.ReadInt16LittleEndian(payload[^4..^2]));
+            Assert.Equal(y, BinaryPrimitives.ReadInt16LittleEndian(payload[^2..]));
+        }
+        finally { if (File.Exists(path)) File.Delete(path); }
     }
 }

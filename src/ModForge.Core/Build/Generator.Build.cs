@@ -74,6 +74,7 @@ public static partial class Generator
         ctx.BuildIdentityGlobals();                 // MF_PrimaryIdentity + MF_IdentityOverride (when primaryIdentity/override used)
         ctx.BuildOutfits();                        // Outfit (OTFT) — contents wired in pass 2
         ctx.BuildStatics();                        // Static (STAT)
+        ctx.BuildMovableStatics();                 // Movable Static (MSTT)
         ctx.BuildActivators();                     // Activator (ACTI)
         ctx.BuildFurniture();                      // Furniture (FURN)
         ctx.BuildSounds();                         // Sound Descriptor (SNDR)

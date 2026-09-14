@@ -52,7 +52,7 @@ keywords, factions, etc. The named master is **added to the plugin automatically
   "cells": [...], "placements": [...],  // new interior cells + placing forms in them
   "leveledItems": [...], "leveledNpcs": [...], "containers": [...],
   "ingredients": [...], "ammunitions": [...], "scrolls": [...], "soulGems": [...],
-  "keys": [...], "keywords": [...], "outfits": [...], "statics": [...], "activators": [...],
+  "keys": [...], "keywords": [...], "outfits": [...], "statics": [...], "movableStatics": [...], "activators": [...],
   "textureSets": [...],          // TXST — retexture an existing mesh without a new .nif
   "furniture": [...], "sounds": [...],  // custom-mesh furniture + Sound Descriptors (external assets)
   "assets": "path/to/asset/dir",        // source dir whose Meshes/Textures/Sounds `package` bundles
@@ -100,7 +100,8 @@ keywords, factions, etc. The named master is **added to the plugin automatically
 | `keys` | `editorId`, `name`, `value`, `weight`, `keywords` (array of *refs*) |
 | `keywords` | `editorId` (define your own keyword so in-spec records can list it in `keywords`) |
 | `outfits` | `editorId`, `items` (array of *refs* → armors/weapons; an npc `outfit` can point at this editorId) |
-| `statics` | `editorId`, `model` (a `.nif` path — vanilla OR custom mesh; a placement base, no name), `alternateTextures` (array — swap the mesh's textures to a TXST; see [SPEC-items](SPEC-items.md)) |
+| `statics` | optional paired `objectBoundsMin`/`objectBoundsMax` (OBND), `editorId`, `model` (a `.nif` path — vanilla OR custom mesh; a placement base, no name), `alternateTextures` (array — swap the mesh's textures to a TXST; see [SPEC-items](SPEC-items.md)) |
+| `movableStatics` | `editorId`, `name`, `model` (`.nif` path), optional paired `objectBoundsMin`/`objectBoundsMax` (MSTT OBND); usable as a placement base |
 | `activators` | `editorId`, `name`, `model` (`.nif` path), optional paired `objectBoundsMin`/`objectBoundsMax` (OBND), `keywords` (array of *refs*), `alternateTextures` (array — same as `statics`), `activationSound`/`loopingSound` (SNDR *refs*); attach behaviour via `scripts` |
 | `furniture` | `editorId`, `name`, `model` (`.nif` path — vanilla OR custom mesh), `keywords` (array of *refs*) — a placeable interactive object (chair/bed/bench/idle marker); place it with a `placement` |
 | `sounds` | `editorId`, `files` (array of Data-relative `Sound\...` `.wav`/`.xwm` paths), `category` (SNCT *ref*, default AudioCategorySFX), `outputModel` (SOPM *ref*, default vanilla SFX), `priority` (0–255), `staticAttenuation` (dB) — a Sound Descriptor (SNDR) a record's sound field points at. See [external_assets.md](../external_assets.md) |

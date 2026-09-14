@@ -111,7 +111,9 @@ public sealed class OutfitSpec { public string EditorId { get; set; } = ""; publ
 // A placement base for scenery; no Name (statics are nameless). `alternateTextures` swaps the
 // textures of named material sub-meshes inside that .nif to in-spec/vanilla TextureSet (TXST)
 // records — the "retexture without a new mesh" path (see TextureSetSpec).
-public sealed class StaticSpec { public string EditorId { get; set; } = ""; public string Model { get; set; } = ""; public List<AlternateTextureSpec> AlternateTextures { get; set; } = new(); }
+public sealed class StaticSpec { public string EditorId { get; set; } = ""; public string Model { get; set; } = ""; public Vec3? ObjectBoundsMin { get; set; } public Vec3? ObjectBoundsMax { get; set; } public List<AlternateTextureSpec> AlternateTextures { get; set; } = new(); }
+// Movable Static (MSTT): a named world mesh with Havok behavior. Unlike STAT it has a display name.
+public sealed class MovableStaticSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Model { get; set; } = ""; public Vec3? ObjectBoundsMin { get; set; } public Vec3? ObjectBoundsMax { get; set; } }
 // FURN — a placeable, interactive piece of furniture (chair/bed/crafting bench/idle marker).
 // `model` is a `.nif` (vanilla or user-supplied); attach behaviour via `scripts`/keywords.
 public sealed class FurnitureSpec { public string EditorId { get; set; } = ""; public string Name { get; set; } = ""; public string Model { get; set; } = ""; public List<string> Keywords { get; set; } = new(); }
@@ -216,6 +218,8 @@ public sealed partial class ModSpec
     public List<OutfitSpec> Outfits { get; set; } = new();
 
     public List<StaticSpec> Statics { get; set; } = new();
+
+    public List<MovableStaticSpec> MovableStatics { get; set; } = new();
 
     public List<ActivatorSpec> Activators { get; set; } = new();
 

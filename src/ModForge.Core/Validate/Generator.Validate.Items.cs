@@ -4,6 +4,22 @@ public static partial class Generator
 {
     private sealed partial class ValidateContext
     {
+        private void CheckObjectBounds(Vec3? min, Vec3? max, string owner)
+        {
+            if ((min is null) != (max is null))
+            {
+                Problems.Add($"{owner} objectBoundsMin/objectBoundsMax must be set together");
+                return;
+            }
+            if (min is null || max is null) return;
+
+            var values = new[] { min.X, min.Y, min.Z, max.X, max.Y, max.Z };
+            if (values.Any(v => !float.IsFinite(v) || v < short.MinValue || v > short.MaxValue || v != MathF.Truncate(v)))
+                Problems.Add($"{owner} object bounds must be finite int16 values (-32768..32767)");
+            if (min.X > max.X || min.Y > max.Y || min.Z > max.Z)
+                Problems.Add($"{owner} object bounds min must not exceed max on any axis");
+        }
+
         // --- items (physical gear, magic, recipes, textures) ---
         // Validates: messages, armors, weapons, books, miscItems, potions, statics, activators,
         // furniture, sounds, magicEffects, classes, spells.
@@ -65,15 +81,12 @@ public static partial class Generator
 
             // External-resource pipeline — model paths, sound file shapes, sound refs.
             foreach (var st in spec.Statics) CheckModelPath(st.Model, $"static '{st.EditorId}'");
+            foreach (var st in spec.MovableStatics) CheckModelPath(st.Model, $"movableStatic '{st.EditorId}'");
+            foreach (var st in spec.Statics) CheckObjectBounds(st.ObjectBoundsMin, st.ObjectBoundsMax, $"static '{st.EditorId}'");
+            foreach (var st in spec.MovableStatics) CheckObjectBounds(st.ObjectBoundsMin, st.ObjectBoundsMax, $"movableStatic '{st.EditorId}'");
             foreach (var ac in spec.Activators) CheckModelPath(ac.Model, $"activator '{ac.EditorId}'");
             foreach (var ac in spec.Activators)
-            {
-                if ((ac.ObjectBoundsMin is null) != (ac.ObjectBoundsMax is null))
-                    Problems.Add($"activator '{ac.EditorId}' objectBoundsMin/objectBoundsMax must be set together");
-                else if (ac.ObjectBoundsMin is { } min && ac.ObjectBoundsMax is { } max
-                    && (min.X >= max.X || min.Y >= max.Y || min.Z >= max.Z))
-                    Problems.Add($"activator '{ac.EditorId}' object bounds min must be below max on every axis");
-            }
+                CheckObjectBounds(ac.ObjectBoundsMin, ac.ObjectBoundsMax, $"activator '{ac.EditorId}'");
             foreach (var fn in spec.Furniture) CheckModelPath(fn.Model, $"furniture '{fn.EditorId}'");
             foreach (var m in spec.MiscItems) CheckModelPath(m.Model, $"miscItem '{m.EditorId}'");
             foreach (var w in spec.Weapons) CheckModelPath(w.Model, $"weapon '{w.EditorId}'");

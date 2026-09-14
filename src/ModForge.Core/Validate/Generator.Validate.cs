@@ -114,6 +114,7 @@ public static partial class Generator
             foreach (var kw in spec.Keywords) Reg(kw.EditorId, "keyword");
             foreach (var o in spec.Outfits) Reg(o.EditorId, "outfit");
             foreach (var st in spec.Statics) Reg(st.EditorId, "static");
+            foreach (var st in spec.MovableStatics) Reg(st.EditorId, "movableStatic");
             foreach (var ac in spec.Activators) Reg(ac.EditorId, "activator");
             foreach (var me in spec.MagicEffects) Reg(me.EditorId, "magicEffect");
             foreach (var es in spec.EffectShaders) Reg(es.EditorId, "effectShader");

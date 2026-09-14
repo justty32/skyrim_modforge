@@ -174,11 +174,12 @@ scene-capture-bridge DLL `sc cap` 匯出的 `capturedItems[]` → macro 展開�
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Items.cs` | `IngredientSpec`, `AmmunitionSpec`, `ScrollSpec`, `SoulGemSpec`, `KeySpec`, `FurnitureSpec`, `SoundSpec`, `ActivatorSpec`（含可選 OBND min/max） |
-| Spec | `Spec.cs` | `keywords`, `outfits`, `statics`, `activators`（頂層欄位）|
-| Build P1 | `Generator.Build.LongTail.cs` | 建上述所有小 record；ACTI 可寫顯式 OBND |
+| Spec | `Spec.Items.cs` | `IngredientSpec`, `AmmunitionSpec`, `ScrollSpec`, `SoulGemSpec`, `KeySpec`, `FurnitureSpec`, `SoundSpec`, `ActivatorSpec`, `StaticSpec`, `MovableStaticSpec`（含可選 OBND min/max） |
+| Spec | `Spec.Items.cs` | `keywords`, `outfits`, `statics`, `movableStatics`, `activators`（頂層欄位）|
+| Build P1 | `Generator.Build.LongTail.cs` | 建上述所有小 record；STAT / MSTT / ACTI 可寫顯式 OBND |
 | Build P2 | `Generator.Build.LongTail.Wire.cs` | keyword 陣列 + sound ref + alternate-texture ref 接線 |
 | Validate | `Generator.Validate.Items.More.cs` | texture-path / model-path / sound-file sanity |
+| Validate / Tests | `Generator.Validate.Items.cs` / `ExternalAssetTests.cs` | OBND 成對、有限整數、int16 範圍及 min ≤ max；ESP 序列化與 MSTT placement 回歸 |
 
 ---
 

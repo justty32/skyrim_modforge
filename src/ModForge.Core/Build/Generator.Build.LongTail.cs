@@ -91,8 +91,28 @@ public static partial class Generator
                 var r = mod.Statics.AddNew();
                 r.EditorID = st.EditorId;
                 if (!string.IsNullOrEmpty(st.Model)) { r.Model = new Model(); r.Model.File.GivenPath = st.Model; }
+                if (st.ObjectBoundsMin is { } min && st.ObjectBoundsMax is { } max)
+                    r.ObjectBounds = MakeObjectBounds(min, max);
             }
         }
+
+        public void BuildMovableStatics()
+        {
+            foreach (var st in spec.MovableStatics)
+            {
+                var r = mod.MoveableStatics.AddNew();
+                r.EditorID = st.EditorId; r.Name = st.Name;
+                if (!string.IsNullOrEmpty(st.Model)) { r.Model = new Model(); r.Model.File.GivenPath = st.Model; }
+                if (st.ObjectBoundsMin is { } min && st.ObjectBoundsMax is { } max)
+                    r.ObjectBounds = MakeObjectBounds(min, max);
+            }
+        }
+
+        private static ObjectBounds MakeObjectBounds(Vec3 min, Vec3 max) => new()
+        {
+            First = new Noggog.P3Int16(checked((short)min.X), checked((short)min.Y), checked((short)min.Z)),
+            Second = new Noggog.P3Int16(checked((short)max.X), checked((short)max.Y), checked((short)max.Z)),
+        };
 
         // --- pass 1: Activator (ACTI) — a `model` path string IS the .nif; sounds wired in pass 2 ---
         public void BuildActivators()
@@ -103,11 +123,7 @@ public static partial class Generator
                 r.EditorID = ac.EditorId; r.Name = ac.Name;
                 if (!string.IsNullOrEmpty(ac.Model)) { r.Model = new Model(); r.Model.File.GivenPath = ac.Model; }
                 if (ac.ObjectBoundsMin is { } min && ac.ObjectBoundsMax is { } max)
-                    r.ObjectBounds = new ObjectBounds
-                    {
-                        First = new Noggog.P3Int16((short)min.X, (short)min.Y, (short)min.Z),
-                        Second = new Noggog.P3Int16((short)max.X, (short)max.Y, (short)max.Z),
-                    };
+                    r.ObjectBounds = MakeObjectBounds(min, max);
             }
         }
 

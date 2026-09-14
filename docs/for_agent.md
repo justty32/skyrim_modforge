@@ -80,7 +80,7 @@ ModForge writes **structurally valid** records. That is NOT the same as **in-gam
 - **More record types** (same spec→build→dump pattern): `ingredients` (alchemy, take `effects`),
   `ammunitions` (`damage`), `scrolls` (`effects` + cast fields), `soulGems` (`maximumCapacity`),
   `keys`, `keywords` (define your own → reference it from any record's `keywords`), `outfits`
-  (item *refs*; an npc `outfit` can point at an in-spec outfit), and `statics`/`activators`
+  (item *refs*; an npc `outfit` can point at an in-spec outfit), and `statics`/`movableStatics`/`activators`
   (a `model` .nif path — reference a vanilla mesh — as placement bases).
 - **External/vanilla forms CAN be referenced** (race/class/outfit/keywords/factions/
   magicEffect/placement base+cell+worldspace/leveled+container entries, via `"<master>:0xFORMID"`).

@@ -47,10 +47,29 @@ public class ExternalAssetTests
     }
 
     [Fact]
-    public void Activator_explicit_object_bounds_are_written()
+    public void Explicit_object_bounds_are_written_for_world_mesh_records()
     {
         var spec = new ModSpec
         {
+            Cells = { new CellSpec { EditorId = "Room", Name = "Room" } },
+            Statics =
+            {
+                new StaticSpec
+                {
+                    EditorId = "Scenery", Model = "Rock.nif",
+                    ObjectBoundsMin = new Vec3 { X = -100, Y = -20, Z = 0 },
+                    ObjectBoundsMax = new Vec3 { X = 200, Y = 18, Z = 16 },
+                },
+            },
+            MovableStatics =
+            {
+                new MovableStaticSpec
+                {
+                    EditorId = "LooseRock", Name = "Loose Rock", Model = "Rock.nif",
+                    ObjectBoundsMin = new Vec3 { X = -10, Y = -2, Z = -3 },
+                    ObjectBoundsMax = new Vec3 { X = 20, Y = 8, Z = 6 },
+                },
+            },
             Activators =
             {
                 new ActivatorSpec
@@ -61,8 +80,17 @@ public class ExternalAssetTests
                     ObjectBoundsMax = new Vec3 { X = 18, Y = 18, Z = 16 },
                 },
             },
+            Placements = { new PlacementSpec { EditorId = "LooseRockRef", Base = "LooseRock", Cell = "Room" } },
         };
         var (_, mod) = Build(spec);
+        var stat = Assert.Single(mod.Statics);
+        Assert.Equal(new Noggog.P3Int16(-100, -20, 0), stat.ObjectBounds.First);
+        Assert.Equal(new Noggog.P3Int16(200, 18, 16), stat.ObjectBounds.Second);
+        var mstt = Assert.Single(mod.MoveableStatics);
+        Assert.Equal(new Noggog.P3Int16(-10, -2, -3), mstt.ObjectBounds.First);
+        Assert.Equal(new Noggog.P3Int16(20, 8, 6), mstt.ObjectBounds.Second);
+        var placed = Assert.Single(mod.EnumerateMajorRecords<IPlacedObjectGetter>());
+        Assert.Equal(mstt.FormKey, placed.Base.FormKey);
         var acti = Assert.Single(mod.Activators);
         Assert.Equal(new Noggog.P3Int16(-18, -20, 0), acti.ObjectBounds.First);
         Assert.Equal(new Noggog.P3Int16(18, 18, 16), acti.ObjectBounds.Second);
@@ -86,7 +114,73 @@ public class ExternalAssetTests
         };
         var problems = Generator.Validate(spec);
         Assert.Contains(problems, p => p.Contains("Half") && p.Contains("must be set together"));
-        Assert.Contains(problems, p => p.Contains("Backwards") && p.Contains("min must be below max"));
+        Assert.Contains(problems, p => p.Contains("Backwards") && p.Contains("min must not exceed max"));
+    }
+
+    [Fact]
+    public void Omitted_object_bounds_keep_default_zero_bounds()
+    {
+        var spec = new ModSpec
+        {
+            Statics = { new StaticSpec { EditorId = "S", Model = "s.nif" } },
+            MovableStatics = { new MovableStaticSpec { EditorId = "M", Model = "m.nif" } },
+            Activators = { new ActivatorSpec { EditorId = "A", Model = "a.nif" } },
+        };
+        var (_, mod) = Build(spec);
+        Assert.Equal(default, Assert.Single(mod.Statics).ObjectBounds.First);
+        Assert.Equal(default, Assert.Single(mod.MoveableStatics).ObjectBounds.First);
+        Assert.Equal(default, Assert.Single(mod.Activators).ObjectBounds.First);
+    }
+
+    [Fact]
+    public void Validate_rejects_fractional_or_out_of_range_object_bounds()
+    {
+        var spec = new ModSpec
+        {
+            Statics =
+            {
+                new StaticSpec
+                {
+                    EditorId = "Fractional", ObjectBoundsMin = new Vec3 { X = -1.5f },
+                    ObjectBoundsMax = new Vec3 { X = 1, Y = 1, Z = 1 },
+                },
+            },
+            MovableStatics =
+            {
+                new MovableStaticSpec
+                {
+                    EditorId = "Overflow", ObjectBoundsMin = new Vec3(),
+                    ObjectBoundsMax = new Vec3 { X = 32768, Y = 1, Z = 1 },
+                },
+            },
+        };
+        var problems = Generator.Validate(spec);
+        Assert.Contains(problems, p => p.Contains("Fractional") && p.Contains("finite int16"));
+        Assert.Contains(problems, p => p.Contains("Overflow") && p.Contains("finite int16"));
+    }
+
+    [Fact]
+    public void Validate_accepts_planar_bounds_but_rejects_reversed_axes()
+    {
+        var spec = new ModSpec
+        {
+            Activators =
+            {
+                new ActivatorSpec
+                {
+                    EditorId = "Plane", ObjectBoundsMin = new Vec3 { X = -2, Y = -3, Z = 0 },
+                    ObjectBoundsMax = new Vec3 { X = 2, Y = 3, Z = 0 },
+                },
+                new ActivatorSpec
+                {
+                    EditorId = "Reversed", ObjectBoundsMin = new Vec3 { X = 2 },
+                    ObjectBoundsMax = new Vec3 { X = 1, Y = 1, Z = 1 },
+                },
+            },
+        };
+        var problems = Generator.Validate(spec);
+        Assert.DoesNotContain(problems, p => p.Contains("Plane"));
+        Assert.Contains(problems, p => p.Contains("Reversed") && p.Contains("must not exceed"));
     }
 
     [Fact]

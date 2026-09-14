@@ -1,0 +1,30 @@
+{
+  "pluginName": "ObjectBoundsExample.esp",
+  "esl": false,
+  "statics": [
+    {
+      "editorId": "MFBoundedStatic",
+      "model": "Clutter\\Common\\CrateSmall01.nif",
+      "objectBoundsMin": { "x": -32, "y": -24, "z": 0 },
+      "objectBoundsMax": { "x": 32, "y": 24, "z": 48 }
+    }
+  ],
+  "movableStatics": [
+    {
+      "editorId": "MFBoundedMovableStatic",
+      "name": "Bounded movable static",
+      "model": "Clutter\\Common\\CrateSmall01.nif",
+      "objectBoundsMin": { "x": -16, "y": -16, "z": -8 },
+      "objectBoundsMax": { "x": 16, "y": 16, "z": 24 }
+    }
+  ],
+  "activators": [
+    {
+      "editorId": "MFBoundedActivator",
+      "name": "Bounded activator",
+      "model": "MarkerX.nif",
+      "objectBoundsMin": { "x": -18, "y": -20, "z": 0 },
+      "objectBoundsMax": { "x": 18, "y": 18, "z": 16 }
+    }
+  ]
+}

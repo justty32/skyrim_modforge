@@ -359,6 +359,13 @@
       },
       "description": "Static (STAT): a world mesh (model path)"
     },
+    "movableStatics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/movableStatic"
+      },
+      "description": "Movable Static (MSTT): a named world mesh with Havok behavior"
+    },
     "activators": {
       "type": "array",
       "items": {
@@ -3424,6 +3431,14 @@
           "type": "string",
           "description": "a .nif path, Data-relative rooted at Meshes\\ (omit the 'Meshes\\' prefix), vanilla OR custom, e.g. 'Clutter\\\\Common\\\\Rock01.nif' or 'MyMod\\\\stone.nif'"
         },
+        "objectBoundsMin": {
+          "$ref": "#/$defs/vec3",
+          "description": "optional STAT OBND minimum; set together with objectBoundsMax"
+        },
+        "objectBoundsMax": {
+          "$ref": "#/$defs/vec3",
+          "description": "optional STAT OBND maximum; set together with objectBoundsMin"
+        },
         "alternateTextures": {
           "type": "array",
           "items": {
@@ -3431,6 +3446,17 @@
           },
           "description": "retexture named materials of `model` via TXST records"
         }
+      }
+    },
+    "movableStatic": {
+      "type": "object",
+      "required": ["editorId"],
+      "properties": {
+        "editorId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "model": { "type": "string", "description": "a .nif path (rooted at Meshes\\, omit the prefix)" },
+        "objectBoundsMin": { "$ref": "#/$defs/vec3", "description": "optional MSTT OBND minimum; set together with objectBoundsMax" },
+        "objectBoundsMax": { "$ref": "#/$defs/vec3", "description": "optional MSTT OBND maximum; set together with objectBoundsMin" }
       }
     },
     "activator": {

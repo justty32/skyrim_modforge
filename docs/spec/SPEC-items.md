@@ -143,14 +143,16 @@ path rules in **[external_assets.md](../external_assets.md)**.
                   "objectBoundsMax": { "x": 18, "y": 18, "z": 16 },
                   "activationSound": "MFChimeSD" } ]
 ```
-- **`model`** (on statics/activators/furniture/miscItems/weapons) is a Data-relative `.nif` path
+- **`model`** (on statics/movableStatics/activators/furniture/miscItems/weapons) is a Data-relative `.nif` path
   rooted at `Meshes\` — so **omit the `Meshes\` prefix** (write `MyMod\bell.nif`, not
   `Meshes\MyMod\bell.nif`). `validate` enforces this. On a `miscItem`, `model` overrides `template`
   (warns); on a `weapon`, pair `model` WITH a `template` (a model-less/template-less weapon CRASHES
   on equip).
-- **`objectBoundsMin` / `objectBoundsMax`** optionally write an activator's OBND and must be set
-  together, with min below max on every axis. Use this for invisible markers and 3D emitters whose
-  newly-authored ACTI would otherwise have zero bounds.
+- **`objectBoundsMin` / `objectBoundsMax`** 可寫入 STAT、MSTT、ACTI 的 OBND，必須成對提供。
+  各軸須為有限整數、介於 -32768 與 32767，且 min ≤ max（允許平面模型）。
+  使用模型本地的 Skyrim 單位，不是 placement 世界座標；由模型計算時向外取整：min 取 floor、max 取 ceil。
+  省略時維持原有零邊界行為。有效 OBND 不代表已通過遊戲內可見性驗收。
+  三種 record 的最小範例見 [object_bounds.json](../../examples/object_bounds.json)。
 - **`sounds`** emit Sound Descriptors (SNDR). A record points at one by *ref* (in-spec `editorId` or
   vanilla `<master>:0xFORMID`): activator `activationSound`/`loopingSound`, misc/weapon
   `pickUpSound`/`putDownSound`. `category`/`outputModel` default to the vanilla SFX category/output.
