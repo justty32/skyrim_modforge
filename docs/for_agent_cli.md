@@ -33,6 +33,7 @@ $R catalog get <db> <Plugin.esp:0xFORMID> [--plugin MyPatch.esp] [--json] # exac
 $R catalog sources <db> [--json] # indexed files, hashes, localization and counts
 $R catalog export-json <db> <out.json> [--placeable] # atomic winner catalog; optional Browser-only types
 $R questnodes <plugin> <outDir> [--strings <dir>] # QUST stage logs -> quest-node JSON files
+$R check-dependencies <plugin> --plugins <plugins.txt> [--implicit-plugins <implicit.txt>] # verify direct masters against supplied enabled lists
 $R compile  <script.psc> <outDir>            # .psc -> .pex via the CK PapyrusCompiler under Wine
 $R extract  <plugin.esp> <strings.json>      # pull translatable strings -> JSON (source/target)
 $R apply    <plugin.esp> <strings.json> <out.esp>     # write targets back (Latin scripts / inline)
@@ -48,6 +49,27 @@ families (`questdiag`, `packagediag`, `landdiag`, `navdiag`, …) that prints on
 you can compare what you generated against a vanilla record of the same kind.
 
 `--no-build` requires a prior `dotnet build`; drop it (slower) if unsure.
+
+### 檢查成品的直接 master 依賴
+
+`check-dependencies` 只讀 ESP 的 TES4 header，將每個直接 master 與明示清單比對。
+`--plugins` 採 MO2 格式：`*Plugin.esp` 是啟用，無星號是停用；忽略 BOM、空行與 `#` 註解。
+MO2 常省略官方主檔，必要時另外提供已確認的隱含載入清單：
+
+```bash
+$R check-dependencies MyPatch.esp --plugins profile/plugins.txt --implicit-plugins official-and-cc.txt
+```
+
+`--implicit-plugins` 每個非註解行是一個啟用的 plugin 名稱，結果標示 `enabled (implicit list)`；
+例如逐行列出已確認安裝的 `Skyrim.esm`、`Update.esm` 與所需 DLC／CC。工具不默認任何官方主檔。
+`Skyrim.ccc` 可提供其中的 CC 名稱，但不代表已涵蓋所有官方主檔。
+不要直接把 MO2 `loadorder.txt` 當上述清單：排序清單不能證明每一筆都啟用。
+空清單與全部停用的清單保持原意，不會自動改成全部啟用。
+
+結束碼：`0`＝所有直接 masters 在提供的證據中啟用；`1`＝有缺項或停用；
+`2`＝參數錯誤、輸入無法讀取或 header／清單格式錯誤。
+這項檢查不改輸入，不驗證磁碟上是否有 master 檔案、版本、遊戲實際載入狀態或遞迴依賴。
+Header 結構依據：[xEdit 固定版本的 TES4 定義](https://github.com/TES5Edit/TES5Edit/blob/9fb016884bec138ea6c7b872cec831537d464c3e/Core/wbDefinitionsTES5.pas#L10111-L10144)。
 
 ## Offline catalog for agent lookups
 

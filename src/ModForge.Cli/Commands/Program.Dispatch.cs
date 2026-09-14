@@ -34,6 +34,7 @@ internal static partial class Program
         "gamedata" when args.Length == 5 && args[3] == "--strings" => GameData(args[1], args[2], args[4]),
         "questnodes" when args.Length == 3 => QuestNodesCmd(args[1], args[2]),
         "questnodes" when args.Length == 5 && args[3] == "--strings" => QuestNodesCmd(args[1], args[2], args[4]),
+        "check-dependencies" => CheckDependenciesCmd(args[1..]),
         _ => null,
     };
 
@@ -58,6 +59,7 @@ internal static partial class Program
         "  catalog export-json <db> <out.json> [--placeable]  export winners; --placeable keeps Browser base types only\n" +
         "  gamedata <plugin> <outDir> [--strings <dir>] bulk-extract books/dialogue/quests/npcs/items/locations/magic to a folder (for agent reference)\n" +
         "  questnodes <plugin> <outDir> [--strings <dir>]  extract non-empty QUST stage logs as schema-valid quest-node JSON files\n" +
+        "  check-dependencies <plugin> --plugins <plugins.txt> [--implicit-plugins <implicit.txt>]  verify direct masters against explicit enabled lists\n" +
         "  texexport <dataDir> <outDir> <master:0xLTEX>[,…]  LTEX→diffuse .dds from texture BSAs → PNG (Godot WYSIWYG terrain)\n" +
         "  nifexport <dataDir> <outDir> <master:0xFORMID>[,…]  placeable base→model .nif from mesh BSAs (Godot WYSIWYG objects; convert via nif2gltf)\n" +
         "  texpath <dataDir> <outDir> <texPath>[,…]     extract arbitrary texture path(s) from BSAs → <basename>.png (textures a model's glTF)\n" +

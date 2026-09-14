@@ -12,6 +12,7 @@
 
 ## 最新進度
 
+
 > ### 🎯 現在在哪（2026-08-02）
 >
 > **repo 結構剛做過一次大搬遷**：`sub_projs/` 的十一個子專案全部移出——有程式碼／建置／產物的成了 `projects/` 下的**同層 git repo**（godot-worldspace-editor、scene-capture-bridge、model-converter、agent-bridge、darksouls-port、sofia-patch、skyrim-voicegen、game-data），純文檔的進工作區 `analysis/`（mod-survey、tool-survey、followers-patch）。**stub 也不留**，對照表在 [sub_projs/README](sub_projs/README.md)。C# 側零改動、1013 測綠。跨 repo 連結一律假設各 repo 同層 clone 在 `projects/` 下。
@@ -25,7 +26,7 @@
 - **🐞 匯出器把「引擎自己生的」當成「玩家放的」——已改登記簿制（2026-07-14，已部署 DLL `c07dd174`，待實機）**：野外匯出 10 筆 placements 裡**只有 1 筆是使用者放的**，其餘是釣魚 CC 的魚 ×3 ＋ `DoNotPlaceSmallCritterLandingMarkerHelper` ×6（蝴蝶降落 marker）。根因＝vanilla diff 的判準「dynamic ref ＝ 玩家放的」**對引擎生的 ref 同樣為真**（引擎自己也 PlaceAtMe），這個啟發式分辨不了、也永遠分辨不了。**一直都在**，只是以前都在室內測（旅館裡沒有魚）。修法（使用者拍板）＝**所有權從推導改成記錄**：每筆 `sc pl`／ghost commit 都進 placed 登記簿，匯出器**沒登記簿列就不匯出**，另給面板一顆 `adopt dynamic refs in this cell`（明示優於推導）。⚠️ **行為改變**：登記簿制之前擺的、以及 console `placeatme` 生的，**不再自動匯出**（要按 adopt）。細節見 [phases](workflows/plans/scene-capture-bridge/phases.md)。
 - **採集橋——待實機只剩三條**（[wait_todo](wait_todo/ingame-tests.md)，同一顆 DLL `c07dd174`）：① 🔴 **`sc ed` numpad 回歸**（長按/加速/`sc ed ax`/單發鍵不連發——本輪把長按時鐘抽成共用 `Numpad.h` 給 ghost 一起用，**唯一可能傷到既有功能之處**）；② **`gh0` 可見性**（Mode 那行 ＋ Settings checkbox）；③ **登記簿制野外匯出**（`scene.json` 應剛好只有你放的，log 多印 `N dynamic refs not ours`）。另有兩個體感待回報：自動縮放的「九分之一」會不會太小（大件會撞到 0.05 下限）、numpad 轉/縮步長順不順手。
 - **其餘採集橋功能**（模式開關 py/ed/pkc、實例附魔 ed1、referrer、跨存檔 reacquire、面板欄位一致化、numpad 長按、動作鍵 `.ini` ＋ palette clear）**使用者已回報通過**，濃縮句在 [landed](workflows/feature-dev/landed/README.md)。
-- **masters 汙染（設計 open，非 bug）**：玩家身上的 spells/effects/inventory 一半來自 mod → esp 把 PROTEUS/XPMSE/nwsFollower… 全變 master。**使用者拍板：完全複製優先、不過濾**；可見性四候選中 (a) build 印來源 ＋ (b) spec `requires:` 契約**已做**，(c) modlist 快照／(d) 依賴檢查指令**未做**（[backlog](workflows/plans/scene-capture-bridge/backlog.md)）。
+- **masters 汙染（設計 open，非 bug）**：玩家身上的 spells/effects/inventory 一半來自 mod → esp 把 PROTEUS/XPMSE/nwsFollower… 全變 master。**使用者拍板：完全複製優先、不過濾**；可見性四候選中 (a) build 印來源 ＋ (b) spec `requires:` 契約**已做**，(c) modlist 快照**未做**；(d) `check-dependencies` 的直接 master／明示啟用清單檢查已於 2026-09-14 完成（專項 11 PASS，完整離線 1270 PASS／1 SKIP；[用法](docs/for_agent_cli.md#檢查成品的直接-master-依賴)）（[backlog](workflows/plans/scene-capture-bridge/backlog.md)）。
 - **Phase 2 烘焙臉（未排，優先級⬇）**：實測分身臉正常——頭形引擎 runtime 生、臉色 Face Discoloration Fix SE 補；只剩「發佈給無 FDF 環境」或「完全自足產物」才需要烘。三路評估與界線在 [plans/captured-npcs-consumption.md](workflows/plans/captured-npcs-consumption.md)。
 - **🔴 鐵律（血的教訓，2026-07-12）**：遊戲跑著時用 `cp` 就地覆寫 `mods/.../SKSE/Plugins/*.dll` → **遊戲無聲暴斃、無 crash log**（Linux 不鎖載入中的 DLL；`cp` 寫穿同一個 inode，而 DLL 程式碼頁是 demand-paged from that file）。**往後部署一律走 `../scene-capture-bridge/scripts/deploy.sh`**（`pgrep SkyrimSE.exe` 在跑就拒絕 ＋ tmp+rename 換 inode），不要手打 `cp`。成因記入 [dev-env § 部署 SKSE DLL](workflows/dev-env.md)。
 
