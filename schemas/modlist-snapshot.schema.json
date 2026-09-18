@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://modforge.local/schemas/modlist-snapshot.schema.json",
+  "title": "MO2 modlist snapshot v1",
+  "description": "Separator lines (*) are omitted and consume no mod priority index. Names join case-insensitively; duplicate mods/load order entries are invalid. Plugins in load order appear first, then plugins-only entries sorted ordinally. No timestamps, paths or machine identifiers.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "sources",
+    "mods",
+    "plugins"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "modlist",
+        "plugins",
+        "loadorder"
+      ],
+      "properties": {
+        "modlist": {
+          "$ref": "#/$defs/source"
+        },
+        "plugins": {
+          "$ref": "#/$defs/source"
+        },
+        "loadorder": {
+          "$ref": "#/$defs/source"
+        }
+      }
+    },
+    "mods": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/mod"
+      }
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/plugin"
+      }
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256",
+        "lineCount"
+      ],
+      "properties": {
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA-256 of UTF-8 source text with CRLF normalized to LF; comments, blank lines and final newline retained."
+        },
+        "lineCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Physical lines including comments and blanks; final newline does not add an extra line."
+        }
+      }
+    },
+    "mod": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "enabled",
+        "priorityIndex"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "priorityIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Zero is highest priority (first non-comment, non-separator mod); indices are contiguous."
+        }
+      }
+    },
+    "plugin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "enabled",
+        "loadOrderIndex"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[^<>:\"/\\\\|?*\\u0000-\\u001f]+\\.[eE][sS][mpMPlL]$"
+        },
+        "enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Null means absent from plugins.txt; no implicit official masters."
+        },
+        "loadOrderIndex": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Zero-based loadorder.txt position; null means absent from loadorder.txt."
+        }
+      },
+      "anyOf": [
+        {
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "properties": {
+            "loadOrderIndex": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
