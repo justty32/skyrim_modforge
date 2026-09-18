@@ -5847,6 +5847,10 @@
           "type": "string",
           "description": "required transcript for some engines (f5)"
         },
+        "referenceLibrary": {
+          "type": "string",
+          "description": "optional voice-annotations.json path relative to spec; clip paths relative to manifest. Applies override/intensityOverride, selects matching emotion then nearest intensity; falls back to Neutral then referenceWav/referenceText. Missing or invalid manifests are errors."
+        },
         "modelPath": {
           "type": "string",
           "description": "optional: path to a fine-tuned model directory"

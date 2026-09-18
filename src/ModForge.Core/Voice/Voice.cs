@@ -39,7 +39,7 @@ public sealed class VoiceOptions
 public static partial class Voice
 {
     /// <summary>
-    /// Builds the TTS command-line argument list for one line. Pure (no I/O) so it is unit-testable.
+    /// Builds the TTS command-line argument list for one line; reads the reference library when configured.
     /// Optional template fields only emit a flag when set, so engine defaults stay in charge otherwise.
     /// </summary>
     public static List<string> BuildTtsArgs(string text, VoiceTemplateSpec template, string specDir, string outWav,
@@ -65,16 +65,29 @@ public static partial class Voice
             args.Add(intensity.Value.ToString(CultureInfo.InvariantCulture));
         }
 
-        if (!string.IsNullOrWhiteSpace(template.ReferenceWav))
+        var referenceWav = template.ReferenceWav;
+        var referenceText = template.ReferenceText;
+        if (!string.IsNullOrWhiteSpace(template.ReferenceLibrary))
         {
-            args.Add("--ref-wav");
-            args.Add(Path.Combine(specDir, template.ReferenceWav));
+            var manifestPath = Path.GetFullPath(Path.Combine(specDir, template.ReferenceLibrary));
+            var selected = SelectReferenceClip(emotion, intensity, LoadReferenceLibrary(manifestPath));
+            if (selected is not null)
+            {
+                referenceWav = Path.Combine(Path.GetDirectoryName(manifestPath)!, selected.Clip);
+                referenceText = selected.Text;
+            }
         }
 
-        if (!string.IsNullOrWhiteSpace(template.ReferenceText))
+        if (!string.IsNullOrWhiteSpace(referenceWav))
+        {
+            args.Add("--ref-wav");
+            args.Add(Path.Combine(specDir, referenceWav));
+        }
+
+        if (!string.IsNullOrWhiteSpace(referenceText))
         {
             args.Add("--ref-text");
-            args.Add(template.ReferenceText);
+            args.Add(referenceText);
         }
 
         if (!string.IsNullOrWhiteSpace(template.ModelPath))
