@@ -35,12 +35,12 @@
 | 工作流 | session-log | open 摘要 |
 |--------|-------------|----------|
 | 功能開發 | [workflows/feature-dev/session-log](workflows/feature-dev/session-log.md) | 🧊 身份系統 ③ 聲望/行為追蹤（2026-06-22 冷凍，等很有空再做）|
-| 重構整理 | [workflows/refactor/session-log](workflows/refactor/session-log.md) | `src/` 拆檔分層 **Batch 0–5 + 文檔收尾全部完成、已 push**；覆蓋率收尾也做完（新增 `scripts/coverage.sh`，離線 **73.0%**，`Archives` 挖出三個真 bug 已修）。只剩一件待你拍板（public 降 internal）。[計畫](workflows/refactor/src-layout-plan.md) |
+| 重構整理 | [workflows/refactor/session-log](workflows/refactor/session-log.md) | `src/` 拆檔分層 **Batch 0–5 + 文檔收尾全部完成、已 push**；覆蓋率收尾也做完（新增 `scripts/coverage.sh`，離線 **73.0%**，`Archives` 挖出三個真 bug 已修）。[計畫](workflows/refactor/src-layout-plan.md) |
 | 調查／解碼 | [workflows/investigation/session-log](workflows/investigation/session-log.md) | 無 |
 
 ## 不屬任何工作流的進度（堆太多 → 拆進 `session_logs/`）
 
-- **Idea #23 living-adventurers**：**YUA 15/15 + generic P0–P3 31/31 均於 2026-08-10 實機 PASS**。Generic 證明兩 actor/archetype、Riverwood↔Whiterun anchor 輪替，以及 Falas structured parley（favor 0→5）；可重跑 spec 為 [living_npcs.qa.json](sub_projs/living-adventurers/living_npcs.qa.json)。YUA 證明 uniqueActor/follower ownership，並修掉 dismiss 出門後立即 `MoveTo` 的可見消失，改為 30 秒＋8192-unit off-screen reclaim。現在剩方向決策：controller 讀 favor/alignment 改行為，或敵對-交戰中 parley 呈現。設計/進度 → [README](sub_projs/living-adventurers/README.md)、[design](sub_projs/living-adventurers/design.md)、[YUA MVP](sub_projs/living-adventurers/yua-mvp.md)。
+- **Idea #23 living-adventurers**：**YUA 15/15 + generic P0–P3 31/31 均於 2026-08-10 實機 PASS**。Generic 證明兩 actor/archetype、Riverwood↔Whiterun anchor 輪替，以及 Falas structured parley（favor 0→5）；可重跑 spec 為 [living_npcs.qa.json](sub_projs/living-adventurers/living_npcs.qa.json)。YUA 證明 uniqueActor/follower ownership，並修掉 dismiss 出門後立即 `MoveTo` 的可見消失，改為 30 秒＋8192-unit off-screen reclaim。**2026-09-18 裁示：今天不做，A／B／C 皆不選**；日後入口：A `controller 讀 favor/alignment 改行為`；B `敵對-交戰中 parley 呈現`；C 先花 ~20 分鐘實機驗 roadmap #9 `instanceGlobals` 解鎖 P4（真 missive），再決定 A 或 B（[驗收單](../../agentctl/handoffs/home-2026-09-18/modforge/ingame-checks/06-instance-globals.md)）。設計/進度 → [README](sub_projs/living-adventurers/README.md)、[design](sub_projs/living-adventurers/design.md)、[YUA MVP](sub_projs/living-adventurers/yua-mvp.md)。
 - **Idea #20 in-world 技能樹**：Phase 0 離線完備 + .pex 已編交付，剩實機驗收——見 [WAIT_USER](WAIT_USER.md) → [wait_todo/roadmap-features.md](wait_todo/roadmap-features.md)。sub_proj [inworld-skill-tree](sub_projs/inworld-skill-tree/README.md)。
 - **darksouls-port（DS1 北方不死院 → Skyrim worldspace）**：P1「空殼院」離線完成、`DSPortP1.zip` 已交付（2026-07-06），**剩實機驗收**（進場指令與三段驗收見 [wait_todo/ingame-tests.md](wait_todo/ingame-tests.md)）；規劃與 P1 結論 [plan.md](../darksouls-port/plan.md)。
 - **Idea #19 Godot Worldspace Editor**：整鏈已落地（[landed/world](workflows/feature-dev/landed/world.md) +「Godot 編輯器 WYSIWYG」條 / [godot-editor](workflows/feature-dev/landed/godot-editor.md)），剩非阻塞小尾巴——見 [WAIT_USER](WAIT_USER.md) → [wait_todo/worldspace-editor.md](wait_todo/worldspace-editor.md)。

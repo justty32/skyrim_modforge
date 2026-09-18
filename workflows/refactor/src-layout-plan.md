@@ -159,7 +159,7 @@
 - **補測試**：`Fuz.Split`（6 條）與 `Translator`（5 條）。`Translator` 在**文件寫明的 library API 裡卻零測試**。測試數 1130 → **1141**。
 - **`docs/for_agent_lib.md` 講實話了**：那張表就是全部支援的介面，其餘 ~100 個構得到的 public 成員是「因為 Cli 在另一個組件所以只好公開」的實作細節。
 
-**沒做、留給你決定的：把 ~100 個 public 降 `internal`。** 量測結果：type 層級 112 個 public static，Cli 用 54 個、測試用 83 個。要降的話得先 ① 給 `ModForge.Cli` 加 `InternalsVisibleTo`；② 決定 `SceneCoordinates`／`Catalog` 這些**有自己 SPEC 文件**的型別算不算對外契約。第二點是產品決定，不是重構決定——所以先把規則寫進文件，執行留給你。
+**2026-09-18 已裁：維持 `public`，不降 `internal`。** 理由：保留把 `ModForge.Core` 給別的 repo 當函式庫用的可能性。量測結果：type 層級 112 個 public static，Cli 用 54 個、測試用 83 個。
 
 > **不重新切 `World.More.cs`**（它同時裝了 regions/cells 與 factions/npcs/shouts，看起來很該拆）：`Validate` 回傳的 problems **是有順序的**，那個順序會印給使用者，而且有一個測試在 index `problems[0]`。為了純美觀的分類去改可觀察的輸出不划算。理由寫進該檔檔頭了。
 

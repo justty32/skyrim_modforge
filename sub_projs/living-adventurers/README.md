@@ -20,7 +20,7 @@ Skyrim 只跑玩家附近的 AI，所以離場冒險者＝**純資料**（Storag
 | **spike：證明模擬迴圈**（`spike/`，1 NPC，build 綠） | ⚪ 過程原型；驗收已由 macro 版 generic 整鏈取代 |
 | **P1：泛化控制器**（`p1/`，2 NPC / 2 archetype，build 綠零警告） | ⚪ 過程原型；兩 actor／兩 anchor 已由 macro 版實機驗證 |
 | **P2：`livingNpcs:` macro 落地**（core） | ✅ 落地＋實機：`examples/living_npcs_spec.json` 的 generic 包由 agent-bridge 完整跑過；「加 NPC = 幾行 JSON」、兩 actor、兩 archetype、anchor 往返輪替成立 |
-| **P3：玩家互動 + alignment**（core） | ✅ generic neutral parley 實機通過（結構化讀選項、選取 TopicInfo、favor 0→5）；YUA Phase-3.5 follower handoff 亦通過。剩新功能方向：敵對-交戰中浮現 parley，或 controller 讀 favor/alignment 改行為 |
+| **P3：玩家互動 + alignment**（core） | ✅ generic neutral parley 實機通過（結構化讀選項、選取 TopicInfo、favor 0→5）；YUA Phase-3.5 follower handoff 亦通過。**2026-09-18 已裁：今天不做**；日後三個方向入口見 [SESSION-LOG Idea #23](../../SESSION-LOG.md) |
 | 任務層（真 missive 隨機地點） | ⏸ 卡 roadmap #7–9（LocationAlias / nested ReferenceAlias / UpdateCurrentInstanceGlobal） |
 | cast 來源接真 standalone follower mod | 🟢 YUA MVP 於 2026-08-10 實機 15/15 PASS：uniqueActor、離場 deeds、materialize、rumor、fund/praise/favor、招募 ownership 與 dismiss 後 off-screen handoff 全過；詳見 [yua-mvp.md](yua-mvp.md) |
 | 玩家互動（搶任務 / 雇用 / 資助破壞） | ⏸ 未開 |

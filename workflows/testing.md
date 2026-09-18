@@ -26,6 +26,14 @@ dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj --filter "Categ
 或 Python runtime 不在場，該 case 會帶理由明示 skip；可用
 `MODFORGE_VOICE_CONTRACT_PYTHON` 指定 Python executable。
 
+### 已知問題：dynamic skip 被 runner 當成 Failed
+
+fresh clone、任何 git worktree 或缺同層 `skyrim-voicegen` checkout 時，離線 suite 回報 `Failed: 1`（非 skip）：`$XunitDynamicSkip$sibling skyrim-voicegen checkout is unavailable`。
+`tests/ModForge.Core.Tests/Voice/VoiceLiveContractTests.cs` 的 `GenerateWav_ProductionVoicegen_HonorsProcessContract` 用 `SkipException.ForSkip`；目前 xUnit／VSTest runner 卻當失敗。這是測試基礎建設問題，非產品 bug，也非你改壞。
+重現：`git worktree add --detach /tmp/x <任一 commit>`，在 `/tmp/x` 跑離線 suite → `Failed: 1`。
+繞法（2026-09-18 實測）：`ln -sfn <工作區>/projects/skyrim-voicegen /tmp/skyrim-voicegen`，再跑 → `Failed: 0, Passed: 1338, Skipped: 0`。
+**2026-09-18 已知、當天決定不修**；建議改真正的 `Skip` 屬性或條件式 Fact。
+
 ## 重構護欄：golden hash（`scripts/golden-hash.sh`）
 
 行為不變的重構（[refactor 工作流](refactor/README.md)）光靠上面的測試**不夠**：1203 個 test method 裡約八成只走 `Generator.Build`/`Validate` 對記錄下斷言，內部怎麼重組它們一律看不見。`golden-hash.sh` 補這個洞——把 `examples/` 全部 build 一次，逐一輸出 `.esp`／`.seq` 的 SHA-256：

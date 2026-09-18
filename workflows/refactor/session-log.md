@@ -87,10 +87,6 @@ cli-dispatch 330 shape、package-snapshot 1433 行。before 基線是**先 `git 
 2. ~~文檔裡 5 條既有死連結~~ **已處理（`19fcadc` + 本次）**——查證後是三種不同的東西：`docs/engine-internals.md`（含 zh-TW）是**真的寫錯**（說生成器在 `src/ModForge.Cli/Build.cs`，其實一直在 Core）已修；`plans/ingame-scene-export.md` 那兩條是**計畫原文**（一條被自己文件上方的進度段取消、一條落地時改了名），就地註記不刪；archive 那兩條**指的檔案真的存在過**（`c0a4885` 加入、`8758d76` 退場），凍結的歷史不動。細節見計畫 Batch 1 的註腳。
 3. ~~`DEV-GUIDE.md` 缺「平鋪太多即包夾」~~ **已補（`19fcadc`）**——現在是觸發 C，並寫明它與觸發 A 的因果關係。
 
-**一件留給你拍板的（不是重構決定）：**
-
-- 要不要把 ~100 個 public 成員降 `internal`（要先給 Cli 加 `InternalsVisibleTo`，並決定有 SPEC 文件的型別算不算對外契約）——量測與選項在計畫 Batch 5。
-
 ### 覆蓋率收尾（2026-08-13 續做，已 commit）
 
 原本「`Archives.cs` / `Papyrus.cs` 零測試」那條是**用型別名 grep 猜的**，不準。改用 `scripts/coverage.sh`（新增，見 [testing.md](../testing.md)）實測，離線基準 **73.0%**，結論修正如下：
