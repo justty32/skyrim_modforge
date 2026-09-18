@@ -8,6 +8,7 @@ public sealed class VoiceTemplateSpec
     public string Engine { get; set; } = "f5";        // f5 | chatterbox | gptsovits | xtts | fish-s2
     public string ReferenceWav { get; set; } = "";    // path to a zero-shot reference clip (rel. to spec)
     public string ReferenceText { get; set; } = "";   // required transcript for some engines (f5)
+    public string? ReferenceLibrary { get; set; }     // annotation manifest path (rel. to spec); clips rel. to manifest
     public string ModelPath { get; set; } = "";       // optional: path to a fine-tuned model directory
     public string RvcModel { get; set; } = "";        // optional: path to an RVC model for timbre stabilization
     public string Language { get; set; } = "en";
