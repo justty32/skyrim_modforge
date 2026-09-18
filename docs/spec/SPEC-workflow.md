@@ -89,11 +89,33 @@ setup notes (Blackwell→torch cu128, F5 auto-transcribes ref when `ref_text=""`
 
 - `voiceTemplates[]` — named cloning recipes, referenced by NPCs:
   - `id` — unique template name.
-  - `engine` — `f5` | `fish-s2` | `chatterbox` | `gptsovits` | `xtts`. `f5` is handled by the
-    bundled local `voicegen.py`; `fish-s2` is routed through `MODFORGE_FISH_SPEECH_BIN`, a local
-    Fish Speech wrapper that writes a WAV. The other names are reserved until their wrappers exist.
+  - `engine` — `f5` | `fish-s2` | `chatterbox` | `gptsovits` | `xtts`.
+    The explicit registry in `Voice.Engines.cs` marks `f5` and `fish-s2` as **wired**.
+    `fish`, `fishspeech`, and `fish-speech` resolve to `fish-s2`; names are case-insensitive.
+    Existing TTS arguments, including the original engine spelling, are forwarded unchanged.
+    `f5` is handled by the sibling skyrim-voicegen `voicegen.py`; `fish-s2` uses
+    `MODFORGE_FISH_SPEECH_BIN`. **Wired** means the route exists, not that local tools/models are installed.
+    `chatterbox`, `gptsovits`, and `xtts` are **reserved**. Validation prints an explicit warning
+    with the future wrapper contract, while keeping the fatal-error list empty for these names.
+    `voicelines` skips all targets using a reserved engine before invoking any external process,
+    counts them separately from TTS failures, and exits 3 whenever at least one target is skipped.
+    The same reserved skip and exit 3 apply to `--dry-run` / `--plan`.
+    `voicediag <spec.json> <built.esp>` reports the number of reserved templates and affected
+    nonempty line targets without TTS, and exits 3 when at least one such target exists.
+    Setting a future wrapper variable alone does not enable a reserved engine: implement its
+    voicegen route and explicitly promote its registry status to wired after integration.
   - `referenceWav` + `referenceText` — zero-shot reference clip and its transcript
     (paths relative to the spec file; f5 requires the transcript).
+  - `referenceLibrary` — optional path to a `voice-annotations.json` array, relative to the
+    spec file. Clip paths are relative to the manifest directory (absolute paths also work).
+    Non-blank `override` replaces `emotion`; non-null `intensityOverride` replaces `intensity`.
+    For each line, match emotion case-insensitively, then choose the closest intensity.
+    Ties use ordinal `infoFormId`, then `clip`, then `text`. Missing emotion/intensity means
+    Neutral/0. If no emotion matches, try Neutral, then fall back to `referenceWav` and
+    `referenceText`; an empty array also uses that fallback. Missing or malformed manifests
+    fail with an explicit error. The selected clip's own text replaces `referenceText`,
+    including an empty transcript (which omits `--ref-text`). Without this field, existing
+    reference arguments are unchanged.
   - `modelPath` — optional fine-tuned model directory (relative to the spec).
   - `rvcModel` — optional RVC model for timbre stabilization.
   - `seed` — deterministic output.
@@ -123,6 +145,16 @@ setup notes (Blackwell→torch cu128, F5 auto-transcribes ref when `ref_text=""`
 | `MODFORGE_LIPGEN` | CK official `LipGenerator.exe` (run under Wine) | **preferred** .lip lipsync generation; ships with the Creation Kit at `Tools/LipGen/LipGenerator/` and auto-finds `FonixData.cdf` next to its own exe (no separate cdf var needed) |
 | `MODFORGE_FACEFX` | community `FaceFXWrapper.exe` (run under Wine) | fallback .lip generation when `MODFORGE_LIPGEN` is unset |
 | `MODFORGE_FONIXDATA` | `FonixData.cdf` | required by the `MODFORGE_FACEFX` fallback only |
+| `MODFORGE_CHATTERBOX_BIN` | Future Chatterbox wrapper executable/script | reserved contract only; currently not read or invoked by ModForge |
+| `MODFORGE_GPTSOVITS_BIN` | Future GPT-SoVITS wrapper executable/script | reserved contract only; currently not read or invoked by ModForge |
+| `MODFORGE_XTTS_BIN` | Future XTTS wrapper executable/script | reserved contract only; currently not read or invoked by ModForge |
+
+Reserved-engine wrappers must accept `--engine`, `--text`, `--out`, and the existing optional
+`--ref-wav`, `--ref-text`, `--model`, `--rvc`, `--seed`, `--speed`, `--exaggeration`,
+`--language`, `--emotion`, and `--intensity` flags with their existing semantics.
+They must write a valid, nonempty WAV to `--out`, return exit 0 only on success,
+and return a nonzero exit code on failure. These variables describe future wiring;
+no new wrapper is implemented or enabled by this change.
 
 > Lip sync runs automatically when `format: fuz` and `skipLip` is false. With `MODFORGE_LIPGEN` pointed at the
 > CK `LipGenerator.exe`, `voicelines` packs a real `.lip` into each `.fuz` so NPC mouths move — **confirmed in-game
@@ -156,8 +188,11 @@ fields for you to fill after listening. `emotion`/`intensity` come straight from
 `Emotion`/`EmotionValue` (the game already labelled every line — a free, authoritative first pass); you
 only correct what the coarse label gets wrong (e.g. labelled Neutral but actually sarcastic — set
 `override`). `<esm>` is `Skyrim.esm` for vanilla voice types, or a mod (`SofiaFollower.esp`, `Vigilant.esm`)
-for that mod's character voices. *(Phase B — `voiceTemplates[].referenceLibrary` consuming the corrected
-manifest to pick an emotion-matched reference clip per line — is a separate later feature.)*
+for that mod's character voices.
+
+Phase B is implemented: `voiceTemplates[].referenceLibrary` consumes this corrected manifest
+and selects an emotion-matched reference clip and its transcript for each synthesized line.
+See the `referenceLibrary` field above for deterministic selection and fallback rules.
 
 Fish S2 template example:
 

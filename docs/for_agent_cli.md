@@ -71,6 +71,27 @@ $R check-dependencies MyPatch.esp --plugins profile/plugins.txt --implicit-plugi
 這項檢查不改輸入，不驗證磁碟上是否有 master 檔案、版本、遊戲實際載入狀態或遞迴依賴。
 Header 結構依據：[xEdit 固定版本的 TES4 定義](https://github.com/TES5Edit/TES5Edit/blob/9fb016884bec138ea6c7b872cec831537d464c3e/Core/wbDefinitionsTES5.pas#L10111-L10144)。
 
+### 保存與比較 MO2 profile 快照
+
+```bash
+$R modlist snapshot profile/ before.json
+$R modlist diff before.json after.json [--json]
+```
+
+`snapshot` 把 profile 的 `modlist.txt`／`plugins.txt`／`loadorder.txt` 讀成一份確定性 JSON
+（原子 rename 寫出，不覆蓋輸入）。**不寫時間戳、絕對路徑或機器資訊**，同輸入永遠產生
+byte-identical 輸出，所以兩份快照可直接 `diff`。欄位契約見
+[`schemas/modlist-snapshot.schema.json`](../schemas/modlist-snapshot.schema.json)。三件語意要注意：
+
+- **`priorityIndex: 0` 是最高優先權**（檔案最前面那筆、最後覆蓋者），index 越大越低；
+  `*` separator 不占 index；名稱保留內部空白與非 ASCII。
+- **`enabled: null` 是「未知」不是「停用」**：啟用只由 `plugins.txt` 決定、`loadOrderIndex` 只由 `loadorder.txt` 決定。**不自動補官方主檔，也不從排序推論啟用狀態**（同 `check-dependencies` 立場）。
+- **`sources.*.sha256` 是 CRLF 正規化成 LF 後的雜湊**，不是原始 bytes，所以同一份 profile 的 CRLF 與 LF 版產生相同快照；BOM 會被移除。
+
+重複項、壞 plugin 名、未知或缺少的 JSON 欄位、不支援的 `schemaVersion` 一律 fail closed。
+`diff` 只比較兩份快照，不讀 profile 也不讀遊戲。結束碼：`0`＝snapshot 成功或 diff 無差異、
+`1`＝diff 有差異、`2`＝參數錯誤或格式錯誤；兩個子指令都不修改輸入檔。
+
 ## Offline catalog for agent lookups
 
 `catalog` is a compact, generic record index for a story system or agent that needs to answer

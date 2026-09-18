@@ -12,6 +12,8 @@
 | `examples/sample_spec.json` | **源碼** | 完整示範 spec；`for_agent_cli.md` 直接引用，是 agent 最先參考的範例 |
 | `examples/proof_spec.json` | 煙霧測試 | 基礎功能 e2e 驗證用 spec |
 | `examples/showcase_spec.json` | 煙霧測試 | 完整功能展示 spec |
+| `schemas/modlist-snapshot.schema.json` | **源碼** | MO2 profile snapshot v1 JSON Schema |
+| `fixtures/modlist-snapshot/{lf,crlf}/` | 人工 fixture | 每組三檔、每檔六行；LF 與 CRLF 對照，含空格／非 ASCII／停用／separator |
 
 ---
 
@@ -34,6 +36,9 @@
 | `GameDataInputTests.cs` | `gamedata`/`questnodes` 共用 localized input：`--strings` 與 synthetic SSE BSA 的 QUST stage-log roundtrip、metadata-driven archive refresh，以及 cache key 的 data-source 隔離。|
 | `SafeOutputPathTests.cs` | package 輸出路徑 containment：合法嵌套路徑通過，`..` traversal 拒絕 |
 | `PackageSafetyTests.cs` | CLI package safety gates：多 `mcmConfigs` 拒絕；required global bridge 編譯失敗時不進入 build/write |
+| `Commands/ModlistSnapshotTests.cs` | 20 個測試案例：mod 啟用／優先序方向／separator／名稱；CRLF-LF 與重跑 byte-identical；既有 plugin parser 與 fail-closed；清單落差／不推論官方主檔；diff 各類變更；來源 hash／行數；JSON 與正式 schema；真 CLI process exit 0/1/2、保護輸入及失敗時保留舊輸出 |
+| `VoiceEngineRegistryTests.cs` | 五個 engine 的 wired/reserved registry、Fish alias 大小寫、unknown error／reserved stderr warning 與 wrapper env var、完整 ordered TTS argv 回歸、生成前 reserved skip 與 plan/exit 3 決策、混合／空白／unresolved 計數（29 cases） |
+| `VoiceReferenceLibraryTests.cs` | referenceLibrary：legacy args 逐字回歸、manifest 路徑/文字接線、emotion 優先/大小寫不敏感、最近 intensity、FormID/clip/text 確定性平手、override/intensityOverride（含零）、Neutral→固定 reference 退路、空陣列、缺檔/壞 JSON/null/無 clip fail-closed、缺省 targets、selector 不修改輸入；18 cases |
 
 ---
 
@@ -55,7 +60,8 @@
 
 | 層次 | 檔案 | 命令 |
 |-----|-----|-----|
-| CLI | `Program.cs` | `gen` / `find` / diagnostic dispatcher；`ResolveSpecJson`（單一 chokepoint，跑 `SpecRefs.ResolveFile`）→ `ReadSpec` JSON 反序列化 |
+| CLI | `Program.cs` | `Main` 入口，依序試 `DispatchCore`／`DispatchDiagnostics`，都不吃就落到 `Usage()`；`ResolveSpecJson`（單一 chokepoint，跑 `SpecRefs.ResolveFile`）→ `ReadSpec` JSON 反序列化 |
+| CLI | `Program.Dispatch.cs` | `DispatchCore`：`build`／`package`／`voicelines`／`voicediag`／`extract-voices`／`voice-annotate`／`compile`／`catalog`／`gamedata`／`questnodes`／`modlist`／`check-dependencies` 等核心命令的 argv 形態比對 + `CoreUsage` 說明文字（`modlist snapshot/diff` 由此線加入） |
 | Catalog | `Catalog.cs` / `Catalog.Schema.cs` / `Catalog.Export.cs` | 離線 SQLite/FTS5 catalog：generic major record（FormKey/plugin/type/EditorID/name/model path）+ source SHA-256/path/load-order provenance；DB schema/version gate 對舊 cache 明示 rebuild；保留 override occurrences，`export-json` 依明示 low→high order 只吐 winner，可選 21 種 scene Browser base 的 record-type filter（不以 model path 誤刪 ARMO）、拒絕覆寫輸入 DB，flushed temporary→atomic replace，契約為 `schemas/scene-catalog.schema.json`。未做 record-specific schema。|
 | CLI | `CatalogCmd.cs` | `catalog build/query/get/sources/export-json` facade；query/get/sources 可輸出人讀 TSV 或 camelCase JSON，`export-json --placeable` 產 scene-capture Browser 精簡檔。|
 | CLI | `Program.Build.cs` | `build` / `validate` / `package` / `compile` / `voicelines` / `extract-voices`；`validate` 的 `CheckUnknownFields` + deserialize 都跑在 `$ref`/`$env` **解析後**的 JSON；`build` 後另印 `annotations`（advisory，不生記錄）與 `references`（label→既有 ref 綁定清單）兩行摘要；`ReportDependencies` 印非 vanilla master ＋寫 `<plugin>.requires.txt` 旁檔（作者面向）；`package` 也印，並另把**玩家面向** `REQUIREMENTS.txt`（`RequiresFileText forShippedMod:true`）寫進出貨夾——玩家最需要「先裝哪些前置」；**`RequiresOk` ＝ `requires[]` 的閘門**（用到沒宣告 → 印錯誤、**在 `PluginIo.Write` 之前 return 1，esp 完全不寫**；`package` 走同一個閘門），**`SyncRequiresFile` ＝ `build --sync-requires`**（用 `JsonNode` 就地改寫 spec 檔的 `requires[]`；requires 來自 `$ref` include 時拒絕改寫，免得宣告分叉）|
@@ -66,6 +72,20 @@
 | CLI | `Package.Scripts.cs` | 步驟 4–5：使用者 `.psc` 編譯（含 dispatcher sibling-header 機制）＋ word-wall 片段；步驟 5b–5g：依 spec 用到什麼就出貨哪顆內嵌 `.pex` |
 | CLI | `Package.LooseFiles.cs` | 步驟 7：action-system loose files（OAR / BDI / PIE / SPID / MCM / FLM / KID / BOS / AOS / SkyPatcher）＋ `.hkx` 解析與複製 |
 | CLI | `Package.Compile.cs` | `Package.cs` 的 static helper：生成片段編譯（`CompileGeneratedFragment`）、MCM count/required-bridge safety gates、embedded `.pex` 出貨（`ShipEmbeddedPex`）、action-system loose file 寫出（`WriteLooseFile`）|
+
+---
+
+## MO2 Profile Snapshot / Diff
+→ **說明文件**：[for_agent_cli.md § 保存與比較 MO2 profile 快照](../../../docs/for_agent_cli.md)
+
+| 層次 | 檔案 | 職責 | Tests |
+|---|---|---|---|
+| Core | `ModlistSnapshot.cs` | v1 snapshot/source/mod/plugin records；三份 MO2 profile 文字解析、正規化雜湊與行數、nullable 來源缺席狀態；plugins parser 重用 `PluginListing.Parse` | `Commands/ModlistSnapshotTests.cs` |
+| Core | `ModlistSnapshot.Json.cs` | 確定性 camelCase JSON、嚴格讀入、版本／來源／名稱／index 驗證 | `Commands/ModlistSnapshotTests.cs` |
+| Core | `ModlistSnapshot.Diff.cs` | 純函式 diff；mod/plugin 新增移除、啟用與位置變更、来源 metadata 變更與 JSON 輸出 | `Commands/ModlistSnapshotTests.cs` |
+| CLI | `ModlistSnapshotCmd.cs` | `modlist snapshot` 原子寫檔、保護 profile 輸入；`modlist diff [--json]`；exit 0/1/2 | `Commands/ModlistSnapshotTests.cs` |
+
+`schemas/modlist-snapshot.schema.json`（見 Examples & Schema 表）為此契約的 JSON Schema 來源。
 
 ---
 
@@ -198,8 +218,10 @@
 
 | 層次 | 檔案 | 職責 |
 |-----|-----|-----|
-| Spec | `Spec.Voice.cs` | `VoiceTemplateSpec`（`engine` f5\|fish-s2\|chatterbox\|gptsovits\|xtts；`fish`/`fishspeech`/`fish-speech` 為 Fish S2 alias；`referenceWav`/`referenceText` zero-shot reference、`modelPath` 微調模型、`rvcModel`、`seed`、`speed`、`exaggeration`、`language`）+ `VoiceLineSpec` 全域輸出設定（`format` fuz\|wav\|xwm、`skipLip`）；`NpcSpec.voiceTemplate`（→ template id）在 `Spec.Actors.cs` |
-| Core | `Voice.cs` + `Voice.Cache.cs` | 呼外部 TTS（`MODFORGE_TTS_BIN`；`BuildTtsArgs` pure 組 engine/ref/model/seed/speed/exaggeration/language + **emotion/intensity**（從 INFO 記錄取，非 spec 欄位）全數傳給 TTS process，協議規格見 `../skyrim-voicegen/PROTOCOL.md`）；production process boundary 由 `VoiceLiveContractTests.cs` 對 sibling `voicegen.py` 離線驗證；`EncodeXwma`（`MODFORGE_XWMAENCODE`）走 Wine；`WinePath`（Unix→`Z:\` 轉換，xwma/lip 共用）。`VoiceCache` 以 deterministic input SHA-256 + versioned `.voice-cache.json` sidecar 判斷可重用性：input 指紋納入 ref/model/RVC/tool 的 content identity（目錄按 ordinal relative path + framed bytes），metadata 需以 byte length + SHA-256 驗證每個實際輸出（含 fallback loose wav 與 optional lip）才 hit。|
+| Spec | `Spec.Voice.cs` | `VoiceTemplateSpec`（`engine` f5\|fish-s2\|chatterbox\|gptsovits\|xtts；`fish`/`fishspeech`/`fish-speech` 為 Fish S2 alias；`referenceWav`/`referenceText` zero-shot reference、optional `referenceLibrary` manifest 路徑（相對 spec，clip 相對 manifest）、`modelPath` 微調模型、`rvcModel`、`seed`、`speed`、`exaggeration`、`language`）+ `VoiceLineSpec` 全域輸出設定（`format` fuz\|wav\|xwm、`skipLip`）；`NpcSpec.voiceTemplate`（→ template id）在 `Spec.Actors.cs`。Tests: `VoiceReferenceLibraryTests.cs` |
+| Core | `Voice.Engines.cs` | `VoiceEngine`／`VoiceEngineStatus`／`VoiceEngines`：唯一名稱、alias、wired/reserved 與 future wrapper 契約表；純 `Resolve`／`GenerationSkipReason`／`ValidationWarning`／`ApplyToPlan`／`ExitCode`。Tests: `VoiceEngineRegistryTests.cs` |
+| Core | `Voice.cs` + `Voice.Cache.cs` | 呼外部 TTS（`MODFORGE_TTS_BIN`；`BuildTtsArgs` 組 engine/ref/model/seed/speed/exaggeration/language + **emotion/intensity**（從 INFO 記錄取，非 spec 欄位）全數傳給 TTS process，協議規格見 `../skyrim-voicegen/PROTOCOL.md`；有 `referenceLibrary` 時讀 manifest 並選該句 reference，未設定時無此 I/O）；production process boundary 由 `VoiceLiveContractTests.cs` 對 sibling `voicegen.py` 離線驗證；`EncodeXwma`（`MODFORGE_XWMAENCODE`）走 Wine；`WinePath`（Unix→`Z:\` 轉換，xwma/lip 共用）。`VoiceCache` 以 deterministic input SHA-256 + versioned `.voice-cache.json` sidecar 判斷可重用性：input 指紋納入 ref/model/RVC/tool 的 content identity（目錄按 ordinal relative path + framed bytes），metadata 需以 byte length + SHA-256 驗證每個實際輸出（含 fallback loose wav 與 optional lip）才 hit。Tests: `VoiceReferenceLibraryTests.cs`（referenceLibrary 選取）|
+| Core | `Voice.ReferenceLibrary.cs` | `Voice.LoadReferenceLibrary` 讀 annotation array、套用人工修正並對無效 manifest fail-closed；`Voice.SelectReferenceClip` 純函式，emotion→intensity distance→ordinal FormID/clip/text，無匹配退 Neutral 再回 null。Tests: `VoiceReferenceLibraryTests.cs` |
 | Core | `Voice.Lip.cs` | `.lip` lip-sync 生成（`GenerateLip` 一個入口、兩後端）：**優先**官方 CK `LipGenerator.exe`（`MODFORGE_LIPGEN`，簽名 `<wav> <text> -Language:<lang> -OutputFileName:<lip>`，FonixData.cdf 自 exe 同夾找、免給 cdf 路徑、**已在本機 Wine 實跑產出合法 .lip 2026-06-13**）；**退化**社群 FaceFXWrapper（`MODFORGE_FACEFX` + `MODFORGE_FONIXDATA`）。`BuildLipGenArgs` pure 可單測 |
 | Core | `Fuz.cs` | `.fuz` 容器拆解（FUZE header → lip + audio；audio ext 自動偵測 xwm/wav）|
 | Core | `Generator.Build.Voice.cs` | `WriteFuz`（lip + audio 打包成 .fuz）+ `VoiceFileName` CK 命名（`quest10_topic15_formid8_n.fuz`：quest EditorID 前 10 字 + topic EditorID 前 15 字 + INFO FormID hex8 + response 序號）|
@@ -207,9 +229,9 @@
 | Core | `Generator.Build.Voice.Speakers.cs` | `ResolveVoiceSpeakers`：從建好 esp 的 INFO 條件解 speaker（GetIsID / GetIsAliasRef / GetInFaction / scene Dialog action）→ `VoiceSpeaker`(Npc + voiceType)；一個 INFO 可對多 speaker（faction），`SelectVoiceTargets` 去重成每個 distinct voiceType 一份。解不出 → `VoiceSpeakerResolution.Reason`（CLI 必須大聲報）。**`ResolveExternalSpeakerVoice`**：INFO gated on GetIsID(Subject) 的**外部 master NPC**（mod-only cache 解不了，如既有隨從 Sofia）→ 用 `voiceSpeakers[]`（`Spec.Voice.cs` `VoiceSpeakerSpec`：speaker ref→voiceType+template）直接給，繞過 NPC 解析；`BuildVoiceLinePlan` 與 voicelines loop 都先查它。在 Core 故可對 in-memory built mod 單測 |
 | Core | `Archives.cs` | Mutagen 讀 BSA/BA2（extract + path filter；`extract-voices` / `voice-annotate` 用）|
 | Core | `Voice.Annotate.cs` | 情緒標注 index：`VoiceAnnotation`(clip/text/emotion/intensity/infoFormId + 人填 override/intensityOverride/note) model + `VoiceAnnotate.TryParseInfoFormKey`(從 clip 檔名解 INFO FormKey;high byte→master)/`BuildEntry`(從 resolved INFO 讀 Emotion/EmotionValue/Text)。純函式可單測 (`VoiceAnnotateTests.cs`)|
-| CLI | `Program.Build.Voice.Extract.cs` `VoiceAnnotateCmd` | `voice-annotate <esm> <voiceType> <bsa> <outDir>`：抽 clip→WAV(Archives.Extract+Fuz+ffmpeg)+ 對每 clip 從 `<esm>` 查 INFO emotion → 寫 `voice-annotations.json`。打底確定性(讀 INFO Emotion);人聽完改 manifest。Phase B(`voiceTemplates[].referenceLibrary` 情緒選 ref)另開 |
-| Validate | `Generator.Validate.Voice.cs` | template id 非空 / engine 枚舉 / `npc.voiceTemplate` ref 存在 / `voiceLine.format` 枚舉；已掛進 `Validate` |
-| CLI | `Program.Build.Voice.cs` | `voicelines <spec> <esp> [--dry-run\|--plan]` + `voicediag`：走訪建好 esp 的 INFO → 從條件找 speaker（GetIsID + **alias / faction 條件**；解不出 speaker → **loud warning**，不靜默 skip）→ WAV→xwm→fuz 寫到 `Sound/Voice/<plugin>/<voiceType>/`。只在 matching deterministic fingerprint sidecar + metadata 列出的 artifact 的 bytes+SHA-256 都相符時 skip；舊檔、壞 sidecar 或被改動的 output 一律重建。一次 `voicelines` run 共用 source-identity memoizer，避免同 template 對每句反覆 hash。**xwm 編碼失敗且 format=fuz → 改寫 loose `.wav` + warning（不把裸 WAV 包進 .fuz），sidecar 綁定實際 wav/lip 輸出**。含 `BuildNpcVoiceTemplateMap`/`BuildNpcVoiceTypeMap`/`BuildExternalVoiceMap`(voiceSpeakers[]→FormKey)/`PrintVoicePlan`/`GenerateVoiceLine` 的生成側 helpers。**F5 踩坑：ref clip 要短（~2-3s），太長/太密 F5 會估錯時長把輸出截斷**|
+| CLI | `Program.Build.Voice.Extract.cs` `VoiceAnnotateCmd` | `voice-annotate <esm> <voiceType> <bsa> <outDir>`：抽 clip→WAV(Archives.Extract+Fuz+ffmpeg)+ 對每 clip 從 `<esm>` 查 INFO emotion → 寫 `voice-annotations.json`。打底確定性(讀 INFO Emotion);人聽完改 manifest。產出的 corrected manifest 由 `Voice.ReferenceLibrary.cs` 消費 |
+| Validate | `Generator.Validate.Voice.cs` | template id 非空 / `npc.voiceTemplate` ref 存在 / `voiceLine.format` 枚舉；已掛進 `Validate`；`engine` 改查 registry，unknown 回傳 fatal error，reserved（`chatterbox`/`gptsovits`/`xtts`）明示 stderr WARNING（含未來 wrapper 契約），不列入 fatal errors。Tests: `VoiceEngineRegistryTests.cs` |
+| CLI | `Program.Build.Voice.cs` | `voicelines <spec> <esp> [--dry-run\|--plan]`：走訪建好 esp 的 INFO → 從條件找 speaker（GetIsID + **alias / faction 條件**；解不出 speaker → **loud warning**，不靜默 skip）→ WAV→xwm→fuz 寫到 `Sound/Voice/<plugin>/<voiceType>/`。只在 matching deterministic fingerprint sidecar + metadata 列出的 artifact 的 bytes+SHA-256 都相符時 skip；舊檔、壞 sidecar 或被改動的 output 一律重建。一次 `voicelines` run 共用 source-identity memoizer，避免同 template 對每句反覆 hash。**xwm 編碼失敗且 format=fuz → 改寫 loose `.wav` + warning（不把裸 WAV 包進 .fuz），sidecar 綁定實際 wav/lip 輸出**。含 `BuildNpcVoiceTemplateMap`/`BuildNpcVoiceTypeMap`/`BuildExternalVoiceMap`(voiceSpeakers[]→FormKey)/`PrintVoicePlan`/`GenerateVoiceLine` 的生成側 helpers。**F5 踩坑：ref clip 要短（~2-3s），太長/太密 F5 會估錯時長把輸出截斷**。`GenerateVoiceLine` 在 cache/檔案/外部行程之前先查 reserved engine，reserved 的目標 return -2、獨立累計不併入 TTS failure，命令（含 `--dry-run`/`--plan`）只要有目標被跳過就 exit 3；spec-aware `voicediag <spec> <esp>` 已搬到 `Diagnostics.Voice.cs`（此檔不再含它）。Tests: `VoiceEngineRegistryTests.cs`（reserved gate 純決策），既有 `VoiceTests.cs`／`VoiceLiveContractTests.cs`（工具契約）|
 | CLI | `Program.Build.Voice.Extract.cs` | `extract-voices <bsa> <voiceType> <outDir> [plugin]`：抽 .fuz → ffmpeg 轉 wav（做 reference clip）；`[plugin]` 預設 Skyrim.esm，給 `SofiaFollower.esp` 等可抽既有隨從 BSA 的嗓音 ref。`VoiceAnnotateCmd`(`voice-annotate`，見上)亦在此。純抽取/轉檔側（Archives.Extract+Fuz.Split+ffmpeg），與生成側分檔以守 300 行上限 |
 
 環境變數：`MODFORGE_TTS_BIN`（TTS wrapper，必要）、`MODFORGE_FISH_SPEECH_BIN`（僅 Fish S2 engine 需要）、`MODFORGE_XWMAENCODE`、`MODFORGE_LIPGEN`（官方 CK LipGenerator.exe，lip 首選）、`MODFORGE_FACEFX` + `MODFORGE_FONIXDATA`（社群 FaceFXWrapper，lip 退化路徑）——皆 Wine 路徑，缺則退化：無 xwm / 無 lip（嘴不動）。`format=fuz` 且未配任何 lip 工具時 `voicelines` 開頭發一次 loud warning。
@@ -247,7 +269,7 @@
 | CLI | `Diagnostics.Dump.cs` | 全 record 列舉（name/editorId/key）|
 | CLI | `Diagnostics.Dump.More.cs` | 擴充 dump（icons/flags/nested sub-records）|
 | CLI | `Diagnostics.Identity.cs` | `identitydiag <esp>`：從建好的 plugin 還原身份系統 wiring——讀 controller VMAD 還原 faction↔code registry、default-grant quest（factions/grants/perks）、**auto-grant trigger（faction ← GetActorValue(av) >= threshold）**、acquire books（MFIdentityBook props：faction/grant/perk/scene/toggle）、兩個控制 GLOB（純讀 plugin record/VMAD，無需 spec/CK）|
-| CLI | `Diagnostics.Voice.cs` | `voicediag <esp>`：走訪所有 dialogue INFO，印出每個 response 期望的 `.fuz` 路徑（`Sound/Voice/<plugin>/<voiceType>/<quest>_<topic>_<formId>_<n>.fuz`）與 speaker/voiceType；reuse Core 的 `ResolveVoiceSpeakers`；無需 spec/Skyrim.esm/TTS|
+| CLI | `Diagnostics.Voice.cs` | 兩個 `voicediag`：spec-aware `VoiceDiagCmd(spec, esp)`（從 `Program.Build.Voice.cs` 搬來）重用 `PrintVoicePlan`，額外列出 reserved template 數與受影響的非空白 line target 數，有 reserved-skipped 或 speaker 未解析即 exit 3/1；純 plugin-only `VoiceDiag(esp)` 保留原樣——走訪所有 dialogue INFO，印出每個 response 期望的 `.fuz` 路徑（`Sound/Voice/<plugin>/<voiceType>/<quest>_<topic>_<formId>_<n>.fuz`）與 speaker/voiceType（reuse Core 的 `ResolveVoiceSpeakers`；無需 spec/Skyrim.esm/TTS，也不含 reserved 資訊）。Tests: `VoiceEngineRegistryTests.cs`（reserved plan 決策），既有 `VoiceSpeakerTests.cs`（speaker/plan）|
 | CLI | `Diagnostics.Records.cs` | targeted 單記錄 diag（lazy overlay，不 materialize 250MB master）：`cellblk`/`mgefdiag`/`lightdiag`/`refpos`/`packagediag` 等 |
 | CLI | `Diagnostics.CellRefs.cs` | **`cellrefs <esp> <0xFORMID>`**：dump 單一 interior cell 的所有 placed REFR/ACHR（base FormKey + cell-local pos + rotation **RADIANS** + scale）成 CSV——逆向 vanilla cell 成 `placements[]`。記憶體安全：lazily 走 CELL block tree，命中 target FormID 後只處理那顆 cell 的 child group（Temporary+Persistent，數百 ref）就 return，絕不列舉所有 cell 的 children。rotation 是 esm 原生 radian，轉成 ModForge spec 的 degree 需 `*180/pi`。範例見 `docs/investigation/decode/sleeping-giant-inn-reverse-2026-06-13.md` + `examples/sleeping_giant_inn.json`。|
 | CLI | `Diagnostics.GameData.cs` | **`gamedata <plugin> <outDir> [--strings <dir>]`**：streamed overlay 一趟 major-record pass，把 books/dialogue/quests/npcs/items/locations/magic 批次匯出成資料夾（給 agent 當參考；不 full-materialize、不 `.ToList` record group，跑得動 250MB master）。|

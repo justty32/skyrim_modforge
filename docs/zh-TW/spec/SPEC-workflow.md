@@ -85,11 +85,32 @@ dotnet run --project src/ModForge.Cli -- build myspec.json out.esp --sync-requir
 
 - `voiceTemplates[]` — 具名的克隆配方，由 NPC 引用：
   - `id` — 唯一的 template 名稱。
-  - `engine` — `f5` | `fish-s2` | `chatterbox` | `gptsovits` | `xtts`。`f5` 由
-    隨附的本機 `voicegen.py` 處理；`fish-s2` 透過 `MODFORGE_FISH_SPEECH_BIN`（一個寫出 WAV 的本機
-    Fish Speech wrapper）路由。其餘名稱保留，直到對應的 wrapper 存在為止。
+  - `engine` — `f5` | `fish-s2` | `chatterbox` | `gptsovits` | `xtts`。
+    `Voice.Engines.cs` 內的明確 registry 把 `f5` 與 `fish-s2` 標記為**已接線（wired）**。
+    `fish`、`fishspeech`、`fish-speech` 都會解析成 `fish-s2`；名稱不分大小寫。
+    既有的 TTS 參數（含原始 engine 拼寫）會原樣轉發，不做任何改寫。
+    `f5` 由旁支 skyrim-voicegen 的 `voicegen.py` 處理；`fish-s2` 使用
+    `MODFORGE_FISH_SPEECH_BIN`。**已接線**只代表路由存在，不代表本機工具／模型已安裝。
+    `chatterbox`、`gptsovits`、`xtts` 為**保留（reserved）**。驗證時會印出明確警告，
+    列出未來的 wrapper 契約，同時讓這些名稱不進入 fatal error 清單。
+    `voicelines` 會在呼叫任何外部程序之前，跳過所有使用 reserved engine 的目標，
+    獨立計數（不併入 TTS failure），只要有任何目標被跳過就 exit 3。
+    `--dry-run` / `--plan` 適用同樣的 reserved skip 與 exit 3。
+    `voicediag <spec.json> <built.esp>` 會回報 reserved template 數量與受影響的
+    非空白 line target 數量（不跑 TTS），只要有這種 target 存在就 exit 3。
+    只設定未來的 wrapper 環境變數並不會啟用 reserved engine：必須實作其
+    voicegen 路由，並在整合後明確把該 engine 在 registry 中的狀態升級為 wired。
   - `referenceWav` + `referenceText` — zero-shot 的參考片段及其轉錄文字
     （路徑相對於 spec 檔；f5 需要轉錄文字）。
+  - `referenceLibrary` — 選用，指向一份 `voice-annotations.json` 陣列的路徑，
+    相對於 spec 檔。片段路徑相對於 manifest 所在目錄（絕對路徑也可以）。
+    非空白的 `override` 會取代 `emotion`；非 null 的 `intensityOverride` 會取代 `intensity`。
+    對每一句台詞，先以不分大小寫比對 emotion，再挑選 intensity 差距最小的候選。
+    平手時依序以 ordinal 比較 `infoFormId`、`clip`、`text`。缺 emotion／intensity 視為
+    Neutral／0。若沒有任何 emotion 匹配，改嘗試 Neutral；再退回 `referenceWav` 與
+    `referenceText`；空陣列同樣使用這個退路。manifest 缺失或格式錯誤會以明確錯誤失敗。
+    選中片段本身的文字會取代 `referenceText`，包含空白轉錄文字的情況（此時省略
+    `--ref-text`）。未設定這個欄位時，既有的 reference 參數不變。
   - `modelPath` — 選用的微調模型目錄（相對於 spec）。
   - `rvcModel` — 選用的 RVC 模型，用於音色穩定化。
   - `seed` — 決定性輸出。
@@ -119,6 +140,16 @@ dotnet run --project src/ModForge.Cli -- build myspec.json out.esp --sync-requir
 | `MODFORGE_LIPGEN` | CK 官方 `LipGenerator.exe`（在 Wine 下執行） | **首選**的 .lip 唇形同步生成；隨 Creation Kit 提供於 `Tools/LipGen/LipGenerator/`，並會自動在自己的 exe 旁找到 `FonixData.cdf`（不需另設 cdf 變數） |
 | `MODFORGE_FACEFX` | 社群的 `FaceFXWrapper.exe`（在 Wine 下執行） | 當 `MODFORGE_LIPGEN` 未設定時，作為 .lip 生成的後備 |
 | `MODFORGE_FONIXDATA` | `FonixData.cdf` | 僅 `MODFORGE_FACEFX` 後備路徑才需要 |
+| `MODFORGE_CHATTERBOX_BIN` | 未來 Chatterbox wrapper 執行檔／腳本 | 僅為 reserved 契約；ModForge 目前不會讀取或呼叫 |
+| `MODFORGE_GPTSOVITS_BIN` | 未來 GPT-SoVITS wrapper 執行檔／腳本 | 僅為 reserved 契約；ModForge 目前不會讀取或呼叫 |
+| `MODFORGE_XTTS_BIN` | 未來 XTTS wrapper 執行檔／腳本 | 僅為 reserved 契約；ModForge 目前不會讀取或呼叫 |
+
+Reserved-engine 的 wrapper 必須接受 `--engine`、`--text`、`--out`，以及既有的選用旗標
+`--ref-wav`、`--ref-text`、`--model`、`--rvc`、`--seed`、`--speed`、`--exaggeration`、
+`--language`、`--emotion`、`--intensity`，語意與既有規格相同。
+它必須把有效、非空的 WAV 寫到 `--out`，只有成功時才回傳 exit 0，
+失敗時回傳非零的 exit code。這些環境變數描述的是未來的接線方式；
+此次改動並未實作或啟用任何新的 wrapper。
 
 > 當 `format: fuz` 且 `skipLip` 為 false 時，唇形同步會自動執行。把 `MODFORGE_LIPGEN` 指向
 > CK 的 `LipGenerator.exe`，`voicelines` 就會把一個真正的 `.lip` 打包進每個 `.fuz`，讓 NPC 嘴巴會動——**遊戲內已於
@@ -152,8 +183,11 @@ Surprise）/ `intensity`（0–100）/ `infoFormId`，外加空白的 `override`
 `Emotion`／`EmotionValue`（遊戲早已為每句台詞標好——免費且具權威的初步成果）；你
 只需修正粗略標籤判斷錯的部分（例如標為 Neutral 但實際上帶諷刺——設定
 `override`）。`<esm>` 對原版 voice type 來說是 `Skyrim.esm`，或對某 mod 的角色聲音來說是 mod
-（`SofiaFollower.esp`、`Vigilant.esm`）。*（Phase B——`voiceTemplates[].referenceLibrary` 消化修正後的
-manifest，為每句挑出情緒相符的參考片段——是另一個之後的獨立功能。）*
+（`SofiaFollower.esp`、`Vigilant.esm`）。
+
+Phase B 已實作：`voiceTemplates[].referenceLibrary` 會消化這份修正後的 manifest，
+為每一句合成台詞挑出情緒相符的參考片段與其轉錄文字。
+確定性選取與退路規則見上方的 `referenceLibrary` 欄位說明。
 
 Fish S2 template 範例：
 
