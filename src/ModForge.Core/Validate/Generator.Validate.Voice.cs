@@ -16,9 +16,12 @@ public static partial class Generator
                 else if (!seenTemplateIds.Add(t.Id))
                     Problems.Add($"duplicate voiceTemplate id '{t.Id}'");
                 
-                var engine = (t.Engine ?? "").ToLowerInvariant();
-                if (engine is not ("f5" or "chatterbox" or "gptsovits" or "xtts" or "fish" or "fish-s2" or "fishspeech" or "fish-speech"))
-                    Problems.Add($"voiceTemplate '{t.Id}': unknown engine '{t.Engine}' (use f5 | chatterbox | gptsovits | xtts | fish-s2)");
+                var engine = VoiceEngines.Resolve(t.Engine);
+                if (engine is null)
+                    Problems.Add($"voiceTemplate '{t.Id}': unknown engine '{t.Engine}' (use {string.Join(" | ", VoiceEngines.All.Select(e => e.Name))})");
+                // Validate's returned list is errors-only; keep reserved advisories out of it.
+                if (VoiceEngines.ValidationWarning(t) is { } warning)
+                    Console.Error.WriteLine(warning);
             }
 
             foreach (var n in spec.Npcs)

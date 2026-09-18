@@ -11,11 +11,14 @@ internal static partial class Program
     //  scene Dialog action), and TTS one file per distinct voiceType folder.
     //  An unresolved speaker is a LOUD warning + summary count, never a silent skip.
     // -------------------------------------------------------------------------------
+    private const string VoicelinesUsage = "Usage: voicelines <spec.json> <built.esp> [--dry-run|--plan]; "
+        + "exit 3 if any voice line is skipped because its engine is reserved (including plans).";
+
     private static int VoicelinesCmd(string specPath, string espPath, string? mode)
     {
         if (mode is not null && mode is not "--dry-run" and not "--plan")
         {
-            Console.Error.WriteLine($"ERROR: unknown voicelines option '{mode}'. Expected --dry-run or --plan.");
+            Console.Error.WriteLine($"ERROR: unknown voicelines option '{mode}'. {VoicelinesUsage}");
             return 2;
         }
 
@@ -31,16 +34,16 @@ internal static partial class Program
 
         if (mode is "--dry-run" or "--plan")
         {
-            PrintVoicePlan(mod, cache, npcToTemplate, npcToVoiceType, pluginName, format, externalByFormKey);
-            return 0;
+            var plan = PrintVoicePlan(mod, cache, npcToTemplate, npcToVoiceType, pluginName, format, externalByFormKey);
+            return VoiceEngines.ExitCode(plan.Count(e => e.SkipReason == VoiceEngines.ReservedSkipReason));
         }
 
         var options = new VoiceOptions();
         var contentIdentities = new VoiceContentIdentityCache();
-        if (string.IsNullOrEmpty(options.ResolvedTtsBin))
+        bool missingTts = string.IsNullOrEmpty(options.ResolvedTtsBin);
+        if (missingTts && spec.VoiceTemplates.Any(t => VoiceEngines.GenerationSkipReason(t) is null))
         {
             Console.Error.WriteLine("ERROR: MODFORGE_TTS_BIN not set. Voice generation skipped.");
-            return 1;
         }
 
         bool skipLip = spec.VoiceLine?.SkipLip ?? false;
@@ -51,7 +54,7 @@ internal static partial class Program
                 + ".fuz files will ship WITHOUT lip sync (mouths won't move). "
                 + "Set MODFORGE_LIPGEN to the CK LipGenerator.exe, or voiceLine.skipLip:true to silence this.");
 
-        int generated = 0, existing = 0, failed = 0, emptyText = 0, noTemplate = 0, unresolved = 0;
+        int generated = 0, existing = 0, failed = 0, emptyText = 0, noTemplate = 0, unresolved = 0, reservedSkipped = 0;
 
         foreach (var topic in mod.EnumerateMajorRecords<IDialogTopicGetter>())
         {
@@ -110,6 +113,7 @@ internal static partial class Program
                         switch (GenerateVoiceLine(espPath, pluginName, t, questEd, topicEd, info.FormKey.ID, i + 1,
                                                   text, format, skipLip, specDir, options, contentIdentities, emotion, intensity))
                         {
+                            case VoiceEngines.ReservedLineResult: reservedSkipped++; break;
                             case 1: generated++; break;
                             case 0: existing++; break;
                             default: failed++; break;
@@ -119,29 +123,12 @@ internal static partial class Program
         }
 
         Console.WriteLine($"Voicelines: {generated} generated, {existing} already on disk, {failed} TTS failure(s), "
-            + $"{emptyText} empty-text line(s), {noTemplate} INFO(s) skipped (no voiceTemplate), "
+            + $"{reservedSkipped} line(s) skipped: engine reserved, {emptyText} empty-text line(s), {noTemplate} INFO(s) skipped (no voiceTemplate), "
             + $"{unresolved} INFO(s) skipped (speaker unresolved).");
         if (unresolved > 0 || noTemplate > 0)
             Console.Error.WriteLine($"  !! {unresolved + noTemplate} INFO(s) produced NO voice — see '!!' warnings above.");
-        return 0;
-    }
-
-    // -------------------------------------------------------------------------------
-    //  voicediag — same speaker/template/path plan as `voicelines --dry-run`, but with
-    //  a check-style exit code so scripts can fail before spending time on TTS.
-    // -------------------------------------------------------------------------------
-    private static int VoiceDiagCmd(string specPath, string espPath)
-    {
-        var spec = ReadSpec(specPath);
-        var mod = Load(espPath);
-        var cache = mod.ToImmutableLinkCache();
-        var pluginName = Path.GetFileName(espPath);
-        var format = spec.VoiceLine?.Format?.ToLowerInvariant() ?? "fuz";
-        var entries = PrintVoicePlan(mod, cache, BuildNpcVoiceTemplateMap(spec), BuildNpcVoiceTypeMap(spec), pluginName, format, BuildExternalVoiceMap(spec));
-        return entries.Any(e => e.SkipReason?.StartsWith("speaker unresolved:", StringComparison.OrdinalIgnoreCase) == true
-                             || e.SkipReason?.StartsWith("no speaker", StringComparison.OrdinalIgnoreCase) == true)
-            ? 1
-            : 0;
+        if (reservedSkipped > 0) Console.Error.WriteLine(VoicelinesUsage);
+        return reservedSkipped > 0 ? VoiceEngines.ExitCode(reservedSkipped) : missingTts ? 1 : 0;
     }
 
     private static Dictionary<string, VoiceTemplateSpec?> BuildNpcVoiceTemplateMap(ModSpec spec)
@@ -197,6 +184,10 @@ internal static partial class Program
         IReadOnlyDictionary<FormKey, (string VoiceType, VoiceTemplateSpec? Template)>? externalByFormKey = null)
     {
         var entries = Generator.BuildVoiceLinePlan(mod, cache, npcToTemplate, pluginName, format, npcToVoiceType, externalByFormKey);
+        var templates = npcToTemplate.Values.Concat(externalByFormKey?.Values.Select(v => v.Template)
+            ?? Enumerable.Empty<VoiceTemplateSpec?>()).OfType<VoiceTemplateSpec>()
+            .DistinctBy(t => t.Id, StringComparer.OrdinalIgnoreCase);
+        entries = VoiceEngines.ApplyToPlan(entries, templates);
         foreach (var e in entries)
         {
             var info = string.IsNullOrWhiteSpace(e.InfoEditorId) ? $"0x{e.InfoFormId:X8}" : $"{e.InfoEditorId} 0x{e.InfoFormId:X8}";
@@ -219,19 +210,26 @@ internal static partial class Program
         var noTemplate = entries.Count(e => e.SkipReason?.StartsWith("no speaker", StringComparison.OrdinalIgnoreCase) == true);
         var empty = entries.Count(e => e.SkipReason == "empty response text");
         var deliverable = entries.Count(e => e.SkipReason is null);
-        Console.WriteLine($"Voice plan: {entries.Count} line target(s), {deliverable} deliverable, {empty} empty-text, {noTemplate} missing-template, {unresolved} unresolved.");
+        Console.WriteLine($"Voice plan: {entries.Count} line target(s), {deliverable} deliverable, {empty} empty-text, {noTemplate} missing-template, {unresolved} unresolved, "
+            + $"{entries.Count(e => e.SkipReason == VoiceEngines.ReservedSkipReason)} skipped: engine reserved.");
         return entries;
     }
 
     // One (text, voiceType) line: TTS → optional xWMA → fuz/wav/xwm via Generator.PackVoiceAudio
     // (which downgrades fuz/xwm to a LOOSE .wav when xWMAEncode is unavailable — never a raw-PCM fuz).
-    // Returns 1 = generated, 0 = cache hit, -1 = TTS failed.
+    // Returns 1 = generated, 0 = cache hit, -1 = TTS failed, -2 = engine reserved.
     private static int GenerateVoiceLine(string espPath, string pluginName, VoiceTarget target,
         string questEd, string topicEd, uint infoId, int responseIndex,
         string text, string format, bool skipLip, string specDir, VoiceOptions options,
         VoiceContentIdentityCache contentIdentities,
         string? emotion = null, int? intensity = null)
     {
+        if (VoiceEngines.GenerationSkipReason(target.Template) is { } skipReason)
+        {
+            Console.Error.WriteLine($"  {skipReason}: template '{target.Template.Id}', engine '{target.Template.Engine}', INFO {infoId:X8} line {responseIndex}");
+            return VoiceEngines.ReservedLineResult;
+        }
+        if (string.IsNullOrEmpty(options.ResolvedTtsBin)) return -1;
         var stem = Path.GetFileNameWithoutExtension(Generator.VoiceFileName(questEd, topicEd, infoId, responseIndex));
         var targetDir = Path.Combine(Path.GetDirectoryName(espPath) ?? ".", "Sound", "Voice", pluginName, target.VoiceType);
         var stemPath = Path.Combine(targetDir, stem);
