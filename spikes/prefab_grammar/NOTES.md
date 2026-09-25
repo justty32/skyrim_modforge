@@ -2,7 +2,7 @@
 
 ## 1. 這是什麼
 
-離線、確定性的 spike：只驗證「prefab 用 connector 對接組成 layout」這套 grammar 概念是否成立與是否可 byte-identical 重現。**不進 ModForge 主管線**、不生 `.esp`、不碰遊戲、不碰 navmesh。怎麼跑看同目錄 [README.md](README.md)；凍結介面看 [../../../../agentctl/handoffs/spike-2026-09-02/CONTRACT.md](../../../../agentctl/handoffs/spike-2026-09-02/CONTRACT.md)。
+離線、確定性的 spike：只驗證「prefab 用 connector 對接組成 layout」這套 grammar 概念是否成立與是否可 byte-identical 重現。**不進 ModForge 主管線**、不生 `.esp`、不碰遊戲、不碰 navmesh。怎麼跑看同目錄 [README.md](README.md)；凍結介面看 [../../../../agentctl/handoffs/done/2026-09-02/spike-2026-09-02/CONTRACT.md](../../../../agentctl/handoffs/done/2026-09-02/spike-2026-09-02/CONTRACT.md)。
 
 ## 2. grammar 規則
 
