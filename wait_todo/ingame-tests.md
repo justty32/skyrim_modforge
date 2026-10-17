@@ -21,8 +21,6 @@
 
 - **Map-scene 座標 profile cube calibration（2026-08-11，pure math 已驗）**：`SceneCoordinates` 已用 `B * R * B^-1` 單測 Unity/Unreal profile；等 `importscene` 第一個 consumer 接好後，用一顆已知朝向、尺寸與座標的 cube 做端到端目視，確認 Skyrim exact handedness/sign、Euler order 與 art-scale fudge。FromSoft profile 在這個實測前刻意不內建猜測。
 
-- **VNML 法線效果（2026-06-16）— 已自驗修正，下面只剩「想看再看」的選配確認**：axis/編碼/尺度已對 vanilla Tamriel LAND 逐 byte 驗過（修了三個 bug，見 SESSION-LOG），不必硬測。新 zip 已交付 `~/skyrim_mods/mine/HeightmapDemo.zip`（FLAT）。**若你某次順手進遊戲**：進 HeightmapDemo worldspace 走坡面，背光側偏暗、向光偏亮、平順漸層即正常——若看到整片黑塊／詭異反光／上下顛倒陰影再回報（理論上不會）。
-
 - **Sofia × VIGILANT 第一幕（2026-06-14）** — 兩版交付 `~/skyrim_mods/mine/`：`SofiaVigilantAct1.zip`（v1 對話+語音）、`SofiaVigilantAct1v2.zip`（v2 +PlayIdle 動作）。spec＝`examples/sofia_vigilant_act1{,_v2}.json`，臺詞＝`../sofia-patch/vigilant-screenplay/act1-警戒者.md`。
   - **✅ v1 核心 pipeline 已實機確認（2026-06-14）**：對話有註冊、觸發點對、語音有播（跑了一小段任務線）。
   - **仍 open（待你續測）**：① **各 beat 完整覆蓋**——把 1-A~1-K 跑滿，看有沒有哪個選項該出現卻沒出現（stage 解碼誤）；② **殺/放分支正確性**（殺女巫=SubQ01 s50 / 放=s230；殺 Carene=GoodEnd s35 / 放=s100——殺了卻跳「放過」台詞＝分支錯）；③ **嘴型**有沒有動（fuz 內嵌 lip，待目視確認）；④ **v2 動作**——換裝 v2（一次只裝一版，editorId 不同），看 1-A 諷刺鼓掌 / 1-E 嘆氣 / 1-H-殺 怒 / 1-I 東張西望 有沒有播。
@@ -42,6 +40,8 @@
   - **回報**:傳送安全否、房子貼地否、Brynja 在否、問候+**交易(有貨有金)**通否。(Brynja 從零建、無 facegen,臉可能陽春/暗臉——能站能講能交易就算過。)
 
 ## scene-capture-bridge — ghost ＝ place 模式的擺放游標：**剩兩條**（2026-07-14，**已部署** DLL `c07dd174`）
+
+> **2026-10-17 查證：仍 open**。現役 DLL 已換成 SHA-256 `b302857…`（不是本節寫的 `c07dd174`），母 repo `wait-user/feature-runtime/scene-ghost.md` 的 15 條 camera-ray 清單**不含**本節兩條與下節登記簿制，所以這三條沒有被別處覆蓋。
 
 ⚠️ **已部署**——完全關遊戲再開。**不變式**：**ghost 存在 ⟺ `sc pl` ＋ `gh1`（預設開）＋ 有東西被選中**。
 
@@ -63,3 +63,9 @@
 3. **⚠️ 已知的行為改變（不是 bug）**：**這個改動之前擺下去的東西、以及 console `placeatme` 生的東西，不會再自動匯出**（它們沒有登記簿列）。要救回來 → Palette 頁按 **`adopt dynamic refs in this cell`**。⚠️ 這顆按鈕**不挑食**：魚站在旁邊它就把魚也收編（面板有警告）——所以按完看一下匯出結果。
 
 **回報**：① 匯出檔裡還有沒有你沒放的東西；② adopt 按鈕有沒有把該收的收回來。
+
+## 封存（已完成／作廢，2026-10-17 查證）
+
+從上方移下、原文保留不刪；狀態與證據寫在每條開頭。
+
+- **作廢**：原文自述已逐 byte 自驗、只剩「想看再看」的選配目視，不構成待辦 — 原文：**VNML 法線效果（2026-06-16）— 已自驗修正，下面只剩「想看再看」的選配確認**：axis/編碼/尺度已對 vanilla Tamriel LAND 逐 byte 驗過（修了三個 bug，見 SESSION-LOG），不必硬測。新 zip 已交付 `~/skyrim_mods/mine/HeightmapDemo.zip`（FLAT）。**若你某次順手進遊戲**：進 HeightmapDemo worldspace 走坡面，背光側偏暗、向光偏亮、平順漸層即正常——若看到整片黑塊／詭異反光／上下顛倒陰影再回報（理論上不會）。

@@ -2,7 +2,7 @@
 
 **本檔只是路由。** 這個 repo 的專案備忘是 **[CLAUDE.md](CLAUDE.md)**（Claude Code 會自動載入；其他工具讀不到，所以有這一份指過去）。兩份的規則完全一樣，**細節不在這裡重複寫**——重複的那一刻就開始腐爛。
 
-> 2026-08-02：本檔原本是 CLAUDE.md 的一份 153 行分身（「Codex 專案備忘」），已經爛掉——指向五條不存在的路徑（`docs/CODE_MAP*.md`、`docs/IDEAS.md`、`docs/SPEC-*.md`，全都早就搬進 `workflows/` 與 `docs/spec/`）、宣稱測試數「259/260」（實際 1013）、把 `.pex` 前置寫成六條手打指令（早已被 `scripts/bootstrap-pex.sh` 取代）。內容逐段核對後確認**沒有任何一段是別處沒有的**，故整份改成路由。
+> 本檔早期是 CLAUDE.md 的過時分身；改成路由的緣由已封存，見 [archive 索引](archive/README.md)。
 
 ## 先讀哪裡
 
