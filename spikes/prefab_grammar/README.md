@@ -50,4 +50,4 @@ python -m unittest discover -s spikes/prefab_grammar -p "test_*.py" -v
 
 座標使用 Skyrim game units，以 256 為格子單位。Bounding box 使用中心點與完整尺寸；connector 位於 bbox 表面，`facing` 朝 bbox 外側。所有 connector 的 `type` 統一為 `hall2`，讓 entrance 與 exit 依凍結對接公式互接。
 
-設計說明與 ModForge 接點見 [NOTES.md](NOTES.md)；欄位與數學的凍結介面見 [CONTRACT.md](../../../../agentctl/handoffs/spike-2026-09-02/CONTRACT.md)。
+設計說明與 ModForge 接點見 [NOTES.md](NOTES.md)；欄位與數學的凍結介面見 [CONTRACT.md](../../../../agentctl/handoffs/done/2026-09-02/spike-2026-09-02/CONTRACT.md)。

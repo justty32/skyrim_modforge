@@ -1,6 +1,6 @@
 # navmesh — 讓編輯器擺出來的東西被 NPC 走得到（plan）
 
-← [plans](README.md)｜採集端：[scene-capture-bridge/backlog](scene-capture-bridge/backlog.md)｜契約：[navmesh-patch-design](../specs/navmesh-patch-design.md)｜任務：[navmesh-p3](navmesh-p3.md)｜背景：[engine-internals](../../docs/engine-internals.md#programmatic-navmesh)
+← [plans](README.md)｜採集端：[scene-capture-bridge/backlog](scene-capture-bridge/backlog.md)｜契約：[navmesh-patch-design](../specs/navmesh-patch-design.md)｜任務：[navmesh-p3](navmesh-p3.md)｜背景：[engine-internals](../../docs/engine-internals.md#programmatic-navmesh-navm--navi--in-game-confirmed-2026-06-03)
 
 ## 現況
 
