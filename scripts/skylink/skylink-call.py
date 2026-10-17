@@ -13,8 +13,11 @@ import subprocess
 import sys
 import threading
 
-DEFAULT_SRV = ("/home/lorkhan/games/mod-organizer-2-skyrimspecialedition/modorganizer2/"
-               "mods/SkyLinkAI/SKSE/Plugins/SkyLinkAI_Server/SkyrimMCP.dll")
+# Environment overrides: SKYLINK_SERVER_DLL (full path) wins; otherwise the DLL is
+# looked up under SKYLINK_MO2_DIR (same variable skylink-bridge.sh reads).
+MO2_DIR = os.environ.get("SKYLINK_MO2_DIR",
+                         "/home/lorkhan/games/mod-organizer-2-skyrimspecialedition/modorganizer2")
+DEFAULT_SRV = os.path.join(MO2_DIR, "mods/SkyLinkAI/SKSE/Plugins/SkyLinkAI_Server/SkyrimMCP.dll")
 SRV = os.environ.get("SKYLINK_SERVER_DLL", DEFAULT_SRV)
 
 HANDSHAKE = [

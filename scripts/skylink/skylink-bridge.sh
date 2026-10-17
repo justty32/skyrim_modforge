@@ -9,15 +9,18 @@
 # wineserver on that prefix behind Steam's back makes the next launch hang.
 set -uo pipefail
 
-APPID=489830
+# Environment overrides (defaults are the Manjaro main box):
+#   SKYLINK_APPID, SKYLINK_PORT, SKYLINK_MO2_DIR, SKYLINK_MO2_EXE, SKYLINK_DOCS
+APPID=${SKYLINK_APPID:-489830}
 PORT=${SKYLINK_PORT:-8770}
 UDS=/tmp/CoreFxPipe_SkyrimMCP
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RELAY="$HERE/relay.exe"
 SENDKEY="$HERE/sendkey.exe"
 CALL="$HERE/skylink-call.py"
-MO2="/home/lorkhan/games/mod-organizer-2-skyrimspecialedition/modorganizer2/ModOrganizer.exe"
-DOCS="/home/lorkhan/.steam/steam/steamapps/compatdata/$APPID/pfx/drive_c/users/steamuser/Documents/My Games/Skyrim Special Edition"
+MO2_DIR=${SKYLINK_MO2_DIR:-/home/lorkhan/games/mod-organizer-2-skyrimspecialedition/modorganizer2}
+MO2=${SKYLINK_MO2_EXE:-$MO2_DIR/ModOrganizer.exe}
+DOCS=${SKYLINK_DOCS:-"/home/lorkhan/.steam/steam/steamapps/compatdata/$APPID/pfx/drive_c/users/steamuser/Documents/My Games/Skyrim Special Edition"}
 
 game_running() { pgrep -f 'SkyrimSE\.ex[e]' >/dev/null; }
 mo2_running() { pgrep -f 'ModOrganize[r]\.exe' >/dev/null; }
