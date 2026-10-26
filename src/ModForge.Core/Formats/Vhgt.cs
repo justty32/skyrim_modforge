@@ -4,7 +4,7 @@ namespace ModForge;
 
 // VHGT (vertex height map) 編解碼。純函式、無 Mutagen/ImageSharp 依賴 → 離線可單測。
 //
-// 格式（查證自 Mutagen 0.53.1 + UESP + xEdit，見 specs/worldspace-editor-design.md）：
+// 格式（查證自 Mutagen 0.53.1 + UESP + xEdit，見 workflows/specs/archive/worldspace-editor-design.md，2026-10-26 封存）：
 //  - Offset(float) = 頂點 [0,0] 高度基準；尺度 = ×8 game units。
 //  - 33×33 signed-int8 delta，row-wise 累積：第 0 欄沿列往北累積成各列基準，
 //    第 1–32 欄沿列內往東累積；每 delta 單位也 = 8 game units。

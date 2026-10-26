@@ -8,7 +8,7 @@
 > - ✅ **PyNifly 真實、Windows-only 屬實**（V27.2.0，2026-06-15）；headless 批次「技術可行但無官方文件背書」。高保真但鎖 Windows。
 > - ⚠️ **Outfit Studio 的 glTF 支援未證實**（只確認 OBJ/FBX/NIF）；**ck-cmd 只做 FBX↔NIF 非 glTF**。
 > - ⚠️ 原文 SkyMeshGLTF 連結錯，正解 `github.com/nlaha/SkyMeshGLTF`。
-> - 結論已併入 [worldspace-editor-design.md](../../../workflows/specs/worldspace-editor-design.md) 與 idea README。
+> - 結論已併入 worldspace-editor-design.md（2026-10-26 已封存） 與 idea README。
 
 關聯：[workflows/idea/worldspace-editor/README.md](../../../../godot-worldspace-editor/README.md)
 先讀：[workflows/idea/asset-pipelines/model-porting/README.md](../../../workflows/idea/asset-pipelines/model-porting/README.md)（2026-06-09 靜態 mesh pipeline 研究，tool 確認度較高）

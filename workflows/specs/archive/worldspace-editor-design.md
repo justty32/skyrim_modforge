@@ -1,6 +1,8 @@
+> 封存 2026-10-26，原因：heightmap → 非平坦 LAND 後端 MVP 已落地（`src/ModForge.Core/Formats/Vhgt.cs`）；依 specs「落地即 archive」規則封存
+
 # worldspace-editor 後端 — 設計方案（heightmap → 非平坦 LAND）
 
-← [specs 入口](README.md)｜idea：[worldspace-editor/README.md](../../../godot-worldspace-editor/README.md)｜座標：[coord-system.md](../../../godot-worldspace-editor/design/coord-system.md)
+← [specs 入口](../README.md)｜idea：[worldspace-editor/README.md](../../../../godot-worldspace-editor/README.md)｜座標：[coord-system.md](../../../../godot-worldspace-editor/design/coord-system.md)
 
 本 spec 只涵蓋 **Idea #19 三階段 pipeline 的第 2 階段（ModForge 後端）的 MVP**：讀一張 16-bit grayscale PNG heightmap → 自動衍生 cell grid → 生非平坦 LAND（VHGT 起伏）→ COW 可進入、地形有起伏。Godot 前端（第 1 階段）與遊戲內微調（第 3 階段）不在本 spec。
 
@@ -26,7 +28,7 @@
 
 ## Schema 變更
 
-`WorldspaceSpec` 加一個**可選** `Heightmap` 欄位（[Spec.Worldspace.cs](../../src/ModForge.Core/Spec/Spec.Worldspace.cs)）：
+`WorldspaceSpec` 加一個**可選** `Heightmap` 欄位（[Spec.Worldspace.cs](../../../src/ModForge.Core/Spec/Spec.Worldspace.cs)）：
 
 ```csharp
 public sealed class HeightmapSpec
@@ -79,7 +81,7 @@ height_game_units = MinHeight + (png_value / 65535) × (MaxHeight − MinHeight)
 1. **Mutagen 寫 byte 原值、不做轉換**；Skyrim 引擎讀成 **signed int8**。→ **ModForge 自己做二補數**：存 delta −10 = `(byte)(sbyte)(-10)` = byte 246。
 2. **累積方式（row-wise）**：`Offset`(float) = 頂點 [0,0] 高度基準；逐列（由底而上）、列內逐欄（由左而右）累加 signed delta。第 0 欄沿列方向往北累積成各列基準，第 1–32 欄沿列內往東累積。
 3. **尺度**：**offset 與每個 delta 單位都 = 8 game units**。⚠️ 舊 coord-system.md 寫「1/8」是**錯的**（1/8 單步最大僅 ±16 units，做不出山；正解 ×8，單步最大 ±127×8 = ±1016 units）。
-4. **API**：`Landscape.VertexHeightMap.Offset`(float) + `.HeightMap`(`Noggog.Array2d<byte>` 33×33) + `.Unknown`(P3UInt8)，與現有 [Generator.Build.Worldspace.cs](../../src/ModForge.Core/Build/Generator.Build.Worldspace.cs) 一致。
+4. **API**：`Landscape.VertexHeightMap.Offset`(float) + `.HeightMap`(`Noggog.Array2d<byte>` 33×33) + `.Unknown`(P3UInt8)，與現有 [Generator.Build.Worldspace.cs](../../../src/ModForge.Core/Build/Generator.Build.Worldspace.cs) 一致。
 
 ### 逆推（已知目標高度網格 → offset + deltas）
 
@@ -134,4 +136,4 @@ for r in 0..32:
 
 - **placements.json（物件擺放）**：schema 已預想 `@export editor_id` + Godot 原生座標 ModForge 轉，格式待另一輪 brainstorm。
 - **VTXT splatmap**、**精確 navmesh**、**LOD**：見 idea README 演進路線。
-- **NIF→glTF 預覽**：屬 Godot 前端；工具選定 **fo76utils/nifskope**（已查證真實、Linux+Windows 雙平台，主力機可跑；`nif2gltf` Rust CLI 經查證**不存在**，勿規劃）。詳見 [nif-gltf finding](../../sub_projs/gemini-research/worldspace-editor/nif-gltf-conversion.md)。
+- **NIF→glTF 預覽**：屬 Godot 前端；工具選定 **fo76utils/nifskope**（已查證真實、Linux+Windows 雙平台，主力機可跑；`nif2gltf` Rust CLI 經查證**不存在**，勿規劃）。詳見 [nif-gltf finding](../../../sub_projs/gemini-research/worldspace-editor/nif-gltf-conversion.md)。
