@@ -2,7 +2,7 @@
 
 ← [INDEX](../../INDEX.md)｜[CLAUDE.md](../../CLAUDE.md)
 
-新增 / 修改 ModForge 功能的工作流。這是本工作流的 **入口**：先讀本檔，再往下深入。always-on 鐵律見 [CLAUDE.md](../../CLAUDE.md)；要整理結構時參考 [DEV-GUIDE](../../DEV-GUIDE.md)（被動）；**程式碼慣例 + CODE_MAP 維護鏈**見 [common/conventions](../common/conventions.md)。
+新增 / 修改 ModForge 功能的工作流。這是本工作流的 **入口**：先讀本檔，再往下深入。always-on 鐵律見 [CLAUDE.md](../../CLAUDE.md)；要整理結構時參考 [STRUCTURE](../../wf/STRUCTURE.md)（被動）；**程式碼慣例 + CODE_MAP 維護鏈**見 [common/conventions](../common/conventions.md)。
 
 ## 流程
 
@@ -27,4 +27,4 @@
 | [gotchas.md](gotchas.md) | 開發踩坑（含**外部工具內部開發聯動**：Papyrus 編譯 / Wine shell-out）|
 | [session-log.md](session-log.md) | 本工作流 open / in-flight 進度（hub 在 repo 根 [SESSION-LOG](../../SESSION-LOG.md)）|
 
-> **archive**：過時/被取代的功能開發文檔封存進 `feature-dev/archive/`（學 [specs/](../specs/README.md) 的封存做法，保留歷史、不污染現役）。本入口檔若膨脹，照 [DEV-GUIDE「結構整理原則」](../../DEV-GUIDE.md) 拆。
+> **archive**：過時/被取代的功能開發文檔封存進 `feature-dev/archive/`（學 [specs/](../specs/README.md) 的封存做法，保留歷史、不污染現役）。本入口檔若膨脹，照 [STRUCTURE「結構整理原則」](../../wf/STRUCTURE.md) 拆。

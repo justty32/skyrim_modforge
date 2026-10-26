@@ -2,7 +2,7 @@
 
 整個專案的頂層導航。ModForge = **JSON spec → Skyrim `.esp` 生成工具**（AI-agent 友善）。CLAUDE.md 只放主工作流 + 指向本檔；細節從這裡分流出去。
 
-程式碼導航另見 [CODE_MAP](workflows/common/code-map/CODE_MAP.md)，spec 欄位語意另見 [SPEC-index](docs/spec/SPEC-index.md)，在 repo 怎麼工作見 [DEV-GUIDE](DEV-GUIDE.md)。
+程式碼導航另見 [CODE_MAP](workflows/common/code-map/CODE_MAP.md)，spec 欄位語意另見 [SPEC-index](docs/spec/SPEC-index.md)，在 repo 怎麼工作見 [STRUCTURE](wf/STRUCTURE.md)。
 
 ---
 
@@ -31,7 +31,7 @@
 
 工作流的**選擇與入口**見 **[WORKFLOWS.md](WORKFLOWS.md)**——依「你想做什麼」派發到 feature-dev / refactor / investigation / specs / plans / idea / roadmap / tooling / testing。每個工作流的 durable 知識歸在 `workflows/<該工作流>/`（入口＝該夾 README 或主檔，含 `archive/` 封存過時文檔），具體流程在各自 README。
 
-[DEV-GUIDE](DEV-GUIDE.md) 是**被動的結構整理參考**（結構整理原則 + 四級成長軌跡）——**只在要重構/整理結構時取用**，不貫穿日常每個動作（類 zh-tw/html）。always-on 的**鐵律**在 [CLAUDE.md](CLAUDE.md)；碰原始碼的**程式碼慣例 + CODE_MAP 維護鏈**在 [common/conventions](workflows/common/conventions.md)。
+[STRUCTURE](wf/STRUCTURE.md) 是**被動的結構整理參考**（結構整理原則 + 四級成長軌跡）——**只在要重構/整理結構時取用**，不貫穿日常每個動作（類 zh-tw/html）。always-on 的**鐵律**在 [CLAUDE.md](CLAUDE.md)；碰原始碼的**程式碼慣例 + CODE_MAP 維護鏈**在 [common/conventions](workflows/common/conventions.md)。
 
 ## 通用（跨工作流共享）
 

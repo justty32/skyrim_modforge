@@ -8,7 +8,7 @@
 
 - 本夾 `*.md` = 各功能的逐步實作計畫（檔名 **`<功能>.md`，不含日期**——日期記在下方 index 表）。
 - 對應的設計方案在 [specs/](../specs/README.md)（命名對應：`<功能>.md` ↔ `specs/<功能>-design.md`）。
-- 計畫要遵守的**程式碼慣例 + CODE_MAP 維護鏈**見 [common/conventions](../common/conventions.md)；橫向通則見 [DEV-GUIDE](../../DEV-GUIDE.md)。
+- 計畫要遵守的**程式碼慣例 + CODE_MAP 維護鏈**見 [common/conventions](../common/conventions.md)；橫向通則見 [STRUCTURE](../../wf/STRUCTURE.md)。
 
 ## 現役計畫
 
@@ -26,4 +26,4 @@ action-system asset/config 生成（OAR/BDI/PIE）已全落地，計畫已封存
 
 新計畫命名 **`<功能>.md`（不含日期）**，日期記在現役 index 表的一欄；落地後即移 [archive/](archive/README.md)。（archived 舊檔仍保留歷史日期前綴、凍結不動。）
 
-> 已落地、被取代的舊實作計畫見 [archive/](archive/README.md)（保留脈絡、不在維護鏈）。本入口檔若膨脹，照 [DEV-GUIDE「結構整理原則」](../../DEV-GUIDE.md) 拆。
+> 已落地、被取代的舊實作計畫見 [archive/](archive/README.md)（保留脈絡、不在維護鏈）。本入口檔若膨脹，照 [STRUCTURE「結構整理原則」](../../wf/STRUCTURE.md) 拆。

@@ -2,7 +2,7 @@
 
 ← [roadmap](README.md)
 
-只列**還沒做/已決定緩做**的結構整理項。已完成的見 [refactor/archive](../refactor/archive/README.md)。拆法原則見 [DEV-GUIDE](../../DEV-GUIDE.md)。
+只列**還沒做/已決定緩做**的結構整理項。已完成的見 [refactor/archive](../refactor/archive/README.md)。拆法原則見 [STRUCTURE](../../wf/STRUCTURE.md)。
 
 ## 緩做（已評估、暫不動）
 

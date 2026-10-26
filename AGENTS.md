@@ -10,7 +10,7 @@
 - **想看專案長怎樣** → **[INDEX.md](INDEX.md)**：repo 頂層結構地圖。
 - **要碰原始碼** → [workflows/common/conventions.md](workflows/common/conventions.md)（程式碼慣例 + CODE_MAP 維護鏈）、導航走 [CODE_MAP](workflows/common/code-map/CODE_MAP.md)。
 - **建置 / 測試 / 前置 / 出貨** → [workflows/dev-env.md](workflows/dev-env.md)（跨機：Manjaro 主力機 vs 離線機各能做什麼）。
-- **要重構或整理結構** → [DEV-GUIDE.md](DEV-GUIDE.md)（被動參考，非日常）。
+- **要重構或整理結構** → [wf/STRUCTURE.md](wf/STRUCTURE.md)（被動參考，非日常）。
 - **wf kernel**（2026-10-26 非侵入式導入，在 `wf/`）：文件整理 tidy、決策記錄 decisions 等 kernel 工作流 → [wf/WORKFLOWS.md](wf/WORKFLOWS.md)（開發工作流仍以根 WORKFLOWS.md 為準）；`wf/` 地圖 → [wf/INDEX.md](wf/INDEX.md)；使用者偏好與確認邊界 → [wf/workflows/common/user.md](wf/workflows/common/user.md)。
 
 ## 鐵律（always-on，任何工作流任何時候）

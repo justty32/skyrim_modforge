@@ -16,6 +16,6 @@ ModForge = **JSON spec → Skyrim `.esp` 生成工具**（AI-agent 友善）。*
 | 檔案 | 角色 |
 |------|------|
 | [WORKFLOWS.md](WORKFLOWS.md) | kernel 派發器；開發工作流導回根 [WORKFLOWS.md](../WORKFLOWS.md) |
-| [STRUCTURE.md](STRUCTURE.md) | kernel 版結構整理參考（被動）；ModForge 原有的是根 [DEV-GUIDE.md](../DEV-GUIDE.md) |
+| [STRUCTURE.md](STRUCTURE.md) | 結構整理參考（被動）；含 ModForge 補充（原根目錄 DEV-GUIDE 併入） |
 | 根 [SESSION-LOG.md](../SESSION-LOG.md) | open 進度（在 repo 根，不在 `wf/`）|
 | 根 [WAIT_USER.md](../WAIT_USER.md) | 等使用者親自做 / 驗證的事（在 repo 根，細項在 [`wait_todo/`](../wait_todo/)）|

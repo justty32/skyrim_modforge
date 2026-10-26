@@ -9,9 +9,9 @@
 - 本夾 `*.md` = 各功能的設計方案（檔名 **`<功能>-design.md`，不含日期**——日期記在下方 index 表）。
 - 對應的逐步實作在 [plans/](../plans/README.md)。
 - 設計脈絡的 idea 雛形在 [ideas](../idea/ideas.md)。
-- 設計涉及 code 結構/慣例時參考 [common/conventions](../common/conventions.md)；橫向通則見 [DEV-GUIDE](../../DEV-GUIDE.md)。
+- 設計涉及 code 結構/慣例時參考 [common/conventions](../common/conventions.md)；橫向通則見 [STRUCTURE](../../wf/STRUCTURE.md)。
 
-> **archive**：已落地、被取代的舊設計方案封存進 [archive/](archive/README.md)（保留脈絡、不在維護鏈）。本入口檔若膨脹，照 [DEV-GUIDE「結構整理原則」](../../DEV-GUIDE.md) 拆。
+> **archive**：已落地、被取代的舊設計方案封存進 [archive/](archive/README.md)（保留脈絡、不在維護鏈）。本入口檔若膨脹，照 [STRUCTURE「結構整理原則」](../../wf/STRUCTURE.md) 拆。
 
 ## 現役設計方案
 

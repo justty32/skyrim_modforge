@@ -1,3 +1,5 @@
+> 封存 2026-10-26，由 wf/STRUCTURE.md 的 `<!-- local -->`「ModForge 補充」區塊取代
+
 # DEV-GUIDE — 結構整理參考（被動 / 按需取用）
 
 ← [INDEX](INDEX.md)
