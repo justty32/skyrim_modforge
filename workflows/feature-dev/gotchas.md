@@ -20,7 +20,7 @@
 
 - **autoStart scene 閘門**：用 `autoStart.gateGlobal`（controller 端檢查），**不要**用 scene-level `conditions`——controller 強制 `Scene.Start()`，繞過 scene begin-conditions（後者只 gate `beginOnQuestStart` scene）。
 - **scene 動作**：`SceneAction.TypeEnum` 只有 Dialog/Package/Timer——「走位/坐/活化」走 Package action 引用 PACK；**「播動畫」走 `SceneActionSpec.Idle`（SceneAdapter phase fragment，非 SceneAction）**。
-- **scene PlayIdle**（in-game 2026-06-07 確認，多坑連環）[[scene-playidle-recipe]]：① **SceneAdapter VMAD 三個 canonical 值不可少,否則引擎靜默跳過 fragment**——`ScenePhaseFragment.Unknown=16777216`(0x01000000;=quest 的 `Unknown2=1` 坑的 scene 版)、`SceneScriptFragments.ExtraBindDataVersion=2`、`ScriptEntry.Flags=Local`(全 265 vanilla phase-frag scene 一致)。② **每個帶 fragment 的 phase 必須有一個 SceneAction(Timer)**,空 phase 引擎不 run、fragment 不 fire(故 idle action 同時發一個 Timer 當 hold)。③ **不是每個 IDLE 都能 PlayIdle**:跪/祈禱(`IdleBlessingKneel*`/`IdleCrouchedPray*`)綁神壇家具,自由 `PlayIdle` 無效;挑 vanilla 腳本實際 `.PlayIdle()` 過的(鞠躬 `IdleSilentBow`/獻手 `IdleGive`/`IdleStop`/offset 類),`grep -ri '.PlayIdle(' ~/.cache/modforge/papyrus/Source/Scripts` 查。④ 連播同一 idle 不明顯重播,要不同手勢才看得出兩 fragment 都 fire。⑤ 座椅/sandbox NPC 忽略 PlayIdle → 給站立包(Sandbox `allowSitting:false`)。⑥ console `playidle` 吃 EditorID 不吃 FormID(Papyrus `PlayIdle(form)` 吃 form,spec `idle` ref 綁的就是 form)。
+- **scene PlayIdle**（in-game 確認，多坑連環）[[scene-playidle-recipe]]：① **SceneAdapter VMAD 三個 canonical 值不可少,否則引擎靜默跳過 fragment**——`ScenePhaseFragment.Unknown=16777216`(0x01000000;=quest 的 `Unknown2=1` 坑的 scene 版)、`SceneScriptFragments.ExtraBindDataVersion=2`、`ScriptEntry.Flags=Local`(全 265 vanilla phase-frag scene 一致)。② **每個帶 fragment 的 phase 必須有一個 SceneAction(Timer)**,空 phase 引擎不 run、fragment 不 fire(故 idle action 同時發一個 Timer 當 hold)。③ **不是每個 IDLE 都能 PlayIdle**:跪/祈禱(`IdleBlessingKneel*`/`IdleCrouchedPray*`)綁神壇家具,自由 `PlayIdle` 無效;挑 vanilla 腳本實際 `.PlayIdle()` 過的(鞠躬 `IdleSilentBow`/獻手 `IdleGive`/`IdleStop`/offset 類),`grep -ri '.PlayIdle(' ~/.cache/modforge/papyrus/Source/Scripts` 查。④ 連播同一 idle 不明顯重播,要不同手勢才看得出兩 fragment 都 fire。⑤ 座椅/sandbox NPC 忽略 PlayIdle → 給站立包(Sandbox `allowSitting:false`)。⑥ console `playidle` 吃 EditorID 不吃 FormID(Papyrus `PlayIdle(form)` 吃 form,spec `idle` ref 綁的就是 form)。
 ## NPC 裝備 / 偷竊
 
 - **NPC 裝備/偷竊**：武器要有傷害（templated 武器 spec 留空會保留 template 原值；0 傷害武器 NPC 評分低於拳頭、不拔）；未裝備物品免 perk 偷，已裝備武器/穿戴衣物需 Misdirection/Perfect Touch perk；`essential` NPC 不可 loot，要可 loot 改用 `protected`。
@@ -30,7 +30,7 @@
 
 ## Voice / ship-voice
 
-- **TIF 內聯編譯的「spurious fail」其實是 native headers 不全** [[sofia-vigilant-pipeline-confirmed]]：Linux native compiler 預設看的 Steam `Data/Scripts/Source` 可能缺 `GlobalVariable.psc` 等 header，故含 `setGlobal`/`sayOnce` 的 fragment 在 `package` 失敗，手動 `compile`（Wine＋完整 cache）卻成功。2026-08-10 已修 `Papyrus.CompileBest`：native 失敗會自動 fallback CK/Wine，並保留兩邊錯誤；正常 `package` 應直接帶齊 TIF `.pex`。離線機沒有 Wine 時仍須把 `MODFORGE_PAPYRUS_HEADERS` 指向完整 header 目錄。
+- **TIF 內聯編譯的「spurious fail」其實是 native headers 不全** [[sofia-vigilant-pipeline-confirmed]]：Linux native compiler 預設看的 Steam `Data/Scripts/Source` 可能缺 `GlobalVariable.psc` 等 header，故含 `setGlobal`/`sayOnce` 的 fragment 在 `package` 失敗，手動 `compile`（Wine＋完整 cache）卻成功。`Papyrus.CompileBest` 在 native 失敗時自動 fallback CK/Wine，並保留兩邊錯誤；正常 `package` 應直接帶齊 TIF `.pex`。離線機沒有 Wine 時仍須把 `MODFORGE_PAPYRUS_HEADERS` 指向完整 header 目錄。
 - **LipGenerator wine crash** [[voice-gen-interface-future]]：lip 嘴型設 `MODFORGE_LIPGEN`＝CK `LipGenerator.exe`；但它在 wine 下會 crash/重試把配音拖到極慢，量大時可先**不設＝跳過**（嘴不動），之後再統一補 lip。
 
 ## adapter / quest stages

@@ -30,7 +30,7 @@ scripts/skylink/skylink-bridge.sh key 44    # 在遊戲裡按一個鍵（hex Dir
 scripts/skylink/skylink-bridge.sh down
 ```
 
-### `key` — agent 唯一能按鍵的方式（2026-07-10 加）
+### `key` — agent 唯一能按鍵的方式
 
 SkyLink 的 tool 都在**遊戲行程內**執行，繞過輸入層，所以查狀態、跑 console 都沒問題。但**按鍵不行**，而有些 SKSE plugin（例如 [scene-capture-bridge](../../../scene-capture-bridge/README.md)）的觸發器只有 hotkey。
 

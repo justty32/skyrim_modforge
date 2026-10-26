@@ -1,0 +1,119 @@
+{
+ "contract": "wf-table/1",
+ "source": "env-vars.md",
+ "extracted": "2026-10-26",
+ "columns": [
+  "Var",
+  "Points to",
+  "Required?",
+  "Missing → behavior",
+  "Read at"
+ ],
+ "rows": [
+  {
+   "Var": "`MODFORGE_SKYRIM_DATA`",
+   "Points to": "Skyrim SE `Data/` dir (masters, BSAs)",
+   "Required?": "for any build that resolves vanilla records",
+   "Missing → behavior": "falls back to default Steam path; if the needed master isn't there, the dependent record is **warned + skipped** (e.g. npcPatch)",
+   "Read at": "`Generator.BuildContext.cs:103`"
+  },
+  {
+   "Var": "`MODFORGE_PAPYRUS_COMPILER`",
+   "Points to": "CK `PapyrusCompiler.exe` (Wine)",
+   "Required?": "for Wine-backend compile",
+   "Missing → behavior": "fallback to hard-coded Steam path; absent → `CompileResult` ExitCode 2 `PapyrusCompiler not found` (never throws)",
+   "Read at": "`Papyrus.cs:13`"
+  },
+  {
+   "Var": "`MODFORGE_PAPYRUS_BASE`",
+   "Points to": "dir w/ base `.psc` + `TESV_Papyrus_Flags.flg` (Wine)",
+   "Required?": "for Wine-backend compile",
+   "Missing → behavior": "fallback `~/.cache/modforge/papyrus/Source/Scripts`; missing flags → ExitCode 2",
+   "Read at": "`Papyrus.cs:17`"
+  },
+  {
+   "Var": "`MODFORGE_PAPYRUS_COMPILER_BIN`",
+   "Points to": "Linux-native `papyrus-compiler`",
+   "Required?": "preferred when present (no Wine)",
+   "Missing → behavior": "fallback `~/tools/papyrus-compiler`; `CompileBest` uses native only if the file exists, else Wine; absent in native path → ExitCode 2",
+   "Read at": "`Papyrus.cs:34`"
+  },
+  {
+   "Var": "`MODFORGE_PAPYRUS_HEADERS`",
+   "Points to": "base-game `.psc` header sources (native)",
+   "Required?": "for native compile (esp. `extends ReferenceAlias`)",
+   "Missing → behavior": "fallback to Steam `Data/Scripts/Source`; missing → ExitCode 2",
+   "Read at": "`Papyrus.cs:38`"
+  },
+  {
+   "Var": "`MODFORGE_TTS_BIN`",
+   "Points to": "TTS wrapper (`voicegen.py` venv launcher); **exec'd directly**",
+   "Required?": "**for `voicelines`**",
+   "Missing → behavior": "CLI prints `ERROR: MODFORGE_TTS_BIN not set. Voice generation skipped.` exit 1; lib `GenerateWav` → null. `--dry-run`/`--plan`/`voicediag` don't need it",
+   "Read at": "`Voice.cs:31`, CLI `Program.Build.Voice.cs:40`"
+  },
+  {
+   "Var": "`MODFORGE_XWMAENCODE`",
+   "Points to": "CK `xWMAEncode.exe` (Wine)",
+   "Required?": "optional",
+   "Missing → behavior": "null/fail → **downgrade fuz/xwm to loose `.wav`** + `!!` warning (never raw PCM in `.fuz`); any `.lip` shipped loose",
+   "Read at": "`Voice.cs:32`, downgrade `Generator.Build.Voice.cs:25`"
+  },
+  {
+   "Var": "`MODFORGE_LIPGEN`",
+   "Points to": "CK official `LipGenerator.exe` (Wine) — **preferred lip backend**",
+   "Required?": "optional",
+   "Missing → behavior": "unset → fall through to FaceFX; both unset (fuz, skipLip=false) → one warning + **no-lip / static mouth**. Auto-finds `FonixData.cdf` beside its own exe",
+   "Read at": "`Voice.cs:35`, dispatch `Voice.Lip.cs:35`"
+  },
+  {
+   "Var": "`MODFORGE_FACEFX`",
+   "Points to": "community `FaceFXWrapper.exe` (Wine) — **legacy lip fallback**",
+   "Required?": "optional",
+   "Missing → behavior": "only used when `MODFORGE_LIPGEN` absent; null → no lip",
+   "Read at": "`Voice.cs:33`, `Voice.Lip.cs:80`"
+  },
+  {
+   "Var": "`MODFORGE_FONIXDATA`",
+   "Points to": "`FonixData.cdf` (FaceFX **only**)",
+   "Required?": "only for the FaceFX fallback",
+   "Missing → behavior": "null → FaceFX path yields no lip. **Not needed** for the preferred LipGenerator path",
+   "Read at": "`Voice.cs:34`, `Voice.Lip.cs:81`"
+  },
+  {
+   "Var": "`MODFORGE_FISH_SPEECH_BIN`",
+   "Points to": "local Fish Speech wrapper",
+   "Required?": "only for `--engine fish-s2`",
+   "Missing → behavior": "**read in `voicegen.py` (Python), not C#**: missing → `sys.exit(1)`. The `f5` engine never reads it",
+   "Read at": "`voicegen.py:61`"
+  },
+  {
+   "Var": "`MODFORGE_DEBUG`",
+   "Points to": "flag (any value)",
+   "Required?": "optional",
+   "Missing → behavior": "unset → top-level CLI catch prints only `ERROR: <Type>: <Message>`; set → full stack trace",
+   "Read at": "`Program.cs:71`"
+  },
+  {
+   "Var": "`MODFORGE_SKYRIM_MASTERS`",
+   "Points to": "space-separated master list",
+   "Required?": "shell only",
+   "Missing → behavior": "`scripts/extract-skyrim-masters.sh` only; unset → built-in default list",
+   "Read at": "`scripts/extract-skyrim-masters.sh:10`"
+  },
+  {
+   "Var": "`MODFORGE_REFERENCE_OUT`",
+   "Points to": "extract output dir",
+   "Required?": "shell only",
+   "Missing → behavior": "`scripts/extract-skyrim-masters.sh` only; unset → `$repo/reference/skyrim-masters-local`",
+   "Read at": "`scripts/extract-skyrim-masters.sh:8`"
+  },
+  {
+   "Var": "*(arbitrary)*",
+   "Points to": "any var named in a spec `$env` directive",
+   "Required?": "contextual",
+   "Missing → behavior": "resolved by `SpecRefs.cs`; **no value and no `default` → hard error** (`SpecRefException`) — the one deliberate non-degrading failure",
+   "Read at": "`SpecRefs.cs:34`"
+  }
+ ]
+}

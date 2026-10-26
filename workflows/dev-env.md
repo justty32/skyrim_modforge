@@ -23,7 +23,7 @@ ModForge 在**兩種機器**上開發，能做的事不同：
 scripts/bootstrap-pex.sh
 ```
 
-把 `assets/papyrus/*.psc` 編成 `.pex`（被 CLI embed 為 EmbeddedResource；`.pex` 不進 repo，任何 `.psc` 改動同樣重跑、新 `.pex` 留本機不 commit）。需 Wine + CK PapyrusCompiler（native 走 `~/tools/papyrus-compiler` + `MODFORGE_PAPYRUS_HEADERS`）。**離線機沒有 Wine/CK → 跳過**（build 仍可，runtime 才 warn 缺 `.pex`）。**腳本若叫 SKSE 擴充函式**（如 `GetDisplayName`）：header cache 是純 vanilla，錯誤只會是「undefined function」——把 SKSE 版 headers 疊進 cache：`cp "<Steam>/Skyrim Special Edition/Data/Scripts/Source/"*.psc ~/.cache/modforge/papyrus/Source/Scripts/`（64 檔＝SKSE 安裝時放的 vanilla+SKSE 合併版；2026-07-11 為 `MFLivingNpcAlias` 補過，同 JContainers/PapyrusUtil 慣例）。
+把 `assets/papyrus/*.psc` 編成 `.pex`（被 CLI embed 為 EmbeddedResource；`.pex` 不進 repo，任何 `.psc` 改動同樣重跑、新 `.pex` 留本機不 commit）。需 Wine + CK PapyrusCompiler（native 走 `~/tools/papyrus-compiler` + `MODFORGE_PAPYRUS_HEADERS`）。**離線機沒有 Wine/CK → 跳過**（build 仍可，runtime 才 warn 缺 `.pex`）。**腳本若叫 SKSE 擴充函式**（如 `GetDisplayName`）：header cache 是純 vanilla，錯誤只會是「undefined function」——把 SKSE 版 headers 疊進 cache：`cp "<Steam>/Skyrim Special Edition/Data/Scripts/Source/"*.psc ~/.cache/modforge/papyrus/Source/Scripts/`（64 檔＝SKSE 安裝時放的 vanilla+SKSE 合併版）。
 
 ## 出貨腳本（**僅 Manjaro**）
 
@@ -37,7 +37,7 @@ scripts/bootstrap-pex.sh
 
 **用 `../scene-capture-bridge/scripts/deploy.sh`，不要手打 `cp`。**
 
-**症狀（2026-07-12 真的把使用者的遊戲弄死過）**：遊戲跑著的時候把新 DLL `cp` 蓋進 `mods/<mod>/SKSE/Plugins/` → 遊戲**無聲暴斃、連 crash log 都沒有**。看起來像「新 DLL 是壞的」，其實 DLL 沒問題。
+**症狀**：遊戲跑著的時候把新 DLL `cp` 蓋進 `mods/<mod>/SKSE/Plugins/` → 遊戲**無聲暴斃、連 crash log 都沒有**。看起來像「新 DLL 是壞的」，其實 DLL 沒問題。
 
 **成因**：Windows 會鎖住載入中的 DLL，**Linux/Proton 不會**。`cp new target` ＝ `open(O_TRUNC)` **寫回同一個 inode**；而已載入 DLL 的程式碼頁是**從該檔 demand-page 進來的**（用到才 fault-in）。檔案在腳下被換掉 → 下一次 page-in 從**新檔**的同一個 offset 讀 bytes，那個位置在**舊檔**裡是別的東西 → 指令流變垃圾 → 死。（crash handler 自己可能也還沒 fault-in，所以連 log 都寫不出來。）
 

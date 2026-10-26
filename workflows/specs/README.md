@@ -23,6 +23,6 @@
 | [ingame-scene-export-design.md](ingame-scene-export-design.md)（遊戲內蓋城鎮 → scene JSON → patch；ModForge 側契約 + 最小切片 M0–M2） | 2026-07-08 | [Idea #24](../idea/tools/24-ingame-editor.md) |
 | [navmesh-patch-design.md](navmesh-patch-design.md)（P3 內裝 edge-to-edge NAVM patch MVP） | 2026-08-11 | [navmesh plan](../plans/navmesh.md) / scene-capture backlog |
 
-action-system asset/config 生成（OAR/BDI/PIE）MVP 已落地（2026-06-14），design 已移 [archive/](archive/README.md)。
+action-system asset/config 生成（OAR/BDI/PIE）MVP 已落地，design 已移 [archive/](archive/README.md)。
 
 > **命名不含日期 + 落地即 archive** 的完整規則見 [plans/README.md](../plans/README.md)（兩夾共用；spec 檔名對應 `<功能>-design.md` ↔ plan `<功能>.md`）。

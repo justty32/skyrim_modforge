@@ -20,8 +20,8 @@
 
 A Skyrim "animation" is **four layers**, and dropping a file in a folder does nothing unless a higher layer references it. The core mental model:
 
-1. **The clip — `.hkx` (Havok binary).** One motion under `Meshes\actors\character\animations\...`: per-bone transforms over time + **annotations**. Skyrim only honors **root Z-translation + X/Y-rotation** (rest of root motion stripped on import).
-2. **The skeleton — `skeleton.nif` + `skeleton.hkx`.** Bone hierarchy + rest pose, `NPC <name> [tag]` naming. An animation is authored *against a skeleton*; mismatched bone names/hierarchy → T-pose/garbage. An animation + the skeleton it plays on **must be the same rig.**
+1. **The clip — `.hkx` (Havok binary).** One motion under `Meshes\actors\character\animations\...`: per-bone transforms over time + **annotations**. Skyrim only honors **root Z-translation + X/Y-rotation**.
+2. **The skeleton — `skeleton.nif` + `skeleton.hkx`.** Bone hierarchy + rest pose, `NPC <name> [tag]` naming. An animation is authored *against a skeleton* and **must play on the same rig**; mismatched bone names/hierarchy → T-pose/garbage.
 3. **The behavior graph — Havok behavior `.hkx` (the hard part).** State machines (`0_master.hkx`, `defaultmale.hkx`…) deciding *when* a clip plays, transitions, conditions. **The gatekeeper.** A clip the graph never references is dead weight. These are "not designed to be modified" — the reason FNIS/Nemesis/Pandora exist (they *patch the graph for you*).
 4. **Animation events / annotations.** Named events (`weaponSwing`, idle tags) the graph reacts to; the engine/Papyrus fire them (`Debug.SendAnimationEvent`, `PlayIdle`). **An IDLE record is essentially a named handle the graph already exposes** — which is why ModForge's existing `PlayIdle` works *only* for vanilla IDLEs the vanilla behavior already drives.
 
@@ -41,7 +41,7 @@ A Skyrim "animation" is **four layers**, and dropping a file in a folder does no
 - **Skeleton mismatch** (names/hierarchy/proportions) → T-pose/explode/foot-skate. Retarget map must be exact.
 - **Root motion** — only root Z + X/Y-rot honored; mismatch → sliding.
 - **The behavior-graph wall** — genuinely *new* motion categories (not replacements) need behavior patching; stay in replacement-land (a/c) for the MVP.
-- **Nemesis under Wine is broken** (thread races) — **use Pandora** (native, reads Nemesis format, headless). Re-baseline.
+- **Nemesis under Wine is broken** (thread races) — **use Pandora** (native, reads Nemesis format, headless).
 - **PyNifly is Windows-only** — the Blender→hkx export has no clean Linux path; budget a Windows box/VM/Wine-Blender, or pre-export hkx manually.
 - **Can't test in-game** — structural verification only; rely on the user's MO2/Proton loop + the known stale-zip/MO2-reinstall traps in memory.
 

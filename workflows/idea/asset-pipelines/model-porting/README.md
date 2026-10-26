@@ -1,17 +1,15 @@
 # Model Porting — Detailed Implementation Plan (External Mesh → Skyrim SE `.nif`)
 
-Deep-dive companion to the landscape survey [`../03-3d-model-import.md`](../03-3d-model-import.md). That file is the *what exists*; this folder is the *how I build it at home* — exhaustive enough that on a Manjaro session you copy-paste a runbook instead of re-deciding.
+Companion to the landscape survey [`../03-3d-model-import.md`](../03-3d-model-import.md) (*what exists*); this folder is the *how to build it at home*, as a copy-paste runbook.
 
-> **現況更新（2026-09-10）：**本目錄保留 2026-06-09 的研究與人工操作路線，不再代表
-> 靜態轉換器的現行架構。可執行實作已在獨立
+> **現況：**本目錄是研究與人工操作路線，其 Blender/NifTools/Compressonator 主路不是靜態轉換器的現行架構。可執行實作在獨立
 > [`model-converter`](../../../../../model-converter/README.md)：以純 Python `any2nif` / `gltf2nif` /
-> `tex2dds` 直接產生 SSE `BSTriShape` NIF 與 BC1/BC3 DDS，FBX 前端使用 FBX2glTF。
-> 本目錄中的 Blender/NifTools/Compressonator 主路是歷史方案；`any2nif --package` 已可一次產出一般模型、貼圖與自動 box/convex 碰撞。
+> `tex2dds` 直接產生 SSE `BSTriShape` NIF 與 BC1/BC3 DDS，FBX 前端使用 FBX2glTF；`any2nif --package` 一次產出一般模型、貼圖與自動 box/convex 碰撞。
 > True PBR profile、蒙皮／骨架與 ModForge 的 spec 接線仍是未完成規劃。
 
-**Research/plan date:** 2026-06-09. **Home rig:** dual-boot — **Manjaro (primary)** + **Windows (reboot on demand)**, NVIDIA 16 GB VRAM. **Status:** plan only, no code touched. This folder is **research** — it does not move the maintenance chain (code → CODE_MAP → docs); landing any of it later follows CLAUDE.md Workflow 1.
+**Home rig:** dual-boot — **Manjaro (primary)** + **Windows (reboot on demand)**, NVIDIA 16 GB VRAM. This folder is **research** — not on the maintenance chain (code → CODE_MAP → docs); landing any of it follows CLAUDE.md Workflow 1.
 
-> **Legal / scope (standing constraint, unchanged from the survey):** personal, single-player, **non-redistributed** use only. Ported commercial-game assets (Genshin/WuWa/FromSoft, Unity-Store/Nexus packs) are converted and used **locally**; never publish converted meshes or textures. They remain the original rights-holders' property.
+> **Legal / scope (standing constraint):** personal, single-player, **non-redistributed** use only. Ported commercial-game assets (Genshin/WuWa/FromSoft, Unity-Store/Nexus packs) are converted and used **locally**; never publish converted meshes or textures. They remain the original rights-holders' property.
 
 ---
 
@@ -47,7 +45,7 @@ source .fbx/.obj/.gltf  (+ source textures)
    in-game static with collision
 ```
 
-Everything on this spine is **native Manjaro, zero Wine, zero reboot.** That is the whole point of the static-first choice: prove the asset-layer shell-out before touching the Havok/skeleton walls.
+Everything on this spine is **native Manjaro, zero Wine, zero reboot** — it proves the asset-layer shell-out before touching the Havok/skeleton walls.
 
 ---
 
@@ -64,6 +62,7 @@ Everything on this spine is **native Manjaro, zero Wine, zero reboot.** That is 
 
 ## File index
 
+<!-- wf-nav -->
 | File | Covers |
 |------|--------|
 | [01-toolchain-setup.md](01-toolchain-setup.md) | Manjaro install (Blender + NifTools + Compressonator) + Windows side (PyNifly) + Wine tools + the swappable-backend contract + a VRAM/CPU reality check |
@@ -79,7 +78,7 @@ Everything on this spine is **native Manjaro, zero Wine, zero reboot.** That is 
 
 ---
 
-## Top risks (carried from memory + survey)
+## Top risks
 
 - **Wrong nif/texture path = invisible object, no error** — the dominant failure mode. Data-relative strings baked into the nif; ModForge owns and can verify them ([[vanilla-nif-paths-must-be-verified]], and the `model` field already warns "wrong = invisible" in `Spec.MagicFx.cs`). [04] §4 is the mitigation.
 - **Scale/orientation** — Skyrim Z-up, −Y forward; sources vary (Unity Y-up/m, UE Z-up/cm, glTF Y-up/m). One miscalibrated constant = giant/tiny/sideways. Calibrate per source against a vanilla nif of known size ([02] §2).

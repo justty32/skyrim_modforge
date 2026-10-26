@@ -14,7 +14,7 @@
 | `examples/` | spec `.json` 範例 + `spec.schema.json` + `scripts/*.psc` + `assets/`——視為**源碼** |
 | `assets/papyrus/` | embed 進 CLI 的 `.psc`（dispatcher / controller / 身份系統）|
 | `scripts/` | 工作流 bash：出貨與環境（bootstrap-pex / ship / ship-voice / extract-skyrim-masters）＋**測試五支**（test-offline 跑測試；golden-hash / package-snapshot / cli-dispatch-snapshot 三支重構護欄；coverage 找沒測到的洞）——後者用法見 [testing.md](workflows/testing.md) |
-| `sub_projs/` | 用 ModForge 當工具的**獨立專案**（消費者 / 基石工具）——見 [sub_projs/README](sub_projs/README.md)。**2026-08-02 大幅瘦身**：只剩 `gemini-research`、`inworld-skill-tree`、`living-adventurers` 三個實體；其餘 **8 個已移出**——有程式碼的成了 `projects/` 下的同層 repo（godot-worldspace-editor、scene-capture-bridge、model-converter、agent-bridge、darksouls-port、sofia-patch、skyrim-voicegen、game-data），純文檔的進工作區 `analysis/`（mod-survey、tool-survey、followers-patch）。**stub 也不留**——原名 → 現在在哪的對照表在 [sub_projs/README](sub_projs/README.md) |
+| `sub_projs/` | 用 ModForge 當工具的**獨立專案**（消費者 / 基石工具）——見 [sub_projs/README](sub_projs/README.md)。實體只有 `gemini-research`、`inworld-skill-tree`、`living-adventurers` 三個；原子專案的其餘部分在外面——有程式碼的是 `projects/` 下的同層 repo（godot-worldspace-editor、scene-capture-bridge、model-converter、agent-bridge、darksouls-port、sofia-patch、skyrim-voicegen、game-data），純文檔的在工作區 `analysis/`（mod-survey、tool-survey、followers-patch）。**stub 不留**——原名 → 現在在哪的對照表在 [sub_projs/README](sub_projs/README.md) |
 | `tests/` | xUnit（`Category=RequiresSkyrim` 為需本機 Skyrim.esm 者）|
 | `spikes/` | 實驗性 spike，不進主管線、不進 dotnet test。目前一個 `prefab_grammar`（seed 可固定的離線 prefab grammar，Python unittest 自測；見 [spikes/prefab_grammar/README.md](spikes/prefab_grammar/README.md)）|
 | `docs/` | ModForge 使用手冊（cookbook/cheatsheet/spec；見下）|
@@ -41,7 +41,7 @@
 
 ## docs/ — ModForge 使用手冊
 
-使用文檔（如何**使用** ModForge）在 [docs/](docs/)：spec 欄位參考 [SPEC-index](docs/spec/SPEC-index.md) · NPC cookbook/cheatsheet [lifelike](docs/lifelike/README.md) · agent CLI 指南 [for_agent](docs/for_agent.md) · 外部資產打包 [external_assets](docs/external_assets.md) · 引擎背景 [engine-internals](docs/engine-internals.md) · vanilla 抽取 [local-skyrim-extraction](docs/local-skyrim-extraction.md) · [繁中鏡像 zh-TW](docs/zh-TW/spec/SPEC-index.md) · 本機 Mutagen/Synthesis 鏡像 + Skyrim.esm 解碼 dump [reference/](docs/reference/INDEX.md)（**素材本體 gitignore、`INDEX*.md` 地圖有進版控**——2026-08-02 修正，之前整包被吞，fresh clone 讀不到地圖）。
+使用文檔（如何**使用** ModForge）在 [docs/](docs/)：spec 欄位參考 [SPEC-index](docs/spec/SPEC-index.md) · NPC cookbook/cheatsheet [lifelike](docs/lifelike/README.md) · agent CLI 指南 [for_agent](docs/for_agent.md) · 外部資產打包 [external_assets](docs/external_assets.md) · 引擎背景 [engine-internals](docs/engine-internals.md) · vanilla 抽取 [local-skyrim-extraction](docs/local-skyrim-extraction.md) · [繁中鏡像 zh-TW](docs/zh-TW/spec/SPEC-index.md) · 本機 Mutagen/Synthesis 鏡像 + Skyrim.esm 解碼 dump [reference/](docs/reference/INDEX.md)（**素材本體 gitignore、`INDEX*.md` 地圖有進版控**）。
 
 > 注：外部工具的**已建好整合**走 spec（[SPEC-workflow](docs/spec/SPEC-workflow.md) Voice 段、external_assets）；**未建的管線可行性研究**屬 idea-research，在 [workflows/idea/asset-pipelines](workflows/idea/asset-pipelines/README.md)。
 

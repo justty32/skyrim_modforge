@@ -2,8 +2,9 @@
 
 這裡放**把 ModForge 當工具使用的專案**，而不是工具本身。ModForge 的唯一目的是「JSON spec → Skyrim mod，且為 AI agent 適配」;這些專案**消費**它（或**作為它的基石**透過協議連接），但**不與它整合**——ModForge 不該為了某個專案長出特例功能。可以在推進這些專案時吸取經驗來改進工具，但專案本身不是工具的一部分。
 
-> **2026-08-02：這個資料夾已經清空到只剩三項。** 十一個子專案全部搬出去了，**連 stub 導引都不留**——去哪找見下方對照表。判準：有自己程式碼／建置／產物的成了 `projects/` 下的同層 git repo；純文檔的進工作區 `analysis/`。舊 commit 歷史查 `git log -- sub_projs/<name>`。
+> **這個資料夾只放三項。** 其他子專案都在別處，**不留 stub 導引**——去哪找見下方對照表。判準：有自己程式碼／建置／產物的是 `projects/` 下的同層 git repo；純文檔的在工作區 `analysis/`。
 
+<!-- wf-nav -->
 | 專案 | 類型 | 狀態 | 說明 |
 |------|------|------|------|
 | [`gemini-research/`](gemini-research/README.md) | 原始素材 | 📄 純存檔 | Gemini CLI 聯網搜尋原始輸出（combat-mods/npc-beautification/outfit-fitting/tool-survey）；品質參差，需人工篩選後才搬入正式 finding。 |
@@ -14,10 +15,11 @@
 
 ---
 
-## 已移出 — 去哪找（2026-08-02）
+## 已移出 — 去哪找
 
 **`projects/` 下的同層 git repo**（有自己的程式碼／建置／產物）：
 
+<!-- wf-nav -->
 | 原 sub_proj | 現在在哪 | 類型 | 對接方式 |
 |------|--------|------|------|
 | godot-worldspace-editor | [`../../godot-worldspace-editor`](../../godot-worldspace-editor/README.md) | 工具前端 | heightmap/splatmap PNG + `placements.json` → spec |

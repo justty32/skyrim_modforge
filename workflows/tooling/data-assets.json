@@ -1,0 +1,55 @@
+{
+ "contract": "wf-table/1",
+ "source": "data-assets.md",
+ "extracted": "2026-10-26",
+ "columns": [
+  "Dependency",
+  "Needed by",
+  "Located via",
+  "Test gate"
+ ],
+ "rows": [
+  {
+   "Dependency": "`Skyrim.esm` (+ other masters)",
+   "Needed by": "resolving vanilla FormKeys: templated weapons, npcPatches, map-marker WRLD override, lighting templates, SM roots, …",
+   "Located via": "`MODFORGE_SKYRIM_DATA` → default Steam Data",
+   "Test gate": "`[Trait(\"Category\",\"RequiresSkyrim\")]` (VoiceTests, NpcPatchTests, MapMarkerTests, LightingTests, WeaponTests). Offline run excludes them (`scripts/test-offline.sh`)"
+  },
+  {
+   "Dependency": "`Skyrim - Interface.bsa` (vanilla STRINGS)",
+   "Needed by": "headless resolution of a **localized** master's Name/Description (npcPatches, `booktext`/quest/spelltome diags) — extracts `<master>_english.*` to a temp `Strings/` named in **ModKey case**",
+   "Located via": "under `skyrimData`",
+   "Test gate": "same `MODFORGE_SKYRIM_DATA`; `RequiresSkyrim` where used. See memory `headless-vanilla-strings-provision`"
+  },
+  {
+   "Dependency": "Papyrus header/source cache `~/.cache/modforge/papyrus/Source/Scripts`",
+   "Needed by": "Wine compiler base scripts + flags (default `MODFORGE_PAPYRUS_BASE`)",
+   "Located via": "default in `Papyrus.cs`",
+   "Test gate": "not a unit-test dep (compile → ExitCode 2 if missing)"
+  },
+  {
+   "Dependency": "Native papyrus headers (Steam `Data/Scripts/Source`)",
+   "Needed by": "native compiler `-h` (default `MODFORGE_PAPYRUS_HEADERS`)",
+   "Located via": "default in `Papyrus.cs`",
+   "Test gate": "—"
+  },
+  {
+   "Dependency": "F5-TTS venv (py 3.11, `f5_tts`, torch cu128)",
+   "Needed by": "the `MODFORGE_TTS_BIN` wrapper's F5 path",
+   "Located via": "wrapper script",
+   "Test gate": "runtime only (`voicelines`)"
+  },
+  {
+   "Dependency": "vanilla / follower voice BSAs (e.g. `SofiaFollower.bsa`)",
+   "Needed by": "`extract-voices`/`voice-annotate` — pull reference `.fuz` clips → ffmpeg → WAV",
+   "Located via": "CLI argument (`bsaPath`), filter `sound/voice/<plugin>/<voiceType>/`",
+   "Test gate": "not gated (user-supplied path, `File.Exists` checked)"
+  },
+  {
+   "Dependency": "spec-referenced assets (`assets/`, `examples/refs/*.wav`, `$ref` preset JSON)",
+   "Needed by": "voice reference WAVs/models (spec-relative), `$ref` preset includes",
+   "Located via": "spec-relative paths / `SpecRefs.cs`",
+   "Test gate": "`examples/refs/` is gitignored (vanilla audio not committed)"
+  }
+ ]
+}

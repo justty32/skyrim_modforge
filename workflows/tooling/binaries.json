@@ -1,0 +1,87 @@
+{
+ "contract": "wf-table/1",
+ "source": "binaries.md",
+ "extracted": "2026-10-26",
+ "columns": [
+  "Tool",
+  "Used for",
+  "Located via",
+  "Wine?",
+  "Missing → behavior",
+  "Source ref"
+ ],
+ "rows": [
+  {
+   "Tool": "`wine`",
+   "Used for": "launcher for all CK `.exe` tools",
+   "Located via": "PATH",
+   "Wine?": "—",
+   "Missing → behavior": "Process.Start throws if `wine` can't start (only reached on the Wine compile/voice paths)"
+  },
+  {
+   "Tool": "`winepath`",
+   "Used for": "Unix → `Z:\\…` path conversion for Wine tools",
+   "Located via": "PATH",
+   "Wine?": "—",
+   "Missing → behavior": "best-effort: on failure **silently returns the un-converted Unix path** (try/catch), which then makes the Wine exe fail with \"Must specify input and output filenames\" — see note below",
+   "Source ref": "`Voice.cs:188`"
+  },
+  {
+   "Tool": "`PapyrusCompiler.exe` (CK)",
+   "Used for": "`.psc → .pex` (Wine)",
+   "Located via": "env → Steam path",
+   "Wine?": "yes",
+   "Missing → behavior": "ExitCode 2 (prereq missing)"
+  },
+  {
+   "Tool": "`papyrus-compiler` (native)",
+   "Used for": "`.psc → .pex` (no Wine)",
+   "Located via": "env → `~/tools/papyrus-compiler`",
+   "Wine?": "no",
+   "Missing → behavior": "preferred when file exists; absent → ExitCode 2"
+  },
+  {
+   "Tool": "TTS bin (`voicegen-f5.sh` → `voicegen.py`, in `../skyrim-voicegen/`)",
+   "Used for": "text+emotion+ref → WAV (decoupled bedrock project; contract = `../skyrim-voicegen/PROTOCOL.md`)",
+   "Located via": "`MODFORGE_TTS_BIN`, exec'd directly",
+   "Wine?": "native",
+   "Missing → behavior": "`voicelines` exit 1 / `GenerateWav` null"
+  },
+  {
+   "Tool": "`xWMAEncode.exe` (CK)",
+   "Used for": "WAV → xWMA for `.fuz`/`.xwm`",
+   "Located via": "`MODFORGE_XWMAENCODE`",
+   "Wine?": "yes (needs winepath)",
+   "Missing → behavior": "loose `.wav` downgrade + warning"
+  },
+  {
+   "Tool": "`LipGenerator.exe` (CK, official)",
+   "Used for": "WAV+text → `.lip` (preferred)",
+   "Located via": "`MODFORGE_LIPGEN`",
+   "Wine?": "yes",
+   "Missing → behavior": "FaceFX fallback, else no-lip"
+  },
+  {
+   "Tool": "`FaceFXWrapper.exe` (community)",
+   "Used for": "WAV+text → `.lip` (legacy)",
+   "Located via": "`MODFORGE_FACEFX` (+`MODFORGE_FONIXDATA`)",
+   "Wine?": "yes",
+   "Missing → behavior": "no-lip"
+  },
+  {
+   "Tool": "`ffmpeg`",
+   "Used for": "xWMA → WAV when extracting **vanilla** voice clips (`extract-voices`, `voice-annotate`)",
+   "Located via": "**bare PATH, no env var, no presence check**",
+   "Wine?": "no",
+   "Missing → behavior": "clip simply isn't converted (silent) — see note below",
+   "Source ref": "`Program.Build.Voice.cs:293,354`"
+  },
+  {
+   "Tool": "Fish Speech wrapper",
+   "Used for": "TTS via fish-s2 engine",
+   "Located via": "`MODFORGE_FISH_SPEECH_BIN`",
+   "Wine?": "no",
+   "Missing → behavior": "Python-side exit 1 (spawned by `voicegen.py`, not C#)"
+  }
+ ]
+}

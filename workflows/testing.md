@@ -31,12 +31,12 @@ dotnet test tests/ModForge.Core.Tests/ModForge.Core.Tests.csproj --filter "Categ
 fresh clone、任何 git worktree 或缺同層 `skyrim-voicegen` checkout 時，離線 suite 回報 `Failed: 1`（非 skip）：`$XunitDynamicSkip$sibling skyrim-voicegen checkout is unavailable`。
 `tests/ModForge.Core.Tests/Voice/VoiceLiveContractTests.cs` 的 `GenerateWav_ProductionVoicegen_HonorsProcessContract` 用 `SkipException.ForSkip`；目前 xUnit／VSTest runner 卻當失敗。這是測試基礎建設問題，非產品 bug，也非你改壞。
 重現：`git worktree add --detach /tmp/x <任一 commit>`，在 `/tmp/x` 跑離線 suite → `Failed: 1`。
-繞法（2026-09-18 實測）：`ln -sfn <工作區>/projects/skyrim-voicegen /tmp/skyrim-voicegen`，再跑 → `Failed: 0, Passed: 1338, Skipped: 0`。
-**2026-09-18 已知、當天決定不修**；建議改真正的 `Skip` 屬性或條件式 Fact。
+繞法：`ln -sfn <工作區>/projects/skyrim-voicegen /tmp/skyrim-voicegen`，再跑 → `Failed: 0`。
+**決定不修**；建議改真正的 `Skip` 屬性或條件式 Fact。
 
 ## 重構護欄：golden hash（`scripts/golden-hash.sh`）
 
-行為不變的重構（[refactor 工作流](refactor/README.md)）光靠上面的測試**不夠**：1203 個 test method 裡約八成只走 `Generator.Build`/`Validate` 對記錄下斷言，內部怎麼重組它們一律看不見。`golden-hash.sh` 補這個洞——把 `examples/` 全部 build 一次，逐一輸出 `.esp`／`.seq` 的 SHA-256：
+行為不變的重構（[refactor 工作流](refactor/README.md)）光靠上面的測試**不夠**：約八成 test method 只走 `Generator.Build`/`Validate` 對記錄下斷言，內部怎麼重組它們一律看不見。`golden-hash.sh` 補這個洞——把 `examples/` 全部 build 一次，逐一輸出 `.esp`／`.seq` 的 SHA-256：
 
 ```bash
 scripts/golden-hash.sh /tmp/before.txt        # 重構前（第二參數＝並行度，預設 4）
@@ -45,24 +45,21 @@ scripts/golden-hash.sh /tmp/after.txt
 diff /tmp/before.txt /tmp/after.txt && echo "byte-identical"
 ```
 
-**任何一行變動＝輸出變了＝這次重構不是 behavior-preserving。** 143 支 spec ／ 197 個產物，離線機約 3 分鐘。
+**任何一行變動＝輸出變了＝這次重構不是 behavior-preserving。** 離線機約 3 分鐘。
 
-⚠️ **跑的時候不能有別的東西在 build 這個 repo**（2026-08-27 修）。三支護欄都是直接執行
+⚠️ **跑的時候不能有別的東西在 build 這個 repo**。三支護欄都是直接執行
 `src/ModForge.Cli/bin/Debug/net10.0/ModForge.Cli`；別條 agent 線、IDE 或 watcher 只要跑一次
 `dotnet build`，這顆執行檔就會被刪掉重寫，**當下還沒跑到的 spec 全部 exec 失敗**。
-實測：run 開始 3 秒後插一次 `-t:Rebuild`，143 支全綠的 spec 變成 135 支 `BUILD-FAIL`。
-
-舊版會把這種 exec 失敗**記成 `BUILD-FAIL`**——也就是記成「你的重構把輸出改掉了」，正好是這支
-腳本唯一該講準的結論。現在兩支都會在 run 前後對執行檔取 SHA-256 指紋，一旦中途變了就
-**印錯誤並 `exit 2`，不交出可以拿去 diff 的檔案**（exec 失敗另記成 `HARNESS-FAIL`，不再跟
-spec 自己 build 失敗混為一談）。看到 `ABORTED` 就是這件事，把別的 build 停掉重跑即可。
+腳本會在 run 前後對執行檔取 SHA-256 指紋，一旦中途變了就
+**印錯誤並 `exit 2`，不交出可以拿去 diff 的檔案**（exec 失敗記成 `HARNESS-FAIL`，跟
+spec 自己 build 失敗分開）。看到 `ABORTED` 就是這件事，把別的 build 停掉重跑即可。
 
 ⚠️ **輸出跟機器綁定，不要 commit、不要跨機比對**：離線機沒有 `Skyrim.esm`，凡是指向 vanilla cell 的 placement 都會被 skip，產出的是縮水版 plugin，bytes 與 Manjaro 上同一支 spec 不同。永遠**在同一台機器上比 before/after**。
 
 ## 重構護欄：package（`scripts/package-snapshot.sh`）
 
 `golden-hash.sh` 只走 `build`，碰不到真正出貨用的 `package`。修改 package 編排、Papyrus
-編譯或 loose-file 出貨時，用這支把 143 個 example 的正規化 stdout/stderr、產物路徑與內容
+編譯或 loose-file 出貨時，用這支把所有 example 的正規化 stdout/stderr、產物路徑與內容
 SHA-256 做成快照：
 
 ```bash
@@ -99,9 +96,9 @@ scripts/coverage.sh                 # 離線跑，報告印到 stdout
 scripts/coverage.sh /tmp/cov.txt    # 順便存一份
 ```
 
-第三方 source-linked 相依（DynamicData／Humanizer／Mutagen）與 `obj/` 生成碼會被濾掉，否則真正的結果會被埋掉。2026-08-13 基準：**73.0%**（27500/37669）。
+第三方 source-linked 相依（DynamicData／Humanizer／Mutagen）與 `obj/` 生成碼會被濾掉，否則真正的結果會被埋掉。
 
-⚠️ **看數字前先看 filter**。預設排除 `Category=RequiresSkyrim`，所以**只有那些測試才走得到的程式碼會顯示成沒覆蓋**——這是「離線機能回歸測到什麼」的實話，但**不等於那段程式碼沒測試**。下結論前先確認該檔的 `*Tests.cs` 是不是整份都標了 `RequiresSkyrim`：`Generator.LivingNpcs.cs` 之前讀起來是 4%，就是因為 `LivingNpcTests` 每一條都要 `Skyrim.esm`，而不是因為它沒測試。要含 RequiresSkyrim 一起算：
+⚠️ **看數字前先看 filter**。預設排除 `Category=RequiresSkyrim`，所以**只有那些測試才走得到的程式碼會顯示成沒覆蓋**——這是「離線機能回歸測到什麼」的實話，但**不等於那段程式碼沒測試**。下結論前先確認該檔的 `*Tests.cs` 是不是整份都標了 `RequiresSkyrim`：例：`LivingNpcTests` 每一條都要 `Skyrim.esm`，所以 `Generator.LivingNpcs.cs` 離線讀起來覆蓋極低，而不是因為它沒測試。要含 RequiresSkyrim 一起算：
 
 ```bash
 MODFORGE_COVERAGE_FILTER= scripts/coverage.sh

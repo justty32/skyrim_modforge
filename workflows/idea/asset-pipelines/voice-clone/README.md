@@ -2,13 +2,13 @@
 
 ← parent landscape survey: [../01-voice-cloning-fuz.md](../01-voice-cloning-fuz.md) · folder index: [../README.md](../README.md)
 
-**This folder started as the *implementation* plan** (the parent file is the *landscape survey*).
-As of 2026-06-12, the core ModForge `voicelines` path exists: it can inspect built INFOs, plan
+**This folder is the *implementation* plan** (the parent file is the *landscape survey*).
+The core ModForge `voicelines` path exists: it can inspect built INFOs, plan
 speaker/template/output paths, shell out to a local TTS wrapper, encode with Wine `xWMAEncode.exe`,
 and write `.fuz` loose assets. The remaining work is real model setup, lip tooling, quality QA, and
 Skyrim/Proton in-game confirmation.
 
-**Plan date:** 2026-06-09. Author target machine: **Manjaro Linux, 16 GB VRAM NVIDIA GPU, CUDA, Wine/Proton available.** Personal single-player use only; generated voice assets are never redistributed.
+Target machine: **Manjaro Linux, 16 GB VRAM NVIDIA GPU, CUDA, Wine/Proton available.** Personal single-player use only; generated voice assets are never redistributed.
 
 ---
 
@@ -24,6 +24,7 @@ Skyrim/Proton in-game confirmation.
 
 ## Document index
 
+<!-- wf-nav -->
 | File | What it covers | When you need it |
 |------|----------------|------------------|
 | [01-engine-setup.md](engine-setup/README.md) | Manjaro CUDA prereqs; install F5-TTS / Chatterbox / GPT-SoVITS; the swappable engine contract; VRAM budgets; tuning knobs; determinism. | First thing at home — get an engine producing a cloned WAV from text. |
@@ -67,14 +68,10 @@ Each step proves one new thing and is independently testable. Do not add a tier 
 3. **Add `.xwm`.** Encode via `xWMAEncode.exe` under Wine. Proves the Wine audio path and shrinks disk. ([03](03-lip-and-audio-encoding.md))
 4. **Add lip (movement).** Tier 1 FaceFXWrapper/Runalip under Wine; if Wine fails, Tier 2 synthetic envelope `.lip`. ([03](03-lip-and-audio-encoding.md))
 5. **GPT-SoVITS fidelity track.** For any NPC where the zero-shot clone drifts across many lines, fine-tune and switch that voice's engine. ([01](engine-setup/README.md), [02](02-voice-data.md))
-6. **ModForge `voicelines` CLI step.** Implemented structurally. Use `voicediag` / `voicelines --plan`
-   first, then generate. Remaining work: real TTS model install + in-game playback confirmation.
-   ([05](05-modforge-integration.md))
+6. **ModForge `voicelines` CLI step.** Implemented structurally; use `voicediag` / `voicelines --plan` first, then generate. ([05](05-modforge-integration.md))
 
 ---
 
 Risks, open questions + legal guardrail → [risks-gotchas.md](risks-gotchas.md)
 
-*Status: plan drafted 2026-06-09; ModForge integration partially landed by 2026-06-12. Fake-TTS +
-real xWMA `.fuz` packaging is structurally verified; real TTS model setup, FaceFX/lip behavior, and
-Skyrim/Proton playback still need empirical confirmation on the home machine.*
+*Status: Fake-TTS + real xWMA `.fuz` packaging is structurally verified.*
