@@ -20,3 +20,13 @@ Gemini CLI（聯網搜尋）生成的**原始研究素材**。品質參差不齊
 - **不信任**任何沒有 URL 或具體工具名的說法
 - **URL 要驗**（Gemini 會捏造 URL）
 - 有價值的結論手動整理進正式 finding（`../../analysis/mod-survey/findings/` 或 `workflows/idea/`）
+
+## 已收錄檔案（逐檔連結）
+
+- [2026-07-10-ingame-scene-editor-prior-art.md](2026-07-10-ingame-scene-editor-prior-art.md)
+- [combat-mods/01-modern-combat-stack.md](combat-mods/01-modern-combat-stack.md)
+- [npc-beautification/01-universal-npc-overhaul.md](npc-beautification/01-universal-npc-overhaul.md)
+- [outfit-fitting/01-runtime-morphing.md](outfit-fitting/01-runtime-morphing.md)
+- [tool-survey/01-tes5edit.md](tool-survey/01-tes5edit.md)
+- [tool-survey/02-f4ref-to-blender.md](tool-survey/02-f4ref-to-blender.md)
+- [tool-survey/03-bodyslide-outfit-studio.md](tool-survey/03-bodyslide-outfit-studio.md)

@@ -7,7 +7,7 @@ Start here when you need to use ModForge. These guides describe the supported in
 | Turn a request into a plugin | [for_agent.md](for_agent.md) |
 | Drive the JSON CLI | [for_agent_cli.md](for_agent_cli.md) |
 | Use `ModForge.Core` from C# | [for_agent_lib.md](for_agent_lib.md) |
-| Find every JSON spec field | [spec/SPEC-index.md](spec/SPEC-index.md) |
+| Find every JSON spec field | [spec/SPEC-index.md](spec/SPEC-index.md)（目錄入口 [spec/README.md](spec/README.md)） |
 | Build more lifelike NPCs | [lifelike/README.md](lifelike/README.md) |
 | Understand generator mechanics | [engine-internals.md](engine-internals.md) |
 | Package external assets | [external_assets.md](external_assets.md) |

@@ -6,7 +6,7 @@
 
 | 專案 | 類型 | 狀態 | 說明 |
 |------|------|------|------|
-| `gemini-research/` | 原始素材 | 📄 純存檔 | Gemini CLI 聯網搜尋原始輸出（combat-mods/npc-beautification/outfit-fitting/tool-survey）；品質參差，需人工篩選後才搬入正式 finding。 |
+| [`gemini-research/`](gemini-research/README.md) | 原始素材 | 📄 純存檔 | Gemini CLI 聯網搜尋原始輸出（combat-mods/npc-beautification/outfit-fitting/tool-survey）；品質參差，需人工篩選後才搬入正式 finding。 |
 | `inworld-skill-tree/` | 消費者 | 🟡 核心已落地、Phase 2 未做 | In-world 3D 星樹技能樹生成路線（Idea #20，玩家+NPC）。放棄 CSF，走 Campfire/Frostfall 世界內星樹 + JContainers per-NPC 狀態。U1–U5 全解；Phase 0（純效果成長）+ Phase 1（玩家版 in-world 樹）+ Phase 3（generator `skillTrees:`）皆離線落地並 IN-GAME CONFIRMED。剩 Phase 2（NPC 版橋接）未動工 + Phase 0 實機驗收。 |
 | `living-adventurers/` | 消費者 | 🟡 核心離線落地、等實機 | 給 standalone follower 一條命：人口/沈浸型 mod，一小撮具名持久冒險者過自主冒險人生（抽象幽靈模擬 + MoveTo 就地實體化），玩家各處撞見、酒館傳唱。idea #23。核心已落地：P1 泛化控制器（build 綠零警告）+ P2 `livingNpcs:` enroll macro（845 測綠）+ P3 玩家互動與 alignment（848 測綠）；待主力機編 .pex + 實機驗證。任務層（真 missive）卡 roadmap #7–9；cast 接真 standalone follower mod 未開。 |
 
