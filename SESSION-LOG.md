@@ -18,5 +18,5 @@
 | 工作流 | session-log | open 摘要 |
 |--------|-------------|----------|
 | 功能開發 | [feature-dev/session-log](workflows/feature-dev/session-log.md) | 身份系統 ③ 冷凍 |
-| 重構整理 | [refactor/session-log](workflows/refactor/session-log.md) | 無（拆檔與覆蓋率收尾已完成） |
+| 重構整理 | [refactor/session-log](workflows/refactor/session-log.md) | 過長方法候選（判斷題，未排） |
 | 調查／解碼 | [investigation/session-log](workflows/investigation/session-log.md) | 無 |

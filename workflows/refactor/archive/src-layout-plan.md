@@ -1,3 +1,5 @@
+> 封存 2026-10-26：Batch 0–5 與收尾已全部完成（計畫自述「做完後整份移 archive/」）；後續 open 見 [refactor/session-log](../session-log.md)。
+
 # src/ 拆檔重構整理 — 計畫
 
 ← [refactor 入口](README.md)｜[DEV-GUIDE 結構整理原則](../../DEV-GUIDE.md)｜[common/conventions](../common/conventions.md)

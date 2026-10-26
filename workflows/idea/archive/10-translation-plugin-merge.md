@@ -1,3 +1,5 @@
+> 封存 2026-10-26，由 [#16 ESL 合併工具](../tools/16-esl-merge-tool.md) 取代（翻譯已落地，合併由 #16 承接）。
+
 # 10. 翻譯 + 插件合併
 
 ← index: [README.md](README.md) · [ideas 索引](../ideas.md)

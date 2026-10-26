@@ -14,8 +14,4 @@
 
 ## 已由 #22 吸收
 
-| # | 原始題目 | 歷史入口 |
-|---|----------|----------|
-| 3 | 商隊與船隊生活 | [03-caravans-fleets.md](03-caravans-fleets.md) |
-| 4 | 異世界冒險（另開 Worldspace） | [04-alien-worldspace.md](04-alien-worldspace.md) |
-| 8 | 程序生成的世界 | [08-procedural-world.md](08-procedural-world.md) |
+#3 商隊與船隊生活、#4 異世界冒險（另開 Worldspace）、#8 程序生成的世界已併入 [#22](22-wandering-frontier.md)，原頁已封存。

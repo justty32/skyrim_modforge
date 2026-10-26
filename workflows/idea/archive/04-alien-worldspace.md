@@ -1,3 +1,5 @@
+> 封存 2026-10-26，由 [#22 漂泊開拓慢活](../world-building/22-wandering-frontier.md) 取代（已併入）。
+
 # 4. 異世界冒險（另開 Worldspace）
 
 ← index: [README.md](README.md) · [ideas 索引](../ideas.md)

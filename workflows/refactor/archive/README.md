@@ -9,3 +9,4 @@
 | 封存記錄 | 一句話 |
 |----------|--------|
 | [2026-06-14-docs-workflows-restructure](2026-06-14-docs-workflows-restructure.md) | docs→workflows 大重構批次：bytes 拆檔門檻改制、docs/ 拆檔、zh-TW 鏡像 1:1 重對齊、workflows 文檔拆檔（tooling/landed/plans/specs/idea）、plans+specs 移 archive。 |
+| [src-layout-plan](src-layout-plan.md) | `src/` 拆檔分層＋hub 解耦計畫（Batch 0–5），2026-08-13 完成；2026-10-26 封存。 |

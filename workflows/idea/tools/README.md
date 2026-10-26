@@ -18,5 +18,5 @@
 
 | # | 主題 | 去向 |
 |---|------|------|
-| 10 | 翻譯 + 插件合併 | 翻譯已落地；合併由 [#16](16-esl-merge-tool.md) 承接；[原頁](10-translation-plugin-merge.md)保留脈絡 |
+| 10 | 翻譯 + 插件合併 | 翻譯已落地；合併由 [#16](16-esl-merge-tool.md) 承接 |
 | 24 | 遊戲內編輯器 | 已進 spec/plan 與 `scene-capture-bridge`；[idea 頁](24-ingame-editor.md)保留北極星 |
