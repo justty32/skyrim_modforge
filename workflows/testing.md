@@ -34,6 +34,12 @@ fresh clone、任何 git worktree 或缺同層 `skyrim-voicegen` checkout 時，
 繞法：`ln -sfn <工作區>/projects/skyrim-voicegen /tmp/skyrim-voicegen`，再跑 → `Failed: 0`。
 **決定不修**；建議改真正的 `Skip` 屬性或條件式 Fact。
 
+### Modlist snapshot fixture 換行契約
+
+`fixtures/modlist-snapshot/lf/*.txt` 必須以 LF checkout；`crlf/*.txt` 保留儲存的 CRLF 位元組（`-text`，不做 Git 換行轉換）。根 `.gitattributes` 僅限定這兩組 fixture，不依賴全域 `core.autocrlf`，也不改 BOM。六檔目前均無 BOM，每檔六行；`ModlistSnapshotTests.Fixtures_CrlfAndLfProduceByteIdenticalJson` 檢查兩組 `modlist.txt` 換行，並驗證三份 profile 清單解析後 JSON 一致。
+
+既有 checkout 更新屬性後若仍持有舊換行，先確認 fixture 無本機修改並搬到 repo 外備份，再於 Bash 用 `git ls-files -z -- fixtures/modlist-snapshot | git checkout-index --force -z --stdin` 重新 checkout 六檔。跨機驗證應在乾淨暫存 checkout，分別以 `core.autocrlf=true`、`false`、`input` 核對六檔與 Git blob 的 SHA-256 相同；Windows 使用 Git for Windows 與原生 .NET，WSL 的 Git／位元組驗證不代表已跑 Linux .NET runtime。
+
 ## 重構護欄：golden hash（`scripts/golden-hash.sh`）
 
 行為不變的重構（[refactor 工作流](refactor/README.md)）光靠上面的測試**不夠**：約八成 test method 只走 `Generator.Build`/`Validate` 對記錄下斷言，內部怎麼重組它們一律看不見。`golden-hash.sh` 補這個洞——把 `examples/` 全部 build 一次，逐一輸出 `.esp`／`.seq` 的 SHA-256：

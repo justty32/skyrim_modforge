@@ -1,0 +1,3 @@
+# Snapshot fixtures exercise both encodings; keep their checkout bytes intentional.
+/fixtures/modlist-snapshot/lf/*.txt text eol=lf
+/fixtures/modlist-snapshot/crlf/*.txt -text
