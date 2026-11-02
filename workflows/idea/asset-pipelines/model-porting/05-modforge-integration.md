@@ -2,10 +2,10 @@
 
 ← [README](README.md) · prev: [04-nif-and-collision.md](04-nif-and-collision.md) · next: [06-standalone-runbook.md](06-standalone-runbook.md)
 
-> **現況更新（2026-09-10）：**這份是尚未實作的 ModForge 整合設計。靜態轉換器已改成
+> **現況更新（2026-11-02）：**[單 StaticSpec 完整包](../../../../../model-converter/MODFORGE-PACKAGE.md)已用獨立 opt-in CLI 接好既有 converter／ModForge package／Mutagen catalog 真讀回與失敗保護；本頁通用 `modelSource`／`importmesh` 仍未實作。靜態轉換器已改成
 > 獨立 [`model-converter`](../../../../../model-converter/README.md) 的黑盒 CLI，並且已由它自行
-> 產生 NIF/DDS；下文的 `modelSource`、`importmesh`、`Mesh.cs` 與 ModForge package 接線
-> 都還沒有落地。真正動工時應保留這些產品意圖，但實作改為呼叫現有 CLI；
+> 產生 NIF/DDS；下文的 `modelSource`、`importmesh`、`Mesh.cs` 通用設計
+> 都還沒有落地。擴展時應保留這些產品意圖，但實作改為呼叫現有 CLI；
 > 舊的 Blender/NifTools/Compressonator backend 細節只留作歷史參考。
 
 How the verified manual pipeline ([06]) folds into the generator. Design, not code — but it names concrete files, spec fields, and the existing conventions to copy. Grounded in the current `src` layout (`workflows/common/code-map/CODE_MAP.infra.md`) and the real `Spec.Items.cs` / `Assets.cs`.
@@ -26,7 +26,7 @@ Additive optional fields only (CLAUDE.md: new optional fields are safe; existing
 ```jsonc
 "statics": [{
   "editorId": "MyCrate",
-  "model": "Meshes/Mine/crate.nif",        // existing field — the Data-relative target
+  "model": "Mine/crate.nif",               // existing field — relative to Meshes (not Data)
   "modelSource": {                           // NEW optional block
     "file": "model-work/src/crate.fbx",     // source mesh (local, never committed)
     "sourceType": "gltf",                    // gltf | fbx | obj  (carries the [02] transform rule)

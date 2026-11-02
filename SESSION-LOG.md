@@ -9,7 +9,7 @@
 - **採集橋待實機三條**：`sc ed` numpad 回歸、`gh0` 可見性、登記簿制野外匯出 → [wait_todo/ingame-tests](wait_todo/ingame-tests.md)。程式碼在 [`../scene-capture-bridge`](../scene-capture-bridge/README.md)；現役 DLL 已非文件寫的 `c07dd174`，以母 repo `wait-user/feature-runtime/scene-ghost.md` 為準。
 - **roadmap 功能 runtime 收尾六項**（Scene SetStage、MCM→GLOB、聚落作息、filtered encounter、互動 perk、instanceGlobals）→ [wait_todo/roadmap-features](wait_todo/roadmap-features.md)；逐張驗收單在工作區 `agentctl/handoffs/home-2026-09-18/modforge/ingame-checks/`。
 - **Idea #19 Godot 編輯器小尾巴**：VTXT position 序、物件 rotation 實機目視 → [wait_todo/worldspace-editor](wait_todo/worldspace-editor.md)。
-- **Idea #23 living-adventurers**：2026-09-18 裁示今天不做；日後入口 A／B／C 見 [README](sub_projs/living-adventurers/README.md)。
+- **Idea #23 living-adventurers**：2026-11-02 使用者說「living adventures這塊，我打算回家再說，因為fde janessa這個mod有可以參考的地方」；留回家再說，`fde janessa` 僅保留為參考線索，本輪未研究或實作。入口見 [README](sub_projs/living-adventurers/README.md)。
 - **Idea #24 新想法未核准**：`sc ed <xx>` 改物件狀態等 → [backlog](workflows/plans/scene-capture-bridge/backlog.md)。
 - **Phase 2 烘焙臉（未排）** → [plans/captured-npcs-consumption](workflows/plans/captured-npcs-consumption.md)。
 
