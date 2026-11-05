@@ -12,3 +12,4 @@ findings 缺口全集（逐檔審閱 32 份 findings）除下列殘餘外幾乎�
 | H | CSF 技能樹生成器 — ⏸️ 暫緩（已有 MVP scope + spec 草案，這裡只留指標） | 🟡 | [generation.md](generation.md) |
 | A partial | SM branch/quest-node 多層巢狀 SMBN、LVLN alias fill 一等模式 | 🟡 | [mod-survey-gaps.md](mod-survey-gaps.md) ⚠️ partial |
 | J 尾巴 | `ActorUtil.AddPackageOverride`（臨時 package 覆蓋，需成對清理＝兩 fragment）、`MiscUtil.ScanCellNPCs`（情境偵測，需條件分支語法）— follower expansion 真正需要時再做 | 🟡 | — |
+| NPC 日程殘餘 | AI Overhaul 解碼浮現（`npcPatches[]` 已落地後剩下的）：天氣 CTDA 函式白名單（`GetCurrentWeatherPercent` 等）＋季節靠約定 GLOB；改既有 vanilla INFO 條件（dialogue override）；日程級 idle 動畫 hook（package-level PlayIdle 或標準化 scene 包裝） | 🟡 | [ai-overhaul-decode](../investigation/decode/ai-overhaul-decode-2026-06-13.md) |
