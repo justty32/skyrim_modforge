@@ -20,10 +20,9 @@
 | [player-capture-capp.md](player-capture-capp.md)（`sc capp <label>` 直接吸玩家＋顯式數值/技能，去 PROTEUS 化；SCCP v9） | 2026-07-11 | [specs/ingame-scene-export-design.md](../specs/ingame-scene-export-design.md)（共用） | **已實作，外貌實機 PASS**；數值與玩家 perk 待練過的角色實機對帳 |
 | [navmesh.md](navmesh.md)（編輯 vanilla cell 的導航網格） / [P3 實作](navmesh-p3.md) | 2026-07-12 / 2026-08-11 | [navmesh-patch-design](../specs/navmesh-patch-design.md) | P0/P1/T2.0/P3 皆實機 PASS；P3 兩名相反方向 Travel actor 均跨過新增↔vanilla seam |
 
-worldspace heightmap 後端與 scene export M0–M2 都已落地，原始逐步計畫已移
-[archive/](archive/README.md)；仍需真人操作的驗收只維護在 [WAIT_USER](../../WAIT_USER.md)。
-action-system asset/config 生成（OAR/BDI/PIE）已全落地，計畫已封存；落地記錄見 [feature-dev/landed/infra-loose-configs.md](../feature-dev/landed/infra-loose-configs.md)。
+worldspace heightmap 後端與 scene export M0–M2 都已落地；仍需真人操作的驗收只維護在 [WAIT_USER](../../WAIT_USER.md)。
+action-system asset/config 生成（OAR/BDI/PIE）已全落地；落地記錄見 [feature-dev/landed/infra-loose-configs.md](../feature-dev/landed/infra-loose-configs.md)。
 
-新計畫命名 **`<功能>.md`（不含日期）**，日期記在現役 index 表的一欄；落地後即移 [archive/](archive/README.md)。（archived 舊檔仍保留歷史日期前綴、凍結不動。）
+新計畫命名 **`<功能>.md`（不含日期）**，日期記在現役 index 表的一欄；落地後即刪（追溯靠 git log）。
 
-> 已落地、被取代的舊實作計畫見 [archive/](archive/README.md)（保留脈絡、不在維護鏈）。本入口檔若膨脹，照 [STRUCTURE「結構整理原則」](../../wf/STRUCTURE.md) 拆。
+> 本入口檔若膨脹，照 [STRUCTURE「結構整理原則」](../../wf/STRUCTURE.md) 拆。

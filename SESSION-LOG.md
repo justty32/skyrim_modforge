@@ -2,7 +2,7 @@
 
 ← [CLAUDE.md](CLAUDE.md)｜[INDEX](INDEX.md)
 
-**只放還沒完成的活狀態**，每條一行＋連結；完成即刪（濃縮句進 [landed](workflows/feature-dev/landed/README.md)，過程留 git log）。待使用者實機／操作的另見 [WAIT_USER](WAIT_USER.md)。2026-10-17 前的長版快照已封存（見 [archive 索引](archive/README.md)）。
+**只放還沒完成的活狀態**，每條一行＋連結；完成即刪（濃縮句進 [landed](workflows/feature-dev/landed/README.md)，過程留 git log）。待使用者實機／操作的另見 [WAIT_USER](WAIT_USER.md)。
 
 ## Open（2026-10-17 查證）
 

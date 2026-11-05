@@ -23,4 +23,4 @@ Step 4  （視需要）examples/assets → 單獨處理 → commit
 |------|------|
 | [session-log.md](session-log.md) | 本工作流 open / in-flight 重構項（hub 在 repo 根 [SESSION-LOG](../../SESSION-LOG.md)）|
 
-> **archive**：過時的重構筆記/計畫封存進 [archive/](archive/README.md)（學 [specs/](../specs/README.md)）。本入口檔若膨脹，照結構整理原則拆。
+> 本入口檔若膨脹，照結構整理原則拆。

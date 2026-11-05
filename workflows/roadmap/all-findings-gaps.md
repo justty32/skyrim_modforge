@@ -2,7 +2,7 @@
 
 ← [roadmap](README.md)
 
-findings 缺口全集的完整人工審閱（逐檔讀 32 份 findings）快照在 [archive/findings-audit-2026-06-15.md](archive/findings-audit-2026-06-15.md)。其中缺口除下列殘餘外幾乎全已落地（見 [feature-dev/landed](../feature-dev/landed/README.md)）。
+findings 缺口全集（逐檔審閱 32 份 findings）除下列殘餘外幾乎全已落地（見 [feature-dev/landed](../feature-dev/landed/README.md)）。
 
 ## open 殘餘
 

@@ -148,7 +148,7 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 ---
 
 ## Populated Settlements 聚落人口（Idea #22）
-→ **說明文件**：[SPEC-world-macros.md § populated settlements](../../../docs/spec/SPEC-world-macros.md#populated-settlements-settlements) · 設計 [settlement-population-design](../../specs/archive/README.md)
+→ **說明文件**：[SPEC-world-macros.md § populated settlements](../../../docs/spec/SPEC-world-macros.md#populated-settlements-settlements)
 
 把「住滿活人的聚落」一鍵展開成既有低階記錄的 **macro**（同 skillTrees 架構，`Build()` pass-0）。MVP = 具名住民 + 靜態 ACHR + 綁錨點作息 + 可選 vendor + faction 三件套；**零新 record 型別、零 runtime 腳本**，純資料展開、離線完全可驗。
 
@@ -185,7 +185,7 @@ Skyrim NPC **只走 navmesh**：腳下沒三角形＝完全不動（且**無任�
 ---
 
 ## 遊戲內場景匯出 · NPC 角色 macro（Idea #24 §D）
-→ **設計**：[specs/ingame-scene-export-design.md](../../specs/ingame-scene-export-design.md) · archived plan [2026-07-08-ingame-scene-export.md](../../plans/archive/2026-07-08-ingame-scene-export.md) · idea [tools/24-ingame-editor.md](../../idea/tools/24-ingame-editor.md)
+→ **設計**：[specs/ingame-scene-export-design.md](../../specs/ingame-scene-export-design.md) · idea [tools/24-ingame-editor.md](../../idea/tools/24-ingame-editor.md)
 
 給一個**外部 captured NPC**（PROTEUS clone / follower base）一個職業 `role`，pass-0 macro 展開成該 NPC 的 conditioned 問候 + 行為。**非玩家向 `IdentitySpec`**（那是玩家加入 FACT gate 玩家對話）；與 `ResidentSpec` 差別＝keyed on **外部 base NPC ref** 且自帶對話。切片只做 `blacksmith`。scene.json ＝一份 `ModSpec` 片段（`placements`/`mapMarkers`/`hazards`/`npcRoles`），生成端 placements/marker/hazard **全已具備**。
 

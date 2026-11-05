@@ -2,7 +2,7 @@
 
 ← [mod-survey-gaps](../mod-survey-gaps.md)
 
-全部條目已逐條核對 `src/` 實際 builder，每條附 evidence（file:symbol）。驗證後撤銷的誤判缺口（早已支援）見 [archive/mod-survey-resolved-2026-06-15.md](../archive/mod-survey-resolved-2026-06-15.md)；機制理解的後續深挖見 [survey-backlog.md](../survey-backlog.md) C 組。
+全部條目已逐條核對 `src/` 實際 builder，每條附 evidence（file:symbol）。機制理解的後續深挖見 [survey-backlog.md](../survey-backlog.md) C 組。
 
 ## ⚠️ 降級為 partial（大部分已支援，只剩窄缺口）
 

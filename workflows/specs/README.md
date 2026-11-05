@@ -11,17 +11,17 @@
 - 設計脈絡的 idea 雛形在 [ideas](../idea/ideas.md)。
 - 設計涉及 code 結構/慣例時參考 [common/conventions](../common/conventions.md)；橫向通則見 [STRUCTURE](../../wf/STRUCTURE.md)。
 
-> **archive**：已落地、被取代的舊設計方案封存進 [archive/](archive/README.md)（保留脈絡、不在維護鏈）。本入口檔若膨脹，照 [STRUCTURE「結構整理原則」](../../wf/STRUCTURE.md) 拆。
+> 本入口檔若膨脹，照 [STRUCTURE「結構整理原則」](../../wf/STRUCTURE.md) 拆。
 
 ## 現役設計方案
 
-> **狀態不記在這**：一份 design「在本夾＝現役、在 [archive/](archive/README.md)＝落地」由位置隱含；已出 plan 與否／落地進度以 [plans/README.md](../plans/README.md) 的表為唯一 source of truth。
+> **狀態不記在這**：一份 design「在本夾＝現役、落地即刪」；已出 plan 與否／落地進度以 [plans/README.md](../plans/README.md) 的表為唯一 source of truth。
 
 | 設計方案 | 討論日期 | 對應 idea/roadmap |
 |---|---|---|
 | [ingame-scene-export-design.md](ingame-scene-export-design.md)（遊戲內蓋城鎮 → scene JSON → patch；ModForge 側契約 + 最小切片 M0–M2） | 2026-07-08 | [Idea #24](../idea/tools/24-ingame-editor.md) |
 | [navmesh-patch-design.md](navmesh-patch-design.md)（P3 內裝 edge-to-edge NAVM patch MVP） | 2026-08-11 | [navmesh plan](../plans/navmesh.md) / scene-capture backlog |
 
-action-system asset/config 生成（OAR/BDI/PIE）MVP 已落地，design 已移 [archive/](archive/README.md)。
+action-system asset/config 生成（OAR/BDI/PIE）MVP 已落地，design 已刪。
 
 > **命名不含日期 + 落地即 archive** 的完整規則見 [plans/README.md](../plans/README.md)（兩夾共用；spec 檔名對應 `<功能>-design.md` ↔ plan `<功能>.md`）。

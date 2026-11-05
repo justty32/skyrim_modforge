@@ -6,9 +6,9 @@
 
 | 檔案 | 內容 |
 |------|------|
-| [verified-record-gaps.md](mod-survey-gaps/verified-record-gaps.md) | **code 驗證後的 9 條缺口（#1–9）** + ⚠️ partial 條目。撤銷的誤判見 [archive/mod-survey-resolved-2026-06-15.md](archive/mod-survey-resolved-2026-06-15.md)。 |
+| [verified-record-gaps.md](mod-survey-gaps/verified-record-gaps.md) | **code 驗證後的 9 條缺口（#1–9）** + ⚠️ partial 條目。 |
 | [population-settlements.md](mod-survey-gaps/population-settlements.md) | **🏘️ 人口 / 聚落量產缺口**（餵 idea #22；`settlements:` MVP 已落地）。 |
 | [economy-services.md](mod-survey-gaps/economy-services.md) | **💰 經濟 / 商販 / 服務 / 互動缺口**（GMST、MESG 多按鈕選單、`services:`/`ownership:`/`animCasts:` 等）。 |
 | [settlements-phase2.md](mod-survey-gaps/settlements-phase2.md) | **🏰 settlements Phase-2「build / manage / defend」**（Tundra Defense 深挖，⭐ idea #22 唯一完整藍圖）。 |
 
-> 機制理解的後續深挖見 [survey-backlog.md](survey-backlog.md) C 組。凍結的一次性審閱快照見 [archive/](archive/README.md)。
+> 機制理解的後續深挖見 [survey-backlog.md](survey-backlog.md) C 組。
