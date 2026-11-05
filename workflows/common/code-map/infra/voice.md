@@ -1,0 +1,21 @@
+# CODE_MAP.infra — 語音克隆（Spec・Core）
+
+← [CODE_MAP.infra](../CODE_MAP.infra.md)
+
+## 語音克隆（TTS → .fuz）
+→ **說明文件**：[SPEC-workflow.md § Voice](../../../../docs/spec/SPEC-workflow.md#voice-tts-voice-cloning--fuz)
+→ **TTS 合成已解耦**：`text+emotion+ref→.wav` 在獨立基石專案 `../skyrim-voicegen/`（`voicegen.py` + wrappers），靠 `MODFORGE_TTS_BIN` 協議連，合約見該夾 `PROTOCOL.md`。**下表全是 ModForge 端的「包裝」職責**（plan/解析/.wav→fuz/lip/擺位），不含合成。
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.Voice.cs` | `VoiceTemplateSpec`（`engine` f5\|fish-s2\|chatterbox\|gptsovits\|xtts；`fish`/`fishspeech`/`fish-speech` 為 Fish S2 alias；`referenceWav`/`referenceText` zero-shot reference、optional `referenceLibrary` manifest 路徑（相對 spec，clip 相對 manifest）、`modelPath` 微調模型、`rvcModel`、`seed`、`speed`、`exaggeration`、`language`）+ `VoiceLineSpec` 全域輸出設定（`format` fuz\|wav\|xwm、`skipLip`）；`NpcSpec.voiceTemplate`（→ template id）在 `Spec.Actors.cs`。Tests: `VoiceReferenceLibraryTests.cs` |
+| Core | `Voice.Engines.cs` | `VoiceEngine`／`VoiceEngineStatus`／`VoiceEngines`：唯一名稱、alias、wired/reserved 與 future wrapper 契約表；純 `Resolve`／`GenerationSkipReason`／`ValidationWarning`／`ApplyToPlan`／`ExitCode`。Tests: `VoiceEngineRegistryTests.cs` |
+| Core | `Voice.cs` + `Voice.Cache.cs` | 呼外部 TTS（`MODFORGE_TTS_BIN`；`BuildTtsArgs` 組 engine/ref/model/seed/speed/exaggeration/language + **emotion/intensity**（從 INFO 記錄取，非 spec 欄位）全數傳給 TTS process，協議規格見 `../skyrim-voicegen/PROTOCOL.md`；有 `referenceLibrary` 時讀 manifest 並選該句 reference，未設定時無此 I/O）；production process boundary 由 `VoiceLiveContractTests.cs` 對 sibling `voicegen.py` 離線驗證；`EncodeXwma`（`MODFORGE_XWMAENCODE`）走 Wine；`WinePath`（Unix→`Z:\` 轉換，xwma/lip 共用）。`VoiceCache` 以 deterministic input SHA-256 + versioned `.voice-cache.json` sidecar 判斷可重用性：input 指紋納入 ref/model/RVC/tool 的 content identity（目錄按 ordinal relative path + framed bytes），metadata 需以 byte length + SHA-256 驗證每個實際輸出（含 fallback loose wav 與 optional lip）才 hit。Tests: `VoiceReferenceLibraryTests.cs`（referenceLibrary 選取）|
+| Core | `Voice.ReferenceLibrary.cs` | `Voice.LoadReferenceLibrary` 讀 annotation array、套用人工修正並對無效 manifest fail-closed；`Voice.SelectReferenceClip` 純函式，emotion→intensity distance→ordinal FormID/clip/text，無匹配退 Neutral 再回 null。Tests: `VoiceReferenceLibraryTests.cs` |
+| Core | `Voice.Lip.cs` | `.lip` lip-sync 生成（`GenerateLip` 一個入口、兩後端）：**優先**官方 CK `LipGenerator.exe`（`MODFORGE_LIPGEN`，簽名 `<wav> <text> -Language:<lang> -OutputFileName:<lip>`，FonixData.cdf 自 exe 同夾找、免給 cdf 路徑、**已在本機 Wine 實跑產出合法 .lip 2026-06-13**）；**退化**社群 FaceFXWrapper（`MODFORGE_FACEFX` + `MODFORGE_FONIXDATA`）。`BuildLipGenArgs` pure 可單測 |
+| Core | `Fuz.cs` | `.fuz` 容器拆解（FUZE header → lip + audio；audio ext 自動偵測 xwm/wav）|
+| Core | `Generator.Build.Voice.cs` | `WriteFuz`（lip + audio 打包成 .fuz）+ `VoiceFileName` CK 命名（`quest10_topic15_formid8_n.fuz`：quest EditorID 前 10 字 + topic EditorID 前 15 字 + INFO FormID hex8 + response 序號）|
+| Core | `Generator.Build.Voice.Plan.cs` | `VoiceLinePlanEntry` record + `BuildVoiceLinePlan`（每個 INFO response → speaker(s)/voiceType 資料夾/引擎檔名的可交付計畫，供 CLI dry-run/`voicediag` 用）+ `VoiceTypeFolderName`（spec voiceType ref → `Sound/Voice` 資料夾名，含 `SkyrimVoiceTypeFolders` 表）+ `NormalizeVoiceFormat`/`IsSafeVoiceFolder` |
+| Core | `Generator.Build.Voice.Speakers.cs` | `ResolveVoiceSpeakers`：從建好 esp 的 INFO 條件解 speaker（GetIsID / GetIsAliasRef / GetInFaction / scene Dialog action）→ `VoiceSpeaker`(Npc + voiceType)；一個 INFO 可對多 speaker（faction），`SelectVoiceTargets` 去重成每個 distinct voiceType 一份。解不出 → `VoiceSpeakerResolution.Reason`（CLI 必須大聲報）。**`ResolveExternalSpeakerVoice`**：INFO gated on GetIsID(Subject) 的**外部 master NPC**（mod-only cache 解不了，如既有隨從 Sofia）→ 用 `voiceSpeakers[]`（`Spec.Voice.cs` `VoiceSpeakerSpec`：speaker ref→voiceType+template）直接給，繞過 NPC 解析；`BuildVoiceLinePlan` 與 voicelines loop 都先查它。在 Core 故可對 in-memory built mod 單測 |
+| Core | `Archives.cs` | Mutagen 讀 BSA/BA2（extract + path filter；`extract-voices` / `voice-annotate` 用）|
+| Core | `Voice.Annotate.cs` | 情緒標注 index：`VoiceAnnotation`(clip/text/emotion/intensity/infoFormId + 人填 override/intensityOverride/note) model + `VoiceAnnotate.TryParseInfoFormKey`(從 clip 檔名解 INFO FormKey;high byte→master)/`BuildEntry`(從 resolved INFO 讀 Emotion/EmotionValue/Text)。純函式可單測 (`VoiceAnnotateTests.cs`)|

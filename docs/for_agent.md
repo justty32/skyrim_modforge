@@ -26,7 +26,7 @@ Both paths produce the same plugins and share the same field reference and limit
   external-resource contract — what ModForge references + bundles vs what you author elsewhere —
   is **[external_assets.md](external_assets.md)**.
 - **Voice generation for dialogue:** start with [SPEC-workflow.md § Voice](spec/SPEC-workflow.md#voice-tts-voice-cloning--fuz)
-  and [CODE_MAP.infra.md § 語音克隆](../workflows/common/code-map/CODE_MAP.infra.md#語音克隆tts--fuz). Always run
+  and [CODE_MAP.infra.md § 語音克隆](../workflows/common/code-map/infra/voice.md#語音克隆tts--fuz). Always run
   `voicediag` or `voicelines --plan` before spending time on TTS.
 
 ## Limits — be honest, do not over-claim

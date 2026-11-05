@@ -25,6 +25,8 @@
 | `code-map/CODE_MAP.npcs-packages.md` | NPC / faction / class / AI package / combat style / weather / climate |
 | `code-map/CODE_MAP.infra.md` | CLI / build orchestrator / validate / package / Papyrus / translate / plugin I/O |
 
+每份子 index 是索引頁，細目按主題拆在同名資料夾（如 `code-map/world/`）；改 CODE_MAP 時改資料夾裡對應的子檔。
+
 三個面向構成維護鏈：**程式碼（含 examples/ 與 assets/）→ CODE_MAP → 文檔**（HTML bundle 最低，只在明確要求時更新）。
 
 `examples/*.json`、`examples/scripts/*.psc`、`examples/assets/`、`assets/papyrus/MFStoryEventDispatch.psc`、`spec.schema.json` 均視為**源碼**——功能變動時必須同步，不是次要的附屬物。

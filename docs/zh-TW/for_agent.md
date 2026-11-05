@@ -22,7 +22,7 @@
 - **帶你自己的網格 / 貼圖 / 音效 / 動畫**（自訂內容 mod）：外部資源契約——ModForge 引用 + 打包了什麼，相對於你在別處撰寫的——在
   **[external_assets.md](external_assets.md)**。
 - **對話的語音生成：** 從 [SPEC-workflow.md § Voice](spec/SPEC-workflow.md#voice-tts-voice-cloning--fuz)
-  和 [CODE_MAP.infra.md § 語音克隆](../../workflows/common/code-map/CODE_MAP.infra.md#語音克隆tts--fuz) 開始。在花時間於 TTS 之前，永遠先跑
+  和 [CODE_MAP.infra.md § 語音克隆](../../workflows/common/code-map/infra/voice.md#語音克隆tts--fuz) 開始。在花時間於 TTS 之前，永遠先跑
   `voicediag` 或 `voicelines --plan`。
 
 <a id="limits--be-honest-do-not-over-claim"></a>

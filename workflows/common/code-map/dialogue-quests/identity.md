@@ -1,0 +1,21 @@
+# CODE_MAP.dialogue-quests — 身份系統（核心）
+
+← [CODE_MAP.dialogue-quests](../CODE_MAP.dialogue-quests.md)
+
+## 身份系統（輕量職業/Identity）
+→ **設計**：`workflows/specs/archive/2026-06-06-identity-system-design.md`；**plan**：`workflows/plans/archive/2026-06-07-identity-system-mvp.md`
+
+三面向：Acquire（讀書 OnRead）/ Gate（identity·primaryIdentity 標籤 → GetInFaction CTDA）/ Grant（常駐 ability 加/收）。身份狀態存成 FACT（持久訊號，未來原版 GetInFaction 可 gate）。
+
+| 層次 | 檔案 | 職責 |
+|-----|-----|-----|
+| Spec | `Spec.Identity.cs` | `IdentitySpec`（id/faction/priority/grants/toggle/default/acquireBook/acquireText）+ `IdentityAcquireSpec`（onAcquire.scene）；`ModSpec.Identities` |
+| Spec | `Spec.Dialogue.cs` | `DialogueSpec.Identity` / `PrimaryIdentity`（招呼/對話行身份閘標籤）|
+| Build P1 | `Generator.Build.Identity.cs` `BuildIdentities` | 每身份建一個持有 FACT（bare editorId 才建；外部/已宣告跳過）|
+| Build P2 | `Generator.Build.Identity.cs` `ExpandIdentityConditions` | identity→`GetInFaction(player,faction)≥1`；primaryIdentity 再對每個更高 priority 身份補 `==0` 排除；由 `Generator.Build.Conditions.Wire.cs` `WireDialogueConditions` 呼叫併入 INFO CTDA。**Phase-2 #2 `activeWhen`**：身份的 `ActiveWhen` 情境 CTDA 接在**正向**閘後（窄化「active」）；`OnPlayerByDefault` helper 把每條 runOn 預設 pin 到玩家（author 設非-Subject runOn 才尊重）；**排除項不含 activeWhen**（否定條件束 CTDA 表達不了——held-but-inactive 高身份仍以 faction 訊號排掉低 primaryIdentity，會掉回 plain 招呼，gap 留給 #4 controller，in-game 2026-06-07 確認）。**Phase-2 #4 controller**：primaryIdentity **不再**做 faction-exclusion，改 `GetInFaction(self)≥1` + `GetGlobalValue(MF_PrimaryIdentity)==code`（code=1-based spec index，`Generator.IdentityCode`）——主身份由 controller 算（單一真相源、可被覆寫）|
+| Build P2 | `Generator.Build.Identity.cs` `AttachIdentityBooks` | 把 `MFIdentityBook` VMAD 掛上 acquireBook + 綁 `TheFaction`/`GrantAbility`(grants[0])/**`GrantPerk`(grantPerks[0])**/`AcquireScene`/`Toggle`（無條件掛，鏡像 controller；prebuilt .pex 出貨）|
+| Build P2 | `Generator.Build.Identity.cs` `BuildDefaultIdentityQuest` | **Phase-2 #1**：任一身份 `default:true` → 建 `MF_IdentityDefaultQuest`（StartGameEnabled）掛 `MFIdentityDefault` VMAD，用 `ScriptObjectListProperty` 綁 `Factions[]`（所有 default 身份的 faction）/`Grants[]`（其 grants，去重；無則省略）/**`Perks[]`（grantPerks，去重）**；無 default 不建。`ObjListProp` helper 建 list property|
+| Build P2 | `Generator.Build.Identity.cs` `BuildIdentityAutoGrantQuest` | **龍裔首吼/autoGrantWhen**：任一身份有 `autoGrantWhen{actorValue,threshold}` → 建 `MF_IdentityAutoGrantQuest`（StartGameEnabled）掛 `MFIdentityAutoGrant` VMAD，平行 `Factions[]`/`AvNames[]`(`StrListProp`)/`Thresholds[]`(`FloatListProp`)；只授 faction 訊號；無 autoGrant 不建 |
+| Build P1/P2 | `Generator.Build.Identity.cs` `BuildIdentityGlobals` / `BuildIdentityControllerQuest` | **Phase-2 #4 controller**：dialogue 用 primaryIdentity 或 setPrimaryIdentity 時（`IdentityControllerNeeded`）→ P1 建兩個 GLOB `MF_PrimaryIdentity`(controller 寫/招呼讀)+`MF_IdentityOverride`(對話寫/controller 讀)（author 同名則尊重）；P2 建 `MF_IdentityControllerQuest`（StartGameEnabled）掛 `MFIdentityController` VMAD，綁 Primary/Override GLOB + `Factions[]`(priority DESC)/`Codes[]`(`IntListProp`，code=1-based spec index)。`Generator.IdentityCode(spec,id)` 解 code（auto/空=0、未知=-1）|
+| Build P2 | `Generator.Build.Scripts.cs` `AttachDialogueResultScripts` | INFO OnEnd result fragment：user `ResultScript` 優先，否則 `needsAutoTif`（setStage / setPrimaryIdentity / **openBarter / rewardItem / evaluateSpeakerPackages / persist / syncPerks / storageWrites**，.pex 在才掛）→ 生成 TIF；綁 `OwningQuest`(setStage) + `MF_IdentityOverride` GLOB(setPrimaryIdentity) + `RewardItem` form(rewardItem) + **`PKey`/`SKey`(ref-key) + `PF_<i>` form(persist 的 form-valued entry) + `SyncPerk_<i>` perk(syncPerks node)**（共用 `BindFormProp` helper；**storageWrites 的 arbitrary-ref target 綁 `SWRef_<i>` form〔`StorageRefEntries`〕，speaker/player/none 不綁**）|
+| Gen | `Generator.DialogueFragments.cs` `GenerateDialogueFragmentSource(d, overrideCode)` | **多動作 TIF**：setStage→`OwningQuest.SetStage(N)`；overrideCode≥0→`MF_IdentityOverride.SetValue(code)`；**rewardItem→`Game.GetPlayer().AddItem(RewardItem, count)`；openBarter→`(akSpeakerRef as Actor).ShowBarterMenu()`；evaluateSpeakerPackages→`.EvaluatePackage()`**（後二共用 `__spk` cast）；**persist/syncPerks→`JContainersFragmentBody(d)`；storageWrites→`StorageWritesBody(d.StorageWrites, "")` + ref decls `StorageWritesPropertyDecls`（J組，body 末尾）**。`DialogueFragmentScriptName` 任一 result 動作（含 persist/syncPerks/**storageWrites**）→ `TIF_<ed>`|
