@@ -19,12 +19,12 @@ ModForge 的開發工作流（feature-dev、testing、refactor、investigation�
 | 觸發（你說…）| 工作流 | 入口檔 |
 |--------------|--------|--------|
 | 「記 / 查踩坑」 | **gotchas** | 根 [workflows/common/gotchas.md](../workflows/common/gotchas.md)（ModForge 既有那份）|
-| 「整理 X」「封存過時的」「檔案太多／太雜」「太大要拆」「只留結論」（**文件**整理）| **tidy** | [workflows/tidy/README.md](workflows/tidy/README.md) |
+| 「整理 X」「刪過時的」「檔案太多／太雜」「太大要拆」「只留結論」（**文件**整理）| **tidy** | [workflows/tidy/README.md](workflows/tidy/README.md) |
 | 「記個想法」「以後要做」「排進 roadmap」「幫我規劃」 | **planning** | 根 [WORKFLOWS.md](../WORKFLOWS.md) 的規劃管線（idea → roadmap → spec → plan）|
 | 「記個決定」「為什麼選 A 不選 B」 | **decisions** | [workflows/decisions.md](workflows/decisions.md) |
 | 「我的偏好是…」「以後直接做 / 先問」 | **user** | [workflows/common/user.md](workflows/common/user.md) |
 
-**tidy 與根 refactor 的分界**：動到程式碼、要求行為不變的重構／拆檔走根 [refactor](../workflows/refactor/README.md)；只動文件的整理、封存、抽資料檔走 tidy。結構整理原則統一在 [STRUCTURE.md](STRUCTURE.md)（ModForge 原根目錄 DEV-GUIDE 已於 2026-10-26 併入其 local 區塊）。
+**tidy 與根 refactor 的分界**：動到程式碼、要求行為不變的重構／拆檔走根 [refactor](../workflows/refactor/README.md)；只動文件的整理、刪過時、抽資料檔走 tidy。結構整理原則統一在 [STRUCTURE.md](STRUCTURE.md)（ModForge 原根目錄 DEV-GUIDE 已於 2026-10-26 併入其 local 區塊）。
 
 **都不符 → 看 [INDEX.md](INDEX.md)**。新開工作流 → 複製 [workflows/TEMPLATE.workflow.md](workflows/TEMPLATE.workflow.md) 到根 `workflows/`，並在根 [WORKFLOWS.md](../WORKFLOWS.md) 派發表加一列（ModForge 只維護根那張派發表）。
 

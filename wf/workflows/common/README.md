@@ -17,4 +17,4 @@ wf kernel 帶來的共用檔。**ModForge 既有的共用區在根 [`workflows/c
 | [根 CODE_MAP.md](../../../workflows/common/code-map/CODE_MAP.md) | 程式碼導航 index（取代 dev 包的 code-map.md）| ModForge |
 <!-- wf-insert:COMMON -->
 
-> 過時文檔封存進 `common/archive/`（見 [STRUCTURE](../../STRUCTURE.md)）。
+> 過時文檔直接刪（過時即刪，見 [STRUCTURE](../../STRUCTURE.md) local 段）。
