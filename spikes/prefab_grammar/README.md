@@ -22,7 +22,7 @@
 - `room_small.json` — 雙出口小房間
 - `deadend_plug.json` — 死路封口
 
-八個 prefab JSON 位於 `data/prefabs/`；測試檔 `test_*.py` 位於本目錄。
+八個 prefab JSON 位於 `data/prefabs/`。
 
 ## 執行
 
@@ -36,14 +36,6 @@ python -m prefab_grammar.cli --seed 1337
 
 ```console
 python spikes/prefab_grammar/cli.py --seed 1337
-```
-
-## 測試
-
-在 `projects/ModForge/`：
-
-```console
-python -m unittest discover -s spikes/prefab_grammar -p "test_*.py" -v
 ```
 
 ## Prefab 幾何約定
