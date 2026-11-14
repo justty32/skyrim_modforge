@@ -1,0 +1,68 @@
+{
+  "AGENTS.md": {
+    "description": "非 Claude agent 的入口路由，只轉指 CLAUDE.md；Codex 等工具進 repo 先讀這份"
+  },
+  "CLAUDE.md": {
+    "description": "專案備忘與最頂層路由、鐵律；Claude Code 自動載入，要動手前先讀"
+  },
+  "INDEX.md": {
+    "description": "repo 頂層結構地圖：各夾內容與三個頂層 index（CODE_MAP、SPEC-index）入口；想看專案長怎樣時進來"
+  },
+  "README.md": {
+    "description": "人類向說明：ModForge 是 JSON spec 轉 Skyrim esp/esl 的 AI 友善生成工具，含生成、翻譯、Papyrus 三大支柱"
+  },
+  "SESSION-LOG.md": {
+    "description": "進度日誌 hub：只放尚未完成的活狀態；開場先看有無條目"
+  },
+  "WAIT_USER.md": {
+    "description": "等使用者親自做或驗證的事（實機、指令、環境設定）；要確認卡在人身上的項時進來"
+  },
+  "WORKFLOWS.md": {
+    "description": "工作流派發器：依意圖選 feature-dev／refactor／investigation 等工作流，再讀其入口檔"
+  },
+  "assets": {
+    "description": "embed 進 CLI 的 Papyrus 原始碼與內建資產；改內建腳本時進來"
+  },
+  "docs": {
+    "description": "使用手冊：cookbook、cheatsheet、spec 欄位語意（SPEC-index）；要使用 ModForge 或查 spec 欄位時進來"
+  },
+  "examples": {
+    "description": "spec JSON 範例、spec.schema.json、範例腳本與資產，視為源碼；寫新 spec 要找範本時進來"
+  },
+  "fixtures": {
+    "description": "測試用固定資料（modlist 快照、quest 節點等）；寫或跑測試時進來"
+  },
+  "out": {
+    "description": "本機生成產物的輸出夾（esp、seq 等），內容被 git 忽略；跑 CLI 生成時落在這"
+  },
+  "schemas": {
+    "description": "JSON Schema 檔（modlist 快照、quest 節點、scene 目錄）；要驗資料格式時進來"
+  },
+  "scripts": {
+    "description": "工作流 bash：出貨與環境準備、測試與重構護欄腳本；要建置、出貨、跑離線測試時進來"
+  },
+  "spikes": {
+    "description": "實驗性 spike，不進主管線也不進 dotnet test；要看或做離線實驗時進來"
+  },
+  "src": {
+    "description": "C# 原始碼：ModForge.Core 生成器與 ModForge.Cli 命令列；導航走 workflows 內的 CODE_MAP"
+  },
+  "sub_projs": {
+    "description": "把 ModForge 當工具使用的衍生專案（消費者、基石），不屬於工具本身；入口為該夾 README"
+  },
+  "tests": {
+    "description": "xUnit 測試；需本機遊戲資料的另標 category；改程式後驗證時進來"
+  },
+  "trash": {
+    "description": "暫放待丟棄物的夾，內容不進版控"
+  },
+  "wait_todo": {
+    "description": "待使用者或外部條件才能推進的項目清單（實機、環境、roadmap、編輯器）；要看卡點時進來"
+  },
+  "wf": {
+    "description": "wf kernel 骨架：文件整理與決策記錄等 kernel 工作流、wf/INDEX 地圖、使用者偏好；整理文件時進來"
+  },
+  "workflows": {
+    "description": "開發、調查、設計與環境工作流的 durable 知識（入口為 README 與 WORKFLOWS.md）；要動手做事時進來"
+  }
+}
