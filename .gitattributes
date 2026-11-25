@@ -4,3 +4,7 @@
 
 # Shell scripts are executed by bash (WSL); keep LF in the working tree.
 *.sh text eol=lf
+
+# Executable Python scripts (shebang) are run directly by WSL; keep LF.
+/scripts/skylink/skylink-call.py text eol=lf
+/wf/tools/tabledb.py text eol=lf
