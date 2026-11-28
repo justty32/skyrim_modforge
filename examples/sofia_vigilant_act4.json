@@ -1,5 +1,5 @@
 {
-  "_note": "Sofia x VIGILANT — ACT 4 (Coldharbour / zzzCH*). Player-initiated 'talk to Sofia' topics gated by VIGILANT Act-4 quest stages + Sofia present (GetIsID). Lines = de-AI'd bilingual rewrite of sub_projs/sofia-patch/vigilant-screenplay/act4-冷港.md (EN voiced; ZH in screenplay). GATES DECODED from PSC fragments (_bsa-psc-cache/ zzzCH* files, 2026-06-14) — see vigilant-screenplay/_act4-trigger-placement-map.md. CONFIRMED FormIDs: Coldharbour MQ00=Vigilant.esm:0x12F24E; Coldharbour WRLD=0x06D275; Grand Inquisitor MeQ01=0x12C4F4; Mad King MeQ02=0x13712B; Marukh MeQ07=0x06F53C; Pelinal MeQ10=0x2A532E; Karma global zzzCHKarma=0x020B19F4 (GlobalFloat). DESIGN: 13 memory dreams — 9 SILENT (MeQ03/04/05/06/08/09/11/12/13); 3 optional post-exit comments (MeQ01/02/07); 1 full in-realm + post (MeQ10 Pelinal). MeQ11/12 driven entirely by MeQ10 outcome — no player choice, no Sofia line. Molag Bal (4-E) gate = MQ00 s90 (UNCERTAIN — from slice.json; validate in-game). 4-G endings gate = MQ00 s999 (UNCERTAIN — inferred from hub pattern; fallback GetQuestRunning==0). Sofia NPC=SofiaFollower.esp:0x0012C4, voiceType=JJSofiaVoiceType (0x0022EE), follower faction=0x060480. VOICE: package FIRST then voicelines on packaged esp. MeQ08 Nameless Bard → Act3 butler link deferred (marked ? in screenplay).",
+  "_note": "Sofia x VIGILANT — ACT 4 (Coldharbour / zzzCH*). Player-initiated 'talk to Sofia' topics gated by VIGILANT Act-4 quest stages + Sofia present (GetIsID). Lines = de-AI'd bilingual rewrite of sub_projs/sofia-patch/vigilant-screenplay/act4-冷港.md (EN voiced; ZH in screenplay). GATES DECODED from PSC fragments (_bsa-psc-cache/ zzzCH* files, 2026-06-14) — see vigilant-screenplay/_act4-trigger-placement-map.md. CONFIRMED FormIDs: Coldharbour MQ00=Vigilant.esm:0x12F24E; Coldharbour WRLD=0x06D275; Grand Inquisitor MeQ01=0x12C4F4; Mad King MeQ02=0x13712B; Marukh MeQ07=0x06F53C; Pelinal MeQ10=0x2A532E; Karma global zzzCHKarma=0x020B19F4 (GlobalFloat). DESIGN: 13 memory dreams — 9 SILENT (MeQ03/04/05/06/08/09/11/12/13); 3 optional post-exit comments (MeQ01/02/07); 1 full in-realm + post (MeQ10 Pelinal). MeQ11/12 driven entirely by MeQ10 outcome — no player choice, no Sofia line. Molag Bal (4-E) gate = zzzCHMQ02(0x08F2F4) s20 = Molag Bal throne scene in his Abyss interior, bounded by zzzCHMQ01(0x1363DB) s255==0 (decompiled live pex, see agentctl/handoffs/home-2026-11-28/sofia-triggers/REPORT.md). 4-G endings gate = zzzCHMQ01(0x1363DB) s255 = Act 4 really over (gCurrentAct=5); MQ00 s999 is only a ShutDownStage. Karma thresholds 10/0 do NOT match the game (zzzCHMQ01 s40: Karma >= 75+min(25*cycle,50) → good s50..s70, else bad s150..s180) — pending user decision, see sofia-triggers REPORT Q2. Sofia NPC=SofiaFollower.esp:0x0012C4, voiceType=JJSofiaVoiceType (0x0022EE), follower faction=0x060480. VOICE: package FIRST then voicelines on packaged esp. MeQ08 Nameless Bard → Act3 butler link deferred (marked ? in screenplay).",
   "pluginName": "ModForgeSofiaVigilantAct4.esp",
   "esl": true,
 
@@ -205,7 +205,7 @@
       ]
     },
     {
-      "_note": "4-E: Molag Bal confrontation. Gate = MQ00 s90 (UNCERTAIN — from slice.json; exact Molag Bal scene stage inside MQ00 not decoded from PSC; validate in-game). High-tension beat: volume-drops moment.",
+      "_note": "4-E: Molag Bal confrontation. Gate (2026-11-28) = zzzCHMQ02 s20 (Sc01 Molag Bal scene in zzzCHAbyssMolagbal, an INTERIOR cell, so the old GetInWorldspace(Coldharbour) bound is replaced by zzzCHMQ01 s255==0). Old MQ00 s90 = Fragment_15 Scene90/Greymarch, not Molag Bal. High-tension beat: volume-drops moment.",
       "editorId": "MFSofVig_4E_MolagBal",
       "questEditorId": "MFSofVigAct4Controller",
       "prompt": "He looked at you.",
@@ -218,8 +218,8 @@
       "linkTo": ["MFSofVig_4E_MolagBalMore"],
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
-        { "function": "GetStageDone", "param": "Vigilant.esm:0x12F24E", "stage": 90, "comparison": "==", "value": 1 },
-        { "function": "GetInWorldspace", "param": "Vigilant.esm:0x06D275", "runOn": "Subject", "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x08F2F4", "stage": 20, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x1363DB", "stage": 255, "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA4_MolagBal", "comparison": "==", "value": 0 }
       ]
     },
@@ -257,7 +257,7 @@
       ]
     },
     {
-      "_note": "4-G-1: High-Karma ending. Gate = MQ00 s999 (UNCERTAIN — inferred from hub pattern; fallback GetQuestRunning(MQ00)==0 if s999 doesn't fire correctly). Karma >= 10 distinguishes from neutral.",
+      "_note": "4-G-1: High-Karma ending. Gate (2026-11-28) = zzzCHMQ01 s255 (Act 4 over). Karma >= 10 is the original design number — does not match the game ending threshold; pending sofia-triggers REPORT Q2.",
       "editorId": "MFSofVig_4G_EndingGood",
       "questEditorId": "MFSofVigAct4Controller",
       "prompt": "We made it out.",
@@ -269,7 +269,7 @@
       "setGlobal": { "global": "MF_SofA4_EndingGood", "value": 1 },
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
-        { "function": "GetStageDone", "param": "Vigilant.esm:0x12F24E", "stage": 999, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x1363DB", "stage": 255, "comparison": "==", "value": 1 },
         { "function": "GetGlobalValue", "param": "Vigilant.esm:0x020B19F4", "comparison": ">=", "value": 10 },
         { "function": "GetGlobalValue", "param": "MF_SofA4_EndingGood", "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA4_EndingBad", "comparison": "==", "value": 0 },
@@ -289,7 +289,7 @@
       "setGlobal": { "global": "MF_SofA4_EndingBad", "value": 1 },
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
-        { "function": "GetStageDone", "param": "Vigilant.esm:0x12F24E", "stage": 999, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x1363DB", "stage": 255, "comparison": "==", "value": 1 },
         { "function": "GetGlobalValue", "param": "Vigilant.esm:0x020B19F4", "comparison": "<", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA4_EndingBad", "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA4_EndingGood", "comparison": "==", "value": 0 },
@@ -309,7 +309,7 @@
       "setGlobal": { "global": "MF_SofA4_EndingNeutral", "value": 1 },
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
-        { "function": "GetStageDone", "param": "Vigilant.esm:0x12F24E", "stage": 999, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x1363DB", "stage": 255, "comparison": "==", "value": 1 },
         { "function": "GetGlobalValue", "param": "Vigilant.esm:0x020B19F4", "comparison": ">=", "value": 0 },
         { "function": "GetGlobalValue", "param": "Vigilant.esm:0x020B19F4", "comparison": "<", "value": 10 },
         { "function": "GetGlobalValue", "param": "MF_SofA4_EndingNeutral", "comparison": "==", "value": 0 },

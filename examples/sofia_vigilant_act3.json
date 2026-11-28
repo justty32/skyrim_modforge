@@ -1,5 +1,5 @@
 {
-  "_note": "Sofia x VIGILANT — ACT 3 (zzzCO* quest chain). Player-initiated 'talk to Sofia' topics gated by VIGILANT Act-3 quest stages + Sofia present (GetIsID). Lines = de-AI'd bilingual rewrite of sub_projs/sofia-patch/vigilant-screenplay/act3-宅邸.md (EN voiced; ZH in screenplay). GATES DECODED from PSC fragments (2026-06-14) — see vigilant-screenplay/_act3-trigger-placement-map.md. Quest chain: zzzCOMq01(0x065932 Child of Oblivion) main + zzzCOGuide(0x43CBAE Stendarr Guide) side + zzzCOSubQ01(0x324E7E Successor) martyrdom branch. Key stages: Mq01 s0=Act3 start(gCurrentAct=3); s10=dispatch from Gwyneth; s20=arrived mansion(obj20); s30=investigate(obj30); s40=Julia defeated(BalScene); s45=BalScene ends; s50=Julius phase(obj60 'Defeat Julius'); s70=Julius defeated(Molag Bal appears); s80=MartyrTRG enabled(obj80 'Martyrdom or Corruption'); s90=martyrdom/burn(Fragment_5 → CHMq00/Act4 starts); s200=corruption/Coldharbour deal(Fragment_14 → SubQ01 starts); SubQ01 s0=fadeout/MoveTo; s10=new life marker(after burn); s20=ShowRaceMenu(meta re-roll). BRANCH GATE NOTE: s90=burn+enter Coldharbour(CHMq00); s200=Molag Bal corruption deal(SubQ01 meta). Sofia NPC=SofiaFollower.esp:0x0012C4, voiceType=JJSofiaVoiceType, follower faction=SofiaFollower.esp:0x060480. Bruiant Estate worldspace=Vigilant.esm:0x047CFA (zCOBruiantWorld). Julia boss=zzzCOJuliusChildOblivion(0x0461D8). Baal/Balthoro alias_index=3 in Mq01. No banter section (Sofia external). Act3 tone: Sofia jokes most here to mask fear — highest ambient/active density of the patch.",
+  "_note": "Sofia x VIGILANT — ACT 3 (zzzCO* quest chain). Player-initiated 'talk to Sofia' topics gated by VIGILANT Act-3 quest stages + Sofia present (GetIsID). Lines = de-AI'd bilingual rewrite of sub_projs/sofia-patch/vigilant-screenplay/act3-宅邸.md (EN voiced; ZH in screenplay). GATES DECODED from PSC fragments (2026-06-14) — see vigilant-screenplay/_act3-trigger-placement-map.md. Quest chain: zzzCOMq01(0x065932 Child of Oblivion) main + zzzCOGuide(0x43CBAE Stendarr Guide) side + zzzCOSubQ01(0x324E7E Successor) martyrdom branch. Key stages: Mq01 s0=Act3 start(gCurrentAct=3); s10=dispatch from Gwyneth; s20=arrived mansion(obj20); s30=investigate(obj30); s40=Julia defeated(BalScene); s45=BalScene ends; s50=Julius phase(obj60 'Defeat Julius'); s70=Julius defeated(Molag Bal appears); s80=MartyrTRG enabled + Molag Bal offers deal(obj80 'Martyrdom or Corruption'); s90=player accepts Molag Bal ('help me get out', TIF CO_TIF__01066A3F) → Fragment_11 opens Oblivion gate; s100=player enters gate(defaultsetstageref, prereq 90) → Fragment_5 starts CHMq00/Act4; s200=player uses martyrdom trigger(NextStage 200) → Fragment_14 MartyrFire + SubQ01 burn path (decompiled live pex, see agentctl/handoffs/home-2026-11-28/sofia-triggers/REPORT.md); SubQ01 s0=fadeout/MoveTo; s10=new life marker(after burn); s20=ShowRaceMenu(meta re-roll). BRANCH GATE NOTE (2026-11-28 corrected): s90/s100=Coldharbour path; s200=burn/martyrdom path(SubQ01 meta). Sofia NPC=SofiaFollower.esp:0x0012C4, voiceType=JJSofiaVoiceType, follower faction=SofiaFollower.esp:0x060480. Bruiant Estate worldspace=Vigilant.esm:0x047CFA (zCOBruiantWorld). Julia boss=zzzCOJuliusChildOblivion(0x0461D8). Baal/Balthoro alias_index=3 in Mq01. No banter section (Sofia external). Act3 tone: Sofia jokes most here to mask fear — highest ambient/active density of the patch.",
   "pluginName": "ModForgeSofiaVigilantAct3.esp",
   "esl": true,
 
@@ -232,7 +232,7 @@
     },
     {
       "editorId": "MFSofVig_3H_ChoicePre",
-      "_note": "3-H pre-choice: Julius defeated (s70), Molag Bal now present, MartyrTRG not yet enabled (s80 not done). Fire persists. Sofia states she'll follow either way.",
+      "_note": "3-H pre-choice: Julius defeated (s70, Molag Bal appears) until the player commits — s90 (accepts Molag Bal deal) or s200 (martyrdom trigger). Gate unchanged 2026-11-28: matches live pex. Sofia states she'll follow either way.",
       "questEditorId": "MFSofVigAct3Controller",
       "prompt": "The fire isn't stopping.",
       "responses": [
@@ -254,7 +254,7 @@
     },
     {
       "editorId": "MFSofVig_3H_ColdharbourBranch",
-      "_note": "3-H branch A: player chose Coldharbour / martyrdom path (Mq01 s90 = Fragment_5: CHMq00 starts). Sofia goes through the gate with the player. Mutually exclusive with BurnBranch (GLOB check).",
+      "_note": "3-H branch A: player accepted Molag Bal (Mq01 s90 = Fragment_11: Oblivion gate opens) and has not yet entered it (s100 = Fragment_5: CHMq00 starts). Window s90..s100 added 2026-11-28. Mutually exclusive with BurnBranch (GLOB check).",
       "questEditorId": "MFSofVigAct3Controller",
       "prompt": "We're going through. Ready?",
       "responses": [
@@ -268,13 +268,14 @@
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
         { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 90, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 100, "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA3_ColdharbourBranch", "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA3_BurnBranch", "comparison": "==", "value": 0 }
       ]
     },
     {
       "editorId": "MFSofVig_3H_BurnBranch",
-      "_note": "3-H branch B: player chose corruption / Molag Bal deal path (Mq01 s200 = Fragment_14: MartyrFire, SubQ01 starts). Sofia burns alongside the player. Mutually exclusive with ColdharbourBranch (GLOB check).",
+      "_note": "3-H branch B: player chose martyrdom/burn (Mq01 s200 = Fragment_14: MartyrFire, SubQ01 starts). OPEN (2026-11-28): s200 is followed by ~3s fade + teleport (Fragment_14 wait 3.0; SubQ01 Fragment_0 MoveTo NewLifeMarker), so this line is practically unreachable — window pending user decision, see sofia-triggers REPORT Q1. Mutually exclusive with ColdharbourBranch (GLOB check).",
       "questEditorId": "MFSofVigAct3Controller",
       "prompt": "We stand our ground.",
       "responses": [
