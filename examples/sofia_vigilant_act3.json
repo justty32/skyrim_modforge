@@ -254,7 +254,7 @@
     },
     {
       "editorId": "MFSofVig_3H_ColdharbourBranch",
-      "_note": "3-H branch A: player accepted Molag Bal (Mq01 s90 = Fragment_11: Oblivion gate opens) and has not yet entered it (s100 = Fragment_5: CHMq00 starts). Window s90..s100 added 2026-11-28. Mutually exclusive with BurnBranch (GLOB check).",
+      "_note": "3-H branch A: player accepted Molag Bal (Mq01 s90 = Fragment_11: Oblivion gate opens) and has not yet entered it (s100 = Fragment_5: CHMq00 starts). Window s90..s100 added 2026-11-28. No longer gated on BurnBranch GLOB (user Q1=A 2026-11-28): BurnBranch is now a pre-choice stance line, so saying it must not lock this one.",
       "questEditorId": "MFSofVigAct3Controller",
       "prompt": "We're going through. Ready?",
       "responses": [
@@ -269,13 +269,12 @@
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
         { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 90, "comparison": "==", "value": 1 },
         { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 100, "comparison": "==", "value": 0 },
-        { "function": "GetGlobalValue", "param": "MF_SofA3_ColdharbourBranch", "comparison": "==", "value": 0 },
-        { "function": "GetGlobalValue", "param": "MF_SofA3_BurnBranch", "comparison": "==", "value": 0 }
+        { "function": "GetGlobalValue", "param": "MF_SofA3_ColdharbourBranch", "comparison": "==", "value": 0 }
       ]
     },
     {
       "editorId": "MFSofVig_3H_BurnBranch",
-      "_note": "3-H branch B: player chose martyrdom/burn (Mq01 s200 = Fragment_14: MartyrFire, SubQ01 starts). OPEN (2026-11-28): s200 is followed by ~3s fade + teleport (Fragment_14 wait 3.0; SubQ01 Fragment_0 MoveTo NewLifeMarker), so this line is practically unreachable — window pending user decision, see sofia-triggers REPORT Q1. Mutually exclusive with ColdharbourBranch (GLOB check).",
+      "_note": "3-H stance line (user Q1=A 2026-11-28): askable after Molag Bal makes his offer (Mq01 s80 = Fragment_10: martyr trigger + offer) and before the player commits — s90 (accepts deal) or s200 (martyrdom: ~3s fade + teleport, too late to hear). Was gated on s200 (practically unreachable). ColdharbourBranch GLOB check kept (redundant with s90==0).",
       "questEditorId": "MFSofVigAct3Controller",
       "prompt": "We stand our ground.",
       "responses": [
@@ -289,7 +288,9 @@
       "setGlobal": { "global": "MF_SofA3_BurnBranch", "value": 1 },
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
-        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 200, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 80, "comparison": "==", "value": 1 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 90, "comparison": "==", "value": 0 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x065932", "stage": 200, "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA3_BurnBranch", "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA3_ColdharbourBranch", "comparison": "==", "value": 0 }
       ]

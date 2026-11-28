@@ -257,7 +257,7 @@
       ]
     },
     {
-      "_note": "4-G-1: High-Karma ending. Gate (2026-11-28) = zzzCHMQ01 s255 (Act 4 over). Karma >= 10 is the original design number — does not match the game ending threshold; pending sofia-triggers REPORT Q2.",
+      "_note": "4-G-1: High-Karma ending (user Q2=A 2026-11-28). Gate = zzzCHMQ01 s255 (Act 4 over) + s70 (good ending: s40 Fragment_6 Karma >= 75+min(25*cycle,50)) + Karma >= 100.",
       "editorId": "MFSofVig_4G_EndingGood",
       "questEditorId": "MFSofVigAct4Controller",
       "prompt": "We made it out.",
@@ -270,14 +270,15 @@
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
         { "function": "GetStageDone", "param": "Vigilant.esm:0x1363DB", "stage": 255, "comparison": "==", "value": 1 },
-        { "function": "GetGlobalValue", "param": "Vigilant.esm:0x020B19F4", "comparison": ">=", "value": 10 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x1363DB", "stage": 70, "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "Vigilant.esm:0x020B19F4", "comparison": ">=", "value": 100 },
         { "function": "GetGlobalValue", "param": "MF_SofA4_EndingGood", "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA4_EndingBad", "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA4_EndingNeutral", "comparison": "==", "value": 0 }
       ]
     },
     {
-      "_note": "4-G-2: Low-Karma ending. Karma < 0.",
+      "_note": "4-G-2: Low line on the BAD ending (user Q2=A 2026-11-28). Gate = zzzCHMQ01 s255 + s180 (bad ending: s40 Karma below threshold -> s150 Molag Bal appears -> s180). No Karma check — the game already decided.",
       "editorId": "MFSofVig_4G_EndingBad",
       "questEditorId": "MFSofVigAct4Controller",
       "prompt": "Was it worth it?",
@@ -290,14 +291,14 @@
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
         { "function": "GetStageDone", "param": "Vigilant.esm:0x1363DB", "stage": 255, "comparison": "==", "value": 1 },
-        { "function": "GetGlobalValue", "param": "Vigilant.esm:0x020B19F4", "comparison": "<", "value": 0 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x1363DB", "stage": 180, "comparison": "==", "value": 1 },
         { "function": "GetGlobalValue", "param": "MF_SofA4_EndingBad", "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA4_EndingGood", "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA4_EndingNeutral", "comparison": "==", "value": 0 }
       ]
     },
     {
-      "_note": "4-G-3: Neutral Karma ending. Karma 0-9 (neither >= 10 nor < 0).",
+      "_note": "4-G-3: Neutral line on the GOOD ending with Karma 75-99 (user Q2=A 2026-11-28). Gate = zzzCHMQ01 s255 + s70 + Karma < 100; the >= 75 floor is implied by s70 (cycle 1 threshold 75; later cycles need >= 100 so they get the high line), no explicit floor so a post-s40 Karma drop cannot leave the good ending with no line.",
       "editorId": "MFSofVig_4G_EndingNeutral",
       "questEditorId": "MFSofVigAct4Controller",
       "prompt": "How do you feel about what we did?",
@@ -310,8 +311,8 @@
       "conditions": [
         { "function": "GetIsID", "param": "SofiaFollower.esp:0x0012C4", "comparison": "==", "value": 1 },
         { "function": "GetStageDone", "param": "Vigilant.esm:0x1363DB", "stage": 255, "comparison": "==", "value": 1 },
-        { "function": "GetGlobalValue", "param": "Vigilant.esm:0x020B19F4", "comparison": ">=", "value": 0 },
-        { "function": "GetGlobalValue", "param": "Vigilant.esm:0x020B19F4", "comparison": "<", "value": 10 },
+        { "function": "GetStageDone", "param": "Vigilant.esm:0x1363DB", "stage": 70, "comparison": "==", "value": 1 },
+        { "function": "GetGlobalValue", "param": "Vigilant.esm:0x020B19F4", "comparison": "<", "value": 100 },
         { "function": "GetGlobalValue", "param": "MF_SofA4_EndingNeutral", "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA4_EndingGood", "comparison": "==", "value": 0 },
         { "function": "GetGlobalValue", "param": "MF_SofA4_EndingBad", "comparison": "==", "value": 0 }
