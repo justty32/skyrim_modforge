@@ -1,0 +1,386 @@
+[
+  {
+    "FormKey": "000802:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "The Windhelm guard came looking for us. Thoughts?",
+    "Target": "風盔城的衛兵找上門了。妳怎麼看？"
+  },
+  {
+    "FormKey": "000803:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "...I'd just closed my eyes.",
+    "Target": "……我才剛閉上眼睛。"
+  },
+  {
+    "FormKey": "000803:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "See that guard's face? That's the 'we have a serious problem and need two idiots to deal with it' face. I recognize it. I've made that face at myself in the mirror.",
+    "Target": "你看到那個衛兵的表情沒有？那是「我們有大麻煩、需要兩個傻子去處理」的表情。我認識那種表情，因為我在鏡子裡對自己做過。"
+  },
+  {
+    "FormKey": "000803:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "Fine. Goodbye, my bed.",
+    "Target": "好吧。我的床，再見了。"
+  },
+  {
+    "FormKey": "000805:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "You seem to know something about what we're dealing with.",
+    "Target": "妳好像知道我們要對付的是什麼。"
+  },
+  {
+    "FormKey": "000806:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "That book — I've read it. Don't look at me like that. I do more than stare at my reflection.",
+    "Target": "那本書——我讀過。別這麼驚訝，我不是只會照鏡子的。"
+  },
+  {
+    "FormKey": "000806:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "A long time ago. Back when I read things for knowledge rather than gold. If half of what's in there is accurate... what's ahead of us is worse than I thought.",
+    "Target": "很久以前。在我還會為了「知識」翻書、而不是為了「報酬」的那個年紀。裡面說的那些東西，要是有一半是真的……我們接下來要碰的，比我想的還糟。"
+  },
+  {
+    "FormKey": "000808:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "You used to be a bookworm?",
+    "Target": "妳以前喜歡讀書？"
+  },
+  {
+    "FormKey": "000809:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "'Like' is a strong word. I read books. Then I learned most of them lie to you. So I read more, looking for the exceptions. Eventually I decided touching things directly is more informative than a lifetime of reading. And here we are.",
+    "Target": "「喜歡」這個詞太強了。我讀書，然後我學到大部分書都沒告訴你真相。這讓我讀更多書，想找到例外。最後我找到的結論是：去親身碰一碰比讀一輩子有效。"
+  },
+  {
+    "FormKey": "00080B:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "Windhelm. Lovely as ever.",
+    "Target": "風盔城。還是一樣迷人。"
+  },
+  {
+    "FormKey": "00080C:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Windhelm. Always snowing, always someone arguing, always that smell you can't quite identify...",
+    "Target": "風盔城。永遠在下雪，永遠有人在吵架，永遠有股說不清楚的霉味……"
+  },
+  {
+    "FormKey": "00080C:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "...and now we're going *down*, toward whatever is *causing* that smell.",
+    "Target": "而現在我們要往下走，去那個霉味的源頭。"
+  },
+  {
+    "FormKey": "00080C:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "Remind me to burn these boots afterward.",
+    "Target": "提醒我之後燒掉這雙靴子。"
+  },
+  {
+    "FormKey": "00080E:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "What do you make of this place?",
+    "Target": "妳覺得這地方怎麼樣？"
+  },
+  {
+    "FormKey": "00080F:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Mud, rats, leaking pipes... oh, and —",
+    "Target": "爛泥、老鼠、管子滲水……哦，還有——"
+  },
+  {
+    "FormKey": "00080F:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "Vampires. Of course.",
+    "Target": "吸血鬼。當然。"
+  },
+  {
+    "FormKey": "00080F:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "You know this outfit is hand-washed only? Hand. Washed. When we get out, you're paying. Bloodstains are extra.",
+    "Target": "你知道我這套衣服是乾洗的嗎。乾洗。出去以後帳算你的，血跡另算。"
+  },
+  {
+    "FormKey": "000811:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "Some of these people look important.",
+    "Target": "這裡有些人看起來來頭不小。"
+  },
+  {
+    "FormKey": "000812:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "These ones look like they have names. Real names. Not 'sewer thug number three.'",
+    "Target": "這幾個看起來有名字。我是說，真的有名字，不是「下水道雜魚甲」那種。"
+  },
+  {
+    "FormKey": "000812:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "You might want to ask what they know first. I know — rare occasion where I'm suggesting *talking*. Take it while it lasts.",
+    "Target": "你要不要先問問他們知道什麼？我是說……難得我建議「先聊」。這輩子不常發生。趁我還沒改主意。"
+  },
+  {
+    "FormKey": "000814:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "This place feels different.",
+    "Target": "這地方感覺不太一樣。"
+  },
+  {
+    "FormKey": "000815:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "This place...",
+    "Target": "這地方……"
+  },
+  {
+    "FormKey": "000815:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "It's too quiet. Like even the air is afraid to breathe too hard.",
+    "Target": "安靜得不對。像是連空氣都不敢太用力呼吸。"
+  },
+  {
+    "FormKey": "000815:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "Whatever's sleeping here — I have a feeling we can't just stab our way through this one. Keep it down. Not for politeness. For survival.",
+    "Target": "睡在這裡的那位，我有種預感，不是隨便能惹的。輕聲點。這次不是為了禮貌。"
+  },
+  {
+    "FormKey": "000817:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "About that dream with Lamae...",
+    "Target": "關於萊梅的那個夢……"
+  },
+  {
+    "FormKey": "000818:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "You just... disappeared.",
+    "Target": "你……就這樣不見了。"
+  },
+  {
+    "FormKey": "000818:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "Eyes closed, and then you were gone. I stood there, counting, got to a pretty large number before I realized this wasn't just you zoning out. You went somewhere I couldn't follow.",
+    "Target": "眼睛閉起來、然後你不在了。我站在那裡，數了一下，數到很大的數字，才意識到這不是你在發呆。你去了某個地方，我進不去的地方。"
+  },
+  {
+    "FormKey": "000818:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "Where did you go.",
+    "Target": "你去哪了。"
+  },
+  {
+    "FormKey": "00081A:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "You were worried about me.",
+    "Target": "妳剛才在擔心我。"
+  },
+  {
+    "FormKey": "00081B:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "I was calculating the resale value of your gear. That's all.",
+    "Target": "我在算你的裝備值多少。就這樣。"
+  },
+  {
+    "FormKey": "00081B:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "...It was a very large number. Drop it.",
+    "Target": "……我數到的那個數字很大。就這樣，別追問了。"
+  },
+  {
+    "FormKey": "00081D:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "What did you make of what Lamae showed us?",
+    "Target": "萊梅讓我們看的那些，妳怎麼想？"
+  },
+  {
+    "FormKey": "00081E:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "The bard. Lamae. I've read accounts of this — not because I care about vampires, it was just the book in front of me and I was bored.",
+    "Target": "吟遊詩人。萊梅。我讀過相關的記載——不是因為我對吸血鬼有興趣，是因為我當時無聊，書剛好在手邊。"
+  },
+  {
+    "FormKey": "00081E:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "Whatever the bard said that made her trust him — *that's* the real story. Someone said exactly the right things, and it turned a woman into the progenitor of an entire bloodline that's been haunting the world ever since.",
+    "Target": "那個人對她說了什麼，讓她信了他。這才是重點。某人說了足夠漂亮的話，結果把一個女人變成了血親始祖、讓一整個族系在世上留了幾千年。"
+  },
+  {
+    "FormKey": "00081E:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "Words are more dangerous than blood. Remember that.",
+    "Target": "話語比血更危險。記住這個。"
+  },
+  {
+    "FormKey": "000820:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "You think she was a victim?",
+    "Target": "妳覺得她是受害者？"
+  },
+  {
+    "FormKey": "000821:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "I think she was someone who got used, and then became a force that couldn't stop. Victim, monster — she's trying to kill us right now, that's the practical part.",
+    "Target": "我覺得她是被利用的人，後來變成了一個沒辦法停下來的力量。受害者不受害者的……她現在想殺我們，這個比較實際。"
+  },
+  {
+    "FormKey": "000823:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "She just got back up. How do we stop this?",
+    "Target": "她又站起來了。這要怎麼停下來？"
+  },
+  {
+    "FormKey": "000824:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "She just got back up. I watched you put her down and she *got back up.*",
+    "Target": "她剛剛起來了。我親眼看著你把她打倒，然後她起來了。"
+  },
+  {
+    "FormKey": "000824:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "Okay. Think. Things that won't stay dead usually aren't solved by hitting them harder — we've tried that, you see the results.",
+    "Target": "好。冷靜。這種打不死的，通常不是用蠻力解決的——蠻力我們都試過了，效果：你看到了。"
+  },
+  {
+    "FormKey": "000824:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "The throne. Something over there is glowing. Stop swinging and go look at the throne. Trust me on this one.",
+    "Target": "王座那邊。有東西在發光。別再砍了，去看那個王座，相信我這一次。"
+  },
+  {
+    "FormKey": "000826:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "That's done. How are you holding up?",
+    "Target": "結束了。妳還撐得住嗎？"
+  },
+  {
+    "FormKey": "000827:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "I've added something new to my personal adventure ledger. 'Fought a vampire progenitor in her own dream palace, watched her come back as a zombie, killed her with a chair.'",
+    "Target": "這趟我的冒險清單裡多了一條：「跟吸血鬼始祖在她自己的夢裡周旋，再看她殭屍復活，然後靠一張王座把她打死。」"
+  },
+  {
+    "FormKey": "000827:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "I'm not sure it's something to be proud of, but I'm pretty sure not many people can say it. ...Are you alright? I don't like that look on your face.",
+    "Target": "我不確定那是值得驕傲的事，但我確定沒多少人做過。……你還好嗎？你那個表情，我不太喜歡。"
+  },
+  {
+    "FormKey": "000829:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "What just happened to you?",
+    "Target": "妳剛才怎麼了？"
+  },
+  {
+    "FormKey": "00082A:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "You took it.",
+    "Target": "那個東西你接了。"
+  },
+  {
+    "FormKey": "00082A:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "I don't know what you were thinking. I don't know what he said that made it sound like a good idea. But I can tell something came in with you — there's something just slightly wrong about your eyes. Just slightly. But I see it.",
+    "Target": "我不知道你在想什麼，我不知道他說了什麼讓你覺得那是個好主意。但我看得出來有什麼東西跟著進來了——跟我認識的你在眼神上不一樣，就差了一點點，但我看得出來。"
+  },
+  {
+    "FormKey": "00082A:ModForgeSofiaVigilantAct2.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "We're going to find a way to undo this. Do you hear me. I said *we*.",
+    "Target": "我們得想辦法解掉這個。你聽到了嗎。我在說「我們」。"
+  }
+]

@@ -1,0 +1,530 @@
+[
+  {
+    "FormKey": "000802:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "What do you make of this place?",
+    "Target": "妳覺得這地方怎麼樣？"
+  },
+  {
+    "FormKey": "000803:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Okay. Just… taking it in. Don't mind me.",
+    "Target": "好。好的。我就在這裡稍微……吸收一下氛圍。別理我。"
+  },
+  {
+    "FormKey": "000803:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "This place has that particular smell — old wood, old blood, and something that used to be a person. I know that smell. I hate that smell.",
+    "Target": "這地方有一股很特別的味道——舊木頭、舊血、還有一些「以前是人」的東西。我認識這個味道。我討厭這個味道。"
+  },
+  {
+    "FormKey": "000803:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "Are you planning to go *in*? Because the sensible options are, in order: leave, set it on fire from out here, *then* leave. You appear to be considering a fourth option.",
+    "Target": "你是打算走進去的意思嗎？因為合理的選擇按優先順序是：離開、在外面把它點了、然後離開。你好像在考慮第四個選項。"
+  },
+  {
+    "FormKey": "000805:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "Any other observations?",
+    "Target": "還有別的發現嗎？"
+  },
+  {
+    "FormKey": "000806:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "The windows are all dark. Usually that means nobody home. *Here* that means something is making sure nobody can look in.",
+    "Target": "窗戶全是暗的。通常這代表沒有人在。在這裡，這代表有什麼東西在確保沒有人能往裡面看。"
+  },
+  {
+    "FormKey": "000806:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "You know the rule about old houses: don't touch anything you don't recognize, don't read anything you find, don't answer if something calls your name. ... We are absolutely going to break all three of those.",
+    "Target": "你知道老宅子的規矩：不認識的東西別亂摸、找到的東西別亂讀、有什麼東西叫你名字別答應。……我們肯定要把這三條全破掉。"
+  },
+  {
+    "FormKey": "000808:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "What do you make of what you just read?",
+    "Target": "剛才讀到的東西，妳怎麼看？"
+  },
+  {
+    "FormKey": "000809:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Another diary. Why do people in enormous haunted houses always keep diaries? You'd think they'd notice the correlation.",
+    "Target": "又一篇日記。住在這種超大鬧鬼宅子裡的人，為什麼都要寫日記？照理說他們應該會注意到其中的關聯性。"
+  },
+  {
+    "FormKey": "000809:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "Lots of money. No friends. Started talking to things they shouldn't. You know what people with friends do? They go out. They eat food someone else cooked. They don't end up in a journal I'm reading two hundred years later surrounded by whatever *that* is.",
+    "Target": "錢很多。朋友沒有。開始跟不該說話的東西說話。你知道有朋友的人在做什麼嗎？他們出門。他們吃別人煮的飯。他們不會最後出現在一本我兩百年後讀到的日記裡、周圍全是不知道那是什麼的東西。"
+  },
+  {
+    "FormKey": "000809:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "... I have you. I'm fine. I'm not judging.",
+    "Target": "……我有你。我沒事。我不是在評論。"
+  },
+  {
+    "FormKey": "00080B:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "You saw me touch that statue.",
+    "Target": "妳看到我摸那座雕像了。"
+  },
+  {
+    "FormKey": "00080C:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "I saw you touch the statue. I *watched* you touch the statue. I made specific eye contact with you *while* you touched the statue.",
+    "Target": "我看到你摸那個塑像。我看著你摸的。你摸的時候我們還有眼神交流。"
+  },
+  {
+    "FormKey": "00080C:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "And now there's something in the room with us that wasn't here before. So I just want to be clear on the chain of events.",
+    "Target": "現在這個房間裡有了一個之前不在這裡的東西。我只是想把這一連串事件的因果說清楚。"
+  },
+  {
+    "FormKey": "00080C:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "Right. Well. Let's go, then.",
+    "Target": "好。那就——走吧。"
+  },
+  {
+    "FormKey": "00080E:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "Red robes in a house like this.",
+    "Target": "在這種宅子裡穿紅袍。"
+  },
+  {
+    "FormKey": "00080F:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Red. They wore *red*. In this place. On purpose.",
+    "Target": "紅色。她們穿了紅色。在這個地方。是主動選的。"
+  },
+  {
+    "FormKey": "00080F:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "I have questions. I have so many questions. Starting with: who *decided*? Was it a group vote? Did someone go, \"I know we're running a haunted noble estate, but have you considered — crimson?\"",
+    "Target": "我有問題。我有很多問題。從這個開始：是誰決定的？有投票嗎？有人說「我知道我們在經營一個鬧鬼的貴族宅邸，但你有沒有考慮過——緋紅色？」"
+  },
+  {
+    "FormKey": "00080F:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "Focus. They're better than they look. Which is saying something, because they look *very good* at this.",
+    "Target": "專心。她們比看起來厲害。這話說起來有點份量，因為她們看起來就很擅長這個。"
+  },
+  {
+    "FormKey": "000811:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "Any read on the woman in charge here?",
+    "Target": "這裡管事的那個女人，妳看出什麼了嗎？"
+  },
+  {
+    "FormKey": "000812:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Look at her. *Look at her.* The posture. The robes. That specific expression people get when they've been the most powerful thing in the room for so long they've forgotten how *bored* they look.",
+    "Target": "你看她。你看她。那個姿態。那件袍子。那種人特有的表情——在一個房間裡當最強的東西當太久之後，他們已經忘記自己看起來有多無聊。"
+  },
+  {
+    "FormKey": "000812:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "She's been here a while, doing whatever this is. That's not confidence. That's just... the particular arrogance of someone who's never been interrupted.",
+    "Target": "她在這裡待很久了，一直在做這些。那不是自信。那只是……一個從來沒有被打斷過的人特有的傲慢。"
+  },
+  {
+    "FormKey": "000812:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "We're about to interrupt her.",
+    "Target": "我們要去打斷她了。"
+  },
+  {
+    "FormKey": "000814:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "She's down. How do you feel?",
+    "Target": "她倒下了。妳感覺怎麼樣？"
+  },
+  {
+    "FormKey": "000815:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "She built all of this. Every room. Every trap. Every poor soul wandering the halls. All of it — to fill something.",
+    "Target": "這一切都是她建的。每個房間。每個陷阱。每個在走廊裡遊蕩的可憐靈魂。所有這些——是為了填滿某個東西。"
+  },
+  {
+    "FormKey": "000815:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "That's the thing nobody talks about. People don't go this far because they're *strong*. They go this far because there's a hole somewhere and they ran out of other ways to fill it.",
+    "Target": "這個沒有人提。人不是因為強大才走到這一步的。是因為某個地方有個洞，而他們其他的填法都用完了。"
+  },
+  {
+    "FormKey": "000815:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "Anyway. What's next?",
+    "Target": "好。接下來？"
+  },
+  {
+    "FormKey": "000817:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "That man. You know him.",
+    "Target": "那個男人。妳認識他。"
+  },
+  {
+    "FormKey": "000818:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "That face.",
+    "Target": "那張臉。"
+  },
+  {
+    "FormKey": "000818:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "I know that face.",
+    "Target": "我認識那張臉。"
+  },
+  {
+    "FormKey": "000818:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "The bard. The one from — *him*. He was in the dream. Said exactly the right things, in exactly the right order, to exactly the right people. And now he's here, in a *butler's uniform*, acting like we've never met.",
+    "Target": "那個吟遊詩人。之前那個——就是他。他在夢裡。說了剛好正確的話、用了剛好正確的順序、說給了剛好正確的人聽。現在他站在這裡、穿著管家制服、裝作我們素未謀面。"
+  },
+  {
+    "FormKey": "000818:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 4,
+    "Source": "I'm very easygoing. Ask anyone. But there are two kinds of people I don't forgive: people who lie to *me*, and people who lie to people I care about. He's managed both.",
+    "Target": "我這個人很好相處。你去問任何人。但有兩種人我不原諒：騙我的人，跟騙我在乎的人的人。他兩樣都做到了。"
+  },
+  {
+    "FormKey": "000818:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 5,
+    "Source": "Don't hold me back. Actually — hold me back. For *one minute*.",
+    "Target": "別拉住我。其實——先拉住我。先給我一分鐘。"
+  },
+  {
+    "FormKey": "00081A:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "What are you going to do?",
+    "Target": "妳打算怎麼做？"
+  },
+  {
+    "FormKey": "00081B:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Nothing. Right now.",
+    "Target": "什麼都不做。現在先不做。"
+  },
+  {
+    "FormKey": "00081B:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "There are more important things in this house. *He* knows that. So do I. He's banking on it.",
+    "Target": "這棟房子裡還有更重要的事。他知道。我也知道。他就是在押這個注。"
+  },
+  {
+    "FormKey": "00081B:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "Later. We'll have a conversation later. And I will be *very* calm. Very professional. Very measured.",
+    "Target": "之後。我們之後會談。我會非常冷靜。非常專業。非常有分寸。"
+  },
+  {
+    "FormKey": "00081B:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 4,
+    "Source": "He should be worried.",
+    "Target": "他應該要擔心。"
+  },
+  {
+    "FormKey": "00081D:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "He's burning the whole place.",
+    "Target": "他要把整個地方燒光。"
+  },
+  {
+    "FormKey": "00081E:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "He's burning it. He's *burning all of it*. The exit. The ceiling. The floor. *Us*, specifically us, is very much on the list.",
+    "Target": "他在燒。他在把所有東西都燒掉。出口。天花板。地板。還有我們，我們很明顯在名單上。"
+  },
+  {
+    "FormKey": "00081E:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "Okay. You know what? I've been scared this whole time. I'm going to stop pretending I haven't. I've been *terrified*, and my hair is now on fire, and I'm still *here*, so clearly that counts for something.",
+    "Target": "好。你知道嗎？我這整段時間都一直很害怕。我不打算繼續假裝沒有。我非常、非常害怕，而且我的頭髮現在在著火，但我還在這裡——所以很顯然這是有意義的。"
+  },
+  {
+    "FormKey": "00081E:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "Stendarr. If you're watching — this is the trial. This is *it*. I see you raising the bar.",
+    "Target": "斯丹達爾。如果你在看——這就是試煉。就是這個。我看到你在拉高標準。"
+  },
+  {
+    "FormKey": "00081E:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 4,
+    "Source": "We're not dying here. Not like this. Not *this badly dressed*.",
+    "Target": "我們不在這裡死。不是這樣死。不是穿成這樣死。"
+  },
+  {
+    "FormKey": "000820:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "The fire isn't stopping.",
+    "Target": "火停不下來。"
+  },
+  {
+    "FormKey": "000821:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "No. It's not.",
+    "Target": "對。它不停。"
+  },
+  {
+    "FormKey": "000821:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "Two doors. The fire, or... that. Whatever *that* is.",
+    "Target": "兩個出口。火，或者……那個。管那是什麼的那個。"
+  },
+  {
+    "FormKey": "000821:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "I'm not going to tell you which one. This is yours. I've had opinions about everything in this entire building — I'm fresh out for this particular question.",
+    "Target": "我不打算告訴你選哪個。這是你的決定。我對這棟房子裡的每件事都有意見——但這個問題我剛好沒了。"
+  },
+  {
+    "FormKey": "000821:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 4,
+    "Source": "Whatever you pick: I'm with you. Not because I have to be. Not because of any contract. Just — I'm with you.",
+    "Target": "不管你選哪個：我跟你走。不是因為我必須。不是因為任何合約。就是——我跟你走。"
+  },
+  {
+    "FormKey": "000823:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "We're going through. Ready?",
+    "Target": "我們要穿過去了。準備好了嗎？"
+  },
+  {
+    "FormKey": "000824:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Into the gate. Sure.",
+    "Target": "走進那個門。好的。"
+  },
+  {
+    "FormKey": "000824:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "We've walked into worse. I think. I'm going to *decide* we have.",
+    "Target": "我們走進過更糟的地方。我想。我要說服自己我們走進過更糟的地方。"
+  },
+  {
+    "FormKey": "000824:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "Come on then.",
+    "Target": "那就走吧。"
+  },
+  {
+    "FormKey": "000826:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "We stand our ground.",
+    "Target": "我們留下來，不退。"
+  },
+  {
+    "FormKey": "000827:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "Alright.",
+    "Target": "好吧。"
+  },
+  {
+    "FormKey": "000827:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "Alright.",
+    "Target": "好吧。"
+  },
+  {
+    "FormKey": "000827:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "Stendarr! We're on our way! We're coming *standing up* — make some room!",
+    "Target": "斯丹達爾！我們來了！我們是站著去的——給我們騰個地方！"
+  },
+  {
+    "FormKey": "000827:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 4,
+    "Source": "Seemed like the right thing to say.",
+    "Target": "這個時候好像就應該說這個。"
+  },
+  {
+    "FormKey": "000829:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "You're still here.",
+    "Target": "妳還在這裡。"
+  },
+  {
+    "FormKey": "00082A:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "I'm still here.",
+    "Target": "我還在這裡。"
+  },
+  {
+    "FormKey": "00082A:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "I was very much on fire. I have specific, detailed memories of being on fire. My boots are singed. That's... real. But here I am.",
+    "Target": "我明明在著火。我有具體的、詳細的記憶說明我當時在著火。我的靴子有燒焦的痕跡。這是真的。但我還在這裡。"
+  },
+  {
+    "FormKey": "00082A:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "The Nine. They do a thing sometimes. I'm not questioning it. We had a good death, I think we earned a second round.",
+    "Target": "九聖靈。他們有時候會出手。我不打算追問。我們死得很好，我覺得我們贏得了第二輪。"
+  },
+  {
+    "FormKey": "00082A:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 4,
+    "Source": "...You're you, right?",
+    "Target": "……你是你，對吧？"
+  },
+  {
+    "FormKey": "00082C:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogTopic",
+    "Field": "Prompt",
+    "Index": 0,
+    "Source": "That burned body.",
+    "Target": "那具燒焦的屍體。"
+  },
+  {
+    "FormKey": "00082D:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 1,
+    "Source": "I... yeah.",
+    "Target": "我……對。"
+  },
+  {
+    "FormKey": "00082D:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 2,
+    "Source": "There's something weird about looking at that. I can't put my finger on it. Like looking at something I've seen before, in a dream, in the wrong order.",
+    "Target": "看著這個有種奇怪的感覺。我說不清楚。像是看到了一個我在夢裡見過的東西、但順序不對。"
+  },
+  {
+    "FormKey": "00082D:ModForgeSofiaVigilantAct3.esp",
+    "Type": "DialogResponse",
+    "Field": "Text",
+    "Index": 3,
+    "Source": "Doesn't matter. We're here. The body is there. Let's keep moving — standing around near corpses is how things get worse in places like this.",
+    "Target": "沒關係。我們在這裡。屍體在那裡。繼續走——在這種地方站在屍體附近是事情變糟的標準方式。"
+  }
+]
